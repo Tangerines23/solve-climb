@@ -1,0 +1,134 @@
+/* src/index.css */
+
+/* 1. 'weekly-todo-react'/'AI 사진관' 예제의 기본 스타일 (Font, Reset, Colors) */
+:root {
+  font-family: "Pretendard Variable", Pretendard, -apple-system,
+    BlinkMacSystemFont, system-ui, Roboto, "Helvetica Neue", "Segoe UI",
+    "Apple SD Gothic Neo", "Noto Sans KR", "Malgun Gothic", "Apple Color Emoji",
+    "Segoe UI Emoji", "Segoe UI Symbol", sans-serif;
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  overflow: hidden;
+  overscroll-behavior: none;
+  -webkit-tap-highlight-color: transparent;
+  touch-action: pan-x pan-y;
+
+  /* (지시서 3-1) Toss UI 색상 정의 */
+  --color-gray-100: #ffffff;
+  --color-gray-800: #181818;
+  --color-gray-900: #1a1b1d; /* (지시서 4-2) 다크 배경색 */
+  --color-primary: #3182f6; /* (지시서 4-2) Primary color */
+  --color-primary-focus-shadow: rgba(49, 130, 246, 0.2);
+  --color-border: #e0e0e0;
+  --color-disabled: #a0a0a0;
+  --color-text-default: #333;
+  --color-error: #D91A2A;
+}
+
+html,
+body,
+#root {
+  width: 100vw;
+  height: 100dvh;
+  margin: 0;
+  padding: 0;
+}
+
+* {
+  box-sizing: border-box;
+  -webkit-user-select: none;
+  -moz-user-select: none; 
+  -ms-user-select: none;
+  user-select: none;
+}
+
+/* 2. 'MathQuizPage' 전용 스타일 ('지시서1.md (v3.0)' 4-2항) */
+
+.page-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 80vh;
+  padding: 16px;
+  background-color: var(--color-gray-900);
+}
+
+.quiz-card {
+  width: 100%;
+  max-width: 400px;
+  padding: 24px;
+  background-color: var(--color-gray-100);
+  border-radius: 16px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+  box-sizing: border-box;
+}
+
+.quiz-form-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+}
+
+.problem-text {
+  font-size: 24px;
+  font-weight: bold;
+  color: var(--color-text-default);
+  margin: 0;
+  padding-bottom: 8px;
+}
+
+.answer-input {
+  width: 100%;
+  padding: 12px 16px;
+  font-size: 16px;
+  font-family: inherit;
+  border: 1px solid var(--color-border);
+  border-radius: 12px;
+  box-sizing: border-box;
+}
+
+.answer-input:focus {
+  outline: none;
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 2px var(--color-primary-focus-shadow);
+}
+
+.submit-button {
+  width: 100%;
+  padding: 14px 16px;
+  font-size: 16px;
+  font-weight: bold;
+  font-family: inherit;
+  color: var(--color-gray-100);
+  background-color: var(--color-primary);
+  border: none;
+  border-radius: 12px;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.submit-button:disabled {
+  background-color: var(--color-disabled);
+  cursor: not-allowed;
+}
+
+/* (v3.0 13단계) 피드백 메시지 스타일 */
+.feedback-message {
+  height: 20px; /* 공간 확보 */
+  font-size: 14px;
+  margin-top: 12px;
+  font-weight: 500;
+  text-align: center;
+}
+
+.feedback-message.success {
+  color: var(--color-primary);
+}
+
+.feedback-message.error {
+  color: var(--color-error);
+}
