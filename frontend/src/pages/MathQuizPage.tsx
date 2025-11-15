@@ -6,160 +6,148 @@ import React, {
   FormEvent,
   useRef,
 } from 'react';
-import './MathQuizPage.css'; // v3.0 9단계에서 생성한 CSS
-
-// (v3.0 17단계) 'AI 사진관'/'TDS 문서'에서 '존재'가 확인된 컴포넌트만 import
-// import {
-//   Button,
-// } from '@toss/tds-mobile';
-
-// (v3.0 17단계) @apps-in-toss/web-framework 의존성 제거 (useToast 없음)
-
-import { generateRandomNumber } from '../utils/math';
+import { useNavigate } from 'react-router-dom'; // useNavigate import
+import './MathQuizPage.css';
 import { useQuizStore, Difficulty } from '../stores/useQuizStore';
+import { generateRandomNumber } from '../utils/math';
 import { MESSAGES } from '../constants/messages';
-import {
-  SCORE_PER_CORRECT,
-  MAX_POSSIBLE_ANSWER,
-} from '../constants/game';
-import { SUBMIT_DELAY_MS } from '../constants/layout';
+import { SCORE_PER_CORRECT, MAX_POSSIBLE_ANSWER } from '../constants/game';
+import { Timer } from '../components/Timer';
 
+type GameMode = 'time-attack' | 'survival';
 type InputHandle = HTMLInputElement;
 
-type Feedback = {
-  message: string;
-  type: 'success' | 'error' | 'idle';
-};
-
 export function MathQuizPage() {
-  // (v3.0 17단계) '존재'하지 않는 훅(useToast, useTheme) 제거
-  const { difficulty, increaseScore } = useQuizStore();
+  const { score, difficulty, increaseScore, resetQuiz } = useQuizStore();
+  const navigate = useNavigate(); // useNavigate hook
+
+  const [gameMode] = useState<GameMode>('time-attack');
+  const [isGameOver, setIsGameOver] = useState(false); // Game over state
 
   const [question, setQuestion] = useState({ x: 0, y: 0 });
   const [answerInput, setAnswerInput] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const inputRef = useRef<InputHandle>(null);
 
-  const [feedback, setFeedback] = useState<Feedback>({ message: '', type: 'idle' });
+  // Animation states
+  const [cardAnimation, setCardAnimation] = useState('');
+  const [inputAnimation, setInputAnimation] = useState('');
+  const [scoreAnimation, setScoreAnimation] = useState('');
+  const [questionAnimation, setQuestionAnimation] = useState('fade-in');
 
   const generateNewQuestion = useCallback(() => {
-    const newX = generateRandomNumber(difficulty as Difficulty);
-    const newY = generateRandomNumber(difficulty as Difficulty);
-    setQuestion({ x: newX, y: newY });
-    setAnswerInput('');
-    inputRef.current?.focus();
+    setQuestionAnimation('fade-out');
+    setTimeout(() => {
+      const newX = generateRandomNumber(difficulty as Difficulty);
+      const newY = generateRandomNumber(difficulty as Difficulty);
+      setQuestion({ x: newX, y: newY });
+      setAnswerInput('');
+      inputRef.current?.focus();
+      setQuestionAnimation('fade-in');
+    }, 150);
   }, [difficulty]);
 
   useEffect(() => {
+    resetQuiz(); // Reset score when component mounts
     generateNewQuestion();
-  }, [generateNewQuestion]);
+  }, [generateNewQuestion, resetQuiz]);
 
-  // (v3.0 17단계) useToast 대신 useState 피드백 사용
-  const openFeedback = (options: { message: string; type: 'success' | 'error' }) => {
-    if (options.type === 'error') {
-      console.error(options.message);
-    } else {
-      console.log(options.message);
-    }
-    setFeedback({ message: options.message, type: options.type });
+  const handleGameOver = () => {
+    setIsGameOver(true);
+  };
+
+  const handleNavigateToResult = () => {
+    navigate('/result');
   };
 
   const handleSubmit = useCallback(
-    async (e: FormEvent) => {
+    (e: FormEvent) => {
       e.preventDefault();
-      if (isSubmitting) return;
-      setIsSubmitting(true);
+      if (isSubmitting || isGameOver) return;
 
       const answer = parseInt(answerInput, 10);
-      if (isNaN(answer)) {
-        openFeedback({ message: MESSAGES.INVALID_INPUT, type: 'error' });
-        inputRef.current?.focus();
-        setIsSubmitting(false);
+      if (isNaN(answer) || answer < 0 || answer > MAX_POSSIBLE_ANSWER) {
+        setCardAnimation('wrong-shake');
+        if (navigator.vibrate) navigator.vibrate(200);
+        setTimeout(() => setCardAnimation(''), 150);
         return;
       }
 
-      if (answer < 0 || answer > MAX_POSSIBLE_ANSWER) {
-        openFeedback({ message: MESSAGES.OUT_OF_RANGE, type: 'error' });
-        inputRef.current?.focus();
-        setIsSubmitting(false);
-        return;
-      }
-
+      setIsSubmitting(true);
       const isCorrect = question.x + question.y === answer;
 
-      setTimeout(() => {
-        if (isCorrect) {
-          openFeedback({ message: MESSAGES.CORRECT, type: 'success' });
-          increaseScore(SCORE_PER_CORRECT);
-
-          setTimeout(() => {
-            generateNewQuestion();
-            setFeedback({ message: '', type: 'idle' });
-          }, SUBMIT_DELAY_MS);
-
-        } else {
-          openFeedback({ message: MESSAGES.INCORRECT, type: 'error' });
-          setAnswerInput('');
-          inputRef.current?.focus();
-        }
-        setIsSubmitting(false);
-      }, SUBMIT_DELAY_MS);
+      if (isCorrect) {
+        setInputAnimation('correct-flash');
+        setScoreAnimation('score-pop');
+        increaseScore(SCORE_PER_CORRECT);
+        
+        setTimeout(() => {
+          generateNewQuestion();
+          setInputAnimation('');
+          setScoreAnimation('');
+          setIsSubmitting(false);
+        }, 150);
+      } else {
+        setCardAnimation('wrong-shake');
+        if (navigator.vibrate) navigator.vibrate(200);
+        
+        setTimeout(() => {
+          generateNewQuestion();
+          setCardAnimation('');
+          setIsSubmitting(false);
+        }, 150);
+      }
     },
-    [answerInput, generateNewQuestion, increaseScore, isSubmitting, question]
+    [answerInput, generateNewQuestion, increaseScore, isSubmitting, isGameOver, question]
   );
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setAnswerInput(e.target.value);
-    if (feedback.type === 'error') {
-      setFeedback({ message: '', type: 'idle' });
-    }
-  };
+  const renderGameOver = () => (
+    <div className="quiz-form-content">
+      <h2 className="problem-text">Time's Up!</h2>
+      <p style={{ textAlign: 'center', fontSize: '1.2rem', margin: '20px 0' }}>
+        Your final score is:
+      </p>
+      <p style={{ textAlign: 'center', fontSize: '3rem', fontWeight: 'bold', color: '#0070f3', margin: 0 }}>
+        {score}
+      </p>
+      <button onClick={handleNavigateToResult} className="submit-button" style={{ marginTop: '20px' }}>
+        Confirm
+      </button>
+    </div>
+  );
 
-  /**
-   * (v3.0 17단계) 'AI 사진관' 예제 방식 (TDS Button + 순수 HTML/CSS)
-   */
-  return (
-    // <Page> 컴포넌트는 TDS에 없으므로 <div>로 대체
-    <div className="page-container">
-      <div className="quiz-container">
-        {/* <Card> 컴포넌트는 TDS에 없으므로 <div>로 대체 */}
-        <div className="quiz-card">
-          <form onSubmit={handleSubmit}>
-            <div className="quiz-form-content">
-              {/* <Text> 컴포넌트는 TDS에 없으므로 <h2>로 대체 */}
-              <h2 className="problem-text">
-                {question.x} + {question.y} = ?
-              </h2>
-
-              {/* <Input> 컴포넌트는 TDS에 없으므로 <input>으로 대체 */}
-              <input
-                ref={inputRef}
-                value={answerInput}
-                onChange={handleInputChange}
-                placeholder="정답을 입력하세요"
-                inputMode="numeric"
-                className="answer-input"
-              />
-
-              {/* (v3.0 17단계) <Spacing> 컴포넌트 제거 (CSS gap으로 대체됨) */}
-
-              {/* <Button> (TDS 컴포넌트 사용) */}
-              <button
-                type="submit"
-                className="submit-button"
-                style={{ width: '100%' }}
-                disabled={isSubmitting || feedback.type === 'success'}
-              >
-                {isSubmitting ? MESSAGES.SUBMITTING : MESSAGES.SUBMIT}
-              </button>
-
-              {/* 피드백 메시지 영역 (순수 HTML) */}
-              <p className={`feedback-message ${feedback.type}`}>
-                {feedback.message}
-              </p>
-            </div>
-          </form>
+  const renderQuiz = () => (
+    <form onSubmit={handleSubmit}>
+      <div className="quiz-form-content">
+        <div className={questionAnimation}>
+          <h2 className="problem-text">
+            {question.x} + {question.y} = ?
+          </h2>
         </div>
+        <input
+          ref={inputRef}
+          value={answerInput}
+          onChange={(e) => setAnswerInput(e.target.value)}
+          placeholder="정답"
+          inputMode="numeric"
+          className={`answer-input ${inputAnimation}`}
+          disabled={isSubmitting}
+        />
+        <button type="submit" className="submit-button" disabled={isSubmitting}>
+          {MESSAGES.SUBMIT}
+        </button>
+      </div>
+    </form>
+  );
+
+  return (
+    <div className="page-container">
+      {gameMode === 'time-attack' && (
+        <Timer initialTime={30} onGameOver={handleGameOver} isPaused={isGameOver} />
+      )}
+      <div className={`score-display ${scoreAnimation}`}>Score: {score}</div>
+      <div className={`quiz-card ${cardAnimation}`}>
+        {isGameOver ? renderGameOver() : renderQuiz()}
       </div>
     </div>
   );

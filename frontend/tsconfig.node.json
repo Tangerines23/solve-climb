@@ -9,8 +9,11 @@
     "allowJs": true
   },
   "include": [
-    "vite.config.js",
+    "vite.config.ts",
     "granite.config.ts",
+    "src/**/*.ts"
+  ],
+  "exclude": [
     "eslint.config.js"
   ]
 }

@@ -1,1 +1,139 @@
-/* This file is intentionally left blank for now. */
+/* Base styles for dark mode */
+html,
+body {
+  background-color: #121212;
+  color: white;
+  margin: 0;
+  padding: 0;
+  height: 100%;
+  width: 100%;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+}
+
+/* Main container for centering the quiz */
+.page-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  padding: 20px;
+  box-sizing: border-box;
+}
+
+/* Score display */
+.score-display {
+  font-size: 2rem;
+  font-weight: bold;
+  color: #448aff; /* Toss blue */
+  margin-bottom: 20px;
+  transition: transform 0.15s ease-in-out;
+}
+
+/* Card UI matching Toss Quiz style - Light Card */
+.quiz-card {
+  background-color: #ffffff; /* White card */
+  color: #333; /* Dark text on card */
+  border-radius: 16px;
+  padding: 24px;
+  width: 100%;
+  max-width: 400px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+
+.quiz-form-content {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+/* Question text */
+.problem-text {
+  font-size: 2.5rem;
+  font-weight: bold;
+  text-align: center;
+  margin: 0;
+  color: #111; /* Darker text for question */
+}
+
+/* Input field for light card */
+.answer-input {
+  background-color: #f0f1f3; /* Light gray background */
+  border: 1px solid #e0e2e7;
+  border-radius: 8px;
+  color: #333; /* Dark text */
+  font-size: 1.5rem;
+  padding: 12px;
+  text-align: center;
+  width: 100%;
+  box-sizing: border-box;
+}
+.answer-input::placeholder {
+  color: #aab0bb;
+}
+
+/* Submit button */
+.submit-button {
+  background-color: #0070f3; /* Toss Blue */
+  color: white;
+  border: none;
+  padding: 14px;
+  font-size: 1.2rem;
+  font-weight: bold;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+.submit-button:disabled {
+  background-color: #aab0bb;
+  cursor: not-allowed;
+}
+/* A red button for confirmation/exit actions */
+.confirm-button-red {
+  background-color: #f44336; /* Toss Red */
+}
+
+
+/* --- Animations --- */
+
+/* Correct answer flash on INPUT (for light background) */
+@keyframes correct-flash-animation {
+  50% { background-color: #c8e6c9; border-color: #4caf50; }
+}
+.correct-flash {
+  animation: correct-flash-animation 0.15s ease-in-out;
+}
+
+/* Incorrect answer shake on CARD */
+@keyframes wrong-shake-animation {
+  0%, 100% { transform: translateX(0); }
+  25% { transform: translateX(-8px); }
+  75% { transform: translateX(8px); }
+}
+.wrong-shake {
+  animation: wrong-shake-animation 0.15s ease-in-out;
+}
+
+/* Score pop animation */
+@keyframes score-pop-animation {
+  50% { transform: scale(1.3); }
+}
+.score-pop {
+  animation: score-pop-animation 0.15s ease-in-out;
+}
+
+/* Question fade transitions */
+@keyframes fade-out {
+  from { opacity: 1; }
+  to { opacity: 0; }
+}
+@keyframes fade-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+.fade-out {
+  animation: fade-out 0.1s forwards;
+}
+.fade-in {
+  animation: fade-in 0.1s forwards;
+}

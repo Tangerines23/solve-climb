@@ -1,0 +1,56 @@
+.mode-selector-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100vh;
+  padding: 20px;
+  color: white;
+  text-align: center;
+}
+
+.mode-title {
+  font-size: 2.5rem;
+  margin-bottom: 40px;
+  font-weight: bold;
+  color: #448aff; /* Toss blue */
+}
+
+.modes {
+  display: flex;
+  gap: 20px;
+}
+
+.mode-card {
+  background-color: #1e1e1e;
+  border-radius: 16px;
+  padding: 30px;
+  width: 250px;
+  cursor: pointer;
+  transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+  border: 1px solid #333;
+}
+
+.mode-card:hover {
+  transform: translateY(-10px);
+  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+}
+
+.mode-card h2 {
+  font-size: 1.8rem;
+  margin-top: 0;
+  margin-bottom: 15px;
+}
+
+.mode-card p {
+  font-size: 1rem;
+  color: #aaa;
+}
+
+.time-attack h2 {
+  color: #ffab00; /* Amber */
+}
+
+.survival h2 {
+  color: #ff5252; /* Red */
+}
