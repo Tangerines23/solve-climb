@@ -2,14 +2,17 @@
 import React from 'react';
 import ReactDOM from 'react-dom/client';
 import { BrowserRouter } from 'react-router-dom';
+import { ThemeProvider } from '@toss/tds-mobile'; // defaultTheme 제거
+
 import App from './App';
-import './index.css'; // (v3.0 9단계) CSS 파일 임포트
+import './index.css';
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>
-    {/* (v3.0 14단계) TDSProvider 래퍼 제거 */}
-    <BrowserRouter>
-      <App />
-    </BrowserRouter>
+    <ThemeProvider> 
+      <BrowserRouter>
+        <App />
+      </BrowserRouter>
+    </ThemeProvider>
   </React.StrictMode>
 );

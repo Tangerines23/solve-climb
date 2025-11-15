@@ -8,9 +8,12 @@ import React, {
 } from 'react';
 import './MathQuizPage.css'; // v3.0 9단계에서 생성한 CSS
 
-// (v3.0 14단계) @toss/tds-mobile 의존성 완전 제거
+// (v3.0 17단계) 'AI 사진관'/'TDS 문서'에서 '존재'가 확인된 컴포넌트만 import
+// import {
+//   Button,
+// } from '@toss/tds-mobile';
 
-// (v3.0 13단계) @apps-in-toss/web-framework 의존성 제거
+// (v3.0 17단계) @apps-in-toss/web-framework 의존성 제거 (useToast 없음)
 
 import { generateRandomNumber } from '../utils/math';
 import { useQuizStore, Difficulty } from '../stores/useQuizStore';
@@ -23,24 +26,20 @@ import { SUBMIT_DELAY_MS } from '../constants/layout';
 
 type InputHandle = HTMLInputElement;
 
-// (v3.0 13단계) 피드백 메시지 타입 정의
 type Feedback = {
   message: string;
   type: 'success' | 'error' | 'idle';
 };
 
 export function MathQuizPage() {
-  // (v3.0 13단계) useToast() 제거
+  // (v3.0 17단계) '존재'하지 않는 훅(useToast, useTheme) 제거
   const { difficulty, increaseScore } = useQuizStore();
-
-  // (v3.0 12단계) useTheme() 훅 제거
 
   const [question, setQuestion] = useState({ x: 0, y: 0 });
   const [answerInput, setAnswerInput] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const inputRef = useRef<InputHandle>(null);
 
-  // (v3.0 13단계) 피드백 상태
   const [feedback, setFeedback] = useState<Feedback>({ message: '', type: 'idle' });
 
   const generateNewQuestion = useCallback(() => {
@@ -55,6 +54,16 @@ export function MathQuizPage() {
     generateNewQuestion();
   }, [generateNewQuestion]);
 
+  // (v3.0 17단계) useToast 대신 useState 피드백 사용
+  const openFeedback = (options: { message: string; type: 'success' | 'error' }) => {
+    if (options.type === 'error') {
+      console.error(options.message);
+    } else {
+      console.log(options.message);
+    }
+    setFeedback({ message: options.message, type: options.type });
+  };
+
   const handleSubmit = useCallback(
     async (e: FormEvent) => {
       e.preventDefault();
@@ -63,14 +72,14 @@ export function MathQuizPage() {
 
       const answer = parseInt(answerInput, 10);
       if (isNaN(answer)) {
-        setFeedback({ message: MESSAGES.INVALID_INPUT, type: 'error' }); // (13단계) useState로 변경
+        openFeedback({ message: MESSAGES.INVALID_INPUT, type: 'error' });
         inputRef.current?.focus();
         setIsSubmitting(false);
         return;
       }
 
       if (answer < 0 || answer > MAX_POSSIBLE_ANSWER) {
-        setFeedback({ message: MESSAGES.OUT_OF_RANGE, type: 'error' }); // (13단계) useState로 변경
+        openFeedback({ message: MESSAGES.OUT_OF_RANGE, type: 'error' });
         inputRef.current?.focus();
         setIsSubmitting(false);
         return;
@@ -80,7 +89,7 @@ export function MathQuizPage() {
 
       setTimeout(() => {
         if (isCorrect) {
-          setFeedback({ message: MESSAGES.CORRECT, type: 'success' }); // (13단계) useState로 변경
+          openFeedback({ message: MESSAGES.CORRECT, type: 'success' });
           increaseScore(SCORE_PER_CORRECT);
 
           setTimeout(() => {
@@ -89,7 +98,7 @@ export function MathQuizPage() {
           }, SUBMIT_DELAY_MS);
 
         } else {
-          setFeedback({ message: MESSAGES.INCORRECT, type: 'error' }); // (13단계) useState로 변경
+          openFeedback({ message: MESSAGES.INCORRECT, type: 'error' });
           setAnswerInput('');
           inputRef.current?.focus();
         }
@@ -107,22 +116,22 @@ export function MathQuizPage() {
   };
 
   /**
-   * (v3.0 14단계) 순수 HTML/CSS
+   * (v3.0 17단계) 'AI 사진관' 예제 방식 (TDS Button + 순수 HTML/CSS)
    */
   return (
-    // <Page> 대신 <div>
+    // <Page> 컴포넌트는 TDS에 없으므로 <div>로 대체
     <div className="page-container">
       <div className="quiz-container">
-        {/* <Card> 대신 <div> */}
+        {/* <Card> 컴포넌트는 TDS에 없으므로 <div>로 대체 */}
         <div className="quiz-card">
           <form onSubmit={handleSubmit}>
             <div className="quiz-form-content">
-              {/* <Text> 대신 <h2> */}
+              {/* <Text> 컴포넌트는 TDS에 없으므로 <h2>로 대체 */}
               <h2 className="problem-text">
                 {question.x} + {question.y} = ?
               </h2>
 
-              {/* <Input> 대신 <input> */}
+              {/* <Input> 컴포넌트는 TDS에 없으므로 <input>으로 대체 */}
               <input
                 ref={inputRef}
                 value={answerInput}
@@ -132,16 +141,19 @@ export function MathQuizPage() {
                 className="answer-input"
               />
 
-              {/* <Button> 대신 <button> */}
+              {/* (v3.0 17단계) <Spacing> 컴포넌트 제거 (CSS gap으로 대체됨) */}
+
+              {/* <Button> (TDS 컴포넌트 사용) */}
               <button
                 type="submit"
                 className="submit-button"
+                style={{ width: '100%' }}
                 disabled={isSubmitting || feedback.type === 'success'}
               >
                 {isSubmitting ? MESSAGES.SUBMITTING : MESSAGES.SUBMIT}
               </button>
 
-              {/* (v3.0 13단계) 피드백 메시지 영역 (순수 HTML) */}
+              {/* 피드백 메시지 영역 (순수 HTML) */}
               <p className={`feedback-message ${feedback.type}`}>
                 {feedback.message}
               </p>
