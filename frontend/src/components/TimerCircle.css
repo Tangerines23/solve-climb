@@ -1,0 +1,16 @@
+.timer-circle-container {
+  position: absolute;
+  top: -64px; /* 퀴즈카드 바로 위에 붙도록 조정 */
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  z-index: 10;
+}
+
+.timer-label {
+  font-size: 0.95rem;
+  font-weight: bold;
+  color: #3182f6;
+}

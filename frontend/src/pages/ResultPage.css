@@ -1,0 +1,73 @@
+/* src/pages/ResultPage.css */
+
+.result-card {
+  height: 300px; /* 퀴즈 카드와 동일한 높이 */
+  padding: 24px 16px; /* 위아래 여백 추가 */
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between; /* 위/아래 요소를 적절히 분산 */
+  align-items: center;
+  background-color: #1e1e1e;
+  border-radius: 12px;
+  box-shadow: 0 0 12px rgba(0, 0, 0, 0.3);
+  width: 100%;
+  max-width: 320px;
+  margin: 0 auto;
+  text-align: center;
+  color: var(--color-text-default);
+  transition: all 0.3s ease;
+}
+
+.result-title {
+  font-size: 28px;
+  font-weight: 700;
+  margin: 0;
+  color: #333;
+}
+
+.score-section {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+}
+
+.score-label {
+  font-size: 160px;
+  font-weight: 500;
+  color: #555;
+  margin: 0;
+}
+
+.score-value {
+  font-size: 48px;
+  font-weight: 800;
+  color: var(--color-primary);
+  margin: 0;
+}
+
+.level-up-section {
+  margin-top: 16px;
+  padding: 16px;
+  background-color: #f0f7ff;
+  border-radius: 12px;
+  width: 100%;
+}
+
+.level-up-text {
+  font-size: 22px;
+  font-weight: 700;
+  color: var(--color-primary);
+  margin: 0 0 8px 0;
+}
+
+.level-value {
+  font-size: 18px;
+  font-weight: 500;
+  color: #333;
+  margin: 0;
+}
+
+.result-card button {
+  margin-top: 16px;
+}

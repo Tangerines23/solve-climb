@@ -12,7 +12,7 @@ import { useQuizStore, Difficulty } from '../stores/useQuizStore';
 import { generateRandomNumber } from '../utils/math';
 import { MESSAGES } from '../constants/messages';
 import { SCORE_PER_CORRECT, MAX_POSSIBLE_ANSWER } from '../constants/game';
-import { Timer } from '../components/Timer';
+import { TimerCircle } from '../components/TimerCircle';
 
 type GameMode = 'time-attack' | 'survival';
 type InputHandle = HTMLInputElement;
@@ -23,6 +23,7 @@ export function MathQuizPage() {
 
   const [gameMode] = useState<GameMode>('time-attack');
   const [isGameOver, setIsGameOver] = useState(false); // Game over state
+  const [category, setCategory] = useState('신용 짤짝 퀴즈');
 
   const [question, setQuestion] = useState({ x: 0, y: 0 });
   const [answerInput, setAnswerInput] = useState('');
@@ -101,24 +102,25 @@ export function MathQuizPage() {
     [answerInput, generateNewQuestion, increaseScore, isSubmitting, isGameOver, question]
   );
 
-  const renderGameOver = () => (
-    <div className="quiz-form-content">
-      <h2 className="problem-text">Time's Up!</h2>
-      <p style={{ textAlign: 'center', fontSize: '1.2rem', margin: '20px 0' }}>
-        Your final score is:
-      </p>
-      <p style={{ textAlign: 'center', fontSize: '3rem', fontWeight: 'bold', color: '#0070f3', margin: 0 }}>
-        {score}
-      </p>
-      <button onClick={handleNavigateToResult} className="submit-button" style={{ marginTop: '20px' }}>
-        Confirm
+  const renderGameOverCard = () => (
+    <div className={`quiz-card result-mode ${cardAnimation}`}>
+      <h2 className="result-title">시간 종료!</h2>
+      <p className="result-score-label">최종 점수:</p>
+      <p className="result-score">{score}</p>
+      <button 
+        onClick={handleNavigateToResult} 
+        className="submit-button result-confirm-button"
+      >
+        확인
       </button>
     </div>
   );
 
-  const renderQuiz = () => (
-    <form onSubmit={handleSubmit}>
-      <div className="quiz-form-content">
+  const renderQuizCard = () => (
+    <div className={`quiz-card ${cardAnimation}`}>
+      <TimerCircle duration={2} onComplete={handleGameOver} isPaused={isGameOver} />
+      <div className="category-label">{category}</div>
+      <form onSubmit={handleSubmit} style={{ display: 'contents' }}>
         <div className={questionAnimation}>
           <h2 className="problem-text">
             {question.x} + {question.y} = ?
@@ -136,19 +138,13 @@ export function MathQuizPage() {
         <button type="submit" className="submit-button" disabled={isSubmitting}>
           {MESSAGES.SUBMIT}
         </button>
-      </div>
-    </form>
+      </form>
+    </div>
   );
 
   return (
     <div className="page-container">
-      {gameMode === 'time-attack' && (
-        <Timer initialTime={30} onGameOver={handleGameOver} isPaused={isGameOver} />
-      )}
-      <div className={`score-display ${scoreAnimation}`}>Score: {score}</div>
-      <div className={`quiz-card ${cardAnimation}`}>
-        {isGameOver ? renderGameOver() : renderQuiz()}
-      </div>
+      {isGameOver ? renderGameOverCard() : renderQuizCard()}
     </div>
   );
 }
