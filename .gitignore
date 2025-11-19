@@ -33,3 +33,5 @@ dist-ssr
 
 # 토스제공 예시파일
 apps-in-toss-examples-main/
+
+memo/*
