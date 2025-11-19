@@ -269,11 +269,12 @@
 
 /* 답변 표시 영역 (div) */
 .answer-display {
-  min-height: clamp(40px, 8vh, 60px);
+  min-height: clamp(50px, 10vh, 70px);
   min-width: 200px;
   display: flex;
-  align-items: center;
-  justify-content: flex-start;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: flex-end;
   font-size: clamp(2rem, 6vw, 3rem);
   font-weight: bold;
   color: #3182f6;
@@ -281,24 +282,27 @@
   user-select: none;
   padding: clamp(12px, 2vh, 16px);
   padding-left: clamp(16px, 3vw, 24px);
+  padding-bottom: clamp(8px, 1.5vh, 12px);
   border-radius: 12px;
   transition: all 0.2s;
   position: relative;
   overflow: visible;
 }
 
+.answer-display-text {
+  line-height: 1.2;
+  margin-bottom: clamp(6px, 1.2vh, 10px);
+  display: block;
+}
+
 .answer-caret {
-  display: inline-block;
-  width: clamp(80px, 15vw, 120px);
+  display: block;
+  width: 100%;
+  min-width: clamp(100px, 20vw, 200px);
   height: clamp(3px, 0.5vh, 4px);
   background-color: #3182f6;
   border-radius: 2px;
   animation: caret-blink 1.2s ease-in-out infinite;
-  margin-left: clamp(8px, 1.5vw, 12px);
-  vertical-align: middle;
-  content: '';
-  line-height: 0;
-  font-size: 0;
   flex-shrink: 0;
 }
 

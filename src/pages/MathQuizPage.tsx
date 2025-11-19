@@ -586,7 +586,7 @@ export function MathQuizPage() {
                 })()
               ) : (
                 <div className={`answer-display ${inputAnimation}`}>
-                  {answerInput}
+                  {answerInput && <span className="answer-display-text">{answerInput}</span>}
                   <span className="answer-caret"></span>
                 </div>
               )}
