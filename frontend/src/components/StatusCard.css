@@ -1,0 +1,102 @@
+.status-card {
+  background-color: #1e1e1e;
+  border-radius: 16px;
+  padding: 20px;
+  margin-bottom: 16px;
+  border: 1px solid #2c2c2c;
+}
+
+.status-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+}
+
+.status-subtitle {
+  font-size: 0.875rem;
+  color: #aaa;
+  font-weight: 500;
+}
+
+.status-detail-link {
+  background: none;
+  border: none;
+  color: #3182f6;
+  font-size: 0.875rem;
+  cursor: pointer;
+  padding: 0;
+  font-weight: 500;
+}
+
+.status-detail-link:hover {
+  opacity: 0.8;
+}
+
+.status-main {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.status-rank {
+  font-size: 1.5rem;
+  font-weight: bold;
+  color: #ffffff;
+  margin: 0;
+}
+
+.status-info {
+  font-size: 0.875rem;
+  color: #aaa;
+  margin: 0;
+}
+
+/* 로딩 상태 */
+.status-card-skeleton {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.skeleton-line {
+  background: linear-gradient(90deg, #2c2c2c 25%, #3c3c3c 50%, #2c2c2c 75%);
+  background-size: 200% 100%;
+  animation: skeleton-loading 1.5s ease-in-out infinite;
+  border-radius: 4px;
+  height: 20px;
+}
+
+.skeleton-line.short {
+  width: 30%;
+}
+
+.skeleton-line.medium {
+  width: 60%;
+}
+
+.skeleton-line.long {
+  width: 100%;
+}
+
+@keyframes skeleton-loading {
+  0% {
+    background-position: 200% 0;
+  }
+  100% {
+    background-position: -200% 0;
+  }
+}
+
+/* 에러 상태 */
+.status-card-error {
+  padding: 20px;
+  text-align: center;
+  color: #f04452;
+}
+
+.status-card-error p {
+  margin: 0;
+  font-size: 0.875rem;
+}
+

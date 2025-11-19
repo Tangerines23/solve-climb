@@ -3,7 +3,7 @@ import React from 'react';
 import ReactDOM from 'react-dom/client';
 import { ThemeProvider } from '@toss/tds-mobile';
 
-import AppContainer from './AppContainer';
+import AppContainer from './AppContainer'; // <-- 이 파일입니다.
 import './index.css';
 
 // Button이 theme.colors.backgroundColor를 정상 참조할 수 있도록 customTheme 객체를 생성합니다.

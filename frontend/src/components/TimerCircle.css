@@ -1,12 +1,9 @@
 .timer-circle-container {
-  position: absolute;
-  top: -64px; /* 퀴즈카드 바로 위에 붙도록 조정 */
-  left: 50%;
-  transform: translateX(-50%);
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: 8px;
   z-index: 10;
+  position: relative;
 }
 
 .timer-label {

@@ -1,0 +1,142 @@
+.mode-select-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.7);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: 20px;
+  animation: fadeIn 0.2s ease-out;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.mode-select-modal {
+  background-color: #1e1e1e;
+  border-radius: 24px;
+  width: 100%;
+  max-width: 400px;
+  padding: 24px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+  animation: slideUp 0.3s ease-out;
+}
+
+@keyframes slideUp {
+  from {
+    transform: translateY(20px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+.mode-select-modal-header {
+  text-align: center;
+  margin-bottom: 24px;
+}
+
+.mode-select-modal-title {
+  font-size: 1.5rem;
+  font-weight: bold;
+  color: #ffffff;
+  margin: 0 0 8px 0;
+}
+
+.mode-select-modal-subtitle {
+  font-size: 0.875rem;
+  color: #aaa;
+  margin: 0;
+}
+
+.mode-select-modal-content {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-bottom: 20px;
+}
+
+.mode-select-button {
+  background-color: #2c2c2c;
+  border: 2px solid #3c3c3c;
+  border-radius: 16px;
+  padding: 20px;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  cursor: pointer;
+  transition: all 0.2s;
+  width: 100%;
+  text-align: left;
+}
+
+.mode-select-button:hover {
+  transform: translateY(-2px);
+  border-color: #3182f6;
+  background-color: #2c3c4c;
+}
+
+.mode-select-button:active {
+  transform: translateY(0);
+}
+
+.mode-select-button-time:hover {
+  border-color: #3182f6;
+}
+
+.mode-select-button-survival:hover {
+  border-color: #10b981;
+}
+
+.mode-select-icon {
+  font-size: 2rem;
+  flex-shrink: 0;
+}
+
+.mode-select-button-text {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.mode-select-button-title {
+  font-size: 1.125rem;
+  font-weight: bold;
+  color: #ffffff;
+}
+
+.mode-select-button-desc {
+  font-size: 0.875rem;
+  color: #aaa;
+}
+
+.mode-select-modal-close {
+  width: 100%;
+  padding: 14px;
+  background-color: #2c2c2c;
+  border: 1px solid #3c3c3c;
+  border-radius: 12px;
+  color: #ffffff;
+  font-size: 1rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.mode-select-modal-close:hover {
+  background-color: #3c3c3c;
+}
+

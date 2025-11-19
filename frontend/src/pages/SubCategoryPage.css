@@ -1,0 +1,185 @@
+.subcategory-page {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: #121212;
+  overflow-y: auto;
+  overflow-x: hidden;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior-y: contain;
+  touch-action: pan-y;
+}
+
+.subcategory-main {
+  padding-top: 56px; /* Header 높이 */
+  padding-bottom: 80px; /* FooterNav 공간 */
+  min-height: calc(100vh - 56px);
+}
+
+.subcategory-content {
+  max-width: 400px;
+  margin: 0 auto;
+  padding: 20px;
+}
+
+.subcategory-list-title {
+  font-size: 0.875rem;
+  color: #aaa;
+  font-weight: 500;
+  margin: 0 0 16px 0;
+  padding: 0 4px;
+}
+
+.topic-list-container {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.topic-card-link {
+  text-decoration: none;
+  color: inherit;
+  display: block;
+}
+
+.topic-card {
+  background-color: #1e1e1e;
+  border-radius: 16px;
+  padding: 16px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border: 1px solid #2c2c2c;
+  transition: transform 0.2s, border-color 0.2s;
+  cursor: pointer;
+}
+
+.topic-card:hover {
+  transform: translateY(-2px);
+  border-color: #3182f6;
+}
+
+.topic-card-left {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex: 1;
+}
+
+.topic-icon {
+  font-size: 1.5rem;
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: #2c2c2c;
+  border-radius: 8px;
+  flex-shrink: 0;
+}
+
+.topic-text {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  flex: 1;
+}
+
+.topic-name {
+  font-size: 1rem;
+  font-weight: bold;
+  color: #ffffff;
+  margin: 0;
+}
+
+.topic-desc {
+  font-size: 0.875rem;
+  color: #aaa;
+  margin: 0;
+}
+
+.topic-chevron {
+  font-size: 1.5rem;
+  color: #aaa;
+  font-weight: 300;
+  flex-shrink: 0;
+  margin-left: 12px;
+}
+
+.error-message {
+  text-align: center;
+  color: #ffffff;
+  padding: 40px 20px;
+  background-color: #1e1e1e;
+  border-radius: 16px;
+  border: 1px solid #2c2c2c;
+}
+
+.error-message h2 {
+  font-size: 1.25rem;
+  font-weight: bold;
+  margin: 0 0 12px 0;
+  color: #f04452;
+}
+
+.error-message p {
+  margin: 0 0 24px 0;
+  font-size: 1rem;
+  color: #aaa;
+}
+
+.error-back-button {
+  padding: 12px 24px;
+  background-color: #3182f6;
+  color: #ffffff;
+  border: none;
+  border-radius: 12px;
+  font-size: 1rem;
+  font-weight: bold;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.error-back-button:hover {
+  background-color: #2563eb;
+}
+
+.topic-card.favorite {
+  border-color: #3182F6;
+  background-color: rgba(49, 130, 246, 0.1);
+}
+
+.favorite-star {
+  font-size: 1rem;
+  margin-right: 4px;
+}
+
+.favorite-toast {
+  position: fixed;
+  bottom: 100px;
+  left: 50%;
+  transform: translateX(-50%);
+  background-color: #1C1C1E;
+  color: #ffffff;
+  padding: 12px 24px;
+  border-radius: 24px;
+  font-size: 0.875rem;
+  font-weight: 500;
+  z-index: 1000;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  animation: toastSlideUp 0.3s ease-out;
+}
+
+@keyframes toastSlideUp {
+  from {
+    opacity: 0;
+    transform: translateX(-50%) translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+  }
+}
+

@@ -1,0 +1,47 @@
+.time-selector-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  max-width: 400px;
+  padding: 20px;
+  color: white;
+}
+
+.time-options {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  width: 100%;
+}
+
+.time-card {
+  background-color: #1e1e1e;
+  border-radius: 16px;
+  padding: 32px 24px;
+  cursor: pointer;
+  transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+  border: 1px solid #333;
+  text-align: center;
+}
+
+.time-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.3);
+  border-color: #3182f6;
+}
+
+.time-card h2 {
+  font-size: 1.5rem;
+  margin: 0 0 8px 0;
+  color: #ffffff;
+  font-weight: bold;
+}
+
+.time-card p {
+  font-size: 0.9rem;
+  color: #aaa;
+  margin: 0;
+}
+

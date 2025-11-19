@@ -1,0 +1,89 @@
+.text-keypad {
+  display: flex;
+  flex-direction: column;
+  gap: clamp(6px, 1vh, 10px);
+  padding: clamp(12px, 2.5vh, 20px);
+  padding-bottom: max(clamp(12px, 2.5vh, 20px), env(safe-area-inset-bottom));
+  background-color: transparent;
+  width: 100%;
+  max-width: 400px;
+  margin: 0 auto;
+  flex-shrink: 0;
+  box-sizing: border-box;
+}
+
+.text-keypad-row {
+  display: flex;
+  gap: clamp(4px, 0.8vh, 8px);
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+.text-keypad-row-last {
+  margin-top: clamp(4px, 0.8vh, 8px);
+  justify-content: space-between;
+}
+
+.text-keypad-key {
+  min-width: clamp(28px, 7vw, 36px);
+  height: clamp(36px, 8vw, 44px);
+  background-color: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: clamp(6px, 1.2vh, 10px);
+  color: #ffffff;
+  font-size: clamp(0.9rem, 2.5vw, 1.2rem);
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.1s ease;
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 clamp(4px, 1vw, 8px);
+}
+
+.text-keypad-key:active {
+  background-color: rgba(255, 255, 255, 0.15);
+  transform: scale(0.95);
+}
+
+.text-keypad-key:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.text-keypad-key:disabled:active {
+  transform: none;
+  background-color: rgba(255, 255, 255, 0.05);
+}
+
+.text-keypad-key-clear {
+  color: #f04452;
+  font-weight: 700;
+  flex: 1;
+  max-width: 80px;
+}
+
+.text-keypad-key-backspace {
+  flex: 1;
+  max-width: 80px;
+  font-size: clamp(1rem, 2.8vw, 1.3rem);
+}
+
+.text-keypad-key-submit {
+  background-color: #3182F6;
+  color: #ffffff;
+  font-weight: 700;
+  flex: 2;
+  max-width: 120px;
+}
+
+.text-keypad-key-submit:active {
+  background-color: #2563eb;
+}
+
+.text-keypad-key-submit:disabled {
+  background-color: rgba(49, 130, 246, 0.3);
+}
+

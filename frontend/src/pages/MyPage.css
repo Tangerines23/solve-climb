@@ -1,0 +1,254 @@
+.my-page {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: #121212;
+  overflow-y: auto;
+  overflow-x: hidden;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior-y: contain;
+  touch-action: pan-y;
+}
+
+.my-page-main {
+  padding-top: 56px;
+  padding-bottom: 80px;
+  min-height: calc(100vh - 56px);
+}
+
+.my-page-content {
+  max-width: 400px;
+  margin: 0 auto;
+  padding: 20px;
+}
+
+.welcome-card {
+  background-color: #1e1e1e;
+  border-radius: 16px;
+  padding: 32px 24px;
+  margin-bottom: 20px;
+  text-align: center;
+  border: 1px solid #2c2c2c;
+}
+
+.welcome-title {
+  font-size: 1.5rem;
+  font-weight: bold;
+  color: #ffffff;
+  margin: 0 0 8px 0;
+}
+
+.welcome-subtitle {
+  font-size: 0.875rem;
+  color: #aaa;
+  margin: 0;
+}
+
+.profile-info-card {
+  background-color: #1e1e1e;
+  border-radius: 16px;
+  padding: 24px;
+  margin-bottom: 20px;
+  border: 1px solid #2c2c2c;
+}
+
+.profile-info-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.profile-info-title {
+  font-size: 1.125rem;
+  font-weight: bold;
+  color: #ffffff;
+  margin: 0;
+}
+
+.edit-button {
+  background: none;
+  border: none;
+  color: #3182f6;
+  font-size: 0.875rem;
+  font-weight: 500;
+  cursor: pointer;
+  padding: 4px 8px;
+}
+
+.edit-button:hover {
+  opacity: 0.8;
+}
+
+.profile-info-content {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.profile-avatar-large {
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  overflow: hidden;
+  background-color: #2c2c2c;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.profile-avatar-large img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.avatar-placeholder-large {
+  font-size: 2rem;
+  font-weight: bold;
+  color: #ffffff;
+}
+
+.profile-details {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  flex: 1;
+}
+
+.profile-nickname {
+  font-size: 1.125rem;
+  font-weight: bold;
+  color: #ffffff;
+  margin: 0;
+}
+
+.profile-joined {
+  font-size: 0.875rem;
+  color: #aaa;
+  margin: 0;
+}
+
+.toss-login-card {
+  background-color: #1e1e1e;
+  border-radius: 16px;
+  padding: 24px;
+  margin-bottom: 20px;
+  border: 1px solid #2c2c2c;
+}
+
+.toss-login-button {
+  width: 100%;
+  padding: 14px 16px;
+  font-size: 1rem;
+  font-weight: bold;
+  font-family: inherit;
+  border: none;
+  border-radius: 12px;
+  cursor: pointer;
+  transition: all 0.2s;
+  background-color: #3182f6;
+  color: #ffffff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.toss-login-button:hover:not(:disabled) {
+  background-color: #2563eb;
+}
+
+.toss-login-button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.toss-login-error {
+  margin-top: 12px;
+  font-size: 0.875rem;
+  color: #f04452;
+  text-align: center;
+}
+
+.stats-card {
+  background-color: #1e1e1e;
+  border-radius: 16px;
+  padding: 24px;
+  margin-bottom: 20px;
+  border: 1px solid #2c2c2c;
+}
+
+.stats-title {
+  font-size: 1.125rem;
+  font-weight: bold;
+  color: #ffffff;
+  margin: 0 0 20px 0;
+}
+
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 16px;
+}
+
+.stat-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  padding: 16px;
+  background-color: #2c2c2c;
+  border-radius: 12px;
+}
+
+.stat-value {
+  font-size: 1.5rem;
+  font-weight: bold;
+  color: #3182f6;
+}
+
+.stat-label {
+  font-size: 0.875rem;
+  color: #aaa;
+}
+
+.action-buttons {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.action-button {
+  width: 100%;
+  padding: 14px 16px;
+  font-size: 1rem;
+  font-weight: bold;
+  font-family: inherit;
+  border: none;
+  border-radius: 12px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.action-button.primary {
+  background-color: #3182f6;
+  color: #ffffff;
+}
+
+.action-button.primary:hover {
+  background-color: #2563eb;
+}
+
+.action-button.secondary {
+  background-color: #2c2c2c;
+  color: #ffffff;
+  border: 1px solid #3c3c3c;
+}
+
+.action-button.secondary:hover {
+  background-color: #3c3c3c;
+}
+

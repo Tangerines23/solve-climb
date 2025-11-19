@@ -1,0 +1,158 @@
+.level-select-page {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: #121212;
+  overflow-y: auto;
+  overflow-x: hidden;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior-y: contain;
+  touch-action: pan-y;
+}
+
+/* 상단 헤더 */
+.level-select-header {
+  position: sticky;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 56px;
+  background-color: #121212;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 16px;
+  z-index: 100;
+  border-bottom: 1px solid #2c2c2c;
+  backdrop-filter: blur(10px);
+  background-color: rgba(18, 18, 18, 0.9);
+}
+
+.level-select-back {
+  background: none;
+  border: none;
+  color: #ffffff;
+  font-size: 1.5rem;
+  cursor: pointer;
+  padding: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: opacity 0.2s;
+}
+
+.level-select-back:hover {
+  opacity: 0.7;
+}
+
+.level-select-title {
+  font-size: 1.125rem;
+  font-weight: bold;
+  color: #ffffff;
+  margin: 0;
+  flex: 1;
+  text-align: center;
+}
+
+.level-select-settings {
+  background: none;
+  border: none;
+  color: #ffffff;
+  font-size: 1.25rem;
+  cursor: pointer;
+  padding: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: opacity 0.2s;
+}
+
+.level-select-settings:hover {
+  opacity: 0.7;
+}
+
+/* 메인 그래픽 영역 */
+.level-select-graphic-container {
+  position: sticky;
+  top: 56px;
+  left: 0;
+  right: 0;
+  z-index: 10;
+  transform-origin: top center;
+  transition: transform 0.1s ease-out, opacity 0.1s ease-out;
+  pointer-events: none;
+}
+
+/* 스크롤 콘텐츠 영역 */
+.level-select-content {
+  position: relative;
+  z-index: 20;
+  background-color: #121212;
+  padding: 20px;
+  padding-bottom: 100px; /* FooterNav 공간 */
+  margin-top: -100px; /* 그래픽과 겹치도록 */
+  min-height: calc(100vh - 56px);
+}
+
+/* 주제 요약 */
+.level-select-summary {
+  margin-bottom: 24px;
+  padding-top: 120px; /* 그래픽 영역과의 간격 */
+}
+
+.level-select-summary-title {
+  font-size: 1.5rem;
+  font-weight: bold;
+  color: #ffffff;
+  margin: 0 0 8px 0;
+}
+
+.level-select-summary-desc {
+  font-size: 1rem;
+  color: #aaa;
+  margin: 0;
+}
+
+/* 에러 메시지 */
+.level-select-error {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  padding: 40px 20px;
+  text-align: center;
+  color: #ffffff;
+}
+
+.level-select-error h2 {
+  font-size: 1.5rem;
+  font-weight: bold;
+  color: #f04452;
+  margin: 0 0 12px 0;
+}
+
+.level-select-error p {
+  font-size: 1rem;
+  color: #aaa;
+  margin: 0 0 24px 0;
+}
+
+.error-back-button {
+  padding: 12px 24px;
+  background-color: #3182f6;
+  color: #ffffff;
+  border: none;
+  border-radius: 12px;
+  font-size: 1rem;
+  font-weight: bold;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.error-back-button:hover {
+  background-color: #2563eb;
+}
+

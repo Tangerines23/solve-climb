@@ -1,0 +1,87 @@
+.language-detail-container {
+  padding: 20px;
+  padding-top: 80px;
+  padding-bottom: 100px;
+  max-width: 400px;
+  margin: 0 auto;
+}
+
+.back-button {
+  background: none;
+  border: none;
+  color: #3182f6;
+  font-size: 1rem;
+  cursor: pointer;
+  padding: 8px 0;
+  margin-bottom: 20px;
+  font-weight: 500;
+  align-self: flex-start;
+}
+
+.back-button:hover {
+  opacity: 0.8;
+}
+
+.language-header {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 32px;
+}
+
+.language-icon {
+  font-size: 3rem;
+}
+
+.language-title {
+  font-size: 1.5rem;
+  font-weight: bold;
+  color: #ffffff;
+  margin: 0;
+}
+
+.subtopic-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.subtopic-card {
+  background-color: #1e1e1e;
+  border-radius: 16px;
+  padding: 20px;
+  cursor: pointer;
+  border: 1px solid #2c2c2c;
+  transition: transform 0.2s, border-color 0.2s;
+}
+
+.subtopic-card:hover {
+  transform: translateY(-2px);
+  border-color: #3182f6;
+}
+
+.subtopic-name {
+  font-size: 1.125rem;
+  font-weight: bold;
+  color: #ffffff;
+  margin: 0 0 8px 0;
+}
+
+.subtopic-description {
+  font-size: 0.875rem;
+  color: #aaa;
+  margin: 0;
+}
+
+.error-message {
+  text-align: center;
+  color: #ffffff;
+  padding: 40px 20px;
+}
+
+.error-message p {
+  margin-bottom: 20px;
+  font-size: 1rem;
+}
+

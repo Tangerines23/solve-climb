@@ -1,0 +1,78 @@
+.my-record-card {
+  background-color: #1e1e1e;
+  border-radius: 16px;
+  padding: 20px;
+  margin-bottom: 16px;
+  border: 1px solid #2c2c2c;
+}
+
+.my-record-card-title {
+  font-size: 1.125rem;
+  font-weight: bold;
+  color: #ffffff;
+  margin: 0 0 16px 0;
+}
+
+.my-record-card-content {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.my-record-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.my-record-icon {
+  font-size: 1.25rem;
+  flex-shrink: 0;
+}
+
+.my-record-label {
+  font-size: 0.875rem;
+  color: #aaa;
+  flex: 1;
+}
+
+.my-record-value {
+  font-size: 1rem;
+  font-weight: bold;
+  color: #3182f6;
+}
+
+/* 스켈레톤 UI */
+.my-record-card-skeleton {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.skeleton-title {
+  height: 24px;
+  width: 60%;
+  background: linear-gradient(90deg, #2c2c2c 25%, #3c3c3c 50%, #2c2c2c 75%);
+  background-size: 200% 100%;
+  border-radius: 8px;
+  animation: skeleton-loading 1.5s ease-in-out infinite;
+}
+
+.skeleton-item {
+  height: 20px;
+  width: 100%;
+  background: linear-gradient(90deg, #2c2c2c 25%, #3c3c3c 50%, #2c2c2c 75%);
+  background-size: 200% 100%;
+  border-radius: 8px;
+  animation: skeleton-loading 1.5s ease-in-out infinite;
+}
+
+@keyframes skeleton-loading {
+  0% {
+    background-position: 200% 0;
+  }
+  100% {
+    background-position: -200% 0;
+  }
+}
+
