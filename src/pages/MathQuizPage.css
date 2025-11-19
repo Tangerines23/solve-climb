@@ -269,41 +269,48 @@
 
 /* 답변 표시 영역 (div) */
 .answer-display {
-  min-height: clamp(50px, 10vh, 70px);
-  min-width: 200px;
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  justify-content: flex-end;
+  height: clamp(60px, 12vh, 80px);
+  width: 100%;
+  max-width: 100%;
+  display: block;
   font-size: clamp(2rem, 6vw, 3rem);
   font-weight: bold;
   color: #3182f6;
-  text-align: left;
+  text-align: center;
   user-select: none;
   padding: clamp(12px, 2vh, 16px);
-  padding-left: clamp(16px, 3vw, 24px);
-  padding-bottom: clamp(8px, 1.5vh, 12px);
   border-radius: 12px;
   transition: all 0.2s;
   position: relative;
-  overflow: visible;
+  overflow: hidden;
 }
 
 .answer-display-text {
+  position: absolute;
+  bottom: clamp(20px, 4vh, 28px);
+  left: 50%;
+  transform: translateX(-50%);
   line-height: 1.2;
-  margin-bottom: clamp(6px, 1.2vh, 10px);
   display: block;
+  text-align: center;
+  width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  z-index: 1;
 }
 
 .answer-caret {
-  display: block;
-  width: 100%;
-  min-width: clamp(100px, 20vw, 200px);
+  position: absolute;
+  bottom: clamp(8px, 1.5vh, 12px);
+  left: 50%;
+  transform: translateX(-50%);
+  width: clamp(100px, 20vw, 200px);
   height: clamp(3px, 0.5vh, 4px);
   background-color: #3182f6;
   border-radius: 2px;
   animation: caret-blink 1.2s ease-in-out infinite;
-  flex-shrink: 0;
+  z-index: 0;
 }
 
 @keyframes caret-blink {
