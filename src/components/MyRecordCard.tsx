@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useLevelProgressStore } from '../stores/useLevelProgressStore';
+import { SCORE_PER_CORRECT } from '../constants/game';
 import './MyRecordCard.css';
 
 interface MyRecordCardProps {
@@ -22,7 +23,15 @@ export function MyRecordCard({ category, subTopic, subTopicName }: MyRecordCardP
     setLoading(true);
     setTimeout(() => {
       const bestRecords = getBestRecords(category, subTopic);
-      setRecords(bestRecords);
+      // 점수를 맞춘 개수로 변환
+      setRecords({
+        'time-attack': bestRecords['time-attack'] !== null 
+          ? Math.floor(bestRecords['time-attack'] / SCORE_PER_CORRECT) 
+          : null,
+        'survival': bestRecords['survival'] !== null 
+          ? Math.floor(bestRecords['survival'] / SCORE_PER_CORRECT) 
+          : null,
+      });
       setLoading(false);
     }, 300);
   }, [category, subTopic, getBestRecords]);

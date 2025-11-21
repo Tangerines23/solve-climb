@@ -181,15 +181,15 @@
   overflow: hidden;
 }
 
-/* 중단 확인 토스트 알림 - fixed position (퀴즈 카드 가리지 않음) */
+/* 중단 확인 토스트 알림 - 커서 아래, 키보드 위에 배치 */
 .exit-confirm-toast {
   position: fixed;
-  top: 80px;
+  bottom: clamp(240px, 40vh, 320px);
   left: 50%;
   transform: translateX(-50%);
   width: calc(100% - 32px);
   max-width: 320px;
-  background-color: rgba(44, 44, 44, 0.9);
+  background-color: rgba(44, 44, 44, 0.85);
   backdrop-filter: blur(8px);
   border-radius: 12px;
   padding: 12px 16px;
@@ -212,7 +212,7 @@
 @keyframes exitConfirmSlideDown {
   from {
     opacity: 0;
-    transform: translateX(-50%) translateY(-10px);
+    transform: translateX(-50%) translateY(20px);
   }
   to {
     opacity: 1;
@@ -231,7 +231,7 @@
   }
   to {
     opacity: 0;
-    transform: translateX(-50%) translateY(-10px);
+    transform: translateX(-50%) translateY(20px);
   }
 }
 

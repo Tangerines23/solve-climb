@@ -32,6 +32,7 @@ export function ResultPage() {
   const wrongQParam = searchParams.get('wrong_q');
   const wrongAParam = searchParams.get('wrong_a');
   const correctAParam = searchParams.get('correct_a');
+  const avgTimeParam = searchParams.get('avg_time'); // 서바이벌 모드 평균 풀이 시간
 
   // 점수는 URL 파라미터 우선, 없으면 store에서 가져오기
   const finalScore = scoreParam ? parseInt(scoreParam, 10) : score;
@@ -39,6 +40,9 @@ export function ResultPage() {
   
   // 맞춘 개수 계산 (점수를 SCORE_PER_CORRECT로 나눔)
   const correctCount = Math.floor(finalScore / SCORE_PER_CORRECT);
+  
+  // 서바이벌 모드: 평균 풀이 시간 (초)
+  const averageTime = avgTimeParam ? parseFloat(avgTimeParam) : null;
 
   // 레벨 정보 가져오기
   const level = levelParam ? parseInt(levelParam, 10) : null;
@@ -180,17 +184,29 @@ export function ResultPage() {
           <p className="score-value">{correctCount.toLocaleString()} 개</p>
         </div>
 
-        {/* 타임 어택 모드: 정확도 및 총 시도 횟수 */}
-        {mode === 'time-attack' && total > 0 && (
-          <div className="time-attack-stats">
-            <div className="accuracy-badge">
+        {/* 통계 섹션 (타임어택/서바이벌 공통) */}
+        <div className="game-stats">
+          {/* 타임 어택 모드: 정확도 */}
+          {mode === 'time-attack' && total > 0 && (
+            <div className="stat-badge">
               정확도 {accuracy}%
             </div>
-            <div className="total-attempts">
+          )}
+          
+          {/* 서바이벌 모드: 평균 풀이 시간 */}
+          {mode === 'survival' && averageTime !== null && (
+            <div className="stat-badge">
+              평균 풀이 시간: {averageTime.toFixed(2)}초
+            </div>
+          )}
+          
+          {/* 총 시도 횟수 (타임어택 모드) */}
+          {mode === 'time-attack' && total > 0 && (
+            <div className="stat-attempts">
               {correctCount} / {total}
             </div>
-          </div>
-        )}
+          )}
+        </div>
 
         {/* 신기록 배지 */}
         {isNewRecord && (

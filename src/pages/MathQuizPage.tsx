@@ -13,6 +13,7 @@ import { SCORE_PER_CORRECT, MAX_POSSIBLE_ANSWER } from '../constants/game';
 import { TimerCircle } from '../components/TimerCircle';
 import { QwertyKeypad } from '../components/QwertyKeypad';
 import { CustomKeypad } from '../components/CustomKeypad';
+import { GameTipModal } from '../components/GameTipModal';
 import { generateQuestion } from '../utils/quizGenerator';
 import { QuizQuestion } from '../types/quiz';
 import { APP_CONFIG } from '../config/app';
@@ -29,6 +30,7 @@ export function MathQuizPage() {
   const [showExitConfirm, setShowExitConfirm] = useState(false);
   const [isFadingOut, setIsFadingOut] = useState(false);
   const [useSystemKeyboard, setUseSystemKeyboard] = useState(false);
+  const [showTipModal, setShowTipModal] = useState(true); // 팁 모달 표시 상태
   const exitConfirmTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
@@ -44,6 +46,8 @@ export function MathQuizPage() {
   // 게임 통계 추적
   const [totalQuestions, setTotalQuestions] = useState(0); // 총 문제 수
   const [wrongAnswers, setWrongAnswers] = useState<Array<{ question: string; wrongAnswer: string; correctAnswer: string }>>([]); // 서바이벌 모드 오답
+  const [questionStartTime, setQuestionStartTime] = useState<number | null>(null); // 현재 문제 시작 시간
+  const [solveTimes, setSolveTimes] = useState<number[]>([]); // 서바이벌 모드: 각 문제의 풀이 시간 (초)
 
   // URL 파라미터에서 레벨 정보 읽기
   const categoryParam = searchParams.get('category');
@@ -133,6 +137,8 @@ export function MathQuizPage() {
       // 서바이벌 모드: 문제가 바뀔 때마다 타이머 리셋 (key 변경으로 TimerCircle 리마운트)
       if (gameMode === 'survival') {
         setQuestionKey((prev) => prev + 1);
+        // 서바이벌 모드: 문제 시작 시간 기록
+        setQuestionStartTime(Date.now());
       }
 
       // 다음 문제로 넘어갈 때 포커스 유지 (시스템 키보드 사용 시만)
@@ -148,8 +154,22 @@ export function MathQuizPage() {
     resetQuiz(); // Reset score when component mounts
     setTotalQuestions(0); // 문제 수 초기화
     setWrongAnswers([]); // 오답 초기화
-    generateNewQuestion();
-  }, [generateNewQuestion, resetQuiz]);
+    setSolveTimes([]); // 풀이 시간 초기화
+    setQuestionStartTime(null); // 문제 시작 시간 초기화
+    // 팁 모달이 닫힌 후에만 문제 생성
+    if (!showTipModal) {
+      generateNewQuestion();
+    }
+  }, [generateNewQuestion, resetQuiz, showTipModal]);
+
+  // 팁 모달이 닫힐 때 첫 문제 생성
+  const handleTipClose = () => {
+    setShowTipModal(false);
+    // 팁 모달이 닫힌 후 문제 생성
+    setTimeout(() => {
+      generateNewQuestion();
+    }, 100);
+  };
 
   const handleGameOver = useCallback(() => {
     // 게임 종료 시 바로 결과 페이지로 이동
@@ -161,18 +181,26 @@ export function MathQuizPage() {
     params.set('score', score.toString());
     params.set('total', totalQuestions.toString());
     
-    // 서바이벌 모드: 오답 정보 전달
-    if (gameMode === 'survival' && wrongAnswers.length > 0) {
-      const questions = wrongAnswers.map(w => w.question).join('|');
-      const wrongAns = wrongAnswers.map(w => w.wrongAnswer).join('|');
-      const correctAns = wrongAnswers.map(w => w.correctAnswer).join('|');
-      params.set('wrong_q', questions);
-      params.set('wrong_a', wrongAns);
-      params.set('correct_a', correctAns);
+    // 서바이벌 모드: 오답 정보 및 평균 풀이 시간 전달
+    if (gameMode === 'survival') {
+      if (wrongAnswers.length > 0) {
+        const questions = wrongAnswers.map(w => w.question).join('|');
+        const wrongAns = wrongAnswers.map(w => w.wrongAnswer).join('|');
+        const correctAns = wrongAnswers.map(w => w.correctAnswer).join('|');
+        params.set('wrong_q', questions);
+        params.set('wrong_a', wrongAns);
+        params.set('correct_a', correctAns);
+      }
+      
+      // 평균 풀이 시간 계산 (초 단위, 소수점 2자리)
+      if (solveTimes.length > 0) {
+        const averageTime = solveTimes.reduce((sum, time) => sum + time, 0) / solveTimes.length;
+        params.set('avg_time', averageTime.toFixed(2));
+      }
     }
     
     navigate(`/result?${params.toString()}`);
-  }, [categoryParam, subParam, levelParam, modeParam, score, totalQuestions, gameMode, wrongAnswers, navigate]);
+  }, [categoryParam, subParam, levelParam, modeParam, score, totalQuestions, gameMode, wrongAnswers, solveTimes, navigate]);
 
 
   // 뒤로 가기 핸들러 (더블클릭 기믹)
@@ -366,6 +394,12 @@ export function MathQuizPage() {
       setTotalQuestions(prev => prev + 1);
 
       if (isCorrect) {
+        // 서바이벌 모드: 정답을 맞춘 경우 풀이 시간 기록
+        if (gameMode === 'survival' && questionStartTime !== null) {
+          const solveTime = (Date.now() - questionStartTime) / 1000; // 초 단위
+          setSolveTimes(prev => [...prev, solveTime]);
+        }
+        
         setCardAnimation('correct-flash');
         setInputAnimation('correct-flash');
         increaseScore(SCORE_PER_CORRECT);
@@ -419,6 +453,11 @@ export function MathQuizPage() {
   );
 
   const renderQuizCard = () => {
+    // 팁 모달이 열려있으면 게임 화면 숨김
+    if (showTipModal) {
+      return null;
+    }
+
     // URL 파라미터가 있으면 그것을 우선 사용, 없으면 store에서 가져오기
     const displayCategory = categoryParam 
       ? APP_CONFIG.CATEGORY_MAP[categoryParam as keyof typeof APP_CONFIG.CATEGORY_MAP] || category
@@ -686,6 +725,15 @@ export function MathQuizPage() {
 
   return (
     <div className="math-quiz-page">
+      {/* 게임 팁 모달 */}
+      {categoryParam && subParam && (
+        <GameTipModal
+          isOpen={showTipModal}
+          category={categoryParam}
+          subTopic={subParam}
+          onClose={handleTipClose}
+        />
+      )}
       {renderQuizCard()}
     </div>
   );

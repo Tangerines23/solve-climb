@@ -111,9 +111,7 @@ export function LevelSelectPage() {
     );
   };
 
-  // 스크롤에 따른 그래픽 축소 효과
-  const graphicScale = Math.max(0.3, 1 - scrollY / 400);
-  const graphicOpacity = Math.max(0, 1 - scrollY / 300);
+  // 스크롤 효과 제거 - 산 이미지는 가만히 있고 아래 리스트가 위로 올라오도록
 
   return (
     <div className="level-select-page" ref={scrollContainerRef}>
@@ -137,18 +135,13 @@ export function LevelSelectPage() {
       </header>
 
       {/* 메인 그래픽 영역 */}
-      <div
-        className="level-select-graphic-container"
-        style={{
-          transform: `scale(${graphicScale}) translateY(${scrollY * 0.3}px)`,
-          opacity: graphicOpacity,
-        }}
-      >
+      <div className="level-select-graphic-container">
         <ClimbGraphic
           category={categoryParam}
           subTopic={subParam}
           levels={levels}
           categoryColor={categoryColor}
+          onLevelClick={handleLevelClick}
         />
       </div>
 

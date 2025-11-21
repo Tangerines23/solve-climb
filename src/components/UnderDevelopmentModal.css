@@ -1,0 +1,66 @@
+.under-development-toast {
+  position: fixed;
+  bottom: max(calc(64px + clamp(20px, 4vh, 32px)), calc(64px + env(safe-area-inset-bottom)));
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 10001;
+  animation: toastSlideUp 0.3s ease-out;
+  /* 스크롤 위치와 무관하게 화면 하단에 고정 */
+  margin: 0;
+  padding: 0;
+  pointer-events: none;
+}
+
+.under-development-toast.closing {
+  animation: toastSlideDown 0.3s ease-out forwards;
+}
+
+.under-development-toast-content {
+  background-color: rgba(28, 28, 30, 0.95);
+  backdrop-filter: blur(10px);
+  border-radius: 16px;
+  padding: clamp(12px, 2.5vh, 16px) clamp(20px, 4vw, 24px);
+  display: flex;
+  align-items: center;
+  gap: clamp(8px, 2vw, 12px);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
+  min-width: 200px;
+  max-width: calc(100vw - 32px);
+  pointer-events: auto;
+}
+
+.under-development-toast-icon {
+  font-size: clamp(20px, 4vw, 24px);
+  line-height: 1;
+  flex-shrink: 0;
+}
+
+.under-development-toast-text {
+  font-size: clamp(0.875rem, 3vw, 1rem);
+  font-weight: 500;
+  color: #ffffff;
+  white-space: nowrap;
+}
+
+@keyframes toastSlideUp {
+  from {
+    opacity: 0;
+    transform: translateX(-50%) translateY(100%);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+  }
+}
+
+@keyframes toastSlideDown {
+  from {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+  }
+  to {
+    opacity: 0;
+    transform: translateX(-50%) translateY(100%);
+  }
+}
+
