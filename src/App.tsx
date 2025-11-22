@@ -1,5 +1,7 @@
 // src/App.tsx
+import { useEffect } from 'react';
 import { Routes, Route } from 'react-router-dom';
+import { useLevelProgressStore } from './stores/useLevelProgressStore';
 import { HomePage } from './pages/HomePage';
 import { SubCategoryPage } from './pages/SubCategoryPage';
 import { LanguageDetailPage } from './pages/LanguageDetailPage';
@@ -12,6 +14,12 @@ import { MyPage } from './pages/MyPage';
 import { NotificationPage } from './pages/NotificationPage';
 
 function App() {
+  const { syncProgress } = useLevelProgressStore();
+
+  useEffect(() => {
+    syncProgress();
+  }, [syncProgress]);
+
   return (
     <Routes>
       <Route path="/" element={<HomePage />} />

@@ -2,25 +2,25 @@
 export const APP_CONFIG = {
   // API 설정
   API_BASE_URL: import.meta.env.VITE_API_BASE_URL || 'https://api.solveclimb.com',
-  
+
   // Google OAuth 설정
   // 방법 1: 환경변수 사용 (권장)
   // frontend 폴더에 .env 파일을 만들고 VITE_GOOGLE_CLIENT_ID=your-client-id 추가
   // 방법 2: 여기에 직접 입력 (개발용)
   // GOOGLE_CLIENT_ID: 'your-google-client-id-here',
   GOOGLE_CLIENT_ID: import.meta.env.VITE_GOOGLE_CLIENT_ID || '',
-  
+
   // 어드민 이메일 목록 (구글 로그인 이메일)
   // 실제 어드민 이메일로 변경하세요
   ADMIN_EMAILS: [
     // 예시: 'admin@yourdomain.com',
     // 'another-admin@yourdomain.com',
   ],
-  
+
   // 앱 정보
   APP_NAME: 'Solve Climb',
   APP_VERSION: '1.0.0',
-  
+
   // 오늘의 챌린지 설정
   TODAY_CHALLENGE: {
     id: 'today_challenge_001',
@@ -30,7 +30,7 @@ export const APP_CONFIG = {
     mode: 'time_attack',
     level: 5,
   },
-  
+
   // 카테고리 설정
   CATEGORIES: [
     {
@@ -58,7 +58,7 @@ export const APP_CONFIG = {
       totalLevels: 20,
     },
   ],
-  
+
   // 라우팅 경로
   ROUTES: {
     HOME: '/',
@@ -73,7 +73,7 @@ export const APP_CONFIG = {
     SETTINGS: '/settings',
     NOTIFICATIONS: '/notifications',
   },
-  
+
   // 카테고리 ID 매핑
   CATEGORY_MAP: {
     math: '수학',
@@ -81,7 +81,7 @@ export const APP_CONFIG = {
     logic: '논리',
     general: '상식',
   },
-  
+
   // 하위 주제 목록 (SUB_TOPICS)
   SUB_TOPICS: {
     math: [
@@ -113,16 +113,26 @@ export const APP_CONFIG = {
   LEVELS: {
     math: {
       arithmetic: [
-        { level: 1, name: '기초 덧셈', description: '한 자리 수 덧셈' },
-        { level: 2, name: '기초 뺄셈', description: '한 자리 수 뺄셈' },
-        { level: 3, name: '두 자리 덧셈', description: '두 자리 수 덧셈' },
-        { level: 4, name: '두 자리 뺄셈', description: '두 자리 수 뺄셈' },
-        { level: 5, name: '기초 곱셈', description: '구구단 기초' },
-        { level: 6, name: '기초 나눗셈', description: '나눗셈 기초' },
-        { level: 7, name: '혼합 연산', description: '덧셈과 뺄셈 혼합' },
-        { level: 8, name: '고급 곱셈', description: '두 자리 곱셈' },
-        { level: 9, name: '고급 나눗셈', description: '두 자리 나눗셈' },
-        { level: 10, name: '종합 연산', description: '사칙연산 종합' },
+        // World 1: Warm-up
+        { level: 1, name: '한 자리 덧셈', description: '결과가 10 이하' },
+        { level: 2, name: '한 자리 뺄셈', description: '결과가 0 이상' },
+        { level: 3, name: '덧셈과 뺄셈', description: '한 자리 수 혼합' },
+        // World 2: Basics
+        { level: 4, name: '받아올림 덧셈', description: '1자리 + 1자리 = 2자리' },
+        { level: 5, name: '받아내림 뺄셈', description: '2자리 - 1자리 = 1자리' },
+        { level: 6, name: '연속 계산', description: '2자리와 1자리 혼합' },
+        // World 3: Expansion
+        { level: 7, name: '기초 곱셈', description: '구구단 2~5단' },
+        { level: 8, name: '심화 곱셈', description: '구구단 6~9단' },
+        { level: 9, name: '딱 떨어지는 나눗셈', description: '나머지가 없는 나눗셈' },
+        // World 4: Skill
+        { level: 10, name: '두 자리 연산', description: '두 자리 수 덧셈/뺄셈' },
+        { level: 11, name: '세 수의 연산', description: '세 개의 숫자 계산' },
+        { level: 12, name: '두 자리 곱셈', description: '2자리 × 1자리' },
+        // World 5: Master
+        { level: 13, name: '혼합 계산', description: '사칙연산 우선순위' },
+        { level: 14, name: '빈칸 채우기', description: '□ 안에 들어갈 수는?' },
+        { level: 15, name: '괄호 계산', description: '괄호가 포함된 식' },
       ],
       equations: [
         { level: 1, name: '일차 방정식 기초', description: 'x + 5 = 10' },

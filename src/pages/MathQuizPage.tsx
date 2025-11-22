@@ -14,6 +14,7 @@ import { TimerCircle } from '../components/TimerCircle';
 import { QwertyKeypad } from '../components/QwertyKeypad';
 import { CustomKeypad } from '../components/CustomKeypad';
 import { GameTipModal } from '../components/GameTipModal';
+import { generateProblem } from '../utils/MathProblemGenerator';
 import { generateQuestion } from '../utils/quizGenerator';
 import { QuizQuestion } from '../types/quiz';
 import { APP_CONFIG } from '../config/app';
@@ -89,29 +90,65 @@ export function MathQuizPage() {
     // URL 파라미터가 있으면 직접 사용, 없으면 store에서 가져오기
     let currentCategory = category;
     let currentTopic = topic;
-    
+
+    console.log('generateNewQuestion params:', { categoryParam, subParam, levelParam });
+
     if (categoryParam && subParam) {
       const categoryName = APP_CONFIG.CATEGORY_MAP[categoryParam as keyof typeof APP_CONFIG.CATEGORY_MAP];
       if (categoryName) {
         currentCategory = categoryName as any;
-        
+
         // 레벨에 따라 적절한 topic 매핑 (arithmetic 서브토픽의 경우)
         if (subParam === 'arithmetic' && levelParam) {
+          console.log('Entering arithmetic block');
           const level = parseInt(levelParam, 10);
-          // 레벨 1: 덧셈, 레벨 2: 뺄셈, 레벨 3: 덧셈, 레벨 4: 뺄셈, 레벨 5: 곱셈, 레벨 6: 나눗셈...
-          const topicMap: Record<number, '덧셈' | '뺄셈' | '곱셈' | '나눗셈'> = {
-            1: '덧셈',
-            2: '뺄셈',
-            3: '덧셈',
-            4: '뺄셈',
-            5: '곱셈',
-            6: '나눗셈',
-            7: '덧셈', // 혼합 연산은 덧셈으로 시작
-            8: '곱셈',
-            9: '나눗셈',
-            10: '덧셈', // 종합 연산은 덧셈으로 시작
-          };
-          currentTopic = topicMap[level] || '덧셈';
+          // 15단계 난이도 시스템 적용 (MathProblemGenerator 사용)
+          // 기존 topicMap 로직은 제거하고 바로 generateProblem 호출로 대체
+          // 하지만 generateQuestion 함수는 category/topic을 인자로 받으므로
+          // 여기서는 새로운 방식과 기존 방식을 분기 처리해야 함
+
+          setQuestionAnimation('fade-out');
+          setTimeout(() => {
+            try {
+              console.log('Calling generateProblem with level:', level);
+              // 새로운 MathProblemGenerator 사용
+              const problem = generateProblem(level);
+              console.log('Generated problem:', problem);
+              const newQuestion: QuizQuestion = {
+                question: problem.expression,
+                answer: problem.answer,
+              };
+              setCurrentQuestion(newQuestion);
+            } catch (e) {
+              console.error("Failed to generate problem, falling back to legacy generator", e);
+              // 실패 시 기존 로직으로 폴백 (혹은 에러 처리)
+              // 기존 로직 유지를 위해 topic 설정
+              const topicMap: Record<number, '덧셈' | '뺄셈' | '곱셈' | '나눗셈'> = {
+                1: '덧셈', 2: '뺄셈', 3: '덧셈', 4: '뺄셈', 5: '곱셈', 6: '나눗셈',
+                7: '덧셈', 8: '곱셈', 9: '나눗셈', 10: '덧셈',
+              };
+              const fallbackTopic = topicMap[level] || '덧셈';
+              // currentCategory가 null일 수 없지만(위에서 체크함), 타입 안전성을 위해 '수학'으로 강제하거나 체크
+              const safeCategory = currentCategory || '수학';
+              const newQuestion = generateQuestion(safeCategory, fallbackTopic, difficulty);
+              setCurrentQuestion(newQuestion);
+            }
+
+            setAnswerInput('');
+            setQuestionAnimation('fade-in');
+
+            if (gameMode === 'survival') {
+              setQuestionKey((prev) => prev + 1);
+              setQuestionStartTime(Date.now());
+            }
+
+            if (useSystemKeyboard && inputRef.current) {
+              setTimeout(() => {
+                inputRef.current?.focus();
+              }, 200);
+            }
+          }, 150);
+          return; // 여기서 함수 종료
         } else if (subParam === 'equations') {
           // 방정식 서브토픽
           currentTopic = 'equations' as any;
@@ -124,16 +161,16 @@ export function MathQuizPage() {
         }
       }
     }
-    
+
     if (!currentCategory || !currentTopic) return;
-    
+
     setQuestionAnimation('fade-out');
     setTimeout(() => {
       const newQuestion = generateQuestion(currentCategory, currentTopic, difficulty);
       setCurrentQuestion(newQuestion);
       setAnswerInput('');
       setQuestionAnimation('fade-in');
-      
+
       // 서바이벌 모드: 문제가 바뀔 때마다 타이머 리셋 (key 변경으로 TimerCircle 리마운트)
       if (gameMode === 'survival') {
         setQuestionKey((prev) => prev + 1);
@@ -180,7 +217,7 @@ export function MathQuizPage() {
     if (modeParam) params.set('mode', modeParam);
     params.set('score', score.toString());
     params.set('total', totalQuestions.toString());
-    
+
     // 서바이벌 모드: 오답 정보 및 평균 풀이 시간 전달
     if (gameMode === 'survival') {
       if (wrongAnswers.length > 0) {
@@ -191,14 +228,14 @@ export function MathQuizPage() {
         params.set('wrong_a', wrongAns);
         params.set('correct_a', correctAns);
       }
-      
+
       // 평균 풀이 시간 계산 (초 단위, 소수점 2자리)
       if (solveTimes.length > 0) {
         const averageTime = solveTimes.reduce((sum, time) => sum + time, 0) / solveTimes.length;
         params.set('avg_time', averageTime.toFixed(2));
       }
     }
-    
+
     navigate(`/result?${params.toString()}`);
   }, [categoryParam, subParam, levelParam, modeParam, score, totalQuestions, gameMode, wrongAnswers, solveTimes, navigate]);
 
@@ -245,7 +282,7 @@ export function MathQuizPage() {
       const height = window.innerHeight;
       const width = window.innerWidth;
       const aspectRatio = height / width;
-      
+
       // 높이가 600px 이하이거나, 가로가 세로보다 긴 경우(가로 모드) 시스템 키보드 사용
       // 또는 화면 비율이 너무 낮은 경우
       const shouldUseSystemKeyboard = height < 600 || aspectRatio < 0.7;
@@ -254,7 +291,7 @@ export function MathQuizPage() {
 
     // 초기 체크
     checkViewportHeight();
-    
+
     // 리사이즈 이벤트 (디바운싱)
     let resizeTimeout: NodeJS.Timeout;
     const handleResize = () => {
@@ -295,11 +332,11 @@ export function MathQuizPage() {
   // 수학 퀴즈용 키패드 핸들러 (3x3 그리드)
   const handleKeypadNumber = useCallback((num: string) => {
     if (isSubmitting) return;
-    
+
     const isEquationQuiz = categoryParam === 'math' && subParam === 'equations';
     const isCalculusQuiz = categoryParam === 'math' && subParam === 'calculus';
     const allowNegative = isEquationQuiz || isCalculusQuiz;
-    
+
     // 음수 기호 처리
     if (num === '-') {
       if (allowNegative) {
@@ -313,16 +350,16 @@ export function MathQuizPage() {
       }
       return;
     }
-    
+
     // 최대 자리수 제한 (방정식/미적분은 음수 기호 포함 6자리, 일반은 5자리)
     const maxLength = allowNegative ? 6 : 5;
     if (answerInput.length >= maxLength) return;
-    
+
     // 음수 기호가 있으면 숫자만 추가
     if (answerInput.startsWith('-')) {
       if (answerInput.length >= maxLength) return;
     }
-    
+
     // 진동 피드백
     if (navigator.vibrate) navigator.vibrate(15);
     setAnswerInput((prev) => prev + num);
@@ -331,7 +368,7 @@ export function MathQuizPage() {
   // 일본어 퀴즈용 쿼티 키보드 핸들러
   const handleQwertyKeyPress = useCallback((key: string) => {
     if (isSubmitting) return;
-    
+
     // 일본어 퀴즈: 영문자만 허용
     if (/[a-z]/.test(key)) {
       if (answerInput.length >= 10) return;
@@ -353,21 +390,21 @@ export function MathQuizPage() {
     (e: FormEvent) => {
       e.preventDefault();
       if (isSubmitting || !currentQuestion) return;
-      
+
       // 값이 비어있으면 무시
       if (!answerInput || answerInput.trim() === '') return;
 
       setIsSubmitting(true);
-      
+
       // 일본어 퀴즈인지 확인 (category가 '언어'이고 subParam이 'japanese'인 경우)
       const isJapaneseQuiz = categoryParam === 'language' && subParam === 'japanese';
       // 방정식/미적분 문제인지 확인 (음수 답도 허용)
       const isEquationQuiz = categoryParam === 'math' && subParam === 'equations';
       const isCalculusQuiz = categoryParam === 'math' && subParam === 'calculus';
       const allowNegative = isEquationQuiz || isCalculusQuiz;
-      
+
       let isCorrect = false;
-      
+
       if (isJapaneseQuiz) {
         // 일본어 퀴즈: 문자열 답안 비교 (대소문자, 공백 무시)
         const normalizedInput = normalizeRomaji(answerInput);
@@ -385,7 +422,7 @@ export function MathQuizPage() {
           setIsSubmitting(false);
           return;
         }
-        isCorrect = typeof currentQuestion.answer === 'number' 
+        isCorrect = typeof currentQuestion.answer === 'number'
           ? currentQuestion.answer === answer
           : false;
       }
@@ -399,11 +436,11 @@ export function MathQuizPage() {
           const solveTime = (Date.now() - questionStartTime) / 1000; // 초 단위
           setSolveTimes(prev => [...prev, solveTime]);
         }
-        
+
         setCardAnimation('correct-flash');
         setInputAnimation('correct-flash');
         increaseScore(SCORE_PER_CORRECT);
-        
+
         setTimeout(() => {
           generateNewQuestion();
           setInputAnimation('');
@@ -419,7 +456,7 @@ export function MathQuizPage() {
       } else {
         setCardAnimation('wrong-shake');
         if (navigator.vibrate) navigator.vibrate(200);
-        
+
         // 서바이벌 모드: 틀리면 게임 종료 (오답 저장)
         if (gameMode === 'survival') {
           // 오답 정보 저장
@@ -430,7 +467,7 @@ export function MathQuizPage() {
             wrongAnswer: answerInput,
             correctAnswer: correctAnswerText
           }]);
-          
+
           setTimeout(() => {
             handleGameOver();
           }, 300);
@@ -459,10 +496,10 @@ export function MathQuizPage() {
     }
 
     // URL 파라미터가 있으면 그것을 우선 사용, 없으면 store에서 가져오기
-    const displayCategory = categoryParam 
+    const displayCategory = categoryParam
       ? APP_CONFIG.CATEGORY_MAP[categoryParam as keyof typeof APP_CONFIG.CATEGORY_MAP] || category
       : category;
-    
+
     let displayTopic: string | null = topic;
     if (categoryParam && subParam) {
       if (subParam === 'arithmetic' && levelParam) {
@@ -501,7 +538,7 @@ export function MathQuizPage() {
         displayTopic = subTopicInfo?.name || subParam;
       }
     }
-    
+
     if (!currentQuestion || (!displayCategory && !categoryParam) || (!displayTopic && !subParam)) {
       // 로딩 중이거나 데이터가 없으면 로딩 표시
       if (categoryParam && subParam) {
@@ -549,7 +586,7 @@ export function MathQuizPage() {
                   const isEquationQuiz = categoryParam === 'math' && subParam === 'equations';
                   const isCalculusQuiz = categoryParam === 'math' && subParam === 'calculus';
                   const allowNegative = isEquationQuiz || isCalculusQuiz;
-                  
+
                   return (
                     <>
                       <input
@@ -634,7 +671,7 @@ export function MathQuizPage() {
 
           {/* 중단 확인 알림 - fixed 토스트 알림 (퀴즈 카드 가리지 않음) */}
           {showExitConfirm && (
-            <div 
+            <div
               className={`exit-confirm-toast ${isFadingOut ? 'fade-out' : ''}`}
               onClick={() => {
                 // 토스트 알림 클릭 시 즉시 닫기
@@ -660,7 +697,7 @@ export function MathQuizPage() {
             const isEquationQuiz = categoryParam === 'math' && subParam === 'equations';
             const isCalculusQuiz = categoryParam === 'math' && subParam === 'calculus';
             const allowNegative = isEquationQuiz || isCalculusQuiz;
-            
+
             // 일본어 퀴즈: 쿼티 키보드 사용
             if (isJapaneseQuiz) {
               return (
@@ -674,7 +711,7 @@ export function MathQuizPage() {
                 />
               );
             }
-            
+
             // 수학 퀴즈: 3x3 숫자 키패드 사용
             return (
               <CustomKeypad

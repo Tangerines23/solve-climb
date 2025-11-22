@@ -14,13 +14,11 @@
   left: 0;
   right: 0;
   bottom: 0;
-  background: linear-gradient(
-    180deg,
-    #3182F6 0%,
-    #5BA3FF 30%,
-    #7DB8FF 60%,
-    #A8D0FF 100%
-  );
+  background: linear-gradient(180deg,
+      #3182F6 0%,
+      #5BA3FF 30%,
+      #7DB8FF 60%,
+      #A8D0FF 100%);
   z-index: 0;
   pointer-events: none;
 }
@@ -31,16 +29,17 @@
   bottom: 0;
   left: 0;
   right: 0;
-  height: 50vh;
+  height: 100vh;
   z-index: 1;
   pointer-events: none;
-  overflow: hidden;
+  overflow: visible;
 }
 
 .mountain-background-svg {
   width: 100%;
   height: 100%;
   display: block;
+  overflow: visible;
 }
 
 .mountain-bg-far {
@@ -62,6 +61,7 @@
     opacity: 0;
     transform: translateY(20px);
   }
+
   to {
     opacity: 1;
     transform: translateY(0);
@@ -71,12 +71,13 @@
 /* 경로 SVG 컨테이너 */
 .level-map-path-container {
   position: absolute;
-  top: 0;
+  top: -100px;
   left: 0;
   right: 0;
   width: 100%;
   z-index: 1;
-  padding: 80px 0 80px 0; /* 상하단 패딩 감소 */
+  padding: 80px 0px 80px 0;
+  /* 상하단 패딩 감소 */
   pointer-events: none;
   overflow: visible;
   display: flex;
@@ -105,6 +106,7 @@
   from {
     stroke-dasharray: 0, 1000;
   }
+
   to {
     stroke-dasharray: 1000, 0;
   }
@@ -112,7 +114,8 @@
 
 /* 레벨 노드 - SVG 내부에 배치되므로 별도 컨테이너 불필요 */
 .level-map-nodes {
-  display: none; /* 더 이상 사용하지 않음 */
+  display: none;
+  /* 더 이상 사용하지 않음 */
 }
 
 /* 레벨 노드 버튼 */
@@ -163,9 +166,12 @@
 }
 
 @keyframes pulse {
-  0%, 100% {
+
+  0%,
+  100% {
     box-shadow: 0 0 0 4px rgba(49, 130, 246, 0.2), 0 4px 16px rgba(0, 0, 0, 0.2);
   }
+
   50% {
     box-shadow: 0 0 0 8px rgba(49, 130, 246, 0.3), 0 4px 20px rgba(0, 0, 0, 0.25);
   }
@@ -213,6 +219,7 @@
     opacity: 0;
     transform: scale(0);
   }
+
   to {
     opacity: 1;
     transform: scale(1);
@@ -242,4 +249,3 @@
     border-width: 2px;
   }
 }
-
