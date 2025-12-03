@@ -46,13 +46,12 @@
 }
 
 .result-card {
-  min-height: 320px;
   padding: 32px 24px;
   display: flex;
   flex-direction: column;
   justify-content: flex-start;
   align-items: center;
-  gap: 20px;
+  gap: 12px; /* 간격 조정 */
   background-color: #1C1C1E;
   border-radius: 24px;
   box-shadow: 0 0 12px rgba(0, 0, 0, 0.3);
@@ -67,14 +66,14 @@
 /* 결과 아이콘 */
 .result-icon {
   font-size: 64px;
-  margin-bottom: 8px;
+  margin: 0 0 8px 0; /* 통일된 마진 */
   line-height: 1;
 }
 
 .result-title {
   font-size: 32px;
   font-weight: 700;
-  margin: 0;
+  margin: 0 0 8px 0; /* 통일된 마진 */
   color: #ffffff;
 }
 
@@ -83,7 +82,7 @@
   flex-direction: column;
   align-items: center;
   gap: 4px;
-  margin: 8px 0;
+  margin: 0 0 8px 0;
 }
 
 .score-value {
@@ -94,9 +93,17 @@
   line-height: 1.2;
 }
 
+.score-subtext {
+  font-size: 0.875rem;
+  font-weight: 400;
+  color: #999;
+  margin: 0;
+  line-height: 1.4;
+}
+
 /* 레벨 정보 */
 .result-level-info {
-  margin-bottom: 8px;
+  margin: 0 0 8px 0;
   text-align: center;
 }
 
@@ -145,7 +152,6 @@
   color: #3182F6;
   padding: 12px 20px;
   border-radius: 12px;
-  margin: 12px 0;
   text-align: center;
   font-size: 1rem;
   font-weight: 600;

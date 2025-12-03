@@ -25,7 +25,6 @@ export function ChallengeCard() {
         <h2 className="challenge-title">오늘의 챌린지</h2>
       </div>
       <p className="challenge-description">{challenge.title}</p>
-      <p className="challenge-participants">현재 946,822명 참여 중</p>
       <button className="challenge-button" onClick={handleChallengeClick}>
         도전하기
       </button>

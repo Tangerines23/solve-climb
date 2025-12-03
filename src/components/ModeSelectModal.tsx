@@ -1,4 +1,5 @@
 import React from 'react';
+import { STAGE_CONFIG, type StageConfig } from '../constants/stages';
 import './ModeSelectModal.css';
 
 interface ModeSelectModalProps {
@@ -18,6 +19,11 @@ export function ModeSelectModal({
 }: ModeSelectModalProps) {
   if (!isOpen) return null;
 
+  // 현재 레벨의 스테이지 정보 찾기
+  const stage: StageConfig = STAGE_CONFIG.find(
+    (s) => level >= s.range[0] && level <= s.range[1]
+  ) || STAGE_CONFIG[0];
+
   const handleModeSelect = (mode: 'time-attack' | 'survival') => {
     onSelectMode(mode);
     onClose();
@@ -27,8 +33,17 @@ export function ModeSelectModal({
     <div className="mode-select-modal-overlay" onClick={onClose}>
       <div className="mode-select-modal" onClick={(e) => e.stopPropagation()}>
         <div className="mode-select-modal-header">
+          <div className="mode-select-stage-info" style={{ color: stage.color }}>
+            <span className="mode-select-stage-icon" role="img" aria-label={stage.title}>
+              {stage.icon}
+            </span>
+            <span className="mode-select-stage-title">{stage.title}</span>
+          </div>
           <h2 className="mode-select-modal-title">Level {level}: {levelName}</h2>
-          <p className="mode-select-modal-subtitle">게임 모드를 선택하세요</p>
+          <p className="mode-select-modal-subtitle" style={{ color: stage.color }}>
+            {stage.desc}
+          </p>
+          <p className="mode-select-modal-subtitle-secondary">게임 모드를 선택하세요</p>
         </div>
         <div className="mode-select-modal-content">
           <button

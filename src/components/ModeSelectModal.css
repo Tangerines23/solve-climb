@@ -48,6 +48,24 @@
   margin-bottom: 24px;
 }
 
+.mode-select-stage-info {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  margin-bottom: 12px;
+  font-size: 1rem;
+  font-weight: 600;
+}
+
+.mode-select-stage-icon {
+  font-size: 1.25rem;
+}
+
+.mode-select-stage-title {
+  font-size: 1rem;
+}
+
 .mode-select-modal-title {
   font-size: 1.5rem;
   font-weight: bold;
@@ -58,7 +76,13 @@
 .mode-select-modal-subtitle {
   font-size: 0.875rem;
   color: #aaa;
-  margin: 0;
+  margin: 0 0 4px 0;
+}
+
+.mode-select-modal-subtitle-secondary {
+  font-size: 0.875rem;
+  color: #888;
+  margin: 8px 0 0 0;
 }
 
 .mode-select-modal-content {

@@ -25,6 +25,10 @@
   grid-template-columns: 1fr 1fr 1fr;
 }
 
+.keypad-row-last.keypad-row-last-with-negative {
+  grid-template-columns: repeat(4, 1fr);
+}
+
 .keypad-row-last .keypad-key-submit {
   aspect-ratio: auto;
   height: 100%;
@@ -74,6 +78,12 @@
 }
 
 .keypad-key-backspace {
+  color: #8b95a1;
+  font-size: clamp(1.8rem, 4.5vw, 2.2rem);
+  font-weight: 600;
+}
+
+.keypad-key-negative {
   color: #8b95a1;
   font-size: clamp(1.8rem, 4.5vw, 2.2rem);
   font-weight: 600;

@@ -4,6 +4,7 @@ import { APP_CONFIG } from '../config/app';
 import { SubCategoryHeader } from '../components/SubCategoryHeader';
 import { FooterNav } from '../components/FooterNav';
 import { useFavoriteStore } from '../stores/useFavoriteStore';
+import { calculateSubTopicProgress, calculateCategoryProgress } from '../utils/scoreCalculator';
 import './SubCategoryPage.css';
 
 const LONG_PRESS_DURATION = 500; // 0.5초
@@ -14,6 +15,7 @@ export function SubCategoryPage() {
   const categoryParam = searchParams.get('category');
   const { addFavorite, isFavorite } = useFavoriteStore();
   const [showFavoriteToast, setShowFavoriteToast] = useState<string | null>(null);
+  const [isFavoriteToastClosing, setIsFavoriteToastClosing] = useState(false);
   const longPressTimerRef = useRef<NodeJS.Timeout | null>(null);
 
   // 예외 처리: category 파라미터가 없거나 유효하지 않은 경우
@@ -40,6 +42,9 @@ export function SubCategoryPage() {
   // config에서 주제 목록 가져오기 (동적 데이터)
   const topics = APP_CONFIG.SUB_TOPICS[categoryParam as keyof typeof APP_CONFIG.SUB_TOPICS];
   const categoryInfo = APP_CONFIG.CATEGORIES.find(cat => cat.id === categoryParam);
+  
+  // 카테고리 전체 진행도 계산
+  const { progressPercent: categoryProgressPercent } = calculateCategoryProgress(categoryParam);
 
   const handleTopicClick = (topicId: string) => {
     // level-select 페이지로 이동
@@ -58,8 +63,33 @@ export function SubCategoryPage() {
       name: `${categoryInfo?.name || ''} - ${topicName}`,
     });
 
-    setShowFavoriteToast(isFav ? `${topicName} 즐겨찾기 해제` : `${topicName} 즐겨찾기 추가`);
-    setTimeout(() => setShowFavoriteToast(null), 2000);
+    const newMessage = isFav ? `${topicName} 즐겨찾기 해제` : `${topicName} 즐겨찾기 추가`;
+    
+    // 현재 토스트가 표시 중이면 즉시 닫고 새 메시지 표시
+    if (showFavoriteToast) {
+      setIsFavoriteToastClosing(true);
+      setTimeout(() => {
+        setIsFavoriteToastClosing(false);
+        setShowFavoriteToast(newMessage);
+        setTimeout(() => {
+          setIsFavoriteToastClosing(true);
+          setTimeout(() => {
+            setShowFavoriteToast(null);
+            setIsFavoriteToastClosing(false);
+          }, 300);
+        }, 2000);
+      }, 300);
+    } else {
+      setIsFavoriteToastClosing(false);
+      setShowFavoriteToast(newMessage);
+      setTimeout(() => {
+        setIsFavoriteToastClosing(true);
+        setTimeout(() => {
+          setShowFavoriteToast(null);
+          setIsFavoriteToastClosing(false);
+        }, 300);
+      }, 2000);
+    }
 
     // 진동 피드백
     if (navigator.vibrate) {
@@ -107,10 +137,18 @@ export function SubCategoryPage() {
       <SubCategoryHeader categoryId={categoryParam} />
       <main className="subcategory-main">
         <div className="subcategory-content">
-          <h2 className="subcategory-list-title">도전할 주제를 선택하세요</h2>
+          <div className="subcategory-header-section">
+            <h2 className="subcategory-category-title">{categoryInfo?.name || '주제 선택'}</h2>
+            <span className="subcategory-category-progress">{categoryProgressPercent}%</span>
+          </div>
           <div id="topic-list-container" className="topic-list-container">
             {sortedTopics.map((topic) => {
               const isFav = isFavorite(categoryParam, topic.id);
+              const { progressPercent, currentAltitude, targetAltitude } = calculateSubTopicProgress(
+                categoryParam,
+                topic.id
+              );
+              
               return (
                 <a
                   key={topic.id}
@@ -132,7 +170,17 @@ export function SubCategoryPage() {
                       <span className="topic-icon">{topic.icon}</span>
                       <div className="topic-text">
                         <h3 className="topic-name">{topic.name}</h3>
-                        <p className="topic-desc">{topic.desc}</p>
+                        <div className="topic-altitude-info">
+                          <p className="topic-altitude-text">
+                            {currentAltitude.toLocaleString()}m / {targetAltitude.toLocaleString()}m
+                          </p>
+                          <div className="topic-progress-bar">
+                            <div 
+                              className="topic-progress-bar-fill" 
+                              style={{ width: `${Math.min(progressPercent, 100)}%` }}
+                            ></div>
+                          </div>
+                        </div>
                       </div>
                     </div>
                     <span className="topic-chevron">›</span>
@@ -144,7 +192,9 @@ export function SubCategoryPage() {
         </div>
       </main>
       {showFavoriteToast && (
-        <div className="favorite-toast">{showFavoriteToast}</div>
+        <div className={`favorite-toast ${isFavoriteToastClosing ? 'closing' : ''}`}>
+          {showFavoriteToast}
+        </div>
       )}
       <FooterNav />
     </div>

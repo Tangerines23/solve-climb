@@ -1,8 +1,7 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { useLevelProgressStore } from '../stores/useLevelProgressStore';
 import { useProfileStore } from '../stores/useProfileStore';
 import { UnderDevelopmentModal } from './UnderDevelopmentModal';
-import { SCORE_PER_CORRECT } from '../constants/game';
 import './LevelListCard.css';
 
 interface LevelListCardProps {
@@ -10,6 +9,8 @@ interface LevelListCardProps {
   subTopic: string;
   levels: Array<{ level: number; name: string; description: string }>;
   onLevelClick: (level: number, levelName: string) => void;
+  onLevelLongPress?: (level: number) => void;
+  onLockedLevelClick?: (level: number, nextLevel: number) => void;
 }
 
 // 개발 중인 레벨 목록 (카테고리_서브토픽_레벨 형식)
@@ -23,6 +24,8 @@ export function LevelListCard({
   subTopic,
   levels,
   onLevelClick,
+  onLevelLongPress,
+  onLockedLevelClick,
 }: LevelListCardProps) {
   const isLevelCleared = useLevelProgressStore((state) => state.isLevelCleared);
   const getLevelProgress = useLevelProgressStore((state) => state.getLevelProgress);
@@ -67,14 +70,10 @@ export function LevelListCard({
     const survival = record.bestScore['survival'];
     if (timeAttack === null && survival === null) return null;
     
-    // 점수를 맞춘 개수로 변환
-    const timeAttackCount = timeAttack !== null ? Math.floor(timeAttack / SCORE_PER_CORRECT) : null;
-    const survivalCount = survival !== null ? Math.floor(survival / SCORE_PER_CORRECT) : null;
-    
-    if (timeAttackCount === null && survivalCount === null) return null;
-    if (timeAttackCount === null) return survivalCount;
-    if (survivalCount === null) return timeAttackCount;
-    return Math.max(timeAttackCount, survivalCount);
+    // 점수를 그대로 사용 (미터 단위)
+    if (timeAttack === null) return survival;
+    if (survival === null) return timeAttack;
+    return Math.max(timeAttack, survival);
   };
 
   return (
@@ -96,10 +95,73 @@ export function LevelListCard({
             const isDisabled = status === 'locked';
             const isDev = isUnderDevelopment(levelData.level);
 
+            // 길게 누르기 타이머 관리 (각 아이템마다 독립적)
+            const timersRef = useMemo(() => ({
+              longPress: null as NodeJS.Timeout | null,
+              toast: null as NodeJS.Timeout | null,
+              count: 0
+            }), []);
+
+            const handleLongPressStart = (e: React.MouseEvent | React.TouchEvent) => {
+              // 잠긴 레벨은 길게 누르기 비활성화
+              if (isDisabled || !onLevelLongPress) return;
+              
+              e.stopPropagation();
+              
+              timersRef.count = 0;
+              
+              // 2초 후 토스트 표시
+              timersRef.toast = setTimeout(() => {
+                timersRef.count = 1;
+                if (onLevelLongPress) {
+                  onLevelLongPress(levelData.level);
+                }
+              }, 2000);
+
+              // 4초 후 실제 해제
+              timersRef.longPress = setTimeout(() => {
+                timersRef.count = 2;
+                if (onLevelLongPress) {
+                  onLevelLongPress(levelData.level);
+                }
+                if (timersRef.toast) {
+                  clearTimeout(timersRef.toast);
+                  timersRef.toast = null;
+                }
+              }, 4000);
+            };
+
+            const handleLongPressEnd = (e: React.MouseEvent | React.TouchEvent) => {
+              if (timersRef.longPress) {
+                clearTimeout(timersRef.longPress);
+                timersRef.longPress = null;
+              }
+              if (timersRef.toast) {
+                clearTimeout(timersRef.toast);
+                timersRef.toast = null;
+              }
+              timersRef.count = 0;
+            };
+
+            const handleLockedClick = (e: React.MouseEvent) => {
+              if (isDisabled && onLockedLevelClick) {
+                e.stopPropagation();
+                onLockedLevelClick(levelData.level, nextLevel);
+              }
+            };
+
             return (
               <div
                 key={levelData.level}
                 className={`level-list-item ${status} ${isDisabled ? 'disabled' : ''} ${isDev ? 'under-development' : ''}`}
+                onMouseDown={!isDisabled ? handleLongPressStart : undefined}
+                onMouseUp={!isDisabled ? handleLongPressEnd : undefined}
+                onMouseLeave={!isDisabled ? handleLongPressEnd : undefined}
+                onTouchStart={!isDisabled ? handleLongPressStart : undefined}
+                onTouchEnd={!isDisabled ? handleLongPressEnd : undefined}
+                onTouchCancel={!isDisabled ? handleLongPressEnd : undefined}
+                onClick={isDisabled ? handleLockedClick : undefined}
+                style={isDisabled ? { cursor: 'pointer' } : undefined}
               >
                 <div className="level-list-item-left">
                   <div className="level-list-item-header">
@@ -116,7 +178,7 @@ export function LevelListCard({
                   </div>
                   <div className="level-list-item-name">{levelData.name}</div>
                   {!isDev && bestScore !== null && (
-                    <div className="level-list-item-best">최고: {bestScore}개</div>
+                    <div className="level-list-item-best">최고: {bestScore.toLocaleString()}m</div>
                   )}
                 </div>
                 <div className="level-list-item-right">
@@ -130,19 +192,29 @@ export function LevelListCard({
                   ) : status === 'next' ? (
                     <button
                       className="level-list-button level-list-button-primary"
-                      onClick={() => onLevelClick(levelData.level, levelData.name)}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        onLevelClick(levelData.level, levelData.name);
+                      }}
                     >
                       도전하기 &gt;
                     </button>
                   ) : status === 'cleared' ? (
                     <button
                       className="level-list-button level-list-button-secondary"
-                      onClick={() => onLevelClick(levelData.level, levelData.name)}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        onLevelClick(levelData.level, levelData.name);
+                      }}
                     >
                       다시하기 &gt;
                     </button>
                   ) : (
-                    <button className="level-list-button level-list-button-disabled" disabled>
+                    <button
+                      className="level-list-button level-list-button-disabled"
+                      disabled
+                      style={{ opacity: 0.5, cursor: 'not-allowed' }}
+                    >
                       잠김
                     </button>
                   )}

@@ -151,10 +151,44 @@
 .level-list-button-under-dev {
   background-color: #6b7280;
   color: #ffffff;
-  cursor: pointer;
+  cursor: not-allowed;
+  opacity: 0.6;
 }
 
 .level-list-button-under-dev:hover {
-  background-color: #5a5a5a;
+  background-color: #6b7280;
+  opacity: 0.6;
+}
+
+/* 모바일 반응형 스타일 */
+@media (max-width: 480px) {
+  /* 레이아웃 변경: Row → Column */
+  .level-list-item {
+    flex-direction: column;
+    align-items: stretch; /* 수직 배치 시 양쪽 끝에 맞춤 */
+    gap: 12px; /* 요소 사이 상하 간격 */
+    width: 100%;
+    margin-left: 0;
+    margin-right: 0;
+  }
+
+  /* 텍스트 정보 영역: 너비 100% */
+  .level-list-item-left {
+    width: 100%;
+    flex: none; /* flex: 1 제거 */
+  }
+
+  /* 버튼 영역: 너비 100% */
+  .level-list-item-right {
+    width: 100%;
+    flex-shrink: 0;
+  }
+
+  /* 버튼 스타일: 너비 100%, 터치하기 쉽게 */
+  .level-list-button {
+    width: 100%;
+    text-align: center;
+    padding: 14px 24px;
+  }
 }
 

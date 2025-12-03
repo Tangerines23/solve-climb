@@ -1,4 +1,6 @@
 import React, { FormEvent } from 'react';
+import { vibrateShort } from '../utils/haptic';
+import { useSettingsStore } from '../stores/useSettingsStore';
 import './CustomKeypad.css';
 
 interface CustomKeypadProps {
@@ -18,16 +20,41 @@ export function CustomKeypad({
   disabled = false,
   showNegative = false,
 }: CustomKeypadProps) {
+  const { hapticEnabled } = useSettingsStore();
+
   const handleNumberClick = (num: string) => {
     if (!disabled) {
-      // 진동 피드백은 부모 컴포넌트에서 처리
+      if (hapticEnabled) {
+        vibrateShort();
+      }
       onNumberClick(num);
     }
   };
 
   const handleBackspace = () => {
     if (!disabled && onBackspace) {
+      if (hapticEnabled) {
+        vibrateShort();
+      }
       onBackspace();
+    }
+  };
+
+  const handleClear = () => {
+    if (!disabled) {
+      if (hapticEnabled) {
+        vibrateShort();
+      }
+      onClear();
+    }
+  };
+
+  const handleSubmit = (e: FormEvent) => {
+    if (!disabled) {
+      if (hapticEnabled) {
+        vibrateShort();
+      }
+      onSubmit(e);
     }
   };
 
@@ -102,19 +129,28 @@ export function CustomKeypad({
           9
         </button>
       </div>
-      <div className="keypad-row keypad-row-last">
+      <div className={`keypad-row keypad-row-last ${showNegative ? 'keypad-row-last-with-negative' : ''}`}>
         {showNegative ? (
-          <button
-            className="keypad-key keypad-key-negative"
-            onClick={() => {
-              if (!disabled) {
-                onNumberClick('-');
-              }
-            }}
-            disabled={disabled}
-          >
-            ±
-          </button>
+          <>
+            <button
+              className="keypad-key keypad-key-negative"
+              onClick={() => {
+                if (!disabled) {
+                  handleNumberClick('-');
+                }
+              }}
+              disabled={disabled}
+            >
+              ±
+            </button>
+            <button
+              className="keypad-key keypad-key-backspace"
+              onClick={handleBackspace}
+              disabled={disabled}
+            >
+              ⌫
+            </button>
+          </>
         ) : (
           <button
             className="keypad-key keypad-key-backspace"
@@ -135,9 +171,7 @@ export function CustomKeypad({
           className="keypad-key keypad-key-submit"
           onClick={(e) => {
             e.preventDefault();
-            if (!disabled) {
-              onSubmit(e);
-            }
+            handleSubmit(e);
           }}
           disabled={disabled}
           type="button"

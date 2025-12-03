@@ -3,7 +3,7 @@
 .level-map-container {
   position: relative;
   width: 100%;
-  min-height: 100vh;
+  /* min-height는 인라인 스타일로 동적으로 설정됨 */
   overflow: visible;
 }
 
@@ -21,40 +21,74 @@
       #A8D0FF 100%);
   z-index: 0;
   pointer-events: none;
+  transition: background 1s ease-in-out;
 }
 
-/* 산 배경 */
-.level-map-mountains {
-  position: fixed;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  height: 100vh;
-  z-index: 1;
-  pointer-events: none;
-  overflow: visible;
-}
-
+/* 배경 SVG 스타일 - 모든 배경 컴포넌트에 공통 적용 */
 .mountain-background-svg {
+  position: absolute;
   width: 100%;
   height: 100%;
+  top: 0;
+  left: 0;
   display: block;
-  overflow: visible;
+  z-index: 1; /* 배경을 뒤로 보냄 (노드가 z-index: 10 이상이므로 앞에 표시됨) */
+  pointer-events: none;
+  object-fit: cover;
+}
+
+/* [주석 처리] 절차적 생성 배경으로 교체됨 - React 컴포넌트가 산을 직접 그리므로 CSS는 더 이상 사용하지 않음 */
+/*
+.level-map-mountains {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 0;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.mountain-bg-far,
+.mountain-bg-mid,
+.mountain-bg-near {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  pointer-events: none;
 }
 
 .mountain-bg-far {
+  z-index: 1;
+  opacity: 0.6;
+  filter: blur(2px) brightness(0.9);
   animation: mountainFadeIn 1.5s ease-out;
-  filter: blur(2px);
+  -webkit-mask-image: linear-gradient(to bottom, black 0%, black 40%, transparent 80%);
+  mask-image: linear-gradient(to bottom, black 0%, black 40%, transparent 80%);
 }
 
 .mountain-bg-mid {
-  animation: mountainFadeIn 1.2s ease-out 0.2s both;
-  filter: blur(1px);
+  z-index: 2;
+  opacity: 0.8;
+  filter: blur(1px) brightness(0.95);
+  animation: mountainFadeIn 1.5s ease-out;
+  -webkit-mask-image: linear-gradient(to bottom, transparent 0%, black 30%, black 60%, transparent 100%);
+  mask-image: linear-gradient(to bottom, transparent 0%, black 30%, black 60%, transparent 100%);
 }
 
 .mountain-bg-near {
+  z-index: 3;
+  opacity: 1;
+  filter: none;
   animation: mountainFadeIn 1s ease-out 0.4s both;
+  -webkit-mask-image: linear-gradient(to bottom, transparent 50%, black 80%, black 100%);
+  mask-image: linear-gradient(to bottom, transparent 50%, black 80%, black 100%);
 }
+*/
 
 @keyframes mountainFadeIn {
   from {
@@ -70,35 +104,39 @@
 
 /* 경로 SVG 컨테이너 */
 .level-map-path-container {
-  position: absolute;
-  top: -100px;
+  position: relative;
   left: 0;
   right: 0;
   width: 100%;
-  z-index: 1;
-  padding: 80px 0px 80px 0;
-  /* 상하단 패딩 감소 */
+  z-index: 10; /* 배경(z-index: 1) 위에 표시되어 노드와 경로가 가려지지 않도록 */
+  padding: 0; /* 패딩 제거하여 정확한 위치 계산 */
   pointer-events: none;
   overflow: visible;
   display: flex;
-  align-items: center;
-  justify-content: center;
+  justify-content: center; /* 중앙 정렬 */
+  align-items: flex-start;
+  /* top은 인라인 스타일로 동적으로 설정됨 */
 }
 
 .path-svg {
   width: 100%;
   height: 100%;
-  max-height: calc(100vh - 200px);
   display: block;
+  overflow: visible;
+  /* [핵심 수정] 최대 너비를 모바일/태블릿 수준으로 제한 */
+  /* 이 너비를 넘어가면 더 이상 그림이 커지지 않고 여백이 생김 */
+  max-width: 500px;
 }
 
 .path-future {
   opacity: 1;
+  /* Toss UI: 얇고 연한 회색 선 (TSX에서 직접 스타일 적용) */
 }
 
 .path-cleared {
-  opacity: 0.5;
-  filter: drop-shadow(0 0 3px rgba(255, 255, 255, 0.3));
+  opacity: 0.6;
+  /* Toss UI: 클리어된 경로도 연한 회색 (TSX에서 직접 스타일 적용) */
+  filter: none; /* 그림자 제거 */
   animation: pathDraw 1s ease-out;
 }
 
@@ -112,13 +150,7 @@
   }
 }
 
-/* 레벨 노드 - SVG 내부에 배치되므로 별도 컨테이너 불필요 */
-.level-map-nodes {
-  display: none;
-  /* 더 이상 사용하지 않음 */
-}
-
-/* 레벨 노드 버튼 */
+/* 레벨 노드 버튼 - iOS Safari 호환성을 위한 최적화 */
 .level-node {
   position: relative;
   width: 56px;
@@ -134,6 +166,14 @@
   animation: nodeAppear 0.5s ease-out both;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
   z-index: 11;
+  /* foreignObject 내부 요소의 렌더링 안정성을 위한 최적화 */
+  transform: translateZ(0); /* 하드웨어 가속 활성화 */
+  -webkit-font-smoothing: antialiased;
+  backface-visibility: hidden;
+  /* 부모가 막은 이벤트를 다시 활성화 */
+  pointer-events: auto;
+  /* 터치 영역 확장 (모바일 사용성 개선) */
+  touch-action: manipulation;
 }
 
 .level-node:disabled {
@@ -155,9 +195,9 @@
   opacity: 0.6;
 }
 
-/* 현재 상태 (토스 블루) */
+/* 현재 상태 (토스 블루) - CSS 변수 활용 */
 .level-node-current {
-  background-color: #3182F6;
+  background-color: var(--category-color, #3182F6);
   color: #ffffff;
   border: 3px solid #ffffff;
   box-shadow: 0 0 0 4px rgba(49, 130, 246, 0.2), 0 4px 16px rgba(0, 0, 0, 0.2);
@@ -247,5 +287,162 @@
 
   .level-node-current {
     border-width: 2px;
+  }
+}
+
+/* 수학 기호 스타일 */
+.math-symbol {
+  font-family: 'Times New Roman', serif;
+  font-weight: bold;
+  pointer-events: none;
+  animation: symbolFloat 3s ease-in-out infinite;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+  /* 모바일에서 글자 압축 방지 */
+  text-rendering: geometricPrecision;
+  shape-rendering: geometricPrecision;
+}
+
+@keyframes symbolFloat {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-10px);
+  }
+}
+
+@keyframes variableFloat {
+  0%, 100% {
+    transform: translate(-50%, -50%) translateY(0);
+  }
+  50% {
+    transform: translate(-50%, -50%) translateY(-12px);
+  }
+}
+
+/* 스테이지별 특수 효과 */
+/* 1단계: 사칙연산 - 블록 그림자 강조 및 3D 효과 */
+.level-map-container[data-stage="arithmetic"] .mountain-bg-near {
+  filter: saturate(1.2) brightness(1.1) drop-shadow(-6px 6px 12px rgba(0, 0, 0, 0.6));
+}
+
+.level-map-container[data-stage="arithmetic"] .mountain-bg-near rect {
+  stroke: rgba(255, 255, 255, 0.3);
+  stroke-width: 2;
+}
+
+/* 2단계: 방정식 - 대칭 강조 */
+.level-map-container[data-stage="equations"] .mountain-bg-near {
+  filter: saturate(1.15) brightness(1.05) drop-shadow(-5px 5px 10px rgba(0, 206, 209, 0.4));
+}
+
+/* 3단계: 수열 - 프랙탈 깊이감 */
+.level-map-container[data-stage="sequence"] .mountain-bg-far {
+  filter: blur(8px) saturate(0.3) brightness(0.8);
+}
+
+/* 4단계: 미적분 - 우주 느낌 */
+.level-map-container[data-stage="calculus"] .mountain-bg-near {
+  filter: saturate(0.8) brightness(0.9) drop-shadow(0 0 20px rgba(0, 212, 255, 0.5));
+}
+
+.level-map-container[data-stage="calculus"] .math-symbol {
+  animation: symbolFloat 3s ease-in-out infinite, symbolGlow 2s ease-in-out infinite;
+}
+
+@keyframes symbolGlow {
+  0%, 100% {
+    opacity: 0.6;
+    filter: drop-shadow(0 0 5px rgba(0, 212, 255, 0.8));
+  }
+  50% {
+    opacity: 1;
+    filter: drop-shadow(0 0 15px rgba(0, 212, 255, 1));
+  }
+}
+
+/* 스테이지 표지판 스타일 (Toss UI) */
+.stage-signpost {
+  pointer-events: none;
+}
+
+.stage-signpost line {
+  opacity: 0.6;
+  transition: opacity 0.3s ease;
+}
+
+.stage-signpost:hover line {
+  opacity: 0.8;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* 큰 화면에서 산 배경이 자연스럽게 확장되도록 */
+@media (min-width: 768px) {
+  .mountain-background-svg {
+    width: 100%;
+    height: 100%;
+  }
+}
+
+/* 내 위치로 가기 버튼 (FAB) */
+.fab-my-location {
+  position: fixed;
+  bottom: 100px; /* 하단 리스트 헤더 위에 떠 있도록 위치 조정 */
+  right: 20px;
+  z-index: 100; /* 가장 위에 */
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  padding: 10px 16px;
+  background-color: #ffffff;
+  color: #333d4b;
+  border: none;
+  border-radius: 24px; /* 캡슐 형태 */
+
+  /* 토스 스타일 부드러운 그림자 */
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15),
+    0 0 0 1px rgba(0, 0, 0, 0.05);
+
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  cursor: pointer;
+
+  /* 애니메이션: 뿅 하고 나타나기 */
+  animation: fabPopIn 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) 0.5s both;
+}
+
+.fab-my-location:active {
+  transform: scale(0.95);
+  background-color: #f9fafb;
+}
+
+@keyframes fabPopIn {
+  from {
+    opacity: 0;
+    transform: scale(0.5) translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+/* 다크모드 대응 (선택) */
+@media (prefers-color-scheme: dark) {
+  .fab-my-location {
+    background-color: #333d4b;
+    color: #ffffff;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
   }
 }

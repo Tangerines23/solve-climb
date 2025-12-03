@@ -10,10 +10,6 @@ export function Header() {
     navigate(APP_CONFIG.ROUTES.NOTIFICATIONS);
   };
 
-  const handleSettingsClick = () => {
-    navigate(APP_CONFIG.ROUTES.SETTINGS);
-  };
-
   return (
     <header className="app-header">
       <div className="header-content">
@@ -25,13 +21,6 @@ export function Header() {
             aria-label="알림"
           >
             🔔
-          </button>
-          <button
-            className="header-icon-button"
-            onClick={handleSettingsClick}
-            aria-label="설정"
-          >
-            ⚙️
           </button>
         </div>
       </div>

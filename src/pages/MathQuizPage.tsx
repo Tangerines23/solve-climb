@@ -16,12 +16,16 @@ import { CustomKeypad } from '../components/CustomKeypad';
 import { GameTipModal } from '../components/GameTipModal';
 import { generateProblem } from '../utils/MathProblemGenerator';
 import { generateQuestion } from '../utils/quizGenerator';
+import { generateEquation } from '../utils/EquationProblemGenerator';
 import { QuizQuestion } from '../types/quiz';
 import { APP_CONFIG } from '../config/app';
 import { normalizeRomaji } from '../utils/japanese';
+import { vibrateMedium } from '../utils/haptic';
+import { useSettingsStore } from '../stores/useSettingsStore';
 
 export function MathQuizPage() {
   const { score, difficulty, increaseScore, resetQuiz, category, topic, timeLimit, setGameMode, gameMode } = useQuizStore();
+  const { hapticEnabled } = useSettingsStore();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
 
@@ -32,6 +36,21 @@ export function MathQuizPage() {
   const [isFadingOut, setIsFadingOut] = useState(false);
   const [useSystemKeyboard, setUseSystemKeyboard] = useState(false);
   const [showTipModal, setShowTipModal] = useState(true); // 팁 모달 표시 상태
+
+  // URL 파라미터에서 레벨 정보 읽기
+  const categoryParam = searchParams.get('category');
+  const subParam = searchParams.get('sub');
+  const levelParam = searchParams.get('level');
+  const modeParam = searchParams.get('mode');
+
+  // categoryParam이나 subParam, levelParam이 변경될 때 팁 모달 상태 업데이트
+  useEffect(() => {
+    if (categoryParam && subParam) {
+      const tipKey = levelParam ? `gameTip_${categoryParam}_${subParam}_${levelParam}` : `gameTip_${categoryParam}_${subParam}`;
+      const shouldHide = localStorage.getItem(tipKey) === 'true';
+      setShowTipModal(!shouldHide);
+    }
+  }, [categoryParam, subParam, levelParam]);
   const exitConfirmTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
@@ -49,12 +68,6 @@ export function MathQuizPage() {
   const [wrongAnswers, setWrongAnswers] = useState<Array<{ question: string; wrongAnswer: string; correctAnswer: string }>>([]); // 서바이벌 모드 오답
   const [questionStartTime, setQuestionStartTime] = useState<number | null>(null); // 현재 문제 시작 시간
   const [solveTimes, setSolveTimes] = useState<number[]>([]); // 서바이벌 모드: 각 문제의 풀이 시간 (초)
-
-  // URL 파라미터에서 레벨 정보 읽기
-  const categoryParam = searchParams.get('category');
-  const subParam = searchParams.get('sub');
-  const levelParam = searchParams.get('level');
-  const modeParam = searchParams.get('mode');
 
   // 게임 모드 설정
   useEffect(() => {
@@ -149,8 +162,48 @@ export function MathQuizPage() {
             }
           }, 150);
           return; // 여기서 함수 종료
+        } else if (subParam === 'equations' && levelParam) {
+          // 방정식 서브토픽 - EquationProblemGenerator 사용
+          const level = parseInt(levelParam, 10);
+          
+          setQuestionAnimation('fade-out');
+          setTimeout(() => {
+            try {
+              console.log('Calling generateEquation with level:', level);
+              // EquationProblemGenerator 사용
+              const equation = generateEquation(level);
+              console.log('Generated equation:', equation);
+              const newQuestion: QuizQuestion = {
+                question: equation.question,
+                answer: equation.x,
+              };
+              setCurrentQuestion(newQuestion);
+            } catch (e) {
+              console.error("Failed to generate equation, falling back to legacy generator", e);
+              // 실패 시 기존 로직으로 폴백
+              currentTopic = 'equations' as any;
+              const safeCategory = currentCategory || '수학';
+              const newQuestion = generateQuestion(safeCategory, currentTopic, difficulty);
+              setCurrentQuestion(newQuestion);
+            }
+
+            setAnswerInput('');
+            setQuestionAnimation('fade-in');
+
+            if (gameMode === 'survival') {
+              setQuestionKey((prev) => prev + 1);
+              setQuestionStartTime(Date.now());
+            }
+
+            if (useSystemKeyboard && inputRef.current) {
+              setTimeout(() => {
+                inputRef.current?.focus();
+              }, 200);
+            }
+          }, 150);
+          return; // 여기서 함수 종료
         } else if (subParam === 'equations') {
-          // 방정식 서브토픽
+          // 방정식 서브토픽 (레벨 파라미터 없을 때)
           currentTopic = 'equations' as any;
         } else if (subParam === 'calculus') {
           // 미적분 서브토픽
@@ -431,6 +484,10 @@ export function MathQuizPage() {
       setTotalQuestions(prev => prev + 1);
 
       if (isCorrect) {
+        // 진동 피드백
+        if (hapticEnabled) {
+          vibrateMedium();
+        }
         // 서바이벌 모드: 정답을 맞춘 경우 풀이 시간 기록
         if (gameMode === 'survival' && questionStartTime !== null) {
           const solveTime = (Date.now() - questionStartTime) / 1000; // 초 단위
@@ -768,6 +825,7 @@ export function MathQuizPage() {
           isOpen={showTipModal}
           category={categoryParam}
           subTopic={subParam}
+          level={levelParam ? parseInt(levelParam, 10) : null}
           onClose={handleTipClose}
         />
       )}

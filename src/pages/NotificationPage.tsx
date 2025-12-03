@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import { Header } from '../components/Header';
 import { FooterNav } from '../components/FooterNav';
 import { UnderDevelopmentModal } from '../components/UnderDevelopmentModal';
+import { Toast } from '../components/Toast';
 import { APP_CONFIG } from '../config/app';
 import './NotificationPage.css';
 
@@ -28,72 +29,14 @@ export function NotificationPage() {
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [loading, setLoading] = useState(true);
   const [showUnderDevelopment, setShowUnderDevelopment] = useState(true);
-
+  const [showToast, setShowToast] = useState(false);
+  const [toastMessage, setToastMessage] = useState('');
+  
   useEffect(() => {
-    fetchNotifications();
+    // 알림 데이터는 백엔드 서버 없이 사용할 수 없으므로 빈 배열로 설정
+    setLoading(false);
+    setNotifications([]);
   }, []);
-
-  const fetchNotifications = async () => {
-    try {
-      setLoading(true);
-      // TODO: 실제 API 호출로 대체
-      // const response = await fetch(`${APP_CONFIG.API_BASE_URL}/notifications`);
-      // const data = await response.json();
-
-      // 임시 데이터
-      await new Promise(resolve => setTimeout(resolve, 500));
-      const mockNotifications: Notification[] = [
-        {
-          id: '1',
-          type: 'record_broken',
-          title: '누군가 내 기록을 깼어요!',
-          message: '수학천재님이 수학 - 사칙연산 Level 1의 최고 기록을 갱신했습니다.',
-          timestamp: new Date(Date.now() - 2 * 60 * 60 * 1000), // 2시간 전
-          read: false,
-          category: 'math',
-          subCategory: 'arithmetic',
-          level: 1,
-          challengerName: '수학천재',
-        },
-        {
-          id: '2',
-          type: 'challenge',
-          title: '오늘의 챌린지가 도착했습니다',
-          message: '사칙연산 스피드런! 챌린지를 완료하고 보상을 받아보세요.',
-          timestamp: new Date(Date.now() - 5 * 60 * 60 * 1000), // 5시간 전
-          read: false,
-          challengeId: APP_CONFIG.TODAY_CHALLENGE.id,
-        },
-        {
-          id: '3',
-          type: 'record_broken',
-          title: '누군가 내 기록을 깼어요!',
-          message: '퀴즈킹님이 언어 - 히라가나 Level 3의 최고 기록을 갱신했습니다.',
-          timestamp: new Date(Date.now() - 24 * 60 * 60 * 1000), // 1일 전
-          read: true,
-          category: 'language',
-          subCategory: 'hiragana',
-          level: 3,
-          challengerName: '퀴즈킹',
-        },
-        {
-          id: '4',
-          type: 'challenge',
-          title: '오늘의 챌린지가 도착했습니다',
-          message: '새로운 챌린지가 준비되었습니다. 도전해보세요!',
-          timestamp: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000), // 2일 전
-          read: true,
-          challengeId: 'challenge_002',
-        },
-      ];
-
-      setNotifications(mockNotifications);
-      setLoading(false);
-    } catch (error) {
-      console.error('Failed to fetch notifications:', error);
-      setLoading(false);
-    }
-  };
 
   const handleNotificationClick = (notification: Notification) => {
     // 알림 읽음 처리
@@ -206,6 +149,12 @@ export function NotificationPage() {
         </main>
         <FooterNav />
       </div>
+      <Toast
+        message={toastMessage}
+        isOpen={showToast}
+        onClose={() => setShowToast(false)}
+        icon="⚠️"
+      />
     </>
   );
 }

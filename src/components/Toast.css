@@ -1,0 +1,73 @@
+.toast {
+  position: fixed;
+  bottom: max(calc(64px + clamp(20px, 4vh, 32px)), calc(64px + env(safe-area-inset-bottom)));
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 10001;
+  animation: toastSlideUp 0.3s ease-out;
+  pointer-events: none;
+}
+
+.toast.closing {
+  animation: toastSlideDown 0.3s ease-out forwards;
+}
+
+.toast-content {
+  background-color: rgba(28, 28, 30, 0.95);
+  backdrop-filter: blur(10px);
+  border-radius: 16px;
+  padding: 12px 20px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
+  /* 화면 기준: 홈페이지 콘텐츠 영역(400px) 또는 화면 전체 중 작은 값, 양쪽 여백 8px */
+  max-width: min(400px, calc(100vw - 16px));
+  width: fit-content;
+  pointer-events: auto;
+}
+
+.toast-icon {
+  font-size: 20px;
+  line-height: 1;
+  flex-shrink: 0;
+}
+
+.toast-text {
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: #ffffff;
+  line-height: 1.4;
+  text-align: center;
+  word-break: keep-all;
+  overflow-wrap: break-word;
+  /* 기본적으로 한 줄로 표시 */
+  white-space: nowrap;
+}
+
+/* 텍스트가 화면을 뚫을 때만 줄바꿈 허용 */
+.toast-text.wrap {
+  white-space: normal;
+}
+
+@keyframes toastSlideUp {
+  from {
+    opacity: 0;
+    transform: translateX(-50%) translateY(100%);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+  }
+}
+
+@keyframes toastSlideDown {
+  from {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+  }
+  to {
+    opacity: 0;
+    transform: translateX(-50%) translateY(100%);
+  }
+}

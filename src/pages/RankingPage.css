@@ -286,3 +286,14 @@
   opacity: 0.5;
 }
 
+.ranking-empty {
+  text-align: center;
+  padding: 40px 20px;
+  color: #aaa;
+}
+
+.ranking-empty p {
+  margin: 0;
+  font-size: 1rem;
+}
+

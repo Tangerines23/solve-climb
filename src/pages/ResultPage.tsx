@@ -3,7 +3,7 @@ import React, { useEffect, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useQuizStore } from '../stores/useQuizStore';
 import { GameMode, useLevelProgressStore } from '../stores/useLevelProgressStore';
-import { submitScore } from '../utils/gameCenter';
+import { submitScoreToLeaderboard } from '../utils/tossGameCenter';
 import { APP_CONFIG } from '../config/app';
 import { SCORE_PER_CORRECT } from '../constants/game';
 import './ResultPage.css';
@@ -38,7 +38,7 @@ export function ResultPage() {
   const finalScore = scoreParam ? parseInt(scoreParam, 10) : score;
   const total = totalParam ? parseInt(totalParam, 10) : 0;
   
-  // 맞춘 개수 계산 (점수를 SCORE_PER_CORRECT로 나눔)
+  // 맞춘 개수 계산 (점수를 SCORE_PER_CORRECT로 나눔) - 보조 텍스트용
   const correctCount = Math.floor(finalScore / SCORE_PER_CORRECT);
   
   // 서바이벌 모드: 평균 풀이 시간 (초)
@@ -108,9 +108,14 @@ export function ResultPage() {
       updateBestScore(categoryParam, subParam, level, mode, finalScore);
     }
 
-    // 리더보드 점수 제출
-    if (finalScore > 0 && !scoreSubmitted) {
-      submitScore(finalScore).then(setScoreSubmitted);
+    // 리더보드 점수 제출 (레벨 클리어 또는 최고 기록 경신 시)
+    if (finalScore > 0 && !scoreSubmitted && shouldClearLevel) {
+      submitScoreToLeaderboard(finalScore)
+        .then(setScoreSubmitted)
+        .catch((error) => {
+          // 에러가 발생해도 게임 진행에 방해되지 않도록 조용히 처리
+          console.error('점수 제출 실패:', error);
+        });
     }
   }, [categoryParam, subParam, level, mode, modeParam, finalScore, scoreSubmitted, accuracy, correctCount, clearLevel, updateBestScore]);
 
@@ -179,43 +184,53 @@ export function ResultPage() {
           </div>
         )}
 
-        {/* 최종 점수 (맞춘 개수) */}
+        {/* 최종 점수 (미터 단위) - 공통 */}
         <div className="score-section">
-          <p className="score-value">{correctCount.toLocaleString()} 개</p>
-        </div>
-
-        {/* 통계 섹션 (타임어택/서바이벌 공통) */}
-        <div className="game-stats">
-          {/* 타임 어택 모드: 정확도 */}
-          {mode === 'time-attack' && total > 0 && (
-            <div className="stat-badge">
-              정확도 {accuracy}%
-            </div>
-          )}
-          
-          {/* 서바이벌 모드: 평균 풀이 시간 */}
-          {mode === 'survival' && averageTime !== null && (
-            <div className="stat-badge">
-              평균 풀이 시간: {averageTime.toFixed(2)}초
-            </div>
-          )}
-          
-          {/* 총 시도 횟수 (타임어택 모드) */}
-          {mode === 'time-attack' && total > 0 && (
-            <div className="stat-attempts">
-              {correctCount} / {total}
-            </div>
+          <p className="score-value">{finalScore.toLocaleString()}m</p>
+          {correctCount > 0 && (
+            <p className="score-subtext">총 {correctCount}문제를 맞췄어요</p>
           )}
         </div>
 
-        {/* 신기록 배지 */}
+        {/* ========== 타임어택 모드 통계 ========== */}
+        {mode === 'time-attack' && (
+          <div className="game-stats">
+            {/* 정확도 */}
+            {total > 0 && (
+              <div className="stat-badge">
+                정확도 {accuracy}%
+              </div>
+            )}
+            
+            {/* 총 시도 횟수 (맞춘 문제 / 전체 문제) */}
+            {total > 0 && (
+              <div className="stat-attempts">
+                {correctCount} / {total}
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* ========== 서바이벌 모드 통계 ========== */}
+        {mode === 'survival' && (
+          <div className="game-stats">
+            {/* 평균 풀이 시간 */}
+            {averageTime !== null && (
+              <div className="stat-badge">
+                평균 풀이 시간: {averageTime.toFixed(2)}초
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* 신기록 배지 - 공통 */}
         {isNewRecord && (
           <div className="new-record-badge">
             🎉 최고 기록 달성!
           </div>
         )}
 
-        {/* 오답 노트 (서바이벌 전용) */}
+        {/* ========== 서바이벌 모드: 오답 노트 ========== */}
         {mode === 'survival' && wrongAnswers.length > 0 && (
           <div className="wrong-answers-section">
             <h3 className="wrong-answers-title">오답 노트</h3>

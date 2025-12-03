@@ -1,0 +1,85 @@
+.unknown-mountain-card {
+  background-color: #1C1C1E;
+  border-radius: 16px;
+  padding: 16px;
+  border: 1px solid #2c2c2c;
+  cursor: pointer;
+  transition: transform 0.2s, border-color 0.2s;
+  opacity: 0.7;
+}
+
+.unknown-mountain-card:hover {
+  border-color: #3c3c3c;
+  opacity: 0.9;
+}
+
+.unknown-mountain-card.pressed {
+  transform: scale(0.98);
+}
+
+.unknown-mountain-content {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.unknown-mountain-icon-wrapper {
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: #2c2c2c;
+  border-radius: 8px;
+  flex-shrink: 0;
+}
+
+.unknown-mountain-icon {
+  width: 32px;
+  height: 32px;
+}
+
+.unknown-mountain-text {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  flex: 1;
+}
+
+.unknown-mountain-title {
+  font-size: 1rem;
+  font-weight: 600;
+  color: #ffffff;
+  margin: 0;
+  background: linear-gradient(to bottom, #ffffff 0%, #ffffff 60%, rgba(255, 255, 255, 0.3) 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.unknown-mountain-description {
+  font-size: 0.875rem;
+  color: #8e94a0;
+  margin: 0;
+}
+
+.unknown-mountain-button {
+  background: transparent;
+  border: 1px solid #3c3c3c;
+  border-radius: 8px;
+  padding: 6px 12px;
+  font-size: 0.8125rem;
+  color: #8e94a0;
+  font-family: inherit;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+  margin-top: 4px;
+  width: fit-content;
+}
+
+.unknown-mountain-button:hover {
+  border-color: #4c4c4c;
+  color: #aaa;
+}
+

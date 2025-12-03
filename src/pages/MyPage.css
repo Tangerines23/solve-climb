@@ -1,10 +1,12 @@
+/* 토스 디자인 시스템 스타일 - MyPage */
+
 .my-page {
   position: fixed;
   top: 0;
   left: 0;
   right: 0;
   bottom: 0;
-  background-color: #121212;
+  background-color: #ffffff;
   overflow-y: auto;
   overflow-x: hidden;
   -webkit-overflow-scrolling: touch;
@@ -16,239 +18,394 @@
   padding-top: 56px;
   padding-bottom: 80px;
   min-height: calc(100vh - 56px);
+  background-color: #f2f4f6;
 }
 
 .my-page-content {
   max-width: 400px;
   margin: 0 auto;
+  padding: 0;
+}
+
+/* Header: Profile & Summary */
+.my-page-header {
+  background: linear-gradient(135deg, #3182f6 0%, #2563eb 100%);
+  padding: 40px 20px 32px;
+  text-align: center;
+  color: #ffffff;
+}
+
+.my-page-profile-icon {
+  font-size: 64px;
+  margin-bottom: 16px;
+  line-height: 1;
+}
+
+.my-page-header-title {
+  font-size: 24px;
+  font-weight: 600;
+  line-height: 1.5;
+  margin: 0;
+  color: #ffffff;
+}
+
+.my-page-header-highlight {
+  font-size: 32px;
+  font-weight: 700;
+  color: #ffffff;
+}
+
+/* Stats Grid */
+.my-page-stats-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 12px;
   padding: 20px;
 }
 
-.welcome-card {
-  background-color: #1e1e1e;
+.my-page-stat-card {
+  background-color: #ffffff;
   border-radius: 16px;
-  padding: 32px 24px;
-  margin-bottom: 20px;
+  padding: 20px;
   text-align: center;
-  border: 1px solid #2c2c2c;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
 }
 
-.welcome-title {
-  font-size: 1.5rem;
-  font-weight: bold;
-  color: #ffffff;
-  margin: 0 0 8px 0;
+.my-page-stat-card-clickable {
+  cursor: pointer;
+  transition: all 0.2s ease;
 }
 
-.welcome-subtitle {
-  font-size: 0.875rem;
-  color: #aaa;
-  margin: 0;
+.my-page-stat-card-clickable:hover {
+  background-color: #f8f9fa;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+  transform: translateY(-2px);
 }
 
-.profile-info-card {
-  background-color: #1e1e1e;
-  border-radius: 16px;
-  padding: 24px;
-  margin-bottom: 20px;
-  border: 1px solid #2c2c2c;
+.my-page-stat-card-clickable:active {
+  transform: translateY(0);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
 }
 
-.profile-info-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 20px;
-}
-
-.profile-info-title {
-  font-size: 1.125rem;
-  font-weight: bold;
-  color: #ffffff;
-  margin: 0;
-}
-
-.edit-button {
-  background: none;
-  border: none;
-  color: #3182f6;
-  font-size: 0.875rem;
+.my-page-stat-label {
+  font-size: 13px;
+  color: #8e94a0;
+  margin-bottom: 8px;
   font-weight: 500;
-  cursor: pointer;
-  padding: 4px 8px;
 }
 
-.edit-button:hover {
-  opacity: 0.8;
+.my-page-stat-value {
+  font-size: 20px;
+  font-weight: 700;
+  color: #191f28;
+  line-height: 1.4;
 }
 
-.profile-info-content {
-  display: flex;
-  align-items: center;
-  gap: 16px;
+/* Settings List */
+.my-page-settings {
+  padding: 0 20px 20px;
 }
 
-.profile-avatar-large {
-  width: 64px;
-  height: 64px;
-  border-radius: 50%;
-  overflow: hidden;
-  background-color: #2c2c2c;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
+.my-page-settings-section {
+  margin-bottom: 32px;
 }
 
-.profile-avatar-large img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
+.my-page-settings-section:last-child {
+  margin-bottom: 0;
 }
 
-.avatar-placeholder-large {
-  font-size: 2rem;
-  font-weight: bold;
-  color: #ffffff;
+.my-page-settings-section-title {
+  font-size: 13px;
+  font-weight: 600;
+  color: #8e94a0;
+  margin: 0 0 12px 0;
+  padding: 0 4px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
 }
 
-.profile-details {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-  flex: 1;
-}
-
-.profile-nickname {
-  font-size: 1.125rem;
-  font-weight: bold;
-  color: #ffffff;
-  margin: 0;
-}
-
-.profile-joined {
-  font-size: 0.875rem;
-  color: #aaa;
-  margin: 0;
-}
-
-.toss-login-card {
-  background-color: #1e1e1e;
-  border-radius: 16px;
-  padding: 24px;
-  margin-bottom: 20px;
-  border: 1px solid #2c2c2c;
-}
-
-.toss-login-button {
-  width: 100%;
-  padding: 14px 16px;
-  font-size: 1rem;
-  font-weight: bold;
-  font-family: inherit;
-  border: none;
+.my-page-settings-list {
+  background-color: #ffffff;
   border-radius: 12px;
-  cursor: pointer;
-  transition: all 0.2s;
-  background-color: #3182f6;
-  color: #ffffff;
+  overflow: hidden;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.my-page-settings-item {
   display: flex;
   align-items: center;
-  justify-content: center;
+  justify-content: space-between;
+  padding: 16px 20px;
+  border-bottom: 1px solid #f2f4f6;
+  background-color: #ffffff;
+  transition: background-color 0.2s;
 }
 
-.toss-login-button:hover:not(:disabled) {
-  background-color: #2563eb;
+.my-page-settings-item:last-child {
+  border-bottom: none;
 }
 
-.toss-login-button:disabled {
-  opacity: 0.6;
+.my-page-settings-item-button {
+  width: 100%;
+  border: none;
+  cursor: pointer;
+  font-family: inherit;
+  text-align: left;
+}
+
+.my-page-settings-item-button:hover {
+  background-color: #f8f9fa;
+}
+
+.my-page-settings-item-button:active {
+  background-color: #f2f4f6;
+}
+
+.my-page-settings-item-button:disabled {
+  opacity: 0.5;
   cursor: not-allowed;
 }
 
-.toss-login-error {
-  margin-top: 12px;
-  font-size: 0.875rem;
-  color: #f04452;
+.my-page-settings-item-content {
+  display: flex;
+  align-items: center;
+  flex: 1;
+}
+
+.my-page-settings-item-label {
+  font-size: 16px;
+  font-weight: 500;
+  color: #191f28;
+}
+
+.my-page-settings-item-value {
+  font-size: 16px;
+  color: #8e94a0;
+  font-weight: 400;
+}
+
+/* Toggle Switch */
+.my-page-settings-toggle {
+  position: relative;
+  display: inline-block;
+  width: 48px;
+  height: 28px;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+.my-page-settings-toggle input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.my-page-settings-toggle-slider {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: #e5e8eb;
+  border-radius: 28px;
+  transition: all 0.3s;
+}
+
+.my-page-settings-toggle-slider:before {
+  position: absolute;
+  content: "";
+  height: 20px;
+  width: 20px;
+  left: 4px;
+  bottom: 4px;
+  background-color: #ffffff;
+  border-radius: 50%;
+  transition: all 0.3s;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.my-page-settings-toggle input:checked + .my-page-settings-toggle-slider {
+  background-color: #3182f6;
+}
+
+.my-page-settings-toggle input:checked + .my-page-settings-toggle-slider:before {
+  transform: translateX(20px);
+}
+
+.my-page-settings-toggle input:focus + .my-page-settings-toggle-slider {
+  box-shadow: 0 0 0 3px rgba(49, 130, 246, 0.2);
+}
+
+/* Arrow Icon */
+.my-page-settings-item-arrow {
+  color: #d1d6db;
+  flex-shrink: 0;
+  margin-left: 12px;
+}
+
+.my-page-settings-item-button:hover .my-page-settings-item-arrow {
+  color: #8e94a0;
+}
+
+/* Error Message */
+.my-page-error {
+  padding: 20px;
   text-align: center;
+  color: #ef4444;
+  font-size: 14px;
 }
 
-.stats-card {
-  background-color: #1e1e1e;
-  border-radius: 16px;
-  padding: 24px;
-  margin-bottom: 20px;
-  border: 1px solid #2c2c2c;
-}
-
-.stats-title {
-  font-size: 1.125rem;
-  font-weight: bold;
-  color: #ffffff;
-  margin: 0 0 20px 0;
-}
-
-.stats-grid {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 16px;
-}
-
-.stat-item {
+/* Guest View (비로그인 상태) */
+.my-page-guest-view {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 8px;
-  padding: 16px;
-  background-color: #2c2c2c;
-  border-radius: 12px;
+  justify-content: center;
+  min-height: calc(100vh - 136px); /* Header + Footer 높이 제외 */
+  padding: 40px 20px;
+  text-align: center;
 }
 
-.stat-value {
-  font-size: 1.5rem;
-  font-weight: bold;
+.my-page-guest-icon {
+  font-size: 80px;
+  margin-bottom: 24px;
+  line-height: 1;
+}
+
+.my-page-guest-title {
+  font-size: 24px;
+  font-weight: 600;
+  line-height: 1.6;
+  margin: 0 0 48px 0;
+  color: #191f28;
+}
+
+.my-page-guest-highlight {
+  font-weight: 700;
   color: #3182f6;
 }
 
-.stat-label {
-  font-size: 0.875rem;
-  color: #aaa;
-}
-
-.action-buttons {
+.my-page-guest-buttons {
+  width: 100%;
+  max-width: 400px;
   display: flex;
   flex-direction: column;
   gap: 12px;
 }
 
-.action-button {
+.my-page-guest-login-button {
   width: 100%;
-  padding: 14px 16px;
-  font-size: 1rem;
-  font-weight: bold;
+  height: 56px;
+  background-color: #3182f6;
+  color: #ffffff;
+  font-size: 16px;
+  font-weight: 600;
   font-family: inherit;
   border: none;
-  border-radius: 12px;
+  border-radius: 16px;
   cursor: pointer;
+  transition: all 0.2s;
+  box-shadow: 0 2px 8px rgba(49, 130, 246, 0.3);
+}
+
+.my-page-guest-login-button:hover {
+  background-color: #2563eb;
+  box-shadow: 0 4px 12px rgba(49, 130, 246, 0.4);
+}
+
+.my-page-guest-login-button:active {
+  background-color: #1d4ed8;
+  transform: scale(0.98);
+}
+
+.my-page-guest-anonymous-link {
+  background: none;
+  border: none;
+  color: #8e94a0;
+  font-size: 14px;
+  font-weight: 400;
+  font-family: inherit;
+  cursor: pointer;
+  padding: 8px 0;
+  text-decoration: underline;
+  text-decoration-color: transparent;
   transition: all 0.2s;
 }
 
-.action-button.primary {
-  background-color: #3182f6;
-  color: #ffffff;
+.my-page-guest-anonymous-link:hover {
+  color: #636870;
+  text-decoration-color: #636870;
 }
 
-.action-button.primary:hover {
-  background-color: #2563eb;
+.my-page-guest-anonymous-link:active {
+  color: #4a4e57;
 }
 
-.action-button.secondary {
-  background-color: #2c2c2c;
-  color: #ffffff;
-  border: 1px solid #3c3c3c;
+/* 로그아웃 버튼 스타일 */
+.my-page-settings-item-logout {
+  border-top: 1px solid #f2f4f6;
+  margin-top: 8px;
 }
 
-.action-button.secondary:hover {
-  background-color: #3c3c3c;
+.my-page-settings-item-logout-label {
+  color: #ef4444;
+  font-weight: 600;
 }
 
+.my-page-settings-item-logout:hover {
+  background-color: #fef2f2;
+}
+
+.my-page-settings-item-logout:active {
+  background-color: #fee2e2;
+}
+
+/* 다크 모드 지원 (선택 사항) */
+@media (prefers-color-scheme: dark) {
+  .my-page {
+    background-color: #121212;
+  }
+
+  .my-page-main {
+    background-color: #1e1e1e;
+  }
+
+  .my-page-stat-card {
+    background-color: #2c2c2c;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+  }
+
+  .my-page-stat-value {
+    color: #ffffff;
+  }
+
+  .my-page-settings-list {
+    background-color: #2c2c2c;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+  }
+
+  .my-page-settings-item {
+    background-color: #2c2c2c;
+    border-bottom-color: #3c3c3c;
+  }
+
+  .my-page-settings-item-button:hover {
+    background-color: #3c3c3c;
+  }
+
+  .my-page-settings-item-button:active {
+    background-color: #4c4c4c;
+  }
+
+  .my-page-settings-item-label {
+    color: #ffffff;
+  }
+
+  .my-page-settings-item-value {
+    color: #aaa;
+  }
+
+  .my-page-settings-section-title {
+    color: #aaa;
+  }
+}

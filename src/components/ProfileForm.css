@@ -4,6 +4,25 @@
   padding: 32px 24px;
   max-width: 400px;
   margin: 0 auto;
+  position: relative;
+}
+
+.profile-form-back-button {
+  position: absolute;
+  top: 24px;
+  left: 24px;
+  background: none;
+  border: none;
+  color: #3182f6;
+  font-size: 0.875rem;
+  font-weight: 500;
+  cursor: pointer;
+  padding: 4px 8px;
+  transition: opacity 0.2s;
+}
+
+.profile-form-back-button:hover {
+  opacity: 0.8;
 }
 
 .profile-form-title {

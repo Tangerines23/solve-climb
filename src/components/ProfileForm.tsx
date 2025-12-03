@@ -1,15 +1,18 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { UserProfile, useProfileStore } from '../stores/useProfileStore';
 // import { openGoogleLogin, isAdminEmail } from '../utils/googleAuth';
 import './ProfileForm.css';
 
 interface ProfileFormProps {
   onComplete: () => void;
+  showBackButton?: boolean;
 }
 
-export function ProfileForm({ onComplete }: ProfileFormProps) {
-  const { setProfile, setIsAdmin } = useProfileStore();
-  const [nickname, setNickname] = useState('');
+export function ProfileForm({ onComplete, showBackButton = false }: ProfileFormProps) {
+  const navigate = useNavigate();
+  const { setProfile, setIsAdmin, profile } = useProfileStore();
+  const [nickname, setNickname] = useState(profile?.nickname || '');
   const [error, setError] = useState('');
   // const [isGoogleLoading, setIsGoogleLoading] = useState(false);
   // const [googleUser, setGoogleUser] = useState<{ email: string; name: string; picture: string } | null>(null);
@@ -76,16 +79,18 @@ export function ProfileForm({ onComplete }: ProfileFormProps) {
     // 닉네임이 'admin'이면 어드민으로 설정
     const isAdmin = nickname.toLowerCase().trim() === 'admin';
 
-    const profile: UserProfile = {
+    const existingProfile = profile;
+    const profileData: UserProfile = {
+      profileId: existingProfile?.profileId || '', // 기존 프로필이 있으면 ID 유지, 없으면 빈 문자열 (스토어에서 생성)
       nickname: nickname.trim(),
       // email: googleUser?.email,
       // avatar: googleUser?.picture,
       // userId: googleUser?.email,
-      createdAt: new Date().toISOString(),
+      createdAt: existingProfile?.createdAt || new Date().toISOString(),
       isAdmin: isAdmin,
     };
 
-    setProfile(profile);
+    setProfile(profileData);
     if (isAdmin) {
       setIsAdmin(true);
     }
@@ -94,11 +99,18 @@ export function ProfileForm({ onComplete }: ProfileFormProps) {
 
   return (
     <div className="profile-form-container">
-      <h2 className="profile-form-title">프로필 만들기</h2>
+      {showBackButton && (
+        <button className="profile-form-back-button" onClick={() => navigate(-1)}>
+          &lt; 뒤로가기
+        </button>
+      )}
+      <h2 className="profile-form-title">
+        {profile ? '프로필 수정' : '프로필 만들기'}
+      </h2>
       <p className="profile-form-description">
-        게임을 시작하기 전에 프로필을 만들어주세요.
-        <br />
-        한 번만 설정하면 됩니다!
+        {profile
+          ? '프로필 정보를 수정할 수 있습니다.'
+          : '게임을 시작하기 전에 프로필을 만들어주세요.\n한 번만 설정하면 됩니다!'}
       </p>
       
       <form onSubmit={handleSubmit} className="profile-form">
@@ -177,7 +189,7 @@ export function ProfileForm({ onComplete }: ProfileFormProps) {
         )} */}
 
         <button type="submit" className="profile-form-submit">
-          시작하기
+          {profile ? '저장하기' : '시작하기'}
         </button>
       </form>
     </div>

@@ -44,6 +44,8 @@ interface LevelProgressState {
   };
   // 서버 데이터와 동기화
   syncProgress: () => Promise<void>;
+  // 모든 레벨 진행도 및 기록 리셋
+  resetProgress: () => Promise<void>;
 }
 
 const getDefaultLevelRecord = (level: number): LevelRecord => ({
@@ -273,6 +275,27 @@ export const useLevelProgressStore = create<LevelProgressState>()(
           }
         } catch (error) {
           console.error('Failed to sync progress from Supabase:', error);
+        }
+      },
+
+      resetProgress: async () => {
+        // 1. Local State 리셋
+        set({ progress: {} });
+
+        // 2. Supabase에서도 삭제
+        try {
+          const { data: { user } } = await supabase.auth.getUser();
+          if (!user) return;
+
+          const { error } = await supabase
+            .from('game_records')
+            .delete()
+            .eq('user_id', user.id);
+
+          if (error) throw error;
+        } catch (error) {
+          console.error('Failed to reset progress in Supabase:', error);
+          // 에러가 발생해도 로컬은 이미 리셋되었으므로 계속 진행
         }
       },
     }),

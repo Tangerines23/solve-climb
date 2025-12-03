@@ -1,83 +1,369 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Header } from '../components/Header';
 import { FooterNav } from '../components/FooterNav';
 import { ProfileForm } from '../components/ProfileForm';
-import { DeleteConfirmModal } from '../components/DeleteConfirmModal';
+import { DataResetConfirmModal } from '../components/DataResetConfirmModal';
+import { Toast } from '../components/Toast';
+import { AlertModal } from '../components/AlertModal';
 import { useProfileStore } from '../stores/useProfileStore';
-import { APP_CONFIG } from '../config/app';
+import { useSettingsStore } from '../stores/useSettingsStore';
+import { useMyPageStats } from '../hooks/useMyPageStats';
+import { resetAllData } from '../utils/dataReset';
+import { vibrateShort } from '../utils/haptic';
+import { supabase } from '../utils/supabaseClient';
 import { loginWithToss } from '../utils/tossAuth';
+import { APP_CONFIG } from '../config/app';
 import './MyPage.css';
 
 export function MyPage() {
   const navigate = useNavigate();
-  const { profile, isProfileComplete, clearProfile, isAdmin, setProfile } = useProfileStore();
+  const { profile, isProfileComplete, clearProfile, setProfile, setIsAdmin } = useProfileStore();
+  const { hapticEnabled, setHapticEnabled } = useSettingsStore();
+  const { stats, session, loading: statsLoading, error: statsError, refetch } = useMyPageStats();
+  
   const [showProfileForm, setShowProfileForm] = useState(!isProfileComplete);
-  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
-  const [isTossLoginLoading, setIsTossLoginLoading] = useState(false);
-  const [tossLoginError, setTossLoginError] = useState('');
-
-  useEffect(() => {
-    if (!isProfileComplete) {
-      setShowProfileForm(true);
-    }
-  }, [isProfileComplete]);
+  const [showDataResetConfirm, setShowDataResetConfirm] = useState(false);
+  const [showToast, setShowToast] = useState(false);
+  const [toastMessage, setToastMessage] = useState('');
+  const [showAlert, setShowAlert] = useState(false);
+  const [alertMessage, setAlertMessage] = useState('');
+  const [isResetting, setIsResetting] = useState(false);
+  const [loginError, setLoginError] = useState(false);
+  const adminInputRef = useRef<string>('');
+  const adminInputTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   const handleProfileComplete = () => {
     setShowProfileForm(false);
+    refetch(); // 프로필 완성 후 통계 다시 불러오기
   };
 
-  const handleEditProfile = () => {
-    setShowProfileForm(true);
+  const handleToggleHaptic = () => {
+    const newValue = !hapticEnabled;
+    setHapticEnabled(newValue);
+    if (newValue) {
+      vibrateShort();
+    }
+    setToastMessage(newValue ? '진동이 켜졌습니다' : '진동이 꺼졌습니다');
+    setShowToast(true);
   };
 
-  const handleLogout = () => {
-    setShowDeleteConfirm(true);
+  const handleDataReset = () => {
+    setShowDataResetConfirm(true);
   };
 
-  const handleConfirmDelete = () => {
-    clearProfile();
-    setShowProfileForm(true);
-    setShowDeleteConfirm(false);
-    // 모달이 닫히면 내부 상태가 자동으로 초기화됨
-  };
-
-  const handleCancelDelete = () => {
-    setShowDeleteConfirm(false);
-  };
-
-  const handleGoToRanking = () => {
-    navigate(APP_CONFIG.ROUTES.RANKING);
-  };
-
-  const handleTossLogin = async () => {
+  const handleConfirmDataReset = async () => {
     try {
-      setIsTossLoginLoading(true);
-      setTossLoginError('');
-      
-      const userInfo = await loginWithToss();
-      
-      // 프로필 업데이트 (토스 사용자 정보 반영)
-      if (profile) {
-        const updatedProfile = {
-          ...profile,
-          userId: userInfo.userKey.toString(),
-          // name이나 phone 정보가 있으면 업데이트
-        };
-        setProfile(updatedProfile);
-      }
-      
-      setIsTossLoginLoading(false);
+      setIsResetting(true);
+      await resetAllData();
+      setShowDataResetConfirm(false);
+      setToastMessage('모든 데이터가 초기화되었습니다.');
+      setShowToast(true);
+      setShowProfileForm(true);
+      refetch(); // 데이터 초기화 후 통계 다시 불러오기
     } catch (error) {
-      console.error('토스 로그인 오류:', error);
-      setTossLoginError(
-        error instanceof Error 
-          ? error.message 
-          : '토스 로그인에 실패했습니다. 토스 앱 환경에서만 사용할 수 있습니다.'
-      );
-      setIsTossLoginLoading(false);
+      console.error('Failed to reset data:', error);
+      setToastMessage('데이터 초기화 중 오류가 발생했습니다.');
+      setShowToast(true);
+    } finally {
+      setIsResetting(false);
     }
   };
+
+  const handleCancelDataReset = () => {
+    setShowDataResetConfirm(false);
+  };
+
+  const handleSendFeedback = () => {
+    const subject = encodeURIComponent('[Solve Climb] 의견 보내기');
+    const body = encodeURIComponent('안녕하세요,\n\n의견을 남겨주세요:\n\n');
+    window.location.href = `mailto:support@solveclimb.com?subject=${subject}&body=${body}`;
+  };
+
+  // Admin 로그인 함수 (로컬 세션만 사용)
+  const handleAdminLogin = useCallback(async () => {
+    try {
+      // Supabase 인증 없이 로컬에서만 세션 관리
+      // Admin 프로필 설정
+      const adminProfile = {
+        profileId: `admin_${Date.now()}`,
+        nickname: 'admin',
+        createdAt: new Date().toISOString(),
+        isAdmin: true,
+      };
+
+      setProfile(adminProfile);
+      setIsAdmin(true);
+
+      // 로컬 세션 저장 (Supabase 인증 없이)
+      try {
+        localStorage.setItem('solve-climb-local-session', JSON.stringify({
+          userId: 'admin',
+          isAdmin: true,
+          loginTime: new Date().toISOString(),
+        }));
+      } catch (e) {
+        console.warn('Failed to save local session:', e);
+      }
+
+      // 로그인 성공 후 통계 다시 불러오기
+      await refetch();
+      setToastMessage('Admin으로 로그인되었습니다.');
+      setShowToast(true);
+      setLoginError(false);
+      adminInputRef.current = '';
+    } catch (error) {
+      console.error('Admin login error:', error);
+      setToastMessage(`Admin 로그인 실패: ${error instanceof Error ? error.message : '알 수 없는 오류'}`);
+      setShowToast(true);
+    }
+  }, [setProfile, setIsAdmin, refetch]);
+
+  // 토스 로그인 함수
+  const handleLogin = async () => {
+    try {
+      setLoginError(false);
+      
+      // 토스 로그인 시도
+      const tossUser = await loginWithToss();
+      
+      // 토스 로그인 성공
+      const userProfile = {
+        profileId: `toss_${tossUser.userKey}`,
+        nickname: tossUser.name || '토스 사용자',
+        userId: tossUser.userKey.toString(),
+        createdAt: new Date().toISOString(),
+        isAdmin: false,
+      };
+
+      setProfile(userProfile);
+
+      // 로컬 세션 저장
+      try {
+        localStorage.setItem('solve-climb-local-session', JSON.stringify({
+          userId: userProfile.profileId,
+          isAdmin: false,
+          loginTime: new Date().toISOString(),
+          loginType: 'toss',
+        }));
+      } catch (e) {
+        console.warn('Failed to save local session:', e);
+      }
+      
+      // 로그인 성공 후 통계 다시 불러오기
+      await refetch();
+      setToastMessage('토스로 로그인되었습니다.');
+      setShowToast(true);
+    } catch (error) {
+      console.error('Login error:', error);
+      setToastMessage('토스 로그인 중 오류가 발생했습니다.');
+      setShowToast(true);
+      setLoginError(true);
+    }
+  };
+
+  // 익명 로그인 함수 (로컬 세션만 사용)
+  const handleOpenLeaderboard = async () => {
+    const { openLeaderboard } = await import('../utils/tossGameCenter');
+    const result = await openLeaderboard((message) => {
+      // 에러 메시지를 AlertModal로 표시
+      setAlertMessage(message);
+      setShowAlert(true);
+    });
+    
+    // 결과가 실패이고 메시지가 없으면 기본 메시지 표시
+    if (!result.success && result.message) {
+      setAlertMessage(result.message);
+      setShowAlert(true);
+    } else if (!result.success) {
+      setAlertMessage('리더보드를 열 수 없습니다.');
+      setShowAlert(true);
+    }
+  };
+
+  const handleAnonymousLogin = async () => {
+    try {
+      setLoginError(false);
+      
+      // 로컬 세션만 사용 (Supabase 인증 없이)
+      const userProfile = {
+        profileId: `user_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+        nickname: '게이머',
+        createdAt: new Date().toISOString(),
+        isAdmin: false,
+      };
+
+      setProfile(userProfile);
+
+      // 로컬 세션 저장
+      try {
+        localStorage.setItem('solve-climb-local-session', JSON.stringify({
+          userId: userProfile.profileId,
+          isAdmin: false,
+          loginTime: new Date().toISOString(),
+          loginType: 'anonymous',
+        }));
+      } catch (e) {
+        console.warn('Failed to save local session:', e);
+      }
+      
+      // 로그인 성공 후 통계 다시 불러오기
+      await refetch();
+      setToastMessage('익명으로 로그인되었습니다.');
+      setShowToast(true);
+    } catch (error) {
+      console.error('Anonymous login error:', error);
+      setToastMessage('익명 로그인 중 오류가 발생했습니다.');
+      setShowToast(true);
+      setLoginError(true);
+    }
+  };
+
+  // 키보드 이벤트 리스너: admin 입력 감지 (로그인 오류 시 또는 Guest View에서)
+  useEffect(() => {
+    // 로그인 오류가 없고 세션이 있으면 리스너 등록 안 함
+    if (!loginError && session) {
+      adminInputRef.current = '';
+      return;
+    }
+
+    const handleKeyDown = async (event: KeyboardEvent) => {
+      // 입력 필드에 포커스가 있으면 무시 (실제 입력 중일 때)
+      const target = event.target as HTMLElement;
+      if (target && (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA' || target.isContentEditable)) {
+        return;
+      }
+
+      // 모바일 키보드가 아닌 물리적 키보드만 감지
+      // event.isComposing은 IME 입력 중인지 확인
+      if (event.isComposing || event.key === 'Process') {
+        return;
+      }
+
+      // 알파벳만 처리
+      if (event.key.length === 1 && /[a-zA-Z]/.test(event.key)) {
+        const char = event.key.toLowerCase();
+        
+        // 기존 입력 타임아웃 클리어
+        if (adminInputTimeoutRef.current) {
+          clearTimeout(adminInputTimeoutRef.current);
+        }
+
+        // "admin" 문자열과 비교
+        const expectedChar = 'admin'[adminInputRef.current.length];
+        
+        if (char === expectedChar) {
+          adminInputRef.current += char;
+          
+          // "admin" 완성 확인
+          if (adminInputRef.current === 'admin') {
+            event.preventDefault(); // 기본 동작 방지
+            await handleAdminLogin();
+            adminInputRef.current = '';
+            return;
+          }
+
+          // 3초 내에 다음 문자를 입력하지 않으면 리셋
+          adminInputTimeoutRef.current = setTimeout(() => {
+            adminInputRef.current = '';
+          }, 3000);
+        } else {
+          // 잘못된 문자 입력 시 리셋
+          adminInputRef.current = '';
+        }
+      } else if (event.key === 'Backspace' || event.key === 'Delete') {
+        // 백스페이스나 삭제 키 입력 시 리셋
+        adminInputRef.current = '';
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+
+    return () => {
+      window.removeEventListener('keydown', handleKeyDown);
+      if (adminInputTimeoutRef.current) {
+        clearTimeout(adminInputTimeoutRef.current);
+      }
+    };
+  }, [loginError, session, handleAdminLogin]);
+
+  // 로그아웃 함수
+  const handleLogout = async () => {
+    try {
+      // Supabase 세션이 있으면 로그아웃
+      const { data: { session: currentSession } } = await supabase.auth.getSession();
+      if (currentSession) {
+        await supabase.auth.signOut();
+      }
+
+      // 로컬 세션 삭제
+      try {
+        localStorage.removeItem('solve-climb-local-session');
+      } catch (e) {
+        console.warn('Failed to remove local session:', e);
+      }
+
+      // 로컬 상태 초기화
+      clearProfile();
+      
+      setToastMessage('로그아웃되었습니다.');
+      setShowToast(true);
+      
+      // 통계 다시 불러오기 (세션 없음 상태로)
+      await refetch();
+    } catch (error) {
+      console.error('Logout error:', error);
+      setToastMessage('로그아웃 중 오류가 발생했습니다.');
+      setShowToast(true);
+    }
+  };
+
+  // Guest View (비로그인 상태)
+  if (!session && !statsLoading) {
+    return (
+      <div className="my-page">
+        <Header />
+        <main className="my-page-main">
+          <div className="my-page-content">
+            <div className="my-page-guest-view">
+              <div className="my-page-guest-icon">🔒</div>
+              <h1 className="my-page-guest-title">
+                로그인하고<br />
+                <strong className="my-page-guest-highlight">내 기록을 평생 간직하세요.</strong>
+              </h1>
+              <div className="my-page-guest-buttons">
+                <button
+                  className="my-page-guest-login-button"
+                  onClick={handleLogin}
+                >
+                  3초 만에 시작하기
+                </button>
+                <button
+                  className="my-page-guest-anonymous-link"
+                  onClick={handleAnonymousLogin}
+                >
+                  익명 로그인하기
+                </button>
+              </div>
+            </div>
+          </div>
+        </main>
+        <FooterNav />
+        <Toast
+          message={toastMessage}
+          isOpen={showToast}
+          onClose={() => setShowToast(false)}
+          icon="⚠️"
+        />
+        <AlertModal
+          isOpen={showAlert}
+          title="알림"
+          message={alertMessage || '리더보드를 열 수 없습니다.'}
+          onClose={() => setShowAlert(false)}
+        />
+      </div>
+    );
+  }
 
   if (showProfileForm) {
     return (
@@ -85,7 +371,7 @@ export function MyPage() {
         <Header />
         <main className="my-page-main">
           <div className="my-page-content">
-            <ProfileForm onComplete={handleProfileComplete} />
+            <ProfileForm onComplete={handleProfileComplete} showBackButton={isProfileComplete} />
           </div>
         </main>
         <FooterNav />
@@ -98,112 +384,176 @@ export function MyPage() {
       <Header />
       <main className="my-page-main">
         <div className="my-page-content">
-          {/* 환영 메시지 */}
-          <div className="welcome-card">
-            <h1 className="welcome-title">
-              {profile?.nickname}님 반가워요! 👋
+          {/* Header: Profile & Summary */}
+          <div className="my-page-header">
+            <div className="my-page-profile-icon">🧗</div>
+            <h1 className="my-page-header-title">
+              지금까지<br />
+              <strong className="my-page-header-highlight">
+                {statsLoading ? '...' : (stats?.totalHeight || 0).toLocaleString()}m
+              </strong>
+              를 올랐어요!
             </h1>
-            <p className="welcome-subtitle">
-              오늘도 즐거운 퀴즈 시간 되세요!
-            </p>
           </div>
 
-          {/* 프로필 정보 */}
-          <div className="profile-info-card">
-            <div className="profile-info-header">
-              <h2 className="profile-info-title">프로필</h2>
-              <button className="edit-button" onClick={handleEditProfile}>
-                수정
-              </button>
+          {/* Stats Grid */}
+          <div className="my-page-stats-grid">
+            <div className="my-page-stat-card">
+              <div className="my-page-stat-label">완등 문제</div>
+              <div className="my-page-stat-value">
+                {statsLoading ? '...' : (stats?.totalSolved || 0).toLocaleString()}개
+              </div>
             </div>
-            <div className="profile-info-content">
-              <div className="profile-avatar-large">
-                {profile?.avatar ? (
-                  <img src={profile.avatar} alt={profile.nickname} />
-                ) : (
-                  <span className="avatar-placeholder-large">
-                    {profile?.nickname.charAt(0)}
-                  </span>
-                )}
+            <div className="my-page-stat-card">
+              <div className="my-page-stat-label">최고 레벨</div>
+              <div className="my-page-stat-value">
+                {statsLoading ? '...' : stats?.maxLevel ? `Lv. ${stats.maxLevel}` : 'Lv. 0'}
               </div>
-              <div className="profile-details">
-                <p className="profile-nickname">{profile?.nickname}</p>
-                <p className="profile-joined">
-                  가입일: {profile?.createdAt ? new Date(profile.createdAt).toLocaleDateString('ko-KR') : '-'}
-                </p>
+            </div>
+            <div className="my-page-stat-card">
+              <div className="my-page-stat-label">주력 분야</div>
+              <div className="my-page-stat-value">
+                {statsLoading ? '...' : stats?.bestSubject || '-'}
               </div>
+            </div>
+            <div className="my-page-stat-card my-page-stat-card-clickable" onClick={handleOpenLeaderboard}>
+              <div className="my-page-stat-label">내 랭킹</div>
+              <div className="my-page-stat-value">명예의 전당 🏆</div>
             </div>
           </div>
 
-          {/* 토스 로그인 버튼 */}
-          <div className="toss-login-card">
-            <button
-              className="toss-login-button"
-              onClick={handleTossLogin}
-              disabled={isTossLoginLoading}
-            >
-              {isTossLoginLoading ? (
-                <>로딩 중...</>
-              ) : (
-                <>
-                  <svg width="20" height="20" viewBox="0 0 20 20" style={{ marginRight: '8px' }}>
+          {/* Settings List */}
+          <div className="my-page-settings">
+            {/* 환경 설정 섹션 */}
+            <div className="my-page-settings-section">
+              <h2 className="my-page-settings-section-title">환경 설정</h2>
+              <div className="my-page-settings-list">
+                <div className="my-page-settings-item">
+                  <div className="my-page-settings-item-content">
+                    <span className="my-page-settings-item-label">진동</span>
+                  </div>
+                  <label className="my-page-settings-toggle">
+                    <input
+                      type="checkbox"
+                      checked={hapticEnabled}
+                      onChange={handleToggleHaptic}
+                    />
+                    <span className="my-page-settings-toggle-slider"></span>
+                  </label>
+                </div>
+              </div>
+            </div>
+
+            {/* 데이터 관리 섹션 */}
+            <div className="my-page-settings-section">
+              <h2 className="my-page-settings-section-title">데이터</h2>
+              <div className="my-page-settings-list">
+                <button
+                  className="my-page-settings-item my-page-settings-item-button"
+                  onClick={handleDataReset}
+                  disabled={isResetting}
+                >
+                  <div className="my-page-settings-item-content">
+                    <span className="my-page-settings-item-label">초기화</span>
+                  </div>
+                  <svg
+                    className="my-page-settings-item-arrow"
+                    width="20"
+                    height="20"
+                    viewBox="0 0 20 20"
+                    fill="none"
+                    xmlns="http://www.w3.org/2000/svg"
+                  >
                     <path
-                      fill="#3182F6"
-                      d="M10 0C4.477 0 0 4.477 0 10s4.477 10 10 10 10-4.477 10-10S15.523 0 10 0zm5.568 7.5c-.276 0-.5.224-.5.5v2.5h-2.5c-.276 0-.5.224-.5.5s.224.5.5.5h2.5v2.5c0 .276.224.5.5.5s.5-.224.5-.5v-2.5h2.5c.276 0 .5-.224.5-.5s-.224-.5-.5-.5h-2.5V8c0-.276-.224-.5-.5-.5z"
+                      d="M7.5 15L12.5 10L7.5 5"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
                     />
                   </svg>
-                  토스로 로그인하기
-                </>
-              )}
-            </button>
-            {tossLoginError && (
-              <p className="toss-login-error">{tossLoginError}</p>
-            )}
-          </div>
+                </button>
+              </div>
+            </div>
 
-          {/* 통계 카드 */}
-          <div className="stats-card">
-            <h2 className="stats-title">나의 통계</h2>
-            <div className="stats-grid">
-              <div className="stat-item">
-                <span className="stat-value">1,234</span>
-                <span className="stat-label">종합 순위</span>
+            {/* 앱 정보 섹션 */}
+            <div className="my-page-settings-section">
+              <h2 className="my-page-settings-section-title">앱 정보</h2>
+              <div className="my-page-settings-list">
+                <div className="my-page-settings-item">
+                  <div className="my-page-settings-item-content">
+                    <span className="my-page-settings-item-label">버전</span>
+                  </div>
+                  <span className="my-page-settings-item-value">{APP_CONFIG.APP_VERSION}</span>
+                </div>
+                <button
+                  className="my-page-settings-item my-page-settings-item-button"
+                  onClick={handleSendFeedback}
+                >
+                  <div className="my-page-settings-item-content">
+                    <span className="my-page-settings-item-label">의견 보내기</span>
+                  </div>
+                  <svg
+                    className="my-page-settings-item-arrow"
+                    width="20"
+                    height="20"
+                    viewBox="0 0 20 20"
+                    fill="none"
+                    xmlns="http://www.w3.org/2000/svg"
+                  >
+                    <path
+                      d="M7.5 15L12.5 10L7.5 5"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    />
+                  </svg>
+                </button>
               </div>
-              <div className="stat-item">
-                <span className="stat-value">8,500</span>
-                <span className="stat-label">최고 점수</span>
-              </div>
-              <div className="stat-item">
-                <span className="stat-value">127</span>
-                <span className="stat-label">총 게임 수</span>
-              </div>
-              <div className="stat-item">
-                <span className="stat-value">15%</span>
-                <span className="stat-label">상위 퍼센트</span>
+            </div>
+
+            {/* 로그아웃 섹션 */}
+            <div className="my-page-settings-section">
+              <div className="my-page-settings-list">
+                <button
+                  className="my-page-settings-item my-page-settings-item-button my-page-settings-item-logout"
+                  onClick={handleLogout}
+                >
+                  <div className="my-page-settings-item-content">
+                    <span className="my-page-settings-item-label my-page-settings-item-logout-label">로그아웃</span>
+                  </div>
+                </button>
               </div>
             </div>
           </div>
 
-          {/* 액션 버튼 */}
-          <div className="action-buttons">
-            <button className="action-button primary" onClick={handleGoToRanking}>
-              랭킹 보기
-            </button>
-            <button className="action-button secondary" onClick={handleLogout}>
-              프로필 삭제
-            </button>
-          </div>
+          {/* 에러 메시지 (있는 경우) */}
+          {statsError && (
+            <div className="my-page-error">
+              <p>{statsError}</p>
+            </div>
+          )}
         </div>
       </main>
       <FooterNav />
-      <DeleteConfirmModal
-        isOpen={showDeleteConfirm}
-        nickname={profile?.nickname || ''}
-        isAdmin={isAdmin}
-        onConfirm={handleConfirmDelete}
-        onCancel={handleCancelDelete}
+      <DataResetConfirmModal
+        isOpen={showDataResetConfirm}
+        onConfirm={handleConfirmDataReset}
+        onCancel={handleCancelDataReset}
+      />
+      <Toast
+        message={toastMessage}
+        isOpen={showToast}
+        onClose={() => setShowToast(false)}
+        icon="⚠️"
+      />
+      <AlertModal
+        isOpen={showAlert}
+        title="알림"
+        message={alertMessage || '리더보드를 열 수 없습니다.'}
+        onClose={() => setShowAlert(false)}
       />
     </div>
   );
 }
-
