@@ -273,6 +273,12 @@ export function MathQuizPage() {
 
     // 서바이벌 모드: 오답 정보 및 평균 풀이 시간 전달
     if (gameMode === 'survival') {
+      console.log('[MathQuizPage] 서바이벌 모드 종료 - 오답 데이터:', {
+        wrongAnswersCount: wrongAnswers.length,
+        wrongAnswers,
+        gameMode,
+      });
+
       if (wrongAnswers.length > 0) {
         const questions = wrongAnswers.map(w => w.question).join('|');
         const wrongAns = wrongAnswers.map(w => w.wrongAnswer).join('|');
@@ -280,6 +286,14 @@ export function MathQuizPage() {
         params.set('wrong_q', questions);
         params.set('wrong_a', wrongAns);
         params.set('correct_a', correctAns);
+        
+        console.log('[MathQuizPage] 오답 데이터 URL 파라미터 설정:', {
+          wrong_q: questions,
+          wrong_a: wrongAns,
+          correct_a: correctAns,
+        });
+      } else {
+        console.log('[MathQuizPage] 오답 데이터 없음 - URL 파라미터 설정 안 함');
       }
 
       // 평균 풀이 시간 계산 (초 단위, 소수점 2자리)

@@ -105,7 +105,23 @@ export function ResultPage() {
 
   // 오답 정보 파싱 (서바이벌 모드용)
   const wrongAnswers: WrongAnswer[] = React.useMemo(() => {
+    // 디버깅: URL 파라미터 확인
+    console.log('[ResultPage] 오답 데이터 파싱:', {
+      mode,
+      modeParam,
+      wrongQParam,
+      wrongAParam,
+      correctAParam,
+      isSurvival: mode === 'survival',
+    });
+
     if (mode !== 'survival' || !wrongQParam || !wrongAParam || !correctAParam) {
+      console.log('[ResultPage] 오답 데이터 없음 - 조건 불만족:', {
+        mode,
+        hasWrongQ: !!wrongQParam,
+        hasWrongA: !!wrongAParam,
+        hasCorrectA: !!correctAParam,
+      });
       return [];
     }
     try {
@@ -113,15 +129,23 @@ export function ResultPage() {
       const wrongAnswers = wrongAParam.split('|');
       const correctAnswers = correctAParam.split('|');
       
-      return questions.map((q, i) => ({
+      const parsed = questions.map((q, i) => ({
         question: q,
         wrongAnswer: wrongAnswers[i] || '',
         correctAnswer: correctAnswers[i] || '',
       }));
-    } catch {
+
+      console.log('[ResultPage] 오답 데이터 파싱 성공:', {
+        count: parsed.length,
+        items: parsed,
+      });
+
+      return parsed;
+    } catch (error) {
+      console.error('[ResultPage] 오답 데이터 파싱 실패:', error);
       return [];
     }
-  }, [mode, wrongQParam, wrongAParam, correctAParam]);
+  }, [mode, modeParam, wrongQParam, wrongAParam, correctAParam]);
 
   // 정확도 계산 (맞춘 개수 기준)
   const accuracy = total > 0 ? Math.round((correctCount / total) * 100) : 0;
@@ -207,8 +231,19 @@ export function ResultPage() {
 
   // 결과 아이콘 및 타이틀
   const isTimeAttack = mode === 'time-attack';
+  const isSurvivalMode = mode === 'survival';
   const resultIcon = isTimeAttack ? '⏱️' : '💥';
   const resultTitle = isTimeAttack ? "시간 종료!" : "게임 오버";
+
+  // 디버깅: 렌더링 조건 확인
+  React.useEffect(() => {
+    console.log('[ResultPage] 렌더링 조건 확인:', {
+      isSurvivalMode,
+      wrongAnswersLength: wrongAnswers.length,
+      wrongAnswers,
+      shouldShowWrongAnswers: isSurvivalMode && wrongAnswers.length > 0,
+    });
+  }, [isSurvivalMode, wrongAnswers]);
 
   // 통계 리스트 데이터 구성
   const statsList = React.useMemo(() => {
@@ -310,7 +345,8 @@ export function ResultPage() {
         )}
 
         {/* [오답 노트 영역] - 서바이벌 전용 */}
-        {!isTimeAttack && wrongAnswers.length > 0 && (
+        {/* 조건: 서바이벌 모드이고 && 오답 데이터가 있을 때 */}
+        {isSurvivalMode && wrongAnswers && wrongAnswers.length > 0 && (
           <div className="wrong-answer-card">
             <h3 className="wrong-answer-title">오답 노트</h3>
             <div className="wrong-answer-list">
