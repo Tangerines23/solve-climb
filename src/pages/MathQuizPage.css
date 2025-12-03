@@ -267,6 +267,12 @@
   line-height: 1.4;
 }
 
+/* 입력창 wrapper - 토스트 위치 기준 */
+.answer-input-wrapper {
+  position: relative;
+  width: 100%;
+}
+
 /* 답변 표시 영역 (div) */
 .answer-display {
   height: clamp(60px, 12vh, 80px);
@@ -356,19 +362,22 @@
   cursor: not-allowed;
 }
 
-/* Shake 애니메이션 */
-@keyframes shake {
+/* Micro Shake 애니메이션 - 좁고 빠른 진동 */
+@keyframes micro-shake {
   0%, 100% { transform: translateX(0); }
-  25% { transform: translateX(-5px); }
-  75% { transform: translateX(5px); }
+  25% { transform: translateX(-4px); }
+  75% { transform: translateX(4px); }
 }
 
 /* 에러 상태 스타일 */
+.answer-input-wrapper.is-error {
+  animation: micro-shake 0.25s ease-in-out;
+}
+
 .answer-input-system.is-error {
   color: #F04452;
   border: 2px solid #F04452;
   background-color: rgba(240, 68, 82, 0.1);
-  animation: shake 0.4s cubic-bezier(.36,.07,.19,.97) both;
 }
 
 .answer-input-system.is-error:focus {
@@ -383,11 +392,11 @@
 .answer-display.is-error {
   color: #F04452;
   transition: color 0.3s ease;
-  animation: shake 0.4s cubic-bezier(.36,.07,.19,.97) both;
 }
 
 .answer-display.is-error .answer-display-text {
   color: #F04452;
+  /* 글자 자체는 고정되어 있음 (가독성 향상) */
 }
 
 /* 시스템 키보드 모드용 제출 버튼 */
@@ -436,5 +445,42 @@
   font-weight: 500;
   color: #3182f6;
   text-align: left;
+}
+
+/* 감점 토스트 스타일 - 입력창 우측 상단 바깥쪽 */
+.slide-toast {
+  position: absolute;
+  top: -8px;
+  right: -12px;
+  z-index: 1000;
+  pointer-events: none;
+  animation: floatUp 1.5s ease-out forwards;
+}
+
+.slide-toast-text {
+  display: inline-block;
+  padding: 6px 12px;
+  background-color: rgba(240, 68, 82, 0.95);
+  color: #ffffff;
+  font-size: 1.125rem;
+  font-weight: bold;
+  border-radius: 6px;
+  box-shadow: 0 4px 12px rgba(240, 68, 82, 0.5);
+  white-space: nowrap;
+}
+
+@keyframes floatUp {
+  0% {
+    opacity: 0;
+    transform: translateY(0) scale(0.8);
+  }
+  15% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(-20px) scale(0.95);
+  }
 }
 

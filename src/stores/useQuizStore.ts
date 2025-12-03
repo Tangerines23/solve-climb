@@ -22,6 +22,7 @@ interface QuizState {
   // 시간 제한
   timeLimit: TimeLimit;
   increaseScore: (amount: number) => void;
+  decreaseScore: (amount: number) => void;
   setDifficulty: (level: Difficulty) => void;
   resetQuiz: () => void;
   // (신규) 지시서 2-1항 반영
@@ -42,6 +43,7 @@ export const useQuizStore = create<QuizState>((set) => ({
   topic: null,
   timeLimit: 60, // 기본 1분
   increaseScore: (amount) => set((state) => ({ score: state.score + amount })),
+  decreaseScore: (amount) => set((state) => ({ score: Math.max(0, state.score - amount) })),
   setDifficulty: (level) => set({ difficulty: level }),
   resetQuiz: () => set({ score: 0, difficulty: 'easy' }),
   // (신규) 지시서 2-1항 반영

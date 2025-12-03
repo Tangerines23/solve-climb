@@ -204,6 +204,40 @@ function calculate(a: number, b: number, op: Operator): number {
     }
 }
 
+/**
+ * 안전하게 수식의 결과를 계산합니다 (연산자 우선순위 적용)
+ * @param numbers 숫자 배열
+ * @param operators 연산자 배열
+ * @returns 계산 결과
+ */
+function calculateWithPrecedence(numbers: number[], operators: Operator[]): number {
+    // 배열을 복사하여 원본을 보존
+    const nums = [...numbers];
+    const ops = [...operators];
+    
+    // 먼저 곱셈과 나눗셈을 처리 (우선순위 높음)
+    let i = 0;
+    while (i < ops.length) {
+        if (ops[i] === '*' || ops[i] === '/') {
+            const result = calculate(nums[i], nums[i + 1], ops[i]);
+            nums[i] = result;
+            nums.splice(i + 1, 1);
+            ops.splice(i, 1);
+            // i를 증가시키지 않고 다시 같은 위치 확인
+        } else {
+            i++;
+        }
+    }
+    
+    // 남은 덧셈과 뺄셈을 왼쪽에서 오른쪽으로 처리
+    let result = nums[0];
+    for (let j = 0; j < ops.length; j++) {
+        result = calculate(result, nums[j + 1], ops[j]);
+    }
+    
+    return result;
+}
+
 export function generateProblem(stageId: number): MathProblem {
     const stage = STAGES.find(s => s.id === stageId);
     if (!stage) {
@@ -319,21 +353,9 @@ function generateSequentialProblem(stage: StageConfig): MathProblem {
     }
 
     // Calculate result respecting precedence
-    // We can use JS eval() but it's safer to implement basic precedence or just use eval for simplicity in this context
-    // provided we sanitize inputs (which we generated ourselves).
-    // However, for "Mixed Operators with Precedence" (Stage 13), we need standard math rules.
-    // For "Sequential Calc" (Stage 6, 11), usually it's left-to-right? 
-    // Stage 13 explicitly says "Precedence", implying others might be simple?
-    // But standard math always has precedence. Let's stick to standard JS evaluation.
-
-    // Note: 'x' symbol vs '*' symbol. We use '*' for calc, 'x' for display?
-    // Let's use standard symbols for calculation.
-
-    // Replace visual operators if needed
-    const calcExpression = expression; // JS understands +, -, *, /
-
-    // eslint-disable-next-line no-eval
-    const result = eval(calcExpression);
+    // Stage 13 (Mixed Operators with Precedence) uses standard math precedence
+    // Other sequential problems also use precedence for consistency
+    const result = calculateWithPrecedence(nums, ops);
 
     // Check constraints
     // For Stage 13 (2 + 3 * 4), result is 14.
