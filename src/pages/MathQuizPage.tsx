@@ -36,6 +36,8 @@ export function MathQuizPage() {
   const [isFadingOut, setIsFadingOut] = useState(false);
   const [useSystemKeyboard, setUseSystemKeyboard] = useState(false);
   const [showTipModal, setShowTipModal] = useState(true); // 팁 모달 표시 상태
+  const [isError, setIsError] = useState(false); // 오답 상태
+  const [displayValue, setDisplayValue] = useState(''); // 입력창에 보여줄 값
 
   // URL 파라미터에서 레벨 정보 읽기
   const categoryParam = searchParams.get('category');
@@ -148,6 +150,8 @@ export function MathQuizPage() {
             }
 
             setAnswerInput('');
+            setDisplayValue('');
+            setIsError(false);
             setQuestionAnimation('fade-in');
 
             if (gameMode === 'survival') {
@@ -188,6 +192,8 @@ export function MathQuizPage() {
             }
 
             setAnswerInput('');
+            setDisplayValue('');
+            setIsError(false);
             setQuestionAnimation('fade-in');
 
             if (gameMode === 'survival') {
@@ -222,6 +228,8 @@ export function MathQuizPage() {
       const newQuestion = generateQuestion(currentCategory, currentTopic, difficulty);
       setCurrentQuestion(newQuestion);
       setAnswerInput('');
+      setDisplayValue('');
+      setIsError(false);
       setQuestionAnimation('fade-in');
 
       // 서바이벌 모드: 문제가 바뀔 때마다 타이머 리셋 (key 변경으로 TimerCircle 리마운트)
@@ -398,7 +406,7 @@ export function MathQuizPage() {
 
   // 수학 퀴즈용 키패드 핸들러 (3x3 그리드)
   const handleKeypadNumber = useCallback((num: string) => {
-    if (isSubmitting) return;
+    if (isSubmitting || isError) return;
 
     const isEquationQuiz = categoryParam === 'math' && subParam === 'equations';
     const isCalculusQuiz = categoryParam === 'math' && subParam === 'calculus';
@@ -409,9 +417,13 @@ export function MathQuizPage() {
       if (allowNegative) {
         // 이미 음수면 제거, 아니면 추가
         if (answerInput.startsWith('-')) {
-          setAnswerInput(answerInput.substring(1));
+          const newValue = answerInput.substring(1);
+          setAnswerInput(newValue);
+          setDisplayValue(newValue);
         } else {
-          setAnswerInput('-' + answerInput);
+          const newValue = '-' + answerInput;
+          setAnswerInput(newValue);
+          setDisplayValue(newValue);
         }
         if (navigator.vibrate) navigator.vibrate(15);
       }
@@ -429,29 +441,39 @@ export function MathQuizPage() {
 
     // 진동 피드백
     if (navigator.vibrate) navigator.vibrate(15);
-    setAnswerInput((prev) => prev + num);
-  }, [isSubmitting, categoryParam, subParam, answerInput]);
+    setAnswerInput((prev) => {
+      const newValue = prev + num;
+      setDisplayValue(newValue);
+      return newValue;
+    });
+  }, [isSubmitting, categoryParam, subParam, answerInput, isError]);
 
   // 일본어 퀴즈용 쿼티 키보드 핸들러
   const handleQwertyKeyPress = useCallback((key: string) => {
-    if (isSubmitting) return;
+    if (isSubmitting || isError) return;
 
     // 일본어 퀴즈: 영문자만 허용
     if (/[a-z]/.test(key)) {
       if (answerInput.length >= 10) return;
-      setAnswerInput((prev) => prev + key);
+      setAnswerInput((prev) => {
+        const newValue = prev + key;
+        setDisplayValue(newValue);
+        return newValue;
+      });
     }
-  }, [isSubmitting, answerInput]);
+  }, [isSubmitting, answerInput, isError]);
 
   const handleKeypadClear = useCallback(() => {
-    if (isSubmitting) return;
+    if (isSubmitting || isError) return;
     setAnswerInput('');
-  }, [isSubmitting]);
+    setDisplayValue('');
+  }, [isSubmitting, isError]);
 
   const handleKeypadBackspace = useCallback(() => {
-    if (isSubmitting) return;
+    if (isSubmitting || isError) return;
     setAnswerInput((prev) => prev.slice(0, -1));
-  }, [isSubmitting]);
+    setDisplayValue('');
+  }, [isSubmitting, isError]);
 
   const handleSubmit = useCallback(
     (e: FormEvent) => {
@@ -513,6 +535,8 @@ export function MathQuizPage() {
         increaseScore(SCORE_PER_CORRECT);
 
         setTimeout(() => {
+          setDisplayValue('');
+          setIsError(false);
           generateNewQuestion();
           setInputAnimation('');
           setCardAnimation('');
@@ -525,27 +549,46 @@ export function MathQuizPage() {
           }
         }, 300);
       } else {
+        // 오답 처리: 정답을 빨간색으로 0.8초간 표시
+        const correctAnswerText = String(currentQuestion.answer);
+        
+        // 1단계: 에러 상태 활성화 및 정답 표시 (동시에 업데이트하여 깜빡임 방지)
+        setIsError(true);
+        setDisplayValue(correctAnswerText);
         setCardAnimation('wrong-shake');
-        if (navigator.vibrate) navigator.vibrate(200);
+        
+        // 진동 피드백
+        if (hapticEnabled && navigator.vibrate) {
+          navigator.vibrate(200);
+        }
 
         // 서바이벌 모드: 틀리면 게임 종료 (오답 저장)
         if (gameMode === 'survival') {
           // 오답 정보 저장
           const questionText = currentQuestion.question;
-          const correctAnswerText = String(currentQuestion.answer);
           setWrongAnswers(prev => [...prev, {
             question: questionText,
             wrongAnswer: answerInput,
             correctAnswer: correctAnswerText
           }]);
 
+          // 800ms 후 게임 종료
           setTimeout(() => {
-            handleGameOver();
-          }, 300);
-        } else {
-          setTimeout(() => {
-            generateNewQuestion();
+            setIsError(false);
+            setDisplayValue('');
+            setInputAnimation('');
             setCardAnimation('');
+            handleGameOver();
+          }, 800);
+        } else {
+          // 타임어택 모드: 800ms 후 다음 문제로 이동
+          setTimeout(() => {
+            setIsError(false);
+            setDisplayValue('');
+            setAnswerInput('');
+            setInputAnimation('');
+            setCardAnimation('');
+            generateNewQuestion();
             setIsSubmitting(false);
             // 다음 문제로 넘어갈 때 포커스 유지 (시스템 키보드 사용 시만)
             if (useSystemKeyboard && inputRef.current) {
@@ -553,11 +596,11 @@ export function MathQuizPage() {
                 inputRef.current?.focus();
               }, 100);
             }
-          }, 300);
+          }, 800);
         }
       }
     },
-    [answerInput, generateNewQuestion, increaseScore, isSubmitting, currentQuestion, gameMode, handleGameOver]
+    [answerInput, generateNewQuestion, increaseScore, isSubmitting, currentQuestion, gameMode, handleGameOver, hapticEnabled, useSystemKeyboard, categoryParam, subParam, questionStartTime, solveTimes]
   );
 
   const renderQuizCard = () => {
@@ -664,13 +707,15 @@ export function MathQuizPage() {
                         ref={inputRef}
                         type={isJapaneseQuiz ? 'text' : 'number'}
                         inputMode={isJapaneseQuiz ? 'text' : 'numeric'}
-                        value={answerInput}
+                        value={isError ? displayValue : answerInput}
                         onChange={(e) => {
+                          if (isError || isSubmitting) return;
                           if (isJapaneseQuiz) {
                             // 일본어: 영문자만 허용 (로마지)
                             const value = e.target.value.replace(/[^a-zA-Z]/g, '');
                             if (value.length <= 10) {
                               setAnswerInput(value);
+                              setDisplayValue(value);
                             }
                           } else {
                             // 수학: 숫자 및 음수 처리
@@ -690,40 +735,45 @@ export function MathQuizPage() {
                               }
                               if (value.length <= 6) {
                                 setAnswerInput(value);
+                                setDisplayValue(value);
                               }
                             } else {
                               // 일반 수학 문제: 숫자만 허용
                               value = value.replace(/[^0-9]/g, '');
                               if (value.length <= 5) {
                                 setAnswerInput(value);
+                                setDisplayValue(value);
                               }
                             }
                           }
                         }}
                         onKeyDown={(e) => {
-                          if (e.key === 'Enter') {
+                          if (e.key === 'Enter' && !isError) {
                             e.preventDefault();
                             handleSubmit(e);
                           }
                         }}
                         onClick={() => {
-                          // 클릭 시 키보드 포커스
-                          if (inputRef.current && !isSubmitting) {
+                          // 클릭 시 키보드 포커스 (에러 상태가 아닐 때만)
+                          if (inputRef.current && !isSubmitting && !isError) {
                             inputRef.current.focus();
                           }
                         }}
                         placeholder={isJapaneseQuiz ? "로마지 입력 (예: a, ki)" : "정답 입력"}
-                        className={`answer-input-system ${inputAnimation}`}
-                        disabled={isSubmitting}
+                        className={`answer-input-system ${inputAnimation} ${isError ? 'error-state is-error' : ''}`}
+                        disabled={isSubmitting && !isError}
+                        readOnly={isError}
                         autoFocus={false}
                       />
                       <button
                         type="submit"
                         className="submit-button-system"
-                        disabled={isSubmitting || !answerInput}
+                        disabled={isSubmitting || !answerInput || isError}
                         onClick={(e) => {
                           e.preventDefault();
-                          handleSubmit(e);
+                          if (!isError) {
+                            handleSubmit(e);
+                          }
                         }}
                       >
                         제출
@@ -732,9 +782,11 @@ export function MathQuizPage() {
                   );
                 })()
               ) : (
-                <div className={`answer-display ${inputAnimation}`}>
-                  {answerInput && <span className="answer-display-text">{answerInput}</span>}
-                  <span className="answer-caret"></span>
+                <div className={`answer-display ${inputAnimation} ${isError ? 'is-error' : ''}`}>
+                  {(isError ? displayValue : answerInput) && (
+                    <span className="answer-display-text">{isError ? displayValue : answerInput}</span>
+                  )}
+                  {!isError && <span className="answer-caret"></span>}
                 </div>
               )}
             </form>
@@ -777,7 +829,7 @@ export function MathQuizPage() {
                   onClear={handleKeypadClear}
                   onBackspace={handleKeypadBackspace}
                   onSubmit={handleSubmit}
-                  disabled={isSubmitting}
+                  disabled={isSubmitting || isError}
                   mode="text"
                 />
               );
@@ -790,7 +842,7 @@ export function MathQuizPage() {
                 onClear={handleKeypadClear}
                 onBackspace={handleKeypadBackspace}
                 onSubmit={handleSubmit}
-                disabled={isSubmitting}
+                disabled={isSubmitting || isError}
                 showNegative={allowNegative}
               />
             );

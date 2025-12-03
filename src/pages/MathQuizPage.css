@@ -280,7 +280,7 @@
   user-select: none;
   padding: clamp(12px, 2vh, 16px);
   border-radius: 12px;
-  transition: all 0.2s;
+  transition: color 0.3s ease;
   position: relative;
   overflow: hidden;
 }
@@ -333,7 +333,7 @@
   background-color: #2c2c2c;
   color: #3182f6;
   text-align: center;
-  transition: all 0.2s;
+  transition: color 0.3s ease, border-color 0.3s ease, background-color 0.3s ease;
   appearance: none;
   -webkit-appearance: none;
   -moz-appearance: textfield;
@@ -354,6 +354,40 @@
 .answer-input-system:disabled {
   opacity: 0.6;
   cursor: not-allowed;
+}
+
+/* Shake 애니메이션 */
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  25% { transform: translateX(-5px); }
+  75% { transform: translateX(5px); }
+}
+
+/* 에러 상태 스타일 */
+.answer-input-system.is-error {
+  color: #F04452;
+  border: 2px solid #F04452;
+  background-color: rgba(240, 68, 82, 0.1);
+  animation: shake 0.4s cubic-bezier(.36,.07,.19,.97) both;
+}
+
+.answer-input-system.is-error:focus {
+  border-color: #F04452;
+  box-shadow: 0 0 0 3px rgba(240, 68, 82, 0.2);
+}
+
+.answer-input-system.is-error.readonly {
+  cursor: default;
+}
+
+.answer-display.is-error {
+  color: #F04452;
+  transition: color 0.3s ease;
+  animation: shake 0.4s cubic-bezier(.36,.07,.19,.97) both;
+}
+
+.answer-display.is-error .answer-display-text {
+  color: #F04452;
 }
 
 /* 시스템 키보드 모드용 제출 버튼 */
