@@ -1,5 +1,5 @@
 // src/pages/ResultPage.tsx
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useQuizStore } from '../stores/useQuizStore';
 import { GameMode, useLevelProgressStore } from '../stores/useLevelProgressStore';
@@ -7,6 +7,50 @@ import { submitScoreToLeaderboard } from '../utils/tossGameCenter';
 import { APP_CONFIG } from '../config/app';
 import { SCORE_PER_CORRECT } from '../constants/game';
 import './ResultPage.css';
+
+// CountUp 애니메이션 훅
+function useCountUp(targetValue: number, duration: number = 1000) {
+  const [count, setCount] = useState(0);
+  const requestRef = useRef<number>();
+  const startTimeRef = useRef<number>();
+
+  useEffect(() => {
+    if (targetValue === 0) {
+      setCount(0);
+      return;
+    }
+
+    startTimeRef.current = Date.now();
+    setCount(0);
+
+    const animate = () => {
+      const elapsed = Date.now() - startTimeRef.current!;
+      const progress = Math.min(elapsed / duration, 1);
+      
+      // easing 함수 (easeOutCubic)
+      const eased = 1 - Math.pow(1 - progress, 3);
+      const currentValue = Math.floor(targetValue * eased);
+      
+      setCount(currentValue);
+
+      if (progress < 1) {
+        requestRef.current = requestAnimationFrame(animate);
+      } else {
+        setCount(targetValue);
+      }
+    };
+
+    requestRef.current = requestAnimationFrame(animate);
+
+    return () => {
+      if (requestRef.current) {
+        cancelAnimationFrame(requestRef.current);
+      }
+    };
+  }, [targetValue, duration]);
+
+  return count;
+}
 
 interface WrongAnswer {
   question: string;
@@ -21,6 +65,7 @@ export function ResultPage() {
   const [searchParams] = useSearchParams();
   const [scoreSubmitted, setScoreSubmitted] = useState(false);
   const [isNewRecord, setIsNewRecord] = useState(false);
+  const [showConfetti, setShowConfetti] = useState(false);
 
   // URL 파라미터 파싱
   const categoryParam = searchParams.get('category');
@@ -36,6 +81,9 @@ export function ResultPage() {
 
   // 점수는 URL 파라미터 우선, 없으면 store에서 가져오기
   const finalScore = scoreParam ? parseInt(scoreParam, 10) : score;
+
+  // CountUp 애니메이션 적용
+  const animatedScore = useCountUp(finalScore, 1500);
   const total = totalParam ? parseInt(totalParam, 10) : 0;
   
   // 맞춘 개수 계산 (점수를 SCORE_PER_CORRECT로 나눔) - 보조 텍스트용
@@ -91,6 +139,9 @@ export function ResultPage() {
     if (finalScore > existingScore) {
       localStorage.setItem(storageKey, finalScore.toString());
       setIsNewRecord(true);
+      setShowConfetti(true);
+      // confetti 효과는 3초 후 제거
+      setTimeout(() => setShowConfetti(false), 3000);
     }
 
     // 레벨 클리어 조건 확인
@@ -155,11 +206,63 @@ export function ResultPage() {
   };
 
   // 결과 아이콘 및 타이틀
-  const resultIcon = mode === 'time-attack' ? '⏱️' : '💥';
-  const resultTitle = mode === 'time-attack' ? "시간 종료!" : "게임 오버";
+  const isTimeAttack = mode === 'time-attack';
+  const resultIcon = isTimeAttack ? '⏱️' : '💥';
+  const resultTitle = isTimeAttack ? "시간 종료!" : "게임 오버";
+
+  // 통계 리스트 데이터 구성
+  const statsList = React.useMemo(() => {
+    const stats: Array<{ label: string; value: string; isHighlight?: boolean }> = [];
+
+    // 신기록 (맨 윗줄)
+    if (isNewRecord) {
+      stats.push({
+        label: '최고 기록 달성',
+        value: 'New! 🏆',
+        isHighlight: true,
+      });
+    }
+
+    // 타임어택 모드 통계
+    if (isTimeAttack) {
+      if (total > 0) {
+        stats.push({
+          label: '정확도',
+          value: `${accuracy}%`,
+        });
+        stats.push({
+          label: '진행',
+          value: `${correctCount} / ${total}`,
+        });
+      }
+    }
+
+    // 서바이벌 모드 통계
+    if (!isTimeAttack && averageTime !== null) {
+      stats.push({
+        label: '평균 시간',
+        value: `${averageTime.toFixed(2)}초`,
+      });
+    }
+
+    return stats;
+  }, [isNewRecord, isTimeAttack, total, accuracy, correctCount, averageTime]);
 
   return (
     <div className="page-container result-page">
+      {/* Confetti 효과 */}
+      {showConfetti && (
+        <div className="confetti-container">
+          {Array.from({ length: 50 }).map((_, i) => (
+            <div key={i} className="confetti" style={{
+              left: `${Math.random() * 100}%`,
+              animationDelay: `${Math.random() * 0.5}s`,
+              backgroundColor: ['#3182F6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6'][Math.floor(Math.random() * 5)],
+            }} />
+          ))}
+        </div>
+      )}
+
       {/* 상단 헤더 - 닫기 버튼 */}
       <header className="result-header">
         <button className="result-close-button" onClick={handleClose} aria-label="닫기">
@@ -169,80 +272,58 @@ export function ResultPage() {
 
       {/* 결과 카드 */}
       <div className="result-card">
-        {/* 결과 아이콘 */}
-        <div className="result-icon">{resultIcon}</div>
+        {/* [헤더 영역] */}
+        <div className="result-header-section">
+          {/* 아이콘 (floating 애니메이션) */}
+          <div className="result-icon floating">{resultIcon}</div>
 
-        {/* 결과 타이틀 */}
-        <h1 className="result-title">{resultTitle}</h1>
+          {/* 타이틀 */}
+          <h1 className="result-title">{resultTitle}</h1>
 
-        {/* 레벨 정보 */}
-        {level && subTopicInfo && (
-          <div className="result-level-info">
-            <p className="result-level-text">
+          {/* 서브타이틀 (레벨 정보) */}
+          {level && subTopicInfo && (
+            <p className="result-subtitle">
               {APP_CONFIG.CATEGORY_MAP[categoryParam as keyof typeof APP_CONFIG.CATEGORY_MAP] || categoryParam} - {subTopicInfo.name} Level {level}
             </p>
-          </div>
-        )}
-
-        {/* 최종 점수 (미터 단위) - 공통 */}
-        <div className="score-section">
-          <p className="score-value">{finalScore.toLocaleString()}m</p>
-          {correctCount > 0 && (
-            <p className="score-subtext">총 {correctCount}문제를 맞췄어요</p>
           )}
+
+          {/* 점수 (CountUp 애니메이션) */}
+          <div className="score-section">
+            <p className="score-value">{animatedScore.toLocaleString()}m</p>
+          </div>
         </div>
 
-        {/* ========== 타임어택 모드 통계 ========== */}
-        {mode === 'time-attack' && (
-          <div className="game-stats">
-            {/* 정확도 */}
-            {total > 0 && (
-              <div className="stat-badge">
-                정확도 {accuracy}%
-              </div>
-            )}
-            
-            {/* 총 시도 횟수 (맞춘 문제 / 전체 문제) */}
-            {total > 0 && (
-              <div className="stat-attempts">
-                {correctCount} / {total}
-              </div>
-            )}
-          </div>
-        )}
-
-        {/* ========== 서바이벌 모드 통계 ========== */}
-        {mode === 'survival' && (
-          <div className="game-stats">
-            {/* 평균 풀이 시간 */}
-            {averageTime !== null && (
-              <div className="stat-badge">
-                평균 풀이 시간: {averageTime.toFixed(2)}초
-              </div>
-            )}
-          </div>
-        )}
-
-        {/* 신기록 배지 - 공통 */}
-        {isNewRecord && (
-          <div className="new-record-badge">
-            🎉 최고 기록 달성!
-          </div>
-        )}
-
-        {/* ========== 서바이벌 모드: 오답 노트 ========== */}
-        {mode === 'survival' && wrongAnswers.length > 0 && (
-          <div className="wrong-answers-section">
-            <h3 className="wrong-answers-title">오답 노트</h3>
-            {wrongAnswers.map((item, index) => (
-              <div key={index} className="wrong-answer-item">
-                <div className="wrong-answer-question">{item.question}</div>
-                <div className="wrong-answer-row">
-                  <span className="wrong-answer-wrong">{item.wrongAnswer}</span>
-                  <span className="wrong-answer-correct">{item.correctAnswer}</span>
-                </div>
-              </div>
+        {/* [통계 리스트 영역] */}
+        {statsList.length > 0 && (
+          <ul className="stat-list">
+            {statsList.map((stat, index) => (
+              <li
+                key={`${stat.label}-${index}`}
+                className={`stat-item ${stat.isHighlight ? 'stat-item-highlight' : ''}`}
+                style={{ animationDelay: `${index * 0.1}s` }}
+              >
+                <span className="stat-label">{stat.label}</span>
+                <span className="stat-value">{stat.value}</span>
+              </li>
             ))}
+          </ul>
+        )}
+
+        {/* [오답 노트 영역] - 서바이벌 전용 */}
+        {!isTimeAttack && wrongAnswers.length > 0 && (
+          <div className="wrong-answer-card">
+            <h3 className="wrong-answer-title">오답 노트</h3>
+            <div className="wrong-answer-list">
+              {wrongAnswers.map((item, index) => (
+                <div key={index} className="wrong-answer-item">
+                  <div className="wrong-answer-question">{item.question}</div>
+                  <div className="wrong-answer-row">
+                    <span className="wrong-answer-wrong">{item.wrongAnswer}</span>
+                    <span className="wrong-answer-correct">{item.correctAnswer}</span>
+                  </div>
+                </div>
+              ))}
+            </div>
           </div>
         )}
       </div>

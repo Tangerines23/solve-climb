@@ -12,7 +12,6 @@ import { useMyPageStats } from '../hooks/useMyPageStats';
 import { resetAllData } from '../utils/dataReset';
 import { vibrateShort } from '../utils/haptic';
 import { supabase } from '../utils/supabaseClient';
-import { loginWithToss } from '../utils/tossAuth';
 import { APP_CONFIG } from '../config/app';
 import './MyPage.css';
 
@@ -119,47 +118,10 @@ export function MyPage() {
     }
   }, [setProfile, setIsAdmin, refetch]);
 
-  // 토스 로그인 함수
+  // 토스 로그인 함수 (준비 중)
   const handleLogin = async () => {
-    try {
-      setLoginError(false);
-      
-      // 토스 로그인 시도
-      const tossUser = await loginWithToss();
-      
-      // 토스 로그인 성공
-      const userProfile = {
-        profileId: `toss_${tossUser.userKey}`,
-        nickname: tossUser.name || '토스 사용자',
-        userId: tossUser.userKey.toString(),
-        createdAt: new Date().toISOString(),
-        isAdmin: false,
-      };
-
-      setProfile(userProfile);
-
-      // 로컬 세션 저장
-      try {
-        localStorage.setItem('solve-climb-local-session', JSON.stringify({
-          userId: userProfile.profileId,
-          isAdmin: false,
-          loginTime: new Date().toISOString(),
-          loginType: 'toss',
-        }));
-      } catch (e) {
-        console.warn('Failed to save local session:', e);
-      }
-      
-      // 로그인 성공 후 통계 다시 불러오기
-      await refetch();
-      setToastMessage('토스로 로그인되었습니다.');
-      setShowToast(true);
-    } catch (error) {
-      console.error('Login error:', error);
-      setToastMessage('토스 로그인 중 오류가 발생했습니다.');
-      setShowToast(true);
-      setLoginError(true);
-    }
+    setToastMessage('토스 로그인 기능은 준비 중입니다.');
+    setShowToast(true);
   };
 
   // 익명 로그인 함수 (로컬 세션만 사용)

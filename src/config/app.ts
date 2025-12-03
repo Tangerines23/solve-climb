@@ -1,7 +1,7 @@
 // 앱 설정 상수 중앙 관리
 export const APP_CONFIG = {
-  // API 설정
-  API_BASE_URL: import.meta.env.VITE_API_BASE_URL || 'https://api.solveclimb.com',
+  // API 설정 (현재 사용하지 않음 - 백엔드 서버 없이 Supabase와 토스 SDK만 사용)
+  // API_BASE_URL: import.meta.env.VITE_API_BASE_URL || 'https://api.solveclimb.com',
 
   // Google OAuth 설정
   // 방법 1: 환경변수 사용 (권장)
