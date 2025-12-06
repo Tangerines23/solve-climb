@@ -1,38 +1,77 @@
-// 진동(Haptic) 유틸리티 함수
+// 진동(Haptic) 유틸리티 함수 - 토스 표준 API 사용 (브라우저 환경 fallback 포함)
+import { generateHapticFeedback } from '@apps-in-toss/web-framework';
 
 /**
- * 진동을 실행합니다.
- * @param duration 진동 지속 시간 (밀리초), 기본값 10ms
+ * 토스 앱 환경인지 확인
  */
-export const vibrate = (duration: number = 10): void => {
+const isTossAppEnvironment = (): boolean => {
+  return !!(window as any).ReactNativeWebView;
+};
+
+/**
+ * 브라우저 진동 실행 (fallback)
+ */
+const vibrateBrowser = (duration: number): void => {
   if ('vibrate' in navigator) {
     try {
       navigator.vibrate(duration);
     } catch (error) {
       // 진동이 지원되지 않거나 실패한 경우 무시
-      console.warn('Vibration not supported or failed:', error);
     }
   }
 };
 
 /**
  * 짧은 진동 (버튼 클릭 등)
+ * 토스 앱: softLight
+ * 브라우저: 10ms
  */
 export const vibrateShort = (): void => {
-  vibrate(10);
+  if (isTossAppEnvironment()) {
+    try {
+      generateHapticFeedback({ type: 'softLight' });
+    } catch (error) {
+      // 실패 시 브라우저 fallback
+      vibrateBrowser(10);
+    }
+  } else {
+    vibrateBrowser(10);
+  }
 };
 
 /**
  * 중간 진동 (정답 맞췄을 때 등)
+ * 토스 앱: softMedium
+ * 브라우저: 50ms
  */
 export const vibrateMedium = (): void => {
-  vibrate(50);
+  if (isTossAppEnvironment()) {
+    try {
+      generateHapticFeedback({ type: 'softMedium' });
+    } catch (error) {
+      // 실패 시 브라우저 fallback
+      vibrateBrowser(50);
+    }
+  } else {
+    vibrateBrowser(50);
+  }
 };
 
 /**
  * 긴 진동 (에러나 중요한 이벤트)
+ * 토스 앱: softHeavy
+ * 브라우저: 100ms
  */
 export const vibrateLong = (): void => {
-  vibrate(100);
+  if (isTossAppEnvironment()) {
+    try {
+      generateHapticFeedback({ type: 'softHeavy' });
+    } catch (error) {
+      // 실패 시 브라우저 fallback
+      vibrateBrowser(100);
+    }
+  } else {
+    vibrateBrowser(100);
+  }
 };
 

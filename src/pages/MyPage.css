@@ -225,7 +225,7 @@
 }
 
 .my-page-settings-toggle input:checked + .my-page-settings-toggle-slider {
-  background-color: #3182f6;
+  background-color: var(--color-blue-400);
 }
 
 .my-page-settings-toggle input:checked + .my-page-settings-toggle-slider:before {
@@ -282,7 +282,7 @@
 
 .my-page-guest-highlight {
   font-weight: 700;
-  color: #3182f6;
+  color: var(--color-blue-400);
 }
 
 .my-page-guest-buttons {
@@ -296,7 +296,7 @@
 .my-page-guest-login-button {
   width: 100%;
   height: 56px;
-  background-color: #3182f6;
+  background-color: var(--color-blue-400);
   color: #ffffff;
   font-size: 16px;
   font-weight: 600;

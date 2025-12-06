@@ -30,16 +30,18 @@
 }
 
 .keypad-row-last .keypad-key-submit {
-  aspect-ratio: auto;
-  height: 100%;
+  aspect-ratio: 1;
+  height: clamp(72px, 16vw, 90px);
+  max-height: clamp(72px, 16vw, 90px);
+  min-height: clamp(72px, 16vw, 90px);
 }
 
 .keypad-key {
   aspect-ratio: 1;
-  min-height: 0;
-  /* 큰 키보드 버튼 */
-  height: clamp(64px, 14vw, 80px);
-  max-height: clamp(64px, 14vw, 80px);
+  /* 큰 키보드 버튼 - 눌리는 영역 확대 */
+  height: clamp(72px, 16vw, 90px);
+  max-height: clamp(72px, 16vw, 90px);
+  min-height: clamp(72px, 16vw, 90px);
   background-color: #121212;
   border: none;
   border-radius: clamp(12px, 2vh, 16px);
@@ -90,29 +92,37 @@
 }
 
 .keypad-key-submit {
-  background-color: #3182f6;
-  color: #ffffff;
+  background-color: var(--color-blue-400);
+  color: var(--color-gray-100);
   font-size: clamp(1.8rem, 4.5vw, 2.2rem);
   font-weight: bold;
   grid-column: span 1;
   border: none;
+  aspect-ratio: 1;
+  transition: 200ms ease-in-out;
+  transition-property: transform, background-color;
 }
 
 .keypad-key-submit:active {
-  background-color: #2563eb;
-  transform: scale(0.95);
+  background-color: var(--color-blue-700);
+  transform: scale(0.975);
 }
 
 .keypad-key-submit:disabled {
   opacity: 0.5;
-  background-color: #3182f6;
+  background-color: var(--color-blue-400);
 }
 
 /* 터치 피드백 개선 - 큰 키보드 버튼 */
 @media (hover: none) and (pointer: coarse) {
   .keypad-key {
-    min-height: clamp(64px, 14vw, 80px);
-    height: clamp(64px, 14vw, 80px);
+    min-height: clamp(72px, 16vw, 90px);
+    height: clamp(72px, 16vw, 90px);
+  }
+  
+  .keypad-key-submit {
+    min-height: clamp(72px, 16vw, 90px);
+    height: clamp(72px, 16vw, 90px);
   }
 }
 

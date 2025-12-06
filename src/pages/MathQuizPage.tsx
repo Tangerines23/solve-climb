@@ -20,7 +20,7 @@ import { generateEquation } from '../utils/EquationProblemGenerator';
 import { QuizQuestion } from '../types/quiz';
 import { APP_CONFIG } from '../config/app';
 import { normalizeRomaji } from '../utils/japanese';
-import { vibrateMedium } from '../utils/haptic';
+import { vibrateMedium, vibrateLong } from '../utils/haptic';
 import { useSettingsStore } from '../stores/useSettingsStore';
 
 export function MathQuizPage() {
@@ -39,6 +39,8 @@ export function MathQuizPage() {
   const [isError, setIsError] = useState(false); // 오답 상태
   const [displayValue, setDisplayValue] = useState(''); // 입력창에 보여줄 값
   const [showSlideToast, setShowSlideToast] = useState(false); // 감점 토스트 표시 상태
+  const [showFlash, setShowFlash] = useState(false); // 플래시 애니메이션 트리거
+  const [damagePosition, setDamagePosition] = useState<{ left: string; top: string }>({ left: '50%', top: '50%' }); // 랜덤 위치
 
   // URL 파라미터에서 레벨 정보 읽기
   const categoryParam = searchParams.get('category');
@@ -153,6 +155,7 @@ export function MathQuizPage() {
             setAnswerInput('');
             setDisplayValue('');
             setIsError(false);
+            setShowFlash(false);
             setQuestionAnimation('fade-in');
 
             if (gameMode === 'survival') {
@@ -195,6 +198,7 @@ export function MathQuizPage() {
             setAnswerInput('');
             setDisplayValue('');
             setIsError(false);
+            setShowFlash(false);
             setQuestionAnimation('fade-in');
 
             if (gameMode === 'survival') {
@@ -538,6 +542,7 @@ export function MathQuizPage() {
         setTimeout(() => {
           setDisplayValue('');
           setIsError(false);
+          setShowFlash(false);
           generateNewQuestion();
           setInputAnimation('');
           setCardAnimation('');
@@ -558,9 +563,15 @@ export function MathQuizPage() {
         setDisplayValue(correctAnswerText);
         setCardAnimation('wrong-shake');
         
-        // 진동 피드백
-        if (hapticEnabled && navigator.vibrate) {
-          navigator.vibrate(200);
+        // 플래시 애니메이션 트리거
+        setShowFlash(true);
+        setTimeout(() => {
+          setShowFlash(false);
+        }, 400); // 애니메이션 지속시간과 동일
+        
+        // 진동 피드백 (토스 표준 API 사용)
+        if (hapticEnabled) {
+          vibrateLong(); // 긴 진동 사용
         }
 
         // 서바이벌 모드: 틀리면 게임 종료 (오답 저장)
@@ -577,6 +588,7 @@ export function MathQuizPage() {
           setTimeout(() => {
             setIsError(false);
             setDisplayValue('');
+            setShowFlash(false);
             setInputAnimation('');
             setCardAnimation('');
             handleGameOver();
@@ -585,17 +597,31 @@ export function MathQuizPage() {
           // 타임어택 모드: 오답 시 감점 적용
           decreaseScore(SLIDE_PER_WRONG);
           
-          // "-3m" 토스트 표시
-          setShowSlideToast(true);
-          setTimeout(() => {
-            setShowSlideToast(false);
-          }, 1500);
+          // 이전 토스트가 있다면 먼저 제거하고 새로 표시
+          setShowSlideToast(false);
+          
+          // 랜덤 위치 생성 (X: 10-80%, Y: 10-40%)
+          const randomLeft = Math.floor(Math.random() * 70) + 10; // 10% ~ 80%
+          const randomTop = Math.floor(Math.random() * 30) + 10;  // 10% ~ 40%
+          setDamagePosition({ left: `${randomLeft}%`, top: `${randomTop}%` });
+          
+          // 다음 프레임에 토스트 표시 (React 상태 업데이트 배칭 문제 방지)
+          requestAnimationFrame(() => {
+            requestAnimationFrame(() => {
+              setShowSlideToast(true);
+              setTimeout(() => {
+                setShowSlideToast(false);
+              }, 1500);
+            });
+          });
           
           // 800ms 후 다음 문제로 이동
           setTimeout(() => {
             setIsError(false);
             setDisplayValue('');
             setAnswerInput('');
+            setShowFlash(false);
+            setShowSlideToast(false); // 명시적으로 초기화
             setInputAnimation('');
             setCardAnimation('');
             generateNewQuestion();
@@ -771,17 +797,11 @@ export function MathQuizPage() {
                             }
                           }}
                           placeholder={isJapaneseQuiz ? "로마지 입력 (예: a, ki)" : "정답 입력"}
-                          className={`answer-input-system ${inputAnimation} ${isError ? 'error-state is-error' : ''}`}
+                          className={`answer-input-system ${inputAnimation} ${isError ? 'error-state is-error' : ''} ${showFlash ? 'input-error-flash' : ''}`}
                           disabled={isSubmitting && !isError}
                           readOnly={isError}
                           autoFocus={false}
                         />
-                        {/* 감점 토스트 - 오답 시 -3m 표시 */}
-                        {showSlideToast && (
-                          <div className="slide-toast">
-                            <span className="slide-toast-text">-{SLIDE_PER_WRONG}m</span>
-                          </div>
-                        )}
                       </div>
                       <button
                         type="submit"
@@ -801,21 +821,25 @@ export function MathQuizPage() {
                 })()
               ) : (
                 <div className={`answer-input-wrapper ${isError ? 'is-error' : ''}`}>
-                  <div className={`answer-display ${inputAnimation} ${isError ? 'is-error' : ''}`}>
+                  <div className={`answer-display ${inputAnimation} ${isError ? 'is-error' : ''} ${showFlash ? 'input-error-flash' : ''}`}>
                     {(isError ? displayValue : answerInput) && (
                       <span className="answer-display-text">{isError ? displayValue : answerInput}</span>
                     )}
                     {!isError && <span className="answer-caret"></span>}
                   </div>
-                  {/* 감점 토스트 - 오답 시 -3m 표시 */}
-                  {showSlideToast && (
-                    <div className="slide-toast">
-                      <span className="slide-toast-text">-{SLIDE_PER_WRONG}m</span>
-                    </div>
-                  )}
                 </div>
               )}
             </form>
+            
+            {/* 감점 토스트 - 오답 시 -3m 표시 (랜덤 위치) */}
+            {showSlideToast && (
+              <div 
+                className="slide-toast"
+                style={{ left: damagePosition.left, top: damagePosition.top }}
+              >
+                <span className="slide-toast-text">-{SLIDE_PER_WRONG}m</span>
+              </div>
+            )}
           </div>
 
           {/* 중단 확인 알림 - fixed 토스트 알림 (퀴즈 카드 가리지 않음) */}

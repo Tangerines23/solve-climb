@@ -123,7 +123,7 @@
 .result-subtitle {
   font-size: 0.875rem;
   font-weight: 500;
-  color: #3182F6;
+  color: var(--color-blue-400);
   margin: 0 0 16px 0;
 }
 
@@ -138,7 +138,7 @@
 .score-value {
   font-size: 48px;
   font-weight: 800;
-  color: #3182F6;
+  color: var(--color-blue-400);
   margin: 0;
   line-height: 1.2;
 }
@@ -185,7 +185,7 @@
 }
 
 .stat-item-highlight .stat-value {
-  color: #3182F6;
+  color: var(--color-blue-400);
   font-weight: 700;
 }
 
@@ -274,24 +274,26 @@
 }
 
 .result-button-primary {
-  background-color: #3182F6;
-  color: #ffffff;
+  background-color: var(--color-blue-400);
+  color: var(--color-gray-100);
   width: 100%;
   padding: 16px;
   border: none;
-  border-radius: 12px;
+  border-radius: var(--rounded-sm);
   font-size: 1rem;
   font-weight: 600;
   cursor: pointer;
-  transition: background-color 0.2s;
+  transition: 200ms ease-in-out;
+  transition-property: transform, background-color;
 }
 
 .result-button-primary:hover {
-  background-color: #2563eb;
+  background-color: var(--color-blue-500);
 }
 
 .result-button-primary:active {
-  background-color: #1d4ed8;
+  background-color: var(--color-blue-700);
+  transform: scale(0.975);
 }
 
 .result-button-group {
@@ -301,24 +303,26 @@
 }
 
 .result-button-secondary {
-  background-color: #2c2c2c;
-  color: #ffffff;
+  background-color: var(--color-gray-700);
+  color: var(--color-gray-100);
   flex: 1;
   padding: 14px;
-  border: 1px solid #3c3c3c;
-  border-radius: 12px;
+  border: 1px solid var(--color-gray-300);
+  border-radius: var(--rounded-sm);
   font-size: 0.875rem;
   font-weight: 500;
   cursor: pointer;
-  transition: background-color 0.2s;
+  transition: 200ms ease-in-out;
+  transition-property: transform, background-color;
 }
 
 .result-button-secondary:hover {
-  background-color: #3c3c3c;
+  background-color: var(--color-gray-600, #3c3c3c);
 }
 
 .result-button-secondary:active {
-  background-color: #4c4c4c;
+  background-color: var(--color-gray-500);
+  transform: scale(0.975);
 }
 
 /* Confetti 효과 */

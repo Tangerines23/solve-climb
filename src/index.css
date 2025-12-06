@@ -16,11 +16,39 @@
   -webkit-tap-highlight-color: transparent;
   touch-action: pan-x pan-y;
 
+  /* 토스 디자인 시스템 CSS 변수 */
+  --icon-size-md: 24px;
+  
+  /* Border Radius - 토스 표준 */
+  --rounded-xs: 6px;
+  --rounded-sm: 12px;
+  --rounded-md: 20px;
+  --rounded-lg: 32px;
+  
+  /* 색상 - 토스 표준 + 커스텀 */
   --color-gray-100: #ffffff;
+  --color-gray-200: #fafafc;
+  --color-gray-300: #e2e2e2;
+  --color-gray-300-alpha: #e2e2e299;
+  --color-gray-400: #bebec0;
+  --color-gray-500: #9b9b9b;
+  --color-gray-700: #303030;
   --color-gray-800: #181818;
   --color-gray-900: #121212;
-  --color-primary: #3182f6;
+  
+  /* Primary Blue - 토스 스타일 */
+  --color-blue-400: #3182f6; /* 기존 primary 색상 유지 */
+  --color-blue-500: #2563eb; /* hover 상태 */
+  --color-blue-700: #1d4ed8; /* active 상태 */
+  
+  /* 추가 Gray 색상 */
+  --color-gray-600: #3c3c3c;
+  
+  /* 기타 색상 */
+  --color-primary: var(--color-blue-400); /* 호환성 유지 */
   --color-toss-red: #f04452;
+  --color-red-400: #ff4545;
+  --color-yellow-400: #fed85d;
   --color-primary-focus-shadow: rgba(49, 130, 246, 0.2);
   --color-border: #e0e0e0;
   --color-disabled: #a0a0a0;
@@ -93,7 +121,7 @@ html, body {
   font-size: 16px;
   font-family: inherit;
   border: 1px solid var(--color-border);
-  border-radius: 12px;
+  border-radius: var(--rounded-sm);
   background-color: #333;
   color: white;
   margin-top: 16px;
@@ -114,7 +142,7 @@ html, body {
   color: var(--color-gray-100);
   background-color: var(--color-primary);
   border: none;
-  border-radius: 12px;
+  border-radius: var(--rounded-sm);
   cursor: pointer;
   transition: background-color 0.2s;
   margin-top: auto;
@@ -180,7 +208,7 @@ html, body {
   color: var(--color-gray-100);
   background-color: var(--color-toss-red);
   border: none;
-  border-radius: 12px;
+  border-radius: var(--rounded-sm);
   cursor: pointer;
   transition: background-color 0.2s;
   margin-top: auto;

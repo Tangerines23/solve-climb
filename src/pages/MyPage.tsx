@@ -12,6 +12,7 @@ import { useMyPageStats } from '../hooks/useMyPageStats';
 import { resetAllData } from '../utils/dataReset';
 import { vibrateShort } from '../utils/haptic';
 import { supabase } from '../utils/supabaseClient';
+import { openLeaderboard } from '../utils/tossGameCenter';
 import { APP_CONFIG } from '../config/app';
 import './MyPage.css';
 
@@ -126,7 +127,6 @@ export function MyPage() {
 
   // 익명 로그인 함수 (로컬 세션만 사용)
   const handleOpenLeaderboard = async () => {
-    const { openLeaderboard } = await import('../utils/tossGameCenter');
     const result = await openLeaderboard((message) => {
       // 에러 메시지를 AlertModal로 표시
       setAlertMessage(message);

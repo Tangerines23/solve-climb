@@ -281,7 +281,7 @@
   display: block;
   font-size: clamp(2rem, 6vw, 3rem);
   font-weight: bold;
-  color: #3182f6;
+  color: var(--color-blue-400);
   text-align: center;
   user-select: none;
   padding: clamp(12px, 2vh, 16px);
@@ -313,7 +313,7 @@
   transform: translateX(-50%);
   width: clamp(100px, 20vw, 200px);
   height: clamp(3px, 0.5vh, 4px);
-  background-color: #3182f6;
+  background-color: var(--color-blue-400);
   border-radius: 2px;
   animation: caret-blink 1.2s ease-in-out infinite;
   z-index: 0;
@@ -337,7 +337,7 @@
   border-radius: 12px;
   border: 2px solid #3c3c3c;
   background-color: #2c2c2c;
-  color: #3182f6;
+  color: var(--color-blue-400);
   text-align: center;
   transition: color 0.3s ease, border-color 0.3s ease, background-color 0.3s ease;
   appearance: none;
@@ -353,7 +353,7 @@
 
 .answer-input-system:focus {
   outline: none;
-  border-color: #3182f6;
+  border-color: var(--color-blue-400);
   box-shadow: 0 0 0 3px rgba(49, 130, 246, 0.2);
 }
 
@@ -362,22 +362,52 @@
   cursor: not-allowed;
 }
 
-/* Micro Shake 애니메이션 - 좁고 빠른 진동 */
-@keyframes micro-shake {
-  0%, 100% { transform: translateX(0); }
-  25% { transform: translateX(-4px); }
-  75% { transform: translateX(4px); }
+/* Flash Red 애니메이션 - 붉은색 플래시 효과 (answer-display용, border 없음) */
+@keyframes flash-red {
+  0% { 
+    background-color: rgba(240, 68, 82, 0); 
+  }
+  20% { 
+    background-color: rgba(240, 68, 82, 0.2); 
+  }
+  100% { 
+    background-color: rgba(240, 68, 82, 0); 
+  }
+}
+
+/* Flash Red Input 애니메이션 - 테두리 색상 포함 (answer-input-system용) */
+@keyframes flash-red-input {
+  0% { 
+    background-color: rgba(240, 68, 82, 0); 
+    border-color: #3c3c3c; 
+  }
+  20% { 
+    background-color: rgba(240, 68, 82, 0.2); 
+    border-color: #F04452; 
+  }
+  100% { 
+    background-color: rgba(240, 68, 82, 0); 
+    border-color: #3c3c3c; 
+  }
 }
 
 /* 에러 상태 스타일 */
 .answer-input-wrapper.is-error {
-  animation: micro-shake 0.25s ease-in-out;
+  /* shake 애니메이션 제거 - flash-red로 대체 */
 }
 
 .answer-input-system.is-error {
   color: #F04452;
   border: 2px solid #F04452;
   background-color: rgba(240, 68, 82, 0.1);
+}
+
+.answer-input-system.input-error-flash {
+  animation: flash-red-input 0.4s ease-out;
+}
+
+.answer-display.input-error-flash {
+  animation: flash-red 0.4s ease-out;
 }
 
 .answer-input-system.is-error:focus {
@@ -405,21 +435,23 @@
   padding: 14px 0;
   font-size: 1.125rem;
   font-weight: bold;
-  background-color: #3182f6;
-  color: #ffffff;
+  background-color: var(--color-blue-400);
+  color: var(--color-gray-100);
   border: none;
-  border-radius: 12px;
+  border-radius: var(--rounded-sm);
   cursor: pointer;
-  transition: all 0.2s;
+  transition: 200ms ease-in-out;
+  transition-property: transform, background-color;
   margin-top: 12px;
 }
 
 .submit-button-system:hover:not(:disabled) {
-  background-color: #2563eb;
+  background-color: var(--color-blue-500);
 }
 
 .submit-button-system:active:not(:disabled) {
-  transform: scale(0.98);
+  background-color: var(--color-blue-700);
+  transform: scale(0.975);
 }
 
 .submit-button-system:disabled {
@@ -432,28 +464,33 @@
   padding: 10px 0;
   font-size: 1rem;
   font-weight: bold;
-  background-color: #3182f6;
-  color: #ffffff;
+  background-color: var(--color-blue-400);
+  color: var(--color-gray-100);
   border: none;
-  border-radius: 8px;
+  border-radius: var(--rounded-xs);
   cursor: pointer;
+  transition: 200ms ease-in-out;
+  transition-property: transform, background-color;
+}
+
+.submit-button:active {
+  transform: scale(0.975);
 }
 
 .category-label {
   margin: 0;
   font-size: 0.875rem;
   font-weight: 500;
-  color: #3182f6;
+  color: var(--color-blue-400);
   text-align: left;
 }
 
-/* 감점 토스트 스타일 - 입력창 우측 상단 바깥쪽 */
+/* 감점 토스트 스타일 - 카드 상단 영역 랜덤 위치 */
 .slide-toast {
   position: absolute;
-  top: -8px;
-  right: -12px;
-  z-index: 1000;
+  z-index: 50;
   pointer-events: none;
+  transform: translate(-50%, -50%);
   animation: floatUp 1.5s ease-out forwards;
 }
 
