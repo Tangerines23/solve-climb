@@ -15,14 +15,14 @@
 .toast-content {
   background-color: rgba(28, 28, 30, 0.95);
   backdrop-filter: blur(10px);
-  border-radius: 16px;
-  padding: 12px 20px;
+  border-radius: var(--rounded-card);
+  padding: var(--spacing-md) var(--spacing-xl);
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: var(--spacing-sm);
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
   /* 화면 기준: 홈페이지 콘텐츠 영역(400px) 또는 화면 전체 중 작은 값, 양쪽 여백 8px */
-  max-width: min(400px, calc(100vw - 16px));
+  max-width: min(400px, calc(100vw - var(--spacing-lg)));
   width: fit-content;
   pointer-events: auto;
 }
@@ -36,7 +36,7 @@
 .toast-text {
   font-size: 0.875rem;
   font-weight: 500;
-  color: #ffffff;
+  color: var(--color-text-primary);
   line-height: 1.4;
   text-align: center;
   word-break: keep-all;

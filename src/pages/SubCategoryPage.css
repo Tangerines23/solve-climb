@@ -4,7 +4,7 @@
   left: 0;
   right: 0;
   bottom: 0;
-  background-color: #121212;
+  background-color: var(--color-gray-900);
   overflow-y: auto;
   overflow-x: hidden;
   -webkit-overflow-scrolling: touch;
@@ -13,15 +13,30 @@
 }
 
 .subcategory-main {
-  padding-top: 56px; /* Header 높이 */
+  padding-top: var(--header-height-portrait); /* Header 높이 */
   padding-bottom: 80px; /* FooterNav 공간 */
-  min-height: calc(100vh - 56px);
+  min-height: calc(100vh - var(--header-height-portrait));
+}
+
+/* 가로모드에서 패딩 조정 */
+@media (orientation: landscape) {
+  .subcategory-main {
+    padding-top: var(--header-height-landscape);
+    padding-bottom: var(--footer-height-landscape);
+  }
 }
 
 .subcategory-content {
-  max-width: 400px;
+  max-width: var(--modal-width-portrait);
   margin: 0 auto;
-  padding: 20px;
+  padding: var(--spacing-xl);
+}
+
+/* 가로모드에서 콘텐츠 너비 확장 */
+@media (orientation: landscape) {
+  .subcategory-content {
+    max-width: var(--modal-width-landscape-small);
+  }
 }
 
 .subcategory-header-section {
@@ -58,26 +73,26 @@
 }
 
 .topic-card {
-  background-color: #1e1e1e;
-  border-radius: 16px;
-  padding: 16px;
+  background-color: var(--color-bg-primary);
+  border-radius: var(--rounded-card);
+  padding: var(--spacing-lg);
   display: flex;
   justify-content: space-between;
   align-items: center;
-  border: 1px solid #2c2c2c;
+  border: 1px solid var(--color-bg-secondary);
   transition: transform 0.2s, border-color 0.2s;
   cursor: pointer;
 }
 
 .topic-card:hover {
   transform: translateY(-2px);
-  border-color: #3182f6;
+  border-color: var(--color-blue-400);
 }
 
 .topic-card-left {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: var(--spacing-md);
   flex: 1;
 }
 
@@ -88,23 +103,23 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  background-color: #2c2c2c;
-  border-radius: 8px;
+  background-color: var(--color-bg-secondary);
+  border-radius: var(--rounded-sm);
   flex-shrink: 0;
 }
 
 .topic-text {
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: var(--spacing-xs);
   flex: 1;
 }
 
 .topic-name {
   font-size: 1rem;
   font-weight: 600;
-  color: #ffffff;
-  margin: 0 0 8px 0;
+  color: var(--color-text-primary);
+  margin: 0 0 var(--spacing-sm) 0;
 }
 
 .topic-altitude-info {
@@ -124,54 +139,54 @@
 .topic-progress-bar {
   width: 100%;
   height: 4px;
-  background-color: #2c2c2c;
-  border-radius: 2px;
+  background-color: var(--color-bg-secondary);
+  border-radius: var(--rounded-tiny);
   overflow: hidden;
 }
 
 .topic-progress-bar-fill {
   height: 100%;
-  background-color: #3182F6;
-  border-radius: 2px;
+  background-color: var(--color-blue-400);
+  border-radius: var(--rounded-tiny);
   transition: width 0.3s ease;
 }
 
 .topic-chevron {
   font-size: 1.5rem;
-  color: #aaa;
+  color: var(--color-text-secondary);
   font-weight: 300;
   flex-shrink: 0;
-  margin-left: 12px;
+  margin-left: var(--spacing-md);
 }
 
 .error-message {
   text-align: center;
-  color: #ffffff;
-  padding: 40px 20px;
-  background-color: #1e1e1e;
-  border-radius: 16px;
-  border: 1px solid #2c2c2c;
+  color: var(--color-text-primary);
+  padding: var(--spacing-4xl) var(--spacing-xl);
+  background-color: var(--color-bg-primary);
+  border-radius: var(--rounded-card);
+  border: 1px solid var(--color-bg-secondary);
 }
 
 .error-message h2 {
   font-size: 1.25rem;
   font-weight: bold;
-  margin: 0 0 12px 0;
-  color: #f04452;
+  margin: 0 0 var(--spacing-md) 0;
+  color: var(--color-toss-red);
 }
 
 .error-message p {
-  margin: 0 0 24px 0;
+  margin: 0 0 var(--spacing-2xl) 0;
   font-size: 1rem;
-  color: #aaa;
+  color: var(--color-text-secondary);
 }
 
 .error-back-button {
-  padding: 12px 24px;
-  background-color: #3182f6;
-  color: #ffffff;
+  padding: var(--spacing-md) var(--spacing-2xl);
+  background-color: var(--color-blue-400);
+  color: var(--color-text-primary);
   border: none;
-  border-radius: 12px;
+  border-radius: var(--rounded-button);
   font-size: 1rem;
   font-weight: bold;
   cursor: pointer;
@@ -179,12 +194,12 @@
 }
 
 .error-back-button:hover {
-  background-color: #2563eb;
+  background-color: var(--color-blue-500);
 }
 
 .topic-card.favorite {
-  border-color: #3182F6;
-  background-color: rgba(49, 130, 246, 0.1);
+  border-color: var(--color-blue-400);
+  background-color: rgba(0, 191, 165, 0.1);
 }
 
 .favorite-star {
@@ -199,8 +214,8 @@
   transform: translateX(-50%);
   background-color: #1C1C1E;
   color: #ffffff;
-  padding: 12px 24px;
-  border-radius: 24px;
+  padding: var(--spacing-md) var(--spacing-2xl);
+  border-radius: var(--rounded-large-card);
   font-size: 0.875rem;
   font-weight: 500;
   z-index: 1000;

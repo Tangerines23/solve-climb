@@ -1,0 +1,335 @@
+.keyboard-info-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: var(--color-overlay);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: var(--spacing-xl);
+  animation: fadeIn 0.3s ease;
+  overflow-y: auto;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.keyboard-info-modal {
+  background-color: var(--color-bg-primary);
+  border-radius: var(--rounded-md);
+  width: 100%;
+  max-width: 500px;
+  max-height: 95vh;
+  padding: var(--spacing-2xl);
+  box-shadow: var(--shadow-modal);
+  animation: slideUp 0.3s ease;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+/* 가로모드에서 모달 크기 조정 */
+@media (orientation: landscape) {
+  .keyboard-info-modal {
+    max-width: var(--modal-width-landscape-medium);
+    max-height: 90vh;
+  }
+
+@keyframes slideUp {
+  from {
+    transform: translateY(var(--spacing-xl));
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+.keyboard-info-modal-header {
+  text-align: center;
+  margin-bottom: var(--spacing-xl);
+  flex-shrink: 0;
+}
+
+.keyboard-info-modal-title {
+  font-size: 1.5rem;
+  font-weight: bold;
+  color: var(--color-text-primary);
+  margin: 0 0 var(--spacing-sm) 0;
+}
+
+.keyboard-info-modal-subtitle {
+  font-size: 0.875rem;
+  color: var(--color-text-secondary);
+  margin: 0;
+}
+
+/* 카테고리 탭 (좌우 스크롤) */
+.keyboard-info-category-tabs {
+  margin-bottom: var(--spacing-2xl);
+  flex-shrink: 0;
+}
+
+.keyboard-info-category-tabs-scroll {
+  display: flex;
+  gap: var(--spacing-sm);
+  overflow-x: auto;
+  overflow-y: hidden;
+  padding-bottom: var(--spacing-sm);
+  scrollbar-width: thin;
+  scrollbar-color: #4c4c4c var(--color-bg-secondary);
+  -webkit-overflow-scrolling: touch;
+}
+
+.keyboard-info-category-tabs-scroll::-webkit-scrollbar {
+  height: 4px;
+}
+
+.keyboard-info-category-tabs-scroll::-webkit-scrollbar-track {
+  background: var(--color-bg-secondary);
+  border-radius: var(--rounded-tiny);
+}
+
+.keyboard-info-category-tabs-scroll::-webkit-scrollbar-thumb {
+  background: #4c4c4c;
+  border-radius: var(--rounded-tiny);
+}
+
+.keyboard-info-category-tabs-scroll::-webkit-scrollbar-thumb:hover {
+  background: #5c5c5c;
+}
+
+.keyboard-info-category-tab {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: var(--spacing-small-alt) var(--spacing-lg);
+  background-color: var(--color-bg-secondary);
+  border: 1px solid var(--color-bg-tertiary);
+  border-radius: var(--rounded-button);
+  color: var(--color-text-primary);
+  font-size: 0.875rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.keyboard-info-category-tab:hover {
+  background-color: var(--color-bg-tertiary);
+  border-color: #4c4c4c;
+}
+
+.keyboard-info-category-tab.active {
+  background-color: var(--color-blue-400);
+  border-color: var(--color-blue-400);
+  color: var(--color-text-primary);
+}
+
+.keyboard-info-tab-icon {
+  font-size: 1.1rem;
+}
+
+.keyboard-info-tab-name {
+  font-weight: 500;
+}
+
+/* 키보드 미리보기 메인 영역 */
+.keyboard-info-main-preview {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  margin-bottom: var(--spacing-xl);
+}
+
+.keyboard-info-preview-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: var(--spacing-lg);
+  padding-bottom: var(--spacing-md);
+  border-bottom: 1px solid var(--color-bg-tertiary);
+}
+
+.keyboard-info-preview-title {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.keyboard-info-preview-icon {
+  font-size: 1.5rem;
+}
+
+.keyboard-info-preview-category {
+  font-size: 0.75rem;
+  color: var(--color-text-secondary);
+  font-weight: 500;
+}
+
+.keyboard-info-preview-subtopic {
+  font-size: 1rem;
+  color: var(--color-text-primary);
+  font-weight: 600;
+}
+
+.keyboard-info-negative-badge {
+  font-size: 0.7rem;
+  color: var(--color-blue-400);
+  background-color: rgba(0, 191, 165, 0.1);
+  padding: var(--spacing-xs) var(--spacing-sm);
+  border-radius: var(--rounded-xs);
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+/* 키보드 미리보기 래퍼 (좌우 화살표 포함) */
+.keyboard-info-preview-wrapper {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-md);
+  flex: 1;
+  min-height: 0;
+}
+
+.keyboard-info-nav-button {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background-color: var(--color-bg-secondary);
+  border: 1px solid var(--color-bg-tertiary);
+  color: var(--color-text-primary);
+  font-size: 1.5rem;
+  font-weight: bold;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  padding: 0;
+  line-height: 1;
+}
+
+.keyboard-info-nav-button:hover {
+  background-color: var(--color-bg-tertiary);
+  border-color: var(--color-blue-400);
+  transform: scale(1.1);
+}
+
+.keyboard-info-nav-button:active {
+  transform: scale(0.95);
+}
+
+.keyboard-info-preview-container-main {
+  flex: 1;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 0;
+  padding: var(--spacing-lg);
+  background-color: var(--color-gray-900);
+  border-radius: var(--rounded-card);
+  overflow: auto;
+}
+
+.keyboard-info-preview-container-main .custom-keypad,
+.keyboard-info-preview-container-main .qwerty-keypad {
+  width: 100%;
+  max-width: 100%;
+  /* 실제 인게임과 동일한 크기로 표시 */
+  transform: none;
+}
+
+/* 세로 모드: 키보드를 세로로 표시 */
+.keyboard-info-preview-container-main.portrait .custom-keypad,
+.keyboard-info-preview-container-main.portrait .qwerty-keypad {
+  /* 세로 모드 스타일은 기본값 유지 */
+}
+
+/* 가로 모드: 키보드를 가로로 표시 */
+.keyboard-info-preview-container-main.landscape .custom-keypad,
+.keyboard-info-preview-container-main.landscape .qwerty-keypad {
+  /* 가로 모드 스타일은 키보드 자체의 가로모드 미디어 쿼리 사용 */
+}
+
+/* 키보드는 실제 인게임과 동일하게 표시 */
+.keyboard-info-preview-container-main .custom-keypad {
+  /* CustomKeypad의 기본 스타일 그대로 사용 */
+}
+
+.keyboard-info-preview-container-main .qwerty-keypad {
+  /* QwertyKeypad의 기본 스타일 그대로 사용 */
+}
+
+.keyboard-info-preview-indicator {
+  text-align: center;
+  margin-top: var(--spacing-md);
+  font-size: 0.75rem;
+  color: var(--color-text-secondary);
+  font-weight: 500;
+}
+
+.keyboard-info-modal-close {
+  width: 100%;
+  padding: var(--spacing-lg);
+  background-color: var(--color-bg-secondary);
+  border: 1px solid var(--color-bg-tertiary);
+  border-radius: var(--rounded-button);
+  color: var(--color-text-primary);
+  font-size: 1rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  flex-shrink: 0;
+}
+
+.keyboard-info-modal-close:hover {
+  background-color: var(--color-bg-tertiary);
+}
+
+.keyboard-info-modal-close:active {
+  transform: scale(0.98);
+}
+
+/* 가로모드에서 모달 크기 조정 */
+@media (orientation: landscape) {
+  .keyboard-info-modal {
+    max-width: var(--modal-width-landscape-medium);
+    max-height: 90vh;
+  }
+
+  .keyboard-info-preview-container-main .custom-keypad .keypad-key {
+    height: clamp(50px, 10vw, 70px);
+    max-height: clamp(50px, 10vw, 70px);
+    min-height: clamp(50px, 10vw, 70px);
+    font-size: clamp(1.4rem, 3vw, 1.8rem);
+  }
+
+  .keyboard-info-preview-container-main .qwerty-keypad .qwerty-keypad-key {
+    font-size: clamp(0.9rem, 2vw, 1.1rem);
+    min-height: 40px;
+  }
+}
+
+/* 작은 화면에서 키보드 크기 조정 */
+@media (max-width: var(--modal-width-portrait)) {
+  .keyboard-info-preview-container-main .custom-keypad .keypad-key {
+    height: clamp(50px, 12vw, 70px);
+    max-height: clamp(50px, 12vw, 70px);
+    min-height: clamp(50px, 12vw, 70px);
+    font-size: clamp(1.4rem, 3.5vw, 1.8rem);
+  }
+}

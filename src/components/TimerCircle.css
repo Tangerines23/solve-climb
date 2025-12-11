@@ -1,7 +1,7 @@
 .timer-circle-container {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: var(--spacing-sm);
   z-index: 10;
   position: relative;
 }
@@ -9,5 +9,5 @@
 .timer-label {
   font-size: 0.95rem;
   font-weight: bold;
-  color: #3182f6;
+  color: var(--color-blue-400);
 }

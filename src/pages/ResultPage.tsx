@@ -11,8 +11,8 @@ import './ResultPage.css';
 // CountUp 애니메이션 훅
 function useCountUp(targetValue: number, duration: number = 1000) {
   const [count, setCount] = useState(0);
-  const requestRef = useRef<number>();
-  const startTimeRef = useRef<number>();
+  const requestRef = useRef<number | undefined>(undefined);
+  const startTimeRef = useRef<number | undefined>(undefined);
 
   useEffect(() => {
     if (targetValue === 0) {
@@ -67,6 +67,21 @@ export function ResultPage() {
   const [isNewRecord, setIsNewRecord] = useState(false);
   const [showConfetti, setShowConfetti] = useState(false);
 
+  // Confetti 색상 팔레트 (CSS 변수에서 읽어옴)
+  const confettiColors = React.useMemo(() => {
+    if (typeof window !== 'undefined') {
+      const root = getComputedStyle(document.documentElement);
+      return [
+        root.getPropertyValue('--color-blue-400').trim() || '#00BFA5',
+        root.getPropertyValue('--color-confetti-green').trim() || '#10b981',
+        root.getPropertyValue('--color-confetti-yellow').trim() || '#f59e0b',
+        root.getPropertyValue('--color-red-500').trim() || '#ef4444',
+        root.getPropertyValue('--color-confetti-purple').trim() || '#8b5cf6',
+      ];
+    }
+    return ['#00BFA5', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6'];
+  }, []);
+
   // URL 파라미터 파싱
   const categoryParam = searchParams.get('category');
   const subParam = searchParams.get('sub');
@@ -105,23 +120,7 @@ export function ResultPage() {
 
   // 오답 정보 파싱 (서바이벌 모드용)
   const wrongAnswers: WrongAnswer[] = React.useMemo(() => {
-    // 디버깅: URL 파라미터 확인
-    console.log('[ResultPage] 오답 데이터 파싱:', {
-      mode,
-      modeParam,
-      wrongQParam,
-      wrongAParam,
-      correctAParam,
-      isSurvival: mode === 'survival',
-    });
-
     if (mode !== 'survival' || !wrongQParam || !wrongAParam || !correctAParam) {
-      console.log('[ResultPage] 오답 데이터 없음 - 조건 불만족:', {
-        mode,
-        hasWrongQ: !!wrongQParam,
-        hasWrongA: !!wrongAParam,
-        hasCorrectA: !!correctAParam,
-      });
       return [];
     }
     try {
@@ -129,23 +128,16 @@ export function ResultPage() {
       const wrongAnswers = wrongAParam.split('|');
       const correctAnswers = correctAParam.split('|');
       
-      const parsed = questions.map((q, i) => ({
+      return questions.map((q, i) => ({
         question: q,
         wrongAnswer: wrongAnswers[i] || '',
         correctAnswer: correctAnswers[i] || '',
       }));
-
-      console.log('[ResultPage] 오답 데이터 파싱 성공:', {
-        count: parsed.length,
-        items: parsed,
-      });
-
-      return parsed;
     } catch (error) {
       console.error('[ResultPage] 오답 데이터 파싱 실패:', error);
       return [];
     }
-  }, [mode, modeParam, wrongQParam, wrongAParam, correctAParam]);
+  }, [mode, wrongQParam, wrongAParam, correctAParam]);
 
   // 정확도 계산 (맞춘 개수 기준)
   const accuracy = total > 0 ? Math.round((correctCount / total) * 100) : 0;
@@ -155,7 +147,9 @@ export function ResultPage() {
     if (!categoryParam || !subParam || !level || !mode) return;
 
     // localStorage 키 생성: highscore_{category}_{sub}_{level}_{mode}
-    const storageKey = `highscore_${categoryParam}_${subParam}_${level}_${modeParam}`;
+    // modeParam 대신 mode를 사용하여 일관성 유지 (mode는 'time-attack' 또는 'survival')
+    const storageKeyMode = mode === 'time-attack' ? 'time_attack' : 'survival';
+    const storageKey = `highscore_${categoryParam}_${subParam}_${level}_${storageKeyMode}`;
     const existingRecord = localStorage.getItem(storageKey);
     const existingScore = existingRecord ? parseInt(existingRecord, 10) : 0;
 
@@ -169,10 +163,10 @@ export function ResultPage() {
     }
 
     // 레벨 클리어 조건 확인
-    // 타임어택: 정확도 50% 이상 또는 점수 10점 이상
+    // 타임어택: 정확도 50% 이상 또는 1개 이상 맞춤 (finalScore >= 10은 correctCount >= 1과 동일)
     // 서바이벌: 1개 이상 맞춤
     const shouldClearLevel = mode === 'time-attack' 
-      ? (accuracy >= 50 || finalScore >= 10)
+      ? (accuracy >= 50 || correctCount >= 1)
       : (correctCount >= 1);
 
     if (shouldClearLevel && finalScore > 0) {
@@ -192,7 +186,7 @@ export function ResultPage() {
           console.error('점수 제출 실패:', error);
         });
     }
-  }, [categoryParam, subParam, level, mode, modeParam, finalScore, scoreSubmitted, accuracy, correctCount, clearLevel, updateBestScore]);
+  }, [categoryParam, subParam, level, mode, finalScore, scoreSubmitted, accuracy, correctCount, clearLevel, updateBestScore]);
 
   // 다시 도전하기 - 같은 게임 설정으로 재시작
   const handleRetry = () => {
@@ -235,21 +229,10 @@ export function ResultPage() {
   const resultIcon = isTimeAttack ? '⏱️' : '💥';
   const resultTitle = isTimeAttack ? "시간 종료!" : "게임 오버";
 
-  // 디버깅: 렌더링 조건 확인
-  React.useEffect(() => {
-    console.log('[ResultPage] 렌더링 조건 확인:', {
-      isSurvivalMode,
-      wrongAnswersLength: wrongAnswers.length,
-      wrongAnswers,
-      shouldShowWrongAnswers: isSurvivalMode && wrongAnswers.length > 0,
-    });
-  }, [isSurvivalMode, wrongAnswers]);
-
   // 통계 리스트 데이터 구성
   const statsList = React.useMemo(() => {
     const stats: Array<{ label: string; value: string; isHighlight?: boolean }> = [];
 
-    // 신기록 (맨 윗줄)
     if (isNewRecord) {
       stats.push({
         label: '최고 기록 달성',
@@ -258,22 +241,18 @@ export function ResultPage() {
       });
     }
 
-    // 타임어택 모드 통계
-    if (isTimeAttack) {
-      if (total > 0) {
-        stats.push({
-          label: '정확도',
-          value: `${accuracy}%`,
-        });
-        stats.push({
-          label: '진행',
-          value: `${correctCount} / ${total}`,
-        });
-      }
+    if (isTimeAttack && total > 0) {
+      stats.push({
+        label: '정확도',
+        value: `${accuracy}%`,
+      });
+      stats.push({
+        label: '진행',
+        value: `${correctCount} / ${total}`,
+      });
     }
 
-    // 서바이벌 모드 통계
-    if (!isTimeAttack && averageTime !== null) {
+    if (isSurvivalMode && averageTime !== null) {
       stats.push({
         label: '평균 시간',
         value: `${averageTime.toFixed(2)}초`,
@@ -282,6 +261,71 @@ export function ResultPage() {
 
     return stats;
   }, [isNewRecord, isTimeAttack, total, accuracy, correctCount, averageTime]);
+
+  // 공통 콘텐츠 컴포넌트
+  const renderHeaderContent = () => (
+    <>
+      <div className="result-icon floating">{resultIcon}</div>
+      <h1 className="result-title">{resultTitle}</h1>
+      {level && subTopicInfo && (
+        <p className="result-subtitle">
+          {APP_CONFIG.CATEGORY_MAP[categoryParam as keyof typeof APP_CONFIG.CATEGORY_MAP] || categoryParam} - {subTopicInfo.name} Level {level}
+        </p>
+      )}
+      <div className="score-section">
+        <p className="score-value">{animatedScore.toLocaleString()}m</p>
+      </div>
+    </>
+  );
+
+  const renderStatsContent = () => (
+    <>
+      {statsList.length > 0 && (
+        <ul className="stat-list">
+          {statsList.map((stat, index) => (
+            <li
+              key={`${stat.label}-${index}`}
+              className={`stat-item ${stat.isHighlight ? 'stat-item-highlight' : ''}`}
+              style={{ animationDelay: `${index * 0.1}s` }}
+            >
+              <span className="stat-label">{stat.label}</span>
+              <span className="stat-value">{stat.value}</span>
+            </li>
+          ))}
+        </ul>
+      )}
+      {isSurvivalMode && wrongAnswers && wrongAnswers.length > 0 && (
+        <div className="wrong-answer-card">
+          <h3 className="wrong-answer-title">오답 노트</h3>
+          <div className="wrong-answer-list">
+            {wrongAnswers.map((item, index) => (
+              <div key={index} className="wrong-answer-item">
+                <div className="wrong-answer-question">{item.question}</div>
+                <div className="wrong-answer-row">
+                  <span className="wrong-answer-wrong">{item.wrongAnswer}</span>
+                  <span className="wrong-answer-correct">{item.correctAnswer}</span>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+    </>
+  );
+
+  const renderButtons = () => (
+    <>
+      <button onClick={handleRetry} className="result-button-primary">
+        다시 도전하기
+      </button>
+      <button onClick={handleViewRanking} className="result-button-secondary">
+        랭킹 보기
+      </button>
+      <button onClick={handleSelectOtherLevel} className="result-button-secondary">
+        다른 레벨
+      </button>
+    </>
+  );
 
   return (
     <div className="page-container result-page">
@@ -292,7 +336,7 @@ export function ResultPage() {
             <div key={i} className="confetti" style={{
               left: `${Math.random() * 100}%`,
               animationDelay: `${Math.random() * 0.5}s`,
-              backgroundColor: ['#3182F6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6'][Math.floor(Math.random() * 5)],
+              backgroundColor: confettiColors[Math.floor(Math.random() * confettiColors.length)],
             }} />
           ))}
         </div>
@@ -305,66 +349,41 @@ export function ResultPage() {
         </button>
       </header>
 
-      {/* 결과 카드 */}
+      {/* 결과 카드 (세로모드용) */}
       <div className="result-card">
-        {/* [헤더 영역] */}
         <div className="result-header-section">
-          {/* 아이콘 (floating 애니메이션) */}
-          <div className="result-icon floating">{resultIcon}</div>
+          {renderHeaderContent()}
+        </div>
+        {renderStatsContent()}
+      </div>
 
-          {/* 타이틀 */}
-          <h1 className="result-title">{resultTitle}</h1>
-
-          {/* 서브타이틀 (레벨 정보) */}
+      {/* 가로모드용 3단 레이아웃 (하나의 모달) */}
+      <div className="result-landscape-layout">
+        <div className="result-left-section">
+          <div className="result-title-row">
+            <div className="result-icon floating">{resultIcon}</div>
+            <h1 className="result-title">{resultTitle}</h1>
+          </div>
           {level && subTopicInfo && (
             <p className="result-subtitle">
               {APP_CONFIG.CATEGORY_MAP[categoryParam as keyof typeof APP_CONFIG.CATEGORY_MAP] || categoryParam} - {subTopicInfo.name} Level {level}
             </p>
           )}
-
-          {/* 점수 (CountUp 애니메이션) */}
           <div className="score-section">
             <p className="score-value">{animatedScore.toLocaleString()}m</p>
           </div>
         </div>
-
-        {/* [통계 리스트 영역] */}
-        {statsList.length > 0 && (
-          <ul className="stat-list">
-            {statsList.map((stat, index) => (
-              <li
-                key={`${stat.label}-${index}`}
-                className={`stat-item ${stat.isHighlight ? 'stat-item-highlight' : ''}`}
-                style={{ animationDelay: `${index * 0.1}s` }}
-              >
-                <span className="stat-label">{stat.label}</span>
-                <span className="stat-value">{stat.value}</span>
-              </li>
-            ))}
-          </ul>
-        )}
-
-        {/* [오답 노트 영역] - 서바이벌 전용 */}
-        {/* 조건: 서바이벌 모드이고 && 오답 데이터가 있을 때 */}
-        {isSurvivalMode && wrongAnswers && wrongAnswers.length > 0 && (
-          <div className="wrong-answer-card">
-            <h3 className="wrong-answer-title">오답 노트</h3>
-            <div className="wrong-answer-list">
-              {wrongAnswers.map((item, index) => (
-                <div key={index} className="wrong-answer-item">
-                  <div className="wrong-answer-question">{item.question}</div>
-                  <div className="wrong-answer-row">
-                    <span className="wrong-answer-wrong">{item.wrongAnswer}</span>
-                    <span className="wrong-answer-correct">{item.correctAnswer}</span>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-        )}
+        <div className="result-divider"></div>
+        <div className="result-center-section">
+          {renderStatsContent()}
+        </div>
+        <div className="result-divider"></div>
+        <div className="result-right-section">
+          {renderButtons()}
+        </div>
       </div>
 
-      {/* 하단 액션 버튼 */}
+      {/* 하단 액션 버튼 (세로모드용) */}
       <div className="result-footer-actions">
         <button onClick={handleRetry} className="result-button-primary">
           다시 도전하기

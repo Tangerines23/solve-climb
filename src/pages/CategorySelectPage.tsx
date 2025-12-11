@@ -80,7 +80,7 @@ export function CategorySelectPage() {
   return (
     <div className="page-container category-select-container">
       <button className="back-button" onClick={handleBack}>
-        ← 뒤로
+        ←
       </button>
       {step === 'category' ? (
         <CategorySelector onSelect={handleCategoryTopicSelect} />

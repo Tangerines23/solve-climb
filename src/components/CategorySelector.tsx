@@ -37,7 +37,7 @@ export function CategorySelector({ onSelect }: CategorySelectorProps) {
     return (
       <div className="category-selector-container">
         <button className="back-button" onClick={handleBack}>
-          ← 뒤로
+          ←
         </button>
         <h1 className="selector-title">{selectedCategory}</h1>
         <div className="topics-grid">

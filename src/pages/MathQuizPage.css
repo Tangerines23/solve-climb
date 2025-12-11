@@ -78,7 +78,7 @@
   width: 100vw;
   height: 100dvh;
   max-height: 100dvh;
-  background-color: #121212;
+  background-color: var(--color-gray-900);
   display: flex;
   flex-direction: column;
   padding: 0;
@@ -106,6 +106,13 @@
   flex-shrink: 0;
 }
 
+/* 가로모드에서 헤더 높이 축소 */
+@media (orientation: landscape) {
+  .math-quiz-header {
+    height: clamp(48px, 6vh, 56px);
+  }
+}
+
 .math-quiz-timer-container {
   flex: 1;
   display: flex;
@@ -121,17 +128,17 @@
 .math-quiz-back-button {
   background: none;
   border: none;
-  color: #8b95a1;
+  color: var(--color-text-secondary);
   font-size: 1.75rem;
   cursor: pointer;
-  padding: 12px;
+  padding: var(--spacing-md);
   display: flex;
   align-items: center;
   justify-content: center;
   transition: all 0.2s;
   min-width: 44px;
   min-height: 44px;
-  border-radius: 8px;
+  border-radius: var(--rounded-sm);
   font-weight: 300;
   line-height: 1;
 }
@@ -151,7 +158,7 @@
   flex-direction: column;
   align-items: center;
   width: 100%;
-  max-width: 400px;
+  max-width: var(--modal-width-portrait);
   margin: 0 auto;
   padding: clamp(12px, 2vh, 20px) clamp(12px, 2vw, 16px) 0;
   gap: clamp(8px, 1.5vh, 20px);
@@ -162,16 +169,28 @@
   overflow: hidden;
 }
 
+/* 가로모드 레이아웃 개선 */
+@media (orientation: landscape) {
+  .math-quiz-content {
+    flex-direction: row;
+    max-width: var(--modal-width-landscape-large);
+    align-items: flex-start;
+    justify-content: center;
+    gap: clamp(16px, 3vw, 32px);
+    padding: clamp(12px, 2vh, 20px) clamp(16px, 3vw, 24px) 0;
+  }
+}
+
 
 .quiz-card {
   position: relative;
   width: 100%;
-  max-width: min(400px, 90vw);
+  max-width: min(var(--modal-width-portrait), 90vw);
   display: flex;
   flex-direction: column;
   gap: clamp(12px, 2.5vh, 24px);
   padding: clamp(16px, 3.5vh, 32px) clamp(12px, 2.5vw, 24px);
-  background-color: #1c1c1e;
+  background-color: var(--color-bg-primary);
   border-radius: clamp(12px, 2.5vh, 24px);
   box-shadow: 0 10px 40px rgba(0, 0, 0, 0.4);
   flex-shrink: 1;
@@ -181,24 +200,42 @@
   overflow: hidden;
 }
 
+/* 가로모드에서 퀴즈 카드 크기 조정 */
+@media (orientation: landscape) {
+  .quiz-card {
+    flex: 1;
+    max-width: var(--modal-width-portrait);
+    margin-bottom: 0;
+    max-height: calc(100vh - 120px);
+  }
+}
+
 /* 중단 확인 토스트 알림 - 커서 아래, 키보드 위에 배치 */
 .exit-confirm-toast {
   position: fixed;
   bottom: clamp(240px, 40vh, 320px);
   left: 50%;
   transform: translateX(-50%);
-  width: calc(100% - 32px);
+  width: calc(100% - var(--spacing-3xl));
   max-width: 320px;
   background-color: rgba(44, 44, 44, 0.85);
   backdrop-filter: blur(8px);
-  border-radius: 12px;
-  padding: 12px 16px;
+  border-radius: var(--rounded-button);
+  padding: var(--spacing-md) var(--spacing-lg);
   text-align: center;
   animation: exitConfirmSlideDown 0.3s ease-out;
   z-index: 10000;
   cursor: pointer;
   transition: background-color 0.2s;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  box-shadow: var(--shadow-card);
+}
+
+/* 가로모드에서 exit-confirm-toast 위치 조정 */
+@media (orientation: landscape) {
+  .exit-confirm-toast {
+    bottom: clamp(180px, 30vh, 240px);
+    max-width: var(--modal-width-portrait);
+  }
 }
 
 .exit-confirm-toast:hover {
@@ -212,7 +249,7 @@
 @keyframes exitConfirmSlideDown {
   from {
     opacity: 0;
-    transform: translateX(-50%) translateY(20px);
+    transform: translateX(-50%) translateY(var(--spacing-xl));
   }
   to {
     opacity: 1;
@@ -231,20 +268,20 @@
   }
   to {
     opacity: 0;
-    transform: translateX(-50%) translateY(20px);
+    transform: translateX(-50%) translateY(var(--spacing-xl));
   }
 }
 
 .exit-confirm-text {
   margin: 0;
-  color: #ffffff;
+  color: var(--color-text-primary);
   font-size: 0.875rem;
   font-weight: 500;
   line-height: 1.4;
 }
 
 .exit-confirm-hint {
-  margin: 4px 0 0 0 !important;
+  margin: var(--spacing-xs) 0 0 0 !important;
   font-size: 0.75rem !important;
   color: rgba(255, 255, 255, 0.6) !important;
   font-weight: 400 !important;
@@ -254,14 +291,14 @@
 .question {
   font-size: 1.5rem;
   font-weight: bold;
-  color: #ffffff;
+  color: var(--color-text-primary);
   text-align: center;
 }
 
 .problem-text {
   font-size: clamp(1.5rem, 5vw, 2.5rem);
   font-weight: bold;
-  color: #ffffff;
+  color: var(--color-text-primary);
   text-align: center;
   margin: 0;
   line-height: 1.4;
@@ -285,7 +322,7 @@
   text-align: center;
   user-select: none;
   padding: clamp(12px, 2vh, 16px);
-  border-radius: 12px;
+  border-radius: var(--rounded-button);
   transition: color 0.3s ease;
   position: relative;
   overflow: hidden;
@@ -314,7 +351,7 @@
   width: clamp(100px, 20vw, 200px);
   height: clamp(3px, 0.5vh, 4px);
   background-color: var(--color-blue-400);
-  border-radius: 2px;
+  border-radius: var(--rounded-tiny);
   animation: caret-blink 1.2s ease-in-out infinite;
   z-index: 0;
 }
@@ -334,9 +371,9 @@
   padding: clamp(12px, 2vh, 16px);
   font-size: clamp(1.5rem, 4vw, 2rem);
   font-weight: bold;
-  border-radius: 12px;
-  border: 2px solid #3c3c3c;
-  background-color: #2c2c2c;
+  border-radius: var(--rounded-button);
+  border: 2px solid var(--color-bg-tertiary);
+  background-color: var(--color-bg-secondary);
   color: var(--color-blue-400);
   text-align: center;
   transition: color 0.3s ease, border-color 0.3s ease, background-color 0.3s ease;
@@ -354,7 +391,7 @@
 .answer-input-system:focus {
   outline: none;
   border-color: var(--color-blue-400);
-  box-shadow: 0 0 0 3px rgba(49, 130, 246, 0.2);
+  box-shadow: 0 0 0 3px rgba(0, 191, 165, 0.2);
 }
 
 .answer-input-system:disabled {
@@ -397,8 +434,8 @@
 }
 
 .answer-input-system.is-error {
-  color: #F04452;
-  border: 2px solid #F04452;
+  color: var(--color-toss-red);
+  border: 2px solid var(--color-toss-red);
   background-color: rgba(240, 68, 82, 0.1);
 }
 
@@ -411,7 +448,7 @@
 }
 
 .answer-input-system.is-error:focus {
-  border-color: #F04452;
+  border-color: var(--color-toss-red);
   box-shadow: 0 0 0 3px rgba(240, 68, 82, 0.2);
 }
 
@@ -420,19 +457,19 @@
 }
 
 .answer-display.is-error {
-  color: #F04452;
+  color: var(--color-toss-red);
   transition: color 0.3s ease;
 }
 
 .answer-display.is-error .answer-display-text {
-  color: #F04452;
+  color: var(--color-toss-red);
   /* 글자 자체는 고정되어 있음 (가독성 향상) */
 }
 
 /* 시스템 키보드 모드용 제출 버튼 */
 .submit-button-system {
   width: 100%;
-  padding: 14px 0;
+  padding: var(--spacing-medium-alt) 0;
   font-size: 1.125rem;
   font-weight: bold;
   background-color: var(--color-blue-400);
@@ -457,11 +494,11 @@
 .submit-button-system:disabled {
   opacity: 0.5;
   cursor: not-allowed;
-  background-color: #2c2c2c;
+  background-color: var(--color-bg-secondary);
 }
 
 .submit-button {
-  padding: 10px 0;
+  padding: var(--spacing-small-alt) 0;
   font-size: 1rem;
   font-weight: bold;
   background-color: var(--color-blue-400);
@@ -496,12 +533,12 @@
 
 .slide-toast-text {
   display: inline-block;
-  padding: 6px 12px;
+  padding: var(--spacing-tiny) var(--spacing-md);
   background-color: rgba(240, 68, 82, 0.95);
-  color: #ffffff;
+  color: var(--color-text-primary);
   font-size: 1.125rem;
   font-weight: bold;
-  border-radius: 6px;
+  border-radius: var(--rounded-small-alt);
   box-shadow: 0 4px 12px rgba(240, 68, 82, 0.5);
   white-space: nowrap;
 }
@@ -518,6 +555,14 @@
   100% {
     opacity: 0;
     transform: translateY(-20px) scale(0.95);
+  }
+}
+
+/* 가로모드에서 exit-confirm-toast 위치 조정 */
+@media (orientation: landscape) {
+  .exit-confirm-toast {
+    bottom: clamp(180px, 30vh, 240px);
+    max-width: 400px;
   }
 }
 

@@ -300,7 +300,7 @@ export function ClimbGraphic({
       },
     };
     return configs[subTopic] || {
-      skyGradient: 'linear-gradient(180deg, #3182F6 0%, #5BA3FF 30%, #7DB8FF 60%, #A8D0FF 100%)',
+      skyGradient: 'linear-gradient(180deg, #00BFA5 0%, #00D4B8 30%, #00E6CC 60%, #00F5DD 100%)',
       mainColor: categoryColor,
       secondaryColor: categoryColor,
       accentColor: categoryColor,

@@ -5,13 +5,29 @@
   right: 0;
   background-color: rgba(30, 30, 30, 0.9);
   backdrop-filter: blur(10px);
-  border-top: 1px solid #2c2c2c;
+  border-top: 1px solid var(--color-bg-secondary);
   display: flex;
   justify-content: space-around;
   align-items: center;
-  padding: 8px 0;
+  padding: var(--spacing-sm) 0;
   z-index: 100;
-  height: 64px;
+  height: var(--footer-height-portrait);
+}
+
+/* 가로모드에서 FooterNav 높이 축소 */
+@media (orientation: landscape) {
+  .footer-nav {
+    height: var(--footer-height-landscape);
+    padding: var(--spacing-xs) 0;
+  }
+
+  .footer-nav-icon {
+    font-size: 1.375rem;
+  }
+
+  .footer-nav-label {
+    font-size: 0.6875rem;
+  }
 }
 
 .footer-nav-item {
@@ -19,14 +35,14 @@
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 4px;
+  gap: var(--spacing-xs);
   background: none;
   border: none;
   cursor: pointer;
-  padding: 8px 16px;
+  padding: var(--spacing-sm) var(--spacing-lg);
   transition: opacity 0.2s;
   flex: 1;
-  color: #aaa;
+  color: var(--color-text-secondary);
 }
 
 .footer-nav-item:hover {
@@ -34,7 +50,7 @@
 }
 
 .footer-nav-item.active {
-  color: #3182f6;
+  color: var(--color-blue-400);
 }
 
 .footer-nav-icon {

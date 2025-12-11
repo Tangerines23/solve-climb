@@ -1,11 +1,12 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { Header } from '../components/Header';
 import { FooterNav } from '../components/FooterNav';
 import { ProfileForm } from '../components/ProfileForm';
 import { DataResetConfirmModal } from '../components/DataResetConfirmModal';
 import { Toast } from '../components/Toast';
 import { AlertModal } from '../components/AlertModal';
+import { KeyboardInfoModal } from '../components/KeyboardInfoModal';
 import { useProfileStore } from '../stores/useProfileStore';
 import { useSettingsStore } from '../stores/useSettingsStore';
 import { useMyPageStats } from '../hooks/useMyPageStats';
@@ -18,25 +19,38 @@ import './MyPage.css';
 
 export function MyPage() {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const { profile, isProfileComplete, clearProfile, setProfile, setIsAdmin } = useProfileStore();
-  const { hapticEnabled, setHapticEnabled } = useSettingsStore();
+  const { hapticEnabled, setHapticEnabled, keyboardType, setKeyboardType } = useSettingsStore();
   const { stats, session, loading: statsLoading, error: statsError, refetch } = useMyPageStats();
   
-  const [showProfileForm, setShowProfileForm] = useState(!isProfileComplete);
+  // URL 파라미터에서 showProfileForm 확인
+  const shouldShowProfileForm = searchParams.get('showProfileForm') === 'true';
+  const [showProfileForm, setShowProfileForm] = useState(!isProfileComplete || shouldShowProfileForm);
   const [showDataResetConfirm, setShowDataResetConfirm] = useState(false);
   const [showToast, setShowToast] = useState(false);
   const [toastMessage, setToastMessage] = useState('');
   const [showAlert, setShowAlert] = useState(false);
   const [alertMessage, setAlertMessage] = useState('');
   const [isResetting, setIsResetting] = useState(false);
+  const [showKeyboardInfo, setShowKeyboardInfo] = useState(false);
   const [loginError, setLoginError] = useState(false);
   const adminInputRef = useRef<string>('');
   const adminInputTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   const handleProfileComplete = () => {
     setShowProfileForm(false);
+    // URL 파라미터 제거
+    navigate('/my-page', { replace: true });
     refetch(); // 프로필 완성 후 통계 다시 불러오기
   };
+
+  // URL 파라미터 변경 감지
+  useEffect(() => {
+    if (shouldShowProfileForm) {
+      setShowProfileForm(true);
+    }
+  }, [shouldShowProfileForm]);
 
   const handleToggleHaptic = () => {
     const newValue = !hapticEnabled;
@@ -45,6 +59,12 @@ export function MyPage() {
       vibrateShort();
     }
     setToastMessage(newValue ? '진동이 켜졌습니다' : '진동이 꺼졌습니다');
+    setShowToast(true);
+  };
+
+  const handleKeyboardTypeChange = (type: 'custom' | 'qwerty') => {
+    setKeyboardType(type);
+    setToastMessage(type === 'custom' ? '커스텀 키패드로 변경되었습니다' : '쿼티 키보드로 변경되었습니다');
     setShowToast(true);
   };
 
@@ -403,6 +423,30 @@ export function MyPage() {
                     <span className="my-page-settings-toggle-slider"></span>
                   </label>
                 </div>
+                <button
+                  className="my-page-settings-item my-page-settings-item-button"
+                  onClick={() => setShowKeyboardInfo(true)}
+                >
+                  <div className="my-page-settings-item-content">
+                    <span className="my-page-settings-item-label">키보드</span>
+                  </div>
+                  <svg
+                    className="my-page-settings-item-arrow"
+                    width="20"
+                    height="20"
+                    viewBox="0 0 20 20"
+                    fill="none"
+                    xmlns="http://www.w3.org/2000/svg"
+                  >
+                    <path
+                      d="M7.5 15L12.5 10L7.5 5"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    />
+                  </svg>
+                </button>
               </div>
             </div>
 
@@ -515,6 +559,10 @@ export function MyPage() {
         title="알림"
         message={alertMessage || '리더보드를 열 수 없습니다.'}
         onClose={() => setShowAlert(false)}
+      />
+      <KeyboardInfoModal
+        isOpen={showKeyboardInfo}
+        onClose={() => setShowKeyboardInfo(false)}
       />
     </div>
   );

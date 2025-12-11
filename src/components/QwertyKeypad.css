@@ -1,41 +1,81 @@
 .qwerty-keypad {
   display: flex;
   flex-direction: column;
-  gap: clamp(3px, 0.5vh, 6px);
-  padding: clamp(6px, 1vh, 10px);
-  padding-bottom: max(clamp(6px, 1vh, 10px), env(safe-area-inset-bottom));
+  gap: clamp(6px, 1.2vh, 10px);
+  padding: clamp(8px, 1.5vh, 16px);
+  padding-bottom: max(clamp(8px, 1.5vh, 16px), env(safe-area-inset-bottom));
   background-color: transparent;
   width: 100%;
-  max-width: 320px;
+  max-width: min(400px, 100vw - var(--spacing-3xl));
   margin: 0 auto;
   flex-shrink: 0;
   box-sizing: border-box;
-  /* 화면 중앙을 넘지 않도록 최대 높이 제한 */
-  max-height: 35vh;
 }
 
 .qwerty-keypad-row {
   display: flex;
-  gap: clamp(3px, 0.6vh, 6px);
+  gap: clamp(4px, 1vw, 8px);
   justify-content: center;
-  flex-wrap: wrap;
+  flex-wrap: nowrap;
+  align-items: stretch;
+  width: 100%;
+}
+
+/* 첫 번째 줄: 왼쪽 위, 오른쪽 아래 (\) 모양 */
+.qwerty-keypad-row:first-child {
+  padding-left: 0;
+  padding-right: 0;
+}
+
+.qwerty-keypad-row:first-child .qwerty-keypad-key:first-child {
+  margin-left: 0;
+}
+
+.qwerty-keypad-row:first-child .qwerty-keypad-key:last-child {
+  margin-right: 0;
+}
+
+/* 두 번째 줄: 왼쪽 아래, 오른쪽 위 (/) 모양 */
+.qwerty-keypad-row:nth-child(2) {
+  padding-left: clamp(12px, 3vw, 20px);
+  padding-right: 0;
+}
+
+.qwerty-keypad-row:nth-child(2) .qwerty-keypad-key:first-child {
+  margin-left: 0;
+}
+
+/* 세 번째 줄: 왼쪽 아래, 오른쪽 위 (/) 모양 */
+.qwerty-keypad-row:nth-child(3) {
+  padding-left: clamp(24px, 6vw, 40px);
+  padding-right: 0;
+}
+
+.qwerty-keypad-row:nth-child(3) .qwerty-keypad-key:first-child {
+  margin-left: 0;
 }
 
 .qwerty-keypad-row-last {
-  margin-top: clamp(4px, 0.8vh, 8px);
-  justify-content: space-between;
+  margin-top: clamp(8px, 1.5vh, 12px);
+  justify-content: center;
   flex-wrap: nowrap;
 }
 
 .qwerty-keypad-key {
-  min-width: clamp(22px, 5vw, 28px);
-  height: clamp(28px, 6vw, 34px);
-  background-color: rgba(255, 255, 255, 0.08);
-  border: 1px solid rgba(255, 255, 255, 0.15);
-  border-radius: clamp(4px, 0.8vh, 6px);
-  color: #ffffff;
-  font-size: clamp(0.75rem, 1.8vw, 0.9rem);
-  font-weight: 500;
+  aspect-ratio: 1;
+  /* 화면 크기에 따라 동적으로 조정 - flex를 사용하여 자동 크기 조정 */
+  flex: 1 1 0;
+  min-width: clamp(28px, 5vw, 40px);
+  max-width: clamp(48px, 9vw, 60px);
+  width: auto;
+  height: auto;
+  min-height: clamp(28px, 5vw, 40px);
+  background-color: var(--color-gray-900);
+  border: none;
+  border-radius: clamp(8px, 1.5vh, 12px);
+  color: var(--color-text-primary);
+  font-size: clamp(0.9rem, 2.2vw, 1.3rem);
+  font-weight: 600;
   cursor: pointer;
   transition: all 0.1s ease;
   user-select: none;
@@ -43,17 +83,13 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 0 clamp(2px, 0.6vw, 4px);
-  flex: 1;
-  max-width: 36px;
-  /* 공학용 계산기 느낌 */
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+  box-shadow: none;
 }
 
 .qwerty-keypad-key:active {
-  background-color: rgba(255, 255, 255, 0.2);
-  transform: scale(0.92);
-  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.3);
+  background-color: rgba(255, 255, 255, 0.1);
+  transform: scale(0.95);
+  box-shadow: none;
 }
 
 .qwerty-keypad-key:disabled {
@@ -63,54 +99,108 @@
 
 .qwerty-keypad-key:disabled:active {
   transform: none;
-  background-color: rgba(255, 255, 255, 0.05);
+  background-color: var(--color-bg-primary);
 }
 
 .qwerty-keypad-key-clear {
-  color: #f04452;
+  color: var(--color-toss-red);
   font-weight: 700;
-  flex: 1;
-  max-width: 70px;
 }
 
 .qwerty-keypad-key-backspace {
-  flex: 1;
-  max-width: 70px;
-  font-size: clamp(0.9rem, 2.2vw, 1.1rem);
+  color: var(--color-text-secondary);
+  font-size: clamp(1rem, 2.5vw, 1.4rem);
+  font-weight: 600;
 }
 
 .qwerty-keypad-key-negative {
-  flex: 1;
-  max-width: 70px;
-  font-size: clamp(0.9rem, 2.2vw, 1.1rem);
+  color: var(--color-text-secondary);
+  font-size: clamp(1rem, 2.5vw, 1.4rem);
+  font-weight: 600;
 }
 
 .qwerty-keypad-key-submit {
-  background-color: #3182F6;
-  color: #ffffff;
-  font-weight: 700;
-  flex: 2;
-  max-width: 100px;
+  background-color: var(--color-blue-400);
+  color: var(--color-text-primary);
+  font-size: clamp(1rem, 2.5vw, 1.4rem);
+  font-weight: bold;
+  border: none;
+  aspect-ratio: 1;
 }
 
 .qwerty-keypad-key-submit:active {
-  background-color: #2563eb;
+  background-color: var(--color-blue-500);
+  transform: scale(0.95);
 }
 
 .qwerty-keypad-key-submit:disabled {
-  background-color: rgba(49, 130, 246, 0.3);
+  opacity: 0.5;
+  background-color: var(--color-blue-400);
 }
 
-/* 숫자 모드: 키 크기 조정 - 공학용 계산기 스타일 */
+/* 숫자 모드: 키 크기 조정 */
+.qwerty-keypad-number .qwerty-keypad-row:first-child {
+  --key-count: 10;
+  --key-count-minus-one: 9;
+  --row-gap: clamp(4px, 1vw, 8px);
+}
+
 .qwerty-keypad-number .qwerty-keypad-key {
-  min-width: clamp(26px, 6vw, 38px);
-  max-width: 60px;
-  height: clamp(32px, 7vw, 42px);
-  font-size: clamp(0.95rem, 2.2vw, 1.2rem);
+  font-size: clamp(1rem, 2.5vw, 1.4rem);
   font-weight: 600;
 }
 
 .qwerty-keypad-number .qwerty-keypad-row {
-  gap: clamp(3px, 0.5vh, 6px);
+  gap: clamp(4px, 1vw, 8px);
+}
+
+/* 터치 피드백 개선 - 큰 키보드 버튼 */
+@media (hover: none) and (pointer: coarse) {
+  .qwerty-keypad-key {
+    min-height: clamp(40px, 8vw, 56px);
+  }
+  
+  .qwerty-keypad-key-submit {
+    min-height: clamp(40px, 8vw, 56px);
+  }
+}
+
+/* 가로모드에서 키보드 크기 조정 */
+@media (orientation: landscape) {
+  .qwerty-keypad {
+    max-width: min(500px, 100vw - var(--spacing-3xl));
+    padding: clamp(6px, 1.2vh, 10px);
+    gap: clamp(4px, 0.8vh, 8px);
+  }
+
+  .qwerty-keypad-row {
+    gap: clamp(3px, 0.8vw, 6px);
+  }
+
+  /* 가로모드에서도 기울임 유지 */
+  .qwerty-keypad-row:nth-child(2) {
+    padding-left: clamp(10px, 2.5vw, 16px);
+  }
+
+  .qwerty-keypad-row:nth-child(3) {
+    padding-left: clamp(20px, 5vw, 32px);
+  }
+
+  .qwerty-keypad-key {
+    max-width: clamp(36px, 6vw, 48px);
+    min-width: clamp(28px, 5vw, 36px);
+    min-height: clamp(28px, 5vw, 36px);
+    font-size: clamp(0.9rem, 2vw, 1.2rem);
+    border-radius: clamp(6px, 1.2vh, 10px);
+  }
+
+  .qwerty-keypad-key-submit {
+    font-size: clamp(0.9rem, 2vw, 1.2rem);
+  }
+
+  .qwerty-keypad-key-backspace,
+  .qwerty-keypad-key-negative {
+    font-size: clamp(0.9rem, 2vw, 1.2rem);
+  }
 }
 

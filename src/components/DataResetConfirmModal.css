@@ -4,68 +4,174 @@
   left: 0;
   right: 0;
   bottom: 0;
-  background-color: rgba(0, 0, 0, 0.7);
+  background-color: var(--color-overlay);
   display: flex;
   align-items: center;
   justify-content: center;
   z-index: 1000;
-  padding: 20px;
+  padding: var(--spacing-xl);
+  animation: fadeIn 0.3s ease;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
 }
 
 .data-reset-confirm-modal {
-  background-color: #1e1e1e;
-  border-radius: 16px;
-  padding: 24px;
+  background-color: var(--color-bg-primary);
+  border-radius: var(--rounded-md);
+  padding: var(--spacing-2xl);
   max-width: 400px;
   width: 100%;
-  border: 1px solid #2c2c2c;
+  border: 1px solid var(--color-bg-secondary);
+  box-shadow: var(--shadow-modal);
+  animation: slideUp 0.3s ease;
+}
+
+@keyframes slideUp {
+  from {
+    transform: translateY(var(--spacing-xl));
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+/* 가로모드에서 모달 너비 확장 및 좌우 분할 */
+@media (orientation: landscape) {
+  .data-reset-confirm-modal {
+    max-width: 700px;
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-2xl);
+    padding: var(--spacing-3xl);
+  }
+
+  .data-reset-confirm-modal-header {
+    flex: 0 0 auto;
+    text-align: left;
+    margin-bottom: 0;
+    padding-right: var(--spacing-2xl);
+    border-right: 1px solid rgba(255, 255, 255, 0.1);
+    padding-bottom: 0;
+  }
+
+  .data-reset-confirm-modal-title {
+    font-size: 1.5rem;
+    margin-bottom: var(--spacing-md);
+  }
+
+  .data-reset-confirm-modal-warning {
+    font-size: 1rem;
+  }
+
+  .data-reset-confirm-modal-content {
+    flex: 1;
+    margin-bottom: 0;
+    padding-left: var(--spacing-2xl);
+  }
+
+  .data-reset-confirm-modal-message {
+    font-size: 1rem;
+    margin-bottom: var(--spacing-lg);
+  }
+
+  .data-reset-confirm-modal-list {
+    font-size: 0.9375rem;
+    margin-bottom: var(--spacing-xl);
+  }
+
+  .data-reset-confirm-modal-warning-text {
+    font-size: 1rem;
+    text-align: left;
+  }
+
+  .data-reset-confirm-modal-actions {
+    flex-direction: row;
+    margin-top: 0;
+    padding-top: var(--spacing-2xl);
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+  }
+}
+
+/* 가로모드에서 헤더와 콘텐츠를 좌우로 배치 */
+@media (orientation: landscape) {
+  .data-reset-confirm-modal {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    grid-template-rows: 1fr auto;
+    gap: var(--spacing-2xl);
+  }
+
+  .data-reset-confirm-modal-header {
+    grid-column: 1;
+    grid-row: 1;
+  }
+
+  .data-reset-confirm-modal-content {
+    grid-column: 2;
+    grid-row: 1;
+    padding-left: var(--spacing-2xl);
+  }
+
+  .data-reset-confirm-modal-actions {
+    grid-column: 1 / -1;
+    grid-row: 2;
+  }
 }
 
 .data-reset-confirm-modal-header {
-  margin-bottom: 20px;
+  margin-bottom: var(--spacing-xl);
   text-align: center;
 }
 
 .data-reset-confirm-modal-title {
   font-size: 1.25rem;
   font-weight: bold;
-  color: #ffffff;
-  margin: 0 0 8px 0;
+  color: var(--color-text-primary);
+  margin: 0 0 var(--spacing-sm) 0;
 }
 
 .data-reset-confirm-modal-warning {
   font-size: 0.875rem;
-  color: #ef4444;
+  color: var(--color-red-500);
   margin: 0;
   font-weight: 500;
 }
 
 .data-reset-confirm-modal-content {
-  margin-bottom: 24px;
+  margin-bottom: var(--spacing-2xl);
 }
 
 .data-reset-confirm-modal-message {
   font-size: 0.875rem;
-  color: #aaa;
-  margin: 0 0 12px 0;
+  color: var(--color-text-secondary);
+  margin: 0 0 var(--spacing-md) 0;
 }
 
 .data-reset-confirm-modal-list {
   list-style: none;
   padding: 0;
-  margin: 0 0 16px 0;
+  margin: 0 0 var(--spacing-lg) 0;
   font-size: 0.875rem;
-  color: #aaa;
+  color: var(--color-text-secondary);
 }
 
 .data-reset-confirm-modal-list li {
-  margin-bottom: 8px;
-  padding-left: 4px;
+  margin-bottom: var(--spacing-sm);
+  padding-left: var(--spacing-xs);
 }
 
 .data-reset-confirm-modal-warning-text {
   font-size: 0.875rem;
-  color: #ef4444;
+  color: var(--color-red-500);
   margin: 0;
   font-weight: 500;
   text-align: center;
@@ -73,45 +179,45 @@
 
 .data-reset-confirm-modal-actions {
   display: flex;
-  gap: 12px;
+  gap: var(--spacing-md);
 }
 
 .data-reset-confirm-modal-button {
   flex: 1;
-  padding: 12px 16px;
+  padding: var(--spacing-md) var(--spacing-lg);
   font-size: 1rem;
   font-weight: bold;
   font-family: inherit;
   border: none;
-  border-radius: 12px;
+  border-radius: var(--rounded-button);
   cursor: pointer;
-  transition: all 0.2s;
+  transition: all 0.2s ease;
 }
 
 .data-reset-confirm-modal-button-cancel {
-  background-color: #2c2c2c;
-  color: #ffffff;
-  border: 1px solid #3c3c3c;
+  background-color: var(--color-bg-secondary);
+  color: var(--color-text-primary);
+  border: 1px solid var(--color-bg-tertiary);
 }
 
 .data-reset-confirm-modal-button-cancel:hover {
-  background-color: #3c3c3c;
+  background-color: var(--color-bg-tertiary);
 }
 
 .data-reset-confirm-modal-button-confirm {
-  background-color: #3182f6;
-  color: #ffffff;
+  background-color: var(--color-blue-400);
+  color: var(--color-text-primary);
 }
 
 .data-reset-confirm-modal-button-confirm:hover {
-  background-color: #2563eb;
+  background-color: var(--color-blue-500);
 }
 
 .data-reset-confirm-modal-button-danger {
-  background-color: #ef4444;
+  background-color: var(--color-red-500);
 }
 
 .data-reset-confirm-modal-button-danger:hover {
-  background-color: #dc2626;
+  background-color: var(--color-red-600);
 }
 

@@ -1,15 +1,15 @@
 .unknown-mountain-card {
-  background-color: #1C1C1E;
-  border-radius: 16px;
-  padding: 16px;
-  border: 1px solid #2c2c2c;
+  background-color: var(--color-bg-primary);
+  border-radius: var(--rounded-card);
+  padding: var(--spacing-lg);
+  border: 1px solid var(--color-bg-secondary);
   cursor: pointer;
   transition: transform 0.2s, border-color 0.2s;
   opacity: 0.7;
 }
 
 .unknown-mountain-card:hover {
-  border-color: #3c3c3c;
+  border-color: var(--color-bg-tertiary);
   opacity: 0.9;
 }
 
@@ -20,7 +20,7 @@
 .unknown-mountain-content {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: var(--spacing-md);
 }
 
 .unknown-mountain-icon-wrapper {
@@ -29,8 +29,8 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  background-color: #2c2c2c;
-  border-radius: 8px;
+  background-color: var(--color-bg-secondary);
+  border-radius: var(--rounded-sm);
   flex-shrink: 0;
 }
 
@@ -42,16 +42,16 @@
 .unknown-mountain-text {
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: var(--spacing-xs);
   flex: 1;
 }
 
 .unknown-mountain-title {
   font-size: 1rem;
   font-weight: 600;
-  color: #ffffff;
+  color: var(--color-text-primary);
   margin: 0;
-  background: linear-gradient(to bottom, #ffffff 0%, #ffffff 60%, rgba(255, 255, 255, 0.3) 100%);
+  background: linear-gradient(to bottom, var(--color-text-primary) 0%, var(--color-text-primary) 60%, rgba(255, 255, 255, 0.3) 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
@@ -59,27 +59,27 @@
 
 .unknown-mountain-description {
   font-size: 0.875rem;
-  color: #8e94a0;
+  color: var(--color-text-secondary);
   margin: 0;
 }
 
 .unknown-mountain-button {
   background: transparent;
-  border: 1px solid #3c3c3c;
-  border-radius: 8px;
-  padding: 6px 12px;
+  border: 1px solid var(--color-bg-tertiary);
+  border-radius: var(--rounded-sm);
+  padding: var(--spacing-tiny) var(--spacing-md);
   font-size: 0.8125rem;
-  color: #8e94a0;
+  color: var(--color-text-secondary);
   font-family: inherit;
   font-weight: 500;
   cursor: pointer;
-  transition: all 0.2s;
-  margin-top: 4px;
+  transition: all 0.2s ease;
+  margin-top: var(--spacing-xs);
   width: fit-content;
 }
 
 .unknown-mountain-button:hover {
   border-color: #4c4c4c;
-  color: #aaa;
+  color: var(--color-text-secondary);
 }
 

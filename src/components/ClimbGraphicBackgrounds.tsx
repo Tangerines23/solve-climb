@@ -790,13 +790,13 @@ export function DefaultBackground({ categoryColor }: { categoryColor?: string })
       {/* 먼 산 - 전체 배경의 70% (y: -300 ~ 750) */}
       <polygon
         points="100,1200 400,-250 700,1200"
-        fill={categoryColor || '#3182F6'}
+        fill={categoryColor || '#00BFA5'}
         opacity="0.3"
         className="mountain-bg-far"
       />
       <polygon
         points="100,1200 400,0 700,1200"
-        fill={categoryColor || '#3182F6'}
+        fill={categoryColor || '#00BFA5'}
         opacity="0.3"
         className="mountain-bg-far"
       />
@@ -804,19 +804,19 @@ export function DefaultBackground({ categoryColor }: { categoryColor?: string })
       {/* 중간 산 - 전체 배경의 50% (y: 300 ~ 1050) */}
       <polygon
         points="-40,1200 160,350 360,1200"
-        fill={categoryColor || '#3182F6'}
+        fill={categoryColor || '#00BFA5'}
         opacity="0.5"
         className="mountain-bg-mid"
       />
       <polygon
         points="440,1200 640,400 840,1200"
-        fill={categoryColor || '#3182F6'}
+        fill={categoryColor || '#00BFA5'}
         opacity="0.5"
         className="mountain-bg-mid"
       />
       <polygon
         points="50,1050 250,650 450,1050"
-        fill={categoryColor || '#3182F6'}
+        fill={categoryColor || '#00BFA5'}
         opacity="0.4"
         className="mountain-bg-mid"
       />
@@ -824,25 +824,25 @@ export function DefaultBackground({ categoryColor }: { categoryColor?: string })
       {/* 가까운 산 - 전체 배경의 30% (y: 750 ~ 1200) */}
       <polygon
         points="0,1200 120,920 240,1200"
-        fill={categoryColor || '#3182F6'}
+        fill={categoryColor || '#00BFA5'}
         opacity="0.8"
         className="mountain-bg-near"
       />
       <polygon
         points="0,1200 400,980 800,1200"
-        fill={categoryColor || '#3182F6'}
+        fill={categoryColor || '#00BFA5'}
         opacity="0.8"
         className="mountain-bg-near"
       />
       <polygon
         points="560,1200 680,920 800,1200"
-        fill={categoryColor || '#3182F6'}
+        fill={categoryColor || '#00BFA5'}
         opacity="0.8"
         className="mountain-bg-near"
       />
       <polygon
         points="200,1200 400,1050 600,1200"
-        fill={categoryColor || '#3182F6'}
+        fill={categoryColor || '#00BFA5'}
         opacity="0.7"
         className="mountain-bg-near"
       />

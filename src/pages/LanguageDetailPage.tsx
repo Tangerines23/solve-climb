@@ -36,7 +36,7 @@ export function LanguageDetailPage() {
       <div className="page-container">
         <div className="error-message">
           <p>언어를 찾을 수 없습니다.</p>
-          <button onClick={handleBack} className="back-button">뒤로 가기</button>
+          <button onClick={handleBack} className="back-button">←</button>
         </div>
       </div>
     );
@@ -45,7 +45,7 @@ export function LanguageDetailPage() {
   return (
     <div className="page-container language-detail-container">
       <button className="back-button" onClick={handleBack}>
-        ← 뒤로
+        ←
       </button>
       <div className="language-header">
         <span className="language-icon">{LANGUAGE_ICONS[languageParam]}</span>

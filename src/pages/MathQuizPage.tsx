@@ -25,7 +25,7 @@ import { useSettingsStore } from '../stores/useSettingsStore';
 
 export function MathQuizPage() {
   const { score, difficulty, increaseScore, decreaseScore, resetQuiz, category, topic, timeLimit, setGameMode, gameMode } = useQuizStore();
-  const { hapticEnabled } = useSettingsStore();
+  const { hapticEnabled, keyboardType } = useSettingsStore();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
 
@@ -361,11 +361,31 @@ export function MathQuizPage() {
       // 실제 뷰포트 높이 확인 (모바일 주소창 제외)
       const height = window.innerHeight;
       const width = window.innerWidth;
-      const aspectRatio = height / width;
-
-      // 높이가 600px 이하이거나, 가로가 세로보다 긴 경우(가로 모드) 시스템 키보드 사용
-      // 또는 화면 비율이 너무 낮은 경우
-      const shouldUseSystemKeyboard = height < 600 || aspectRatio < 0.7;
+      
+      // 가로모드 인식 (크기 비교와 분리)
+      let isLandscape = false;
+      
+      // 1순위: screen.orientation API (실제 디바이스 방향)
+      if (screen.orientation) {
+        const orientationType = screen.orientation.type;
+        isLandscape = orientationType.includes('landscape');
+      }
+      // 2순위: matchMedia (CSS 미디어 쿼리)
+      else if (window.matchMedia) {
+        isLandscape = window.matchMedia('(orientation: landscape)').matches;
+      }
+      // 3순위: 폴백 (크기 비교 - 정확도 낮음)
+      else {
+        isLandscape = width > height;
+      }
+      
+      // 크기 체크 (가로모드와 독립적으로)
+      const isSmallScreen = height < 600;
+      
+      // 로직: 작은 화면이면서 세로 모드일 때만 시스템 키보드
+      // 가로 모드일 때는 항상 앱 내 키보드 사용
+      const shouldUseSystemKeyboard = isSmallScreen && !isLandscape;
+      
       setUseSystemKeyboard(shouldUseSystemKeyboard);
     };
 
@@ -380,9 +400,24 @@ export function MathQuizPage() {
     };
 
     window.addEventListener('resize', handleResize);
-    window.addEventListener('orientationchange', () => {
+    
+    // orientationchange 이벤트 리스너
+    const handleOrientationChange = () => {
       setTimeout(checkViewportHeight, 200);
-    });
+    };
+    window.addEventListener('orientationchange', handleOrientationChange);
+    
+    // screen.orientationchange 이벤트 (더 정확한 가로모드 감지)
+    if (screen.orientation) {
+      screen.orientation.addEventListener('change', handleOrientationChange);
+    }
+    
+    // matchMedia로 orientation 변경 감지
+    let mediaQuery: MediaQueryList | null = null;
+    if (window.matchMedia) {
+      mediaQuery = window.matchMedia('(orientation: landscape)');
+      mediaQuery.addEventListener('change', handleOrientationChange);
+    }
 
     // Visual Viewport API 사용 (모바일 키보드 감지)
     if (window.visualViewport) {
@@ -392,7 +427,13 @@ export function MathQuizPage() {
     return () => {
       clearTimeout(resizeTimeout);
       window.removeEventListener('resize', handleResize);
-      window.removeEventListener('orientationchange', checkViewportHeight);
+      window.removeEventListener('orientationchange', handleOrientationChange);
+      if (screen.orientation) {
+        screen.orientation.removeEventListener('change', handleOrientationChange);
+      }
+      if (mediaQuery) {
+        mediaQuery.removeEventListener('change', handleOrientationChange);
+      }
       if (window.visualViewport) {
         window.visualViewport.removeEventListener('resize', checkViewportHeight);
       }
@@ -453,20 +494,65 @@ export function MathQuizPage() {
     });
   }, [isSubmitting, categoryParam, subParam, answerInput, isError]);
 
-  // 일본어 퀴즈용 쿼티 키보드 핸들러
+  // 쿼티 키보드 핸들러 (일본어 퀴즈 및 수학 퀴즈 모두 지원)
   const handleQwertyKeyPress = useCallback((key: string) => {
     if (isSubmitting || isError) return;
 
+    const isJapaneseQuiz = categoryParam === 'language' && subParam === 'japanese';
+    const isEquationQuiz = categoryParam === 'math' && subParam === 'equations';
+    const isCalculusQuiz = categoryParam === 'math' && subParam === 'calculus';
+    const allowNegative = isEquationQuiz || isCalculusQuiz;
+
     // 일본어 퀴즈: 영문자만 허용
-    if (/[a-z]/.test(key)) {
-      if (answerInput.length >= 10) return;
+    if (isJapaneseQuiz) {
+      if (/[a-z]/.test(key)) {
+        if (answerInput.length >= 10) return;
+        setAnswerInput((prev) => {
+          const newValue = prev + key;
+          setDisplayValue(newValue);
+          return newValue;
+        });
+      }
+      return;
+    }
+
+    // 수학 퀴즈: 숫자 및 음수 기호 처리
+    if (key === '-') {
+      if (allowNegative) {
+        // 이미 음수면 제거, 아니면 추가
+        if (answerInput.startsWith('-')) {
+          const newValue = answerInput.substring(1);
+          setAnswerInput(newValue);
+          setDisplayValue(newValue);
+        } else {
+          const newValue = '-' + answerInput;
+          setAnswerInput(newValue);
+          setDisplayValue(newValue);
+        }
+        if (navigator.vibrate) navigator.vibrate(15);
+      }
+      return;
+    }
+
+    // 숫자 처리
+    if (/[0-9]/.test(key)) {
+      const maxLength = allowNegative ? 6 : 5;
+      if (answerInput.length >= maxLength) return;
+
+      // 음수 기호가 있으면 숫자만 추가
+      if (answerInput.startsWith('-')) {
+        if (answerInput.length >= maxLength) return;
+      }
+
+      // 진동 피드백
+      if (navigator.vibrate) navigator.vibrate(15);
       setAnswerInput((prev) => {
         const newValue = prev + key;
         setDisplayValue(newValue);
         return newValue;
       });
     }
-  }, [isSubmitting, answerInput, isError]);
+  }, [isSubmitting, categoryParam, subParam, answerInput, isError]);
 
   const handleKeypadClear = useCallback(() => {
     if (isSubmitting || isError) return;
@@ -605,23 +691,24 @@ export function MathQuizPage() {
           const randomTop = Math.floor(Math.random() * 30) + 10;  // 10% ~ 40%
           setDamagePosition({ left: `${randomLeft}%`, top: `${randomTop}%` });
           
-          // 다음 프레임에 토스트 표시 (React 상태 업데이트 배칭 문제 방지)
-          requestAnimationFrame(() => {
-            requestAnimationFrame(() => {
-              setShowSlideToast(true);
-              setTimeout(() => {
-                setShowSlideToast(false);
-              }, 1500);
-            });
-          });
+          // 토스트를 즉시 표시 (requestAnimationFrame 제거로 지연 없음)
+          setShowSlideToast(true);
+          
+          // 토스트 자동 종료 타이머 (700ms - 다음 문제 이동 전에 자연스럽게 사라짐)
+          const toastHideTimer = setTimeout(() => {
+            setShowSlideToast(false);
+          }, 700);
           
           // 800ms 후 다음 문제로 이동
           setTimeout(() => {
+            // 토스트 타이머 정리 (혹시 모를 중복 제거 방지)
+            clearTimeout(toastHideTimer);
+            
             setIsError(false);
             setDisplayValue('');
             setAnswerInput('');
             setShowFlash(false);
-            setShowSlideToast(false); // 명시적으로 초기화
+            setShowSlideToast(false); // 명시적으로 초기화 (이미 사라졌을 수도 있음)
             setInputAnimation('');
             setCardAnimation('');
             generateNewQuestion();
@@ -871,7 +958,7 @@ export function MathQuizPage() {
             const isCalculusQuiz = categoryParam === 'math' && subParam === 'calculus';
             const allowNegative = isEquationQuiz || isCalculusQuiz;
 
-            // 일본어 퀴즈: 쿼티 키보드 사용
+            // 일본어 퀴즈: 항상 쿼티 키보드 사용 (텍스트 입력 필요)
             if (isJapaneseQuiz) {
               return (
                 <QwertyKeypad
@@ -885,7 +972,7 @@ export function MathQuizPage() {
               );
             }
 
-            // 수학 퀴즈: 3x3 숫자 키패드 사용
+            // 수학 퀴즈: 항상 커스텀 키패드 사용 (3x3 그리드)
             return (
               <CustomKeypad
                 onNumberClick={handleKeypadNumber}

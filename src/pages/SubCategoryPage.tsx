@@ -29,7 +29,7 @@ export function SubCategoryPage() {
               <h2>잘못된 접근입니다</h2>
               <p>존재하지 않는 카테고리입니다.</p>
               <button onClick={() => navigate('/')} className="error-back-button">
-                홈으로 돌아가기
+                ←
               </button>
             </div>
           </div>

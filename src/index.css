@@ -37,23 +37,108 @@
   --color-gray-900: #121212;
   
   /* Primary Blue - 토스 스타일 */
-  --color-blue-400: #3182f6; /* 기존 primary 색상 유지 */
-  --color-blue-500: #2563eb; /* hover 상태 */
-  --color-blue-700: #1d4ed8; /* active 상태 */
+  --color-blue-400: #00BFA5; /* 기존 primary 색상 유지 */
+  --color-blue-500: #00a693; /* hover 상태 */
+  --color-blue-700: #00897a; /* active 상태 */
   
   /* 추가 Gray 색상 */
   --color-gray-600: #3c3c3c;
+  
+  /* 배경 색상 */
+  --color-bg-primary: #1e1e1e;
+  --color-bg-secondary: #2c2c2c;
+  --color-bg-tertiary: #3c3c3c;
+  
+  /* 텍스트 색상 */
+  --color-text-primary: #ffffff;
+  --color-text-secondary: #aaa;
+  
+  /* Border Radius 추가 */
+  --rounded-card: 16px;
+  --rounded-button: 12px; /* --rounded-sm과 동일하지만 의미적으로 명확 */
+  --rounded-toggle: 28px; /* 토글 스위치 */
+  --rounded-large-card: 24px; /* 큰 카드 */
+  --rounded-tiny: 2px; /* 매우 작은 요소 */
+  --rounded-micro: 3px; /* 미세한 요소 */
+  --rounded-small-alt: 6px; /* 작은 요소 대체 */
+  
+  /* Shadow */
+  --shadow-modal: 0 8px 32px rgba(0, 0, 0, 0.5);
+  --shadow-card: 0 4px 12px rgba(0, 0, 0, 0.3);
+  
+  /* Overlay */
+  --color-overlay: rgba(0, 0, 0, 0.7);
+  
+  /* Spacing */
+  --spacing-xs: 4px;
+  --spacing-sm: 8px;
+  --spacing-md: 12px;
+  --spacing-lg: 16px;
+  --spacing-xl: 20px;
+  --spacing-2xl: 24px;
+  --spacing-3xl: 32px;
+  --spacing-4xl: 40px; /* 큰 패딩 */
+  --spacing-tiny: 6px; /* 작은 간격 */
+  --spacing-small-alt: 10px; /* 중간-작은 간격 */
+  --spacing-medium-alt: 14px; /* 중간 간격 */
+  
+  /* 반응형 레이아웃 값 */
+  --header-height-portrait: 56px;
+  --header-height-landscape: 48px;
+  --footer-height-portrait: 64px;
+  --footer-height-landscape: 56px;
+  --modal-width-portrait: 400px;
+  --modal-width-landscape-small: 600px;
+  --modal-width-landscape-medium: 700px;
+  --modal-width-landscape-large: 900px;
+  
+  /* Clamp 최소/최대값 (반응형 요소용) */
+  --clamp-gap-min: 6px;
+  --clamp-gap-max: 12px;
+  --clamp-padding-min: 8px;
+  --clamp-padding-max: 16px;
+  --clamp-padding-lg-min: 12px;
+  --clamp-padding-lg-max: 20px;
+  --clamp-padding-xl-min: 16px;
+  --clamp-padding-xl-max: 32px;
+  --clamp-border-radius-min: 8px;
+  --clamp-border-radius-max: 16px;
+  --clamp-font-size-min: 0.9rem;
+  --clamp-font-size-max: 1.3rem;
+  --clamp-keypad-height-min: 50px;
+  --clamp-keypad-height-max: 70px;
+  --clamp-keypad-height-lg-min: 72px;
+  --clamp-keypad-height-lg-max: 90px;
   
   /* 기타 색상 */
   --color-primary: var(--color-blue-400); /* 호환성 유지 */
   --color-toss-red: #f04452;
   --color-red-400: #ff4545;
+  --color-red-500: #ef4444;
+  --color-red-600: #dc2626; /* 위험 버튼 hover */
   --color-yellow-400: #fed85d;
-  --color-primary-focus-shadow: rgba(49, 130, 246, 0.2);
+  
+  /* Confetti 색상 팔레트 */
+  --color-confetti-green: #10b981;
+  --color-confetti-yellow: #f59e0b;
+  --color-confetti-purple: #8b5cf6;
+  --color-primary-focus-shadow: rgba(0, 191, 165, 0.2);
   --color-border: #e0e0e0;
   --color-disabled: #a0a0a0;
   --color-text-default: #333;
   --color-error: #D91A2A;
+  
+  /* 추가 Gray 색상 (UI 요소용) */
+  --color-gray-450: #4c4c4c; /* active 상태 배경 */
+  --color-gray-350: #d1d6db; /* 아이콘 색상 */
+  --color-gray-550: #8e94a0; /* hover 아이콘 */
+  --color-gray-650: #636870; /* 링크 hover */
+  --color-gray-750: #4a4e57; /* 링크 active */
+  --color-gray-toggle-bg: #e5e8eb; /* 토글 스위치 배경 */
+  
+  /* 로그아웃 버튼 전용 색상 */
+  --color-logout-hover: #3c2c2c;
+  --color-logout-active: #4c2c2c;
 }
 
 html, body {
@@ -117,7 +202,7 @@ html, body {
 
 .answer-input {
   width: 100%;
-  padding: 12px 16px;
+  padding: var(--spacing-md) var(--spacing-lg);
   font-size: 16px;
   font-family: inherit;
   border: 1px solid var(--color-border);
@@ -135,7 +220,7 @@ html, body {
 
 .submit-button {
   width: 100%;
-  padding: 14px 16px;
+  padding: var(--spacing-medium-alt) var(--spacing-lg);
   font-size: 16px;
   font-weight: bold;
   font-family: inherit;
@@ -185,7 +270,7 @@ html, body {
 
 .result-score-label {
   font-size: 1.2rem;
-  margin: 20px 0;
+  margin: var(--spacing-xl) 0;
   color: white;
 }
 
@@ -201,7 +286,7 @@ html, body {
 
 .confirm-button {
   width: 100%;
-  padding: 14px 16px;
+  padding: var(--spacing-medium-alt) var(--spacing-lg);
   font-size: 16px;
   font-weight: bold;
   font-family: inherit;

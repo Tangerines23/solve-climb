@@ -35,7 +35,7 @@ export function LevelSelectPage() {
           <h2>잘못된 접근입니다</h2>
           <p>필수 파라미터가 누락되었습니다.</p>
           <button onClick={() => navigate('/')} className="error-back-button">
-            홈으로 돌아가기
+            ←
           </button>
         </div>
       </div>
@@ -54,7 +54,7 @@ export function LevelSelectPage() {
           <h2>잘못된 접근입니다</h2>
           <p>존재하지 않는 카테고리 또는 주제입니다.</p>
           <button onClick={() => navigate('/')} className="error-back-button">
-            홈으로 돌아가기
+            ←
           </button>
         </div>
       </div>
@@ -72,7 +72,7 @@ export function LevelSelectPage() {
           <h2>레벨 데이터가 없습니다</h2>
           <p>이 주제에 대한 레벨이 아직 준비되지 않았습니다.</p>
           <button onClick={() => navigate(-1)} className="error-back-button">
-            뒤로 가기
+            ←
           </button>
         </div>
       </div>
@@ -229,7 +229,7 @@ export function LevelSelectPage() {
             }
           }}
         >
-          &lt;
+          ←
         </button>
         <h1 className="level-select-title">{subTopicInfo.name}</h1>
       </header>

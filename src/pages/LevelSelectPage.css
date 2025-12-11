@@ -23,11 +23,11 @@
   top: 0;
   left: 0;
   right: 0;
-  height: 56px;
+  height: var(--header-height-portrait);
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 0 16px;
+  padding: 0 var(--spacing-lg);
   z-index: 100;
   border-bottom: 1px solid rgba(255, 255, 255, 0.1);
   backdrop-filter: blur(10px);
@@ -99,30 +99,41 @@
   position: relative;
   z-index: 20;
   background-color: rgba(18, 18, 18, 0.95);
-  padding: 20px;
+  padding: var(--spacing-xl);
   padding-bottom: 100px; /* FooterNav 공간 */
   margin-top: -10px; /* 그래픽과 겹치도록 (더 많이 겹치게) */
-  min-height: calc(100vh - 56px);
-  border-radius: 24px 24px 0 0;
+  min-height: calc(100vh - var(--header-height-portrait));
+  border-radius: var(--rounded-large-card) var(--rounded-large-card) 0 0;
   backdrop-filter: blur(10px);
+}
+
+/* 가로모드에서 패딩 조정 */
+@media (orientation: landscape) {
+  .level-select-header {
+    height: var(--header-height-landscape);
+  }
+
+  .level-select-content {
+    padding-bottom: 80px;
+  }
 }
 
 /* 주제 요약 */
 .level-select-summary {
-  margin-bottom: 24px;
+  margin-bottom: var(--spacing-2xl);
   padding-top: 0px; /* 그래픽 영역과의 간격 (더 많이 겹치게) */
 }
 
 .level-select-summary-title {
   font-size: 1.5rem;
   font-weight: bold;
-  color: #ffffff;
-  margin: 0 0 8px 0;
+  color: var(--color-text-primary);
+  margin: 0 0 var(--spacing-sm) 0;
 }
 
 .level-select-summary-desc {
   font-size: 1rem;
-  color: #aaa;
+  color: var(--color-text-secondary);
   margin: 0;
 }
 
@@ -133,30 +144,30 @@
   align-items: center;
   justify-content: center;
   min-height: 100vh;
-  padding: 40px 20px;
+  padding: var(--spacing-4xl) var(--spacing-xl);
   text-align: center;
-  color: #ffffff;
+  color: var(--color-text-primary);
 }
 
 .level-select-error h2 {
   font-size: 1.5rem;
   font-weight: bold;
-  color: #f04452;
-  margin: 0 0 12px 0;
+  color: var(--color-toss-red);
+  margin: 0 0 var(--spacing-md) 0;
 }
 
 .level-select-error p {
   font-size: 1rem;
-  color: #aaa;
-  margin: 0 0 24px 0;
+  color: var(--color-text-secondary);
+  margin: 0 0 var(--spacing-2xl) 0;
 }
 
 .error-back-button {
-  padding: 12px 24px;
-  background-color: #3182f6;
-  color: #ffffff;
+  padding: var(--spacing-md) var(--spacing-2xl);
+  background-color: var(--color-blue-400);
+  color: var(--color-text-primary);
   border: none;
-  border-radius: 12px;
+  border-radius: var(--rounded-button);
   font-size: 1rem;
   font-weight: bold;
   cursor: pointer;
@@ -164,6 +175,6 @@
 }
 
 .error-back-button:hover {
-  background-color: #2563eb;
+  background-color: var(--color-blue-500);
 }
 

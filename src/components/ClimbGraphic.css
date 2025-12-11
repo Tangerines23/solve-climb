@@ -15,7 +15,7 @@
   right: 0;
   bottom: 0;
   background: linear-gradient(180deg,
-      #3182F6 0%,
+      var(--color-blue-400) 0%,
       #5BA3FF 30%,
       #7DB8FF 60%,
       #A8D0FF 100%);
@@ -197,10 +197,10 @@
 
 /* 현재 상태 (토스 블루) - CSS 변수 활용 */
 .level-node-current {
-  background-color: var(--category-color, #3182F6);
-  color: #ffffff;
-  border: 3px solid #ffffff;
-  box-shadow: 0 0 0 4px rgba(49, 130, 246, 0.2), 0 4px 16px rgba(0, 0, 0, 0.2);
+  background-color: var(--category-color, var(--color-blue-400));
+  color: var(--color-text-primary);
+  border: 3px solid var(--color-text-primary);
+  box-shadow: 0 0 0 4px rgba(0, 191, 165, 0.2), 0 4px 16px rgba(0, 0, 0, 0.2);
   animation: nodeAppear 0.5s ease-out both, pulse 2s ease-in-out infinite;
   z-index: 10;
 }
@@ -209,17 +209,17 @@
 
   0%,
   100% {
-    box-shadow: 0 0 0 4px rgba(49, 130, 246, 0.2), 0 4px 16px rgba(0, 0, 0, 0.2);
+    box-shadow: 0 0 0 4px rgba(0, 191, 165, 0.2), 0 4px 16px rgba(0, 0, 0, 0.2);
   }
 
   50% {
-    box-shadow: 0 0 0 8px rgba(49, 130, 246, 0.3), 0 4px 20px rgba(0, 0, 0, 0.25);
+    box-shadow: 0 0 0 8px rgba(0, 191, 165, 0.3), 0 4px 20px rgba(0, 0, 0, 0.25);
   }
 }
 
 /* 완료 상태 */
 .level-node-cleared {
-  background-color: #ffffff;
+  background-color: var(--color-bg-secondary);
   color: #10b981;
   box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
 }
@@ -398,18 +398,18 @@
 .fab-my-location {
   position: fixed;
   bottom: 100px; /* 하단 리스트 헤더 위에 떠 있도록 위치 조정 */
-  right: 20px;
+  right: var(--spacing-xl);
   z-index: 100; /* 가장 위에 */
 
   display: flex;
   align-items: center;
   justify-content: center;
 
-  padding: 10px 16px;
-  background-color: #ffffff;
-  color: #333d4b;
+  padding: var(--spacing-small-alt) var(--spacing-lg);
+  background-color: var(--color-text-primary);
+  color: var(--color-gray-700);
   border: none;
-  border-radius: 24px; /* 캡슐 형태 */
+  border-radius: var(--rounded-lg); /* 캡슐 형태 */
 
   /* 토스 스타일 부드러운 그림자 */
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15),
@@ -430,7 +430,7 @@
 @keyframes fabPopIn {
   from {
     opacity: 0;
-    transform: scale(0.5) translateY(20px);
+    transform: scale(0.5) translateY(var(--spacing-xl));
   }
   to {
     opacity: 1;
@@ -441,8 +441,8 @@
 /* 다크모드 대응 (선택) */
 @media (prefers-color-scheme: dark) {
   .fab-my-location {
-    background-color: #333d4b;
-    color: #ffffff;
+    background-color: var(--color-gray-700);
+    color: var(--color-text-primary);
     box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
   }
 }

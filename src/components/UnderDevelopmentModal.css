@@ -18,14 +18,14 @@
 .under-development-toast-content {
   background-color: rgba(28, 28, 30, 0.95);
   backdrop-filter: blur(10px);
-  border-radius: 16px;
+  border-radius: var(--rounded-card);
   padding: clamp(12px, 2.5vh, 16px) clamp(20px, 4vw, 24px);
   display: flex;
   align-items: center;
   gap: clamp(8px, 2vw, 12px);
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
   min-width: 200px;
-  max-width: calc(100vw - 32px);
+  max-width: calc(100vw - var(--spacing-3xl));
   pointer-events: auto;
 }
 
@@ -38,7 +38,7 @@
 .under-development-toast-text {
   font-size: clamp(0.875rem, 3vw, 1rem);
   font-weight: 500;
-  color: #ffffff;
+  color: var(--color-text-primary);
   white-space: nowrap;
 }
 

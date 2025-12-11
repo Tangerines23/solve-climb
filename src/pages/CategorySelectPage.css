@@ -3,14 +3,14 @@
   flex-direction: column;
   justify-content: center;
   align-items: center;
-  padding: 20px;
+  padding: var(--spacing-xl);
 }
 
 .back-button {
   align-self: flex-start;
   background: none;
   border: none;
-  color: #3182f6;
+  color: #00BFA5;
   font-size: 1rem;
   cursor: pointer;
   padding: 8px 0;
@@ -31,8 +31,16 @@
   text-align: center;
 }
 
+/* 가로모드에서 콘텐츠 너비 확장 */
+@media (orientation: landscape) {
+  .back-button,
+  .selected-info {
+    max-width: 600px;
+  }
+}
+
 .selected-text {
-  color: #3182f6;
+  color: #00BFA5;
   font-size: 1.1rem;
   font-weight: 500;
   margin: 0;

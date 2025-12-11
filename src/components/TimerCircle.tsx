@@ -67,7 +67,7 @@ export function TimerCircle({ duration, onComplete, isPaused = false, enableFast
   const angle = 360 * percentage;
 
   const circleStyle = {
-    background: `conic-gradient(#3182f6 ${angle}deg, #2c2c2c 0deg)`,
+    background: `conic-gradient(#00BFA5 ${angle}deg, #2c2c2c 0deg)`,
     borderRadius: '50%',
     width: '28px',
     height: '28px',

@@ -1,28 +1,28 @@
 .my-record-card {
-  background-color: #1e1e1e;
-  border-radius: 16px;
-  padding: 20px;
-  margin-bottom: 16px;
-  border: 1px solid #2c2c2c;
+  background-color: var(--color-bg-primary);
+  border-radius: var(--rounded-card);
+  padding: var(--spacing-xl);
+  margin-bottom: var(--spacing-lg);
+  border: 1px solid var(--color-bg-secondary);
 }
 
 .my-record-card-title {
   font-size: 1.125rem;
   font-weight: bold;
-  color: #ffffff;
-  margin: 0 0 16px 0;
+  color: var(--color-text-primary);
+  margin: 0 0 var(--spacing-lg) 0;
 }
 
 .my-record-card-content {
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: var(--spacing-md);
 }
 
 .my-record-item {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: var(--spacing-md);
 }
 
 .my-record-icon {
@@ -32,38 +32,38 @@
 
 .my-record-label {
   font-size: 0.875rem;
-  color: #aaa;
+  color: var(--color-text-secondary);
   flex: 1;
 }
 
 .my-record-value {
   font-size: 1rem;
   font-weight: bold;
-  color: #3182f6;
+  color: var(--color-blue-400);
 }
 
 /* 스켈레톤 UI */
 .my-record-card-skeleton {
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: var(--spacing-md);
 }
 
 .skeleton-title {
   height: 24px;
   width: 60%;
-  background: linear-gradient(90deg, #2c2c2c 25%, #3c3c3c 50%, #2c2c2c 75%);
+  background: linear-gradient(90deg, var(--color-bg-secondary) 25%, var(--color-bg-tertiary) 50%, var(--color-bg-secondary) 75%);
   background-size: 200% 100%;
-  border-radius: 8px;
+  border-radius: var(--rounded-sm);
   animation: skeleton-loading 1.5s ease-in-out infinite;
 }
 
 .skeleton-item {
   height: 20px;
   width: 100%;
-  background: linear-gradient(90deg, #2c2c2c 25%, #3c3c3c 50%, #2c2c2c 75%);
+  background: linear-gradient(90deg, var(--color-bg-secondary) 25%, var(--color-bg-tertiary) 50%, var(--color-bg-secondary) 75%);
   background-size: 200% 100%;
-  border-radius: 8px;
+  border-radius: var(--rounded-sm);
   animation: skeleton-loading 1.5s ease-in-out infinite;
 }
 

@@ -12,6 +12,7 @@ interface GameTipModalProps {
 
 export function GameTipModal({ isOpen, category, subTopic, level, onClose }: GameTipModalProps) {
   const [dontShowAgain, setDontShowAgain] = useState(false);
+  const [orientationKey, setOrientationKey] = useState(0);
 
   // localStorage에서 "다시 보지 않기" 설정 확인
   useEffect(() => {
@@ -24,6 +25,44 @@ export function GameTipModal({ isOpen, category, subTopic, level, onClose }: Gam
     }
   }, [isOpen, category, subTopic, level, onClose]);
 
+  // orientation 변경 감지 및 강제 리렌더링
+  useEffect(() => {
+    const checkOrientation = () => {
+      // 실제 뷰포트 크기로 orientation 확인
+      const isLandscape = window.innerWidth > window.innerHeight;
+      const modalElement = document.querySelector('.game-tip-modal');
+      
+      if (modalElement) {
+        if (isLandscape) {
+          modalElement.classList.add('force-landscape');
+          modalElement.classList.remove('force-portrait');
+        } else {
+          modalElement.classList.add('force-portrait');
+          modalElement.classList.remove('force-landscape');
+        }
+      }
+      
+      // 강제 리렌더링을 위한 상태 업데이트
+      setOrientationKey(prev => prev + 1);
+    };
+
+    // 초기 확인
+    checkOrientation();
+
+    // 이벤트 리스너 추가
+    window.addEventListener('orientationchange', checkOrientation);
+    window.addEventListener('resize', checkOrientation);
+    
+    // 약간의 지연을 두고 다시 확인 (뷰포트 크기 안정화 대기)
+    const timeoutId = setTimeout(checkOrientation, 100);
+
+    return () => {
+      clearTimeout(timeoutId);
+      window.removeEventListener('orientationchange', checkOrientation);
+      window.removeEventListener('resize', checkOrientation);
+    };
+  }, []);
+
   if (!isOpen) return null;
 
   const handleClose = () => {
@@ -34,18 +73,15 @@ export function GameTipModal({ isOpen, category, subTopic, level, onClose }: Gam
     onClose();
   };
 
-  const renderTip = () => {
+  const getTipData = () => {
     // 사칙연산 팁
     if (category === 'math' && subTopic === 'arithmetic') {
-      const getArithmeticTip = () => {
-        if (!level) {
-          return (
-            <div className="game-tip-content">
-              <h3 className="game-tip-title">🧮 사칙연산 팁</h3>
-              <p className="game-tip-description">핵심 로직: "숫자를 쪼개거나(Split), 10을 만들어라(Make 10)."</p>
-            </div>
-          );
-        }
+      const title = '🧮 사칙연산 팁';
+      const description = '핵심 로직: "숫자를 쪼개거나(Split), 10을 만들어라(Make 10)."';
+      
+      if (!level) {
+        return { title, description, section: null, other: null };
+      }
 
         const tips: Record<number, { title: string; tip: string; example: string; strategy: string }> = {
           1: {
@@ -142,45 +178,31 @@ export function GameTipModal({ isOpen, category, subTopic, level, onClose }: Gam
 
         const tipData = tips[level];
         if (!tipData) {
-          return (
-            <div className="game-tip-content">
-              <h3 className="game-tip-title">🧮 사칙연산 팁</h3>
-              <p className="game-tip-description">핵심 로직: "숫자를 쪼개거나(Split), 10을 만들어라(Make 10)."</p>
-            </div>
-          );
+          return { title, description, section: null, other: null };
         }
 
-        return (
-          <div className="game-tip-content">
-            <h3 className="game-tip-title">🧮 사칙연산 팁</h3>
-            <p className="game-tip-description">핵심 로직: "숫자를 쪼개거나(Split), 10을 만들어라(Make 10)."</p>
-            <div className="game-tip-section">
-              <h4>{tipData.title}</h4>
-              <p><strong>팁:</strong> {tipData.tip}</p>
-              <p><strong>공략:</strong> {tipData.strategy}</p>
-              <div className="game-tip-example">
-                <p><strong>예시:</strong> {tipData.example}</p>
-              </div>
+        const section = (
+          <div className="game-tip-section">
+            <h4>{tipData.title}</h4>
+            <p><strong>팁:</strong> {tipData.tip}</p>
+            <p><strong>공략:</strong> {tipData.strategy}</p>
+            <div className="game-tip-example">
+              <p><strong>예시:</strong> {tipData.example}</p>
             </div>
           </div>
         );
-      };
 
-      return getArithmeticTip();
-
+        return { title, description, section, other: null };
     }
 
     // 방정식 팁
     if (category === 'math' && subTopic === 'equations') {
-      const getEquationTip = () => {
-        if (!level) {
-          return (
-            <div className="game-tip-content">
-              <h3 className="game-tip-title">🧩 방정식 풀이 팁</h3>
-              <p className="game-tip-description">핵심 로직: "이항(Transposition) = 부호 반대(Change Sign)."</p>
-            </div>
-          );
-        }
+      const title = '🧩 방정식 풀이 팁';
+      const description = '핵심 로직: "이항(Transposition) = 부호 반대(Change Sign)."';
+      
+      if (!level) {
+        return { title, description, section: null, other: null };
+      }
 
         const tips: Record<number, { title: string; tip: string; example: string; strategy: string }> = {
           1: {
@@ -277,35 +299,28 @@ export function GameTipModal({ isOpen, category, subTopic, level, onClose }: Gam
 
         const tipData = tips[level];
         if (!tipData) {
-          return (
-            <div className="game-tip-content">
-              <h3 className="game-tip-title">🧩 방정식 풀이 팁</h3>
-              <p className="game-tip-description">핵심 로직: "이항(Transposition) = 부호 반대(Change Sign)."</p>
-            </div>
-          );
+          return { title, description, section: null, other: null };
         }
 
-        return (
-          <div className="game-tip-content">
-            <h3 className="game-tip-title">🧩 방정식 풀이 팁</h3>
-            <p className="game-tip-description">핵심 로직: "이항(Transposition) = 부호 반대(Change Sign)."</p>
-            <div className="game-tip-section">
-              <h4>{tipData.title}</h4>
-              <p><strong>팁:</strong> {tipData.tip}</p>
-              <p><strong>공략:</strong> {tipData.strategy}</p>
-              <div className="game-tip-example">
-                <p><strong>예시:</strong> {tipData.example}</p>
-              </div>
+        const section = (
+          <div className="game-tip-section">
+            <h4>{tipData.title}</h4>
+            <p><strong>팁:</strong> {tipData.tip}</p>
+            <p><strong>공략:</strong> {tipData.strategy}</p>
+            <div className="game-tip-example">
+              <p><strong>예시:</strong> {tipData.example}</p>
             </div>
           </div>
         );
-      };
 
-      return getEquationTip();
+        return { title, description, section, other: null };
     }
 
     // 히라가나 팁
     if (category === 'language' && subTopic === 'japanese') {
+      const title = '💡 히라가나 표';
+      const description = '히라가나를 보고 로마지(영문자)로 입력하세요.';
+      
       // 기본 히라가나만 표시 (탁음, 반탁음 제외)
       const basicHiragana = HIRAGANA_MAPPINGS.filter(m => {
         const romaji = m.romaji;
@@ -336,56 +351,99 @@ export function GameTipModal({ isOpen, category, subTopic, level, onClose }: Gam
         }
       });
 
-      return (
-        <div className="game-tip-content">
-          <h3 className="game-tip-title">💡 히라가나 표</h3>
-          <p className="game-tip-description">히라가나를 보고 로마지(영문자)로 입력하세요.</p>
-          <div className="hiragana-table-container">
-            {grouped.map((group, groupIndex) => (
-              <div key={groupIndex} className="hiragana-row-group">
-                <div className="hiragana-row-header">{group.row.toUpperCase()}행</div>
-                <div className="hiragana-row-items">
-                  {group.items.map((mapping, index) => (
-                    <div key={index} className="hiragana-item">
-                      <span className="hiragana-char">{mapping.hiragana}</span>
-                      <span className="romaji-char">{mapping.romaji}</span>
-                    </div>
-                  ))}
-                </div>
+      const other = (
+        <div className="hiragana-table-container">
+          {grouped.map((group, groupIndex) => (
+            <div key={groupIndex} className="hiragana-row-group">
+              <div className="hiragana-row-header">{group.row.toUpperCase()}행</div>
+              <div className="hiragana-row-items">
+                {group.items.map((mapping, index) => (
+                  <div key={index} className="hiragana-item">
+                    <span className="hiragana-char">{mapping.hiragana}</span>
+                    <span className="romaji-char">{mapping.romaji}</span>
+                  </div>
+                ))}
               </div>
-            ))}
-          </div>
+            </div>
+          ))}
         </div>
       );
+
+      return { title, description, section: null, other };
     }
 
     // 기본 팁 (다른 카테고리)
-    return (
-      <div className="game-tip-content">
-        <h3 className="game-tip-title">💡 게임 팁</h3>
-        <p>문제를 빠르고 정확하게 풀어보세요!</p>
-      </div>
-    );
+    return {
+      title: '💡 게임 팁',
+      description: '문제를 빠르고 정확하게 풀어보세요!',
+      section: null,
+      other: null
+    };
   };
 
+  const tipData = getTipData();
+
+  // 세로모드용 전체 콘텐츠 생성
+  const renderVerticalContent = () => (
+    <div className="game-tip-content">
+      <h3 className="game-tip-title">{tipData.title}</h3>
+      {tipData.description && <p className="game-tip-description">{tipData.description}</p>}
+      {tipData.section}
+      {tipData.other}
+    </div>
+  );
+
   return (
-    <div className="game-tip-modal-overlay" onClick={handleClose}>
+    <div className="game-tip-modal-overlay" onClick={handleClose} key={orientationKey}>
       <div className="game-tip-modal" onClick={(e) => e.stopPropagation()}>
-        {renderTip()}
-        <div className="game-tip-checkbox-container">
-          <label className="game-tip-checkbox-label">
-            <input
-              type="checkbox"
-              checked={dontShowAgain}
-              onChange={(e) => setDontShowAgain(e.target.checked)}
-              className="game-tip-checkbox"
-            />
-            <span>다시 보지 않기</span>
-          </label>
+        <div className="game-tip-content-wrapper">
+          {/* 왼쪽 영역 (가로모드에서만 표시) */}
+          <div className="game-tip-left-area">
+            <h3 className="game-tip-title">{tipData.title}</h3>
+            <div className="game-tip-spacer"></div>
+            <div className="game-tip-checkbox-container">
+              <label className="game-tip-checkbox-label">
+                <input
+                  type="checkbox"
+                  checked={dontShowAgain}
+                  onChange={(e) => setDontShowAgain(e.target.checked)}
+                  className="game-tip-checkbox"
+                />
+                <span>다시 보지 않기</span>
+              </label>
+            </div>
+            <button className="game-tip-close-button" onClick={handleClose}>
+              시작하기
+            </button>
+          </div>
+          
+          {/* 오른쪽 영역 (가로모드에서만 표시) */}
+          <div className="game-tip-right-area">
+            {tipData.description && <p className="game-tip-description">{tipData.description}</p>}
+            {tipData.section}
+            {tipData.other}
+          </div>
+          
+          {/* 세로모드용 전체 콘텐츠 */}
+          <div className="game-tip-vertical-content">
+            {renderVerticalContent()}
+            <div className="game-tip-checkbox-container">
+              <label className="game-tip-checkbox-label">
+                <input
+                  type="checkbox"
+                  checked={dontShowAgain}
+                  onChange={(e) => setDontShowAgain(e.target.checked)}
+                  className="game-tip-checkbox"
+                />
+                <span>다시 보지 않기</span>
+              </label>
+            </div>
+          </div>
+          {/* 세로모드용 시작하기 버튼 (하단 고정) */}
+          <button className="game-tip-close-button game-tip-close-button-vertical" onClick={handleClose}>
+            시작하기
+          </button>
         </div>
-        <button className="game-tip-close-button" onClick={handleClose}>
-          시작하기
-        </button>
       </div>
     </div>
   );

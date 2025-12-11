@@ -2,6 +2,7 @@
 import { useEffect } from 'react';
 import { Routes, Route } from 'react-router-dom';
 import { useLevelProgressStore } from './stores/useLevelProgressStore';
+import { useCustomBackNavigation } from './hooks/useCustomBackNavigation';
 import { HomePage } from './pages/HomePage';
 import { SubCategoryPage } from './pages/SubCategoryPage';
 import { LanguageDetailPage } from './pages/LanguageDetailPage';
@@ -15,6 +16,9 @@ import { NotificationPage } from './pages/NotificationPage';
 
 function App() {
   const { syncProgress } = useLevelProgressStore();
+  
+  // 커스텀 뒤로가기 네비게이션 적용
+  useCustomBackNavigation();
 
   useEffect(() => {
     syncProgress();

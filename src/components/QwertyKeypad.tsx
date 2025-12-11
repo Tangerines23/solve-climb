@@ -130,10 +130,37 @@ export function QwertyKeypad({
               {key}
             </button>
           ))}
+          {/* 두 번째 줄 끝에 Backspace (L 옆) */}
+          {rowIndex === 1 && (
+            <button
+              className="qwerty-keypad-key qwerty-keypad-key-backspace"
+              onClick={handleBackspace}
+              disabled={disabled}
+            >
+              ⌫
+            </button>
+          )}
+          {/* 세 번째 줄 끝에 Enter(확인) (M 옆) */}
+          {rowIndex === 2 && (
+            <button
+              className="qwerty-keypad-key qwerty-keypad-key-submit"
+              onClick={(e) => {
+                e.preventDefault();
+                if (!disabled) {
+                  onSubmit(e);
+                }
+              }}
+              disabled={disabled}
+              type="button"
+            >
+              ✓
+            </button>
+          )}
         </div>
       ))}
-      <div className="qwerty-keypad-row qwerty-keypad-row-last">
-        {mode === 'number' && allowNegative && (
+      {/* 숫자 모드일 때만 하단 줄에 음수 버튼 표시 */}
+      {mode === 'number' && allowNegative && (
+        <div className="qwerty-keypad-row qwerty-keypad-row-last">
           <button
             className="qwerty-keypad-key qwerty-keypad-key-negative"
             onClick={() => handleKeyClick('-')}
@@ -141,35 +168,8 @@ export function QwertyKeypad({
           >
             ±
           </button>
-        )}
-        <button
-          className="qwerty-keypad-key qwerty-keypad-key-clear"
-          onClick={handleClear}
-          disabled={disabled}
-        >
-          C
-        </button>
-        <button
-          className="qwerty-keypad-key qwerty-keypad-key-backspace"
-          onClick={handleBackspace}
-          disabled={disabled}
-        >
-          ⌫
-        </button>
-        <button
-          className="qwerty-keypad-key qwerty-keypad-key-submit"
-          onClick={(e) => {
-            e.preventDefault();
-            if (!disabled) {
-              onSubmit(e);
-            }
-          }}
-          disabled={disabled}
-          type="button"
-        >
-          ✓
-        </button>
-      </div>
+        </div>
+      )}
     </div>
   );
 }

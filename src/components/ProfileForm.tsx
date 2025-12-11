@@ -100,7 +100,7 @@ export function ProfileForm({ onComplete, showBackButton = false }: ProfileFormP
     <div className="profile-form-container">
       {showBackButton && (
         <button className="profile-form-back-button" onClick={() => navigate(-1)}>
-          &lt; 뒤로가기
+          ←
         </button>
       )}
       <h2 className="profile-form-title">
@@ -120,6 +120,7 @@ export function ProfileForm({ onComplete, showBackButton = false }: ProfileFormP
           <input
             id="nickname"
             type="text"
+            inputMode="text"
             value={nickname}
             onChange={(e) => {
               setNickname(e.target.value);
@@ -129,6 +130,10 @@ export function ProfileForm({ onComplete, showBackButton = false }: ProfileFormP
             className={`profile-form-input ${error ? 'error' : ''}`}
             maxLength={10}
             autoFocus
+            autoComplete="off"
+            autoCorrect="off"
+            autoCapitalize="off"
+            spellCheck="false"
           />
           {error && <p className="profile-form-error">{error}</p>}
           <p className="profile-form-hint">
