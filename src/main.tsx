@@ -1,5 +1,5 @@
 // src/main.tsx
-import React, { Suspense, lazy } from 'react';
+import React, { useState, useEffect, ComponentType } from 'react';
 import ReactDOM from 'react-dom/client';
 import './index.css';
 
@@ -21,16 +21,6 @@ function isTossEnvironment(): boolean {
 function ThemeProviderFallback({ theme, children }: { theme: typeof customTheme; children: React.ReactNode }) {
   return <div>{children}</div>;
 }
-
-// 동적 import: ThemeProvider
-const TossThemeProvider = lazy(() =>
-  import('@toss/tds-mobile').then((module) => ({
-    default: module.ThemeProvider,
-  }))
-);
-
-// 동적 import: AppContainer
-const AppContainer = lazy(() => import('./AppContainer'));
 
 // 심사용 AppContainer 대체 컴포넌트 (경량 버전)
 function AppContainerReview() {
@@ -57,40 +47,115 @@ function AppContainerReview() {
   );
 }
 
-// 조건에 따라 ThemeProvider와 AppContainer를 렌더링
-const isToss = isTossEnvironment();
+// 로딩 UI 컴포넌트
+function LoadingFallback() {
+  return (
+    <div
+      style={{
+        display: 'flex',
+        justifyContent: 'center',
+        alignItems: 'center',
+        height: '100vh',
+        backgroundColor: 'var(--color-bg-primary)',
+        color: 'var(--color-text-primary)',
+      }}
+    >
+      <div>로딩 중...</div>
+    </div>
+  );
+}
+
+// 런타임 조건부 동적 import: ThemeProvider
+function ConditionalThemeProvider({ children }: { children: React.ReactNode }) {
+  const [TossThemeProvider, setTossThemeProvider] = useState<ComponentType<{ theme: typeof customTheme; children: React.ReactNode }> | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<Error | null>(null);
+
+  useEffect(() => {
+    if (isTossEnvironment()) {
+      setLoading(true);
+      // 런타임에 조건부로만 import 수행
+      import('@toss/tds-mobile')
+        .then((module) => {
+          setTossThemeProvider(() => module.ThemeProvider);
+        })
+        .catch((err) => {
+          console.error('Failed to load Toss TDS:', err);
+          setError(err);
+        })
+        .finally(() => {
+          setLoading(false);
+        });
+    }
+  }, []);
+
+  // 심사 환경
+  if (!isTossEnvironment()) {
+    return <ThemeProviderFallback theme={customTheme}>{children}</ThemeProviderFallback>;
+  }
+
+  // 로딩 중
+  if (loading) {
+    return <LoadingFallback />;
+  }
+
+  // 에러 발생 시 대체 컴포넌트 사용
+  if (error || !TossThemeProvider) {
+    return <ThemeProviderFallback theme={customTheme}>{children}</ThemeProviderFallback>;
+  }
+
+  // Toss 환경 - 정상 로드
+  return <TossThemeProvider theme={customTheme}>{children}</TossThemeProvider>;
+}
+
+// 런타임 조건부 동적 import: AppContainer
+function ConditionalAppContainer() {
+  const [AppContainer, setAppContainer] = useState<ComponentType | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<Error | null>(null);
+
+  useEffect(() => {
+    if (isTossEnvironment()) {
+      setLoading(true);
+      import('./AppContainer')
+        .then((module) => {
+          setAppContainer(() => module.default);
+        })
+        .catch((err) => {
+          console.error('Failed to load AppContainer:', err);
+          setError(err);
+        })
+        .finally(() => {
+          setLoading(false);
+        });
+    }
+  }, []);
+
+  // 심사 환경
+  if (!isTossEnvironment()) {
+    return <AppContainerReview />;
+  }
+
+  // 로딩 중
+  if (loading) {
+    return <LoadingFallback />;
+  }
+
+  // 에러 발생 시 대체 컴포넌트 사용
+  if (error || !AppContainer) {
+    return <AppContainerReview />;
+  }
+
+  // Toss 환경 - 정상 로드
+  return <AppContainer />;
+}
 
 function RootApp() {
-  if (isToss) {
-    return (
-      <Suspense
-        fallback={
-          <div
-            style={{
-              display: 'flex',
-              justifyContent: 'center',
-              alignItems: 'center',
-              height: '100vh',
-              backgroundColor: 'var(--color-bg-primary)',
-              color: 'var(--color-text-primary)',
-            }}
-          >
-            <div>로딩 중...</div>
-          </div>
-        }
-      >
-        <TossThemeProvider theme={customTheme}>
-          <AppContainer />
-        </TossThemeProvider>
-      </Suspense>
-    );
-  } else {
-    return (
-      <ThemeProviderFallback theme={customTheme}>
-        <AppContainerReview />
-      </ThemeProviderFallback>
-    );
-  }
+  return (
+    <ConditionalThemeProvider>
+      <ConditionalAppContainer />
+    </ConditionalThemeProvider>
+  );
 }
 
 ReactDOM.createRoot(document.getElementById('root')!).render(

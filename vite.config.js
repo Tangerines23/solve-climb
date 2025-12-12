@@ -18,4 +18,8 @@ export default defineConfig({
     },
     chunkSizeWarningLimit: 1000, // 1MB로 증가 (현재 1.4MB이므로)
   },
+  // optimizeDeps에서 TDS 제외 (개발 서버에서도 번들에 포함되지 않도록)
+  optimizeDeps: {
+    exclude: ['@toss/tds-mobile', '@toss/tds-mobile-ait'],
+  },
 })
