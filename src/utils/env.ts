@@ -9,7 +9,28 @@ const isDevelopment = import.meta.env.DEV;
 const isProduction = import.meta.env.PROD;
 
 // #region agent log
-fetch('http://127.0.0.1:7242/ingest/8e4324b5-9dc1-47d8-937c-afc744e1c2c9',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'env.ts:8-9',message:'Environment flags',data:{isDev:isDevelopment,isProd:isProduction,envVars:{supabaseUrl:import.meta.env.VITE_SUPABASE_URL,supabaseKey:import.meta.env.VITE_SUPABASE_ANON_KEY?`${import.meta.env.VITE_SUPABASE_ANON_KEY.substring(0,10)}...`:'undefined'}},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'A,C,E'})}).catch(()=>{});
+const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+const supabaseKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
+fetch('http://127.0.0.1:7242/ingest/8e4324b5-9dc1-47d8-937c-afc744e1c2c9', {
+  method: 'POST',
+  headers: { 'Content-Type': 'application/json' },
+  body: JSON.stringify({
+    location: 'env.ts:8-9',
+    message: 'Environment flags',
+    data: {
+      isDev: isDevelopment,
+      isProd: isProduction,
+      envVars: {
+        supabaseUrl: supabaseUrl || 'undefined',
+        supabaseKey: supabaseKey ? `${supabaseKey.substring(0, 10)}...` : 'undefined'
+      }
+    },
+    timestamp: Date.now(),
+    sessionId: 'debug-session',
+    runId: 'run1',
+    hypothesisId: 'A,C,E'
+  })
+}).catch(() => {});
 // #endregion
 
 /**
@@ -50,7 +71,19 @@ interface ValidationResult {
  */
 function validateEnv(strict: boolean = isProduction): ValidationResult {
   // #region agent log
-  fetch('http://127.0.0.1:7242/ingest/8e4324b5-9dc1-47d8-937c-afc744e1c2c9',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'env.ts:47',message:'validateEnv called',data:{strict,isProduction}},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'A'})}).catch(()=>{});
+  fetch('http://127.0.0.1:7242/ingest/8e4324b5-9dc1-47d8-937c-afc744e1c2c9', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      location: 'env.ts:72',
+      message: 'validateEnv called',
+      data: { strict, isProduction },
+      timestamp: Date.now(),
+      sessionId: 'debug-session',
+      runId: 'run1',
+      hypothesisId: 'A'
+    })
+  }).catch(() => {});
   // #endregion
   const missing: string[] = [];
   const errors: string[] = [];
@@ -58,7 +91,19 @@ function validateEnv(strict: boolean = isProduction): ValidationResult {
   REQUIRED_ENV_VARS.forEach((varName) => {
     const value = import.meta.env[varName];
     // #region agent log
-    fetch('http://127.0.0.1:7242/ingest/8e4324b5-9dc1-47d8-937c-afc744e1c2c9',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'env.ts:52',message:'Checking env var',data:{varName,hasValue:!!value,valueLength:value?.length||0}},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'B,D,E'})}).catch(()=>{});
+    fetch('http://127.0.0.1:7242/ingest/8e4324b5-9dc1-47d8-937c-afc744e1c2c9', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        location: 'env.ts:79',
+        message: 'Checking env var',
+        data: { varName, hasValue: !!value, valueLength: value?.length || 0 },
+        timestamp: Date.now(),
+        sessionId: 'debug-session',
+        runId: 'run1',
+        hypothesisId: 'B,D,E'
+      })
+    }).catch(() => {});
     // #endregion
     if (!value || value.trim() === '') {
       missing.push(varName);
@@ -78,7 +123,19 @@ function validateEnv(strict: boolean = isProduction): ValidationResult {
     errors,
   };
   // #region agent log
-  fetch('http://127.0.0.1:7242/ingest/8e4324b5-9dc1-47d8-937c-afc744e1c2c9',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'env.ts:65',message:'validateEnv result',data:result},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'A,B,D'})}).catch(()=>{});
+  fetch('http://127.0.0.1:7242/ingest/8e4324b5-9dc1-47d8-937c-afc744e1c2c9', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      location: 'env.ts:96',
+      message: 'validateEnv result',
+      data: result,
+      timestamp: Date.now(),
+      sessionId: 'debug-session',
+      runId: 'run1',
+      hypothesisId: 'A,B,D'
+    })
+  }).catch(() => {});
   // #endregion
   return result;
 }
@@ -89,7 +146,19 @@ function validateEnv(strict: boolean = isProduction): ValidationResult {
  */
 function validateAndHandleEnv(): void {
   // #region agent log
-  fetch('http://127.0.0.1:7242/ingest/8e4324b5-9dc1-47d8-937c-afc744e1c2c9',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'env.ts:76',message:'validateAndHandleEnv entry',data:{isProduction}},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'A'})}).catch(()=>{});
+  fetch('http://127.0.0.1:7242/ingest/8e4324b5-9dc1-47d8-937c-afc744e1c2c9', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      location: 'env.ts:111',
+      message: 'validateAndHandleEnv entry',
+      data: { isProduction },
+      timestamp: Date.now(),
+      sessionId: 'debug-session',
+      runId: 'run1',
+      hypothesisId: 'A'
+    })
+  }).catch(() => {});
   // #endregion
   const result = validateEnv();
 
@@ -105,7 +174,19 @@ function validateAndHandleEnv(): void {
     ].join('\n');
 
     // #region agent log
-    fetch('http://127.0.0.1:7242/ingest/8e4324b5-9dc1-47d8-937c-afc744e1c2c9',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'env.ts:90',message:'Validation failed, checking production',data:{isProduction,willThrow:isProduction}},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'A'})}).catch(()=>{});
+    fetch('http://127.0.0.1:7242/ingest/8e4324b5-9dc1-47d8-937c-afc744e1c2c9', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        location: 'env.ts:128',
+        message: 'Validation failed, checking production',
+        data: { isProduction, willThrow: isProduction },
+        timestamp: Date.now(),
+        sessionId: 'debug-session',
+        runId: 'run1',
+        hypothesisId: 'A'
+      })
+    }).catch(() => {});
     // #endregion
     if (isProduction) {
       // 프로덕션에서는 에러 발생
@@ -123,7 +204,19 @@ function validateAndHandleEnv(): void {
  */
 export const ENV: EnvConfig = (() => {
   // #region agent log
-  fetch('http://127.0.0.1:7242/ingest/8e4324b5-9dc1-47d8-937c-afc744e1c2c9',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'env.ts:104',message:'ENV module-level initialization',data:{isProduction,isDevelopment}},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'A,E'})}).catch(()=>{});
+  fetch('http://127.0.0.1:7242/ingest/8e4324b5-9dc1-47d8-937c-afc744e1c2c9', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      location: 'env.ts:145',
+      message: 'ENV module-level initialization',
+      data: { isProduction, isDevelopment },
+      timestamp: Date.now(),
+      sessionId: 'debug-session',
+      runId: 'run1',
+      hypothesisId: 'A,E'
+    })
+  }).catch(() => {});
   // #endregion
   // 환경 변수 검증
   validateAndHandleEnv();

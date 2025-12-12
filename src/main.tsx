@@ -116,20 +116,61 @@ function ConditionalAppContainer() {
 
   useEffect(() => {
     // #region agent log
-    fetch('http://127.0.0.1:7242/ingest/8e4324b5-9dc1-47d8-937c-afc744e1c2c9',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'main.tsx:117',message:'ConditionalAppContainer useEffect start',data:{isToss:isTossEnvironment()}},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'C'})}).catch(()=>{});
+    const isToss = isTossEnvironment();
+    fetch('http://127.0.0.1:7242/ingest/8e4324b5-9dc1-47d8-937c-afc744e1c2c9', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        location: 'main.tsx:117',
+        message: 'ConditionalAppContainer useEffect start',
+        data: { isToss },
+        timestamp: Date.now(),
+        sessionId: 'debug-session',
+        runId: 'run1',
+        hypothesisId: 'C'
+      })
+    }).catch(() => {});
     // #endregion
     // 심사 환경에서도 AppContainer를 로드 (TDS 의존성 없음)
     setLoading(true);
     import('./AppContainer')
       .then((module) => {
         // #region agent log
-        fetch('http://127.0.0.1:7242/ingest/8e4324b5-9dc1-47d8-937c-afc744e1c2c9',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'main.tsx:122',message:'AppContainer import success',data:{hasDefault:!!module.default}},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'C'})}).catch(()=>{});
+        fetch('http://127.0.0.1:7242/ingest/8e4324b5-9dc1-47d8-937c-afc744e1c2c9', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            location: 'main.tsx:122',
+            message: 'AppContainer import success',
+            data: { hasDefault: !!module.default },
+            timestamp: Date.now(),
+            sessionId: 'debug-session',
+            runId: 'run1',
+            hypothesisId: 'C'
+          })
+        }).catch(() => {});
         // #endregion
         setAppContainer(() => module.default);
       })
       .catch((err) => {
         // #region agent log
-        fetch('http://127.0.0.1:7242/ingest/8e4324b5-9dc1-47d8-937c-afc744e1c2c9',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'main.tsx:125',message:'AppContainer import error',data:{errorName:err.name,errorMessage:err.message,errorStack:err.stack?.substring(0,200)}},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'A,B,C,D,E'})}).catch(()=>{});
+        fetch('http://127.0.0.1:7242/ingest/8e4324b5-9dc1-47d8-937c-afc744e1c2c9', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            location: 'main.tsx:125',
+            message: 'AppContainer import error',
+            data: {
+              errorName: err.name,
+              errorMessage: err.message,
+              errorStack: err.stack?.substring(0, 200)
+            },
+            timestamp: Date.now(),
+            sessionId: 'debug-session',
+            runId: 'run1',
+            hypothesisId: 'A,B,C,D,E'
+          })
+        }).catch(() => {});
         // #endregion
         console.error('Failed to load AppContainer:', err);
         setError(err);
