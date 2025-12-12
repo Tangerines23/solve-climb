@@ -8,6 +8,10 @@ import { logger } from './logger';
 const isDevelopment = import.meta.env.DEV;
 const isProduction = import.meta.env.PROD;
 
+// #region agent log
+fetch('http://127.0.0.1:7242/ingest/8e4324b5-9dc1-47d8-937c-afc744e1c2c9',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'env.ts:8-9',message:'Environment flags',data:{isDev:isDevelopment,isProd:isProduction,envVars:{supabaseUrl:import.meta.env.VITE_SUPABASE_URL,supabaseKey:import.meta.env.VITE_SUPABASE_ANON_KEY?`${import.meta.env.VITE_SUPABASE_ANON_KEY.substring(0,10)}...`:'undefined'}},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'A,C,E'})}).catch(()=>{});
+// #endregion
+
 /**
  * 환경 변수 타입 정의
  */
@@ -45,11 +49,17 @@ interface ValidationResult {
  * @returns 검증 결과
  */
 function validateEnv(strict: boolean = isProduction): ValidationResult {
+  // #region agent log
+  fetch('http://127.0.0.1:7242/ingest/8e4324b5-9dc1-47d8-937c-afc744e1c2c9',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'env.ts:47',message:'validateEnv called',data:{strict,isProduction}},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'A'})}).catch(()=>{});
+  // #endregion
   const missing: string[] = [];
   const errors: string[] = [];
 
   REQUIRED_ENV_VARS.forEach((varName) => {
     const value = import.meta.env[varName];
+    // #region agent log
+    fetch('http://127.0.0.1:7242/ingest/8e4324b5-9dc1-47d8-937c-afc744e1c2c9',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'env.ts:52',message:'Checking env var',data:{varName,hasValue:!!value,valueLength:value?.length||0}},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'B,D,E'})}).catch(()=>{});
+    // #endregion
     if (!value || value.trim() === '') {
       missing.push(varName);
       errors.push(`필수 환경 변수 "${varName}"가 설정되지 않았습니다.`);
@@ -62,11 +72,15 @@ function validateEnv(strict: boolean = isProduction): ValidationResult {
     errors.push('VITE_SUPABASE_URL은 https://로 시작해야 합니다.');
   }
 
-  return {
+  const result = {
     isValid: missing.length === 0 && errors.length === 0,
     missing,
     errors,
   };
+  // #region agent log
+  fetch('http://127.0.0.1:7242/ingest/8e4324b5-9dc1-47d8-937c-afc744e1c2c9',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'env.ts:65',message:'validateEnv result',data:result},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'A,B,D'})}).catch(()=>{});
+  // #endregion
+  return result;
 }
 
 /**
@@ -74,6 +88,9 @@ function validateEnv(strict: boolean = isProduction): ValidationResult {
  * @throws 환경 변수가 누락된 경우 (프로덕션) 또는 경고 (개발)
  */
 function validateAndHandleEnv(): void {
+  // #region agent log
+  fetch('http://127.0.0.1:7242/ingest/8e4324b5-9dc1-47d8-937c-afc744e1c2c9',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'env.ts:76',message:'validateAndHandleEnv entry',data:{isProduction}},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'A'})}).catch(()=>{});
+  // #endregion
   const result = validateEnv();
 
   if (!result.isValid) {
@@ -87,6 +104,9 @@ function validateAndHandleEnv(): void {
       '.env.example 파일을 참고하여 환경 변수를 설정해주세요.',
     ].join('\n');
 
+    // #region agent log
+    fetch('http://127.0.0.1:7242/ingest/8e4324b5-9dc1-47d8-937c-afc744e1c2c9',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'env.ts:90',message:'Validation failed, checking production',data:{isProduction,willThrow:isProduction}},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'A'})}).catch(()=>{});
+    // #endregion
     if (isProduction) {
       // 프로덕션에서는 에러 발생
       throw new Error(errorMessage);
@@ -102,6 +122,9 @@ function validateAndHandleEnv(): void {
  * 검증 후 안전하게 접근 가능한 환경 변수들
  */
 export const ENV: EnvConfig = (() => {
+  // #region agent log
+  fetch('http://127.0.0.1:7242/ingest/8e4324b5-9dc1-47d8-937c-afc744e1c2c9',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'env.ts:104',message:'ENV module-level initialization',data:{isProduction,isDevelopment}},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'A,E'})}).catch(()=>{});
+  // #endregion
   // 환경 변수 검증
   validateAndHandleEnv();
 
