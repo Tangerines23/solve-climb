@@ -115,26 +115,20 @@ function ConditionalAppContainer() {
   const [error, setError] = useState<Error | null>(null);
 
   useEffect(() => {
-    if (isTossEnvironment()) {
-      setLoading(true);
-      import('./AppContainer')
-        .then((module) => {
-          setAppContainer(() => module.default);
-        })
-        .catch((err) => {
-          console.error('Failed to load AppContainer:', err);
-          setError(err);
-        })
-        .finally(() => {
-          setLoading(false);
-        });
-    }
+    // 심사 환경에서도 AppContainer를 로드 (TDS 의존성 없음)
+    setLoading(true);
+    import('./AppContainer')
+      .then((module) => {
+        setAppContainer(() => module.default);
+      })
+      .catch((err) => {
+        console.error('Failed to load AppContainer:', err);
+        setError(err);
+      })
+      .finally(() => {
+        setLoading(false);
+      });
   }, []);
-
-  // 심사 환경
-  if (!isTossEnvironment()) {
-    return <AppContainerReview />;
-  }
 
   // 로딩 중
   if (loading) {
@@ -146,7 +140,7 @@ function ConditionalAppContainer() {
     return <AppContainerReview />;
   }
 
-  // Toss 환경 - 정상 로드
+  // 정상 로드 (Toss 환경과 심사 환경 모두)
   return <AppContainer />;
 }
 
