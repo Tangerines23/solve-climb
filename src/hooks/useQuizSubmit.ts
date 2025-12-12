@@ -1,5 +1,5 @@
 // 답안 제출 로직을 관리하는 커스텀 훅
-import { useCallback, FormEvent } from 'react';
+import { useCallback, useRef, useEffect, FormEvent } from 'react';
 import { QuizQuestion } from '../types/quiz';
 import { GameMode } from '../types/quiz';
 import { CLIMB_PER_CORRECT, SLIDE_PER_WRONG, MAX_POSSIBLE_ANSWER } from '../constants/game';
@@ -63,6 +63,25 @@ export function useQuizSubmit({
   setSolveTimes,
   inputRef,
 }: UseQuizSubmitParams) {
+  // 함수 참조를 안정적으로 유지하기 위한 ref
+  const paramsRef = useRef({
+    generateNewQuestion,
+    handleGameOver,
+    setTotalQuestions,
+    setWrongAnswers,
+    setSolveTimes,
+  });
+  
+  useEffect(() => {
+    paramsRef.current = {
+      generateNewQuestion,
+      handleGameOver,
+      setTotalQuestions,
+      setWrongAnswers,
+      setSolveTimes,
+    };
+  }, [generateNewQuestion, handleGameOver, setTotalQuestions, setWrongAnswers, setSolveTimes]);
+  
   const handleSubmit = useCallback(
     (e: FormEvent) => {
       e.preventDefault();
@@ -105,7 +124,7 @@ export function useQuizSubmit({
       }
 
       // 문제 수 증가
-      setTotalQuestions(prev => prev + 1);
+      paramsRef.current.setTotalQuestions(prev => prev + 1);
 
       if (isCorrect) {
         // 진동 피드백
@@ -115,7 +134,7 @@ export function useQuizSubmit({
         // 서바이벌 모드: 정답을 맞춘 경우 풀이 시간 기록
         if (gameMode === 'survival' && questionStartTime !== null) {
           const solveTime = (Date.now() - questionStartTime) / 1000; // 초 단위
-          setSolveTimes(prev => [...prev, solveTime]);
+          paramsRef.current.setSolveTimes(prev => [...prev, solveTime]);
         }
 
         setCardAnimation('correct-flash');
@@ -126,7 +145,7 @@ export function useQuizSubmit({
           setDisplayValue('');
           setIsError(false);
           setShowFlash(false);
-          generateNewQuestion();
+          paramsRef.current.generateNewQuestion();
           setInputAnimation('');
           setCardAnimation('');
           setIsSubmitting(false);
@@ -161,7 +180,7 @@ export function useQuizSubmit({
         if (gameMode === 'survival') {
           // 오답 정보 저장
           const questionText = currentQuestion.question;
-          setWrongAnswers(prev => [...prev, {
+          paramsRef.current.setWrongAnswers(prev => [...prev, {
             question: questionText,
             wrongAnswer: answerInput,
             correctAnswer: correctAnswerText
@@ -174,7 +193,7 @@ export function useQuizSubmit({
             setShowFlash(false);
             setInputAnimation('');
             setCardAnimation('');
-            handleGameOver();
+            paramsRef.current.handleGameOver();
           }, 800);
         } else {
           // 타임어택 모드: 오답 시 감점 적용
@@ -208,7 +227,7 @@ export function useQuizSubmit({
             setShowSlideToast(false); // 명시적으로 초기화 (이미 사라졌을 수도 있음)
             setInputAnimation('');
             setCardAnimation('');
-            generateNewQuestion();
+            paramsRef.current.generateNewQuestion();
             setIsSubmitting(false);
             // 다음 문제로 넘어갈 때 포커스 유지 (시스템 키보드 사용 시만)
             if (useSystemKeyboard && inputRef.current) {
@@ -241,11 +260,6 @@ export function useQuizSubmit({
       setAnswerInput,
       increaseScore,
       decreaseScore,
-      generateNewQuestion,
-      handleGameOver,
-      setTotalQuestions,
-      setWrongAnswers,
-      setSolveTimes,
       inputRef,
     ]
   );

@@ -17,6 +17,8 @@ const ResultPage = lazy(() => import('./pages/ResultPage').then(module => ({ def
 const RankingPage = lazy(() => import('./pages/RankingPage').then(module => ({ default: module.RankingPage })));
 const MyPage = lazy(() => import('./pages/MyPage').then(module => ({ default: module.MyPage })));
 const NotificationPage = lazy(() => import('./pages/NotificationPage').then(module => ({ default: module.NotificationPage })));
+const AuthCallbackPage = lazy(() => import('./pages/AuthCallbackPage').then(module => ({ default: module.AuthCallbackPage })));
+const AuthTestPage = lazy(() => import('./pages/AuthTestPage').then(module => ({ default: module.AuthTestPage })));
 
 function App() {
   const { syncProgress } = useLevelProgressStore();
@@ -53,6 +55,8 @@ function App() {
           <Route path="/ranking" element={<RankingPage />} />
           <Route path="/my-page" element={<MyPage />} />
           <Route path="/notifications" element={<NotificationPage />} />
+          <Route path="/auth/callback" element={<AuthCallbackPage />} />
+          <Route path="/auth/test" element={<AuthTestPage />} />
         </Routes>
       </Suspense>
     </ErrorBoundary>

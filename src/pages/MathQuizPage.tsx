@@ -3,6 +3,8 @@ import {
   useState,
   useEffect,
   useRef,
+  useCallback,
+  useMemo,
 } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import './MathQuizPage.css';
@@ -114,6 +116,22 @@ export function MathQuizPage() {
     setDisplayValue,
   });
 
+  // gameState의 setter들을 안정적으로 참조하기 위한 ref
+  const gameStateSettersRef = useRef({
+    handleGameOver: gameState.handleGameOver,
+    setTotalQuestions: gameState.setTotalQuestions,
+    setWrongAnswers: gameState.setWrongAnswers,
+    setSolveTimes: gameState.setSolveTimes,
+  });
+  useEffect(() => {
+    gameStateSettersRef.current = {
+      handleGameOver: gameState.handleGameOver,
+      setTotalQuestions: gameState.setTotalQuestions,
+      setWrongAnswers: gameState.setWrongAnswers,
+      setSolveTimes: gameState.setSolveTimes,
+    };
+  }, [gameState.handleGameOver, gameState.setTotalQuestions, gameState.setWrongAnswers, gameState.setSolveTimes]);
+  
   // 답안 제출 로직
   const { handleSubmit } = useQuizSubmit({
     answerInput,
@@ -137,10 +155,10 @@ export function MathQuizPage() {
     increaseScore,
     decreaseScore,
     generateNewQuestion,
-    handleGameOver: gameState.handleGameOver,
-    setTotalQuestions: gameState.setTotalQuestions,
-    setWrongAnswers: gameState.setWrongAnswers,
-    setSolveTimes: gameState.setSolveTimes,
+    handleGameOver: gameStateSettersRef.current.handleGameOver,
+    setTotalQuestions: gameStateSettersRef.current.setTotalQuestions,
+    setWrongAnswers: gameStateSettersRef.current.setWrongAnswers,
+    setSolveTimes: gameStateSettersRef.current.setSolveTimes,
     inputRef,
   });
 
@@ -182,28 +200,82 @@ export function MathQuizPage() {
     }
   }, [category, topic, navigate, categoryParam, subParam]);
 
-  // gameState 객체 대신 필요한 함수만 의존성에 포함
-  const { setTotalQuestions, setWrongAnswers, setSolveTimes, setQuestionStartTime } = gameState;
+  // gameState의 setter 함수들을 ref로 안정적인 참조 유지
+  // gameState 객체 전체가 아닌 개별 속성들을 추적
+  const gameStateRef = useRef(gameState);
+  useEffect(() => {
+    gameStateRef.current = gameState;
+  }, [
+    gameState.totalQuestions,
+    gameState.wrongAnswers,
+    gameState.questionStartTime,
+    gameState.solveTimes,
+    gameState.handleGameOver,
+    gameState.setTotalQuestions,
+    gameState.setWrongAnswers,
+    gameState.setQuestionStartTime,
+    gameState.setSolveTimes,
+  ]);
   
+  // handleGameOver를 안정적인 참조로 유지 (QuizCard에 전달하기 위해)
+  const handleGameOverRef = useRef(gameState.handleGameOver);
+  useEffect(() => {
+    handleGameOverRef.current = gameState.handleGameOver;
+  }, [gameState.handleGameOver]);
+  
+  // generateNewQuestion의 최신 참조를 유지하기 위한 ref
+  const generateNewQuestionRef = useRef(generateNewQuestion);
+  useEffect(() => {
+    generateNewQuestionRef.current = generateNewQuestion;
+  }, [generateNewQuestion]);
+  
+  // 안정적인 handleGameOver 함수 (QuizCard에 전달)
+  const stableHandleGameOver = useCallback(() => {
+    handleGameOverRef.current();
+  }, []);
+  
+  // 초기화 로직: categoryParam, subParam, levelParam이 변경될 때만 실행
   useEffect(() => {
     resetQuiz();
-    setTotalQuestions(0);
-    setWrongAnswers([]);
-    setSolveTimes([]);
-    setQuestionStartTime(null);
+    gameStateRef.current.setTotalQuestions(0);
+    gameStateRef.current.setWrongAnswers([]);
+    gameStateRef.current.setSolveTimes([]);
+    gameStateRef.current.setQuestionStartTime(null);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [categoryParam, subParam, levelParam, resetQuiz]);
+  
+  // showTipModal이 false가 되면 문제 생성
+  useEffect(() => {
     if (!showTipModal) {
-      generateNewQuestion();
+      // 약간의 지연을 두어 상태 업데이트가 완료된 후 실행
+      const timer = setTimeout(() => {
+        generateNewQuestionRef.current();
+      }, 50);
+      return () => clearTimeout(timer);
     }
-  }, [generateNewQuestion, resetQuiz, showTipModal, setTotalQuestions, setWrongAnswers, setSolveTimes, setQuestionStartTime]);
+  }, [showTipModal]);
 
-  const handleTipClose = () => {
+  const handleTipClose = useCallback(() => {
+    // #region agent log
+    fetch('http://127.0.0.1:7242/ingest/8e4324b5-9dc1-47d8-937c-afc744e1c2c9', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        location: 'MathQuizPage.tsx:251',
+        message: 'handleTipClose called',
+        data: {},
+        timestamp: Date.now(),
+        sessionId: 'debug-session',
+        runId: 'run1',
+        hypothesisId: 'C'
+      })
+    }).catch(() => {});
+    // #endregion
     setShowTipModal(false);
-    setTimeout(() => {
-      generateNewQuestion();
-    }, 100);
-  };
+    // generateNewQuestion은 useEffect에서 showTipModal이 false가 되면 자동으로 호출됨
+  }, []);
 
-  const handleBack = () => {
+  const handleBack = useCallback(() => {
     if (showExitConfirm) {
       if (exitConfirmTimeoutRef.current) {
         clearTimeout(exitConfirmTimeoutRef.current);
@@ -231,7 +303,7 @@ export function MathQuizPage() {
         }, 300);
       }, 3000);
     }
-  };
+  }, [showExitConfirm, categoryParam, subParam, navigate]);
 
   // 화면 높이 감지 및 키보드 모드 전환
   useEffect(() => {
@@ -377,7 +449,7 @@ export function MathQuizPage() {
         damagePosition={animations.damagePosition}
         handleSubmit={handleSubmit}
         handleBack={handleBack}
-        handleGameOver={gameState.handleGameOver}
+        handleGameOver={stableHandleGameOver}
         handleKeypadNumber={inputHandlers.handleKeypadNumber}
         handleQwertyKeyPress={inputHandlers.handleQwertyKeyPress}
         handleKeypadClear={inputHandlers.handleKeypadClear}

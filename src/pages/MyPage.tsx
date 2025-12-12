@@ -15,6 +15,7 @@ import { vibrateShort } from '../utils/haptic';
 import { supabase } from '../utils/supabaseClient';
 import { openLeaderboard } from '../utils/tossGameCenter';
 import { APP_CONFIG } from '../config/app';
+import { ENV } from '../utils/env';
 import './MyPage.css';
 
 export function MyPage() {
@@ -503,6 +504,32 @@ export function MyPage() {
                   </div>
                   <span className="my-page-settings-item-value">{APP_CONFIG.APP_VERSION}</span>
                 </div>
+                {ENV.IS_DEVELOPMENT && (
+                  <button
+                    className="my-page-settings-item my-page-settings-item-button"
+                    onClick={() => navigate('/auth/test')}
+                  >
+                    <div className="my-page-settings-item-content">
+                      <span className="my-page-settings-item-label">인증 테스트</span>
+                    </div>
+                    <svg
+                      className="my-page-settings-item-arrow"
+                      width="20"
+                      height="20"
+                      viewBox="0 0 20 20"
+                      fill="none"
+                      xmlns="http://www.w3.org/2000/svg"
+                    >
+                      <path
+                        d="M7.5 15L12.5 10L7.5 5"
+                        stroke="currentColor"
+                        strokeWidth="2"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                      />
+                    </svg>
+                  </button>
+                )}
                 <button
                   className="my-page-settings-item my-page-settings-item-button"
                   onClick={handleSendFeedback}
@@ -514,6 +541,7 @@ export function MyPage() {
                     className="my-page-settings-item-arrow"
                     width="20"
                     height="20"
+                    viewBox="0 0 20 20"
                     viewBox="0 0 20 20"
                     fill="none"
                     xmlns="http://www.w3.org/2000/svg"
