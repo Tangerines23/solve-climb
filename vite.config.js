@@ -10,7 +10,7 @@ export default defineConfig({
         manualChunks: {
           // Vendor chunks
           'react-vendor': ['react', 'react-dom', 'react-router-dom'],
-          'toss-vendor': ['@toss/tds-mobile', '@toss/tds-mobile-ait'],
+          // toss-vendor 제거: 동적 import로 처리되므로 수동 청크에 포함하지 않음
           'supabase-vendor': ['@supabase/supabase-js'],
           'zustand-vendor': ['zustand'],
         },
