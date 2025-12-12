@@ -1,6 +1,8 @@
 // 사용자 게임 통계를 가져오는 Custom Hook
 import { useState, useEffect } from 'react';
 import { supabase } from '../utils/supabaseClient';
+import { parseLocalSession } from '../utils/safeJsonParse';
+import { storage, StorageKeys } from '../utils/storage';
 import type { Session } from '@supabase/supabase-js';
 
 export interface MyPageStats {
@@ -34,9 +36,9 @@ export function useMyPageStats(): UseMyPageStatsResult {
     // 로컬 세션 확인
     const checkLocalSession = () => {
       try {
-        const localSessionStr = localStorage.getItem('solve-climb-local-session');
-        if (localSessionStr) {
-          const localSession = JSON.parse(localSessionStr);
+        const localSessionStr = storage.getString(StorageKeys.LOCAL_SESSION);
+        const localSession = parseLocalSession(localSessionStr);
+        if (localSession) {
           // 로컬 세션이 있으면 가상 세션 객체 생성
           const virtualSession = {
             user: {
@@ -89,9 +91,9 @@ export function useMyPageStats(): UseMyPageStatsResult {
       let userId = null;
       
       try {
-        const localSessionStr = localStorage.getItem('solve-climb-local-session');
-        if (localSessionStr) {
-          const localSession = JSON.parse(localSessionStr);
+        const localSessionStr = storage.getString(StorageKeys.LOCAL_SESSION);
+        const localSession = parseLocalSession(localSessionStr);
+        if (localSession) {
           userId = localSession.userId;
           // 로컬 세션이 있으면 가상 세션 객체 생성
           currentSession = {
@@ -155,7 +157,7 @@ export function useMyPageStats(): UseMyPageStatsResult {
 
       // 방법 2: 직접 쿼리로 집계 (RPC 함수가 없는 경우 폴백)
       // 로컬 세션인 경우 Supabase 쿼리 스킵
-      if (user_id === 'admin' || user_id.startsWith('admin_') || user_id.startsWith('user_')) {
+      if (user_id === 'tester' || user_id.startsWith('tester_') || user_id.startsWith('user_')) {
         // 로컬 세션인 경우 기본값 반환 (Supabase 데이터 없음)
         setStats({
           totalHeight: 0,

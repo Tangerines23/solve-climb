@@ -2,8 +2,7 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import { supabase } from '../utils/supabaseClient';
-
-export type GameMode = 'time-attack' | 'survival';
+import { GameMode } from '../types/quiz';
 
 export interface LevelRecord {
   level: number;

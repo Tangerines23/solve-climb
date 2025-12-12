@@ -31,7 +31,7 @@
     border: 2px solid transparent;
   }
   50% { 
-    border: 2px solid #10b981;
+    border: 2px solid var(--color-confetti-green);
     box-shadow: 0 0 20px rgba(16, 185, 129, 0.5);
   }
 }
@@ -416,15 +416,15 @@
 @keyframes flash-red-input {
   0% { 
     background-color: rgba(240, 68, 82, 0); 
-    border-color: #3c3c3c; 
+    border-color: var(--color-bg-tertiary); 
   }
   20% { 
     background-color: rgba(240, 68, 82, 0.2); 
-    border-color: #F04452; 
+    border-color: var(--color-toss-red); 
   }
   100% { 
     background-color: rgba(240, 68, 82, 0); 
-    border-color: #3c3c3c; 
+    border-color: var(--color-bg-tertiary); 
   }
 }
 

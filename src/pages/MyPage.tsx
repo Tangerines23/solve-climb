@@ -20,8 +20,16 @@ import './MyPage.css';
 export function MyPage() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
-  const { profile, isProfileComplete, clearProfile, setProfile, setIsAdmin } = useProfileStore();
-  const { hapticEnabled, setHapticEnabled, keyboardType, setKeyboardType } = useSettingsStore();
+  // Zustand Selector 패턴 적용
+  const profile = useProfileStore((state) => state.profile);
+  const isProfileComplete = useProfileStore((state) => state.isProfileComplete);
+  const clearProfile = useProfileStore((state) => state.clearProfile);
+  const setProfile = useProfileStore((state) => state.setProfile);
+  const setIsAdmin = useProfileStore((state) => state.setIsAdmin);
+  const hapticEnabled = useSettingsStore((state) => state.hapticEnabled);
+  const setHapticEnabled = useSettingsStore((state) => state.setHapticEnabled);
+  const keyboardType = useSettingsStore((state) => state.keyboardType);
+  const setKeyboardType = useSettingsStore((state) => state.setKeyboardType);
   const { stats, session, loading: statsLoading, error: statsError, refetch } = useMyPageStats();
   
   // URL 파라미터에서 showProfileForm 확인
@@ -35,8 +43,8 @@ export function MyPage() {
   const [isResetting, setIsResetting] = useState(false);
   const [showKeyboardInfo, setShowKeyboardInfo] = useState(false);
   const [loginError, setLoginError] = useState(false);
-  const adminInputRef = useRef<string>('');
-  const adminInputTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const testerInputRef = useRef<string>('');
+  const testerInputTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   const handleProfileComplete = () => {
     setShowProfileForm(false);
@@ -100,25 +108,27 @@ export function MyPage() {
     window.location.href = `mailto:support@solveclimb.com?subject=${subject}&body=${body}`;
   };
 
-  // Admin 로그인 함수 (로컬 세션만 사용)
-  const handleAdminLogin = useCallback(async () => {
+  // ⚠️ 출시 전 확인 필요: 키보드 입력으로 테스터(관리자) 로그인 기능
+  // 이 기능은 개발/테스트 목적으로만 사용하며, 출시 전에 제거하거나 
+  // 더 안전한 인증 방식으로 교체해야 합니다.
+  const handleTesterLogin = useCallback(async () => {
     try {
       // Supabase 인증 없이 로컬에서만 세션 관리
-      // Admin 프로필 설정
-      const adminProfile = {
-        profileId: `admin_${Date.now()}`,
-        nickname: 'admin',
+      // 테스터 프로필 설정
+      const testerProfile = {
+        profileId: `tester_${Date.now()}`,
+        nickname: 'tester',
         createdAt: new Date().toISOString(),
         isAdmin: true,
       };
 
-      setProfile(adminProfile);
+      setProfile(testerProfile);
       setIsAdmin(true);
 
       // 로컬 세션 저장 (Supabase 인증 없이)
       try {
         localStorage.setItem('solve-climb-local-session', JSON.stringify({
-          userId: 'admin',
+          userId: 'tester',
           isAdmin: true,
           loginTime: new Date().toISOString(),
         }));
@@ -128,13 +138,13 @@ export function MyPage() {
 
       // 로그인 성공 후 통계 다시 불러오기
       await refetch();
-      setToastMessage('Admin으로 로그인되었습니다.');
+      setToastMessage('테스터로 로그인되었습니다.');
       setShowToast(true);
       setLoginError(false);
-      adminInputRef.current = '';
+      testerInputRef.current = '';
     } catch (error) {
-      console.error('Admin login error:', error);
-      setToastMessage(`Admin 로그인 실패: ${error instanceof Error ? error.message : '알 수 없는 오류'}`);
+      console.error('Tester login error:', error);
+      setToastMessage(`테스터 로그인 실패: ${error instanceof Error ? error.message : '알 수 없는 오류'}`);
       setShowToast(true);
     }
   }, [setProfile, setIsAdmin, refetch]);
@@ -201,11 +211,12 @@ export function MyPage() {
     }
   };
 
-  // 키보드 이벤트 리스너: admin 입력 감지 (로그인 오류 시 또는 Guest View에서)
+  // ⚠️ 출시 전 확인 필요: 키보드 입력으로 테스터(관리자) 로그인 감지
+  // 이 기능은 개발/테스트 목적으로만 사용하며, 출시 전에 제거해야 합니다.
   useEffect(() => {
     // 로그인 오류가 없고 세션이 있으면 리스너 등록 안 함
     if (!loginError && session) {
-      adminInputRef.current = '';
+      testerInputRef.current = '';
       return;
     }
 
@@ -227,35 +238,35 @@ export function MyPage() {
         const char = event.key.toLowerCase();
         
         // 기존 입력 타임아웃 클리어
-        if (adminInputTimeoutRef.current) {
-          clearTimeout(adminInputTimeoutRef.current);
+        if (testerInputTimeoutRef.current) {
+          clearTimeout(testerInputTimeoutRef.current);
         }
 
-        // "admin" 문자열과 비교
-        const expectedChar = 'admin'[adminInputRef.current.length];
+        // "tester" 문자열과 비교
+        const expectedChar = 'tester'[testerInputRef.current.length];
         
         if (char === expectedChar) {
-          adminInputRef.current += char;
+          testerInputRef.current += char;
           
-          // "admin" 완성 확인
-          if (adminInputRef.current === 'admin') {
+          // "tester" 완성 확인
+          if (testerInputRef.current === 'tester') {
             event.preventDefault(); // 기본 동작 방지
-            await handleAdminLogin();
-            adminInputRef.current = '';
+            await handleTesterLogin();
+            testerInputRef.current = '';
             return;
           }
 
           // 3초 내에 다음 문자를 입력하지 않으면 리셋
-          adminInputTimeoutRef.current = setTimeout(() => {
-            adminInputRef.current = '';
+          testerInputTimeoutRef.current = setTimeout(() => {
+            testerInputRef.current = '';
           }, 3000);
         } else {
           // 잘못된 문자 입력 시 리셋
-          adminInputRef.current = '';
+          testerInputRef.current = '';
         }
       } else if (event.key === 'Backspace' || event.key === 'Delete') {
         // 백스페이스나 삭제 키 입력 시 리셋
-        adminInputRef.current = '';
+        testerInputRef.current = '';
       }
     };
 
@@ -263,11 +274,11 @@ export function MyPage() {
 
     return () => {
       window.removeEventListener('keydown', handleKeyDown);
-      if (adminInputTimeoutRef.current) {
-        clearTimeout(adminInputTimeoutRef.current);
+      if (testerInputTimeoutRef.current) {
+        clearTimeout(testerInputTimeoutRef.current);
       }
     };
-  }, [loginError, session, handleAdminLogin]);
+  }, [loginError, session, handleTesterLogin]);
 
   // 로그아웃 함수
   const handleLogout = async () => {

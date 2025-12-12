@@ -13,7 +13,9 @@ export function SubCategoryPage() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const categoryParam = searchParams.get('category');
-  const { addFavorite, isFavorite } = useFavoriteStore();
+  // Zustand Selector 패턴 적용
+  const addFavorite = useFavoriteStore((state) => state.addFavorite);
+  const isFavorite = useFavoriteStore((state) => state.isFavorite);
   const [showFavoriteToast, setShowFavoriteToast] = useState<string | null>(null);
   const [isFavoriteToastClosing, setIsFavoriteToastClosing] = useState(false);
   const longPressTimerRef = useRef<NodeJS.Timeout | null>(null);

@@ -6,7 +6,9 @@ import './ChallengeCard.css';
 
 export function ChallengeCard() {
   const navigate = useNavigate();
-  const { setCategoryTopic, setTimeLimit } = useQuizStore();
+  // Zustand Selector 패턴 적용
+  const setCategoryTopic = useQuizStore((state) => state.setCategoryTopic);
+  const setTimeLimit = useQuizStore((state) => state.setTimeLimit);
   const challenge = APP_CONFIG.TODAY_CHALLENGE;
 
   const handleChallengeClick = () => {

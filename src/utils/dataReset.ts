@@ -2,6 +2,8 @@
 import { supabase } from './supabaseClient';
 import { useProfileStore } from '../stores/useProfileStore';
 import { useLevelProgressStore } from '../stores/useLevelProgressStore';
+import { storage } from './storage';
+import { logError } from './errorHandler';
 
 /**
  * 모든 데이터를 초기화합니다.
@@ -21,35 +23,15 @@ export const resetAllData = async (): Promise<void> => {
           .eq('user_id', user.id);
 
         if (error) {
-          console.error('Failed to delete game_records from Supabase:', error);
+          logError('데이터 초기화 - Supabase 게임 기록 삭제', error);
         }
       }
     } catch (error) {
-      console.error('Failed to access Supabase:', error);
+      logError('데이터 초기화 - Supabase 접근', error);
     }
 
     // 2. localStorage의 모든 앱 관련 데이터 삭제
-    const keysToRemove: string[] = [];
-    
-    // localStorage의 모든 키를 순회하며 앱 관련 키 찾기
-    for (let i = 0; i < localStorage.length; i++) {
-      const key = localStorage.key(i);
-      if (key && (
-        key.startsWith('solve-climb-') ||
-        key.startsWith('gameCenterApi_')
-      )) {
-        keysToRemove.push(key);
-      }
-    }
-
-    // 찾은 키들 삭제
-    keysToRemove.forEach(key => {
-      try {
-        localStorage.removeItem(key);
-      } catch (error) {
-        console.error(`Failed to remove ${key}:`, error);
-      }
-    });
+    storage.clearAppData();
 
     // 3. Zustand 스토어 초기화
     // 프로필 스토어 초기화
@@ -63,7 +45,7 @@ export const resetAllData = async (): Promise<void> => {
     // 설정 스토어는 초기화하지 않음 (사용자 설정은 유지)
     
   } catch (error) {
-    console.error('Failed to reset all data:', error);
+    logError('데이터 초기화', error);
     throw error;
   }
 };

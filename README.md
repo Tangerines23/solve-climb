@@ -171,6 +171,98 @@ Zustand를 사용하여 전역 상태를 관리합니다:
 - `useSettingsStore`: 앱 설정
 - `useFavoriteStore`: 즐겨찾기
 
+### CSS 변수 사용 가이드
+
+모든 스타일은 `src/index.css`에 정의된 CSS 변수를 사용해야 합니다. 하드코딩된 색상, 간격, border-radius 값은 금지됩니다.
+
+#### 색상 변수
+
+**배경 색상:**
+- `var(--color-bg-primary)` - 주요 배경 (#1e1e1e)
+- `var(--color-bg-secondary)` - 보조 배경 (#2c2c2c)
+- `var(--color-bg-tertiary)` - 3차 배경 (#3c3c3c)
+
+**텍스트 색상:**
+- `var(--color-text-primary)` - 주요 텍스트 (#ffffff)
+- `var(--color-text-secondary)` - 보조 텍스트 (#aaa)
+
+**Primary 색상 (버튼, 링크 등):**
+- `var(--color-blue-400)` - 기본 상태 (#00BFA5)
+- `var(--color-blue-500)` - hover 상태 (#00a693)
+- `var(--color-blue-700)` - active 상태 (#00897a)
+
+**에러/경고 색상:**
+- `var(--color-toss-red)` - 토스 빨간색 (#f04452)
+- `var(--color-red-500)` - 일반 빨간색 (#ef4444)
+- `var(--color-red-600)` - 위험 버튼 hover (#dc2626)
+
+#### 간격 변수
+
+기본 간격:
+- `var(--spacing-xs)` - 4px
+- `var(--spacing-sm)` - 8px
+- `var(--spacing-md)` - 12px
+- `var(--spacing-lg)` - 16px
+- `var(--spacing-xl)` - 20px
+- `var(--spacing-2xl)` - 24px
+- `var(--spacing-3xl)` - 32px
+- `var(--spacing-4xl)` - 40px
+
+특수 간격:
+- `var(--spacing-tiny)` - 6px
+- `var(--spacing-small-alt)` - 10px
+- `var(--spacing-medium-alt)` - 14px
+
+#### Border Radius 변수
+
+- `var(--rounded-xs)` - 6px
+- `var(--rounded-sm)` - 12px
+- `var(--rounded-md)` - 20px
+- `var(--rounded-lg)` - 32px
+- `var(--rounded-card)` - 16px (카드용)
+- `var(--rounded-button)` - 12px (버튼용)
+- `var(--rounded-toggle)` - 28px (토글 스위치)
+- `var(--rounded-large-card)` - 24px (큰 카드)
+- `var(--rounded-tiny)` - 2px (매우 작은 요소)
+- `var(--rounded-micro)` - 3px (미세한 요소)
+- `var(--rounded-small-alt)` - 6px (작은 요소 대체)
+
+#### 사용 예시
+
+```css
+/* ✅ 올바른 사용 */
+.my-component {
+  background-color: var(--color-bg-primary);
+  padding: var(--spacing-xl);
+  border-radius: var(--rounded-card);
+  color: var(--color-text-primary);
+}
+
+/* ❌ 잘못된 사용 */
+.my-component {
+  background-color: #1e1e1e; /* 하드코딩 금지 */
+  padding: 20px; /* 하드코딩 금지 */
+  border-radius: 16px; /* 하드코딩 금지 */
+}
+```
+
+**예외 사항:**
+- 그래픽/아트워크 요소의 그라데이션 색상
+- 브랜드 색상 (Google 등)
+- `index.css`의 변수 정의 자체
+
+#### 하드코딩 검사
+
+정기적으로 하드코딩된 값을 검사할 수 있습니다:
+
+```bash
+npm run check:css
+```
+
+이 명령어는 `src` 폴더의 모든 CSS 파일을 검사하고 하드코딩된 색상, 간격, border-radius 값을 찾아보고합니다.
+
+자세한 내용은 [DESIGN_SYSTEM.md](./docs/DESIGN_SYSTEM.md)를 참고하세요.
+
 ## 라이센스
 
 이 프로젝트는 토스 앱 인앱 개발을 위한 예제 프로젝트입니다.

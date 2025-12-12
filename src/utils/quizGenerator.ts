@@ -1,7 +1,6 @@
 // 문제 생성 유틸리티
-import { Category, Topic, CategoryTopic, QuizQuestion } from '../types/quiz';
+import { Category, Topic, CategoryTopic, QuizQuestion, Difficulty } from '../types/quiz';
 import { generateRandomNumber } from './math';
-import { Difficulty } from '../stores/useQuizStore';
 import { generateJapaneseQuestion } from './japanese';
 import { NUMBER_RANGE_BY_DIFFICULTY } from '../constants/game';
 

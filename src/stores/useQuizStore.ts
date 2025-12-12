@@ -1,12 +1,6 @@
 // src/stores/useQuizStore.ts
 import { create } from 'zustand';
-import { Category, Topic } from '../types/quiz';
-
-// <-- 1. 'Difficulty'가 export 되었는지 확인
-export type Difficulty = 'easy' | 'medium' | 'hard'; 
-
-// (신규) 지시서 2-1항 반영
-type GameMode = 'time-attack' | 'survival';
+import { Category, Topic, GameMode, Difficulty } from '../types/quiz';
 
 // 시간 설정 (초 단위)
 export type TimeLimit = 60 | 120 | 180; // 1분, 2분, 3분

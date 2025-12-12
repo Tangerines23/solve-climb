@@ -37,10 +37,10 @@
 .level-select-back {
   background: none;
   border: none;
-  color: #ffffff;
+  color: var(--color-text-primary);
   font-size: 1.5rem;
   cursor: pointer;
-  padding: 8px;
+  padding: var(--spacing-sm);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -54,7 +54,7 @@
 .level-select-title {
   font-size: 1.125rem;
   font-weight: bold;
-  color: #ffffff;
+  color: var(--color-text-primary);
   margin: 0;
   flex: 1;
   text-align: center;
@@ -65,10 +65,10 @@
 .level-select-settings {
   background: none;
   border: none;
-  color: #ffffff;
+  color: var(--color-text-primary);
   font-size: 1.25rem;
   cursor: pointer;
-  padding: 8px;
+  padding: var(--spacing-sm);
   display: flex;
   align-items: center;
   justify-content: center;

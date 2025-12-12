@@ -186,8 +186,8 @@
 
 /* 잠김 상태 */
 .level-node-locked {
-  background-color: #9ca3af;
-  color: #6b7280;
+  background-color: var(--color-gray-500);
+  color: var(--color-gray-600);
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 }
 
@@ -220,7 +220,7 @@
 /* 완료 상태 */
 .level-node-cleared {
   background-color: var(--color-bg-secondary);
-  color: #10b981;
+  color: var(--color-blue-400);
   box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
 }
 
@@ -235,7 +235,7 @@
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 2px;
+  gap: var(--spacing-xs);
 }
 
 .level-node-icon {
@@ -424,7 +424,7 @@
 
 .fab-my-location:active {
   transform: scale(0.95);
-  background-color: #f9fafb;
+  background-color: var(--color-gray-200);
 }
 
 @keyframes fabPopIn {

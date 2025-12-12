@@ -3,6 +3,7 @@
 
 import { submitGameCenterLeaderBoardScore, openGameCenterLeaderboard } from '@apps-in-toss/web-framework';
 import { useProfileStore } from '../stores/useProfileStore';
+import { logError, getUserErrorMessage } from './errorHandler';
 
 /**
  * 토스 앱 환경인지 확인
@@ -75,40 +76,7 @@ export async function submitScoreToLeaderboard(score: number): Promise<boolean> 
       return false;
     }
   } catch (error) {
-    // 네트워크 오류와 일반 오류 구분
-    const isNetworkError = 
-      // TypeError: fetch failed, network error 등
-      (error instanceof TypeError && (
-        error.message.includes('fetch') || 
-        error.message.includes('network') || 
-        error.message.includes('Failed') ||
-        error.message.includes('ERR_NAME_NOT_RESOLVED') ||
-        error.message.includes('ERR_INTERNET_DISCONNECTED') ||
-        error.message.includes('ERR_NETWORK_CHANGED')
-      )) ||
-      // AbortError: 요청 취소/타임아웃
-      (error instanceof Error && error.name === 'AbortError') ||
-      // DOMException: 네트워크 관련 예외
-      (error instanceof DOMException && error.name === 'NetworkError');
-    
-    // 연결 끊김/타임아웃 오류 감지
-    const isConnectionError = 
-      error instanceof Error && (
-        error.message.includes('timeout') ||
-        error.message.includes('aborted') ||
-        error.message.includes('abort') ||
-        error.message.includes('연결') ||
-        error.message.includes('disconnected') ||
-        error.message.includes('disconnect')
-      );
-    
-    if (isNetworkError) {
-      console.error('[토스 게임 센터] 네트워크 오류로 점수 제출에 실패했습니다.', error);
-    } else if (isConnectionError) {
-      console.error('[토스 게임 센터] 연결이 끊겨 점수 제출에 실패했습니다.', error);
-    } else {
-      console.error('[토스 게임 센터] 점수 제출 중 오류가 발생했어요.', error);
-    }
+    logError('토스 게임 센터 - 점수 제출', error);
     return false;
   }
 }
@@ -173,54 +141,8 @@ export async function openLeaderboard(onError?: (message: string) => void): Prom
       return { success: false, message };
     }
   } catch (error) {
-    let message = '리더보드를 열 수 없습니다.';
-    
-    // 네트워크 오류 감지
-    const isNetworkError = 
-      // TypeError: fetch failed, network error 등
-      (error instanceof TypeError && (
-        error.message.includes('fetch') || 
-        error.message.includes('network') || 
-        error.message.includes('Failed') ||
-        error.message.includes('ERR_NAME_NOT_RESOLVED') ||
-        error.message.includes('ERR_INTERNET_DISCONNECTED') ||
-        error.message.includes('ERR_NETWORK_CHANGED')
-      )) ||
-      // AbortError: 요청 취소/타임아웃
-      (error instanceof Error && error.name === 'AbortError') ||
-      // DOMException: 네트워크 관련 예외
-      (error instanceof DOMException && error.name === 'NetworkError');
-    
-    // 연결 끊김/타임아웃 오류 감지
-    const isConnectionError = 
-      error instanceof Error && (
-        error.message.includes('timeout') ||
-        error.message.includes('aborted') ||
-        error.message.includes('abort') ||
-        error.message.includes('연결') ||
-        error.message.includes('disconnected') ||
-        error.message.includes('disconnect')
-      );
-    
-    if (isNetworkError) {
-      console.error('[토스 게임 센터] 네트워크 오류로 리더보드를 열 수 없습니다.', error);
-      message = '네트워크 연결을 확인해주세요.';
-    } else if (isConnectionError) {
-      console.error('[토스 게임 센터] 연결이 끊겼습니다.', error);
-      message = '연결이 끊겼습니다. 다시 시도해주세요.';
-    } else if (error instanceof Error) {
-      // 기타 오류
-      console.error('[토스 게임 센터] 리더보드 열기 중 오류가 발생했어요.', error);
-      // 에러 메시지에 네트워크 관련 키워드가 있으면 네트워크 오류로 간주
-      if (error.message.toLowerCase().includes('network') || 
-          error.message.toLowerCase().includes('connection') ||
-          error.message.toLowerCase().includes('timeout')) {
-        message = '네트워크 연결을 확인해주세요.';
-      }
-    } else {
-      console.error('[토스 게임 센터] 리더보드 열기 중 오류가 발생했어요.', error);
-    }
-    
+    logError('토스 게임 센터 - 리더보드 열기', error);
+    const message = getUserErrorMessage(error) || '리더보드를 열 수 없습니다.';
     if (onError) onError(message);
     return { success: false, message };
   }

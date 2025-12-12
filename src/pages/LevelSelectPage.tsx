@@ -8,6 +8,7 @@ import { ModeSelectModal } from '../components/ModeSelectModal';
 import { FooterNav } from '../components/FooterNav';
 import { Toast } from '../components/Toast';
 import { useLevelProgressStore } from '../stores/useLevelProgressStore';
+import { storage } from '../utils/storage';
 import './LevelSelectPage.css';
 
 export function LevelSelectPage() {
@@ -128,7 +129,7 @@ export function LevelSelectPage() {
       // 두 번째 호출 (4초): 실제 해제
       console.log('LevelSelectPage: 두 번째 호출 - 해제');
       const tipKey = `gameTip_${categoryParam}_${subParam}_${level}`;
-      localStorage.removeItem(tipKey);
+      storage.remove(tipKey);
       setToastMessage('해제되었습니다!');
       setShowToast(true);
       // 다음 길게 누르기를 위해 리셋하지 않음 (손을 떼면 리셋됨)

@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { HIRAGANA_MAPPINGS } from '../utils/japanese';
+import { createSafeStorageKey } from '../utils/storageKey';
+import { storage } from '../utils/storage';
 import './GameTipModal.css';
 
 interface GameTipModalProps {
@@ -17,8 +19,11 @@ export function GameTipModal({ isOpen, category, subTopic, level, onClose }: Gam
   // localStorage에서 "다시 보지 않기" 설정 확인
   useEffect(() => {
     if (isOpen) {
-      const tipKey = level ? `gameTip_${category}_${subTopic}_${level}` : `gameTip_${category}_${subTopic}`;
-      const shouldHide = localStorage.getItem(tipKey) === 'true';
+      // 안전한 키 생성 함수 사용
+      const tipKey = level
+        ? createSafeStorageKey('gameTip', category, subTopic, level)
+        : createSafeStorageKey('gameTip', category, subTopic);
+      const shouldHide = storage.getString(tipKey) === 'true';
       if (shouldHide) {
         onClose();
       }
@@ -67,8 +72,11 @@ export function GameTipModal({ isOpen, category, subTopic, level, onClose }: Gam
 
   const handleClose = () => {
     if (dontShowAgain) {
-      const tipKey = level ? `gameTip_${category}_${subTopic}_${level}` : `gameTip_${category}_${subTopic}`;
-      localStorage.setItem(tipKey, 'true');
+      // 안전한 키 생성 함수 사용
+      const tipKey = level
+        ? createSafeStorageKey('gameTip', category, subTopic, level)
+        : createSafeStorageKey('gameTip', category, subTopic);
+      storage.setString(tipKey, 'true');
     }
     onClose();
   };

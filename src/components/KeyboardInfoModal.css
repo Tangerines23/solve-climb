@@ -101,18 +101,18 @@
 }
 
 .keyboard-info-category-tabs-scroll::-webkit-scrollbar-thumb {
-  background: #4c4c4c;
+  background: var(--color-gray-600);
   border-radius: var(--rounded-tiny);
 }
 
 .keyboard-info-category-tabs-scroll::-webkit-scrollbar-thumb:hover {
-  background: #5c5c5c;
+  background: var(--color-bg-tertiary);
 }
 
 .keyboard-info-category-tab {
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: var(--spacing-tiny);
   padding: var(--spacing-small-alt) var(--spacing-lg);
   background-color: var(--color-bg-secondary);
   border: 1px solid var(--color-bg-tertiary);
@@ -128,7 +128,7 @@
 
 .keyboard-info-category-tab:hover {
   background-color: var(--color-bg-tertiary);
-  border-color: #4c4c4c;
+  border-color: var(--color-gray-600);
 }
 
 .keyboard-info-category-tab.active {
@@ -166,7 +166,7 @@
 .keyboard-info-preview-title {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: var(--spacing-small-alt);
 }
 
 .keyboard-info-preview-icon {

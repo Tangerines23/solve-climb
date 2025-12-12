@@ -6,7 +6,8 @@ import './Header.css';
 
 export function Header() {
   const navigate = useNavigate();
-  const { isAdmin } = useProfileStore();
+  // Zustand Selector 패턴 적용
+  const isAdmin = useProfileStore((state) => state.isAdmin);
   const [showProfileForm, setShowProfileForm] = useState(false);
   const doubleClickTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const lastClickTimeRef = useRef<number>(0);

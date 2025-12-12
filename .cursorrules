@@ -1,0 +1,153 @@
+# Solve Climb 프로젝트 코딩 규칙
+
+## CSS 스타일링 규칙
+
+### 필수 사항
+- 모든 CSS 스타일은 `src/index.css`에 정의된 CSS 변수를 사용해야 합니다.
+- 하드코딩된 색상, 간격, border-radius 값은 금지됩니다.
+- 새 컴포넌트나 CSS 파일을 작성할 때는 항상 변수를 사용하세요.
+
+### 색상 변수 사용
+
+**배경 색상:**
+- `var(--color-bg-primary)` - 주요 배경 (#1e1e1e)
+- `var(--color-bg-secondary)` - 보조 배경 (#2c2c2c)
+- `var(--color-bg-tertiary)` - 3차 배경 (#3c3c3c)
+
+**텍스트 색상:**
+- `var(--color-text-primary)` - 주요 텍스트 (#ffffff)
+- `var(--color-text-secondary)` - 보조 텍스트 (#aaa)
+
+**Primary 색상 (버튼, 링크):**
+- `var(--color-blue-400)` - 기본 상태 (#00BFA5)
+- `var(--color-blue-500)` - hover 상태 (#00a693)
+- `var(--color-blue-700)` - active 상태 (#00897a)
+
+**에러/경고 색상:**
+- `var(--color-toss-red)` - 토스 빨간색 (#f04452)
+- `var(--color-red-500)` - 일반 빨간색 (#ef4444)
+- `var(--color-red-600)` - 위험 버튼 hover (#dc2626)
+
+### 간격 변수 사용
+
+**기본 간격:**
+- `var(--spacing-xs)` (4px) ~ `var(--spacing-4xl)` (40px)
+- `var(--spacing-sm)` (8px), `var(--spacing-md)` (12px), `var(--spacing-lg)` (16px), `var(--spacing-xl)` (20px), `var(--spacing-2xl)` (24px), `var(--spacing-3xl)` (32px)
+
+**특수 간격:**
+- `var(--spacing-tiny)` (6px)
+- `var(--spacing-small-alt)` (10px)
+- `var(--spacing-medium-alt)` (14px)
+
+### Border Radius 변수 사용
+
+**기본:**
+- `var(--rounded-xs)` (6px), `var(--rounded-sm)` (12px), `var(--rounded-md)` (20px), `var(--rounded-lg)` (32px)
+
+**특수:**
+- `var(--rounded-card)` (16px) - 카드용
+- `var(--rounded-button)` (12px) - 버튼용
+- `var(--rounded-toggle)` (28px) - 토글 스위치
+- `var(--rounded-large-card)` (24px) - 큰 카드
+- `var(--rounded-tiny)` (2px), `var(--rounded-micro)` (3px), `var(--rounded-small-alt)` (6px)
+
+### Shadow 변수 사용
+- `var(--shadow-modal)` - 모달용
+- `var(--shadow-card)` - 카드용
+
+### 예외 사항 (하드코딩 허용)
+- 그래픽/아트워크 요소의 그라데이션 색상 (예: `linear-gradient(...)`)
+- 브랜드 색상 (예: Google `#4285F4`)
+- `index.css`의 변수 정의 자체 (`:root` 내부)
+
+### 금지 사항
+- ❌ `#ffffff`, `#1e1e1e` 같은 직접 색상 값 사용 금지
+- ❌ `20px`, `16px` 같은 직접 간격 값 사용 금지
+- ❌ `12px`, `20px` 같은 직접 border-radius 값 사용 금지
+- ❌ `rgba(0, 0, 0, 0.5)` 같은 직접 shadow 값 사용 금지 (변수 사용)
+
+### 올바른 사용 예시
+
+```css
+/* ✅ 올바른 예시 */
+.my-component {
+  background-color: var(--color-bg-primary);
+  padding: var(--spacing-xl);
+  border-radius: var(--rounded-card);
+  color: var(--color-text-primary);
+  box-shadow: var(--shadow-card);
+}
+
+.button {
+  background-color: var(--color-blue-400);
+  padding: var(--spacing-md) var(--spacing-lg);
+  border-radius: var(--rounded-button);
+}
+
+.button:hover {
+  background-color: var(--color-blue-500);
+}
+```
+
+### 잘못된 사용 예시
+
+```css
+/* ❌ 잘못된 예시 */
+.my-component {
+  background-color: #1e1e1e;  /* 하드코딩 금지 */
+  padding: 20px;              /* 하드코딩 금지 */
+  border-radius: 16px;        /* 하드코딩 금지 */
+}
+```
+
+### 코드 작성 시 체크리스트
+
+CSS 파일을 작성하거나 수정할 때:
+1. 색상은 항상 `var(--color-*)` 변수 사용
+2. 간격(padding, margin, gap)은 항상 `var(--spacing-*)` 변수 사용
+3. Border radius는 항상 `var(--rounded-*)` 변수 사용
+4. Shadow는 항상 `var(--shadow-*)` 변수 사용
+5. 하드코딩이 필요한 경우 예외 사항에 해당하는지 확인
+
+### 참고 문서
+- 상세 가이드: `docs/DESIGN_SYSTEM.md` 참고
+- 변수 정의: `src/index.css`의 `:root` 섹션 참고
+- 사용 예시: 기존 컴포넌트 CSS 파일 참고 (예: `src/components/AlertModal.css`)
+
+### 컴포넌트 템플릿
+
+새 컴포넌트를 만들 때는 다음 템플릿을 사용하세요:
+
+```css
+.component-name {
+  background-color: var(--color-bg-primary);
+  padding: var(--spacing-xl);
+  margin-bottom: var(--spacing-lg);
+  gap: var(--spacing-md);
+  border-radius: var(--rounded-card);
+  box-shadow: var(--shadow-card);
+  color: var(--color-text-primary);
+}
+
+.component-name-button {
+  background-color: var(--color-blue-400);
+  color: var(--color-text-primary);
+  padding: var(--spacing-md) var(--spacing-lg);
+  border-radius: var(--rounded-button);
+}
+
+.component-name-button:hover {
+  background-color: var(--color-blue-500);
+}
+
+.component-name-button:active {
+  background-color: var(--color-blue-700);
+}
+```
+
+## 일반 코딩 규칙
+
+- TypeScript strict 모드 사용
+- 함수형 컴포넌트와 Hooks 사용
+- ESLint 규칙 준수
+

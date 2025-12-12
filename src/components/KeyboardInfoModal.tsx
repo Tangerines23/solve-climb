@@ -24,7 +24,8 @@ interface KeyboardInfo {
 type KeyboardDisplayType = 'qwerty-text' | 'qwerty-number' | 'custom';
 
 export function KeyboardInfoModal({ isOpen, onClose }: KeyboardInfoModalProps) {
-  const { keyboardType } = useSettingsStore();
+  // Zustand Selector 패턴 적용
+  const keyboardType = useSettingsStore((state) => state.keyboardType);
   const [isLandscape, setIsLandscape] = useState(false);
   
   // 키보드 타입별로 사용되는 카테고리 정보 수집 함수

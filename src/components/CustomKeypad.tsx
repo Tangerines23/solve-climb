@@ -12,7 +12,7 @@ interface CustomKeypadProps {
   showNegative?: boolean; // 음수 버튼 표시 여부
 }
 
-export function CustomKeypad({
+function CustomKeypadComponent({
   onNumberClick,
   onClear,
   onBackspace,
@@ -20,7 +20,8 @@ export function CustomKeypad({
   disabled = false,
   showNegative = false,
 }: CustomKeypadProps) {
-  const { hapticEnabled } = useSettingsStore();
+  // Zustand Selector 패턴 적용
+  const hapticEnabled = useSettingsStore((state) => state.hapticEnabled);
 
   const handleNumberClick = (num: string) => {
     if (!disabled) {
@@ -182,4 +183,7 @@ export function CustomKeypad({
     </div>
   );
 }
+
+// React.memo로 메모이제이션
+export const CustomKeypad = React.memo(CustomKeypadComponent);
 

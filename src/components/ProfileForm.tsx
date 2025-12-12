@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { UserProfile, useProfileStore } from '../stores/useProfileStore';
+import { sanitizeNickname, validateNickname } from '../utils/validation';
 import './ProfileForm.css';
 
 interface ProfileFormProps {
@@ -10,7 +11,10 @@ interface ProfileFormProps {
 
 export function ProfileForm({ onComplete, showBackButton = false }: ProfileFormProps) {
   const navigate = useNavigate();
-  const { setProfile, setIsAdmin, profile } = useProfileStore();
+  // Zustand Selector 패턴 적용
+  const setProfile = useProfileStore((state) => state.setProfile);
+  const setIsAdmin = useProfileStore((state) => state.setIsAdmin);
+  const profile = useProfileStore((state) => state.profile);
   const [nickname, setNickname] = useState(profile?.nickname || '');
   const [error, setError] = useState('');
   // const [isGoogleLoading, setIsGoogleLoading] = useState(false);
@@ -65,23 +69,24 @@ export function ProfileForm({ onComplete, showBackButton = false }: ProfileFormP
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!nickname.trim()) {
-      setError('닉네임을 입력해주세요.');
+    // 닉네임 정제 (HTML 태그 제거, 공백 정규화)
+    const sanitizedNickname = sanitizeNickname(nickname);
+    
+    // 닉네임 검증
+    const validation = validateNickname(sanitizedNickname);
+    if (!validation.valid) {
+      setError(validation.error || '닉네임이 올바르지 않습니다.');
       return;
     }
 
-    if (nickname.length > 10) {
-      setError('닉네임은 10자 이하여야 합니다.');
-      return;
-    }
-
-    // 닉네임이 'admin'이면 어드민으로 설정
-    const isAdmin = nickname.toLowerCase().trim() === 'admin';
+    // 닉네임으로는 관리자 권한 부여 안 함
+    // 관리자 권한은 키보드 입력으로만 가능 (출시 전 확인 필요)
+    const isAdmin = false;
 
     const existingProfile = profile;
     const profileData: UserProfile = {
       profileId: existingProfile?.profileId || '', // 기존 프로필이 있으면 ID 유지, 없으면 빈 문자열 (스토어에서 생성)
-      nickname: nickname.trim(),
+      nickname: sanitizedNickname,
       // email: googleUser?.email,
       // avatar: googleUser?.picture,
       // userId: googleUser?.email,
@@ -90,9 +95,6 @@ export function ProfileForm({ onComplete, showBackButton = false }: ProfileFormP
     };
 
     setProfile(profileData);
-    if (isAdmin) {
-      setIsAdmin(true);
-    }
     onComplete();
   };
 

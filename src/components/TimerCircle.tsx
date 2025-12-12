@@ -8,7 +8,7 @@ interface TimerCircleProps {
   enableFastForward?: boolean; // 타임어택 모드에서 빠른 진행 활성화
 }
 
-export function TimerCircle({ duration, onComplete, isPaused = false, enableFastForward = false }: TimerCircleProps) {
+function TimerCircleComponent({ duration, onComplete, isPaused = false, enableFastForward = false }: TimerCircleProps) {
   const [timeLeft, setTimeLeft] = useState(duration);
   const [isFastForward, setIsFastForward] = useState(false);
   const pressStartTimeRef = useRef<number | null>(null);
@@ -90,3 +90,6 @@ export function TimerCircle({ duration, onComplete, isPaused = false, enableFast
     </div>
   );
 }
+
+// React.memo로 메모이제이션
+export const TimerCircle = React.memo(TimerCircleComponent);

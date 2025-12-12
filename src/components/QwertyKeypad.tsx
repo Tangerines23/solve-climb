@@ -24,7 +24,7 @@ const NUMBER_LAYOUT = [
   ['1', '2', '3', '4', '5', '6', '7', '8', '9', '0'],
 ];
 
-export function QwertyKeypad({
+function QwertyKeypadComponent({
   onKeyPress,
   onClear,
   onBackspace,
@@ -173,4 +173,7 @@ export function QwertyKeypad({
     </div>
   );
 }
+
+// React.memo로 메모이제이션
+export const QwertyKeypad = React.memo(QwertyKeypadComponent);
 

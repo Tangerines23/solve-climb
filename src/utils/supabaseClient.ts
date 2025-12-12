@@ -1,13 +1,11 @@
 import { createClient } from '@supabase/supabase-js';
+import { ENV, logEnvInfo } from './env';
 
-const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
-const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
+// 개발 환경에서 환경 변수 정보 출력
+logEnvInfo();
 
-if (!supabaseUrl || !supabaseAnonKey) {
-    console.warn('Supabase URL or Anon Key is missing. Supabase features will be disabled.');
-}
-
+// 환경 변수 검증은 env.ts에서 자동으로 수행됨
 export const supabase = createClient(
-    supabaseUrl || '',
-    supabaseAnonKey || ''
+    ENV.SUPABASE_URL,
+    ENV.SUPABASE_ANON_KEY
 );

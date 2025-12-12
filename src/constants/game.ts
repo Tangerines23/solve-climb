@@ -1,5 +1,5 @@
 // src/constants/game.ts
-import { Difficulty } from '../stores/useQuizStore';
+import { Difficulty } from '../types/quiz';
 
 export const SCORE_PER_CORRECT = 10;
 export const CLIMB_PER_CORRECT = 10; // 등반 시 10m 상승

@@ -28,3 +28,9 @@ export interface QuizQuestion {
   options?: (number | string)[];
 }
 
+// 게임 모드 타입
+export type GameMode = 'time-attack' | 'survival';
+
+// 난이도 타입
+export type Difficulty = 'easy' | 'medium' | 'hard';
+

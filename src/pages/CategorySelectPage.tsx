@@ -14,7 +14,9 @@ type SelectionStep = 'category' | 'time';
 export function CategorySelectPage() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
-  const { setCategoryTopic, setTimeLimit } = useQuizStore();
+  // Zustand Selector 패턴 적용
+  const setCategoryTopic = useQuizStore((state) => state.setCategoryTopic);
+  const setTimeLimit = useQuizStore((state) => state.setTimeLimit);
   const [step, setStep] = useState<SelectionStep>('category');
   const [selectedCategory, setSelectedCategory] = useState<Category | null>(null);
   const [selectedTopic, setSelectedTopic] = useState<Topic | null>(null);

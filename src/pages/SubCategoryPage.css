@@ -50,20 +50,20 @@
 .subcategory-category-title {
   font-size: 1.5rem;
   font-weight: 700;
-  color: #ffffff;
+  color: var(--color-text-primary);
   margin: 0;
 }
 
 .subcategory-category-progress {
   font-size: 0.875rem;
-  color: #8e94a0;
+  color: var(--color-gray-550);
   font-weight: 500;
 }
 
 .topic-list-container {
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: var(--spacing-md);
 }
 
 .topic-card-link {
@@ -125,14 +125,14 @@
 .topic-altitude-info {
   display: flex;
   flex-direction: column;
-  gap: 6px;
-  margin-top: 4px;
+  gap: var(--spacing-tiny);
+  margin-top: var(--spacing-xs);
 }
 
 .topic-altitude-text {
   font-size: 1rem;
-  color: #ffffff;
-  margin: 0 0 8px 0;
+  color: var(--color-text-primary);
+  margin: 0 0 var(--spacing-sm) 0;
   font-weight: 500;
 }
 
@@ -212,8 +212,8 @@
   bottom: 100px;
   left: 50%;
   transform: translateX(-50%);
-  background-color: #1C1C1E;
-  color: #ffffff;
+  background-color: var(--color-bg-primary);
+  color: var(--color-text-primary);
   padding: var(--spacing-md) var(--spacing-2xl);
   border-radius: var(--rounded-large-card);
   font-size: 0.875rem;

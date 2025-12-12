@@ -10,10 +10,10 @@
   align-self: flex-start;
   background: none;
   border: none;
-  color: #00BFA5;
+  color: var(--color-blue-400);
   font-size: 1rem;
   cursor: pointer;
-  padding: 8px 0;
+  padding: var(--spacing-sm) 0;
   margin-bottom: 20px;
   font-weight: 500;
   width: 100%;
@@ -40,7 +40,7 @@
 }
 
 .selected-text {
-  color: #00BFA5;
+  color: var(--color-blue-400);
   font-size: 1.1rem;
   font-weight: 500;
   margin: 0;

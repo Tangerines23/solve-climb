@@ -2,10 +2,20 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useQuizStore } from '../stores/useQuizStore';
-import { GameMode, useLevelProgressStore } from '../stores/useLevelProgressStore';
+import { useLevelProgressStore } from '../stores/useLevelProgressStore';
+import { GameMode } from '../types/quiz';
 import { submitScoreToLeaderboard } from '../utils/tossGameCenter';
 import { APP_CONFIG } from '../config/app';
 import { SCORE_PER_CORRECT } from '../constants/game';
+import {
+  validateCategoryParam,
+  validateSubTopicParam,
+  validateLevelParam,
+  validateModeParam,
+  validateNumberParam,
+  validateFloatParam,
+  createSafeStorageKey,
+} from '../utils/urlParams';
 import './ResultPage.css';
 
 // CountUp 애니메이션 훅
@@ -59,8 +69,10 @@ interface WrongAnswer {
 }
 
 export function ResultPage() {
-  const { score } = useQuizStore();
-  const { clearLevel, updateBestScore } = useLevelProgressStore();
+  // Zustand Selector 패턴 적용
+  const score = useQuizStore((state) => state.score);
+  const clearLevel = useLevelProgressStore((state) => state.clearLevel);
+  const updateBestScore = useLevelProgressStore((state) => state.updateBestScore);
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const [scoreSubmitted, setScoreSubmitted] = useState(false);
@@ -82,34 +94,41 @@ export function ResultPage() {
     return ['#00BFA5', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6'];
   }, []);
 
-  // URL 파라미터 파싱
-  const categoryParam = searchParams.get('category');
-  const subParam = searchParams.get('sub');
-  const levelParam = searchParams.get('level');
-  const modeParam = searchParams.get('mode');
-  const scoreParam = searchParams.get('score');
-  const totalParam = searchParams.get('total');
+  // URL 파라미터 파싱 및 검증
+  const categoryParamRaw = searchParams.get('category');
+  const subParamRaw = searchParams.get('sub');
+  const levelParamRaw = searchParams.get('level');
+  const modeParamRaw = searchParams.get('mode');
+  const scoreParamRaw = searchParams.get('score');
+  const totalParamRaw = searchParams.get('total');
   const wrongQParam = searchParams.get('wrong_q');
   const wrongAParam = searchParams.get('wrong_a');
   const correctAParam = searchParams.get('correct_a');
-  const avgTimeParam = searchParams.get('avg_time'); // 서바이벌 모드 평균 풀이 시간
+  const avgTimeParamRaw = searchParams.get('avg_time'); // 서바이벌 모드 평균 풀이 시간
 
-  // 점수는 URL 파라미터 우선, 없으면 store에서 가져오기
-  const finalScore = scoreParam ? parseInt(scoreParam, 10) : score;
+  // 파라미터 검증
+  const categoryParam = validateCategoryParam(categoryParamRaw);
+  const subParam = validateSubTopicParam(categoryParam, subParamRaw);
+  const level = validateLevelParam(levelParamRaw, 20);
+  const mode = validateModeParam(modeParamRaw);
+  
+  // 점수 검증 (0 이상, 최대값 제한)
+  const validatedScore = validateNumberParam(scoreParamRaw, 0, 1000000);
+  const finalScore = validatedScore !== null ? validatedScore : score;
 
   // CountUp 애니메이션 적용
   const animatedScore = useCountUp(finalScore, 1500);
-  const total = totalParam ? parseInt(totalParam, 10) : 0;
+  
+  // 총 문제 수 검증
+  const validatedTotal = validateNumberParam(totalParamRaw, 0, 10000);
+  const total = validatedTotal !== null ? validatedTotal : 0;
   
   // 맞춘 개수 계산 (점수를 SCORE_PER_CORRECT로 나눔) - 보조 텍스트용
   const correctCount = Math.floor(finalScore / SCORE_PER_CORRECT);
   
-  // 서바이벌 모드: 평균 풀이 시간 (초)
-  const averageTime = avgTimeParam ? parseFloat(avgTimeParam) : null;
-
-  // 레벨 정보 가져오기
-  const level = levelParam ? parseInt(levelParam, 10) : null;
-  const mode: GameMode | null = modeParam === 'time_attack' ? 'time-attack' : modeParam === 'survival' ? 'survival' : null;
+  // 서바이벌 모드: 평균 풀이 시간 (초) 검증
+  const validatedAvgTime = validateFloatParam(avgTimeParamRaw, 0, 3600);
+  const averageTime = validatedAvgTime;
 
   // 서브토픽 정보 가져오기
   const subTopicInfo = categoryParam && subParam
@@ -146,10 +165,9 @@ export function ResultPage() {
   useEffect(() => {
     if (!categoryParam || !subParam || !level || !mode) return;
 
-    // localStorage 키 생성: highscore_{category}_{sub}_{level}_{mode}
-    // modeParam 대신 mode를 사용하여 일관성 유지 (mode는 'time-attack' 또는 'survival')
+    // localStorage 키 생성: 안전한 키 생성 함수 사용
     const storageKeyMode = mode === 'time-attack' ? 'time_attack' : 'survival';
-    const storageKey = `highscore_${categoryParam}_${subParam}_${level}_${storageKeyMode}`;
+    const storageKey = createSafeStorageKey('highscore', categoryParam, subParam, level, storageKeyMode);
     const existingRecord = localStorage.getItem(storageKey);
     const existingScore = existingRecord ? parseInt(existingRecord, 10) : 0;
 

@@ -223,7 +223,7 @@
 /* 어드민 안내 메시지 */
 .profile-form-admin-notice {
   font-size: 0.875rem;
-  color: #fbbf24;
+  color: var(--color-text-secondary);
   margin: 0 0 var(--spacing-md) 0;
   text-align: center;
 }

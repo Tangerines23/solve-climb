@@ -19,7 +19,7 @@ const UNDER_DEVELOPMENT_LEVELS = new Set([
   // 개발 중인 레벨이 있으면 여기에 추가
 ]);
 
-export function LevelListCard({
+function LevelListCardComponent({
   category,
   subTopic,
   levels,
@@ -227,3 +227,6 @@ export function LevelListCard({
     </>
   );
 }
+
+// React.memo로 메모이제이션
+export const LevelListCard = React.memo(LevelListCardComponent);

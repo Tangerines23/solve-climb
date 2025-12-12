@@ -430,7 +430,7 @@
 .stat-label {
   font-size: 0.9375rem;
   font-weight: 500;
-  color: #999;
+  color: var(--color-text-secondary);
 }
 
 .stat-value {
@@ -503,12 +503,12 @@
 }
 
 .wrong-answer-wrong {
-  color: #999;
+  color: var(--color-text-secondary);
   text-decoration: line-through;
 }
 
 .wrong-answer-correct {
-  color: #10b981;
+  color: var(--color-blue-400);
   font-weight: 700;
 }
 
@@ -532,7 +532,7 @@
   background-color: var(--color-blue-400);
   color: var(--color-gray-100);
   width: 100%;
-  padding: 16px;
+  padding: var(--spacing-lg);
   border: none;
   border-radius: var(--rounded-sm);
   font-size: 1rem;

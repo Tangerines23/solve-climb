@@ -79,7 +79,7 @@
 }
 
 .unknown-mountain-button:hover {
-  border-color: #4c4c4c;
+  border-color: var(--color-gray-600);
   color: var(--color-text-secondary);
 }
 

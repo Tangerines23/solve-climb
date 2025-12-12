@@ -12,7 +12,10 @@ const LONG_PRESS_DURATION = 500; // 0.5초
 
 export function CategoryList() {
   const navigate = useNavigate();
-  const { favorites, addFavorite, isFavorite } = useFavoriteStore();
+  // Zustand Selector 패턴 적용
+  const favorites = useFavoriteStore((state) => state.favorites);
+  const addFavorite = useFavoriteStore((state) => state.addFavorite);
+  const isFavorite = useFavoriteStore((state) => state.isFavorite);
   const [showFavoriteToast, setShowFavoriteToast] = useState<string | null>(null);
   const [isFavoriteToastClosing, setIsFavoriteToastClosing] = useState(false);
   const [showExplorerToast, setShowExplorerToast] = useState<string | null>(null);
