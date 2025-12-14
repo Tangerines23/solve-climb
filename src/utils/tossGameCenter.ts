@@ -1,7 +1,7 @@
 // 토스 게임 센터 SDK 래퍼 유틸리티
 // 로컬 개발 환경에서는 실제 호출 없이 시뮬레이션만 수행
 
-import { submitGameCenterLeaderBoardScore, openGameCenterLeaderboard, isMinVersionSupported } from '@apps-in-toss/web-framework';
+import { submitGameCenterLeaderBoardScore, openGameCenterLeaderboard, isMinVersionSupported, getOperationalEnvironment } from '@apps-in-toss/web-framework';
 import { useProfileStore } from '../stores/useProfileStore';
 import { logError, getUserErrorMessage } from './errorHandler';
 
@@ -51,6 +51,13 @@ export async function submitScoreToLeaderboard(score: number): Promise<boolean> 
       return false;
     }
 
+    // 샌드박스 환경 체크 (예제 코드 참고: 'toss' 환경에서만 제출)
+    const operationalEnvironment = getOperationalEnvironment();
+    if (operationalEnvironment !== 'toss') {
+      console.warn(`[토스 게임 센터] ${operationalEnvironment} 환경에서는 점수를 제출할 수 없습니다. (toss 환경에서만 가능)`);
+      return false;
+    }
+
     const { isProfileComplete } = useProfileStore.getState();
     
     // 프로필이 생성되지 않았으면 제출하지 않음
@@ -89,13 +96,130 @@ export interface LeaderboardResult {
   message?: string;
 }
 
+
+/**
+ * 디버깅 정보 수집 (개발 환경)
+ */
+function collectDebugInfo() {
+  const isDev = import.meta.env.DEV;
+  if (!isDev) return null;
+
+  const profileState = useProfileStore.getState();
+  const win = typeof window !== 'undefined' ? window : null;
+  
+  try {
+    const operationalEnvironment = getOperationalEnvironment();
+    return {
+      timestamp: new Date().toISOString(),
+      isTossApp: isTossAppEnvironment(),
+      isLocalDev: isLocalDevelopment(),
+      isProfileComplete: profileState.isProfileComplete,
+      operationalEnvironment: operationalEnvironment || 'unknown',
+      userAgent: win?.navigator?.userAgent || 'unknown',
+      location: win?.location?.href || 'unknown',
+      hasReactNativeWebView: !!(win as any)?.ReactNativeWebView,
+    };
+  } catch (error) {
+    // getOperationalEnvironment가 실패할 수 있으므로 에러 처리
+    return {
+      timestamp: new Date().toISOString(),
+      isTossApp: isTossAppEnvironment(),
+      isLocalDev: isLocalDevelopment(),
+      isProfileComplete: profileState.isProfileComplete,
+      operationalEnvironment: 'error',
+      userAgent: win?.navigator?.userAgent || 'unknown',
+      location: win?.location?.href || 'unknown',
+      hasReactNativeWebView: !!(win as any)?.ReactNativeWebView,
+    };
+  }
+}
+
+/**
+ * 에러 타입 감지 및 사용자 친화적 메시지 생성
+ */
+function getErrorMessage(error: unknown): string {
+  if (!(error instanceof Error)) {
+    return '리더보드를 열 수 없습니다. 잠시 후 다시 시도해주세요.';
+  }
+
+  const errorMessage = error.message.toLowerCase();
+  const errorName = error.name.toLowerCase();
+
+  // 네트워크 관련 오류
+  if (
+    errorMessage.includes('network') ||
+    errorMessage.includes('fetch') ||
+    errorMessage.includes('connection') ||
+    errorMessage.includes('timeout')
+  ) {
+    return '네트워크 연결을 확인해주세요. 잠시 후 다시 시도해주세요.';
+  }
+
+  // 샌드박스 환경 관련 오류
+  if (
+    errorMessage.includes('sandbox') ||
+    errorMessage.includes('샌드박스') ||
+    errorMessage.includes('랭킹 기능은 샌드박스')
+  ) {
+    return '랭킹 기능은 샌드박스 환경에서는 사용할 수 없어요.';
+  }
+
+  // 리더보드 관련 오류
+  if (
+    errorMessage.includes('leaderboard not found') ||
+    errorMessage.includes('not found') ||
+    errorMessage.includes('리더보드를 찾을 수 없')
+  ) {
+    return '리더보드를 찾을 수 없습니다. 미니앱 정보 승인이 완료되었는지 확인해주세요.';
+  }
+
+  // 버전 관련 오류
+  if (
+    errorMessage.includes('version') ||
+    errorMessage.includes('버전') ||
+    errorMessage.includes('not supported') ||
+    errorMessage.includes('지원하지 않')
+  ) {
+    return '리더보드를 열 수 없습니다. 토스 앱을 최신 버전으로 업데이트해주세요.';
+  }
+
+  // 권한 관련 오류
+  if (
+    errorMessage.includes('permission') ||
+    errorMessage.includes('unauthorized') ||
+    errorMessage.includes('권한') ||
+    errorMessage.includes('인증')
+  ) {
+    return '리더보드를 열 권한이 없습니다. 프로필을 확인해주세요.';
+  }
+
+  // 타임아웃 오류
+  if (errorMessage.includes('timeout') || errorName.includes('timeout')) {
+    return '요청 시간이 초과되었습니다. 잠시 후 다시 시도해주세요.';
+  }
+
+  // 기본 에러 메시지
+  return getUserErrorMessage(error) || '리더보드를 열 수 없습니다. 잠시 후 다시 시도해주세요.';
+}
+
 /**
  * 토스 게임 센터 리더보드 열기
  * @param onError 에러 발생 시 호출할 콜백 함수 (선택사항)
+ * @param onRetry 재시도 중일 때 호출할 콜백 함수 (선택사항)
  * @returns 열기 성공 여부와 에러 메시지
  */
-export async function openLeaderboard(onError?: (message: string) => void): Promise<LeaderboardResult> {
+export async function openLeaderboard(
+  onError?: (message: string) => void,
+  onRetry?: (attempt: number, maxRetries: number) => void
+): Promise<LeaderboardResult> {
+  const debugInfo = collectDebugInfo();
+  
   try {
+    // 디버깅 정보 로깅
+    if (debugInfo) {
+      console.log('[토스 게임 센터] 리더보드 열기 시도', debugInfo);
+    }
+
     // 로컬 개발 환경에서는 시뮬레이션만 수행
     if (isLocalDevelopment() && !isTossAppEnvironment()) {
       console.log('[로컬 개발] 리더보드 열기 흉내');
@@ -125,37 +249,40 @@ export async function openLeaderboard(onError?: (message: string) => void): Prom
       return { success: false, message };
     }
 
-    const { isProfileComplete } = useProfileStore.getState();
-    
-    // 프로필이 생성되지 않았으면 열지 않음
-    if (!isProfileComplete) {
-      console.warn('[토스 게임 센터] 프로필이 생성되지 않아 리더보드를 열 수 없습니다.');
-      const message = '프로필을 먼저 생성해주세요.';
+    // 샌드박스 환경 체크 (예제 코드 참고)
+    const operationalEnvironment = getOperationalEnvironment();
+    if (operationalEnvironment === 'sandbox') {
+      console.warn('[토스 게임 센터] 샌드박스 환경에서는 리더보드를 열 수 없습니다.');
+      const message = '랭킹 기능은 샌드박스 환경에서는 사용할 수 없어요.';
       if (onError) onError(message);
       return { success: false, message };
     }
 
-    // openGameCenterLeaderboard는 Promise<void>를 반환하므로 반환값 체크 불필요
-    // 함수 호출 자체가 성공하면 리더보드가 열림
-    await openGameCenterLeaderboard();
+    // 예제 코드처럼 단순 호출 (프로필 체크 제거, await 제거, 재시도 로직 제거)
+    // openGameCenterLeaderboard는 Promise<void>를 반환하지만, 
+    // 토스 앱 내부에서 처리되므로 await 없이 호출만 함
+    console.log('[토스 게임 센터] 리더보드 열기 호출');
+    openGameCenterLeaderboard();
     
-    console.log('[토스 게임 센터] 리더보드 열기 성공!');
+    console.log('[토스 게임 센터] 리더보드 열기 호출 완료 (비동기 처리 중)');
     return { success: true };
   } catch (error) {
     logError('토스 게임 센터 - 리더보드 열기', error);
     
-    // 특정 에러 메시지 처리
-    let message = '리더보드를 열 수 없습니다.';
-    if (error instanceof Error) {
-      const errorMessage = error.message.toLowerCase();
-      if (errorMessage.includes('leaderboard not found') || errorMessage.includes('not found')) {
-        message = '리더보드를 찾을 수 없습니다. 미니앱 정보 승인이 완료되었는지 확인해주세요.';
-      } else if (errorMessage.includes('version') || errorMessage.includes('버전')) {
-        message = '리더보드를 열 수 없습니다. 토스 앱을 최신 버전으로 업데이트해주세요.';
-      } else {
-        message = getUserErrorMessage(error) || message;
-      }
+    // 디버깅 정보와 함께 에러 로깅
+    if (debugInfo) {
+      console.error('[토스 게임 센터] 리더보드 열기 실패 - 디버깅 정보:', {
+        ...debugInfo,
+        error: error instanceof Error ? {
+          name: error.name,
+          message: error.message,
+          stack: error.stack,
+        } : String(error),
+      });
     }
+    
+    // 에러 타입별 메시지 생성
+    const message = getErrorMessage(error);
     
     if (onError) onError(message);
     return { success: false, message };

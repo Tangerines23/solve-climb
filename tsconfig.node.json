@@ -6,7 +6,8 @@
     "moduleResolution": "bundler",
     "allowSyntheticDefaultImports": true,
     "strict": true,
-    "allowJs": true
+    "allowJs": true,
+    "types": ["node"]
   },
   "include": [
     "vite.config.ts",

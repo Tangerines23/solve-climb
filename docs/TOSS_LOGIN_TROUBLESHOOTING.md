@@ -20,7 +20,60 @@ supabase functions deploy toss-oauth
 supabase functions deploy toss-auth
 ```
 
-### 2. 환경 변수 미설정
+### 2. 401 인증 실패 오류 ⚠️
+
+**증상:**
+- `401 Unauthorized` 에러 발생
+- "액세스 토큰 요청 실패" 또는 "Authentication failed" 메시지
+- Edge Function은 정상 작동하지만 토스 API 인증 실패
+
+**원인:**
+- `TOSS_API_BASIC_AUTH` 환경 변수가 Supabase Secrets에 설정되지 않음
+- `TOSS_API_BASIC_AUTH` 값이 잘못되었거나 만료됨
+- Basic Auth 형식이 올바르지 않음 (Base64 인코딩 필요)
+
+**해결 방법:**
+
+1. **토스 콘솔에서 인증 정보 확인**
+   - [토스 앱인토스 개발자센터](https://developers-apps-in-toss.toss.im/) 접속
+   - 앱 설정에서 `client_id`와 `client_secret` 확인
+
+2. **Basic Auth 값 생성**
+   - 형식: `client_id:client_secret`을 Base64로 인코딩
+   - 예시:
+     ```bash
+     # Node.js에서 생성
+     node -e "console.log(Buffer.from('your_client_id:your_client_secret').toString('base64'))"
+     
+     # 또는 온라인 Base64 인코더 사용
+     # 입력: your_client_id:your_client_secret
+     # 출력: eW91cl9jbGllbnRfaWQ6eW91cl9jbGllbnRfc2VjcmV0
+     ```
+
+3. **Supabase Secrets에 설정**
+   ```bash
+   # Supabase CLI 사용
+   supabase secrets set TOSS_API_BASIC_AUTH=your_base64_encoded_value
+   
+   # 또는 Supabase 대시보드에서 설정
+   # Edge Functions > Secrets 메뉴에서 추가
+   ```
+
+4. **설정 확인**
+   ```bash
+   # Secrets 목록 확인
+   supabase secrets list
+   
+   # Edge Function 로그 확인 (401 에러 발생 시)
+   supabase functions logs toss-oauth
+   ```
+
+**주의사항:**
+- `TOSS_API_BASIC_AUTH` 값은 Base64로 인코딩된 문자열이어야 합니다
+- `client_id:client_secret` 형식으로 콜론(`:`)을 포함해야 합니다
+- 값에 공백이나 줄바꿈이 포함되지 않도록 주의하세요
+
+### 3. 환경 변수 미설정
 
 **필수 환경 변수:**
 - 클라이언트: `VITE_SUPABASE_URL`, `VITE_SUPABASE_ANON_KEY`
@@ -42,7 +95,7 @@ supabase secrets set TOSS_API_BASIC_AUTH=your_basic_auth_token
 supabase secrets set SUPABASE_SERVICE_ROLE_KEY=your_service_role_key
 ```
 
-### 3. Supabase URL 오류
+### 4. Supabase URL 오류
 
 **확인 사항:**
 - `VITE_SUPABASE_URL`이 올바른 형식인지 확인 (`https://xxxxx.supabase.co`)
@@ -53,7 +106,7 @@ supabase secrets set SUPABASE_SERVICE_ROLE_KEY=your_service_role_key
 2. `.env` 파일의 `VITE_SUPABASE_URL` 업데이트
 3. 앱 재시작
 
-### 4. CORS 문제
+### 5. CORS 문제
 
 **증상:**
 - 브라우저 콘솔에 CORS 관련 오류
@@ -63,7 +116,7 @@ supabase secrets set SUPABASE_SERVICE_ROLE_KEY=your_service_role_key
 - Edge Function의 CORS 헤더 확인 (이미 설정되어 있음)
 - Supabase 대시보드에서 CORS 설정 확인
 
-### 5. 네트워크 연결 문제
+### 6. 네트워크 연결 문제
 
 **증상:**
 - 인터넷 연결 불안정
@@ -125,6 +178,7 @@ curl -X POST https://your-project.supabase.co/functions/v1/toss-oauth \
 - [ ] 환경 변수가 설정되어 있는가?
   - 클라이언트: `.env` 파일 확인
   - Edge Function: `supabase secrets list` 확인
+  - **특히 `TOSS_API_BASIC_AUTH`가 올바르게 설정되어 있는지 확인 (401 에러 발생 시 필수)**
 
 - [ ] Supabase URL이 올바른가?
   - Supabase 대시보드에서 프로젝트 URL 확인
@@ -144,6 +198,10 @@ curl -X POST https://your-project.supabase.co/functions/v1/toss-oauth \
 
 - **환경 변수 미설정:** 어떤 환경 변수가 누락되었는지 표시
 - **Edge Function 미배포:** 배포 명령어 안내
+- **401 인증 실패:** 토스 API 인증 문제 시 구체적인 안내 메시지
+  - TOSS_API_BASIC_AUTH 설정 안내
+  - 토스 콘솔에서 인증 정보 확인 방법
+  - Base64 인코딩 필요 여부 안내
 - **네트워크 오류:** 구체적인 원인 제시
 - **HTTP 오류:** 상태 코드와 상세 메시지 표시
 

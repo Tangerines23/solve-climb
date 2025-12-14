@@ -212,6 +212,34 @@ export async function handleTossLoginFlow(
         errorData = { message: text || `HTTP ${accessTokenResponse.status}` };
       }
       
+      // 401 에러인 경우 특별 처리
+      if (accessTokenResponse.status === 401) {
+        const errorMessage = errorData.message || errorData.error || '인증 실패';
+        const details = errorData.details;
+        
+        let userMessage = '토스 API 인증에 실패했습니다.\n\n';
+        
+        if (details?.hint) {
+          userMessage += `${details.hint}\n\n`;
+        }
+        
+        if (details?.checkSecrets) {
+          userMessage += `${details.checkSecrets}\n\n`;
+        }
+        
+        if (details?.tossApiError) {
+          const tossError = details.tossApiError;
+          if (tossError.error || tossError.message) {
+            userMessage += `토스 API 오류: ${tossError.error || tossError.message}`;
+          }
+        } else {
+          userMessage += errorMessage;
+        }
+        
+        throw new Error(userMessage);
+      }
+      
+      // 기타 HTTP 에러
       throw new Error(
         `AccessToken 요청 실패 (${accessTokenResponse.status}):\n` +
         `${errorData.error || errorData.message || JSON.stringify(errorData)}\n\n` +

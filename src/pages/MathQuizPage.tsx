@@ -18,6 +18,7 @@ import { useQuizAnimations } from '../hooks/useQuizAnimations';
 import { useQuizSubmit } from '../hooks/useQuizSubmit';
 import { useSettingsStore } from '../stores/useSettingsStore';
 import { storage } from '../utils/storage';
+import { sendDebugLog } from '../utils/debugLogger';
 import {
   validateCategoryParam,
   validateSubTopicParam,
@@ -257,19 +258,7 @@ export function MathQuizPage() {
 
   const handleTipClose = useCallback(() => {
     // #region agent log
-    fetch('http://127.0.0.1:7242/ingest/8e4324b5-9dc1-47d8-937c-afc744e1c2c9', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        location: 'MathQuizPage.tsx:251',
-        message: 'handleTipClose called',
-        data: {},
-        timestamp: Date.now(),
-        sessionId: 'debug-session',
-        runId: 'run1',
-        hypothesisId: 'C'
-      })
-    }).catch(() => {});
+    sendDebugLog('MathQuizPage.tsx:251', 'handleTipClose called', {});
     // #endregion
     setShowTipModal(false);
     // generateNewQuestion은 useEffect에서 showTipModal이 false가 되면 자동으로 호출됨

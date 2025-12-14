@@ -46,6 +46,8 @@ export function MyPage() {
   const [isResetting, setIsResetting] = useState(false);
   const [showKeyboardInfo, setShowKeyboardInfo] = useState(false);
   const [loginError, setLoginError] = useState(false);
+  const [isOpeningLeaderboard, setIsOpeningLeaderboard] = useState(false);
+  const [retryCount, setRetryCount] = useState(0);
   const testerInputRef = useRef<string>('');
   const testerInputTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
@@ -204,21 +206,37 @@ export function MyPage() {
     }
   };
 
-  // 익명 로그인 함수 (로컬 세션만 사용)
+  // 리더보드 열기 함수
   const handleOpenLeaderboard = async () => {
-    const result = await openLeaderboard((message) => {
-      // 에러 메시지를 AlertModal로 표시
-      setAlertMessage(message);
-      setShowAlert(true);
-    });
+    setIsOpeningLeaderboard(true);
+    setRetryCount(0);
     
-    // 결과가 실패이고 메시지가 없으면 기본 메시지 표시
-    if (!result.success && result.message) {
-      setAlertMessage(result.message);
-      setShowAlert(true);
-    } else if (!result.success) {
-      setAlertMessage('리더보드를 열 수 없습니다.');
-      setShowAlert(true);
+    try {
+      const result = await openLeaderboard(
+        (message) => {
+          // 에러 메시지를 AlertModal로 표시
+          setAlertMessage(message);
+          setShowAlert(true);
+        },
+        (attempt, maxRetries) => {
+          // 재시도 중일 때 사용자에게 알림
+          setRetryCount(attempt);
+          setToastMessage(`리더보드를 여는 중... (${attempt}/${maxRetries})`);
+          setShowToast(true);
+        }
+      );
+      
+      // 결과가 실패이고 메시지가 없으면 기본 메시지 표시
+      if (!result.success && result.message) {
+        setAlertMessage(result.message);
+        setShowAlert(true);
+      } else if (!result.success) {
+        setAlertMessage('리더보드를 열 수 없습니다.');
+        setShowAlert(true);
+      }
+    } finally {
+      setIsOpeningLeaderboard(false);
+      setRetryCount(0);
     }
   };
 
@@ -458,9 +476,14 @@ export function MyPage() {
                 {statsLoading ? '...' : stats?.bestSubject || '-'}
               </div>
             </div>
-            <div className="my-page-stat-card my-page-stat-card-clickable" onClick={handleOpenLeaderboard}>
+            <div 
+              className={`my-page-stat-card my-page-stat-card-clickable ${isOpeningLeaderboard ? 'my-page-stat-card-loading' : ''}`}
+              onClick={isOpeningLeaderboard ? undefined : handleOpenLeaderboard}
+            >
               <div className="my-page-stat-label">내 랭킹</div>
-              <div className="my-page-stat-value">명예의 전당 🏆</div>
+              <div className="my-page-stat-value">
+                {isOpeningLeaderboard ? (retryCount > 0 ? `재시도 중... (${retryCount}/${2})` : '열기 중...') : '명예의 전당 🏆'}
+              </div>
             </div>
           </div>
 

@@ -16,6 +16,7 @@ import {
   validateFloatParam,
   createSafeStorageKey,
 } from '../utils/urlParams';
+import { sendDebugLog } from '../utils/debugLogger';
 import './ResultPage.css';
 
 // CountUp 애니메이션 훅
@@ -209,36 +210,23 @@ export function ResultPage() {
   // 다시 도전하기 - 같은 게임 설정으로 재시작
   const handleRetry = () => {
     // #region agent log
-    fetch('http://127.0.0.1:7242/ingest/8e4324b5-9dc1-47d8-937c-afc744e1c2c9', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        location: 'ResultPage.tsx:handleRetry',
-        message: 'handleRetry called',
-        data: { categoryParam, subParam, level, mode, hasMode: !!mode },
-        timestamp: Date.now(),
-        sessionId: 'debug-session',
-        runId: 'run1',
-        hypothesisId: 'A'
-      })
-    }).catch(() => {});
+    sendDebugLog('ResultPage.tsx:handleRetry', 'handleRetry called', {
+      categoryParam,
+      subParam,
+      level,
+      mode,
+      hasMode: !!mode,
+    });
     // #endregion
 
     if (!categoryParam || !subParam || !level || !mode) {
       // #region agent log
-      fetch('http://127.0.0.1:7242/ingest/8e4324b5-9dc1-47d8-937c-afc744e1c2c9', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          location: 'ResultPage.tsx:handleRetry:earlyReturn',
-          message: 'handleRetry early return - missing params',
-          data: { categoryParam, subParam, level, mode },
-          timestamp: Date.now(),
-          sessionId: 'debug-session',
-          runId: 'run1',
-          hypothesisId: 'A'
-        })
-      }).catch(() => {});
+      sendDebugLog('ResultPage.tsx:handleRetry:earlyReturn', 'handleRetry early return - missing params', {
+        categoryParam,
+        subParam,
+        level,
+        mode,
+      });
       // #endregion
       navigate('/');
       return;
@@ -251,19 +239,11 @@ export function ResultPage() {
     // mode는 'time-attack' 또는 'survival'이지만, URL 파라미터로는 'time_attack' 또는 'survival'을 사용
     const modeParamForUrl = mode === 'time-attack' ? 'time_attack' : mode;
     // #region agent log
-    fetch('http://127.0.0.1:7242/ingest/8e4324b5-9dc1-47d8-937c-afc744e1c2c9', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        location: 'ResultPage.tsx:handleRetry:beforeNavigate',
-        message: 'handleRetry before navigate',
-        data: { mode, modeParamForUrl, params: params.toString() },
-        timestamp: Date.now(),
-        sessionId: 'debug-session',
-        runId: 'run1',
-        hypothesisId: 'A'
-      })
-    }).catch(() => {});
+    sendDebugLog('ResultPage.tsx:handleRetry:beforeNavigate', 'handleRetry before navigate', {
+      mode,
+      modeParamForUrl,
+      params: params.toString(),
+    });
     // #endregion
     params.set('mode', modeParamForUrl);
     

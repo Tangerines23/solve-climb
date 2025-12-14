@@ -41,10 +41,14 @@ serve(async (req) => {
 
     // Basic Auth 헤더 가져오기
     const basicAuth = Deno.env.get('TOSS_API_BASIC_AUTH');
-    if (!basicAuth) {
-      console.error('TOSS_API_BASIC_AUTH 환경 변수가 설정되지 않았습니다.');
+    if (!basicAuth || basicAuth.trim() === '') {
+      console.error('[토스 OAuth] TOSS_API_BASIC_AUTH 환경 변수가 설정되지 않았거나 비어있습니다.');
       return new Response(
-        JSON.stringify({ error: 'Server configuration error' }),
+        JSON.stringify({ 
+          error: 'Server configuration error',
+          message: 'TOSS_API_BASIC_AUTH 환경 변수가 설정되지 않았습니다. Supabase Secrets에서 설정해주세요.',
+          hint: 'supabase secrets set TOSS_API_BASIC_AUTH=your_basic_auth_token'
+        }),
         { 
           status: 500, 
           headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
@@ -68,13 +72,61 @@ serve(async (req) => {
       }
     );
 
-    const data = await response.json();
+    let data: any;
+    try {
+      data = await response.json();
+    } catch (parseError) {
+      // JSON 파싱 실패 시 텍스트로 읽기 시도
+      const text = await response.text().catch(() => '');
+      data = { 
+        error: 'Failed to parse response',
+        rawResponse: text || `HTTP ${response.status} ${response.statusText}`
+      };
+    }
 
     if (!response.ok) {
-      console.error('[토스 OAuth] AccessToken 요청 실패:', data);
+      // 401 에러인 경우 상세 로깅 및 안내
+      if (response.status === 401) {
+        console.error('[토스 OAuth] 401 인증 실패 상세 정보:', {
+          status: response.status,
+          statusText: response.statusText,
+          responseBody: data,
+          hasBasicAuth: !!basicAuth,
+          basicAuthLength: basicAuth?.length || 0,
+          basicAuthPrefix: basicAuth?.substring(0, 10) || 'N/A',
+          apiUrl: `${TOSS_API_BASE_URL}/api-partner/v1/apps-in-toss/user/oauth2/generate-token`,
+        });
+
+        return new Response(
+          JSON.stringify({ 
+            error: 'Authentication failed',
+            message: '토스 API 인증에 실패했습니다. TOSS_API_BASIC_AUTH 환경 변수를 확인해주세요.',
+            details: {
+              status: response.status,
+              statusText: response.statusText,
+              tossApiError: data,
+              hint: '토스 앱인토스 개발자센터에서 발급받은 client_id:client_secret을 Base64 인코딩한 값이 필요합니다.',
+              checkSecrets: 'Supabase Secrets에서 TOSS_API_BASIC_AUTH 값이 올바르게 설정되어 있는지 확인하세요.',
+            }
+          }),
+          { 
+            status: response.status, 
+            headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
+          }
+        );
+      }
+
+      // 기타 HTTP 에러
+      console.error('[토스 OAuth] AccessToken 요청 실패:', {
+        status: response.status,
+        statusText: response.statusText,
+        responseBody: data,
+      });
+
       return new Response(
         JSON.stringify({ 
           error: 'Failed to get access token',
+          message: `토스 API 요청 실패 (${response.status})`,
           details: data 
         }),
         { 

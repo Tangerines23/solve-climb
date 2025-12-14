@@ -20,6 +20,8 @@ export interface EnvConfig {
   IS_DEVELOPMENT: boolean;
   /** 프로덕션 환경 여부 */
   IS_PRODUCTION: boolean;
+  /** 디버깅 URL (개발 환경에서만 사용) */
+  DEBUG_URL: string;
 }
 
 /**
@@ -118,6 +120,7 @@ export const ENV: EnvConfig = (() => {
     SUPABASE_ANON_KEY: import.meta.env.VITE_SUPABASE_ANON_KEY || '',
     IS_DEVELOPMENT: isDevelopment,
     IS_PRODUCTION: isProduction,
+    DEBUG_URL: import.meta.env.VITE_DEBUG_URL || '',
   };
 })();
 

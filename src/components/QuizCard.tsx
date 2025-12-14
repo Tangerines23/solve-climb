@@ -7,6 +7,7 @@ import { QwertyKeypad } from './QwertyKeypad';
 import { CustomKeypad } from './CustomKeypad';
 import { APP_CONFIG } from '../config/app';
 import { SLIDE_PER_WRONG } from '../constants/game';
+import { sendDebugLog } from '../utils/debugLogger';
 
 interface QuizCardProps {
   // 문제 관련
@@ -108,37 +109,17 @@ function QuizCardComponent({
 }: QuizCardProps) {
   // #region agent log
   const renderId = Math.random().toString(36).substring(7);
-  fetch('http://127.0.0.1:7242/ingest/8e4324b5-9dc1-47d8-937c-afc744e1c2c9', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-      location: 'QuizCard.tsx:108',
-      message: 'QuizCard component entry',
-      data: { renderId, showTipModal, hasCurrentQuestion: !!currentQuestion },
-      timestamp: Date.now(),
-      sessionId: 'debug-session',
-      runId: 'run1',
-      hypothesisId: 'A'
-    })
-  }).catch(() => {});
+  sendDebugLog('QuizCard.tsx:108', 'QuizCard component entry', {
+    renderId,
+    showTipModal,
+    hasCurrentQuestion: !!currentQuestion,
+  });
   // #endregion
 
   // 팁 모달이 열려있으면 게임 화면 숨김
   if (showTipModal) {
     // #region agent log
-    fetch('http://127.0.0.1:7242/ingest/8e4324b5-9dc1-47d8-937c-afc744e1c2c9', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        location: 'QuizCard.tsx:earlyReturn1',
-        message: 'Early return: showTipModal=true',
-        data: { renderId },
-        timestamp: Date.now(),
-        sessionId: 'debug-session',
-        runId: 'run1',
-        hypothesisId: 'B'
-      })
-    }).catch(() => {});
+    sendDebugLog('QuizCard.tsx:earlyReturn1', 'Early return: showTipModal=true', { renderId });
     // #endregion
     return null;
   }
@@ -195,19 +176,11 @@ function QuizCardComponent({
   // 모든 hooks를 조건부 반환 이전에 호출해야 함 (React Hooks 규칙)
   const isJapaneseQuiz = useMemo(() => {
     // #region agent log
-    fetch('http://127.0.0.1:7242/ingest/8e4324b5-9dc1-47d8-937c-afc744e1c2c9', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        location: 'QuizCard.tsx:isJapaneseQuiz',
-        message: 'isJapaneseQuiz useMemo executing',
-        data: { renderId, categoryParam, subParam },
-        timestamp: Date.now(),
-        sessionId: 'debug-session',
-        runId: 'run1',
-        hypothesisId: 'E'
-      })
-    }).catch(() => {});
+    sendDebugLog('QuizCard.tsx:isJapaneseQuiz', 'isJapaneseQuiz useMemo executing', {
+      renderId,
+      categoryParam,
+      subParam,
+    });
     // #endregion
     return categoryParam === 'language' && subParam === 'japanese';
   }, [categoryParam, subParam, renderId]);
@@ -222,19 +195,11 @@ function QuizCardComponent({
   
   const allowNegative = useMemo(() => {
     // #region agent log
-    fetch('http://127.0.0.1:7242/ingest/8e4324b5-9dc1-47d8-937c-afc744e1c2c9', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        location: 'QuizCard.tsx:allowNegative',
-        message: 'allowNegative useMemo executing',
-        data: { renderId, isEquationQuiz, isCalculusQuiz },
-        timestamp: Date.now(),
-        sessionId: 'debug-session',
-        runId: 'run1',
-        hypothesisId: 'A'
-      })
-    }).catch(() => {});
+    sendDebugLog('QuizCard.tsx:allowNegative', 'allowNegative useMemo executing', {
+      renderId,
+      isEquationQuiz,
+      isCalculusQuiz,
+    });
     // #endregion
     return isEquationQuiz || isCalculusQuiz;
   }, [isEquationQuiz, isCalculusQuiz, renderId]);
@@ -242,19 +207,14 @@ function QuizCardComponent({
   // 조건부 반환은 모든 hooks 호출 이후에 수행
   if (!currentQuestion || (!displayCategory && !categoryParam) || (!displayTopic && !subParam)) {
     // #region agent log
-    fetch('http://127.0.0.1:7242/ingest/8e4324b5-9dc1-47d8-937c-afc744e1c2c9', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        location: 'QuizCard.tsx:earlyReturn2',
-        message: 'Early return: missing data',
-        data: { renderId, hasCurrentQuestion: !!currentQuestion, displayCategory, displayTopic, categoryParam, subParam },
-        timestamp: Date.now(),
-        sessionId: 'debug-session',
-        runId: 'run1',
-        hypothesisId: 'A'
-      })
-    }).catch(() => {});
+    sendDebugLog('QuizCard.tsx:earlyReturn2', 'Early return: missing data', {
+      renderId,
+      hasCurrentQuestion: !!currentQuestion,
+      displayCategory,
+      displayTopic,
+      categoryParam,
+      subParam,
+    });
     // #endregion
     // 로딩 중이거나 데이터가 없으면 로딩 표시
     if (categoryParam && subParam) {

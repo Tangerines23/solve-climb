@@ -99,6 +99,19 @@
 
 .my-page-stat-card-clickable:active {
   transform: translateY(0);
+}
+
+.my-page-stat-card-loading {
+  opacity: 0.7;
+  cursor: not-allowed;
+  pointer-events: none;
+}
+
+.my-page-stat-card-loading:hover {
+  background-color: var(--color-bg-secondary);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+  transform: none;
+  transform: translateY(0);
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
 }
 

@@ -69,6 +69,17 @@
   background-color: var(--color-blue-700);
 }
 
+.toss-leaderboard-button:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+  background-color: var(--color-bg-secondary);
+  color: var(--color-text-secondary);
+}
+
+.toss-leaderboard-button:disabled:hover {
+  background-color: var(--color-bg-secondary);
+}
+
 .period-selector {
   display: flex;
   gap: var(--spacing-sm);
