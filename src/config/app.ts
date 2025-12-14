@@ -1,3 +1,5 @@
+import packageJson from '../../package.json';
+
 // 앱 설정 상수 중앙 관리
 export const APP_CONFIG = {
   // API 설정 (현재 사용하지 않음 - 백엔드 서버 없이 Supabase와 토스 SDK만 사용)
@@ -21,7 +23,7 @@ export const APP_CONFIG = {
 
   // 앱 정보
   APP_NAME: 'Solve Climb',
-  APP_VERSION: '1.0.0',
+  APP_VERSION: packageJson.version,
 
   // 오늘의 챌린지 설정
   TODAY_CHALLENGE: {

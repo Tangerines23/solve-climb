@@ -43,6 +43,7 @@
     max-width: var(--modal-width-landscape-medium);
     max-height: 90vh;
   }
+}
 
 @keyframes slideUp {
   from {

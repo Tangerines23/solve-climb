@@ -80,7 +80,8 @@ function ConditionalThemeProvider({ children }: { children: React.ReactNode }) {
           setTossThemeProvider(() => module.ThemeProvider);
         })
         .catch((err) => {
-          console.error('Failed to load Toss TDS:', err);
+          // TDS 로딩 실패는 조용히 처리 (Toss 환경이 아닐 때는 정상)
+          console.warn('Toss TDS 로딩 실패 (무시됨):', err.message || err);
           setError(err);
         })
         .finally(() => {

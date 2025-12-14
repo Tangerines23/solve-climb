@@ -278,3 +278,56 @@ export const statsApi = {
   },
 };
 
+/**
+ * 오늘의 챌린지 API
+ */
+export const challengeApi = {
+  /**
+   * 오늘 날짜의 챌린지를 가져옵니다
+   * @param date 날짜 문자열 (YYYY-MM-DD 형식, 생략 시 오늘 날짜)
+   * @returns 오늘의 챌린지 또는 null
+   */
+  async getTodayChallenge(date?: string): Promise<{
+    id: string;
+    challenge_date: string;
+    category_id: string;
+    category_name: string;
+    topic_id: string;
+    topic_name: string;
+    level: number;
+    mode: string;
+    title: string;
+  } | null> {
+    const loadingId = createLoadingId('challenge_getTodayChallenge');
+    return withLoading(loadingId, async () => {
+      try {
+        const targetDate = date || new Date().toISOString().split('T')[0];
+        
+        const { data, error } = await supabase
+          .from('today_challenges')
+          .select('*')
+          .eq('challenge_date', targetDate)
+          .single();
+
+        if (error) {
+          // PGRST116 = not found (챌린지가 없음) - 정상적인 상황
+          if (error.code === 'PGRST116') {
+            return null;
+          }
+          // 404 에러도 정상적인 상황 (챌린지가 없음)
+          if (error.code === 'PGRST301' || error.message?.includes('404')) {
+            return null;
+          }
+          throw error;
+        }
+
+        return data;
+      } catch (error) {
+        logError('Challenge API - getTodayChallenge', error);
+        // 에러 발생 시 null 반환 (폴백 처리)
+        return null;
+      }
+    });
+  },
+};
+

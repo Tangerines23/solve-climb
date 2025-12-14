@@ -62,6 +62,12 @@ function validateEnv(strict: boolean = isProduction): ValidationResult {
     errors.push('VITE_SUPABASE_URL은 https://로 시작해야 합니다.');
   }
 
+  // Supabase Anon Key 형식 검증
+  const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
+  if (supabaseAnonKey && supabaseAnonKey.length < 100) {
+    errors.push('VITE_SUPABASE_ANON_KEY 형식이 올바르지 않습니다. (최소 100자 이상이어야 합니다)');
+  }
+
   const result = {
     isValid: missing.length === 0 && errors.length === 0,
     missing,

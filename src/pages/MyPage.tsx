@@ -16,6 +16,8 @@ import { supabase } from '../utils/supabaseClient';
 import { openLeaderboard } from '../utils/tossGameCenter';
 import { APP_CONFIG } from '../config/app';
 import { ENV } from '../utils/env';
+import { handleTossLogin } from '../utils/tossLogin';
+import { handleTossLoginFlow } from '../utils/tossAuth';
 import './MyPage.css';
 
 export function MyPage() {
@@ -150,10 +152,56 @@ export function MyPage() {
     }
   }, [setProfile, setIsAdmin, refetch]);
 
-  // 토스 로그인 함수 (준비 중)
+  // 토스 로그인 함수
   const handleLogin = async () => {
-    setToastMessage('토스 로그인 기능은 준비 중입니다.');
-    setShowToast(true);
+    try {
+      setLoginError(false);
+      
+      // 1. 토스 로그인 실행 (인가 코드 받기)
+      const loginResult = await handleTossLogin();
+      
+      if (!loginResult.success || !loginResult.authorizationCode) {
+        const errorMessage = loginResult.error || '토스 로그인에 실패했습니다.';
+        setToastMessage(errorMessage);
+        setShowToast(true);
+        setLoginError(true);
+        return;
+      }
+
+      // 2. 인가 코드로 AccessToken 받기 및 Supabase 사용자 생성/로그인
+      const { user, session } = await handleTossLoginFlow(
+        loginResult.authorizationCode,
+        loginResult.referrer || 'DEFAULT'
+      );
+
+      if (!user || !session) {
+        throw new Error('로그인 세션을 생성할 수 없습니다.');
+      }
+
+      // 3. 프로필 설정
+      const userProfile = {
+        profileId: user.id,
+        nickname: user.user_metadata?.tossName || user.user_metadata?.tossUserKey?.toString() || '게이머',
+        userId: user.id,
+        email: user.email,
+        createdAt: user.created_at || new Date().toISOString(),
+        isAdmin: false,
+      };
+
+      setProfile(userProfile);
+
+      // 4. 로그인 성공 후 통계 다시 불러오기
+      await refetch();
+      setToastMessage('토스 로그인에 성공했습니다!');
+      setShowToast(true);
+      setLoginError(false);
+    } catch (error) {
+      console.error('Toss login error:', error);
+      const errorMessage = error instanceof Error ? error.message : '토스 로그인 중 오류가 발생했습니다.';
+      setToastMessage(errorMessage);
+      setShowToast(true);
+      setLoginError(true);
+    }
   };
 
   // 익명 로그인 함수 (로컬 세션만 사용)
@@ -541,7 +589,6 @@ export function MyPage() {
                     className="my-page-settings-item-arrow"
                     width="20"
                     height="20"
-                    viewBox="0 0 20 20"
                     viewBox="0 0 20 20"
                     fill="none"
                     xmlns="http://www.w3.org/2000/svg"

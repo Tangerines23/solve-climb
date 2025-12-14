@@ -3,6 +3,7 @@ import react from '@vitejs/plugin-react'
 
 // https://vite.dev/config/
 export default defineConfig({
+  base: './',
   plugins: [react()],
   build: {
     rollupOptions: {
@@ -21,5 +22,9 @@ export default defineConfig({
   // optimizeDeps에서 TDS 제외 (개발 서버에서도 번들에 포함되지 않도록)
   optimizeDeps: {
     exclude: ['@toss/tds-mobile', '@toss/tds-mobile-ait'],
+    esbuildOptions: {
+      // hoist-non-react-statics를 CommonJS로 처리
+      mainFields: ['module', 'main'],
+    },
   },
 })

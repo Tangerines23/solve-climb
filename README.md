@@ -263,6 +263,37 @@ npm run check:css
 
 자세한 내용은 [DESIGN_SYSTEM.md](./docs/DESIGN_SYSTEM.md)를 참고하세요.
 
+## 보안
+
+### 보안 스크립트
+
+프로젝트에는 보안 취약점을 검사하는 스크립트가 포함되어 있습니다:
+
+```bash
+# 보안 취약점 검사
+npm run audit
+
+# 자동 수정 가능한 취약점 수정
+npm run audit:fix
+
+# Moderate 이상 취약점만 검사
+npm run check:security
+```
+
+### 환경 변수 관리
+
+- 모든 시크릿과 API 키는 환경 변수로 관리됩니다
+- `.env` 파일은 절대 커밋하지 마세요
+- `.env.example` 파일을 참고하여 필요한 환경 변수를 설정하세요
+
+### 보안 점검
+
+정기적인 보안 점검을 위해 [SECURITY_CHECKLIST.md](./docs/SECURITY_CHECKLIST.md)를 참고하세요.
+
+### Dependabot
+
+이 프로젝트는 GitHub Dependabot을 사용하여 의존성 업데이트와 보안 취약점을 자동으로 감지합니다. 주간 스캔이 실행되며, 보안 업데이트 PR이 자동으로 생성됩니다.
+
 ## 라이센스
 
 이 프로젝트는 토스 앱 인앱 개발을 위한 예제 프로젝트입니다.

@@ -1,11 +1,11 @@
 {
   "name": "react-vite-app",
   "private": true,
-  "version": "0.0.0",
+  "version": "0.8.0",
   "type": "module",
   "scripts": {
     "dev": "granite dev",
-    "build": "vite build",
+    "build": "vite build && node scripts/create-granite-config.js",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
     "format": "prettier --write \"src/**/*.{ts,tsx,js,jsx,json,css}\"",
@@ -14,7 +14,10 @@
     "check": "npm run type-check && npm run lint && npm run format:check && npm run check:css",
     "preview": "vite preview",
     "deploy": "ait deploy",
-    "check:css": "node scripts/check-hardcoded-values.js"
+    "check:css": "node scripts/check-hardcoded-values.js",
+    "audit": "npm audit",
+    "audit:fix": "npm audit fix",
+    "check:security": "npm audit --audit-level=moderate"
   },
   "dependencies": {
     "@apps-in-toss/web-framework": "^1.4.7",
@@ -39,7 +42,8 @@
     "eslint-plugin-react-hooks": "^5.2.0",
     "eslint-plugin-react-refresh": "^0.4.22",
     "globals": "^16.4.0",
-    "prettier": "^3.2.5",
+    "prettier": "^3.7.4",
+    "supabase": "^2.67.1",
     "vite": "^7.1.7"
   }
 }

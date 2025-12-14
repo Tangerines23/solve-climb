@@ -208,7 +208,38 @@ export function ResultPage() {
 
   // 다시 도전하기 - 같은 게임 설정으로 재시작
   const handleRetry = () => {
-    if (!categoryParam || !subParam || !level || !modeParam) {
+    // #region agent log
+    fetch('http://127.0.0.1:7242/ingest/8e4324b5-9dc1-47d8-937c-afc744e1c2c9', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        location: 'ResultPage.tsx:handleRetry',
+        message: 'handleRetry called',
+        data: { categoryParam, subParam, level, mode, hasMode: !!mode },
+        timestamp: Date.now(),
+        sessionId: 'debug-session',
+        runId: 'run1',
+        hypothesisId: 'A'
+      })
+    }).catch(() => {});
+    // #endregion
+
+    if (!categoryParam || !subParam || !level || !mode) {
+      // #region agent log
+      fetch('http://127.0.0.1:7242/ingest/8e4324b5-9dc1-47d8-937c-afc744e1c2c9', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          location: 'ResultPage.tsx:handleRetry:earlyReturn',
+          message: 'handleRetry early return - missing params',
+          data: { categoryParam, subParam, level, mode },
+          timestamp: Date.now(),
+          sessionId: 'debug-session',
+          runId: 'run1',
+          hypothesisId: 'A'
+        })
+      }).catch(() => {});
+      // #endregion
       navigate('/');
       return;
     }
@@ -217,7 +248,24 @@ export function ResultPage() {
     params.set('category', categoryParam);
     params.set('sub', subParam);
     params.set('level', level.toString());
-    params.set('mode', modeParam);
+    // mode는 'time-attack' 또는 'survival'이지만, URL 파라미터로는 'time_attack' 또는 'survival'을 사용
+    const modeParamForUrl = mode === 'time-attack' ? 'time_attack' : mode;
+    // #region agent log
+    fetch('http://127.0.0.1:7242/ingest/8e4324b5-9dc1-47d8-937c-afc744e1c2c9', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        location: 'ResultPage.tsx:handleRetry:beforeNavigate',
+        message: 'handleRetry before navigate',
+        data: { mode, modeParamForUrl, params: params.toString() },
+        timestamp: Date.now(),
+        sessionId: 'debug-session',
+        runId: 'run1',
+        hypothesisId: 'A'
+      })
+    }).catch(() => {});
+    // #endregion
+    params.set('mode', modeParamForUrl);
     
     navigate(`/math-quiz?${params.toString()}`);
   };

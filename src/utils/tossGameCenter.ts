@@ -1,7 +1,7 @@
 // 토스 게임 센터 SDK 래퍼 유틸리티
 // 로컬 개발 환경에서는 실제 호출 없이 시뮬레이션만 수행
 
-import { submitGameCenterLeaderBoardScore, openGameCenterLeaderboard } from '@apps-in-toss/web-framework';
+import { submitGameCenterLeaderBoardScore, openGameCenterLeaderboard, isMinVersionSupported } from '@apps-in-toss/web-framework';
 import { useProfileStore } from '../stores/useProfileStore';
 import { logError, getUserErrorMessage } from './errorHandler';
 
@@ -112,6 +112,19 @@ export async function openLeaderboard(onError?: (message: string) => void): Prom
       return { success: false, message };
     }
 
+    // 앱 버전 지원 여부 확인 (토스앱 5.221.0 이상 필요)
+    const isSupported = isMinVersionSupported({
+      android: "5.221.0",
+      ios: "5.221.0",
+    });
+
+    if (!isSupported) {
+      console.warn('[토스 게임 센터] 지원하지 않는 앱 버전이에요. (최소 버전: 5.221.0)');
+      const message = '리더보드를 열 수 없습니다. 토스 앱을 최신 버전으로 업데이트해주세요.';
+      if (onError) onError(message);
+      return { success: false, message };
+    }
+
     const { isProfileComplete } = useProfileStore.getState();
     
     // 프로필이 생성되지 않았으면 열지 않음
@@ -122,27 +135,28 @@ export async function openLeaderboard(onError?: (message: string) => void): Prom
       return { success: false, message };
     }
 
-    const result = await openGameCenterLeaderboard();
-
-    if (!result) {
-      console.warn('[토스 게임 센터] 지원하지 않는 앱 버전이에요.');
-      const message = '리더보드를 열 수 없습니다.';
-      if (onError) onError(message);
-      return { success: false, message };
-    }
-
-    if (result.statusCode === 'SUCCESS') {
-      console.log('[토스 게임 센터] 리더보드 열기 성공!');
-      return { success: true };
-    } else {
-      console.error(`[토스 게임 센터] 리더보드 열기 실패: ${result.statusCode}`);
-      const message = '리더보드를 열 수 없습니다.';
-      if (onError) onError(message);
-      return { success: false, message };
-    }
+    // openGameCenterLeaderboard는 Promise<void>를 반환하므로 반환값 체크 불필요
+    // 함수 호출 자체가 성공하면 리더보드가 열림
+    await openGameCenterLeaderboard();
+    
+    console.log('[토스 게임 센터] 리더보드 열기 성공!');
+    return { success: true };
   } catch (error) {
     logError('토스 게임 센터 - 리더보드 열기', error);
-    const message = getUserErrorMessage(error) || '리더보드를 열 수 없습니다.';
+    
+    // 특정 에러 메시지 처리
+    let message = '리더보드를 열 수 없습니다.';
+    if (error instanceof Error) {
+      const errorMessage = error.message.toLowerCase();
+      if (errorMessage.includes('leaderboard not found') || errorMessage.includes('not found')) {
+        message = '리더보드를 찾을 수 없습니다. 미니앱 정보 승인이 완료되었는지 확인해주세요.';
+      } else if (errorMessage.includes('version') || errorMessage.includes('버전')) {
+        message = '리더보드를 열 수 없습니다. 토스 앱을 최신 버전으로 업데이트해주세요.';
+      } else {
+        message = getUserErrorMessage(error) || message;
+      }
+    }
+    
     if (onError) onError(message);
     return { success: false, message };
   }
