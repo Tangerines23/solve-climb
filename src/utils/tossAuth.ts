@@ -157,6 +157,14 @@ export async function handleTossLoginFlow(
   authorizationCode: string,
   referrer: string
 ): Promise<{ user: any; session: any }> {
+  // 호출 추적 로깅
+  console.log('[토스 로그인 플로우] 함수 호출됨', {
+    timestamp: new Date().toISOString(),
+    authorizationCode: authorizationCode?.substring(0, 20) + '...',
+    referrer,
+    stack: new Error().stack?.split('\n').slice(0, 5).join('\n'),
+  });
+
   try {
     // 환경 변수 검증
     if (!ENV.SUPABASE_URL || !ENV.SUPABASE_ANON_KEY) {
@@ -171,9 +179,15 @@ export async function handleTossLoginFlow(
 
     const oauthUrl = `${ENV.SUPABASE_URL}/functions/v1/toss-oauth`;
     
+    console.log('[토스 로그인 플로우] toss-oauth Edge Function 호출 시작', {
+      url: oauthUrl,
+      timestamp: new Date().toISOString(),
+    });
+    
     // 1. Edge Function으로 AccessToken 받기
     let accessTokenResponse: Response;
     try {
+      const fetchStartTime = Date.now();
       accessTokenResponse = await fetch(oauthUrl, {
         method: 'POST',
         headers: {
@@ -184,6 +198,14 @@ export async function handleTossLoginFlow(
           authorizationCode,
           referrer,
         }),
+      });
+      
+      const fetchEndTime = Date.now();
+      console.log('[토스 로그인 플로우] toss-oauth fetch 완료', {
+        duration: `${fetchEndTime - fetchStartTime}ms`,
+        status: accessTokenResponse.status,
+        statusText: accessTokenResponse.statusText,
+        ok: accessTokenResponse.ok,
       });
     } catch (fetchError) {
       // 네트워크 오류 (fail to fetch)

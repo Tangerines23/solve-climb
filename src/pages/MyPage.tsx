@@ -350,29 +350,42 @@ export function MyPage() {
   // 로그아웃 함수
   const handleLogout = async () => {
     try {
+      console.log('[로그아웃] 시작');
+      
       // Supabase 세션이 있으면 로그아웃
       const { data: { session: currentSession } } = await supabase.auth.getSession();
+      console.log('[로그아웃] 현재 세션 확인:', { hasSession: !!currentSession });
+      
       if (currentSession) {
+        console.log('[로그아웃] Supabase signOut 호출 전');
         await supabase.auth.signOut();
+        console.log('[로그아웃] Supabase signOut 완료');
       }
 
       // 로컬 세션 삭제
       try {
         localStorage.removeItem('solve-climb-local-session');
+        console.log('[로그아웃] 로컬 세션 삭제 완료');
       } catch (e) {
         console.warn('Failed to remove local session:', e);
       }
 
       // 로컬 상태 초기화
+      console.log('[로그아웃] 프로필 초기화 전');
       clearProfile();
+      console.log('[로그아웃] 프로필 초기화 완료');
       
       setToastMessage('로그아웃되었습니다.');
       setShowToast(true);
       
       // 통계 다시 불러오기 (세션 없음 상태로)
+      console.log('[로그아웃] refetch 호출 전');
       await refetch();
+      console.log('[로그아웃] refetch 완료');
+      
+      console.log('[로그아웃] 전체 과정 완료');
     } catch (error) {
-      console.error('Logout error:', error);
+      console.error('[로그아웃] 오류 발생:', error);
       setToastMessage('로그아웃 중 오류가 발생했습니다.');
       setShowToast(true);
     }

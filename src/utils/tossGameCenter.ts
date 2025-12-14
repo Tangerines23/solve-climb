@@ -249,8 +249,10 @@ export async function openLeaderboard(
       return { success: false, message };
     }
 
-    // 샌드박스 환경 체크 (예제 코드 참고)
+    // 운영 환경 체크 (예제 코드 참고: 'toss' 환경에서만 작동)
     const operationalEnvironment = getOperationalEnvironment();
+    console.log('[토스 게임 센터] 운영 환경:', operationalEnvironment);
+    
     if (operationalEnvironment === 'sandbox') {
       console.warn('[토스 게임 센터] 샌드박스 환경에서는 리더보드를 열 수 없습니다.');
       const message = '랭킹 기능은 샌드박스 환경에서는 사용할 수 없어요.';
@@ -258,14 +260,36 @@ export async function openLeaderboard(
       return { success: false, message };
     }
 
-    // 예제 코드처럼 단순 호출 (프로필 체크 제거, await 제거, 재시도 로직 제거)
-    // openGameCenterLeaderboard는 Promise<void>를 반환하지만, 
-    // 토스 앱 내부에서 처리되므로 await 없이 호출만 함
-    console.log('[토스 게임 센터] 리더보드 열기 호출');
-    openGameCenterLeaderboard();
+    // 'toss' 환경이 아니면 리더보드를 열 수 없음 (예제 코드 참고)
+    if (operationalEnvironment !== 'toss') {
+      console.warn(`[토스 게임 센터] ${operationalEnvironment} 환경에서는 리더보드를 열 수 없습니다. (toss 환경에서만 가능)`);
+      const message = '리더보드를 열 수 없습니다. 토스 앱에서 실행 중인지 확인해주세요.';
+      if (onError) onError(message);
+      return { success: false, message };
+    }
+
+    // 모든 검증 완료 - 리더보드 열기 호출
+    // 예제 코드처럼 단순 호출 (await 없이, 토스 앱 내부에서 비동기 처리)
+    console.log('[토스 게임 센터] 리더보드 열기 호출 (모든 검증 완료)', {
+      operationalEnvironment,
+      isSupported,
+      isTossApp: isTossAppEnvironment(),
+    });
     
-    console.log('[토스 게임 센터] 리더보드 열기 호출 완료 (비동기 처리 중)');
-    return { success: true };
+    try {
+      // openGameCenterLeaderboard는 Promise<void>를 반환하지만,
+      // 토스 앱 내부에서 처리되므로 await 없이 호출만 함
+      // 주의: 이 함수는 에러를 throw하지 않을 수 있으며,
+      // 토스 앱 내부에서 "일시적인 오류" 메시지를 표시할 수 있음
+      openGameCenterLeaderboard();
+      console.log('[토스 게임 센터] 리더보드 열기 호출 완료 (비동기 처리 중)');
+      console.warn('[토스 게임 센터] 참고: "일시적인 오류"가 표시되면 미니앱 정보 승인 또는 리더보드 설정을 확인하세요.');
+      return { success: true };
+    } catch (error) {
+      // 호출 시점에 에러가 발생한 경우 (드물지만 가능)
+      console.error('[토스 게임 센터] 리더보드 열기 호출 시 에러 발생:', error);
+      throw error;
+    }
   } catch (error) {
     logError('토스 게임 센터 - 리더보드 열기', error);
     

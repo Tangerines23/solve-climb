@@ -57,14 +57,40 @@ serve(async (req) => {
     }
 
     // 토스 API로 AccessToken 요청
+    // Authorization 헤더 검증 및 로깅
+    const authHeader = `Basic ${basicAuth}`;
+    console.log('[토스 OAuth] 토스 API 요청 준비:', {
+      url: `${TOSS_API_BASE_URL}/api-partner/v1/apps-in-toss/user/oauth2/generate-token`,
+      hasAuthHeader: !!authHeader,
+      authHeaderLength: authHeader.length,
+      authHeaderPrefix: authHeader.substring(0, 20) + '...',
+    });
+
+    const requestHeaders = {
+      'Content-Type': 'application/json',
+      'Authorization': authHeader,
+    };
+
+    // 헤더 검증
+    if (!requestHeaders['Authorization'] || requestHeaders['Authorization'].trim() === 'Basic') {
+      console.error('[토스 OAuth] Authorization 헤더가 올바르게 설정되지 않았습니다.');
+      return new Response(
+        JSON.stringify({
+          error: 'Server configuration error',
+          message: 'Authorization 헤더 설정 오류. TOSS_API_BASIC_AUTH 환경 변수를 확인해주세요.',
+        }),
+        {
+          status: 500,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        }
+      );
+    }
+
     const response = await fetch(
       `${TOSS_API_BASE_URL}/api-partner/v1/apps-in-toss/user/oauth2/generate-token`,
       {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Basic ${basicAuth}`,
-        },
+        headers: requestHeaders,
         body: JSON.stringify({
           authorizationCode,
           referrer: referrer || 'DEFAULT',
@@ -87,15 +113,44 @@ serve(async (req) => {
     if (!response.ok) {
       // 401 에러인 경우 상세 로깅 및 안내
       if (response.status === 401) {
+        const errorMessage = data?.error || data?.message || JSON.stringify(data);
+        const isMissingAuthHeader = errorMessage.toLowerCase().includes('missing authorization') || 
+                                   errorMessage.toLowerCase().includes('authorization header');
+        
         console.error('[토스 OAuth] 401 인증 실패 상세 정보:', {
           status: response.status,
           statusText: response.statusText,
           responseBody: data,
+          errorMessage: errorMessage,
+          isMissingAuthHeader: isMissingAuthHeader,
           hasBasicAuth: !!basicAuth,
           basicAuthLength: basicAuth?.length || 0,
           basicAuthPrefix: basicAuth?.substring(0, 10) || 'N/A',
+          authHeaderSent: `Basic ${basicAuth?.substring(0, 10)}...`,
           apiUrl: `${TOSS_API_BASE_URL}/api-partner/v1/apps-in-toss/user/oauth2/generate-token`,
         });
+
+        // "missing authorization header" 오류인 경우 특별 처리
+        if (isMissingAuthHeader) {
+          return new Response(
+            JSON.stringify({ 
+              error: 'Missing authorization header',
+              message: '토스 API 인증 헤더가 누락되었습니다. TOSS_API_BASIC_AUTH 환경 변수를 확인해주세요.',
+              details: {
+                status: response.status,
+                statusText: response.statusText,
+                tossApiError: data,
+                hint: '토스 앱인토스 개발자센터에서 발급받은 client_id:client_secret을 Base64 인코딩한 값이 필요합니다.',
+                checkSecrets: 'Supabase Secrets에서 TOSS_API_BASIC_AUTH 값이 올바르게 설정되어 있는지 확인하세요.',
+                troubleshooting: '1. Supabase 대시보드 > Edge Functions > Secrets에서 TOSS_API_BASIC_AUTH 확인\n2. 값이 비어있지 않은지 확인\n3. Base64 인코딩이 올바른지 확인',
+              }
+            }),
+            { 
+              status: response.status, 
+              headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
+            }
+          );
+        }
 
         return new Response(
           JSON.stringify({ 

@@ -58,23 +58,89 @@ serve(async (req) => {
     const supabaseAdmin = createClient(supabaseUrl, supabaseServiceKey);
 
     // 1. 토스 API로 사용자 정보 조회
+    // Authorization 헤더 검증
+    if (!accessToken || accessToken.trim() === '') {
+      console.error('[토스 Auth] accessToken이 비어있습니다.');
+      return new Response(
+        JSON.stringify({ 
+          error: 'Invalid access token',
+          message: 'accessToken이 비어있거나 유효하지 않습니다.'
+        }),
+        { 
+          status: 400, 
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
+        }
+      );
+    }
+
+    const authHeader = `Bearer ${accessToken}`;
+    console.log('[토스 Auth] 토스 API 요청 준비:', {
+      url: `${TOSS_API_BASE_URL}/api-partner/v1/apps-in-toss/user/info`,
+      hasAuthHeader: !!authHeader,
+      authHeaderLength: authHeader.length,
+      authHeaderPrefix: authHeader.substring(0, 30) + '...',
+    });
+
+    const requestHeaders = {
+      'Authorization': authHeader,
+      'Content-Type': 'application/json',
+    };
+
     const userInfoResponse = await fetch(
       `${TOSS_API_BASE_URL}/api-partner/v1/apps-in-toss/user/info`,
       {
         method: 'GET',
-        headers: {
-          'Authorization': `Bearer ${accessToken}`,
-          'Content-Type': 'application/json',
-        },
+        headers: requestHeaders,
       }
     );
 
     if (!userInfoResponse.ok) {
-      const errorData = await userInfoResponse.json().catch(() => ({}));
-      console.error('[토스 Auth] 사용자 정보 조회 실패:', errorData);
+      let errorData: any = {};
+      try {
+        errorData = await userInfoResponse.json();
+      } catch {
+        const text = await userInfoResponse.text().catch(() => '');
+        errorData = { message: text || `HTTP ${userInfoResponse.status}` };
+      }
+
+      const errorMessage = errorData?.error || errorData?.message || JSON.stringify(errorData);
+      const isMissingAuthHeader = errorMessage.toLowerCase().includes('missing authorization') || 
+                                 errorMessage.toLowerCase().includes('authorization header');
+
+      console.error('[토스 Auth] 사용자 정보 조회 실패:', {
+        status: userInfoResponse.status,
+        statusText: userInfoResponse.statusText,
+        errorData: errorData,
+        errorMessage: errorMessage,
+        isMissingAuthHeader: isMissingAuthHeader,
+        hasAccessToken: !!accessToken,
+        accessTokenLength: accessToken?.length || 0,
+      });
+
+      // "missing authorization header" 오류인 경우 특별 처리
+      if (isMissingAuthHeader || userInfoResponse.status === 401) {
+        return new Response(
+          JSON.stringify({ 
+            error: 'Authentication failed',
+            message: '토스 API 인증에 실패했습니다. accessToken이 유효하지 않거나 만료되었을 수 있습니다.',
+            details: {
+              status: userInfoResponse.status,
+              statusText: userInfoResponse.statusText,
+              tossApiError: errorData,
+              hint: 'accessToken이 올바르게 전달되었는지 확인하세요.',
+            }
+          }),
+          { 
+            status: userInfoResponse.status, 
+            headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
+          }
+        );
+      }
+
       return new Response(
         JSON.stringify({ 
           error: 'Failed to get user info',
+          message: `토스 API 요청 실패 (${userInfoResponse.status})`,
           details: errorData 
         }),
         { 
