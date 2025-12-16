@@ -139,7 +139,7 @@ serve(async (req) => {
     console.log('[토스 Auth] 프록시 서버를 통해 토스 API 호출:', {
       proxyServerUrl: proxyServerUrl,
       proxyEndpoint: proxyEndpoint,
-      targetUrl: `${TOSS_API_BASE_URL}/api-partner/v1/apps-in-toss/user/info`,
+      targetUrl: `${TOSS_API_BASE_URL}/api-partner/v1/apps-in-toss/user/oauth2/login-me`,
       hasAuthHeader: !!authHeader,
       authHeaderLength: authHeader.length,
       authHeaderPrefix: authHeader.substring(0, 30) + '...',

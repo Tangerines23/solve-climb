@@ -78,10 +78,10 @@ app.post('/api/toss-auth/user-info', async (req, res) => {
     const options = {
       hostname: 'apps-in-toss-api.toss.im',
       port: 443,
-      path: '/api-partner/v1/apps-in-toss/user/info',
+      path: '/api-partner/v1/apps-in-toss/user/oauth2/login-me',
       method: 'GET',
       headers: {
-        'Authorization': `Bearer ${accessToken}`,
+        'Authorization': accessToken, // Bearer 없이 accessToken만 전달 (토스 API 예제 참고)
         'Content-Type': 'application/json',
       },
       ...tlsOptions,
@@ -144,10 +144,10 @@ app.post('/api/toss-auth/user-info', async (req, res) => {
     const options = {
       hostname: 'apps-in-toss-api.toss.im',
       port: 443,
-      path: '/api-partner/v1/apps-in-toss/user/info',
+      path: '/api-partner/v1/apps-in-toss/user/oauth2/login-me',
       method: 'GET',
       headers: {
-        'Authorization': `Bearer ${accessToken}`,
+        'Authorization': accessToken, // Bearer 없이 accessToken만 전달 (토스 API 예제 참고)
         'Content-Type': 'application/json',
       },
       ...tlsOptions,

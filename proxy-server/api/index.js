@@ -117,13 +117,14 @@ app.post('/api/toss-auth/user-info', async (req, res) => {
     }
 
     // 토스 API는 mTLS 인증서만 사용
+    // 참고: 토스 API 예제 코드에서 사용자 정보 조회 엔드포인트는 /api-partner/v1/apps-in-toss/user/oauth2/login-me
     const options = {
       hostname: 'apps-in-toss-api.toss.im',
       port: 443,
-      path: '/api-partner/v1/apps-in-toss/user/info',
+      path: '/api-partner/v1/apps-in-toss/user/oauth2/login-me',
       method: 'GET',
       headers: {
-        'Authorization': `Bearer ${accessToken}`,
+        'Authorization': accessToken, // Bearer 없이 accessToken만 전달 (토스 API 예제 참고)
         'Content-Type': 'application/json',
       },
       ...tlsOptions,
