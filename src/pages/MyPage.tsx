@@ -18,6 +18,7 @@ import { APP_CONFIG } from '../config/app';
 import { ENV } from '../utils/env';
 import { handleTossLogin } from '../utils/tossLogin';
 import { handleTossLoginFlow } from '../utils/tossAuth';
+import { migrateToGameLogin } from '../utils/tossGameLogin';
 import './MyPage.css';
 
 export function MyPage() {
@@ -154,52 +155,158 @@ export function MyPage() {
     }
   }, [setProfile, setIsAdmin, refetch]);
 
-  // 토스 로그인 함수
+  // 게임 로그인 마이그레이션 및 로그인 함수
   const handleLogin = async () => {
     try {
       setLoginError(false);
       
-      // 1. 토스 로그인 실행 (인가 코드 받기)
-      const loginResult = await handleTossLogin();
+      // 1. 게임 로그인 마이그레이션 시도 (게임 로그인 hash 발급 및 필요시 토스 로그인 매핑)
+      console.log('[로그인] 게임 로그인 마이그레이션 시작');
+      const migrationResult = await migrateToGameLogin();
       
-      if (!loginResult.success || !loginResult.authorizationCode) {
-        const errorMessage = loginResult.error || '토스 로그인에 실패했습니다.';
-        setToastMessage(errorMessage);
+      if (!migrationResult.success) {
+        // 게임 로그인 마이그레이션 실패 시 기존 토스 로그인으로 폴백
+        console.warn('[로그인] 게임 로그인 마이그레이션 실패, 기존 토스 로그인으로 폴백:', migrationResult.error);
+        
+        // 기존 토스 로그인 플로우 실행
+        console.log('[로그인] 기존 토스 로그인 플로우 시작');
+        const loginResult = await handleTossLogin();
+        
+        if (!loginResult.success || !loginResult.authorizationCode) {
+          // 더 구체적인 에러 메시지 제공
+          let errorMessage = loginResult.error || migrationResult.error || '로그인에 실패했습니다.';
+          
+          // 로컬 개발 환경(샌드박스)에서의 특별 처리
+          const isLocalDev = window.location.hostname === 'localhost' || 
+                            window.location.hostname === '127.0.0.1' ||
+                            window.location.hostname.includes('192.168.');
+          
+          if (isLocalDev && errorMessage.includes('토스 앱에서만')) {
+            errorMessage = '로컬 개발 환경에서는 토스 로그인을 테스트할 수 없습니다.\n실제 토스 앱에서 테스트하거나 AIT에 배포 후 테스트해주세요.';
+          }
+          
+          console.error('[로그인] 토스 로그인 실패:', {
+            error: loginResult.error,
+            migrationError: migrationResult.error,
+            isLocalDev,
+            hostname: window.location.hostname,
+          });
+          
+          setToastMessage(errorMessage);
+          setShowToast(true);
+          setLoginError(true);
+          return;
+        }
+
+        // 인가 코드로 AccessToken 받기 및 Supabase 사용자 생성/로그인
+        const { user, session } = await handleTossLoginFlow(
+          loginResult.authorizationCode,
+          loginResult.referrer || 'DEFAULT'
+        );
+
+        if (!user || !session) {
+          throw new Error('로그인 세션을 생성할 수 없습니다.');
+        }
+
+        // 프로필 설정
+        const userProfile = {
+          profileId: user.id,
+          nickname: user.user_metadata?.tossName || user.user_metadata?.tossUserKey?.toString() || '게이머',
+          userId: user.id,
+          email: user.email,
+          createdAt: user.created_at || new Date().toISOString(),
+          isAdmin: false,
+        };
+
+        setProfile(userProfile);
+        await refetch();
+        setToastMessage('토스 로그인에 성공했습니다!');
         setShowToast(true);
-        setLoginError(true);
+        setLoginError(false);
         return;
       }
 
-      // 2. 인가 코드로 AccessToken 받기 및 Supabase 사용자 생성/로그인
-      const { user, session } = await handleTossLoginFlow(
-        loginResult.authorizationCode,
-        loginResult.referrer || 'DEFAULT'
-      );
+      // 2. 게임 로그인 마이그레이션 성공
+      // hash는 발급되었지만, Supabase 사용자는 토스 로그인을 통해 생성해야 함
+      console.log('[로그인] 게임 로그인 마이그레이션 성공, hash:', migrationResult.hash?.substring(0, 10) + '...');
+      
+      // 토스 로그인 연동 여부 확인
+      const { checkTossLoginIntegration } = await import('../utils/tossGameLogin');
+      const integrationStatus = await checkTossLoginIntegration();
+      
+      if (integrationStatus.success && integrationStatus.isIntegrated === true) {
+        // 토스 로그인 연동 사용자: 토스 로그인으로 Supabase 사용자 생성
+        console.log('[로그인] 토스 로그인 연동 사용자 - 토스 로그인으로 Supabase 사용자 생성');
+        
+        const loginResult = await handleTossLogin();
+        
+        if (!loginResult.success || !loginResult.authorizationCode) {
+          // 토스 로그인 실패 시 게임 로그인 hash만으로 진행 (제한적 기능)
+          console.warn('[로그인] 토스 로그인 실패, 게임 로그인 hash만 사용');
+          const gameLoginProfile = {
+            profileId: `game_${migrationResult.hash}`,
+            nickname: '게이머',
+            userId: `game_${migrationResult.hash}`,
+            email: `game_${migrationResult.hash}@game.local`,
+            createdAt: new Date().toISOString(),
+            isAdmin: false,
+            gameLoginHash: migrationResult.hash,
+          };
+          setProfile(gameLoginProfile);
+          await refetch();
+          setToastMessage('게임 로그인에 성공했습니다! (일부 기능 제한)');
+          setShowToast(true);
+          setLoginError(false);
+          return;
+        }
 
-      if (!user || !session) {
-        throw new Error('로그인 세션을 생성할 수 없습니다.');
+        // 토스 로그인 성공 - Supabase 사용자 생성/로그인
+        const { user, session } = await handleTossLoginFlow(
+          loginResult.authorizationCode,
+          loginResult.referrer || 'DEFAULT'
+        );
+
+        if (!user || !session) {
+          throw new Error('로그인 세션을 생성할 수 없습니다.');
+        }
+
+        // 프로필 설정 (게임 로그인 hash 포함)
+        const userProfile = {
+          profileId: user.id,
+          nickname: user.user_metadata?.tossName || user.user_metadata?.tossUserKey?.toString() || '게이머',
+          userId: user.id,
+          email: user.email,
+          createdAt: user.created_at || new Date().toISOString(),
+          isAdmin: false,
+          gameLoginHash: migrationResult.hash, // 게임 로그인 hash 저장
+        };
+
+        setProfile(userProfile);
+        await refetch();
+        setToastMessage('게임 로그인에 성공했습니다!');
+        setShowToast(true);
+        setLoginError(false);
+      } else {
+        // 토스 로그인 미연동 사용자: 게임 로그인 hash만 사용 (제한적 기능)
+        console.log('[로그인] 토스 로그인 미연동 사용자 - 게임 로그인 hash만 사용');
+        const gameLoginProfile = {
+          profileId: `game_${migrationResult.hash}`,
+          nickname: '게이머',
+          userId: `game_${migrationResult.hash}`,
+          email: `game_${migrationResult.hash}@game.local`,
+          createdAt: new Date().toISOString(),
+          isAdmin: false,
+          gameLoginHash: migrationResult.hash,
+        };
+        setProfile(gameLoginProfile);
+        await refetch();
+        setToastMessage('게임 로그인에 성공했습니다!');
+        setShowToast(true);
+        setLoginError(false);
       }
-
-      // 3. 프로필 설정
-      const userProfile = {
-        profileId: user.id,
-        nickname: user.user_metadata?.tossName || user.user_metadata?.tossUserKey?.toString() || '게이머',
-        userId: user.id,
-        email: user.email,
-        createdAt: user.created_at || new Date().toISOString(),
-        isAdmin: false,
-      };
-
-      setProfile(userProfile);
-
-      // 4. 로그인 성공 후 통계 다시 불러오기
-      await refetch();
-      setToastMessage('토스 로그인에 성공했습니다!');
-      setShowToast(true);
-      setLoginError(false);
     } catch (error) {
-      console.error('Toss login error:', error);
-      const errorMessage = error instanceof Error ? error.message : '토스 로그인 중 오류가 발생했습니다.';
+      console.error('Login error:', error);
+      const errorMessage = error instanceof Error ? error.message : '로그인 중 오류가 발생했습니다.';
       setToastMessage(errorMessage);
       setShowToast(true);
       setLoginError(true);

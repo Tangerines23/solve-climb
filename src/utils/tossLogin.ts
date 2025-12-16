@@ -40,12 +40,32 @@ export async function handleTossLogin(): Promise<TossLoginResult> {
     }
 
     // appLogin 함수 호출
-    const result = await appLogin();
-
-    if (!result || !result.authorizationCode) {
+    console.log('[토스 로그인] appLogin 호출 시작');
+    let result;
+    try {
+      result = await appLogin();
+      console.log('[토스 로그인] appLogin 호출 완료:', {
+        hasResult: !!result,
+        hasAuthorizationCode: !!result?.authorizationCode,
+        authorizationCodePrefix: result?.authorizationCode?.substring(0, 20) || 'N/A',
+        referrer: result?.referrer || 'N/A',
+      });
+    } catch (error) {
+      console.error('[토스 로그인] appLogin 호출 중 예외 발생:', error);
       return {
         success: false,
-        error: '토스 로그인에 실패했습니다.',
+        error: error instanceof Error ? error.message : '토스 로그인 중 오류가 발생했습니다.',
+      };
+    }
+
+    if (!result || !result.authorizationCode) {
+      console.warn('[토스 로그인] appLogin 결과가 올바르지 않음:', {
+        result: result,
+        hasAuthorizationCode: !!result?.authorizationCode,
+      });
+      return {
+        success: false,
+        error: '토스 로그인에 실패했습니다. authorizationCode를 받을 수 없습니다.',
       };
     }
 

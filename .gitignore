@@ -31,6 +31,17 @@ dist-ssr
 .env.*
 !.env.example
 
+# mTLS 인증서 파일 (보안 - Git에 커밋 금지!)
+*.crt
+*.key
+*.pem
+*.cert
+cert/
+certs/
+
+# 프록시 서버 인증서
+proxy-server/cert/
+
 # 토스제공 예시파일
 apps-in-toss-examples-main/
 

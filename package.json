@@ -15,6 +15,7 @@
     "preview": "vite preview",
     "deploy": "ait deploy",
     "check:css": "node scripts/check-hardcoded-values.js",
+    "check:basic-auth": "node scripts/check-basic-auth.js",
     "audit": "npm audit",
     "audit:fix": "npm audit fix",
     "check:security": "npm audit --audit-level=moderate"

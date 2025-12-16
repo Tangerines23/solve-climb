@@ -2,6 +2,8 @@
 import React, { useState, useEffect, ComponentType } from 'react';
 import ReactDOM from 'react-dom/client';
 import './index.css';
+// tossAuth 유틸리티를 import하여 window 함수들이 등록되도록 함
+import './utils/tossAuth';
 
 // Button이 theme.colors.backgroundColor를 정상 참조할 수 있도록 customTheme 객체를 생성합니다.
 const customTheme = {

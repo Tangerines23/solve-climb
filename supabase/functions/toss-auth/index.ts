@@ -42,7 +42,11 @@ serve(async (req) => {
 
     // Supabase 클라이언트 생성 (Service Role Key 사용)
     const supabaseUrl = Deno.env.get('SUPABASE_URL') ?? '';
-    const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? '';
+    // 환경 변수 이름 변경 대응: SERVICE_ROLE_KEY 우선, 없으면 기존 이름도 검사
+    const supabaseServiceKey =
+      Deno.env.get('SERVICE_ROLE_KEY') ??
+      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ??
+      '';
 
     if (!supabaseUrl || !supabaseServiceKey) {
       console.error('Supabase 환경 변수가 설정되지 않았습니다.');

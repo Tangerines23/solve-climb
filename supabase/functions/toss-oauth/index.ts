@@ -40,7 +40,7 @@ serve(async (req) => {
     }
 
     // Basic Auth 헤더 가져오기
-    const basicAuth = Deno.env.get('TOSS_API_BASIC_AUTH');
+    let basicAuth = Deno.env.get('TOSS_API_BASIC_AUTH');
     if (!basicAuth || basicAuth.trim() === '') {
       console.error('[토스 OAuth] TOSS_API_BASIC_AUTH 환경 변수가 설정되지 않았거나 비어있습니다.');
       return new Response(
@@ -56,28 +56,23 @@ serve(async (req) => {
       );
     }
 
-    // 토스 API로 AccessToken 요청
-    // Authorization 헤더 검증 및 로깅
-    const authHeader = `Basic ${basicAuth}`;
-    console.log('[토스 OAuth] 토스 API 요청 준비:', {
-      url: `${TOSS_API_BASE_URL}/api-partner/v1/apps-in-toss/user/oauth2/generate-token`,
-      hasAuthHeader: !!authHeader,
-      authHeaderLength: authHeader.length,
-      authHeaderPrefix: authHeader.substring(0, 20) + '...',
-    });
+    // 환경 변수에 "Basic " 접두사가 이미 포함되어 있다면 제거하여 중복 방지
+    basicAuth = basicAuth.trim();
+    if (basicAuth.startsWith('Basic ')) {
+      basicAuth = basicAuth.substring(6); // "Basic " 제거
+      console.log('[토스 OAuth] 환경 변수 TOSS_API_BASIC_AUTH에서 "Basic " 접두사 제거됨');
+    }
 
-    const requestHeaders = {
-      'Content-Type': 'application/json',
-      'Authorization': authHeader,
-    };
-
-    // 헤더 검증
-    if (!requestHeaders['Authorization'] || requestHeaders['Authorization'].trim() === 'Basic') {
-      console.error('[토스 OAuth] Authorization 헤더가 올바르게 설정되지 않았습니다.');
+    // Basic Auth 값 검증
+    if (!basicAuth || basicAuth.length < 10) {
+      console.error('[토스 OAuth] Basic Auth 값이 너무 짧거나 비어있습니다.', {
+        basicAuthLength: basicAuth?.length || 0,
+        basicAuthPrefix: basicAuth?.substring(0, 10) || 'N/A',
+      });
       return new Response(
         JSON.stringify({
           error: 'Server configuration error',
-          message: 'Authorization 헤더 설정 오류. TOSS_API_BASIC_AUTH 환경 변수를 확인해주세요.',
+          message: 'TOSS_API_BASIC_AUTH 값이 올바르지 않습니다. Base64 인코딩된 값이 필요합니다.',
         }),
         {
           status: 500,
@@ -86,17 +81,52 @@ serve(async (req) => {
       );
     }
 
+    // 프록시 서버 URL 가져오기
+    const proxyServerUrl = Deno.env.get('PROXY_SERVER_URL');
+    
+    if (!proxyServerUrl) {
+      console.error('[토스 OAuth] PROXY_SERVER_URL 환경 변수가 설정되지 않았습니다.');
+      return new Response(
+        JSON.stringify({
+          error: 'Server configuration error',
+          message: 'PROXY_SERVER_URL 환경 변수가 설정되지 않았습니다. Supabase Secrets에서 설정해주세요.',
+          hint: 'supabase secrets set PROXY_SERVER_URL=https://your-proxy-server.com'
+        }),
+        {
+          status: 500,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        }
+      );
+    }
+
+    // 프록시 서버를 통해 토스 API 호출
+    console.log('[토스 OAuth] 프록시 서버를 통해 토스 API 호출:', {
+      proxyUrl: `${proxyServerUrl}/api/toss-oauth/generate-token`,
+      authorizationCode: authorizationCode?.substring(0, 20) + '...',
+      referrer: referrer || 'DEFAULT',
+    });
+
     const response = await fetch(
-      `${TOSS_API_BASE_URL}/api-partner/v1/apps-in-toss/user/oauth2/generate-token`,
+      `${proxyServerUrl}/api/toss-oauth/generate-token`,
       {
         method: 'POST',
-        headers: requestHeaders,
+        headers: {
+          'Content-Type': 'application/json',
+        },
         body: JSON.stringify({
           authorizationCode,
           referrer: referrer || 'DEFAULT',
         }),
       }
     );
+    
+    // 응답 받은 후 즉시 로깅
+    console.log('[토스 OAuth] 응답 받음:', {
+      status: response.status,
+      statusText: response.statusText,
+      ok: response.ok,
+      headers: Object.fromEntries(response.headers.entries()),
+    });
 
     let data: any;
     try {
@@ -117,16 +147,28 @@ serve(async (req) => {
         const isMissingAuthHeader = errorMessage.toLowerCase().includes('missing authorization') || 
                                    errorMessage.toLowerCase().includes('authorization header');
         
+        // 응답 헤더도 확인
+        const responseHeaders: Record<string, string> = {};
+        response.headers.forEach((value, key) => {
+          responseHeaders[key] = value;
+        });
+        
         console.error('[토스 OAuth] 401 인증 실패 상세 정보:', {
           status: response.status,
           statusText: response.statusText,
           responseBody: data,
+          responseHeaders: responseHeaders,
           errorMessage: errorMessage,
           isMissingAuthHeader: isMissingAuthHeader,
           hasBasicAuth: !!basicAuth,
           basicAuthLength: basicAuth?.length || 0,
           basicAuthPrefix: basicAuth?.substring(0, 10) || 'N/A',
           authHeaderSent: `Basic ${basicAuth?.substring(0, 10)}...`,
+          authHeaderLength: authHeader.length,
+          requestHeaders: {
+            'Content-Type': requestHeaders['Content-Type'],
+            'Authorization': requestHeaders['Authorization']?.substring(0, 30) + '...',
+          },
           apiUrl: `${TOSS_API_BASE_URL}/api-partner/v1/apps-in-toss/user/oauth2/generate-token`,
         });
 
