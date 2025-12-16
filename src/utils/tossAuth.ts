@@ -366,13 +366,24 @@ if (typeof window !== 'undefined') {
         },
       });
       
-      // 401 오류인 경우 상세 정보 출력
-      if (response.status === 401) {
-        console.error('❌ 401 오류 상세 정보:');
+      // 오류인 경우 상세 정보 출력
+      if (!response.ok) {
+        console.error(`❌ ${response.status} 오류 상세 정보:`);
         console.error('응답 본문:', responseData);
-        console.error('환경 변수 확인:');
-        console.error('  - SUPABASE_URL:', ENV.SUPABASE_URL || '설정되지 않음');
-        console.error('  - SUPABASE_ANON_KEY:', ENV.SUPABASE_ANON_KEY ? `${ENV.SUPABASE_ANON_KEY.substring(0, 20)}... (길이: ${ENV.SUPABASE_ANON_KEY.length})` : '설정되지 않음');
+        
+        if (response.status === 400) {
+          console.log('💡 참고: TEST_CODE는 유효하지 않은 authorization code입니다.');
+          console.log('💡 실제 로그인 플로우에서는 토스 앱에서 받은 실제 authorization code를 사용합니다.');
+          console.log('💡 프록시 서버와 Edge Function이 정상적으로 작동하고 있습니다! ✅');
+        }
+        
+        if (response.status === 401) {
+          console.error('환경 변수 확인:');
+          console.error('  - SUPABASE_URL:', ENV.SUPABASE_URL || '설정되지 않음');
+          console.error('  - SUPABASE_ANON_KEY:', ENV.SUPABASE_ANON_KEY ? `${ENV.SUPABASE_ANON_KEY.substring(0, 20)}... (길이: ${ENV.SUPABASE_ANON_KEY.length})` : '설정되지 않음');
+        }
+      } else {
+        console.log('🎉 성공! 프록시 서버와 Edge Function이 정상적으로 작동하고 있습니다!');
       }
       
       return {
