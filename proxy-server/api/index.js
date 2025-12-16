@@ -94,10 +94,27 @@ app.post('/api/toss-auth/user-info', async (req, res) => {
 
     console.log('[프록시] 토스 사용자 정보 조회 시작:', {
       accessTokenPrefix: accessToken.substring(0, 20) + '...',
+      accessTokenLength: accessToken.length,
     });
 
     // mTLS 인증서 로드 (lazy loading)
-    const tlsOptions = getTlsOptions();
+    let tlsOptions;
+    try {
+      tlsOptions = getTlsOptions();
+      console.log('[프록시] mTLS 인증서 로드 성공');
+    } catch (tlsError) {
+      console.error('[프록시] mTLS 인증서 로드 실패:', {
+        error: tlsError.message,
+        stack: tlsError.stack,
+        hasCertEnv: !!process.env.TOSS_MTLS_CERT,
+        hasKeyEnv: !!process.env.TOSS_MTLS_KEY,
+      });
+      return res.status(500).json({ 
+        error: 'mTLS certificate loading failed',
+        message: tlsError.message,
+        hint: 'Vercel Environment Variables에 TOSS_MTLS_CERT와 TOSS_MTLS_KEY를 설정하세요.',
+      });
+    }
 
     // 토스 API는 mTLS 인증서만 사용
     const options = {
@@ -112,6 +129,15 @@ app.post('/api/toss-auth/user-info', async (req, res) => {
       ...tlsOptions,
     };
 
+    console.log('[프록시] 토스 API 호출 옵션:', {
+      hostname: options.hostname,
+      path: options.path,
+      method: options.method,
+      hasCert: !!options.cert,
+      hasKey: !!options.key,
+      authHeaderPrefix: options.headers.Authorization.substring(0, 30) + '...',
+    });
+
     const proxyReq = https.request(options, (proxyRes) => {
       let data = '';
 
@@ -124,33 +150,66 @@ app.post('/api/toss-auth/user-info', async (req, res) => {
           const jsonData = JSON.parse(data);
           console.log('[프록시] 토스 사용자 정보 응답:', {
             status: proxyRes.statusCode,
+            statusText: proxyRes.statusText,
+            resultType: jsonData.resultType,
             success: jsonData.resultType === 'SUCCESS',
+            hasError: !!jsonData.error,
+            errorMessage: jsonData.error || null,
+            responseLength: data.length,
           });
+          
+          // 에러 응답인 경우 더 자세한 로깅
+          if (proxyRes.statusCode && proxyRes.statusCode >= 400) {
+            console.error('[프록시] 토스 API 에러 응답:', {
+              status: proxyRes.statusCode,
+              statusText: proxyRes.statusText,
+              response: jsonData,
+              rawResponse: data.substring(0, 500), // 처음 500자만
+            });
+          }
+          
           res.status(proxyRes.statusCode || 200).json(jsonData);
         } catch (parseError) {
-          console.error('[프록시] JSON 파싱 오류:', parseError);
+          console.error('[프록시] JSON 파싱 오류:', {
+            error: parseError.message,
+            rawResponse: data.substring(0, 500),
+            responseLength: data.length,
+          });
           res.status(proxyRes.statusCode || 200).json({
             error: 'Failed to parse response',
-            rawResponse: data,
+            message: parseError.message,
+            rawResponse: data.substring(0, 500),
           });
         }
       });
     });
 
     proxyReq.on('error', (error) => {
-      console.error('[프록시] 토스 API 호출 실패:', error);
+      console.error('[프록시] 토스 API 호출 실패:', {
+        error: error.message,
+        code: error.code,
+        stack: error.stack,
+        hostname: options.hostname,
+        path: options.path,
+      });
       res.status(500).json({ 
         error: 'Proxy request failed',
-        message: error.message 
+        message: error.message,
+        code: error.code,
       });
     });
 
     proxyReq.end();
   } catch (error) {
-    console.error('[프록시] 예외 발생:', error);
+    console.error('[프록시] 예외 발생:', {
+      error: error.message,
+      stack: error.stack,
+      name: error.name,
+    });
     res.status(500).json({ 
       error: 'Internal server error',
-      message: error.message 
+      message: error.message,
+      name: error.name,
     });
   }
 });
@@ -172,7 +231,23 @@ app.post('/api/toss-oauth/generate-token', async (req, res) => {
     });
 
     // mTLS 인증서 로드 (lazy loading)
-    const tlsOptions = getTlsOptions();
+    let tlsOptions;
+    try {
+      tlsOptions = getTlsOptions();
+      console.log('[프록시] mTLS 인증서 로드 성공 (OAuth)');
+    } catch (tlsError) {
+      console.error('[프록시] mTLS 인증서 로드 실패 (OAuth):', {
+        error: tlsError.message,
+        stack: tlsError.stack,
+        hasCertEnv: !!process.env.TOSS_MTLS_CERT,
+        hasKeyEnv: !!process.env.TOSS_MTLS_KEY,
+      });
+      return res.status(500).json({ 
+        error: 'mTLS certificate loading failed',
+        message: tlsError.message,
+        hint: 'Vercel Environment Variables에 TOSS_MTLS_CERT와 TOSS_MTLS_KEY를 설정하세요.',
+      });
+    }
 
     // 토스 API는 mTLS 인증서만 사용 (Basic Auth 불필요)
     // 참고: 토스 커뮤니티에 따르면 client_id/client_secret은 따로 없음

@@ -140,11 +140,15 @@ serve(async (req) => {
 
     if (!userInfoResponse.ok) {
       let errorData: any = {};
+      let rawResponseText = '';
       try {
-        errorData = await userInfoResponse.json();
+        rawResponseText = await userInfoResponse.text();
+        errorData = JSON.parse(rawResponseText);
       } catch {
-        const text = await userInfoResponse.text().catch(() => '');
-        errorData = { message: text || `HTTP ${userInfoResponse.status}` };
+        errorData = { 
+          message: rawResponseText || `HTTP ${userInfoResponse.status}`,
+          rawResponse: rawResponseText.substring(0, 500),
+        };
       }
 
       const errorMessage = errorData?.error || errorData?.message || JSON.stringify(errorData);
@@ -157,10 +161,13 @@ serve(async (req) => {
         statusText: userInfoResponse.statusText,
         errorData: errorData,
         errorMessage: errorMessageStr,
+        rawResponse: rawResponseText.substring(0, 500),
         isMissingAuthHeader: isMissingAuthHeader,
         hasAccessToken: !!accessToken,
         accessTokenLength: accessToken?.length || 0,
+        accessTokenPrefix: accessToken?.substring(0, 20) || '',
         proxyUrl: proxyEndpoint,
+        proxyServerUrl: proxyServerUrl,
       });
 
       // 404 에러인 경우 프록시 서버 엔드포인트가 배포되지 않았을 수 있음
@@ -174,8 +181,32 @@ serve(async (req) => {
               proxyUrl: proxyEndpoint,
               proxyServerUrl: proxyServerUrl,
               errorData: errorData,
+              rawResponse: rawResponseText.substring(0, 500),
               hint: 'Vercel에 프록시 서버를 배포했는지 확인하세요. proxy-server/api/index.js에 엔드포인트가 추가되어 있어야 합니다.',
               solution: '1. Vercel Dashboard에서 solve-climb-proxy 프로젝트 확인\n2. 최신 배포 상태 확인\n3. 배포 완료 후 재시도',
+            }
+          }),
+          { 
+            status: 500, 
+            headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
+          }
+        );
+      }
+
+      // 500 에러인 경우 프록시 서버 내부 오류일 수 있음
+      if (userInfoResponse.status === 500) {
+        return new Response(
+          JSON.stringify({ 
+            error: 'Proxy server error',
+            message: `프록시 서버에서 내부 오류가 발생했습니다 (500). 프록시 서버 로그를 확인하세요.`,
+            details: {
+              status: userInfoResponse.status,
+              proxyUrl: proxyEndpoint,
+              proxyServerUrl: proxyServerUrl,
+              errorData: errorData,
+              rawResponse: rawResponseText.substring(0, 500),
+              hint: 'Vercel Dashboard의 Function Logs를 확인하세요. mTLS 인증서 로드 실패일 수 있습니다.',
+              solution: '1. Vercel Dashboard > solve-climb-proxy > Functions > Logs 확인\n2. TOSS_MTLS_CERT와 TOSS_MTLS_KEY 환경 변수 확인\n3. 인증서 형식 확인 (-----BEGIN CERTIFICATE----- 포함)',
             }
           }),
           { 
