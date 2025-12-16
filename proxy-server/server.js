@@ -75,32 +75,16 @@ app.post('/api/toss-oauth/generate-token', async (req, res) => {
       referrer: referrer || 'DEFAULT',
     });
 
-    // Basic Auth 헤더 가져오기
-    const basicAuth = process.env.TOSS_API_BASIC_AUTH;
-    if (!basicAuth) {
-      console.error('[프록시] TOSS_API_BASIC_AUTH 환경 변수가 설정되지 않았습니다.');
-      return res.status(500).json({
-        error: 'Server configuration error',
-        message: 'TOSS_API_BASIC_AUTH 환경 변수가 설정되지 않았습니다.',
-        hint: '환경 변수에서 TOSS_API_BASIC_AUTH를 설정하세요.',
-      });
-    }
-
-    // Basic Auth 값 검증 및 처리
-    let authHeader = basicAuth.trim();
-    if (!authHeader.startsWith('Basic ')) {
-      authHeader = `Basic ${authHeader}`;
-    }
-
+    // 토스 API는 mTLS 인증서만 사용 (Basic Auth 불필요)
+    // 참고: 토스 커뮤니티에 따르면 client_id/client_secret은 따로 없음
     const options = {
       hostname: 'apps-in-toss-api.toss.im',
       port: 443,
       path: '/api-partner/v1/apps-in-toss/user/oauth2/generate-token',
       method: 'POST',
-      ...tlsOptions, // mTLS 인증서 사용
+      ...tlsOptions, // mTLS 인증서만 사용
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': authHeader, // Basic Auth 헤더 추가
       },
     };
 
