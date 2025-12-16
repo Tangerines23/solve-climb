@@ -77,26 +77,65 @@ serve(async (req) => {
       );
     }
 
+    // 프록시 서버 URL 가져오기
+    const proxyServerUrl = Deno.env.get('PROXY_SERVER_URL');
+    
+    if (!proxyServerUrl) {
+      console.error('[토스 Auth] PROXY_SERVER_URL 환경 변수가 설정되지 않았습니다.');
+      return new Response(
+        JSON.stringify({
+          error: 'Server configuration error',
+          message: 'PROXY_SERVER_URL 환경 변수가 설정되지 않았습니다. Supabase Secrets에서 설정해주세요.',
+          hint: 'supabase secrets set PROXY_SERVER_URL=https://your-proxy-server.com'
+        }),
+        {
+          status: 500,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        }
+      );
+    }
+
     const authHeader = `Bearer ${accessToken}`;
-    console.log('[토스 Auth] 토스 API 요청 준비:', {
-      url: `${TOSS_API_BASE_URL}/api-partner/v1/apps-in-toss/user/info`,
+    console.log('[토스 Auth] 프록시 서버를 통해 토스 API 호출:', {
+      proxyServerUrl: proxyServerUrl,
+      targetUrl: `${TOSS_API_BASE_URL}/api-partner/v1/apps-in-toss/user/info`,
       hasAuthHeader: !!authHeader,
       authHeaderLength: authHeader.length,
       authHeaderPrefix: authHeader.substring(0, 30) + '...',
     });
 
-    const requestHeaders = {
-      'Authorization': authHeader,
-      'Content-Type': 'application/json',
-    };
-
-    const userInfoResponse = await fetch(
-      `${TOSS_API_BASE_URL}/api-partner/v1/apps-in-toss/user/info`,
-      {
-        method: 'GET',
-        headers: requestHeaders,
-      }
-    );
+    // 프록시 서버를 통해 토스 API 호출
+    const proxyEndpoint = `${proxyServerUrl}/api/toss-auth/user-info`;
+    
+    let userInfoResponse: Response;
+    try {
+      userInfoResponse = await fetch(proxyEndpoint, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          accessToken,
+        }),
+      });
+    } catch (fetchError) {
+      console.error('[토스 Auth] 프록시 서버 호출 실패:', {
+        error: fetchError instanceof Error ? fetchError.message : String(fetchError),
+        proxyUrl: proxyEndpoint,
+        proxyServerUrl: proxyServerUrl,
+      });
+      return new Response(
+        JSON.stringify({
+          error: 'Proxy server request failed',
+          message: fetchError instanceof Error ? fetchError.message : String(fetchError),
+          proxyUrl: proxyEndpoint,
+        }),
+        {
+          status: 500,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        }
+      );
+    }
 
     if (!userInfoResponse.ok) {
       let errorData: any = {};
@@ -156,6 +195,19 @@ serve(async (req) => {
 
     const userInfoData = await userInfoResponse.json();
 
+    // API 응답 상세 로깅 (암호화 여부 확인용)
+    console.log('[토스 Auth] API 응답 데이터:', {
+      resultType: userInfoData.resultType,
+      hasSuccess: !!userInfoData.success,
+      successKeys: userInfoData.success ? Object.keys(userInfoData.success) : [],
+      sampleData: userInfoData.success ? {
+        userKey: userInfoData.success.userKey,
+        ci: userInfoData.success.ci ? (typeof userInfoData.success.ci === 'string' ? userInfoData.success.ci.substring(0, 20) + '...' : userInfoData.success.ci) : null,
+        name: userInfoData.success.name ? (typeof userInfoData.success.name === 'string' ? userInfoData.success.name.substring(0, 20) + '...' : userInfoData.success.name) : null,
+        phone: userInfoData.success.phone ? (typeof userInfoData.success.phone === 'string' ? userInfoData.success.phone.substring(0, 20) + '...' : userInfoData.success.phone) : null,
+      } : null,
+    });
+
     if (userInfoData.resultType !== 'SUCCESS' || !userInfoData.success) {
       return new Response(
         JSON.stringify({
@@ -172,7 +224,17 @@ serve(async (req) => {
     const tossUserInfo = userInfoData.success;
     const tossUserKey = tossUserInfo.userKey;
 
-    console.log(`[토스 Auth] 사용자 정보 조회 성공: userKey=${tossUserKey}`);
+    // 암호화 여부 확인 로깅
+    const isEncrypted = {
+      ci: tossUserInfo.ci && typeof tossUserInfo.ci === 'string' && tossUserInfo.ci.length > 50,
+      name: tossUserInfo.name && typeof tossUserInfo.name === 'string' && tossUserInfo.name.length > 50,
+      phone: tossUserInfo.phone && typeof tossUserInfo.phone === 'string' && tossUserInfo.phone.length > 50,
+    };
+    
+    console.log(`[토스 Auth] 사용자 정보 조회 성공: userKey=${tossUserKey}`, {
+      isEncrypted,
+      note: '필드가 50자 이상이면 암호화된 것으로 추정됩니다. 복호화가 필요할 수 있습니다.',
+    });
 
     // 2. 기존 사용자 찾기 (user_metadata의 tossUserKey로)
     // Supabase Admin API로 모든 사용자를 검색할 수 없으므로,

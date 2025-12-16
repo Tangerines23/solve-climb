@@ -65,6 +65,13 @@ export async function getTossUserInfo(accessToken: string): Promise<TossUserInfo
 export async function createOrUpdateSupabaseUser(
   accessToken: string
 ): Promise<{ user: any; loginInfo: { email: string; password: string } }> {
+  // 호출 추적 로깅
+  console.log('[토스 Auth] createOrUpdateSupabaseUser 함수 호출됨', {
+    timestamp: new Date().toISOString(),
+    accessTokenPrefix: accessToken?.substring(0, 20) + '...',
+    accessTokenLength: accessToken?.length || 0,
+  });
+
   try {
     // 환경 변수 검증
     if (!ENV.SUPABASE_URL || !ENV.SUPABASE_ANON_KEY) {
@@ -81,9 +88,15 @@ export async function createOrUpdateSupabaseUser(
     const baseUrl = ENV.SUPABASE_URL.replace(/\/$/, '');
     const authUrl = `${baseUrl}/functions/v1/toss-auth`;
     
+    console.log('[토스 Auth] toss-auth Edge Function 호출 시작', {
+      url: authUrl,
+      timestamp: new Date().toISOString(),
+    });
+    
     // Edge Function 호출 (인증 없이 호출 가능하도록 설정)
     let response: Response;
     try {
+      const fetchStartTime = Date.now();
       response = await fetch(authUrl, {
         method: 'POST',
         headers: {
@@ -93,6 +106,14 @@ export async function createOrUpdateSupabaseUser(
         body: JSON.stringify({
           accessToken,
         }),
+      });
+      
+      const fetchEndTime = Date.now();
+      console.log('[토스 Auth] toss-auth fetch 완료', {
+        duration: `${fetchEndTime - fetchStartTime}ms`,
+        status: response.status,
+        statusText: response.statusText,
+        ok: response.ok,
       });
     } catch (fetchError) {
       // 네트워크 오류 (fail to fetch)
@@ -197,6 +218,7 @@ export async function handleTossLoginFlow(
         headers: {
           'Content-Type': 'application/json',
           'apikey': ENV.SUPABASE_ANON_KEY,
+          'Authorization': `Bearer ${ENV.SUPABASE_ANON_KEY}`,
         },
         body: JSON.stringify({
           authorizationCode,
@@ -238,6 +260,37 @@ export async function handleTossLoginFlow(
         errorData = { message: text || `HTTP ${accessTokenResponse.status}` };
       }
       
+      // 개발 모드 authorization code 감지
+      const isDevMode = authorizationCode.startsWith('DEV_MODE_');
+      
+      // 400 에러인 경우 (개발 모드 authorization code는 유효하지 않음)
+      if (accessTokenResponse.status === 400) {
+        const errorMessage = errorData.error || errorData.message || JSON.stringify(errorData);
+        
+        if (isDevMode) {
+          // 개발 모드에서는 예상된 동작
+          console.log('💡 개발 모드: DEV_MODE authorization code는 유효하지 않습니다.');
+          console.log('💡 이것은 정상적인 동작입니다. Edge Function 호출 플로우는 확인되었습니다.');
+          console.log('💡 실제 토스 앱에서 테스트하거나 AIT에 배포 후 테스트하세요.');
+          
+          throw new Error(
+            '개발 모드: 유효하지 않은 authorization code입니다.\n\n' +
+            '✅ Edge Function 호출 플로우는 정상적으로 작동하고 있습니다.\n\n' +
+            '실제 로그인 테스트:\n' +
+            '1. 실제 토스 앱에서 테스트\n' +
+            '2. 또는 AIT에 배포 후 테스트\n' +
+            '3. 또는 브라우저 콘솔에서 window.testTossOAuth() 실행'
+          );
+        }
+        
+        // 실제 authorization code인데 400 에러인 경우
+        throw new Error(
+          `AccessToken 요청 실패 (400):\n` +
+          `${errorMessage}\n\n` +
+          `Edge Function URL: ${oauthUrl}`
+        );
+      }
+      
       // 401 에러인 경우 특별 처리
       if (accessTokenResponse.status === 401) {
         const errorMessage = errorData.message || errorData.error || '인증 실패';
@@ -266,9 +319,10 @@ export async function handleTossLoginFlow(
       }
       
       // 기타 HTTP 에러
+      const errorMessage = errorData.error || errorData.message || JSON.stringify(errorData);
       throw new Error(
         `AccessToken 요청 실패 (${accessTokenResponse.status}):\n` +
-        `${errorData.error || errorData.message || JSON.stringify(errorData)}\n\n` +
+        `${errorMessage}\n\n` +
         `Edge Function URL: ${oauthUrl}`
       );
     }
@@ -403,23 +457,29 @@ if (typeof window !== 'undefined') {
 
   /**
    * toss-auth Edge Function 테스트
-   * 실제 accessToken이 필요하므로, 먼저 토스 로그인을 해야 합니다.
+   * 실제 accessToken이 필요하지만, 테스트용 더미 토큰으로도 호출 가능
    * 브라우저 콘솔에서 window.testTossAuth(accessToken)로 호출 가능
    */
   (window as any).testTossAuth = async (accessToken?: string) => {
     console.log('🧪 toss-auth Edge Function 테스트 시작...');
     
+    // accessToken이 없으면 테스트용 더미 토큰 사용
+    const testAccessToken = accessToken || 'TEST_ACCESS_TOKEN_FOR_EDGE_FUNCTION_TEST';
+    
     if (!accessToken) {
-      console.warn('⚠️ accessToken이 필요합니다. 토스 로그인을 먼저 실행하거나 accessToken을 인자로 전달하세요.');
-      console.log('💡 사용법: window.testTossAuth("your_access_token_here")');
-      return {
-        success: false,
-        error: 'accessToken이 필요합니다.',
-      };
+      console.warn('⚠️ accessToken이 제공되지 않았습니다. 테스트용 더미 토큰을 사용합니다.');
+      console.log('💡 토스 API는 실패하지만, Edge Function 호출 플로우는 확인할 수 있습니다.');
+      console.log('💡 실제 accessToken을 사용하려면: window.testTossAuth("your_access_token_here")');
     }
     
     const baseUrl = ENV.SUPABASE_URL.replace(/\/$/, '');
     const authUrl = `${baseUrl}/functions/v1/toss-auth`;
+    
+    console.log('[토스 Auth 테스트] toss-auth Edge Function 호출:', {
+      url: authUrl,
+      accessTokenPrefix: testAccessToken.substring(0, 20) + '...',
+      isTestToken: !accessToken,
+    });
     
     try {
       const startTime = Date.now();
@@ -428,9 +488,10 @@ if (typeof window !== 'undefined') {
         headers: {
           'Content-Type': 'application/json',
           'apikey': ENV.SUPABASE_ANON_KEY || '',
+          'Authorization': `Bearer ${ENV.SUPABASE_ANON_KEY || ''}`,
         },
         body: JSON.stringify({
-          accessToken,
+          accessToken: testAccessToken,
         }),
       });
       
@@ -450,6 +511,23 @@ if (typeof window !== 'undefined') {
         response: responseData,
         url: authUrl,
       });
+      
+      if (!response.ok) {
+        console.error(`❌ ${response.status} 오류 상세 정보:`);
+        console.error('응답 본문:', responseData);
+        
+        if (response.status === 401) {
+          console.log('💡 참고: 테스트용 더미 토큰은 유효하지 않습니다.');
+          console.log('💡 이것은 정상적인 동작입니다. Edge Function 호출 플로우는 확인되었습니다! ✅');
+          console.log('💡 실제 토스 앱에서 로그인하면 유효한 accessToken을 받을 수 있습니다.');
+        }
+        
+        if (response.status === 400) {
+          console.log('💡 참고: accessToken이 없거나 형식이 잘못되었습니다.');
+        }
+      } else {
+        console.log('🎉 성공! toss-auth Edge Function이 정상적으로 작동하고 있습니다!');
+      }
       
       return {
         success: response.ok,

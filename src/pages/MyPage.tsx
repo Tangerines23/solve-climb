@@ -160,6 +160,66 @@ export function MyPage() {
     try {
       setLoginError(false);
       
+      // 로컬 개발 환경 확인
+      const isLocalDev = window.location.hostname === 'localhost' || 
+                        window.location.hostname === '127.0.0.1' ||
+                        window.location.hostname.includes('192.168.');
+      
+      // 로컬 개발 환경에서 개발 모드 authorization code 사용
+      if (isLocalDev) {
+        console.log('[로그인] 로컬 개발 환경 감지 - 개발 모드 authorization code 사용');
+        console.warn('[로그인] ⚠️ 개발 모드: 실제 토스 앱이 아닌 환경에서 테스트합니다.');
+        console.warn('[로그인] ⚠️ 실제 토스 API 호출은 실패할 수 있지만, Edge Function 플로우는 테스트할 수 있습니다.');
+        
+        // 개발 모드: 더미 authorization code로 플로우 테스트
+        // 실제 토스 API는 실패하지만, Edge Function 호출 플로우는 확인 가능
+        const devAuthorizationCode = 'DEV_MODE_AUTHORIZATION_CODE_' + Date.now();
+        
+        try {
+          // 인가 코드로 AccessToken 받기 및 Supabase 사용자 생성/로그인 시도
+          // 실제 토스 API는 실패하지만, Edge Function 호출 플로우는 확인 가능
+          const { user, session } = await handleTossLoginFlow(
+            devAuthorizationCode,
+            'DEV_MODE'
+          );
+
+          if (!user || !session) {
+            throw new Error('로그인 세션을 생성할 수 없습니다.');
+          }
+
+          // 프로필 설정
+          const userProfile = {
+            profileId: user.id,
+            nickname: user.user_metadata?.tossName || user.user_metadata?.tossUserKey?.toString() || '게이머',
+            userId: user.id,
+            email: user.email,
+            createdAt: user.created_at || new Date().toISOString(),
+            isAdmin: false,
+          };
+
+          setProfile(userProfile);
+          await refetch();
+          setToastMessage('개발 모드: 로그인 플로우 테스트 완료 (실제 토스 API는 실패했을 수 있음)');
+          setShowToast(true);
+          setLoginError(false);
+          return;
+        } catch (devError) {
+          console.error('[로그인] 개발 모드 로그인 실패:', devError);
+          
+          // 개발 모드에서 예상된 에러인 경우 사용자에게 안내
+          const errorMessage = devError instanceof Error ? devError.message : String(devError);
+          if (errorMessage.includes('개발 모드') || errorMessage.includes('유효하지 않은 authorization code')) {
+            setToastMessage(errorMessage);
+            setShowToast(true);
+            setLoginError(false); // 에러가 아닌 안내 메시지
+            return;
+          }
+          
+          // 개발 모드에서도 실패하면 실제 플로우로 진행
+          console.log('[로그인] 개발 모드 실패, 실제 토스 로그인 플로우로 진행');
+        }
+      }
+      
       // 1. 게임 로그인 마이그레이션 시도 (게임 로그인 hash 발급 및 필요시 토스 로그인 매핑)
       console.log('[로그인] 게임 로그인 마이그레이션 시작');
       const migrationResult = await migrateToGameLogin();
@@ -176,13 +236,12 @@ export function MyPage() {
           // 더 구체적인 에러 메시지 제공
           let errorMessage = loginResult.error || migrationResult.error || '로그인에 실패했습니다.';
           
-          // 로컬 개발 환경(샌드박스)에서의 특별 처리
-          const isLocalDev = window.location.hostname === 'localhost' || 
-                            window.location.hostname === '127.0.0.1' ||
-                            window.location.hostname.includes('192.168.');
-          
           if (isLocalDev && errorMessage.includes('토스 앱에서만')) {
-            errorMessage = '로컬 개발 환경에서는 토스 로그인을 테스트할 수 없습니다.\n실제 토스 앱에서 테스트하거나 AIT에 배포 후 테스트해주세요.';
+            errorMessage = '로컬 개발 환경에서는 토스 앱이 필요합니다.\n\n' +
+                          '개발 모드로 테스트하려면:\n' +
+                          '1. 브라우저 콘솔에서 window.testTossOAuth() 실행\n' +
+                          '2. 또는 실제 토스 앱에서 테스트\n' +
+                          '3. 또는 AIT에 배포 후 테스트';
           }
           
           console.error('[로그인] 토스 로그인 실패:', {

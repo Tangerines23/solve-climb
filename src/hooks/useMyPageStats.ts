@@ -135,6 +135,20 @@ export function useMyPageStats(): UseMyPageStatsResult {
       const user = currentSession.user;
       const user_id = userId || user.id;
 
+      // 로컬 세션인 경우 Supabase 쿼리 스킵 (RPC 호출 전에 체크)
+      const isLocalSession = user_id === 'tester' || user_id.startsWith('tester_') || user_id.startsWith('user_') || user_id.startsWith('game_');
+      if (isLocalSession) {
+        // 로컬 세션인 경우 기본값 반환 (Supabase 데이터 없음)
+        setStats({
+          totalHeight: 0,
+          totalSolved: 0,
+          maxLevel: 0,
+          bestSubject: null,
+        });
+        setLoading(false);
+        return;
+      }
+
       // 방법 1: RPC 함수 사용 (권장 - Supabase에 함수가 생성되어 있는 경우)
       try {
         const { data: rpcData, error: rpcError } = await supabase.rpc('get_user_game_stats');
@@ -150,25 +164,25 @@ export function useMyPageStats(): UseMyPageStatsResult {
           setLoading(false);
           return;
         }
-      } catch (rpcErr) {
+        
+        // RPC 함수가 404를 반환한 경우 (함수가 없거나 접근 불가)
+        if (rpcError && rpcError.code === 'PGRST116') {
+          // 404는 정상적인 폴백 시나리오이므로 경고만 출력
+          console.warn('RPC function not found (404), falling back to direct query');
+        } else if (rpcError) {
+          // 다른 에러는 경고 출력
+          console.warn('RPC function error, falling back to direct query:', rpcError);
+        }
+      } catch (rpcErr: any) {
         // RPC 함수가 없거나 실패한 경우, 직접 쿼리로 폴백
-        console.warn('RPC function not available, falling back to direct query:', rpcErr);
+        if (rpcErr?.status === 404 || rpcErr?.code === 'PGRST116') {
+          console.warn('RPC function not found (404), falling back to direct query');
+        } else {
+          console.warn('RPC function not available, falling back to direct query:', rpcErr);
+        }
       }
 
       // 방법 2: 직접 쿼리로 집계 (RPC 함수가 없는 경우 폴백)
-      // 로컬 세션인 경우 Supabase 쿼리 스킵
-      if (user_id === 'tester' || user_id.startsWith('tester_') || user_id.startsWith('user_')) {
-        // 로컬 세션인 경우 기본값 반환 (Supabase 데이터 없음)
-        setStats({
-          totalHeight: 0,
-          totalSolved: 0,
-          maxLevel: 0,
-          bestSubject: null,
-        });
-        setLoading(false);
-        return;
-      }
-
       const { data: records, error: queryError } = await supabase
         .from('game_records')
         .select('score, cleared, level, subject')
