@@ -58,15 +58,17 @@ serve(async (req) => {
     }
 
     // 프록시 서버를 통해 토스 API 호출
+    const proxyEndpoint = `${proxyServerUrl}/api/toss-oauth/generate-token`;
     console.log('[토스 OAuth] 프록시 서버를 통해 토스 API 호출:', {
-      proxyUrl: `${proxyServerUrl}/api/toss-oauth/generate-token`,
+      proxyUrl: proxyEndpoint,
+      proxyServerUrl: proxyServerUrl,
       authorizationCode: authorizationCode?.substring(0, 20) + '...',
       referrer: referrer || 'DEFAULT',
     });
 
-    const response = await fetch(
-      `${proxyServerUrl}/api/toss-oauth/generate-token`,
-      {
+    let response: Response;
+    try {
+      response = await fetch(proxyEndpoint, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -75,8 +77,25 @@ serve(async (req) => {
           authorizationCode,
           referrer: referrer || 'DEFAULT',
         }),
-      }
-    );
+      });
+    } catch (fetchError) {
+      console.error('[토스 OAuth] 프록시 서버 호출 실패:', {
+        error: fetchError instanceof Error ? fetchError.message : String(fetchError),
+        proxyUrl: proxyEndpoint,
+        proxyServerUrl: proxyServerUrl,
+      });
+      return new Response(
+        JSON.stringify({
+          error: 'Proxy server request failed',
+          message: fetchError instanceof Error ? fetchError.message : String(fetchError),
+          proxyUrl: proxyEndpoint,
+        }),
+        {
+          status: 500,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        }
+      );
+    }
     
     // 응답 받은 후 즉시 로깅
     console.log('[토스 OAuth] 응답 받음:', {
