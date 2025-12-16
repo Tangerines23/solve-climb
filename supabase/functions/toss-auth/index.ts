@@ -81,10 +81,17 @@ serve(async (req) => {
       hasSupabaseServiceRoleKey: !!Deno.env.get('SUPABASE_SERVICE_ROLE_KEY'),
     });
 
+    // Supabase Admin API를 사용하기 위해 Service Role Key를 명시적으로 헤더에 추가
     const supabaseAdmin = createClient(supabaseUrl, supabaseServiceKey, {
       auth: {
         persistSession: false,
         autoRefreshToken: false,
+      },
+      global: {
+        headers: {
+          'apikey': supabaseServiceKey,
+          'Authorization': `Bearer ${supabaseServiceKey}`,
+        },
       },
     });
 
