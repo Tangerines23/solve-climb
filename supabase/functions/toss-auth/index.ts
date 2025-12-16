@@ -78,7 +78,7 @@ serve(async (req) => {
     }
 
     // 프록시 서버 URL 가져오기
-    const proxyServerUrl = Deno.env.get('PROXY_SERVER_URL');
+    let proxyServerUrl = Deno.env.get('PROXY_SERVER_URL');
     
     if (!proxyServerUrl) {
       console.error('[토스 Auth] PROXY_SERVER_URL 환경 변수가 설정되지 않았습니다.');
@@ -94,6 +94,9 @@ serve(async (req) => {
         }
       );
     }
+
+    // URL 정규화: 끝에 슬래시 제거
+    proxyServerUrl = proxyServerUrl.replace(/\/+$/, '');
 
     const authHeader = `Bearer ${accessToken}`;
     // 프록시 서버를 통해 토스 API 호출
