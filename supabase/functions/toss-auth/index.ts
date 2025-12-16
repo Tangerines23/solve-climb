@@ -147,17 +147,19 @@ serve(async (req) => {
       }
 
       const errorMessage = errorData?.error || errorData?.message || JSON.stringify(errorData);
-      const isMissingAuthHeader = errorMessage.toLowerCase().includes('missing authorization') || 
-                                 errorMessage.toLowerCase().includes('authorization header');
+      const errorMessageStr = typeof errorMessage === 'string' ? errorMessage : JSON.stringify(errorMessage);
+      const isMissingAuthHeader = errorMessageStr.toLowerCase().includes('missing authorization') || 
+                                 errorMessageStr.toLowerCase().includes('authorization header');
 
       console.error('[토스 Auth] 사용자 정보 조회 실패:', {
         status: userInfoResponse.status,
         statusText: userInfoResponse.statusText,
         errorData: errorData,
-        errorMessage: errorMessage,
+        errorMessage: errorMessageStr,
         isMissingAuthHeader: isMissingAuthHeader,
         hasAccessToken: !!accessToken,
         accessTokenLength: accessToken?.length || 0,
+        proxyUrl: proxyEndpoint,
       });
 
       // "missing authorization header" 오류인 경우 특별 처리
@@ -170,6 +172,7 @@ serve(async (req) => {
               status: userInfoResponse.status,
               statusText: userInfoResponse.statusText,
               tossApiError: errorData,
+              errorMessage: errorMessageStr,
               hint: 'accessToken이 올바르게 전달되었는지 확인하세요.',
             }
           }),
