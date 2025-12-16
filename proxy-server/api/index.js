@@ -100,6 +100,23 @@ app.post('/api/toss-oauth/generate-token', async (req, res) => {
     // mTLS 인증서 로드 (lazy loading)
     const tlsOptions = getTlsOptions();
 
+    // Basic Auth 헤더 가져오기
+    const basicAuth = process.env.TOSS_API_BASIC_AUTH;
+    if (!basicAuth) {
+      console.error('[프록시] TOSS_API_BASIC_AUTH 환경 변수가 설정되지 않았습니다.');
+      return res.status(500).json({
+        error: 'Server configuration error',
+        message: 'TOSS_API_BASIC_AUTH 환경 변수가 설정되지 않았습니다.',
+        hint: 'Vercel Environment Variables에서 TOSS_API_BASIC_AUTH를 설정하세요.',
+      });
+    }
+
+    // Basic Auth 값 검증 및 처리
+    let authHeader = basicAuth.trim();
+    if (!authHeader.startsWith('Basic ')) {
+      authHeader = `Basic ${authHeader}`;
+    }
+
     const options = {
       hostname: 'apps-in-toss-api.toss.im',
       port: 443,
@@ -108,6 +125,7 @@ app.post('/api/toss-oauth/generate-token', async (req, res) => {
       ...tlsOptions, // mTLS 인증서 사용
       headers: {
         'Content-Type': 'application/json',
+        'Authorization': authHeader, // Basic Auth 헤더 추가
       },
     };
 
@@ -182,8 +200,10 @@ app.get('/', (req, res) => {
     env: {
       hasCert: !!process.env.TOSS_MTLS_CERT,
       hasKey: !!process.env.TOSS_MTLS_KEY,
+      hasBasicAuth: !!process.env.TOSS_API_BASIC_AUTH,
       certLength: process.env.TOSS_MTLS_CERT?.length || 0,
       keyLength: process.env.TOSS_MTLS_KEY?.length || 0,
+      basicAuthLength: process.env.TOSS_API_BASIC_AUTH?.length || 0,
     },
     timestamp: new Date().toISOString(),
   });
