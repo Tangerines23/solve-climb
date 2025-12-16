@@ -125,7 +125,7 @@ app.post('/api/toss-auth/user-info', async (req, res) => {
       method: 'GET',
       headers: {
         'Authorization': accessToken, // Bearer 없이 accessToken만 전달 (토스 API 예제 참고)
-        'Content-Type': 'application/json',
+        'Content-Type': 'application/json; charset=utf-8', // 토스 API 예제와 동일한 형식
       },
       ...tlsOptions,
     };
