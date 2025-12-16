@@ -93,7 +93,7 @@ export async function createOrUpdateSupabaseUser(
       timestamp: new Date().toISOString(),
     });
     
-    // Edge Function 호출 (인증 없이 호출 가능하도록 설정)
+    // Edge Function 호출
     let response: Response;
     try {
       const fetchStartTime = Date.now();
@@ -102,6 +102,7 @@ export async function createOrUpdateSupabaseUser(
         headers: {
           'Content-Type': 'application/json',
           'apikey': ENV.SUPABASE_ANON_KEY,
+          'Authorization': `Bearer ${ENV.SUPABASE_ANON_KEY}`,
         },
         body: JSON.stringify({
           accessToken,
