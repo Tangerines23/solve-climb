@@ -96,16 +96,17 @@ serve(async (req) => {
     }
 
     const authHeader = `Bearer ${accessToken}`;
+    // 프록시 서버를 통해 토스 API 호출
+    const proxyEndpoint = `${proxyServerUrl}/api/toss-auth/user-info`;
+    
     console.log('[토스 Auth] 프록시 서버를 통해 토스 API 호출:', {
       proxyServerUrl: proxyServerUrl,
+      proxyEndpoint: proxyEndpoint,
       targetUrl: `${TOSS_API_BASE_URL}/api-partner/v1/apps-in-toss/user/info`,
       hasAuthHeader: !!authHeader,
       authHeaderLength: authHeader.length,
       authHeaderPrefix: authHeader.substring(0, 30) + '...',
     });
-
-    // 프록시 서버를 통해 토스 API 호출
-    const proxyEndpoint = `${proxyServerUrl}/api/toss-auth/user-info`;
     
     let userInfoResponse: Response;
     try {
@@ -162,6 +163,28 @@ serve(async (req) => {
         proxyUrl: proxyEndpoint,
       });
 
+      // 404 에러인 경우 프록시 서버 엔드포인트가 배포되지 않았을 수 있음
+      if (userInfoResponse.status === 404) {
+        return new Response(
+          JSON.stringify({ 
+            error: 'Proxy endpoint not found',
+            message: `프록시 서버 엔드포인트를 찾을 수 없습니다 (404). 프록시 서버에 /api/toss-auth/user-info 엔드포인트가 배포되었는지 확인하세요.`,
+            details: {
+              status: userInfoResponse.status,
+              proxyUrl: proxyEndpoint,
+              proxyServerUrl: proxyServerUrl,
+              errorData: errorData,
+              hint: 'Vercel에 프록시 서버를 배포했는지 확인하세요. proxy-server/api/index.js에 엔드포인트가 추가되어 있어야 합니다.',
+              solution: '1. Vercel Dashboard에서 solve-climb-proxy 프로젝트 확인\n2. 최신 배포 상태 확인\n3. 배포 완료 후 재시도',
+            }
+          }),
+          { 
+            status: 500, 
+            headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
+          }
+        );
+      }
+
       // "missing authorization header" 오류인 경우 특별 처리
       if (isMissingAuthHeader || userInfoResponse.status === 401) {
         return new Response(
@@ -187,7 +210,10 @@ serve(async (req) => {
         JSON.stringify({ 
           error: 'Failed to get user info',
           message: `토스 API 요청 실패 (${userInfoResponse.status})`,
-          details: errorData 
+          details: {
+            ...errorData,
+            proxyUrl: proxyEndpoint,
+          }
         }),
         { 
           status: userInfoResponse.status, 
