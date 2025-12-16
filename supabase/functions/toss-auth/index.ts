@@ -49,9 +49,23 @@ serve(async (req) => {
       '';
 
     if (!supabaseUrl || !supabaseServiceKey) {
-      console.error('Supabase 환경 변수가 설정되지 않았습니다.');
+      console.error('[토스 Auth] Supabase 환경 변수가 설정되지 않았습니다.', {
+        hasSupabaseUrl: !!supabaseUrl,
+        hasServiceRoleKey: !!Deno.env.get('SERVICE_ROLE_KEY'),
+        hasSupabaseServiceRoleKey: !!Deno.env.get('SUPABASE_SERVICE_ROLE_KEY'),
+        supabaseUrlLength: supabaseUrl.length,
+        serviceKeyLength: supabaseServiceKey.length,
+      });
       return new Response(
-        JSON.stringify({ error: 'Server configuration error' }),
+        JSON.stringify({ 
+          error: 'Server configuration error',
+          message: 'Supabase 환경 변수가 설정되지 않았습니다.',
+          details: {
+            hasSupabaseUrl: !!supabaseUrl,
+            hasServiceRoleKey: !!Deno.env.get('SERVICE_ROLE_KEY'),
+            hasSupabaseServiceRoleKey: !!Deno.env.get('SUPABASE_SERVICE_ROLE_KEY'),
+          }
+        }),
         { 
           status: 500, 
           headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
@@ -59,7 +73,20 @@ serve(async (req) => {
       );
     }
 
-    const supabaseAdmin = createClient(supabaseUrl, supabaseServiceKey);
+    console.log('[토스 Auth] Supabase Admin 클라이언트 생성:', {
+      supabaseUrl: supabaseUrl.substring(0, 30) + '...',
+      serviceKeyLength: supabaseServiceKey.length,
+      serviceKeyPrefix: supabaseServiceKey.substring(0, 20) + '...',
+      hasServiceRoleKey: !!Deno.env.get('SERVICE_ROLE_KEY'),
+      hasSupabaseServiceRoleKey: !!Deno.env.get('SUPABASE_SERVICE_ROLE_KEY'),
+    });
+
+    const supabaseAdmin = createClient(supabaseUrl, supabaseServiceKey, {
+      auth: {
+        persistSession: false,
+        autoRefreshToken: false,
+      },
+    });
 
     // 1. 토스 API로 사용자 정보 조회
     // Authorization 헤더 검증
@@ -326,16 +353,38 @@ serve(async (req) => {
     let existingUser = null;
     try {
       // 가상 이메일로 사용자 찾기 시도
+      console.log('[토스 Auth] 기존 사용자 찾기 시작...');
       const { data: { users }, error: listError } = await supabaseAdmin.auth.admin.listUsers();
       
-      if (!listError && users) {
+      if (listError) {
+        console.error('[토스 Auth] 사용자 목록 조회 실패:', {
+          error: listError.message,
+          status: listError.status,
+          name: listError.name,
+        });
+        throw listError;
+      }
+      
+      if (users) {
+        console.log(`[토스 Auth] 전체 사용자 수: ${users.length}`);
         // user_metadata의 tossUserKey로 사용자 찾기
         existingUser = users.find(u => 
           u.user_metadata?.tossUserKey === tossUserKey
         ) || null;
+        
+        if (existingUser) {
+          console.log(`[토스 Auth] 기존 사용자 발견: ${existingUser.id}`);
+        } else {
+          console.log('[토스 Auth] 기존 사용자를 찾을 수 없음, 새 사용자 생성 필요');
+        }
       }
     } catch (error) {
-      console.warn('[토스 Auth] 기존 사용자 찾기 실패:', error);
+      console.error('[토스 Auth] 기존 사용자 찾기 실패:', {
+        error: error instanceof Error ? error.message : String(error),
+        name: error instanceof Error ? error.name : 'Unknown',
+        stack: error instanceof Error ? error.stack : undefined,
+      });
+      // 에러가 발생해도 계속 진행 (새 사용자 생성)
     }
 
     let user;
@@ -344,6 +393,11 @@ serve(async (req) => {
     if (existingUser) {
       // 4-1. 기존 사용자 업데이트
       console.log(`[토스 Auth] 기존 사용자 업데이트: ${existingUser.id}`);
+      
+      console.log('[토스 Auth] 사용자 업데이트 시작:', {
+        userId: existingUser.id,
+        email: existingUser.email,
+      });
       
       const { data: { user: updatedUser }, error: updateError } = await supabaseAdmin.auth.admin.updateUserById(
         existingUser.id,
@@ -356,8 +410,19 @@ serve(async (req) => {
       );
 
       if (updateError) {
+        console.error('[토스 Auth] 사용자 업데이트 실패:', {
+          error: updateError.message,
+          status: updateError.status,
+          name: updateError.name,
+          userId: existingUser.id,
+        });
         throw updateError;
       }
+      
+      console.log('[토스 Auth] 사용자 업데이트 성공:', {
+        userId: updatedUser?.id,
+        email: updatedUser?.email,
+      });
 
       user = updatedUser;
 
@@ -368,6 +433,11 @@ serve(async (req) => {
       // 4-2. 새 사용자 생성
       console.log(`[토스 Auth] 새 사용자 생성: userKey=${tossUserKey}`);
       
+      console.log('[토스 Auth] 새 사용자 생성 시작:', {
+        email: virtualEmail,
+        userKey: tossUserKey,
+      });
+      
       const { data: { user: newUser }, error: createError } = await supabaseAdmin.auth.admin.createUser({
         email: virtualEmail,
         password: virtualPassword,
@@ -376,6 +446,12 @@ serve(async (req) => {
       });
 
       if (createError) {
+        console.error('[토스 Auth] 사용자 생성 실패:', {
+          error: createError.message,
+          status: createError.status,
+          name: createError.name,
+          email: virtualEmail,
+        });
         // 이미 존재하는 사용자일 수 있음 (이메일 중복)
         if (createError.message?.includes('already registered')) {
           // 기존 사용자로 처리
