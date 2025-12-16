@@ -18,26 +18,46 @@ app.use((req, res, next) => {
 
 app.use(express.json());
 
-// mTLS 인증서 로드
-const certPath = path.join(__dirname, 'cert', 'solve-climb-mtls_public.crt');
-const keyPath = path.join(__dirname, 'cert', 'solve-climb-mtls_private.key');
+// mTLS 인증서 로드 (환경 변수 우선, 없으면 파일 시스템에서)
+let tlsOptions;
 
-// 인증서 파일 존재 확인
-if (!fs.existsSync(certPath) || !fs.existsSync(keyPath)) {
-  console.error('❌ 인증서 파일을 찾을 수 없습니다!');
-  console.error(`인증서 경로: ${certPath}`);
-  console.error(`키 경로: ${keyPath}`);
-  console.error('cert 폴더에 인증서 파일을 복사해주세요.');
-  process.exit(1);
+// 환경 변수에서 인증서 로드 시도
+const certContent = process.env.TOSS_MTLS_CERT;
+const keyContent = process.env.TOSS_MTLS_KEY;
+
+if (certContent && keyContent) {
+  // 환경 변수에서 로드
+  console.log('📦 환경 변수에서 mTLS 인증서 로드 시도...');
+  tlsOptions = {
+    cert: certContent,
+    key: keyContent,
+    rejectUnauthorized: true,
+  };
+  console.log('✅ mTLS 인증서 로드 완료 (환경 변수에서)');
+} else {
+  // 파일 시스템에서 로드 (로컬 개발용)
+  console.log('📁 파일 시스템에서 mTLS 인증서 로드 시도...');
+  const certPath = path.join(__dirname, 'cert', 'solve-climb-mtls_public.crt');
+  const keyPath = path.join(__dirname, 'cert', 'solve-climb-mtls_private.key');
+
+  if (!fs.existsSync(certPath) || !fs.existsSync(keyPath)) {
+    console.error('❌ 인증서 파일을 찾을 수 없습니다!');
+    console.error(`인증서 경로: ${certPath}`);
+    console.error(`키 경로: ${keyPath}`);
+    console.error('');
+    console.error('해결 방법:');
+    console.error('1. 로컬 개발: cert 폴더에 인증서 파일을 복사하세요.');
+    console.error('2. Vercel 배포: Environment Variables에 TOSS_MTLS_CERT와 TOSS_MTLS_KEY를 설정하세요.');
+    process.exit(1);
+  }
+
+  tlsOptions = {
+    cert: fs.readFileSync(certPath),
+    key: fs.readFileSync(keyPath),
+    rejectUnauthorized: true,
+  };
+  console.log('✅ mTLS 인증서 로드 완료 (파일 시스템에서)');
 }
-
-const tlsOptions = {
-  cert: fs.readFileSync(certPath),
-  key: fs.readFileSync(keyPath),
-  rejectUnauthorized: true,
-};
-
-console.log('✅ mTLS 인증서 로드 완료');
 
 // 프록시 엔드포인트: 토스 OAuth AccessToken 받기
 app.post('/api/toss-oauth/generate-token', async (req, res) => {

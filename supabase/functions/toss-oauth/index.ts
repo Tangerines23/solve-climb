@@ -39,48 +39,6 @@ serve(async (req) => {
       );
     }
 
-    // Basic Auth 헤더 가져오기
-    let basicAuth = Deno.env.get('TOSS_API_BASIC_AUTH');
-    if (!basicAuth || basicAuth.trim() === '') {
-      console.error('[토스 OAuth] TOSS_API_BASIC_AUTH 환경 변수가 설정되지 않았거나 비어있습니다.');
-      return new Response(
-        JSON.stringify({ 
-          error: 'Server configuration error',
-          message: 'TOSS_API_BASIC_AUTH 환경 변수가 설정되지 않았습니다. Supabase Secrets에서 설정해주세요.',
-          hint: 'supabase secrets set TOSS_API_BASIC_AUTH=your_basic_auth_token'
-        }),
-        { 
-          status: 500, 
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
-        }
-      );
-    }
-
-    // 환경 변수에 "Basic " 접두사가 이미 포함되어 있다면 제거하여 중복 방지
-    basicAuth = basicAuth.trim();
-    if (basicAuth.startsWith('Basic ')) {
-      basicAuth = basicAuth.substring(6); // "Basic " 제거
-      console.log('[토스 OAuth] 환경 변수 TOSS_API_BASIC_AUTH에서 "Basic " 접두사 제거됨');
-    }
-
-    // Basic Auth 값 검증
-    if (!basicAuth || basicAuth.length < 10) {
-      console.error('[토스 OAuth] Basic Auth 값이 너무 짧거나 비어있습니다.', {
-        basicAuthLength: basicAuth?.length || 0,
-        basicAuthPrefix: basicAuth?.substring(0, 10) || 'N/A',
-      });
-      return new Response(
-        JSON.stringify({
-          error: 'Server configuration error',
-          message: 'TOSS_API_BASIC_AUTH 값이 올바르지 않습니다. Base64 인코딩된 값이 필요합니다.',
-        }),
-        {
-          status: 500,
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-        }
-      );
-    }
-
     // 프록시 서버 URL 가져오기
     const proxyServerUrl = Deno.env.get('PROXY_SERVER_URL');
     
@@ -160,50 +118,20 @@ serve(async (req) => {
           responseHeaders: responseHeaders,
           errorMessage: errorMessage,
           isMissingAuthHeader: isMissingAuthHeader,
-          hasBasicAuth: !!basicAuth,
-          basicAuthLength: basicAuth?.length || 0,
-          basicAuthPrefix: basicAuth?.substring(0, 10) || 'N/A',
-          authHeaderSent: `Basic ${basicAuth?.substring(0, 10)}...`,
-          authHeaderLength: authHeader.length,
-          requestHeaders: {
-            'Content-Type': requestHeaders['Content-Type'],
-            'Authorization': requestHeaders['Authorization']?.substring(0, 30) + '...',
-          },
-          apiUrl: `${TOSS_API_BASE_URL}/api-partner/v1/apps-in-toss/user/oauth2/generate-token`,
+          proxyUrl: `${proxyServerUrl}/api/toss-oauth/generate-token`,
         });
-
-        // "missing authorization header" 오류인 경우 특별 처리
-        if (isMissingAuthHeader) {
-          return new Response(
-            JSON.stringify({ 
-              error: 'Missing authorization header',
-              message: '토스 API 인증 헤더가 누락되었습니다. TOSS_API_BASIC_AUTH 환경 변수를 확인해주세요.',
-              details: {
-                status: response.status,
-                statusText: response.statusText,
-                tossApiError: data,
-                hint: '토스 앱인토스 개발자센터에서 발급받은 client_id:client_secret을 Base64 인코딩한 값이 필요합니다.',
-                checkSecrets: 'Supabase Secrets에서 TOSS_API_BASIC_AUTH 값이 올바르게 설정되어 있는지 확인하세요.',
-                troubleshooting: '1. Supabase 대시보드 > Edge Functions > Secrets에서 TOSS_API_BASIC_AUTH 확인\n2. 값이 비어있지 않은지 확인\n3. Base64 인코딩이 올바른지 확인',
-              }
-            }),
-            { 
-              status: response.status, 
-              headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
-            }
-          );
-        }
 
         return new Response(
           JSON.stringify({ 
             error: 'Authentication failed',
-            message: '토스 API 인증에 실패했습니다. TOSS_API_BASIC_AUTH 환경 변수를 확인해주세요.',
+            message: '프록시 서버를 통한 토스 API 인증에 실패했습니다.',
             details: {
               status: response.status,
               statusText: response.statusText,
-              tossApiError: data,
-              hint: '토스 앱인토스 개발자센터에서 발급받은 client_id:client_secret을 Base64 인코딩한 값이 필요합니다.',
-              checkSecrets: 'Supabase Secrets에서 TOSS_API_BASIC_AUTH 값이 올바르게 설정되어 있는지 확인하세요.',
+              proxyError: data,
+              proxyUrl: `${proxyServerUrl}/api/toss-oauth/generate-token`,
+              hint: '프록시 서버의 mTLS 인증서가 올바르게 설정되어 있는지 확인하세요.',
+              checkProxyServer: 'Vercel Environment Variables에서 TOSS_MTLS_CERT와 TOSS_MTLS_KEY를 확인하세요.',
             }
           }),
           { 
