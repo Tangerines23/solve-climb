@@ -40,8 +40,8 @@ BEGIN
     u.created_at,
     u.updated_at,
     u.last_sign_in_at,
-    u.user_metadata,
-    u.app_metadata,
+    u.raw_user_meta_data as user_metadata,
+    u.raw_app_meta_data as app_metadata,
     u.aud,
     u.role
   FROM auth.users u
@@ -76,11 +76,11 @@ BEGIN
   SELECT 
     u.id,
     u.email,
-    u.user_metadata,
+    u.raw_user_meta_data as user_metadata,
     u.created_at,
     u.updated_at
   FROM auth.users u
-  WHERE u.user_metadata->>'tossUserKey' = target_key
+  WHERE u.raw_user_meta_data->>'tossUserKey' = target_key
   LIMIT 1;
 END;
 $$;
