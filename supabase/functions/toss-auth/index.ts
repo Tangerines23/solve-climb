@@ -9,6 +9,112 @@ const corsHeaders = {
 
 const TOSS_API_BASE_URL = 'https://apps-in-toss-api.toss.im';
 
+/**
+ * AES-256-GCM 복호화 함수 (Web Crypto API 사용)
+ * @param encryptedBase64 - 암호문 (Base64 인코딩, IV + 암호문 + 태그)
+ * @param base64EncodedKey - AES 키 (Base64)
+ * @param aad - AAD 문자열
+ * @returns 복호화된 평문
+ */
+async function decryptUserData(
+  encryptedBase64: string,
+  base64EncodedKey: string,
+  aad: string
+): Promise<string> {
+  try {
+    const IV_LENGTH = 12;
+    const TAG_LENGTH = 16;
+
+    // Base64 디코딩
+    const encryptedBytes = Uint8Array.from(atob(encryptedBase64), c => c.charCodeAt(0));
+    const keyBytes = Uint8Array.from(atob(base64EncodedKey), c => c.charCodeAt(0));
+    const aadBytes = new TextEncoder().encode(aad);
+
+    // IV, 암호문, 태그 분리
+    const iv = encryptedBytes.slice(0, IV_LENGTH);
+    const ciphertextWithTag = encryptedBytes.slice(IV_LENGTH);
+    const ciphertext = ciphertextWithTag.slice(0, ciphertextWithTag.length - TAG_LENGTH);
+    const tag = ciphertextWithTag.slice(ciphertextWithTag.length - TAG_LENGTH);
+
+    // 암호문 + 태그 결합 (Web Crypto API는 태그가 암호문 끝에 붙어있어야 함)
+    const ciphertextWithTagCombined = new Uint8Array(ciphertext.length + tag.length);
+    ciphertextWithTagCombined.set(ciphertext);
+    ciphertextWithTagCombined.set(tag, ciphertext.length);
+
+    // CryptoKey 생성
+    const cryptoKey = await crypto.subtle.importKey(
+      'raw',
+      keyBytes,
+      { name: 'AES-GCM' },
+      false,
+      ['decrypt']
+    );
+
+    // 복호화
+    const decryptedBytes = await crypto.subtle.decrypt(
+      {
+        name: 'AES-GCM',
+        iv: iv,
+        additionalData: aadBytes,
+      },
+      cryptoKey,
+      ciphertextWithTagCombined
+    );
+
+    // UTF-8 디코딩
+    return new TextDecoder().decode(decryptedBytes);
+  } catch (error) {
+    console.error('[복호화] 실패:', {
+      error: error instanceof Error ? error.message : String(error),
+      encryptedPrefix: encryptedBase64.substring(0, 20) + '...',
+    });
+    // 복호화 실패 시 원본 반환 (암호화되지 않은 데이터일 수 있음)
+    return encryptedBase64;
+  }
+}
+
+/**
+ * 사용자 정보 객체 복호화
+ * @param userInfo - 토스 API에서 받은 사용자 정보
+ * @param decryptionKey - 복호화 키 (Base64)
+ * @param aad - AAD 문자열
+ * @returns 복호화된 사용자 정보
+ */
+async function decryptUserInfo(
+  userInfo: any,
+  decryptionKey: string,
+  aad: string
+): Promise<any> {
+  const fields = ['ci', 'name', 'phone', 'gender', 'nationality', 'birthday', 'email'];
+  const decrypted: any = {};
+
+  for (const field of fields) {
+    const value = userInfo[field];
+    if (typeof value === 'string' && value.length > 0) {
+      // 암호화된 데이터인지 확인 (Base64 형식이고 길이가 50자 이상)
+      const isEncrypted = value.length > 50 && /^[A-Za-z0-9+/=]+$/.test(value);
+      if (isEncrypted) {
+        try {
+          decrypted[field] = await decryptUserData(value, decryptionKey, aad);
+          console.log(`[복호화] ${field}: 성공 (${value.substring(0, 20)}... → ${decrypted[field]})`);
+        } catch (error) {
+          console.error(`[복호화] ${field}: 실패`, error);
+          decrypted[field] = value; // 복호화 실패 시 원본 사용
+        }
+      } else {
+        decrypted[field] = value; // 암호화되지 않은 데이터
+      }
+    } else {
+      decrypted[field] = value;
+    }
+  }
+
+  return {
+    ...userInfo,
+    ...decrypted,
+  };
+}
+
 serve(async (req) => {
   // CORS preflight 요청 처리
   if (req.method === 'OPTIONS') {
@@ -318,7 +424,7 @@ serve(async (req) => {
       );
     }
 
-    const tossUserInfo = userInfoData.success;
+    let tossUserInfo = userInfoData.success;
     const tossUserKey = tossUserInfo.userKey;
 
     // 암호화 여부 확인 로깅
@@ -330,8 +436,36 @@ serve(async (req) => {
     
     console.log(`[토스 Auth] 사용자 정보 조회 성공: userKey=${tossUserKey}`, {
       isEncrypted,
-      note: '필드가 50자 이상이면 암호화된 것으로 추정됩니다. 복호화가 필요할 수 있습니다.',
+      note: '필드가 50자 이상이면 암호화된 것으로 추정됩니다. 복호화를 시도합니다.',
     });
+
+    // 복호화 키 가져오기
+    const decryptionKey = Deno.env.get('TOSS_DECRYPTION_KEY');
+    const aadString = Deno.env.get('TOSS_AAD_STRING');
+
+    if (decryptionKey && aadString) {
+      console.log('[토스 Auth] 복호화 키 발견, 사용자 정보 복호화 시작...');
+      try {
+        tossUserInfo = await decryptUserInfo(tossUserInfo, decryptionKey, aadString);
+        console.log('[토스 Auth] 사용자 정보 복호화 완료:', {
+          userKey: tossUserKey,
+          hasName: !!tossUserInfo.name,
+          nameLength: tossUserInfo.name?.length || 0,
+          namePreview: tossUserInfo.name ? tossUserInfo.name.substring(0, 10) : 'N/A',
+        });
+      } catch (error) {
+        console.error('[토스 Auth] 복호화 실패:', {
+          error: error instanceof Error ? error.message : String(error),
+          note: '복호화 실패 시 암호화된 데이터를 그대로 사용합니다.',
+        });
+      }
+    } else {
+      console.warn('[토스 Auth] 복호화 키가 설정되지 않았습니다. 암호화된 데이터를 그대로 사용합니다.', {
+        hasDecryptionKey: !!decryptionKey,
+        hasAadString: !!aadString,
+        hint: 'Supabase Secrets에 TOSS_DECRYPTION_KEY와 TOSS_AAD_STRING을 설정하세요.',
+      });
+    }
 
     // 2. 기존 사용자 찾기 (user_metadata의 tossUserKey로)
     // Supabase Admin API로 모든 사용자를 검색할 수 없으므로,
