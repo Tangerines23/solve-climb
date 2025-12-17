@@ -76,12 +76,16 @@ app.post('/api/toss-auth/user-info', async (req, res) => {
     });
 
     // 토스 API는 mTLS 인증서만 사용
-    // Bearer 접두사가 있으면 제거 (토스 API는 Bearer 없이 accessToken만 요구)
-    const cleanAccessToken = accessToken.replace(/^Bearer\s+/i, '');
+    // Bearer 접두사 처리: tokenType이 'Bearer'로 반환되므로 실제로는 Bearer 접두사가 필요함!
+    let authHeader = accessToken;
+    if (!accessToken.startsWith('Bearer ')) {
+      authHeader = `Bearer ${accessToken}`;
+    }
     
-    console.log('[프록시] Bearer 접두사 제거:', {
-      hadBearerPrefix: accessToken !== cleanAccessToken,
-      cleanTokenPrefix: cleanAccessToken.substring(0, 20) + '...',
+    console.log('[프록시] Bearer 접두사 추가:', {
+      hadBearerPrefix: accessToken.startsWith('Bearer '),
+      addedBearerPrefix: !accessToken.startsWith('Bearer '),
+      authHeaderPrefix: authHeader.substring(0, 27) + '...',
     });
     
     const options = {
@@ -90,8 +94,8 @@ app.post('/api/toss-auth/user-info', async (req, res) => {
       path: '/api-partner/v1/apps-in-toss/user/oauth2/login-me',
       method: 'GET',
       headers: {
-        'Authorization': cleanAccessToken, // Bearer 없이 accessToken만 전달 (토스 API 예제 참고)
-        'Content-Type': 'application/json; charset=utf-8', // 토스 API 예제와 동일한 형식
+        'Authorization': authHeader, // Bearer {accessToken} 형식으로 전달
+        'Content-Type': 'application/json; charset=utf-8',
       },
       ...tlsOptions,
     };
