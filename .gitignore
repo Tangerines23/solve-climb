@@ -57,4 +57,9 @@ supabase/supabase/
 *.ait
 docs/
 
+# 임시 SQL 파일 및 실패한 마이그레이션
+*.manual
+*_manual.sql
+check_*.sql
+
 .gitignore
