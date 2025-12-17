@@ -52,4 +52,9 @@ supabase/.temp
 supabase/.branches
 supabase/supabase/
 
+# 개인 스크립트 및 개발 파일
+*.bat
+*.ait
+docs/
+
 .gitignore
