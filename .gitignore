@@ -47,4 +47,9 @@ apps-in-toss-examples-main/
 
 memo/*
 
+# Supabase CLI 임시 파일
+supabase/.temp
+supabase/.branches
+supabase/supabase/
+
 .gitignore
