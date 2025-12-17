@@ -72,82 +72,25 @@ app.post('/api/toss-auth/user-info', async (req, res) => {
 
     console.log('[프록시] 토스 사용자 정보 조회 시작:', {
       accessTokenPrefix: accessToken.substring(0, 20) + '...',
+      accessTokenLength: accessToken.length,
     });
 
     // 토스 API는 mTLS 인증서만 사용
+    // Bearer 접두사가 있으면 제거 (토스 API는 Bearer 없이 accessToken만 요구)
+    const cleanAccessToken = accessToken.replace(/^Bearer\s+/i, '');
+    
+    console.log('[프록시] Bearer 접두사 제거:', {
+      hadBearerPrefix: accessToken !== cleanAccessToken,
+      cleanTokenPrefix: cleanAccessToken.substring(0, 20) + '...',
+    });
+    
     const options = {
       hostname: 'apps-in-toss-api.toss.im',
       port: 443,
       path: '/api-partner/v1/apps-in-toss/user/oauth2/login-me',
       method: 'GET',
       headers: {
-        'Authorization': accessToken, // Bearer 없이 accessToken만 전달 (토스 API 예제 참고)
-        'Content-Type': 'application/json; charset=utf-8', // 토스 API 예제와 동일한 형식
-      },
-      ...tlsOptions,
-    };
-
-    const proxyReq = https.request(options, (proxyRes) => {
-      let data = '';
-
-      proxyRes.on('data', (chunk) => {
-        data += chunk;
-      });
-
-      proxyRes.on('end', () => {
-        try {
-          const jsonData = JSON.parse(data);
-          res.status(proxyRes.statusCode || 200).json(jsonData);
-        } catch (parseError) {
-          res.status(proxyRes.statusCode || 200).json({ 
-            rawResponse: data,
-            parseError: parseError.message 
-          });
-        }
-      });
-    });
-
-    proxyReq.on('error', (error) => {
-      console.error('[프록시] 토스 API 호출 실패:', error);
-      res.status(500).json({ 
-        error: 'Proxy request failed',
-        message: error.message 
-      });
-    });
-
-    proxyReq.end();
-  } catch (error) {
-    console.error('[프록시] 예외 발생:', error);
-    res.status(500).json({ 
-      error: 'Internal server error',
-      message: error.message 
-    });
-  }
-});
-
-// 프록시 엔드포인트: 토스 사용자 정보 조회
-app.post('/api/toss-auth/user-info', async (req, res) => {
-  try {
-    const { accessToken } = req.body;
-
-    if (!accessToken) {
-      return res.status(400).json({ 
-        error: 'accessToken is required' 
-      });
-    }
-
-    console.log('[프록시] 토스 사용자 정보 조회 시작:', {
-      accessTokenPrefix: accessToken.substring(0, 20) + '...',
-    });
-
-    // 토스 API는 mTLS 인증서만 사용
-    const options = {
-      hostname: 'apps-in-toss-api.toss.im',
-      port: 443,
-      path: '/api-partner/v1/apps-in-toss/user/oauth2/login-me',
-      method: 'GET',
-      headers: {
-        'Authorization': accessToken, // Bearer 없이 accessToken만 전달 (토스 API 예제 참고)
+        'Authorization': cleanAccessToken, // Bearer 없이 accessToken만 전달 (토스 API 예제 참고)
         'Content-Type': 'application/json; charset=utf-8', // 토스 API 예제와 동일한 형식
       },
       ...tlsOptions,
