@@ -278,9 +278,17 @@ app.post('/api/toss-oauth/generate-token', async (req, res) => {
       proxyRes.on('end', () => {
         try {
           const jsonData = JSON.parse(data);
-          console.log('[프록시] 토스 API 응답:', {
+          console.log('[프록시] 토스 API 응답 (generate-token):', {
             status: proxyRes.statusCode,
+            resultType: jsonData.resultType,
             success: jsonData.resultType === 'SUCCESS',
+            hasAccessToken: !!jsonData.success?.accessToken,
+            accessTokenLength: jsonData.success?.accessToken?.length || 0,
+            accessTokenPrefix: jsonData.success?.accessToken?.substring(0, 30) + '...' || 'N/A',
+            hasRefreshToken: !!jsonData.success?.refreshToken,
+            tokenType: jsonData.success?.tokenType || 'N/A',
+            expiresIn: jsonData.success?.expiresIn || 'N/A',
+            fullResponse: JSON.stringify(jsonData).substring(0, 500),
           });
           
           res.status(proxyRes.statusCode).json(jsonData);
