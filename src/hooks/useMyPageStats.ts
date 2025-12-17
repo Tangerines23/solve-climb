@@ -178,7 +178,7 @@ export function useMyPageStats(): UseMyPageStatsResult {
         if (rpcErr?.status === 404 || rpcErr?.code === 'PGRST116') {
           console.warn('RPC function not found (404), falling back to direct query');
         } else {
-          console.warn('RPC function not available, falling back to direct query:', rpcErr);
+        console.warn('RPC function not available, falling back to direct query:', rpcErr);
         }
       }
 
