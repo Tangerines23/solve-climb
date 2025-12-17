@@ -473,7 +473,8 @@ serve(async (req) => {
     
     // 토스 userKey를 기반으로 고유한 이메일 생성 (Supabase는 이메일이 필요)
     // 실제 이메일이 없으므로 가상의 이메일을 생성
-    const virtualPassword = `toss_${tossUserKey}_${Date.now()}`;
+    // 고정된 패스워드 사용 (Date.now() 제거 - 로그인 시 일관성 유지)
+    const virtualPassword = `toss_${tossUserKey}_secret_key`;
 
     // user_metadata 준비
     const userMetadata = {
