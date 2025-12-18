@@ -18,7 +18,7 @@ import { APP_CONFIG } from '../config/app';
 import { ENV } from '../utils/env';
 import { handleTossLogin } from '../utils/tossLogin';
 import { handleTossLoginFlow } from '../utils/tossAuth';
-import { migrateToGameLogin } from '../utils/tossGameLogin';
+import { migrateToGameLogin, checkTossLoginIntegration } from '../utils/tossGameLogin';
 import './MyPage.css';
 
 export function MyPage() {
@@ -289,8 +289,7 @@ export function MyPage() {
       // hash는 발급되었지만, Supabase 사용자는 토스 로그인을 통해 생성해야 함
       console.log('[로그인] 게임 로그인 마이그레이션 성공, hash:', migrationResult.hash?.substring(0, 10) + '...');
       
-      // 토스 로그인 연동 여부 확인
-      const { checkTossLoginIntegration } = await import('../utils/tossGameLogin');
+      // 토스 로그인 연동 여부 확인 (상단에서 이미 import됨)
       const integrationStatus = await checkTossLoginIntegration();
       
       if (integrationStatus.success && integrationStatus.isIntegrated === true) {

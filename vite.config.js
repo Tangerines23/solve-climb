@@ -13,16 +13,42 @@ export default defineConfig({
   build: {
     rollupOptions: {
       output: {
-        manualChunks: {
-          // Vendor chunks
-          'react-vendor': ['react', 'react-dom', 'react-router-dom'],
-          // toss-vendor 제거: 동적 import로 처리되므로 수동 청크에 포함하지 않음
-          'supabase-vendor': ['@supabase/supabase-js'],
-          'zustand-vendor': ['zustand'],
+        manualChunks: (id) => {
+          // node_modules의 패키지들을 별도 청크로 분리
+          if (id.includes('node_modules')) {
+            // React 관련 패키지
+            if (id.includes('react') || id.includes('react-dom') || id.includes('react-router')) {
+              return 'vendor-react';
+            }
+            // Supabase 관련 패키지
+            if (id.includes('@supabase')) {
+              return 'vendor-supabase';
+            }
+            // Zustand 상태관리
+            if (id.includes('zustand')) {
+              return 'vendor-zustand';
+            }
+            // Toss 관련 패키지 (동적 import되지만 별도 청크로 분리)
+            if (id.includes('@apps-in-toss') || id.includes('@toss')) {
+              return 'vendor-toss';
+            }
+            // 기타 vendor 패키지들
+            return 'vendor-other';
+          }
+          
+          // src/utils 폴더의 파일들을 별도 청크로 분리 (큰 파일들)
+          if (id.includes('src/utils/')) {
+            // 토스 관련 유틸리티
+            if (id.includes('tossAuth') || id.includes('tossLogin') || id.includes('tossGameLogin') || id.includes('tossGameCenter')) {
+              return 'utils-toss';
+            }
+            // 기타 유틸리티
+            return 'utils-common';
+          }
         },
       },
     },
-    chunkSizeWarningLimit: 1000, // 1MB로 증가 (현재 1.4MB이므로)
+    chunkSizeWarningLimit: 1000, // 1MB
   },
   // optimizeDeps에서 TDS 제외 (개발 서버에서도 번들에 포함되지 않도록)
   optimizeDeps: {

@@ -349,8 +349,7 @@ export async function migrateToGameLogin(): Promise<{
     // 6. 미매핑 사용자는 토스 로그인 후 매핑 생성
     console.log('[게임 로그인] 미매핑 사용자 - 토스 로그인 후 매핑 생성');
     
-    // 토스 로그인 실행
-    const { appLogin } = await import('@apps-in-toss/web-framework');
+    // 토스 로그인 실행 (appLogin은 상단에서 이미 임포트됨)
     console.log('[게임 로그인] appLogin 호출 시작');
     let loginResult;
     try {

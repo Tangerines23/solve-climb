@@ -674,6 +674,7 @@ if (typeof window !== 'undefined') {
     // 2. 게임 로그인 마이그레이션 테스트
     console.log('2️⃣ 게임 로그인 마이그레이션 테스트');
     try {
+      // 동적 import 대신 직접 import 사용 (순환 참조 방지)
       const { migrateToGameLogin } = await import('./tossGameLogin');
       const migrationResult = await migrateToGameLogin();
       
@@ -703,6 +704,7 @@ if (typeof window !== 'undefined') {
     // 3. 토스 로그인 테스트
     console.log('3️⃣ 토스 로그인 테스트');
     try {
+      // 동적 import 대신 직접 import 사용 (순환 참조 방지)
       const { handleTossLogin } = await import('./tossLogin');
       const loginResult = await handleTossLogin();
       
@@ -717,7 +719,7 @@ if (typeof window !== 'undefined') {
         // 4. 토스 로그인 플로우 테스트
         console.log('4️⃣ 토스 로그인 플로우 테스트');
         try {
-          const { handleTossLoginFlow } = await import('./tossAuth');
+          // 자기 자신을 import하지 않고 직접 호출 (순환 참조 방지)
           const { user, session } = await handleTossLoginFlow(
             loginResult.authorizationCode!,
             loginResult.referrer || 'DEFAULT'
@@ -809,6 +811,7 @@ if (typeof window !== 'undefined') {
     }
     
     try {
+      // 동적 import 대신 직접 import 사용 (순환 참조 방지)
       const { migrateToGameLogin } = await import('./tossGameLogin');
       const result = await migrateToGameLogin();
       
