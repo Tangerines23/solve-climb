@@ -2,7 +2,6 @@
 // 로컬 개발 환경에서는 실제 호출 없이 시뮬레이션만 수행
 
 import { submitGameCenterLeaderBoardScore, openGameCenterLeaderboard, isMinVersionSupported, getOperationalEnvironment } from '@apps-in-toss/web-framework';
-import { useProfileStore } from '../stores/useProfileStore';
 import { logError, getUserErrorMessage } from './errorHandler';
 
 /**
@@ -13,7 +12,7 @@ function isTossAppEnvironment(): boolean {
   if (typeof window === 'undefined') {
     return false;
   }
-  
+
   // ReactNativeWebView가 있으면 토스 앱 내부
   return !!(window as any).ReactNativeWebView;
 }
@@ -26,7 +25,7 @@ function isLocalDevelopment(): boolean {
   if (typeof window === 'undefined') {
     return false;
   }
-  
+
   // localhost 또는 127.0.0.1에서 실행 중이면 로컬 개발 환경
   const hostname = window.location.hostname;
   return hostname === 'localhost' || hostname === '127.0.0.1' || hostname === '';
@@ -51,23 +50,8 @@ export async function submitScoreToLeaderboard(score: number): Promise<boolean> 
       return false;
     }
 
-    // 샌드박스 환경 체크 (예제 코드 참고: 'toss' 환경에서만 제출)
-    const operationalEnvironment = getOperationalEnvironment();
-    if (operationalEnvironment !== 'toss') {
-      console.warn(`[토스 게임 센터] ${operationalEnvironment} 환경에서는 점수를 제출할 수 없습니다. (toss 환경에서만 가능)`);
-      return false;
-    }
-
-    const { isProfileComplete } = useProfileStore.getState();
-    
-    // 프로필이 생성되지 않았으면 제출하지 않음
-    if (!isProfileComplete) {
-      console.warn('[토스 게임 센터] 프로필이 생성되지 않아 점수를 제출할 수 없습니다.');
-      return false;
-    }
-
     const result = await submitGameCenterLeaderBoardScore({
-      score: score.toString(), // 문자열로 변환
+      score: Math.floor(score).toString(), // 정수 문자열로 변환 (공식 예제 참고)
     });
 
     if (!result) {
@@ -104,16 +88,14 @@ function collectDebugInfo() {
   const isDev = import.meta.env.DEV;
   if (!isDev) return null;
 
-  const profileState = useProfileStore.getState();
   const win = typeof window !== 'undefined' ? window : null;
-  
+
   try {
     const operationalEnvironment = getOperationalEnvironment();
     return {
       timestamp: new Date().toISOString(),
       isTossApp: isTossAppEnvironment(),
       isLocalDev: isLocalDevelopment(),
-      isProfileComplete: profileState.isProfileComplete,
       operationalEnvironment: operationalEnvironment || 'unknown',
       userAgent: win?.navigator?.userAgent || 'unknown',
       location: win?.location?.href || 'unknown',
@@ -125,7 +107,6 @@ function collectDebugInfo() {
       timestamp: new Date().toISOString(),
       isTossApp: isTossAppEnvironment(),
       isLocalDev: isLocalDevelopment(),
-      isProfileComplete: profileState.isProfileComplete,
       operationalEnvironment: 'error',
       userAgent: win?.navigator?.userAgent || 'unknown',
       location: win?.location?.href || 'unknown',
@@ -213,7 +194,7 @@ export async function openLeaderboard(
   onRetry?: (attempt: number, maxRetries: number) => void
 ): Promise<LeaderboardResult> {
   const debugInfo = collectDebugInfo();
-  
+
   try {
     // 디버깅 정보 로깅
     if (debugInfo) {
@@ -252,7 +233,7 @@ export async function openLeaderboard(
     // 운영 환경 체크 (예제 코드 참고: 'toss' 환경에서만 작동)
     const operationalEnvironment = getOperationalEnvironment();
     console.log('[토스 게임 센터] 운영 환경:', operationalEnvironment);
-    
+
     if (operationalEnvironment === 'sandbox') {
       console.warn('[토스 게임 센터] 샌드박스 환경에서는 리더보드를 열 수 없습니다.');
       const message = '랭킹 기능은 샌드박스 환경에서는 사용할 수 없어요.';
@@ -275,7 +256,7 @@ export async function openLeaderboard(
       isSupported,
       isTossApp: isTossAppEnvironment(),
     });
-    
+
     try {
       // openGameCenterLeaderboard는 Promise<void>를 반환하지만,
       // 토스 앱 내부에서 처리되므로 await 없이 호출만 함
@@ -292,7 +273,7 @@ export async function openLeaderboard(
     }
   } catch (error) {
     logError('토스 게임 센터 - 리더보드 열기', error);
-    
+
     // 디버깅 정보와 함께 에러 로깅
     if (debugInfo) {
       console.error('[토스 게임 센터] 리더보드 열기 실패 - 디버깅 정보:', {
@@ -304,10 +285,10 @@ export async function openLeaderboard(
         } : String(error),
       });
     }
-    
+
     // 에러 타입별 메시지 생성
     const message = getErrorMessage(error);
-    
+
     if (onError) onError(message);
     return { success: false, message };
   }
