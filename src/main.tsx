@@ -30,14 +30,24 @@ try {
 
   const root = ReactDOM.createRoot(rootElement);
 
+  // 토스 환경 감지 (userAgent 기준)
+  const isToss = typeof window !== 'undefined' && /Toss/i.test(navigator.userAgent);
+
   // ThemeProvider의 theme 타입 에러를 해결하기 위해 any로 캐스팅
   const Provider = ThemeProvider as any;
 
-  root.render(
-    <Provider theme={customTheme}>
-      <AppContainer />
-    </Provider>
-  );
+  if (isToss) {
+    root.render(
+      <Provider theme={customTheme}>
+        <AppContainer />
+      </Provider>
+    );
+  } else {
+    // Vercel 등 외부 브라우저 환경에서는 TDS ThemeProvider를 건너뜁니다.
+    // TDS는 토스 앱 내부가 아니면 에러를 던지기 때문입니다.
+    log('External Browser Detected. Bypassing TDS Provider.');
+    root.render(<AppContainer />);
+  }
 
   log('Render Initialized.');
 

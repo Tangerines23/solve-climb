@@ -79,7 +79,8 @@
       el.select();
       document.execCommand('copy');
       document.body.removeChild(el);
-      alert('Error log copied to clipboard!');
+      // alert 제거: 사용자 요청에 따라 팝업 없이 처리
+      console.log('Error log copied to clipboard');
     }
   </script>
 
