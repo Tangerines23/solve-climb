@@ -50,8 +50,14 @@ export async function submitScoreToLeaderboard(score: number): Promise<boolean> 
       return false;
     }
 
+    // 모든 Bridge 호출 전 로그 출력 (토스 앱 내 콘솔 확인용)
+    console.log('[토스 게임 센터] 점수 제출 데이터 확인:', {
+      rawScore: score,
+      formattedScore: score.toFixed(1),
+    });
+
     const result = await submitGameCenterLeaderBoardScore({
-      score: Math.floor(score).toString(), // 정수 문자열로 변환 (공식 예제 참고)
+      score: score.toFixed(1), // SDK 가이드: "123.45" 형태의 실수 문자열 필수
     });
 
     if (!result) {
@@ -262,9 +268,9 @@ export async function openLeaderboard(
       // 토스 앱 내부에서 처리되므로 await 없이 호출만 함
       // 주의: 이 함수는 에러를 throw하지 않을 수 있으며,
       // 토스 앱 내부에서 "일시적인 오류" 메시지를 표시할 수 있음
+      console.log('[토스 게임 센터] openGameCenterLeaderboard 호출 직전');
       openGameCenterLeaderboard();
-      console.log('[토스 게임 센터] 리더보드 열기 호출 완료 (비동기 처리 중)');
-      console.warn('[토스 게임 센터] 참고: "일시적인 오류"가 표시되면 미니앱 정보 승인 또는 리더보드 설정을 확인하세요.');
+      console.log('[토스 게임 센터] 리더보드 호출 완료');
       return { success: true };
     } catch (error) {
       // 호출 시점에 에러가 발생한 경우 (드물지만 가능)

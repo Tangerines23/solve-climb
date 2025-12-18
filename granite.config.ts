@@ -1,9 +1,11 @@
 import { defineConfig } from '@apps-in-toss/web-framework/config';
 
 export default defineConfig({
-  appName: 'solve-climb-edu',
+  // appName: 'solve-climb-edu',
+  appName: 'solve-climb',
   brand: {
-    displayName: 'solve-climb-edu', // 화면에 노출될 앱의 한글 이름으로 바꿔주세요.
+    // displayName: 'solve-climb-edu',
+    displayName: '솔브 클라임',
     primaryColor: '#00BFA5', // 화면에 노출될 앱의 기본 색상으로 바꿔주세요.
     icon: 'public/SolveClimb.png', // 화면에 노출될 앱의 아이콘 이미지 주소로 바꿔주세요.
     bridgeColorMode: 'inverted',
