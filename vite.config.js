@@ -12,50 +12,18 @@ export default defineConfig({
   },
   build: {
     rollupOptions: {
-      output: {
-        manualChunks: (id) => {
-          // node_modules의 패키지들을 별도 청크로 분리
-          if (id.includes('node_modules')) {
-            // React 관련 패키지
-            if (id.includes('react') || id.includes('react-dom') || id.includes('react-router')) {
-              return 'vendor-react';
-            }
-            // Supabase 관련 패키지
-            if (id.includes('@supabase')) {
-              return 'vendor-supabase';
-            }
-            // Zustand 상태관리
-            if (id.includes('zustand')) {
-              return 'vendor-zustand';
-            }
-            // Toss 관련 패키지 (동적 import되지만 별도 청크로 분리)
-            if (id.includes('@apps-in-toss') || id.includes('@toss')) {
-              return 'vendor-toss';
-            }
-            // 기타 vendor 패키지들
-            return 'vendor-other';
-          }
-          
-          // src/utils 폴더의 파일들을 별도 청크로 분리 (큰 파일들)
-          if (id.includes('src/utils/')) {
-            // 토스 관련 유틸리티
-            if (id.includes('tossAuth') || id.includes('tossLogin') || id.includes('tossGameLogin') || id.includes('tossGameCenter')) {
-              return 'utils-toss';
-            }
-            // 기타 유틸리티
-            return 'utils-common';
-          }
-        },
-      },
+      // manualChunks를 제거하여 Vite 기본 번들링 전략(안정성 우선)으로 전환합니다.
+      // 특정 패키지 분할이 모듈 초기화 순서를 꼬이게 할 수 있습니다.
     },
-    chunkSizeWarningLimit: 1000, // 1MB
+    chunkSizeWarningLimit: 2000, // 2MB (TDS 포함 시 용량 증가 대응)
   },
-  // optimizeDeps에서 TDS 제외 (개발 서버에서도 번들에 포함되지 않도록)
+  // optimizeDeps 설정을 최적화하여 CJS/ESM 호환성 이슈를 해결합니다.
   optimizeDeps: {
-    exclude: ['@toss/tds-mobile', '@toss/tds-mobile-ait'],
-    esbuildOptions: {
-      // hoist-non-react-statics를 CommonJS로 처리
-      mainFields: ['module', 'main'],
-    },
+    include: [
+      'hoist-non-react-statics',
+      'react-is',
+      '@toss/tds-mobile',
+      '@toss/tds-mobile-ait'
+    ],
   },
 })

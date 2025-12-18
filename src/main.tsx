@@ -1,162 +1,59 @@
 // src/main.tsx
-import React, { useState, useEffect, ComponentType } from 'react';
+import React from 'react';
 import ReactDOM from 'react-dom/client';
+import { ThemeProvider } from '@toss/tds-mobile'; // 정적 임포트로 변경하여 로딩 불확실성 제거
 import './index.css';
-// tossAuth 유틸리티를 import하여 window 함수들이 등록되도록 함
 import './utils/tossAuth';
+import AppContainer from './AppContainer';
 
-// Button이 theme.colors.backgroundColor를 정상 참조할 수 있도록 customTheme 객체를 생성합니다.
+// [DEBUG] 가시적 로그 함수 (window.diagnosis는 index.html에 정의됨)
+const log = (window as any).diagnosis || console.log;
+
+log('JavaScript Executed. Initializing React...');
+
 const customTheme = {
   colors: {
-    backgroundColor: '#FFFFFF', // 흰색 배경
+    backgroundColor: '#FFFFFF',
   },
 };
 
-// 조건 체크 함수: UserAgent에 'Toss' 포함 또는 localhost일 때만 true
-function isTossEnvironment(): boolean {
-  const userAgent = navigator.userAgent || '';
-  const hostname = window.location.hostname;
-  return userAgent.includes('Toss') || hostname === 'localhost';
-}
+/**
+ * 렌더링 시작
+ */
+try {
+  log('Starting React Render...');
 
-// ThemeProvider 대체 컴포넌트 (심사 환경용)
-function ThemeProviderFallback({ theme, children }: { theme: typeof customTheme; children: React.ReactNode }) {
-  return <div>{children}</div>;
-}
+  const rootElement = document.getElementById('root');
+  if (!rootElement) {
+    throw new Error('Root element not found');
+  }
 
-// 심사용 AppContainer 대체 컴포넌트 (경량 버전)
-function AppContainerReview() {
-  return (
-    <div
-      style={{
-        display: 'flex',
-        flexDirection: 'column',
-        justifyContent: 'center',
-        alignItems: 'center',
-        minHeight: '100vh',
-        padding: 'var(--spacing-xl)',
-        backgroundColor: 'var(--color-bg-primary)',
-        color: 'var(--color-text-primary)',
-      }}
-    >
-      <h1 style={{ marginBottom: 'var(--spacing-lg)', textAlign: 'center' }}>
-        Solve Climb
-      </h1>
-      <p style={{ textAlign: 'center', color: 'var(--color-text-secondary)' }}>
-        심사 환경에서는 TDS를 사용할 수 없습니다.
-      </p>
-    </div>
+  const root = ReactDOM.createRoot(rootElement);
+
+  // ThemeProvider의 theme 타입 에러를 해결하기 위해 any로 캐스팅
+  const Provider = ThemeProvider as any;
+
+  root.render(
+    <Provider theme={customTheme}>
+      <AppContainer />
+    </Provider>
   );
-}
 
-// 로딩 UI 컴포넌트
-function LoadingFallback() {
-  return (
-    <div
-      style={{
-        display: 'flex',
-        justifyContent: 'center',
-        alignItems: 'center',
-        height: '100vh',
-        backgroundColor: 'var(--color-bg-primary)',
-        color: 'var(--color-text-primary)',
-      }}
-    >
-      <div>로딩 중...</div>
-    </div>
-  );
-}
+  log('Render Initialized.');
 
-// 런타임 조건부 동적 import: ThemeProvider
-function ConditionalThemeProvider({ children }: { children: React.ReactNode }) {
-  const [TossThemeProvider, setTossThemeProvider] = useState<ComponentType<{ theme: typeof customTheme; children: React.ReactNode }> | null>(null);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<Error | null>(null);
-
-  useEffect(() => {
-    if (isTossEnvironment()) {
-      setLoading(true);
-      // 런타임에 조건부로만 import 수행
-      import('@toss/tds-mobile')
-        .then((module) => {
-          setTossThemeProvider(() => module.ThemeProvider);
-        })
-        .catch((err) => {
-          // TDS 로딩 실패는 조용히 처리 (Toss 환경이 아닐 때는 정상)
-          console.warn('Toss TDS 로딩 실패 (무시됨):', err.message || err);
-          setError(err);
-        })
-        .finally(() => {
-          setLoading(false);
-        });
+  // 성공 시 로더 제거
+  setTimeout(() => {
+    const loader = document.getElementById('loading-check');
+    if (loader) {
+      loader.style.opacity = '0';
+      setTimeout(() => { loader.style.display = 'none'; }, 500);
     }
-  }, []);
+  }, 1000);
 
-  // 심사 환경
-  if (!isTossEnvironment()) {
-    return <ThemeProviderFallback theme={customTheme}>{children}</ThemeProviderFallback>;
+} catch (err) {
+  log('Render Crash!', '#ff4444');
+  console.error(err);
+  if (window.onerror) {
+    window.onerror(String(err), 'main.tsx', 0, 0, err as Error);
   }
-
-  // 로딩 중
-  if (loading) {
-    return <LoadingFallback />;
-  }
-
-  // 에러 발생 시 대체 컴포넌트 사용
-  if (error || !TossThemeProvider) {
-    return <ThemeProviderFallback theme={customTheme}>{children}</ThemeProviderFallback>;
-  }
-
-  // Toss 환경 - 정상 로드
-  return <TossThemeProvider theme={customTheme}>{children}</TossThemeProvider>;
 }
-
-// 런타임 조건부 동적 import: AppContainer
-function ConditionalAppContainer() {
-  const [AppContainer, setAppContainer] = useState<ComponentType | null>(null);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<Error | null>(null);
-
-  useEffect(() => {
-    // 심사 환경에서도 AppContainer를 로드 (TDS 의존성 없음)
-    setLoading(true);
-    import('./AppContainer')
-      .then((module) => {
-        setAppContainer(() => module.default);
-      })
-      .catch((err) => {
-        console.error('Failed to load AppContainer:', err);
-        setError(err);
-      })
-      .finally(() => {
-        setLoading(false);
-      });
-  }, []);
-
-  // 로딩 중
-  if (loading) {
-    return <LoadingFallback />;
-  }
-
-  // 에러 발생 시 대체 컴포넌트 사용
-  if (error || !AppContainer) {
-    return <AppContainerReview />;
-  }
-
-  // 정상 로드 (Toss 환경과 심사 환경 모두)
-  return <AppContainer />;
-}
-
-function RootApp() {
-  return (
-    <ConditionalThemeProvider>
-      <ConditionalAppContainer />
-    </ConditionalThemeProvider>
-  );
-}
-
-ReactDOM.createRoot(document.getElementById('root')!).render(
-  <React.StrictMode>
-    <RootApp />
-  </React.StrictMode>
-);

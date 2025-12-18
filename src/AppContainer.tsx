@@ -4,6 +4,7 @@ import { BrowserRouter } from 'react-router-dom';
 import App from './App'; // <-- (신규) App.tsx를 임포트합니다.
 
 function AppContainer() {
+  (window as any).diagnosis?.('AppContainer Initializing...');
   return (
     <BrowserRouter>
       {/* 이제 AppContainer는 라우터 '컨텍스트'만 제공하고,
