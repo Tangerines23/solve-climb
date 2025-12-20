@@ -50,7 +50,22 @@ export function useCustomBackNavigation() {
       // 케이스 1: 메인 페이지에서 뒤로가기
       if (mainPages.includes(pathToCheck)) {
         if (pathToCheck === APP_CONFIG.ROUTES.HOME) {
-          // 홈에서 뒤로가기 → 커스텀 이벤트 발생 (HomePage에서 토스트 표시)
+          // 홈에서 뒤로가기 처리
+          // 가이드: "진입 시 첫 화면에서는 백버튼을 사용하지 않아요"
+          // 히스토리가 없으면(첫 진입) 뒤로가기 무시
+          const historyLength = window.history.length;
+          const hasHistory = historyLength > 1 || document.referrer !== '';
+          
+          if (!hasHistory) {
+            // 첫 진입 시: 뒤로가기 무시 (가이드 준수)
+            navigate(previousPath + previousSearch, { replace: true });
+            setTimeout(() => {
+              isHandlingPopStateRef.current = false;
+            }, 100);
+            return;
+          }
+          
+          // 히스토리가 있는 경우: 커스텀 이벤트 발생 (HomePage에서 토스트 표시)
           const customEvent = new CustomEvent('home-back-button', {
             detail: { previousPath: previousPath, previousSearch: previousSearch }
           });

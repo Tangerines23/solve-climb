@@ -2,6 +2,7 @@
 import { useEffect, lazy, Suspense } from 'react';
 import { Routes, Route } from 'react-router-dom';
 import { useLevelProgressStore } from './stores/useLevelProgressStore';
+import { useAuthStore } from './stores/useAuthStore';
 import { useCustomBackNavigation } from './hooks/useCustomBackNavigation';
 import { ErrorBoundary } from './components/ErrorBoundary';
 import { GlobalLoadingIndicator } from './components/GlobalLoadingIndicator';
@@ -15,29 +16,34 @@ const LevelSelectPage = lazy(() => import('./pages/LevelSelectPage').then(module
 const MathQuizPage = lazy(() => import('./pages/MathQuizPage').then(module => ({ default: module.MathQuizPage })));
 const ResultPage = lazy(() => import('./pages/ResultPage').then(module => ({ default: module.ResultPage })));
 const RankingPage = lazy(() => import('./pages/RankingPage').then(module => ({ default: module.RankingPage })));
+const HistoryPage = lazy(() => import('./pages/HistoryPage').then(module => ({ default: module.HistoryPage })));
 const MyPage = lazy(() => import('./pages/MyPage').then(module => ({ default: module.MyPage })));
 const NotificationPage = lazy(() => import('./pages/NotificationPage').then(module => ({ default: module.NotificationPage })));
 const AuthCallbackPage = lazy(() => import('./pages/AuthCallbackPage').then(module => ({ default: module.AuthCallbackPage })));
 const AuthTestPage = lazy(() => import('./pages/AuthTestPage').then(module => ({ default: module.AuthTestPage })));
+const ShopPage = lazy(() => import('./pages/ShopPage').then(module => ({ default: module.ShopPage })));
 
 function App() {
   const { syncProgress } = useLevelProgressStore();
-  
+  const { initialize: initializeAuth } = useAuthStore();
+
   // 커스텀 뒤로가기 네비게이션 적용
   useCustomBackNavigation();
 
   useEffect(() => {
-    syncProgress();
-  }, [syncProgress]);
+    initializeAuth().then(() => {
+      syncProgress();
+    });
+  }, [initializeAuth, syncProgress]);
 
   return (
     <ErrorBoundary>
       <GlobalLoadingIndicator />
       <Suspense fallback={
-        <div style={{ 
-          display: 'flex', 
-          justifyContent: 'center', 
-          alignItems: 'center', 
+        <div style={{
+          display: 'flex',
+          justifyContent: 'center',
+          alignItems: 'center',
           height: '100vh',
           color: 'var(--color-text-primary)'
         }}>
@@ -53,10 +59,12 @@ function App() {
           <Route path="/math-quiz" element={<MathQuizPage />} />
           <Route path="/result" element={<ResultPage />} />
           <Route path="/ranking" element={<RankingPage />} />
+          <Route path="/challenge" element={<HistoryPage />} />
           <Route path="/my-page" element={<MyPage />} />
           <Route path="/notifications" element={<NotificationPage />} />
           <Route path="/auth/callback" element={<AuthCallbackPage />} />
           <Route path="/auth/test" element={<AuthTestPage />} />
+          <Route path="/shop" element={<ShopPage />} />
         </Routes>
       </Suspense>
     </ErrorBoundary>

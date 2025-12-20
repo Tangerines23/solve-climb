@@ -310,12 +310,20 @@ export const challengeApi = {
           .single();
 
         if (error) {
-          // PGRST116 = not found (챌린지가 없음) - 정상적인 상황
+          // PGRST116 = not found (데이터가 없음) - 정상적인 상황
           if (error.code === 'PGRST116') {
             return null;
           }
-          // 404 에러도 정상적인 상황 (챌린지가 없음)
-          if (error.code === 'PGRST301' || error.message?.includes('404')) {
+          // PGRST205 = table not found in schema cache (테이블이 없음) - 마이그레이션 필요
+          // PGRST301 = relation does not exist (테이블이 없음) - 마이그레이션 필요
+          if (error.code === 'PGRST205' || error.code === 'PGRST301') {
+            console.warn('[Challenge API] today_challenges 테이블이 존재하지 않습니다.');
+            console.warn('[Challenge API] 마이그레이션 파일: supabase/migrations/20251219000001_create_today_challenges.sql');
+            console.warn('[Challenge API] 가이드 문서: docs/TODAY_CHALLENGES_MIGRATION.md');
+            return null;
+          }
+          // 404 에러 (데이터가 없음) - 정상적인 상황
+          if (error.message?.includes('404') || error.message?.includes('not found')) {
             return null;
           }
           throw error;

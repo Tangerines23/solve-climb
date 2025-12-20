@@ -15,8 +15,32 @@ export function HomePage() {
   const [showExitToast, setShowExitToast] = useState(false);
   const exitConfirmTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const isWaitingForSecondBackRef = useRef<boolean>(false);
+  // 연령 등급 표기 (가이드 필수: 초기 화면 우측 상단에 3초 이상 표시)
+  // 매번 HomePage 진입 시 표시 (컴포넌트 마운트 시마다)
+  const [showAgeRating, setShowAgeRating] = useState(true);
+
+  // 연령 등급 표기 (3초 후 자동 숨김)
+  useEffect(() => {
+    // 컴포넌트가 마운트될 때마다 표시
+    setShowAgeRating(true);
+    
+    const timer = setTimeout(() => {
+      setShowAgeRating(false);
+    }, 3000);
+    
+    return () => clearTimeout(timer);
+  }, []); // 빈 의존성 배열: 컴포넌트 마운트 시 한 번만 실행
 
   useEffect(() => {
+    // 가이드: "진입 시 첫 화면에서는 백버튼을 사용하지 않아요"
+    // 첫 진입 여부 확인 (히스토리 길이와 referrer 확인)
+    const isFirstVisit = window.history.length <= 1 && document.referrer === '';
+    
+    // 첫 진입 시에는 뒤로가기 이벤트 리스너를 등록하지 않음
+    if (isFirstVisit) {
+      return;
+    }
+
     const handleHomeBackButton = (event: CustomEvent) => {
       if (isWaitingForSecondBackRef.current) {
         // 두 번째 뒤로가기: 마이 페이지로 이동
@@ -56,6 +80,27 @@ export function HomePage() {
 
   return (
     <div className="home-page">
+      {/* 연령 등급 표기 (가이드 필수: 초기 화면 우측 상단에 3초 이상 표시) */}
+      {showAgeRating && (
+        <div
+          style={{
+            position: 'fixed',
+            top: `calc(var(--header-height-portrait) + var(--spacing-md))`,
+            right: 'var(--spacing-lg)',
+            zIndex: 10000,
+            padding: 'var(--spacing-sm) var(--spacing-md)',
+            backgroundColor: 'rgba(0, 0, 0, 0.85)',
+            color: 'var(--color-text-primary)',
+            borderRadius: 'var(--rounded-sm)',
+            fontSize: '0.875rem',
+            fontWeight: '500',
+            boxShadow: 'var(--shadow-card)',
+            pointerEvents: 'none',
+          }}
+        >
+          전체 이용가
+        </div>
+      )}
       <Header />
       <main className="home-main">
         <div className="home-content">

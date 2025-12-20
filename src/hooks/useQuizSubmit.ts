@@ -5,6 +5,9 @@ import { GameMode } from '../types/quiz';
 import { CLIMB_PER_CORRECT, SLIDE_PER_WRONG, MAX_POSSIBLE_ANSWER } from '../constants/game';
 import { normalizeRomaji } from '../utils/japanese';
 import { vibrateMedium, vibrateLong } from '../utils/haptic';
+import { useGameStore } from '../stores/useGameStore';
+import { useUserStore } from '../stores/useUserStore';
+import { supabase } from '../utils/supabaseClient';
 
 interface UseQuizSubmitParams {
   answerInput: string;
@@ -32,7 +35,7 @@ interface UseQuizSubmitParams {
   setTotalQuestions: (updater: (prev: number) => number) => void;
   setWrongAnswers: (updater: (prev: Array<{ question: string; wrongAnswer: string; correctAnswer: string }>) => Array<{ question: string; wrongAnswer: string; correctAnswer: string }>) => void;
   setSolveTimes: (updater: (prev: number[]) => number[]) => void;
-  inputRef: React.RefObject<HTMLInputElement>;
+  inputRef: React.RefObject<HTMLInputElement | null>;
 }
 
 export function useQuizSubmit({
@@ -63,6 +66,9 @@ export function useQuizSubmit({
   setSolveTimes,
   inputRef,
 }: UseQuizSubmitParams) {
+  const { incrementCombo, resetCombo, isExhausted, activeItems, consumeActiveItem } = useGameStore();
+  const { stamina, fetchUserData } = useUserStore();
+
   // 함수 참조를 안정적으로 유지하기 위한 ref
   const paramsRef = useRef({
     generateNewQuestion,
@@ -71,7 +77,7 @@ export function useQuizSubmit({
     setWrongAnswers,
     setSolveTimes,
   });
-  
+
   useEffect(() => {
     paramsRef.current = {
       generateNewQuestion,
@@ -81,7 +87,7 @@ export function useQuizSubmit({
       setSolveTimes,
     };
   }, [generateNewQuestion, handleGameOver, setTotalQuestions, setWrongAnswers, setSolveTimes]);
-  
+
   const handleSubmit = useCallback(
     (e: FormEvent) => {
       e.preventDefault();
@@ -139,7 +145,12 @@ export function useQuizSubmit({
 
         setCardAnimation('correct-flash');
         setInputAnimation('correct-flash');
-        increaseScore(CLIMB_PER_CORRECT);
+
+        // 콤보 증가 및 가중치 적용
+        incrementCombo();
+        const baseScore = CLIMB_PER_CORRECT;
+        const multiplier = isExhausted ? 0.8 : 1.0;
+        increaseScore(Math.floor(baseScore * multiplier));
 
         setTimeout(() => {
           setDisplayValue('');
@@ -159,18 +170,27 @@ export function useQuizSubmit({
       } else {
         // 오답 처리: 정답을 빨간색으로 0.8초간 표시
         const correctAnswerText = String(currentQuestion.answer);
-        
+
         // 1단계: 에러 상태 활성화 및 정답 표시 (동시에 업데이트하여 깜빡임 방지)
         setIsError(true);
         setDisplayValue(correctAnswerText);
         setCardAnimation('wrong-shake');
-        
+
+        const hasSafetyRope = activeItems.includes('safety_rope');
+        if (hasSafetyRope) {
+          consumeActiveItem('safety_rope');
+          // Show special toast or feedback for rope use
+          console.log('[Game] Safety Rope used! Combo protected.');
+        } else {
+          resetCombo();
+        }
+
         // 플래시 애니메이션 트리거
         setShowFlash(true);
         setTimeout(() => {
           setShowFlash(false);
         }, 400); // 애니메이션 지속시간과 동일
-        
+
         // 진동 피드백 (토스 표준 API 사용)
         if (hapticEnabled) {
           vibrateLong(); // 긴 진동 사용
@@ -186,40 +206,53 @@ export function useQuizSubmit({
             correctAnswer: correctAnswerText
           }]);
 
-          // 800ms 후 게임 종료
+          // 800ms 후 게임 종료 (Flare가 있으면 부활)
           setTimeout(() => {
-            setIsError(false);
-            setDisplayValue('');
-            setShowFlash(false);
-            setInputAnimation('');
-            setCardAnimation('');
-            paramsRef.current.handleGameOver();
+            const hasFlare = activeItems.includes('flare');
+            if (hasFlare) {
+              consumeActiveItem('flare');
+              console.log('[Game] Flare used! Revived in survival mode.');
+              setIsError(false);
+              setDisplayValue('');
+              setShowFlash(false);
+              paramsRef.current.generateNewQuestion();
+              setIsSubmitting(false);
+            } else {
+              setIsError(false);
+              setDisplayValue('');
+              setShowFlash(false);
+              setInputAnimation('');
+              setCardAnimation('');
+              paramsRef.current.handleGameOver();
+            }
           }, 800);
         } else {
           // 타임어택 모드: 오답 시 감점 적용
-          decreaseScore(SLIDE_PER_WRONG);
-          
+          if (!hasSafetyRope) {
+            decreaseScore(SLIDE_PER_WRONG);
+          }
+
           // 이전 토스트가 있다면 먼저 제거하고 새로 표시
           setShowSlideToast(false);
-          
+
           // 랜덤 위치 생성 (X: 10-80%, Y: 10-40%)
           const randomLeft = Math.floor(Math.random() * 70) + 10; // 10% ~ 80%
           const randomTop = Math.floor(Math.random() * 30) + 10;  // 10% ~ 40%
           setDamagePosition({ left: `${randomLeft}%`, top: `${randomTop}%` });
-          
+
           // 토스트를 즉시 표시 (requestAnimationFrame 제거로 지연 없음)
           setShowSlideToast(true);
-          
+
           // 토스트 자동 종료 타이머 (700ms - 다음 문제 이동 전에 자연스럽게 사라짐)
           const toastHideTimer = setTimeout(() => {
             setShowSlideToast(false);
           }, 700);
-          
+
           // 800ms 후 다음 문제로 이동
           setTimeout(() => {
             // 토스트 타이머 정리 (혹시 모를 중복 제거 방지)
             clearTimeout(toastHideTimer);
-            
+
             setIsError(false);
             setDisplayValue('');
             setAnswerInput('');

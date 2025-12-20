@@ -19,7 +19,7 @@
 .score-display {
   font-size: 1.2rem; /* Reduced size */
   font-weight: bold;
-  color: white; /* Changed color for dark theme */
+  color: white; /* 라이트 모드 기준 색상 */
   transition: transform 0.15s ease-in-out;
 }
 
@@ -84,6 +84,8 @@
   padding: 0;
   box-sizing: border-box;
   overflow: hidden;
+  /* 풀스크린 구현: Dynamic Island, 노치 등 안전 영역 고려 */
+  /* 필요시 padding-top: env(safe-area-inset-top) 추가 가능 */
 }
 
 
@@ -160,7 +162,8 @@
   width: 100%;
   max-width: var(--modal-width-portrait);
   margin: 0 auto;
-  padding: clamp(12px, 2vh, 20px) clamp(12px, 2vw, 16px) 0;
+  /* 안전 영역 고려: Dynamic Island, 노치 등 */
+  padding: max(clamp(12px, 2vh, 20px), env(safe-area-inset-top, 0px)) clamp(12px, 2vw, 16px) 0;
   gap: clamp(8px, 1.5vh, 20px);
   flex: 1;
   min-height: 0;

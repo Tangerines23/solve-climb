@@ -17,6 +17,7 @@
   from {
     opacity: 0;
   }
+
   to {
     opacity: 1;
   }
@@ -41,6 +42,7 @@
     transform: translateY(30px);
     opacity: 0;
   }
+
   to {
     transform: translateY(0);
     opacity: 1;
@@ -206,35 +208,86 @@
   accent-color: var(--color-blue-400);
 }
 
-.game-tip-close-button {
-  width: 100%;
+.game-tip-footer {
+  margin-top: auto;
+  padding-top: var(--spacing-lg);
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-md);
+  flex-shrink: 0;
+}
+
+.game-tip-actions {
+  display: flex;
+  gap: 12px;
+  align-items: stretch;
+}
+
+.game-tip-start-button {
+  flex: 8;
   padding: var(--spacing-lg);
-  margin-top: var(--spacing-lg);
   background: var(--color-blue-400);
-  color: var(--color-text-primary);
+  color: #fff;
   border: none;
   border-radius: var(--rounded-button);
   font-size: 18px;
   font-weight: bold;
   cursor: pointer;
-  transition: all 0.2s ease;
-  flex-shrink: 0;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 4px 15px rgba(59, 130, 246, 0.3);
 }
 
-.game-tip-close-button-vertical {
-  margin-top: auto;
-  flex-shrink: 0;
-  display: none;
-}
-
-.game-tip-close-button:hover {
+.game-tip-start-button:hover {
   background: var(--color-blue-500);
   transform: translateY(-2px);
-  box-shadow: var(--shadow-card);
+  box-shadow: 0 6px 20px rgba(59, 130, 246, 0.4);
 }
 
-.game-tip-close-button:active {
-  transform: translateY(0);
+.game-tip-start-button:active {
+  transform: translateY(0) scale(0.98);
+}
+
+.game-tip-backpack-button {
+  flex: 2;
+  aspect-ratio: 1 / 1;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: var(--rounded-button);
+  font-size: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  position: relative;
+  overflow: visible;
+}
+
+.game-tip-backpack-button:hover {
+  background: rgba(255, 255, 255, 0.1);
+  border-color: rgba(255, 255, 255, 0.2);
+}
+
+.game-tip-backpack-button.has-items {
+  border-color: #2dd4bf;
+  box-shadow: 0 0 10px rgba(45, 212, 191, 0.2);
+}
+
+.backpack-badge {
+  position: absolute;
+  top: -5px;
+  right: -5px;
+  background: #2dd4bf;
+  color: #000;
+  font-size: 10px;
+  font-weight: 800;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 2px solid var(--color-bg-primary);
 }
 
 /* 기본: 세로모드 (가로모드용 영역 숨김) */
@@ -387,21 +440,21 @@
     min-width: 0;
     overflow-x: hidden;
   }
-  
+
   /* 스크롤바 스타일 - 내용이 적을 때는 스크롤바 숨김 */
   .game-tip-right-area::-webkit-scrollbar {
     width: 6px;
   }
-  
+
   .game-tip-right-area::-webkit-scrollbar-track {
     background: transparent;
   }
-  
+
   .game-tip-right-area::-webkit-scrollbar-thumb {
     background: rgba(255, 255, 255, 0.2);
     border-radius: var(--rounded-micro);
   }
-  
+
   .game-tip-right-area::-webkit-scrollbar-thumb:hover {
     background: rgba(255, 255, 255, 0.3);
   }
@@ -497,4 +550,3 @@
   padding-left: var(--spacing-2xl);
   padding-right: var(--spacing-2xl);
 }
-

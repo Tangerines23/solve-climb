@@ -73,6 +73,7 @@ export const APP_CONFIG = {
     RESULT: '/result',
     RANKING: '/ranking',
     CHALLENGE: '/challenge',
+    HISTORY: '/challenge',
     MY_PAGE: '/my-page',
     NOTIFICATIONS: '/notifications',
   },

@@ -438,11 +438,11 @@
   }
 }
 
-/* 다크모드 대응 (선택) */
-@media (prefers-color-scheme: dark) {
+/* 다크모드 대응 제거 - 앱인토스 미니앱은 다크모드를 제공하지 않음 */
+/* @media (prefers-color-scheme: dark) {
   .fab-my-location {
     background-color: var(--color-gray-700);
     color: var(--color-text-primary);
     box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
   }
-}
+} */

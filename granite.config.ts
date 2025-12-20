@@ -17,7 +17,7 @@ export default defineConfig({
     },
   },
   webViewProps: {
-    // type: 'game' 설정을 제거하여 일반 앱(비게임)으로 분류합니다.
+    type: 'game', // 게임 미니앱으로 설정 (공통 내비게이션 바 자동 적용)
     overScrollMode: 'never',
   },
   permissions: [],

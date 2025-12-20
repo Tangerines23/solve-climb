@@ -15,7 +15,7 @@ interface UseQuestionGeneratorParams {
   subParam: string | null;
   levelParam: number | null;
   useSystemKeyboard: boolean;
-  inputRef: React.RefObject<HTMLInputElement>;
+  inputRef: React.RefObject<HTMLInputElement | null>;
   setCurrentQuestion: (question: QuizQuestion | null) => void;
   setAnswerInput: (value: string) => void;
   setDisplayValue: (value: string) => void;
@@ -108,7 +108,7 @@ export function useQuestionGenerator({
         } else if (subParam === 'equations' && levelParam !== null) {
           // 방정식 서브토픽 - EquationProblemGenerator 사용
           const level = levelParam;
-          
+
           setQuestionAnimation('fade-out');
           setTimeout(() => {
             try {
@@ -165,7 +165,7 @@ export function useQuestionGenerator({
 
     setQuestionAnimation('fade-out');
     setTimeout(() => {
-      const newQuestion = generateQuestion(currentCategory, currentTopic, difficulty);
+      const newQuestion = generateQuestion(currentCategory, currentTopic as Topic, difficulty);
       setCurrentQuestion(newQuestion);
       setAnswerInput('');
       setDisplayValue('');

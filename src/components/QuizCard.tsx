@@ -7,6 +7,7 @@ import { QwertyKeypad } from './QwertyKeypad';
 import { CustomKeypad } from './CustomKeypad';
 import { APP_CONFIG } from '../config/app';
 import { SLIDE_PER_WRONG } from '../constants/game';
+import { useGameStore } from '../stores/useGameStore';
 import { sendDebugLog } from '../utils/debugLogger';
 
 interface QuizCardProps {
@@ -14,20 +15,20 @@ interface QuizCardProps {
   currentQuestion: QuizQuestion | null;
   answerInput: string;
   displayValue: string;
-  
+
   // 카테고리/토픽 정보
   category: string | null;
   topic: string | null;
   categoryParam: string | null;
   subParam: string | null;
   levelParam: number | null;
-  
+
   // 게임 모드
   gameMode: GameMode;
   timeLimit: number;
   questionKey: number;
   SURVIVAL_QUESTION_TIME: number;
-  
+
   // 상태
   isSubmitting: boolean;
   isError: boolean;
@@ -35,7 +36,7 @@ interface QuizCardProps {
   showTipModal: boolean;
   showExitConfirm: boolean;
   isFadingOut: boolean;
-  
+
   // 애니메이션
   cardAnimation: string;
   inputAnimation: string;
@@ -43,7 +44,7 @@ interface QuizCardProps {
   showFlash: boolean;
   showSlideToast: boolean;
   damagePosition: { left: string; top: string };
-  
+
   // 핸들러
   handleSubmit: (e: FormEvent) => void;
   handleBack: () => void;
@@ -52,11 +53,11 @@ interface QuizCardProps {
   handleQwertyKeyPress: (key: string) => void;
   handleKeypadClear: () => void;
   handleKeypadBackspace: () => void;
-  
+
   // Refs
-  inputRef: React.RefObject<HTMLInputElement>;
+  inputRef: React.RefObject<HTMLInputElement | null>;
   exitConfirmTimeoutRef: React.MutableRefObject<NodeJS.Timeout | null>;
-  
+
   // Setters
   setAnswerInput: (value: string) => void;
   setDisplayValue: (value: string) => void;
@@ -102,8 +103,6 @@ function QuizCardComponent({
   exitConfirmTimeoutRef,
   setAnswerInput,
   setDisplayValue,
-  setIsError,
-  setShowFlash,
   setShowExitConfirm,
   setIsFadingOut,
 }: QuizCardProps) {
@@ -184,15 +183,15 @@ function QuizCardComponent({
     // #endregion
     return categoryParam === 'language' && subParam === 'japanese';
   }, [categoryParam, subParam, renderId]);
-  
+
   const isEquationQuiz = useMemo(() => {
     return categoryParam === 'math' && subParam === 'equations';
   }, [categoryParam, subParam]);
-  
+
   const isCalculusQuiz = useMemo(() => {
     return categoryParam === 'math' && subParam === 'calculus';
   }, [categoryParam, subParam]);
-  
+
   const allowNegative = useMemo(() => {
     // #region agent log
     sendDebugLog('QuizCard.tsx:allowNegative', 'allowNegative useMemo executing', {
@@ -227,6 +226,18 @@ function QuizCardComponent({
     return null;
   }
 
+  const { activeItems, consumeActiveItem } = useGameStore();
+
+  const handleTimeUp = () => {
+    const hasFlare = activeItems.includes('flare');
+    if (hasFlare) {
+      consumeActiveItem('flare');
+      console.log('[Game] Flare used! Revived from time up.');
+    } else {
+      handleGameOver();
+    }
+  };
+
   return (
     <>
       {/* 상단 네비게이션 (뒤로가기 + 타이머) */}
@@ -236,9 +247,9 @@ function QuizCardComponent({
         </button>
         <div className="math-quiz-timer-container">
           {gameMode === 'survival' ? (
-            <TimerCircle duration={SURVIVAL_QUESTION_TIME} onComplete={handleGameOver} isPaused={isSubmitting} key={questionKey} />
+            <TimerCircle duration={SURVIVAL_QUESTION_TIME} onComplete={handleTimeUp} isPaused={isSubmitting} key={questionKey} />
           ) : (
-            <TimerCircle duration={timeLimit} onComplete={handleGameOver} isPaused={false} enableFastForward={true} />
+            <TimerCircle duration={timeLimit} onComplete={handleTimeUp} isPaused={false} enableFastForward={true} />
           )}
         </div>
         <div className="math-quiz-header-spacer"></div>
@@ -347,10 +358,10 @@ function QuizCardComponent({
               </div>
             )}
           </form>
-          
+
           {/* 감점 토스트 - 오답 시 -3m 표시 (랜덤 위치) */}
           {showSlideToast && (
-            <div 
+            <div
               className="slide-toast"
               style={{ left: damagePosition.left, top: damagePosition.top }}
             >

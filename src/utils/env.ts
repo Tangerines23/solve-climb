@@ -22,6 +22,8 @@ export interface EnvConfig {
   IS_PRODUCTION: boolean;
   /** 디버깅 URL (개발 환경에서만 사용) */
   DEBUG_URL: string;
+  /** Vercel 환경 여부 */
+  IS_VERCEL: boolean;
 }
 
 /**
@@ -121,6 +123,7 @@ export const ENV: EnvConfig = (() => {
     IS_DEVELOPMENT: isDevelopment,
     IS_PRODUCTION: isProduction,
     DEBUG_URL: import.meta.env.VITE_DEBUG_URL || '',
+    IS_VERCEL: !!import.meta.env.VITE_IS_VERCEL,
   };
 })();
 

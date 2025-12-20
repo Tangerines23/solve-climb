@@ -15,7 +15,7 @@ interface NavItemConfig {
 const navItems: NavItemConfig[] = [
   { id: 'home', label: '홈', icon: '🏠', route: APP_CONFIG.ROUTES.HOME },
   { id: 'ranking', label: '랭킹', icon: '🏆', route: APP_CONFIG.ROUTES.RANKING },
-  { id: 'challenge', label: '챌린지', icon: '🔥', route: APP_CONFIG.ROUTES.CHALLENGE },
+  { id: 'challenge', label: '기록', icon: '📝', route: APP_CONFIG.ROUTES.CHALLENGE },
   { id: 'my', label: '마이', icon: '👤', route: APP_CONFIG.ROUTES.MY_PAGE },
 ];
 
@@ -30,23 +30,8 @@ export function FooterNav() {
       if (location.pathname !== APP_CONFIG.ROUTES.HOME) {
         navigate(APP_CONFIG.ROUTES.HOME);
       }
-    } else if (item.id === 'challenge') {
-      // 챌린지 클릭 시 오늘의 챌린지 카드로 스크롤
-      if (location.pathname === APP_CONFIG.ROUTES.HOME) {
-        const challengeCard = document.querySelector('.challenge-card');
-        if (challengeCard) {
-          challengeCard.scrollIntoView({ behavior: 'smooth', block: 'start' });
-        }
-      } else {
-        navigate(APP_CONFIG.ROUTES.HOME);
-        setTimeout(() => {
-          const challengeCard = document.querySelector('.challenge-card');
-          if (challengeCard) {
-            challengeCard.scrollIntoView({ behavior: 'smooth', block: 'start' });
-          }
-        }, 100);
-      }
     } else {
+      // 일반 네비게이션: 해당 라우트로 이동
       navigate(item.route);
     }
   };

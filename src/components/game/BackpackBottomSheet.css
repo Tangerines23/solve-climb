@@ -1,0 +1,206 @@
+.backpack-sheet-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.6);
+    backdrop-filter: blur(4px);
+    z-index: 2000;
+    display: flex;
+    align-items: flex-end;
+    opacity: 0;
+    visibility: hidden;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.backpack-sheet-overlay.open {
+    opacity: 1;
+    visibility: visible;
+}
+
+.backpack-sheet-content {
+    width: 100%;
+    max-width: 500px;
+    margin: 0 auto;
+    background: rgba(30, 30, 35, 0.95);
+    backdrop-filter: blur(20px);
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 24px 24px 0 0;
+    padding: 20px 24px 40px;
+    transform: translateY(100%);
+    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: 0 -10px 40px rgba(0, 0, 0, 0.5);
+}
+
+.backpack-sheet-content.open {
+    transform: translateY(0);
+}
+
+.backpack-sheet-header {
+    text-align: center;
+    margin-bottom: 24px;
+}
+
+.backpack-sheet-handle {
+    width: 40px;
+    height: 4px;
+    background: rgba(255, 255, 255, 0.2);
+    border-radius: 2px;
+    margin: 0 auto 16px;
+}
+
+.backpack-sheet-title {
+    color: #fff;
+    font-size: 1.25rem;
+    margin: 0 0 4px;
+    font-weight: 700;
+}
+
+.backpack-sheet-subtitle {
+    color: rgba(255, 255, 255, 0.5);
+    font-size: 0.875rem;
+    margin: 0;
+}
+
+.backpack-items-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    max-height: 400px;
+    overflow-y: auto;
+    margin-bottom: 24px;
+    padding-right: 4px;
+}
+
+.backpack-items-grid::-webkit-scrollbar {
+    width: 4px;
+}
+
+.backpack-items-grid::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 2px;
+}
+
+.backpack-item-card {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    padding: 16px;
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 16px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    position: relative;
+}
+
+.backpack-item-card:active {
+    transform: scale(0.98);
+}
+
+.backpack-item-card.selected {
+    background: rgba(45, 212, 191, 0.1);
+    border-color: #2dd4bf;
+    box-shadow: 0 0 15px rgba(45, 212, 191, 0.2);
+}
+
+.backpack-item-card.empty {
+    opacity: 0.5;
+    cursor: not-allowed;
+    filter: grayscale(0.8);
+}
+
+.backpack-item-icon-wrapper {
+    position: relative;
+    width: 48px;
+    height: 48px;
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.backpack-item-icon {
+    font-size: 1.5rem;
+}
+
+.backpack-item-qty {
+    position: absolute;
+    top: -6px;
+    right: -6px;
+    background: #2dd4bf;
+    color: #000;
+    font-size: 0.625rem;
+    font-weight: 800;
+    padding: 2px 6px;
+    border-radius: 8px;
+    min-width: 16px;
+    text-align: center;
+}
+
+.backpack-item-info {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.backpack-item-name {
+    color: #fff;
+    font-weight: 600;
+    font-size: 1rem;
+}
+
+.backpack-item-desc {
+    color: rgba(255, 255, 255, 0.4);
+    font-size: 0.75rem;
+}
+
+.backpack-item-checkbox {
+    width: 24px;
+    height: 24px;
+    border: 2px solid rgba(255, 255, 255, 0.2);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #2dd4bf;
+    font-weight: bold;
+    font-size: 1rem;
+}
+
+.selected .backpack-item-checkbox {
+    border-color: #2dd4bf;
+    background: rgba(45, 212, 191, 0.1);
+}
+
+.backpack-empty-state {
+    text-align: center;
+    padding: 40px 0;
+    color: rgba(255, 255, 255, 0.3);
+}
+
+.backpack-empty-hint {
+    font-size: 0.8125rem;
+    margin-top: 4px;
+}
+
+.backpack-sheet-close {
+    width: 100%;
+    padding: 16px;
+    background: #2dd4bf;
+    color: #000;
+    border: none;
+    border-radius: 16px;
+    font-weight: 700;
+    font-size: 1.0625rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.backpack-sheet-close:active {
+    transform: scale(0.97);
+    filter: brightness(0.9);
+}

@@ -1,9 +1,8 @@
 // src/pages/ResultPage.tsx
-import React, { useEffect, useState, useRef } from 'react';
+import { useEffect, useState, useRef, useMemo } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useQuizStore } from '../stores/useQuizStore';
 import { useLevelProgressStore } from '../stores/useLevelProgressStore';
-import { GameMode } from '../types/quiz';
 import { submitScoreToLeaderboard } from '../utils/tossGameCenter';
 import { APP_CONFIG } from '../config/app';
 import { SCORE_PER_CORRECT } from '../constants/game';
@@ -17,6 +16,8 @@ import {
   createSafeStorageKey,
 } from '../utils/urlParams';
 import { sendDebugLog } from '../utils/debugLogger';
+import { useUserStore } from '../stores/useUserStore';
+import { supabase } from '../utils/supabaseClient';
 import './ResultPage.css';
 
 // CountUp 애니메이션 훅
@@ -37,11 +38,11 @@ function useCountUp(targetValue: number, duration: number = 1000) {
     const animate = () => {
       const elapsed = Date.now() - startTimeRef.current!;
       const progress = Math.min(elapsed / duration, 1);
-      
+
       // easing 함수 (easeOutCubic)
       const eased = 1 - Math.pow(1 - progress, 3);
       const currentValue = Math.floor(targetValue * eased);
-      
+
       setCount(currentValue);
 
       if (progress < 1) {
@@ -74,6 +75,8 @@ export function ResultPage() {
   const score = useQuizStore((state) => state.score);
   const clearLevel = useLevelProgressStore((state) => state.clearLevel);
   const updateBestScore = useLevelProgressStore((state) => state.updateBestScore);
+  const { fetchUserData } = useUserStore();
+
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const [scoreSubmitted, setScoreSubmitted] = useState(false);
@@ -81,7 +84,7 @@ export function ResultPage() {
   const [showConfetti, setShowConfetti] = useState(false);
 
   // Confetti 색상 팔레트 (CSS 변수에서 읽어옴)
-  const confettiColors = React.useMemo(() => {
+  const confettiColors = useMemo(() => {
     if (typeof window !== 'undefined') {
       const root = getComputedStyle(document.documentElement);
       return [
@@ -106,27 +109,28 @@ export function ResultPage() {
   const wrongAParam = searchParams.get('wrong_a');
   const correctAParam = searchParams.get('correct_a');
   const avgTimeParamRaw = searchParams.get('avg_time'); // 서바이벌 모드 평균 풀이 시간
+  const isExhaustedParam = searchParams.get('exhausted') === 'true';
 
   // 파라미터 검증
   const categoryParam = validateCategoryParam(categoryParamRaw);
   const subParam = validateSubTopicParam(categoryParam, subParamRaw);
   const level = validateLevelParam(levelParamRaw, 20);
   const mode = validateModeParam(modeParamRaw);
-  
+
   // 점수 검증 (0 이상, 최대값 제한)
   const validatedScore = validateNumberParam(scoreParamRaw, 0, 1000000);
   const finalScore = validatedScore !== null ? validatedScore : score;
 
   // CountUp 애니메이션 적용
   const animatedScore = useCountUp(finalScore, 1500);
-  
+
   // 총 문제 수 검증
   const validatedTotal = validateNumberParam(totalParamRaw, 0, 10000);
   const total = validatedTotal !== null ? validatedTotal : 0;
-  
+
   // 맞춘 개수 계산 (점수를 SCORE_PER_CORRECT로 나눔) - 보조 텍스트용
   const correctCount = Math.floor(finalScore / SCORE_PER_CORRECT);
-  
+
   // 서바이벌 모드: 평균 풀이 시간 (초) 검증
   const validatedAvgTime = validateFloatParam(avgTimeParamRaw, 0, 3600);
   const averageTime = validatedAvgTime;
@@ -134,12 +138,12 @@ export function ResultPage() {
   // 서브토픽 정보 가져오기
   const subTopicInfo = categoryParam && subParam
     ? APP_CONFIG.SUB_TOPICS[categoryParam as keyof typeof APP_CONFIG.SUB_TOPICS]?.find(
-        (topic) => topic.id === subParam
-      )
+      (topic) => topic.id === subParam
+    )
     : null;
 
   // 오답 정보 파싱 (서바이벌 모드용)
-  const wrongAnswers: WrongAnswer[] = React.useMemo(() => {
+  const wrongAnswers: WrongAnswer[] = useMemo(() => {
     if (mode !== 'survival' || !wrongQParam || !wrongAParam || !correctAParam) {
       return [];
     }
@@ -147,7 +151,7 @@ export function ResultPage() {
       const questions = wrongQParam.split('|');
       const wrongAnswers = wrongAParam.split('|');
       const correctAnswers = correctAParam.split('|');
-      
+
       return questions.map((q, i) => ({
         question: q,
         wrongAnswer: wrongAnswers[i] || '',
@@ -184,7 +188,7 @@ export function ResultPage() {
     // 레벨 클리어 조건 확인
     // 타임어택: 정확도 50% 이상 또는 1개 이상 맞춤 (finalScore >= 10은 correctCount >= 1과 동일)
     // 서바이벌: 1개 이상 맞춤
-    const shouldClearLevel = mode === 'time-attack' 
+    const shouldClearLevel = mode === 'time-attack'
       ? (accuracy >= 50 || correctCount >= 1)
       : (correctCount >= 1);
 
@@ -198,12 +202,21 @@ export function ResultPage() {
 
     // 리더보드 점수 제출 (레벨 클리어 또는 최고 기록 경신 시)
     if (finalScore > 0 && !scoreSubmitted && shouldClearLevel) {
+      // 1. 토스 리더보드 제출
       submitScoreToLeaderboard(finalScore)
         .then(setScoreSubmitted)
-        .catch((error) => {
-          // 에러가 발생해도 게임 진행에 방해되지 않도록 조용히 처리
-          console.error('점수 제출 실패:', error);
-        });
+        .catch((error) => console.error('점수 제출 실패:', error));
+
+      // 2. Supabase 결과 제출 및 미네랄 획득
+      const mineralsEarned = Math.floor(finalScore / 10); // 10m 당 1미네랄
+      supabase.rpc('submit_game_result', {
+        p_score: finalScore,
+        p_minerals_earned: mineralsEarned,
+        p_game_mode: storageKeyMode,
+        p_items_used: []
+      }).then(() => {
+        fetchUserData();
+      });
     }
   }, [categoryParam, subParam, level, mode, finalScore, scoreSubmitted, accuracy, correctCount, clearLevel, updateBestScore]);
 
@@ -231,7 +244,7 @@ export function ResultPage() {
       navigate('/');
       return;
     }
-    
+
     const params = new URLSearchParams();
     params.set('category', categoryParam);
     params.set('sub', subParam);
@@ -246,8 +259,8 @@ export function ResultPage() {
     });
     // #endregion
     params.set('mode', modeParamForUrl);
-    
-    navigate(`/math-quiz?${params.toString()}`);
+
+    navigate(`/ math - quiz ? ${params.toString()} `);
   };
 
   // 랭킹 보기
@@ -258,7 +271,7 @@ export function ResultPage() {
   // 다른 레벨 선택
   const handleSelectOtherLevel = () => {
     if (categoryParam && subParam) {
-      navigate(`/level-select?category=${categoryParam}&sub=${subParam}`);
+      navigate(`/ level - select ? category = ${categoryParam}& sub=${subParam} `);
     } else {
       navigate('/');
     }
@@ -276,7 +289,7 @@ export function ResultPage() {
   const resultTitle = isTimeAttack ? "시간 종료!" : "게임 오버";
 
   // 통계 리스트 데이터 구성
-  const statsList = React.useMemo(() => {
+  const statsList = useMemo(() => {
     const stats: Array<{ label: string; value: string; isHighlight?: boolean }> = [];
 
     if (isNewRecord) {
@@ -290,7 +303,7 @@ export function ResultPage() {
     if (isTimeAttack && total > 0) {
       stats.push({
         label: '정확도',
-        value: `${accuracy}%`,
+        value: `${accuracy}% `,
       });
       stats.push({
         label: '진행',
@@ -305,6 +318,14 @@ export function ResultPage() {
       });
     }
 
+    if (isExhaustedParam) {
+      stats.push({
+        label: '지침 상태 패널티',
+        value: '-20%',
+        isHighlight: true,
+      });
+    }
+
     return stats;
   }, [isNewRecord, isTimeAttack, total, accuracy, correctCount, averageTime]);
 
@@ -313,6 +334,9 @@ export function ResultPage() {
     <>
       <div className="result-icon floating">{resultIcon}</div>
       <h1 className="result-title">{resultTitle}</h1>
+      {isExhaustedParam && (
+        <div className="exhausted-badge">😫 지침 상태 (효율 80%)</div>
+      )}
       {level && subTopicInfo && (
         <p className="result-subtitle">
           {APP_CONFIG.CATEGORY_MAP[categoryParam as keyof typeof APP_CONFIG.CATEGORY_MAP] || categoryParam} - {subTopicInfo.name} Level {level}

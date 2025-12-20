@@ -1,5 +1,5 @@
 // 게임 상태 관리 로직을 관리하는 커스텀 훅
-import { useState, useCallback } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { GameMode } from '../types/quiz';
 
 interface UseQuizGameStateParams {
@@ -9,6 +9,7 @@ interface UseQuizGameStateParams {
   subParam: string | null;
   levelParam: number | null;
   modeParam: string | null;
+  isExhausted: boolean;
   navigate: (path: string) => void;
 }
 
@@ -19,6 +20,7 @@ export function useQuizGameState({
   subParam,
   levelParam,
   modeParam,
+  isExhausted,
   navigate,
 }: UseQuizGameStateParams) {
   const [totalQuestionsState, setTotalQuestionsState] = useState(0);
@@ -35,6 +37,7 @@ export function useQuizGameState({
     if (modeParam) params.set('mode', modeParam);
     params.set('score', score.toString());
     params.set('total', totalQuestionsState.toString());
+    if (isExhausted) params.set('exhausted', 'true');
 
     // 서바이벌 모드: 오답 정보 및 평균 풀이 시간 전달
     if (gameMode === 'survival') {
@@ -51,7 +54,7 @@ export function useQuizGameState({
         params.set('wrong_q', questions);
         params.set('wrong_a', wrongAns);
         params.set('correct_a', correctAns);
-        
+
         console.log('[MathQuizPage] 오답 데이터 URL 파라미터 설정:', {
           wrong_q: questions,
           wrong_a: wrongAns,
