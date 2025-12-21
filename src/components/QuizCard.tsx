@@ -115,14 +115,6 @@ function QuizCardComponent({
   });
   // #endregion
 
-  // 팁 모달이 열려있으면 게임 화면 숨김
-  if (showTipModal) {
-    // #region agent log
-    sendDebugLog('QuizCard.tsx:earlyReturn1', 'Early return: showTipModal=true', { renderId });
-    // #endregion
-    return null;
-  }
-
   // URL 파라미터가 있으면 그것을 우선 사용, 없으면 store에서 가져오기
   const displayCategory = useMemo(() => {
     return categoryParam
@@ -138,31 +130,15 @@ function QuizCardComponent({
     if (subParam === 'arithmetic' && levelParam !== null) {
       const level = levelParam;
       const topicMap: Record<number, string> = {
-        1: '덧셈',
-        2: '뺄셈',
-        3: '덧셈',
-        4: '뺄셈',
-        5: '곱셈',
-        6: '나눗셈',
-        7: '혼합 연산',
-        8: '곱셈',
-        9: '나눗셈',
-        10: '종합 연산',
+        1: '덧셈', 2: '뺄셈', 3: '덧셈', 4: '뺄셈', 5: '곱셈',
+        6: '나눗셈', 7: '혼합 연산', 8: '곱셈', 9: '나눗셈', 10: '종합 연산',
       };
       return topicMap[level] || '덧셈';
     } else if (subParam === 'calculus' && levelParam !== null) {
       const level = levelParam;
       const topicMap: Record<number, string> = {
-        1: '기초 미분',
-        2: '상수배 미분',
-        3: '합과 차의 미분',
-        4: '곱의 미분',
-        5: '몫의 미분',
-        6: '합성함수 미분',
-        7: '삼각함수 미분',
-        8: '지수·로그 미분',
-        9: '고급 미분',
-        10: '미분 종합',
+        1: '기초 미분', 2: '상수배 미분', 3: '합과 차의 미분', 4: '곱의 미분', 5: '몫의 미분',
+        6: '합성함수 미분', 7: '삼각함수 미분', 8: '지수·로그 미분', 9: '고급 미분', 10: '미분 종합',
       };
       return topicMap[level] || '미적분';
     } else {
@@ -172,17 +148,9 @@ function QuizCardComponent({
     }
   }, [categoryParam, subParam, levelParam, topic]);
 
-  // 모든 hooks를 조건부 반환 이전에 호출해야 함 (React Hooks 규칙)
   const isJapaneseQuiz = useMemo(() => {
-    // #region agent log
-    sendDebugLog('QuizCard.tsx:isJapaneseQuiz', 'isJapaneseQuiz useMemo executing', {
-      renderId,
-      categoryParam,
-      subParam,
-    });
-    // #endregion
     return categoryParam === 'language' && subParam === 'japanese';
-  }, [categoryParam, subParam, renderId]);
+  }, [categoryParam, subParam]);
 
   const isEquationQuiz = useMemo(() => {
     return categoryParam === 'math' && subParam === 'equations';
@@ -193,19 +161,21 @@ function QuizCardComponent({
   }, [categoryParam, subParam]);
 
   const allowNegative = useMemo(() => {
-    // #region agent log
-    sendDebugLog('QuizCard.tsx:allowNegative', 'allowNegative useMemo executing', {
-      renderId,
-      isEquationQuiz,
-      isCalculusQuiz,
-    });
-    // #endregion
     return isEquationQuiz || isCalculusQuiz;
-  }, [isEquationQuiz, isCalculusQuiz, renderId]);
+  }, [isEquationQuiz, isCalculusQuiz]);
 
-  // 조건부 반환은 모든 hooks 호출 이후에 수행
+  const { activeItems, consumeActiveItem } = useGameStore();
+
+  // --- Early Returns must come AFTER all hooks ---
+
+  // 팁 모달이 열려있으면 게임 화면 숨김
+  if (showTipModal) {
+    sendDebugLog('QuizCard.tsx:earlyReturn1', 'Early return: showTipModal=true', { renderId });
+    return null;
+  }
+
+  // 데이터 부족 시 로딩 반환
   if (!currentQuestion || (!displayCategory && !categoryParam) || (!displayTopic && !subParam)) {
-    // #region agent log
     sendDebugLog('QuizCard.tsx:earlyReturn2', 'Early return: missing data', {
       renderId,
       hasCurrentQuestion: !!currentQuestion,
@@ -214,19 +184,15 @@ function QuizCardComponent({
       categoryParam,
       subParam,
     });
-    // #endregion
-    // 로딩 중이거나 데이터가 없으면 로딩 표시
     if (categoryParam && subParam) {
       return (
-        <div className="math-quiz-page">
+        <div className="quiz-page">
           <div className="quiz-loading">문제를 생성하는 중...</div>
         </div>
       );
     }
     return null;
   }
-
-  const { activeItems, consumeActiveItem } = useGameStore();
 
   const handleTimeUp = () => {
     const hasFlare = activeItems.includes('flare');
@@ -241,22 +207,22 @@ function QuizCardComponent({
   return (
     <>
       {/* 상단 네비게이션 (뒤로가기 + 타이머) */}
-      <header className="math-quiz-header">
-        <button className="math-quiz-back-button" onClick={handleBack} aria-label="뒤로 가기">
+      <header className="quiz-header">
+        <button className="quiz-back-button" onClick={handleBack} aria-label="뒤로 가기">
           ←
         </button>
-        <div className="math-quiz-timer-container">
+        <div className="quiz-timer-container">
           {gameMode === 'survival' ? (
             <TimerCircle duration={SURVIVAL_QUESTION_TIME} onComplete={handleTimeUp} isPaused={isSubmitting} key={questionKey} />
           ) : (
             <TimerCircle duration={timeLimit} onComplete={handleTimeUp} isPaused={false} enableFastForward={true} />
           )}
         </div>
-        <div className="math-quiz-header-spacer"></div>
+        <div className="quiz-header-spacer"></div>
       </header>
 
       {/* 메인 컨텐츠 영역 */}
-      <div className="math-quiz-content">
+      <div className="quiz-content">
         {/* 퀴즈 카드 */}
         <div className={`quiz-card ${cardAnimation}`}>
           <div className="category-label">{displayCategory} - {displayTopic}</div>

@@ -568,16 +568,16 @@ export function QuizPage() {
     const currentPreviewType = isJapaneseQuizPreview ? 'qwerty' : previewKeyboardType;
 
     return (
-      <div className="math-quiz-page">
-        <header className="math-quiz-header">
+      <div className="quiz-page">
+        <header className="quiz-header">
           <button
-            className="math-quiz-back-button"
+            className="quiz-back-button"
             onClick={() => navigate('/my-page')}
             aria-label="뒤로 가기"
           >
             ←
           </button>
-          <div className="math-quiz-timer-container" style={{ display: 'flex', alignItems: 'center', gap: 'var(--spacing-md)' }}>
+          <div className="quiz-timer-container" style={{ display: 'flex', alignItems: 'center', gap: 'var(--spacing-md)' }}>
             {canSwitchKeyboard && (
               <button
                 onClick={handlePrevKeyboard}
@@ -640,10 +640,10 @@ export function QuizPage() {
               </button>
             )}
           </div>
-          <div className="math-quiz-header-spacer"></div>
+          <div className="quiz-header-spacer"></div>
         </header>
 
-        <div className="math-quiz-content">
+        <div className="quiz-content">
           {/* quiz-card - 인게임과 동일한 구조 */}
           <div className="quiz-card">
             <div className="category-label">{displayCategoryPreview} - {displayTopicPreview}</div>
@@ -705,7 +705,7 @@ export function QuizPage() {
   }
 
   return (
-    <div className="math-quiz-page">
+    <div className="quiz-page">
       {categoryParam && subParam && (
         <GameTipModal
           isOpen={showTipModal}

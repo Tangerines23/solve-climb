@@ -151,3 +151,31 @@ BEGIN
   RETURN json_build_object('success', true);
 END;
 $$;
+
+-- 5. 아이템 소모 함수 (추가됨)
+CREATE OR REPLACE FUNCTION consume_item(p_item_id INTEGER)
+RETURNS JSON
+LANGUAGE plpgsql
+SECURITY DEFINER
+AS $$
+DECLARE
+  v_user_id UUID := auth.uid();
+  v_quantity INTEGER;
+BEGIN
+  -- 인벤토리에서 아이템 수량 확인
+  SELECT quantity INTO v_quantity 
+  FROM public.inventory 
+  WHERE user_id = v_user_id AND item_id = p_item_id;
+
+  IF v_quantity IS NULL OR v_quantity <= 0 THEN
+    RETURN json_build_object('success', false, 'message', '아이템이 부족합니다.');
+  END IF;
+
+  -- 수량 1 차감
+  UPDATE public.inventory 
+  SET quantity = quantity - 1
+  WHERE user_id = v_user_id AND item_id = p_item_id;
+
+  RETURN json_build_object('success', true, 'message', '아이템 사용 완료');
+END;
+$$;

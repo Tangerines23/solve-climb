@@ -260,7 +260,7 @@ export function ResultPage() {
     // #endregion
     params.set('mode', modeParamForUrl);
 
-    navigate(`/ math - quiz ? ${params.toString()} `);
+    navigate(`/quiz?${params.toString()}`);
   };
 
   // 랭킹 보기
@@ -271,7 +271,7 @@ export function ResultPage() {
   // 다른 레벨 선택
   const handleSelectOtherLevel = () => {
     if (categoryParam && subParam) {
-      navigate(`/ level - select ? category = ${categoryParam}& sub=${subParam} `);
+      navigate(`/level-select?category=${categoryParam}&sub=${subParam}`);
     } else {
       navigate('/');
     }

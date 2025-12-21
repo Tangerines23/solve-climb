@@ -85,7 +85,7 @@ export const GameOverlay: React.FC = () => {
             {feverLevel > 0 && (
                 <div style={{
                     position: 'fixed',
-                    top: '20%',
+                    top: '10%',
                     left: '50%',
                     transform: 'translateX(-50%)',
                     color: feverLevel === 2 ? '#FFD700' : '#FFFFFF',
@@ -93,6 +93,7 @@ export const GameOverlay: React.FC = () => {
                     fontWeight: 'bold',
                     textShadow: '0 0 10px rgba(0,0,0,0.5)',
                     zIndex: 1001,
+                    pointerEvents: 'none',
                     animation: 'pulse 1s infinite'
                 }}>
                     {feverLevel === 2 ? '🔥 SECOND WIND 🔥' : '⚡ MOMENTUM ⚡'}

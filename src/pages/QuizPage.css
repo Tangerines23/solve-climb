@@ -73,7 +73,7 @@
   animation: fade-in 0.1s forwards;
 }
 
-.math-quiz-page {
+.quiz-page {
   position: relative;
   width: 100vw;
   height: 100dvh;
@@ -93,7 +93,7 @@
 
 
 /* 상단 헤더 (뒤로가기 + 타이머) */
-.math-quiz-header {
+.quiz-header {
   position: relative;
   top: 0;
   left: 0;
@@ -110,24 +110,24 @@
 
 /* 가로모드에서 헤더 높이 축소 */
 @media (orientation: landscape) {
-  .math-quiz-header {
+  .quiz-header {
     height: clamp(48px, 6vh, 56px);
   }
 }
 
-.math-quiz-timer-container {
+.quiz-timer-container {
   flex: 1;
   display: flex;
   justify-content: center;
   align-items: center;
 }
 
-.math-quiz-header-spacer {
+.quiz-header-spacer {
   width: 44px;
   min-width: 44px;
 }
 
-.math-quiz-back-button {
+.quiz-back-button {
   background: none;
   border: none;
   color: var(--color-text-secondary);
@@ -145,17 +145,17 @@
   line-height: 1;
 }
 
-.math-quiz-back-button:hover {
+.quiz-back-button:hover {
   opacity: 0.7;
   background-color: rgba(255, 255, 255, 0.05);
 }
 
-.math-quiz-back-button:active {
+.quiz-back-button:active {
   opacity: 0.5;
 }
 
 /* 메인 컨텐츠 영역 */
-.math-quiz-content {
+.quiz-content {
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -174,7 +174,7 @@
 
 /* 가로모드 레이아웃 개선 */
 @media (orientation: landscape) {
-  .math-quiz-content {
+  .quiz-content {
     flex-direction: row;
     max-width: var(--modal-width-landscape-large);
     align-items: flex-start;

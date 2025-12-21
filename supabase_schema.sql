@@ -9,7 +9,8 @@ CREATE TABLE IF NOT EXISTS game_records (
   score INTEGER DEFAULT 0,
   cleared BOOLEAN DEFAULT false,
   cleared_at TIMESTAMP WITH TIME ZONE DEFAULT now(),
-  updated_at TIMESTAMP WITH TIME ZONE DEFAULT now()
+  updated_at TIMESTAMP WITH TIME ZONE DEFAULT now(),
+  UNIQUE(user_id, category, subject, level, mode)
 );
 
 -- Update auth.users with game specific columns (handled via public.users table for RLS)

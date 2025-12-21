@@ -1,251 +1,315 @@
-.game-tip-modal-overlay {
+.gt-modal-overlay {
   position: fixed;
   top: 0;
   left: 0;
   right: 0;
   bottom: 0;
-  background: rgba(15, 23, 42, 0.85);
-  backdrop-filter: blur(12px);
+  background: rgba(0, 0, 0, 0.75);
   display: flex;
   align-items: center;
   justify-content: center;
   z-index: 2000;
-  padding: 1rem;
-  animation: fadeIn 0.3s ease;
+  padding: 16px;
+  backdrop-filter: blur(8px);
 }
 
-@keyframes fadeIn {
-  from {
-    opacity: 0;
-  }
-
-  to {
-    opacity: 1;
-  }
-}
-
-.game-tip-modal {
-  background: var(--color-bg-primary);
-  border-radius: 2rem;
+.gt-modal-content {
+  background: #1a1a1a;
+  border-radius: 32px;
   width: 100%;
-  max-width: 800px;
-  max-height: 90vh;
-  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+  max-width: 920px;
+  max-height: 94vh;
   overflow: hidden;
-  display: flex;
-  flex-direction: column;
-  border: 1px solid rgba(255, 255, 255, 0.1);
-}
-
-.game-tip-container {
-  display: flex;
-  flex-direction: column;
-  height: 100%;
-  padding: 2rem;
-}
-
-/* Header */
-.modal-header {
-  text-align: center;
-  margin-bottom: 1.5rem;
-  flex-shrink: 0;
-}
-
-.modal-title {
-  font-size: 1.75rem;
-  font-weight: 800;
-  background: linear-gradient(135deg, #2dd4bf, #3b82f6);
-  -webkit-background-clip: text;
-  background-clip: text;
-  -webkit-text-fill-color: transparent;
-  margin-bottom: 0.5rem;
-}
-
-.modal-description {
-  color: #94a3b8;
-  font-size: 0.95rem;
-}
-
-/* Body */
-.modal-body {
-  flex: 1;
-  overflow-y: auto;
-  display: grid;
-  grid-template-columns: 1fr;
-  gap: 1.5rem;
-  padding-right: 0.5rem;
-  min-height: 0;
-}
-
-/* Content Sections */
-.game-tip-section {
-  background: rgba(255, 255, 255, 0.03);
-  border-radius: 1.25rem;
-  padding: 1.25rem;
+  box-shadow: 0 30px 60px rgba(0, 0, 0, 0.6);
   border: 1px solid rgba(255, 255, 255, 0.05);
 }
 
-.section-title {
-  font-size: 1.1rem;
-  color: #fff;
-  margin-bottom: 1rem;
+.gt-layout-wrapper {
   display: flex;
-  align-items: center;
-  gap: 0.5rem;
+  flex-direction: row;
+  min-height: 0;
+  height: auto;
 }
 
-.section-content p {
-  font-size: 0.95rem;
-  line-height: 1.6;
-  color: #cbd5e1;
-  margin-bottom: 0.75rem;
-}
-
-.game-tip-example {
-  background: rgba(0, 0, 0, 0.2);
-  padding: 0.75rem 1rem;
-  border-radius: 0.75rem;
-  margin: 1rem 0;
-  border-left: 3px solid #3b82f6;
-}
-
-/* Footer */
-.modal-footer {
-  margin-top: 1.5rem;
-  padding-top: 1.5rem;
-  border-top: 1px solid rgba(255, 255, 255, 0.1);
+.gt-left-panel {
+  flex: 0 0 38%;
+  padding: clamp(24px, 5vh, 48px);
   display: flex;
-  align-items: center;
+  flex-direction: column;
   justify-content: space-between;
-  flex-shrink: 0;
+  border-right: 1px solid rgba(255, 255, 255, 0.05);
+  background: rgba(255, 255, 255, 0.02);
 }
 
-.dont-show-checkbox {
+.gt-right-panel {
+  flex: 1;
+  padding: clamp(24px, 5vh, 48px);
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  background: #1e1e1e;
+}
+
+/* Title Area */
+.gt-title-area {
+  display: flex;
+  align-items: flex-start;
+  gap: 16px;
+  margin-bottom: 24px;
+}
+
+.gt-title-icon {
+  font-size: 2.4rem;
+  filter: drop-shadow(0 0 10px rgba(45, 212, 191, 0.3));
+}
+
+.gt-title-text {
+  font-size: clamp(1.8rem, 4vh, 2.4rem);
+  font-weight: 900;
+  color: #2dd4bf;
+  margin: 0;
+  line-height: 1.1;
+  word-break: keep-all;
+  letter-spacing: -0.02em;
+}
+
+/* Controls Area */
+.gt-controls-area {
+  display: flex;
+  flex-direction: column;
+}
+
+.gt-checkbox-label {
   display: flex;
   align-items: center;
-  gap: 0.5rem;
-  color: #64748b;
-  font-size: 0.85rem;
+  gap: 12px;
+  color: rgba(255, 255, 255, 0.45);
+  font-size: 0.95rem;
   cursor: pointer;
+  margin-bottom: clamp(16px, 3vh, 32px);
+  user-select: none;
+  transition: color 0.2s;
 }
 
-.game-actions {
+.gt-checkbox-label:hover {
+  color: rgba(255, 255, 255, 0.8);
+}
+
+.gt-checkbox-label input {
+  width: 18px;
+  height: 18px;
+  cursor: pointer;
+  accent-color: #2dd4bf;
+}
+
+.gt-button-group {
   display: flex;
-  gap: 0.75rem;
+  gap: 12px;
 }
 
-.start-btn {
-  background: linear-gradient(135deg, #2dd4bf, #34d399);
-  color: #042f2e;
+.gt-start-btn {
+  flex: 1;
+  background: #2dd4bf;
+  color: #000;
   border: none;
-  padding: 0.8rem 2rem;
-  border-radius: 1rem;
-  font-size: 1.1rem;
-  font-weight: 700;
+  padding: 18px;
+  border-radius: 20px;
+  font-size: 1.3rem;
+  font-weight: 800;
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: all 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  box-shadow: 0 4px 15px rgba(45, 212, 191, 0.2);
 }
 
-.start-btn:hover {
-  transform: scale(1.03);
-  box-shadow: 0 0 20px rgba(45, 212, 191, 0.4);
+.gt-start-btn:hover {
+  transform: translateY(-3px);
+  filter: brightness(1.1);
+  box-shadow: 0 8px 25px rgba(45, 212, 191, 0.3);
 }
 
-.backpack-btn {
-  width: 3.5rem;
-  height: 3.5rem;
+.gt-backpack-btn {
+  width: 64px;
+  height: 64px;
   background: rgba(255, 255, 255, 0.05);
   border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: 1rem;
+  border-radius: 20px;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 1.5rem;
+  font-size: 1.8rem;
   cursor: pointer;
   position: relative;
-  transition: all 0.2s ease;
+  transition: all 0.2s;
 }
 
-.backpack-btn:hover {
+.gt-backpack-btn:hover {
   background: rgba(255, 255, 255, 0.1);
+  border-color: rgba(255, 255, 255, 0.2);
 }
 
-.backpack-btn.has-items {
-  border-color: #2dd4bf;
-}
-
-.count-badge {
+.gt-badge {
   position: absolute;
-  top: -5px;
-  right: -5px;
-  background: #2dd4bf;
-  color: #042f2e;
-  font-size: 0.7rem;
+  top: -6px;
+  right: -6px;
+  background: #3b82f6;
+  color: white;
+  font-size: 0.8rem;
   font-weight: 800;
-  width: 1.25rem;
-  height: 1.25rem;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border: 2px solid var(--color-bg-primary);
+  padding: 4px 8px;
+  border-radius: 10px;
+  border: 3px solid #1a1a1a;
+  box-shadow: 0 4px 10px rgba(59, 130, 246, 0.4);
 }
 
-/* Landscape Split Layout */
-@media (min-width: 768px) and (min-height: 500px) {
-  .modal-body {
-    grid-template-columns: 1fr 1fr;
-    gap: 2rem;
-  }
+/* Right Side Content */
+.gt-description {
+  color: rgba(255, 255, 255, 0.55);
+  font-size: 1.1rem;
+  margin-bottom: 24px;
+  line-height: 1.5;
+  word-break: keep-all;
+  overflow-wrap: break-word;
 }
 
-/* Short Viewport Handling (Horizontal overlap fix) */
-@media (max-height: 600px) {
-  .game-tip-modal {
-    max-height: 95vh;
+.gt-scroll-content {
+  flex: 1;
+  overflow-y: auto;
+  padding-right: 12px;
+  min-height: 0;
+}
+
+/* Level Tip Card */
+.level-tip-card {
+  background: rgba(255, 255, 255, 0.03);
+  border-radius: 24px;
+  padding: 28px;
+  border-left: 6px solid #2dd4bf;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+}
+
+.level-tip-title {
+  font-size: 1.6rem;
+  font-weight: 800;
+  color: #fff;
+  margin: 0 0 16px 0;
+  letter-spacing: -0.01em;
+}
+
+.level-tip-text,
+.level-tip-strategy {
+  font-size: 1.1rem;
+  color: rgba(255, 255, 255, 0.85);
+  margin: 0 0 12px 0;
+  line-height: 1.65;
+  word-break: keep-all;
+}
+
+.level-tip-example {
+  background: rgba(0, 0, 0, 0.35);
+  padding: 16px 24px;
+  border-radius: 16px;
+  margin-top: 20px;
+  font-family: 'Pretendard', sans-serif;
+  font-size: 1.2rem;
+  color: #2dd4bf;
+  letter-spacing: 0.05em;
+  border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+/* Scrollbar */
+.gt-scroll-content::-webkit-scrollbar {
+  width: 6px;
+}
+
+.gt-scroll-content::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.12);
+  border-radius: 3px;
+}
+
+.gt-scroll-content::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.2);
+}
+
+/* Landscape Mobile */
+@media (max-height: 480px) {
+  .gt-modal-content {
+    max-height: 98vh;
+    border-radius: 20px;
   }
 
-  .game-tip-container {
-    padding: 1rem 1.5rem;
+  .gt-left-panel,
+  .gt-right-panel {
+    padding: 20px 32px;
   }
 
-  .modal-header {
-    margin-bottom: 0.75rem;
+  .gt-title-area {
+    margin-bottom: 12px;
   }
 
-  .modal-title {
+  .gt-description {
+    margin-bottom: 12px;
+    font-size: 1rem;
+  }
+
+  .gt-title-text {
+    font-size: 1.8rem;
+  }
+
+  .gt-start-btn {
+    padding: 12px;
+    font-size: 1.1rem;
+  }
+
+  .gt-backpack-btn {
+    width: 48px;
+    height: 48px;
     font-size: 1.4rem;
   }
 
-  .modal-footer {
-    margin-top: 0.75rem;
-    padding-top: 0.75rem;
+  .level-tip-card {
+    padding: 20px;
   }
 }
 
-/* Illustration placeholder */
-.default-tip-illustration {
-  height: 100%;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  background: rgba(255, 255, 255, 0.02);
-  border-radius: 1.25rem;
-  color: #475569;
-}
+/* Portrait */
+@media (max-width: 768px) and (orientation: portrait) {
+  .gt-layout-wrapper {
+    flex-direction: column;
+    max-height: 94vh;
+  }
 
-.illustration-icon {
-  font-size: 4rem;
-  margin-bottom: 1rem;
-  opacity: 0.5;
-}
+  .gt-left-panel {
+    display: contents;
+    /* Reordering hack */
+  }
 
-/* Hiragana Table Responsiveness */
-.hiragana-table-container {
-  max-height: 100%;
-}
+  .gt-title-area {
+    order: 1;
+    padding: 32px 32px 10px;
+    background: transparent;
+    margin-bottom: 0;
+  }
 
-.hiragana-row-items {
-  grid-template-columns: repeat(auto-fill, minmax(60px, 1fr));
+  .gt-right-panel {
+    order: 2;
+    padding: 10px 32px 20px;
+    flex: 1;
+    min-height: 0;
+    background: transparent;
+  }
+
+  .gt-controls-area {
+    order: 3;
+    padding: 24px 32px 32px;
+    background: transparent;
+    border-top: 1px solid rgba(255, 255, 255, 0.05);
+  }
+
+  .gt-checkbox-label {
+    margin-bottom: 20px;
+  }
+
+  .gt-button-group {
+    margin-top: 0;
+  }
 }

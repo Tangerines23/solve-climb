@@ -178,7 +178,7 @@
   font-weight: 500;
 }
 
-/* 키보드 미리보기 메인 영역 - 제거 (math-quiz-content를 직접 사용) */
+/* 키보드 미리보기 메인 영역 - 제거 (quiz-content를 직접 사용) */
 
 .keyboard-info-preview-header {
   display: flex;
@@ -282,7 +282,7 @@
   transform: scale(0.95);
 }
 
-/* 키보드는 math-quiz-content의 직접 자식으로 배치되어 퀴즈 페이지와 완전히 동일 */
+/* 키보드는 quiz-content의 직접 자식으로 배치되어 퀴즈 페이지와 완전히 동일 */
 .keyboard-info-content-wrapper > .custom-keypad,
 .keyboard-info-content-wrapper > .qwerty-keypad {
   /* 퀴즈 페이지와 동일 - 위치 강제 고정 */

@@ -68,7 +68,7 @@ export function CategorySelectPage() {
   const handleTimeSelect = (time: TimeLimit) => {
     setTimeLimit(time);
     // 모든 선택이 완료되면 퀴즈 페이지로 이동
-    navigate('/math-quiz');
+    navigate('/quiz');
   };
 
   const handleBack = () => {

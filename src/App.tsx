@@ -13,7 +13,7 @@ const SubCategoryPage = lazy(() => import('./pages/SubCategoryPage').then(module
 const LanguageDetailPage = lazy(() => import('./pages/LanguageDetailPage').then(module => ({ default: module.LanguageDetailPage })));
 const CategorySelectPage = lazy(() => import('./pages/CategorySelectPage').then(module => ({ default: module.CategorySelectPage })));
 const LevelSelectPage = lazy(() => import('./pages/LevelSelectPage').then(module => ({ default: module.LevelSelectPage })));
-const MathQuizPage = lazy(() => import('./pages/MathQuizPage').then(module => ({ default: module.MathQuizPage })));
+const QuizPage = lazy(() => import('./pages/QuizPage').then(module => ({ default: module.QuizPage })));
 const ResultPage = lazy(() => import('./pages/ResultPage').then(module => ({ default: module.ResultPage })));
 const RankingPage = lazy(() => import('./pages/RankingPage').then(module => ({ default: module.RankingPage })));
 const HistoryPage = lazy(() => import('./pages/HistoryPage').then(module => ({ default: module.HistoryPage })));
@@ -56,7 +56,7 @@ function App() {
           <Route path="/language-detail" element={<LanguageDetailPage />} />
           <Route path="/category-select" element={<CategorySelectPage />} />
           <Route path="/level-select" element={<LevelSelectPage />} />
-          <Route path="/math-quiz" element={<MathQuizPage />} />
+          <Route path="/quiz" element={<QuizPage />} />
           <Route path="/result" element={<ResultPage />} />
           <Route path="/ranking" element={<RankingPage />} />
           <Route path="/challenge" element={<HistoryPage />} />

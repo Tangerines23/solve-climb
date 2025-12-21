@@ -702,7 +702,7 @@ export function MyPage() {
                 </div>
                 <button
                   className="my-page-settings-item my-page-settings-item-button"
-                  onClick={() => navigate('/math-quiz?category=math&sub=arithmetic&level=1&preview=true')}
+                  onClick={() => navigate('/quiz?category=math&sub=arithmetic&level=1&preview=true')}
                 >
                   <div className="my-page-settings-item-content">
                     <span className="my-page-settings-item-label">키보드</span>

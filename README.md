@@ -111,7 +111,7 @@ solve-climb/
 - `/` - 홈 페이지
 - `/category-select` - 카테고리 선택
 - `/level-select` - 레벨 선택
-- `/math-quiz` - 수학 퀴즈 게임
+- `/quiz` - 퀴즈 게임 (수학, 언어, 논리, 상식 등 모든 카테고리)
 - `/result` - 결과 페이지
 - `/ranking` - 랭킹 페이지
 - `/my-page` - 마이페이지

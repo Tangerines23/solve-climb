@@ -69,7 +69,7 @@ export const APP_CONFIG = {
     CATEGORY_SELECT: '/category-select',
     SUB_CATEGORY: '/subcategory',
     LEVEL_SELECT: '/level-select',
-    GAME: '/math-quiz',
+    GAME: '/quiz',
     RESULT: '/result',
     RANKING: '/ranking',
     CHALLENGE: '/challenge',

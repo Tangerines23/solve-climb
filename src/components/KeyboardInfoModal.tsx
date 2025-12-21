@@ -4,7 +4,7 @@ import { APP_CONFIG } from '../config/app';
 import { useSettingsStore } from '../stores/useSettingsStore';
 import { CustomKeypad } from './CustomKeypad';
 import { QwertyKeypad } from './QwertyKeypad';
-import '../pages/MathQuizPage.css';
+import '../pages/QuizPage.css';
 import './KeyboardInfoModal.css';
 
 interface KeyboardInfoModalProps {
@@ -257,7 +257,7 @@ export function KeyboardInfoModal({ isOpen, onClose }: KeyboardInfoModalProps) {
     if (!selectedKeyboardType || availableKeyboardTypes.length === 0 || currentCategories.length === 0 || !currentCategory) {
       return (
         <div className="keyboard-info-modal-overlay" onClick={onClose}>
-          <div className="keyboard-info-modal math-quiz-page" onClick={(e) => e.stopPropagation()}>
+          <div className="keyboard-info-modal quiz-page" onClick={(e) => e.stopPropagation()}>
             <div className="keyboard-info-modal-header">
               <h2 className="keyboard-info-modal-title">키보드 미리보기</h2>
               <p className="keyboard-info-modal-subtitle">
@@ -278,24 +278,24 @@ export function KeyboardInfoModal({ isOpen, onClose }: KeyboardInfoModalProps) {
 
     return (
       <div className="keyboard-info-modal-overlay" onClick={onClose}>
-        <div className="keyboard-info-modal math-quiz-page" onClick={(e) => e.stopPropagation()}>
+        <div className="keyboard-info-modal quiz-page" onClick={(e) => e.stopPropagation()}>
           {/* 퀴즈 페이지와 동일한 헤더 구조 */}
-          <header className="math-quiz-header">
+          <header className="quiz-header">
             <button 
-              className="math-quiz-back-button" 
+              className="quiz-back-button" 
               onClick={onClose} 
               aria-label="뒤로 가기"
             >
               ←
             </button>
-            <div className="math-quiz-timer-container">
+            <div className="quiz-timer-container">
               <h2 className="keyboard-info-modal-title">{getKeyboardTypeName(selectedKeyboardType)}</h2>
             </div>
-            <div className="math-quiz-header-spacer"></div>
+            <div className="quiz-header-spacer"></div>
           </header>
 
           {/* 퀴즈 페이지와 동일한 컨텐츠 영역 구조 */}
-          <div className="math-quiz-content keyboard-info-content-wrapper">
+          <div className="quiz-content keyboard-info-content-wrapper">
             {/* 카테고리 선택 탭 (좌우 스크롤) - 키보드 위에 오버레이로 배치 */}
             <div className="keyboard-info-category-tabs">
               <div className="keyboard-info-category-tabs-scroll">
@@ -331,7 +331,7 @@ export function KeyboardInfoModal({ isOpen, onClose }: KeyboardInfoModalProps) {
               </button>
             </div>
 
-            {/* 키보드 - 퀴즈 페이지와 완전히 동일한 위치에 배치 (math-quiz-content의 직접 자식) */}
+            {/* 키보드 - 퀴즈 페이지와 완전히 동일한 위치에 배치 (quiz-content의 직접 자식) */}
             {selectedKeyboardType === 'custom' && (
               <CustomKeypad
                 onNumberClick={handleKeyPress}

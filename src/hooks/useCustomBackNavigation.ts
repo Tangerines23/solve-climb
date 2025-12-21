@@ -93,7 +93,7 @@ export function useCustomBackNavigation() {
       const newSearchParams = new URLSearchParams();
 
       switch (pathToCheck) {
-        case APP_CONFIG.ROUTES.GAME: // /math-quiz
+        case APP_CONFIG.ROUTES.GAME: // /quiz
           // /level-select로 이동 (category, sub 파라미터 유지)
           targetPath = APP_CONFIG.ROUTES.LEVEL_SELECT;
           const category = paramsToCheck.get('category');
@@ -127,7 +127,7 @@ export function useCustomBackNavigation() {
           break;
 
         case APP_CONFIG.ROUTES.RESULT: // /result
-          // 쿼리 파라미터를 확인하여 /math-quiz로 이동하거나 홈으로
+          // 쿼리 파라미터를 확인하여 /quiz로 이동하거나 홈으로
           const resultCategory = paramsToCheck.get('category');
           const resultSub = paramsToCheck.get('sub');
           const resultLevel = paramsToCheck.get('level');

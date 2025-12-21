@@ -199,7 +199,7 @@ export function LevelSelectPage() {
   const handleModeSelect = (mode: 'time-attack' | 'survival') => {
     const modeParam = mode === 'time-attack' ? 'time_attack' : 'survival';
     navigate(
-      `/math-quiz?category=${categoryParam}&sub=${subParam}&level=${selectedLevel?.level}&mode=${modeParam}`
+      `/quiz?category=${categoryParam}&sub=${subParam}&level=${selectedLevel?.level}&mode=${modeParam}`
     );
   };
 
