@@ -6,7 +6,7 @@
   background-color: var(--color-gray-900);
   border-bottom: 1px solid var(--color-bg-secondary);
   z-index: 100;
-  padding: 0 var(--spacing-xl);
+  padding: 0 var(--spacing-md);
   backdrop-filter: blur(10px);
   background-color: rgba(18, 18, 18, 0.9);
 }
@@ -17,6 +17,7 @@
   align-items: center;
   height: var(--header-height-portrait);
   max-width: 100%;
+  gap: var(--spacing-sm);
 }
 
 /* 가로모드에서 헤더 높이 축소 */
@@ -39,16 +40,22 @@
 }
 
 .header-logo {
-  font-size: 1.25rem;
+  font-size: 1.1rem;
   font-weight: bold;
   color: var(--color-text-primary);
   margin: 0;
+  white-space: nowrap;
+  flex-shrink: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .header-icons {
   display: flex;
-  gap: var(--spacing-lg);
+  gap: var(--spacing-sm);
   align-items: center;
+  flex-shrink: 0;
 }
 
 .header-icon-button {
@@ -72,18 +79,19 @@
 
 .header-status {
   display: flex;
-  gap: var(--spacing-md);
+  gap: var(--spacing-xs);
   background-color: rgba(255, 255, 255, 0.05);
-  padding: var(--spacing-xs) var(--spacing-md);
+  padding: 2px var(--spacing-sm);
   border-radius: 20px;
+  flex-shrink: 0;
 }
 
 .status-item {
   display: flex;
   align-items: center;
-  gap: var(--spacing-xs);
-  font-size: 0.875rem;
-  font-weight: 500;
+  gap: 2px;
+  font-size: 0.8rem;
+  font-weight: 600;
   color: var(--color-text-primary);
 }
 
@@ -106,9 +114,8 @@
 
 .admin-badge {
   position: absolute;
-  top: -10px;
-  left: 50%;
-  transform: translateX(-50%);
+  top: 4px;
+  left: 10px;
   background-color: #ff9800;
   color: white;
   font-size: 0.6rem;
@@ -117,6 +124,7 @@
   font-weight: bold;
   pointer-events: none;
   animation: pulse 1s infinite alternate;
+  z-index: 101;
 }
 
 @keyframes pulse {

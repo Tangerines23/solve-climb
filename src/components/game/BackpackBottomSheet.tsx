@@ -77,7 +77,7 @@ function getItemEmoji(code: string) {
     switch (code) {
         case 'oxygen_tank': return '🧪';
         case 'power_gel': return '⚡';
-        case 'safety_rope': return '🪢';
+        case 'safety_rope': return '🛡️';
         case 'flare': return '🧨';
         default: return '📦';
     }

@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { supabase } from '../utils/supabaseClient';
 import { useUserStore } from '../stores/useUserStore';
 import { Header } from '../components/Header';
+import { FooterNav } from '../components/FooterNav';
 import './ShopPage.css';
 
 interface Item {
@@ -19,6 +20,7 @@ export function ShopPage() {
     const [items, setItems] = useState<Item[]>([]);
     const [isLoading, setIsLoading] = useState(true);
     const [purchaseStatus, setPurchaseStatus] = useState<{ id: number; message: string } | null>(null);
+    const [activeTab, setActiveTab] = useState<'shop' | 'bag'>('shop');
     const { minerals, inventory, fetchUserData } = useUserStore();
 
     useEffect(() => {
@@ -71,10 +73,15 @@ export function ShopPage() {
         switch (code) {
             case 'oxygen_tank': return '🧪';
             case 'power_gel': return '⚡';
-            case 'safety_rope': return '🪢';
+            case 'safety_rope': return '🛡️'; // Match centralized icon
             case 'flare': return '🧨';
             default: return '📦';
         }
+    };
+
+    const getOwnedCount = (code: string) => {
+        const item = inventory.find(i => i.code === code);
+        return item ? item.quantity : 0;
     };
 
     return (
@@ -89,52 +96,90 @@ export function ShopPage() {
                     </div>
                 </header>
 
-                {isLoading && items.length === 0 ? (
-                    <div className="loading">상점 물건을 진열 중...</div>
-                ) : (
-                    <div className="item-grid">
-                        {items.map((item) => (
-                            <div key={item.id} className="item-card">
-                                <div className="item-icon">{getItemEmoji(item.code)}</div>
-                                <div className="item-info">
-                                    <h3>{item.name}</h3>
-                                    <p className="item-desc">{item.description}</p>
-                                    <div className="item-footer">
-                                        <span className="item-price">
-                                            <span role="img" aria-label="minerals">💎</span> {item.price}
-                                        </span>
-                                        <button
-                                            className="purchase-button"
-                                            onClick={() => handlePurchase(item.id, item.price)}
-                                            disabled={isLoading}
-                                        >
-                                            {purchaseStatus?.id === item.id ? purchaseStatus.message : '구매하기'}
-                                        </button>
-                                    </div>
-                                </div>
-                            </div>
-                        ))}
-                    </div>
-                )}
+                <div className="shop-tabs">
+                    <button
+                        className={`tab-button ${activeTab === 'shop' ? 'active' : ''}`}
+                        onClick={() => setActiveTab('shop')}
+                    >
+                        ⛰️ 상점
+                    </button>
+                    <button
+                        className={`tab-button ${activeTab === 'bag' ? 'active' : ''}`}
+                        onClick={() => setActiveTab('bag')}
+                    >
+                        🎒 내 배낭
+                    </button>
+                </div>
 
-                <section className="inventory-preview">
-                    <h3>나의 배낭</h3>
-                    <p className="hint">구매한 아이템은 게임 시작 시 자동으로 소모됩니다.</p>
-                    <div className="inventory-list">
-                        {inventory.length > 0 ? (
-                            inventory.map((item) => (
-                                <div key={item.id} className="inventory-item">
-                                    <span className="inventory-icon">{getItemEmoji(item.code)}</span>
-                                    <span className="inventory-name">{item.name}</span>
-                                    <span className="inventory-qty">x{item.quantity}</span>
+                {activeTab === 'bag' ? (
+                    <div className="inventory-view fade-in">
+                        <div className="inventory-header">
+                            <span className="inventory-logo">🎒</span>
+                            <div className="inventory-titles">
+                                <h3>나의 배낭</h3>
+                                <p className="hint">보유 중인 아이템입니다.</p>
+                            </div>
+                        </div>
+                        <div className="inventory-list">
+                            {inventory.length > 0 ? (
+                                inventory.map((item) => (
+                                    <div key={item.id} className="inventory-item">
+                                        <span className="inventory-icon">{getItemEmoji(item.code)}</span>
+                                        <div className="inventory-item-info">
+                                            <span className="inventory-name">{item.name}</span>
+                                            <span className="inventory-qty">x{item.quantity}</span>
+                                        </div>
+                                    </div>
+                                ))
+                            ) : (
+                                <div className="empty-inventory">
+                                    <p>배낭이 비어있습니다.</p>
+                                    <span>아이템을 구매하여 등반을 준비하세요!</span>
                                 </div>
-                            ))
-                        ) : (
-                            <p className="empty-inventory">비어 있음</p>
-                        )}
+                            )}
+                        </div>
                     </div>
-                </section>
+                ) : (
+                    <>
+                        {isLoading && items.length === 0 ? (
+                            <div className="loading">상점 물건을 진열 중...</div>
+                        ) : (
+                            <div className="item-grid fade-in">
+                                {items.map((item) => {
+                                    const owned = getOwnedCount(item.code);
+                                    return (
+                                        <div key={item.id} className="item-card">
+                                            <div className="item-icon-wrapper">
+                                                <div className="item-icon">{getItemEmoji(item.code)}</div>
+                                                {owned > 0 && <div className="owned-badge">보유 {owned}</div>}
+                                            </div>
+                                            <div className="item-info">
+                                                <div className="item-title-row">
+                                                    <h3>{item.name}</h3>
+                                                </div>
+                                                <p className="item-desc">{item.description}</p>
+                                                <div className="item-footer">
+                                                    <span className="item-price">
+                                                        <span role="img" aria-label="minerals">💎</span> {item.price}
+                                                    </span>
+                                                    <button
+                                                        className="purchase-button"
+                                                        onClick={() => handlePurchase(item.id, item.price)}
+                                                        disabled={isLoading}
+                                                    >
+                                                        {purchaseStatus?.id === item.id ? purchaseStatus.message : '구매하기'}
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    );
+                                })}
+                            </div>
+                        )}
+                    </>
+                )}
             </main>
+            <FooterNav />
         </div>
     );
 }

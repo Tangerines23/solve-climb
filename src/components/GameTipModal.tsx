@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { HIRAGANA_MAPPINGS } from '../utils/japanese';
 import { createSafeStorageKey } from '../utils/storageKey';
 import { storage } from '../utils/storage';
@@ -16,61 +16,10 @@ interface GameTipModalProps {
 
 export function GameTipModal({ isOpen, category, subTopic, level, onClose, onStart }: GameTipModalProps) {
   const [dontShowAgain, setDontShowAgain] = useState(false);
-  const [orientationKey, setOrientationKey] = useState(0);
   const [isBackpackOpen, setIsBackpackOpen] = useState(false);
   const [selectedItemIds, setSelectedItemIds] = useState<number[]>([]);
 
   // localStorage에서 "다시 보지 않기" 설정 확인
-  useEffect(() => {
-    if (isOpen) {
-      // 안전한 키 생성 함수 사용
-      const tipKey = level
-        ? createSafeStorageKey('gameTip', category, subTopic, level)
-        : createSafeStorageKey('gameTip', category, subTopic);
-      const shouldHide = storage.getString(tipKey) === 'true';
-      if (shouldHide) {
-        onClose();
-      }
-    }
-  }, [isOpen, category, subTopic, level, onClose]);
-
-  // orientation 변경 감지 및 강제 리렌더링
-  useEffect(() => {
-    const checkOrientation = () => {
-      // 실제 뷰포트 크기로 orientation 확인
-      const isLandscape = window.innerWidth > window.innerHeight;
-      const modalElement = document.querySelector('.game-tip-modal');
-
-      if (modalElement) {
-        if (isLandscape) {
-          modalElement.classList.add('force-landscape');
-          modalElement.classList.remove('force-portrait');
-        } else {
-          modalElement.classList.add('force-portrait');
-          modalElement.classList.remove('force-landscape');
-        }
-      }
-
-      // 강제 리렌더링을 위한 상태 업데이트
-      setOrientationKey(prev => prev + 1);
-    };
-
-    // 초기 확인
-    checkOrientation();
-
-    // 이벤트 리스너 추가
-    window.addEventListener('orientationchange', checkOrientation);
-    window.addEventListener('resize', checkOrientation);
-
-    // 약간의 지연을 두고 다시 확인 (뷰포트 크기 안정화 대기)
-    const timeoutId = setTimeout(checkOrientation, 100);
-
-    return () => {
-      clearTimeout(timeoutId);
-      window.removeEventListener('orientationchange', checkOrientation);
-      window.removeEventListener('resize', checkOrientation);
-    };
-  }, []);
 
   if (!isOpen) return null;
 
@@ -207,11 +156,13 @@ export function GameTipModal({ isOpen, category, subTopic, level, onClose, onSta
 
       const section = (
         <div className="game-tip-section">
-          <h4>{tipData.title}</h4>
-          <p><strong>팁:</strong> {tipData.tip}</p>
-          <p><strong>공략:</strong> {tipData.strategy}</p>
-          <div className="game-tip-example">
-            <p><strong>예시:</strong> {tipData.example}</p>
+          <h4 className="section-title">{tipData.title}</h4>
+          <div className="section-content">
+            <p className="tip-text"><strong>팁:</strong> {tipData.tip}</p>
+            <div className="game-tip-example">
+              <p><strong>예시:</strong> {tipData.example}</p>
+            </div>
+            <p className="strategy-text"><strong>공략:</strong> {tipData.strategy}</p>
           </div>
         </div>
       );
@@ -328,11 +279,13 @@ export function GameTipModal({ isOpen, category, subTopic, level, onClose, onSta
 
       const section = (
         <div className="game-tip-section">
-          <h4>{tipData.title}</h4>
-          <p><strong>팁:</strong> {tipData.tip}</p>
-          <p><strong>공략:</strong> {tipData.strategy}</p>
-          <div className="game-tip-example">
-            <p><strong>예시:</strong> {tipData.example}</p>
+          <h4 className="section-title">{tipData.title}</h4>
+          <div className="section-content">
+            <p className="tip-text"><strong>팁:</strong> {tipData.tip}</p>
+            <div className="game-tip-example">
+              <p><strong>예시:</strong> {tipData.example}</p>
+            </div>
+            <p className="strategy-text"><strong>공략:</strong> {tipData.strategy}</p>
           </div>
         </div>
       );
@@ -407,61 +360,60 @@ export function GameTipModal({ isOpen, category, subTopic, level, onClose, onSta
 
   const tipData = getTipData();
 
-  // 세로모드용 전체 콘텐츠 생성
-  const renderVerticalContent = () => (
-    <div className="game-tip-content">
-      <h3 className="game-tip-title">{tipData.title}</h3>
-      {tipData.description && <p className="game-tip-description">{tipData.description}</p>}
-      {tipData.section}
-      {tipData.other}
-    </div>
-  );
-
   return (
-    <div className="game-tip-modal-overlay" onClick={handleClose} key={orientationKey}>
+    <div className="game-tip-modal-overlay" onClick={handleClose}>
       <div className="game-tip-modal" onClick={(e) => e.stopPropagation()}>
-        <div className="game-tip-content-wrapper">
-          {/* 왼쪽 영역 (가로모드에서만 표시) */}
-          <div className="game-tip-left-area">
-            <h3 className="game-tip-title">{tipData.title}</h3>
-            <div className="game-tip-spacer"></div>
-            {tipData.description && <p className="game-tip-description">{tipData.description}</p>}
-            {tipData.section}
-            {tipData.other}
+        <div className="game-tip-container">
+          {/* Header Area */}
+          <div className="modal-header">
+            <h3 className="modal-title">{tipData.title}</h3>
+            {tipData.description && <p className="modal-description">{tipData.description}</p>}
           </div>
 
-          {/* 세로모드용 전체 콘텐츠 */}
-          <div className="game-tip-vertical-content">
-            {renderVerticalContent()}
+          {/* Main Content Area (Split in Landscape, Scrollable in Portrait) */}
+          <div className="modal-body">
+            <div className="body-left">
+              {tipData.section}
+            </div>
+            <div className="body-right">
+              {tipData.other || (
+                <div className="default-tip-illustration">
+                  <div className="illustration-icon">🎯</div>
+                  <p>정확도가 생명입니다!</p>
+                </div>
+              )}
+            </div>
           </div>
 
-          <div className="game-tip-footer">
-            <div className="game-tip-checkbox-container">
-              <label className="game-tip-checkbox-label">
+          {/* Footer Area */}
+          <div className="modal-footer">
+            <div className="footer-left">
+              <label className="dont-show-checkbox">
                 <input
                   type="checkbox"
                   checked={dontShowAgain}
                   onChange={(e) => setDontShowAgain(e.target.checked)}
-                  className="game-tip-checkbox"
                 />
                 <span>다시 보지 않기</span>
               </label>
             </div>
 
-            <div className="game-tip-actions">
-              <button className="game-tip-start-button" onClick={handleStart}>
-                시작하기
-              </button>
-              <button
-                className={`game-tip-backpack-button ${selectedItemIds.length > 0 ? 'has-items' : ''}`}
-                onClick={() => setIsBackpackOpen(true)}
-                aria-label="배낭 열기"
-              >
-                🎒
-                {selectedItemIds.length > 0 && (
-                  <span className="backpack-badge">{selectedItemIds.length}</span>
-                )}
-              </button>
+            <div className="footer-right">
+              <div className="game-actions">
+                <button className="start-btn" onClick={handleStart}>
+                  시작하기
+                </button>
+                <button
+                  className={`backpack-btn ${selectedItemIds.length > 0 ? 'has-items' : ''}`}
+                  onClick={() => setIsBackpackOpen(true)}
+                  aria-label="배낭 열기"
+                >
+                  🎒
+                  {selectedItemIds.length > 0 && (
+                    <span className="count-badge">{selectedItemIds.length}</span>
+                  )}
+                </button>
+              </div>
             </div>
           </div>
         </div>

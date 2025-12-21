@@ -36,6 +36,7 @@ interface UseQuizSubmitParams {
   setWrongAnswers: (updater: (prev: Array<{ question: string; wrongAnswer: string; correctAnswer: string }>) => Array<{ question: string; wrongAnswer: string; correctAnswer: string }>) => void;
   setSolveTimes: (updater: (prev: number[]) => number[]) => void;
   inputRef: React.RefObject<HTMLInputElement | null>;
+  showFeedback: (text: string, subText?: string, type?: 'success' | 'info') => void;
 }
 
 export function useQuizSubmit({
@@ -65,6 +66,7 @@ export function useQuizSubmit({
   setWrongAnswers,
   setSolveTimes,
   inputRef,
+  showFeedback,
 }: UseQuizSubmitParams) {
   const { incrementCombo, resetCombo, isExhausted, activeItems, consumeActiveItem } = useGameStore();
   const { stamina, fetchUserData } = useUserStore();
@@ -180,6 +182,7 @@ export function useQuizSubmit({
         if (hasSafetyRope) {
           consumeActiveItem('safety_rope');
           // Show special toast or feedback for rope use
+          showFeedback('SAFE!', 'Combo Protected');
           console.log('[Game] Safety Rope used! Combo protected.');
         } else {
           resetCombo();
@@ -211,6 +214,7 @@ export function useQuizSubmit({
             const hasFlare = activeItems.includes('flare');
             if (hasFlare) {
               consumeActiveItem('flare');
+              showFeedback('REVIVE!', 'Survival Continued', 'info');
               console.log('[Game] Flare used! Revived in survival mode.');
               setIsError(false);
               setDisplayValue('');
@@ -294,6 +298,7 @@ export function useQuizSubmit({
       increaseScore,
       decreaseScore,
       inputRef,
+      showFeedback,
     ]
   );
 

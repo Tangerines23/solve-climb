@@ -121,3 +121,33 @@ BEGIN
 END;
 $$;
 
+-- 4. 스태미나 차감 함수
+CREATE OR REPLACE FUNCTION consume_stamina()
+RETURNS JSON
+LANGUAGE plpgsql
+SECURITY DEFINER
+AS $$
+DECLARE
+  v_user_id UUID := auth.uid();
+  v_current_stamina INTEGER;
+  v_max_stamina INTEGER := 5;
+BEGIN
+  SELECT stamina INTO v_current_stamina FROM public.profiles WHERE id = v_user_id;
+
+  IF v_current_stamina <= 0 THEN
+    RETURN json_build_object('success', false, 'message', '스태미나가 부족합니다.');
+  END IF;
+
+  -- 스태미나 차감 및 시간 업데이트 (풀 상태에서 소모할 때만 현재 시간으로 갱신)
+  UPDATE public.profiles 
+  SET 
+    stamina = stamina - 1,
+    last_stamina_update = CASE 
+      WHEN stamina = v_max_stamina THEN now() 
+      ELSE last_stamina_update 
+    END
+  WHERE id = v_user_id;
+
+  RETURN json_build_object('success', true);
+END;
+$$;

@@ -11,6 +11,7 @@ interface UserState {
     purchaseItem: (itemId: number) => Promise<{ success: boolean; message: string }>;
     checkStamina: () => Promise<void>;
     consumeItem: (itemId: number) => Promise<{ success: boolean; message: string }>;
+    consumeStamina: () => Promise<{ success: boolean; message: string }>;
     setMinerals: (minerals: number) => Promise<void>;
     setStamina: (stamina: number) => void;
 }
@@ -92,6 +93,19 @@ export const useUserStore = create<UserState>((set, get) => ({
 
         if (data.success) {
             await get().fetchUserData();
+        }
+        return data;
+    },
+    consumeStamina: async () => {
+        const { data, error } = await supabase.rpc('consume_stamina');
+        if (error) {
+            console.error('Error consuming stamina:', error);
+            return { success: false, message: '오류가 발생했습니다.' };
+        }
+
+        if (data.success) {
+            // Optimistic update
+            set((state) => ({ stamina: Math.max(0, state.stamina - 1) }));
         }
         return data;
     },

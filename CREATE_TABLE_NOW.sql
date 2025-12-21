@@ -59,3 +59,5 @@ CREATE TRIGGER update_today_challenges_updated_at
 
 
 
+
+

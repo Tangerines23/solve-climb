@@ -25,7 +25,7 @@ export const PreGameLobby: React.FC<PreGameLobbyProps> = ({ onStart, onBack, cat
         switch (code) {
             case 'oxygen_tank': return '🧪';
             case 'power_gel': return '⚡';
-            case 'safety_rope': return '🪢';
+            case 'safety_rope': return '🛡️'; // Updated to shield for consistency
             case 'flare': return '🧨';
             default: return '📦';
         }

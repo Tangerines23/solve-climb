@@ -17,6 +17,8 @@ import { QwertyKeypad } from '../components/QwertyKeypad';
 import { GameOverlay } from '../components/game/GameOverlay';
 import { useUserStore } from '../stores/useUserStore';
 import { useGameStore } from '../stores/useGameStore';
+import { StaminaWarningModal } from '../components/game/StaminaWarningModal';
+import { ItemFeedbackOverlay, ItemFeedbackRef } from '../components/game/ItemFeedbackOverlay';
 import { APP_CONFIG } from '../config/app';
 import {
   validateCategoryParam,
@@ -53,7 +55,9 @@ export function MathQuizPage() {
   const [isFadingOut, setIsFadingOut] = useState(false);
   const [useSystemKeyboard, setUseSystemKeyboard] = useState(false);
   const [showTipModal, setShowTipModal] = useState(true);
-  const { stamina, inventory, checkStamina, consumeItem } = useUserStore();
+  const [showStaminaModal, setShowStaminaModal] = useState(false);
+  const [pendingItemIds, setPendingItemIds] = useState<number[]>([]);
+  const { stamina, inventory, checkStamina, consumeItem, consumeStamina } = useUserStore();
   const { setExhausted, resetGame, setActiveItems, incrementCombo } = useGameStore();
   const [questionKey, setQuestionKey] = useState(0);
   const [previewKeyboardType, setPreviewKeyboardType] = useState<'custom' | 'qwerty'>(() => keyboardType);
@@ -61,6 +65,7 @@ export function MathQuizPage() {
   const SURVIVAL_QUESTION_TIME = 5;
   const exitConfirmTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
+  const feedbackRef = useRef<ItemFeedbackRef>(null);
 
   // URL 파라미터에서 레벨 정보 읽기 및 검증
   const categoryParamRaw = searchParams.get('category');
@@ -165,6 +170,7 @@ export function MathQuizPage() {
     setWrongAnswers: gameStateSettersRef.current.setWrongAnswers,
     setSolveTimes: gameStateSettersRef.current.setSolveTimes,
     inputRef,
+    showFeedback: (text: string, subText?: string, type?: 'success' | 'info') => feedbackRef.current?.show(text, subText, type),
   });
 
   // categoryParam이나 subParam, levelParam이 변경될 때 팁 모달 상태 업데이트
@@ -187,6 +193,27 @@ export function MathQuizPage() {
   }, [modeParam, setGameMode]);
 
   const handleStartGame = async (selectedItemIds: number[]) => {
+    // 1. Check Stamina
+    if (stamina <= 0) {
+      setPendingItemIds(selectedItemIds);
+      setShowStaminaModal(true);
+      return;
+    }
+
+    // 2. Consume Stamina
+    const staminaResult = await consumeStamina();
+    if (!staminaResult.success) {
+      // Small chance of race condition, but handle it
+      setPendingItemIds(selectedItemIds);
+      setShowStaminaModal(true);
+      return;
+    }
+
+    // 3. Normal Start
+    await startWithItems(selectedItemIds);
+  };
+
+  const startWithItems = async (selectedItemIds: number[]) => {
     // 1. Consume items and identify their codes
     const activeCodes: string[] = [];
     for (const id of selectedItemIds) {
@@ -212,12 +239,20 @@ export function MathQuizPage() {
       incrementCombo(); // Start with 1 combo (Momentum)
     }
 
-    // 4. Close lobby and start quiz
+    // 4. Close modal and start quiz
     setShowTipModal(false);
-    // Note: showTipModal might still be true if it's the first time
-    if (!showTipModal) {
-      generateNewQuestion();
-    }
+    setShowStaminaModal(false);
+    generateNewQuestion();
+  };
+
+  const handlePlayAnyway = async () => {
+    setExhausted(true);
+    await startWithItems(pendingItemIds);
+  };
+
+  const handleWatchAd = () => {
+    // Placeholder for Ad logic
+    alert('광고 시스템 준비 중입니다.');
   };
 
   // URL 파라미터에서 category와 topic 설정
@@ -682,6 +717,13 @@ export function MathQuizPage() {
         />
       )}
       <GameOverlay />
+      <StaminaWarningModal
+        isOpen={showStaminaModal}
+        onClose={() => setShowStaminaModal(false)}
+        onPlayAnyway={handlePlayAnyway}
+        onWatchAd={handleWatchAd}
+      />
+      <ItemFeedbackOverlay ref={feedbackRef} />
       <QuizCard
         currentQuestion={currentQuestion}
         answerInput={answerInput}
