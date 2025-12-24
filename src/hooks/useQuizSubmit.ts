@@ -37,6 +37,7 @@ interface UseQuizSubmitParams {
   setSolveTimes: (updater: (prev: number[]) => number[]) => void;
   inputRef: React.RefObject<HTMLInputElement | null>;
   showFeedback: (text: string, subText?: string, type?: 'success' | 'info') => void;
+  onSafetyRopeUsed?: () => void;
 }
 
 export function useQuizSubmit({
@@ -67,6 +68,7 @@ export function useQuizSubmit({
   setSolveTimes,
   inputRef,
   showFeedback,
+  onSafetyRopeUsed,
 }: UseQuizSubmitParams) {
   const { incrementCombo, resetCombo, isExhausted, activeItems, consumeActiveItem } = useGameStore();
   const { stamina, fetchUserData } = useUserStore();
@@ -181,9 +183,25 @@ export function useQuizSubmit({
         const hasSafetyRope = activeItems.includes('safety_rope');
         if (hasSafetyRope) {
           consumeActiveItem('safety_rope');
-          // Show special toast or feedback for rope use
-          showFeedback('SAFE!', 'Combo Protected');
-          console.log('[Game] Safety Rope used! Combo protected.');
+
+          // Trigger Safety Rope Overlay
+          if (onSafetyRopeUsed) onSafetyRopeUsed();
+
+          console.log('[Game] Safety Rope used! Combo protected & Retry allowed.');
+
+          // Reset interaction state to allow retry
+          setTimeout(() => {
+            setIsError(false);
+            setCardAnimation('');
+            setIsSubmitting(false);
+            // Optionally clear input? "해당 문제 화면에 머무르게" -> Keep input or clear?
+            // Usually clearing incorrect input is better UX for retry.
+            // setAnswerInput(''); 
+            // setDisplayValue('');
+            // But let's keep it for a moment so they see what they typed.
+          }, 1000); // 1.5s animation, wait a bit before unlocking
+
+          return; // STOP Game Over Logic
         } else {
           resetCombo();
         }

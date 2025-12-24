@@ -110,18 +110,6 @@ export function useCustomBackNavigation() {
           break;
 
         case APP_CONFIG.ROUTES.SUB_CATEGORY: // /subcategory
-          // /category-select로 이동 (category 파라미터 유지)
-          const catParam = paramsToCheck.get('category');
-          if (catParam) {
-            targetPath = APP_CONFIG.ROUTES.CATEGORY_SELECT;
-            newSearchParams.set('category', catParam);
-          } else {
-            // category 파라미터가 없으면 홈으로
-            targetPath = APP_CONFIG.ROUTES.HOME;
-          }
-          break;
-
-        case APP_CONFIG.ROUTES.CATEGORY_SELECT: // /category-select
           // 홈으로 이동
           targetPath = APP_CONFIG.ROUTES.HOME;
           break;

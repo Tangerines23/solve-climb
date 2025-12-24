@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { APP_CONFIG } from '../config/app';
 import { useProfileStore } from '../stores/useProfileStore';
 import { useUserStore } from '../stores/useUserStore';
+import { Toast } from './Toast'; // Import Toast
 import './Header.css';
 
 export function Header() {
@@ -11,7 +12,16 @@ export function Header() {
   const { minerals, stamina, fetchUserData, checkStamina, setMinerals, setStamina } = useUserStore();
 
   const [isAdminMode, setIsAdminMode] = useState(false);
-  const [selectedResource, setSelectedResource] = useState<'stamina' | 'minerals' | null>(null);
+  const [selectedResource, setSelectedResource] = useState<'stamina' | 'minerals' | 'items' | null>(null);
+
+  // Toast State
+  const [toastMessage, setToastMessage] = useState('');
+  const [isToastOpen, setIsToastOpen] = useState(false);
+
+  const showToast = (msg: string) => {
+    setToastMessage(msg);
+    setIsToastOpen(true);
+  };
 
   const doubleClickTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const lastClickTimeRef = useRef<number>(0);
@@ -70,13 +80,22 @@ export function Header() {
     if (e.key === '+' || e.key === '=') {
       if (selectedResource === 'stamina') setStamina(stamina + 1);
       if (selectedResource === 'minerals') setMinerals(minerals + 100);
+      if (selectedResource === 'items') {
+        const { debugAddItems } = useUserStore.getState();
+        debugAddItems().then(() => showToast("아이템 +5 지급 🎒"));
+      }
     } else if (e.key === '-' || e.key === '_') {
       if (selectedResource === 'stamina') setStamina(stamina - 1);
       if (selectedResource === 'minerals') setMinerals(minerals - 100);
+      if (selectedResource === 'items') {
+        const { debugRemoveItems } = useUserStore.getState();
+        debugRemoveItems().then(() => showToast("아이템 -5 감소 🗑️"));
+      }
     }
   }, [isDev, isAdminMode, selectedResource, stamina, minerals, setStamina, setMinerals]);
 
   useEffect(() => {
+    // 키보드 이벤트는 window에 확실하게 바인딩
     if (isDev) {
       window.addEventListener('keydown', handleKeyDown);
       return () => window.removeEventListener('keydown', handleKeyDown);
@@ -95,6 +114,12 @@ export function Header() {
     setSelectedResource(prev => prev === 'minerals' ? null : 'minerals');
   };
 
+  const handleItemsClick = (e: React.MouseEvent) => {
+    if (!isAdminMode) return;
+    e.stopPropagation();
+    setSelectedResource(prev => prev === 'items' ? null : 'items');
+  };
+
   const clearSelection = () => {
     setSelectedResource(null);
   };
@@ -110,7 +135,7 @@ export function Header() {
           {APP_CONFIG.APP_NAME}
         </h1>
         <div className="header-status">
-          {isAdminMode && <div className="admin-badge">DEV DEBUG</div>}
+          {isAdminMode && <div className="admin-badge">DEV</div>}
           <div
             className={`status-item ${selectedResource === 'stamina' ? 'selected' : ''}`}
             onClick={handleStaminaClick}
@@ -127,6 +152,15 @@ export function Header() {
             <span role="img" aria-label="minerals">💎</span>
             <span className="status-value">{minerals}</span>
           </div>
+          {isAdminMode && (
+            <div
+              className={`status-item ${selectedResource === 'items' ? 'selected' : ''}`}
+              onClick={handleItemsClick}
+              style={{ cursor: 'pointer' }}
+            >
+              <span role="img" aria-label="items">📦</span>
+            </div>
+          )}
         </div>
         <div className="header-icons">
           <button
@@ -145,6 +179,13 @@ export function Header() {
           </button>
         </div>
       </div>
+      <Toast
+        message={toastMessage}
+        isOpen={isToastOpen}
+        onClose={() => setIsToastOpen(false)}
+        autoClose={true}
+        autoCloseDelay={2000}
+      />
     </header>
   );
 }

@@ -66,7 +66,6 @@ export const APP_CONFIG = {
   // 라우팅 경로
   ROUTES: {
     HOME: '/',
-    CATEGORY_SELECT: '/category-select',
     SUB_CATEGORY: '/subcategory',
     LEVEL_SELECT: '/level-select',
     GAME: '/quiz',

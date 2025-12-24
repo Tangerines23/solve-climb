@@ -1,5 +1,6 @@
 // 범용 토스트 메시지 컴포넌트
 import React, { useEffect, useState, useRef } from 'react';
+import { createPortal } from 'react-dom';
 import './Toast.css';
 
 interface ToastProps {
@@ -38,10 +39,10 @@ export function Toast({
 
       // 임시로 한 줄로 표시하여 실제 너비 측정
       const textElement = textRef.current;
-      
+
       const originalWhiteSpace = textElement.style.whiteSpace;
       textElement.style.whiteSpace = 'nowrap';
-      
+
       const textWidth = textElement.scrollWidth;
       const iconWidth = icon ? 28 : 0; // 아이콘(20px) + gap(8px)
       const padding = 40; // 좌우 padding (20px * 2)
@@ -66,7 +67,7 @@ export function Toast({
 
     if (isOpen && message) {
       setIsClosing(false);
-      
+
       // 자동 닫기
       if (autoClose && onClose) {
         timerRef.current = setTimeout(() => {
@@ -94,7 +95,7 @@ export function Toast({
 
   if (!isOpen || !message) return null;
 
-  return (
+  return createPortal(
     <div className={`toast ${isClosing ? 'closing' : ''}`}>
       <div ref={contentRef} className="toast-content">
         {icon && <span className="toast-icon">{icon}</span>}
@@ -102,6 +103,7 @@ export function Toast({
           {message}
         </span>
       </div>
-    </div>
+    </div>,
+    document.body
   );
 }

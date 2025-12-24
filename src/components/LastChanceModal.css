@@ -1,0 +1,186 @@
+.last-chance-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0, 0, 0, 0.6);
+    /* Slightly more transparent to show blur */
+    backdrop-filter: blur(8px);
+    /* Blur effect */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+    /* 최상위 */
+    animation: fadeIn 0.3s ease-out;
+}
+
+.last-chance-modal {
+    background: #2c2c2c;
+    /* Dark background */
+    width: 90%;
+    max-width: 320px;
+    border-radius: 20px;
+    padding: 24px;
+    text-align: center;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    animation: popIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.last-chance-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+.last-chance-header h2 {
+    margin: 0;
+    color: #fff;
+    /* White title */
+    font-size: 24px;
+    font-weight: 800;
+    font-style: italic;
+}
+
+.last-chance-timer {
+    background: rgba(255, 255, 255, 0.1);
+    color: #fff;
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-weight: bold;
+    font-size: 18px;
+}
+
+.last-chance-message {
+    font-size: 16px;
+    color: #eee;
+    /* Lighter text */
+    margin-bottom: 20px;
+    line-height: 1.4;
+}
+
+.item-status {
+    background: #f5f5f5;
+    padding: 12px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    margin-bottom: 20px;
+}
+
+.item-icon {
+    width: 32px;
+    height: 32px;
+    background-size: contain;
+    background-repeat: no-repeat;
+    background-position: center;
+}
+
+.item-icon.oxygen_tank {
+    background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="%232196F3"><path d="M12 2C7.58 2 4 5.58 4 10v12h16V10c0-4.42-3.58-8-8-8zm-1 18h-2v-2h2v2zm0-4h-2V6h2v10zm4 4h-2v-2h2v2zm0-4h-2V6h2v10z"/></svg>');
+}
+
+.item-icon.flare {
+    background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="%23FF5722"><path d="M12 2L4.5 20.29l.71.71L12 18l6.79 3 .71-.71z"/></svg>');
+}
+
+.item-name {
+    font-weight: bold;
+    color: #555;
+}
+
+.action-buttons {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.last-chance-btn {
+    width: 100%;
+    padding: 14px;
+    border: none;
+    border-radius: 12px;
+    font-size: 16px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: transform 0.1s;
+}
+
+.last-chance-btn:active {
+    transform: scale(0.98);
+}
+
+.use-btn {
+    background: #3f3f3f;
+    /* Dark Grey */
+    border: 1px solid #7367F0;
+    /* Primary Border */
+    color: #7367F0;
+    box-shadow: 0 4px 0 #2a2a2a;
+}
+
+.buy-btn {
+    background: #1f4037;
+    /* Dark Green */
+    border: 1px solid #28C76F;
+    color: #28C76F;
+    box-shadow: 0 4px 0 #152e26;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.buy-btn.disabled {
+    background: #333;
+    border: 1px solid #555;
+    color: #777;
+    box-shadow: none;
+    cursor: not-allowed;
+    opacity: 0.7;
+}
+
+.error-text {
+    font-size: 11px;
+    opacity: 0.9;
+    font-weight: normal;
+    color: #ff6b6b;
+}
+
+.give-up-btn {
+    background: transparent;
+    border: 1px solid #555;
+    color: #aaa;
+    box-shadow: none;
+}
+
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+    }
+
+    to {
+        opacity: 1;
+    }
+}
+
+@keyframes popIn {
+    from {
+        transform: scale(0.8);
+        opacity: 0;
+    }
+
+    to {
+        transform: scale(1);
+        opacity: 1;
+    }
+}

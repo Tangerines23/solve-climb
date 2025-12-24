@@ -1,49 +1,52 @@
-import React, { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Header } from '../components/Header';
 import { FooterNav } from '../components/FooterNav';
-import { openLeaderboard } from '../utils/tossGameCenter';
-import { AlertModal } from '../components/AlertModal';
-import { Toast } from '../components/Toast';
+import { supabase } from '../utils/supabaseClient';
+import { useLevelProgressStore } from '../stores/useLevelProgressStore';
 import './RankingPage.css';
 
-export function RankingPage() {
-  const [showAlert, setShowAlert] = useState(false);
-  const [alertMessage, setAlertMessage] = useState('');
-  const [isOpeningLeaderboard, setIsOpeningLeaderboard] = useState(false);
-  const [retryCount, setRetryCount] = useState(0);
-  const [showToast, setShowToast] = useState(false);
-  const [toastMessage, setToastMessage] = useState('');
+type RankingType = 'total' | 'time-attack' | 'survival';
+type RankingPeriod = 'weekly' | 'all-time';
 
-  const handleOpenTossLeaderboard = async () => {
-    setIsOpeningLeaderboard(true);
-    setRetryCount(0);
-    
-    try {
-      const result = await openLeaderboard(
-        (message) => {
-          // 에러 메시지를 AlertModal로 표시
-          setAlertMessage(message);
-          setShowAlert(true);
-        },
-        (attempt, maxRetries) => {
-          // 재시도 중일 때 사용자에게 알림
-          setRetryCount(attempt);
-          setToastMessage(`리더보드를 여는 중... (${attempt}/${maxRetries})`);
-          setShowToast(true);
-        }
-      );
-      
-      // 결과가 실패이고 메시지가 없으면 기본 메시지 표시
-      if (!result.success && result.message) {
-        setAlertMessage(result.message);
-        setShowAlert(true);
-      } else if (!result.success) {
-        setAlertMessage('리더보드를 열 수 없습니다.');
-        setShowAlert(true);
+export function RankingPage() {
+  const [activeType, setActiveType] = useState<RankingType>('total');
+  const [activePeriod, setActivePeriod] = useState<RankingPeriod>('weekly');
+  const [loading, setLoading] = useState(false);
+  const [currentUserId, setCurrentUserId] = useState<string | null>(null);
+
+  const { fetchRanking, rankings } = useLevelProgressStore();
+
+  const currentCategory = 'math';
+  const currentRankings = rankings[`${currentCategory}-${activePeriod}-${activeType}`] || [];
+
+  useEffect(() => {
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      if (session?.user) {
+        setCurrentUserId(session.user.id);
       }
-    } finally {
-      setIsOpeningLeaderboard(false);
-      setRetryCount(0);
+    });
+  }, []);
+
+  useEffect(() => {
+    const loadRanking = async () => {
+      setLoading(true);
+      await fetchRanking(currentCategory, activePeriod, activeType);
+      setLoading(false);
+    };
+    loadRanking();
+  }, [activeType, activePeriod, fetchRanking]);
+
+  // 내 랭킹 찾기
+  const myRank = currentUserId
+    ? currentRankings.find((item) => item.user_id === currentUserId)
+    : null;
+
+  const getMedalIcon = (rank: number) => {
+    switch (rank) {
+      case 1: return '🥇';
+      case 2: return '🥈';
+      case 3: return '🥉';
+      default: return rank;
     }
   };
 
@@ -51,39 +54,109 @@ export function RankingPage() {
     <div className="ranking-page">
       <Header />
       <main className="ranking-main">
-        <div className="ranking-content">
-          <h1 className="ranking-title">리더보드</h1>
-
-          {/* 토스 리더보드 열기 버튼 */}
-          <button 
-            className="toss-leaderboard-button"
-            onClick={handleOpenTossLeaderboard}
-            disabled={isOpeningLeaderboard}
-          >
-            {isOpeningLeaderboard 
-              ? (retryCount > 0 ? `재시도 중... (${retryCount}/${2})` : '열기 중...')
-              : '🏆 리더보드 보기'
-            }
-          </button>
-
-          <div className="ranking-empty">
-            <p>토스 앱에서 리더보드를 확인하세요</p>
+        {/* Layer 1: 종목 선택 (Tabs) */}
+        <div className="ranking-tabs-container">
+          <div className="ranking-tabs">
+            <button
+              className={`ranking-tab ${activeType === 'total' ? 'active' : ''}`}
+              onClick={() => setActiveType('total')}
+            >
+              종합
+            </button>
+            <button
+              className={`ranking-tab ${activeType === 'time-attack' ? 'active' : ''}`}
+              onClick={() => setActiveType('time-attack')}
+            >
+              타임어택
+            </button>
+            <button
+              className={`ranking-tab ${activeType === 'survival' ? 'active' : ''}`}
+              onClick={() => setActiveType('survival')}
+            >
+              서바이벌
+            </button>
           </div>
         </div>
+
+        {/* Layer 2: 기간 선택 (Pill Switch) */}
+        <div className="ranking-switch-container">
+          <div className="ranking-switch">
+            <div
+              className={`switch-bg ${activePeriod}`}
+            />
+            <button
+              className={`switch-option ${activePeriod === 'weekly' ? 'active' : ''}`}
+              onClick={() => setActivePeriod('weekly')}
+            >
+              🔥 이번 주 리그
+            </button>
+            <button
+              className={`switch-option ${activePeriod === 'all-time' ? 'active' : ''}`}
+              onClick={() => setActivePeriod('all-time')}
+            >
+              👑 명예의 전당
+            </button>
+          </div>
+        </div>
+
+        {/* Info Text */}
+        <div className="ranking-info">
+          {activePeriod === 'weekly' ? (
+            <p>성실함 & 노력! 이번 주 획득한 모든 점수의 합산</p>
+          ) : (
+            <p>{activeType === 'total' ? '티어 정복! 모든 레벨별 최고 기록의 총합' : '역대 최고 기록! 단일 판 기록 기준'}</p>
+          )}
+        </div>
+
+        {/* Layer 3: 랭킹 리스트 */}
+        <div className="ranking-list-container">
+          {loading ? (
+            <div className="ranking-loading">
+              <div className="spinner"></div>
+              <p>랭킹 불러오는 중...</p>
+            </div>
+          ) : currentRankings.length > 0 ? (
+            <div className="ranking-list">
+              {currentRankings.map((item) => (
+                <div
+                  key={item.user_id}
+                  className={`ranking-item ${Number(item.rank) <= 3 ? `top-rank rank-${item.rank}` : ''} ${item.user_id === currentUserId ? 'my-item' : ''}`}
+                >
+                  <div className="ranking-item-left">
+                    <span className="ranking-rank">{getMedalIcon(Number(item.rank))}</span>
+                    <span className="ranking-nickname">{item.nickname}</span>
+                  </div>
+                  <div className="ranking-score">
+                    {Number(item.score).toLocaleString()}점
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div className="ranking-empty">
+              <span className="empty-icon">🏜️</span>
+              <p>아직 등록된 랭킹이 없어요.</p>
+              <p>첫 번째 주인공이 되어보세요!</p>
+            </div>
+          )}
+        </div>
+
+        {/* 내 랭킹 (스티키) */}
+        {myRank && (
+          <div className="my-rank-sticky">
+            <div className="ranking-item my-item">
+              <div className="ranking-item-left">
+                <span className="ranking-rank">{getMedalIcon(Number(myRank.rank))}</span>
+                <span className="ranking-nickname">나 ({myRank.nickname})</span>
+              </div>
+              <div className="ranking-score">
+                {Number(myRank.score).toLocaleString()}점
+              </div>
+            </div>
+          </div>
+        )}
       </main>
       <FooterNav />
-      <AlertModal
-        isOpen={showAlert}
-        title="알림"
-        message={alertMessage || '리더보드를 열 수 없습니다.'}
-        onClose={() => setShowAlert(false)}
-      />
-      <Toast
-        message={toastMessage}
-        isOpen={showToast}
-        onClose={() => setShowToast(false)}
-        icon="⏳"
-      />
     </div>
   );
 }

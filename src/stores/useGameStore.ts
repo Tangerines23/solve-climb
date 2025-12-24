@@ -17,6 +17,10 @@ interface GameState {
     activeItems: string[]; // List of item codes active in the current session
     setActiveItems: (codes: string[]) => void;
     consumeActiveItem: (code: string) => void;
+
+    // Stamina Session Lock
+    isStaminaConsumed: boolean;
+    setStaminaConsumed: (consumed: boolean) => void;
     resetGame: () => void;
 }
 
@@ -28,6 +32,7 @@ export const useGameStore = create<GameState>((set) => ({
     showSpeedLines: false,
     showVignette: false,
     activeItems: [],
+    isStaminaConsumed: false,
 
     setScore: (score) => set({ score }),
 
@@ -55,6 +60,8 @@ export const useGameStore = create<GameState>((set) => ({
 
     setExhausted: (exhausted) => set({ isExhausted: exhausted, showVignette: exhausted }),
 
+    setStaminaConsumed: (consumed) => set({ isStaminaConsumed: consumed }),
+
     resetGame: () => set({
         score: 0,
         combo: 0,
@@ -63,6 +70,7 @@ export const useGameStore = create<GameState>((set) => ({
         showSpeedLines: false,
         showVignette: false,
         activeItems: [],
+        isStaminaConsumed: false,
     }),
 
     setActiveItems: (codes) => set({ activeItems: codes }),

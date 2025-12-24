@@ -82,6 +82,9 @@ export function ResultPage() {
   const [scoreSubmitted, setScoreSubmitted] = useState(false);
   const [isNewRecord, setIsNewRecord] = useState(false);
   const [showConfetti, setShowConfetti] = useState(false);
+  const [currentRank, setCurrentRank] = useState<number | null>(null);
+
+  const { fetchRanking } = useLevelProgressStore();
 
   // Confetti 색상 팔레트 (CSS 변수에서 읽어옴)
   const confettiColors = useMemo(() => {
@@ -113,13 +116,20 @@ export function ResultPage() {
 
   // 파라미터 검증
   const categoryParam = validateCategoryParam(categoryParamRaw);
+  const currentCategory = categoryParam || 'math';
   const subParam = validateSubTopicParam(categoryParam, subParamRaw);
   const level = validateLevelParam(levelParamRaw, 20);
   const mode = validateModeParam(modeParamRaw);
 
   // 점수 검증 (0 이상, 최대값 제한)
   const validatedScore = validateNumberParam(scoreParamRaw, 0, 1000000);
-  const finalScore = validatedScore !== null ? validatedScore : score;
+  let baseScore = validatedScore !== null ? validatedScore : score;
+
+  // 패널티 적용
+  if (isExhaustedParam) {
+    baseScore = Math.floor(baseScore * 0.8);
+  }
+  const finalScore = baseScore;
 
   // CountUp 애니메이션 적용
   const animatedScore = useCountUp(finalScore, 1500);
@@ -192,12 +202,33 @@ export function ResultPage() {
       ? (accuracy >= 50 || correctCount >= 1)
       : (correctCount >= 1);
 
-    if (shouldClearLevel && finalScore > 0) {
-      // 레벨 클리어 처리 (자동으로 최고 기록도 업데이트됨)
-      clearLevel(categoryParam, subParam, level, mode, finalScore);
-    } else if (finalScore > 0) {
-      // 클리어는 아니지만 최고 기록만 업데이트
-      updateBestScore(categoryParam, subParam, level, mode, finalScore);
+    const syncAndFetchRanking = async () => {
+      if (shouldClearLevel && finalScore > 0) {
+        await clearLevel(categoryParam, subParam, level, mode, finalScore);
+      } else if (finalScore > 0) {
+        await updateBestScore(categoryParam, subParam, level, mode, finalScore);
+      }
+
+      // 랭킹 정보 가져오기 (데이터 동기화 후)
+      if (finalScore > 0) {
+        try {
+          await fetchRanking(currentCategory, 'weekly', mode);
+          const latestRankings = useLevelProgressStore.getState().rankings[`${currentCategory}-weekly-${mode}`];
+          const { data: { user } } = await supabase.auth.getUser();
+          if (user && latestRankings) {
+            const myRankItem = latestRankings.find(r => r.user_id === user.id);
+            if (myRankItem) {
+              setCurrentRank(Number(myRankItem.rank));
+            }
+          }
+        } catch (error) {
+          console.error('랭킹 정보를 가져오는데 실패했습니다:', error);
+        }
+      }
+    };
+
+    if (finalScore > 0) {
+      syncAndFetchRanking();
     }
 
     // 리더보드 점수 제출 (레벨 클리어 또는 최고 기록 경신 시)
@@ -209,16 +240,19 @@ export function ResultPage() {
 
       // 2. Supabase 결과 제출 및 미네랄 획득
       const mineralsEarned = Math.floor(finalScore / 10); // 10m 당 1미네랄
+      // RPC는 'timeattack' (하이픈/언더바 없음)을 기대함
+      const rpcGameMode = mode === 'time-attack' ? 'timeattack' : 'survival';
+
       supabase.rpc('submit_game_result', {
         p_score: finalScore,
         p_minerals_earned: mineralsEarned,
-        p_game_mode: storageKeyMode,
+        p_game_mode: rpcGameMode,
         p_items_used: []
       }).then(() => {
         fetchUserData();
       });
     }
-  }, [categoryParam, subParam, level, mode, finalScore, scoreSubmitted, accuracy, correctCount, clearLevel, updateBestScore]);
+  }, [categoryParam, subParam, level, mode, finalScore, scoreSubmitted, accuracy, correctCount, clearLevel, updateBestScore, fetchRanking, currentCategory]);
 
   // 다시 도전하기 - 같은 게임 설정으로 재시작
   const handleRetry = () => {
@@ -326,8 +360,16 @@ export function ResultPage() {
       });
     }
 
+    if (currentRank) {
+      stats.push({
+        label: '현재 글로벌 순위',
+        value: `${currentRank}위 🏅`,
+        isHighlight: true,
+      });
+    }
+
     return stats;
-  }, [isNewRecord, isTimeAttack, total, accuracy, correctCount, averageTime]);
+  }, [isNewRecord, isTimeAttack, total, accuracy, correctCount, averageTime, currentRank]);
 
   // 공통 콘텐츠 컴포넌트
   const renderHeaderContent = () => (

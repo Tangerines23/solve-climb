@@ -28,6 +28,9 @@ import {
   createSafeStorageKey,
 } from '../utils/urlParams';
 import { QuizQuestion } from '../types/quiz';
+import { LastChanceModal } from '../components/LastChanceModal';
+import { CountdownOverlay } from '../components/CountdownOverlay';
+import { SafetyRopeOverlay } from '../components/game/SafetyRopeOverlay';
 
 export function QuizPage() {
   // Zustand Selector 패턴 적용 - 필요한 값만 구독
@@ -57,9 +60,43 @@ export function QuizPage() {
   const [showTipModal, setShowTipModal] = useState(true);
   const [showStaminaModal, setShowStaminaModal] = useState(false);
   const [pendingItemIds, setPendingItemIds] = useState<number[]>([]);
-  const { stamina, inventory, checkStamina, consumeItem, consumeStamina } = useUserStore();
-  const { setExhausted, resetGame, setActiveItems, incrementCombo } = useGameStore();
+
+  // 사용자 스토어
+  const { stamina, inventory, checkStamina, consumeItem, consumeStamina, minerals, recoverStaminaAds } = useUserStore();
+
+  // ... (중략)
+
+  // 광고 보기 핸들러
+  const handleWatchAd = useCallback(async () => {
+    // 1. 모달 닫기
+    // 2. Mock Ad Process (광고 시청 로직)
+    const adDuration = 3000; // 3초
+    animations.setShowSlideToast(true);
+
+    // [AD] 실제 광고 연동 시 여기서 showAd() 호출 (Google AdMob 등)
+    // 현재는 사용자 경험 테스트를 위해 3초 딜레이로 대체함.
+
+    await new Promise(resolve => setTimeout(resolve, adDuration));
+
+    // 3. 보상 지급
+    const result = await recoverStaminaAds();
+    if (result.success) {
+      setShowStaminaModal(false);
+      window.location.reload();
+    } else {
+      alert('광고 보상 지급 실패: ' + result.message);
+    }
+  }, []);
+
+  // Revive System State
+  const [showLastChanceModal, setShowLastChanceModal] = useState(false);
+  const [hasUsedLastChance, setHasUsedLastChance] = useState(false);
+  const [showCountdown, setShowCountdown] = useState(false);
+  const [showSafetyRope, setShowSafetyRope] = useState(false);
+
+  const { setExhausted, resetGame, setActiveItems, incrementCombo, isStaminaConsumed, setStaminaConsumed } = useGameStore();
   const [questionKey, setQuestionKey] = useState(0);
+  const [timerResetKey, setTimerResetKey] = useState(0);
   const [previewKeyboardType, setPreviewKeyboardType] = useState<'custom' | 'qwerty'>(() => keyboardType);
 
   const SURVIVAL_QUESTION_TIME = 5;
@@ -124,6 +161,8 @@ export function QuizPage() {
     subParam,
     setAnswerInput,
     setDisplayValue,
+    setIsError: animations.setIsError, // 추가
+    animations // 추가 (ref로 전달하거나 필요한 애니메이션 세터들)
   });
 
   // gameState의 setter들을 안정적으로 참조하기 위한 ref
@@ -142,6 +181,115 @@ export function QuizPage() {
     };
   }, [gameState.handleGameOver, gameState.setTotalQuestions, gameState.setWrongAnswers, gameState.setSolveTimes]);
 
+  // handleGameOver를 안정적인 참조로 유지 (QuizCard에 전달하기 위해)
+  const handleGameOverRef = useRef(gameState.handleGameOver);
+  useEffect(() => {
+    handleGameOverRef.current = gameState.handleGameOver;
+  }, [gameState.handleGameOver]);
+
+  // generateNewQuestion의 최신 참조를 유지하기 위한 ref
+  const generateNewQuestionRef = useRef(generateNewQuestion);
+  useEffect(() => {
+    generateNewQuestionRef.current = generateNewQuestion;
+  }, [generateNewQuestion]);
+
+  // 안정적인 handleGameOver 함수 (QuizCard에 전달) - LAST CHANCE INTERCEPT
+  const stableHandleGameOver = useCallback(() => {
+    // 이미 부활을 사용했거나, 미리보기 모드라면 즉시 종료
+    if (hasUsedLastChance || isPreview) {
+      handleGameOverRef.current();
+      return;
+    }
+
+    // 아이템 보유 확인
+    const itemType = gameMode === 'time-attack' ? 'oxygen_tank' : 'flare';
+    // const hasItem = inventory.find((i: any) => i.code === itemType && i.quantity > 0);
+    // 아이템이 없어도, 미네랄이 있어도, 일단 모달은 띄워서 '기회'를 보여준다.
+    setShowLastChanceModal(true);
+  }, [hasUsedLastChance, isPreview, gameMode, inventory]);
+
+  // Revive Logic
+  const handleRevive = useCallback(async (useItem: boolean) => {
+    const itemType = gameMode === 'time-attack' ? 'oxygen_tank' : 'flare';
+
+    if (useItem) {
+      const item = inventory.find((i: any) => i.code === itemType);
+      if (item) {
+        // UI 반응성을 위해 await 없이 호출할 수도 있지만, 안전하게
+        await consumeItem(item.id);
+      }
+    }
+
+    setShowLastChanceModal(false);
+    setHasUsedLastChance(true);
+
+    // Resume Game
+    setIsSubmitting(false); // UI 먹통 방지
+    if (gameMode === 'time-attack') {
+      // 타임어택: 3초 카운트다운 후 재개
+      setShowCountdown(true);
+      // CountdownOverlay의 onComplete에서 실제 시간 리셋 및 시작 처리
+    } else {
+      // 서바이벌: 새 문제 (스킵)
+      generateNewQuestionRef.current();
+      animations.setIsError(false);
+      setDisplayValue('');
+    }
+  }, [gameMode, inventory, consumeItem, animations]);
+
+  const handleCountdownComplete = useCallback(() => {
+    setShowCountdown(false);
+    useQuizStore.getState().setTimeLimit(15); // 15초로 상향
+    setQuestionKey(prev => prev + 1);
+  }, []);
+
+  const handleSafetyRopeUsed = useCallback(() => {
+    setShowSafetyRope(true);
+    // 1회 방어 후, 타임오버일 경우를 대비해 시간을 리셋하거나 키를 업데이트해야 함.
+    // 오답 시에는 input만 풀리면 되지만, Time Up 시에는 시간이 필요함.
+    // 안전하게 항상 약간의 시간을 주거나(타임어택), 문제 키를 업데이트(서바이벌) 해야 할 수도 있음.
+    // 하지만 "Retry" 컨셉이므로 문제는 유지하고 싶음.
+    // -> TimerCircle이 key update 없이도 reset method를 노출하면 좋지만 복잡함.
+    // -> 가장 쉬운 방법: QuestionKey를 유지하되, TimeLimit을 잠시 바꿨다 돌아오거나?
+    // -> 아니면 그냥 TimerCircle이 props change를 감지하므로 force reset.
+    // 여기서는 Time Up 방어 시 '시간 충전' 개념이 필요.
+    // 타임어택: 15초 부여? 아니면 원래 제한시간? 
+    // 디자인 상 명시 없으나, 방어 후 바로 죽으면 안 되므로 10~15초 정도 주는 것이 타당.
+    if (gameMode === 'time-attack') {
+      // useQuizStore.getState().setTimeLimit(15); // 라스트 스페어와 동일?
+      // 근데 setTimeLimit만 호출하면 render가 안 일어날수도? (이미 15면)
+      // 강제로 리셋하기 위해 key 업데이트가 필요하지만, 문제는 그대로여야 함.
+      // QuizCard에서 TimerCircle key={questionKey + "_retry_" + safetyCount} 처럼 별도 키 필요.
+      // 일단 편의상 15초로 설정.
+      useQuizStore.getState().setTimeLimit(15);
+      // 타이머 리셋을 위해 임시로 questionKey 업데이트? -> 문제는 바뀜.
+      // -> TimerCircle에 별도 'resetTrigger' prop을 주는게 정석.
+      // 시간 관계상, 안전 로프 사용 시 '새 문제'로 넘어가는 건 원치 않으므로, 
+      // QuizPage 상태에 'timerResetKey'를 추가하여 TimerCircle key에 조합.
+      setTimerResetKey(prev => prev + 1);
+    }
+  }, [gameMode]);
+
+  const handlePurchaseAndRevive = useCallback(async () => {
+    const itemType = gameMode === 'time-attack' ? 'oxygen_tank' : 'flare';
+    // 산소통(라스트 스페어) 10원, 조명탄 20원 유지
+    const basePrice = itemType === 'oxygen_tank' ? 10 : 20;
+    const targetPrice = basePrice * 2;
+
+    if (minerals >= targetPrice) {
+      console.log(`Simulating purchase of ${itemType} for ${targetPrice} minerals`);
+      // TODO: 실제 구매 로직 연동 필요 (purchaseItem 사용 시 ID 필요)
+      // 임시: 구매 성공 가정하고 진행
+      await handleRevive(false);
+    }
+  }, [minerals, gameMode, handleRevive]);
+
+  const handleGiveUp = useCallback(() => {
+    setShowLastChanceModal(false);
+    handleGameOverRef.current(); // 진짜 종료
+  }, []);
+
+
   // 답안 제출 로직
   const { handleSubmit } = useQuizSubmit({
     answerInput,
@@ -155,6 +303,7 @@ export function QuizPage() {
     useSystemKeyboard,
     setIsSubmitting,
     setCardAnimation: animations.setCardAnimation,
+    onSafetyRopeUsed: handleSafetyRopeUsed, // Pass handler
     setInputAnimation: animations.setInputAnimation,
     setDisplayValue,
     setIsError: animations.setIsError,
@@ -165,7 +314,7 @@ export function QuizPage() {
     increaseScore,
     decreaseScore,
     generateNewQuestion,
-    handleGameOver: gameStateSettersRef.current.handleGameOver,
+    handleGameOver: stableHandleGameOver, // Intercepted handler
     setTotalQuestions: gameStateSettersRef.current.setTotalQuestions,
     setWrongAnswers: gameStateSettersRef.current.setWrongAnswers,
     setSolveTimes: gameStateSettersRef.current.setSolveTimes,
@@ -242,7 +391,7 @@ export function QuizPage() {
     // 4. Close modal and start quiz
     setShowTipModal(false);
     setShowStaminaModal(false);
-    generateNewQuestion();
+    // generateNewQuestion(); // useEffect에서 호출됨
   };
 
   const handlePlayAnyway = async () => {
@@ -250,10 +399,7 @@ export function QuizPage() {
     await startWithItems(pendingItemIds);
   };
 
-  const handleWatchAd = () => {
-    // Placeholder for Ad logic
-    alert('광고 시스템 준비 중입니다.');
-  };
+
 
   // URL 파라미터에서 category와 topic 설정
   useEffect(() => {
@@ -290,23 +436,6 @@ export function QuizPage() {
     gameState.setQuestionStartTime,
     gameState.setSolveTimes,
   ]);
-
-  // handleGameOver를 안정적인 참조로 유지 (QuizCard에 전달하기 위해)
-  const handleGameOverRef = useRef(gameState.handleGameOver);
-  useEffect(() => {
-    handleGameOverRef.current = gameState.handleGameOver;
-  }, [gameState.handleGameOver]);
-
-  // generateNewQuestion의 최신 참조를 유지하기 위한 ref
-  const generateNewQuestionRef = useRef(generateNewQuestion);
-  useEffect(() => {
-    generateNewQuestionRef.current = generateNewQuestion;
-  }, [generateNewQuestion]);
-
-  // 안정적인 handleGameOver 함수 (QuizCard에 전달)
-  const stableHandleGameOver = useCallback(() => {
-    handleGameOverRef.current();
-  }, []);
 
   // 초기화 로직: categoryParam, subParam, levelParam이 변경될 때만 실행
   useEffect(() => {
@@ -471,6 +600,38 @@ export function QuizPage() {
       document.removeEventListener('click', handleClickOutside);
     };
   }, [showExitConfirm]);
+
+  // 게임 시작 시 스태미나 소모 및 고갈 상태 체크
+  // [Fix] useRef 대신 전역 Store 상태(isStaminaConsumed)를 사용하여
+  // React StrictMode의 Remount 상황에서도 중복 실행을 완벽히 방지합니다.
+  useEffect(() => {
+    // 미리보기 모드이거나, 이미 이번 세션에서 스태미나를 소모했다면 패스
+    if (isPreview || isStaminaConsumed) return;
+
+    // [중요] 비동기 로직 시작 전에 즉시 Lock을 건다.
+    // Store 업데이트는 컴포넌트가 Remount 되어도 유지되므로 안전함.
+    setStaminaConsumed(true);
+
+    const initStamina = async () => {
+      // 1. 현재 스태미나 확인 (DB 최신화)
+      await checkStamina();
+      const currentStamina = useUserStore.getState().stamina;
+
+      if (currentStamina <= 0) {
+        // 스태미나 고갈 상태: 경고 모달 표시 & 게임 전역 상태에 패널티 설정
+        setShowStaminaModal(true);
+        setExhausted(true);
+      } else {
+        // 스태미나 소모
+        setExhausted(false);
+        await consumeStamina();
+      }
+    };
+
+    initStamina();
+  }, [isPreview]);
+
+
 
   // Preview 모드용 간단한 핸들러들
   const handlePreviewKeyPress = useCallback((key: string) => {
@@ -706,6 +867,32 @@ export function QuizPage() {
 
   return (
     <div className="quiz-page">
+      {/* 아이템 피드백 (사용 효과 등) */}
+      <ItemFeedbackOverlay ref={feedbackRef} />
+
+      {/* 부활/라스트 찬스 모달 */}
+      <LastChanceModal
+        isVisible={showLastChanceModal}
+        gameMode={gameMode}
+        inventoryCount={inventory.find(i => i.code === (gameMode === 'time-attack' ? 'oxygen_tank' : 'flare'))?.quantity || 0}
+        userMinerals={minerals}
+        onUseItem={() => handleRevive(true)}
+        onPurchaseAndUse={handlePurchaseAndRevive}
+        onGiveUp={handleGiveUp}
+        basePrice={gameMode === 'time-attack' ? 10 : 20}
+      />
+
+      {/* 카운트다운 오버레이 (부활 후 재개 시 사용) */}
+      {showCountdown && <CountdownOverlay onComplete={handleCountdownComplete} />}
+
+      {/* 안전 로프 사용 효과 오버레이 */}
+      {showSafetyRope && (
+        <SafetyRopeOverlay
+          duration={2000}
+          onComplete={() => setShowSafetyRope(false)}
+        />
+      )}
+
       {categoryParam && subParam && (
         <GameTipModal
           isOpen={showTipModal}
@@ -737,10 +924,12 @@ export function QuizPage() {
         timeLimit={timeLimit}
         questionKey={questionKey}
         SURVIVAL_QUESTION_TIME={SURVIVAL_QUESTION_TIME}
+        SURVIVAL_QUESTION_TIME={SURVIVAL_QUESTION_TIME}
         isSubmitting={isSubmitting}
         isError={animations.isError}
         useSystemKeyboard={useSystemKeyboard}
         showTipModal={showTipModal}
+        isPaused={showTipModal || showLastChanceModal || showCountdown}
         showExitConfirm={showExitConfirm}
         isFadingOut={isFadingOut}
         cardAnimation={animations.cardAnimation}

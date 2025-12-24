@@ -28,12 +28,14 @@ interface QuizCardProps {
   timeLimit: number;
   questionKey: number;
   SURVIVAL_QUESTION_TIME: number;
+  onSafetyRopeUsed?: () => void;
 
   // 상태
   isSubmitting: boolean;
   isError: boolean;
   useSystemKeyboard: boolean;
   showTipModal: boolean;
+  isPaused: boolean; // New prop for global pause (modal, countdown)
   showExitConfirm: boolean;
   isFadingOut: boolean;
 
@@ -84,6 +86,7 @@ function QuizCardComponent({
   isError,
   useSystemKeyboard,
   showTipModal,
+  isPaused,
   showExitConfirm,
   isFadingOut,
   cardAnimation,
@@ -105,12 +108,14 @@ function QuizCardComponent({
   setDisplayValue,
   setShowExitConfirm,
   setIsFadingOut,
+  onSafetyRopeUsed,
 }: QuizCardProps) {
   // #region agent log
   const renderId = Math.random().toString(36).substring(7);
   sendDebugLog('QuizCard.tsx:108', 'QuizCard component entry', {
     renderId,
     showTipModal,
+    isPaused,
     hasCurrentQuestion: !!currentQuestion,
   });
   // #endregion
@@ -168,11 +173,11 @@ function QuizCardComponent({
 
   // --- Early Returns must come AFTER all hooks ---
 
-  // 팁 모달이 열려있으면 게임 화면 숨김
-  if (showTipModal) {
-    sendDebugLog('QuizCard.tsx:earlyReturn1', 'Early return: showTipModal=true', { renderId });
-    return null;
-  }
+  // 팁 모달이 열려있으면 게임 화면 숨김 -> REMOVED to show background
+  // if (showTipModal) {
+  //   sendDebugLog('QuizCard.tsx:earlyReturn1', 'Early return: showTipModal=true', { renderId });
+  //   return null;
+  // }
 
   // 데이터 부족 시 로딩 반환
   if (!currentQuestion || (!displayCategory && !categoryParam) || (!displayTopic && !subParam)) {
@@ -196,7 +201,26 @@ function QuizCardComponent({
 
   const handleTimeUp = () => {
     const hasFlare = activeItems.includes('flare');
-    if (hasFlare) {
+    const hasSafetyRope = activeItems.includes('safety_rope');
+
+    if (hasSafetyRope) {
+      consumeActiveItem('safety_rope');
+      console.log('[Game] Safety Rope used! Saved from time up.');
+      if (onSafetyRopeUsed) onSafetyRopeUsed();
+      // 타임어택의 경우 시간이 다 되면? -> 안전 로프는 "1회 방어" 이므로 시간을 조금 더 주거나(리셋) 
+      // 아니면 그냥 게임오버만 막고 시간은 0초? 0초면 바로 또 죽음.
+      // 따라서 "시간 리셋"이 필요함. 혹은 문제 스킵?
+      // 사용자 요청: "오답 처리를 무효화하고 해당 문제 화면에 머무르게" -> Time Up도 비슷하게 처리.
+      // Time Up 상황에서 머무르려면 시간을 채워줘야 함.
+      // 라스트 스페어처럼 15초? 아니면 원래 제한시간? 일단 서바이벌은 5초, 타임어택은 timeLimit.
+      // QuizCard는 Timer를 리셋할 권한이 없음 (props로 받음). 
+      // 하지만 TimerCircle은 key가 바뀌지 않으면 내부 state만 가짐. 
+      // QuizCard에서 TimerCircle을 강제 리셋하려면 key를 바꿔야 함.
+      // -> onSafetyRopeUsed에서 key 업데이트를 요청해야 함? 
+      // -> QuizPage에서 handleSafetyRopeUsed 호출 시 QuestionKey를 업데이트하지 않으면 Timer는 0에서 멈춤.
+      // -> SafetyRopeOverlay가 1.5초 동안 뜨고, 그 뒤에 재개?
+      // -> QuizPage의 handleSafetyRopeUsed에서 추가 처리 필요.
+    } else if (hasFlare) {
       consumeActiveItem('flare');
       console.log('[Game] Flare used! Revived from time up.');
     } else {
@@ -213,9 +237,9 @@ function QuizCardComponent({
         </button>
         <div className="quiz-timer-container">
           {gameMode === 'survival' ? (
-            <TimerCircle duration={SURVIVAL_QUESTION_TIME} onComplete={handleTimeUp} isPaused={isSubmitting} key={questionKey} />
+            <TimerCircle duration={SURVIVAL_QUESTION_TIME} onComplete={handleTimeUp} isPaused={isSubmitting || isPaused} key={questionKey} />
           ) : (
-            <TimerCircle duration={timeLimit} onComplete={handleTimeUp} isPaused={false} enableFastForward={true} />
+            <TimerCircle duration={timeLimit} onComplete={handleTimeUp} isPaused={isPaused} enableFastForward={true} key={timeLimit} />
           )}
         </div>
         <div className="quiz-header-spacer"></div>
@@ -242,7 +266,7 @@ function QuizCardComponent({
                     inputMode={isJapaneseQuiz ? 'text' : 'numeric'}
                     value={isError ? displayValue : answerInput}
                     onChange={(e) => {
-                      if (isError || isSubmitting) return;
+                      if (isError || isSubmitting || isPaused) return; // Disable input on pause
                       if (isJapaneseQuiz) {
                         // 일본어: 영문자만 허용 (로마지)
                         const value = e.target.value.replace(/[^a-zA-Z]/g, '');
@@ -294,7 +318,7 @@ function QuizCardComponent({
                     }}
                     placeholder={isJapaneseQuiz ? "로마지 입력 (예: a, ki)" : "정답 입력"}
                     className={`answer-input-system ${inputAnimation} ${isError ? 'error-state is-error' : ''} ${showFlash ? 'input-error-flash' : ''}`}
-                    disabled={isSubmitting && !isError}
+                    disabled={(isSubmitting && !isError) || isPaused}
                     readOnly={isError}
                     autoFocus={false}
                   />
@@ -398,6 +422,7 @@ export const QuizCard = React.memo(QuizCardComponent, (prevProps, nextProps) => 
     prevProps.isSubmitting === nextProps.isSubmitting &&
     prevProps.isError === nextProps.isError &&
     prevProps.showTipModal === nextProps.showTipModal &&
+    prevProps.isPaused === nextProps.isPaused &&
     prevProps.showExitConfirm === nextProps.showExitConfirm &&
     prevProps.isFadingOut === nextProps.isFadingOut &&
     prevProps.cardAnimation === nextProps.cardAnimation &&

@@ -3,7 +3,7 @@ import { create } from 'zustand';
 import { Category, Topic, GameMode, Difficulty } from '../types/quiz';
 
 // 시간 설정 (초 단위)
-export type TimeLimit = 60 | 120 | 180; // 1분, 2분, 3분
+export type TimeLimit = 10 | 15 | 60 | 120 | 180; // 10s/15s(Revive), 1min, 2min, 3min
 
 interface QuizState {
   score: number;
@@ -39,7 +39,7 @@ export const useQuizStore = create<QuizState>((set) => ({
   increaseScore: (amount) => set((state) => ({ score: state.score + amount })),
   decreaseScore: (amount) => set((state) => ({ score: Math.max(0, state.score - amount) })),
   setDifficulty: (level) => set({ difficulty: level }),
-  resetQuiz: () => set({ score: 0, difficulty: 'easy' }),
+  resetQuiz: () => set({ score: 0, difficulty: 'easy', timeLimit: 60 }),
   // (신규) 지시서 2-1항 반영
   setGameMode: (mode) => set({ gameMode: mode }),
   setCategoryTopic: (category, topic) => set({ category, topic }),

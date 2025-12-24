@@ -10,8 +10,6 @@ import { GlobalLoadingIndicator } from './components/GlobalLoadingIndicator';
 // 페이지 컴포넌트 레이지 로딩
 const HomePage = lazy(() => import('./pages/HomePage').then(module => ({ default: module.HomePage })));
 const SubCategoryPage = lazy(() => import('./pages/SubCategoryPage').then(module => ({ default: module.SubCategoryPage })));
-const LanguageDetailPage = lazy(() => import('./pages/LanguageDetailPage').then(module => ({ default: module.LanguageDetailPage })));
-const CategorySelectPage = lazy(() => import('./pages/CategorySelectPage').then(module => ({ default: module.CategorySelectPage })));
 const LevelSelectPage = lazy(() => import('./pages/LevelSelectPage').then(module => ({ default: module.LevelSelectPage })));
 const QuizPage = lazy(() => import('./pages/QuizPage').then(module => ({ default: module.QuizPage })));
 const ResultPage = lazy(() => import('./pages/ResultPage').then(module => ({ default: module.ResultPage })));
@@ -53,8 +51,6 @@ function App() {
         <Routes>
           <Route path="/" element={<HomePage />} />
           <Route path="/subcategory" element={<SubCategoryPage />} />
-          <Route path="/language-detail" element={<LanguageDetailPage />} />
-          <Route path="/category-select" element={<CategorySelectPage />} />
           <Route path="/level-select" element={<LevelSelectPage />} />
           <Route path="/quiz" element={<QuizPage />} />
           <Route path="/result" element={<ResultPage />} />

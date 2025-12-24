@@ -13,7 +13,6 @@ export function ProfileForm({ onComplete, showBackButton = false }: ProfileFormP
   const navigate = useNavigate();
   // Zustand Selector 패턴 적용
   const setProfile = useProfileStore((state) => state.setProfile);
-  const setIsAdmin = useProfileStore((state) => state.setIsAdmin);
   const profile = useProfileStore((state) => state.profile);
   const [nickname, setNickname] = useState(profile?.nickname || '');
   const [error, setError] = useState('');
@@ -68,10 +67,10 @@ export function ProfileForm({ onComplete, showBackButton = false }: ProfileFormP
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     // 닉네임 정제 (HTML 태그 제거, 공백 정규화)
     const sanitizedNickname = sanitizeNickname(nickname);
-    
+
     // 닉네임 검증
     const validation = validateNickname(sanitizedNickname);
     if (!validation.valid) {
@@ -95,6 +94,21 @@ export function ProfileForm({ onComplete, showBackButton = false }: ProfileFormP
     };
 
     setProfile(profileData);
+
+    // [New] Supabase 프로필 닉네임 동기화 (비동기 처리)
+    import('../utils/supabaseClient').then(({ supabase }) => {
+      supabase.auth.getSession().then(({ data: { session } }) => {
+        if (session?.user) {
+          // RPC 함수 호출하여 닉네임 업데이트
+          supabase.rpc('update_profile_nickname', { p_nickname: sanitizedNickname })
+            .then(({ error }) => {
+              if (error) console.error('Failed to sync nickname to Supabase:', error);
+              else console.log('Nickname synced to Supabase');
+            });
+        }
+      });
+    });
+
     onComplete();
   };
 
@@ -113,7 +127,7 @@ export function ProfileForm({ onComplete, showBackButton = false }: ProfileFormP
           ? '프로필 정보를 수정할 수 있습니다.'
           : '게임을 시작하기 전에 프로필을 만들어주세요.\n한 번만 설정하면 됩니다!'}
       </p>
-      
+
       <form onSubmit={handleSubmit} className="profile-form">
         <div className="profile-form-field">
           <label htmlFor="nickname" className="profile-form-label">

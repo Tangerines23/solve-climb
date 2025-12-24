@@ -278,6 +278,14 @@ export function MyPage() {
         };
 
         setProfile(userProfile);
+
+        // [New] 로그인 직후 닉네임 DB 동기화
+        try {
+          await supabase.rpc('update_profile_nickname', { p_nickname: userProfile.nickname });
+        } catch (e) {
+          console.warn('Failed to sync nickname on login:', e);
+        }
+
         await refetch();
         setToastMessage('토스 로그인에 성공했습니다!');
         setShowToast(true);
@@ -340,6 +348,14 @@ export function MyPage() {
         };
 
         setProfile(userProfile);
+
+        // [New] 로그인 직후 닉네임 DB 동기화
+        try {
+          await supabase.rpc('update_profile_nickname', { p_nickname: userProfile.nickname });
+        } catch (e) {
+          console.warn('Failed to sync nickname on login:', e);
+        }
+
         await refetch();
         setToastMessage('게임 로그인에 성공했습니다!');
         setShowToast(true);
@@ -687,6 +703,30 @@ export function MyPage() {
             <div className="my-page-settings-section">
               <h2 className="my-page-settings-section-title">환경 설정</h2>
               <div className="my-page-settings-list">
+                <button
+                  className="my-page-settings-item my-page-settings-item-button"
+                  onClick={() => setShowProfileForm(true)}
+                >
+                  <div className="my-page-settings-item-content">
+                    <span className="my-page-settings-item-label">프로필 수정</span>
+                  </div>
+                  <svg
+                    className="my-page-settings-item-arrow"
+                    width="20"
+                    height="20"
+                    viewBox="0 0 20 20"
+                    fill="none"
+                    xmlns="http://www.w3.org/2000/svg"
+                  >
+                    <path
+                      d="M7.5 15L12.5 10L7.5 5"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    />
+                  </svg>
+                </button>
                 <div className="my-page-settings-item">
                   <div className="my-page-settings-item-content">
                     <span className="my-page-settings-item-label">진동</span>

@@ -24,27 +24,35 @@ export interface UserProgress {
   [category: string]: CategorySubProgress;
 }
 
+export interface RankingRecord {
+  user_id: string;
+  nickname: string;
+  score: number;
+  rank: number;
+}
+
 interface LevelProgressState {
   progress: UserProgress;
-  // 특정 카테고리-서브토픽의 레벨 진행 상태 가져오기
+  rankings: { [key: string]: RankingRecord[] }; // category-mode key
+  // ... existing
   getLevelProgress: (category: string, subTopic: string) => LevelRecord[];
-  // 레벨 클리어 상태 확인
   isLevelCleared: (category: string, subTopic: string, level: number) => boolean;
-  // 다음 도전 레벨 가져오기
   getNextLevel: (category: string, subTopic: string) => number;
-  // 레벨 클리어 처리 (Optimistic Update + Supabase Sync)
   clearLevel: (category: string, subTopic: string, level: number, mode: GameMode, score: number) => void;
-  // 최고 기록 업데이트 (Optimistic Update + Supabase Sync)
   updateBestScore: (category: string, subTopic: string, level: number, mode: GameMode, score: number) => void;
-  // 특정 카테고리-서브토픽의 최고 기록 가져오기
   getBestRecords: (category: string, subTopic: string) => {
     'time-attack': number | null;
     'survival': number | null;
   };
-  // 서버 데이터와 동기화
   syncProgress: () => Promise<void>;
-  // 모든 레벨 진행도 및 기록 리셋
   resetProgress: () => Promise<void>;
+  // Global Ranking v2
+  fetchRanking: (
+    category: string,
+    period: 'weekly' | 'all-time',
+    type: 'total' | 'time-attack' | 'survival',
+    limit?: number
+  ) => Promise<void>;
 }
 
 const getDefaultLevelRecord = (level: number): LevelRecord => ({
@@ -60,8 +68,12 @@ export const useLevelProgressStore = create<LevelProgressState>()(
   persist(
     (set, get) => ({
       progress: {},
+      rankings: {},
 
       getLevelProgress: (category, subTopic) => {
+        // ... existing methods (omitted for brevity in instruction, but I will replace the whole block if needed or just specific parts)
+        // I will use multi_replace if I need to change distant parts, but here I can just replace the initialization and add the method at the end.
+
         const state = get();
         const categoryProgress = state.progress[category];
         if (!categoryProgress || !categoryProgress[subTopic]) {
@@ -295,6 +307,30 @@ export const useLevelProgressStore = create<LevelProgressState>()(
         } catch (error) {
           console.error('Failed to reset progress in Supabase:', error);
           // 에러가 발생해도 로컬은 이미 리셋되었으므로 계속 진행
+        }
+      },
+
+      fetchRanking: async (category, period, type, limit = 50) => {
+        try {
+          const { data, error } = await supabase.rpc('get_ranking_v2', {
+            p_category: category,
+            p_period: period,
+            p_type: type,
+            p_limit: limit
+          });
+
+          if (error) throw error;
+
+          if (data) {
+            set((state) => ({
+              rankings: {
+                ...state.rankings,
+                [`${category}-${period}-${type}`]: data as RankingRecord[]
+              }
+            }));
+          }
+        } catch (error) {
+          console.error('Failed to fetch ranking v2:', error);
         }
       },
     }),

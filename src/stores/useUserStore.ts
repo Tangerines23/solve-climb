@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import { supabase } from '../utils/supabaseClient'; // Assuming this exists based on project context
+import { supabase } from '../utils/supabaseClient';
 
 interface UserState {
     minerals: number;
@@ -14,6 +14,14 @@ interface UserState {
     consumeStamina: () => Promise<{ success: boolean; message: string }>;
     setMinerals: (minerals: number) => Promise<void>;
     setStamina: (stamina: number) => void;
+    recoverStaminaAds: () => Promise<{ success: boolean; message: string }>;
+
+    // DEV ONLY
+    debugAddItems: () => Promise<void>;
+    debugResetItems: () => Promise<void>;
+    debugRemoveItems: () => Promise<void>;
+
+    lastStaminaConsumeTime: number;
 }
 
 export const useUserStore = create<UserState>((set, get) => ({
@@ -21,11 +29,11 @@ export const useUserStore = create<UserState>((set, get) => ({
     stamina: 5,
     inventory: [],
     isLoading: false,
+    lastStaminaConsumeTime: 0,
 
     fetchUserData: async () => {
         set({ isLoading: true });
         try {
-            // Wait for auth to be ready
             const { data: { user } } = await supabase.auth.getUser();
             if (!user) {
                 console.log('[UserStore] No user found, skipping fetch');
@@ -43,9 +51,9 @@ export const useUserStore = create<UserState>((set, get) => ({
             const { data: inventoryData } = await supabase
                 .from('inventory')
                 .select(`
-          quantity,
-          items (id, code, name, description)
-        `)
+                    quantity,
+                    items (id, code, name, description)
+                `)
                 .eq('user_id', user.id);
 
             const formattedInventory = inventoryData?.map((item: any) => ({
@@ -79,12 +87,17 @@ export const useUserStore = create<UserState>((set, get) => ({
     },
 
     checkStamina: async () => {
+        const { data: { session } } = await supabase.auth.getSession();
+        if (!session?.user) return;
+
         const { data, error } = await supabase.rpc('check_and_recover_stamina');
         if (error) {
             console.error('Error checking stamina:', error);
             return;
         }
-        set({ stamina: data.stamina });
+        if (data && typeof data.stamina === 'number') {
+            set({ stamina: data.stamina });
+        }
     },
 
     consumeItem: async (itemId: number) => {
@@ -96,7 +109,16 @@ export const useUserStore = create<UserState>((set, get) => ({
         }
         return data;
     },
+
     consumeStamina: async () => {
+        const now = Date.now();
+        const lastTime = get().lastStaminaConsumeTime;
+
+        if (now - lastTime < 3000) {
+            console.log('[UserStore] Stamina consumption throttled');
+            return { success: true, message: 'Already consumed' };
+        }
+
         const { data, error } = await supabase.rpc('consume_stamina');
         if (error) {
             console.error('Error consuming stamina:', error);
@@ -104,8 +126,10 @@ export const useUserStore = create<UserState>((set, get) => ({
         }
 
         if (data.success) {
-            // Optimistic update
-            set((state) => ({ stamina: Math.max(0, state.stamina - 1) }));
+            set((state) => ({
+                stamina: Math.max(0, state.stamina - 1),
+                lastStaminaConsumeTime: now
+            }));
         }
         return data;
     },
@@ -123,6 +147,7 @@ export const useUserStore = create<UserState>((set, get) => ({
             console.error('Error syncing debug minerals:', error);
         }
     },
+
     setStamina: async (stamina: number) => {
         const value = Math.max(0, stamina);
         set({ stamina: value });
@@ -135,5 +160,84 @@ export const useUserStore = create<UserState>((set, get) => ({
         } catch (error) {
             console.error('Error syncing debug stamina:', error);
         }
-    }
+    },
+
+    recoverStaminaAds: async () => {
+        const { data, error } = await supabase.rpc('recover_stamina_ads');
+        if (error) {
+            console.error('Error recovering stamina (ads):', error);
+            return { success: false, message: '오류가 발생했습니다.' };
+        }
+
+        if (data.success) {
+            set((state) => ({ stamina: Math.min(5, state.stamina + 1) }));
+        }
+        return data;
+    },
+
+    // DEV ONLY: 아이템 지급 치트 (RPC Version)
+    debugAddItems: async () => {
+        console.log('[DEBUG] Calling debug_grant_items RPC...');
+        const { error } = await supabase.rpc('debug_grant_items');
+
+        if (error) {
+            console.error('[DEBUG] RPC Failed:', error);
+            alert(`아이템 지급 실패: ${error.message}\n(SQL 권한 문제일 수 있습니다)`);
+            return;
+        }
+
+        console.log('[DEBUG] RPC Success');
+        // alert handled in UI (Header)
+        await get().fetchUserData();
+    },
+
+    // DEV ONLY: 아이템 초기화
+    debugResetItems: async () => {
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!user) return;
+
+        console.log('[DEBUG] Resetting items...');
+        const { error } = await supabase.from('inventory').delete().eq('user_id', user.id);
+
+        if (error) {
+            console.error('[DEBUG] Reset Failed:', error);
+            alert(`초기화 실패: ${error.message}`);
+            return;
+        }
+
+        console.log('[DEBUG] Items Reset Success');
+        await get().fetchUserData();
+    },
+
+    // DEV ONLY: 아이템 5개씩 감소
+    debugRemoveItems: async () => {
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!user) return;
+
+        // Get current inventory
+        const { data: inventory } = await supabase.from('inventory').select('id, quantity').eq('user_id', user.id);
+        if (!inventory) return;
+
+        const updates: any[] = [];
+        const deletions: any[] = [];
+
+        for (const item of inventory) {
+            const newQty = item.quantity - 5;
+            if (newQty <= 0) {
+                deletions.push(item.id);
+            } else {
+                updates.push({ id: item.id, quantity: newQty, user_id: user.id });
+            }
+        }
+
+        if (deletions.length > 0) {
+            await supabase.from('inventory').delete().in('id', deletions);
+        }
+
+        if (updates.length > 0) {
+            await supabase.from('inventory').upsert(updates);
+        }
+
+        await get().fetchUserData();
+    },
 }));
