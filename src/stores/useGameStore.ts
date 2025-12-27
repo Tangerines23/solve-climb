@@ -13,6 +13,7 @@ interface GameState {
     setScore: (score: number) => void;
     incrementCombo: () => void;
     resetCombo: () => void;
+    setCombo: (combo: number) => void; // 콤보를 직접 설정 (피버 상태 자동 계산)
     setExhausted: (exhausted: boolean) => void;
     activeItems: string[]; // List of item codes active in the current session
     setActiveItems: (codes: string[]) => void;
@@ -57,6 +58,25 @@ export const useGameStore = create<GameState>((set) => ({
     }),
 
     resetCombo: () => set({ combo: 0, feverLevel: 0, showSpeedLines: false }),
+
+    setCombo: (combo) => set((state) => {
+        let newFeverLevel = 0;
+        let speedLines = false;
+
+        if (combo >= 20) {
+            newFeverLevel = 2;
+            speedLines = true;
+        } else if (combo >= 5) {
+            newFeverLevel = 1;
+            speedLines = true;
+        }
+
+        return {
+            combo,
+            feverLevel: newFeverLevel as 0 | 1 | 2,
+            showSpeedLines: speedLines
+        };
+    }),
 
     setExhausted: (exhausted) => set({ isExhausted: exhausted, showVignette: exhausted }),
 

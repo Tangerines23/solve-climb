@@ -44,8 +44,8 @@ export function LastChanceModal({
 
     if (!isVisible) return null;
 
-    const itemName = gameMode === 'time-attack' ? '산소통 (10초 연장)' : '구조 신호탄 (부활)';
-    const itemType = gameMode === 'time-attack' ? 'oxygen_tank' : 'flare';
+    const itemName = gameMode === 'time-attack' ? '라스트 스퍼트 (+15초 + 피버)' : '구조 신호탄 (부활)';
+    const itemType = gameMode === 'time-attack' ? 'last_spurt' : 'flare';
     const purchasePrice = basePrice * 2;
     const canAfford = userMinerals >= purchasePrice;
 
@@ -60,7 +60,7 @@ export function LastChanceModal({
                 <div className="last-chance-content">
                     <p className="last-chance-message">
                         {gameMode === 'time-attack'
-                            ? '산소가 부족합니다! 연장하시겠습니까?'
+                            ? '라스트 스퍼트로 15초 더 뛸 수 있습니다!'
                             : '구조 신호탄을 사용하여 부활하시겠습니까?'}
                     </p>
 

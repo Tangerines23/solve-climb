@@ -5,6 +5,7 @@ interface UseQuizInputParams {
   answerInput: string;
   isSubmitting: boolean;
   isError: boolean;
+  isPaused?: boolean;
   categoryParam: string | null;
   subParam: string | null;
   setAnswerInput: (value: string) => void;
@@ -15,6 +16,7 @@ export function useQuizInput({
   answerInput,
   isSubmitting,
   isError,
+  isPaused = false,
   categoryParam,
   subParam,
   setAnswerInput,
@@ -22,7 +24,7 @@ export function useQuizInput({
 }: UseQuizInputParams) {
   // 수학 퀴즈용 키패드 핸들러 (3x3 그리드)
   const handleKeypadNumber = useCallback((num: string) => {
-    if (isSubmitting || isError) return;
+    if (isSubmitting || isError || isPaused) return;
 
     const isEquationQuiz = categoryParam === 'math' && subParam === 'equations';
     const isCalculusQuiz = categoryParam === 'math' && subParam === 'calculus';
@@ -62,11 +64,11 @@ export function useQuizInput({
       setDisplayValue(newValue);
       return newValue;
     });
-  }, [isSubmitting, categoryParam, subParam, answerInput, isError, setAnswerInput, setDisplayValue]);
+  }, [isSubmitting, categoryParam, subParam, answerInput, isError, isPaused, setAnswerInput, setDisplayValue]);
 
   // 쿼티 키보드 핸들러 (일본어 퀴즈 및 수학 퀴즈 모두 지원)
   const handleQwertyKeyPress = useCallback((key: string) => {
-    if (isSubmitting || isError) return;
+    if (isSubmitting || isError || isPaused) return;
 
     const isJapaneseQuiz = categoryParam === 'language' && subParam === 'japanese';
     const isEquationQuiz = categoryParam === 'math' && subParam === 'equations';
@@ -122,19 +124,19 @@ export function useQuizInput({
         return newValue;
       });
     }
-  }, [isSubmitting, categoryParam, subParam, answerInput, isError, setAnswerInput, setDisplayValue]);
+  }, [isSubmitting, categoryParam, subParam, answerInput, isError, isPaused, setAnswerInput, setDisplayValue]);
 
   const handleKeypadClear = useCallback(() => {
-    if (isSubmitting || isError) return;
+    if (isSubmitting || isError || isPaused) return;
     setAnswerInput('');
     setDisplayValue('');
-  }, [isSubmitting, isError, setAnswerInput, setDisplayValue]);
+  }, [isSubmitting, isError, isPaused, setAnswerInput, setDisplayValue]);
 
   const handleKeypadBackspace = useCallback(() => {
-    if (isSubmitting || isError) return;
+    if (isSubmitting || isError || isPaused) return;
     setAnswerInput((prev) => prev.slice(0, -1));
     setDisplayValue('');
-  }, [isSubmitting, isError, setAnswerInput, setDisplayValue]);
+  }, [isSubmitting, isError, isPaused, setAnswerInput, setDisplayValue]);
 
   return {
     handleKeypadNumber,

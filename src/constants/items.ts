@@ -25,6 +25,11 @@ export const ITEM_METADATA: Record<string, ItemMetadata> = {
         emoji: '🧨',
         description: '게임 오버 시 부활',
     },
+    last_spurt: {
+        name: '라스트 스퍼트',
+        emoji: '🔥',
+        description: '시간 0초 시 +15초 추가 + 5초 피버',
+    },
 };
 
 export const getItemEmoji = (code: string) => ITEM_METADATA[code]?.emoji || '📦';

@@ -27,6 +27,7 @@ export const PreGameLobby: React.FC<PreGameLobbyProps> = ({ onStart, onBack, cat
             case 'power_gel': return '⚡';
             case 'safety_rope': return '🛡️'; // Updated to shield for consistency
             case 'flare': return '🧨';
+            case 'last_spurt': return '🔥';
             default: return '📦';
         }
     };
@@ -60,6 +61,7 @@ export const PreGameLobby: React.FC<PreGameLobbyProps> = ({ onStart, onBack, cat
                                         {item.code === 'power_gel' && '시작부터 질주'}
                                         {item.code === 'safety_rope' && '실수 1회 방어'}
                                         {item.code === 'flare' && '부활 1회'}
+                                        {item.code === 'last_spurt' && '타임어택 부활'}
                                     </div>
                                 </div>
                             ))

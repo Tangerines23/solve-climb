@@ -75,6 +75,7 @@ export function ShopPage() {
             case 'power_gel': return '⚡';
             case 'safety_rope': return '🛡️'; // Match centralized icon
             case 'flare': return '🧨';
+            case 'last_spurt': return '🔥';
             default: return '📦';
         }
     };

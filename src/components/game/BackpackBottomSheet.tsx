@@ -79,6 +79,7 @@ function getItemEmoji(code: string) {
         case 'power_gel': return '⚡';
         case 'safety_rope': return '🛡️';
         case 'flare': return '🧨';
+        case 'last_spurt': return '🔥';
         default: return '📦';
     }
 }

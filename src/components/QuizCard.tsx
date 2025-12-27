@@ -27,6 +27,7 @@ interface QuizCardProps {
   gameMode: GameMode;
   timeLimit: number;
   questionKey: number;
+  timerResetKey?: number;
   SURVIVAL_QUESTION_TIME: number;
   onSafetyRopeUsed?: () => void;
 
@@ -81,6 +82,7 @@ function QuizCardComponent({
   gameMode,
   timeLimit,
   questionKey,
+  timerResetKey,
   SURVIVAL_QUESTION_TIME,
   isSubmitting,
   isError,
@@ -200,8 +202,9 @@ function QuizCardComponent({
   }
 
   const handleTimeUp = () => {
-    const hasFlare = activeItems.includes('flare');
     const hasSafetyRope = activeItems.includes('safety_rope');
+    const hasLastSpurt = gameMode === 'time-attack' && activeItems.includes('last_spurt');
+    const hasFlare = gameMode === 'survival' && activeItems.includes('flare');
 
     if (hasSafetyRope) {
       consumeActiveItem('safety_rope');
@@ -220,9 +223,15 @@ function QuizCardComponent({
       // -> QuizPage에서 handleSafetyRopeUsed 호출 시 QuestionKey를 업데이트하지 않으면 Timer는 0에서 멈춤.
       // -> SafetyRopeOverlay가 1.5초 동안 뜨고, 그 뒤에 재개?
       // -> QuizPage의 handleSafetyRopeUsed에서 추가 처리 필요.
+    } else if (hasLastSpurt) {
+      // 타임어택 전용: 라스트 스퍼트는 LastChanceModal에서 처리
+      // 여기서는 게임 오버로 처리하여 모달이 뜨도록 함
+      handleGameOver();
     } else if (hasFlare) {
+      // 서바이벌 전용: 구조 신호탄 사용
       consumeActiveItem('flare');
       console.log('[Game] Flare used! Revived from time up.');
+      // 서바이벌에서는 새 문제로 넘어감
     } else {
       handleGameOver();
     }
@@ -239,7 +248,7 @@ function QuizCardComponent({
           {gameMode === 'survival' ? (
             <TimerCircle duration={SURVIVAL_QUESTION_TIME} onComplete={handleTimeUp} isPaused={isSubmitting || isPaused} key={questionKey} />
           ) : (
-            <TimerCircle duration={timeLimit} onComplete={handleTimeUp} isPaused={isPaused} enableFastForward={true} key={timeLimit} />
+            <TimerCircle duration={timeLimit} onComplete={handleTimeUp} isPaused={isPaused} enableFastForward={true} key={`${timeLimit}-${timerResetKey || 0}`} />
           )}
         </div>
         <div className="quiz-header-spacer"></div>
@@ -250,7 +259,11 @@ function QuizCardComponent({
         {/* 퀴즈 카드 */}
         <div className={`quiz-card ${cardAnimation}`}>
           <div className="category-label">{displayCategory} - {displayTopic}</div>
-          <form onSubmit={handleSubmit} style={{ display: 'contents' }}>
+          <form onSubmit={(e) => {
+            e.preventDefault();
+            if (isPaused || isSubmitting || isError) return;
+            handleSubmit(e);
+          }} style={{ display: 'contents' }}>
             <div className={questionAnimation}>
               <h2 className="problem-text">
                 {currentQuestion.question}
@@ -305,7 +318,7 @@ function QuizCardComponent({
                       }
                     }}
                     onKeyDown={(e) => {
-                      if (e.key === 'Enter' && !isError) {
+                      if (e.key === 'Enter' && !isError && !isPaused && !isSubmitting) {
                         e.preventDefault();
                         handleSubmit(e);
                       }
@@ -326,10 +339,10 @@ function QuizCardComponent({
                 <button
                   type="submit"
                   className="submit-button-system"
-                  disabled={isSubmitting || !answerInput || isError}
+                  disabled={isSubmitting || !answerInput || isError || isPaused}
                   onClick={(e) => {
                     e.preventDefault();
-                    if (!isError) {
+                    if (!isError && !isPaused && !isSubmitting) {
                       handleSubmit(e);
                     }
                   }}
@@ -391,7 +404,7 @@ function QuizCardComponent({
                 onClear={handleKeypadClear}
                 onBackspace={handleKeypadBackspace}
                 onSubmit={handleSubmit}
-                disabled={isSubmitting || isError}
+                disabled={isSubmitting || isError || isPaused}
                 mode="text"
               />
             ) : (
@@ -400,7 +413,7 @@ function QuizCardComponent({
                 onClear={handleKeypadClear}
                 onBackspace={handleKeypadBackspace}
                 onSubmit={handleSubmit}
-                disabled={isSubmitting || isError}
+                disabled={isSubmitting || isError || isPaused}
                 showNegative={allowNegative}
               />
             )}

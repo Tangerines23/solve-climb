@@ -83,6 +83,7 @@ export function HomePage() {
     <div className="home-page">
       {/* 연령 등급 표기 (가이드 필수: 초기 화면 우측 상단에 3초 이상 표시) */}
       {/* 법적 요구사항: 충분한 크기와 가독성 확보 필요 */}
+      {/* 게임물관리위원회 공식 등급 마크 이미지 사용 권장 */}
       {showAgeRating && (
         <div
           style={{
@@ -102,9 +103,33 @@ export function HomePage() {
             minWidth: '120px', // 최소 너비 보장
             textAlign: 'center',
             letterSpacing: '0.5px', // 가독성 향상
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            gap: 'var(--spacing-sm)',
           }}
         >
-          전체 이용가
+          {/* 게임물관리위원회 공식 등급 마크 이미지 (public/age-rating-all.png에 추가 필요) */}
+          {/* 이미지가 있으면 이미지 사용, 없으면 텍스트만 표시 */}
+          <img
+            src="/age-rating-all.png"
+            alt="전체 이용가"
+            style={{
+              width: '24px',
+              height: '24px',
+              objectFit: 'contain',
+              display: 'none', // 이미지가 없을 경우 숨김 (onError로 처리)
+            }}
+            onError={(e) => {
+              // 이미지가 없으면 img 태그 숨김
+              (e.target as HTMLImageElement).style.display = 'none';
+            }}
+            onLoad={(e) => {
+              // 이미지가 로드되면 표시
+              (e.target as HTMLImageElement).style.display = 'block';
+            }}
+          />
+          <span>전체 이용가</span>
         </div>
       )}
       <Header />

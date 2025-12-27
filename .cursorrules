@@ -111,6 +111,7 @@ CSS 파일을 작성하거나 수정할 때:
 
 ### 참고 문서
 - 상세 가이드: `docs/DESIGN_SYSTEM.md` 참고
+- UI 가이드: `docs/UI_GUIDE.md` 참고 (컴포넌트 패턴, 레이아웃, 인터랙션 등)
 - 변수 정의: `src/index.css`의 `:root` 섹션 참고
 - 사용 예시: 기존 컴포넌트 CSS 파일 참고 (예: `src/components/AlertModal.css`)
 
@@ -150,4 +151,29 @@ CSS 파일을 작성하거나 수정할 때:
 - TypeScript strict 모드 사용
 - 함수형 컴포넌트와 Hooks 사용
 - ESLint 규칙 준수
+
+## UI 컴포넌트 작성 시 필수 참고
+
+새로운 UI 컴포넌트를 작성하거나 수정할 때는 반드시 다음 가이드를 참고하세요:
+
+### 필수 참고 문서
+- **`docs/UI_GUIDE.md`**: 모든 UI 컴포넌트 패턴, 레이아웃 시스템, 인터랙션 패턴, Do's and Don'ts
+- **`docs/DESIGN_SYSTEM.md`**: CSS 변수 시스템, 디자인 토큰
+
+### UI 컴포넌트 작성 체크리스트
+1. 레이아웃: Header/Footer 높이 고려, 반응형 레이아웃 지원
+2. 스타일: CSS 변수 사용 (하드코딩 금지)
+3. 상태: Loading, Error, Empty, Success 상태 모두 고려
+4. 인터랙션: 호버 효과, 클릭 피드백, 부드러운 전환
+5. 접근성: aria-label, 키보드 네비게이션, 포커스 상태
+6. 컴포넌트 조합: `docs/UI_GUIDE.md`의 "컴포넌트 조합 예시" 참고
+7. 빈 상태: `docs/UI_GUIDE.md`의 "빈 상태 패턴" 참고
+8. Do's and Don'ts: `docs/UI_GUIDE.md`의 "Do's and Don'ts" 섹션 확인
+
+### 컴포넌트 작성 전 확인사항
+- [ ] `docs/UI_GUIDE.md`에서 유사한 컴포넌트 패턴 확인
+- [ ] `docs/DESIGN_SYSTEM.md`에서 필요한 CSS 변수 확인
+- [ ] 기존 컴포넌트 예시 참고 (`src/components/` 디렉토리)
+- [ ] 반응형 디자인 고려 (세로/가로 모드)
+- [ ] 모든 상태 (Loading, Error, Empty, Success) 처리
 

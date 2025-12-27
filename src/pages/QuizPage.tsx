@@ -94,7 +94,7 @@ export function QuizPage() {
   const [showCountdown, setShowCountdown] = useState(false);
   const [showSafetyRope, setShowSafetyRope] = useState(false);
 
-  const { setExhausted, resetGame, setActiveItems, incrementCombo, isStaminaConsumed, setStaminaConsumed } = useGameStore();
+  const { setExhausted, resetGame, setActiveItems, incrementCombo, setCombo, isStaminaConsumed, setStaminaConsumed, combo } = useGameStore();
   const [questionKey, setQuestionKey] = useState(0);
   const [timerResetKey, setTimerResetKey] = useState(0);
   const [previewKeyboardType, setPreviewKeyboardType] = useState<'custom' | 'qwerty'>(() => keyboardType);
@@ -157,6 +157,7 @@ export function QuizPage() {
     answerInput,
     isSubmitting,
     isError: animations.isError,
+    isPaused: showTipModal || showLastChanceModal || showCountdown,
     categoryParam,
     subParam,
     setAnswerInput,
@@ -202,7 +203,7 @@ export function QuizPage() {
     }
 
     // 아이템 보유 확인
-    const itemType = gameMode === 'time-attack' ? 'oxygen_tank' : 'flare';
+    const itemType = gameMode === 'time-attack' ? 'last_spurt' : 'flare';
     // const hasItem = inventory.find((i: any) => i.code === itemType && i.quantity > 0);
     // 아이템이 없어도, 미네랄이 있어도, 일단 모달은 띄워서 '기회'를 보여준다.
     setShowLastChanceModal(true);
@@ -210,27 +211,30 @@ export function QuizPage() {
 
   // Revive Logic
   const handleRevive = useCallback(async (useItem: boolean) => {
-    const itemType = gameMode === 'time-attack' ? 'oxygen_tank' : 'flare';
+    const itemType = gameMode === 'time-attack' ? 'last_spurt' : 'flare';
 
     if (useItem) {
       const item = inventory.find((i: any) => i.code === itemType);
       if (item) {
-        // UI 반응성을 위해 await 없이 호출할 수도 있지만, 안전하게
         await consumeItem(item.id);
       }
     }
 
     setShowLastChanceModal(false);
     setHasUsedLastChance(true);
+    setIsSubmitting(false);
 
-    // Resume Game
-    setIsSubmitting(false); // UI 먹통 방지
     if (gameMode === 'time-attack') {
-      // 타임어택: 3초 카운트다운 후 재개
+      // 타임어택: 라스트 스퍼트 사용 시 +15초 추가
+      // 1. 시간을 15초로 설정
+      useQuizStore.getState().setTimeLimit(15);
+      // 2. 타이머 리셋 (key 변경으로 TimerCircle 리마운트)
+      setTimerResetKey(prev => prev + 1);
+      // 3. 카운트다운 시작 (3-2-1)
       setShowCountdown(true);
-      // CountdownOverlay의 onComplete에서 실제 시간 리셋 및 시작 처리
+      // 피버 상태는 카운트다운 완료 후 처리
     } else {
-      // 서바이벌: 새 문제 (스킵)
+      // 서바이벌: 새 문제로 진행
       generateNewQuestionRef.current();
       animations.setIsError(false);
       setDisplayValue('');
@@ -238,10 +242,14 @@ export function QuizPage() {
   }, [gameMode, inventory, consumeItem, animations]);
 
   const handleCountdownComplete = useCallback(() => {
+    // 카운트다운 완료 후 처리 순서:
+    // 1. 피버 상태 활성화 (Second Wind)
+    setCombo(20);
+    
+    // 2. 카운트다운 닫기 (isPaused 해제로 타이머 시작)
+    // handleRevive에서 이미 타이머를 리셋했으므로 여기서는 닫기만 처리
     setShowCountdown(false);
-    useQuizStore.getState().setTimeLimit(15); // 15초로 상향
-    setQuestionKey(prev => prev + 1);
-  }, []);
+  }, [setCombo]);
 
   const handleSafetyRopeUsed = useCallback(() => {
     setShowSafetyRope(true);
@@ -271,9 +279,9 @@ export function QuizPage() {
   }, [gameMode]);
 
   const handlePurchaseAndRevive = useCallback(async () => {
-    const itemType = gameMode === 'time-attack' ? 'oxygen_tank' : 'flare';
-    // 산소통(라스트 스페어) 10원, 조명탄 20원 유지
-    const basePrice = itemType === 'oxygen_tank' ? 10 : 20;
+    const itemType = gameMode === 'time-attack' ? 'last_spurt' : 'flare';
+    // 라스트 스퍼트 800원, 구조 신호탄 800원
+    const basePrice = itemType === 'last_spurt' ? 800 : 800;
     const targetPrice = basePrice * 2;
 
     if (minerals >= targetPrice) {
@@ -874,16 +882,16 @@ export function QuizPage() {
       <LastChanceModal
         isVisible={showLastChanceModal}
         gameMode={gameMode}
-        inventoryCount={inventory.find(i => i.code === (gameMode === 'time-attack' ? 'oxygen_tank' : 'flare'))?.quantity || 0}
+        inventoryCount={inventory.find(i => i.code === (gameMode === 'time-attack' ? 'last_spurt' : 'flare'))?.quantity || 0}
         userMinerals={minerals}
         onUseItem={() => handleRevive(true)}
         onPurchaseAndUse={handlePurchaseAndRevive}
         onGiveUp={handleGiveUp}
-        basePrice={gameMode === 'time-attack' ? 10 : 20}
+        basePrice={gameMode === 'time-attack' ? 800 : 800}
       />
 
       {/* 카운트다운 오버레이 (부활 후 재개 시 사용) */}
-      {showCountdown && <CountdownOverlay onComplete={handleCountdownComplete} />}
+      {showCountdown && <CountdownOverlay isVisible={showCountdown} onComplete={handleCountdownComplete} />}
 
       {/* 안전 로프 사용 효과 오버레이 */}
       {showSafetyRope && (
@@ -923,7 +931,7 @@ export function QuizPage() {
         gameMode={gameMode}
         timeLimit={timeLimit}
         questionKey={questionKey}
-        SURVIVAL_QUESTION_TIME={SURVIVAL_QUESTION_TIME}
+        timerResetKey={timerResetKey}
         SURVIVAL_QUESTION_TIME={SURVIVAL_QUESTION_TIME}
         isSubmitting={isSubmitting}
         isError={animations.isError}
