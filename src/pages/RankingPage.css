@@ -215,6 +215,9 @@
 .ranking-item-left {
   display: flex;
   align-items: center;
+  gap: var(--spacing-sm);
+  display: flex;
+  align-items: center;
   gap: 16px;
 }
 

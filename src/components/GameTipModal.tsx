@@ -20,11 +20,8 @@ export function GameTipModal({ isOpen, category, subTopic, level, onClose, onSta
   const [selectedItemIds, setSelectedItemIds] = useState<number[]>([]);
 
   if (!isOpen) {
-    console.log('[GameTipModal] isOpen is false, returning null');
     return null;
   }
-
-  console.log('[GameTipModal] Rendering with isOpen: true');
 
   const handleStart = () => {
     if (dontShowAgain) {

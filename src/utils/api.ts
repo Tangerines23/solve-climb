@@ -6,6 +6,7 @@
 import { supabase } from './supabaseClient';
 import { logError } from './errorHandler';
 import { useLoadingStore } from '../stores/useLoadingStore';
+import { ENV } from './env';
 import type { Session } from '@supabase/supabase-js';
 
 /**
@@ -258,7 +259,7 @@ export const statsApi = {
    */
   async getUserStats(userId: string): Promise<UserStats> {
     // 로컬 세션인 경우 기본값 반환
-    if (userId === 'tester' || userId.startsWith('tester_') || userId.startsWith('user_')) {
+    if (userId.startsWith('user_')) {
       return {
         totalHeight: 0,
         totalSolved: 0,
@@ -303,36 +304,38 @@ export const challengeApi = {
       try {
         const targetDate = date || new Date().toISOString().split('T')[0];
         
+        // .maybeSingle() 사용: 데이터가 없으면 null 반환 (406 에러 없음)
         const { data, error } = await supabase
           .from('today_challenges')
           .select('*')
           .eq('challenge_date', targetDate)
-          .single();
+          .maybeSingle();
 
         if (error) {
-          // PGRST116 = not found (데이터가 없음) - 정상적인 상황
+          // PGRST116 = 데이터 없음 (정상적인 상황)
           if (error.code === 'PGRST116') {
             return null;
           }
-          // PGRST205 = table not found in schema cache (테이블이 없음) - 마이그레이션 필요
-          // PGRST301 = relation does not exist (테이블이 없음) - 마이그레이션 필요
+          
+          // 테이블이 없는 경우 (마이그레이션 필요)
           if (error.code === 'PGRST205' || error.code === 'PGRST301') {
-            console.warn('[Challenge API] today_challenges 테이블이 존재하지 않습니다.');
-            console.warn('[Challenge API] 마이그레이션 파일: supabase/migrations/20251219000001_create_today_challenges.sql');
-            console.warn('[Challenge API] 가이드 문서: docs/TODAY_CHALLENGES_MIGRATION.md');
+            if (ENV.IS_DEVELOPMENT) {
+              console.warn('[Challenge API] today_challenges 테이블이 존재하지 않습니다.');
+            }
             return null;
           }
-          // 404 에러 (데이터가 없음) - 정상적인 상황
-          if (error.message?.includes('404') || error.message?.includes('not found')) {
-            return null;
+          
+          // 기타 에러는 로깅 후 null 반환
+          if (ENV.IS_DEVELOPMENT) {
+            console.error('[Challenge API] today_challenges 조회 에러:', error);
           }
-          throw error;
+          logError('Challenge API - getTodayChallenge', error);
+          return null;
         }
 
         return data;
       } catch (error) {
         logError('Challenge API - getTodayChallenge', error);
-        // 에러 발생 시 null 반환 (폴백 처리)
         return null;
       }
     });

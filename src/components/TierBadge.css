@@ -1,0 +1,81 @@
+/* src/components/TierBadge.css */
+.tier-badge {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--spacing-xs);
+}
+
+.tier-badge-small {
+  gap: var(--spacing-tiny);
+}
+
+.tier-badge-medium {
+  gap: var(--spacing-sm);
+}
+
+.tier-badge-large {
+  gap: var(--spacing-md);
+}
+
+.tier-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--rounded-card);
+  padding: var(--spacing-sm);
+  transition: transform 0.2s ease;
+}
+
+.tier-badge-small .tier-icon {
+  padding: var(--spacing-xs);
+  font-size: 1.2rem;
+}
+
+.tier-badge-medium .tier-icon {
+  padding: var(--spacing-sm);
+  font-size: 1.5rem;
+}
+
+.tier-badge-large .tier-icon {
+  padding: var(--spacing-md);
+  font-size: 2rem;
+}
+
+.tier-icon:hover {
+  transform: scale(1.1);
+}
+
+.tier-emoji {
+  display: block;
+  line-height: 1;
+}
+
+.tier-label {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--spacing-tiny);
+}
+
+.tier-name {
+  font-size: 0.85rem;
+  color: var(--color-text-primary);
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+.tier-badge-small .tier-name {
+  font-size: 0.75rem;
+}
+
+.tier-badge-large .tier-name {
+  font-size: 1rem;
+}
+
+.tier-stars {
+  margin-left: var(--spacing-xs);
+  color: var(--color-tier-legend);
+  font-size: 0.9em;
+}
+

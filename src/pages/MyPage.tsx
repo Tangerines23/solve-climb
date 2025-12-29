@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef, useCallback } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { Header } from '../components/Header';
 import { FooterNav } from '../components/FooterNav';
@@ -6,6 +6,10 @@ import { ProfileForm } from '../components/ProfileForm';
 import { DataResetConfirmModal } from '../components/DataResetConfirmModal';
 import { Toast } from '../components/Toast';
 import { AlertModal } from '../components/AlertModal';
+import { TierBadge } from '../components/TierBadge';
+import { TierProgressBar } from '../components/TierProgressBar';
+import { CyclePromotionModal } from '../components/CyclePromotionModal';
+import { BadgeCollection } from '../components/BadgeSlot';
 import { useProfileStore } from '../stores/useProfileStore';
 import { useSettingsStore } from '../stores/useSettingsStore';
 import { useMyPageStats } from '../hooks/useMyPageStats';
@@ -18,6 +22,7 @@ import { ENV } from '../utils/env';
 import { handleTossLogin } from '../utils/tossLogin';
 import { handleTossLoginFlow } from '../utils/tossAuth';
 import { migrateToGameLogin, checkTossLoginIntegration } from '../utils/tossGameLogin';
+import { calculateTier } from '../constants/tiers';
 import './MyPage.css';
 
 export function MyPage() {
@@ -47,8 +52,34 @@ export function MyPage() {
   const [loginError, setLoginError] = useState(false);
   const [isOpeningLeaderboard, setIsOpeningLeaderboard] = useState(false);
   const [retryCount, setRetryCount] = useState(0);
-  const testerInputRef = useRef<string>('');
-  const testerInputTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const [showPromotionModal, setShowPromotionModal] = useState(false);
+  const [tierStars, setTierStars] = useState(0);
+  const [currentUserId, setCurrentUserId] = useState<string | null>(null);
+
+  // 사용자 ID 가져오기
+  useEffect(() => {
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      if (session?.user) {
+        setCurrentUserId(session.user.id);
+      }
+    });
+  }, []);
+
+  // 승급 대기 상태 확인 및 모달 표시
+  useEffect(() => {
+    if (stats?.cyclePromotionPending && !showPromotionModal) {
+      // 티어 정보 계산하여 별 개수 가져오기
+      calculateTier(stats.totalMasteryScore).then((tierResult) => {
+        setTierStars(tierResult.stars);
+        setShowPromotionModal(true);
+      });
+    }
+  }, [stats?.cyclePromotionPending, stats?.totalMasteryScore, showPromotionModal]);
+
+  const handlePromote = async () => {
+    setShowPromotionModal(false);
+    await refetch(); // 티어 정보 갱신
+  };
 
   const handleProfileComplete = () => {
     setShowProfileForm(false);
@@ -112,46 +143,6 @@ export function MyPage() {
     window.location.href = `mailto:support@solveclimb.com?subject=${subject}&body=${body}`;
   };
 
-  // ⚠️ 출시 전 확인 필요: 키보드 입력으로 테스터(관리자) 로그인 기능
-  // 이 기능은 개발/테스트 목적으로만 사용하며, 출시 전에 제거하거나 
-  // 더 안전한 인증 방식으로 교체해야 합니다.
-  const handleTesterLogin = useCallback(async () => {
-    try {
-      // Supabase 인증 없이 로컬에서만 세션 관리
-      // 테스터 프로필 설정
-      const testerProfile = {
-        profileId: `tester_${Date.now()}`,
-        nickname: 'tester',
-        createdAt: new Date().toISOString(),
-        isAdmin: true,
-      };
-
-      setProfile(testerProfile);
-      setIsAdmin(true);
-
-      // 로컬 세션 저장 (Supabase 인증 없이)
-      try {
-        localStorage.setItem('solve-climb-local-session', JSON.stringify({
-          userId: 'tester',
-          isAdmin: true,
-          loginTime: new Date().toISOString(),
-        }));
-      } catch (e) {
-        console.warn('Failed to save local session:', e);
-      }
-
-      // 로그인 성공 후 통계 다시 불러오기
-      await refetch();
-      setToastMessage('테스터로 로그인되었습니다.');
-      setShowToast(true);
-      setLoginError(false);
-      testerInputRef.current = '';
-    } catch (error) {
-      console.error('Tester login error:', error);
-      setToastMessage(`테스터 로그인 실패: ${error instanceof Error ? error.message : '알 수 없는 오류'}`);
-      setShowToast(true);
-    }
-  }, [setProfile, setIsAdmin, refetch]);
 
   // 게임 로그인 마이그레이션 및 로그인 함수
   const handleLogin = async () => {
@@ -459,74 +450,6 @@ export function MyPage() {
     }
   };
 
-  // ⚠️ 출시 전 확인 필요: 키보드 입력으로 테스터(관리자) 로그인 감지
-  // 이 기능은 개발/테스트 목적으로만 사용하며, 출시 전에 제거해야 합니다.
-  useEffect(() => {
-    // 로그인 오류가 없고 세션이 있으면 리스너 등록 안 함
-    if (!loginError && session) {
-      testerInputRef.current = '';
-      return;
-    }
-
-    const handleKeyDown = async (event: KeyboardEvent) => {
-      // 입력 필드에 포커스가 있으면 무시 (실제 입력 중일 때)
-      const target = event.target as HTMLElement;
-      if (target && (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA' || target.isContentEditable)) {
-        return;
-      }
-
-      // 모바일 키보드가 아닌 물리적 키보드만 감지
-      // event.isComposing은 IME 입력 중인지 확인
-      if (event.isComposing || event.key === 'Process') {
-        return;
-      }
-
-      // 알파벳만 처리
-      if (event.key.length === 1 && /[a-zA-Z]/.test(event.key)) {
-        const char = event.key.toLowerCase();
-
-        // 기존 입력 타임아웃 클리어
-        if (testerInputTimeoutRef.current) {
-          clearTimeout(testerInputTimeoutRef.current);
-        }
-
-        // "tester" 문자열과 비교
-        const expectedChar = 'tester'[testerInputRef.current.length];
-
-        if (char === expectedChar) {
-          testerInputRef.current += char;
-
-          // "tester" 완성 확인
-          if (testerInputRef.current === 'tester') {
-            event.preventDefault(); // 기본 동작 방지
-            await handleTesterLogin();
-            testerInputRef.current = '';
-            return;
-          }
-
-          // 3초 내에 다음 문자를 입력하지 않으면 리셋
-          testerInputTimeoutRef.current = setTimeout(() => {
-            testerInputRef.current = '';
-          }, 3000);
-        } else {
-          // 잘못된 문자 입력 시 리셋
-          testerInputRef.current = '';
-        }
-      } else if (event.key === 'Backspace' || event.key === 'Delete') {
-        // 백스페이스나 삭제 키 입력 시 리셋
-        testerInputRef.current = '';
-      }
-    };
-
-    window.addEventListener('keydown', handleKeyDown);
-
-    return () => {
-      window.removeEventListener('keydown', handleKeyDown);
-      if (testerInputTimeoutRef.current) {
-        clearTimeout(testerInputTimeoutRef.current);
-      }
-    };
-  }, [loginError, session, handleTesterLogin]);
 
   // 로그아웃 함수
   const handleLogout = async () => {
@@ -631,6 +554,13 @@ export function MyPage() {
           message={alertMessage || '리더보드를 열 수 없습니다.'}
           onClose={() => setShowAlert(false)}
         />
+        <CyclePromotionModal
+          isOpen={showPromotionModal}
+          stars={tierStars}
+          pendingScore={stats?.pendingCycleScore || 0}
+          onPromote={handlePromote}
+          onClose={() => setShowPromotionModal(false)}
+        />
       </div>
     );
   }
@@ -664,6 +594,19 @@ export function MyPage() {
               </strong>
               를 올랐어요!
             </h1>
+            {/* 티어 뱃지 표시 */}
+            {stats && stats.totalMasteryScore > 0 && (
+              <div className="my-page-tier-section">
+                <TierBadge 
+                  totalScore={stats.totalMasteryScore}
+                  size="large"
+                  showLabel={true}
+                  showStars={true}
+                  currentTierLevel={stats.currentTierLevel ?? undefined}
+                />
+                <TierProgressBar totalScore={stats.totalMasteryScore} size="medium" />
+              </div>
+            )}
           </div>
 
           {/* Stats Grid */}
@@ -876,6 +819,11 @@ export function MyPage() {
               </div>
             </div>
           </div>
+
+          {/* 뱃지 컬렉션 */}
+          {currentUserId && (
+            <BadgeCollection userId={currentUserId} />
+          )}
 
           {/* 에러 메시지 (있는 경우) */}
           {statsError && (

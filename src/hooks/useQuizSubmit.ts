@@ -38,6 +38,9 @@ interface UseQuizSubmitParams {
   inputRef: React.RefObject<HTMLInputElement | null>;
   showFeedback: (text: string, subText?: string, type?: 'success' | 'info') => void;
   onSafetyRopeUsed?: () => void;
+  setIsFlarePaused?: (paused: boolean) => void;
+  onAnswerSubmitted?: (questionId: string, userAnswer: number) => void;
+  currentQuestionId?: string | null;
 }
 
 export function useQuizSubmit({
@@ -65,10 +68,13 @@ export function useQuizSubmit({
   handleGameOver,
   setTotalQuestions,
   setWrongAnswers,
-  setSolveTimes,
-  inputRef,
-  showFeedback,
-  onSafetyRopeUsed,
+    setSolveTimes,
+    inputRef,
+    showFeedback,
+    onSafetyRopeUsed,
+    setIsFlarePaused,
+    onAnswerSubmitted,
+    currentQuestionId,
 }: UseQuizSubmitParams) {
   const { incrementCombo, resetCombo, isExhausted, activeItems, consumeActiveItem } = useGameStore();
   const { stamina, fetchUserData } = useUserStore();
@@ -131,6 +137,11 @@ export function useQuizSubmit({
         isCorrect = typeof currentQuestion.answer === 'number'
           ? currentQuestion.answer === answer
           : false;
+        
+        // 답안 수집 (문제 ID와 함께)
+        if (onAnswerSubmitted && currentQuestionId) {
+          onAnswerSubmitted(currentQuestionId, answer);
+        }
       }
 
       // 문제 수 증가
@@ -184,6 +195,9 @@ export function useQuizSubmit({
         if (hasSafetyRope) {
           consumeActiveItem('safety_rope');
 
+          // 안전 로프 사용 시 정답 표시하지 않음 (오답 방어이므로)
+          // setDisplayValue는 호출하지 않음
+
           // Trigger Safety Rope Overlay
           if (onSafetyRopeUsed) onSafetyRopeUsed();
 
@@ -192,13 +206,10 @@ export function useQuizSubmit({
           // Reset interaction state to allow retry
           setTimeout(() => {
             setIsError(false);
+            setDisplayValue(''); // 정답 표시 제거
             setCardAnimation('');
             setIsSubmitting(false);
-            // Optionally clear input? "해당 문제 화면에 머무르게" -> Keep input or clear?
-            // Usually clearing incorrect input is better UX for retry.
-            // setAnswerInput(''); 
-            // setDisplayValue('');
-            // But let's keep it for a moment so they see what they typed.
+            setAnswerInput(''); // 입력 초기화하여 재시도 가능하게
           }, 1000); // 1.5s animation, wait a bit before unlocking
 
           return; // STOP Game Over Logic
@@ -237,6 +248,9 @@ export function useQuizSubmit({
               setIsError(false);
               setDisplayValue('');
               setShowFlash(false);
+              // 구조 신호탄 사용 후 타이머 일시정지
+              if (setIsFlarePaused) setIsFlarePaused(true);
+              // 새 문제 생성
               paramsRef.current.generateNewQuestion();
               setIsSubmitting(false);
             } else {
@@ -317,6 +331,8 @@ export function useQuizSubmit({
       decreaseScore,
       inputRef,
       showFeedback,
+      onAnswerSubmitted,
+      currentQuestionId,
     ]
   );
 

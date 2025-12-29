@@ -58,7 +58,21 @@ const createSupabaseClient = (): SupabaseClient => {
     console.log('[Supabase] 콜백 URL:', redirectUrl);
   }
   
-  return createClient(ENV.SUPABASE_URL, ENV.SUPABASE_ANON_KEY, options);
+  const client = createClient(ENV.SUPABASE_URL, ENV.SUPABASE_ANON_KEY, options);
+  
+  // 익명 사용자 인증 자동 수행 (RLS 정책을 통과하기 위해)
+  // 세션이 없을 때만 익명 로그인 시도 (비동기, 실패해도 무시)
+  if (typeof window !== 'undefined') {
+    client.auth.getSession().then(({ data: { session } }) => {
+      if (!session) {
+        client.auth.signInAnonymously().catch(() => {
+          // 익명 로그인 실패는 무시 (정책이 제대로 설정되어 있으면 작동할 수 있음)
+        });
+      }
+    });
+  }
+  
+  return client;
 };
 
 export const supabase = createSupabaseClient();

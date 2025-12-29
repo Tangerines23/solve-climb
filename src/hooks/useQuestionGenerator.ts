@@ -24,6 +24,7 @@ interface UseQuestionGeneratorParams {
   setQuestionAnimation: (value: string) => void;
   setQuestionKey: (updater: (prev: number) => number) => void;
   setQuestionStartTime: (time: number | null) => void;
+  onQuestionGenerated?: (question: QuizQuestion, questionId: string) => void;
 }
 
 export function useQuestionGenerator({
@@ -44,6 +45,7 @@ export function useQuestionGenerator({
   setQuestionAnimation,
   setQuestionKey,
   setQuestionStartTime,
+  onQuestionGenerated,
 }: UseQuestionGeneratorParams) {
   const generateNewQuestion = useCallback(() => {
     // URL 파라미터가 있으면 직접 사용, 없으면 store에서 가져오기
@@ -73,7 +75,13 @@ export function useQuestionGenerator({
                 question: problem.expression,
                 answer: problem.answer,
               };
+              // 문제 ID 생성 (UUID)
+              const questionId = crypto.randomUUID();
               setCurrentQuestion(newQuestion);
+              // 문제 생성 콜백 호출
+              if (onQuestionGenerated) {
+                onQuestionGenerated(newQuestion, questionId);
+              }
             } catch (e) {
               console.error("Failed to generate problem, falling back to legacy generator", e);
               // 실패 시 기존 로직으로 폴백
@@ -84,7 +92,13 @@ export function useQuestionGenerator({
               const fallbackTopic = topicMap[level] || '덧셈';
               const safeCategory = currentCategory || '수학';
               const newQuestion = generateQuestion(safeCategory, fallbackTopic, difficulty);
+              // 문제 ID 생성 (UUID)
+              const questionId = crypto.randomUUID();
               setCurrentQuestion(newQuestion);
+              // 문제 생성 콜백 호출
+              if (onQuestionGenerated) {
+                onQuestionGenerated(newQuestion, questionId);
+              }
             }
 
             setAnswerInput('');
@@ -120,14 +134,26 @@ export function useQuestionGenerator({
                 question: equation.question,
                 answer: equation.x,
               };
+              // 문제 ID 생성 (UUID)
+              const questionId = crypto.randomUUID();
               setCurrentQuestion(newQuestion);
+              // 문제 생성 콜백 호출
+              if (onQuestionGenerated) {
+                onQuestionGenerated(newQuestion, questionId);
+              }
             } catch (e) {
               console.error("Failed to generate equation, falling back to legacy generator", e);
               // 실패 시 기존 로직으로 폴백
               currentTopic = 'equations' as Topic;
               const safeCategory = currentCategory || '수학';
               const newQuestion = generateQuestion(safeCategory, currentTopic, difficulty);
+              // 문제 ID 생성 (UUID)
+              const questionId = crypto.randomUUID();
               setCurrentQuestion(newQuestion);
+              // 문제 생성 콜백 호출
+              if (onQuestionGenerated) {
+                onQuestionGenerated(newQuestion, questionId);
+              }
             }
 
             setAnswerInput('');
@@ -166,7 +192,13 @@ export function useQuestionGenerator({
     setQuestionAnimation('fade-out');
     setTimeout(() => {
       const newQuestion = generateQuestion(currentCategory, currentTopic as Topic, difficulty);
+      // 문제 ID 생성 (UUID)
+      const questionId = crypto.randomUUID();
       setCurrentQuestion(newQuestion);
+      // 문제 생성 콜백 호출
+      if (onQuestionGenerated) {
+        onQuestionGenerated(newQuestion, questionId);
+      }
       setAnswerInput('');
       setDisplayValue('');
       setIsError(false);
@@ -204,6 +236,7 @@ export function useQuestionGenerator({
     setQuestionAnimation,
     setQuestionKey,
     setQuestionStartTime,
+    onQuestionGenerated,
   ]);
 
   return {

@@ -10,6 +10,7 @@ interface UseQuizInputParams {
   subParam: string | null;
   setAnswerInput: (value: string) => void;
   setDisplayValue: (value: string) => void;
+  onInputStart?: () => void; // 입력 시작 시 호출 (구조 신호탄 타이머 재개용)
 }
 
 export function useQuizInput({
@@ -21,10 +22,13 @@ export function useQuizInput({
   subParam,
   setAnswerInput,
   setDisplayValue,
+  onInputStart,
 }: UseQuizInputParams) {
   // 수학 퀴즈용 키패드 핸들러 (3x3 그리드)
   const handleKeypadNumber = useCallback((num: string) => {
     if (isSubmitting || isError || isPaused) return;
+    // 입력 시작 시 콜백 호출 (구조 신호탄 타이머 재개)
+    if (onInputStart) onInputStart();
 
     const isEquationQuiz = categoryParam === 'math' && subParam === 'equations';
     const isCalculusQuiz = categoryParam === 'math' && subParam === 'calculus';
@@ -64,11 +68,13 @@ export function useQuizInput({
       setDisplayValue(newValue);
       return newValue;
     });
-  }, [isSubmitting, categoryParam, subParam, answerInput, isError, isPaused, setAnswerInput, setDisplayValue]);
+  }, [isSubmitting, categoryParam, subParam, answerInput, isError, isPaused, onInputStart, setAnswerInput, setDisplayValue]);
 
   // 쿼티 키보드 핸들러 (일본어 퀴즈 및 수학 퀴즈 모두 지원)
   const handleQwertyKeyPress = useCallback((key: string) => {
     if (isSubmitting || isError || isPaused) return;
+    // 입력 시작 시 콜백 호출 (구조 신호탄 타이머 재개)
+    if (onInputStart) onInputStart();
 
     const isJapaneseQuiz = categoryParam === 'language' && subParam === 'japanese';
     const isEquationQuiz = categoryParam === 'math' && subParam === 'equations';
@@ -124,7 +130,7 @@ export function useQuizInput({
         return newValue;
       });
     }
-  }, [isSubmitting, categoryParam, subParam, answerInput, isError, isPaused, setAnswerInput, setDisplayValue]);
+  }, [isSubmitting, categoryParam, subParam, answerInput, isError, isPaused, onInputStart, setAnswerInput, setDisplayValue]);
 
   const handleKeypadClear = useCallback(() => {
     if (isSubmitting || isError || isPaused) return;

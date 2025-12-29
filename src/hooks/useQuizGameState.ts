@@ -1,6 +1,7 @@
 // 게임 상태 관리 로직을 관리하는 커스텀 훅
 import { useState, useEffect, useCallback } from 'react';
 import { GameMode } from '../types/quiz';
+import { supabase } from '../utils/supabaseClient';
 
 interface UseQuizGameStateParams {
   score: number;
@@ -27,6 +28,9 @@ export function useQuizGameState({
   const [wrongAnswersState, setWrongAnswersState] = useState<Array<{ question: string; wrongAnswer: string; correctAnswer: string }>>([]);
   const [questionStartTime, setQuestionStartTime] = useState<number | null>(null);
   const [solveTimesState, setSolveTimesState] = useState<number[]>([]);
+  const [gameSessionId, setGameSessionId] = useState<string | null>(null);
+  const [userAnswers, setUserAnswers] = useState<number[]>([]);
+  const [questionIds, setQuestionIds] = useState<string[]>([]);
 
   const handleGameOver = useCallback(() => {
     // 게임 종료 시 바로 결과 페이지로 이동
@@ -71,18 +75,35 @@ export function useQuizGameState({
       }
     }
 
+    // 게임 세션 ID와 답안 정보 전달
+    if (gameSessionId) {
+      params.set('session_id', gameSessionId);
+    }
+    if (userAnswers.length > 0) {
+      params.set('user_answers', userAnswers.join(','));
+    }
+    if (questionIds.length > 0) {
+      params.set('question_ids', questionIds.join(','));
+    }
+
     navigate(`/result?${params.toString()}`);
-  }, [categoryParam, subParam, levelParam, modeParam, score, totalQuestionsState, gameMode, wrongAnswersState, solveTimesState, navigate]);
+  }, [categoryParam, subParam, levelParam, modeParam, score, totalQuestionsState, gameMode, wrongAnswersState, solveTimesState, navigate, gameSessionId, userAnswers, questionIds]);
 
   return {
     totalQuestions: totalQuestionsState,
     wrongAnswers: wrongAnswersState,
     questionStartTime,
     solveTimes: solveTimesState,
+    gameSessionId,
+    userAnswers,
+    questionIds,
     setTotalQuestions: setTotalQuestionsState,
     setWrongAnswers: setWrongAnswersState,
     setQuestionStartTime,
     setSolveTimes: setSolveTimesState,
+    setGameSessionId,
+    setUserAnswers,
+    setQuestionIds,
     handleGameOver,
   };
 }

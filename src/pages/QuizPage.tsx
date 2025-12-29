@@ -20,6 +20,7 @@ import { useGameStore } from '../stores/useGameStore';
 import { StaminaWarningModal } from '../components/game/StaminaWarningModal';
 import { ItemFeedbackOverlay, ItemFeedbackRef } from '../components/game/ItemFeedbackOverlay';
 import { APP_CONFIG } from '../config/app';
+import { supabase } from '../utils/supabaseClient';
 import {
   validateCategoryParam,
   validateSubTopicParam,
@@ -60,6 +61,8 @@ export function QuizPage() {
   const [showTipModal, setShowTipModal] = useState(true);
   const [showStaminaModal, setShowStaminaModal] = useState(false);
   const [pendingItemIds, setPendingItemIds] = useState<number[]>([]);
+  const [gameQuestions, setGameQuestions] = useState<Array<{ id: string; question: QuizQuestion; userAnswer: number | null }>>([]);
+  const [currentQuestionId, setCurrentQuestionId] = useState<string | null>(null);
 
   // 사용자 스토어
   const { stamina, inventory, checkStamina, consumeItem, consumeStamina, minerals, recoverStaminaAds } = useUserStore();
@@ -92,6 +95,7 @@ export function QuizPage() {
   const [showLastChanceModal, setShowLastChanceModal] = useState(false);
   const [hasUsedLastChance, setHasUsedLastChance] = useState(false);
   const [showCountdown, setShowCountdown] = useState(false);
+  const [isFlarePaused, setIsFlarePaused] = useState(false); // 구조 신호탄 사용 후 타이머 일시정지
   const [showSafetyRope, setShowSafetyRope] = useState(false);
 
   const { setExhausted, resetGame, setActiveItems, incrementCombo, setCombo, isStaminaConsumed, setStaminaConsumed, combo } = useGameStore();
@@ -150,20 +154,32 @@ export function QuizPage() {
     setQuestionAnimation: animations.setQuestionAnimation,
     setQuestionKey,
     setQuestionStartTime: gameState.setQuestionStartTime,
+    onQuestionGenerated: (question, questionId) => {
+      // 문제 생성 시 문제 ID와 문제 정보 수집
+      setGameQuestions(prev => [...prev, { id: questionId, question, userAnswer: null }]);
+      gameState.setQuestionIds(prev => [...prev, questionId]);
+      setCurrentQuestionId(questionId);
+    },
   });
+
+  // 구조 신호탄 타이머 재개 핸들러
+  const handleFlareInputStart = useCallback(() => {
+    if (isFlarePaused) {
+      setIsFlarePaused(false);
+    }
+  }, [isFlarePaused]);
 
   // 키보드 입력 처리
   const inputHandlers = useQuizInput({
     answerInput,
     isSubmitting,
     isError: animations.isError,
-    isPaused: showTipModal || showLastChanceModal || showCountdown,
+    isPaused: showTipModal || showLastChanceModal || showCountdown || isFlarePaused,
     categoryParam,
     subParam,
     setAnswerInput,
     setDisplayValue,
-    setIsError: animations.setIsError, // 추가
-    animations // 추가 (ref로 전달하거나 필요한 애니메이션 세터들)
+    onInputStart: handleFlareInputStart,
   });
 
   // gameState의 setter들을 안정적으로 참조하기 위한 ref
@@ -253,27 +269,11 @@ export function QuizPage() {
 
   const handleSafetyRopeUsed = useCallback(() => {
     setShowSafetyRope(true);
-    // 1회 방어 후, 타임오버일 경우를 대비해 시간을 리셋하거나 키를 업데이트해야 함.
-    // 오답 시에는 input만 풀리면 되지만, Time Up 시에는 시간이 필요함.
-    // 안전하게 항상 약간의 시간을 주거나(타임어택), 문제 키를 업데이트(서바이벌) 해야 할 수도 있음.
-    // 하지만 "Retry" 컨셉이므로 문제는 유지하고 싶음.
-    // -> TimerCircle이 key update 없이도 reset method를 노출하면 좋지만 복잡함.
-    // -> 가장 쉬운 방법: QuestionKey를 유지하되, TimeLimit을 잠시 바꿨다 돌아오거나?
-    // -> 아니면 그냥 TimerCircle이 props change를 감지하므로 force reset.
-    // 여기서는 Time Up 방어 시 '시간 충전' 개념이 필요.
-    // 타임어택: 15초 부여? 아니면 원래 제한시간? 
-    // 디자인 상 명시 없으나, 방어 후 바로 죽으면 안 되므로 10~15초 정도 주는 것이 타당.
+    // 안전 로프는 오답 방어이므로 시간을 변경하지 않음
+    // 오답 방어 시: 입력만 초기화하고 문제는 그대로 유지
+    // Time Up 방어 시: 타이머 리셋 필요 (타임어택의 경우 원래 제한시간으로)
     if (gameMode === 'time-attack') {
-      // useQuizStore.getState().setTimeLimit(15); // 라스트 스페어와 동일?
-      // 근데 setTimeLimit만 호출하면 render가 안 일어날수도? (이미 15면)
-      // 강제로 리셋하기 위해 key 업데이트가 필요하지만, 문제는 그대로여야 함.
-      // QuizCard에서 TimerCircle key={questionKey + "_retry_" + safetyCount} 처럼 별도 키 필요.
-      // 일단 편의상 15초로 설정.
-      useQuizStore.getState().setTimeLimit(15);
-      // 타이머 리셋을 위해 임시로 questionKey 업데이트? -> 문제는 바뀜.
-      // -> TimerCircle에 별도 'resetTrigger' prop을 주는게 정석.
-      // 시간 관계상, 안전 로프 사용 시 '새 문제'로 넘어가는 건 원치 않으므로, 
-      // QuizPage 상태에 'timerResetKey'를 추가하여 TimerCircle key에 조합.
+      // Time Up 방어 시 타이머 리셋 (원래 제한시간으로)
       setTimerResetKey(prev => prev + 1);
     }
   }, [gameMode]);
@@ -328,6 +328,15 @@ export function QuizPage() {
     setSolveTimes: gameStateSettersRef.current.setSolveTimes,
     inputRef,
     showFeedback: (text: string, subText?: string, type?: 'success' | 'info') => feedbackRef.current?.show(text, subText, type),
+    setIsFlarePaused,
+    onAnswerSubmitted: (questionId, userAnswer) => {
+      // 답안 수집
+      setGameQuestions(prev => prev.map(q => 
+        q.id === questionId ? { ...q, userAnswer } : q
+      ));
+      gameState.setUserAnswers(prev => [...prev, userAnswer]);
+    },
+    currentQuestionId,
   });
 
   // categoryParam이나 subParam, levelParam이 변경될 때 팁 모달 상태 업데이트
@@ -458,19 +467,71 @@ export function QuizPage() {
     gameStateRef.current.setWrongAnswers([]);
     gameStateRef.current.setSolveTimes([]);
     gameStateRef.current.setQuestionStartTime(null);
+    setSessionCreated(false); // 세션 생성 상태 초기화
+    isCreatingSessionRef.current = false; // 세션 생성 플래그 초기화
+    setGameQuestions([]); // 게임 문제 초기화
+    setCurrentQuestionId(null); // 현재 문제 ID 초기화
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [categoryParam, subParam, levelParam, resetQuiz]);
 
+  // 게임 시작 시 세션 생성 (한 번만 실행)
+  const [sessionCreated, setSessionCreated] = useState(false);
+  const setGameSessionId = gameState.setGameSessionId;
+  const isCreatingSessionRef = useRef(false);
+  useEffect(() => {
+    if (!showTipModal && categoryParam && subParam && levelParam !== null && modeParam && !sessionCreated && !isCreatingSessionRef.current) {
+      isCreatingSessionRef.current = true;
+      const createGameSession = async () => {
+        try {
+          // RPC는 'timeattack' (하이픈/언더바 없음)을 기대함
+          const rpcGameMode = modeParam === 'time_attack' ? 'timeattack' : 'survival';
+          
+          // 빈 세션 생성 (문제는 나중에 추가)
+          // 실제로는 문제를 미리 생성하거나, 문제가 생성될 때마다 세션을 업데이트해야 하지만
+          // 현재 구조에서는 게임 종료 시 문제와 답안을 한 번에 제출하는 방식 사용
+          const { data, error } = await supabase.rpc('create_game_session', {
+            p_questions: [], // 빈 배열 (JSONB는 자동으로 변환됨)
+            p_category: categoryParam,
+            p_subject: subParam,
+            p_level: levelParam,
+            p_game_mode: rpcGameMode
+          });
+
+          if (error) {
+            console.error('[QuizPage] 게임 세션 생성 실패:', error);
+            isCreatingSessionRef.current = false;
+            // 세션 생성 실패해도 게임은 계속 진행
+          } else if (data?.session_id) {
+            setGameSessionId(data.session_id);
+            console.log('[QuizPage] 게임 세션 생성 성공:', data.session_id);
+            setSessionCreated(true);
+            isCreatingSessionRef.current = false;
+          }
+        } catch (error) {
+          console.error('[QuizPage] 게임 세션 생성 중 오류:', error);
+          isCreatingSessionRef.current = false;
+        }
+      };
+
+      createGameSession();
+    }
+    
+    // cleanup: 컴포넌트 언마운트 시 플래그 초기화
+    return () => {
+      isCreatingSessionRef.current = false;
+    };
+  }, [showTipModal, categoryParam, subParam, levelParam, modeParam, sessionCreated, setGameSessionId]);
+
   // showTipModal이 false가 되면 문제 생성
   useEffect(() => {
-    if (!showTipModal) {
+    if (!showTipModal && !sessionCreated) {
       // 약간의 지연을 두어 상태 업데이트가 완료된 후 실행
       const timer = setTimeout(() => {
         generateNewQuestionRef.current();
       }, 50);
       return () => clearTimeout(timer);
     }
-  }, [showTipModal]);
+  }, [showTipModal, sessionCreated]);
 
 
   const handleBack = useCallback(() => {
@@ -937,7 +998,7 @@ export function QuizPage() {
         isError={animations.isError}
         useSystemKeyboard={useSystemKeyboard}
         showTipModal={showTipModal}
-        isPaused={showTipModal || showLastChanceModal || showCountdown}
+        isPaused={showTipModal || showLastChanceModal || showCountdown || isFlarePaused}
         showExitConfirm={showExitConfirm}
         isFadingOut={isFadingOut}
         cardAnimation={animations.cardAnimation}

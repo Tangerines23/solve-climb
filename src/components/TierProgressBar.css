@@ -1,0 +1,85 @@
+/* src/components/TierProgressBar.css */
+.tier-progress-bar {
+  width: 100%;
+  padding: var(--spacing-md);
+  background-color: var(--color-bg-secondary);
+  border-radius: var(--rounded-card);
+  box-shadow: var(--shadow-card);
+}
+
+.tier-progress-bar-small {
+  padding: var(--spacing-sm);
+}
+
+.tier-progress-bar-large {
+  padding: var(--spacing-lg);
+}
+
+.tier-progress-label {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: var(--spacing-sm);
+  font-size: 0.9rem;
+  color: var(--color-text-secondary);
+}
+
+.tier-progress-bar-small .tier-progress-label {
+  font-size: 0.8rem;
+}
+
+.tier-progress-bar-large .tier-progress-label {
+  font-size: 1rem;
+}
+
+.current-tier {
+  font-weight: 500;
+  color: var(--color-text-primary);
+}
+
+.next-tier {
+  color: var(--color-text-secondary);
+}
+
+.tier-progress-bar-container {
+  width: 100%;
+  height: 8px;
+  background-color: var(--color-bg-tertiary);
+  border-radius: var(--rounded-sm);
+  overflow: hidden;
+  margin-bottom: var(--spacing-sm);
+}
+
+.tier-progress-bar-small .tier-progress-bar-container {
+  height: 6px;
+}
+
+.tier-progress-bar-large .tier-progress-bar-container {
+  height: 10px;
+}
+
+.tier-progress-bar-fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--color-blue-400), var(--color-blue-500));
+  border-radius: var(--rounded-sm);
+  transition: width 0.3s ease;
+}
+
+.tier-progress-text {
+  text-align: center;
+  font-size: 0.85rem;
+  color: var(--color-text-secondary);
+}
+
+.tier-progress-bar-small .tier-progress-text {
+  font-size: 0.75rem;
+}
+
+.tier-progress-bar-large .tier-progress-text {
+  font-size: 0.95rem;
+}
+
+.remaining-score {
+  font-weight: 500;
+  color: var(--color-text-primary);
+}
+

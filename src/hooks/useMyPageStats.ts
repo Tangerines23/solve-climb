@@ -10,6 +10,10 @@ export interface MyPageStats {
   totalSolved: number;
   maxLevel: number;
   bestSubject: string | null;
+  totalMasteryScore: number;
+  currentTierLevel: number | null;
+  cyclePromotionPending: boolean;
+  pendingCycleScore: number;
 }
 
 interface UseMyPageStatsResult {
@@ -127,6 +131,10 @@ export function useMyPageStats(): UseMyPageStatsResult {
           totalSolved: 0,
           maxLevel: 0,
           bestSubject: null,
+          totalMasteryScore: 0,
+          currentTierLevel: null,
+          cyclePromotionPending: false,
+          pendingCycleScore: 0,
         });
         setLoading(false);
         return;
@@ -136,7 +144,7 @@ export function useMyPageStats(): UseMyPageStatsResult {
       const user_id = userId || user.id;
 
       // 로컬 세션인 경우 Supabase 쿼리 스킵 (RPC 호출 전에 체크)
-      const isLocalSession = user_id === 'tester' || user_id.startsWith('tester_') || user_id.startsWith('user_') || user_id.startsWith('game_');
+      const isLocalSession = user_id.startsWith('user_') || user_id.startsWith('game_');
       if (isLocalSession) {
         // 로컬 세션인 경우 기본값 반환 (Supabase 데이터 없음)
         setStats({
@@ -144,9 +152,25 @@ export function useMyPageStats(): UseMyPageStatsResult {
           totalSolved: 0,
           maxLevel: 0,
           bestSubject: null,
+          totalMasteryScore: 0,
+          currentTierLevel: null,
+          cyclePromotionPending: false,
+          pendingCycleScore: 0,
         });
         setLoading(false);
         return;
+      }
+
+      // 프로필 정보 가져오기 (티어 정보 포함)
+      const { data: profileData, error: profileError } = await supabase
+        .from('profiles')
+        .select('total_mastery_score, current_tier_level, cycle_promotion_pending, pending_cycle_score')
+        .eq('id', user_id)
+        .single();
+
+      if (profileError) {
+        console.error('[useMyPageStats] 프로필 조회 실패:', profileError);
+        // 프로필 조회 실패 시에도 기본값으로 계속 진행
       }
 
       // 방법 1: RPC 함수 사용 (권장 - Supabase에 함수가 생성되어 있는 경우)
@@ -160,6 +184,10 @@ export function useMyPageStats(): UseMyPageStatsResult {
             totalSolved: result.total_solved || 0,
             maxLevel: result.max_level || 0,
             bestSubject: result.best_subject || null,
+            totalMasteryScore: profileData?.total_mastery_score || 0,
+            currentTierLevel: profileData?.current_tier_level ?? null,
+            cyclePromotionPending: profileData?.cycle_promotion_pending || false,
+            pendingCycleScore: profileData?.pending_cycle_score || 0,
           });
           setLoading(false);
           return;
@@ -228,6 +256,10 @@ export function useMyPageStats(): UseMyPageStatsResult {
         totalSolved,
         maxLevel,
         bestSubject,
+        totalMasteryScore: profileData?.total_mastery_score || 0,
+        currentTierLevel: profileData?.current_tier_level ?? null,
+        cyclePromotionPending: profileData?.cycle_promotion_pending || false,
+        pendingCycleScore: profileData?.pending_cycle_score || 0,
       });
     } catch (err) {
       console.error('Failed to fetch user stats:', err);
@@ -238,6 +270,10 @@ export function useMyPageStats(): UseMyPageStatsResult {
         totalSolved: 0,
         maxLevel: 0,
         bestSubject: null,
+        totalMasteryScore: 0,
+        currentTierLevel: null,
+        cyclePromotionPending: false,
+        pendingCycleScore: 0,
       });
     } finally {
       setLoading(false);

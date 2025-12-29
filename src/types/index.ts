@@ -52,7 +52,7 @@ export interface LocalSession {
   userId: string;
   isAdmin: boolean;
   loginTime: string;
-  loginType?: 'tester' | 'anonymous' | 'supabase';
+  loginType?: 'anonymous' | 'supabase';
 }
 
 // 환경 변수 타입

@@ -3,6 +3,7 @@ import { Header } from '../components/Header';
 import { FooterNav } from '../components/FooterNav';
 import { supabase } from '../utils/supabaseClient';
 import { useLevelProgressStore } from '../stores/useLevelProgressStore';
+import { TierBadge } from '../components/TierBadge';
 import './RankingPage.css';
 
 type RankingType = 'total' | 'time-attack' | 'survival';
@@ -125,6 +126,15 @@ export function RankingPage() {
                   <div className="ranking-item-left">
                     <span className="ranking-rank">{getMedalIcon(Number(item.rank))}</span>
                     <span className="ranking-nickname">{item.nickname}</span>
+                    {/* 명예의 전당 종합에만 티어 표시 */}
+                    {activePeriod === 'all-time' && activeType === 'total' && (
+                      <TierBadge 
+                        totalScore={Number(item.score)} 
+                        size="small" 
+                        showLabel={false}
+                        showStars={true}
+                      />
+                    )}
                   </div>
                   <div className="ranking-score">
                     {Number(item.score).toLocaleString()}점
@@ -148,6 +158,15 @@ export function RankingPage() {
               <div className="ranking-item-left">
                 <span className="ranking-rank">{getMedalIcon(Number(myRank.rank))}</span>
                 <span className="ranking-nickname">나 ({myRank.nickname})</span>
+                {/* 명예의 전당 종합에만 티어 표시 */}
+                {activePeriod === 'all-time' && activeType === 'total' && (
+                  <TierBadge 
+                    totalScore={Number(myRank.score)} 
+                    size="small" 
+                    showLabel={false}
+                    showStars={true}
+                  />
+                )}
               </div>
               <div className="ranking-score">
                 {Number(myRank.score).toLocaleString()}점

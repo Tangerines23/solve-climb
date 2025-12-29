@@ -1,0 +1,164 @@
+/* src/components/TierUpgradeModal.css */
+.tier-upgrade-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: var(--color-overlay);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: var(--spacing-lg);
+}
+
+.tier-upgrade-modal {
+  background-color: var(--color-bg-primary);
+  border-radius: var(--rounded-large-card);
+  padding: var(--spacing-2xl);
+  max-width: 400px;
+  width: 100%;
+  box-shadow: var(--shadow-modal);
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-xl);
+}
+
+.tier-upgrade-header {
+  text-align: center;
+}
+
+.tier-upgrade-header h2 {
+  font-size: 1.5rem;
+  color: var(--color-text-primary);
+  margin-bottom: var(--spacing-md);
+  font-weight: 700;
+}
+
+.tier-upgrade-header p {
+  font-size: 0.95rem;
+  color: var(--color-text-secondary);
+  line-height: 1.5;
+}
+
+.tier-upgrade-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--spacing-xl);
+  padding: var(--spacing-xl) 0;
+}
+
+.tier-comparison {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--spacing-lg);
+  width: 100%;
+}
+
+.tier-before,
+.tier-after {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--spacing-sm);
+}
+
+.tier-icon-small {
+  font-size: 2rem;
+  opacity: 0.7;
+}
+
+.tier-icon-large {
+  font-size: 3rem;
+  transition: transform 0.3s ease;
+}
+
+.tier-icon-large.stars-animation {
+  animation: tier-glow 2s ease-in-out infinite, scale-bounce 0.5s ease-in-out;
+}
+
+@keyframes scale-bounce {
+  0%, 100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.2);
+  }
+}
+
+.tier-name-small,
+.tier-name-large {
+  font-size: 0.9rem;
+  color: var(--color-text-primary);
+  font-weight: 500;
+  text-align: center;
+}
+
+.tier-name-large {
+  font-size: 1.1rem;
+  font-weight: 600;
+}
+
+.tier-stars-small,
+.tier-stars-large {
+  margin-left: var(--spacing-xs);
+  color: var(--color-tier-legend);
+  font-size: 0.9em;
+}
+
+.tier-arrow {
+  font-size: 2rem;
+  color: var(--color-text-secondary);
+  font-weight: 700;
+}
+
+.stars-celebration {
+  text-align: center;
+  padding: var(--spacing-lg);
+  background-color: var(--color-bg-secondary);
+  border-radius: var(--rounded-card);
+  width: 100%;
+}
+
+.stars-display {
+  font-size: 2.5rem;
+  color: var(--color-tier-legend);
+  text-align: center;
+  margin-bottom: var(--spacing-md);
+  animation: tier-glow 2s ease-in-out infinite;
+}
+
+.stars-celebration p {
+  font-size: 1rem;
+  color: var(--color-text-primary);
+  font-weight: 500;
+}
+
+.tier-upgrade-actions {
+  display: flex;
+  justify-content: center;
+}
+
+.tier-upgrade-button {
+  background-color: var(--color-blue-400);
+  color: var(--color-text-primary);
+  border: none;
+  border-radius: var(--rounded-button);
+  padding: var(--spacing-md) var(--spacing-2xl);
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.tier-upgrade-button:hover {
+  background-color: var(--color-blue-500);
+}
+
+.tier-upgrade-button:active {
+  background-color: var(--color-blue-700);
+}
+

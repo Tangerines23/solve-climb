@@ -94,7 +94,7 @@ export function HistoryPage() {
         const user_id = userId || user.id;
 
         // 로컬 세션인 경우 기본값 반환
-        const isLocalSession = user_id === 'tester' || user_id.startsWith('tester_') || user_id.startsWith('user_') || user_id.startsWith('game_');
+        const isLocalSession = user_id.startsWith('user_') || user_id.startsWith('game_');
         if (isLocalSession) {
           setStats({
             weeklyTotal: 0,
