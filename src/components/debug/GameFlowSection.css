@@ -1,0 +1,122 @@
+.debug-section {
+  padding: var(--spacing-lg);
+}
+
+.debug-section-title {
+  margin: 0 0 var(--spacing-lg) 0;
+  color: var(--color-text-primary);
+  font-size: 1.125rem;
+  font-weight: 600;
+}
+
+.debug-loading {
+  padding: var(--spacing-xl);
+  text-align: center;
+  color: var(--color-text-secondary);
+}
+
+.debug-empty-state {
+  padding: var(--spacing-xl);
+  text-align: center;
+  color: var(--color-text-secondary);
+  background-color: var(--color-bg-tertiary);
+  border-radius: var(--rounded-card);
+}
+
+.debug-session-info {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-md);
+  padding: var(--spacing-lg);
+  background-color: var(--color-bg-tertiary);
+  border-radius: var(--rounded-card);
+  margin-bottom: var(--spacing-lg);
+}
+
+.debug-session-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: var(--spacing-sm) 0;
+  border-bottom: 1px solid var(--color-bg-secondary);
+}
+
+.debug-session-item:last-child {
+  border-bottom: none;
+}
+
+.debug-session-label {
+  color: var(--color-text-secondary);
+  font-size: 0.875rem;
+}
+
+.debug-session-value {
+  color: var(--color-text-primary);
+  font-size: 0.875rem;
+  font-weight: 500;
+  word-break: break-all;
+  text-align: right;
+}
+
+.debug-session-actions {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-md);
+}
+
+.debug-session-button {
+  padding: var(--spacing-md) var(--spacing-lg);
+  border: none;
+  border-radius: var(--rounded-button);
+  color: var(--color-text-primary);
+  font-size: 0.875rem;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.debug-session-button-danger {
+  background-color: var(--color-red-500);
+}
+
+.debug-session-button-danger:hover:not(:disabled) {
+  background-color: var(--color-red-600);
+}
+
+.debug-session-button-warning {
+  background-color: var(--color-bg-tertiary);
+}
+
+.debug-session-button-warning:hover:not(:disabled) {
+  background-color: var(--color-bg-secondary);
+}
+
+.debug-session-button-secondary {
+  background-color: var(--color-bg-tertiary);
+}
+
+.debug-session-button-secondary:hover:not(:disabled) {
+  background-color: var(--color-bg-secondary);
+}
+
+.debug-session-button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.debug-message {
+  margin-top: var(--spacing-lg);
+  padding: var(--spacing-md);
+  border-radius: var(--rounded-button);
+  font-size: 0.875rem;
+}
+
+.debug-message-success {
+  background-color: var(--color-blue-400);
+  color: var(--color-text-primary);
+}
+
+.debug-message-error {
+  background-color: var(--color-red-500);
+  color: var(--color-text-primary);
+}
+

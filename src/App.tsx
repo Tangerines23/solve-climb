@@ -6,6 +6,7 @@ import { useAuthStore } from './stores/useAuthStore';
 import { useCustomBackNavigation } from './hooks/useCustomBackNavigation';
 import { ErrorBoundary } from './components/ErrorBoundary';
 import { GlobalLoadingIndicator } from './components/GlobalLoadingIndicator';
+import { useErrorLogStore } from './stores/useErrorLogStore';
 
 // 페이지 컴포넌트 레이지 로딩
 const HomePage = lazy(() => import('./pages/HomePage').then(module => ({ default: module.HomePage })));
@@ -33,6 +34,41 @@ function App() {
       syncProgress();
     });
   }, [initializeAuth, syncProgress]);
+
+  // 전역 에러 핸들러 설정 (개발 환경에서만)
+  useEffect(() => {
+    if (!import.meta.env.DEV) return;
+
+    const handleError = (event: ErrorEvent) => {
+      useErrorLogStore.getState().addLog(
+        'error',
+        event.message || 'Unknown error',
+        event.error?.stack,
+        `Global: ${event.filename || 'unknown'}:${event.lineno || 0}`
+      );
+    };
+
+    const handleUnhandledRejection = (event: PromiseRejectionEvent) => {
+      const error = event.reason instanceof Error 
+        ? event.reason 
+        : new Error(String(event.reason));
+      
+      useErrorLogStore.getState().addLog(
+        'error',
+        `Unhandled Promise Rejection: ${error.message}`,
+        error.stack,
+        'Global: UnhandledRejection'
+      );
+    };
+
+    window.addEventListener('error', handleError);
+    window.addEventListener('unhandledrejection', handleUnhandledRejection);
+
+    return () => {
+      window.removeEventListener('error', handleError);
+      window.removeEventListener('unhandledrejection', handleUnhandledRejection);
+    };
+  }, []);
 
   return (
     <ErrorBoundary>

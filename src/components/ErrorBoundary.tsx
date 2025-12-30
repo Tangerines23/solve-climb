@@ -6,6 +6,7 @@
 import React, { Component, ErrorInfo, ReactNode } from 'react';
 import { ErrorFallback } from './ErrorFallback';
 import { logError } from '../utils/errorHandler';
+import { useErrorLogStore } from '../stores/useErrorLogStore';
 
 interface Props {
   children: ReactNode;
@@ -39,8 +40,14 @@ export class ErrorBoundary extends Component<Props, State> {
     // 에러 로깅
     logError('ErrorBoundary', error);
     
-    // 에러 정보 로깅 (개발 환경)
+    // 에러 로그 스토어에 기록 (개발 환경에서만)
     if (import.meta.env.DEV) {
+      useErrorLogStore.getState().addLog(
+        'error',
+        error.message,
+        error.stack,
+        `ErrorBoundary: ${errorInfo.componentStack?.split('\n')[0] || 'Unknown component'}`
+      );
       console.error('ErrorBoundary caught an error:', error);
       console.error('Error Info:', errorInfo);
     }

@@ -26,7 +26,16 @@ export default defineConfig(({ mode }) => {
     },
     build: {
       rollupOptions: {
-        // manualChunks를 제거하여 Vite 기본 번들링 전략(안정성 우선)으로 전환합니다.
+        output: {
+          manualChunks: (id) => {
+            // 디버그 관련 코드를 별도 청크로 분리 (프로덕션 빌드 최적화)
+            if (id.includes('DebugPanel') || 
+                id.includes('useDebugStore') ||
+                id.includes('/debug/')) {
+              return 'debug';
+            }
+          }
+        }
       },
       chunkSizeWarningLimit: 2000, // 2MB (TDS 포함 시 용량 증가 대응)
     },

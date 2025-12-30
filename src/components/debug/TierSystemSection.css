@@ -1,0 +1,178 @@
+.debug-section {
+  padding: var(--spacing-lg);
+}
+
+.debug-section-title {
+  margin: 0 0 var(--spacing-lg) 0;
+  color: var(--color-text-primary);
+  font-size: 1.125rem;
+  font-weight: 600;
+}
+
+.debug-subsection-title {
+  margin: var(--spacing-xl) 0 var(--spacing-md) 0;
+  color: var(--color-text-primary);
+  font-size: 1rem;
+  font-weight: 500;
+}
+
+.debug-tier-control {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-lg);
+}
+
+.debug-tier-item {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-sm);
+}
+
+.debug-tier-label {
+  color: var(--color-text-secondary);
+  font-size: 0.875rem;
+}
+
+.debug-tier-select {
+  padding: var(--spacing-sm) var(--spacing-md);
+  background-color: var(--color-bg-tertiary);
+  border: 1px solid var(--color-bg-tertiary);
+  border-radius: var(--rounded-button);
+  color: var(--color-text-primary);
+  font-size: 1rem;
+}
+
+.debug-tier-select:focus {
+  outline: none;
+  border-color: var(--color-blue-400);
+}
+
+.debug-tier-select:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.debug-tier-input-group {
+  display: flex;
+  gap: var(--spacing-sm);
+  align-items: center;
+}
+
+.debug-tier-input {
+  flex: 1;
+  padding: var(--spacing-sm) var(--spacing-md);
+  background-color: var(--color-bg-tertiary);
+  border: 1px solid var(--color-bg-tertiary);
+  border-radius: var(--rounded-button);
+  color: var(--color-text-primary);
+  font-size: 1rem;
+  text-align: center;
+}
+
+.debug-tier-input:focus {
+  outline: none;
+  border-color: var(--color-blue-400);
+}
+
+.debug-tier-input:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.debug-tier-button {
+  padding: var(--spacing-sm) var(--spacing-lg);
+  background-color: var(--color-blue-400);
+  border: none;
+  border-radius: var(--rounded-button);
+  color: var(--color-text-primary);
+  font-size: 0.875rem;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+  margin-top: var(--spacing-xs);
+}
+
+.debug-tier-button:hover:not(:disabled) {
+  background-color: var(--color-blue-500);
+}
+
+.debug-tier-button:active:not(:disabled) {
+  background-color: var(--color-blue-700);
+}
+
+.debug-tier-button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.debug-tier-button-small {
+  padding: var(--spacing-sm) var(--spacing-md);
+  background-color: var(--color-bg-tertiary);
+  border: 1px solid var(--color-bg-tertiary);
+  border-radius: var(--rounded-button);
+  color: var(--color-text-primary);
+  font-size: 0.875rem;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+  min-width: 60px;
+}
+
+.debug-tier-button-small:hover:not(:disabled) {
+  background-color: var(--color-bg-primary);
+}
+
+.debug-tier-button-small:active:not(:disabled) {
+  background-color: var(--color-blue-400);
+}
+
+.debug-tier-button-small:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.debug-tier-result {
+  margin-top: var(--spacing-xl);
+  padding: var(--spacing-lg);
+  background-color: var(--color-bg-tertiary);
+  border-radius: var(--rounded-card);
+}
+
+.debug-tier-result-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: var(--spacing-sm) 0;
+  border-bottom: 1px solid var(--color-bg-secondary);
+}
+
+.debug-tier-result-item:last-child {
+  border-bottom: none;
+}
+
+.debug-tier-result-label {
+  color: var(--color-text-secondary);
+  font-size: 0.875rem;
+}
+
+.debug-tier-result-value {
+  color: var(--color-text-primary);
+  font-size: 0.875rem;
+  font-weight: 500;
+}
+
+.debug-message {
+  margin-top: var(--spacing-lg);
+  padding: var(--spacing-md);
+  border-radius: var(--rounded-button);
+  font-size: 0.875rem;
+}
+
+.debug-message-success {
+  background-color: var(--color-blue-400);
+  color: var(--color-text-primary);
+}
+
+.debug-message-error {
+  background-color: var(--color-red-500);
+  color: var(--color-text-primary);
+}
+

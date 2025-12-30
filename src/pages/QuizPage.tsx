@@ -17,6 +17,7 @@ import { QwertyKeypad } from '../components/QwertyKeypad';
 import { GameOverlay } from '../components/game/GameOverlay';
 import { useUserStore } from '../stores/useUserStore';
 import { useGameStore } from '../stores/useGameStore';
+import { useDebugStore } from '../stores/useDebugStore';
 import { StaminaWarningModal } from '../components/game/StaminaWarningModal';
 import { ItemFeedbackOverlay, ItemFeedbackRef } from '../components/game/ItemFeedbackOverlay';
 import { APP_CONFIG } from '../config/app';
@@ -486,6 +487,9 @@ export function QuizPage() {
           // RPC는 'timeattack' (하이픈/언더바 없음)을 기대함
           const rpcGameMode = modeParam === 'time_attack' ? 'timeattack' : 'survival';
           
+          // 디버그 모드 상태 확인
+          const { infiniteStamina } = useDebugStore.getState();
+          
           // 빈 세션 생성 (문제는 나중에 추가)
           // 실제로는 문제를 미리 생성하거나, 문제가 생성될 때마다 세션을 업데이트해야 하지만
           // 현재 구조에서는 게임 종료 시 문제와 답안을 한 번에 제출하는 방식 사용
@@ -494,7 +498,8 @@ export function QuizPage() {
             p_category: categoryParam,
             p_subject: subParam,
             p_level: levelParam,
-            p_game_mode: rpcGameMode
+            p_game_mode: rpcGameMode,
+            p_is_debug_session: infiniteStamina  // 무한 스태미나 모드일 때 true
           });
 
           if (error) {

@@ -1,18 +1,32 @@
-import { useRef, useEffect, useState, useCallback } from 'react';
+import { useRef, useEffect, useState, useCallback, lazy, Suspense } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { APP_CONFIG } from '../config/app';
 import { useProfileStore } from '../stores/useProfileStore';
 import { useUserStore } from '../stores/useUserStore';
+import { useDebugStore } from '../stores/useDebugStore';
 import { Toast } from './Toast'; // Import Toast
 import './Header.css';
+import './DebugPanel.css'; // 디버그 패널 로딩 스타일 사용
+
+// ⚠️ 개발 환경에서만 동적 임포트
+const DebugPanel = import.meta.env.DEV
+  ? lazy(() => import('./DebugPanel').then(module => ({ default: module.DebugPanel })))
+  : null;
 
 export function Header() {
   const navigate = useNavigate();
   const isAdmin = useProfileStore((state) => state.isAdmin);
   const { minerals, stamina, fetchUserData, checkStamina, setMinerals, setStamina } = useUserStore();
 
-  const [isAdminMode, setIsAdminMode] = useState(false);
-  const [selectedResource, setSelectedResource] = useState<'stamina' | 'minerals' | 'items' | null>(null);
+  // ⚠️ useDebugStore 사용
+  const { 
+    isAdminMode, 
+    selectedResource, 
+    toggleAdminMode, 
+    setSelectedResource,
+    toggleDebugPanel,
+    isDebugPanelOpen
+  } = useDebugStore();
 
   // Toast State
   const [toastMessage, setToastMessage] = useState('');
@@ -68,13 +82,20 @@ export function Header() {
   const handleKeyDown = useCallback((e: KeyboardEvent) => {
     if (!isDev) return;
 
-    // Toggle Admin Mode with Backtick (`)
-    if (e.key === '`') {
-      setIsAdminMode(prev => !prev);
-      if (isAdminMode) setSelectedResource(null);
+    // Level 1: 백틱(`) 단독 키: Admin Mode 토글
+    if (e.key === '`' && !e.ctrlKey && !e.shiftKey && !e.metaKey) {
+      toggleAdminMode();
       return;
     }
 
+    // Level 2: Ctrl + ` (백틱): 디버그 패널 열기/닫기
+    if (e.key === '`' && (e.ctrlKey || e.metaKey)) {
+      e.preventDefault();
+      toggleDebugPanel();
+      return;
+    }
+
+    // Level 1: 리소스 조작 (기존 유지)
     if (!isAdminMode || !selectedResource) return;
 
     if (e.key === '+' || e.key === '=') {
@@ -92,7 +113,7 @@ export function Header() {
         debugRemoveItems().then(() => showToast("아이템 -5 감소 🗑️"));
       }
     }
-  }, [isDev, isAdminMode, selectedResource, stamina, minerals, setStamina, setMinerals]);
+  }, [isDev, isAdminMode, selectedResource, stamina, minerals, setStamina, setMinerals, toggleAdminMode, setSelectedResource, toggleDebugPanel]);
 
   useEffect(() => {
     // 키보드 이벤트는 window에 확실하게 바인딩
@@ -105,19 +126,19 @@ export function Header() {
   const handleStaminaClick = (e: React.MouseEvent) => {
     if (!isAdminMode) return;
     e.stopPropagation();
-    setSelectedResource(prev => prev === 'stamina' ? null : 'stamina');
+    setSelectedResource(selectedResource === 'stamina' ? null : 'stamina');
   };
 
   const handleMineralsClick = (e: React.MouseEvent) => {
     if (!isAdminMode) return;
     e.stopPropagation();
-    setSelectedResource(prev => prev === 'minerals' ? null : 'minerals');
+    setSelectedResource(selectedResource === 'minerals' ? null : 'minerals');
   };
 
   const handleItemsClick = (e: React.MouseEvent) => {
     if (!isAdminMode) return;
     e.stopPropagation();
-    setSelectedResource(prev => prev === 'items' ? null : 'items');
+    setSelectedResource(selectedResource === 'items' ? null : 'items');
   };
 
   const clearSelection = () => {
@@ -135,7 +156,18 @@ export function Header() {
           {APP_CONFIG.APP_NAME}
         </h1>
         <div className="header-status">
-          {isAdminMode && <div className="admin-badge">DEV</div>}
+          {isAdminMode && (
+            <div 
+              className="admin-badge" 
+              onClick={(e) => {
+                e.stopPropagation();
+                toggleDebugPanel();
+              }}
+              style={{ cursor: 'pointer' }}
+            >
+              DEV
+            </div>
+          )}
           <div
             className={`status-item ${selectedResource === 'stamina' ? 'selected' : ''}`}
             onClick={handleStaminaClick}
@@ -186,6 +218,17 @@ export function Header() {
         autoClose={true}
         autoCloseDelay={2000}
       />
+      
+      {/* 디버그 패널 조건부 렌더링 */}
+      {import.meta.env.DEV && isDebugPanelOpen && DebugPanel && (
+        <Suspense fallback={
+          <div className="debug-panel-loading">
+            <div>디버그 패널 로딩 중...</div>
+          </div>
+        }>
+          <DebugPanel />
+        </Suspense>
+      )}
     </header>
   );
 }
