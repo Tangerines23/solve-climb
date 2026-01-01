@@ -12,13 +12,26 @@
     "format:check": "prettier --check \"src/**/*.{ts,tsx,js,jsx,json,css}\"",
     "type-check": "tsc --noEmit",
     "check": "npm run type-check && npm run lint && npm run format:check && npm run check:css",
+    "validate": "npm run type-check && npm run lint && npm run format:check && npm run check:css",
+    "validate:quick": "npm run lint -- --max-warnings=0",
+    "validate:full": "npm run validate && npm run test && npm run check:db",
+    "test": "vitest",
+    "test:ui": "vitest --ui",
+    "test:coverage": "vitest --coverage",
     "preview": "vite preview",
     "deploy": "ait deploy",
     "check:css": "node scripts/check-hardcoded-values.js",
     "check:basic-auth": "node scripts/check-basic-auth.js",
+    "check:migrations": "node scripts/check-migrations.js",
+    "check:db:migrations": "npx supabase migration list",
+    "check:db:lint": "npx supabase db lint --linked --fail-on error",
+    "check:db:diff": "npx supabase db diff --linked",
+    "check:db:full": "npm run check:migrations && npm run check:db:migrations && npm run check:db:lint && npm run check:db:diff",
+    "check:db": "npm run check:migrations && npm run check:db:migrations && npm run check:db:lint",
     "audit": "npm audit",
     "audit:fix": "npm audit fix",
-    "check:security": "npm audit --audit-level=moderate"
+    "check:security": "npm audit --audit-level=moderate",
+    "prepare": "husky"
   },
   "dependencies": {
     "@apps-in-toss/web-framework": "^1.4.7",
@@ -37,17 +50,35 @@
   },
   "devDependencies": {
     "@eslint/js": "^9.36.0",
+    "@testing-library/jest-dom": "^6.9.1",
+    "@testing-library/react": "^16.3.1",
+    "@testing-library/user-event": "^14.6.1",
     "@types/react": "^19.1.16",
     "@types/react-dom": "^19.1.9",
     "@typescript-eslint/eslint-plugin": "^8.49.0",
     "@typescript-eslint/parser": "^8.49.0",
     "@vitejs/plugin-react": "^5.0.4",
+    "@vitest/coverage-v8": "^4.0.16",
+    "@vitest/ui": "^4.0.16",
     "eslint": "^9.36.0",
     "eslint-plugin-react-hooks": "^5.2.0",
     "eslint-plugin-react-refresh": "^0.4.22",
     "globals": "^16.4.0",
+    "husky": "^9.1.7",
+    "jsdom": "^27.4.0",
+    "lint-staged": "^16.2.7",
     "prettier": "^3.7.4",
     "supabase": "^2.67.1",
-    "vite": "^7.1.7"
+    "vite": "^7.1.7",
+    "vitest": "^4.0.16"
+  },
+  "lint-staged": {
+    "*.{ts,tsx}": [
+      "eslint --fix",
+      "prettier --write"
+    ],
+    "*.{js,jsx,json,css}": [
+      "prettier --write"
+    ]
   }
 }

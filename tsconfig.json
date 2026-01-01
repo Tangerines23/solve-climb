@@ -12,6 +12,9 @@
     "resolveJsonModule": true,
     "isolatedModules": true,
     "noEmit": true,
+    "declaration": false,
+    "emitDeclarationOnly": false,
+    "outDir": "./dist",
     "jsx": "react-jsx", /* <-- 이 'react-jsx' 설정이 ts(2866) 오류를 해결합니다. */
 
     /* Linting */
@@ -20,6 +23,7 @@
     "noUnusedParameters": true,
     "noFallthroughCasesInSwitch": true
   },
-  "include": ["src"],
+  "include": ["src/**/*.ts", "src/**/*.tsx"],
+  "exclude": ["**/*.d.ts", "node_modules", "dist", "**/__tests__/**", "**/__mocks__/**"],
   "references": [{ "path": "./tsconfig.node.json" }]
 }

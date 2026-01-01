@@ -2,6 +2,8 @@ import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 import path from 'path'
 
+/// <reference types="vitest" />
+
 // https://vite.dev/config/
 export default defineConfig(({ mode }) => {
   // Vercel 환경인지 확인
@@ -46,6 +48,13 @@ export default defineConfig(({ mode }) => {
         'react-is',
         ...(isVercel ? [] : ['@toss/tds-mobile', '@apps-in-toss/web-framework'])
       ],
+    },
+    // Vitest 설정
+    test: {
+      globals: true,
+      environment: 'jsdom',
+      setupFiles: './src/setupTests.ts',
+      css: true,
     },
   }
 })

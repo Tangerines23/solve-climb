@@ -1,0 +1,10 @@
+npm run type-check
+npm run lint
+npm run format:check
+npm run test -- --run
+
+# DB 관련 파일이 변경되었는지 확인
+if git diff --cached --name-only | grep -qE "(supabase/migrations|supabase/.*\.sql)"; then
+  echo "DB 파일 변경 감지 - DB 검증 실행..."
+  npm run check:db
+fi

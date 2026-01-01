@@ -1,24 +1,6 @@
--- ============================================================================
--- 뱃지 시스템 구현
--- 작성일: 2025.12.25
--- ============================================================================
+-- Fix: v_all_cleared 타입을 BOOLEAN에서 INTEGER로 변경
+-- 이슈: COUNT() 결과는 INTEGER인데 BOOLEAN 변수에 할당하여 타입 오류 발생
 
--- 1. 뱃지 정의 데이터 추가 (theme_id 사용)
-INSERT INTO public.badge_definitions (id, name, description, emoji, theme_id, required_levels)
-VALUES
-  ('math_add_master', '덧셈 마스터', '덧셈 모든 레벨 클리어', '➕', 'math_add', ARRAY[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20]),
-  ('math_sub_master', '뺄셈 마스터', '뺄셈 모든 레벨 클리어', '➖', 'math_sub', ARRAY[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20]),
-  ('math_mul_master', '곱셈 마스터', '곱셈 모든 레벨 클리어', '✖️', 'math_mul', ARRAY[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20]),
-  ('math_div_master', '나눗셈 마스터', '나눗셈 모든 레벨 클리어', '➗', 'math_div', ARRAY[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20]),
-  ('math_arithmetic_master', '사칙연산 완전정복', '사칙연산 모든 레벨 클리어', '🏔️', 'math', NULL)
-ON CONFLICT (id) DO UPDATE SET
-  name = EXCLUDED.name,
-  description = EXCLUDED.description,
-  emoji = EXCLUDED.emoji,
-  theme_id = EXCLUDED.theme_id,
-  required_levels = EXCLUDED.required_levels;
-
--- 2. 뱃지 획득 체크 함수
 CREATE OR REPLACE FUNCTION public.check_and_award_badges(
   p_user_id UUID,
   p_category TEXT,
@@ -30,7 +12,7 @@ DECLARE
   v_badge_id TEXT;
   v_badge_def RECORD;
   v_cleared_levels INTEGER[];
-  v_all_cleared INTEGER;
+  v_all_cleared INTEGER;  -- BOOLEAN에서 INTEGER로 수정
   v_awarded_badges TEXT[] := ARRAY[]::TEXT[];
 BEGIN
   -- 해당 카테고리/주제의 뱃지 정의 조회
@@ -99,7 +81,4 @@ BEGIN
   );
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;
-
--- 3. submit_game_result에 뱃지 체크 로직 추가
--- (이미 구현된 함수를 업데이트하는 대신, 별도 함수로 분리하여 호출)
 
