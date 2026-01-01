@@ -144,6 +144,29 @@ export const QuickActionsSection = React.memo(function QuickActionsSection() {
     }
   };
 
+  const handleVerifySync = async () => {
+    if (isVerifyingSync) return;
+
+    try {
+      setIsVerifyingSync(true);
+      setSyncResult(null);
+
+      const { data: { user } } = await supabase.auth.getSession();
+      if (!user) {
+        setPresetMessage({ type: 'error', text: '로그인이 필요합니다.' });
+        return;
+      }
+
+      const result = await verifySync(user.id);
+      setSyncResult(result);
+      setPresetMessage({ type: 'success', text: '동기화 검증이 완료되었습니다.' });
+    } catch (err) {
+      setPresetMessage({ type: 'error', text: `동기화 검증 실패: ${err instanceof Error ? err.message : '알 수 없는 오류'}` });
+    } finally {
+      setIsVerifyingSync(false);
+    }
+  };
+
   return (
       <div className="debug-section">
         <h3 className="debug-section-title">📊 게임 상태</h3>

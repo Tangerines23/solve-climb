@@ -33,12 +33,13 @@ export const TierSystemSection = React.memo(function TierSystemSection() {
 
   useEffect(() => {
     if (stats) {
-      setMasteryInput(stats.totalMasteryScore.toString());
+      const masteryScore = stats.totalMasteryScore ?? 0;
+      setMasteryInput(masteryScore.toString());
       if (stats.currentTierLevel !== null) {
         setSelectedTierLevel(stats.currentTierLevel as TierLevel);
       }
       // 계산 결과 업데이트
-      calculateTier(stats.totalMasteryScore).then(result => {
+      calculateTier(masteryScore).then(result => {
         setCalculationResult({
           level: result.level,
           stars: result.stars,
@@ -89,7 +90,8 @@ export const TierSystemSection = React.memo(function TierSystemSection() {
   const handleMasteryInputBlur = () => {
     const numValue = parseInt(masteryInput, 10);
     if (isNaN(numValue) || numValue < 0) {
-      setMasteryInput(stats?.totalMasteryScore.toString() || '0');
+      const masteryScore = stats?.totalMasteryScore ?? 0;
+      setMasteryInput(masteryScore.toString());
     }
   };
 
