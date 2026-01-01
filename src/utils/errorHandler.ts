@@ -90,15 +90,10 @@ export function getUserErrorMessage(error: unknown): string {
 export function logError(context: string, error: unknown): void {
   const errorMessage = error instanceof Error ? error.message : String(error);
   logger.error(context, `Error: ${errorMessage}`, error);
-  
+
   // 에러 로그 스토어에 기록 (개발 환경에서만)
   if (isDevelopment && error instanceof Error) {
-    useErrorLogStore.getState().addLog(
-      'error',
-      errorMessage,
-      error.stack,
-      context
-    );
+    useErrorLogStore.getState().addLog('error', errorMessage, error.stack, context);
   }
 }
 
@@ -108,14 +103,9 @@ export function logError(context: string, error: unknown): void {
  */
 export function logWarning(context: string, message: string): void {
   logger.warn(context, message);
-  
+
   // 경고 로그 스토어에 기록 (개발 환경에서만)
   if (isDevelopment) {
-    useErrorLogStore.getState().addLog(
-      'warning',
-      message,
-      undefined,
-      context
-    );
+    useErrorLogStore.getState().addLog('warning', message, undefined, context);
   }
 }

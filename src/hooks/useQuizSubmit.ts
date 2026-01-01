@@ -6,8 +6,6 @@ import { CLIMB_PER_CORRECT, SLIDE_PER_WRONG, MAX_POSSIBLE_ANSWER } from '../cons
 import { normalizeRomaji } from '../utils/japanese';
 import { vibrateMedium, vibrateLong } from '../utils/haptic';
 import { useGameStore } from '../stores/useGameStore';
-import { useUserStore } from '../stores/useUserStore';
-import { supabase } from '../utils/supabaseClient';
 
 interface UseQuizSubmitParams {
   answerInput: string;
@@ -33,7 +31,11 @@ interface UseQuizSubmitParams {
   generateNewQuestion: () => void;
   handleGameOver: () => void;
   setTotalQuestions: (updater: (prev: number) => number) => void;
-  setWrongAnswers: (updater: (prev: Array<{ question: string; wrongAnswer: string; correctAnswer: string }>) => Array<{ question: string; wrongAnswer: string; correctAnswer: string }>) => void;
+  setWrongAnswers: (
+    updater: (
+      prev: Array<{ question: string; wrongAnswer: string; correctAnswer: string }>
+    ) => Array<{ question: string; wrongAnswer: string; correctAnswer: string }>
+  ) => void;
   setSolveTimes: (updater: (prev: number[]) => number[]) => void;
   inputRef: React.RefObject<HTMLInputElement | null>;
   showFeedback: (text: string, subText?: string, type?: 'success' | 'info') => void;
@@ -68,16 +70,16 @@ export function useQuizSubmit({
   handleGameOver,
   setTotalQuestions,
   setWrongAnswers,
-    setSolveTimes,
-    inputRef,
-    showFeedback,
-    onSafetyRopeUsed,
-    setIsFlarePaused,
-    onAnswerSubmitted,
-    currentQuestionId,
+  setSolveTimes,
+  inputRef,
+  showFeedback,
+  onSafetyRopeUsed,
+  setIsFlarePaused,
+  onAnswerSubmitted,
+  currentQuestionId,
 }: UseQuizSubmitParams) {
-  const { incrementCombo, resetCombo, isExhausted, activeItems, consumeActiveItem } = useGameStore();
-  const { stamina, fetchUserData } = useUserStore();
+  const { incrementCombo, resetCombo, isExhausted, activeItems, consumeActiveItem } =
+    useGameStore();
 
   // 함수 참조를 안정적으로 유지하기 위한 ref
   const paramsRef = useRef({
@@ -134,10 +136,9 @@ export function useQuizSubmit({
           setIsSubmitting(false);
           return;
         }
-        isCorrect = typeof currentQuestion.answer === 'number'
-          ? currentQuestion.answer === answer
-          : false;
-        
+        isCorrect =
+          typeof currentQuestion.answer === 'number' ? currentQuestion.answer === answer : false;
+
         // 답안 수집 (문제 ID와 함께)
         if (onAnswerSubmitted && currentQuestionId) {
           onAnswerSubmitted(currentQuestionId, answer);
@@ -145,7 +146,7 @@ export function useQuizSubmit({
       }
 
       // 문제 수 증가
-      paramsRef.current.setTotalQuestions(prev => prev + 1);
+      paramsRef.current.setTotalQuestions((prev) => prev + 1);
 
       if (isCorrect) {
         // 진동 피드백
@@ -155,7 +156,7 @@ export function useQuizSubmit({
         // 서바이벌 모드: 정답을 맞춘 경우 풀이 시간 기록
         if (gameMode === 'survival' && questionStartTime !== null) {
           const solveTime = (Date.now() - questionStartTime) / 1000; // 초 단위
-          paramsRef.current.setSolveTimes(prev => [...prev, solveTime]);
+          paramsRef.current.setSolveTimes((prev) => [...prev, solveTime]);
         }
 
         setCardAnimation('correct-flash');
@@ -232,11 +233,14 @@ export function useQuizSubmit({
         if (gameMode === 'survival') {
           // 오답 정보 저장
           const questionText = currentQuestion.question;
-          paramsRef.current.setWrongAnswers(prev => [...prev, {
-            question: questionText,
-            wrongAnswer: answerInput,
-            correctAnswer: correctAnswerText
-          }]);
+          paramsRef.current.setWrongAnswers((prev) => [
+            ...prev,
+            {
+              question: questionText,
+              wrongAnswer: answerInput,
+              correctAnswer: correctAnswerText,
+            },
+          ]);
 
           // 800ms 후 게임 종료 (Flare가 있으면 부활)
           setTimeout(() => {
@@ -273,7 +277,7 @@ export function useQuizSubmit({
 
           // 랜덤 위치 생성 (X: 10-80%, Y: 10-40%)
           const randomLeft = Math.floor(Math.random() * 70) + 10; // 10% ~ 80%
-          const randomTop = Math.floor(Math.random() * 30) + 10;  // 10% ~ 40%
+          const randomTop = Math.floor(Math.random() * 30) + 10; // 10% ~ 40%
           setDamagePosition({ left: `${randomLeft}%`, top: `${randomTop}%` });
 
           // 토스트를 즉시 표시 (requestAnimationFrame 제거로 지연 없음)
@@ -340,4 +344,3 @@ export function useQuizSubmit({
     handleSubmit,
   };
 }
-

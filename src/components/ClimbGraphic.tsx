@@ -17,61 +17,67 @@ export const LevelButton = React.forwardRef<HTMLButtonElement, LevelButtonProps>
     const toastTimerRef = useRef<NodeJS.Timeout | null>(null);
     const [isLongPressing, setIsLongPressing] = useState(false);
 
-    const handleStart = useCallback((e: React.MouseEvent<HTMLButtonElement> | React.TouchEvent<HTMLButtonElement>) => {
-      // disabled 상태이거나 onLongPress가 없으면 작동하지 않음
-      if (props.disabled || !onLongPress) {
-        return;
-      }
-
-      console.log('LevelButton: 길게 누르기 시작');
-      setIsLongPressing(true);
-      
-      // 2초 후 토스트 표시 (첫 번째 콜백)
-      toastTimerRef.current = setTimeout(() => {
-        console.log('LevelButton: 2초 경과 - 토스트 표시');
-        if (onLongPress) {
-          onLongPress(); // 토스트 표시
+    const handleStart = useCallback(
+      (e: React.MouseEvent<HTMLButtonElement> | React.TouchEvent<HTMLButtonElement>) => {
+        // disabled 상태이거나 onLongPress가 없으면 작동하지 않음
+        if (props.disabled || !onLongPress) {
+          return;
         }
-      }, 2000);
 
-      // 4초 후 실제 해제 (두 번째 콜백)
-      longPressTimerRef.current = setTimeout(() => {
-        console.log('LevelButton: 4초 경과 - 해제');
-        if (onLongPress) {
-          onLongPress(); // 실제 해제
+        console.log('LevelButton: 길게 누르기 시작');
+        setIsLongPressing(true);
+
+        // 2초 후 토스트 표시 (첫 번째 콜백)
+        toastTimerRef.current = setTimeout(() => {
+          console.log('LevelButton: 2초 경과 - 토스트 표시');
+          if (onLongPress) {
+            onLongPress(); // 토스트 표시
+          }
+        }, 2000);
+
+        // 4초 후 실제 해제 (두 번째 콜백)
+        longPressTimerRef.current = setTimeout(() => {
+          console.log('LevelButton: 4초 경과 - 해제');
+          if (onLongPress) {
+            onLongPress(); // 실제 해제
+          }
+          setIsLongPressing(false);
+          if (toastTimerRef.current) {
+            clearTimeout(toastTimerRef.current);
+          }
+        }, 4000);
+
+        if (onMouseDown && 'type' in e && e.type === 'mousedown') {
+          onMouseDown(e as React.MouseEvent<HTMLButtonElement>);
         }
-        setIsLongPressing(false);
+        if (onTouchStart && 'type' in e && e.type === 'touchstart') {
+          onTouchStart(e as React.TouchEvent<HTMLButtonElement>);
+        }
+      },
+      [onLongPress, props.disabled, onMouseDown, onTouchStart]
+    );
+
+    const handleEnd = useCallback(
+      (e: React.MouseEvent<HTMLButtonElement> | React.TouchEvent<HTMLButtonElement>) => {
+        if (longPressTimerRef.current) {
+          clearTimeout(longPressTimerRef.current);
+          longPressTimerRef.current = null;
+        }
         if (toastTimerRef.current) {
           clearTimeout(toastTimerRef.current);
+          toastTimerRef.current = null;
         }
-      }, 4000);
+        setIsLongPressing(false);
 
-      if (onMouseDown && 'type' in e && e.type === 'mousedown') {
-        onMouseDown(e as React.MouseEvent<HTMLButtonElement>);
-      }
-      if (onTouchStart && 'type' in e && e.type === 'touchstart') {
-        onTouchStart(e as React.TouchEvent<HTMLButtonElement>);
-      }
-    }, [onLongPress, props.disabled, onMouseDown, onTouchStart]);
-
-    const handleEnd = useCallback((e: React.MouseEvent<HTMLButtonElement> | React.TouchEvent<HTMLButtonElement>) => {
-      if (longPressTimerRef.current) {
-        clearTimeout(longPressTimerRef.current);
-        longPressTimerRef.current = null;
-      }
-      if (toastTimerRef.current) {
-        clearTimeout(toastTimerRef.current);
-        toastTimerRef.current = null;
-      }
-      setIsLongPressing(false);
-
-      if (onMouseUp && 'type' in e && e.type === 'mouseup') {
-        onMouseUp(e as React.MouseEvent<HTMLButtonElement>);
-      }
-      if (onTouchEnd && 'type' in e && e.type === 'touchend') {
-        onTouchEnd(e as React.TouchEvent<HTMLButtonElement>);
-      }
-    }, [onMouseUp, onTouchEnd]);
+        if (onMouseUp && 'type' in e && e.type === 'mouseup') {
+          onMouseUp(e as React.MouseEvent<HTMLButtonElement>);
+        }
+        if (onTouchEnd && 'type' in e && e.type === 'touchend') {
+          onTouchEnd(e as React.TouchEvent<HTMLButtonElement>);
+        }
+      },
+      [onMouseUp, onTouchEnd]
+    );
 
     useEffect(() => {
       return () => {
@@ -149,7 +155,7 @@ export function ClimbGraphic({
 
   // 개발중인 레벨 체크 함수
   const isUnderDevelopment = (level: number) => {
-    const UNDER_DEVELOPMENT_LEVELS = new Set([
+    const UNDER_DEVELOPMENT_LEVELS = new Set<string>([
       // 개발 중인 레벨이 있으면 여기에 추가 (카테고리_서브토픽_레벨 형식)
     ]);
     const levelKey = `${category}_${subTopic}_${level}`;
@@ -158,9 +164,10 @@ export function ClimbGraphic({
 
   // ========== 스테이지 헬퍼 함수 ==========
   const getStageInfo = useCallback((levelId: number): StageConfig => {
-    return STAGE_CONFIG.find(
-      (stage) => levelId >= stage.range[0] && levelId <= stage.range[1]
-    ) || STAGE_CONFIG[0]; // Fallback
+    return (
+      STAGE_CONFIG.find((stage) => levelId >= stage.range[0] && levelId <= stage.range[1]) ||
+      STAGE_CONFIG[0]
+    ); // Fallback
   }, []);
 
   // ========== 설정 상수 ==========
@@ -247,7 +254,7 @@ export function ClimbGraphic({
 
   // 전체 경로와 클리어된 경로 생성
   const pathData = useMemo(() => createPath(pathPoints), [pathPoints]);
-  
+
   const clearedPathData = useMemo(() => {
     if (lastClearedIndex < 0) return '';
     // 클리어된 마지막 노드까지의 경로 (해당 노드 포함)
@@ -268,7 +275,6 @@ export function ClimbGraphic({
     }
   }, []);
 
-
   // 스테이지별 배경 설정
   const stageConfig = useMemo(() => {
     const configs: Record<string, StageBackgroundConfig> = {
@@ -281,7 +287,8 @@ export function ClimbGraphic({
       },
       equations: {
         // 지적이고 깊은 청록색 - 심해나 우주에 가까운 톤
-        skyGradient: 'linear-gradient(180deg, #064E3B 0%, #065F46 15%, #0891B2 40%, #06B6D4 65%, #22D3EE 85%, #67E8F9 100%)',
+        skyGradient:
+          'linear-gradient(180deg, #064E3B 0%, #065F46 15%, #0891B2 40%, #06B6D4 65%, #22D3EE 85%, #67E8F9 100%)',
         mainColor: '#064E3B', // Cyan-900
         secondaryColor: '#0891B2', // Cyan-600
         accentColor: '#22D3EE', // Cyan-400
@@ -299,12 +306,14 @@ export function ClimbGraphic({
         accentColor: '#00D4FF',
       },
     };
-    return configs[subTopic] || {
-      skyGradient: 'linear-gradient(180deg, #00BFA5 0%, #00D4B8 30%, #00E6CC 60%, #00F5DD 100%)',
-      mainColor: categoryColor,
-      secondaryColor: categoryColor,
-      accentColor: categoryColor,
-    };
+    return (
+      configs[subTopic] || {
+        skyGradient: 'linear-gradient(180deg, #00BFA5 0%, #00D4B8 30%, #00E6CC 60%, #00F5DD 100%)',
+        mainColor: categoryColor,
+        secondaryColor: categoryColor,
+        accentColor: categoryColor,
+      }
+    );
   }, [subTopic, categoryColor]);
 
   // 절차적 생성 배경 사용 (기존 BackgroundComponent는 더 이상 사용하지 않음)
@@ -313,22 +322,19 @@ export function ClimbGraphic({
     <div
       className="level-map-container"
       data-stage={subTopic}
-      style={{ 
-        '--category-color': categoryColor,
-        minHeight: `${svgHeight + 200}px` // SVG 높이 + 여유 공간
-      } as React.CSSProperties}
+      style={
+        {
+          '--category-color': categoryColor,
+          minHeight: `${svgHeight + 200}px`, // SVG 높이 + 여유 공간
+        } as React.CSSProperties
+      }
     >
       {/* 하늘 그라데이션 배경 */}
-      <div 
-        className="level-map-sky" 
-        style={{ background: stageConfig.skyGradient }}
-      />
+      <div className="level-map-sky" style={{ background: stageConfig.skyGradient }} />
 
       {/* 산 배경 (새로 만든 컴포넌트) */}
       {/* CSS로 하던 .level-map-mountains 대신 이걸 씁니다 */}
-      {subTopic === 'arithmetic' && (
-        <ArithmeticBackground totalLevels={totalLevels} />
-      )}
+      {subTopic === 'arithmetic' && <ArithmeticBackground totalLevels={totalLevels} />}
       {subTopic === 'equations' && (
         <EquationsBackground totalLevels={totalLevels} config={stageConfig} />
       )}
@@ -336,9 +342,9 @@ export function ClimbGraphic({
       {/* SVG 경로 영역 - 경로와 노드를 모두 포함 */}
       <div
         className="level-map-path-container"
-        style={{ 
+        style={{
           height: `${svgHeight}px`,
-          top: `${SCROLL_OFFSET}px`
+          top: `${SCROLL_OFFSET}px`,
         }}
       >
         <svg
@@ -410,12 +416,21 @@ export function ClimbGraphic({
                         onLevelClick(level.id, levelInfo.name);
                       }
                     }}
-                    onLongPress={level.status === 'locked' ? undefined : () => {
-                      console.log('ClimbGraphic: onLongPress 호출됨, level:', level.id, 'onLevelLongPress:', !!onLevelLongPress);
-                      if (onLevelLongPress) {
-                        onLevelLongPress(level.id);
-                      }
-                    }}
+                    onLongPress={
+                      level.status === 'locked'
+                        ? undefined
+                        : () => {
+                            console.log(
+                              'ClimbGraphic: onLongPress 호출됨, level:',
+                              level.id,
+                              'onLevelLongPress:',
+                              !!onLevelLongPress
+                            );
+                            if (onLevelLongPress) {
+                              onLevelLongPress(level.id);
+                            }
+                          }
+                    }
                     disabled={level.status === 'locked'}
                     style={{
                       width: '56px',
@@ -424,19 +439,25 @@ export function ClimbGraphic({
                       padding: 0,
                       // 스테이지별 테마 색상 적용
                       borderColor: level.status === 'current' ? stage.color : undefined,
-                      boxShadow: level.status === 'current' 
-                        ? `0 0 0 4px ${stage.color}40` 
-                        : undefined,
+                      boxShadow:
+                        level.status === 'current' ? `0 0 0 4px ${stage.color}40` : undefined,
                     }}
                   >
                     <div className="level-node-content">
                       {level.status === 'locked' ? (
                         <span className="level-node-icon">🔒</span>
                       ) : level.status === 'cleared' ? (
-                        <span className="level-node-icon" style={{ color: stage.color }}>✓</span>
+                        <span className="level-node-icon" style={{ color: stage.color }}>
+                          ✓
+                        </span>
                       ) : (
                         // 진행 중일 때 스테이지 아이콘 표시
-                        <span className="level-node-icon" role="img" aria-label={stage.title} style={{ color: stage.color }}>
+                        <span
+                          className="level-node-icon"
+                          role="img"
+                          aria-label={stage.title}
+                          style={{ color: stage.color }}
+                        >
                           {stage.icon}
                         </span>
                       )}
@@ -462,13 +483,17 @@ export function ClimbGraphic({
             const badgeSpacing = 42;
 
             // 위치 계산: 왼쪽 또는 오른쪽
-            const badgeX = isLeftSide 
-              ? position.x - badgeWidth - badgeSpacing  // 왼쪽: 노드 왼쪽으로 뱃지 너비 + 여백만큼
-              : position.x + badgeSpacing;               // 오른쪽: 노드 오른쪽으로 여백만큼
+            const badgeX = isLeftSide
+              ? position.x - badgeWidth - badgeSpacing // 왼쪽: 노드 왼쪽으로 뱃지 너비 + 여백만큼
+              : position.x + badgeSpacing; // 오른쪽: 노드 오른쪽으로 여백만큼
             const badgeY = position.y - 15;
 
             return (
-              <g key={stage.id} className="stage-signpost" style={{ animation: 'fadeIn 0.6s ease-out' }}>
+              <g
+                key={stage.id}
+                className="stage-signpost"
+                style={{ animation: 'fadeIn 0.6s ease-out' }}
+              >
                 {/* 1. 연결선: 아주 얇고 연한 회색 (눈에 띌 듯 말 듯 하게) */}
                 <line
                   x1={isLeftSide ? position.x - 20 : position.x + 20}
@@ -480,7 +505,10 @@ export function ClimbGraphic({
                 />
 
                 {/* 2. 뱃지 그룹 */}
-                <g transform={`translate(${badgeX}, ${badgeY})`} style={{ filter: 'url(#toss-shadow)' }}>
+                <g
+                  transform={`translate(${badgeX}, ${badgeY})`}
+                  style={{ filter: 'url(#toss-shadow)' }}
+                >
                   {/* 배경: 완전한 흰색 캡슐 */}
                   <rect
                     width={badgeWidth}
@@ -490,12 +518,7 @@ export function ClimbGraphic({
                   />
 
                   {/* 포인트 아이콘 (스테이지 색상 원) */}
-                  <circle 
-                    cx={isLeftSide ? badgeWidth - 12 : 12} 
-                    cy="15" 
-                    r="4" 
-                    fill={stage.color} 
-                  />
+                  <circle cx={isLeftSide ? badgeWidth - 12 : 12} cy="15" r="4" fill={stage.color} />
 
                   {/* 텍스트: Toss Grey 컬러, 시스템 폰트 */}
                   <text
@@ -529,4 +552,3 @@ export function ClimbGraphic({
     </div>
   );
 }
-

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { supabase } from '../../utils/supabaseClient';
 import { verifySync, type SyncResult } from '../../utils/debugSync';
 import { Toast } from '../Toast';
@@ -11,11 +11,6 @@ interface BadgeDefinition {
   emoji: string | null;
 }
 
-interface UserBadge {
-  badge_id: string;
-  earned_at: string;
-}
-
 export function BadgeSystemSection() {
   const [badgeDefinitions, setBadgeDefinitions] = useState<BadgeDefinition[]>([]);
   const [userBadges, setUserBadges] = useState<Set<string>>(new Set());
@@ -24,10 +19,9 @@ export function BadgeSystemSection() {
   const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
   const [isVerifyingSync, setIsVerifyingSync] = useState(false);
   const [syncResult, setSyncResult] = useState<SyncResult | null>(null);
-  
+
   // 뱃지 알림 테스트 상태
   const [selectedBadgeId, setSelectedBadgeId] = useState<string>('');
-  const [showBadgeNotification, setShowBadgeNotification] = useState(false);
   const [toastMessage, setToastMessage] = useState('');
   const [isToastOpen, setIsToastOpen] = useState(false);
 
@@ -39,11 +33,14 @@ export function BadgeSystemSection() {
     try {
       setIsLoading(true);
 
-      const { data: { user } } = await supabase.auth.getSession();
-      if (!user) {
+      const {
+        data: { session },
+      } = await supabase.auth.getSession();
+      if (!session?.user) {
         setMessage({ type: 'error', text: '로그인이 필요합니다.' });
         return;
       }
+      const user = session.user;
 
       // 뱃지 정의 조회
       const { data: definitions, error: defError } = await supabase
@@ -61,9 +58,12 @@ export function BadgeSystemSection() {
         .eq('user_id', user.id);
 
       if (badgesError) throw badgesError;
-      setUserBadges(new Set(badges?.map(b => b.badge_id) || []));
+      setUserBadges(new Set(badges?.map((b) => b.badge_id) || []));
     } catch (err) {
-      setMessage({ type: 'error', text: `뱃지 로드 실패: ${err instanceof Error ? err.message : '알 수 없는 오류'}` });
+      setMessage({
+        type: 'error',
+        text: `뱃지 로드 실패: ${err instanceof Error ? err.message : '알 수 없는 오류'}`,
+      });
     } finally {
       setIsLoading(false);
     }
@@ -76,23 +76,26 @@ export function BadgeSystemSection() {
       setIsUpdating(true);
       setMessage(null);
 
-      const { data: { user } } = await supabase.auth.getSession();
-      if (!user) {
+      const {
+        data: { session },
+      } = await supabase.auth.getSession();
+      if (!session?.user) {
         setMessage({ type: 'error', text: '로그인이 필요합니다.' });
         return;
       }
+      const user = session.user;
 
       const isEarned = userBadges.has(badgeId);
 
       if (isEarned) {
         // 뱃지 제거 (RPC 함수 사용)
-        const { data, error } = await supabase.rpc('debug_remove_badge', {
+        const { error } = await supabase.rpc('debug_remove_badge', {
           p_user_id: user.id,
           p_badge_id: badgeId,
         });
 
         if (error) throw error;
-        setUserBadges(prev => {
+        setUserBadges((prev) => {
           const next = new Set(prev);
           next.delete(badgeId);
           return next;
@@ -100,17 +103,20 @@ export function BadgeSystemSection() {
         setMessage({ type: 'success', text: '뱃지가 제거되었습니다.' });
       } else {
         // 뱃지 부여
-        const { data, error } = await supabase.rpc('debug_grant_badge', {
+        const { error } = await supabase.rpc('debug_grant_badge', {
           p_user_id: user.id,
           p_badge_id: badgeId,
         });
 
         if (error) throw error;
-        setUserBadges(prev => new Set([...prev, badgeId]));
+        setUserBadges((prev) => new Set([...prev, badgeId]));
         setMessage({ type: 'success', text: '뱃지가 부여되었습니다.' });
       }
     } catch (err) {
-      setMessage({ type: 'error', text: `뱃지 조작 실패: ${err instanceof Error ? err.message : '알 수 없는 오류'}` });
+      setMessage({
+        type: 'error',
+        text: `뱃지 조작 실패: ${err instanceof Error ? err.message : '알 수 없는 오류'}`,
+      });
     } finally {
       setIsUpdating(false);
     }
@@ -124,34 +130,37 @@ export function BadgeSystemSection() {
       setIsUpdating(true);
       setMessage(null);
 
-      const { data: { user } } = await supabase.auth.getSession();
-      if (!user) {
+      const {
+        data: { session },
+      } = await supabase.auth.getSession();
+      if (!session?.user) {
         setMessage({ type: 'error', text: '로그인이 필요합니다.' });
         return;
       }
+      const user = session.user;
 
-      const { error } = await supabase
-        .from('user_badges')
-        .delete()
-        .eq('user_id', user.id);
+      const { error } = await supabase.from('user_badges').delete().eq('user_id', user.id);
 
       if (error) throw error;
       setUserBadges(new Set());
       setMessage({ type: 'success', text: '모든 뱃지가 제거되었습니다.' });
     } catch (err) {
-      setMessage({ type: 'error', text: `뱃지 초기화 실패: ${err instanceof Error ? err.message : '알 수 없는 오류'}` });
+      setMessage({
+        type: 'error',
+        text: `뱃지 초기화 실패: ${err instanceof Error ? err.message : '알 수 없는 오류'}`,
+      });
     } finally {
       setIsUpdating(false);
     }
   };
 
   // 획득한 뱃지 목록 (earnedBadges)
-  const earnedBadges = badgeDefinitions.filter(badge => userBadges.has(badge.id));
+  const earnedBadges = badgeDefinitions.filter((badge) => userBadges.has(badge.id));
 
   const handleShowBadgeNotification = () => {
     if (!selectedBadgeId) return;
 
-    const badge = badgeDefinitions.find(b => b.id === selectedBadgeId);
+    const badge = badgeDefinitions.find((b) => b.id === selectedBadgeId);
     if (badge) {
       const badgeEmoji = badge.emoji || '🎖️';
       setToastMessage(`${badgeEmoji} ${badge.name} 뱃지를 획득했습니다!`);
@@ -166,16 +175,22 @@ export function BadgeSystemSection() {
       setIsVerifyingSync(true);
       setSyncResult(null);
 
-      const { data: { user } } = await supabase.auth.getSession();
-      if (!user) {
+      const {
+        data: { session },
+      } = await supabase.auth.getSession();
+      if (!session?.user) {
         setMessage({ type: 'error', text: '로그인이 필요합니다.' });
         return;
       }
+      const user = session.user;
 
       const result = await verifySync(user.id);
       setSyncResult(result);
     } catch (err) {
-      setMessage({ type: 'error', text: `동기화 검증 실패: ${err instanceof Error ? err.message : '알 수 없는 오류'}` });
+      setMessage({
+        type: 'error',
+        text: `동기화 검증 실패: ${err instanceof Error ? err.message : '알 수 없는 오류'}`,
+      });
     } finally {
       setIsVerifyingSync(false);
     }
@@ -194,11 +209,7 @@ export function BadgeSystemSection() {
       <h3 className="debug-section-title">🎖️ 뱃지 시스템</h3>
 
       <div className="debug-sync-control">
-        <button
-          className="debug-sync-button"
-          onClick={handleVerifySync}
-          disabled={isVerifyingSync}
-        >
+        <button className="debug-sync-button" onClick={handleVerifySync} disabled={isVerifyingSync}>
           {isVerifyingSync ? '검증 중...' : '동기화 확인'}
         </button>
       </div>
@@ -250,22 +261,14 @@ export function BadgeSystemSection() {
               className={`debug-badge-item ${isEarned ? 'earned' : 'locked'}`}
               onClick={() => handleBadgeToggle(badge.id)}
             >
-              <div className="debug-badge-icon">
-                {isEarned && badge.emoji ? badge.emoji : '🔒'}
-              </div>
+              <div className="debug-badge-icon">{isEarned && badge.emoji ? badge.emoji : '🔒'}</div>
               <div className="debug-badge-info">
-                <div className="debug-badge-name">
-                  {isEarned ? badge.name : '???'}
-                </div>
+                <div className="debug-badge-name">{isEarned ? badge.name : '???'}</div>
                 {badge.description && (
-                  <div className="debug-badge-description">
-                    {badge.description}
-                  </div>
+                  <div className="debug-badge-description">{badge.description}</div>
                 )}
               </div>
-              <div className="debug-badge-status">
-                {isEarned ? '✅' : '❌'}
-              </div>
+              <div className="debug-badge-status">{isEarned ? '✅' : '❌'}</div>
             </div>
           );
         })}
@@ -276,7 +279,9 @@ export function BadgeSystemSection() {
           <h4 className="debug-subsection-title">동기화 검증 결과</h4>
           <div className="debug-sync-item">
             <span className="debug-sync-label">프로필:</span>
-            <span className={`debug-sync-status ${syncResult.profile.synced ? 'success' : 'error'}`}>
+            <span
+              className={`debug-sync-status ${syncResult.profile.synced ? 'success' : 'error'}`}
+            >
               {syncResult.profile.synced ? '✅ 동기화됨' : '❌ 문제 있음'}
             </span>
           </div>
@@ -294,13 +299,15 @@ export function BadgeSystemSection() {
           </div>
           <div className="debug-sync-item">
             <span className="debug-sync-label">인벤토리:</span>
-            <span className={`debug-sync-status ${syncResult.inventory.synced ? 'success' : 'error'}`}>
+            <span
+              className={`debug-sync-status ${syncResult.inventory.synced ? 'success' : 'error'}`}
+            >
               {syncResult.inventory.synced ? '✅ 동기화됨' : '❌ 문제 있음'}
             </span>
           </div>
-          {(syncResult.profile.issues.length > 0 || 
-            syncResult.tier.issues.length > 0 || 
-            syncResult.badges.issues.length > 0 || 
+          {(syncResult.profile.issues.length > 0 ||
+            syncResult.tier.issues.length > 0 ||
+            syncResult.badges.issues.length > 0 ||
             syncResult.inventory.issues.length > 0) && (
             <div className="debug-sync-issues">
               <h5 className="debug-sync-issues-title">발견된 문제:</h5>
@@ -324,9 +331,7 @@ export function BadgeSystemSection() {
       )}
 
       {message && (
-        <div className={`debug-message debug-message-${message.type}`}>
-          {message.text}
-        </div>
+        <div className={`debug-message debug-message-${message.type}`}>{message.text}</div>
       )}
 
       <Toast
@@ -339,4 +344,3 @@ export function BadgeSystemSection() {
     </div>
   );
 }
-

@@ -1,5 +1,5 @@
 // src/pages/HomePage.tsx - 메인 랜딩 페이지
-import React, { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Header } from '../components/Header';
 import { StatusCard } from '../components/StatusCard';
@@ -42,7 +42,7 @@ export function HomePage() {
       return;
     }
 
-    const handleHomeBackButton = (event: CustomEvent) => {
+    const handleHomeBackButton = (_event: CustomEvent) => {
       if (isWaitingForSecondBackRef.current) {
         // 두 번째 뒤로가기: 마이 페이지로 이동
         isWaitingForSecondBackRef.current = false;

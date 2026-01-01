@@ -22,14 +22,15 @@ export interface UseLoadingOptions {
  * @returns 로딩 상태 및 제어 함수
  */
 export function useLoading(options: UseLoadingOptions = {}) {
-  const { id, auto = false } = options;
+  const { id } = options;
   const { startLoading, stopLoading, isLoading, isAnyLoading } = useLoadingStore();
   const loadingIdRef = useRef<string | null>(null);
 
   // 고유 ID 생성 (제공되지 않은 경우)
   useEffect(() => {
     if (!loadingIdRef.current) {
-      loadingIdRef.current = id || `loading_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+      loadingIdRef.current =
+        id || `loading_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
     }
   }, [id]);
 
@@ -52,7 +53,7 @@ export function useLoading(options: UseLoadingOptions = {}) {
   /**
    * 비동기 작업 실행 (자동 로딩 관리)
    */
-  const execute = async <T,>(asyncFn: () => Promise<T>): Promise<T> => {
+  const execute = async <T>(asyncFn: () => Promise<T>): Promise<T> => {
     const targetId = loadingIdRef.current!;
     try {
       startLoading(targetId);
@@ -82,4 +83,3 @@ export function useLoading(options: UseLoadingOptions = {}) {
     execute,
   };
 }
-

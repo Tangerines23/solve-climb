@@ -139,20 +139,36 @@ function QuizCardComponent({
     if (subParam === 'arithmetic' && levelParam !== null) {
       const level = levelParam;
       const topicMap: Record<number, string> = {
-        1: '덧셈', 2: '뺄셈', 3: '덧셈', 4: '뺄셈', 5: '곱셈',
-        6: '나눗셈', 7: '혼합 연산', 8: '곱셈', 9: '나눗셈', 10: '종합 연산',
+        1: '덧셈',
+        2: '뺄셈',
+        3: '덧셈',
+        4: '뺄셈',
+        5: '곱셈',
+        6: '나눗셈',
+        7: '혼합 연산',
+        8: '곱셈',
+        9: '나눗셈',
+        10: '종합 연산',
       };
       return topicMap[level] || '덧셈';
     } else if (subParam === 'calculus' && levelParam !== null) {
       const level = levelParam;
       const topicMap: Record<number, string> = {
-        1: '기초 미분', 2: '상수배 미분', 3: '합과 차의 미분', 4: '곱의 미분', 5: '몫의 미분',
-        6: '합성함수 미분', 7: '삼각함수 미분', 8: '지수·로그 미분', 9: '고급 미분', 10: '미분 종합',
+        1: '기초 미분',
+        2: '상수배 미분',
+        3: '합과 차의 미분',
+        4: '곱의 미분',
+        5: '몫의 미분',
+        6: '합성함수 미분',
+        7: '삼각함수 미분',
+        8: '지수·로그 미분',
+        9: '고급 미분',
+        10: '미분 종합',
       };
       return topicMap[level] || '미적분';
     } else {
       const subTopics = APP_CONFIG.SUB_TOPICS[categoryParam as keyof typeof APP_CONFIG.SUB_TOPICS];
-      const subTopicInfo = subTopics?.find(t => t.id === subParam);
+      const subTopicInfo = subTopics?.find((t) => t.id === subParam);
       return subTopicInfo?.name || subParam;
     }
   }, [categoryParam, subParam, levelParam, topic]);
@@ -212,16 +228,16 @@ function QuizCardComponent({
       consumeActiveItem('safety_rope');
       console.log('[Game] Safety Rope used! Saved from time up.');
       if (onSafetyRopeUsed) onSafetyRopeUsed();
-      // 타임어택의 경우 시간이 다 되면? -> 안전 로프는 "1회 방어" 이므로 시간을 조금 더 주거나(리셋) 
+      // 타임어택의 경우 시간이 다 되면? -> 안전 로프는 "1회 방어" 이므로 시간을 조금 더 주거나(리셋)
       // 아니면 그냥 게임오버만 막고 시간은 0초? 0초면 바로 또 죽음.
       // 따라서 "시간 리셋"이 필요함. 혹은 문제 스킵?
       // 사용자 요청: "오답 처리를 무효화하고 해당 문제 화면에 머무르게" -> Time Up도 비슷하게 처리.
       // Time Up 상황에서 머무르려면 시간을 채워줘야 함.
       // 라스트 스페어처럼 15초? 아니면 원래 제한시간? 일단 서바이벌은 5초, 타임어택은 timeLimit.
-      // QuizCard는 Timer를 리셋할 권한이 없음 (props로 받음). 
-      // 하지만 TimerCircle은 key가 바뀌지 않으면 내부 state만 가짐. 
+      // QuizCard는 Timer를 리셋할 권한이 없음 (props로 받음).
+      // 하지만 TimerCircle은 key가 바뀌지 않으면 내부 state만 가짐.
       // QuizCard에서 TimerCircle을 강제 리셋하려면 key를 바꿔야 함.
-      // -> onSafetyRopeUsed에서 key 업데이트를 요청해야 함? 
+      // -> onSafetyRopeUsed에서 key 업데이트를 요청해야 함?
       // -> QuizPage에서 handleSafetyRopeUsed 호출 시 QuestionKey를 업데이트하지 않으면 Timer는 0에서 멈춤.
       // -> SafetyRopeOverlay가 1.5초 동안 뜨고, 그 뒤에 재개?
       // -> QuizPage의 handleSafetyRopeUsed에서 추가 처리 필요.
@@ -248,9 +264,20 @@ function QuizCardComponent({
         </button>
         <div className="quiz-timer-container">
           {gameMode === 'survival' ? (
-            <TimerCircle duration={SURVIVAL_QUESTION_TIME} onComplete={handleTimeUp} isPaused={isSubmitting || isPaused} key={questionKey} />
+            <TimerCircle
+              duration={SURVIVAL_QUESTION_TIME}
+              onComplete={handleTimeUp}
+              isPaused={isSubmitting || isPaused}
+              key={questionKey}
+            />
           ) : (
-            <TimerCircle duration={timeLimit} onComplete={handleTimeUp} isPaused={isPaused} enableFastForward={true} key={`${timeLimit}-${timerResetKey || 0}`} />
+            <TimerCircle
+              duration={timeLimit}
+              onComplete={handleTimeUp}
+              isPaused={isPaused}
+              enableFastForward={true}
+              key={`${timeLimit}-${timerResetKey || 0}`}
+            />
           )}
         </div>
         <div className="quiz-header-spacer"></div>
@@ -260,16 +287,19 @@ function QuizCardComponent({
       <div className="quiz-content">
         {/* 퀴즈 카드 */}
         <div className={`quiz-card ${cardAnimation}`}>
-          <div className="category-label">{displayCategory} - {displayTopic}</div>
-          <form onSubmit={(e) => {
-            e.preventDefault();
-            if (isPaused || isSubmitting || isError) return;
-            handleSubmit(e);
-          }} style={{ display: 'contents' }}>
+          <div className="category-label">
+            {displayCategory} - {displayTopic}
+          </div>
+          <form
+            onSubmit={(e) => {
+              e.preventDefault();
+              if (isPaused || isSubmitting || isError) return;
+              handleSubmit(e);
+            }}
+            style={{ display: 'contents' }}
+          >
             <div className={questionAnimation}>
-              <h2 className="problem-text">
-                {currentQuestion.question}
-              </h2>
+              <h2 className="problem-text">{currentQuestion.question}</h2>
               {showAnswer && (
                 <div className="debug-answer-display">
                   정답: <strong>{currentQuestion.answer}</strong>
@@ -336,7 +366,7 @@ function QuizCardComponent({
                         inputRef.current.focus();
                       }
                     }}
-                    placeholder={isJapaneseQuiz ? "로마지 입력 (예: a, ki)" : "정답 입력"}
+                    placeholder={isJapaneseQuiz ? '로마지 입력 (예: a, ki)' : '정답 입력'}
                     className={`answer-input-system ${inputAnimation} ${isError ? 'error-state is-error' : ''} ${showFlash ? 'input-error-flash' : ''}`}
                     disabled={(isSubmitting && !isError) || isPaused}
                     readOnly={isError}
@@ -359,9 +389,13 @@ function QuizCardComponent({
               </>
             ) : (
               <div className={`answer-input-wrapper ${isError ? 'is-error' : ''}`}>
-                <div className={`answer-display ${inputAnimation} ${isError ? 'is-error' : ''} ${showFlash ? 'input-error-flash' : ''}`}>
+                <div
+                  className={`answer-display ${inputAnimation} ${isError ? 'is-error' : ''} ${showFlash ? 'input-error-flash' : ''}`}
+                >
                   {(isError ? displayValue : answerInput) && (
-                    <span className="answer-display-text">{isError ? displayValue : answerInput}</span>
+                    <span className="answer-display-text">
+                      {isError ? displayValue : answerInput}
+                    </span>
                   )}
                   {!isError && <span className="answer-caret"></span>}
                 </div>
@@ -457,4 +491,3 @@ export const QuizCard = React.memo(QuizCardComponent, (prevProps, nextProps) => 
     prevProps.useSystemKeyboard === nextProps.useSystemKeyboard
   );
 });
-

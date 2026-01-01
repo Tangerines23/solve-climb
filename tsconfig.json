@@ -8,22 +8,33 @@
 
     /* Bundler mode */
     "moduleResolution": "bundler",
-    "allowImportingTsExtensions": true,
     "resolveJsonModule": true,
     "isolatedModules": true,
     "noEmit": true,
     "declaration": false,
+    "declarationMap": false,
     "emitDeclarationOnly": false,
-    "outDir": "./dist",
+    "incremental": false,
     "jsx": "react-jsx", /* <-- 이 'react-jsx' 설정이 ts(2866) 오류를 해결합니다. */
 
     /* Linting */
     "strict": true,
     "noUnusedLocals": true,
     "noUnusedParameters": true,
-    "noFallthroughCasesInSwitch": true
+    "noFallthroughCasesInSwitch": true,
+    
+    /* Prevent .d.ts file conflicts */
+    "skipDefaultLibCheck": true
   },
-  "include": ["src/**/*.ts", "src/**/*.tsx"],
-  "exclude": ["**/*.d.ts", "node_modules", "dist", "**/__tests__/**", "**/__mocks__/**"],
-  "references": [{ "path": "./tsconfig.node.json" }]
+  "include": ["src/**/*.ts", "src/**/*.tsx", "src/vite-env.d.ts"],
+  "exclude": [
+    "**/node_modules/**",
+    "**/dist/**",
+    "**/__tests__/**",
+    "**/__mocks__/**",
+    "**/*.test.ts",
+    "**/*.test.tsx",
+    "**/*.spec.ts",
+    "**/*.spec.tsx"
+  ]
 }

@@ -9,18 +9,40 @@ import { GlobalLoadingIndicator } from './components/GlobalLoadingIndicator';
 import { useErrorLogStore } from './stores/useErrorLogStore';
 
 // 페이지 컴포넌트 레이지 로딩
-const HomePage = lazy(() => import('./pages/HomePage').then(module => ({ default: module.HomePage })));
-const SubCategoryPage = lazy(() => import('./pages/SubCategoryPage').then(module => ({ default: module.SubCategoryPage })));
-const LevelSelectPage = lazy(() => import('./pages/LevelSelectPage').then(module => ({ default: module.LevelSelectPage })));
-const QuizPage = lazy(() => import('./pages/QuizPage').then(module => ({ default: module.QuizPage })));
-const ResultPage = lazy(() => import('./pages/ResultPage').then(module => ({ default: module.ResultPage })));
-const RankingPage = lazy(() => import('./pages/RankingPage').then(module => ({ default: module.RankingPage })));
-const HistoryPage = lazy(() => import('./pages/HistoryPage').then(module => ({ default: module.HistoryPage })));
-const MyPage = lazy(() => import('./pages/MyPage').then(module => ({ default: module.MyPage })));
-const NotificationPage = lazy(() => import('./pages/NotificationPage').then(module => ({ default: module.NotificationPage })));
-const AuthCallbackPage = lazy(() => import('./pages/AuthCallbackPage').then(module => ({ default: module.AuthCallbackPage })));
-const AuthTestPage = lazy(() => import('./pages/AuthTestPage').then(module => ({ default: module.AuthTestPage })));
-const ShopPage = lazy(() => import('./pages/ShopPage').then(module => ({ default: module.ShopPage })));
+const HomePage = lazy(() =>
+  import('./pages/HomePage').then((module) => ({ default: module.HomePage }))
+);
+const SubCategoryPage = lazy(() =>
+  import('./pages/SubCategoryPage').then((module) => ({ default: module.SubCategoryPage }))
+);
+const LevelSelectPage = lazy(() =>
+  import('./pages/LevelSelectPage').then((module) => ({ default: module.LevelSelectPage }))
+);
+const QuizPage = lazy(() =>
+  import('./pages/QuizPage').then((module) => ({ default: module.QuizPage }))
+);
+const ResultPage = lazy(() =>
+  import('./pages/ResultPage').then((module) => ({ default: module.ResultPage }))
+);
+const RankingPage = lazy(() =>
+  import('./pages/RankingPage').then((module) => ({ default: module.RankingPage }))
+);
+const HistoryPage = lazy(() =>
+  import('./pages/HistoryPage').then((module) => ({ default: module.HistoryPage }))
+);
+const MyPage = lazy(() => import('./pages/MyPage').then((module) => ({ default: module.MyPage })));
+const NotificationPage = lazy(() =>
+  import('./pages/NotificationPage').then((module) => ({ default: module.NotificationPage }))
+);
+const AuthCallbackPage = lazy(() =>
+  import('./pages/AuthCallbackPage').then((module) => ({ default: module.AuthCallbackPage }))
+);
+const AuthTestPage = lazy(() =>
+  import('./pages/AuthTestPage').then((module) => ({ default: module.AuthTestPage }))
+);
+const ShopPage = lazy(() =>
+  import('./pages/ShopPage').then((module) => ({ default: module.ShopPage }))
+);
 
 function App() {
   const { syncProgress } = useLevelProgressStore();
@@ -40,25 +62,27 @@ function App() {
     if (!import.meta.env.DEV) return;
 
     const handleError = (event: ErrorEvent) => {
-      useErrorLogStore.getState().addLog(
-        'error',
-        event.message || 'Unknown error',
-        event.error?.stack,
-        `Global: ${event.filename || 'unknown'}:${event.lineno || 0}`
-      );
+      useErrorLogStore
+        .getState()
+        .addLog(
+          'error',
+          event.message || 'Unknown error',
+          event.error?.stack,
+          `Global: ${event.filename || 'unknown'}:${event.lineno || 0}`
+        );
     };
 
     const handleUnhandledRejection = (event: PromiseRejectionEvent) => {
-      const error = event.reason instanceof Error 
-        ? event.reason 
-        : new Error(String(event.reason));
-      
-      useErrorLogStore.getState().addLog(
-        'error',
-        `Unhandled Promise Rejection: ${error.message}`,
-        error.stack,
-        'Global: UnhandledRejection'
-      );
+      const error = event.reason instanceof Error ? event.reason : new Error(String(event.reason));
+
+      useErrorLogStore
+        .getState()
+        .addLog(
+          'error',
+          `Unhandled Promise Rejection: ${error.message}`,
+          error.stack,
+          'Global: UnhandledRejection'
+        );
     };
 
     window.addEventListener('error', handleError);
@@ -73,17 +97,21 @@ function App() {
   return (
     <ErrorBoundary>
       <GlobalLoadingIndicator />
-      <Suspense fallback={
-        <div style={{
-          display: 'flex',
-          justifyContent: 'center',
-          alignItems: 'center',
-          height: '100vh',
-          color: 'var(--color-text-primary)'
-        }}>
-          <div>로딩 중...</div>
-        </div>
-      }>
+      <Suspense
+        fallback={
+          <div
+            style={{
+              display: 'flex',
+              justifyContent: 'center',
+              alignItems: 'center',
+              height: '100vh',
+              color: 'var(--color-text-primary)',
+            }}
+          >
+            <div>로딩 중...</div>
+          </div>
+        }
+      >
         <Routes>
           <Route path="/" element={<HomePage />} />
           <Route path="/subcategory" element={<SubCategoryPage />} />

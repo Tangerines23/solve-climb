@@ -55,4 +55,3 @@ export const STAGE_CONFIG: StageConfig[] = [
     bgTheme: 'space',
   },
 ];
-

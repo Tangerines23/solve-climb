@@ -1,42 +1,42 @@
 .countdown-overlay {
-    position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    /* See-through background to allow viewing the question */
-    background: rgba(0, 0, 0, 0.3);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    z-index: 10000;
-    pointer-events: none; /* 배경 클릭 방지하되 문제는 보이도록 */
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  /* See-through background to allow viewing the question */
+  background: rgba(0, 0, 0, 0.3);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 10000;
+  pointer-events: none; /* 배경 클릭 방지하되 문제는 보이도록 */
 }
 
 .countdown-number {
-    font-size: 6rem;
-    font-weight: bold;
-    color: #fff;
-    /* Removed text-shadow for cleaner look */
-    /* text-shadow: 0 0 20px rgba(0, 255, 255, 0.8); */
+  font-size: 6rem;
+  font-weight: bold;
+  color: #fff;
+  /* Removed text-shadow for cleaner look */
+  /* text-shadow: 0 0 20px rgba(0, 255, 255, 0.8); */
 
-    /* Subtle fade-in instead of dynamic pop */
-    animation: simpleFade 1s ease-in-out infinite;
+  /* Subtle fade-in instead of dynamic pop */
+  animation: simpleFade 1s ease-in-out infinite;
 }
 
 @keyframes simpleFade {
-    0% {
-        opacity: 0.5;
-        transform: scale(0.95);
-    }
+  0% {
+    opacity: 0.5;
+    transform: scale(0.95);
+  }
 
-    50% {
-        opacity: 1;
-        transform: scale(1);
-    }
+  50% {
+    opacity: 1;
+    transform: scale(1);
+  }
 
-    100% {
-        opacity: 0.5;
-        transform: scale(0.95);
-    }
+  100% {
+    opacity: 0.5;
+    transform: scale(0.95);
+  }
 }

@@ -1,5 +1,4 @@
 // 알림 모달 컴포넌트
-import React from 'react';
 import './AlertModal.css';
 
 interface AlertModalProps {
@@ -29,10 +28,7 @@ export function AlertModal({
           <p className="alert-modal-message">{message}</p>
         </div>
         <div className="alert-modal-actions">
-          <button
-            className="alert-modal-button"
-            onClick={onClose}
-          >
+          <button className="alert-modal-button" onClick={onClose}>
             {buttonText}
           </button>
         </div>
@@ -40,4 +36,3 @@ export function AlertModal({
     </div>
   );
 }
-

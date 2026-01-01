@@ -23,19 +23,15 @@ interface BadgeSlotProps {
 }
 
 export const BadgeSlot: React.FC<BadgeSlotProps> = ({
-  badgeId,
+  badgeId: _badgeId,
   isEarned,
   badgeDef,
-  earnedAt
+  earnedAt,
 }) => {
   return (
     <div className={`badge-slot ${isEarned ? 'badge-earned' : 'badge-locked'}`}>
-      <div className="badge-icon">
-        {isEarned && badgeDef?.emoji ? badgeDef.emoji : '🔒'}
-      </div>
-      <div className="badge-name">
-        {isEarned && badgeDef ? badgeDef.name : '???'}
-      </div>
+      <div className="badge-icon">{isEarned && badgeDef?.emoji ? badgeDef.emoji : '🔒'}</div>
+      <div className="badge-name">{isEarned && badgeDef ? badgeDef.name : '???'}</div>
       {isEarned && earnedAt && (
         <div className="badge-date">
           {new Date(earnedAt).toLocaleDateString('ko-KR', { year: 'numeric', month: 'short' })}
@@ -76,20 +72,20 @@ export const BadgeCollection: React.FC<BadgeCollectionProps> = ({ userId }) => {
         if (defError) throw defError;
 
         const defMap: Record<string, BadgeDefinition> = {};
-        definitions?.forEach(def => {
+        definitions?.forEach((def) => {
           defMap[def.id] = def;
         });
         setBadgeDefinitions(defMap);
 
         // 모든 뱃지 정의 가져오기 (획득하지 않은 뱃지도 표시)
-        const allBadgeIds = definitions?.map(d => d.id) || [];
-        const earnedBadgeIds = new Set(userBadges?.map(b => b.badge_id) || []);
-        const lockedBadges = allBadgeIds.filter(id => !earnedBadgeIds.has(id));
-        
+        const allBadgeIds = definitions?.map((d) => d.id) || [];
+        const earnedBadgeIds = new Set(userBadges?.map((b) => b.badge_id) || []);
+        const lockedBadges = allBadgeIds.filter((id) => !earnedBadgeIds.has(id));
+
         // 락된 뱃지도 표시하기 위해 추가
         const allBadges: UserBadge[] = [
           ...(userBadges || []),
-          ...lockedBadges.map(id => ({ badge_id: id, earned_at: '' }))
+          ...lockedBadges.map((id) => ({ badge_id: id, earned_at: '' })),
         ];
         setBadges(allBadges);
       } catch (error) {
@@ -136,4 +132,3 @@ export const BadgeCollection: React.FC<BadgeCollectionProps> = ({ userId }) => {
     </div>
   );
 };
-

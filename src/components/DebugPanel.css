@@ -124,9 +124,8 @@
     max-width: 100%;
     transform: translateY(100%); /* 모바일: 아래에서 위로 */
   }
-  
+
   .debug-panel.open {
     transform: translateY(0);
   }
 }
-

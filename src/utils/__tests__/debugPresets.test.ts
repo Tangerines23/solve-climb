@@ -413,25 +413,25 @@ describe('debugPresets - Default Presets', () => {
   });
 
   it('should have preset with id "newbie"', () => {
-    const newbie = debugPresets.find(p => p.id === 'newbie');
+    const newbie = debugPresets.find((p) => p.id === 'newbie');
     expect(newbie).toBeDefined();
     expect(newbie?.name).toBe('뉴비 세팅');
   });
 
   it('should have preset with id "veteran"', () => {
-    const veteran = debugPresets.find(p => p.id === 'veteran');
+    const veteran = debugPresets.find((p) => p.id === 'veteran');
     expect(veteran).toBeDefined();
-    expect(veteran?.actions.some(a => a.type === 'setMasteryScore' && a.value === -1)).toBe(true);
+    expect(veteran?.actions.some((a) => a.type === 'setMasteryScore' && a.value === -1)).toBe(true);
   });
 
   it('should have preset with id "crisis"', () => {
-    const crisis = debugPresets.find(p => p.id === 'crisis');
+    const crisis = debugPresets.find((p) => p.id === 'crisis');
     expect(crisis).toBeDefined();
     expect(crisis?.description).toContain('엣지 케이스');
   });
 
   it('should have all presets with required fields', () => {
-    debugPresets.forEach(preset => {
+    debugPresets.forEach((preset) => {
       expect(preset.id).toBeDefined();
       expect(preset.name).toBeDefined();
       expect(preset.description).toBeDefined();
@@ -439,4 +439,3 @@ describe('debugPresets - Default Presets', () => {
     });
   });
 });
-

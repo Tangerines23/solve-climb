@@ -76,7 +76,6 @@
   opacity: 0.5;
 }
 
-
 .header-status {
   display: flex;
   gap: var(--spacing-xs);

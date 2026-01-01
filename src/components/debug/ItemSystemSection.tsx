@@ -26,7 +26,7 @@ export function ItemSystemSection() {
   useEffect(() => {
     // 인벤토리 변경 시 입력 필드 업데이트
     const quantities: Record<number, string> = {};
-    inventory.forEach(item => {
+    inventory.forEach((item) => {
       quantities[item.id] = item.quantity.toString();
     });
     setItemQuantities(quantities);
@@ -44,7 +44,10 @@ export function ItemSystemSection() {
       if (error) throw error;
       setItemDefinitions(data || []);
     } catch (err) {
-      setMessage({ type: 'error', text: `아이템 로드 실패: ${err instanceof Error ? err.message : '알 수 없는 오류'}` });
+      setMessage({
+        type: 'error',
+        text: `아이템 로드 실패: ${err instanceof Error ? err.message : '알 수 없는 오류'}`,
+      });
     } finally {
       setIsLoading(false);
     }
@@ -53,18 +56,18 @@ export function ItemSystemSection() {
   const handleQuantityChange = (itemId: number, delta: number) => {
     const current = parseInt(itemQuantities[itemId] || '0', 10);
     const newValue = Math.max(0, current + delta);
-    setItemQuantities(prev => ({ ...prev, [itemId]: newValue.toString() }));
+    setItemQuantities((prev) => ({ ...prev, [itemId]: newValue.toString() }));
   };
 
   const handleQuantityInputChange = (itemId: number, value: string) => {
-    setItemQuantities(prev => ({ ...prev, [itemId]: value }));
+    setItemQuantities((prev) => ({ ...prev, [itemId]: value }));
   };
 
   const handleQuantityInputBlur = (itemId: number) => {
     const numValue = parseInt(itemQuantities[itemId] || '0', 10);
     if (isNaN(numValue) || numValue < 0) {
-      const currentItem = inventory.find(item => item.id === itemId);
-      setItemQuantities(prev => ({ ...prev, [itemId]: (currentItem?.quantity || 0).toString() }));
+      const currentItem = inventory.find((item) => item.id === itemId);
+      setItemQuantities((prev) => ({ ...prev, [itemId]: (currentItem?.quantity || 0).toString() }));
     }
   };
 
@@ -81,14 +84,17 @@ export function ItemSystemSection() {
       setIsUpdating(true);
       setMessage(null);
 
-      const { data: { user } } = await supabase.auth.getSession();
-      if (!user) {
+      const {
+        data: { session },
+      } = await supabase.auth.getSession();
+      if (!session?.user) {
         setMessage({ type: 'error', text: '로그인이 필요합니다.' });
         return;
       }
+      const user = session.user;
 
       // 현재 인벤토리에서 해당 아이템 찾기
-      const currentItem = inventory.find(item => item.id === itemId);
+      const currentItem = inventory.find((item) => item.id === itemId);
       const currentQuantity = currentItem?.quantity || 0;
       const quantityDiff = numValue - currentQuantity;
 
@@ -99,16 +105,14 @@ export function ItemSystemSection() {
 
       // 인벤토리 업데이트 (직접 업데이트)
       const newQuantity = Math.max(0, numValue);
-      
+
       if (currentQuantity === 0 && newQuantity > 0) {
         // 새 아이템 추가
-        const { error } = await supabase
-          .from('inventory')
-          .insert({
-            user_id: user.id,
-            item_id: itemId,
-            quantity: newQuantity,
-          });
+        const { error } = await supabase.from('inventory').insert({
+          user_id: user.id,
+          item_id: itemId,
+          quantity: newQuantity,
+        });
 
         if (error) throw error;
         setMessage({ type: 'success', text: `아이템 ${newQuantity}개가 추가되었습니다.` });
@@ -136,7 +140,10 @@ export function ItemSystemSection() {
 
       await fetchUserData();
     } catch (err) {
-      setMessage({ type: 'error', text: `아이템 조작 실패: ${err instanceof Error ? err.message : '알 수 없는 오류'}` });
+      setMessage({
+        type: 'error',
+        text: `아이템 조작 실패: ${err instanceof Error ? err.message : '알 수 없는 오류'}`,
+      });
     } finally {
       setIsUpdating(false);
     }
@@ -150,23 +157,26 @@ export function ItemSystemSection() {
       setIsUpdating(true);
       setMessage(null);
 
-      const { data: { user } } = await supabase.auth.getSession();
-      if (!user) {
+      const {
+        data: { session },
+      } = await supabase.auth.getSession();
+      if (!session?.user) {
         setMessage({ type: 'error', text: '로그인이 필요합니다.' });
         return;
       }
+      const user = session.user;
 
-      const { error } = await supabase
-        .from('inventory')
-        .delete()
-        .eq('user_id', user.id);
+      const { error } = await supabase.from('inventory').delete().eq('user_id', user.id);
 
       if (error) throw error;
 
       setMessage({ type: 'success', text: '인벤토리가 초기화되었습니다.' });
       await fetchUserData();
     } catch (err) {
-      setMessage({ type: 'error', text: `인벤토리 초기화 실패: ${err instanceof Error ? err.message : '알 수 없는 오류'}` });
+      setMessage({
+        type: 'error',
+        text: `인벤토리 초기화 실패: ${err instanceof Error ? err.message : '알 수 없는 오류'}`,
+      });
     } finally {
       setIsUpdating(false);
     }
@@ -175,7 +185,7 @@ export function ItemSystemSection() {
   const handleUseItem = async (itemId: number) => {
     if (usingItemId === itemId || isUpdating) return;
 
-    const currentItem = inventory.find(item => item.id === itemId);
+    const currentItem = inventory.find((item) => item.id === itemId);
     if (!currentItem || currentItem.quantity <= 0) {
       setMessage({ type: 'error', text: '사용할 수 있는 아이템이 없습니다.' });
       return;
@@ -186,15 +196,21 @@ export function ItemSystemSection() {
       setMessage(null);
 
       const result = await consumeItem(itemId);
-      
+
       if (result.success) {
         setMessage({ type: 'success', text: `${currentItem.name} 아이템을 사용했습니다.` });
         await fetchUserData();
       } else {
-        setMessage({ type: 'error', text: `아이템 사용 실패: ${result.message || '알 수 없는 오류'}` });
+        setMessage({
+          type: 'error',
+          text: `아이템 사용 실패: ${result.message || '알 수 없는 오류'}`,
+        });
       }
     } catch (err) {
-      setMessage({ type: 'error', text: `아이템 사용 실패: ${err instanceof Error ? err.message : '알 수 없는 오류'}` });
+      setMessage({
+        type: 'error',
+        text: `아이템 사용 실패: ${err instanceof Error ? err.message : '알 수 없는 오류'}`,
+      });
     } finally {
       setUsingItemId(null);
     }
@@ -224,7 +240,7 @@ export function ItemSystemSection() {
 
       <div className="debug-item-list">
         {itemDefinitions.map((item) => {
-          const currentItem = inventory.find(inv => inv.id === item.id);
+          const currentItem = inventory.find((inv) => inv.id === item.id);
           const currentQuantity = currentItem?.quantity || 0;
           const inputValue = itemQuantities[item.id] ?? currentQuantity.toString();
 
@@ -283,11 +299,8 @@ export function ItemSystemSection() {
       </div>
 
       {message && (
-        <div className={`debug-message debug-message-${message.type}`}>
-          {message.text}
-        </div>
+        <div className={`debug-message debug-message-${message.type}`}>{message.text}</div>
       )}
     </div>
   );
 }
-

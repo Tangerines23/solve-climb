@@ -359,7 +359,6 @@
 }
 
 @keyframes floating {
-
   0%,
   100% {
     transform: translateY(0px);
@@ -429,7 +428,6 @@
   border-bottom: 1px solid rgba(255, 255, 255, 0.05);
   animation: fadeInUp 0.5s ease-out both;
 }
-
 
 .stat-item:last-child {
   border-bottom: none;

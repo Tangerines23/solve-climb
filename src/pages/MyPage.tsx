@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { Header } from '../components/Header';
 import { FooterNav } from '../components/FooterNav';
@@ -29,27 +29,25 @@ export function MyPage() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   // Zustand Selector 패턴 적용
-  const profile = useProfileStore((state) => state.profile);
   const isProfileComplete = useProfileStore((state) => state.isProfileComplete);
   const clearProfile = useProfileStore((state) => state.clearProfile);
   const setProfile = useProfileStore((state) => state.setProfile);
-  const setIsAdmin = useProfileStore((state) => state.setIsAdmin);
   const hapticEnabled = useSettingsStore((state) => state.hapticEnabled);
   const setHapticEnabled = useSettingsStore((state) => state.setHapticEnabled);
-  const keyboardType = useSettingsStore((state) => state.keyboardType);
-  const setKeyboardType = useSettingsStore((state) => state.setKeyboardType);
   const { stats, session, loading: statsLoading, error: statsError, refetch } = useMyPageStats();
 
   // URL 파라미터에서 showProfileForm 확인
   const shouldShowProfileForm = searchParams.get('showProfileForm') === 'true';
-  const [showProfileForm, setShowProfileForm] = useState(!isProfileComplete || shouldShowProfileForm);
+  const [showProfileForm, setShowProfileForm] = useState(
+    !isProfileComplete || shouldShowProfileForm
+  );
   const [showDataResetConfirm, setShowDataResetConfirm] = useState(false);
   const [showToast, setShowToast] = useState(false);
   const [toastMessage, setToastMessage] = useState('');
   const [showAlert, setShowAlert] = useState(false);
   const [alertMessage, setAlertMessage] = useState('');
   const [isResetting, setIsResetting] = useState(false);
-  const [loginError, setLoginError] = useState(false);
+  const [_loginError, setLoginError] = useState(false);
   const [isOpeningLeaderboard, setIsOpeningLeaderboard] = useState(false);
   const [retryCount, setRetryCount] = useState(0);
   const [showPromotionModal, setShowPromotionModal] = useState(false);
@@ -105,12 +103,6 @@ export function MyPage() {
     setShowToast(true);
   };
 
-  const handleKeyboardTypeChange = (type: 'custom' | 'qwerty') => {
-    setKeyboardType(type);
-    setToastMessage(type === 'custom' ? '커스텀 키패드로 변경되었습니다' : '쿼티 키보드로 변경되었습니다');
-    setShowToast(true);
-  };
-
   const handleDataReset = () => {
     setShowDataResetConfirm(true);
   };
@@ -143,14 +135,14 @@ export function MyPage() {
     window.location.href = `mailto:support@solveclimb.com?subject=${subject}&body=${body}`;
   };
 
-
   // 게임 로그인 마이그레이션 및 로그인 함수
   const handleLogin = async () => {
     try {
       setLoginError(false);
 
       // 로컬 개발 환경 또는 Vercel(심사) 환경 확인
-      const isLocalDev = window.location.hostname === 'localhost' ||
+      const isLocalDev =
+        window.location.hostname === 'localhost' ||
         window.location.hostname === '127.0.0.1' ||
         window.location.hostname.includes('192.168.');
       const isReviewMode = isLocalDev || ENV.IS_VERCEL;
@@ -169,10 +161,7 @@ export function MyPage() {
         try {
           // 인가 코드로 AccessToken 받기 및 Supabase 사용자 생성/로그인 시도
           // 실제 토스 API는 실패하지만, Edge Function 호출 플로우는 확인 가능
-          const { user, session } = await handleTossLoginFlow(
-            devAuthorizationCode,
-            'DEV_MODE'
-          );
+          const { user, session } = await handleTossLoginFlow(devAuthorizationCode, 'DEV_MODE');
 
           if (!user || !session) {
             throw new Error('로그인 세션을 생성할 수 없습니다.');
@@ -181,7 +170,10 @@ export function MyPage() {
           // 프로필 설정
           const userProfile = {
             profileId: user.id,
-            nickname: user.user_metadata?.tossName || user.user_metadata?.tossUserKey?.toString() || '게이머',
+            nickname:
+              user.user_metadata?.tossName ||
+              user.user_metadata?.tossUserKey?.toString() ||
+              '게이머',
             userId: user.id,
             email: user.email,
             createdAt: user.created_at || new Date().toISOString(),
@@ -190,7 +182,9 @@ export function MyPage() {
 
           setProfile(userProfile);
           await refetch();
-          setToastMessage('개발 모드: 로그인 플로우 테스트 완료 (실제 토스 API는 실패했을 수 있음)');
+          setToastMessage(
+            '개발 모드: 로그인 플로우 테스트 완료 (실제 토스 API는 실패했을 수 있음)'
+          );
           setShowToast(true);
           setLoginError(false);
           return;
@@ -199,7 +193,10 @@ export function MyPage() {
 
           // 개발 모드에서 예상된 에러인 경우 사용자에게 안내
           const errorMessage = devError instanceof Error ? devError.message : String(devError);
-          if (errorMessage.includes('개발 모드') || errorMessage.includes('유효하지 않은 authorization code')) {
+          if (
+            errorMessage.includes('개발 모드') ||
+            errorMessage.includes('유효하지 않은 authorization code')
+          ) {
             setToastMessage(errorMessage);
             setShowToast(true);
             setLoginError(false); // 에러가 아닌 안내 메시지
@@ -217,7 +214,10 @@ export function MyPage() {
 
       if (!migrationResult.success) {
         // 게임 로그인 마이그레이션 실패 시 기존 토스 로그인으로 폴백
-        console.warn('[로그인] 게임 로그인 마이그레이션 실패, 기존 토스 로그인으로 폴백:', migrationResult.error);
+        console.warn(
+          '[로그인] 게임 로그인 마이그레이션 실패, 기존 토스 로그인으로 폴백:',
+          migrationResult.error
+        );
 
         // 기존 토스 로그인 플로우 실행
         console.log('[로그인] 기존 토스 로그인 플로우 시작');
@@ -228,7 +228,8 @@ export function MyPage() {
           let errorMessage = loginResult.error || migrationResult.error || '로그인에 실패했습니다.';
 
           if (isLocalDev && errorMessage.includes('토스 앱에서만')) {
-            errorMessage = '로컬 개발 환경에서는 토스 앱이 필요합니다.\n\n' +
+            errorMessage =
+              '로컬 개발 환경에서는 토스 앱이 필요합니다.\n\n' +
               '개발 모드로 테스트하려면:\n' +
               '1. 브라우저 콘솔에서 window.testTossOAuth() 실행\n' +
               '2. 또는 실제 토스 앱에서 테스트\n' +
@@ -261,7 +262,8 @@ export function MyPage() {
         // 프로필 설정
         const userProfile = {
           profileId: user.id,
-          nickname: user.user_metadata?.tossName || user.user_metadata?.tossUserKey?.toString() || '게이머',
+          nickname:
+            user.user_metadata?.tossName || user.user_metadata?.tossUserKey?.toString() || '게이머',
           userId: user.id,
           email: user.email,
           createdAt: user.created_at || new Date().toISOString(),
@@ -286,7 +288,10 @@ export function MyPage() {
 
       // 2. 게임 로그인 마이그레이션 성공
       // hash는 발급되었지만, Supabase 사용자는 토스 로그인을 통해 생성해야 함
-      console.log('[로그인] 게임 로그인 마이그레이션 성공, hash:', migrationResult.hash?.substring(0, 10) + '...');
+      console.log(
+        '[로그인] 게임 로그인 마이그레이션 성공, hash:',
+        migrationResult.hash?.substring(0, 10) + '...'
+      );
 
       // 토스 로그인 연동 여부 확인 (상단에서 이미 import됨)
       const integrationStatus = await checkTossLoginIntegration();
@@ -330,7 +335,8 @@ export function MyPage() {
         // 프로필 설정 (게임 로그인 hash 포함)
         const userProfile = {
           profileId: user.id,
-          nickname: user.user_metadata?.tossName || user.user_metadata?.tossUserKey?.toString() || '게이머',
+          nickname:
+            user.user_metadata?.tossName || user.user_metadata?.tossUserKey?.toString() || '게이머',
           userId: user.id,
           email: user.email,
           createdAt: user.created_at || new Date().toISOString(),
@@ -371,7 +377,8 @@ export function MyPage() {
       }
     } catch (error) {
       console.error('Login error:', error);
-      const errorMessage = error instanceof Error ? error.message : '로그인 중 오류가 발생했습니다.';
+      const errorMessage =
+        error instanceof Error ? error.message : '로그인 중 오류가 발생했습니다.';
       setToastMessage(errorMessage);
       setShowToast(true);
       setLoginError(true);
@@ -428,12 +435,15 @@ export function MyPage() {
 
       // 로컬 세션 저장
       try {
-        localStorage.setItem('solve-climb-local-session', JSON.stringify({
-          userId: userProfile.profileId,
-          isAdmin: false,
-          loginTime: new Date().toISOString(),
-          loginType: 'anonymous',
-        }));
+        localStorage.setItem(
+          'solve-climb-local-session',
+          JSON.stringify({
+            userId: userProfile.profileId,
+            isAdmin: false,
+            loginTime: new Date().toISOString(),
+            loginType: 'anonymous',
+          })
+        );
       } catch (e) {
         console.warn('Failed to save local session:', e);
       }
@@ -450,14 +460,15 @@ export function MyPage() {
     }
   };
 
-
   // 로그아웃 함수
   const handleLogout = async () => {
     try {
       console.log('[로그아웃] 시작');
 
       // Supabase 세션이 있으면 로그아웃
-      const { data: { session: currentSession } } = await supabase.auth.getSession();
+      const {
+        data: { session: currentSession },
+      } = await supabase.auth.getSession();
       console.log('[로그아웃] 현재 세션 확인:', { hasSession: !!currentSession });
 
       if (currentSession) {
@@ -505,36 +516,36 @@ export function MyPage() {
             <div className="my-page-guest-view">
               <div className="my-page-guest-icon">🔒</div>
               {ENV.IS_VERCEL && (
-                <div style={{
-                  backgroundColor: 'rgba(0, 106, 255, 0.05)',
-                  padding: '12px 16px',
-                  borderRadius: '12px',
-                  marginBottom: '20px',
-                  fontSize: '14px',
-                  color: '#0066ff',
-                  textAlign: 'center',
-                  fontWeight: '500',
-                  border: '1px solid rgba(0, 106, 255, 0.1)'
-                }}>
-                  심사위원님 환영합니다! 🧗<br />
-                  <span style={{ fontSize: '12px', opacity: 0.8 }}>Vercel 환경에서는 가상 프로필로 모든 기능을 체험해보실 수 있습니다.</span>
+                <div
+                  style={{
+                    backgroundColor: 'rgba(0, 106, 255, 0.05)',
+                    padding: '12px 16px',
+                    borderRadius: '12px',
+                    marginBottom: '20px',
+                    fontSize: '14px',
+                    color: '#0066ff',
+                    textAlign: 'center',
+                    fontWeight: '500',
+                    border: '1px solid rgba(0, 106, 255, 0.1)',
+                  }}
+                >
+                  심사위원님 환영합니다! 🧗
+                  <br />
+                  <span style={{ fontSize: '12px', opacity: 0.8 }}>
+                    Vercel 환경에서는 가상 프로필로 모든 기능을 체험해보실 수 있습니다.
+                  </span>
                 </div>
               )}
               <h1 className="my-page-guest-title">
-                로그인하고<br />
+                로그인하고
+                <br />
                 <strong className="my-page-guest-highlight">내 기록을 평생 간직하세요.</strong>
               </h1>
               <div className="my-page-guest-buttons">
-                <button
-                  className="my-page-guest-login-button"
-                  onClick={handleLogin}
-                >
+                <button className="my-page-guest-login-button" onClick={handleLogin}>
                   {ENV.IS_VERCEL ? '체험 시작하기' : '3초 만에 시작하기'}
                 </button>
-                <button
-                  className="my-page-guest-anonymous-link"
-                  onClick={handleAnonymousLogin}
-                >
+                <button className="my-page-guest-anonymous-link" onClick={handleAnonymousLogin}>
                   익명 로그인하기
                 </button>
               </div>
@@ -588,7 +599,8 @@ export function MyPage() {
           <div className="my-page-header">
             <div className="my-page-profile-icon">🧗</div>
             <h1 className="my-page-header-title">
-              지금까지<br />
+              지금까지
+              <br />
               <strong className="my-page-header-highlight">
                 {statsLoading ? '...' : (stats?.totalHeight || 0).toLocaleString()}m
               </strong>
@@ -597,12 +609,14 @@ export function MyPage() {
             {/* 티어 뱃지 표시 */}
             {stats && stats.totalMasteryScore > 0 && (
               <div className="my-page-tier-section">
-                <TierBadge 
+                <TierBadge
                   totalScore={stats.totalMasteryScore}
                   size="large"
                   showLabel={true}
                   showStars={true}
-                  currentTierLevel={stats.currentTierLevel ?? undefined}
+                  currentTierLevel={
+                    (stats.currentTierLevel ?? undefined) as 0 | 1 | 2 | 3 | 4 | 5 | 6 | undefined
+                  }
                 />
                 <TierProgressBar totalScore={stats.totalMasteryScore} size="medium" />
               </div>
@@ -635,7 +649,11 @@ export function MyPage() {
             >
               <div className="my-page-stat-label">내 랭킹</div>
               <div className="my-page-stat-value">
-                {isOpeningLeaderboard ? (retryCount > 0 ? `재시도 중... (${retryCount}/${2})` : '열기 중...') : '명예의 전당 🏆'}
+                {isOpeningLeaderboard
+                  ? retryCount > 0
+                    ? `재시도 중... (${retryCount}/${2})`
+                    : '열기 중...'
+                  : '명예의 전당 🏆'}
               </div>
             </div>
           </div>
@@ -675,17 +693,15 @@ export function MyPage() {
                     <span className="my-page-settings-item-label">진동</span>
                   </div>
                   <label className="my-page-settings-toggle">
-                    <input
-                      type="checkbox"
-                      checked={hapticEnabled}
-                      onChange={handleToggleHaptic}
-                    />
+                    <input type="checkbox" checked={hapticEnabled} onChange={handleToggleHaptic} />
                     <span className="my-page-settings-toggle-slider"></span>
                   </label>
                 </div>
                 <button
                   className="my-page-settings-item my-page-settings-item-button"
-                  onClick={() => navigate('/quiz?category=math&sub=arithmetic&level=1&preview=true')}
+                  onClick={() =>
+                    navigate('/quiz?category=math&sub=arithmetic&level=1&preview=true')
+                  }
                 >
                   <div className="my-page-settings-item-content">
                     <span className="my-page-settings-item-label">키보드</span>
@@ -813,7 +829,9 @@ export function MyPage() {
                   onClick={handleLogout}
                 >
                   <div className="my-page-settings-item-content">
-                    <span className="my-page-settings-item-label my-page-settings-item-logout-label">로그아웃</span>
+                    <span className="my-page-settings-item-label my-page-settings-item-logout-label">
+                      로그아웃
+                    </span>
                   </div>
                 </button>
               </div>
@@ -821,9 +839,7 @@ export function MyPage() {
           </div>
 
           {/* 뱃지 컬렉션 */}
-          {currentUserId && (
-            <BadgeCollection userId={currentUserId} />
-          )}
+          {currentUserId && <BadgeCollection userId={currentUserId} />}
 
           {/* 에러 메시지 (있는 경우) */}
           {statsError && (

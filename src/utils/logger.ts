@@ -34,7 +34,7 @@ const LOG_STYLES = {
 /**
  * 로그 포맷터
  */
-function formatMessage(context: string, message: string, ...args: unknown[]): string {
+function formatMessage(context: string, message: string, ..._args: unknown[]): string {
   const timestamp = new Date().toISOString();
   return `[${timestamp}] [${context}] ${message}`;
 }
@@ -42,12 +42,7 @@ function formatMessage(context: string, message: string, ...args: unknown[]): st
 /**
  * 로그 출력 함수
  */
-function log(
-  level: LogLevel,
-  context: string,
-  message: string,
-  ...args: unknown[]
-): void {
+function log(level: LogLevel, context: string, message: string, ...args: unknown[]): void {
   // 프로덕션에서는 ERROR 레벨만 로깅
   if (isProduction && level < LogLevel.ERROR) {
     return;
@@ -162,5 +157,3 @@ export function getLogLevel(): LogLevel {
 export function isLoggingEnabled(): boolean {
   return isDevelopment || LOG_LEVEL <= LogLevel.ERROR;
 }
-
-

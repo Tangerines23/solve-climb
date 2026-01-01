@@ -1,8 +1,7 @@
-import React, { useRef, useState } from 'react';
+import { useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { APP_CONFIG } from '../config/app';
 import { useFavoriteStore } from '../stores/useFavoriteStore';
-import { useLevelProgressStore } from '../stores/useLevelProgressStore';
 import { calculateCategoryAltitude } from '../utils/scoreCalculator';
 import { UnknownMountainCard } from './UnknownMountainCard';
 import { Toast } from './Toast';
@@ -13,7 +12,6 @@ const LONG_PRESS_DURATION = 500; // 0.5초
 export function CategoryList() {
   const navigate = useNavigate();
   // Zustand Selector 패턴 적용
-  const favorites = useFavoriteStore((state) => state.favorites);
   const addFavorite = useFavoriteStore((state) => state.addFavorite);
   const isFavorite = useFavoriteStore((state) => state.isFavorite);
   const [showFavoriteToast, setShowFavoriteToast] = useState<string | null>(null);
@@ -32,7 +30,7 @@ export function CategoryList() {
   const handleLongPress = (categoryId: string, categoryName: string) => {
     const favoriteId = `${categoryId}_category`;
     const isFav = isFavorite(categoryId);
-    
+
     addFavorite({
       id: favoriteId,
       type: 'category',
@@ -41,13 +39,13 @@ export function CategoryList() {
     });
 
     const newMessage = isFav ? `${categoryName} 즐겨찾기 해제` : `${categoryName} 즐겨찾기 추가`;
-    
+
     // 기존 타이머 정리
     if (favoriteToastTimerRef.current) {
       clearTimeout(favoriteToastTimerRef.current);
       favoriteToastTimerRef.current = null;
     }
-    
+
     // 현재 토스트가 표시 중이면 즉시 닫고 새 메시지 표시
     if (showFavoriteToast) {
       setIsFavoriteToastClosing(true);
@@ -110,10 +108,9 @@ export function CategoryList() {
     }
   };
 
-
   // 수학의 산과 언어의 산만 필터링
   const mainCategories = APP_CONFIG.CATEGORIES.filter(
-    category => category.id === 'math' || category.id === 'language'
+    (category) => category.id === 'math' || category.id === 'language'
   );
 
   // 즐겨찾기된 카테고리를 먼저 표시
@@ -145,8 +142,10 @@ export function CategoryList() {
             >
               <div className="category-item-content">
                 {isFav && <span className="favorite-star">⭐</span>}
-                <span className={`category-icon ${category.id === 'logic' || category.id === 'general' ? 'unknown-mountain' : ''}`}>
-                  {category.id === 'logic' || category.id === 'general' ? (
+                <span
+                  className={`category-icon ${(category.id as string) === 'logic' || (category.id as string) === 'general' ? 'unknown-mountain' : ''}`}
+                >
+                  {(category.id as string) === 'logic' || (category.id as string) === 'general' ? (
                     <span className="unknown-mountain-icon">
                       <span className="mountain-silhouette">⛰️</span>
                       <span className="question-overlay">?</span>
@@ -188,7 +187,7 @@ export function CategoryList() {
               clearTimeout(explorerToastTimerRef.current);
               explorerToastTimerRef.current = null;
             }
-            
+
             // 현재 토스트가 표시 중이면 즉시 닫고 새 메시지 표시
             // Toast 컴포넌트가 자동으로 처리하므로 null로 설정 후 바로 새 메시지 설정
             if (showExplorerToast) {
@@ -218,4 +217,3 @@ export function CategoryList() {
     </div>
   );
 }
-

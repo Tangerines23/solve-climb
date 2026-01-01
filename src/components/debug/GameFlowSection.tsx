@@ -24,18 +24,18 @@ export const GameFlowSection = React.memo(function GameFlowSection() {
   const [isUpdating, setIsUpdating] = useState(false);
   const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
   const [extendSeconds, setExtendSeconds] = useState('60');
-  
+
   // 문제 생성 테스트 상태
   const [selectedCategory, setSelectedCategory] = useState<Category>('수학');
   const [selectedTopic, setSelectedTopic] = useState<Topic>('덧셈');
   const [selectedDifficulty, setSelectedDifficulty] = useState<Difficulty>('easy');
   const [generatedQuestion, setGeneratedQuestion] = useState<QuizQuestion | null>(null);
-  
+
   // 게임 모드 전환 상태
   const [selectedGameMode, setSelectedGameMode] = useState<GameMode>('time-attack');
   const setGameMode = useQuizStore((state) => state.setGameMode);
 
-  const selectedSession = sessions.find(s => s.id === selectedSessionId) || null;
+  const selectedSession = sessions.find((s) => s.id === selectedSessionId) || null;
 
   useEffect(() => {
     loadSessions();
@@ -45,16 +45,21 @@ export const GameFlowSection = React.memo(function GameFlowSection() {
     try {
       setIsLoading(true);
 
-      const { data: { user } } = await supabase.auth.getSession();
-      if (!user) {
+      const {
+        data: { session },
+      } = await supabase.auth.getSession();
+      if (!session?.user) {
         setMessage({ type: 'error', text: '로그인이 필요합니다.' });
         return;
       }
+      const user = session.user;
 
       // 최근 10개 세션 조회 (status 무관)
       const { data, error } = await supabase
         .from('game_sessions')
-        .select('id, status, expires_at, created_at, game_mode, category, subject, level, is_debug_session')
+        .select(
+          'id, status, expires_at, created_at, game_mode, category, subject, level, is_debug_session'
+        )
         .eq('user_id', user.id)
         .order('created_at', { ascending: false })
         .limit(10);
@@ -62,16 +67,19 @@ export const GameFlowSection = React.memo(function GameFlowSection() {
       if (error) throw error;
 
       setSessions(data || []);
-      
+
       // 현재 플레이 중인 세션이 있으면 자동 선택
-      const playingSession = data?.find(s => s.status === 'playing');
+      const playingSession = data?.find((s) => s.status === 'playing');
       if (playingSession) {
         setSelectedSessionId(playingSession.id);
       } else if (data && data.length > 0) {
         setSelectedSessionId(data[0].id);
       }
     } catch (err) {
-      setMessage({ type: 'error', text: `세션 로드 실패: ${err instanceof Error ? err.message : '알 수 없는 오류'}` });
+      setMessage({
+        type: 'error',
+        text: `세션 로드 실패: ${err instanceof Error ? err.message : '알 수 없는 오류'}`,
+      });
     } finally {
       setIsLoading(false);
     }
@@ -85,11 +93,14 @@ export const GameFlowSection = React.memo(function GameFlowSection() {
       setIsUpdating(true);
       setMessage(null);
 
-      const { data: { user } } = await supabase.auth.getSession();
-      if (!user) {
+      const {
+        data: { session },
+      } = await supabase.auth.getSession();
+      if (!session?.user) {
         setMessage({ type: 'error', text: '로그인이 필요합니다.' });
         return;
       }
+      const user = session.user;
 
       const { error } = await supabase
         .from('game_sessions')
@@ -102,7 +113,10 @@ export const GameFlowSection = React.memo(function GameFlowSection() {
       setMessage({ type: 'success', text: '게임이 종료되었습니다.' });
       await loadSessions();
     } catch (err) {
-      setMessage({ type: 'error', text: `게임 종료 실패: ${err instanceof Error ? err.message : '알 수 없는 오류'}` });
+      setMessage({
+        type: 'error',
+        text: `게임 종료 실패: ${err instanceof Error ? err.message : '알 수 없는 오류'}`,
+      });
     } finally {
       setIsUpdating(false);
     }
@@ -116,11 +130,14 @@ export const GameFlowSection = React.memo(function GameFlowSection() {
       setIsUpdating(true);
       setMessage(null);
 
-      const { data: { user } } = await supabase.auth.getSession();
-      if (!user) {
+      const {
+        data: { session },
+      } = await supabase.auth.getSession();
+      if (!session?.user) {
         setMessage({ type: 'error', text: '로그인이 필요합니다.' });
         return;
       }
+      const user = session.user;
 
       const { error } = await supabase
         .from('game_sessions')
@@ -133,7 +150,10 @@ export const GameFlowSection = React.memo(function GameFlowSection() {
       setMessage({ type: 'success', text: '세션이 만료 처리되었습니다.' });
       await loadSessions();
     } catch (err) {
-      setMessage({ type: 'error', text: `세션 만료 실패: ${err instanceof Error ? err.message : '알 수 없는 오류'}` });
+      setMessage({
+        type: 'error',
+        text: `세션 만료 실패: ${err instanceof Error ? err.message : '알 수 없는 오류'}`,
+      });
     } finally {
       setIsUpdating(false);
     }
@@ -152,11 +172,14 @@ export const GameFlowSection = React.memo(function GameFlowSection() {
       setIsUpdating(true);
       setMessage(null);
 
-      const { data: { user } } = await supabase.auth.getSession();
-      if (!user) {
+      const {
+        data: { session },
+      } = await supabase.auth.getSession();
+      if (!session?.user) {
         setMessage({ type: 'error', text: '로그인이 필요합니다.' });
         return;
       }
+      const user = session.user;
 
       const currentExpiresAt = new Date(selectedSession.expires_at);
       const newExpiresAt = new Date(currentExpiresAt.getTime() + seconds * 1000);
@@ -172,7 +195,10 @@ export const GameFlowSection = React.memo(function GameFlowSection() {
       setMessage({ type: 'success', text: `세션 시간이 ${seconds}초 연장되었습니다.` });
       await loadSessions();
     } catch (err) {
-      setMessage({ type: 'error', text: `시간 연장 실패: ${err instanceof Error ? err.message : '알 수 없는 오류'}` });
+      setMessage({
+        type: 'error',
+        text: `시간 연장 실패: ${err instanceof Error ? err.message : '알 수 없는 오류'}`,
+      });
     } finally {
       setIsUpdating(false);
     }
@@ -184,7 +210,20 @@ export const GameFlowSection = React.memo(function GameFlowSection() {
       case '수학':
         return ['덧셈', '뺄셈', '곱셈', '나눗셈'];
       case '언어':
-        return ['한글-글자', '한글-문자', '한글-문장', '일본어-글자', '일본어-문자', '일본어-문장', '영어-글자', '영어-문자', '영어-문장', '맞춤법', '어휘', '속담'];
+        return [
+          '한글-글자',
+          '한글-문자',
+          '한글-문장',
+          '일본어-글자',
+          '일본어-문자',
+          '일본어-문장',
+          '영어-글자',
+          '영어-문자',
+          '영어-문장',
+          '맞춤법',
+          '어휘',
+          '속담',
+        ];
       case '논리':
         return ['수열', '패턴', '추론'];
       case '상식':
@@ -200,7 +239,10 @@ export const GameFlowSection = React.memo(function GameFlowSection() {
       setGeneratedQuestion(question);
       setMessage({ type: 'success', text: '문제가 생성되었습니다.' });
     } catch (err) {
-      setMessage({ type: 'error', text: `문제 생성 실패: ${err instanceof Error ? err.message : '알 수 없는 오류'}` });
+      setMessage({
+        type: 'error',
+        text: `문제 생성 실패: ${err instanceof Error ? err.message : '알 수 없는 오류'}`,
+      });
       setGeneratedQuestion(null);
     }
   };
@@ -216,9 +258,15 @@ export const GameFlowSection = React.memo(function GameFlowSection() {
   const handleGameModeChange = () => {
     try {
       setGameMode(selectedGameMode);
-      setMessage({ type: 'success', text: `게임 모드가 ${selectedGameMode === 'time-attack' ? '타임어택' : '서바이벌'}으로 변경되었습니다.` });
+      setMessage({
+        type: 'success',
+        text: `게임 모드가 ${selectedGameMode === 'time-attack' ? '타임어택' : '서바이벌'}으로 변경되었습니다.`,
+      });
     } catch (err) {
-      setMessage({ type: 'error', text: `게임 모드 변경 실패: ${err instanceof Error ? err.message : '알 수 없는 오류'}` });
+      setMessage({
+        type: 'error',
+        text: `게임 모드 변경 실패: ${err instanceof Error ? err.message : '알 수 없는 오류'}`,
+      });
     }
   };
 
@@ -234,9 +282,7 @@ export const GameFlowSection = React.memo(function GameFlowSection() {
     return (
       <div className="debug-section">
         <h3 className="debug-section-title">🎮 게임 플로우</h3>
-        <div className="debug-empty-state">
-          게임 세션이 없습니다.
-        </div>
+        <div className="debug-empty-state">게임 세션이 없습니다.</div>
       </div>
     );
   }
@@ -255,7 +301,8 @@ export const GameFlowSection = React.memo(function GameFlowSection() {
         >
           {sessions.map((session) => (
             <option key={session.id} value={session.id}>
-              {new Date(session.created_at).toLocaleString('ko-KR')} - {session.status} {session.is_debug_session ? '[디버그]' : ''}
+              {new Date(session.created_at).toLocaleString('ko-KR')} - {session.status}{' '}
+              {session.is_debug_session ? '[디버그]' : ''}
             </option>
           ))}
         </select>
@@ -265,9 +312,7 @@ export const GameFlowSection = React.memo(function GameFlowSection() {
         <>
           <div className="debug-session-info">
             {selectedSession.is_debug_session && (
-              <div className="debug-session-badge">
-                🐛 디버그 세션
-              </div>
+              <div className="debug-session-badge">🐛 디버그 세션</div>
             )}
             <div className="debug-session-item">
               <span className="debug-session-label">세션 ID:</span>
@@ -456,11 +501,8 @@ export const GameFlowSection = React.memo(function GameFlowSection() {
       </div>
 
       {message && (
-        <div className={`debug-message debug-message-${message.type}`}>
-          {message.text}
-        </div>
+        <div className={`debug-message debug-message-${message.type}`}>{message.text}</div>
       )}
     </div>
   );
 });
-

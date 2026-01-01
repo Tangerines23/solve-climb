@@ -1,4 +1,3 @@
-import React from 'react';
 import { TimeLimit } from '../stores/useQuizStore';
 import './TimeSelector.css';
 
@@ -18,11 +17,7 @@ export function TimeSelector({ onSelect }: TimeSelectorProps) {
       <h1 className="selector-title">시간을 선택하세요</h1>
       <div className="time-options">
         {TIME_OPTIONS.map((option) => (
-          <div
-            key={option.time}
-            className="time-card"
-            onClick={() => onSelect(option.time)}
-          >
+          <div key={option.time} className="time-card" onClick={() => onSelect(option.time)}>
             <h2>{option.label}</h2>
             <p>{option.time}초</p>
           </div>
@@ -31,4 +26,3 @@ export function TimeSelector({ onSelect }: TimeSelectorProps) {
     </div>
   );
 }
-

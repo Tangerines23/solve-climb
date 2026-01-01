@@ -8,7 +8,12 @@ interface TimerCircleProps {
   enableFastForward?: boolean;
 }
 
-function TimerCircleComponent({ duration, onComplete, isPaused = false, enableFastForward = false }: TimerCircleProps) {
+function TimerCircleComponent({
+  duration,
+  onComplete,
+  isPaused = false,
+  enableFastForward = false,
+}: TimerCircleProps) {
   const [timeLeft, setTimeLeft] = useState(duration);
   const [isFastForward, setIsFastForward] = useState(false);
   const pressTimerRef = useRef<NodeJS.Timeout | null>(null);
@@ -59,7 +64,7 @@ function TimerCircleComponent({ duration, onComplete, isPaused = false, enableFa
 
     const interval = isFastForward ? 100 : 1000;
     intervalRef.current = setInterval(() => {
-      setTimeLeft(prev => {
+      setTimeLeft((prev) => {
         const newTime = prev - 1;
         if (newTime <= 0) {
           if (intervalRef.current) {
@@ -91,7 +96,7 @@ function TimerCircleComponent({ duration, onComplete, isPaused = false, enableFa
   }, []);
 
   // 스타일 계산 메모이제이션
-  const { percentage, angle, circleStyle, timeLabel } = useMemo(() => {
+  const { circleStyle, timeLabel } = useMemo(() => {
     const pct = timeLeft / duration;
     const ang = 360 * pct;
     return {
@@ -103,7 +108,7 @@ function TimerCircleComponent({ duration, onComplete, isPaused = false, enableFa
         width: '28px',
         height: '28px',
       },
-      timeLabel: `${Math.floor(timeLeft / 60)}:${(timeLeft % 60).toString().padStart(2, '0')}`
+      timeLabel: `${Math.floor(timeLeft / 60)}:${(timeLeft % 60).toString().padStart(2, '0')}`,
     };
   }, [timeLeft, duration]);
 
@@ -115,7 +120,7 @@ function TimerCircleComponent({ duration, onComplete, isPaused = false, enableFa
       onMouseLeave: handleMouseUp,
       onTouchStart: handleMouseDown,
       onTouchEnd: handleMouseUp,
-      style: { cursor: 'pointer' as const }
+      style: { cursor: 'pointer' as const },
     };
   }, [enableFastForward, handleMouseDown, handleMouseUp]);
 

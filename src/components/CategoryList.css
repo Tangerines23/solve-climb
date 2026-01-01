@@ -24,7 +24,9 @@
   justify-content: space-between;
   align-items: center;
   border: 1px solid var(--color-bg-secondary);
-  transition: transform 0.2s, border-color 0.2s;
+  transition:
+    transform 0.2s,
+    border-color 0.2s;
 }
 
 .category-item-card:hover {
@@ -199,4 +201,3 @@
     transform: translateX(-50%) translateY(var(--spacing-xl));
   }
 }
-

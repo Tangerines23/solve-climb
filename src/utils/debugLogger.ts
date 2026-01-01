@@ -44,10 +44,3 @@ export function sendDebugLog(
     // 실패해도 무시
   });
 }
-
-
-
-
-
-
-

@@ -39,7 +39,9 @@ function createVirtualSession(userId: string, isAdmin: boolean = false): Session
     },
     access_token: 'local',
     refresh_token: 'local',
-  } as Session;
+    expires_in: 3600,
+    token_type: 'bearer',
+  } as unknown as Session;
 }
 
 /**
@@ -58,7 +60,7 @@ export function useSession(): UseSessionResult {
       if (localSession) {
         return createVirtualSession(localSession.userId, localSession.isAdmin);
       }
-    } catch (e) {
+    } catch {
       // 로컬 세션 파싱 실패 시 무시
     }
     return null;
@@ -80,7 +82,7 @@ export function useSession(): UseSessionResult {
     try {
       const supabaseSession = await authApi.getSession();
       setSession(supabaseSession);
-    } catch (error) {
+    } catch {
       setSession(null);
     } finally {
       setIsLoading(false);
@@ -118,4 +120,3 @@ export function useSession(): UseSessionResult {
     isAdmin,
   };
 }
-

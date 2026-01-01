@@ -20,9 +20,7 @@ const QWERTY_LAYOUT = [
 ];
 
 // 숫자 키보드 레이아웃 (쿼티 스타일 - 가로로 배치)
-const NUMBER_LAYOUT = [
-  ['1', '2', '3', '4', '5', '6', '7', '8', '9', '0'],
-];
+const NUMBER_LAYOUT = [['1', '2', '3', '4', '5', '6', '7', '8', '9', '0']];
 
 function QwertyKeypadComponent({
   onKeyPress,
@@ -100,13 +98,6 @@ function QwertyKeypadComponent({
     }
   };
 
-  const handleClear = () => {
-    if (!disabled) {
-      if (navigator.vibrate) navigator.vibrate(15);
-      onClear();
-    }
-  };
-
   const handleBackspace = () => {
     if (!disabled) {
       if (navigator.vibrate) navigator.vibrate(15);
@@ -117,7 +108,11 @@ function QwertyKeypadComponent({
   const layout = mode === 'number' ? NUMBER_LAYOUT : QWERTY_LAYOUT;
 
   return (
-    <div ref={containerRef} className={`qwerty-keypad ${mode === 'number' ? 'qwerty-keypad-number' : ''}`} data-mode={mode}>
+    <div
+      ref={containerRef}
+      className={`qwerty-keypad ${mode === 'number' ? 'qwerty-keypad-number' : ''}`}
+      data-mode={mode}
+    >
       {layout.map((row, rowIndex) => (
         <div key={rowIndex} className="qwerty-keypad-row">
           {row.map((key) => (
@@ -176,4 +171,3 @@ function QwertyKeypadComponent({
 
 // React.memo로 메모이제이션
 export const QwertyKeypad = React.memo(QwertyKeypadComponent);
-

@@ -216,7 +216,7 @@
   border-radius: var(--rounded-sm);
 }
 
-.auth-test-checklist-item input[type="checkbox"] {
+.auth-test-checklist-item input[type='checkbox'] {
   width: 18px;
   height: 18px;
   cursor: pointer;
@@ -226,4 +226,3 @@
   font-size: 14px;
   cursor: pointer;
 }
-

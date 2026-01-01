@@ -4,7 +4,9 @@
   padding: var(--spacing-lg);
   border: 1px solid var(--color-bg-secondary);
   cursor: pointer;
-  transition: transform 0.2s, border-color 0.2s;
+  transition:
+    transform 0.2s,
+    border-color 0.2s;
   opacity: 0.7;
 }
 
@@ -51,7 +53,12 @@
   font-weight: 600;
   color: var(--color-text-primary);
   margin: 0;
-  background: linear-gradient(to bottom, var(--color-text-primary) 0%, var(--color-text-primary) 60%, rgba(255, 255, 255, 0.3) 100%);
+  background: linear-gradient(
+    to bottom,
+    var(--color-text-primary) 0%,
+    var(--color-text-primary) 60%,
+    rgba(255, 255, 255, 0.3) 100%
+  );
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
@@ -82,4 +89,3 @@
   border-color: var(--color-gray-600);
   color: var(--color-text-secondary);
 }
-

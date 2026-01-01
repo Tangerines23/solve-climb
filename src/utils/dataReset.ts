@@ -15,12 +15,11 @@ export const resetAllData = async (): Promise<void> => {
   try {
     // 1. Supabase에서 게임 기록 삭제
     try {
-      const { data: { user } } = await supabase.auth.getUser();
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
       if (user) {
-        const { error } = await supabase
-          .from('game_records')
-          .delete()
-          .eq('user_id', user.id);
+        const { error } = await supabase.from('game_records').delete().eq('user_id', user.id);
 
         if (error) {
           logError('데이터 초기화 - Supabase 게임 기록 삭제', error);
@@ -43,10 +42,8 @@ export const resetAllData = async (): Promise<void> => {
     await levelProgressStore.resetProgress();
 
     // 설정 스토어는 초기화하지 않음 (사용자 설정은 유지)
-    
   } catch (error) {
     logError('데이터 초기화', error);
     throw error;
   }
 };
-

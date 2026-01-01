@@ -90,5 +90,3 @@ export type Maybe<T> = T | null | undefined;
 // 함수 타입
 export type AsyncFunction<T = void> = () => Promise<T>;
 export type Callback<T = void> = () => T;
-
-

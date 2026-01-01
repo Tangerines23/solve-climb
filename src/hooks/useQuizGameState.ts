@@ -1,7 +1,6 @@
 // 게임 상태 관리 로직을 관리하는 커스텀 훅
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useCallback } from 'react';
 import { GameMode } from '../types/quiz';
-import { supabase } from '../utils/supabaseClient';
 
 interface UseQuizGameStateParams {
   score: number;
@@ -25,7 +24,9 @@ export function useQuizGameState({
   navigate,
 }: UseQuizGameStateParams) {
   const [totalQuestionsState, setTotalQuestionsState] = useState(0);
-  const [wrongAnswersState, setWrongAnswersState] = useState<Array<{ question: string; wrongAnswer: string; correctAnswer: string }>>([]);
+  const [wrongAnswersState, setWrongAnswersState] = useState<
+    Array<{ question: string; wrongAnswer: string; correctAnswer: string }>
+  >([]);
   const [questionStartTime, setQuestionStartTime] = useState<number | null>(null);
   const [solveTimesState, setSolveTimesState] = useState<number[]>([]);
   const [gameSessionId, setGameSessionId] = useState<string | null>(null);
@@ -52,9 +53,9 @@ export function useQuizGameState({
       });
 
       if (wrongAnswersState.length > 0) {
-        const questions = wrongAnswersState.map(w => w.question).join('|');
-        const wrongAns = wrongAnswersState.map(w => w.wrongAnswer).join('|');
-        const correctAns = wrongAnswersState.map(w => w.correctAnswer).join('|');
+        const questions = wrongAnswersState.map((w) => w.question).join('|');
+        const wrongAns = wrongAnswersState.map((w) => w.wrongAnswer).join('|');
+        const correctAns = wrongAnswersState.map((w) => w.correctAnswer).join('|');
         params.set('wrong_q', questions);
         params.set('wrong_a', wrongAns);
         params.set('correct_a', correctAns);
@@ -70,7 +71,8 @@ export function useQuizGameState({
 
       // 평균 풀이 시간 계산 (초 단위, 소수점 2자리)
       if (solveTimesState.length > 0) {
-        const averageTime = solveTimesState.reduce((sum, time) => sum + time, 0) / solveTimesState.length;
+        const averageTime =
+          solveTimesState.reduce((sum, time) => sum + time, 0) / solveTimesState.length;
         params.set('avg_time', averageTime.toFixed(2));
       }
     }
@@ -87,7 +89,21 @@ export function useQuizGameState({
     }
 
     navigate(`/result?${params.toString()}`);
-  }, [categoryParam, subParam, levelParam, modeParam, score, totalQuestionsState, gameMode, wrongAnswersState, solveTimesState, navigate, gameSessionId, userAnswers, questionIds]);
+  }, [
+    categoryParam,
+    subParam,
+    levelParam,
+    modeParam,
+    score,
+    totalQuestionsState,
+    gameMode,
+    wrongAnswersState,
+    solveTimesState,
+    navigate,
+    gameSessionId,
+    userAnswers,
+    questionIds,
+  ]);
 
   return {
     totalQuestions: totalQuestionsState,
@@ -107,4 +123,3 @@ export function useQuizGameState({
     handleGameOver,
   };
 }
-

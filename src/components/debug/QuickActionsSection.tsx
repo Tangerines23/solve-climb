@@ -3,20 +3,32 @@ import { supabase } from '../../utils/supabaseClient';
 import { useUserStore } from '../../stores/useUserStore';
 import { useDebugStore } from '../../stores/useDebugStore';
 import { useMyPageStats } from '../../hooks/useMyPageStats';
-import { debugPresets, applyPreset, getPresetHistories, clearPresetHistory, getCustomPresets, saveCustomPreset, deleteCustomPreset, exportCustomPresets, importCustomPresets, type PresetHistory, type CustomPreset } from '../../utils/debugPresets';
+import {
+  debugPresets,
+  applyPreset,
+  getPresetHistories,
+  clearPresetHistory,
+  getCustomPresets,
+  saveCustomPreset,
+  deleteCustomPreset,
+  exportCustomPresets,
+  importCustomPresets,
+  type PresetHistory,
+  type CustomPreset,
+} from '../../utils/debugPresets';
 import { verifySync, type SyncResult } from '../../utils/debugSync';
 import { CustomPresetModal } from './CustomPresetModal';
 import './QuickActionsSection.css';
 
 export const QuickActionsSection = React.memo(function QuickActionsSection() {
   const { minerals, stamina, fetchUserData, setMinerals, setStamina } = useUserStore();
-  const { 
-    infiniteStamina, 
-    infiniteMinerals, 
+  const {
+    infiniteStamina,
+    infiniteMinerals,
     infiniteTime,
     setInfiniteStamina,
     setInfiniteMinerals,
-    setInfiniteTime
+    setInfiniteTime,
   } = useDebugStore();
   const { refetch } = useMyPageStats();
 
@@ -24,7 +36,10 @@ export const QuickActionsSection = React.memo(function QuickActionsSection() {
   const [mineralsInput, setMineralsInput] = useState(minerals.toString());
   const [isUpdating, setIsUpdating] = useState(false);
   const [isApplyingPreset, setIsApplyingPreset] = useState(false);
-  const [presetMessage, setPresetMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
+  const [presetMessage, setPresetMessage] = useState<{
+    type: 'success' | 'error';
+    text: string;
+  } | null>(null);
   const [presetHistories, setPresetHistories] = useState<PresetHistory[]>([]);
   const [showHistory, setShowHistory] = useState(false);
   const [syncResult, setSyncResult] = useState<SyncResult | null>(null);
@@ -36,7 +51,7 @@ export const QuickActionsSection = React.memo(function QuickActionsSection() {
 
   const handleStaminaChange = async (delta: number) => {
     if (isUpdating) return; // 중복 클릭 방지
-    
+
     setIsUpdating(true);
     try {
       const newValue = Math.max(0, stamina + delta);
@@ -66,7 +81,7 @@ export const QuickActionsSection = React.memo(function QuickActionsSection() {
 
   const handleMineralsChange = async (delta: number) => {
     if (isUpdating) return; // 중복 클릭 방지
-    
+
     setIsUpdating(true);
     try {
       const newValue = Math.max(0, minerals + delta);
@@ -107,23 +122,26 @@ export const QuickActionsSection = React.memo(function QuickActionsSection() {
       setIsApplyingPreset(true);
       setPresetMessage(null);
 
-      const { data: { user } } = await supabase.auth.getSession();
-      if (!user) {
+      const {
+        data: { session },
+      } = await supabase.auth.getSession();
+      if (!session?.user) {
         setPresetMessage({ type: 'error', text: '로그인이 필요합니다.' });
         return;
       }
+      const user = session.user;
 
       await applyPreset(presetId, user.id, refetch);
       setPresetMessage({ type: 'success', text: '프리셋이 적용되었습니다.' });
-      
+
       // 히스토리 새로고침
       setPresetHistories(getPresetHistories());
     } catch (err) {
-      setPresetMessage({ 
-        type: 'error', 
-        text: `프리셋 적용 실패: ${err instanceof Error ? err.message : '알 수 없는 오류'}` 
+      setPresetMessage({
+        type: 'error',
+        text: `프리셋 적용 실패: ${err instanceof Error ? err.message : '알 수 없는 오류'}`,
       });
-      
+
       // 히스토리 새로고침 (실패 기록 포함)
       setPresetHistories(getPresetHistories());
     } finally {
@@ -151,93 +169,99 @@ export const QuickActionsSection = React.memo(function QuickActionsSection() {
       setIsVerifyingSync(true);
       setSyncResult(null);
 
-      const { data: { user } } = await supabase.auth.getSession();
-      if (!user) {
+      const {
+        data: { session },
+      } = await supabase.auth.getSession();
+      if (!session?.user) {
         setPresetMessage({ type: 'error', text: '로그인이 필요합니다.' });
         return;
       }
+      const user = session.user;
 
       const result = await verifySync(user.id);
       setSyncResult(result);
       setPresetMessage({ type: 'success', text: '동기화 검증이 완료되었습니다.' });
     } catch (err) {
-      setPresetMessage({ type: 'error', text: `동기화 검증 실패: ${err instanceof Error ? err.message : '알 수 없는 오류'}` });
+      setPresetMessage({
+        type: 'error',
+        text: `동기화 검증 실패: ${err instanceof Error ? err.message : '알 수 없는 오류'}`,
+      });
     } finally {
       setIsVerifyingSync(false);
     }
   };
 
   return (
-      <div className="debug-section">
-        <h3 className="debug-section-title">📊 게임 상태</h3>
+    <div className="debug-section">
+      <h3 className="debug-section-title">📊 게임 상태</h3>
 
-        <div className="debug-sync-control">
-          <button
-            className="debug-sync-button"
-            onClick={handleVerifySync}
-            disabled={isVerifyingSync}
-          >
-            {isVerifyingSync ? '검증 중...' : '동기화 확인'}
-          </button>
-        </div>
+      <div className="debug-sync-control">
+        <button className="debug-sync-button" onClick={handleVerifySync} disabled={isVerifyingSync}>
+          {isVerifyingSync ? '검증 중...' : '동기화 확인'}
+        </button>
+      </div>
 
-        {syncResult && (
-          <div className="debug-sync-result">
-            <h4 className="debug-subsection-title">동기화 검증 결과</h4>
-            <div className="debug-sync-item">
-              <span className="debug-sync-label">프로필:</span>
-              <span className={`debug-sync-status ${syncResult.profile.synced ? 'success' : 'error'}`}>
-                {syncResult.profile.synced ? '✅ 동기화됨' : '❌ 문제 있음'}
-              </span>
-            </div>
-            <div className="debug-sync-item">
-              <span className="debug-sync-label">티어:</span>
-              <span className={`debug-sync-status ${syncResult.tier.synced ? 'success' : 'error'}`}>
-                {syncResult.tier.synced ? '✅ 동기화됨' : '❌ 문제 있음'}
-              </span>
-            </div>
-            <div className="debug-sync-item">
-              <span className="debug-sync-label">뱃지:</span>
-              <span className={`debug-sync-status ${syncResult.badges.synced ? 'success' : 'error'}`}>
-                {syncResult.badges.synced ? '✅ 동기화됨' : '❌ 문제 있음'}
-              </span>
-            </div>
-            <div className="debug-sync-item">
-              <span className="debug-sync-label">인벤토리:</span>
-              <span className={`debug-sync-status ${syncResult.inventory.synced ? 'success' : 'error'}`}>
-                {syncResult.inventory.synced ? '✅ 동기화됨' : '❌ 문제 있음'}
-              </span>
-            </div>
-            {(syncResult.profile.issues.length > 0 || 
-              syncResult.tier.issues.length > 0 || 
-              syncResult.badges.issues.length > 0 || 
-              syncResult.inventory.issues.length > 0) && (
-              <div className="debug-sync-issues">
-                <h5 className="debug-sync-issues-title">발견된 문제:</h5>
-                <ul className="debug-sync-issues-list">
-                  {syncResult.profile.issues.map((issue, idx) => (
-                    <li key={`profile-${idx}`}>{issue}</li>
-                  ))}
-                  {syncResult.tier.issues.map((issue, idx) => (
-                    <li key={`tier-${idx}`}>{issue}</li>
-                  ))}
-                  {syncResult.badges.issues.map((issue, idx) => (
-                    <li key={`badges-${idx}`}>{issue}</li>
-                  ))}
-                  {syncResult.inventory.issues.map((issue, idx) => (
-                    <li key={`inventory-${idx}`}>{issue}</li>
-                  ))}
-                </ul>
-              </div>
-            )}
+      {syncResult && (
+        <div className="debug-sync-result">
+          <h4 className="debug-subsection-title">동기화 검증 결과</h4>
+          <div className="debug-sync-item">
+            <span className="debug-sync-label">프로필:</span>
+            <span
+              className={`debug-sync-status ${syncResult.profile.synced ? 'success' : 'error'}`}
+            >
+              {syncResult.profile.synced ? '✅ 동기화됨' : '❌ 문제 있음'}
+            </span>
           </div>
-        )}
-        
-        <div className="debug-resource-control">
+          <div className="debug-sync-item">
+            <span className="debug-sync-label">티어:</span>
+            <span className={`debug-sync-status ${syncResult.tier.synced ? 'success' : 'error'}`}>
+              {syncResult.tier.synced ? '✅ 동기화됨' : '❌ 문제 있음'}
+            </span>
+          </div>
+          <div className="debug-sync-item">
+            <span className="debug-sync-label">뱃지:</span>
+            <span className={`debug-sync-status ${syncResult.badges.synced ? 'success' : 'error'}`}>
+              {syncResult.badges.synced ? '✅ 동기화됨' : '❌ 문제 있음'}
+            </span>
+          </div>
+          <div className="debug-sync-item">
+            <span className="debug-sync-label">인벤토리:</span>
+            <span
+              className={`debug-sync-status ${syncResult.inventory.synced ? 'success' : 'error'}`}
+            >
+              {syncResult.inventory.synced ? '✅ 동기화됨' : '❌ 문제 있음'}
+            </span>
+          </div>
+          {(syncResult.profile.issues.length > 0 ||
+            syncResult.tier.issues.length > 0 ||
+            syncResult.badges.issues.length > 0 ||
+            syncResult.inventory.issues.length > 0) && (
+            <div className="debug-sync-issues">
+              <h5 className="debug-sync-issues-title">발견된 문제:</h5>
+              <ul className="debug-sync-issues-list">
+                {syncResult.profile.issues.map((issue, idx) => (
+                  <li key={`profile-${idx}`}>{issue}</li>
+                ))}
+                {syncResult.tier.issues.map((issue, idx) => (
+                  <li key={`tier-${idx}`}>{issue}</li>
+                ))}
+                {syncResult.badges.issues.map((issue, idx) => (
+                  <li key={`badges-${idx}`}>{issue}</li>
+                ))}
+                {syncResult.inventory.issues.map((issue, idx) => (
+                  <li key={`inventory-${idx}`}>{issue}</li>
+                ))}
+              </ul>
+            </div>
+          )}
+        </div>
+      )}
+
+      <div className="debug-resource-control">
         <div className="debug-resource-item">
           <label className="debug-resource-label">스태미나</label>
           <div className="debug-resource-input-group">
-            <button 
+            <button
               className="debug-resource-button"
               onClick={() => handleStaminaChange(-1)}
               disabled={isUpdating}
@@ -253,7 +277,7 @@ export const QuickActionsSection = React.memo(function QuickActionsSection() {
               min="0"
               disabled={isUpdating}
             />
-            <button 
+            <button
               className="debug-resource-button"
               onClick={() => handleStaminaChange(1)}
               disabled={isUpdating}
@@ -266,7 +290,7 @@ export const QuickActionsSection = React.memo(function QuickActionsSection() {
         <div className="debug-resource-item">
           <label className="debug-resource-label">미네랄</label>
           <div className="debug-resource-input-group">
-            <button 
+            <button
               className="debug-resource-button"
               onClick={() => handleMineralsChange(-100)}
               disabled={isUpdating}
@@ -282,7 +306,7 @@ export const QuickActionsSection = React.memo(function QuickActionsSection() {
               min="0"
               disabled={isUpdating}
             />
-            <button 
+            <button
               className="debug-resource-button"
               onClick={() => handleMineralsChange(100)}
               disabled={isUpdating}
@@ -295,7 +319,7 @@ export const QuickActionsSection = React.memo(function QuickActionsSection() {
 
       <div className="debug-infinite-modes">
         <h4 className="debug-subsection-title">무한 모드</h4>
-        
+
         <div className="debug-toggle-item">
           <label className="debug-toggle-label">무한 스태미나</label>
           <button
@@ -342,10 +366,7 @@ export const QuickActionsSection = React.memo(function QuickActionsSection() {
           <div className="debug-preset-history-section">
             <div className="debug-preset-history-header">
               <span className="debug-preset-history-title">최근 적용 내역</span>
-              <button
-                className="debug-preset-history-clear"
-                onClick={handleClearHistory}
-              >
+              <button className="debug-preset-history-clear" onClick={handleClearHistory}>
                 전체 삭제
               </button>
             </div>
@@ -363,9 +384,7 @@ export const QuickActionsSection = React.memo(function QuickActionsSection() {
                       {new Date(history.appliedAt).toLocaleString('ko-KR')}
                     </div>
                     {history.error && (
-                      <div className="debug-preset-history-error">
-                        {history.error}
-                      </div>
+                      <div className="debug-preset-history-error">{history.error}</div>
                     )}
                   </div>
                   <button
@@ -383,9 +402,7 @@ export const QuickActionsSection = React.memo(function QuickActionsSection() {
         )}
 
         {showHistory && presetHistories.length === 0 && (
-          <div className="debug-preset-history-empty">
-            적용된 프리셋 히스토리가 없습니다.
-          </div>
+          <div className="debug-preset-history-empty">적용된 프리셋 히스토리가 없습니다.</div>
         )}
 
         <div className="debug-preset-list">
@@ -398,9 +415,7 @@ export const QuickActionsSection = React.memo(function QuickActionsSection() {
               >
                 {preset.name}
               </button>
-              <div className="debug-preset-description">
-                {preset.description}
-              </div>
+              <div className="debug-preset-description">{preset.description}</div>
             </div>
           ))}
         </div>
@@ -436,9 +451,7 @@ export const QuickActionsSection = React.memo(function QuickActionsSection() {
           {showCustomPresets && (
             <div className="debug-custom-presets-list">
               {customPresets.length === 0 ? (
-                <div className="debug-custom-presets-empty">
-                  커스텀 프리셋이 없습니다.
-                </div>
+                <div className="debug-custom-presets-empty">커스텀 프리셋이 없습니다.</div>
               ) : (
                 customPresets.map((preset) => (
                   <div key={preset.id} className="debug-custom-preset-item">
@@ -499,7 +512,10 @@ export const QuickActionsSection = React.memo(function QuickActionsSection() {
                   URL.revokeObjectURL(url);
                   setPresetMessage({ type: 'success', text: '커스텀 프리셋이 내보내졌습니다.' });
                 } catch (err) {
-                  setPresetMessage({ type: 'error', text: `내보내기 실패: ${err instanceof Error ? err.message : '알 수 없는 오류'}` });
+                  setPresetMessage({
+                    type: 'error',
+                    text: `내보내기 실패: ${err instanceof Error ? err.message : '알 수 없는 오류'}`,
+                  });
                 }
               }}
             >
@@ -521,9 +537,15 @@ export const QuickActionsSection = React.memo(function QuickActionsSection() {
                       const json = event.target?.result as string;
                       importCustomPresets(json);
                       setCustomPresets(getCustomPresets());
-                      setPresetMessage({ type: 'success', text: '커스텀 프리셋이 가져와졌습니다.' });
+                      setPresetMessage({
+                        type: 'success',
+                        text: '커스텀 프리셋이 가져와졌습니다.',
+                      });
                     } catch (err) {
-                      setPresetMessage({ type: 'error', text: `가져오기 실패: ${err instanceof Error ? err.message : '알 수 없는 오류'}` });
+                      setPresetMessage({
+                        type: 'error',
+                        text: `가져오기 실패: ${err instanceof Error ? err.message : '알 수 없는 오류'}`,
+                      });
                     }
                   };
                   reader.readAsText(file);
@@ -553,4 +575,3 @@ export const QuickActionsSection = React.memo(function QuickActionsSection() {
     </div>
   );
 });
-

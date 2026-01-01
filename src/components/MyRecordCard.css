@@ -52,7 +52,12 @@
 .skeleton-title {
   height: 24px;
   width: 60%;
-  background: linear-gradient(90deg, var(--color-bg-secondary) 25%, var(--color-bg-tertiary) 50%, var(--color-bg-secondary) 75%);
+  background: linear-gradient(
+    90deg,
+    var(--color-bg-secondary) 25%,
+    var(--color-bg-tertiary) 50%,
+    var(--color-bg-secondary) 75%
+  );
   background-size: 200% 100%;
   border-radius: var(--rounded-sm);
   animation: skeleton-loading 1.5s ease-in-out infinite;
@@ -61,7 +66,12 @@
 .skeleton-item {
   height: 20px;
   width: 100%;
-  background: linear-gradient(90deg, var(--color-bg-secondary) 25%, var(--color-bg-tertiary) 50%, var(--color-bg-secondary) 75%);
+  background: linear-gradient(
+    90deg,
+    var(--color-bg-secondary) 25%,
+    var(--color-bg-tertiary) 50%,
+    var(--color-bg-secondary) 75%
+  );
   background-size: 200% 100%;
   border-radius: var(--rounded-sm);
   animation: skeleton-loading 1.5s ease-in-out infinite;
@@ -75,4 +85,3 @@
     background-position: -200% 0;
   }
 }
-

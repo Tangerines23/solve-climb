@@ -5,15 +5,6 @@ import { ENV, logEnvInfo } from './env';
 logEnvInfo();
 
 /**
- * 토스 앱 인앱 환경 확인
- */
-const isTossEnvironment = (): boolean => {
-  if (typeof window === 'undefined') return false;
-  const userAgent = window.navigator?.userAgent || '';
-  return userAgent.includes('Toss');
-};
-
-/**
  * 콜백 URL 생성
  * 토스 앱 인앱 환경에서는 현재 origin을 기반으로 콜백 URL 생성
  */
@@ -21,11 +12,11 @@ const getRedirectUrl = (): string => {
   if (typeof window === 'undefined') {
     return '';
   }
-  
+
   // 현재 origin을 기반으로 콜백 URL 생성
   const origin = window.location.origin;
   const callbackPath = '/auth/callback';
-  
+
   return `${origin}${callbackPath}`;
 };
 
@@ -37,7 +28,7 @@ const createSupabaseClient = (): SupabaseClient => {
     // 실제 API 호출은 실패하지만 앱은 크래시하지 않음
     return createClient('https://dummy.supabase.co', 'dummy-key');
   }
-  
+
   // Supabase 클라이언트 옵션 설정
   const redirectUrl = getRedirectUrl();
   const options = {
@@ -52,14 +43,14 @@ const createSupabaseClient = (): SupabaseClient => {
       detectSessionInUrl: true,
     },
   };
-  
+
   // 개발 환경에서 콜백 URL 로그 출력
   if (ENV.IS_DEVELOPMENT && redirectUrl) {
     console.log('[Supabase] 콜백 URL:', redirectUrl);
   }
-  
+
   const client = createClient(ENV.SUPABASE_URL, ENV.SUPABASE_ANON_KEY, options);
-  
+
   // 익명 사용자 인증 자동 수행 (RLS 정책을 통과하기 위해)
   // 세션이 없을 때만 익명 로그인 시도 (비동기, 실패해도 무시)
   if (typeof window !== 'undefined') {
@@ -71,7 +62,7 @@ const createSupabaseClient = (): SupabaseClient => {
       }
     });
   }
-  
+
   return client;
 };
 

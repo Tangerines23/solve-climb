@@ -72,8 +72,8 @@ const saveActiveProfileId = (profileId: string | null) => {
 // 프로필 목록과 활성 프로필 로드
 const savedProfiles = loadProfiles();
 const activeProfileId = loadActiveProfileId();
-const savedProfile = activeProfileId 
-  ? savedProfiles.find(p => p.profileId === activeProfileId) || null
+const savedProfile = activeProfileId
+  ? savedProfiles.find((p) => p.profileId === activeProfileId) || null
   : savedProfiles[0] || null;
 
 // 관리자 모드 상태를 localStorage에서 불러오기
@@ -101,14 +101,14 @@ export const useProfileStore = create<ProfileState>((set, get) => ({
   setProfile: (profile) => {
     const state = get();
     let updatedProfiles = [...state.profiles];
-    
+
     // 프로필에 ID가 없거나 빈 문자열이면 생성 (새 프로필)
     if (!profile.profileId || profile.profileId === '') {
       profile.profileId = generateProfileId();
     }
-    
+
     // 기존 프로필이 있으면 업데이트, 없으면 추가
-    const existingIndex = updatedProfiles.findIndex(p => p.profileId === profile.profileId);
+    const existingIndex = updatedProfiles.findIndex((p) => p.profileId === profile.profileId);
     if (existingIndex >= 0) {
       updatedProfiles[existingIndex] = profile;
     } else {
@@ -119,20 +119,20 @@ export const useProfileStore = create<ProfileState>((set, get) => ({
       }
       updatedProfiles.push(profile);
     }
-    
+
     // 프로필 목록 저장
     saveProfiles(updatedProfiles);
     saveActiveProfileId(profile.profileId);
-    
+
     // 프로필이 변경되면 기록도 함께 변경
     const levelProgressStore = useLevelProgressStore.getState();
     const currentProgress = levelProgressStore.progress;
-    
+
     // 프로필 ID를 키로 사용하여 기록 저장
     storage.set(StorageKeys.PROGRESS(profile.profileId), currentProgress);
-    
+
     set({ profile, isProfileComplete: true, profiles: updatedProfiles });
-    
+
     // 프로필이 변경되면 관리자 모드도 업데이트
     if (profile.isAdmin) {
       saveAdminMode(true);
@@ -153,7 +153,7 @@ export const useProfileStore = create<ProfileState>((set, get) => ({
       // 프로필도 업데이트
       if (state.profile) {
         const updatedProfile = { ...state.profile, isAdmin };
-        const updatedProfiles = state.profiles.map(p => 
+        const updatedProfiles = state.profiles.map((p) =>
           p.profileId === updatedProfile.profileId ? updatedProfile : p
         );
         saveProfiles(updatedProfiles);
@@ -164,18 +164,18 @@ export const useProfileStore = create<ProfileState>((set, get) => ({
   },
   switchProfile: (profileId: string) => {
     const state = get();
-    const profile = state.profiles.find(p => p.profileId === profileId);
+    const profile = state.profiles.find((p) => p.profileId === profileId);
     if (!profile) return;
-    
+
     // 활성 프로필 ID 저장
     saveActiveProfileId(profileId);
-    
+
     // 해당 프로필의 기록 로드
     const progress = storage.get<UserProgress>(StorageKeys.PROGRESS(profileId), {});
     useLevelProgressStore.setState({ progress });
-    
+
     set({ profile, isProfileComplete: true });
-    
+
     // 관리자 모드 업데이트
     if (profile.isAdmin) {
       saveAdminMode(true);
@@ -187,12 +187,12 @@ export const useProfileStore = create<ProfileState>((set, get) => ({
   },
   deleteProfile: (profileId: string) => {
     const state = get();
-    const updatedProfiles = state.profiles.filter(p => p.profileId !== profileId);
+    const updatedProfiles = state.profiles.filter((p) => p.profileId !== profileId);
     saveProfiles(updatedProfiles);
-    
+
     // 삭제된 프로필의 기록도 삭제
     storage.remove(StorageKeys.PROGRESS(profileId));
-    
+
     // 현재 프로필이 삭제된 프로필이면 첫 번째 프로필로 전환
     if (state.profile?.profileId === profileId) {
       if (updatedProfiles.length > 0) {
@@ -206,4 +206,3 @@ export const useProfileStore = create<ProfileState>((set, get) => ({
     }
   },
 }));
-

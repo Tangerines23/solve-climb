@@ -111,7 +111,7 @@ serve(async (req) => {
     let data: any;
     try {
       data = await response.json();
-    } catch (parseError) {
+    } catch {
       // JSON 파싱 실패 시 텍스트로 읽기 시도
       const text = await response.text().catch(() => '');
       data = { 

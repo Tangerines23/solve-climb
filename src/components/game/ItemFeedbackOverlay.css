@@ -1,73 +1,73 @@
 .item-feedback-container {
-    position: fixed;
-    top: 15%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    z-index: 1000;
-    pointer-events: none;
-    text-align: center;
+  position: fixed;
+  top: 15%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 1000;
+  pointer-events: none;
+  text-align: center;
 }
 
 .feedback-content {
-    background: rgba(0, 0, 0, 0.4);
-    backdrop-filter: blur(10px);
-    padding: 1.5rem 3rem;
-    border-radius: 2rem;
-    border: 2px solid rgba(255, 255, 255, 0.2);
-    box-shadow: 0 0 30px rgba(0, 184, 148, 0.3);
+  background: rgba(0, 0, 0, 0.4);
+  backdrop-filter: blur(10px);
+  padding: 1.5rem 3rem;
+  border-radius: 2rem;
+  border: 2px solid rgba(255, 255, 255, 0.2);
+  box-shadow: 0 0 30px rgba(0, 184, 148, 0.3);
 }
 
 .feedback-text {
-    font-size: 3.5rem;
-    font-weight: 900;
-    margin: 0;
-    letter-spacing: -2px;
-    text-shadow: 0 4px 10px rgba(0, 0, 0, 0.5);
-    background: linear-gradient(135deg, #00b894, #55efc4);
-    -webkit-background-clip: text;
-    background-clip: text;
-    -webkit-text-fill-color: transparent;
+  font-size: 3.5rem;
+  font-weight: 900;
+  margin: 0;
+  letter-spacing: -2px;
+  text-shadow: 0 4px 10px rgba(0, 0, 0, 0.5);
+  background: linear-gradient(135deg, #00b894, #55efc4);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
 }
 
 .info .feedback-text {
-    background: linear-gradient(135deg, #0984e3, #74b9ff);
-    -webkit-background-clip: text;
-    background-clip: text;
+  background: linear-gradient(135deg, #0984e3, #74b9ff);
+  -webkit-background-clip: text;
+  background-clip: text;
 }
 
 .feedback-subtext {
-    font-size: 1.1rem;
-    font-weight: 700;
-    color: #fff;
-    margin-top: 0.5rem;
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: #fff;
+  margin-top: 0.5rem;
 }
 
 .fade-up {
-    animation: fadeUp 2s cubic-bezier(0.19, 1, 0.22, 1) forwards;
+  animation: fadeUp 2s cubic-bezier(0.19, 1, 0.22, 1) forwards;
 }
 
 @keyframes fadeUp {
-    0% {
-        opacity: 0;
-        transform: translate(-50%, 0) scale(0.8);
-    }
+  0% {
+    opacity: 0;
+    transform: translate(-50%, 0) scale(0.8);
+  }
 
-    10% {
-        opacity: 1;
-        transform: translate(-50%, -50%) scale(1.1);
-    }
+  10% {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(1.1);
+  }
 
-    20% {
-        transform: translate(-50%, -50%) scale(1);
-    }
+  20% {
+    transform: translate(-50%, -50%) scale(1);
+  }
 
-    80% {
-        opacity: 1;
-        transform: translate(-50%, -60%);
-    }
+  80% {
+    opacity: 1;
+    transform: translate(-50%, -60%);
+  }
 
-    100% {
-        opacity: 0;
-        transform: translate(-50%, -100%);
-    }
+  100% {
+    opacity: 0;
+    transform: translate(-50%, -100%);
+  }
 }

@@ -1,10 +1,10 @@
 // 인증 설정 테스트 페이지 (개발 환경용)
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { 
-  testAuthSetup, 
-  testSupabaseConnection, 
-  testCallbackUrl, 
+import {
+  testAuthSetup,
+  testSupabaseConnection,
+  testCallbackUrl,
   testGoogleLogin,
   getCallbackUrl,
 } from '../utils/authTest';
@@ -43,7 +43,7 @@ export function AuthTestPage() {
     setLoading(true);
     try {
       const result = await testSupabaseConnection();
-      setResults(prev => ({ ...prev, connection: result }));
+      setResults((prev) => ({ ...prev, connection: result }));
     } catch (error) {
       console.error('연결 테스트 중 오류:', error);
     } finally {
@@ -53,15 +53,15 @@ export function AuthTestPage() {
 
   const testCallback = () => {
     const result = testCallbackUrl();
-    setResults(prev => ({ ...prev, callbackUrl: result }));
+    setResults((prev) => ({ ...prev, callbackUrl: result }));
   };
 
   const testGoogle = async () => {
     setLoading(true);
     try {
       const result = await testGoogleLogin();
-      setResults(prev => ({ ...prev, googleLogin: result }));
-      
+      setResults((prev) => ({ ...prev, googleLogin: result }));
+
       // 성공하면 실제로 OAuth 리디렉션이 시작됨
       if (result.success && result.details?.url) {
         window.location.href = result.details.url;
@@ -77,10 +77,7 @@ export function AuthTestPage() {
     <div className="auth-test-page">
       <div className="auth-test-header">
         <h1>🔐 인증 설정 테스트</h1>
-        <button 
-          className="auth-test-back-button"
-          onClick={() => navigate('/my-page')}
-        >
+        <button className="auth-test-back-button" onClick={() => navigate('/my-page')}>
           ← 뒤로가기
         </button>
       </div>
@@ -92,15 +89,11 @@ export function AuthTestPage() {
           <div className="auth-test-info">
             <div className="auth-test-info-item">
               <span className="auth-test-label">Supabase URL:</span>
-              <span className="auth-test-value">
-                {ENV.SUPABASE_URL || '미설정'}
-              </span>
+              <span className="auth-test-value">{ENV.SUPABASE_URL || '미설정'}</span>
             </div>
             <div className="auth-test-info-item">
               <span className="auth-test-label">Anon Key:</span>
-              <span className="auth-test-value">
-                {ENV.SUPABASE_ANON_KEY ? '설정됨' : '미설정'}
-              </span>
+              <span className="auth-test-value">{ENV.SUPABASE_ANON_KEY ? '설정됨' : '미설정'}</span>
             </div>
             <div className="auth-test-info-item">
               <span className="auth-test-label">콜백 URL:</span>
@@ -124,25 +117,13 @@ export function AuthTestPage() {
             >
               {loading ? '테스트 중...' : '전체 테스트 실행'}
             </button>
-            <button
-              className="auth-test-button"
-              onClick={testConnection}
-              disabled={loading}
-            >
+            <button className="auth-test-button" onClick={testConnection} disabled={loading}>
               Supabase 연결 테스트
             </button>
-            <button
-              className="auth-test-button"
-              onClick={testCallback}
-              disabled={loading}
-            >
+            <button className="auth-test-button" onClick={testCallback} disabled={loading}>
               콜백 URL 확인
             </button>
-            <button
-              className="auth-test-button"
-              onClick={testGoogle}
-              disabled={loading}
-            >
+            <button className="auth-test-button" onClick={testGoogle} disabled={loading}>
               Google 로그인 테스트
             </button>
           </div>
@@ -152,9 +133,11 @@ export function AuthTestPage() {
         {(results.callbackUrl || results.connection || results.googleLogin) && (
           <div className="auth-test-section">
             <h2>테스트 결과</h2>
-            
+
             {results.summary && (
-              <div className={`auth-test-summary ${results.summary.allPassed ? 'success' : 'error'}`}>
+              <div
+                className={`auth-test-summary ${results.summary.allPassed ? 'success' : 'error'}`}
+              >
                 <div className="auth-test-summary-title">
                   {results.summary.allPassed ? '✅ 모든 테스트 통과' : '❌ 일부 테스트 실패'}
                 </div>
@@ -165,7 +148,9 @@ export function AuthTestPage() {
             )}
 
             {results.callbackUrl && (
-              <div className={`auth-test-result ${results.callbackUrl.success ? 'success' : 'error'}`}>
+              <div
+                className={`auth-test-result ${results.callbackUrl.success ? 'success' : 'error'}`}
+              >
                 <h3>콜백 URL 확인</h3>
                 <div className="auth-test-result-message">
                   {results.callbackUrl.success ? '✅' : '❌'} {results.callbackUrl.message}
@@ -180,7 +165,9 @@ export function AuthTestPage() {
             )}
 
             {results.connection && (
-              <div className={`auth-test-result ${results.connection.success ? 'success' : 'error'}`}>
+              <div
+                className={`auth-test-result ${results.connection.success ? 'success' : 'error'}`}
+              >
                 <h3>Supabase 연결</h3>
                 <div className="auth-test-result-message">
                   {results.connection.success ? '✅' : '❌'} {results.connection.message}
@@ -195,7 +182,9 @@ export function AuthTestPage() {
             )}
 
             {results.googleLogin && (
-              <div className={`auth-test-result ${results.googleLogin.success ? 'success' : 'error'}`}>
+              <div
+                className={`auth-test-result ${results.googleLogin.success ? 'success' : 'error'}`}
+              >
                 <h3>Google 로그인</h3>
                 <div className="auth-test-result-message">
                   {results.googleLogin.success ? '✅' : '❌'} {results.googleLogin.message}
@@ -241,4 +230,3 @@ export function AuthTestPage() {
     </div>
   );
 }
-

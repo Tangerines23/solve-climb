@@ -10,12 +10,12 @@ export const DataResetSection = React.memo(function DataResetSection() {
   const { fetchUserData } = useUserStore();
   const [isResetting, setIsResetting] = useState(false);
   const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
-  
+
   // 게임 기록 초기화 상태
   const [deleteCount, setDeleteCount] = useState('10');
   const [selectedLevel, setSelectedLevel] = useState<number | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
-  
+
   // 레벨 진행도 초기화 상태
   const [selectedCategory, setSelectedCategory] = useState<string>('math');
   const [selectedSubject, setSelectedSubject] = useState<string>('arithmetic');
@@ -29,13 +29,16 @@ export const DataResetSection = React.memo(function DataResetSection() {
       setIsResetting(true);
       setMessage(null);
 
-      const { data: { user } } = await supabase.auth.getSession();
-      if (!user) {
+      const {
+        data: { session },
+      } = await supabase.auth.getSession();
+      if (!session?.user) {
         setMessage({ type: 'error', text: '로그인이 필요합니다.' });
         return;
       }
+      const user = session.user;
 
-      const { data, error } = await supabase.rpc('debug_reset_profile', {
+      const { error } = await supabase.rpc('debug_reset_profile', {
         p_user_id: user.id,
         p_reset_type: resetType,
       });
@@ -45,7 +48,10 @@ export const DataResetSection = React.memo(function DataResetSection() {
       setMessage({ type: 'success', text: '프로필이 초기화되었습니다.' });
       await Promise.all([refetch(), fetchUserData()]);
     } catch (err) {
-      setMessage({ type: 'error', text: `초기화 실패: ${err instanceof Error ? err.message : '알 수 없는 오류'}` });
+      setMessage({
+        type: 'error',
+        text: `초기화 실패: ${err instanceof Error ? err.message : '알 수 없는 오류'}`,
+      });
     } finally {
       setIsResetting(false);
     }
@@ -71,7 +77,10 @@ export const DataResetSection = React.memo(function DataResetSection() {
 
       setMessage({ type: 'success', text: '데이터가 내보내졌습니다.' });
     } catch (err) {
-      setMessage({ type: 'error', text: `내보내기 실패: ${err instanceof Error ? err.message : '알 수 없는 오류'}` });
+      setMessage({
+        type: 'error',
+        text: `내보내기 실패: ${err instanceof Error ? err.message : '알 수 없는 오류'}`,
+      });
     }
   };
 
@@ -90,19 +99,22 @@ export const DataResetSection = React.memo(function DataResetSection() {
           setMessage(null);
 
           const data = JSON.parse(event.target?.result as string);
-          
+
           if (!data.stats) {
             setMessage({ type: 'error', text: '유효하지 않은 데이터 형식입니다.' });
             setIsResetting(false);
             return;
           }
 
-          const { data: { user } } = await supabase.auth.getSession();
-          if (!user) {
+          const {
+            data: { session },
+          } = await supabase.auth.getSession();
+          if (!session?.user) {
             setMessage({ type: 'error', text: '로그인이 필요합니다.' });
             setIsResetting(false);
             return;
           }
+          const user = session.user;
 
           // 실제 데이터 적용
           const updatePromises: Promise<any>[] = [];
@@ -113,7 +125,7 @@ export const DataResetSection = React.memo(function DataResetSection() {
               supabase.rpc('debug_set_mastery_score', {
                 p_user_id: user.id,
                 p_score: data.stats.totalMasteryScore,
-              })
+              }) as any
             );
           }
 
@@ -123,26 +135,29 @@ export const DataResetSection = React.memo(function DataResetSection() {
               supabase.rpc('debug_set_tier', {
                 p_user_id: user.id,
                 p_level: data.stats.currentTierLevel,
-              })
+              }) as any
             );
           }
 
           // 모든 업데이트 실행
           const results = await Promise.allSettled(updatePromises);
-          
+
           // 에러 확인
-          const errors = results.filter(r => r.status === 'rejected');
+          const errors = results.filter((r) => r.status === 'rejected');
           if (errors.length > 0) {
-            const errorMessages = errors.map(e => 
-              e.status === 'rejected' ? e.reason?.message || '알 수 없는 오류' : ''
-            ).join(', ');
+            const errorMessages = errors
+              .map((e) => (e.status === 'rejected' ? e.reason?.message || '알 수 없는 오류' : ''))
+              .join(', ');
             setMessage({ type: 'error', text: `일부 데이터 적용 실패: ${errorMessages}` });
           } else {
             setMessage({ type: 'success', text: '데이터가 가져와져 적용되었습니다.' });
             await Promise.all([refetch(), fetchUserData()]);
           }
         } catch (err) {
-          setMessage({ type: 'error', text: `가져오기 실패: ${err instanceof Error ? err.message : '알 수 없는 오류'}` });
+          setMessage({
+            type: 'error',
+            text: `가져오기 실패: ${err instanceof Error ? err.message : '알 수 없는 오류'}`,
+          });
         } finally {
           setIsResetting(false);
         }
@@ -162,7 +177,10 @@ export const DataResetSection = React.memo(function DataResetSection() {
       localStorage.setItem('debug_snapshot', JSON.stringify(snapshot));
       setMessage({ type: 'success', text: '스냅샷이 저장되었습니다.' });
     } catch (err) {
-      setMessage({ type: 'error', text: `스냅샷 저장 실패: ${err instanceof Error ? err.message : '알 수 없는 오류'}` });
+      setMessage({
+        type: 'error',
+        text: `스냅샷 저장 실패: ${err instanceof Error ? err.message : '알 수 없는 오류'}`,
+      });
     }
   };
 
@@ -179,19 +197,22 @@ export const DataResetSection = React.memo(function DataResetSection() {
       }
 
       const snapshot = JSON.parse(snapshotStr);
-      
+
       if (!snapshot.stats) {
         setMessage({ type: 'error', text: '유효하지 않은 스냅샷 형식입니다.' });
         setIsResetting(false);
         return;
       }
 
-      const { data: { user } } = await supabase.auth.getSession();
-      if (!user) {
+      const {
+        data: { session },
+      } = await supabase.auth.getSession();
+      if (!session?.user) {
         setMessage({ type: 'error', text: '로그인이 필요합니다.' });
         setIsResetting(false);
         return;
       }
+      const user = session.user;
 
       // 실제 데이터 적용 (JSON 가져오기와 동일한 로직)
       const updatePromises: Promise<any>[] = [];
@@ -201,33 +222,39 @@ export const DataResetSection = React.memo(function DataResetSection() {
           supabase.rpc('debug_set_mastery_score', {
             p_user_id: user.id,
             p_score: snapshot.stats.totalMasteryScore,
-          })
+          }) as any
         );
       }
 
-      if (snapshot.stats.currentTierLevel !== undefined && snapshot.stats.currentTierLevel !== null) {
+      if (
+        snapshot.stats.currentTierLevel !== undefined &&
+        snapshot.stats.currentTierLevel !== null
+      ) {
         updatePromises.push(
           supabase.rpc('debug_set_tier', {
             p_user_id: user.id,
             p_level: snapshot.stats.currentTierLevel,
-          })
+          }) as any
         );
       }
 
       const results = await Promise.allSettled(updatePromises);
-      
-      const errors = results.filter(r => r.status === 'rejected');
+
+      const errors = results.filter((r) => r.status === 'rejected');
       if (errors.length > 0) {
-        const errorMessages = errors.map(e => 
-          e.status === 'rejected' ? e.reason?.message || '알 수 없는 오류' : ''
-        ).join(', ');
+        const errorMessages = errors
+          .map((e) => (e.status === 'rejected' ? e.reason?.message || '알 수 없는 오류' : ''))
+          .join(', ');
         setMessage({ type: 'error', text: `일부 데이터 복원 실패: ${errorMessages}` });
       } else {
         setMessage({ type: 'success', text: '스냅샷이 복원되었습니다.' });
         await Promise.all([refetch(), fetchUserData()]);
       }
     } catch (err) {
-      setMessage({ type: 'error', text: `스냅샷 복원 실패: ${err instanceof Error ? err.message : '알 수 없는 오류'}` });
+      setMessage({
+        type: 'error',
+        text: `스냅샷 복원 실패: ${err instanceof Error ? err.message : '알 수 없는 오류'}`,
+      });
     } finally {
       setIsResetting(false);
     }
@@ -247,11 +274,14 @@ export const DataResetSection = React.memo(function DataResetSection() {
       setIsDeleting(true);
       setMessage(null);
 
-      const { data: { user } } = await supabase.auth.getSession();
-      if (!user) {
+      const {
+        data: { session },
+      } = await supabase.auth.getSession();
+      if (!session?.user) {
         setMessage({ type: 'error', text: '로그인이 필요합니다.' });
         return;
       }
+      const user = session.user;
 
       // 최근 N개 세션 ID 조회
       const { data: sessions, error: sessionsError } = await supabase
@@ -268,7 +298,7 @@ export const DataResetSection = React.memo(function DataResetSection() {
         return;
       }
 
-      const sessionIds = sessions.map(s => s.id);
+      const sessionIds = sessions.map((s) => s.id);
 
       // game_results 삭제
       const { error: resultsError } = await supabase
@@ -289,7 +319,10 @@ export const DataResetSection = React.memo(function DataResetSection() {
       setMessage({ type: 'success', text: `${sessions.length}개의 게임 기록이 삭제되었습니다.` });
       await Promise.all([refetch(), fetchUserData()]);
     } catch (err) {
-      setMessage({ type: 'error', text: `삭제 실패: ${err instanceof Error ? err.message : '알 수 없는 오류'}` });
+      setMessage({
+        type: 'error',
+        text: `삭제 실패: ${err instanceof Error ? err.message : '알 수 없는 오류'}`,
+      });
     } finally {
       setIsDeleting(false);
     }
@@ -303,11 +336,14 @@ export const DataResetSection = React.memo(function DataResetSection() {
       setIsDeleting(true);
       setMessage(null);
 
-      const { data: { user } } = await supabase.auth.getSession();
-      if (!user) {
+      const {
+        data: { session },
+      } = await supabase.auth.getSession();
+      if (!session?.user) {
         setMessage({ type: 'error', text: '로그인이 필요합니다.' });
         return;
       }
+      const user = session.user;
 
       // game_results 삭제
       const { error: resultsError } = await supabase
@@ -328,7 +364,10 @@ export const DataResetSection = React.memo(function DataResetSection() {
       setMessage({ type: 'success', text: '모든 게임 기록이 삭제되었습니다.' });
       await Promise.all([refetch(), fetchUserData()]);
     } catch (err) {
-      setMessage({ type: 'error', text: `삭제 실패: ${err instanceof Error ? err.message : '알 수 없는 오류'}` });
+      setMessage({
+        type: 'error',
+        text: `삭제 실패: ${err instanceof Error ? err.message : '알 수 없는 오류'}`,
+      });
     } finally {
       setIsDeleting(false);
     }
@@ -342,11 +381,14 @@ export const DataResetSection = React.memo(function DataResetSection() {
       setIsDeleting(true);
       setMessage(null);
 
-      const { data: { user } } = await supabase.auth.getSession();
-      if (!user) {
+      const {
+        data: { session },
+      } = await supabase.auth.getSession();
+      if (!session?.user) {
         setMessage({ type: 'error', text: '로그인이 필요합니다.' });
         return;
       }
+      const user = session.user;
 
       // 해당 레벨의 세션 ID 조회
       const { data: sessions, error: sessionsError } = await supabase
@@ -362,7 +404,7 @@ export const DataResetSection = React.memo(function DataResetSection() {
         return;
       }
 
-      const sessionIds = sessions.map(s => s.id);
+      const sessionIds = sessions.map((s) => s.id);
 
       // game_results 삭제
       const { error: resultsError } = await supabase
@@ -392,7 +434,10 @@ export const DataResetSection = React.memo(function DataResetSection() {
       setMessage({ type: 'success', text: `레벨 ${selectedLevel}의 게임 기록이 삭제되었습니다.` });
       await Promise.all([refetch(), fetchUserData()]);
     } catch (err) {
-      setMessage({ type: 'error', text: `삭제 실패: ${err instanceof Error ? err.message : '알 수 없는 오류'}` });
+      setMessage({
+        type: 'error',
+        text: `삭제 실패: ${err instanceof Error ? err.message : '알 수 없는 오류'}`,
+      });
     } finally {
       setIsDeleting(false);
     }
@@ -402,23 +447,31 @@ export const DataResetSection = React.memo(function DataResetSection() {
   const getSubjectsForCategory = (category: string): string[] => {
     const subTopics = APP_CONFIG.SUB_TOPICS[category as keyof typeof APP_CONFIG.SUB_TOPICS];
     if (!subTopics) return [];
-    return subTopics.map(topic => topic.id);
+    return subTopics.map((topic) => topic.id);
   };
 
   // 레벨 진행도 초기화
   const handleResetLevelProgress = async () => {
     if (isResettingProgress) return;
-    if (!confirm(`${APP_CONFIG.CATEGORY_MAP[selectedCategory as keyof typeof APP_CONFIG.CATEGORY_MAP]} > ${selectedSubject}의 레벨 진행도를 초기화하시겠습니까?`)) return;
+    if (
+      !confirm(
+        `${APP_CONFIG.CATEGORY_MAP[selectedCategory as keyof typeof APP_CONFIG.CATEGORY_MAP]} > ${selectedSubject}의 레벨 진행도를 초기화하시겠습니까?`
+      )
+    )
+      return;
 
     try {
       setIsResettingProgress(true);
       setMessage(null);
 
-      const { data: { user } } = await supabase.auth.getSession();
-      if (!user) {
+      const {
+        data: { session },
+      } = await supabase.auth.getSession();
+      if (!session?.user) {
         setMessage({ type: 'error', text: '로그인이 필요합니다.' });
         return;
       }
+      const user = session.user;
 
       // user_level_records에서 해당 카테고리와 주제의 레벨 진행도 삭제
       const { error: recordsError } = await supabase
@@ -433,7 +486,10 @@ export const DataResetSection = React.memo(function DataResetSection() {
       setMessage({ type: 'success', text: '레벨 진행도가 초기화되었습니다.' });
       await Promise.all([refetch(), fetchUserData()]);
     } catch (err) {
-      setMessage({ type: 'error', text: `초기화 실패: ${err instanceof Error ? err.message : '알 수 없는 오류'}` });
+      setMessage({
+        type: 'error',
+        text: `초기화 실패: ${err instanceof Error ? err.message : '알 수 없는 오류'}`,
+      });
     } finally {
       setIsResettingProgress(false);
     }
@@ -488,16 +544,10 @@ export const DataResetSection = React.memo(function DataResetSection() {
       <div className="debug-data-section">
         <h4 className="debug-subsection-title">상태 내보내기/가져오기</h4>
         <div className="debug-export-buttons">
-          <button
-            className="debug-export-button"
-            onClick={handleExportData}
-          >
+          <button className="debug-export-button" onClick={handleExportData}>
             JSON 다운로드
           </button>
-          <button
-            className="debug-export-button"
-            onClick={handleImportData}
-          >
+          <button className="debug-export-button" onClick={handleImportData}>
             JSON 가져오기
           </button>
         </div>
@@ -506,16 +556,10 @@ export const DataResetSection = React.memo(function DataResetSection() {
       <div className="debug-data-section">
         <h4 className="debug-subsection-title">스냅샷</h4>
         <div className="debug-snapshot-buttons">
-          <button
-            className="debug-snapshot-button"
-            onClick={handleSaveSnapshot}
-          >
+          <button className="debug-snapshot-button" onClick={handleSaveSnapshot}>
             저장
           </button>
-          <button
-            className="debug-snapshot-button"
-            onClick={handleRestoreSnapshot}
-          >
+          <button className="debug-snapshot-button" onClick={handleRestoreSnapshot}>
             복원
           </button>
         </div>
@@ -523,7 +567,7 @@ export const DataResetSection = React.memo(function DataResetSection() {
 
       <div className="debug-data-section">
         <h4 className="debug-subsection-title">게임 기록 초기화</h4>
-        
+
         <div className="debug-game-records-delete">
           <div className="debug-game-records-row">
             <label className="debug-game-records-label">최근 N개 삭제:</label>
@@ -559,7 +603,9 @@ export const DataResetSection = React.memo(function DataResetSection() {
             <select
               className="debug-game-records-select"
               value={selectedLevel === null ? '' : selectedLevel}
-              onChange={(e) => setSelectedLevel(e.target.value === '' ? null : parseInt(e.target.value, 10))}
+              onChange={(e) =>
+                setSelectedLevel(e.target.value === '' ? null : parseInt(e.target.value, 10))
+              }
               disabled={isDeleting}
             >
               <option value="">레벨 선택</option>
@@ -625,11 +671,8 @@ export const DataResetSection = React.memo(function DataResetSection() {
       </div>
 
       {message && (
-        <div className={`debug-message debug-message-${message.type}`}>
-          {message.text}
-        </div>
+        <div className={`debug-message debug-message-${message.type}`}>{message.text}</div>
       )}
     </div>
   );
 });
-

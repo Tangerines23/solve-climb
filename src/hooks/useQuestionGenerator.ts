@@ -55,7 +55,8 @@ export function useQuestionGenerator({
     console.log('generateNewQuestion params:', { categoryParam, subParam, levelParam });
 
     if (categoryParam && subParam) {
-      const categoryName = APP_CONFIG.CATEGORY_MAP[categoryParam as keyof typeof APP_CONFIG.CATEGORY_MAP];
+      const categoryName =
+        APP_CONFIG.CATEGORY_MAP[categoryParam as keyof typeof APP_CONFIG.CATEGORY_MAP];
       if (categoryName) {
         currentCategory = categoryName as Category;
 
@@ -83,11 +84,19 @@ export function useQuestionGenerator({
                 onQuestionGenerated(newQuestion, questionId);
               }
             } catch (e) {
-              console.error("Failed to generate problem, falling back to legacy generator", e);
+              console.error('Failed to generate problem, falling back to legacy generator', e);
               // 실패 시 기존 로직으로 폴백
               const topicMap: Record<number, '덧셈' | '뺄셈' | '곱셈' | '나눗셈'> = {
-                1: '덧셈', 2: '뺄셈', 3: '덧셈', 4: '뺄셈', 5: '곱셈', 6: '나눗셈',
-                7: '덧셈', 8: '곱셈', 9: '나눗셈', 10: '덧셈',
+                1: '덧셈',
+                2: '뺄셈',
+                3: '덧셈',
+                4: '뺄셈',
+                5: '곱셈',
+                6: '나눗셈',
+                7: '덧셈',
+                8: '곱셈',
+                9: '나눗셈',
+                10: '덧셈',
               };
               const fallbackTopic = topicMap[level] || '덧셈';
               const safeCategory = currentCategory || '수학';
@@ -142,7 +151,7 @@ export function useQuestionGenerator({
                 onQuestionGenerated(newQuestion, questionId);
               }
             } catch (e) {
-              console.error("Failed to generate equation, falling back to legacy generator", e);
+              console.error('Failed to generate equation, falling back to legacy generator', e);
               // 실패 시 기존 로직으로 폴백
               currentTopic = 'equations' as Topic;
               const safeCategory = currentCategory || '수학';
@@ -243,4 +252,3 @@ export function useQuestionGenerator({
     generateNewQuestion,
   };
 }
-

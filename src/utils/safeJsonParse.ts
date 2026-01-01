@@ -45,13 +45,13 @@ export function safeJsonParse<T>(
 
   try {
     const parsed = JSON.parse(jsonString);
-    
+
     // 타입 검증 함수가 제공된 경우 검증
     if (validator && !validator(parsed)) {
       console.warn('JSON parsing validation failed, using default value');
       return defaultValue;
     }
-    
+
     return parsed;
   } catch (error) {
     console.warn('JSON parsing failed:', error);
@@ -63,11 +63,9 @@ export function safeJsonParse<T>(
  * 로컬 세션을 안전하게 파싱하는 함수
  */
 export function parseLocalSession(jsonString: string | null): LocalSession | null {
-  return safeJsonParse<LocalSession>(
+  return safeJsonParse<LocalSession | null>(
     jsonString,
     null,
-    isLocalSession
+    isLocalSession as (data: unknown) => data is LocalSession | null
   );
 }
-
-

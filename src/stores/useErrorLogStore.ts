@@ -11,9 +11,18 @@ export interface ErrorLogEntry {
 
 interface ErrorLogState {
   logs: ErrorLogEntry[];
-  addLog: (level: 'error' | 'warning' | 'info', message: string, stack?: string, context?: string) => void;
+  addLog: (
+    level: 'error' | 'warning' | 'info',
+    message: string,
+    stack?: string,
+    context?: string
+  ) => void;
   clearLogs: () => void;
-  filterLogs: (level?: 'error' | 'warning' | 'info', startTime?: Date, endTime?: Date) => ErrorLogEntry[];
+  filterLogs: (
+    level?: 'error' | 'warning' | 'info',
+    startTime?: Date,
+    endTime?: Date
+  ) => ErrorLogEntry[];
 }
 
 export const useErrorLogStore = create<ErrorLogState>((set, get) => ({
@@ -48,4 +57,3 @@ export const useErrorLogStore = create<ErrorLogState>((set, get) => ({
     });
   },
 }));
-

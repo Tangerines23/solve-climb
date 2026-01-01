@@ -105,7 +105,9 @@
   display: flex;
   gap: var(--spacing-md);
   cursor: pointer;
-  transition: background-color 0.2s, transform 0.1s;
+  transition:
+    background-color 0.2s,
+    transform 0.1s;
   position: relative;
 }
 
@@ -183,4 +185,3 @@
 .notification-item.read .notification-item-message {
   color: var(--color-gray-500);
 }
-

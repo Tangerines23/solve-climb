@@ -39,7 +39,10 @@ async function verifyProfileSync(userId: string): Promise<{ synced: boolean; iss
       return { synced: false, issues };
     }
 
-    const calculatedScore = (gameRecords || []).reduce((sum, record) => sum + (record.mastery_score || 0), 0);
+    const calculatedScore = (gameRecords || []).reduce(
+      (sum, record) => sum + (record.mastery_score || 0),
+      0
+    );
     const profileScore = profile?.total_mastery_score || 0;
 
     if (Math.abs(calculatedScore - profileScore) > 0.01) {
@@ -119,7 +122,7 @@ async function verifyBadgesSync(userId: string): Promise<{ synced: boolean; issu
       return { synced: false, issues };
     }
 
-    const badgeIds = new Set((userBadges || []).map(b => b.badge_id));
+    const badgeIds = new Set((userBadges || []).map((b) => b.badge_id));
 
     // 뱃지 정의 조회
     const { data: badgeDefinitions, error: defError } = await supabase
@@ -131,7 +134,7 @@ async function verifyBadgesSync(userId: string): Promise<{ synced: boolean; issu
       return { synced: false, issues };
     }
 
-    const definedIds = new Set((badgeDefinitions || []).map(b => b.id));
+    const definedIds = new Set((badgeDefinitions || []).map((b) => b.id));
 
     // 사용자가 가지고 있는 뱃지 중 정의에 없는 뱃지 확인
     for (const badgeId of badgeIds) {
@@ -170,16 +173,14 @@ async function verifyInventorySync(userId: string): Promise<{ synced: boolean; i
     }
 
     // 아이템 정의 조회
-    const { data: items, error: itemsError } = await supabase
-      .from('items')
-      .select('id');
+    const { data: items, error: itemsError } = await supabase.from('items').select('id');
 
     if (itemsError) {
       issues.push(`아이템 정의 조회 실패: ${itemsError.message}`);
       return { synced: false, issues };
     }
 
-    const itemIds = new Set((items || []).map(i => i.id));
+    const itemIds = new Set((items || []).map((i) => i.id));
 
     // 인벤토리에 있는 아이템 중 정의에 없는 아이템 확인
     for (const invItem of inventory || []) {
@@ -219,4 +220,3 @@ export async function verifySync(userId: string): Promise<SyncResult> {
     inventory,
   };
 }
-

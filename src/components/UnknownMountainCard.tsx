@@ -1,17 +1,17 @@
-import React, { useState, useRef } from 'react';
+import { useState, useRef } from 'react';
 import './UnknownMountainCard.css';
 
 const explorerMessages = [
-  "아직 지도에 표시되지 않은 구역이에요! 🗺️",
-  "이 산은 아직 구름 속에 가려져 있어요 ☁️",
-  "안개가 걷히면 등반할 수 있어요! 🌫️",
-  "아직 누구도 정복하지 못한 미개척지예요 🚩",
-  "셰르파들이 안전한 길을 찾는 중입니다 🧗",
-  "이곳의 좌표는 아직 비밀에 부쳐져 있어요 🤫",
-  "나침반이 방향을 찾지 못하고 빙글빙글 도네요 🧭",
-  "전설 속에만 존재하는 신비의 산입니다 ✨",
-  "베이스캠프에서 장비를 점검하고 있어요 🎒",
-  "곧 입산 통제가 해제될 예정입니다 🚧"
+  '아직 지도에 표시되지 않은 구역이에요! 🗺️',
+  '이 산은 아직 구름 속에 가려져 있어요 ☁️',
+  '안개가 걷히면 등반할 수 있어요! 🌫️',
+  '아직 누구도 정복하지 못한 미개척지예요 🚩',
+  '셰르파들이 안전한 길을 찾는 중입니다 🧗',
+  '이곳의 좌표는 아직 비밀에 부쳐져 있어요 🤫',
+  '나침반이 방향을 찾지 못하고 빙글빙글 도네요 🧭',
+  '전설 속에만 존재하는 신비의 산입니다 ✨',
+  '베이스캠프에서 장비를 점검하고 있어요 🎒',
+  '곧 입산 통제가 해제될 예정입니다 🚧',
 ];
 
 interface UnknownMountainCardProps {
@@ -29,12 +29,12 @@ export function UnknownMountainCard({ onToast }: UnknownMountainCardProps) {
     if (now - lastClickTimeRef.current < CLICK_COOLDOWN) {
       return;
     }
-    
+
     lastClickTimeRef.current = now;
-    
+
     // 랜덤 메시지 선택
     const randomMessage = explorerMessages[Math.floor(Math.random() * explorerMessages.length)];
-    
+
     if (onToast) {
       onToast(randomMessage);
     }
@@ -81,4 +81,3 @@ export function UnknownMountainCard({ onToast }: UnknownMountainCardProps) {
     </div>
   );
 }
-

@@ -45,28 +45,25 @@ export async function loadTierDefinitions(): Promise<TierInfo[]> {
   if (cachedTierLevels && Date.now() - cacheTimestamp < CACHE_DURATION) {
     return cachedTierLevels;
   }
-  
+
   try {
-    const { data, error } = await supabase
-      .from('tier_definitions')
-      .select('*')
-      .order('level');
-    
+    const { data, error } = await supabase.from('tier_definitions').select('*').order('level');
+
     if (error || !data || data.length === 0) {
       // 폴백: 하드코딩된 기본값
       cachedTierLevels = FALLBACK_TIER_DEFINITIONS;
       cacheTimestamp = Date.now();
       return cachedTierLevels;
     }
-    
-    cachedTierLevels = data.map(item => ({
+
+    cachedTierLevels = data.map((item) => ({
       level: item.level as TierLevel,
       name: item.name,
       icon: item.icon,
       minScore: item.min_score,
       colorVar: item.color_var,
     }));
-    
+
     cacheTimestamp = Date.now();
     return cachedTierLevels;
   } catch (error) {
@@ -87,21 +84,21 @@ export async function loadCycleCap(): Promise<number> {
   if (cachedCycleCap !== null && Date.now() - cacheTimestamp < CACHE_DURATION) {
     return cachedCycleCap;
   }
-  
+
   try {
     const { data, error } = await supabase
       .from('game_config')
       .select('value')
       .eq('key', 'tier_cycle_cap')
       .single();
-    
+
     if (error || !data) {
       // 폴백: 기본값
       cachedCycleCap = FALLBACK_CYCLE_CAP;
       cacheTimestamp = Date.now();
       return cachedCycleCap;
     }
-    
+
     cachedCycleCap = parseInt(data.value, 10);
     cacheTimestamp = Date.now();
     return cachedCycleCap;
@@ -130,38 +127,33 @@ function calculateLevel(score: number, tierLevels: TierInfo[]): TierLevel {
 
 /**
  * 무한 등반(순환제) 계산 로직
- * 
+ *
  * @param totalScore 총 마스터리 점수
  * @returns { level: 티어 레벨, stars: 별 개수, totalScore: 총 점수, currentCycleScore: 현재 사이클 내 점수 }
  */
-export async function calculateTier(
-  totalScore: number
-): Promise<TierCalculationResult> {
-  const [tierLevels, cycleCap] = await Promise.all([
-    loadTierDefinitions(),
-    loadCycleCap(),
-  ]);
-  
+export async function calculateTier(totalScore: number): Promise<TierCalculationResult> {
+  const [tierLevels, cycleCap] = await Promise.all([loadTierDefinitions(), loadCycleCap()]);
+
   // 첫 사이클 이전 (250,000점 이하)
   if (totalScore <= cycleCap) {
-    return { 
-      level: calculateLevel(totalScore, tierLevels), 
+    return {
+      level: calculateLevel(totalScore, tierLevels),
       stars: 0,
       totalScore,
-      currentCycleScore: totalScore
+      currentCycleScore: totalScore,
     };
   }
-  
+
   // 사이클 이후: 사이클 수와 현재 사이클 내 점수 계산
   // 250,001점부터 다음 사이클 시작 (버퍼 적용)
   const cycleCount = Math.floor((totalScore - 1) / cycleCap); // 사이클 수 (별 개수)
   const currentCycleScore = ((totalScore - 1) % cycleCap) + 1; // 현재 사이클 내 점수 (1부터 시작)
-  
+
   return {
     level: calculateLevel(currentCycleScore, tierLevels),
     stars: cycleCount,
     totalScore,
-    currentCycleScore
+    currentCycleScore,
   };
 }
 
@@ -175,71 +167,70 @@ export function calculateTierSync(
 ): TierCalculationResult {
   // 첫 사이클 이전 (250,000점 이하)
   if (totalScore <= cycleCap) {
-    return { 
-      level: calculateLevel(totalScore, tierLevels), 
+    return {
+      level: calculateLevel(totalScore, tierLevels),
       stars: 0,
       totalScore,
-      currentCycleScore: totalScore
+      currentCycleScore: totalScore,
     };
   }
-  
+
   // 사이클 이후: 250,001점부터 다음 사이클 시작 (버퍼 적용)
   const cycleCount = Math.floor((totalScore - 1) / cycleCap);
   const currentCycleScore = ((totalScore - 1) % cycleCap) + 1;
-  
+
   return {
     level: calculateLevel(currentCycleScore, tierLevels),
     stars: cycleCount,
     totalScore,
-    currentCycleScore
+    currentCycleScore,
   };
 }
 
 /**
  * 다음 티어까지 필요한 점수
  */
-export async function getNextTierInfo(currentScore: number): Promise<{ name: string; minScore: number; remaining: number } | null> {
-  const [tierLevels, cycleCap] = await Promise.all([
-    loadTierDefinitions(),
-    loadCycleCap(),
-  ]);
-  
+export async function getNextTierInfo(
+  currentScore: number
+): Promise<{ name: string; minScore: number; remaining: number } | null> {
+  const [tierLevels, cycleCap] = await Promise.all([loadTierDefinitions(), loadCycleCap()]);
+
   const tierResult = await calculateTier(currentScore);
-  
+
   // 첫 사이클 이전
   if (tierResult.stars === 0) {
-    const nextTier = tierLevels.find(t => t.level === tierResult.level + 1);
+    const nextTier = tierLevels.find((t) => t.level === tierResult.level + 1);
     if (!nextTier) {
       // 전설까지 도달: 다음 사이클 시작까지
       return {
         name: '다음 사이클',
         minScore: cycleCap,
-        remaining: cycleCap - currentScore
+        remaining: cycleCap - currentScore,
       };
     }
     return {
       name: nextTier.name,
       minScore: nextTier.minScore,
-      remaining: nextTier.minScore - currentScore
+      remaining: nextTier.minScore - currentScore,
     };
   }
-  
+
   // 사이클 이후: 현재 사이클 내에서 다음 레벨까지
-  const nextTier = tierLevels.find(t => t.level === tierResult.level + 1);
-  
+  const nextTier = tierLevels.find((t) => t.level === tierResult.level + 1);
+
   if (nextTier) {
     // 같은 사이클 내 다음 레벨
     return {
       name: nextTier.name,
       minScore: nextTier.minScore,
-      remaining: nextTier.minScore - tierResult.currentCycleScore
+      remaining: nextTier.minScore - tierResult.currentCycleScore,
     };
   } else {
     // 전설까지 도달: 다음 사이클 시작까지
     return {
       name: '다음 사이클',
       minScore: cycleCap,
-      remaining: cycleCap - tierResult.currentCycleScore
+      remaining: cycleCap - tierResult.currentCycleScore,
     };
   }
 }
@@ -249,6 +240,5 @@ export async function getNextTierInfo(currentScore: number): Promise<{ name: str
  */
 export async function getTierInfo(level: TierLevel): Promise<TierInfo | null> {
   const tierLevels = await loadTierDefinitions();
-  return tierLevels.find(t => t.level === level) || null;
+  return tierLevels.find((t) => t.level === level) || null;
 }
-

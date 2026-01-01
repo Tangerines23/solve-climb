@@ -3,7 +3,6 @@
  * 여러 로딩 작업이 진행 중일 때 표시됩니다.
  */
 
-import React from 'react';
 import { useLoadingStore } from '../stores/useLoadingStore';
 import './GlobalLoadingIndicator.css';
 
@@ -21,4 +20,3 @@ export function GlobalLoadingIndicator() {
     </div>
   );
 }
-

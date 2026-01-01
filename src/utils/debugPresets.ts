@@ -4,7 +4,15 @@ import { useQuizStore, type TimeLimit } from '../stores/useQuizStore';
 import { calculateScoreForTier } from './tierUtils';
 
 export interface DebugAction {
-  type: 'reset' | 'setTier' | 'setMasteryScore' | 'setMinerals' | 'setStamina' | 'grantAllItems' | 'grantAllBadges' | 'setGameTime';
+  type:
+    | 'reset'
+    | 'setTier'
+    | 'setMasteryScore'
+    | 'setMinerals'
+    | 'setStamina'
+    | 'grantAllItems'
+    | 'grantAllBadges'
+    | 'setGameTime';
   target?: string; // reset 타입에서 사용 ('all' | 'score' | 'minerals' | 'tier')
   level?: number; // setTier에서 사용
   value?: number; // setMinerals, setStamina, setMasteryScore에서 사용
@@ -48,7 +56,7 @@ export const debugPresets: DebugPreset[] = [
       { type: 'setTier', level: 0 },
       { type: 'setMinerals', value: 0 },
       { type: 'setStamina', value: 5 },
-    ]
+    ],
   },
   {
     id: 'veteran',
@@ -60,7 +68,7 @@ export const debugPresets: DebugPreset[] = [
       { type: 'setMinerals', value: 999999 },
       { type: 'grantAllItems', quantity: 99 },
       { type: 'grantAllBadges' },
-    ]
+    ],
   },
   {
     id: 'crisis',
@@ -69,7 +77,7 @@ export const debugPresets: DebugPreset[] = [
     actions: [
       { type: 'setStamina', value: 0 },
       { type: 'setGameTime', seconds: 5 },
-    ]
+    ],
   },
   {
     id: 'midgame',
@@ -80,8 +88,8 @@ export const debugPresets: DebugPreset[] = [
       { type: 'setMinerals', value: 10000 },
       { type: 'setStamina', value: 3 },
       { type: 'grantAllItems', quantity: 10 },
-    ]
-  }
+    ],
+  },
 ];
 
 /**
@@ -143,24 +151,20 @@ export async function executeDebugAction(action: DebugAction, userId: string): P
 
     case 'grantAllItems': {
       // items 테이블에서 모든 아이템 조회
-      const { data: items, error: itemsError } = await supabase
-        .from('items')
-        .select('id');
+      const { data: items, error: itemsError } = await supabase.from('items').select('id');
 
       if (itemsError) throw itemsError;
 
       // 배치 upsert: 한 번의 네트워크 요청으로 모든 아이템 처리
-      const inventoryData = (items || []).map(item => ({
+      const inventoryData = (items || []).map((item) => ({
         user_id: userId,
         item_id: item.id,
-        quantity: action.quantity || 99
+        quantity: action.quantity || 99,
       }));
 
-      const { error: upsertError } = await supabase
-        .from('inventory')
-        .upsert(inventoryData, { 
-          onConflict: 'user_id,item_id' 
-        });
+      const { error: upsertError } = await supabase.from('inventory').upsert(inventoryData, {
+        onConflict: 'user_id,item_id',
+      });
 
       if (upsertError) throw upsertError;
       break;
@@ -175,14 +179,16 @@ export async function executeDebugAction(action: DebugAction, userId: string): P
       if (badgesError) throw badgesError;
 
       // Promise.allSettled로 병렬 처리: 모든 뱃지를 동시에 지급 (일부 실패해도 계속 진행)
-      const badgePromises = (badges || []).map((badge, index) =>
-        supabase.rpc('debug_grant_badge', {
-          p_user_id: userId,
-          p_badge_id: badge.id
-        }).then(
-          (result) => ({ success: true, badgeId: badge.id, result }),
-          (error) => ({ success: false, badgeId: badge.id, error })
-        )
+      const badgePromises = (badges || []).map((badge) =>
+        supabase
+          .rpc('debug_grant_badge', {
+            p_user_id: userId,
+            p_badge_id: badge.id,
+          })
+          .then(
+            (result) => ({ success: true, badgeId: badge.id, result }),
+            (error) => ({ success: false, badgeId: badge.id, error })
+          )
       );
 
       const results = await Promise.allSettled(badgePromises);
@@ -194,14 +200,14 @@ export async function executeDebugAction(action: DebugAction, userId: string): P
             return { badgeId: badges?.[index]?.id || 'unknown', error: result.reason };
           }
           if (result.status === 'fulfilled' && !result.value.success) {
-            return { badgeId: result.value.badgeId, error: result.value.error };
+            return { badgeId: result.value.badgeId, error: (result.value as any).error };
           }
           return null;
         })
         .filter((f): f is { badgeId: string; error: any } => f !== null);
 
       if (failures.length > 0) {
-        const failedIds = failures.map(f => f.badgeId).join(', ');
+        const failedIds = failures.map((f) => f.badgeId).join(', ');
         console.warn(`${failures.length} badges failed to grant:`, failedIds, failures);
         // 일부 실패해도 계속 진행
       }
@@ -210,7 +216,7 @@ export async function executeDebugAction(action: DebugAction, userId: string): P
 
     case 'setGameTime': {
       const seconds = action.seconds || 5;
-      
+
       // 게임 세션이 진행 중인지 확인
       const { data: session, error: sessionError } = await supabase
         .from('game_sessions')
@@ -227,26 +233,21 @@ export async function executeDebugAction(action: DebugAction, userId: string): P
 
       if (session) {
         // 진행 중인 게임 세션: expires_at을 정확한 시간으로 업데이트
-        const newExpiresAt = new Date(
-          Date.now() + seconds * 1000
-        ).toISOString();
-        
+        const newExpiresAt = new Date(Date.now() + seconds * 1000).toISOString();
+
         const { error: updateError } = await supabase
           .from('game_sessions')
           .update({ expires_at: newExpiresAt })
           .eq('id', session.id);
-          
+
         if (updateError) throw updateError;
       } else {
         // 게임이 진행 중이 아닐 때: useQuizStore의 timeLimit 설정 (다음 게임 시작 시 적용)
         // TimeLimit 타입에 맞게 매핑 (10 | 15 | 60 | 120 | 180)
         const { setTimeLimit } = useQuizStore.getState();
         const mappedTime: TimeLimit =
-          seconds <= 10 ? 10 :
-          seconds <= 15 ? 15 :
-          seconds <= 60 ? 60 :
-          seconds <= 120 ? 120 : 180;
-        
+          seconds <= 10 ? 10 : seconds <= 15 ? 15 : seconds <= 60 ? 60 : seconds <= 120 ? 120 : 180;
+
         setTimeLimit(mappedTime);
       }
       break;
@@ -279,12 +280,12 @@ export function getPresetHistories(): PresetHistory[] {
   try {
     const stored = localStorage.getItem(PRESET_HISTORY_KEY);
     if (!stored) return [];
-    
+
     const histories = JSON.parse(stored) as PresetHistory[];
     // Date 객체 복원
-    return histories.map(h => ({
+    return histories.map((h) => ({
       ...h,
-      appliedAt: new Date(h.appliedAt)
+      appliedAt: new Date(h.appliedAt),
     }));
   } catch (error) {
     console.error('Failed to load preset history:', error);
@@ -309,7 +310,9 @@ export async function applyPreset(
   refetch?: () => Promise<void>
 ): Promise<void> {
   // 기본 프리셋과 커스텀 프리셋 모두에서 찾기
-  const preset = debugPresets.find(p => p.id === presetId) || getCustomPresets().find(p => p.id === presetId);
+  const preset =
+    debugPresets.find((p) => p.id === presetId) ||
+    getCustomPresets().find((p) => p.id === presetId);
   if (!preset) {
     throw new Error(`Preset not found: ${presetId}`);
   }
@@ -322,7 +325,7 @@ export async function applyPreset(
   try {
     for (let i = 0; i < preset.actions.length; i++) {
       let action = preset.actions[i];
-      
+
       // setMasteryScore 액션에서 value가 -1이면 동적 계산 필요
       if (action.type === 'setMasteryScore' && action.value === -1) {
         // veteran 프리셋: calculateScoreForTier(6, 10, 100000)
@@ -333,7 +336,7 @@ export async function applyPreset(
           throw new Error(`setMasteryScore with value -1 is only supported for veteran preset`);
         }
       }
-      
+
       try {
         await executeDebugAction(action, userId);
         executedActions.push(action);
@@ -354,7 +357,7 @@ export async function applyPreset(
     // 상태 동기화
     const { fetchUserData } = useUserStore.getState();
     await fetchUserData();
-    
+
     if (refetch) {
       await refetch();
     }
@@ -366,11 +369,11 @@ export async function applyPreset(
       presetName: preset.name,
       appliedAt: startTime,
       userId,
-      success: true
+      success: true,
     });
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : String(error);
-    
+
     // 실패 히스토리 저장
     savePresetHistory({
       id: historyId,
@@ -379,9 +382,9 @@ export async function applyPreset(
       appliedAt: startTime,
       userId,
       success: false,
-      error: errorMessage
+      error: errorMessage,
     });
-    
+
     throw error;
   }
 }
@@ -395,11 +398,11 @@ export function getCustomPresets(): CustomPreset[] {
   try {
     const stored = localStorage.getItem(CUSTOM_PRESET_KEY);
     if (!stored) return [];
-    
+
     const presets = JSON.parse(stored) as CustomPreset[];
-    return presets.map(p => ({
+    return presets.map((p) => ({
       ...p,
-      isCustom: true as const
+      isCustom: true as const,
     }));
   } catch (error) {
     console.error('Failed to load custom presets:', error);
@@ -410,8 +413,8 @@ export function getCustomPresets(): CustomPreset[] {
 export function saveCustomPreset(preset: CustomPreset): void {
   try {
     const presets = getCustomPresets();
-    const existingIndex = presets.findIndex(p => p.id === preset.id);
-    
+    const existingIndex = presets.findIndex((p) => p.id === preset.id);
+
     if (existingIndex >= 0) {
       // 기존 프리셋 수정
       presets[existingIndex] = preset;
@@ -419,7 +422,7 @@ export function saveCustomPreset(preset: CustomPreset): void {
       // 새 프리셋 추가
       presets.push(preset);
     }
-    
+
     localStorage.setItem(CUSTOM_PRESET_KEY, JSON.stringify(presets));
   } catch (error) {
     console.error('Failed to save custom preset:', error);
@@ -430,7 +433,7 @@ export function saveCustomPreset(preset: CustomPreset): void {
 export function deleteCustomPreset(presetId: string): void {
   try {
     const presets = getCustomPresets();
-    const filtered = presets.filter(p => p.id !== presetId);
+    const filtered = presets.filter((p) => p.id !== presetId);
     localStorage.setItem(CUSTOM_PRESET_KEY, JSON.stringify(filtered));
   } catch (error) {
     console.error('Failed to delete custom preset:', error);
@@ -451,12 +454,12 @@ export function exportCustomPresets(): string {
 export function importCustomPresets(json: string): void {
   try {
     const presets = JSON.parse(json) as CustomPreset[];
-    
+
     // 유효성 검사
     if (!Array.isArray(presets)) {
       throw new Error('Invalid preset format: must be an array');
     }
-    
+
     // 각 프리셋 검증
     for (const preset of presets) {
       if (!preset.id || !preset.name || !Array.isArray(preset.actions)) {
@@ -465,22 +468,21 @@ export function importCustomPresets(json: string): void {
       // isCustom 플래그 추가
       preset.isCustom = true;
     }
-    
+
     // 기존 프리셋과 병합 (id 기준으로 중복 체크)
     const existing = getCustomPresets();
-    const existingIds = new Set(existing.map(p => p.id));
-    
+    const existingIds = new Set(existing.map((p) => p.id));
+
     const merged = [...existing];
     for (const preset of presets) {
       if (!existingIds.has(preset.id)) {
         merged.push(preset);
       }
     }
-    
+
     localStorage.setItem(CUSTOM_PRESET_KEY, JSON.stringify(merged));
   } catch (error) {
     console.error('Failed to import custom presets:', error);
     throw error;
   }
 }
-

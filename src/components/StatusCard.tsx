@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { APP_CONFIG } from '../config/app';
 import { useLevelProgressStore } from '../stores/useLevelProgressStore';
@@ -24,10 +24,10 @@ export function StatusCard() {
   const fetchUserData = () => {
     try {
       setState('loading');
-      
+
       // 로컬 데이터로 통계 계산
       const { progress } = useLevelProgressStore.getState();
-      
+
       // 모든 카테고리에서 최고 점수 찾기
       let bestScore = 0;
 
@@ -50,7 +50,7 @@ export function StatusCard() {
         rankPercent: 0,
         rankChange: 0,
       };
-      
+
       setStatus(userStatus);
       setState('success');
     } catch (error) {
@@ -76,13 +76,13 @@ export function StatusCard() {
           <div className="skeleton-line medium"></div>
         </div>
       )}
-      
+
       {state === 'error' && (
         <div className="status-card-error">
           <p>정보를 불러올 수 없습니다</p>
         </div>
       )}
-      
+
       {state === 'success' && status && (
         <>
           <div className="status-card-header">
@@ -102,4 +102,3 @@ export function StatusCard() {
     </div>
   );
 }
-

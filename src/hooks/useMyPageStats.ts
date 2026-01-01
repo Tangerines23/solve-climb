@@ -26,7 +26,7 @@ interface UseMyPageStatsResult {
 
 /**
  * Supabase에서 사용자 게임 통계를 가져오는 Hook
- * 
+ *
  * RPC 함수를 사용하거나, 직접 쿼리로 집계합니다.
  */
 export function useMyPageStats(): UseMyPageStatsResult {
@@ -93,7 +93,7 @@ export function useMyPageStats(): UseMyPageStatsResult {
       // 로컬 세션 확인
       let currentSession = null;
       let userId = null;
-      
+
       try {
         const localSessionStr = storage.getString(StorageKeys.LOCAL_SESSION);
         const localSession = parseLocalSession(localSessionStr);
@@ -119,7 +119,9 @@ export function useMyPageStats(): UseMyPageStatsResult {
 
       // Supabase 세션 확인 (로컬 세션이 없을 때만)
       if (!currentSession) {
-        const { data: { session: supabaseSession } } = await supabase.auth.getSession();
+        const {
+          data: { session: supabaseSession },
+        } = await supabase.auth.getSession();
         currentSession = supabaseSession;
         setSession(supabaseSession);
       }
@@ -164,7 +166,9 @@ export function useMyPageStats(): UseMyPageStatsResult {
       // 프로필 정보 가져오기 (티어 정보 포함)
       const { data: profileData, error: profileError } = await supabase
         .from('profiles')
-        .select('total_mastery_score, current_tier_level, cycle_promotion_pending, pending_cycle_score')
+        .select(
+          'total_mastery_score, current_tier_level, cycle_promotion_pending, pending_cycle_score'
+        )
         .eq('id', user_id)
         .single();
 
@@ -176,7 +180,7 @@ export function useMyPageStats(): UseMyPageStatsResult {
       // 방법 1: RPC 함수 사용 (권장 - Supabase에 함수가 생성되어 있는 경우)
       try {
         const { data: rpcData, error: rpcError } = await supabase.rpc('get_user_game_stats');
-        
+
         if (!rpcError && rpcData && rpcData.length > 0) {
           const result = rpcData[0];
           setStats({
@@ -192,7 +196,7 @@ export function useMyPageStats(): UseMyPageStatsResult {
           setLoading(false);
           return;
         }
-        
+
         // RPC 함수가 404를 반환한 경우 (함수가 없거나 접근 불가)
         if (rpcError && rpcError.code === 'PGRST116') {
           // 404는 정상적인 폴백 시나리오이므로 경고만 출력
@@ -206,7 +210,7 @@ export function useMyPageStats(): UseMyPageStatsResult {
         if (rpcErr?.status === 404 || rpcErr?.code === 'PGRST116') {
           console.warn('RPC function not found (404), falling back to direct query');
         } else {
-        console.warn('RPC function not available, falling back to direct query:', rpcErr);
+          console.warn('RPC function not available, falling back to direct query:', rpcErr);
         }
       }
 
@@ -226,6 +230,10 @@ export function useMyPageStats(): UseMyPageStatsResult {
           totalSolved: 0,
           maxLevel: 0,
           bestSubject: null,
+          totalMasteryScore: 0,
+          currentTierLevel: null,
+          cyclePromotionPending: false,
+          pendingCycleScore: 0,
         });
         setLoading(false);
         return;
@@ -233,23 +241,24 @@ export function useMyPageStats(): UseMyPageStatsResult {
 
       // 클라이언트에서 집계
       const totalHeight = records.reduce((sum, record) => sum + (record.score || 0), 0);
-      const solvedRecords = records.filter(r => r.cleared === true);
+      const solvedRecords = records.filter((r) => r.cleared === true);
       const totalSolved = solvedRecords.length;
-      const maxLevel = solvedRecords.length > 0
-        ? Math.max(...solvedRecords.map(r => r.level || 0))
-        : 0;
+      const maxLevel =
+        solvedRecords.length > 0 ? Math.max(...solvedRecords.map((r) => r.level || 0)) : 0;
 
       // 과목별 점수 합계 계산
       const subjectScores: Record<string, number> = {};
-      records.forEach(record => {
+      records.forEach((record) => {
         if (record.subject) {
-          subjectScores[record.subject] = (subjectScores[record.subject] || 0) + (record.score || 0);
+          subjectScores[record.subject] =
+            (subjectScores[record.subject] || 0) + (record.score || 0);
         }
       });
 
-      const bestSubject = Object.keys(subjectScores).length > 0
-        ? Object.entries(subjectScores).sort((a, b) => b[1] - a[1])[0][0]
-        : null;
+      const bestSubject =
+        Object.keys(subjectScores).length > 0
+          ? Object.entries(subjectScores).sort((a, b) => b[1] - a[1])[0][0]
+          : null;
 
       setStats({
         totalHeight,
@@ -292,4 +301,3 @@ export function useMyPageStats(): UseMyPageStatsResult {
     refetch: fetchStats,
   };
 }
-

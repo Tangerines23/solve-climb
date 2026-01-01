@@ -1,8 +1,8 @@
 // 게임 로그인 및 토스 로그인 마이그레이션 유틸리티
-import { 
-  getUserKeyForGame, 
-  getIsTossLoginIntegratedService, 
-  appLogin 
+import {
+  getUserKeyForGame,
+  getIsTossLoginIntegratedService,
+  appLogin,
 } from '@apps-in-toss/web-framework';
 import { logError } from './errorHandler';
 import { ENV } from './env';
@@ -15,7 +15,7 @@ function isTossAppEnvironment(): boolean {
   if (typeof window === 'undefined') {
     return false;
   }
-  
+
   // ReactNativeWebView가 있으면 토스 앱 내부
   return !!(window as any).ReactNativeWebView;
 }
@@ -38,14 +38,15 @@ export async function getGameLoginHash(): Promise<GameLoginHashResult> {
   try {
     // 토스 앱 환경 확인
     if (!isTossAppEnvironment()) {
-      const isLocalDev = typeof window !== 'undefined' && 
-                         (window.location.hostname === 'localhost' || 
-                          window.location.hostname === '127.0.0.1' ||
-                          window.location.hostname.includes('192.168.'));
-      
+      const isLocalDev =
+        typeof window !== 'undefined' &&
+        (window.location.hostname === 'localhost' ||
+          window.location.hostname === '127.0.0.1' ||
+          window.location.hostname.includes('192.168.'));
+
       return {
         success: false,
-        error: isLocalDev 
+        error: isLocalDev
           ? '로컬 개발 환경에서는 게임 로그인을 테스트할 수 없습니다. 실제 토스 앱에서 테스트해주세요.'
           : '토스 앱에서만 게임 로그인을 사용할 수 있습니다.',
         errorType: 'ERROR',
@@ -99,7 +100,8 @@ export async function getGameLoginHash(): Promise<GameLoginHashResult> {
     logError('게임 로그인 hash 발급', error);
     return {
       success: false,
-      error: error instanceof Error ? error.message : '게임 로그인 hash 발급 중 오류가 발생했습니다.',
+      error:
+        error instanceof Error ? error.message : '게임 로그인 hash 발급 중 오류가 발생했습니다.',
       errorType: 'ERROR',
     };
   }
@@ -136,7 +138,7 @@ export async function checkTossLoginIntegration(): Promise<TossLoginIntegrationS
   } catch (error) {
     // 토스 로그인을 사용하지 않는 미니앱에서는 예외가 발생할 수 있음
     const errorMessage = error instanceof Error ? error.message : String(error);
-    
+
     if (errorMessage.includes('oauth2ClientId 설정이 필요합니다')) {
       // 토스 로그인 기능이 없는 환경
       return {
@@ -183,7 +185,7 @@ export async function getMigrationStatus(hash: string): Promise<MigrationStatusR
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'apikey': ENV.SUPABASE_ANON_KEY,
+        apikey: ENV.SUPABASE_ANON_KEY,
       },
       body: JSON.stringify({ hash }),
     });
@@ -199,7 +201,10 @@ export async function getMigrationStatus(hash: string): Promise<MigrationStatusR
 
       return {
         success: false,
-        error: errorData.error || errorData.message || `마이그레이션 상태 조회 실패 (${response.status})`,
+        error:
+          errorData.error ||
+          errorData.message ||
+          `마이그레이션 상태 조회 실패 (${response.status})`,
       };
     }
 
@@ -212,7 +217,8 @@ export async function getMigrationStatus(hash: string): Promise<MigrationStatusR
     logError('마이그레이션 상태 조회', error);
     return {
       success: false,
-      error: error instanceof Error ? error.message : '마이그레이션 상태 조회 중 오류가 발생했습니다.',
+      error:
+        error instanceof Error ? error.message : '마이그레이션 상태 조회 중 오류가 발생했습니다.',
     };
   }
 }
@@ -252,7 +258,7 @@ export async function createMigrationLink(
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'apikey': ENV.SUPABASE_ANON_KEY,
+        apikey: ENV.SUPABASE_ANON_KEY,
       },
       body: JSON.stringify({
         hash,
@@ -272,7 +278,10 @@ export async function createMigrationLink(
 
       return {
         success: false,
-        error: errorData.error || errorData.message || `마이그레이션 링크 생성 실패 (${response.status})`,
+        error:
+          errorData.error ||
+          errorData.message ||
+          `마이그레이션 링크 생성 실패 (${response.status})`,
       };
     }
 
@@ -284,7 +293,8 @@ export async function createMigrationLink(
     logError('마이그레이션 링크 생성', error);
     return {
       success: false,
-      error: error instanceof Error ? error.message : '마이그레이션 링크 생성 중 오류가 발생했습니다.',
+      error:
+        error instanceof Error ? error.message : '마이그레이션 링크 생성 중 오류가 발생했습니다.',
     };
   }
 }
@@ -348,7 +358,7 @@ export async function migrateToGameLogin(): Promise<{
 
     // 6. 미매핑 사용자는 토스 로그인 후 매핑 생성
     console.log('[게임 로그인] 미매핑 사용자 - 토스 로그인 후 매핑 생성');
-    
+
     // 토스 로그인 실행 (appLogin은 상단에서 이미 임포트됨)
     console.log('[게임 로그인] appLogin 호출 시작');
     let loginResult;
@@ -401,7 +411,8 @@ export async function migrateToGameLogin(): Promise<{
     logError('게임 로그인 마이그레이션', error);
     return {
       success: false,
-      error: error instanceof Error ? error.message : '게임 로그인 마이그레이션 중 오류가 발생했습니다.',
+      error:
+        error instanceof Error ? error.message : '게임 로그인 마이그레이션 중 오류가 발생했습니다.',
     };
   }
 }

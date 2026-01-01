@@ -258,7 +258,7 @@
 
 .my-page-settings-toggle-slider:before {
   position: absolute;
-  content: "";
+  content: '';
   height: 20px;
   width: 20px;
   left: 4px;

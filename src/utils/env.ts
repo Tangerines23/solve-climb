@@ -29,10 +29,7 @@ export interface EnvConfig {
 /**
  * 필수 환경 변수 목록
  */
-const REQUIRED_ENV_VARS = [
-  'VITE_SUPABASE_URL',
-  'VITE_SUPABASE_ANON_KEY',
-] as const;
+const REQUIRED_ENV_VARS = ['VITE_SUPABASE_URL', 'VITE_SUPABASE_ANON_KEY'] as const;
 
 /**
  * 환경 변수 검증 결과
@@ -48,7 +45,7 @@ interface ValidationResult {
  * @param strict 엄격 모드 (프로덕션에서는 true, 개발에서는 false)
  * @returns 검증 결과
  */
-function validateEnv(strict: boolean = isProduction): ValidationResult {
+function validateEnv(_strict: boolean = isProduction): ValidationResult {
   const missing: string[] = [];
   const errors: string[] = [];
 
@@ -149,4 +146,3 @@ export function logEnvInfo(): void {
     logger.info('Env', `Supabase Anon Key: ${ENV.SUPABASE_ANON_KEY ? '설정됨' : '미설정'}`);
   });
 }
-

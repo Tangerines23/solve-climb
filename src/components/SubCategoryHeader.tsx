@@ -1,4 +1,3 @@
-import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { APP_CONFIG } from '../config/app';
 import './SubCategoryHeader.css';
@@ -17,7 +16,7 @@ export function SubCategoryHeader({ categoryId }: SubCategoryHeaderProps) {
   // 카테고리 ID로 카테고리 이름 가져오기
   const getCategoryName = (id: string | null): string => {
     if (!id) return '주제 선택';
-    const category = APP_CONFIG.CATEGORIES.find(cat => cat.id === id);
+    const category = APP_CONFIG.CATEGORIES.find((cat) => cat.id === id);
     return category ? category.name : '주제 선택';
   };
 
@@ -33,4 +32,3 @@ export function SubCategoryHeader({ categoryId }: SubCategoryHeaderProps) {
     </header>
   );
 }
-

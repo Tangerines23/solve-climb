@@ -7,7 +7,14 @@ import tsparser from '@typescript-eslint/parser'
 import { defineConfig, globalIgnores } from 'eslint/config'
 
 export default defineConfig([
-  globalIgnores(['dist', 'apps-in-toss-examples-main', 'node_modules']),
+  globalIgnores([
+    'dist',
+    'apps-in-toss-examples-main',
+    'node_modules',
+    'android/**',
+    'proxy-server/**',
+    '**/*.js.map',
+  ]),
   {
     files: ['**/*.{js,jsx,ts,tsx}'],
     ignores: ['**/*.backup.tsx', '**/*.refactored.tsx'],
@@ -31,7 +38,13 @@ export default defineConfig([
     },
     rules: {
       ...tseslint.configs.recommended.rules,
-      '@typescript-eslint/no-unused-vars': ['error', { varsIgnorePattern: '^[A-Z_]' }],
+      '@typescript-eslint/no-unused-vars': [
+        'error',
+        {
+          varsIgnorePattern: '^[A-Z_]|^_',
+          argsIgnorePattern: '^[A-Z_]|^_',
+        },
+      ],
       'no-unused-vars': 'off', // TypeScript 규칙 사용
       '@typescript-eslint/no-explicit-any': 'warn', // any 타입 경고로 변경
       'no-undef': 'off', // TypeScript가 타입 체크를 하므로 off

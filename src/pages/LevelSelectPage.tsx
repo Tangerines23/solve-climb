@@ -27,123 +27,10 @@ export function LevelSelectPage() {
   const categoryParam = searchParams.get('category');
   const subParam = searchParams.get('sub');
 
-
-  // URL 파라미터 검증 및 데이터 로드
-  if (!categoryParam || !subParam) {
-    return (
-      <div className="level-select-page">
-        <div className="level-select-error">
-          <h2>잘못된 접근입니다</h2>
-          <p>필수 파라미터가 누락되었습니다.</p>
-          <button onClick={() => navigate('/')} className="error-back-button">
-            ←
-          </button>
-        </div>
-      </div>
-    );
-  }
-
-  // 카테고리와 서브토픽 정보 가져오기
-  const categoryInfo = APP_CONFIG.CATEGORIES.find((cat) => cat.id === categoryParam);
-  const subTopics = APP_CONFIG.SUB_TOPICS[categoryParam as keyof typeof APP_CONFIG.SUB_TOPICS];
-  const subTopicInfo = subTopics?.find((topic) => topic.id === subParam);
-
-  if (!categoryInfo || !subTopicInfo) {
-    return (
-      <div className="level-select-page">
-        <div className="level-select-error">
-          <h2>잘못된 접근입니다</h2>
-          <p>존재하지 않는 카테고리 또는 주제입니다.</p>
-          <button onClick={() => navigate('/')} className="error-back-button">
-            ←
-          </button>
-        </div>
-      </div>
-    );
-  }
-
-  // 레벨 데이터 가져오기
-  const categoryLevels = APP_CONFIG.LEVELS[categoryParam as keyof typeof APP_CONFIG.LEVELS];
-  const levels = (categoryLevels as any)?.[subParam] as Array<{ level: number; name: string; description: string }> | undefined;
-
-  if (!levels || levels.length === 0) {
-    return (
-      <div className="level-select-page">
-        <div className="level-select-error">
-          <h2>레벨 데이터가 없습니다</h2>
-          <p>이 주제에 대한 레벨이 아직 준비되지 않았습니다.</p>
-          <button onClick={() => navigate(-1)} className="error-back-button">
-            ←
-          </button>
-        </div>
-      </div>
-    );
-  }
-
-  // 카테고리별 색상 매핑
-  const categoryColors: Record<string, string> = {
-    math: '#10b981', // 녹색
-    language: '#3b82f6', // 푸른색
-    logic: '#8b5cf6', // 보라색
-    general: '#f59e0b', // 주황색
-  };
-
-  const categoryColor = categoryColors[categoryParam] || '#10b981';
-
-  // 다음 레벨 가져오기
+  // 다음 레벨 가져오기 (early return 전에 호출)
   const getNextLevel = useLevelProgressStore((state) => state.getNextLevel);
-  const nextLevel = getNextLevel(categoryParam, subParam);
 
-  // 개발중인 레벨 체크 함수
-  const isUnderDevelopment = (level: number) => {
-    const UNDER_DEVELOPMENT_LEVELS = new Set([
-      // 개발 중인 레벨이 있으면 여기에 추가 (카테고리_서브토픽_레벨 형식)
-    ]);
-    const levelKey = `${categoryParam}_${subParam}_${level}`;
-    return UNDER_DEVELOPMENT_LEVELS.has(levelKey);
-  };
-
-  // 레벨 클릭 핸들러
-  const handleLevelClick = (level: number, levelName: string) => {
-    // 개발중인 레벨이면 토스트만 표시하고 진입 차단
-    if (isUnderDevelopment(level)) {
-      setToastMessage('아직 개발중입니다 :(');
-      setShowToast(true);
-      return;
-    }
-    setSelectedLevel({ level, name: levelName });
-    setIsModalOpen(true);
-  };
-
-  // 레벨 길게 누르기 핸들러
-  const handleLevelLongPress = (level: number) => {
-    console.log('LevelSelectPage: handleLevelLongPress 호출됨, level:', level, '현재 카운트:', longPressCountRef.current);
-    longPressCountRef.current += 1;
-    
-    if (longPressCountRef.current === 1) {
-      // 첫 번째 호출 (2초): 토스트 표시
-      console.log('LevelSelectPage: 첫 번째 호출 - 토스트 표시');
-      setToastMessage('다시 보지 않기가 풀립니다');
-      setShowToast(true);
-    } else if (longPressCountRef.current >= 2) {
-      // 두 번째 호출 (4초): 실제 해제
-      console.log('LevelSelectPage: 두 번째 호출 - 해제');
-      const tipKey = `gameTip_${categoryParam}_${subParam}_${level}`;
-      storage.remove(tipKey);
-      setToastMessage('해제되었습니다!');
-      setShowToast(true);
-      // 다음 길게 누르기를 위해 리셋하지 않음 (손을 떼면 리셋됨)
-    }
-  };
-
-  // 잠긴 레벨 클릭 핸들러
-  const handleLockedLevelClick = (_level: number, _nextLevel: number) => {
-    setToastMessage(`Level ${nextLevel}의 문제 10문제를 맞추고 와야 해요`);
-    setShowToast(true);
-  };
-
-  // [핵심 2] useLayoutEffect 사용 (useEffect 대신)
-  // 브라우저가 화면을 그리기(Paint) 직전에 실행됩니다.
+  // Hooks를 early return 전에 호출
   useLayoutEffect(() => {
     const container = scrollContainerRef.current;
 
@@ -195,6 +82,126 @@ export function LevelSelectPage() {
     };
   }, []);
 
+  // URL 파라미터 검증 및 데이터 로드
+  if (!categoryParam || !subParam) {
+    return (
+      <div className="level-select-page">
+        <div className="level-select-error">
+          <h2>잘못된 접근입니다</h2>
+          <p>필수 파라미터가 누락되었습니다.</p>
+          <button onClick={() => navigate('/')} className="error-back-button">
+            ←
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  // 카테고리와 서브토픽 정보 가져오기
+  const categoryInfo = APP_CONFIG.CATEGORIES.find((cat) => cat.id === categoryParam);
+  const subTopics = APP_CONFIG.SUB_TOPICS[categoryParam as keyof typeof APP_CONFIG.SUB_TOPICS];
+  const subTopicInfo = subTopics?.find((topic) => topic.id === subParam);
+
+  if (!categoryInfo || !subTopicInfo) {
+    return (
+      <div className="level-select-page">
+        <div className="level-select-error">
+          <h2>잘못된 접근입니다</h2>
+          <p>존재하지 않는 카테고리 또는 주제입니다.</p>
+          <button onClick={() => navigate('/')} className="error-back-button">
+            ←
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  // 레벨 데이터 가져오기
+  const categoryLevels = APP_CONFIG.LEVELS[categoryParam as keyof typeof APP_CONFIG.LEVELS];
+  const levels = (categoryLevels as any)?.[subParam] as
+    | Array<{ level: number; name: string; description: string }>
+    | undefined;
+
+  if (!levels || levels.length === 0) {
+    return (
+      <div className="level-select-page">
+        <div className="level-select-error">
+          <h2>레벨 데이터가 없습니다</h2>
+          <p>이 주제에 대한 레벨이 아직 준비되지 않았습니다.</p>
+          <button onClick={() => navigate(-1)} className="error-back-button">
+            ←
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  // 카테고리별 색상 매핑
+  const categoryColors: Record<string, string> = {
+    math: '#10b981', // 녹색
+    language: '#3b82f6', // 푸른색
+    logic: '#8b5cf6', // 보라색
+    general: '#f59e0b', // 주황색
+  };
+
+  const categoryColor = categoryColors[categoryParam] || '#10b981';
+
+  // 다음 레벨 계산
+  const nextLevel = getNextLevel(categoryParam, subParam);
+
+  // 개발중인 레벨 체크 함수
+  const isUnderDevelopment = (level: number) => {
+    const UNDER_DEVELOPMENT_LEVELS = new Set<string>([
+      // 개발 중인 레벨이 있으면 여기에 추가 (카테고리_서브토픽_레벨 형식)
+    ]);
+    const levelKey = `${categoryParam}_${subParam}_${level}`;
+    return UNDER_DEVELOPMENT_LEVELS.has(levelKey);
+  };
+
+  // 레벨 클릭 핸들러
+  const handleLevelClick = (level: number, levelName: string) => {
+    // 개발중인 레벨이면 토스트만 표시하고 진입 차단
+    if (isUnderDevelopment(level)) {
+      setToastMessage('아직 개발중입니다 :(');
+      setShowToast(true);
+      return;
+    }
+    setSelectedLevel({ level, name: levelName });
+    setIsModalOpen(true);
+  };
+
+  // 레벨 길게 누르기 핸들러
+  const handleLevelLongPress = (level: number) => {
+    console.log(
+      'LevelSelectPage: handleLevelLongPress 호출됨, level:',
+      level,
+      '현재 카운트:',
+      longPressCountRef.current
+    );
+    longPressCountRef.current += 1;
+
+    if (longPressCountRef.current === 1) {
+      // 첫 번째 호출 (2초): 토스트 표시
+      console.log('LevelSelectPage: 첫 번째 호출 - 토스트 표시');
+      setToastMessage('다시 보지 않기가 풀립니다');
+      setShowToast(true);
+    } else if (longPressCountRef.current >= 2) {
+      // 두 번째 호출 (4초): 실제 해제
+      console.log('LevelSelectPage: 두 번째 호출 - 해제');
+      const tipKey = `gameTip_${categoryParam}_${subParam}_${level}`;
+      storage.remove(tipKey);
+      setToastMessage('해제되었습니다!');
+      setShowToast(true);
+      // 다음 길게 누르기를 위해 리셋하지 않음 (손을 떼면 리셋됨)
+    }
+  };
+
+  // 잠긴 레벨 클릭 핸들러
+  const handleLockedLevelClick = (_level: number, _nextLevel: number) => {
+    setToastMessage(`Level ${nextLevel}의 문제 10문제를 맞추고 와야 해요`);
+    setShowToast(true);
+  };
+
   // 모드 선택 핸들러
   const handleModeSelect = (mode: 'time-attack' | 'survival') => {
     const modeParam = mode === 'time-attack' ? 'time_attack' : 'survival';
@@ -219,8 +226,8 @@ export function LevelSelectPage() {
     >
       {/* 상단 헤더 */}
       <header className="level-select-header">
-        <button 
-          className="level-select-back" 
+        <button
+          className="level-select-back"
           onClick={() => {
             // 이전 페이지(상위 페이지)로 이동
             if (categoryParam) {
@@ -302,4 +309,3 @@ export function LevelSelectPage() {
     </div>
   );
 }
-

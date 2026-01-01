@@ -1,5 +1,5 @@
 // 문제 생성 유틸리티
-import { Category, Topic, CategoryTopic, QuizQuestion, Difficulty } from '../types/quiz';
+import { Category, Topic, QuizQuestion, Difficulty } from '../types/quiz';
 import { generateRandomNumber } from './math';
 import { generateJapaneseQuestion } from './japanese';
 import { NUMBER_RANGE_BY_DIFFICULTY } from '../constants/game';
@@ -29,22 +29,24 @@ export function generateQuestion(
 /**
  * 수학 문제 생성
  */
-function generateMathQuestion(topic: '덧셈' | '뺄셈' | '곱셈' | '나눗셈' | 'equations' | 'calculus', difficulty: Difficulty): QuizQuestion {
+function generateMathQuestion(
+  topic: '덧셈' | '뺄셈' | '곱셈' | '나눗셈' | 'equations' | 'calculus',
+  difficulty: Difficulty
+): QuizQuestion {
   // 방정식 문제 처리
   if (topic === 'equations') {
     return generateEquationQuestion(difficulty);
   }
-  
+
   // 미적분 문제 처리
   if (topic === 'calculus') {
     return generateCalculusQuestion(difficulty);
   }
-  
+
   // 기존 사칙연산 문제 (0이 나오지 않도록 처리)
   // 0이 나오지 않도록 랜덤 숫자 생성 (최소값 1)
   const generateNonZeroNumber = (difficulty: Difficulty): number => {
-    const range =
-      NUMBER_RANGE_BY_DIFFICULTY[difficulty] || NUMBER_RANGE_BY_DIFFICULTY['easy'];
+    const range = NUMBER_RANGE_BY_DIFFICULTY[difficulty] || NUMBER_RANGE_BY_DIFFICULTY['easy'];
     const { min, max } = range;
     // 최소값이 0이면 1로 변경, 아니면 그대로 사용
     const adjustedMin = min === 0 ? 1 : min;
@@ -127,11 +129,11 @@ function generateLanguageQuestion(topic: any, difficulty: Difficulty): QuizQuest
       answer: romaji,
     };
   }
-  
+
   // 언어 타입-세부분야 형식 (예: "한글-글자", "일본어-문자")
   if (typeof topic === 'string' && topic.includes('-')) {
     const [languageType, subTopic] = topic.split('-');
-    
+
     // 일본어인 경우
     if (languageType === '일본어' || languageType === 'japanese') {
       const { hiragana, romaji } = generateJapaneseQuestion(difficulty);
@@ -140,14 +142,14 @@ function generateLanguageQuestion(topic: any, difficulty: Difficulty): QuizQuest
         answer: romaji,
       };
     }
-    
+
     // 임시로 간단한 문제 생성 (추후 확장)
     return {
       question: `${languageType} ${subTopic} 문제 (개발 중)`,
       answer: 0,
     };
   }
-  
+
   // 기존 형식 (맞춤법, 어휘, 속담)
   return {
     question: `${topic} 문제 (개발 중)`,
@@ -158,7 +160,7 @@ function generateLanguageQuestion(topic: any, difficulty: Difficulty): QuizQuest
 /**
  * 논리 문제 생성 (추후 확장 가능)
  */
-function generateLogicQuestion(topic: any, difficulty: Difficulty): QuizQuestion {
+function generateLogicQuestion(topic: any, _difficulty: Difficulty): QuizQuestion {
   // 임시로 간단한 문제 생성
   return {
     question: `논리 - ${topic} 문제 (개발 중)`,
@@ -169,7 +171,7 @@ function generateLogicQuestion(topic: any, difficulty: Difficulty): QuizQuestion
 /**
  * 상식 문제 생성 (추후 확장 가능)
  */
-function generateGeneralQuestion(topic: any, difficulty: Difficulty): QuizQuestion {
+function generateGeneralQuestion(topic: any, _difficulty: Difficulty): QuizQuestion {
   // 임시로 간단한 문제 생성
   return {
     question: `상식 - ${topic} 문제 (개발 중)`,
@@ -182,7 +184,7 @@ function generateGeneralQuestion(topic: any, difficulty: Difficulty): QuizQuesti
  */
 function generateEquationQuestion(difficulty: Difficulty): QuizQuestion {
   const type = Math.floor(Math.random() * 4); // 0~3: 일차, 이차, 연립, 부등식
-  
+
   switch (type) {
     case 0: // 일차 방정식: x + a = b 또는 ax + b = c
       return generateLinearEquation(difficulty);
@@ -202,13 +204,13 @@ function generateEquationQuestion(difficulty: Difficulty): QuizQuestion {
  */
 function generateLinearEquation(difficulty: Difficulty): QuizQuestion {
   const isSimple = Math.random() < 0.5; // 50% 확률로 간단한 형태
-  
+
   if (isSimple) {
     // x + a = b 형태
     const a = generateRandomNumber(difficulty);
     const x = generateRandomNumber(difficulty);
     const b = x + a;
-    
+
     return {
       question: `x + ${a} = ${b}`,
       answer: x,
@@ -219,7 +221,7 @@ function generateLinearEquation(difficulty: Difficulty): QuizQuestion {
     const x = generateRandomNumber(difficulty);
     const b = generateRandomNumber(difficulty);
     const c = coefficient * x + b;
-    
+
     return {
       question: `${coefficient}x + ${b} = ${c}`,
       answer: x,
@@ -230,14 +232,14 @@ function generateLinearEquation(difficulty: Difficulty): QuizQuestion {
 /**
  * 이차 방정식 생성: x² = a 또는 x² + ax + b = 0
  */
-function generateQuadraticEquation(difficulty: Difficulty): QuizQuestion {
+function generateQuadraticEquation(_difficulty: Difficulty): QuizQuestion {
   const isSimple = Math.random() < 0.5; // 50% 확률로 간단한 형태
-  
+
   if (isSimple) {
     // x² = a 형태 (a는 완전제곱수)
     const x = Math.floor(Math.random() * 10) + 1; // 1~10
     const a = x * x;
-    
+
     return {
       question: `x² = ${a}`,
       answer: x, // 양수 해만 반환
@@ -248,10 +250,10 @@ function generateQuadraticEquation(difficulty: Difficulty): QuizQuestion {
     const x2 = Math.floor(Math.random() * 10) - 5; // -5~5
     const a = -(x1 + x2);
     const b = x1 * x2;
-    
+
     // 더 작은 해를 답으로 사용 (정수 해만)
     const answer = Math.min(x1, x2);
-    
+
     return {
       question: `x² + ${a}x + ${b} = 0`,
       answer: answer,
@@ -268,7 +270,7 @@ function generateSystemEquation(difficulty: Difficulty): QuizQuestion {
   const y = generateRandomNumber(difficulty);
   const a = x + y;
   const b = x - y;
-  
+
   return {
     question: `x + y = ${a}, x - y = ${b}`,
     answer: x, // x 값을 답으로
@@ -282,7 +284,7 @@ function generateInequality(difficulty: Difficulty): QuizQuestion {
   const types = ['>', '<', '≥', '≤'];
   const type = types[Math.floor(Math.random() * types.length)];
   const a = generateRandomNumber(difficulty);
-  
+
   // 부등식을 만족하는 정수 해 중 하나를 답으로
   let answer: number;
   switch (type) {
@@ -301,7 +303,7 @@ function generateInequality(difficulty: Difficulty): QuizQuestion {
     default:
       answer = a + 1;
   }
-  
+
   return {
     question: `x ${type} ${a}`,
     answer: answer,
@@ -315,7 +317,7 @@ function generateCalculusQuestion(difficulty: Difficulty): QuizQuestion {
   // 난이도에 따라 문제 유형 결정
   // easy: 기본 미분, medium: 합/차/곱, hard: 삼각함수/지수함수
   const rand = Math.random();
-  
+
   if (difficulty === 'easy') {
     // 기본 미분: x^n, ax^n
     if (rand < 0.5) {
@@ -359,7 +361,7 @@ function generateBasicDerivative(): QuizQuestion {
   const n = Math.floor(Math.random() * 4) + 2; // 2~5
   const x = Math.floor(Math.random() * 5) + 1; // 1~5
   const answer = n * Math.pow(x, n - 1);
-  
+
   return {
     question: `d/dx(x^${n}) = ? (x=${x}일 때)`,
     answer: answer,
@@ -373,7 +375,7 @@ function generateConstantMultipleDerivative(): QuizQuestion {
   const a = Math.floor(Math.random() * 5) + 2; // 2~6
   const n = Math.floor(Math.random() * 4) + 2; // 2~5
   const answer = a * n;
-  
+
   return {
     question: `d/dx(${a}x^${n}) = ? (x=1일 때)`,
     answer: answer,
@@ -387,7 +389,7 @@ function generateSumDerivative(): QuizQuestion {
   const n = Math.floor(Math.random() * 4) + 2; // 2~5
   const m = Math.floor(Math.random() * 4) + 2; // 2~5
   const answer = n + m;
-  
+
   return {
     question: `d/dx(x^${n} + x^${m}) = ? (x=1일 때)`,
     answer: answer,
@@ -401,7 +403,7 @@ function generateProductDerivative(): QuizQuestion {
   const n = Math.floor(Math.random() * 3) + 2; // 2~4
   const m = Math.floor(Math.random() * 3) + 2; // 2~4
   const answer = n + m;
-  
+
   return {
     question: `d/dx(x^${n} · x^${m}) = ? (x=1일 때)`,
     answer: answer,
@@ -414,13 +416,13 @@ function generateProductDerivative(): QuizQuestion {
  */
 function generateTrigonometricDerivative(): QuizQuestion {
   const type = Math.random() < 0.5 ? 'sin' : 'cos';
-  
+
   if (type === 'sin') {
     // d/dx(sin(x)) = cos(x)
     // x=0일 때: cos(0) = 1
     // x=π/2일 때: cos(π/2) = 0
     const useZero = Math.random() < 0.5;
-    
+
     if (useZero) {
       return {
         question: `d/dx(sin(x)) = ? (x=0일 때)`,
@@ -437,7 +439,7 @@ function generateTrigonometricDerivative(): QuizQuestion {
     // x=0일 때: -sin(0) = 0
     // x=π/2일 때: -sin(π/2) = -1
     const useZero = Math.random() < 0.5;
-    
+
     if (useZero) {
       return {
         question: `d/dx(cos(x)) = ? (x=0일 때)`,
@@ -457,7 +459,7 @@ function generateTrigonometricDerivative(): QuizQuestion {
  */
 function generateExponentialDerivative(): QuizQuestion {
   const type = Math.random() < 0.5 ? 'exp' : 'ln';
-  
+
   if (type === 'exp') {
     // d/dx(e^x) = e^x, x=0일 때 e^0 = 1
     return {
@@ -480,7 +482,7 @@ function generateDifferenceDerivative(): QuizQuestion {
   const n = Math.floor(Math.random() * 4) + 3; // 3~6
   const m = Math.floor(Math.random() * 3) + 2; // 2~4
   const answer = n - m;
-  
+
   return {
     question: `d/dx(x^${n} - x^${m}) = ? (x=1일 때)`,
     answer: answer,
@@ -494,7 +496,7 @@ function generateCompositeDerivative(): QuizQuestion {
   const n = Math.floor(Math.random() * 3) + 2; // 2~4
   const m = Math.floor(Math.random() * 2) + 2; // 2~3
   const answer = n * m;
-  
+
   return {
     question: `d/dx((x^${n})^${m}) = ? (x=1일 때)`,
     answer: answer,
@@ -507,7 +509,7 @@ function generateCompositeDerivative(): QuizQuestion {
 function generateMixedTrigonometricDerivative(): QuizQuestion {
   const type = Math.random() < 0.5 ? 'sin' : 'cos';
   const n = Math.floor(Math.random() * 3) + 2; // 2~4
-  
+
   if (type === 'sin') {
     // d/dx(x^n · sin(x)) = nx^(n-1)sin(x) + x^ncos(x)
     // x=0일 때: n·0^(n-1)·sin(0) + 0^n·cos(0) = 0 (n>1인 경우)
@@ -525,4 +527,3 @@ function generateMixedTrigonometricDerivative(): QuizQuestion {
     };
   }
 }
-

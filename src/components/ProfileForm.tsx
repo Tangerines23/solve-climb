@@ -24,31 +24,31 @@ export function ProfileForm({ onComplete, showBackButton = false }: ProfileFormP
   //   try {
   //     setIsGoogleLoading(true);
   //     setError('');
-  //     
+  //
   //     const user = await openGoogleLogin();
-  //     
+  //
   //     // 어드민 이메일 확인
   //     const isAdmin = isAdminEmail(user.email);
-  //     
+  //
   //     if (!isAdmin) {
   //       setError('어드민 계정만 구글 로그인을 사용할 수 있습니다.');
   //       setIsGoogleLoading(false);
   //       return;
   //     }
-  //     
+  //
   //     setGoogleUser({
   //       email: user.email,
   //       name: user.name,
   //       picture: user.picture,
   //     });
-  //     
+  //
   //     // 닉네임 자동 설정
   //     setNickname(user.name || user.email.split('@')[0]);
   //     setIsGoogleLoading(false);
   //   } catch (error) {
   //     console.error('Google login error:', error);
   //     const errorMessage = error instanceof Error ? error.message : '구글 로그인에 실패했습니다.';
-  //     
+  //
   //     // Google Client ID 미설정 에러인 경우 더 자세한 안내 제공
   //     if (errorMessage.includes('Google Client ID가 설정되지 않았습니다')) {
   //       setError(
@@ -100,7 +100,8 @@ export function ProfileForm({ onComplete, showBackButton = false }: ProfileFormP
       supabase.auth.getSession().then(({ data: { session } }) => {
         if (session?.user) {
           // RPC 함수 호출하여 닉네임 업데이트
-          supabase.rpc('update_profile_nickname', { p_nickname: sanitizedNickname })
+          supabase
+            .rpc('update_profile_nickname', { p_nickname: sanitizedNickname })
             .then(({ error }) => {
               if (error) console.error('Failed to sync nickname to Supabase:', error);
               else console.log('Nickname synced to Supabase');
@@ -119,9 +120,7 @@ export function ProfileForm({ onComplete, showBackButton = false }: ProfileFormP
           ←
         </button>
       )}
-      <h2 className="profile-form-title">
-        {profile ? '프로필 수정' : '프로필 만들기'}
-      </h2>
+      <h2 className="profile-form-title">{profile ? '프로필 수정' : '프로필 만들기'}</h2>
       <p className="profile-form-description">
         {profile
           ? '프로필 정보를 수정할 수 있습니다.'
@@ -152,9 +151,7 @@ export function ProfileForm({ onComplete, showBackButton = false }: ProfileFormP
             spellCheck="false"
           />
           {error && <p className="profile-form-error">{error}</p>}
-          <p className="profile-form-hint">
-            {nickname.length}/10자
-          </p>
+          <p className="profile-form-hint">{nickname.length}/10자</p>
         </div>
 
         {/* 구글 로그인 기능 주석처리 */}
@@ -215,4 +212,3 @@ export function ProfileForm({ onComplete, showBackButton = false }: ProfileFormP
     </div>
   );
 }
-

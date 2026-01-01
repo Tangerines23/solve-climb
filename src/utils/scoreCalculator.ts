@@ -13,7 +13,7 @@ const METERS_PER_LEVEL = 20 * SCORE_PER_CORRECT; // 200m
  */
 export function calculateTotalAltitude(): { totalAltitude: number; totalProblems: number } {
   const { progress } = useLevelProgressStore.getState();
-  
+
   let totalAltitude = 0;
 
   // 모든 카테고리 순회
@@ -46,7 +46,7 @@ export function calculateTotalAltitude(): { totalAltitude: number; totalProblems
 export function calculateSubTopicAltitude(category: string, subTopic: string): number {
   const { getLevelProgress } = useLevelProgressStore.getState();
   const levelProgress = getLevelProgress(category, subTopic);
-  
+
   let currentAltitude = 0;
 
   levelProgress.forEach((levelRecord) => {
@@ -74,7 +74,7 @@ export function calculateSubTopicTargetAltitude(category: string, subTopic: stri
   if (!subTopicLevels || !Array.isArray(subTopicLevels)) return 0;
 
   // 레벨 수 × 200m (20문제 × 10m)
-  return subTopicLevels.length * METERS_PER_LEVEL;
+  return (subTopicLevels as any[]).length * METERS_PER_LEVEL;
 }
 
 /**
@@ -90,9 +90,8 @@ export function calculateSubTopicProgress(
   const currentAltitude = calculateSubTopicAltitude(category, subTopic);
   const targetAltitude = calculateSubTopicTargetAltitude(category, subTopic);
 
-  const progressPercent = targetAltitude > 0 
-    ? Math.round((currentAltitude / targetAltitude) * 100)
-    : 0;
+  const progressPercent =
+    targetAltitude > 0 ? Math.round((currentAltitude / targetAltitude) * 100) : 0;
 
   return { progressPercent, currentAltitude, targetAltitude };
 }
@@ -102,10 +101,13 @@ export function calculateSubTopicProgress(
  * @param category 카테고리 ID
  * @returns 총 고도(m)와 총 문제 수
  */
-export function calculateCategoryAltitude(category: string): { totalAltitude: number; totalProblems: number } {
+export function calculateCategoryAltitude(category: string): {
+  totalAltitude: number;
+  totalProblems: number;
+} {
   const { progress } = useLevelProgressStore.getState();
   const categoryProgress = progress[category];
-  
+
   if (!categoryProgress) {
     return { totalAltitude: 0, totalProblems: 0 };
   }
@@ -154,16 +156,16 @@ export function calculateCategoryTargetAltitude(category: string): number {
  * @param category 카테고리 ID
  * @returns 진행률(%)과 현재/목표 고도
  */
-export function calculateCategoryProgress(
-  category: string
-): { progressPercent: number; currentAltitude: number; targetAltitude: number } {
+export function calculateCategoryProgress(category: string): {
+  progressPercent: number;
+  currentAltitude: number;
+  targetAltitude: number;
+} {
   const { totalAltitude: currentAltitude } = calculateCategoryAltitude(category);
   const targetAltitude = calculateCategoryTargetAltitude(category);
 
-  const progressPercent = targetAltitude > 0 
-    ? Math.round((currentAltitude / targetAltitude) * 100)
-    : 0;
+  const progressPercent =
+    targetAltitude > 0 ? Math.round((currentAltitude / targetAltitude) * 100) : 0;
 
   return { progressPercent, currentAltitude, targetAltitude };
 }
-

@@ -215,7 +215,7 @@ serve(async (req) => {
 
     // 3. user_migrations 테이블에 매핑 저장
     try {
-      const { data, error } = await supabaseAdmin
+      const { error } = await supabaseAdmin
         .from('user_migrations')
         .upsert({
           hash: hash,

@@ -1,4 +1,3 @@
-import React from 'react';
 import { STAGE_CONFIG, type StageConfig } from '../constants/stages';
 import './ModeSelectModal.css';
 
@@ -20,9 +19,8 @@ export function ModeSelectModal({
   if (!isOpen) return null;
 
   // 현재 레벨의 스테이지 정보 찾기
-  const stage: StageConfig = STAGE_CONFIG.find(
-    (s) => level >= s.range[0] && level <= s.range[1]
-  ) || STAGE_CONFIG[0];
+  const stage: StageConfig =
+    STAGE_CONFIG.find((s) => level >= s.range[0] && level <= s.range[1]) || STAGE_CONFIG[0];
 
   const handleModeSelect = (mode: 'time-attack' | 'survival') => {
     onSelectMode(mode);
@@ -39,7 +37,9 @@ export function ModeSelectModal({
             </span>
             <span className="mode-select-stage-title">{stage.title}</span>
           </div>
-          <h2 className="mode-select-modal-title">Level {level}: {levelName}</h2>
+          <h2 className="mode-select-modal-title">
+            Level {level}: {levelName}
+          </h2>
           <p className="mode-select-modal-subtitle" style={{ color: stage.color }}>
             {stage.desc}
           </p>
@@ -74,4 +74,3 @@ export function ModeSelectModal({
     </div>
   );
 }
-

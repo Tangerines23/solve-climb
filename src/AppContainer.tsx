@@ -1,5 +1,4 @@
 // src/AppContainer.tsx
-import React from 'react';
 import { BrowserRouter } from 'react-router-dom';
 import App from './App'; // <-- (신규) App.tsx를 임포트합니다.
 

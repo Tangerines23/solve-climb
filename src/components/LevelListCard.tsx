@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useRef } from 'react';
 import { useLevelProgressStore } from '../stores/useLevelProgressStore';
 import { useProfileStore } from '../stores/useProfileStore';
 import { UnderDevelopmentModal } from './UnderDevelopmentModal';
@@ -15,7 +15,7 @@ interface LevelListCardProps {
 
 // 개발 중인 레벨 목록 (카테고리_서브토픽_레벨 형식)
 // 모든 레벨이 구현되었으므로 빈 Set으로 유지
-const UNDER_DEVELOPMENT_LEVELS = new Set([
+const UNDER_DEVELOPMENT_LEVELS = new Set<string>([
   // 개발 중인 레벨이 있으면 여기에 추가
 ]);
 
@@ -35,7 +35,7 @@ function LevelListCardComponent({
 
   const nextLevel = getNextLevel(category, subTopic);
   const progress = getLevelProgress(category, subTopic);
-  
+
   const isUnderDevelopment = (level: number) => {
     const levelKey = `${category}_${subTopic}_${level}`;
     return UNDER_DEVELOPMENT_LEVELS.has(levelKey);
@@ -49,7 +49,7 @@ function LevelListCardComponent({
       }
       return 'next'; // 관리자 모드에서는 모든 레벨이 도전 가능
     }
-    
+
     // 일반 모드
     if (isLevelCleared(category, subTopic, level)) {
       return 'cleared';
@@ -69,7 +69,7 @@ function LevelListCardComponent({
     const timeAttack = record.bestScore['time-attack'];
     const survival = record.bestScore['survival'];
     if (timeAttack === null && survival === null) return null;
-    
+
     // 점수를 그대로 사용 (미터 단위)
     if (timeAttack === null) return survival;
     if (survival === null) return timeAttack;
@@ -96,51 +96,52 @@ function LevelListCardComponent({
             const isDev = isUnderDevelopment(levelData.level);
 
             // 길게 누르기 타이머 관리 (각 아이템마다 독립적)
-            const timersRef = useMemo(() => ({
+            // eslint-disable-next-line react-hooks/rules-of-hooks
+            const timersRef = useRef({
               longPress: null as NodeJS.Timeout | null,
               toast: null as NodeJS.Timeout | null,
-              count: 0
-            }), []);
+              count: 0,
+            });
 
             const handleLongPressStart = (e: React.MouseEvent | React.TouchEvent) => {
               // 잠긴 레벨은 길게 누르기 비활성화
               if (isDisabled || !onLevelLongPress) return;
-              
+
               e.stopPropagation();
-              
-              timersRef.count = 0;
-              
+
+              timersRef.current.count = 0;
+
               // 2초 후 토스트 표시
-              timersRef.toast = setTimeout(() => {
-                timersRef.count = 1;
+              timersRef.current.toast = setTimeout(() => {
+                timersRef.current.count = 1;
                 if (onLevelLongPress) {
                   onLevelLongPress(levelData.level);
                 }
               }, 2000);
 
               // 4초 후 실제 해제
-              timersRef.longPress = setTimeout(() => {
-                timersRef.count = 2;
+              timersRef.current.longPress = setTimeout(() => {
+                timersRef.current.count = 2;
                 if (onLevelLongPress) {
                   onLevelLongPress(levelData.level);
                 }
-                if (timersRef.toast) {
-                  clearTimeout(timersRef.toast);
-                  timersRef.toast = null;
+                if (timersRef.current.toast) {
+                  clearTimeout(timersRef.current.toast);
+                  timersRef.current.toast = null;
                 }
               }, 4000);
             };
 
-            const handleLongPressEnd = (e: React.MouseEvent | React.TouchEvent) => {
-              if (timersRef.longPress) {
-                clearTimeout(timersRef.longPress);
-                timersRef.longPress = null;
+            const handleLongPressEnd = (_e: React.MouseEvent | React.TouchEvent) => {
+              if (timersRef.current.longPress) {
+                clearTimeout(timersRef.current.longPress);
+                timersRef.current.longPress = null;
               }
-              if (timersRef.toast) {
-                clearTimeout(timersRef.toast);
-                timersRef.toast = null;
+              if (timersRef.current.toast) {
+                clearTimeout(timersRef.current.toast);
+                timersRef.current.toast = null;
               }
-              timersRef.count = 0;
+              timersRef.current.count = 0;
             };
 
             const handleLockedClick = (e: React.MouseEvent) => {
@@ -166,9 +167,7 @@ function LevelListCardComponent({
                 <div className="level-list-item-left">
                   <div className="level-list-item-header">
                     <span className="level-list-item-number">Level {levelData.level}</span>
-                    {isDev && (
-                      <span className="level-list-status under-dev">개발중</span>
-                    )}
+                    {isDev && <span className="level-list-status under-dev">개발중</span>}
                     {!isDev && status === 'cleared' && (
                       <span className="level-list-status cleared">클리어 ✓</span>
                     )}

@@ -10,7 +10,7 @@ function isTossAppEnvironment(): boolean {
   if (typeof window === 'undefined') {
     return false;
   }
-  
+
   // ReactNativeWebView가 있으면 토스 앱 내부
   return !!(window as any).ReactNativeWebView;
 }
@@ -82,4 +82,3 @@ export async function handleTossLogin(): Promise<TossLoginResult> {
     };
   }
 }
-

@@ -9,7 +9,7 @@ export interface LevelRecord {
   cleared: boolean;
   bestScore: {
     'time-attack': number | null;
-    'survival': number | null;
+    survival: number | null;
   };
   clearedAt?: string;
 }
@@ -38,11 +38,26 @@ interface LevelProgressState {
   getLevelProgress: (category: string, subTopic: string) => LevelRecord[];
   isLevelCleared: (category: string, subTopic: string, level: number) => boolean;
   getNextLevel: (category: string, subTopic: string) => number;
-  clearLevel: (category: string, subTopic: string, level: number, mode: GameMode, score: number) => void;
-  updateBestScore: (category: string, subTopic: string, level: number, mode: GameMode, score: number) => void;
-  getBestRecords: (category: string, subTopic: string) => {
+  clearLevel: (
+    category: string,
+    subTopic: string,
+    level: number,
+    mode: GameMode,
+    score: number
+  ) => void;
+  updateBestScore: (
+    category: string,
+    subTopic: string,
+    level: number,
+    mode: GameMode,
+    score: number
+  ) => void;
+  getBestRecords: (
+    category: string,
+    subTopic: string
+  ) => {
     'time-attack': number | null;
-    'survival': number | null;
+    survival: number | null;
   };
   syncProgress: () => Promise<void>;
   resetProgress: () => Promise<void>;
@@ -60,7 +75,7 @@ const getDefaultLevelRecord = (level: number): LevelRecord => ({
   cleared: false,
   bestScore: {
     'time-attack': null,
-    'survival': null,
+    survival: null,
   },
 });
 
@@ -84,9 +99,7 @@ export const useLevelProgressStore = create<LevelProgressState>()(
 
       isLevelCleared: (category, subTopic, level) => {
         const state = get();
-        return (
-          state.progress[category]?.[subTopic]?.[level]?.cleared ?? false
-        );
+        return state.progress[category]?.[subTopic]?.[level]?.cleared ?? false;
       },
 
       getNextLevel: (category, subTopic) => {
@@ -132,12 +145,13 @@ export const useLevelProgressStore = create<LevelProgressState>()(
 
         // 2. Background Sync (Supabase)
         try {
-          const { data: { user } } = await supabase.auth.getUser();
+          const {
+            data: { user },
+          } = await supabase.auth.getUser();
           if (!user) return;
 
-          const { error } = await supabase
-            .from('game_records')
-            .upsert({
+          const { error } = await supabase.from('game_records').upsert(
+            {
               user_id: user.id,
               category,
               subject: subTopic,
@@ -147,10 +161,12 @@ export const useLevelProgressStore = create<LevelProgressState>()(
               cleared: true,
               cleared_at: new Date().toISOString(),
               updated_at: new Date().toISOString(),
-            }, {
+            },
+            {
               onConflict: 'user_id, category, subject, level, mode',
               ignoreDuplicates: false, // Update if exists
-            });
+            }
+          );
 
           if (error) throw error;
         } catch (error) {
@@ -179,22 +195,23 @@ export const useLevelProgressStore = create<LevelProgressState>()(
 
         // 2. Background Sync (Supabase)
         try {
-          const { data: { user } } = await supabase.auth.getUser();
+          const {
+            data: { user },
+          } = await supabase.auth.getUser();
           if (!user) return;
 
-          // Note: We only update score if it's higher, but the SQL constraint/upsert 
+          // Note: We only update score if it's higher, but the SQL constraint/upsert
           // will handle the row existence. However, to strictly follow "update only if higher",
           // we rely on the application logic here (we already checked locally).
           // But if another device has a higher score, we might overwrite it if we are not careful.
           // The requirement said: "Unique Key 충돌 시 기존 점수보다 새 점수가 높을 때만 score를 업데이트"
           // Supabase upsert doesn't support conditional update based on value directly in one go easily without a function.
-          // But for now, we assume the local check + upsert is sufficient for this MVP, 
-          // or we could use a stored procedure. 
+          // But for now, we assume the local check + upsert is sufficient for this MVP,
+          // or we could use a stored procedure.
           // Given the constraints, we will just upsert the current high score.
 
-          const { error } = await supabase
-            .from('game_records')
-            .upsert({
+          const { error } = await supabase.from('game_records').upsert(
+            {
               user_id: user.id,
               category,
               subject: subTopic,
@@ -202,9 +219,11 @@ export const useLevelProgressStore = create<LevelProgressState>()(
               mode,
               score,
               updated_at: new Date().toISOString(),
-            }, {
+            },
+            {
               onConflict: 'user_id, category, subject, level, mode',
-            });
+            }
+          );
 
           if (error) throw error;
         } catch (error) {
@@ -216,7 +235,7 @@ export const useLevelProgressStore = create<LevelProgressState>()(
         const state = get();
         const categoryProgress = state.progress[category];
         if (!categoryProgress || !categoryProgress[subTopic]) {
-          return { 'time-attack': null, 'survival': null };
+          return { 'time-attack': null, survival: null };
         }
 
         const records = Object.values(categoryProgress[subTopic]);
@@ -238,13 +257,15 @@ export const useLevelProgressStore = create<LevelProgressState>()(
 
         return {
           'time-attack': bestTimeAttack,
-          'survival': bestSurvival,
+          survival: bestSurvival,
         };
       },
 
       syncProgress: async () => {
         try {
-          const { data: { user } } = await supabase.auth.getUser();
+          const {
+            data: { user },
+          } = await supabase.auth.getUser();
           if (!user) return;
 
           const { data: records, error } = await supabase
@@ -276,7 +297,10 @@ export const useLevelProgressStore = create<LevelProgressState>()(
                 }
 
                 const modeKey = mode as GameMode;
-                if (localRecord.bestScore[modeKey] === null || score > localRecord.bestScore[modeKey]!) {
+                if (
+                  localRecord.bestScore[modeKey] === null ||
+                  score > localRecord.bestScore[modeKey]!
+                ) {
                   localRecord.bestScore[modeKey] = score;
                 }
               });
@@ -295,13 +319,12 @@ export const useLevelProgressStore = create<LevelProgressState>()(
 
         // 2. Supabase에서도 삭제
         try {
-          const { data: { user } } = await supabase.auth.getUser();
+          const {
+            data: { user },
+          } = await supabase.auth.getUser();
           if (!user) return;
 
-          const { error } = await supabase
-            .from('game_records')
-            .delete()
-            .eq('user_id', user.id);
+          const { error } = await supabase.from('game_records').delete().eq('user_id', user.id);
 
           if (error) throw error;
         } catch (error) {
@@ -316,7 +339,7 @@ export const useLevelProgressStore = create<LevelProgressState>()(
             p_category: category,
             p_period: period,
             p_type: type,
-            p_limit: limit
+            p_limit: limit,
           });
 
           if (error) throw error;
@@ -325,8 +348,8 @@ export const useLevelProgressStore = create<LevelProgressState>()(
             set((state) => ({
               rankings: {
                 ...state.rankings,
-                [`${category}-${period}-${type}`]: data as RankingRecord[]
-              }
+                [`${category}-${period}-${type}`]: data as RankingRecord[],
+              },
             }));
           }
         } catch (error) {
@@ -339,4 +362,3 @@ export const useLevelProgressStore = create<LevelProgressState>()(
     }
   )
 );
-

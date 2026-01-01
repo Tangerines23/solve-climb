@@ -159,7 +159,7 @@
   .qwerty-keypad-key {
     min-height: clamp(40px, 8vw, 56px);
   }
-  
+
   .qwerty-keypad-key-submit {
     min-height: clamp(40px, 8vw, 56px);
   }
@@ -203,4 +203,3 @@
     font-size: clamp(0.9rem, 2vw, 1.2rem);
   }
 }
-

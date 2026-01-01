@@ -3,7 +3,6 @@
  * Error Boundary와 함께 사용됩니다.
  */
 
-import React from 'react';
 import './ErrorFallback.css';
 
 interface ErrorFallbackProps {
@@ -22,7 +21,7 @@ export function ErrorFallback({ error, resetError }: ErrorFallbackProps) {
         <p className="error-fallback-message">
           예상치 못한 오류가 발생했습니다. 페이지를 새로고침하거나 다시 시도해주세요.
         </p>
-        
+
         {isDevelopment && (
           <div className="error-fallback-details">
             <details>
@@ -50,4 +49,3 @@ export function ErrorFallback({ error, resetError }: ErrorFallbackProps) {
     </div>
   );
 }
-

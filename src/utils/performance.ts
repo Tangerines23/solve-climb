@@ -67,7 +67,7 @@ export function useComponentPerformance(componentName: string) {
   }
 
   const endMeasure = measurePerformance(`Render: ${componentName}`);
-  
+
   // useEffect를 사용하여 렌더링 후 측정 종료
   if (typeof window !== 'undefined') {
     // 다음 프레임에서 측정 종료 (렌더링 완료 후)
@@ -85,10 +85,7 @@ export function useComponentPerformance(componentName: string) {
  * @param apiCall API 호출 함수
  * @returns API 호출 결과
  */
-export async function measureApiCall<T>(
-  apiName: string,
-  apiCall: () => Promise<T>
-): Promise<T> {
+export async function measureApiCall<T>(apiName: string, apiCall: () => Promise<T>): Promise<T> {
   const endMeasure = measurePerformance(`API: ${apiName}`);
   try {
     const result = await apiCall();
@@ -121,24 +118,27 @@ export function logPerformanceSummary(): void {
     return;
   }
 
-  const summary = metrics.reduce((acc, metric) => {
-    if (!acc[metric.name]) {
-      acc[metric.name] = {
-        count: 0,
-        total: 0,
-        min: Infinity,
-        max: -Infinity,
-      };
-    }
+  const summary = metrics.reduce(
+    (acc, metric) => {
+      if (!acc[metric.name]) {
+        acc[metric.name] = {
+          count: 0,
+          total: 0,
+          min: Infinity,
+          max: -Infinity,
+        };
+      }
 
-    const stat = acc[metric.name];
-    stat.count++;
-    stat.total += metric.duration;
-    stat.min = Math.min(stat.min, metric.duration);
-    stat.max = Math.max(stat.max, metric.duration);
+      const stat = acc[metric.name];
+      stat.count++;
+      stat.total += metric.duration;
+      stat.min = Math.min(stat.min, metric.duration);
+      stat.max = Math.max(stat.max, metric.duration);
 
-    return acc;
-  }, {} as Record<string, { count: number; total: number; min: number; max: number }>);
+      return acc;
+    },
+    {} as Record<string, { count: number; total: number; min: number; max: number }>
+  );
 
   logger.group('Performance', 'Performance Summary', () => {
     Object.entries(summary).forEach(([name, stat]) => {
@@ -150,5 +150,3 @@ export function logPerformanceSummary(): void {
     });
   });
 }
-
-

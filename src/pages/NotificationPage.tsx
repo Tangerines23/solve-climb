@@ -1,11 +1,10 @@
 // src/pages/NotificationPage.tsx
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Header } from '../components/Header';
 import { FooterNav } from '../components/FooterNav';
 import { UnderDevelopmentModal } from '../components/UnderDevelopmentModal';
 import { Toast } from '../components/Toast';
-import { APP_CONFIG } from '../config/app';
 import './NotificationPage.css';
 
 export type NotificationType = 'record_broken' | 'challenge';
@@ -30,8 +29,8 @@ export function NotificationPage() {
   const [loading, setLoading] = useState(true);
   const [showUnderDevelopment, setShowUnderDevelopment] = useState(true);
   const [showToast, setShowToast] = useState(false);
-  const [toastMessage, setToastMessage] = useState('');
-  
+  const [toastMessage] = useState('');
+
   useEffect(() => {
     // 알림 데이터는 백엔드 서버 없이 사용할 수 없으므로 빈 배열로 설정
     setLoading(false);
@@ -41,8 +40,8 @@ export function NotificationPage() {
   const handleNotificationClick = (notification: Notification) => {
     // 알림 읽음 처리
     if (!notification.read) {
-      setNotifications(prev =>
-        prev.map(n => (n.id === notification.id ? { ...n, read: true } : n))
+      setNotifications((prev) =>
+        prev.map((n) => (n.id === notification.id ? { ...n, read: true } : n))
       );
     }
 
@@ -52,15 +51,13 @@ export function NotificationPage() {
     } else if (notification.type === 'record_broken') {
       // 기록이 깨진 레벨로 이동
       if (notification.category && notification.subCategory && notification.level) {
-        navigate(
-          `/level-select?category=${notification.category}&sub=${notification.subCategory}`
-        );
+        navigate(`/level-select?category=${notification.category}&sub=${notification.subCategory}`);
       }
     }
   };
 
   const handleMarkAllAsRead = () => {
-    setNotifications(prev => prev.map(n => ({ ...n, read: true })));
+    setNotifications((prev) => prev.map((n) => ({ ...n, read: true })));
   };
 
   const formatTimeAgo = (date: Date): string => {
@@ -88,7 +85,7 @@ export function NotificationPage() {
     }
   };
 
-  const unreadCount = notifications.filter(n => !n.read).length;
+  const unreadCount = notifications.filter((n) => !n.read).length;
 
   return (
     <>
@@ -122,7 +119,7 @@ export function NotificationPage() {
               </div>
             ) : (
               <div className="notification-list">
-                {notifications.map(notification => (
+                {notifications.map((notification) => (
                   <div
                     key={notification.id}
                     className={`notification-item ${notification.read ? 'read' : 'unread'}`}
@@ -158,4 +155,3 @@ export function NotificationPage() {
     </>
   );
 }
-

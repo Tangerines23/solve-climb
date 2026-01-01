@@ -8,7 +8,10 @@ export function useQuizAnimations() {
   const [showFlash, setShowFlash] = useState(false);
   const [isError, setIsError] = useState(false);
   const [showSlideToast, setShowSlideToast] = useState(false);
-  const [damagePosition, setDamagePosition] = useState<{ left: string; top: string }>({ left: '50%', top: '50%' });
+  const [damagePosition, setDamagePosition] = useState<{ left: string; top: string }>({
+    left: '50%',
+    top: '50%',
+  });
 
   return {
     cardAnimation,
@@ -27,4 +30,3 @@ export function useQuizAnimations() {
     setDamagePosition,
   };
 }
-

@@ -8,22 +8,22 @@ import { loadTierDefinitions, loadCycleCap } from '../constants/tiers';
  * @returns 필요한 total_mastery_score
  */
 export async function calculateScoreForTier(
-  level: number, 
-  stars: number = 0, 
+  level: number,
+  stars: number = 0,
   bonusScore: number = 0
 ): Promise<number> {
   const cycleCap = await loadCycleCap(); // 250000 (기본값)
-  
+
   // stars가 0이면 첫 사이클
   if (stars === 0) {
     // level에 해당하는 최소 점수 계산
     const tierLevels = await loadTierDefinitions();
-    const targetTier = tierLevels.find(t => t.level === level);
+    const targetTier = tierLevels.find((t) => t.level === level);
     return (targetTier?.minScore || 0) + bonusScore;
   }
-  
+
   // stars가 있으면: cycleCap * stars + level 최소 점수 + bonus
   const tierLevels = await loadTierDefinitions();
-  const targetTier = tierLevels.find(t => t.level === level);
+  const targetTier = tierLevels.find((t) => t.level === level);
   return cycleCap * stars + (targetTier?.minScore || 0) + bonusScore;
 }

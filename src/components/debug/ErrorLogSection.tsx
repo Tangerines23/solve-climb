@@ -21,7 +21,7 @@ export const ErrorLogSection = React.memo(function ErrorLogSection() {
     if (timeFilter !== 'all') {
       const now = new Date();
       let startTime: Date;
-      
+
       switch (timeFilter) {
         case '1h':
           startTime = new Date(now.getTime() - 60 * 60 * 1000);
@@ -35,17 +35,18 @@ export const ErrorLogSection = React.memo(function ErrorLogSection() {
         default:
           startTime = new Date(0);
       }
-      
-      result = result.filter(log => log.timestamp >= startTime);
+
+      result = result.filter((log) => log.timestamp >= startTime);
     }
 
     // 검색 필터
     if (searchQuery.trim()) {
       const query = searchQuery.toLowerCase();
-      result = result.filter(log => 
-        log.message.toLowerCase().includes(query) ||
-        (log.context && log.context.toLowerCase().includes(query)) ||
-        (log.stack && log.stack.toLowerCase().includes(query))
+      result = result.filter(
+        (log) =>
+          log.message.toLowerCase().includes(query) ||
+          (log.context && log.context.toLowerCase().includes(query)) ||
+          (log.stack && log.stack.toLowerCase().includes(query))
       );
     }
 
@@ -65,7 +66,7 @@ export const ErrorLogSection = React.memo(function ErrorLogSection() {
   const handleExportLogs = () => {
     try {
       const exportData = {
-        logs: filteredLogs.map(log => ({
+        logs: filteredLogs.map((log) => ({
           id: log.id,
           timestamp: log.timestamp.toISOString(),
           level: log.level,
@@ -186,10 +187,7 @@ export const ErrorLogSection = React.memo(function ErrorLogSection() {
           >
             내보내기 ({filteredLogs.length})
           </button>
-          <button
-            className="debug-log-clear-button"
-            onClick={handleClearLogs}
-          >
+          <button className="debug-log-clear-button" onClick={handleClearLogs}>
             로그 클리어
           </button>
         </div>
@@ -197,31 +195,18 @@ export const ErrorLogSection = React.memo(function ErrorLogSection() {
 
       <div className="debug-log-list">
         {filteredLogs.length === 0 ? (
-          <div className="debug-log-empty">
-            로그가 없습니다.
-          </div>
+          <div className="debug-log-empty">로그가 없습니다.</div>
         ) : (
           filteredLogs.map((log) => (
             <div key={log.id} className="debug-log-entry">
               <div className="debug-log-header">
-                <span
-                  className="debug-log-level"
-                  style={{ color: getLevelColor(log.level) }}
-                >
+                <span className="debug-log-level" style={{ color: getLevelColor(log.level) }}>
                   {log.level.toUpperCase()}
                 </span>
-                <span className="debug-log-time">
-                  {log.timestamp.toLocaleString('ko-KR')}
-                </span>
+                <span className="debug-log-time">{log.timestamp.toLocaleString('ko-KR')}</span>
               </div>
-              {log.context && (
-                <div className="debug-log-context">
-                  {log.context}
-                </div>
-              )}
-              <div className="debug-log-message">
-                {log.message}
-              </div>
+              {log.context && <div className="debug-log-context">{log.context}</div>}
+              <div className="debug-log-message">{log.message}</div>
               {log.stack && (
                 <details className="debug-log-stack">
                   <summary>스택 트레이스</summary>
@@ -235,4 +220,3 @@ export const ErrorLogSection = React.memo(function ErrorLogSection() {
     </div>
   );
 });
-

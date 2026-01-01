@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { APP_CONFIG } from '../config/app';
 import { useQuizStore } from '../stores/useQuizStore';
@@ -10,7 +10,7 @@ export function ChallengeCard() {
   // Zustand Selector 패턴 적용
   const setCategoryTopic = useQuizStore((state) => state.setCategoryTopic);
   const setTimeLimit = useQuizStore((state) => state.setTimeLimit);
-  
+
   // 오늘의 챌린지 상태
   const [challenge, setChallenge] = useState<TodayChallenge | null>(null);
   const [loading, setLoading] = useState(true);
@@ -30,13 +30,15 @@ export function ChallengeCard() {
 
   const handleChallengeClick = () => {
     if (!challenge) return;
-    
+
     // 오늘의 챌린지 설정 적용
     setCategoryTopic(challenge.category as any, challenge.topicId as any);
     setTimeLimit(60); // 기본 1분
-    
+
     // 게임 페이지로 이동 (category와 sub 파라미터 사용)
-    navigate(`${APP_CONFIG.ROUTES.GAME}?challenge=today&category=${challenge.categoryId}&sub=${challenge.topicId}&level=${challenge.level}&mode=${challenge.mode}`);
+    navigate(
+      `${APP_CONFIG.ROUTES.GAME}?challenge=today&category=${challenge.categoryId}&sub=${challenge.topicId}&level=${challenge.level}&mode=${challenge.mode}`
+    );
   };
 
   if (loading) {
@@ -82,4 +84,3 @@ export function ChallengeCard() {
     </div>
   );
 }
-

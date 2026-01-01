@@ -41,7 +41,7 @@
   margin: 0;
   text-align: center;
   flex: 1;
-  text-shadow: 
+  text-shadow:
     0 0 var(--spacing-sm) rgba(0, 0, 0, 1),
     0 0 var(--spacing-md) rgba(0, 0, 0, 0.8),
     0 2px var(--spacing-xs) rgba(0, 0, 0, 1),
@@ -52,4 +52,3 @@
   width: 40px; /* 뒤로가기 버튼과 균형 맞추기 */
   flex-shrink: 0;
 }
-

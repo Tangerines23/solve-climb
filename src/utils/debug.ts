@@ -28,11 +28,7 @@ export function dumpState<T>(name: string, state: T): void {
 /**
  * 네트워크 요청 로깅
  */
-export function logNetworkRequest(
-  method: string,
-  url: string,
-  options?: RequestInit
-): void {
+export function logNetworkRequest(method: string, url: string, options?: RequestInit): void {
   if (!isDevelopment) {
     return;
   }
@@ -140,5 +136,3 @@ export const debugUtils = {
   logNetworkRequest,
   logNetworkResponse,
 };
-
-

@@ -62,11 +62,21 @@ export function QuizPage() {
   const [showTipModal, setShowTipModal] = useState(true);
   const [showStaminaModal, setShowStaminaModal] = useState(false);
   const [pendingItemIds, setPendingItemIds] = useState<number[]>([]);
-  const [gameQuestions, setGameQuestions] = useState<Array<{ id: string; question: QuizQuestion; userAnswer: number | null }>>([]);
+  const [_gameQuestions, setGameQuestions] = useState<
+    Array<{ id: string; question: QuizQuestion; userAnswer: number | null }>
+  >([]);
   const [currentQuestionId, setCurrentQuestionId] = useState<string | null>(null);
 
   // 사용자 스토어
-  const { stamina, inventory, checkStamina, consumeItem, consumeStamina, minerals, recoverStaminaAds } = useUserStore();
+  const {
+    stamina,
+    inventory,
+    checkStamina,
+    consumeItem,
+    consumeStamina,
+    minerals,
+    recoverStaminaAds,
+  } = useUserStore();
 
   // ... (중략)
 
@@ -80,7 +90,7 @@ export function QuizPage() {
     // [AD] 실제 광고 연동 시 여기서 showAd() 호출 (Google AdMob 등)
     // 현재는 사용자 경험 테스트를 위해 3초 딜레이로 대체함.
 
-    await new Promise(resolve => setTimeout(resolve, adDuration));
+    await new Promise((resolve) => setTimeout(resolve, adDuration));
 
     // 3. 보상 지급
     const result = await recoverStaminaAds();
@@ -99,11 +109,21 @@ export function QuizPage() {
   const [isFlarePaused, setIsFlarePaused] = useState(false); // 구조 신호탄 사용 후 타이머 일시정지
   const [showSafetyRope, setShowSafetyRope] = useState(false);
 
-  const { setExhausted, resetGame, setActiveItems, incrementCombo, setCombo, isStaminaConsumed, setStaminaConsumed, combo } = useGameStore();
+  const {
+    setExhausted,
+    resetGame,
+    setActiveItems,
+    incrementCombo,
+    setCombo,
+    isStaminaConsumed,
+    setStaminaConsumed,
+  } = useGameStore();
   const isAdminMode = useDebugStore((state) => state.isAdminMode);
   const [questionKey, setQuestionKey] = useState(0);
   const [timerResetKey, setTimerResetKey] = useState(0);
-  const [previewKeyboardType, setPreviewKeyboardType] = useState<'custom' | 'qwerty'>(() => keyboardType);
+  const [previewKeyboardType, setPreviewKeyboardType] = useState<'custom' | 'qwerty'>(
+    () => keyboardType
+  );
 
   const SURVIVAL_QUESTION_TIME = 5;
   const exitConfirmTimeoutRef = useRef<NodeJS.Timeout | null>(null);
@@ -158,8 +178,8 @@ export function QuizPage() {
     setQuestionStartTime: gameState.setQuestionStartTime,
     onQuestionGenerated: (question, questionId) => {
       // 문제 생성 시 문제 ID와 문제 정보 수집
-      setGameQuestions(prev => [...prev, { id: questionId, question, userAnswer: null }]);
-      gameState.setQuestionIds(prev => [...prev, questionId]);
+      setGameQuestions((prev) => [...prev, { id: questionId, question, userAnswer: null }]);
+      gameState.setQuestionIds((prev) => [...prev, questionId]);
       setCurrentQuestionId(questionId);
     },
   });
@@ -198,7 +218,12 @@ export function QuizPage() {
       setWrongAnswers: gameState.setWrongAnswers,
       setSolveTimes: gameState.setSolveTimes,
     };
-  }, [gameState.handleGameOver, gameState.setTotalQuestions, gameState.setWrongAnswers, gameState.setSolveTimes]);
+  }, [
+    gameState.handleGameOver,
+    gameState.setTotalQuestions,
+    gameState.setWrongAnswers,
+    gameState.setSolveTimes,
+  ]);
 
   // handleGameOver를 안정적인 참조로 유지 (QuizCard에 전달하기 위해)
   const handleGameOverRef = useRef(gameState.handleGameOver);
@@ -221,49 +246,51 @@ export function QuizPage() {
     }
 
     // 아이템 보유 확인
-    const itemType = gameMode === 'time-attack' ? 'last_spurt' : 'flare';
     // const hasItem = inventory.find((i: any) => i.code === itemType && i.quantity > 0);
     // 아이템이 없어도, 미네랄이 있어도, 일단 모달은 띄워서 '기회'를 보여준다.
     setShowLastChanceModal(true);
   }, [hasUsedLastChance, isPreview, gameMode, inventory]);
 
   // Revive Logic
-  const handleRevive = useCallback(async (useItem: boolean) => {
-    const itemType = gameMode === 'time-attack' ? 'last_spurt' : 'flare';
+  const handleRevive = useCallback(
+    async (useItem: boolean) => {
+      const itemType = gameMode === 'time-attack' ? 'last_spurt' : 'flare';
 
-    if (useItem) {
-      const item = inventory.find((i: any) => i.code === itemType);
-      if (item) {
-        await consumeItem(item.id);
+      if (useItem) {
+        const item = inventory.find((i: any) => i.code === itemType);
+        if (item) {
+          await consumeItem(item.id);
+        }
       }
-    }
 
-    setShowLastChanceModal(false);
-    setHasUsedLastChance(true);
-    setIsSubmitting(false);
+      setShowLastChanceModal(false);
+      setHasUsedLastChance(true);
+      setIsSubmitting(false);
 
-    if (gameMode === 'time-attack') {
-      // 타임어택: 라스트 스퍼트 사용 시 +15초 추가
-      // 1. 시간을 15초로 설정
-      useQuizStore.getState().setTimeLimit(15);
-      // 2. 타이머 리셋 (key 변경으로 TimerCircle 리마운트)
-      setTimerResetKey(prev => prev + 1);
-      // 3. 카운트다운 시작 (3-2-1)
-      setShowCountdown(true);
-      // 피버 상태는 카운트다운 완료 후 처리
-    } else {
-      // 서바이벌: 새 문제로 진행
-      generateNewQuestionRef.current();
-      animations.setIsError(false);
-      setDisplayValue('');
-    }
-  }, [gameMode, inventory, consumeItem, animations]);
+      if (gameMode === 'time-attack') {
+        // 타임어택: 라스트 스퍼트 사용 시 +15초 추가
+        // 1. 시간을 15초로 설정
+        useQuizStore.getState().setTimeLimit(15);
+        // 2. 타이머 리셋 (key 변경으로 TimerCircle 리마운트)
+        setTimerResetKey((prev) => prev + 1);
+        // 3. 카운트다운 시작 (3-2-1)
+        setShowCountdown(true);
+        // 피버 상태는 카운트다운 완료 후 처리
+      } else {
+        // 서바이벌: 새 문제로 진행
+        generateNewQuestionRef.current();
+        animations.setIsError(false);
+        setDisplayValue('');
+      }
+    },
+    [gameMode, inventory, consumeItem, animations]
+  );
 
   const handleCountdownComplete = useCallback(() => {
     // 카운트다운 완료 후 처리 순서:
     // 1. 피버 상태 활성화 (Second Wind)
     setCombo(20);
-    
+
     // 2. 카운트다운 닫기 (isPaused 해제로 타이머 시작)
     // handleRevive에서 이미 타이머를 리셋했으므로 여기서는 닫기만 처리
     setShowCountdown(false);
@@ -276,7 +303,7 @@ export function QuizPage() {
     // Time Up 방어 시: 타이머 리셋 필요 (타임어택의 경우 원래 제한시간으로)
     if (gameMode === 'time-attack') {
       // Time Up 방어 시 타이머 리셋 (원래 제한시간으로)
-      setTimerResetKey(prev => prev + 1);
+      setTimerResetKey((prev) => prev + 1);
     }
   }, [gameMode]);
 
@@ -298,7 +325,6 @@ export function QuizPage() {
     setShowLastChanceModal(false);
     handleGameOverRef.current(); // 진짜 종료
   }, []);
-
 
   // 답안 제출 로직
   const { handleSubmit } = useQuizSubmit({
@@ -329,14 +355,13 @@ export function QuizPage() {
     setWrongAnswers: gameStateSettersRef.current.setWrongAnswers,
     setSolveTimes: gameStateSettersRef.current.setSolveTimes,
     inputRef,
-    showFeedback: (text: string, subText?: string, type?: 'success' | 'info') => feedbackRef.current?.show(text, subText, type),
+    showFeedback: (text: string, subText?: string, type?: 'success' | 'info') =>
+      feedbackRef.current?.show(text, subText, type),
     setIsFlarePaused,
     onAnswerSubmitted: (questionId, userAnswer) => {
       // 답안 수집
-      setGameQuestions(prev => prev.map(q => 
-        q.id === questionId ? { ...q, userAnswer } : q
-      ));
-      gameState.setUserAnswers(prev => [...prev, userAnswer]);
+      setGameQuestions((prev) => prev.map((q) => (q.id === questionId ? { ...q, userAnswer } : q)));
+      gameState.setUserAnswers((prev) => [...prev, userAnswer]);
     },
     currentQuestionId,
   });
@@ -355,7 +380,10 @@ export function QuizPage() {
   // 게임 모드 설정
   useEffect(() => {
     if (modeParam) {
-      const mode = (String(modeParam) === 'time_attack' || modeParam === 'time-attack') ? 'time-attack' as const : 'survival' as const;
+      const mode =
+        String(modeParam) === 'time_attack' || modeParam === 'time-attack'
+          ? ('time-attack' as const)
+          : ('survival' as const);
       setGameMode(mode);
     }
   }, [modeParam, setGameMode]);
@@ -418,12 +446,11 @@ export function QuizPage() {
     await startWithItems(pendingItemIds);
   };
 
-
-
   // URL 파라미터에서 category와 topic 설정
   useEffect(() => {
     if (categoryParam && subParam) {
-      const categoryName = APP_CONFIG.CATEGORY_MAP[categoryParam as keyof typeof APP_CONFIG.CATEGORY_MAP];
+      const categoryName =
+        APP_CONFIG.CATEGORY_MAP[categoryParam as keyof typeof APP_CONFIG.CATEGORY_MAP];
       if (categoryName) {
         setCategoryTopic(categoryName as any, subParam as any);
       }
@@ -481,16 +508,27 @@ export function QuizPage() {
   const setGameSessionId = gameState.setGameSessionId;
   const isCreatingSessionRef = useRef(false);
   useEffect(() => {
-    if (!showTipModal && categoryParam && subParam && levelParam !== null && modeParam && !sessionCreated && !isCreatingSessionRef.current) {
+    if (
+      !showTipModal &&
+      categoryParam &&
+      subParam &&
+      levelParam !== null &&
+      modeParam &&
+      !sessionCreated &&
+      !isCreatingSessionRef.current
+    ) {
       isCreatingSessionRef.current = true;
       const createGameSession = async () => {
         try {
           // RPC는 'timeattack' (하이픈/언더바 없음)을 기대함
-          const rpcGameMode = modeParam === 'time_attack' ? 'timeattack' : 'survival';
-          
+          const rpcGameMode =
+            modeParam === 'time-attack' || (modeParam as string) === 'time_attack'
+              ? 'timeattack'
+              : 'survival';
+
           // 디버그 모드 상태 확인
           const { infiniteStamina } = useDebugStore.getState();
-          
+
           // 빈 세션 생성 (문제는 나중에 추가)
           // 실제로는 문제를 미리 생성하거나, 문제가 생성될 때마다 세션을 업데이트해야 하지만
           // 현재 구조에서는 게임 종료 시 문제와 답안을 한 번에 제출하는 방식 사용
@@ -500,7 +538,7 @@ export function QuizPage() {
             p_subject: subParam,
             p_level: levelParam,
             p_game_mode: rpcGameMode,
-            p_is_debug_session: infiniteStamina  // 무한 스태미나 모드일 때 true
+            p_is_debug_session: infiniteStamina, // 무한 스태미나 모드일 때 true
           });
 
           if (error) {
@@ -521,12 +559,20 @@ export function QuizPage() {
 
       createGameSession();
     }
-    
+
     // cleanup: 컴포넌트 언마운트 시 플래그 초기화
     return () => {
       isCreatingSessionRef.current = false;
     };
-  }, [showTipModal, categoryParam, subParam, levelParam, modeParam, sessionCreated, setGameSessionId]);
+  }, [
+    showTipModal,
+    categoryParam,
+    subParam,
+    levelParam,
+    modeParam,
+    sessionCreated,
+    setGameSessionId,
+  ]);
 
   // showTipModal이 false가 되면 문제 생성
   useEffect(() => {
@@ -538,7 +584,6 @@ export function QuizPage() {
       return () => clearTimeout(timer);
     }
   }, [showTipModal, sessionCreated]);
-
 
   const handleBack = useCallback(() => {
     if (showExitConfirm) {
@@ -706,8 +751,6 @@ export function QuizPage() {
     initStamina();
   }, [isPreview]);
 
-
-
   // Preview 모드용 간단한 핸들러들
   const handlePreviewKeyPress = useCallback((key: string) => {
     // Preview 모드에서는 입력을 콘솔에만 출력
@@ -737,7 +780,9 @@ export function QuizPage() {
   const displayCategoryPreview = useMemo(() => {
     if (!isPreview) return '';
     return categoryParam
-      ? APP_CONFIG.CATEGORY_MAP[categoryParam as keyof typeof APP_CONFIG.CATEGORY_MAP] || category || ''
+      ? APP_CONFIG.CATEGORY_MAP[categoryParam as keyof typeof APP_CONFIG.CATEGORY_MAP] ||
+          category ||
+          ''
       : category || '';
   }, [isPreview, categoryParam, category]);
 
@@ -776,7 +821,7 @@ export function QuizPage() {
       return topicMap[level] || '미적분';
     } else {
       const subTopics = APP_CONFIG.SUB_TOPICS[categoryParam as keyof typeof APP_CONFIG.SUB_TOPICS];
-      const subTopicInfo = subTopics?.find(t => t.id === subParam);
+      const subTopicInfo = subTopics?.find((t) => t.id === subParam);
       return subTopicInfo?.name || subParam;
     }
   }, [isPreview, categoryParam, subParam, levelParam, topic]);
@@ -788,17 +833,17 @@ export function QuizPage() {
     }
   }, [isPreview, keyboardType]);
 
+  // Preview 모드에서 키보드 타입 전환 핸들러 (early return 전에 호출)
+  const handlePrevKeyboard = useCallback(() => {
+    setPreviewKeyboardType((prev) => (prev === 'custom' ? 'qwerty' : 'custom'));
+  }, []);
+
+  const handleNextKeyboard = useCallback(() => {
+    setPreviewKeyboardType((prev) => (prev === 'custom' ? 'qwerty' : 'custom'));
+  }, []);
+
   // Preview 모드일 때 렌더링
   if (isPreview) {
-    // Preview 모드에서 키보드 타입 전환 핸들러
-    const handlePrevKeyboard = useCallback(() => {
-      setPreviewKeyboardType((prev) => (prev === 'custom' ? 'qwerty' : 'custom'));
-    }, []);
-
-    const handleNextKeyboard = useCallback(() => {
-      setPreviewKeyboardType((prev) => (prev === 'custom' ? 'qwerty' : 'custom'));
-    }, []);
-
     // 일본어 퀴즈가 아닐 때만 키보드 타입 전환 가능
     const canSwitchKeyboard = !isJapaneseQuizPreview;
     const currentPreviewType = isJapaneseQuizPreview ? 'qwerty' : previewKeyboardType;
@@ -813,7 +858,10 @@ export function QuizPage() {
           >
             ←
           </button>
-          <div className="quiz-timer-container" style={{ display: 'flex', alignItems: 'center', gap: 'var(--spacing-md)' }}>
+          <div
+            className="quiz-timer-container"
+            style={{ display: 'flex', alignItems: 'center', gap: 'var(--spacing-md)' }}
+          >
             {canSwitchKeyboard && (
               <button
                 onClick={handlePrevKeyboard}
@@ -843,7 +891,9 @@ export function QuizPage() {
                 ‹
               </button>
             )}
-            <h2 style={{ fontSize: '1.2rem', fontWeight: 'bold', color: 'var(--color-text-primary)' }}>
+            <h2
+              style={{ fontSize: '1.2rem', fontWeight: 'bold', color: 'var(--color-text-primary)' }}
+            >
               {currentPreviewType === 'custom' ? '커스텀 키패드' : '쿼티 키보드'}
             </h2>
             {canSwitchKeyboard && (
@@ -882,12 +932,12 @@ export function QuizPage() {
         <div className="quiz-content">
           {/* quiz-card - 인게임과 동일한 구조 */}
           <div className="quiz-card">
-            <div className="category-label">{displayCategoryPreview} - {displayTopicPreview}</div>
+            <div className="category-label">
+              {displayCategoryPreview} - {displayTopicPreview}
+            </div>
             <form onSubmit={handlePreviewSubmit} style={{ display: 'contents' }}>
               <div>
-                <h2 className="problem-text">
-                  미리보기
-                </h2>
+                <h2 className="problem-text">미리보기</h2>
               </div>
               {/* 답안 표시 영역 (빈 상태) */}
               {!useSystemKeyboard && (
@@ -949,7 +999,10 @@ export function QuizPage() {
       <LastChanceModal
         isVisible={showLastChanceModal}
         gameMode={gameMode}
-        inventoryCount={inventory.find(i => i.code === (gameMode === 'time-attack' ? 'last_spurt' : 'flare'))?.quantity || 0}
+        inventoryCount={
+          inventory.find((i) => i.code === (gameMode === 'time-attack' ? 'last_spurt' : 'flare'))
+            ?.quantity || 0
+        }
         userMinerals={minerals}
         onUseItem={() => handleRevive(true)}
         onPurchaseAndUse={handlePurchaseAndRevive}
@@ -958,14 +1011,13 @@ export function QuizPage() {
       />
 
       {/* 카운트다운 오버레이 (부활 후 재개 시 사용) */}
-      {showCountdown && <CountdownOverlay isVisible={showCountdown} onComplete={handleCountdownComplete} />}
+      {showCountdown && (
+        <CountdownOverlay isVisible={showCountdown} onComplete={handleCountdownComplete} />
+      )}
 
       {/* 안전 로프 사용 효과 오버레이 */}
       {showSafetyRope && (
-        <SafetyRopeOverlay
-          duration={2000}
-          onComplete={() => setShowSafetyRope(false)}
-        />
+        <SafetyRopeOverlay isVisible={true} onAnimationComplete={() => setShowSafetyRope(false)} />
       )}
 
       {categoryParam && subParam && (

@@ -89,7 +89,7 @@ export function ResultPage() {
   const [previousMasteryScore, setPreviousMasteryScore] = useState<number | null>(null);
   const [currentMasteryScore, setCurrentMasteryScore] = useState<number | null>(null);
   const [awardedBadges, setAwardedBadges] = useState<string[]>([]);
-  const [showBadgeNotification, setShowBadgeNotification] = useState(false);
+  const [_showBadgeNotification, setShowBadgeNotification] = useState(false);
 
   const { fetchRanking } = useLevelProgressStore();
 
@@ -156,11 +156,12 @@ export function ResultPage() {
   const averageTime = validatedAvgTime;
 
   // 서브토픽 정보 가져오기
-  const subTopicInfo = categoryParam && subParam
-    ? APP_CONFIG.SUB_TOPICS[categoryParam as keyof typeof APP_CONFIG.SUB_TOPICS]?.find(
-      (topic) => topic.id === subParam
-    )
-    : null;
+  const subTopicInfo =
+    categoryParam && subParam
+      ? APP_CONFIG.SUB_TOPICS[categoryParam as keyof typeof APP_CONFIG.SUB_TOPICS]?.find(
+          (topic) => topic.id === subParam
+        )
+      : null;
 
   // 오답 정보 파싱 (서바이벌 모드용)
   const wrongAnswers: WrongAnswer[] = useMemo(() => {
@@ -189,9 +190,8 @@ export function ResultPage() {
   // 레벨 클리어 조건 확인
   // 타임어택: 정확도 50% 이상 또는 1개 이상 맞춤 (finalScore >= 10은 correctCount >= 1과 동일)
   // 서바이벌: 1개 이상 맞춤
-  const shouldClearLevel = mode === 'time-attack'
-    ? (accuracy >= 50 || correctCount >= 1)
-    : (correctCount >= 1);
+  const shouldClearLevel =
+    mode === 'time-attack' ? accuracy >= 50 || correctCount >= 1 : correctCount >= 1;
 
   // 최고 기록 저장 및 레벨 클리어 처리
   useEffect(() => {
@@ -199,7 +199,13 @@ export function ResultPage() {
 
     // localStorage 키 생성: 안전한 키 생성 함수 사용
     const storageKeyMode = mode === 'time-attack' ? 'time_attack' : 'survival';
-    const storageKey = createSafeStorageKey('highscore', categoryParam, subParam, level, storageKeyMode);
+    const storageKey = createSafeStorageKey(
+      'highscore',
+      categoryParam,
+      subParam,
+      level,
+      storageKeyMode
+    );
     const existingRecord = localStorage.getItem(storageKey);
     const existingScore = existingRecord ? parseInt(existingRecord, 10) : 0;
 
@@ -223,10 +229,13 @@ export function ResultPage() {
       if (finalScore > 0) {
         try {
           await fetchRanking(currentCategory, 'weekly', mode);
-          const latestRankings = useLevelProgressStore.getState().rankings[`${currentCategory}-weekly-${mode}`];
-          const { data: { user } } = await supabase.auth.getUser();
+          const latestRankings =
+            useLevelProgressStore.getState().rankings[`${currentCategory}-weekly-${mode}`];
+          const {
+            data: { user },
+          } = await supabase.auth.getUser();
           if (user && latestRankings) {
-            const myRankItem = latestRankings.find(r => r.user_id === user.id);
+            const myRankItem = latestRankings.find((r) => r.user_id === user.id);
             if (myRankItem) {
               setCurrentRank(Number(myRankItem.rank));
             }
@@ -252,7 +261,9 @@ export function ResultPage() {
       // 새로운 티어 시스템 API 사용 (서버 사이드 채점)
       const submitGameResult = async () => {
         // 현재 사용자 ID 가져오기
-        const { data: { user } } = await supabase.auth.getUser();
+        const {
+          data: { user },
+        } = await supabase.auth.getUser();
         if (!user) {
           console.warn('[ResultPage] 사용자가 로그인하지 않았습니다.');
           return;
@@ -264,56 +275,59 @@ export function ResultPage() {
           .select('total_mastery_score')
           .eq('id', user.id)
           .single();
-        
+
         const previousScore = profileBefore?.total_mastery_score || 0;
         setPreviousMasteryScore(previousScore);
 
         // RPC는 'timeattack' (하이픈/언더바 없음)을 기대함
         const rpcGameMode = mode === 'time-attack' ? 'timeattack' : 'survival';
-        
+
         // 사용자 답안과 문제 ID 파싱
-        const userAnswersArray = userAnswersParam 
-          ? userAnswersParam.split(',').map(a => parseInt(a, 10)).filter(a => !isNaN(a))
+        const userAnswersArray = userAnswersParam
+          ? userAnswersParam
+              .split(',')
+              .map((a) => parseInt(a, 10))
+              .filter((a) => !isNaN(a))
           : [];
-        const questionIdsArray = questionIdsParam 
-          ? questionIdsParam.split(',').filter(id => id.length > 0)
+        const questionIdsArray = questionIdsParam
+          ? questionIdsParam.split(',').filter((id) => id.length > 0)
           : [];
 
         // 게임 세션이 있는 경우에만 새로운 API 사용
         if (sessionIdParam && userAnswersArray.length > 0 && questionIdsArray.length > 0) {
           const { data: result, error: resultError } = await supabase.rpc('submit_game_result', {
             p_user_answers: userAnswersArray,
-            p_question_ids: questionIdsArray.map(id => id as any), // UUID 배열
+            p_question_ids: questionIdsArray.map((id) => id as any), // UUID 배열
             p_game_mode: rpcGameMode,
             p_items_used: [],
             p_session_id: sessionIdParam as any, // UUID
             p_category: categoryParam || 'math',
             p_subject: subParam || 'add',
-            p_level: level || 1
+            p_level: level || 1,
           });
 
           if (resultError) {
             console.error('게임 결과 제출 실패:', resultError);
             return;
           }
-          
+
           fetchUserData();
-          
+
           // 제출 후 마스터리 점수 다시 조회하여 티어 업그레이드 확인
           const { data: profileAfter } = await supabase
             .from('profiles')
             .select('total_mastery_score')
             .eq('id', user.id)
             .single();
-          
+
           const newScore = profileAfter?.total_mastery_score || 0;
           setCurrentMasteryScore(newScore);
-          
+
           // 티어 업그레이드 확인 (점수가 증가했는지 확인)
           if (newScore > previousScore) {
             setShowTierUpgrade(true);
           }
-          
+
           // 뱃지 획득 확인
           if (result?.awarded_badges && result.awarded_badges.length > 0) {
             setAwardedBadges(result.awarded_badges);
@@ -327,7 +341,25 @@ export function ResultPage() {
 
       submitGameResult();
     }
-  }, [categoryParam, subParam, level, mode, finalScore, scoreSubmitted, accuracy, correctCount, clearLevel, updateBestScore, fetchRanking, currentCategory, sessionIdParam, userAnswersParam, questionIdsParam, shouldClearLevel, fetchUserData]);
+  }, [
+    categoryParam,
+    subParam,
+    level,
+    mode,
+    finalScore,
+    scoreSubmitted,
+    accuracy,
+    correctCount,
+    clearLevel,
+    updateBestScore,
+    fetchRanking,
+    currentCategory,
+    sessionIdParam,
+    userAnswersParam,
+    questionIdsParam,
+    shouldClearLevel,
+    fetchUserData,
+  ]);
 
   // 다시 도전하기 - 같은 게임 설정으로 재시작
   const handleRetry = () => {
@@ -343,12 +375,16 @@ export function ResultPage() {
 
     if (!categoryParam || !subParam || !level || !mode) {
       // #region agent log
-      sendDebugLog('ResultPage.tsx:handleRetry:earlyReturn', 'handleRetry early return - missing params', {
-        categoryParam,
-        subParam,
-        level,
-        mode,
-      });
+      sendDebugLog(
+        'ResultPage.tsx:handleRetry:earlyReturn',
+        'handleRetry early return - missing params',
+        {
+          categoryParam,
+          subParam,
+          level,
+          mode,
+        }
+      );
       // #endregion
       navigate('/');
       return;
@@ -395,7 +431,7 @@ export function ResultPage() {
   const isTimeAttack = mode === 'time-attack';
   const isSurvivalMode = mode === 'survival';
   const resultIcon = isTimeAttack ? '⏱️' : '💥';
-  const resultTitle = isTimeAttack ? "시간 종료!" : "게임 오버";
+  const resultTitle = isTimeAttack ? '시간 종료!' : '게임 오버';
 
   // 통계 리스트 데이터 구성
   const statsList = useMemo(() => {
@@ -451,12 +487,12 @@ export function ResultPage() {
     <>
       <div className="result-icon floating">{resultIcon}</div>
       <h1 className="result-title">{resultTitle}</h1>
-      {isExhaustedParam && (
-        <div className="exhausted-badge">😫 지침 상태 (효율 80%)</div>
-      )}
+      {isExhaustedParam && <div className="exhausted-badge">😫 지침 상태 (효율 80%)</div>}
       {level && subTopicInfo && (
         <p className="result-subtitle">
-          {APP_CONFIG.CATEGORY_MAP[categoryParam as keyof typeof APP_CONFIG.CATEGORY_MAP] || categoryParam} - {subTopicInfo.name} Level {level}
+          {APP_CONFIG.CATEGORY_MAP[categoryParam as keyof typeof APP_CONFIG.CATEGORY_MAP] ||
+            categoryParam}{' '}
+          - {subTopicInfo.name} Level {level}
         </p>
       )}
       <div className="score-section">
@@ -520,11 +556,15 @@ export function ResultPage() {
       {showConfetti && (
         <div className="confetti-container">
           {Array.from({ length: 50 }).map((_, i) => (
-            <div key={i} className="confetti" style={{
-              left: `${Math.random() * 100}%`,
-              animationDelay: `${Math.random() * 0.5}s`,
-              backgroundColor: confettiColors[Math.floor(Math.random() * confettiColors.length)],
-            }} />
+            <div
+              key={i}
+              className="confetti"
+              style={{
+                left: `${Math.random() * 100}%`,
+                animationDelay: `${Math.random() * 0.5}s`,
+                backgroundColor: confettiColors[Math.floor(Math.random() * confettiColors.length)],
+              }}
+            />
           ))}
         </div>
       )}
@@ -538,9 +578,7 @@ export function ResultPage() {
 
       {/* 결과 카드 (세로모드용) */}
       <div className="result-card">
-        <div className="result-header-section">
-          {renderHeaderContent()}
-        </div>
+        <div className="result-header-section">{renderHeaderContent()}</div>
         {renderStatsContent()}
       </div>
 
@@ -553,7 +591,9 @@ export function ResultPage() {
           </div>
           {level && subTopicInfo && (
             <p className="result-subtitle">
-              {APP_CONFIG.CATEGORY_MAP[categoryParam as keyof typeof APP_CONFIG.CATEGORY_MAP] || categoryParam} - {subTopicInfo.name} Level {level}
+              {APP_CONFIG.CATEGORY_MAP[categoryParam as keyof typeof APP_CONFIG.CATEGORY_MAP] ||
+                categoryParam}{' '}
+              - {subTopicInfo.name} Level {level}
             </p>
           )}
           <div className="score-section">
@@ -561,13 +601,9 @@ export function ResultPage() {
           </div>
         </div>
         <div className="result-divider"></div>
-        <div className="result-center-section">
-          {renderStatsContent()}
-        </div>
+        <div className="result-center-section">{renderStatsContent()}</div>
         <div className="result-divider"></div>
-        <div className="result-right-section">
-          {renderButtons()}
-        </div>
+        <div className="result-right-section">{renderButtons()}</div>
       </div>
 
       {/* 하단 액션 버튼 (세로모드용) */}

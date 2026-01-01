@@ -33,4 +33,3 @@ export type GameMode = 'time-attack' | 'survival';
 
 // 난이도 타입
 export type Difficulty = 'easy' | 'medium' | 'hard';
-

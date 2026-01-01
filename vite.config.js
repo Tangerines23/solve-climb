@@ -5,7 +5,7 @@ import path from 'path'
 /// <reference types="vitest" />
 
 // https://vite.dev/config/
-export default defineConfig(({ mode }) => {
+export default defineConfig(() => {
   // Vercel 환경인지 확인
   const isVercel = process.env.VERCEL === '1';
 

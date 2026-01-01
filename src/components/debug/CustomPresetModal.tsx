@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { DebugAction, CustomPreset } from '../../utils/debugPresets';
 import './CustomPresetModal.css';
 
@@ -9,7 +9,12 @@ interface CustomPresetModalProps {
   onSave: (preset: CustomPreset) => void;
 }
 
-export function CustomPresetModal({ isOpen, editingPreset, onClose, onSave }: CustomPresetModalProps) {
+export function CustomPresetModal({
+  isOpen,
+  editingPreset,
+  onClose,
+  onSave,
+}: CustomPresetModalProps) {
   const [name, setName] = useState('');
   const [description, setDescription] = useState('');
   const [actions, setActions] = useState<DebugAction[]>([]);
@@ -50,7 +55,7 @@ export function CustomPresetModal({ isOpen, editingPreset, onClose, onSave }: Cu
   };
 
   const handleDeleteAction = (index: number) => {
-    setActions(prev => prev.filter((_, i) => i !== index));
+    setActions((prev) => prev.filter((_, i) => i !== index));
   };
 
   const handleSaveAction = () => {
@@ -58,10 +63,12 @@ export function CustomPresetModal({ isOpen, editingPreset, onClose, onSave }: Cu
 
     if (editingActionIndex === actions.length) {
       // 새 액션 추가
-      setActions(prev => [...prev, editingAction]);
+      setActions((prev) => [...prev, editingAction]);
     } else {
       // 기존 액션 수정
-      setActions(prev => prev.map((action, i) => i === editingActionIndex ? editingAction : action));
+      setActions((prev) =>
+        prev.map((action, i) => (i === editingActionIndex ? editingAction : action))
+      );
     }
 
     setEditingAction(null);
@@ -117,15 +124,13 @@ export function CustomPresetModal({ isOpen, editingPreset, onClose, onSave }: Cu
       <div className="custom-preset-modal" onClick={(e) => e.stopPropagation()}>
         <div className="custom-preset-modal-header">
           <h3>{editingPreset ? '프리셋 편집' : '프리셋 추가'}</h3>
-          <button className="custom-preset-modal-close" onClick={onClose}>×</button>
+          <button className="custom-preset-modal-close" onClick={onClose}>
+            ×
+          </button>
         </div>
 
         <div className="custom-preset-modal-content">
-          {errorMessage && (
-            <div className="custom-preset-modal-error">
-              {errorMessage}
-            </div>
-          )}
+          {errorMessage && <div className="custom-preset-modal-error">{errorMessage}</div>}
 
           <div className="custom-preset-modal-field">
             <label className="custom-preset-modal-label">프리셋 이름:</label>
@@ -155,10 +160,7 @@ export function CustomPresetModal({ isOpen, editingPreset, onClose, onSave }: Cu
           <div className="custom-preset-modal-actions-section">
             <div className="custom-preset-modal-actions-header">
               <label className="custom-preset-modal-label">액션:</label>
-              <button
-                className="custom-preset-modal-add-action-button"
-                onClick={handleAddAction}
-              >
+              <button className="custom-preset-modal-add-action-button" onClick={handleAddAction}>
                 액션 추가
               </button>
             </div>
@@ -177,9 +179,7 @@ export function CustomPresetModal({ isOpen, editingPreset, onClose, onSave }: Cu
                         </span>
                       )}
                       {action.value !== undefined && (
-                        <span className="custom-preset-modal-action-param">
-                          값: {action.value}
-                        </span>
+                        <span className="custom-preset-modal-action-param">값: {action.value}</span>
                       )}
                       {action.quantity !== undefined && (
                         <span className="custom-preset-modal-action-param">
@@ -218,16 +218,18 @@ export function CustomPresetModal({ isOpen, editingPreset, onClose, onSave }: Cu
                   <select
                     className="custom-preset-modal-select"
                     value={editingAction.type}
-                    onChange={(e) => setEditingAction({
-                      ...editingAction,
-                      type: e.target.value as DebugAction['type'],
-                      // 타입 변경 시 관련 파라미터 초기화
-                      level: undefined,
-                      value: undefined,
-                      quantity: undefined,
-                      seconds: undefined,
-                      target: undefined,
-                    })}
+                    onChange={(e) =>
+                      setEditingAction({
+                        ...editingAction,
+                        type: e.target.value as DebugAction['type'],
+                        // 타입 변경 시 관련 파라미터 초기화
+                        level: undefined,
+                        value: undefined,
+                        quantity: undefined,
+                        seconds: undefined,
+                        target: undefined,
+                      })
+                    }
                   >
                     <option value="reset">초기화</option>
                     <option value="setTier">티어 설정</option>
@@ -246,10 +248,12 @@ export function CustomPresetModal({ isOpen, editingPreset, onClose, onSave }: Cu
                     <select
                       className="custom-preset-modal-select"
                       value={editingAction.target || 'all'}
-                      onChange={(e) => setEditingAction({
-                        ...editingAction,
-                        target: e.target.value,
-                      })}
+                      onChange={(e) =>
+                        setEditingAction({
+                          ...editingAction,
+                          target: e.target.value,
+                        })
+                      }
                     >
                       <option value="all">전체</option>
                       <option value="score">점수만</option>
@@ -266,27 +270,33 @@ export function CustomPresetModal({ isOpen, editingPreset, onClose, onSave }: Cu
                       type="number"
                       className="custom-preset-modal-input"
                       value={editingAction.level ?? 0}
-                      onChange={(e) => setEditingAction({
-                        ...editingAction,
-                        level: parseInt(e.target.value, 10) || 0,
-                      })}
+                      onChange={(e) =>
+                        setEditingAction({
+                          ...editingAction,
+                          level: parseInt(e.target.value, 10) || 0,
+                        })
+                      }
                       min="0"
                       max="6"
                     />
                   </div>
                 )}
 
-                {(editingAction.type === 'setMasteryScore' || editingAction.type === 'setMinerals' || editingAction.type === 'setStamina') && (
+                {(editingAction.type === 'setMasteryScore' ||
+                  editingAction.type === 'setMinerals' ||
+                  editingAction.type === 'setStamina') && (
                   <div className="custom-preset-modal-field">
                     <label className="custom-preset-modal-label">값:</label>
                     <input
                       type="number"
                       className="custom-preset-modal-input"
                       value={editingAction.value ?? 0}
-                      onChange={(e) => setEditingAction({
-                        ...editingAction,
-                        value: parseInt(e.target.value, 10) || 0,
-                      })}
+                      onChange={(e) =>
+                        setEditingAction({
+                          ...editingAction,
+                          value: parseInt(e.target.value, 10) || 0,
+                        })
+                      }
                       min="0"
                     />
                   </div>
@@ -299,10 +309,12 @@ export function CustomPresetModal({ isOpen, editingPreset, onClose, onSave }: Cu
                       type="number"
                       className="custom-preset-modal-input"
                       value={editingAction.quantity ?? 99}
-                      onChange={(e) => setEditingAction({
-                        ...editingAction,
-                        quantity: parseInt(e.target.value, 10) || 99,
-                      })}
+                      onChange={(e) =>
+                        setEditingAction({
+                          ...editingAction,
+                          quantity: parseInt(e.target.value, 10) || 99,
+                        })
+                      }
                       min="1"
                     />
                   </div>
@@ -315,10 +327,12 @@ export function CustomPresetModal({ isOpen, editingPreset, onClose, onSave }: Cu
                       type="number"
                       className="custom-preset-modal-input"
                       value={editingAction.seconds ?? 5}
-                      onChange={(e) => setEditingAction({
-                        ...editingAction,
-                        seconds: parseInt(e.target.value, 10) || 5,
-                      })}
+                      onChange={(e) =>
+                        setEditingAction({
+                          ...editingAction,
+                          seconds: parseInt(e.target.value, 10) || 5,
+                        })
+                      }
                       min="1"
                     />
                   </div>
@@ -344,16 +358,10 @@ export function CustomPresetModal({ isOpen, editingPreset, onClose, onSave }: Cu
         </div>
 
         <div className="custom-preset-modal-footer">
-          <button
-            className="custom-preset-modal-save-button"
-            onClick={handleSave}
-          >
+          <button className="custom-preset-modal-save-button" onClick={handleSave}>
             저장
           </button>
-          <button
-            className="custom-preset-modal-cancel-button"
-            onClick={onClose}
-          >
+          <button className="custom-preset-modal-cancel-button" onClick={onClose}>
             취소
           </button>
         </div>
@@ -361,4 +369,3 @@ export function CustomPresetModal({ isOpen, editingPreset, onClose, onSave }: Cu
     </div>
   );
 }
-

@@ -15,7 +15,7 @@ const vibrateBrowser = (duration: number): void => {
   if ('vibrate' in navigator) {
     try {
       navigator.vibrate(duration);
-    } catch (error) {
+    } catch {
       // 진동이 지원되지 않거나 실패한 경우 무시
     }
   }
@@ -29,8 +29,8 @@ const vibrateBrowser = (duration: number): void => {
 export const vibrateShort = (): void => {
   if (isTossAppEnvironment()) {
     try {
-      generateHapticFeedback({ type: 'softLight' });
-    } catch (error) {
+      generateHapticFeedback({ type: 'softLight' as any });
+    } catch {
       // 실패 시 브라우저 fallback
       vibrateBrowser(10);
     }
@@ -48,7 +48,7 @@ export const vibrateMedium = (): void => {
   if (isTossAppEnvironment()) {
     try {
       generateHapticFeedback({ type: 'softMedium' });
-    } catch (error) {
+    } catch {
       // 실패 시 브라우저 fallback
       vibrateBrowser(50);
     }
@@ -65,8 +65,8 @@ export const vibrateMedium = (): void => {
 export const vibrateLong = (): void => {
   if (isTossAppEnvironment()) {
     try {
-      generateHapticFeedback({ type: 'softHeavy' });
-    } catch (error) {
+      generateHapticFeedback({ type: 'softHeavy' as any });
+    } catch {
       // 실패 시 브라우저 fallback
       vibrateBrowser(100);
     }
@@ -74,4 +74,3 @@ export const vibrateLong = (): void => {
     vibrateBrowser(100);
   }
 };
-

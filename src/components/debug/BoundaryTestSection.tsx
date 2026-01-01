@@ -20,7 +20,10 @@ export const BoundaryTestSection = React.memo(function BoundaryTestSection() {
       await fetchUserData();
       setMessage({ type: 'success', text: `스태미나가 ${value}로 설정되었습니다.` });
     } catch (err) {
-      setMessage({ type: 'error', text: `설정 실패: ${err instanceof Error ? err.message : '알 수 없는 오류'}` });
+      setMessage({
+        type: 'error',
+        text: `설정 실패: ${err instanceof Error ? err.message : '알 수 없는 오류'}`,
+      });
     } finally {
       setIsUpdating(false);
     }
@@ -36,7 +39,10 @@ export const BoundaryTestSection = React.memo(function BoundaryTestSection() {
       await fetchUserData();
       setMessage({ type: 'success', text: `미네랄이 ${value.toLocaleString()}로 설정되었습니다.` });
     } catch (err) {
-      setMessage({ type: 'error', text: `설정 실패: ${err instanceof Error ? err.message : '알 수 없는 오류'}` });
+      setMessage({
+        type: 'error',
+        text: `설정 실패: ${err instanceof Error ? err.message : '알 수 없는 오류'}`,
+      });
     } finally {
       setIsUpdating(false);
     }
@@ -49,11 +55,14 @@ export const BoundaryTestSection = React.memo(function BoundaryTestSection() {
       setIsUpdating(true);
       setMessage(null);
 
-      const { data: { user } } = await supabase.auth.getSession();
-      if (!user) {
+      const {
+        data: { session },
+      } = await supabase.auth.getSession();
+      if (!session?.user) {
         setMessage({ type: 'error', text: '로그인이 필요합니다.' });
         return;
       }
+      const user = session.user;
 
       const { error } = await supabase.rpc('debug_set_tier', {
         p_user_id: user.id,
@@ -65,7 +74,10 @@ export const BoundaryTestSection = React.memo(function BoundaryTestSection() {
       setMessage({ type: 'success', text: `티어가 레벨 ${level}로 설정되었습니다.` });
       await refetch();
     } catch (err) {
-      setMessage({ type: 'error', text: `설정 실패: ${err instanceof Error ? err.message : '알 수 없는 오류'}` });
+      setMessage({
+        type: 'error',
+        text: `설정 실패: ${err instanceof Error ? err.message : '알 수 없는 오류'}`,
+      });
     } finally {
       setIsUpdating(false);
     }
@@ -78,11 +90,14 @@ export const BoundaryTestSection = React.memo(function BoundaryTestSection() {
       setIsUpdating(true);
       setMessage(null);
 
-      const { data: { user } } = await supabase.auth.getSession();
-      if (!user) {
+      const {
+        data: { session },
+      } = await supabase.auth.getSession();
+      if (!session?.user) {
         setMessage({ type: 'error', text: '로그인이 필요합니다.' });
         return;
       }
+      const user = session.user;
 
       const { error } = await supabase.rpc('debug_set_mastery_score', {
         p_user_id: user.id,
@@ -91,10 +106,16 @@ export const BoundaryTestSection = React.memo(function BoundaryTestSection() {
 
       if (error) throw error;
 
-      setMessage({ type: 'success', text: `마스터리 점수가 ${score.toLocaleString()}로 설정되었습니다.` });
+      setMessage({
+        type: 'success',
+        text: `마스터리 점수가 ${score.toLocaleString()}로 설정되었습니다.`,
+      });
       await refetch();
     } catch (err) {
-      setMessage({ type: 'error', text: `설정 실패: ${err instanceof Error ? err.message : '알 수 없는 오류'}` });
+      setMessage({
+        type: 'error',
+        text: `설정 실패: ${err instanceof Error ? err.message : '알 수 없는 오류'}`,
+      });
     } finally {
       setIsUpdating(false);
     }
@@ -234,11 +255,8 @@ export const BoundaryTestSection = React.memo(function BoundaryTestSection() {
       </div>
 
       {message && (
-        <div className={`debug-message debug-message-${message.type}`}>
-          {message.text}
-        </div>
+        <div className={`debug-message debug-message-${message.type}`}>{message.text}</div>
       )}
     </div>
   );
 });
-

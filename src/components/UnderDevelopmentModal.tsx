@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import './UnderDevelopmentModal.css';
 
 interface UnderDevelopmentModalProps {
@@ -41,4 +41,3 @@ export function UnderDevelopmentModal({
     </div>
   );
 }
-

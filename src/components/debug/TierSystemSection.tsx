@@ -1,9 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { supabase } from '../../utils/supabaseClient';
 import { useMyPageStats } from '../../hooks/useMyPageStats';
-import { loadTierDefinitions, calculateTier, type TierInfo, type TierLevel } from '../../constants/tiers';
+import {
+  loadTierDefinitions,
+  calculateTier,
+  type TierInfo,
+  type TierLevel,
+} from '../../constants/tiers';
 import { calculateScoreForTier } from '../../utils/tierUtils';
-import { verifySync } from '../../utils/debugSync';
 import { TierUpgradeModal } from '../TierUpgradeModal';
 import './TierSystemSection.css';
 
@@ -19,7 +23,7 @@ export const TierSystemSection = React.memo(function TierSystemSection() {
   } | null>(null);
   const [isUpdating, setIsUpdating] = useState(false);
   const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
-  
+
   // 티어 업그레이드 시뮬레이션 상태
   const [previousTierLevel, setPreviousTierLevel] = useState<TierLevel>(0);
   const [currentTierLevel, setCurrentTierLevel] = useState<TierLevel>(1);
@@ -39,7 +43,7 @@ export const TierSystemSection = React.memo(function TierSystemSection() {
         setSelectedTierLevel(stats.currentTierLevel as TierLevel);
       }
       // 계산 결과 업데이트
-      calculateTier(masteryScore).then(result => {
+      calculateTier(masteryScore).then((result) => {
         setCalculationResult({
           level: result.level,
           stars: result.stars,
@@ -56,13 +60,16 @@ export const TierSystemSection = React.memo(function TierSystemSection() {
       setIsUpdating(true);
       setMessage(null);
 
-      const { data: { user } } = await supabase.auth.getSession();
-      if (!user) {
+      const {
+        data: { session },
+      } = await supabase.auth.getSession();
+      if (!session?.user) {
         setMessage({ type: 'error', text: '로그인이 필요합니다.' });
         return;
       }
+      const user = session.user;
 
-      const { data, error } = await supabase.rpc('debug_set_tier', {
+      const { error } = await supabase.rpc('debug_set_tier', {
         p_user_id: user.id,
         p_level: selectedTierLevel,
       });
@@ -75,7 +82,10 @@ export const TierSystemSection = React.memo(function TierSystemSection() {
       setMessage({ type: 'success', text: '티어가 변경되었습니다.' });
       await refetch();
     } catch (err) {
-      setMessage({ type: 'error', text: `오류: ${err instanceof Error ? err.message : '알 수 없는 오류'}` });
+      setMessage({
+        type: 'error',
+        text: `오류: ${err instanceof Error ? err.message : '알 수 없는 오류'}`,
+      });
     } finally {
       setIsUpdating(false);
     }
@@ -108,13 +118,16 @@ export const TierSystemSection = React.memo(function TierSystemSection() {
       setIsUpdating(true);
       setMessage(null);
 
-      const { data: { user } } = await supabase.auth.getSession();
-      if (!user) {
+      const {
+        data: { session },
+      } = await supabase.auth.getSession();
+      if (!session?.user) {
         setMessage({ type: 'error', text: '로그인이 필요합니다.' });
         return;
       }
+      const user = session.user;
 
-      const { data, error } = await supabase.rpc('debug_set_mastery_score', {
+      const { error } = await supabase.rpc('debug_set_mastery_score', {
         p_user_id: user.id,
         p_score: numValue,
       });
@@ -127,7 +140,10 @@ export const TierSystemSection = React.memo(function TierSystemSection() {
       setMessage({ type: 'success', text: '마스터리 점수가 설정되었습니다.' });
       await refetch();
     } catch (err) {
-      setMessage({ type: 'error', text: `오류: ${err instanceof Error ? err.message : '알 수 없는 오류'}` });
+      setMessage({
+        type: 'error',
+        text: `오류: ${err instanceof Error ? err.message : '알 수 없는 오류'}`,
+      });
     } finally {
       setIsUpdating(false);
     }
@@ -139,12 +155,15 @@ export const TierSystemSection = React.memo(function TierSystemSection() {
       // 티어 레벨에서 기본 점수를 계산 (별 0개, 보너스 0점)
       const prevScore = await calculateScoreForTier(previousTierLevel, 0, 0);
       const currScore = await calculateScoreForTier(currentTierLevel, 0, 0);
-      
+
       setPreviousScore(prevScore);
       setCurrentScore(currScore);
       setShowUpgradeModal(true);
     } catch (err) {
-      setMessage({ type: 'error', text: `점수 계산 실패: ${err instanceof Error ? err.message : '알 수 없는 오류'}` });
+      setMessage({
+        type: 'error',
+        text: `점수 계산 실패: ${err instanceof Error ? err.message : '알 수 없는 오류'}`,
+      });
     }
   };
 
@@ -167,11 +186,7 @@ export const TierSystemSection = React.memo(function TierSystemSection() {
               </option>
             ))}
           </select>
-          <button
-            className="debug-tier-button"
-            onClick={handleTierChange}
-            disabled={isUpdating}
-          >
+          <button className="debug-tier-button" onClick={handleTierChange} disabled={isUpdating}>
             티어 변경
           </button>
         </div>
@@ -203,11 +218,7 @@ export const TierSystemSection = React.memo(function TierSystemSection() {
               +1000
             </button>
           </div>
-          <button
-            className="debug-tier-button"
-            onClick={handleMasterySet}
-            disabled={isUpdating}
-          >
+          <button className="debug-tier-button" onClick={handleMasterySet} disabled={isUpdating}>
             점수 설정
           </button>
         </div>
@@ -219,8 +230,9 @@ export const TierSystemSection = React.memo(function TierSystemSection() {
           <div className="debug-tier-result-item">
             <span className="debug-tier-result-label">레벨:</span>
             <span className="debug-tier-result-value">
-              {tierDefinitions.find(t => t.level === calculationResult.level)?.icon || ''}{' '}
-              {tierDefinitions.find(t => t.level === calculationResult.level)?.name || calculationResult.level}
+              {tierDefinitions.find((t) => t.level === calculationResult.level)?.icon || ''}{' '}
+              {tierDefinitions.find((t) => t.level === calculationResult.level)?.name ||
+                calculationResult.level}
             </span>
           </div>
           <div className="debug-tier-result-item">
@@ -229,7 +241,9 @@ export const TierSystemSection = React.memo(function TierSystemSection() {
           </div>
           <div className="debug-tier-result-item">
             <span className="debug-tier-result-label">사이클 점수:</span>
-            <span className="debug-tier-result-value">{calculationResult.currentCycleScore.toLocaleString()}</span>
+            <span className="debug-tier-result-value">
+              {calculationResult.currentCycleScore.toLocaleString()}
+            </span>
           </div>
         </div>
       )}
@@ -265,10 +279,7 @@ export const TierSystemSection = React.memo(function TierSystemSection() {
               ))}
             </select>
           </div>
-          <button
-            className="debug-tier-upgrade-button"
-            onClick={handleShowUpgradeModal}
-          >
+          <button className="debug-tier-upgrade-button" onClick={handleShowUpgradeModal}>
             티어 업그레이드 모달 표시
           </button>
         </div>
@@ -284,11 +295,8 @@ export const TierSystemSection = React.memo(function TierSystemSection() {
       )}
 
       {message && (
-        <div className={`debug-message debug-message-${message.type}`}>
-          {message.text}
-        </div>
+        <div className={`debug-message debug-message-${message.type}`}>{message.text}</div>
       )}
     </div>
   );
 });
-

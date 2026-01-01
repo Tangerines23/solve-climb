@@ -38,7 +38,7 @@ serve(async (req) => {
         break;
 
       case 'WITHDRAWAL_TERMS':
-      case 'WITHDRAWAL_TOSS':
+      case 'WITHDRAWAL_TOSS': {
         console.log("🚨 회원 탈퇴 요청 (DB 삭제 시도)");
         
         // [핵심 변경] Loop 함수 제거 -> DB 함수(RPC) 호출로 변경
@@ -64,6 +64,7 @@ serve(async (req) => {
           console.log("⚠️ 유저를 찾을 수 없음 (이미 삭제됨 or 존재하지 않음)");
         }
         break;
+      }
 
       default:
         console.warn(`❓ 알 수 없는 사유(${referrer})입니다. 작업 건너뜀.`);

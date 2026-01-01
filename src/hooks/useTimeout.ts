@@ -10,10 +10,7 @@ import { useEffect, useRef } from 'react';
  * @param callback 타이머가 만료될 때 실행할 콜백 함수
  * @param delay 지연 시간 (밀리초). null이면 타이머가 비활성화됨
  */
-export function useTimeout(
-  callback: () => void,
-  delay: number | null
-): void {
+export function useTimeout(callback: () => void, delay: number | null): void {
   const callbackRef = useRef(callback);
 
   // 콜백 함수를 항상 최신 상태로 유지
@@ -37,4 +34,3 @@ export function useTimeout(
     };
   }, [delay]);
 }
-

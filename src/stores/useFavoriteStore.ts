@@ -33,10 +33,7 @@ export const useFavoriteStore = create<FavoriteState>()(
         } else {
           // 즐겨찾기 추가
           set((state) => ({
-            favorites: [
-              { ...favorite, timestamp: Date.now() },
-              ...state.favorites,
-            ],
+            favorites: [{ ...favorite, timestamp: Date.now() }, ...state.favorites],
           }));
         }
       },
@@ -63,4 +60,3 @@ export const useFavoriteStore = create<FavoriteState>()(
     }
   )
 );
-

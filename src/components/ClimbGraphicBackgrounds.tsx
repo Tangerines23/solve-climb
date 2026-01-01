@@ -19,21 +19,24 @@ interface BackgroundProps {
 
 // [수정] 네모 블록 모양 (기호 제거됨)
 const BlockShape = ({ type }: { type: 'near' | 'mid' | 'far' }) => {
-  let fill = "#334155"; // near
+  let fill = '#334155'; // near
   let opacity = 1;
-  
+
   if (type === 'mid') {
-    fill = "#64748B";
+    fill = '#64748B';
     opacity = 0.8;
   } else if (type === 'far') {
-    fill = "#94A3B8";
+    fill = '#94A3B8';
     opacity = 0.5;
   }
 
   return (
     <svg viewBox="0 0 100 100" width="100%" height="100%" style={{ overflow: 'visible' }}>
       <rect
-        x="0" y="0" width="100" height="100"
+        x="0"
+        y="0"
+        width="100"
+        height="100"
         rx="12" // 둥근 모서리
         fill={fill}
         fillOpacity={opacity}
@@ -43,31 +46,32 @@ const BlockShape = ({ type }: { type: 'near' | 'mid' | 'far' }) => {
 };
 
 // [신규] 떠다니는 기호 모양
-const SymbolShape = ({ symbol, type }: { symbol: string, type: 'near' | 'mid' | 'far' }) => {
+const SymbolShape = ({ symbol, type }: { symbol: string; type: 'near' | 'mid' | 'far' }) => {
   // 기호 색상: 블록과 배경(하늘색)과 어울리는 색상
   // 블록 색상: near: #334155, mid: #64748B, far: #94A3B8
   // 하늘색 계열과 블록 색상을 조화롭게 섞은 톤
-  let color = "#0EA5E9"; // near: 밝은 하늘색 (sky-500)
+  let color = '#0EA5E9'; // near: 밝은 하늘색 (sky-500)
   let opacity = 0.85;
-  
+
   if (type === 'mid') {
-    color = "#38BDF8"; // mid: 하늘색 (sky-400)
+    color = '#38BDF8'; // mid: 하늘색 (sky-400)
     opacity = 0.7;
   } else if (type === 'far') {
-    color = "#7DD3FC"; // far: 연한 하늘색 (sky-300)
+    color = '#7DD3FC'; // far: 연한 하늘색 (sky-300)
     opacity = 0.5;
   }
 
   return (
     <svg viewBox="0 0 100 100" width="100%" height="100%" style={{ overflow: 'visible' }}>
-       {/* 텍스트 그림자 효과로 입체감 추가 */}
-       <defs>
+      {/* 텍스트 그림자 효과로 입체감 추가 */}
+      <defs>
         <filter id="symbol-shadow">
           <feDropShadow dx="2" dy="2" stdDeviation="2" floodColor="rgba(0,0,0,0.2)" />
         </filter>
       </defs>
       <text
-        x="50" y="55"
+        x="50"
+        y="55"
         fontSize="60"
         fill={color}
         fillOpacity={opacity}
@@ -153,9 +157,13 @@ export function ArithmeticBackground({ totalLevels = 15 }: BackgroundProps) {
         // 블록 아이템 추가 (isSymbol: false, rotation 없음)
         generatedItems.push({
           id: `block-${idCounter++}`,
-          x, y: safeY, type, scale, rotation: 0, // 블록은 회전 없음
+          x,
+          y: safeY,
+          type,
+          scale,
+          rotation: 0, // 블록은 회전 없음
           isSymbol: false, // 블록임
-          symbol: null
+          symbol: null,
         });
       }
     }
@@ -164,24 +172,28 @@ export function ArithmeticBackground({ totalLevels = 15 }: BackgroundProps) {
     // 블록 개수의 약 50%만큼 기호를 추가로 생성하여 떠다니게 함
     const symbolCount = Math.floor(totalCount * 0.5);
     for (let i = 0; i < symbolCount; i++) {
-        const y = Math.random() * 100; // 전체 영역에 랜덤 배치
-        const x = Math.random() * 100;
-        const type = getMountainType(y); // 높이에 따른 타입(크기/흐림) 결정
-        const symbol = symbols[Math.floor(Math.random() * symbols.length)]; // 랜덤 기호 선택
+      const y = Math.random() * 100; // 전체 영역에 랜덤 배치
+      const x = Math.random() * 100;
+      const type = getMountainType(y); // 높이에 따른 타입(크기/흐림) 결정
+      const symbol = symbols[Math.floor(Math.random() * symbols.length)]; // 랜덤 기호 선택
 
-        let scale = 1;
-        // 기호는 블록보다 약간 더 작게 설정
-        if (type === 'far') scale = 0.3 + Math.random() * 0.2;
-        else if (type === 'mid') scale = 0.5 + Math.random() * 0.2;
-        else if (type === 'near') scale = 0.7 + Math.random() * 0.3;
+      let scale = 1;
+      // 기호는 블록보다 약간 더 작게 설정
+      if (type === 'far') scale = 0.3 + Math.random() * 0.2;
+      else if (type === 'mid') scale = 0.5 + Math.random() * 0.2;
+      else if (type === 'near') scale = 0.7 + Math.random() * 0.3;
 
-        // 기호 아이템 추가 (isSymbol: true, rotation 없음)
-        generatedItems.push({
-          id: `symbol-${idCounter++}`,
-          x, y, type, scale, rotation: 0, // 기호도 회전 없음
-          isSymbol: true, // 기호임
-          symbol: symbol
-        });
+      // 기호 아이템 추가 (isSymbol: true, rotation 없음)
+      generatedItems.push({
+        id: `symbol-${idCounter++}`,
+        x,
+        y,
+        type,
+        scale,
+        rotation: 0, // 기호도 회전 없음
+        isSymbol: true, // 기호임
+        symbol: symbol,
+      });
     }
 
     // Y축 정렬 (멀리 있는 것이 뒤로 가도록)
@@ -189,10 +201,16 @@ export function ArithmeticBackground({ totalLevels = 15 }: BackgroundProps) {
   }, [totalLevels]);
 
   return (
-    <div style={{ 
-      position: 'absolute', width: '100%', height: '100%', 
-      overflow: 'hidden', pointerEvents: 'none', zIndex: 1 
-    }}>
+    <div
+      style={{
+        position: 'absolute',
+        width: '100%',
+        height: '100%',
+        overflow: 'hidden',
+        pointerEvents: 'none',
+        zIndex: 1,
+      }}
+    >
       {items.map((item) => (
         <div
           key={item.id}
@@ -206,12 +224,20 @@ export function ArithmeticBackground({ totalLevels = 15 }: BackgroundProps) {
             transform: `translate(-50%, -50%) scale(${item.scale})`,
             // 타입에 따른 Z-index 및 블러 효과
             // 블록: 1, 2, 3 / 기호: 4, 5, 6 (블록보다 위, 노드(11)보다 아래)
-            zIndex: item.isSymbol 
-              ? (item.type === 'near' ? 6 : item.type === 'mid' ? 5 : 4)
-              : (item.type === 'near' ? 3 : item.type === 'mid' ? 2 : 1),
+            zIndex: item.isSymbol
+              ? item.type === 'near'
+                ? 6
+                : item.type === 'mid'
+                  ? 5
+                  : 4
+              : item.type === 'near'
+                ? 3
+                : item.type === 'mid'
+                  ? 2
+                  : 1,
             filter: item.type === 'far' ? 'blur(2px)' : item.type === 'mid' ? 'blur(1px)' : 'none',
             opacity: item.type === 'far' ? 0.8 : 1,
-            transition: 'transform 0.5s ease-out'
+            transition: 'transform 0.5s ease-out',
           }}
         >
           {/* 아이템 타입에 따라 다른 컴포넌트 렌더링 */}
@@ -230,7 +256,8 @@ export function ArithmeticBackground({ totalLevels = 15 }: BackgroundProps) {
 export function EquationsBackground({ config, totalLevels = 15 }: BackgroundProps) {
   // 청록색 팔레트: Cyan-900 ~ Cyan-600
   const defaultConfig: StageBackgroundConfig = {
-    skyGradient: 'linear-gradient(180deg, #064E3B 0%, #065F46 20%, #047857 40%, #059669 60%, #10B981 80%, #5EEAD4 100%)',
+    skyGradient:
+      'linear-gradient(180deg, #064E3B 0%, #065F46 20%, #047857 40%, #059669 60%, #10B981 80%, #5EEAD4 100%)',
     mainColor: '#064E3B', // Cyan-900 (아주 어두운 청록)
     secondaryColor: '#0891B2', // Cyan-600 (중간 청록)
     accentColor: '#22D3EE', // Cyan-400 (밝은 청록)
@@ -244,7 +271,7 @@ export function EquationsBackground({ config, totalLevels = 15 }: BackgroundProp
   const NODE_SPACING = 80; // 노드 간 간격
   const lastNodeY = LIST_DISTANCE;
   const firstNodeY = lastNodeY + (totalLevels - 1) * NODE_SPACING;
-  
+
   const totalBridges = Math.ceil(totalLevels / 2);
   for (let i = 0; i < totalBridges; i++) {
     const blockIndex = (i + 1) * 2; // 2, 4, 6, 8...
@@ -260,15 +287,16 @@ export function EquationsBackground({ config, totalLevels = 15 }: BackgroundProp
   const variables = useMemo(() => {
     const vars: Array<{ id: string; x: number; y: number; symbol: string; delay: number }> = [];
     const symbols = ['x', 'y', 'a', 'b'];
-    
+
     // 총 12개 정도의 미지수 생성
     for (let i = 0; i < 12; i++) {
       // X 위치: 좌측 0-35% 또는 우측 65-100% (중앙 35-65% 제외)
       const side = Math.random() < 0.5 ? 'left' : 'right';
-      const x = side === 'left' 
-        ? Math.random() * 35  // 좌측
-        : 65 + Math.random() * 35; // 우측
-      
+      const x =
+        side === 'left'
+          ? Math.random() * 35 // 좌측
+          : 65 + Math.random() * 35; // 우측
+
       vars.push({
         id: `var-${i}`,
         x,
@@ -308,7 +336,14 @@ export function EquationsBackground({ config, totalLevels = 15 }: BackgroundProp
         }}
       >
         <defs>
-          <pattern id="equation-grid" x="0" y="0" width="40" height="40" patternUnits="userSpaceOnUse">
+          <pattern
+            id="equation-grid"
+            x="0"
+            y="0"
+            width="40"
+            height="40"
+            patternUnits="userSpaceOnUse"
+          >
             <path
               d="M 40 0 L 0 0 0 40"
               fill="none"
@@ -452,7 +487,7 @@ export function EquationsBackground({ config, totalLevels = 15 }: BackgroundProp
         {bridgeYPositions.map((yPos, index) => {
           const bridgeY = yPos;
           const bridgeThickness = 6;
-          
+
           return (
             <g key={`bridge-${index}`} opacity="0.7">
               {/* 왼쪽 가로선 (150px 지점) */}
@@ -527,20 +562,20 @@ export function SequenceBackground({ config }: BackgroundProps) {
     accentColor: '#9370DB',
   };
   const finalConfig = config || defaultConfig;
-  
+
   return (
     <svg
       viewBox="0 -300 800 1500"
       className="mountain-background-svg"
       preserveAspectRatio="xMidYMid meet"
-      style={{ 
+      style={{
         position: 'absolute',
         width: '100%',
         height: '100%',
         top: 0,
         left: 0,
         zIndex: 1,
-        pointerEvents: 'none'
+        pointerEvents: 'none',
       }}
     >
       {/* 프랙탈 구조: 큰 삼각형 안에 작은 삼각형들 */}
@@ -563,7 +598,7 @@ export function SequenceBackground({ config }: BackgroundProps) {
         opacity="0.25"
         className="mountain-bg-far"
       />
-      
+
       {/* 중간 삼각형들 - 전체 배경의 50% (y: 300 ~ 1050) */}
       <polygon
         points="200,1200 400,400 600,1200"
@@ -589,17 +624,33 @@ export function SequenceBackground({ config }: BackgroundProps) {
         opacity="0.35"
         className="mountain-bg-mid"
       />
-      
+
       {/* 계단식 구조 - 전체 배경의 30% (y: 750 ~ 1200) */}
-      <polygon points="0,1200 0,1100 60,1100 60,1050 120,1050 120,1000 180,1000 180,950 240,950 240,900 300,900 300,1200" 
-        fill={finalConfig.mainColor} opacity="0.6" className="mountain-bg-near" />
-      <polygon points="0,1200 0,1150 80,1150 80,1100 160,1100 160,1050 240,1050 240,1020 320,1020 320,1000 400,1000 400,1200" 
-        fill={finalConfig.mainColor} opacity="0.7" className="mountain-bg-near" />
-      <polygon points="400,1200 400,1000 480,1000 480,1020 560,1020 560,1050 640,1050 640,1100 720,1100 720,1150 800,1150 800,1200" 
-        fill={finalConfig.mainColor} opacity="0.7" className="mountain-bg-near" />
-      <polygon points="500,1200 500,900 560,900 560,950 620,950 620,1000 680,1000 680,1050 740,1050 740,1100 800,1100 800,1200" 
-        fill={finalConfig.mainColor} opacity="0.6" className="mountain-bg-near" />
-      
+      <polygon
+        points="0,1200 0,1100 60,1100 60,1050 120,1050 120,1000 180,1000 180,950 240,950 240,900 300,900 300,1200"
+        fill={finalConfig.mainColor}
+        opacity="0.6"
+        className="mountain-bg-near"
+      />
+      <polygon
+        points="0,1200 0,1150 80,1150 80,1100 160,1100 160,1050 240,1050 240,1020 320,1020 320,1000 400,1000 400,1200"
+        fill={finalConfig.mainColor}
+        opacity="0.7"
+        className="mountain-bg-near"
+      />
+      <polygon
+        points="400,1200 400,1000 480,1000 480,1020 560,1020 560,1050 640,1050 640,1100 720,1100 720,1150 800,1150 800,1200"
+        fill={finalConfig.mainColor}
+        opacity="0.7"
+        className="mountain-bg-near"
+      />
+      <polygon
+        points="500,1200 500,900 560,900 560,950 620,950 620,1000 680,1000 680,1050 740,1050 740,1100 800,1100 800,1200"
+        fill={finalConfig.mainColor}
+        opacity="0.6"
+        className="mountain-bg-near"
+      />
+
       {/* 규칙적으로 배치된 바위들 - 화면 전체에 분산 */}
       <circle cx="100" cy="-150" r="10" fill={finalConfig.accentColor} opacity="0.4" />
       <circle cx="300" cy="-130" r="12" fill={finalConfig.accentColor} opacity="0.4" />
@@ -629,34 +680,63 @@ export function CalculusBackground({ config }: BackgroundProps) {
     accentColor: '#00D4FF',
   };
   const finalConfig = config || defaultConfig;
-  
+
   return (
     <svg
       viewBox="0 -300 800 1500"
       className="mountain-background-svg"
       preserveAspectRatio="xMidYMid meet"
-      style={{ 
+      style={{
         position: 'absolute',
         width: '100%',
         height: '100%',
         top: 0,
         left: 0,
         zIndex: 1,
-        pointerEvents: 'none'
+        pointerEvents: 'none',
       }}
     >
       {/* 배경 그리드 패턴 - viewBox 전체에 맞게 조정 */}
       <defs>
-        <pattern id="grid" x="0" y="0" width="40" height="40" patternUnits="userSpaceOnUse" opacity="0.2">
-          <path d="M 40 0 L 0 0 0 40" fill="none" stroke={finalConfig.accentColor} strokeWidth="1" />
+        <pattern
+          id="grid"
+          x="0"
+          y="0"
+          width="40"
+          height="40"
+          patternUnits="userSpaceOnUse"
+          opacity="0.2"
+        >
+          <path
+            d="M 40 0 L 0 0 0 40"
+            fill="none"
+            stroke={finalConfig.accentColor}
+            strokeWidth="1"
+          />
         </pattern>
       </defs>
       <rect x="0" y="-300" width="800" height="1800" fill="url(#grid)" />
-      
+
       {/* 좌표축 - viewBox 내부에 맞게 조정 */}
-      <line x1="0" y1="600" x2="800" y2="600" stroke={finalConfig.accentColor} strokeWidth="2" opacity="0.3" />
-      <line x1="400" y1="-300" x2="400" y2="1200" stroke={finalConfig.accentColor} strokeWidth="2" opacity="0.3" />
-      
+      <line
+        x1="0"
+        y1="600"
+        x2="800"
+        y2="600"
+        stroke={finalConfig.accentColor}
+        strokeWidth="2"
+        opacity="0.3"
+      />
+      <line
+        x1="400"
+        y1="-300"
+        x2="400"
+        y2="1200"
+        stroke={finalConfig.accentColor}
+        strokeWidth="2"
+        opacity="0.3"
+      />
+
       {/* 부유섬 1 - 곡선형 (좌우로 분산) - 전체 배경의 70% (y: -300 ~ 750) */}
       <path
         d="M 50,-250 Q 200,-300 300,-250 T 500,-270 T 650,-250 Z"
@@ -688,7 +768,7 @@ export function CalculusBackground({ config }: BackgroundProps) {
         opacity="0.35"
         className="mountain-bg-far"
       />
-      
+
       {/* 부유섬 2 - 중간 높이 (좌우로 분산) - 전체 배경의 50% (y: 300 ~ 1050) */}
       <path
         d="M 0,100 Q 150,0 300,20 T 500,0 T 700,100 Z"
@@ -714,7 +794,7 @@ export function CalculusBackground({ config }: BackgroundProps) {
         opacity="0.45"
         className="mountain-bg-mid"
       />
-      
+
       {/* 부유섬 3 - 적분 면적 형태 (좌우로 분산) - 전체 배경의 30% (y: 750 ~ 1200) */}
       <path
         d="M 50,1200 L 50,1000 Q 200,950 350,980 T 550,960 T 750,1200 Z"
@@ -734,21 +814,123 @@ export function CalculusBackground({ config }: BackgroundProps) {
         opacity="0.7"
         className="mountain-bg-near"
       />
-      
+
       {/* 접선 빛줄기 - 화면 전체에 분산 */}
-      <line x1="0" y1="-250" x2="800" y2="-200" stroke={finalConfig.accentColor} strokeWidth="2" opacity="0.3" strokeDasharray="5,5" />
-      <line x1="0" y1="150" x2="800" y2="200" stroke={finalConfig.accentColor} strokeWidth="2" opacity="0.4" strokeDasharray="5,5" />
-      <line x1="100" y1="100" x2="700" y2="250" stroke={finalConfig.accentColor} strokeWidth="2" opacity="0.3" strokeDasharray="5,5" />
-      <line x1="0" y1="850" x2="800" y2="900" stroke={finalConfig.accentColor} strokeWidth="2" opacity="0.3" strokeDasharray="5,5" />
-      
+      <line
+        x1="0"
+        y1="-250"
+        x2="800"
+        y2="-200"
+        stroke={finalConfig.accentColor}
+        strokeWidth="2"
+        opacity="0.3"
+        strokeDasharray="5,5"
+      />
+      <line
+        x1="0"
+        y1="150"
+        x2="800"
+        y2="200"
+        stroke={finalConfig.accentColor}
+        strokeWidth="2"
+        opacity="0.4"
+        strokeDasharray="5,5"
+      />
+      <line
+        x1="100"
+        y1="100"
+        x2="700"
+        y2="250"
+        stroke={finalConfig.accentColor}
+        strokeWidth="2"
+        opacity="0.3"
+        strokeDasharray="5,5"
+      />
+      <line
+        x1="0"
+        y1="850"
+        x2="800"
+        y2="900"
+        stroke={finalConfig.accentColor}
+        strokeWidth="2"
+        opacity="0.3"
+        strokeDasharray="5,5"
+      />
+
       {/* 적분 기호 - 화면 전체에 분산 */}
-      <text x="100" y="-230" fontSize="45" fill={finalConfig.accentColor} opacity="0.5" className="math-symbol" textAnchor="middle" dominantBaseline="middle">∫</text>
-      <text x="700" y="-220" fontSize="38" fill={finalConfig.accentColor} opacity="0.4" className="math-symbol" textAnchor="middle" dominantBaseline="middle">∞</text>
-      <text x="200" y="250" fontSize="50" fill={finalConfig.accentColor} opacity="0.6" className="math-symbol" textAnchor="middle" dominantBaseline="middle">∫</text>
-      <text x="600" y="220" fontSize="40" fill={finalConfig.accentColor} opacity="0.5" className="math-symbol" textAnchor="middle" dominantBaseline="middle">∞</text>
-      <text x="500" y="980" fontSize="42" fill={finalConfig.accentColor} opacity="0.5" className="math-symbol" textAnchor="middle" dominantBaseline="middle">∫</text>
-      <text x="300" y="1100" fontSize="40" fill={finalConfig.accentColor} opacity="0.5" className="math-symbol" textAnchor="middle" dominantBaseline="middle">∞</text>
-      
+      <text
+        x="100"
+        y="-230"
+        fontSize="45"
+        fill={finalConfig.accentColor}
+        opacity="0.5"
+        className="math-symbol"
+        textAnchor="middle"
+        dominantBaseline="middle"
+      >
+        ∫
+      </text>
+      <text
+        x="700"
+        y="-220"
+        fontSize="38"
+        fill={finalConfig.accentColor}
+        opacity="0.4"
+        className="math-symbol"
+        textAnchor="middle"
+        dominantBaseline="middle"
+      >
+        ∞
+      </text>
+      <text
+        x="200"
+        y="250"
+        fontSize="50"
+        fill={finalConfig.accentColor}
+        opacity="0.6"
+        className="math-symbol"
+        textAnchor="middle"
+        dominantBaseline="middle"
+      >
+        ∫
+      </text>
+      <text
+        x="600"
+        y="220"
+        fontSize="40"
+        fill={finalConfig.accentColor}
+        opacity="0.5"
+        className="math-symbol"
+        textAnchor="middle"
+        dominantBaseline="middle"
+      >
+        ∞
+      </text>
+      <text
+        x="500"
+        y="980"
+        fontSize="42"
+        fill={finalConfig.accentColor}
+        opacity="0.5"
+        className="math-symbol"
+        textAnchor="middle"
+        dominantBaseline="middle"
+      >
+        ∫
+      </text>
+      <text
+        x="300"
+        y="1100"
+        fontSize="40"
+        fill={finalConfig.accentColor}
+        opacity="0.5"
+        className="math-symbol"
+        textAnchor="middle"
+        dominantBaseline="middle"
+      >
+        ∞
+      </text>
+
       {/* 별들 - 화면 전체에 분산 */}
       <circle cx="150" cy="-270" r="2" fill={finalConfig.accentColor} opacity="0.8" />
       <circle cx="300" cy="-250" r="1.5" fill={finalConfig.accentColor} opacity="0.7" />
@@ -777,14 +959,14 @@ export function DefaultBackground({ categoryColor }: { categoryColor?: string })
       viewBox="0 -300 800 1500"
       className="mountain-background-svg"
       preserveAspectRatio="xMidYMid meet"
-      style={{ 
+      style={{
         position: 'absolute',
         width: '100%',
         height: '100%',
         top: 0,
         left: 0,
         zIndex: 1,
-        pointerEvents: 'none'
+        pointerEvents: 'none',
       }}
     >
       {/* 먼 산 - 전체 배경의 70% (y: -300 ~ 750) */}
@@ -850,8 +1032,8 @@ export function DefaultBackground({ categoryColor }: { categoryColor?: string })
   );
 }
 
-
 // 배경 컴포넌트 선택 함수
+// eslint-disable-next-line react-refresh/only-export-components
 export function getBackgroundComponent(subTopic: string) {
   switch (subTopic) {
     case 'arithmetic':
@@ -866,4 +1048,3 @@ export function getBackgroundComponent(subTopic: string) {
       return DefaultBackground;
   }
 }
-

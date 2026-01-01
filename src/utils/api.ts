@@ -19,10 +19,7 @@ function createLoadingId(prefix: string): string {
 /**
  * 로딩 상태와 함께 비동기 작업 실행
  */
-async function withLoading<T>(
-  loadingId: string,
-  asyncFn: () => Promise<T>
-): Promise<T> {
+async function withLoading<T>(loadingId: string, asyncFn: () => Promise<T>): Promise<T> {
   const { startLoading, stopLoading } = useLoadingStore.getState();
   try {
     startLoading(loadingId);
@@ -48,7 +45,10 @@ export const authApi = {
     const loadingId = createLoadingId('auth_getCurrentUser');
     return withLoading(loadingId, async () => {
       try {
-        const { data: { user }, error } = await supabase.auth.getUser();
+        const {
+          data: { user },
+          error,
+        } = await supabase.auth.getUser();
         if (error) throw error;
         return user;
       } catch (error) {
@@ -65,7 +65,10 @@ export const authApi = {
     const loadingId = createLoadingId('auth_getSession');
     return withLoading(loadingId, async () => {
       try {
-        const { data: { session }, error } = await supabase.auth.getSession();
+        const {
+          data: { session },
+          error,
+        } = await supabase.auth.getSession();
         if (error) throw error;
         return session;
       } catch (error) {
@@ -95,7 +98,9 @@ export const authApi = {
    * 인증 상태 변경 리스너 등록
    */
   onAuthStateChange(callback: (event: string, session: Session | null) => void) {
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((event, session) => {
       callback(event, session);
     });
     return subscription;
@@ -134,15 +139,16 @@ export const gameRecordsApi = {
     const loadingId = createLoadingId('gameRecords_upsertRecord');
     return withLoading(loadingId, async () => {
       try {
-        const { error } = await supabase
-          .from('game_records')
-          .upsert({
+        const { error } = await supabase.from('game_records').upsert(
+          {
             ...record,
             updated_at: new Date().toISOString(),
-          }, {
+          },
+          {
             onConflict: 'user_id, category, subject, level, mode',
             ignoreDuplicates: false,
-          });
+          }
+        );
 
         if (error) throw error;
       } catch (error) {
@@ -159,10 +165,7 @@ export const gameRecordsApi = {
     const loadingId = createLoadingId('gameRecords_deleteAll');
     return withLoading(loadingId, async () => {
       try {
-        const { error } = await supabase
-          .from('game_records')
-          .delete()
-          .eq('user_id', userId);
+        const { error } = await supabase.from('game_records').delete().eq('user_id', userId);
 
         if (error) throw error;
       } catch (error) {
@@ -185,7 +188,7 @@ export const statsApi = {
     return withLoading(loadingId, async () => {
       try {
         const { data, error } = await supabase.rpc('get_user_game_stats');
-        
+
         if (error) throw error;
         if (!data || data.length === 0) return null;
 
@@ -223,23 +226,24 @@ export const statsApi = {
 
         // 클라이언트에서 집계
         const totalHeight = records.reduce((sum, record) => sum + (record.score || 0), 0);
-        const solvedRecords = records.filter(r => r.cleared === true);
+        const solvedRecords = records.filter((r) => r.cleared === true);
         const totalSolved = solvedRecords.length;
-        const maxLevel = solvedRecords.length > 0
-          ? Math.max(...solvedRecords.map(r => r.level || 0))
-          : 0;
+        const maxLevel =
+          solvedRecords.length > 0 ? Math.max(...solvedRecords.map((r) => r.level || 0)) : 0;
 
         // 과목별 점수 합계 계산
         const subjectScores: Record<string, number> = {};
-        records.forEach(record => {
+        records.forEach((record) => {
           if (record.subject) {
-            subjectScores[record.subject] = (subjectScores[record.subject] || 0) + (record.score || 0);
+            subjectScores[record.subject] =
+              (subjectScores[record.subject] || 0) + (record.score || 0);
           }
         });
 
-        const bestSubject = Object.keys(subjectScores).length > 0
-          ? Object.entries(subjectScores).sort((a, b) => b[1] - a[1])[0][0]
-          : null;
+        const bestSubject =
+          Object.keys(subjectScores).length > 0
+            ? Object.entries(subjectScores).sort((a, b) => b[1] - a[1])[0][0]
+            : null;
 
         return {
           totalHeight,
@@ -303,7 +307,7 @@ export const challengeApi = {
     return withLoading(loadingId, async () => {
       try {
         const targetDate = date || new Date().toISOString().split('T')[0];
-        
+
         // .maybeSingle() 사용: 데이터가 없으면 null 반환 (406 에러 없음)
         const { data, error } = await supabase
           .from('today_challenges')
@@ -316,7 +320,7 @@ export const challengeApi = {
           if (error.code === 'PGRST116') {
             return null;
           }
-          
+
           // 테이블이 없는 경우 (마이그레이션 필요)
           if (error.code === 'PGRST205' || error.code === 'PGRST301') {
             if (ENV.IS_DEVELOPMENT) {
@@ -324,7 +328,7 @@ export const challengeApi = {
             }
             return null;
           }
-          
+
           // 기타 에러는 로깅 후 null 반환
           if (ENV.IS_DEVELOPMENT) {
             console.error('[Challenge API] today_challenges 조회 에러:', error);
@@ -341,4 +345,3 @@ export const challengeApi = {
     });
   },
 };
-

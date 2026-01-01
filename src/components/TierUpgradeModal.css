@@ -77,11 +77,14 @@
 }
 
 .tier-icon-large.stars-animation {
-  animation: tier-glow 2s ease-in-out infinite, scale-bounce 0.5s ease-in-out;
+  animation:
+    tier-glow 2s ease-in-out infinite,
+    scale-bounce 0.5s ease-in-out;
 }
 
 @keyframes scale-bounce {
-  0%, 100% {
+  0%,
+  100% {
     transform: scale(1);
   }
   50% {
@@ -161,4 +164,3 @@
 .tier-upgrade-button:active {
   background-color: var(--color-blue-700);
 }
-

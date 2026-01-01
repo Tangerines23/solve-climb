@@ -44,10 +44,14 @@ export function RankingPage() {
 
   const getMedalIcon = (rank: number) => {
     switch (rank) {
-      case 1: return '🥇';
-      case 2: return '🥈';
-      case 3: return '🥉';
-      default: return rank;
+      case 1:
+        return '🥇';
+      case 2:
+        return '🥈';
+      case 3:
+        return '🥉';
+      default:
+        return rank;
     }
   };
 
@@ -82,9 +86,7 @@ export function RankingPage() {
         {/* Layer 2: 기간 선택 (Pill Switch) */}
         <div className="ranking-switch-container">
           <div className="ranking-switch">
-            <div
-              className={`switch-bg ${activePeriod}`}
-            />
+            <div className={`switch-bg ${activePeriod}`} />
             <button
               className={`switch-option ${activePeriod === 'weekly' ? 'active' : ''}`}
               onClick={() => setActivePeriod('weekly')}
@@ -105,7 +107,11 @@ export function RankingPage() {
           {activePeriod === 'weekly' ? (
             <p>성실함 & 노력! 이번 주 획득한 모든 점수의 합산</p>
           ) : (
-            <p>{activeType === 'total' ? '티어 정복! 모든 레벨별 최고 기록의 총합' : '역대 최고 기록! 단일 판 기록 기준'}</p>
+            <p>
+              {activeType === 'total'
+                ? '티어 정복! 모든 레벨별 최고 기록의 총합'
+                : '역대 최고 기록! 단일 판 기록 기준'}
+            </p>
           )}
         </div>
 
@@ -128,17 +134,15 @@ export function RankingPage() {
                     <span className="ranking-nickname">{item.nickname}</span>
                     {/* 명예의 전당 종합에만 티어 표시 */}
                     {activePeriod === 'all-time' && activeType === 'total' && (
-                      <TierBadge 
-                        totalScore={Number(item.score)} 
-                        size="small" 
+                      <TierBadge
+                        totalScore={Number(item.score)}
+                        size="small"
                         showLabel={false}
                         showStars={true}
                       />
                     )}
                   </div>
-                  <div className="ranking-score">
-                    {Number(item.score).toLocaleString()}점
-                  </div>
+                  <div className="ranking-score">{Number(item.score).toLocaleString()}점</div>
                 </div>
               ))}
             </div>
@@ -160,17 +164,15 @@ export function RankingPage() {
                 <span className="ranking-nickname">나 ({myRank.nickname})</span>
                 {/* 명예의 전당 종합에만 티어 표시 */}
                 {activePeriod === 'all-time' && activeType === 'total' && (
-                  <TierBadge 
-                    totalScore={Number(myRank.score)} 
-                    size="small" 
+                  <TierBadge
+                    totalScore={Number(myRank.score)}
+                    size="small"
                     showLabel={false}
                     showStars={true}
                   />
                 )}
               </div>
-              <div className="ranking-score">
-                {Number(myRank.score).toLocaleString()}점
-              </div>
+              <div className="ranking-score">{Number(myRank.score).toLocaleString()}점</div>
             </div>
           </div>
         )}

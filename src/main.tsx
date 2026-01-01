@@ -1,5 +1,4 @@
 // src/main.tsx
-import React from 'react';
 import ReactDOM from 'react-dom/client';
 import { ThemeProvider } from '@toss/tds-mobile'; // 정적 임포트로 변경하여 로딩 불확실성 제거
 import './index.css';
@@ -56,10 +55,11 @@ try {
     const loader = document.getElementById('loading-check');
     if (loader) {
       loader.style.opacity = '0';
-      setTimeout(() => { loader.style.display = 'none'; }, 500);
+      setTimeout(() => {
+        loader.style.display = 'none';
+      }, 500);
     }
   }, 1000);
-
 } catch (err) {
   log('Render Crash!', '#ff4444');
   console.error(err);

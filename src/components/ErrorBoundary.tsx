@@ -3,7 +3,7 @@
  * 하위 컴포넌트에서 발생한 에러를 캐치하여 처리합니다.
  */
 
-import React, { Component, ErrorInfo, ReactNode } from 'react';
+import { Component, ErrorInfo, ReactNode } from 'react';
 import { ErrorFallback } from './ErrorFallback';
 import { logError } from '../utils/errorHandler';
 import { useErrorLogStore } from '../stores/useErrorLogStore';
@@ -39,15 +39,17 @@ export class ErrorBoundary extends Component<Props, State> {
   componentDidCatch(error: Error, errorInfo: ErrorInfo) {
     // 에러 로깅
     logError('ErrorBoundary', error);
-    
+
     // 에러 로그 스토어에 기록 (개발 환경에서만)
     if (import.meta.env.DEV) {
-      useErrorLogStore.getState().addLog(
-        'error',
-        error.message,
-        error.stack,
-        `ErrorBoundary: ${errorInfo.componentStack?.split('\n')[0] || 'Unknown component'}`
-      );
+      useErrorLogStore
+        .getState()
+        .addLog(
+          'error',
+          error.message,
+          error.stack,
+          `ErrorBoundary: ${errorInfo.componentStack?.split('\n')[0] || 'Unknown component'}`
+        );
       console.error('ErrorBoundary caught an error:', error);
       console.error('Error Info:', errorInfo);
     }
@@ -73,15 +75,9 @@ export class ErrorBoundary extends Component<Props, State> {
       }
 
       // 기본 ErrorFallback 사용
-      return (
-        <ErrorFallback
-          error={this.state.error}
-          resetError={this.handleReset}
-        />
-      );
+      return <ErrorFallback error={this.state.error} resetError={this.handleReset} />;
     }
 
     return this.props.children;
   }
 }
-

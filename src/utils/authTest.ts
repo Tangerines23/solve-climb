@@ -41,7 +41,7 @@ export async function testSupabaseConnection(): Promise<AuthTestResult> {
 
     // 간단한 API 호출로 연결 테스트
     const { data, error } = await supabase.auth.getSession();
-    
+
     if (error) {
       return {
         success: false,
@@ -78,16 +78,17 @@ export async function testSupabaseConnection(): Promise<AuthTestResult> {
 export function testCallbackUrl(): AuthTestResult {
   const callbackUrl = getCallbackUrl();
   const currentUrl = typeof window !== 'undefined' ? window.location.href : '';
-  
+
   // URL 형식 검증
   const isValidUrl = callbackUrl.startsWith('http://') || callbackUrl.startsWith('https://');
   const hasCallbackPath = callbackUrl.includes('/auth/callback');
-  
+
   return {
     success: isValidUrl && hasCallbackPath,
-    message: isValidUrl && hasCallbackPath 
-      ? '콜백 URL 설정이 올바릅니다' 
-      : '콜백 URL 설정에 문제가 있습니다',
+    message:
+      isValidUrl && hasCallbackPath
+        ? '콜백 URL 설정이 올바릅니다'
+        : '콜백 URL 설정에 문제가 있습니다',
     details: {
       callbackUrl,
       currentUrl,
@@ -112,15 +113,15 @@ export async function testAuthSetup(): Promise<{
 }> {
   const callbackUrlTest = testCallbackUrl();
   const connectionTest = await testSupabaseConnection();
-  
+
   const tests = [callbackUrlTest, connectionTest];
-  const passed = tests.filter(t => t.success).length;
-  
+  const passed = tests.filter((t) => t.success).length;
+
   return {
     callbackUrl: callbackUrlTest,
     connection: connectionTest,
     summary: {
-      allPassed: tests.every(t => t.success),
+      allPassed: tests.every((t) => t.success),
       passed,
       total: tests.length,
     },
@@ -133,7 +134,7 @@ export async function testAuthSetup(): Promise<{
 export async function testGoogleLogin(): Promise<AuthTestResult> {
   try {
     const callbackUrl = getCallbackUrl();
-    
+
     const { data, error } = await supabase.auth.signInWithOAuth({
       provider: 'google',
       options: {
@@ -170,4 +171,3 @@ export async function testGoogleLogin(): Promise<AuthTestResult> {
     };
   }
 }
-

@@ -118,7 +118,7 @@
     min-height: clamp(72px, 16vw, 90px);
     height: clamp(72px, 16vw, 90px);
   }
-  
+
   .keypad-key-submit {
     min-height: clamp(72px, 16vw, 90px);
     height: clamp(72px, 16vw, 90px);
@@ -163,4 +163,3 @@
     font-size: clamp(1.2rem, 3vw, 1.6rem);
   }
 }
-

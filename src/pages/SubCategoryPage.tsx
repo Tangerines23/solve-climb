@@ -1,4 +1,4 @@
-import React, { useRef, useState } from 'react';
+import { useRef, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { APP_CONFIG } from '../config/app';
 import { SubCategoryHeader } from '../components/SubCategoryHeader';
@@ -21,7 +21,10 @@ export function SubCategoryPage() {
   const longPressTimerRef = useRef<NodeJS.Timeout | null>(null);
 
   // 예외 처리: category 파라미터가 없거나 유효하지 않은 경우
-  if (!categoryParam || !APP_CONFIG.SUB_TOPICS[categoryParam as keyof typeof APP_CONFIG.SUB_TOPICS]) {
+  if (
+    !categoryParam ||
+    !APP_CONFIG.SUB_TOPICS[categoryParam as keyof typeof APP_CONFIG.SUB_TOPICS]
+  ) {
     return (
       <div className="subcategory-page">
         <SubCategoryHeader categoryId={null} />
@@ -43,8 +46,8 @@ export function SubCategoryPage() {
 
   // config에서 주제 목록 가져오기 (동적 데이터)
   const topics = APP_CONFIG.SUB_TOPICS[categoryParam as keyof typeof APP_CONFIG.SUB_TOPICS];
-  const categoryInfo = APP_CONFIG.CATEGORIES.find(cat => cat.id === categoryParam);
-  
+  const categoryInfo = APP_CONFIG.CATEGORIES.find((cat) => cat.id === categoryParam);
+
   // 카테고리 전체 진행도 계산
   const { progressPercent: categoryProgressPercent } = calculateCategoryProgress(categoryParam);
 
@@ -56,7 +59,7 @@ export function SubCategoryPage() {
   const handleLongPress = (topicId: string, topicName: string) => {
     const favoriteId = `${categoryParam}_${topicId}`;
     const isFav = isFavorite(categoryParam, topicId);
-    
+
     addFavorite({
       id: favoriteId,
       type: 'subcategory',
@@ -66,7 +69,7 @@ export function SubCategoryPage() {
     });
 
     const newMessage = isFav ? `${topicName} 즐겨찾기 해제` : `${topicName} 즐겨찾기 추가`;
-    
+
     // 현재 토스트가 표시 중이면 즉시 닫고 새 메시지 표시
     if (showFavoriteToast) {
       setIsFavoriteToastClosing(true);
@@ -146,11 +149,9 @@ export function SubCategoryPage() {
           <div id="topic-list-container" className="topic-list-container">
             {sortedTopics.map((topic) => {
               const isFav = isFavorite(categoryParam, topic.id);
-              const { progressPercent, currentAltitude, targetAltitude } = calculateSubTopicProgress(
-                categoryParam,
-                topic.id
-              );
-              
+              const { progressPercent, currentAltitude, targetAltitude } =
+                calculateSubTopicProgress(categoryParam, topic.id);
+
               return (
                 <a
                   key={topic.id}
@@ -177,8 +178,8 @@ export function SubCategoryPage() {
                             {currentAltitude.toLocaleString()}m / {targetAltitude.toLocaleString()}m
                           </p>
                           <div className="topic-progress-bar">
-                            <div 
-                              className="topic-progress-bar-fill" 
+                            <div
+                              className="topic-progress-bar-fill"
                               style={{ width: `${Math.min(progressPercent, 100)}%` }}
                             ></div>
                           </div>
@@ -202,4 +203,3 @@ export function SubCategoryPage() {
     </div>
   );
 }
-

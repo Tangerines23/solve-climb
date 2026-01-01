@@ -10,10 +10,7 @@ import { useEffect, useRef } from 'react';
  * @param callback 인터벌마다 실행할 콜백 함수
  * @param delay 인터벌 간격 (밀리초). null이면 인터벌이 비활성화됨
  */
-export function useInterval(
-  callback: () => void,
-  delay: number | null
-): void {
+export function useInterval(callback: () => void, delay: number | null): void {
   const callbackRef = useRef(callback);
 
   // 콜백 함수를 항상 최신 상태로 유지
@@ -37,4 +34,3 @@ export function useInterval(
     };
   }, [delay]);
 }
-

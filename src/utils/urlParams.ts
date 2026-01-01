@@ -22,7 +22,7 @@ export function validateNumberParam(
   }
 
   const num = parseInt(value, 10);
-  
+
   // NaN 체크
   if (isNaN(num)) {
     return null;
@@ -53,7 +53,7 @@ export function validateFloatParam(
   }
 
   const num = parseFloat(value);
-  
+
   // NaN 체크
   if (isNaN(num)) {
     return null;
@@ -93,7 +93,7 @@ export function validateStringParam(
  * 카테고리 파라미터 검증
  */
 export function validateCategoryParam(value: string | null): string | null {
-  const allowedCategories = APP_CONFIG.CATEGORIES.map(cat => cat.id);
+  const allowedCategories = APP_CONFIG.CATEGORIES.map((cat) => cat.id);
   return validateStringParam(value, allowedCategories);
 }
 
@@ -110,12 +110,12 @@ export function validateSubTopicParam(
 
   const categoryKey = category as keyof typeof APP_CONFIG.SUB_TOPICS;
   const subTopics = APP_CONFIG.SUB_TOPICS[categoryKey];
-  
+
   if (!subTopics) {
     return null;
   }
 
-  const allowedSubTopics = subTopics.map(sub => sub.id);
+  const allowedSubTopics = subTopics.map((sub) => sub.id);
   return validateStringParam(subTopic, allowedSubTopics);
 }
 
@@ -137,13 +137,9 @@ export function validateModeParam(value: string | null): 'time-attack' | 'surviv
  * @param value 검증할 값
  * @param maxLevel 최대 레벨 (기본값: 20)
  */
-export function validateLevelParam(
-  value: string | null,
-  maxLevel: number = 20
-): number | null {
+export function validateLevelParam(value: string | null, maxLevel: number = 20): number | null {
   return validateNumberParam(value, 1, maxLevel);
 }
 
 // createSafeStorageKey는 storageKey.ts에서 export하여 사용
 export { createSafeStorageKey } from './storageKey';
-

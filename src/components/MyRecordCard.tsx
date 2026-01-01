@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useLevelProgressStore } from '../stores/useLevelProgressStore';
 import './MyRecordCard.css';
 
@@ -12,8 +12,8 @@ export function MyRecordCard({ category, subTopic, subTopicName }: MyRecordCardP
   const [loading, setLoading] = useState(true);
   const [records, setRecords] = useState<{
     'time-attack': number | null;
-    'survival': number | null;
-  }>({ 'time-attack': null, 'survival': null });
+    survival: number | null;
+  }>({ 'time-attack': null, survival: null });
 
   const getBestRecords = useLevelProgressStore((state) => state.getBestRecords);
 
@@ -25,7 +25,7 @@ export function MyRecordCard({ category, subTopic, subTopicName }: MyRecordCardP
       // 점수를 그대로 사용 (미터 단위)
       setRecords({
         'time-attack': bestRecords['time-attack'],
-        'survival': bestRecords['survival'],
+        survival: bestRecords['survival'],
       });
       setLoading(false);
     }, 300);
@@ -51,18 +51,21 @@ export function MyRecordCard({ category, subTopic, subTopicName }: MyRecordCardP
           <span className="my-record-icon">⏱️</span>
           <span className="my-record-label">타임 어택:</span>
           <span className="my-record-value">
-            {records['time-attack'] !== null ? `${records['time-attack'].toLocaleString()}m` : '기록 없음'}
+            {records['time-attack'] !== null
+              ? `${records['time-attack'].toLocaleString()}m`
+              : '기록 없음'}
           </span>
         </div>
         <div className="my-record-item">
           <span className="my-record-icon">♾️</span>
           <span className="my-record-label">서바이벌:</span>
           <span className="my-record-value">
-            {records['survival'] !== null ? `${records['survival'].toLocaleString()}m` : '기록 없음'}
+            {records['survival'] !== null
+              ? `${records['survival'].toLocaleString()}m`
+              : '기록 없음'}
           </span>
         </div>
       </div>
     </div>
   );
 }
-

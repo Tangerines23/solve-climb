@@ -14,7 +14,7 @@ export const TierUpgradeModal: React.FC<TierUpgradeModalProps> = ({
   isOpen,
   previousScore,
   currentScore,
-  onClose
+  onClose,
 }) => {
   const [previousTier, setPreviousTier] = useState<TierCalculationResult | null>(null);
   const [currentTier, setCurrentTier] = useState<TierCalculationResult | null>(null);
@@ -42,12 +42,16 @@ export const TierUpgradeModal: React.FC<TierUpgradeModalProps> = ({
   }, [isOpen, previousScore, currentScore]);
 
   // 티어 정보를 동기적으로 가져오기 위한 상태
-  const [previousTierInfo, setPreviousTierInfo] = useState<{ icon: string; name: string } | null>(null);
-  const [currentTierInfo, setCurrentTierInfo] = useState<{ icon: string; name: string } | null>(null);
+  const [previousTierInfo, setPreviousTierInfo] = useState<{ icon: string; name: string } | null>(
+    null
+  );
+  const [currentTierInfo, setCurrentTierInfo] = useState<{ icon: string; name: string } | null>(
+    null
+  );
 
   useEffect(() => {
     if (previousTier) {
-      getTierInfo(previousTier.level).then(info => {
+      getTierInfo(previousTier.level).then((info) => {
         if (info) {
           setPreviousTierInfo({ icon: info.icon, name: info.name });
         }
@@ -57,7 +61,7 @@ export const TierUpgradeModal: React.FC<TierUpgradeModalProps> = ({
 
   useEffect(() => {
     if (currentTier) {
-      getTierInfo(currentTier.level).then(info => {
+      getTierInfo(currentTier.level).then((info) => {
         if (info) {
           setCurrentTierInfo({ icon: info.icon, name: info.name });
         }
@@ -65,7 +69,8 @@ export const TierUpgradeModal: React.FC<TierUpgradeModalProps> = ({
     }
   }, [currentTier]);
 
-  if (!isOpen || loading || !previousTier || !currentTier || !previousTierInfo || !currentTierInfo) return null;
+  if (!isOpen || loading || !previousTier || !currentTier || !previousTierInfo || !currentTierInfo)
+    return null;
 
   const tierUpgraded = currentTier.level > previousTier.level;
   const starsAdded = currentTier.stars > previousTier.stars;
@@ -93,14 +98,14 @@ export const TierUpgradeModal: React.FC<TierUpgradeModalProps> = ({
         <div className="tier-upgrade-content">
           <div className="tier-comparison">
             <div className="tier-before">
-              <div className="tier-icon-small">
-                {previousTierInfo.icon}
-              </div>
+              <div className="tier-icon-small">{previousTierInfo.icon}</div>
               <div className="tier-name-small">
                 {previousTierInfo.name}
                 {previousTier.stars > 0 && (
                   <span className="tier-stars-small">
-                    {previousTier.stars >= 5 ? `★×${previousTier.stars}` : '★'.repeat(previousTier.stars)}
+                    {previousTier.stars >= 5
+                      ? `★×${previousTier.stars}`
+                      : '★'.repeat(previousTier.stars)}
                   </span>
                 )}
               </div>
@@ -116,7 +121,9 @@ export const TierUpgradeModal: React.FC<TierUpgradeModalProps> = ({
                 {currentTierInfo.name}
                 {currentTier.stars > 0 && (
                   <span className="tier-stars-large">
-                    {currentTier.stars >= 5 ? `★×${currentTier.stars}` : '★'.repeat(currentTier.stars)}
+                    {currentTier.stars >= 5
+                      ? `★×${currentTier.stars}`
+                      : '★'.repeat(currentTier.stars)}
                   </span>
                 )}
               </div>
@@ -125,9 +132,7 @@ export const TierUpgradeModal: React.FC<TierUpgradeModalProps> = ({
 
           {starsAdded && (
             <div className="stars-celebration">
-              <div className="stars-display">
-                {'★'.repeat(currentTier.stars)}
-              </div>
+              <div className="stars-display">{'★'.repeat(currentTier.stars)}</div>
               <p>새로운 사이클이 시작됩니다!</p>
             </div>
           )}
@@ -142,4 +147,3 @@ export const TierUpgradeModal: React.FC<TierUpgradeModalProps> = ({
     </div>
   );
 };
-

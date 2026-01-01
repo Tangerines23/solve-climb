@@ -1,7 +1,12 @@
 // 토스 게임 센터 SDK 래퍼 유틸리티
 // 로컬 개발 환경에서는 실제 호출 없이 시뮬레이션만 수행
 
-import { submitGameCenterLeaderBoardScore, openGameCenterLeaderboard, isMinVersionSupported, getOperationalEnvironment } from '@apps-in-toss/web-framework';
+import {
+  submitGameCenterLeaderBoardScore,
+  openGameCenterLeaderboard,
+  isMinVersionSupported,
+  getOperationalEnvironment,
+} from '@apps-in-toss/web-framework';
 import { logError, getUserErrorMessage } from './errorHandler';
 
 /**
@@ -86,7 +91,6 @@ export interface LeaderboardResult {
   message?: string;
 }
 
-
 /**
  * 디버깅 정보 수집 (개발 환경)
  */
@@ -107,7 +111,7 @@ function collectDebugInfo() {
       location: win?.location?.href || 'unknown',
       hasReactNativeWebView: !!(win as any)?.ReactNativeWebView,
     };
-  } catch (error) {
+  } catch {
     // getOperationalEnvironment가 실패할 수 있으므로 에러 처리
     return {
       timestamp: new Date().toISOString(),
@@ -197,7 +201,7 @@ function getErrorMessage(error: unknown): string {
  */
 export async function openLeaderboard(
   onError?: (message: string) => void,
-  onRetry?: (attempt: number, maxRetries: number) => void
+  _onRetry?: (_attempt: number, _maxRetries: number) => void
 ): Promise<LeaderboardResult> {
   const debugInfo = collectDebugInfo();
 
@@ -225,8 +229,8 @@ export async function openLeaderboard(
 
     // 앱 버전 지원 여부 확인 (토스앱 5.221.0 이상 필요)
     const isSupported = isMinVersionSupported({
-      android: "5.221.0",
-      ios: "5.221.0",
+      android: '5.221.0',
+      ios: '5.221.0',
     });
 
     if (!isSupported) {
@@ -249,7 +253,9 @@ export async function openLeaderboard(
 
     // 'toss' 환경이 아니면 리더보드를 열 수 없음 (예제 코드 참고)
     if (operationalEnvironment !== 'toss') {
-      console.warn(`[토스 게임 센터] ${operationalEnvironment} 환경에서는 리더보드를 열 수 없습니다. (toss 환경에서만 가능)`);
+      console.warn(
+        `[토스 게임 센터] ${operationalEnvironment} 환경에서는 리더보드를 열 수 없습니다. (toss 환경에서만 가능)`
+      );
       const message = '리더보드를 열 수 없습니다. 토스 앱에서 실행 중인지 확인해주세요.';
       if (onError) onError(message);
       return { success: false, message };
@@ -284,11 +290,14 @@ export async function openLeaderboard(
     if (debugInfo) {
       console.error('[토스 게임 센터] 리더보드 열기 실패 - 디버깅 정보:', {
         ...debugInfo,
-        error: error instanceof Error ? {
-          name: error.name,
-          message: error.message,
-          stack: error.stack,
-        } : String(error),
+        error:
+          error instanceof Error
+            ? {
+                name: error.name,
+                message: error.message,
+                stack: error.stack,
+              }
+            : String(error),
       });
     }
 
@@ -299,4 +308,3 @@ export async function openLeaderboard(
     return { success: false, message };
   }
 }
-

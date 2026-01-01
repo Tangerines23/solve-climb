@@ -58,4 +58,3 @@ export const useLoadingStore = create<LoadingState>((set, get) => ({
     return get().loadingIds.size > 0;
   },
 }));
-

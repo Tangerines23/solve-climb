@@ -11,9 +11,9 @@ import './DebugPanel.css';
 
 function DebugPanel() {
   const { isDebugPanelOpen, activeTab, toggleDebugPanel, setActiveTab } = useDebugStore();
-  
+
   if (!isDebugPanelOpen) return null;
-  
+
   const tabs = [
     { id: 'quick', label: '빠른 조작' },
     { id: 'tier', label: '티어' },
@@ -47,9 +47,9 @@ function DebugPanel() {
         return <QuickActionsSection />;
     }
   };
-  
+
   return (
-    <div 
+    <div
       className="debug-panel-overlay"
       onClick={(e) => {
         // 패널 외부 클릭 시 닫기
@@ -58,15 +58,17 @@ function DebugPanel() {
         }
       }}
     >
-      <div 
+      <div
         className={`debug-panel ${isDebugPanelOpen ? 'open' : ''}`}
         onClick={(e) => e.stopPropagation()}
       >
         <div className="debug-panel-header">
           <h2>🐛 디버그 패널</h2>
-          <button onClick={toggleDebugPanel} aria-label="닫기">X</button>
+          <button onClick={toggleDebugPanel} aria-label="닫기">
+            X
+          </button>
         </div>
-        
+
         <div className="debug-panel-tabs">
           {tabs.map((tab) => (
             <button
@@ -78,10 +80,8 @@ function DebugPanel() {
             </button>
           ))}
         </div>
-        
-        <div className="debug-panel-content">
-          {renderTabContent()}
-        </div>
+
+        <div className="debug-panel-content">{renderTabContent()}</div>
       </div>
     </div>
   );

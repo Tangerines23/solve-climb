@@ -13,18 +13,18 @@ import { logger } from './logger';
 export const StorageKeys = {
   // 기기 관련
   DEVICE_ID: 'solve-climb-device-id',
-  
+
   // 프로필 관련
   PROFILES: (deviceId: string) => `solve-climb-profiles-${deviceId}`,
   ACTIVE_PROFILE_ID: 'solve-climb-active-profile-id',
   ADMIN_MODE: 'solve-climb-admin-mode',
   PROGRESS: (profileId: string) => `solve-climb-progress-${profileId}`,
-  
+
   // 세션 관련
   LOCAL_SESSION: 'solve-climb-local-session',
-  
+
   // 게임 팁 관련
-  GAME_TIP: (category: string, sub: string, level?: string) => 
+  GAME_TIP: (category: string, sub: string, level?: string) =>
     level ? `gameTip_${category}_${sub}_${level}` : `gameTip_${category}_${sub}`,
 } as const;
 
@@ -32,10 +32,7 @@ export const StorageKeys = {
  * localStorage 접두사 목록
  * 데이터 초기화 시 사용됩니다.
  */
-export const STORAGE_PREFIXES = [
-  'solve-climb-',
-  'gameCenterApi_',
-] as const;
+export const STORAGE_PREFIXES = ['solve-climb-', 'gameCenterApi_'] as const;
 
 /**
  * 타입 안전한 localStorage 관리 유틸리티
@@ -48,11 +45,7 @@ export const storage = {
    * @param validator 선택적 타입 검증 함수
    * @returns 파싱된 데이터 또는 기본값
    */
-  get<T>(
-    key: string,
-    defaultValue: T,
-    validator?: (data: unknown) => data is T
-  ): T {
+  get<T>(key: string, defaultValue: T, validator?: (data: unknown) => data is T): T {
     try {
       const item = localStorage.getItem(key);
       return safeJsonParse<T>(item, defaultValue, validator);
@@ -145,7 +138,7 @@ export const storage = {
    */
   removeByPrefix(prefix: string): void {
     const keys = this.getKeysByPrefix(prefix);
-    keys.forEach(key => this.remove(key));
+    keys.forEach((key) => this.remove(key));
   },
 
   /**
@@ -153,9 +146,8 @@ export const storage = {
    * STORAGE_PREFIXES에 정의된 접두사로 시작하는 모든 키를 제거합니다.
    */
   clearAppData(): void {
-    STORAGE_PREFIXES.forEach(prefix => {
+    STORAGE_PREFIXES.forEach((prefix) => {
       this.removeByPrefix(prefix);
     });
   },
 };
-

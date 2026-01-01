@@ -15,10 +15,7 @@ interface BadgeNotificationProps {
   onClose: () => void;
 }
 
-export const BadgeNotification: React.FC<BadgeNotificationProps> = ({
-  badgeIds,
-  onClose
-}) => {
+export const BadgeNotification: React.FC<BadgeNotificationProps> = ({ badgeIds, onClose }) => {
   const [badgeDefs, setBadgeDefs] = useState<BadgeDefinition[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -68,15 +65,11 @@ export const BadgeNotification: React.FC<BadgeNotificationProps> = ({
         <div className="badge-notification-content">
           {badgeDefs.map((badge) => (
             <div key={badge.id} className="badge-notification-item">
-              <div className="badge-notification-icon">
-                {badge.emoji || '🏆'}
-              </div>
+              <div className="badge-notification-icon">{badge.emoji || '🏆'}</div>
               <div className="badge-notification-info">
                 <div className="badge-notification-name">{badge.name}</div>
                 {badge.description && (
-                  <div className="badge-notification-description">
-                    {badge.description}
-                  </div>
+                  <div className="badge-notification-description">{badge.description}</div>
                 )}
               </div>
             </div>
@@ -91,4 +84,3 @@ export const BadgeNotification: React.FC<BadgeNotificationProps> = ({
     </div>
   );
 };
-

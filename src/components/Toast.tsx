@@ -1,5 +1,5 @@
 // 범용 토스트 메시지 컴포넌트
-import React, { useEffect, useState, useRef } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { createPortal } from 'react-dom';
 import './Toast.css';
 

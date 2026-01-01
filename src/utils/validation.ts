@@ -28,13 +28,13 @@ const normalizeWhitespace = (text: string): string => {
  */
 export const sanitizeNickname = (nickname: string): string => {
   let sanitized = nickname;
-  
+
   // HTML 태그 제거
   sanitized = removeHtmlTags(sanitized);
-  
+
   // 공백 정규화
   sanitized = normalizeWhitespace(sanitized);
-  
+
   return sanitized;
 };
 
@@ -61,5 +61,3 @@ export const validateNickname = (nickname: string): { valid: boolean; error?: st
 
   return { valid: true };
 };
-
-
