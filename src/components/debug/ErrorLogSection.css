@@ -11,16 +11,50 @@
 
 .debug-log-controls {
   display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: var(--spacing-lg);
+  flex-direction: column;
   gap: var(--spacing-md);
+  margin-bottom: var(--spacing-lg);
+}
+
+.debug-log-search {
+  width: 100%;
+}
+
+.debug-log-search-input {
+  width: 100%;
+  padding: var(--spacing-md);
+  background-color: var(--color-bg-tertiary);
+  border: 1px solid var(--color-bg-secondary);
+  border-radius: var(--rounded-button);
+  color: var(--color-text-primary);
+  font-size: 0.875rem;
+}
+
+.debug-log-search-input:focus {
+  outline: none;
+  border-color: var(--color-blue-400);
+}
+
+.debug-log-search-input::placeholder {
+  color: var(--color-text-secondary);
 }
 
 .debug-log-filters {
   display: flex;
-  gap: var(--spacing-xs);
-  flex-wrap: wrap;
+  flex-direction: column;
+  gap: var(--spacing-md);
+}
+
+.debug-log-filter-group {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+}
+
+.debug-log-filter-label {
+  color: var(--color-text-secondary);
+  font-size: 0.875rem;
+  min-width: 40px;
 }
 
 .debug-log-filter-button {
@@ -47,13 +81,38 @@
   background-color: var(--color-blue-500);
 }
 
+.debug-log-actions {
+  display: flex;
+  gap: var(--spacing-md);
+}
+
+.debug-log-export-button {
+  padding: var(--spacing-md) var(--spacing-lg);
+  background-color: var(--color-blue-400);
+  border: none;
+  border-radius: var(--rounded-button);
+  color: var(--color-text-primary);
+  font-size: 0.875rem;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.debug-log-export-button:hover:not(:disabled) {
+  background-color: var(--color-blue-500);
+}
+
+.debug-log-export-button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
 .debug-log-clear-button {
-  padding: var(--spacing-xs) var(--spacing-md);
+  padding: var(--spacing-md) var(--spacing-lg);
   background-color: var(--color-red-500);
   border: none;
   border-radius: var(--rounded-button);
   color: var(--color-text-primary);
-  font-size: 0.75rem;
+  font-size: 0.875rem;
   cursor: pointer;
   transition: background-color 0.2s ease;
 }

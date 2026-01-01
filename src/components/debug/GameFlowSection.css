@@ -120,3 +120,190 @@
   color: var(--color-text-primary);
 }
 
+.debug-session-selector {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-sm);
+  margin-bottom: var(--spacing-lg);
+}
+
+.debug-session-selector-label {
+  color: var(--color-text-secondary);
+  font-size: 0.875rem;
+}
+
+.debug-session-select {
+  padding: var(--spacing-md);
+  background-color: var(--color-bg-tertiary);
+  border: 1px solid var(--color-bg-secondary);
+  border-radius: var(--rounded-button);
+  color: var(--color-text-primary);
+  font-size: 0.875rem;
+  cursor: pointer;
+}
+
+.debug-session-select:focus {
+  outline: none;
+  border-color: var(--color-blue-400);
+}
+
+.debug-session-select:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.debug-session-badge {
+  display: inline-block;
+  padding: var(--spacing-xs) var(--spacing-md);
+  background-color: var(--color-blue-400);
+  color: var(--color-text-primary);
+  border-radius: var(--rounded-button);
+  font-size: 0.75rem;
+  font-weight: 500;
+  margin-bottom: var(--spacing-md);
+}
+
+.debug-session-extend {
+  margin-bottom: var(--spacing-lg);
+  padding: var(--spacing-md);
+  background-color: var(--color-bg-tertiary);
+  border-radius: var(--rounded-card);
+}
+
+.debug-session-extend-control {
+  display: flex;
+  gap: var(--spacing-md);
+  align-items: center;
+}
+
+.debug-session-extend-input {
+  flex: 1;
+  padding: var(--spacing-md);
+  background-color: var(--color-bg-secondary);
+  border: 1px solid var(--color-bg-tertiary);
+  border-radius: var(--rounded-button);
+  color: var(--color-text-primary);
+  font-size: 0.875rem;
+}
+
+.debug-session-extend-input:focus {
+  outline: none;
+  border-color: var(--color-blue-400);
+}
+
+.debug-session-extend-input:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.debug-session-button-primary {
+  background-color: var(--color-blue-400);
+}
+
+.debug-session-button-primary:hover:not(:disabled) {
+  background-color: var(--color-blue-500);
+}
+
+.debug-subsection-title {
+  margin: 0 0 var(--spacing-md) 0;
+  color: var(--color-text-primary);
+  font-size: 1rem;
+  font-weight: 500;
+}
+
+.debug-quiz-generation {
+  margin-top: var(--spacing-xl);
+  padding: var(--spacing-lg);
+  background-color: var(--color-bg-tertiary);
+  border-radius: var(--rounded-card);
+}
+
+.debug-quiz-generation-controls {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-md);
+}
+
+.debug-quiz-generation-row {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-md);
+}
+
+.debug-quiz-generation-label {
+  min-width: 80px;
+  color: var(--color-text-secondary);
+  font-size: 0.875rem;
+}
+
+.debug-quiz-generation-select {
+  flex: 1;
+  padding: var(--spacing-md);
+  background-color: var(--color-bg-secondary);
+  border: 1px solid var(--color-bg-tertiary);
+  border-radius: var(--rounded-button);
+  color: var(--color-text-primary);
+  font-size: 0.875rem;
+  cursor: pointer;
+}
+
+.debug-quiz-generation-select:focus {
+  outline: none;
+  border-color: var(--color-blue-400);
+}
+
+.debug-quiz-result {
+  margin-top: var(--spacing-lg);
+  padding: var(--spacing-lg);
+  background-color: var(--color-bg-secondary);
+  border-radius: var(--rounded-card);
+}
+
+.debug-quiz-question {
+  margin-bottom: var(--spacing-md);
+}
+
+.debug-quiz-question-label,
+.debug-quiz-answer-label,
+.debug-quiz-options-label {
+  color: var(--color-text-secondary);
+  font-size: 0.75rem;
+  margin-bottom: var(--spacing-xs);
+}
+
+.debug-quiz-question-text {
+  color: var(--color-text-primary);
+  font-size: 1rem;
+  font-weight: 500;
+  padding: var(--spacing-md);
+  background-color: var(--color-bg-tertiary);
+  border-radius: var(--rounded-button);
+}
+
+.debug-quiz-answer {
+  margin-bottom: var(--spacing-md);
+}
+
+.debug-quiz-answer-value {
+  color: var(--color-blue-400);
+  font-size: 1.25rem;
+  font-weight: 600;
+  padding: var(--spacing-md);
+  background-color: var(--color-bg-tertiary);
+  border-radius: var(--rounded-button);
+}
+
+.debug-quiz-options-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--spacing-sm);
+}
+
+.debug-quiz-option {
+  padding: var(--spacing-sm) var(--spacing-md);
+  background-color: var(--color-bg-tertiary);
+  border-radius: var(--rounded-button);
+  color: var(--color-text-primary);
+  font-size: 0.875rem;
+}
+

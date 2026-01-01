@@ -123,6 +123,27 @@
   cursor: not-allowed;
 }
 
+.debug-item-use-button {
+  padding: var(--spacing-sm) var(--spacing-md);
+  background-color: var(--color-blue-400);
+  border: none;
+  border-radius: var(--rounded-button);
+  color: var(--color-text-primary);
+  font-size: 0.875rem;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+  white-space: nowrap;
+}
+
+.debug-item-use-button:hover:not(:disabled) {
+  background-color: var(--color-blue-500);
+}
+
+.debug-item-use-button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
 .debug-item-button {
   padding: var(--spacing-sm) var(--spacing-md);
   background-color: var(--color-blue-400);
@@ -162,5 +183,30 @@
 .debug-message-error {
   background-color: var(--color-red-500);
   color: var(--color-text-primary);
+}
+
+.debug-sync-control {
+  margin-bottom: var(--spacing-lg);
+}
+
+.debug-sync-button {
+  padding: var(--spacing-md) var(--spacing-lg);
+  background-color: var(--color-blue-400);
+  border: none;
+  border-radius: var(--rounded-button);
+  color: var(--color-text-primary);
+  font-size: 0.875rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.debug-sync-button:hover:not(:disabled) {
+  background-color: var(--color-blue-500);
+}
+
+.debug-sync-button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
 }
 

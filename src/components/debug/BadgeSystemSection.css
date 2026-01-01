@@ -19,6 +19,155 @@
   margin-bottom: var(--spacing-lg);
 }
 
+.debug-badge-notification-test {
+  margin-top: var(--spacing-xl);
+  padding: var(--spacing-lg);
+  background-color: var(--color-bg-tertiary);
+  border-radius: var(--rounded-card);
+}
+
+.debug-badge-notification-controls {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-md);
+}
+
+.debug-badge-notification-row {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-md);
+}
+
+.debug-badge-notification-label {
+  min-width: 100px;
+  color: var(--color-text-secondary);
+  font-size: 0.875rem;
+}
+
+.debug-badge-notification-select {
+  flex: 1;
+  padding: var(--spacing-md);
+  background-color: var(--color-bg-secondary);
+  border: 1px solid var(--color-bg-tertiary);
+  border-radius: var(--rounded-button);
+  color: var(--color-text-primary);
+  font-size: 0.875rem;
+  cursor: pointer;
+}
+
+.debug-badge-notification-select:focus {
+  outline: none;
+  border-color: var(--color-blue-400);
+}
+
+.debug-badge-notification-button {
+  padding: var(--spacing-md) var(--spacing-lg);
+  border: none;
+  border-radius: var(--rounded-button);
+  background-color: var(--color-blue-400);
+  color: var(--color-text-primary);
+  font-size: 0.875rem;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.debug-badge-notification-button:hover:not(:disabled) {
+  background-color: var(--color-blue-500);
+}
+
+.debug-badge-notification-button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.debug-sync-control {
+  margin-bottom: var(--spacing-lg);
+}
+
+.debug-sync-button {
+  padding: var(--spacing-md) var(--spacing-lg);
+  background-color: var(--color-blue-400);
+  border: none;
+  border-radius: var(--rounded-button);
+  color: var(--color-text-primary);
+  font-size: 0.875rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.debug-sync-button:hover:not(:disabled) {
+  background-color: var(--color-blue-500);
+}
+
+.debug-sync-button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.debug-sync-result {
+  margin-bottom: var(--spacing-lg);
+  margin-top: var(--spacing-lg);
+  padding: var(--spacing-lg);
+  background-color: var(--color-bg-tertiary);
+  border-radius: var(--rounded-card);
+}
+
+.debug-sync-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: var(--spacing-sm) 0;
+  border-bottom: 1px solid var(--color-bg-secondary);
+}
+
+.debug-sync-item:last-child {
+  border-bottom: none;
+}
+
+.debug-sync-label {
+  color: var(--color-text-secondary);
+  font-size: 0.875rem;
+}
+
+.debug-sync-status {
+  font-size: 0.875rem;
+  font-weight: 500;
+}
+
+.debug-sync-status.success {
+  color: var(--color-blue-400);
+}
+
+.debug-sync-status.error {
+  color: var(--color-red-500);
+}
+
+.debug-sync-issues {
+  margin-top: var(--spacing-md);
+  padding-top: var(--spacing-md);
+  border-top: 1px solid var(--color-bg-secondary);
+}
+
+.debug-sync-issues-title {
+  margin: 0 0 var(--spacing-sm) 0;
+  color: var(--color-text-primary);
+  font-size: 0.875rem;
+  font-weight: 500;
+}
+
+.debug-sync-issues-list {
+  margin: 0;
+  padding-left: var(--spacing-lg);
+  color: var(--color-text-secondary);
+  font-size: 0.75rem;
+  line-height: 1.6;
+}
+
+.debug-sync-issues-list li {
+  margin-bottom: var(--spacing-xs);
+}
+
 .debug-badge-reset-button {
   padding: var(--spacing-sm) var(--spacing-lg);
   background-color: var(--color-red-500);
@@ -111,5 +260,30 @@
 .debug-message-error {
   background-color: var(--color-red-500);
   color: var(--color-text-primary);
+}
+
+.debug-sync-control {
+  margin-bottom: var(--spacing-lg);
+}
+
+.debug-sync-button {
+  padding: var(--spacing-md) var(--spacing-lg);
+  background-color: var(--color-blue-400);
+  border: none;
+  border-radius: var(--rounded-button);
+  color: var(--color-text-primary);
+  font-size: 0.875rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.debug-sync-button:hover:not(:disabled) {
+  background-color: var(--color-blue-500);
+}
+
+.debug-sync-button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
 }
 

@@ -100,6 +100,7 @@ export function QuizPage() {
   const [showSafetyRope, setShowSafetyRope] = useState(false);
 
   const { setExhausted, resetGame, setActiveItems, incrementCombo, setCombo, isStaminaConsumed, setStaminaConsumed, combo } = useGameStore();
+  const isAdminMode = useDebugStore((state) => state.isAdminMode);
   const [questionKey, setQuestionKey] = useState(0);
   const [timerResetKey, setTimerResetKey] = useState(0);
   const [previewKeyboardType, setPreviewKeyboardType] = useState<'custom' | 'qwerty'>(() => keyboardType);
@@ -1006,6 +1007,7 @@ export function QuizPage() {
         isPaused={showTipModal || showLastChanceModal || showCountdown || isFlarePaused}
         showExitConfirm={showExitConfirm}
         isFadingOut={isFadingOut}
+        showAnswer={isAdminMode}
         cardAnimation={animations.cardAnimation}
         inputAnimation={animations.inputAnimation}
         questionAnimation={animations.questionAnimation}

@@ -11,12 +11,13 @@ interface ItemDefinition {
 }
 
 export function ItemSystemSection() {
-  const { inventory, fetchUserData } = useUserStore();
+  const { inventory, fetchUserData, consumeItem } = useUserStore();
   const [itemDefinitions, setItemDefinitions] = useState<ItemDefinition[]>([]);
   const [itemQuantities, setItemQuantities] = useState<Record<number, string>>({});
   const [isLoading, setIsLoading] = useState(true);
   const [isUpdating, setIsUpdating] = useState(false);
   const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
+  const [usingItemId, setUsingItemId] = useState<number | null>(null);
 
   useEffect(() => {
     loadItems();
@@ -171,6 +172,34 @@ export function ItemSystemSection() {
     }
   };
 
+  const handleUseItem = async (itemId: number) => {
+    if (usingItemId === itemId || isUpdating) return;
+
+    const currentItem = inventory.find(item => item.id === itemId);
+    if (!currentItem || currentItem.quantity <= 0) {
+      setMessage({ type: 'error', text: '사용할 수 있는 아이템이 없습니다.' });
+      return;
+    }
+
+    try {
+      setUsingItemId(itemId);
+      setMessage(null);
+
+      const result = await consumeItem(itemId);
+      
+      if (result.success) {
+        setMessage({ type: 'success', text: `${currentItem.name} 아이템을 사용했습니다.` });
+        await fetchUserData();
+      } else {
+        setMessage({ type: 'error', text: `아이템 사용 실패: ${result.message || '알 수 없는 오류'}` });
+      }
+    } catch (err) {
+      setMessage({ type: 'error', text: `아이템 사용 실패: ${err instanceof Error ? err.message : '알 수 없는 오류'}` });
+    } finally {
+      setUsingItemId(null);
+    }
+  };
+
   if (isLoading) {
     return (
       <div className="debug-section">
@@ -238,6 +267,15 @@ export function ItemSystemSection() {
                 >
                   설정
                 </button>
+                {currentQuantity > 0 && (
+                  <button
+                    className="debug-item-use-button"
+                    onClick={() => handleUseItem(item.id)}
+                    disabled={isUpdating || usingItemId === item.id}
+                  >
+                    {usingItemId === item.id ? '사용 중...' : '즉시 사용'}
+                  </button>
+                )}
               </div>
             </div>
           );

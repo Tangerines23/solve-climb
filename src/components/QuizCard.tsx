@@ -39,6 +39,7 @@ interface QuizCardProps {
   isPaused: boolean; // New prop for global pause (modal, countdown)
   showExitConfirm: boolean;
   isFadingOut: boolean;
+  showAnswer?: boolean; // 디버그 모드: 정답 표시
 
   // 애니메이션
   cardAnimation: string;
@@ -91,6 +92,7 @@ function QuizCardComponent({
   isPaused,
   showExitConfirm,
   isFadingOut,
+  showAnswer = false,
   cardAnimation,
   inputAnimation,
   questionAnimation,
@@ -268,6 +270,11 @@ function QuizCardComponent({
               <h2 className="problem-text">
                 {currentQuestion.question}
               </h2>
+              {showAnswer && (
+                <div className="debug-answer-display">
+                  정답: <strong>{currentQuestion.answer}</strong>
+                </div>
+              )}
             </div>
             {/* 답안 표시 영역 - 시스템 키보드 사용 시 input, 아니면 display */}
             {useSystemKeyboard ? (

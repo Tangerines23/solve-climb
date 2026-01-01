@@ -138,3 +138,18 @@
     transform: translateX(-50%) scale(1);
   }
 }
+
+/* 디버그 패널 로딩 스타일 (개발 환경 전용, Suspense fallback용) */
+.debug-panel-loading {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 9999;
+  color: var(--color-text-primary);
+}

@@ -6,9 +6,10 @@ import { GameFlowSection } from './debug/GameFlowSection';
 import { ItemSystemSection } from './debug/ItemSystemSection';
 import { DataResetSection } from './debug/DataResetSection';
 import { ErrorLogSection } from './debug/ErrorLogSection';
+import { BoundaryTestSection } from './debug/BoundaryTestSection';
 import './DebugPanel.css';
 
-export function DebugPanel() {
+function DebugPanel() {
   const { isDebugPanelOpen, activeTab, toggleDebugPanel, setActiveTab } = useDebugStore();
   
   if (!isDebugPanelOpen) return null;
@@ -21,6 +22,7 @@ export function DebugPanel() {
     { id: 'item', label: '아이템' },
     { id: 'data', label: '데이터' },
     { id: 'errors', label: '에러 로그' },
+    { id: 'boundary', label: '경계값 테스트' },
   ];
 
   const renderTabContent = () => {
@@ -39,6 +41,8 @@ export function DebugPanel() {
         return <DataResetSection />;
       case 'errors':
         return <ErrorLogSection />;
+      case 'boundary':
+        return <BoundaryTestSection />;
       default:
         return <QuickActionsSection />;
     }
@@ -83,3 +87,4 @@ export function DebugPanel() {
   );
 }
 
+export default DebugPanel;

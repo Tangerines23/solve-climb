@@ -159,6 +159,62 @@
   font-weight: 500;
 }
 
+.debug-tier-upgrade-simulation {
+  margin-top: var(--spacing-xl);
+  padding: var(--spacing-lg);
+  background-color: var(--color-bg-tertiary);
+  border-radius: var(--rounded-card);
+}
+
+.debug-tier-upgrade-controls {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-md);
+}
+
+.debug-tier-upgrade-row {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-md);
+}
+
+.debug-tier-upgrade-label {
+  min-width: 100px;
+  color: var(--color-text-secondary);
+  font-size: 0.875rem;
+}
+
+.debug-tier-upgrade-select {
+  flex: 1;
+  padding: var(--spacing-md);
+  background-color: var(--color-bg-secondary);
+  border: 1px solid var(--color-bg-tertiary);
+  border-radius: var(--rounded-button);
+  color: var(--color-text-primary);
+  font-size: 0.875rem;
+  cursor: pointer;
+}
+
+.debug-tier-upgrade-select:focus {
+  outline: none;
+  border-color: var(--color-blue-400);
+}
+
+.debug-tier-upgrade-button {
+  padding: var(--spacing-md) var(--spacing-lg);
+  border: none;
+  border-radius: var(--rounded-button);
+  background-color: var(--color-blue-400);
+  color: var(--color-text-primary);
+  font-size: 0.875rem;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.debug-tier-upgrade-button:hover {
+  background-color: var(--color-blue-500);
+}
+
 .debug-message {
   margin-top: var(--spacing-lg);
   padding: var(--spacing-md);
@@ -174,5 +230,30 @@
 .debug-message-error {
   background-color: var(--color-red-500);
   color: var(--color-text-primary);
+}
+
+.debug-sync-control {
+  margin-bottom: var(--spacing-lg);
+}
+
+.debug-sync-button {
+  padding: var(--spacing-md) var(--spacing-lg);
+  background-color: var(--color-blue-400);
+  border: none;
+  border-radius: var(--rounded-button);
+  color: var(--color-text-primary);
+  font-size: 0.875rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.debug-sync-button:hover:not(:disabled) {
+  background-color: var(--color-blue-500);
+}
+
+.debug-sync-button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
 }
 

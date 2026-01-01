@@ -1,10 +1,13 @@
-import { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { supabase } from '../../utils/supabaseClient';
 import { useMyPageStats } from '../../hooks/useMyPageStats';
 import { loadTierDefinitions, calculateTier, type TierInfo, type TierLevel } from '../../constants/tiers';
+import { calculateScoreForTier } from '../../utils/tierUtils';
+import { verifySync } from '../../utils/debugSync';
+import { TierUpgradeModal } from '../TierUpgradeModal';
 import './TierSystemSection.css';
 
-export function TierSystemSection() {
+export const TierSystemSection = React.memo(function TierSystemSection() {
   const { stats, refetch } = useMyPageStats();
   const [tierDefinitions, setTierDefinitions] = useState<TierInfo[]>([]);
   const [selectedTierLevel, setSelectedTierLevel] = useState<TierLevel>(0);
@@ -16,6 +19,13 @@ export function TierSystemSection() {
   } | null>(null);
   const [isUpdating, setIsUpdating] = useState(false);
   const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
+  
+  // 티어 업그레이드 시뮬레이션 상태
+  const [previousTierLevel, setPreviousTierLevel] = useState<TierLevel>(0);
+  const [currentTierLevel, setCurrentTierLevel] = useState<TierLevel>(1);
+  const [showUpgradeModal, setShowUpgradeModal] = useState(false);
+  const [previousScore, setPreviousScore] = useState(0);
+  const [currentScore, setCurrentScore] = useState(0);
 
   useEffect(() => {
     loadTierDefinitions().then(setTierDefinitions);
@@ -121,6 +131,21 @@ export function TierSystemSection() {
     }
   };
 
+  const handleShowUpgradeModal = async () => {
+    try {
+      // 이전 티어와 현재 티어의 점수 계산
+      // 티어 레벨에서 기본 점수를 계산 (별 0개, 보너스 0점)
+      const prevScore = await calculateScoreForTier(previousTierLevel, 0, 0);
+      const currScore = await calculateScoreForTier(currentTierLevel, 0, 0);
+      
+      setPreviousScore(prevScore);
+      setCurrentScore(currScore);
+      setShowUpgradeModal(true);
+    } catch (err) {
+      setMessage({ type: 'error', text: `점수 계산 실패: ${err instanceof Error ? err.message : '알 수 없는 오류'}` });
+    }
+  };
+
   return (
     <div className="debug-section">
       <h3 className="debug-section-title">🏆 티어 시스템</h3>
@@ -207,6 +232,55 @@ export function TierSystemSection() {
         </div>
       )}
 
+      <div className="debug-tier-upgrade-simulation">
+        <h4 className="debug-subsection-title">티어 업그레이드 시뮬레이션</h4>
+        <div className="debug-tier-upgrade-controls">
+          <div className="debug-tier-upgrade-row">
+            <label className="debug-tier-upgrade-label">이전 티어:</label>
+            <select
+              className="debug-tier-upgrade-select"
+              value={previousTierLevel}
+              onChange={(e) => setPreviousTierLevel(parseInt(e.target.value, 10) as TierLevel)}
+            >
+              {tierDefinitions.map((tier) => (
+                <option key={tier.level} value={tier.level}>
+                  {tier.icon} {tier.name}
+                </option>
+              ))}
+            </select>
+          </div>
+          <div className="debug-tier-upgrade-row">
+            <label className="debug-tier-upgrade-label">현재 티어:</label>
+            <select
+              className="debug-tier-upgrade-select"
+              value={currentTierLevel}
+              onChange={(e) => setCurrentTierLevel(parseInt(e.target.value, 10) as TierLevel)}
+            >
+              {tierDefinitions.map((tier) => (
+                <option key={tier.level} value={tier.level}>
+                  {tier.icon} {tier.name}
+                </option>
+              ))}
+            </select>
+          </div>
+          <button
+            className="debug-tier-upgrade-button"
+            onClick={handleShowUpgradeModal}
+          >
+            티어 업그레이드 모달 표시
+          </button>
+        </div>
+      </div>
+
+      {showUpgradeModal && (
+        <TierUpgradeModal
+          isOpen={showUpgradeModal}
+          previousScore={previousScore}
+          currentScore={currentScore}
+          onClose={() => setShowUpgradeModal(false)}
+        />
+      )}
+
       {message && (
         <div className={`debug-message debug-message-${message.type}`}>
           {message.text}
@@ -214,5 +288,5 @@ export function TierSystemSection() {
       )}
     </div>
   );
-}
+});
 

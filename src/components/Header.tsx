@@ -1,20 +1,22 @@
 import { useRef, useEffect, useState, useCallback, lazy, Suspense } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { APP_CONFIG } from '../config/app';
 import { useProfileStore } from '../stores/useProfileStore';
 import { useUserStore } from '../stores/useUserStore';
 import { useDebugStore } from '../stores/useDebugStore';
 import { Toast } from './Toast'; // Import Toast
 import './Header.css';
-import './DebugPanel.css'; // 디버그 패널 로딩 스타일 사용
+// DebugPanel.css는 DebugPanel 컴포넌트 내부에서 import하므로 여기서는 제거
+// (동적 import된 컴포넌트의 CSS는 자동으로 분리되어 로드됨)
 
 // ⚠️ 개발 환경에서만 동적 임포트
 const DebugPanel = import.meta.env.DEV
-  ? lazy(() => import('./DebugPanel').then(module => ({ default: module.DebugPanel })))
+  ? lazy(() => import('./DebugPanel'))
   : null;
 
 export function Header() {
   const navigate = useNavigate();
+  const location = useLocation();
   const isAdmin = useProfileStore((state) => state.isAdmin);
   const { minerals, stamina, fetchUserData, checkStamina, setMinerals, setStamina } = useUserStore();
 
@@ -44,6 +46,22 @@ export function Header() {
     fetchUserData();
     checkStamina();
   }, [fetchUserData, checkStamina]);
+
+  // URL 파라미터 및 localStorage로 디버그 패널 자동 활성화
+  useEffect(() => {
+    if (!import.meta.env.DEV) return;
+
+    // URL 파라미터 체크: ?debug=true
+    const urlParams = new URLSearchParams(location.search);
+    if (urlParams.get('debug') === 'true' && !isDebugPanelOpen) {
+      toggleDebugPanel();
+    }
+
+    // localStorage 체크: debug_mode = 'true'
+    if (localStorage.getItem('debug_mode') === 'true' && !isDebugPanelOpen) {
+      toggleDebugPanel();
+    }
+  }, [location.search, isDebugPanelOpen, toggleDebugPanel]);
 
   const handleNotificationClick = () => {
     navigate(APP_CONFIG.ROUTES.NOTIFICATIONS);

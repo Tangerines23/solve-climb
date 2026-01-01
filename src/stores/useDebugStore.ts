@@ -7,7 +7,7 @@ interface DebugState {
   
   // Level 2: 고급 디버그 패널
   isDebugPanelOpen: boolean;
-  activeTab: 'quick' | 'tier' | 'badge' | 'game' | 'item' | 'data' | 'errors';
+  activeTab: 'quick' | 'tier' | 'badge' | 'game' | 'item' | 'data' | 'errors' | 'boundary';
   
   // 무한 모드
   infiniteStamina: boolean;
