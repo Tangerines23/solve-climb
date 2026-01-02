@@ -2,6 +2,7 @@
 import { supabase } from './supabaseClient';
 import { ENV } from './env';
 import { logError } from './errorHandler';
+import type { User } from '@supabase/supabase-js';
 
 /**
  * 토스 사용자 정보 타입
@@ -67,7 +68,7 @@ export async function getTossUserInfo(accessToken: string): Promise<TossUserInfo
  */
 export async function createOrUpdateSupabaseUser(
   accessToken: string
-): Promise<{ user: any; loginInfo: { email: string; password: string } }> {
+): Promise<{ user: User | null; loginInfo: { email: string; password: string } }> {
   // 호출 추적 로깅
   console.log('[토스 Auth] createOrUpdateSupabaseUser 함수 호출됨', {
     timestamp: new Date().toISOString(),
@@ -137,7 +138,7 @@ export async function createOrUpdateSupabaseUser(
     }
 
     if (!response.ok) {
-      let errorData: any = {};
+      let errorData: unknown = {};
       try {
         errorData = await response.json();
       } catch {
@@ -146,9 +147,13 @@ export async function createOrUpdateSupabaseUser(
         errorData = { message: text || `HTTP ${response.status}` };
       }
 
+      const errorMessage =
+        (errorData as { error?: string; message?: string })?.error ||
+        (errorData as { error?: string; message?: string })?.message ||
+        JSON.stringify(errorData);
       throw new Error(
         `사용자 생성/업데이트 실패 (${response.status}):\n` +
-          `${errorData.error || errorData.message || JSON.stringify(errorData)}\n\n` +
+          `${errorMessage}\n\n` +
           `Edge Function URL: ${authUrl}`
       );
     }
@@ -184,7 +189,7 @@ export async function createOrUpdateSupabaseUser(
 export async function handleTossLoginFlow(
   authorizationCode: string,
   referrer: string
-): Promise<{ user: any; session: any }> {
+): Promise<{ user: User | null; session: { access_token: string; refresh_token: string } | null }> {
   // 호출 추적 로깅
   console.log('[토스 로그인 플로우] 함수 호출됨', {
     timestamp: new Date().toISOString(),
@@ -256,7 +261,7 @@ export async function handleTossLoginFlow(
     }
 
     if (!accessTokenResponse.ok) {
-      let errorData: any = {};
+      let errorData: unknown = {};
       try {
         errorData = await accessTokenResponse.json();
       } catch {
@@ -270,7 +275,10 @@ export async function handleTossLoginFlow(
 
       // 400 에러인 경우 (개발 모드 authorization code는 유효하지 않음)
       if (accessTokenResponse.status === 400) {
-        const errorMessage = errorData.error || errorData.message || JSON.stringify(errorData);
+        const errorMessage =
+          (errorData as { error?: string; message?: string })?.error ||
+          (errorData as { error?: string; message?: string })?.message ||
+          JSON.stringify(errorData);
 
         if (isDevMode) {
           // 개발 모드에서는 예상된 동작
@@ -298,8 +306,17 @@ export async function handleTossLoginFlow(
 
       // 401 에러인 경우 특별 처리
       if (accessTokenResponse.status === 401) {
-        const errorMessage = errorData.message || errorData.error || '인증 실패';
-        const details = errorData.details;
+        const errorDataTyped = errorData as {
+          message?: string;
+          error?: string;
+          details?: {
+            hint?: string;
+            checkSecrets?: string;
+            tossApiError?: { error?: string; message?: string };
+          };
+        };
+        const errorMessage = errorDataTyped.message || errorDataTyped.error || '인증 실패';
+        const details = errorDataTyped.details;
 
         let userMessage = '토스 API 인증에 실패했습니다.\n\n';
 
@@ -324,7 +341,9 @@ export async function handleTossLoginFlow(
       }
 
       // 기타 HTTP 에러
-      const errorMessage = errorData.error || errorData.message || JSON.stringify(errorData);
+      const errorDataTyped = errorData as { error?: string; message?: string };
+      const errorMessage =
+        errorDataTyped.error || errorDataTyped.message || JSON.stringify(errorData);
       throw new Error(
         `AccessToken 요청 실패 (${accessTokenResponse.status}):\n` +
           `${errorMessage}\n\n` +
@@ -387,7 +406,7 @@ if (typeof window !== 'undefined') {
    * toss-oauth Edge Function 테스트
    * 브라우저 콘솔에서 window.testTossOAuth()로 호출 가능
    */
-  (window as any).testTossOAuth = async () => {
+  ((window as unknown as Record<string, unknown>).testTossOAuth as unknown) = async () => {
     console.log('🧪 toss-oauth Edge Function 테스트 시작...');
 
     // URL 끝의 슬래시 제거 후 경로 추가
@@ -479,7 +498,9 @@ if (typeof window !== 'undefined') {
    * 실제 accessToken이 필요하지만, 테스트용 더미 토큰으로도 호출 가능
    * 브라우저 콘솔에서 window.testTossAuth(accessToken)로 호출 가능
    */
-  (window as any).testTossAuth = async (accessToken?: string) => {
+  ((window as unknown as Record<string, unknown>).testTossAuth as unknown) = async (
+    accessToken?: string
+  ) => {
     console.log('🧪 toss-auth Edge Function 테스트 시작...');
 
     // accessToken이 없으면 테스트용 더미 토큰 사용
@@ -571,7 +592,7 @@ if (typeof window !== 'undefined') {
    * 전체 로그인 플로우 체크
    * 브라우저 콘솔에서 window.checkTossLoginFlow()로 호출 가능
    */
-  (window as any).checkTossLoginFlow = async () => {
+  ((window as unknown as Record<string, unknown>).checkTossLoginFlow as unknown) = async () => {
     console.log('🔍 토스 로그인 플로우 전체 체크 시작...');
     console.log('');
 
@@ -660,7 +681,7 @@ if (typeof window !== 'undefined') {
 
     // 3. 토스 앱 환경 체크
     console.log('3️⃣ 토스 앱 환경 체크');
-    const isTossApp = !!(window as any).ReactNativeWebView;
+    const isTossApp = !!(window as unknown as Record<string, unknown>).ReactNativeWebView;
     if (isTossApp) {
       checks.push({ name: '토스 앱 환경', status: 'pass', message: '토스 앱 내부에서 실행 중' });
     } else {
@@ -708,7 +729,7 @@ if (typeof window !== 'undefined') {
    * 전체 로그인 플로우 테스트 (실제 토스 앱에서만 작동)
    * 브라우저 콘솔에서 window.testFullLoginFlow()로 호출 가능
    */
-  (window as any).testFullLoginFlow = async () => {
+  ((window as unknown as Record<string, unknown>).testFullLoginFlow as unknown) = async () => {
     console.log('🧪 전체 로그인 플로우 테스트 시작...');
     console.log('');
 
@@ -716,12 +737,12 @@ if (typeof window !== 'undefined') {
       step: string;
       status: 'pass' | 'fail' | 'skip';
       message: string;
-      data?: any;
+      data?: unknown;
     }> = [];
 
     // 1. 환경 체크
     console.log('1️⃣ 환경 체크');
-    const isTossApp = !!(window as any).ReactNativeWebView;
+    const isTossApp = !!(window as unknown as Record<string, unknown>).ReactNativeWebView;
     if (!isTossApp) {
       results.push({
         step: '토스 앱 환경',
@@ -864,10 +885,10 @@ if (typeof window !== 'undefined') {
    * 게임 로그인 마이그레이션만 테스트
    * 브라우저 콘솔에서 window.testGameLoginMigration()로 호출 가능
    */
-  (window as any).testGameLoginMigration = async () => {
+  ((window as unknown as Record<string, unknown>).testGameLoginMigration as unknown) = async () => {
     console.log('🧪 게임 로그인 마이그레이션 테스트 시작...');
 
-    const isTossApp = !!(window as any).ReactNativeWebView;
+    const isTossApp = !!(window as unknown as Record<string, unknown>).ReactNativeWebView;
     if (!isTossApp) {
       console.warn('⚠️ 브라우저 환경에서는 게임 로그인 테스트가 불가능합니다.');
       console.log('💡 토스 앱에서 실행하거나, MyPage의 "3초 만에 시작하기" 버튼을 사용하세요.');

@@ -54,7 +54,9 @@ export function useMyPageStats(): UseMyPageStatsResult {
             },
             access_token: 'local',
             refresh_token: 'local',
-          } as any;
+            expires_in: 3600,
+            token_type: 'bearer',
+          } as unknown as Session;
           setSession(virtualSession);
           return;
         }
@@ -110,7 +112,9 @@ export function useMyPageStats(): UseMyPageStatsResult {
             },
             access_token: 'local',
             refresh_token: 'local',
-          } as any;
+            expires_in: 3600,
+            token_type: 'bearer',
+          } as unknown as Session;
           setSession(currentSession);
         }
       } catch (e) {
@@ -205,9 +209,10 @@ export function useMyPageStats(): UseMyPageStatsResult {
           // 다른 에러는 경고 출력
           console.warn('RPC function error, falling back to direct query:', rpcError);
         }
-      } catch (rpcErr: any) {
+      } catch (rpcErr: unknown) {
         // RPC 함수가 없거나 실패한 경우, 직접 쿼리로 폴백
-        if (rpcErr?.status === 404 || rpcErr?.code === 'PGRST116') {
+        const rpcErrTyped = rpcErr as { status?: number; code?: string };
+        if (rpcErrTyped?.status === 404 || rpcErrTyped?.code === 'PGRST116') {
           console.warn('RPC function not found (404), falling back to direct query');
         } else {
           console.warn('RPC function not available, falling back to direct query:', rpcErr);

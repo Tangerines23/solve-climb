@@ -118,10 +118,9 @@ const getMountainType = (yPercent: number): 'near' | 'mid' | 'far' => {
 // ==========================================
 
 export function ArithmeticBackground({ totalLevels = 15 }: BackgroundProps) {
-  // 사칙연산 기호 목록
-  const symbols = ['+', '-', '×', '÷'];
-
   const items = useMemo(() => {
+    // 사칙연산 기호 목록
+    const symbols = ['+', '-', '×', '÷'];
     const generatedItems = [];
 
     const density = 1.8; // 블록 밀도

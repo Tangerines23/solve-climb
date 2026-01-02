@@ -92,6 +92,7 @@ export function useQuizGameState({
   }, [
     categoryParam,
     subParam,
+    isExhausted,
     levelParam,
     modeParam,
     score,

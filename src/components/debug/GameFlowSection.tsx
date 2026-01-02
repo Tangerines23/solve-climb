@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { supabase } from '../../utils/supabaseClient';
 import { generateQuestion } from '../../utils/quizGenerator';
 import { Category, Topic, Difficulty, QuizQuestion, GameMode } from '../../types/quiz';
@@ -205,7 +205,7 @@ export const GameFlowSection = React.memo(function GameFlowSection() {
   };
 
   // 카테고리별 주제 목록
-  const getTopicsForCategory = (category: Category): Topic[] => {
+  const getTopicsForCategory = useCallback((category: Category): Topic[] => {
     switch (category) {
       case '수학':
         return ['덧셈', '뺄셈', '곱셈', '나눗셈'];
@@ -231,7 +231,7 @@ export const GameFlowSection = React.memo(function GameFlowSection() {
       default:
         return ['덧셈'];
     }
-  };
+  }, []);
 
   const handleGenerateQuestion = () => {
     try {
@@ -253,7 +253,7 @@ export const GameFlowSection = React.memo(function GameFlowSection() {
     if (topics.length > 0 && !topics.includes(selectedTopic)) {
       setSelectedTopic(topics[0]);
     }
-  }, [selectedCategory]);
+  }, [selectedCategory, selectedTopic, getTopicsForCategory]);
 
   const handleGameModeChange = () => {
     try {

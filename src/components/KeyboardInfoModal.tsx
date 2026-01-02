@@ -40,10 +40,13 @@ export function KeyboardInfoModal({ isOpen, onClose }: KeyboardInfoModalProps) {
           APP_CONFIG.CATEGORY_MAP[categoryId as keyof typeof APP_CONFIG.CATEGORY_MAP];
 
         subTopics.forEach((subTopic) => {
+          const categoryLevels = APP_CONFIG.LEVELS[categoryId as keyof typeof APP_CONFIG.LEVELS];
           const levels =
-            (APP_CONFIG.LEVELS[categoryId as keyof typeof APP_CONFIG.LEVELS] as any)?.[
-              subTopic.id as string
-            ] || [];
+            (categoryLevels?.[subTopic.id as keyof typeof categoryLevels] as Array<{
+              level: number;
+              name: string;
+              description: string;
+            }>) || [];
 
           let kbType: 'qwerty-text' | 'custom' | 'qwerty-number' | null = null;
           let allowNegative = false;
@@ -93,7 +96,7 @@ export function KeyboardInfoModal({ isOpen, onClose }: KeyboardInfoModalProps) {
               icon: subTopic.icon,
               keyboardType: kbType,
               allowNegative,
-              levels: levels.map((l: any) => ({ level: l.level, name: l.name })),
+              levels: levels.map((l) => ({ level: l.level, name: l.name })),
             });
           }
         });

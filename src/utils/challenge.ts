@@ -89,10 +89,10 @@ function generateTodayChallenge(): TodayChallenge {
 
   // 수학의 산에서 수열 제거
   if (selectedCategory.id === 'math' && subTopics) {
-    subTopics = subTopics.filter((topic) => topic.id !== 'sequence') as any;
+    subTopics = subTopics.filter((topic) => topic.id !== 'sequence') as unknown as typeof subTopics;
   }
 
-  if (!subTopics || (Array.isArray(subTopics) && (subTopics as any[]).length === 0)) {
+  if (!subTopics || !Array.isArray(subTopics) || (subTopics as unknown[]).length === 0) {
     // 서브토픽이 없으면 기본값 사용
     return {
       id: `today_challenge_${todayDate}`,
@@ -114,10 +114,11 @@ function generateTodayChallenge(): TodayChallenge {
   const selectedTopic = sortedSubTopics[topicIndex];
 
   // 3. 레벨 랜덤 선택
-  const levels = (
-    APP_CONFIG.LEVELS[selectedCategory.id as keyof typeof APP_CONFIG.LEVELS] as any
-  )?.[selectedTopic.id as string];
-  if (!levels || levels.length === 0) {
+  const categoryLevels = APP_CONFIG.LEVELS[selectedCategory.id as keyof typeof APP_CONFIG.LEVELS];
+  const levels = categoryLevels?.[selectedTopic.id as keyof typeof categoryLevels] as
+    | Array<{ level: number; name: string; description: string }>
+    | undefined;
+  if (!levels || !Array.isArray(levels) || levels.length === 0) {
     // 레벨이 없으면 기본값 사용
     return {
       id: `today_challenge_${todayDate}`,

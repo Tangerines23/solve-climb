@@ -9,7 +9,7 @@ import { ENV } from './env';
 export interface AuthTestResult {
   success: boolean;
   message: string;
-  details?: any;
+  details?: Record<string, unknown>;
 }
 
 /**

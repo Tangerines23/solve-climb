@@ -9,5 +9,7 @@ export const ThemeProvider = ({ children }: { children: React.ReactNode }) => {
 };
 
 // 필요한 경우 다른 TDS 컴포넌트들도 이곳에 추가할 수 있습니다.
-export const Button = (props: any) => <button {...props} />;
-export const Input = (props: any) => <input {...props} />;
+export const Button = (props: React.ButtonHTMLAttributes<HTMLButtonElement>) => (
+  <button {...props} />
+);
+export const Input = (props: React.InputHTMLAttributes<HTMLInputElement>) => <input {...props} />;

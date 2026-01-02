@@ -12,7 +12,7 @@ function isTossAppEnvironment(): boolean {
   }
 
   // ReactNativeWebView가 있으면 토스 앱 내부
-  return !!(window as any).ReactNativeWebView;
+  return !!(window as unknown as Record<string, unknown>).ReactNativeWebView;
 }
 
 /**

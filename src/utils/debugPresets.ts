@@ -200,11 +200,14 @@ export async function executeDebugAction(action: DebugAction, userId: string): P
             return { badgeId: badges?.[index]?.id || 'unknown', error: result.reason };
           }
           if (result.status === 'fulfilled' && !result.value.success) {
-            return { badgeId: result.value.badgeId, error: (result.value as any).error };
+            return {
+              badgeId: result.value.badgeId,
+              error: (result.value as { error?: unknown }).error,
+            };
           }
           return null;
         })
-        .filter((f): f is { badgeId: string; error: any } => f !== null);
+        .filter((f): f is { badgeId: string; error: unknown } => f !== null);
 
       if (failures.length > 0) {
         const failedIds = failures.map((f) => f.badgeId).join(', ');
@@ -254,7 +257,7 @@ export async function executeDebugAction(action: DebugAction, userId: string): P
     }
 
     default:
-      throw new Error(`Unknown action type: ${(action as any).type}`);
+      throw new Error(`Unknown action type: ${(action as { type?: string }).type}`);
   }
 }
 

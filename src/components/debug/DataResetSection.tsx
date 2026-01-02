@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { supabase } from '../../utils/supabaseClient';
 import { useMyPageStats } from '../../hooks/useMyPageStats';
 import { useUserStore } from '../../stores/useUserStore';
@@ -117,7 +117,7 @@ export const DataResetSection = React.memo(function DataResetSection() {
           const user = session.user;
 
           // 실제 데이터 적용
-          const updatePromises: Promise<any>[] = [];
+          const updatePromises: Promise<unknown>[] = [];
 
           // 마스터리 점수 적용
           if (data.stats.totalMasteryScore !== undefined) {
@@ -125,7 +125,7 @@ export const DataResetSection = React.memo(function DataResetSection() {
               supabase.rpc('debug_set_mastery_score', {
                 p_user_id: user.id,
                 p_score: data.stats.totalMasteryScore,
-              }) as any
+              }) as unknown as Promise<unknown>
             );
           }
 
@@ -135,7 +135,7 @@ export const DataResetSection = React.memo(function DataResetSection() {
               supabase.rpc('debug_set_tier', {
                 p_user_id: user.id,
                 p_level: data.stats.currentTierLevel,
-              }) as any
+              }) as unknown as Promise<unknown>
             );
           }
 
@@ -215,14 +215,14 @@ export const DataResetSection = React.memo(function DataResetSection() {
       const user = session.user;
 
       // 실제 데이터 적용 (JSON 가져오기와 동일한 로직)
-      const updatePromises: Promise<any>[] = [];
+      const updatePromises: Promise<unknown>[] = [];
 
       if (snapshot.stats.totalMasteryScore !== undefined) {
         updatePromises.push(
           supabase.rpc('debug_set_mastery_score', {
             p_user_id: user.id,
             p_score: snapshot.stats.totalMasteryScore,
-          }) as any
+          }) as unknown as Promise<unknown>
         );
       }
 
@@ -234,7 +234,7 @@ export const DataResetSection = React.memo(function DataResetSection() {
           supabase.rpc('debug_set_tier', {
             p_user_id: user.id,
             p_level: snapshot.stats.currentTierLevel,
-          }) as any
+          }) as unknown as Promise<unknown>
         );
       }
 
@@ -444,11 +444,11 @@ export const DataResetSection = React.memo(function DataResetSection() {
   };
 
   // 카테고리별 주제 목록 반환
-  const getSubjectsForCategory = (category: string): string[] => {
+  const getSubjectsForCategory = useCallback((category: string): string[] => {
     const subTopics = APP_CONFIG.SUB_TOPICS[category as keyof typeof APP_CONFIG.SUB_TOPICS];
     if (!subTopics) return [];
     return subTopics.map((topic) => topic.id);
-  };
+  }, []);
 
   // 레벨 진행도 초기화
   const handleResetLevelProgress = async () => {
@@ -501,7 +501,7 @@ export const DataResetSection = React.memo(function DataResetSection() {
     if (subjects.length > 0 && !subjects.includes(selectedSubject)) {
       setSelectedSubject(subjects[0]);
     }
-  }, [selectedCategory]);
+  }, [selectedCategory, selectedSubject, getSubjectsForCategory]);
 
   return (
     <div className="debug-section">

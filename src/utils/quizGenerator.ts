@@ -14,13 +14,13 @@ export function generateQuestion(
 ): QuizQuestion {
   switch (category) {
     case '수학':
-      return generateMathQuestion(topic as any, difficulty);
+      return generateMathQuestion(topic, difficulty);
     case '언어':
-      return generateLanguageQuestion(topic as any, difficulty);
+      return generateLanguageQuestion(topic, difficulty);
     case '논리':
-      return generateLogicQuestion(topic as any, difficulty);
+      return generateLogicQuestion(topic, difficulty);
     case '상식':
-      return generateGeneralQuestion(topic as any, difficulty);
+      return generateGeneralQuestion(topic, difficulty);
     default:
       return generateMathQuestion('덧셈', difficulty);
   }
@@ -30,7 +30,7 @@ export function generateQuestion(
  * 수학 문제 생성
  */
 function generateMathQuestion(
-  topic: '덧셈' | '뺄셈' | '곱셈' | '나눗셈' | 'equations' | 'calculus',
+  topic: '덧셈' | '뺄셈' | '곱셈' | '나눗셈' | 'equations' | 'calculus' | Topic,
   difficulty: Difficulty
 ): QuizQuestion {
   // 방정식 문제 처리
@@ -114,15 +114,21 @@ function generateMathQuestion(
         answer: quotient,
       };
     }
+    default:
+      // 기본값: 덧셈 문제 반환
+      return {
+        question: `${x} + ${y} = ?`,
+        answer: x + y,
+      };
   }
 }
 
 /**
  * 언어 문제 생성
  */
-function generateLanguageQuestion(topic: any, difficulty: Difficulty): QuizQuestion {
+function generateLanguageQuestion(topic: Topic, difficulty: Difficulty): QuizQuestion {
   // 일본어 퀴즈 처리 (topic이 'japanese'인 경우)
-  if (typeof topic === 'string' && topic === 'japanese') {
+  if (typeof topic === 'string' && (topic as string).includes('일본어')) {
     const { hiragana, romaji } = generateJapaneseQuestion(difficulty);
     return {
       question: hiragana,
@@ -160,7 +166,7 @@ function generateLanguageQuestion(topic: any, difficulty: Difficulty): QuizQuest
 /**
  * 논리 문제 생성 (추후 확장 가능)
  */
-function generateLogicQuestion(topic: any, _difficulty: Difficulty): QuizQuestion {
+function generateLogicQuestion(topic: Topic, _difficulty: Difficulty): QuizQuestion {
   // 임시로 간단한 문제 생성
   return {
     question: `논리 - ${topic} 문제 (개발 중)`,
@@ -171,7 +177,7 @@ function generateLogicQuestion(topic: any, _difficulty: Difficulty): QuizQuestio
 /**
  * 상식 문제 생성 (추후 확장 가능)
  */
-function generateGeneralQuestion(topic: any, _difficulty: Difficulty): QuizQuestion {
+function generateGeneralQuestion(topic: Topic, _difficulty: Difficulty): QuizQuestion {
   // 임시로 간단한 문제 생성
   return {
     question: `상식 - ${topic} 문제 (개발 중)`,

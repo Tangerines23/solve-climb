@@ -1,11 +1,11 @@
 // 진동(Haptic) 유틸리티 함수 - 토스 표준 API 사용 (브라우저 환경 fallback 포함)
-import { generateHapticFeedback } from '@apps-in-toss/web-framework';
+import { generateHapticFeedback, type HapticFeedbackType } from '@apps-in-toss/web-framework';
 
 /**
  * 토스 앱 환경인지 확인
  */
 const isTossAppEnvironment = (): boolean => {
-  return !!(window as any).ReactNativeWebView;
+  return !!(window as unknown as Record<string, unknown>).ReactNativeWebView;
 };
 
 /**
@@ -29,7 +29,7 @@ const vibrateBrowser = (duration: number): void => {
 export const vibrateShort = (): void => {
   if (isTossAppEnvironment()) {
     try {
-      generateHapticFeedback({ type: 'softLight' as any });
+      generateHapticFeedback({ type: 'softLight' as HapticFeedbackType });
     } catch {
       // 실패 시 브라우저 fallback
       vibrateBrowser(10);
@@ -65,7 +65,7 @@ export const vibrateMedium = (): void => {
 export const vibrateLong = (): void => {
   if (isTossAppEnvironment()) {
     try {
-      generateHapticFeedback({ type: 'softHeavy' as any });
+      generateHapticFeedback({ type: 'softHeavy' as HapticFeedbackType });
     } catch {
       // 실패 시 브라우저 fallback
       vibrateBrowser(100);

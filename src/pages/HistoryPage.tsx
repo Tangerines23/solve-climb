@@ -7,6 +7,7 @@ import { parseLocalSession } from '../utils/safeJsonParse';
 import { storage, StorageKeys } from '../utils/storage';
 import { APP_CONFIG } from '../config/app';
 import type { GameRecord } from '../types';
+import type { Session } from '@supabase/supabase-js';
 import './HistoryPage.css';
 
 interface HistoryStats {
@@ -38,7 +39,7 @@ export function HistoryPage() {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
   const [stats, setStats] = useState<HistoryStats | null>(null);
-  const [session, setSession] = useState<any>(null);
+  const [session, setSession] = useState<Session | null>(null);
 
   useEffect(() => {
     const fetchHistoryData = async () => {
@@ -64,7 +65,9 @@ export function HistoryPage() {
               },
               access_token: 'local',
               refresh_token: 'local',
-            } as any;
+              expires_in: 3600,
+              token_type: 'bearer',
+            } as unknown as Session;
             setSession(currentSession);
           }
         } catch (e) {

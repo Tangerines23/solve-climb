@@ -50,7 +50,10 @@ export function GameTipModal({ isOpen, category, subTopic, level, onStart }: Gam
       if (!level) return { title, icon, description, section: null, other: null };
 
       // Simplified tips for brevity in this tool call, normally would have the full set
-      const tips: any = isArithmetic
+      const tips: Record<
+        string,
+        { title: string; tip: string; example: string; strategy: string }
+      > = isArithmetic
         ? {
             1: {
               title: '1레벨: 반사신경 덧셈',

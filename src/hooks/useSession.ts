@@ -3,7 +3,7 @@
  * 로컬 세션과 Supabase 세션을 통합 관리합니다.
  */
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { authApi } from '../utils/api';
 import { storage, StorageKeys } from '../utils/storage';
 import { parseLocalSession } from '../utils/safeJsonParse';
@@ -67,7 +67,7 @@ export function useSession(): UseSessionResult {
   };
 
   // 세션 확인 및 설정
-  const checkSession = async () => {
+  const checkSession = useCallback(async () => {
     setIsLoading(true);
 
     // 1. 로컬 세션 확인
@@ -87,7 +87,7 @@ export function useSession(): UseSessionResult {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, []);
 
   useEffect(() => {
     // 초기 세션 확인
@@ -107,7 +107,7 @@ export function useSession(): UseSessionResult {
     return () => {
       subscription.unsubscribe();
     };
-  }, []);
+  }, [checkSession]);
 
   const userId = session?.user?.id || null;
   const isAdmin = session?.user?.user_metadata?.isAdmin || false;

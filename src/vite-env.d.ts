@@ -8,7 +8,7 @@ interface ImportMetaEnv {
   readonly VITE_SUPABASE_ANON_KEY?: string;
   readonly VITE_DEBUG_URL?: string;
   readonly VERCEL?: string;
-  [key: string]: any;
+  [key: string]: string | boolean | undefined;
 }
 
 interface ImportMeta {

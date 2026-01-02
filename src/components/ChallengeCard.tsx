@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { APP_CONFIG } from '../config/app';
 import { useQuizStore } from '../stores/useQuizStore';
 import { getTodayChallenge, type TodayChallenge } from '../utils/challenge';
+import type { Category, Topic } from '../types/quiz';
 import './ChallengeCard.css';
 
 export function ChallengeCard() {
@@ -32,7 +33,7 @@ export function ChallengeCard() {
     if (!challenge) return;
 
     // 오늘의 챌린지 설정 적용
-    setCategoryTopic(challenge.category as any, challenge.topicId as any);
+    setCategoryTopic(challenge.category as Category, challenge.topicId as Topic);
     setTimeLimit(60); // 기본 1분
 
     // 게임 페이지로 이동 (category와 sub 파라미터 사용)

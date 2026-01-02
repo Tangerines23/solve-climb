@@ -19,7 +19,7 @@ function isTossAppEnvironment(): boolean {
   }
 
   // ReactNativeWebView가 있으면 토스 앱 내부
-  return !!(window as any).ReactNativeWebView;
+  return !!(window as unknown as Record<string, unknown>).ReactNativeWebView;
 }
 
 /**
@@ -109,7 +109,7 @@ function collectDebugInfo() {
       operationalEnvironment: operationalEnvironment || 'unknown',
       userAgent: win?.navigator?.userAgent || 'unknown',
       location: win?.location?.href || 'unknown',
-      hasReactNativeWebView: !!(win as any)?.ReactNativeWebView,
+      hasReactNativeWebView: !!(win as unknown as Record<string, unknown>)?.ReactNativeWebView,
     };
   } catch {
     // getOperationalEnvironment가 실패할 수 있으므로 에러 처리
@@ -120,7 +120,7 @@ function collectDebugInfo() {
       operationalEnvironment: 'error',
       userAgent: win?.navigator?.userAgent || 'unknown',
       location: win?.location?.href || 'unknown',
-      hasReactNativeWebView: !!(win as any)?.ReactNativeWebView,
+      hasReactNativeWebView: !!(win as unknown as Record<string, unknown>)?.ReactNativeWebView,
     };
   }
 }

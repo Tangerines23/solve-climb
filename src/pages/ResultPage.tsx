@@ -297,10 +297,10 @@ export function ResultPage() {
         if (sessionIdParam && userAnswersArray.length > 0 && questionIdsArray.length > 0) {
           const { data: result, error: resultError } = await supabase.rpc('submit_game_result', {
             p_user_answers: userAnswersArray,
-            p_question_ids: questionIdsArray.map((id) => id as any), // UUID 배열
+            p_question_ids: questionIdsArray, // UUID 배열
             p_game_mode: rpcGameMode,
             p_items_used: [],
-            p_session_id: sessionIdParam as any, // UUID
+            p_session_id: sessionIdParam, // UUID
             p_category: categoryParam || 'math',
             p_subject: subParam || 'add',
             p_level: level || 1,
@@ -480,7 +480,17 @@ export function ResultPage() {
     }
 
     return stats;
-  }, [isNewRecord, isTimeAttack, total, accuracy, correctCount, averageTime, currentRank]);
+  }, [
+    isNewRecord,
+    isTimeAttack,
+    isSurvivalMode,
+    isExhaustedParam,
+    total,
+    accuracy,
+    correctCount,
+    averageTime,
+    currentRank,
+  ]);
 
   // 공통 콘텐츠 컴포넌트
   const renderHeaderContent = () => (

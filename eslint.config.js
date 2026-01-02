@@ -60,4 +60,12 @@ export default defineConfig([
       'no-unused-vars': ['error', { varsIgnorePattern: '^[A-Z_]' }],
     },
   },
+  // 새 기능 디렉토리에 대해서만 any 타입을 엄격하게 검사
+  // 기존 코드는 warn 유지, 새 코드는 error로 설정
+  {
+    files: ['src/new-features/**/*.{ts,tsx}'],
+    rules: {
+      '@typescript-eslint/no-explicit-any': 'error', // 새 코드는 엄격하게
+    },
+  },
 ])

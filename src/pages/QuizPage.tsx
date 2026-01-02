@@ -2,7 +2,7 @@
 import { useState, useEffect, useRef, useCallback, useMemo, FormEvent } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import './QuizPage.css';
-import { useQuizStore } from '../stores/useQuizStore';
+import { useQuizStore, type TimeLimit } from '../stores/useQuizStore';
 import { GameTipModal } from '../components/GameTipModal';
 import { QuizCard } from '../components/QuizCard';
 import { useQuestionGenerator } from '../hooks/useQuestionGenerator';
@@ -18,6 +18,7 @@ import { GameOverlay } from '../components/game/GameOverlay';
 import { useUserStore } from '../stores/useUserStore';
 import { useGameStore } from '../stores/useGameStore';
 import { useDebugStore } from '../stores/useDebugStore';
+import type { Category, Topic } from '../types/quiz';
 import { StaminaWarningModal } from '../components/game/StaminaWarningModal';
 import { ItemFeedbackOverlay, ItemFeedbackRef } from '../components/game/ItemFeedbackOverlay';
 import { APP_CONFIG } from '../config/app';
@@ -78,6 +79,9 @@ export function QuizPage() {
     recoverStaminaAds,
   } = useUserStore();
 
+  // 애니메이션 상태 관리 (handleWatchAd보다 먼저 선언)
+  const animations = useQuizAnimations();
+
   // ... (중략)
 
   // 광고 보기 핸들러
@@ -100,7 +104,7 @@ export function QuizPage() {
     } else {
       alert('광고 보상 지급 실패: ' + result.message);
     }
-  }, []);
+  }, [animations, recoverStaminaAds]);
 
   // Revive System State
   const [showLastChanceModal, setShowLastChanceModal] = useState(false);
@@ -141,9 +145,6 @@ export function QuizPage() {
   const levelParam = validateLevelParam(levelParamRaw, 20);
   const modeParam = validateModeParam(modeParamRaw);
   const isPreview = searchParams.get('preview') === 'true';
-
-  // 애니메이션 상태 관리
-  const animations = useQuizAnimations();
 
   // 게임 상태 관리
   const gameState = useQuizGameState({
@@ -249,7 +250,7 @@ export function QuizPage() {
     // const hasItem = inventory.find((i: any) => i.code === itemType && i.quantity > 0);
     // 아이템이 없어도, 미네랄이 있어도, 일단 모달은 띄워서 '기회'를 보여준다.
     setShowLastChanceModal(true);
-  }, [hasUsedLastChance, isPreview, gameMode, inventory]);
+  }, [hasUsedLastChance, isPreview]);
 
   // Revive Logic
   const handleRevive = useCallback(
@@ -257,7 +258,7 @@ export function QuizPage() {
       const itemType = gameMode === 'time-attack' ? 'last_spurt' : 'flare';
 
       if (useItem) {
-        const item = inventory.find((i: any) => i.code === itemType);
+        const item = inventory.find((i) => i.code === itemType);
         if (item) {
           await consumeItem(item.id);
         }
@@ -413,7 +414,7 @@ export function QuizPage() {
     // 1. Consume items and identify their codes
     const activeCodes: string[] = [];
     for (const id of selectedItemIds) {
-      const item = inventory.find((i: any) => i.id === id);
+      const item = inventory.find((i) => i.id === id);
       if (item && item.quantity > 0) {
         const result = await consumeItem(id);
         if (result.success) {
@@ -428,7 +429,11 @@ export function QuizPage() {
     // 3. Apply immediate effects
     if (activeCodes.includes('oxygen_tank')) {
       const currentTimeLimit = useQuizStore.getState().timeLimit;
-      useQuizStore.getState().setTimeLimit((currentTimeLimit + 10) as any);
+      const newLimit = Math.min(currentTimeLimit + 10, 180);
+      // TimeLimit 타입: 10 | 20 | 30 | 60 | 90 | 120 | 180
+      const validLimits = [10, 20, 30, 60, 90, 120, 180];
+      const closestLimit = validLimits.find((l) => l >= newLimit) || 180;
+      useQuizStore.getState().setTimeLimit(closestLimit as TimeLimit);
     }
 
     if (activeCodes.includes('power_gel')) {
@@ -452,7 +457,7 @@ export function QuizPage() {
       const categoryName =
         APP_CONFIG.CATEGORY_MAP[categoryParam as keyof typeof APP_CONFIG.CATEGORY_MAP];
       if (categoryName) {
-        setCategoryTopic(categoryName as any, subParam as any);
+        setCategoryTopic(categoryName as Category, subParam as Topic);
       }
     }
   }, [categoryParam, subParam, setCategoryTopic]);
@@ -481,6 +486,7 @@ export function QuizPage() {
     gameState.setWrongAnswers,
     gameState.setQuestionStartTime,
     gameState.setSolveTimes,
+    gameState,
   ]);
 
   // 초기화 로직: categoryParam, subParam, levelParam이 변경될 때만 실행
@@ -749,7 +755,14 @@ export function QuizPage() {
     };
 
     initStamina();
-  }, [isPreview]);
+  }, [
+    isPreview,
+    checkStamina,
+    consumeStamina,
+    isStaminaConsumed,
+    setExhausted,
+    setStaminaConsumed,
+  ]);
 
   // Preview 모드용 간단한 핸들러들
   const handlePreviewKeyPress = useCallback((key: string) => {

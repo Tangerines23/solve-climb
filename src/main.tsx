@@ -6,7 +6,9 @@ import './utils/tossAuth';
 import AppContainer from './AppContainer';
 
 // [DEBUG] 가시적 로그 함수 (window.diagnosis는 index.html에 정의됨)
-const log = (window as any).diagnosis || console.log;
+const log =
+  ((window as unknown as Record<string, unknown>).diagnosis as typeof console.log | undefined) ||
+  console.log;
 
 log('JavaScript Executed. Initializing React...');
 
@@ -32,8 +34,11 @@ try {
   // 토스 환경 감지 (userAgent 기준)
   const isToss = typeof window !== 'undefined' && /Toss/i.test(navigator.userAgent);
 
-  // ThemeProvider의 theme 타입 에러를 해결하기 위해 any로 캐스팅
-  const Provider = ThemeProvider as any;
+  // ThemeProvider의 theme 타입 에러를 해결하기 위해 unknown으로 캐스팅
+  const Provider = ThemeProvider as unknown as React.ComponentType<{
+    theme: unknown;
+    children: React.ReactNode;
+  }>;
 
   if (isToss) {
     root.render(

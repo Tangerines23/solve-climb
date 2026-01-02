@@ -63,8 +63,13 @@ export function AuthTestPage() {
       setResults((prev) => ({ ...prev, googleLogin: result }));
 
       // 성공하면 실제로 OAuth 리디렉션이 시작됨
-      if (result.success && result.details?.url) {
-        window.location.href = result.details.url;
+      if (
+        result.success &&
+        typeof result.details === 'object' &&
+        result.details &&
+        'url' in result.details
+      ) {
+        window.location.href = String(result.details.url);
       }
     } catch (error) {
       console.error('Google 로그인 테스트 중 오류:', error);

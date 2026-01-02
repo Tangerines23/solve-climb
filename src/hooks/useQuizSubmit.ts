@@ -337,6 +337,13 @@ export function useQuizSubmit({
       showFeedback,
       onAnswerSubmitted,
       currentQuestionId,
+      activeItems,
+      consumeActiveItem,
+      incrementCombo,
+      isExhausted,
+      onSafetyRopeUsed,
+      resetCombo,
+      setIsFlarePaused,
     ]
   );
 

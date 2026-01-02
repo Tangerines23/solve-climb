@@ -74,7 +74,7 @@ export function calculateSubTopicTargetAltitude(category: string, subTopic: stri
   if (!subTopicLevels || !Array.isArray(subTopicLevels)) return 0;
 
   // 레벨 수 × 200m (20문제 × 10m)
-  return (subTopicLevels as any[]).length * METERS_PER_LEVEL;
+  return (subTopicLevels as Array<unknown>).length * METERS_PER_LEVEL;
 }
 
 /**

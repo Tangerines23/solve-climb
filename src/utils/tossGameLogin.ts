@@ -17,7 +17,7 @@ function isTossAppEnvironment(): boolean {
   }
 
   // ReactNativeWebView가 있으면 토스 앱 내부
-  return !!(window as any).ReactNativeWebView;
+  return !!(window as unknown as Record<string, unknown>).ReactNativeWebView;
 }
 
 /**
@@ -191,7 +191,7 @@ export async function getMigrationStatus(hash: string): Promise<MigrationStatusR
     });
 
     if (!response.ok) {
-      let errorData: any = {};
+      let errorData: unknown = {};
       try {
         errorData = await response.json();
       } catch {
@@ -202,8 +202,8 @@ export async function getMigrationStatus(hash: string): Promise<MigrationStatusR
       return {
         success: false,
         error:
-          errorData.error ||
-          errorData.message ||
+          (errorData as { error?: string; message?: string })?.error ||
+          (errorData as { error?: string; message?: string })?.message ||
           `마이그레이션 상태 조회 실패 (${response.status})`,
       };
     }
@@ -268,7 +268,7 @@ export async function createMigrationLink(
     });
 
     if (!response.ok) {
-      let errorData: any = {};
+      let errorData: unknown = {};
       try {
         errorData = await response.json();
       } catch {
@@ -279,8 +279,8 @@ export async function createMigrationLink(
       return {
         success: false,
         error:
-          errorData.error ||
-          errorData.message ||
+          (errorData as { error?: string; message?: string })?.error ||
+          (errorData as { error?: string; message?: string })?.message ||
           `마이그레이션 링크 생성 실패 (${response.status})`,
       };
     }

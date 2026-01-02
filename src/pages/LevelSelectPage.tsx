@@ -118,7 +118,7 @@ export function LevelSelectPage() {
 
   // 레벨 데이터 가져오기
   const categoryLevels = APP_CONFIG.LEVELS[categoryParam as keyof typeof APP_CONFIG.LEVELS];
-  const levels = (categoryLevels as any)?.[subParam] as
+  const levels = categoryLevels?.[subParam as keyof typeof categoryLevels] as
     | Array<{ level: number; name: string; description: string }>
     | undefined;
 

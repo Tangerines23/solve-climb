@@ -112,7 +112,7 @@ serve(async (req) => {
     );
 
     if (!tokenResponse.ok) {
-      let errorData: any = {};
+      let errorData: unknown = {};
       try {
         errorData = await tokenResponse.json();
       } catch {
@@ -168,7 +168,7 @@ serve(async (req) => {
     );
 
     if (!userInfoResponse.ok) {
-      let errorData: any = {};
+      let errorData: unknown = {};
       try {
         errorData = await userInfoResponse.json();
       } catch {

@@ -66,8 +66,17 @@ export const useUserStore = create<UserState>((set, get) => ({
         )
         .eq('user_id', user.id);
 
+      type InventoryItem = {
+        quantity: number;
+        items: {
+          id: number;
+          code: string;
+          name: string;
+          description: string;
+        };
+      };
       const formattedInventory =
-        inventoryData?.map((item: any) => ({
+        (inventoryData as InventoryItem[] | null)?.map((item) => ({
           id: item.items.id,
           code: item.items.code,
           name: item.items.name,
@@ -245,20 +254,20 @@ export const useUserStore = create<UserState>((set, get) => ({
       .eq('user_id', user.id);
     if (!inventory) return;
 
-    const updates: any[] = [];
-    const deletions: any[] = [];
+    const updates: Array<{ id: number; quantity: number }> = [];
+    const deletions: number[] = [];
 
     for (const item of inventory) {
       const newQty = item.quantity - 5;
       if (newQty <= 0) {
         deletions.push(item.id);
       } else {
-        updates.push({ id: item.id, quantity: newQty, user_id: user.id });
+        updates.push({ id: item.id, quantity: newQty });
       }
     }
 
     if (deletions.length > 0) {
-      await supabase.from('inventory').delete().in('id', deletions);
+      await supabase.from('inventory').delete().in('item_id', deletions);
     }
 
     if (updates.length > 0) {

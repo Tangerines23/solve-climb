@@ -85,7 +85,7 @@ function TimerCircleComponent({
         intervalRef.current = null;
       }
     };
-  }, [isPaused, isFastForward, duration]); // timeLeft 제거 - setTimeLeft의 함수형 업데이트 사용
+  }, [isPaused, isFastForward, duration, timeLeft]); // timeLeft 추가
 
   // 컴포넌트 언마운트 시 정리
   useEffect(() => {

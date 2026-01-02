@@ -9,7 +9,10 @@ import { supabase } from '../utils/supabaseClient';
 const isTossEnvironment = (): boolean => {
   if (typeof window === 'undefined') return false;
   const userAgent = window.navigator?.userAgent || '';
-  return userAgent.includes('Toss') || !!(window as any).ReactNativeWebView;
+  return (
+    userAgent.includes('Toss') ||
+    !!(window as unknown as Record<string, unknown>).ReactNativeWebView
+  );
 };
 
 export function AuthCallbackPage() {

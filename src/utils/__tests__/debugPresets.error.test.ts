@@ -122,7 +122,7 @@ describe('debugPresets - Error Handling', () => {
       const originalSetItem = Storage.prototype.setItem;
       Storage.prototype.setItem = vi.fn(() => {
         const error = new Error('QuotaExceededError');
-        (error as any).name = 'QuotaExceededError';
+        (error as Error & { name?: string }).name = 'QuotaExceededError';
         throw error;
       });
 

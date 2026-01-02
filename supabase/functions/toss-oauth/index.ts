@@ -108,7 +108,7 @@ serve(async (req) => {
       headers: Object.fromEntries(response.headers.entries()),
     });
 
-    let data: any;
+    let data: unknown;
     try {
       data = await response.json();
     } catch {

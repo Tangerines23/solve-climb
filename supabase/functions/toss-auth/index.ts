@@ -66,12 +66,12 @@ async function decryptUserData(
  * 사용자 정보 객체 복호화
  */
 async function decryptUserInfo(
-  userInfo: any,
+  userInfo: Record<string, unknown>,
   decryptionKey: string,
   aad: string
-): Promise<any> {
+): Promise<Record<string, string>> {
   const fields = ['ci', 'name', 'phone', 'gender', 'nationality', 'birthday', 'email'];
-  const decrypted: any = {};
+  const decrypted: Record<string, string> = {};
 
   for (const field of fields) {
     const value = userInfo[field];
@@ -103,11 +103,11 @@ async function decryptUserInfo(
  * 사용자 업데이트 헬퍼 함수 (중복 제거)
  */
 async function updateSupabaseUser(
-  supabaseAdmin: any,
+  supabaseAdmin: ReturnType<typeof createClient>,
   userId: string,
   email: string,
   password: string,
-  userMetadata: any
+  userMetadata: Record<string, unknown>
 ) {
   console.log('[토스 Auth] 사용자 업데이트 시작:', { userId, email });
   
@@ -138,7 +138,7 @@ async function updateSupabaseUser(
 /**
  * 이메일로 사용자 찾기 (RPC 함수 사용 - 최적화됨)
  */
-async function findUserByEmail(supabaseAdmin: any, email: string) {
+async function findUserByEmail(supabaseAdmin: ReturnType<typeof createClient>, email: string) {
   try {
     console.log('[사용자 검색] RPC 함수 호출:', { email });
     const startTime = Date.now();
@@ -173,7 +173,7 @@ async function findUserByEmail(supabaseAdmin: any, email: string) {
 /**
  * 에러 응답 생성 헬퍼
  */
-function createErrorResponse(status: number, error: string, message: string, details?: any) {
+function createErrorResponse(status: number, error: string, message: string, details?: unknown) {
   return new Response(
     JSON.stringify({ error, message, details }),
     {
@@ -278,7 +278,7 @@ serve(async (req) => {
 
     // 프록시 응답 에러 처리
     if (!userInfoResponse.ok) {
-      let errorData: any = {};
+      let errorData: unknown = {};
       try {
         const rawText = await userInfoResponse.text();
         errorData = JSON.parse(rawText);

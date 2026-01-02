@@ -141,7 +141,6 @@ export function Header() {
       setStamina,
       setMinerals,
       toggleAdminMode,
-      setSelectedResource,
       toggleDebugPanel,
     ]
   );

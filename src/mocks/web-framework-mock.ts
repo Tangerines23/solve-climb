@@ -3,7 +3,7 @@
  * Vercel 환경에서 브릿지 API 호출 시 에러 없이 작동하도록 돕습니다.
  */
 
-export const submitGameCenterLeaderBoardScore = async (data: any) => {
+export const submitGameCenterLeaderBoardScore = async (data: unknown) => {
   console.log('[Mock] 점수 제출됨:', data);
   return { statusCode: 'SUCCESS' };
 };
@@ -33,6 +33,6 @@ export const getUserKeyForGame = async () => {
 
 export const getIsTossLoginIntegratedService = async () => true;
 
-export const generateHapticFeedback = (data: any) => {
+export const generateHapticFeedback = (data: { type?: string }) => {
   console.log('[Mock] 햅틱 피드백:', data.type);
 };
