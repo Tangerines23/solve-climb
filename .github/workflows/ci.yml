@@ -109,7 +109,7 @@ jobs:
           retention-days: 7
         continue-on-error: true
 
-  # Phase 4: 보안 검사 (병렬 실행)
+  # Phase 4: 보안 검사 (병렬 실행) - 필수
   security:
     name: Security Audit
     runs-on: ubuntu-latest
@@ -130,6 +130,15 @@ jobs:
 
       - name: Security audit
         run: npm run check:security
+
+      - name: Upload security report
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: security-report
+          path: |
+            package-lock.json
+          retention-days: 7
         continue-on-error: true
 
   # Phase 5: DB 검증 (조건부 실행)
@@ -190,8 +199,14 @@ jobs:
       - name: Check CI status
         run: |
           if [ "${{ needs.validate.result }}" != "success" ] || \
-             [ "${{ needs.test.result }}" != "success" ]; then
+             [ "${{ needs.test.result }}" != "success" ] || \
+             [ "${{ needs.security.result }}" != "success" ]; then
             echo "❌ CI failed"
+            echo ""
+            echo "Failed jobs:"
+            [ "${{ needs.validate.result }}" != "success" ] && echo "  - Code Validation" || true
+            [ "${{ needs.test.result }}" != "success" ] && echo "  - Tests & Coverage" || true
+            [ "${{ needs.security.result }}" != "success" ] && echo "  - Security Audit (보안 취약점 발견)" || true
             exit 1
           else
             echo "✅ CI passed"
