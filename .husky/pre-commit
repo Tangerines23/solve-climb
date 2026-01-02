@@ -4,27 +4,38 @@ set -e
 
 echo "🔍 검증 시작..."
 
-# 1. TypeScript 타입 체크 (필수)
+# 1. TypeScript 타입 체크 (필수 - 전체 프로젝트)
 echo "1️⃣ TypeScript 타입 체크..."
-npm run type-check || {
+if ! npm run type-check 2>&1; then
+  echo ""
   echo "❌ TypeScript 타입 체크 실패"
+  echo "💡 타입 에러를 수정한 후 다시 커밋해주세요"
   exit 1
-}
+fi
 
-# 2. ESLint 검증 (필수)
-echo "2️⃣ ESLint 검증..."
-npm run lint || {
-  echo "❌ ESLint 검증 실패"
+# 2. lint-staged 실행 (변경된 파일만 ESLint + Prettier)
+echo "2️⃣ lint-staged 실행 (변경된 파일만 검사 및 자동 수정)..."
+if ! npx lint-staged 2>&1; then
+  echo ""
+  echo "❌ lint-staged 검증 실패"
+  echo "💡 ESLint 또는 Prettier 에러가 있습니다"
+  echo "💡 자동 수정된 파일이 있으면 다시 커밋해주세요"
   exit 1
-}
+fi
 
-# 3. Prettier 포맷팅 체크 (필수)
-echo "3️⃣ Prettier 포맷팅 체크..."
-npm run format:check || {
-  echo "❌ Prettier 포맷팅 실패"
-  echo "💡 'npm run format' 실행 후 다시 커밋해주세요"
-  exit 1
-}
+# 3. CSS 검증 (조건부 - CSS 파일 변경 시에만)
+CSS_CHANGED=$(node scripts/check-css-changes.js 2>/dev/null || echo "")
+if [ -n "$CSS_CHANGED" ]; then
+  echo "3️⃣ CSS 검증..."
+  echo "$CSS_CHANGED - CSS 검증 실행..."
+  if ! npm run check:css 2>&1; then
+    echo ""
+    echo "❌ CSS 검증 실패"
+    echo "💡 하드코딩된 CSS 값이 발견되었습니다"
+    echo "💡 CSS 변수를 사용하도록 수정해주세요 (docs/DESIGN_SYSTEM.md 참고)"
+    exit 1
+  fi
+fi
 
 # 4. 보안 검사 (경고만 - 느려서 실패해도 커밋 가능)
 echo "4️⃣ 보안 검사 (의존성 취약점)..."
@@ -48,10 +59,12 @@ DB_CHANGED=$(node scripts/check-db-changes.js 2>/dev/null || echo "")
 if [ -n "$DB_CHANGED" ]; then
   echo "6️⃣ DB 검증..."
   echo "$DB_CHANGED - DB 검증 실행..."
-  npm run check:db || {
+  if ! npm run check:db 2>&1; then
+    echo ""
     echo "❌ DB 검증 실패"
+    echo "💡 DB 마이그레이션 또는 스키마에 문제가 있습니다"
     exit 1
-  }
+  fi
 fi
 
 echo ""
