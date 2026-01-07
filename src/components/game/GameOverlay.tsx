@@ -17,9 +17,9 @@ export const GameOverlay: React.FC = () => {
               right: 0,
               bottom: 0,
               pointerEvents: 'none',
-              boxShadow: 'inset 0 0 150px rgba(255, 0, 0, 0.4)',
+              boxShadow: 'inset 0 0 180px rgba(220, 38, 38, 0.6)', // 더 진한 빨간색
               zIndex: 1000,
-              transition: 'all 0.5s ease',
+              animation: 'vignette-pulse 2s infinite ease-in-out',
             }}
           />
           <div
@@ -30,10 +30,17 @@ export const GameOverlay: React.FC = () => {
               right: 0,
               bottom: 0,
               pointerEvents: 'none',
-              backdropFilter: 'saturate(0.5) blur(1px)',
+              backdropFilter: 'saturate(0.4) blur(1.5px)', // 더 낮은 채도와 흐림
               zIndex: 998,
+              transition: 'all 0.5s ease',
             }}
           />
+          <style>{`
+            @keyframes vignette-pulse {
+              0%, 100% { box-shadow: inset 0 0 180px rgba(220, 38, 38, 0.5); }
+              50% { box-shadow: inset 0 0 220px rgba(220, 38, 38, 0.75); }
+            }
+          `}</style>
         </>
       )}
 
