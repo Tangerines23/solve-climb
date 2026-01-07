@@ -27,6 +27,7 @@ interface HistoryStats {
     subCategoryName?: string;
     level: number;
     levelName: string;
+    progress: number; // 0-100
   }>;
   recentRecords: Array<{
     themeCode: number;
@@ -40,7 +41,22 @@ interface HistoryStats {
     count: number;
     timeAgo: string;
   }>;
+  // 신규 추가 필드
+  totalAltitude: number;
+  userTitle: string;
+  totalCorrect: number;
+  averageAccuracy: number;
+  maxCombo: number;
 }
+
+const getUserTitle = (altitude: number): string => {
+  if (altitude >= 10000) return '하늘 위의 신선';
+  if (altitude >= 5000) return '구름을 뚫는 수학자';
+  if (altitude >= 3000) return '절벽의 베테랑';
+  if (altitude >= 1000) return '산중턱 탐험가';
+  if (altitude >= 500) return '동네 뒷산 대장';
+  return '초보 등반가';
+};
 
 export function HistoryPage() {
   const navigate = useNavigate();
@@ -48,7 +64,6 @@ export function HistoryPage() {
   const [stats, setStats] = useState<HistoryStats | null>(null);
   const [session, setSession] = useState<Session | null>(null);
   const [timeRange, setTimeRange] = useState<'week' | 'month'>('week');
-  const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
 
   useEffect(() => {
     const fetchHistoryData = async () => {
@@ -106,6 +121,11 @@ export function HistoryPage() {
             monthlyDays: [],
             categoryLevels: [],
             recentRecords: [],
+            totalAltitude: 0,
+            userTitle: 'GUEST',
+            totalCorrect: 0,
+            averageAccuracy: 0,
+            maxCombo: 0,
           });
           setLoading(false);
           return;
@@ -130,6 +150,11 @@ export function HistoryPage() {
             monthlyDays: [],
             categoryLevels: [],
             recentRecords: [],
+            totalAltitude: 0,
+            userTitle: '로컬 플레이어',
+            totalCorrect: 0,
+            averageAccuracy: 0,
+            maxCombo: 0,
           });
           setLoading(false);
           return;
@@ -257,9 +282,20 @@ export function HistoryPage() {
               subCategoryName: subcategory,
               level,
               levelName,
+              progress: Math.min(Math.round((level / 15) * 100), 100),
             };
           })
           .sort((a, b) => b.level - a.level);
+
+        // 누적 고도 계산 (best_score 합산)
+        const levelsWithBestScore = recordsWithTheme.filter(r => r.best_score > 0);
+        const totalAltitude = levelsWithBestScore.reduce((sum: number, r) => sum + (r.best_score || 0), 0);
+        const userTitle = getUserTitle(totalAltitude);
+
+        // 총 정답 수 (best_score > 0인 레코드 개수 * 10문제 추정값)
+        const totalCorrect = levelsWithBestScore.length * 10;
+        const averageAccuracy = 95; // 임시값
+        const maxCombo = 45; // 임시값
 
         // 최근 플레이 기록 (최근 10개, 중복 제거)
         const seenKeys = new Set<string>();
@@ -419,6 +455,11 @@ export function HistoryPage() {
           monthlyDays,
           categoryLevels,
           recentRecords,
+          totalAltitude,
+          userTitle,
+          totalCorrect,
+          averageAccuracy,
+          maxCombo,
         });
       } catch (err) {
         console.error('Failed to fetch history data:', err);
@@ -435,6 +476,11 @@ export function HistoryPage() {
           monthlyDays: [],
           categoryLevels: [],
           recentRecords: [],
+          totalAltitude: 0,
+          userTitle: 'ERROR',
+          totalCorrect: 0,
+          averageAccuracy: 0,
+          maxCombo: 0,
         });
       } finally {
         setLoading(false);
@@ -461,25 +507,12 @@ export function HistoryPage() {
     return new Date(dateString).toLocaleDateString('ko-KR');
   };
 
-  const handleReviewClick = () => {
-    // 오답 노트 복습 페이지로 이동 (나중에 구현)
-    navigate(APP_CONFIG.ROUTES.HOME);
-  };
+
 
   // 필터링된 통계 계산
   const filteredStats = useMemo(() => {
-    if (!stats || !selectedCategory) return stats;
-
-    return {
-      ...stats,
-      recentRecords: stats.recentRecords.filter((record) =>
-        record.themeId.startsWith(selectedCategory)
-      ),
-      categoryLevels: stats.categoryLevels.filter((item) =>
-        item.themeId.startsWith(selectedCategory)
-      ),
-    };
-  }, [stats, selectedCategory]);
+    return stats;
+  }, [stats]);
 
   // 로그인하지 않은 경우
   if (!session && !loading) {
@@ -516,11 +549,38 @@ export function HistoryPage() {
         <div className="history-content">
           <h1 className="history-header-title">나의 등반 기록</h1>
 
-          {/* 카드 1: 요약 */}
-          <div className="history-card">
-            <div className="history-card-header">
+          {/* 카드 1: 프로필 & 종합 등반 고도 (Summary Card) */}
+          <div className="history-summary-card">
+            <div className="history-profile-section">
+              <div className="history-avatar">🏔️</div>
+              <div className="history-profile-info">
+                <div className="history-user-title">{loading ? '분석 중...' : stats?.userTitle}</div>
+                <div className="history-user-altitude">
+                  누적 고도 <strong className="altitude-value">{loading ? '...' : stats?.totalAltitude.toLocaleString()}m</strong>
+                </div>
+              </div>
+            </div>
+
+            <div className="history-stats-grid">
+              <div className="history-stat-item">
+                <span className="stat-label">총 정답 수</span>
+                <span className="stat-value">{loading ? '...' : stats?.totalCorrect.toLocaleString()}개</span>
+              </div>
+              <div className="history-stat-item">
+                <span className="stat-label">평균 정확도</span>
+                <span className="stat-value">{loading ? '...' : stats?.averageAccuracy}%</span>
+              </div>
+              <div className="history-stat-item">
+                <span className="stat-label">최고 콤보</span>
+                <span className="stat-value">{loading ? '...' : stats?.maxCombo}회</span>
+              </div>
+            </div>
+
+            <div className="history-card-divider" />
+
+            <div className="history-card-header no-border">
               <h2 className="history-card-title">
-                {timeRange === 'week' ? '이번 주 요약' : '이번 달 요약'}
+                {timeRange === 'week' ? '주간 학습 리포트' : '월간 학습 리포트'}
               </h2>
               <div className="history-time-range-tabs">
                 <button
@@ -537,7 +597,8 @@ export function HistoryPage() {
                 </button>
               </div>
             </div>
-            <div className="history-summary-content">
+
+            <div className="history-summary-content mini">
               <div className="history-summary-text">
                 {timeRange === 'week' ? '이번 주' : '이번 달'}{' '}
                 <strong className="history-summary-highlight">
@@ -546,15 +607,15 @@ export function HistoryPage() {
                     : timeRange === 'week'
                       ? stats?.weeklyTotal || 0
                       : stats?.monthlyTotal || 0}
-                  문제
+                  개 레벨
                 </strong>
-                를 풀었어요!
+                을 정복했어요!
               </div>
 
               {/* SVG 막대 그래프 (최근 7일) */}
               <div
                 className="history-summary-graph-container"
-                style={{ height: '120px', marginTop: '16px', position: 'relative' }}
+                style={{ height: '100px', marginTop: '12px', position: 'relative' }}
               >
                 {loading ? (
                   <div className="history-graph-loading">트렌드 분석 중...</div>
@@ -573,204 +634,151 @@ export function HistoryPage() {
                     {/* 데이터 바 렌더링 */}
                     {timeRange === 'week'
                       ? (stats?.dailyCounts || []).map((count, index) => {
-                          // 최대값 기준으로 높이 계산 (최소 10)
-                          const dailyCounts = stats?.dailyCounts || [0, 0, 0, 0, 0, 0, 0];
-                          const max = Math.max(...dailyCounts, 10);
-                          const height = Math.min((count / max) * 80, 80); // 최대 높이 80
-                          const x = index * (300 / 7) + 300 / 14 - 10; // 7등분 후 중앙 정렬, 바 너비 20 보정
+                        // 최대값 기준으로 높이 계산 (최소 10)
+                        const dailyCounts = stats?.dailyCounts || [0, 0, 0, 0, 0, 0, 0];
+                        const max = Math.max(...dailyCounts, 10);
+                        const height = Math.min((count / max) * 80, 80); // 최대 높이 80
+                        const x = index * (300 / 7) + 300 / 14 - 10; // 7등분 후 중앙 정렬, 바 너비 20 보정
+
+                        return (
+                          <g key={index}>
+                            {/* 막대 (최소 높이 4px 보장) */}
+                            <rect
+                              x={x}
+                              y={80 - Math.max(height, count > 0 ? 4 : 0)}
+                              width="20"
+                              height={Math.max(height, count > 0 ? 4 : 0)}
+                              fill={index === 6 ? '#4cd964' : 'rgba(255, 255, 255, 0.2)'}
+                              rx="4"
+                            />
+                            {/* 요일 라벨 */}
+                            <text
+                              x={x + 10}
+                              y="95"
+                              textAnchor="middle"
+                              fill={index === 6 ? '#fff' : 'rgba(255,255,255,0.4)'}
+                              fontSize="10"
+                              fontWeight={index === 6 ? 'bold' : 'normal'}
+                            >
+                              {stats?.weekDays?.[index] || ''}
+                            </text>
+                          </g>
+                        );
+                      })
+                      : (stats?.monthlyDailyCounts || []).length > 0
+                        ? (stats?.monthlyDailyCounts || []).map((count, index) => {
+                          const monthlyCounts = stats?.monthlyDailyCounts || [];
+                          const max = Math.max(...monthlyCounts, 10);
+                          const height = Math.min((count / max) * 80, 80);
+                          const x = (index / monthlyCounts.length) * 300;
+                          const barWidth = Math.max(2, 300 / monthlyCounts.length - 2);
 
                           return (
                             <g key={index}>
-                              {/* 막대 (최소 높이 4px 보장) */}
                               <rect
                                 x={x}
                                 y={80 - Math.max(height, count > 0 ? 4 : 0)}
-                                width="20"
+                                width={barWidth}
                                 height={Math.max(height, count > 0 ? 4 : 0)}
-                                fill={index === 6 ? '#4cd964' : 'rgba(255, 255, 255, 0.3)'}
-                                rx="4"
+                                fill={
+                                  index === monthlyCounts.length - 1
+                                    ? '#4cd964'
+                                    : 'rgba(255, 255, 255, 0.2)'
+                                }
+                                rx="2"
                               />
-                              {/* 수치 라벨 (값이 있을 때만) */}
-                              {count > 0 && (
+                              {index % Math.ceil(monthlyCounts.length / 7) === 0 && (
                                 <text
-                                  x={x + 10}
-                                  y={80 - height - 5}
+                                  x={x + barWidth / 2}
+                                  y="95"
                                   textAnchor="middle"
-                                  fill="rgba(255,255,255,0.8)"
-                                  fontSize="10"
+                                  fill={
+                                    index === monthlyCounts.length - 1
+                                      ? '#fff'
+                                      : 'rgba(255,255,255,0.4)'
+                                  }
+                                  fontSize="8"
+                                  fontWeight={index === monthlyCounts.length - 1 ? 'bold' : 'normal'}
                                 >
-                                  {count}
+                                  {stats?.monthlyDays?.[index] || ''}
                                 </text>
                               )}
-                              {/* 요일 라벨 */}
-                              <text
-                                x={x + 10}
-                                y="95"
-                                textAnchor="middle"
-                                fill={index === 6 ? '#fff' : 'rgba(255,255,255,0.5)'}
-                                fontSize="10"
-                                fontWeight={index === 6 ? 'bold' : 'normal'}
-                              >
-                                {stats?.weekDays?.[index] || ''}
-                              </text>
                             </g>
                           );
                         })
-                      : (stats?.monthlyDailyCounts || []).length > 0
-                        ? (stats?.monthlyDailyCounts || []).map((count, index) => {
-                            const monthlyCounts = stats?.monthlyDailyCounts || [];
-                            if (monthlyCounts.length === 0) return null;
-                            
-                            const daysToShow = Math.min(monthlyCounts.length, 30);
-                            const step = Math.max(1, Math.floor(monthlyCounts.length / daysToShow));
-                            if (index % step !== 0 && index !== monthlyCounts.length - 1) return null;
-
-                            const max = Math.max(...monthlyCounts, 10);
-                            const height = Math.min((count / max) * 80, 80);
-                            const x = (index / monthlyCounts.length) * 300;
-                            const barWidth = Math.max(2, 300 / monthlyCounts.length - 2);
-
-                            return (
-                              <g key={index}>
-                                <rect
-                                  x={x}
-                                  y={80 - Math.max(height, count > 0 ? 4 : 0)}
-                                  width={barWidth}
-                                  height={Math.max(height, count > 0 ? 4 : 0)}
-                                  fill={
-                                    index === monthlyCounts.length - 1
-                                      ? '#4cd964'
-                                      : 'rgba(255, 255, 255, 0.3)'
-                                  }
-                                  rx="2"
-                                />
-                                {count > 0 && index % Math.ceil(monthlyCounts.length / 10) === 0 && (
-                                  <text
-                                    x={x + barWidth / 2}
-                                    y={80 - height - 5}
-                                    textAnchor="middle"
-                                    fill="rgba(255,255,255,0.8)"
-                                    fontSize="8"
-                                  >
-                                    {count}
-                                  </text>
-                                )}
-                                {index % Math.ceil(monthlyCounts.length / 7) === 0 && (
-                                  <text
-                                    x={x + barWidth / 2}
-                                    y="95"
-                                    textAnchor="middle"
-                                    fill={
-                                      index === monthlyCounts.length - 1
-                                        ? '#fff'
-                                        : 'rgba(255,255,255,0.5)'
-                                    }
-                                    fontSize="8"
-                                    fontWeight={index === monthlyCounts.length - 1 ? 'bold' : 'normal'}
-                                  >
-                                    {stats?.monthlyDays?.[index] || ''}
-                                  </text>
-                                )}
-                              </g>
-                            );
-                          })
                         : null}
                   </svg>
                 )}
               </div>
-
-              {stats &&
-                ((timeRange === 'week' && stats.weeklyTotalLastWeek > 0) ||
-                  (timeRange === 'month' && stats.monthlyTotalLastMonth > 0)) && (
-                  <div className="history-summary-comparison" style={{ marginTop: '8px' }}>
-                    {timeRange === 'week' ? '지난주' : '지난달'} 대비{' '}
-                    {timeRange === 'week'
-                      ? stats.weeklyTotal >= stats.weeklyTotalLastWeek
-                        ? '+'
-                        : ''
-                      : stats.monthlyTotal >= stats.monthlyTotalLastMonth
-                        ? '+'
-                        : ''}
-                    {timeRange === 'week'
-                      ? stats.weeklyTotal - stats.weeklyTotalLastWeek
-                      : stats.monthlyTotal - stats.monthlyTotalLastMonth}
-                    문제
-                  </div>
-                )}
             </div>
           </div>
 
-          {/* 카드 2: 오답 노트 */}
-          <div className="history-card">
-            <div className="history-card-header">
-              <h2 className="history-card-title">오답 노트</h2>
+          {/* 카드 2: 분야별 숙련 분석 (Analysis Card) */}
+          <div className="history-analysis-card">
+            <div className="history-card-header no-border">
+              <h2 className="history-card-title">분야별 숙련도</h2>
             </div>
-            <div className="history-wrong-answer-content">
-              <div className="history-wrong-answer-text">
-                최근 틀린 문제가{' '}
-                <strong className="history-wrong-answer-highlight">
-                  {loading ? '...' : stats?.wrongAnswers || 0}개
-                </strong>{' '}
-                있어요.
-              </div>
-              <button
-                className="history-review-button"
-                onClick={handleReviewClick}
-                disabled={!stats || stats.wrongAnswers === 0}
-              >
-                복습하러 가기 &gt;
-              </button>
-            </div>
-          </div>
-
-          {/* 카드 3: 분야별 분석 */}
-          <div className="history-card">
-            <div className="history-card-header">
-              <h2 className="history-card-title">분야별 분석</h2>
-              {selectedCategory && (
-                <button
-                  className="history-filter-clear"
-                  onClick={() => setSelectedCategory(null)}
-                >
-                  필터 해제
-                </button>
-              )}
-            </div>
-            <div className="history-category-list">
+            <div className="history-proficiency-list">
               {loading ? (
                 <div className="history-loading">로딩 중...</div>
               ) : stats && stats.categoryLevels.length > 0 ? (
-                stats.categoryLevels.map((item) => {
-                  const [category] = item.themeId.split('_');
-                  return (
-                    <div
-                      key={item.themeId}
-                      className={`history-category-item ${selectedCategory === category ? 'history-category-item-selected' : ''}`}
-                      onClick={() => setSelectedCategory(category)}
-                      style={{ cursor: 'pointer' }}
-                    >
-                      <span className="history-category-name">
-                        {item.categoryName}
-                        {item.subCategoryName && ` - ${item.subCategoryName}`}
-                      </span>
-                      <span className="history-category-level">
-                        Lv.{item.level} ({item.levelName})
-                      </span>
+                stats.categoryLevels.slice(0, 5).map((item) => (
+                  <div key={item.themeId} className="history-proficiency-item">
+                    <div className="proficiency-info">
+                      <span className="proficiency-name">{item.categoryName} - {item.subCategoryName}</span>
+                      <span className="proficiency-level">Lv.{item.level}</span>
                     </div>
-                  );
-                })
+                    <div className="proficiency-bar-container">
+                      <div
+                        className="proficiency-bar-fill"
+                        style={{ width: `${item.progress}%` }}
+                      />
+                    </div>
+                  </div>
+                ))
               ) : (
-                <div className="history-empty">아직 기록이 없어요.</div>
+                <div className="history-empty">기록이 부족합니다.</div>
               )}
             </div>
           </div>
 
-          {/* 카드 4: 최근 플레이 기록 */}
-          <div className="history-card">
-            <div className="history-card-header">
-              <h2 className="history-card-title">최근 플레이 기록</h2>
+          {/* 카드 3: 명예의 전당 (Best Records Card) */}
+          <div className="history-best-records-card">
+            <div className="history-card-header no-border">
+              <h2 className="history-card-title">명예의 전당</h2>
             </div>
-            <div className="history-recent-list">
+            <div className="history-best-grid">
+              <div className="history-best-item survival">
+                <div className="best-icon">🔥</div>
+                <div className="best-label">서바이벌 최장</div>
+                <div className="best-value">{loading ? '...' : `${stats?.maxCombo || 0}콤보`}</div>
+              </div>
+              <div className="history-best-item timeattack">
+                <div className="best-icon">⚡</div>
+                <div className="best-label">타임어택 최고</div>
+                <div className="best-value">{loading ? '...' : 'Lv.15'}</div>
+              </div>
+            </div>
+          </div>
+
+          {/* 카드 4: 오답 노트 & 최근 이력 (Activity List) */}
+          <div className="history-card no-padding">
+            <div className="history-card-header padding-16">
+              <h2 className="history-card-title">최근 등반 이력</h2>
+              <button
+                className="history-review-climb-button"
+                onClick={() => {
+                  if (stats && stats.wrongAnswers > 0) {
+                    // 오답 등반 로직 (추후 구현)
+                    alert('오답 문제를 모아 등반을 시작합니다!');
+                  }
+                }}
+                disabled={!stats || stats.wrongAnswers === 0}
+              >
+                오답 등반하기
+              </button>
+            </div>
+            <div className="history-recent-list border-top">
               {loading ? (
                 <div className="history-loading">로딩 중...</div>
               ) : filteredStats && filteredStats.recentRecords.length > 0 ? (
@@ -779,7 +787,7 @@ export function HistoryPage() {
                   return (
                     <div
                       key={index}
-                      className="history-recent-item"
+                      className="history-recent-item-new"
                       onClick={() => {
                         if (subCategory) {
                           navigate(`/level-select?category=${category}&sub=${subCategory}`);
@@ -787,21 +795,25 @@ export function HistoryPage() {
                           navigate(`/subcategory?category=${category}`);
                         }
                       }}
-                      style={{ cursor: 'pointer' }}
                     >
-                      <div className="history-recent-info">
-                        <span className="history-recent-category">[{record.categoryName}]</span>
-                        <span className="history-recent-details">
-                          {record.subCategoryName || ''} Lv.{record.level} ({record.modeName}) - {record.count}개
-                          <span className="history-recent-score">최고: {record.bestScore}점</span>
-                        </span>
+                      <div className="history-recent-icon-small">
+                        {category === 'math' ? '🔢' : '🇯🇵'}
                       </div>
-                      <span className="history-recent-time">{record.timeAgo}</span>
+                      <div className="history-recent-content">
+                        <div className="history-recent-title-row">
+                          <span className="history-recent-name">{record.categoryName} {record.subCategoryName} Lv.{record.level}</span>
+                          <span className="history-recent-time-new">{record.timeAgo}</span>
+                        </div>
+                        <div className="history-recent-score-row">
+                          <span className="history-recent-mode">{record.modeName}</span>
+                          <span className="history-recent-best">{record.bestScore}점</span>
+                        </div>
+                      </div>
                     </div>
                   );
                 })
               ) : (
-                <div className="history-empty">아직 기록이 없어요.</div>
+                <div className="history-empty">최근 활동이 없습니다.</div>
               )}
             </div>
           </div>
