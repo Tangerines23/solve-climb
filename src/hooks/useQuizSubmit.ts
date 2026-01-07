@@ -196,9 +196,9 @@ export function useQuizSubmit({
           earnedDistance += BOSS_BONUS;
         }
 
-        // 지침 상태 페널티 (80%)
+        // 탈진 상태 페널티 (20% 감점, 0.8배 적용)
         if (isExhausted) {
-          earnedDistance = Math.floor(earnedDistance * 0.2);
+          earnedDistance = Math.floor(earnedDistance * 0.8);
         }
 
         // 서바이벌 모드: 10문제마다 라이프 회복

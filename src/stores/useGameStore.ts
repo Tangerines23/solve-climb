@@ -47,12 +47,19 @@ export const useGameStore = create<GameState>((set) => ({
       let newFeverLevel = state.feverLevel;
       let speedLines = state.showSpeedLines;
 
-      if (newCombo >= 20) {
-        newFeverLevel = 2;
-        speedLines = true;
-      } else if (newCombo >= 5) {
-        newFeverLevel = 1;
-        speedLines = true;
+      // 탈진 상태가 아닐 때만 피버 레벨 상승
+      if (!state.isExhausted) {
+        if (newCombo >= 20) {
+          newFeverLevel = 2;
+          speedLines = true;
+        } else if (newCombo >= 5) {
+          newFeverLevel = 1;
+          speedLines = true;
+        }
+      } else {
+        // 탈진 상태면 피버 초기화 (또는 미발동)
+        newFeverLevel = 0;
+        speedLines = false;
       }
 
       return {
@@ -65,16 +72,19 @@ export const useGameStore = create<GameState>((set) => ({
   resetCombo: () => set({ combo: 0, feverLevel: 0, showSpeedLines: false }),
 
   setCombo: (combo) =>
-    set(() => {
+    set((state) => {
       let newFeverLevel = 0;
       let speedLines = false;
 
-      if (combo >= 20) {
-        newFeverLevel = 2;
-        speedLines = true;
-      } else if (combo >= 5) {
-        newFeverLevel = 1;
-        speedLines = true;
+      // 탈진 상태가 아닐 때만 피버 계산
+      if (!state.isExhausted) {
+        if (combo >= 20) {
+          newFeverLevel = 2;
+          speedLines = true;
+        } else if (combo >= 5) {
+          newFeverLevel = 1;
+          speedLines = true;
+        }
       }
 
       return {

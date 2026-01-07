@@ -195,7 +195,7 @@ function QuizCardComponent({
     return isEquationQuiz || isCalculusQuiz;
   }, [isEquationQuiz, isCalculusQuiz]);
 
-  const { activeItems, consumeActiveItem, consumeLife } = useGameStore();
+  const { activeItems, consumeActiveItem, consumeLife, isExhausted } = useGameStore();
 
   const currentSurvivalDuration = useMemo(() => {
     if (gameMode !== 'survival') return SURVIVAL_QUESTION_TIME;
@@ -385,7 +385,7 @@ function QuizCardComponent({
                       }
                     }}
                     placeholder={isJapaneseQuiz ? '로마지 입력 (예: a, ki)' : '정답 입력'}
-                    className={`answer-input-system ${inputAnimation} ${isError ? 'error-state is-error' : ''} ${showFlash ? 'input-error-flash' : ''}`}
+                    className={`answer-input-system ${inputAnimation} ${isError ? 'error-state is-error' : ''} ${showFlash && !isExhausted ? 'input-error-flash' : ''}`}
                     disabled={(isSubmitting && !isError) || isPaused}
                     readOnly={isError}
                     autoFocus={false}
@@ -408,7 +408,7 @@ function QuizCardComponent({
             ) : (
               <div className={`answer-input-wrapper ${isError ? 'is-error' : ''}`}>
                 <div
-                  className={`answer-display ${inputAnimation} ${isError ? 'is-error' : ''} ${showFlash ? 'input-error-flash' : ''}`}
+                  className={`answer-display ${inputAnimation} ${isError ? 'is-error' : ''} ${showFlash && !isExhausted ? 'input-error-flash' : ''}`}
                 >
                   {(isError ? displayValue : answerInput) && (
                     <span className="answer-display-text">
@@ -427,7 +427,7 @@ function QuizCardComponent({
               className={`slide-toast ${isPositiveToast ? 'is-positive' : ''}`}
               style={{ left: damagePosition.left, top: damagePosition.top }}
             >
-              <span className={`slide-toast-text ${isPositiveToast ? 'is-positive' : ''}`}>
+              <span className={`slide-toast-text ${isPositiveToast ? 'is-positive' : ''} ${isExhausted && isPositiveToast ? 'is-exhausted' : ''}`}>
                 {toastValue}
               </span>
             </div>

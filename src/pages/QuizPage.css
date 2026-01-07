@@ -645,6 +645,15 @@
   box-shadow: 0 4px 12px rgba(16, 185, 129, 0.5);
 }
 
+/* 탈진 상태용 득점 토스트 - 활력 저하 (채도 낮음, 크기 작음) */
+.slide-toast-text.is-positive.is-exhausted {
+  background-color: rgba(52, 211, 153, 0.6);
+  /* 채도가 낮고 불투명도가 낮은 녹색 */
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+  transform: scale(0.85);
+  font-size: 1rem;
+}
+
 @keyframes floatUp {
   0% {
     opacity: 0;
