@@ -1,5 +1,13 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
-import { loadTierDefinitions, loadCycleCap, type TierInfo } from '../tiers';
+import {
+  loadTierDefinitions,
+  loadCycleCap,
+  calculateTier,
+  calculateTierSync,
+  getNextTierInfo,
+  getTierInfo,
+  type TierInfo,
+} from '../tiers';
 import { supabase } from '../../utils/supabaseClient';
 
 // Mock supabase
@@ -227,6 +235,231 @@ describe('tiers', () => {
         expect(tier.colorVar).toMatch(/^--color-/);
         expect(typeof tier.colorVar).toBe('string');
       });
+    });
+  });
+
+  describe('loadTierDefinitions - error handling', () => {
+    it('should handle exception and return fallback', async () => {
+      vi.mocked(supabase.from).mockImplementation(() => {
+        throw new Error('Network error');
+      });
+
+      const result = await loadTierDefinitions();
+
+      expect(result).toBeDefined();
+      expect(Array.isArray(result)).toBe(true);
+      expect(result.length).toBeGreaterThan(0);
+    });
+
+    it('should use cache when valid', async () => {
+      const mockTierData = [
+        { level: 0, name: '베이스캠프', icon: '⛺', min_score: 0, color_var: '--color-tier-base' },
+      ];
+
+      const mockFrom = {
+        select: vi.fn().mockReturnValue({
+          order: vi.fn().mockReturnValue({
+            data: mockTierData,
+            error: null,
+          }),
+        }),
+      };
+
+      vi.mocked(supabase.from).mockReturnValue(mockFrom as any);
+
+      // First call
+      const result1 = await loadTierDefinitions();
+      // Second call should use cache
+      const result2 = await loadTierDefinitions();
+
+      expect(result1).toEqual(result2);
+    });
+  });
+
+  describe('loadCycleCap - error handling', () => {
+    it('should handle exception and return fallback', async () => {
+      vi.mocked(supabase.from).mockImplementation(() => {
+        throw new Error('Network error');
+      });
+
+      const result = await loadCycleCap();
+
+      expect(result).toBe(250000);
+    });
+
+    it('should handle empty data array', async () => {
+      vi.mocked(supabase.from).mockReturnValue({
+        select: vi.fn().mockReturnValue({
+          eq: vi.fn().mockReturnValue({
+            single: vi.fn().mockReturnValue({
+              data: null,
+              error: null,
+            }),
+          }),
+        }),
+      } as any);
+
+      const result = await loadCycleCap();
+
+      expect(result).toBe(250000);
+    });
+  });
+
+  describe('calculateTier', () => {
+    it('should calculate tier for score below cycle cap', async () => {
+      const result = await calculateTier(10000);
+
+      expect(result).toBeDefined();
+      expect(result.totalScore).toBe(10000);
+      expect(result.stars).toBe(0);
+      expect(result.currentCycleScore).toBe(10000);
+      expect(result.level).toBeGreaterThanOrEqual(0);
+      expect(result.level).toBeLessThanOrEqual(6);
+    });
+
+    it('should calculate tier for score above cycle cap', async () => {
+      const result = await calculateTier(300000);
+
+      expect(result).toBeDefined();
+      expect(result.totalScore).toBe(300000);
+      expect(result.stars).toBeGreaterThan(0);
+      expect(result.currentCycleScore).toBeGreaterThan(0);
+      expect(result.level).toBeGreaterThanOrEqual(0);
+      expect(result.level).toBeLessThanOrEqual(6);
+    });
+
+    it('should calculate tier for score exactly at cycle cap', async () => {
+      const result = await calculateTier(250000);
+
+      expect(result).toBeDefined();
+      expect(result.totalScore).toBe(250000);
+      expect(result.stars).toBe(0);
+      expect(result.currentCycleScore).toBe(250000);
+    });
+
+    it('should calculate tier for score just above cycle cap', async () => {
+      const result = await calculateTier(250001);
+
+      expect(result).toBeDefined();
+      expect(result.totalScore).toBe(250001);
+      expect(result.stars).toBe(1);
+      expect(result.currentCycleScore).toBe(1);
+    });
+
+    it('should calculate tier for zero score', async () => {
+      const result = await calculateTier(0);
+
+      expect(result).toBeDefined();
+      expect(result.totalScore).toBe(0);
+      expect(result.stars).toBe(0);
+      expect(result.currentCycleScore).toBe(0);
+      expect(result.level).toBe(0);
+    });
+  });
+
+  describe('calculateTierSync', () => {
+    it('should calculate tier synchronously for score below cycle cap', () => {
+      const tierLevels: TierInfo[] = [
+        { level: 0, name: '베이스캠프', icon: '⛺', minScore: 0, colorVar: '--color-tier-base' },
+        { level: 1, name: '등산로', icon: '🥾', minScore: 1000, colorVar: '--color-tier-trail' },
+        { level: 2, name: '중턱', icon: '⛰️', minScore: 5000, colorVar: '--color-tier-mid' },
+      ];
+      const cycleCap = 250000;
+
+      const result = calculateTierSync(10000, tierLevels, cycleCap);
+
+      expect(result).toBeDefined();
+      expect(result.totalScore).toBe(10000);
+      expect(result.stars).toBe(0);
+      expect(result.currentCycleScore).toBe(10000);
+      expect(result.level).toBe(2);
+    });
+
+    it('should calculate tier synchronously for score above cycle cap', () => {
+      const tierLevels: TierInfo[] = [
+        { level: 0, name: '베이스캠프', icon: '⛺', minScore: 0, colorVar: '--color-tier-base' },
+        { level: 1, name: '등산로', icon: '🥾', minScore: 1000, colorVar: '--color-tier-trail' },
+      ];
+      const cycleCap = 250000;
+
+      const result = calculateTierSync(300000, tierLevels, cycleCap);
+
+      expect(result).toBeDefined();
+      expect(result.totalScore).toBe(300000);
+      expect(result.stars).toBe(1);
+      expect(result.currentCycleScore).toBe(50000);
+    });
+
+    it('should return level 0 for very low score', () => {
+      const tierLevels: TierInfo[] = [
+        { level: 0, name: '베이스캠프', icon: '⛺', minScore: 0, colorVar: '--color-tier-base' },
+        { level: 1, name: '등산로', icon: '🥾', minScore: 1000, colorVar: '--color-tier-trail' },
+      ];
+      const cycleCap = 250000;
+
+      const result = calculateTierSync(500, tierLevels, cycleCap);
+
+      expect(result.level).toBe(0);
+    });
+  });
+
+  describe('getNextTierInfo', () => {
+    it('should return next tier info for score below cycle cap', async () => {
+      const result = await getNextTierInfo(10000);
+
+      expect(result).toBeDefined();
+      if (result) {
+        expect(result.name).toBeDefined();
+        expect(result.minScore).toBeGreaterThan(0);
+        expect(result.remaining).toBeGreaterThan(0);
+      }
+    });
+
+    it('should return next cycle info when at max tier', async () => {
+      const result = await getNextTierInfo(250000);
+
+      expect(result).toBeDefined();
+      if (result) {
+        expect(result.name).toBeDefined();
+      }
+    });
+
+    it('should return null or valid info for very high score', async () => {
+      const result = await getNextTierInfo(500000);
+
+      // Should return valid info or null
+      if (result) {
+        expect(result.name).toBeDefined();
+        expect(result.minScore).toBeGreaterThan(0);
+      }
+    });
+  });
+
+  describe('getTierInfo', () => {
+    it('should return tier info for valid level', async () => {
+      const result = await getTierInfo(0);
+
+      expect(result).toBeDefined();
+      if (result) {
+        expect(result.level).toBe(0);
+        expect(result.name).toBeDefined();
+        expect(result.icon).toBeDefined();
+      }
+    });
+
+    it('should return tier info for level 6', async () => {
+      const result = await getTierInfo(6);
+
+      expect(result).toBeDefined();
+      if (result) {
+        expect(result.level).toBe(6);
+      }
+    });
+
+    it('should return null for invalid level', async () => {
+      const result = await getTierInfo(99 as any);
+
+      expect(result).toBeNull();
     });
   });
 });

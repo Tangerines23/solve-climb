@@ -223,5 +223,107 @@ describe('useSession', () => {
       expect(result.current.userId).toBe('new-user-123');
     });
   });
+
+  it('should handle local session parse failure', async () => {
+    vi.mocked(storage.getString).mockReturnValue('invalid json');
+    vi.mocked(authApi.getSession).mockResolvedValue(null);
+
+    const { result } = renderHook(() => useSession());
+
+    await waitFor(() => {
+      expect(result.current.isLoading).toBe(false);
+    });
+
+    expect(result.current.isAuthenticated).toBe(false);
+    expect(result.current.userId).toBeNull();
+  });
+
+  it('should handle Supabase getSession error', async () => {
+    vi.mocked(storage.getString).mockReturnValue(null);
+    vi.mocked(authApi.getSession).mockRejectedValue(new Error('Session error'));
+
+    const { result } = renderHook(() => useSession());
+
+    await waitFor(() => {
+      expect(result.current.isLoading).toBe(false);
+    });
+
+    expect(result.current.isAuthenticated).toBe(false);
+    expect(result.current.session).toBeNull();
+  });
+
+  it('should check local session when auth state changes to null', async () => {
+    vi.mocked(storage.getString).mockReturnValue(null);
+    vi.mocked(authApi.getSession).mockResolvedValue(null);
+
+    let authStateChangeCallback: ((event: string, session: Session | null) => void) | null = null;
+    vi.mocked(authApi.onAuthStateChange).mockImplementation((callback) => {
+      authStateChangeCallback = callback;
+      return { unsubscribe: mockUnsubscribe };
+    });
+
+    const { result } = renderHook(() => useSession());
+
+    await waitFor(() => {
+      expect(result.current.isLoading).toBe(false);
+    });
+
+    // Set up local session
+    const localSessionData = {
+      userId: 'local-user-123',
+      isAdmin: false,
+    };
+    vi.mocked(storage.getString).mockReturnValue(JSON.stringify(localSessionData));
+
+    act(() => {
+      if (authStateChangeCallback) {
+        authStateChangeCallback('SIGNED_OUT', null);
+      }
+    });
+
+    await waitFor(() => {
+      expect(result.current.userId).toBe('local-user-123');
+    });
+  });
+
+  it('should handle auth state change with new session', async () => {
+    vi.mocked(storage.getString).mockReturnValue(null);
+    vi.mocked(authApi.getSession).mockResolvedValue(null);
+
+    let authStateChangeCallback: ((event: string, session: Session | null) => void) | null = null;
+    vi.mocked(authApi.onAuthStateChange).mockImplementation((callback) => {
+      authStateChangeCallback = callback;
+      return { unsubscribe: mockUnsubscribe };
+    });
+
+    const { result } = renderHook(() => useSession());
+
+    await waitFor(() => {
+      expect(result.current.isLoading).toBe(false);
+    });
+
+    const newSession: Session = {
+      user: {
+        id: 'new-user-456',
+        email: 'new@example.com',
+        user_metadata: { isAdmin: false },
+      },
+      access_token: 'new-token',
+      refresh_token: 'new-refresh',
+      expires_in: 3600,
+      token_type: 'bearer',
+    } as unknown as Session;
+
+    act(() => {
+      if (authStateChangeCallback) {
+        authStateChangeCallback('SIGNED_IN', newSession);
+      }
+    });
+
+    await waitFor(() => {
+      expect(result.current.userId).toBe('new-user-456');
+      expect(result.current.session).toBe(newSession);
+    });
+  });
 });
 

@@ -259,7 +259,7 @@ export const QuickActionsSection = React.memo(function QuickActionsSection() {
 
       <div className="debug-resource-control">
         <div className="debug-resource-item">
-          <label className="debug-resource-label">스태미나</label>
+          <label htmlFor="debug-stamina-input" className="debug-resource-label">스태미나</label>
           <div className="debug-resource-input-group">
             <button
               className="debug-resource-button"
@@ -270,6 +270,8 @@ export const QuickActionsSection = React.memo(function QuickActionsSection() {
             </button>
             <input
               type="number"
+              id="debug-stamina-input"
+              name="stamina"
               className="debug-resource-input"
               value={staminaInput}
               onChange={(e) => handleStaminaInputChange(e.target.value)}
@@ -288,7 +290,7 @@ export const QuickActionsSection = React.memo(function QuickActionsSection() {
         </div>
 
         <div className="debug-resource-item">
-          <label className="debug-resource-label">미네랄</label>
+          <label htmlFor="debug-minerals-input" className="debug-resource-label">미네랄</label>
           <div className="debug-resource-input-group">
             <button
               className="debug-resource-button"
@@ -299,6 +301,8 @@ export const QuickActionsSection = React.memo(function QuickActionsSection() {
             </button>
             <input
               type="number"
+              id="debug-minerals-input"
+              name="minerals"
               className="debug-resource-input"
               value={mineralsInput}
               onChange={(e) => handleMineralsInputChange(e.target.value)}
@@ -321,30 +325,33 @@ export const QuickActionsSection = React.memo(function QuickActionsSection() {
         <h4 className="debug-subsection-title">무한 모드</h4>
 
         <div className="debug-toggle-item">
-          <label className="debug-toggle-label">무한 스태미나</label>
+          <span className="debug-toggle-label">무한 스태미나</span>
           <button
             className={`debug-toggle-button ${infiniteStamina ? 'active' : ''}`}
             onClick={() => setInfiniteStamina(!infiniteStamina)}
+            aria-label="무한 스태미나 토글"
           >
             {infiniteStamina ? 'ON' : 'OFF'}
           </button>
         </div>
 
         <div className="debug-toggle-item">
-          <label className="debug-toggle-label">무한 미네랄</label>
+          <span className="debug-toggle-label">무한 미네랄</span>
           <button
             className={`debug-toggle-button ${infiniteMinerals ? 'active' : ''}`}
             onClick={() => setInfiniteMinerals(!infiniteMinerals)}
+            aria-label="무한 미네랄 토글"
           >
             {infiniteMinerals ? 'ON' : 'OFF'}
           </button>
         </div>
 
         <div className="debug-toggle-item">
-          <label className="debug-toggle-label">무한 시간</label>
+          <span className="debug-toggle-label">무한 시간</span>
           <button
             className={`debug-toggle-button ${infiniteTime ? 'active' : ''}`}
             onClick={() => setInfiniteTime(!infiniteTime)}
+            aria-label="무한 시간 토글"
           >
             {infiniteTime ? 'ON' : 'OFF'}
           </button>

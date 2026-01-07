@@ -93,5 +93,86 @@ describe('useErrorLogStore', () => {
     const filtered = filterLogs(undefined, startTime, endTime);
     expect(filtered.length).toBeGreaterThanOrEqual(1);
   });
+
+  it('should filter logs by level and time range', () => {
+    const { addLog, filterLogs } = useErrorLogStore.getState();
+    const now = new Date();
+    const startTime = new Date(now.getTime() - 1000);
+    const endTime = new Date(now.getTime() + 1000);
+
+    addLog('error', 'Error 1');
+    addLog('warning', 'Warning 1');
+    addLog('error', 'Error 2');
+
+    const filtered = filterLogs('error', startTime, endTime);
+    expect(filtered.every((log) => log.level === 'error')).toBe(true);
+    expect(filtered.length).toBeGreaterThanOrEqual(2);
+  });
+
+  it('should filter logs with only startTime', () => {
+    const { addLog, filterLogs } = useErrorLogStore.getState();
+    const now = new Date();
+    const startTime = new Date(now.getTime() - 1000);
+
+    addLog('info', 'Log 1');
+    addLog('info', 'Log 2');
+
+    const filtered = filterLogs(undefined, startTime);
+    expect(filtered.length).toBeGreaterThanOrEqual(2);
+  });
+
+  it('should filter logs with only endTime', () => {
+    const { addLog, filterLogs } = useErrorLogStore.getState();
+    const now = new Date();
+    const endTime = new Date(now.getTime() + 1000);
+
+    addLog('info', 'Log 1');
+    addLog('info', 'Log 2');
+
+    const filtered = filterLogs(undefined, undefined, endTime);
+    expect(filtered.length).toBeGreaterThanOrEqual(2);
+  });
+
+  it('should filter logs with no filters (return all)', () => {
+    const { addLog, filterLogs } = useErrorLogStore.getState();
+    addLog('error', 'Error 1');
+    addLog('warning', 'Warning 1');
+    addLog('info', 'Info 1');
+
+    const filtered = filterLogs();
+    expect(filtered.length).toBe(3);
+  });
+
+  it('should exclude logs before startTime', () => {
+    const { addLog, filterLogs } = useErrorLogStore.getState();
+    const now = new Date();
+    const startTime = new Date(now.getTime() + 1000); // 미래 시간
+
+    addLog('info', 'Log 1');
+
+    const filtered = filterLogs(undefined, startTime);
+    expect(filtered.length).toBe(0);
+  });
+
+  it('should exclude logs after endTime', () => {
+    const { addLog, filterLogs } = useErrorLogStore.getState();
+    const now = new Date();
+    const endTime = new Date(now.getTime() - 1000); // 과거 시간
+
+    addLog('info', 'Log 1');
+
+    const filtered = filterLogs(undefined, undefined, endTime);
+    expect(filtered.length).toBe(0);
+  });
+
+  it('should add log without optional parameters', () => {
+    const { addLog } = useErrorLogStore.getState();
+    addLog('info', 'Log without stack and context');
+
+    const { logs } = useErrorLogStore.getState();
+    expect(logs).toHaveLength(1);
+    expect(logs[0].stack).toBeUndefined();
+    expect(logs[0].context).toBeUndefined();
+  });
 });
 

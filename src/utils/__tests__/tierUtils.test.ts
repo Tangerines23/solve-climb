@@ -160,6 +160,129 @@ describe('tierUtils', () => {
       expect(result).toBe(250000 + 1000);
       expect(loadCycleCap).toHaveBeenCalled();
     });
+
+    it('should handle negative stars value', async () => {
+      const mockTierDefinitions = [
+        { level: 1, name: '등산로', icon: '🥾', minScore: 1000, colorVar: '--color-tier-trail' },
+      ];
+
+      vi.mocked(loadTierDefinitions).mockResolvedValue(mockTierDefinitions as any);
+      vi.mocked(loadCycleCap).mockResolvedValue(250000);
+
+      // 음수 stars는 0이 아니므로 사이클 계산에 사용됨
+      const result = await calculateScoreForTier(1, -1, 0);
+
+      expect(result).toBe(250000 * -1 + 1000); // -250000 + 1000 = -249000
+    });
+
+    it('should handle negative bonusScore', async () => {
+      const mockTierDefinitions = [
+        { level: 1, name: '등산로', icon: '🥾', minScore: 1000, colorVar: '--color-tier-trail' },
+      ];
+
+      vi.mocked(loadTierDefinitions).mockResolvedValue(mockTierDefinitions as any);
+      vi.mocked(loadCycleCap).mockResolvedValue(250000);
+
+      const result = await calculateScoreForTier(1, 0, -100);
+
+      expect(result).toBe(900); // 1000 + (-100)
+    });
+
+    it('should handle very large bonusScore', async () => {
+      const mockTierDefinitions = [
+        { level: 1, name: '등산로', icon: '🥾', minScore: 1000, colorVar: '--color-tier-trail' },
+      ];
+
+      vi.mocked(loadTierDefinitions).mockResolvedValue(mockTierDefinitions as any);
+      vi.mocked(loadCycleCap).mockResolvedValue(250000);
+
+      const result = await calculateScoreForTier(1, 0, 1000000);
+
+      expect(result).toBe(1001000); // 1000 + 1000000
+    });
+
+    it('should handle very large stars value', async () => {
+      const mockTierDefinitions = [
+        { level: 1, name: '등산로', icon: '🥾', minScore: 1000, colorVar: '--color-tier-trail' },
+      ];
+
+      vi.mocked(loadTierDefinitions).mockResolvedValue(mockTierDefinitions as any);
+      vi.mocked(loadCycleCap).mockResolvedValue(250000);
+
+      const result = await calculateScoreForTier(1, 100, 0);
+
+      expect(result).toBe(250000 * 100 + 1000); // cycleCap * stars + minScore
+    });
+
+    it('should handle decimal stars value', async () => {
+      const mockTierDefinitions = [
+        { level: 1, name: '등산로', icon: '🥾', minScore: 1000, colorVar: '--color-tier-trail' },
+      ];
+
+      vi.mocked(loadTierDefinitions).mockResolvedValue(mockTierDefinitions as any);
+      vi.mocked(loadCycleCap).mockResolvedValue(250000);
+
+      // 소수점 stars는 0이 아니므로 사이클 계산에 사용됨
+      const result = await calculateScoreForTier(1, 1.5, 0);
+
+      expect(result).toBe(250000 * 1.5 + 1000); // 376000
+    });
+
+    it('should handle negative level gracefully', async () => {
+      const mockTierDefinitions = [
+        { level: 0, name: '베이스캠프', icon: '⛺', minScore: 0, colorVar: '--color-tier-base' },
+        { level: 1, name: '등산로', icon: '🥾', minScore: 1000, colorVar: '--color-tier-trail' },
+      ];
+
+      vi.mocked(loadTierDefinitions).mockResolvedValue(mockTierDefinitions as any);
+      vi.mocked(loadCycleCap).mockResolvedValue(250000);
+
+      // 음수 level은 찾을 수 없으므로 0 반환
+      const result = await calculateScoreForTier(-1, 0, 0);
+
+      expect(result).toBe(0); // targetTier?.minScore || 0
+    });
+
+    it('should handle very large level value', async () => {
+      const mockTierDefinitions = [
+        { level: 6, name: '전설', icon: '👑', minScore: 250000, colorVar: '--color-tier-legend' },
+      ];
+
+      vi.mocked(loadTierDefinitions).mockResolvedValue(mockTierDefinitions as any);
+      vi.mocked(loadCycleCap).mockResolvedValue(250000);
+
+      // 매우 큰 level은 찾을 수 없으므로 0 반환
+      const result = await calculateScoreForTier(999999, 0, 0);
+
+      expect(result).toBe(0); // targetTier?.minScore || 0
+    });
+
+    it('should handle zero cycleCap', async () => {
+      const mockTierDefinitions = [
+        { level: 1, name: '등산로', icon: '🥾', minScore: 1000, colorVar: '--color-tier-trail' },
+      ];
+
+      vi.mocked(loadTierDefinitions).mockResolvedValue(mockTierDefinitions as any);
+      vi.mocked(loadCycleCap).mockResolvedValue(0);
+
+      const result = await calculateScoreForTier(1, 1, 0);
+
+      expect(result).toBe(0 + 1000); // 0 * stars + minScore
+    });
+
+    it('should handle all parameters with edge values', async () => {
+      const mockTierDefinitions = [
+        { level: 6, name: '전설', icon: '👑', minScore: 250000, colorVar: '--color-tier-legend' },
+      ];
+
+      vi.mocked(loadTierDefinitions).mockResolvedValue(mockTierDefinitions as any);
+      vi.mocked(loadCycleCap).mockResolvedValue(250000);
+
+      // 최대 레벨, 최대 stars, 최대 bonusScore
+      const result = await calculateScoreForTier(6, 100, 1000000);
+
+      expect(result).toBe(250000 * 100 + 250000 + 1000000);
+    });
   });
 });
 

@@ -88,27 +88,27 @@ export const APP_CONFIG = {
   // 하위 주제 목록 (SUB_TOPICS)
   SUB_TOPICS: {
     math: [
-      { id: 'arithmetic', name: '사칙연산', desc: '덧셈, 뺄셈, 곱셈, 나눗셈', icon: '➕' },
-      { id: 'equations', name: '방정식', desc: '미지수 X의 값을 찾아보세요', icon: 'x' },
-      { id: 'sequence', name: '수열', desc: '규칙을 찾아 다음 수를 맞춰보세요', icon: '🔢' },
-      { id: 'calculus', name: '미적분', desc: '미분과 적분을 배워보세요', icon: '∫' },
+      { id: 'arithmetic', name: '사칙연산', desc: '덧셈, 뺄셈, 곱셈, 나눗셈', icon: '➕', tier: 'basic' },
+      { id: 'equations', name: '방정식', desc: '미지수 X의 값을 찾아보세요', icon: 'x', tier: 'advanced' },
+      { id: 'sequence', name: '수열', desc: '규칙을 찾아 다음 수를 맞춰보세요', icon: '🔢', tier: 'advanced' },
+      { id: 'calculus', name: '미적분', desc: '미분과 적분을 배워보세요', icon: '∫', tier: 'expert' },
     ],
     language: [
-      { id: 'japanese', name: '일본어', desc: '히라가나, 가타카나, 한자 학습', icon: 'あ' },
-      { id: 'english', name: '영어', desc: '기초 영단어, 문법, 회화', icon: 'A' },
-      { id: 'korean', name: '한글', desc: '맞춤법, 띄어쓰기, 문법', icon: '한' },
-      { id: 'chinese', name: '중국어', desc: '한자, 병음, 회화', icon: '中' },
+      { id: 'japanese', name: '일본어', desc: '히라가나, 가타카나, 한자 학습', icon: 'あ', tier: 'basic' },
+      { id: 'english', name: '영어', desc: '기초 영단어, 문법, 회화', icon: 'A', tier: 'advanced' },
+      { id: 'korean', name: '한글', desc: '맞춤법, 띄어쓰기, 문법', icon: '한', tier: 'advanced' },
+      { id: 'chinese', name: '중국어', desc: '한자, 병음, 회화', icon: '中', tier: 'advanced' },
     ],
     logic: [
-      { id: 'sequence', name: '수열', desc: '규칙을 찾아보세요', icon: '🔢' },
-      { id: 'pattern', name: '패턴', desc: '반복되는 패턴을 발견하세요', icon: '🔁' },
-      { id: 'reasoning', name: '추론', desc: '논리적으로 생각해보세요', icon: '💭' },
+      { id: 'sequence', name: '수열', desc: '규칙을 찾아보세요', icon: '🔢', tier: 'advanced' },
+      { id: 'pattern', name: '패턴', desc: '반복되는 패턴을 발견하세요', icon: '🔁', tier: 'advanced' },
+      { id: 'reasoning', name: '추론', desc: '논리적으로 생각해보세요', icon: '💭', tier: 'advanced' },
     ],
     general: [
-      { id: 'history', name: '역사', desc: '한국사, 세계사를 알아보세요', icon: '📜' },
-      { id: 'science', name: '과학', desc: '자연과학의 원리를 배워보세요', icon: '🔬' },
-      { id: 'geography', name: '지리', desc: '나라와 도시를 알아보세요', icon: '🌍' },
-      { id: 'culture', name: '문화', desc: '다양한 문화를 탐험해보세요', icon: '🎭' },
+      { id: 'history', name: '역사', desc: '한국사, 세계사를 알아보세요', icon: '📜', tier: 'advanced' },
+      { id: 'science', name: '과학', desc: '자연과학의 원리를 배워보세요', icon: '🔬', tier: 'advanced' },
+      { id: 'geography', name: '지리', desc: '나라와 도시를 알아보세요', icon: '🌍', tier: 'advanced' },
+      { id: 'culture', name: '문화', desc: '다양한 문화를 탐험해보세요', icon: '🎭', tier: 'advanced' },
     ],
   },
 

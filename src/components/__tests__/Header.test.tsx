@@ -101,5 +101,66 @@ describe('Header', () => {
       expect(mockNavigate).toHaveBeenCalled();
     }
   });
+
+  it('should display user minerals and stamina', () => {
+    render(<Header />);
+    
+    expect(screen.getByText('1000')).toBeInTheDocument();
+    expect(screen.getByText('5')).toBeInTheDocument();
+  });
+
+  it('should navigate to shop when shop button is clicked', () => {
+    render(<Header />);
+    
+    const shopButton = screen.getByLabelText('상점');
+    fireEvent.click(shopButton);
+    
+    expect(mockNavigate).toHaveBeenCalledWith('/shop');
+  });
+
+  it('should not show admin badge when not in admin mode', () => {
+    vi.mocked(useDebugStore).mockReturnValue({
+      isAdminMode: false,
+      selectedResource: null,
+      toggleAdminMode: vi.fn(),
+      setSelectedResource: vi.fn(),
+      toggleDebugPanel: vi.fn(),
+      isDebugPanelOpen: false,
+    } as never);
+
+    render(<Header />);
+    
+    expect(screen.queryByText('DEV')).not.toBeInTheDocument();
+  });
+
+  it('should show admin badge when in admin mode', () => {
+    vi.mocked(useDebugStore).mockReturnValue({
+      isAdminMode: true,
+      selectedResource: null,
+      toggleAdminMode: vi.fn(),
+      setSelectedResource: vi.fn(),
+      toggleDebugPanel: vi.fn(),
+      isDebugPanelOpen: false,
+    } as never);
+
+    render(<Header />);
+    
+    expect(screen.getByText('DEV')).toBeInTheDocument();
+  });
+
+  it('should not navigate on logo click when not admin', () => {
+    vi.mocked(useProfileStore).mockReturnValue({
+      isAdmin: false,
+    } as never);
+
+    render(<Header />);
+    
+    const logo = document.querySelector('[class*="logo"]');
+    if (logo) {
+      fireEvent.click(logo);
+      // Should not navigate when not admin
+      expect(mockNavigate).not.toHaveBeenCalledWith('/my-page?showProfileForm=true');
+    }
+  });
 });
 

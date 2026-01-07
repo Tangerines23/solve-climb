@@ -6,6 +6,7 @@ import {
   clearPerformanceMetrics,
   logPerformanceSummary,
 } from '../performance';
+import { logger } from '../logger';
 
 describe('performance', () => {
   beforeEach(() => {
@@ -123,6 +124,50 @@ describe('performance', () => {
       expect(() => {
         logPerformanceSummary();
       }).not.toThrow();
+    });
+  });
+
+  describe('measurePerformance - duration thresholds', () => {
+    it('should record metrics with different durations', () => {
+      const endMeasure1 = measurePerformance('fast-operation');
+      const endMeasure2 = measurePerformance('slow-operation');
+
+      // Fast operation
+      endMeasure1();
+
+      // Wait a bit for slow operation
+      return new Promise<void>((resolve) => {
+        setTimeout(() => {
+          endMeasure2();
+
+          const metrics = getPerformanceMetrics();
+          expect(metrics.length).toBeGreaterThanOrEqual(2);
+
+          // Both operations should be recorded
+          const fastOp = metrics.find((m) => m.name === 'fast-operation');
+          const slowOp = metrics.find((m) => m.name === 'slow-operation');
+
+          expect(fastOp).toBeDefined();
+          expect(slowOp).toBeDefined();
+          expect(slowOp!.duration).toBeGreaterThan(fastOp!.duration);
+
+          resolve();
+        }, 10);
+      });
+    });
+
+    it('should handle multiple measurements correctly', () => {
+      const endMeasure1 = measurePerformance('op1');
+      const endMeasure2 = measurePerformance('op2');
+      const endMeasure3 = measurePerformance('op3');
+
+      endMeasure1();
+      endMeasure2();
+      endMeasure3();
+
+      const metrics = getPerformanceMetrics();
+      expect(metrics.length).toBe(3);
+      expect(metrics.map((m) => m.name)).toEqual(['op1', 'op2', 'op3']);
     });
   });
 });

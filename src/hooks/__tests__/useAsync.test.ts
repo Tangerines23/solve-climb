@@ -122,5 +122,87 @@ describe('useAsync', () => {
     // State should not be updated after unmount
     expect(result.current.data).toBeNull();
   });
+
+  it('should not execute immediately when immediate is false', () => {
+    const asyncFn = vi.fn(() => Promise.resolve('data'));
+    renderHook(() => useAsync(asyncFn, { immediate: false }));
+
+    expect(asyncFn).not.toHaveBeenCalled();
+  });
+
+  it('should refetch when deps change', async () => {
+    const asyncFn = vi.fn(() => Promise.resolve('data'));
+    const { rerender } = renderHook(
+      ({ dep }) => useAsync(asyncFn, { deps: [dep], immediate: true }),
+      { initialProps: { dep: 1 } }
+    );
+
+    await waitFor(() => {
+      expect(asyncFn).toHaveBeenCalledTimes(1);
+    });
+
+    rerender({ dep: 2 });
+
+    await waitFor(() => {
+      expect(asyncFn).toHaveBeenCalledTimes(2);
+    });
+  });
+
+  it('should handle success without onSuccess callback', async () => {
+    const asyncFn = vi.fn(() => Promise.resolve('data'));
+    const { result } = renderHook(() => useAsync(asyncFn, { onSuccess: undefined }));
+
+    await waitFor(() => {
+      expect(result.current.loading).toBe(false);
+    });
+
+    expect(result.current.data).toBe('data');
+    expect(result.current.error).toBeNull();
+  });
+
+  it('should handle error without onError callback', async () => {
+    const error = new Error('Test error');
+    const asyncFn = vi.fn(() => Promise.reject(error));
+    const { result } = renderHook(() => useAsync(asyncFn, { onError: undefined }));
+
+    await waitFor(() => {
+      expect(result.current.loading).toBe(false);
+    });
+
+    expect(result.current.error).toBeTruthy();
+  });
+
+  it('should use errorOptions.context when provided', async () => {
+    const error = new Error('Test error');
+    const asyncFn = vi.fn(() => Promise.reject(error));
+    renderHook(() =>
+      useAsync(asyncFn, { errorOptions: { context: 'custom context' } })
+    );
+
+    await waitFor(() => {
+      expect(asyncFn).toHaveBeenCalled();
+    });
+  });
+
+  it('should not update state after unmount in error case', async () => {
+    const asyncFn = vi.fn(() => new Promise((_, reject) => setTimeout(() => reject(new Error('error')), 100)));
+    const { result, unmount } = renderHook(() => useAsync(asyncFn));
+
+    unmount();
+
+    await new Promise((resolve) => setTimeout(resolve, 200));
+
+    // State should not be updated after unmount
+    expect(result.current.error).toBeNull();
+  });
+
+  it('should handle immediate execution with deps', async () => {
+    const asyncFn = vi.fn(() => Promise.resolve('data'));
+    renderHook(() => useAsync(asyncFn, { deps: [1, 2], immediate: true }));
+
+    await waitFor(() => {
+      expect(asyncFn).toHaveBeenCalled();
+    });
+  });
 });
 

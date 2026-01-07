@@ -70,5 +70,35 @@ describe('AlertModal', () => {
 
     expect(onClose).not.toHaveBeenCalled();
   });
+
+  it('should handle empty title', () => {
+    const onClose = vi.fn();
+    render(<AlertModal isOpen={true} title="" message="Test message" onClose={onClose} />);
+
+    expect(screen.getByText('Test message')).toBeInTheDocument();
+  });
+
+  it('should handle empty message', () => {
+    const onClose = vi.fn();
+    render(<AlertModal isOpen={true} title="Test Title" message="" onClose={onClose} />);
+
+    expect(screen.getByText('Test Title')).toBeInTheDocument();
+  });
+
+  it('should handle long message text', () => {
+    const onClose = vi.fn();
+    const longMessage = 'A'.repeat(500);
+    render(<AlertModal isOpen={true} title="Test" message={longMessage} onClose={onClose} />);
+
+    expect(screen.getByText(longMessage)).toBeInTheDocument();
+  });
+
+  it('should handle special characters in message', () => {
+    const onClose = vi.fn();
+    const specialMessage = 'Test <script>alert("xss")</script> & "quotes"';
+    render(<AlertModal isOpen={true} title="Test" message={specialMessage} onClose={onClose} />);
+
+    expect(screen.getByText(specialMessage)).toBeInTheDocument();
+  });
 });
 

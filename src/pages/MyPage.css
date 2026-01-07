@@ -59,10 +59,74 @@
   color: var(--color-text-primary);
 }
 
+.my-page-profile-section {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--spacing-lg);
+  margin-bottom: var(--spacing-xl);
+}
+
 .my-page-profile-icon {
   font-size: 64px;
-  margin-bottom: 16px;
   line-height: 1;
+  flex-shrink: 0;
+}
+
+.my-page-profile-info {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--spacing-sm);
+}
+
+.my-page-nickname {
+  font-size: 24px;
+  font-weight: 700;
+  line-height: 1.4;
+  margin: 0;
+  color: var(--color-text-primary);
+}
+
+.my-page-profile-edit-button {
+  background-color: rgba(255, 255, 255, 0.2);
+  color: var(--color-text-primary);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  border-radius: var(--rounded-button);
+  padding: var(--spacing-xs) var(--spacing-md);
+  font-size: 14px;
+  font-weight: 500;
+  font-family: inherit;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.my-page-profile-edit-button:hover {
+  background-color: rgba(255, 255, 255, 0.3);
+  border-color: rgba(255, 255, 255, 0.5);
+}
+
+.my-page-profile-edit-button:active {
+  background-color: rgba(255, 255, 255, 0.25);
+  transform: scale(0.98);
+}
+
+.my-page-mastery-section {
+  margin-bottom: var(--spacing-xl);
+}
+
+.my-page-mastery-label {
+  font-size: 14px;
+  font-weight: 500;
+  color: rgba(255, 255, 255, 0.9);
+  margin-bottom: var(--spacing-sm);
+}
+
+.my-page-mastery-value {
+  font-size: 36px;
+  font-weight: 700;
+  color: var(--color-text-primary);
+  line-height: 1.2;
 }
 
 .my-page-header-title {
@@ -445,4 +509,140 @@
 
 .my-page-settings-item-logout:active {
   background-color: var(--color-logout-active);
+}
+
+/* Quick Access Section */
+.my-page-quick-access {
+  padding: 0 var(--spacing-xl) var(--spacing-xl);
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-lg);
+}
+
+.my-page-quick-access-card {
+  background-color: var(--color-bg-secondary);
+  border-radius: var(--rounded-card);
+  padding: var(--spacing-xl);
+  box-shadow: var(--shadow-card);
+}
+
+.my-page-quick-access-header {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+  margin-bottom: var(--spacing-md);
+}
+
+.my-page-quick-access-icon {
+  font-size: 24px;
+  line-height: 1;
+}
+
+.my-page-quick-access-title {
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--color-text-primary);
+  margin: 0;
+}
+
+.my-page-quick-access-description {
+  font-size: 14px;
+  color: var(--color-text-secondary);
+  margin: 0 0 var(--spacing-lg) 0;
+  line-height: 1.5;
+}
+
+.my-page-quick-access-button {
+  width: 100%;
+  background-color: var(--color-blue-400);
+  color: var(--color-text-primary);
+  border: none;
+  border-radius: var(--rounded-button);
+  padding: var(--spacing-md) var(--spacing-lg);
+  font-size: 16px;
+  font-weight: 600;
+  font-family: inherit;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.my-page-quick-access-button:hover {
+  background-color: var(--color-blue-500);
+}
+
+.my-page-quick-access-button:active {
+  background-color: var(--color-blue-700);
+  transform: scale(0.98);
+}
+
+/* Favorites List */
+.my-page-favorites-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-sm);
+  margin-bottom: var(--spacing-md);
+}
+
+.my-page-favorite-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--spacing-md);
+  background-color: var(--color-bg-tertiary);
+  border-radius: var(--rounded-sm);
+  border: none;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-family: inherit;
+}
+
+.my-page-favorite-item:hover {
+  background-color: var(--color-gray-450);
+  transform: translateX(4px);
+}
+
+.my-page-favorite-item:active {
+  transform: translateX(2px);
+}
+
+.my-page-favorite-name {
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--color-text-primary);
+  flex: 1;
+  text-align: left;
+}
+
+.my-page-favorite-arrow {
+  color: var(--color-text-secondary);
+  flex-shrink: 0;
+  margin-left: var(--spacing-sm);
+}
+
+.my-page-favorite-item:hover .my-page-favorite-arrow {
+  color: var(--color-text-primary);
+}
+
+.my-page-favorites-more {
+  width: 100%;
+  background: none;
+  border: 1px solid var(--color-bg-tertiary);
+  border-radius: var(--rounded-button);
+  padding: var(--spacing-sm) var(--spacing-md);
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--color-text-secondary);
+  font-family: inherit;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.my-page-favorites-more:hover {
+  border-color: var(--color-blue-400);
+  color: var(--color-blue-400);
+  background-color: rgba(0, 191, 165, 0.1);
+}
+
+.my-page-favorites-more:active {
+  transform: scale(0.98);
 }

@@ -100,6 +100,53 @@ describe('DebugPanel', () => {
       expect(mockToggleDebugPanel).toHaveBeenCalled();
     }
   });
+
+  it('should render all tabs', () => {
+    render(<DebugPanel />);
+
+    expect(screen.getByText('빠른 조작')).toBeInTheDocument();
+    expect(screen.getByText('티어')).toBeInTheDocument();
+    expect(screen.getByText('뱃지')).toBeInTheDocument();
+    expect(screen.getByText('게임')).toBeInTheDocument();
+    expect(screen.getByText('아이템')).toBeInTheDocument();
+    expect(screen.getByText('데이터')).toBeInTheDocument();
+    expect(screen.getByText('에러 로그')).toBeInTheDocument();
+    expect(screen.getByText('경계값 테스트')).toBeInTheDocument();
+  });
+
+  it('should switch to different tabs', () => {
+    render(<DebugPanel />);
+
+    const badgeTab = screen.getByText('뱃지');
+    fireEvent.click(badgeTab);
+    expect(mockSetActiveTab).toHaveBeenCalledWith('badge');
+
+    const gameTab = screen.getByText('게임');
+    fireEvent.click(gameTab);
+    expect(mockSetActiveTab).toHaveBeenCalledWith('game');
+  });
+
+  it('should render active tab content', () => {
+    vi.mocked(useDebugStore).mockReturnValue({
+      isDebugPanelOpen: true,
+      activeTab: 'tier',
+      toggleDebugPanel: mockToggleDebugPanel,
+      setActiveTab: mockSetActiveTab,
+    } as never);
+
+    render(<DebugPanel />);
+    expect(screen.getByText('Tier System')).toBeInTheDocument();
+  });
+
+  it('should not close panel when panel content is clicked', () => {
+    render(<DebugPanel />);
+
+    const panelContent = document.querySelector('.debug-panel');
+    if (panelContent) {
+      fireEvent.click(panelContent);
+      expect(mockToggleDebugPanel).not.toHaveBeenCalled();
+    }
+  });
 });
 
 

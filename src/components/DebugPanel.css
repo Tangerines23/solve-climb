@@ -5,8 +5,9 @@
   left: 0;
   right: 0;
   bottom: 0;
-  pointer-events: none; /* 전체 영역 클릭 통과 */
+  background-color: rgba(0, 0, 0, 0.3);
   z-index: 9999;
+  pointer-events: auto; /* 오버레이 클릭 가능하도록 */
 }
 
 /* 사이드바 패널: 우측 고정, 슬라이드 인/아웃 */

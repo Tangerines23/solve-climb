@@ -309,7 +309,7 @@ describe('scoreCalculator', () => {
       // This test depends on APP_CONFIG.LEVELS structure
       // We'll test with a mock or actual config
       // For now, we'll test the logic with a known structure
-      const result = calculateSubTopicTargetAltitude('math', 'addition');
+      const result = calculateSubTopicTargetAltitude('math', 'arithmetic');
       // The actual value depends on APP_CONFIG, but we can verify it's a number
       expect(typeof result).toBe('number');
       expect(result).toBeGreaterThanOrEqual(0);
@@ -485,6 +485,211 @@ describe('scoreCalculator', () => {
       expect(typeof result.targetAltitude).toBe('number');
       expect(result.progressPercent).toBeGreaterThanOrEqual(0);
       expect(result.progressPercent).toBeLessThanOrEqual(100);
+    });
+
+    it('should return zero progress when targetAltitude is zero', () => {
+      vi.mocked(useLevelProgressStore.getState).mockReturnValue({
+        progress: {},
+        getLevelProgress: vi.fn().mockReturnValue([]),
+      } as unknown as ReturnType<typeof useLevelProgressStore.getState>);
+
+      // Mock APP_CONFIG to return empty levels
+      const result = calculateSubTopicProgress('nonexistent', 'nonexistent');
+
+      expect(result.progressPercent).toBe(0);
+      expect(result.currentAltitude).toBe(0);
+      expect(result.targetAltitude).toBe(0);
+    });
+  });
+
+  describe('Edge cases', () => {
+    it('should handle null bestScore values', () => {
+      const mockProgress: UserProgress = {
+        math: {
+          addition: {
+            1: {
+              level: 1,
+              cleared: true,
+              bestScore: {
+                'time-attack': null,
+                survival: null,
+              },
+            },
+          },
+        },
+      };
+
+      vi.mocked(useLevelProgressStore.getState).mockReturnValue({
+        progress: mockProgress,
+      } as ReturnType<typeof useLevelProgressStore.getState>);
+
+      const result = calculateTotalAltitude();
+
+      expect(result.totalAltitude).toBe(0);
+      expect(result.totalProblems).toBe(0);
+    });
+
+    it('should handle null bestScore in calculateSubTopicAltitude', () => {
+      const mockLevelRecords: LevelRecord[] = [
+        {
+          level: 1,
+          cleared: true,
+          bestScore: {
+            'time-attack': null,
+            survival: null,
+          },
+        },
+      ];
+
+      vi.mocked(useLevelProgressStore.getState).mockReturnValue({
+        progress: {},
+        getLevelProgress: vi.fn().mockReturnValue(mockLevelRecords),
+      } as unknown as ReturnType<typeof useLevelProgressStore.getState>);
+
+      const result = calculateSubTopicAltitude('math', 'addition');
+
+      expect(result).toBe(0);
+    });
+
+    it('should handle null bestScore in calculateCategoryAltitude', () => {
+      const mockProgress: UserProgress = {
+        math: {
+          addition: {
+            1: {
+              level: 1,
+              cleared: true,
+              bestScore: {
+                'time-attack': null,
+                survival: null,
+              },
+            },
+          },
+        },
+      };
+
+      vi.mocked(useLevelProgressStore.getState).mockReturnValue({
+        progress: mockProgress,
+      } as ReturnType<typeof useLevelProgressStore.getState>);
+
+      const result = calculateCategoryAltitude('math');
+
+      expect(result.totalAltitude).toBe(0);
+      expect(result.totalProblems).toBe(0);
+    });
+
+    it('should handle when time-attack is higher than survival', () => {
+      const mockProgress: UserProgress = {
+        math: {
+          addition: {
+            1: {
+              level: 1,
+              cleared: true,
+              bestScore: {
+                'time-attack': 200,
+                survival: 100,
+              },
+            },
+          },
+        },
+      };
+
+      vi.mocked(useLevelProgressStore.getState).mockReturnValue({
+        progress: mockProgress,
+      } as ReturnType<typeof useLevelProgressStore.getState>);
+
+      const result = calculateTotalAltitude();
+
+      expect(result.totalAltitude).toBe(200);
+      expect(result.totalProblems).toBe(20);
+    });
+
+    it('should handle when survival is higher than time-attack', () => {
+      const mockProgress: UserProgress = {
+        math: {
+          addition: {
+            1: {
+              level: 1,
+              cleared: true,
+              bestScore: {
+                'time-attack': 100,
+                survival: 200,
+              },
+            },
+          },
+        },
+      };
+
+      vi.mocked(useLevelProgressStore.getState).mockReturnValue({
+        progress: mockProgress,
+      } as ReturnType<typeof useLevelProgressStore.getState>);
+
+      const result = calculateTotalAltitude();
+
+      expect(result.totalAltitude).toBe(200);
+      expect(result.totalProblems).toBe(20);
+    });
+
+    it('should handle calculateSubTopicProgress when targetAltitude is zero', () => {
+      const mockLevelRecords: LevelRecord[] = [
+        {
+          level: 1,
+          cleared: true,
+          bestScore: {
+            'time-attack': 100,
+            survival: null,
+          },
+        },
+      ];
+
+      vi.mocked(useLevelProgressStore.getState).mockReturnValue({
+        progress: {},
+        getLevelProgress: vi.fn().mockReturnValue(mockLevelRecords),
+      } as unknown as ReturnType<typeof useLevelProgressStore.getState>);
+
+      // Mock to return 0 for targetAltitude (nonexistent category/subTopic)
+      const result = calculateSubTopicProgress('nonexistent', 'nonexistent');
+
+      expect(result.progressPercent).toBe(0);
+      expect(result.currentAltitude).toBe(100);
+      expect(result.targetAltitude).toBe(0);
+    });
+
+    it('should handle calculateCategoryProgress when targetAltitude is zero', () => {
+      const mockProgress: UserProgress = {
+        math: {
+          addition: {
+            1: {
+              level: 1,
+              cleared: true,
+              bestScore: {
+                'time-attack': 100,
+                survival: null,
+              },
+            },
+          },
+        },
+      };
+
+      vi.mocked(useLevelProgressStore.getState).mockReturnValue({
+        progress: mockProgress,
+      } as ReturnType<typeof useLevelProgressStore.getState>);
+
+      // Mock to return 0 for targetAltitude (nonexistent category)
+      const result = calculateCategoryProgress('nonexistent');
+
+      expect(result.progressPercent).toBe(0);
+      expect(result.currentAltitude).toBe(0);
+      expect(result.targetAltitude).toBe(0);
+    });
+
+    it('should handle calculateSubTopicTargetAltitude with invalid subTopic', () => {
+      const result = calculateSubTopicTargetAltitude('math', 'invalid-topic');
+      expect(result).toBe(0);
+    });
+
+    it('should handle calculateCategoryTargetAltitude with invalid category', () => {
+      const result = calculateCategoryTargetAltitude('invalid-category');
+      expect(result).toBe(0);
     });
   });
 });

@@ -228,8 +228,10 @@ export function BadgeSystemSection() {
         <h4 className="debug-subsection-title">뱃지 알림 테스트</h4>
         <div className="debug-badge-notification-controls">
           <div className="debug-badge-notification-row">
-            <label className="debug-badge-notification-label">뱃지 선택:</label>
+            <label htmlFor="debug-badge-select" className="debug-badge-notification-label">뱃지 선택:</label>
             <select
+              id="debug-badge-select"
+              name="selectedBadgeId"
               className="debug-badge-notification-select"
               value={selectedBadgeId}
               onChange={(e) => setSelectedBadgeId(e.target.value)}

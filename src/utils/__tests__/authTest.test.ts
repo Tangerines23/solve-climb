@@ -1,5 +1,11 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { getCallbackUrl, testSupabaseConnection, testCallbackUrl } from '../authTest';
+import {
+  getCallbackUrl,
+  testSupabaseConnection,
+  testCallbackUrl,
+  testAuthSetup,
+  testGoogleLogin,
+} from '../authTest';
 import { supabase } from '../supabaseClient';
 import { ENV } from '../env';
 
@@ -86,6 +92,99 @@ describe('authTest', () => {
 
       expect(result.success).toBe(true);
       expect(result.details?.callbackUrl).toContain('/auth/callback');
+    });
+
+    it('should return failure for invalid URL format', () => {
+      // Mock window.location to have invalid origin
+      const originalLocation = window.location;
+      Object.defineProperty(window, 'location', {
+        value: { origin: '', href: '' },
+        writable: true,
+      });
+
+      const result = testCallbackUrl();
+
+      // Should handle edge cases
+      expect(result).toBeDefined();
+      expect(result).toHaveProperty('success');
+      expect(result).toHaveProperty('message');
+
+      window.location = originalLocation;
+    });
+  });
+
+  describe('testSupabaseConnection - error handling', () => {
+    it('should handle exception in connection test', async () => {
+      vi.mocked(supabase.auth.getSession).mockRejectedValue(new Error('Network error'));
+
+      const result = await testSupabaseConnection();
+
+      expect(result.success).toBe(false);
+      expect(result.message).toContain('오류');
+    });
+  });
+
+  describe('testAuthSetup', () => {
+    it('should run all auth tests and return summary', async () => {
+      vi.mocked(supabase.auth.getSession).mockResolvedValue({
+        data: { session: { user: { id: 'test-user' } } },
+        error: null,
+      } as never);
+
+      const result = await testAuthSetup();
+
+      expect(result).toBeDefined();
+      expect(result.callbackUrl).toBeDefined();
+      expect(result.connection).toBeDefined();
+      expect(result.summary).toBeDefined();
+      expect(result.summary.total).toBe(2);
+      expect(result.summary.passed).toBeGreaterThanOrEqual(0);
+      expect(result.summary.allPassed).toBeDefined();
+    });
+
+    it('should return allPassed false when some tests fail', async () => {
+      vi.mocked(ENV).SUPABASE_URL = '';
+      vi.mocked(ENV).SUPABASE_ANON_KEY = '';
+
+      const result = await testAuthSetup();
+
+      expect(result.summary.allPassed).toBe(false);
+    });
+  });
+
+  describe('testGoogleLogin', () => {
+    it('should initiate Google OAuth login', async () => {
+      vi.mocked(supabase.auth.signInWithOAuth).mockResolvedValue({
+        data: { url: 'https://oauth.google.com' },
+        error: null,
+      } as never);
+
+      const result = await testGoogleLogin();
+
+      expect(result.success).toBe(true);
+      expect(result.message).toContain('리디렉션');
+      expect(result.details?.url).toBeDefined();
+    });
+
+    it('should handle OAuth error', async () => {
+      vi.mocked(supabase.auth.signInWithOAuth).mockResolvedValue({
+        data: { url: null },
+        error: { message: 'OAuth error', status: 400 },
+      } as never);
+
+      const result = await testGoogleLogin();
+
+      expect(result.success).toBe(false);
+      expect(result.message).toContain('실패');
+    });
+
+    it('should handle exception in Google login', async () => {
+      vi.mocked(supabase.auth.signInWithOAuth).mockRejectedValue(new Error('Network error'));
+
+      const result = await testGoogleLogin();
+
+      expect(result.success).toBe(false);
+      expect(result.message).toContain('오류');
     });
   });
 });

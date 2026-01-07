@@ -109,5 +109,59 @@ describe('useFavoriteStore', () => {
     const id = getFavoriteId('math', 'arithmetic');
     expect(id).toBe('test-1');
   });
+
+  it('should get favorite id when subCategoryId is not provided', () => {
+    const { addFavorite, getFavoriteId } = useFavoriteStore.getState();
+    addFavorite({
+      id: 'test-1',
+      type: 'category',
+      categoryId: 'math',
+      name: '수학',
+    });
+
+    const id = getFavoriteId('math');
+    expect(id).toBe('test-1');
+  });
+
+  it('should return null when favorite does not exist', () => {
+    const { getFavoriteId } = useFavoriteStore.getState();
+    const id = getFavoriteId('nonexistent');
+    expect(id).toBeNull();
+  });
+
+  it('should return null when subcategory favorite does not exist', () => {
+    const { getFavoriteId } = useFavoriteStore.getState();
+    const id = getFavoriteId('math', 'nonexistent');
+    expect(id).toBeNull();
+  });
+
+  it('should handle category favorite when subCategoryId is provided but favorite has no subCategoryId', () => {
+    const { addFavorite, getFavoriteId } = useFavoriteStore.getState();
+    addFavorite({
+      id: 'test-1',
+      type: 'category',
+      categoryId: 'math',
+      name: '수학',
+    });
+
+    // subCategoryId를 제공했지만, 즐겨찾기는 category 타입이므로 null 반환
+    const id = getFavoriteId('math', 'arithmetic');
+    expect(id).toBeNull();
+  });
+
+  it('should handle subcategory favorite when subCategoryId is not provided', () => {
+    const { addFavorite, getFavoriteId } = useFavoriteStore.getState();
+    addFavorite({
+      id: 'test-1',
+      type: 'subcategory',
+      categoryId: 'math',
+      subCategoryId: 'arithmetic',
+      name: '사칙연산',
+    });
+
+    // subCategoryId를 제공하지 않으면 category 타입만 찾으므로 null 반환
+    const id = getFavoriteId('math');
+    expect(id).toBeNull();
+  });
 });
 

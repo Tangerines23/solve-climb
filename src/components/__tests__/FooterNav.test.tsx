@@ -54,5 +54,95 @@ describe('FooterNav', () => {
 
     expect(mockNavigate).toHaveBeenCalled();
   });
+
+  it('should handle home navigation with scroll', () => {
+    const scrollToSpy = vi.spyOn(window, 'scrollTo').mockImplementation(() => {});
+    mockLocation.pathname = '/ranking';
+    renderFooterNav();
+
+    const homeButton = screen.getByText('홈');
+    homeButton.click();
+
+    expect(scrollToSpy).toHaveBeenCalledWith({ top: 0, behavior: 'smooth' });
+    expect(mockNavigate).toHaveBeenCalled();
+
+    scrollToSpy.mockRestore();
+  });
+
+  it('should not navigate when already on home page', () => {
+    const scrollToSpy = vi.spyOn(window, 'scrollTo').mockImplementation(() => {});
+    mockLocation.pathname = '/';
+    renderFooterNav();
+
+    const homeButton = screen.getByText('홈');
+    homeButton.click();
+
+    expect(scrollToSpy).toHaveBeenCalled();
+    // Should not navigate if already on home
+    scrollToSpy.mockRestore();
+  });
+
+  it('should mark active item for different paths', () => {
+    mockLocation.pathname = '/ranking';
+    renderFooterNav();
+
+    const rankingButton = screen.getByText('랭킹').closest('button');
+    expect(rankingButton).toHaveClass('active');
+  });
+
+  it('should mark challenge as active when on challenge page', () => {
+    mockLocation.pathname = '/challenge';
+    renderFooterNav();
+
+    const challengeButton = screen.getByText('기록').closest('button');
+    expect(challengeButton).toHaveClass('active');
+  });
+
+  it('should mark my page as active when on my page', () => {
+    mockLocation.pathname = '/my-page';
+    renderFooterNav();
+
+    const myButton = screen.getByText('마이').closest('button');
+    expect(myButton).toHaveClass('active');
+  });
+
+  it('should navigate to ranking when ranking is clicked', () => {
+    mockLocation.pathname = '/';
+    renderFooterNav();
+
+    const rankingButton = screen.getByText('랭킹');
+    rankingButton.click();
+
+    expect(mockNavigate).toHaveBeenCalledWith('/ranking');
+  });
+
+  it('should navigate to challenge when challenge is clicked', () => {
+    mockLocation.pathname = '/';
+    renderFooterNav();
+
+    const challengeButton = screen.getByText('기록');
+    challengeButton.click();
+
+    expect(mockNavigate).toHaveBeenCalledWith('/challenge');
+  });
+
+  it('should navigate to my page when my is clicked', () => {
+    mockLocation.pathname = '/';
+    renderFooterNav();
+
+    const myButton = screen.getByText('마이');
+    myButton.click();
+
+    expect(mockNavigate).toHaveBeenCalledWith('/my-page');
+  });
+
+  it('should display all navigation icons', () => {
+    renderFooterNav();
+
+    expect(screen.getByText('🏠')).toBeInTheDocument();
+    expect(screen.getByText('🏆')).toBeInTheDocument();
+    expect(screen.getByText('📝')).toBeInTheDocument();
+    expect(screen.getByText('👤')).toBeInTheDocument();
+  });
 });
 

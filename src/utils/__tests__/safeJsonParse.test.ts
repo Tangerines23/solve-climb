@@ -62,4 +62,52 @@ describe('parseLocalSession', () => {
     const result = parseLocalSession('invalid');
     expect(result).toBeNull();
   });
+
+  it('should return null for null input', () => {
+    const result = parseLocalSession(null);
+    expect(result).toBeNull();
+  });
+
+  it('should return null for empty string', () => {
+    const result = parseLocalSession('');
+    expect(result).toBeNull();
+  });
+
+  it('should return null when session missing userId', () => {
+    const invalidSession = { isAdmin: false };
+    const result = parseLocalSession(JSON.stringify(invalidSession));
+    expect(result).toBeNull();
+  });
+
+  it('should return null when session missing isAdmin', () => {
+    const invalidSession = { userId: 'test' };
+    const result = parseLocalSession(JSON.stringify(invalidSession));
+    expect(result).toBeNull();
+  });
+
+  it('should return null when session has wrong type for userId', () => {
+    const invalidSession = { userId: 123, isAdmin: false };
+    const result = parseLocalSession(JSON.stringify(invalidSession));
+    expect(result).toBeNull();
+  });
+
+  it('should return null when session has wrong type for isAdmin', () => {
+    const invalidSession = { userId: 'test', isAdmin: 'true' };
+    const result = parseLocalSession(JSON.stringify(invalidSession));
+    expect(result).toBeNull();
+  });
+
+  it('should handle validator returning false', () => {
+    const validator = vi.fn(() => false);
+    const result = safeJsonParse('{"key":"value"}', null, validator);
+    expect(result).toBeNull();
+    expect(validator).toHaveBeenCalled();
+  });
+
+  it('should handle validator returning true', () => {
+    const validator = vi.fn(() => true);
+    const result = safeJsonParse('{"key":"value"}', null, validator);
+    expect(result).toEqual({ key: 'value' });
+    expect(validator).toHaveBeenCalled();
+  });
 });

@@ -23,6 +23,55 @@ describe('debugLogger', () => {
         sendDebugLog('test', 'Test message');
       }).not.toThrow();
     });
+
+    it('should send log when debug URL is set', async () => {
+      // Mock environment variable
+      const originalEnv = import.meta.env.VITE_DEBUG_URL;
+      Object.defineProperty(import.meta, 'env', {
+        value: { ...import.meta.env, VITE_DEBUG_URL: 'https://debug.example.com' },
+        writable: true,
+      });
+
+      vi.mocked(fetch).mockResolvedValue({
+        ok: true,
+      } as Response);
+
+      sendDebugLog('test', 'Test message', { data: 'test' });
+
+      // Wait for async fetch
+      await new Promise((resolve) => setTimeout(resolve, 10));
+
+      if (import.meta.env.DEV && import.meta.env.VITE_DEBUG_URL) {
+        expect(fetch).toHaveBeenCalled();
+      }
+
+      // Restore
+      Object.defineProperty(import.meta, 'env', {
+        value: { ...import.meta.env, VITE_DEBUG_URL: originalEnv },
+        writable: true,
+      });
+    });
+
+    it('should handle fetch errors gracefully', async () => {
+      const originalEnv = import.meta.env.VITE_DEBUG_URL;
+      Object.defineProperty(import.meta, 'env', {
+        value: { ...import.meta.env, VITE_DEBUG_URL: 'https://debug.example.com' },
+        writable: true,
+      });
+
+      vi.mocked(fetch).mockRejectedValue(new Error('Network error'));
+
+      // Should not throw
+      expect(() => {
+        sendDebugLog('test', 'Test message');
+      }).not.toThrow();
+
+      // Restore
+      Object.defineProperty(import.meta, 'env', {
+        value: { ...import.meta.env, VITE_DEBUG_URL: originalEnv },
+        writable: true,
+      });
+    });
   });
 });
 

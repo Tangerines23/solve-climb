@@ -6,7 +6,6 @@ import { storage, StorageKeys } from '../utils/storage';
 import type { Session } from '@supabase/supabase-js';
 
 export interface MyPageStats {
-  totalHeight: number;
   totalSolved: number;
   maxLevel: number;
   bestSubject: string | null;
@@ -133,7 +132,6 @@ export function useMyPageStats(): UseMyPageStatsResult {
       if (!currentSession) {
         // 로그인하지 않은 경우 기본값 반환
         setStats({
-          totalHeight: 0,
           totalSolved: 0,
           maxLevel: 0,
           bestSubject: null,
@@ -154,7 +152,6 @@ export function useMyPageStats(): UseMyPageStatsResult {
       if (isLocalSession) {
         // 로컬 세션인 경우 기본값 반환 (Supabase 데이터 없음)
         setStats({
-          totalHeight: 0,
           totalSolved: 0,
           maxLevel: 0,
           bestSubject: null,
@@ -188,7 +185,6 @@ export function useMyPageStats(): UseMyPageStatsResult {
         if (!rpcError && rpcData && rpcData.length > 0) {
           const result = rpcData[0];
           setStats({
-            totalHeight: result.total_height || 0,
             totalSolved: result.total_solved || 0,
             maxLevel: result.max_level || 0,
             bestSubject: result.best_subject || null,
@@ -219,54 +215,83 @@ export function useMyPageStats(): UseMyPageStatsResult {
         }
       }
 
-      // 방법 2: 직접 쿼리로 집계 (RPC 함수가 없는 경우 폴백)
-      const { data: records, error: queryError } = await supabase
-        .from('game_records')
-        .select('score, cleared, level, subject')
+      // 방법 2: user_level_records 기반 직접 쿼리로 집계 (RPC 함수가 없는 경우 폴백)
+      // theme_mapping 조회
+      const { data: themeMapping, error: themeError } = await supabase
+        .from('theme_mapping')
+        .select('code, theme_id, name');
+
+      if (themeError) {
+        console.warn('[useMyPageStats] theme_mapping 조회 실패:', themeError);
+      }
+
+      // theme_code -> theme_id 매핑 생성
+      const themeCodeToId: Record<number, string> = {};
+      const themeCodeToName: Record<number, string> = {};
+      themeMapping?.forEach((tm) => {
+        themeCodeToId[tm.code] = tm.theme_id;
+        themeCodeToName[tm.code] = tm.name;
+      });
+
+      // user_level_records 조회
+      const { data: levelRecords, error: queryError } = await supabase
+        .from('user_level_records')
+        .select('theme_code, level, best_score')
         .eq('user_id', user_id);
 
       if (queryError) {
         throw queryError;
       }
 
-      if (!records || records.length === 0) {
+      if (!levelRecords || levelRecords.length === 0) {
         setStats({
-          totalHeight: 0,
           totalSolved: 0,
           maxLevel: 0,
           bestSubject: null,
-          totalMasteryScore: 0,
-          currentTierLevel: null,
-          cyclePromotionPending: false,
-          pendingCycleScore: 0,
+          totalMasteryScore: profileData?.total_mastery_score || 0,
+          currentTierLevel: profileData?.current_tier_level ?? null,
+          cyclePromotionPending: profileData?.cycle_promotion_pending || false,
+          pendingCycleScore: profileData?.pending_cycle_score || 0,
         });
         setLoading(false);
         return;
       }
 
-      // 클라이언트에서 집계
-      const totalHeight = records.reduce((sum, record) => sum + (record.score || 0), 0);
-      const solvedRecords = records.filter((r) => r.cleared === true);
-      const totalSolved = solvedRecords.length;
-      const maxLevel =
-        solvedRecords.length > 0 ? Math.max(...solvedRecords.map((r) => r.level || 0)) : 0;
+      // 통계 계산 함수들
+      // 완등 문제: 고유한 (theme_code, level) 조합 개수
+      const uniqueLevels = new Set<string>();
+      levelRecords.forEach((record) => {
+        uniqueLevels.add(`${record.theme_code}-${record.level}`);
+      });
+      const totalSolved = uniqueLevels.size;
 
-      // 과목별 점수 합계 계산
-      const subjectScores: Record<string, number> = {};
-      records.forEach((record) => {
-        if (record.subject) {
-          subjectScores[record.subject] =
-            (subjectScores[record.subject] || 0) + (record.score || 0);
+      // 최고 레벨: 최대 level 값
+      const maxLevel =
+        levelRecords.length > 0
+          ? Math.max(...levelRecords.map((r) => r.level || 0))
+          : 0;
+
+      // 주력 분야: theme_code별 best_score 합계, 가장 높은 theme_id 반환
+      const themeScores: Record<number, number> = {};
+      levelRecords.forEach((record) => {
+        if (record.theme_code) {
+          themeScores[record.theme_code] =
+            (themeScores[record.theme_code] || 0) + (record.best_score || 0);
         }
       });
 
-      const bestSubject =
-        Object.keys(subjectScores).length > 0
-          ? Object.entries(subjectScores).sort((a, b) => b[1] - a[1])[0][0]
-          : null;
+      let bestSubject: string | null = null;
+      if (Object.keys(themeScores).length > 0) {
+        const bestThemeCode = Object.entries(themeScores).sort((a, b) => b[1] - a[1])[0][0];
+        const bestThemeCodeNum = parseInt(bestThemeCode, 10);
+        // theme_id 반환 (없으면 name, 그것도 없으면 null)
+        bestSubject =
+          themeCodeToId[bestThemeCodeNum] ||
+          themeCodeToName[bestThemeCodeNum] ||
+          null;
+      }
 
       setStats({
-        totalHeight,
         totalSolved,
         maxLevel,
         bestSubject,
@@ -280,7 +305,6 @@ export function useMyPageStats(): UseMyPageStatsResult {
       setError(err instanceof Error ? err.message : '통계를 불러오는 중 오류가 발생했습니다.');
       // 에러 발생 시 기본값 설정
       setStats({
-        totalHeight: 0,
         totalSolved: 0,
         maxLevel: 0,
         bestSubject: null,

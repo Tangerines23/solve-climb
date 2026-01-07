@@ -173,8 +173,10 @@ export const TierSystemSection = React.memo(function TierSystemSection() {
 
       <div className="debug-tier-control">
         <div className="debug-tier-item">
-          <label className="debug-tier-label">티어</label>
+          <label htmlFor="debug-tier-select" className="debug-tier-label">티어</label>
           <select
+            id="debug-tier-select"
+            name="selectedTierLevel"
             className="debug-tier-select"
             value={selectedTierLevel}
             onChange={(e) => setSelectedTierLevel(parseInt(e.target.value, 10) as TierLevel)}
@@ -192,7 +194,7 @@ export const TierSystemSection = React.memo(function TierSystemSection() {
         </div>
 
         <div className="debug-tier-item">
-          <label className="debug-tier-label">마스터리 점수</label>
+          <label htmlFor="debug-mastery-input" className="debug-tier-label">마스터리 점수</label>
           <div className="debug-tier-input-group">
             <button
               className="debug-tier-button-small"
@@ -203,6 +205,8 @@ export const TierSystemSection = React.memo(function TierSystemSection() {
             </button>
             <input
               type="number"
+              id="debug-mastery-input"
+              name="mastery"
               className="debug-tier-input"
               value={masteryInput}
               onChange={(e) => setMasteryInput(e.target.value)}
@@ -252,8 +256,10 @@ export const TierSystemSection = React.memo(function TierSystemSection() {
         <h4 className="debug-subsection-title">티어 업그레이드 시뮬레이션</h4>
         <div className="debug-tier-upgrade-controls">
           <div className="debug-tier-upgrade-row">
-            <label className="debug-tier-upgrade-label">이전 티어:</label>
+            <label htmlFor="debug-previous-tier-select" className="debug-tier-upgrade-label">이전 티어:</label>
             <select
+              id="debug-previous-tier-select"
+              name="previousTierLevel"
               className="debug-tier-upgrade-select"
               value={previousTierLevel}
               onChange={(e) => setPreviousTierLevel(parseInt(e.target.value, 10) as TierLevel)}
@@ -266,8 +272,10 @@ export const TierSystemSection = React.memo(function TierSystemSection() {
             </select>
           </div>
           <div className="debug-tier-upgrade-row">
-            <label className="debug-tier-upgrade-label">현재 티어:</label>
+            <label htmlFor="debug-current-tier-select" className="debug-tier-upgrade-label">현재 티어:</label>
             <select
+              id="debug-current-tier-select"
+              name="currentTierLevel"
               className="debug-tier-upgrade-select"
               value={currentTierLevel}
               onChange={(e) => setCurrentTierLevel(parseInt(e.target.value, 10) as TierLevel)}

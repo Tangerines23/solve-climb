@@ -570,9 +570,11 @@ export const DataResetSection = React.memo(function DataResetSection() {
 
         <div className="debug-game-records-delete">
           <div className="debug-game-records-row">
-            <label className="debug-game-records-label">최근 N개 삭제:</label>
+            <label htmlFor="debug-delete-count-input" className="debug-game-records-label">최근 N개 삭제:</label>
             <input
               type="number"
+              id="debug-delete-count-input"
+              name="deleteCount"
               className="debug-game-records-input"
               value={deleteCount}
               onChange={(e) => setDeleteCount(e.target.value)}
@@ -599,8 +601,10 @@ export const DataResetSection = React.memo(function DataResetSection() {
           </div>
 
           <div className="debug-game-records-row">
-            <label className="debug-game-records-label">레벨 선택:</label>
+            <label htmlFor="debug-level-select" className="debug-game-records-label">레벨 선택:</label>
             <select
+              id="debug-level-select"
+              name="selectedLevel"
               className="debug-game-records-select"
               value={selectedLevel === null ? '' : selectedLevel}
               onChange={(e) =>
@@ -630,8 +634,10 @@ export const DataResetSection = React.memo(function DataResetSection() {
         <h4 className="debug-subsection-title">레벨 진행도 초기화</h4>
         <div className="debug-level-progress-reset">
           <div className="debug-level-progress-row">
-            <label className="debug-level-progress-label">카테고리:</label>
+            <label htmlFor="debug-category-select" className="debug-level-progress-label">카테고리:</label>
             <select
+              id="debug-category-select"
+              name="selectedCategory"
               className="debug-level-progress-select"
               value={selectedCategory}
               onChange={(e) => setSelectedCategory(e.target.value)}
@@ -644,8 +650,10 @@ export const DataResetSection = React.memo(function DataResetSection() {
             </select>
           </div>
           <div className="debug-level-progress-row">
-            <label className="debug-level-progress-label">주제:</label>
+            <label htmlFor="debug-subject-select" className="debug-level-progress-label">주제:</label>
             <select
+              id="debug-subject-select"
+              name="selectedSubject"
               className="debug-level-progress-select"
               value={selectedSubject}
               onChange={(e) => setSelectedSubject(e.target.value)}

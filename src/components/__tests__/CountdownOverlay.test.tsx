@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { render, screen, waitFor } from '@testing-library/react';
+import { render, screen, waitFor, act } from '@testing-library/react';
 import { CountdownOverlay } from '../CountdownOverlay';
 
 describe('CountdownOverlay', () => {
@@ -44,5 +44,43 @@ describe('CountdownOverlay', () => {
 
     expect(screen.getByText('3')).toBeInTheDocument();
   });
-});
 
+  it('should countdown from 3 to 1', () => {
+    const onComplete = vi.fn();
+    render(<CountdownOverlay isVisible={true} onComplete={onComplete} />);
+
+    expect(screen.getByText('3')).toBeInTheDocument();
+
+    act(() => {
+      vi.advanceTimersByTime(1000);
+    });
+    expect(screen.getByText('2')).toBeInTheDocument();
+
+    act(() => {
+      vi.advanceTimersByTime(1000);
+    });
+    expect(screen.getByText('1')).toBeInTheDocument();
+  });
+
+  it('should display GO! when countdown reaches 0', () => {
+    const onComplete = vi.fn();
+    render(<CountdownOverlay isVisible={true} onComplete={onComplete} />);
+
+    // Countdown from 3 to 0
+    act(() => {
+      vi.advanceTimersByTime(3000);
+    });
+
+    expect(screen.getByText('GO!')).toBeInTheDocument();
+  });
+
+
+  it('should not call onComplete when isVisible is false', () => {
+    const onComplete = vi.fn();
+    render(<CountdownOverlay isVisible={false} onComplete={onComplete} />);
+
+    vi.advanceTimersByTime(5000);
+
+    expect(onComplete).not.toHaveBeenCalled();
+  });
+});

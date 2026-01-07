@@ -274,5 +274,79 @@ describe('challenge', () => {
       expect(Number.isInteger(result.level)).toBe(true);
     });
   });
+
+  it('should handle cached challenge with different date', async () => {
+    const oldDate = '2024-01-14';
+    const todayDate = '2024-01-15';
+    const oldChallenge: TodayChallenge = {
+      id: `today_challenge_${oldDate}`,
+      title: 'Old Challenge',
+      category: '수학',
+      categoryId: 'math',
+      topic: '덧셈',
+      topicId: 'addition',
+      mode: 'time_attack',
+      level: 1,
+    };
+
+    vi.mocked(storage.getString).mockReturnValue(oldDate);
+    vi.mocked(storage.get).mockReturnValue(oldChallenge);
+    vi.mocked(challengeApi.getTodayChallenge).mockResolvedValue(null);
+
+    const result = await getTodayChallenge();
+
+    // Should generate new challenge, not return old cached one
+    expect(result.id).toContain('today_challenge_');
+    expect(result.id).not.toBe(oldChallenge.id);
+  });
+
+  it('should handle background cache update failure gracefully', async () => {
+    const todayDate = '2024-01-15';
+    const cachedChallenge: TodayChallenge = {
+      id: `today_challenge_${todayDate}`,
+      title: 'Cached Challenge',
+      category: '수학',
+      categoryId: 'math',
+      topic: '덧셈',
+      topicId: 'addition',
+      mode: 'time_attack',
+      level: 1,
+    };
+
+    vi.mocked(storage.getString).mockReturnValue(todayDate);
+    vi.mocked(storage.get).mockReturnValue(cachedChallenge);
+    vi.mocked(challengeApi.getTodayChallenge).mockRejectedValue(new Error('Network error'));
+
+    const result = await getTodayChallenge();
+
+    // Should return cached challenge even if background update fails
+    expect(result).toEqual(cachedChallenge);
+  });
+
+  it('should handle server challenge with all fields', async () => {
+    const todayDate = '2024-01-15';
+    const serverChallenge = {
+      id: 'server_challenge_1',
+      title: 'Server Challenge',
+      category_name: '언어',
+      category_id: 'language',
+      topic_name: '일본어',
+      topic_id: 'japanese',
+      mode: 'time_attack',
+      level: 3,
+    };
+
+    vi.mocked(storage.getString).mockReturnValue(null);
+    vi.mocked(storage.get).mockReturnValue(null);
+    vi.mocked(challengeApi.getTodayChallenge).mockResolvedValue(serverChallenge);
+
+    const result = await getTodayChallenge();
+
+    expect(result.category).toBe('언어');
+    expect(result.categoryId).toBe('language');
+    expect(result.topic).toBe('일본어');
+    expect(result.topicId).toBe('japanese');
+    expect(result.level).toBe(3);
+  });
 });
 

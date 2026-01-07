@@ -210,24 +210,52 @@ export function AuthTestPage() {
           <h2>📋 확인 사항</h2>
           <div className="auth-test-checklist">
             <div className="auth-test-checklist-item">
-              <input type="checkbox" checked={!!ENV.SUPABASE_URL} readOnly />
-              <label>Supabase URL이 설정되어 있음</label>
+              <input
+                type="checkbox"
+                id="auth-test-checkbox-url"
+                name="supabaseUrl"
+                checked={!!ENV.SUPABASE_URL}
+                readOnly
+              />
+              <label htmlFor="auth-test-checkbox-url">Supabase URL이 설정되어 있음</label>
             </div>
             <div className="auth-test-checklist-item">
-              <input type="checkbox" checked={!!ENV.SUPABASE_ANON_KEY} readOnly />
-              <label>Supabase Anon Key가 설정되어 있음</label>
+              <input
+                type="checkbox"
+                id="auth-test-checkbox-anon-key"
+                name="supabaseAnonKey"
+                checked={!!ENV.SUPABASE_ANON_KEY}
+                readOnly
+              />
+              <label htmlFor="auth-test-checkbox-anon-key">Supabase Anon Key가 설정되어 있음</label>
             </div>
             <div className="auth-test-checklist-item">
-              <input type="checkbox" checked={callbackUrl.includes('/auth/callback')} readOnly />
-              <label>콜백 URL이 올바른 형식임</label>
+              <input
+                type="checkbox"
+                id="auth-test-checkbox-callback-format"
+                name="callbackFormat"
+                checked={callbackUrl.includes('/auth/callback')}
+                readOnly
+              />
+              <label htmlFor="auth-test-checkbox-callback-format">콜백 URL이 올바른 형식임</label>
             </div>
             <div className="auth-test-checklist-item">
-              <input type="checkbox" checked={callbackUrl.startsWith('http')} readOnly />
-              <label>콜백 URL이 http/https로 시작함</label>
+              <input
+                type="checkbox"
+                id="auth-test-checkbox-callback-protocol"
+                name="callbackProtocol"
+                checked={callbackUrl.startsWith('http')}
+                readOnly
+              />
+              <label htmlFor="auth-test-checkbox-callback-protocol">콜백 URL이 http/https로 시작함</label>
             </div>
             <div className="auth-test-checklist-item">
-              <input type="checkbox" />
-              <label>Supabase 대시보드에 콜백 URL이 등록되어 있음</label>
+              <input
+                type="checkbox"
+                id="auth-test-checkbox-callback-registered"
+                name="callbackRegistered"
+              />
+              <label htmlFor="auth-test-checkbox-callback-registered">Supabase 대시보드에 콜백 URL이 등록되어 있음</label>
             </div>
           </div>
         </div>

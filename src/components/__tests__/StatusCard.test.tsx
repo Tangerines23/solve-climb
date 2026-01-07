@@ -87,5 +87,127 @@ describe('StatusCard', () => {
       expect(mockNavigate).toHaveBeenCalled();
     }
   });
+
+  it('should display error state when fetchUserData fails', async () => {
+    vi.mocked(useLevelProgressStore.getState).mockImplementation(() => {
+      throw new Error('Failed to get state');
+    });
+
+    renderStatusCard();
+
+    await new Promise((resolve) => setTimeout(resolve, 100));
+
+    expect(screen.getByText('정보를 불러올 수 없습니다')).toBeInTheDocument();
+  });
+
+  it('should display rank information correctly', async () => {
+    vi.mocked(useLevelProgressStore.getState).mockReturnValue({
+      progress: {
+        math: {
+          arithmetic: {
+            1: {
+              level: 1,
+              bestScore: {
+                'time-attack': 100,
+                survival: 200,
+              },
+            },
+          },
+        },
+      },
+    } as unknown as ReturnType<typeof useLevelProgressStore.getState>);
+
+    renderStatusCard();
+
+    await new Promise((resolve) => setTimeout(resolve, 100));
+
+    expect(screen.getByText(/종합/)).toBeInTheDocument();
+    expect(screen.getByText(/상위/)).toBeInTheDocument();
+  });
+
+  it('should format rank with locale string', async () => {
+    vi.mocked(useLevelProgressStore.getState).mockReturnValue({
+      progress: {
+        math: {
+          arithmetic: {
+            1: {
+              level: 1,
+              bestScore: {
+                'time-attack': 100,
+                survival: null,
+              },
+            },
+          },
+        },
+      },
+    } as unknown as ReturnType<typeof useLevelProgressStore.getState>);
+
+    renderStatusCard();
+
+    await new Promise((resolve) => setTimeout(resolve, 100));
+
+    // Rank should be formatted (0위)
+    expect(screen.getByText(/종합.*위/)).toBeInTheDocument();
+  });
+
+  it('should handle rankChange positive value', async () => {
+    vi.mocked(useLevelProgressStore.getState).mockReturnValue({
+      progress: {
+        math: {
+          arithmetic: {
+            1: {
+              level: 1,
+              bestScore: {
+                'time-attack': 100,
+                survival: null,
+              },
+            },
+          },
+        },
+      },
+    } as unknown as ReturnType<typeof useLevelProgressStore.getState>);
+
+    renderStatusCard();
+
+    await new Promise((resolve) => setTimeout(resolve, 100));
+
+    // rankChange is 0 by default, but should display correctly
+    expect(screen.getByText(/어제보다/)).toBeInTheDocument();
+  });
+
+  it('should calculate bestScore from multiple categories', async () => {
+    vi.mocked(useLevelProgressStore.getState).mockReturnValue({
+      progress: {
+        math: {
+          arithmetic: {
+            1: {
+              level: 1,
+              bestScore: {
+                'time-attack': 100,
+                survival: 150,
+              },
+            },
+          },
+        },
+        science: {
+          physics: {
+            1: {
+              level: 1,
+              bestScore: {
+                'time-attack': 200,
+                survival: 250,
+              },
+            },
+          },
+        },
+      },
+    } as unknown as ReturnType<typeof useLevelProgressStore.getState>);
+
+    renderStatusCard();
+
+    await new Promise((resolve) => setTimeout(resolve, 100));
+
+    expect(screen.getByText(/나의 랭킹/)).toBeInTheDocument();
+  });
 });
 

@@ -249,15 +249,35 @@ BEGIN
       END IF;
     END LOOP;
     
-    -- 점수 계산 (정답률 × 레벨별 기본 점수)
-    -- 모드별 가중치 적용 (타임어택과 서바이벌 점수 형평성 유지)
-    IF p_game_mode = 'survival' THEN
-      v_mode_weight := 0.8;  -- 서바이벌 점수 20% 감소 (예시, 실제 값은 밸런스 테스트 후 결정)
-    ELSE
-      v_mode_weight := 1.0;  -- 타임어택은 기준점
-    END IF;
-    
-    v_calculated_score := FLOOR((v_correct_count * 100.0 / GREATEST(v_total_questions, 1)) * p_level * v_mode_weight);
+    -- [New Scoring System Synchronization]
+    DECLARE
+      v_base_level_score INTEGER;
+      v_theme_multiplier NUMERIC;
+      v_is_boss BOOLEAN := (p_level = 10);
+      v_boss_bonus INTEGER := 0;
+    BEGIN
+      -- 기본 레벨 점수: 10 + (레벨-1)*5
+      v_base_level_score := 10 + (p_level - 1) * 5;
+
+      -- 테마 배율 (서버 사이드 하드코딩 또는 매핑 테이블 필요 - 여기선 파라미터 기반 추론)
+      -- math_calculus: 3.0, math_arithmetic: 1.0, others: 1.5
+      IF v_theme_id = 'math_calculus' THEN
+        v_theme_multiplier := 3.0;
+      ELSIF v_theme_id = 'math_arithmetic' OR v_theme_id = 'language_japanese' THEN
+        v_theme_multiplier := 1.0;
+      ELSE
+        v_theme_multiplier := 1.5;
+      END IF;
+
+      IF v_is_boss THEN
+        v_boss_bonus := 50;
+      END IF;
+
+      -- 최종 점수 계산 (서버에서는 콤보 없이 '기본 달성 가능 폭'을 검증)
+      -- 획득 가능 점수 = floor(전체문제수 * [(기본점수 * 테마배율) + (보스보너스/문제수)])
+      -- 여기서는 클라이언트에서 계산해온 결과와 비교하거나 직접 계산
+      v_calculated_score := FLOOR(v_correct_count * v_base_level_score * v_theme_multiplier) + (CASE WHEN v_is_boss THEN (v_correct_count * v_boss_bonus / GREATEST(v_total_questions, 1)) ELSE 0 END);
+    END;
     
     -- 점수 검증
     IF v_calculated_score < 0 OR v_calculated_score > MAX_SCORE THEN

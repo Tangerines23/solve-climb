@@ -9,7 +9,7 @@
   <!-- 개발 환경에서는 unsafe-inline/unsafe-eval 필요, 프로덕션에서는 Vite가 최적화 -->
   <!-- 디버깅 URL은 환경 변수로 관리되므로 CSP에서 제거 -->
   <meta http-equiv="Content-Security-Policy"
-    content="default-src * 'unsafe-inline' 'unsafe-eval' data: blob:; script-src * 'unsafe-inline' 'unsafe-eval'; style-src * 'unsafe-inline'; img-src * data: https:; font-src * data:; connect-src *;">
+    content="default-src * 'unsafe-inline' 'unsafe-eval' data: blob:; script-src * 'unsafe-inline' 'unsafe-eval' blob:; worker-src * blob:; style-src * 'unsafe-inline'; img-src * data: https:; font-src * data:; connect-src *;">
   <title>Solve Climb</title>
   <script>
     // [DIAGNOSIS] 즉시 실행되는 진단 스크립트

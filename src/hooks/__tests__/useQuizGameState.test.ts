@@ -244,5 +244,185 @@ describe('useQuizGameState', () => {
     // Average: (1.5 + 2.0 + 3.5) / 3 = 2.33
     expect(avgTime).toBe('2.33');
   });
+
+  it('should handle survival mode without wrong answers', () => {
+    const { result } = renderHook(() =>
+      useQuizGameState({
+        ...defaultParams,
+        gameMode: 'survival',
+      })
+    );
+
+    act(() => {
+      result.current.setTotalQuestions(5);
+      result.current.setWrongAnswers([]);
+      result.current.setSolveTimes([1.5, 2.0]);
+    });
+
+    act(() => {
+      result.current.handleGameOver();
+    });
+
+    expect(mockNavigate).toHaveBeenCalled();
+    const navigateCall = mockNavigate.mock.calls[0][0];
+    const queryString = navigateCall.split('?')[1];
+    const params = new URLSearchParams(queryString);
+    
+    // wrongAnswers가 없으면 wrong_q, wrong_a, correct_a가 없어야 함
+    expect(params.get('wrong_q')).toBeNull();
+    expect(params.get('wrong_a')).toBeNull();
+    expect(params.get('correct_a')).toBeNull();
+    expect(params.get('avg_time')).toBe('1.75');
+  });
+
+  it('should handle survival mode without solveTimes', () => {
+    const { result } = renderHook(() =>
+      useQuizGameState({
+        ...defaultParams,
+        gameMode: 'survival',
+      })
+    );
+
+    const wrongAnswer = {
+      question: '5 + 3 = ?',
+      wrongAnswer: '7',
+      correctAnswer: '8',
+    };
+
+    act(() => {
+      result.current.setTotalQuestions(5);
+      result.current.setWrongAnswers([wrongAnswer]);
+      result.current.setSolveTimes([]);
+    });
+
+    act(() => {
+      result.current.handleGameOver();
+    });
+
+    expect(mockNavigate).toHaveBeenCalled();
+    const navigateCall = mockNavigate.mock.calls[0][0];
+    const queryString = navigateCall.split('?')[1];
+    const params = new URLSearchParams(queryString);
+    
+    expect(params.get('wrong_q')).toBe('5 + 3 = ?');
+    expect(params.get('avg_time')).toBeNull();
+  });
+
+  it('should handle multiple wrong answers in survival mode', () => {
+    const { result } = renderHook(() =>
+      useQuizGameState({
+        ...defaultParams,
+        gameMode: 'survival',
+      })
+    );
+
+    const wrongAnswers = [
+      { question: '5 + 3 = ?', wrongAnswer: '7', correctAnswer: '8' },
+      { question: '10 - 4 = ?', wrongAnswer: '5', correctAnswer: '6' },
+      { question: '2 × 3 = ?', wrongAnswer: '5', correctAnswer: '6' },
+    ];
+
+    act(() => {
+      result.current.setTotalQuestions(5);
+      result.current.setWrongAnswers(wrongAnswers);
+    });
+
+    act(() => {
+      result.current.handleGameOver();
+    });
+
+    expect(mockNavigate).toHaveBeenCalled();
+    const navigateCall = mockNavigate.mock.calls[0][0];
+    const queryString = navigateCall.split('?')[1];
+    const params = new URLSearchParams(queryString);
+    
+    expect(params.get('wrong_q')).toBe('5 + 3 = ?|10 - 4 = ?|2 × 3 = ?');
+    expect(params.get('wrong_a')).toBe('7|5|5');
+    expect(params.get('correct_a')).toBe('8|6|6');
+  });
+
+  it('should handle null parameters', () => {
+    const { result } = renderHook(() =>
+      useQuizGameState({
+        score: 100,
+        gameMode: 'time-attack' as GameMode,
+        categoryParam: null,
+        subParam: null,
+        levelParam: null,
+        modeParam: null,
+        isExhausted: false,
+        navigate: mockNavigate,
+      })
+    );
+
+    act(() => {
+      result.current.setTotalQuestions(10);
+    });
+
+    // 상태 업데이트를 기다린 후 handleGameOver 호출
+    act(() => {
+      result.current.handleGameOver();
+    });
+
+    expect(mockNavigate).toHaveBeenCalled();
+    const navigateCall = mockNavigate.mock.calls[0][0];
+    const queryString = navigateCall.split('?')[1];
+    const params = new URLSearchParams(queryString);
+    
+    expect(params.get('category')).toBeNull();
+    expect(params.get('sub')).toBeNull();
+    expect(params.get('level')).toBeNull();
+    expect(params.get('mode')).toBeNull();
+    expect(params.get('score')).toBe('100');
+    expect(params.get('total')).toBe('10');
+  });
+
+  it('should handle empty arrays for userAnswers and questionIds', () => {
+    const { result } = renderHook(() => useQuizGameState(defaultParams));
+
+    act(() => {
+      result.current.setGameSessionId('session-123');
+      result.current.setUserAnswers([]);
+      result.current.setQuestionIds([]);
+    });
+
+    // 상태 업데이트를 기다린 후 handleGameOver 호출
+    act(() => {
+      result.current.handleGameOver();
+    });
+
+    expect(mockNavigate).toHaveBeenCalled();
+    const navigateCall = mockNavigate.mock.calls[0][0];
+    const queryString = navigateCall.split('?')[1];
+    const params = new URLSearchParams(queryString);
+    
+    expect(params.get('session_id')).toBe('session-123');
+    expect(params.get('user_answers')).toBeNull();
+    expect(params.get('question_ids')).toBeNull();
+  });
+
+  it('should handle null gameSessionId', () => {
+    const { result } = renderHook(() => useQuizGameState(defaultParams));
+
+    act(() => {
+      result.current.setGameSessionId(null);
+      result.current.setUserAnswers([1, 2, 3]);
+      result.current.setQuestionIds(['q1', 'q2']);
+    });
+
+    // 상태 업데이트를 기다린 후 handleGameOver 호출
+    act(() => {
+      result.current.handleGameOver();
+    });
+
+    expect(mockNavigate).toHaveBeenCalled();
+    const navigateCall = mockNavigate.mock.calls[0][0];
+    const queryString = navigateCall.split('?')[1];
+    const params = new URLSearchParams(queryString);
+    
+    expect(params.get('session_id')).toBeNull();
+    expect(params.get('user_answers')).toBe('1,2,3');
+    expect(params.get('question_ids')).toBe('q1,q2');
+  });
 });
 

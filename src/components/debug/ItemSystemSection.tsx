@@ -247,7 +247,7 @@ export function ItemSystemSection() {
           return (
             <div key={item.id} className="debug-item-item">
               <div className="debug-item-info">
-                <div className="debug-item-name">{item.name}</div>
+                <label htmlFor={`debug-item-input-${item.id}`} className="debug-item-name">{item.name}</label>
                 {item.description && (
                   <div className="debug-item-description">{item.description}</div>
                 )}
@@ -262,6 +262,8 @@ export function ItemSystemSection() {
                 </button>
                 <input
                   type="number"
+                  id={`debug-item-input-${item.id}`}
+                  name={`item-${item.id}`}
                   className="debug-item-input"
                   value={inputValue}
                   onChange={(e) => handleQuantityInputChange(item.id, e.target.value)}

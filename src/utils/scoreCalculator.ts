@@ -1,11 +1,18 @@
 // 점수 계산 유틸리티 함수
 import { useLevelProgressStore } from '../stores/useLevelProgressStore';
 import { APP_CONFIG } from '../config/app';
-import { SCORE_PER_CORRECT } from '../constants/game';
+import {
+  SCORE_PER_CORRECT,
+  BASE_CLIMB_DISTANCE,
+  DISTANCE_PER_LEVEL,
+  THEME_MULTIPLIERS,
+  BOSS_LEVEL,
+  BOSS_BONUS,
+  ThemeTier
+} from '../constants/game';
 
-// 목표 고도 계산 상수
-// 각 레벨당 20문제 × 10m = 200m
-const METERS_PER_LEVEL = 20 * SCORE_PER_CORRECT; // 200m
+// 목표 고도 계산 상수 (Deprecated: Now calculated dynamically)
+// const METERS_PER_LEVEL = 20 * SCORE_PER_CORRECT; // 200m
 
 /**
  * 전체 누적 등반 고도 계산 (모든 카테고리의 bestScore 합산)
@@ -73,8 +80,32 @@ export function calculateSubTopicTargetAltitude(category: string, subTopic: stri
   const subTopicLevels = levels[subTopic as keyof typeof levels];
   if (!subTopicLevels || !Array.isArray(subTopicLevels)) return 0;
 
-  // 레벨 수 × 200m (20문제 × 10m)
-  return (subTopicLevels as Array<unknown>).length * METERS_PER_LEVEL;
+  // 테마 난이도 배율 (Theme Multiplier)
+  const categoryTopics = APP_CONFIG.SUB_TOPICS[category as keyof typeof APP_CONFIG.SUB_TOPICS] || [];
+  const currentTopic = categoryTopics.find((t: any) => t.id === subTopic);
+  const tier = (currentTopic as any)?.tier as ThemeTier || 'basic';
+  const themeMultiplier = THEME_MULTIPLIERS[tier];
+
+  let totalTarget = 0;
+
+  // 각 레벨별 목표 점수를 합산 (레벨당 20문제 기준)
+  (subTopicLevels as Array<any>).forEach((levelData: any) => {
+    const level = levelData.level;
+    const baseLevelScore = BASE_CLIMB_DISTANCE + (level - 1) * DISTANCE_PER_LEVEL;
+
+    // 획득 예상 거리 = (기본거리 * 테마배율) * 20문제 
+    // (콤보는 변동성이 크므로 목표치 계산에서는 제외하거나 평균값 1.0 적용)
+    let levelTargetAltitude = (baseLevelScore * themeMultiplier) * 20;
+
+    // 보스 보너스 합산
+    if (level === BOSS_LEVEL) {
+      levelTargetAltitude += BOSS_BONUS;
+    }
+
+    totalTarget += levelTargetAltitude;
+  });
+
+  return Math.floor(totalTarget);
 }
 
 /**

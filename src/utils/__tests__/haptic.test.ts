@@ -94,5 +94,20 @@ describe('haptic', () => {
     expect(() => vibrateMedium()).not.toThrow();
     expect(() => vibrateLong()).not.toThrow();
   });
+
+  it('should handle vibrateBrowser error gracefully', () => {
+    Object.defineProperty(navigator, 'vibrate', {
+      value: vi.fn(() => {
+        throw new Error('Vibration failed');
+      }),
+      writable: true,
+      configurable: true,
+    });
+
+    expect(() => vibrateShort()).not.toThrow();
+    expect(() => vibrateMedium()).not.toThrow();
+    expect(() => vibrateLong()).not.toThrow();
+  });
+
 });
 

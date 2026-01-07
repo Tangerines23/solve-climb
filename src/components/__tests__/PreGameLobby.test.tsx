@@ -86,6 +86,92 @@ describe('PreGameLobby', () => {
 
     expect(mockOnStart).toHaveBeenCalledWith([1]);
   });
+
+  it('should display empty inventory message when inventory is empty', () => {
+    vi.mocked(useUserStore).mockReturnValue({
+      inventory: [],
+    } as never);
+
+    render(
+      <PreGameLobby
+        onStart={mockOnStart}
+        onBack={mockOnBack}
+        category="수학"
+        topic="덧셈"
+      />
+    );
+
+    expect(screen.getByText(/보유한 아이템이 없습니다/)).toBeInTheDocument();
+  });
+
+  it('should display item effects correctly', () => {
+    render(
+      <PreGameLobby
+        onStart={mockOnStart}
+        onBack={mockOnBack}
+        category="수학"
+        topic="덧셈"
+      />
+    );
+
+    expect(screen.getByText('+10초')).toBeInTheDocument();
+    expect(screen.getByText('시작부터 질주')).toBeInTheDocument();
+  });
+
+  it('should deselect item when clicked again', () => {
+    render(
+      <PreGameLobby
+        onStart={mockOnStart}
+        onBack={mockOnBack}
+        category="수학"
+        topic="덧셈"
+      />
+    );
+
+    const itemCard = screen.getByText('산소통');
+    fireEvent.click(itemCard);
+    fireEvent.click(itemCard);
+
+    const startButton = screen.getByText(/등반 시작/);
+    fireEvent.click(startButton);
+
+    expect(mockOnStart).toHaveBeenCalledWith([]);
+  });
+
+  it('should handle multiple item selections', () => {
+    render(
+      <PreGameLobby
+        onStart={mockOnStart}
+        onBack={mockOnBack}
+        category="수학"
+        topic="덧셈"
+      />
+    );
+
+    const item1 = screen.getByText('산소통');
+    const item2 = screen.getByText('파워젤');
+    fireEvent.click(item1);
+    fireEvent.click(item2);
+
+    const startButton = screen.getByText(/등반 시작/);
+    fireEvent.click(startButton);
+
+    expect(mockOnStart).toHaveBeenCalledWith([1, 2]);
+  });
+
+  it('should display topic and category correctly', () => {
+    render(
+      <PreGameLobby
+        onStart={mockOnStart}
+        onBack={mockOnBack}
+        category="과학"
+        topic="화학"
+      />
+    );
+
+    expect(screen.getByText(/과학/)).toBeInTheDocument();
+    expect(screen.getByText(/화학/)).toBeInTheDocument();
+  });
 });
 
 

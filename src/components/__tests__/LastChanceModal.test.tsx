@@ -103,5 +103,102 @@ describe('LastChanceModal', () => {
 
     expect(onUseItem).toHaveBeenCalled();
   });
+
+  it('should call onPurchaseAndUse when buy button is clicked', () => {
+    const onPurchaseAndUse = vi.fn();
+    render(
+      <LastChanceModal
+        isVisible={true}
+        gameMode="time-attack"
+        inventoryCount={0}
+        userMinerals={200}
+        onUseItem={vi.fn()}
+        onPurchaseAndUse={onPurchaseAndUse}
+        onGiveUp={vi.fn()}
+        basePrice={50}
+      />
+    );
+
+    const buyButton = screen.getByText(/즉시 구매 & 사용/);
+    buyButton.click();
+
+    expect(onPurchaseAndUse).toHaveBeenCalled();
+  });
+
+  it('should call onGiveUp when give up button is clicked', () => {
+    const onGiveUp = vi.fn();
+    render(
+      <LastChanceModal
+        isVisible={true}
+        gameMode="time-attack"
+        inventoryCount={0}
+        userMinerals={100}
+        onUseItem={vi.fn()}
+        onPurchaseAndUse={vi.fn()}
+        onGiveUp={onGiveUp}
+        basePrice={50}
+      />
+    );
+
+    const giveUpButton = screen.getByText(/그냥 기록 남기기/);
+    giveUpButton.click();
+
+    expect(onGiveUp).toHaveBeenCalled();
+  });
+
+  it('should show disabled buy button when user cannot afford', () => {
+    render(
+      <LastChanceModal
+        isVisible={true}
+        gameMode="time-attack"
+        inventoryCount={0}
+        userMinerals={50}
+        onUseItem={vi.fn()}
+        onPurchaseAndUse={vi.fn()}
+        onGiveUp={vi.fn()}
+        basePrice={50}
+      />
+    );
+
+    const buyButton = screen.getByText(/즉시 구매 & 사용/);
+    expect(buyButton).toBeDisabled();
+    expect(screen.getByText(/미네랄 부족/)).toBeInTheDocument();
+  });
+
+  it('should show countdown timer', () => {
+    render(
+      <LastChanceModal
+        isVisible={true}
+        gameMode="time-attack"
+        inventoryCount={0}
+        userMinerals={100}
+        onUseItem={vi.fn()}
+        onPurchaseAndUse={vi.fn()}
+        onGiveUp={vi.fn()}
+        basePrice={50}
+      />
+    );
+
+    expect(screen.getByText('10')).toBeInTheDocument();
+  });
+
+  it('should display countdown timer initially', () => {
+    render(
+      <LastChanceModal
+        isVisible={true}
+        gameMode="time-attack"
+        inventoryCount={0}
+        userMinerals={100}
+        onUseItem={vi.fn()}
+        onPurchaseAndUse={vi.fn()}
+        onGiveUp={vi.fn()}
+        basePrice={50}
+      />
+    );
+
+    // Timer should be displayed (initial value is 10)
+    const timer = screen.getByText('10');
+    expect(timer).toBeInTheDocument();
+  });
 });
 

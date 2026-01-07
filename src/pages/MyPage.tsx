@@ -13,6 +13,10 @@ import { BadgeCollection } from '../components/BadgeSlot';
 import { useProfileStore } from '../stores/useProfileStore';
 import { useSettingsStore } from '../stores/useSettingsStore';
 import { useMyPageStats } from '../hooks/useMyPageStats';
+import { useFavoriteStore } from '../stores/useFavoriteStore';
+import { getTodayChallenge, type TodayChallenge } from '../utils/challenge';
+import { useQuizStore } from '../stores/useQuizStore';
+import type { Category, Topic } from '../types/quiz';
 import { resetAllData } from '../utils/dataReset';
 import { vibrateShort } from '../utils/haptic';
 import { supabase } from '../utils/supabaseClient';
@@ -25,6 +29,34 @@ import { migrateToGameLogin, checkTossLoginIntegration } from '../utils/tossGame
 import { calculateTier } from '../constants/tiers';
 import './MyPage.css';
 
+// theme_id를 읽기 쉬운 이름으로 변환하는 함수
+const formatBestSubject = (themeId: string | null): string => {
+  if (!themeId) return '-';
+  
+  // theme_id 형식: 'math_add', 'math_sub' 등
+  // theme_mapping의 name을 이미 반환하도록 했으므로, theme_id인 경우만 변환
+  if (themeId.includes('_')) {
+    const [category, subject] = themeId.split('_');
+    const categoryName = APP_CONFIG.CATEGORY_MAP[category as keyof typeof APP_CONFIG.CATEGORY_MAP] || category;
+    
+    // subject 매핑
+    const subjectMap: Record<string, string> = {
+      add: '덧셈',
+      sub: '뺄셈',
+      mul: '곱셈',
+      div: '나눗셈',
+      word: '단어',
+      puzzle: '퍼즐',
+    };
+    
+    const subjectName = subjectMap[subject] || subject;
+    return `${categoryName} ${subjectName}`;
+  }
+  
+  // 이미 읽기 쉬운 이름인 경우 그대로 반환
+  return themeId;
+};
+
 export function MyPage() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
@@ -32,9 +64,18 @@ export function MyPage() {
   const isProfileComplete = useProfileStore((state) => state.isProfileComplete);
   const clearProfile = useProfileStore((state) => state.clearProfile);
   const setProfile = useProfileStore((state) => state.setProfile);
+  const profile = useProfileStore((state) => state.profile);
+  const nickname = profile?.nickname || '게이머';
   const hapticEnabled = useSettingsStore((state) => state.hapticEnabled);
   const setHapticEnabled = useSettingsStore((state) => state.setHapticEnabled);
   const { stats, session, loading: statsLoading, error: statsError, refetch } = useMyPageStats();
+  const favorites = useFavoriteStore((state) => state.favorites);
+  const setCategoryTopic = useQuizStore((state) => state.setCategoryTopic);
+  const setTimeLimit = useQuizStore((state) => state.setTimeLimit);
+  
+  // 오늘의 챌린지 상태
+  const [todayChallenge, setTodayChallenge] = useState<TodayChallenge | null>(null);
+  const [challengeLoading, setChallengeLoading] = useState(true);
 
   // URL 파라미터에서 showProfileForm 확인
   const shouldShowProfileForm = searchParams.get('showProfileForm') === 'true';
@@ -61,6 +102,19 @@ export function MyPage() {
         setCurrentUserId(session.user.id);
       }
     });
+  }, []);
+
+  // 오늘의 챌린지 가져오기
+  useEffect(() => {
+    getTodayChallenge()
+      .then((challengeData) => {
+        setTodayChallenge(challengeData);
+        setChallengeLoading(false);
+      })
+      .catch((error) => {
+        console.error('Failed to load today challenge:', error);
+        setChallengeLoading(false);
+      });
   }, []);
 
   // 승급 대기 상태 확인 및 모달 표시
@@ -597,15 +651,24 @@ export function MyPage() {
         <div className="my-page-content">
           {/* Header: Profile & Summary */}
           <div className="my-page-header">
-            <div className="my-page-profile-icon">🧗</div>
-            <h1 className="my-page-header-title">
-              지금까지
-              <br />
-              <strong className="my-page-header-highlight">
-                {statsLoading ? '...' : (stats?.totalHeight || 0).toLocaleString()}m
-              </strong>
-              를 올랐어요!
-            </h1>
+            <div className="my-page-profile-section">
+              <div className="my-page-profile-icon">🧗</div>
+              <div className="my-page-profile-info">
+                <h2 className="my-page-nickname">{nickname}</h2>
+                <button
+                  className="my-page-profile-edit-button"
+                  onClick={() => setShowProfileForm(true)}
+                >
+                  프로필 수정
+                </button>
+              </div>
+            </div>
+            <div className="my-page-mastery-section">
+              <div className="my-page-mastery-label">총 마스터리 점수</div>
+              <div className="my-page-mastery-value">
+                {statsLoading ? '...' : (stats?.totalMasteryScore || 0).toLocaleString()}점
+              </div>
+            </div>
             {/* 티어 뱃지 표시 */}
             {stats && stats.totalMasteryScore > 0 && (
               <div className="my-page-tier-section">
@@ -625,22 +688,31 @@ export function MyPage() {
 
           {/* Stats Grid */}
           <div className="my-page-stats-grid">
-            <div className="my-page-stat-card">
+            <div
+              className="my-page-stat-card my-page-stat-card-clickable"
+              onClick={() => navigate(APP_CONFIG.ROUTES.HISTORY)}
+            >
               <div className="my-page-stat-label">완등 문제</div>
               <div className="my-page-stat-value">
                 {statsLoading ? '...' : (stats?.totalSolved || 0).toLocaleString()}개
               </div>
             </div>
-            <div className="my-page-stat-card">
+            <div
+              className="my-page-stat-card my-page-stat-card-clickable"
+              onClick={() => navigate(APP_CONFIG.ROUTES.HISTORY)}
+            >
               <div className="my-page-stat-label">최고 레벨</div>
               <div className="my-page-stat-value">
                 {statsLoading ? '...' : stats?.maxLevel ? `Lv. ${stats.maxLevel}` : 'Lv. 0'}
               </div>
             </div>
-            <div className="my-page-stat-card">
+            <div
+              className="my-page-stat-card my-page-stat-card-clickable"
+              onClick={() => navigate(APP_CONFIG.ROUTES.HISTORY)}
+            >
               <div className="my-page-stat-label">주력 분야</div>
               <div className="my-page-stat-value">
-                {statsLoading ? '...' : stats?.bestSubject || '-'}
+                {statsLoading ? '...' : formatBestSubject(stats?.bestSubject || null)}
               </div>
             </div>
             <div
@@ -656,6 +728,99 @@ export function MyPage() {
                   : '명예의 전당 🏆'}
               </div>
             </div>
+          </div>
+
+          {/* Quick Access Section */}
+          <div className="my-page-quick-access">
+            {/* 오늘의 챌린지 */}
+            {todayChallenge && (
+              <div className="my-page-quick-access-card">
+                <div className="my-page-quick-access-header">
+                  <span className="my-page-quick-access-icon">🔥</span>
+                  <h3 className="my-page-quick-access-title">오늘의 챌린지</h3>
+                </div>
+                <p className="my-page-quick-access-description">{todayChallenge.title}</p>
+                <button
+                  className="my-page-quick-access-button"
+                  onClick={() => {
+                    setCategoryTopic(todayChallenge.category as Category, todayChallenge.topicId as Topic);
+                    setTimeLimit(60);
+                    navigate(
+                      `${APP_CONFIG.ROUTES.GAME}?challenge=today&category=${todayChallenge.categoryId}&sub=${todayChallenge.topicId}&level=${todayChallenge.level}&mode=${todayChallenge.mode}`
+                    );
+                  }}
+                >
+                  도전하기
+                </button>
+              </div>
+            )}
+
+            {/* 즐겨찾는 카테고리 */}
+            {favorites.length > 0 && (
+              <div className="my-page-quick-access-card">
+                <div className="my-page-quick-access-header">
+                  <span className="my-page-quick-access-icon">⭐</span>
+                  <h3 className="my-page-quick-access-title">즐겨찾기</h3>
+                </div>
+                <div className="my-page-favorites-list">
+                  {favorites.slice(0, 3).map((favorite) => {
+                    const categoryName =
+                      APP_CONFIG.CATEGORY_MAP[favorite.categoryId as keyof typeof APP_CONFIG.CATEGORY_MAP] ||
+                      favorite.categoryId;
+                    let subCategoryName = '';
+                    if (favorite.subCategoryId) {
+                      const subTopics =
+                        APP_CONFIG.SUB_TOPICS[favorite.categoryId as keyof typeof APP_CONFIG.SUB_TOPICS] || [];
+                      const subTopic = subTopics.find((st) => st.id === favorite.subCategoryId);
+                      subCategoryName = subTopic?.name || favorite.subCategoryId;
+                    }
+
+                    return (
+                      <button
+                        key={favorite.id}
+                        className="my-page-favorite-item"
+                        onClick={() => {
+                          if (favorite.subCategoryId) {
+                            navigate(`/level-select?category=${favorite.categoryId}&sub=${favorite.subCategoryId}`);
+                          } else {
+                            navigate(`/subcategory?category=${favorite.categoryId}`);
+                          }
+                        }}
+                      >
+                        <span className="my-page-favorite-name">
+                          {categoryName}
+                          {subCategoryName && ` - ${subCategoryName}`}
+                        </span>
+                        <svg
+                          className="my-page-favorite-arrow"
+                          width="16"
+                          height="16"
+                          viewBox="0 0 20 20"
+                          fill="none"
+                          xmlns="http://www.w3.org/2000/svg"
+                        >
+                          <path
+                            d="M7.5 15L12.5 10L7.5 5"
+                            stroke="currentColor"
+                            strokeWidth="2"
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                          />
+                        </svg>
+                      </button>
+                    );
+                  })}
+                </div>
+                {favorites.length > 3 && (
+                  <button
+                    className="my-page-favorites-more"
+                    onClick={() => navigate(APP_CONFIG.ROUTES.HOME)}
+                  >
+                    즐겨찾기 더보기 ({favorites.length - 3}개)
+                  </button>
+                )}
+              </div>
+            )}
           </div>
 
           {/* Settings List */}
@@ -704,7 +869,7 @@ export function MyPage() {
                   }
                 >
                   <div className="my-page-settings-item-content">
-                    <span className="my-page-settings-item-label">키보드</span>
+                    <span className="my-page-settings-item-label">키보드 미리보기</span>
                   </div>
                   <svg
                     className="my-page-settings-item-arrow"

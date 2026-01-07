@@ -89,6 +89,152 @@ describe('dataReset', () => {
 
       expect(storage.clearAppData).toHaveBeenCalled();
     });
+
+    it('should handle Supabase getUser error gracefully', async () => {
+      const mockClearProfile = vi.fn();
+      const mockResetProgress = vi.fn(() => Promise.resolve());
+
+      vi.mocked(supabase.auth.getUser).mockRejectedValue(new Error('Auth error'));
+      vi.mocked(useProfileStore.getState).mockReturnValue({
+        clearProfile: mockClearProfile,
+      } as never);
+      vi.mocked(useLevelProgressStore.getState).mockReturnValue({
+        resetProgress: mockResetProgress,
+      } as never);
+
+      // 에러가 발생해도 계속 진행되어야 함
+      await resetAllData();
+
+      expect(storage.clearAppData).toHaveBeenCalled();
+      expect(mockClearProfile).toHaveBeenCalled();
+      expect(mockResetProgress).toHaveBeenCalled();
+    });
+
+    it('should handle Supabase delete error gracefully', async () => {
+      const mockClearProfile = vi.fn();
+      const mockResetProgress = vi.fn(() => Promise.resolve());
+      const deleteError = { message: 'Delete failed' };
+      const mockDelete = vi.fn(() => ({
+        eq: vi.fn(() => Promise.resolve({ error: deleteError })),
+      }));
+
+      vi.mocked(supabase.from).mockReturnValue({
+        delete: mockDelete,
+      } as never);
+      vi.mocked(supabase.auth.getUser).mockResolvedValue({
+        data: { user: { id: 'test-user' } },
+        error: null,
+      } as never);
+      vi.mocked(useProfileStore.getState).mockReturnValue({
+        clearProfile: mockClearProfile,
+      } as never);
+      vi.mocked(useLevelProgressStore.getState).mockReturnValue({
+        resetProgress: mockResetProgress,
+      } as never);
+
+      // delete 에러가 발생해도 계속 진행되어야 함
+      await resetAllData();
+
+      expect(storage.clearAppData).toHaveBeenCalled();
+      expect(mockClearProfile).toHaveBeenCalled();
+      expect(mockResetProgress).toHaveBeenCalled();
+    });
+
+    it('should throw error if storage.clearAppData throws error', async () => {
+      const mockDelete = vi.fn(() => ({
+        eq: vi.fn(() => Promise.resolve({ error: null })),
+      }));
+
+      vi.mocked(supabase.from).mockReturnValue({
+        delete: mockDelete,
+      } as never);
+      vi.mocked(supabase.auth.getUser).mockResolvedValue({
+        data: { user: { id: 'test-user' } },
+        error: null,
+      } as never);
+      vi.mocked(storage.clearAppData).mockImplementation(() => {
+        throw new Error('Storage error');
+      });
+
+      // storage 에러가 발생하면 전체 함수가 실패해야 함
+      await expect(resetAllData()).rejects.toThrow('Storage error');
+    });
+
+    it('should throw error if clearProfile throws error', async () => {
+      const mockClearProfile = vi.fn(() => {
+        throw new Error('Clear profile error');
+      });
+      const mockDelete = vi.fn(() => ({
+        eq: vi.fn(() => Promise.resolve({ error: null })),
+      }));
+
+      vi.mocked(supabase.from).mockReturnValue({
+        delete: mockDelete,
+      } as never);
+      vi.mocked(supabase.auth.getUser).mockResolvedValue({
+        data: { user: { id: 'test-user' } },
+        error: null,
+      } as never);
+      vi.mocked(useProfileStore.getState).mockReturnValue({
+        clearProfile: mockClearProfile,
+      } as never);
+      // storage.clearAppData는 정상 동작
+      vi.mocked(storage.clearAppData).mockImplementation(() => {});
+
+      // clearProfile 에러가 발생하면 전체 함수가 실패해야 함
+      await expect(resetAllData()).rejects.toThrow('Clear profile error');
+    });
+
+    it('should throw error if resetProgress fails', async () => {
+      const mockClearProfile = vi.fn();
+      const resetError = new Error('Reset progress error');
+      const mockResetProgress = vi.fn(() => Promise.reject(resetError));
+      const mockDelete = vi.fn(() => ({
+        eq: vi.fn(() => Promise.resolve({ error: null })),
+      }));
+
+      vi.mocked(supabase.from).mockReturnValue({
+        delete: mockDelete,
+      } as never);
+      vi.mocked(supabase.auth.getUser).mockResolvedValue({
+        data: { user: { id: 'test-user' } },
+        error: null,
+      } as never);
+      vi.mocked(useProfileStore.getState).mockReturnValue({
+        clearProfile: mockClearProfile,
+      } as never);
+      vi.mocked(useLevelProgressStore.getState).mockReturnValue({
+        resetProgress: mockResetProgress,
+      } as never);
+      // storage.clearAppData는 정상 동작
+      vi.mocked(storage.clearAppData).mockImplementation(() => {});
+
+      // resetProgress 에러는 throw되어야 함
+      await expect(resetAllData()).rejects.toThrow('Reset progress error');
+    });
+
+    it('should handle Supabase errors but throw on storage errors', async () => {
+      const mockClearProfile = vi.fn();
+      const deleteError = { message: 'Delete failed' };
+      const mockDelete = vi.fn(() => ({
+        eq: vi.fn(() => Promise.resolve({ error: deleteError })),
+      }));
+
+      vi.mocked(supabase.from).mockReturnValue({
+        delete: mockDelete,
+      } as never);
+      vi.mocked(supabase.auth.getUser).mockRejectedValue(new Error('Auth error'));
+      vi.mocked(useProfileStore.getState).mockReturnValue({
+        clearProfile: mockClearProfile,
+      } as never);
+      vi.mocked(storage.clearAppData).mockImplementation(() => {
+        throw new Error('Storage error');
+      });
+
+      // Supabase 에러는 무시되지만 storage 에러는 throw되어야 함
+      await expect(resetAllData()).rejects.toThrow('Storage error');
+    });
+
   });
 });
 

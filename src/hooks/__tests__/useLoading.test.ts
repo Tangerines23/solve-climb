@@ -87,5 +87,51 @@ describe('useLoading', () => {
     const storeResult = renderHook(() => useLoadingStore());
     expect(storeResult.result.current.isAnyLoading()).toBe(false);
   });
+
+  it('should use custom ID when provided in options', () => {
+    const { result } = renderHook(() => useLoading({ id: 'custom-id' }));
+
+    act(() => {
+      result.current.start();
+    });
+
+    expect(result.current.isLoading).toBe(true);
+    
+    const storeResult = renderHook(() => useLoadingStore());
+    expect(storeResult.result.current.isLoading('custom-id')).toBe(true);
+  });
+
+  it('should use isAnyLoading when id is not provided', () => {
+    const { result } = renderHook(() => useLoading());
+
+    act(() => {
+      result.current.start();
+    });
+
+    expect(result.current.isLoading).toBe(true);
+  });
+
+  it('should use custom ID in start function', () => {
+    const { result } = renderHook(() => useLoading());
+
+    act(() => {
+      result.current.start('custom-start-id');
+    });
+
+    const storeResult = renderHook(() => useLoadingStore());
+    expect(storeResult.result.current.isLoading('custom-start-id')).toBe(true);
+  });
+
+  it('should use custom ID in stop function', () => {
+    const { result } = renderHook(() => useLoading());
+
+    act(() => {
+      result.current.start('custom-stop-id');
+      result.current.stop('custom-stop-id');
+    });
+
+    const storeResult = renderHook(() => useLoadingStore());
+    expect(storeResult.result.current.isLoading('custom-stop-id')).toBe(false);
+  });
 });
 

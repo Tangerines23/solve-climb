@@ -9,9 +9,67 @@ import {
   savePresetHistory,
   clearPresetHistory,
   debugPresets,
+  executeDebugAction,
+  applyPreset,
   type CustomPreset,
   type PresetHistory,
+  type DebugAction,
 } from '../debugPresets';
+import { supabase } from '../supabaseClient';
+import { useUserStore } from '../../stores/useUserStore';
+import { useQuizStore } from '../../stores/useQuizStore';
+import { calculateScoreForTier } from '../tierUtils';
+
+// Mock dependencies for executeDebugAction and applyPreset tests
+vi.mock('../supabaseClient', () => ({
+  supabase: {
+    auth: {
+      getUser: vi.fn(() => Promise.resolve({ data: { user: { id: 'test-user' } }, error: null })),
+    },
+    rpc: vi.fn(),
+    from: vi.fn(() => ({
+      select: vi.fn(() => ({
+        eq: vi.fn(() => ({
+        eq: vi.fn(() => ({
+          order: vi.fn(() => ({
+            limit: vi.fn(() => ({
+              single: vi.fn(),
+            })),
+          })),
+        })),
+      })),
+      })),
+      upsert: vi.fn(() => Promise.resolve({ error: null })),
+      update: vi.fn(() => ({
+        eq: vi.fn(() => Promise.resolve({ error: null })),
+      })),
+    })),
+  },
+}));
+
+const mockGetUserStoreState = vi.fn();
+
+vi.mock('../../stores/useUserStore', () => ({
+  useUserStore: {
+    getState: () => mockGetUserStoreState(),
+  },
+}));
+
+const mockGetQuizStoreState = vi.fn();
+
+vi.mock('../../stores/useQuizStore', () => ({
+  useQuizStore: {
+    getState: () => mockGetQuizStoreState(),
+  },
+}));
+
+vi.mock('../tierUtils', () => ({
+  calculateScoreForTier: vi.fn(() => Promise.resolve(2850000)),
+}));
+
+vi.mock('../errorHandler', () => ({
+  logError: vi.fn(),
+}));
 
 describe('debugPresets - Custom Presets', () => {
   beforeEach(() => {
@@ -437,5 +495,914 @@ describe('debugPresets - Default Presets', () => {
       expect(preset.description).toBeDefined();
       expect(Array.isArray(preset.actions)).toBe(true);
     });
+  });
+});
+
+describe('debugPresets - executeDebugAction', () => {
+  const userId = 'test-user-id';
+
+  beforeEach(() => {
+    vi.clearAllMocks();
+    localStorage.clear();
+    // Reset mocks to default
+    mockGetUserStoreState.mockReturnValue({
+      fetchUserData: vi.fn(() => Promise.resolve()),
+      setMinerals: vi.fn(() => Promise.resolve()),
+      setStamina: vi.fn(() => Promise.resolve()),
+    });
+    mockGetQuizStoreState.mockReturnValue({
+      setTimeLimit: vi.fn(),
+    });
+    // Reset supabase.from mock
+    vi.mocked(supabase.from).mockReturnValue({
+      select: vi.fn(),
+      upsert: vi.fn(() => Promise.resolve({ error: null })),
+      update: vi.fn(() => ({
+        eq: vi.fn(() => Promise.resolve({ error: null })),
+      })),
+    } as any);
+  });
+
+  describe('reset action', () => {
+    it('should execute reset action with target "all"', async () => {
+      vi.mocked(supabase.rpc).mockResolvedValue({ error: null } as never);
+
+      const action: DebugAction = { type: 'reset', target: 'all' };
+      await executeDebugAction(action, userId);
+
+      expect(supabase.rpc).toHaveBeenCalledWith('debug_reset_profile', {
+        p_user_id: userId,
+        p_reset_type: 'all',
+      });
+    });
+
+    it('should execute reset action with target "score"', async () => {
+      vi.mocked(supabase.rpc).mockResolvedValue({ error: null } as never);
+
+      const action: DebugAction = { type: 'reset', target: 'score' };
+      await executeDebugAction(action, userId);
+
+      expect(supabase.rpc).toHaveBeenCalledWith('debug_reset_profile', {
+        p_user_id: userId,
+        p_reset_type: 'score',
+      });
+    });
+
+    it('should execute reset action with default target "all"', async () => {
+      vi.mocked(supabase.rpc).mockResolvedValue({ error: null } as never);
+
+      const action: DebugAction = { type: 'reset' };
+      await executeDebugAction(action, userId);
+
+      expect(supabase.rpc).toHaveBeenCalledWith('debug_reset_profile', {
+        p_user_id: userId,
+        p_reset_type: 'all',
+      });
+    });
+
+    it('should execute reset action with target "minerals"', async () => {
+      vi.mocked(supabase.rpc).mockResolvedValue({ error: null } as never);
+
+      const action: DebugAction = { type: 'reset', target: 'minerals' };
+      await executeDebugAction(action, userId);
+
+      expect(supabase.rpc).toHaveBeenCalledWith('debug_reset_profile', {
+        p_user_id: userId,
+        p_reset_type: 'minerals',
+      });
+    });
+
+    it('should execute reset action with target "tier"', async () => {
+      vi.mocked(supabase.rpc).mockResolvedValue({ error: null } as never);
+
+      const action: DebugAction = { type: 'reset', target: 'tier' };
+      await executeDebugAction(action, userId);
+
+      expect(supabase.rpc).toHaveBeenCalledWith('debug_reset_profile', {
+        p_user_id: userId,
+        p_reset_type: 'tier',
+      });
+    });
+
+    it('should throw error when reset fails', async () => {
+      const error = { message: 'Reset failed' };
+      vi.mocked(supabase.rpc).mockResolvedValue({ error } as never);
+
+      const action: DebugAction = { type: 'reset', target: 'all' };
+      await expect(executeDebugAction(action, userId)).rejects.toEqual(error);
+    });
+  });
+
+  describe('setTier action', () => {
+    it('should execute setTier action with valid level', async () => {
+      vi.mocked(supabase.rpc).mockResolvedValue({ error: null } as never);
+
+      const action: DebugAction = { type: 'setTier', level: 3 };
+      await executeDebugAction(action, userId);
+
+      expect(supabase.rpc).toHaveBeenCalledWith('debug_set_tier', {
+        p_user_id: userId,
+        p_level: 3,
+      });
+    });
+
+    it('should throw error when level is undefined', async () => {
+      const action: DebugAction = { type: 'setTier' };
+      await expect(executeDebugAction(action, userId)).rejects.toThrow(
+        'setTier action requires level'
+      );
+    });
+
+    it('should throw error when setTier fails', async () => {
+      const error = { message: 'Set tier failed' };
+      vi.mocked(supabase.rpc).mockResolvedValue({ error } as never);
+
+      const action: DebugAction = { type: 'setTier', level: 3 };
+      await expect(executeDebugAction(action, userId)).rejects.toEqual(error);
+    });
+  });
+
+  describe('setMasteryScore action', () => {
+    it('should execute setMasteryScore action with valid value', async () => {
+      vi.mocked(supabase.rpc).mockResolvedValue({ error: null } as never);
+
+      const action: DebugAction = { type: 'setMasteryScore', value: 100000 };
+      await executeDebugAction(action, userId);
+
+      expect(supabase.rpc).toHaveBeenCalledWith('debug_set_mastery_score', {
+        p_user_id: userId,
+        p_score: 100000,
+      });
+    });
+
+    it('should throw error when value is undefined', async () => {
+      const action: DebugAction = { type: 'setMasteryScore' };
+      await expect(executeDebugAction(action, userId)).rejects.toThrow(
+        'setMasteryScore action requires value'
+      );
+    });
+
+    it('should throw error when setMasteryScore fails', async () => {
+      const error = { message: 'Set mastery score failed' };
+      vi.mocked(supabase.rpc).mockResolvedValue({ error } as never);
+
+      const action: DebugAction = { type: 'setMasteryScore', value: 100000 };
+      await expect(executeDebugAction(action, userId)).rejects.toEqual(error);
+    });
+  });
+
+  describe('setMinerals action', () => {
+    it('should execute setMinerals action with valid value', async () => {
+      const mockSetMinerals = vi.fn(() => Promise.resolve());
+      mockGetUserStoreState.mockReturnValue({
+        setMinerals: mockSetMinerals,
+      });
+      vi.mocked(supabase.from).mockImplementation((table: string) => {
+        if (table === 'profiles') {
+          return {
+            update: vi.fn(() => ({
+              eq: vi.fn(() => Promise.resolve({ error: null })),
+            })),
+          } as any;
+        }
+        return {} as any;
+      });
+
+      const action: DebugAction = { type: 'setMinerals', value: 5000 };
+      await executeDebugAction(action, userId);
+
+      expect(mockSetMinerals).toHaveBeenCalledWith(5000);
+    });
+
+    it('should throw error when value is undefined', async () => {
+      const action: DebugAction = { type: 'setMinerals' };
+      await expect(executeDebugAction(action, userId)).rejects.toThrow(
+        'setMinerals action requires value'
+      );
+    });
+  });
+
+  describe('setStamina action', () => {
+    it('should execute setStamina action with valid value', async () => {
+      const mockSetStamina = vi.fn(() => Promise.resolve());
+      mockGetUserStoreState.mockReturnValue({
+        setStamina: mockSetStamina,
+      });
+      vi.mocked(supabase.from).mockImplementation((table: string) => {
+        if (table === 'profiles') {
+          return {
+            update: vi.fn(() => ({
+              eq: vi.fn(() => Promise.resolve({ error: null })),
+            })),
+          } as any;
+        }
+        return {} as any;
+      });
+
+      const action: DebugAction = { type: 'setStamina', value: 5 };
+      await executeDebugAction(action, userId);
+
+      expect(mockSetStamina).toHaveBeenCalledWith(5);
+    });
+
+    it('should throw error when value is undefined', async () => {
+      const action: DebugAction = { type: 'setStamina' };
+      await expect(executeDebugAction(action, userId)).rejects.toThrow(
+        'setStamina action requires value'
+      );
+    });
+  });
+
+  describe('grantAllItems action', () => {
+    it('should execute grantAllItems action with default quantity', async () => {
+      const mockItems = [{ id: 'item-1' }, { id: 'item-2' }];
+      const mockUpsert = vi.fn(() => Promise.resolve({ error: null }));
+
+      vi.mocked(supabase.from).mockReturnValue({
+        select: vi.fn(() => Promise.resolve({ data: mockItems, error: null })),
+        upsert: mockUpsert,
+      } as never);
+
+      const action: DebugAction = { type: 'grantAllItems' };
+      await executeDebugAction(action, userId);
+
+      expect(mockUpsert).toHaveBeenCalledWith(
+        [
+          { user_id: userId, item_id: 'item-1', quantity: 99 },
+          { user_id: userId, item_id: 'item-2', quantity: 99 },
+        ],
+        { onConflict: 'user_id,item_id' }
+      );
+    });
+
+    it('should execute grantAllItems action with custom quantity', async () => {
+      const mockItems = [{ id: 'item-1' }];
+      const mockUpsert = vi.fn(() => Promise.resolve({ error: null }));
+
+      vi.mocked(supabase.from).mockReturnValue({
+        select: vi.fn(() => Promise.resolve({ data: mockItems, error: null })),
+        upsert: mockUpsert,
+      } as never);
+
+      const action: DebugAction = { type: 'grantAllItems', quantity: 50 };
+      await executeDebugAction(action, userId);
+
+      expect(mockUpsert).toHaveBeenCalledWith(
+        [{ user_id: userId, item_id: 'item-1', quantity: 50 }],
+        { onConflict: 'user_id,item_id' }
+      );
+    });
+
+    it('should throw error when items query fails', async () => {
+      const error = { message: 'Items query failed' };
+
+      vi.mocked(supabase.from).mockReturnValue({
+        select: vi.fn(() => Promise.resolve({ data: null, error })),
+      } as never);
+
+      const action: DebugAction = { type: 'grantAllItems' };
+      await expect(executeDebugAction(action, userId)).rejects.toEqual(error);
+    });
+
+    it('should throw error when upsert fails', async () => {
+      const mockItems = [{ id: 'item-1' }];
+      const error = { message: 'Upsert failed' };
+
+      vi.mocked(supabase.from).mockReturnValue({
+        select: vi.fn(() => Promise.resolve({ data: mockItems, error: null })),
+        upsert: vi.fn(() => Promise.resolve({ error })),
+      } as never);
+
+      const action: DebugAction = { type: 'grantAllItems' };
+      await expect(executeDebugAction(action, userId)).rejects.toEqual(error);
+    });
+
+    it('should handle empty items array', async () => {
+      const mockUpsert = vi.fn(() => Promise.resolve({ error: null }));
+
+      vi.mocked(supabase.from).mockReturnValue({
+        select: vi.fn(() => Promise.resolve({ data: [], error: null })),
+        upsert: mockUpsert,
+      } as never);
+
+      const action: DebugAction = { type: 'grantAllItems' };
+      await executeDebugAction(action, userId);
+
+      expect(mockUpsert).toHaveBeenCalledWith([], { onConflict: 'user_id,item_id' });
+    });
+  });
+
+  describe('grantAllBadges action', () => {
+    it('should execute grantAllBadges action successfully', async () => {
+      const mockBadges = [{ id: 'badge-1' }, { id: 'badge-2' }];
+
+      vi.mocked(supabase.from).mockReturnValue({
+        select: vi.fn(() => Promise.resolve({ data: mockBadges, error: null })),
+      } as never);
+
+      vi.mocked(supabase.rpc).mockImplementation((fnName: string) => {
+        if (fnName === 'debug_grant_badge') {
+          return Promise.resolve({ error: null } as never);
+        }
+        return Promise.resolve({ error: null } as never);
+      });
+
+      const action: DebugAction = { type: 'grantAllBadges' };
+      await executeDebugAction(action, userId);
+
+      expect(supabase.rpc).toHaveBeenCalledTimes(2);
+    });
+
+    it('should handle badge grant failures gracefully', async () => {
+      const mockBadges = [{ id: 'badge-1' }, { id: 'badge-2' }];
+      const consoleWarnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});
+
+      vi.mocked(supabase.from).mockReturnValue({
+        select: vi.fn(() => Promise.resolve({ data: mockBadges, error: null })),
+      } as never);
+
+      // 첫 번째는 성공, 두 번째는 실패
+      let callCount = 0;
+      vi.mocked(supabase.rpc).mockImplementation(() => {
+        callCount++;
+        if (callCount === 1) {
+          return Promise.resolve({ error: null } as never);
+        } else {
+          return Promise.reject({ message: 'Badge grant failed' });
+        }
+      });
+
+      const action: DebugAction = { type: 'grantAllBadges' };
+      await executeDebugAction(action, userId);
+
+      // 일부 실패해도 에러를 throw하지 않음 (내부에서 처리)
+      expect(consoleWarnSpy).toHaveBeenCalled();
+      consoleWarnSpy.mockRestore();
+    });
+
+    it('should handle badge grant when result.value.success is false', async () => {
+      const mockBadges = [{ id: 'badge-1' }];
+      const consoleWarnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});
+
+      vi.mocked(supabase.from).mockReturnValue({
+        select: vi.fn(() => Promise.resolve({ data: mockBadges, error: null })),
+      } as never);
+
+      // result.value.success가 false인 경우를 시뮬레이션
+      // supabase.rpc가 reject되면 .then()의 두 번째 인자가 호출되어 { success: false, ... } 반환
+      vi.mocked(supabase.rpc).mockImplementation(() => {
+        return Promise.reject({ message: 'Badge grant failed' });
+      });
+
+      const action: DebugAction = { type: 'grantAllBadges' };
+      await executeDebugAction(action, userId);
+
+      // 일부 실패해도 에러를 throw하지 않음 (내부에서 처리)
+      expect(consoleWarnSpy).toHaveBeenCalled();
+      consoleWarnSpy.mockRestore();
+    });
+
+    it('should throw error when badges query fails', async () => {
+      const error = { message: 'Badges query failed' };
+
+      vi.mocked(supabase.from).mockReturnValue({
+        select: vi.fn(() => Promise.resolve({ data: null, error })),
+      } as never);
+
+      const action: DebugAction = { type: 'grantAllBadges' };
+      await expect(executeDebugAction(action, userId)).rejects.toEqual(error);
+    });
+  });
+
+  describe('setGameTime action', () => {
+    it('should update existing game session', async () => {
+      const mockSession = { id: 'session-1' };
+      const mockUpdate = vi.fn(() => ({
+        eq: vi.fn(() => Promise.resolve({ error: null })),
+      }));
+
+      vi.mocked(supabase.from).mockReturnValue({
+        select: vi.fn(() => ({
+          eq: vi.fn(() => ({
+          eq: vi.fn(() => ({
+            order: vi.fn(() => ({
+              limit: vi.fn(() => ({
+                single: vi.fn(() => Promise.resolve({ data: mockSession, error: null })),
+                })),
+              })),
+            })),
+          })),
+        })),
+        update: mockUpdate,
+      } as never);
+
+      const action: DebugAction = { type: 'setGameTime', seconds: 30 };
+      await executeDebugAction(action, userId);
+
+      expect(mockUpdate).toHaveBeenCalled();
+    });
+
+    it('should set timeLimit when no active session', async () => {
+      const mockSetTimeLimit = vi.fn();
+      const error = { code: 'PGRST116' }; // No rows returned
+
+      vi.mocked(supabase.from).mockReturnValue({
+        select: vi.fn(() => ({
+          eq: vi.fn(() => ({
+          eq: vi.fn(() => ({
+            order: vi.fn(() => ({
+              limit: vi.fn(() => ({
+                single: vi.fn(() => Promise.resolve({ data: null, error })),
+                })),
+              })),
+            })),
+          })),
+        })),
+      } as never);
+
+      mockGetQuizStoreState.mockReturnValue({
+        setTimeLimit: mockSetTimeLimit,
+      });
+
+      const action: DebugAction = { type: 'setGameTime', seconds: 60 };
+      await executeDebugAction(action, userId);
+
+      expect(mockSetTimeLimit).toHaveBeenCalledWith(60);
+    });
+
+    it('should map seconds to correct TimeLimit value', async () => {
+      const mockSetTimeLimit = vi.fn();
+      const error = { code: 'PGRST116' };
+
+      vi.mocked(supabase.from).mockReturnValue({
+        select: vi.fn(() => ({
+          eq: vi.fn(() => ({
+          eq: vi.fn(() => ({
+            order: vi.fn(() => ({
+              limit: vi.fn(() => ({
+                single: vi.fn(() => Promise.resolve({ data: null, error })),
+                })),
+              })),
+            })),
+          })),
+        })),
+      } as never);
+
+      mockGetQuizStoreState.mockReturnValue({
+        setTimeLimit: mockSetTimeLimit,
+      });
+
+      // 5초 -> 10
+      const action1: DebugAction = { type: 'setGameTime', seconds: 5 };
+      await executeDebugAction(action1, userId);
+      expect(mockSetTimeLimit).toHaveBeenCalledWith(10);
+
+      // 12초 -> 15
+      const action2: DebugAction = { type: 'setGameTime', seconds: 12 };
+      await executeDebugAction(action2, userId);
+      expect(mockSetTimeLimit).toHaveBeenCalledWith(15);
+
+      // 30초 -> 60
+      const action3: DebugAction = { type: 'setGameTime', seconds: 30 };
+      await executeDebugAction(action3, userId);
+      expect(mockSetTimeLimit).toHaveBeenCalledWith(60);
+
+      // 100초 -> 120
+      const action4: DebugAction = { type: 'setGameTime', seconds: 100 };
+      await executeDebugAction(action4, userId);
+      expect(mockSetTimeLimit).toHaveBeenCalledWith(120);
+
+      // 150초 -> 180
+      const action5: DebugAction = { type: 'setGameTime', seconds: 150 };
+      await executeDebugAction(action5, userId);
+      expect(mockSetTimeLimit).toHaveBeenCalledWith(180);
+    });
+
+    it('should use default seconds (5) when not provided', async () => {
+      const mockSetTimeLimit = vi.fn();
+      const error = { code: 'PGRST116' };
+
+      vi.mocked(supabase.from).mockReturnValue({
+        select: vi.fn(() => ({
+          eq: vi.fn(() => ({
+          eq: vi.fn(() => ({
+            order: vi.fn(() => ({
+              limit: vi.fn(() => ({
+                single: vi.fn(() => Promise.resolve({ data: null, error })),
+                })),
+              })),
+            })),
+          })),
+        })),
+      } as never);
+
+      mockGetQuizStoreState.mockReturnValue({
+        setTimeLimit: mockSetTimeLimit,
+      });
+
+      const action: DebugAction = { type: 'setGameTime' };
+      await executeDebugAction(action, userId);
+
+      expect(mockSetTimeLimit).toHaveBeenCalledWith(10); // 5초 -> 10
+    });
+
+    it('should throw error when sessionError code is not PGRST116', async () => {
+      const error = { code: 'PGRST500', message: 'Server error' };
+
+      vi.mocked(supabase.from).mockReturnValue({
+        select: vi.fn(() => ({
+          eq: vi.fn(() => ({
+            eq: vi.fn(() => ({
+              order: vi.fn(() => ({
+                limit: vi.fn(() => ({
+                  single: vi.fn(() => Promise.resolve({ data: null, error })),
+                })),
+              })),
+            })),
+          })),
+        })),
+      } as never);
+
+      const action: DebugAction = { type: 'setGameTime', seconds: 30 };
+      await expect(executeDebugAction(action, userId)).rejects.toEqual(error);
+    });
+
+    it('should throw error when session query fails (non-PGRST116)', async () => {
+      const error = { code: 'PGRST500', message: 'Server error' };
+
+      vi.mocked(supabase.from).mockReturnValue({
+        select: vi.fn(() => ({
+          eq: vi.fn(() => ({
+          eq: vi.fn(() => ({
+            order: vi.fn(() => ({
+              limit: vi.fn(() => ({
+                single: vi.fn(() => Promise.resolve({ data: null, error })),
+                })),
+              })),
+            })),
+          })),
+        })),
+      } as never);
+
+      const action: DebugAction = { type: 'setGameTime', seconds: 30 };
+      await expect(executeDebugAction(action, userId)).rejects.toEqual(error);
+    });
+  });
+
+  describe('unknown action type', () => {
+    it('should throw error for unknown action type', async () => {
+      const action = { type: 'unknown' as any };
+      await expect(executeDebugAction(action, userId)).rejects.toThrow('Unknown action type');
+    });
+  });
+});
+
+describe('debugPresets - applyPreset', () => {
+  const userId = 'test-user-id';
+
+  beforeEach(() => {
+    vi.clearAllMocks();
+    localStorage.clear();
+    // Reset mocks to default
+    mockGetUserStoreState.mockReturnValue({
+      fetchUserData: vi.fn(() => Promise.resolve()),
+      setMinerals: vi.fn(() => Promise.resolve()),
+      setStamina: vi.fn(() => Promise.resolve()),
+    });
+    mockGetQuizStoreState.mockReturnValue({
+      setTimeLimit: vi.fn(),
+    });
+    // Reset supabase.from mock
+    vi.mocked(supabase.from).mockReturnValue({
+      select: vi.fn(),
+      upsert: vi.fn(() => Promise.resolve({ error: null })),
+      update: vi.fn(() => ({
+        eq: vi.fn(() => Promise.resolve({ error: null })),
+      })),
+    } as any);
+  });
+
+  it('should apply newbie preset successfully', async () => {
+    const mockFetchUserData = vi.fn(() => Promise.resolve());
+    const mockSetMinerals = vi.fn(() => Promise.resolve());
+    const mockSetStamina = vi.fn(() => Promise.resolve());
+
+    vi.mocked(supabase.rpc).mockResolvedValue({ error: null } as never);
+    vi.mocked(supabase.from).mockImplementation((table: string) => {
+      if (table === 'profiles') {
+        return {
+          select: vi.fn(() => ({
+            eq: vi.fn(() => ({
+              single: vi.fn(() => Promise.resolve({ data: { minerals: 0, stamina: 5 }, error: null })),
+            })),
+          })),
+          update: vi.fn(() => ({
+            eq: vi.fn(() => Promise.resolve({ error: null })),
+          })),
+        } as any;
+      }
+      if (table === 'inventory') {
+        return {
+          select: vi.fn(() => ({
+            eq: vi.fn(() => Promise.resolve({ data: [], error: null })),
+          })),
+        } as any;
+      }
+      return {
+        select: vi.fn(),
+        upsert: vi.fn(() => Promise.resolve({ error: null })),
+        update: vi.fn(() => ({
+          eq: vi.fn(() => Promise.resolve({ error: null })),
+        })),
+      } as any;
+    });
+    mockGetUserStoreState.mockReturnValue({
+      fetchUserData: mockFetchUserData,
+      setMinerals: mockSetMinerals,
+      setStamina: mockSetStamina,
+    });
+
+    await applyPreset('newbie', userId);
+
+    expect(supabase.rpc).toHaveBeenCalledWith('debug_reset_profile', {
+      p_user_id: userId,
+      p_reset_type: 'all',
+    });
+    expect(supabase.rpc).toHaveBeenCalledWith('debug_set_tier', {
+      p_user_id: userId,
+      p_level: 0,
+    });
+    expect(mockSetMinerals).toHaveBeenCalledWith(0);
+    expect(mockSetStamina).toHaveBeenCalledWith(5);
+    expect(mockFetchUserData).toHaveBeenCalled();
+
+    const histories = getPresetHistories();
+    expect(histories).toHaveLength(1);
+    expect(histories[0].presetId).toBe('newbie');
+    expect(histories[0].success).toBe(true);
+  });
+
+  it('should apply veteran preset with dynamic score calculation', async () => {
+    const mockFetchUserData = vi.fn(() => Promise.resolve());
+    const mockSetMinerals = vi.fn(() => Promise.resolve());
+    const mockItems = [{ id: 'item-1' }, { id: 'item-2' }];
+    const mockBadges = [{ id: 'badge-1' }];
+
+    vi.mocked(supabase.rpc).mockImplementation((fnName: string) => {
+      if (fnName === 'debug_set_mastery_score') {
+        return Promise.resolve({ error: null } as never);
+      }
+      if (fnName === 'debug_set_tier') {
+        return Promise.resolve({ error: null } as never);
+      }
+      if (fnName === 'debug_grant_badge') {
+        return Promise.resolve({ error: null } as never);
+      }
+      return Promise.resolve({ error: null } as never);
+    });
+
+    vi.mocked(supabase.from).mockImplementation((table: string) => {
+      if (table === 'items') {
+        return {
+          select: vi.fn(() => Promise.resolve({ data: mockItems, error: null })),
+          upsert: vi.fn(() => Promise.resolve({ error: null })),
+        } as any;
+      }
+      if (table === 'badge_definitions') {
+        return {
+          select: vi.fn(() => Promise.resolve({ data: mockBadges, error: null })),
+        } as any;
+      }
+      if (table === 'profiles') {
+        return {
+          select: vi.fn(() => ({
+            eq: vi.fn(() => ({
+              single: vi.fn(() => Promise.resolve({ data: { minerals: 0, stamina: 5 }, error: null })),
+            })),
+          })),
+          update: vi.fn(() => ({
+            eq: vi.fn(() => Promise.resolve({ error: null })),
+          })),
+        } as any;
+      }
+      if (table === 'inventory') {
+        return {
+          select: vi.fn(() => ({
+            eq: vi.fn(() => Promise.resolve({ data: [], error: null })),
+          })),
+          upsert: vi.fn(() => Promise.resolve({ error: null })),
+        } as any;
+      }
+      return {
+        select: vi.fn(),
+        upsert: vi.fn(() => Promise.resolve({ error: null })),
+        update: vi.fn(() => ({
+          eq: vi.fn(() => Promise.resolve({ error: null })),
+        })),
+      } as any;
+    });
+
+    mockGetUserStoreState.mockReturnValue({
+      fetchUserData: mockFetchUserData,
+      setMinerals: mockSetMinerals,
+    });
+
+    await applyPreset('veteran', userId);
+
+    expect(calculateScoreForTier).toHaveBeenCalledWith(6, 10, 100000);
+    expect(supabase.rpc).toHaveBeenCalledWith('debug_set_mastery_score', {
+      p_user_id: userId,
+      p_score: 2850000,
+    });
+    expect(mockFetchUserData).toHaveBeenCalled();
+
+    const histories = getPresetHistories();
+    expect(histories[0].presetId).toBe('veteran');
+    expect(histories[0].success).toBe(true);
+  });
+
+  it('should apply custom preset successfully', async () => {
+    const mockFetchUserData = vi.fn(() => Promise.resolve());
+    const mockSetMinerals = vi.fn(() => Promise.resolve());
+
+    const customPreset: CustomPreset = {
+      id: 'custom-test',
+      name: 'Custom Test',
+      description: 'Test',
+      actions: [{ type: 'setMinerals', value: 1000 }],
+      isCustom: true,
+    };
+
+    saveCustomPreset(customPreset);
+
+    vi.mocked(supabase.rpc).mockResolvedValue({ error: null } as never);
+    vi.mocked(supabase.from).mockImplementation((table: string) => {
+      if (table === 'profiles') {
+        return {
+          select: vi.fn(() => ({
+            eq: vi.fn(() => ({
+              single: vi.fn(() => Promise.resolve({ data: { minerals: 0, stamina: 5 }, error: null })),
+            })),
+          })),
+          update: vi.fn(() => ({
+            eq: vi.fn(() => Promise.resolve({ error: null })),
+          })),
+        } as any;
+      }
+      if (table === 'inventory') {
+        return {
+          select: vi.fn(() => ({
+            eq: vi.fn(() => Promise.resolve({ data: [], error: null })),
+          })),
+        } as any;
+      }
+      return {
+        select: vi.fn(),
+        upsert: vi.fn(() => Promise.resolve({ error: null })),
+        update: vi.fn(() => ({
+          eq: vi.fn(() => Promise.resolve({ error: null })),
+        })),
+      } as any;
+    });
+    mockGetUserStoreState.mockReturnValue({
+      fetchUserData: mockFetchUserData,
+      setMinerals: mockSetMinerals,
+    });
+
+    await applyPreset('custom-test', userId);
+
+    expect(mockSetMinerals).toHaveBeenCalledWith(1000);
+    expect(mockFetchUserData).toHaveBeenCalled();
+
+    const histories = getPresetHistories();
+    expect(histories[0].presetId).toBe('custom-test');
+    expect(histories[0].success).toBe(true);
+  });
+
+  it('should save failure history when action fails', async () => {
+    const error = { message: 'Action failed' };
+
+    vi.mocked(supabase.rpc).mockResolvedValue({ error } as never);
+
+    await expect(applyPreset('newbie', userId)).rejects.toBeDefined();
+
+    const histories = getPresetHistories();
+    expect(histories).toHaveLength(1);
+    expect(histories[0].success).toBe(false);
+    expect(histories[0].error).toBeDefined();
+  });
+
+  it('should call refetch callback when provided', async () => {
+    const mockRefetch = vi.fn(() => Promise.resolve());
+    const mockFetchUserData = vi.fn(() => Promise.resolve());
+    const mockSetMinerals = vi.fn(() => Promise.resolve());
+    const mockSetStamina = vi.fn(() => Promise.resolve());
+
+    vi.mocked(supabase.rpc).mockResolvedValue({ error: null } as never);
+    vi.mocked(supabase.from).mockImplementation((table: string) => {
+      if (table === 'profiles') {
+        return {
+          select: vi.fn(() => ({
+            eq: vi.fn(() => ({
+              single: vi.fn(() => Promise.resolve({ data: { minerals: 0, stamina: 5 }, error: null })),
+            })),
+          })),
+          update: vi.fn(() => ({
+            eq: vi.fn(() => Promise.resolve({ error: null })),
+          })),
+        } as any;
+      }
+      if (table === 'inventory') {
+        return {
+          select: vi.fn(() => ({
+            eq: vi.fn(() => Promise.resolve({ data: [], error: null })),
+          })),
+        } as any;
+      }
+      return {
+        select: vi.fn(),
+        upsert: vi.fn(() => Promise.resolve({ error: null })),
+        update: vi.fn(() => ({
+          eq: vi.fn(() => Promise.resolve({ error: null })),
+        })),
+      } as any;
+    });
+    mockGetUserStoreState.mockReturnValue({
+      fetchUserData: mockFetchUserData,
+      setMinerals: mockSetMinerals,
+      setStamina: mockSetStamina,
+    });
+
+    await applyPreset('newbie', userId, mockRefetch);
+
+    expect(mockRefetch).toHaveBeenCalled();
+  });
+
+  it('should not call refetch when not provided', async () => {
+    const mockFetchUserData = vi.fn(() => Promise.resolve());
+    const mockSetMinerals = vi.fn(() => Promise.resolve());
+    const mockSetStamina = vi.fn(() => Promise.resolve());
+
+    vi.mocked(supabase.rpc).mockResolvedValue({ error: null } as never);
+    vi.mocked(supabase.from).mockImplementation((table: string) => {
+      if (table === 'profiles') {
+        return {
+          select: vi.fn(() => ({
+            eq: vi.fn(() => ({
+              single: vi.fn(() => Promise.resolve({ data: { minerals: 0, stamina: 5 }, error: null })),
+            })),
+          })),
+          update: vi.fn(() => ({
+            eq: vi.fn(() => Promise.resolve({ error: null })),
+          })),
+        } as any;
+      }
+      if (table === 'inventory') {
+        return {
+          select: vi.fn(() => ({
+            eq: vi.fn(() => Promise.resolve({ data: [], error: null })),
+          })),
+        } as any;
+      }
+      return {
+        select: vi.fn(),
+        upsert: vi.fn(() => Promise.resolve({ error: null })),
+        update: vi.fn(() => ({
+          eq: vi.fn(() => Promise.resolve({ error: null })),
+        })),
+      } as any;
+    });
+    mockGetUserStoreState.mockReturnValue({
+      fetchUserData: mockFetchUserData,
+      setMinerals: mockSetMinerals,
+      setStamina: mockSetStamina,
+    });
+
+    await applyPreset('newbie', userId);
+
+    expect(mockFetchUserData).toHaveBeenCalled();
+    // refetch가 없어도 정상 동작해야 함
+  });
+
+  it('should throw error for setMasteryScore with -1 in non-veteran preset', async () => {
+    const customPreset: CustomPreset = {
+      id: 'invalid-preset',
+      name: 'Invalid',
+      description: 'Test',
+      actions: [{ type: 'setMasteryScore', value: -1 }],
+      isCustom: true,
+    };
+
+    saveCustomPreset(customPreset);
+
+    await expect(applyPreset('invalid-preset', userId)).rejects.toThrow(
+      'setMasteryScore with value -1 is only supported for veteran preset'
+    );
+  });
+
+  it('should throw error when preset is not found', async () => {
+    await expect(applyPreset('non-existent-preset', userId)).rejects.toThrow(
+      'Preset not found: non-existent-preset'
+    );
   });
 });

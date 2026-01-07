@@ -3,6 +3,11 @@ import { render, screen, fireEvent } from '@testing-library/react';
 import { CustomKeypad } from '../CustomKeypad';
 import { useSettingsStore } from '../../stores/useSettingsStore';
 
+// Mock haptic
+vi.mock('../../utils/haptic', () => ({
+  vibrateShort: vi.fn(),
+}));
+
 // Mock stores
 vi.mock('../../stores/useSettingsStore', () => ({
   useSettingsStore: vi.fn(),
@@ -201,6 +206,37 @@ describe('CustomKeypad', () => {
     // Should not throw error when backspace is clicked without onBackspace prop
     const backspaceButton = screen.getByText('⌫');
     expect(() => fireEvent.click(backspaceButton)).not.toThrow();
+  });
+
+
+  it('should apply correct CSS class when showNegative is true', () => {
+    const { container } = render(
+      <CustomKeypad
+        onNumberClick={mockOnNumberClick}
+        onClear={mockOnClear}
+        onBackspace={mockOnBackspace}
+        onSubmit={mockOnSubmit}
+        showNegative={true}
+      />
+    );
+
+    const lastRow = container.querySelector('.keypad-row-last');
+    expect(lastRow).toHaveClass('keypad-row-last-with-negative');
+  });
+
+  it('should not apply negative class when showNegative is false', () => {
+    const { container } = render(
+      <CustomKeypad
+        onNumberClick={mockOnNumberClick}
+        onClear={mockOnClear}
+        onBackspace={mockOnBackspace}
+        onSubmit={mockOnSubmit}
+        showNegative={false}
+      />
+    );
+
+    const lastRow = container.querySelector('.keypad-row-last');
+    expect(lastRow).not.toHaveClass('keypad-row-last-with-negative');
   });
 });
 

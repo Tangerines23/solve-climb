@@ -84,6 +84,64 @@ describe('StaminaWarningModal', () => {
 
     expect(mockOnClose).toHaveBeenCalled();
   });
+
+  it('should display penalty information', () => {
+    render(
+      <StaminaWarningModal
+        isOpen={true}
+        onClose={mockOnClose}
+        onPlayAnyway={mockOnPlayAnyway}
+        onWatchAd={mockOnWatchAd}
+      />
+    );
+
+    expect(screen.getByText(/스태미나가 부족하여/)).toBeInTheDocument();
+    expect(screen.getByText(/지친 상태/)).toBeInTheDocument();
+    expect(screen.getByText(/획득 점수와 미네랄이/)).toBeInTheDocument();
+    expect(screen.getByText(/80%/)).toBeInTheDocument();
+    expect(screen.getByText(/화면이 붉게 어두워집니다/)).toBeInTheDocument();
+  });
+
+  it('should display warning icon', () => {
+    render(
+      <StaminaWarningModal
+        isOpen={true}
+        onClose={mockOnClose}
+        onPlayAnyway={mockOnPlayAnyway}
+        onWatchAd={mockOnWatchAd}
+      />
+    );
+
+    expect(screen.getByText('⚡')).toBeInTheDocument();
+  });
+
+  it('should display ad button with icon', () => {
+    render(
+      <StaminaWarningModal
+        isOpen={true}
+        onClose={mockOnClose}
+        onPlayAnyway={mockOnPlayAnyway}
+        onWatchAd={mockOnWatchAd}
+      />
+    );
+
+    const adButton = screen.getByText(/광고 보고 충전/);
+    expect(adButton).toBeInTheDocument();
+    expect(screen.getByText('📺')).toBeInTheDocument();
+  });
+
+  it('should display warning message', () => {
+    render(
+      <StaminaWarningModal
+        isOpen={true}
+        onClose={mockOnClose}
+        onPlayAnyway={mockOnPlayAnyway}
+        onWatchAd={mockOnWatchAd}
+      />
+    );
+
+    expect(screen.getByText(/체력이 부족합니다/)).toBeInTheDocument();
+  });
 });
 
 

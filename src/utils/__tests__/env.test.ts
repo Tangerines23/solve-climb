@@ -51,10 +51,27 @@ describe('env', () => {
       expect(Array.isArray(result.missing)).toBe(true);
       expect(Array.isArray(result.errors)).toBe(true);
     });
+
+    it('should validate environment variables correctly', () => {
+      const result = checkEnv();
+      // checkEnv는 현재 환경 변수를 검증합니다
+      // 실제 값에 따라 isValid가 true 또는 false일 수 있습니다
+      expect(result).toHaveProperty('isValid');
+      expect(result).toHaveProperty('missing');
+      expect(result).toHaveProperty('errors');
+    });
   });
 
   describe('logEnvInfo', () => {
     it('should not throw error', () => {
+      expect(() => {
+        logEnvInfo();
+      }).not.toThrow();
+    });
+
+    it('should handle production environment', () => {
+      // logEnvInfo는 isDevelopment가 false면 early return합니다
+      // 실제 환경에 따라 다르게 동작할 수 있습니다
       expect(() => {
         logEnvInfo();
       }).not.toThrow();

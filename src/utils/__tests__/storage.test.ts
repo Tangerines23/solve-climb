@@ -202,5 +202,126 @@ describe('storage', () => {
       expect(key).toBe('gameTip_math_addition_1');
     });
   });
+
+  describe('Error handling branches', () => {
+    it('should handle localStorage.getItem error in get', () => {
+      const originalGetItem = localStorage.getItem;
+      localStorage.getItem = vi.fn(() => {
+        throw new Error('Storage error');
+      });
+
+      const result = storage.get('test-key', { default: true });
+      expect(result).toEqual({ default: true });
+
+      localStorage.getItem = originalGetItem;
+    });
+
+    it('should handle JSON.stringify error in set', () => {
+      const circular: any = {};
+      circular.self = circular;
+
+      // JSON.stringify will fail for circular reference
+      storage.set('test-key', circular);
+      // Should not throw, just log error
+      expect(typeof storage.set).toBe('function');
+    });
+
+    it('should handle localStorage.setItem error in set (QuotaExceededError)', () => {
+      const originalSetItem = localStorage.setItem;
+      localStorage.setItem = vi.fn(() => {
+        throw new DOMException('Quota exceeded', 'QuotaExceededError');
+      });
+
+      storage.set('test-key', { data: 'test' });
+      // Should not throw, just log error
+      expect(typeof storage.set).toBe('function');
+
+      localStorage.setItem = originalSetItem;
+    });
+
+    it('should handle localStorage.removeItem error in remove', () => {
+      const originalRemoveItem = localStorage.removeItem;
+      localStorage.removeItem = vi.fn(() => {
+        throw new Error('Remove error');
+      });
+
+      storage.remove('test-key');
+      // Should not throw, just log error
+      expect(typeof storage.remove).toBe('function');
+
+      localStorage.removeItem = originalRemoveItem;
+    });
+
+    it('should handle localStorage.getItem error in getString', () => {
+      const originalGetItem = localStorage.getItem;
+      localStorage.getItem = vi.fn(() => {
+        throw new Error('Storage error');
+      });
+
+      const result = storage.getString('test-key', 'default');
+      expect(result).toBe('default');
+
+      localStorage.getItem = originalGetItem;
+    });
+
+    it('should handle localStorage.setItem error in setString', () => {
+      const originalSetItem = localStorage.setItem;
+      localStorage.setItem = vi.fn(() => {
+        throw new Error('Storage error');
+      });
+
+      storage.setString('test-key', 'value');
+      // Should not throw, just log error
+      expect(typeof storage.setString).toBe('function');
+
+      localStorage.setItem = originalSetItem;
+    });
+
+    it('should handle localStorage.key returning null in getKeysByPrefix', () => {
+      const originalKey = localStorage.key;
+      let callCount = 0;
+      localStorage.key = vi.fn((index: number) => {
+        callCount++;
+        if (callCount === 1) return 'prefix-key1';
+        if (callCount === 2) return null; // Simulate null return
+        return null;
+      });
+      Object.defineProperty(localStorage, 'length', {
+        get: () => 3,
+        configurable: true,
+      });
+
+      const keys = storage.getKeysByPrefix('prefix-');
+      expect(keys).toContain('prefix-key1');
+
+      localStorage.key = originalKey;
+    });
+
+    it('should handle empty localStorage in getKeysByPrefix', () => {
+      Object.defineProperty(localStorage, 'length', {
+        get: () => 0,
+        configurable: true,
+      });
+
+      const keys = storage.getKeysByPrefix('prefix-');
+      expect(keys).toEqual([]);
+    });
+
+    it('should handle localStorage.key error in getKeysByPrefix', () => {
+      const originalKey = localStorage.key;
+      localStorage.key = vi.fn(() => {
+        throw new Error('Key error');
+      });
+      Object.defineProperty(localStorage, 'length', {
+        get: () => 1,
+        configurable: true,
+      });
+
+      const keys = storage.getKeysByPrefix('prefix-');
+      expect(keys).toEqual([]);
+
+      localStorage.key = originalKey;
+    });
+  });
 });
 

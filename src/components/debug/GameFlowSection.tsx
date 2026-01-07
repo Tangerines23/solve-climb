@@ -292,8 +292,10 @@ export const GameFlowSection = React.memo(function GameFlowSection() {
       <h3 className="debug-section-title">🎮 게임 플로우</h3>
 
       <div className="debug-session-selector">
-        <label className="debug-session-selector-label">세션 선택:</label>
+        <label htmlFor="debug-session-select" className="debug-session-selector-label">세션 선택:</label>
         <select
+          id="debug-session-select"
+          name="selectedSessionId"
           className="debug-session-select"
           value={selectedSessionId || ''}
           onChange={(e) => setSelectedSessionId(e.target.value)}
@@ -355,8 +357,13 @@ export const GameFlowSection = React.memo(function GameFlowSection() {
           <div className="debug-session-extend">
             <h4 className="debug-subsection-title">시간 연장</h4>
             <div className="debug-session-extend-control">
+              <label htmlFor="debug-session-extend-input" className="debug-session-extend-label">
+                연장 시간 (초):
+              </label>
               <input
                 type="number"
+                id="debug-session-extend-input"
+                name="extendSeconds"
                 className="debug-session-extend-input"
                 value={extendSeconds}
                 onChange={(e) => setExtendSeconds(e.target.value)}
@@ -405,8 +412,10 @@ export const GameFlowSection = React.memo(function GameFlowSection() {
         <h4 className="debug-subsection-title">게임 모드 전환</h4>
         <div className="debug-game-mode-controls">
           <div className="debug-game-mode-row">
-            <label className="debug-game-mode-label">게임 모드:</label>
+            <label htmlFor="debug-game-mode-select" className="debug-game-mode-label">게임 모드:</label>
             <select
+              id="debug-game-mode-select"
+              name="selectedGameMode"
               className="debug-game-mode-select"
               value={selectedGameMode}
               onChange={(e) => setSelectedGameMode(e.target.value as GameMode)}
@@ -429,8 +438,10 @@ export const GameFlowSection = React.memo(function GameFlowSection() {
         <h4 className="debug-subsection-title">문제 생성 테스트</h4>
         <div className="debug-quiz-generation-controls">
           <div className="debug-quiz-generation-row">
-            <label className="debug-quiz-generation-label">카테고리:</label>
+            <label htmlFor="debug-quiz-category-select" className="debug-quiz-generation-label">카테고리:</label>
             <select
+              id="debug-quiz-category-select"
+              name="selectedCategory"
               className="debug-quiz-generation-select"
               value={selectedCategory}
               onChange={(e) => setSelectedCategory(e.target.value as Category)}
@@ -442,8 +453,10 @@ export const GameFlowSection = React.memo(function GameFlowSection() {
             </select>
           </div>
           <div className="debug-quiz-generation-row">
-            <label className="debug-quiz-generation-label">주제:</label>
+            <label htmlFor="debug-quiz-topic-select" className="debug-quiz-generation-label">주제:</label>
             <select
+              id="debug-quiz-topic-select"
+              name="selectedTopic"
               className="debug-quiz-generation-select"
               value={selectedTopic}
               onChange={(e) => setSelectedTopic(e.target.value as Topic)}
@@ -456,8 +469,10 @@ export const GameFlowSection = React.memo(function GameFlowSection() {
             </select>
           </div>
           <div className="debug-quiz-generation-row">
-            <label className="debug-quiz-generation-label">난이도:</label>
+            <label htmlFor="debug-quiz-difficulty-select" className="debug-quiz-generation-label">난이도:</label>
             <select
+              id="debug-quiz-difficulty-select"
+              name="selectedDifficulty"
               className="debug-quiz-generation-select"
               value={selectedDifficulty}
               onChange={(e) => setSelectedDifficulty(e.target.value as Difficulty)}

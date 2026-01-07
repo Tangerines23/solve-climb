@@ -63,6 +63,14 @@ describe('japanese', () => {
         expect(allowedChars.includes(firstChar)).toBe(true);
       }
     });
+
+    it('should handle default case for unknown difficulty', () => {
+      const result = generateJapaneseQuestion('unknown' as any);
+      expect(result).toHaveProperty('hiragana');
+      expect(result).toHaveProperty('romaji');
+      const found = HIRAGANA_MAPPINGS.find((m) => m.hiragana === result.hiragana);
+      expect(found).toBeDefined();
+    });
   });
 
   describe('normalizeRomaji', () => {

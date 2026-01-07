@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Header } from '../components/Header';
 import { FooterNav } from '../components/FooterNav';
@@ -6,7 +6,6 @@ import { supabase } from '../utils/supabaseClient';
 import { parseLocalSession } from '../utils/safeJsonParse';
 import { storage, StorageKeys } from '../utils/storage';
 import { APP_CONFIG } from '../config/app';
-import type { GameRecord } from '../types';
 import type { Session } from '@supabase/supabase-js';
 import './HistoryPage.css';
 
@@ -14,22 +13,30 @@ interface HistoryStats {
   weeklyTotal: number;
   weeklyTotalLastWeek: number;
   graphPercentage: number;
-  wrongAnswers: number;
+  wrongAnswers: number; // best_score = 0인 경우로 판단
   dailyCounts: number[]; // 최근 7일간 일별 문제 풀이 수 (0: 6일전, 6: 오늘)
   weekDays: string[]; // 최근 7일간 요일 라벨 (예: '월', '화')
+  monthlyTotal: number;
+  monthlyTotalLastMonth: number;
+  monthlyDailyCounts: number[]; // 이번 달 일별 데이터
+  monthlyDays: string[]; // 이번 달 날짜 라벨 (1일, 2일, ...)
   categoryLevels: Array<{
-    category: string;
+    themeCode: number;
+    themeId: string;
     categoryName: string;
+    subCategoryName?: string;
     level: number;
     levelName: string;
   }>;
   recentRecords: Array<{
-    category: string;
+    themeCode: number;
+    themeId: string;
     categoryName: string;
-    subject: string;
+    subCategoryName?: string;
     level: number;
-    mode: string;
+    modeCode: number;
     modeName: string;
+    bestScore: number;
     count: number;
     timeAgo: string;
   }>;
@@ -40,6 +47,8 @@ export function HistoryPage() {
   const [loading, setLoading] = useState(true);
   const [stats, setStats] = useState<HistoryStats | null>(null);
   const [session, setSession] = useState<Session | null>(null);
+  const [timeRange, setTimeRange] = useState<'week' | 'month'>('week');
+  const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
 
   useEffect(() => {
     const fetchHistoryData = async () => {
@@ -91,6 +100,10 @@ export function HistoryPage() {
             wrongAnswers: 0,
             dailyCounts: [],
             weekDays: [],
+            monthlyTotal: 0,
+            monthlyTotalLastMonth: 0,
+            monthlyDailyCounts: [],
+            monthlyDays: [],
             categoryLevels: [],
             recentRecords: [],
           });
@@ -111,6 +124,10 @@ export function HistoryPage() {
             wrongAnswers: 0,
             dailyCounts: [],
             weekDays: [],
+            monthlyTotal: 0,
+            monthlyTotalLastMonth: 0,
+            monthlyDailyCounts: [],
+            monthlyDays: [],
             categoryLevels: [],
             recentRecords: [],
           });
@@ -133,69 +150,112 @@ export function HistoryPage() {
         lastWeekEnd.setDate(weekStart.getDate() - 1);
         lastWeekEnd.setHours(23, 59, 59, 999);
 
-        // 게임 기록 가져오기
-        const { data: records, error } = await supabase
-          .from('game_records')
-          .select('*')
+        // theme_mapping 조회
+        const { data: themeMapping, error: themeError } = await supabase
+          .from('theme_mapping')
+          .select('code, theme_id, name');
+
+        if (themeError) {
+          console.warn('[HistoryPage] theme_mapping 조회 실패:', themeError);
+        }
+
+        // theme_code -> theme_id, name 매핑 생성
+        const themeCodeToId: Record<number, string> = {};
+        const themeCodeToName: Record<number, string> = {};
+        themeMapping?.forEach((tm) => {
+          themeCodeToId[tm.code] = tm.theme_id;
+          themeCodeToName[tm.code] = tm.name;
+        });
+
+        // user_level_records 조회
+        const { data: levelRecords, error } = await supabase
+          .from('user_level_records')
+          .select('theme_code, level, mode_code, best_score, updated_at')
           .eq('user_id', user_id)
-          .order('cleared_at', { ascending: false });
+          .order('updated_at', { ascending: false });
 
         if (error) throw error;
 
-        // 이번 주 총 문제 수 계산
-        const weeklyRecords =
-          records?.filter((record) => {
-            if (!record.cleared_at) return false;
-            const recordDate = new Date(record.cleared_at);
-            return recordDate >= weekStart;
-          }) || [];
+        // theme_mapping 정보 매핑
+        const recordsWithTheme = (levelRecords || []).map((record) => {
+          const themeId = themeCodeToId[record.theme_code] || '';
+          const themeName = themeCodeToName[record.theme_code] || '';
+          return {
+            ...record,
+            themeId,
+            themeName,
+          };
+        });
+
+        // 이번 주 총 문제 수 계산 (best_score > 0인 고유한 레벨)
+        const weeklyRecords = recordsWithTheme.filter((record) => {
+          if (!record.updated_at || record.best_score === 0) return false;
+          const recordDate = new Date(record.updated_at);
+          return recordDate >= weekStart;
+        });
+
+        // 고유한 (theme_code, level) 조합 개수
+        const uniqueWeeklyRecords = new Set(
+          weeklyRecords.map((r) => `${r.theme_code}-${r.level}`)
+        );
+        const weeklyTotal = uniqueWeeklyRecords.size;
 
         // 이전 주 총 문제 수 계산
-        const lastWeekRecords =
-          records?.filter((record) => {
-            if (!record.cleared_at) return false;
-            const recordDate = new Date(record.cleared_at);
-            return recordDate >= lastWeekStart && recordDate <= lastWeekEnd;
-          }) || [];
+        const lastWeekRecords = recordsWithTheme.filter((record) => {
+          if (!record.updated_at || record.best_score === 0) return false;
+          const recordDate = new Date(record.updated_at);
+          return recordDate >= lastWeekStart && recordDate <= lastWeekEnd;
+        });
+
+        // 고유한 (theme_code, level) 조합 개수
+        const uniqueLastWeekRecords = new Set(
+          lastWeekRecords.map((r) => `${r.theme_code}-${r.level}`)
+        );
+        const weeklyTotalLastWeek = uniqueLastWeekRecords.size;
 
         // 그래프 비율 계산 (이전 주 대비 또는 최소 50문제 기준)
-        const weeklyTotal = weeklyRecords.length;
-        const weeklyTotalLastWeek = lastWeekRecords.length;
         const maxValue = Math.max(weeklyTotal, weeklyTotalLastWeek, 50); // 최소 50문제 기준
         const graphPercentage = maxValue > 0 ? Math.min((weeklyTotal / maxValue) * 100, 100) : 0;
 
-        // 오답 노트 (cleared가 false인 최근 기록)
-        const wrongRecords = records?.filter((record) => record.cleared === false) || [];
+        // 오답 노트 (best_score = 0인 최근 기록)
+        // 주의: user_level_records에는 best_score = 0인 레코드가 없을 수 있음
+        // 실제 오답은 game_sessions나 별도 테이블에 있을 수 있음
+        const wrongRecords = recordsWithTheme.filter((record) => record.best_score === 0);
         const wrongAnswers = wrongRecords.length;
 
         // 분야별 최고 레벨 계산
-        const categoryMap: Record<string, { level: number; records: GameRecord[] }> = {};
-        records?.forEach((record) => {
-          if (record.cleared) {
-            const key = record.category;
-            if (!categoryMap[key]) {
-              categoryMap[key] = { level: 0, records: [] };
-            }
-            categoryMap[key].records.push(record);
-            if (record.level > categoryMap[key].level) {
-              categoryMap[key].level = record.level;
-            }
+        const themeMap: Record<number, { level: number; themeId: string; themeName: string }> = {};
+
+        recordsWithTheme.forEach((record) => {
+          if (record.best_score === 0) return;
+          const themeCode = record.theme_code;
+          if (!themeMap[themeCode] || record.level > themeMap[themeCode].level) {
+            themeMap[themeCode] = {
+              level: record.level,
+              themeId: record.themeId,
+              themeName: record.themeName,
+            };
           }
         });
 
-        const categoryLevels = Object.entries(categoryMap)
-          .map(([category, data]) => {
+        // theme_id 파싱하여 category/subcategory 분리
+        const categoryLevels = Object.entries(themeMap)
+          .map(([themeCodeStr, { level, themeId }]) => {
+            const [category, subcategory] = themeId.split('_');
             const categoryName =
               APP_CONFIG.CATEGORY_MAP[category as keyof typeof APP_CONFIG.CATEGORY_MAP] || category;
+
             let levelName = 'Beginner';
-            if (data.level >= 15) levelName = 'Master';
-            else if (data.level >= 10) levelName = 'Expert';
-            else if (data.level >= 5) levelName = 'Intermediate';
+            if (level >= 15) levelName = 'Master';
+            else if (level >= 10) levelName = 'Expert';
+            else if (level >= 5) levelName = 'Intermediate';
 
             return {
-              category,
+              themeCode: parseInt(themeCodeStr, 10),
+              themeId,
               categoryName,
-              level: data.level,
+              subCategoryName: subcategory,
+              level,
               levelName,
             };
           })
@@ -203,42 +263,42 @@ export function HistoryPage() {
 
         // 최근 플레이 기록 (최근 10개, 중복 제거)
         const seenKeys = new Set<string>();
-        const recentRecords = (records || [])
+        const recentRecords = recordsWithTheme
           .filter((record) => {
-            if (!record.cleared) return false;
-            const key = `${record.category}-${record.subject}-${record.level}-${record.mode}`;
+            if (record.best_score === 0) return false;
+            const key = `${record.theme_code}-${record.level}-${record.mode_code}`;
             if (seenKeys.has(key)) return false;
             seenKeys.add(key);
             return true;
           })
           .slice(0, 10)
           .map((record) => {
+            const timeAgo = getTimeAgo(record.updated_at || '');
+            const modeName = record.mode_code === 1 ? '타임어택' : '서바이벌';
+            const [category, subcategory] = record.themeId.split('_');
             const categoryName =
-              APP_CONFIG.CATEGORY_MAP[record.category as keyof typeof APP_CONFIG.CATEGORY_MAP] ||
-              record.category;
-            const timeAgo = getTimeAgo(record.cleared_at || record.updated_at || '');
-            const modeName = record.mode === 'time-attack' ? '타임어택' : '서바이벌';
+              APP_CONFIG.CATEGORY_MAP[category as keyof typeof APP_CONFIG.CATEGORY_MAP] || category;
 
-            // 같은 category, subject, level, mode의 기록 개수 계산
-            const sameRecords =
-              records?.filter(
-                (r) =>
-                  r.category === record.category &&
-                  r.subject === record.subject &&
-                  r.level === record.level &&
-                  r.mode === record.mode &&
-                  r.cleared
-              ) || [];
+            // 같은 theme_code, level, mode_code의 기록 개수 계산
+            const sameRecords = recordsWithTheme.filter(
+              (r) =>
+                r.theme_code === record.theme_code &&
+                r.level === record.level &&
+                r.mode_code === record.mode_code &&
+                r.best_score > 0
+            );
 
             return {
-              category: record.category,
+              themeCode: record.theme_code,
+              themeId: record.themeId,
               categoryName,
-              subject: record.subject,
+              subCategoryName: subcategory,
               level: record.level,
-              mode: record.mode,
+              modeCode: record.mode_code,
+              modeName,
+              bestScore: record.best_score,
               count: sameRecords.length,
               timeAgo,
-              modeName,
             };
           });
 
@@ -256,18 +316,94 @@ export function HistoryPage() {
           weekDays[i] = days[d.getDay()];
         }
 
-        // 일별 카운트 집계
-        records?.forEach((record) => {
-          if (!record.cleared || !record.cleared_at) return;
-          const date = new Date(record.cleared_at);
+        // 일별 카운트 집계 (고유한 레벨 조합으로 집계)
+        const dailyUniqueSets = [
+          new Set<string>(),
+          new Set<string>(),
+          new Set<string>(),
+          new Set<string>(),
+          new Set<string>(),
+          new Set<string>(),
+          new Set<string>(),
+        ];
+
+        recordsWithTheme.forEach((record) => {
+          if (record.best_score === 0 || !record.updated_at) return;
+          const date = new Date(record.updated_at);
           date.setHours(0, 0, 0, 0);
 
           const diffTime = today.getTime() - date.getTime();
           const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
 
           if (diffDays >= 0 && diffDays < 7) {
-            dailyCounts[6 - diffDays]++;
+            const key = `${record.theme_code}-${record.level}`;
+            dailyUniqueSets[6 - diffDays].add(key);
           }
+        });
+
+        dailyCounts.forEach((_, index) => {
+          dailyCounts[index] = dailyUniqueSets[index].size;
+        });
+
+        // 월간 통계 계산
+        const monthNow = new Date();
+        const monthStart = new Date(monthNow.getFullYear(), monthNow.getMonth(), 1);
+        monthStart.setHours(0, 0, 0, 0);
+
+        const lastMonthStart = new Date(monthNow.getFullYear(), monthNow.getMonth() - 1, 1);
+        const lastMonthEnd = new Date(monthNow.getFullYear(), monthNow.getMonth(), 0);
+        lastMonthEnd.setHours(23, 59, 59, 999);
+
+        // 이번 달 총 문제 수 계산
+        const monthlyRecords = recordsWithTheme.filter((record) => {
+          if (!record.updated_at || record.best_score === 0) return false;
+          const recordDate = new Date(record.updated_at);
+          return recordDate >= monthStart;
+        });
+
+        const uniqueMonthlyRecords = new Set(
+          monthlyRecords.map((r) => `${r.theme_code}-${r.level}`)
+        );
+        const monthlyTotal = uniqueMonthlyRecords.size;
+
+        // 지난 달 총 문제 수 계산
+        const lastMonthRecords = recordsWithTheme.filter((record) => {
+          if (!record.updated_at || record.best_score === 0) return false;
+          const recordDate = new Date(record.updated_at);
+          return recordDate >= lastMonthStart && recordDate <= lastMonthEnd;
+        });
+
+        const uniqueLastMonthRecords = new Set(
+          lastMonthRecords.map((r) => `${r.theme_code}-${r.level}`)
+        );
+        const monthlyTotalLastMonth = uniqueLastMonthRecords.size;
+
+        // 이번 달 일별 데이터 계산
+        const daysInMonth = new Date(monthNow.getFullYear(), monthNow.getMonth() + 1, 0).getDate();
+        const monthlyDailyCounts = Array(daysInMonth).fill(0);
+        const monthlyDailySets = Array(daysInMonth)
+          .fill(null)
+          .map(() => new Set<string>());
+        const monthlyDays = Array(daysInMonth)
+          .fill(null)
+          .map((_, index) => `${index + 1}일`);
+
+        recordsWithTheme.forEach((record) => {
+          if (record.best_score === 0 || !record.updated_at) return;
+          const date = new Date(record.updated_at);
+          date.setHours(0, 0, 0, 0);
+
+          if (date >= monthStart && date < new Date(monthNow.getFullYear(), monthNow.getMonth() + 1, 1)) {
+            const dayOfMonth = date.getDate() - 1; // 0-based index
+            if (dayOfMonth >= 0 && dayOfMonth < daysInMonth) {
+              const key = `${record.theme_code}-${record.level}`;
+              monthlyDailySets[dayOfMonth].add(key);
+            }
+          }
+        });
+
+        monthlyDailyCounts.forEach((_, index) => {
+          monthlyDailyCounts[index] = monthlyDailySets[index].size;
         });
 
         setStats({
@@ -277,6 +413,10 @@ export function HistoryPage() {
           wrongAnswers,
           dailyCounts,
           weekDays,
+          monthlyTotal,
+          monthlyTotalLastMonth,
+          monthlyDailyCounts,
+          monthlyDays,
           categoryLevels,
           recentRecords,
         });
@@ -289,6 +429,10 @@ export function HistoryPage() {
           wrongAnswers: 0,
           dailyCounts: [],
           weekDays: [],
+          monthlyTotal: 0,
+          monthlyTotalLastMonth: 0,
+          monthlyDailyCounts: [],
+          monthlyDays: [],
           categoryLevels: [],
           recentRecords: [],
         });
@@ -321,6 +465,21 @@ export function HistoryPage() {
     // 오답 노트 복습 페이지로 이동 (나중에 구현)
     navigate(APP_CONFIG.ROUTES.HOME);
   };
+
+  // 필터링된 통계 계산
+  const filteredStats = useMemo(() => {
+    if (!stats || !selectedCategory) return stats;
+
+    return {
+      ...stats,
+      recentRecords: stats.recentRecords.filter((record) =>
+        record.themeId.startsWith(selectedCategory)
+      ),
+      categoryLevels: stats.categoryLevels.filter((item) =>
+        item.themeId.startsWith(selectedCategory)
+      ),
+    };
+  }, [stats, selectedCategory]);
 
   // 로그인하지 않은 경우
   if (!session && !loading) {
@@ -360,13 +519,34 @@ export function HistoryPage() {
           {/* 카드 1: 요약 */}
           <div className="history-card">
             <div className="history-card-header">
-              <h2 className="history-card-title">이번 주 요약</h2>
+              <h2 className="history-card-title">
+                {timeRange === 'week' ? '이번 주 요약' : '이번 달 요약'}
+              </h2>
+              <div className="history-time-range-tabs">
+                <button
+                  className={`history-tab ${timeRange === 'week' ? 'active' : ''}`}
+                  onClick={() => setTimeRange('week')}
+                >
+                  주간
+                </button>
+                <button
+                  className={`history-tab ${timeRange === 'month' ? 'active' : ''}`}
+                  onClick={() => setTimeRange('month')}
+                >
+                  월간
+                </button>
+              </div>
             </div>
             <div className="history-summary-content">
               <div className="history-summary-text">
-                이번 주{' '}
+                {timeRange === 'week' ? '이번 주' : '이번 달'}{' '}
                 <strong className="history-summary-highlight">
-                  {loading ? '...' : stats?.weeklyTotal || 0}문제
+                  {loading
+                    ? '...'
+                    : timeRange === 'week'
+                      ? stats?.weeklyTotal || 0
+                      : stats?.monthlyTotal || 0}
+                  문제
                 </strong>
                 를 풀었어요!
               </div>
@@ -391,59 +571,132 @@ export function HistoryPage() {
                     />
 
                     {/* 데이터 바 렌더링 */}
-                    {stats?.dailyCounts?.map((count, index) => {
-                      // 최대값 기준으로 높이 계산 (최소 10)
-                      const max = Math.max(...(stats.dailyCounts || [0]), 10);
-                      const height = Math.min((count / max) * 80, 80); // 최대 높이 80
-                      const x = index * (300 / 7) + 300 / 14 - 10; // 7등분 후 중앙 정렬, 바 너비 20 보정
+                    {timeRange === 'week'
+                      ? (stats?.dailyCounts || []).map((count, index) => {
+                          // 최대값 기준으로 높이 계산 (최소 10)
+                          const dailyCounts = stats?.dailyCounts || [0, 0, 0, 0, 0, 0, 0];
+                          const max = Math.max(...dailyCounts, 10);
+                          const height = Math.min((count / max) * 80, 80); // 최대 높이 80
+                          const x = index * (300 / 7) + 300 / 14 - 10; // 7등분 후 중앙 정렬, 바 너비 20 보정
 
-                      return (
-                        <g key={index}>
-                          {/* 막대 (최소 높이 4px 보장) */}
-                          <rect
-                            x={x}
-                            y={80 - Math.max(height, count > 0 ? 4 : 0)}
-                            width="20"
-                            height={Math.max(height, count > 0 ? 4 : 0)}
-                            fill={index === 6 ? '#4cd964' : 'rgba(255, 255, 255, 0.3)'}
-                            rx="4"
-                          />
-                          {/* 수치 라벨 (값이 있을 때만) */}
-                          {count > 0 && (
-                            <text
-                              x={x + 10}
-                              y={80 - height - 5}
-                              textAnchor="middle"
-                              fill="rgba(255,255,255,0.8)"
-                              fontSize="10"
-                            >
-                              {count}
-                            </text>
-                          )}
-                          {/* 요일 라벨 */}
-                          <text
-                            x={x + 10}
-                            y="95"
-                            textAnchor="middle"
-                            fill={index === 6 ? '#fff' : 'rgba(255,255,255,0.5)'}
-                            fontSize="10"
-                            fontWeight={index === 6 ? 'bold' : 'normal'}
-                          >
-                            {stats?.weekDays?.[index] || ''}
-                          </text>
-                        </g>
-                      );
-                    })}
+                          return (
+                            <g key={index}>
+                              {/* 막대 (최소 높이 4px 보장) */}
+                              <rect
+                                x={x}
+                                y={80 - Math.max(height, count > 0 ? 4 : 0)}
+                                width="20"
+                                height={Math.max(height, count > 0 ? 4 : 0)}
+                                fill={index === 6 ? '#4cd964' : 'rgba(255, 255, 255, 0.3)'}
+                                rx="4"
+                              />
+                              {/* 수치 라벨 (값이 있을 때만) */}
+                              {count > 0 && (
+                                <text
+                                  x={x + 10}
+                                  y={80 - height - 5}
+                                  textAnchor="middle"
+                                  fill="rgba(255,255,255,0.8)"
+                                  fontSize="10"
+                                >
+                                  {count}
+                                </text>
+                              )}
+                              {/* 요일 라벨 */}
+                              <text
+                                x={x + 10}
+                                y="95"
+                                textAnchor="middle"
+                                fill={index === 6 ? '#fff' : 'rgba(255,255,255,0.5)'}
+                                fontSize="10"
+                                fontWeight={index === 6 ? 'bold' : 'normal'}
+                              >
+                                {stats?.weekDays?.[index] || ''}
+                              </text>
+                            </g>
+                          );
+                        })
+                      : (stats?.monthlyDailyCounts || []).length > 0
+                        ? (stats?.monthlyDailyCounts || []).map((count, index) => {
+                            const monthlyCounts = stats?.monthlyDailyCounts || [];
+                            if (monthlyCounts.length === 0) return null;
+                            
+                            const daysToShow = Math.min(monthlyCounts.length, 30);
+                            const step = Math.max(1, Math.floor(monthlyCounts.length / daysToShow));
+                            if (index % step !== 0 && index !== monthlyCounts.length - 1) return null;
+
+                            const max = Math.max(...monthlyCounts, 10);
+                            const height = Math.min((count / max) * 80, 80);
+                            const x = (index / monthlyCounts.length) * 300;
+                            const barWidth = Math.max(2, 300 / monthlyCounts.length - 2);
+
+                            return (
+                              <g key={index}>
+                                <rect
+                                  x={x}
+                                  y={80 - Math.max(height, count > 0 ? 4 : 0)}
+                                  width={barWidth}
+                                  height={Math.max(height, count > 0 ? 4 : 0)}
+                                  fill={
+                                    index === monthlyCounts.length - 1
+                                      ? '#4cd964'
+                                      : 'rgba(255, 255, 255, 0.3)'
+                                  }
+                                  rx="2"
+                                />
+                                {count > 0 && index % Math.ceil(monthlyCounts.length / 10) === 0 && (
+                                  <text
+                                    x={x + barWidth / 2}
+                                    y={80 - height - 5}
+                                    textAnchor="middle"
+                                    fill="rgba(255,255,255,0.8)"
+                                    fontSize="8"
+                                  >
+                                    {count}
+                                  </text>
+                                )}
+                                {index % Math.ceil(monthlyCounts.length / 7) === 0 && (
+                                  <text
+                                    x={x + barWidth / 2}
+                                    y="95"
+                                    textAnchor="middle"
+                                    fill={
+                                      index === monthlyCounts.length - 1
+                                        ? '#fff'
+                                        : 'rgba(255,255,255,0.5)'
+                                    }
+                                    fontSize="8"
+                                    fontWeight={index === monthlyCounts.length - 1 ? 'bold' : 'normal'}
+                                  >
+                                    {stats?.monthlyDays?.[index] || ''}
+                                  </text>
+                                )}
+                              </g>
+                            );
+                          })
+                        : null}
                   </svg>
                 )}
               </div>
 
-              {stats && stats.weeklyTotalLastWeek > 0 && (
-                <div className="history-summary-comparison" style={{ marginTop: '8px' }}>
-                  지난주 대비 {stats.weeklyTotal >= stats.weeklyTotalLastWeek ? '+' : ''}
-                  {stats.weeklyTotal - stats.weeklyTotalLastWeek}문제
-                </div>
-              )}
+              {stats &&
+                ((timeRange === 'week' && stats.weeklyTotalLastWeek > 0) ||
+                  (timeRange === 'month' && stats.monthlyTotalLastMonth > 0)) && (
+                  <div className="history-summary-comparison" style={{ marginTop: '8px' }}>
+                    {timeRange === 'week' ? '지난주' : '지난달'} 대비{' '}
+                    {timeRange === 'week'
+                      ? stats.weeklyTotal >= stats.weeklyTotalLastWeek
+                        ? '+'
+                        : ''
+                      : stats.monthlyTotal >= stats.monthlyTotalLastMonth
+                        ? '+'
+                        : ''}
+                    {timeRange === 'week'
+                      ? stats.weeklyTotal - stats.weeklyTotalLastWeek
+                      : stats.monthlyTotal - stats.monthlyTotalLastMonth}
+                    문제
+                  </div>
+                )}
             </div>
           </div>
 
@@ -474,19 +727,38 @@ export function HistoryPage() {
           <div className="history-card">
             <div className="history-card-header">
               <h2 className="history-card-title">분야별 분석</h2>
+              {selectedCategory && (
+                <button
+                  className="history-filter-clear"
+                  onClick={() => setSelectedCategory(null)}
+                >
+                  필터 해제
+                </button>
+              )}
             </div>
             <div className="history-category-list">
               {loading ? (
                 <div className="history-loading">로딩 중...</div>
               ) : stats && stats.categoryLevels.length > 0 ? (
-                stats.categoryLevels.map((item) => (
-                  <div key={item.category} className="history-category-item">
-                    <span className="history-category-name">{item.categoryName}</span>
-                    <span className="history-category-level">
-                      Lv.{item.level} ({item.levelName})
-                    </span>
-                  </div>
-                ))
+                stats.categoryLevels.map((item) => {
+                  const [category] = item.themeId.split('_');
+                  return (
+                    <div
+                      key={item.themeId}
+                      className={`history-category-item ${selectedCategory === category ? 'history-category-item-selected' : ''}`}
+                      onClick={() => setSelectedCategory(category)}
+                      style={{ cursor: 'pointer' }}
+                    >
+                      <span className="history-category-name">
+                        {item.categoryName}
+                        {item.subCategoryName && ` - ${item.subCategoryName}`}
+                      </span>
+                      <span className="history-category-level">
+                        Lv.{item.level} ({item.levelName})
+                      </span>
+                    </div>
+                  );
+                })
               ) : (
                 <div className="history-empty">아직 기록이 없어요.</div>
               )}
@@ -501,18 +773,33 @@ export function HistoryPage() {
             <div className="history-recent-list">
               {loading ? (
                 <div className="history-loading">로딩 중...</div>
-              ) : stats && stats.recentRecords.length > 0 ? (
-                stats.recentRecords.map((record, index) => (
-                  <div key={index} className="history-recent-item">
-                    <div className="history-recent-info">
-                      <span className="history-recent-category">[{record.categoryName}]</span>
-                      <span className="history-recent-details">
-                        {record.subject} Lv.{record.level} ({record.modeName}) - {record.count}개
-                      </span>
+              ) : filteredStats && filteredStats.recentRecords.length > 0 ? (
+                filteredStats.recentRecords.map((record, index) => {
+                  const [category, subCategory] = record.themeId.split('_');
+                  return (
+                    <div
+                      key={index}
+                      className="history-recent-item"
+                      onClick={() => {
+                        if (subCategory) {
+                          navigate(`/level-select?category=${category}&sub=${subCategory}`);
+                        } else {
+                          navigate(`/subcategory?category=${category}`);
+                        }
+                      }}
+                      style={{ cursor: 'pointer' }}
+                    >
+                      <div className="history-recent-info">
+                        <span className="history-recent-category">[{record.categoryName}]</span>
+                        <span className="history-recent-details">
+                          {record.subCategoryName || ''} Lv.{record.level} ({record.modeName}) - {record.count}개
+                          <span className="history-recent-score">최고: {record.bestScore}점</span>
+                        </span>
+                      </div>
+                      <span className="history-recent-time">{record.timeAgo}</span>
                     </div>
-                    <span className="history-recent-time">{record.timeAgo}</span>
-                  </div>
-                ))
+                  );
+                })
               ) : (
                 <div className="history-empty">아직 기록이 없어요.</div>
               )}

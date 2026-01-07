@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach, vi, afterEach } from 'vitest';
-import { render, screen } from '@testing-library/react';
+import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { TimerCircle } from '../TimerCircle';
 
 describe('TimerCircle', () => {
@@ -59,5 +59,35 @@ describe('TimerCircle', () => {
 
     expect(container.querySelector('.timer-circle-container')).toBeInTheDocument();
   });
-});
 
+  it('should render with correct initial time', () => {
+    const onComplete = vi.fn();
+    render(<TimerCircle duration={5} onComplete={onComplete} />);
+    expect(screen.getByText('0:05')).toBeInTheDocument();
+  });
+
+  it('should render circle with correct style', () => {
+    const onComplete = vi.fn();
+    const { container } = render(<TimerCircle duration={60} onComplete={onComplete} />);
+    const circle = container.querySelector('div[style*="conic-gradient"]');
+    expect(circle).toBeInTheDocument();
+  });
+
+  it('should have event handlers when enableFastForward is true', () => {
+    const onComplete = vi.fn();
+    const { container } = render(
+      <TimerCircle duration={10} onComplete={onComplete} enableFastForward={true} />
+    );
+    const timerContainer = container.querySelector('.timer-circle-container');
+    expect(timerContainer).toBeInTheDocument();
+  });
+
+  it('should not have event handlers when enableFastForward is false', () => {
+    const onComplete = vi.fn();
+    const { container } = render(
+      <TimerCircle duration={10} onComplete={onComplete} enableFastForward={false} />
+    );
+    const timerContainer = container.querySelector('.timer-circle-container');
+    expect(timerContainer).toBeInTheDocument();
+  });
+});

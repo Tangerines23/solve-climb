@@ -240,5 +240,143 @@ describe('TierBadge', () => {
       expect(screen.getByText('베이스캠프')).toBeInTheDocument();
     });
   });
+
+  it('should handle error when calculateTier fails', async () => {
+    const consoleErrorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
+    vi.mocked(calculateTier).mockRejectedValue(new Error('Failed to calculate tier'));
+
+    render(<TierBadge totalScore={1000} />);
+
+    await waitFor(
+      () => {
+        expect(consoleErrorSpy).toHaveBeenCalled();
+      },
+      { timeout: 3000 }
+    );
+
+    // Should still show loading state (⛺)
+    expect(screen.getByText('⛺')).toBeInTheDocument();
+
+    consoleErrorSpy.mockRestore();
+  });
+
+  it('should handle error when getTierInfo fails', async () => {
+    const consoleErrorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
+    vi.mocked(calculateTier).mockResolvedValue({
+      level: 1,
+      stars: 0,
+      totalScore: 1000,
+      currentCycleScore: 1000,
+    });
+    vi.mocked(getTierInfo).mockRejectedValue(new Error('Failed to get tier info'));
+
+    render(<TierBadge totalScore={1000} />);
+
+    await waitFor(
+      () => {
+        expect(consoleErrorSpy).toHaveBeenCalled();
+      },
+      { timeout: 3000 }
+    );
+
+    // Should still show loading state (⛺)
+    expect(screen.getByText('⛺')).toBeInTheDocument();
+
+    consoleErrorSpy.mockRestore();
+  });
+
+  it('should not display stars when stars is 0', async () => {
+    vi.mocked(calculateTier).mockResolvedValue({
+      level: 1,
+      stars: 0,
+      totalScore: 1000,
+      currentCycleScore: 1000,
+    });
+    vi.mocked(getTierInfo).mockResolvedValue({
+      level: 1,
+      name: '등산로',
+      icon: '🥾',
+      minScore: 1000,
+      colorVar: '--color-tier-trail',
+    });
+
+    render(<TierBadge totalScore={1000} showStars={true} />);
+
+    await waitFor(() => {
+      expect(screen.getByText('등산로')).toBeInTheDocument();
+    });
+
+    // Stars should not be displayed when stars is 0
+    expect(screen.queryByText(/★/)).not.toBeInTheDocument();
+  });
+
+  it('should update when totalScore changes', async () => {
+    vi.mocked(calculateTier).mockResolvedValueOnce({
+      level: 1,
+      stars: 0,
+      totalScore: 1000,
+      currentCycleScore: 1000,
+    });
+    vi.mocked(getTierInfo).mockResolvedValueOnce({
+      level: 1,
+      name: '등산로',
+      icon: '🥾',
+      minScore: 1000,
+      colorVar: '--color-tier-trail',
+    });
+
+    const { rerender } = render(<TierBadge totalScore={1000} />);
+
+    await waitFor(() => {
+      expect(screen.getByText('등산로')).toBeInTheDocument();
+    });
+
+    // Update score
+    vi.mocked(calculateTier).mockResolvedValueOnce({
+      level: 2,
+      stars: 0,
+      totalScore: 5000,
+      currentCycleScore: 5000,
+    });
+    vi.mocked(getTierInfo).mockResolvedValueOnce({
+      level: 2,
+      name: '중턱',
+      icon: '⛰️',
+      minScore: 5000,
+      colorVar: '--color-tier-mid',
+    });
+
+    rerender(<TierBadge totalScore={5000} />);
+
+    await waitFor(() => {
+      expect(screen.getByText('중턱')).toBeInTheDocument();
+    });
+  });
+
+  it('should use currentTierLevel when provided instead of calculated level', async () => {
+    vi.mocked(calculateTier).mockResolvedValue({
+      level: 2,
+      stars: 0,
+      totalScore: 5000,
+      currentCycleScore: 5000,
+    });
+    vi.mocked(getTierInfo).mockResolvedValue({
+      level: 1,
+      name: '등산로',
+      icon: '🥾',
+      minScore: 1000,
+      colorVar: '--color-tier-trail',
+    });
+
+    render(<TierBadge totalScore={5000} currentTierLevel={1} />);
+
+    await waitFor(() => {
+      expect(screen.getByText('등산로')).toBeInTheDocument();
+    });
+
+    // Should use currentTierLevel (1) instead of calculated level (2)
+    expect(getTierInfo).toHaveBeenCalledWith(1);
+    expect(getTierInfo).not.toHaveBeenCalledWith(2);
+  });
 });
 

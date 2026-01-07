@@ -136,5 +136,98 @@ describe('ProfileForm', () => {
       expect(onComplete).toHaveBeenCalled();
     });
   });
+
+  it('should show back button when showBackButton is true', () => {
+    renderProfileForm({ showBackButton: true });
+
+    const backButton = screen.getByText('←');
+    expect(backButton).toBeInTheDocument();
+  });
+
+  it('should not show back button when showBackButton is false', () => {
+    renderProfileForm({ showBackButton: false });
+
+    const backButton = screen.queryByText('←');
+    expect(backButton).not.toBeInTheDocument();
+  });
+
+  it('should show "저장하기" button for existing profile', () => {
+    (useProfileStore as unknown as ReturnType<typeof vi.fn>).mockImplementation((selector) => {
+      const state = {
+        profile: {
+          profileId: 'test-id',
+          nickname: 'TestUser',
+          createdAt: new Date().toISOString(),
+          isAdmin: false,
+        },
+        setProfile: vi.fn(),
+      };
+      return selector(state);
+    });
+
+    renderProfileForm();
+
+    expect(screen.getByText('저장하기')).toBeInTheDocument();
+  });
+
+  it('should show error for nickname longer than 10 characters', async () => {
+    const user = userEvent.setup();
+    renderProfileForm();
+
+    const input = screen.getByPlaceholderText('닉네임을 입력하세요');
+    const submitButton = screen.getByText('시작하기');
+
+    // Type exactly 11 characters (maxLength is 10, so only 10 will be accepted)
+    await user.type(input, '12345678901');
+    
+    // Input should be limited to 10 characters
+    expect(input).toHaveValue('1234567890');
+    
+    // Try to submit
+    await user.click(submitButton);
+
+    // Since input is limited, validation should pass, but we can check the character count
+    expect(screen.getByText('10/10자')).toBeInTheDocument();
+  });
+
+  it('should clear error when typing in input', async () => {
+    const user = userEvent.setup();
+    renderProfileForm();
+
+    const input = screen.getByPlaceholderText('닉네임을 입력하세요');
+    const submitButton = screen.getByText('시작하기');
+
+    // Submit empty to trigger error
+    await user.click(submitButton);
+    await waitFor(() => {
+      expect(screen.getByText(/닉네임을 입력해주세요/)).toBeInTheDocument();
+    });
+
+    // Type to clear error
+    await user.type(input, 'Test');
+    expect(screen.queryByText(/닉네임을 입력해주세요/)).not.toBeInTheDocument();
+  });
+
+  it('should update character count as user types', async () => {
+    const user = userEvent.setup();
+    renderProfileForm();
+
+    const input = screen.getByPlaceholderText('닉네임을 입력하세요');
+
+    await user.type(input, 'Test');
+    expect(screen.getByText('4/10자')).toBeInTheDocument();
+
+    await user.type(input, 'Name');
+    expect(screen.getByText('8/10자')).toBeInTheDocument();
+  });
+
+  it('should navigate back when back button is clicked', () => {
+    renderProfileForm({ showBackButton: true });
+
+    const backButton = screen.getByText('←');
+    backButton.click();
+
+    expect(mockNavigate).toHaveBeenCalledWith(-1);
+  });
 });
 

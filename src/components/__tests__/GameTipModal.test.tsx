@@ -130,5 +130,85 @@ describe('GameTipModal', () => {
 
     expect(screen.getByTestId('backpack-bottom-sheet')).toBeInTheDocument();
   });
+
+  it('should call onClose when close button is clicked', () => {
+    render(
+      <GameTipModal
+        isOpen={true}
+        category="math"
+        subTopic="arithmetic"
+        onClose={mockOnClose}
+        onStart={mockOnStart}
+      />
+    );
+
+    const closeButton = screen.queryByText(/닫기/) || screen.queryByText(/×/);
+    if (closeButton) {
+      fireEvent.click(closeButton);
+      expect(mockOnClose).toHaveBeenCalled();
+    }
+  });
+
+  it('should call onStart with selected items', () => {
+    render(
+      <GameTipModal
+        isOpen={true}
+        category="math"
+        subTopic="arithmetic"
+        onClose={mockOnClose}
+        onStart={mockOnStart}
+      />
+    );
+
+    const startButton = screen.getByText(/시작하기/);
+    fireEvent.click(startButton);
+
+    expect(mockOnStart).toHaveBeenCalledWith([]);
+  });
+
+  it('should handle different category and subTopic combinations', () => {
+    const { rerender } = render(
+      <GameTipModal
+        isOpen={true}
+        category="math"
+        subTopic="arithmetic"
+        onClose={mockOnClose}
+        onStart={mockOnStart}
+      />
+    );
+
+    expect(screen.getByText(/사칙연산 팁/)).toBeInTheDocument();
+
+    rerender(
+      <GameTipModal
+        isOpen={true}
+        category="math"
+        subTopic="equations"
+        onClose={mockOnClose}
+        onStart={mockOnStart}
+      />
+    );
+
+    expect(screen.getByText(/방정식 풀이 팁/)).toBeInTheDocument();
+  });
+
+  it('should not save preference when dont show again is not checked', () => {
+    render(
+      <GameTipModal
+        isOpen={true}
+        category="math"
+        subTopic="arithmetic"
+        level={1}
+        onClose={mockOnClose}
+        onStart={mockOnStart}
+      />
+    );
+
+    const startButton = screen.getByText(/시작하기/);
+    fireEvent.click(startButton);
+
+    // storage.setString should not be called when checkbox is not checked
+    expect(storage.setString).not.toHaveBeenCalled();
+  });
 });
 
