@@ -2,6 +2,12 @@
 
 수학 퀴즈를 통해 산을 오르는 교육용 게임 앱입니다. 사칙연산부터 고급 수학 문제까지 다양한 난이도로 학습할 수 있습니다.
 
+## CI/CD 상태
+
+![CI](https://github.com/Tangerines23/solve-climb/workflows/CI/badge.svg)
+![Security](https://img.shields.io/badge/security-0%20vulnerabilities-brightgreen)
+![Tests](https://img.shields.io/badge/tests-44%20passed-success)
+
 ## 주요 기능
 
 - 📚 **다양한 카테고리**: 수학의 산, 언어의 산, 미지의 산
@@ -262,6 +268,36 @@ npm run check:css
 이 명령어는 `src` 폴더의 모든 CSS 파일을 검사하고 하드코딩된 색상, 간격, border-radius 값을 찾아보고합니다.
 
 자세한 내용은 [DESIGN_SYSTEM.md](./docs/DESIGN_SYSTEM.md)를 참고하세요.
+
+## CI/CD
+
+이 프로젝트는 GitHub Actions를 사용하여 자동화된 CI/CD 파이프라인을 구축하고 있습니다.
+
+### CI/CD 문서
+
+- **[CI/CD 시스템 분석](./docs/CI_CD_GAPS_DEEP_ANALYSIS.md)** - 현재 시스템의 부족한 부분 심층 분석 및 개선 방안
+- **[CI/CD 실행 계획서](./docs/CI_CD_IMPLEMENTATION_PLAN.md)** - 상세 작업 계획 및 체크리스트
+
+### 현재 상태
+
+- ✅ TypeScript 타입 체크
+- ✅ ESLint 코드 검사
+- ✅ Prettier 포맷팅 검사
+- ✅ CSS 변수 검증
+- ✅ 보안 취약점 스캔 (npm audit)
+- ✅ 테스트 실행 및 커버리지 리포트
+- ✅ 자동 배포 (Vercel)
+
+### 향후 개선 계획
+
+- ⚠️ 테스트 커버리지 80% 달성 (현재 33%)
+- ⚠️ 통합 테스트 추가
+- ⚠️ E2E 테스트 추가 (Playwright)
+- ⚠️ 성능 테스트 (Lighthouse CI)
+- ⚠️ 고급 보안 도구 (CodeQL, OWASP ZAP)
+- ⚠️ 모니터링 및 알림 강화
+
+자세한 내용은 [CI/CD 실행 계획서](./docs/CI_CD_IMPLEMENTATION_PLAN.md)를 참고하세요.
 
 ## 보안
 

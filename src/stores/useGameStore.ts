@@ -9,6 +9,7 @@ interface GameState {
   // UI Triggers
   showSpeedLines: boolean;
   showVignette: boolean;
+  lives: number; // Survival Mode Lives (Hearts)
 
   setScore: (score: number) => void;
   incrementCombo: () => void;
@@ -22,6 +23,8 @@ interface GameState {
   // Stamina Session Lock
   isStaminaConsumed: boolean;
   setStaminaConsumed: (consumed: boolean) => void;
+  consumeLife: () => void;
+  recoverLife: () => void;
   resetGame: () => void;
 }
 
@@ -34,6 +37,7 @@ export const useGameStore = create<GameState>((set) => ({
   showVignette: false,
   activeItems: [],
   isStaminaConsumed: false,
+  lives: 3,
 
   setScore: (score) => set({ score }),
 
@@ -84,6 +88,16 @@ export const useGameStore = create<GameState>((set) => ({
 
   setStaminaConsumed: (consumed) => set({ isStaminaConsumed: consumed }),
 
+  consumeLife: () =>
+    set((state) => ({
+      lives: Math.max(0, state.lives - 1),
+    })),
+
+  recoverLife: () =>
+    set((state) => ({
+      lives: Math.min(5, state.lives + 1),
+    })),
+
   resetGame: () =>
     set({
       score: 0,
@@ -94,6 +108,7 @@ export const useGameStore = create<GameState>((set) => ({
       showVignette: false,
       activeItems: [],
       isStaminaConsumed: false,
+      lives: 3,
     }),
 
   setActiveItems: (codes) => set({ activeItems: codes }),

@@ -2,10 +2,11 @@
 import { useCallback, useRef, useEffect, FormEvent } from 'react';
 import { QuizQuestion } from '../types/quiz';
 import { GameMode } from '../types/quiz';
-import { CLIMB_PER_CORRECT, SLIDE_PER_WRONG, MAX_POSSIBLE_ANSWER } from '../constants/game';
+import { SLIDE_PER_WRONG, MAX_POSSIBLE_ANSWER, BASE_CLIMB_DISTANCE, DISTANCE_PER_LEVEL, THEME_MULTIPLIERS, BOSS_LEVEL, BOSS_BONUS, ThemeTier, SURVIVAL_CONFIG } from '../constants/game';
 import { normalizeRomaji } from '../utils/japanese';
 import { vibrateMedium, vibrateLong } from '../utils/haptic';
 import { useGameStore } from '../stores/useGameStore';
+import { APP_CONFIG } from '../config/app';
 
 interface UseQuizSubmitParams {
   answerInput: string;
@@ -24,6 +25,7 @@ interface UseQuizSubmitParams {
   setIsError: (value: boolean) => void;
   setShowFlash: (value: boolean) => void;
   setShowSlideToast: (value: boolean) => void;
+  setToastValue: (value: string) => void;
   setDamagePosition: (value: { left: string; top: string }) => void;
   setAnswerInput: (value: string) => void;
   increaseScore: (amount: number) => void;
@@ -62,6 +64,7 @@ export function useQuizSubmit({
   setIsError,
   setShowFlash,
   setShowSlideToast,
+  setToastValue,
   setDamagePosition,
   setAnswerInput,
   increaseScore,
@@ -78,7 +81,7 @@ export function useQuizSubmit({
   onAnswerSubmitted,
   currentQuestionId,
 }: UseQuizSubmitParams) {
-  const { incrementCombo, resetCombo, isExhausted, activeItems, consumeActiveItem } =
+  const { incrementCombo, resetCombo, isExhausted, activeItems, consumeActiveItem, lives, consumeLife, recoverLife } =
     useGameStore();
 
   // 함수 참조를 안정적으로 유지하기 위한 ref
@@ -146,7 +149,11 @@ export function useQuizSubmit({
       }
 
       // 문제 수 증가
-      paramsRef.current.setTotalQuestions((prev) => prev + 1);
+      let currentWave = 1;
+      paramsRef.current.setTotalQuestions((prev) => {
+        currentWave = prev + 1;
+        return currentWave;
+      });
 
       if (isCorrect) {
         // 진동 피드백
@@ -164,9 +171,49 @@ export function useQuizSubmit({
 
         // 콤보 증가 및 가중치 적용
         incrementCombo();
-        const baseScore = CLIMB_PER_CORRECT;
-        const multiplier = isExhausted ? 0.8 : 1.0;
-        increaseScore(Math.floor(baseScore * multiplier));
+
+        // [New Scoring System]
+        const level = parseInt(new URLSearchParams(window.location.search).get('level') || '1', 10);
+        const { feverLevel } = useGameStore.getState();
+
+        // 1. 기본 레벨 점수 (Base Score)
+        const baseLevelScore = BASE_CLIMB_DISTANCE + (level - 1) * DISTANCE_PER_LEVEL;
+
+        // 2. 테마 난이도 배율 (Theme Multiplier)
+        const categoryTopics = APP_CONFIG.SUB_TOPICS[categoryParam as keyof typeof APP_CONFIG.SUB_TOPICS] || [];
+        const currentTopic = categoryTopics.find((t: any) => t.id === subParam);
+        const tier = (currentTopic as any)?.tier as ThemeTier || 'basic';
+        const themeMultiplier = THEME_MULTIPLIERS[tier];
+
+        // 3. 콤보 배율 (Combo Multiplier)
+        const comboMultiplier = feverLevel === 2 ? 1.5 : feverLevel === 1 ? 1.2 : 1.0;
+
+        // 4. 최종 점수 계산
+        let earnedDistance = Math.floor((baseLevelScore * themeMultiplier) * comboMultiplier);
+
+        // 5. 보스 보너스 (Lv.10)
+        if (level === BOSS_LEVEL) {
+          earnedDistance += BOSS_BONUS;
+        }
+
+        // 지침 상태 페널티 (80%)
+        if (isExhausted) {
+          earnedDistance = Math.floor(earnedDistance * 0.2);
+        }
+
+        // 서바이벌 모드: 10문제마다 라이프 회복
+        if (gameMode === 'survival' && currentWave > 0 && currentWave % SURVIVAL_CONFIG.HEAL_INTERVAL === 0) {
+          recoverLife();
+          showFeedback('LIFE UP!', 'Health Recovered ❤️', 'success');
+        }
+
+        // 득점 토스트
+        setToastValue(`+${earnedDistance}m`);
+        setDamagePosition({ left: '50%', top: '30%' }); // 정답은 중앙 상단 고정 또는 랜덤
+        setShowSlideToast(true);
+        setTimeout(() => setShowSlideToast(false), 700);
+
+        increaseScore(earnedDistance);
 
         setTimeout(() => {
           setDisplayValue('');
@@ -242,7 +289,7 @@ export function useQuizSubmit({
             },
           ]);
 
-          // 800ms 후 게임 종료 (Flare가 있으면 부활)
+          // 800ms 후 게임 종료 (Flare가 있으면 부활, Lives가 있으면 유지)
           setTimeout(() => {
             const hasFlare = activeItems.includes('flare');
             if (hasFlare) {
@@ -252,12 +299,21 @@ export function useQuizSubmit({
               setIsError(false);
               setDisplayValue('');
               setShowFlash(false);
-              // 구조 신호탄 사용 후 타이머 일시정지
               if (setIsFlarePaused) setIsFlarePaused(true);
-              // 새 문제 생성
+              paramsRef.current.generateNewQuestion();
+              setIsSubmitting(false);
+            } else if (lives > 1) {
+              // 라이프가 남아있으면 차감하고 계속 진행
+              consumeLife();
+              showFeedback('LIFE LOST', `${lives - 1} Hearts Left`, 'info');
+              setIsError(false);
+              setDisplayValue('');
+              setShowFlash(false);
               paramsRef.current.generateNewQuestion();
               setIsSubmitting(false);
             } else {
+              // 라이프가 0이면 진짜 종료
+              consumeLife(); // 0으로 만들기
               setIsError(false);
               setDisplayValue('');
               setShowFlash(false);
@@ -274,6 +330,7 @@ export function useQuizSubmit({
 
           // 이전 토스트가 있다면 먼저 제거하고 새로 표시
           setShowSlideToast(false);
+          setToastValue(`-${SLIDE_PER_WRONG}m`);
 
           // 랜덤 위치 생성 (X: 10-80%, Y: 10-40%)
           const randomLeft = Math.floor(Math.random() * 70) + 10; // 10% ~ 80%
@@ -344,6 +401,9 @@ export function useQuizSubmit({
       onSafetyRopeUsed,
       resetCombo,
       setIsFlarePaused,
+      lives,
+      consumeLife,
+      recoverLife,
     ]
   );
 

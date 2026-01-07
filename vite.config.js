@@ -55,6 +55,25 @@ export default defineConfig(() => {
       environment: 'jsdom',
       setupFiles: './src/setupTests.ts',
       css: true,
+      coverage: {
+        provider: 'v8',
+        reporter: ['text', 'json', 'html', 'lcov'],
+        exclude: [
+          'node_modules/',
+          'src/setupTests.ts',
+          '**/*.d.ts',
+          '**/*.config.*',
+          '**/dist/**',
+          '**/coverage/**',
+        ],
+        // 커버리지 임계값 설정 (업계 표준: 80%)
+        thresholds: {
+          lines: 80,
+          functions: 80,
+          branches: 75,
+          statements: 80,
+        },
+      },
     },
   }
 })

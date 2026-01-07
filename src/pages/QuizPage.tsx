@@ -56,8 +56,10 @@ export function QuizPage() {
   const [currentQuestion, setCurrentQuestion] = useState<QuizQuestion | null>(null);
   const [answerInput, setAnswerInput] = useState('');
   const [displayValue, setDisplayValue] = useState('');
+  const lives = useGameStore((state) => state.lives);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showExitConfirm, setShowExitConfirm] = useState(false);
+  const [toastValue, setToastValue] = useState('');
   const [isFadingOut, setIsFadingOut] = useState(false);
   const [useSystemKeyboard, setUseSystemKeyboard] = useState(false);
   const [showTipModal, setShowTipModal] = useState(true);
@@ -167,6 +169,7 @@ export function QuizPage() {
     categoryParam,
     subParam,
     levelParam,
+    totalQuestions: gameState.totalQuestions,
     useSystemKeyboard,
     inputRef,
     setCurrentQuestion,
@@ -346,6 +349,7 @@ export function QuizPage() {
     setIsError: animations.setIsError,
     setShowFlash: animations.setShowFlash,
     setShowSlideToast: animations.setShowSlideToast,
+    setToastValue,
     setDamagePosition: animations.setDamagePosition,
     setAnswerInput,
     increaseScore,
@@ -794,8 +798,8 @@ export function QuizPage() {
     if (!isPreview) return '';
     return categoryParam
       ? APP_CONFIG.CATEGORY_MAP[categoryParam as keyof typeof APP_CONFIG.CATEGORY_MAP] ||
-          category ||
-          ''
+      category ||
+      ''
       : category || '';
   }, [isPreview, categoryParam, category]);
 
@@ -1065,6 +1069,8 @@ export function QuizPage() {
         questionKey={questionKey}
         timerResetKey={timerResetKey}
         SURVIVAL_QUESTION_TIME={SURVIVAL_QUESTION_TIME}
+        totalQuestions={gameState.totalQuestions}
+        lives={lives}
         isSubmitting={isSubmitting}
         isError={animations.isError}
         useSystemKeyboard={useSystemKeyboard}
@@ -1078,7 +1084,9 @@ export function QuizPage() {
         questionAnimation={animations.questionAnimation}
         showFlash={animations.showFlash}
         showSlideToast={animations.showSlideToast}
+        toastValue={toastValue}
         damagePosition={animations.damagePosition}
+        generateNewQuestion={generateNewQuestion}
         handleSubmit={handleSubmit}
         handleBack={handleBack}
         handleGameOver={stableHandleGameOver}
@@ -1090,8 +1098,6 @@ export function QuizPage() {
         exitConfirmTimeoutRef={exitConfirmTimeoutRef}
         setAnswerInput={setAnswerInput}
         setDisplayValue={setDisplayValue}
-        setIsError={animations.setIsError}
-        setShowFlash={animations.setShowFlash}
         setShowExitConfirm={setShowExitConfirm}
         setIsFadingOut={setIsFadingOut}
       />

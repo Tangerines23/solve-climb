@@ -6,7 +6,7 @@ import { TimerCircle } from './TimerCircle';
 import { QwertyKeypad } from './QwertyKeypad';
 import { CustomKeypad } from './CustomKeypad';
 import { APP_CONFIG } from '../config/app';
-import { SLIDE_PER_WRONG } from '../constants/game';
+import { SURVIVAL_CONFIG } from '../constants/game';
 import { useGameStore } from '../stores/useGameStore';
 import { sendDebugLog } from '../utils/debugLogger';
 
@@ -29,6 +29,8 @@ interface QuizCardProps {
   questionKey: number;
   timerResetKey?: number;
   SURVIVAL_QUESTION_TIME: number;
+  totalQuestions: number; // 현재 푼 문제 수
+  lives: number; // 현재 라이프
   onSafetyRopeUsed?: () => void;
 
   // 상태
@@ -47,9 +49,11 @@ interface QuizCardProps {
   questionAnimation: string;
   showFlash: boolean;
   showSlideToast: boolean;
+  toastValue: string; // "+10m" 또는 "-3m"
   damagePosition: { left: string; top: string };
 
   // 핸들러
+  generateNewQuestion: () => void;
   handleSubmit: (e: FormEvent) => void;
   handleBack: () => void;
   handleGameOver: () => void;
@@ -65,8 +69,6 @@ interface QuizCardProps {
   // Setters
   setAnswerInput: (value: string) => void;
   setDisplayValue: (value: string) => void;
-  setIsError: (value: boolean) => void;
-  setShowFlash: (value: boolean) => void;
   setShowExitConfirm: (value: boolean) => void;
   setIsFadingOut: (value: boolean) => void;
 }
@@ -85,6 +87,8 @@ function QuizCardComponent({
   questionKey,
   timerResetKey,
   SURVIVAL_QUESTION_TIME,
+  totalQuestions,
+  lives,
   isSubmitting,
   isError,
   useSystemKeyboard,
@@ -92,6 +96,7 @@ function QuizCardComponent({
   isPaused,
   showExitConfirm,
   isFadingOut,
+  generateNewQuestion,
   showAnswer = false,
   cardAnimation,
   inputAnimation,
@@ -113,6 +118,7 @@ function QuizCardComponent({
   setShowExitConfirm,
   setIsFadingOut,
   onSafetyRopeUsed,
+  toastValue,
 }: QuizCardProps) {
   // #region agent log
   const renderId = Math.random().toString(36).substring(7);
@@ -189,7 +195,18 @@ function QuizCardComponent({
     return isEquationQuiz || isCalculusQuiz;
   }, [isEquationQuiz, isCalculusQuiz]);
 
-  const { activeItems, consumeActiveItem } = useGameStore();
+  const { activeItems, consumeActiveItem, consumeLife } = useGameStore();
+
+  const currentSurvivalDuration = useMemo(() => {
+    if (gameMode !== 'survival') return SURVIVAL_QUESTION_TIME;
+    const currentWave = totalQuestions + 1;
+    const waveConfig = SURVIVAL_CONFIG.WAVES.find(
+      (w) => currentWave >= w.start && currentWave <= w.end
+    );
+    return waveConfig ? waveConfig.timer : 7; // 하드코어 7초
+  }, [gameMode, totalQuestions, SURVIVAL_QUESTION_TIME]);
+
+  const isPositiveToast = useMemo(() => toastValue.startsWith('+'), [toastValue]);
 
   // --- Early Returns must come AFTER all hooks ---
 
@@ -222,34 +239,26 @@ function QuizCardComponent({
   const handleTimeUp = () => {
     const hasSafetyRope = activeItems.includes('safety_rope');
     const hasLastSpurt = gameMode === 'time-attack' && activeItems.includes('last_spurt');
-    const hasFlare = gameMode === 'survival' && activeItems.includes('flare');
 
     if (hasSafetyRope) {
       consumeActiveItem('safety_rope');
       console.log('[Game] Safety Rope used! Saved from time up.');
       if (onSafetyRopeUsed) onSafetyRopeUsed();
-      // 타임어택의 경우 시간이 다 되면? -> 안전 로프는 "1회 방어" 이므로 시간을 조금 더 주거나(리셋)
-      // 아니면 그냥 게임오버만 막고 시간은 0초? 0초면 바로 또 죽음.
-      // 따라서 "시간 리셋"이 필요함. 혹은 문제 스킵?
-      // 사용자 요청: "오답 처리를 무효화하고 해당 문제 화면에 머무르게" -> Time Up도 비슷하게 처리.
-      // Time Up 상황에서 머무르려면 시간을 채워줘야 함.
-      // 라스트 스페어처럼 15초? 아니면 원래 제한시간? 일단 서바이벌은 5초, 타임어택은 timeLimit.
-      // QuizCard는 Timer를 리셋할 권한이 없음 (props로 받음).
-      // 하지만 TimerCircle은 key가 바뀌지 않으면 내부 state만 가짐.
-      // QuizCard에서 TimerCircle을 강제 리셋하려면 key를 바꿔야 함.
-      // -> onSafetyRopeUsed에서 key 업데이트를 요청해야 함?
-      // -> QuizPage에서 handleSafetyRopeUsed 호출 시 QuestionKey를 업데이트하지 않으면 Timer는 0에서 멈춤.
-      // -> SafetyRopeOverlay가 1.5초 동안 뜨고, 그 뒤에 재개?
-      // -> QuizPage의 handleSafetyRopeUsed에서 추가 처리 필요.
     } else if (hasLastSpurt) {
-      // 타임어택 전용: 라스트 스퍼트는 LastChanceModal에서 처리
-      // 여기서는 게임 오버로 처리하여 모달이 뜨도록 함
       handleGameOver();
-    } else if (hasFlare) {
-      // 서바이벌 전용: 구조 신호탄 사용
-      consumeActiveItem('flare');
-      console.log('[Game] Flare used! Revived from time up.');
-      // 서바이벌에서는 새 문제로 넘어감
+    } else if (gameMode === 'survival') {
+      const hasFlare = activeItems.includes('flare');
+      if (hasFlare) {
+        consumeActiveItem('flare');
+        console.log('[Game] Flare used! Revived from time up.');
+        generateNewQuestion();
+      } else if (lives > 1) {
+        consumeLife();
+        generateNewQuestion();
+      } else {
+        consumeLife();
+        handleGameOver();
+      }
     } else {
       handleGameOver();
     }
@@ -262,10 +271,19 @@ function QuizCardComponent({
         <button className="quiz-back-button" onClick={handleBack} aria-label="뒤로 가기">
           ←
         </button>
+        {gameMode === 'survival' && (
+          <div className="quiz-lives-container">
+            {[...Array(SURVIVAL_CONFIG.MAX_LIVES)].map((_, i) => (
+              <span key={i} className={`quiz-life-heart ${i < lives ? 'active' : 'inactive'}`}>
+                ❤️
+              </span>
+            ))}
+          </div>
+        )}
         <div className="quiz-timer-container">
           {gameMode === 'survival' ? (
             <TimerCircle
-              duration={SURVIVAL_QUESTION_TIME}
+              duration={currentSurvivalDuration}
               onComplete={handleTimeUp}
               isPaused={isSubmitting || isPaused}
               key={questionKey}
@@ -406,10 +424,12 @@ function QuizCardComponent({
           {/* 감점 토스트 - 오답 시 -3m 표시 (랜덤 위치) */}
           {showSlideToast && (
             <div
-              className="slide-toast"
+              className={`slide-toast ${isPositiveToast ? 'is-positive' : ''}`}
               style={{ left: damagePosition.left, top: damagePosition.top }}
             >
-              <span className="slide-toast-text">-{SLIDE_PER_WRONG}m</span>
+              <span className={`slide-toast-text ${isPositiveToast ? 'is-positive' : ''}`}>
+                {toastValue}
+              </span>
             </div>
           )}
         </div>
@@ -484,10 +504,14 @@ export const QuizCard = React.memo(QuizCardComponent, (prevProps, nextProps) => 
     prevProps.questionAnimation === nextProps.questionAnimation &&
     prevProps.showFlash === nextProps.showFlash &&
     prevProps.showSlideToast === nextProps.showSlideToast &&
+    prevProps.toastValue === nextProps.toastValue &&
     prevProps.damagePosition.left === nextProps.damagePosition.left &&
     prevProps.damagePosition.top === nextProps.damagePosition.top &&
     prevProps.gameMode === nextProps.gameMode &&
     prevProps.questionKey === nextProps.questionKey &&
+    prevProps.lives === nextProps.lives &&
+    prevProps.totalQuestions === nextProps.totalQuestions &&
+    prevProps.generateNewQuestion === nextProps.generateNewQuestion &&
     prevProps.useSystemKeyboard === nextProps.useSystemKeyboard
   );
 });

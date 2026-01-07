@@ -17,7 +17,7 @@
     "validate:full": "npm run validate && npm run test && npm run check:db",
     "test": "vitest",
     "test:ui": "vitest --ui",
-    "test:coverage": "vitest --coverage",
+    "test:coverage": "vitest --coverage --coverage.threshold.lines=80 --coverage.threshold.functions=80 --coverage.threshold.branches=75 --coverage.threshold.statements=80",
     "preview": "vite preview",
     "deploy": "ait deploy",
     "check:css": "node scripts/check-hardcoded-values.js",

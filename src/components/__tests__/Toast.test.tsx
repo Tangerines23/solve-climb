@@ -1,28 +1,43 @@
-import { describe, it, expect } from 'vitest';
-import { render, screen } from '@testing-library/react';
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
+import { render, screen, waitFor } from '@testing-library/react';
 import { Toast } from '../Toast';
 
+// Mock createPortal
+vi.mock('react-dom', () => ({
+  createPortal: (element: React.ReactElement) => element,
+}));
+
 describe('Toast', () => {
-  it('renders message when isOpen is true', () => {
-    render(<Toast message="Test message" isOpen={true} onClose={() => {}} autoClose={false} />);
+  beforeEach(() => {
+    vi.clearAllMocks();
+    vi.useFakeTimers();
+  });
 
+  afterEach(() => {
+    vi.useRealTimers();
+  });
+
+  it('should render message when open', () => {
+    render(<Toast message="Test message" isOpen={true} />);
     expect(screen.getByText('Test message')).toBeInTheDocument();
   });
 
-  it('does not render when isOpen is false', () => {
-    const { container } = render(
-      <Toast message="Test message" isOpen={false} onClose={() => {}} autoClose={false} />
-    );
-
-    expect(container.firstChild).toBeNull();
+  it('should not render when closed', () => {
+    render(<Toast message="Test message" isOpen={false} />);
+    expect(screen.queryByText('Test message')).not.toBeInTheDocument();
   });
 
-  it('renders with icon when provided', () => {
-    render(
-      <Toast message="Test message" isOpen={true} onClose={() => {}} autoClose={false} icon="✅" />
-    );
-
+  it('should render icon when provided', () => {
+    render(<Toast message="Test message" isOpen={true} icon="✅" />);
     expect(screen.getByText('✅')).toBeInTheDocument();
-    expect(screen.getByText('Test message')).toBeInTheDocument();
+  });
+
+  it('should not auto close when autoClose is false', () => {
+    const onClose = vi.fn();
+    render(<Toast message="Test message" isOpen={true} onClose={onClose} autoClose={false} />);
+
+    vi.advanceTimersByTime(5000);
+
+    expect(onClose).not.toHaveBeenCalled();
   });
 });

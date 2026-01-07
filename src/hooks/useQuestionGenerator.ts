@@ -1,10 +1,11 @@
 // 문제 생성 로직을 관리하는 커스텀 훅
-import { useCallback } from 'react';
+import { useCallback, useMemo } from 'react';
 import { Category, Topic, QuizQuestion, Difficulty, GameMode } from '../types/quiz';
 import { generateProblem } from '../utils/MathProblemGenerator';
 import { generateQuestion } from '../utils/quizGenerator';
 import { generateEquation } from '../utils/EquationProblemGenerator';
 import { APP_CONFIG } from '../config/app';
+import { SURVIVAL_CONFIG } from '../constants/game';
 
 interface UseQuestionGeneratorParams {
   category: Category | null;
@@ -14,6 +15,7 @@ interface UseQuestionGeneratorParams {
   categoryParam: string | null;
   subParam: string | null;
   levelParam: number | null;
+  totalQuestions: number; // 현재 푼 문제 수
   useSystemKeyboard: boolean;
   inputRef: React.RefObject<HTMLInputElement | null>;
   setCurrentQuestion: (question: QuizQuestion | null) => void;
@@ -35,6 +37,7 @@ export function useQuestionGenerator({
   categoryParam,
   subParam,
   levelParam,
+  totalQuestions,
   useSystemKeyboard,
   inputRef,
   setCurrentQuestion,
@@ -47,6 +50,16 @@ export function useQuestionGenerator({
   setQuestionStartTime,
   onQuestionGenerated,
 }: UseQuestionGeneratorParams) {
+  const effectiveLevel = useMemo(() => {
+    if (gameMode !== 'survival') return levelParam || 1;
+
+    const currentWave = totalQuestions + 1;
+    const waveConfig = SURVIVAL_CONFIG.WAVES.find(
+      (w) => currentWave >= w.start && currentWave <= w.end
+    );
+    return waveConfig ? waveConfig.level : 15; // 51웨이브 이후는 Lv.15 고정 (또는 더 높게 가능)
+  }, [gameMode, levelParam, totalQuestions]);
+
   const generateNewQuestion = useCallback(() => {
     // URL 파라미터가 있으면 직접 사용, 없으면 store에서 가져오기
     let currentCategory = category;
@@ -63,7 +76,7 @@ export function useQuestionGenerator({
         // 레벨에 따라 적절한 topic 매핑 (arithmetic 서브토픽의 경우)
         if (subParam === 'arithmetic' && levelParam !== null) {
           console.log('Entering arithmetic block');
-          const level = levelParam;
+          const level = gameMode === 'survival' ? effectiveLevel : levelParam;
 
           setQuestionAnimation('fade-out');
           setTimeout(() => {
@@ -130,7 +143,7 @@ export function useQuestionGenerator({
           return; // 여기서 함수 종료
         } else if (subParam === 'equations' && levelParam !== null) {
           // 방정식 서브토픽 - EquationProblemGenerator 사용
-          const level = levelParam;
+          const level = gameMode === 'survival' ? effectiveLevel : levelParam;
 
           setQuestionAnimation('fade-out');
           setTimeout(() => {
@@ -246,6 +259,8 @@ export function useQuestionGenerator({
     setQuestionKey,
     setQuestionStartTime,
     onQuestionGenerated,
+    effectiveLevel,
+    totalQuestions,
   ]);
 
   return {
