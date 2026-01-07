@@ -207,9 +207,9 @@ export function useQuizSubmit({
           showFeedback('LIFE UP!', 'Health Recovered ❤️', 'success');
         }
 
-        // 득점 토스트
+        // 득점 토스트 (문제를 가리지 않도록 우측 상단 인근 배치)
         setToastValue(`+${earnedDistance}m`);
-        setDamagePosition({ left: '50%', top: '30%' }); // 정답은 중앙 상단 고정 또는 랜덤
+        setDamagePosition({ left: '75%', top: '20%' });
         setShowSlideToast(true);
         setTimeout(() => setShowSlideToast(false), 700);
 
