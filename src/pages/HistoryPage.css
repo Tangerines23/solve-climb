@@ -1,4 +1,4 @@
-/* 토스 디자인 시스템 스타일 - HistoryPage 대개편 */
+/* 토스 디자인 시스템 스타일 - HistoryPage 대개편 (Phase 2) */
 
 .history-page {
   position: fixed;
@@ -38,6 +38,7 @@
 .history-summary-card,
 .history-analysis-card,
 .history-best-records-card,
+.history-milestones-card,
 .history-card {
   background-color: var(--color-bg-secondary);
   border-radius: 24px;
@@ -81,7 +82,7 @@
   display: flex;
   align-items: center;
   gap: 16px;
-  margin-bottom: 24px;
+  margin-bottom: 20px;
 }
 
 .history-avatar {
@@ -112,6 +113,68 @@
   font-size: 24px;
   color: var(--color-text-primary);
   margin-left: 4px;
+}
+
+/* --- Phase 2: Tier Progress --- */
+.history-tier-progress {
+  margin-bottom: 20px;
+}
+
+.tier-progress-header {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 8px;
+  font-size: 13px;
+}
+
+.tier-next-label {
+  color: var(--color-text-secondary);
+}
+
+.tier-next-label strong {
+  color: #4facfe;
+}
+
+.tier-percentage {
+  color: #4facfe;
+  font-weight: 700;
+}
+
+.tier-progress-bar-container {
+  height: 8px;
+  background-color: rgba(255, 255, 255, 0.1);
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.tier-progress-bar-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #4facfe 0%, #00f2fe 100%);
+  border-radius: 4px;
+  box-shadow: 0 0 8px rgba(79, 172, 254, 0.5);
+}
+
+/* --- Phase 2: Smart Comment --- */
+.history-smart-comment {
+  background-color: rgba(79, 172, 254, 0.1);
+  border-left: 4px solid #4facfe;
+  padding: 12px 16px;
+  border-radius: 0 12px 12px 0;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 24px;
+}
+
+.comment-icon {
+  font-size: 20px;
+}
+
+.comment-text {
+  font-size: 14px;
+  color: var(--color-text-primary);
+  font-weight: 500;
+  line-height: 1.4;
 }
 
 .history-stats-grid {
@@ -162,6 +225,88 @@
 .history-summary-highlight {
   color: #4cd964;
   font-weight: 700;
+}
+
+/* --- Phase 2: Milestones --- */
+.history-milestones-card {
+  margin-top: 4px;
+}
+
+.history-milestones-list {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding-left: 4px;
+}
+
+.milestone-line {
+  position: absolute;
+  left: 17px;
+  top: 10px;
+  bottom: 10px;
+  width: 2px;
+  background: repeating-linear-gradient(to bottom,
+      #4facfe,
+      #4facfe 4px,
+      transparent 4px,
+      transparent 8px);
+  opacity: 0.2;
+}
+
+.milestone-item {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  position: relative;
+  z-index: 1;
+}
+
+.milestone-dot {
+  width: 28px;
+  height: 28px;
+  background: #333;
+  border-radius: 50%;
+  border: 2px solid #4facfe;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+  flex-shrink: 0;
+}
+
+.milestone-content {
+  display: flex;
+  flex-direction: column;
+}
+
+.milestone-label {
+  font-size: 14px;
+  color: var(--color-text-secondary);
+  font-weight: 500;
+}
+
+.milestone-value {
+  font-size: 12px;
+  color: var(--color-text-tertiary);
+}
+
+.milestone-item.is-current .milestone-label {
+  color: #4cd964;
+  font-weight: 700;
+  font-size: 16px;
+}
+
+.milestone-item.is-current .milestone-value {
+  color: #4cd964;
+  font-weight: 600;
+}
+
+.milestone-item.is-current .milestone-dot {
+  background: #4cd964;
+  border-color: #fff;
+  transform: scale(1.2);
+  box-shadow: 0 0 12px rgba(76, 217, 100, 0.5);
 }
 
 /* --- 2. Analysis Card (Proficiency) --- */
@@ -278,6 +423,59 @@
 
 .border-top {
   border-top: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+/* --- Phase 2: Mini Heatmap --- */
+.history-mini-heatmap {
+  padding: 16px 24px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.heatmap-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+}
+
+.heatmap-title {
+  font-size: 12px;
+  color: var(--color-text-tertiary);
+  font-weight: 600;
+}
+
+.heatmap-streak {
+  font-size: 12px;
+  color: #4cd964;
+}
+
+.heatmap-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+
+.heatmap-cell {
+  width: 10px;
+  height: 10px;
+  background-color: rgba(255, 255, 255, 0.05);
+  border-radius: 2px;
+}
+
+.heatmap-cell.intensity-1 {
+  background-color: #0e4429;
+}
+
+.heatmap-cell.intensity-2 {
+  background-color: #006d32;
+}
+
+.heatmap-cell.intensity-3 {
+  background-color: #26a641;
+}
+
+.heatmap-cell.intensity-4 {
+  background-color: #39d353;
 }
 
 .history-recent-item-new {

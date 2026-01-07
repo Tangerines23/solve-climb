@@ -47,7 +47,22 @@ interface HistoryStats {
   totalCorrect: number;
   averageAccuracy: number;
   maxCombo: number;
+  // Phase 2 추가 필드
+  nextTierGoal: number;
+  nextTierName: string;
+  streakCount: number;
+  heatmapData: Array<{ date: string; count: number; intensity: number }>;
+  smartComment: string;
 }
+
+const ALTITUDE_TIERS = [
+  { name: '브론즈', goal: 500, icon: '🥉' },
+  { name: '실버', goal: 1500, icon: '🥈' },
+  { name: '골드', goal: 3500, icon: '🥇' },
+  { name: '플래티넘', goal: 7000, icon: '💎' },
+  { name: '다이아몬드', goal: 15000, icon: '💎' },
+  { name: '마스터', goal: 999999, icon: '👑' },
+];
 
 const getUserTitle = (altitude: number): string => {
   if (altitude >= 10000) return '하늘 위의 신선';
@@ -126,6 +141,11 @@ export function HistoryPage() {
             totalCorrect: 0,
             averageAccuracy: 0,
             maxCombo: 0,
+            nextTierGoal: 500,
+            nextTierName: '브론즈',
+            streakCount: 0,
+            heatmapData: [],
+            smartComment: '등반을 시작해보세요!',
           });
           setLoading(false);
           return;
@@ -155,6 +175,11 @@ export function HistoryPage() {
             totalCorrect: 0,
             averageAccuracy: 0,
             maxCombo: 0,
+            nextTierGoal: 500,
+            nextTierName: '브론즈',
+            streakCount: 0,
+            heatmapData: [],
+            smartComment: '오늘도 즐거운 등반 되세요!',
           });
           setLoading(false);
           return;
@@ -297,6 +322,57 @@ export function HistoryPage() {
         const averageAccuracy = 95; // 임시값
         const maxCombo = 45; // 임시값
 
+        // --- Phase 2: 티어 진행도 ---
+        const currentTierInfo = ALTITUDE_TIERS.find(t => totalAltitude < t.goal) || ALTITUDE_TIERS[ALTITUDE_TIERS.length - 1];
+        const nextTierGoal = currentTierInfo.goal;
+        const nextTierName = currentTierInfo.name;
+
+        // --- Phase 2: 활동 잔디 (최근 28일) ---
+        const heatmapData = [];
+        const today = new Date();
+        const activityMap = new Map<string, number>();
+
+        // 날짜별 활동량 매핑
+        recordsWithTheme.forEach(r => {
+          const d = new Date(r.updated_at).toDateString();
+          activityMap.set(d, (activityMap.get(d) || 0) + 1);
+        });
+
+        for (let i = 27; i >= 0; i--) {
+          const d = new Date(today);
+          d.setDate(today.getDate() - i);
+          const dateStr = d.toDateString();
+          const count = activityMap.get(dateStr) || 0;
+          // 농도 계산 (1: 흐림, 4: 진함)
+          let intensity = 0;
+          if (count > 10) intensity = 4;
+          else if (count > 5) intensity = 3;
+          else if (count > 2) intensity = 2;
+          else if (count > 0) intensity = 1;
+
+          heatmapData.push({ date: dateStr, count, intensity });
+        }
+
+        // --- Phase 2: 스트릭 계산 ---
+        let streakCount = 0;
+        for (let i = 0; i < 30; i++) {
+          const d = new Date(today);
+          d.setDate(today.getDate() - i);
+          if (activityMap.has(d.toDateString())) {
+            streakCount++;
+          } else {
+            if (i === 0) continue; // 오늘 아직 안 풀었으면 무시하고 어제부터 체크
+            break;
+          }
+        }
+
+        // --- Phase 2: 스마트 코멘트 ---
+        let smartComment = '오늘도 한 걸음 더 높은 곳으로!';
+        if (streakCount >= 3) smartComment = `${streakCount}일 연속 등반 중! 대단한 열정이에요 🔥`;
+        else if (averageAccuracy >= 98) smartComment = '완벽에 가까운 정확도네요! 전설적인 산악인입니다 🎯';
+        else if (maxCombo >= 50) smartComment = '한 번의 실수도 없는 집중력, 정말 놀라워요 ⚡';
+        else if (totalAltitude >= 5000) smartComment = '고산 지대에 진입하셨군요. 공기가 달라졌어요 ☁️';
+
         // 최근 플레이 기록 (최근 10개, 중복 제거)
         const seenKeys = new Set<string>();
         const recentRecords = recordsWithTheme
@@ -341,14 +417,14 @@ export function HistoryPage() {
         // 최근 7일간 일별 데이터 계산
         const dailyCounts = [0, 0, 0, 0, 0, 0, 0];
         const weekDays = ['', '', '', '', '', '', ''];
-        const today = new Date();
-        today.setHours(0, 0, 0, 0);
+        const todayStart = new Date();
+        todayStart.setHours(0, 0, 0, 0);
 
         // 요일 라벨 생성 (6일 전 ~ 오늘)
         const days = ['일', '월', '화', '수', '목', '금', '토'];
         for (let i = 0; i < 7; i++) {
-          const d = new Date(today);
-          d.setDate(today.getDate() - (6 - i));
+          const d = new Date(todayStart);
+          d.setDate(todayStart.getDate() - (6 - i));
           weekDays[i] = days[d.getDay()];
         }
 
@@ -368,7 +444,7 @@ export function HistoryPage() {
           const date = new Date(record.updated_at);
           date.setHours(0, 0, 0, 0);
 
-          const diffTime = today.getTime() - date.getTime();
+          const diffTime = todayStart.getTime() - date.getTime();
           const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
 
           if (diffDays >= 0 && diffDays < 7) {
@@ -460,6 +536,11 @@ export function HistoryPage() {
           totalCorrect,
           averageAccuracy,
           maxCombo,
+          nextTierGoal,
+          nextTierName,
+          streakCount,
+          heatmapData,
+          smartComment,
         });
       } catch (err) {
         console.error('Failed to fetch history data:', err);
@@ -481,6 +562,11 @@ export function HistoryPage() {
           totalCorrect: 0,
           averageAccuracy: 0,
           maxCombo: 0,
+          nextTierGoal: 0,
+          nextTierName: 'Unknown',
+          streakCount: 0,
+          heatmapData: [],
+          smartComment: '데이터를 불러오지 못했습니다.',
         });
       } finally {
         setLoading(false);
@@ -560,6 +646,32 @@ export function HistoryPage() {
                 </div>
               </div>
             </div>
+
+            {/* Phase 2: Tier Progress Gauge */}
+            {!loading && stats && (
+              <div className="history-tier-progress">
+                <div className="tier-progress-header">
+                  <span className="tier-next-label">
+                    {stats.nextTierName} 등급까지 <strong>{(stats.nextTierGoal - stats.totalAltitude).toLocaleString()}m</strong>
+                  </span>
+                  <span className="tier-percentage">{Math.round((stats.totalAltitude / stats.nextTierGoal) * 100)}%</span>
+                </div>
+                <div className="tier-progress-bar-container">
+                  <div
+                    className="tier-progress-bar-fill"
+                    style={{ width: `${Math.min((stats.totalAltitude / stats.nextTierGoal) * 100, 100)}%` }}
+                  />
+                </div>
+              </div>
+            )}
+
+            {/* Phase 2: Smart Comment */}
+            {!loading && stats && (
+              <div className="history-smart-comment">
+                <span className="comment-icon">💬</span>
+                <span className="comment-text">{stats.smartComment}</span>
+              </div>
+            )}
 
             <div className="history-stats-grid">
               <div className="history-stat-item">
@@ -713,6 +825,31 @@ export function HistoryPage() {
             </div>
           </div>
 
+          {/* Phase 2: 수직 등반 이정표 (Vertical Milestones Card) */}
+          <div className="history-milestones-card">
+            <div className="history-card-header no-border">
+              <h2 className="history-card-title">등반 여정</h2>
+            </div>
+            <div className="history-milestones-list">
+              <div className="milestone-line" />
+              {[
+                { label: '에베레스트', altitude: 8848, icon: '🏁' },
+                { label: '구름 위', altitude: 3000, icon: '☁️' },
+                { label: '수목 한계선', altitude: 1500, icon: '🌲' },
+                { label: '현재 위치', altitude: stats?.totalAltitude || 0, icon: '🚶', isCurrent: true },
+                { label: '시작점', altitude: 0, icon: '🏠' }
+              ].sort((a, b) => b.altitude - a.altitude).map((m, idx) => (
+                <div key={idx} className={`milestone-item ${m.isCurrent ? 'is-current' : ''}`}>
+                  <div className="milestone-dot">{m.icon}</div>
+                  <div className="milestone-content">
+                    <span className="milestone-label">{m.label}</span>
+                    <span className="milestone-value">{m.altitude.toLocaleString()}m</span>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+
           {/* 카드 2: 분야별 숙련 분석 (Analysis Card) */}
           <div className="history-analysis-card">
             <div className="history-card-header no-border">
@@ -778,6 +915,26 @@ export function HistoryPage() {
                 오답 등반하기
               </button>
             </div>
+
+            {/* Phase 2: Mini Heatmap */}
+            {!loading && stats && (
+              <div className="history-mini-heatmap">
+                <div className="heatmap-header">
+                  <span className="heatmap-title">최근 28일 활동</span>
+                  <span className="heatmap-streak"><strong>{stats.streakCount}일</strong> 연속 등반 중!</span>
+                </div>
+                <div className="heatmap-grid">
+                  {stats.heatmapData.map((day, idx) => (
+                    <div
+                      key={idx}
+                      className={`heatmap-cell intensity-${day.intensity}`}
+                      title={`${day.date}: ${day.count}개`}
+                    />
+                  ))}
+                </div>
+              </div>
+            )}
+
             <div className="history-recent-list border-top">
               {loading ? (
                 <div className="history-loading">로딩 중...</div>
