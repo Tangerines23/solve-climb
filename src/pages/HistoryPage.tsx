@@ -1,625 +1,725 @@
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
+import './HistoryPage.css';
 import { Header } from '../components/Header';
 import { FooterNav } from '../components/FooterNav';
-import { supabase } from '../utils/supabaseClient';
-import { parseLocalSession } from '../utils/safeJsonParse';
-import { storage, StorageKeys } from '../utils/storage';
-import { APP_CONFIG } from '../config/app';
-import type { Session } from '@supabase/supabase-js';
-import './HistoryPage.css';
-
-interface HistoryStats {
-  weeklyTotal: number;
-  weeklyTotalLastWeek: number;
-  graphPercentage: number;
-  wrongAnswers: number; // best_score = 0인 경우로 판단
-  dailyCounts: number[]; // 최근 7일간 일별 문제 풀이 수 (0: 6일전, 6: 오늘)
-  weekDays: string[]; // 최근 7일간 요일 라벨 (예: '월', '화')
-  monthlyTotal: number;
-  monthlyTotalLastMonth: number;
-  monthlyDailyCounts: number[]; // 이번 달 일별 데이터
-  monthlyDays: string[]; // 이번 달 날짜 라벨 (1일, 2일, ...)
-  categoryLevels: Array<{
-    themeCode: number;
-    themeId: string;
-    categoryName: string;
-    subCategoryName?: string;
-    level: number;
-    levelName: string;
-    progress: number; // 0-100
-  }>;
-  recentRecords: Array<{
-    themeCode: number;
-    themeId: string;
-    categoryName: string;
-    subCategoryName?: string;
-    level: number;
-    modeCode: number;
-    modeName: string;
-    bestScore: number;
-    count: number;
-    timeAgo: string;
-  }>;
-  // 신규 추가 필드
-  totalAltitude: number;
-  userTitle: string;
-  totalCorrect: number;
-  averageAccuracy: number;
-  maxCombo: number;
-  // Phase 2 추가 필드
-  nextTierGoal: number;
-  nextTierName: string;
-  streakCount: number;
-  heatmapData: Array<{ date: string; count: number; intensity: number }>;
-  smartComment: string;
-}
-
-const ALTITUDE_TIERS = [
-  { name: '브론즈', goal: 500, icon: '🥉' },
-  { name: '실버', goal: 1500, icon: '🥈' },
-  { name: '골드', goal: 3500, icon: '🥇' },
-  { name: '플래티넘', goal: 7000, icon: '💎' },
-  { name: '다이아몬드', goal: 15000, icon: '💎' },
-  { name: '마스터', goal: 999999, icon: '👑' },
-];
-
-const getUserTitle = (altitude: number): string => {
-  if (altitude >= 10000) return '하늘 위의 신선';
-  if (altitude >= 5000) return '구름을 뚫는 수학자';
-  if (altitude >= 3000) return '절벽의 베테랑';
-  if (altitude >= 1000) return '산중턱 탐험가';
-  if (altitude >= 500) return '동네 뒷산 대장';
-  return '초보 등반가';
-};
+import { useHistoryData } from '../hooks/useHistoryData';
+import { ALTITUDE_MILESTONES } from '../constants/history';
+import { vibrateShort } from '../utils/haptic';
 
 export function HistoryPage() {
   const navigate = useNavigate();
-  const [loading, setLoading] = useState(true);
-  const [stats, setStats] = useState<HistoryStats | null>(null);
-  const [session, setSession] = useState<Session | null>(null);
-  const [timeRange, setTimeRange] = useState<'week' | 'month'>('week');
+  const { stats, loading, error } = useHistoryData();
+  const [activeTab, setActiveTab] = useState<'summary' | 'analysis' | 'activity'>('summary');
+  const [isMilestoneExpanded, setIsMilestoneExpanded] = useState(false);
+  const [isRoadmapActive, setIsRoadmapActive] = useState(false);
+  const [cardRect, setCardRect] = useState<DOMRect | null>(null);
+  const [isLinearScale, setIsLinearScale] = useState(false);
+  const [gaugeHeight, setGaugeHeight] = useState('0%');
+  const [displayRatio, setDisplayRatio] = useState(5); // Dynamic Ratio (Starts at 5m/px)
+  const [isScaling, setIsScaling] = useState(false);
+  const [viewportHeight, setViewportHeight] = useState(0);
+  const VIRTUAL_RAIL_HEIGHT = 10000; // 스크롤바 길이를 고정하는 상수
+  const cameraRef = useRef<HTMLDivElement>(null); // 시각적 위치 업데이트용 Ref
 
+  // --- Dynamic Global Zoom System ---
+  // 스크롤 위치(고도)에 따라 전체 지도의 축척(ratio)이 변함
+  const getAltitudeY = (alt: number, ratio: number) => {
+    return alt / ratio;
+  };
+
+  const cardRef = useRef<HTMLDivElement>(null);
+  const roadmapRef = useRef<HTMLDivElement>(null);
+  const currentMarkerRef = useRef<HTMLDivElement>(null);
+  const nextMarkerRef = useRef<HTMLDivElement>(null);
+  const zeroMarkerRef = useRef<HTMLDivElement>(null);
+  const topMarkerRef = useRef<HTMLDivElement>(null);
+  const roadmapScrollRef = useRef<HTMLDivElement>(null);
+  const scrollProgressRef = useRef(0); // 비율 변경 간 위치 동기화를 위한 Ref
+  const [targetScrollAltitude, setTargetScrollAltitude] = useState<number | null>(null);
+  const landmarkRefs = useRef<Map<number, HTMLDivElement>>(new Map());
+
+  // 1. 데이터 메모이제이션 (성능 최적화)
+  const roadmapData = useMemo(() => {
+    if (!stats) return { currentIdx: -1, cardIndices: [] };
+
+    const currentIdx = ALTITUDE_MILESTONES.findIndex(
+      (m, idx) =>
+        stats.totalAltitude >= m.altitude &&
+        (idx === 0 || stats.totalAltitude < ALTITUDE_MILESTONES[idx - 1].altitude)
+    );
+
+    const tierIndices = ALTITUDE_MILESTONES.map((mil, i) => ({
+      type: mil.type,
+      altitude: mil.altitude,
+      originalIdx: i,
+    }))
+      .filter((mil) => mil.type === 'tier' || mil.altitude === 0)
+      .sort((a, b) => a.altitude - b.altitude);
+
+    const nextTier = tierIndices.find((m) => m.altitude > stats.totalAltitude);
+    const prevTier = tierIndices
+      .slice()
+      .reverse()
+      .find((m) => m.altitude <= stats.totalAltitude);
+
+    const cardIndices = [nextTier?.originalIdx, prevTier?.originalIdx]
+      .filter((val): val is number => val !== undefined && val !== -1)
+      .filter((val, i, arr) => arr.indexOf(val) === i);
+
+    return { currentIdx, cardIndices };
+  }, [stats]);
+
+  // --- 통합 레이아웃 계산 (Single Source of Truth) ---
+  const layoutData = useMemo(() => {
+    if (!isLinearScale || !stats) return null;
+
+    // 1. 기본 변수 준비 (Fisheye 제거, 순수 Dynamic Ratio 적용)
+    const y0 = getAltitudeY(0, displayRatio);
+    const absoluteZeroY = y0;
+
+    // 2. 게이지 높이 계산
+    const absoluteProgressY = getAltitudeY(stats.totalAltitude, displayRatio);
+    // Pixel Snapping: 소수점 렌더링 오차 방지를 위해 반올림
+    const calculatedGaugeHeight = Math.round(Math.max(0, absoluteProgressY - absoluteZeroY));
+
+    // 3. 노드 위치 미리 계산
+    const nodes = ALTITUDE_MILESTONES.flatMap((m) => {
+      const items = [];
+      if (m.type === 'tier') {
+        items.push({ ...m, isTier: true });
+        m.subLandmarks.forEach((sub: any) => {
+          items.push({ ...sub, isTier: false, parentTierId: m.id });
+        });
+      }
+      return items;
+    })
+      .map((item) => {
+        const absoluteY = getAltitudeY(item.altitude, displayRatio);
+        const bottom = Math.round(absoluteY - absoluteZeroY); // CSS bottom 값 (px) - Pixel Snapping
+
+        return {
+          ...item,
+          bottom,
+        };
+      })
+      .sort((a, b) => b.altitude - a.altitude);
+
+    // 4. 카메라 오프셋 계산 (Zero-Anchor 기준)
+    // 현재 스크롤 위치(%)에 해당하는 고도가 화면 바닥에 오도록 설정
+    const totalLogicalAltitude = ALTITUDE_MILESTONES[0].altitude + 10000;
+    const BOTTOM_SAFETY_MARGIN = 4; // 바닥에 거의 붙도록 4px로 최소화 (한계치)
+
+    return {
+      gaugeHeight: calculatedGaugeHeight,
+      nodes: nodes.map((n) => ({ ...n, bottom: n.bottom + BOTTOM_SAFETY_MARGIN })),
+      absoluteZeroY,
+      totalLogicalAltitude,
+      BOTTOM_SAFETY_MARGIN,
+    };
+  }, [isLinearScale, stats, displayRatio]); // focalY removed, displayRatio added
+
+  // 2. 게이지 실시간 트래킹 (글로벌 선형 배율 적용)
   useEffect(() => {
-    const fetchHistoryData = async () => {
-      try {
-        setLoading(true);
+    if (!isRoadmapActive || !stats) {
+      setGaugeHeight('0%');
+      return;
+    }
 
-        // 세션 확인
-        let currentSession = null;
-        let userId = null;
+    const updateGauge = () => {
+      const pathContainer = document.querySelector('.roadmap-mountain-path') as HTMLElement;
+      if (!pathContainer || !stats) return;
 
-        try {
-          const localSessionStr = storage.getString(StorageKeys.LOCAL_SESSION);
-          const localSession = parseLocalSession(localSessionStr);
-          if (localSession) {
-            userId = localSession.userId;
-            currentSession = {
-              user: {
-                id: localSession.userId,
-                email: null,
-                user_metadata: {
-                  isAdmin: localSession.isAdmin || false,
-                },
-              },
-              access_token: 'local',
-              refresh_token: 'local',
-              expires_in: 3600,
-              token_type: 'bearer',
-            } as unknown as Session;
-            setSession(currentSession);
-          }
-        } catch (e) {
-          console.warn('Failed to read local session:', e);
-        }
+      if (isLinearScale) {
+        // 선형 모드: handleScroll/layoutData에서 처리
+        return;
+      } else {
+        // 정렬 모드: 마커 기반 실시간 정렬
+        const currentMarker = currentMarkerRef.current;
+        const nextMarker = nextMarkerRef.current;
+        const zeroMarker = zeroMarkerRef.current;
+        const topMarker = topMarkerRef.current;
 
-        if (!currentSession) {
-          const {
-            data: { session: supabaseSession },
-          } = await supabase.auth.getSession();
-          currentSession = supabaseSession;
-          setSession(supabaseSession);
-        }
+        if (!zeroMarker) return;
 
-        if (!currentSession) {
-          // 로그인하지 않은 경우 기본값
-          setStats({
-            weeklyTotal: 0,
-            weeklyTotalLastWeek: 0,
-            graphPercentage: 0,
-            wrongAnswers: 0,
-            dailyCounts: [],
-            weekDays: [],
-            monthlyTotal: 0,
-            monthlyTotalLastMonth: 0,
-            monthlyDailyCounts: [],
-            monthlyDays: [],
-            categoryLevels: [],
-            recentRecords: [],
-            totalAltitude: 0,
-            userTitle: 'GUEST',
-            totalCorrect: 0,
-            averageAccuracy: 0,
-            maxCombo: 0,
-            nextTierGoal: 500,
-            nextTierName: '브론즈',
-            streakCount: 0,
-            heatmapData: [],
-            smartComment: '등반을 시작해보세요!',
-          });
-          setLoading(false);
-          return;
-        }
+        const containerRect = pathContainer.getBoundingClientRect();
+        const zeroRect = zeroMarker.getBoundingClientRect();
+        const zeroCenterY = zeroRect.top + zeroRect.height / 2;
 
-        const user = currentSession.user;
-        const user_id = userId || user.id;
+        // 1. 게이지 시작점 (Bottom)
+        const bottomOffset = containerRect.bottom - zeroCenterY;
+        pathContainer.style.setProperty('--gauge-bottom', `${Math.round(bottomOffset)}px`);
 
-        // 로컬 세션인 경우 기본값 반환
-        const isLocalSession = user_id.startsWith('user_') || user_id.startsWith('game_');
-        if (isLocalSession) {
-          setStats({
-            weeklyTotal: 0,
-            weeklyTotalLastWeek: 0,
-            graphPercentage: 0,
-            wrongAnswers: 0,
-            dailyCounts: [],
-            weekDays: [],
-            monthlyTotal: 0,
-            monthlyTotalLastMonth: 0,
-            monthlyDailyCounts: [],
-            monthlyDays: [],
-            categoryLevels: [],
-            recentRecords: [],
-            totalAltitude: 0,
-            userTitle: '로컬 플레이어',
-            totalCorrect: 0,
-            averageAccuracy: 0,
-            maxCombo: 0,
-            nextTierGoal: 500,
-            nextTierName: '브론즈',
-            streakCount: 0,
-            heatmapData: [],
-            smartComment: '오늘도 즐거운 등반 되세요!',
-          });
-          setLoading(false);
-          return;
-        }
+        // 2. 게이지 높이 (Current Progress)
+        let targetY = zeroCenterY;
+        if (currentMarker) {
+          const currentRect = currentMarker.getBoundingClientRect();
+          const currentCenterY = currentRect.top + currentRect.height / 2;
+          targetY = currentCenterY;
 
-        // 이번 주 시작일 계산 (월요일 기준)
-        const now = new Date();
-        const dayOfWeek = now.getDay();
-        const diff = dayOfWeek === 0 ? 6 : dayOfWeek - 1; // 일요일이면 6일 전, 아니면 dayOfWeek - 1
-        const weekStart = new Date(now);
-        weekStart.setDate(now.getDate() - diff);
-        weekStart.setHours(0, 0, 0, 0);
+          if (nextMarker) {
+            const nextRect = nextMarker.getBoundingClientRect();
+            const nextCenterY = nextRect.top + nextRect.height / 2;
 
-        // 이전 주 시작일 계산
-        const lastWeekStart = new Date(weekStart);
-        lastWeekStart.setDate(weekStart.getDate() - 7);
-        const lastWeekEnd = new Date(weekStart);
-        lastWeekEnd.setDate(weekStart.getDate() - 1);
-        lastWeekEnd.setHours(23, 59, 59, 999);
+            const currentMilestone =
+              roadmapData.currentIdx !== -1
+                ? ALTITUDE_MILESTONES[roadmapData.currentIdx]
+                : { altitude: 0 };
+            const nextMilestone = ALTITUDE_MILESTONES.slice()
+              .reverse()
+              .find((m) => m.altitude > stats.totalAltitude && m.type === 'tier');
 
-        // theme_mapping 조회
-        const { data: themeMapping, error: themeError } = await supabase
-          .from('theme_mapping')
-          .select('code, theme_id, name');
-
-        if (themeError) {
-          console.warn('[HistoryPage] theme_mapping 조회 실패:', themeError);
-        }
-
-        // theme_code -> theme_id, name 매핑 생성
-        const themeCodeToId: Record<number, string> = {};
-        const themeCodeToName: Record<number, string> = {};
-        themeMapping?.forEach((tm) => {
-          themeCodeToId[tm.code] = tm.theme_id;
-          themeCodeToName[tm.code] = tm.name;
-        });
-
-        // user_level_records 조회
-        const { data: levelRecords, error } = await supabase
-          .from('user_level_records')
-          .select('theme_code, level, mode_code, best_score, updated_at')
-          .eq('user_id', user_id)
-          .order('updated_at', { ascending: false });
-
-        if (error) throw error;
-
-        // theme_mapping 정보 매핑
-        const recordsWithTheme = (levelRecords || []).map((record) => {
-          const themeId = themeCodeToId[record.theme_code] || '';
-          const themeName = themeCodeToName[record.theme_code] || '';
-          return {
-            ...record,
-            themeId,
-            themeName,
-          };
-        });
-
-        // 이번 주 총 문제 수 계산 (best_score > 0인 고유한 레벨)
-        const weeklyRecords = recordsWithTheme.filter((record) => {
-          if (!record.updated_at || record.best_score === 0) return false;
-          const recordDate = new Date(record.updated_at);
-          return recordDate >= weekStart;
-        });
-
-        // 고유한 (theme_code, level) 조합 개수
-        const uniqueWeeklyRecords = new Set(
-          weeklyRecords.map((r) => `${r.theme_code}-${r.level}`)
-        );
-        const weeklyTotal = uniqueWeeklyRecords.size;
-
-        // 이전 주 총 문제 수 계산
-        const lastWeekRecords = recordsWithTheme.filter((record) => {
-          if (!record.updated_at || record.best_score === 0) return false;
-          const recordDate = new Date(record.updated_at);
-          return recordDate >= lastWeekStart && recordDate <= lastWeekEnd;
-        });
-
-        // 고유한 (theme_code, level) 조합 개수
-        const uniqueLastWeekRecords = new Set(
-          lastWeekRecords.map((r) => `${r.theme_code}-${r.level}`)
-        );
-        const weeklyTotalLastWeek = uniqueLastWeekRecords.size;
-
-        // 그래프 비율 계산 (이전 주 대비 또는 최소 50문제 기준)
-        const maxValue = Math.max(weeklyTotal, weeklyTotalLastWeek, 50); // 최소 50문제 기준
-        const graphPercentage = maxValue > 0 ? Math.min((weeklyTotal / maxValue) * 100, 100) : 0;
-
-        // 오답 노트 (best_score = 0인 최근 기록)
-        // 주의: user_level_records에는 best_score = 0인 레코드가 없을 수 있음
-        // 실제 오답은 game_sessions나 별도 테이블에 있을 수 있음
-        const wrongRecords = recordsWithTheme.filter((record) => record.best_score === 0);
-        const wrongAnswers = wrongRecords.length;
-
-        // 분야별 최고 레벨 계산
-        const themeMap: Record<number, { level: number; themeId: string; themeName: string }> = {};
-
-        recordsWithTheme.forEach((record) => {
-          if (record.best_score === 0) return;
-          const themeCode = record.theme_code;
-          if (!themeMap[themeCode] || record.level > themeMap[themeCode].level) {
-            themeMap[themeCode] = {
-              level: record.level,
-              themeId: record.themeId,
-              themeName: record.themeName,
-            };
-          }
-        });
-
-        // theme_id 파싱하여 category/subcategory 분리
-        const categoryLevels = Object.entries(themeMap)
-          .map(([themeCodeStr, { level, themeId }]) => {
-            const [category, subcategory] = themeId.split('_');
-            const categoryName =
-              APP_CONFIG.CATEGORY_MAP[category as keyof typeof APP_CONFIG.CATEGORY_MAP] || category;
-
-            let levelName = 'Beginner';
-            if (level >= 15) levelName = 'Master';
-            else if (level >= 10) levelName = 'Expert';
-            else if (level >= 5) levelName = 'Intermediate';
-
-            return {
-              themeCode: parseInt(themeCodeStr, 10),
-              themeId,
-              categoryName,
-              subCategoryName: subcategory,
-              level,
-              levelName,
-              progress: Math.min(Math.round((level / 15) * 100), 100),
-            };
-          })
-          .sort((a, b) => b.level - a.level);
-
-        // 누적 고도 계산 (best_score 합산)
-        const levelsWithBestScore = recordsWithTheme.filter(r => r.best_score > 0);
-        const totalAltitude = levelsWithBestScore.reduce((sum: number, r) => sum + (r.best_score || 0), 0);
-        const userTitle = getUserTitle(totalAltitude);
-
-        // 총 정답 수 (best_score > 0인 레코드 개수 * 10문제 추정값)
-        const totalCorrect = levelsWithBestScore.length * 10;
-        const averageAccuracy = 95; // 임시값
-        const maxCombo = 45; // 임시값
-
-        // --- Phase 2: 티어 진행도 ---
-        const currentTierInfo = ALTITUDE_TIERS.find(t => totalAltitude < t.goal) || ALTITUDE_TIERS[ALTITUDE_TIERS.length - 1];
-        const nextTierGoal = currentTierInfo.goal;
-        const nextTierName = currentTierInfo.name;
-
-        // --- Phase 2: 활동 잔디 (최근 28일) ---
-        const heatmapData = [];
-        const today = new Date();
-        const activityMap = new Map<string, number>();
-
-        // 날짜별 활동량 매핑
-        recordsWithTheme.forEach(r => {
-          const d = new Date(r.updated_at).toDateString();
-          activityMap.set(d, (activityMap.get(d) || 0) + 1);
-        });
-
-        for (let i = 27; i >= 0; i--) {
-          const d = new Date(today);
-          d.setDate(today.getDate() - i);
-          const dateStr = d.toDateString();
-          const count = activityMap.get(dateStr) || 0;
-          // 농도 계산 (1: 흐림, 4: 진함)
-          let intensity = 0;
-          if (count > 10) intensity = 4;
-          else if (count > 5) intensity = 3;
-          else if (count > 2) intensity = 2;
-          else if (count > 0) intensity = 1;
-
-          heatmapData.push({ date: dateStr, count, intensity });
-        }
-
-        // --- Phase 2: 스트릭 계산 ---
-        let streakCount = 0;
-        for (let i = 0; i < 30; i++) {
-          const d = new Date(today);
-          d.setDate(today.getDate() - i);
-          if (activityMap.has(d.toDateString())) {
-            streakCount++;
-          } else {
-            if (i === 0) continue; // 오늘 아직 안 풀었으면 무시하고 어제부터 체크
-            break;
-          }
-        }
-
-        // --- Phase 2: 스마트 코멘트 ---
-        let smartComment = '오늘도 한 걸음 더 높은 곳으로!';
-        if (streakCount >= 3) smartComment = `${streakCount}일 연속 등반 중! 대단한 열정이에요 🔥`;
-        else if (averageAccuracy >= 98) smartComment = '완벽에 가까운 정확도네요! 전설적인 산악인입니다 🎯';
-        else if (maxCombo >= 50) smartComment = '한 번의 실수도 없는 집중력, 정말 놀라워요 ⚡';
-        else if (totalAltitude >= 5000) smartComment = '고산 지대에 진입하셨군요. 공기가 달라졌어요 ☁️';
-
-        // 최근 플레이 기록 (최근 10개, 중복 제거)
-        const seenKeys = new Set<string>();
-        const recentRecords = recordsWithTheme
-          .filter((record) => {
-            if (record.best_score === 0) return false;
-            const key = `${record.theme_code}-${record.level}-${record.mode_code}`;
-            if (seenKeys.has(key)) return false;
-            seenKeys.add(key);
-            return true;
-          })
-          .slice(0, 10)
-          .map((record) => {
-            const timeAgo = getTimeAgo(record.updated_at || '');
-            const modeName = record.mode_code === 1 ? '타임어택' : '서바이벌';
-            const [category, subcategory] = record.themeId.split('_');
-            const categoryName =
-              APP_CONFIG.CATEGORY_MAP[category as keyof typeof APP_CONFIG.CATEGORY_MAP] || category;
-
-            // 같은 theme_code, level, mode_code의 기록 개수 계산
-            const sameRecords = recordsWithTheme.filter(
-              (r) =>
-                r.theme_code === record.theme_code &&
-                r.level === record.level &&
-                r.mode_code === record.mode_code &&
-                r.best_score > 0
-            );
-
-            return {
-              themeCode: record.theme_code,
-              themeId: record.themeId,
-              categoryName,
-              subCategoryName: subcategory,
-              level: record.level,
-              modeCode: record.mode_code,
-              modeName,
-              bestScore: record.best_score,
-              count: sameRecords.length,
-              timeAgo,
-            };
-          });
-
-        // 최근 7일간 일별 데이터 계산
-        const dailyCounts = [0, 0, 0, 0, 0, 0, 0];
-        const weekDays = ['', '', '', '', '', '', ''];
-        const todayStart = new Date();
-        todayStart.setHours(0, 0, 0, 0);
-
-        // 요일 라벨 생성 (6일 전 ~ 오늘)
-        const days = ['일', '월', '화', '수', '목', '금', '토'];
-        for (let i = 0; i < 7; i++) {
-          const d = new Date(todayStart);
-          d.setDate(todayStart.getDate() - (6 - i));
-          weekDays[i] = days[d.getDay()];
-        }
-
-        // 일별 카운트 집계 (고유한 레벨 조합으로 집계)
-        const dailyUniqueSets = [
-          new Set<string>(),
-          new Set<string>(),
-          new Set<string>(),
-          new Set<string>(),
-          new Set<string>(),
-          new Set<string>(),
-          new Set<string>(),
-        ];
-
-        recordsWithTheme.forEach((record) => {
-          if (record.best_score === 0 || !record.updated_at) return;
-          const date = new Date(record.updated_at);
-          date.setHours(0, 0, 0, 0);
-
-          const diffTime = todayStart.getTime() - date.getTime();
-          const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
-
-          if (diffDays >= 0 && diffDays < 7) {
-            const key = `${record.theme_code}-${record.level}`;
-            dailyUniqueSets[6 - diffDays].add(key);
-          }
-        });
-
-        dailyCounts.forEach((_, index) => {
-          dailyCounts[index] = dailyUniqueSets[index].size;
-        });
-
-        // 월간 통계 계산
-        const monthNow = new Date();
-        const monthStart = new Date(monthNow.getFullYear(), monthNow.getMonth(), 1);
-        monthStart.setHours(0, 0, 0, 0);
-
-        const lastMonthStart = new Date(monthNow.getFullYear(), monthNow.getMonth() - 1, 1);
-        const lastMonthEnd = new Date(monthNow.getFullYear(), monthNow.getMonth(), 0);
-        lastMonthEnd.setHours(23, 59, 59, 999);
-
-        // 이번 달 총 문제 수 계산
-        const monthlyRecords = recordsWithTheme.filter((record) => {
-          if (!record.updated_at || record.best_score === 0) return false;
-          const recordDate = new Date(record.updated_at);
-          return recordDate >= monthStart;
-        });
-
-        const uniqueMonthlyRecords = new Set(
-          monthlyRecords.map((r) => `${r.theme_code}-${r.level}`)
-        );
-        const monthlyTotal = uniqueMonthlyRecords.size;
-
-        // 지난 달 총 문제 수 계산
-        const lastMonthRecords = recordsWithTheme.filter((record) => {
-          if (!record.updated_at || record.best_score === 0) return false;
-          const recordDate = new Date(record.updated_at);
-          return recordDate >= lastMonthStart && recordDate <= lastMonthEnd;
-        });
-
-        const uniqueLastMonthRecords = new Set(
-          lastMonthRecords.map((r) => `${r.theme_code}-${r.level}`)
-        );
-        const monthlyTotalLastMonth = uniqueLastMonthRecords.size;
-
-        // 이번 달 일별 데이터 계산
-        const daysInMonth = new Date(monthNow.getFullYear(), monthNow.getMonth() + 1, 0).getDate();
-        const monthlyDailyCounts = Array(daysInMonth).fill(0);
-        const monthlyDailySets = Array(daysInMonth)
-          .fill(null)
-          .map(() => new Set<string>());
-        const monthlyDays = Array(daysInMonth)
-          .fill(null)
-          .map((_, index) => `${index + 1}일`);
-
-        recordsWithTheme.forEach((record) => {
-          if (record.best_score === 0 || !record.updated_at) return;
-          const date = new Date(record.updated_at);
-          date.setHours(0, 0, 0, 0);
-
-          if (date >= monthStart && date < new Date(monthNow.getFullYear(), monthNow.getMonth() + 1, 1)) {
-            const dayOfMonth = date.getDate() - 1; // 0-based index
-            if (dayOfMonth >= 0 && dayOfMonth < daysInMonth) {
-              const key = `${record.theme_code}-${record.level}`;
-              monthlyDailySets[dayOfMonth].add(key);
+            if (currentMilestone && nextMilestone) {
+              const segmentTotal = nextMilestone.altitude - currentMilestone.altitude;
+              const segmentProgress =
+                segmentTotal > 0
+                  ? (stats.totalAltitude - currentMilestone.altitude) / segmentTotal
+                  : 0;
+              targetY =
+                currentCenterY +
+                (nextCenterY - currentCenterY) * Math.max(0, Math.min(1, segmentProgress));
             }
           }
-        });
+        }
 
-        monthlyDailyCounts.forEach((_, index) => {
-          monthlyDailyCounts[index] = monthlyDailySets[index].size;
-        });
+        const heightInPixels = Math.max(0, zeroCenterY - targetY);
+        setGaugeHeight(`${heightInPixels}px`);
 
-        setStats({
-          weeklyTotal,
-          weeklyTotalLastWeek,
-          graphPercentage,
-          wrongAnswers,
-          dailyCounts,
-          weekDays,
-          monthlyTotal,
-          monthlyTotalLastMonth,
-          monthlyDailyCounts,
-          monthlyDays,
-          categoryLevels,
-          recentRecords,
-          totalAltitude,
-          userTitle,
-          totalCorrect,
-          averageAccuracy,
-          maxCombo,
-          nextTierGoal,
-          nextTierName,
-          streakCount,
-          heatmapData,
-          smartComment,
-        });
-      } catch (err) {
-        console.error('Failed to fetch history data:', err);
-        setStats({
-          weeklyTotal: 0,
-          weeklyTotalLastWeek: 0,
-          graphPercentage: 0,
-          wrongAnswers: 0,
-          dailyCounts: [],
-          weekDays: [],
-          monthlyTotal: 0,
-          monthlyTotalLastMonth: 0,
-          monthlyDailyCounts: [],
-          monthlyDays: [],
-          categoryLevels: [],
-          recentRecords: [],
-          totalAltitude: 0,
-          userTitle: 'ERROR',
-          totalCorrect: 0,
-          averageAccuracy: 0,
-          maxCombo: 0,
-          nextTierGoal: 0,
-          nextTierName: 'Unknown',
-          streakCount: 0,
-          heatmapData: [],
-          smartComment: '데이터를 불러오지 못했습니다.',
-        });
-      } finally {
-        setLoading(false);
+        // 3. 점선 범위 (Top to Bottom)
+        if (topMarker) {
+          const topRect = topMarker.getBoundingClientRect();
+          const topCenterY = topRect.top + topRect.height / 2;
+          const totalDottedHeight = zeroCenterY - topCenterY;
+          pathContainer.style.setProperty('--dotted-height', `${Math.round(totalDottedHeight)}px`);
+          pathContainer.style.setProperty(
+            '--dotted-top',
+            `${Math.round(topCenterY - containerRect.top)}px`
+          );
+        }
       }
     };
 
-    fetchHistoryData();
-  }, []);
+    const resizeObserver = new ResizeObserver(updateGauge);
+    const observerTarget = document.querySelector('.roadmap-mountain-path');
+    if (observerTarget) resizeObserver.observe(observerTarget);
 
-  const getTimeAgo = (dateString: string): string => {
-    if (!dateString) return '';
-    const now = new Date();
-    const date = new Date(dateString);
-    const diffMs = now.getTime() - date.getTime();
-    const diffMins = Math.floor(diffMs / 60000);
-    const diffHours = Math.floor(diffMs / 3600000);
-    const diffDays = Math.floor(diffMs / 86400000);
+    updateGauge();
+    return () => resizeObserver.disconnect();
+  }, [isRoadmapActive, stats, isLinearScale, roadmapData.currentIdx]);
 
-    if (diffMins < 1) return '방금 전';
-    if (diffMins < 60) return `${diffMins}분 전`;
-    if (diffHours < 24) return `${diffHours}시간 전`;
-    if (diffDays === 1) return '어제';
-    if (diffDays < 7) return `${diffDays}일 전`;
-    return new Date(dateString).toLocaleDateString('ko-KR');
+  // 3. 로드맵 애니메이션 및 자동 스크롤
+  // 4. 스크롤 위치에 따른 배율 실시간 업데이트
+  useEffect(() => {
+    const scrollContainer = roadmapScrollRef.current;
+    if (!scrollContainer || !isLinearScale) return;
+
+    const handleScroll = () => {
+      const { scrollTop, clientHeight } = scrollContainer;
+
+      // 1. Viewport Height Sync (Needed for offset calculation)
+      if (Math.abs(viewportHeight - clientHeight) > 5) {
+        setViewportHeight(clientHeight);
+      }
+
+      const maxScroll = VIRTUAL_RAIL_HEIGHT - clientHeight;
+      if (maxScroll <= 0) return;
+
+      const scrollFromBottom = Math.max(0, maxScroll - scrollTop);
+      const currentProgress = Math.min(1, Math.max(0, scrollFromBottom / maxScroll));
+
+      scrollProgressRef.current = currentProgress;
+
+      // 2. Camera Translation via CSS Variable (Direct DOM manipulation for performance)
+      if (cameraRef.current && layoutData) {
+        const totalHeight = layoutData.totalLogicalAltitude / displayRatio;
+        const offset = Math.max(0, totalHeight - clientHeight) * currentProgress;
+        cameraRef.current.style.setProperty('--camera-offset', `-${offset}px`);
+      }
+
+      // 3. Altitude Estimation for Ratio Logic
+      const approxAltitude = layoutData ? layoutData.totalLogicalAltitude * currentProgress : 0;
+
+      // 3. Dynamic Scale Logic (Stable)
+      // 0m ~ 1000m: Ratio 10
+      // 1000m ~ 5000m: Ratio 10 -> 30
+      // 5000m+: Ratio 30
+      // Hysteresis Zoom Logic (히스테리시스 적용)
+      // 상태 전환에 버퍼를 두어 경계선에서의 떨림과 갇힘 현상을 방지함.
+      let targetRatio = displayRatio;
+
+      if (displayRatio === 5) {
+        // Upgrade: 5k 넘으면 10으로
+        if (approxAltitude > 5000) targetRatio = 10;
+      } else if (displayRatio === 10) {
+        // Downgrade: 3k 밑으로 와야 5로
+        if (approxAltitude < 3000) targetRatio = 5;
+        // Upgrade: 20k 넘으면 30으로 (상당히 높이 올라가야 바뀜)
+        else if (approxAltitude > 20000) targetRatio = 30;
+      } else if (displayRatio === 30) {
+        // Downgrade: 10k 밑으로 와야 10으로 (충분히 내려와야 바뀜)
+        if (approxAltitude < 10000) targetRatio = 10;
+        // Upgrade: 60k 넘으면 100으로
+        else if (approxAltitude > 60000) targetRatio = 100;
+      } else if (displayRatio === 100) {
+        // Downgrade: 40k 밑으로 와야 30으로
+        if (approxAltitude < 40000) targetRatio = 30;
+        // Upgrade: 150k 넘으면 150으로
+        else if (approxAltitude > 150000) targetRatio = 150;
+      } else if (displayRatio === 150) {
+        // Downgrade: 120k 밑으로 와야 100으로
+        if (approxAltitude < 120000) targetRatio = 100;
+        // Upgrade: 200k 넘으면 300으로
+        else if (approxAltitude > 200000) targetRatio = 300;
+      } else if (displayRatio === 300) {
+        // Downgrade: 180k 밑으로 와야 150으로
+        if (approxAltitude < 180000) targetRatio = 150;
+      } else {
+        // 예외 상황 복구
+        targetRatio = 5;
+      }
+
+      if (Math.abs(targetRatio - displayRatio) > 0.1) {
+        setIsScaling(true);
+        setDisplayRatio(targetRatio);
+        // 트랜지션 완료 후 상태 해제 (CSS transition duration 0.8s와 일치)
+        setTimeout(() => setIsScaling(false), 850);
+      }
+    };
+
+    scrollContainer.addEventListener('scroll', handleScroll);
+    handleScroll(); // 초기값 설정
+    return () => scrollContainer.removeEventListener('scroll', handleScroll);
+  }, [isLinearScale, isRoadmapActive, stats, displayRatio, viewportHeight, layoutData]);
+
+  useEffect(() => {
+    if (isMilestoneExpanded) {
+      const timer = setTimeout(() => {
+        setIsRoadmapActive(true);
+        // 열리는 애니메이션(600ms)이 충분히 진행된 후 스크롤 계산 시도
+        setTimeout(() => {
+          let targetEl: HTMLElement | null = null;
+          if (targetScrollAltitude !== null) {
+            targetEl = landmarkRefs.current.get(targetScrollAltitude) || null;
+          }
+          if (!targetEl) {
+            targetEl = currentMarkerRef.current;
+          }
+
+          if (targetEl) {
+            targetEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
+          }
+        }, 650); // 150ms -> 650ms (Transition 완료 대기)
+      }, 10);
+      return () => clearTimeout(timer);
+    } else {
+      // 닫힐 때 타겟 초기화
+      setTargetScrollAltitude(null);
+    }
+  }, [isMilestoneExpanded, targetScrollAltitude]);
+
+  const handleOpenRoadmap = (altitude?: number) => {
+    if (cardRef.current) {
+      const rect = cardRef.current.getBoundingClientRect();
+      setCardRect(rect);
+      if (typeof altitude === 'number') {
+        setTargetScrollAltitude(altitude);
+      }
+      setIsMilestoneExpanded(true);
+      setIsLinearScale(false);
+    }
   };
 
+  const handleCloseRoadmap = () => {
+    setIsRoadmapActive(false);
+    setTimeout(() => setIsMilestoneExpanded(false), 750);
+  };
 
+  // --- Sub-Render Functions ---
 
-  // 필터링된 통계 계산
-  const filteredStats = useMemo(() => {
-    return stats;
-  }, [stats]);
+  const renderProfileSection = () => (
+    <div className="history-summary-card">
+      <div className="history-profile-section">
+        <div className="history-avatar">🏔️</div>
+        <div className="history-profile-info">
+          <div className="history-user-title">{loading ? '분석 중...' : stats?.userTitle}</div>
+          <div className="history-user-altitude">
+            누적 고도{' '}
+            <strong className="altitude-value">
+              {loading ? '...' : stats?.totalAltitude.toLocaleString()}m
+            </strong>
+          </div>
+        </div>
+      </div>
 
-  // 로그인하지 않은 경우
-  if (!session && !loading) {
+      {!loading && stats && (
+        <>
+          <div className="history-tier-progress">
+            <div className="tier-progress-header">
+              <span className="tier-next-label">
+                {stats.nextTierName} 등급까지{' '}
+                <strong>{(stats.nextTierGoal - stats.totalAltitude).toLocaleString()}m</strong>
+              </span>
+              <span className="tier-percentage">
+                {stats.nextTierGoal > 0
+                  ? Math.round((stats.totalAltitude / stats.nextTierGoal) * 100)
+                  : 100}
+                %
+              </span>
+            </div>
+            <div className="tier-progress-bar-container">
+              <div
+                className="tier-progress-bar-fill"
+                style={{
+                  width: `${Math.min((stats.totalAltitude / stats.nextTierGoal) * 100, 100)}%`,
+                }}
+              />
+            </div>
+          </div>
+
+          <div className="history-smart-comment">
+            <span className="comment-icon">💬</span>
+            <span className="comment-text">{stats.smartComment}</span>
+          </div>
+
+          <div
+            ref={cardRef}
+            className={`history-milestones-integrated ${isMilestoneExpanded ? 'hidden' : ''}`}
+            onClick={() => handleOpenRoadmap()}
+          >
+            <div className="history-milestones-list-integrated">
+              <div className="milestone-line-integrated" />
+              {(() => {
+                const items = roadmapData.cardIndices.map((idx) => ({
+                  ...ALTITUDE_MILESTONES[idx],
+                  isMilestone: true,
+                }));
+
+                const hasExactMatch = items.some((m) => m.altitude === stats.totalAltitude);
+
+                const displayItems = hasExactMatch
+                  ? items
+                  : [
+                      ...items,
+                      {
+                        label: '현재 위치',
+                        altitude: stats.totalAltitude,
+                        isMilestone: false,
+                        icon: '🚶',
+                      },
+                    ];
+
+                return displayItems
+                  .sort((a, b) => b.altitude - a.altitude)
+                  .map((m) => {
+                    const isNow = !m.isMilestone || m.altitude === stats.totalAltitude;
+                    const isBetween = !m.isMilestone;
+                    return (
+                      <div
+                        key={m.isMilestone ? (m as any).id : 'current-now'}
+                        className={`milestone-item-integrated ${isNow ? 'is-current' : ''} ${isBetween ? 'current-pos-mini' : ''}`}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleOpenRoadmap(m.altitude);
+                          vibrateShort();
+                        }}
+                      >
+                        <div className="milestone-dot-integrated">
+                          {isNow ? '🚶' : m.altitude === 0 ? '🏠' : m.icon}
+                        </div>
+                        <div className="milestone-content-integrated">
+                          <span className="milestone-label-integrated">{m.label}</span>
+                          <span className="milestone-value-integrated">
+                            {m.altitude.toLocaleString()}m
+                          </span>
+                        </div>
+                      </div>
+                    );
+                  });
+              })()}
+            </div>
+            <div className="milestone-expand-hint">전체 로드맵 보기 🗺️</div>
+          </div>
+        </>
+      )}
+    </div>
+  );
+
+  const renderRoadmapOverlay = () => {
+    if (!isMilestoneExpanded || !stats || !cardRect) return null;
+
+    return (
+      <div
+        className={`history-roadmap-overlay ${isRoadmapActive ? 'fade-in' : ''}`}
+        style={{
+          ['--start-top' as any]: `${cardRect.top}px`,
+          ['--start-left' as any]: `${cardRect.left}px`,
+          ['--start-width' as any]: `${cardRect.width}px`,
+          ['--start-height' as any]: `${cardRect.height}px`,
+        }}
+      >
+        <div className="roadmap-backdrop" onClick={handleCloseRoadmap} />
+        <div ref={roadmapRef} className={`roadmap-container ${isRoadmapActive ? 'is-active' : ''}`}>
+          <header className="roadmap-header">
+            <div className="roadmap-title-group">
+              <h2 className="roadmap-title">등반 로드맵</h2>
+              <span className="roadmap-subtitle">{stats.userTitle}</span>
+            </div>
+            <button className="roadmap-close-button" onClick={handleCloseRoadmap}>
+              ✕
+            </button>
+          </header>
+
+          <div
+            className="roadmap-content"
+            style={{ position: 'relative', flex: 1, overflow: 'hidden' }}
+          >
+            {/* 1. Fixed Logical Scroll Rail (Ghost) */}
+            <div
+              ref={roadmapScrollRef}
+              className="roadmap-scroll-ghost"
+              style={{
+                position: 'absolute',
+                inset: 0,
+                overflowY: isLinearScale ? 'auto' : 'hidden',
+                zIndex: isLinearScale ? 2 : 0,
+                pointerEvents: isLinearScale ? 'auto' : 'none',
+              }}
+            >
+              <div style={{ height: `${VIRTUAL_RAIL_HEIGHT}px`, width: '1px' }} />
+            </div>
+
+            {/* 2. Virtual Camera View Container (Visual) */}
+            <div
+              className="roadmap-virtual-viewport"
+              style={{
+                position: 'absolute',
+                inset: 0,
+                zIndex: 1,
+                pointerEvents: 'none',
+                overflow: isLinearScale ? 'hidden' : 'auto',
+              }}
+            >
+              <div
+                ref={cameraRef}
+                className={`roadmap-mountain-path ${isScaling ? 'is-scaling' : ''}`}
+                style={{
+                  position: 'absolute',
+                  pointerEvents: 'auto',
+                  left: 0,
+                  right: 0,
+                  bottom: isLinearScale && layoutData ? 'var(--camera-offset, 0px)' : '0px',
+                  height: isLinearScale
+                    ? `${getAltitudeY(ALTITUDE_MILESTONES[0].altitude + 10000, displayRatio)}px`
+                    : 'auto',
+                }}
+              >
+                <div
+                  className="roadmap-dotted-line"
+                  style={{
+                    bottom: isLinearScale
+                      ? layoutData?.BOTTOM_SAFETY_MARGIN || 0
+                      : 'var(--gauge-bottom, 36px)',
+                    height:
+                      isLinearScale && layoutData
+                        ? `${layoutData.nodes[0].bottom - layoutData.BOTTOM_SAFETY_MARGIN + 100}px`
+                        : 'var(--dotted-height, 100%)',
+                    top: isLinearScale ? 'auto' : 'var(--dotted-top, 118px)',
+                  }}
+                />
+                <div
+                  className="path-line-fill"
+                  style={{
+                    bottom: isLinearScale
+                      ? layoutData?.BOTTOM_SAFETY_MARGIN || 0
+                      : 'var(--gauge-bottom, 36px)',
+                    height:
+                      isLinearScale && layoutData ? `${layoutData.gaugeHeight}px` : gaugeHeight,
+                    top: 'auto',
+                  }}
+                />
+
+                <div
+                  className="current-position-floating-marker"
+                  style={{
+                    bottom: `calc(${isLinearScale ? (layoutData?.BOTTOM_SAFETY_MARGIN || 0) + 'px' : 'var(--gauge-bottom, 36px)'} + ${isLinearScale && layoutData ? layoutData.gaugeHeight + 'px' : gaugeHeight})`,
+                    ['--current-alt-text' as any]: `"${stats.totalAltitude.toLocaleString()}m"`,
+                  }}
+                >
+                  <div
+                    className="landmark-progress-marker"
+                    style={{ position: 'relative', left: '0' }}
+                  >
+                    <div className="landmark-dot">🚶</div>
+                  </div>
+                </div>
+
+                <div
+                  className={`path-landmarks ${isLinearScale ? 'is-linear' : ''}`}
+                  style={
+                    isLinearScale
+                      ? {
+                          height: `${getAltitudeY(ALTITUDE_MILESTONES[0].altitude + 10000, displayRatio)}px`,
+                          position: 'absolute',
+                          bottom: 0,
+                          left: 0,
+                          right: 0,
+                        }
+                      : undefined
+                  }
+                >
+                  {/* 하단 여백: 확대맵(Linear)일 때는 센터링을 위해 길게, 기본 목록일 때는 짧게 */}
+                  <div
+                    className="roadmap-scroll-spacer bottom-spacer"
+                    style={{ height: isLinearScale ? '100px' : '0px' }}
+                  />
+                  {isLinearScale && layoutData ? (
+                    layoutData.nodes.map((item) => {
+                      const isPassed = stats.totalAltitude >= item.altitude;
+                      const isTier = item.isTier;
+                      const isCurrent = isTier && stats.totalAltitude === item.altitude; // 고도가 정확히 일치할 때만
+                      const isRefCurrent =
+                        isTier &&
+                        roadmapData.currentIdx !== -1 &&
+                        ALTITUDE_MILESTONES[roadmapData.currentIdx].id === item.id;
+                      const isNext =
+                        isTier &&
+                        roadmapData.currentIdx > 0 &&
+                        ALTITUDE_MILESTONES[roadmapData.currentIdx - 1].id === item.id;
+
+                      return (
+                        <div
+                          key={isTier ? item.id : `${item.parentTierId}-sub-${item.label}`}
+                          className={`landmark-item ${isTier ? 'type-tier' : 'type-landmark'} ${isCurrent ? 'is-current' : ''} ${isPassed ? 'is-passed' : ''}`}
+                          style={{
+                            position: 'absolute',
+                            bottom: `${item.bottom}px`,
+                            left: 0,
+                            right: 0,
+                            height: '0px',
+                            minHeight: 0,
+                            zIndex: 2,
+                            display: 'flex',
+                            alignItems: 'center',
+                          }}
+                        >
+                          <div
+                            className="landmark-progress-marker"
+                            ref={isRefCurrent ? currentMarkerRef : isNext ? nextMarkerRef : null}
+                          >
+                            <div className={isTier ? 'landmark-dot' : 'landmark-dot sub-dot'}>
+                              {isTier ? (isCurrent ? '🚶' : item.icon) : null}
+                            </div>
+                          </div>
+                          <div className="landmark-info">
+                            <div className={isTier ? 'tier-label-row' : 'landmark-label-row'}>
+                              <span className={`landmark-label ${!isTier ? 'sub' : ''}`}>
+                                {item.label}
+                              </span>
+                              <span className={`landmark-altitude ${!isTier ? 'sub' : ''}`}>
+                                {item.altitude.toLocaleString()}m
+                              </span>
+                            </div>
+                          </div>
+                        </div>
+                      );
+                    })
+                  ) : (
+                    <>
+                      {ALTITUDE_MILESTONES.map((m, idx) => {
+                        const isZero = m.altitude === 0;
+                        if (m.type !== 'tier' && !isZero) return null;
+
+                        const isCurrentNode = stats.totalAltitude === m.altitude;
+                        const isRefCurrent = idx === roadmapData.currentIdx;
+                        const isNext =
+                          idx === (roadmapData.currentIdx !== -1 ? roadmapData.currentIdx - 1 : -1);
+                        const isTop = idx === 0;
+                        const isPassed = stats ? stats.totalAltitude >= m.altitude : false;
+                        const isInCardView = roadmapData.cardIndices.includes(idx);
+
+                        return (
+                          <div
+                            key={m.id || idx}
+                            className={`tier-group ${!isInCardView && !isRoadmapActive ? 'roadmap-extra-content' : ''}`}
+                          >
+                            <div
+                              className={`landmark-item ${isPassed ? 'is-passed' : ''} ${isCurrentNode ? 'is-current' : ''} ${m.type === 'tier' || isZero ? 'type-tier' : ''}`}
+                              ref={(el) => {
+                                if (el) landmarkRefs.current.set(m.altitude, el);
+                              }}
+                              onClick={() => {
+                                setIsLinearScale(true);
+                                vibrateShort();
+                              }}
+                              style={{ cursor: 'pointer' }}
+                            >
+                              <div
+                                className="landmark-progress-marker"
+                                ref={(el) => {
+                                  if (isRefCurrent) currentMarkerRef.current = el;
+                                  if (isNext) nextMarkerRef.current = el;
+                                  if (isTop) topMarkerRef.current = el;
+                                  if (isZero) zeroMarkerRef.current = el;
+                                }}
+                              >
+                                <div className="landmark-dot">
+                                  {isCurrentNode ? '🚶' : isZero ? '🏠' : m.icon}
+                                </div>
+                              </div>
+                              <div className="landmark-info">
+                                <div className="tier-label-row">
+                                  <span className="landmark-label">{m.label}</span>
+                                  <span className="landmark-altitude">
+                                    {m.altitude.toLocaleString()}m
+                                  </span>
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                        );
+                      })}
+                      <div
+                        className="roadmap-scroll-spacer top-spacer"
+                        style={{ height: isLinearScale ? '100px' : '4px' }}
+                      />
+                    </>
+                  )}
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {isLinearScale && (
+            <div className="roadmap-scale-indicator">
+              <span className="scale-prefix">1px : </span>
+              <span className="scale-value">{Math.round(displayRatio)}m</span>
+            </div>
+          )}
+
+          <div className="roadmap-footer roadmap-extra-content">
+            <div className="roadmap-footer-row">
+              <span className="footer-label">현재 고도</span>
+              <span className="footer-value">{stats.totalAltitude.toLocaleString()}m</span>
+            </div>
+            <div className="roadmap-footer-row">
+              <span className="footer-label">다음 목표 정상까지</span>
+              <span className="footer-value">
+                {(stats.nextTierGoal - stats.totalAltitude).toLocaleString()}m
+              </span>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  };
+
+  if (error) {
     return (
       <div className="history-page">
-        <Header />
         <main className="history-main">
           <div className="history-content">
-            <div className="history-guest-view">
-              <div className="history-guest-icon">🔒</div>
-              <h1 className="history-guest-title">
-                로그인하고
-                <br />
-                <strong className="history-guest-highlight">나의 등반 기록을 확인하세요.</strong>
-              </h1>
-              <button
-                className="history-guest-button"
-                onClick={() => navigate(APP_CONFIG.ROUTES.MY_PAGE)}
-              >
-                로그인하기
-              </button>
+            <div className="history-error">
+              데이터를 불러오지 못했습니다. 잠시 후 다시 시도해주세요.
             </div>
           </div>
         </main>
@@ -633,350 +733,189 @@ export function HistoryPage() {
       <Header />
       <main className="history-main">
         <div className="history-content">
-          <h1 className="history-header-title">나의 등반 기록</h1>
+          <header className="history-header">
+            <h1 className="history-header-title">나의 등반 기록</h1>
+          </header>
 
-          {/* 카드 1: 프로필 & 종합 등반 고도 (Summary Card) */}
-          <div className="history-summary-card">
-            <div className="history-profile-section">
-              <div className="history-avatar">🏔️</div>
-              <div className="history-profile-info">
-                <div className="history-user-title">{loading ? '분석 중...' : stats?.userTitle}</div>
-                <div className="history-user-altitude">
-                  누적 고도 <strong className="altitude-value">{loading ? '...' : stats?.totalAltitude.toLocaleString()}m</strong>
-                </div>
-              </div>
+          {renderProfileSection()}
+
+          {/* Tabs Indicator Component */}
+          <div className="history-tab-container">
+            <div className="history-segmented-control">
+              {['summary', 'analysis', 'activity'].map((tab) => (
+                <button
+                  key={tab}
+                  className={`segmented-item ${activeTab === tab ? 'active' : ''}`}
+                  onClick={() => setActiveTab(tab as any)}
+                >
+                  {tab === 'summary' ? '요약' : tab === 'analysis' ? '분석' : '활동'}
+                </button>
+              ))}
+              <div className={`segmented-indicator tab-${activeTab}`} />
             </div>
+          </div>
 
-            {/* Phase 2: Tier Progress Gauge */}
-            {!loading && stats && (
-              <div className="history-tier-progress">
-                <div className="tier-progress-header">
-                  <span className="tier-next-label">
-                    {stats.nextTierName} 등급까지 <strong>{(stats.nextTierGoal - stats.totalAltitude).toLocaleString()}m</strong>
-                  </span>
-                  <span className="tier-percentage">{Math.round((stats.totalAltitude / stats.nextTierGoal) * 100)}%</span>
-                </div>
-                <div className="tier-progress-bar-container">
-                  <div
-                    className="tier-progress-bar-fill"
-                    style={{ width: `${Math.min((stats.totalAltitude / stats.nextTierGoal) * 100, 100)}%` }}
-                  />
+          <div className="history-tab-content">
+            {activeTab === 'summary' && (
+              <div className="tab-pane fade-in">
+                <div className="history-summary-card mini">
+                  <div className="history-stats-grid">
+                    <div className="history-stat-item">
+                      <span className="stat-label">총 정답</span>
+                      <span className="stat-value">
+                        {loading ? '...' : stats?.totalCorrect.toLocaleString()}
+                      </span>
+                    </div>
+                    <div className="history-stat-item">
+                      <span className="stat-label">정확도</span>
+                      <span className="stat-value">
+                        {loading ? '...' : `${stats?.averageAccuracy}%`}
+                      </span>
+                    </div>
+                    <div className="history-stat-item">
+                      <span className="stat-label">스트릭</span>
+                      <span className="stat-value">
+                        {loading ? '...' : `${stats?.streakCount}일`}
+                      </span>
+                    </div>
+                  </div>
+                  <div className="history-stats-grid secondary">
+                    <div className="history-stat-item">
+                      <span className="stat-label">최고 콤보</span>
+                      <span className="stat-value">
+                        {loading ? '...' : `${stats?.maxCombo || 0}🔥`}
+                      </span>
+                    </div>
+                    <div className="history-stat-item">
+                      <span className="stat-label">주간 정복</span>
+                      <span className="stat-value">
+                        {loading ? '...' : `${stats?.weeklyTotal || 0}Lv`}
+                      </span>
+                    </div>
+                    <div className="history-stat-item">
+                      <span className="stat-label">성장률</span>
+                      <span className="stat-value">
+                        {loading ? '...' : `${stats?.graphPercentage || 0}%`}
+                      </span>
+                    </div>
+                  </div>
                 </div>
               </div>
             )}
 
-            {/* Phase 2: Smart Comment */}
-            {!loading && stats && (
-              <div className="history-smart-comment">
-                <span className="comment-icon">💬</span>
-                <span className="comment-text">{stats.smartComment}</span>
-              </div>
-            )}
-
-            <div className="history-stats-grid">
-              <div className="history-stat-item">
-                <span className="stat-label">총 정답 수</span>
-                <span className="stat-value">{loading ? '...' : stats?.totalCorrect.toLocaleString()}개</span>
-              </div>
-              <div className="history-stat-item">
-                <span className="stat-label">평균 정확도</span>
-                <span className="stat-value">{loading ? '...' : stats?.averageAccuracy}%</span>
-              </div>
-              <div className="history-stat-item">
-                <span className="stat-label">최고 콤보</span>
-                <span className="stat-value">{loading ? '...' : stats?.maxCombo}회</span>
-              </div>
-            </div>
-
-            <div className="history-card-divider" />
-
-            <div className="history-card-header no-border">
-              <h2 className="history-card-title">
-                {timeRange === 'week' ? '주간 학습 리포트' : '월간 학습 리포트'}
-              </h2>
-              <div className="history-time-range-tabs">
-                <button
-                  className={`history-tab ${timeRange === 'week' ? 'active' : ''}`}
-                  onClick={() => setTimeRange('week')}
-                >
-                  주간
-                </button>
-                <button
-                  className={`history-tab ${timeRange === 'month' ? 'active' : ''}`}
-                  onClick={() => setTimeRange('month')}
-                >
-                  월간
-                </button>
-              </div>
-            </div>
-
-            <div className="history-summary-content mini">
-              <div className="history-summary-text">
-                {timeRange === 'week' ? '이번 주' : '이번 달'}{' '}
-                <strong className="history-summary-highlight">
-                  {loading
-                    ? '...'
-                    : timeRange === 'week'
-                      ? stats?.weeklyTotal || 0
-                      : stats?.monthlyTotal || 0}
-                  개 레벨
-                </strong>
-                을 정복했어요!
-              </div>
-
-              {/* SVG 막대 그래프 (최근 7일) */}
-              <div
-                className="history-summary-graph-container"
-                style={{ height: '100px', marginTop: '12px', position: 'relative' }}
-              >
-                {loading ? (
-                  <div className="history-graph-loading">트렌드 분석 중...</div>
-                ) : (
-                  <svg width="100%" height="100%" viewBox="0 0 300 100" preserveAspectRatio="none">
-                    {/* Y축 가이드라인 */}
-                    <line
-                      x1="0"
-                      y1="80"
-                      x2="300"
-                      y2="80"
-                      stroke="rgba(255,255,255,0.1)"
-                      strokeWidth="1"
-                    />
-
-                    {/* 데이터 바 렌더링 */}
-                    {timeRange === 'week'
-                      ? (stats?.dailyCounts || []).map((count, index) => {
-                        // 최대값 기준으로 높이 계산 (최소 10)
-                        const dailyCounts = stats?.dailyCounts || [0, 0, 0, 0, 0, 0, 0];
-                        const max = Math.max(...dailyCounts, 10);
-                        const height = Math.min((count / max) * 80, 80); // 최대 높이 80
-                        const x = index * (300 / 7) + 300 / 14 - 10; // 7등분 후 중앙 정렬, 바 너비 20 보정
-
-                        return (
-                          <g key={index}>
-                            {/* 막대 (최소 높이 4px 보장) */}
-                            <rect
-                              x={x}
-                              y={80 - Math.max(height, count > 0 ? 4 : 0)}
-                              width="20"
-                              height={Math.max(height, count > 0 ? 4 : 0)}
-                              fill={index === 6 ? '#4cd964' : 'rgba(255, 255, 255, 0.2)'}
-                              rx="4"
+            {activeTab === 'analysis' && (
+              <div className="tab-pane fade-in">
+                <div className="history-analysis-card">
+                  <div className="history-card-header no-border">
+                    <h2 className="history-card-title">분야별 숙련도</h2>
+                  </div>
+                  <div className="history-proficiency-list">
+                    {loading ? (
+                      <div className="history-loading">로딩 중...</div>
+                    ) : stats && stats.categoryLevels.length > 0 ? (
+                      stats.categoryLevels.slice(0, 10).map((item) => (
+                        <div key={item.themeId + item.level} className="history-proficiency-item">
+                          <div className="proficiency-info">
+                            <span className="proficiency-name">
+                              {item.categoryName} - {item.subCategoryName}
+                            </span>
+                            <span className="proficiency-level">Lv.{item.level}</span>
+                          </div>
+                          <div className="proficiency-bar-container">
+                            <div
+                              className="proficiency-bar-fill"
+                              style={{ width: `${item.progress}%` }}
                             />
-                            {/* 요일 라벨 */}
-                            <text
-                              x={x + 10}
-                              y="95"
-                              textAnchor="middle"
-                              fill={index === 6 ? '#fff' : 'rgba(255,255,255,0.4)'}
-                              fontSize="10"
-                              fontWeight={index === 6 ? 'bold' : 'normal'}
-                            >
-                              {stats?.weekDays?.[index] || ''}
-                            </text>
-                          </g>
+                          </div>
+                        </div>
+                      ))
+                    ) : (
+                      <div className="history-empty">기록이 부족합니다.</div>
+                    )}
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {activeTab === 'activity' && (
+              <div className="tab-pane fade-in">
+                <div className="history-card no-padding">
+                  <div className="history-card-header padding-16">
+                    <h2 className="history-card-title">최근 등반 이력</h2>
+                    <button
+                      className="history-review-climb-button"
+                      onClick={() => stats?.wrongAnswers && alert('오답 등반을 시작합니다!')}
+                      disabled={!stats || stats.wrongAnswers === 0}
+                    >
+                      오답 등반하기
+                    </button>
+                  </div>
+
+                  {!loading && stats && (
+                    <div className="history-mini-heatmap">
+                      <div className="heatmap-header">
+                        <span className="heatmap-title">최근 28일 활동</span>
+                      </div>
+                      <div className="heatmap-grid">
+                        {stats.heatmapData.map((day, idx) => (
+                          <div
+                            key={idx}
+                            className={`heatmap-cell intensity-${day.intensity}`}
+                            title={`${day.date}: ${day.count}개`}
+                          />
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  <div className="history-recent-list border-top">
+                    {loading ? (
+                      <div className="history-loading">로딩 중...</div>
+                    ) : stats && stats.recentRecords.length > 0 ? (
+                      stats.recentRecords.map((record, index) => {
+                        const [category, subCategory] = record.themeId.split('_');
+                        return (
+                          <div
+                            key={index}
+                            className="history-recent-item-new"
+                            onClick={() =>
+                              navigate(
+                                subCategory
+                                  ? `/level-select?category=${category}&sub=${subCategory}`
+                                  : `/subcategory?category=${category}`
+                              )
+                            }
+                          >
+                            <div className="history-recent-icon-small">
+                              {category === 'math' ? '🔢' : '🇯🇵'}
+                            </div>
+                            <div className="history-recent-content">
+                              <div className="history-recent-title-row">
+                                <span className="history-recent-name">
+                                  {record.categoryName} {record.subCategoryName} Lv.{record.level}
+                                </span>
+                                <span className="history-recent-time-new">{record.timeAgo}</span>
+                              </div>
+                              <div className="history-recent-score-row">
+                                <span className="history-recent-mode">{record.modeName}</span>
+                                <span className="history-recent-best">{record.bestScore}점</span>
+                              </div>
+                            </div>
+                          </div>
                         );
                       })
-                      : (stats?.monthlyDailyCounts || []).length > 0
-                        ? (stats?.monthlyDailyCounts || []).map((count, index) => {
-                          const monthlyCounts = stats?.monthlyDailyCounts || [];
-                          const max = Math.max(...monthlyCounts, 10);
-                          const height = Math.min((count / max) * 80, 80);
-                          const x = (index / monthlyCounts.length) * 300;
-                          const barWidth = Math.max(2, 300 / monthlyCounts.length - 2);
-
-                          return (
-                            <g key={index}>
-                              <rect
-                                x={x}
-                                y={80 - Math.max(height, count > 0 ? 4 : 0)}
-                                width={barWidth}
-                                height={Math.max(height, count > 0 ? 4 : 0)}
-                                fill={
-                                  index === monthlyCounts.length - 1
-                                    ? '#4cd964'
-                                    : 'rgba(255, 255, 255, 0.2)'
-                                }
-                                rx="2"
-                              />
-                              {index % Math.ceil(monthlyCounts.length / 7) === 0 && (
-                                <text
-                                  x={x + barWidth / 2}
-                                  y="95"
-                                  textAnchor="middle"
-                                  fill={
-                                    index === monthlyCounts.length - 1
-                                      ? '#fff'
-                                      : 'rgba(255,255,255,0.4)'
-                                  }
-                                  fontSize="8"
-                                  fontWeight={index === monthlyCounts.length - 1 ? 'bold' : 'normal'}
-                                >
-                                  {stats?.monthlyDays?.[index] || ''}
-                                </text>
-                              )}
-                            </g>
-                          );
-                        })
-                        : null}
-                  </svg>
-                )}
-              </div>
-            </div>
-          </div>
-
-          {/* Phase 2: 수직 등반 이정표 (Vertical Milestones Card) */}
-          <div className="history-milestones-card">
-            <div className="history-card-header no-border">
-              <h2 className="history-card-title">등반 여정</h2>
-            </div>
-            <div className="history-milestones-list">
-              <div className="milestone-line" />
-              {[
-                { label: '에베레스트', altitude: 8848, icon: '🏁' },
-                { label: '구름 위', altitude: 3000, icon: '☁️' },
-                { label: '수목 한계선', altitude: 1500, icon: '🌲' },
-                { label: '현재 위치', altitude: stats?.totalAltitude || 0, icon: '🚶', isCurrent: true },
-                { label: '시작점', altitude: 0, icon: '🏠' }
-              ].sort((a, b) => b.altitude - a.altitude).map((m, idx) => (
-                <div key={idx} className={`milestone-item ${m.isCurrent ? 'is-current' : ''}`}>
-                  <div className="milestone-dot">{m.icon}</div>
-                  <div className="milestone-content">
-                    <span className="milestone-label">{m.label}</span>
-                    <span className="milestone-value">{m.altitude.toLocaleString()}m</span>
+                    ) : (
+                      <div className="history-empty">최근 활동이 없습니다.</div>
+                    )}
                   </div>
-                </div>
-              ))}
-            </div>
-          </div>
-
-          {/* 카드 2: 분야별 숙련 분석 (Analysis Card) */}
-          <div className="history-analysis-card">
-            <div className="history-card-header no-border">
-              <h2 className="history-card-title">분야별 숙련도</h2>
-            </div>
-            <div className="history-proficiency-list">
-              {loading ? (
-                <div className="history-loading">로딩 중...</div>
-              ) : stats && stats.categoryLevels.length > 0 ? (
-                stats.categoryLevels.slice(0, 5).map((item) => (
-                  <div key={item.themeId} className="history-proficiency-item">
-                    <div className="proficiency-info">
-                      <span className="proficiency-name">{item.categoryName} - {item.subCategoryName}</span>
-                      <span className="proficiency-level">Lv.{item.level}</span>
-                    </div>
-                    <div className="proficiency-bar-container">
-                      <div
-                        className="proficiency-bar-fill"
-                        style={{ width: `${item.progress}%` }}
-                      />
-                    </div>
-                  </div>
-                ))
-              ) : (
-                <div className="history-empty">기록이 부족합니다.</div>
-              )}
-            </div>
-          </div>
-
-          {/* 카드 3: 명예의 전당 (Best Records Card) */}
-          <div className="history-best-records-card">
-            <div className="history-card-header no-border">
-              <h2 className="history-card-title">명예의 전당</h2>
-            </div>
-            <div className="history-best-grid">
-              <div className="history-best-item survival">
-                <div className="best-icon">🔥</div>
-                <div className="best-label">서바이벌 최장</div>
-                <div className="best-value">{loading ? '...' : `${stats?.maxCombo || 0}콤보`}</div>
-              </div>
-              <div className="history-best-item timeattack">
-                <div className="best-icon">⚡</div>
-                <div className="best-label">타임어택 최고</div>
-                <div className="best-value">{loading ? '...' : 'Lv.15'}</div>
-              </div>
-            </div>
-          </div>
-
-          {/* 카드 4: 오답 노트 & 최근 이력 (Activity List) */}
-          <div className="history-card no-padding">
-            <div className="history-card-header padding-16">
-              <h2 className="history-card-title">최근 등반 이력</h2>
-              <button
-                className="history-review-climb-button"
-                onClick={() => {
-                  if (stats && stats.wrongAnswers > 0) {
-                    // 오답 등반 로직 (추후 구현)
-                    alert('오답 문제를 모아 등반을 시작합니다!');
-                  }
-                }}
-                disabled={!stats || stats.wrongAnswers === 0}
-              >
-                오답 등반하기
-              </button>
-            </div>
-
-            {/* Phase 2: Mini Heatmap */}
-            {!loading && stats && (
-              <div className="history-mini-heatmap">
-                <div className="heatmap-header">
-                  <span className="heatmap-title">최근 28일 활동</span>
-                  <span className="heatmap-streak"><strong>{stats.streakCount}일</strong> 연속 등반 중!</span>
-                </div>
-                <div className="heatmap-grid">
-                  {stats.heatmapData.map((day, idx) => (
-                    <div
-                      key={idx}
-                      className={`heatmap-cell intensity-${day.intensity}`}
-                      title={`${day.date}: ${day.count}개`}
-                    />
-                  ))}
                 </div>
               </div>
             )}
-
-            <div className="history-recent-list border-top">
-              {loading ? (
-                <div className="history-loading">로딩 중...</div>
-              ) : filteredStats && filteredStats.recentRecords.length > 0 ? (
-                filteredStats.recentRecords.map((record, index) => {
-                  const [category, subCategory] = record.themeId.split('_');
-                  return (
-                    <div
-                      key={index}
-                      className="history-recent-item-new"
-                      onClick={() => {
-                        if (subCategory) {
-                          navigate(`/level-select?category=${category}&sub=${subCategory}`);
-                        } else {
-                          navigate(`/subcategory?category=${category}`);
-                        }
-                      }}
-                    >
-                      <div className="history-recent-icon-small">
-                        {category === 'math' ? '🔢' : '🇯🇵'}
-                      </div>
-                      <div className="history-recent-content">
-                        <div className="history-recent-title-row">
-                          <span className="history-recent-name">{record.categoryName} {record.subCategoryName} Lv.{record.level}</span>
-                          <span className="history-recent-time-new">{record.timeAgo}</span>
-                        </div>
-                        <div className="history-recent-score-row">
-                          <span className="history-recent-mode">{record.modeName}</span>
-                          <span className="history-recent-best">{record.bestScore}점</span>
-                        </div>
-                      </div>
-                    </div>
-                  );
-                })
-              ) : (
-                <div className="history-empty">최근 활동이 없습니다.</div>
-              )}
-            </div>
           </div>
         </div>
       </main>
       <FooterNav />
+      {renderRoadmapOverlay()}
     </div>
   );
 }

@@ -21,10 +21,10 @@
 .history-content {
   max-width: var(--modal-width-portrait);
   margin: 0 auto;
-  padding: 24px 20px;
+  padding: 16px 20px;
   display: flex;
   flex-direction: column;
-  gap: 20px;
+  gap: 12px;
 }
 
 .history-header-title {
@@ -37,15 +37,18 @@
 /* --- 공통 카드 스타일 --- */
 .history-summary-card,
 .history-analysis-card,
-.history-best-records-card,
 .history-milestones-card,
 .history-card {
   background-color: var(--color-bg-secondary);
-  border-radius: 24px;
+  border-radius: 20px;
+  /* 약간 조정 */
   padding: 24px;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.12);
   display: flex;
   flex-direction: column;
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  /* 경계 강화 */
+  animation: cardFadeIn 0.6s ease-out backwards;
 }
 
 .history-card.no-padding {
@@ -75,6 +78,625 @@
   font-size: 18px;
   font-weight: 700;
   color: var(--color-text-primary);
+}
+
+/* --- Phase 11: Full-screen Roadmap Overlay --- */
+.history-roadmap-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 2000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  /* Hero expansion을 위해 여백 제거 */
+}
+
+.roadmap-backdrop {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0);
+  backdrop-filter: blur(0px);
+  transition: all 0.5s ease;
+}
+
+.history-roadmap-overlay.fade-in .roadmap-backdrop {
+  background-color: rgba(0, 0, 0, 0.85);
+  backdrop-filter: blur(12px);
+  /* 약간 더 깊게 */
+}
+
+.roadmap-container {
+  position: absolute;
+  /* fixed 배경 위에서의 절대 위치 */
+  top: var(--start-top, 50%);
+  left: var(--start-left, 50%);
+  width: var(--start-width, 90%);
+  height: var(--start-height, 180px);
+  background-color: rgba(0, 0, 0, 0.2);
+  /* 카드와 100% 일치 */
+  border-radius: 16px;
+  display: flex;
+  flex-direction: column;
+  box-shadow: none;
+  overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  /* 닫을 때는 0.7s 동안 부드럽게 수축 */
+  transition: all 0.7s cubic-bezier(0.19, 1, 0.22, 1);
+  z-index: 2001;
+}
+
+.history-roadmap-overlay.fade-in .roadmap-container {
+  top: 0;
+  left: 0;
+  width: 100%;
+  max-width: 500px;
+  /* 데스크탑 max-width 유지 */
+  height: 100vh;
+  max-height: 100vh;
+  border-radius: 0;
+  background-color: var(--color-bg-secondary);
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+  /* 열 때는 0.8s 동안 우아하게 확장 */
+  transition: all 0.8s cubic-bezier(0.19, 1, 0.22, 1);
+}
+
+/* 데스크탑/태블릿 환경에서도 시원하게 */
+@media (min-width: 500px) {
+  .history-roadmap-overlay.fade-in {
+    padding: 20px;
+  }
+
+  .history-roadmap-overlay.fade-in .roadmap-container {
+    top: 5vh;
+    left: 50%;
+    transform: translateX(-50%);
+    height: 90vh;
+    max-height: 90vh;
+    border-radius: 32px;
+  }
+}
+
+.roadmap-header {
+  padding: 24px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  opacity: 0;
+  transition: opacity 0.4s ease;
+  /* 닫을 때 조금 더 천천히 사라짐 */
+}
+
+.history-roadmap-overlay.fade-in .roadmap-header {
+  opacity: 1;
+  transition: opacity 0.5s ease 0.4s;
+  /* 확장 중간 이후부터 서서히 나타남 */
+}
+
+.roadmap-title-group {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.roadmap-title {
+  font-size: 20px;
+  font-weight: 800;
+  color: #fff;
+}
+
+.roadmap-subtitle {
+  font-size: 13px;
+  color: #4facfe;
+  font-weight: 600;
+}
+
+.roadmap-close-button {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  border: none;
+  background-color: rgba(255, 255, 255, 0.1);
+  color: #fff;
+  font-size: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+
+.roadmap-progress-section {
+  padding: 16px 24px 0 24px;
+}
+
+.roadmap-content {
+  flex: 1;
+  overflow: hidden;
+  padding: 24px 24px 0 24px;
+}
+
+.roadmap-mountain-path {
+  transition: none;
+}
+
+.roadmap-mountain-path.is-scaling {
+  transition:
+    bottom 0.8s cubic-bezier(0.4, 0, 0.2, 1),
+    height 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+  will-change: bottom, height;
+}
+
+.path-line-fill {
+  position: absolute;
+  left: 18px;
+  bottom: 0px;
+  width: 2px;
+  background: linear-gradient(to top, #4facfe, #00f2fe);
+  box-shadow: 0 0 10px rgba(79, 172, 254, 0.5);
+  transition: height 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+  z-index: 1;
+}
+
+.roadmap-dotted-line {
+  position: absolute;
+  left: 18px;
+  bottom: 0;
+  top: 0;
+  width: 2px;
+  background-image: linear-gradient(
+    to bottom,
+    rgba(79, 172, 254, 0.4) 40%,
+    rgba(255, 255, 255, 0) 0%
+  );
+  background-position: left;
+  background-size: 2px 8px;
+  /* 더 촘촘하고 예쁜 점선 */
+  background-repeat: repeat-y;
+  z-index: 0;
+}
+
+/* Unused duplicate removed */
+
+.path-landmarks {
+  display: flex;
+  flex-direction: column;
+  gap: 40px;
+  position: relative;
+  /* padding-left removed. Alignment handled by absolute markers */
+}
+
+.path-landmarks.is-linear {
+  display: block;
+}
+
+.landmark-dot.sub-dot {
+  width: 10px;
+  height: 10px;
+  background-color: #222;
+  border: 2px solid #4facfe;
+  border-radius: 50%;
+  box-shadow: 0 0 8px rgba(79, 172, 254, 0.4);
+  z-index: 2;
+  position: relative;
+  /* marker 컨테이너 내에서 중앙 정렬됨 */
+}
+
+.landmark-item.type-landmark.is-passed .landmark-dot.sub-dot {
+  background-color: #4facfe;
+  box-shadow: 0 0 12px rgba(79, 172, 254, 0.6);
+}
+
+.landmark-label.sub {
+  font-size: 13px;
+  color: rgba(255, 255, 255, 0.7);
+}
+
+.landmark-altitude.sub {
+  font-size: 11px;
+  color: rgba(79, 172, 254, 0.6);
+}
+
+.tier-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+.tier-label-row {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.milestone-divider.sub {
+  margin: 12px 0;
+  opacity: 0.3;
+}
+
+.milestone-divider.sub.is-passed {
+  opacity: 0.6;
+}
+
+.sub-landmark-hint {
+  font-size: 11px;
+  color: #4facfe;
+  font-weight: 600;
+  margin-top: 4px;
+  opacity: 0.7;
+}
+
+/* Remove diagonal callouts */
+
+.landmark-item.type-tier {
+  cursor: pointer;
+  padding: 8px 0;
+  position: relative;
+}
+
+.landmark-item.type-tier:hover {
+  background-color: rgba(255, 255, 255, 0.05);
+  border-radius: 8px;
+}
+
+.landmark-item {
+  display: flex;
+  align-items: center;
+  position: relative;
+  min-height: 48px;
+  opacity: 0.45;
+  transition: all 0.4s ease;
+}
+
+.landmark-item.is-passed {
+  opacity: 0.8;
+}
+
+.landmark-item.is-current {
+  opacity: 1;
+}
+
+.landmark-progress-marker {
+  position: absolute;
+  left: 19px;
+  /* 18px(line start) + 1px(half width) -> Center align */
+  transform: translateX(-50%);
+  z-index: 2;
+  width: 38px;
+  height: 38px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.type-tier .landmark-progress-marker {
+  left: 64px;
+}
+
+.roadmap-scroll-spacer {
+  width: 100%;
+  pointer-events: none;
+}
+
+/* 티어와 수직선을 연결하는 가로 분기선 (마커 뒤로 겹치지 않게 왼쪽 끝에서 시작) */
+.type-tier .landmark-progress-marker::before {
+  content: '';
+  position: absolute;
+  right: 100%;
+  /* 마커 외곽선 왼쪽 끝에 도킹 */
+  top: 50%;
+  width: 27px;
+  /* 64px(중심) - 19px(마커 반폭) - 18px(수직선) = 27px */
+  height: 2px;
+  background: linear-gradient(to left, rgba(79, 172, 254, 0.6), transparent);
+  z-index: -1;
+}
+
+.landmark-dot {
+  width: 38px;
+  height: 38px;
+  background-color: #222;
+  border-radius: 50%;
+  border: 2px solid #4facfe;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  z-index: 2;
+  position: relative;
+}
+
+.landmark-item.is-current .landmark-dot {
+  background: #4cd964 !important;
+  /* 우선순위 강제 (type-tier 오버라이드 방지) */
+  border-color: #fff !important;
+  transform: scale(1.1);
+  box-shadow: 0 0 15px rgba(76, 217, 100, 0.6);
+}
+
+.roadmap-extra-content {
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.5s ease 0.4s;
+}
+
+.history-roadmap-overlay.fade-in .roadmap-extra-content {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.landmark-info {
+  margin-left: 56px;
+  /* 수직선(18px) 기반 서브 지표용 충분한 간격 */
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  justify-content: center;
+  gap: 2px;
+}
+
+.type-tier .landmark-info {
+  margin-left: 110px;
+  /* 분리된 티어(64px 축) + 마커 반폭(19px) + 여백(27px) */
+}
+
+/* --- 로드맵 하단 요약 (Footer) --- */
+.roadmap-footer {
+  padding: 16px 20px;
+  background-color: rgba(25, 26, 30, 0.95);
+  border-top: 1px solid rgba(255, 255, 255, 0.05);
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  backdrop-filter: blur(20px);
+}
+
+.roadmap-footer-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.footer-label {
+  font-size: 14px;
+  color: rgba(255, 255, 255, 0.7);
+  font-weight: 500;
+}
+
+.footer-value {
+  font-size: 15px;
+  color: #4facfe;
+  font-weight: 800;
+  letter-spacing: -0.2px;
+}
+
+/* --- 로드맵 실시간 배율 표시기 --- */
+.roadmap-scale-indicator {
+  position: absolute;
+  bottom: 130px;
+  /* 로드맵 푸터(고도 정보) 위로 올림 */
+  right: 24px;
+  background-color: rgba(25, 26, 30, 0.85);
+  border: 1px solid rgba(79, 172, 254, 0.4);
+  backdrop-filter: blur(12px);
+  padding: 6px 14px;
+  border-radius: 100px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  z-index: 100;
+  /* 최상단 배치 */
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.4);
+  pointer-events: none;
+  animation: scaleIndicatorIn 0.3s ease-out;
+}
+
+.scale-prefix {
+  font-size: 11px;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.4);
+  letter-spacing: 0.5px;
+}
+
+.scale-value {
+  font-size: 15px;
+  font-weight: 800;
+  color: #4facfe;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.2px;
+}
+
+@keyframes scaleIndicatorIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px) scale(0.9);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.landmark-label {
+  font-size: 16px;
+  font-weight: 700;
+  color: #fff;
+}
+
+.landmark-label-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.landmark-item.type-tier .landmark-dot {
+  border-color: #00f2fe;
+  background-color: rgba(79, 172, 254, 0.1);
+}
+
+.landmark-item.type-tier.is-passed .landmark-dot {
+  box-shadow: 0 0 15px rgba(0, 242, 254, 0.3);
+}
+
+.landmark-item.type-landmark .landmark-dot {
+  border-color: rgba(255, 255, 255, 0.2);
+  background-color: #1a1a1a;
+}
+
+.landmark-item.type-landmark.is-passed .landmark-dot {
+  border-color: rgba(255, 255, 255, 0.5);
+}
+
+.landmark-altitude {
+  font-size: 13px;
+  /* 약간 키움 */
+  color: var(--color-text-secondary);
+  /* 대비 상향 (기존 tertiary) */
+  font-weight: 500;
+}
+
+.current-location-tag {
+  font-size: 10px;
+  padding: 2px 8px;
+  background-color: #4cd964;
+  color: #fff;
+  border-radius: 100px;
+  width: fit-content;
+  margin-top: 4px;
+}
+
+.roadmap-bottom-stats {
+  padding: 24px;
+  background-color: rgba(0, 0, 0, 0.2);
+  border-top: 1px solid rgba(255, 255, 255, 0.05);
+  opacity: 0;
+  transition: opacity 0.4s ease;
+}
+
+.history-roadmap-overlay.fade-in .roadmap-bottom-stats {
+  opacity: 1;
+  transition: opacity 0.5s ease 0.4s;
+}
+
+.roadmap-altitude-summary,
+.roadmap-next-goal {
+  font-size: 14px;
+  color: var(--color-text-secondary);
+  display: flex;
+  justify-content: space-between;
+}
+
+.roadmap-next-goal {
+  margin-top: 4px;
+}
+
+.highlight {
+  color: #4facfe;
+  font-weight: 700;
+}
+
+/* Animations */
+.scale-up {
+  /* scale-up 애니메이션은 JS 좌표 트랜지션과 충돌할 수 있으므로 제거하거나 보정 */
+  animation: none;
+}
+
+@keyframes scaleUp {
+  from {
+    opacity: 0;
+    transform: scale(0.8);
+  }
+
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+/* --- Phase 9: Segmented Control (Tabs) --- */
+.history-tab-container {
+  padding: 8px 0;
+  margin-bottom: 12px;
+}
+
+.history-segmented-control {
+  position: relative;
+  display: flex;
+  background-color: rgba(255, 255, 255, 0.05);
+  border-radius: 14px;
+  padding: 4px;
+  height: 44px;
+}
+
+.segmented-item {
+  flex: 1;
+  border: none;
+  background: none;
+  color: var(--color-text-tertiary);
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  z-index: 1;
+  transition: color 0.3s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.segmented-item.active {
+  color: #fff;
+}
+
+.segmented-indicator {
+  position: absolute;
+  top: 4px;
+  bottom: 4px;
+  left: 4px;
+  width: calc(33.33% - 4px);
+  background-color: rgba(255, 255, 255, 0.15);
+  border-radius: 10px;
+  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.segmented-indicator.tab-summary {
+  transform: translateX(0);
+}
+
+.segmented-indicator.tab-analysis {
+  transform: translateX(100%);
+}
+
+.segmented-indicator.tab-activity {
+  transform: translateX(200%);
+}
+
+.history-tab-content {
+  min-height: 200px;
+}
+
+.fade-in {
+  animation: fadeIn 0.3s ease-out;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 /* --- 1. Summary Card (Profile & Altitude) --- */
@@ -177,11 +799,39 @@
   line-height: 1.4;
 }
 
+@keyframes cardFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(15px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.history-error {
+  padding: 40px;
+  background-color: rgba(235, 87, 87, 0.1);
+  border: 1px solid rgba(235, 87, 87, 0.2);
+  border-radius: 12px;
+  color: #eb5757;
+  text-align: center;
+  font-weight: 600;
+}
+
 .history-stats-grid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   gap: 12px;
-  margin-bottom: 24px;
+  margin-top: 20px;
+}
+
+.history-stats-grid.secondary {
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px solid rgba(255, 255, 255, 0.05);
 }
 
 .history-stat-item {
@@ -195,7 +845,8 @@
 
 .stat-label {
   font-size: 11px;
-  color: var(--color-text-tertiary);
+  color: rgba(255, 255, 255, 0.5);
+  /* 대비 상향 */
   margin-bottom: 4px;
 }
 
@@ -209,6 +860,13 @@
   height: 1px;
   background-color: rgba(255, 255, 255, 0.1);
   margin: 0 -24px 24px -24px;
+}
+
+.history-summary-card.mini {
+  background-color: rgba(255, 255, 255, 0.03);
+  box-shadow: none;
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  margin-bottom: 0;
 }
 
 .history-summary-content.mini {
@@ -227,86 +885,309 @@
   font-weight: 700;
 }
 
-/* --- Phase 2: Milestones --- */
-.history-milestones-card {
-  margin-top: 4px;
+/* --- Phase 8: Integrated Milestones --- */
+.history-milestones-integrated {
+  position: relative;
+  background-color: rgba(0, 0, 0, 0.2);
+  padding: 16px 20px 12px 32px;
+  /* 왼쪽 여백 대폭 상향하여 안전거리 확보 */
+  border-radius: 16px;
+  margin-bottom: 24px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  border: 1px solid transparent;
 }
 
-.history-milestones-list {
+.history-milestones-integrated:hover {
+  background-color: rgba(255, 255, 255, 0.05);
+  border-color: rgba(79, 172, 254, 0.2);
+}
+
+.history-milestones-integrated.expanded {
+  padding-bottom: 16px;
+}
+
+.history-milestones-list-integrated {
   position: relative;
   display: flex;
   flex-direction: column;
-  gap: 16px;
-  padding-left: 4px;
+  gap: 12px;
+  max-height: 180px;
+  /* 고도가 중간일 때 현위치 카드가 보이도록 상향 */
+  overflow: hidden;
+  transition: max-height 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  padding: 0 12px 8px 12px;
+  /* 좌우 여백을 주어 아이콘 shadow/scale 클리핑 방지 */
+  margin: 0 -12px;
+  /* 상위 패딩과 상쇄하여 위치 유지 */
 }
 
-.milestone-line {
+.history-milestones-integrated.expanded .history-milestones-list-integrated {
+  max-height: 1000px;
+  /* 충분히 큰 값 */
+  overflow-y: auto;
+  padding-right: 4px;
+}
+
+.milestone-line-integrated {
   position: absolute;
-  left: 17px;
+  left: 44px;
+  /* 32px padding + 12px center */
+  transform: translateX(-50%);
   top: 10px;
-  bottom: 10px;
+  bottom: 0px;
   width: 2px;
-  background: repeating-linear-gradient(to bottom,
-      #4facfe,
-      #4facfe 4px,
-      transparent 4px,
-      transparent 8px);
-  opacity: 0.2;
+  background: repeating-linear-gradient(
+    to bottom,
+    #4facfe,
+    #4facfe 3px,
+    transparent 3px,
+    transparent 6px
+  );
+  opacity: 0.25;
 }
 
-.milestone-item {
+.milestone-item-integrated {
   display: flex;
   align-items: center;
-  gap: 20px;
+  gap: 16px;
   position: relative;
   z-index: 1;
 }
 
-.milestone-dot {
-  width: 28px;
-  height: 28px;
+.milestone-dot-integrated {
+  width: 24px;
+  height: 24px;
   background: #333;
   border-radius: 50%;
-  border: 2px solid #4facfe;
+  border: 1.5px solid #4facfe;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 14px;
+  font-size: 13px;
   flex-shrink: 0;
 }
 
-.milestone-content {
+.milestone-item-integrated.is-current .milestone-dot-integrated {
+  background: #4cd964 !important;
+  border-color: #fff !important;
+  box-shadow: 0 0 15px rgba(76, 217, 100, 0.6);
+  transform: scale(1.1);
+  z-index: 5;
+}
+
+.milestone-item-integrated.current-pos-mini {
+  margin: -6px 0;
+  /* 간격을 더 좁혀서 '사이'임을 강조 */
+  opacity: 0.8;
+  height: 24px;
+  /* 높이 고정으로 슬림하게 */
+}
+
+.current-pos-mini .milestone-dot-integrated {
+  width: 12px;
+  /* 사이 지점 마커는 작게 */
+  height: 12px;
+  margin-left: 6px;
+  /* 중앙 정렬 유지 */
+  background: #4cd964;
+  border: 2px solid #fff;
+}
+
+.milestone-item-integrated.is-current .milestone-label-integrated {
+  color: #4cd964;
+  font-weight: 800;
+}
+
+@keyframes miniPulse {
+  0% {
+    transform: scale(1);
+    opacity: 1;
+  }
+
+  100% {
+    transform: scale(1.4);
+    opacity: 0;
+  }
+}
+
+.milestone-item-integrated.is-current .milestone-dot-integrated::after {
+  content: '';
+  position: absolute;
+  inset: -2px;
+  border-radius: 50%;
+  border: 2px solid #4cd964;
+  animation: miniPulse 1.5s infinite;
+}
+
+/* 미리보기 가로 점선 가이드 - 텍스트를 통과하도록 연장 */
+.milestone-item-integrated.is-current::before {
+  content: '';
+  position: absolute;
+  left: 32px;
+  right: 0;
+  height: 1px;
+  background-image: linear-gradient(to right, #4cd964 33%, rgba(255, 255, 255, 0) 0%);
+  background-position: bottom;
+  background-size: 6px 1px;
+  background-repeat: repeat-x;
+  top: 50%;
+  z-index: 0;
+  opacity: 0.4;
+}
+
+.milestone-item-integrated.is-current .milestone-content-integrated {
+  margin-left: auto;
+  /* 우측 빈 공간으로 밀기 */
+  margin-right: 12px;
+  /* 우측 벽에서 살짝 띄우기 */
+  background: rgba(43, 44, 50, 0.9);
+  padding: 4px 10px;
+  border-radius: 6px;
+  border: 1px solid rgba(76, 217, 100, 0.2);
+  z-index: 1;
+  text-align: right;
+  backdrop-filter: blur(8px);
+}
+
+/* Floating Marker Polish - Improved to not cover icons */
+.current-position-floating-marker {
+  position: absolute;
+  z-index: 100;
+  pointer-events: none;
+  display: flex;
+  align-items: center;
+  transition: bottom 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+  left: -24px !important;
+  /* 컨테이너 패딩만큼 왼쪽으로 */
+  right: -24px !important;
+  /* 컨테이너 패딩만큼 오른쪽으로 */
+  width: auto;
+  transform: translateY(50%);
+}
+
+.current-position-floating-marker .landmark-progress-marker {
+  display: flex;
+  align-items: center;
+  width: 100%;
+}
+
+/* 수평 진행 가이드 라인 (세련된 네온 점선) */
+.current-position-floating-marker::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  width: 100vw;
+  height: 1px;
+  background-image: linear-gradient(to right, #4cd964 33%, rgba(255, 255, 255, 0) 0%);
+  background-position: center;
+  background-size: 8px 1px;
+  background-repeat: repeat-x;
+  opacity: 0.8;
+  box-shadow: 0 0 5px rgba(76, 217, 100, 0.3);
+}
+
+.current-position-floating-marker .landmark-dot {
+  position: absolute !important;
+  left: 17px;
+  /* vertical line center is at 18px. marker width is 28px, center is 14. 18-14=4-ish. But given padding-left:24px, we adjust to line-up. */
+  width: 28px;
+  height: 20px;
+  border-radius: 4px;
+  font-size: 12px;
+  background: #4cd964 !important;
+  border: 1px solid #fff !important;
+  box-shadow: 0 0 10px rgba(76, 217, 100, 0.6);
+  z-index: 110;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* 고도 표시 태그 - 우측 끝에서 살짝 띄움 */
+.current-position-floating-marker::after {
+  content: var(--current-alt-text, '');
+  position: absolute;
+  right: 48px;
+  /* 우측 여백 추가 확보 */
+  font-size: 11px;
+  font-weight: 900;
+  color: #4cd964;
+  background: rgba(0, 0, 0, 0.7);
+  padding: 2px 10px;
+  border-radius: 100px;
+  border: 1px solid rgba(76, 217, 100, 0.4);
+  backdrop-filter: blur(10px);
+  white-space: nowrap;
+  box-shadow: 0 0 15px rgba(0, 0, 0, 0.5);
+}
+
+.milestone-content-integrated {
   display: flex;
   flex-direction: column;
 }
 
-.milestone-label {
-  font-size: 14px;
-  color: var(--color-text-secondary);
+.milestone-label-integrated {
+  font-size: 13px;
+  color: rgba(255, 255, 255, 0.9);
+  /* 대비 상향 */
   font-weight: 500;
 }
 
-.milestone-value {
-  font-size: 12px;
-  color: var(--color-text-tertiary);
+.milestone-value-integrated {
+  font-size: 11px;
+  color: rgba(255, 255, 255, 0.5);
+  /* 대비 상향 */
 }
 
-.milestone-item.is-current .milestone-label {
+.milestone-item-integrated.is-current .milestone-label-integrated {
   color: #4cd964;
   font-weight: 700;
-  font-size: 16px;
+  font-size: 14px;
 }
 
-.milestone-item.is-current .milestone-value {
+.milestone-item-integrated.is-current .milestone-value-integrated {
   color: #4cd964;
   font-weight: 600;
 }
 
-.milestone-item.is-current .milestone-dot {
+.milestone-item-integrated.is-current .milestone-dot-integrated {
   background: #4cd964;
   border-color: #fff;
-  transform: scale(1.2);
-  box-shadow: 0 0 12px rgba(76, 217, 100, 0.5);
+  transform: scale(1.1);
+  box-shadow: 0 0 8px rgba(76, 217, 100, 0.4);
+}
+
+.milestone-item-integrated.in-full-list {
+  animation: slideInUp 0.3s ease-out forwards;
+}
+
+@keyframes slideInUp {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.milestone-expand-hint {
+  text-align: center;
+  font-size: 11px;
+  color: #4facfe;
+  /* 아예 브랜드 컬러로 변경하여 시인성 확보 */
+  margin-top: 12px;
+  padding-top: 8px;
+  border-top: 1px solid rgba(255, 255, 255, 0.05);
+  font-weight: 600;
+  transition: opacity 0.2s;
+}
+
+.history-milestones-integrated:hover .milestone-expand-hint {
+  color: #4facfe;
 }
 
 /* --- 2. Analysis Card (Proficiency) --- */
@@ -387,7 +1268,8 @@
 
 .best-label {
   font-size: 12px;
-  color: var(--color-text-tertiary);
+  color: rgba(255, 255, 255, 0.5);
+  /* 대비 상향 */
 }
 
 .best-value {
@@ -440,7 +1322,8 @@
 
 .heatmap-title {
   font-size: 12px;
-  color: var(--color-text-tertiary);
+  color: rgba(255, 255, 255, 0.5);
+  /* 대비 상향 */
   font-weight: 600;
 }
 
@@ -518,7 +1401,8 @@
 
 .history-recent-time-new {
   font-size: 11px;
-  color: var(--color-text-tertiary);
+  color: rgba(255, 255, 255, 0.4);
+  /* 대비 상향 */
 }
 
 .history-recent-score-row {
@@ -551,7 +1435,8 @@
   padding: 4px 12px;
   border: none;
   background: none;
-  color: var(--color-text-tertiary);
+  color: rgba(255, 255, 255, 0.45);
+  /* 대비 상향 */
   font-size: 12px;
   font-weight: 600;
   border-radius: 6px;
@@ -567,6 +1452,18 @@
 .history-empty {
   padding: 40px;
   text-align: center;
-  color: var(--color-text-tertiary);
+  color: rgba(255, 255, 255, 0.5);
+  /* 대비 상향 */
   font-size: 14px;
+}
+
+.history-milestones-integrated.hidden {
+  opacity: 0;
+  pointer-events: none;
+}
+
+/* 로드맵 구성 요소 공통 트랜지션 - 배율 변경 시 부드러운 이동성 보장 */
+.landmark-item {
+  transition: bottom 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+  will-change: bottom;
 }

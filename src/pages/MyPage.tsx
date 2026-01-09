@@ -32,13 +32,14 @@ import './MyPage.css';
 // theme_id를 읽기 쉬운 이름으로 변환하는 함수
 const formatBestSubject = (themeId: string | null): string => {
   if (!themeId) return '-';
-  
+
   // theme_id 형식: 'math_add', 'math_sub' 등
   // theme_mapping의 name을 이미 반환하도록 했으므로, theme_id인 경우만 변환
   if (themeId.includes('_')) {
     const [category, subject] = themeId.split('_');
-    const categoryName = APP_CONFIG.CATEGORY_MAP[category as keyof typeof APP_CONFIG.CATEGORY_MAP] || category;
-    
+    const categoryName =
+      APP_CONFIG.CATEGORY_MAP[category as keyof typeof APP_CONFIG.CATEGORY_MAP] || category;
+
     // subject 매핑
     const subjectMap: Record<string, string> = {
       add: '덧셈',
@@ -48,11 +49,11 @@ const formatBestSubject = (themeId: string | null): string => {
       word: '단어',
       puzzle: '퍼즐',
     };
-    
+
     const subjectName = subjectMap[subject] || subject;
     return `${categoryName} ${subjectName}`;
   }
-  
+
   // 이미 읽기 쉬운 이름인 경우 그대로 반환
   return themeId;
 };
@@ -72,10 +73,9 @@ export function MyPage() {
   const favorites = useFavoriteStore((state) => state.favorites);
   const setCategoryTopic = useQuizStore((state) => state.setCategoryTopic);
   const setTimeLimit = useQuizStore((state) => state.setTimeLimit);
-  
+
   // 오늘의 챌린지 상태
   const [todayChallenge, setTodayChallenge] = useState<TodayChallenge | null>(null);
-  const [challengeLoading, setChallengeLoading] = useState(true);
 
   // URL 파라미터에서 showProfileForm 확인
   const shouldShowProfileForm = searchParams.get('showProfileForm') === 'true';
@@ -109,11 +109,9 @@ export function MyPage() {
     getTodayChallenge()
       .then((challengeData) => {
         setTodayChallenge(challengeData);
-        setChallengeLoading(false);
       })
       .catch((error) => {
         console.error('Failed to load today challenge:', error);
-        setChallengeLoading(false);
       });
   }, []);
 
@@ -743,7 +741,10 @@ export function MyPage() {
                 <button
                   className="my-page-quick-access-button"
                   onClick={() => {
-                    setCategoryTopic(todayChallenge.category as Category, todayChallenge.topicId as Topic);
+                    setCategoryTopic(
+                      todayChallenge.category as Category,
+                      todayChallenge.topicId as Topic
+                    );
                     setTimeLimit(60);
                     navigate(
                       `${APP_CONFIG.ROUTES.GAME}?challenge=today&category=${todayChallenge.categoryId}&sub=${todayChallenge.topicId}&level=${todayChallenge.level}&mode=${todayChallenge.mode}`
@@ -765,12 +766,15 @@ export function MyPage() {
                 <div className="my-page-favorites-list">
                   {favorites.slice(0, 3).map((favorite) => {
                     const categoryName =
-                      APP_CONFIG.CATEGORY_MAP[favorite.categoryId as keyof typeof APP_CONFIG.CATEGORY_MAP] ||
-                      favorite.categoryId;
+                      APP_CONFIG.CATEGORY_MAP[
+                        favorite.categoryId as keyof typeof APP_CONFIG.CATEGORY_MAP
+                      ] || favorite.categoryId;
                     let subCategoryName = '';
                     if (favorite.subCategoryId) {
                       const subTopics =
-                        APP_CONFIG.SUB_TOPICS[favorite.categoryId as keyof typeof APP_CONFIG.SUB_TOPICS] || [];
+                        APP_CONFIG.SUB_TOPICS[
+                          favorite.categoryId as keyof typeof APP_CONFIG.SUB_TOPICS
+                        ] || [];
                       const subTopic = subTopics.find((st) => st.id === favorite.subCategoryId);
                       subCategoryName = subTopic?.name || favorite.subCategoryId;
                     }
@@ -781,7 +785,9 @@ export function MyPage() {
                         className="my-page-favorite-item"
                         onClick={() => {
                           if (favorite.subCategoryId) {
-                            navigate(`/level-select?category=${favorite.categoryId}&sub=${favorite.subCategoryId}`);
+                            navigate(
+                              `/level-select?category=${favorite.categoryId}&sub=${favorite.subCategoryId}`
+                            );
                           } else {
                             navigate(`/subcategory?category=${favorite.categoryId}`);
                           }

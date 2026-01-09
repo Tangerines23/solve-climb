@@ -147,22 +147,7 @@ export function useMyPageStats(): UseMyPageStatsResult {
       const user = currentSession.user;
       const user_id = userId || user.id;
 
-      // 로컬 세션인 경우 Supabase 쿼리 스킵 (RPC 호출 전에 체크)
-      const isLocalSession = user_id.startsWith('user_') || user_id.startsWith('game_');
-      if (isLocalSession) {
-        // 로컬 세션인 경우 기본값 반환 (Supabase 데이터 없음)
-        setStats({
-          totalSolved: 0,
-          maxLevel: 0,
-          bestSubject: null,
-          totalMasteryScore: 0,
-          currentTierLevel: null,
-          cyclePromotionPending: false,
-          pendingCycleScore: 0,
-        });
-        setLoading(false);
-        return;
-      }
+      // 로컬 세션 가드 제거 (DB 데이터가 있다면 조회 진행)
 
       // 프로필 정보 가져오기 (티어 정보 포함)
       const { data: profileData, error: profileError } = await supabase
@@ -258,18 +243,17 @@ export function useMyPageStats(): UseMyPageStatsResult {
       }
 
       // 통계 계산 함수들
-      // 완등 문제: 고유한 (theme_code, level) 조합 개수
-      const uniqueLevels = new Set<string>();
-      levelRecords.forEach((record) => {
-        uniqueLevels.add(`${record.theme_code}-${record.level}`);
-      });
-      const totalSolved = uniqueLevels.size;
+      const totalMasteryScoreFromRecords = levelRecords.reduce(
+        (sum, r) => sum + (r.best_score || 0),
+        0
+      );
+
+      // 완등 문제: user_level_records에 기록된 모든 행의 수 (theme/level/mode 조합)
+      const totalSolved = levelRecords.filter((r) => (r.best_score || 0) > 0).length;
 
       // 최고 레벨: 최대 level 값
       const maxLevel =
-        levelRecords.length > 0
-          ? Math.max(...levelRecords.map((r) => r.level || 0))
-          : 0;
+        levelRecords.length > 0 ? Math.max(...levelRecords.map((r) => r.level || 0)) : 0;
 
       // 주력 분야: theme_code별 best_score 합계, 가장 높은 theme_id 반환
       const themeScores: Record<number, number> = {};
@@ -285,17 +269,17 @@ export function useMyPageStats(): UseMyPageStatsResult {
         const bestThemeCode = Object.entries(themeScores).sort((a, b) => b[1] - a[1])[0][0];
         const bestThemeCodeNum = parseInt(bestThemeCode, 10);
         // theme_id 반환 (없으면 name, 그것도 없으면 null)
-        bestSubject =
-          themeCodeToId[bestThemeCodeNum] ||
-          themeCodeToName[bestThemeCodeNum] ||
-          null;
+        bestSubject = themeCodeToId[bestThemeCodeNum] || themeCodeToName[bestThemeCodeNum] || null;
       }
 
       setStats({
         totalSolved,
         maxLevel,
         bestSubject,
-        totalMasteryScore: profileData?.total_mastery_score || 0,
+        totalMasteryScore: Math.max(
+          totalMasteryScoreFromRecords,
+          profileData?.total_mastery_score || 0
+        ),
         currentTierLevel: profileData?.current_tier_level ?? null,
         cyclePromotionPending: profileData?.cycle_promotion_pending || false,
         pendingCycleScore: profileData?.pending_cycle_score || 0,
