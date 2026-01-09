@@ -230,7 +230,7 @@
   transition:
     bottom 0.8s cubic-bezier(0.4, 0, 0.2, 1),
     height 0.8s cubic-bezier(0.4, 0, 0.2, 1);
-  will-change: bottom, height;
+  will-change: bottom, height, transform;
 }
 
 .path-line-fill {
@@ -242,6 +242,7 @@
   box-shadow: 0 0 10px rgba(79, 172, 254, 0.5);
   transition: height 0.8s cubic-bezier(0.4, 0, 0.2, 1);
   z-index: 1;
+  will-change: height;
 }
 
 .roadmap-dotted-line {
@@ -1409,14 +1410,14 @@
 
 .history-recent-mode {
   font-size: 12px;
-  color: #4facfe;
+  color: var(--color-primary-light);
   font-weight: 500;
 }
 
 .history-recent-best {
   font-size: 14px;
   font-weight: 700;
-  color: #4cd964;
+  color: var(--color-success);
 }
 
 /* --- Utilities --- */
@@ -1424,7 +1425,7 @@
   display: flex;
   background-color: rgba(255, 255, 255, 0.1);
   padding: 2px;
-  border-radius: 8px;
+  border-radius: var(--rounded-xs);
 }
 
 .history-tab {
@@ -1435,7 +1436,7 @@
   /* 대비 상향 */
   font-size: 12px;
   font-weight: 600;
-  border-radius: 6px;
+  border-radius: var(--rounded-small-alt);
   cursor: pointer;
 }
 
@@ -1461,5 +1462,33 @@
 /* 로드맵 구성 요소 공통 트랜지션 - 배율 변경 시 부드러운 이동성 보장 */
 .landmark-item {
   transition: bottom 0.8s cubic-bezier(0.4, 0, 0.2, 1);
-  will-change: bottom;
+  will-change: bottom, transform, opacity;
+}
+
+/* 배율 인디케이터 (고도화 항목) */
+.roadmap-zoom-indicator {
+  position: absolute;
+  top: 84px;
+  /* header 아래 */
+  right: 20px;
+  background: rgba(0, 0, 0, 0.45);
+  backdrop-filter: blur(8px);
+  color: #fff;
+  padding: 4px 12px;
+  border-radius: var(--rounded-xs);
+  font-size: 11px;
+  font-weight: 800;
+  z-index: 100;
+  opacity: 0;
+  transform: translateY(-8px);
+  transition: all 0.4s cubic-bezier(0.19, 1, 0.22, 1);
+  pointer-events: none;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  letter-spacing: 0.5px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+
+.roadmap-zoom-indicator.visible {
+  opacity: 1;
+  transform: translateY(0);
 }

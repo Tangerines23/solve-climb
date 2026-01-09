@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo, useRef } from 'react';
+import { useState, useEffect, useMemo, useRef, memo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import './HistoryPage.css';
 import { Header } from '../components/Header';
@@ -6,6 +6,138 @@ import { FooterNav } from '../components/FooterNav';
 import { useHistoryData } from '../hooks/useHistoryData';
 import { ALTITUDE_MILESTONES } from '../constants/history';
 import { vibrateShort } from '../utils/haptic';
+
+// --- 전역 상수 및 설정 ---
+const VIRTUAL_RAIL_HEIGHT = 10000; // 스크롤바 길이를 고정하는 상수
+
+interface ScaleConfig {
+  ratio: number;
+  upgrade?: number;
+  downgrade?: number;
+}
+
+const ROADMAP_SCALE_CONFIG: ScaleConfig[] = [
+  { ratio: 5, upgrade: 5000 },
+  { ratio: 10, downgrade: 3000, upgrade: 20000 },
+  { ratio: 30, downgrade: 10000, upgrade: 60000 },
+  { ratio: 100, downgrade: 40000, upgrade: 150000 },
+  { ratio: 150, downgrade: 120000, upgrade: 200000 },
+  { ratio: 300, downgrade: 180000 }
+];
+
+// --- 최적화용 메모이제이션 컴포넌트 ---
+
+const LinearLandmarkItem = memo(({
+  item,
+  stats,
+  isRefCurrent,
+  isNext,
+  currentMarkerRef,
+  nextMarkerRef
+}: any) => {
+  const isPassed = stats.totalAltitude >= item.altitude;
+  const isTier = item.isTier;
+  const isCurrent = isTier && stats.totalAltitude === item.altitude;
+
+  return (
+    <div
+      className={`landmark-item ${isTier ? 'type-tier' : 'type-landmark'} ${isCurrent ? 'is-current' : ''} ${isPassed ? 'is-passed' : ''}`}
+      style={{
+        position: 'absolute',
+        bottom: `${item.bottom}px`,
+        left: 0,
+        right: 0,
+        height: '0px',
+        minHeight: 0,
+        zIndex: 2,
+        display: 'flex',
+        alignItems: 'center',
+        willChange: 'bottom'
+      }}
+    >
+      <div
+        className="landmark-progress-marker"
+        ref={isRefCurrent ? currentMarkerRef : isNext ? nextMarkerRef : null}
+      >
+        <div className={isTier ? 'landmark-dot' : 'landmark-dot sub-dot'}>
+          {isTier ? (isCurrent ? '🚶' : item.icon) : null}
+        </div>
+      </div>
+      <div className="landmark-info">
+        <div className={isTier ? 'tier-label-row' : 'landmark-label-row'}>
+          <span className={`landmark-label ${!isTier ? 'sub' : ''}`}>
+            {item.label}
+          </span>
+          <span className={`landmark-altitude ${!isTier ? 'sub' : ''}`}>
+            {item.altitude.toLocaleString()}m
+          </span>
+        </div>
+      </div>
+    </div>
+  );
+});
+
+const NonLinearTierItem = memo(({
+  m,
+  idx,
+  stats,
+  roadmapData,
+  isRoadmapActive,
+  setIsLinearScale,
+  landmarkRefs,
+  currentMarkerRef,
+  nextMarkerRef,
+  topMarkerRef,
+  zeroMarkerRef
+}: any) => {
+  const isZero = m.altitude === 0;
+  const isCurrentNode = stats.totalAltitude === m.altitude;
+  const isRefCurrent = idx === roadmapData.currentIdx;
+  const isNext = idx === (roadmapData.currentIdx !== -1 ? roadmapData.currentIdx - 1 : -1);
+  const isTop = idx === 0;
+  const isPassed = stats ? stats.totalAltitude >= m.altitude : false;
+  const isInCardView = roadmapData.cardIndices.includes(idx);
+
+  return (
+    <div
+      className={`tier-group ${!isInCardView && !isRoadmapActive ? 'roadmap-extra-content' : ''}`}
+    >
+      <div
+        className={`landmark-item ${isPassed ? 'is-passed' : ''} ${isCurrentNode ? 'is-current' : ''} ${m.type === 'tier' || isZero ? 'type-tier' : ''}`}
+        ref={(el) => {
+          if (el) landmarkRefs.current.set(m.altitude, el);
+        }}
+        onClick={() => {
+          setIsLinearScale(true);
+          vibrateShort();
+        }}
+        style={{ cursor: 'pointer' }}
+      >
+        <div
+          className="landmark-progress-marker"
+          ref={(el) => {
+            if (isRefCurrent) currentMarkerRef.current = el;
+            if (isNext) nextMarkerRef.current = el;
+            if (isTop) topMarkerRef.current = el;
+            if (isZero) zeroMarkerRef.current = el;
+          }}
+        >
+          <div className="landmark-dot">
+            {isCurrentNode ? '🚶' : isZero ? '🏠' : m.icon}
+          </div>
+        </div>
+        <div className="landmark-info">
+          <div className="tier-label-row">
+            <span className="landmark-label">{m.label}</span>
+            <span className="landmark-altitude">
+              {m.altitude.toLocaleString()}m
+            </span>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+});
 
 export function HistoryPage() {
   const navigate = useNavigate();
@@ -18,9 +150,11 @@ export function HistoryPage() {
   const [gaugeHeight, setGaugeHeight] = useState('0%');
   const [displayRatio, setDisplayRatio] = useState(5); // Dynamic Ratio (Starts at 5m/px)
   const [isScaling, setIsScaling] = useState(false);
+  const [showZoomIndicator, setShowZoomIndicator] = useState(false);
   const [viewportHeight, setViewportHeight] = useState(0);
-  const VIRTUAL_RAIL_HEIGHT = 10000; // 스크롤바 길이를 고정하는 상수
+  const [visibleAltRange, setVisibleAltRange] = useState({ min: -1000, max: 20000 }); // Pruning Range
   const cameraRef = useRef<HTMLDivElement>(null); // 시각적 위치 업데이트용 Ref
+  const indicatorTimerRef = useRef<NodeJS.Timeout | null>(null);
 
   // --- Dynamic Global Zoom System ---
   // 스크롤 위치(고도)에 따라 전체 지도의 축척(ratio)이 변함
@@ -230,57 +364,50 @@ export function HistoryPage() {
       scrollProgressRef.current = currentProgress;
 
       // 2. Camera Translation via CSS Variable (Direct DOM manipulation for performance)
-      if (cameraRef.current && layoutData) {
-        const totalHeight = layoutData.totalLogicalAltitude / displayRatio;
-        const offset = Math.max(0, totalHeight - clientHeight) * currentProgress;
+      const totalHeight = layoutData ? layoutData.totalLogicalAltitude / displayRatio : 0;
+      const offset = Math.max(0, totalHeight - clientHeight) * currentProgress;
+
+      if (cameraRef.current) {
         cameraRef.current.style.setProperty('--camera-offset', `-${offset}px`);
       }
 
-      // 3. Altitude Estimation for Ratio Logic
-      const approxAltitude = layoutData ? layoutData.totalLogicalAltitude * currentProgress : 0;
+      // 3. Viewport Pruning Logic (Calculate visible altitude range)
+      // 화면 중앙 고도뿐 아니라 상하 뷰포트 영역에 해당하는 고도 계산
+      const buffer = 500 * displayRatio; // 500px 정도의 상하 버퍼
+      const bottomAlt = layoutData ? layoutData.totalLogicalAltitude * currentProgress : 0;
+      const topAlt = bottomAlt + (clientHeight * displayRatio);
 
-      // 3. Dynamic Scale Logic (Stable)
-      // 0m ~ 1000m: Ratio 10
-      // 1000m ~ 5000m: Ratio 10 -> 30
-      // 5000m+: Ratio 30
-      // Hysteresis Zoom Logic (히스테리시스 적용)
-      // 상태 전환에 버퍼를 두어 경계선에서의 떨림과 갇힘 현상을 방지함.
+      setVisibleAltRange({
+        min: bottomAlt - buffer,
+        max: topAlt + buffer
+      });
+
+      // 4. Altitude Estimation for Ratio Logic
+      const approxAltitude = bottomAlt;
+
+      // --- 리팩토링된 Dynamic Scale Logic ---
+      const currentConfig = ROADMAP_SCALE_CONFIG.find(c => c.ratio === displayRatio);
       let targetRatio = displayRatio;
 
-      if (displayRatio === 5) {
-        // Upgrade: 5k 넘으면 10으로
-        if (approxAltitude > 5000) targetRatio = 10;
-      } else if (displayRatio === 10) {
-        // Downgrade: 3k 밑으로 와야 5로
-        if (approxAltitude < 3000) targetRatio = 5;
-        // Upgrade: 20k 넘으면 30으로 (상당히 높이 올라가야 바뀜)
-        else if (approxAltitude > 20000) targetRatio = 30;
-      } else if (displayRatio === 30) {
-        // Downgrade: 10k 밑으로 와야 10으로 (충분히 내려와야 바뀜)
-        if (approxAltitude < 10000) targetRatio = 10;
-        // Upgrade: 60k 넘으면 100으로
-        else if (approxAltitude > 60000) targetRatio = 100;
-      } else if (displayRatio === 100) {
-        // Downgrade: 40k 밑으로 와야 30으로
-        if (approxAltitude < 40000) targetRatio = 30;
-        // Upgrade: 150k 넘으면 150으로
-        else if (approxAltitude > 150000) targetRatio = 150;
-      } else if (displayRatio === 150) {
-        // Downgrade: 120k 밑으로 와야 100으로
-        if (approxAltitude < 120000) targetRatio = 100;
-        // Upgrade: 200k 넘으면 300으로
-        else if (approxAltitude > 200000) targetRatio = 300;
-      } else if (displayRatio === 300) {
-        // Downgrade: 180k 밑으로 와야 150으로
-        if (approxAltitude < 180000) targetRatio = 150;
-      } else {
-        // 예외 상황 복구
-        targetRatio = 5;
+      if (currentConfig) {
+        if (currentConfig.upgrade && approxAltitude > currentConfig.upgrade) {
+          const nextConfig = ROADMAP_SCALE_CONFIG.find(c => c.ratio > displayRatio);
+          if (nextConfig) targetRatio = nextConfig.ratio;
+        } else if (currentConfig.downgrade && approxAltitude < currentConfig.downgrade) {
+          const prevConfig = [...ROADMAP_SCALE_CONFIG].reverse().find(c => c.ratio < displayRatio);
+          if (prevConfig) targetRatio = prevConfig.ratio;
+        }
       }
 
       if (Math.abs(targetRatio - displayRatio) > 0.1) {
         setIsScaling(true);
         setDisplayRatio(targetRatio);
+
+        // 배율 인디케이터 표시
+        setShowZoomIndicator(true);
+        if (indicatorTimerRef.current) clearTimeout(indicatorTimerRef.current);
+        indicatorTimerRef.current = setTimeout(() => setShowZoomIndicator(false), 2000);
+
         // 트랜지션 완료 후 상태 해제 (CSS transition duration 0.8s와 일치)
         setTimeout(() => setIsScaling(false), 850);
       }
@@ -399,14 +526,14 @@ export function HistoryPage() {
                 const displayItems = hasExactMatch
                   ? items
                   : [
-                      ...items,
-                      {
-                        label: '현재 위치',
-                        altitude: stats.totalAltitude,
-                        isMilestone: false,
-                        icon: '🚶',
-                      },
-                    ];
+                    ...items,
+                    {
+                      label: '현재 위치',
+                      altitude: stats.totalAltitude,
+                      isMilestone: false,
+                      icon: '🚶',
+                    },
+                  ];
 
                 return displayItems
                   .sort((a, b) => b.altitude - a.altitude)
@@ -468,6 +595,11 @@ export function HistoryPage() {
               ✕
             </button>
           </header>
+
+          {/* 배율 인디케이터 (고도화 항목) */}
+          <div className={`roadmap-zoom-indicator ${showZoomIndicator ? 'visible' : ''}`}>
+            Zoom 1:{displayRatio}
+          </div>
 
           <div
             className="roadmap-content"
@@ -558,12 +690,12 @@ export function HistoryPage() {
                   style={
                     isLinearScale
                       ? {
-                          height: `${getAltitudeY(ALTITUDE_MILESTONES[0].altitude + 10000, displayRatio)}px`,
-                          position: 'absolute',
-                          bottom: 0,
-                          left: 0,
-                          right: 0,
-                        }
+                        height: `${getAltitudeY(ALTITUDE_MILESTONES[0].altitude + 10000, displayRatio)}px`,
+                        position: 'absolute',
+                        bottom: 0,
+                        left: 0,
+                        right: 0,
+                      }
                       : undefined
                   }
                 >
@@ -573,109 +705,52 @@ export function HistoryPage() {
                     style={{ height: isLinearScale ? '100px' : '0px' }}
                   />
                   {isLinearScale && layoutData ? (
-                    layoutData.nodes.map((item) => {
-                      const isPassed = stats.totalAltitude >= item.altitude;
-                      const isTier = item.isTier;
-                      const isCurrent = isTier && stats.totalAltitude === item.altitude; // 고도가 정확히 일치할 때만
-                      const isRefCurrent =
-                        isTier &&
-                        roadmapData.currentIdx !== -1 &&
-                        ALTITUDE_MILESTONES[roadmapData.currentIdx].id === item.id;
-                      const isNext =
-                        isTier &&
-                        roadmapData.currentIdx > 0 &&
-                        ALTITUDE_MILESTONES[roadmapData.currentIdx - 1].id === item.id;
+                    layoutData.nodes
+                      .filter(item => item.altitude >= visibleAltRange.min && item.altitude <= visibleAltRange.max)
+                      .map((item) => {
+                        const isTier = item.isTier;
+                        const isRefCurrent =
+                          isTier &&
+                          roadmapData.currentIdx !== -1 &&
+                          ALTITUDE_MILESTONES[roadmapData.currentIdx].id === item.id;
+                        const isNext =
+                          isTier &&
+                          roadmapData.currentIdx > 0 &&
+                          ALTITUDE_MILESTONES[roadmapData.currentIdx - 1].id === item.id;
 
-                      return (
-                        <div
-                          key={isTier ? item.id : `${item.parentTierId}-sub-${item.label}`}
-                          className={`landmark-item ${isTier ? 'type-tier' : 'type-landmark'} ${isCurrent ? 'is-current' : ''} ${isPassed ? 'is-passed' : ''}`}
-                          style={{
-                            position: 'absolute',
-                            bottom: `${item.bottom}px`,
-                            left: 0,
-                            right: 0,
-                            height: '0px',
-                            minHeight: 0,
-                            zIndex: 2,
-                            display: 'flex',
-                            alignItems: 'center',
-                          }}
-                        >
-                          <div
-                            className="landmark-progress-marker"
-                            ref={isRefCurrent ? currentMarkerRef : isNext ? nextMarkerRef : null}
-                          >
-                            <div className={isTier ? 'landmark-dot' : 'landmark-dot sub-dot'}>
-                              {isTier ? (isCurrent ? '🚶' : item.icon) : null}
-                            </div>
-                          </div>
-                          <div className="landmark-info">
-                            <div className={isTier ? 'tier-label-row' : 'landmark-label-row'}>
-                              <span className={`landmark-label ${!isTier ? 'sub' : ''}`}>
-                                {item.label}
-                              </span>
-                              <span className={`landmark-altitude ${!isTier ? 'sub' : ''}`}>
-                                {item.altitude.toLocaleString()}m
-                              </span>
-                            </div>
-                          </div>
-                        </div>
-                      );
-                    })
+                        return (
+                          <LinearLandmarkItem
+                            key={isTier ? item.id : `${item.parentTierId}-sub-${item.label}`}
+                            item={item}
+                            stats={stats}
+                            isRefCurrent={isRefCurrent}
+                            isNext={isNext}
+                            currentMarkerRef={currentMarkerRef}
+                            nextMarkerRef={nextMarkerRef}
+                          />
+                        );
+                      })
                   ) : (
                     <>
                       {ALTITUDE_MILESTONES.map((m, idx) => {
                         const isZero = m.altitude === 0;
                         if (m.type !== 'tier' && !isZero) return null;
 
-                        const isCurrentNode = stats.totalAltitude === m.altitude;
-                        const isRefCurrent = idx === roadmapData.currentIdx;
-                        const isNext =
-                          idx === (roadmapData.currentIdx !== -1 ? roadmapData.currentIdx - 1 : -1);
-                        const isTop = idx === 0;
-                        const isPassed = stats ? stats.totalAltitude >= m.altitude : false;
-                        const isInCardView = roadmapData.cardIndices.includes(idx);
-
                         return (
-                          <div
+                          <NonLinearTierItem
                             key={m.id || idx}
-                            className={`tier-group ${!isInCardView && !isRoadmapActive ? 'roadmap-extra-content' : ''}`}
-                          >
-                            <div
-                              className={`landmark-item ${isPassed ? 'is-passed' : ''} ${isCurrentNode ? 'is-current' : ''} ${m.type === 'tier' || isZero ? 'type-tier' : ''}`}
-                              ref={(el) => {
-                                if (el) landmarkRefs.current.set(m.altitude, el);
-                              }}
-                              onClick={() => {
-                                setIsLinearScale(true);
-                                vibrateShort();
-                              }}
-                              style={{ cursor: 'pointer' }}
-                            >
-                              <div
-                                className="landmark-progress-marker"
-                                ref={(el) => {
-                                  if (isRefCurrent) currentMarkerRef.current = el;
-                                  if (isNext) nextMarkerRef.current = el;
-                                  if (isTop) topMarkerRef.current = el;
-                                  if (isZero) zeroMarkerRef.current = el;
-                                }}
-                              >
-                                <div className="landmark-dot">
-                                  {isCurrentNode ? '🚶' : isZero ? '🏠' : m.icon}
-                                </div>
-                              </div>
-                              <div className="landmark-info">
-                                <div className="tier-label-row">
-                                  <span className="landmark-label">{m.label}</span>
-                                  <span className="landmark-altitude">
-                                    {m.altitude.toLocaleString()}m
-                                  </span>
-                                </div>
-                              </div>
-                            </div>
-                          </div>
+                            m={m}
+                            idx={idx}
+                            stats={stats}
+                            roadmapData={roadmapData}
+                            isRoadmapActive={isRoadmapActive}
+                            setIsLinearScale={setIsLinearScale}
+                            landmarkRefs={landmarkRefs}
+                            currentMarkerRef={currentMarkerRef}
+                            nextMarkerRef={nextMarkerRef}
+                            topMarkerRef={topMarkerRef}
+                            zeroMarkerRef={zeroMarkerRef}
+                          />
                         );
                       })}
                       <div
