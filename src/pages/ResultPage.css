@@ -24,7 +24,7 @@
   align-items: center;
   padding: 0 var(--spacing-xl);
   background-color: var(--color-gray-900);
-  z-index: 100;
+  z-index: var(--z-header);
 }
 
 /* 가로모드에서 헤더 높이 축소 */
@@ -65,9 +65,13 @@
   justify-content: flex-start;
   align-items: stretch;
   gap: 0;
-  background-color: var(--color-bg-primary);
+  /* Glass UI Update */
+  background-color: var(--bg-glass-card);
+  backdrop-filter: blur(var(--backdrop-blur));
+  -webkit-backdrop-filter: blur(var(--backdrop-blur));
+  border: var(--border-glass);
   border-radius: var(--rounded-large-card);
-  box-shadow: 0 0 12px rgba(0, 0, 0, 0.3);
+  box-shadow: var(--shadow-glass);
   width: 100%;
   max-width: var(--modal-width-portrait);
   max-height: calc(100vh - 200px);
@@ -113,9 +117,12 @@
     width: 90vw;
     max-width: 90vw;
     padding: var(--spacing-3xl);
-    background-color: var(--color-bg-primary);
+    background-color: var(--bg-glass-card);
+    backdrop-filter: blur(var(--backdrop-blur));
+    -webkit-backdrop-filter: blur(var(--backdrop-blur));
+    border: var(--border-glass);
     border-radius: var(--rounded-large-card);
-    box-shadow: 0 0 12px rgba(0, 0, 0, 0.3);
+    box-shadow: var(--shadow-glass);
     overflow: hidden;
   }
 
@@ -359,6 +366,7 @@
 }
 
 @keyframes floating {
+
   0%,
   100% {
     transform: translateY(0px);
@@ -537,7 +545,7 @@
   border-top: 1px solid var(--color-bg-secondary);
   padding: var(--spacing-lg) var(--spacing-xl);
   padding-bottom: calc(var(--spacing-lg) + env(safe-area-inset-bottom));
-  z-index: 100;
+  z-index: var(--z-header);
   display: flex;
   flex-direction: column;
   gap: var(--spacing-md);
@@ -603,7 +611,7 @@
   right: 0;
   bottom: 0;
   pointer-events: none;
-  z-index: 1000;
+  z-index: var(--z-modal);
   overflow: hidden;
 }
 

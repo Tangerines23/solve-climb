@@ -39,6 +39,11 @@
   cursor: pointer;
 }
 
+.ranking-tab:hover:not(.active) {
+  background: rgba(255, 255, 255, 0.08);
+  color: #fff;
+}
+
 .ranking-tab.active {
   background: #6366f1;
   color: #fff;
@@ -91,6 +96,10 @@
   font-size: 0.9rem;
   transition: color 0.3s ease;
   cursor: pointer;
+}
+
+.switch-option:hover:not(.active) {
+  color: var(--color-text-primary);
 }
 
 .switch-option.active {
@@ -165,10 +174,20 @@
   align-items: center;
   justify-content: space-between;
   padding: 18px 20px;
-  background: rgba(255, 255, 255, 0.03);
+  background: var(--bg-glass-card);
   border-radius: 20px;
-  border: 1px solid rgba(255, 255, 255, 0.05);
-  transition: transform 0.2s ease;
+  border: var(--border-glass);
+  backdrop-filter: blur(var(--backdrop-blur));
+  -webkit-backdrop-filter: blur(var(--backdrop-blur));
+  box-shadow: var(--shadow-glass);
+  transition: transform 0.2s ease, background-color 0.2s, box-shadow 0.2s;
+  cursor: default;
+  /* 랭킹 아이템은 클릭 기능이 없으므로 기본 커서 */
+}
+
+/* 내 랭킹 등 강조된 아이템은 호버 효과 제공 (옵션) */
+.ranking-item.my-item:hover {
+  transform: scale(1.02);
 }
 
 .ranking-item.top-rank {

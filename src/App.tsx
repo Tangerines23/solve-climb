@@ -12,8 +12,8 @@ import { useErrorLogStore } from './stores/useErrorLogStore';
 const HomePage = lazy(() =>
   import('./pages/HomePage').then((module) => ({ default: module.HomePage }))
 );
-const SubCategoryPage = lazy(() =>
-  import('./pages/SubCategoryPage').then((module) => ({ default: module.SubCategoryPage }))
+const TopicSelectPage = lazy(() =>
+  import('./pages/TopicSelectPage').then((module) => ({ default: module.TopicSelectPage }))
 );
 const LevelSelectPage = lazy(() =>
   import('./pages/LevelSelectPage').then((module) => ({ default: module.LevelSelectPage }))
@@ -27,19 +27,14 @@ const ResultPage = lazy(() =>
 const RankingPage = lazy(() =>
   import('./pages/RankingPage').then((module) => ({ default: module.RankingPage }))
 );
-const HistoryPage = lazy(() =>
-  import('./pages/HistoryPage').then((module) => ({ default: module.HistoryPage }))
+const RoadmapPage = lazy(() =>
+  import('./pages/RoadmapPage').then((module) => ({ default: module.RoadmapPage }))
 );
 const MyPage = lazy(() => import('./pages/MyPage').then((module) => ({ default: module.MyPage })));
 const NotificationPage = lazy(() =>
   import('./pages/NotificationPage').then((module) => ({ default: module.NotificationPage }))
 );
-const AuthCallbackPage = lazy(() =>
-  import('./pages/AuthCallbackPage').then((module) => ({ default: module.AuthCallbackPage }))
-);
-const AuthTestPage = lazy(() =>
-  import('./pages/AuthTestPage').then((module) => ({ default: module.AuthTestPage }))
-);
+// AuthCallbackPage & AuthTestPage imports removed
 const ShopPage = lazy(() =>
   import('./pages/ShopPage').then((module) => ({ default: module.ShopPage }))
 );
@@ -114,16 +109,15 @@ function App() {
       >
         <Routes>
           <Route path="/" element={<HomePage />} />
-          <Route path="/subcategory" element={<SubCategoryPage />} />
+          <Route path="/topic-select" element={<TopicSelectPage />} />
           <Route path="/level-select" element={<LevelSelectPage />} />
           <Route path="/quiz" element={<QuizPage />} />
           <Route path="/result" element={<ResultPage />} />
           <Route path="/ranking" element={<RankingPage />} />
-          <Route path="/challenge" element={<HistoryPage />} />
+          <Route path="/roadmap" element={<RoadmapPage />} />
           <Route path="/my-page" element={<MyPage />} />
           <Route path="/notifications" element={<NotificationPage />} />
-          <Route path="/auth/callback" element={<AuthCallbackPage />} />
-          <Route path="/auth/test" element={<AuthTestPage />} />
+          {/* AuthCallbackPage & AuthTestPage routes removed */}
           <Route path="/shop" element={<ShopPage />} />
         </Routes>
       </Suspense>

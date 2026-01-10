@@ -136,15 +136,7 @@ export function LevelSelectPage() {
     );
   }
 
-  // 카테고리별 색상 매핑
-  const categoryColors: Record<string, string> = {
-    math: '#10b981', // 녹색
-    language: '#3b82f6', // 푸른색
-    logic: '#8b5cf6', // 보라색
-    general: '#f59e0b', // 주황색
-  };
-
-  const categoryColor = categoryColors[categoryParam] || '#10b981';
+  const categoryColor = categoryInfo.color || '#10b981';
 
   // 다음 레벨 계산
   const nextLevel = getNextLevel(categoryParam, subParam);
@@ -231,7 +223,7 @@ export function LevelSelectPage() {
           onClick={() => {
             // 이전 페이지(상위 페이지)로 이동
             if (categoryParam) {
-              navigate(`/subcategory?category=${categoryParam}`);
+              navigate(`/topic-select?category=${categoryParam}`);
             } else {
               navigate(-1);
             }

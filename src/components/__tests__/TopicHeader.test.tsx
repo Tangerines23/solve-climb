@@ -1,7 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen } from '@testing-library/react';
 import { BrowserRouter } from 'react-router-dom';
-import { SubCategoryHeader } from '../SubCategoryHeader';
+import { TopicHeader } from '../TopicHeader';
 
 // Mock useNavigate
 const mockNavigate = vi.fn();
@@ -13,26 +13,26 @@ vi.mock('react-router-dom', async () => {
   };
 });
 
-describe('SubCategoryHeader', () => {
+describe('TopicHeader', () => {
   beforeEach(() => {
     vi.clearAllMocks();
   });
 
-  const renderSubCategoryHeader = (categoryId: string | null) => {
+  const renderTopicHeader = (categoryId: string | null) => {
     return render(
       <BrowserRouter>
-        <SubCategoryHeader categoryId={categoryId} />
+        <TopicHeader categoryId={categoryId} />
       </BrowserRouter>
     );
   };
 
   it('should render default title when categoryId is null', () => {
-    renderSubCategoryHeader(null);
+    renderTopicHeader(null);
     expect(screen.getByText('주제 선택')).toBeInTheDocument();
   });
 
   it('should render category name when categoryId is provided', () => {
-    renderSubCategoryHeader('math');
+    renderTopicHeader('math');
     // Category name should be rendered (could be '수학' or other name from APP_CONFIG)
     const header = screen.getByRole('heading');
     expect(header).toBeInTheDocument();
@@ -40,7 +40,7 @@ describe('SubCategoryHeader', () => {
   });
 
   it('should navigate to home when back button is clicked', () => {
-    renderSubCategoryHeader('math');
+    renderTopicHeader('math');
     const backButton = screen.getByLabelText('뒤로 가기');
     backButton.click();
 
@@ -48,24 +48,24 @@ describe('SubCategoryHeader', () => {
   });
 
   it('should render back button', () => {
-    renderSubCategoryHeader('math');
+    renderTopicHeader('math');
     expect(screen.getByLabelText('뒤로 가기')).toBeInTheDocument();
   });
 
   it('should render default title when categoryId does not exist', () => {
-    renderSubCategoryHeader('nonexistent');
+    renderTopicHeader('nonexistent');
     expect(screen.getByText('주제 선택')).toBeInTheDocument();
   });
 
   it('should render category name correctly for valid categoryId', () => {
-    renderSubCategoryHeader('math');
+    renderTopicHeader('math');
     const title = screen.getByRole('heading');
     expect(title).toBeInTheDocument();
     expect(title.textContent).not.toBe('주제 선택');
   });
 
   it('should call navigate with correct path when back button is clicked', () => {
-    renderSubCategoryHeader('math');
+    renderTopicHeader('math');
     const backButton = screen.getByLabelText('뒤로 가기');
     backButton.click();
 
@@ -74,8 +74,8 @@ describe('SubCategoryHeader', () => {
   });
 
   it('should render header with correct structure', () => {
-    const { container } = renderSubCategoryHeader('math');
-    const header = container.querySelector('.subcategory-header');
+    const { container } = renderTopicHeader('math');
+    const header = container.querySelector('.topic-header');
     expect(header).toBeInTheDocument();
   });
 });

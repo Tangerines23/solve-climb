@@ -74,7 +74,7 @@ describe('CategoryList', () => {
     const climbButton = document.querySelector('[data-category-id="math"]') as HTMLButtonElement;
     expect(climbButton).toBeTruthy();
     fireEvent.click(climbButton!);
-    expect(mockNavigate).toHaveBeenCalledWith('/subcategory?category=math');
+    expect(mockNavigate).toHaveBeenCalledWith('/topic-select?category=math');
   });
 
   it('should render category cards', () => {

@@ -1,12 +1,12 @@
 import { useNavigate } from 'react-router-dom';
 import { APP_CONFIG } from '../config/app';
-import './SubCategoryHeader.css';
+import './TopicHeader.css';
 
-interface SubCategoryHeaderProps {
+interface TopicHeaderProps {
   categoryId: string | null;
 }
 
-export function SubCategoryHeader({ categoryId }: SubCategoryHeaderProps) {
+export function TopicHeader({ categoryId }: TopicHeaderProps) {
   const navigate = useNavigate();
 
   const handleBack = () => {
@@ -21,13 +21,13 @@ export function SubCategoryHeader({ categoryId }: SubCategoryHeaderProps) {
   };
 
   return (
-    <header className="subcategory-header">
-      <div className="subcategory-header-content">
-        <button className="subcategory-back-button" onClick={handleBack} aria-label="뒤로 가기">
+    <header className="topic-header">
+      <div className="topic-header-content">
+        <button className="topic-back-button" onClick={handleBack} aria-label="뒤로 가기">
           ←
         </button>
-        <h1 className="subcategory-header-title">{getCategoryName(categoryId)}</h1>
-        <div className="subcategory-header-spacer"></div>
+        <h1 className="topic-header-title">{getCategoryName(categoryId)}</h1>
+        <div className="topic-header-spacer"></div>
       </div>
     </header>
   );

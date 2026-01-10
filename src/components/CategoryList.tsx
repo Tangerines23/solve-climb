@@ -108,10 +108,14 @@ export function CategoryList() {
     }
   };
 
-  // 수학의 산과 언어의 산만 필터링
-  const mainCategories = APP_CONFIG.CATEGORIES.filter(
-    (category) => category.id === 'math' || category.id === 'language'
-  );
+  // 활성화된 메인 카테고리만 필터링 (기능 플래그 기준)
+  const mainCategories = APP_CONFIG.CATEGORIES.filter((category) => {
+    if (category.id === 'math') return APP_CONFIG.FEATURE_FLAGS.ENABLE_MATH_MOUNTAIN;
+    if (category.id === 'language') return APP_CONFIG.FEATURE_FLAGS.ENABLE_LANGUAGE_MOUNTAIN;
+    // logic, general 등 '미지의 산' 계열은 하단의 UnknownMountainCard에서 별도로 처리하므로
+    // 메인 리스트에서는 제외하여 중복 표시를 방지합니다.
+    return false;
+  });
 
   // 즐겨찾기된 카테고리를 먼저 표시
   const sortedCategories = [...mainCategories].sort((a, b) => {

@@ -1,15 +1,15 @@
 import { useRef, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { APP_CONFIG } from '../config/app';
-import { SubCategoryHeader } from '../components/SubCategoryHeader';
+import { TopicHeader } from '../components/TopicHeader';
 import { FooterNav } from '../components/FooterNav';
 import { useFavoriteStore } from '../stores/useFavoriteStore';
 import { calculateSubTopicProgress, calculateCategoryProgress } from '../utils/scoreCalculator';
-import './SubCategoryPage.css';
+import './TopicSelectPage.css';
 
 const LONG_PRESS_DURATION = 500; // 0.5초
 
-export function SubCategoryPage() {
+export function TopicSelectPage() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const categoryParam = searchParams.get('category');
@@ -26,10 +26,10 @@ export function SubCategoryPage() {
     !APP_CONFIG.SUB_TOPICS[categoryParam as keyof typeof APP_CONFIG.SUB_TOPICS]
   ) {
     return (
-      <div className="subcategory-page">
-        <SubCategoryHeader categoryId={null} />
-        <main className="subcategory-main">
-          <div className="subcategory-content">
+      <div className="topic-select-page">
+        <TopicHeader categoryId={null} />
+        <main className="topic-select-main">
+          <div className="topic-select-content">
             <div className="error-message">
               <h2>잘못된 접근입니다</h2>
               <p>존재하지 않는 카테고리입니다.</p>
@@ -138,13 +138,13 @@ export function SubCategoryPage() {
   });
 
   return (
-    <div className="subcategory-page">
-      <SubCategoryHeader categoryId={categoryParam} />
-      <main className="subcategory-main">
-        <div className="subcategory-content">
-          <div className="subcategory-header-section">
-            <h2 className="subcategory-category-title">{categoryInfo?.name || '주제 선택'}</h2>
-            <span className="subcategory-category-progress">{categoryProgressPercent}%</span>
+    <div className="topic-select-page">
+      <TopicHeader categoryId={categoryParam} />
+      <main className="topic-select-main">
+        <div className="topic-select-content">
+          <div className="topic-select-header-section">
+            <h2 className="topic-select-category-title">{categoryInfo?.name || '주제 선택'}</h2>
+            <span className="topic-select-category-progress">{categoryProgressPercent}%</span>
           </div>
           <div id="topic-list-container" className="topic-list-container">
             {sortedTopics.map((topic) => {

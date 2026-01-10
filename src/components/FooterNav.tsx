@@ -2,7 +2,7 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import { APP_CONFIG } from '../config/app';
 import './FooterNav.css';
 
-type NavItem = 'home' | 'ranking' | 'challenge' | 'my';
+type NavItem = 'home' | 'ranking' | 'roadmap' | 'my';
 
 interface NavItemConfig {
   id: NavItem;
@@ -14,7 +14,7 @@ interface NavItemConfig {
 const navItems: NavItemConfig[] = [
   { id: 'home', label: '홈', icon: '🏠', route: APP_CONFIG.ROUTES.HOME },
   { id: 'ranking', label: '랭킹', icon: '🏆', route: APP_CONFIG.ROUTES.RANKING },
-  { id: 'challenge', label: '기록', icon: '📝', route: APP_CONFIG.ROUTES.CHALLENGE },
+  { id: 'roadmap', label: '일지', icon: '📝', route: APP_CONFIG.ROUTES.HISTORY },
   { id: 'my', label: '마이', icon: '👤', route: APP_CONFIG.ROUTES.MY_PAGE },
 ];
 

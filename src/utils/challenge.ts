@@ -5,7 +5,7 @@
 
 import { APP_CONFIG } from '../config/app';
 import { storage } from './storage';
-import { challengeApi } from './api';
+
 
 const STORAGE_KEY_DATE = 'solve-climb-today-challenge-date';
 const STORAGE_KEY_CHALLENGE = 'solve-climb-today-challenge';
@@ -75,11 +75,14 @@ function generateTodayChallenge(): TodayChallenge {
   const seed = dateToSeed(todayDate);
   const rng = new SeededRandom(seed);
 
-  // 1. 카테고리(산) 랜덤 선택
-  // 수학의 산과 언어의 산만 사용 (논리, 상식 제외)
-  const availableCategories = APP_CONFIG.CATEGORIES.filter(
-    (cat) => cat.id === 'math' || cat.id === 'language'
-  );
+  // 기능 플래그(FEATURE_FLAGS)에 따라 활성화된 카테고리만 선택
+  const availableCategories = APP_CONFIG.CATEGORIES.filter((cat) => {
+    if (cat.id === 'math') return APP_CONFIG.FEATURE_FLAGS.ENABLE_MATH_MOUNTAIN;
+    if (cat.id === 'language') return APP_CONFIG.FEATURE_FLAGS.ENABLE_LANGUAGE_MOUNTAIN;
+    if (cat.id === 'logic') return APP_CONFIG.FEATURE_FLAGS.ENABLE_LOGIC_MOUNTAIN;
+    if (cat.id === 'general') return APP_CONFIG.FEATURE_FLAGS.ENABLE_GENERAL_MOUNTAIN;
+    return false;
+  });
   const categories = [...availableCategories].sort((a, b) => a.id.localeCompare(b.id));
   const categoryIndex = rng.randomInt(0, categories.length);
   const selectedCategory = categories[categoryIndex];
@@ -98,7 +101,7 @@ function generateTodayChallenge(): TodayChallenge {
       id: `today_challenge_${todayDate}`,
       title: '기본 챌린지',
       category:
-        APP_CONFIG.CATEGORY_MAP[selectedCategory.id as keyof typeof APP_CONFIG.CATEGORY_MAP] ||
+        APP_CONFIG.CATEGORIES.find((c) => c.id === selectedCategory.id)?.name ||
         selectedCategory.name,
       categoryId: selectedCategory.id,
       topic: '기본',
@@ -124,7 +127,7 @@ function generateTodayChallenge(): TodayChallenge {
       id: `today_challenge_${todayDate}`,
       title: `${selectedTopic.name} 도전!`,
       category:
-        APP_CONFIG.CATEGORY_MAP[selectedCategory.id as keyof typeof APP_CONFIG.CATEGORY_MAP] ||
+        APP_CONFIG.CATEGORIES.find((c) => c.id === selectedCategory.id)?.name ||
         selectedCategory.name,
       categoryId: selectedCategory.id,
       topic: selectedTopic.name,
@@ -146,7 +149,7 @@ function generateTodayChallenge(): TodayChallenge {
     id: `today_challenge_${todayDate}`,
     title,
     category:
-      APP_CONFIG.CATEGORY_MAP[selectedCategory.id as keyof typeof APP_CONFIG.CATEGORY_MAP] ||
+      APP_CONFIG.CATEGORIES.find((c) => c.id === selectedCategory.id)?.name ||
       selectedCategory.name,
     categoryId: selectedCategory.id,
     topic: selectedTopic.name,
@@ -167,59 +170,9 @@ export async function getTodayChallenge(): Promise<TodayChallenge> {
   const storedDate = storage.getString(STORAGE_KEY_DATE, null);
   const storedChallenge = storage.get<TodayChallenge | null>(STORAGE_KEY_CHALLENGE, null);
 
-  // 같은 날짜면 캐시된 값 먼저 확인 (빠른 응답)
+  // 같은 날짜면 캐시된 값 사용
   if (storedDate === todayDate && storedChallenge) {
-    // 백그라운드에서 서버 확인 (다음 요청을 위해)
-    challengeApi
-      .getTodayChallenge(todayDate)
-      .then((serverChallenge) => {
-        if (serverChallenge) {
-          const challenge: TodayChallenge = {
-            id: serverChallenge.id,
-            title: serverChallenge.title,
-            category: serverChallenge.category_name,
-            categoryId: serverChallenge.category_id,
-            topic: serverChallenge.topic_name,
-            topicId: serverChallenge.topic_id,
-            mode: serverChallenge.mode,
-            level: serverChallenge.level,
-          };
-          storage.setString(STORAGE_KEY_DATE, todayDate);
-          storage.set(STORAGE_KEY_CHALLENGE, challenge);
-        }
-      })
-      .catch(() => {
-        // 서버 확인 실패는 무시 (캐시된 값 사용)
-      });
-
     return storedChallenge;
-  }
-
-  // 서버에서 가져오기 시도
-  try {
-    const serverChallenge = await challengeApi.getTodayChallenge(todayDate);
-
-    if (serverChallenge) {
-      // 서버에서 가져온 챌린지 사용
-      const challenge: TodayChallenge = {
-        id: serverChallenge.id,
-        title: serverChallenge.title,
-        category: serverChallenge.category_name,
-        categoryId: serverChallenge.category_id,
-        topic: serverChallenge.topic_name,
-        topicId: serverChallenge.topic_id,
-        mode: serverChallenge.mode,
-        level: serverChallenge.level,
-      };
-
-      // 캐시 저장
-      storage.setString(STORAGE_KEY_DATE, todayDate);
-      storage.set(STORAGE_KEY_CHALLENGE, challenge);
-
-      return challenge;
-    }
-  } catch (error) {
-    console.warn('Failed to fetch today challenge from server, using local fallback:', error);
   }
 
   // 서버에 없거나 실패 시 로컬 생성 (폴백)

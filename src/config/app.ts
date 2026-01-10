@@ -1,5 +1,21 @@
 import packageJson from '../../package.json';
 
+/**
+ * [ solve-climb 카테고리/주제 관리 가이드 ]
+ * 
+ * 1. 구조 (Hierarchy):
+ *    - CATEGORIES: 대분류 (~의 산). 이름, 아이콘, 테마 색상 정의.
+ *    - SUB_TOPICS: 중분류 (등반로). 특정 카테고리 ID에 속하는 주제 목록.
+ *    - LEVELS: 소분류 (레벨). 특정 주제 ID에 속하는 실제 퀴즈 스테이지 목록.
+ * 
+ * 2. 확장 방법 (How to Extend):
+ *    - 새로운 산 추가: CATEGORIES, SUB_TOPICS, LEVELS에 각각 새 ID로 데이터 추가.
+ *    - 레벨 수정: LEVELS 객체 내의 해당 주제 배열을 수정.
+ * 
+ * 3. 연결 제어 (Connection Control):
+ *    - FEATURE_FLAGS에서 ENABLE_***_MOUNTAIN 값을 true/false로 변경하여 UI 표시 여부 결정.
+ */
+
 // 앱 설정 상수 중앙 관리
 export const APP_CONFIG = {
   // API 설정 (현재 사용하지 않음 - 백엔드 서버 없이 Supabase와 토스 SDK만 사용)
@@ -21,9 +37,18 @@ export const APP_CONFIG = {
   //   // 'another-admin@yourdomain.com',
   // ],
 
-  // 앱 정보
   APP_NAME: 'Solve Climb',
   APP_VERSION: packageJson.version,
+
+  // 기능 플래그 (Feature Flags) - 산(카테고리) 활성화 상태 관리
+  // 연결을 끊고 싶으면 false, 다시 연결하고 싶으면 true로 설정하세요.
+  // 이 설정은 홈 화면 목록과 오늘의 챌린지 생성에 즉시 반영됩니다.
+  FEATURE_FLAGS: {
+    ENABLE_MATH_MOUNTAIN: true, // 수학의 산 (활성)
+    ENABLE_LANGUAGE_MOUNTAIN: false, // 언어의 산 (준비 중 - 비활성)
+    ENABLE_LOGIC_MOUNTAIN: false, // 논리/상식 (준비 중 - 비활성)
+    ENABLE_GENERAL_MOUNTAIN: false, // 상식 (준비 중 - 비활성)
+  },
 
   // 오늘의 챌린지 설정
   TODAY_CHALLENGE: {
@@ -41,48 +66,52 @@ export const APP_CONFIG = {
       id: 'math',
       name: '수학의 산',
       icon: '➕',
+      color: '#10b981', // 녹색
       totalLevels: 20,
     },
     {
       id: 'language',
       name: '언어의 산',
       icon: 'あ',
+      color: '#3b82f6', // 푸른색
       totalLevels: 20,
     },
     {
       id: 'logic',
       name: '미지의 산',
       icon: '?',
+      color: '#8b5cf6', // 보라색
       totalLevels: 15,
     },
     {
       id: 'general',
       name: '미지의 산',
       icon: '?',
+      color: '#f59e0b', // 주황색
       totalLevels: 20,
     },
   ],
 
+  // 카테고리 ID -> 이름 매핑 (O(1) Lookup용)
+  CATEGORY_MAP: {
+    math: '수학의 산',
+    language: '언어의 산',
+    logic: '미지의 산',
+    general: '미지의 산',
+  },
+
   // 라우팅 경로
   ROUTES: {
     HOME: '/',
-    SUB_CATEGORY: '/subcategory',
+    SUB_CATEGORY: '/topic-select',
     LEVEL_SELECT: '/level-select',
     GAME: '/quiz',
     RESULT: '/result',
     RANKING: '/ranking',
     CHALLENGE: '/challenge',
-    HISTORY: '/challenge',
+    HISTORY: '/roadmap',
     MY_PAGE: '/my-page',
     NOTIFICATIONS: '/notifications',
-  },
-
-  // 카테고리 ID 매핑
-  CATEGORY_MAP: {
-    math: '수학',
-    language: '언어',
-    logic: '논리',
-    general: '상식',
   },
 
   // 하위 주제 목록 (SUB_TOPICS)

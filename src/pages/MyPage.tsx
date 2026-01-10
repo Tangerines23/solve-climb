@@ -37,8 +37,9 @@ const formatBestSubject = (themeId: string | null): string => {
   // theme_mapping의 name을 이미 반환하도록 했으므로, theme_id인 경우만 변환
   if (themeId.includes('_')) {
     const [category, subject] = themeId.split('_');
+
     const categoryName =
-      APP_CONFIG.CATEGORY_MAP[category as keyof typeof APP_CONFIG.CATEGORY_MAP] || category;
+      APP_CONFIG.CATEGORIES.find((c) => c.id === category)?.name || category;
 
     // subject 매핑
     const subjectMap: Record<string, string> = {
@@ -662,9 +663,9 @@ export function MyPage() {
               </div>
             </div>
             <div className="my-page-mastery-section">
-              <div className="my-page-mastery-label">총 마스터리 점수</div>
+              <div className="my-page-mastery-label">누적 고도</div>
               <div className="my-page-mastery-value">
-                {statsLoading ? '...' : (stats?.totalMasteryScore || 0).toLocaleString()}점
+                {statsLoading ? '...' : (stats?.totalMasteryScore || 0).toLocaleString()}m
               </div>
             </div>
             {/* 티어 뱃지 표시 */}
@@ -766,14 +767,13 @@ export function MyPage() {
                 <div className="my-page-favorites-list">
                   {favorites.slice(0, 3).map((favorite) => {
                     const categoryName =
-                      APP_CONFIG.CATEGORY_MAP[
-                        favorite.categoryId as keyof typeof APP_CONFIG.CATEGORY_MAP
-                      ] || favorite.categoryId;
+                      APP_CONFIG.CATEGORIES.find((c) => c.id === favorite.categoryId)?.name ||
+                      favorite.categoryId;
                     let subCategoryName = '';
                     if (favorite.subCategoryId) {
                       const subTopics =
                         APP_CONFIG.SUB_TOPICS[
-                          favorite.categoryId as keyof typeof APP_CONFIG.SUB_TOPICS
+                        favorite.categoryId as keyof typeof APP_CONFIG.SUB_TOPICS
                         ] || [];
                       const subTopic = subTopics.find((st) => st.id === favorite.subCategoryId);
                       subCategoryName = subTopic?.name || favorite.subCategoryId;
@@ -939,32 +939,7 @@ export function MyPage() {
                   </div>
                   <span className="my-page-settings-item-value">{APP_CONFIG.APP_VERSION}</span>
                 </div>
-                {ENV.IS_DEVELOPMENT && (
-                  <button
-                    className="my-page-settings-item my-page-settings-item-button"
-                    onClick={() => navigate('/auth/test')}
-                  >
-                    <div className="my-page-settings-item-content">
-                      <span className="my-page-settings-item-label">인증 테스트</span>
-                    </div>
-                    <svg
-                      className="my-page-settings-item-arrow"
-                      width="20"
-                      height="20"
-                      viewBox="0 0 20 20"
-                      fill="none"
-                      xmlns="http://www.w3.org/2000/svg"
-                    >
-                      <path
-                        d="M7.5 15L12.5 10L7.5 5"
-                        stroke="currentColor"
-                        strokeWidth="2"
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                      />
-                    </svg>
-                  </button>
-                )}
+                {/* Auth test button removed */}
                 <button
                   className="my-page-settings-item my-page-settings-item-button"
                   onClick={handleSendFeedback}

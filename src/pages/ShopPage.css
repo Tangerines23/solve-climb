@@ -44,6 +44,16 @@
   font-size: 1.5rem;
   cursor: pointer;
   padding: 0.5rem;
+  transition: transform 0.2s, opacity 0.2s;
+}
+
+.back-button:hover {
+  transform: translateX(-4px);
+  opacity: 0.8;
+}
+
+.back-button:active {
+  transform: translateX(-4px) scale(0.95);
 }
 
 .user-minerals {
@@ -77,6 +87,11 @@
   transition: all 0.2s ease;
 }
 
+.tab-button:hover:not(.active) {
+  background: rgba(255, 255, 255, 0.05);
+  color: #e2e8f0;
+}
+
 .tab-button.active {
   background: rgba(255, 255, 255, 0.1);
   color: #f8fafc;
@@ -92,11 +107,13 @@
 .item-card {
   display: flex;
   align-items: center;
-  background: rgba(255, 255, 255, 0.03);
-  backdrop-filter: blur(10px);
-  border: 1px solid rgba(255, 255, 255, 0.05);
+  background: var(--bg-glass-card);
+  backdrop-filter: blur(var(--backdrop-blur));
+  -webkit-backdrop-filter: blur(var(--backdrop-blur));
+  border: var(--border-glass);
   border-radius: 1rem;
   padding: 1rem;
+  box-shadow: var(--shadow-glass);
   transition:
     transform 0.2s ease,
     background 0.2s ease;
@@ -223,10 +240,11 @@
   display: flex;
   align-items: center;
   gap: 0.75rem;
-  background: rgba(255, 255, 255, 0.03);
+  background: var(--bg-glass-card);
   padding: 0.75rem;
   border-radius: 0.75rem;
-  border: 1px solid rgba(255, 255, 255, 0.05);
+  border: var(--border-glass);
+  backdrop-filter: blur(var(--backdrop-blur));
 }
 
 .inventory-icon {

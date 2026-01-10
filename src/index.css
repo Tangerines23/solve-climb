@@ -210,6 +210,61 @@
   /* 로그아웃 버튼 전용 색상 */
   --color-logout-hover: #3c2c2c;
   --color-logout-active: #4c2c2c;
+
+  /* Z-Index System - Global standard for layering */
+  --z-background: 0;
+  --z-content: 10;
+  --z-glass-overlay: 20;
+  --z-header: 50;
+  --z-sticky: 60;
+  --z-toast-low: 100;
+  --z-modal: 1000;
+  --z-toast-high: 2000;
+  --z-max: 9999;
+
+  /* --- Premium Glass Design Tokens (V2) --- */
+  --bg-glass-card: rgba(30, 31, 35, 0.6);
+  --bg-glass-card-hover: rgba(40, 41, 45, 0.7);
+  --bg-glass-overlay: rgba(30, 31, 35, 0.85);
+  --border-glass: 1px solid rgba(255, 255, 255, 0.08);
+  --border-glass-hover: 1px solid rgba(255, 255, 255, 0.15);
+  --backdrop-blur: 20px;
+  --shadow-glass: 0 8px 32px rgba(0, 0, 0, 0.2);
+  --shadow-glass-hover: 0 12px 40px rgba(0, 0, 0, 0.3);
+  --gradient-text-premium: linear-gradient(135deg, #fff 30%, #4facfe 100%);
+  --gradient-sub-text: linear-gradient(135deg, rgba(255, 255, 255, 0.8) 0%, rgba(255, 255, 255, 0.4) 100%);
+}
+
+/* --- Premium Utility Classes --- */
+.glass-card {
+  background-color: var(--bg-glass-card);
+  border: var(--border-glass);
+  border-radius: var(--rounded-large-card);
+  backdrop-filter: blur(var(--backdrop-blur));
+  -webkit-backdrop-filter: blur(var(--backdrop-blur));
+  box-shadow: var(--shadow-glass);
+  transition: transform 0.2s ease, box-shadow 0.2s ease, background-color 0.2s ease;
+}
+
+.glass-card:hover {
+  /* Only apply hover effect if explicitly clickable or desired */
+  /* transform: translateY(-2px); Moved to specific modifier */
+}
+
+.glass-card.interactive:hover {
+  background-color: var(--bg-glass-card-hover);
+  border: var(--border-glass-hover);
+  box-shadow: var(--shadow-glass-hover);
+  transform: translateY(-2px);
+}
+
+.premium-text-gradient {
+  background: var(--gradient-text-premium);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  color: #fff;
+  /* Fallback */
 }
 
 html,
@@ -250,10 +305,13 @@ body {
  */
 
 .quiz-card {
-  background-color: #1e1e1e;
+  background-color: var(--bg-glass-card);
+  border: var(--border-glass);
   padding: 24px 16px;
   border-radius: 16px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  box-shadow: var(--shadow-glass);
+  backdrop-filter: blur(var(--backdrop-blur));
+  -webkit-backdrop-filter: blur(var(--backdrop-blur));
   width: 90%;
   max-width: 320px;
   margin: 0 auto;
@@ -277,9 +335,9 @@ body {
   padding: var(--spacing-md) var(--spacing-lg);
   font-size: 16px;
   font-family: inherit;
-  border: 1px solid var(--color-border);
+  border: var(--border-glass);
   border-radius: var(--rounded-sm);
-  background-color: #333;
+  background-color: rgba(255, 255, 255, 0.05);
   color: white;
   margin-top: 16px;
 }
@@ -297,7 +355,7 @@ body {
   font-weight: bold;
   font-family: inherit;
   color: var(--color-gray-100);
-  background-color: var(--color-primary);
+  background: linear-gradient(135deg, var(--color-blue-400) 0%, var(--color-blue-500) 100%);
   border: none;
   border-radius: var(--rounded-sm);
   cursor: pointer;

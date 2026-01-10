@@ -22,7 +22,7 @@ export const ALTITUDE_TIERS: TierDefinition[] = [
   { name: '중턱', goal: 20000, icon: '⛰️', colorVar: '--color-tier-mid' },
   { name: '고지대', goal: 50000, icon: '🏔️', colorVar: '--color-tier-high' },
   { name: '봉우리', goal: 100000, icon: '🦅', colorVar: '--color-tier-peak' },
-  { name: '전설', goal: 250000, icon: '🏁', colorVar: '--color-tier-summit' },
+  { name: '정상', goal: 250000, icon: '🚩', colorVar: '--color-tier-summit' },
 ];
 
 /**
@@ -63,11 +63,7 @@ export const ALTITUDE_MILESTONES = (() => {
   for (let s = 0; s < maxCycles; s++) {
     ALTITUDE_TIERS.forEach((t) => {
       const absAltitude = s * TIER_CYCLE_LIMIT + t.goal;
-      let label = t.name;
-
-      if (t.goal === TIER_CYCLE_LIMIT) {
-        label = '전설';
-      }
+      const label = t.name;
 
       list.push({
         id: `tier-${s}-${t.goal}`,

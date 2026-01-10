@@ -133,8 +133,9 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
+  justify-content: space-between;
   padding: 0 clamp(12px, 2vw, 16px);
-  z-index: 100;
+  z-index: var(--z-header);
   flex-shrink: 0;
 }
 
@@ -222,9 +223,12 @@
   flex-direction: column;
   gap: clamp(12px, 2.5vh, 24px);
   padding: clamp(16px, 3.5vh, 32px) clamp(12px, 2.5vw, 24px);
-  background-color: var(--color-bg-primary);
+  background-color: var(--bg-glass-card);
+  border: var(--border-glass);
+  backdrop-filter: blur(var(--backdrop-blur));
+  -webkit-backdrop-filter: blur(var(--backdrop-blur));
   border-radius: clamp(12px, 2.5vh, 24px);
-  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.4);
+  box-shadow: var(--shadow-glass);
   flex-shrink: 1;
   min-height: 0;
   margin-bottom: clamp(8px, 1.5vh, 16px);
@@ -256,7 +260,7 @@
   padding: var(--spacing-md) var(--spacing-lg);
   text-align: center;
   animation: exitConfirmSlideDown 0.3s ease-out;
-  z-index: 10000;
+  z-index: var(--z-toast-high);
   cursor: pointer;
   transition: background-color 0.2s;
   box-shadow: var(--shadow-card);
@@ -424,8 +428,8 @@
   font-size: clamp(1.5rem, 4vw, 2rem);
   font-weight: bold;
   border-radius: var(--rounded-button);
-  border: 2px solid var(--color-bg-tertiary);
-  background-color: var(--color-bg-secondary);
+  border: var(--border-glass);
+  background-color: rgba(255, 255, 255, 0.05);
   color: var(--color-blue-400);
   text-align: center;
   transition:
@@ -621,7 +625,7 @@
 /* 감점 토스트 스타일 - 카드 상단 영역 랜덤 위치 */
 .slide-toast {
   position: absolute;
-  z-index: 50;
+  z-index: var(--z-toast-low);
   pointer-events: none;
   transform: translate(-50%, -50%);
   animation: floatUp 1.5s ease-out forwards;

@@ -99,12 +99,16 @@
 }
 
 .notification-item {
-  background-color: var(--color-bg-primary);
+  background-color: var(--bg-glass-card);
   border-radius: var(--rounded-sm);
   padding: var(--spacing-lg);
   display: flex;
   gap: var(--spacing-md);
   cursor: pointer;
+  border: var(--border-glass);
+  backdrop-filter: blur(var(--backdrop-blur));
+  -webkit-backdrop-filter: blur(var(--backdrop-blur));
+  box-shadow: var(--shadow-glass);
   transition:
     background-color 0.2s,
     transform 0.1s;

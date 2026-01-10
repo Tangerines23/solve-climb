@@ -1,6 +1,6 @@
 import { useState, useEffect, useMemo, useRef, memo } from 'react';
-import { useNavigate } from 'react-router-dom';
-import './HistoryPage.css';
+// import { useNavigate } from 'react-router-dom';
+import './RoadmapPage.css';
 import { Header } from '../components/Header';
 import { FooterNav } from '../components/FooterNav';
 import { useHistoryData } from '../hooks/useHistoryData';
@@ -139,8 +139,8 @@ const NonLinearTierItem = memo(({
   );
 });
 
-export function HistoryPage() {
-  const navigate = useNavigate();
+export function RoadmapPage() {
+  // const navigate = useNavigate();
   const { stats, loading, error } = useHistoryData();
   const [activeTab, setActiveTab] = useState<'summary' | 'analysis' | 'activity'>('summary');
   const [isMilestoneExpanded, setIsMilestoneExpanded] = useState(false);
@@ -564,7 +564,7 @@ export function HistoryPage() {
                   });
               })()}
             </div>
-            <div className="milestone-expand-hint">전체 로드맵 보기 🗺️</div>
+            <div className="milestone-expand-hint">전체 일지 보기 🗺️</div>
           </div>
         </>
       )}
@@ -588,7 +588,7 @@ export function HistoryPage() {
         <div ref={roadmapRef} className={`roadmap-container ${isRoadmapActive ? 'is-active' : ''}`}>
           <header className="roadmap-header">
             <div className="roadmap-title-group">
-              <h2 className="roadmap-title">등반 로드맵</h2>
+              <h2 className="roadmap-title">등반 일지</h2>
               <span className="roadmap-subtitle">{stats.userTitle}</span>
             </div>
             <button className="roadmap-close-button" onClick={handleCloseRoadmap}>
@@ -788,6 +788,110 @@ export function HistoryPage() {
     );
   };
 
+  /* --- Analysis View --- */
+  const renderAnalysisSection = () => {
+    if (!stats) return null;
+
+    // 카테고리별 숙련도 데이터 준비
+    const maxLevel = 15; // 최대 레벨 가정
+    const categoryData = stats.categoryLevels.slice(0, 5); // 상위 5개만
+
+    return (
+      <div className="history-analysis-container fade-in">
+        {/* 1. 종합 요약 카드 */}
+        <div className="history-analysis-card">
+          <div className="history-card-header no-border">
+            <h3 className="history-card-title">등반 성과 📊</h3>
+          </div>
+          <div className="analysis-summary-grid">
+            <div className="analysis-stat-item">
+              <div className="stat-label">정답률</div>
+              <div className="stat-value highlight">{stats.averageAccuracy}%</div>
+            </div>
+            <div className="analysis-stat-item">
+              <div className="stat-label">완등 문제</div>
+              <div className="stat-value">{stats.weeklyTotal}개</div>
+            </div>
+            <div className="analysis-stat-item">
+              <div className="stat-label">연속 등반</div>
+              <div className="stat-value">{stats.streakCount}일</div>
+            </div>
+          </div>
+        </div>
+
+        {/* 2. 분야별 숙련도 (Bar Chart) */}
+        <div className="history-analysis-card">
+          <div className="history-card-header">
+            <h3 className="history-card-title">분야별 숙련도</h3>
+          </div>
+          <div className="skill-chart-container">
+            {categoryData.length > 0 ? (
+              categoryData.map((cat) => (
+                <div key={cat.themeId} className="skill-bar-row">
+                  <div className="skill-info">
+                    <span className="skill-name">
+                      {cat.categoryName} - {cat.subCategoryName}
+                    </span>
+                    <span className="skill-level">Lv.{cat.level}</span>
+                  </div>
+                  <div className="skill-track">
+                    <div
+                      className="skill-bar"
+                      style={{
+                        width: `${(cat.level / maxLevel) * 100}%`,
+                        backgroundColor:
+                          cat.level >= 10
+                            ? '#4cd964'
+                            : cat.level >= 5
+                              ? '#4facfe'
+                              : '#ff9500',
+                      }}
+                    />
+                  </div>
+                </div>
+              ))
+            ) : (
+              <div className="empty-chart-message">
+                아직 데이터가 충분하지 않습니다.
+                <br />
+                다양한 문제를 풀어보세요!
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* 3. 활동 히트맵 (Grass) */}
+        <div className="history-analysis-card">
+          <div className="history-card-header">
+            <h3 className="history-card-title">최근 등반 활동</h3>
+          </div>
+          <div className="activity-heatmap-container">
+            <div className="heatmap-grid">
+              {stats.heatmapData.map((day, idx) => (
+                <div
+                  key={idx}
+                  className={`heatmap-cell intensity-${day.intensity}`}
+                  title={`${day.date}: ${day.count}문제`}
+                />
+              ))}
+            </div>
+            <div className="heatmap-legend">
+              <span>Less</span>
+              <div className="legend-cells">
+                <div className="heatmap-cell intensity-0" />
+                <div className="heatmap-cell intensity-1" />
+                <div className="heatmap-cell intensity-2" />
+                <div className="heatmap-cell intensity-3" />
+                <div className="heatmap-cell intensity-4" />
+              </div>
+              <span>More</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  };
+
   if (error) {
     return (
       <div className="history-page">
@@ -808,189 +912,47 @@ export function HistoryPage() {
       <Header />
       <main className="history-main">
         <div className="history-content">
-          <header className="history-header">
-            <h1 className="history-header-title">나의 등반 기록</h1>
-          </header>
-
-          {renderProfileSection()}
-
-          {/* Tabs Indicator Component */}
+          {/* Tab Switcher */}
           <div className="history-tab-container">
             <div className="history-segmented-control">
-              {['summary', 'analysis', 'activity'].map((tab) => (
-                <button
-                  key={tab}
-                  className={`segmented-item ${activeTab === tab ? 'active' : ''}`}
-                  onClick={() => setActiveTab(tab as any)}
-                >
-                  {tab === 'summary' ? '요약' : tab === 'analysis' ? '분석' : '활동'}
-                </button>
-              ))}
-              <div className={`segmented-indicator tab-${activeTab}`} />
+              <div
+                className={`segmented-indicator ${activeTab === 'summary'
+                  ? 'tab-summary'
+                  : 'tab-analysis'
+                  }`}
+                style={{
+                  width: '50%',
+                  transform: activeTab === 'summary' ? 'translateX(0)' : 'translateX(100%)',
+                }}
+              />
+              <button
+                className={`segmented-item ${activeTab === 'summary' ? 'active' : ''}`}
+                onClick={() => {
+                  setActiveTab('summary');
+                  vibrateShort();
+                }}
+              >
+                일지
+              </button>
+              <button
+                className={`segmented-item ${activeTab === 'analysis' ? 'active' : ''}`}
+                onClick={() => {
+                  setActiveTab('analysis');
+                  vibrateShort();
+                }}
+              >
+                분석
+              </button>
             </div>
           </div>
 
           <div className="history-tab-content">
-            {activeTab === 'summary' && (
-              <div className="tab-pane fade-in">
-                <div className="history-summary-card mini">
-                  <div className="history-stats-grid">
-                    <div className="history-stat-item">
-                      <span className="stat-label">총 정답</span>
-                      <span className="stat-value">
-                        {loading ? '...' : stats?.totalCorrect.toLocaleString()}
-                      </span>
-                    </div>
-                    <div className="history-stat-item">
-                      <span className="stat-label">정확도</span>
-                      <span className="stat-value">
-                        {loading ? '...' : `${stats?.averageAccuracy}%`}
-                      </span>
-                    </div>
-                    <div className="history-stat-item">
-                      <span className="stat-label">스트릭</span>
-                      <span className="stat-value">
-                        {loading ? '...' : `${stats?.streakCount}일`}
-                      </span>
-                    </div>
-                  </div>
-                  <div className="history-stats-grid secondary">
-                    <div className="history-stat-item">
-                      <span className="stat-label">최고 콤보</span>
-                      <span className="stat-value">
-                        {loading ? '...' : `${stats?.maxCombo || 0}🔥`}
-                      </span>
-                    </div>
-                    <div className="history-stat-item">
-                      <span className="stat-label">주간 정복</span>
-                      <span className="stat-value">
-                        {loading ? '...' : `${stats?.weeklyTotal || 0}Lv`}
-                      </span>
-                    </div>
-                    <div className="history-stat-item">
-                      <span className="stat-label">성장률</span>
-                      <span className="stat-value">
-                        {loading ? '...' : `${stats?.graphPercentage || 0}%`}
-                      </span>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            )}
-
-            {activeTab === 'analysis' && (
-              <div className="tab-pane fade-in">
-                <div className="history-analysis-card">
-                  <div className="history-card-header no-border">
-                    <h2 className="history-card-title">분야별 숙련도</h2>
-                  </div>
-                  <div className="history-proficiency-list">
-                    {loading ? (
-                      <div className="history-loading">로딩 중...</div>
-                    ) : stats && stats.categoryLevels.length > 0 ? (
-                      stats.categoryLevels.slice(0, 10).map((item) => (
-                        <div key={item.themeId + item.level} className="history-proficiency-item">
-                          <div className="proficiency-info">
-                            <span className="proficiency-name">
-                              {item.categoryName} - {item.subCategoryName}
-                            </span>
-                            <span className="proficiency-level">Lv.{item.level}</span>
-                          </div>
-                          <div className="proficiency-bar-container">
-                            <div
-                              className="proficiency-bar-fill"
-                              style={{ width: `${item.progress}%` }}
-                            />
-                          </div>
-                        </div>
-                      ))
-                    ) : (
-                      <div className="history-empty">기록이 부족합니다.</div>
-                    )}
-                  </div>
-                </div>
-              </div>
-            )}
-
-            {activeTab === 'activity' && (
-              <div className="tab-pane fade-in">
-                <div className="history-card no-padding">
-                  <div className="history-card-header padding-16">
-                    <h2 className="history-card-title">최근 등반 이력</h2>
-                    <button
-                      className="history-review-climb-button"
-                      onClick={() => stats?.wrongAnswers && alert('오답 등반을 시작합니다!')}
-                      disabled={!stats || stats.wrongAnswers === 0}
-                    >
-                      오답 등반하기
-                    </button>
-                  </div>
-
-                  {!loading && stats && (
-                    <div className="history-mini-heatmap">
-                      <div className="heatmap-header">
-                        <span className="heatmap-title">최근 28일 활동</span>
-                      </div>
-                      <div className="heatmap-grid">
-                        {stats.heatmapData.map((day, idx) => (
-                          <div
-                            key={idx}
-                            className={`heatmap-cell intensity-${day.intensity}`}
-                            title={`${day.date}: ${day.count}개`}
-                          />
-                        ))}
-                      </div>
-                    </div>
-                  )}
-
-                  <div className="history-recent-list border-top">
-                    {loading ? (
-                      <div className="history-loading">로딩 중...</div>
-                    ) : stats && stats.recentRecords.length > 0 ? (
-                      stats.recentRecords.map((record, index) => {
-                        const [category, subCategory] = record.themeId.split('_');
-                        return (
-                          <div
-                            key={index}
-                            className="history-recent-item-new"
-                            onClick={() =>
-                              navigate(
-                                subCategory
-                                  ? `/level-select?category=${category}&sub=${subCategory}`
-                                  : `/subcategory?category=${category}`
-                              )
-                            }
-                          >
-                            <div className="history-recent-icon-small">
-                              {category === 'math' ? '🔢' : '🇯🇵'}
-                            </div>
-                            <div className="history-recent-content">
-                              <div className="history-recent-title-row">
-                                <span className="history-recent-name">
-                                  {record.categoryName} {record.subCategoryName} Lv.{record.level}
-                                </span>
-                                <span className="history-recent-time-new">{record.timeAgo}</span>
-                              </div>
-                              <div className="history-recent-score-row">
-                                <span className="history-recent-mode">{record.modeName}</span>
-                                <span className="history-recent-best">{record.bestScore}점</span>
-                              </div>
-                            </div>
-                          </div>
-                        );
-                      })
-                    ) : (
-                      <div className="history-empty">최근 활동이 없습니다.</div>
-                    )}
-                  </div>
-                </div>
-              </div>
-            )}
+            {activeTab === 'summary' ? renderProfileSection() : renderAnalysisSection()}
           </div>
         </div>
       </main>
-      <FooterNav />
       {renderRoadmapOverlay()}
+      <FooterNav />
     </div>
   );
 }

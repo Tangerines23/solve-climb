@@ -4,7 +4,7 @@
  */
 
 import { useState, useEffect, useCallback } from 'react';
-import { authApi } from '../utils/api';
+import { supabase } from '../utils/supabaseClient';
 import { storage, StorageKeys } from '../utils/storage';
 import { parseLocalSession } from '../utils/safeJsonParse';
 import type { Session } from '@supabase/supabase-js';
@@ -80,7 +80,7 @@ export function useSession(): UseSessionResult {
 
     // 2. Supabase 세션 확인
     try {
-      const supabaseSession = await authApi.getSession();
+      const { data: { session: supabaseSession } } = await supabase.auth.getSession();
       setSession(supabaseSession);
     } catch {
       setSession(null);
@@ -94,7 +94,7 @@ export function useSession(): UseSessionResult {
     checkSession();
 
     // 인증 상태 변경 리스너 등록
-    const subscription = authApi.onAuthStateChange((_event, newSession) => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, newSession) => {
       // Supabase 세션이 없으면 로컬 세션 확인
       if (!newSession) {
         const localSession = checkLocalSession();
