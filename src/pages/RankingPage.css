@@ -41,12 +41,12 @@
 
 .ranking-tab:hover:not(.active) {
   background: rgba(255, 255, 255, 0.08);
-  color: #fff;
+  color: var(--color-gray-100);
 }
 
 .ranking-tab.active {
-  background: #6366f1;
-  color: #fff;
+  background: var(--color-indigo-500);
+  color: var(--color-gray-100);
   box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);
 }
 
@@ -74,7 +74,7 @@
   left: 4px;
   width: calc(50% - 4px);
   height: calc(100% - 8px);
-  background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
+  background: linear-gradient(135deg, var(--color-indigo-600) 0%, var(--color-tier-peak) 100%);
   border-radius: 26px;
   transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   z-index: 0;
@@ -103,7 +103,7 @@
 }
 
 .switch-option.active {
-  color: #fff;
+  color: var(--color-gray-100);
 }
 
 /* Info Text */
@@ -138,7 +138,7 @@
   width: 32px;
   height: 32px;
   border: 3px solid rgba(255, 255, 255, 0.1);
-  border-top-color: #6366f1;
+  border-top-color: var(--color-indigo-500);
   border-radius: 50%;
   animation: spin 1s linear infinite;
   margin-bottom: 16px;
@@ -196,19 +196,19 @@
 }
 
 .ranking-item.rank-1 {
-  background: linear-gradient(135deg, rgba(255, 215, 0, 0.1) 0%, rgba(255, 255, 255, 0.03) 100%);
-  border-color: rgba(255, 215, 0, 0.25);
-  box-shadow: 0 4px 15px rgba(255, 215, 0, 0.05);
+  background: linear-gradient(135deg, color-mix(in srgb, var(--color-rank-gold), transparent 90%) 0%, color-mix(in srgb, var(--color-gray-100), transparent 97%) 100%);
+  border-color: color-mix(in srgb, var(--color-rank-gold), transparent 75%);
+  box-shadow: 0 4px 15px color-mix(in srgb, var(--color-rank-gold), transparent 95%);
 }
 
 .ranking-item.rank-2 {
-  background: linear-gradient(135deg, rgba(192, 192, 192, 0.1) 0%, rgba(255, 255, 255, 0.03) 100%);
-  border-color: rgba(192, 192, 192, 0.25);
+  background: linear-gradient(135deg, color-mix(in srgb, var(--color-rank-silver), transparent 90%) 0%, color-mix(in srgb, var(--color-gray-100), transparent 97%) 100%);
+  border-color: color-mix(in srgb, var(--color-rank-silver), transparent 75%);
 }
 
 .ranking-item.rank-3 {
-  background: linear-gradient(135deg, rgba(205, 127, 50, 0.1) 0%, rgba(255, 255, 255, 0.03) 100%);
-  border-color: rgba(205, 127, 50, 0.25);
+  background: linear-gradient(135deg, color-mix(in srgb, var(--color-rank-bronze), transparent 90%) 0%, color-mix(in srgb, var(--color-gray-100), transparent 97%) 100%);
+  border-color: color-mix(in srgb, var(--color-rank-bronze), transparent 75%);
 }
 
 .ranking-item.my-item {
@@ -257,11 +257,11 @@
   font-family: 'Outfit', sans-serif;
   font-weight: 800;
   font-size: 1.1rem;
-  color: #a5b4fc;
+  color: var(--color-indigo-300);
 }
 
 .top-rank .ranking-score {
-  color: #fff;
+  color: var(--color-gray-100);
   text-shadow: 0 0 10px rgba(255, 255, 255, 0.3);
 }
 

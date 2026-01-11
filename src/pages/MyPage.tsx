@@ -6,17 +6,18 @@ import { ProfileForm } from '../components/ProfileForm';
 import { DataResetConfirmModal } from '../components/DataResetConfirmModal';
 import { Toast } from '../components/Toast';
 import { AlertModal } from '../components/AlertModal';
-import { TierBadge } from '../components/TierBadge';
-import { TierProgressBar } from '../components/TierProgressBar';
+
 import { CyclePromotionModal } from '../components/CyclePromotionModal';
-import { BadgeCollection } from '../components/BadgeSlot';
+import { MyPageProfile } from '../components/my/MyPageProfile';
+import { MyPageStats } from '../components/my/MyPageStats';
+import { MyPageQuickAccess } from '../components/my/MyPageQuickAccess';
+import { MyPageSettings } from '../components/my/MyPageSettings';
 import { useProfileStore } from '../stores/useProfileStore';
 import { useSettingsStore } from '../stores/useSettingsStore';
 import { useMyPageStats } from '../hooks/useMyPageStats';
 import { useFavoriteStore } from '../stores/useFavoriteStore';
 import { getTodayChallenge, type TodayChallenge } from '../utils/challenge';
 import { useQuizStore } from '../stores/useQuizStore';
-import type { Category, Topic } from '../types/quiz';
 import { resetAllData } from '../utils/dataReset';
 import { vibrateShort } from '../utils/haptic';
 import { supabase } from '../utils/supabaseClient';
@@ -33,15 +34,11 @@ import './MyPage.css';
 const formatBestSubject = (themeId: string | null): string => {
   if (!themeId) return '-';
 
-  // theme_id 형식: 'math_add', 'math_sub' 등
-  // theme_mapping의 name을 이미 반환하도록 했으므로, theme_id인 경우만 변환
   if (themeId.includes('_')) {
     const [category, subject] = themeId.split('_');
-
     const categoryName =
       APP_CONFIG.CATEGORIES.find((c) => c.id === category)?.name || category;
 
-    // subject 매핑
     const subjectMap: Record<string, string> = {
       add: '덧셈',
       sub: '뺄셈',
@@ -54,8 +51,6 @@ const formatBestSubject = (themeId: string | null): string => {
     const subjectName = subjectMap[subject] || subject;
     return `${categoryName} ${subjectName}`;
   }
-
-  // 이미 읽기 쉬운 이름인 경우 그대로 반환
   return themeId;
 };
 
@@ -73,7 +68,7 @@ export function MyPage() {
   const { stats, session, loading: statsLoading, error: statsError, refetch } = useMyPageStats();
   const favorites = useFavoriteStore((state) => state.favorites);
   const setCategoryTopic = useQuizStore((state) => state.setCategoryTopic);
-  const setTimeLimit = useQuizStore((state) => state.setTimeLimit);
+
 
   // 오늘의 챌린지 상태
   const [todayChallenge, setTodayChallenge] = useState<TodayChallenge | null>(null);
@@ -94,16 +89,6 @@ export function MyPage() {
   const [retryCount, setRetryCount] = useState(0);
   const [showPromotionModal, setShowPromotionModal] = useState(false);
   const [tierStars, setTierStars] = useState(0);
-  const [currentUserId, setCurrentUserId] = useState<string | null>(null);
-
-  // 사용자 ID 가져오기
-  useEffect(() => {
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      if (session?.user) {
-        setCurrentUserId(session.user.id);
-      }
-    });
-  }, []);
 
   // 오늘의 챌린지 가져오기
   useEffect(() => {
@@ -649,343 +634,44 @@ export function MyPage() {
       <main className="my-page-main">
         <div className="my-page-content">
           {/* Header: Profile & Summary */}
-          <div className="my-page-header">
-            <div className="my-page-profile-section">
-              <div className="my-page-profile-icon">🧗</div>
-              <div className="my-page-profile-info">
-                <h2 className="my-page-nickname">{nickname}</h2>
-                <button
-                  className="my-page-profile-edit-button"
-                  onClick={() => setShowProfileForm(true)}
-                >
-                  프로필 수정
-                </button>
-              </div>
-            </div>
-            <div className="my-page-mastery-section">
-              <div className="my-page-mastery-label">누적 고도</div>
-              <div className="my-page-mastery-value">
-                {statsLoading ? '...' : (stats?.totalMasteryScore || 0).toLocaleString()}m
-              </div>
-            </div>
-            {/* 티어 뱃지 표시 */}
-            {stats && stats.totalMasteryScore > 0 && (
-              <div className="my-page-tier-section">
-                <TierBadge
-                  totalScore={stats.totalMasteryScore}
-                  size="large"
-                  showLabel={true}
-                  showStars={true}
-                  currentTierLevel={
-                    (stats.currentTierLevel ?? undefined) as 0 | 1 | 2 | 3 | 4 | 5 | 6 | undefined
-                  }
-                />
-                <TierProgressBar totalScore={stats.totalMasteryScore} size="medium" />
-              </div>
-            )}
-          </div>
+          <MyPageProfile
+            nickname={nickname}
+            totalMasteryScore={stats?.totalMasteryScore || 0}
+            loading={statsLoading}
+            onEditProfile={() => setShowProfileForm(true)}
+          />
 
           {/* Stats Grid */}
-          <div className="my-page-stats-grid">
-            <div
-              className="my-page-stat-card my-page-stat-card-clickable"
-              onClick={() => navigate(APP_CONFIG.ROUTES.HISTORY)}
-            >
-              <div className="my-page-stat-label">완등 문제</div>
-              <div className="my-page-stat-value">
-                {statsLoading ? '...' : (stats?.totalSolved || 0).toLocaleString()}개
-              </div>
-            </div>
-            <div
-              className="my-page-stat-card my-page-stat-card-clickable"
-              onClick={() => navigate(APP_CONFIG.ROUTES.HISTORY)}
-            >
-              <div className="my-page-stat-label">최고 레벨</div>
-              <div className="my-page-stat-value">
-                {statsLoading ? '...' : stats?.maxLevel ? `Lv. ${stats.maxLevel}` : 'Lv. 0'}
-              </div>
-            </div>
-            <div
-              className="my-page-stat-card my-page-stat-card-clickable"
-              onClick={() => navigate(APP_CONFIG.ROUTES.HISTORY)}
-            >
-              <div className="my-page-stat-label">주력 분야</div>
-              <div className="my-page-stat-value">
-                {statsLoading ? '...' : formatBestSubject(stats?.bestSubject || null)}
-              </div>
-            </div>
-            <div
-              className={`my-page-stat-card my-page-stat-card-clickable ${isOpeningLeaderboard ? 'my-page-stat-card-loading' : ''}`}
-              onClick={isOpeningLeaderboard ? undefined : handleOpenLeaderboard}
-            >
-              <div className="my-page-stat-label">내 랭킹</div>
-              <div className="my-page-stat-value">
-                {isOpeningLeaderboard
-                  ? retryCount > 0
-                    ? `재시도 중... (${retryCount}/${2})`
-                    : '열기 중...'
-                  : '명예의 전당 🏆'}
-              </div>
-            </div>
-          </div>
+          <MyPageStats
+            loading={statsLoading}
+            totalSolved={stats?.totalSolved || 0}
+            maxLevel={stats?.maxLevel}
+            bestSubject={formatBestSubject(stats?.bestSubject || null)}
+            isOpeningLeaderboard={isOpeningLeaderboard}
+            retryCount={retryCount}
+            onNavigateHistory={() => navigate(APP_CONFIG.ROUTES.HISTORY)}
+            onOpenLeaderboard={handleOpenLeaderboard}
+          />
 
           {/* Quick Access Section */}
-          <div className="my-page-quick-access">
-            {/* 오늘의 챌린지 */}
-            {todayChallenge && (
-              <div className="my-page-quick-access-card">
-                <div className="my-page-quick-access-header">
-                  <span className="my-page-quick-access-icon">🔥</span>
-                  <h3 className="my-page-quick-access-title">오늘의 챌린지</h3>
-                </div>
-                <p className="my-page-quick-access-description">{todayChallenge.title}</p>
-                <button
-                  className="my-page-quick-access-button"
-                  onClick={() => {
-                    setCategoryTopic(
-                      todayChallenge.category as Category,
-                      todayChallenge.topicId as Topic
-                    );
-                    setTimeLimit(60);
-                    navigate(
-                      `${APP_CONFIG.ROUTES.GAME}?challenge=today&category=${todayChallenge.categoryId}&sub=${todayChallenge.topicId}&level=${todayChallenge.level}&mode=${todayChallenge.mode}`
-                    );
-                  }}
-                >
-                  도전하기
-                </button>
-              </div>
-            )}
-
-            {/* 즐겨찾는 카테고리 */}
-            {favorites.length > 0 && (
-              <div className="my-page-quick-access-card">
-                <div className="my-page-quick-access-header">
-                  <span className="my-page-quick-access-icon">⭐</span>
-                  <h3 className="my-page-quick-access-title">즐겨찾기</h3>
-                </div>
-                <div className="my-page-favorites-list">
-                  {favorites.slice(0, 3).map((favorite) => {
-                    const categoryName =
-                      APP_CONFIG.CATEGORIES.find((c) => c.id === favorite.categoryId)?.name ||
-                      favorite.categoryId;
-                    let subCategoryName = '';
-                    if (favorite.subCategoryId) {
-                      const subTopics =
-                        APP_CONFIG.SUB_TOPICS[
-                        favorite.categoryId as keyof typeof APP_CONFIG.SUB_TOPICS
-                        ] || [];
-                      const subTopic = subTopics.find((st) => st.id === favorite.subCategoryId);
-                      subCategoryName = subTopic?.name || favorite.subCategoryId;
-                    }
-
-                    return (
-                      <button
-                        key={favorite.id}
-                        className="my-page-favorite-item"
-                        onClick={() => {
-                          if (favorite.subCategoryId) {
-                            navigate(
-                              `/level-select?category=${favorite.categoryId}&sub=${favorite.subCategoryId}`
-                            );
-                          } else {
-                            navigate(`/subcategory?category=${favorite.categoryId}`);
-                          }
-                        }}
-                      >
-                        <span className="my-page-favorite-name">
-                          {categoryName}
-                          {subCategoryName && ` - ${subCategoryName}`}
-                        </span>
-                        <svg
-                          className="my-page-favorite-arrow"
-                          width="16"
-                          height="16"
-                          viewBox="0 0 20 20"
-                          fill="none"
-                          xmlns="http://www.w3.org/2000/svg"
-                        >
-                          <path
-                            d="M7.5 15L12.5 10L7.5 5"
-                            stroke="currentColor"
-                            strokeWidth="2"
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                          />
-                        </svg>
-                      </button>
-                    );
-                  })}
-                </div>
-                {favorites.length > 3 && (
-                  <button
-                    className="my-page-favorites-more"
-                    onClick={() => navigate(APP_CONFIG.ROUTES.HOME)}
-                  >
-                    즐겨찾기 더보기 ({favorites.length - 3}개)
-                  </button>
-                )}
-              </div>
-            )}
-          </div>
+          <MyPageQuickAccess
+            todayChallenge={todayChallenge}
+            favorites={favorites}
+            setCategoryTopic={setCategoryTopic}
+          />
 
           {/* Settings List */}
-          <div className="my-page-settings">
-            {/* 환경 설정 섹션 */}
-            <div className="my-page-settings-section">
-              <h2 className="my-page-settings-section-title">환경 설정</h2>
-              <div className="my-page-settings-list">
-                <button
-                  className="my-page-settings-item my-page-settings-item-button"
-                  onClick={() => setShowProfileForm(true)}
-                >
-                  <div className="my-page-settings-item-content">
-                    <span className="my-page-settings-item-label">프로필 수정</span>
-                  </div>
-                  <svg
-                    className="my-page-settings-item-arrow"
-                    width="20"
-                    height="20"
-                    viewBox="0 0 20 20"
-                    fill="none"
-                    xmlns="http://www.w3.org/2000/svg"
-                  >
-                    <path
-                      d="M7.5 15L12.5 10L7.5 5"
-                      stroke="currentColor"
-                      strokeWidth="2"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                    />
-                  </svg>
-                </button>
-                <div className="my-page-settings-item">
-                  <div className="my-page-settings-item-content">
-                    <span className="my-page-settings-item-label">진동</span>
-                  </div>
-                  <label className="my-page-settings-toggle">
-                    <input type="checkbox" checked={hapticEnabled} onChange={handleToggleHaptic} />
-                    <span className="my-page-settings-toggle-slider"></span>
-                  </label>
-                </div>
-                <button
-                  className="my-page-settings-item my-page-settings-item-button"
-                  onClick={() =>
-                    navigate('/quiz?category=math&sub=arithmetic&level=1&preview=true')
-                  }
-                >
-                  <div className="my-page-settings-item-content">
-                    <span className="my-page-settings-item-label">키보드 미리보기</span>
-                  </div>
-                  <svg
-                    className="my-page-settings-item-arrow"
-                    width="20"
-                    height="20"
-                    viewBox="0 0 20 20"
-                    fill="none"
-                    xmlns="http://www.w3.org/2000/svg"
-                  >
-                    <path
-                      d="M7.5 15L12.5 10L7.5 5"
-                      stroke="currentColor"
-                      strokeWidth="2"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                    />
-                  </svg>
-                </button>
-              </div>
-            </div>
+          <MyPageSettings
+            hapticEnabled={hapticEnabled}
+            onToggleHaptic={handleToggleHaptic}
+            onShowProfileForm={() => setShowProfileForm(true)}
+            onDataReset={handleDataReset}
+            isResetting={isResetting}
+            onSendFeedback={handleSendFeedback}
+            onLogout={handleLogout}
+          />
 
-            {/* 데이터 관리 섹션 */}
-            <div className="my-page-settings-section">
-              <h2 className="my-page-settings-section-title">데이터</h2>
-              <div className="my-page-settings-list">
-                <button
-                  className="my-page-settings-item my-page-settings-item-button"
-                  onClick={handleDataReset}
-                  disabled={isResetting}
-                >
-                  <div className="my-page-settings-item-content">
-                    <span className="my-page-settings-item-label">초기화</span>
-                  </div>
-                  <svg
-                    className="my-page-settings-item-arrow"
-                    width="20"
-                    height="20"
-                    viewBox="0 0 20 20"
-                    fill="none"
-                    xmlns="http://www.w3.org/2000/svg"
-                  >
-                    <path
-                      d="M7.5 15L12.5 10L7.5 5"
-                      stroke="currentColor"
-                      strokeWidth="2"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                    />
-                  </svg>
-                </button>
-              </div>
-            </div>
 
-            {/* 앱 정보 섹션 */}
-            <div className="my-page-settings-section">
-              <h2 className="my-page-settings-section-title">앱 정보</h2>
-              <div className="my-page-settings-list">
-                <div className="my-page-settings-item">
-                  <div className="my-page-settings-item-content">
-                    <span className="my-page-settings-item-label">버전</span>
-                  </div>
-                  <span className="my-page-settings-item-value">{APP_CONFIG.APP_VERSION}</span>
-                </div>
-                {/* Auth test button removed */}
-                <button
-                  className="my-page-settings-item my-page-settings-item-button"
-                  onClick={handleSendFeedback}
-                >
-                  <div className="my-page-settings-item-content">
-                    <span className="my-page-settings-item-label">의견 보내기</span>
-                  </div>
-                  <svg
-                    className="my-page-settings-item-arrow"
-                    width="20"
-                    height="20"
-                    viewBox="0 0 20 20"
-                    fill="none"
-                    xmlns="http://www.w3.org/2000/svg"
-                  >
-                    <path
-                      d="M7.5 15L12.5 10L7.5 5"
-                      stroke="currentColor"
-                      strokeWidth="2"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                    />
-                  </svg>
-                </button>
-              </div>
-            </div>
-
-            {/* 로그아웃 섹션 */}
-            <div className="my-page-settings-section">
-              <div className="my-page-settings-list">
-                <button
-                  className="my-page-settings-item my-page-settings-item-button my-page-settings-item-logout"
-                  onClick={handleLogout}
-                >
-                  <div className="my-page-settings-item-content">
-                    <span className="my-page-settings-item-label my-page-settings-item-logout-label">
-                      로그아웃
-                    </span>
-                  </div>
-                </button>
-              </div>
-            </div>
-          </div>
-
-          {/* 뱃지 컬렉션 */}
-          {currentUserId && <BadgeCollection userId={currentUserId} />}
 
           {/* 에러 메시지 (있는 경우) */}
           {statsError && (

@@ -23,15 +23,20 @@ interface BadgeSlotProps {
 }
 
 export const BadgeSlot: React.FC<BadgeSlotProps> = ({
-  badgeId: _badgeId,
   isEarned,
   badgeDef,
   earnedAt,
 }) => {
   return (
-    <div className={`badge-slot ${isEarned ? 'badge-earned' : 'badge-locked'}`}>
-      <div className="badge-icon">{isEarned && badgeDef?.emoji ? badgeDef.emoji : '🔒'}</div>
-      <div className="badge-name">{isEarned && badgeDef ? badgeDef.name : '???'}</div>
+    <div
+      className={`badge-slot ${isEarned ? 'badge-earned' : 'badge-locked'}`}
+      onClick={() => {
+        // Simple alert for now, or assume parent handles click if passed
+      }}
+    >
+      <div className="badge-icon">{badgeDef?.emoji || '🔒'}</div>
+      <div className="badge-name">{badgeDef?.name || 'Loading...'}</div>
+      <div className="badge-desc">{badgeDef?.description || '목표를 달성하세요'}</div>
       {isEarned && earnedAt && (
         <div className="badge-date">
           {new Date(earnedAt).toLocaleDateString('ko-KR', { year: 'numeric', month: 'short' })}
@@ -43,9 +48,14 @@ export const BadgeSlot: React.FC<BadgeSlotProps> = ({
 
 interface BadgeCollectionProps {
   userId: string;
+  mode?: 'preview' | 'full';
+  onBadgeClick?: (badgeId: string) => void;
 }
 
-export const BadgeCollection: React.FC<BadgeCollectionProps> = ({ userId }) => {
+export const BadgeCollection: React.FC<BadgeCollectionProps> = ({
+  userId,
+  mode = 'full',
+}) => {
   const [badges, setBadges] = useState<UserBadge[]>([]);
   const [badgeDefinitions, setBadgeDefinitions] = useState<Record<string, BadgeDefinition>>({});
   const [loading, setLoading] = useState(true);
@@ -62,8 +72,6 @@ export const BadgeCollection: React.FC<BadgeCollectionProps> = ({ userId }) => {
 
         if (badgesError) throw badgesError;
 
-        setBadges(userBadges || []);
-
         // 뱃지 정의 조회
         const { data: definitions, error: defError } = await supabase
           .from('badge_definitions')
@@ -77,17 +85,33 @@ export const BadgeCollection: React.FC<BadgeCollectionProps> = ({ userId }) => {
         });
         setBadgeDefinitions(defMap);
 
-        // 모든 뱃지 정의 가져오기 (획득하지 않은 뱃지도 표시)
+        // 모든 뱃지 정의 가져오기
         const allBadgeIds = definitions?.map((d) => d.id) || [];
         const earnedBadgeIds = new Set(userBadges?.map((b) => b.badge_id) || []);
-        const lockedBadges = allBadgeIds.filter((id) => !earnedBadgeIds.has(id));
 
-        // 락된 뱃지도 표시하기 위해 추가
-        const allBadges: UserBadge[] = [
-          ...(userBadges || []),
-          ...lockedBadges.map((id) => ({ badge_id: id, earned_at: '' })),
-        ];
-        setBadges(allBadges);
+        // Preview 모드에서는 획득한 뱃지만 보여주거나, 없으면 빈 상태
+        // Full 모드에서는 락된 뱃지도 보여줌
+        let displayBadges: UserBadge[] = [];
+
+        if (mode === 'preview') {
+          // 획득한 것 위주 + 락된 것도 몇 개 보여주기?
+          // 일단 획득한 것만 먼저, 그리고 나머지는 락된 걸로 채워서 5개 정도?
+          const earned = (userBadges || []);
+          const locked = allBadgeIds
+            .filter(id => !earnedBadgeIds.has(id))
+            .slice(0, 5 - earned.length)
+            .map(id => ({ badge_id: id, earned_at: '' }));
+
+          displayBadges = [...earned, ...locked].slice(0, 5);
+        } else {
+          const lockedBadges = allBadgeIds.filter((id) => !earnedBadgeIds.has(id));
+          displayBadges = [
+            ...(userBadges || []),
+            ...lockedBadges.map((id) => ({ badge_id: id, earned_at: '' })),
+          ];
+        }
+
+        setBadges(displayBadges);
       } catch (error) {
         console.error('Failed to load badges:', error);
       } finally {
@@ -98,15 +122,40 @@ export const BadgeCollection: React.FC<BadgeCollectionProps> = ({ userId }) => {
     if (userId) {
       loadBadges();
     }
-  }, [userId]);
+  }, [userId, mode]);
 
   if (loading) {
-    return <div className="badge-collection-loading">뱃지 불러오는 중...</div>;
+    return <div className="badge-collection-loading">뱃지 로딩...</div>;
   }
 
+  // Preview Mode UI
+  if (mode === 'preview') {
+    if (badges.length === 0) {
+      return <div className="badge-preview-empty">획득한 뱃지가 없습니다.</div>;
+    }
+    return (
+      <div className="badge-collection-preview">
+        {badges.map((badge) => {
+          const isEarned = badge.earned_at !== '';
+          const badgeDef = badgeDefinitions[badge.badge_id];
+          return (
+            <div key={badge.badge_id} className="badge-slot-mini">
+              <div className={`badge-icon-mini ${isEarned ? 'earned' : 'locked'}`}>
+                {isEarned && badgeDef?.emoji ? badgeDef.emoji : '🔒'}
+              </div>
+            </div>
+          )
+        })}
+      </div>
+    )
+  }
+
+  // Full Mode UI (Existing)
   return (
     <div className="badge-collection">
-      <h3 className="badge-collection-title">획득한 뱃지</h3>
+      {/* Title removed here, let parent handle it if needed, or keep it? Original had title. Keeping it for Full mode compatibility if used elsewhere. */}
+      {/* <h3 className="badge-collection-title">획득한 뱃지</h3> */}
+
       {badges.length === 0 ? (
         <div className="badge-collection-empty">
           <p>아직 획득한 뱃지가 없습니다.</p>

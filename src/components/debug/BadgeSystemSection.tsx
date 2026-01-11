@@ -154,6 +154,61 @@ export function BadgeSystemSection() {
     }
   };
 
+  const handleSeedBadges = async () => {
+    if (isUpdating) return;
+    if (!confirm('기본 뱃지 정의를 데이터베이스에 추가하시겠습니까? (기존 정의는 유지되거나 업데이트됩니다)')) return;
+
+    try {
+      setIsUpdating(true);
+      setMessage(null);
+
+      const { BADGE_DEFINITIONS } = await import('../../constants/badges');
+
+      // theme_id가 required이므로, 임의의 유효한 theme_id 하나를 가져옴
+      const { data: themes } = await supabase
+        .from('theme_mapping')
+        .select('theme_id') // 여기선 id가 아니라 mapping의 Primary Key 혹은 theme_id 자체가 필요
+        .limit(1);
+
+      let defaultThemeId = themes?.[0]?.theme_id;
+
+      // 만약 theme_id가 전혀 없다면? (초기 상태)
+      if (!defaultThemeId) {
+        // 이 경우엔 어쩔 수 없이 Error를 띄우거나, 더미 ID를 써야 함.
+        // 하지만 theme_mapping이 비어있을 리는 거의 없음 (앱 초기화 시 넣으므로).
+        // 혹시 모르니 체크
+        throw new Error("유효한 Theme ID를 찾을 수 없습니다. (theme_mapping 확인 필요)");
+      }
+
+      // upsert: id가 같으면 업데이트, 없으면 추가
+      const { error } = await supabase
+        .from('badge_definitions')
+        .upsert(
+          BADGE_DEFINITIONS.map(def => ({
+            id: def.id,
+            name: def.name,
+            description: def.description,
+            emoji: def.emoji,
+            theme_id: defaultThemeId, // 모든 뱃지에 공통 할당 (Global 의미)
+          })),
+          { onConflict: 'id' }
+        );
+
+      if (error) throw error;
+
+      setMessage({ type: 'success', text: '기본 뱃지 설치 완료!' });
+      loadBadges(); // Reload list
+    } catch (err) {
+      console.error(err);
+      setMessage({
+        type: 'error',
+        text: `뱃지 설치 실패: ${err instanceof Error ? err.message : '알 수 없는 오류'}`,
+      });
+    } finally {
+      setIsUpdating(false);
+    }
+  };
+
   // 획득한 뱃지 목록 (earnedBadges)
   const earnedBadges = badgeDefinitions.filter((badge) => userBadges.has(badge.id));
 
@@ -221,6 +276,14 @@ export function BadgeSystemSection() {
           disabled={isUpdating}
         >
           모든 뱃지 초기화
+        </button>
+        <button
+          className="debug-badge-seed-button"
+          onClick={handleSeedBadges}
+          disabled={isUpdating}
+          style={{ marginLeft: '8px', backgroundColor: '#4cd964' }}
+        >
+          기본 뱃지 설치 (Seeding)
         </button>
       </div>
 
@@ -311,24 +374,24 @@ export function BadgeSystemSection() {
             syncResult.tier.issues.length > 0 ||
             syncResult.badges.issues.length > 0 ||
             syncResult.inventory.issues.length > 0) && (
-            <div className="debug-sync-issues">
-              <h5 className="debug-sync-issues-title">발견된 문제:</h5>
-              <ul className="debug-sync-issues-list">
-                {syncResult.profile.issues.map((issue, idx) => (
-                  <li key={`profile-${idx}`}>{issue}</li>
-                ))}
-                {syncResult.tier.issues.map((issue, idx) => (
-                  <li key={`tier-${idx}`}>{issue}</li>
-                ))}
-                {syncResult.badges.issues.map((issue, idx) => (
-                  <li key={`badges-${idx}`}>{issue}</li>
-                ))}
-                {syncResult.inventory.issues.map((issue, idx) => (
-                  <li key={`inventory-${idx}`}>{issue}</li>
-                ))}
-              </ul>
-            </div>
-          )}
+              <div className="debug-sync-issues">
+                <h5 className="debug-sync-issues-title">발견된 문제:</h5>
+                <ul className="debug-sync-issues-list">
+                  {syncResult.profile.issues.map((issue, idx) => (
+                    <li key={`profile-${idx}`}>{issue}</li>
+                  ))}
+                  {syncResult.tier.issues.map((issue, idx) => (
+                    <li key={`tier-${idx}`}>{issue}</li>
+                  ))}
+                  {syncResult.badges.issues.map((issue, idx) => (
+                    <li key={`badges-${idx}`}>{issue}</li>
+                  ))}
+                  {syncResult.inventory.issues.map((issue, idx) => (
+                    <li key={`inventory-${idx}`}>{issue}</li>
+                  ))}
+                </ul>
+              </div>
+            )}
         </div>
       )}
 

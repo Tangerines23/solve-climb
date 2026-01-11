@@ -74,11 +74,63 @@
   font-weight: 500;
   color: var(--color-text-primary);
   text-align: center;
+  margin-bottom: 2px;
+}
+
+.badge-desc {
+  font-size: 0.7rem;
+  color: var(--color-text-tertiary);
+  text-align: center;
+  line-height: 1.3;
   margin-bottom: var(--spacing-xs);
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
 }
 
 .badge-date {
   font-size: 0.75rem;
   color: var(--color-text-secondary);
   text-align: center;
+}
+
+/* Badge Preview Mode */
+.badge-collection-preview {
+  display: flex;
+  gap: 12px;
+  overflow-x: auto;
+  padding-bottom: 4px;
+  scrollbar-width: none;
+}
+
+.badge-collection-preview::-webkit-scrollbar {
+  display: none;
+}
+
+.badge-slot-mini {
+  flex: 0 0 auto;
+}
+
+.badge-icon-mini {
+  width: 50px;
+  height: 50px;
+  background-color: rgba(255, 255, 255, 0.05);
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 24px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.badge-icon-mini.locked {
+  opacity: 0.5;
+  filter: grayscale(1);
+}
+
+.badge-icon-mini.earned {
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.1) 0%, rgba(255, 255, 255, 0.05) 100%);
+  border-color: rgba(255, 215, 0, 0.3);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
 }

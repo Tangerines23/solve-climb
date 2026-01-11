@@ -233,6 +233,32 @@
   --shadow-glass-hover: 0 12px 40px rgba(0, 0, 0, 0.3);
   --gradient-text-premium: linear-gradient(135deg, #fff 30%, #4facfe 100%);
   --gradient-sub-text: linear-gradient(135deg, rgba(255, 255, 255, 0.8) 0%, rgba(255, 255, 255, 0.4) 100%);
+
+  /* New Color Palettes for Consistency */
+  /* Slate (Gray-Blueish) */
+  --color-slate-400: #94a3b8;
+  --color-slate-500: #64748b;
+  --color-slate-600: #475569;
+  --color-slate-700: #334155;
+  --color-slate-800: #1e293b;
+  --color-slate-900: #0f172a;
+
+  /* Sky (Light Blue) */
+  --color-sky-400: #38bdf8;
+  --color-sky-500: #0ea5e9;
+
+  /* Indigo (Purple-Blue) */
+  --color-indigo-300: #a5b4fc;
+  --color-indigo-500: #6366f1;
+  --color-indigo-600: #4f46e5;
+
+  /* Cyan (Bright) */
+  --color-cyan-bright: #00f2fe;
+
+  /* Ranking Metals */
+  --color-rank-gold: #ffd700;
+  --color-rank-silver: #c0c0c0;
+  --color-rank-bronze: #cd7f32;
 }
 
 /* --- Premium Utility Classes --- */

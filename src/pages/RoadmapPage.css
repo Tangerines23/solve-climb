@@ -21,42 +21,40 @@
 .history-content {
   max-width: var(--modal-width-portrait);
   margin: 0 auto;
-  padding: 16px 20px;
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-}
-
-.history-header-title {
-  font-size: 24px;
-  font-weight: 700;
-  color: var(--color-text-primary);
-  margin-bottom: 8px;
-}
-
-/* --- 공통 카드 스타일 --- */
-.history-summary-card,
-.history-analysis-card,
-.history-milestones-card,
-.history-card {
-  background-color: var(--color-bg-secondary);
-  border-radius: 20px;
-  /* 약간 조정 */
-  padding: 24px;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.12);
-  display: flex;
-  flex-direction: column;
-  border: 1px solid rgba(255, 255, 255, 0.05);
-  /* 경계 강화 */
-  animation: cardFadeIn 0.6s ease-out backwards;
-}
-
-.history-card.no-padding {
+  /* Removed padding to allow hero to be full width within container */
   padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  /* Gap handled by sections */
 }
 
-.padding-16 {
-  padding: 20px 24px;
+/* --- Phase 12: Hero Section UI --- */
+.history-hero-section {
+  padding: 24px 20px 32px;
+  background-color: var(--color-bg-secondary);
+  border-bottom-left-radius: 32px;
+  border-bottom-right-radius: 32px;
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.2);
+  margin-bottom: 24px;
+  position: relative;
+  z-index: 10;
+}
+
+.history-tab-container {
+  padding: 0 20px;
+  margin-bottom: 20px;
+}
+
+.history-journey-container {
+  padding: 0 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.history-analysis-container {
+  padding: 0 20px;
 }
 
 .history-card-header {
@@ -189,12 +187,12 @@
 .roadmap-title {
   font-size: 20px;
   font-weight: 800;
-  color: #fff;
+  color: var(--color-text-primary);
 }
 
 .roadmap-subtitle {
   font-size: 13px;
-  color: #4facfe;
+  color: var(--color-primary-light);
   font-weight: 600;
 }
 
@@ -204,7 +202,7 @@
   border-radius: 50%;
   border: none;
   background-color: rgba(255, 255, 255, 0.1);
-  color: #fff;
+  color: var(--color-text-primary);
   font-size: 16px;
   display: flex;
   align-items: center;
@@ -238,8 +236,8 @@
   left: 18px;
   bottom: 0px;
   width: 2px;
-  background: linear-gradient(to top, var(--color-primary-light), #00f2fe);
-  box-shadow: 0 0 10px rgba(79, 172, 254, 0.5);
+  background: linear-gradient(to top, var(--color-primary-light), var(--color-cyan-bright));
+  box-shadow: 0 0 10px color-mix(in srgb, var(--color-primary-light), transparent 50%);
   transition: height 0.8s cubic-bezier(0.4, 0, 0.2, 1);
   z-index: 1;
   will-change: height;
@@ -252,7 +250,7 @@
   top: 0;
   width: 2px;
   background-image: linear-gradient(to bottom,
-      rgba(79, 172, 254, 0.4) 40%,
+      color-mix(in srgb, var(--color-primary-light), transparent 60%) 40%,
       rgba(255, 255, 255, 0) 0%);
   background-position: left;
   background-size: 2px 8px;
@@ -278,18 +276,18 @@
 .landmark-dot.sub-dot {
   width: 10px;
   height: 10px;
-  background-color: #222;
-  border: 2px solid #4facfe;
+  background-color: var(--color-bg-secondary);
+  border: 2px solid var(--color-primary-light);
   border-radius: 50%;
-  box-shadow: 0 0 8px rgba(79, 172, 254, 0.4);
+  box-shadow: 0 0 8px color-mix(in srgb, var(--color-primary-light), transparent 60%);
   z-index: 2;
   position: relative;
   /* marker 컨테이너 내에서 중앙 정렬됨 */
 }
 
 .landmark-item.type-landmark.is-passed .landmark-dot.sub-dot {
-  background-color: #4facfe;
-  box-shadow: 0 0 12px rgba(79, 172, 254, 0.6);
+  background-color: var(--color-primary-light);
+  box-shadow: 0 0 12px color-mix(in srgb, var(--color-primary-light), transparent 40%);
 }
 
 .landmark-label.sub {
@@ -299,7 +297,55 @@
 
 .landmark-altitude.sub {
   font-size: 11px;
-  color: rgba(79, 172, 254, 0.6);
+  color: color-mix(in srgb, var(--color-primary-light), transparent 40%);
+}
+
+/* --- Badge Collection (New) --- */
+.history-badge-collection {
+  background-color: var(--color-bg-secondary);
+  border-radius: 16px;
+  padding: 16px 20px;
+  border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.collection-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+}
+
+.collection-title {
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--color-text-primary);
+}
+
+.collection-more {
+  font-size: 12px;
+  color: var(--color-text-tertiary);
+  cursor: pointer;
+}
+
+.collection-content {
+  display: flex;
+  gap: 16px;
+  overflow-x: auto;
+  padding-bottom: 4px;
+  /* Scrollbar space */
+}
+
+.badge-placeholder {
+  width: 60px;
+  height: 80px;
+  background-color: rgba(0, 0, 0, 0.2);
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 20px;
+  opacity: 0.5;
+  border: 1px dashed rgba(255, 255, 255, 0.1);
 }
 
 .tier-group {
@@ -325,7 +371,7 @@
 
 .sub-landmark-hint {
   font-size: 11px;
-  color: #4facfe;
+  color: var(--color-primary-light);
   font-weight: 600;
   margin-top: 4px;
   opacity: 0.7;
@@ -393,16 +439,16 @@
   width: 27px;
   /* 64px(중심) - 19px(마커 반폭) - 18px(수직선) = 27px */
   height: 2px;
-  background: linear-gradient(to left, rgba(79, 172, 254, 0.6), transparent);
+  background: linear-gradient(to left, color-mix(in srgb, var(--color-primary-light), transparent 40%), transparent);
   z-index: -1;
 }
 
 .landmark-dot {
   width: 38px;
   height: 38px;
-  background-color: #222;
+  background-color: var(--color-bg-secondary);
   border-radius: 50%;
-  border: 2px solid #4facfe;
+  border: 2px solid var(--color-primary-light);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -413,11 +459,11 @@
 }
 
 .landmark-item.is-current .landmark-dot {
-  background: #4cd964 !important;
+  background: var(--color-success) !important;
   /* 우선순위 강제 (type-tier 오버라이드 방지) */
-  border-color: #fff !important;
+  border-color: var(--color-text-primary) !important;
   transform: scale(1.1);
-  box-shadow: 0 0 15px rgba(76, 217, 100, 0.6);
+  box-shadow: 0 0 15px color-mix(in srgb, var(--color-success), transparent 40%);
 }
 
 .roadmap-extra-content {
@@ -483,7 +529,7 @@
   /* 로드맵 푸터(고도 정보) 위로 올림 */
   right: 24px;
   background-color: rgba(25, 26, 30, 0.85);
-  border: 1px solid rgba(79, 172, 254, 0.4);
+  border: 1px solid color-mix(in srgb, var(--color-primary-light), transparent 60%);
   backdrop-filter: blur(12px);
   padding: 6px 14px;
   border-radius: 100px;
@@ -507,7 +553,7 @@
 .scale-value {
   font-size: 15px;
   font-weight: 800;
-  color: #4facfe;
+  color: var(--color-primary-light);
   font-variant-numeric: tabular-nums;
   letter-spacing: -0.2px;
 }
@@ -527,7 +573,7 @@
 .landmark-label {
   font-size: 16px;
   font-weight: 700;
-  color: #fff;
+  color: var(--color-text-primary);
 }
 
 .landmark-label-row {
@@ -537,12 +583,12 @@
 }
 
 .landmark-item.type-tier .landmark-dot {
-  border-color: #00f2fe;
-  background-color: rgba(79, 172, 254, 0.1);
+  border-color: var(--color-cyan-bright);
+  background-color: color-mix(in srgb, var(--color-primary-light), transparent 90%);
 }
 
 .landmark-item.type-tier.is-passed .landmark-dot {
-  box-shadow: 0 0 15px rgba(0, 242, 254, 0.3);
+  box-shadow: 0 0 15px color-mix(in srgb, var(--color-cyan-bright), transparent 70%);
 }
 
 .landmark-item.type-landmark .landmark-dot {
@@ -565,8 +611,8 @@
 .current-location-tag {
   font-size: 10px;
   padding: 2px 8px;
-  background-color: #4cd964;
-  color: #fff;
+  background-color: var(--color-success);
+  color: var(--color-text-primary);
   border-radius: 100px;
   width: fit-content;
   margin-top: 4px;
@@ -598,7 +644,7 @@
 }
 
 .highlight {
-  color: #4facfe;
+  color: var(--color-primary-light);
   font-weight: 700;
 }
 
@@ -651,7 +697,7 @@
 }
 
 .segmented-item.active {
-  color: #fff;
+  color: var(--color-text-primary);
 }
 
 .segmented-indicator {
@@ -709,18 +755,18 @@
 .history-avatar {
   width: 64px;
   height: 64px;
-  background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+  background: linear-gradient(135deg, var(--color-primary-light) 0%, var(--color-cyan-bright) 100%);
   border-radius: 20px;
   display: flex;
   align-items: center;
   justify-content: center;
   font-size: 32px;
-  box-shadow: 0 8px 16px rgba(79, 172, 254, 0.3);
+  box-shadow: 0 8px 16px color-mix(in srgb, var(--color-primary-light), transparent 70%);
 }
 
 .history-user-title {
   font-size: 14px;
-  color: #4facfe;
+  color: var(--color-primary-light);
   font-weight: 600;
   margin-bottom: 4px;
 }
@@ -753,11 +799,11 @@
 }
 
 .tier-next-label strong {
-  color: #4facfe;
+  color: var(--color-primary-light);
 }
 
 .tier-percentage {
-  color: #4facfe;
+  color: var(--color-primary-light);
   font-weight: 700;
 }
 
@@ -770,15 +816,15 @@
 
 .tier-progress-bar-fill {
   height: 100%;
-  background: linear-gradient(90deg, #4facfe 0%, #00f2fe 100%);
+  background: linear-gradient(90deg, var(--color-primary-light) 0%, var(--color-cyan-bright) 100%);
   border-radius: 4px;
-  box-shadow: 0 0 8px rgba(79, 172, 254, 0.5);
+  box-shadow: 0 0 8px color-mix(in srgb, var(--color-primary-light), transparent 50%);
 }
 
 /* --- Phase 2: Smart Comment --- */
 .history-smart-comment {
-  background-color: rgba(79, 172, 254, 0.1);
-  border-left: 4px solid #4facfe;
+  background-color: color-mix(in srgb, var(--color-primary-light), transparent 90%);
+  border-left: 4px solid var(--color-primary-light);
   padding: 12px 16px;
   border-radius: 0 12px 12px 0;
   display: flex;
@@ -1558,16 +1604,18 @@
 .stat-value {
   font-size: 24px;
   font-weight: 800;
-  color: #fff;
-  background: linear-gradient(135deg, #fff 30%, #4facfe 100%);
+  color: var(--color-text-primary);
+  background: linear-gradient(135deg, var(--color-text-primary) 30%, var(--color-primary-light) 100%);
   -webkit-background-clip: text;
+  background-clip: text;
   -webkit-text-fill-color: transparent;
-  filter: drop-shadow(0 4px 8px rgba(79, 172, 254, 0.3));
+  filter: drop-shadow(0 4px 8px color-mix(in srgb, var(--color-primary-light), transparent 70%));
 }
 
 .stat-value.highlight {
-  background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+  background: linear-gradient(135deg, var(--color-primary-light) 0%, var(--color-cyan-bright) 100%);
   -webkit-background-clip: text;
+  background-clip: text;
   -webkit-text-fill-color: transparent;
 }
 
@@ -1731,4 +1779,77 @@
   width: 12px;
   height: 12px;
   border-radius: 3px;
+}
+
+/* --- Badge Modal Overlay --- */
+.badge-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.8);
+  backdrop-filter: blur(8px);
+  z-index: 3000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  animation: fadeIn 0.3s ease-out;
+}
+
+.badge-modal-content {
+  background-color: var(--color-bg-secondary);
+  width: 100%;
+  max-width: 400px;
+  border-radius: 24px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  max-height: 80vh;
+}
+
+.badge-modal-header {
+  padding: 20px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.badge-modal-header h3 {
+  font-size: 18px;
+  font-weight: 700;
+  margin: 0;
+  color: var(--color-text-primary);
+}
+
+.close-button {
+  background: none;
+  border: none;
+  color: var(--color-text-tertiary);
+  font-size: 20px;
+  cursor: pointer;
+  padding: 4px;
+}
+
+.badge-modal-body {
+  padding: 20px;
+  overflow-y: auto;
+}
+
+/* Override BadgeCollection styles inside modal for better fit */
+.badge-modal-body .badge-collection {
+  margin-top: 0;
+  padding: 0;
+  background: none;
+  box-shadow: none;
+  border: none;
+}
+
+.badge-modal-body .badge-collection-title {
+  display: none;
+  /* Hide title inside modal as header has it */
 }

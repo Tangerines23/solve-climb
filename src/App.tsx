@@ -7,6 +7,7 @@ import { useCustomBackNavigation } from './hooks/useCustomBackNavigation';
 import { ErrorBoundary } from './components/ErrorBoundary';
 import { GlobalLoadingIndicator } from './components/GlobalLoadingIndicator';
 import { useErrorLogStore } from './stores/useErrorLogStore';
+import { useDebugStore } from './stores/useDebugStore';
 
 // 페이지 컴포넌트 레이지 로딩
 const HomePage = lazy(() =>
@@ -38,6 +39,11 @@ const NotificationPage = lazy(() =>
 const ShopPage = lazy(() =>
   import('./pages/ShopPage').then((module) => ({ default: module.ShopPage }))
 );
+
+// ⚠️ 개발 환경에서만 디버그 패널 로드
+const DebugPanel = import.meta.env.DEV
+  ? lazy(() => import('./components/DebugPanel'))
+  : null;
 
 function App() {
   const { syncProgress } = useLevelProgressStore();
@@ -89,6 +95,8 @@ function App() {
     };
   }, []);
 
+  const { isDebugPanelOpen } = useDebugStore(); // Debug store state for conditional rendering
+
   return (
     <ErrorBoundary>
       <GlobalLoadingIndicator />
@@ -117,9 +125,13 @@ function App() {
           <Route path="/roadmap" element={<RoadmapPage />} />
           <Route path="/my-page" element={<MyPage />} />
           <Route path="/notifications" element={<NotificationPage />} />
-          {/* AuthCallbackPage & AuthTestPage routes removed */}
           <Route path="/shop" element={<ShopPage />} />
         </Routes>
+
+        {/* Global Debug Panel (Outside Routes, High Z-Index) */}
+        {import.meta.env.DEV && isDebugPanelOpen && DebugPanel && (
+          <DebugPanel />
+        )}
       </Suspense>
     </ErrorBoundary>
   );

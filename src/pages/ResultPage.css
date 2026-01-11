@@ -392,14 +392,14 @@
 }
 
 .exhausted-badge {
-  background-color: rgba(255, 59, 48, 0.15);
-  color: #ff3b30;
+  background-color: color-mix(in srgb, var(--color-toss-red), transparent 85%);
+  color: var(--color-toss-red);
   padding: 4px 12px;
   border-radius: 20px;
   font-size: 0.75rem;
   font-weight: 600;
   margin-bottom: var(--spacing-md);
-  border: 1px solid rgba(255, 59, 48, 0.3);
+  border: 1px solid color-mix(in srgb, var(--color-toss-red), transparent 70%);
   display: inline-block;
   animation: fadeInUp 0.5s ease-out;
 }
@@ -442,7 +442,7 @@
 }
 
 .stat-item-highlight {
-  background-color: rgba(0, 191, 165, 0.1);
+  background-color: color-mix(in srgb, var(--color-blue-400), transparent 90%);
   border-radius: var(--rounded-sm);
   padding: var(--spacing-lg) var(--spacing-md);
   margin: 0 calc(-1 * var(--spacing-md)) var(--spacing-sm) calc(-1 * var(--spacing-md));
@@ -484,7 +484,7 @@
   margin-top: var(--spacing-2xl);
   padding-top: var(--spacing-2xl);
   border-top: 1px solid rgba(255, 255, 255, 0.1);
-  background-color: rgba(255, 59, 48, 0.1);
+  background-color: color-mix(in srgb, var(--color-toss-red), transparent 90%);
   border-radius: var(--rounded-button);
   padding: var(--spacing-lg);
   animation: fadeInUp 0.5s ease-out both;

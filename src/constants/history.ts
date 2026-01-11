@@ -1,17 +1,6 @@
-// src/constants/history.ts
+import { TierDefinition, MilestoneItem, TIER_CYCLE_LIMIT } from '../types/roadmap';
 
-export interface TierDefinition {
-  name: string;
-  goal: number;
-  icon: string;
-  colorVar: string;
-}
-
-/**
- * 250,000m를 하나의 고도 사이클(Cycle)로 정의합니다.
- * 각 사이클이 끝날 때마다 별(Star)이 하나씩 추가됩니다.
- */
-export const TIER_CYCLE_LIMIT = 250000;
+export { TIER_CYCLE_LIMIT }; // Re-export for compatibility
 
 /**
  * 한 사이클 내에서 반복되는 티어 정의입니다.
@@ -55,8 +44,8 @@ const BASE_LANDMARKS = [
  * 250,000m 사이클마다 반복되는 티어와 절대 고도 랜드마크를 결합하여
  * 전체 로드맵 배열을 생성합니다.
  */
-export const ALTITUDE_MILESTONES = (() => {
-  const list: any[] = [];
+export const ALTITUDE_MILESTONES: MilestoneItem[] = (() => {
+  const list: MilestoneItem[] = [];
   const maxCycles = 1;
 
   // 1. 모든 사이클의 티어를 먼저 생성
@@ -73,6 +62,7 @@ export const ALTITUDE_MILESTONES = (() => {
         type: 'tier',
         stars: s,
         subLandmarks: [], // 여기에 하위 랜드마크를 담을 것
+        isTier: true // Explicit flag
       });
     });
   }
@@ -103,10 +93,12 @@ export const ALTITUDE_MILESTONES = (() => {
       const tierAlt = Math.round(parentTier.altitude);
       if (tierAlt === targetAlt) {
         // 고도가 정확히 일치하면 덮어쓰기 지표로 설정
-        parentTier.overlapLandmark = l;
+        // Cast l as MilestoneItem-ish object if needed, or strictly type BASE_LANDMARKS
+        parentTier.overlapLandmark = { ...l, id: `landmark-${targetAlt}`, type: 'landmark' };
       } else {
         // 구간 내에 있으면 하위 리스트에 추가
-        parentTier.subLandmarks.push(l);
+        if (!parentTier.subLandmarks) parentTier.subLandmarks = [];
+        parentTier.subLandmarks.push({ ...l, id: `landmark-${targetAlt}`, type: 'landmark' });
       }
     }
   });
@@ -115,7 +107,7 @@ export const ALTITUDE_MILESTONES = (() => {
   list.forEach((tier) => {
     if (tier.subLandmarks && tier.subLandmarks.length > 0) {
       // 티어 고도에서 역순으로 가장 가까운 것부터 (등반 시 먼저 만나는 순)
-      tier.subLandmarks.sort((a: any, b: any) => b.altitude - a.altitude);
+      tier.subLandmarks.sort((a, b) => b.altitude - a.altitude);
       tier.representativeLandmark = tier.subLandmarks[0];
     } else {
       tier.subLandmarks = [];

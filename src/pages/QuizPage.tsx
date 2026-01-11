@@ -1,9 +1,9 @@
 // src/pages/QuizPage.tsx (범용 퀴즈 페이지)
-import { useState, useEffect, useRef, useCallback, useMemo, FormEvent } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import './QuizPage.css';
 import { useQuizStore, type TimeLimit } from '../stores/useQuizStore';
-import { GameTipModal } from '../components/GameTipModal';
+// import { GameTipModal } from '../components/GameTipModal';
 import { QuizCard } from '../components/QuizCard';
 import { useQuestionGenerator } from '../hooks/useQuestionGenerator';
 import { useQuizInput } from '../hooks/useQuizInput';
@@ -12,14 +12,11 @@ import { useQuizAnimations } from '../hooks/useQuizAnimations';
 import { useQuizSubmit } from '../hooks/useQuizSubmit';
 import { useSettingsStore } from '../stores/useSettingsStore';
 import { storage } from '../utils/storage';
-import { CustomKeypad } from '../components/CustomKeypad';
-import { QwertyKeypad } from '../components/QwertyKeypad';
-import { GameOverlay } from '../components/game/GameOverlay';
+import { useQuizRevive } from '../hooks/useQuizRevive';
 import { useUserStore } from '../stores/useUserStore';
 import { useGameStore } from '../stores/useGameStore';
 import { useDebugStore } from '../stores/useDebugStore';
 import type { Category, Topic } from '../types/quiz';
-import { StaminaWarningModal } from '../components/game/StaminaWarningModal';
 import { ItemFeedbackOverlay, ItemFeedbackRef } from '../components/game/ItemFeedbackOverlay';
 import { APP_CONFIG } from '../config/app';
 import { supabase } from '../utils/supabaseClient';
@@ -31,9 +28,8 @@ import {
   createSafeStorageKey,
 } from '../utils/urlParams';
 import { QuizQuestion } from '../types/quiz';
-import { LastChanceModal } from '../components/LastChanceModal';
-import { CountdownOverlay } from '../components/CountdownOverlay';
-import { SafetyRopeOverlay } from '../components/game/SafetyRopeOverlay';
+import { QuizPreview } from '../components/quiz/QuizPreview';
+import { QuizModals } from '../components/quiz/QuizModals';
 
 export function QuizPage() {
   // Zustand Selector 패턴 적용 - 필요한 값만 구독
@@ -110,7 +106,6 @@ export function QuizPage() {
 
   // Revive System State
   const [showLastChanceModal, setShowLastChanceModal] = useState(false);
-  const [hasUsedLastChance, setHasUsedLastChance] = useState(false);
   const [showCountdown, setShowCountdown] = useState(false);
   const [isFlarePaused, setIsFlarePaused] = useState(false); // 구조 신호탄 사용 후 타이머 일시정지
   const [showSafetyRope, setShowSafetyRope] = useState(false);
@@ -127,7 +122,7 @@ export function QuizPage() {
   const isAdminMode = useDebugStore((state) => state.isAdminMode);
   const [questionKey, setQuestionKey] = useState(0);
   const [timerResetKey, setTimerResetKey] = useState(0);
-  const [previewKeyboardType, setPreviewKeyboardType] = useState<'custom' | 'qwerty'>(
+  const [previewKeyboardType] = useState<'custom' | 'qwerty'>(
     () => keyboardType
   );
 
@@ -241,54 +236,29 @@ export function QuizPage() {
     generateNewQuestionRef.current = generateNewQuestion;
   }, [generateNewQuestion]);
 
-  // 안정적인 handleGameOver 함수 (QuizCard에 전달) - LAST CHANCE INTERCEPT
-  const stableHandleGameOver = useCallback(() => {
-    // 이미 부활을 사용했거나, 미리보기 모드라면 즉시 종료
-    if (hasUsedLastChance || isPreview) {
-      handleGameOverRef.current();
-      return;
-    }
+  // Revive Hook Integration
+  const revive = useQuizRevive({
+    gameMode,
+    inventory,
+    minerals,
+    consumeItem,
+    setShowLastChanceModal,
+    setTimerResetKey,
+    setShowCountdown,
+    generateNewQuestion: generateNewQuestionRef.current,
+    animations,
+    setDisplayValue,
+    handleGameOver: handleGameOverRef.current,
+    setIsSubmitting,
+    isPreview,
+  });
 
-    // 아이템 보유 확인
-    // const hasItem = inventory.find((i: any) => i.code === itemType && i.quantity > 0);
-    // 아이템이 없어도, 미네랄이 있어도, 일단 모달은 띄워서 '기회'를 보여준다.
-    setShowLastChanceModal(true);
-  }, [hasUsedLastChance, isPreview]);
-
-  // Revive Logic
-  const handleRevive = useCallback(
-    async (useItem: boolean) => {
-      const itemType = gameMode === 'time-attack' ? 'last_spurt' : 'flare';
-
-      if (useItem) {
-        const item = inventory.find((i) => i.code === itemType);
-        if (item) {
-          await consumeItem(item.id);
-        }
-      }
-
-      setShowLastChanceModal(false);
-      setHasUsedLastChance(true);
-      setIsSubmitting(false);
-
-      if (gameMode === 'time-attack') {
-        // 타임어택: 라스트 스퍼트 사용 시 +15초 추가
-        // 1. 시간을 15초로 설정
-        useQuizStore.getState().setTimeLimit(15);
-        // 2. 타이머 리셋 (key 변경으로 TimerCircle 리마운트)
-        setTimerResetKey((prev) => prev + 1);
-        // 3. 카운트다운 시작 (3-2-1)
-        setShowCountdown(true);
-        // 피버 상태는 카운트다운 완료 후 처리
-      } else {
-        // 서바이벌: 새 문제로 진행
-        generateNewQuestionRef.current();
-        animations.setIsError(false);
-        setDisplayValue('');
-      }
-    },
-    [gameMode, inventory, consumeItem, animations]
-  );
+  const {
+    handleRevive,
+    handlePurchaseAndRevive,
+    handleGiveUp,
+    stableHandleGameOver,
+  } = revive;
 
   const handleCountdownComplete = useCallback(() => {
     // 카운트다운 완료 후 처리 순서:
@@ -310,25 +280,6 @@ export function QuizPage() {
       setTimerResetKey((prev) => prev + 1);
     }
   }, [gameMode]);
-
-  const handlePurchaseAndRevive = useCallback(async () => {
-    const itemType = gameMode === 'time-attack' ? 'last_spurt' : 'flare';
-    // 라스트 스퍼트 800원, 구조 신호탄 800원
-    const basePrice = itemType === 'last_spurt' ? 800 : 800;
-    const targetPrice = basePrice * 2;
-
-    if (minerals >= targetPrice) {
-      console.log(`Simulating purchase of ${itemType} for ${targetPrice} minerals`);
-      // TODO: 실제 구매 로직 연동 필요 (purchaseItem 사용 시 ID 필요)
-      // 임시: 구매 성공 가정하고 진행
-      await handleRevive(false);
-    }
-  }, [minerals, gameMode, handleRevive]);
-
-  const handleGiveUp = useCallback(() => {
-    setShowLastChanceModal(false);
-    handleGameOverRef.current(); // 진짜 종료
-  }, []);
 
   // 답안 제출 로직
   const { handleSubmit } = useQuizSubmit({
@@ -768,291 +719,49 @@ export function QuizPage() {
     setStaminaConsumed,
   ]);
 
-  // Preview 모드용 간단한 핸들러들
-  const handlePreviewKeyPress = useCallback((key: string) => {
-    // Preview 모드에서는 입력을 콘솔에만 출력
-    console.log('Preview key press:', key);
-  }, []);
-
-  const handlePreviewClear = useCallback(() => {
-    console.log('Preview clear');
-  }, []);
-
-  const handlePreviewBackspace = useCallback(() => {
-    console.log('Preview backspace');
-  }, []);
-
-  const handlePreviewSubmit = useCallback((e: FormEvent) => {
-    e.preventDefault();
-    console.log('Preview submit');
-  }, []);
-
-  // Preview 모드용 변수들 (조건부 블록 밖에서 계산)
-  const isJapaneseQuizPreview = categoryParam === 'language' && subParam === 'japanese';
-  const isEquationQuizPreview = categoryParam === 'math' && subParam === 'equations';
-  const isCalculusQuizPreview = categoryParam === 'math' && subParam === 'calculus';
-  const allowNegativePreview = isEquationQuizPreview || isCalculusQuizPreview;
-
-  // displayCategory와 displayTopic 계산 (Preview 모드용)
-  const displayCategoryPreview = useMemo(() => {
-    if (!isPreview) return '';
-    return categoryParam
-      ? APP_CONFIG.CATEGORY_MAP[categoryParam as keyof typeof APP_CONFIG.CATEGORY_MAP] ||
-      category ||
-      ''
-      : category || '';
-  }, [isPreview, categoryParam, category]);
-
-  const displayTopicPreview = useMemo(() => {
-    if (!isPreview || !categoryParam || !subParam) return topic || '';
-
-    if (subParam === 'arithmetic' && levelParam !== null) {
-      const level = levelParam;
-      const topicMap: Record<number, string> = {
-        1: '덧셈',
-        2: '뺄셈',
-        3: '덧셈',
-        4: '뺄셈',
-        5: '곱셈',
-        6: '나눗셈',
-        7: '혼합 연산',
-        8: '곱셈',
-        9: '나눗셈',
-        10: '종합 연산',
-      };
-      return topicMap[level] || '덧셈';
-    } else if (subParam === 'calculus' && levelParam !== null) {
-      const level = levelParam;
-      const topicMap: Record<number, string> = {
-        1: '기초 미분',
-        2: '상수배 미분',
-        3: '합과 차의 미분',
-        4: '곱의 미분',
-        5: '몫의 미분',
-        6: '합성함수 미분',
-        7: '삼각함수 미분',
-        8: '지수·로그 미분',
-        9: '고급 미분',
-        10: '미분 종합',
-      };
-      return topicMap[level] || '미적분';
-    } else {
-      const subTopics = APP_CONFIG.SUB_TOPICS[categoryParam as keyof typeof APP_CONFIG.SUB_TOPICS];
-      const subTopicInfo = subTopics?.find((t) => t.id === subParam);
-      return subTopicInfo?.name || subParam;
-    }
-  }, [isPreview, categoryParam, subParam, levelParam, topic]);
-
-  // Preview 모드에서 keyboardType 변경 시 previewKeyboardType 동기화
-  useEffect(() => {
-    if (isPreview) {
-      setPreviewKeyboardType(keyboardType);
-    }
-  }, [isPreview, keyboardType]);
-
-  // Preview 모드에서 키보드 타입 전환 핸들러 (early return 전에 호출)
-  const handlePrevKeyboard = useCallback(() => {
-    setPreviewKeyboardType((prev) => (prev === 'custom' ? 'qwerty' : 'custom'));
-  }, []);
-
-  const handleNextKeyboard = useCallback(() => {
-    setPreviewKeyboardType((prev) => (prev === 'custom' ? 'qwerty' : 'custom'));
-  }, []);
+  // Preview 모드 처리는 QuizPreview 컴포넌트로 위임
 
   // Preview 모드일 때 렌더링
   if (isPreview) {
-    // 일본어 퀴즈가 아닐 때만 키보드 타입 전환 가능
-    const canSwitchKeyboard = !isJapaneseQuizPreview;
-    const currentPreviewType = isJapaneseQuizPreview ? 'qwerty' : previewKeyboardType;
-
     return (
-      <div className="quiz-page">
-        <header className="quiz-header">
-          <button
-            className="quiz-back-button"
-            onClick={() => navigate('/my-page')}
-            aria-label="뒤로 가기"
-          >
-            ←
-          </button>
-          <div
-            className="quiz-timer-container"
-            style={{ display: 'flex', alignItems: 'center', gap: 'var(--spacing-md)' }}
-          >
-            {canSwitchKeyboard && (
-              <button
-                onClick={handlePrevKeyboard}
-                style={{
-                  background: 'none',
-                  border: 'none',
-                  color: 'var(--color-text-primary)',
-                  fontSize: '1.5rem',
-                  cursor: 'pointer',
-                  padding: 'var(--spacing-xs)',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  minWidth: '32px',
-                  minHeight: '32px',
-                  borderRadius: 'var(--rounded-sm)',
-                  transition: 'background-color 0.2s',
-                }}
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.1)';
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.backgroundColor = 'transparent';
-                }}
-                aria-label="이전 키보드"
-              >
-                ‹
-              </button>
-            )}
-            <h2
-              style={{ fontSize: '1.2rem', fontWeight: 'bold', color: 'var(--color-text-primary)' }}
-            >
-              {currentPreviewType === 'custom' ? '커스텀 키패드' : '쿼티 키보드'}
-            </h2>
-            {canSwitchKeyboard && (
-              <button
-                onClick={handleNextKeyboard}
-                style={{
-                  background: 'none',
-                  border: 'none',
-                  color: 'var(--color-text-primary)',
-                  fontSize: '1.5rem',
-                  cursor: 'pointer',
-                  padding: 'var(--spacing-xs)',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  minWidth: '32px',
-                  minHeight: '32px',
-                  borderRadius: 'var(--rounded-sm)',
-                  transition: 'background-color 0.2s',
-                }}
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.1)';
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.backgroundColor = 'transparent';
-                }}
-                aria-label="다음 키보드"
-              >
-                ›
-              </button>
-            )}
-          </div>
-          <div className="quiz-header-spacer"></div>
-        </header>
-
-        <div className="quiz-content">
-          {/* quiz-card - 인게임과 동일한 구조 */}
-          <div className="quiz-card">
-            <div className="category-label">
-              {displayCategoryPreview} - {displayTopicPreview}
-            </div>
-            <form onSubmit={handlePreviewSubmit} style={{ display: 'contents' }}>
-              <div>
-                <h2 className="problem-text">미리보기</h2>
-              </div>
-              {/* 답안 표시 영역 (빈 상태) */}
-              {!useSystemKeyboard && (
-                <div className="answer-input-wrapper">
-                  <div className="answer-display">
-                    {/* 빈 상태 - 커서만 표시 */}
-                    <span className="answer-caret"></span>
-                  </div>
-                </div>
-              )}
-            </form>
-          </div>
-
-          {/* 하단 키보드 (카드 아래) - Preview 모드에서는 선택한 키보드 타입 사용 */}
-          {!useSystemKeyboard && (
-            <>
-              {isJapaneseQuizPreview ? (
-                <QwertyKeypad
-                  onKeyPress={handlePreviewKeyPress}
-                  onClear={handlePreviewClear}
-                  onBackspace={handlePreviewBackspace}
-                  onSubmit={handlePreviewSubmit}
-                  disabled={false}
-                  mode="text"
-                />
-              ) : currentPreviewType === 'qwerty' ? (
-                <QwertyKeypad
-                  onKeyPress={handlePreviewKeyPress}
-                  onClear={handlePreviewClear}
-                  onBackspace={handlePreviewBackspace}
-                  onSubmit={handlePreviewSubmit}
-                  disabled={false}
-                  mode="number"
-                  allowNegative={allowNegativePreview}
-                />
-              ) : (
-                <CustomKeypad
-                  onNumberClick={handlePreviewKeyPress}
-                  onClear={handlePreviewClear}
-                  onBackspace={handlePreviewBackspace}
-                  onSubmit={handlePreviewSubmit}
-                  disabled={false}
-                  showNegative={allowNegativePreview}
-                />
-              )}
-            </>
-          )}
-        </div>
-      </div>
+      <QuizPreview
+        categoryParam={categoryParam}
+        subParam={subParam}
+        levelParam={levelParam}
+        category={category}
+        topic={topic}
+        keyboardType={previewKeyboardType} // Using local state initialized from store
+        navigate={navigate}
+        useSystemKeyboard={useSystemKeyboard}
+      />
     );
   }
 
   return (
     <div className="quiz-page">
-      {/* 아이템 피드백 (사용 효과 등) */}
-      <ItemFeedbackOverlay ref={feedbackRef} />
-
-      {/* 부활/라스트 찬스 모달 */}
-      <LastChanceModal
-        isVisible={showLastChanceModal}
+      <QuizModals
+        feedbackRef={feedbackRef}
+        showLastChanceModal={showLastChanceModal}
         gameMode={gameMode}
-        inventoryCount={
-          inventory.find((i) => i.code === (gameMode === 'time-attack' ? 'last_spurt' : 'flare'))
-            ?.quantity || 0
-        }
-        userMinerals={minerals}
-        onUseItem={() => handleRevive(true)}
-        onPurchaseAndUse={handlePurchaseAndRevive}
-        onGiveUp={handleGiveUp}
-        basePrice={gameMode === 'time-attack' ? 800 : 800}
-      />
-
-      {/* 카운트다운 오버레이 (부활 후 재개 시 사용) */}
-      {showCountdown && (
-        <CountdownOverlay isVisible={showCountdown} onComplete={handleCountdownComplete} />
-      )}
-
-      {/* 안전 로프 사용 효과 오버레이 */}
-      {showSafetyRope && (
-        <SafetyRopeOverlay isVisible={true} onAnimationComplete={() => setShowSafetyRope(false)} />
-      )}
-
-      {categoryParam && subParam && (
-        <GameTipModal
-          isOpen={showTipModal}
-          category={categoryParam}
-          subTopic={subParam}
-          level={levelParam}
-          onClose={handleBack}
-          onStart={handleStartGame}
-        />
-      )}
-      <GameOverlay />
-      <StaminaWarningModal
-        isOpen={showStaminaModal}
-        onClose={() => setShowStaminaModal(false)}
-        onPlayAnyway={handlePlayAnyway}
-        onWatchAd={handleWatchAd}
+        inventory={inventory}
+        minerals={minerals}
+        handleRevive={handleRevive}
+        handlePurchaseAndRevive={handlePurchaseAndRevive}
+        handleGiveUp={handleGiveUp}
+        showCountdown={showCountdown}
+        handleCountdownComplete={handleCountdownComplete}
+        showSafetyRope={showSafetyRope}
+        setShowSafetyRope={setShowSafetyRope}
+        categoryParam={categoryParam}
+        subParam={subParam}
+        levelParam={levelParam}
+        showTipModal={showTipModal}
+        handleBack={handleBack}
+        handleStartGame={handleStartGame}
+        showStaminaModal={showStaminaModal}
+        setShowStaminaModal={setShowStaminaModal}
+        handlePlayAnyway={handlePlayAnyway}
+        handleWatchAd={handleWatchAd}
       />
       <ItemFeedbackOverlay ref={feedbackRef} />
       <QuizCard

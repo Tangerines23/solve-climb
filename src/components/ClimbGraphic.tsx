@@ -281,9 +281,9 @@ export function ClimbGraphic({
       arithmetic: {
         // 연한 하늘색 그라데이션 (눈이 편안한 색상)
         skyGradient: 'linear-gradient(180deg, #E8F4F8 0%, #F0F8FF 50%, #FFFFFF 100%)',
-        mainColor: '#1E293B', // Slate 800 (짙은 남색 블록)
-        secondaryColor: '#334155', // Slate 700
-        accentColor: '#475569', // Slate 600 (밝은 면)
+        mainColor: 'var(--color-slate-800)', // Slate 800
+        secondaryColor: 'var(--color-slate-700)', // Slate 700
+        accentColor: 'var(--color-slate-600)', // Slate 600
       },
       equations: {
         // 지적이고 깊은 청록색 - 심해나 우주에 가까운 톤
@@ -420,16 +420,16 @@ export function ClimbGraphic({
                       level.status === 'locked'
                         ? undefined
                         : () => {
-                            console.log(
-                              'ClimbGraphic: onLongPress 호출됨, level:',
-                              level.id,
-                              'onLevelLongPress:',
-                              !!onLevelLongPress
-                            );
-                            if (onLevelLongPress) {
-                              onLevelLongPress(level.id);
-                            }
+                          console.log(
+                            'ClimbGraphic: onLongPress 호출됨, level:',
+                            level.id,
+                            'onLevelLongPress:',
+                            !!onLevelLongPress
+                          );
+                          if (onLevelLongPress) {
+                            onLevelLongPress(level.id);
                           }
+                        }
                     }
                     disabled={level.status === 'locked'}
                     style={{

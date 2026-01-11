@@ -1,4 +1,4 @@
-import { useRef, useEffect, useState, useCallback, lazy, Suspense } from 'react';
+import { useRef, useEffect, useState, useCallback } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { APP_CONFIG } from '../config/app';
 import { useProfileStore } from '../stores/useProfileStore';
@@ -10,7 +10,7 @@ import './Header.css';
 // (동적 import된 컴포넌트의 CSS는 자동으로 분리되어 로드됨)
 
 // ⚠️ 개발 환경에서만 동적 임포트
-const DebugPanel = import.meta.env.DEV ? lazy(() => import('./DebugPanel')) : null;
+// ⚠️ 개발 환경에서만 동적 임포트 (App.tsx에서 전역 처리)
 
 export function Header() {
   const navigate = useNavigate();
@@ -258,18 +258,7 @@ export function Header() {
         autoCloseDelay={2000}
       />
 
-      {/* 디버그 패널 조건부 렌더링 */}
-      {import.meta.env.DEV && isDebugPanelOpen && DebugPanel && (
-        <Suspense
-          fallback={
-            <div className="debug-panel-loading">
-              <div>디버그 패널 로딩 중...</div>
-            </div>
-          }
-        >
-          <DebugPanel />
-        </Suspense>
-      )}
+      {/* 디버그 패널 렌더링 제거 -> App.tsx로 이동 */}
     </header>
   );
 }
