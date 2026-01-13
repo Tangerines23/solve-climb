@@ -1,27 +1,32 @@
 .item-feedback-container {
   position: fixed;
-  top: 15%;
+  top: 10%;
+  /* Move up */
   left: 50%;
   transform: translate(-50%, -50%);
   z-index: 1000;
   pointer-events: none;
   text-align: center;
+  width: 100%;
 }
 
 .feedback-content {
-  background: rgba(0, 0, 0, 0.4);
-  backdrop-filter: blur(10px);
-  padding: 1.5rem 3rem;
-  border-radius: 2rem;
-  border: 2px solid rgba(255, 255, 255, 0.2);
-  box-shadow: 0 0 30px rgba(0, 184, 148, 0.3);
+  display: inline-block;
+  background: rgba(0, 0, 0, 0.2);
+  /* More transparent */
+  backdrop-filter: blur(4px);
+  /* Less blur */
+  padding: 0.75rem 1.5rem;
+  /* Smaller padding */
+  border-radius: 1rem;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
 }
 
 .feedback-text {
-  font-size: 3.5rem;
-  font-weight: 900;
-  margin: 0;
-  letter-spacing: -2px;
+  font-size: 1.5rem;
+  /* Smaller font */
+  font-weight: 800;
   text-shadow: 0 4px 10px rgba(0, 0, 0, 0.5);
   background: linear-gradient(135deg, #00b894, #55efc4);
   -webkit-background-clip: text;

@@ -1,25 +1,25 @@
-import { useState, useEffect, useRef, useLayoutEffect } from 'react';
+import { useState, useRef, useLayoutEffect } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { APP_CONFIG } from '../config/app';
 import { ClimbGraphic } from '../components/ClimbGraphic';
 import { MyRecordCard } from '../components/MyRecordCard';
 import { LevelListCard } from '../components/LevelListCard';
-import { ModeSelectModal } from '../components/ModeSelectModal';
+// import { ModeSelectModal } from '../components/ModeSelectModal'; // Removed
 import { FooterNav } from '../components/FooterNav';
 import { Toast } from '../components/Toast';
-import { useLevelProgressStore } from '../stores/useLevelProgressStore';
-import { storage } from '../utils/storage';
+// import { useLevelProgressStore } from '../stores/useLevelProgressStore'; // Removed
+// import { storage } from '../utils/storage'; // Removed
 import './LevelSelectPage.css';
 
 export function LevelSelectPage() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
-  const [selectedLevel, setSelectedLevel] = useState<{ level: number; name: string } | null>(null);
-  const [isModalOpen, setIsModalOpen] = useState(false);
+  // const [selectedLevel, setSelectedLevel] = useState<{ level: number; name: string } | null>(null); // Removed
+  // const [isModalOpen, setIsModalOpen] = useState(false); // Removed
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   const [toastMessage, setToastMessage] = useState('');
   const [showToast, setShowToast] = useState(false);
-  const longPressCountRef = useRef(0);
+  // const longPressCountRef = useRef(0); // Removed
 
   // [핵심 1] 화면 준비 상태 (초기엔 숨김)
   const [isReady, setIsReady] = useState(false);
@@ -28,7 +28,7 @@ export function LevelSelectPage() {
   const subParam = searchParams.get('sub');
 
   // 다음 레벨 가져오기 (early return 전에 호출)
-  const getNextLevel = useLevelProgressStore((state) => state.getNextLevel);
+  // const getNextLevel = useLevelProgressStore((state) => state.getNextLevel);
 
   // Hooks를 early return 전에 호출
   useLayoutEffect(() => {
@@ -64,23 +64,7 @@ export function LevelSelectPage() {
     }
   }, []); // 의존성 배열 비움: 마운트 시 1회 실행
 
-  // 손을 떼면 카운터 리셋
-  useEffect(() => {
-    const handleMouseUp = () => {
-      longPressCountRef.current = 0;
-    };
-    const handleTouchEnd = () => {
-      longPressCountRef.current = 0;
-    };
-
-    document.addEventListener('mouseup', handleMouseUp);
-    document.addEventListener('touchend', handleTouchEnd);
-
-    return () => {
-      document.removeEventListener('mouseup', handleMouseUp);
-      document.removeEventListener('touchend', handleTouchEnd);
-    };
-  }, []);
+  // 손을 떼면 카운터 리셋 로직 제거됨
 
   // URL 파라미터 검증 및 데이터 로드
   if (!categoryParam || !subParam) {
@@ -138,8 +122,8 @@ export function LevelSelectPage() {
 
   const categoryColor = categoryInfo.color || '#10b981';
 
-  // 다음 레벨 계산
-  const nextLevel = getNextLevel(categoryParam, subParam);
+  // 다음 레벨 계산 (현재 사용되지 않음, 주석 처리 또는 제거)
+  // const nextLevel = getNextLevel(categoryParam, subParam);
 
   // 개발중인 레벨 체크 함수
   const isUnderDevelopment = (level: number) => {
@@ -150,56 +134,29 @@ export function LevelSelectPage() {
     return UNDER_DEVELOPMENT_LEVELS.has(levelKey);
   };
 
-  // 레벨 클릭 핸들러
-  const handleLevelClick = (level: number, levelName: string) => {
+  // 레벨 클릭 핸들러 (Direct Time Attack Entry)
+  const handleLevelClick = (level: number) => {
     // 개발중인 레벨이면 토스트만 표시하고 진입 차단
     if (isUnderDevelopment(level)) {
       setToastMessage('아직 개발중입니다 :(');
       setShowToast(true);
       return;
     }
-    setSelectedLevel({ level, name: levelName });
-    setIsModalOpen(true);
-  };
 
-  // 레벨 길게 누르기 핸들러
-  const handleLevelLongPress = (level: number) => {
-    console.log(
-      'LevelSelectPage: handleLevelLongPress 호출됨, level:',
-      level,
-      '현재 카운트:',
-      longPressCountRef.current
-    );
-    longPressCountRef.current += 1;
-
-    if (longPressCountRef.current === 1) {
-      // 첫 번째 호출 (2초): 토스트 표시
-      console.log('LevelSelectPage: 첫 번째 호출 - 토스트 표시');
-      setToastMessage('다시 보지 않기가 풀립니다');
-      setShowToast(true);
-    } else if (longPressCountRef.current >= 2) {
-      // 두 번째 호출 (4초): 실제 해제
-      console.log('LevelSelectPage: 두 번째 호출 - 해제');
-      const tipKey = `gameTip_${categoryParam}_${subParam}_${level}`;
-      storage.remove(tipKey);
-      setToastMessage('해제되었습니다!');
-      setShowToast(true);
-      // 다음 길게 누르기를 위해 리셋하지 않음 (손을 떼면 리셋됨)
-    }
+    // 모달 없이 즉시 타임어택 모드로 진입
+    navigate(`/quiz?category=${categoryParam}&sub=${subParam}&level=${level}&mode=time-attack`);
   };
 
   // 잠긴 레벨 클릭 핸들러
-  const handleLockedLevelClick = (_level: number, _nextLevel: number) => {
+  const handleLockedLevelClick = (_level: number, nextLevel: number) => {
     setToastMessage(`Level ${nextLevel}의 문제 10문제를 맞추고 와야 해요`);
     setShowToast(true);
   };
 
-  // 모드 선택 핸들러
-  const handleModeSelect = (mode: 'time-attack' | 'survival') => {
-    const modeParam = mode === 'time-attack' ? 'time_attack' : 'survival';
-    navigate(
-      `/quiz?category=${categoryParam}&sub=${subParam}&level=${selectedLevel?.level}&mode=${modeParam}`
-    );
+  // 서바이벌 모드 진입 핸들러 (New)
+  const handleSurvivalClick = () => {
+    // 서바이벌은 레벨 파라미터 1로 시작하지만, 내부적으로 Wave 시스템을 따름
+    navigate(`/quiz?category=${categoryParam}&sub=${subParam}&level=1&mode=survival`);
   };
 
   // 스크롤 효과 제거 - 산 이미지는 가만히 있고 아래 리스트가 위로 올라오도록
@@ -234,7 +191,6 @@ export function LevelSelectPage() {
         <h1 className="level-select-title">{subTopicInfo.name}</h1>
       </header>
 
-      {/* 메인 그래픽 영역 */}
       <div className="level-select-graphic-container">
         <ClimbGraphic
           category={categoryParam}
@@ -242,7 +198,6 @@ export function LevelSelectPage() {
           levels={levels}
           categoryColor={categoryColor}
           onLevelClick={handleLevelClick}
-          onLevelLongPress={handleLevelLongPress}
           onUnderDevelopmentClick={() => {
             setToastMessage('아직 개발중입니다 :(');
             setShowToast(true);
@@ -258,6 +213,18 @@ export function LevelSelectPage() {
           <p className="level-select-summary-desc">{subTopicInfo.desc}</p>
         </div>
 
+        {/* 서바이벌 챌린지 버튼 (신규) */}
+        <div className="survival-challenge-entry">
+          <button className="survival-challenge-button" onClick={handleSurvivalClick}>
+            <span className="survival-icon">🔥</span>
+            <div className="survival-text">
+              <span className="survival-title">서바이벌 챌린지</span>
+              <span className="survival-desc">한 번의 실수도 용납되지 않는 무한 도전!</span>
+            </div>
+            <span className="survival-arrow">→</span>
+          </button>
+        </div>
+
         {/* 나의 기록 카드 */}
         <MyRecordCard
           category={categoryParam}
@@ -271,7 +238,6 @@ export function LevelSelectPage() {
           subTopic={subParam}
           levels={levels}
           onLevelClick={handleLevelClick}
-          onLevelLongPress={handleLevelLongPress}
           onLockedLevelClick={handleLockedLevelClick}
         />
       </div>
@@ -279,16 +245,7 @@ export function LevelSelectPage() {
       {/* 하단 네비게이션 */}
       <FooterNav />
 
-      {/* 모드 선택 모달 */}
-      {selectedLevel && (
-        <ModeSelectModal
-          isOpen={isModalOpen}
-          level={selectedLevel.level}
-          levelName={selectedLevel.name}
-          onClose={() => setIsModalOpen(false)}
-          onSelectMode={handleModeSelect}
-        />
-      )}
+      {/* 모드 선택 모달 제거됨 */}
 
       {/* 토스트 메시지 */}
       <Toast

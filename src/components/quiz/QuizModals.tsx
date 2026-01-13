@@ -7,99 +7,116 @@ import { GameOverlay } from '../game/GameOverlay';
 import { StaminaWarningModal } from '../game/StaminaWarningModal';
 import { RefObject } from 'react';
 import { InventoryItem } from '../../types/user';
+import { PauseModal } from '../game/PauseModal';
 
 interface QuizModalsProps {
-    feedbackRef: RefObject<ItemFeedbackRef | null>;
-    showLastChanceModal: boolean;
-    gameMode: 'survival' | 'time-attack';
-    inventory: InventoryItem[];
-    minerals: number;
-    handleRevive: (useItem: boolean) => void;
-    handlePurchaseAndRevive: () => void;
-    handleGiveUp: () => void;
-    showCountdown: boolean;
-    handleCountdownComplete: () => void;
-    showSafetyRope: boolean;
-    setShowSafetyRope: (show: boolean) => void;
-    categoryParam: string | null;
-    subParam: string | null;
-    levelParam: number | null;
-    showTipModal: boolean;
-    handleBack: () => void;
-    handleStartGame: (selectedItemIds: number[]) => void;
-    showStaminaModal: boolean;
-    setShowStaminaModal: (show: boolean) => void;
-    handlePlayAnyway: () => void;
-    handleWatchAd: () => void;
+  feedbackRef: RefObject<ItemFeedbackRef | null>;
+  showLastChanceModal: boolean;
+  gameMode: 'survival' | 'time-attack';
+  inventory: InventoryItem[];
+  minerals: number;
+  handleRevive: (useItem: boolean) => void;
+  handlePurchaseAndRevive: () => void;
+  handleGiveUp: () => void;
+  showCountdown: boolean;
+  handleCountdownComplete: () => void;
+  showSafetyRope: boolean;
+  setShowSafetyRope: (show: boolean) => void;
+  categoryParam: string | null;
+  subParam: string | null;
+  levelParam: number | null;
+  showTipModal: boolean;
+  handleBack: () => void;
+  handleStartGame: (selectedItemIds: number[]) => void;
+  showStaminaModal: boolean;
+  setShowStaminaModal: (show: boolean) => void;
+  handlePlayAnyway: () => void;
+  handleWatchAd: () => void;
+  // Pause System
+  showPauseModal: boolean;
+  remainingPauses: number;
+  handlePauseResume: () => void;
+  handlePauseExit: () => void;
 }
 
 export function QuizModals({
-    feedbackRef,
-    showLastChanceModal,
-    gameMode,
-    inventory,
-    minerals,
-    handleRevive,
-    handlePurchaseAndRevive,
-    handleGiveUp,
-    showCountdown,
-    handleCountdownComplete,
-    showSafetyRope,
-    setShowSafetyRope,
-    categoryParam,
-    subParam,
-    levelParam,
-    showTipModal,
-    handleBack,
-    handleStartGame,
-    showStaminaModal,
-    setShowStaminaModal,
-    handlePlayAnyway,
-    handleWatchAd,
+  feedbackRef,
+  showLastChanceModal,
+  gameMode,
+  inventory,
+  minerals,
+  handleRevive,
+  handlePurchaseAndRevive,
+  handleGiveUp,
+  showCountdown,
+  handleCountdownComplete,
+  showSafetyRope,
+  setShowSafetyRope,
+  categoryParam,
+  subParam,
+  levelParam,
+  showTipModal,
+  handleBack,
+  handleStartGame,
+  showStaminaModal,
+  setShowStaminaModal,
+  handlePlayAnyway,
+  handleWatchAd,
+  showPauseModal,
+  remainingPauses,
+  handlePauseResume,
+  handlePauseExit,
 }: QuizModalsProps) {
-    return (
-        <>
-            <ItemFeedbackOverlay ref={feedbackRef} />
+  return (
+    <>
+      <ItemFeedbackOverlay ref={feedbackRef} />
 
-            <LastChanceModal
-                isVisible={showLastChanceModal}
-                gameMode={gameMode}
-                inventoryCount={
-                    inventory.find((i) => i.code === (gameMode === 'time-attack' ? 'last_spurt' : 'flare'))
-                        ?.quantity || 0
-                }
-                userMinerals={minerals}
-                onUseItem={() => handleRevive(true)}
-                onPurchaseAndUse={handlePurchaseAndRevive}
-                onGiveUp={handleGiveUp}
-                basePrice={gameMode === 'time-attack' ? 800 : 800}
-            />
+      <LastChanceModal
+        isVisible={showLastChanceModal}
+        gameMode={gameMode}
+        inventoryCount={
+          inventory.find((i) => i.code === (gameMode === 'time-attack' ? 'last_spurt' : 'flare'))
+            ?.quantity || 0
+        }
+        userMinerals={minerals}
+        onUseItem={() => handleRevive(true)}
+        onPurchaseAndUse={handlePurchaseAndRevive}
+        onGiveUp={handleGiveUp}
+        basePrice={gameMode === 'time-attack' ? 800 : 800}
+      />
 
-            {showCountdown && (
-                <CountdownOverlay isVisible={showCountdown} onComplete={handleCountdownComplete} />
-            )}
+      {showCountdown && (
+        <CountdownOverlay isVisible={showCountdown} onComplete={handleCountdownComplete} />
+      )}
 
-            {showSafetyRope && (
-                <SafetyRopeOverlay isVisible={true} onAnimationComplete={() => setShowSafetyRope(false)} />
-            )}
+      {showSafetyRope && (
+        <SafetyRopeOverlay isVisible={true} onAnimationComplete={() => setShowSafetyRope(false)} />
+      )}
 
-            {categoryParam && subParam && (
-                <GameTipModal
-                    isOpen={showTipModal}
-                    category={categoryParam}
-                    subTopic={subParam}
-                    level={levelParam}
-                    onClose={handleBack}
-                    onStart={handleStartGame}
-                />
-            )}
-            <GameOverlay />
-            <StaminaWarningModal
-                isOpen={showStaminaModal}
-                onClose={() => setShowStaminaModal(false)}
-                onPlayAnyway={handlePlayAnyway}
-                onWatchAd={handleWatchAd}
-            />
-        </>
-    );
+      <PauseModal
+        isVisible={showPauseModal}
+        remainingPauses={remainingPauses}
+        onResume={handlePauseResume}
+        onExit={handlePauseExit}
+      />
+
+      {categoryParam && subParam && (
+        <GameTipModal
+          isOpen={showTipModal}
+          category={categoryParam}
+          subTopic={subParam}
+          level={levelParam}
+          onClose={handleBack}
+          onStart={handleStartGame}
+        />
+      )}
+      <GameOverlay />
+      <StaminaWarningModal
+        isOpen={showStaminaModal}
+        onClose={() => setShowStaminaModal(false)}
+        onPlayAnyway={handlePlayAnyway}
+        onWatchAd={handleWatchAd}
+      />
+    </>
+  );
 }

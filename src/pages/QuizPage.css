@@ -30,7 +30,6 @@
 
 /* Correct answer flash */
 @keyframes correct-flash-animation {
-
   0%,
   100% {
     border: 2px solid transparent;
@@ -48,7 +47,6 @@
 
 /* Incorrect answer shake on CARD */
 @keyframes wrong-shake-animation {
-
   0%,
   100% {
     transform: translateX(0);
@@ -147,7 +145,7 @@
 }
 
 .quiz-timer-container {
-  flex: 1;
+  /* flex: 1; removed - controlled by group */
   display: flex;
   justify-content: center;
   align-items: center;
@@ -410,7 +408,6 @@
 }
 
 @keyframes caret-blink {
-
   0%,
   100% {
     opacity: 1;
@@ -577,40 +574,49 @@
   transform: scale(0.975);
 }
 
+.quiz-timer-group {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+}
+
 .quiz-lives-container {
   display: flex;
-  gap: 4px;
-  position: absolute;
-  left: clamp(56px, 12vw, 64px);
-  top: 50%;
-  transform: translateY(-50%);
+  gap: 6px;
+  /* position, top, left 제거 - Flexbox로 배치 */
+  height: 20px;
+  align-items: center;
+  justify-content: center;
 }
 
-.quiz-life-heart {
-  font-size: 1.2rem;
+.quiz-life-item {
+  font-size: 1rem;
   transition: all 0.3s ease;
   filter: drop-shadow(0 0 2px rgba(0, 0, 0, 0.3));
+  line-height: 1;
 }
 
-.quiz-life-heart.inactive {
-  opacity: 0.2;
-  filter: grayscale(1);
+.quiz-life-item.used {
+  opacity: 0.4;
+  filter: grayscale(100%);
   transform: scale(0.85);
 }
 
-.quiz-life-heart.active {
-  animation: heart-pulse 2s infinite ease-in-out;
+.quiz-life-item.active {
+  animation: item-pulse 2s infinite ease-in-out;
 }
 
-@keyframes heart-pulse {
-
+@keyframes item-pulse {
   0%,
   100% {
     transform: scale(1);
   }
 
   50% {
-    transform: scale(1.1);
+    transform: scale(1.15);
   }
 }
 
@@ -681,4 +687,215 @@
     bottom: clamp(180px, 30vh, 240px);
     max-width: 400px;
   }
+}
+
+/* Digital Altimeter HUD Styles */
+.altimeter-hud {
+  position: absolute;
+  top: 10px;
+  /* Below the linear timer */
+  left: 0;
+  right: 0;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  padding: 0 16px;
+  z-index: 100;
+  /* Above card, below modals */
+  pointer-events: none;
+  /* Let clicks pass through to card if needed, but buttons need pointer-events: auto */
+}
+
+.altimeter-hud > * {
+  pointer-events: auto;
+}
+
+.altimeter-center {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  transform: translateY(4px);
+}
+
+.altitude-display {
+  display: flex;
+  align-items: baseline;
+  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.8));
+  /* Strong shadow */
+}
+
+.altitude-value {
+  font-family: 'Inter', system-ui, sans-serif;
+  font-weight: 800;
+  /* ExtraBold */
+  font-size: 3rem;
+  line-height: 1;
+  color: #ffffff;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -1px;
+}
+
+.altitude-unit {
+  font-size: 1.2rem;
+  font-weight: 700;
+  color: #ffffff;
+  margin-left: 2px;
+  opacity: 0.9;
+}
+
+.life-indicator {
+  display: flex;
+  gap: 6px;
+  margin-top: 4px;
+}
+
+.life-icon {
+  font-size: 1.2rem;
+  filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.5));
+  transition: all 0.3s ease;
+}
+
+.life-icon.active {
+  animation: life-pulse 2s infinite;
+}
+
+.life-icon.used {
+  filter: grayscale(100%) opacity(0.5) drop-shadow(0 0 0 transparent);
+  transform: scale(0.8);
+}
+
+@keyframes life-pulse {
+  0% {
+    transform: scale(1);
+  }
+
+  50% {
+    transform: scale(1.1);
+  }
+
+  100% {
+    transform: scale(1);
+  }
+}
+
+/* Reworked Quiz Header (Left Stack + Center Timer) */
+.quiz-header-rework {
+  position: relative;
+  width: 100%;
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  /* Left, Center, Right */
+  align-items: flex-start;
+  padding: 16px;
+  z-index: 100;
+  pointer-events: none;
+  /* Allow clicks to pass through spacer areas */
+}
+
+/* Left Controls: Pause + Items */
+.header-left-controls {
+  pointer-events: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  /* Gap between pause button and items */
+  align-items: flex-start;
+}
+
+.pause-button {
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(4px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.pause-button:hover {
+  background: rgba(255, 255, 255, 0.2);
+  transform: scale(1.05);
+}
+
+.pause-icon {
+  font-weight: 900;
+  font-size: 1.2rem;
+  letter-spacing: -1px;
+}
+
+.vertical-item-stack {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.side-item {
+  width: 36px;
+  height: 36px;
+  background: rgba(0, 0, 0, 0.3);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.2rem;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.side-item.active {
+  background: rgba(40, 199, 111, 0.2);
+  border: 1px solid rgba(40, 199, 111, 0.5);
+  animation: life-pulse 2s infinite;
+}
+
+.side-item.used {
+  filter: grayscale(100%) opacity(0.5);
+}
+
+/* Center: Timer & Score */
+.header-center-timer {
+  pointer-events: auto;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-top: 0;
+  /* Align top */
+}
+
+.score-display-round {
+  margin-top: 8px;
+  /* Space from timer */
+  display: flex;
+  align-items: baseline;
+  justify-content: center;
+
+  /* Badge/Card Style */
+  background: rgba(0, 0, 0, 0.6);
+  padding: 6px 16px;
+  border-radius: 20px;
+  backdrop-filter: blur(4px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
+}
+
+.score-display-round .score-val {
+  font-family: 'Inter', system-ui, sans-serif;
+  font-weight: 800;
+  font-size: 1.2rem;
+  /* Reduced size */
+  color: #fff;
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+}
+
+.score-display-round .score-unit {
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: rgba(255, 255, 255, 0.8);
+  margin-left: 2px;
 }

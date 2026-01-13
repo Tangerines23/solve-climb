@@ -22,11 +22,7 @@ interface BadgeSlotProps {
   earnedAt?: string;
 }
 
-export const BadgeSlot: React.FC<BadgeSlotProps> = ({
-  isEarned,
-  badgeDef,
-  earnedAt,
-}) => {
+export const BadgeSlot: React.FC<BadgeSlotProps> = ({ isEarned, badgeDef, earnedAt }) => {
   return (
     <div
       className={`badge-slot ${isEarned ? 'badge-earned' : 'badge-locked'}`}
@@ -52,10 +48,7 @@ interface BadgeCollectionProps {
   onBadgeClick?: (badgeId: string) => void;
 }
 
-export const BadgeCollection: React.FC<BadgeCollectionProps> = ({
-  userId,
-  mode = 'full',
-}) => {
+export const BadgeCollection: React.FC<BadgeCollectionProps> = ({ userId, mode = 'full' }) => {
   const [badges, setBadges] = useState<UserBadge[]>([]);
   const [badgeDefinitions, setBadgeDefinitions] = useState<Record<string, BadgeDefinition>>({});
   const [loading, setLoading] = useState(true);
@@ -96,11 +89,11 @@ export const BadgeCollection: React.FC<BadgeCollectionProps> = ({
         if (mode === 'preview') {
           // 획득한 것 위주 + 락된 것도 몇 개 보여주기?
           // 일단 획득한 것만 먼저, 그리고 나머지는 락된 걸로 채워서 5개 정도?
-          const earned = (userBadges || []);
+          const earned = userBadges || [];
           const locked = allBadgeIds
-            .filter(id => !earnedBadgeIds.has(id))
+            .filter((id) => !earnedBadgeIds.has(id))
             .slice(0, 5 - earned.length)
-            .map(id => ({ badge_id: id, earned_at: '' }));
+            .map((id) => ({ badge_id: id, earned_at: '' }));
 
           displayBadges = [...earned, ...locked].slice(0, 5);
         } else {
@@ -144,10 +137,10 @@ export const BadgeCollection: React.FC<BadgeCollectionProps> = ({
                 {isEarned && badgeDef?.emoji ? badgeDef.emoji : '🔒'}
               </div>
             </div>
-          )
+          );
         })}
       </div>
-    )
+    );
   }
 
   // Full Mode UI (Existing)

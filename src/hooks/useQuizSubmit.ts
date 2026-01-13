@@ -2,7 +2,16 @@
 import { useCallback, useRef, useEffect, FormEvent } from 'react';
 import { QuizQuestion } from '../types/quiz';
 import { GameMode } from '../types/quiz';
-import { SLIDE_PER_WRONG, MAX_POSSIBLE_ANSWER, BASE_CLIMB_DISTANCE, DISTANCE_PER_LEVEL, THEME_MULTIPLIERS, BOSS_LEVEL, BOSS_BONUS, ThemeTier, SURVIVAL_CONFIG } from '../constants/game';
+import {
+  SLIDE_PER_WRONG,
+  MAX_POSSIBLE_ANSWER,
+  BASE_CLIMB_DISTANCE,
+  DISTANCE_PER_LEVEL,
+  THEME_MULTIPLIERS,
+  BOSS_LEVEL,
+  BOSS_BONUS,
+  ThemeTier,
+} from '../constants/game';
 import { normalizeRomaji } from '../utils/japanese';
 import { vibrateMedium, vibrateLong } from '../utils/haptic';
 import { useGameStore } from '../stores/useGameStore';
@@ -81,8 +90,15 @@ export function useQuizSubmit({
   onAnswerSubmitted,
   currentQuestionId,
 }: UseQuizSubmitParams) {
-  const { incrementCombo, resetCombo, isExhausted, activeItems, consumeActiveItem, lives, consumeLife, recoverLife } =
-    useGameStore();
+  const {
+    incrementCombo,
+    resetCombo,
+    isExhausted,
+    activeItems,
+    consumeActiveItem,
+    lives,
+    consumeLife,
+  } = useGameStore();
 
   // 함수 참조를 안정적으로 유지하기 위한 ref
   const paramsRef = useRef({
@@ -180,16 +196,17 @@ export function useQuizSubmit({
         const baseLevelScore = BASE_CLIMB_DISTANCE + (level - 1) * DISTANCE_PER_LEVEL;
 
         // 2. 테마 난이도 배율 (Theme Multiplier)
-        const categoryTopics = APP_CONFIG.SUB_TOPICS[categoryParam as keyof typeof APP_CONFIG.SUB_TOPICS] || [];
+        const categoryTopics =
+          APP_CONFIG.SUB_TOPICS[categoryParam as keyof typeof APP_CONFIG.SUB_TOPICS] || [];
         const currentTopic = categoryTopics.find((t: any) => t.id === subParam);
-        const tier = (currentTopic as any)?.tier as ThemeTier || 'basic';
+        const tier = ((currentTopic as any)?.tier as ThemeTier) || 'basic';
         const themeMultiplier = THEME_MULTIPLIERS[tier];
 
         // 3. 콤보 배율 (Combo Multiplier)
         const comboMultiplier = feverLevel === 2 ? 1.5 : feverLevel === 1 ? 1.2 : 1.0;
 
         // 4. 최종 점수 계산
-        let earnedDistance = Math.floor((baseLevelScore * themeMultiplier) * comboMultiplier);
+        let earnedDistance = Math.floor(baseLevelScore * themeMultiplier * comboMultiplier);
 
         // 5. 보스 보너스 (Lv.10)
         if (level === BOSS_LEVEL) {
@@ -199,12 +216,6 @@ export function useQuizSubmit({
         // 탈진 상태 페널티 (20% 감점, 0.8배 적용)
         if (isExhausted) {
           earnedDistance = Math.floor(earnedDistance * 0.8);
-        }
-
-        // 서바이벌 모드: 10문제마다 라이프 회복
-        if (gameMode === 'survival' && currentWave > 0 && currentWave % SURVIVAL_CONFIG.HEAL_INTERVAL === 0) {
-          recoverLife();
-          showFeedback('LIFE UP!', 'Health Recovered ❤️', 'success');
         }
 
         // 득점 토스트 (문제를 가리지 않도록 우측 상단 인근 배치)
@@ -403,7 +414,6 @@ export function useQuizSubmit({
       setIsFlarePaused,
       lives,
       consumeLife,
-      recoverLife,
     ]
   );
 

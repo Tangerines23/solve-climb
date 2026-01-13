@@ -1,6 +1,6 @@
 import { useState } from 'react';
-import { createSafeStorageKey } from '../utils/storageKey';
-import { storage } from '../utils/storage';
+// import { createSafeStorageKey } from '../utils/storageKey'; // Removed
+// import { storage } from '../utils/storage'; // Removed
 import { BackpackBottomSheet } from './game/BackpackBottomSheet';
 import './GameTipModal.css';
 
@@ -14,7 +14,7 @@ interface GameTipModalProps {
 }
 
 export function GameTipModal({ isOpen, category, subTopic, level, onStart }: GameTipModalProps) {
-  const [dontShowAgain, setDontShowAgain] = useState(false);
+  // const [dontShowAgain, setDontShowAgain] = useState(false); // Removed
   const [isBackpackOpen, setIsBackpackOpen] = useState(false);
   const [selectedItemIds, setSelectedItemIds] = useState<number[]>([]);
 
@@ -22,15 +22,7 @@ export function GameTipModal({ isOpen, category, subTopic, level, onStart }: Gam
     return null;
   }
 
-  const handleStart = () => {
-    if (dontShowAgain) {
-      const tipKey = level
-        ? createSafeStorageKey('gameTip', category, subTopic, level)
-        : createSafeStorageKey('gameTip', category, subTopic);
-      storage.setString(tipKey, 'true');
-    }
-    onStart(selectedItemIds);
-  };
+  // start handler removed, using inline onStart
 
   const toggleItem = (itemId: number) => {
     setSelectedItemIds((prev) =>
@@ -235,17 +227,16 @@ export function GameTipModal({ isOpen, category, subTopic, level, onStart }: Gam
             </div>
 
             <div className="gt-controls-area">
-              <label className="gt-checkbox-label">
-                <input
-                  type="checkbox"
-                  checked={dontShowAgain}
-                  onChange={(e) => setDontShowAgain(e.target.checked)}
-                />
-                <span>다시 보지 않기</span>
-              </label>
+              <div
+                className="gt-checkbox-label"
+                onClick={() => window.history.back()}
+                style={{ cursor: 'pointer', display: 'inline-flex' }}
+              >
+                <span>← 뒤로</span>
+              </div>
 
               <div className="gt-button-group">
-                <button className="gt-start-btn" onClick={handleStart}>
+                <button className="gt-start-btn" onClick={() => onStart(selectedItemIds)}>
                   시작하기
                 </button>
                 <button className="gt-backpack-btn" onClick={() => setIsBackpackOpen(true)}>

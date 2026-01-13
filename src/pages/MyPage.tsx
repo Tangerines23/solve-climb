@@ -36,8 +36,7 @@ const formatBestSubject = (themeId: string | null): string => {
 
   if (themeId.includes('_')) {
     const [category, subject] = themeId.split('_');
-    const categoryName =
-      APP_CONFIG.CATEGORIES.find((c) => c.id === category)?.name || category;
+    const categoryName = APP_CONFIG.CATEGORIES.find((c) => c.id === category)?.name || category;
 
     const subjectMap: Record<string, string> = {
       add: '덧셈',
@@ -68,7 +67,6 @@ export function MyPage() {
   const { stats, session, loading: statsLoading, error: statsError, refetch } = useMyPageStats();
   const favorites = useFavoriteStore((state) => state.favorites);
   const setCategoryTopic = useQuizStore((state) => state.setCategoryTopic);
-
 
   // 오늘의 챌린지 상태
   const [todayChallenge, setTodayChallenge] = useState<TodayChallenge | null>(null);
@@ -670,8 +668,6 @@ export function MyPage() {
             onSendFeedback={handleSendFeedback}
             onLogout={handleLogout}
           />
-
-
 
           {/* 에러 메시지 (있는 경우) */}
           {statsError && (

@@ -2,6 +2,8 @@
 import { Category, Topic, QuizQuestion, Difficulty } from '../types/quiz';
 import { generateRandomNumber } from './math';
 import { generateJapaneseQuestion } from './japanese';
+import { generateLogicProblem } from './LogicProblemGenerator';
+import { generateGeneralQuestion as generateGeneralProblem } from './GeneralProblemGenerator';
 import { NUMBER_RANGE_BY_DIFFICULTY } from '../constants/game';
 
 /**
@@ -164,24 +166,26 @@ function generateLanguageQuestion(topic: Topic, difficulty: Difficulty): QuizQue
 }
 
 /**
- * 논리 문제 생성 (추후 확장 가능)
+ * 논리 문제 생성
  */
-function generateLogicQuestion(topic: Topic, _difficulty: Difficulty): QuizQuestion {
-  // 임시로 간단한 문제 생성
+function generateLogicQuestion(topic: Topic, difficulty: Difficulty): QuizQuestion {
+  const problem = generateLogicProblem(topic as string, difficulty);
   return {
-    question: `논리 - ${topic} 문제 (개발 중)`,
-    answer: 0,
+    question: problem.question,
+    answer: problem.answer,
   };
 }
 
 /**
- * 상식 문제 생성 (추후 확장 가능)
+ * 상식 문제 생성
  */
-function generateGeneralQuestion(topic: Topic, _difficulty: Difficulty): QuizQuestion {
-  // 임시로 간단한 문제 생성
+function generateGeneralQuestion(topic: Topic, difficulty: Difficulty): QuizQuestion {
+  // Topic 타입을 GeneralTopic으로 단언 (호출 시 보장된다고 가정)
+  // 안전하게 처리하려면 타입 가드 필요하지만, 현재 구조상 category 분기 후 들어오므로 안전
+  const problem = generateGeneralProblem(topic as any, difficulty);
   return {
-    question: `상식 - ${topic} 문제 (개발 중)`,
-    answer: 0,
+    question: problem.question,
+    answer: problem.answer,
   };
 }
 

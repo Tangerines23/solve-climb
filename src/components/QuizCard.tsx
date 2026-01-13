@@ -7,6 +7,7 @@ import { QwertyKeypad } from './QwertyKeypad';
 import { CustomKeypad } from './CustomKeypad';
 import { APP_CONFIG } from '../config/app';
 import { SURVIVAL_CONFIG } from '../constants/game';
+import { getItemEmoji } from '../constants/items';
 import { useGameStore } from '../stores/useGameStore';
 import { sendDebugLog } from '../utils/debugLogger';
 
@@ -33,12 +34,17 @@ interface QuizCardProps {
   lives: number; // 현재 라이프
   onSafetyRopeUsed?: () => void;
 
+  // Pause Props
+  onPause: () => void;
+  // remainingPauses removed
+
   // 상태
   isSubmitting: boolean;
   isError: boolean;
   useSystemKeyboard: boolean;
   showTipModal: boolean;
-  isPaused: boolean; // New prop for global pause (modal, countdown)
+  isPaused: boolean; // Timer pause (global)
+  isInputPaused?: boolean; // Input specific pause (defaults to isPaused if undefined)
   showExitConfirm: boolean;
   isFadingOut: boolean;
   showAnswer?: boolean; // 디버그 모드: 정답 표시
@@ -55,7 +61,7 @@ interface QuizCardProps {
   // 핸들러
   generateNewQuestion: () => void;
   handleSubmit: (e: FormEvent) => void;
-  handleBack: () => void;
+  // handleBack removed
   handleGameOver: () => void;
   handleKeypadNumber: (num: string) => void;
   handleQwertyKeyPress: (key: string) => void;
@@ -94,6 +100,7 @@ function QuizCardComponent({
   useSystemKeyboard,
   showTipModal,
   isPaused,
+  isInputPaused, // New prop
   showExitConfirm,
   isFadingOut,
   generateNewQuestion,
@@ -105,7 +112,6 @@ function QuizCardComponent({
   showSlideToast,
   damagePosition,
   handleSubmit,
-  handleBack,
   handleGameOver,
   handleKeypadNumber,
   handleQwertyKeyPress,
@@ -119,6 +125,7 @@ function QuizCardComponent({
   setIsFadingOut,
   onSafetyRopeUsed,
   toastValue,
+  onPause,
 }: QuizCardProps) {
   // #region agent log
   const renderId = Math.random().toString(36).substring(7);
@@ -129,6 +136,9 @@ function QuizCardComponent({
     hasCurrentQuestion: !!currentQuestion,
   });
   // #endregion
+
+  // Determine effective input pause state
+  const effectiveInputPaused = isInputPaused !== undefined ? isInputPaused : isPaused;
 
   // URL 파라미터가 있으면 그것을 우선 사용, 없으면 store에서 가져오기
   const displayCategory = useMemo(() => {
@@ -195,18 +205,35 @@ function QuizCardComponent({
     return isEquationQuiz || isCalculusQuiz;
   }, [isEquationQuiz, isCalculusQuiz]);
 
-  const { activeItems, consumeActiveItem, consumeLife, isExhausted } = useGameStore();
+  const { activeItems, consumeActiveItem, consumeLife, isExhausted, usedItems } = useGameStore();
 
   const currentSurvivalDuration = useMemo(() => {
     if (gameMode !== 'survival') return SURVIVAL_QUESTION_TIME;
+
     const currentWave = totalQuestions + 1;
     const waveConfig = SURVIVAL_CONFIG.WAVES.find(
       (w) => currentWave >= w.start && currentWave <= w.end
     );
-    return waveConfig ? waveConfig.timer : 7; // 하드코어 7초
+
+    // 기본 파동 타이머 (없으면 하드코어 7초)
+    const baseTimer = waveConfig ? waveConfig.timer : 7;
+
+    // v1.9 스마트 압박 (Smart Pressure) 적용
+    // 공식: BaseTime * clamp(MIN, START - (totalQuestions * DECAY))
+    const { START, MIN, DECAY } = SURVIVAL_CONFIG.PRESSURE_CONFIG.PRESSURE_FACTOR;
+    const pressureMultiplier = Math.max(MIN, START - totalQuestions * DECAY);
+
+    return Math.floor(baseTimer * pressureMultiplier);
   }, [gameMode, totalQuestions, SURVIVAL_QUESTION_TIME]);
 
   const isPositiveToast = useMemo(() => toastValue.startsWith('+'), [toastValue]);
+
+  const forceSystemKeyboard = useMemo(() => {
+    // 일반 상식 문제 중 정답이 텍스트인 경우 시스템 키보드 강제 사용 (한글 입력 지원)
+    return categoryParam === 'general' && typeof currentQuestion?.answer === 'string';
+  }, [categoryParam, currentQuestion]);
+
+  const shouldUseSystemKeyboard = useSystemKeyboard || forceSystemKeyboard;
 
   // --- Early Returns must come AFTER all hooks ---
 
@@ -266,39 +293,59 @@ function QuizCardComponent({
 
   return (
     <>
-      {/* 상단 네비게이션 (뒤로가기 + 타이머) */}
-      <header className="quiz-header">
-        <button className="quiz-back-button" onClick={handleBack} aria-label="뒤로 가기">
-          ←
-        </button>
-        {gameMode === 'survival' && (
-          <div className="quiz-lives-container">
-            {[...Array(SURVIVAL_CONFIG.MAX_LIVES)].map((_, i) => (
-              <span key={i} className={`quiz-life-heart ${i < lives ? 'active' : 'inactive'}`}>
-                ❤️
-              </span>
+      {/* Header Area with new 3-Column Grid or Flex */}
+      <header className="quiz-header-rework">
+        {/* LEFT: Pause & Items */}
+        <div className="header-left-controls">
+          <button className="pause-button" onClick={onPause} aria-label="일시정지">
+            <span className="pause-icon">||</span>
+          </button>
+
+          <div className="vertical-item-stack">
+            {/* Active Items */}
+            {activeItems.map((code, i) => (
+              <div key={`active-${i}`} className="side-item active">
+                {getItemEmoji(code)}
+              </div>
+            ))}
+            {/* Used Items */}
+            {usedItems.map((code, i) => (
+              <div key={`used-${i}`} className="side-item used">
+                {getItemEmoji(code)}
+              </div>
             ))}
           </div>
-        )}
-        <div className="quiz-timer-container">
-          {gameMode === 'survival' ? (
-            <TimerCircle
-              duration={currentSurvivalDuration}
-              onComplete={handleTimeUp}
-              isPaused={isSubmitting || isPaused}
-              key={questionKey}
-            />
-          ) : (
-            <TimerCircle
-              duration={timeLimit}
-              onComplete={handleTimeUp}
-              isPaused={isPaused}
-              enableFastForward={true}
-              key={`${timeLimit}-${timerResetKey || 0}`}
-            />
-          )}
         </div>
-        <div className="quiz-header-spacer"></div>
+
+        {/* CENTER: Timer Only */}
+        <div className="header-center-timer">
+          <div className="timer-wrapper">
+            {gameMode === 'survival' ? (
+              <TimerCircle
+                duration={currentSurvivalDuration}
+                onComplete={handleTimeUp}
+                isPaused={isSubmitting || isPaused}
+                key={questionKey}
+              />
+            ) : (
+              <TimerCircle
+                duration={timeLimit}
+                onComplete={handleTimeUp}
+                isPaused={isPaused}
+                enableFastForward={true}
+                key={`${timeLimit}-${timerResetKey || 0}`}
+              />
+            )}
+          </div>
+        </div>
+
+        {/* RIGHT: Score Display */}
+        <div className="header-right-stats">
+          <div className="score-display-round">
+            <span className="score-val">{totalQuestions * 10}</span>
+            <span className="score-unit">m</span>
+          </div>
+        </div>
       </header>
 
       {/* 메인 컨텐츠 영역 */}
@@ -325,55 +372,62 @@ function QuizCardComponent({
               )}
             </div>
             {/* 답안 표시 영역 - 시스템 키보드 사용 시 input, 아니면 display */}
-            {useSystemKeyboard ? (
+            {shouldUseSystemKeyboard ? (
               <>
                 <div className={`answer-input-wrapper ${isError ? 'is-error' : ''}`}>
                   <input
                     ref={inputRef}
-                    type={isJapaneseQuiz ? 'text' : 'number'}
-                    inputMode={isJapaneseQuiz ? 'text' : 'numeric'}
+                    type={isJapaneseQuiz || forceSystemKeyboard ? 'text' : 'number'}
+                    inputMode={isJapaneseQuiz ? 'text' : forceSystemKeyboard ? 'text' : 'numeric'}
                     value={isError ? displayValue : answerInput}
                     onChange={(e) => {
-                      if (isError || isSubmitting || isPaused) return; // Disable input on pause
+                      if (isError || isSubmitting || effectiveInputPaused) return; // Disable input on pause
+
+                      const value = e.target.value;
+
                       if (isJapaneseQuiz) {
                         // 일본어: 영문자만 허용 (로마지)
-                        const value = e.target.value.replace(/[^a-zA-Z]/g, '');
+                        const filtered = value.replace(/[^a-zA-Z]/g, '');
+                        if (filtered.length <= 20) {
+                          setAnswerInput(filtered);
+                          setDisplayValue(filtered);
+                        }
+                      } else if (forceSystemKeyboard) {
+                        // 상식(텍스트): 모든 입력 허용 (길이 제한만)
                         if (value.length <= 10) {
                           setAnswerInput(value);
                           setDisplayValue(value);
                         }
                       } else {
-                        // 수학: 숫자 및 음수 처리
-                        let value = e.target.value;
+                        // 수학/논리/상식(숫자): 숫자 및 음수 처리
                         if (allowNegative) {
-                          // 음수 기호와 숫자만 허용
-                          value = value.replace(/[^0-9-]/g, '');
-                          // 음수 기호는 맨 앞에만 허용
-                          if (value.includes('-') && value.indexOf('-') !== 0) {
-                            value = value.replace(/-/g, '');
-                            value = '-' + value;
+                          // 음수 기호와 숫자만 허용 (기존 로직 유지)
+                          let newValue = value.replace(/[^0-9-]/g, '');
+                          if (newValue.includes('-') && newValue.indexOf('-') !== 0) {
+                            newValue = newValue.replace(/-/g, '');
+                            newValue = '-' + newValue;
                           }
-                          // 음수 기호가 여러 개면 하나만 유지
-                          const minusCount = (value.match(/-/g) || []).length;
+                          const minusCount = (newValue.match(/-/g) || []).length;
                           if (minusCount > 1) {
-                            value = '-' + value.replace(/-/g, '');
+                            newValue = '-' + newValue.replace(/-/g, '');
                           }
-                          if (value.length <= 6) {
-                            setAnswerInput(value);
-                            setDisplayValue(value);
+                          if (newValue.length <= 6) {
+                            setAnswerInput(newValue);
+                            setDisplayValue(newValue);
                           }
                         } else {
-                          // 일반 수학 문제: 숫자만 허용
-                          value = value.replace(/[^0-9]/g, '');
-                          if (value.length <= 5) {
-                            setAnswerInput(value);
-                            setDisplayValue(value);
+                          // 일반 숫자: 숫자만 허용
+                          const newValue = value.replace(/[^0-9]/g, '');
+                          if (newValue.length <= 6) {
+                            // 길이 제한 5->6으로 통일
+                            setAnswerInput(newValue);
+                            setDisplayValue(newValue);
                           }
                         }
                       }
                     }}
                     onKeyDown={(e) => {
-                      if (e.key === 'Enter' && !isError && !isPaused && !isSubmitting) {
+                      if (e.key === 'Enter' && !isError && !effectiveInputPaused && !isSubmitting) {
                         e.preventDefault();
                         handleSubmit(e);
                       }
@@ -386,7 +440,7 @@ function QuizCardComponent({
                     }}
                     placeholder={isJapaneseQuiz ? '로마지 입력 (예: a, ki)' : '정답 입력'}
                     className={`answer-input-system ${inputAnimation} ${isError ? 'error-state is-error' : ''} ${showFlash && !isExhausted ? 'input-error-flash' : ''}`}
-                    disabled={(isSubmitting && !isError) || isPaused}
+                    disabled={(isSubmitting && !isError) || effectiveInputPaused}
                     readOnly={isError}
                     autoFocus={false}
                   />
@@ -394,10 +448,10 @@ function QuizCardComponent({
                 <button
                   type="submit"
                   className="submit-button-system"
-                  disabled={isSubmitting || !answerInput || isError || isPaused}
+                  disabled={isSubmitting || !answerInput || isError || effectiveInputPaused}
                   onClick={(e) => {
                     e.preventDefault();
-                    if (!isError && !isPaused && !isSubmitting) {
+                    if (!isError && !effectiveInputPaused && !isSubmitting) {
                       handleSubmit(e);
                     }
                   }}
@@ -427,7 +481,9 @@ function QuizCardComponent({
               className={`slide-toast ${isPositiveToast ? 'is-positive' : ''}`}
               style={{ left: damagePosition.left, top: damagePosition.top }}
             >
-              <span className={`slide-toast-text ${isPositiveToast ? 'is-positive' : ''} ${isExhausted && isPositiveToast ? 'is-exhausted' : ''}`}>
+              <span
+                className={`slide-toast-text ${isPositiveToast ? 'is-positive' : ''} ${isExhausted && isPositiveToast ? 'is-exhausted' : ''}`}
+              >
                 {toastValue}
               </span>
             </div>
@@ -457,7 +513,7 @@ function QuizCardComponent({
         )}
 
         {/* 하단 키보드 (카드 아래) - 시스템 키보드 사용 시 숨김 */}
-        {!useSystemKeyboard && (
+        {!shouldUseSystemKeyboard && (
           <>
             {isJapaneseQuiz ? (
               <QwertyKeypad
@@ -465,7 +521,7 @@ function QuizCardComponent({
                 onClear={handleKeypadClear}
                 onBackspace={handleKeypadBackspace}
                 onSubmit={handleSubmit}
-                disabled={isSubmitting || isError || isPaused}
+                disabled={isSubmitting || isError || effectiveInputPaused}
                 mode="text"
               />
             ) : (
@@ -474,7 +530,7 @@ function QuizCardComponent({
                 onClear={handleKeypadClear}
                 onBackspace={handleKeypadBackspace}
                 onSubmit={handleSubmit}
-                disabled={isSubmitting || isError || isPaused}
+                disabled={isSubmitting || isError || effectiveInputPaused}
                 showNegative={allowNegative}
               />
             )}
@@ -497,6 +553,7 @@ export const QuizCard = React.memo(QuizCardComponent, (prevProps, nextProps) => 
     prevProps.isError === nextProps.isError &&
     prevProps.showTipModal === nextProps.showTipModal &&
     prevProps.isPaused === nextProps.isPaused &&
+    prevProps.isInputPaused === nextProps.isInputPaused &&
     prevProps.showExitConfirm === nextProps.showExitConfirm &&
     prevProps.isFadingOut === nextProps.isFadingOut &&
     prevProps.cardAnimation === nextProps.cardAnimation &&
@@ -512,6 +569,7 @@ export const QuizCard = React.memo(QuizCardComponent, (prevProps, nextProps) => 
     prevProps.lives === nextProps.lives &&
     prevProps.totalQuestions === nextProps.totalQuestions &&
     prevProps.generateNewQuestion === nextProps.generateNewQuestion &&
-    prevProps.useSystemKeyboard === nextProps.useSystemKeyboard
+    prevProps.useSystemKeyboard === nextProps.useSystemKeyboard &&
+    prevProps.categoryParam === nextProps.categoryParam
   );
 });

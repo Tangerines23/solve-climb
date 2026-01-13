@@ -1,4 +1,5 @@
 import { create } from 'zustand';
+import { SURVIVAL_CONFIG } from '../constants/game';
 
 interface GameState {
   score: number;
@@ -17,6 +18,7 @@ interface GameState {
   setCombo: (combo: number) => void; // 콤보를 직접 설정 (피버 상태 자동 계산)
   setExhausted: (exhausted: boolean) => void;
   activeItems: string[]; // List of item codes active in the current session
+  usedItems: string[]; // Items used in the current session
   setActiveItems: (codes: string[]) => void;
   consumeActiveItem: (code: string) => void;
 
@@ -24,7 +26,6 @@ interface GameState {
   isStaminaConsumed: boolean;
   setStaminaConsumed: (consumed: boolean) => void;
   consumeLife: () => void;
-  recoverLife: () => void;
   resetGame: () => void;
 }
 
@@ -37,7 +38,8 @@ export const useGameStore = create<GameState>((set) => ({
   showVignette: false,
   activeItems: [],
   isStaminaConsumed: false,
-  lives: 3,
+  lives: SURVIVAL_CONFIG.INITIAL_LIVES,
+  usedItems: [],
 
   setScore: (score) => set({ score }),
 
@@ -103,11 +105,6 @@ export const useGameStore = create<GameState>((set) => ({
       lives: Math.max(0, state.lives - 1),
     })),
 
-  recoverLife: () =>
-    set((state) => ({
-      lives: Math.min(5, state.lives + 1),
-    })),
-
   resetGame: () =>
     set({
       score: 0,
@@ -117,8 +114,9 @@ export const useGameStore = create<GameState>((set) => ({
       showSpeedLines: false,
       showVignette: false,
       activeItems: [],
+      usedItems: [],
       isStaminaConsumed: false,
-      lives: 3,
+      lives: SURVIVAL_CONFIG.INITIAL_LIVES,
     }),
 
   setActiveItems: (codes) => set({ activeItems: codes }),
@@ -126,5 +124,6 @@ export const useGameStore = create<GameState>((set) => ({
   consumeActiveItem: (code) =>
     set((state) => ({
       activeItems: state.activeItems.filter((itemCode) => itemCode !== code),
+      usedItems: [...state.usedItems, code],
     })),
 }));

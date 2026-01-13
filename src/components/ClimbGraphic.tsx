@@ -1,113 +1,18 @@
-import React, { useEffect, useRef, useMemo, useState, useCallback } from 'react';
+import React, { useRef, useMemo, useCallback } from 'react';
 import { useLevelProgressStore } from '../stores/useLevelProgressStore';
 import { useProfileStore } from '../stores/useProfileStore';
 import { ArithmeticBackground, EquationsBackground } from './ClimbGraphicBackgrounds';
 import { STAGE_CONFIG, type StageConfig } from '../constants/stages';
 import './ClimbGraphic.css';
 
-// 길게 누르기 기능이 있는 버튼 컴포넌트
+// 단순화된 LevelButton (Long Press 로직 제거됨)
 interface LevelButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
-  onLongPress?: () => void;
   children: React.ReactNode;
 }
 
 export const LevelButton = React.forwardRef<HTMLButtonElement, LevelButtonProps>(
-  ({ onLongPress, onClick, onMouseDown, onMouseUp, onTouchStart, onTouchEnd, ...props }, ref) => {
-    const longPressTimerRef = useRef<NodeJS.Timeout | null>(null);
-    const toastTimerRef = useRef<NodeJS.Timeout | null>(null);
-    const [isLongPressing, setIsLongPressing] = useState(false);
-
-    const handleStart = useCallback(
-      (e: React.MouseEvent<HTMLButtonElement> | React.TouchEvent<HTMLButtonElement>) => {
-        // disabled 상태이거나 onLongPress가 없으면 작동하지 않음
-        if (props.disabled || !onLongPress) {
-          return;
-        }
-
-        console.log('LevelButton: 길게 누르기 시작');
-        setIsLongPressing(true);
-
-        // 2초 후 토스트 표시 (첫 번째 콜백)
-        toastTimerRef.current = setTimeout(() => {
-          console.log('LevelButton: 2초 경과 - 토스트 표시');
-          if (onLongPress) {
-            onLongPress(); // 토스트 표시
-          }
-        }, 2000);
-
-        // 4초 후 실제 해제 (두 번째 콜백)
-        longPressTimerRef.current = setTimeout(() => {
-          console.log('LevelButton: 4초 경과 - 해제');
-          if (onLongPress) {
-            onLongPress(); // 실제 해제
-          }
-          setIsLongPressing(false);
-          if (toastTimerRef.current) {
-            clearTimeout(toastTimerRef.current);
-          }
-        }, 4000);
-
-        if (onMouseDown && 'type' in e && e.type === 'mousedown') {
-          onMouseDown(e as React.MouseEvent<HTMLButtonElement>);
-        }
-        if (onTouchStart && 'type' in e && e.type === 'touchstart') {
-          onTouchStart(e as React.TouchEvent<HTMLButtonElement>);
-        }
-      },
-      [onLongPress, props.disabled, onMouseDown, onTouchStart]
-    );
-
-    const handleEnd = useCallback(
-      (e: React.MouseEvent<HTMLButtonElement> | React.TouchEvent<HTMLButtonElement>) => {
-        if (longPressTimerRef.current) {
-          clearTimeout(longPressTimerRef.current);
-          longPressTimerRef.current = null;
-        }
-        if (toastTimerRef.current) {
-          clearTimeout(toastTimerRef.current);
-          toastTimerRef.current = null;
-        }
-        setIsLongPressing(false);
-
-        if (onMouseUp && 'type' in e && e.type === 'mouseup') {
-          onMouseUp(e as React.MouseEvent<HTMLButtonElement>);
-        }
-        if (onTouchEnd && 'type' in e && e.type === 'touchend') {
-          onTouchEnd(e as React.TouchEvent<HTMLButtonElement>);
-        }
-      },
-      [onMouseUp, onTouchEnd]
-    );
-
-    useEffect(() => {
-      return () => {
-        if (longPressTimerRef.current) {
-          clearTimeout(longPressTimerRef.current);
-        }
-        if (toastTimerRef.current) {
-          clearTimeout(toastTimerRef.current);
-        }
-      };
-    }, []);
-
-    return (
-      <button
-        ref={ref}
-        {...props}
-        onMouseDown={handleStart}
-        onMouseUp={handleEnd}
-        onMouseLeave={handleEnd}
-        onTouchStart={handleStart}
-        onTouchEnd={handleEnd}
-        onTouchCancel={handleEnd}
-        onClick={(e) => {
-          // 길게 누르기 중이면 클릭 무시
-          if (!isLongPressing && onClick) {
-            onClick(e);
-          }
-        }}
-      />
-    );
+  ({ onClick, ...props }, ref) => {
+    return <button ref={ref} onClick={onClick} {...props} />;
   }
 );
 
@@ -119,7 +24,6 @@ interface ClimbGraphicProps {
   levels: Array<{ level: number; name: string; description: string }>;
   categoryColor?: string;
   onLevelClick?: (level: number, levelName: string) => void;
-  onLevelLongPress?: (level: number) => void;
   onUnderDevelopmentClick?: () => void;
 }
 
@@ -142,7 +46,6 @@ export function ClimbGraphic({
   levels,
   categoryColor = '#10b981',
   onLevelClick,
-  onLevelLongPress,
   onUnderDevelopmentClick,
 }: ClimbGraphicProps) {
   const isLevelCleared = useLevelProgressStore((state) => state.isLevelCleared);
@@ -416,21 +319,7 @@ export function ClimbGraphic({
                         onLevelClick(level.id, levelInfo.name);
                       }
                     }}
-                    onLongPress={
-                      level.status === 'locked'
-                        ? undefined
-                        : () => {
-                          console.log(
-                            'ClimbGraphic: onLongPress 호출됨, level:',
-                            level.id,
-                            'onLevelLongPress:',
-                            !!onLevelLongPress
-                          );
-                          if (onLevelLongPress) {
-                            onLevelLongPress(level.id);
-                          }
-                        }
-                    }
+                    // onLongPress removed
                     disabled={level.status === 'locked'}
                     style={{
                       width: '56px',

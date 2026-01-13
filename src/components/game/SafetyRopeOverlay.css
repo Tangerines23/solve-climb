@@ -1,59 +1,56 @@
 .safety-rope-overlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: rgba(40, 199, 111, 0.2);
-  /* Green tint */
+  position: absolute;
+  top: 15%;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 1000;
+  pointer-events: none;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  z-index: 9999;
-  backdrop-filter: blur(2px);
-  animation: safeFlash 0.3s ease-out;
+  animation: safeFadeIn 0.3s ease-out;
 }
 
-.safe-text {
-  font-size: 5rem;
-  font-weight: 900;
-  color: #28c76f;
-  text-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
-  transform: rotate(-5deg);
-  animation: safePop 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-}
-
-.safe-subtext {
-  margin-top: 10px;
-  font-size: 1.2rem;
-  color: #fff;
-  font-weight: bold;
-  text-shadow: 0 1px 4px rgba(0, 0, 0, 0.5);
-  animation: bounceanimation 1s infinite;
-}
-
-@keyframes safeFlash {
+@keyframes safeFadeIn {
   0% {
     opacity: 0;
-    background: rgba(255, 255, 255, 0.5);
+    transform: translate(-50%, -20px);
   }
 
   100% {
     opacity: 1;
-    background: rgba(40, 199, 111, 0.2);
+    transform: translate(-50%, 0);
   }
+}
+
+.safe-text {
+  font-size: 3rem;
+  font-weight: 900;
+  color: #28c76f;
+  text-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+  transform: rotate(-5deg);
+  animation: safePop 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.safe-subtext {
+  margin-top: 8px;
+  font-size: 1rem;
+  color: #333;
+  /* Darker text for visibility without dark background */
+  font-weight: bold;
+  background: rgba(255, 255, 255, 0.9);
+  padding: 4px 12px;
+  border-radius: 20px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  animation: none;
+  /* Removed bounce for cleaner look */
 }
 
 @keyframes safePop {
   0% {
-    transform: scale(0.5) rotate(-15deg);
+    transform: scale(0.5) rotate(-10deg);
     opacity: 0;
-  }
-
-  70% {
-    transform: scale(1.1) rotate(0deg);
-    opacity: 1;
   }
 
   100% {

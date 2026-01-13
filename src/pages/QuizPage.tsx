@@ -11,7 +11,6 @@ import { useQuizGameState } from '../hooks/useQuizGameState';
 import { useQuizAnimations } from '../hooks/useQuizAnimations';
 import { useQuizSubmit } from '../hooks/useQuizSubmit';
 import { useSettingsStore } from '../stores/useSettingsStore';
-import { storage } from '../utils/storage';
 import { useQuizRevive } from '../hooks/useQuizRevive';
 import { useUserStore } from '../stores/useUserStore';
 import { useGameStore } from '../stores/useGameStore';
@@ -25,7 +24,6 @@ import {
   validateSubTopicParam,
   validateLevelParam,
   validateModeParam,
-  createSafeStorageKey,
 } from '../utils/urlParams';
 import { QuizQuestion } from '../types/quiz';
 import { QuizPreview } from '../components/quiz/QuizPreview';
@@ -110,6 +108,10 @@ export function QuizPage() {
   const [isFlarePaused, setIsFlarePaused] = useState(false); // 구조 신호탄 사용 후 타이머 일시정지
   const [showSafetyRope, setShowSafetyRope] = useState(false);
 
+  // Pause System State
+  const [showPauseModal, setShowPauseModal] = useState(false);
+  const [remainingPauses, setRemainingPauses] = useState(3);
+
   const {
     setExhausted,
     resetGame,
@@ -122,9 +124,7 @@ export function QuizPage() {
   const isAdminMode = useDebugStore((state) => state.isAdminMode);
   const [questionKey, setQuestionKey] = useState(0);
   const [timerResetKey, setTimerResetKey] = useState(0);
-  const [previewKeyboardType] = useState<'custom' | 'qwerty'>(
-    () => keyboardType
-  );
+  const [previewKeyboardType] = useState<'custom' | 'qwerty'>(() => keyboardType);
 
   const SURVIVAL_QUESTION_TIME = 5;
   const exitConfirmTimeoutRef = useRef<NodeJS.Timeout | null>(null);
@@ -183,6 +183,12 @@ export function QuizPage() {
     },
   });
 
+  // generateNewQuestion의 최신 참조를 유지하기 위한 ref (for Pause Logic)
+  const generateNewQuestionRef = useRef(generateNewQuestion);
+  useEffect(() => {
+    generateNewQuestionRef.current = generateNewQuestion;
+  }, [generateNewQuestion]);
+
   // 구조 신호탄 타이머 재개 핸들러
   const handleFlareInputStart = useCallback(() => {
     if (isFlarePaused) {
@@ -190,12 +196,73 @@ export function QuizPage() {
     }
   }, [isFlarePaused]);
 
+  // handleBack (Moved up for Pause Logic)
+  const handleBack = useCallback(() => {
+    if (showExitConfirm) {
+      if (exitConfirmTimeoutRef.current) {
+        clearTimeout(exitConfirmTimeoutRef.current);
+        exitConfirmTimeoutRef.current = null;
+      }
+      setIsFadingOut(false);
+      setShowExitConfirm(false);
+      if (categoryParam && subParam) {
+        navigate(`/level-select?category=${categoryParam}&sub=${subParam}`);
+      } else {
+        navigate('/');
+      }
+    } else {
+      setToastValue('뒤로 가려면 한 번 더 누르세요');
+      setShowExitConfirm(true);
+      setIsFadingOut(false);
+
+      // 애니메이션을 위해 잠시 대기
+      setTimeout(() => setIsFadingOut(true), 2500);
+
+      exitConfirmTimeoutRef.current = setTimeout(() => {
+        setShowExitConfirm(false);
+        setIsFadingOut(false);
+        exitConfirmTimeoutRef.current = null;
+      }, 3000); // 3초 후 토스트 닫기
+    }
+  }, [showExitConfirm, categoryParam, subParam, navigate]);
+
+  // Pause System Handlers
+  const handlePauseClick = useCallback(() => {
+    if (remainingPauses > 0) {
+      setShowPauseModal(true);
+    } else {
+      feedbackRef.current?.show('일시정지 횟수 초과!', '더 이상 일시정지할 수 없습니다.', 'info');
+    }
+  }, [remainingPauses]);
+
+  const handlePauseResume = useCallback(() => {
+    if (remainingPauses > 0) {
+      setRemainingPauses((prev) => prev - 1);
+      // Reroll Question Logic
+      generateNewQuestionRef.current(); // New question
+      // State updates
+      setShowPauseModal(false);
+      feedbackRef.current?.show('문제 교체!', '일시정지 페널티로 문제가 변경되었습니다.', 'info');
+    }
+  }, [remainingPauses]);
+
+  const handlePauseExit = useCallback(() => {
+    if (confirm('게임을 종료하시겠습니까?')) {
+      handleBack(); // Use handleBack logic
+    }
+  }, [handleBack]);
+
+  // Pause Logic Separation
+  const isTimerPaused =
+    showTipModal || showLastChanceModal || showCountdown || isFlarePaused || showPauseModal;
+  const isInputPaused = showTipModal || showLastChanceModal || showCountdown || showPauseModal; // Input is NOT paused by Flare
+
   // 키보드 입력 처리
   const inputHandlers = useQuizInput({
     answerInput,
     isSubmitting,
     isError: animations.isError,
-    isPaused: showTipModal || showLastChanceModal || showCountdown || isFlarePaused,
+    isPaused: isInputPaused, // Use Input Pause specifically
     categoryParam,
     subParam,
     setAnswerInput,
@@ -203,7 +270,10 @@ export function QuizPage() {
     onInputStart: handleFlareInputStart,
   });
 
-  // gameState의 setter들을 안정적으로 참조하기 위한 ref
+  // ... (refs)
+
+  // ... (handlers)
+
   const gameStateSettersRef = useRef({
     handleGameOver: gameState.handleGameOver,
     setTotalQuestions: gameState.setTotalQuestions,
@@ -230,12 +300,6 @@ export function QuizPage() {
     handleGameOverRef.current = gameState.handleGameOver;
   }, [gameState.handleGameOver]);
 
-  // generateNewQuestion의 최신 참조를 유지하기 위한 ref
-  const generateNewQuestionRef = useRef(generateNewQuestion);
-  useEffect(() => {
-    generateNewQuestionRef.current = generateNewQuestion;
-  }, [generateNewQuestion]);
-
   // Revive Hook Integration
   const revive = useQuizRevive({
     gameMode,
@@ -253,12 +317,7 @@ export function QuizPage() {
     isPreview,
   });
 
-  const {
-    handleRevive,
-    handlePurchaseAndRevive,
-    handleGiveUp,
-    stableHandleGameOver,
-  } = revive;
+  const { handleRevive, handlePurchaseAndRevive, handleGiveUp, stableHandleGameOver } = revive;
 
   const handleCountdownComplete = useCallback(() => {
     // 카운트다운 완료 후 처리 순서:
@@ -325,11 +384,8 @@ export function QuizPage() {
   // categoryParam이나 subParam, levelParam이 변경될 때 팁 모달 상태 업데이트
   useEffect(() => {
     if (categoryParam && subParam) {
-      const tipKey = levelParam
-        ? createSafeStorageKey('gameTip', categoryParam, subParam, levelParam)
-        : createSafeStorageKey('gameTip', categoryParam, subParam);
-      const shouldHide = storage.getString(tipKey) === 'true';
-      setShowTipModal(!shouldHide);
+      // 항상 팁 모달을 보여줍니다 (다시 보지 않기 제거됨)
+      setShowTipModal(true);
     }
   }, [categoryParam, subParam, levelParam]);
 
@@ -546,36 +602,6 @@ export function QuizPage() {
     }
   }, [showTipModal, sessionCreated]);
 
-  const handleBack = useCallback(() => {
-    if (showExitConfirm) {
-      if (exitConfirmTimeoutRef.current) {
-        clearTimeout(exitConfirmTimeoutRef.current);
-        exitConfirmTimeoutRef.current = null;
-      }
-      setIsFadingOut(false);
-      setShowExitConfirm(false);
-      if (categoryParam && subParam) {
-        navigate(`/level-select?category=${categoryParam}&sub=${subParam}`);
-      } else {
-        navigate('/');
-      }
-    } else {
-      setIsFadingOut(false);
-      setShowExitConfirm(true);
-      if (exitConfirmTimeoutRef.current) {
-        clearTimeout(exitConfirmTimeoutRef.current);
-      }
-      exitConfirmTimeoutRef.current = setTimeout(() => {
-        setIsFadingOut(true);
-        setTimeout(() => {
-          setShowExitConfirm(false);
-          setIsFadingOut(false);
-          exitConfirmTimeoutRef.current = null;
-        }, 300);
-      }, 3000);
-    }
-  }, [showExitConfirm, categoryParam, subParam, navigate]);
-
   // 화면 높이 감지 및 키보드 모드 전환
   useEffect(() => {
     const checkViewportHeight = () => {
@@ -762,6 +788,11 @@ export function QuizPage() {
         setShowStaminaModal={setShowStaminaModal}
         handlePlayAnyway={handlePlayAnyway}
         handleWatchAd={handleWatchAd}
+        // Pause System
+        showPauseModal={showPauseModal}
+        remainingPauses={remainingPauses}
+        handlePauseResume={handlePauseResume}
+        handlePauseExit={handlePauseExit}
       />
       <ItemFeedbackOverlay ref={feedbackRef} />
       <QuizCard
@@ -784,7 +815,8 @@ export function QuizPage() {
         isError={animations.isError}
         useSystemKeyboard={useSystemKeyboard}
         showTipModal={showTipModal}
-        isPaused={showTipModal || showLastChanceModal || showCountdown || isFlarePaused}
+        isPaused={isTimerPaused}
+        isInputPaused={isInputPaused}
         showExitConfirm={showExitConfirm}
         isFadingOut={isFadingOut}
         showAnswer={isAdminMode}
@@ -797,7 +829,6 @@ export function QuizPage() {
         damagePosition={animations.damagePosition}
         generateNewQuestion={generateNewQuestion}
         handleSubmit={handleSubmit}
-        handleBack={handleBack}
         handleGameOver={stableHandleGameOver}
         handleKeypadNumber={inputHandlers.handleKeypadNumber}
         handleQwertyKeyPress={inputHandlers.handleQwertyKeyPress}
@@ -809,6 +840,8 @@ export function QuizPage() {
         setDisplayValue={setDisplayValue}
         setShowExitConfirm={setShowExitConfirm}
         setIsFadingOut={setIsFadingOut}
+        // New Props for Pause/Layout
+        onPause={handlePauseClick}
       />
     </div>
   );
