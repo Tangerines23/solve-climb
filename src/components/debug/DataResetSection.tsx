@@ -3,6 +3,7 @@ import { supabase } from '../../utils/supabaseClient';
 import { useMyPageStats } from '../../hooks/useMyPageStats';
 import { useUserStore } from '../../stores/useUserStore';
 import { APP_CONFIG } from '../../config/app';
+import { ConfirmModal } from '../ConfirmModal';
 import './DataResetSection.css';
 
 export const DataResetSection = React.memo(function DataResetSection() {
@@ -21,9 +22,32 @@ export const DataResetSection = React.memo(function DataResetSection() {
   const [selectedSubject, setSelectedSubject] = useState<string>('arithmetic');
   const [isResettingProgress, setIsResettingProgress] = useState(false);
 
-  const handleResetProfile = async (resetType: 'all' | 'score' | 'minerals' | 'tier') => {
+  // 컨펌 모달 상태
+  const [confirmConfig, setConfirmConfig] = useState<{
+    isOpen: boolean;
+    title: string;
+    message: string;
+    onConfirm: () => void;
+  }>({
+    isOpen: false,
+    title: '',
+    message: '',
+    onConfirm: () => { },
+  });
+
+  const handleResetProfile = (resetType: 'all' | 'score' | 'minerals' | 'tier') => {
     if (isResetting) return;
-    if (!confirm(`프로필을 초기화하시겠습니까? (타입: ${resetType})`)) return;
+
+    setConfirmConfig({
+      isOpen: true,
+      title: '프로필 초기화',
+      message: `프로필을 초기화하시겠습니까? (초기화 항목: ${resetType === 'all' ? '전체' : resetType}) 이 작업은 되돌릴 수 없습니다.`,
+      onConfirm: () => executeResetProfile(resetType)
+    });
+  };
+
+  const executeResetProfile = async (resetType: 'all' | 'score' | 'minerals' | 'tier') => {
+    setConfirmConfig(prev => ({ ...prev, isOpen: false }));
 
     try {
       setIsResetting(true);
@@ -268,7 +292,18 @@ export const DataResetSection = React.memo(function DataResetSection() {
       setMessage({ type: 'error', text: '유효한 개수를 입력하세요.' });
       return;
     }
-    if (!confirm(`최근 ${count}개의 게임 기록을 삭제하시겠습니까?`)) return;
+
+    setConfirmConfig({
+      isOpen: true,
+      title: '게임 기록 삭제',
+      message: `최근 ${count}개의 게임 기록을 삭제하시겠습니까? 이 작업은 되돌릴 수 없습니다.`,
+      onConfirm: executeDeleteRecent
+    });
+  };
+
+  const executeDeleteRecent = async () => {
+    setConfirmConfig(prev => ({ ...prev, isOpen: false }));
+    const count = parseInt(deleteCount, 10);
 
     try {
       setIsDeleting(true);
@@ -328,9 +363,19 @@ export const DataResetSection = React.memo(function DataResetSection() {
     }
   };
 
-  const handleDeleteAll = async () => {
+  const handleDeleteAll = () => {
     if (isDeleting) return;
-    if (!confirm('모든 게임 기록을 삭제하시겠습니까? 이 작업은 되돌릴 수 없습니다.')) return;
+
+    setConfirmConfig({
+      isOpen: true,
+      title: '전체 기록 삭제',
+      message: '모든 게임 기록을 삭제하시겠습니까? 이 작업은 되돌릴 수 없습니다.',
+      onConfirm: executeDeleteAll
+    });
+  };
+
+  const executeDeleteAll = async () => {
+    setConfirmConfig(prev => ({ ...prev, isOpen: false }));
 
     try {
       setIsDeleting(true);
@@ -681,6 +726,15 @@ export const DataResetSection = React.memo(function DataResetSection() {
       {message && (
         <div className={`debug-message debug-message-${message.type}`}>{message.text}</div>
       )}
+
+      <ConfirmModal
+        isOpen={confirmConfig.isOpen}
+        title={confirmConfig.title}
+        message={confirmConfig.message}
+        onConfirm={confirmConfig.onConfirm}
+        onCancel={() => setConfirmConfig(prev => ({ ...prev, isOpen: false }))}
+        variant="danger"
+      />
     </div>
   );
 });

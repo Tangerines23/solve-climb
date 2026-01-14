@@ -46,7 +46,7 @@ export function StatusCard() {
 
       // 로컬 데이터만으로는 순위와 퍼센트를 계산할 수 없음
       const userStatus: UserStatus = {
-        totalRank: 0,
+        totalRank: 0, // 랭킹 정보 산출 불가 상황 (v2.0 고도화 예정)
         rankPercent: 0,
         rankChange: 0,
       };
@@ -88,13 +88,17 @@ export function StatusCard() {
           <div className="status-card-header">
             <span className="status-subtitle">나의 랭킹</span>
             <button className="status-detail-link" onClick={handleDetailClick}>
-              자세히 &gt;
+              더보기 &gt;
             </button>
           </div>
           <div className="status-main">
-            <h2 className="status-rank">종합 {formatRank(status.totalRank)}위</h2>
+            <h2 className="status-rank">
+              {status.totalRank > 0 ? `종합 ${formatRank(status.totalRank)}위` : '등반 시작하기 🏔️'}
+            </h2>
             <p className="status-info">
-              상위 {status.rankPercent}% ・ 어제보다 {status.rankChange}계단 올랐어요!
+              {status.totalRank > 0
+                ? `상위 ${status.rankPercent}% ・ 어제보다 ${status.rankChange}계단 올랐어요!`
+                : '아직 기록이 없습니다. 첫 문제를 완등해보세요!'}
             </p>
           </div>
         </>

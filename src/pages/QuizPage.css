@@ -30,6 +30,7 @@
 
 /* Correct answer flash */
 @keyframes correct-flash-animation {
+
   0%,
   100% {
     border: 2px solid transparent;
@@ -47,6 +48,7 @@
 
 /* Incorrect answer shake on CARD */
 @keyframes wrong-shake-animation {
+
   0%,
   100% {
     transform: translateX(0);
@@ -408,6 +410,7 @@
 }
 
 @keyframes caret-blink {
+
   0%,
   100% {
     opacity: 1;
@@ -489,10 +492,6 @@
 }
 
 /* 에러 상태 스타일 */
-.answer-input-wrapper.is-error {
-  /* shake 애니메이션 제거 - flash-red로 대체 */
-}
-
 .answer-input-system.is-error {
   color: var(--color-toss-red);
   border: 2px solid var(--color-toss-red);
@@ -610,6 +609,7 @@
 }
 
 @keyframes item-pulse {
+
   0%,
   100% {
     transform: scale(1);
@@ -706,7 +706,7 @@
   /* Let clicks pass through to card if needed, but buttons need pointer-events: auto */
 }
 
-.altimeter-hud > * {
+.altimeter-hud>* {
   pointer-events: auto;
 }
 
@@ -818,15 +818,20 @@
   transition: all 0.2s;
 }
 
-.pause-button:hover {
-  background: rgba(255, 255, 255, 0.2);
-  transform: scale(1.05);
+.pause-button:active {
+  transform: scale(0.92);
+  background: rgba(255, 255, 255, 0.25);
 }
 
-.pause-icon {
-  font-weight: 900;
-  font-size: 1.2rem;
-  letter-spacing: -1px;
+.pause-icon-svg {
+  width: 18px;
+  height: 18px;
+  color: #fff;
+  transition: transform 0.2s;
+}
+
+.pause-button:hover .pause-icon-svg {
+  transform: scale(1.1);
 }
 
 .vertical-item-stack {

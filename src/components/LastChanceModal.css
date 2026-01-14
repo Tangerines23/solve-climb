@@ -4,29 +4,25 @@
   left: 0;
   right: 0;
   bottom: 0;
-  background-color: rgba(0, 0, 0, 0.6);
-  /* Slightly more transparent to show blur */
-  backdrop-filter: blur(8px);
-  /* Blur effect */
+  background-color: rgba(0, 0, 0, 0.85);
+  backdrop-filter: blur(12px);
   display: flex;
   justify-content: center;
   align-items: center;
-  z-index: 1000;
-  /* 최상위 */
+  z-index: 3500;
   animation: fadeIn 0.3s ease-out;
 }
 
 .last-chance-modal {
-  background: #2c2c2c;
-  /* Dark background */
+  background: rgba(30, 30, 40, 0.98);
   width: 90%;
-  max-width: 320px;
-  border-radius: 20px;
-  padding: 24px;
+  max-width: 360px;
+  border-radius: 24px;
+  padding: 2.5rem;
   text-align: center;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+  box-shadow: 0 40px 100px rgba(0, 0, 0, 0.8);
   border: 1px solid rgba(255, 255, 255, 0.1);
-  animation: popIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  animation: scaleIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
 }
 
 .last-chance-header {
@@ -47,15 +43,17 @@
 
 .last-chance-timer {
   background: rgba(255, 255, 255, 0.1);
-  color: #fff;
-  width: 36px;
-  height: 36px;
+  color: var(--color-blue-400);
+  width: 44px;
+  height: 44px;
   border-radius: 50%;
   display: flex;
   justify-content: center;
   align-items: center;
-  font-weight: bold;
-  font-size: 18px;
+  font-weight: 900;
+  font-size: 20px;
+  border: 2px solid var(--color-blue-400);
+  box-shadow: 0 0 15px rgba(59, 130, 246, 0.3);
 }
 
 .last-chance-message {
@@ -67,14 +65,15 @@
 }
 
 .item-status {
-  background: #f5f5f5;
-  padding: 12px;
-  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.05);
+  padding: 16px;
+  border-radius: 16px;
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 10px;
-  margin-bottom: 20px;
+  gap: 12px;
+  margin-bottom: 24px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
 }
 
 .item-icon {
@@ -98,8 +97,9 @@
 }
 
 .item-name {
-  font-weight: bold;
-  color: #555;
+  font-weight: 800;
+  font-size: 1.1rem;
+  color: #fff;
 }
 
 .action-buttons {
@@ -124,32 +124,37 @@
 }
 
 .use-btn {
-  background: #3f3f3f;
-  /* Dark Grey */
-  border: 1px solid #7367f0;
-  /* Primary Border */
-  color: #7367f0;
-  box-shadow: 0 4px 0 #2a2a2a;
+  background: var(--color-blue-400);
+  color: #fff;
+  box-shadow: 0 8px 20px rgba(59, 130, 246, 0.3);
+}
+
+.use-btn:hover {
+  background: var(--color-blue-500);
+  transform: translateY(-2px);
 }
 
 .buy-btn {
-  background: #1f4037;
-  /* Dark Green */
-  border: 1px solid #28c76f;
-  color: #28c76f;
-  box-shadow: 0 4px 0 #152e26;
+  background: #28c76f;
+  color: #fff;
+  box-shadow: 0 8px 20px rgba(40, 199, 111, 0.3);
   display: flex;
   flex-direction: column;
   align-items: center;
 }
 
+.buy-btn:hover:not(.disabled) {
+  background: #20a157;
+  transform: translateY(-2px);
+}
+
 .buy-btn.disabled {
-  background: #333;
-  border: 1px solid #555;
-  color: #777;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: rgba(255, 255, 255, 0.3);
   box-shadow: none;
   cursor: not-allowed;
-  opacity: 0.7;
+  opacity: 0.6;
 }
 
 .error-text {
@@ -161,9 +166,14 @@
 
 .give-up-btn {
   background: transparent;
-  border: 1px solid #555;
-  color: #aaa;
-  box-shadow: none;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  color: rgba(255, 255, 255, 0.5);
+  margin-top: 8px;
+}
+
+.give-up-btn:hover {
+  background: rgba(255, 255, 255, 0.05);
+  color: #fff;
 }
 
 @keyframes fadeIn {

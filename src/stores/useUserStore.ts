@@ -211,7 +211,7 @@ export const useUserStore = create<UserState>((set, get) => ({
 
     if (error) {
       console.error('[DEBUG] RPC Failed:', error);
-      alert(`아이템 지급 실패: ${error.message}\n(SQL 권한 문제일 수 있습니다)`);
+      // alert replaced with console error. Caller components should handle UI feedback.
       return;
     }
 
@@ -232,7 +232,7 @@ export const useUserStore = create<UserState>((set, get) => ({
 
     if (error) {
       console.error('[DEBUG] Reset Failed:', error);
-      alert(`초기화 실패: ${error.message}`);
+      // alert replaced with console error.
       return;
     }
 

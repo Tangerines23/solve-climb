@@ -5,7 +5,7 @@
   right: 0;
   bottom: 0;
   background: rgba(0, 0, 0, 0.85);
-  backdrop-filter: blur(8px);
+  backdrop-filter: blur(12px);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -14,14 +14,15 @@
 }
 
 .stamina-modal-content {
-  background: #1e293b;
-  border-radius: 1.5rem;
-  padding: 2rem;
-  width: 100%;
+  background: rgba(30, 30, 40, 0.95);
+  border-radius: 2rem;
+  padding: 2.5rem;
+  width: 90%;
   max-width: 400px;
   border: 1px solid rgba(255, 255, 255, 0.1);
-  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5);
+  box-shadow: 0 40px 100px rgba(0, 0, 0, 0.8);
   text-align: center;
+  animation: scaleIn 0.25s cubic-bezier(0.175, 0.885, 0.32, 1.275);
 }
 
 .stamina-modal-header {
@@ -76,38 +77,46 @@
 }
 
 .ad-button {
-  background: linear-gradient(135deg, #fbbf24, #f59e0b);
-  color: #000;
+  background: var(--color-blue-400);
+  color: #fff;
   border: none;
-  padding: 1rem;
+  padding: 1.1rem;
   border-radius: 1rem;
-  font-weight: 700;
+  font-weight: 800;
   font-size: 1.1rem;
   cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
   gap: 0.5rem;
-  transition: transform 0.2s;
+  transition: all 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  box-shadow: 0 8px 20px rgba(59, 130, 246, 0.3);
 }
 
 .ad-button:hover {
-  transform: scale(1.02);
+  transform: translateY(-3px);
+  background: var(--color-blue-500);
+  box-shadow: 0 12px 30px rgba(59, 130, 246, 0.4);
+}
+
+.ad-button:active {
+  transform: scale(0.97);
 }
 
 .play-anyway-button {
   background: rgba(255, 255, 255, 0.05);
-  color: #f8fafc;
+  color: rgba(255, 255, 255, 0.9);
   border: 1px solid rgba(255, 255, 255, 0.1);
-  padding: 0.875rem;
+  padding: 1rem;
   border-radius: 1rem;
-  font-weight: 600;
+  font-weight: 700;
   cursor: pointer;
-  transition: background 0.2s;
+  transition: all 0.2s;
 }
 
 .play-anyway-button:hover {
   background: rgba(255, 255, 255, 0.1);
+  border-color: rgba(255, 255, 255, 0.2);
 }
 
 .close-link {

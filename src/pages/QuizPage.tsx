@@ -28,6 +28,7 @@ import {
 import { QuizQuestion } from '../types/quiz';
 import { QuizPreview } from '../components/quiz/QuizPreview';
 import { QuizModals } from '../components/quiz/QuizModals';
+import { ConfirmModal } from '../components/ConfirmModal';
 
 export function QuizPage() {
   // Zustand Selector 패턴 적용 - 필요한 값만 구독
@@ -80,25 +81,25 @@ export function QuizPage() {
 
   // ... (중략)
 
-  // 광고 보기 핸들러
-  const handleWatchAd = useCallback(async () => {
-    // 1. 모달 닫기
-    // 2. Mock Ad Process (광고 시청 로직)
-    const adDuration = 3000; // 3초
+  // 스태미나 광고 회복 핸들러 (Mock 전용)
+  const handleStaminaAdRecovery = useCallback(async () => {
+    // 1. 시뮬레이션: 광고 시청 중...
+    const adDuration = 2500; // 2.5초
     animations.setShowSlideToast(true);
+    setToastValue('광고 시청 중... (Mock)');
 
-    // [AD] 실제 광고 연동 시 여기서 showAd() 호출 (Google AdMob 등)
-    // 현재는 사용자 경험 테스트를 위해 3초 딜레이로 대체함.
-
+    // [AD] 실제 광고 연동 시 Google AdMob 또는 토스 광고 SDK 호출
     await new Promise((resolve) => setTimeout(resolve, adDuration));
 
-    // 3. 보상 지급
+    // 2. 보상 지급 (사용자 스토어 연동)
     const result = await recoverStaminaAds();
     if (result.success) {
       setShowStaminaModal(false);
-      window.location.reload();
+      setToastValue('산소통(스태미나)이 충전되었습니다! 🫧');
+      // 리로드 대신 상태 초기화로 처리 권장되나 현재 호환성을 위해 유지 가능
+      setTimeout(() => window.location.reload(), 1000);
     } else {
-      alert('광고 보상 지급 실패: ' + result.message);
+      setToastValue('충전 실패: ' + result.message);
     }
   }, [animations, recoverStaminaAds]);
 
@@ -110,6 +111,7 @@ export function QuizPage() {
 
   // Pause System State
   const [showPauseModal, setShowPauseModal] = useState(false);
+  const [showPauseExitConfirm, setShowPauseExitConfirm] = useState(false);
   const [remainingPauses, setRemainingPauses] = useState(3);
 
   const {
@@ -247,10 +249,18 @@ export function QuizPage() {
   }, [remainingPauses]);
 
   const handlePauseExit = useCallback(() => {
-    if (confirm('게임을 종료하시겠습니까?')) {
-      handleBack(); // Use handleBack logic
+    setShowPauseExitConfirm(true);
+  }, []);
+
+  const handleConfirmExit = useCallback(() => {
+    setShowPauseExitConfirm(false);
+    setShowPauseModal(false);
+    if (categoryParam && subParam) {
+      navigate(`/level-select?category=${categoryParam}&sub=${subParam}`);
+    } else {
+      navigate('/');
     }
-  }, [handleBack]);
+  }, [navigate, categoryParam, subParam]);
 
   // Pause Logic Separation
   const isTimerPaused =
@@ -787,7 +797,7 @@ export function QuizPage() {
         showStaminaModal={showStaminaModal}
         setShowStaminaModal={setShowStaminaModal}
         handlePlayAnyway={handlePlayAnyway}
-        handleWatchAd={handleWatchAd}
+        handleWatchAd={handleStaminaAdRecovery}
         // Pause System
         showPauseModal={showPauseModal}
         remainingPauses={remainingPauses}
@@ -842,6 +852,16 @@ export function QuizPage() {
         setIsFadingOut={setIsFadingOut}
         // New Props for Pause/Layout
         onPause={handlePauseClick}
+      />
+      <ConfirmModal
+        isOpen={showPauseExitConfirm}
+        title="게임 종료"
+        message="게임을 종료하시겠습니까? 현재까지의 기록이 유실될 수 있습니다."
+        confirmText="종료하기"
+        cancelText="계속하기"
+        onConfirm={handleConfirmExit}
+        onCancel={() => setShowPauseExitConfirm(false)}
+        variant="danger"
       />
     </div>
   );

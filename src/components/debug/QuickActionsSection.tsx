@@ -18,6 +18,7 @@ import {
 } from '../../utils/debugPresets';
 import { verifySync, type SyncResult } from '../../utils/debugSync';
 import { CustomPresetModal } from './CustomPresetModal';
+import { ConfirmModal } from '../ConfirmModal';
 import './QuickActionsSection.css';
 
 export const QuickActionsSection = React.memo(function QuickActionsSection() {
@@ -48,6 +49,19 @@ export const QuickActionsSection = React.memo(function QuickActionsSection() {
   const [showCustomPresets, setShowCustomPresets] = useState(false);
   const [showPresetModal, setShowPresetModal] = useState(false);
   const [editingPreset, setEditingPreset] = useState<CustomPreset | null>(null);
+
+  // 컨펌 모달 상태
+  const [confirmConfig, setConfirmConfig] = useState<{
+    isOpen: boolean;
+    title: string;
+    message: string;
+    onConfirm: () => void;
+  }>({
+    isOpen: false,
+    title: '',
+    message: '',
+    onConfirm: () => { },
+  });
 
   const handleStaminaChange = async (delta: number) => {
     if (isUpdating) return; // 중복 클릭 방지
@@ -155,11 +169,17 @@ export const QuickActionsSection = React.memo(function QuickActionsSection() {
   };
 
   const handleClearHistory = () => {
-    if (confirm('히스토리를 모두 삭제하시겠습니까?')) {
-      clearPresetHistory();
-      setPresetHistories([]);
-      setPresetMessage({ type: 'success', text: '히스토리가 삭제되었습니다.' });
-    }
+    setConfirmConfig({
+      isOpen: true,
+      title: '히스토리 삭제',
+      message: '히스토리를 모두 삭제하시겠습니까?',
+      onConfirm: () => {
+        clearPresetHistory();
+        setPresetHistories([]);
+        setPresetMessage({ type: 'success', text: '히스토리가 삭제되었습니다.' });
+        setConfirmConfig(prev => ({ ...prev, isOpen: false }));
+      }
+    });
   };
 
   const handleVerifySync = async () => {
@@ -236,24 +256,24 @@ export const QuickActionsSection = React.memo(function QuickActionsSection() {
             syncResult.tier.issues.length > 0 ||
             syncResult.badges.issues.length > 0 ||
             syncResult.inventory.issues.length > 0) && (
-            <div className="debug-sync-issues">
-              <h5 className="debug-sync-issues-title">발견된 문제:</h5>
-              <ul className="debug-sync-issues-list">
-                {syncResult.profile.issues.map((issue, idx) => (
-                  <li key={`profile-${idx}`}>{issue}</li>
-                ))}
-                {syncResult.tier.issues.map((issue, idx) => (
-                  <li key={`tier-${idx}`}>{issue}</li>
-                ))}
-                {syncResult.badges.issues.map((issue, idx) => (
-                  <li key={`badges-${idx}`}>{issue}</li>
-                ))}
-                {syncResult.inventory.issues.map((issue, idx) => (
-                  <li key={`inventory-${idx}`}>{issue}</li>
-                ))}
-              </ul>
-            </div>
-          )}
+              <div className="debug-sync-issues">
+                <h5 className="debug-sync-issues-title">발견된 문제:</h5>
+                <ul className="debug-sync-issues-list">
+                  {syncResult.profile.issues.map((issue, idx) => (
+                    <li key={`profile-${idx}`}>{issue}</li>
+                  ))}
+                  {syncResult.tier.issues.map((issue, idx) => (
+                    <li key={`tier-${idx}`}>{issue}</li>
+                  ))}
+                  {syncResult.badges.issues.map((issue, idx) => (
+                    <li key={`badges-${idx}`}>{issue}</li>
+                  ))}
+                  {syncResult.inventory.issues.map((issue, idx) => (
+                    <li key={`inventory-${idx}`}>{issue}</li>
+                  ))}
+                </ul>
+              </div>
+            )}
         </div>
       )}
 
@@ -486,11 +506,17 @@ export const QuickActionsSection = React.memo(function QuickActionsSection() {
                       <button
                         className="debug-custom-preset-action-button debug-custom-preset-delete-button"
                         onClick={() => {
-                          if (confirm(`프리셋 "${preset.name}"을 삭제하시겠습니까?`)) {
-                            deleteCustomPreset(preset.id);
-                            setCustomPresets(getCustomPresets());
-                            setPresetMessage({ type: 'success', text: '프리셋이 삭제되었습니다.' });
-                          }
+                          setConfirmConfig({
+                            isOpen: true,
+                            title: '프리셋 삭제',
+                            message: `프리셋 "${preset.name}"을 삭제하시겠습니까?`,
+                            onConfirm: () => {
+                              deleteCustomPreset(preset.id);
+                              setCustomPresets(getCustomPresets());
+                              setPresetMessage({ type: 'success', text: '프리셋이 삭제되었습니다.' });
+                              setConfirmConfig(prev => ({ ...prev, isOpen: false }));
+                            }
+                          });
                         }}
                       >
                         삭제
@@ -578,6 +604,15 @@ export const QuickActionsSection = React.memo(function QuickActionsSection() {
           setCustomPresets(getCustomPresets());
           setPresetMessage({ type: 'success', text: `프리셋 "${preset.name}"이 저장되었습니다.` });
         }}
+      />
+
+      <ConfirmModal
+        isOpen={confirmConfig.isOpen}
+        title={confirmConfig.title}
+        message={confirmConfig.message}
+        onConfirm={confirmConfig.onConfirm}
+        onCancel={() => setConfirmConfig(prev => ({ ...prev, isOpen: false }))}
+        variant="danger"
       />
     </div>
   );

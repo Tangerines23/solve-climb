@@ -51,10 +51,15 @@
 }
 
 .count-value {
-  color: #28c76f;
-  /* Success color for count */
-  font-weight: bold;
-  font-size: 1.2rem;
+  color: #4facfe;
+  /* Electric blue for better contrast */
+  font-weight: 800;
+  font-size: 1.3rem;
+  text-shadow: 0 0 10px rgba(79, 172, 254, 0.3);
+}
+
+.count-icon {
+  margin-right: 4px;
 }
 
 .pause-actions {
@@ -71,7 +76,15 @@
   font-size: 1rem;
   font-weight: 700;
   cursor: pointer;
-  transition: transform 0.1s;
+  transition: all 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+.btn-icon {
+  font-size: 1.1rem;
 }
 
 .pause-btn:active {

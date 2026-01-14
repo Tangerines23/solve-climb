@@ -4,12 +4,13 @@
   left: 0;
   right: 0;
   bottom: 0;
-  background-color: var(--color-overlay);
+  background-color: rgba(0, 0, 0, 0.85);
   display: flex;
   align-items: center;
   justify-content: center;
   z-index: 1000;
   padding: var(--spacing-xl);
+  backdrop-filter: blur(12px);
   animation: fadeIn 0.3s ease;
 }
 
@@ -17,19 +18,21 @@
   from {
     opacity: 0;
   }
+
   to {
     opacity: 1;
   }
 }
 
 .mode-select-modal {
-  background-color: var(--color-bg-primary);
-  border-radius: var(--rounded-md);
+  background-color: rgba(30, 30, 40, 0.98);
+  border-radius: 24px;
   width: 100%;
   max-width: 400px;
-  padding: var(--spacing-2xl);
-  box-shadow: var(--shadow-modal);
-  animation: slideUp 0.3s ease;
+  padding: 2.5rem;
+  box-shadow: 0 40px 100px rgba(0, 0, 0, 0.8);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  animation: scaleIn 0.25s cubic-bezier(0.175, 0.885, 0.32, 1.275);
 }
 
 /* 가로모드에서 모달 너비 확장 및 좌우 분할 */
@@ -115,6 +118,7 @@
     transform: translateY(var(--spacing-xl));
     opacity: 0;
   }
+
   to {
     transform: translateY(0);
     opacity: 1;
@@ -185,9 +189,10 @@
 }
 
 .mode-select-button:hover {
-  transform: translateY(-2px);
+  transform: translateY(-4px);
   border-color: var(--color-blue-400);
-  background-color: var(--color-bg-tertiary);
+  background-color: rgba(255, 255, 255, 0.1);
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
 }
 
 .mode-select-button:active {

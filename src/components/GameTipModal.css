@@ -4,24 +4,25 @@
   left: 0;
   right: 0;
   bottom: 0;
-  background: rgba(0, 0, 0, 0.75);
+  background: rgba(0, 0, 0, 0.85);
   display: flex;
   align-items: center;
   justify-content: center;
   z-index: 2000;
   padding: 16px;
-  backdrop-filter: blur(8px);
+  backdrop-filter: blur(12px);
 }
 
 .gt-modal-content {
-  background: #1a1a1a;
+  background: rgba(30, 30, 40, 0.95);
   border-radius: 32px;
   width: 100%;
   max-width: 920px;
-  max-height: 94vh;
+  max-height: 90vh;
   overflow: hidden;
-  box-shadow: 0 30px 60px rgba(0, 0, 0, 0.6);
-  border: 1px solid rgba(255, 255, 255, 0.05);
+  box-shadow: 0 40px 100px rgba(0, 0, 0, 0.8);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  animation: scaleIn 0.25s cubic-bezier(0.175, 0.885, 0.32, 1.275);
 }
 
 .gt-layout-wrapper {
@@ -33,21 +34,21 @@
 
 .gt-left-panel {
   flex: 0 0 38%;
-  padding: clamp(24px, 5vh, 48px);
+  padding: clamp(24px, 5vh, 40px);
   display: flex;
   flex-direction: column;
   justify-content: space-between;
-  border-right: 1px solid rgba(255, 255, 255, 0.05);
-  background: rgba(255, 255, 255, 0.02);
+  border-right: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(255, 255, 255, 0.03);
 }
 
 .gt-right-panel {
   flex: 1;
-  padding: clamp(24px, 5vh, 48px);
+  padding: clamp(24px, 5vh, 40px);
   display: flex;
   flex-direction: column;
   min-height: 0;
-  background: #1e1e1e;
+  background: transparent;
 }
 
 /* Title Area */
@@ -66,7 +67,7 @@
 .gt-title-text {
   font-size: clamp(1.8rem, 4vh, 2.4rem);
   font-weight: 900;
-  color: #2dd4bf;
+  color: #fff;
   margin: 0;
   line-height: 1.1;
   word-break: keep-all;
@@ -109,8 +110,8 @@
 
 .gt-start-btn {
   flex: 1;
-  background: #2dd4bf;
-  color: #000;
+  background: var(--color-blue-400);
+  color: #fff;
   border: none;
   padding: 18px;
   border-radius: 20px;
@@ -118,13 +119,17 @@
   font-weight: 800;
   cursor: pointer;
   transition: all 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-  box-shadow: 0 4px 15px rgba(45, 212, 191, 0.2);
+  box-shadow: 0 10px 25px rgba(59, 130, 246, 0.3);
 }
 
 .gt-start-btn:hover {
   transform: translateY(-3px);
-  filter: brightness(1.1);
-  box-shadow: 0 8px 25px rgba(45, 212, 191, 0.3);
+  background: var(--color-blue-500);
+  box-shadow: 0 15px 35px rgba(59, 130, 246, 0.4);
+}
+
+.gt-start-btn:active {
+  transform: scale(0.96);
 }
 
 .gt-backpack-btn {
@@ -180,11 +185,11 @@
 
 /* Level Tip Card */
 .level-tip-card {
-  background: rgba(255, 255, 255, 0.03);
+  background: rgba(255, 255, 255, 0.05);
   border-radius: 24px;
   padding: 28px;
-  border-left: 6px solid #2dd4bf;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
 }
 
 .level-tip-title {
@@ -205,15 +210,15 @@
 }
 
 .level-tip-example {
-  background: rgba(0, 0, 0, 0.35);
+  background: rgba(0, 0, 0, 0.5);
   padding: 16px 24px;
   border-radius: 16px;
   margin-top: 20px;
   font-family: 'Pretendard', sans-serif;
   font-size: 1.2rem;
-  color: #2dd4bf;
+  color: var(--color-blue-400);
   letter-spacing: 0.05em;
-  border: 1px solid rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
 }
 
 /* Scrollbar */
