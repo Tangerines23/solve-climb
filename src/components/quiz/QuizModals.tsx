@@ -35,6 +35,7 @@ interface QuizModalsProps {
   // Pause System
   showPauseModal: boolean;
   remainingPauses: number;
+  handlePauseClick: () => void;
   handlePauseResume: () => void;
   handlePauseExit: () => void;
 }

@@ -16,7 +16,7 @@
 .countdown-number {
   font-size: 6rem;
   font-weight: bold;
-  color: #fff;
+  color: var(--color-gray-100);
   /* Removed text-shadow for cleaner look */
   /* text-shadow: 0 0 20px rgba(0, 255, 255, 0.8); */
 

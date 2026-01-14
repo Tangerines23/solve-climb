@@ -9,19 +9,19 @@
   align-items: center;
   justify-content: center;
   z-index: 2000;
-  padding: 16px;
+  padding: var(--spacing-lg);
   backdrop-filter: blur(12px);
 }
 
 .gt-modal-content {
-  background: rgba(30, 30, 40, 0.95);
-  border-radius: 32px;
+  background: var(--color-bg-primary);
+  border-radius: var(--rounded-lg);
   width: 100%;
   max-width: 920px;
   max-height: 90vh;
   overflow: hidden;
   box-shadow: 0 40px 100px rgba(0, 0, 0, 0.8);
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  border: 1px solid var(--color-bg-secondary);
   animation: scaleIn 0.25s cubic-bezier(0.175, 0.885, 0.32, 1.275);
 }
 
@@ -55,8 +55,8 @@
 .gt-title-area {
   display: flex;
   align-items: flex-start;
-  gap: 16px;
-  margin-bottom: 24px;
+  gap: var(--spacing-lg);
+  margin-bottom: var(--spacing-2xl);
 }
 
 .gt-title-icon {
@@ -67,7 +67,7 @@
 .gt-title-text {
   font-size: clamp(1.8rem, 4vh, 2.4rem);
   font-weight: 900;
-  color: #fff;
+  color: var(--color-gray-100);
   margin: 0;
   line-height: 1.1;
   word-break: keep-all;
@@ -83,7 +83,7 @@
 .gt-checkbox-label {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: var(--spacing-md);
   color: rgba(255, 255, 255, 0.45);
   font-size: 0.95rem;
   cursor: pointer;
@@ -97,24 +97,24 @@
 }
 
 .gt-checkbox-label input {
-  width: 18px;
-  height: 18px;
+  width: var(--spacing-xl);
+  height: var(--spacing-xl);
   cursor: pointer;
-  accent-color: #2dd4bf;
+  accent-color: var(--color-blue-400);
 }
 
 .gt-button-group {
   display: flex;
-  gap: 12px;
+  gap: var(--spacing-md);
 }
 
 .gt-start-btn {
   flex: 1;
   background: var(--color-blue-400);
-  color: #fff;
+  color: var(--color-gray-100);
   border: none;
-  padding: 18px;
-  border-radius: 20px;
+  padding: var(--spacing-xl);
+  border-radius: var(--rounded-md);
   font-size: 1.3rem;
   font-weight: 800;
   cursor: pointer;
@@ -137,7 +137,7 @@
   height: 64px;
   background: rgba(255, 255, 255, 0.05);
   border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: 20px;
+  border-radius: var(--rounded-md);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -156,13 +156,13 @@
   position: absolute;
   top: -6px;
   right: -6px;
-  background: #3b82f6;
+  background: var(--color-blue-400);
   color: white;
   font-size: 0.8rem;
   font-weight: 800;
-  padding: 4px 8px;
-  border-radius: 10px;
-  border: 3px solid #1a1a1a;
+  padding: var(--spacing-xs) var(--spacing-sm);
+  border-radius: var(--rounded-sm-alt);
+  border: 3px solid var(--color-bg-primary);
   box-shadow: 0 4px 10px rgba(59, 130, 246, 0.4);
 }
 
@@ -170,7 +170,7 @@
 .gt-description {
   color: rgba(255, 255, 255, 0.55);
   font-size: 1.1rem;
-  margin-bottom: 24px;
+  margin-bottom: var(--spacing-2xl);
   line-height: 1.5;
   word-break: keep-all;
   overflow-wrap: break-word;
@@ -179,15 +179,15 @@
 .gt-scroll-content {
   flex: 1;
   overflow-y: auto;
-  padding-right: 12px;
+  padding-right: var(--spacing-md);
   min-height: 0;
 }
 
 /* Level Tip Card */
 .level-tip-card {
   background: rgba(255, 255, 255, 0.05);
-  border-radius: 24px;
-  padding: 28px;
+  border-radius: var(--rounded-large-card);
+  padding: var(--spacing-3xl);
   border: 1px solid rgba(255, 255, 255, 0.08);
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
 }
@@ -195,8 +195,8 @@
 .level-tip-title {
   font-size: 1.6rem;
   font-weight: 800;
-  color: #fff;
-  margin: 0 0 16px 0;
+  color: var(--color-gray-100);
+  margin: 0 0 var(--spacing-lg) 0;
   letter-spacing: -0.01em;
 }
 
@@ -204,16 +204,16 @@
 .level-tip-strategy {
   font-size: 1.1rem;
   color: rgba(255, 255, 255, 0.85);
-  margin: 0 0 12px 0;
+  margin: 0 0 var(--spacing-md) 0;
   line-height: 1.65;
   word-break: keep-all;
 }
 
 .level-tip-example {
   background: rgba(0, 0, 0, 0.5);
-  padding: 16px 24px;
-  border-radius: 16px;
-  margin-top: 20px;
+  padding: var(--spacing-lg) var(--spacing-2xl);
+  border-radius: var(--rounded-card);
+  margin-top: var(--spacing-xl);
   font-family: 'Pretendard', sans-serif;
   font-size: 1.2rem;
   color: var(--color-blue-400);
@@ -228,7 +228,7 @@
 
 .gt-scroll-content::-webkit-scrollbar-thumb {
   background: rgba(255, 255, 255, 0.12);
-  border-radius: 3px;
+  border-radius: var(--rounded-micro);
 }
 
 .gt-scroll-content::-webkit-scrollbar-thumb:hover {
@@ -239,20 +239,20 @@
 @media (max-height: 480px) {
   .gt-modal-content {
     max-height: 98vh;
-    border-radius: 20px;
+    border-radius: var(--rounded-md);
   }
 
   .gt-left-panel,
   .gt-right-panel {
-    padding: 20px 32px;
+    padding: var(--spacing-xl) var(--spacing-3xl);
   }
 
   .gt-title-area {
-    margin-bottom: 12px;
+    margin-bottom: var(--spacing-md);
   }
 
   .gt-description {
-    margin-bottom: 12px;
+    margin-bottom: var(--spacing-md);
     font-size: 1rem;
   }
 
@@ -261,7 +261,7 @@
   }
 
   .gt-start-btn {
-    padding: 12px;
+    padding: var(--spacing-md);
     font-size: 1.1rem;
   }
 
@@ -272,7 +272,7 @@
   }
 
   .level-tip-card {
-    padding: 20px;
+    padding: var(--spacing-xl);
   }
 }
 
@@ -290,14 +290,14 @@
 
   .gt-title-area {
     order: 1;
-    padding: 32px 32px 10px;
+    padding: var(--spacing-3xl) var(--spacing-3xl) var(--spacing-small-alt);
     background: transparent;
     margin-bottom: 0;
   }
 
   .gt-right-panel {
     order: 2;
-    padding: 10px 32px 20px;
+    padding: var(--spacing-small-alt) var(--spacing-3xl) var(--spacing-xl);
     flex: 1;
     min-height: 0;
     background: transparent;
@@ -305,13 +305,13 @@
 
   .gt-controls-area {
     order: 3;
-    padding: 24px 32px 32px;
+    padding: var(--spacing-2xl) var(--spacing-3xl) var(--spacing-3xl);
     background: transparent;
     border-top: 1px solid rgba(255, 255, 255, 0.05);
   }
 
   .gt-checkbox-label {
-    margin-bottom: 20px;
+    margin-bottom: var(--spacing-xl);
   }
 
   .gt-button-group {

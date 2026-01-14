@@ -43,7 +43,7 @@
 .feedback-subtext {
   font-size: 1.1rem;
   font-weight: 700;
-  color: #fff;
+  color: var(--color-text-primary);
   margin-top: 0.5rem;
 }
 

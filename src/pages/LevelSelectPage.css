@@ -33,6 +33,7 @@
   border-bottom: 1px solid rgba(255, 255, 255, 0.1);
   backdrop-filter: blur(10px);
   background-color: rgba(255, 255, 255, 0.1);
+  position: sticky;
 }
 
 .level-select-back {
@@ -45,7 +46,10 @@
   display: flex;
   align-items: center;
   justify-content: center;
+  position: relative;
+  z-index: 10;
   transition: opacity 0.2s;
+  text-shadow: 0 4px 8px rgba(0, 0, 0, 0.9);
 }
 
 .level-select-back:hover {
@@ -53,13 +57,22 @@
 }
 
 .level-select-title {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 0;
+  bottom: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   font-size: 1.125rem;
   font-weight: bold;
   color: var(--color-text-primary);
   margin: 0;
-  flex: 1;
   text-align: center;
   text-shadow: 0 4px 8px rgba(0, 0, 0, 0.9);
+  pointer-events: none;
+  z-index: 1;
 }
 
 .level-select-settings {
@@ -245,13 +258,13 @@
   display: flex;
   flex-direction: column;
   align-items: flex-start;
-  gap: 4px;
+  gap: var(--spacing-xs);
 }
 
 .survival-title {
   font-size: 1.125rem;
   font-weight: 800;
-  color: #fca5a5;
+  color: var(--color-red-600);
   /* Red-300 */
   text-transform: uppercase;
   letter-spacing: 0.5px;
@@ -264,7 +277,7 @@
 }
 
 .survival-arrow {
-  color: #fca5a5;
+  color: var(--color-red-600);
   font-size: 1.25rem;
   font-weight: bold;
   opacity: 0.8;

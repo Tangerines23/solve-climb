@@ -31,49 +31,49 @@
 
 /* --- Phase 12: Hero Section UI --- */
 .history-hero-section {
-  padding: 24px 20px 32px;
+  padding: var(--spacing-2xl) var(--spacing-xl) var(--spacing-3xl);
   background-color: var(--color-bg-secondary);
   border-bottom-left-radius: 32px;
   border-bottom-right-radius: 32px;
   box-shadow: 0 4px 24px rgba(0, 0, 0, 0.2);
-  margin-bottom: 24px;
+  margin-bottom: var(--spacing-2xl);
   position: relative;
   z-index: 10;
 }
 
 .history-tab-container {
-  padding: 0 20px;
-  margin-bottom: 20px;
+  padding: 0 var(--spacing-xl);
+  margin-bottom: var(--spacing-xl);
 }
 
 .history-journey-container {
-  padding: 0 20px;
+  padding: 0 var(--spacing-xl);
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: var(--spacing-lg);
 }
 
 .history-analysis-container {
-  padding: 0 20px;
+  padding: 0 var(--spacing-xl);
 }
 
 .history-card-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 20px;
+  margin-bottom: var(--spacing-xl);
   border-bottom: 1px solid rgba(255, 255, 255, 0.05);
-  padding-bottom: 12px;
+  padding-bottom: var(--spacing-md);
 }
 
 .history-card-header.no-border {
   border-bottom: none;
   padding-bottom: 0;
-  margin-bottom: 16px;
+  margin-bottom: var(--spacing-lg);
 }
 
 .history-card-title {
-  font-size: 18px;
+  font-size: var(--spacing-xl);
   font-weight: 700;
   color: var(--color-text-primary);
 }
@@ -119,7 +119,7 @@
   height: var(--start-height, 180px);
   background-color: rgba(0, 0, 0, 0.2);
   /* 카드와 100% 일치 */
-  border-radius: 16px;
+  border-radius: var(--rounded-card);
   display: flex;
   flex-direction: column;
   box-shadow: none;
@@ -148,7 +148,7 @@
 /* 데스크탑/태블릿 환경에서도 시원하게 */
 @media (min-width: 500px) {
   .history-roadmap-overlay.fade-in {
-    padding: 20px;
+    padding: var(--spacing-xl);
   }
 
   .history-roadmap-overlay.fade-in .roadmap-container {
@@ -157,12 +157,12 @@
     transform: translateX(-50%);
     height: 90vh;
     max-height: 90vh;
-    border-radius: 32px;
+    border-radius: var(--rounded-lg);
   }
 }
 
 .roadmap-header {
-  padding: 24px;
+  padding: var(--spacing-2xl);
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -181,7 +181,7 @@
 .roadmap-title-group {
   display: flex;
   flex-direction: column;
-  gap: 2px;
+  gap: var(--spacing-micro);
 }
 
 .roadmap-title {
@@ -211,13 +211,13 @@
 }
 
 .roadmap-progress-section {
-  padding: 16px 24px 0 24px;
+  padding: var(--spacing-lg) var(--spacing-2xl) 0 var(--spacing-2xl);
 }
 
 .roadmap-content {
   flex: 1;
   overflow: hidden;
-  padding: 24px 24px 0 24px;
+  padding: var(--spacing-2xl) var(--spacing-2xl) 0 var(--spacing-2xl);
 }
 
 .roadmap-mountain-path {
@@ -233,9 +233,9 @@
 
 .path-line-fill {
   position: absolute;
-  left: 18px;
+  left: var(--spacing-xl);
   bottom: 0px;
-  width: 2px;
+  width: var(--spacing-micro);
   background: linear-gradient(to top, var(--color-primary-light), var(--color-cyan-bright));
   box-shadow: 0 0 10px color-mix(in srgb, var(--color-primary-light), transparent 50%);
   transition: height 0.8s cubic-bezier(0.4, 0, 0.2, 1);
@@ -245,13 +245,15 @@
 
 .roadmap-dotted-line {
   position: absolute;
-  left: 18px;
+  left: var(--spacing-xl);
   bottom: 0;
   top: 0;
-  width: 2px;
-  background-image: linear-gradient(to bottom,
-      color-mix(in srgb, var(--color-primary-light), transparent 60%) 40%,
-      rgba(255, 255, 255, 0) 0%);
+  width: var(--spacing-micro);
+  background-image: linear-gradient(
+    to bottom,
+    color-mix(in srgb, var(--color-primary-light), transparent 60%) 40%,
+    rgba(255, 255, 255, 0) 0%
+  );
   background-position: left;
   background-size: 2px 8px;
   /* 더 촘촘하고 예쁜 점선 */
@@ -264,7 +266,7 @@
 .path-landmarks {
   display: flex;
   flex-direction: column;
-  gap: 40px;
+  gap: var(--spacing-4xl);
   position: relative;
   /* padding-left removed. Alignment handled by absolute markers */
 }
@@ -303,8 +305,8 @@
 /* --- Badge Collection (New) --- */
 .history-badge-collection {
   background-color: var(--color-bg-secondary);
-  border-radius: 16px;
-  padding: 16px 20px;
+  border-radius: var(--rounded-card);
+  padding: var(--spacing-lg) var(--spacing-xl);
   border: 1px solid rgba(255, 255, 255, 0.05);
 }
 
@@ -312,7 +314,7 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 12px;
+  margin-bottom: var(--spacing-md);
 }
 
 .collection-title {
@@ -329,9 +331,9 @@
 
 .collection-content {
   display: flex;
-  gap: 16px;
+  gap: var(--spacing-lg);
   overflow-x: auto;
-  padding-bottom: 4px;
+  padding-bottom: var(--spacing-xs);
   /* Scrollbar space */
 }
 
@@ -339,7 +341,7 @@
   width: 60px;
   height: 80px;
   background-color: rgba(0, 0, 0, 0.2);
-  border-radius: 12px;
+  border-radius: var(--rounded-sm);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -357,11 +359,11 @@
 .tier-label-row {
   display: flex;
   flex-direction: column;
-  gap: 2px;
+  gap: var(--spacing-micro);
 }
 
 .milestone-divider.sub {
-  margin: 12px 0;
+  margin: var(--spacing-md) 0;
   opacity: 0.3;
 }
 
@@ -373,7 +375,7 @@
   font-size: 11px;
   color: var(--color-primary-light);
   font-weight: 600;
-  margin-top: 4px;
+  margin-top: var(--spacing-xs);
   opacity: 0.7;
 }
 
@@ -381,13 +383,13 @@
 
 .landmark-item.type-tier {
   cursor: pointer;
-  padding: 8px 0;
+  padding: var(--spacing-sm) 0;
   position: relative;
 }
 
 .landmark-item.type-tier:hover {
   background-color: rgba(255, 255, 255, 0.05);
-  border-radius: 8px;
+  border-radius: var(--rounded-xs);
 }
 
 .landmark-item {
@@ -438,8 +440,12 @@
   top: 50%;
   width: 27px;
   /* 64px(중심) - 19px(마커 반폭) - 18px(수직선) = 27px */
-  height: 2px;
-  background: linear-gradient(to left, color-mix(in srgb, var(--color-primary-light), transparent 40%), transparent);
+  height: var(--spacing-micro);
+  background: linear-gradient(
+    to left,
+    color-mix(in srgb, var(--color-primary-light), transparent 40%),
+    transparent
+  );
   z-index: -1;
 }
 
@@ -452,7 +458,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 18px;
+  font-size: var(--spacing-xl);
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
   z-index: 2;
   position: relative;
@@ -484,7 +490,7 @@
   flex: 1;
   flex-direction: column;
   justify-content: center;
-  gap: 2px;
+  gap: var(--spacing-micro);
 }
 
 .type-tier .landmark-info {
@@ -494,12 +500,12 @@
 
 /* --- 로드맵 하단 요약 (Footer) --- */
 .roadmap-footer {
-  padding: 16px 20px;
+  padding: var(--spacing-lg) var(--spacing-xl);
   background-color: rgba(25, 26, 30, 0.95);
   border-top: 1px solid rgba(255, 255, 255, 0.05);
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: var(--spacing-tiny);
   backdrop-filter: blur(20px);
 }
 
@@ -517,7 +523,7 @@
 
 .footer-value {
   font-size: 15px;
-  color: #4facfe;
+  color: var(--color-primary-light);
   font-weight: 800;
   letter-spacing: -0.2px;
 }
@@ -531,11 +537,11 @@
   background-color: rgba(25, 26, 30, 0.85);
   border: 1px solid color-mix(in srgb, var(--color-primary-light), transparent 60%);
   backdrop-filter: blur(12px);
-  padding: 6px 14px;
-  border-radius: 100px;
+  padding: var(--spacing-tiny) var(--spacing-medium-alt);
+  border-radius: var(--rounded-pill);
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: var(--spacing-tiny);
   z-index: 100;
   /* 최상단 배치 */
   box-shadow: 0 4px 15px rgba(0, 0, 0, 0.4);
@@ -579,7 +585,7 @@
 .landmark-label-row {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: var(--spacing-sm);
 }
 
 .landmark-item.type-tier .landmark-dot {
@@ -593,7 +599,7 @@
 
 .landmark-item.type-landmark .landmark-dot {
   border-color: rgba(255, 255, 255, 0.2);
-  background-color: #1a1a1a;
+  background-color: var(--color-bg-primary);
 }
 
 .landmark-item.type-landmark.is-passed .landmark-dot {
@@ -610,16 +616,16 @@
 
 .current-location-tag {
   font-size: 10px;
-  padding: 2px 8px;
+  padding: 2px var(--spacing-sm);
   background-color: var(--color-success);
   color: var(--color-text-primary);
-  border-radius: 100px;
+  border-radius: var(--rounded-pill);
   width: fit-content;
-  margin-top: 4px;
+  margin-top: var(--spacing-xs);
 }
 
 .roadmap-bottom-stats {
-  padding: 24px;
+  padding: var(--spacing-2xl);
   background-color: rgba(0, 0, 0, 0.2);
   border-top: 1px solid rgba(255, 255, 255, 0.05);
   opacity: 0;
@@ -640,7 +646,7 @@
 }
 
 .roadmap-next-goal {
-  margin-top: 4px;
+  margin-top: var(--spacing-xs);
 }
 
 .highlight {
@@ -668,16 +674,16 @@
 
 /* --- Phase 9: Segmented Control (Tabs) --- */
 .history-tab-container {
-  padding: 8px 0;
-  margin-bottom: 12px;
+  padding: var(--spacing-sm) 0;
+  margin-bottom: var(--spacing-md);
 }
 
 .history-segmented-control {
   position: relative;
   display: flex;
   background-color: rgba(255, 255, 255, 0.05);
-  border-radius: 14px;
-  padding: 4px;
+  border-radius: var(--rounded-md-alt);
+  padding: var(--spacing-xs);
   height: 44px;
 }
 
@@ -707,7 +713,7 @@
   left: 4px;
   width: calc(33.33% - 4px);
   background-color: rgba(255, 255, 255, 0.15);
-  border-radius: 10px;
+  border-radius: var(--rounded-sm-alt);
   transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 }
@@ -748,15 +754,15 @@
 .history-profile-section {
   display: flex;
   align-items: center;
-  gap: 16px;
-  margin-bottom: 20px;
+  gap: var(--spacing-lg);
+  margin-bottom: var(--spacing-xl);
 }
 
 .history-avatar {
   width: 64px;
   height: 64px;
   background: linear-gradient(135deg, var(--color-primary-light) 0%, var(--color-cyan-bright) 100%);
-  border-radius: 20px;
+  border-radius: var(--rounded-md);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -768,7 +774,7 @@
   font-size: 14px;
   color: var(--color-primary-light);
   font-weight: 600;
-  margin-bottom: 4px;
+  margin-bottom: var(--spacing-xs);
 }
 
 .history-user-altitude {
@@ -779,18 +785,18 @@
 .altitude-value {
   font-size: 24px;
   color: var(--color-text-primary);
-  margin-left: 4px;
+  margin-left: var(--spacing-xs);
 }
 
 /* --- Phase 2: Tier Progress --- */
 .history-tier-progress {
-  margin-bottom: 20px;
+  margin-bottom: var(--spacing-xl);
 }
 
 .tier-progress-header {
   display: flex;
   justify-content: space-between;
-  margin-bottom: 8px;
+  margin-bottom: var(--spacing-sm);
   font-size: 13px;
 }
 
@@ -810,14 +816,14 @@
 .tier-progress-bar-container {
   height: 8px;
   background-color: rgba(255, 255, 255, 0.1);
-  border-radius: 4px;
+  border-radius: var(--rounded-2xs);
   overflow: hidden;
 }
 
 .tier-progress-bar-fill {
   height: 100%;
   background: linear-gradient(90deg, var(--color-primary-light) 0%, var(--color-cyan-bright) 100%);
-  border-radius: 4px;
+  border-radius: var(--rounded-2xs);
   box-shadow: 0 0 8px color-mix(in srgb, var(--color-primary-light), transparent 50%);
 }
 
@@ -825,12 +831,12 @@
 .history-smart-comment {
   background-color: color-mix(in srgb, var(--color-primary-light), transparent 90%);
   border-left: 4px solid var(--color-primary-light);
-  padding: 12px 16px;
+  padding: var(--spacing-md) var(--spacing-lg);
   border-radius: 0 12px 12px 0;
   display: flex;
   align-items: center;
-  gap: 12px;
-  margin-bottom: 24px;
+  gap: var(--spacing-md);
+  margin-bottom: var(--spacing-2xl);
 }
 
 .comment-icon {
@@ -857,11 +863,11 @@
 }
 
 .history-error {
-  padding: 40px;
+  padding: var(--spacing-4xl);
   background-color: rgba(235, 87, 87, 0.1);
   border: 1px solid rgba(235, 87, 87, 0.2);
-  border-radius: 12px;
-  color: #eb5757;
+  border-radius: var(--rounded-sm);
+  color: var(--color-toss-red);
   text-align: center;
   font-weight: 600;
 }
@@ -869,13 +875,13 @@
 .history-stats-grid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  gap: 12px;
-  margin-top: 20px;
+  gap: var(--spacing-md);
+  margin-top: var(--spacing-xl);
 }
 
 .history-stats-grid.secondary {
-  margin-top: 12px;
-  padding-top: 12px;
+  margin-top: var(--spacing-md);
+  padding-top: var(--spacing-md);
   border-top: 1px solid rgba(255, 255, 255, 0.05);
 }
 
@@ -884,15 +890,15 @@
   flex-direction: column;
   align-items: center;
   background-color: rgba(255, 255, 255, 0.05);
-  padding: 12px 8px;
-  border-radius: 16px;
+  padding: var(--spacing-md) var(--spacing-sm);
+  border-radius: var(--rounded-card);
 }
 
 .stat-label {
   font-size: 11px;
   color: rgba(255, 255, 255, 0.5);
   /* 대비 상향 */
-  margin-bottom: 4px;
+  margin-bottom: var(--spacing-xs);
 }
 
 .stat-value {
@@ -904,7 +910,7 @@
 .history-card-divider {
   height: 1px;
   background-color: rgba(255, 255, 255, 0.1);
-  margin: 0 -24px 24px -24px;
+  margin: 0 -24px var(--spacing-2xl) -24px;
 }
 
 .history-summary-card.mini {
@@ -916,8 +922,8 @@
 
 .history-summary-content.mini {
   background-color: rgba(0, 0, 0, 0.2);
-  padding: 16px;
-  border-radius: 16px;
+  padding: var(--spacing-lg);
+  border-radius: var(--rounded-card);
 }
 
 .history-summary-text {
@@ -926,7 +932,7 @@
 }
 
 .history-summary-highlight {
-  color: #4cd964;
+  color: var(--color-success);
   font-weight: 700;
 }
 
@@ -934,10 +940,10 @@
 .history-milestones-integrated {
   position: relative;
   background-color: rgba(0, 0, 0, 0.2);
-  padding: 16px 20px 12px 32px;
+  padding: var(--spacing-lg) var(--spacing-xl) var(--spacing-md) var(--spacing-3xl);
   /* 왼쪽 여백 대폭 상향하여 안전거리 확보 */
-  border-radius: 16px;
-  margin-bottom: 24px;
+  border-radius: var(--rounded-card);
+  margin-bottom: var(--spacing-2xl);
   cursor: pointer;
   transition: all 0.3s ease;
   border: 1px solid transparent;
@@ -949,19 +955,19 @@
 }
 
 .history-milestones-integrated.expanded {
-  padding-bottom: 16px;
+  padding-bottom: var(--spacing-lg);
 }
 
 .history-milestones-list-integrated {
   position: relative;
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: var(--spacing-md);
   max-height: 180px;
   /* 고도가 중간일 때 현위치 카드가 보이도록 상향 */
   overflow: hidden;
   transition: max-height 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-  padding: 0 12px 8px 12px;
+  padding: 0 var(--spacing-md) var(--spacing-sm) var(--spacing-md);
   /* 좌우 여백을 주어 아이콘 shadow/scale 클리핑 방지 */
   margin: 0 -12px;
   /* 상위 패딩과 상쇄하여 위치 유지 */
@@ -971,7 +977,7 @@
   max-height: 1000px;
   /* 충분히 큰 값 */
   overflow-y: auto;
-  padding-right: 4px;
+  padding-right: var(--spacing-xs);
 }
 
 .milestone-line-integrated {
@@ -981,19 +987,21 @@
   transform: translateX(-50%);
   top: 10px;
   bottom: 0px;
-  width: 2px;
-  background: repeating-linear-gradient(to bottom,
-      #4facfe,
-      #4facfe 3px,
-      transparent 3px,
-      transparent 6px);
+  width: var(--spacing-micro);
+  background: repeating-linear-gradient(
+    to bottom,
+    var(--color-primary-light),
+    var(--color-primary-light) 3px,
+    transparent 3px,
+    transparent 6px
+  );
   opacity: 0.25;
 }
 
 .milestone-item-integrated {
   display: flex;
   align-items: center;
-  gap: 16px;
+  gap: var(--spacing-lg);
   position: relative;
   z-index: 1;
 }
@@ -1001,9 +1009,9 @@
 .milestone-dot-integrated {
   width: 24px;
   height: 24px;
-  background: #333;
+  background: var(--color-bg-tertiary);
   border-radius: 50%;
-  border: 1.5px solid #4facfe;
+  border: 1.5px solid var(--color-primary-light);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -1013,7 +1021,7 @@
 
 .milestone-item-integrated.is-current .milestone-dot-integrated {
   background: var(--color-success) !important;
-  border-color: #fff !important;
+  border-color: var(--color-gray-100) !important;
   box-shadow: 0 0 15px rgba(76, 217, 100, 0.6);
   transform: scale(1.1);
   z-index: 5;
@@ -1031,10 +1039,10 @@
   width: 12px;
   /* 사이 지점 마커는 작게 */
   height: 12px;
-  margin-left: 6px;
+  margin-left: var(--spacing-tiny);
   /* 중앙 정렬 유지 */
   background: var(--color-success);
-  border: 2px solid #fff;
+  border: 2px solid var(--color-gray-100);
 }
 
 .milestone-item-integrated.is-current .milestone-label-integrated {
@@ -1082,10 +1090,10 @@
 .milestone-item-integrated.is-current .milestone-content-integrated {
   margin-left: auto;
   /* 우측 빈 공간으로 밀기 */
-  margin-right: 12px;
+  margin-right: var(--spacing-md);
   /* 우측 벽에서 살짝 띄우기 */
   background: rgba(43, 44, 50, 0.9);
-  padding: 4px 10px;
+  padding: var(--spacing-xs) var(--spacing-small-alt);
   border-radius: var(--rounded-small-alt);
   border: 1px solid rgba(76, 217, 100, 0.2);
   z-index: 1;
@@ -1133,13 +1141,13 @@
 .current-position-floating-marker .landmark-dot {
   position: absolute !important;
   left: 17px;
-  /* vertical line center is at 18px. marker width is 28px, center is 14. 18-14=4-ish. But given padding-left:24px, we adjust to line-up. */
-  width: 28px;
+  /* vertical line center is at 18px. marker width is 28px, center is 14. 18-14=4-ish. But given padding-left: 24px, we adjust to line-up. */
+  width: var(--spacing-3xl);
   height: 20px;
   border-radius: var(--rounded-2xs);
   font-size: 12px;
   background: var(--color-success) !important;
-  border: 1px solid #fff !important;
+  border: 1px solid var(--color-gray-100) !important;
   box-shadow: 0 0 10px rgba(76, 217, 100, 0.6);
   z-index: 110;
   display: flex;
@@ -1157,8 +1165,8 @@
   font-weight: 900;
   color: var(--color-success);
   background: rgba(0, 0, 0, 0.7);
-  padding: 2px 10px;
-  border-radius: 100px;
+  padding: 2px var(--spacing-small-alt);
+  border-radius: var(--rounded-pill);
   border: 1px solid rgba(76, 217, 100, 0.4);
   backdrop-filter: blur(10px);
   white-space: nowrap;
@@ -1196,7 +1204,7 @@
 
 .milestone-item-integrated.is-current .milestone-dot-integrated {
   background: var(--color-success);
-  border-color: #fff;
+  border-color: var(--color-gray-100);
   transform: scale(1.1);
   box-shadow: 0 0 8px rgba(76, 217, 100, 0.4);
 }
@@ -1220,30 +1228,30 @@
 .milestone-expand-hint {
   text-align: center;
   font-size: 11px;
-  color: #4facfe;
+  color: var(--color-primary-light);
   /* 아예 브랜드 컬러로 변경하여 시인성 확보 */
-  margin-top: 12px;
-  padding-top: 8px;
+  margin-top: var(--spacing-md);
+  padding-top: var(--spacing-sm);
   border-top: 1px solid rgba(255, 255, 255, 0.05);
   font-weight: 600;
   transition: opacity 0.2s;
 }
 
 .history-milestones-integrated:hover .milestone-expand-hint {
-  color: #4facfe;
+  color: var(--color-primary-light);
 }
 
 /* --- 2. Analysis Card (Proficiency) --- */
 .history-proficiency-list {
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: var(--spacing-lg);
 }
 
 .history-proficiency-item {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: var(--spacing-sm);
 }
 
 .proficiency-info {
@@ -1260,21 +1268,21 @@
 
 .proficiency-level {
   font-size: 12px;
-  color: #4facfe;
+  color: var(--color-primary-light);
   font-weight: 700;
 }
 
 .proficiency-bar-container {
   height: 6px;
   background-color: rgba(255, 255, 255, 0.1);
-  border-radius: 3px;
+  border-radius: var(--rounded-micro);
   overflow: hidden;
 }
 
 .proficiency-bar-fill {
   height: 100%;
   background: linear-gradient(90deg, #4facfe 0%, #00f2fe 100%);
-  border-radius: 3px;
+  border-radius: var(--rounded-micro);
   transition: width 0.8s cubic-bezier(0.34, 1.56, 0.64, 1);
 }
 
@@ -1282,16 +1290,16 @@
 .history-best-grid {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 16px;
+  gap: var(--spacing-lg);
 }
 
 .history-best-item {
-  padding: 20px;
-  border-radius: 20px;
+  padding: var(--spacing-xl);
+  border-radius: var(--rounded-md);
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 8px;
+  gap: var(--spacing-sm);
   text-align: center;
 }
 
@@ -1316,7 +1324,7 @@
 }
 
 .best-value {
-  font-size: 18px;
+  font-size: var(--spacing-xl);
   font-weight: 800;
   color: var(--color-text-primary);
 }
@@ -1326,8 +1334,8 @@
   background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
   color: white;
   border: none;
-  border-radius: 12px;
-  padding: 8px 16px;
+  border-radius: var(--rounded-sm);
+  padding: var(--spacing-sm) var(--spacing-lg);
   font-size: 13px;
   font-weight: 700;
   cursor: pointer;
@@ -1340,8 +1348,8 @@
 }
 
 .history-review-climb-button:disabled {
-  background: #444;
-  color: #888;
+  background: var(--color-bg-tertiary);
+  color: var(--color-text-secondary);
   box-shadow: none;
   cursor: not-allowed;
 }
@@ -1352,7 +1360,7 @@
 
 /* --- Phase 2: Mini Heatmap --- */
 .history-mini-heatmap {
-  padding: 16px 24px;
+  padding: var(--spacing-lg) var(--spacing-2xl);
   border-bottom: 1px solid rgba(255, 255, 255, 0.05);
 }
 
@@ -1360,7 +1368,7 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 12px;
+  margin-bottom: var(--spacing-md);
 }
 
 .heatmap-title {
@@ -1372,43 +1380,43 @@
 
 .heatmap-streak {
   font-size: 12px;
-  color: #4cd964;
+  color: var(--color-success);
 }
 
 .heatmap-grid {
   display: flex;
   flex-wrap: wrap;
-  gap: 4px;
+  gap: var(--spacing-xs);
 }
 
 .heatmap-cell {
   width: 10px;
   height: 10px;
   background-color: rgba(255, 255, 255, 0.05);
-  border-radius: 2px;
+  border-radius: var(--rounded-tiny);
 }
 
 .heatmap-cell.intensity-1 {
-  background-color: #0e4429;
+  background-color: var(--color-heatmap-1);
 }
 
 .heatmap-cell.intensity-2 {
-  background-color: #006d32;
+  background-color: var(--color-heatmap-2);
 }
 
 .heatmap-cell.intensity-3 {
-  background-color: #26a641;
+  background-color: var(--color-heatmap-3);
 }
 
 .heatmap-cell.intensity-4 {
-  background-color: #39d353;
+  background-color: var(--color-heatmap-4);
 }
 
 .history-recent-item-new {
   display: flex;
   align-items: center;
-  gap: 16px;
-  padding: 16px 24px;
+  gap: var(--spacing-lg);
+  padding: var(--spacing-lg) var(--spacing-2xl);
   border-bottom: 1px solid rgba(255, 255, 255, 0.05);
   cursor: pointer;
   transition: background-color 0.2s;
@@ -1427,7 +1435,7 @@
   flex: 1;
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: var(--spacing-xs);
 }
 
 .history-recent-title-row {
@@ -1470,12 +1478,12 @@
 .history-time-range-tabs {
   display: flex;
   background-color: rgba(255, 255, 255, 0.1);
-  padding: 2px;
+  padding: var(--spacing-micro);
   border-radius: var(--rounded-xs);
 }
 
 .history-tab {
-  padding: 4px 12px;
+  padding: var(--spacing-xs) var(--spacing-md);
   border: none;
   background: none;
   color: rgba(255, 255, 255, 0.45);
@@ -1493,7 +1501,7 @@
 
 .history-loading,
 .history-empty {
-  padding: 40px;
+  padding: var(--spacing-4xl);
   text-align: center;
   color: rgba(255, 255, 255, 0.5);
   /* 대비 상향 */
@@ -1519,8 +1527,8 @@
   right: 20px;
   background: rgba(0, 0, 0, 0.45);
   backdrop-filter: blur(8px);
-  color: #fff;
-  padding: 4px 12px;
+  color: var(--color-gray-100);
+  padding: var(--spacing-xs) var(--spacing-md);
   border-radius: var(--rounded-xs);
   font-size: 11px;
   font-weight: 800;
@@ -1543,23 +1551,25 @@
 .history-analysis-container {
   display: flex;
   flex-direction: column;
-  gap: 24px;
+  gap: var(--spacing-2xl);
   /* Increased gap for better separation */
-  padding-bottom: 40px;
+  padding-bottom: var(--spacing-4xl);
 }
 
 .history-analysis-card {
   background-color: var(--bg-glass-card);
-  border-radius: 24px;
-  padding: 24px;
+  border-radius: var(--rounded-large-card);
+  padding: var(--spacing-2xl);
   box-shadow: var(--shadow-glass);
   border: var(--border-glass);
   backdrop-filter: blur(var(--backdrop-blur));
   -webkit-backdrop-filter: blur(var(--backdrop-blur));
   display: flex;
   flex-direction: column;
-  gap: 20px;
-  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  gap: var(--spacing-xl);
+  transition:
+    transform 0.3s ease,
+    box-shadow 0.3s ease;
 }
 
 .history-analysis-card:hover {
@@ -1571,15 +1581,15 @@
 .analysis-summary-grid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  gap: 16px;
+  gap: var(--spacing-lg);
   text-align: center;
-  padding: 8px 0;
+  padding: var(--spacing-sm) 0;
 }
 
 .analysis-stat-item {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: var(--spacing-sm);
   position: relative;
   align-items: center;
 }
@@ -1605,7 +1615,11 @@
   font-size: 24px;
   font-weight: 800;
   color: var(--color-text-primary);
-  background: linear-gradient(135deg, var(--color-text-primary) 30%, var(--color-primary-light) 100%);
+  background: linear-gradient(
+    135deg,
+    var(--color-text-primary) 30%,
+    var(--color-primary-light) 100%
+  );
   -webkit-background-clip: text;
   background-clip: text;
   -webkit-text-fill-color: transparent;
@@ -1623,13 +1637,13 @@
 .skill-chart-container {
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: var(--spacing-lg);
 }
 
 .skill-bar-row {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: var(--spacing-sm);
 }
 
 .skill-info {
@@ -1644,29 +1658,29 @@
   font-weight: 600;
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: var(--spacing-tiny);
 }
 
 .skill-level {
-  color: #4facfe;
+  color: var(--color-primary-light);
   font-weight: 700;
   font-size: 13px;
   background: rgba(79, 172, 254, 0.1);
-  padding: 2px 8px;
-  border-radius: 6px;
+  padding: 2px var(--spacing-sm);
+  border-radius: var(--rounded-xs);
 }
 
 .skill-track {
   height: 10px;
   background-color: rgba(255, 255, 255, 0.05);
-  border-radius: 100px;
+  border-radius: var(--rounded-pill);
   overflow: hidden;
   box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.3);
 }
 
 .skill-bar {
   height: 100%;
-  border-radius: 100px;
+  border-radius: var(--rounded-pill);
   transition: width 1.2s cubic-bezier(0.22, 1, 0.36, 1);
   position: relative;
   overflow: hidden;
@@ -1692,9 +1706,9 @@
 
 .empty-chart-message {
   text-align: center;
-  padding: 40px 20px;
+  padding: var(--spacing-4xl) var(--spacing-xl);
   background: rgba(255, 255, 255, 0.03);
-  border-radius: 16px;
+  border-radius: var(--rounded-card);
   border: 1px dashed rgba(255, 255, 255, 0.1);
   color: var(--color-text-tertiary);
   font-size: 14px;
@@ -1705,22 +1719,22 @@
 .activity-heatmap-container {
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: var(--spacing-lg);
   align-items: center;
-  padding: 8px 0;
+  padding: var(--spacing-sm) 0;
 }
 
 .heatmap-grid {
   display: grid;
   grid-template-columns: repeat(7, 1fr);
-  gap: 6px;
+  gap: var(--spacing-tiny);
   width: 100%;
   max-width: 320px;
 }
 
 .heatmap-cell {
   aspect-ratio: 1;
-  border-radius: 6px;
+  border-radius: var(--rounded-xs);
   background-color: rgba(255, 255, 255, 0.05);
   transition: all 0.3s ease;
   position: relative;
@@ -1761,24 +1775,24 @@
 .heatmap-legend {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: var(--spacing-md);
   font-size: 12px;
   color: rgba(255, 255, 255, 0.5);
-  margin-top: 8px;
+  margin-top: var(--spacing-sm);
   background: rgba(0, 0, 0, 0.2);
-  padding: 6px 16px;
-  border-radius: 100px;
+  padding: var(--spacing-tiny) var(--spacing-lg);
+  border-radius: var(--rounded-pill);
 }
 
 .legend-cells {
   display: flex;
-  gap: 3px;
+  gap: var(--rounded-micro);
 }
 
 .legend-cells .heatmap-cell {
   width: 12px;
   height: 12px;
-  border-radius: 3px;
+  border-radius: var(--rounded-micro);
 }
 
 /* --- Badge Modal Overlay --- */
@@ -1794,7 +1808,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 20px;
+  padding: var(--spacing-xl);
   animation: fadeIn 0.3s ease-out;
 }
 
@@ -1802,7 +1816,7 @@
   background-color: var(--color-bg-secondary);
   width: 100%;
   max-width: 400px;
-  border-radius: 24px;
+  border-radius: var(--rounded-large-card);
   border: 1px solid rgba(255, 255, 255, 0.1);
   box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
   overflow: hidden;
@@ -1812,7 +1826,7 @@
 }
 
 .badge-modal-header {
-  padding: 20px;
+  padding: var(--spacing-xl);
   border-bottom: 1px solid rgba(255, 255, 255, 0.05);
   display: flex;
   justify-content: space-between;
@@ -1820,7 +1834,7 @@
 }
 
 .badge-modal-header h3 {
-  font-size: 18px;
+  font-size: var(--spacing-xl);
   font-weight: 700;
   margin: 0;
   color: var(--color-text-primary);
@@ -1832,11 +1846,11 @@
   color: var(--color-text-tertiary);
   font-size: 20px;
   cursor: pointer;
-  padding: 4px;
+  padding: var(--spacing-xs);
 }
 
 .badge-modal-body {
-  padding: 20px;
+  padding: var(--spacing-xl);
   overflow-y: auto;
 }
 

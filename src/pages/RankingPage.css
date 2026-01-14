@@ -15,26 +15,26 @@
 
 /* Layer 1: Tabs Styling */
 .ranking-tabs-container {
-  padding: 80px 20px 10px;
+  padding: 80px var(--spacing-xl) var(--spacing-small-alt);
   background: linear-gradient(180deg, rgba(0, 0, 0, 0.3) 0%, transparent 100%);
 }
 
 .ranking-tabs {
   display: flex;
   background: rgba(255, 255, 255, 0.05);
-  padding: 4px;
-  border-radius: 14px;
+  padding: var(--spacing-xs);
+  border-radius: var(--rounded-md-alt);
 }
 
 .ranking-tab {
   flex: 1;
-  padding: 10px;
+  padding: var(--spacing-small-alt);
   border: none;
   background: transparent;
   color: var(--color-text-secondary);
   font-weight: 700;
   font-size: 0.95rem;
-  border-radius: 10px;
+  border-radius: var(--rounded-sm-alt);
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   cursor: pointer;
 }
@@ -52,7 +52,7 @@
 
 /* Layer 2: Pill Switch Styling */
 .ranking-switch-container {
-  padding: 0 20px 20px;
+  padding: 0 var(--spacing-xl) var(--spacing-xl);
   display: flex;
   justify-content: center;
 }
@@ -63,8 +63,8 @@
   width: 100%;
   max-width: 320px;
   background: rgba(255, 255, 255, 0.05);
-  border-radius: 30px;
-  padding: 4px;
+  border-radius: var(--rounded-xl);
+  padding: var(--spacing-xs);
   border: 1px solid rgba(255, 255, 255, 0.1);
 }
 
@@ -75,7 +75,7 @@
   width: calc(50% - 4px);
   height: calc(100% - 8px);
   background: linear-gradient(135deg, var(--color-indigo-600) 0%, var(--color-tier-peak) 100%);
-  border-radius: 26px;
+  border-radius: var(--rounded-lg-alt);
   transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   z-index: 0;
 }
@@ -88,7 +88,7 @@
   flex: 1;
   position: relative;
   z-index: 1;
-  padding: 12px;
+  padding: var(--spacing-md);
   border: none;
   background: transparent;
   color: var(--color-text-secondary);
@@ -109,7 +109,7 @@
 /* Info Text */
 .ranking-info {
   text-align: center;
-  padding: 0 24px 16px;
+  padding: 0 var(--spacing-2xl) var(--spacing-lg);
 }
 
 .ranking-info p {
@@ -122,7 +122,7 @@
 /* Layer 3: Ranking List Styling */
 .ranking-list-container {
   flex: 1;
-  padding: 0 20px 20px;
+  padding: 0 var(--spacing-xl) var(--spacing-xl);
 }
 
 .ranking-loading {
@@ -130,7 +130,7 @@
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  padding: 60px 0;
+  padding: calc(var(--spacing-4xl) * 1.5) 0;
   color: var(--color-text-secondary);
 }
 
@@ -141,7 +141,7 @@
   border-top-color: var(--color-indigo-500);
   border-radius: 50%;
   animation: spin 1s linear infinite;
-  margin-bottom: 16px;
+  margin-bottom: var(--spacing-lg);
 }
 
 @keyframes spin {
@@ -152,35 +152,38 @@
 
 .ranking-empty {
   text-align: center;
-  padding: 80px 0;
+  padding: calc(var(--spacing-4xl) * 2) 0;
   color: var(--color-text-secondary);
 }
 
 .empty-icon {
   font-size: 4rem;
   display: block;
-  margin-bottom: 20px;
+  margin-bottom: var(--spacing-xl);
   opacity: 0.3;
 }
 
 .ranking-list {
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: var(--spacing-small-alt);
 }
 
 .ranking-item {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 18px 20px;
+  padding: 18px var(--spacing-xl);
   background: var(--bg-glass-card);
-  border-radius: 20px;
+  border-radius: var(--rounded-md);
   border: var(--border-glass);
   backdrop-filter: blur(var(--backdrop-blur));
   -webkit-backdrop-filter: blur(var(--backdrop-blur));
   box-shadow: var(--shadow-glass);
-  transition: transform 0.2s ease, background-color 0.2s, box-shadow 0.2s;
+  transition:
+    transform 0.2s ease,
+    background-color 0.2s,
+    box-shadow 0.2s;
   cursor: default;
   /* 랭킹 아이템은 클릭 기능이 없으므로 기본 커서 */
 }
@@ -196,18 +199,30 @@
 }
 
 .ranking-item.rank-1 {
-  background: linear-gradient(135deg, color-mix(in srgb, var(--color-rank-gold), transparent 90%) 0%, color-mix(in srgb, var(--color-gray-100), transparent 97%) 100%);
+  background: linear-gradient(
+    135deg,
+    color-mix(in srgb, var(--color-rank-gold), transparent 90%) 0%,
+    color-mix(in srgb, var(--color-gray-100), transparent 97%) 100%
+  );
   border-color: color-mix(in srgb, var(--color-rank-gold), transparent 75%);
   box-shadow: 0 4px 15px color-mix(in srgb, var(--color-rank-gold), transparent 95%);
 }
 
 .ranking-item.rank-2 {
-  background: linear-gradient(135deg, color-mix(in srgb, var(--color-rank-silver), transparent 90%) 0%, color-mix(in srgb, var(--color-gray-100), transparent 97%) 100%);
+  background: linear-gradient(
+    135deg,
+    color-mix(in srgb, var(--color-rank-silver), transparent 90%) 0%,
+    color-mix(in srgb, var(--color-gray-100), transparent 97%) 100%
+  );
   border-color: color-mix(in srgb, var(--color-rank-silver), transparent 75%);
 }
 
 .ranking-item.rank-3 {
-  background: linear-gradient(135deg, color-mix(in srgb, var(--color-rank-bronze), transparent 90%) 0%, color-mix(in srgb, var(--color-gray-100), transparent 97%) 100%);
+  background: linear-gradient(
+    135deg,
+    color-mix(in srgb, var(--color-rank-bronze), transparent 90%) 0%,
+    color-mix(in srgb, var(--color-gray-100), transparent 97%) 100%
+  );
   border-color: color-mix(in srgb, var(--color-rank-bronze), transparent 75%);
 }
 
@@ -237,7 +252,7 @@
   gap: var(--spacing-sm);
   display: flex;
   align-items: center;
-  gap: 16px;
+  gap: var(--spacing-lg);
 }
 
 .ranking-rank {
@@ -271,7 +286,7 @@
   bottom: 80px;
   left: 0;
   right: 0;
-  padding: 16px 20px;
+  padding: var(--spacing-lg) var(--spacing-xl);
   background: linear-gradient(180deg, transparent 0%, rgba(0, 0, 0, 0.9) 40%, #000 100%);
   backdrop-filter: blur(8px);
   z-index: 100;

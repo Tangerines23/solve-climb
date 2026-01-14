@@ -17,9 +17,9 @@
   background: linear-gradient(
     180deg,
     var(--color-blue-400) 0%,
-    #5ba3ff 30%,
-    #7db8ff 60%,
-    #a8d0ff 100%
+    var(--color-indigo-500) 30%,
+    var(--color-tier-mid) 60%,
+    var(--color-primary-light) 100%
   );
   z-index: 0;
   pointer-events: none;
@@ -34,7 +34,8 @@
   top: 0;
   left: 0;
   display: block;
-  z-index: 1; /* 배경을 뒤로 보냄 (노드가 z-index: 10 이상이므로 앞에 표시됨) */
+  z-index: 1;
+  /* 배경을 뒤로 보냄 (노드가 z-index: 10 이상이므로 앞에 표시됨) */
   pointer-events: none;
   object-fit: cover;
 }
@@ -110,12 +111,15 @@
   left: 0;
   right: 0;
   width: 100%;
-  z-index: 10; /* 배경(z-index: 1) 위에 표시되어 노드와 경로가 가려지지 않도록 */
-  padding: 0; /* 패딩 제거하여 정확한 위치 계산 */
+  z-index: 10;
+  /* 배경(z-index: 1) 위에 표시되어 노드와 경로가 가려지지 않도록 */
+  padding: 0;
+  /* 패딩 제거하여 정확한 위치 계산 */
   pointer-events: none;
   overflow: visible;
   display: flex;
-  justify-content: center; /* 중앙 정렬 */
+  justify-content: center;
+  /* 중앙 정렬 */
   align-items: flex-start;
   /* top은 인라인 스타일로 동적으로 설정됨 */
 }
@@ -138,7 +142,8 @@
 .path-cleared {
   opacity: 0.6;
   /* Toss UI: 클리어된 경로도 연한 회색 (TSX에서 직접 스타일 적용) */
-  filter: none; /* 그림자 제거 */
+  filter: none;
+  /* 그림자 제거 */
   animation: pathDraw 1s ease-out;
 }
 
@@ -169,7 +174,8 @@
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
   z-index: 11;
   /* foreignObject 내부 요소의 렌더링 안정성을 위한 최적화 */
-  transform: translateZ(0); /* 하드웨어 가속 활성화 */
+  transform: translateZ(0);
+  /* 하드웨어 가속 활성화 */
   -webkit-font-smoothing: antialiased;
   backface-visibility: hidden;
   /* 부모가 막은 이벤트를 다시 활성화 */
@@ -248,7 +254,7 @@
 }
 
 .level-node-icon {
-  font-size: 18px;
+  font-size: var(--spacing-xl);
   line-height: 1;
 }
 
@@ -295,7 +301,7 @@
   }
 
   .level-node-current {
-    border-width: 2px;
+    border-width: var(--spacing-micro);
   }
 }
 
@@ -316,6 +322,7 @@
   100% {
     transform: translateY(0);
   }
+
   50% {
     transform: translateY(-10px);
   }
@@ -326,6 +333,7 @@
   100% {
     transform: translate(-50%, -50%) translateY(0);
   }
+
   50% {
     transform: translate(-50%, -50%) translateY(-12px);
   }
@@ -369,6 +377,7 @@
     opacity: 0.6;
     filter: drop-shadow(0 0 5px rgba(0, 212, 255, 0.8));
   }
+
   50% {
     opacity: 1;
     filter: drop-shadow(0 0 15px rgba(0, 212, 255, 1));
@@ -394,6 +403,7 @@
     opacity: 0;
     transform: translateY(-4px);
   }
+
   to {
     opacity: 1;
     transform: translateY(0);
@@ -411,9 +421,11 @@
 /* 내 위치로 가기 버튼 (FAB) */
 .fab-my-location {
   position: fixed;
-  bottom: 100px; /* 하단 리스트 헤더 위에 떠 있도록 위치 조정 */
+  bottom: 100px;
+  /* 하단 리스트 헤더 위에 떠 있도록 위치 조정 */
   right: var(--spacing-xl);
-  z-index: 100; /* 가장 위에 */
+  z-index: 100;
+  /* 가장 위에 */
 
   display: flex;
   align-items: center;
@@ -423,7 +435,8 @@
   background-color: var(--color-text-primary);
   color: var(--color-gray-700);
   border: none;
-  border-radius: var(--rounded-lg); /* 캡슐 형태 */
+  border-radius: var(--rounded-lg);
+  /* 캡슐 형태 */
 
   /* 토스 스타일 부드러운 그림자 */
   box-shadow:
@@ -449,6 +462,7 @@
     opacity: 0;
     transform: scale(0.5) translateY(var(--spacing-xl));
   }
+
   to {
     opacity: 1;
     transform: scale(1) translateY(0);

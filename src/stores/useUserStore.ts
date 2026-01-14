@@ -13,6 +13,14 @@ interface UserState {
   }>;
   isLoading: boolean;
 
+  handleWatchAd: () => void;
+  // Pause System
+  showPauseModal: boolean;
+  remainingPauses: number;
+  handlePauseClick: () => void;
+  handlePauseResume: () => void;
+  handlePauseExit: () => void;
+
   fetchUserData: () => Promise<void>;
   purchaseItem: (itemId: number) => Promise<{ success: boolean; message: string }>;
   checkStamina: () => Promise<void>;
@@ -21,6 +29,7 @@ interface UserState {
   setMinerals: (minerals: number) => Promise<void>;
   setStamina: (stamina: number) => void;
   recoverStaminaAds: () => Promise<{ success: boolean; message: string }>;
+  refundStamina: () => Promise<{ success: boolean; message: string }>;
 
   // DEV ONLY
   debugAddItems: () => Promise<void>;
@@ -35,6 +44,24 @@ export const useUserStore = create<UserState>((set, get) => ({
   stamina: 5,
   inventory: [],
   isLoading: false,
+
+  handleWatchAd: () => {
+    console.log('Watch Ad called (not implemented)');
+    // Implement ad watching logic here
+  },
+  showPauseModal: false,
+  remainingPauses: 3, // Initial value
+  handlePauseClick: () => {
+    set(() => ({ showPauseModal: true }));
+  },
+  handlePauseResume: () => {
+    set(() => ({ showPauseModal: false }));
+  },
+  handlePauseExit: () => {
+    set(() => ({ showPauseModal: false }));
+    // Additional logic for exiting the quiz/game
+  },
+
   lastStaminaConsumeTime: 0,
 
   fetchUserData: async () => {
@@ -275,5 +302,29 @@ export const useUserStore = create<UserState>((set, get) => ({
     }
 
     await get().fetchUserData();
+  },
+
+  refundStamina: async () => {
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+    if (!user) return { success: false, message: '로그인이 필요합니다.' };
+
+    // Simply increment stamina locally and sync to server
+    // Note: server should ideally have a refund RPC, but for now we manually update
+    // Or reusing recover_stamina logic if appropriate, but refund implies giving back what was taken.
+    // Let's increment by 1 safely.
+
+    // Optimistic update
+    set((state) => ({ stamina: Math.min(5, state.stamina + 1) }));
+
+    try {
+      const { error } = await supabase.rpc('recover_stamina_ads'); // Using existing recovery RPC as it increments by 1
+      if (error) throw error;
+      return { success: true, message: 'Stamina refunded' };
+    } catch (error) {
+      console.error('Error refunding stamina:', error);
+      return { success: false, message: 'Failed to refund stamina' };
+    }
   },
 }));

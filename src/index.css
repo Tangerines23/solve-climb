@@ -33,7 +33,25 @@
   --icon-size-md: 24px;
 
   /* Border Radius - 토스 표준 */
+  --rounded-micro: var(--rounded-micro);
+  --rounded-2xs: 4px;
   --rounded-xs: 6px;
+  --rounded-sm-alt: 10px;
+  /* 10px 대체 */
+  --rounded-sm: 12px;
+  --rounded-md-alt: 14px;
+  /* 14px 대체 */
+  --rounded-card: 16px;
+  --rounded-md: 20px;
+  --rounded-large-card: 24px;
+  --rounded-lg-alt: 26px;
+  /* 26px 대체 */
+  --rounded-toggle: var(--spacing-3xl);
+  --rounded-xl: 30px;
+  /* 30px 대체 */
+  --rounded-lg: 32px;
+  --rounded-pill: 100px;
+  /* 완전 둥글게 */
   --rounded-sm: 12px;
   --rounded-md: 20px;
   --rounded-lg: 32px;
@@ -43,26 +61,33 @@
   /* 성공/완료 */
   --color-primary-light: #4facfe;
   /* Primary Light */
-  --color-gray-100: #ffffff;
+  --color-gray-100: var(--color-gray-100);
   --color-gray-200: #fafafc;
   --color-gray-300: #e2e2e2;
   --color-gray-300-alpha: #e2e2e299;
   --color-gray-400: #bebec0;
   --color-gray-500: #9b9b9b;
-  --color-gray-700: #303030;
-  --color-gray-800: #181818;
+  /* --color-gray-700 (#303030) -> use var(--color-bg-secondary) */
+  /* --color-gray-800 (#181818) -> use var(--color-bg-primary) */
   --color-gray-900: #121212;
 
   /* Primary Blue - 토스 스타일 */
-  --color-blue-400: #00bfa5;
+  --color-blue-400: var(--color-blue-400);
   /* 기존 primary 색상 유지 */
   --color-blue-500: #00a693;
   /* hover 상태 */
   --color-blue-700: #00897a;
   /* active 상태 */
 
+  /* Red Scale (Simplified) */
+  --color-toss-red: #f04452;
+  /* Primary Danger */
+  --color-red-600: #dc2626;
+  /* Darker/Hover */
+  /* --color-red-400, 500 removed (Merged to toss-red or 600) */
+
   /* 추가 Gray 색상 */
-  --color-gray-600: #3c3c3c;
+  /* --color-gray-600 (#3c3c3c) -> use var(--color-bg-tertiary) */
 
   /* 배경 색상 */
   --color-bg-primary: #1e1e1e;
@@ -70,7 +95,7 @@
   --color-bg-tertiary: #3c3c3c;
 
   /* 텍스트 색상 */
-  --color-text-primary: #ffffff;
+  --color-text-primary: var(--color-gray-100);
   --color-text-secondary: #aaa;
 
   /* Border Radius 추가 */
@@ -79,13 +104,13 @@
   /* --rounded-sm과 동일하지만 의미적으로 명확 */
   --rounded-2xs: 4px;
   /* 4px 라운딩 */
-  --rounded-toggle: 28px;
+  --rounded-toggle: var(--spacing-3xl);
   /* 토글 스위치 */
   --rounded-large-card: 24px;
   /* 큰 카드 */
-  --rounded-tiny: 2px;
+  --rounded-tiny: var(--spacing-micro);
   /* 매우 작은 요소 */
-  --rounded-micro: 3px;
+  --rounded-micro: var(--rounded-micro);
   /* 미세한 요소 */
   --rounded-small-alt: 6px;
   /* 작은 요소 대체 */
@@ -100,7 +125,7 @@
   /* 티어 색상 변수 */
   --color-tier-base: #888888;
   /* 베이스캠프 - 회색 */
-  --color-tier-trail: #00bfa5;
+  --color-tier-trail: var(--color-blue-400);
   /* 등산로 - 청록색 */
   --color-tier-mid: #2196f3;
   /* 중턱 - 파란색 */
@@ -115,7 +140,6 @@
 
   /* 테두리 시스템 애니메이션 */
   @keyframes tier-glow {
-
     0%,
     100% {
       box-shadow: 0 0 8px var(--color-tier-legend);
@@ -156,14 +180,14 @@
   --modal-width-landscape-large: 900px;
 
   /* Clamp 최소/최대값 (반응형 요소용) */
-  --clamp-gap-min: 6px;
-  --clamp-gap-max: 12px;
-  --clamp-padding-min: 8px;
-  --clamp-padding-max: 16px;
-  --clamp-padding-lg-min: 12px;
-  --clamp-padding-lg-max: 20px;
-  --clamp-padding-xl-min: 16px;
-  --clamp-padding-xl-max: 32px;
+  --clamp-gap-min: var(--spacing-tiny);
+  --clamp-gap-max: var(--spacing-md);
+  --clamp-padding-min: var(--spacing-sm);
+  --clamp-padding-max: var(--spacing-lg);
+  --clamp-padding-lg-min: var(--spacing-md);
+  --clamp-padding-lg-max: var(--spacing-xl);
+  --clamp-padding-xl-min: var(--spacing-lg);
+  --clamp-padding-xl-max: var(--spacing-3xl);
   --clamp-border-radius-min: 8px;
   --clamp-border-radius-max: 16px;
   --clamp-font-size-min: 0.9rem;
@@ -176,10 +200,8 @@
   /* 기타 색상 */
   --color-primary: var(--color-blue-400);
   /* 호환성 유지 */
-  --color-toss-red: #f04452;
-  --color-red-400: #ff4545;
-  --color-red-500: #ef4444;
-  --color-red-600: #dc2626;
+  /* --color-red-400, 500 Merged to toss-red */
+  /* --color-red-600: #dc2626; (Moved up) */
   /* 위험 버튼 hover */
   --color-yellow-400: #fed85d;
 
@@ -190,7 +212,7 @@
   --color-primary-focus-shadow: rgba(0, 191, 165, 0.2);
   --color-border: #e0e0e0;
   --color-disabled: #a0a0a0;
-  --color-text-default: #333;
+  --color-text-default: var(--color-text-default);
   --color-error: #d91a2a;
 
   /* 추가 Gray 색상 (UI 요소용) */
@@ -231,13 +253,17 @@
   --backdrop-blur: 20px;
   --shadow-glass: 0 8px 32px rgba(0, 0, 0, 0.2);
   --shadow-glass-hover: 0 12px 40px rgba(0, 0, 0, 0.3);
-  --gradient-text-premium: linear-gradient(135deg, #fff 30%, #4facfe 100%);
-  --gradient-sub-text: linear-gradient(135deg, rgba(255, 255, 255, 0.8) 0%, rgba(255, 255, 255, 0.4) 100%);
+  --gradient-text-premium: linear-gradient(135deg, var(--color-gray-100) 30%, #4facfe 100%);
+  --gradient-sub-text: linear-gradient(
+    135deg,
+    rgba(255, 255, 255, 0.8) 0%,
+    rgba(255, 255, 255, 0.4) 100%
+  );
 
   /* New Color Palettes for Consistency */
   /* Slate (Gray-Blueish) */
-  --color-slate-400: #94a3b8;
-  --color-slate-500: #64748b;
+  --color-slate-400: var(--color-slate-400);
+  --color-slate-500: var(--color-slate-500);
   --color-slate-600: #475569;
   --color-slate-700: #334155;
   --color-slate-800: #1e293b;
@@ -269,7 +295,10 @@
   backdrop-filter: blur(var(--backdrop-blur));
   -webkit-backdrop-filter: blur(var(--backdrop-blur));
   box-shadow: var(--shadow-glass);
-  transition: transform 0.2s ease, box-shadow 0.2s ease, background-color 0.2s ease;
+  transition:
+    transform 0.2s ease,
+    box-shadow 0.2s ease,
+    background-color 0.2s ease;
 }
 
 .glass-card:hover {
@@ -289,7 +318,7 @@
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
-  color: #fff;
+  color: var(--color-gray-100);
   /* Fallback */
 }
 
@@ -333,7 +362,7 @@ body {
 .quiz-card {
   background-color: var(--bg-glass-card);
   border: var(--border-glass);
-  padding: 24px 16px;
+  padding: var(--spacing-2xl) var(--spacing-lg);
   border-radius: 16px;
   box-shadow: var(--shadow-glass);
   backdrop-filter: blur(var(--backdrop-blur));
@@ -353,7 +382,7 @@ body {
   font-weight: bold;
   color: var(--color-gray-100);
   margin: 0;
-  padding-bottom: 8px;
+  padding-bottom: var(--spacing-sm);
 }
 
 .answer-input {
@@ -365,7 +394,7 @@ body {
   border-radius: var(--rounded-sm);
   background-color: rgba(255, 255, 255, 0.05);
   color: white;
-  margin-top: 16px;
+  margin-top: var(--spacing-lg);
 }
 
 .answer-input:focus {
@@ -398,7 +427,7 @@ body {
 .feedback-message {
   height: 20px;
   font-size: 14px;
-  margin-top: 12px;
+  margin-top: var(--spacing-md);
   font-weight: 500;
   text-align: center;
 }
@@ -421,7 +450,7 @@ body {
   font-weight: bold;
   color: var(--color-gray-100);
   margin: 0;
-  padding-bottom: 8px;
+  padding-bottom: var(--spacing-sm);
 }
 
 .result-score-label {

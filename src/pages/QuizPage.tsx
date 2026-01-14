@@ -74,6 +74,7 @@ export function QuizPage() {
     consumeStamina,
     minerals,
     recoverStaminaAds,
+    refundStamina,
   } = useUserStore();
 
   // 애니메이션 상태 관리 (handleWatchAd보다 먼저 선언)
@@ -329,6 +330,28 @@ export function QuizPage() {
 
   const { handleRevive, handlePurchaseAndRevive, handleGiveUp, stableHandleGameOver } = revive;
 
+  const smartHandleGameOver = useCallback(
+    (reason?: string) => {
+      // 1. 환불 로직 체크
+      if (
+        gameState.totalQuestions === 0 && // 한 문제도 못 풀었을 때
+        (reason === 'timeout' || reason === 'manual_exit') // 타임아웃 또는 안전한 종료
+      ) {
+        refundStamina().then((res) => {
+          if (res.success) {
+            setToastValue('첫 문제 도전 실패로 스태미나가 반환되었습니다.');
+            animations.setShowSlideToast(true);
+            setTimeout(() => animations.setShowSlideToast(false), 2000);
+          }
+        });
+      }
+
+      // 2. 원래 게임 오버 호출
+      stableHandleGameOver(reason);
+    },
+    [gameState.totalQuestions, refundStamina, stableHandleGameOver, animations]
+  );
+
   const handleCountdownComplete = useCallback(() => {
     // 카운트다운 완료 후 처리 순서:
     // 1. 피버 상태 활성화 (Second Wind)
@@ -375,7 +398,7 @@ export function QuizPage() {
     increaseScore,
     decreaseScore,
     generateNewQuestion,
-    handleGameOver: stableHandleGameOver, // Intercepted handler
+    handleGameOver: smartHandleGameOver, // Check refund logic first
     setTotalQuestions: gameStateSettersRef.current.setTotalQuestions,
     setWrongAnswers: gameStateSettersRef.current.setWrongAnswers,
     setSolveTimes: gameStateSettersRef.current.setSolveTimes,
@@ -795,15 +818,31 @@ export function QuizPage() {
         handleBack={handleBack}
         handleStartGame={handleStartGame}
         showStaminaModal={showStaminaModal}
-        setShowStaminaModal={setShowStaminaModal}
-        handlePlayAnyway={handlePlayAnyway}
         handleWatchAd={handleStaminaAdRecovery}
         // Pause System
         showPauseModal={showPauseModal}
         remainingPauses={remainingPauses}
+        handlePauseClick={handlePauseClick}
         handlePauseResume={handlePauseResume}
         handlePauseExit={handlePauseExit}
+        // Missing Props Fix
+        setShowStaminaModal={setShowStaminaModal}
+        handlePlayAnyway={handlePlayAnyway}
       />
+
+      {/* Pause Exit Confirm Toast */}
+      {showPauseExitConfirm && (
+        <ConfirmModal
+          isOpen={true}
+          title="게임 중단"
+          message={`게임을 중단하시겠습니까?${'\n'}지금 나가면 진행 상황이 저장되지 않습니다.`}
+          onConfirm={handleConfirmExit}
+          onCancel={() => setShowPauseExitConfirm(false)}
+          confirmText="나가기"
+          cancelText="취소"
+          variant="danger"
+        />
+      )}
       <ItemFeedbackOverlay ref={feedbackRef} />
       <QuizCard
         currentQuestion={currentQuestion}

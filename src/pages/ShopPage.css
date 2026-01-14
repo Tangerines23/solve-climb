@@ -44,7 +44,9 @@
   font-size: 1.5rem;
   cursor: pointer;
   padding: 0.5rem;
-  transition: transform 0.2s, opacity 0.2s;
+  transition:
+    transform 0.2s,
+    opacity 0.2s;
 }
 
 .back-button:hover {
@@ -68,8 +70,8 @@
 .shop-tabs {
   display: flex;
   background: rgba(255, 255, 255, 0.05);
-  padding: 4px;
-  border-radius: 12px;
+  padding: var(--spacing-xs);
+  border-radius: var(--rounded-sm);
   margin-bottom: 2rem;
   border: 1px solid rgba(255, 255, 255, 0.1);
 }
@@ -83,7 +85,7 @@
   font-weight: 600;
   font-size: 0.95rem;
   cursor: pointer;
-  border-radius: 8px;
+  border-radius: var(--rounded-xs);
   transition: all 0.2s ease;
 }
 
@@ -142,8 +144,8 @@
   color: white;
   font-size: 0.65rem;
   font-weight: 800;
-  padding: 2px 6px;
-  border-radius: 6px;
+  padding: 2px var(--spacing-tiny);
+  border-radius: var(--rounded-xs);
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
   white-space: nowrap;
 }
@@ -189,8 +191,12 @@
 }
 
 .purchase-button:hover:not(:disabled) {
-  transform: scale(1.05);
+  transform: scale(1.02);
   box-shadow: 0 0 15px rgba(59, 130, 246, 0.4);
+}
+
+.purchase-button:active:not(:disabled) {
+  transform: scale(0.975);
 }
 
 .purchase-button:disabled {

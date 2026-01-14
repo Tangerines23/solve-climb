@@ -62,7 +62,7 @@ interface QuizCardProps {
   generateNewQuestion: () => void;
   handleSubmit: (e: FormEvent) => void;
   // handleBack removed
-  handleGameOver: () => void;
+  handleGameOver: (reason?: string) => void;
   handleKeypadNumber: (num: string) => void;
   handleQwertyKeyPress: (key: string) => void;
   handleKeypadClear: () => void;
@@ -272,7 +272,7 @@ function QuizCardComponent({
       console.log('[Game] Safety Rope used! Saved from time up.');
       if (onSafetyRopeUsed) onSafetyRopeUsed();
     } else if (hasLastSpurt) {
-      handleGameOver();
+      handleGameOver('timeout');
     } else if (gameMode === 'survival') {
       const hasFlare = activeItems.includes('flare');
       if (hasFlare) {
@@ -284,10 +284,10 @@ function QuizCardComponent({
         generateNewQuestion();
       } else {
         consumeLife();
-        handleGameOver();
+        handleGameOver('timeout');
       }
     } else {
-      handleGameOver();
+      handleGameOver('timeout');
     }
   };
 

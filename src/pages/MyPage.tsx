@@ -12,6 +12,7 @@ import { MyPageProfile } from '../components/my/MyPageProfile';
 import { MyPageStats } from '../components/my/MyPageStats';
 import { MyPageQuickAccess } from '../components/my/MyPageQuickAccess';
 import { MyPageSettings } from '../components/my/MyPageSettings';
+import { NotificationPlayground } from '../components/debug/NotificationPlayground';
 import { useProfileStore } from '../stores/useProfileStore';
 import { useSettingsStore } from '../stores/useSettingsStore';
 import { useMyPageStats } from '../hooks/useMyPageStats';
@@ -668,6 +669,13 @@ export function MyPage() {
             onSendFeedback={handleSendFeedback}
             onLogout={handleLogout}
           />
+
+          {/* Admin / Dev Playground */}
+          {(useProfileStore.getState().isAdmin || import.meta.env.DEV) && (
+            <div style={{ marginTop: '32px' }}>
+              <NotificationPlayground />
+            </div>
+          )}
 
           {/* 에러 메시지 (있는 경우) */}
           {statsError && (

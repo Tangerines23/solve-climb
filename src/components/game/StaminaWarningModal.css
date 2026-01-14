@@ -4,7 +4,7 @@
   left: 0;
   right: 0;
   bottom: 0;
-  background: rgba(0, 0, 0, 0.85);
+  background: var(--color-overlay);
   backdrop-filter: blur(12px);
   display: flex;
   align-items: center;
@@ -14,12 +14,12 @@
 }
 
 .stamina-modal-content {
-  background: rgba(30, 30, 40, 0.95);
+  background: var(--color-bg-primary);
   border-radius: 2rem;
   padding: 2.5rem;
   width: 90%;
   max-width: 400px;
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  border: 1px solid var(--color-bg-secondary);
   box-shadow: 0 40px 100px rgba(0, 0, 0, 0.8);
   text-align: center;
   animation: scaleIn 0.25s cubic-bezier(0.175, 0.885, 0.32, 1.275);
@@ -37,13 +37,13 @@
 }
 
 .stamina-modal-header h2 {
-  color: #f8fafc;
+  color: var(--color-text-primary);
   font-size: 1.5rem;
   font-weight: 700;
 }
 
 .stamina-modal-body p {
-  color: #cbd5e1;
+  color: var(--color-text-secondary);
   margin-bottom: 1rem;
   line-height: 1.5;
 }
@@ -60,7 +60,7 @@
 
 .penalty-list li {
   font-size: 0.875rem;
-  color: #f87171;
+  color: var(--color-toss-red);
   margin-bottom: 0.5rem;
   text-align: left;
 }
@@ -78,7 +78,7 @@
 
 .ad-button {
   background: var(--color-blue-400);
-  color: #fff;
+  color: var(--color-text-primary);
   border: none;
   padding: 1.1rem;
   border-radius: 1rem;
@@ -122,7 +122,7 @@
 .close-link {
   background: none;
   border: none;
-  color: #94a3b8;
+  color: var(--color-slate-400);
   font-size: 0.875rem;
   cursor: pointer;
   text-decoration: underline;

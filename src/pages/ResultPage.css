@@ -163,7 +163,7 @@
   }
 
   .result-left-section .result-title-row .result-title {
-    font-size: 28px;
+    font-size: var(--spacing-3xl);
     font-weight: 700;
     margin: 0;
     color: var(--color-text-primary);
@@ -175,7 +175,7 @@
     font-size: 0.875rem;
     font-weight: 500;
     color: var(--color-blue-400);
-    margin: 0 0 16px 0;
+    margin: 0 0 var(--spacing-lg) 0;
     text-align: center;
     white-space: nowrap;
   }
@@ -284,13 +284,13 @@
 
   /* Primary 버튼 색상 */
   .result-right-section .result-button-primary {
-    background-color: var(--color-blue-400) !important;
+    background: linear-gradient(135deg, var(--color-blue-400), var(--color-blue-500)) !important;
     color: var(--color-gray-100) !important;
     border: 1px solid transparent !important;
   }
 
   .result-right-section .result-button-primary:hover {
-    background-color: var(--color-blue-500) !important;
+    background: linear-gradient(135deg, var(--color-blue-500), var(--color-blue-700)) !important;
   }
 
   .result-right-section .result-button-primary:active {
@@ -300,7 +300,7 @@
 
   /* Secondary 버튼 색상 - 크기는 primary와 동일 */
   .result-right-section .result-button-secondary {
-    background-color: var(--color-gray-700) !important;
+    background-color: var(--color-bg-secondary) !important;
     color: var(--color-gray-100) !important;
     border: 1px solid var(--color-gray-300) !important;
     /* flex 제거하여 크기 동일하게 */
@@ -308,7 +308,7 @@
   }
 
   .result-right-section .result-button-secondary:hover {
-    background-color: var(--color-gray-600, #3c3c3c) !important;
+    background-color: var(--color-bg-tertiary) !important;
   }
 
   .result-right-section .result-button-secondary:active {
@@ -357,7 +357,7 @@
 /* 결과 아이콘 (floating 애니메이션) */
 .result-icon {
   font-size: 64px;
-  margin: 0 0 12px 0;
+  margin: 0 0 var(--spacing-md) 0;
   line-height: 1;
 }
 
@@ -366,7 +366,6 @@
 }
 
 @keyframes floating {
-
   0%,
   100% {
     transform: translateY(0px);
@@ -378,7 +377,7 @@
 }
 
 .result-title {
-  font-size: 28px;
+  font-size: var(--spacing-3xl);
   font-weight: 700;
   margin: 0 0 var(--spacing-sm) 0;
   color: var(--color-text-primary);
@@ -388,14 +387,14 @@
   font-size: 0.875rem;
   font-weight: 500;
   color: var(--color-blue-400);
-  margin: 0 0 16px 0;
+  margin: 0 0 var(--spacing-lg) 0;
 }
 
 .exhausted-badge {
   background-color: color-mix(in srgb, var(--color-toss-red), transparent 85%);
   color: var(--color-toss-red);
-  padding: 4px 12px;
-  border-radius: 20px;
+  padding: var(--spacing-xs) var(--spacing-md);
+  border-radius: var(--rounded-md);
   font-size: 0.75rem;
   font-weight: 600;
   margin-bottom: var(--spacing-md);
@@ -552,12 +551,12 @@
 }
 
 .result-button-primary {
-  background-color: var(--color-blue-400);
+  background: linear-gradient(135deg, var(--color-blue-400), var(--color-blue-500));
   color: var(--color-gray-100);
   width: 100%;
   padding: var(--spacing-lg);
   border: none;
-  border-radius: var(--rounded-sm);
+  border-radius: var(--rounded-button);
   font-size: 1rem;
   font-weight: 600;
   cursor: pointer;
@@ -566,7 +565,7 @@
 }
 
 .result-button-primary:hover {
-  background-color: var(--color-blue-500);
+  background: linear-gradient(135deg, var(--color-blue-500), var(--color-blue-700));
 }
 
 .result-button-primary:active {
@@ -581,7 +580,7 @@
 }
 
 .result-button-secondary {
-  background-color: var(--color-gray-700);
+  background-color: var(--color-bg-secondary);
   color: var(--color-gray-100);
   flex: 1;
   padding: var(--spacing-medium-alt);
@@ -595,7 +594,7 @@
 }
 
 .result-button-secondary:hover {
-  background-color: var(--color-gray-600, #3c3c3c);
+  background-color: var(--color-bg-tertiary);
 }
 
 .result-button-secondary:active {

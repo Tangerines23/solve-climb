@@ -198,7 +198,7 @@
   font-weight: 500;
   font-family: inherit;
   color: var(--color-text-primary);
-  background-color: #4285f4;
+  background-color: var(--color-tier-mid);
   border: none;
   border-radius: var(--rounded-button);
   cursor: pointer;

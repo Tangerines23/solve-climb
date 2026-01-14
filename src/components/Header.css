@@ -81,14 +81,14 @@
   gap: var(--spacing-xs);
   background-color: rgba(255, 255, 255, 0.05);
   padding: 2px var(--spacing-sm);
-  border-radius: 20px;
+  border-radius: var(--rounded-md);
   flex-shrink: 0;
 }
 
 .status-item {
   display: flex;
   align-items: center;
-  gap: 2px;
+  gap: var(--spacing-micro);
   font-size: 0.75rem;
   font-weight: 600;
   color: var(--color-text-primary);
@@ -100,8 +100,8 @@
 
 .status-item.selected {
   background-color: rgba(96, 165, 243, 0.2);
-  border-radius: 12px;
-  padding: 0 8px;
+  border-radius: var(--rounded-sm);
+  padding: 0 var(--spacing-sm);
   box-shadow: 0 0 8px rgba(96, 165, 243, 0.5);
   transition: all 0.2s ease;
 }
@@ -115,11 +115,11 @@
   position: absolute;
   top: 4px;
   left: 10px;
-  background-color: #ff9800;
+  background-color: var(--color-confetti-yellow);
   color: white;
   font-size: 0.6rem;
-  padding: 2px 6px;
-  border-radius: 4px;
+  padding: 2px var(--spacing-tiny);
+  border-radius: var(--rounded-2xs);
   font-weight: bold;
   pointer-events: none;
   animation: pulse 1s infinite alternate;

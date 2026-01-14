@@ -1,0 +1,111 @@
+.notification-playground {
+  padding: var(--spacing-lg);
+  background-color: var(--color-bg-secondary);
+  border-radius: var(--rounded-card);
+  margin-top: var(--spacing-2xl);
+  border: 1px dashed var(--color-blue-400);
+}
+
+.playground-title {
+  margin: 0 0 var(--spacing-xs) 0;
+  color: var(--color-blue-400);
+  font-size: 1.1rem;
+}
+
+.playground-desc {
+  margin: 0 0 var(--spacing-lg) 0;
+  color: var(--color-text-secondary);
+  font-size: 0.8rem;
+}
+
+.playground-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: var(--spacing-lg);
+}
+
+.playground-section {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-sm);
+}
+
+.playground-section h4 {
+  margin: 0;
+  font-size: 0.9rem;
+  color: var(--color-text-primary);
+  opacity: 0.8;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  padding-bottom: var(--spacing-xs);
+  margin-bottom: var(--spacing-xs);
+}
+
+.playground-section button {
+  padding: var(--spacing-sm) var(--spacing-md);
+  background-color: var(--color-bg-tertiary);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: var(--rounded-button);
+  color: var(--color-text-primary);
+  font-size: 0.85rem;
+  cursor: pointer;
+  text-align: left;
+  transition: all 0.2s;
+}
+
+.playground-section button:hover {
+  background-color: var(--color-blue-400);
+  color: white;
+  border-color: transparent;
+}
+
+/* Overlay */
+.playground-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.8);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+  padding: var(--spacing-lg);
+}
+
+.playground-card-container {
+  width: 100%;
+  max-width: 400px;
+  position: relative;
+}
+
+.playground-card-scroll-container {
+  width: 100%;
+  max-width: 500px;
+  max-height: 80vh;
+  overflow-y: auto;
+  background: var(--color-bg-primary);
+  padding: var(--spacing-lg);
+  border-radius: var(--rounded-large-card);
+}
+
+.card-preview-row {
+  margin-bottom: var(--spacing-xl);
+}
+
+.card-preview-row h5 {
+  margin-bottom: var(--spacing-sm);
+  color: var(--color-text-secondary);
+}
+
+.playground-close-btn {
+  margin-top: var(--spacing-md);
+  width: 100%;
+  padding: var(--spacing-md);
+  background-color: var(--color-bg-tertiary);
+  border: none;
+  border-radius: var(--rounded-button);
+  color: white;
+  font-weight: bold;
+  cursor: pointer;
+}

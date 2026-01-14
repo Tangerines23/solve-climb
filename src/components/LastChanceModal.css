@@ -14,14 +14,14 @@
 }
 
 .last-chance-modal {
-  background: rgba(30, 30, 40, 0.98);
+  background: var(--color-bg-primary);
   width: 90%;
   max-width: 360px;
-  border-radius: 24px;
+  border-radius: var(--rounded-large-card);
   padding: 2.5rem;
   text-align: center;
   box-shadow: 0 40px 100px rgba(0, 0, 0, 0.8);
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  border: 1px solid var(--color-bg-secondary);
   animation: scaleIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
 }
 
@@ -29,12 +29,12 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 20px;
+  margin-bottom: var(--spacing-xl);
 }
 
 .last-chance-header h2 {
   margin: 0;
-  color: #fff;
+  color: var(--color-gray-100);
   /* White title */
   font-size: 24px;
   font-weight: 800;
@@ -58,21 +58,21 @@
 
 .last-chance-message {
   font-size: 16px;
-  color: #eee;
+  color: var(--color-gray-300);
   /* Lighter text */
-  margin-bottom: 20px;
+  margin-bottom: var(--spacing-xl);
   line-height: 1.4;
 }
 
 .item-status {
   background: rgba(255, 255, 255, 0.05);
-  padding: 16px;
-  border-radius: 16px;
+  padding: var(--spacing-lg);
+  border-radius: var(--rounded-card);
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 12px;
-  margin-bottom: 24px;
+  gap: var(--spacing-md);
+  margin-bottom: var(--spacing-2xl);
   border: 1px solid rgba(255, 255, 255, 0.08);
 }
 
@@ -99,20 +99,20 @@
 .item-name {
   font-weight: 800;
   font-size: 1.1rem;
-  color: #fff;
+  color: var(--color-gray-100);
 }
 
 .action-buttons {
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: var(--spacing-small-alt);
 }
 
 .last-chance-btn {
   width: 100%;
-  padding: 14px;
+  padding: var(--spacing-medium-alt);
   border: none;
-  border-radius: 12px;
+  border-radius: var(--rounded-sm);
   font-size: 16px;
   font-weight: bold;
   cursor: pointer;
@@ -125,7 +125,7 @@
 
 .use-btn {
   background: var(--color-blue-400);
-  color: #fff;
+  color: var(--color-gray-100);
   box-shadow: 0 8px 20px rgba(59, 130, 246, 0.3);
 }
 
@@ -135,8 +135,8 @@
 }
 
 .buy-btn {
-  background: #28c76f;
-  color: #fff;
+  background: var(--color-success);
+  color: var(--color-gray-100);
   box-shadow: 0 8px 20px rgba(40, 199, 111, 0.3);
   display: flex;
   flex-direction: column;
@@ -144,7 +144,7 @@
 }
 
 .buy-btn:hover:not(.disabled) {
-  background: #20a157;
+  background: var(--color-success);
   transform: translateY(-2px);
 }
 
@@ -161,19 +161,19 @@
   font-size: 11px;
   opacity: 0.9;
   font-weight: normal;
-  color: #ff6b6b;
+  color: var(--color-toss-red);
 }
 
 .give-up-btn {
   background: transparent;
   border: 1px solid rgba(255, 255, 255, 0.2);
   color: rgba(255, 255, 255, 0.5);
-  margin-top: 8px;
+  margin-top: var(--spacing-sm);
 }
 
 .give-up-btn:hover {
   background: rgba(255, 255, 255, 0.05);
-  color: #fff;
+  color: var(--color-gray-100);
 }
 
 @keyframes fadeIn {
