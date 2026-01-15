@@ -61,7 +61,7 @@
   /* 성공/완료 */
   --color-primary-light: #4facfe;
   /* Primary Light */
-  --color-gray-100: var(--color-gray-100);
+  --color-gray-100: #ffffff;
   --color-gray-200: #fafafc;
   --color-gray-300: #e2e2e2;
   --color-gray-300-alpha: #e2e2e299;
@@ -71,13 +71,10 @@
   /* --color-gray-800 (#181818) -> use var(--color-bg-primary) */
   --color-gray-900: #121212;
 
-  /* Primary Blue - 토스 스타일 */
-  --color-blue-400: var(--color-blue-400);
-  /* 기존 primary 색상 유지 */
+  /* Primary Blue - 토스 스타일 (이 프로젝트에서는 민트/연초록 계열 사용) */
+  --color-blue-400: #00bfa5;
   --color-blue-500: #00a693;
-  /* hover 상태 */
   --color-blue-700: #00897a;
-  /* active 상태 */
 
   /* Red Scale (Simplified) */
   --color-toss-red: #f04452;
@@ -125,7 +122,7 @@
   /* 티어 색상 변수 */
   --color-tier-base: #888888;
   /* 베이스캠프 - 회색 */
-  --color-tier-trail: var(--color-blue-400);
+  --color-tier-trail: #00bfa5;
   /* 등산로 - 청록색 */
   --color-tier-mid: #2196f3;
   /* 중턱 - 파란색 */
@@ -262,8 +259,8 @@
 
   /* New Color Palettes for Consistency */
   /* Slate (Gray-Blueish) */
-  --color-slate-400: var(--color-slate-400);
-  --color-slate-500: var(--color-slate-500);
+  --color-slate-400: #94a3b8;
+  --color-slate-500: #64748b;
   --color-slate-600: #475569;
   --color-slate-700: #334155;
   --color-slate-800: #1e293b;
@@ -299,11 +296,6 @@
     transform 0.2s ease,
     box-shadow 0.2s ease,
     background-color 0.2s ease;
-}
-
-.glass-card:hover {
-  /* Only apply hover effect if explicitly clickable or desired */
-  /* transform: translateY(-2px); Moved to specific modifier */
 }
 
 .glass-card.interactive:hover {

@@ -1,0 +1,84 @@
+:root {
+  /* TDS Color Palette Mock */
+  --adaptiveGrey50: #f9fafb;
+  --adaptiveGrey100: #f2f4f6;
+  --adaptiveGrey200: #e5e8eb;
+  --adaptiveGrey300: #d1d6db;
+  --adaptiveGrey400: #b0b8c1;
+  --adaptiveGrey500: #8b95a1;
+  --adaptiveGrey600: #6b7684;
+  --adaptiveGrey700: #4e5968;
+  --adaptiveGrey800: #333d4b;
+  --adaptiveGrey900: #191f28;
+
+  --adaptiveBlue50: #e8f3ff;
+  --adaptiveBlue100: #c9e2ff;
+  --adaptiveBlue200: #90c2ff;
+  --adaptiveBlue300: #64a8ff;
+  --adaptiveBlue400: #4593fc;
+  --adaptiveBlue500: #3182f6;
+  --adaptiveBlue600: #2272eb;
+  --adaptiveBlue700: #1b64da;
+  --adaptiveBlue800: #1957c2;
+  --adaptiveBlue900: #194aa6;
+
+  --adaptiveRed50: #ffeeee;
+  --adaptiveRed100: #ffd4d6;
+  --adaptiveRed400: #f66570;
+  --adaptiveRed500: #f04452;
+  --adaptiveRed600: #e42939;
+
+  --adaptiveGreen500: #03b26c;
+
+  /* Legacy Variables Mapping */
+  --color-blue-400: var(--adaptiveBlue500);
+  --color-blue-500: var(--adaptiveBlue600);
+  --color-gray-100: var(--adaptiveGrey900);
+  --color-gray-50: var(--adaptiveGrey50);
+  --color-white: #ffffff;
+  --color-black: #000000;
+
+  /* Backgrounds */
+  --adaptiveBackground: #ffffff;
+  --adaptiveBackgroundDimmed: rgba(0, 0, 0, 0.5);
+
+  /* Glassmorphism & UI Tokens (New Requirements) */
+  --bg-glass-card: rgba(30, 31, 35, 0.6);
+  --bg-glass-card-hover: rgba(40, 41, 45, 0.7);
+  --bg-glass-overlay: rgba(30, 31, 35, 0.85);
+  --border-glass: 1px solid rgba(255, 255, 255, 0.08);
+  --border-glass-hover: 1px solid rgba(255, 255, 255, 0.15);
+  --backdrop-blur: 20px;
+  --shadow-glass: 0 8px 32px rgba(0, 0, 0, 0.2);
+  --shadow-glass-hover: 0 12px 40px rgba(0, 0, 0, 0.3);
+
+  /* Spacing Tokens */
+  --spacing-xs: 4px;
+  --spacing-sm: 8px;
+  --spacing-md: 12px;
+  --spacing-lg: 16px;
+  --spacing-xl: 20px;
+  --spacing-2xl: 24px;
+  --spacing-3xl: 32px;
+  --spacing-4xl: 40px;
+  --spacing-tiny: 6px;
+  --spacing-small-alt: 10px;
+  --spacing-medium-alt: 14px;
+
+  /* Radius Tokens */
+  --rounded-micro: 2px;
+  --rounded-2xs: 4px;
+  --rounded-xs: 6px;
+  --rounded-sm: 12px;
+  --rounded-md: 20px;
+  --rounded-lg: 32px;
+  --rounded-xl: 30px;
+  --rounded-card: 16px;
+  --rounded-large-card: 24px;
+  --rounded-pill: 100px;
+}
+
+[data-theme='dark'] {
+  --adaptiveBackground: #191f28;
+  --color-gray-100: #ffffff;
+}

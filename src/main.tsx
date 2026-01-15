@@ -1,6 +1,6 @@
 // src/main.tsx
 import ReactDOM from 'react-dom/client';
-import { ThemeProvider } from '@toss/tds-mobile'; // 정적 임포트로 변경하여 로딩 불확실성 제거
+import { ThemeProvider } from '@toss/tds-mobile';
 import './index.css';
 import './utils/tossAuth';
 import AppContainer from './AppContainer';
@@ -31,27 +31,18 @@ try {
 
   const root = ReactDOM.createRoot(rootElement);
 
-  // 토스 환경 감지 (userAgent 기준)
-  const isToss = typeof window !== 'undefined' && /Toss/i.test(navigator.userAgent);
-
-  // ThemeProvider의 theme 타입 에러를 해결하기 위해 unknown으로 캐스팅
   const Provider = ThemeProvider as unknown as React.ComponentType<{
     theme: unknown;
     children: React.ReactNode;
   }>;
 
-  if (isToss) {
-    root.render(
-      <Provider theme={customTheme}>
-        <AppContainer />
-      </Provider>
-    );
-  } else {
-    // Vercel 등 외부 브라우저 환경에서는 TDS ThemeProvider를 건너뜁니다.
-    // TDS는 토스 앱 내부가 아니면 에러를 던지기 때문입니다.
-    log('External Browser Detected. Bypassing TDS Provider.');
-    root.render(<AppContainer />);
-  }
+  // 모든 환경에서 실제 ThemeProvider를 사용합니다.
+  // 실제 Toss 앱 환경이 아닐 때도 TDS 스타일 변수들을 주입하기 위함입니다.
+  root.render(
+    <Provider theme={customTheme}>
+      <AppContainer />
+    </Provider>
+  );
 
   log('Render Initialized.');
 
