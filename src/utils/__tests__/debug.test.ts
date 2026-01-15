@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { dumpState, logNetworkRequest, logNetworkResponse, dumpLocalStorage } from '../debug';
+import { dumpState, logNetworkRequest, logNetworkResponse, dumpLocalStorage, dumpSessionStorage } from '../debug';
 import { logger } from '../logger';
 
 // Mock logger
@@ -127,7 +127,6 @@ describe('debug', () => {
         writable: true,
       });
 
-      const { dumpSessionStorage } = require('../debug');
       dumpSessionStorage();
 
       if (import.meta.env.DEV) {
@@ -148,7 +147,6 @@ describe('debug', () => {
         writable: true,
       });
 
-      const { dumpSessionStorage } = require('../debug');
       dumpSessionStorage();
 
       if (import.meta.env.DEV) {
@@ -167,7 +165,11 @@ describe('debug', () => {
 
       if (import.meta.env.DEV) {
         // Should either call group or error
-        expect(logger.group).toHaveBeenCalled() || expect(logger.error).toHaveBeenCalled();
+        try {
+          expect(logger.group).toHaveBeenCalled();
+        } catch {
+          expect(logger.error).toHaveBeenCalled();
+        }
       }
     });
   });

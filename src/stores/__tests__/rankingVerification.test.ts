@@ -1,5 +1,11 @@
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, vi } from 'vitest';
 import { supabase } from '../../utils/supabaseClient';
+
+vi.mock('../../utils/supabaseClient', () => ({
+    supabase: {
+        rpc: vi.fn().mockResolvedValue({ data: [], error: null }),
+    },
+}));
 
 describe('Ranking System V2 Verification', () => {
     it('should fetch weekly ranking successfully', async () => {

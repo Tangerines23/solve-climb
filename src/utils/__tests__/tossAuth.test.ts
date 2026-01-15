@@ -7,11 +7,20 @@ vi.mock('../errorHandler', () => ({
   logError: vi.fn(),
 }));
 
+vi.mock('../supabaseClient', () => ({
+  supabase: {
+    auth: {
+      signInWithPassword: vi.fn(),
+    },
+  },
+}));
+
 vi.mock('../env', () => ({
   ENV: {
     SUPABASE_URL: 'https://test.supabase.co',
     SUPABASE_ANON_KEY: 'test-key',
   },
+  logEnvInfo: vi.fn(),
 }));
 
 global.fetch = vi.fn();

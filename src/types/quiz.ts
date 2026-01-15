@@ -2,7 +2,7 @@
 export type Category = '수학' | '언어' | '논리' | '상식';
 
 // 수학 분야
-export type MathTopic = '덧셈' | '뺄셈' | '곱셈' | '나눗셈';
+export type MathTopic = '덧셈' | '뺄셈' | '곱셈' | '나눗셈' | 'equations' | 'calculus';
 
 // 언어 분야 - 언어별 세부 분야
 export type LanguageType = '한글' | '일본어' | '영어';
