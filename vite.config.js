@@ -31,9 +31,9 @@ export default defineConfig(() => {
         output: {
           manualChunks: (id) => {
             // 디버그 관련 코드를 별도 청크로 분리 (프로덕션 빌드 최적화)
-            if (id.includes('DebugPanel') || 
-                id.includes('useDebugStore') ||
-                id.includes('/debug/')) {
+            if (id.includes('DebugPanel') ||
+              id.includes('useDebugStore') ||
+              id.includes('/debug/')) {
               return 'debug';
             }
           }
@@ -66,23 +66,23 @@ export default defineConfig(() => {
         // 리포트 생성 최적화: 필요한 것만 생성 (text는 필수, html은 상세 분석용)
         reporter: ['text', 'html'],
         // 커버리지 수집 범위 제한: 테스트 파일과 설정 파일 제외
-          exclude: [
-            'node_modules/',
-            'src/setupTests.ts',
-            '**/*.d.ts',
-            '**/*.config.*',
-            '**/dist/**',
-            '**/coverage/**',
-            '**/__tests__/**',
-            '**/*.test.{ts,tsx}',
-            '**/*.spec.{ts,tsx}',
-            '**/mocks/**',
-            '**/types/**',
-            'src/main.tsx',
-            'src/App.tsx',
-            'src/AppContainer.tsx',
-            'src/components/debug/**', // 개발용 디버그 컴포넌트 제외
-          ],
+        exclude: [
+          'node_modules/',
+          'src/setupTests.ts',
+          '**/*.d.ts',
+          '**/*.config.*',
+          '**/dist/**',
+          '**/coverage/**',
+          '**/__tests__/**',
+          '**/*.test.{ts,tsx}',
+          '**/*.spec.{ts,tsx}',
+          '**/mocks/**',
+          '**/types/**',
+          'src/main.tsx',
+          'src/App.tsx',
+          'src/AppContainer.tsx',
+          'src/components/debug/**', // 개발용 디버그 컴포넌트 제외
+        ],
         // 커버리지 임계값 설정 (업계 표준: 80%)
         thresholds: {
           lines: 80,
@@ -92,8 +92,8 @@ export default defineConfig(() => {
         },
         // 성능 최적화: 100% 커버리지 파일 자동 제외
         all: false,
-        // 성능 최적화: 100% 커버리지 파일은 수집 스킵 (약 10-15% 성능 향상)
-        skipFull: true,
+        // 성능 최적화: 100% 커버리지 파일은 수집 스킵 (분석 필요 시 false로 변경)
+        skipFull: false,
         // 커버리지 디렉토리 자동 정리
         clean: true,
         // 재실행 시 커버리지 디렉토리 정리
