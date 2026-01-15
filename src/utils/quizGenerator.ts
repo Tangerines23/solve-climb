@@ -3,7 +3,6 @@ import { Category, Topic, QuizQuestion, Difficulty } from '../types/quiz';
 import { generateRandomNumber } from './math';
 import { generateJapaneseQuestion } from './japanese';
 import { generateLogicProblem } from './LogicProblemGenerator';
-import { generateGeneralQuestion as generateGeneralProblem } from './GeneralProblemGenerator';
 import { NUMBER_RANGE_BY_DIFFICULTY } from '../constants/game';
 
 /**
@@ -15,15 +14,19 @@ export function generateQuestion(
   difficulty: Difficulty
 ): QuizQuestion {
   switch (category) {
-    case '수학':
+    case '기초':
       return generateMathQuestion(topic, difficulty);
-    case '언어':
-      return generateLanguageQuestion(topic, difficulty);
+    case '대수':
+      return generateMathQuestion('equations', difficulty);
     case '논리':
       return generateLogicQuestion(topic, difficulty);
-    case '상식':
-      return generateGeneralQuestion(topic, difficulty);
+    case '심화':
+      // 심화는 현재 대수 또는 심화 수학 문제로 처리
+      return generateMathQuestion('calculus', difficulty);
     default:
+      // 기존 하위 호환성 유지 (문자열인 경우)
+      if (category === ('수학' as any)) return generateMathQuestion(topic, difficulty);
+      if (category === ('언어' as any)) return generateLanguageQuestion(topic, difficulty);
       return generateMathQuestion('덧셈', difficulty);
   }
 }
@@ -179,15 +182,6 @@ function generateLogicQuestion(topic: Topic, difficulty: Difficulty): QuizQuesti
 /**
  * 상식 문제 생성
  */
-function generateGeneralQuestion(topic: Topic, difficulty: Difficulty): QuizQuestion {
-  // Topic 타입을 GeneralTopic으로 단언 (호출 시 보장된다고 가정)
-  // 안전하게 처리하려면 타입 가드 필요하지만, 현재 구조상 category 분기 후 들어오므로 안전
-  const problem = generateGeneralProblem(topic as any, difficulty);
-  return {
-    question: problem.question,
-    answer: problem.answer,
-  };
-}
 
 /**
  * 방정식 문제 생성

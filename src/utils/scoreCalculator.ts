@@ -5,10 +5,8 @@ import {
   SCORE_PER_CORRECT,
   BASE_CLIMB_DISTANCE,
   DISTANCE_PER_LEVEL,
-  THEME_MULTIPLIERS,
   BOSS_LEVEL,
   BOSS_BONUS,
-  ThemeTier
 } from '../constants/game';
 
 // 목표 고도 계산 상수 (Deprecated: Now calculated dynamically)
@@ -74,17 +72,14 @@ export function calculateSubTopicAltitude(category: string, subTopic: string): n
  * @returns 목표 고도(m)
  */
 export function calculateSubTopicTargetAltitude(category: string, subTopic: string): number {
-  const levels = APP_CONFIG.LEVELS[category as keyof typeof APP_CONFIG.LEVELS];
-  if (!levels) return 0;
+  const worldLevels = (APP_CONFIG.LEVELS as any)[category];
+  if (!worldLevels) return 0;
 
-  const subTopicLevels = levels[subTopic as keyof typeof levels];
+  const subTopicLevels = worldLevels[subTopic];
   if (!subTopicLevels || !Array.isArray(subTopicLevels)) return 0;
 
-  // 테마 난이도 배율 (Theme Multiplier)
-  const categoryTopics = APP_CONFIG.SUB_TOPICS[category as keyof typeof APP_CONFIG.SUB_TOPICS] || [];
-  const currentTopic = categoryTopics.find((t: any) => t.id === subTopic);
-  const tier = (currentTopic as any)?.tier as ThemeTier || 'basic';
-  const themeMultiplier = THEME_MULTIPLIERS[tier];
+  // 테마 난이도 배율 (Theme Multiplier - 현재는 고정값 1.0 사용하거나 로직 수정 필요)
+  const themeMultiplier = 1.0;
 
   let totalTarget = 0;
 
@@ -145,10 +140,13 @@ export function calculateCategoryAltitude(category: string): {
 
   let totalAltitude = 0;
 
-  // 모든 서브토픽 순회
-  Object.values(categoryProgress).forEach((subTopicData) => {
-    // 모든 레벨 순회
-    Object.values(subTopicData).forEach((levelRecord) => {
+  // 모든 월드 순회
+  Object.values(progress).forEach((worldProgress) => {
+    const categoryData = worldProgress[category];
+    if (!categoryData) return;
+
+    // 해당 카테고리의 모든 레벨 순회
+    Object.values(categoryData).forEach((levelRecord) => {
       // time-attack과 survival 중 최고 점수 선택
       const timeAttack = levelRecord.bestScore['time-attack'] || 0;
       const survival = levelRecord.bestScore['survival'] || 0;
@@ -164,22 +162,13 @@ export function calculateCategoryAltitude(category: string): {
 }
 
 /**
- * 특정 카테고리의 목표 고도 계산 (모든 서브토픽의 목표 고도 합산)
+ * 특정 카테고리의 목표 고도 계산 (모든 월드의 목표 고도 합산)
  * @param category 카테고리 ID
  * @returns 목표 고도(m)
  */
 export function calculateCategoryTargetAltitude(category: string): number {
-  const topics = APP_CONFIG.SUB_TOPICS[category as keyof typeof APP_CONFIG.SUB_TOPICS];
-  if (!topics) return 0;
-
-  let totalTargetAltitude = 0;
-
-  topics.forEach((topic) => {
-    const targetAltitude = calculateSubTopicTargetAltitude(category, topic.id);
-    totalTargetAltitude += targetAltitude;
-  });
-
-  return totalTargetAltitude;
+  // 현재는 World1만 지원하므로 World1의 목표 고도 반환
+  return calculateSubTopicTargetAltitude('World1', category);
 }
 
 /**

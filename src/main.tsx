@@ -1,6 +1,5 @@
-// src/main.tsx
 import ReactDOM from 'react-dom/client';
-import { ThemeProvider } from '@toss/tds-mobile';
+import React from 'react';
 import './index.css';
 import './utils/tossAuth';
 import AppContainer from './AppContainer';
@@ -11,12 +10,6 @@ const log =
   console.log;
 
 log('JavaScript Executed. Initializing React...');
-
-const customTheme = {
-  colors: {
-    backgroundColor: '#FFFFFF',
-  },
-};
 
 /**
  * 렌더링 시작
@@ -31,17 +24,11 @@ try {
 
   const root = ReactDOM.createRoot(rootElement);
 
-  const Provider = ThemeProvider as unknown as React.ComponentType<{
-    theme: unknown;
-    children: React.ReactNode;
-  }>;
-
-  // 모든 환경에서 실제 ThemeProvider를 사용합니다.
-  // 실제 Toss 앱 환경이 아닐 때도 TDS 스타일 변수들을 주입하기 위함입니다.
+  // ThemeProvider 제거: UI 독립성을 위해 React.Fragment로 대체합니다.
   root.render(
-    <Provider theme={customTheme}>
+    <React.Fragment>
       <AppContainer />
-    </Provider>
+    </React.Fragment>
   );
 
   log('Render Initialized.');

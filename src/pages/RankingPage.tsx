@@ -31,7 +31,7 @@ export function RankingPage() {
   useEffect(() => {
     const loadRanking = async () => {
       setLoading(true);
-      await fetchRanking(currentCategory, activePeriod, activeType);
+      await fetchRanking('World1', currentCategory, activePeriod, activeType);
       setLoading(false);
     };
     loadRanking();

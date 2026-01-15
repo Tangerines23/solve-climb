@@ -26,8 +26,8 @@ export const GameFlowSection = React.memo(function GameFlowSection() {
   const [extendSeconds, setExtendSeconds] = useState('60');
 
   // 문제 생성 테스트 상태
-  const [selectedCategory, setSelectedCategory] = useState<Category>('수학');
-  const [selectedTopic, setSelectedTopic] = useState<Topic>('덧셈');
+  const [selectedCategory, setSelectedCategory] = useState<Category>('기초');
+  const [selectedTopic, setSelectedTopic] = useState<Topic>('World1-기초');
   const [selectedDifficulty, setSelectedDifficulty] = useState<Difficulty>('easy');
   const [generatedQuestion, setGeneratedQuestion] = useState<QuizQuestion | null>(null);
 
@@ -206,30 +206,18 @@ export const GameFlowSection = React.memo(function GameFlowSection() {
 
   // 카테고리별 주제 목록
   const getTopicsForCategory = useCallback((category: Category): Topic[] => {
+    // 현재는 World1 주제만 반환하도록 디버그 영역 수정
     switch (category) {
-      case '수학':
-        return ['덧셈', '뺄셈', '곱셈', '나눗셈'];
-      case '언어':
-        return [
-          '한글-글자',
-          '한글-문자',
-          '한글-문장',
-          '일본어-글자',
-          '일본어-문자',
-          '일본어-문장',
-          '영어-글자',
-          '영어-문자',
-          '영어-문장',
-          '맞춤법',
-          '어휘',
-          '속담',
-        ];
+      case '기초':
+        return ['World1-기초'];
+      case '대수':
+        return ['World1-대수'];
       case '논리':
-        return ['수열', '패턴', '추론'];
-      case '상식':
-        return ['역사', '과학', '지리', '문화'];
+        return ['World1-논리'];
+      case '심화':
+        return ['World1-심화'];
       default:
-        return ['덧셈'];
+        return ['World1-기초'];
     }
   }, []);
 
@@ -446,10 +434,10 @@ export const GameFlowSection = React.memo(function GameFlowSection() {
               value={selectedCategory}
               onChange={(e) => setSelectedCategory(e.target.value as Category)}
             >
-              <option value="수학">수학</option>
-              <option value="언어">언어</option>
+              <option value="기초">기초</option>
+              <option value="대수">대수</option>
               <option value="논리">논리</option>
-              <option value="상식">상식</option>
+              <option value="심화">심화</option>
             </select>
           </div>
           <div className="debug-quiz-generation-row">

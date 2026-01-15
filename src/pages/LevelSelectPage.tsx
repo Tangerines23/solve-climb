@@ -4,70 +4,47 @@ import { APP_CONFIG } from '../config/app';
 import { ClimbGraphic } from '../components/ClimbGraphic';
 import { MyRecordCard } from '../components/MyRecordCard';
 import { LevelListCard } from '../components/LevelListCard';
-// import { ModeSelectModal } from '../components/ModeSelectModal'; // Removed
 import { FooterNav } from '../components/FooterNav';
 import { Toast } from '../components/Toast';
-// import { useLevelProgressStore } from '../stores/useLevelProgressStore'; // Removed
-// import { storage } from '../utils/storage'; // Removed
+import { World, Category } from '../types/quiz';
 import './LevelSelectPage.css';
 
 export function LevelSelectPage() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
-  // const [selectedLevel, setSelectedLevel] = useState<{ level: number; name: string } | null>(null); // Removed
-  // const [isModalOpen, setIsModalOpen] = useState(false); // Removed
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   const [toastMessage, setToastMessage] = useState('');
   const [showToast, setShowToast] = useState(false);
-  // const longPressCountRef = useRef(0); // Removed
 
   // [핵심 1] 화면 준비 상태 (초기엔 숨김)
   const [isReady, setIsReady] = useState(false);
 
-  const categoryParam = searchParams.get('category');
-  const subParam = searchParams.get('sub');
+  const mountainParam = searchParams.get('mountain');
+  const worldParam = searchParams.get('world') as World | null;
+  const categoryParam = searchParams.get('category') as Category | null;
 
-  // 다음 레벨 가져오기 (early return 전에 호출)
-  // const getNextLevel = useLevelProgressStore((state) => state.getNextLevel);
-
-  // Hooks를 early return 전에 호출
   useLayoutEffect(() => {
     const container = scrollContainerRef.current;
 
     if (container) {
-      // 1. 리스트 박스 요소를 찾습니다.
       const contentElement = container.querySelector('.level-select-content') as HTMLElement;
 
       if (contentElement) {
-        // 2. 리스트 박스가 시작되는 절대 위치(Y)를 구합니다.
         const contentTop = contentElement.offsetTop;
-
-        // 3. 현재 화면(뷰포트)의 높이를 구합니다.
         const viewportHeight = container.clientHeight;
-
-        // [조절 포인트] 화면의 몇 % 지점에 리스트를 시작하게 할지 결정합니다.
-        // 0.6 (60%) 정도면 사용자님이 보내주신 이미지처럼 타이틀과 요약만 보이고 목록은 아래에 숨습니다.
-        // 숫자가 클수록 리스트가 더 아래로 내려갑니다. (0.5 ~ 0.7 사이 추천)
         const visibleRatio = 0.75;
-
-        // 4. 절묘한 스크롤 위치 계산
-        // "리스트의 시작점" - "화면의 60% 높이" = 리스트가 화면 60% 지점에 옴
         const targetScrollTop = contentTop - viewportHeight * visibleRatio;
-
         container.scrollTop = targetScrollTop;
       }
 
-      // 5. 화면 공개
       requestAnimationFrame(() => {
         setIsReady(true);
       });
     }
-  }, []); // 의존성 배열 비움: 마운트 시 1회 실행
-
-  // 손을 떼면 카운터 리셋 로직 제거됨
+  }, []);
 
   // URL 파라미터 검증 및 데이터 로드
-  if (!categoryParam || !subParam) {
+  if (!mountainParam || !worldParam || !categoryParam) {
     return (
       <div className="level-select-page">
         <div className="level-select-error">
@@ -81,17 +58,16 @@ export function LevelSelectPage() {
     );
   }
 
-  // 카테고리와 서브토픽 정보 가져오기
+  // 월드와 카테고리 정보 가져오기
+  const worldName = APP_CONFIG.WORLD_MAP[worldParam as keyof typeof APP_CONFIG.WORLD_MAP];
   const categoryInfo = APP_CONFIG.CATEGORIES.find((cat) => cat.id === categoryParam);
-  const subTopics = APP_CONFIG.SUB_TOPICS[categoryParam as keyof typeof APP_CONFIG.SUB_TOPICS];
-  const subTopicInfo = subTopics?.find((topic) => topic.id === subParam);
 
-  if (!categoryInfo || !subTopicInfo) {
+  if (!worldName || !categoryInfo) {
     return (
       <div className="level-select-page">
         <div className="level-select-error">
           <h2>잘못된 접근입니다</h2>
-          <p>존재하지 않는 카테고리 또는 주제입니다.</p>
+          <p>존재하지 않는 월드 또는 카테고리입니다.</p>
           <button onClick={() => navigate('/')} className="error-back-button">
             ←
           </button>
@@ -101,8 +77,8 @@ export function LevelSelectPage() {
   }
 
   // 레벨 데이터 가져오기
-  const categoryLevels = APP_CONFIG.LEVELS[categoryParam as keyof typeof APP_CONFIG.LEVELS];
-  const levels = categoryLevels?.[subParam as keyof typeof categoryLevels] as
+  const worldLevels = APP_CONFIG.LEVELS[worldParam as keyof typeof APP_CONFIG.LEVELS];
+  const levels = (worldLevels as any)?.[categoryParam] as
     | Array<{ level: number; name: string; description: string }>
     | undefined;
 
@@ -111,7 +87,7 @@ export function LevelSelectPage() {
       <div className="level-select-page">
         <div className="level-select-error">
           <h2>레벨 데이터가 없습니다</h2>
-          <p>이 주제에 대한 레벨이 아직 준비되지 않았습니다.</p>
+          <p>이 카테고리에 대한 레벨이 아직 준비되지 않았습니다.</p>
           <button onClick={() => navigate(-1)} className="error-back-button">
             ←
           </button>
@@ -122,29 +98,9 @@ export function LevelSelectPage() {
 
   const categoryColor = categoryInfo.color || '#10b981';
 
-  // 다음 레벨 계산 (현재 사용되지 않음, 주석 처리 또는 제거)
-  // const nextLevel = getNextLevel(categoryParam, subParam);
-
-  // 개발중인 레벨 체크 함수
-  const isUnderDevelopment = (level: number) => {
-    const UNDER_DEVELOPMENT_LEVELS = new Set<string>([
-      // 개발 중인 레벨이 있으면 여기에 추가 (카테고리_서브토픽_레벨 형식)
-    ]);
-    const levelKey = `${categoryParam}_${subParam}_${level}`;
-    return UNDER_DEVELOPMENT_LEVELS.has(levelKey);
-  };
-
-  // 레벨 클릭 핸들러 (Direct Time Attack Entry)
+  // 레벨 클릭 핸들러
   const handleLevelClick = (level: number) => {
-    // 개발중인 레벨이면 토스트만 표시하고 진입 차단
-    if (isUnderDevelopment(level)) {
-      setToastMessage('아직 개발중입니다 :(');
-      setShowToast(true);
-      return;
-    }
-
-    // 모달 없이 즉시 타임어택 모드로 진입
-    navigate(`/quiz?category=${categoryParam}&sub=${subParam}&level=${level}&mode=time-attack`);
+    navigate(`/quiz?world=${worldParam}&category=${categoryParam}&level=${level}&mode=time-attack`);
   };
 
   // 잠긴 레벨 클릭 핸들러
@@ -153,23 +109,17 @@ export function LevelSelectPage() {
     setShowToast(true);
   };
 
-  // 서바이벌 모드 진입 핸들러 (New)
+  // 서바이벌 모드 진입 핸들러
   const handleSurvivalClick = () => {
-    // 서바이벌은 레벨 파라미터 1로 시작하지만, 내부적으로 Wave 시스템을 따름
-    navigate(`/quiz?category=${categoryParam}&sub=${subParam}&level=1&mode=survival`);
+    navigate(`/quiz?world=${worldParam}&category=${categoryParam}&level=1&mode=survival`);
   };
-
-  // 스크롤 효과 제거 - 산 이미지는 가만히 있고 아래 리스트가 위로 올라오도록
 
   return (
     <div
       className="level-select-page"
       ref={scrollContainerRef}
       style={{
-        // [핵심 3] 준비되기 전에는 투명하게(opacity: 0) 숨김
-        // 준비되면(isReady: true) 즉시 보임(opacity: 1)
         opacity: isReady ? 1 : 0,
-        // (선택) 부드럽게 나타나게 하려면 transition 추가 (깜빡임이 싫다면 제거)
         transition: 'opacity 0.2s ease-out',
       }}
     >
@@ -178,23 +128,18 @@ export function LevelSelectPage() {
         <button
           className="level-select-back"
           onClick={() => {
-            // 이전 페이지(상위 페이지)로 이동
-            if (categoryParam) {
-              navigate(`/topic-select?category=${categoryParam}`);
-            } else {
-              navigate(-1);
-            }
+            navigate(`${APP_CONFIG.ROUTES.CATEGORY_SELECT}?mountain=${mountainParam}`);
           }}
         >
           ←
         </button>
-        <h1 className="level-select-title">{subTopicInfo.name}</h1>
+        <h1 className="level-select-title">{categoryInfo.name}</h1>
       </header>
 
       <div className="level-select-graphic-container">
         <ClimbGraphic
+          world={worldParam}
           category={categoryParam}
-          subTopic={subParam}
           levels={levels}
           categoryColor={categoryColor}
           onLevelClick={handleLevelClick}
@@ -205,15 +150,12 @@ export function LevelSelectPage() {
         />
       </div>
 
-      {/* 스크롤 콘텐츠 영역 */}
       <div className="level-select-content">
-        {/* 주제 요약 타이틀 */}
         <div className="level-select-summary">
-          <h2 className="level-select-summary-title">{subTopicInfo.name}</h2>
-          <p className="level-select-summary-desc">{subTopicInfo.desc}</p>
+          <h2 className="level-select-summary-title">{categoryInfo.name}</h2>
+          <p className="level-select-summary-desc">{categoryInfo.symbol} 주제를 정복해보세요!</p>
         </div>
 
-        {/* 서바이벌 챌린지 버튼 (신규) */}
         <div className="survival-challenge-entry">
           <button className="survival-challenge-button" onClick={handleSurvivalClick}>
             <span className="survival-icon">🔥</span>
@@ -225,29 +167,23 @@ export function LevelSelectPage() {
           </button>
         </div>
 
-        {/* 나의 기록 카드 */}
         <MyRecordCard
+          world={worldParam}
           category={categoryParam}
-          subTopic={subParam}
-          subTopicName={subTopicInfo.name}
+          categoryName={categoryInfo.name}
         />
 
-        {/* 레벨 리스트 카드 */}
         <LevelListCard
+          world={worldParam}
           category={categoryParam}
-          subTopic={subParam}
           levels={levels}
           onLevelClick={handleLevelClick}
           onLockedLevelClick={handleLockedLevelClick}
         />
       </div>
 
-      {/* 하단 네비게이션 */}
       <FooterNav />
 
-      {/* 모드 선택 모달 제거됨 */}
-
-      {/* 토스트 메시지 */}
       <Toast
         message={toastMessage}
         isOpen={showToast}

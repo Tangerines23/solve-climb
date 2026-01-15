@@ -5,8 +5,9 @@ import { GameMode } from '../types/quiz';
 interface UseQuizGameStateParams {
   score: number;
   gameMode: GameMode;
+  mountainParam: string | null;
+  worldParam: string | null;
   categoryParam: string | null;
-  subParam: string | null;
   levelParam: number | null;
   modeParam: string | null;
   isExhausted: boolean;
@@ -16,8 +17,9 @@ interface UseQuizGameStateParams {
 export function useQuizGameState({
   score,
   gameMode,
+  mountainParam,
+  worldParam,
   categoryParam,
-  subParam,
   levelParam,
   modeParam,
   isExhausted,
@@ -35,12 +37,10 @@ export function useQuizGameState({
 
   const handleGameOver = useCallback(
     (reason?: string) => {
-      // 1. Calculate final results
-      // Removed unused temporary variables
-      // 게임 종료 시 바로 결과 페이지로 이동
       const params = new URLSearchParams();
+      if (mountainParam) params.set('mountain', mountainParam);
+      if (worldParam) params.set('world', worldParam);
       if (categoryParam) params.set('category', categoryParam);
-      if (subParam) params.set('sub', subParam);
       if (levelParam !== null) params.set('level', levelParam.toString());
       if (modeParam) params.set('mode', modeParam);
       params.set('score', score.toString());
@@ -50,12 +50,6 @@ export function useQuizGameState({
 
       // 서바이벌 모드: 오답 정보 및 평균 풀이 시간 전달
       if (gameMode === 'survival') {
-        console.log('[QuizPage] 서바이벌 모드 종료 - 오답 데이터:', {
-          wrongAnswersCount: wrongAnswersState.length,
-          wrongAnswers: wrongAnswersState,
-          gameMode,
-        });
-
         if (wrongAnswersState.length > 0) {
           const questions = wrongAnswersState.map((w) => w.question).join('|');
           const wrongAns = wrongAnswersState.map((w) => w.wrongAnswer).join('|');
@@ -63,17 +57,9 @@ export function useQuizGameState({
           params.set('wrong_q', questions);
           params.set('wrong_a', wrongAns);
           params.set('correct_a', correctAns);
-
-          console.log('[QuizPage] 오답 데이터 URL 파라미터 설정:', {
-            wrong_q: questions,
-            wrong_a: wrongAns,
-            correct_a: correctAns,
-          });
-        } else {
-          console.log('[QuizPage] 오답 데이터 없음 - URL 파라미터 설정 안 함');
         }
 
-        // 평균 풀이 시간 계산 (초 단위, 소수점 2자리)
+        // 평균 풀이 시간 계산
         if (solveTimesState.length > 0) {
           const averageTime =
             solveTimesState.reduce((sum, time) => sum + time, 0) / solveTimesState.length;
@@ -95,8 +81,9 @@ export function useQuizGameState({
       navigate(`/result?${params.toString()}`);
     },
     [
+      mountainParam,
+      worldParam,
       categoryParam,
-      subParam,
       isExhausted,
       levelParam,
       modeParam,

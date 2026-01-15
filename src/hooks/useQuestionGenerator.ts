@@ -1,19 +1,18 @@
 // 문제 생성 로직을 관리하는 커스텀 훅
 import { useCallback, useMemo } from 'react';
-import { Category, Topic, QuizQuestion, Difficulty, GameMode } from '../types/quiz';
+import { Category, Topic, QuizQuestion, Difficulty, GameMode, World } from '../types/quiz';
 import { generateProblem } from '../utils/MathProblemGenerator';
 import { generateQuestion } from '../utils/quizGenerator';
 import { generateEquation } from '../utils/EquationProblemGenerator';
-import { APP_CONFIG } from '../config/app';
 import { SURVIVAL_CONFIG } from '../constants/game';
 
 interface UseQuestionGeneratorParams {
   category: Category | null;
-  topic: Topic | null;
+  world: World | null;
   difficulty: Difficulty;
   gameMode: GameMode;
+  worldParam: string | null;
   categoryParam: string | null;
-  subParam: string | null;
   levelParam: number | null;
   totalQuestions: number; // 현재 푼 문제 수
   useSystemKeyboard: boolean;
@@ -31,11 +30,11 @@ interface UseQuestionGeneratorParams {
 
 export function useQuestionGenerator({
   category,
-  topic,
+  world,
   difficulty,
   gameMode,
+  worldParam,
   categoryParam,
-  subParam,
   levelParam,
   totalQuestions,
   useSystemKeyboard,
@@ -57,167 +56,90 @@ export function useQuestionGenerator({
     const waveConfig = SURVIVAL_CONFIG.WAVES.find(
       (w) => currentWave >= w.start && currentWave <= w.end
     );
-    return waveConfig ? waveConfig.level : 15; // 51웨이브 이후는 Lv.15 고정 (또는 더 높게 가능)
+    return waveConfig ? waveConfig.level : 15;
   }, [gameMode, levelParam, totalQuestions]);
 
   const generateNewQuestion = useCallback(() => {
-    // URL 파라미터가 있으면 직접 사용, 없으면 store에서 가져오기
-    let currentCategory = category;
-    let currentTopic = topic;
+    console.log('generateNewQuestion params:', { worldParam, categoryParam, levelParam });
 
-    console.log('generateNewQuestion params:', { categoryParam, subParam, levelParam });
+    if (worldParam && categoryParam) {
+      const level = gameMode === 'survival' ? effectiveLevel : (levelParam || 1);
 
-    if (categoryParam && subParam) {
-      const categoryName =
-        APP_CONFIG.CATEGORY_MAP[categoryParam as keyof typeof APP_CONFIG.CATEGORY_MAP];
-      if (categoryName) {
-        currentCategory = categoryName as Category;
+      setQuestionAnimation('fade-out');
+      setTimeout(() => {
+        try {
+          let newQuestion: QuizQuestion | null = null;
 
-        // 레벨에 따라 적절한 topic 매핑 (arithmetic 서브토픽의 경우)
-        if (subParam === 'arithmetic' && levelParam !== null) {
-          console.log('Entering arithmetic block');
-          const level = gameMode === 'survival' ? effectiveLevel : levelParam;
-
-          setQuestionAnimation('fade-out');
-          setTimeout(() => {
-            try {
-              console.log('Calling generateProblem with level:', level);
-              // 새로운 MathProblemGenerator 사용
+          // World 1 매핑 로직
+          if (worldParam === 'World1') {
+            if (categoryParam === '기초') {
+              // 사칙연산
               const problem = generateProblem(level);
-              console.log('Generated problem:', problem);
-              const newQuestion: QuizQuestion = {
+              newQuestion = {
                 question: problem.expression,
                 answer: problem.answer,
               };
-              // 문제 ID 생성 (UUID)
-              const questionId = crypto.randomUUID();
-              setCurrentQuestion(newQuestion);
-              // 문제 생성 콜백 호출
-              if (onQuestionGenerated) {
-                onQuestionGenerated(newQuestion, questionId);
-              }
-            } catch (e) {
-              console.error('Failed to generate problem, falling back to legacy generator', e);
-              // 실패 시 기존 로직으로 폴백
-              const topicMap: Record<number, '덧셈' | '뺄셈' | '곱셈' | '나눗셈'> = {
-                1: '덧셈',
-                2: '뺄셈',
-                3: '덧셈',
-                4: '뺄셈',
-                5: '곱셈',
-                6: '나눗셈',
-                7: '덧셈',
-                8: '곱셈',
-                9: '나눗셈',
-                10: '덧셈',
-              };
-              const fallbackTopic = topicMap[level] || '덧셈';
-              const safeCategory = currentCategory || '수학';
-              const newQuestion = generateQuestion(safeCategory, fallbackTopic, difficulty);
-              // 문제 ID 생성 (UUID)
-              const questionId = crypto.randomUUID();
-              setCurrentQuestion(newQuestion);
-              // 문제 생성 콜백 호출
-              if (onQuestionGenerated) {
-                onQuestionGenerated(newQuestion, questionId);
-              }
-            }
-
-            setAnswerInput('');
-            setDisplayValue('');
-            setIsError(false);
-            setShowFlash(false);
-            setQuestionAnimation('fade-in');
-
-            if (gameMode === 'survival') {
-              setQuestionKey((prev) => prev + 1);
-              setQuestionStartTime(Date.now());
-            }
-
-            if (useSystemKeyboard && inputRef.current) {
-              setTimeout(() => {
-                inputRef.current?.focus();
-              }, 200);
-            }
-          }, 150);
-          return; // 여기서 함수 종료
-        } else if (subParam === 'equations' && levelParam !== null) {
-          // 방정식 서브토픽 - EquationProblemGenerator 사용
-          const level = gameMode === 'survival' ? effectiveLevel : levelParam;
-
-          setQuestionAnimation('fade-out');
-          setTimeout(() => {
-            try {
-              console.log('Calling generateEquation with level:', level);
-              // EquationProblemGenerator 사용
+            } else if (categoryParam === '대수') {
+              // 방정식
               const equation = generateEquation(level);
-              console.log('Generated equation:', equation);
-              const newQuestion: QuizQuestion = {
+              newQuestion = {
                 question: equation.question,
                 answer: equation.x,
               };
-              // 문제 ID 생성 (UUID)
-              const questionId = crypto.randomUUID();
-              setCurrentQuestion(newQuestion);
-              // 문제 생성 콜백 호출
-              if (onQuestionGenerated) {
-                onQuestionGenerated(newQuestion, questionId);
-              }
-            } catch (e) {
-              console.error('Failed to generate equation, falling back to legacy generator', e);
-              // 실패 시 기존 로직으로 폴백
-              currentTopic = 'equations' as Topic;
-              const safeCategory = currentCategory || '수학';
-              const newQuestion = generateQuestion(safeCategory, currentTopic, difficulty);
-              // 문제 ID 생성 (UUID)
-              const questionId = crypto.randomUUID();
-              setCurrentQuestion(newQuestion);
-              // 문제 생성 콜백 호출
-              if (onQuestionGenerated) {
-                onQuestionGenerated(newQuestion, questionId);
-              }
+            } else {
+              // 논리, 심화 등 -> 기존 생성기 사용 (Topic 형식: World-Category)
+              const topic = `${worldParam}-${categoryParam}` as Topic;
+              newQuestion = generateQuestion(categoryParam as Category, topic, difficulty);
             }
+          } else {
+            // 다른 월드 추후 구현 (기본적으로 덧셈 폴백)
+            const topic = `World1-기초` as Topic;
+            newQuestion = generateQuestion('기초', topic, difficulty);
+          }
 
-            setAnswerInput('');
-            setDisplayValue('');
-            setIsError(false);
-            setShowFlash(false);
-            setQuestionAnimation('fade-in');
-
-            if (gameMode === 'survival') {
-              setQuestionKey((prev) => prev + 1);
-              setQuestionStartTime(Date.now());
+          if (newQuestion) {
+            const questionId = crypto.randomUUID();
+            setCurrentQuestion(newQuestion);
+            if (onQuestionGenerated) {
+              onQuestionGenerated(newQuestion, questionId);
             }
-
-            if (useSystemKeyboard && inputRef.current) {
-              setTimeout(() => {
-                inputRef.current?.focus();
-              }, 200);
-            }
-          }, 150);
-          return; // 여기서 함수 종료
-        } else if (subParam === 'equations') {
-          // 방정식 서브토픽 (레벨 파라미터 없을 때)
-          currentTopic = 'equations' as Topic;
-        } else if (subParam === 'calculus') {
-          // 미적분 서브토픽
-          currentTopic = 'calculus' as Topic;
-        } else {
-          // 다른 서브토픽은 subParam을 그대로 사용
-          currentTopic = subParam as Topic;
+          }
+        } catch (e) {
+          console.error('Failed to generate question:', e);
+          const fallbackTopic = `World1-기초` as Topic;
+          const fallbackQuestion = generateQuestion('기초', fallbackTopic, difficulty);
+          setCurrentQuestion(fallbackQuestion);
         }
-      }
+
+        setAnswerInput('');
+        setDisplayValue('');
+        setIsError(false);
+        setShowFlash(false);
+        setQuestionAnimation('fade-in');
+
+        if (gameMode === 'survival') {
+          setQuestionKey((prev) => prev + 1);
+          setQuestionStartTime(Date.now());
+        }
+
+        if (useSystemKeyboard && inputRef.current) {
+          setTimeout(() => {
+            inputRef.current?.focus();
+          }, 200);
+        }
+      }, 150);
+      return;
     }
 
-    if (!currentCategory || !currentTopic) return;
+    // 파라미터가 없는 경우 스토어 값 사용
+    if (!category || !world) return;
 
     setQuestionAnimation('fade-out');
     setTimeout(() => {
-      const newQuestion = generateQuestion(currentCategory, currentTopic as Topic, difficulty);
-      // 문제 ID 생성 (UUID)
+      const topic = `${world}-${category}` as Topic;
+      const newQuestion = generateQuestion(category, topic, difficulty);
       const questionId = crypto.randomUUID();
       setCurrentQuestion(newQuestion);
-      // 문제 생성 콜백 호출
       if (onQuestionGenerated) {
         onQuestionGenerated(newQuestion, questionId);
       }
@@ -226,14 +148,11 @@ export function useQuestionGenerator({
       setIsError(false);
       setQuestionAnimation('fade-in');
 
-      // 서바이벌 모드: 문제가 바뀔 때마다 타이머 리셋 (key 변경으로 TimerCircle 리마운트)
       if (gameMode === 'survival') {
         setQuestionKey((prev) => prev + 1);
-        // 서바이벌 모드: 문제 시작 시간 기록
         setQuestionStartTime(Date.now());
       }
 
-      // 다음 문제로 넘어갈 때 포커스 유지 (시스템 키보드 사용 시만)
       if (useSystemKeyboard && inputRef.current) {
         setTimeout(() => {
           inputRef.current?.focus();
@@ -242,11 +161,11 @@ export function useQuestionGenerator({
     }, 150);
   }, [
     category,
-    topic,
+    world,
     difficulty,
     gameMode,
+    worldParam,
     categoryParam,
-    subParam,
     levelParam,
     useSystemKeyboard,
     inputRef,
@@ -260,7 +179,6 @@ export function useQuestionGenerator({
     setQuestionStartTime,
     onQuestionGenerated,
     effectiveLevel,
-    totalQuestions,
   ]);
 
   return {

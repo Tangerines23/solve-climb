@@ -39,7 +39,7 @@
   --color-black: #000000;
 
   /* Backgrounds */
-  --adaptiveBackground: #ffffff;
+  --adaptiveBackground: var(--color-white);
   --adaptiveBackgroundDimmed: rgba(0, 0, 0, 0.5);
 
   /* Glassmorphism & UI Tokens (New Requirements) */
@@ -79,6 +79,6 @@
 }
 
 [data-theme='dark'] {
-  --adaptiveBackground: #191f28;
-  --color-gray-100: #ffffff;
+  --adaptiveBackground: var(--adaptiveGrey900);
+  --color-gray-100: var(--color-white);
 }

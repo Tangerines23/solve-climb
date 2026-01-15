@@ -75,24 +75,24 @@ function generateTodayChallenge(): TodayChallenge {
   const seed = dateToSeed(todayDate);
   const rng = new SeededRandom(seed);
 
-  // 기능 플래그(FEATURE_FLAGS)에 따라 활성화된 카테고리만 선택
-  const availableCategories = APP_CONFIG.CATEGORIES.filter((cat) => {
-    if (cat.id === 'math') return APP_CONFIG.FEATURE_FLAGS.ENABLE_MATH_MOUNTAIN;
-    if (cat.id === 'language') return APP_CONFIG.FEATURE_FLAGS.ENABLE_LANGUAGE_MOUNTAIN;
-    if (cat.id === 'logic') return APP_CONFIG.FEATURE_FLAGS.ENABLE_LOGIC_MOUNTAIN;
-    if (cat.id === 'general') return APP_CONFIG.FEATURE_FLAGS.ENABLE_GENERAL_MOUNTAIN;
+  // 기능 플래그(FEATURE_FLAGS)에 따라 활성화된 산 선택
+  const availableMountains = APP_CONFIG.MOUNTAINS.filter((mtn) => {
+    if (mtn.id === 'math') return APP_CONFIG.FEATURE_FLAGS.ENABLE_MATH_MOUNTAIN;
+    if (mtn.id === 'language') return APP_CONFIG.FEATURE_FLAGS.ENABLE_LANGUAGE_MOUNTAIN;
+    if (mtn.id === 'logic') return APP_CONFIG.FEATURE_FLAGS.ENABLE_LOGIC_MOUNTAIN;
+    if (mtn.id === 'general') return APP_CONFIG.FEATURE_FLAGS.ENABLE_GENERAL_MOUNTAIN;
     return false;
   });
-  const categories = [...availableCategories].sort((a, b) => a.id.localeCompare(b.id));
-  const categoryIndex = rng.randomInt(0, categories.length);
-  const selectedCategory = categories[categoryIndex];
+  const mountains = [...availableMountains].sort((a, b) => a.id.localeCompare(b.id));
+  const mountainIndex = rng.randomInt(0, mountains.length);
+  const selectedMountain = mountains[mountainIndex];
 
-  // 2. 서브토픽(등반로) 랜덤 선택
-  let subTopics = APP_CONFIG.SUB_TOPICS[selectedCategory.id as keyof typeof APP_CONFIG.SUB_TOPICS];
+  // 2. 카테고리(기초, 논리 등) 랜덤 선택
+  let subTopics = APP_CONFIG.SUB_TOPICS[selectedMountain.id as keyof typeof APP_CONFIG.SUB_TOPICS];
 
   // 수학의 산에서 수열 제거
-  if (selectedCategory.id === 'math' && subTopics) {
-    subTopics = subTopics.filter((topic) => topic.id !== 'sequence') as unknown as typeof subTopics;
+  if (selectedMountain.id === 'math' && subTopics) {
+    subTopics = subTopics.filter((topic: any) => topic.id !== 'sequence') as unknown as typeof subTopics;
   }
 
   if (!subTopics || !Array.isArray(subTopics) || (subTopics as unknown[]).length === 0) {
@@ -101,9 +101,9 @@ function generateTodayChallenge(): TodayChallenge {
       id: `today_challenge_${todayDate}`,
       title: '기본 챌린지',
       category:
-        APP_CONFIG.CATEGORIES.find((c) => c.id === selectedCategory.id)?.name ||
-        selectedCategory.name,
-      categoryId: selectedCategory.id,
+        APP_CONFIG.MOUNTAINS.find((m) => m.id === selectedMountain.id)?.name ||
+        selectedMountain.name,
+      categoryId: selectedMountain.id,
       topic: '기본',
       topicId: 'default',
       mode: 'time_attack',
@@ -116,9 +116,9 @@ function generateTodayChallenge(): TodayChallenge {
   const topicIndex = rng.randomInt(0, sortedSubTopics.length);
   const selectedTopic = sortedSubTopics[topicIndex];
 
-  // 3. 레벨 랜덤 선택
-  const categoryLevels = APP_CONFIG.LEVELS[selectedCategory.id as keyof typeof APP_CONFIG.LEVELS];
-  const levels = categoryLevels?.[selectedTopic.id as keyof typeof categoryLevels] as
+  // 3. 레벨 랜덤 선택 (World1 고정 사용)
+  const categoryLevels = (APP_CONFIG.LEVELS as any)['World1'];
+  const levels = categoryLevels?.[selectedTopic.id] as
     | Array<{ level: number; name: string; description: string }>
     | undefined;
   if (!levels || !Array.isArray(levels) || levels.length === 0) {
@@ -127,9 +127,9 @@ function generateTodayChallenge(): TodayChallenge {
       id: `today_challenge_${todayDate}`,
       title: `${selectedTopic.name} 도전!`,
       category:
-        APP_CONFIG.CATEGORIES.find((c) => c.id === selectedCategory.id)?.name ||
-        selectedCategory.name,
-      categoryId: selectedCategory.id,
+        APP_CONFIG.MOUNTAINS.find((m) => m.id === selectedMountain.id)?.name ||
+        selectedMountain.name,
+      categoryId: selectedMountain.id,
       topic: selectedTopic.name,
       topicId: selectedTopic.id,
       mode: 'time_attack',
@@ -149,9 +149,9 @@ function generateTodayChallenge(): TodayChallenge {
     id: `today_challenge_${todayDate}`,
     title,
     category:
-      APP_CONFIG.CATEGORIES.find((c) => c.id === selectedCategory.id)?.name ||
-      selectedCategory.name,
-    categoryId: selectedCategory.id,
+      APP_CONFIG.MOUNTAINS.find((m) => m.id === selectedMountain.id)?.name ||
+      selectedMountain.name,
+    categoryId: selectedMountain.id,
     topic: selectedTopic.name,
     topicId: selectedTopic.id,
     mode: 'time_attack',

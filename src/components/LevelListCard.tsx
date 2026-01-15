@@ -5,23 +5,22 @@ import { UnderDevelopmentModal } from './UnderDevelopmentModal';
 import './LevelListCard.css';
 
 interface LevelListCardProps {
+  world: string;
   category: string;
-  subTopic: string;
   levels: Array<{ level: number; name: string; description: string }>;
   onLevelClick: (level: number, levelName: string) => void;
   onLevelLongPress?: (level: number) => void;
   onLockedLevelClick?: (level: number, nextLevel: number) => void;
 }
 
-// 개발 중인 레벨 목록 (카테고리_서브토픽_레벨 형식)
-// 모든 레벨이 구현되었으므로 빈 Set으로 유지
+// 개발 중인 레벨 목록 (월드_카테고리_레벨 형식)
 const UNDER_DEVELOPMENT_LEVELS = new Set<string>([
   // 개발 중인 레벨이 있으면 여기에 추가
 ]);
 
 function LevelListCardComponent({
+  world,
   category,
-  subTopic,
   levels,
   onLevelClick,
   onLevelLongPress,
@@ -33,25 +32,25 @@ function LevelListCardComponent({
   const isAdmin = useProfileStore((state) => state.isAdmin);
   const [showUnderDevelopment, setShowUnderDevelopment] = useState(false);
 
-  const nextLevel = getNextLevel(category, subTopic);
-  const progress = getLevelProgress(category, subTopic);
+  const nextLevel = getNextLevel(world, category);
+  const progress = getLevelProgress(world, category);
 
   const isUnderDevelopment = (level: number) => {
-    const levelKey = `${category}_${subTopic}_${level}`;
+    const levelKey = `${world}_${category}_${level}`;
     return UNDER_DEVELOPMENT_LEVELS.has(levelKey);
   };
 
   const getLevelStatus = (level: number) => {
     // 관리자 모드면 모든 레벨이 해금됨
     if (isAdmin) {
-      if (isLevelCleared(category, subTopic, level)) {
+      if (isLevelCleared(world, category, level)) {
         return 'cleared';
       }
-      return 'next'; // 관리자 모드에서는 모든 레벨이 도전 가능
+      return 'next';
     }
 
     // 일반 모드
-    if (isLevelCleared(category, subTopic, level)) {
+    if (isLevelCleared(world, category, level)) {
       return 'cleared';
     }
     if (level === nextLevel) {
@@ -60,7 +59,7 @@ function LevelListCardComponent({
     if (level > nextLevel) {
       return 'locked';
     }
-    return 'next'; // 기본적으로 다음 도전 가능
+    return 'next';
   };
 
   const getBestScore = (level: number): number | null => {

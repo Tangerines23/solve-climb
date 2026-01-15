@@ -14,14 +14,14 @@ export interface LevelRecord {
   clearedAt?: string;
 }
 
-export interface CategorySubProgress {
-  [subTopic: string]: {
+export interface CategoryProgress {
+  [category: string]: {
     [level: number]: LevelRecord;
   };
 }
 
 export interface UserProgress {
-  [category: string]: CategorySubProgress;
+  [world: string]: CategoryProgress;
 }
 
 export interface RankingRecord {
@@ -35,26 +35,26 @@ interface LevelProgressState {
   progress: UserProgress;
   rankings: { [key: string]: RankingRecord[] }; // category-mode key
   // ... existing
-  getLevelProgress: (category: string, subTopic: string) => LevelRecord[];
-  isLevelCleared: (category: string, subTopic: string, level: number) => boolean;
-  getNextLevel: (category: string, subTopic: string) => number;
+  getLevelProgress: (world: string, category: string) => LevelRecord[];
+  isLevelCleared: (world: string, category: string, level: number) => boolean;
+  getNextLevel: (world: string, category: string) => number;
   clearLevel: (
+    world: string,
     category: string,
-    subTopic: string,
     level: number,
     mode: GameMode,
     score: number
   ) => void;
   updateBestScore: (
+    world: string,
     category: string,
-    subTopic: string,
     level: number,
     mode: GameMode,
     score: number
   ) => void;
   getBestRecords: (
-    category: string,
-    subTopic: string
+    world: string,
+    category: string
   ) => {
     'time-attack': number | null;
     survival: number | null;
@@ -63,6 +63,7 @@ interface LevelProgressState {
   resetProgress: () => Promise<void>;
   // Global Ranking v2
   fetchRanking: (
+    world: string,
     category: string,
     period: 'weekly' | 'all-time',
     type: 'total' | 'time-attack' | 'survival',
@@ -85,31 +86,28 @@ export const useLevelProgressStore = create<LevelProgressState>()(
       progress: {},
       rankings: {},
 
-      getLevelProgress: (category, subTopic) => {
-        // ... existing methods (omitted for brevity in instruction, but I will replace the whole block if needed or just specific parts)
-        // I will use multi_replace if I need to change distant parts, but here I can just replace the initialization and add the method at the end.
-
+      getLevelProgress: (world, category) => {
         const state = get();
-        const categoryProgress = state.progress[category];
-        if (!categoryProgress || !categoryProgress[subTopic]) {
+        const worldProgress = state.progress[world];
+        if (!worldProgress || !worldProgress[category]) {
           return [];
         }
-        return Object.values(categoryProgress[subTopic]).sort((a, b) => a.level - b.level);
+        return Object.values(worldProgress[category]).sort((a, b) => a.level - b.level);
       },
 
-      isLevelCleared: (category, subTopic, level) => {
+      isLevelCleared: (world, category, level) => {
         const state = get();
-        return state.progress[category]?.[subTopic]?.[level]?.cleared ?? false;
+        return state.progress[world]?.[category]?.[level]?.cleared ?? false;
       },
 
-      getNextLevel: (category, subTopic) => {
+      getNextLevel: (world, category) => {
         const state = get();
-        const categoryProgress = state.progress[category];
-        if (!categoryProgress || !categoryProgress[subTopic]) {
+        const worldProgress = state.progress[world];
+        if (!worldProgress || !worldProgress[category]) {
           return 1; // 첫 레벨부터 시작
         }
 
-        const levels = Object.values(categoryProgress[subTopic])
+        const levels = Object.values(worldProgress[category])
           .filter((record) => record.cleared)
           .map((record) => record.level)
           .sort((a, b) => b - a);
@@ -121,18 +119,18 @@ export const useLevelProgressStore = create<LevelProgressState>()(
         return levels[0] + 1; // 마지막 클리어 레벨 + 1
       },
 
-      clearLevel: async (category, subTopic, level, mode, score) => {
+      clearLevel: async (world, category, level, mode, score) => {
         // 1. Optimistic Update (Local)
         set((state) => {
           const newProgress = { ...state.progress };
 
-          if (!newProgress[category]) newProgress[category] = {};
-          if (!newProgress[category][subTopic]) newProgress[category][subTopic] = {};
-          if (!newProgress[category][subTopic][level]) {
-            newProgress[category][subTopic][level] = getDefaultLevelRecord(level);
+          if (!newProgress[world]) newProgress[world] = {};
+          if (!newProgress[world][category]) newProgress[world][category] = {};
+          if (!newProgress[world][category][level]) {
+            newProgress[world][category][level] = getDefaultLevelRecord(level);
           }
 
-          const record = newProgress[category][subTopic][level];
+          const record = newProgress[world][category][level];
           record.cleared = true;
           record.clearedAt = new Date().toISOString();
 
@@ -153,8 +151,8 @@ export const useLevelProgressStore = create<LevelProgressState>()(
           const { error } = await supabase.from('game_records').upsert(
             {
               user_id: user.id,
-              category,
-              subject: subTopic,
+              category: world, // world를 category로 매핑
+              subject: category, // category를 subject로 매핑
               level,
               mode,
               score,
@@ -174,18 +172,18 @@ export const useLevelProgressStore = create<LevelProgressState>()(
         }
       },
 
-      updateBestScore: async (category, subTopic, level, mode, score) => {
+      updateBestScore: async (world, category, level, mode, score) => {
         // 1. Optimistic Update (Local)
         set((state) => {
           const newProgress = { ...state.progress };
 
-          if (!newProgress[category]) newProgress[category] = {};
-          if (!newProgress[category][subTopic]) newProgress[category][subTopic] = {};
-          if (!newProgress[category][subTopic][level]) {
-            newProgress[category][subTopic][level] = getDefaultLevelRecord(level);
+          if (!newProgress[world]) newProgress[world] = {};
+          if (!newProgress[world][category]) newProgress[world][category] = {};
+          if (!newProgress[world][category][level]) {
+            newProgress[world][category][level] = getDefaultLevelRecord(level);
           }
 
-          const record = newProgress[category][subTopic][level];
+          const record = newProgress[world][category][level];
           if (record.bestScore[mode] === null || score > record.bestScore[mode]!) {
             record.bestScore[mode] = score;
           }
@@ -200,21 +198,11 @@ export const useLevelProgressStore = create<LevelProgressState>()(
           } = await supabase.auth.getUser();
           if (!user) return;
 
-          // Note: We only update score if it's higher, but the SQL constraint/upsert
-          // will handle the row existence. However, to strictly follow "update only if higher",
-          // we rely on the application logic here (we already checked locally).
-          // But if another device has a higher score, we might overwrite it if we are not careful.
-          // The requirement said: "Unique Key 충돌 시 기존 점수보다 새 점수가 높을 때만 score를 업데이트"
-          // Supabase upsert doesn't support conditional update based on value directly in one go easily without a function.
-          // But for now, we assume the local check + upsert is sufficient for this MVP,
-          // or we could use a stored procedure.
-          // Given the constraints, we will just upsert the current high score.
-
           const { error } = await supabase.from('game_records').upsert(
             {
               user_id: user.id,
-              category,
-              subject: subTopic,
+              category: world,
+              subject: category,
               level,
               mode,
               score,
@@ -231,14 +219,14 @@ export const useLevelProgressStore = create<LevelProgressState>()(
         }
       },
 
-      getBestRecords: (category, subTopic) => {
+      getBestRecords: (world, category) => {
         const state = get();
-        const categoryProgress = state.progress[category];
-        if (!categoryProgress || !categoryProgress[subTopic]) {
+        const worldProgress = state.progress[world];
+        if (!worldProgress || !worldProgress[category]) {
           return { 'time-attack': null, survival: null };
         }
 
-        const records = Object.values(categoryProgress[subTopic]);
+        const records = Object.values(worldProgress[category]);
         let bestTimeAttack: number | null = null;
         let bestSurvival: number | null = null;
 
@@ -280,15 +268,15 @@ export const useLevelProgressStore = create<LevelProgressState>()(
               const newProgress = { ...state.progress };
 
               records.forEach((serverRecord) => {
-                const { category, subject, level, mode, score, cleared, cleared_at } = serverRecord;
+                const { category: world, subject: category, level, mode, score, cleared, cleared_at } = serverRecord;
 
-                if (!newProgress[category]) newProgress[category] = {};
-                if (!newProgress[category][subject]) newProgress[category][subject] = {};
-                if (!newProgress[category][subject][level]) {
-                  newProgress[category][subject][level] = getDefaultLevelRecord(level);
+                if (!newProgress[world]) newProgress[world] = {};
+                if (!newProgress[world][category]) newProgress[world][category] = {};
+                if (!newProgress[world][category][level]) {
+                  newProgress[world][category][level] = getDefaultLevelRecord(level);
                 }
 
-                const localRecord = newProgress[category][subject][level];
+                const localRecord = newProgress[world][category][level];
 
                 // Merge logic: Server wins if data exists
                 if (cleared) {
@@ -333,10 +321,10 @@ export const useLevelProgressStore = create<LevelProgressState>()(
         }
       },
 
-      fetchRanking: async (category, period, type, limit = 50) => {
+      fetchRanking: async (world, category, period, type, limit = 50) => {
         try {
           const { data, error } = await supabase.rpc('get_ranking_v2', {
-            p_category: category,
+            p_category: world,
             p_period: period,
             p_type: type,
             p_limit: limit,
@@ -348,7 +336,7 @@ export const useLevelProgressStore = create<LevelProgressState>()(
             set((state) => ({
               rankings: {
                 ...state.rankings,
-                [`${category}-${period}-${type}`]: data as RankingRecord[],
+                [`${world}-${category}-${period}-${type}`]: data as RankingRecord[],
               },
             }));
           }

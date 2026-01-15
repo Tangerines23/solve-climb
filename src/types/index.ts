@@ -5,6 +5,7 @@
 
 // Quiz 관련 타입 (기존 quiz.ts에서 re-export)
 export type {
+  Mountain,
   Category,
   MathTopic,
   LanguageType,

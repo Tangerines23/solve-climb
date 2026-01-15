@@ -1,11 +1,12 @@
 import React, { useRef, useMemo, useCallback } from 'react';
 import { useLevelProgressStore } from '../stores/useLevelProgressStore';
 import { useProfileStore } from '../stores/useProfileStore';
-import { ArithmeticBackground, EquationsBackground } from './ClimbGraphicBackgrounds';
+import { ArithmeticBackground, EquationsBackground, SequenceBackground, CalculusBackground } from './ClimbGraphicBackgrounds';
 import { STAGE_CONFIG, type StageConfig } from '../constants/stages';
+import { World, Category } from '../types/quiz';
 import './ClimbGraphic.css';
 
-// 단순화된 LevelButton (Long Press 로직 제거됨)
+// 단순화된 LevelButton
 interface LevelButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
   children: React.ReactNode;
 }
@@ -19,8 +20,8 @@ export const LevelButton = React.forwardRef<HTMLButtonElement, LevelButtonProps>
 LevelButton.displayName = 'LevelButton';
 
 interface ClimbGraphicProps {
-  category: string;
-  subTopic: string;
+  world: World;
+  category: Category;
   levels: Array<{ level: number; name: string; description: string }>;
   categoryColor?: string;
   onLevelClick?: (level: number, levelName: string) => void;
@@ -41,8 +42,8 @@ interface StageBackgroundConfig {
 }
 
 export function ClimbGraphic({
+  world,
   category,
-  subTopic,
   levels,
   categoryColor = '#10b981',
   onLevelClick,
@@ -53,15 +54,13 @@ export function ClimbGraphic({
   const isAdmin = useProfileStore((state) => state.isAdmin);
   const currentLevelRef = useRef<HTMLButtonElement>(null);
 
-  const nextLevel = getNextLevel(category, subTopic);
+  const nextLevel = getNextLevel(world, category);
   const totalLevels = levels.length;
 
   // 개발중인 레벨 체크 함수
   const isUnderDevelopment = (level: number) => {
-    const UNDER_DEVELOPMENT_LEVELS = new Set<string>([
-      // 개발 중인 레벨이 있으면 여기에 추가 (카테고리_서브토픽_레벨 형식)
-    ]);
-    const levelKey = `${category}_${subTopic}_${level}`;
+    const UNDER_DEVELOPMENT_LEVELS = new Set<string>([]);
+    const levelKey = `${world}_${category}_${level}`;
     return UNDER_DEVELOPMENT_LEVELS.has(levelKey);
   };
 
@@ -70,62 +69,50 @@ export function ClimbGraphic({
     return (
       STAGE_CONFIG.find((stage) => levelId >= stage.range[0] && levelId <= stage.range[1]) ||
       STAGE_CONFIG[0]
-    ); // Fallback
+    );
   }, []);
 
   // ========== 설정 상수 ==========
-  const SVG_WIDTH = 400; // SVG 너비
-  const NODE_SPACING = 80; // 노드 간 최소 간격 (픽셀)
-  const LIST_DISTANCE = 100; // SVG 내부: 맨 위 노드가 캔버스 상단에서 100px 떨어짐
-  const SCROLL_OFFSET = 60; // 외부 배치: 전체 판이 화면 상단(헤더 아래)에서 60px 내려옴
+  const SVG_WIDTH = 400;
+  const NODE_SPACING = 80;
+  const LIST_DISTANCE = 100;
+  const SCROLL_OFFSET = 60;
 
   // ========== 노드 위치 계산 ==========
   const { levelData, pathPoints, svgHeight, lastClearedIndex } = useMemo(() => {
     const data: LevelData[] = [];
     const points: Array<{ x: number; y: number }> = [];
-    let lastClearedIdx = -1; // 클리어된 마지막 노드의 인덱스
+    let lastClearedIdx = -1;
 
-    // 1. 경로 전체 높이 계산
-    // 마지막 노드 Y 위치 (위에서 LIST_DISTANCE만큼 떨어짐)
     const lastNodeY = LIST_DISTANCE;
-    // 첫 노드 Y 위치 (아래쪽, 경로 높이만큼 떨어짐)
     const firstNodeY = lastNodeY + (totalLevels - 1) * NODE_SPACING;
-    // SVG 전체 높이 (첫 노드 위치 + 여유 공간)
-    const calculatedSvgHeight = firstNodeY - 50;
+    const calculatedSvgHeight = firstNodeY + 100; // 여유 공간 확보
 
-    // 2. 각 노드 위치 계산
     for (let i = 0; i < totalLevels; i++) {
-      // 진행도: 0 (첫 노드) ~ 1 (마지막 노드)
       const progress = i / (totalLevels - 1 || 1);
-
-      // Y 좌표: 첫 노드에서 마지막 노드로 선형 보간
       const y = firstNodeY - (firstNodeY - lastNodeY) * progress;
-
-      // X 좌표: S자 곡선 (중앙 기준 좌우로 움직임)
       const centerX = SVG_WIDTH * 0.5;
-      const amplitude = SVG_WIDTH * 0.4; // 좌우 진폭
+      const amplitude = SVG_WIDTH * 0.3;
       const offsetX = Math.sin(progress * Math.PI * 2) * amplitude;
       const x = centerX + offsetX;
 
       points.push({ x, y });
 
-      // 레벨 상태 결정
-      const isCleared = isLevelCleared(category, subTopic, levels[i].level);
+      const isCleared = isLevelCleared(world, category, levels[i].level);
       const isCurrent = isAdmin ? false : levels[i].level === nextLevel;
       const status: 'locked' | 'current' | 'cleared' = isCleared
         ? 'cleared'
-        : isCurrent
+        : (levels[i].level === nextLevel || (isAdmin && !isCleared))
           ? 'current'
           : 'locked';
 
-      // 클리어된 마지막 인덱스 추적 (성능 최적화)
       if (status === 'cleared') {
         lastClearedIdx = i;
       }
 
       data.push({
         id: levels[i].level,
-        status,
+        status: status as any,
         position: { x, y },
       });
     }
@@ -136,9 +123,8 @@ export function ClimbGraphic({
       svgHeight: calculatedSvgHeight,
       lastClearedIndex: lastClearedIdx,
     };
-  }, [category, subTopic, levels, totalLevels, nextLevel, isLevelCleared, isAdmin]);
+  }, [world, category, levels, totalLevels, nextLevel, isLevelCleared, isAdmin]);
 
-  // 경로 생성 함수 (통일된 로직)
   const createPath = (points: Array<{ x: number; y: number }>): string => {
     if (points.length === 0) return '';
     if (points.length === 1) return `M ${points[0].x} ${points[0].y}`;
@@ -147,7 +133,6 @@ export function ClimbGraphic({
     for (let i = 1; i < points.length; i++) {
       const prev = points[i - 1];
       const curr = points[i];
-      // 이전 점과 현재 점의 중간점을 제어점으로 사용하여 부드러운 곡선 생성
       const cpX = (prev.x + curr.x) / 2;
       const cpY = (prev.y + curr.y) / 2;
       path += ` Q ${cpX} ${cpY}, ${curr.x} ${curr.y}`;
@@ -155,20 +140,14 @@ export function ClimbGraphic({
     return path;
   };
 
-  // 전체 경로와 클리어된 경로 생성
   const pathData = useMemo(() => createPath(pathPoints), [pathPoints]);
 
   const clearedPathData = useMemo(() => {
     if (lastClearedIndex < 0) return '';
-    // 클리어된 마지막 노드까지의 경로 (해당 노드 포함)
     const clearedPoints = pathPoints.slice(0, lastClearedIndex + 1);
     return createPath(clearedPoints);
   }, [pathPoints, lastClearedIndex]);
 
-  // [수정] 자동 스크롤 제거 - Base Camp 진입 시 자동으로 이동하지 않음
-  // 기존의 자동 스크롤 useEffect는 제거됨
-
-  // [신규] "내 위치로" 스크롤 함수
   const scrollToCurrentLevel = useCallback(() => {
     if (currentLevelRef.current) {
       currentLevelRef.current.scrollIntoView({
@@ -178,71 +157,55 @@ export function ClimbGraphic({
     }
   }, []);
 
-  // 스테이지별 배경 설정
+  // 카테고리별 배경 매핑
   const stageConfig = useMemo(() => {
     const configs: Record<string, StageBackgroundConfig> = {
-      arithmetic: {
-        // 연한 하늘색 그라데이션 (눈이 편안한 색상)
+      '기초': {
         skyGradient: 'linear-gradient(180deg, #E8F4F8 0%, #F0F8FF 50%, #FFFFFF 100%)',
-        mainColor: 'var(--color-slate-800)', // Slate 800
-        secondaryColor: 'var(--color-slate-700)', // Slate 700
-        accentColor: 'var(--color-slate-600)', // Slate 600
+        mainColor: 'var(--color-slate-800)',
+        secondaryColor: 'var(--color-slate-700)',
+        accentColor: 'var(--color-slate-600)',
       },
-      equations: {
-        // 지적이고 깊은 청록색 - 심해나 우주에 가까운 톤
-        skyGradient:
-          'linear-gradient(180deg, #064E3B 0%, #065F46 15%, #0891B2 40%, #06B6D4 65%, #22D3EE 85%, #67E8F9 100%)',
-        mainColor: '#064E3B', // Cyan-900
-        secondaryColor: '#0891B2', // Cyan-600
-        accentColor: '#22D3EE', // Cyan-400
+      '대수': {
+        skyGradient: 'linear-gradient(180deg, #064E3B 0%, #065F46 15%, #0891B2 40%, #06B6D4 65%, #22D3EE 85%, #67E8F9 100%)',
+        mainColor: '#064E3B',
+        secondaryColor: '#0891B2',
+        accentColor: '#22D3EE',
       },
-      sequence: {
+      '논리': {
         skyGradient: 'linear-gradient(180deg, #4B0082 0%, #6A5ACD 30%, #9370DB 60%, #BA55D3 100%)',
         mainColor: '#4B0082',
         secondaryColor: '#6A5ACD',
         accentColor: '#9370DB',
       },
-      calculus: {
+      '심화': {
         skyGradient: 'linear-gradient(180deg, #000428 0%, #004e92 30%, #1a1a2e 60%, #16213e 100%)',
         mainColor: '#000428',
         secondaryColor: '#004e92',
         accentColor: '#00D4FF',
       },
     };
-    return (
-      configs[subTopic] || {
-        skyGradient: 'linear-gradient(180deg, #00BFA5 0%, #00D4B8 30%, #00E6CC 60%, #00F5DD 100%)',
-        mainColor: categoryColor,
-        secondaryColor: categoryColor,
-        accentColor: categoryColor,
-      }
-    );
-  }, [subTopic, categoryColor]);
-
-  // 절차적 생성 배경 사용 (기존 BackgroundComponent는 더 이상 사용하지 않음)
+    return configs[category] || configs['기초'];
+  }, [category]);
 
   return (
     <div
       className="level-map-container"
-      data-stage={subTopic}
+      data-stage={category}
       style={
         {
           '--category-color': categoryColor,
-          minHeight: `${svgHeight + 200}px`, // SVG 높이 + 여유 공간
+          minHeight: `${svgHeight + 200}px`,
         } as React.CSSProperties
       }
     >
-      {/* 하늘 그라데이션 배경 */}
       <div className="level-map-sky" style={{ background: stageConfig.skyGradient }} />
 
-      {/* 산 배경 (새로 만든 컴포넌트) */}
-      {/* CSS로 하던 .level-map-mountains 대신 이걸 씁니다 */}
-      {subTopic === 'arithmetic' && <ArithmeticBackground totalLevels={totalLevels} />}
-      {subTopic === 'equations' && (
-        <EquationsBackground totalLevels={totalLevels} config={stageConfig} />
-      )}
+      {category === '기초' && <ArithmeticBackground totalLevels={totalLevels} />}
+      {category === '대수' && <EquationsBackground totalLevels={totalLevels} config={stageConfig} />}
+      {category === '논리' && <SequenceBackground totalLevels={totalLevels} config={stageConfig} />}
+      {category === '심화' && <CalculusBackground totalLevels={totalLevels} config={stageConfig} />}
 
-      {/* SVG 경로 영역 - 경로와 노드를 모두 포함 */}
       <div
         className="level-map-path-container"
         style={{
@@ -256,7 +219,6 @@ export function ClimbGraphic({
           preserveAspectRatio="xMidYMax meet"
           style={{ width: '100%', height: `${svgHeight}px` }}
         >
-          {/* 토스 스타일: 부드럽고 넓은 그림자 필터 */}
           <defs>
             <filter id="toss-shadow" x="-50%" y="-50%" width="200%" height="200%">
               <feDropShadow dx="0" dy="4" stdDeviation="8" floodColor="rgba(0,0,0,0.08)" />
@@ -264,30 +226,27 @@ export function ClimbGraphic({
             </filter>
           </defs>
 
-          {/* 미완료 경로 (Toss UI: 얇고 연한 회색 점선) */}
           {pathData && (
             <path
               d={pathData}
               fill="none"
-              stroke="#E5E8EB" // Toss Grey 200
+              stroke="#E5E8EB"
               strokeWidth="2"
-              strokeDasharray="4,4" // 더 작은 점선 패턴
+              strokeDasharray="4,4"
               className="path-future"
             />
           )}
 
-          {/* 클리어된 경로 (Toss UI: 얇고 연한 회색 실선) */}
           {clearedPathData && (
             <path
               d={clearedPathData}
               fill="none"
-              stroke="#8B95A1" // Toss Grey 400
+              stroke="#8B95A1"
               strokeWidth="2"
               className="path-cleared"
             />
           )}
 
-          {/* 레벨 노드들 */}
           {levelData.map((level) => {
             const levelInfo = levels.find((l) => l.level === level.id);
             if (!levelInfo) return null;
@@ -307,8 +266,7 @@ export function ClimbGraphic({
                     ref={level.status === 'current' ? currentLevelRef : null}
                     className={`level-node level-node-${level.status}`}
                     onClick={() => {
-                      if (level.status === 'locked') return;
-                      // 개발중인 레벨이면 토스트만 표시하고 진입 차단
+                      if (level.status === 'locked' && !isAdmin) return;
                       if (isUnderDevelopment(level.id)) {
                         if (onUnderDevelopmentClick) {
                           onUnderDevelopmentClick();
@@ -319,14 +277,12 @@ export function ClimbGraphic({
                         onLevelClick(level.id, levelInfo.name);
                       }
                     }}
-                    // onLongPress removed
-                    disabled={level.status === 'locked'}
+                    disabled={level.status === 'locked' && !isAdmin}
                     style={{
                       width: '56px',
                       height: '56px',
                       margin: 0,
                       padding: 0,
-                      // 스테이지별 테마 색상 적용
                       borderColor: level.status === 'current' ? stage.color : undefined,
                       boxShadow:
                         level.status === 'current' ? `0 0 0 4px ${stage.color}40` : undefined,
@@ -340,7 +296,6 @@ export function ClimbGraphic({
                           ✓
                         </span>
                       ) : (
-                        // 진행 중일 때 스테이지 아이콘 표시
                         <span
                           className="level-node-icon"
                           role="img"
@@ -350,7 +305,6 @@ export function ClimbGraphic({
                           {stage.icon}
                         </span>
                       )}
-                      {/* 숫자는 작게 유지하여 '순서' 정보 제공 */}
                       <span className="level-node-number">{level.id}</span>
                     </div>
                   </LevelButton>
@@ -359,22 +313,19 @@ export function ClimbGraphic({
             );
           })}
 
-          {/* 스테이지 표지판 (Toss Style Chips) */}
           {STAGE_CONFIG.map((stage) => {
-            const startLevelIdx = stage.range[0] - 1; // 배열 인덱스 (레벨은 1부터 시작)
+            const startLevelIdx = stage.range[0] - 1;
             const position = levelData[startLevelIdx]?.position;
 
             if (!position) return null;
 
-            // 왼쪽에 붙일 스테이지: basic, focus (몸풀기는 오른쪽)
             const isLeftSide = stage.id === 'basic' || stage.id === 'focus';
             const badgeWidth = 96;
             const badgeSpacing = 42;
 
-            // 위치 계산: 왼쪽 또는 오른쪽
             const badgeX = isLeftSide
-              ? position.x - badgeWidth - badgeSpacing // 왼쪽: 노드 왼쪽으로 뱃지 너비 + 여백만큼
-              : position.x + badgeSpacing; // 오른쪽: 노드 오른쪽으로 여백만큼
+              ? position.x - badgeWidth - badgeSpacing
+              : position.x + badgeSpacing;
             const badgeY = position.y - 15;
 
             return (
@@ -383,42 +334,35 @@ export function ClimbGraphic({
                 className="stage-signpost"
                 style={{ animation: 'fadeIn 0.6s ease-out' }}
               >
-                {/* 1. 연결선: 아주 얇고 연한 회색 (눈에 띌 듯 말 듯 하게) */}
                 <line
                   x1={isLeftSide ? position.x - 20 : position.x + 20}
                   y1={position.y}
                   x2={isLeftSide ? badgeX + badgeWidth - 2 : badgeX + 2}
                   y2={position.y}
-                  stroke="#E5E8EB" // Toss Grey 200
+                  stroke="#E5E8EB"
                   strokeWidth="1.5"
                 />
 
-                {/* 2. 뱃지 그룹 */}
                 <g
                   transform={`translate(${badgeX}, ${badgeY})`}
                   style={{ filter: 'url(#toss-shadow)' }}
                 >
-                  {/* 배경: 완전한 흰색 캡슐 */}
                   <rect
                     width={badgeWidth}
                     height="30"
-                    rx="15" // 높이의 절반 (완전한 원형 라운드)
+                    rx="15"
                     fill="#FFFFFF"
                   />
-
-                  {/* 포인트 아이콘 (스테이지 색상 원) */}
                   <circle cx={isLeftSide ? badgeWidth - 12 : 12} cy="15" r="4" fill={stage.color} />
-
-                  {/* 텍스트: Toss Grey 컬러, 시스템 폰트 */}
                   <text
                     x={isLeftSide ? badgeWidth - 24 : 24}
                     y="20"
-                    fill="#333D4B" // Toss Grey 800 (가독성 높은 진한 회색)
+                    fill="#333D4B"
                     fontSize="13px"
-                    fontWeight="600" // Semi-bold
+                    fontWeight="600"
                     fontFamily="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif"
-                    style={{ letterSpacing: '-0.2px' }} // 자간을 살짝 좁혀서 단단해 보이게
-                    textAnchor={isLeftSide ? 'end' : 'start'} // 왼쪽은 오른쪽 정렬, 오른쪽은 왼쪽 정렬
+                    style={{ letterSpacing: '-0.2px' }}
+                    textAnchor={isLeftSide ? 'end' : 'start'}
                   >
                     {stage.title}
                   </text>
@@ -429,7 +373,6 @@ export function ClimbGraphic({
         </svg>
       </div>
 
-      {/* [신규] 내 위치로 가기 버튼 (Floating Action Button) */}
       <button
         className="fab-my-location"
         onClick={scrollToCurrentLevel}

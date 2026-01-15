@@ -13,8 +13,11 @@ import { useDebugStore } from './stores/useDebugStore';
 const HomePage = lazy(() =>
   import('./pages/HomePage').then((module) => ({ default: module.HomePage }))
 );
-const TopicSelectPage = lazy(() =>
-  import('./pages/TopicSelectPage').then((module) => ({ default: module.TopicSelectPage }))
+const WorldSelectPage = lazy(() =>
+  import('./pages/WorldSelectPage').then((module) => ({ default: module.WorldSelectPage }))
+);
+const CategorySelectPage = lazy(() =>
+  import('./pages/CategorySelectPage').then((module) => ({ default: module.CategorySelectPage }))
 );
 const LevelSelectPage = lazy(() =>
   import('./pages/LevelSelectPage').then((module) => ({ default: module.LevelSelectPage }))
@@ -117,7 +120,8 @@ function App() {
       >
         <Routes>
           <Route path="/" element={<HomePage />} />
-          <Route path="/topic-select" element={<TopicSelectPage />} />
+          <Route path="/world-select" element={<WorldSelectPage />} />
+          <Route path="/category-select" element={<CategorySelectPage />} />
           <Route path="/level-select" element={<LevelSelectPage />} />
           <Route path="/quiz" element={<QuizPage />} />
           <Route path="/result" element={<ResultPage />} />

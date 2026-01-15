@@ -14,7 +14,6 @@ export default defineConfig(() => {
     plugins: [react()],
     resolve: {
       alias: isVercel ? {
-        '@toss/tds-mobile': path.resolve(process.cwd(), './src/mocks/tds-mobile-mock.tsx'),
         '@apps-in-toss/web-framework': path.resolve(process.cwd(), './src/mocks/web-framework-mock.ts'),
       } : {},
     },
@@ -46,7 +45,7 @@ export default defineConfig(() => {
       include: [
         'hoist-non-react-statics',
         'react-is',
-        ...(isVercel ? [] : ['@toss/tds-mobile', '@apps-in-toss/web-framework'])
+        ...(isVercel ? [] : ['@apps-in-toss/web-framework'])
       ],
     },
     // Vitest 설정

@@ -3,12 +3,12 @@ import { useLevelProgressStore } from '../stores/useLevelProgressStore';
 import './MyRecordCard.css';
 
 interface MyRecordCardProps {
+  world: string;
   category: string;
-  subTopic: string;
-  subTopicName: string;
+  categoryName: string;
 }
 
-export function MyRecordCard({ category, subTopic, subTopicName }: MyRecordCardProps) {
+export function MyRecordCard({ world, category, categoryName }: MyRecordCardProps) {
   const [loading, setLoading] = useState(true);
   const [records, setRecords] = useState<{
     'time-attack': number | null;
@@ -21,7 +21,7 @@ export function MyRecordCard({ category, subTopic, subTopicName }: MyRecordCardP
     // 비동기 로딩 시뮬레이션 (실제로는 API 호출)
     setLoading(true);
     setTimeout(() => {
-      const bestRecords = getBestRecords(category, subTopic);
+      const bestRecords = getBestRecords(world, category);
       // 점수를 그대로 사용 (미터 단위)
       setRecords({
         'time-attack': bestRecords['time-attack'],
@@ -29,7 +29,7 @@ export function MyRecordCard({ category, subTopic, subTopicName }: MyRecordCardP
       });
       setLoading(false);
     }, 300);
-  }, [category, subTopic, getBestRecords]);
+  }, [world, category, getBestRecords]);
 
   if (loading) {
     return (
@@ -45,7 +45,7 @@ export function MyRecordCard({ category, subTopic, subTopicName }: MyRecordCardP
 
   return (
     <div className="my-record-card">
-      <h3 className="my-record-card-title">{subTopicName} 최고 기록</h3>
+      <h3 className="my-record-card-title">{categoryName} 최고 기록</h3>
       <div className="my-record-card-content">
         <div className="my-record-item">
           <span className="my-record-icon">⏱️</span>

@@ -36,12 +36,11 @@ export function MyPageQuickAccess({
                         className="my-page-quick-access-button"
                         onClick={() => {
                             setCategoryTopic(
-                                todayChallenge.category as Category,
-                                todayChallenge.topicId as Topic
+                                todayChallenge.topicId as Category,
+                                'World1' as any
                             );
-                            // setTimeLimit(60); // QuizPage handles this based on mode
                             navigate(
-                                `${APP_CONFIG.ROUTES.GAME}?challenge=today&category=${todayChallenge.categoryId}&sub=${todayChallenge.topicId}&level=${todayChallenge.level}&mode=${todayChallenge.mode}`
+                                `${APP_CONFIG.ROUTES.CATEGORY_SELECT}?mountain=${todayChallenge.categoryId}`
                             );
                         }}
                     >
@@ -82,7 +81,7 @@ export function MyPageQuickAccess({
                                                 `/level-select?category=${favorite.categoryId}&sub=${favorite.subCategoryId}`
                                             );
                                         } else {
-                                            navigate(`/subcategory?category=${favorite.categoryId}`);
+                                            navigate(`${APP_CONFIG.ROUTES.CATEGORY_SELECT}?mountain=${favorite.categoryId}`);
                                         }
                                     }}
                                 >

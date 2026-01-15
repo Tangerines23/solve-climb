@@ -35,38 +35,37 @@ export function KeyboardInfoModal({ isOpen, onClose }: KeyboardInfoModalProps) {
     return (type: KeyboardDisplayType): KeyboardInfo[] => {
       const categories: KeyboardInfo[] = [];
 
-      Object.entries(APP_CONFIG.SUB_TOPICS).forEach(([categoryId, subTopics]) => {
-        const categoryName =
-          APP_CONFIG.CATEGORY_MAP[categoryId as keyof typeof APP_CONFIG.CATEGORY_MAP];
-
+      Object.entries(APP_CONFIG.SUB_TOPICS).forEach(([mtnId, subTopics]) => {
         subTopics.forEach((subTopic) => {
-          const categoryLevels = APP_CONFIG.LEVELS[categoryId as keyof typeof APP_CONFIG.LEVELS];
-          const levels =
-            (categoryLevels?.[subTopic.id as keyof typeof categoryLevels] as Array<{
-              level: number;
-              name: string;
-              description: string;
-            }>) || [];
+          const categoryId = subTopic.id;
+
+          // 현재 World1 고정 사용
+          const worldLevels = (APP_CONFIG.LEVELS as any)['World1'];
+          const levels = (worldLevels?.[categoryId] as Array<{
+            level: number;
+            name: string;
+            description: string;
+          }>) || [];
 
           let kbType: 'qwerty-text' | 'custom' | 'qwerty-number' | null = null;
           let allowNegative = false;
           let shouldInclude = false;
 
           if (type === 'qwerty-text') {
-            if (categoryId === 'language' && subTopic.id === 'japanese') {
+            if (mtnId === 'language' && categoryId === 'japanese') {
               kbType = 'qwerty-text';
               shouldInclude = true;
             }
           } else if (type === 'qwerty-number') {
             if (
               keyboardType === 'qwerty' &&
-              !(categoryId === 'language' && subTopic.id === 'japanese')
+              !(mtnId === 'language' && categoryId === 'japanese')
             ) {
               kbType = 'qwerty-number';
               shouldInclude = true;
               if (
-                categoryId === 'math' &&
-                (subTopic.id === 'equations' || subTopic.id === 'calculus')
+                mtnId === 'math' &&
+                (categoryId === '대수' || categoryId === '심화')
               ) {
                 allowNegative = true;
               }
@@ -74,13 +73,13 @@ export function KeyboardInfoModal({ isOpen, onClose }: KeyboardInfoModalProps) {
           } else if (type === 'custom') {
             if (
               keyboardType === 'custom' &&
-              !(categoryId === 'language' && subTopic.id === 'japanese')
+              !(mtnId === 'language' && categoryId === 'japanese')
             ) {
               kbType = 'custom';
               shouldInclude = true;
               if (
-                categoryId === 'math' &&
-                (subTopic.id === 'equations' || subTopic.id === 'calculus')
+                mtnId === 'math' &&
+                (categoryId === '대수' || categoryId === '심화')
               ) {
                 allowNegative = true;
               }
@@ -89,9 +88,9 @@ export function KeyboardInfoModal({ isOpen, onClose }: KeyboardInfoModalProps) {
 
           if (shouldInclude && kbType) {
             categories.push({
-              category: categoryId,
-              categoryName,
-              subTopic: subTopic.id,
+              category: mtnId,
+              categoryName: (APP_CONFIG.MOUNTAIN_MAP as any)[mtnId] || mtnId,
+              subTopic: categoryId,
               subTopicName: subTopic.name,
               icon: subTopic.icon,
               keyboardType: kbType,

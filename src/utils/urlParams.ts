@@ -90,6 +90,14 @@ export function validateStringParam(
 }
 
 /**
+ * 월드 파라미터 검증
+ */
+export function validateWorldParam(value: string | null): string | null {
+  const allowedWorlds = APP_CONFIG.WORLDS.map((w) => w.id);
+  return validateStringParam(value, allowedWorlds);
+}
+
+/**
  * 카테고리 파라미터 검증
  */
 export function validateCategoryParam(value: string | null): string | null {
@@ -98,25 +106,25 @@ export function validateCategoryParam(value: string | null): string | null {
 }
 
 /**
- * 서브토픽 파라미터 검증
+ * 특정 월드 내의 카테고리 파라미터 검증
  */
-export function validateSubTopicParam(
-  category: string | null,
-  subTopic: string | null
+export function validateCategoryInWorldParam(
+  world: string | null,
+  category: string | null
 ): string | null {
-  if (!category || !subTopic) {
+  if (!world || !category) {
     return null;
   }
 
-  const categoryKey = category as keyof typeof APP_CONFIG.SUB_TOPICS;
-  const subTopics = APP_CONFIG.SUB_TOPICS[categoryKey];
-
-  if (!subTopics) {
+  // 월드 존재 여부 확인
+  const allowedWorlds = APP_CONFIG.WORLDS.map((w) => w.id) as string[];
+  if (!allowedWorlds.includes(world)) {
     return null;
   }
 
-  const allowedSubTopics = subTopics.map((sub) => sub.id);
-  return validateStringParam(subTopic, allowedSubTopics);
+  // 카테고리 존재 여부 확인
+  const allowedCategories = APP_CONFIG.CATEGORIES.map((cat) => cat.id);
+  return validateStringParam(category, allowedCategories);
 }
 
 /**
