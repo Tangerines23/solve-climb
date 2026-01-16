@@ -131,6 +131,7 @@ export function LevelSelectPage() {
   return (
     <div
       className="level-select-page"
+      data-world={worldParam || 'World1'}
       ref={scrollContainerRef}
       style={{
         opacity: isReady ? 1 : 0,

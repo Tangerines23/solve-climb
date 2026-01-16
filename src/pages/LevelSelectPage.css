@@ -4,18 +4,37 @@
   left: 0;
   right: 0;
   bottom: 0;
-  background-color: transparent;
+  background-color: #1a1a1a;
+  /* Fallback */
   overflow-y: auto;
   overflow-x: auto;
-  /* min-width로 인한 가로 스크롤 허용 */
   -webkit-overflow-scrolling: touch;
   overscroll-behavior-y: contain;
   touch-action: pan-y;
-  /* [중요] 초기화면에서는 부드러운 스크롤을 끕니다. */
-  /* 만약 'smooth'로 되어 있다면 'auto'로 바꾸거나 지우세요. */
   scroll-behavior: auto;
-  /* 극단적으로 좁은 화면(Galaxy Fold 등)에서 UI가 깨지는 것을 방지 */
   min-width: 320px;
+  transition: background 0.5s ease;
+}
+
+/* World Themes */
+.level-select-page[data-world="World1"] {
+  background: linear-gradient(to bottom, #065f46, #064e3b, #022c22);
+  /* Green/Grass */
+}
+
+.level-select-page[data-world="World2"] {
+  background: linear-gradient(to bottom, #92400e, #78350f, #451a03);
+  /* Desert/Ancient */
+}
+
+.level-select-page[data-world="World3"] {
+  background: linear-gradient(to bottom, #0e7490, #155e75, #083344);
+  /* Sea/Ice */
+}
+
+.level-select-page[data-world="World4"] {
+  background: linear-gradient(to bottom, #581c87, #3b0764, #000000);
+  /* Future/Space */
 }
 
 /* 상단 헤더 */

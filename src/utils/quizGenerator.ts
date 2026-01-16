@@ -1,34 +1,186 @@
-// 문제 생성 유틸리티
-import { Category, Topic, QuizQuestion, Difficulty } from '../types/quiz';
+import { Category, Topic, QuizQuestion, Difficulty, World } from '../types/quiz';
 import { generateRandomNumber } from './math';
-import { generateJapaneseQuestion } from './japanese';
 import { generateLogicProblem } from './LogicProblemGenerator';
+import { generateProblem } from './MathProblemGenerator';
+import { generateEquation } from './EquationProblemGenerator';
 import { NUMBER_RANGE_BY_DIFFICULTY } from '../constants/game';
 
 /**
- * 카테고리와 분야에 따라 문제를 생성합니다.
+ * 카테고리와 월드, 레벨에 따라 문제를 생성합니다.
  */
 export function generateQuestion(
+  world: World,
   category: Category,
-  topic: Topic,
+  level: number,
+  difficulty: Difficulty
+): QuizQuestion {
+  switch (world) {
+    case 'World1':
+      return generateWorld1Question(category, level, difficulty);
+    case 'World2':
+      return generateWorld2Question(category, level, difficulty);
+    case 'World3':
+      return generateWorld3Question(category, level, difficulty);
+    case 'World4':
+      return generateWorld4Question(category, level, difficulty);
+    default:
+      return generateWorld1Question(category, level, difficulty);
+  }
+}
+
+/**
+ * World 1: 수와 대수
+ */
+function generateWorld1Question(
+  category: Category,
+  level: number,
   difficulty: Difficulty
 ): QuizQuestion {
   switch (category) {
     case '기초':
-      return generateMathQuestion(topic, difficulty);
+      // 기존 MathProblemGenerator 활용 (레벨 기반)
+      try {
+        const problem = generateProblem(level);
+        return {
+          question: problem.expression,
+          answer: problem.answer,
+        };
+      } catch (e) {
+        return generateMathQuestion('덧셈', difficulty);
+      }
     case '대수':
-      return generateMathQuestion('equations', difficulty);
+      // 기존 EquationProblemGenerator 활용
+      try {
+        const equation = generateEquation(level);
+        return {
+          question: equation.question,
+          answer: equation.x,
+        };
+      } catch (e) {
+        return generateEquationQuestion(difficulty);
+      }
     case '논리':
-      return generateLogicQuestion(topic, difficulty);
+      // 기존 로직 유지 (Topic 기반 폴백 대응)
+      return generateLogicQuestion(`World1-논리` as Topic, difficulty);
     case '심화':
-      // 심화는 현재 대수 또는 심화 수학 문제로 처리
-      return generateMathQuestion('calculus', difficulty);
+      return generateCalculusQuestion(difficulty);
     default:
-      // 기존 하위 호환성 유지 (문자열인 경우)
-      if (category === ('수학' as any)) return generateMathQuestion(topic, difficulty);
-      if (category === ('언어' as any)) return generateLanguageQuestion(topic, difficulty);
       return generateMathQuestion('덧셈', difficulty);
   }
+}
+
+/**
+ * World 2: 도형과 공간
+ */
+function generateWorld2Question(
+  category: Category,
+  _level: number,
+  difficulty: Difficulty
+): QuizQuestion {
+  switch (category) {
+    case '기초':
+      return generateGeometryBasicQuestion(difficulty);
+    case '논리':
+      return { question: '정사각형의 대칭축은 몇 개인가?', answer: 4 };
+    default:
+      return { question: '도형 문제 준비 중...', answer: 0 };
+  }
+}
+
+/**
+ * World 3: 확률과 통계
+ */
+function generateWorld3Question(
+  category: Category,
+  _level: number,
+  difficulty: Difficulty
+): QuizQuestion {
+  switch (category) {
+    case '기초':
+      return generateStatsBasicQuestion(difficulty);
+    default:
+      return { question: '통계 문제 준비 중...', answer: 0 };
+  }
+}
+
+/**
+ * World 4: 공학 및 응용
+ */
+function generateWorld4Question(
+  category: Category,
+  _level: number,
+  difficulty: Difficulty
+): QuizQuestion {
+  switch (category) {
+    case '기초':
+      return generateCSBasicQuestion(difficulty);
+    case '논리':
+      return generateLogicGateQuestion(difficulty);
+    default:
+      return { question: '공학 문제 준비 중...', answer: 0 };
+  }
+}
+
+/**
+ * World 2: 도형 기초
+ */
+function generateGeometryBasicQuestion(_difficulty: Difficulty): QuizQuestion {
+  const problems = [
+    { q: '정삼각형의 한 내각의 크기는? (도)', a: 60 },
+    { q: '정사각형의 네 내각의 합은? (도)', a: 360 },
+    { q: '오각형의 변의 개수는?', a: 5 },
+    { q: '원주율(π)의 근삿값은? (소수점 둘째)', a: 3.14 },
+    { q: '반지름이 5인 원의 지름은?', a: 10 },
+  ];
+  const selected = problems[Math.floor(Math.random() * problems.length)];
+  return { question: selected.q, answer: selected.a };
+}
+
+/**
+ * World 3: 통계 기초
+ */
+function generateStatsBasicQuestion(_difficulty: Difficulty): QuizQuestion {
+  const n1 = generateRandomNumber('easy');
+  const n2 = generateRandomNumber('easy');
+  const n3 = generateRandomNumber('easy');
+  const sum = n1 + n2 + n3;
+
+  const modes = [
+    { q: `${n1}, ${n2}, ${n3}의 평균은?`, a: Number((sum / 3).toFixed(0)) },
+    { q: '동전 2개를 동시에 던질 때 나오는 경우의 수는?', a: 4 },
+    { q: '주사위 1개를 던질 때 짝수가 나올 경우의 수는?', a: 3 },
+  ];
+
+  const selected = modes[Math.floor(Math.random() * modes.length)];
+  return { question: selected.q, answer: selected.a };
+}
+
+/**
+ * World 4: 공학 기초 (진법 변환)
+ */
+function generateCSBasicQuestion(_difficulty: Difficulty): QuizQuestion {
+  const num = Math.floor(Math.random() * 15) + 1; // 1~15
+  const modes = [
+    { q: `10진수 ${num}을(를) 2진수로 바꾸면?`, a: num.toString(2) },
+    { q: `2진수 ${num.toString(2)}을(를) 10진수로 바꾸면?`, a: num },
+  ];
+  const selected = modes[Math.floor(Math.random() * modes.length)];
+  return { question: selected.q, answer: selected.a };
+}
+
+/**
+ * World 4: 논리 게이트
+ */
+function generateLogicGateQuestion(_difficulty: Difficulty): QuizQuestion {
+  const a = Math.random() > 0.5 ? 1 : 0;
+  const b = Math.random() > 0.5 ? 1 : 0;
+  const gates = [
+    { q: `${a} AND ${b} 의 값은?`, a: a && b },
+    { q: `${a} OR ${b} 의 값은?`, a: a || b },
+    { q: `NOT ${a} 의 값은?`, a: a ? 0 : 1 },
+  ];
+  const selected = gates[Math.floor(Math.random() * gates.length)];
+  return { question: selected.q, answer: selected.a };
 }
 
 /**
@@ -129,32 +281,6 @@ function generateMathQuestion(
 }
 
 /**
- * 언어 문제 생성
- */
-function generateLanguageQuestion(topic: Topic, difficulty: Difficulty): QuizQuestion {
-  // 일본어 퀴즈 처리 (topic이 'japanese'인 경우)
-  if (typeof topic === 'string' && (topic as string).includes('일본어')) {
-    const { hiragana, romaji } = generateJapaneseQuestion(difficulty);
-    return {
-      question: hiragana,
-      answer: romaji,
-    };
-  }
-
-  // 언어 타입-세부분야 형식 (예: "한글-글자", "일본어-문자")
-  if (typeof topic === 'string' && topic.includes('-')) {
-    const [languageType, subTopic] = topic.split('-');
-
-    // 일본어인 경우
-    if (languageType === '일본어' || languageType === 'japanese') {
-      const { hiragana, romaji } = generateJapaneseQuestion(difficulty);
-      return {
-        question: hiragana,
-        answer: romaji,
-      };
-    }
-
-    // 임시로 간단한 문제 생성 (추후 확장)
     return {
       question: `${languageType} ${subTopic} 문제 (개발 중)`,
       answer: 0,

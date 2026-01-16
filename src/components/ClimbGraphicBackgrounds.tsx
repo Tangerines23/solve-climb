@@ -19,16 +19,8 @@ interface BackgroundProps {
 
 // [수정] 네모 블록 모양 (기호 제거됨)
 const BlockShape = ({ type }: { type: 'near' | 'mid' | 'far' }) => {
-  let fill = '#334155'; // near
-  let opacity = 1;
-
-  if (type === 'mid') {
-    fill = '#64748B';
-    opacity = 0.8;
-  } else if (type === 'far') {
-    fill = '#94A3B8';
-    opacity = 0.5;
-  }
+  const fill = `var(--ground-color-${type})`;
+  const opacity = `var(--ground-opacity-${type})`;
 
   return (
     <svg viewBox="0 0 100 100" width="100%" height="100%" style={{ overflow: 'visible' }}>
@@ -37,7 +29,7 @@ const BlockShape = ({ type }: { type: 'near' | 'mid' | 'far' }) => {
         y="0"
         width="100"
         height="100"
-        rx="12" // 둥근 모서리
+        rx="12"
         fill={fill}
         fillOpacity={opacity}
       />
@@ -47,23 +39,11 @@ const BlockShape = ({ type }: { type: 'near' | 'mid' | 'far' }) => {
 
 // [신규] 떠다니는 기호 모양
 const SymbolShape = ({ symbol, type }: { symbol: string; type: 'near' | 'mid' | 'far' }) => {
-  // 기호 색상: 블록과 배경(하늘색)과 어울리는 색상
-  // 블록 색상: near: #334155, mid: #64748B, far: #94A3B8
-  // 하늘색 계열과 블록 색상을 조화롭게 섞은 톤
-  let color = '#0EA5E9'; // near: 밝은 하늘색 (sky-500)
-  let opacity = 0.85;
-
-  if (type === 'mid') {
-    color = '#38BDF8'; // mid: 하늘색 (sky-400)
-    opacity = 0.7;
-  } else if (type === 'far') {
-    color = '#7DD3FC'; // far: 연한 하늘색 (sky-300)
-    opacity = 0.5;
-  }
+  const color = `var(--symbol-color-${type})`;
+  const opacity = `var(--symbol-opacity-${type})`;
 
   return (
     <svg viewBox="0 0 100 100" width="100%" height="100%" style={{ overflow: 'visible' }}>
-      {/* 텍스트 그림자 효과로 입체감 추가 */}
       <defs>
         <filter id="symbol-shadow">
           <feDropShadow dx="2" dy="2" stdDeviation="2" floodColor="rgba(0,0,0,0.2)" />

@@ -1,9 +1,7 @@
 // 문제 생성 로직을 관리하는 커스텀 훅
 import { useCallback, useMemo } from 'react';
-import { Category, Topic, QuizQuestion, Difficulty, GameMode, World } from '../types/quiz';
-import { generateProblem } from '../utils/MathProblemGenerator';
+import { Category, QuizQuestion, Difficulty, GameMode, World } from '../types/quiz';
 import { generateQuestion } from '../utils/quizGenerator';
-import { generateEquation } from '../utils/EquationProblemGenerator';
 import { SURVIVAL_CONFIG } from '../constants/game';
 
 interface UseQuestionGeneratorParams {
@@ -60,92 +58,38 @@ export function useQuestionGenerator({
   }, [gameMode, levelParam, totalQuestions]);
 
   const generateNewQuestion = useCallback(() => {
-    console.log('generateNewQuestion params:', { worldParam, categoryParam, levelParam });
+    // 1. 월드/카테고리/레벨 결정 (파라미터 우선, 없으면 스토어 값 사용)
+    const targetWorld = (worldParam || world) as World;
+    const targetCategory = (categoryParam || category) as Category;
+    const targetLevel = gameMode === 'survival' ? effectiveLevel : (levelParam || 1);
 
-    if (worldParam && categoryParam) {
-      const level = gameMode === 'survival' ? effectiveLevel : (levelParam || 1);
-
-      setQuestionAnimation('fade-out');
-      setTimeout(() => {
-        try {
-          let newQuestion: QuizQuestion | null = null;
-
-          // World 1 매핑 로직
-          if (worldParam === 'World1') {
-            if (categoryParam === '기초') {
-              // 사칙연산
-              const problem = generateProblem(level);
-              newQuestion = {
-                question: problem.expression,
-                answer: problem.answer,
-              };
-            } else if (categoryParam === '대수') {
-              // 방정식
-              const equation = generateEquation(level);
-              newQuestion = {
-                question: equation.question,
-                answer: equation.x,
-              };
-            } else {
-              // 논리, 심화 등 -> 기존 생성기 사용 (Topic 형식: World-Category)
-              const topic = `${worldParam}-${categoryParam}` as Topic;
-              newQuestion = generateQuestion(categoryParam as Category, topic, difficulty);
-            }
-          } else {
-            // 다른 월드 추후 구현 (기본적으로 덧셈 폴백)
-            const topic = `World1-기초` as Topic;
-            newQuestion = generateQuestion('기초', topic, difficulty);
-          }
-
-          if (newQuestion) {
-            const questionId = crypto.randomUUID();
-            setCurrentQuestion(newQuestion);
-            if (onQuestionGenerated) {
-              onQuestionGenerated(newQuestion, questionId);
-            }
-          }
-        } catch (e) {
-          console.error('Failed to generate question:', e);
-          const fallbackTopic = `World1-기초` as Topic;
-          const fallbackQuestion = generateQuestion('기초', fallbackTopic, difficulty);
-          setCurrentQuestion(fallbackQuestion);
-        }
-
-        setAnswerInput('');
-        setDisplayValue('');
-        setIsError(false);
-        setShowFlash(false);
-        setQuestionAnimation('fade-in');
-
-        if (gameMode === 'survival') {
-          setQuestionKey((prev) => prev + 1);
-          setQuestionStartTime(Date.now());
-        }
-
-        if (useSystemKeyboard && inputRef.current) {
-          setTimeout(() => {
-            inputRef.current?.focus();
-          }, 200);
-        }
-      }, 150);
+    if (!targetWorld || !targetCategory) {
+      console.warn('Missing world or category for question generation');
       return;
     }
 
-    // 파라미터가 없는 경우 스토어 값 사용
-    if (!category || !world) return;
-
     setQuestionAnimation('fade-out');
     setTimeout(() => {
-      const topic = `${world}-${category}` as Topic;
-      const newQuestion = generateQuestion(category, topic, difficulty);
-      const questionId = crypto.randomUUID();
-      setCurrentQuestion(newQuestion);
-      if (onQuestionGenerated) {
-        onQuestionGenerated(newQuestion, questionId);
+      try {
+        const newQuestion = generateQuestion(targetWorld, targetCategory, targetLevel, difficulty);
+
+        if (newQuestion) {
+          const questionId = crypto.randomUUID();
+          setCurrentQuestion(newQuestion);
+          if (onQuestionGenerated) {
+            onQuestionGenerated(newQuestion, questionId);
+          }
+        }
+      } catch (e) {
+        console.error('Failed to generate question:', e);
+        const fallbackQuestion = generateQuestion('World1', '기초', 1, difficulty);
+        setCurrentQuestion(fallbackQuestion);
       }
+
       setAnswerInput('');
       setDisplayValue('');
       setIsError(false);
+      setShowFlash(false);
       setQuestionAnimation('fade-in');
 
       if (gameMode === 'survival') {

@@ -3,8 +3,62 @@
 .level-map-container {
   position: relative;
   width: 100%;
-  /* min-height는 인라인 스타일로 동적으로 설정됨 */
   overflow: visible;
+
+  /* Default Variables (World 1 - Grass) */
+  --ground-color-near: #334155;
+  --ground-color-mid: #64748B;
+  --ground-color-far: #94A3B8;
+  --ground-opacity-near: 1;
+  --ground-opacity-mid: 0.8;
+  --ground-opacity-far: 0.5;
+
+  --symbol-color-near: #0EA5E9;
+  --symbol-color-mid: #38BDF8;
+  --symbol-color-far: #7DD3FC;
+  --symbol-opacity-near: 0.85;
+  --symbol-opacity-mid: 0.7;
+  --symbol-opacity-far: 0.5;
+}
+
+/* World 1 Theme (Grassland) - Greenish */
+.level-map-container[data-world="World1"] {
+  --ground-color-near: #064e3b;
+  --ground-color-mid: #065f46;
+  --ground-color-far: #059669;
+  --symbol-color-near: #34d399;
+  --symbol-color-mid: #6ee7b7;
+  --symbol-color-far: #a7f3d0;
+}
+
+/* World 2 Theme (Desert) - Amber/Sand */
+.level-map-container[data-world="World2"] {
+  --ground-color-near: #451a03;
+  --ground-color-mid: #78350f;
+  --ground-color-far: #92400e;
+  --symbol-color-near: #f59e0b;
+  --symbol-color-mid: #fbbf24;
+  --symbol-color-far: #fcd34d;
+}
+
+/* World 3 Theme (Ice/Sea) - Blue/Cyan */
+.level-map-container[data-world="World3"] {
+  --ground-color-near: #083344;
+  --ground-color-mid: #155e75;
+  --ground-color-far: #0e7490;
+  --symbol-color-near: #22d3ee;
+  --symbol-color-mid: #67e8f9;
+  --symbol-color-far: #a5f3fc;
+}
+
+/* World 4 Theme (Space) - Purple/Dark */
+.level-map-container[data-world="World4"] {
+  --ground-color-near: #3b0764;
+  --ground-color-mid: #581c87;
+  --ground-color-far: #7e22ce;
+  --symbol-color-near: #c084fc;
+  --symbol-color-mid: #d8b4fe;
+  --symbol-color-far: #f3e8ff;
 }
 
 /* 하늘 그라데이션 배경 */
@@ -14,13 +68,11 @@
   left: 0;
   right: 0;
   bottom: 0;
-  background: linear-gradient(
-    180deg,
-    var(--color-blue-400) 0%,
-    var(--color-indigo-500) 30%,
-    var(--color-tier-mid) 60%,
-    var(--color-primary-light) 100%
-  );
+  background: linear-gradient(180deg,
+      var(--color-blue-400) 0%,
+      var(--color-indigo-500) 30%,
+      var(--color-tier-mid) 60%,
+      var(--color-primary-light) 100%);
   z-index: 0;
   pointer-events: none;
   transition: background 1s ease-in-out;
@@ -218,6 +270,7 @@
 }
 
 @keyframes pulse {
+
   0%,
   100% {
     box-shadow:
@@ -318,6 +371,7 @@
 }
 
 @keyframes symbolFloat {
+
   0%,
   100% {
     transform: translateY(0);
@@ -329,6 +383,7 @@
 }
 
 @keyframes variableFloat {
+
   0%,
   100% {
     transform: translate(-50%, -50%) translateY(0);
@@ -372,6 +427,7 @@
 }
 
 @keyframes symbolGlow {
+
   0%,
   100% {
     opacity: 0.6;

@@ -99,7 +99,6 @@ export function ClimbGraphic({
       points.push({ x, y });
 
       const isCleared = isLevelCleared(world, category, levels[i].level);
-      const isCurrent = isAdmin ? false : levels[i].level === nextLevel;
       const status: 'locked' | 'current' | 'cleared' = isCleared
         ? 'cleared'
         : (levels[i].level === nextLevel || (isAdmin && !isCleared))
@@ -157,41 +156,50 @@ export function ClimbGraphic({
     }
   }, []);
 
-  // 카테고리별 배경 매핑
+  // 카테고리 및 월드별 배경 매핑
   const stageConfig = useMemo(() => {
+    // 월드별 기본 스카이 그라데이션
+    const worldSkyGradients: Record<World, string> = {
+      'World1': 'linear-gradient(180deg, #065f46 0%, #064e3b 100%)',
+      'World2': 'linear-gradient(180deg, #92400e 0%, #451a03 100%)',
+      'World3': 'linear-gradient(180deg, #0e7490 0%, #083344 100%)',
+      'World4': 'linear-gradient(180deg, #581c87 0%, #000000 100%)',
+    };
+
     const configs: Record<string, StageBackgroundConfig> = {
       '기초': {
-        skyGradient: 'linear-gradient(180deg, #E8F4F8 0%, #F0F8FF 50%, #FFFFFF 100%)',
-        mainColor: 'var(--color-slate-800)',
-        secondaryColor: 'var(--color-slate-700)',
-        accentColor: 'var(--color-slate-600)',
+        skyGradient: worldSkyGradients[world] || worldSkyGradients['World1'],
+        mainColor: 'var(--ground-color-near)',
+        secondaryColor: 'var(--ground-color-mid)',
+        accentColor: 'var(--symbol-color-near)',
       },
       '대수': {
-        skyGradient: 'linear-gradient(180deg, #064E3B 0%, #065F46 15%, #0891B2 40%, #06B6D4 65%, #22D3EE 85%, #67E8F9 100%)',
-        mainColor: '#064E3B',
-        secondaryColor: '#0891B2',
-        accentColor: '#22D3EE',
+        skyGradient: worldSkyGradients[world] || 'linear-gradient(180deg, #064E3B 0%, #065F46 15%, #0891B2 40%, #06B6D4 65%, #22D3EE 85%, #67E8F9 100%)',
+        mainColor: 'var(--ground-color-near)',
+        secondaryColor: 'var(--ground-color-mid)',
+        accentColor: 'var(--symbol-color-near)',
       },
       '논리': {
-        skyGradient: 'linear-gradient(180deg, #4B0082 0%, #6A5ACD 30%, #9370DB 60%, #BA55D3 100%)',
-        mainColor: '#4B0082',
-        secondaryColor: '#6A5ACD',
-        accentColor: '#9370DB',
+        skyGradient: worldSkyGradients[world] || 'linear-gradient(180deg, #4B0082 0%, #6A5ACD 30%, #9370DB 60%, #BA55D3 100%)',
+        mainColor: 'var(--ground-color-near)',
+        secondaryColor: 'var(--ground-color-mid)',
+        accentColor: 'var(--symbol-color-near)',
       },
       '심화': {
-        skyGradient: 'linear-gradient(180deg, #000428 0%, #004e92 30%, #1a1a2e 60%, #16213e 100%)',
-        mainColor: '#000428',
-        secondaryColor: '#004e92',
-        accentColor: '#00D4FF',
+        skyGradient: worldSkyGradients[world] || 'linear-gradient(180deg, #000428 0%, #004e92 30%, #1a1a2e 60%, #16213e 100%)',
+        mainColor: 'var(--ground-color-near)',
+        secondaryColor: 'var(--ground-color-mid)',
+        accentColor: 'var(--symbol-color-near)',
       },
     };
     return configs[category] || configs['기초'];
-  }, [category]);
+  }, [category, world]);
 
   return (
     <div
       className="level-map-container"
       data-stage={category}
+      data-world={world}
       style={
         {
           '--category-color': categoryColor,

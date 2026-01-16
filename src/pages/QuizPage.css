@@ -30,6 +30,7 @@
 
 /* Correct answer flash */
 @keyframes correct-flash-animation {
+
   0%,
   100% {
     border: 2px solid transparent;
@@ -47,6 +48,7 @@
 
 /* Incorrect answer shake on CARD */
 @keyframes wrong-shake-animation {
+
   0%,
   100% {
     transform: translateX(0);
@@ -116,8 +118,24 @@
   padding: 0;
   box-sizing: border-box;
   overflow: hidden;
-  /* 풀스크린 구현: Dynamic Island, 노치 등 안전 영역 고려 */
-  /* 필요시 padding-top: env(safe-area-inset-top) 추가 가능 */
+  transition: background 0.5s ease;
+}
+
+/* World Themes */
+.quiz-page[data-world="World1"] {
+  background: linear-gradient(to bottom, #065f46, #064e3b, #022c22);
+}
+
+.quiz-page[data-world="World2"] {
+  background: linear-gradient(to bottom, #92400e, #78350f, #451a03);
+}
+
+.quiz-page[data-world="World3"] {
+  background: linear-gradient(to bottom, #0e7490, #155e75, #083344);
+}
+
+.quiz-page[data-world="World4"] {
+  background: linear-gradient(to bottom, #581c87, #3b0764, #000000);
 }
 
 /* 상단 헤더 (뒤로가기 + 타이머) */
@@ -408,6 +426,7 @@
 }
 
 @keyframes caret-blink {
+
   0%,
   100% {
     opacity: 1;
@@ -606,6 +625,7 @@
 }
 
 @keyframes item-pulse {
+
   0%,
   100% {
     transform: scale(1);
@@ -702,7 +722,7 @@
   /* Let clicks pass through to card if needed, but buttons need pointer-events: auto */
 }
 
-.altimeter-hud > * {
+.altimeter-hud>* {
   pointer-events: auto;
 }
 

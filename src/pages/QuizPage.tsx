@@ -363,7 +363,10 @@ export function QuizPage() {
   if (isPreview) return <QuizPreview categoryParam={categoryParam || ''} subParam={worldParam || ''} levelParam={levelParam} category={category || '기초'} topic={`${worldParam}-${categoryParam}` as any} keyboardType={previewKeyboardType} navigate={navigate} useSystemKeyboard={useSystemKeyboard} />;
 
   return (
-    <div className="quiz-page">
+    <div
+      className="quiz-page"
+      data-world={worldParam || world || 'World1'}
+    >
       <QuizCard
         currentQuestion={currentQuestion} answerInput={answerInput} displayValue={displayValue}
         category={category} topic={`${worldParam}-${categoryParam}`} categoryParam={categoryParam} subParam={worldParam} levelParam={levelParam}
