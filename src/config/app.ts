@@ -191,5 +191,23 @@ export const APP_CONFIG = {
         { level: 10, name: '수학의 끝', description: '통합 공학적 개념' },
       ],
     },
+    World2: {
+      기초: [{ level: 1, name: '기하학의 시작', description: '점과 선' }],
+      논리: [],
+      대수: [],
+      심화: [],
+    },
+    World3: {
+      기초: [{ level: 1, name: '데이터 읽기', description: '표와 그래프' }],
+      논리: [],
+      대수: [],
+      심화: [],
+    },
+    World4: {
+      기초: [{ level: 1, name: '알고리즘 기초', description: '순서도 이해하기' }],
+      논리: [],
+      대수: [],
+      심화: [],
+    },
   },
 } as const;

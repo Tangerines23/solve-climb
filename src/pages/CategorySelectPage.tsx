@@ -35,8 +35,11 @@ export function CategorySelectPage() {
     const categories = APP_CONFIG.CATEGORIES;
 
     const handleCategoryClick = (categoryId: string) => {
-        // level-select 페이지로 이동 (mountain, world=World1, category 파라미터 전달)
-        navigate(`/level-select?mountain=${mountainParam}&world=World1&category=${categoryId}`);
+        // 마지막으로 플레이한 월드 가져오기 (기본값 World1)
+        const lastWorld = localStorage.getItem('lastPlayedWorld') || 'World1';
+
+        // level-select 페이지로 이동 (mountain, world, category 파라미터 전달)
+        navigate(`/level-select?mountain=${mountainParam}&world=${lastWorld}&category=${categoryId}`);
     };
 
     return (

@@ -17,9 +17,16 @@ vi.mock('react-router-dom', async () => {
   return {
     ...actual,
     useNavigate: () => vi.fn(),
-    useSearchParams: () => [new URLSearchParams()],
+    useSearchParams: () => [new URLSearchParams('?mountain=math&world=World1&category=기초')],
   };
 });
+
+// Mock localStorage
+const localStorageMock = {
+  getItem: vi.fn(),
+  setItem: vi.fn(),
+};
+Object.defineProperty(window, 'localStorage', { value: localStorageMock });
 
 describe('LevelSelectPage', () => {
   beforeEach(() => {

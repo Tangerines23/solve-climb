@@ -114,6 +114,20 @@ export function LevelSelectPage() {
     navigate(`/quiz?world=${worldParam}&category=${categoryParam}&level=1&mode=survival`);
   };
 
+  // 월드 전환 핸들러
+  const handleWorldChange = (direction: 'next' | 'prev') => {
+    const worldIds = APP_CONFIG.WORLDS.map((w) => w.id);
+    const currentIndex = worldIds.indexOf(worldParam as any);
+    let nextIndex = direction === 'next' ? currentIndex + 1 : currentIndex - 1;
+
+    if (nextIndex >= worldIds.length) nextIndex = 0;
+    if (nextIndex < 0) nextIndex = worldIds.length - 1;
+
+    const nextWorld = worldIds[nextIndex];
+    localStorage.setItem('lastPlayedWorld', nextWorld);
+    navigate(`/level-select?mountain=${mountainParam}&world=${nextWorld}&category=${categoryParam}`);
+  };
+
   return (
     <div
       className="level-select-page"
@@ -133,7 +147,19 @@ export function LevelSelectPage() {
         >
           ←
         </button>
-        <h1 className="level-select-title">{categoryInfo.name}</h1>
+        <div className="world-switcher">
+          <button className="world-switch-btn prev" onClick={() => handleWorldChange('prev')}>
+            ‹
+          </button>
+          <div className="world-info">
+            <span className="world-label">{worldParam}</span>
+            <h1 className="world-name">{worldName}</h1>
+          </div>
+          <button className="world-switch-btn next" onClick={() => handleWorldChange('next')}>
+            ›
+          </button>
+        </div>
+        <div className="header-right-placeholder" />
       </header>
 
       <div className="level-select-graphic-container">
