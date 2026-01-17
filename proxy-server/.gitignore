@@ -1,0 +1,16 @@
+# 인증서 파일 (보안)
+cert/*.crt
+cert/*.key
+cert/*.pem
+
+# Node modules
+node_modules/
+
+# 환경 변수
+.env
+.env.local
+
+# 로그
+*.log
+npm-debug.log*
+

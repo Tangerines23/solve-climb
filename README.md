@@ -6,7 +6,9 @@
 
 ![CI](https://github.com/Tangerines23/solve-climb/workflows/CI/badge.svg)
 ![Security](https://img.shields.io/badge/security-0%20vulnerabilities-brightgreen)
-![Tests](https://img.shields.io/badge/tests-44%20passed-success)
+![Tests](https://img.shields.io/badge/tests-1379%2F1382%20passed-brightgreen)
+![Coverage](https://img.shields.io/badge/coverage-69%25-yellow)
+![Test Files](https://img.shields.io/badge/test%20files-120-blue)
 
 ## 주요 기능
 

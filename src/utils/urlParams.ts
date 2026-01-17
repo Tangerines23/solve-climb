@@ -128,6 +128,33 @@ export function validateCategoryInWorldParam(
 }
 
 /**
+ * 서브토픽 파라미터 검증
+ */
+export function validateSubTopicParam(
+  category: string | null,
+  subTopic: string | null
+): string | null {
+  if (!category || !subTopic) {
+    return null;
+  }
+
+  // 카테고리가 유효한지 확인
+  const allowedCategories = APP_CONFIG.CATEGORIES.map((cat) => cat.id);
+  if (!allowedCategories.includes(category)) {
+    return null;
+  }
+
+  // 해당 카테고리의 서브토픽 목록 확인
+  const subTopics = (APP_CONFIG.SUB_TOPICS as any)[category];
+  if (!subTopics || !Array.isArray(subTopics)) {
+    return null;
+  }
+
+  const allowedSubTopics = subTopics.map((s: any) => s.id) as string[];
+  return validateStringParam(subTopic, allowedSubTopics);
+}
+
+/**
  * 게임 모드 파라미터 검증
  */
 export function validateModeParam(value: string | null): 'time-attack' | 'survival' | null {

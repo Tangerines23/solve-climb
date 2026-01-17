@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { render, screen, waitFor } from '@testing-library/react';
+import { render, screen, act } from '@testing-library/react';
 import { Toast } from '../Toast';
 
 // Mock createPortal
@@ -32,11 +32,13 @@ describe('Toast', () => {
     expect(screen.getByText('✅')).toBeInTheDocument();
   });
 
-  it('should not auto close when autoClose is false', () => {
+  it('should not auto close when autoClose is false', async () => {
     const onClose = vi.fn();
     render(<Toast message="Test message" isOpen={true} onClose={onClose} autoClose={false} />);
 
-    vi.advanceTimersByTime(5000);
+    await act(async () => {
+      vi.advanceTimersByTime(5000);
+    });
 
     expect(onClose).not.toHaveBeenCalled();
   });
@@ -50,11 +52,15 @@ describe('Toast', () => {
     expect(screen.getByText('Test message')).toBeInTheDocument();
 
     // Advance timers: autoCloseDelay (2000ms) + closing animation (300ms)
-    vi.advanceTimersByTime(2000);
+    await act(async () => {
+      vi.advanceTimersByTime(2000);
+    });
     // closing 단계로 전환됨
-    vi.advanceTimersByTime(300);
+    await act(async () => {
+      vi.advanceTimersByTime(300);
+    });
     // onClose 호출됨
-    
+
     expect(onClose).toHaveBeenCalled();
   });
 
@@ -64,13 +70,19 @@ describe('Toast', () => {
       <Toast message="Test message" isOpen={true} onClose={onClose} autoClose={true} autoCloseDelay={5000} />
     );
 
-    vi.advanceTimersByTime(3000);
+    await act(async () => {
+      vi.advanceTimersByTime(3000);
+    });
     expect(onClose).not.toHaveBeenCalled();
 
     // Advance remaining delay + closing animation
-    vi.advanceTimersByTime(2000);
-    vi.advanceTimersByTime(300);
-    
+    await act(async () => {
+      vi.advanceTimersByTime(2000);
+    });
+    await act(async () => {
+      vi.advanceTimersByTime(300);
+    });
+
     expect(onClose).toHaveBeenCalled();
   });
 
@@ -85,7 +97,9 @@ describe('Toast', () => {
     rerender(<Toast message="Test message" isOpen={false} onClose={onClose} autoClose={false} />);
 
     // isOpen이 false가 되면 closing 애니메이션 시작 (300ms)
-    vi.advanceTimersByTime(300);
+    await act(async () => {
+      vi.advanceTimersByTime(300);
+    });
 
     // isOpen이 false이고 message가 있으면 null을 반환하므로 렌더링되지 않음
     expect(screen.queryByText('Test message')).not.toBeInTheDocument();

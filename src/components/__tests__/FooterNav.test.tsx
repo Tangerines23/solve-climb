@@ -34,7 +34,7 @@ describe('FooterNav', () => {
     renderFooterNav();
     expect(screen.getByText('홈')).toBeInTheDocument();
     expect(screen.getByText('랭킹')).toBeInTheDocument();
-    expect(screen.getByText('기록')).toBeInTheDocument();
+    expect(screen.getByText('일지')).toBeInTheDocument();
     expect(screen.getByText('마이')).toBeInTheDocument();
   });
 
@@ -56,7 +56,7 @@ describe('FooterNav', () => {
   });
 
   it('should handle home navigation with scroll', () => {
-    const scrollToSpy = vi.spyOn(window, 'scrollTo').mockImplementation(() => {});
+    const scrollToSpy = vi.spyOn(window, 'scrollTo').mockImplementation(() => { });
     mockLocation.pathname = '/ranking';
     renderFooterNav();
 
@@ -70,7 +70,7 @@ describe('FooterNav', () => {
   });
 
   it('should not navigate when already on home page', () => {
-    const scrollToSpy = vi.spyOn(window, 'scrollTo').mockImplementation(() => {});
+    const scrollToSpy = vi.spyOn(window, 'scrollTo').mockImplementation(() => { });
     mockLocation.pathname = '/';
     renderFooterNav();
 
@@ -90,12 +90,12 @@ describe('FooterNav', () => {
     expect(rankingButton).toHaveClass('active');
   });
 
-  it('should mark challenge as active when on challenge page', () => {
-    mockLocation.pathname = '/challenge';
+  it('should mark roadmap as active when on roadmap page', () => {
+    mockLocation.pathname = '/roadmap';
     renderFooterNav();
 
-    const challengeButton = screen.getByText('기록').closest('button');
-    expect(challengeButton).toHaveClass('active');
+    const roadmapButton = screen.getByText('일지').closest('button');
+    expect(roadmapButton).toHaveClass('active');
   });
 
   it('should mark my page as active when on my page', () => {
@@ -116,14 +116,14 @@ describe('FooterNav', () => {
     expect(mockNavigate).toHaveBeenCalledWith('/ranking');
   });
 
-  it('should navigate to challenge when challenge is clicked', () => {
+  it('should navigate to roadmap when roadmap is clicked', () => {
     mockLocation.pathname = '/';
     renderFooterNav();
 
-    const challengeButton = screen.getByText('기록');
-    challengeButton.click();
+    const roadmapButton = screen.getByText('일지');
+    roadmapButton.click();
 
-    expect(mockNavigate).toHaveBeenCalledWith('/challenge');
+    expect(mockNavigate).toHaveBeenCalledWith('/roadmap');
   });
 
   it('should navigate to my page when my is clicked', () => {

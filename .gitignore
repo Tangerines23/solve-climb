@@ -65,4 +65,5 @@ docs/
 *_manual.sql
 check_*.sql
 
-.gitignore
+# Coverage reports
+coverage/

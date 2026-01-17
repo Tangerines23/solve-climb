@@ -1,6 +1,7 @@
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 import path from 'path'
+import { visualizer } from 'rollup-plugin-visualizer'
 
 /// <reference types="vitest" />
 
@@ -11,7 +12,16 @@ export default defineConfig(() => {
 
   return {
     base: './',
-    plugins: [react()],
+    plugins: [
+      react(),
+      // Bundle analyzer (only in analyze mode)
+      process.env.ANALYZE && visualizer({
+        open: true,
+        filename: 'dist/stats.html',
+        gzipSize: true,
+        brotliSize: true,
+      }),
+    ].filter(Boolean),
     resolve: {
       alias: isVercel ? {
         '@apps-in-toss/web-framework': path.resolve(process.cwd(), './src/mocks/web-framework-mock.ts'),
@@ -60,10 +70,19 @@ export default defineConfig(() => {
       maxConcurrency: 5,
       // 테스트 격리 모드 (성능 향상, 단일 테스트 파일 내에서는 격리 유지)
       isolate: true,
+      // Hybrid 실행 전략: localStorage 충돌 파일만 별도 프로세스에서 격리 실행
+      poolMatchGlobs: [
+        // localStorage 전역 Mock 사용 파일들 → forks pool (완전 격리)
+        ['**/storage.test.ts', 'forks'],
+        ['**/debugPresets.test.ts', 'forks'],
+        ['**/debugPresets.error.test.ts', 'forks'],
+        ['**/useHistoryData.test.ts', 'forks'],
+        // 나머지 모든 테스트 → threads pool (병렬 실행, 기본값)
+      ],
       coverage: {
-        provider: 'v8',
-        // 리포트 생성 최적화: 필요한 것만 생성 (text는 필수, html은 상세 분석용)
-        reporter: ['text', 'html'],
+        provider: 'istanbul',  // v8 → istanbul (안정성 우선)
+        // 리포트 생성: text(콘솔), json-summary(CI), lcov(Codecov), html(로컬 분석)
+        reporter: ['text', 'json-summary', 'lcov', 'html'],
         // 커버리지 수집 범위 제한: 테스트 파일과 설정 파일 제외
         exclude: [
           'node_modules/',

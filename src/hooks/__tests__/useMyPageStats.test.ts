@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { renderHook, waitFor } from '@testing-library/react';
+import { renderHook, waitFor, act } from '@testing-library/react';
 import { useMyPageStats } from '../useMyPageStats';
 import { supabase } from '../../utils/supabaseClient';
 import { storage } from '../../utils/storage';
@@ -29,6 +29,14 @@ vi.mock('../../utils/storage', () => ({
   storage: {
     getString: vi.fn(),
   },
+  StorageKeys: {
+    LOCAL_SESSION: 'solve-climb-local-session',
+    DEVICE_ID: 'solve-climb-device-id',
+    PROFILES: (deviceId: string) => `solve-climb-profiles-${deviceId}`,
+    ACTIVE_PROFILE_ID: 'solve-climb-active-profile-id',
+    ADMIN_MODE: 'solve-climb-admin-mode',
+    PROGRESS: (profileId: string) => `solve-climb-progress-${profileId}`,
+  },
 }));
 
 vi.mock('../../utils/safeJsonParse', () => ({
@@ -37,16 +45,30 @@ vi.mock('../../utils/safeJsonParse', () => ({
 
 describe('useMyPageStats', () => {
   beforeEach(() => {
-    vi.clearAllMocks();
-  });
+    vi.resetAllMocks();
 
-  it('should return default stats when no session', async () => {
+    // Default mocks
     vi.mocked(storage.getString).mockReturnValue(null);
+    vi.mocked(parseLocalSession).mockReturnValue(null);
     vi.mocked(supabase.auth.getSession).mockResolvedValue({
       data: { session: null },
       error: null,
-    } as never);
+    } as any);
+    vi.mocked(supabase.auth.onAuthStateChange).mockReturnValue({
+      data: { subscription: { unsubscribe: vi.fn() } },
+    } as any);
+    vi.mocked(supabase.from).mockReturnValue({
+      select: vi.fn(() => ({
+        eq: vi.fn(() => ({
+          single: vi.fn(),
+        })),
+      })),
+    } as any);
+    vi.mocked(supabase.rpc).mockResolvedValue({ data: null, error: null } as any);
+  });
 
+  it('should return default stats when no session', async () => {
+    // defaults are already set in beforeEach
     const { result } = renderHook(() => useMyPageStats());
 
     // Hook이 초기화되는지 확인
@@ -645,7 +667,9 @@ describe('useMyPageStats', () => {
     }, { timeout: 3000 });
 
     // Refetch 호출
-    await result.current.refetch();
+    await act(async () => {
+      await result.current.refetch();
+    });
 
     expect(result.current.stats).toBeTruthy();
   });

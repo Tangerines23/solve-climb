@@ -50,6 +50,7 @@ export function CategoryList() {
               <button
                 className="category-climb-button"
                 disabled={mountain.disabled}
+                data-category-id={mountain.id}
                 onClick={(e) => {
                   e.stopPropagation();
                   handleMountainClick(mountain.id);

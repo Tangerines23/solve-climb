@@ -8,6 +8,7 @@ interface UseQuizGameStateParams {
   mountainParam: string | null;
   worldParam: string | null;
   categoryParam: string | null;
+  subParam: string | null;
   levelParam: number | null;
   modeParam: string | null;
   isExhausted: boolean;
@@ -20,6 +21,7 @@ export function useQuizGameState({
   mountainParam,
   worldParam,
   categoryParam,
+  subParam,
   levelParam,
   modeParam,
   isExhausted,
@@ -41,6 +43,7 @@ export function useQuizGameState({
       if (mountainParam) params.set('mountain', mountainParam);
       if (worldParam) params.set('world', worldParam);
       if (categoryParam) params.set('category', categoryParam);
+      if (subParam) params.set('sub', subParam);
       if (levelParam !== null) params.set('level', levelParam.toString());
       if (modeParam) params.set('mode', modeParam);
       params.set('score', score.toString());
@@ -84,6 +87,7 @@ export function useQuizGameState({
       mountainParam,
       worldParam,
       categoryParam,
+      subParam,
       isExhausted,
       levelParam,
       modeParam,

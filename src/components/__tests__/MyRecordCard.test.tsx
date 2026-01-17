@@ -25,7 +25,7 @@ describe('MyRecordCard', () => {
   });
 
   it('should render loading state initially', () => {
-    render(<MyRecordCard category="math" subTopic="arithmetic" subTopicName="사칙연산" />);
+    render(<MyRecordCard world="math" category="arithmetic" categoryName="사칙연산" />);
     expect(screen.queryByText('사칙연산 최고 기록')).not.toBeInTheDocument();
   });
 
@@ -35,7 +35,7 @@ describe('MyRecordCard', () => {
       survival: 2000,
     });
 
-    render(<MyRecordCard category="math" subTopic="arithmetic" subTopicName="사칙연산" />);
+    render(<MyRecordCard world="math" category="arithmetic" categoryName="사칙연산" />);
 
     vi.advanceTimersByTime(300);
     vi.useRealTimers();
@@ -56,7 +56,7 @@ describe('MyRecordCard', () => {
       survival: null,
     });
 
-    render(<MyRecordCard category="math" subTopic="arithmetic" subTopicName="사칙연산" />);
+    render(<MyRecordCard world="math" category="arithmetic" categoryName="사칙연산" />);
 
     vi.advanceTimersByTime(300);
     vi.useRealTimers();
@@ -75,7 +75,7 @@ describe('MyRecordCard', () => {
       survival: null,
     });
 
-    render(<MyRecordCard category="math" subTopic="arithmetic" subTopicName="사칙연산" />);
+    render(<MyRecordCard world="math" category="arithmetic" categoryName="사칙연산" />);
 
     vi.advanceTimersByTime(300);
     vi.useRealTimers();
@@ -94,7 +94,7 @@ describe('MyRecordCard', () => {
       survival: 3000,
     });
 
-    render(<MyRecordCard category="math" subTopic="arithmetic" subTopicName="사칙연산" />);
+    render(<MyRecordCard world="math" category="arithmetic" categoryName="사칙연산" />);
 
     vi.advanceTimersByTime(300);
     vi.useRealTimers();
@@ -113,7 +113,7 @@ describe('MyRecordCard', () => {
       survival: 9876543,
     });
 
-    render(<MyRecordCard category="math" subTopic="arithmetic" subTopicName="사칙연산" />);
+    render(<MyRecordCard world="math" category="arithmetic" categoryName="사칙연산" />);
 
     vi.advanceTimersByTime(300);
     vi.useRealTimers();

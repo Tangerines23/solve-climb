@@ -7,9 +7,13 @@ import { vibrateMedium, vibrateLong } from '../../utils/haptic';
 import { CLIMB_PER_CORRECT, MAX_POSSIBLE_ANSWER } from '../../constants/game';
 
 // Mock dependencies
-vi.mock('../../stores/useGameStore', () => ({
-  useGameStore: vi.fn(),
-}));
+vi.mock('../../stores/useGameStore', () => {
+  const mockUseGameStore = vi.fn();
+  (mockUseGameStore as any).getState = vi.fn(() => ({ feverLevel: 0 }));
+  return {
+    useGameStore: mockUseGameStore,
+  };
+});
 
 vi.mock('../../utils/haptic', () => ({
   vibrateMedium: vi.fn(),
@@ -43,6 +47,7 @@ describe('useQuizSubmit', () => {
     setIsError: vi.fn(),
     setShowFlash: vi.fn(),
     setShowSlideToast: vi.fn(),
+    setToastValue: vi.fn(),
     setDamagePosition: vi.fn(),
     setAnswerInput: vi.fn(),
     increaseScore: vi.fn(),
@@ -65,6 +70,8 @@ describe('useQuizSubmit', () => {
       isExhausted: false,
       activeItems: [],
       consumeActiveItem: vi.fn(),
+      lives: 3,
+      consumeLife: vi.fn(),
     } as any);
   });
 
@@ -202,6 +209,16 @@ describe('useQuizSubmit', () => {
   });
 
   it('should handle survival mode wrong answer', async () => {
+    vi.mocked(useGameStore).mockReturnValue({
+      incrementCombo: vi.fn(),
+      resetCombo: vi.fn(),
+      isExhausted: false,
+      activeItems: [],
+      consumeActiveItem: vi.fn(),
+      lives: 1,
+      consumeLife: vi.fn(),
+    } as any);
+
     const { result } = renderHook(() =>
       useQuizSubmit({
         ...defaultParams,
@@ -250,6 +267,8 @@ describe('useQuizSubmit', () => {
       isExhausted: false,
       activeItems: ['safety_rope'],
       consumeActiveItem: vi.fn(),
+      lives: 3,
+      consumeLife: vi.fn(),
     } as any);
 
     const onSafetyRopeUsed = vi.fn();
@@ -369,6 +388,8 @@ describe('useQuizSubmit', () => {
       isExhausted: false,
       activeItems: ['flare'],
       consumeActiveItem: vi.fn(),
+      lives: 3,
+      consumeLife: vi.fn(),
     } as any);
 
     const setIsFlarePaused = vi.fn();
@@ -404,6 +425,8 @@ describe('useQuizSubmit', () => {
       isExhausted: true,
       activeItems: [],
       consumeActiveItem: vi.fn(),
+      lives: 3,
+      consumeLife: vi.fn(),
     } as any);
 
     const { result } = renderHook(() => useQuizSubmit(defaultParams));
@@ -720,6 +743,8 @@ describe('useQuizSubmit', () => {
       isExhausted: false,
       activeItems: [],
       consumeActiveItem: vi.fn(),
+      lives: 3,
+      consumeLife: vi.fn(),
     } as any);
 
     const { result } = renderHook(() => useQuizSubmit(defaultParams));
@@ -757,6 +782,8 @@ describe('useQuizSubmit', () => {
       isExhausted: false,
       activeItems: ['safety_rope'],
       consumeActiveItem: vi.fn(),
+      lives: 3,
+      consumeLife: vi.fn(),
     } as any);
 
     const mockEvent = { preventDefault: vi.fn() } as any;
@@ -788,6 +815,8 @@ describe('useQuizSubmit', () => {
       isExhausted: false,
       activeItems: [],
       consumeActiveItem: vi.fn(),
+      lives: 3,
+      consumeLife: vi.fn(),
     } as any);
 
     const mockEvent = { preventDefault: vi.fn() } as any;
@@ -821,6 +850,8 @@ describe('useQuizSubmit', () => {
       isExhausted: false,
       activeItems: [],
       consumeActiveItem: vi.fn(),
+      lives: 3,
+      consumeLife: vi.fn(),
     } as any);
 
     const mockEvent = { preventDefault: vi.fn() } as any;
@@ -838,6 +869,16 @@ describe('useQuizSubmit', () => {
   });
 
   it('should handle survival mode wrong answer without flare', async () => {
+    vi.mocked(useGameStore).mockReturnValue({
+      incrementCombo: vi.fn(),
+      resetCombo: vi.fn(),
+      isExhausted: false,
+      activeItems: [],
+      consumeActiveItem: vi.fn(),
+      lives: 1,
+      consumeLife: vi.fn(),
+    } as any);
+
     const { result } = renderHook(() =>
       useQuizSubmit({
         ...defaultParams,
@@ -845,14 +886,6 @@ describe('useQuizSubmit', () => {
         answerInput: '7',
       })
     );
-
-    vi.mocked(useGameStore).mockReturnValue({
-      incrementCombo: vi.fn(),
-      resetCombo: vi.fn(),
-      isExhausted: false,
-      activeItems: [],
-      consumeActiveItem: vi.fn(),
-    } as any);
 
     const mockEvent = { preventDefault: vi.fn() } as any;
 
@@ -1014,6 +1047,8 @@ describe('useQuizSubmit', () => {
       isExhausted: false,
       activeItems: [],
       consumeActiveItem: vi.fn(),
+      lives: 3,
+      consumeLife: vi.fn(),
     } as any);
 
     const mockEvent = { preventDefault: vi.fn() } as any;
@@ -1049,6 +1084,8 @@ describe('useQuizSubmit', () => {
       isExhausted: false,
       activeItems: [],
       consumeActiveItem: vi.fn(),
+      lives: 3,
+      consumeLife: vi.fn(),
     } as any);
 
     const mockEvent = { preventDefault: vi.fn() } as any;
@@ -1079,6 +1116,8 @@ describe('useQuizSubmit', () => {
       isExhausted: false,
       activeItems: [],
       consumeActiveItem: vi.fn(),
+      lives: 3,
+      consumeLife: vi.fn(),
     } as any);
 
     const mockEvent = { preventDefault: vi.fn() } as any;
@@ -1110,6 +1149,8 @@ describe('useQuizSubmit', () => {
       isExhausted: false,
       activeItems: [],
       consumeActiveItem: vi.fn(),
+      lives: 3,
+      consumeLife: vi.fn(),
     } as any);
 
     const mockEvent = { preventDefault: vi.fn() } as any;
@@ -1140,6 +1181,8 @@ describe('useQuizSubmit', () => {
       isExhausted: false,
       activeItems: [],
       consumeActiveItem: vi.fn(),
+      lives: 3,
+      consumeLife: vi.fn(),
     } as any);
 
     const mockEvent = { preventDefault: vi.fn() } as any;
@@ -1169,6 +1212,8 @@ describe('useQuizSubmit', () => {
       isExhausted: false,
       activeItems: [],
       consumeActiveItem: vi.fn(),
+      lives: 3,
+      consumeLife: vi.fn(),
     } as any);
 
     const mockEvent = { preventDefault: vi.fn() } as any;
@@ -1193,6 +1238,8 @@ describe('useQuizSubmit', () => {
       isExhausted: true,
       activeItems: [],
       consumeActiveItem: vi.fn(),
+      lives: 3,
+      consumeLife: vi.fn(),
     } as any);
 
     const mockEvent = { preventDefault: vi.fn() } as any;
@@ -1228,6 +1275,8 @@ describe('useQuizSubmit', () => {
       isExhausted: false,
       activeItems: [],
       consumeActiveItem: vi.fn(),
+      lives: 3,
+      consumeLife: vi.fn(),
     } as any);
 
     const mockEvent = { preventDefault: vi.fn() } as any;
@@ -1260,6 +1309,8 @@ describe('useQuizSubmit', () => {
       isExhausted: false,
       activeItems: [],
       consumeActiveItem: vi.fn(),
+      lives: 3,
+      consumeLife: vi.fn(),
     } as any);
 
     const mockEvent = { preventDefault: vi.fn() } as any;
@@ -1293,6 +1344,8 @@ describe('useQuizSubmit', () => {
       isExhausted: false,
       activeItems: [],
       consumeActiveItem: vi.fn(),
+      lives: 3,
+      consumeLife: vi.fn(),
     } as any);
 
     const mockEvent = { preventDefault: vi.fn() } as any;
@@ -1321,6 +1374,8 @@ describe('useQuizSubmit', () => {
       isExhausted: false,
       activeItems: [],
       consumeActiveItem: vi.fn(),
+      lives: 3,
+      consumeLife: vi.fn(),
     } as any);
 
     const mockEvent = { preventDefault: vi.fn() } as any;
@@ -1347,6 +1402,8 @@ describe('useQuizSubmit', () => {
       isExhausted: false,
       activeItems: [],
       consumeActiveItem: vi.fn(),
+      lives: 3,
+      consumeLife: vi.fn(),
     } as any);
 
     const mockEvent = { preventDefault: vi.fn() } as any;
@@ -1377,6 +1434,8 @@ describe('useQuizSubmit', () => {
       isExhausted: false,
       activeItems: [],
       consumeActiveItem: vi.fn(),
+      lives: 3,
+      consumeLife: vi.fn(),
     } as any);
 
     const mockEvent = { preventDefault: vi.fn() } as any;
@@ -1414,6 +1473,8 @@ describe('useQuizSubmit', () => {
       isExhausted: false,
       activeItems: [],
       consumeActiveItem: vi.fn(),
+      lives: 3,
+      consumeLife: vi.fn(),
     } as any);
 
     const mockEvent = { preventDefault: vi.fn() } as any;
@@ -1466,6 +1527,8 @@ describe('useQuizSubmit', () => {
       isExhausted: false,
       activeItems: [],
       consumeActiveItem: vi.fn(),
+      lives: 3,
+      consumeLife: vi.fn(),
     } as any);
 
     const mockEvent = { preventDefault: vi.fn() } as any;

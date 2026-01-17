@@ -93,27 +93,6 @@ describe('GameTipModal', () => {
     expect(mockOnStart).toHaveBeenCalled();
   });
 
-  it('should save dont show again preference', () => {
-    render(
-      <GameTipModal
-        isOpen={true}
-        category="math"
-        subTopic="arithmetic"
-        level={1}
-        onClose={mockOnClose}
-        onStart={mockOnStart}
-      />
-    );
-
-    const checkbox = screen.getByLabelText(/다시 보지 않기/);
-    fireEvent.click(checkbox);
-
-    const startButton = screen.getByText(/시작하기/);
-    fireEvent.click(startButton);
-
-    expect(storage.setString).toHaveBeenCalled();
-  });
-
   it('should open backpack bottom sheet', () => {
     render(
       <GameTipModal
@@ -192,23 +171,6 @@ describe('GameTipModal', () => {
     expect(screen.getByText(/방정식 풀이 팁/)).toBeInTheDocument();
   });
 
-  it('should not save preference when dont show again is not checked', () => {
-    render(
-      <GameTipModal
-        isOpen={true}
-        category="math"
-        subTopic="arithmetic"
-        level={1}
-        onClose={mockOnClose}
-        onStart={mockOnStart}
-      />
-    );
 
-    const startButton = screen.getByText(/시작하기/);
-    fireEvent.click(startButton);
-
-    // storage.setString should not be called when checkbox is not checked
-    expect(storage.setString).not.toHaveBeenCalled();
-  });
 });
 

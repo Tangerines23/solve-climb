@@ -21,7 +21,7 @@ describe('useQuizStore', () => {
     expect(result.current.difficulty).toBe('easy');
     expect(result.current.gameMode).toBe('time-attack');
     expect(result.current.category).toBeNull();
-    expect(result.current.topic).toBeNull();
+    expect(result.current.world).toBeNull();
     expect(result.current.timeLimit).toBe(60);
   });
 
@@ -103,7 +103,7 @@ describe('useQuizStore', () => {
     });
 
     expect(result.current.category).toBe('수학');
-    expect(result.current.topic).toBe('덧셈');
+    expect(result.current.world).toBe('덧셈');
   });
 
   it('should set time limit', () => {
@@ -137,9 +137,9 @@ describe('useQuizStore', () => {
     expect(result.current.score).toBe(0);
     expect(result.current.difficulty).toBe('easy');
     expect(result.current.timeLimit).toBe(60);
-    // resetQuiz does not reset category/topic
+    // resetQuiz does not reset category/world
     expect(result.current.category).toBe('수학');
-    expect(result.current.topic).toBe('덧셈');
+    expect(result.current.world).toBe('덧셈');
   });
 
   it('should handle multiple score operations', () => {

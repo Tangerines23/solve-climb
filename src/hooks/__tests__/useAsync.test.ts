@@ -1,6 +1,12 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { renderHook, waitFor, act } from '@testing-library/react';
 import { useAsync } from '../useAsync';
+import { logError } from '../../utils/errorHandler';
+
+vi.mock('../../utils/errorHandler', () => ({
+  logError: vi.fn(),
+  getUserErrorMessage: vi.fn((err: any) => err.message || 'Error'),
+}));
 
 describe('useAsync', () => {
   beforeEach(() => {
@@ -161,6 +167,7 @@ describe('useAsync', () => {
   });
 
   it('should handle error without onError callback', async () => {
+    vi.mocked(logError).mockClear();
     const error = new Error('Test error');
     const asyncFn = vi.fn(() => Promise.reject(error));
     const { result } = renderHook(() => useAsync(asyncFn, { onError: undefined }));
@@ -170,9 +177,11 @@ describe('useAsync', () => {
     });
 
     expect(result.current.error).toBeTruthy();
+    expect(logError).toHaveBeenCalledWith(expect.any(String), error);
   });
 
   it('should use errorOptions.context when provided', async () => {
+    vi.mocked(logError).mockClear();
     const error = new Error('Test error');
     const asyncFn = vi.fn(() => Promise.reject(error));
     renderHook(() =>
@@ -181,6 +190,11 @@ describe('useAsync', () => {
 
     await waitFor(() => {
       expect(asyncFn).toHaveBeenCalled();
+    });
+
+    // Wait for error handling
+    await waitFor(() => {
+      expect(logError).toHaveBeenCalledWith('custom context', error);
     });
   });
 

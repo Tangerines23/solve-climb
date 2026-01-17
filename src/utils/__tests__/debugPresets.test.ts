@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach, vi } from 'vitest';
+import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import {
   getCustomPresets,
   saveCustomPreset,
@@ -19,7 +19,30 @@ import { supabase } from '../supabaseClient';
 import { useUserStore } from '../../stores/useUserStore';
 import { useQuizStore } from '../../stores/useQuizStore';
 import { calculateScoreForTier } from '../tierUtils';
-
+// Mock localStorage
+const localStorageMock = (() => {
+  let store: Record<string, string> = {};
+  return {
+    store,
+    getItem: (key: string) => store[key] || null,
+    setItem: (key: string, value: string) => {
+      store[key] = value.toString();
+    },
+    removeItem: (key: string) => {
+      delete store[key];
+    },
+    clear: () => {
+      store = {};
+    },
+    key: (index: number) => {
+      const keys = Object.keys(store);
+      return keys[index] || null;
+    },
+    get length() {
+      return Object.keys(store).length;
+    },
+  };
+})();
 // Mock dependencies for executeDebugAction and applyPreset tests
 vi.mock('../supabaseClient', () => ({
   supabase: {
@@ -30,14 +53,14 @@ vi.mock('../supabaseClient', () => ({
     from: vi.fn(() => ({
       select: vi.fn(() => ({
         eq: vi.fn(() => ({
-        eq: vi.fn(() => ({
-          order: vi.fn(() => ({
-            limit: vi.fn(() => ({
-              single: vi.fn(),
+          eq: vi.fn(() => ({
+            order: vi.fn(() => ({
+              limit: vi.fn(() => ({
+                single: vi.fn(),
+              })),
             })),
           })),
         })),
-      })),
       })),
       upsert: vi.fn(() => Promise.resolve({ error: null })),
       update: vi.fn(() => ({
@@ -72,9 +95,32 @@ vi.mock('../errorHandler', () => ({
 }));
 
 describe('debugPresets - Custom Presets', () => {
+  let originalLocalStorage: Storage;
+
   beforeEach(() => {
-    // 각 테스트 전 localStorage 초기화
-    localStorage.clear();
+    // Save original
+    originalLocalStorage = window.localStorage;
+
+    // Reset mock storage
+    localStorageMock.clear();
+    vi.stubGlobal('localStorage', localStorageMock);
+
+    // Also explicitly replace window.localStorage for JSDOM
+    Object.defineProperty(window, 'localStorage', {
+      value: localStorageMock,
+      writable: true,
+      configurable: true,
+    });
+  });
+
+  afterEach(() => {
+    vi.unstubAllGlobals();
+    // Restore original window.localStorage
+    Object.defineProperty(window, 'localStorage', {
+      value: originalLocalStorage,
+      writable: true,
+      configurable: true,
+    });
   });
 
   describe('getCustomPresets', () => {
@@ -152,8 +198,8 @@ describe('debugPresets - Custom Presets', () => {
 
     it('should throw error on localStorage failure', () => {
       // localStorage.setItem을 모킹하여 에러 발생시키기
-      const originalSetItem = Storage.prototype.setItem;
-      Storage.prototype.setItem = vi.fn(() => {
+      const originalSetItem = localStorage.setItem;
+      localStorage.setItem = vi.fn(() => {
         throw new Error('Storage quota exceeded');
       });
 
@@ -168,7 +214,7 @@ describe('debugPresets - Custom Presets', () => {
       expect(() => saveCustomPreset(preset)).toThrow();
 
       // 원상복구
-      Storage.prototype.setItem = originalSetItem;
+      localStorage.setItem = originalSetItem;
     });
   });
 
@@ -815,7 +861,7 @@ describe('debugPresets - executeDebugAction', () => {
 
     it('should handle badge grant failures gracefully', async () => {
       const mockBadges = [{ id: 'badge-1' }, { id: 'badge-2' }];
-      const consoleWarnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});
+      const consoleWarnSpy = vi.spyOn(console, 'warn').mockImplementation(() => { });
 
       vi.mocked(supabase.from).mockReturnValue({
         select: vi.fn(() => Promise.resolve({ data: mockBadges, error: null })),
@@ -842,7 +888,7 @@ describe('debugPresets - executeDebugAction', () => {
 
     it('should handle badge grant when result.value.success is false', async () => {
       const mockBadges = [{ id: 'badge-1' }];
-      const consoleWarnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});
+      const consoleWarnSpy = vi.spyOn(console, 'warn').mockImplementation(() => { });
 
       vi.mocked(supabase.from).mockReturnValue({
         select: vi.fn(() => Promise.resolve({ data: mockBadges, error: null })),
@@ -884,10 +930,10 @@ describe('debugPresets - executeDebugAction', () => {
       vi.mocked(supabase.from).mockReturnValue({
         select: vi.fn(() => ({
           eq: vi.fn(() => ({
-          eq: vi.fn(() => ({
-            order: vi.fn(() => ({
-              limit: vi.fn(() => ({
-                single: vi.fn(() => Promise.resolve({ data: mockSession, error: null })),
+            eq: vi.fn(() => ({
+              order: vi.fn(() => ({
+                limit: vi.fn(() => ({
+                  single: vi.fn(() => Promise.resolve({ data: mockSession, error: null })),
                 })),
               })),
             })),
@@ -909,10 +955,10 @@ describe('debugPresets - executeDebugAction', () => {
       vi.mocked(supabase.from).mockReturnValue({
         select: vi.fn(() => ({
           eq: vi.fn(() => ({
-          eq: vi.fn(() => ({
-            order: vi.fn(() => ({
-              limit: vi.fn(() => ({
-                single: vi.fn(() => Promise.resolve({ data: null, error })),
+            eq: vi.fn(() => ({
+              order: vi.fn(() => ({
+                limit: vi.fn(() => ({
+                  single: vi.fn(() => Promise.resolve({ data: null, error })),
                 })),
               })),
             })),
@@ -937,10 +983,10 @@ describe('debugPresets - executeDebugAction', () => {
       vi.mocked(supabase.from).mockReturnValue({
         select: vi.fn(() => ({
           eq: vi.fn(() => ({
-          eq: vi.fn(() => ({
-            order: vi.fn(() => ({
-              limit: vi.fn(() => ({
-                single: vi.fn(() => Promise.resolve({ data: null, error })),
+            eq: vi.fn(() => ({
+              order: vi.fn(() => ({
+                limit: vi.fn(() => ({
+                  single: vi.fn(() => Promise.resolve({ data: null, error })),
                 })),
               })),
             })),
@@ -985,10 +1031,10 @@ describe('debugPresets - executeDebugAction', () => {
       vi.mocked(supabase.from).mockReturnValue({
         select: vi.fn(() => ({
           eq: vi.fn(() => ({
-          eq: vi.fn(() => ({
-            order: vi.fn(() => ({
-              limit: vi.fn(() => ({
-                single: vi.fn(() => Promise.resolve({ data: null, error })),
+            eq: vi.fn(() => ({
+              order: vi.fn(() => ({
+                limit: vi.fn(() => ({
+                  single: vi.fn(() => Promise.resolve({ data: null, error })),
                 })),
               })),
             })),
@@ -1033,10 +1079,10 @@ describe('debugPresets - executeDebugAction', () => {
       vi.mocked(supabase.from).mockReturnValue({
         select: vi.fn(() => ({
           eq: vi.fn(() => ({
-          eq: vi.fn(() => ({
-            order: vi.fn(() => ({
-              limit: vi.fn(() => ({
-                single: vi.fn(() => Promise.resolve({ data: null, error })),
+            eq: vi.fn(() => ({
+              order: vi.fn(() => ({
+                limit: vi.fn(() => ({
+                  single: vi.fn(() => Promise.resolve({ data: null, error })),
                 })),
               })),
             })),

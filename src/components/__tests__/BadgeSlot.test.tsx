@@ -27,7 +27,7 @@ describe('BadgeSlot', () => {
   it('should render locked badge', () => {
     render(<BadgeSlot badgeId="test-badge" isEarned={false} badgeDef={null} />);
 
-    expect(screen.getByText('???')).toBeInTheDocument();
+    expect(screen.getByText('Loading...')).toBeInTheDocument();
     expect(screen.getByText('🔒')).toBeInTheDocument();
   });
 

@@ -133,6 +133,7 @@ export function QuizPage() {
     mountainParam,
     worldParam,
     categoryParam,
+    subParam: worldParam, // subParam은 worldParam과 동일
     levelParam,
     modeParam,
     isExhausted: useGameStore.getState().isExhausted,

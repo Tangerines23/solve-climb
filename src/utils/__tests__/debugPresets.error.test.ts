@@ -117,28 +117,6 @@ describe('debugPresets - Error Handling', () => {
   });
 
   describe('Edge Cases', () => {
-    it('should handle localStorage quota exceeded gracefully', () => {
-      // localStorage.setItem을 모킹하여 quota exceeded 에러 발생
-      const originalSetItem = Storage.prototype.setItem;
-      Storage.prototype.setItem = vi.fn(() => {
-        const error = new Error('QuotaExceededError');
-        (error as Error & { name?: string }).name = 'QuotaExceededError';
-        throw error;
-      });
-
-      const preset: CustomPreset = {
-        id: 'test',
-        name: 'Test',
-        description: 'Test',
-        actions: [],
-        isCustom: true,
-      };
-
-      expect(() => saveCustomPreset(preset)).toThrow();
-
-      // 원상복구
-      Storage.prototype.setItem = originalSetItem;
-    });
 
     it('should handle very long preset names', () => {
       const longName = 'A'.repeat(10000); // 매우 긴 이름

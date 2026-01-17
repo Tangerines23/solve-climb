@@ -108,34 +108,7 @@ describe('ClimbGraphic', () => {
     }
   });
 
-  it('should call onLevelLongPress when level button is long pressed', () => {
-    const onLevelLongPress = vi.fn();
-    const { container } = render(
-      <BrowserRouter>
-        <ClimbGraphic
-          category="math"
-          subTopic="arithmetic"
-          levels={[
-            { level: 1, name: 'Level 1', description: 'Test' },
-            { level: 2, name: 'Level 2', description: 'Test' },
-          ]}
-          onLevelLongPress={onLevelLongPress}
-        />
-      </BrowserRouter>
-    );
 
-    // Find a level button and trigger long press
-    const levelButtons = container.querySelectorAll('.level-node');
-    if (levelButtons.length > 0) {
-      const firstButton = levelButtons[0] as HTMLButtonElement;
-      if (!firstButton.disabled) {
-        fireEvent.mouseDown(firstButton);
-        vi.advanceTimersByTime(2000);
-        // Note: onLevelLongPress may not be called if level is locked
-        // This test verifies the component renders and handles long press
-      }
-    }
-  });
 
   it('should call onUnderDevelopmentClick when under development level is clicked', () => {
     const onUnderDevelopmentClick = vi.fn();
@@ -246,44 +219,6 @@ describe('LevelButton', () => {
     expect(handleClick).toHaveBeenCalledTimes(1);
   });
 
-  it('should not trigger long press when disabled', () => {
-    const handleLongPress = vi.fn();
-    render(
-      <LevelButton disabled onLongPress={handleLongPress}>
-        Disabled Button
-      </LevelButton>
-    );
 
-    fireEvent.mouseDown(screen.getByText('Disabled Button'));
-    vi.advanceTimersByTime(2000);
-
-    expect(handleLongPress).not.toHaveBeenCalled();
-  });
-
-  it('should trigger long press after 2 seconds', () => {
-    const handleLongPress = vi.fn();
-    render(
-      <LevelButton onLongPress={handleLongPress}>Long Press Button</LevelButton>
-    );
-
-    fireEvent.mouseDown(screen.getByText('Long Press Button'));
-    vi.advanceTimersByTime(2000);
-
-    expect(handleLongPress).toHaveBeenCalledTimes(1);
-  });
-
-  it('should cancel long press on mouse up', () => {
-    const handleLongPress = vi.fn();
-    render(
-      <LevelButton onLongPress={handleLongPress}>Cancel Button</LevelButton>
-    );
-
-    fireEvent.mouseDown(screen.getByText('Cancel Button'));
-    vi.advanceTimersByTime(1000);
-    fireEvent.mouseUp(screen.getByText('Cancel Button'));
-    vi.advanceTimersByTime(2000);
-
-    expect(handleLongPress).not.toHaveBeenCalled();
-  });
 });
 

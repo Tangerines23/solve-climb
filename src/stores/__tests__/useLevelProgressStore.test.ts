@@ -307,7 +307,7 @@ describe('useLevelProgressStore', () => {
 
   it('should handle syncProgress error gracefully', async () => {
     const { result } = renderHook(() => useLevelProgressStore());
-    const consoleErrorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
+    const consoleErrorSpy = vi.spyOn(console, 'error').mockImplementation(() => { });
 
     vi.mocked(supabase.auth.getUser).mockResolvedValue({
       data: { user: { id: 'user-123' } },
@@ -361,18 +361,18 @@ describe('useLevelProgressStore', () => {
     } as any);
 
     await act(async () => {
-      await result.current.fetchRanking('math', 'weekly', 'total', 10);
+      await result.current.fetchRanking('math', 'addition', 'weekly', 'total', 10);
     });
 
     await waitFor(() => {
-      const rankings = result.current.rankings['math-weekly-total'];
+      const rankings = result.current.rankings['math-addition-weekly-total'];
       expect(rankings).toEqual(mockRanking);
     });
   });
 
   it('should handle fetchRanking error gracefully', async () => {
     const { result } = renderHook(() => useLevelProgressStore());
-    const consoleErrorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
+    const consoleErrorSpy = vi.spyOn(console, 'error').mockImplementation(() => { });
 
     vi.mocked(supabase.rpc).mockResolvedValue({
       data: null,
@@ -415,7 +415,7 @@ describe('useLevelProgressStore', () => {
 
   it('should handle clearLevel error gracefully', async () => {
     const { result } = renderHook(() => useLevelProgressStore());
-    const consoleErrorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
+    const consoleErrorSpy = vi.spyOn(console, 'error').mockImplementation(() => { });
 
     vi.mocked(supabase.auth.getUser).mockResolvedValue({
       data: { user: { id: 'user-123' } },
@@ -441,7 +441,7 @@ describe('useLevelProgressStore', () => {
 
   it('should handle updateBestScore error gracefully', async () => {
     const { result } = renderHook(() => useLevelProgressStore());
-    const consoleErrorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
+    const consoleErrorSpy = vi.spyOn(console, 'error').mockImplementation(() => { });
 
     vi.mocked(supabase.auth.getUser).mockResolvedValue({
       data: { user: { id: 'user-123' } },
@@ -501,7 +501,7 @@ describe('useLevelProgressStore', () => {
 
   it('should handle resetProgress error gracefully', async () => {
     const { result } = renderHook(() => useLevelProgressStore());
-    const consoleErrorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
+    const consoleErrorSpy = vi.spyOn(console, 'error').mockImplementation(() => { });
 
     vi.mocked(supabase.auth.getUser).mockResolvedValue({
       data: { user: { id: 'user-123' } },
@@ -884,7 +884,7 @@ describe('useLevelProgressStore', () => {
 
   it('should handle fetchRanking when error occurs', async () => {
     const { result } = renderHook(() => useLevelProgressStore());
-    const consoleErrorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
+    const consoleErrorSpy = vi.spyOn(console, 'error').mockImplementation(() => { });
 
     vi.mocked(supabase.rpc).mockResolvedValue({
       data: null,
@@ -913,7 +913,7 @@ describe('useLevelProgressStore', () => {
     } as any);
 
     await act(async () => {
-      await result.current.fetchRanking('math', 'all-time', 'survival', 20);
+      await result.current.fetchRanking('math', 'addition', 'all-time', 'survival', 20);
     });
 
     expect(supabase.rpc).toHaveBeenCalledWith('get_ranking_v2', {
@@ -923,7 +923,7 @@ describe('useLevelProgressStore', () => {
       p_limit: 20,
     });
 
-    expect(result.current.rankings['math-all-time-survival']).toEqual(mockRanking);
+    expect(result.current.rankings['math-addition-all-time-survival']).toEqual(mockRanking);
   });
 });
 

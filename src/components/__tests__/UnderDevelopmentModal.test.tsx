@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { render, screen } from '@testing-library/react';
+import { render, screen, act } from '@testing-library/react';
 import { UnderDevelopmentModal } from '../UnderDevelopmentModal';
 
 describe('UnderDevelopmentModal', () => {
@@ -23,67 +23,85 @@ describe('UnderDevelopmentModal', () => {
     expect(screen.getByText('🚧')).toBeInTheDocument();
   });
 
-  it('should auto close after delay', () => {
+  it('should auto close after delay', async () => {
     const onClose = vi.fn();
     render(<UnderDevelopmentModal isOpen={true} onClose={onClose} autoClose={true} autoCloseDelay={2000} />);
 
     expect(screen.getByText('아직 개발중입니다 :(')).toBeInTheDocument();
 
     // Advance through the delay and closing animation
-    vi.advanceTimersByTime(2000);
-    vi.advanceTimersByTime(300);
+    await act(async () => {
+      vi.advanceTimersByTime(2000);
+    });
+    await act(async () => {
+      vi.advanceTimersByTime(300);
+    });
 
     // onClose should be called
     expect(onClose).toHaveBeenCalled();
   });
 
-  it('should not auto close when autoClose is false', () => {
+  it('should not auto close when autoClose is false', async () => {
     const onClose = vi.fn();
     render(<UnderDevelopmentModal isOpen={true} onClose={onClose} autoClose={false} />);
 
-    vi.advanceTimersByTime(5000);
+    await act(async () => {
+      vi.advanceTimersByTime(5000);
+    });
 
     expect(onClose).not.toHaveBeenCalled();
   });
 
-  it('should use default autoCloseDelay when not provided', () => {
+  it('should use default autoCloseDelay when not provided', async () => {
     const onClose = vi.fn();
     render(<UnderDevelopmentModal isOpen={true} onClose={onClose} autoClose={true} />);
 
     // Default delay is 2000ms
-    vi.advanceTimersByTime(2000);
-    vi.advanceTimersByTime(300);
+    await act(async () => {
+      vi.advanceTimersByTime(2000);
+    });
+    await act(async () => {
+      vi.advanceTimersByTime(300);
+    });
 
     expect(onClose).toHaveBeenCalled();
   });
 
-  it('should use custom autoCloseDelay', () => {
+  it('should use custom autoCloseDelay', async () => {
     const onClose = vi.fn();
     render(<UnderDevelopmentModal isOpen={true} onClose={onClose} autoClose={true} autoCloseDelay={5000} />);
 
     // Should not close before custom delay
-    vi.advanceTimersByTime(2000);
+    await act(async () => {
+      vi.advanceTimersByTime(2000);
+    });
     expect(onClose).not.toHaveBeenCalled();
 
     // Should close after custom delay
-    vi.advanceTimersByTime(3000);
-    vi.advanceTimersByTime(300);
+    await act(async () => {
+      vi.advanceTimersByTime(3000);
+    });
+    await act(async () => {
+      vi.advanceTimersByTime(300);
+    });
 
     expect(onClose).toHaveBeenCalled();
   });
 
-  it('should not auto close when onClose is not provided', () => {
+  it('should not auto close when onClose is not provided', async () => {
     render(<UnderDevelopmentModal isOpen={true} autoClose={true} autoCloseDelay={2000} />);
 
     expect(screen.getByText('아직 개발중입니다 :(')).toBeInTheDocument();
 
-    vi.advanceTimersByTime(5000);
+    await act(async () => {
+      vi.advanceTimersByTime(5000);
+    });
 
     // Should still be visible (no error thrown)
     expect(screen.getByText('아직 개발중입니다 :(')).toBeInTheDocument();
   });
 
-  it('should apply closing class during closing animation', () => {
+  it('should apply closing class during closing animation', async () => {
     const onClose = vi.fn();
     const { container } = render(
       <UnderDevelopmentModal isOpen={true} onClose={onClose} autoClose={true} autoCloseDelay={2000} />
@@ -94,7 +112,9 @@ describe('UnderDevelopmentModal', () => {
     expect(toast).toBeInTheDocument();
 
     // Advance to start closing (2000ms delay triggers setIsClosing)
-    vi.advanceTimersByTime(2000);
+    await act(async () => {
+      vi.advanceTimersByTime(2000);
+    });
 
     // Component should still be visible and closing class may be applied
     // (Note: React state updates with fake timers may not be immediately reflected)
@@ -103,7 +123,7 @@ describe('UnderDevelopmentModal', () => {
     expect(toastAfterDelay).toBeInTheDocument();
   });
 
-  it('should cleanup timer when component unmounts', () => {
+  it('should cleanup timer when component unmounts', async () => {
     const onClose = vi.fn();
     const { unmount } = render(
       <UnderDevelopmentModal isOpen={true} onClose={onClose} autoClose={true} autoCloseDelay={2000} />
@@ -112,13 +132,15 @@ describe('UnderDevelopmentModal', () => {
     unmount();
 
     // Advance time after unmount
-    vi.advanceTimersByTime(5000);
+    await act(async () => {
+      vi.advanceTimersByTime(5000);
+    });
 
     // onClose should not be called after unmount
     expect(onClose).not.toHaveBeenCalled();
   });
 
-  it('should reset closing state when isOpen changes to true again', () => {
+  it('should reset closing state when isOpen changes to true again', async () => {
     const onClose = vi.fn();
     const { rerender, container } = render(
       <UnderDevelopmentModal isOpen={true} onClose={onClose} autoClose={true} autoCloseDelay={2000} />
@@ -128,10 +150,14 @@ describe('UnderDevelopmentModal', () => {
     expect(toast).toBeInTheDocument();
 
     // Start closing
-    vi.advanceTimersByTime(2000);
+    await act(async () => {
+      vi.advanceTimersByTime(2000);
+    });
 
     // Close modal (onClose will be called after 300ms)
-    vi.advanceTimersByTime(300);
+    await act(async () => {
+      vi.advanceTimersByTime(300);
+    });
     expect(onClose).toHaveBeenCalled();
 
     rerender(<UnderDevelopmentModal isOpen={false} onClose={onClose} autoClose={true} autoCloseDelay={2000} />);

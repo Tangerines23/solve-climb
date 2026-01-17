@@ -10,7 +10,7 @@ import {
 } from '../urlParams';
 
 // Mock APP_CONFIG
-vi.mock('../config/app', () => ({
+vi.mock('../../config/app', () => ({
   APP_CONFIG: {
     CATEGORIES: [{ id: 'math' }, { id: 'language' }],
     SUB_TOPICS: {

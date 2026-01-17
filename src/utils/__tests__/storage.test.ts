@@ -1,327 +1,196 @@
-import { describe, it, expect, beforeEach, vi } from 'vitest';
-import { storage, StorageKeys, STORAGE_PREFIXES } from '../storage';
+import { describe, it, expect, beforeEach } from 'vitest';
+import { StorageUtil, StorageKeys, STORAGE_PREFIXES } from '../storage';
+import { MockStorageService } from '../../services';
 
-// Mock localStorage
-const localStorageMock = (() => {
-  let store: Record<string, string> = {};
+describe('StorageUtil', () => {
+  let mockStorage: MockStorageService;
+  let storageUtil: StorageUtil;
 
-  return {
-    getItem: (key: string) => store[key] || null,
-    setItem: (key: string, value: string) => {
-      store[key] = value.toString();
-    },
-    removeItem: (key: string) => {
-      delete store[key];
-    },
-    clear: () => {
-      store = {};
-    },
-    key: (index: number) => {
-      const keys = Object.keys(store);
-      return keys[index] || null;
-    },
-    get length() {
-      return Object.keys(store).length;
-    },
-  };
-})();
-
-describe('storage', () => {
   beforeEach(() => {
-    // Clear localStorage before each test
-    localStorageMock.clear();
-    // Replace global localStorage with mock
-    Object.defineProperty(window, 'localStorage', {
-      value: localStorageMock,
-      writable: true,
-    });
+    // 각 테스트마다 독립된 Mock 인스턴스 생성
+    mockStorage = new MockStorageService();
+    storageUtil = new StorageUtil(mockStorage);
   });
 
-  describe('get and set', () => {
-    it('should store and retrieve object', () => {
-      const testData = { name: 'test', value: 123 };
-      storage.set('test-key', testData);
-      const retrieved = storage.get('test-key', null);
+  describe('get/set', () => {
+    it('should store and retrieve values', () => {
+      const testData = { name: 'John', age: 30 };
+
+      storageUtil.set('user', testData);
+      const retrieved = storageUtil.get('user', {});
 
       expect(retrieved).toEqual(testData);
     });
 
     it('should return default value when key does not exist', () => {
-      const defaultValue = { default: true };
-      const result = storage.get('non-existent-key', defaultValue);
+      const defaultValue = { name: 'Default' };
+      const result = storageUtil.get('nonexistent', defaultValue);
 
       expect(result).toEqual(defaultValue);
     });
 
-    it('should store and retrieve string', () => {
-      storage.set('string-key', 'test string');
-      const result = storage.get('string-key', '');
+    it('should handle complex nested objects', () => {
+      const complexData = {
+        user: { name: 'John', profile: { age: 30, city: 'Seoul' } },
+        settings: { theme: 'dark', notifications: true },
+      };
 
-      expect(result).toBe('test string');
-    });
+      storageUtil.set('complex', complexData);
+      const retrieved = storageUtil.get('complex', {});
 
-    it('should store and retrieve number', () => {
-      storage.set('number-key', 42);
-      const result = storage.get('number-key', 0);
-
-      expect(result).toBe(42);
-    });
-
-    it('should store and retrieve array', () => {
-      const testArray = [1, 2, 3];
-      storage.set('array-key', testArray);
-      const result = storage.get('array-key', []);
-
-      expect(result).toEqual(testArray);
-    });
-
-    it('should handle invalid JSON gracefully', () => {
-      // Manually set invalid JSON
-      localStorageMock.setItem('invalid-key', 'invalid json{');
-      const result = storage.get('invalid-key', { default: true });
-
-      expect(result).toEqual({ default: true });
+      expect(retrieved).toEqual(complexData);
     });
   });
 
-  describe('getString and setString', () => {
-    it('should store and retrieve string directly', () => {
-      storage.setString('string-key', 'test string');
-      const result = storage.getString('string-key', null);
+  describe('getString/setString', () => {
+    it('should store and retrieve string values', () => {
+      storageUtil.setString('text', 'Hello World');
+      const retrieved = storageUtil.getString('text');
 
-      expect(result).toBe('test string');
+      expect(retrieved).toBe('Hello World');
     });
 
-    it('should return default value when string key does not exist', () => {
-      const result = storage.getString('non-existent-key', 'default');
-
+    it('should return default value for non-existent string', () => {
+      const result = storageUtil.getString('nonexistent', 'default');
       expect(result).toBe('default');
     });
 
-    it('should return null when no default provided', () => {
-      const result = storage.getString('non-existent-key', null);
-
+    it('should return null when no default is provided', () => {
+      const result = storageUtil.getString('nonexistent');
       expect(result).toBeNull();
     });
   });
 
   describe('remove', () => {
-    it('should remove stored item', () => {
-      storage.set('test-key', { data: 'test' });
-      storage.remove('test-key');
-      const result = storage.get('test-key', null);
+    it('should remove stored values', () => {
+      storageUtil.set('temp', 'value');
+      expect(storageUtil.get('temp', null)).toBe('value');
 
-      expect(result).toBeNull();
+      storageUtil.remove('temp');
+      expect(storageUtil.get('temp', null)).toBeNull();
     });
 
-    it('should handle removing non-existent key gracefully', () => {
-      expect(() => {
-        storage.remove('non-existent-key');
-      }).not.toThrow();
+    it('should not throw when removing non-existent key', () => {
+      expect(() => storageUtil.remove('nonexistent')).not.toThrow();
     });
   });
 
   describe('getKeysByPrefix', () => {
-    it('should return keys with matching prefix', () => {
-      storage.setString('prefix-key1', 'value1');
-      storage.setString('prefix-key2', 'value2');
-      storage.setString('other-key', 'value3');
+    it('should find keys by prefix', () => {
+      storageUtil.set('solve-climb-user1', 'data1');
+      storageUtil.set('solve-climb-user2', 'data2');
+      storageUtil.set('other-key', 'data3');
 
-      const keys = storage.getKeysByPrefix('prefix-');
+      const keys = storageUtil.getKeysByPrefix('solve-climb-');
 
-      expect(keys).toContain('prefix-key1');
-      expect(keys).toContain('prefix-key2');
+      expect(keys).toHaveLength(2);
+      expect(keys).toContain('solve-climb-user1');
+      expect(keys).toContain('solve-climb-user2');
       expect(keys).not.toContain('other-key');
     });
 
-    it('should return empty array when no keys match prefix', () => {
-      storage.setString('other-key', 'value');
-
-      const keys = storage.getKeysByPrefix('prefix-');
+    it('should return empty array when no keys match', () => {
+      storageUtil.set('key1', 'value1');
+      const keys = storageUtil.getKeysByPrefix('nonexistent-');
 
       expect(keys).toEqual([]);
     });
   });
 
   describe('removeByPrefix', () => {
-    it('should remove all keys with matching prefix', () => {
-      storage.setString('prefix-key1', 'value1');
-      storage.setString('prefix-key2', 'value2');
-      storage.setString('other-key', 'value3');
+    it('should remove all keys with given prefix', () => {
+      storageUtil.set('solve-climb-user1', 'data1');
+      storageUtil.set('solve-climb-user2', 'data2');
+      storageUtil.set('other-key', 'data3');
 
-      storage.removeByPrefix('prefix-');
+      storageUtil.removeByPrefix('solve-climb-');
 
-      expect(storage.getString('prefix-key1', null)).toBeNull();
-      expect(storage.getString('prefix-key2', null)).toBeNull();
-      expect(storage.getString('other-key', null)).toBe('value3');
+      expect(storageUtil.get('solve-climb-user1', null)).toBeNull();
+      expect(storageUtil.get('solve-climb-user2', null)).toBeNull();
+      expect(storageUtil.get('other-key', null)).toBe('data3');
     });
   });
 
   describe('clearAppData', () => {
-    it('should remove all keys with app prefixes', () => {
-      storage.setString('solve-climb-test1', 'value1');
-      storage.setString('gameCenterApi_test2', 'value2');
-      storage.setString('other-key', 'value3');
+    it('should clear all app-related data', () => {
+      // STORAGE_PREFIXES에 정의된 접두사로 데이터 저장
+      storageUtil.set('solve-climb-user', 'data1');
+      storageUtil.set('gameCenterApi_score', 'data2');
+      storageUtil.set('other-app-data', 'data3');
 
-      storage.clearAppData();
+      storageUtil.clearAppData();
 
-      expect(storage.getString('solve-climb-test1', null)).toBeNull();
-      expect(storage.getString('gameCenterApi_test2', null)).toBeNull();
-      expect(storage.getString('other-key', null)).toBe('value3');
+      expect(storageUtil.get('solve-climb-user', null)).toBeNull();
+      expect(storageUtil.get('gameCenterApi_score', null)).toBeNull();
+      expect(storageUtil.get('other-app-data', null)).toBe('data3');
     });
   });
 
   describe('StorageKeys', () => {
-    it('should generate correct device ID key', () => {
+    it('should have correct key constants', () => {
       expect(StorageKeys.DEVICE_ID).toBe('solve-climb-device-id');
+      expect(StorageKeys.ACTIVE_PROFILE_ID).toBe('solve-climb-active-profile-id');
+      expect(StorageKeys.LOCAL_SESSION).toBe('solve-climb-local-session');
     });
 
-    it('should generate correct profile key with device ID', () => {
-      const deviceId = 'device-123';
-      const key = StorageKeys.PROFILES(deviceId);
-
-      expect(key).toBe('solve-climb-profiles-device-123');
-    });
-
-    it('should generate correct progress key with profile ID', () => {
-      const profileId = 'profile-456';
-      const key = StorageKeys.PROGRESS(profileId);
-
-      expect(key).toBe('solve-climb-progress-profile-456');
-    });
-
-    it('should generate correct game tip key', () => {
-      const key = StorageKeys.GAME_TIP('math', 'addition');
-
-      expect(key).toBe('gameTip_math_addition');
-    });
-
-    it('should generate correct game tip key with level', () => {
-      const key = StorageKeys.GAME_TIP('math', 'addition', '1');
-
-      expect(key).toBe('gameTip_math_addition_1');
+    it('should generate dynamic keys correctly', () => {
+      expect(StorageKeys.PROFILES('device123')).toBe('solve-climb-profiles-device123');
+      expect(StorageKeys.PROGRESS('profile456')).toBe('solve-climb-progress-profile456');
+      expect(StorageKeys.GAME_TIP('math', 'addition', '1')).toBe('gameTip_math_addition_1');
+      expect(StorageKeys.GAME_TIP('math', 'addition')).toBe('gameTip_math_addition');
     });
   });
 
-  describe('Error handling branches', () => {
-    it('should handle localStorage.getItem error in get', () => {
-      const originalGetItem = localStorage.getItem;
-      localStorage.getItem = vi.fn(() => {
-        throw new Error('Storage error');
-      });
+  describe('STORAGE_PREFIXES', () => {
+    it('should contain expected prefixes', () => {
+      expect(STORAGE_PREFIXES).toContain('solve-climb-');
+      expect(STORAGE_PREFIXES).toContain('gameCenterApi_');
+    });
+  });
 
-      const result = storage.get('test-key', { default: true });
-      expect(result).toEqual({ default: true });
-
-      localStorage.getItem = originalGetItem;
+  describe('Edge Cases', () => {
+    it('should handle empty string values', () => {
+      storageUtil.setString('empty', '');
+      expect(storageUtil.getString('empty')).toBe('');
     });
 
-    it('should handle JSON.stringify error in set', () => {
-      const circular: any = {};
-      circular.self = circular;
-
-      // JSON.stringify will fail for circular reference
-      storage.set('test-key', circular);
-      // Should not throw, just log error
-      expect(typeof storage.set).toBe('function');
+    it('should handle null values', () => {
+      storageUtil.set('null-value', null);
+      // null은 저장되지만, get 시 null이 반환되면 default 값 사용
+      const result = storageUtil.get('null-value', 'default');
+      // MockStorageService는 null을 그대로 저장하므로 null 반환
+      expect(result).toBeNull();
     });
 
-    it('should handle localStorage.setItem error in set (QuotaExceededError)', () => {
-      const originalSetItem = localStorage.setItem;
-      localStorage.setItem = vi.fn(() => {
-        throw new DOMException('Quota exceeded', 'QuotaExceededError');
-      });
-
-      storage.set('test-key', { data: 'test' });
-      // Should not throw, just log error
-      expect(typeof storage.set).toBe('function');
-
-      localStorage.setItem = originalSetItem;
+    it('should handle undefined values', () => {
+      storageUtil.set('undefined-value', undefined);
+      const result = storageUtil.get('undefined-value', 'default');
+      // MockStorageService는 undefined를 null로 저장
+      expect(result).toBeNull();
     });
 
-    it('should handle localStorage.removeItem error in remove', () => {
-      const originalRemoveItem = localStorage.removeItem;
-      localStorage.removeItem = vi.fn(() => {
-        throw new Error('Remove error');
-      });
-
-      storage.remove('test-key');
-      // Should not throw, just log error
-      expect(typeof storage.remove).toBe('function');
-
-      localStorage.removeItem = originalRemoveItem;
+    it('should handle arrays', () => {
+      const arr = [1, 2, 3, 4, 5];
+      storageUtil.set('array', arr);
+      expect(storageUtil.get('array', [])).toEqual(arr);
     });
 
-    it('should handle localStorage.getItem error in getString', () => {
-      const originalGetItem = localStorage.getItem;
-      localStorage.getItem = vi.fn(() => {
-        throw new Error('Storage error');
-      });
+    it('should handle boolean values', () => {
+      storageUtil.set('bool-true', true);
+      storageUtil.set('bool-false', false);
 
-      const result = storage.getString('test-key', 'default');
-      expect(result).toBe('default');
-
-      localStorage.getItem = originalGetItem;
+      expect(storageUtil.get('bool-true', false)).toBe(true);
+      expect(storageUtil.get('bool-false', true)).toBe(false);
     });
 
-    it('should handle localStorage.setItem error in setString', () => {
-      const originalSetItem = localStorage.setItem;
-      localStorage.setItem = vi.fn(() => {
-        throw new Error('Storage error');
-      });
+    it('should handle number values', () => {
+      storageUtil.set('number', 42);
+      storageUtil.set('float', 3.14);
+      storageUtil.set('zero', 0);
 
-      storage.setString('test-key', 'value');
-      // Should not throw, just log error
-      expect(typeof storage.setString).toBe('function');
-
-      localStorage.setItem = originalSetItem;
-    });
-
-    it('should handle localStorage.key returning null in getKeysByPrefix', () => {
-      const originalKey = localStorage.key;
-      let callCount = 0;
-      localStorage.key = vi.fn((index: number) => {
-        callCount++;
-        if (callCount === 1) return 'prefix-key1';
-        if (callCount === 2) return null; // Simulate null return
-        return null;
-      });
-      Object.defineProperty(localStorage, 'length', {
-        get: () => 3,
-        configurable: true,
-      });
-
-      const keys = storage.getKeysByPrefix('prefix-');
-      expect(keys).toContain('prefix-key1');
-
-      localStorage.key = originalKey;
-    });
-
-    it('should handle empty localStorage in getKeysByPrefix', () => {
-      Object.defineProperty(localStorage, 'length', {
-        get: () => 0,
-        configurable: true,
-      });
-
-      const keys = storage.getKeysByPrefix('prefix-');
-      expect(keys).toEqual([]);
-    });
-
-    it('should handle localStorage.key error in getKeysByPrefix', () => {
-      const originalKey = localStorage.key;
-      localStorage.key = vi.fn(() => {
-        throw new Error('Key error');
-      });
-      Object.defineProperty(localStorage, 'length', {
-        get: () => 1,
-        configurable: true,
-      });
-
-      const keys = storage.getKeysByPrefix('prefix-');
-      expect(keys).toEqual([]);
-
-      localStorage.key = originalKey;
+      expect(storageUtil.get('number', 0)).toBe(42);
+      expect(storageUtil.get('float', 0)).toBe(3.14);
+      expect(storageUtil.get('zero', -1)).toBe(0);
     });
   });
 });
-

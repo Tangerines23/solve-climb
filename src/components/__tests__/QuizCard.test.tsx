@@ -77,7 +77,12 @@ describe('QuizCard', () => {
     questionAnimation: '',
     showFlash: false,
     showSlideToast: false,
+    toastValue: '',
     damagePosition: { left: '0px', top: '0px' },
+    totalQuestions: 0,
+    lives: 3,
+    onPause: vi.fn(),
+    generateNewQuestion: vi.fn(),
     handleSubmit: vi.fn(),
     handleBack: vi.fn(),
     handleGameOver: vi.fn(),
@@ -99,6 +104,11 @@ describe('QuizCard', () => {
     vi.clearAllMocks();
     vi.mocked(useGameStore).mockReturnValue({
       safetyRopeCount: 0,
+      activeItems: [],
+      usedItems: [],
+      consumeActiveItem: vi.fn(),
+      consumeLife: vi.fn(),
+      isExhausted: false,
     } as any);
   });
 
@@ -230,7 +240,7 @@ describe('QuizCard', () => {
   });
 
   it('should display slide toast when showSlideToast is true', () => {
-    render(<QuizCard {...defaultProps} showSlideToast={true} />);
+    render(<QuizCard {...defaultProps} showSlideToast={true} toastValue="-3m" />);
 
     expect(screen.getByText(/-3m/)).toBeInTheDocument();
   });

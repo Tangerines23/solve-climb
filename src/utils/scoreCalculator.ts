@@ -140,13 +140,10 @@ export function calculateCategoryAltitude(category: string): {
 
   let totalAltitude = 0;
 
-  // 모든 월드 순회
-  Object.values(progress).forEach((worldProgress) => {
-    const categoryData = worldProgress[category];
-    if (!categoryData) return;
-
-    // 해당 카테고리의 모든 레벨 순회
-    Object.values(categoryData).forEach((levelRecord) => {
+  // 모든 서브토픽 순회
+  Object.values(categoryProgress).forEach((levelMap) => {
+    // 해당 서브토픽의 모든 레벨 순회
+    Object.values(levelMap).forEach((levelRecord) => {
       // time-attack과 survival 중 최고 점수 선택
       const timeAttack = levelRecord.bestScore['time-attack'] || 0;
       const survival = levelRecord.bestScore['survival'] || 0;
