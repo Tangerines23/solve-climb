@@ -19,7 +19,7 @@ export function createSafeStorageKey(...parts: (string | number | null | undefin
       // XSS 공격 방지를 위해 HTML 태그 및 스크립트 문자 제거
       return str
         .replace(/<[^>]*>/g, '') // HTML 태그 제거
-        .replace(/[^a-zA-Z0-9_-]/g, '') // 특수문자 제거
+        .replace(/[^\p{L}\p{N}_-]/gu, '') // 유니코드 문자(한글 포함), 숫자, 언더스코어, 하이픈만 허용
         .substring(0, 100); // 길이 제한 (100자)
     })
     .filter((part) => part.length > 0)

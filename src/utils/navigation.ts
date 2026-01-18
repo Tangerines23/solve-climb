@@ -124,7 +124,16 @@ export const urls = {
   /**
    * Ranking Page
    */
-  ranking: () => '/ranking',
+  ranking: (params?: { world?: string; category?: string; mode?: string }) => {
+    const baseUrl = APP_CONFIG.ROUTES.RANKING;
+    if (!params) return baseUrl;
+    const query = new URLSearchParams();
+    if (params.world) query.append('world', params.world);
+    if (params.category) query.append('category', params.category);
+    if (params.mode) query.append('mode', params.mode);
+    const queryString = query.toString();
+    return queryString ? `${baseUrl}?${queryString}` : baseUrl;
+  },
 
   /**
    * Notifications Page

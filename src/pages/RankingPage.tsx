@@ -1,4 +1,5 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { Header } from '../components/Header';
 import { FooterNav } from '../components/FooterNav';
 import { supabase } from '../utils/supabaseClient';
@@ -9,16 +10,43 @@ import './RankingPage.css';
 type RankingType = 'total' | 'time-attack' | 'survival';
 type RankingPeriod = 'weekly' | 'all-time';
 
+// Helper functions for validation
+const validateWorldParam = (param: string | null): string => {
+  // For now, just return a default if null. In a real app, you might check against a list of valid worlds.
+  return param || 'World1';
+};
+
+const validateModeParam = (param: string | null): RankingType | null => {
+  if (param === 'total' || param === 'time-attack' || param === 'survival') {
+    return param;
+  }
+  return null;
+};
+
 export function RankingPage() {
-  const [activeType, setActiveType] = useState<RankingType>('total');
-  const [activePeriod, setActivePeriod] = useState<RankingPeriod>('weekly');
+  const [searchParams] = useSearchParams();
+
+  // URL 파라미터에서 정보 추출 (기본값 설정)
+  const worldParam = validateWorldParam(searchParams.get('world'));
+  // Note: category param is ignored because get_ranking_v2 doesn't filter by category
+  // It only tracks overall weekly scores, not per-category
+  const modeParam = validateModeParam(searchParams.get('mode'));
+
+  const [activePeriod, setActivePeriod] = useState<'weekly' | 'all-time'>('weekly');
+  const [activeType, setActiveType] = useState<'total' | 'time-attack' | 'survival'>(
+    modeParam === 'time-attack' ? 'time-attack' : modeParam === 'survival' ? 'survival' : 'total'
+  );
   const [loading, setLoading] = useState(false);
   const [currentUserId, setCurrentUserId] = useState<string | null>(null);
 
   const { fetchRanking, rankings } = useLevelProgressStore();
 
-  const currentCategory = 'math';
-  const currentRankings = rankings[`${currentCategory}-${activePeriod}-${activeType}`] || [];
+  // Fetch ranking data (category is not used by RPC)
+  const currentRankings = useMemo(() => {
+    // Use a simple key without category since RPC doesn't filter by it
+    const key = `${activePeriod}-${activeType}`;
+    return rankings[key] || [];
+  }, [rankings, activePeriod, activeType]);
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
@@ -31,11 +59,23 @@ export function RankingPage() {
   useEffect(() => {
     const loadRanking = async () => {
       setLoading(true);
-      await fetchRanking('World1', currentCategory, activePeriod, activeType);
+      // Note: passing null for world and category since RPC doesn't use them
+      await fetchRanking(null as any, null as any, activePeriod, activeType);
       setLoading(false);
     };
     loadRanking();
   }, [activeType, activePeriod, fetchRanking]);
+
+  // 디버그 로그 추가
+  useEffect(() => {
+    console.log('[RankingPage] Active Params:', { activePeriod, activeType });
+    console.log('[RankingPage] Current User ID:', currentUserId);
+    console.log('[RankingPage] Current Rankings Count:', currentRankings.length);
+    if (currentUserId && currentRankings.length > 0) {
+      const found = currentRankings.find(r => r.user_id === currentUserId);
+      console.log('[RankingPage] User found in rankings:', found);
+    }
+  }, [activePeriod, activeType, currentUserId, currentRankings]);
 
   // 내 랭킹 찾기
   const myRank = currentUserId

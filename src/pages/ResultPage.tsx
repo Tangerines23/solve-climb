@@ -112,13 +112,17 @@ export function ResultPage() {
         );
         const ranks =
           useLevelProgressStore.getState().rankings[
-            `${worldParam}-${categoryParam}-weekly-${mode}`
+          `${worldParam}-${categoryParam}-weekly-${mode}`
           ];
         const {
           data: { user },
         } = await supabase.auth.getUser();
-        if (user && ranks)
-          setCurrentRank(Number(ranks.find((r) => r.user_id === user.id)?.rank || null));
+        if (user && ranks && Array.isArray(ranks)) {
+          const myRanking = ranks.find((r) => r.user_id === user.id);
+          if (myRanking) {
+            setCurrentRank(Number(myRanking.rank));
+          }
+        }
       }
     };
     sync();
@@ -141,6 +145,12 @@ export function ResultPage() {
     searchParams,
     fetchUserData,
   ]);
+
+  // 디버그 로그 추가
+  useEffect(() => {
+    console.log('[ResultPage] Params:', { worldParam, categoryParam, level, mode, finalScore });
+    console.log('[ResultPage] Score submitted:', scoreSubmitted);
+  }, [worldParam, categoryParam, level, mode, finalScore, scoreSubmitted]);
 
   const handleRetry = () => {
     const mountain = mountainParam || 'math';
@@ -215,6 +225,7 @@ export function ResultPage() {
           ✕
         </button>
       </header>
+      {/* 세로모드 레이아웃 */}
       <div className="result-card">
         <div className="result-header-section">
           <div className="result-icon floating">{mode === 'time-attack' ? '⏱️' : '💥'}</div>
@@ -253,16 +264,103 @@ export function ResultPage() {
           ))}
         </ul>
       </div>
+
       <div className="result-footer-actions">
         <button onClick={handleRetry} className="result-button-primary">
           다시 도전하기
         </button>
         <div className="result-button-group">
-          <button onClick={() => navigate(urls.ranking())} className="result-button-secondary">
+          <button
+            onClick={() =>
+              navigate(
+                urls.ranking({
+                  world: worldParam || undefined,
+                  category: categoryParam || undefined,
+                  mode: mode || undefined,
+                })
+              )
+            }
+            className="result-button-secondary"
+          >
             랭킹 보기
           </button>
           <button onClick={handleLevelSelect} className="result-button-secondary">
             다른 레벨
+          </button>
+        </div>
+      </div>
+
+      {/* 가로모드 레이아웃 (Landscape) */}
+      <div className="result-landscape-layout">
+        <div className="result-left-section">
+          <div className="result-title-row">
+            <div className="result-icon floating">{mode === 'time-attack' ? '⏱️' : '💥'}</div>
+            <h1 className="result-title">{mode === 'time-attack' ? '시간 종료!' : '게임 오버'}</h1>
+          </div>
+          <p className="result-subtitle">
+            {worldParam} - {categoryParam} Level {level}
+          </p>
+          <div className="score-section">
+            <p className="score-value">{animatedScore.toLocaleString()}m</p>
+          </div>
+        </div>
+
+        <div className="result-divider"></div>
+
+        <div className="result-center-section">
+          <ul className="stat-list">
+            {statsList.map((s, i) => (
+              <li
+                key={i}
+                className={`stat-item ${s.isHighlight ? 'stat-item-highlight' : ''}`}
+                style={{ animationDelay: `${i * 0.1}s` }}
+              >
+                <span className="stat-label">{s.label}</span>
+                <span className="stat-value">{s.value}</span>
+              </li>
+            ))}
+          </ul>
+
+          {/* 가로모드 데스노트 */}
+          {mode === 'survival' && searchParams.get('last_q') && (
+            <div className="wrong-answer-card">
+              <h3 className="wrong-answer-title">마지막 고비 💀</h3>
+              <div className="wrong-answer-item">
+                <div className="wrong-answer-question">{searchParams.get('last_q')}</div>
+                <div className="wrong-answer-row">
+                  <span className="wrong-answer-wrong">오답: {searchParams.get('wrong_a')}</span>
+                  <span className="wrong-answer-correct">정답: {searchParams.get('correct_a')}</span>
+                </div>
+              </div>
+            </div>
+          )}
+        </div>
+
+        <div className="result-divider"></div>
+
+        <div className="result-right-section">
+          <button onClick={handleRetry} className="result-button-primary">
+            다시 도전하기
+          </button>
+          <button
+            onClick={() =>
+              navigate(
+                urls.ranking({
+                  world: worldParam || undefined,
+                  category: categoryParam || undefined,
+                  mode: mode || undefined,
+                })
+              )
+            }
+            className="result-button-secondary"
+          >
+            랭킹 보기
+          </button>
+          <button onClick={handleLevelSelect} className="result-button-secondary">
+            다른 레벨
+          </button>
+          <button onClick={() => navigate(urls.home())} className="result-button-secondary">
+            홈으로 이동
           </button>
         </div>
       </div>

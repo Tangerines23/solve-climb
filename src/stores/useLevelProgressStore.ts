@@ -120,6 +120,15 @@ export const useLevelProgressStore = create<LevelProgressState>()(
       },
 
       clearLevel: async (world, category, level, mode, score) => {
+        console.log('[useLevelProgressStore] clearLevel called:', { world, category, level, mode, score });
+
+        const { data: { user } } = await supabase.auth.getUser();
+        console.log('[useLevelProgressStore] Current user:', user?.id);
+
+        if (!user) {
+          console.warn('[useLevelProgressStore] No user found, skipping clearLevel');
+          return;
+        }
         // 1. Optimistic Update (Local)
         set((state) => {
           const newProgress = { ...state.progress };
@@ -141,7 +150,28 @@ export const useLevelProgressStore = create<LevelProgressState>()(
           return { progress: newProgress };
         });
 
-        // 2. Background Sync (Supabase)
+        // 2. Call submit_game_result RPC to update weekly scores and log activity
+        try {
+          const gameMode = mode === 'time-attack' ? 'timeattack' : 'survival';
+          console.log('[clearLevel] Calling submit_game_result RPC:', { score, gameMode });
+
+          const { error: rpcError } = await supabase.rpc('submit_game_result', {
+            p_score: score,
+            p_minerals_earned: Math.floor(score / 10),
+            p_game_mode: gameMode,
+            p_items_used: null
+          });
+
+          if (rpcError) {
+            console.error('[clearLevel] submit_game_result RPC failed:', rpcError);
+          } else {
+            console.log('[clearLevel] Weekly score updated successfully via RPC');
+          }
+        } catch (error) {
+          console.error('[clearLevel] Failed to call submit_game_result:', error);
+        }
+
+        // 3. Fallback: Direct game_records update (for compatibility)
         try {
           const {
             data: { user },
@@ -331,8 +361,9 @@ export const useLevelProgressStore = create<LevelProgressState>()(
 
       fetchRanking: async (world, category, period, type, limit = 50) => {
         try {
+          // Note: RPC function doesn't actually use p_category, it only uses period and type
           const { data, error } = await supabase.rpc('get_ranking_v2', {
-            p_category: world,
+            p_category: '', // Not used by RPC but required by signature
             p_period: period,
             p_type: type,
             p_limit: limit,
@@ -341,10 +372,11 @@ export const useLevelProgressStore = create<LevelProgressState>()(
           if (error) throw error;
 
           if (data) {
+            // Simplified key without world/category since RPC doesn't filter by them
             set((state) => ({
               rankings: {
                 ...state.rankings,
-                [`${world}-${category}-${period}-${type}`]: data as RankingRecord[],
+                [`${period}-${type}`]: data as RankingRecord[],
               },
             }));
           }
