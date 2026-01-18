@@ -1,21 +1,18 @@
 import ReactDOM from 'react-dom/client';
 import React from 'react';
-import './index.css';
-import './utils/tossAuth';
-import AppContainer from './AppContainer';
+import '@/index.css';
+import '@/utils/tossAuth';
+import AppContainer from '@/AppContainer';
 
-// [DEBUG] 가시적 로그 함수 (window.diagnosis는 index.html에 정의됨)
-const log =
-  ((window as unknown as Record<string, unknown>).diagnosis as typeof console.log | undefined) ||
-  console.log;
+import { logger } from '@/utils/logger';
 
-log('JavaScript Executed. Initializing React...');
+logger.log('JavaScript Executed. Initializing React...');
 
 /**
  * 렌더링 시작
  */
 try {
-  log('Starting React Render...');
+  logger.info('Main', 'Starting React Render...');
 
   const rootElement = document.getElementById('root');
   if (!rootElement) {
@@ -31,7 +28,7 @@ try {
     </React.Fragment>
   );
 
-  log('Render Initialized.');
+  logger.log('Render Initialized.');
 
   // 성공 시 로더 제거
   setTimeout(() => {
@@ -44,8 +41,7 @@ try {
     }
   }, 1000);
 } catch (err) {
-  log('Render Crash!', '#ff4444');
-  console.error(err);
+  logger.error('Main', 'Render Crash!', err);
   if (window.onerror) {
     window.onerror(String(err), 'main.tsx', 0, 0, err as Error);
   }

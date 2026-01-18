@@ -1,6 +1,6 @@
 // src/AppContainer.tsx
 import { BrowserRouter } from 'react-router-dom';
-import App from './App'; // <-- (신규) App.tsx를 임포트합니다.
+import App from '@/App'; // <-- (신규) App.tsx를 임포트합니다.
 
 function AppContainer() {
   const diagnosis = (window as unknown as Record<string, unknown>).diagnosis;

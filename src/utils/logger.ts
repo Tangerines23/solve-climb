@@ -142,6 +142,16 @@ export const logger = {
     console.table(data);
     console.groupEnd();
   },
+
+  /**
+   * 진단용 로그 (메인 진입점 전용)
+   */
+  log(message: string, color?: string): void {
+    if (!isDevelopment) return;
+    const style = color ? `color: ${color}; font-weight: bold;` : LOG_STYLES.info;
+    const timestamp = new Date().toISOString();
+    console.log(`%c[${timestamp}] [SYSTEM] ${message}`, style);
+  },
 };
 
 /**

@@ -5,7 +5,10 @@
     "lib": ["ESNext", "DOM", "DOM.Iterable"],
     "module": "ESNext",
     "skipLibCheck": true,
-
+    "baseUrl": ".",
+    "paths": {
+      "@/*": ["src/*"]
+    },
     /* Bundler mode */
     "moduleResolution": "bundler",
     "resolveJsonModule": true,
@@ -15,14 +18,12 @@
     "declarationMap": false,
     "emitDeclarationOnly": false,
     "incremental": false,
-    "jsx": "react-jsx", /* <-- 이 'react-jsx' 설정이 ts(2866) 오류를 해결합니다. */
-
+    "jsx": "react-jsx" /* <-- 이 'react-jsx' 설정이 ts(2866) 오류를 해결합니다. */,
     /* Linting */
     "strict": true,
     "noUnusedLocals": true,
     "noUnusedParameters": true,
     "noFallthroughCasesInSwitch": true,
-    
     /* Prevent .d.ts file conflicts */
     "skipDefaultLibCheck": true
   },

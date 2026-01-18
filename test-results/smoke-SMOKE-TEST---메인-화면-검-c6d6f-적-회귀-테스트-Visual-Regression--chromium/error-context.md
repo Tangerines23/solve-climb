@@ -1,0 +1,71 @@
+# Page snapshot
+
+```yaml
+- generic [ref=e3]:
+  - banner [ref=e4]:
+    - generic [ref=e5]:
+      - heading "Solve Climb" [level=1] [ref=e6]
+      - generic [ref=e7]:
+        - generic [ref=e8]:
+          - img "stamina" [ref=e9]: ⚡
+          - generic [ref=e10]: "5"
+        - generic [ref=e11]:
+          - img "minerals" [ref=e12]: 💎
+          - generic [ref=e13]: "0"
+      - generic [ref=e14]:
+        - button "상점" [ref=e15] [cursor=pointer]: 🎒
+        - button "알림" [ref=e16] [cursor=pointer]: 🔔
+  - main [ref=e17]:
+    - generic [ref=e18]:
+      - generic [ref=e19]:
+        - img [ref=e21]
+        - generic [ref=e25]:
+          - generic [ref=e26]: "5"
+          - generic [ref=e27]: /5
+      - generic [ref=e28]:
+        - generic [ref=e29]:
+          - generic [ref=e30]: 나의 랭킹
+          - button "더보기 >" [ref=e31] [cursor=pointer]
+        - generic [ref=e32]:
+          - heading "기록 측정 중... 🏔️" [level=2] [ref=e33]
+          - paragraph [ref=e34]: 첫 문제를 풀고 등반 기록을 남겨보세요!
+      - generic [ref=e35]:
+        - generic [ref=e36]:
+          - generic [ref=e37]: 🔥
+          - heading "오늘의 챌린지" [level=2] [ref=e38]
+        - paragraph [ref=e39]: 대수 (Equation) 비례식 기초!
+        - button "도전하기" [ref=e40] [cursor=pointer]
+      - generic [ref=e41]:
+        - heading "등반할 산 선택하기" [level=3] [ref=e42]
+        - generic [ref=e43]:
+          - generic [ref=e44]:
+            - generic [ref=e45]:
+              - generic [ref=e46]: ⛰️
+              - generic [ref=e47]:
+                - heading "수학의 산" [level=4] [ref=e48]
+                - generic [ref=e49]:
+                  - paragraph [ref=e50]:
+                    - text: 누적 등반
+                    - strong [ref=e51]: 0m
+                  - paragraph [ref=e52]: 총 0문제 해결
+            - button "등반하기" [ref=e53] [cursor=pointer]
+          - generic [ref=e55] [cursor=pointer]:
+            - img [ref=e57]
+            - generic [ref=e64]:
+              - heading "미지의 산" [level=3] [ref=e65]
+              - paragraph [ref=e66]: 베이스캠프 구축 중
+              - button "⛏️ 개척 중" [ref=e67]
+  - navigation [ref=e68]:
+    - button "🏠 홈" [ref=e69] [cursor=pointer]:
+      - generic [ref=e70]: 🏠
+      - generic [ref=e71]: 홈
+    - button "🏆 랭킹" [ref=e72] [cursor=pointer]:
+      - generic [ref=e73]: 🏆
+      - generic [ref=e74]: 랭킹
+    - button "📝 일지" [ref=e75] [cursor=pointer]:
+      - generic [ref=e76]: 📝
+      - generic [ref=e77]: 일지
+    - button "👤 마이" [ref=e78] [cursor=pointer]:
+      - generic [ref=e79]: 👤
+      - generic [ref=e80]: 마이
+```

@@ -4,7 +4,7 @@
  * This prevents "Invalid Access" errors by enforcing required parameters at compile time.
  */
 
-import { APP_CONFIG } from '../config/app';
+import { APP_CONFIG } from '@/config/app';
 
 /**
  * Interface for Quiz Page Parameters

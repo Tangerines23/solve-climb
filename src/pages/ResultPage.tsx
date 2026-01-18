@@ -1,10 +1,10 @@
 // src/pages/ResultPage.tsx
 import { useEffect, useState, useRef, useMemo } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
-import { useQuizStore } from '../stores/useQuizStore';
-import { useLevelProgressStore } from '../stores/useLevelProgressStore';
-import { submitScoreToLeaderboard } from '../utils/tossGameCenter';
-import { SCORE_PER_CORRECT } from '../constants/game';
+import { useQuizStore } from '@/stores/useQuizStore';
+import { useLevelProgressStore } from '@/stores/useLevelProgressStore';
+import { submitScoreToLeaderboard } from '@/utils/tossGameCenter';
+import { SCORE_PER_CORRECT } from '@/constants/game';
 import {
   validateWorldParam,
   validateCategoryInWorldParam,
@@ -13,12 +13,12 @@ import {
   validateNumberParam,
   validateFloatParam,
   createSafeStorageKey,
-} from '../utils/urlParams';
-import { useUserStore } from '../stores/useUserStore';
-import { supabase } from '../utils/supabaseClient';
-import { TierUpgradeModal } from '../components/TierUpgradeModal';
-import { BadgeNotification } from '../components/BadgeNotification';
-import { urls } from '../utils/navigation';
+} from '@/utils/urlParams';
+import { useUserStore } from '@/stores/useUserStore';
+import { supabase } from '@/utils/supabaseClient';
+import { TierUpgradeModal } from '@/components/TierUpgradeModal';
+import { BadgeNotification } from '@/components/BadgeNotification';
+import { urls } from '@/utils/navigation';
 import './ResultPage.css';
 
 function useCountUp(targetValue: number, duration = 1000) {

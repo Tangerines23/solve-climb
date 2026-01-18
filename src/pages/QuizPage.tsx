@@ -2,31 +2,31 @@
 import { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import './QuizPage.css';
-import { useQuizStore, type TimeLimit } from '../stores/useQuizStore';
-import { QuizCard } from '../components/QuizCard';
-import { useQuestionGenerator } from '../hooks/useQuestionGenerator';
-import { useQuizInput } from '../hooks/useQuizInput';
-import { useQuizGameState } from '../hooks/useQuizGameState';
-import { useQuizAnimations } from '../hooks/useQuizAnimations';
-import { useQuizSubmit } from '../hooks/useQuizSubmit';
-import { useSettingsStore } from '../stores/useSettingsStore';
-import { useQuizRevive } from '../hooks/useQuizRevive';
-import { useUserStore } from '../stores/useUserStore';
-import { useGameStore } from '../stores/useGameStore';
-import { useDebugStore } from '../stores/useDebugStore';
-import { useToastStore } from '../stores/useToastStore';
-import type { Category, World } from '../types/quiz';
-import { ItemFeedbackRef } from '../components/game/ItemFeedbackOverlay';
-import { supabase } from '../utils/supabaseClient';
+import { useQuizStore, type TimeLimit } from '@/stores/useQuizStore';
+import { QuizCard } from '@/components/QuizCard';
+import { useQuestionGenerator } from '@/hooks/useQuestionGenerator';
+import { useQuizInput } from '@/hooks/useQuizInput';
+import { useQuizGameState } from '@/hooks/useQuizGameState';
+import { useQuizAnimations } from '@/hooks/useQuizAnimations';
+import { useQuizSubmit } from '@/hooks/useQuizSubmit';
+import { useSettingsStore } from '@/stores/useSettingsStore';
+import { useQuizRevive } from '@/hooks/useQuizRevive';
+import { useUserStore } from '@/stores/useUserStore';
+import { useGameStore } from '@/stores/useGameStore';
+import { useDebugStore } from '@/stores/useDebugStore';
+import { useToastStore } from '@/stores/useToastStore';
+import type { Category, World } from '@/types/quiz';
+import { ItemFeedbackRef } from '@/components/game/ItemFeedbackOverlay';
+import { supabase } from '@/utils/supabaseClient';
 import {
   validateWorldParam,
   validateCategoryInWorldParam,
   validateLevelParam,
   validateModeParam,
-} from '../utils/urlParams';
-import { QuizQuestion } from '../types/quiz';
-import { QuizPreview } from '../components/quiz/QuizPreview';
-import { QuizModals } from '../components/quiz/QuizModals';
+} from '@/utils/urlParams';
+import { QuizQuestion } from '@/types/quiz';
+import { QuizPreview } from '@/components/quiz/QuizPreview';
+import { QuizModals } from '@/components/quiz/QuizModals';
 
 export function QuizPage() {
   const score = useQuizStore((state) => state.score);

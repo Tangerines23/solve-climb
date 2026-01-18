@@ -1,46 +1,46 @@
 // src/App.tsx
 import { useEffect, lazy, Suspense } from 'react';
 import { Routes, Route } from 'react-router-dom';
-import { useLevelProgressStore } from './stores/useLevelProgressStore';
-import { useAuthStore } from './stores/useAuthStore';
-import { useCustomBackNavigation } from './hooks/useCustomBackNavigation';
-import { ErrorBoundary } from './components/ErrorBoundary';
-import { GlobalLoadingIndicator } from './components/GlobalLoadingIndicator';
-import { useErrorLogStore } from './stores/useErrorLogStore';
-import { useDebugStore } from './stores/useDebugStore';
+import { useLevelProgressStore } from '@/stores/useLevelProgressStore';
+import { useAuthStore } from '@/stores/useAuthStore';
+import { useCustomBackNavigation } from '@/hooks/useCustomBackNavigation';
+import { ErrorBoundary } from '@/components/ErrorBoundary';
+import { GlobalLoadingIndicator } from '@/components/GlobalLoadingIndicator';
+import { useErrorLogStore } from '@/stores/useErrorLogStore';
+import { useDebugStore } from '@/stores/useDebugStore';
 
 const HomePage = lazy(() =>
-  import('./pages/HomePage').then((module) => ({ default: module.HomePage }))
+  import('@/pages/HomePage').then((module) => ({ default: module.HomePage }))
 );
-import { GlobalToastContainer } from './components/GlobalToastContainer';
+import { GlobalToastContainer } from '@/components/GlobalToastContainer';
 const WorldSelectPage = lazy(() =>
-  import('./pages/WorldSelectPage').then((module) => ({ default: module.WorldSelectPage }))
+  import('@/pages/WorldSelectPage').then((module) => ({ default: module.WorldSelectPage }))
 );
 const CategorySelectPage = lazy(() =>
-  import('./pages/CategorySelectPage').then((module) => ({ default: module.CategorySelectPage }))
+  import('@/pages/CategorySelectPage').then((module) => ({ default: module.CategorySelectPage }))
 );
 const LevelSelectPage = lazy(() =>
-  import('./pages/LevelSelectPage').then((module) => ({ default: module.LevelSelectPage }))
+  import('@/pages/LevelSelectPage').then((module) => ({ default: module.LevelSelectPage }))
 );
 const QuizPage = lazy(() =>
-  import('./pages/QuizPage').then((module) => ({ default: module.QuizPage }))
+  import('@/pages/QuizPage').then((module) => ({ default: module.QuizPage }))
 );
 const ResultPage = lazy(() =>
-  import('./pages/ResultPage').then((module) => ({ default: module.ResultPage }))
+  import('@/pages/ResultPage').then((module) => ({ default: module.ResultPage }))
 );
 const RankingPage = lazy(() =>
-  import('./pages/RankingPage').then((module) => ({ default: module.RankingPage }))
+  import('@/pages/RankingPage').then((module) => ({ default: module.RankingPage }))
 );
 const RoadmapPage = lazy(() =>
-  import('./pages/RoadmapPage').then((module) => ({ default: module.RoadmapPage }))
+  import('@/pages/RoadmapPage').then((module) => ({ default: module.RoadmapPage }))
 );
-const MyPage = lazy(() => import('./pages/MyPage').then((module) => ({ default: module.MyPage })));
+const MyPage = lazy(() => import('@/pages/MyPage').then((module) => ({ default: module.MyPage })));
 const NotificationPage = lazy(() =>
-  import('./pages/NotificationPage').then((module) => ({ default: module.NotificationPage }))
+  import('@/pages/NotificationPage').then((module) => ({ default: module.NotificationPage }))
 );
 // AuthCallbackPage & AuthTestPage imports removed
 const ShopPage = lazy(() =>
-  import('./pages/ShopPage').then((module) => ({ default: module.ShopPage }))
+  import('@/pages/ShopPage').then((module) => ({ default: module.ShopPage }))
 );
 
 // ⚠️ 개발 환경에서만 디버그 패널 로드

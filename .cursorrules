@@ -160,6 +160,14 @@ CSS 파일을 작성하거나 수정할 때:
 - **`docs/UI_GUIDE.md`**: 모든 UI 컴포넌트 패턴, 레이아웃 시스템, 인터랙션 패턴, Do's and Don'ts
 - **`docs/DESIGN_SYSTEM.md`**: CSS 변수 시스템, 디자인 토큰
 
+## 📁 파일 경로 및 임포트 규칙
+- **절대 경로 사용**: 모든 내부 파일 임포트 시 `@/` 에일리어스를 사용해야 합니다. (예: `import { Header } from '@/components/Header'`)
+- **상대 경로 금지**: `../` 또는 `./`를 사용한 상대 경로 임포트는 지양합니다.
+
+## 📝 로깅 및 디버깅 규칙
+- **전용 로거 사용**: `console.log`를 직접 사용하는 대신 `src/utils/logger.ts`의 `logger`를 사용하세요.
+- **로깅 형식**: `logger.info(context, message)`, `logger.error(context, message, error)` 형식을 준수하세요.
+
 ### UI 컴포넌트 작성 체크리스트
 1. 레이아웃: Header/Footer 높이 고려, 반응형 레이아웃 지원
 2. 스타일: CSS 변수 사용 (하드코딩 금지)

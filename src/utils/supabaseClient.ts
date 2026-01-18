@@ -1,5 +1,6 @@
 import { createClient, SupabaseClient } from '@supabase/supabase-js';
-import { ENV, logEnvInfo } from './env';
+import { ENV, logEnvInfo } from '@/utils/env';
+import { Database } from '@/types/database.types';
 
 // 개발 환경에서 환경 변수 정보 출력
 logEnvInfo();
@@ -49,7 +50,7 @@ const createSupabaseClient = (): SupabaseClient => {
     console.log('[Supabase] 콜백 URL:', redirectUrl);
   }
 
-  const client = createClient(ENV.SUPABASE_URL, ENV.SUPABASE_ANON_KEY, options);
+  const client = createClient<Database>(ENV.SUPABASE_URL, ENV.SUPABASE_ANON_KEY, options);
 
   // 익명 사용자 인증 자동 수행 (RLS 정책을 통과하기 위해)
   // 세션이 없을 때만 익명 로그인 시도 (비동기, 실패해도 무시)

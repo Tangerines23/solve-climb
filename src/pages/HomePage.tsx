@@ -1,14 +1,14 @@
 // src/pages/HomePage.tsx - 메인 랜딩 페이지
 import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Header } from '../components/Header';
-import { StatusCard } from '../components/StatusCard';
-import { ChallengeCard } from '../components/ChallengeCard';
-import { CategoryList } from '../components/CategoryList';
-import { FooterNav } from '../components/FooterNav';
-import { Toast } from '../components/Toast';
-import { StaminaGauge } from '../components/StaminaGauge';
-import { APP_CONFIG } from '../config/app';
+import { Header } from '@/components/Header';
+import { StatusCard } from '@/components/StatusCard';
+import { ChallengeCard } from '@/components/ChallengeCard';
+import { CategoryList } from '@/components/CategoryList';
+import { FooterNav } from '@/components/FooterNav';
+import { Toast } from '@/components/Toast';
+import { StaminaGauge } from '@/components/StaminaGauge';
+import { APP_CONFIG } from '@/config/app';
 import './HomePage.css';
 
 export function HomePage() {

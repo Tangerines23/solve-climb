@@ -1,13 +1,13 @@
 import { useState, useRef, useLayoutEffect } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
-import { APP_CONFIG } from '../config/app';
-import { ClimbGraphic } from '../components/ClimbGraphic';
-import { MyRecordCard } from '../components/MyRecordCard';
-import { LevelListCard } from '../components/LevelListCard';
-import { FooterNav } from '../components/FooterNav';
-import { Toast } from '../components/Toast';
-import { World, Category } from '../types/quiz';
-import { urls } from '../utils/navigation';
+import { APP_CONFIG } from '@/config/app';
+import { ClimbGraphic } from '@/components/ClimbGraphic';
+import { MyRecordCard } from '@/components/MyRecordCard';
+import { LevelListCard } from '@/components/LevelListCard';
+import { FooterNav } from '@/components/FooterNav';
+import { Toast } from '@/components/Toast';
+import { World, Category } from '@/types/quiz';
+import { urls } from '@/utils/navigation';
 import './LevelSelectPage.css';
 
 export function LevelSelectPage() {

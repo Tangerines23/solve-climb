@@ -1,8 +1,8 @@
 import { useNavigate, useSearchParams } from 'react-router-dom';
-import { APP_CONFIG } from '../config/app';
-import { TopicHeader } from '../components/TopicHeader';
-import { FooterNav } from '../components/FooterNav';
-import { urls } from '../utils/navigation';
+import { APP_CONFIG } from '@/config/app';
+import { TopicHeader } from '@/components/TopicHeader';
+import { FooterNav } from '@/components/FooterNav';
+import { urls } from '@/utils/navigation';
 import './TopicSelectPage.css';
 
 export function WorldSelectPage() {

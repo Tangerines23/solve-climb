@@ -1,7 +1,7 @@
-import { defineConfig } from 'vite'
-import react from '@vitejs/plugin-react'
-import path from 'path'
-import { visualizer } from 'rollup-plugin-visualizer'
+import { defineConfig } from 'vite';
+import react from '@vitejs/plugin-react';
+import path from 'path';
+import { visualizer } from 'rollup-plugin-visualizer';
 
 /// <reference types="vitest" />
 
@@ -15,17 +15,26 @@ export default defineConfig(() => {
     plugins: [
       react(),
       // Bundle analyzer (only in analyze mode)
-      process.env.ANALYZE && visualizer({
-        open: true,
-        filename: 'dist/stats.html',
-        gzipSize: true,
-        brotliSize: true,
-      }),
+      process.env.ANALYZE &&
+        visualizer({
+          open: true,
+          filename: 'dist/stats.html',
+          gzipSize: true,
+          brotliSize: true,
+        }),
     ].filter(Boolean),
     resolve: {
-      alias: isVercel ? {
-        '@apps-in-toss/web-framework': path.resolve(process.cwd(), './src/mocks/web-framework-mock.ts'),
-      } : {},
+      alias: {
+        '@': path.resolve(process.cwd(), './src'),
+        ...(isVercel
+          ? {
+              '@apps-in-toss/web-framework': path.resolve(
+                process.cwd(),
+                './src/mocks/web-framework-mock.ts'
+              ),
+            }
+          : {}),
+      },
     },
     define: {
       'import.meta.env.VITE_IS_VERCEL': JSON.stringify(isVercel),
@@ -40,13 +49,15 @@ export default defineConfig(() => {
         output: {
           manualChunks: (id) => {
             // 디버그 관련 코드를 별도 청크로 분리 (프로덕션 빌드 최적화)
-            if (id.includes('DebugPanel') ||
+            if (
+              id.includes('DebugPanel') ||
               id.includes('useDebugStore') ||
-              id.includes('/debug/')) {
+              id.includes('/debug/')
+            ) {
               return 'debug';
             }
-          }
-        }
+          },
+        },
       },
       chunkSizeWarningLimit: 2000, // 2MB (TDS 포함 시 용량 증가 대응)
     },
@@ -55,7 +66,7 @@ export default defineConfig(() => {
       include: [
         'hoist-non-react-statics',
         'react-is',
-        ...(isVercel ? [] : ['@apps-in-toss/web-framework'])
+        ...(isVercel ? [] : ['@apps-in-toss/web-framework']),
       ],
     },
     // Vitest 설정
@@ -80,7 +91,7 @@ export default defineConfig(() => {
         // 나머지 모든 테스트 → threads pool (병렬 실행, 기본값)
       ],
       coverage: {
-        provider: 'istanbul',  // v8 → istanbul (안정성 우선)
+        provider: 'istanbul', // v8 → istanbul (안정성 우선)
         // 리포트 생성: text(콘솔), json-summary(CI), lcov(Codecov), html(로컬 분석)
         reporter: ['text', 'json-summary', 'lcov', 'html'],
         // 커버리지 수집 범위 제한: 테스트 파일과 설정 파일 제외
@@ -118,6 +129,5 @@ export default defineConfig(() => {
         cleanOnRerun: true,
       },
     },
-  }
-})
-
+  };
+});

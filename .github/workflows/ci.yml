@@ -25,7 +25,7 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '20'
+          node-version: '22.17.0'
           cache: 'npm'
 
       - name: Install dependencies
@@ -68,6 +68,9 @@ jobs:
       - name: Production build
         run: npm run build
 
+      - name: Bundle size audit
+        run: npm run check:size
+
       - name: Upload build artifacts
         if: success()
         uses: actions/upload-artifact@v4
@@ -89,7 +92,7 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '20'
+          node-version: '22.17.0'
           cache: 'npm'
 
       - name: Install dependencies
@@ -100,7 +103,6 @@ jobs:
 
       - name: Generate coverage with thresholds
         run: npm run test:coverage
-        continue-on-error: true
 
       - name: Check coverage thresholds
         run: |
@@ -184,7 +186,7 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '20'
+          node-version: '22.17.0'
           cache: 'npm'
 
       - name: Install dependencies
@@ -216,7 +218,7 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '20'
+          node-version: '22.17.0'
           cache: 'npm'
 
       - name: Install dependencies
@@ -250,11 +252,45 @@ jobs:
           SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
         continue-on-error: true
 
+  # Phase 6: E2E 및 시각적 회귀 테스트 (Playwright)
+  e2e:
+    name: E2E & Visual Tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    needs: validate
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22.17.0'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Install Playwright Browsers
+        run: npx playwright install --with-deps
+
+      - name: Run Playwright tests
+        run: npm run test:e2e
+
+      - name: Upload Playwright report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-report
+          path: playwright-report/
+          retention-days: 30
+
   # 최종 상태 확인 (모든 Job 완료 후)
   ci-status:
     name: CI Status
     runs-on: ubuntu-latest
-    needs: [validate, test, security]
+    needs: [validate, test, security, e2e]
     if: always()
 
     steps:
@@ -262,13 +298,15 @@ jobs:
         run: |
           if [ "${{ needs.validate.result }}" != "success" ] || \
              [ "${{ needs.test.result }}" != "success" ] || \
-             [ "${{ needs.security.result }}" != "success" ]; then
+             [ "${{ needs.security.result }}" != "success" ] || \
+             [ "${{ needs.e2e.result }}" != "success" ]; then
             echo "❌ CI failed"
             echo ""
             echo "Failed jobs:"
             [ "${{ needs.validate.result }}" != "success" ] && echo "  - Code Validation" || true
             [ "${{ needs.test.result }}" != "success" ] && echo "  - Tests & Coverage" || true
             [ "${{ needs.security.result }}" != "success" ] && echo "  - Security Audit (보안 취약점 발견)" || true
+            [ "${{ needs.e2e.result }}" != "success" ] && echo "  - E2E & Visual Tests" || true
             exit 1
           else
             echo "✅ CI passed"
