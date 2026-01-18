@@ -93,12 +93,14 @@ export function StatusCard() {
           </div>
           <div className="status-main">
             <h2 className="status-rank">
-              {status.totalRank > 0 ? `종합 ${formatRank(status.totalRank)}위` : '등반 시작하기 🏔️'}
+              {status.totalRank > 0
+                ? `종합 ${formatRank(status.totalRank)}위`
+                : '기록 측정 중... 🏔️'}
             </h2>
             <p className="status-info">
               {status.totalRank > 0
                 ? `상위 ${status.rankPercent}% ・ 어제보다 ${status.rankChange}계단 올랐어요!`
-                : '아직 기록이 없습니다. 첫 문제를 완등해보세요!'}
+                : '첫 문제를 풀고 등반 기록을 남겨보세요!'}
             </p>
           </div>
         </>

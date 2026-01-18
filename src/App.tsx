@@ -9,10 +9,10 @@ import { GlobalLoadingIndicator } from './components/GlobalLoadingIndicator';
 import { useErrorLogStore } from './stores/useErrorLogStore';
 import { useDebugStore } from './stores/useDebugStore';
 
-// 페이지 컴포넌트 레이지 로딩
 const HomePage = lazy(() =>
   import('./pages/HomePage').then((module) => ({ default: module.HomePage }))
 );
+import { GlobalToastContainer } from './components/GlobalToastContainer';
 const WorldSelectPage = lazy(() =>
   import('./pages/WorldSelectPage').then((module) => ({ default: module.WorldSelectPage }))
 );
@@ -44,9 +44,7 @@ const ShopPage = lazy(() =>
 );
 
 // ⚠️ 개발 환경에서만 디버그 패널 로드
-const DebugPanel = import.meta.env.DEV
-  ? lazy(() => import('./components/DebugPanel'))
-  : null;
+const DebugPanel = import.meta.env.DEV ? lazy(() => import('./components/DebugPanel')) : null;
 
 function App() {
   const { syncProgress } = useLevelProgressStore();
@@ -103,6 +101,7 @@ function App() {
   return (
     <ErrorBoundary>
       <GlobalLoadingIndicator />
+      <GlobalToastContainer />
       <Suspense
         fallback={
           <div
@@ -133,9 +132,7 @@ function App() {
         </Routes>
 
         {/* Global Debug Panel (Outside Routes, High Z-Index) */}
-        {import.meta.env.DEV && isDebugPanelOpen && DebugPanel && (
-          <DebugPanel />
-        )}
+        {import.meta.env.DEV && isDebugPanelOpen && DebugPanel && <DebugPanel />}
       </Suspense>
     </ErrorBoundary>
   );

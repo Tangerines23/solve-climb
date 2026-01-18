@@ -1,5 +1,6 @@
 // 게임 상태 관리 로직을 관리하는 커스텀 훅
 import { useState, useCallback } from 'react';
+import { urls } from '../utils/navigation';
 import { GameMode } from '../types/quiz';
 
 interface UseQuizGameStateParams {
@@ -54,12 +55,17 @@ export function useQuizGameState({
       // 서바이벌 모드: 오답 정보 및 평균 풀이 시간 전달
       if (gameMode === 'survival') {
         if (wrongAnswersState.length > 0) {
+          const lastWrong = wrongAnswersState[wrongAnswersState.length - 1];
+          params.set('last_q', lastWrong.question);
+          params.set('wrong_a', lastWrong.wrongAnswer);
+          params.set('correct_a', lastWrong.correctAnswer);
+
           const questions = wrongAnswersState.map((w) => w.question).join('|');
           const wrongAns = wrongAnswersState.map((w) => w.wrongAnswer).join('|');
           const correctAns = wrongAnswersState.map((w) => w.correctAnswer).join('|');
-          params.set('wrong_q', questions);
-          params.set('wrong_a', wrongAns);
-          params.set('correct_a', correctAns);
+          params.set('wrong_qs', questions);
+          params.set('wrong_as', wrongAns);
+          params.set('correct_as', correctAns);
         }
 
         // 평균 풀이 시간 계산
@@ -81,7 +87,7 @@ export function useQuizGameState({
         params.set('question_ids', questionIds.join(','));
       }
 
-      navigate(`/result?${params.toString()}`);
+      navigate(urls.result(params));
     },
     [
       mountainParam,

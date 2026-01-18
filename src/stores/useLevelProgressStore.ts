@@ -268,7 +268,15 @@ export const useLevelProgressStore = create<LevelProgressState>()(
               const newProgress = { ...state.progress };
 
               records.forEach((serverRecord) => {
-                const { category: world, subject: category, level, mode, score, cleared, cleared_at } = serverRecord;
+                const {
+                  category: world,
+                  subject: category,
+                  level,
+                  mode,
+                  score,
+                  cleared,
+                  cleared_at,
+                } = serverRecord;
 
                 if (!newProgress[world]) newProgress[world] = {};
                 if (!newProgress[world][category]) newProgress[world][category] = {};

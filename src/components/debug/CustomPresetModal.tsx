@@ -133,7 +133,9 @@ export function CustomPresetModal({
           {errorMessage && <div className="custom-preset-modal-error">{errorMessage}</div>}
 
           <div className="custom-preset-modal-field">
-            <label htmlFor="custom-preset-name-input" className="custom-preset-modal-label">프리셋 이름:</label>
+            <label htmlFor="custom-preset-name-input" className="custom-preset-modal-label">
+              프리셋 이름:
+            </label>
             <input
               type="text"
               id="custom-preset-name-input"
@@ -149,7 +151,12 @@ export function CustomPresetModal({
           </div>
 
           <div className="custom-preset-modal-field">
-            <label htmlFor="custom-preset-description-textarea" className="custom-preset-modal-label">설명:</label>
+            <label
+              htmlFor="custom-preset-description-textarea"
+              className="custom-preset-modal-label"
+            >
+              설명:
+            </label>
             <textarea
               id="custom-preset-description-textarea"
               name="presetDescription"
@@ -164,7 +171,11 @@ export function CustomPresetModal({
           <div className="custom-preset-modal-actions-section">
             <div className="custom-preset-modal-actions-header">
               <span className="custom-preset-modal-label">액션:</span>
-              <button className="custom-preset-modal-add-action-button" onClick={handleAddAction} aria-label="액션 추가">
+              <button
+                className="custom-preset-modal-add-action-button"
+                onClick={handleAddAction}
+                aria-label="액션 추가"
+              >
                 액션 추가
               </button>
             </div>
@@ -218,7 +229,12 @@ export function CustomPresetModal({
             {editingAction !== null && (
               <div className="custom-preset-modal-action-editor">
                 <div className="custom-preset-modal-field">
-                  <label htmlFor="custom-preset-action-type-select" className="custom-preset-modal-label">액션 타입:</label>
+                  <label
+                    htmlFor="custom-preset-action-type-select"
+                    className="custom-preset-modal-label"
+                  >
+                    액션 타입:
+                  </label>
                   <select
                     id="custom-preset-action-type-select"
                     name="actionType"
@@ -250,7 +266,12 @@ export function CustomPresetModal({
 
                 {editingAction.type === 'reset' && (
                   <div className="custom-preset-modal-field">
-                    <label htmlFor="custom-preset-action-target-select" className="custom-preset-modal-label">대상:</label>
+                    <label
+                      htmlFor="custom-preset-action-target-select"
+                      className="custom-preset-modal-label"
+                    >
+                      대상:
+                    </label>
                     <select
                       id="custom-preset-action-target-select"
                       name="actionTarget"
@@ -273,7 +294,12 @@ export function CustomPresetModal({
 
                 {editingAction.type === 'setTier' && (
                   <div className="custom-preset-modal-field">
-                    <label htmlFor="custom-preset-action-level-input" className="custom-preset-modal-label">레벨:</label>
+                    <label
+                      htmlFor="custom-preset-action-level-input"
+                      className="custom-preset-modal-label"
+                    >
+                      레벨:
+                    </label>
                     <input
                       type="number"
                       id="custom-preset-action-level-input"
@@ -296,7 +322,12 @@ export function CustomPresetModal({
                   editingAction.type === 'setMinerals' ||
                   editingAction.type === 'setStamina') && (
                   <div className="custom-preset-modal-field">
-                    <label htmlFor="custom-preset-action-value-input" className="custom-preset-modal-label">값:</label>
+                    <label
+                      htmlFor="custom-preset-action-value-input"
+                      className="custom-preset-modal-label"
+                    >
+                      값:
+                    </label>
                     <input
                       type="number"
                       id="custom-preset-action-value-input"
@@ -316,7 +347,12 @@ export function CustomPresetModal({
 
                 {editingAction.type === 'grantAllItems' && (
                   <div className="custom-preset-modal-field">
-                    <label htmlFor="custom-preset-action-quantity-input" className="custom-preset-modal-label">수량:</label>
+                    <label
+                      htmlFor="custom-preset-action-quantity-input"
+                      className="custom-preset-modal-label"
+                    >
+                      수량:
+                    </label>
                     <input
                       type="number"
                       id="custom-preset-action-quantity-input"
@@ -336,7 +372,12 @@ export function CustomPresetModal({
 
                 {editingAction.type === 'setGameTime' && (
                   <div className="custom-preset-modal-field">
-                    <label htmlFor="custom-preset-action-seconds-input" className="custom-preset-modal-label">초:</label>
+                    <label
+                      htmlFor="custom-preset-action-seconds-input"
+                      className="custom-preset-modal-label"
+                    >
+                      초:
+                    </label>
                     <input
                       type="number"
                       id="custom-preset-action-seconds-input"

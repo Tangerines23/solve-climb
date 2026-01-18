@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { APP_CONFIG } from '../config/app';
+import { urls } from '../utils/navigation';
 import { useFavoriteStore } from '../stores/useFavoriteStore';
 import { UnknownMountainCard } from './UnknownMountainCard';
 import { Toast } from './Toast';
@@ -14,11 +15,17 @@ export function CategoryList() {
 
   const handleMountainClick = (mountainId: string) => {
     // 산 선택 시 해당 산의 카테고리(기초, 논리 등) 선택 페이지로 이동
-    navigate(`${APP_CONFIG.ROUTES.CATEGORY_SELECT}?mountain=${mountainId}`);
+    navigate(urls.categorySelect({ mountain: mountainId }));
   };
 
   // 활성화된 산 목록
-  const mountains = APP_CONFIG.MOUNTAINS;
+  const mountains = (APP_CONFIG.MOUNTAINS as unknown as any[]).filter((mountain) => {
+    if (mountain.id === 'math') return APP_CONFIG.FEATURE_FLAGS.ENABLE_MATH_MOUNTAIN;
+    if (mountain.id === 'language') return APP_CONFIG.FEATURE_FLAGS.ENABLE_LANGUAGE_MOUNTAIN;
+    if (mountain.id === 'logic') return APP_CONFIG.FEATURE_FLAGS.ENABLE_LOGIC_MOUNTAIN;
+    if (mountain.id === 'general') return APP_CONFIG.FEATURE_FLAGS.ENABLE_GENERAL_MOUNTAIN;
+    return true;
+  });
 
   return (
     <div className="category-list-container">
@@ -48,12 +55,15 @@ export function CategoryList() {
                 </div>
               </div>
               <button
-                className="category-climb-button"
-                disabled={mountain.disabled}
+                className={`category-climb-button ${mountain.disabled ? 'disabled' : ''}`}
                 data-category-id={mountain.id}
                 onClick={(e) => {
                   e.stopPropagation();
-                  handleMountainClick(mountain.id);
+                  if (mountain.disabled) {
+                    setShowExplorerToast('셰르파들이 안전한 길을 찾는 중입니다! (준비 중) ⛏️');
+                  } else {
+                    handleMountainClick(mountain.id);
+                  }
                 }}
               >
                 {mountain.disabled ? '준비 중' : '등반하기'}

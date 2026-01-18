@@ -5,8 +5,6 @@ import { GameMode } from '../types/quiz';
 import {
   SLIDE_PER_WRONG,
   MAX_POSSIBLE_ANSWER,
-  BASE_CLIMB_DISTANCE,
-  DISTANCE_PER_LEVEL,
   THEME_MULTIPLIERS,
   BOSS_LEVEL,
   BOSS_BONUS,
@@ -188,19 +186,23 @@ export function useQuizSubmit({
         // 콤보 증가 및 가중치 적용
         incrementCombo();
 
-        // [New Scoring System]
-        const level = parseInt(new URLSearchParams(window.location.search).get('level') || '1', 10);
+        // [v2.2 New Scoring System]
+        // 레벨은 문제에서 직접 가져오거나 URL 파라미터에서 가져옴
+        const currentLevel =
+          currentQuestion.level ||
+          parseInt(new URLSearchParams(window.location.search).get('level') || '1', 10);
         const { feverLevel } = useGameStore.getState();
 
-        // 1. 기본 레벨 점수 (Base Score)
-        const baseLevelScore = BASE_CLIMB_DISTANCE + (level - 1) * DISTANCE_PER_LEVEL;
+        // 1. 기본 레벨 점수 (Base Score) - v2.2 공식: 레벨 * 10m
+        const baseLevelScore = currentLevel * 10;
 
-        // 2. 테마 난이도 배율 (Theme Multiplier)
+        // 2. 테마 난이도 배율 (Theme Multiplier) - 서바이벌은 기본 1.0 (또는 기획에 따라)
+        // 타임어택 등 레벨 고정 모드에서는 티어 배율 적용
         const categoryTopics =
           APP_CONFIG.SUB_TOPICS[categoryParam as keyof typeof APP_CONFIG.SUB_TOPICS] || [];
         const currentTopic = categoryTopics.find((t: any) => t.id === subParam);
         const tier = ((currentTopic as any)?.tier as ThemeTier) || 'basic';
-        const themeMultiplier = THEME_MULTIPLIERS[tier];
+        const themeMultiplier = gameMode === 'survival' ? 1.0 : THEME_MULTIPLIERS[tier];
 
         // 3. 콤보 배율 (Combo Multiplier)
         const comboMultiplier = feverLevel === 2 ? 1.5 : feverLevel === 1 ? 1.2 : 1.0;
@@ -208,8 +210,8 @@ export function useQuizSubmit({
         // 4. 최종 점수 계산
         let earnedDistance = Math.floor(baseLevelScore * themeMultiplier * comboMultiplier);
 
-        // 5. 보스 보너스 (Lv.10)
-        if (level === BOSS_LEVEL) {
+        // 5. 보스 보너스 (Lv.10) - 타임어택 전용 (서바이벌은 매번 점수가 다르므로 제외)
+        if (gameMode !== 'survival' && currentLevel === BOSS_LEVEL) {
           earnedDistance += BOSS_BONUS;
         }
 
@@ -330,6 +332,10 @@ export function useQuizSubmit({
               setShowFlash(false);
               setInputAnimation('');
               setCardAnimation('');
+
+              // v2.2 데스노트 데이터 전달을 위해 handleGameOver 인자 활용 (hook 파라미터에는 없으므로 navigate 직접 호출 또는 smartHandleGameOver 수정 필요)
+              // 여기서는 일단 수동으로 URL 조립 가능하도록 유도하거나 smartHandleGameOver가 currentQuestion 정보를 알게 함.
+              // QuizPage의 smartHandleGameOver가 gameState에서 정보를 가져갈 수 있게 설계됨.
               paramsRef.current.handleGameOver();
             }
           }, 800);

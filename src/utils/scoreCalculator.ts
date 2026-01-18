@@ -88,9 +88,9 @@ export function calculateSubTopicTargetAltitude(category: string, subTopic: stri
     const level = levelData.level;
     const baseLevelScore = BASE_CLIMB_DISTANCE + (level - 1) * DISTANCE_PER_LEVEL;
 
-    // 획득 예상 거리 = (기본거리 * 테마배율) * 20문제 
+    // 획득 예상 거리 = (기본거리 * 테마배율) * 20문제
     // (콤보는 변동성이 크므로 목표치 계산에서는 제외하거나 평균값 1.0 적용)
-    let levelTargetAltitude = (baseLevelScore * themeMultiplier) * 20;
+    let levelTargetAltitude = baseLevelScore * themeMultiplier * 20;
 
     // 보스 보너스 합산
     if (level === BOSS_LEVEL) {

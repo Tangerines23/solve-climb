@@ -25,55 +25,48 @@ interface ItemProps {
 
 // --- 최적화용 메모이제이션 컴포넌트 ---
 
-const LinearLandmarkItem = memo(({
-  item,
-  stats,
-  isRefCurrent,
-  isNext,
-  currentMarkerRef,
-  nextMarkerRef
-}: ItemProps) => {
-  const isPassed = stats.totalAltitude >= item.altitude;
-  const isTier = item.isTier;
-  const isCurrent = isTier && stats.totalAltitude === item.altitude;
+const LinearLandmarkItem = memo(
+  ({ item, stats, isRefCurrent, isNext, currentMarkerRef, nextMarkerRef }: ItemProps) => {
+    const isPassed = stats.totalAltitude >= item.altitude;
+    const isTier = item.isTier;
+    const isCurrent = isTier && stats.totalAltitude === item.altitude;
 
-  return (
-    <div
-      className={`landmark-item ${isTier ? 'type-tier' : 'type-landmark'} ${isCurrent ? 'is-current' : ''} ${isPassed ? 'is-passed' : ''}`}
-      style={{
-        position: 'absolute',
-        bottom: `${item.bottom}px`,
-        left: 0,
-        right: 0,
-        height: '0px',
-        minHeight: 0,
-        zIndex: 2,
-        display: 'flex',
-        alignItems: 'center',
-        willChange: 'bottom'
-      }}
-    >
+    return (
       <div
-        className="landmark-progress-marker"
-        ref={isRefCurrent ? currentMarkerRef : isNext ? nextMarkerRef : null}
+        className={`landmark-item ${isTier ? 'type-tier' : 'type-landmark'} ${isCurrent ? 'is-current' : ''} ${isPassed ? 'is-passed' : ''}`}
+        style={{
+          position: 'absolute',
+          bottom: `${item.bottom}px`,
+          left: 0,
+          right: 0,
+          height: '0px',
+          minHeight: 0,
+          zIndex: 2,
+          display: 'flex',
+          alignItems: 'center',
+          willChange: 'bottom',
+        }}
       >
-        <div className={isTier ? 'landmark-dot' : 'landmark-dot sub-dot'}>
-          {isTier ? (isCurrent ? '🚶' : item.icon) : null}
+        <div
+          className="landmark-progress-marker"
+          ref={isRefCurrent ? currentMarkerRef : isNext ? nextMarkerRef : null}
+        >
+          <div className={isTier ? 'landmark-dot' : 'landmark-dot sub-dot'}>
+            {isTier ? (isCurrent ? '🚶' : item.icon) : null}
+          </div>
+        </div>
+        <div className="landmark-info">
+          <div className={isTier ? 'tier-label-row' : 'landmark-label-row'}>
+            <span className={`landmark-label ${!isTier ? 'sub' : ''}`}>{item.label}</span>
+            <span className={`landmark-altitude ${!isTier ? 'sub' : ''}`}>
+              {item.altitude.toLocaleString()}m
+            </span>
+          </div>
         </div>
       </div>
-      <div className="landmark-info">
-        <div className={isTier ? 'tier-label-row' : 'landmark-label-row'}>
-          <span className={`landmark-label ${!isTier ? 'sub' : ''}`}>
-            {item.label}
-          </span>
-          <span className={`landmark-altitude ${!isTier ? 'sub' : ''}`}>
-            {item.altitude.toLocaleString()}m
-          </span>
-        </div>
-      </div>
-    </div>
-  );
-});
+    );
+  }
+);
 
 interface TierItemProps {
   m: MilestoneItem;
@@ -89,67 +82,65 @@ interface TierItemProps {
   zeroMarkerRef: React.MutableRefObject<HTMLDivElement | null>;
 }
 
-const NonLinearTierItem = memo(({
-  m,
-  idx,
-  stats,
-  roadmapData,
-  isRoadmapActive,
-  setIsLinearScale,
-  landmarkRefs,
-  currentMarkerRef,
-  nextMarkerRef,
-  topMarkerRef,
-  zeroMarkerRef
-}: TierItemProps) => {
-  const isZero = m.altitude === 0;
-  const isCurrentNode = stats.totalAltitude === m.altitude;
-  const isRefCurrent = idx === roadmapData.currentIdx;
-  const isNext = idx === (roadmapData.currentIdx !== -1 ? roadmapData.currentIdx - 1 : -1);
-  const isTop = idx === 0;
-  const isPassed = stats ? stats.totalAltitude >= m.altitude : false;
-  const isInCardView = roadmapData.cardIndices.includes(idx);
+const NonLinearTierItem = memo(
+  ({
+    m,
+    idx,
+    stats,
+    roadmapData,
+    isRoadmapActive,
+    setIsLinearScale,
+    landmarkRefs,
+    currentMarkerRef,
+    nextMarkerRef,
+    topMarkerRef,
+    zeroMarkerRef,
+  }: TierItemProps) => {
+    const isZero = m.altitude === 0;
+    const isCurrentNode = stats.totalAltitude === m.altitude;
+    const isRefCurrent = idx === roadmapData.currentIdx;
+    const isNext = idx === (roadmapData.currentIdx !== -1 ? roadmapData.currentIdx - 1 : -1);
+    const isTop = idx === 0;
+    const isPassed = stats ? stats.totalAltitude >= m.altitude : false;
+    const isInCardView = roadmapData.cardIndices.includes(idx);
 
-  return (
-    <div
-      className={`tier-group ${!isInCardView && !isRoadmapActive ? 'roadmap-extra-content' : ''}`}
-    >
+    return (
       <div
-        className={`landmark-item ${isPassed ? 'is-passed' : ''} ${isCurrentNode ? 'is-current' : ''} ${m.type === 'tier' || isZero ? 'type-tier' : ''}`}
-        ref={(el) => {
-          if (el) landmarkRefs.current.set(m.altitude, el);
-        }}
-        onClick={() => {
-          setIsLinearScale(true);
-          vibrateShort();
-        }}
-        style={{ cursor: 'pointer' }}
+        className={`tier-group ${!isInCardView && !isRoadmapActive ? 'roadmap-extra-content' : ''}`}
       >
         <div
-          className="landmark-progress-marker"
+          className={`landmark-item ${isPassed ? 'is-passed' : ''} ${isCurrentNode ? 'is-current' : ''} ${m.type === 'tier' || isZero ? 'type-tier' : ''}`}
           ref={(el) => {
-            if (isRefCurrent) currentMarkerRef.current = el;
-            if (isNext) nextMarkerRef.current = el;
-            if (isTop) topMarkerRef.current = el;
-            if (isZero) zeroMarkerRef.current = el;
+            if (el) landmarkRefs.current.set(m.altitude, el);
           }}
+          onClick={() => {
+            setIsLinearScale(true);
+            vibrateShort();
+          }}
+          style={{ cursor: 'pointer' }}
         >
-          <div className="landmark-dot">
-            {isCurrentNode ? '🚶' : isZero ? '🏠' : m.icon}
+          <div
+            className="landmark-progress-marker"
+            ref={(el) => {
+              if (isRefCurrent) currentMarkerRef.current = el;
+              if (isNext) nextMarkerRef.current = el;
+              if (isTop) topMarkerRef.current = el;
+              if (isZero) zeroMarkerRef.current = el;
+            }}
+          >
+            <div className="landmark-dot">{isCurrentNode ? '🚶' : isZero ? '🏠' : m.icon}</div>
           </div>
-        </div>
-        <div className="landmark-info">
-          <div className="tier-label-row">
-            <span className="landmark-label">{m.label}</span>
-            <span className="landmark-altitude">
-              {m.altitude.toLocaleString()}m
-            </span>
+          <div className="landmark-info">
+            <div className="tier-label-row">
+              <span className="landmark-label">{m.label}</span>
+              <span className="landmark-altitude">{m.altitude.toLocaleString()}m</span>
+            </div>
           </div>
         </div>
       </div>
-    </div>
-  );
-});
+    );
+  }
+);
 
 export function RoadmapPage() {
   // const navigate = useNavigate();
@@ -184,7 +175,7 @@ export function RoadmapPage() {
   // Check badges when stats are loaded
   useEffect(() => {
     if (userId && stats) {
-      checkAndAwardBadges(userId, stats).then(newBadges => {
+      checkAndAwardBadges(userId, stats).then((newBadges) => {
         if (newBadges && newBadges.length > 0) {
           // Optional: Show toast or confetti?
           // For now, BadgeCollection will update automatically on re-render or if we force it,
@@ -415,26 +406,28 @@ export function RoadmapPage() {
       // 화면 중앙 고도뿐 아니라 상하 뷰포트 영역에 해당하는 고도 계산
       const buffer = 500 * displayRatio; // 500px 정도의 상하 버퍼
       const bottomAlt = layoutData ? layoutData.totalLogicalAltitude * currentProgress : 0;
-      const topAlt = bottomAlt + (clientHeight * displayRatio);
+      const topAlt = bottomAlt + clientHeight * displayRatio;
 
       setVisibleAltRange({
         min: bottomAlt - buffer,
-        max: topAlt + buffer
+        max: topAlt + buffer,
       });
 
       // 4. Altitude Estimation for Ratio Logic
       const approxAltitude = bottomAlt;
 
       // --- 리팩토링된 Dynamic Scale Logic ---
-      const currentConfig = ROADMAP_SCALE_CONFIG.find(c => c.ratio === displayRatio);
+      const currentConfig = ROADMAP_SCALE_CONFIG.find((c) => c.ratio === displayRatio);
       let targetRatio = displayRatio;
 
       if (currentConfig) {
         if (currentConfig.upgrade && approxAltitude > currentConfig.upgrade) {
-          const nextConfig = ROADMAP_SCALE_CONFIG.find(c => c.ratio > displayRatio);
+          const nextConfig = ROADMAP_SCALE_CONFIG.find((c) => c.ratio > displayRatio);
           if (nextConfig) targetRatio = nextConfig.ratio;
         } else if (currentConfig.downgrade && approxAltitude < currentConfig.downgrade) {
-          const prevConfig = [...ROADMAP_SCALE_CONFIG].reverse().find(c => c.ratio < displayRatio);
+          const prevConfig = [...ROADMAP_SCALE_CONFIG]
+            .reverse()
+            .find((c) => c.ratio < displayRatio);
           if (prevConfig) targetRatio = prevConfig.ratio;
         }
       }
@@ -502,8 +495,6 @@ export function RoadmapPage() {
   };
 
   // --- Sub-Render Functions ---
-
-
 
   const renderRoadmapOverlay = () => {
     if (!isMilestoneExpanded || !stats || !cardRect) return null;
@@ -628,12 +619,12 @@ export function RoadmapPage() {
                   style={
                     isLinearScale
                       ? {
-                        height: `${getAltitudeY(ALTITUDE_MILESTONES[0].altitude + 10000, displayRatio)}px`,
-                        position: 'absolute',
-                        bottom: 0,
-                        left: 0,
-                        right: 0,
-                      }
+                          height: `${getAltitudeY(ALTITUDE_MILESTONES[0].altitude + 10000, displayRatio)}px`,
+                          position: 'absolute',
+                          bottom: 0,
+                          left: 0,
+                          right: 0,
+                        }
                       : undefined
                   }
                 >
@@ -644,7 +635,11 @@ export function RoadmapPage() {
                   />
                   {isLinearScale && layoutData ? (
                     layoutData.nodes
-                      .filter(item => item.altitude >= visibleAltRange.min && item.altitude <= visibleAltRange.max)
+                      .filter(
+                        (item) =>
+                          item.altitude >= visibleAltRange.min &&
+                          item.altitude <= visibleAltRange.max
+                      )
                       .map((item) => {
                         const isTier = item.isTier;
                         const isRefCurrent =
@@ -722,7 +717,7 @@ export function RoadmapPage() {
             </div>
           </div>
         </div>
-      </div >
+      </div>
     );
   };
 
@@ -778,11 +773,7 @@ export function RoadmapPage() {
                       style={{
                         width: `${(cat.level / maxLevel) * 100}%`,
                         backgroundColor:
-                          cat.level >= 10
-                            ? '#4cd964'
-                            : cat.level >= 5
-                              ? '#4facfe'
-                              : '#ff9500',
+                          cat.level >= 10 ? '#4cd964' : cat.level >= 5 ? '#4facfe' : '#ff9500',
                       }}
                     />
                   </div>
@@ -855,7 +846,9 @@ export function RoadmapPage() {
             <div className="history-profile-row">
               <div className="history-avatar">🏔️</div>
               <div className="history-profile-info">
-                <div className="history-user-title">{loading ? '분석 중...' : stats?.userTitle}</div>
+                <div className="history-user-title">
+                  {loading ? '분석 중...' : stats?.userTitle}
+                </div>
                 <div className="history-user-altitude">
                   누적 고도{' '}
                   <strong className="altitude-value">
@@ -895,10 +888,9 @@ export function RoadmapPage() {
           <div className="history-tab-container">
             <div className="history-segmented-control">
               <div
-                className={`segmented-indicator ${activeTab === 'summary'
-                  ? 'tab-summary'
-                  : 'tab-analysis'
-                  }`}
+                className={`segmented-indicator ${
+                  activeTab === 'summary' ? 'tab-summary' : 'tab-analysis'
+                }`}
                 style={{
                   width: '50%',
                   transform: activeTab === 'summary' ? 'translateX(0)' : 'translateX(100%)',
@@ -942,7 +934,9 @@ export function RoadmapPage() {
                       <div className="history-badge-collection">
                         <div className="collection-header">
                           <span className="collection-title">나의 뱃지 보관함 🏆</span>
-                          <span className="collection-more" onClick={() => setShowBadgeModal(true)}>전체보기 &gt;</span>
+                          <span className="collection-more" onClick={() => setShowBadgeModal(true)}>
+                            전체보기 &gt;
+                          </span>
                         </div>
                         <div className="collection-content">
                           <BadgeCollection userId={userId} mode="preview" />
@@ -963,19 +957,21 @@ export function RoadmapPage() {
                             isMilestone: true,
                           }));
 
-                          const hasExactMatch = items.some((m) => m.altitude === stats.totalAltitude);
+                          const hasExactMatch = items.some(
+                            (m) => m.altitude === stats.totalAltitude
+                          );
 
                           const displayItems = hasExactMatch
                             ? items
                             : [
-                              ...items,
-                              {
-                                label: '현재 위치',
-                                altitude: stats.totalAltitude,
-                                isMilestone: false,
-                                icon: '🚶',
-                              },
-                            ];
+                                ...items,
+                                {
+                                  label: '현재 위치',
+                                  altitude: stats.totalAltitude,
+                                  isMilestone: false,
+                                  icon: '🚶',
+                                },
+                              ];
 
                           return displayItems
                             .sort((a, b) => b.altitude - a.altitude)
@@ -1021,10 +1017,12 @@ export function RoadmapPage() {
       {/* Badge Full View Modal */}
       {showBadgeModal && userId && (
         <div className="badge-modal-overlay" onClick={() => setShowBadgeModal(false)}>
-          <div className="badge-modal-content" onClick={e => e.stopPropagation()}>
+          <div className="badge-modal-content" onClick={(e) => e.stopPropagation()}>
             <div className="badge-modal-header">
               <h3>전체 뱃지 도감</h3>
-              <button className="close-button" onClick={() => setShowBadgeModal(false)}>✕</button>
+              <button className="close-button" onClick={() => setShowBadgeModal(false)}>
+                ✕
+              </button>
             </div>
             <div className="badge-modal-body">
               <BadgeCollection userId={userId} mode="full" />

@@ -32,7 +32,7 @@ export const DataResetSection = React.memo(function DataResetSection() {
     isOpen: false,
     title: '',
     message: '',
-    onConfirm: () => { },
+    onConfirm: () => {},
   });
 
   const handleResetProfile = (resetType: 'all' | 'score' | 'minerals' | 'tier') => {
@@ -42,12 +42,12 @@ export const DataResetSection = React.memo(function DataResetSection() {
       isOpen: true,
       title: '프로필 초기화',
       message: `프로필을 초기화하시겠습니까? (초기화 항목: ${resetType === 'all' ? '전체' : resetType}) 이 작업은 되돌릴 수 없습니다.`,
-      onConfirm: () => executeResetProfile(resetType)
+      onConfirm: () => executeResetProfile(resetType),
     });
   };
 
   const executeResetProfile = async (resetType: 'all' | 'score' | 'minerals' | 'tier') => {
-    setConfirmConfig(prev => ({ ...prev, isOpen: false }));
+    setConfirmConfig((prev) => ({ ...prev, isOpen: false }));
 
     try {
       setIsResetting(true);
@@ -297,12 +297,12 @@ export const DataResetSection = React.memo(function DataResetSection() {
       isOpen: true,
       title: '게임 기록 삭제',
       message: `최근 ${count}개의 게임 기록을 삭제하시겠습니까? 이 작업은 되돌릴 수 없습니다.`,
-      onConfirm: executeDeleteRecent
+      onConfirm: executeDeleteRecent,
     });
   };
 
   const executeDeleteRecent = async () => {
-    setConfirmConfig(prev => ({ ...prev, isOpen: false }));
+    setConfirmConfig((prev) => ({ ...prev, isOpen: false }));
     const count = parseInt(deleteCount, 10);
 
     try {
@@ -370,12 +370,12 @@ export const DataResetSection = React.memo(function DataResetSection() {
       isOpen: true,
       title: '전체 기록 삭제',
       message: '모든 게임 기록을 삭제하시겠습니까? 이 작업은 되돌릴 수 없습니다.',
-      onConfirm: executeDeleteAll
+      onConfirm: executeDeleteAll,
     });
   };
 
   const executeDeleteAll = async () => {
-    setConfirmConfig(prev => ({ ...prev, isOpen: false }));
+    setConfirmConfig((prev) => ({ ...prev, isOpen: false }));
 
     try {
       setIsDeleting(true);
@@ -615,7 +615,9 @@ export const DataResetSection = React.memo(function DataResetSection() {
 
         <div className="debug-game-records-delete">
           <div className="debug-game-records-row">
-            <label htmlFor="debug-delete-count-input" className="debug-game-records-label">최근 N개 삭제:</label>
+            <label htmlFor="debug-delete-count-input" className="debug-game-records-label">
+              최근 N개 삭제:
+            </label>
             <input
               type="number"
               id="debug-delete-count-input"
@@ -646,7 +648,9 @@ export const DataResetSection = React.memo(function DataResetSection() {
           </div>
 
           <div className="debug-game-records-row">
-            <label htmlFor="debug-level-select" className="debug-game-records-label">레벨 선택:</label>
+            <label htmlFor="debug-level-select" className="debug-game-records-label">
+              레벨 선택:
+            </label>
             <select
               id="debug-level-select"
               name="selectedLevel"
@@ -679,7 +683,9 @@ export const DataResetSection = React.memo(function DataResetSection() {
         <h4 className="debug-subsection-title">레벨 진행도 초기화</h4>
         <div className="debug-level-progress-reset">
           <div className="debug-level-progress-row">
-            <label htmlFor="debug-category-select" className="debug-level-progress-label">카테고리:</label>
+            <label htmlFor="debug-category-select" className="debug-level-progress-label">
+              카테고리:
+            </label>
             <select
               id="debug-category-select"
               name="selectedCategory"
@@ -695,7 +701,9 @@ export const DataResetSection = React.memo(function DataResetSection() {
             </select>
           </div>
           <div className="debug-level-progress-row">
-            <label htmlFor="debug-subject-select" className="debug-level-progress-label">주제:</label>
+            <label htmlFor="debug-subject-select" className="debug-level-progress-label">
+              주제:
+            </label>
             <select
               id="debug-subject-select"
               name="selectedSubject"
@@ -732,7 +740,7 @@ export const DataResetSection = React.memo(function DataResetSection() {
         title={confirmConfig.title}
         message={confirmConfig.message}
         onConfirm={confirmConfig.onConfirm}
-        onCancel={() => setConfirmConfig(prev => ({ ...prev, isOpen: false }))}
+        onCancel={() => setConfirmConfig((prev) => ({ ...prev, isOpen: false }))}
         variant="danger"
       />
     </div>

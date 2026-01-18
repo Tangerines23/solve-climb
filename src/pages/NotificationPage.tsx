@@ -5,6 +5,7 @@ import { Header } from '../components/Header';
 import { FooterNav } from '../components/FooterNav';
 import { UnderDevelopmentModal } from '../components/UnderDevelopmentModal';
 import { Toast } from '../components/Toast';
+import { urls } from '../utils/navigation';
 import './NotificationPage.css';
 
 export type NotificationType = 'record_broken' | 'challenge';
@@ -47,11 +48,21 @@ export function NotificationPage() {
 
     // 알림 타입에 따라 다른 페이지로 이동
     if (notification.type === 'challenge' && notification.challengeId) {
-      navigate(`/challenge?id=${notification.challengeId}`);
+      navigate(urls.challenge({ id: notification.challengeId }));
     } else if (notification.type === 'record_broken') {
       // 기록이 깨진 레벨로 이동
       if (notification.category && notification.subCategory && notification.level) {
-        navigate(`/level-select?category=${notification.category}&sub=${notification.subCategory}`);
+        // notification.category는 산 ID (예: 'math'), subCategory는 카테고리 ID (예: '기초')
+        const mountain = notification.category || 'math';
+        const world = 'World1'; // 기본 월드
+        const category = notification.subCategory;
+        navigate(
+          urls.levelSelect({
+            mountain,
+            world,
+            category,
+          })
+        );
       }
     }
   };

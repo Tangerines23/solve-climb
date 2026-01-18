@@ -247,7 +247,9 @@ export function ItemSystemSection() {
           return (
             <div key={item.id} className="debug-item-item">
               <div className="debug-item-info">
-                <label htmlFor={`debug-item-input-${item.id}`} className="debug-item-name">{item.name}</label>
+                <label htmlFor={`debug-item-input-${item.id}`} className="debug-item-name">
+                  {item.name}
+                </label>
                 {item.description && (
                   <div className="debug-item-description">{item.description}</div>
                 )}

@@ -62,7 +62,7 @@ export const ALTITUDE_MILESTONES: MilestoneItem[] = (() => {
         type: 'tier',
         stars: s,
         subLandmarks: [], // 여기에 하위 랜드마크를 담을 것
-        isTier: true // Explicit flag
+        isTier: true, // Explicit flag
       });
     });
   }

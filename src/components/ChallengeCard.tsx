@@ -1,9 +1,9 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { APP_CONFIG } from '../config/app';
+import { urls } from '../utils/navigation';
 import { useQuizStore } from '../stores/useQuizStore';
 import { getTodayChallenge, type TodayChallenge } from '../utils/challenge';
-import type { Category, Topic } from '../types/quiz';
+import type { Category } from '../types/quiz';
 import './ChallengeCard.css';
 
 export function ChallengeCard() {
@@ -33,12 +33,19 @@ export function ChallengeCard() {
     if (!challenge) return;
 
     // 오늘의 챌린지 설정 적용
-    setCategoryTopic(challenge.category as Category, challenge.topicId as Topic);
+    setCategoryTopic(challenge.categoryId as Category, 'World1');
     setTimeLimit(60); // 기본 1분
 
-    // 게임 페이지로 이동 (category와 sub 파라미터 사용)
+    // 게임 페이지로 이동 (산, 월드, 카테고리 파라미터 표준화)
     navigate(
-      `${APP_CONFIG.ROUTES.GAME}?challenge=today&category=${challenge.categoryId}&sub=${challenge.topicId}&level=${challenge.level}&mode=${challenge.mode}`
+      urls.quiz({
+        mountain: challenge.categoryId,
+        world: 'World1',
+        category: challenge.topicId,
+        level: challenge.level,
+        mode: challenge.mode as any,
+        challenge: 'today',
+      })
     );
   };
 

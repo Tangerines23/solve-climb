@@ -1,15 +1,19 @@
 /**
  * localStorage 관리 유틸리티
  * 모든 localStorage 키를 중앙에서 관리하고 타입 안전한 API를 제공합니다.
- * 
+ *
  * v2: Dependency Injection 패턴 적용
  * - 테스트 격리를 위해 IStorageService 기반으로 리팩토링
  * - 기존 API는 하위 호환성을 위해 유지
  */
 
-
 import { logger } from './logger';
-import { storageService, IStorageService, LocalStorageService, MockStorageService } from '../services';
+import {
+  storageService,
+  IStorageService,
+  LocalStorageService,
+  MockStorageService,
+} from '../services';
 
 /**
  * localStorage 키 이름 상수
@@ -41,11 +45,11 @@ export const STORAGE_PREFIXES = ['solve-climb-', 'gameCenterApi_'] as const;
 
 /**
  * Storage 유틸리티 클래스 (DI 지원)
- * 
+ *
  * IStorageService를 주입받아 사용하므로 테스트 시 Mock 사용 가능
  */
 export class StorageUtil {
-  constructor(private storageService: IStorageService) { }
+  constructor(private storageService: IStorageService) {}
 
   /**
    * localStorage에서 값을 가져옵니다.
@@ -133,7 +137,7 @@ export class StorageUtil {
    */
   getKeysByPrefix(prefix: string): string[] {
     try {
-      return this.storageService.keys().filter(key => key.startsWith(prefix));
+      return this.storageService.keys().filter((key) => key.startsWith(prefix));
     } catch (error) {
       logger.warn('Storage', `Failed to get keys by prefix "${prefix}"`, error);
       return [];
@@ -171,7 +175,7 @@ const defaultStorageUtil = new StorageUtil(storageService);
 
 /**
  * 타입 안전한 localStorage 관리 유틸리티
- * 
+ *
  * @deprecated 새 코드에서는 StorageUtil 클래스를 직접 사용하세요
  * 기존 코드 호환성을 위해 유지됩니다
  */
@@ -179,26 +183,20 @@ export const storage = {
   get: <T>(key: string, defaultValue: T, validator?: (data: unknown) => data is T) =>
     defaultStorageUtil.get(key, defaultValue, validator),
 
-  set: <T>(key: string, value: T) =>
-    defaultStorageUtil.set(key, value),
+  set: <T>(key: string, value: T) => defaultStorageUtil.set(key, value),
 
-  remove: (key: string) =>
-    defaultStorageUtil.remove(key),
+  remove: (key: string) => defaultStorageUtil.remove(key),
 
-  setString: (key: string, value: string) =>
-    defaultStorageUtil.setString(key, value),
+  setString: (key: string, value: string) => defaultStorageUtil.setString(key, value),
 
   getString: (key: string, defaultValue: string | null = null) =>
     defaultStorageUtil.getString(key, defaultValue),
 
-  getKeysByPrefix: (prefix: string) =>
-    defaultStorageUtil.getKeysByPrefix(prefix),
+  getKeysByPrefix: (prefix: string) => defaultStorageUtil.getKeysByPrefix(prefix),
 
-  removeByPrefix: (prefix: string) =>
-    defaultStorageUtil.removeByPrefix(prefix),
+  removeByPrefix: (prefix: string) => defaultStorageUtil.removeByPrefix(prefix),
 
-  clearAppData: () =>
-    defaultStorageUtil.clearAppData(),
+  clearAppData: () => defaultStorageUtil.clearAppData(),
 };
 
 // 새 API Export (DI 지원)

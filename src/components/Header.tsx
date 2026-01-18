@@ -1,6 +1,7 @@
 import { useRef, useEffect, useState, useCallback } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { APP_CONFIG } from '../config/app';
+import { urls } from '../utils/navigation';
 import { useProfileStore } from '../stores/useProfileStore';
 import { useUserStore } from '../stores/useUserStore';
 import { useDebugStore } from '../stores/useDebugStore';
@@ -68,7 +69,7 @@ export function Header() {
 
   const handleLogoDoubleClick = () => {
     if (isAdmin) {
-      navigate('/my-page?showProfileForm=true');
+      navigate(urls.myPage({ showProfileForm: true }));
     }
   };
 
@@ -206,8 +207,8 @@ export function Header() {
             onClick={handleStaminaClick}
             style={{ cursor: isAdminMode ? 'pointer' : 'default' }}
           >
-            <span role="img" aria-label="stamina">
-              ❤️
+            <span role="img" aria-label="stamina" className="status-icon stamina-icon">
+              ⚡
             </span>
             <span className="status-value">{stamina}</span>
           </div>

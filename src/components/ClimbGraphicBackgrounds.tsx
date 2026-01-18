@@ -24,15 +24,7 @@ const BlockShape = ({ type }: { type: 'near' | 'mid' | 'far' }) => {
 
   return (
     <svg viewBox="0 0 100 100" width="100%" height="100%" style={{ overflow: 'visible' }}>
-      <rect
-        x="0"
-        y="0"
-        width="100"
-        height="100"
-        rx="12"
-        fill={fill}
-        fillOpacity={opacity}
-      />
+      <rect x="0" y="0" width="100" height="100" rx="12" fill={fill} fillOpacity={opacity} />
     </svg>
   );
 };

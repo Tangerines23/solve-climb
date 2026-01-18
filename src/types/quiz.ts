@@ -3,11 +3,11 @@
 // 1. 산 (Mountain) - 최상위 레벨
 export type Mountain = 'math' | 'language' | 'logic' | 'general';
 
-// 2. 분야 (Category) - 산 내부의 분야 (기초, 논리, 대수, 심화)
-export type Category = '기초' | '논리' | '대수' | '심화';
+// 2. 분야 (Category) - 산 내부의 분야 (기초, 논리, 대수, 심화 + 언어 분야)
+export type Category = '기초' | '논리' | '대수' | '심화' | '히라가나' | '가타카나' | '어휘';
 
 // 3. 테마 (World) - 분야 내부의 테마
-export type World = 'World1' | 'World2' | 'World3' | 'World4';
+export type World = 'World1' | 'World2' | 'World3' | 'World4' | 'LangWorld1';
 
 // 호환성을 위한 기존 타입 별칭
 export type MathTopic = '덧셈' | '뺄셈' | '곱셈' | '나눗셈';
@@ -29,6 +29,8 @@ export interface QuizQuestion {
   question: string;
   answer: number | string;
   options?: (number | string)[];
+  level?: number;
+  category?: Category;
 }
 
 // 게임 모드 타입

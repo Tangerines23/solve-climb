@@ -26,7 +26,8 @@ export const PauseModal: React.FC<PauseModalProps> = ({
             재개 시 현재 문제가 <strong>교체</strong>됩니다.
           </p>
           <div className="pause-count-display">
-            남은 일시정지 <span className="count-icon">⏳</span>: <span className="count-value">{remainingPauses}</span> / 3
+            남은 일시정지 <span className="count-icon">⏳</span>:{' '}
+            <span className="count-value">{remainingPauses}</span> / 3
           </div>
         </div>
 

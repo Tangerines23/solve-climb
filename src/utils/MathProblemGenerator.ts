@@ -4,30 +4,35 @@ export interface StageConfig {
   id: number;
   world: number;
   description: string;
-  type: 'standard' | 'sequential' | 'fill-blank' | 'parentheses';
+  type:
+    | 'standard'
+    | 'sequential'
+    | 'fill-blank'
+    | 'parentheses'
+    | 'decimal'
+    | 'fraction'
+    | 'time'
+    | 'modulo';
   operators: Operator[];
   operandCount: number;
   // Array of ranges for each operand position.
-  // If operandCount > ranges.length, the last range is reused or logic handles it.
   ranges: { min: number; max: number }[];
   constraints?: {
     resultMax?: number;
     resultMin?: number;
-    allowNegative?: boolean; // default false
-    ensureIntegerDivision?: boolean; // default true for division
-    allowRemainder?: boolean; // default false
-    forceCarry?: boolean; // for addition
-    forceBorrow?: boolean; // for subtraction
-    fixedSecondOperand?: number; // e.g. for specific times tables if needed, though ranges usually suffice
+    allowNegative?: boolean;
+    ensureIntegerDivision?: boolean;
+    precision?: number; // for decimals
+    denominator?: number; // for fractions
   };
 }
 
 export const STAGES: StageConfig[] = [
-  // World 1: Warm-up (Reflex)
+  // World 1 기초 (Training) Curriculum: 15 Levels
   {
     id: 1,
     world: 1,
-    description: '1-digit Addition (Result <= 10)',
+    description: '한 자릿수 덧셈',
     type: 'standard',
     operators: ['+'],
     operandCount: 2,
@@ -40,7 +45,7 @@ export const STAGES: StageConfig[] = [
   {
     id: 2,
     world: 1,
-    description: '1-digit Subtraction (Result >= 0)',
+    description: '한 자릿수 뺄셈',
     type: 'standard',
     operators: ['-'],
     operandCount: 2,
@@ -53,22 +58,7 @@ export const STAGES: StageConfig[] = [
   {
     id: 3,
     world: 1,
-    description: 'Mixed 1-digit Addition & Subtraction',
-    type: 'standard',
-    operators: ['+', '-'],
-    operandCount: 2,
-    ranges: [
-      { min: 1, max: 9 },
-      { min: 1, max: 9 },
-    ],
-    constraints: { resultMax: 18, resultMin: 0 },
-  },
-
-  // World 2: Basics (Carry/Borrow)
-  {
-    id: 4,
-    world: 2,
-    description: 'Addition with Carry (1-digit + 1-digit = 2-digit)',
+    description: '받아올림 덧셈',
     type: 'standard',
     operators: ['+'],
     operandCount: 2,
@@ -76,12 +66,12 @@ export const STAGES: StageConfig[] = [
       { min: 1, max: 9 },
       { min: 1, max: 9 },
     ],
-    constraints: { resultMin: 10 }, // Force result to be 2-digit
+    constraints: { resultMin: 10 },
   },
   {
-    id: 5,
-    world: 2,
-    description: 'Subtraction with Borrow (2-digit - 1-digit = 1-digit)',
+    id: 4,
+    world: 1,
+    description: '받아내림 뺄셈',
     type: 'standard',
     operators: ['-'],
     operandCount: 2,
@@ -89,143 +79,145 @@ export const STAGES: StageConfig[] = [
       { min: 10, max: 19 },
       { min: 1, max: 9 },
     ],
-    constraints: { resultMax: 9, resultMin: 0 }, // Force result to be 1-digit
+    constraints: { resultMax: 9 },
+  },
+  {
+    id: 5,
+    world: 1,
+    description: '기초 구구단',
+    type: 'standard',
+    operators: ['*'],
+    operandCount: 2,
+    ranges: [
+      { min: 2, max: 5 },
+      { min: 1, max: 9 },
+    ],
   },
   {
     id: 6,
-    world: 2,
-    description: 'Sequential Calc (2-digit +/- 1-digit)',
+    world: 1,
+    description: '심화 구구단',
     type: 'standard',
-    operators: ['+', '-'],
+    operators: ['*'],
     operandCount: 2,
     ranges: [
-      { min: 10, max: 99 },
+      { min: 6, max: 9 },
       { min: 1, max: 9 },
     ],
-    constraints: { resultMin: 0 },
   },
-
-  // World 3: Expansion (Multiplication/Division)
   {
     id: 7,
-    world: 3,
-    description: 'Basic Multiplication (Times tables 2~5)',
-    type: 'standard',
-    operators: ['*'],
-    operandCount: 2,
-    ranges: [
-      { min: 2, max: 9 },
-      { min: 2, max: 5 },
-    ],
-  },
-  {
-    id: 8,
-    world: 3,
-    description: 'Advanced Multiplication (Times tables 6~9)',
-    type: 'standard',
-    operators: ['*'],
-    operandCount: 2,
-    ranges: [
-      { min: 2, max: 9 },
-      { min: 6, max: 9 },
-    ],
-  },
-  {
-    id: 9,
-    world: 3,
-    description: 'Clean Division (No remainders)',
+    world: 1,
+    description: '나눗셈 기초',
     type: 'standard',
     operators: ['/'],
     operandCount: 2,
     ranges: [
-      { min: 2, max: 81 },
       { min: 2, max: 9 },
-    ], // Dividend range is approximate, logic handles exact multiples
+      { min: 2, max: 9 },
+    ],
     constraints: { ensureIntegerDivision: true },
   },
-
-  // World 4: Skill (Mental Math)
   {
-    id: 10,
-    world: 4,
-    description: 'Double-digit Addition/Subtraction',
-    type: 'standard',
-    operators: ['+', '-'],
-    operandCount: 2,
-    ranges: [
-      { min: 10, max: 99 },
-      { min: 10, max: 99 },
-    ],
-    constraints: { resultMin: 0 },
-  },
-  {
-    id: 11,
-    world: 4,
-    description: 'Three Operands',
-    type: 'sequential', // a op b op c
-    operators: ['+', '-'],
-    operandCount: 3,
-    ranges: [
-      { min: 1, max: 20 },
-      { min: 1, max: 20 },
-      { min: 1, max: 20 },
-    ],
-    constraints: { resultMin: 0 },
-  },
-  {
-    id: 12,
-    world: 4,
-    description: '2-digit x 1-digit Multiplication',
-    type: 'standard',
-    operators: ['*'],
-    operandCount: 2,
-    ranges: [
-      { min: 10, max: 99 },
-      { min: 2, max: 9 },
-    ],
-  },
-
-  // World 5: Master (Mixed Operations)
-  {
-    id: 13,
-    world: 5,
-    description: 'Mixed Operators with Precedence',
-    type: 'sequential', // Logic needs to handle precedence
+    id: 8,
+    world: 1,
+    description: '사칙연산 혼합',
+    type: 'sequential',
     operators: ['+', '-', '*'],
     operandCount: 3,
     ranges: [
       { min: 1, max: 10 },
       { min: 1, max: 10 },
       { min: 1, max: 5 },
-    ], // Keep multiplication manageable
-    constraints: { resultMin: 0 },
-  },
-  {
-    id: 14,
-    world: 5,
-    description: 'Fill in the Blank',
-    type: 'fill-blank',
-    operators: ['+', '-'],
-    operandCount: 2,
-    ranges: [
-      { min: 1, max: 20 },
-      { min: 1, max: 20 },
     ],
-    constraints: { resultMin: 0 },
   },
   {
-    id: 15,
-    world: 5,
-    description: 'Complex/Parentheses',
+    id: 9,
+    world: 1,
+    description: '연산 우선순위',
     type: 'parentheses',
     operators: ['+', '-', '*'],
     operandCount: 3,
     ranges: [
       { min: 1, max: 10 },
-      { min: 1, max: 10 },
+      { min: 1, max: 5 },
       { min: 2, max: 5 },
     ],
-    constraints: { resultMin: 0 },
+  },
+  {
+    id: 10,
+    world: 1,
+    description: '소수(Decimal) 계산',
+    type: 'decimal',
+    operators: ['+', '-'],
+    operandCount: 2,
+    ranges: [
+      { min: 1, max: 5 },
+      { min: 1, max: 5 },
+    ],
+    constraints: { precision: 1 },
+  },
+  {
+    id: 11,
+    world: 1,
+    description: '분수(Fraction) 기초',
+    type: 'fraction',
+    operators: ['+'],
+    operandCount: 2,
+    ranges: [
+      { min: 1, max: 4 },
+      { min: 1, max: 4 },
+    ],
+    constraints: { denominator: 4 },
+  },
+  {
+    id: 12,
+    world: 1,
+    description: '60진법 시각 계산',
+    type: 'time',
+    operators: ['+'],
+    operandCount: 2,
+    ranges: [
+      { min: 0, max: 59 },
+      { min: 5, max: 45 },
+    ],
+  },
+  {
+    id: 13,
+    world: 1,
+    description: '두 자릿수 곱셈',
+    type: 'standard',
+    operators: ['*'],
+    operandCount: 2,
+    ranges: [
+      { min: 10, max: 50 },
+      { min: 2, max: 9 },
+    ],
+  },
+  {
+    id: 14,
+    world: 1,
+    description: '나눗셈 검산',
+    type: 'modulo',
+    operators: ['/'],
+    operandCount: 2,
+    ranges: [
+      { min: 10, max: 50 },
+      { min: 3, max: 7 },
+    ],
+  },
+  {
+    id: 15,
+    world: 1,
+    description: '기초 산수 마스터',
+    type: 'sequential',
+    operators: ['+', '-', '*', '/'],
+    operandCount: 3,
+    ranges: [
+      { min: 1, max: 20 },
+      { min: 1, max: 20 },
+      { min: 2, max: 10 },
+    ],
   },
 ];
 
@@ -309,6 +301,14 @@ export function generateProblem(stageId: number): MathProblem {
         problem = generateSequentialProblem(stage);
       } else if (stage.type === 'parentheses') {
         problem = generateParenthesesProblem(stage);
+      } else if (stage.type === 'decimal') {
+        problem = generateDecimalProblem(stage);
+      } else if (stage.type === 'fraction') {
+        problem = generateFractionProblem(stage);
+      } else if (stage.type === 'time') {
+        problem = generateTimeProblem(stage);
+      } else if (stage.type === 'modulo') {
+        problem = generateModuloProblem(stage);
       }
       isValid = true;
     } catch {
@@ -478,4 +478,71 @@ function generateParenthesesProblem(stage: StageConfig): MathProblem {
   }
 
   return { expression, answer: result };
+}
+
+function generateDecimalProblem(stage: StageConfig): MathProblem {
+  const op = getRandomOperator(stage.operators);
+  const precision = stage.constraints?.precision || 1;
+  const factor = Math.pow(10, precision);
+
+  const range0 = stage.ranges[0];
+  const range1 = stage.ranges[1] || stage.ranges[0];
+
+  const a = getRandomInt(range0.min * factor, range0.max * factor) / factor;
+  const b = getRandomInt(range1.min * factor, range1.max * factor) / factor;
+
+  const result = calculate(a, b, op);
+  const roundedResult = Math.round(result * factor) / factor;
+
+  return {
+    expression: `${a.toFixed(precision)} ${op} ${b.toFixed(precision)}`,
+    answer: roundedResult,
+  };
+}
+
+function generateFractionProblem(stage: StageConfig): MathProblem {
+  // Simple unit fractions or same denominator for World 1 Level 11
+  const den = stage.constraints?.denominator || 4;
+  const num1 = getRandomInt(1, den - 1);
+  const num2 = getRandomInt(1, den - 1);
+
+  // We'll return the answer as a decimal but show it as a fraction?
+  // Or handle fraction input in UI. For now, let's keep it simple: 1/4 + 2/4 = ?
+  // Answer as decimal: 0.75
+  const result = (num1 + num2) / den;
+
+  return {
+    expression: `${num1}/${den} + ${num2}/${den}`,
+    answer: Math.round(result * 100) / 100,
+  };
+}
+
+function generateTimeProblem(stage: StageConfig): MathProblem {
+  // 14:00 + 40min = 1440 (14:40)
+  const hour = getRandomInt(0, 23);
+  const min = getRandomInt(0, 59);
+  const addMin = getRandomInt(stage.ranges[1].min, stage.ranges[1].max);
+
+  const totalInMinutes = hour * 60 + min + addMin;
+  const finalHour = Math.floor(totalInMinutes / 60) % 24;
+  const finalMin = totalInMinutes % 60;
+
+  const displayTime = `${hour.toString().padStart(2, '0')}:${min.toString().padStart(2, '0')}`;
+  const answer = Number(`${finalHour}${finalMin.toString().padStart(2, '0')}`);
+
+  return {
+    expression: `${displayTime} + ${addMin}분`,
+    answer: answer,
+  };
+}
+
+function generateModuloProblem(stage: StageConfig): MathProblem {
+  const a = getRandomInt(stage.ranges[0].min, stage.ranges[0].max);
+  const b = getRandomInt(stage.ranges[1].min, stage.ranges[1].max);
+  const remainder = a % b;
+
+  return {
+    expression: `${a} ÷ ${b} 의 나머지`,
+    answer: remainder,
+  };
 }

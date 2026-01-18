@@ -2,6 +2,7 @@
 import React, { FormEvent, useMemo } from 'react';
 import { QuizQuestion } from '../types/quiz';
 import { GameMode } from '../types/quiz';
+import { useQuizStore } from '../stores/useQuizStore';
 import { TimerCircle } from './TimerCircle';
 import { QwertyKeypad } from './QwertyKeypad';
 import { CustomKeypad } from './CustomKeypad';
@@ -36,7 +37,7 @@ interface QuizCardProps {
 
   // Pause Props
   onPause: () => void;
-  // remainingPauses removed
+  remainingPauses?: number; // v2.2 일시정지 남은 횟수
 
   // 상태
   isSubmitting: boolean;
@@ -126,6 +127,7 @@ function QuizCardComponent({
   onSafetyRopeUsed,
   toastValue,
   onPause,
+  remainingPauses = 3,
 }: QuizCardProps) {
   // #region agent log
   const renderId = Math.random().toString(36).substring(7);
@@ -210,20 +212,17 @@ function QuizCardComponent({
   const currentSurvivalDuration = useMemo(() => {
     if (gameMode !== 'survival') return SURVIVAL_QUESTION_TIME;
 
-    const currentWave = totalQuestions + 1;
-    const waveConfig = SURVIVAL_CONFIG.WAVES.find(
-      (w) => currentWave >= w.start && currentWave <= w.end
-    );
+    // v2.2 스마트 압박 (Smart Pressure) 적용
+    // A. 레벨별 권장 시간 (Base Time)
+    const baseTime =
+      SURVIVAL_CONFIG.PRESSURE_CONFIG.LEVEL_BASE_TIME[currentQuestion?.level || 1] || 10;
 
-    // 기본 파동 타이머 (없으면 하드코어 7초)
-    const baseTimer = waveConfig ? waveConfig.timer : 7;
-
-    // v1.9 스마트 압박 (Smart Pressure) 적용
+    // B. 압박 배율 (Pressure Factor) - 연속 감소
     // 공식: BaseTime * clamp(MIN, START - (totalQuestions * DECAY))
     const { START, MIN, DECAY } = SURVIVAL_CONFIG.PRESSURE_CONFIG.PRESSURE_FACTOR;
     const pressureMultiplier = Math.max(MIN, START - totalQuestions * DECAY);
 
-    return Math.floor(baseTimer * pressureMultiplier);
+    return Math.floor(baseTime * pressureMultiplier);
   }, [gameMode, totalQuestions, SURVIVAL_QUESTION_TIME]);
 
   const isPositiveToast = useMemo(() => toastValue.startsWith('+'), [toastValue]);
@@ -307,6 +306,9 @@ function QuizCardComponent({
               <rect x="6" y="5" width="4" height="14" rx="1.5" />
               <rect x="14" y="5" width="4" height="14" rx="1.5" />
             </svg>
+            {gameMode === 'survival' && (
+              <span className="pause-count-badge">{remainingPauses}</span>
+            )}
           </button>
 
           <div className="vertical-item-stack">
@@ -347,10 +349,17 @@ function QuizCardComponent({
           </div>
         </div>
 
-        {/* RIGHT: Score Display */}
-        <div className="header-right-stats">
-          <div className="score-display-round">
-            <span className="score-val">{totalQuestions * 10}</span>
+        {/* RIGHT: Score Pill Card */}
+        <div className="header-right-score">
+          {/* v2.2 캡슐형 카드 (Pill Card) */}
+          {/* Note: score is managed by store, but we wrap it in a pulse container */}
+          <div
+            className={`pill-card score-capsule ${totalQuestions > 0 ? 'pulse' : ''}`}
+            key={`score-${totalQuestions}`}
+          >
+            <span className="score-val">
+              {Math.floor(useQuizStore.getState().score).toLocaleString()}
+            </span>
             <span className="score-unit">m</span>
           </div>
         </div>

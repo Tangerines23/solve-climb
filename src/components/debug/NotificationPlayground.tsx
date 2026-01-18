@@ -259,7 +259,7 @@ export function NotificationPlayground() {
             <div className="card-preview-row">
               <h5>My Record Card</h5>
               <div style={{ maxWidth: '300px' }}>
-                <MyRecordCard category="math" subTopic="arithmetic" subTopicName="사칙연산" />
+                <MyRecordCard world="World1" category="기초" categoryName="사칙연산" />
               </div>
             </div>
             <div className="card-preview-row">
@@ -285,8 +285,8 @@ export function NotificationPlayground() {
         <div className="playground-overlay" onClick={closeModals}>
           <div className="playground-card-container" onClick={(e) => e.stopPropagation()}>
             <LevelListCard
-              category="math"
-              subTopic="arithmetic"
+              world="World1"
+              category="기초"
               levels={[
                 { level: 1, name: 'Level 1', description: 'Test' },
                 { level: 2, name: 'Level 2', description: 'Test' },

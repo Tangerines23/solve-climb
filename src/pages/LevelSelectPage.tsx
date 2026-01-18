@@ -7,6 +7,7 @@ import { LevelListCard } from '../components/LevelListCard';
 import { FooterNav } from '../components/FooterNav';
 import { Toast } from '../components/Toast';
 import { World, Category } from '../types/quiz';
+import { urls } from '../utils/navigation';
 import './LevelSelectPage.css';
 
 export function LevelSelectPage() {
@@ -50,7 +51,10 @@ export function LevelSelectPage() {
         <div className="level-select-error">
           <h2>잘못된 접근입니다</h2>
           <p>필수 파라미터가 누락되었습니다.</p>
-          <button onClick={() => navigate('/')} className="error-back-button">
+          <button
+            onClick={() => navigate(urls.home(), { replace: true })}
+            className="error-back-button"
+          >
             ←
           </button>
         </div>
@@ -68,7 +72,10 @@ export function LevelSelectPage() {
         <div className="level-select-error">
           <h2>잘못된 접근입니다</h2>
           <p>존재하지 않는 월드 또는 카테고리입니다.</p>
-          <button onClick={() => navigate('/')} className="error-back-button">
+          <button
+            onClick={() => navigate(urls.home(), { replace: true })}
+            className="error-back-button"
+          >
             ←
           </button>
         </div>
@@ -88,7 +95,17 @@ export function LevelSelectPage() {
         <div className="level-select-error">
           <h2>레벨 데이터가 없습니다</h2>
           <p>이 카테고리에 대한 레벨이 아직 준비되지 않았습니다.</p>
-          <button onClick={() => navigate(-1)} className="error-back-button">
+          <button
+            onClick={() => {
+              // 안전한 복귀: category-select 또는 홈으로 (히스토리에서 에러 페이지 제거를 위해 replace: true)
+              if (mountainParam) {
+                navigate(urls.categorySelect({ mountain: mountainParam }), { replace: true });
+              } else {
+                navigate(urls.home(), { replace: true });
+              }
+            }}
+            className="error-back-button"
+          >
             ←
           </button>
         </div>
@@ -100,7 +117,15 @@ export function LevelSelectPage() {
 
   // 레벨 클릭 핸들러
   const handleLevelClick = (level: number) => {
-    navigate(`/quiz?world=${worldParam}&category=${categoryParam}&level=${level}&mode=time-attack`);
+    navigate(
+      urls.quiz({
+        mountain: mountainParam,
+        world: worldParam,
+        category: categoryParam,
+        level,
+        mode: 'time-attack',
+      })
+    );
   };
 
   // 잠긴 레벨 클릭 핸들러
@@ -111,21 +136,43 @@ export function LevelSelectPage() {
 
   // 서바이벌 모드 진입 핸들러
   const handleSurvivalClick = () => {
-    navigate(`/quiz?world=${worldParam}&category=${categoryParam}&level=1&mode=survival`);
+    navigate(
+      urls.quiz({
+        mountain: mountainParam,
+        world: worldParam,
+        category: categoryParam,
+        level: 1,
+        mode: 'survival',
+      })
+    );
   };
 
   // 월드 전환 핸들러
   const handleWorldChange = (direction: 'next' | 'prev') => {
-    const worldIds = APP_CONFIG.WORLDS.map((w) => w.id);
-    const currentIndex = worldIds.indexOf(worldParam as any);
+    // 현재 산에 속한 월드만 필터링 (중요: 다른 산의 월드로 넘어가지 않도록 함)
+    const validWorldIds = APP_CONFIG.WORLDS.filter(
+      (w) => (w as any).mountainId === mountainParam
+    ).map((w) => w.id);
+
+    if (validWorldIds.length <= 1) return; // 전활할 월드가 없으면 무시
+
+    const currentIndex = validWorldIds.indexOf(worldParam as any);
     let nextIndex = direction === 'next' ? currentIndex + 1 : currentIndex - 1;
 
-    if (nextIndex >= worldIds.length) nextIndex = 0;
-    if (nextIndex < 0) nextIndex = worldIds.length - 1;
+    if (nextIndex >= validWorldIds.length) nextIndex = 0;
+    if (nextIndex < 0) nextIndex = validWorldIds.length - 1;
 
-    const nextWorld = worldIds[nextIndex];
-    localStorage.setItem('lastPlayedWorld', nextWorld);
-    navigate(`/level-select?mountain=${mountainParam}&world=${nextWorld}&category=${categoryParam}`);
+    const nextWorld = validWorldIds[nextIndex];
+
+    // 산별로 마지막 플레이 월드 분리 저장
+    localStorage.setItem(`lastPlayedWorld_${mountainParam}`, nextWorld);
+    navigate(
+      urls.levelSelect({
+        mountain: mountainParam,
+        world: nextWorld,
+        category: categoryParam,
+      })
+    );
   };
 
   return (
@@ -143,7 +190,7 @@ export function LevelSelectPage() {
         <button
           className="level-select-back"
           onClick={() => {
-            navigate(`${APP_CONFIG.ROUTES.CATEGORY_SELECT}?mountain=${mountainParam}`);
+            navigate(urls.categorySelect({ mountain: mountainParam }));
           }}
         >
           ←

@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { Header } from '../components/Header';
 import { FooterNav } from '../components/FooterNav';
+import { urls } from '../utils/navigation';
 import { ProfileForm } from '../components/ProfileForm';
 import { DataResetConfirmModal } from '../components/DataResetConfirmModal';
 import { Toast } from '../components/Toast';
@@ -49,7 +50,7 @@ const formatBestSubject = (themeId: string | null): string => {
     };
 
     const subjectName = subjectMap[subject] || subject;
-    return `${categoryName} ${subjectName}`;
+    return `${categoryName} ${subjectName} `;
   }
   return themeId;
 };
@@ -119,7 +120,7 @@ export function MyPage() {
   const handleProfileComplete = () => {
     setShowProfileForm(false);
     // URL 파라미터 제거
-    navigate('/my-page', { replace: true });
+    navigate(urls.myPage(), { replace: true });
     refetch(); // 프로필 완성 후 통계 다시 불러오기
   };
 
@@ -169,7 +170,7 @@ export function MyPage() {
   const handleSendFeedback = () => {
     const subject = encodeURIComponent('[Solve Climb] 의견 보내기');
     const body = encodeURIComponent('안녕하세요,\n\n의견을 남겨주세요:\n\n');
-    window.location.href = `mailto:support@solveclimb.com?subject=${subject}&body=${body}`;
+    window.location.href = `mailto:support @solveclimb.com?subject = ${subject}& body=${body} `;
   };
 
   // 게임 로그인 마이그레이션 및 로그인 함수
@@ -343,10 +344,10 @@ export function MyPage() {
           // 토스 로그인 실패 시 게임 로그인 hash만으로 진행 (제한적 기능)
           console.warn('[로그인] 토스 로그인 실패, 게임 로그인 hash만 사용');
           const gameLoginProfile = {
-            profileId: `game_${migrationResult.hash}`,
+            profileId: `game_${migrationResult.hash} `,
             nickname: '게이머',
-            userId: `game_${migrationResult.hash}`,
-            email: `game_${migrationResult.hash}@game.local`,
+            userId: `game_${migrationResult.hash} `,
+            email: `game_${migrationResult.hash} @game.local`,
             createdAt: new Date().toISOString(),
             isAdmin: false,
             gameLoginHash: migrationResult.hash,
@@ -398,10 +399,10 @@ export function MyPage() {
         // 토스 로그인 미연동 사용자: 게임 로그인 hash만 사용 (제한적 기능)
         console.log('[로그인] 토스 로그인 미연동 사용자 - 게임 로그인 hash만 사용');
         const gameLoginProfile = {
-          profileId: `game_${migrationResult.hash}`,
+          profileId: `game_${migrationResult.hash} `,
           nickname: '게이머',
-          userId: `game_${migrationResult.hash}`,
-          email: `game_${migrationResult.hash}@game.local`,
+          userId: `game_${migrationResult.hash} `,
+          email: `game_${migrationResult.hash} @game.local`,
           createdAt: new Date().toISOString(),
           isAdmin: false,
           gameLoginHash: migrationResult.hash,
@@ -462,7 +463,7 @@ export function MyPage() {
 
       // 로컬 세션만 사용 (Supabase 인증 없이)
       const userProfile = {
-        profileId: `user_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+        profileId: `user_${Date.now()}_${Math.random().toString(36).substr(2, 9)} `,
         nickname: '게이머',
         createdAt: new Date().toISOString(),
         isAdmin: false,

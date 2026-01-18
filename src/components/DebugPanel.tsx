@@ -64,11 +64,11 @@ function DebugPanel() {
       >
         <div className="debug-panel-header">
           <h2>🐛 디버그 패널</h2>
-          <button 
+          <button
             onClick={(e) => {
               e.stopPropagation();
               toggleDebugPanel();
-            }} 
+            }}
             aria-label="닫기"
             type="button"
           >

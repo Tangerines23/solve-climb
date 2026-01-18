@@ -220,7 +220,21 @@ export const useUserStore = create<UserState>((set, get) => ({
 
   recoverStaminaAds: async () => {
     const { data, error } = await supabase.rpc('recover_stamina_ads');
+
+    // PGRST202: RPC 함수가 DB에 없을 경우 (시뮬레이션 모드/마이그레이션 누락)
     if (error) {
+      if ((error as any).code === 'PGRST202') {
+        console.warn(
+          '[UserStore] recover_stamina_ads RPC not found. Falling back to manual update for simulation.'
+        );
+        const currentStamina = get().stamina;
+        if (currentStamina < 5) {
+          await get().setStamina(currentStamina + 1);
+          return { success: true, message: 'Stamina recovered via simulation fallback' };
+        }
+        return { success: false, message: 'Stamina is already full' };
+      }
+
       console.error('Error recovering stamina (ads):', error);
       return { success: false, message: '오류가 발생했습니다.' };
     }
@@ -310,17 +324,28 @@ export const useUserStore = create<UserState>((set, get) => ({
     } = await supabase.auth.getUser();
     if (!user) return { success: false, message: '로그인이 필요합니다.' };
 
-    // Simply increment stamina locally and sync to server
-    // Note: server should ideally have a refund RPC, but for now we manually update
-    // Or reusing recover_stamina logic if appropriate, but refund implies giving back what was taken.
-    // Let's increment by 1 safely.
-
     // Optimistic update
-    set((state) => ({ stamina: Math.min(5, state.stamina + 1) }));
+    const currentStamina = get().stamina;
+    if (currentStamina < 5) {
+      set({ stamina: currentStamina + 1 });
+    }
 
     try {
-      const { error } = await supabase.rpc('recover_stamina_ads'); // Using existing recovery RPC as it increments by 1
-      if (error) throw error;
+      const { error } = await supabase.rpc('recover_stamina_ads');
+      if (error) {
+        // RPC가 없는 경우 (PGRST202) 시뮬레이션 모드로 간주하고 성공 반환
+        if ((error as any).code === 'PGRST202') {
+          console.warn(
+            '[UserStore] recover_stamina_ads RPC not found during refund. Using simulation fallback.'
+          );
+          // 이미 위에서 set한 상태를 서버에 동기화
+          if (currentStamina < 5) {
+            await get().setStamina(currentStamina + 1);
+          }
+          return { success: true, message: 'Stamina refunded (Simulation)' };
+        }
+        throw error;
+      }
       return { success: true, message: 'Stamina refunded' };
     } catch (error) {
       console.error('Error refunding stamina:', error);

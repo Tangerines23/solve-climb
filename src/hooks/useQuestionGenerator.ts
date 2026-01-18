@@ -54,14 +54,22 @@ export function useQuestionGenerator({
     const waveConfig = SURVIVAL_CONFIG.WAVES.find(
       (w) => currentWave >= w.start && currentWave <= w.end
     );
-    return waveConfig ? waveConfig.level : 15;
+
+    // v2.2 상세 기획 반영: Phase별 레벨 범위 내에서 무작위 선택
+    if (waveConfig) {
+      const { minLevel, maxLevel } = waveConfig as any;
+      // 해당 범위(min-max) 내에서 무작위 레벨 선택
+      return Math.floor(Math.random() * (maxLevel - minLevel + 1)) + minLevel;
+    }
+
+    return 10; // Fallback
   }, [gameMode, levelParam, totalQuestions]);
 
   const generateNewQuestion = useCallback(() => {
     // 1. 월드/카테고리/레벨 결정 (파라미터 우선, 없으면 스토어 값 사용)
     const targetWorld = (worldParam || world) as World;
     const targetCategory = (categoryParam || category) as Category;
-    const targetLevel = gameMode === 'survival' ? effectiveLevel : (levelParam || 1);
+    const targetLevel = gameMode === 'survival' ? effectiveLevel : levelParam || 1;
 
     if (!targetWorld || !targetCategory) {
       console.warn('Missing world or category for question generation');
