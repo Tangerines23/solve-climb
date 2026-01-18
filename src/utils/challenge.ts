@@ -6,7 +6,6 @@
 import { APP_CONFIG } from '../config/app';
 import { storage } from './storage';
 
-
 const STORAGE_KEY_DATE = 'solve-climb-today-challenge-date';
 const STORAGE_KEY_CHALLENGE = 'solve-climb-today-challenge';
 
@@ -76,7 +75,7 @@ function generateTodayChallenge(): TodayChallenge {
   const rng = new SeededRandom(seed);
 
   // 기능 플래그(FEATURE_FLAGS)에 따라 활성화된 산 선택
-  const availableMountains = APP_CONFIG.MOUNTAINS.filter((mtn) => {
+  const availableMountains = APP_CONFIG.MOUNTAINS.filter((mtn: any) => {
     if (mtn.id === 'math') return APP_CONFIG.FEATURE_FLAGS.ENABLE_MATH_MOUNTAIN;
     if (mtn.id === 'language') return APP_CONFIG.FEATURE_FLAGS.ENABLE_LANGUAGE_MOUNTAIN;
     if (mtn.id === 'logic') return APP_CONFIG.FEATURE_FLAGS.ENABLE_LOGIC_MOUNTAIN;
@@ -92,7 +91,9 @@ function generateTodayChallenge(): TodayChallenge {
 
   // 수학의 산에서 수열 제거
   if (selectedMountain.id === 'math' && subTopics) {
-    subTopics = subTopics.filter((topic: any) => topic.id !== 'sequence') as unknown as typeof subTopics;
+    subTopics = subTopics.filter(
+      (topic: any) => topic.id !== 'sequence'
+    ) as unknown as typeof subTopics;
   }
 
   if (!subTopics || !Array.isArray(subTopics) || (subTopics as unknown[]).length === 0) {
@@ -149,8 +150,7 @@ function generateTodayChallenge(): TodayChallenge {
     id: `today_challenge_${todayDate}`,
     title,
     category:
-      APP_CONFIG.MOUNTAINS.find((m) => m.id === selectedMountain.id)?.name ||
-      selectedMountain.name,
+      APP_CONFIG.MOUNTAINS.find((m) => m.id === selectedMountain.id)?.name || selectedMountain.name,
     categoryId: selectedMountain.id,
     topic: selectedTopic.name,
     topicId: selectedTopic.id,

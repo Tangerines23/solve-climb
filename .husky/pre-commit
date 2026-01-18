@@ -37,8 +37,21 @@ if [ -n "$CSS_CHANGED" ]; then
   fi
 fi
 
-# 4. 보안 검사 (경고만 - 느려서 실패해도 커밋 가능)
-echo "4️⃣ 보안 검사 (의존성 취약점)..."
+# 4. 네비게이션 검증 (조건부 - TS/TSX 파일 변경 시에만)
+NAV_CHANGED=$(node scripts/check-nav-changes.js 2>/dev/null || echo "")
+if [ -n "$NAV_CHANGED" ]; then
+  echo "4️⃣ 네비게이션 검증 (UrlBuilder 사용 여부)..."
+  if ! npm run check:nav 2>&1; then
+    echo ""
+    echo "❌ 네비게이션 검증 실패"
+    echo "💡 직접적인 navigate('주소') 호출이 발견되었습니다"
+    echo "💡 src/utils/navigation.ts의 urls 객체를 사용해주세요"
+    exit 1
+  fi
+fi
+
+# 5. 보안 검사 (경고만 - 느려서 실패해도 커밋 가능)
+echo "5️⃣ 보안 검사 (의존성 취약점)..."
 npm run check:security 2>/dev/null || {
   echo "⚠️  보안 취약점 발견"
   echo "💡 'npm audit' 실행하여 상세 확인 권장"
@@ -46,18 +59,18 @@ npm run check:security 2>/dev/null || {
   # exit 1  # 엄격하게 하려면 주석 해제
 }
 
-# 5. 테스트 실행 (선택적 - 경고만)
-echo "5️⃣ 테스트 실행..."
+# 6. 테스트 실행 (선택적 - 경고만)
+echo "6️⃣ 테스트 실행..."
 npm run test -- --run || {
   echo "⚠️  테스트 실패"
   echo "💡 CI에서 재확인 예정"
   # exit 1  # 엄격하게 하려면 주석 해제
 }
 
-# 6. DB 검증 (조건부)
+# 7. DB 검증 (조건부)
 DB_CHANGED=$(node scripts/check-db-changes.js 2>/dev/null || echo "")
 if [ -n "$DB_CHANGED" ]; then
-  echo "6️⃣ DB 검증..."
+  echo "7️⃣ DB 검증..."
   echo "$DB_CHANGED - DB 검증 실행..."
   if ! npm run check:db 2>&1; then
     echo ""

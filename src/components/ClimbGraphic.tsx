@@ -1,7 +1,12 @@
 import React, { useRef, useMemo, useCallback } from 'react';
 import { useLevelProgressStore } from '../stores/useLevelProgressStore';
 import { useProfileStore } from '../stores/useProfileStore';
-import { ArithmeticBackground, EquationsBackground, SequenceBackground, CalculusBackground } from './ClimbGraphicBackgrounds';
+import {
+  ArithmeticBackground,
+  EquationsBackground,
+  SequenceBackground,
+  CalculusBackground,
+} from './ClimbGraphicBackgrounds';
 import { STAGE_CONFIG, type StageConfig } from '../constants/stages';
 import { World, Category } from '../types/quiz';
 import './ClimbGraphic.css';
@@ -101,7 +106,7 @@ export function ClimbGraphic({
       const isCleared = isLevelCleared(world, category, levels[i].level);
       const status: 'locked' | 'current' | 'cleared' = isCleared
         ? 'cleared'
-        : (levels[i].level === nextLevel || (isAdmin && !isCleared))
+        : levels[i].level === nextLevel || (isAdmin && !isCleared)
           ? 'current'
           : 'locked';
 
@@ -160,33 +165,40 @@ export function ClimbGraphic({
   const stageConfig = useMemo(() => {
     // 월드별 기본 스카이 그라데이션
     const worldSkyGradients: Record<World, string> = {
-      'World1': 'linear-gradient(180deg, #065f46 0%, #064e3b 100%)',
-      'World2': 'linear-gradient(180deg, #92400e 0%, #451a03 100%)',
-      'World3': 'linear-gradient(180deg, #0e7490 0%, #083344 100%)',
-      'World4': 'linear-gradient(180deg, #581c87 0%, #000000 100%)',
+      World1: 'linear-gradient(180deg, #065f46 0%, #064e3b 100%)',
+      World2: 'linear-gradient(180deg, #92400e 0%, #451a03 100%)',
+      World3: 'linear-gradient(180deg, #0e7490 0%, #083344 100%)',
+      World4: 'linear-gradient(180deg, #581c87 0%, #000000 100%)',
+      LangWorld1: 'linear-gradient(180deg, #f87171 0%, #7f1d1d 100%)',
     };
 
     const configs: Record<string, StageBackgroundConfig> = {
-      '기초': {
+      기초: {
         skyGradient: worldSkyGradients[world] || worldSkyGradients['World1'],
         mainColor: 'var(--ground-color-near)',
         secondaryColor: 'var(--ground-color-mid)',
         accentColor: 'var(--symbol-color-near)',
       },
-      '대수': {
-        skyGradient: worldSkyGradients[world] || 'linear-gradient(180deg, #064E3B 0%, #065F46 15%, #0891B2 40%, #06B6D4 65%, #22D3EE 85%, #67E8F9 100%)',
+      대수: {
+        skyGradient:
+          worldSkyGradients[world] ||
+          'linear-gradient(180deg, #064E3B 0%, #065F46 15%, #0891B2 40%, #06B6D4 65%, #22D3EE 85%, #67E8F9 100%)',
         mainColor: 'var(--ground-color-near)',
         secondaryColor: 'var(--ground-color-mid)',
         accentColor: 'var(--symbol-color-near)',
       },
-      '논리': {
-        skyGradient: worldSkyGradients[world] || 'linear-gradient(180deg, #4B0082 0%, #6A5ACD 30%, #9370DB 60%, #BA55D3 100%)',
+      논리: {
+        skyGradient:
+          worldSkyGradients[world] ||
+          'linear-gradient(180deg, #4B0082 0%, #6A5ACD 30%, #9370DB 60%, #BA55D3 100%)',
         mainColor: 'var(--ground-color-near)',
         secondaryColor: 'var(--ground-color-mid)',
         accentColor: 'var(--symbol-color-near)',
       },
-      '심화': {
-        skyGradient: worldSkyGradients[world] || 'linear-gradient(180deg, #000428 0%, #004e92 30%, #1a1a2e 60%, #16213e 100%)',
+      심화: {
+        skyGradient:
+          worldSkyGradients[world] ||
+          'linear-gradient(180deg, #000428 0%, #004e92 30%, #1a1a2e 60%, #16213e 100%)',
         mainColor: 'var(--ground-color-near)',
         secondaryColor: 'var(--ground-color-mid)',
         accentColor: 'var(--symbol-color-near)',
@@ -210,7 +222,9 @@ export function ClimbGraphic({
       <div className="level-map-sky" style={{ background: stageConfig.skyGradient }} />
 
       {category === '기초' && <ArithmeticBackground totalLevels={totalLevels} />}
-      {category === '대수' && <EquationsBackground totalLevels={totalLevels} config={stageConfig} />}
+      {category === '대수' && (
+        <EquationsBackground totalLevels={totalLevels} config={stageConfig} />
+      )}
       {category === '논리' && <SequenceBackground totalLevels={totalLevels} config={stageConfig} />}
       {category === '심화' && <CalculusBackground totalLevels={totalLevels} config={stageConfig} />}
 
@@ -355,12 +369,7 @@ export function ClimbGraphic({
                   transform={`translate(${badgeX}, ${badgeY})`}
                   style={{ filter: 'url(#toss-shadow)' }}
                 >
-                  <rect
-                    width={badgeWidth}
-                    height="30"
-                    rx="15"
-                    fill="#FFFFFF"
-                  />
+                  <rect width={badgeWidth} height="30" rx="15" fill="#FFFFFF" />
                   <circle cx={isLeftSide ? badgeWidth - 12 : 12} cy="15" r="4" fill={stage.color} />
                   <text
                     x={isLeftSide ? badgeWidth - 24 : 24}

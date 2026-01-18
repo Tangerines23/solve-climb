@@ -1,0 +1,133 @@
+/**
+ * @file navigation.ts
+ * @description Type-safe URL builders for application navigation.
+ * This prevents "Invalid Access" errors by enforcing required parameters at compile time.
+ */
+
+import { APP_CONFIG } from '../config/app';
+
+/**
+ * Interface for Quiz Page Parameters
+ */
+export interface QuizParams {
+  mountain: string;
+  world: string;
+  category: string;
+  level: number | string;
+  mode: 'time-attack' | 'survival';
+  preview?: boolean;
+  challenge?: string;
+}
+
+/**
+ * Interface for Level Select Page Parameters
+ */
+export interface LevelSelectParams {
+  mountain: string;
+  world: string;
+  category: string;
+}
+
+/**
+ * Interface for World Select Page Parameters
+ */
+export interface WorldSelectParams {
+  mountain: string;
+  category: string;
+}
+
+/**
+ * Interface for Category Select Page Parameters
+ */
+export interface CategorySelectParams {
+  mountain: string;
+}
+
+/**
+ * Type-safe URL Builders
+ */
+export const urls = {
+  /**
+   * Home Page
+   */
+  home: () => APP_CONFIG.ROUTES.HOME,
+
+  /**
+   * Category Select Page
+   */
+  categorySelect: (params: CategorySelectParams) => {
+    return `${APP_CONFIG.ROUTES.CATEGORY_SELECT}?mountain=${params.mountain}`;
+  },
+
+  /**
+   * World Select Page
+   */
+  worldSelect: (params: WorldSelectParams) => {
+    return `${APP_CONFIG.ROUTES.WORLD_SELECT}?mountain=${params.mountain}&category=${params.category}`;
+  },
+
+  /**
+   * Level Select Page
+   */
+  levelSelect: (params: LevelSelectParams) => {
+    return `${APP_CONFIG.ROUTES.LEVEL_SELECT}?mountain=${params.mountain}&world=${params.world}&category=${params.category}`;
+  },
+
+  /**
+   * Quiz Page
+   */
+  quiz: (params: QuizParams) => {
+    const baseUrl = APP_CONFIG.ROUTES.GAME;
+    const query = new URLSearchParams({
+      mountain: params.mountain,
+      world: params.world,
+      category: params.category,
+      level: params.level.toString(),
+      mode: params.mode,
+    });
+    if (params.preview) query.append('preview', 'true');
+    if (params.challenge) query.append('challenge', params.challenge);
+    return `${baseUrl}?${query.toString()}`;
+  },
+
+  /**
+   * Result Page
+   */
+  result: (params: URLSearchParams | string) => {
+    const query = typeof params === 'string' ? params : params.toString();
+    return `${APP_CONFIG.ROUTES.RESULT}?${query}`;
+  },
+
+  /**
+   * My Page
+   */
+  myPage: (params?: { showProfileForm?: boolean }) => {
+    const baseUrl = APP_CONFIG.ROUTES.MY_PAGE;
+    if (params?.showProfileForm) {
+      return `${baseUrl}?showProfileForm=true`;
+    }
+    return baseUrl;
+  },
+
+  /**
+   * Challenge Page
+   */
+  challenge: (params: { id: string }) => {
+    return `/challenge?id=${params.id}`;
+  },
+
+  /**
+   * Shop Page
+   */
+  shop: () => '/shop',
+
+  /**
+   * Ranking Page
+   */
+  ranking: () => '/ranking',
+
+  /**
+   * Notifications Page
+   */
+  notifications: () => APP_CONFIG.ROUTES.NOTIFICATIONS,
+};

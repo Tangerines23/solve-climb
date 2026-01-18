@@ -3,6 +3,9 @@ import { generateRandomNumber } from './math';
 import { generateLogicProblem } from './LogicProblemGenerator';
 import { generateProblem } from './MathProblemGenerator';
 import { generateEquation } from './EquationProblemGenerator';
+import { generateGeometryProblem } from './GeometryProblemGenerator';
+import { generateStatsProblem } from './StatsProblemGenerator';
+import { generateCSProblem } from './CSProblemGenerator';
 import { NUMBER_RANGE_BY_DIFFICULTY } from '../constants/game';
 
 /**
@@ -14,18 +17,26 @@ export function generateQuestion(
   level: number,
   difficulty: Difficulty
 ): QuizQuestion {
-  switch (world) {
-    case 'World1':
-      return generateWorld1Question(category, level, difficulty);
-    case 'World2':
-      return generateWorld2Question(category, level, difficulty);
-    case 'World3':
-      return generateWorld3Question(category, level, difficulty);
-    case 'World4':
-      return generateWorld4Question(category, level, difficulty);
-    default:
-      return generateWorld1Question(category, level, difficulty);
-  }
+  const q = (() => {
+    switch (world) {
+      case 'World1':
+        return generateWorld1Question(category, level, difficulty);
+      case 'World2':
+        return generateWorld2Question(category, level, difficulty);
+      case 'World3':
+        return generateWorld3Question(category, level, difficulty);
+      case 'World4':
+        return generateWorld4Question(category, level, difficulty);
+      default:
+        return generateWorld1Question(category, level, difficulty);
+    }
+  })();
+
+  return {
+    ...q,
+    level,
+    category,
+  };
 }
 
 /**
@@ -45,7 +56,7 @@ function generateWorld1Question(
           question: problem.expression,
           answer: problem.answer,
         };
-      } catch (e) {
+      } catch {
         return generateMathQuestion('덧셈', difficulty);
       }
     case '대수':
@@ -56,13 +67,21 @@ function generateWorld1Question(
           question: equation.question,
           answer: equation.x,
         };
-      } catch (e) {
+      } catch {
         return generateEquationQuestion(difficulty);
       }
     case '논리':
-      // 기존 로직 유지 (Topic 기반 폴백 대응)
-      return generateLogicQuestion(`World1-논리` as Topic, difficulty);
+      try {
+        const logicProblem = generateLogicProblem(level, difficulty);
+        return {
+          question: logicProblem.question,
+          answer: logicProblem.answer,
+        };
+      } catch {
+        return generateLogicQuestion(level, difficulty);
+      }
     case '심화':
+      // 심화(Expert)는 레벨별 미적분/응용 문제 생성 (현재는 difficulty 위주)
       return generateCalculusQuestion(difficulty);
     default:
       return generateMathQuestion('덧셈', difficulty);
@@ -74,14 +93,25 @@ function generateWorld1Question(
  */
 function generateWorld2Question(
   category: Category,
-  _level: number,
+  level: number,
   difficulty: Difficulty
 ): QuizQuestion {
   switch (category) {
     case '기초':
-      return generateGeometryBasicQuestion(difficulty);
+      try {
+        const problem = generateGeometryProblem(level, difficulty);
+        return {
+          question: problem.question,
+          answer: problem.answer,
+        };
+      } catch {
+        return generateGeometryBasicQuestion(difficulty);
+      }
     case '논리':
-      return { question: '정사각형의 대칭축은 몇 개인가?', answer: 4 };
+      // World 2 논리 레벨 (정사각형 대칭축 등)
+      if (level === 9) return { question: '정사각형의 대칭축은 몇 개인가?', answer: 4 };
+      if (level === 10) return { question: '정삼각형의 대칭축은 몇 개인가?', answer: 3 };
+      return generateGeometryBasicQuestion(difficulty);
     default:
       return { question: '도형 문제 준비 중...', answer: 0 };
   }
@@ -92,12 +122,20 @@ function generateWorld2Question(
  */
 function generateWorld3Question(
   category: Category,
-  _level: number,
+  level: number,
   difficulty: Difficulty
 ): QuizQuestion {
   switch (category) {
     case '기초':
-      return generateStatsBasicQuestion(difficulty);
+      try {
+        const problem = generateStatsProblem(level, difficulty);
+        return {
+          question: problem.question,
+          answer: problem.answer,
+        };
+      } catch {
+        return generateStatsBasicQuestion(difficulty);
+      }
     default:
       return { question: '통계 문제 준비 중...', answer: 0 };
   }
@@ -108,12 +146,20 @@ function generateWorld3Question(
  */
 function generateWorld4Question(
   category: Category,
-  _level: number,
+  level: number,
   difficulty: Difficulty
 ): QuizQuestion {
   switch (category) {
     case '기초':
-      return generateCSBasicQuestion(difficulty);
+      try {
+        const problem = generateCSProblem(level, difficulty);
+        return {
+          question: problem.question,
+          answer: problem.answer,
+        };
+      } catch {
+        return generateCSBasicQuestion(difficulty);
+      }
     case '논리':
       return generateLogicGateQuestion(difficulty);
     default:
@@ -297,8 +343,8 @@ function generateMathQuestion(
 /**
  * 논리 문제 생성
  */
-function generateLogicQuestion(topic: Topic, difficulty: Difficulty): QuizQuestion {
-  const problem = generateLogicProblem(topic as string, difficulty);
+function generateLogicQuestion(level: number, difficulty: Difficulty): QuizQuestion {
+  const problem = generateLogicProblem(level, difficulty);
   return {
     question: problem.question,
     answer: problem.answer,

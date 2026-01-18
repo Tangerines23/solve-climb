@@ -140,7 +140,7 @@ export function validateSubTopicParam(
 
   // 카테고리가 유효한지 확인
   const allowedCategories = APP_CONFIG.CATEGORIES.map((cat) => cat.id);
-  if (!allowedCategories.includes(category)) {
+  if (!(allowedCategories as string[]).includes(category)) {
     return null;
   }
 

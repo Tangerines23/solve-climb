@@ -41,46 +41,41 @@ export function KeyboardInfoModal({ isOpen, onClose }: KeyboardInfoModalProps) {
 
           // 현재 World1 고정 사용
           const worldLevels = (APP_CONFIG.LEVELS as any)['World1'];
-          const levels = (worldLevels?.[categoryId] as Array<{
-            level: number;
-            name: string;
-            description: string;
-          }>) || [];
+          const levels =
+            (worldLevels?.[categoryId] as Array<{
+              level: number;
+              name: string;
+              description: string;
+            }>) || [];
 
           let kbType: 'qwerty-text' | 'custom' | 'qwerty-number' | null = null;
           let allowNegative = false;
           let shouldInclude = false;
 
           if (type === 'qwerty-text') {
-            if (mtnId === 'language' && categoryId === 'japanese') {
+            if (mtnId === 'language' && (categoryId === '히라가나' || categoryId === '가타카나')) {
               kbType = 'qwerty-text';
               shouldInclude = true;
             }
           } else if (type === 'qwerty-number') {
             if (
               keyboardType === 'qwerty' &&
-              !(mtnId === 'language' && categoryId === 'japanese')
+              !(mtnId === 'language' && (categoryId === '히라가나' || categoryId === '가타카나'))
             ) {
               kbType = 'qwerty-number';
               shouldInclude = true;
-              if (
-                mtnId === 'math' &&
-                (categoryId === '대수' || categoryId === '심화')
-              ) {
+              if (mtnId === 'math' && (categoryId === '대수' || categoryId === '심화')) {
                 allowNegative = true;
               }
             }
           } else if (type === 'custom') {
             if (
               keyboardType === 'custom' &&
-              !(mtnId === 'language' && categoryId === 'japanese')
+              !(mtnId === 'language' && (categoryId === '히라가나' || categoryId === '가타카나'))
             ) {
               kbType = 'custom';
               shouldInclude = true;
-              if (
-                mtnId === 'math' &&
-                (categoryId === '대수' || categoryId === '심화')
-              ) {
+              if (mtnId === 'math' && (categoryId === '대수' || categoryId === '심화')) {
                 allowNegative = true;
               }
             }
