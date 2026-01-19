@@ -1,6 +1,7 @@
 // src/hooks/useHistoryData.ts
 import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '../utils/supabaseClient';
+import { debugSupabaseQuery } from '../utils/debugFetch';
 import { APP_CONFIG } from '../config/app';
 import { parseLocalSession } from '../utils/safeJsonParse';
 import { storage, StorageKeys } from '../utils/storage';
@@ -92,7 +93,7 @@ export function useHistoryData() {
       if (!currentSession) {
         const {
           data: { session: supabaseSession },
-        } = await supabase.auth.getSession();
+        } = await debugSupabaseQuery(supabase.auth.getSession());
         currentSession = supabaseSession;
       }
 
@@ -121,20 +122,26 @@ export function useHistoryData() {
 
       // --- 2. 데이터 페칭 ---
       const [themeRes, recordsRes, sessionsRes, profileRes] = await Promise.all([
-        supabase.from('theme_mapping').select('code, theme_id, name'),
-        supabase
-          .from('user_level_records')
-          .select('theme_code, level, mode_code, best_score, updated_at')
-          .eq('user_id', currentUserId)
-          .order('updated_at', { ascending: false }),
-        supabase
-          .from('game_sessions')
-          .select('category, subject, level, game_mode, score, created_at')
-          .eq('user_id', currentUserId)
-          .eq('status', 'completed')
-          .order('created_at', { ascending: false })
-          .limit(50),
-        supabase.from('profiles').select('total_mastery_score').eq('id', currentUserId).single(),
+        debugSupabaseQuery(supabase.from('theme_mapping').select('code, theme_id, name')),
+        debugSupabaseQuery(
+          supabase
+            .from('user_level_records')
+            .select('theme_code, level, mode_code, best_score, updated_at')
+            .eq('user_id', currentUserId)
+            .order('updated_at', { ascending: false })
+        ),
+        debugSupabaseQuery(
+          supabase
+            .from('game_sessions')
+            .select('category, subject, level, game_mode, score, created_at')
+            .eq('user_id', currentUserId)
+            .eq('status', 'completed')
+            .order('created_at', { ascending: false })
+            .limit(50)
+        ),
+        debugSupabaseQuery(
+          supabase.from('profiles').select('total_mastery_score').eq('id', currentUserId).single()
+        ),
       ]);
 
       if (recordsRes.error) throw recordsRes.error;

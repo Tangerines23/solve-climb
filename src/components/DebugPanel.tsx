@@ -7,6 +7,10 @@ import { ItemSystemSection } from './debug/ItemSystemSection';
 import { DataResetSection } from './debug/DataResetSection';
 import { ErrorLogSection } from './debug/ErrorLogSection';
 import { BoundaryTestSection } from './debug/BoundaryTestSection';
+import { NetworkSection } from './debug/NetworkSection';
+import { VisualSection } from './debug/VisualSection';
+import { MacroSection } from './debug/MacroSection';
+import { ProgressionSection } from './debug/ProgressionSection';
 import './DebugPanel.css';
 
 function DebugPanel() {
@@ -22,7 +26,11 @@ function DebugPanel() {
     { id: 'item', label: '아이템' },
     { id: 'data', label: '데이터' },
     { id: 'errors', label: '에러 로그' },
-    { id: 'boundary', label: '경계값 테스트' },
+    { id: 'boundary', label: '경계값' },
+    { id: 'network', label: '🌐 네트워크' },
+    { id: 'visual', label: '📱 시각' },
+    { id: 'macro', label: '🎬 매크로' },
+    { id: 'progression', label: '🏆 진행' },
   ];
 
   const renderTabContent = () => {
@@ -43,6 +51,14 @@ function DebugPanel() {
         return <ErrorLogSection />;
       case 'boundary':
         return <BoundaryTestSection />;
+      case 'network':
+        return <NetworkSection />;
+      case 'visual':
+        return <VisualSection />;
+      case 'macro':
+        return <MacroSection />;
+      case 'progression':
+        return <ProgressionSection />;
       default:
         return <QuickActionsSection />;
     }

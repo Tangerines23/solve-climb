@@ -1,4 +1,4 @@
-import { useState, useRef, useLayoutEffect } from 'react';
+import { useState, useRef, useLayoutEffect, useEffect } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { APP_CONFIG } from '@/config/app';
 import { ClimbGraphic } from '@/components/ClimbGraphic';
@@ -23,6 +23,30 @@ export function LevelSelectPage() {
   const mountainParam = searchParams.get('mountain');
   const worldParam = searchParams.get('world') as World | null;
   const categoryParam = searchParams.get('category') as Category | null;
+
+  // [Phase 8] Persistence & Self-healing
+  useEffect(() => {
+    if (mountainParam) localStorage.setItem('last_visited_mountain', mountainParam);
+    if (worldParam) localStorage.setItem('last_visited_world', worldParam);
+    if (categoryParam) localStorage.setItem('last_visited_category', categoryParam);
+  }, [mountainParam, worldParam, categoryParam]);
+
+  // URL 파라미터 결손 시 자동 복구 리다이렉트
+  useEffect(() => {
+    if (!mountainParam || !worldParam || !categoryParam) {
+      const recMountain = mountainParam || localStorage.getItem('last_visited_mountain');
+      const recWorld = worldParam || localStorage.getItem('last_visited_world');
+      const recCategory = categoryParam || localStorage.getItem('last_visited_category');
+
+      if (recMountain && recWorld && recCategory) {
+        // 모든 정보가 복구 가능하면 이동
+        navigate(
+          `${window.location.pathname}?mountain=${recMountain}&world=${recWorld}&category=${recCategory}`,
+          { replace: true }
+        );
+      }
+    }
+  }, [mountainParam, worldParam, categoryParam, navigate]);
 
   useLayoutEffect(() => {
     const container = scrollContainerRef.current;

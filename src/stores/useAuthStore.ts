@@ -1,6 +1,7 @@
 import { create } from 'zustand';
 import { supabase } from '../utils/supabaseClient';
 import { Session, User } from '@supabase/supabase-js';
+import { debugSupabaseQuery } from '../utils/debugFetch';
 
 interface AuthState {
   session: Session | null;
@@ -22,7 +23,7 @@ export const useAuthStore = create<AuthState>((set) => ({
     // Check current session
     const {
       data: { session },
-    } = await supabase.auth.getSession();
+    } = await debugSupabaseQuery(supabase.auth.getSession());
     set({ session, user: session?.user ?? null });
 
     // Listen for auth changes
@@ -32,7 +33,7 @@ export const useAuthStore = create<AuthState>((set) => ({
 
     // If no session, try anonymous sign-in
     if (!session) {
-      const { data, error } = await supabase.auth.signInAnonymously();
+      const { data, error } = await debugSupabaseQuery(supabase.auth.signInAnonymously());
       if (error) {
         console.error('[AuthStore] Anonymous sign-in failed:', error.message);
       } else {
@@ -45,7 +46,7 @@ export const useAuthStore = create<AuthState>((set) => ({
 
   signInAnonymously: async () => {
     set({ isLoading: true });
-    const { data, error } = await supabase.auth.signInAnonymously();
+    const { data, error } = await debugSupabaseQuery(supabase.auth.signInAnonymously());
     if (error) {
       console.error('[AuthStore] Manual anonymous sign-in failed:', error.message);
     } else {
@@ -55,7 +56,7 @@ export const useAuthStore = create<AuthState>((set) => ({
   },
 
   signOut: async () => {
-    await supabase.auth.signOut();
+    await debugSupabaseQuery(supabase.auth.signOut());
     set({ session: null, user: null });
   },
 }));

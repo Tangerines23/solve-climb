@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '../utils/supabaseClient';
+import { debugSupabaseQuery } from '../utils/debugFetch';
 import { useUserStore } from '../stores/useUserStore';
 import { Header } from '../components/Header';
 import { FooterNav } from '../components/FooterNav';
@@ -27,10 +28,9 @@ export function ShopPage() {
 
   useEffect(() => {
     async function fetchItems() {
-      const { data, error } = await supabase
-        .from('items')
-        .select('*')
-        .order('id', { ascending: true });
+      const { data, error } = await debugSupabaseQuery(
+        supabase.from('items').select('*').order('id', { ascending: true })
+      );
 
       if (error) {
         console.error('Error fetching items:', error);
@@ -52,7 +52,9 @@ export function ShopPage() {
 
     setIsLoading(true);
     try {
-      const { data, error } = await supabase.rpc('purchase_item', { p_item_id: itemId });
+      const { data, error } = await debugSupabaseQuery(
+        supabase.rpc('purchase_item', { p_item_id: itemId })
+      );
 
       if (error) throw error;
 

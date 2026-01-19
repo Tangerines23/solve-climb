@@ -18,6 +18,7 @@ import { useToastStore } from '@/stores/useToastStore';
 import type { Category, World } from '@/types/quiz';
 import { ItemFeedbackRef } from '@/components/game/ItemFeedbackOverlay';
 import { supabase } from '@/utils/supabaseClient';
+import { debugSupabaseQuery } from '@/utils/debugFetch';
 import {
   validateWorldParam,
   validateCategoryInWorldParam,
@@ -27,6 +28,7 @@ import {
 import { QuizQuestion } from '@/types/quiz';
 import { QuizPreview } from '@/components/quiz/QuizPreview';
 import { QuizModals } from '@/components/quiz/QuizModals';
+import { urls } from '@/utils/navigation';
 
 export function QuizPage() {
   const score = useQuizStore((state) => state.score);
@@ -141,6 +143,13 @@ export function QuizPage() {
     isExhausted: useGameStore.getState().isExhausted,
     navigate,
   });
+
+  // [Phase 8] Persistence for Resilience
+  useEffect(() => {
+    if (mountainParam) localStorage.setItem('last_visited_mountain', mountainParam);
+    if (worldParam) localStorage.setItem('last_visited_world', worldParam);
+    if (categoryParam) localStorage.setItem('last_visited_category', categoryParam);
+  }, [mountainParam, worldParam, categoryParam]);
 
   // v2.2 Landmark Popups
   const [activeLandmark, setActiveLandmark] = useState<{ icon: string; text: string } | null>(null);
@@ -275,21 +284,79 @@ export function QuizPage() {
     [gameState.totalQuestions, refundStamina, stableHandleGameOver, showGlobalToast]
   );
 
+  const showExitConfirmRef = useRef(false);
+
   const handleBack = useCallback(() => {
-    if (showExitConfirm) {
+    // 1. 아직 한 문제도 풀지 않았거나 팁 화면인 경우, 확인 없이 바로 섹션 선택으로 이동
+    if (gameState.totalQuestions === 0 || showTipModal) {
       if (exitConfirmTimeoutRef.current) clearTimeout(exitConfirmTimeoutRef.current);
-      // 단순 navigate 대신 smartHandleGameOver 호출로 환불 로직 보장
+
+      // 환불 로직 실행
+      refundStamina().catch(console.error);
+
+      // 이전 선택 화면으로 이동
+      if (mountainParam && worldParam && categoryParam) {
+        navigate(
+          urls.levelSelect({
+            mountain: mountainParam,
+            world: worldParam,
+            category: categoryParam as Category,
+          }),
+          { replace: true }
+        );
+      } else {
+        navigate(urls.home(), { replace: true });
+      }
+      return;
+    }
+
+    // 2. 게임 도중인 경우 안전 장치(2번 누르기) 작동
+    if (showExitConfirmRef.current) {
+      if (exitConfirmTimeoutRef.current) clearTimeout(exitConfirmTimeoutRef.current);
       smartHandleGameOver('manual_exit');
     } else {
       setToastValue('뒤로 가려면 한 번 더 누르세요');
       setShowExitConfirm(true);
+      showExitConfirmRef.current = true;
       setTimeout(() => setIsFadingOut(true), 2500);
       exitConfirmTimeoutRef.current = setTimeout(() => {
         setShowExitConfirm(false);
+        showExitConfirmRef.current = false;
         setIsFadingOut(false);
       }, 3000);
     }
-  }, [showExitConfirm, smartHandleGameOver]);
+  }, [
+    gameState.totalQuestions,
+    showTipModal,
+    refundStamina,
+    mountainParam,
+    worldParam,
+    categoryParam,
+    navigate,
+    smartHandleGameOver,
+  ]);
+
+  // 브라우저 뒤로가기 가로채기 및 UI 뒤로가기(handleBack)와 동기화
+  useEffect(() => {
+    // 빌드 타임 혹은 초기 팁 화면에서는 가로채지 않음 (자유로운 이탈 허용)
+    if (showTipModal) return;
+
+    // 퀴즈 진행 중일 때만 히스토리 스택에 더미 상태 추가
+    window.history.pushState({ protected: true }, '', window.location.href);
+
+    const handlePopState = () => {
+      // popstate가 발생했다는 것은 브라우저가 이미 한 단계 뒤로 이동했다는 뜻 (dummy -> original)
+      handleBack();
+      // 강제로 다시 dummy를 밀어넣어 페이지 유지
+      window.history.pushState({ protected: true }, '', window.location.href);
+    };
+
+    window.addEventListener('popstate', handlePopState);
+
+    return () => {
+      window.removeEventListener('popstate', handlePopState);
+    };
+  }, [handleBack, showTipModal]);
 
   const handlePauseClick = useCallback(() => {
     if (remainingPauses > 0) setShowPauseModal(true);
@@ -440,14 +507,16 @@ export function QuizPage() {
         try {
           const mode = modeParam.includes('time') ? 'timeattack' : 'survival';
           const { infiniteStamina } = useDebugStore.getState();
-          const { data } = await supabase.rpc('create_game_session', {
-            p_questions: [],
-            p_category: categoryParam,
-            p_subject: worldParam,
-            p_level: levelParam,
-            p_game_mode: mode,
-            p_is_debug_session: infiniteStamina,
-          });
+          const { data } = await debugSupabaseQuery(
+            supabase.rpc('create_game_session', {
+              p_questions: [],
+              p_category: categoryParam,
+              p_subject: worldParam,
+              p_level: levelParam,
+              p_game_mode: mode,
+              p_is_debug_session: infiniteStamina,
+            })
+          );
           if (data?.session_id) {
             gameState.setGameSessionId(data.session_id);
             setSessionCreated(true);

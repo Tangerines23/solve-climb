@@ -1,11 +1,10 @@
-import { useRef, useEffect, useState, useCallback } from 'react';
+import { useRef, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { APP_CONFIG } from '../config/app';
 import { urls } from '../utils/navigation';
 import { useProfileStore } from '../stores/useProfileStore';
 import { useUserStore } from '../stores/useUserStore';
 import { useDebugStore } from '../stores/useDebugStore';
-import { Toast } from './Toast'; // Import Toast
 import './Header.css';
 // DebugPanel.css는 DebugPanel 컴포넌트 내부에서 import하므로 여기서는 제거
 // (동적 import된 컴포넌트의 CSS는 자동으로 분리되어 로드됨)
@@ -17,27 +16,11 @@ export function Header() {
   const navigate = useNavigate();
   const location = useLocation();
   const isAdmin = useProfileStore((state) => state.isAdmin);
-  const { minerals, stamina, fetchUserData, checkStamina, setMinerals, setStamina } =
-    useUserStore();
+  const { minerals, stamina, fetchUserData, checkStamina } = useUserStore();
 
   // ⚠️ useDebugStore 사용
-  const {
-    isAdminMode,
-    selectedResource,
-    toggleAdminMode,
-    setSelectedResource,
-    toggleDebugPanel,
-    isDebugPanelOpen,
-  } = useDebugStore();
-
-  // Toast State
-  const [toastMessage, setToastMessage] = useState('');
-  const [isToastOpen, setIsToastOpen] = useState(false);
-
-  const showToast = (msg: string) => {
-    setToastMessage(msg);
-    setIsToastOpen(true);
-  };
+  const { isAdminMode, selectedResource, setSelectedResource, toggleDebugPanel, isDebugPanelOpen } =
+    useDebugStore();
 
   const doubleClickTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const lastClickTimeRef = useRef<number>(0);
@@ -94,65 +77,7 @@ export function Header() {
     lastClickTimeRef.current = now;
   };
 
-  // --- Admin Debug Mode Logic (Run Dev Only) ---
-  const isDev = import.meta.env.DEV;
-
-  const handleKeyDown = useCallback(
-    (e: KeyboardEvent) => {
-      if (!isDev) return;
-
-      // Level 1: 백틱(`) 단독 키: Admin Mode 토글
-      if (e.key === '`' && !e.ctrlKey && !e.shiftKey && !e.metaKey) {
-        toggleAdminMode();
-        return;
-      }
-
-      // Level 2: Ctrl + ` (백틱): 디버그 패널 열기/닫기
-      if (e.key === '`' && (e.ctrlKey || e.metaKey)) {
-        e.preventDefault();
-        toggleDebugPanel();
-        return;
-      }
-
-      // Level 1: 리소스 조작 (기존 유지)
-      if (!isAdminMode || !selectedResource) return;
-
-      if (e.key === '+' || e.key === '=') {
-        if (selectedResource === 'stamina') setStamina(stamina + 1);
-        if (selectedResource === 'minerals') setMinerals(minerals + 100);
-        if (selectedResource === 'items') {
-          const { debugAddItems } = useUserStore.getState();
-          debugAddItems().then(() => showToast('아이템 +5 지급 🎒'));
-        }
-      } else if (e.key === '-' || e.key === '_') {
-        if (selectedResource === 'stamina') setStamina(stamina - 1);
-        if (selectedResource === 'minerals') setMinerals(minerals - 100);
-        if (selectedResource === 'items') {
-          const { debugRemoveItems } = useUserStore.getState();
-          debugRemoveItems().then(() => showToast('아이템 -5 감소 🗑️'));
-        }
-      }
-    },
-    [
-      isDev,
-      isAdminMode,
-      selectedResource,
-      stamina,
-      minerals,
-      setStamina,
-      setMinerals,
-      toggleAdminMode,
-      toggleDebugPanel,
-    ]
-  );
-
-  useEffect(() => {
-    // 키보드 이벤트는 window에 확실하게 바인딩
-    if (isDev) {
-      window.addEventListener('keydown', handleKeyDown);
-      return () => window.removeEventListener('keydown', handleKeyDown);
-    }
-  }, [isDev, handleKeyDown]);
+  // --- Admin Debug Mode: 클릭 기반 조작 (키보드 단축키는 App.tsx의 useDebugShortcuts 훅에서 처리) ---
 
   const handleStaminaClick = (e: React.MouseEvent) => {
     if (!isAdminMode) return;
@@ -251,13 +176,6 @@ export function Header() {
           </button>
         </div>
       </div>
-      <Toast
-        message={toastMessage}
-        isOpen={isToastOpen}
-        onClose={() => setIsToastOpen(false)}
-        autoClose={true}
-        autoCloseDelay={2000}
-      />
 
       {/* 디버그 패널 렌더링 제거 -> App.tsx로 이동 */}
     </header>

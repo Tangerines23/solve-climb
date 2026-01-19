@@ -1,4 +1,5 @@
 import { useNavigate, useSearchParams } from 'react-router-dom';
+import { useEffect } from 'react';
 import { APP_CONFIG } from '@/config/app';
 import { TopicHeader } from '@/components/TopicHeader';
 import { FooterNav } from '@/components/FooterNav';
@@ -10,6 +11,31 @@ export function WorldSelectPage() {
   const [searchParams] = useSearchParams();
   const mountainParam = searchParams.get('mountain');
   const categoryParam = searchParams.get('category');
+
+  // [Phase 8] Persistence & Self-healing
+  useEffect(() => {
+    if (mountainParam) localStorage.setItem('last_visited_mountain', mountainParam);
+    if (categoryParam) localStorage.setItem('last_visited_category', categoryParam);
+  }, [mountainParam, categoryParam]);
+
+  // 파라미터 결손 시 스토리지 기반 복구
+  useEffect(() => {
+    if (!mountainParam || !categoryParam) {
+      const recMountain = mountainParam || localStorage.getItem('last_visited_mountain');
+      const recCategory = categoryParam || localStorage.getItem('last_visited_category');
+
+      if (
+        recMountain &&
+        recCategory &&
+        APP_CONFIG.MOUNTAIN_MAP[recMountain as keyof typeof APP_CONFIG.MOUNTAIN_MAP] &&
+        APP_CONFIG.CATEGORIES.find((c) => c.id === recCategory)
+      ) {
+        navigate(`${window.location.pathname}?mountain=${recMountain}&category=${recCategory}`, {
+          replace: true,
+        });
+      }
+    }
+  }, [mountainParam, categoryParam, navigate]);
 
   const mountainName = mountainParam
     ? APP_CONFIG.MOUNTAIN_MAP[mountainParam as keyof typeof APP_CONFIG.MOUNTAIN_MAP]

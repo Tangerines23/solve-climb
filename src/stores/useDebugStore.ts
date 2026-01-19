@@ -7,12 +7,35 @@ interface DebugState {
 
   // Level 2: 고급 디버그 패널
   isDebugPanelOpen: boolean;
-  activeTab: 'quick' | 'tier' | 'badge' | 'game' | 'item' | 'data' | 'errors' | 'boundary';
+  activeTab:
+    | 'quick'
+    | 'tier'
+    | 'badge'
+    | 'game'
+    | 'item'
+    | 'data'
+    | 'errors'
+    | 'boundary'
+    | 'network'
+    | 'visual'
+    | 'macro'
+    | 'progression';
 
   // 무한 모드
   infiniteStamina: boolean;
   infiniteMinerals: boolean;
   infiniteTime: boolean;
+
+  // 네트워크 시뮬레이션 (Phase 2)
+  networkLatency: number; // 0 = off, 1000+ = 지연 ms
+  forceNetworkError: boolean; // true = 모든 요청 실패
+
+  // 시각적 디버그 도구 (Phase 3)
+  showSafeAreaGuide: boolean;
+  showComponentBorders: boolean;
+
+  // 진행 및 이동 (Phase 6)
+  bypassLevelLock: boolean;
 
   // Actions
   toggleAdminMode: () => void;
@@ -22,6 +45,11 @@ interface DebugState {
   setInfiniteStamina: (value: boolean) => void;
   setInfiniteMinerals: (value: boolean) => void;
   setInfiniteTime: (value: boolean) => void;
+  setNetworkLatency: (ms: number) => void;
+  setForceNetworkError: (value: boolean) => void;
+  setShowSafeAreaGuide: (value: boolean) => void;
+  setShowComponentBorders: (value: boolean) => void;
+  setBypassLevelLock: (value: boolean) => void;
 }
 
 export const useDebugStore = create<DebugState>((set) => ({
@@ -33,6 +61,11 @@ export const useDebugStore = create<DebugState>((set) => ({
   infiniteStamina: false,
   infiniteMinerals: false,
   infiniteTime: false,
+  networkLatency: 0,
+  forceNetworkError: false,
+  showSafeAreaGuide: false,
+  showComponentBorders: false,
+  bypassLevelLock: false,
 
   // Actions
   toggleAdminMode: () =>
@@ -53,4 +86,9 @@ export const useDebugStore = create<DebugState>((set) => ({
   setInfiniteStamina: (value) => set({ infiniteStamina: value }),
   setInfiniteMinerals: (value) => set({ infiniteMinerals: value }),
   setInfiniteTime: (value) => set({ infiniteTime: value }),
+  setNetworkLatency: (ms) => set({ networkLatency: Math.max(0, ms) }),
+  setForceNetworkError: (value) => set({ forceNetworkError: value }),
+  setShowSafeAreaGuide: (value) => set({ showSafeAreaGuide: value }),
+  setShowComponentBorders: (value) => set({ showComponentBorders: value }),
+  setBypassLevelLock: (value) => set({ bypassLevelLock: value }),
 }));

@@ -1,5 +1,6 @@
 import { useCallback } from 'react';
 import { supabase } from '../utils/supabaseClient';
+import { debugSupabaseQuery } from '../utils/debugFetch';
 import { BADGE_DEFINITIONS } from '../constants/badges';
 import { HistoryStats } from '../hooks/useHistoryData';
 
@@ -8,10 +9,9 @@ export function useBadgeChecker() {
     if (!userId || !stats) return;
 
     // 1. Get user's current badges
-    const { data: userBadges, error } = await supabase
-      .from('user_badges')
-      .select('badge_id')
-      .eq('user_id', userId);
+    const { data: userBadges, error } = await debugSupabaseQuery(
+      supabase.from('user_badges').select('badge_id').eq('user_id', userId)
+    );
 
     if (error) {
       console.error('Failed to fetch user badges for check:', error);
@@ -83,7 +83,9 @@ export function useBadgeChecker() {
         earned_at: new Date().toISOString(),
       }));
 
-      const { error: insertError } = await supabase.from('user_badges').insert(inserts);
+      const { error: insertError } = await debugSupabaseQuery(
+        supabase.from('user_badges').insert(inserts)
+      );
 
       if (insertError) {
         console.error('Failed to grant badges:', insertError);

@@ -1,0 +1,122 @@
+.debug-macro-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-sm);
+}
+
+.debug-macro-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--spacing-md);
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: var(--radius-md);
+  transition: all 0.2s ease;
+}
+
+.debug-macro-item:hover {
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.debug-macro-item.running {
+  background: rgba(var(--color-primary-rgb), 0.15);
+  border: 1px solid rgba(var(--color-primary-rgb), 0.3);
+}
+
+.debug-macro-info {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-md);
+}
+
+.debug-macro-icon {
+  font-size: 1.5rem;
+}
+
+.debug-macro-text {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-xs);
+}
+
+.debug-macro-name {
+  font-weight: 600;
+  color: var(--color-text-primary);
+}
+
+.debug-macro-description {
+  font-size: var(--font-size-xs);
+  color: var(--color-text-tertiary);
+}
+
+.debug-macro-run-button {
+  padding: var(--spacing-sm) var(--spacing-md);
+  background: var(--color-primary);
+  border: none;
+  border-radius: var(--radius-sm);
+  color: white;
+  font-size: var(--font-size-sm);
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  min-width: 60px;
+}
+
+.debug-macro-run-button:hover:not(:disabled) {
+  opacity: 0.9;
+  transform: scale(1.02);
+}
+
+.debug-macro-run-button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.debug-macro-result {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+  padding: var(--spacing-md);
+  border-radius: var(--radius-md);
+  margin-top: var(--spacing-md);
+}
+
+.debug-macro-result.success {
+  background: rgba(52, 199, 89, 0.15);
+  border: 1px solid rgba(52, 199, 89, 0.3);
+}
+
+.debug-macro-result.error {
+  background: rgba(255, 59, 48, 0.15);
+  border: 1px solid rgba(255, 59, 48, 0.3);
+}
+
+.debug-macro-result-icon {
+  font-size: 1.125rem;
+}
+
+.debug-macro-result-text {
+  font-size: var(--font-size-sm);
+}
+
+.debug-macro-info-box {
+  margin-top: var(--spacing-md);
+  padding: var(--spacing-md);
+  background: rgba(0, 0, 0, 0.2);
+  border-radius: var(--radius-md);
+}
+
+.debug-macro-help-list {
+  margin: 0;
+  padding-left: var(--spacing-md);
+  font-size: var(--font-size-xs);
+  color: var(--color-text-tertiary);
+}
+
+.debug-macro-help-list li {
+  margin-bottom: var(--spacing-xs);
+}
+
+.debug-macro-help-list li:last-child {
+  margin-bottom: 0;
+}

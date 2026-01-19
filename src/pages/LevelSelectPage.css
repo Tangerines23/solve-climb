@@ -4,7 +4,7 @@
   left: 0;
   right: 0;
   bottom: 0;
-  background-color: #1a1a1a;
+  background-color: var(--color-bg-primary);
   /* Fallback */
   overflow-y: auto;
   overflow-x: auto;
@@ -17,22 +17,22 @@
 }
 
 /* World Themes */
-.level-select-page[data-world="World1"] {
+.level-select-page[data-world='World1'] {
   background: linear-gradient(to bottom, #065f46, #064e3b, #022c22);
   /* Green/Grass */
 }
 
-.level-select-page[data-world="World2"] {
+.level-select-page[data-world='World2'] {
   background: linear-gradient(to bottom, #92400e, #78350f, #451a03);
   /* Desert/Ancient */
 }
 
-.level-select-page[data-world="World3"] {
+.level-select-page[data-world='World3'] {
   background: linear-gradient(to bottom, #0e7490, #155e75, #083344);
   /* Sea/Ice */
 }
 
-.level-select-page[data-world="World4"] {
+.level-select-page[data-world='World4'] {
   background: linear-gradient(to bottom, #581c87, #3b0764, #000000);
   /* Future/Space */
 }

@@ -1,0 +1,95 @@
+.debug-progression-control {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-xl);
+}
+
+.debug-progression-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: var(--spacing-md);
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: var(--rounded-small-alt);
+}
+
+.debug-progression-info {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-xs);
+}
+
+.debug-progression-label {
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.debug-progression-desc {
+  font-size: 11px;
+  opacity: 0.6;
+}
+
+.debug-teleport-zone {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-md);
+  padding: var(--spacing-lg);
+  background: rgba(255, 255, 255, 0.08);
+  border-radius: var(--rounded-sm);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.debug-subtitle {
+  margin: 0;
+  font-size: 13px;
+  color: var(--color-text-primary);
+  opacity: 0.9;
+}
+
+.debug-teleport-selects {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--spacing-md);
+}
+
+.debug-select-group {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-tiny);
+}
+
+.debug-select-group label {
+  font-size: 11px;
+  opacity: 0.7;
+}
+
+.debug-select-group select {
+  padding: var(--spacing-sm);
+  background: var(--color-bg-secondary);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: var(--rounded-xs);
+  color: var(--color-text-primary);
+  font-size: 13px;
+  outline: none;
+}
+
+.debug-select-group select:focus {
+  border-color: var(--color-primary);
+}
+
+.debug-teleport-button {
+  margin-top: var(--spacing-sm);
+  padding: var(--spacing-md);
+  background: linear-gradient(135deg, var(--color-primary), var(--adaptiveBlue600));
+  color: white;
+  border: none;
+  border-radius: var(--rounded-small-alt);
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.debug-teleport-button:active {
+  transform: scale(0.98);
+  opacity: 0.9;
+}

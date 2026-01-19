@@ -4,6 +4,7 @@ import { Routes, Route } from 'react-router-dom';
 import { useLevelProgressStore } from '@/stores/useLevelProgressStore';
 import { useAuthStore } from '@/stores/useAuthStore';
 import { useCustomBackNavigation } from '@/hooks/useCustomBackNavigation';
+import { useDebugShortcuts } from '@/hooks/useDebugShortcuts';
 import { ErrorBoundary } from '@/components/ErrorBoundary';
 import { GlobalLoadingIndicator } from '@/components/GlobalLoadingIndicator';
 import { useErrorLogStore } from '@/stores/useErrorLogStore';
@@ -43,8 +44,11 @@ const ShopPage = lazy(() =>
   import('@/pages/ShopPage').then((module) => ({ default: module.ShopPage }))
 );
 
-// ⚠️ 개발 환경에서만 디버그 패널 로드
+// ⚠️ 개발 환경에서만 디버그 컴포넌트 로드
 const DebugPanel = import.meta.env.DEV ? lazy(() => import('./components/DebugPanel')) : null;
+const DebugOverlay = import.meta.env.DEV
+  ? lazy(() => import('./components/debug/DebugOverlay').then((m) => ({ default: m.DebugOverlay })))
+  : null;
 
 function App() {
   const { syncProgress } = useLevelProgressStore();
@@ -52,6 +56,9 @@ function App() {
 
   // 커스텀 뒤로가기 네비게이션 적용
   useCustomBackNavigation();
+
+  // ⚠️ 전역 디버그 단축키 (개발 환경에서만 활성화)
+  useDebugShortcuts();
 
   useEffect(() => {
     initializeAuth().then(() => {
@@ -133,6 +140,8 @@ function App() {
 
         {/* Global Debug Panel (Outside Routes, High Z-Index) */}
         {import.meta.env.DEV && isDebugPanelOpen && DebugPanel && <DebugPanel />}
+        {/* Debug Visual Overlay (SafeArea guides, component borders) */}
+        {import.meta.env.DEV && DebugOverlay && <DebugOverlay />}
       </Suspense>
     </ErrorBoundary>
   );

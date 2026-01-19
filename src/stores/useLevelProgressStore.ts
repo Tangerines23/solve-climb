@@ -2,7 +2,9 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import { supabase } from '../utils/supabaseClient';
+import { debugSupabaseQuery } from '../utils/debugFetch';
 import { GameMode } from '../types/quiz';
+import { useDebugStore } from './useDebugStore';
 
 export interface LevelRecord {
   level: number;
@@ -97,12 +99,18 @@ export const useLevelProgressStore = create<LevelProgressState>()(
 
       isLevelCleared: (world, category, level) => {
         const state = get();
+        if (import.meta.env.DEV && useDebugStore.getState().bypassLevelLock) return true;
         return state.progress[world]?.[category]?.[level]?.cleared ?? false;
       },
 
       getNextLevel: (world, category) => {
         const state = get();
         const worldProgress = state.progress[world];
+
+        if (import.meta.env.DEV && useDebugStore.getState().bypassLevelLock) {
+          return 999; // bypass 시에는 어떤 레벨이든 통과 가능하도록 큰 값 반환
+        }
+
         if (!worldProgress || !worldProgress[category]) {
           return 1; // 첫 레벨부터 시작
         }
@@ -120,9 +128,17 @@ export const useLevelProgressStore = create<LevelProgressState>()(
       },
 
       clearLevel: async (world, category, level, mode, score) => {
-        console.log('[useLevelProgressStore] clearLevel called:', { world, category, level, mode, score });
+        console.log('[useLevelProgressStore] clearLevel called:', {
+          world,
+          category,
+          level,
+          mode,
+          score,
+        });
 
-        const { data: { user } } = await supabase.auth.getUser();
+        const {
+          data: { user },
+        } = await debugSupabaseQuery(supabase.auth.getUser());
         console.log('[useLevelProgressStore] Current user:', user?.id);
 
         if (!user) {
@@ -155,12 +171,14 @@ export const useLevelProgressStore = create<LevelProgressState>()(
           const gameMode = mode === 'time-attack' ? 'timeattack' : 'survival';
           console.log('[clearLevel] Calling submit_game_result RPC:', { score, gameMode });
 
-          const { error: rpcError } = await supabase.rpc('submit_game_result', {
-            p_score: score,
-            p_minerals_earned: Math.floor(score / 10),
-            p_game_mode: gameMode,
-            p_items_used: null
-          });
+          const { error: rpcError } = await debugSupabaseQuery(
+            supabase.rpc('submit_game_result', {
+              p_score: score,
+              p_minerals_earned: Math.floor(score / 10),
+              p_game_mode: gameMode,
+              p_items_used: null,
+            })
+          );
 
           if (rpcError) {
             console.error('[clearLevel] submit_game_result RPC failed:', rpcError);
@@ -175,25 +193,27 @@ export const useLevelProgressStore = create<LevelProgressState>()(
         try {
           const {
             data: { user },
-          } = await supabase.auth.getUser();
+          } = await debugSupabaseQuery(supabase.auth.getUser());
           if (!user) return;
 
-          const { error } = await supabase.from('game_records').upsert(
-            {
-              user_id: user.id,
-              category: world, // world를 category로 매핑
-              subject: category, // category를 subject로 매핑
-              level,
-              mode,
-              score,
-              cleared: true,
-              cleared_at: new Date().toISOString(),
-              updated_at: new Date().toISOString(),
-            },
-            {
-              onConflict: 'user_id, category, subject, level, mode',
-              ignoreDuplicates: false, // Update if exists
-            }
+          const { error } = await debugSupabaseQuery(
+            supabase.from('game_records').upsert(
+              {
+                user_id: user.id,
+                category: world, // world를 category로 매핑
+                subject: category, // category를 subject로 매핑
+                level,
+                mode,
+                score,
+                cleared: true,
+                cleared_at: new Date().toISOString(),
+                updated_at: new Date().toISOString(),
+              },
+              {
+                onConflict: 'user_id, category, subject, level, mode',
+                ignoreDuplicates: false, // Update if exists
+              }
+            )
           );
 
           if (error) throw error;
@@ -225,22 +245,24 @@ export const useLevelProgressStore = create<LevelProgressState>()(
         try {
           const {
             data: { user },
-          } = await supabase.auth.getUser();
+          } = await debugSupabaseQuery(supabase.auth.getUser());
           if (!user) return;
 
-          const { error } = await supabase.from('game_records').upsert(
-            {
-              user_id: user.id,
-              category: world,
-              subject: category,
-              level,
-              mode,
-              score,
-              updated_at: new Date().toISOString(),
-            },
-            {
-              onConflict: 'user_id, category, subject, level, mode',
-            }
+          const { error } = await debugSupabaseQuery(
+            supabase.from('game_records').upsert(
+              {
+                user_id: user.id,
+                category: world,
+                subject: category,
+                level,
+                mode,
+                score,
+                updated_at: new Date().toISOString(),
+              },
+              {
+                onConflict: 'user_id, category, subject, level, mode',
+              }
+            )
           );
 
           if (error) throw error;
@@ -283,13 +305,12 @@ export const useLevelProgressStore = create<LevelProgressState>()(
         try {
           const {
             data: { user },
-          } = await supabase.auth.getUser();
+          } = await debugSupabaseQuery(supabase.auth.getUser());
           if (!user) return;
 
-          const { data: records, error } = await supabase
-            .from('game_records')
-            .select('*')
-            .eq('user_id', user.id);
+          const { data: records, error } = await debugSupabaseQuery(
+            supabase.from('game_records').select('*').eq('user_id', user.id)
+          );
 
           if (error) throw error;
 
@@ -347,10 +368,12 @@ export const useLevelProgressStore = create<LevelProgressState>()(
         try {
           const {
             data: { user },
-          } = await supabase.auth.getUser();
+          } = await debugSupabaseQuery(supabase.auth.getUser());
           if (!user) return;
 
-          const { error } = await supabase.from('game_records').delete().eq('user_id', user.id);
+          const { error } = await debugSupabaseQuery(
+            supabase.from('game_records').delete().eq('user_id', user.id)
+          );
 
           if (error) throw error;
         } catch (error) {
@@ -359,15 +382,17 @@ export const useLevelProgressStore = create<LevelProgressState>()(
         }
       },
 
-      fetchRanking: async (world, category, period, type, limit = 50) => {
+      fetchRanking: async (_world, _category, period, type, limit = 50) => {
         try {
           // Note: RPC function doesn't actually use p_category, it only uses period and type
-          const { data, error } = await supabase.rpc('get_ranking_v2', {
-            p_category: '', // Not used by RPC but required by signature
-            p_period: period,
-            p_type: type,
-            p_limit: limit,
-          });
+          const { data, error } = await debugSupabaseQuery(
+            supabase.rpc('get_ranking_v2', {
+              p_category: '', // Not used by RPC but required by signature
+              p_period: period,
+              p_type: type,
+              p_limit: limit,
+            })
+          );
 
           if (error) throw error;
 

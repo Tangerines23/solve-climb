@@ -28,15 +28,15 @@
   --adaptiveRed500: #f04452;
   --adaptiveRed600: #e42939;
 
-  --adaptiveGreen500: #03b26c;
+  --adaptiveGreen500: #0b2;
 
   /* Legacy Variables Mapping */
   --color-blue-400: var(--adaptiveBlue500);
   --color-blue-500: var(--adaptiveBlue600);
   --color-gray-100: var(--adaptiveGrey900);
   --color-gray-50: var(--adaptiveGrey50);
-  --color-white: #ffffff;
-  --color-black: #000000;
+  --color-white: var(--adaptiveGrey100);
+  --color-black: var(--adaptiveGrey900);
 
   /* Backgrounds */
   --adaptiveBackground: var(--color-white);

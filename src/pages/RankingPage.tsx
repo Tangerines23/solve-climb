@@ -8,13 +8,8 @@ import { TierBadge } from '../components/TierBadge';
 import './RankingPage.css';
 
 type RankingType = 'total' | 'time-attack' | 'survival';
-type RankingPeriod = 'weekly' | 'all-time';
 
 // Helper functions for validation
-const validateWorldParam = (param: string | null): string => {
-  // For now, just return a default if null. In a real app, you might check against a list of valid worlds.
-  return param || 'World1';
-};
 
 const validateModeParam = (param: string | null): RankingType | null => {
   if (param === 'total' || param === 'time-attack' || param === 'survival') {
@@ -27,7 +22,6 @@ export function RankingPage() {
   const [searchParams] = useSearchParams();
 
   // URL 파라미터에서 정보 추출 (기본값 설정)
-  const worldParam = validateWorldParam(searchParams.get('world'));
   // Note: category param is ignored because get_ranking_v2 doesn't filter by category
   // It only tracks overall weekly scores, not per-category
   const modeParam = validateModeParam(searchParams.get('mode'));
@@ -72,7 +66,7 @@ export function RankingPage() {
     console.log('[RankingPage] Current User ID:', currentUserId);
     console.log('[RankingPage] Current Rankings Count:', currentRankings.length);
     if (currentUserId && currentRankings.length > 0) {
-      const found = currentRankings.find(r => r.user_id === currentUserId);
+      const found = currentRankings.find((r) => r.user_id === currentUserId);
       console.log('[RankingPage] User found in rankings:', found);
     }
   }, [activePeriod, activeType, currentUserId, currentRankings]);

@@ -1,0 +1,50 @@
+.debug-visual-control {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-md);
+}
+
+.debug-toggle-info {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-xs);
+}
+
+.debug-toggle-description {
+  font-size: var(--font-size-xs);
+  color: var(--color-text-tertiary);
+}
+
+.debug-visual-info {
+  margin-top: var(--spacing-md);
+  padding: var(--spacing-md);
+  background: rgba(0, 0, 0, 0.2);
+  border-radius: var(--radius-md);
+}
+
+.debug-visual-device-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-xs);
+}
+
+.debug-visual-device-item {
+  display: flex;
+  justify-content: space-between;
+  padding: var(--spacing-xs) 0;
+  font-size: var(--font-size-xs);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.debug-visual-device-item:last-child {
+  border-bottom: none;
+}
+
+.debug-visual-device-item span:first-child {
+  color: var(--color-text-secondary);
+}
+
+.debug-visual-device-item span:last-child {
+  color: var(--color-text-tertiary);
+  font-family: monospace;
+}
