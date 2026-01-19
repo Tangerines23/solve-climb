@@ -24,8 +24,8 @@ test('익명 인증 테스트', async ({ page }) => {
                 userId: data.user?.id,
                 session: !!data.session
             };
-        } catch (e: any) {
-            return { success: false, error: e.message };
+        } catch (e: unknown) {
+            return { success: false, error: (e as Error).message };
         }
     });
 

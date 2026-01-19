@@ -1,5 +1,11 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { dumpState, logNetworkRequest, logNetworkResponse, dumpLocalStorage, dumpSessionStorage } from '../debug';
+import {
+  dumpState,
+  logNetworkRequest,
+  logNetworkResponse,
+  dumpLocalStorage,
+  dumpSessionStorage,
+} from '../debug';
 import { logger } from '../logger';
 
 // Mock logger
@@ -31,7 +37,9 @@ describe('debug', () => {
 
   describe('logNetworkRequest', () => {
     it('should log network request in development mode', () => {
-      logNetworkRequest('GET', 'https://example.com', { headers: { 'Content-Type': 'application/json' } });
+      logNetworkRequest('GET', 'https://example.com', {
+        headers: { 'Content-Type': 'application/json' },
+      });
 
       if (import.meta.env.DEV) {
         expect(logger.debug).toHaveBeenCalled();
@@ -190,4 +198,3 @@ describe('debug', () => {
     });
   });
 });
-

@@ -20,7 +20,7 @@ describe('tossLogin', () => {
 
   it('should return error when not in Toss app environment', async () => {
     const result = await handleTossLogin();
-    
+
     expect(result.success).toBe(false);
     expect(result.error).toContain('토스 앱에서만');
   });
@@ -60,4 +60,3 @@ describe('tossLogin', () => {
     expect(result.error).toContain('authorizationCode');
   });
 });
-

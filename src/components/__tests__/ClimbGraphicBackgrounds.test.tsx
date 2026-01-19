@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { render, screen } from '@testing-library/react';
+import { render } from '@testing-library/react';
 import { ArithmeticBackground, EquationsBackground } from '../ClimbGraphicBackgrounds';
 
 describe('ClimbGraphicBackgrounds', () => {
@@ -23,9 +23,7 @@ describe('ClimbGraphicBackgrounds', () => {
     });
 
     it('should render with different totalLevels', () => {
-      const { container } = render(
-        <ArithmeticBackground totalLevels={20} />
-      );
+      const { container } = render(<ArithmeticBackground totalLevels={20} />);
       expect(container).toBeTruthy();
     });
   });
@@ -50,11 +48,8 @@ describe('ClimbGraphicBackgrounds', () => {
     });
 
     it('should render with different totalLevels', () => {
-      const { container } = render(
-        <EquationsBackground totalLevels={15} />
-      );
+      const { container } = render(<EquationsBackground totalLevels={15} />);
       expect(container).toBeTruthy();
     });
   });
 });
-

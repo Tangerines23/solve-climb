@@ -438,4 +438,3 @@ describe('useQuizGameState', () => {
     expect(params.get('question_ids')).toBe('q1,q2');
   });
 });
-

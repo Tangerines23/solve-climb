@@ -23,28 +23,14 @@ describe('PreGameLobby', () => {
   });
 
   it('should render lobby with category and topic', () => {
-    render(
-      <PreGameLobby
-        onStart={mockOnStart}
-        onBack={mockOnBack}
-        category="수학"
-        topic="덧셈"
-      />
-    );
+    render(<PreGameLobby onStart={mockOnStart} onBack={mockOnBack} category="수학" topic="덧셈" />);
 
     expect(screen.getByText(/준비하기/)).toBeInTheDocument();
     expect(screen.getByText(/수학/)).toBeInTheDocument();
   });
 
   it('should call onBack when back button is clicked', () => {
-    render(
-      <PreGameLobby
-        onStart={mockOnStart}
-        onBack={mockOnBack}
-        category="수학"
-        topic="덧셈"
-      />
-    );
+    render(<PreGameLobby onStart={mockOnStart} onBack={mockOnBack} category="수학" topic="덧셈" />);
 
     const backButton = screen.getByText('←');
     fireEvent.click(backButton);
@@ -53,14 +39,7 @@ describe('PreGameLobby', () => {
   });
 
   it('should call onStart with selected items', () => {
-    render(
-      <PreGameLobby
-        onStart={mockOnStart}
-        onBack={mockOnBack}
-        category="수학"
-        topic="덧셈"
-      />
-    );
+    render(<PreGameLobby onStart={mockOnStart} onBack={mockOnBack} category="수학" topic="덧셈" />);
 
     const startButton = screen.getByText(/등반 시작/);
     fireEvent.click(startButton);
@@ -69,14 +48,7 @@ describe('PreGameLobby', () => {
   });
 
   it('should toggle item selection', () => {
-    render(
-      <PreGameLobby
-        onStart={mockOnStart}
-        onBack={mockOnBack}
-        category="수학"
-        topic="덧셈"
-      />
-    );
+    render(<PreGameLobby onStart={mockOnStart} onBack={mockOnBack} category="수학" topic="덧셈" />);
 
     const itemCard = screen.getByText('산소통');
     fireEvent.click(itemCard);
@@ -92,41 +64,20 @@ describe('PreGameLobby', () => {
       inventory: [],
     } as never);
 
-    render(
-      <PreGameLobby
-        onStart={mockOnStart}
-        onBack={mockOnBack}
-        category="수학"
-        topic="덧셈"
-      />
-    );
+    render(<PreGameLobby onStart={mockOnStart} onBack={mockOnBack} category="수학" topic="덧셈" />);
 
     expect(screen.getByText(/보유한 아이템이 없습니다/)).toBeInTheDocument();
   });
 
   it('should display item effects correctly', () => {
-    render(
-      <PreGameLobby
-        onStart={mockOnStart}
-        onBack={mockOnBack}
-        category="수학"
-        topic="덧셈"
-      />
-    );
+    render(<PreGameLobby onStart={mockOnStart} onBack={mockOnBack} category="수학" topic="덧셈" />);
 
     expect(screen.getByText('+10초')).toBeInTheDocument();
     expect(screen.getByText('시작부터 질주')).toBeInTheDocument();
   });
 
   it('should deselect item when clicked again', () => {
-    render(
-      <PreGameLobby
-        onStart={mockOnStart}
-        onBack={mockOnBack}
-        category="수학"
-        topic="덧셈"
-      />
-    );
+    render(<PreGameLobby onStart={mockOnStart} onBack={mockOnBack} category="수학" topic="덧셈" />);
 
     const itemCard = screen.getByText('산소통');
     fireEvent.click(itemCard);
@@ -139,14 +90,7 @@ describe('PreGameLobby', () => {
   });
 
   it('should handle multiple item selections', () => {
-    render(
-      <PreGameLobby
-        onStart={mockOnStart}
-        onBack={mockOnBack}
-        category="수학"
-        topic="덧셈"
-      />
-    );
+    render(<PreGameLobby onStart={mockOnStart} onBack={mockOnBack} category="수학" topic="덧셈" />);
 
     const item1 = screen.getByText('산소통');
     const item2 = screen.getByText('파워젤');
@@ -160,18 +104,9 @@ describe('PreGameLobby', () => {
   });
 
   it('should display topic and category correctly', () => {
-    render(
-      <PreGameLobby
-        onStart={mockOnStart}
-        onBack={mockOnBack}
-        category="과학"
-        topic="화학"
-      />
-    );
+    render(<PreGameLobby onStart={mockOnStart} onBack={mockOnBack} category="과학" topic="화학" />);
 
     expect(screen.getByText(/과학/)).toBeInTheDocument();
     expect(screen.getByText(/화학/)).toBeInTheDocument();
   });
 });
-
-

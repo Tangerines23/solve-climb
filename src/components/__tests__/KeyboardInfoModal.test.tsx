@@ -77,8 +77,9 @@ describe('KeyboardInfoModal', () => {
   it('should call onClose when close button is clicked', () => {
     render(<KeyboardInfoModal isOpen={true} onClose={mockOnClose} />);
     // Portal을 통해 렌더링되므로 document.body에서 찾기
-    const closeButton = document.querySelector('.keyboard-info-modal-close') || 
-                       document.querySelector('.quiz-back-button');
+    const closeButton =
+      document.querySelector('.keyboard-info-modal-close') ||
+      document.querySelector('.quiz-back-button');
     if (closeButton) {
       fireEvent.click(closeButton);
       expect(mockOnClose).toHaveBeenCalled();
@@ -166,4 +167,3 @@ describe('KeyboardInfoModal', () => {
     expect(modal).toBeTruthy();
   });
 });
-

@@ -3,7 +3,7 @@ import { getGameLoginHash } from '../tossGameLogin';
 import {
   getUserKeyForGame,
   getIsTossLoginIntegratedService,
-  appLogin,
+  appLogin as _appLogin,
 } from '@apps-in-toss/web-framework';
 
 // Mock dependencies
@@ -38,7 +38,7 @@ describe('tossGameLogin', () => {
 
   it('should return error when not integrated service', async () => {
     (window as any).ReactNativeWebView = {};
-    vi.mocked(getIsTossLoginIntegratedService).mockReturnValue(false);
+    vi.mocked(getIsTossLoginIntegratedService).mockResolvedValue(false);
 
     const result = await getGameLoginHash();
 
@@ -48,7 +48,7 @@ describe('tossGameLogin', () => {
 
   it('should get game login hash successfully', async () => {
     (window as any).ReactNativeWebView = {};
-    vi.mocked(getIsTossLoginIntegratedService).mockReturnValue(true);
+    vi.mocked(getIsTossLoginIntegratedService).mockResolvedValue(true);
     vi.mocked(getUserKeyForGame).mockResolvedValue({
       type: 'HASH',
       hash: 'test-hash',
@@ -62,7 +62,7 @@ describe('tossGameLogin', () => {
 
   it('should handle getUserKeyForGame error', async () => {
     (window as any).ReactNativeWebView = {};
-    vi.mocked(getIsTossLoginIntegratedService).mockReturnValue(true);
+    vi.mocked(getIsTossLoginIntegratedService).mockResolvedValue(true);
     vi.mocked(getUserKeyForGame).mockRejectedValue(new Error('API error'));
 
     const result = await getGameLoginHash();
@@ -71,4 +71,3 @@ describe('tossGameLogin', () => {
     expect(result.error).toBeDefined();
   });
 });
-

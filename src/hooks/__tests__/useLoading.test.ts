@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
-import { renderHook, act, waitFor } from '@testing-library/react';
+import { renderHook, act } from '@testing-library/react';
 import { useLoading } from '../useLoading';
 import { useLoadingStore } from '../../stores/useLoadingStore';
 
@@ -96,7 +96,7 @@ describe('useLoading', () => {
     });
 
     expect(result.current.isLoading).toBe(true);
-    
+
     const storeResult = renderHook(() => useLoadingStore());
     expect(storeResult.result.current.isLoading('custom-id')).toBe(true);
   });
@@ -134,4 +134,3 @@ describe('useLoading', () => {
     expect(storeResult.result.current.isLoading('custom-stop-id')).toBe(false);
   });
 });
-

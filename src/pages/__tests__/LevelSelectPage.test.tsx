@@ -43,4 +43,3 @@ describe('LevelSelectPage', () => {
     expect(container).toBeTruthy();
   });
 });
-

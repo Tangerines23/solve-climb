@@ -208,7 +208,6 @@ describe('CustomKeypad', () => {
     expect(() => fireEvent.click(backspaceButton)).not.toThrow();
   });
 
-
   it('should apply correct CSS class when showNegative is true', () => {
     const { container } = render(
       <CustomKeypad
@@ -239,4 +238,3 @@ describe('CustomKeypad', () => {
     expect(lastRow).not.toHaveClass('keypad-row-last-with-negative');
   });
 });
-

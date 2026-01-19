@@ -3,7 +3,6 @@ import { render, screen, waitFor } from '@testing-library/react';
 import { BrowserRouter } from 'react-router-dom';
 import { ChallengeCard } from '../ChallengeCard';
 import { getTodayChallenge } from '../../utils/challenge';
-import { useQuizStore } from '../../stores/useQuizStore';
 
 // Mock dependencies
 vi.mock('../../utils/challenge', () => ({
@@ -48,7 +47,7 @@ describe('ChallengeCard', () => {
   };
 
   it('should render loading state initially', () => {
-    vi.mocked(getTodayChallenge).mockImplementation(() => new Promise(() => { })); // Never resolves
+    vi.mocked(getTodayChallenge).mockImplementation(() => new Promise(() => {})); // Never resolves
 
     renderChallengeCard();
 
@@ -116,7 +115,7 @@ describe('ChallengeCard', () => {
   });
 
   it('should disable button when loading', () => {
-    vi.mocked(getTodayChallenge).mockImplementation(() => new Promise(() => { })); // Never resolves
+    vi.mocked(getTodayChallenge).mockImplementation(() => new Promise(() => {})); // Never resolves
 
     renderChallengeCard();
 
@@ -189,7 +188,7 @@ describe('ChallengeCard', () => {
   });
 
   it('should render challenge icon and title', () => {
-    vi.mocked(getTodayChallenge).mockImplementation(() => new Promise(() => { })); // Never resolves
+    vi.mocked(getTodayChallenge).mockImplementation(() => new Promise(() => {})); // Never resolves
 
     renderChallengeCard();
 
@@ -197,4 +196,3 @@ describe('ChallengeCard', () => {
     expect(screen.getByText('🔥')).toBeInTheDocument();
   });
 });
-

@@ -117,7 +117,6 @@ describe('debugPresets - Error Handling', () => {
   });
 
   describe('Edge Cases', () => {
-
     it('should handle very long preset names', () => {
       const longName = 'A'.repeat(10000); // 매우 긴 이름
       const preset: CustomPreset = {

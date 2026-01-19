@@ -92,4 +92,3 @@ describe('GlobalLoadingIndicator', () => {
     expect(screen.queryByText('로딩 중...')).not.toBeInTheDocument();
   });
 });
-

@@ -128,4 +128,3 @@ describe('BadgeSlot', () => {
     expect(screen.getByText('Test Badge')).toBeInTheDocument();
   });
 });
-

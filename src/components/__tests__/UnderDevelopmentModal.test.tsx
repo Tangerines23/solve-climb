@@ -25,7 +25,14 @@ describe('UnderDevelopmentModal', () => {
 
   it('should auto close after delay', async () => {
     const onClose = vi.fn();
-    render(<UnderDevelopmentModal isOpen={true} onClose={onClose} autoClose={true} autoCloseDelay={2000} />);
+    render(
+      <UnderDevelopmentModal
+        isOpen={true}
+        onClose={onClose}
+        autoClose={true}
+        autoCloseDelay={2000}
+      />
+    );
 
     expect(screen.getByText('아직 개발중입니다 :(')).toBeInTheDocument();
 
@@ -69,7 +76,14 @@ describe('UnderDevelopmentModal', () => {
 
   it('should use custom autoCloseDelay', async () => {
     const onClose = vi.fn();
-    render(<UnderDevelopmentModal isOpen={true} onClose={onClose} autoClose={true} autoCloseDelay={5000} />);
+    render(
+      <UnderDevelopmentModal
+        isOpen={true}
+        onClose={onClose}
+        autoClose={true}
+        autoCloseDelay={5000}
+      />
+    );
 
     // Should not close before custom delay
     await act(async () => {
@@ -104,7 +118,12 @@ describe('UnderDevelopmentModal', () => {
   it('should apply closing class during closing animation', async () => {
     const onClose = vi.fn();
     const { container } = render(
-      <UnderDevelopmentModal isOpen={true} onClose={onClose} autoClose={true} autoCloseDelay={2000} />
+      <UnderDevelopmentModal
+        isOpen={true}
+        onClose={onClose}
+        autoClose={true}
+        autoCloseDelay={2000}
+      />
     );
 
     const toast = container.querySelector('.under-development-toast');
@@ -126,7 +145,12 @@ describe('UnderDevelopmentModal', () => {
   it('should cleanup timer when component unmounts', async () => {
     const onClose = vi.fn();
     const { unmount } = render(
-      <UnderDevelopmentModal isOpen={true} onClose={onClose} autoClose={true} autoCloseDelay={2000} />
+      <UnderDevelopmentModal
+        isOpen={true}
+        onClose={onClose}
+        autoClose={true}
+        autoCloseDelay={2000}
+      />
     );
 
     unmount();
@@ -143,7 +167,12 @@ describe('UnderDevelopmentModal', () => {
   it('should reset closing state when isOpen changes to true again', async () => {
     const onClose = vi.fn();
     const { rerender, container } = render(
-      <UnderDevelopmentModal isOpen={true} onClose={onClose} autoClose={true} autoCloseDelay={2000} />
+      <UnderDevelopmentModal
+        isOpen={true}
+        onClose={onClose}
+        autoClose={true}
+        autoCloseDelay={2000}
+      />
     );
 
     const toast = container.querySelector('.under-development-toast');
@@ -160,15 +189,28 @@ describe('UnderDevelopmentModal', () => {
     });
     expect(onClose).toHaveBeenCalled();
 
-    rerender(<UnderDevelopmentModal isOpen={false} onClose={onClose} autoClose={true} autoCloseDelay={2000} />);
+    rerender(
+      <UnderDevelopmentModal
+        isOpen={false}
+        onClose={onClose}
+        autoClose={true}
+        autoCloseDelay={2000}
+      />
+    );
     expect(container.firstChild).toBeNull();
 
     // Reopen modal - should start fresh without closing class
-    rerender(<UnderDevelopmentModal isOpen={true} onClose={onClose} autoClose={true} autoCloseDelay={2000} />);
+    rerender(
+      <UnderDevelopmentModal
+        isOpen={true}
+        onClose={onClose}
+        autoClose={true}
+        autoCloseDelay={2000}
+      />
+    );
 
     const newToast = container.querySelector('.under-development-toast');
     expect(newToast).toBeInTheDocument();
     expect(newToast).not.toHaveClass('closing');
   });
 });
-

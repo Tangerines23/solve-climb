@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { render, screen, waitFor, act } from '@testing-library/react';
+import { render, screen, act } from '@testing-library/react';
 import { SafetyRopeOverlay } from '../game/SafetyRopeOverlay';
 
 describe('SafetyRopeOverlay', () => {
@@ -29,18 +29,14 @@ describe('SafetyRopeOverlay', () => {
   });
 
   it('should render overlay content when visible', () => {
-    render(
-      <SafetyRopeOverlay isVisible={true} onAnimationComplete={mockOnAnimationComplete} />
-    );
+    render(<SafetyRopeOverlay isVisible={true} onAnimationComplete={mockOnAnimationComplete} />);
 
     expect(screen.getByText('SAFE!')).toBeInTheDocument();
     expect(screen.getByText('안전 로프가 1회 방어했습니다')).toBeInTheDocument();
   });
 
   it('should call onAnimationComplete after 1.5 seconds', () => {
-    render(
-      <SafetyRopeOverlay isVisible={true} onAnimationComplete={mockOnAnimationComplete} />
-    );
+    render(<SafetyRopeOverlay isVisible={true} onAnimationComplete={mockOnAnimationComplete} />);
 
     act(() => {
       vi.advanceTimersByTime(1500);
@@ -50,9 +46,7 @@ describe('SafetyRopeOverlay', () => {
   });
 
   it('should not call onAnimationComplete before timeout', () => {
-    render(
-      <SafetyRopeOverlay isVisible={true} onAnimationComplete={mockOnAnimationComplete} />
-    );
+    render(<SafetyRopeOverlay isVisible={true} onAnimationComplete={mockOnAnimationComplete} />);
 
     act(() => {
       vi.advanceTimersByTime(1000);
@@ -85,9 +79,7 @@ describe('SafetyRopeOverlay', () => {
       vi.advanceTimersByTime(1000);
     });
 
-    rerender(
-      <SafetyRopeOverlay isVisible={false} onAnimationComplete={mockOnAnimationComplete} />
-    );
+    rerender(<SafetyRopeOverlay isVisible={false} onAnimationComplete={mockOnAnimationComplete} />);
 
     act(() => {
       vi.advanceTimersByTime(2000);
@@ -97,5 +89,3 @@ describe('SafetyRopeOverlay', () => {
     expect(mockOnAnimationComplete).not.toHaveBeenCalled();
   });
 });
-
-

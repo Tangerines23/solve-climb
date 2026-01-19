@@ -29,9 +29,7 @@ describe('ItemSystemSection', () => {
     vi.mocked(supabase.from).mockReturnValue({
       select: vi.fn().mockReturnValue({
         order: vi.fn().mockResolvedValue({
-          data: [
-            { id: 1, code: 'oxygen_tank', name: '산소통', description: '시간 추가' },
-          ],
+          data: [{ id: 1, code: 'oxygen_tank', name: '산소통', description: '시간 추가' }],
           error: null,
         }),
       }),
@@ -64,5 +62,3 @@ describe('ItemSystemSection', () => {
     expect(screen.getByText(/아이템 불러오는 중/)).toBeInTheDocument();
   });
 });
-
-

@@ -43,7 +43,7 @@ describe('useErrorLogStore', () => {
 
   it('should maintain maximum 1000 logs', () => {
     const { addLog } = useErrorLogStore.getState();
-    
+
     // 1001개의 로그 추가
     for (let i = 0; i < 1001; i++) {
       addLog('info', `Log ${i}`);
@@ -84,7 +84,7 @@ describe('useErrorLogStore', () => {
     const endTime = new Date(now.getTime() + 1000);
 
     addLog('info', 'Log 1');
-    
+
     // 시간을 조작하기 위해 약간의 지연
     setTimeout(() => {
       addLog('info', 'Log 2');
@@ -175,4 +175,3 @@ describe('useErrorLogStore', () => {
     expect(logs[0].context).toBeUndefined();
   });
 });
-

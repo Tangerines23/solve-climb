@@ -108,8 +108,6 @@ describe('ClimbGraphic', () => {
     }
   });
 
-
-
   it('should call onUnderDevelopmentClick when under development level is clicked', () => {
     const onUnderDevelopmentClick = vi.fn();
     const { container } = render(
@@ -203,9 +201,7 @@ describe('LevelButton', () => {
   });
 
   it('should render without crashing', () => {
-    const { container } = render(
-      <LevelButton>Test Button</LevelButton>
-    );
+    const { container } = render(<LevelButton>Test Button</LevelButton>);
 
     expect(container).toBeTruthy();
     expect(screen.getByText('Test Button')).toBeInTheDocument();
@@ -218,7 +214,4 @@ describe('LevelButton', () => {
     fireEvent.click(screen.getByText('Click Me'));
     expect(handleClick).toHaveBeenCalledTimes(1);
   });
-
-
 });
-

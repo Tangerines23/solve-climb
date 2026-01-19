@@ -64,7 +64,7 @@ describe('tiers', () => {
 
       // Clear cache before test
       vi.clearAllTimers();
-      
+
       const result = await loadTierDefinitions();
 
       expect(result).toBeDefined();
@@ -463,4 +463,3 @@ describe('tiers', () => {
     });
   });
 });
-

@@ -1,8 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/react';
 import { GameTipModal } from '../GameTipModal';
-import { storage } from '../../utils/storage';
-import { createSafeStorageKey } from '../../utils/storageKey';
 
 // Mock dependencies
 vi.mock('../../utils/storageKey', () => ({
@@ -170,7 +168,4 @@ describe('GameTipModal', () => {
 
     expect(screen.getByText(/방정식 풀이 팁/)).toBeInTheDocument();
   });
-
-
 });
-

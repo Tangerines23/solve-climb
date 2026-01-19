@@ -1,4 +1,4 @@
-import { test, expect } from '@playwright/test';
+import { test } from '@playwright/test';
 
 test('Supabase 데이터베이스 상태 확인', async ({ page }) => {
     page.on('console', msg => console.log(`[BROWSER] ${msg.text()}`));

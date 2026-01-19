@@ -51,4 +51,3 @@ describe('MyPage', () => {
     expect(container).toBeTruthy();
   });
 });
-

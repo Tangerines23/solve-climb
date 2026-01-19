@@ -185,5 +185,3 @@ describe('ErrorLogSection', () => {
     expect(screen.getByText(/에러 로그/)).toBeInTheDocument();
   });
 });
-
-

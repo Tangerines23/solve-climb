@@ -34,4 +34,3 @@ describe('CategorySelectPage', () => {
     expect(container).toBeTruthy();
   });
 });
-

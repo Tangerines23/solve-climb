@@ -35,9 +35,7 @@ describe('BadgeSystemSection', () => {
     vi.mocked(supabase.from).mockReturnValue({
       select: vi.fn().mockReturnValue({
         order: vi.fn().mockResolvedValue({
-          data: [
-            { id: 'badge1', name: 'Test Badge', description: 'Test', emoji: '🏆' },
-          ],
+          data: [{ id: 'badge1', name: 'Test Badge', description: 'Test', emoji: '🏆' }],
           error: null,
         }),
         eq: vi.fn().mockReturnValue({
@@ -71,5 +69,3 @@ describe('BadgeSystemSection', () => {
     });
   });
 });
-
-

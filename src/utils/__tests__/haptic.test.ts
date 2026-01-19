@@ -108,6 +108,4 @@ describe('haptic', () => {
     expect(() => vibrateMedium()).not.toThrow();
     expect(() => vibrateLong()).not.toThrow();
   });
-
 });
-

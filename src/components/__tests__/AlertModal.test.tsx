@@ -13,7 +13,9 @@ describe('AlertModal', () => {
 
   it('should render when isOpen is true', () => {
     const onClose = vi.fn();
-    render(<AlertModal isOpen={true} title="Test Title" message="Test message" onClose={onClose} />);
+    render(
+      <AlertModal isOpen={true} title="Test Title" message="Test message" onClose={onClose} />
+    );
 
     expect(screen.getByText('Test Title')).toBeInTheDocument();
     expect(screen.getByText('Test message')).toBeInTheDocument();
@@ -101,4 +103,3 @@ describe('AlertModal', () => {
     expect(screen.getByText(specialMessage)).toBeInTheDocument();
   });
 });
-

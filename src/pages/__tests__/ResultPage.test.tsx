@@ -37,4 +37,3 @@ describe('ResultPage', () => {
     expect(container).toBeTruthy();
   });
 });
-

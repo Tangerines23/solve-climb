@@ -57,4 +57,3 @@ describe('TopicHeader', () => {
     expect(header).toBeInTheDocument();
   });
 });
-

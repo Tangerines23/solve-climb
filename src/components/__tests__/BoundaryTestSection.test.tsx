@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { render, screen, waitFor } from '@testing-library/react';
+import { render, screen } from '@testing-library/react';
 import { BoundaryTestSection } from '../debug/BoundaryTestSection';
 import { useUserStore } from '../../stores/useUserStore';
 import { useMyPageStats } from '../../hooks/useMyPageStats';
@@ -65,5 +65,3 @@ describe('BoundaryTestSection', () => {
     expect(screen.getByText(/티어/)).toBeInTheDocument();
   });
 });
-
-

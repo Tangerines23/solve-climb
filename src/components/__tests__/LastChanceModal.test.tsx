@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { render, screen, waitFor } from '@testing-library/react';
+import { render, screen, fireEvent } from '@testing-library/react';
 import { LastChanceModal } from '../LastChanceModal';
 
 describe('LastChanceModal', () => {
@@ -99,7 +99,7 @@ describe('LastChanceModal', () => {
     );
 
     const useButton = screen.getByText(/아이템 사용/);
-    useButton.click();
+    fireEvent.click(useButton);
 
     expect(onUseItem).toHaveBeenCalled();
   });
@@ -120,7 +120,7 @@ describe('LastChanceModal', () => {
     );
 
     const buyButton = screen.getByText(/즉시 구매 & 사용/);
-    buyButton.click();
+    fireEvent.click(buyButton);
 
     expect(onPurchaseAndUse).toHaveBeenCalled();
   });
@@ -141,7 +141,7 @@ describe('LastChanceModal', () => {
     );
 
     const giveUpButton = screen.getByText(/그냥 기록 남기기/);
-    giveUpButton.click();
+    fireEvent.click(giveUpButton);
 
     expect(onGiveUp).toHaveBeenCalled();
   });
@@ -201,4 +201,3 @@ describe('LastChanceModal', () => {
     expect(timer).toBeInTheDocument();
   });
 });
-

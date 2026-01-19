@@ -105,7 +105,7 @@ describe('useFavoriteStore', () => {
 
     expect(isFavorite('math', 'arithmetic')).toBe(true);
     expect(isFavorite('math')).toBe(false);
-    
+
     const id = getFavoriteId('math', 'arithmetic');
     expect(id).toBe('test-1');
   });
@@ -164,4 +164,3 @@ describe('useFavoriteStore', () => {
     expect(id).toBeNull();
   });
 });
-

@@ -109,4 +109,3 @@ describe('useLoadingStore', () => {
     expect(result.current.isLoading('loading-2')).toBe(false);
   });
 });
-

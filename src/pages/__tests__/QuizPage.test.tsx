@@ -51,4 +51,3 @@ describe('QuizPage', () => {
     expect(container).toBeTruthy();
   });
 });
-

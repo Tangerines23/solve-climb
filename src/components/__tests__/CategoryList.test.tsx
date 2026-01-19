@@ -3,8 +3,6 @@ import { render, screen, fireEvent } from '@testing-library/react';
 import { CategoryList } from '../CategoryList';
 import { BrowserRouter } from 'react-router-dom';
 import { useNavigate } from 'react-router-dom';
-import { useFavoriteStore } from '../../stores/useFavoriteStore';
-import { calculateCategoryAltitude } from '../../utils/scoreCalculator';
 
 // Mock dependencies
 vi.mock('react-router-dom', async () => {
@@ -100,4 +98,3 @@ describe('CategoryList', () => {
     expect(screen.getByText('등반할 산 선택하기')).toBeInTheDocument();
   });
 });
-

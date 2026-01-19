@@ -16,23 +16,23 @@ export default defineConfig(() => {
       react(),
       // Bundle analyzer (only in analyze mode)
       process.env.ANALYZE &&
-        visualizer({
-          open: true,
-          filename: 'dist/stats.html',
-          gzipSize: true,
-          brotliSize: true,
-        }),
+      visualizer({
+        open: true,
+        filename: 'dist/stats.html',
+        gzipSize: true,
+        brotliSize: true,
+      }),
     ].filter(Boolean),
     resolve: {
       alias: {
         '@': path.resolve(process.cwd(), './src'),
         ...(isVercel
           ? {
-              '@apps-in-toss/web-framework': path.resolve(
-                process.cwd(),
-                './src/mocks/web-framework-mock.ts'
-              ),
-            }
+            '@apps-in-toss/web-framework': path.resolve(
+              process.cwd(),
+              './src/mocks/web-framework-mock.ts'
+            ),
+          }
           : {}),
       },
     },
@@ -75,6 +75,16 @@ export default defineConfig(() => {
       environment: 'jsdom',
       setupFiles: './src/setupTests.ts',
       css: true,
+      // Playwright E2E 및 CT 테스트 제외
+      exclude: [
+        'node_modules/**',
+        'dist/**',
+        'cypress/**',
+        '**/.{idea,git,cache,output,temp}/**',
+        'tests/e2e/**',
+        '**/*.spec.{ts,tsx}',
+        '**/*.ct.spec.tsx',
+      ],
       // 성능 최적화: 파일 병렬 실행 활성화
       fileParallelism: true,
       // 동시 실행 테스트 수 제한 (메모리 최적화)

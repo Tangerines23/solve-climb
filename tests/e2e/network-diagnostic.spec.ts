@@ -19,10 +19,10 @@ test('브라우저에서 Supabase 연결이 가능한지 확인', async ({ page 
                 ok: resp.ok,
                 json: await resp.json()
             };
-        } catch (e: any) {
+        } catch (e: unknown) {
             return {
-                error: e.message,
-                stack: e.stack
+                error: (e as Error).message,
+                stack: (e as Error).stack
             };
         }
     });

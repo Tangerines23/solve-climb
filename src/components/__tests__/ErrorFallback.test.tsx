@@ -3,7 +3,7 @@ import { render, screen, fireEvent } from '@testing-library/react';
 import { ErrorFallback } from '../ErrorFallback';
 
 describe('ErrorFallback', () => {
-  const originalEnv = import.meta.env;
+  const originalEnv = (import.meta as any).env;
   const originalReload = window.location.reload;
 
   beforeEach(() => {
@@ -17,7 +17,7 @@ describe('ErrorFallback', () => {
 
   afterEach(() => {
     // Restore original env
-    Object.defineProperty(import.meta, 'env', {
+    Object.defineProperty(import.meta as any, 'env', {
       value: originalEnv,
       writable: true,
       configurable: true,
@@ -57,7 +57,7 @@ describe('ErrorFallback', () => {
   });
 
   it('should show error details in development', () => {
-    Object.defineProperty(import.meta, 'env', {
+    Object.defineProperty(import.meta as any, 'env', {
       value: { ...originalEnv, DEV: true },
       writable: true,
       configurable: true,
@@ -81,7 +81,7 @@ describe('ErrorFallback', () => {
   });
 
   it('should display error message when stack is not available', () => {
-    Object.defineProperty(import.meta, 'env', {
+    Object.defineProperty(import.meta as any, 'env', {
       value: { ...originalEnv, DEV: true },
       writable: true,
       configurable: true,
@@ -105,7 +105,7 @@ describe('ErrorFallback', () => {
 
   it('should have correct button classes', () => {
     const error = new Error('Test error');
-    const { container } = render(<ErrorFallback error={error} resetError={vi.fn()} />);
+    render(<ErrorFallback error={error} resetError={vi.fn()} />);
 
     const retryButton = screen.getByText('다시 시도');
     const reloadButton = screen.getByText('페이지 새로고침');
@@ -123,4 +123,3 @@ describe('ErrorFallback', () => {
     expect(icon?.textContent).toBe('⚠️');
   });
 });
-

@@ -31,4 +31,3 @@ describe('NotificationPage', () => {
     expect(container).toBeTruthy();
   });
 });
-

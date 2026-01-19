@@ -426,4 +426,3 @@ describe('debugSync', () => {
     expect(result.badges.issues.length).toBeGreaterThan(0);
   });
 });
-

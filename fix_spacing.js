@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-require-imports */
 /* Spacing Refactoring Script */
 const fs = require('fs');
 const path = require('path');
@@ -48,7 +49,7 @@ files.forEach((file) => {
       /(padding|margin|gap)([-a-zA-Z]*):\s*([^;]+);/g,
       (match, prop, suffix, val) => {
         let newVal = val;
-        let replaced = false;
+        let _replaced = false;
 
         // Iterate over map keys (e.g., '4px')
         // Using a simple regex to ensure we match whole words or numbers ending in px

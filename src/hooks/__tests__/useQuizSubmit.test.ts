@@ -413,7 +413,11 @@ describe('useQuizSubmit', () => {
     });
 
     expect(setIsFlarePaused).toHaveBeenCalledWith(true);
-    expect(defaultParams.showFeedback).toHaveBeenCalledWith('REVIVE!', 'Survival Continued', 'info');
+    expect(defaultParams.showFeedback).toHaveBeenCalledWith(
+      'REVIVE!',
+      'Survival Continued',
+      'info'
+    );
     expect(defaultParams.generateNewQuestion).toHaveBeenCalled();
     expect(defaultParams.handleGameOver).not.toHaveBeenCalled();
   });
@@ -1451,7 +1455,6 @@ describe('useQuizSubmit', () => {
     expect(vibrateLong).not.toHaveBeenCalled();
   });
 
-
   it('should handle time-attack mode wrong answer with useSystemKeyboard', () => {
     const mockFocus = vi.fn();
     const mockInput = { focus: mockFocus } as any;
@@ -1563,4 +1566,3 @@ describe('useQuizSubmit', () => {
     expect(defaultParams.setIsSubmitting).toHaveBeenCalledWith(false);
   });
 });
-

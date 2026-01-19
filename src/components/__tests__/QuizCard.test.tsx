@@ -14,9 +14,13 @@ vi.mock('../../utils/debugLogger', () => ({
 }));
 
 vi.mock('../TimerCircle', () => ({
-  TimerCircle: ({ duration, onComplete }: { duration: number; onComplete: () => void }) => (
-    <div data-testid="timer-circle">Timer: {duration}s</div>
-  ),
+  TimerCircle: ({
+    duration,
+    onComplete: _onComplete,
+  }: {
+    duration: number;
+    onComplete: () => void;
+  }) => <div data-testid="timer-circle">Timer: {duration}s</div>,
 }));
 
 vi.mock('../CustomKeypad', () => ({
@@ -119,7 +123,9 @@ describe('QuizCard', () => {
   });
 
   it('should render answer input field', () => {
-    render(<QuizCard {...defaultProps} answerInput="8" displayValue="8" useSystemKeyboard={true} />);
+    render(
+      <QuizCard {...defaultProps} answerInput="8" displayValue="8" useSystemKeyboard={true} />
+    );
 
     // Input should be rendered when useSystemKeyboard is true
     const input = screen.getByDisplayValue('8');
@@ -181,7 +187,9 @@ describe('QuizCard', () => {
   });
 
   it('should handle null currentQuestion', () => {
-    render(<QuizCard {...defaultProps} currentQuestion={null} categoryParam="math" subParam="addition" />);
+    render(
+      <QuizCard {...defaultProps} currentQuestion={null} categoryParam="math" subParam="addition" />
+    );
 
     // Component should render loading state or null when question is missing
     // The actual behavior depends on categoryParam and subParam
@@ -356,4 +364,3 @@ describe('QuizCard', () => {
     expect(container.firstChild).toBeNull();
   });
 });
-

@@ -6,7 +6,7 @@ import { IStorageService } from './IStorageService';
  * 프로덕션 환경에서 사용되는 실제 localStorage 구현
  */
 export class LocalStorageService implements IStorageService {
-  constructor(private storage: Storage = window.localStorage) { }
+  constructor(private storage: Storage = window.localStorage) {}
 
   get<T>(key: string): T | null {
     try {
@@ -15,7 +15,7 @@ export class LocalStorageService implements IStorageService {
 
       try {
         return JSON.parse(item) as T;
-      } catch (parseError) {
+      } catch (_parseError) {
         // JSON 파싱 실패 시, T가 string이면 원본 그대로 반환 시도
         // 이는 setString 등으로 raw string이 저장된 경우를 위함
         return item as unknown as T;

@@ -73,7 +73,7 @@ describe('DataResetConfirmModal', () => {
   });
 
   it('should have correct button classes', () => {
-    const { container } = render(
+    const { container: _container } = render(
       <DataResetConfirmModal isOpen={true} onConfirm={vi.fn()} onCancel={vi.fn()} />
     );
 
@@ -99,4 +99,3 @@ describe('DataResetConfirmModal', () => {
     expect(warningMessage.textContent).toContain('⚠️');
   });
 });
-

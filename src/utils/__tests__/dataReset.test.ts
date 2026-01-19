@@ -57,7 +57,7 @@ describe('dataReset', () => {
       const mockDelete = vi.fn(() => ({
         eq: vi.fn(() => Promise.resolve({ error: null })),
       }));
-      
+
       vi.mocked(supabase.from).mockReturnValue({
         delete: mockDelete,
       } as never);
@@ -234,7 +234,5 @@ describe('dataReset', () => {
       // Supabase 에러는 무시되지만 storage 에러는 throw되어야 함
       await expect(resetAllData()).rejects.toThrow('Storage error');
     });
-
   });
 });
-

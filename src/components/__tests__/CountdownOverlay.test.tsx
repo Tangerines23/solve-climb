@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { render, screen, waitFor, act } from '@testing-library/react';
+import { render, screen, act } from '@testing-library/react';
 import { CountdownOverlay } from '../CountdownOverlay';
 
 describe('CountdownOverlay', () => {
@@ -73,7 +73,6 @@ describe('CountdownOverlay', () => {
 
     expect(screen.getByText('GO!')).toBeInTheDocument();
   });
-
 
   it('should not call onComplete when isVisible is false', () => {
     const onComplete = vi.fn();

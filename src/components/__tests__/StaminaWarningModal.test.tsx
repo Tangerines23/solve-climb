@@ -143,5 +143,3 @@ describe('StaminaWarningModal', () => {
     expect(screen.getByText(/체력이 부족합니다/)).toBeInTheDocument();
   });
 });
-
-

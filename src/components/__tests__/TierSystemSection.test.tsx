@@ -3,7 +3,7 @@ import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { TierSystemSection } from '../debug/TierSystemSection';
 import { supabase } from '../../utils/supabaseClient';
 import { useMyPageStats } from '../../hooks/useMyPageStats';
-import { loadTierDefinitions, calculateTier } from '../../constants/tiers';
+import { loadTierDefinitions } from '../../constants/tiers';
 
 // Mock dependencies
 vi.mock('../../stores/useLevelProgressStore', () => ({
@@ -45,9 +45,9 @@ describe('TierSystemSection', () => {
       refetch: vi.fn(),
     } as never);
     vi.mocked(loadTierDefinitions).mockResolvedValue([
-      { level: 0, name: '베이스캠프', icon: '⛺' },
-      { level: 1, name: '등산로', icon: '🥾' },
-    ]);
+      { level: 0, name: '베이스캠프', icon: '⛺', minScore: 0, colorVar: '--tds-color-blue-500' },
+      { level: 1, name: '등산로', icon: '🥾', minScore: 1000, colorVar: '--tds-color-green-500' },
+    ] as any);
     vi.mocked(supabase.auth.getSession).mockResolvedValue({
       data: { session: { user: { id: 'test-user' } } },
       error: null,
@@ -99,5 +99,3 @@ describe('TierSystemSection', () => {
     });
   });
 });
-
-

@@ -93,5 +93,3 @@ describe('GameOverlay', () => {
     expect(speedLinesDiv).toBeInTheDocument();
   });
 });
-
-

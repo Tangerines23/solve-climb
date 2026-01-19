@@ -68,14 +68,14 @@ describe('Header', () => {
 
   it('should render header with user data', () => {
     render(<Header />);
-    
+
     expect(mockFetchUserData).toHaveBeenCalled();
     expect(mockCheckStamina).toHaveBeenCalled();
   });
 
   it('should navigate to notifications on notification click', () => {
     render(<Header />);
-    
+
     const notificationButton = screen.queryByLabelText(/알림|notification/i);
     if (notificationButton) {
       fireEvent.click(notificationButton);
@@ -89,11 +89,12 @@ describe('Header', () => {
     } as never);
 
     render(<Header />);
-    
-    const logo = screen.queryByRole('button', { name: /logo/i }) || 
-                 screen.queryByText(/로고/i) ||
-                 document.querySelector('[class*="logo"]');
-    
+
+    const logo =
+      screen.queryByRole('button', { name: /logo/i }) ||
+      screen.queryByText(/로고/i) ||
+      document.querySelector('[class*="logo"]');
+
     if (logo) {
       fireEvent.click(logo);
       fireEvent.click(logo);
@@ -104,17 +105,17 @@ describe('Header', () => {
 
   it('should display user minerals and stamina', () => {
     render(<Header />);
-    
+
     expect(screen.getByText('1000')).toBeInTheDocument();
     expect(screen.getByText('5')).toBeInTheDocument();
   });
 
   it('should navigate to shop when shop button is clicked', () => {
     render(<Header />);
-    
+
     const shopButton = screen.getByLabelText('상점');
     fireEvent.click(shopButton);
-    
+
     expect(mockNavigate).toHaveBeenCalledWith('/shop');
   });
 
@@ -129,7 +130,7 @@ describe('Header', () => {
     } as never);
 
     render(<Header />);
-    
+
     expect(screen.queryByText('DEV')).not.toBeInTheDocument();
   });
 
@@ -144,7 +145,7 @@ describe('Header', () => {
     } as never);
 
     render(<Header />);
-    
+
     expect(screen.getByText('DEV')).toBeInTheDocument();
   });
 
@@ -154,7 +155,7 @@ describe('Header', () => {
     } as never);
 
     render(<Header />);
-    
+
     const logo = document.querySelector('[class*="logo"]');
     if (logo) {
       fireEvent.click(logo);
@@ -163,4 +164,3 @@ describe('Header', () => {
     }
   });
 });
-

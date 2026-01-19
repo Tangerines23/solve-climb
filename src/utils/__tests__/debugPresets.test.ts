@@ -16,8 +16,8 @@ import {
   type DebugAction,
 } from '../debugPresets';
 import { supabase } from '../supabaseClient';
-import { useUserStore } from '../../stores/useUserStore';
-import { useQuizStore } from '../../stores/useQuizStore';
+import { useUserStore as _useUserStore } from '../../stores/useUserStore';
+import { useQuizStore as _useQuizStore } from '../../stores/useQuizStore';
 import { calculateScoreForTier } from '../tierUtils';
 // Mock localStorage
 const localStorageMock = (() => {
@@ -571,7 +571,7 @@ describe('debugPresets - executeDebugAction', () => {
 
   describe('reset action', () => {
     it('should execute reset action with target "all"', async () => {
-      vi.mocked(supabase.rpc).mockResolvedValue({ error: null } as never);
+      vi.mocked(supabase.rpc).mockResolvedValue({ error: null } as any);
 
       const action: DebugAction = { type: 'reset', target: 'all' };
       await executeDebugAction(action, userId);
@@ -583,7 +583,7 @@ describe('debugPresets - executeDebugAction', () => {
     });
 
     it('should execute reset action with target "score"', async () => {
-      vi.mocked(supabase.rpc).mockResolvedValue({ error: null } as never);
+      vi.mocked(supabase.rpc).mockResolvedValue({ error: null } as any);
 
       const action: DebugAction = { type: 'reset', target: 'score' };
       await executeDebugAction(action, userId);
@@ -595,7 +595,7 @@ describe('debugPresets - executeDebugAction', () => {
     });
 
     it('should execute reset action with default target "all"', async () => {
-      vi.mocked(supabase.rpc).mockResolvedValue({ error: null } as never);
+      vi.mocked(supabase.rpc).mockResolvedValue({ error: null } as any);
 
       const action: DebugAction = { type: 'reset' };
       await executeDebugAction(action, userId);
@@ -607,7 +607,7 @@ describe('debugPresets - executeDebugAction', () => {
     });
 
     it('should execute reset action with target "minerals"', async () => {
-      vi.mocked(supabase.rpc).mockResolvedValue({ error: null } as never);
+      vi.mocked(supabase.rpc).mockResolvedValue({ error: null } as any);
 
       const action: DebugAction = { type: 'reset', target: 'minerals' };
       await executeDebugAction(action, userId);
@@ -619,7 +619,7 @@ describe('debugPresets - executeDebugAction', () => {
     });
 
     it('should execute reset action with target "tier"', async () => {
-      vi.mocked(supabase.rpc).mockResolvedValue({ error: null } as never);
+      vi.mocked(supabase.rpc).mockResolvedValue({ error: null } as any);
 
       const action: DebugAction = { type: 'reset', target: 'tier' };
       await executeDebugAction(action, userId);
@@ -632,7 +632,7 @@ describe('debugPresets - executeDebugAction', () => {
 
     it('should throw error when reset fails', async () => {
       const error = { message: 'Reset failed' };
-      vi.mocked(supabase.rpc).mockResolvedValue({ error } as never);
+      vi.mocked(supabase.rpc).mockResolvedValue({ error } as any);
 
       const action: DebugAction = { type: 'reset', target: 'all' };
       await expect(executeDebugAction(action, userId)).rejects.toEqual(error);
@@ -641,7 +641,7 @@ describe('debugPresets - executeDebugAction', () => {
 
   describe('setTier action', () => {
     it('should execute setTier action with valid level', async () => {
-      vi.mocked(supabase.rpc).mockResolvedValue({ error: null } as never);
+      vi.mocked(supabase.rpc).mockResolvedValue({ error: null } as any);
 
       const action: DebugAction = { type: 'setTier', level: 3 };
       await executeDebugAction(action, userId);
@@ -661,7 +661,7 @@ describe('debugPresets - executeDebugAction', () => {
 
     it('should throw error when setTier fails', async () => {
       const error = { message: 'Set tier failed' };
-      vi.mocked(supabase.rpc).mockResolvedValue({ error } as never);
+      vi.mocked(supabase.rpc).mockResolvedValue({ error } as any);
 
       const action: DebugAction = { type: 'setTier', level: 3 };
       await expect(executeDebugAction(action, userId)).rejects.toEqual(error);
@@ -670,7 +670,7 @@ describe('debugPresets - executeDebugAction', () => {
 
   describe('setMasteryScore action', () => {
     it('should execute setMasteryScore action with valid value', async () => {
-      vi.mocked(supabase.rpc).mockResolvedValue({ error: null } as never);
+      vi.mocked(supabase.rpc).mockResolvedValue({ error: null } as any);
 
       const action: DebugAction = { type: 'setMasteryScore', value: 100000 };
       await executeDebugAction(action, userId);
@@ -690,7 +690,7 @@ describe('debugPresets - executeDebugAction', () => {
 
     it('should throw error when setMasteryScore fails', async () => {
       const error = { message: 'Set mastery score failed' };
-      vi.mocked(supabase.rpc).mockResolvedValue({ error } as never);
+      vi.mocked(supabase.rpc).mockResolvedValue({ error } as any);
 
       const action: DebugAction = { type: 'setMasteryScore', value: 100000 };
       await expect(executeDebugAction(action, userId)).rejects.toEqual(error);
@@ -767,7 +767,7 @@ describe('debugPresets - executeDebugAction', () => {
       vi.mocked(supabase.from).mockReturnValue({
         select: vi.fn(() => Promise.resolve({ data: mockItems, error: null })),
         upsert: mockUpsert,
-      } as never);
+      } as any);
 
       const action: DebugAction = { type: 'grantAllItems' };
       await executeDebugAction(action, userId);
@@ -788,7 +788,7 @@ describe('debugPresets - executeDebugAction', () => {
       vi.mocked(supabase.from).mockReturnValue({
         select: vi.fn(() => Promise.resolve({ data: mockItems, error: null })),
         upsert: mockUpsert,
-      } as never);
+      } as any);
 
       const action: DebugAction = { type: 'grantAllItems', quantity: 50 };
       await executeDebugAction(action, userId);
@@ -804,7 +804,7 @@ describe('debugPresets - executeDebugAction', () => {
 
       vi.mocked(supabase.from).mockReturnValue({
         select: vi.fn(() => Promise.resolve({ data: null, error })),
-      } as never);
+      } as any);
 
       const action: DebugAction = { type: 'grantAllItems' };
       await expect(executeDebugAction(action, userId)).rejects.toEqual(error);
@@ -817,7 +817,7 @@ describe('debugPresets - executeDebugAction', () => {
       vi.mocked(supabase.from).mockReturnValue({
         select: vi.fn(() => Promise.resolve({ data: mockItems, error: null })),
         upsert: vi.fn(() => Promise.resolve({ error })),
-      } as never);
+      } as any);
 
       const action: DebugAction = { type: 'grantAllItems' };
       await expect(executeDebugAction(action, userId)).rejects.toEqual(error);
@@ -829,7 +829,7 @@ describe('debugPresets - executeDebugAction', () => {
       vi.mocked(supabase.from).mockReturnValue({
         select: vi.fn(() => Promise.resolve({ data: [], error: null })),
         upsert: mockUpsert,
-      } as never);
+      } as any);
 
       const action: DebugAction = { type: 'grantAllItems' };
       await executeDebugAction(action, userId);
@@ -844,13 +844,13 @@ describe('debugPresets - executeDebugAction', () => {
 
       vi.mocked(supabase.from).mockReturnValue({
         select: vi.fn(() => Promise.resolve({ data: mockBadges, error: null })),
-      } as never);
+      } as any);
 
       vi.mocked(supabase.rpc).mockImplementation((fnName: string) => {
         if (fnName === 'debug_grant_badge') {
-          return Promise.resolve({ error: null } as never);
+          return Promise.resolve({ error: null } as any);
         }
-        return Promise.resolve({ error: null } as never);
+        return Promise.resolve({ error: null } as any);
       });
 
       const action: DebugAction = { type: 'grantAllBadges' };
@@ -861,18 +861,18 @@ describe('debugPresets - executeDebugAction', () => {
 
     it('should handle badge grant failures gracefully', async () => {
       const mockBadges = [{ id: 'badge-1' }, { id: 'badge-2' }];
-      const consoleWarnSpy = vi.spyOn(console, 'warn').mockImplementation(() => { });
+      const consoleWarnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});
 
       vi.mocked(supabase.from).mockReturnValue({
         select: vi.fn(() => Promise.resolve({ data: mockBadges, error: null })),
-      } as never);
+      } as any);
 
-      // 첫 번째는 성공, 두 번째는 실패
+      // 첫번째는 성공, 두번째는 실패
       let callCount = 0;
       vi.mocked(supabase.rpc).mockImplementation(() => {
         callCount++;
         if (callCount === 1) {
-          return Promise.resolve({ error: null } as never);
+          return Promise.resolve({ error: null } as any);
         } else {
           return Promise.reject({ message: 'Badge grant failed' });
         }
@@ -888,14 +888,14 @@ describe('debugPresets - executeDebugAction', () => {
 
     it('should handle badge grant when result.value.success is false', async () => {
       const mockBadges = [{ id: 'badge-1' }];
-      const consoleWarnSpy = vi.spyOn(console, 'warn').mockImplementation(() => { });
+      const consoleWarnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});
 
       vi.mocked(supabase.from).mockReturnValue({
         select: vi.fn(() => Promise.resolve({ data: mockBadges, error: null })),
-      } as never);
+      } as any);
 
-      // result.value.success가 false인 경우를 시뮬레이션
-      // supabase.rpc가 reject되면 .then()의 두 번째 인자가 호출되어 { success: false, ... } 반환
+      // result.value.success가 false인 경우를 레이어링
+      // supabase.rpc가 reject되면 .then()의 두번째 인자가 호출되어 { success: false, ... } 반환
       vi.mocked(supabase.rpc).mockImplementation(() => {
         return Promise.reject({ message: 'Badge grant failed' });
       });
@@ -913,7 +913,7 @@ describe('debugPresets - executeDebugAction', () => {
 
       vi.mocked(supabase.from).mockReturnValue({
         select: vi.fn(() => Promise.resolve({ data: null, error })),
-      } as never);
+      } as any);
 
       const action: DebugAction = { type: 'grantAllBadges' };
       await expect(executeDebugAction(action, userId)).rejects.toEqual(error);
@@ -940,7 +940,7 @@ describe('debugPresets - executeDebugAction', () => {
           })),
         })),
         update: mockUpdate,
-      } as never);
+      } as any);
 
       const action: DebugAction = { type: 'setGameTime', seconds: 30 };
       await executeDebugAction(action, userId);
@@ -964,7 +964,7 @@ describe('debugPresets - executeDebugAction', () => {
             })),
           })),
         })),
-      } as never);
+      } as any);
 
       mockGetQuizStoreState.mockReturnValue({
         setTimeLimit: mockSetTimeLimit,
@@ -992,7 +992,7 @@ describe('debugPresets - executeDebugAction', () => {
             })),
           })),
         })),
-      } as never);
+      } as any);
 
       mockGetQuizStoreState.mockReturnValue({
         setTimeLimit: mockSetTimeLimit,
@@ -1040,7 +1040,7 @@ describe('debugPresets - executeDebugAction', () => {
             })),
           })),
         })),
-      } as never);
+      } as any);
 
       mockGetQuizStoreState.mockReturnValue({
         setTimeLimit: mockSetTimeLimit,
@@ -1067,7 +1067,7 @@ describe('debugPresets - executeDebugAction', () => {
             })),
           })),
         })),
-      } as never);
+      } as any);
 
       const action: DebugAction = { type: 'setGameTime', seconds: 30 };
       await expect(executeDebugAction(action, userId)).rejects.toEqual(error);
@@ -1088,7 +1088,7 @@ describe('debugPresets - executeDebugAction', () => {
             })),
           })),
         })),
-      } as never);
+      } as any);
 
       const action: DebugAction = { type: 'setGameTime', seconds: 30 };
       await expect(executeDebugAction(action, userId)).rejects.toEqual(error);
@@ -1133,13 +1133,15 @@ describe('debugPresets - applyPreset', () => {
     const mockSetMinerals = vi.fn(() => Promise.resolve());
     const mockSetStamina = vi.fn(() => Promise.resolve());
 
-    vi.mocked(supabase.rpc).mockResolvedValue({ error: null } as never);
+    vi.mocked(supabase.rpc).mockResolvedValue({ error: null } as any);
     vi.mocked(supabase.from).mockImplementation((table: string) => {
       if (table === 'profiles') {
         return {
           select: vi.fn(() => ({
             eq: vi.fn(() => ({
-              single: vi.fn(() => Promise.resolve({ data: { minerals: 0, stamina: 5 }, error: null })),
+              single: vi.fn(() =>
+                Promise.resolve({ data: { minerals: 0, stamina: 5 }, error: null })
+              ),
             })),
           })),
           update: vi.fn(() => ({
@@ -1196,15 +1198,15 @@ describe('debugPresets - applyPreset', () => {
 
     vi.mocked(supabase.rpc).mockImplementation((fnName: string) => {
       if (fnName === 'debug_set_mastery_score') {
-        return Promise.resolve({ error: null } as never);
+        return Promise.resolve({ error: null } as any);
       }
       if (fnName === 'debug_set_tier') {
-        return Promise.resolve({ error: null } as never);
+        return Promise.resolve({ error: null } as any);
       }
       if (fnName === 'debug_grant_badge') {
-        return Promise.resolve({ error: null } as never);
+        return Promise.resolve({ error: null } as any);
       }
-      return Promise.resolve({ error: null } as never);
+      return Promise.resolve({ error: null } as any);
     });
 
     vi.mocked(supabase.from).mockImplementation((table: string) => {
@@ -1223,7 +1225,9 @@ describe('debugPresets - applyPreset', () => {
         return {
           select: vi.fn(() => ({
             eq: vi.fn(() => ({
-              single: vi.fn(() => Promise.resolve({ data: { minerals: 0, stamina: 5 }, error: null })),
+              single: vi.fn(() =>
+                Promise.resolve({ data: { minerals: 0, stamina: 5 }, error: null })
+              ),
             })),
           })),
           update: vi.fn(() => ({
@@ -1281,13 +1285,15 @@ describe('debugPresets - applyPreset', () => {
 
     saveCustomPreset(customPreset);
 
-    vi.mocked(supabase.rpc).mockResolvedValue({ error: null } as never);
+    vi.mocked(supabase.rpc).mockResolvedValue({ error: null } as any);
     vi.mocked(supabase.from).mockImplementation((table: string) => {
       if (table === 'profiles') {
         return {
           select: vi.fn(() => ({
             eq: vi.fn(() => ({
-              single: vi.fn(() => Promise.resolve({ data: { minerals: 0, stamina: 5 }, error: null })),
+              single: vi.fn(() =>
+                Promise.resolve({ data: { minerals: 0, stamina: 5 }, error: null })
+              ),
             })),
           })),
           update: vi.fn(() => ({
@@ -1328,7 +1334,7 @@ describe('debugPresets - applyPreset', () => {
   it('should save failure history when action fails', async () => {
     const error = { message: 'Action failed' };
 
-    vi.mocked(supabase.rpc).mockResolvedValue({ error } as never);
+    vi.mocked(supabase.rpc).mockResolvedValue({ error } as any);
 
     await expect(applyPreset('newbie', userId)).rejects.toBeDefined();
 
@@ -1344,13 +1350,15 @@ describe('debugPresets - applyPreset', () => {
     const mockSetMinerals = vi.fn(() => Promise.resolve());
     const mockSetStamina = vi.fn(() => Promise.resolve());
 
-    vi.mocked(supabase.rpc).mockResolvedValue({ error: null } as never);
+    vi.mocked(supabase.rpc).mockResolvedValue({ error: null } as any);
     vi.mocked(supabase.from).mockImplementation((table: string) => {
       if (table === 'profiles') {
         return {
           select: vi.fn(() => ({
             eq: vi.fn(() => ({
-              single: vi.fn(() => Promise.resolve({ data: { minerals: 0, stamina: 5 }, error: null })),
+              single: vi.fn(() =>
+                Promise.resolve({ data: { minerals: 0, stamina: 5 }, error: null })
+              ),
             })),
           })),
           update: vi.fn(() => ({
@@ -1389,13 +1397,15 @@ describe('debugPresets - applyPreset', () => {
     const mockSetMinerals = vi.fn(() => Promise.resolve());
     const mockSetStamina = vi.fn(() => Promise.resolve());
 
-    vi.mocked(supabase.rpc).mockResolvedValue({ error: null } as never);
+    vi.mocked(supabase.rpc).mockResolvedValue({ error: null } as any);
     vi.mocked(supabase.from).mockImplementation((table: string) => {
       if (table === 'profiles') {
         return {
           select: vi.fn(() => ({
             eq: vi.fn(() => ({
-              single: vi.fn(() => Promise.resolve({ data: { minerals: 0, stamina: 5 }, error: null })),
+              single: vi.fn(() =>
+                Promise.resolve({ data: { minerals: 0, stamina: 5 }, error: null })
+              ),
             })),
           })),
           update: vi.fn(() => ({
@@ -1427,7 +1437,7 @@ describe('debugPresets - applyPreset', () => {
     await applyPreset('newbie', userId);
 
     expect(mockFetchUserData).toHaveBeenCalled();
-    // refetch가 없어도 정상 동작해야 함
+    // refetch가 이루어지 상 동작해야 함
   });
 
   it('should throw error for setMasteryScore with -1 in non-veteran preset', async () => {

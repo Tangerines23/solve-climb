@@ -112,7 +112,7 @@ export function ResultPage() {
         );
         const ranks =
           useLevelProgressStore.getState().rankings[
-          `${worldParam}-${categoryParam}-weekly-${mode}`
+            `${worldParam}-${categoryParam}-weekly-${mode}`
           ];
         const {
           data: { user },
@@ -329,7 +329,9 @@ export function ResultPage() {
                 <div className="wrong-answer-question">{searchParams.get('last_q')}</div>
                 <div className="wrong-answer-row">
                   <span className="wrong-answer-wrong">오답: {searchParams.get('wrong_a')}</span>
-                  <span className="wrong-answer-correct">정답: {searchParams.get('correct_a')}</span>
+                  <span className="wrong-answer-correct">
+                    정답: {searchParams.get('correct_a')}
+                  </span>
                 </div>
               </div>
             </div>

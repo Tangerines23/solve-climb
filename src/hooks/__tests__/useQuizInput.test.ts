@@ -583,7 +583,6 @@ describe('useQuizInput', () => {
     expect(setAnswerInput).not.toHaveBeenCalled();
   });
 
-
   it('should not call onInputStart when not provided', () => {
     const setAnswerInput = vi.fn((updater) => {
       if (typeof updater === 'function') {
@@ -836,4 +835,3 @@ describe('useQuizInput', () => {
     expect(setDisplayValue).not.toHaveBeenCalled();
   });
 });
-

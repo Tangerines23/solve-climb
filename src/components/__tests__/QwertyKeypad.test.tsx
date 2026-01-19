@@ -202,10 +202,36 @@ describe('QwertyKeypad', () => {
 
   it('should render all qwerty keys in text mode', () => {
     render(<QwertyKeypad {...defaultProps} mode="text" />);
-    const qwertyKeys = ['q', 'w', 'e', 'r', 't', 'y', 'u', 'i', 'o', 'p', 'a', 's', 'd', 'f', 'g', 'h', 'j', 'k', 'l', 'z', 'x', 'c', 'v', 'b', 'n', 'm'];
-    qwertyKeys.forEach(key => {
+    const qwertyKeys = [
+      'q',
+      'w',
+      'e',
+      'r',
+      't',
+      'y',
+      'u',
+      'i',
+      'o',
+      'p',
+      'a',
+      's',
+      'd',
+      'f',
+      'g',
+      'h',
+      'j',
+      'k',
+      'l',
+      'z',
+      'x',
+      'c',
+      'v',
+      'b',
+      'n',
+      'm',
+    ];
+    qwertyKeys.forEach((key) => {
       expect(screen.getByText(key)).toBeInTheDocument();
     });
   });
 });
-

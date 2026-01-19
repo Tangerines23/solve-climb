@@ -184,9 +184,7 @@ describe('useAsync', () => {
     vi.mocked(logError).mockClear();
     const error = new Error('Test error');
     const asyncFn = vi.fn(() => Promise.reject(error));
-    renderHook(() =>
-      useAsync(asyncFn, { errorOptions: { context: 'custom context' } })
-    );
+    renderHook(() => useAsync(asyncFn, { errorOptions: { context: 'custom context' } }));
 
     await waitFor(() => {
       expect(asyncFn).toHaveBeenCalled();
@@ -199,7 +197,9 @@ describe('useAsync', () => {
   });
 
   it('should not update state after unmount in error case', async () => {
-    const asyncFn = vi.fn(() => new Promise((_, reject) => setTimeout(() => reject(new Error('error')), 100)));
+    const asyncFn = vi.fn(
+      () => new Promise((_, reject) => setTimeout(() => reject(new Error('error')), 100))
+    );
     const { result, unmount } = renderHook(() => useAsync(asyncFn));
 
     unmount();
@@ -219,4 +219,3 @@ describe('useAsync', () => {
     });
   });
 });
-

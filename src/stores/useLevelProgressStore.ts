@@ -136,15 +136,7 @@ export const useLevelProgressStore = create<LevelProgressState>()(
           score,
         });
 
-        const authResult = (await debugSupabaseQuery(supabase.auth.getUser())) as any;
-        const user = authResult?.data?.user;
-        console.log('[useLevelProgressStore] Current user:', user?.id);
-
-        if (!user) {
-          console.warn('[useLevelProgressStore] No user found, skipping clearLevel');
-          return;
-        }
-        // 1. Optimistic Update (Local)
+        // 1. Optimistic Update (Local) - Move to the beginning to be truly synchronous for UI/Tests
         set((state) => {
           const newProgress = { ...state.progress };
 
@@ -164,6 +156,15 @@ export const useLevelProgressStore = create<LevelProgressState>()(
 
           return { progress: newProgress };
         });
+
+        const authResult = (await debugSupabaseQuery(supabase.auth.getUser())) as any;
+        const user = authResult?.data?.user;
+        console.log('[useLevelProgressStore] Current user:', user?.id);
+
+        if (!user) {
+          console.warn('[useLevelProgressStore] No user found, skipping Supabase sync');
+          return;
+        }
 
         // 2. Call submit_game_result RPC to update weekly scores and log activity
         try {
@@ -377,12 +378,12 @@ export const useLevelProgressStore = create<LevelProgressState>()(
         }
       },
 
-      fetchRanking: async (_world, _category, period, type, limit = 50) => {
+      fetchRanking: async (world, category, period, type, limit = 50) => {
         try {
-          // Note: RPC function doesn't actually use p_category, it only uses period and type
+          // Note: RPC function signature requires p_category
           const { data, error } = await debugSupabaseQuery(
             supabase.rpc('get_ranking_v2', {
-              p_category: '', // Not used by RPC but required by signature
+              p_category: world,
               p_period: period,
               p_type: type,
               p_limit: limit,
@@ -392,11 +393,10 @@ export const useLevelProgressStore = create<LevelProgressState>()(
           if (error) throw error;
 
           if (data) {
-            // Simplified key without world/category since RPC doesn't filter by them
             set((state) => ({
               rankings: {
                 ...state.rankings,
-                [`${period}-${type}`]: data as RankingRecord[],
+                [`${world}-${category}-${period}-${type}`]: data as RankingRecord[],
               },
             }));
           }

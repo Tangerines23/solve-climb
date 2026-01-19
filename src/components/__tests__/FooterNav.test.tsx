@@ -56,7 +56,7 @@ describe('FooterNav', () => {
   });
 
   it('should handle home navigation with scroll', () => {
-    const scrollToSpy = vi.spyOn(window, 'scrollTo').mockImplementation(() => { });
+    const scrollToSpy = vi.spyOn(window, 'scrollTo').mockImplementation(() => {});
     mockLocation.pathname = '/ranking';
     renderFooterNav();
 
@@ -70,7 +70,7 @@ describe('FooterNav', () => {
   });
 
   it('should not navigate when already on home page', () => {
-    const scrollToSpy = vi.spyOn(window, 'scrollTo').mockImplementation(() => { });
+    const scrollToSpy = vi.spyOn(window, 'scrollTo').mockImplementation(() => {});
     mockLocation.pathname = '/';
     renderFooterNav();
 
@@ -145,4 +145,3 @@ describe('FooterNav', () => {
     expect(screen.getByText('👤')).toBeInTheDocument();
   });
 });
-

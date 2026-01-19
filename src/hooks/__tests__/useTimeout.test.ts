@@ -75,4 +75,3 @@ describe('useTimeout', () => {
     expect(callback).toHaveBeenCalledTimes(1);
   });
 });
-

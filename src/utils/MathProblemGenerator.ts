@@ -5,14 +5,14 @@ export interface StageConfig {
   world: number;
   description: string;
   type:
-  | 'standard'
-  | 'sequential'
-  | 'fill-blank'
-  | 'parentheses'
-  | 'decimal'
-  | 'fraction'
-  | 'time'
-  | 'modulo';
+    | 'standard'
+    | 'sequential'
+    | 'fill-blank'
+    | 'parentheses'
+    | 'decimal'
+    | 'fraction'
+    | 'time'
+    | 'modulo';
   operators: Operator[];
   operandCount: number;
   // Array of ranges for each operand position.

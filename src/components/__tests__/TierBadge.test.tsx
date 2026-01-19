@@ -379,4 +379,3 @@ describe('TierBadge', () => {
     expect(getTierInfo).not.toHaveBeenCalledWith(2);
   });
 });
-

@@ -77,7 +77,7 @@ describe('LevelListCard', () => {
   it('should call onLevelClick when level button is clicked', () => {
     const onLevelClick = vi.fn();
     mockGetNextLevel.mockReturnValue(1); // Level 1 is next
-    
+
     render(
       <LevelListCard
         category="math"
@@ -207,4 +207,3 @@ describe('LevelListCard', () => {
     expect(retryButtons.length).toBeGreaterThan(0);
   });
 });
-

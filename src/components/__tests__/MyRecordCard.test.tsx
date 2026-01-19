@@ -40,9 +40,12 @@ describe('MyRecordCard', () => {
     vi.advanceTimersByTime(300);
     vi.useRealTimers();
 
-    await waitFor(() => {
-      expect(screen.getByText('사칙연산 최고 기록')).toBeInTheDocument();
-    }, { timeout: 1000 });
+    await waitFor(
+      () => {
+        expect(screen.getByText('사칙연산 최고 기록')).toBeInTheDocument();
+      },
+      { timeout: 1000 }
+    );
 
     expect(screen.getByText(/타임 어택:/)).toBeInTheDocument();
     expect(screen.getByText(/서바이벌:/)).toBeInTheDocument();
@@ -61,9 +64,12 @@ describe('MyRecordCard', () => {
     vi.advanceTimersByTime(300);
     vi.useRealTimers();
 
-    await waitFor(() => {
-      expect(screen.getByText('사칙연산 최고 기록')).toBeInTheDocument();
-    }, { timeout: 1000 });
+    await waitFor(
+      () => {
+        expect(screen.getByText('사칙연산 최고 기록')).toBeInTheDocument();
+      },
+      { timeout: 1000 }
+    );
 
     const noRecordTexts = screen.getAllByText('기록 없음');
     expect(noRecordTexts.length).toBeGreaterThan(0);
@@ -80,9 +86,12 @@ describe('MyRecordCard', () => {
     vi.advanceTimersByTime(300);
     vi.useRealTimers();
 
-    await waitFor(() => {
-      expect(screen.getByText('사칙연산 최고 기록')).toBeInTheDocument();
-    }, { timeout: 1000 });
+    await waitFor(
+      () => {
+        expect(screen.getByText('사칙연산 최고 기록')).toBeInTheDocument();
+      },
+      { timeout: 1000 }
+    );
 
     expect(screen.getByText('1,500m')).toBeInTheDocument();
     expect(screen.getByText('기록 없음')).toBeInTheDocument();
@@ -99,9 +108,12 @@ describe('MyRecordCard', () => {
     vi.advanceTimersByTime(300);
     vi.useRealTimers();
 
-    await waitFor(() => {
-      expect(screen.getByText('사칙연산 최고 기록')).toBeInTheDocument();
-    }, { timeout: 1000 });
+    await waitFor(
+      () => {
+        expect(screen.getByText('사칙연산 최고 기록')).toBeInTheDocument();
+      },
+      { timeout: 1000 }
+    );
 
     expect(screen.getByText('3,000m')).toBeInTheDocument();
     expect(screen.getByText('기록 없음')).toBeInTheDocument();
@@ -118,12 +130,14 @@ describe('MyRecordCard', () => {
     vi.advanceTimersByTime(300);
     vi.useRealTimers();
 
-    await waitFor(() => {
-      expect(screen.getByText('사칙연산 최고 기록')).toBeInTheDocument();
-    }, { timeout: 1000 });
+    await waitFor(
+      () => {
+        expect(screen.getByText('사칙연산 최고 기록')).toBeInTheDocument();
+      },
+      { timeout: 1000 }
+    );
 
     expect(screen.getByText(/1,234,567m/)).toBeInTheDocument();
     expect(screen.getByText(/9,876,543m/)).toBeInTheDocument();
   });
 });
-

@@ -171,7 +171,7 @@ describe('useAuthStore', () => {
     } as never);
 
     const initializePromise = useAuthStore.getState().initialize();
-    
+
     // isLoading should be true during initialization
     expect(useAuthStore.getState().isLoading).toBe(true);
 
@@ -194,7 +194,7 @@ describe('useAuthStore', () => {
     } as never);
 
     const signInPromise = useAuthStore.getState().signInAnonymously();
-    
+
     // isLoading should be true during sign-in
     expect(useAuthStore.getState().isLoading).toBe(true);
 
@@ -204,4 +204,3 @@ describe('useAuthStore', () => {
     expect(useAuthStore.getState().isLoading).toBe(false);
   });
 });
-

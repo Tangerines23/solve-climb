@@ -13,6 +13,9 @@ export default defineConfig([
     'node_modules',
     'android/**',
     'proxy-server/**',
+    'playwright/.cache/**',
+    'playwright-report/**',
+    'test-results/**',
     '**/*.js.map',
   ]),
   {
@@ -43,6 +46,7 @@ export default defineConfig([
         {
           varsIgnorePattern: '^[A-Z_]|^_',
           argsIgnorePattern: '^[A-Z_]|^_',
+          caughtErrorsIgnorePattern: '^[A-Z_]|^_',
         },
       ],
       'no-unused-vars': 'off', // TypeScript 규칙 사용

@@ -4,7 +4,7 @@ import type { Category, Difficulty } from '../../types/quiz';
 
 // Mock math utilities
 vi.mock('../math', () => ({
-  generateRandomNumber: vi.fn((difficulty: string) => {
+  generateRandomNumber: vi.fn((_difficulty: string) => {
     return 10; // Simple constant for testing
   }),
 }));
@@ -37,7 +37,7 @@ describe('quizGenerator', () => {
   describe('World 2: Geometry & Space', () => {
     it('should generate geometry question for World2-기초', () => {
       const result = generateQuestion('World2', '기초', 1, 'easy');
-      expect(result.question).toMatch(/삼각형|사각형|오각형|원/);
+      expect(result.question).toMatch(/삼각형|사각형|오각형|육각형|원/);
       expect(typeof result.answer).toBe('number');
     });
 

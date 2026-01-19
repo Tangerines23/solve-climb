@@ -100,7 +100,7 @@ describe('ProfileForm', () => {
     const user = userEvent.setup();
     renderProfileForm();
 
-    const input = screen.getByPlaceholderText('닉네임을 입력하세요');
+    const _input = screen.getByPlaceholderText('닉네임을 입력하세요');
     const submitButton = screen.getByText('시작하기');
 
     // Try to submit empty nickname
@@ -179,10 +179,10 @@ describe('ProfileForm', () => {
 
     // Type exactly 11 characters (maxLength is 10, so only 10 will be accepted)
     await user.type(input, '12345678901');
-    
+
     // Input should be limited to 10 characters
     expect(input).toHaveValue('1234567890');
-    
+
     // Try to submit
     await user.click(submitButton);
 
@@ -230,4 +230,3 @@ describe('ProfileForm', () => {
     expect(mockNavigate).toHaveBeenCalledWith(-1);
   });
 });
-

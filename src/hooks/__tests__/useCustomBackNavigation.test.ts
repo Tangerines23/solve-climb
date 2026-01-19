@@ -24,7 +24,7 @@ describe('useCustomBackNavigation', () => {
     vi.clearAllMocks();
     vi.mocked(useNavigate).mockReturnValue(mockNavigate);
     vi.mocked(useLocation).mockReturnValue(mockLocation);
-    
+
     // Mock window.history
     Object.defineProperty(window, 'history', {
       value: {
@@ -34,7 +34,7 @@ describe('useCustomBackNavigation', () => {
       },
       writable: true,
     });
-    
+
     // Mock document.referrer
     Object.defineProperty(document, 'referrer', {
       value: '',
@@ -52,7 +52,7 @@ describe('useCustomBackNavigation', () => {
       ...mockLocation,
       pathname: APP_CONFIG.ROUTES.HOME,
     });
-    
+
     Object.defineProperty(window, 'history', {
       value: {
         length: 1,
@@ -133,10 +133,9 @@ describe('useCustomBackNavigation', () => {
     const popStateEvent = new PopStateEvent('popstate');
     window.dispatchEvent(popStateEvent);
 
-    expect(mockNavigate).toHaveBeenCalledWith(
-      expect.stringContaining(APP_CONFIG.ROUTES.GAME),
-      { replace: true }
-    );
+    expect(mockNavigate).toHaveBeenCalledWith(expect.stringContaining(APP_CONFIG.ROUTES.GAME), {
+      replace: true,
+    });
   });
 
   it('should navigate to home from result page when params are missing', () => {
@@ -283,10 +282,9 @@ describe('useCustomBackNavigation', () => {
     const popStateEvent = new PopStateEvent('popstate');
     window.dispatchEvent(popStateEvent);
 
-    expect(mockNavigate).toHaveBeenCalledWith(
-      expect.stringContaining('mode=time-attack'),
-      { replace: true }
-    );
+    expect(mockNavigate).toHaveBeenCalledWith(expect.stringContaining('mode=time-attack'), {
+      replace: true,
+    });
   });
 
   it('should prevent duplicate popstate handling', () => {
@@ -298,7 +296,7 @@ describe('useCustomBackNavigation', () => {
     renderHook(() => useCustomBackNavigation());
 
     const popStateEvent = new PopStateEvent('popstate');
-    
+
     // Dispatch multiple events quickly
     window.dispatchEvent(popStateEvent);
     window.dispatchEvent(popStateEvent);
@@ -308,4 +306,3 @@ describe('useCustomBackNavigation', () => {
     expect(mockNavigate).toHaveBeenCalled();
   });
 });
-

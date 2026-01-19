@@ -155,4 +155,3 @@ describe('useQuizStore', () => {
     expect(result.current.score).toBe(40);
   });
 });
-

@@ -3,7 +3,6 @@ import { render, screen, fireEvent } from '@testing-library/react';
 import { ErrorBoundary } from '../ErrorBoundary';
 import { ErrorFallback } from '../ErrorFallback';
 import { logError } from '../../utils/errorHandler';
-import { useErrorLogStore } from '../../stores/useErrorLogStore';
 
 // Mock ErrorFallback
 vi.mock('../ErrorFallback', () => ({
@@ -39,8 +38,8 @@ const ThrowError = ({ shouldThrow }: { shouldThrow: boolean }) => {
 };
 
 describe('ErrorBoundary', () => {
-  const originalEnv = import.meta.env;
-  const originalConsoleError = console.error;
+  const originalEnv = (import.meta as any).env;
+  const _originalConsoleError = console.error;
 
   beforeEach(() => {
     vi.clearAllMocks();
@@ -50,7 +49,7 @@ describe('ErrorBoundary', () => {
 
   afterEach(() => {
     vi.restoreAllMocks();
-    Object.defineProperty(import.meta, 'env', {
+    Object.defineProperty(import.meta as any, 'env', {
       value: originalEnv,
       writable: true,
     });
@@ -110,23 +109,23 @@ describe('ErrorBoundary', () => {
     expect(screen.getByText(/Error:/)).toBeInTheDocument();
 
     const resetButton = screen.getByText('Reset');
-    
+
     // Reset button should be present and clickable
     expect(resetButton).toBeInTheDocument();
     fireEvent.click(resetButton);
-    
+
     // Reset function should be called (verified by ErrorFallback mock)
     // The actual reset behavior is tested by rendering a new component after reset
   });
 
   it('should log error to store in development mode', () => {
-    Object.defineProperty(import.meta, 'env', {
+    Object.defineProperty(import.meta as any, 'env', {
       value: { ...originalEnv, DEV: true },
       writable: true,
     });
 
-    const error = new Error('Test error');
-    const errorInfo = {
+    const _error = new Error('Test error');
+    const _errorInfo = {
       componentStack: 'TestComponent\n  at ErrorBoundary',
     } as React.ErrorInfo;
 
@@ -141,7 +140,7 @@ describe('ErrorBoundary', () => {
   });
 
   it('should handle errorInfo without componentStack', () => {
-    Object.defineProperty(import.meta, 'env', {
+    Object.defineProperty(import.meta as any, 'env', {
       value: { ...originalEnv, DEV: true },
       writable: true,
     });
@@ -155,4 +154,3 @@ describe('ErrorBoundary', () => {
     expect(logError).toHaveBeenCalled();
   });
 });
-

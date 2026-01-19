@@ -25,4 +25,3 @@ describe('RankingPage', () => {
     expect(container).toBeTruthy();
   });
 });
-

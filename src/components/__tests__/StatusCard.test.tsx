@@ -100,7 +100,6 @@ describe('StatusCard', () => {
     expect(screen.getByText('정보를 불러올 수 없습니다')).toBeInTheDocument();
   });
 
-
   it('should calculate bestScore from multiple categories', async () => {
     vi.mocked(useLevelProgressStore.getState).mockReturnValue({
       progress: {
@@ -136,4 +135,3 @@ describe('StatusCard', () => {
     expect(screen.getByText(/나의 랭킹/)).toBeInTheDocument();
   });
 });
-

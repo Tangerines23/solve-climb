@@ -77,4 +77,3 @@ describe('useInterval', () => {
     expect(callback).toHaveBeenCalledTimes(1);
   });
 });
-

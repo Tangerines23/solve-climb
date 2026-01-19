@@ -170,7 +170,6 @@
 
   /* 테두리 시스템 애니메이션 */
   @keyframes tier-glow {
-
     0%,
     100% {
       box-shadow: 0 0 8px var(--color-tier-legend);
@@ -285,9 +284,11 @@
   --shadow-glass: 0 8px 32px rgba(0, 0, 0, 0.2);
   --shadow-glass-hover: 0 12px 40px rgba(0, 0, 0, 0.3);
   --gradient-text-premium: linear-gradient(135deg, var(--color-gray-100) 30%, #4facfe 100%);
-  --gradient-sub-text: linear-gradient(135deg,
+  --gradient-sub-text: linear-gradient(
+    135deg,
     rgba(255, 255, 255, 0.8) 0%,
-    rgba(255, 255, 255, 0.4) 100%);
+    rgba(255, 255, 255, 0.4) 100%
+  );
 
   /* New Color Palettes for Consistency */
   /* Slate (Gray-Blueish) */

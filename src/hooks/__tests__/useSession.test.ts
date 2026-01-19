@@ -1,5 +1,5 @@
-import { describe, it, expect, beforeEach, vi, afterEach } from 'vitest';
-import { renderHook, waitFor, act } from '@testing-library/react';
+import { describe, it, expect, beforeEach, vi } from 'vitest';
+import { renderHook, waitFor } from '@testing-library/react';
 import { useSession } from '../useSession';
 import { supabase } from '../../utils/supabaseClient';
 import { storage } from '../../utils/storage';
@@ -40,6 +40,8 @@ describe('useSession', () => {
   const mockOnAuthStateChange = vi.fn(() => ({
     data: {
       subscription: {
+        id: 'mock-sub',
+        callback: () => {},
         unsubscribe: mockUnsubscribe,
       },
     },
@@ -48,10 +50,6 @@ describe('useSession', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     vi.mocked(supabase.auth.onAuthStateChange).mockImplementation(mockOnAuthStateChange);
-  });
-
-  afterEach(() => {
-    vi.clearAllMocks();
   });
 
   it('should initialize with loading state', () => {
@@ -99,7 +97,10 @@ describe('useSession', () => {
     } as unknown as Session;
 
     vi.mocked(storage.getString).mockReturnValue(null);
-    vi.mocked(supabase.auth.getSession).mockResolvedValue({ data: { session: mockSupabaseSession }, error: null });
+    vi.mocked(supabase.auth.getSession).mockResolvedValue({
+      data: { session: mockSupabaseSession },
+      error: null,
+    });
 
     const { result } = renderHook(() => useSession());
 
@@ -135,4 +136,3 @@ describe('useSession', () => {
     expect(supabase.auth.onAuthStateChange).toHaveBeenCalled();
   });
 });
-

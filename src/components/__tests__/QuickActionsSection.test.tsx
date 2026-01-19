@@ -94,4 +94,3 @@ describe('QuickActionsSection', () => {
     expect(presetSection).toBeInTheDocument();
   });
 });
-

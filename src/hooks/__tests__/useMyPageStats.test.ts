@@ -118,9 +118,12 @@ describe('useMyPageStats', () => {
 
     const { result } = renderHook(() => useMyPageStats());
 
-    await waitFor(() => {
-      expect(result.current.loading).toBe(false);
-    }, { timeout: 3000 });
+    await waitFor(
+      () => {
+        expect(result.current.loading).toBe(false);
+      },
+      { timeout: 3000 }
+    );
 
     expect(result.current.stats).toBeTruthy();
   });
@@ -161,9 +164,12 @@ describe('useMyPageStats', () => {
 
     const { result } = renderHook(() => useMyPageStats());
 
-    await waitFor(() => {
-      expect(result.current.loading).toBe(false);
-    }, { timeout: 3000 });
+    await waitFor(
+      () => {
+        expect(result.current.loading).toBe(false);
+      },
+      { timeout: 3000 }
+    );
 
     expect(result.current.stats).toBeTruthy();
   });
@@ -178,9 +184,12 @@ describe('useMyPageStats', () => {
 
     const { result } = renderHook(() => useMyPageStats());
 
-    await waitFor(() => {
-      expect(result.current.loading).toBe(false);
-    }, { timeout: 3000 });
+    await waitFor(
+      () => {
+        expect(result.current.loading).toBe(false);
+      },
+      { timeout: 3000 }
+    );
 
     expect(result.current.stats).toBeTruthy();
     expect(result.current.stats?.totalSolved).toBe(0);
@@ -213,17 +222,13 @@ describe('useMyPageStats', () => {
     }));
 
     const mockThemeMappingSelect = vi.fn().mockResolvedValue({
-      data: [
-        { code: 1, theme_id: 'theme-1', name: 'Math' },
-      ],
+      data: [{ code: 1, theme_id: 'theme-1', name: 'Math' }],
       error: null,
     });
 
     const mockUserLevelRecordsSelect = vi.fn(() => ({
       eq: vi.fn().mockResolvedValue({
-        data: [
-          { theme_code: 1, level: 1, best_score: 100 },
-        ],
+        data: [{ theme_code: 1, level: 1, best_score: 100 }],
         error: null,
       }),
     }));
@@ -256,9 +261,12 @@ describe('useMyPageStats', () => {
 
     const { result } = renderHook(() => useMyPageStats());
 
-    await waitFor(() => {
-      expect(result.current.loading).toBe(false);
-    }, { timeout: 3000 });
+    await waitFor(
+      () => {
+        expect(result.current.loading).toBe(false);
+      },
+      { timeout: 3000 }
+    );
 
     expect(result.current.stats).toBeTruthy();
   });
@@ -323,9 +331,12 @@ describe('useMyPageStats', () => {
 
     const { result } = renderHook(() => useMyPageStats());
 
-    await waitFor(() => {
-      expect(result.current.loading).toBe(false);
-    }, { timeout: 3000 });
+    await waitFor(
+      () => {
+        expect(result.current.loading).toBe(false);
+      },
+      { timeout: 3000 }
+    );
 
     expect(result.current.stats).toBeTruthy();
   });
@@ -395,9 +406,12 @@ describe('useMyPageStats', () => {
 
     const { result } = renderHook(() => useMyPageStats());
 
-    await waitFor(() => {
-      expect(result.current.loading).toBe(false);
-    }, { timeout: 3000 });
+    await waitFor(
+      () => {
+        expect(result.current.loading).toBe(false);
+      },
+      { timeout: 3000 }
+    );
 
     expect(result.current.stats).toBeTruthy();
     expect(result.current.stats?.totalSolved).toBe(0);
@@ -476,9 +490,12 @@ describe('useMyPageStats', () => {
 
     const { result } = renderHook(() => useMyPageStats());
 
-    await waitFor(() => {
-      expect(result.current.loading).toBe(false);
-    }, { timeout: 3000 });
+    await waitFor(
+      () => {
+        expect(result.current.loading).toBe(false);
+      },
+      { timeout: 3000 }
+    );
 
     expect(result.current.stats).toBeTruthy();
     expect(result.current.stats?.bestSubject).toBe('theme-1');
@@ -516,9 +533,7 @@ describe('useMyPageStats', () => {
 
     const mockUserLevelRecordsSelect = vi.fn(() => ({
       eq: vi.fn().mockResolvedValue({
-        data: [
-          { theme_code: 1, level: 1, best_score: 100 },
-        ],
+        data: [{ theme_code: 1, level: 1, best_score: 100 }],
         error: null,
       }),
     }));
@@ -551,9 +566,12 @@ describe('useMyPageStats', () => {
 
     const { result } = renderHook(() => useMyPageStats());
 
-    await waitFor(() => {
-      expect(result.current.loading).toBe(false);
-    }, { timeout: 3000 });
+    await waitFor(
+      () => {
+        expect(result.current.loading).toBe(false);
+      },
+      { timeout: 3000 }
+    );
 
     expect(result.current.stats).toBeTruthy();
   });
@@ -623,9 +641,12 @@ describe('useMyPageStats', () => {
 
     const { result } = renderHook(() => useMyPageStats());
 
-    await waitFor(() => {
-      expect(result.current.loading).toBe(false);
-    }, { timeout: 3000 });
+    await waitFor(
+      () => {
+        expect(result.current.loading).toBe(false);
+      },
+      { timeout: 3000 }
+    );
 
     expect(result.current.error).toBeTruthy();
     expect(result.current.stats).toBeTruthy();
@@ -640,9 +661,12 @@ describe('useMyPageStats', () => {
 
     const { result } = renderHook(() => useMyPageStats());
 
-    await waitFor(() => {
-      expect(result.current.loading).toBe(false);
-    }, { timeout: 3000 });
+    await waitFor(
+      () => {
+        expect(result.current.loading).toBe(false);
+      },
+      { timeout: 3000 }
+    );
 
     // Refetch 호출
     await act(async () => {
@@ -678,17 +702,13 @@ describe('useMyPageStats', () => {
     }));
 
     const mockThemeMappingSelect = vi.fn().mockResolvedValue({
-      data: [
-        { code: 1, theme_id: null, name: 'Math' },
-      ],
+      data: [{ code: 1, theme_id: null, name: 'Math' }],
       error: null,
     });
 
     const mockUserLevelRecordsSelect = vi.fn(() => ({
       eq: vi.fn().mockResolvedValue({
-        data: [
-          { theme_code: 1, level: 1, best_score: 100 },
-        ],
+        data: [{ theme_code: 1, level: 1, best_score: 100 }],
         error: null,
       }),
     }));
@@ -721,14 +741,16 @@ describe('useMyPageStats', () => {
 
     const { result } = renderHook(() => useMyPageStats());
 
-    await waitFor(() => {
-      expect(result.current.loading).toBe(false);
-    }, { timeout: 3000 });
+    await waitFor(
+      () => {
+        expect(result.current.loading).toBe(false);
+      },
+      { timeout: 3000 }
+    );
 
     expect(result.current.stats).toBeTruthy();
     expect(result.current.stats?.bestSubject).toBe('Math');
   });
-
 
   it('should handle RPC catch block with status 404', async () => {
     vi.mocked(storage.getString).mockReturnValue(null);
@@ -796,9 +818,12 @@ describe('useMyPageStats', () => {
 
     const { result } = renderHook(() => useMyPageStats());
 
-    await waitFor(() => {
-      expect(result.current.loading).toBe(false);
-    }, { timeout: 3000 });
+    await waitFor(
+      () => {
+        expect(result.current.loading).toBe(false);
+      },
+      { timeout: 3000 }
+    );
 
     expect(result.current.stats).toBeTruthy();
   });
@@ -869,11 +894,13 @@ describe('useMyPageStats', () => {
 
     const { result } = renderHook(() => useMyPageStats());
 
-    await waitFor(() => {
-      expect(result.current.loading).toBe(false);
-    }, { timeout: 3000 });
+    await waitFor(
+      () => {
+        expect(result.current.loading).toBe(false);
+      },
+      { timeout: 3000 }
+    );
 
     expect(result.current.stats).toBeTruthy();
   });
 });
-

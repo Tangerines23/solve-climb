@@ -1,5 +1,9 @@
 import { describe, it, expect } from 'vitest';
-import { generateEquation, EQUATION_STAGES, EquationProblemGenerator } from '../EquationProblemGenerator';
+import {
+  generateEquation,
+  EQUATION_STAGES,
+  EquationProblemGenerator,
+} from '../EquationProblemGenerator';
 
 describe('EquationProblemGenerator', () => {
   describe('generateEquation', () => {
@@ -275,4 +279,3 @@ describe('EquationProblemGenerator', () => {
     });
   });
 });
-

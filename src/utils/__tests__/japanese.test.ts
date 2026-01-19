@@ -59,7 +59,43 @@ describe('japanese', () => {
         expect(mapping).toBeDefined();
         // Check that it's from the allowed set
         const firstChar = result.question[0];
-        const allowedChars = ['あ', 'い', 'う', 'え', 'お', 'か', 'き', 'く', 'け', 'こ', 'さ', 'し', 'す', 'せ', 'そ', 'た', 'ち', 'つ', 'て', 'と', 'な', 'に', 'ぬ', 'ね', 'の', 'は', 'ひ', 'ふ', 'へ', 'ほ', 'ま', 'み', 'む', 'め', 'も'];
+        const allowedChars = [
+          'あ',
+          'い',
+          'う',
+          'え',
+          'お',
+          'か',
+          'き',
+          'く',
+          'け',
+          'こ',
+          'さ',
+          'し',
+          'す',
+          'せ',
+          'そ',
+          'た',
+          'ち',
+          'つ',
+          'て',
+          'と',
+          'な',
+          'に',
+          'ぬ',
+          'ね',
+          'の',
+          'は',
+          'ひ',
+          'ふ',
+          'へ',
+          'ほ',
+          'ま',
+          'み',
+          'む',
+          'め',
+          'も',
+        ];
         expect(allowedChars.includes(firstChar)).toBe(true);
       }
     });
@@ -104,4 +140,3 @@ describe('japanese', () => {
     });
   });
 });
-

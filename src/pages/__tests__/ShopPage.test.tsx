@@ -31,4 +31,3 @@ describe('ShopPage', () => {
     expect(container).toBeTruthy();
   });
 });
-

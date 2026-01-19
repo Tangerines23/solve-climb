@@ -181,7 +181,7 @@ describe('CyclePromotionModal', () => {
 
     const promoteButton = screen.getByText('다음 도전 시작하기');
     const cancelButton = screen.getByText('나중에');
-    
+
     promoteButton.click();
 
     // Buttons should be disabled during promotion
@@ -197,4 +197,3 @@ describe('CyclePromotionModal', () => {
     });
   });
 });
-

@@ -159,4 +159,3 @@ describe('ModeSelectModal', () => {
     expect(screen.getByText('틀릴 때까지 도전')).toBeInTheDocument();
   });
 });
-

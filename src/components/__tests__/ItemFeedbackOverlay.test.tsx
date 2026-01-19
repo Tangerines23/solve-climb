@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { render, screen, waitFor, act } from '@testing-library/react';
+import { render, screen, act } from '@testing-library/react';
 import { ItemFeedbackOverlay, ItemFeedbackRef } from '../game/ItemFeedbackOverlay';
 import React, { useRef } from 'react';
 
@@ -35,7 +35,7 @@ describe('ItemFeedbackOverlay', () => {
 
     render(<TestComponent />);
     const button = screen.getByText('Show');
-    
+
     act(() => {
       button.click();
     });
@@ -56,7 +56,7 @@ describe('ItemFeedbackOverlay', () => {
 
     render(<TestComponent />);
     const button = screen.getByText('Show');
-    
+
     act(() => {
       button.click();
     });
@@ -78,7 +78,7 @@ describe('ItemFeedbackOverlay', () => {
 
     render(<TestComponent />);
     const button = screen.getByText('Show');
-    
+
     act(() => {
       button.click();
     });
@@ -106,7 +106,7 @@ describe('ItemFeedbackOverlay', () => {
 
     const { container } = render(<TestComponent />);
     const button = screen.getByText('Show');
-    
+
     act(() => {
       button.click();
     });
@@ -115,5 +115,3 @@ describe('ItemFeedbackOverlay', () => {
     expect(overlay).toHaveClass('info');
   });
 });
-
-

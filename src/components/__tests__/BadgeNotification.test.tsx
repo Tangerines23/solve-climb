@@ -1,5 +1,5 @@
-import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { render, screen, waitFor } from '@testing-library/react';
+import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { render, screen, waitFor, fireEvent } from '@testing-library/react';
 import { BadgeNotification } from '../BadgeNotification';
 import { supabase } from '../../utils/supabaseClient';
 
@@ -213,7 +213,7 @@ describe('BadgeNotification', () => {
 
     const overlay = screen.getByText('🎉 뱃지 획득! 🎉').closest('.badge-notification-overlay');
     if (overlay) {
-      overlay.click();
+      fireEvent.click(overlay);
       expect(onClose).toHaveBeenCalled();
     }
   });
@@ -290,4 +290,3 @@ describe('BadgeNotification', () => {
     consoleErrorSpy.mockRestore();
   });
 });
-

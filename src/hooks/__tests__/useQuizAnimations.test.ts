@@ -84,4 +84,3 @@ describe('useQuizAnimations', () => {
     expect(result.current.damagePosition).toEqual({ left: '30%', top: '40%' });
   });
 });
-

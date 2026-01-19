@@ -17,7 +17,9 @@ vi.mock('../../stores/useUserStore', () => ({
 vi.mock('../../utils/supabaseClient', () => ({
   supabase: {
     auth: {
-      getSession: vi.fn(() => Promise.resolve({ data: { session: { user: { id: 'test-user' } } } })),
+      getSession: vi.fn(() =>
+        Promise.resolve({ data: { session: { user: { id: 'test-user' } } } })
+      ),
     },
     rpc: vi.fn(() => Promise.resolve({ error: null })),
   },
@@ -59,8 +61,8 @@ describe('DataResetSection', () => {
     // Find any reset button
     const resetButtons = screen.queryAllByRole('button');
     if (resetButtons.length > 0) {
-      const resetButton = resetButtons.find((btn) => 
-        btn.textContent?.includes('초기화') || btn.textContent?.includes('리셋')
+      const resetButton = resetButtons.find(
+        (btn) => btn.textContent?.includes('초기화') || btn.textContent?.includes('리셋')
       );
       if (resetButton) {
         fireEvent.click(resetButton);
@@ -77,8 +79,8 @@ describe('DataResetSection', () => {
     // Find any reset button
     const resetButtons = screen.queryAllByRole('button');
     if (resetButtons.length > 0) {
-      const resetButton = resetButtons.find((btn) => 
-        btn.textContent?.includes('초기화') || btn.textContent?.includes('리셋')
+      const resetButton = resetButtons.find(
+        (btn) => btn.textContent?.includes('초기화') || btn.textContent?.includes('리셋')
       );
       if (resetButton) {
         fireEvent.click(resetButton);
@@ -100,14 +102,12 @@ describe('DataResetSection', () => {
   it('should handle reset operations', async () => {
     mockConfirm.mockReturnValue(true);
     vi.mocked(supabase.rpc).mockResolvedValue({ error: null } as never);
-    
+
     render(<DataResetSection />);
-    
+
     // Component should render successfully
     await waitFor(() => {
       expect(screen.queryByText(/데이터/)).toBeTruthy();
     });
   });
 });
-
-

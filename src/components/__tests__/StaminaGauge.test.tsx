@@ -115,4 +115,3 @@ describe('StaminaGauge', () => {
     expect(lightning).toHaveAttribute('fill', '#4cd964');
   });
 });
-

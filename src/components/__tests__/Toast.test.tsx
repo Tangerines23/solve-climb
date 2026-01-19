@@ -46,7 +46,13 @@ describe('Toast', () => {
   it('should auto close after delay when autoClose is true', async () => {
     const onClose = vi.fn();
     render(
-      <Toast message="Test message" isOpen={true} onClose={onClose} autoClose={true} autoCloseDelay={2000} />
+      <Toast
+        message="Test message"
+        isOpen={true}
+        onClose={onClose}
+        autoClose={true}
+        autoCloseDelay={2000}
+      />
     );
 
     expect(screen.getByText('Test message')).toBeInTheDocument();
@@ -67,7 +73,13 @@ describe('Toast', () => {
   it('should use custom autoCloseDelay', async () => {
     const onClose = vi.fn();
     render(
-      <Toast message="Test message" isOpen={true} onClose={onClose} autoClose={true} autoCloseDelay={5000} />
+      <Toast
+        message="Test message"
+        isOpen={true}
+        onClose={onClose}
+        autoClose={true}
+        autoCloseDelay={5000}
+      />
     );
 
     await act(async () => {

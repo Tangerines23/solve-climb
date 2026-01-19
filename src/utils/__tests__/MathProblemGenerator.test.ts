@@ -254,7 +254,7 @@ describe('MathProblemGenerator', () => {
     it('should handle sequential problems with multiple operators', () => {
       // Stage 8 has sequential with +, -, *
       const problem = generateProblem(8);
-      expect(problem.expression).toMatch(/[\+\-\×]/);
+      expect(problem.expression).toMatch(/[+\-×]/);
       expect(Number.isInteger(problem.answer)).toBe(true);
     });
 
@@ -265,4 +265,3 @@ describe('MathProblemGenerator', () => {
     });
   });
 });
-

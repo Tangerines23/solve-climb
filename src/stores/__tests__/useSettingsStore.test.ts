@@ -78,4 +78,3 @@ describe('useSettingsStore', () => {
     expect(result.current.keyboardType).toBe('qwerty');
   });
 });
-

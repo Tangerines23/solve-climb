@@ -274,7 +274,7 @@ describe('useQuestionGenerator', () => {
       useQuestionGenerator({
         ...defaultParams,
         category: null,
-        // topic: null, 
+        // topic: null,
       })
     );
 

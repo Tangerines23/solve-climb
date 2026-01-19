@@ -16,12 +16,7 @@ describe('TierUpgradeModal', () => {
 
   it('should not render when isOpen is false', () => {
     render(
-      <TierUpgradeModal
-        isOpen={false}
-        previousScore={1000}
-        currentScore={2000}
-        onClose={vi.fn()}
-      />
+      <TierUpgradeModal isOpen={false} previousScore={1000} currentScore={2000} onClose={vi.fn()} />
     );
 
     expect(screen.queryByText('티어 업그레이드')).not.toBeInTheDocument();
@@ -44,12 +39,7 @@ describe('TierUpgradeModal', () => {
     vi.mocked(getTierInfo).mockResolvedValueOnce({ icon: '🏕️', name: 'Camp 2' });
 
     render(
-      <TierUpgradeModal
-        isOpen={true}
-        previousScore={1000}
-        currentScore={2000}
-        onClose={vi.fn()}
-      />
+      <TierUpgradeModal isOpen={true} previousScore={1000} currentScore={2000} onClose={vi.fn()} />
     );
 
     await waitFor(() => {
@@ -74,12 +64,7 @@ describe('TierUpgradeModal', () => {
     vi.mocked(getTierInfo).mockResolvedValueOnce({ icon: '🏕️', name: 'Camp 1' });
 
     render(
-      <TierUpgradeModal
-        isOpen={true}
-        previousScore={1000}
-        currentScore={1500}
-        onClose={vi.fn()}
-      />
+      <TierUpgradeModal isOpen={true} previousScore={1000} currentScore={1500} onClose={vi.fn()} />
     );
 
     await waitFor(() => {
@@ -104,12 +89,7 @@ describe('TierUpgradeModal', () => {
     vi.mocked(getTierInfo).mockResolvedValueOnce({ icon: '🏕️', name: 'Camp 1' });
 
     render(
-      <TierUpgradeModal
-        isOpen={true}
-        previousScore={1000}
-        currentScore={1100}
-        onClose={vi.fn()}
-      />
+      <TierUpgradeModal isOpen={true} previousScore={1000} currentScore={1100} onClose={vi.fn()} />
     );
 
     await waitFor(() => {
@@ -135,12 +115,7 @@ describe('TierUpgradeModal', () => {
     vi.mocked(getTierInfo).mockResolvedValueOnce({ icon: '🏕️', name: 'Camp 2' });
 
     render(
-      <TierUpgradeModal
-        isOpen={true}
-        previousScore={1000}
-        currentScore={2000}
-        onClose={onClose}
-      />
+      <TierUpgradeModal isOpen={true} previousScore={1000} currentScore={2000} onClose={onClose} />
     );
 
     await waitFor(() => {
@@ -168,12 +143,7 @@ describe('TierUpgradeModal', () => {
     vi.mocked(getTierInfo).mockResolvedValueOnce({ icon: '🏕️', name: 'Camp 2' });
 
     const { container } = render(
-      <TierUpgradeModal
-        isOpen={true}
-        previousScore={1000}
-        currentScore={2000}
-        onClose={onClose}
-      />
+      <TierUpgradeModal isOpen={true} previousScore={1000} currentScore={2000} onClose={onClose} />
     );
 
     await waitFor(() => {
@@ -203,12 +173,7 @@ describe('TierUpgradeModal', () => {
     vi.mocked(getTierInfo).mockResolvedValueOnce({ icon: '🏕️', name: 'Camp 2' });
 
     const { container } = render(
-      <TierUpgradeModal
-        isOpen={true}
-        previousScore={1000}
-        currentScore={2000}
-        onClose={onClose}
-      />
+      <TierUpgradeModal isOpen={true} previousScore={1000} currentScore={2000} onClose={onClose} />
     );
 
     await waitFor(() => {
@@ -237,12 +202,7 @@ describe('TierUpgradeModal', () => {
     vi.mocked(getTierInfo).mockResolvedValueOnce({ icon: '🏕️', name: 'Camp 2' });
 
     render(
-      <TierUpgradeModal
-        isOpen={true}
-        previousScore={1000}
-        currentScore={2000}
-        onClose={vi.fn()}
-      />
+      <TierUpgradeModal isOpen={true} previousScore={1000} currentScore={2000} onClose={vi.fn()} />
     );
 
     await waitFor(() => {
@@ -268,12 +228,7 @@ describe('TierUpgradeModal', () => {
     vi.mocked(getTierInfo).mockResolvedValueOnce({ icon: '🏕️', name: 'Camp 1' });
 
     render(
-      <TierUpgradeModal
-        isOpen={true}
-        previousScore={1000}
-        currentScore={1500}
-        onClose={vi.fn()}
-      />
+      <TierUpgradeModal isOpen={true} previousScore={1000} currentScore={1500} onClose={vi.fn()} />
     );
 
     await waitFor(() => {
@@ -298,12 +253,7 @@ describe('TierUpgradeModal', () => {
     vi.mocked(getTierInfo).mockResolvedValueOnce({ icon: '🏕️', name: 'Camp 1' });
 
     render(
-      <TierUpgradeModal
-        isOpen={true}
-        previousScore={1000}
-        currentScore={1500}
-        onClose={vi.fn()}
-      />
+      <TierUpgradeModal isOpen={true} previousScore={1000} currentScore={1500} onClose={vi.fn()} />
     );
 
     await waitFor(() => {
@@ -316,15 +266,9 @@ describe('TierUpgradeModal', () => {
     vi.mocked(calculateTier).mockImplementation(() => new Promise(() => {})); // Never resolves
 
     const { container } = render(
-      <TierUpgradeModal
-        isOpen={true}
-        previousScore={1000}
-        currentScore={2000}
-        onClose={vi.fn()}
-      />
+      <TierUpgradeModal isOpen={true} previousScore={1000} currentScore={2000} onClose={vi.fn()} />
     );
 
     expect(container.firstChild).toBeNull();
   });
 });
-

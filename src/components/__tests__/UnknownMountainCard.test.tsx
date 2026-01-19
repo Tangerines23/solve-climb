@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { render, screen, fireEvent, waitFor } from '@testing-library/react';
+import { render, screen, fireEvent } from '@testing-library/react';
 import { UnknownMountainCard } from '../UnknownMountainCard';
 
 describe('UnknownMountainCard', () => {
@@ -24,7 +24,7 @@ describe('UnknownMountainCard', () => {
     render(<UnknownMountainCard onToast={onToast} />);
 
     const card = screen.getByText('미지의 산').closest('.unknown-mountain-card');
-    card?.click();
+    if (card) fireEvent.click(card);
 
     expect(onToast).toHaveBeenCalled();
   });
@@ -36,11 +36,8 @@ describe('UnknownMountainCard', () => {
     const card = screen.getByText('미지의 산').closest('.unknown-mountain-card');
 
     // First click
-    card?.click();
-    expect(onToast).toHaveBeenCalledTimes(1);
-
-    // Second click immediately (should be ignored due to cooldown)
-    card?.click();
+    if (card) fireEvent.click(card);
+    if (card) fireEvent.click(card);
     expect(onToast).toHaveBeenCalledTimes(1);
   });
 
@@ -51,14 +48,14 @@ describe('UnknownMountainCard', () => {
     const card = screen.getByText('미지의 산').closest('.unknown-mountain-card');
 
     // First click
-    card?.click();
+    if (card) fireEvent.click(card);
     expect(onToast).toHaveBeenCalledTimes(1);
 
     // Advance time past cooldown (500ms)
     vi.advanceTimersByTime(600);
 
     // Second click after cooldown (should be allowed)
-    card?.click();
+    if (card) fireEvent.click(card);
     expect(onToast).toHaveBeenCalledTimes(2);
   });
 
@@ -66,17 +63,19 @@ describe('UnknownMountainCard', () => {
     render(<UnknownMountainCard />);
 
     const card = screen.getByText('미지의 산').closest('.unknown-mountain-card');
-    
+
     // Should not throw error when clicking without onToast
-    expect(() => card?.click()).not.toThrow();
+    expect(() => {
+      if (card) fireEvent.click(card);
+    }).not.toThrow();
   });
 
   it('should set pressed state on mouse down', () => {
     render(<UnknownMountainCard />);
 
     const card = screen.getByText('미지의 산').closest('.unknown-mountain-card');
-    
-    fireEvent.mouseDown(card as HTMLElement);
+
+    if (card) fireEvent.mouseDown(card);
     expect(card).toHaveClass('pressed');
   });
 
@@ -84,11 +83,11 @@ describe('UnknownMountainCard', () => {
     render(<UnknownMountainCard />);
 
     const card = screen.getByText('미지의 산').closest('.unknown-mountain-card');
-    
-    fireEvent.mouseDown(card as HTMLElement);
+
+    if (card) fireEvent.mouseDown(card);
     expect(card).toHaveClass('pressed');
-    
-    fireEvent.mouseUp(card as HTMLElement);
+
+    if (card) fireEvent.mouseUp(card);
     expect(card).not.toHaveClass('pressed');
   });
 
@@ -96,11 +95,11 @@ describe('UnknownMountainCard', () => {
     render(<UnknownMountainCard />);
 
     const card = screen.getByText('미지의 산').closest('.unknown-mountain-card');
-    
-    fireEvent.mouseDown(card as HTMLElement);
+
+    if (card) fireEvent.mouseDown(card);
     expect(card).toHaveClass('pressed');
-    
-    fireEvent.mouseLeave(card as HTMLElement);
+
+    if (card) fireEvent.mouseLeave(card);
     expect(card).not.toHaveClass('pressed');
   });
 
@@ -108,8 +107,8 @@ describe('UnknownMountainCard', () => {
     render(<UnknownMountainCard />);
 
     const card = screen.getByText('미지의 산').closest('.unknown-mountain-card');
-    
-    fireEvent.touchStart(card as HTMLElement);
+
+    if (card) fireEvent.touchStart(card);
     expect(card).toHaveClass('pressed');
   });
 
@@ -117,11 +116,11 @@ describe('UnknownMountainCard', () => {
     render(<UnknownMountainCard />);
 
     const card = screen.getByText('미지의 산').closest('.unknown-mountain-card');
-    
-    fireEvent.touchStart(card as HTMLElement);
+
+    if (card) fireEvent.touchStart(card);
     expect(card).toHaveClass('pressed');
-    
-    fireEvent.touchEnd(card as HTMLElement);
+
+    if (card) fireEvent.touchEnd(card);
     expect(card).not.toHaveClass('pressed');
   });
 
@@ -130,7 +129,7 @@ describe('UnknownMountainCard', () => {
     render(<UnknownMountainCard onToast={onToast} />);
 
     const card = screen.getByText('미지의 산').closest('.unknown-mountain-card');
-    card?.click();
+    if (card) fireEvent.click(card);
 
     // Should call onToast with one of the explorer messages
     expect(onToast).toHaveBeenCalled();
@@ -139,4 +138,3 @@ describe('UnknownMountainCard', () => {
     expect(typeof calledMessage).toBe('string');
   });
 });
-

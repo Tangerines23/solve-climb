@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, it, expect, beforeEach } from 'vitest';
 import { useProfileStore } from '../useProfileStore';
 
 describe('useProfileStore', () => {
@@ -157,7 +157,6 @@ describe('useProfileStore', () => {
     const { isAdmin } = useProfileStore.getState();
     expect(isAdmin).toBe(true);
   });
-
 
   it('should switch profile successfully', () => {
     const { setProfile, switchProfile } = useProfileStore.getState();
@@ -330,4 +329,3 @@ describe('useProfileStore', () => {
     expect(profile).toBeNull();
   });
 });
-
