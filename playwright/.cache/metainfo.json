@@ -1,0 +1,63 @@
+{
+  "version": "1.57.0",
+  "viteVersion": "6.4.1",
+  "registerSourceHash": "ea233d95b980072c81eb49458aee55f5d33fdb02",
+  "components": [
+    {
+      "id": "C__Users_ghkdd_gemini_projects_solve_climb_src_components_ConfirmModal_ConfirmModal",
+      "filename": "C:\\Users\\ghkdd\\gemini-projects\\solve-climb\\src\\components\\__tests__\\ConfirmModal.ct.spec.tsx",
+      "importSource": "../ConfirmModal",
+      "remoteName": "ConfirmModal"
+    }
+  ],
+  "sources": {
+    "C:/Users/ghkdd/gemini-projects/solve-climb/playwright/index.html": {
+      "timestamp": 1768820012761.859
+    },
+    "C:/Users/ghkdd/gemini-projects/solve-climb/playwright/index.tsx": {
+      "timestamp": 1768820014685.7139
+    },
+    "C:/Users/ghkdd/gemini-projects/solve-climb/node_modules/react/index.js": {
+      "timestamp": 1762878930427.6052
+    },
+    "C:/Users/ghkdd/gemini-projects/solve-climb/node_modules/react-dom/client.js": {
+      "timestamp": 1762878930423.602
+    },
+    "C:/Users/ghkdd/gemini-projects/solve-climb/node_modules/@playwright/experimental-ct-react/hooks.mjs": {
+      "timestamp": 1768820002360.392
+    },
+    "C:/Users/ghkdd/gemini-projects/solve-climb/src/components/ConfirmModal.tsx": {
+      "timestamp": 1768737455734.9595
+    },
+    "C:/Users/ghkdd/gemini-projects/solve-climb/node_modules/react-dom/index.js": {
+      "timestamp": 1762878930897.048
+    },
+    "C:/Users/ghkdd/gemini-projects/solve-climb/node_modules/react/cjs/react.production.min.js": {
+      "timestamp": 1762878934374.3188
+    },
+    "C:/Users/ghkdd/gemini-projects/solve-climb/src/components/ConfirmModal.css": {
+      "timestamp": 1768405772949.232
+    },
+    "C:/Users/ghkdd/gemini-projects/solve-climb/node_modules/react/jsx-runtime.js": {
+      "timestamp": 1762878931414.0217
+    },
+    "C:/Users/ghkdd/gemini-projects/solve-climb/node_modules/react-dom/cjs/react-dom.production.min.js": {
+      "timestamp": 1762878937406.894
+    },
+    "C:/Users/ghkdd/gemini-projects/solve-climb/node_modules/react/cjs/react-jsx-runtime.production.min.js": {
+      "timestamp": 1762878933330.3413
+    },
+    "C:/Users/ghkdd/gemini-projects/solve-climb/node_modules/scheduler/index.js": {
+      "timestamp": 1762878930359.5435
+    },
+    "C:/Users/ghkdd/gemini-projects/solve-climb/node_modules/scheduler/cjs/scheduler.production.min.js": {
+      "timestamp": 1762878933808.2864
+    }
+  },
+  "deps": {
+    "C:\\Users\\ghkdd\\gemini-projects\\solve-climb\\src\\components\\ConfirmModal.tsx": [
+      "C:\\Users\\ghkdd\\gemini-projects\\solve-climb\\src\\components\\ConfirmModal.tsx",
+      "C:\\Users\\ghkdd\\gemini-projects\\solve-climb\\src\\components\\ConfirmModal.css"
+    ]
+  }
+}
