@@ -8,6 +8,8 @@ describe('useQuizGameState', () => {
   const defaultParams = {
     score: 100,
     gameMode: 'time-attack' as GameMode,
+    mountainParam: 'climb-1',
+    worldParam: 'World1',
     categoryParam: 'math',
     subParam: 'addition',
     levelParam: 1,
@@ -125,7 +127,7 @@ describe('useQuizGameState', () => {
     expect(mockNavigate).toHaveBeenCalled();
     const navigateCall = mockNavigate.mock.calls[0][0];
     expect(navigateCall).toContain('/result?');
-    
+
     // Parse query string to check parameters
     const queryString = navigateCall.split('?')[1];
     const params = new URLSearchParams(queryString);
@@ -164,13 +166,16 @@ describe('useQuizGameState', () => {
 
     expect(mockNavigate).toHaveBeenCalled();
     const navigateCall = mockNavigate.mock.calls[0][0];
-    
+
     // Parse query string to check parameters
     const queryString = navigateCall.split('?')[1];
     const params = new URLSearchParams(queryString);
-    expect(params.get('wrong_q')).toBe('5 + 3 = ?');
+    expect(params.get('last_q')).toBe('5 + 3 = ?');
     expect(params.get('wrong_a')).toBe('7');
     expect(params.get('correct_a')).toBe('8');
+    expect(params.get('wrong_qs')).toBe('5 + 3 = ?');
+    expect(params.get('wrong_as')).toBe('7');
+    expect(params.get('correct_as')).toBe('8');
     // Average: (1.5 + 2.0) / 2 = 1.75
     expect(params.get('avg_time')).toBe('1.75');
   });
@@ -191,7 +196,7 @@ describe('useQuizGameState', () => {
 
     expect(mockNavigate).toHaveBeenCalled();
     const navigateCall = mockNavigate.mock.calls[0][0];
-    
+
     // Parse query string to check parameters
     const queryString = navigateCall.split('?')[1];
     const params = new URLSearchParams(queryString);
@@ -236,7 +241,7 @@ describe('useQuizGameState', () => {
 
     expect(mockNavigate).toHaveBeenCalled();
     const navigateCall = mockNavigate.mock.calls[0][0];
-    
+
     // Parse query string to check average time
     const queryString = navigateCall.split('?')[1];
     const params = new URLSearchParams(queryString);
@@ -267,11 +272,14 @@ describe('useQuizGameState', () => {
     const navigateCall = mockNavigate.mock.calls[0][0];
     const queryString = navigateCall.split('?')[1];
     const params = new URLSearchParams(queryString);
-    
-    // wrongAnswers가 없으면 wrong_q, wrong_a, correct_a가 없어야 함
-    expect(params.get('wrong_q')).toBeNull();
+
+    // wrongAnswers가 없으면 last_q, wrong_a, correct_a, wrong_qs, wrong_as, correct_as가 없어야 함
+    expect(params.get('last_q')).toBeNull();
     expect(params.get('wrong_a')).toBeNull();
     expect(params.get('correct_a')).toBeNull();
+    expect(params.get('wrong_qs')).toBeNull();
+    expect(params.get('wrong_as')).toBeNull();
+    expect(params.get('correct_as')).toBeNull();
     expect(params.get('avg_time')).toBe('1.75');
   });
 
@@ -303,8 +311,8 @@ describe('useQuizGameState', () => {
     const navigateCall = mockNavigate.mock.calls[0][0];
     const queryString = navigateCall.split('?')[1];
     const params = new URLSearchParams(queryString);
-    
-    expect(params.get('wrong_q')).toBe('5 + 3 = ?');
+
+    expect(params.get('last_q')).toBe('5 + 3 = ?');
     expect(params.get('avg_time')).toBeNull();
   });
 
@@ -335,10 +343,13 @@ describe('useQuizGameState', () => {
     const navigateCall = mockNavigate.mock.calls[0][0];
     const queryString = navigateCall.split('?')[1];
     const params = new URLSearchParams(queryString);
-    
-    expect(params.get('wrong_q')).toBe('5 + 3 = ?|10 - 4 = ?|2 × 3 = ?');
-    expect(params.get('wrong_a')).toBe('7|5|5');
-    expect(params.get('correct_a')).toBe('8|6|6');
+
+    expect(params.get('last_q')).toBe('2 × 3 = ?');
+    expect(params.get('wrong_a')).toBe('5');
+    expect(params.get('correct_a')).toBe('6');
+    expect(params.get('wrong_qs')).toBe('5 + 3 = ?|10 - 4 = ?|2 × 3 = ?');
+    expect(params.get('wrong_as')).toBe('7|5|5');
+    expect(params.get('correct_as')).toBe('8|6|6');
   });
 
   it('should handle null parameters', () => {
@@ -346,6 +357,8 @@ describe('useQuizGameState', () => {
       useQuizGameState({
         score: 100,
         gameMode: 'time-attack' as GameMode,
+        mountainParam: null,
+        worldParam: null,
         categoryParam: null,
         subParam: null,
         levelParam: null,
@@ -368,7 +381,7 @@ describe('useQuizGameState', () => {
     const navigateCall = mockNavigate.mock.calls[0][0];
     const queryString = navigateCall.split('?')[1];
     const params = new URLSearchParams(queryString);
-    
+
     expect(params.get('category')).toBeNull();
     expect(params.get('sub')).toBeNull();
     expect(params.get('level')).toBeNull();
@@ -395,7 +408,7 @@ describe('useQuizGameState', () => {
     const navigateCall = mockNavigate.mock.calls[0][0];
     const queryString = navigateCall.split('?')[1];
     const params = new URLSearchParams(queryString);
-    
+
     expect(params.get('session_id')).toBe('session-123');
     expect(params.get('user_answers')).toBeNull();
     expect(params.get('question_ids')).toBeNull();
@@ -419,7 +432,7 @@ describe('useQuizGameState', () => {
     const navigateCall = mockNavigate.mock.calls[0][0];
     const queryString = navigateCall.split('?')[1];
     const params = new URLSearchParams(queryString);
-    
+
     expect(params.get('session_id')).toBeNull();
     expect(params.get('user_answers')).toBe('1,2,3');
     expect(params.get('question_ids')).toBe('q1,q2');

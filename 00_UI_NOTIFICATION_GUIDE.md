@@ -1,63 +1,107 @@
-# 사용자 알림 및 가이드 요소 가이드 (UI Notification Guide)
+import pandas as pd
 
-Solve Climb 프로젝트 내에서 사용자에게 정보를 제공하거나, 액션을 유도하거나, 가이드하는 모든 UI 요소를 정리했습니다.
+# Data compilation based on the image analysis
+data = []
 
-## 1. 🪟 모달 (Modals & Blocking Overlays)
-사용자의 상호작용을 차단하고 중요한 결정을 내리거나 정보를 확인하게 하는 요소입니다.
+# Helper function to add items
+def add_items(group, category, sub_type, specs):
+    for spec in specs:
+        # Try to split spec into diameter and length if possible (e.g., "3x50")
+        try:
+            if 'x' in spec.lower():
+                d, l = spec.lower().split('x')
+                size_d = d.strip()
+                size_l = l.strip()
+            elif 'm' in spec.lower(): # For nuts
+                size_d = spec.strip()
+                size_l = ""
+            else:
+                size_d = spec
+                size_l = ""
+        except:
+            size_d = spec
+            size_l = ""
+        
+        data.append({
+            "Group": group,
+            "Category": category,
+            "Sub_Type": sub_type,
+            "Spec_Raw": spec,
+            "Size_Diameter": size_d,
+            "Size_Length": size_l
+        })
 
-| 이름 | 경로 | 상황 및 목적 |
-| :--- | :--- | :--- |
-| **AlertModal** | `src/components/AlertModal.tsx` | 범용 시스템 안내 및 경고 (확인 버튼). |
-| **ConfirmModal** | `src/components/ConfirmModal.tsx` | 중대한 결정 전 최종 확인 (종료, 삭제 등 / 예-아니오). |
-| **PauseModal** | `src/components/game/PauseModal.tsx` | 게임 중 일시정지 메뉴 (재개, 종료). |
-| **LastChanceModal** | `src/components/LastChanceModal.tsx` | 게임 오버 위기 시 부활 아이템(신호탄 등) 구매 및 사용 유도. |
-| **ModeSelectModal** | `src/components/ModeSelectModal.tsx` | 게임 모드(타임어택, 서바이벌) 선택. |
-| **GameTipModal** | `src/components/GameTipModal.tsx` | 게임 시작 직전, 카테고리별 팁 안내 및 아이템 장착. |
-| **StaminaWarningModal** | `src/components/game/StaminaWarningModal.tsx` | 스태미나 부족 시 경고 및 광고 시청(충전) 유도. |
-| **TierUpgradeModal** | `src/components/TierUpgradeModal.tsx` | 티어 승급 성공 시 축하 및 결과 안내. |
-| **KeyboardInfoModal** | `src/components/KeyboardInfoModal.tsx` | 조작법 및 키보드 종류(커스텀/시스템) 설정 안내. |
-| **UnderDevelopmentModal** | `src/components/UnderDevelopmentModal.tsx` | 구현 예정 기능 클릭 시 안내. |
-| **BackpackBottomSheet** | `src/components/game/BackpackBottomSheet.tsx` | 인게임 보유 아이템 목록 확인 및 사용. |
+# A: NI 렌지
+add_items("A", "NI 렌지", "일반", 
+          ["3x50", "4x12", "5x55", "5x60", "6x15", "6x35", "8x45", "8x50", 
+           "12x20", "12x40", "12x45", "16x45", "16x50", "20x60"])
 
-| **RoadmapOverlay** | `src/components/roadmap/RoadmapOverlay.tsx` | 등반 경로 및 마일스톤 전체 현황 확인. |
-| **CyclePromotionModal** | `src/components/CyclePromotionModal.tsx` | 사이클 초기화(환생) 및 보상 안내 (전설 달성 시). |
-| **DataResetConfirmModal** | `src/components/DataResetConfirmModal.tsx` | 데이터 전체 초기화 경고 및 최종 확인. |
-| **CustomPresetModal** | `src/components/debug/CustomPresetModal.tsx` | (디버그) 게임 환경 프리셋 생성 및 편집. |
+# B: NI 렌지
+add_items("B", "NI 렌지", "일반", 
+          ["2.5x10", "3x25", "3x35", "3x40", "4x12", "4x50", "8x18", "8x20", "8x10"])
 
-## 2. 💬 토스트 및 알림 (Toasts & Notifications)
-방해하지 않고 가볍게 메시지를 전달한 후 사라지는 요소입니다.
+# C: NI 렌지
+add_items("C", "NI 렌지", "일반", 
+          ["2.5x6", "2.5x15", "4x25", "4x30", "5x65", "6x30", "8x25", "8x30", 
+           "8x40", "8x15", "10x40", "10x90", "12x40"])
 
-| 이름 | 경로 | 상황 및 목적 |
-| :--- | :--- | :--- |
-| **Toast** | `src/components/Toast.tsx` | 범용 하단 토스트 메시지 (예: "저장되었습니다"). |
-| **BadgeNotification** | `src/components/BadgeNotification.tsx` | 새로운 뱃지 획득 시 상단 팝업 알림. |
-| **SlideToast** (Inline) | `src/components/QuizCard.tsx` | 퀴즈 카드 내 오답 감점(-3m) 또는 아이템 효과 텍스트 애니메이션. |
-| **ExitConfirmToast** (Inline) | `src/components/QuizCard.tsx` | 뒤로가기 시 "한 번 더 누르면 나갑니다" 하단 안내. |
-| **ItemFeedbackOverlay** | `src/components/game/ItemFeedbackOverlay.tsx` | 아이템 사용 시 효과 텍스트 출력 (예: "OXYGEN UP!"). |
+# D: NI 렌지
+add_items("D", "NI 렌지", "일반", 
+          ["5x20", "5x25", "5x35", "5x45", "5x50", "5x85"])
 
-## 3. 🎮 인게임 피드백 (In-Game Feedback Overlays)
-게임 플레이 중 즉각적인 시각적 피드백을 제공하는 요소입니다.
+# E: NI 렌지, 접시
+add_items("E", "NI 렌지", "일반", 
+          ["5x25", "5x30", "5x40", "5x45", "6x40", "12x30", "12x35", "12x45", "12x50", "12x140"])
+add_items("E", "NI 렌지", "접시", 
+          ["6x20", "12x45"]) # 12x45 next to "Dish D" notation
 
-| 이름 | 경로 | 상황 및 목적 |
-| :--- | :--- | :--- |
-| **CountdownOverlay** | `src/components/CountdownOverlay.tsx` | 게임 시작 또는 부활 직후 카운트다운(3, 2, 1). |
-| **SafetyRopeOverlay** | `src/components/game/SafetyRopeOverlay.tsx` | 안전 로프 아이템 발동 시 오답 방어 애니메이션. |
-| **GameOverlay** | `src/components/game/GameOverlay.tsx` | 게임 화면 전체 피드백 레이어. |
-| **TimerCircle** | `src/components/TimerCircle.tsx` | 남은 시간 시각화/게임 진행률 표시. |
+# F: SUS 렌지
+add_items("F", "SUS 렌지", "일반", 
+          ["5x12", "5x20", "5x30", "5x45", "6x15", "6x10", "8x15", "8x20", "8x30", "8x40"])
+add_items("F", "SUS 렌지", "전산", 
+          ["10x40", "10x50", "10x100"])
 
-## 4. 📚 가이드 및 안내성 카드 (Guidance & Info Cards)
-페이지 내에서 정적으로 정보를 제공하거나 사용자를 안내하는 요소입니다.
+# G: SUS
+add_items("G", "SUS", "일반", 
+          ["6x18", "6x20", "6x25", "10x15", "10x20"])
+add_items("G", "SUS", "전산", 
+          ["8x35", "8x40", "8x55", "6x80"])
 
-| 이름 | 경로 | 상황 및 목적 |
-| :--- | :--- | :--- |
-| **ChallengeCard** | `src/components/ChallengeCard.tsx` | 도전 과제 및 보상 정보 안내. |
-| **MyRecordCard** | `src/components/MyRecordCard.tsx` | 나의 등반 기록 및 분석 결과 안내. |
-| **UnknownMountainCard** | `src/components/UnknownMountainCard.tsx` | 잠겨있는 레벨/산에 대한 정보 안내. |
-| **StatusCard** | `src/components/StatusCard.tsx` | 현재 스태미나, 미네랄, 티어 상태 요약 정보. |
-| **LevelListCard** | `src/components/LevelListCard.tsx` | 레벨 선택 목록, 잠금/해제 상태 표시 및 개발중 레벨 안내. |
-| **QuizCard** | `src/components/QuizCard.tsx` | 메인 게임 플레이 카드 (문제, 입력, 타이머 포함). |
+# H: SUS 렌지, 기타
+add_items("H", "SUS 렌지", "일반", ["12x50"])
+add_items("H", "SUS 렌지", "전산", ["12x130"])
+add_items("H", "SUS 렌지", "육각머리", ["12x55"])
+add_items("H", "SUS 렌지", "둥근렌지", ["5x20", "6x12", "6x20", "6x18", "6x15"]) # Corrected based on image flow
+add_items("H", "SUS 렌지", "접시렌지", ["10x15", "3x6", "4x8"])
+add_items("H", "SUS 렌지", "접시셈라", ["4x6", "4x32", "4x40", "5x8", "6x5"])
 
-## 🛠️ 관리 및 통합 방식
-- **QuizModals**: `src/components/quiz/QuizModals.tsx`에서 인게임용 모달들을 통합하여 관리합니다.
-- **useQuizAnimations**: 퀴즈 페이지 내의 다양한 하이라이트, 진동, 토스트 효과를 훅으로 관리합니다.
-- **Typography & Theme**: 모든 요소는 현재 **Dark Glassmorphism** 스타일로 통일되어 프리미엄한 UX를 제공합니다.
+# I: 트러스
+add_items("I", "트러스", "일반", ["4x10", "4x16", "5x16", "6x16"])
+
+# J: 셈스 렌지
+add_items("J", "셈스 렌지", "둥근셈라", ["6x10"])
+add_items("J", "셈스 렌지", "일반", 
+          ["4x12", "4x13", "5x15", "5x25", "6x15", "6x16", "6x25", "6x30"])
+
+# K: 별렌지
+add_items("K", "별렌지", "일반", 
+          ["4x8", "4x10", "4x12", "4x35", "4x40", "5x8", "5x12", "5x25", "6x8", "6x12"])
+add_items("K", "별렌지", "접시별렌지", ["6x8"])
+add_items("K", "별렌지", "셈스별렌지", ["4x10", "6x15", "6x20"])
+add_items("K", "별렌지", "낮은머리별렌지", ["4x45"])
+
+# L: 너트
+add_items("L", "너트", "플랜지 너트", ["M5", "M6", "M8"])
+add_items("L", "너트", "캡 너트", ["M3", "M4", "M5", "M8"]) # Based on user input text
+add_items("L", "너트", "작 너트", ["M4"])
+add_items("L", "너트", "일반", ["M2", "M12", "M16", "M18", "M20"])
+
+# Create DataFrame
+df = pd.DataFrame(data)
+
+# Save to CSV
+csv_filename = "parts_list_v2.csv"
+df.to_csv(csv_filename, index=False, encoding='utf-8-sig')
+
+print(f"CSV file created: {csv_filename}")
+print(df.head())

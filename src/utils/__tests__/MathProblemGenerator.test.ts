@@ -26,54 +26,41 @@ describe('MathProblemGenerator', () => {
       const problem = generateProblem(3);
       expect(problem).toHaveProperty('expression');
       expect(problem).toHaveProperty('answer');
-    });
-
-    it('should generate problem for stage 4 (carry)', () => {
-      const problem = generateProblem(4);
-      expect(problem).toHaveProperty('expression');
-      expect(problem).toHaveProperty('answer');
       expect(problem.answer).toBeGreaterThanOrEqual(10);
     });
 
-    it('should generate problem for stage 5 (borrow)', () => {
-      const problem = generateProblem(5);
+    it('should generate problem for stage 4', () => {
+      const problem = generateProblem(4);
       expect(problem).toHaveProperty('expression');
       expect(problem).toHaveProperty('answer');
       expect(problem.answer).toBeLessThanOrEqual(9);
-      expect(problem.answer).toBeGreaterThanOrEqual(0);
     });
 
-    it('should generate problem for stage 7 (multiplication)', () => {
-      const problem = generateProblem(7);
+    it('should generate problem for stage 5 (multiplication)', () => {
+      const problem = generateProblem(5);
       expect(problem).toHaveProperty('expression');
       expect(problem).toHaveProperty('answer');
-      expect(problem.expression).toContain('*');
+      // Multiplications in World 1 curriculum may use ' * ' or ' × '
+      expect(problem.expression.includes('*') || problem.expression.includes('×')).toBe(true);
     });
 
-    it('should generate problem for stage 9 (division)', () => {
-      const problem = generateProblem(9);
+    it('should generate problem for stage 7 (division)', () => {
+      const problem = generateProblem(7);
       expect(problem).toHaveProperty('expression');
       expect(problem).toHaveProperty('answer');
       // Division might be represented as '/' or '÷'
       expect(problem.expression.includes('/') || problem.expression.includes('÷')).toBe(true);
-      // Division should result in integer (or at least finite number)
       expect(Number.isFinite(problem.answer)).toBe(true);
     });
 
-    it('should generate problem for stage 11 (sequential)', () => {
-      const problem = generateProblem(11);
+    it('should generate problem for stage 8 (sequential)', () => {
+      const problem = generateProblem(8);
       expect(problem).toHaveProperty('expression');
       expect(problem).toHaveProperty('answer');
     });
 
-    it('should generate problem for stage 14 (fill-blank)', () => {
-      const problem = generateProblem(14);
-      expect(problem).toHaveProperty('expression');
-      expect(problem).toHaveProperty('answer');
-    });
-
-    it('should generate problem for stage 15 (parentheses)', () => {
-      const problem = generateProblem(15);
+    it('should generate problem for stage 9 (parentheses)', () => {
+      const problem = generateProblem(9);
       expect(problem).toHaveProperty('expression');
       expect(problem).toHaveProperty('answer');
     });
@@ -99,27 +86,22 @@ describe('MathProblemGenerator', () => {
     });
 
     it('should handle all type branches: standard, sequential, fill-blank, parentheses', () => {
-      // standard type
-      const standardProblem = generateProblem(1);
-      expect(standardProblem).toHaveProperty('expression');
-      expect(standardProblem).toHaveProperty('answer');
+      // Standard
+      const standard = generateProblem(1);
+      expect(standard.expression).not.toContain('?');
+      expect(standard.expression).not.toContain('(');
 
-      // sequential type
-      const sequentialProblem = generateProblem(11);
-      expect(sequentialProblem).toHaveProperty('expression');
-      expect(sequentialProblem).toHaveProperty('answer');
+      // Sequential
+      const sequential = generateProblem(8);
+      expect(sequential.expression.split(' ').length).toBeGreaterThanOrEqual(5); // 3 operands + 2 operators
 
-      // fill-blank type
-      const fillBlankProblem = generateProblem(14);
-      expect(fillBlankProblem).toHaveProperty('expression');
-      expect(fillBlankProblem).toHaveProperty('answer');
-      expect(fillBlankProblem.expression).toContain('?');
+      // Fill-blank
+      const fillBlank = generateProblem(16);
+      expect(fillBlank.expression).toContain('?');
 
-      // parentheses type
-      const parenthesesProblem = generateProblem(15);
-      expect(parenthesesProblem).toHaveProperty('expression');
-      expect(parenthesesProblem).toHaveProperty('answer');
-      expect(parenthesesProblem.expression).toContain('(');
+      // Parentheses
+      const parentheses = generateProblem(9);
+      expect(parentheses.expression).toContain('(');
     });
 
     it('should handle all operator branches: +, -, *, /', () => {
@@ -132,11 +114,11 @@ describe('MathProblemGenerator', () => {
       expect(subProblem.expression).toContain('-');
 
       // Multiplication
-      const mulProblem = generateProblem(7);
+      const mulProblem = generateProblem(5);
       expect(mulProblem.expression.includes('*') || mulProblem.expression.includes('×')).toBe(true);
 
       // Division
-      const divProblem = generateProblem(9);
+      const divProblem = generateProblem(7);
       expect(divProblem.expression.includes('/') || divProblem.expression.includes('÷')).toBe(true);
     });
 
@@ -166,26 +148,25 @@ describe('MathProblemGenerator', () => {
     });
 
     it('should handle constraints: ensureIntegerDivision', () => {
-      // Stage 9 has ensureIntegerDivision: true
+      // Stage 7 has ensureIntegerDivision: true
       for (let i = 0; i < 10; i++) {
-        const problem = generateProblem(9);
+        const problem = generateProblem(7);
         expect(Number.isInteger(problem.answer)).toBe(true);
       }
     });
 
-    it('should handle constraints: resultMin for carry (stage 4)', () => {
-      // Stage 4 has resultMin: 10 (force carry)
+    it('should handle constraints: resultMin for carry (stage 3)', () => {
+      // Stage 3 has resultMin: 10 (force carry)
       for (let i = 0; i < 10; i++) {
-        const problem = generateProblem(4);
+        const problem = generateProblem(3);
         expect(problem.answer).toBeGreaterThanOrEqual(10);
       }
     });
 
-    it('should handle constraints: resultMax and resultMin for borrow (stage 5)', () => {
-      // Stage 5 has resultMax: 9 and resultMin: 0
+    it('should handle constraints: resultMax for borrow (stage 4)', () => {
+      // Stage 4 has resultMax: 9
       for (let i = 0; i < 10; i++) {
-        const problem = generateProblem(5);
-        expect(problem.answer).toBeGreaterThanOrEqual(0);
+        const problem = generateProblem(4);
         expect(problem.answer).toBeLessThanOrEqual(9);
       }
     });
@@ -196,7 +177,7 @@ describe('MathProblemGenerator', () => {
       let foundHideSecond = false;
 
       for (let i = 0; i < 20; i++) {
-        const problem = generateProblem(14);
+        const problem = generateProblem(16);
         if (problem.expression.startsWith('?')) {
           foundHideFirst = true;
         } else if (problem.expression.includes('?') && !problem.expression.startsWith('?')) {
@@ -218,25 +199,23 @@ describe('MathProblemGenerator', () => {
 
     it('should handle parentheses problems with division', () => {
       // Test parentheses with division branch
-      // This tests the division branch in generateParenthesesProblem
       let foundDivision = false;
       let problem;
       for (let i = 0; i < 20; i++) {
-        problem = generateProblem(15);
-        if (problem.expression.includes('÷')) {
+        problem = generateProblem(17);
+        if (problem.expression.includes('÷') || problem.expression.includes('/')) {
           foundDivision = true;
           break;
         }
       }
-      // May or may not find division, but should handle it if it occurs
-      expect(problem).toBeDefined();
+      expect(foundDivision).toBe(true);
       expect(problem).toHaveProperty('expression');
       expect(problem).toHaveProperty('answer');
     });
 
     it('should handle parentheses problems with multiplication', () => {
-      // Test parentheses with multiplication branch
-      const problem = generateProblem(15);
+      // Test parentheses with multiplication branch (Stage 9 has *)
+      const problem = generateProblem(9);
       expect(problem).toHaveProperty('expression');
       expect(problem).toHaveProperty('answer');
       expect(problem.expression).toContain('(');
@@ -256,9 +235,9 @@ describe('MathProblemGenerator', () => {
     });
 
     it('should handle division with special logic', () => {
-      // Stage 9 uses special division logic
+      // Stage 7 uses special division logic
       for (let i = 0; i < 10; i++) {
-        const problem = generateProblem(9);
+        const problem = generateProblem(7);
         expect(problem.expression.includes('/') || problem.expression.includes('÷')).toBe(true);
         expect(Number.isInteger(problem.answer)).toBe(true);
         expect(problem.answer).toBeGreaterThan(0);
@@ -273,9 +252,9 @@ describe('MathProblemGenerator', () => {
     });
 
     it('should handle sequential problems with multiple operators', () => {
-      // Stage 11 has sequential with + and -
-      const problem = generateProblem(11);
-      expect(problem.expression).toMatch(/[\+\-]/);
+      // Stage 8 has sequential with +, -, *
+      const problem = generateProblem(8);
+      expect(problem.expression).toMatch(/[\+\-\×]/);
       expect(Number.isInteger(problem.answer)).toBe(true);
     });
 

@@ -5,14 +5,14 @@ export interface StageConfig {
   world: number;
   description: string;
   type:
-    | 'standard'
-    | 'sequential'
-    | 'fill-blank'
-    | 'parentheses'
-    | 'decimal'
-    | 'fraction'
-    | 'time'
-    | 'modulo';
+  | 'standard'
+  | 'sequential'
+  | 'fill-blank'
+  | 'parentheses'
+  | 'decimal'
+  | 'fraction'
+  | 'time'
+  | 'modulo';
   operators: Operator[];
   operandCount: number;
   // Array of ranges for each operand position.
@@ -218,6 +218,33 @@ export const STAGES: StageConfig[] = [
       { min: 1, max: 20 },
       { min: 2, max: 10 },
     ],
+  },
+  {
+    id: 16,
+    world: 1,
+    description: '빈칸 채우기 기초',
+    type: 'fill-blank',
+    operators: ['+', '-'],
+    operandCount: 2,
+    ranges: [
+      { min: 1, max: 20 },
+      { min: 1, max: 20 },
+    ],
+    constraints: { resultMin: 0 },
+  },
+  {
+    id: 17,
+    world: 1,
+    description: '괄호와 나눗셈',
+    type: 'parentheses',
+    operators: ['+', '-', '/'],
+    operandCount: 3,
+    ranges: [
+      { min: 1, max: 20 },
+      { min: 1, max: 20 },
+      { min: 2, max: 5 },
+    ],
+    constraints: { ensureIntegerDivision: true },
   },
 ];
 

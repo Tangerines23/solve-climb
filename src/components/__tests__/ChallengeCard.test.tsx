@@ -48,7 +48,7 @@ describe('ChallengeCard', () => {
   };
 
   it('should render loading state initially', () => {
-    vi.mocked(getTodayChallenge).mockImplementation(() => new Promise(() => {})); // Never resolves
+    vi.mocked(getTodayChallenge).mockImplementation(() => new Promise(() => { })); // Never resolves
 
     renderChallengeCard();
 
@@ -58,9 +58,11 @@ describe('ChallengeCard', () => {
 
   it('should render challenge when loaded', async () => {
     const mockChallenge = {
+      id: '1',
       title: 'Test Challenge',
       category: '수학',
       categoryId: 'math',
+      topic: 'Addition',
       topicId: 'addition',
       level: 5,
       mode: 'time_attack',
@@ -89,9 +91,11 @@ describe('ChallengeCard', () => {
 
   it('should navigate to game page when challenge button is clicked', async () => {
     const mockChallenge = {
+      id: '1',
       title: 'Test Challenge',
       category: '수학',
       categoryId: 'math',
+      topic: 'Addition',
       topicId: 'addition',
       level: 5,
       mode: 'time_attack',
@@ -112,7 +116,7 @@ describe('ChallengeCard', () => {
   });
 
   it('should disable button when loading', () => {
-    vi.mocked(getTodayChallenge).mockImplementation(() => new Promise(() => {})); // Never resolves
+    vi.mocked(getTodayChallenge).mockImplementation(() => new Promise(() => { })); // Never resolves
 
     renderChallengeCard();
 
@@ -135,9 +139,11 @@ describe('ChallengeCard', () => {
 
   it('should enable button when challenge is loaded', async () => {
     const mockChallenge = {
+      id: '1',
       title: 'Test Challenge',
       category: '수학',
       categoryId: 'math',
+      topic: 'Addition',
       topicId: 'addition',
       level: 5,
       mode: 'time_attack',
@@ -157,9 +163,11 @@ describe('ChallengeCard', () => {
 
   it('should call setCategoryTopic and setTimeLimit when challenge button is clicked', async () => {
     const mockChallenge = {
+      id: '1',
       title: 'Test Challenge',
       category: '수학',
       categoryId: 'math',
+      topic: 'Addition',
       topicId: 'addition',
       level: 5,
       mode: 'time_attack',
@@ -176,12 +184,12 @@ describe('ChallengeCard', () => {
     const challengeButton = screen.getByText('도전하기');
     challengeButton.click();
 
-    expect(mockSetCategoryTopic).toHaveBeenCalledWith('수학', 'addition');
+    expect(mockSetCategoryTopic).toHaveBeenCalledWith('math', 'World1');
     expect(mockSetTimeLimit).toHaveBeenCalledWith(60);
   });
 
   it('should render challenge icon and title', () => {
-    vi.mocked(getTodayChallenge).mockImplementation(() => new Promise(() => {})); // Never resolves
+    vi.mocked(getTodayChallenge).mockImplementation(() => new Promise(() => { })); // Never resolves
 
     renderChallengeCard();
 

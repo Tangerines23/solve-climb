@@ -5,7 +5,19 @@ import { supabase } from '../../utils/supabaseClient';
 import { storage } from '../../utils/storage';
 import { parseLocalSession } from '../../utils/safeJsonParse';
 
-// Mock dependencies
+// Helper for Supabase chain mocking
+const createMockChain = (data: any, error: any = null) => {
+  const result = { data, error };
+  const chain = {
+    select: vi.fn().mockReturnThis(),
+    eq: vi.fn().mockReturnThis(),
+    single: vi.fn().mockResolvedValue(result),
+    then: vi.fn((resolve) => Promise.resolve(result).then(resolve)),
+    catch: vi.fn((reject) => Promise.resolve(result).catch(reject)),
+  };
+  return chain;
+};
+
 vi.mock('../../utils/supabaseClient', () => ({
   supabase: {
     auth: {
@@ -14,13 +26,7 @@ vi.mock('../../utils/supabaseClient', () => ({
         data: { subscription: { unsubscribe: vi.fn() } },
       })),
     },
-    from: vi.fn(() => ({
-      select: vi.fn(() => ({
-        eq: vi.fn(() => ({
-          single: vi.fn(),
-        })),
-      })),
-    })),
+    from: vi.fn(),
     rpc: vi.fn(),
   },
 }));
@@ -57,24 +63,22 @@ describe('useMyPageStats', () => {
     vi.mocked(supabase.auth.onAuthStateChange).mockReturnValue({
       data: { subscription: { unsubscribe: vi.fn() } },
     } as any);
-    vi.mocked(supabase.from).mockReturnValue({
-      select: vi.fn(() => ({
-        eq: vi.fn(() => ({
-          single: vi.fn(),
-        })),
-      })),
-    } as any);
+    vi.mocked(supabase.from).mockImplementation(() => createMockChain(null) as any);
     vi.mocked(supabase.rpc).mockResolvedValue({ data: null, error: null } as any);
   });
 
   it('should return default stats when no session', async () => {
     // defaults are already set in beforeEach
-    const { result } = renderHook(() => useMyPageStats());
+    let result: any;
+    await act(async () => {
+      const rendered = renderHook(() => useMyPageStats());
+      result = rendered.result;
+    });
 
     // Hook이 초기화되는지 확인
     expect(result.current).toBeTruthy();
     expect(typeof result.current.refetch).toBe('function');
-    expect(typeof result.current.loading).toBe('boolean');
+    await waitFor(() => expect(result.current.loading).toBe(false));
   });
 
   it('should fetch stats from RPC when available', async () => {
@@ -88,21 +92,17 @@ describe('useMyPageStats', () => {
       error: null,
     } as never);
 
-    vi.mocked(supabase.from).mockReturnValue({
-      select: vi.fn(() => ({
-        eq: vi.fn(() => ({
-          single: vi.fn().mockResolvedValue({
-            data: {
-              total_mastery_score: 1000,
-              current_tier_level: 2,
-              cycle_promotion_pending: false,
-              pending_cycle_score: 0,
-            },
-            error: null,
-          }),
-        })),
-      })),
-    } as never);
+    const mockProfileData = {
+      total_mastery_score: 1000,
+      current_tier_level: 2,
+      cycle_promotion_pending: false,
+      pending_cycle_score: 0,
+    };
+
+    vi.mocked(supabase.from).mockImplementation((table: string) => {
+      if (table === 'profiles') return createMockChain(mockProfileData) as any;
+      return createMockChain([]) as any;
+    });
 
     vi.mocked(supabase.rpc).mockResolvedValue({
       data: [
@@ -136,44 +136,22 @@ describe('useMyPageStats', () => {
       error: null,
     } as never);
 
-    const mockProfilesSelect = vi.fn(() => ({
-      eq: vi.fn(() => ({
-        single: vi.fn().mockResolvedValue({
-          data: {
-            total_mastery_score: 1000,
-            current_tier_level: 2,
-            cycle_promotion_pending: false,
-            pending_cycle_score: 0,
-          },
-          error: null,
-        }),
-      })),
-    }));
-
-    const mockGameRecordsSelect = vi.fn(() => ({
-      eq: vi.fn().mockResolvedValue({
-        data: [
-          { score: 100, cleared: true, level: 1, subject: 'math' },
-          { score: 200, cleared: true, level: 2, subject: 'math' },
-        ],
-        error: null,
-      }),
-    }));
-
     vi.mocked(supabase.from).mockImplementation((table: string) => {
       if (table === 'profiles') {
-        return {
-          select: mockProfilesSelect,
-        } as never;
+        return createMockChain({
+          total_mastery_score: 1000,
+          current_tier_level: 2,
+          cycle_promotion_pending: false,
+          pending_cycle_score: 0,
+        }) as any;
       }
-      if (table === 'game_records') {
-        return {
-          select: mockGameRecordsSelect,
-        } as never;
+      if (table === 'user_level_records') {
+        return createMockChain([
+          { best_score: 100, level: 1, theme_code: 1 },
+          { best_score: 200, level: 2, theme_code: 1 },
+        ]) as any;
       }
-      return {
-        select: vi.fn(),
-      } as never;
+      return createMockChain([]) as any;
     });
 
     vi.mocked(supabase.rpc).mockResolvedValue({

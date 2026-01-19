@@ -111,7 +111,11 @@ describe('DebugPanel', () => {
     expect(screen.getByText('아이템')).toBeInTheDocument();
     expect(screen.getByText('데이터')).toBeInTheDocument();
     expect(screen.getByText('에러 로그')).toBeInTheDocument();
-    expect(screen.getByText('경계값 테스트')).toBeInTheDocument();
+    expect(screen.getByText('경계값')).toBeInTheDocument();
+    expect(screen.getByText('🌐 네트워크')).toBeInTheDocument();
+    expect(screen.getByText('📱 시각')).toBeInTheDocument();
+    expect(screen.getByText('🎬 매크로')).toBeInTheDocument();
+    expect(screen.getByText('🏆 진행')).toBeInTheDocument();
   });
 
   it('should switch to different tabs', () => {

@@ -42,7 +42,7 @@ describe('quizGenerator', () => {
     });
 
     it('should generate symmetry question for World2-논리', () => {
-      const result = generateQuestion('World2', '논리', 1, 'easy');
+      const result = generateQuestion('World2', '논리', 9, 'easy');
       expect(result.question).toContain('대칭');
     });
   });
