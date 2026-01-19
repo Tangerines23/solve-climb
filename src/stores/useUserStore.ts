@@ -68,9 +68,8 @@ export const useUserStore = create<UserState>((set, get) => ({
   fetchUserData: async () => {
     set({ isLoading: true });
     try {
-      const {
-        data: { user },
-      } = await debugSupabaseQuery(supabase.auth.getUser());
+      const authResult = (await debugSupabaseQuery(supabase.auth.getUser())) as any;
+      const user = authResult?.data?.user;
       if (!user) {
         console.log('[UserStore] No user found, skipping fetch');
         return;
@@ -193,9 +192,8 @@ export const useUserStore = create<UserState>((set, get) => ({
     set({ minerals: value });
 
     try {
-      const {
-        data: { user },
-      } = await debugSupabaseQuery(supabase.auth.getUser());
+      const authResult = (await debugSupabaseQuery(supabase.auth.getUser())) as any;
+      const user = authResult?.data?.user;
       if (user) {
         await debugSupabaseQuery(
           supabase.from('profiles').update({ minerals: value }).eq('id', user.id)
@@ -211,9 +209,8 @@ export const useUserStore = create<UserState>((set, get) => ({
     set({ stamina: value });
 
     try {
-      const {
-        data: { user },
-      } = await debugSupabaseQuery(supabase.auth.getUser());
+      const authResult = (await debugSupabaseQuery(supabase.auth.getUser())) as any;
+      const user = authResult?.data?.user;
       if (user) {
         await debugSupabaseQuery(
           supabase
@@ -272,9 +269,8 @@ export const useUserStore = create<UserState>((set, get) => ({
 
   // DEV ONLY: 아이템 초기화
   debugResetItems: async () => {
-    const {
-      data: { user },
-    } = await debugSupabaseQuery(supabase.auth.getUser());
+    const authResult = (await debugSupabaseQuery(supabase.auth.getUser())) as any;
+    const user = authResult?.data?.user;
     if (!user) return;
 
     console.log('[DEBUG] Resetting items...');
@@ -294,9 +290,8 @@ export const useUserStore = create<UserState>((set, get) => ({
 
   // DEV ONLY: 아이템 5개씩 감소
   debugRemoveItems: async () => {
-    const {
-      data: { user },
-    } = await debugSupabaseQuery(supabase.auth.getUser());
+    const authResult = (await debugSupabaseQuery(supabase.auth.getUser())) as any;
+    const user = authResult?.data?.user;
     if (!user) return;
 
     // Get current inventory
@@ -329,9 +324,8 @@ export const useUserStore = create<UserState>((set, get) => ({
   },
 
   refundStamina: async () => {
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
+    const authResult = (await debugSupabaseQuery(supabase.auth.getUser())) as any;
+    const user = authResult?.data?.user;
     if (!user) return { success: false, message: '로그인이 필요합니다.' };
 
     // Optimistic update
@@ -341,7 +335,7 @@ export const useUserStore = create<UserState>((set, get) => ({
     }
 
     try {
-      const { error } = await debugSupabaseQuery(supabase.rpc('recover_stamina_ads'));
+      const { error } = (await debugSupabaseQuery(supabase.rpc('recover_stamina_ads'))) || {};
       if (error) {
         // RPC가 없는 경우 (PGRST202) 시뮬레이션 모드로 간주하고 성공 반환
         if ((error as any).code === 'PGRST202') {

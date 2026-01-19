@@ -4,20 +4,60 @@ import { useUserStore } from '../useUserStore';
 import { supabase } from '../../utils/supabaseClient';
 
 // Mock supabase
-vi.mock('../../utils/supabaseClient', () => ({
-  supabase: {
-    auth: {
-      getUser: vi.fn(),
-      getSession: vi.fn(),
+// Mock supabase
+vi.mock('../../utils/supabaseClient', () => {
+  const builder: any = {
+    then: vi.fn((resolve) => resolve({ data: null, error: null })),
+  };
+  builder.select = vi.fn(() => builder);
+  builder.insert = vi.fn(() => builder);
+  builder.update = vi.fn(() => builder);
+  builder.upsert = vi.fn(() => builder);
+  builder.delete = vi.fn(() => builder);
+  builder.eq = vi.fn(() => builder);
+  builder.single = vi.fn(() => builder);
+  builder.in = vi.fn(() => builder);
+
+  return {
+    supabase: {
+      auth: {
+        getUser: vi.fn().mockResolvedValue({ data: { user: null }, error: null }),
+        getSession: vi.fn().mockResolvedValue({ data: { session: null }, error: null }),
+        signInAnonymously: vi
+          .fn()
+          .mockResolvedValue({ data: { session: null, user: null }, error: null }),
+        onAuthStateChange: vi
+          .fn()
+          .mockReturnValue({ data: { subscription: { unsubscribe: vi.fn() } } }),
+        signOut: vi.fn().mockResolvedValue({ error: null }),
+      },
+      from: vi.fn(() => builder),
+      rpc: vi.fn().mockResolvedValue({ data: null, error: null }),
     },
-    from: vi.fn(),
-    rpc: vi.fn(),
-  },
-}));
+  };
+});
 
 describe('useUserStore', () => {
   beforeEach(() => {
     vi.clearAllMocks();
+
+    // Reset supabase mock to a robust builder
+    const mockBuilder = {
+      select: vi.fn().mockReturnThis(),
+      insert: vi.fn().mockReturnThis(),
+      update: vi.fn().mockReturnThis(),
+      upsert: vi.fn().mockReturnThis(),
+      delete: vi.fn().mockReturnThis(),
+      eq: vi.fn().mockReturnThis(),
+      single: vi.fn().mockReturnThis(),
+      in: vi.fn().mockReturnThis(),
+      then: vi.fn((resolve) => resolve({ data: null, error: null })),
+    } as any;
+
+    vi.mocked(supabase.from).mockReturnValue(mockBuilder);
+    vi.mocked(supabase.rpc).mockResolvedValue({ data: null, error: null });
+    vi.mocked(supabase.auth.getUser).mockResolvedValue({ data: { user: null }, error: null });
+
     // Reset store state
     const { result } = renderHook(() => useUserStore());
     act(() => {
@@ -326,7 +366,7 @@ describe('useUserStore', () => {
       }),
     } as any);
 
-    const consoleErrorSpy = vi.spyOn(console, 'error').mockImplementation(() => { });
+    const consoleErrorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
 
     const { result } = renderHook(() => useUserStore());
 
@@ -401,7 +441,7 @@ describe('useUserStore', () => {
       }),
     } as any);
 
-    const consoleErrorSpy = vi.spyOn(console, 'error').mockImplementation(() => { });
+    const consoleErrorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
 
     const { result } = renderHook(() => useUserStore());
 
@@ -463,7 +503,7 @@ describe('useUserStore', () => {
       error: { message: 'RPC error' },
     } as any);
 
-    const consoleErrorSpy = vi.spyOn(console, 'error').mockImplementation(() => { });
+    const consoleErrorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
 
     const { result } = renderHook(() => useUserStore());
     const initialStamina = result.current.stamina;
@@ -519,7 +559,7 @@ describe('useUserStore', () => {
       useUserStore.setState({ lastStaminaConsumeTime: 0 });
     });
 
-    const consoleLogSpy = vi.spyOn(console, 'log').mockImplementation(() => { });
+    const consoleLogSpy = vi.spyOn(console, 'log').mockImplementation(() => {});
 
     // 첫 번째 호출
     await act(async () => {
@@ -548,7 +588,7 @@ describe('useUserStore', () => {
       return Promise.resolve({ data: null, error: null } as any);
     });
 
-    const consoleErrorSpy = vi.spyOn(console, 'error').mockImplementation(() => { });
+    const consoleErrorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
 
     const { result } = renderHook(() => useUserStore());
 
@@ -646,7 +686,7 @@ describe('useUserStore', () => {
       error: { message: 'RPC error' },
     } as any);
 
-    const consoleErrorSpy = vi.spyOn(console, 'error').mockImplementation(() => { });
+    const consoleErrorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
 
     const { result } = renderHook(() => useUserStore());
 
@@ -731,7 +771,7 @@ describe('useUserStore', () => {
       return {} as any;
     });
 
-    const consoleErrorSpy = vi.spyOn(console, 'error').mockImplementation(() => { });
+    const consoleErrorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
 
     const { result } = renderHook(() => useUserStore());
 
@@ -787,7 +827,7 @@ describe('useUserStore', () => {
       return {} as any;
     });
 
-    const consoleErrorSpy = vi.spyOn(console, 'error').mockImplementation(() => { });
+    const consoleErrorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
 
     const { result } = renderHook(() => useUserStore());
 
@@ -820,7 +860,7 @@ describe('useUserStore', () => {
       error: null,
     } as any);
 
-    const consoleLogSpy = vi.spyOn(console, 'log').mockImplementation(() => { });
+    const consoleLogSpy = vi.spyOn(console, 'log').mockImplementation(() => {});
 
     const { result } = renderHook(() => useUserStore());
 
@@ -838,7 +878,7 @@ describe('useUserStore', () => {
       error: { message: 'RPC error' },
     } as any);
 
-    const consoleErrorSpy = vi.spyOn(console, 'error').mockImplementation(() => { });
+    const consoleErrorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
 
     const { result } = renderHook(() => useUserStore());
 
@@ -865,7 +905,7 @@ describe('useUserStore', () => {
       }),
     } as any);
 
-    const consoleLogSpy = vi.spyOn(console, 'log').mockImplementation(() => { });
+    const consoleLogSpy = vi.spyOn(console, 'log').mockImplementation(() => {});
 
     const { result } = renderHook(() => useUserStore());
 
@@ -908,7 +948,7 @@ describe('useUserStore', () => {
       }),
     } as any);
 
-    const consoleErrorSpy = vi.spyOn(console, 'error').mockImplementation(() => { });
+    const consoleErrorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
 
     const { result } = renderHook(() => useUserStore());
 
@@ -1089,4 +1129,3 @@ describe('useUserStore', () => {
     expect(result.current).toBeTruthy();
   });
 });
-

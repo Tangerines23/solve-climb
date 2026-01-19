@@ -1,4 +1,4 @@
-// 레벨 진행 상태 관리 스토어
+﻿// 레벨 진행 상태 관리 스토어
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import { supabase } from '../utils/supabaseClient';
@@ -136,9 +136,8 @@ export const useLevelProgressStore = create<LevelProgressState>()(
           score,
         });
 
-        const {
-          data: { user },
-        } = await debugSupabaseQuery(supabase.auth.getUser());
+        const authResult = (await debugSupabaseQuery(supabase.auth.getUser())) as any;
+        const user = authResult?.data?.user;
         console.log('[useLevelProgressStore] Current user:', user?.id);
 
         if (!user) {
@@ -191,9 +190,8 @@ export const useLevelProgressStore = create<LevelProgressState>()(
 
         // 3. Fallback: Direct game_records update (for compatibility)
         try {
-          const {
-            data: { user },
-          } = await debugSupabaseQuery(supabase.auth.getUser());
+          const authResult = (await debugSupabaseQuery(supabase.auth.getUser())) as any;
+          const user = authResult?.data?.user;
           if (!user) return;
 
           const { error } = await debugSupabaseQuery(
@@ -243,9 +241,8 @@ export const useLevelProgressStore = create<LevelProgressState>()(
 
         // 2. Background Sync (Supabase)
         try {
-          const {
-            data: { user },
-          } = await debugSupabaseQuery(supabase.auth.getUser());
+          const authResult = await debugSupabaseQuery(supabase.auth.getUser());
+          const user = authResult?.data?.user;
           if (!user) return;
 
           const { error } = await debugSupabaseQuery(
@@ -303,9 +300,8 @@ export const useLevelProgressStore = create<LevelProgressState>()(
 
       syncProgress: async () => {
         try {
-          const {
-            data: { user },
-          } = await debugSupabaseQuery(supabase.auth.getUser());
+          const authResult = await debugSupabaseQuery(supabase.auth.getUser());
+          const user = authResult?.data?.user;
           if (!user) return;
 
           const { data: records, error } = await debugSupabaseQuery(
@@ -366,9 +362,8 @@ export const useLevelProgressStore = create<LevelProgressState>()(
 
         // 2. Supabase에서도 삭제
         try {
-          const {
-            data: { user },
-          } = await debugSupabaseQuery(supabase.auth.getUser());
+          const authResult = await debugSupabaseQuery(supabase.auth.getUser());
+          const user = authResult?.data?.user;
           if (!user) return;
 
           const { error } = await debugSupabaseQuery(
