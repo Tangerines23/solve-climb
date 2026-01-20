@@ -20,6 +20,41 @@ import { useUserStore as _useUserStore } from '../../stores/useUserStore';
 import { useQuizStore as _useQuizStore } from '../../stores/useQuizStore';
 import { calculateScoreForTier } from '../tierUtils';
 import type { PostgrestSingleResponse } from '@supabase/supabase-js';
+
+// --- Typed Mock Builders ---
+interface MockPostgrestBuilder {
+  select: ReturnType<typeof vi.fn>;
+  eq: ReturnType<typeof vi.fn>;
+  order: ReturnType<typeof vi.fn>;
+  limit: ReturnType<typeof vi.fn>;
+  single: ReturnType<typeof vi.fn>;
+  upsert: ReturnType<typeof vi.fn>;
+  update: ReturnType<typeof vi.fn>;
+}
+
+const createMockQueryBuilder = (returnValue: any = { data: null, error: null }) => {
+  const builder: any = {};
+  const mockReturn = Promise.resolve(returnValue);
+
+  builder.select = vi.fn(() => builder);
+  builder.eq = vi.fn(() => builder);
+  builder.order = vi.fn(() => builder);
+  builder.limit = vi.fn(() => builder);
+  builder.single = vi.fn(() => mockReturn);
+  builder.upsert = vi.fn(() => mockReturn);
+  builder.update = vi.fn(() => builder);
+
+  // Make builder thenable to support await on the chain
+  builder.then = (
+    onfulfilled?: ((value: any) => any) | null,
+    onrejected?: ((reason: any) => any) | null
+  ) => {
+    return mockReturn.then(onfulfilled, onrejected);
+  };
+
+  return builder as any;
+};
+
 // Mock localStorage
 const localStorageMock = (() => {
   let store: Record<string, string> = {};
@@ -51,23 +86,7 @@ vi.mock('../supabaseClient', () => ({
       getUser: vi.fn(() => Promise.resolve({ data: { user: { id: 'test-user' } }, error: null })),
     },
     rpc: vi.fn(),
-    from: vi.fn(() => ({
-      select: vi.fn(() => ({
-        eq: vi.fn(() => ({
-          eq: vi.fn(() => ({
-            order: vi.fn(() => ({
-              limit: vi.fn(() => ({
-                single: vi.fn(),
-              })),
-            })),
-          })),
-        })),
-      })),
-      upsert: vi.fn(() => Promise.resolve({ error: null })),
-      update: vi.fn(() => ({
-        eq: vi.fn(() => Promise.resolve({ error: null })),
-      })),
-    })),
+    from: vi.fn(() => createMockQueryBuilder()),
   },
 }));
 
@@ -785,13 +804,13 @@ describe('debugPresets - executeDebugAction', () => {
       });
       vi.mocked(supabase.from).mockImplementation((table: string) => {
         if (table === 'profiles') {
-          return {
-            update: vi.fn(() => ({
-              eq: vi.fn(() => Promise.resolve({ error: null })),
-            })),
-          } as unknown as any;
+          const builder = createMockQueryBuilder();
+          builder.update = vi.fn(() => ({
+            eq: vi.fn(() => Promise.resolve({ error: null })),
+          }));
+          return builder;
         }
-        return {} as unknown as any;
+        return createMockQueryBuilder();
       });
 
       const action: DebugAction = { type: 'setStamina', value: 5 };
@@ -813,10 +832,9 @@ describe('debugPresets - executeDebugAction', () => {
       const mockItems = [{ id: 'item-1' }, { id: 'item-2' }];
       const mockUpsert = vi.fn(() => Promise.resolve({ error: null }));
 
-      vi.mocked(supabase.from).mockReturnValue({
-        select: vi.fn(() => Promise.resolve({ data: mockItems, error: null })),
-        upsert: mockUpsert,
-      } as unknown as any);
+      const builder = createMockQueryBuilder({ data: mockItems, error: null });
+      builder.upsert = mockUpsert;
+      vi.mocked(supabase.from).mockReturnValue(builder);
 
       const action: DebugAction = { type: 'grantAllItems' };
       await executeDebugAction(action, userId);
@@ -834,10 +852,9 @@ describe('debugPresets - executeDebugAction', () => {
       const mockItems = [{ id: 'item-1' }];
       const mockUpsert = vi.fn(() => Promise.resolve({ error: null }));
 
-      vi.mocked(supabase.from).mockReturnValue({
-        select: vi.fn(() => Promise.resolve({ data: mockItems, error: null })),
-        upsert: mockUpsert,
-      } as unknown as any);
+      const builder = createMockQueryBuilder({ data: mockItems, error: null });
+      builder.upsert = mockUpsert;
+      vi.mocked(supabase.from).mockReturnValue(builder);
 
       const action: DebugAction = { type: 'grantAllItems', quantity: 50 };
       await executeDebugAction(action, userId);
@@ -851,9 +868,7 @@ describe('debugPresets - executeDebugAction', () => {
     it('should throw error when items query fails', async () => {
       const error = { message: 'Items query failed' };
 
-      vi.mocked(supabase.from).mockReturnValue({
-        select: vi.fn(() => Promise.resolve({ data: null, error })),
-      } as unknown as any);
+      vi.mocked(supabase.from).mockReturnValue(createMockQueryBuilder({ data: null, error }));
 
       const action: DebugAction = { type: 'grantAllItems' };
       await expect(executeDebugAction(action, userId)).rejects.toEqual(error);
@@ -863,10 +878,9 @@ describe('debugPresets - executeDebugAction', () => {
       const mockItems = [{ id: 'item-1' }];
       const error = { message: 'Upsert failed' };
 
-      vi.mocked(supabase.from).mockReturnValue({
-        select: vi.fn(() => Promise.resolve({ data: mockItems, error: null })),
-        upsert: vi.fn(() => Promise.resolve({ error })),
-      } as unknown as any);
+      const builder = createMockQueryBuilder({ data: mockItems, error: null });
+      builder.upsert = vi.fn(() => Promise.resolve({ error }));
+      vi.mocked(supabase.from).mockReturnValue(builder);
 
       const action: DebugAction = { type: 'grantAllItems' };
       await expect(executeDebugAction(action, userId)).rejects.toEqual(error);
@@ -875,10 +889,9 @@ describe('debugPresets - executeDebugAction', () => {
     it('should handle empty items array', async () => {
       const mockUpsert = vi.fn(() => Promise.resolve({ error: null }));
 
-      vi.mocked(supabase.from).mockReturnValue({
-        select: vi.fn(() => Promise.resolve({ data: [], error: null })),
-        upsert: mockUpsert,
-      } as unknown as any);
+      const builder = createMockQueryBuilder({ data: [], error: null });
+      builder.upsert = mockUpsert;
+      vi.mocked(supabase.from).mockReturnValue(builder);
 
       const action: DebugAction = { type: 'grantAllItems' };
       await executeDebugAction(action, userId);
@@ -891,9 +904,9 @@ describe('debugPresets - executeDebugAction', () => {
     it('should execute grantAllBadges action successfully', async () => {
       const mockBadges = [{ id: 'badge-1' }, { id: 'badge-2' }];
 
-      vi.mocked(supabase.from).mockReturnValue({
-        select: vi.fn(() => Promise.resolve({ data: mockBadges, error: null })),
-      } as any);
+      vi.mocked(supabase.from).mockReturnValue(
+        createMockQueryBuilder({ data: mockBadges, error: null })
+      );
 
       vi.mocked(supabase.rpc).mockImplementation((fnName: string) => {
         if (fnName === 'debug_grant_badge') {
@@ -912,9 +925,9 @@ describe('debugPresets - executeDebugAction', () => {
       const mockBadges = [{ id: 'badge-1' }, { id: 'badge-2' }];
       const consoleWarnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});
 
-      vi.mocked(supabase.from).mockReturnValue({
-        select: vi.fn(() => Promise.resolve({ data: mockBadges, error: null })),
-      } as any);
+      vi.mocked(supabase.from).mockReturnValue(
+        createMockQueryBuilder({ data: mockBadges, error: null })
+      );
 
       // 첫번째는 성공, 두번째는 실패
       let callCount = 0;
@@ -939,9 +952,9 @@ describe('debugPresets - executeDebugAction', () => {
       const mockBadges = [{ id: 'badge-1' }];
       const consoleWarnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});
 
-      vi.mocked(supabase.from).mockReturnValue({
-        select: vi.fn(() => Promise.resolve({ data: mockBadges, error: null })),
-      } as any);
+      vi.mocked(supabase.from).mockReturnValue(
+        createMockQueryBuilder({ data: mockBadges, error: null })
+      );
 
       // result.value.success가 false인 경우를 레이어링
       // supabase.rpc가 reject되면 .then()의 두번째 인자가 호출되어 { success: false, ... } 반환
@@ -960,9 +973,7 @@ describe('debugPresets - executeDebugAction', () => {
     it('should throw error when badges query fails', async () => {
       const error = { message: 'Badges query failed' };
 
-      vi.mocked(supabase.from).mockReturnValue({
-        select: vi.fn(() => Promise.resolve({ data: null, error })),
-      } as any);
+      vi.mocked(supabase.from).mockReturnValue(createMockQueryBuilder({ data: null, error }));
 
       const action: DebugAction = { type: 'grantAllBadges' };
       await expect(executeDebugAction(action, userId)).rejects.toEqual(error);
@@ -976,20 +987,9 @@ describe('debugPresets - executeDebugAction', () => {
         eq: vi.fn(() => Promise.resolve({ error: null })),
       }));
 
-      vi.mocked(supabase.from).mockReturnValue({
-        select: vi.fn(() => ({
-          eq: vi.fn(() => ({
-            eq: vi.fn(() => ({
-              order: vi.fn(() => ({
-                limit: vi.fn(() => ({
-                  single: vi.fn(() => Promise.resolve({ data: mockSession, error: null })),
-                })),
-              })),
-            })),
-          })),
-        })),
-        update: mockUpdate,
-      } as unknown as any);
+      const builder = createMockQueryBuilder({ data: mockSession, error: null });
+      builder.update = mockUpdate;
+      vi.mocked(supabase.from).mockReturnValue(builder);
 
       const action: DebugAction = { type: 'setGameTime', seconds: 30 };
       await executeDebugAction(action, userId);
@@ -1147,7 +1147,7 @@ describe('debugPresets - executeDebugAction', () => {
   describe('unknown action type', () => {
     it('should throw error for unknown action type', async () => {
       const action = { type: 'unknown' as DebugAction['type'] };
-      await expect(executeDebugAction(action as any, userId)).rejects.toThrow(
+      await expect(executeDebugAction(action as DebugAction, userId)).rejects.toThrow(
         'Unknown action type'
       );
     });
@@ -1170,13 +1170,7 @@ describe('debugPresets - applyPreset', () => {
       setTimeLimit: vi.fn(),
     });
     // Reset supabase.from mock
-    vi.mocked(supabase.from).mockReturnValue({
-      select: vi.fn(),
-      upsert: vi.fn(() => Promise.resolve({ error: null })),
-      update: vi.fn(() => ({
-        eq: vi.fn(() => Promise.resolve({ error: null })),
-      })),
-    } as unknown as any);
+    vi.mocked(supabase.from).mockReturnValue(createMockQueryBuilder());
   });
 
   it('should apply newbie preset successfully', async () => {
@@ -1187,33 +1181,16 @@ describe('debugPresets - applyPreset', () => {
     vi.mocked(supabase.rpc).mockResolvedValue({ error: null } as any);
     vi.mocked(supabase.from).mockImplementation((table: string) => {
       if (table === 'profiles') {
-        return {
-          select: vi.fn(() => ({
-            eq: vi.fn(() => ({
-              single: vi.fn(() =>
-                Promise.resolve({ data: { minerals: 0, stamina: 5 }, error: null })
-              ),
-            })),
-          })),
-          update: vi.fn(() => ({
-            eq: vi.fn(() => Promise.resolve({ error: null })),
-          })),
-        } as any;
+        const builder = createMockQueryBuilder();
+        builder.single = vi.fn(() =>
+          Promise.resolve({ data: { minerals: 0, stamina: 5 }, error: null })
+        );
+        return builder;
       }
       if (table === 'inventory') {
-        return {
-          select: vi.fn(() => ({
-            eq: vi.fn(() => Promise.resolve({ data: [], error: null })),
-          })),
-        } as any;
+        return createMockQueryBuilder({ data: [], error: null });
       }
-      return {
-        select: vi.fn(),
-        upsert: vi.fn(() => Promise.resolve({ error: null })),
-        update: vi.fn(() => ({
-          eq: vi.fn(() => Promise.resolve({ error: null })),
-        })),
-      } as unknown as any;
+      return createMockQueryBuilder();
     });
     mockGetUserStoreState.mockReturnValue({
       fetchUserData: mockFetchUserData,
@@ -1262,45 +1239,22 @@ describe('debugPresets - applyPreset', () => {
 
     vi.mocked(supabase.from).mockImplementation((table: string) => {
       if (table === 'items') {
-        return {
-          select: vi.fn(() => Promise.resolve({ data: mockItems, error: null })),
-          upsert: vi.fn(() => Promise.resolve({ error: null })),
-        } as any;
+        return createMockQueryBuilder({ data: mockItems, error: null });
       }
       if (table === 'badge_definitions') {
-        return {
-          select: vi.fn(() => Promise.resolve({ data: mockBadges, error: null })),
-        } as any;
+        return createMockQueryBuilder({ data: mockBadges, error: null });
       }
       if (table === 'profiles') {
-        return {
-          select: vi.fn(() => ({
-            eq: vi.fn(() => ({
-              single: vi.fn(() =>
-                Promise.resolve({ data: { minerals: 0, stamina: 5 }, error: null })
-              ),
-            })),
-          })),
-          update: vi.fn(() => ({
-            eq: vi.fn(() => Promise.resolve({ error: null })),
-          })),
-        } as any;
+        const builder = createMockQueryBuilder();
+        builder.single = vi.fn(() =>
+          Promise.resolve({ data: { minerals: 0, stamina: 5 }, error: null })
+        );
+        return builder;
       }
       if (table === 'inventory') {
-        return {
-          select: vi.fn(() => ({
-            eq: vi.fn(() => Promise.resolve({ data: [], error: null })),
-          })),
-          upsert: vi.fn(() => Promise.resolve({ error: null })),
-        } as any;
+        return createMockQueryBuilder({ data: [], error: null });
       }
-      return {
-        select: vi.fn(),
-        upsert: vi.fn(() => Promise.resolve({ error: null })),
-        update: vi.fn(() => ({
-          eq: vi.fn(() => Promise.resolve({ error: null })),
-        })),
-      } as any;
+      return createMockQueryBuilder();
     });
 
     mockGetUserStoreState.mockReturnValue({
@@ -1339,33 +1293,16 @@ describe('debugPresets - applyPreset', () => {
     vi.mocked(supabase.rpc).mockResolvedValue({ error: null } as any);
     vi.mocked(supabase.from).mockImplementation((table: string) => {
       if (table === 'profiles') {
-        return {
-          select: vi.fn(() => ({
-            eq: vi.fn(() => ({
-              single: vi.fn(() =>
-                Promise.resolve({ data: { minerals: 0, stamina: 5 }, error: null })
-              ),
-            })),
-          })),
-          update: vi.fn(() => ({
-            eq: vi.fn(() => Promise.resolve({ error: null })),
-          })),
-        } as any;
+        const builder = createMockQueryBuilder();
+        builder.single = vi.fn(() =>
+          Promise.resolve({ data: { minerals: 0, stamina: 5 }, error: null })
+        );
+        return builder;
       }
       if (table === 'inventory') {
-        return {
-          select: vi.fn(() => ({
-            eq: vi.fn(() => Promise.resolve({ data: [], error: null })),
-          })),
-        } as any;
+        return createMockQueryBuilder({ data: [], error: null });
       }
-      return {
-        select: vi.fn(),
-        upsert: vi.fn(() => Promise.resolve({ error: null })),
-        update: vi.fn(() => ({
-          eq: vi.fn(() => Promise.resolve({ error: null })),
-        })),
-      } as unknown as any;
+      return createMockQueryBuilder();
     });
     mockGetUserStoreState.mockReturnValue({
       fetchUserData: mockFetchUserData,
@@ -1406,33 +1343,16 @@ describe('debugPresets - applyPreset', () => {
     } as unknown as PostgrestSingleResponse<any>);
     vi.mocked(supabase.from).mockImplementation((table: string) => {
       if (table === 'profiles') {
-        return {
-          select: vi.fn(() => ({
-            eq: vi.fn(() => ({
-              single: vi.fn(() =>
-                Promise.resolve({ data: { minerals: 0, stamina: 5 }, error: null })
-              ),
-            })),
-          })),
-          update: vi.fn(() => ({
-            eq: vi.fn(() => Promise.resolve({ error: null })),
-          })),
-        } as any;
+        const builder = createMockQueryBuilder();
+        builder.single = vi.fn(() =>
+          Promise.resolve({ data: { minerals: 0, stamina: 5 }, error: null })
+        );
+        return builder;
       }
       if (table === 'inventory') {
-        return {
-          select: vi.fn(() => ({
-            eq: vi.fn(() => Promise.resolve({ data: [], error: null })),
-          })),
-        } as any;
+        return createMockQueryBuilder({ data: [], error: null });
       }
-      return {
-        select: vi.fn(),
-        upsert: vi.fn(() => Promise.resolve({ error: null })),
-        update: vi.fn(() => ({
-          eq: vi.fn(() => Promise.resolve({ error: null })),
-        })),
-      } as unknown as any;
+      return createMockQueryBuilder();
     });
     mockGetUserStoreState.mockReturnValue({
       fetchUserData: mockFetchUserData,
@@ -1455,33 +1375,16 @@ describe('debugPresets - applyPreset', () => {
     } as unknown as PostgrestSingleResponse<any>);
     vi.mocked(supabase.from).mockImplementation((table: string) => {
       if (table === 'profiles') {
-        return {
-          select: vi.fn(() => ({
-            eq: vi.fn(() => ({
-              single: vi.fn(() =>
-                Promise.resolve({ data: { minerals: 0, stamina: 5 }, error: null })
-              ),
-            })),
-          })),
-          update: vi.fn(() => ({
-            eq: vi.fn(() => Promise.resolve({ error: null })),
-          })),
-        } as any;
+        const builder = createMockQueryBuilder();
+        builder.single = vi.fn(() =>
+          Promise.resolve({ data: { minerals: 0, stamina: 5 }, error: null })
+        );
+        return builder;
       }
       if (table === 'inventory') {
-        return {
-          select: vi.fn(() => ({
-            eq: vi.fn(() => Promise.resolve({ data: [], error: null })),
-          })),
-        } as any;
+        return createMockQueryBuilder({ data: [], error: null });
       }
-      return {
-        select: vi.fn(),
-        upsert: vi.fn(() => Promise.resolve({ error: null })),
-        update: vi.fn(() => ({
-          eq: vi.fn(() => Promise.resolve({ error: null })),
-        })),
-      } as unknown as any;
+      return createMockQueryBuilder();
     });
     mockGetUserStoreState.mockReturnValue({
       fetchUserData: mockFetchUserData,

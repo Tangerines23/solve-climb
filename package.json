@@ -89,6 +89,7 @@
     "husky": "^9.1.7",
     "jsdom": "^27.4.0",
     "lint-staged": "^16.2.7",
+    "msw": "^2.12.7",
     "prettier": "^3.7.4",
     "rollup-plugin-visualizer": "^6.0.5",
     "supabase": "^2.67.1",
@@ -113,6 +114,11 @@
     ],
     "*.{js,jsx,json,css}": [
       "prettier --write"
+    ]
+  },
+  "msw": {
+    "workerDirectory": [
+      "public"
     ]
   }
 }

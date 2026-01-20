@@ -3,7 +3,7 @@ import { renderHook, act, waitFor } from '@testing-library/react';
 import { useLevelProgressStore } from '../useLevelProgressStore';
 import type { GameMode } from '../../types/quiz';
 import { supabase } from '../../utils/supabaseClient';
-import type { UserResponse, PostgrestSingleResponse } from '@supabase/supabase-js';
+import type { UserResponse, PostgrestSingleResponse, SupabaseClient } from '@supabase/supabase-js';
 
 // Mock supabase
 vi.mock('../../utils/supabaseClient', () => {
@@ -40,28 +40,58 @@ type MockSupabaseResponse<T> = {
   statusText: string;
 };
 
+interface MockPostgrestBuilder {
+  select: ReturnType<typeof vi.fn>;
+  eq: ReturnType<typeof vi.fn>;
+  single: ReturnType<typeof vi.fn>;
+  upsert: ReturnType<typeof vi.fn>;
+  insert: ReturnType<typeof vi.fn>;
+  update: ReturnType<typeof vi.fn>;
+  delete: ReturnType<typeof vi.fn>;
+  in: ReturnType<typeof vi.fn>;
+  then: (
+    onfulfilled?: ((value: any) => any) | null,
+    onrejected?: ((reason: any) => any) | null
+  ) => Promise<any>;
+}
+
+const createMockQueryBuilder = (returnValue: any = { data: null, error: null }) => {
+  const builder: any = {};
+  const mockReturn = Promise.resolve(returnValue);
+
+  builder.select = vi.fn(() => builder);
+  builder.eq = vi.fn(() => builder);
+  builder.single = vi.fn(() => mockReturn);
+  builder.upsert = vi.fn(() => mockReturn);
+  builder.insert = vi.fn(() => mockReturn);
+  builder.update = vi.fn(() => builder); // update usually returns builder or promise depending on usage, making it builder for chain
+  builder.delete = vi.fn(() => builder);
+  builder.in = vi.fn(() => builder);
+
+  // Make builder thenable to support await on the chain
+  builder.then = (
+    onfulfilled?: ((value: any) => any) | null,
+    onrejected?: ((reason: any) => any) | null
+  ) => {
+    return mockReturn.then(onfulfilled, onrejected);
+  };
+
+  return builder as unknown as ReturnType<SupabaseClient['from']>;
+};
+
 describe('useLevelProgressStore', () => {
   beforeEach(() => {
     vi.clearAllMocks();
 
-    // Reset supabase mock to a robust builder
-    const mockBuilder = {
-      select: vi.fn().mockReturnThis(),
-      insert: vi.fn().mockReturnThis(),
-      update: vi.fn().mockReturnThis(),
-      upsert: vi.fn().mockReturnThis(),
-      delete: vi.fn().mockReturnThis(),
-      eq: vi.fn().mockReturnThis(),
-      single: vi.fn().mockReturnThis(),
-      in: vi.fn().mockReturnThis(),
-      then: vi.fn((resolve) =>
-        resolve({ data: null, error: null, count: null, status: 200, statusText: 'OK' })
-      ),
-    };
-
-    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-    // @ts-ignore - Mocking complex Supabase builder
-    vi.mocked(supabase.from).mockReturnValue(mockBuilder);
+    vi.mocked(supabase.from).mockReturnValue(
+      createMockQueryBuilder({
+        data: null,
+        error: null,
+        count: null,
+        status: 200,
+        statusText: 'OK',
+      })
+    );
     vi.mocked(supabase.rpc).mockResolvedValue({
       data: null,
       error: null,
@@ -154,12 +184,7 @@ describe('useLevelProgressStore', () => {
       error: null,
     } as UserResponse);
 
-    vi.mocked(supabase.from).mockReturnValue({
-      upsert: vi.fn().mockResolvedValue({
-        data: null,
-        error: null,
-      }),
-    } as any);
+    vi.mocked(supabase.from).mockReturnValue(createMockQueryBuilder());
 
     act(() => {
       result.current.clearLevel('math', 'addition', 1, 'time-attack', 100);
@@ -178,12 +203,7 @@ describe('useLevelProgressStore', () => {
       error: null,
     } as UserResponse);
 
-    vi.mocked(supabase.from).mockReturnValue({
-      upsert: vi.fn().mockResolvedValue({
-        data: null,
-        error: null,
-      }),
-    } as any);
+    vi.mocked(supabase.from).mockReturnValue(createMockQueryBuilder());
 
     act(() => {
       result.current.clearLevel('math', 'addition', 1, 'time-attack', 100);
@@ -205,12 +225,7 @@ describe('useLevelProgressStore', () => {
       error: null,
     } as UserResponse);
 
-    vi.mocked(supabase.from).mockReturnValue({
-      upsert: vi.fn().mockResolvedValue({
-        data: null,
-        error: null,
-      }),
-    } as any);
+    vi.mocked(supabase.from).mockReturnValue(createMockQueryBuilder());
 
     act(() => {
       result.current.clearLevel('math', 'addition', 1, 'time-attack', 150);
@@ -232,12 +247,7 @@ describe('useLevelProgressStore', () => {
       error: null,
     } as UserResponse);
 
-    vi.mocked(supabase.from).mockReturnValue({
-      upsert: vi.fn().mockResolvedValue({
-        data: null,
-        error: null,
-      }),
-    } as any);
+    vi.mocked(supabase.from).mockReturnValue(createMockQueryBuilder());
 
     act(() => {
       result.current.clearLevel('math', 'addition', 1, 'time-attack', 100);
@@ -258,12 +268,7 @@ describe('useLevelProgressStore', () => {
       error: null,
     } as UserResponse);
 
-    vi.mocked(supabase.from).mockReturnValue({
-      upsert: vi.fn().mockResolvedValue({
-        data: null,
-        error: null,
-      }),
-    } as unknown as any);
+    vi.mocked(supabase.from).mockReturnValue(createMockQueryBuilder());
 
     act(() => {
       result.current.clearLevel('math', 'addition', 1, 'time-attack', 100);
@@ -283,18 +288,7 @@ describe('useLevelProgressStore', () => {
       error: null,
     } as UserResponse);
 
-    vi.mocked(supabase.from).mockReturnValue({
-      upsert: vi.fn().mockResolvedValue({
-        data: null,
-        error: null,
-      }),
-      delete: vi.fn().mockReturnValue({
-        eq: vi.fn().mockResolvedValue({
-          data: null,
-          error: null,
-        }),
-      }),
-    } as any);
+    vi.mocked(supabase.from).mockReturnValue(createMockQueryBuilder());
 
     act(() => {
       result.current.clearLevel('math', 'addition', 1, 'time-attack', 100);
@@ -340,14 +334,9 @@ describe('useLevelProgressStore', () => {
       error: null,
     } as UserResponse);
 
-    vi.mocked(supabase.from).mockReturnValue({
-      select: vi.fn().mockReturnValue({
-        eq: vi.fn().mockResolvedValue({
-          data: mockRecords,
-          error: null,
-        }),
-      }),
-    } as any);
+    vi.mocked(supabase.from).mockReturnValue(
+      createMockQueryBuilder({ data: mockRecords, error: null })
+    );
 
     await act(async () => {
       await result.current.syncProgress();
@@ -371,14 +360,9 @@ describe('useLevelProgressStore', () => {
       error: null,
     } as UserResponse);
 
-    vi.mocked(supabase.from).mockReturnValue({
-      select: vi.fn().mockReturnValue({
-        eq: vi.fn().mockResolvedValue({
-          data: null,
-          error: { message: 'Query failed' },
-        }),
-      }),
-    } as any);
+    vi.mocked(supabase.from).mockReturnValue(
+      createMockQueryBuilder({ data: null, error: { message: 'Query failed' } })
+    );
 
     await act(async () => {
       await result.current.syncProgress();
@@ -452,12 +436,7 @@ describe('useLevelProgressStore', () => {
       error: null,
     } as UserResponse);
 
-    vi.mocked(supabase.from).mockReturnValue({
-      upsert: vi.fn().mockResolvedValue({
-        data: null,
-        error: null,
-      }),
-    } as any);
+    vi.mocked(supabase.from).mockReturnValue(createMockQueryBuilder());
 
     act(() => {
       result.current.clearLevel('math', 'addition', 1, 'time-attack', 100);
@@ -479,12 +458,9 @@ describe('useLevelProgressStore', () => {
       error: null,
     } as UserResponse);
 
-    vi.mocked(supabase.from).mockReturnValue({
-      upsert: vi.fn().mockResolvedValue({
-        data: null,
-        error: { message: 'Upsert failed' },
-      }),
-    } as any);
+    vi.mocked(supabase.from).mockReturnValue(
+      createMockQueryBuilder({ data: null, error: { message: 'Upsert failed' } })
+    );
 
     await act(async () => {
       await result.current.clearLevel('math', 'addition', 1, 'time-attack', 100);
@@ -505,12 +481,9 @@ describe('useLevelProgressStore', () => {
       error: null,
     } as UserResponse);
 
-    vi.mocked(supabase.from).mockReturnValue({
-      upsert: vi.fn().mockResolvedValue({
-        data: null,
-        error: { message: 'Upsert failed' },
-      }),
-    } as any);
+    vi.mocked(supabase.from).mockReturnValue(
+      createMockQueryBuilder({ data: null, error: { message: 'Upsert failed' } })
+    );
 
     await act(async () => {
       await result.current.updateBestScore('math', 'addition', 1, 'time-attack', 100);
@@ -565,14 +538,9 @@ describe('useLevelProgressStore', () => {
       error: null,
     } as UserResponse);
 
-    vi.mocked(supabase.from).mockReturnValue({
-      delete: vi.fn().mockReturnValue({
-        eq: vi.fn().mockResolvedValue({
-          data: null,
-          error: { message: 'Delete failed' },
-        }),
-      }),
-    } as any);
+    vi.mocked(supabase.from).mockReturnValue(
+      createMockQueryBuilder({ data: null, error: { message: 'Delete failed' } })
+    );
 
     await act(async () => {
       await result.current.resetProgress();
@@ -750,14 +718,9 @@ describe('useLevelProgressStore', () => {
       },
     ];
 
-    vi.mocked(supabase.from).mockReturnValue({
-      select: vi.fn().mockReturnValue({
-        eq: vi.fn().mockResolvedValue({
-          data: mockRecords,
-          error: null,
-        }),
-      }),
-    } as any);
+    vi.mocked(supabase.from).mockReturnValue(
+      createMockQueryBuilder({ data: mockRecords, error: null })
+    );
 
     await act(async () => {
       await result.current.syncProgress();
@@ -793,14 +756,9 @@ describe('useLevelProgressStore', () => {
       },
     ];
 
-    vi.mocked(supabase.from).mockReturnValue({
-      select: vi.fn().mockReturnValue({
-        eq: vi.fn().mockResolvedValue({
-          data: mockRecords,
-          error: null,
-        }),
-      }),
-    } as any);
+    vi.mocked(supabase.from).mockReturnValue(
+      createMockQueryBuilder({ data: mockRecords, error: null })
+    );
 
     await act(async () => {
       await result.current.syncProgress();
@@ -836,14 +794,9 @@ describe('useLevelProgressStore', () => {
       },
     ];
 
-    vi.mocked(supabase.from).mockReturnValue({
-      select: vi.fn().mockReturnValue({
-        eq: vi.fn().mockResolvedValue({
-          data: mockRecords,
-          error: null,
-        }),
-      }),
-    } as any);
+    vi.mocked(supabase.from).mockReturnValue(
+      createMockQueryBuilder({ data: mockRecords, error: null })
+    );
 
     await act(async () => {
       await result.current.syncProgress();
@@ -873,14 +826,9 @@ describe('useLevelProgressStore', () => {
       },
     ];
 
-    vi.mocked(supabase.from).mockReturnValue({
-      select: vi.fn().mockReturnValue({
-        eq: vi.fn().mockResolvedValue({
-          data: mockRecords,
-          error: null,
-        }),
-      }),
-    } as any);
+    vi.mocked(supabase.from).mockReturnValue(
+      createMockQueryBuilder({ data: mockRecords, error: null })
+    );
 
     await act(async () => {
       await result.current.syncProgress();
@@ -898,12 +846,7 @@ describe('useLevelProgressStore', () => {
       error: null,
     } as UserResponse);
 
-    vi.mocked(supabase.from).mockReturnValue({
-      upsert: vi.fn().mockResolvedValue({
-        data: null,
-        error: null,
-      }),
-    } as any);
+    vi.mocked(supabase.from).mockReturnValue(createMockQueryBuilder());
 
     await act(async () => {
       await result.current.clearLevel('math', 'addition', 1, 'time-attack', 200);
