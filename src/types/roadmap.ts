@@ -3,7 +3,7 @@ export interface TierDefinition {
   goal: number;
   icon: string;
   colorVar: string;
-  overlapLandmark?: any; // Will refine below if possible, but keeping loose to avoid circular dep for now
+  overlapLandmark?: MilestoneItem;
 }
 
 export interface MilestoneItem {

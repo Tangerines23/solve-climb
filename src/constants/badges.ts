@@ -1,9 +1,11 @@
+import { UserStats } from '../types';
+
 export interface BadgeDef {
   id: string;
   name: string;
   description: string;
   emoji: string;
-  condition: (stats: any) => boolean; // Logic placeholder, strictly for reference here
+  condition: (stats: UserStats) => boolean;
 }
 
 export const BADGE_DEFINITIONS = [
