@@ -24,6 +24,38 @@ vi.mock('../../utils/japanese', () => ({
   normalizeRomaji: vi.fn((str: string) => str.toLowerCase().trim()),
 }));
 
+// --- Typed Mock Helpers ---
+
+// 1. Mock Event Helper
+const createMockEvent = () =>
+  ({
+    preventDefault: vi.fn(),
+    stopPropagation: vi.fn(),
+  }) as unknown as React.FormEvent;
+
+// 2. Mock GameStore Helper
+type MockGameStore = {
+  incrementCombo: ReturnType<typeof vi.fn>;
+  resetCombo: ReturnType<typeof vi.fn>;
+  isExhausted: boolean;
+  activeItems: string[];
+  consumeActiveItem: ReturnType<typeof vi.fn>;
+  lives: number;
+  consumeLife: ReturnType<typeof vi.fn>;
+  feverLevel?: number;
+};
+
+const defaultGameStoreState: MockGameStore = {
+  incrementCombo: vi.fn(),
+  resetCombo: vi.fn(),
+  isExhausted: false,
+  activeItems: [],
+  consumeActiveItem: vi.fn(),
+  lives: 3,
+  consumeLife: vi.fn(),
+  feverLevel: 0,
+};
+
 describe('useQuizSubmit', () => {
   const mockQuestion: QuizQuestion = {
     question: '5 + 3 = ?',
@@ -64,15 +96,7 @@ describe('useQuizSubmit', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     vi.useFakeTimers();
-    vi.mocked(useGameStore).mockReturnValue({
-      incrementCombo: vi.fn(),
-      resetCombo: vi.fn(),
-      isExhausted: false,
-      activeItems: [],
-      consumeActiveItem: vi.fn(),
-      lives: 3,
-      consumeLife: vi.fn(),
-    } as any);
+    vi.mocked(useGameStore).mockReturnValue(defaultGameStoreState as any); // Type assertion fix for partial mock
   });
 
   afterEach(() => {
@@ -94,7 +118,7 @@ describe('useQuizSubmit', () => {
       })
     );
 
-    const mockEvent = { preventDefault: vi.fn() } as any;
+    const mockEvent = createMockEvent();
 
     act(() => {
       result.current.handleSubmit(mockEvent);
@@ -112,7 +136,7 @@ describe('useQuizSubmit', () => {
       })
     );
 
-    const mockEvent = { preventDefault: vi.fn() } as any;
+    const mockEvent = createMockEvent();
 
     act(() => {
       result.current.handleSubmit(mockEvent);
@@ -129,7 +153,7 @@ describe('useQuizSubmit', () => {
       })
     );
 
-    const mockEvent = { preventDefault: vi.fn() } as any;
+    const mockEvent = createMockEvent();
 
     act(() => {
       result.current.handleSubmit(mockEvent);
@@ -141,7 +165,7 @@ describe('useQuizSubmit', () => {
   it('should handle correct answer for math question', async () => {
     const { result } = renderHook(() => useQuizSubmit(defaultParams));
 
-    const mockEvent = { preventDefault: vi.fn() } as any;
+    const mockEvent = createMockEvent();
 
     act(() => {
       result.current.handleSubmit(mockEvent);
@@ -166,7 +190,7 @@ describe('useQuizSubmit', () => {
       })
     );
 
-    const mockEvent = { preventDefault: vi.fn() } as any;
+    const mockEvent = createMockEvent();
 
     act(() => {
       result.current.handleSubmit(mockEvent);
@@ -198,7 +222,7 @@ describe('useQuizSubmit', () => {
       })
     );
 
-    const mockEvent = { preventDefault: vi.fn() } as any;
+    const mockEvent = createMockEvent();
 
     act(() => {
       result.current.handleSubmit(mockEvent);
@@ -210,14 +234,9 @@ describe('useQuizSubmit', () => {
 
   it('should handle survival mode wrong answer', async () => {
     vi.mocked(useGameStore).mockReturnValue({
-      incrementCombo: vi.fn(),
-      resetCombo: vi.fn(),
-      isExhausted: false,
-      activeItems: [],
-      consumeActiveItem: vi.fn(),
+      ...defaultGameStoreState,
       lives: 1,
-      consumeLife: vi.fn(),
-    } as any);
+    });
 
     const { result } = renderHook(() =>
       useQuizSubmit({
@@ -227,7 +246,7 @@ describe('useQuizSubmit', () => {
       })
     );
 
-    const mockEvent = { preventDefault: vi.fn() } as any;
+    const mockEvent = createMockEvent();
 
     act(() => {
       result.current.handleSubmit(mockEvent);
@@ -251,7 +270,7 @@ describe('useQuizSubmit', () => {
       })
     );
 
-    const mockEvent = { preventDefault: vi.fn() } as any;
+    const mockEvent = createMockEvent();
 
     act(() => {
       result.current.handleSubmit(mockEvent);
@@ -262,14 +281,9 @@ describe('useQuizSubmit', () => {
 
   it('should handle safety rope usage on wrong answer', async () => {
     vi.mocked(useGameStore).mockReturnValue({
-      incrementCombo: vi.fn(),
-      resetCombo: vi.fn(),
-      isExhausted: false,
+      ...defaultGameStoreState,
       activeItems: ['safety_rope'],
-      consumeActiveItem: vi.fn(),
-      lives: 3,
-      consumeLife: vi.fn(),
-    } as any);
+    });
 
     const onSafetyRopeUsed = vi.fn();
     const { result } = renderHook(() =>
@@ -280,7 +294,7 @@ describe('useQuizSubmit', () => {
       })
     );
 
-    const mockEvent = { preventDefault: vi.fn() } as any;
+    const mockEvent = createMockEvent();
 
     act(() => {
       result.current.handleSubmit(mockEvent);
@@ -310,7 +324,7 @@ describe('useQuizSubmit', () => {
       })
     );
 
-    const mockEvent = { preventDefault: vi.fn() } as any;
+    const mockEvent = createMockEvent();
 
     act(() => {
       result.current.handleSubmit(mockEvent);
@@ -334,7 +348,7 @@ describe('useQuizSubmit', () => {
       })
     );
 
-    const mockEvent = { preventDefault: vi.fn() } as any;
+    const mockEvent = createMockEvent();
 
     act(() => {
       result.current.handleSubmit(mockEvent);
@@ -352,7 +366,7 @@ describe('useQuizSubmit', () => {
       })
     );
 
-    const mockEvent = { preventDefault: vi.fn() } as any;
+    const mockEvent = createMockEvent();
 
     act(() => {
       result.current.handleSubmit(mockEvent);
@@ -371,7 +385,7 @@ describe('useQuizSubmit', () => {
       })
     );
 
-    const mockEvent = { preventDefault: vi.fn() } as any;
+    const mockEvent = createMockEvent();
 
     act(() => {
       result.current.handleSubmit(mockEvent);
@@ -383,14 +397,9 @@ describe('useQuizSubmit', () => {
 
   it('should handle flare usage in survival mode', async () => {
     vi.mocked(useGameStore).mockReturnValue({
-      incrementCombo: vi.fn(),
-      resetCombo: vi.fn(),
-      isExhausted: false,
+      ...defaultGameStoreState,
       activeItems: ['flare'],
-      consumeActiveItem: vi.fn(),
-      lives: 3,
-      consumeLife: vi.fn(),
-    } as any);
+    });
 
     const setIsFlarePaused = vi.fn();
     const { result } = renderHook(() =>
@@ -402,7 +411,7 @@ describe('useQuizSubmit', () => {
       })
     );
 
-    const mockEvent = { preventDefault: vi.fn() } as any;
+    const mockEvent = createMockEvent();
 
     act(() => {
       result.current.handleSubmit(mockEvent);
@@ -424,18 +433,13 @@ describe('useQuizSubmit', () => {
 
   it('should apply exhausted multiplier to score', () => {
     vi.mocked(useGameStore).mockReturnValue({
-      incrementCombo: vi.fn(),
-      resetCombo: vi.fn(),
+      ...defaultGameStoreState,
       isExhausted: true,
-      activeItems: [],
-      consumeActiveItem: vi.fn(),
-      lives: 3,
-      consumeLife: vi.fn(),
-    } as any);
+    });
 
     const { result } = renderHook(() => useQuizSubmit(defaultParams));
 
-    const mockEvent = { preventDefault: vi.fn() } as any;
+    const mockEvent = createMockEvent();
 
     act(() => {
       result.current.handleSubmit(mockEvent);
@@ -461,7 +465,7 @@ describe('useQuizSubmit', () => {
       })
     );
 
-    const mockEvent = { preventDefault: vi.fn() } as any;
+    const mockEvent = createMockEvent();
 
     act(() => {
       result.current.handleSubmit(mockEvent);
@@ -480,7 +484,7 @@ describe('useQuizSubmit', () => {
       })
     );
 
-    const mockEvent = { preventDefault: vi.fn() } as any;
+    const mockEvent = createMockEvent();
 
     act(() => {
       result.current.handleSubmit(mockEvent);
@@ -502,7 +506,7 @@ describe('useQuizSubmit', () => {
       })
     );
 
-    const mockEvent = { preventDefault: vi.fn() } as any;
+    const mockEvent = createMockEvent();
 
     act(() => {
       result.current.handleSubmit(mockEvent);
@@ -525,7 +529,7 @@ describe('useQuizSubmit', () => {
       })
     );
 
-    const mockEvent = { preventDefault: vi.fn() } as any;
+    const mockEvent = createMockEvent();
 
     act(() => {
       result.current.handleSubmit(mockEvent);
@@ -542,7 +546,7 @@ describe('useQuizSubmit', () => {
       })
     );
 
-    const mockEvent = { preventDefault: vi.fn() } as any;
+    const mockEvent = createMockEvent();
 
     act(() => {
       result.current.handleSubmit(mockEvent);
@@ -560,7 +564,7 @@ describe('useQuizSubmit', () => {
       })
     );
 
-    const mockEvent = { preventDefault: vi.fn() } as any;
+    const mockEvent = createMockEvent();
 
     act(() => {
       result.current.handleSubmit(mockEvent);
@@ -581,7 +585,7 @@ describe('useQuizSubmit', () => {
       })
     );
 
-    const mockEvent = { preventDefault: vi.fn() } as any;
+    const mockEvent = createMockEvent();
 
     act(() => {
       result.current.handleSubmit(mockEvent);
@@ -598,7 +602,7 @@ describe('useQuizSubmit', () => {
       })
     );
 
-    const mockEvent = { preventDefault: vi.fn() } as any;
+    const mockEvent = createMockEvent();
 
     act(() => {
       result.current.handleSubmit(mockEvent);
@@ -618,7 +622,7 @@ describe('useQuizSubmit', () => {
       })
     );
 
-    const mockEvent = { preventDefault: vi.fn() } as any;
+    const mockEvent = createMockEvent();
 
     act(() => {
       result.current.handleSubmit(mockEvent);
@@ -636,7 +640,7 @@ describe('useQuizSubmit', () => {
       })
     );
 
-    const mockEvent = { preventDefault: vi.fn() } as any;
+    const mockEvent = createMockEvent();
 
     act(() => {
       result.current.handleSubmit(mockEvent);
@@ -663,7 +667,7 @@ describe('useQuizSubmit', () => {
       })
     );
 
-    const mockEvent = { preventDefault: vi.fn() } as any;
+    const mockEvent = createMockEvent();
 
     act(() => {
       result.current.handleSubmit(mockEvent);
@@ -687,7 +691,7 @@ describe('useQuizSubmit', () => {
       })
     );
 
-    const mockEvent = { preventDefault: vi.fn() } as any;
+    const mockEvent = createMockEvent();
 
     act(() => {
       result.current.handleSubmit(mockEvent);
@@ -709,7 +713,7 @@ describe('useQuizSubmit', () => {
       })
     );
 
-    const mockEvent = { preventDefault: vi.fn() } as any;
+    const mockEvent = createMockEvent();
 
     act(() => {
       result.current.handleSubmit(mockEvent);
@@ -727,7 +731,7 @@ describe('useQuizSubmit', () => {
       })
     );
 
-    const mockEvent = { preventDefault: vi.fn() } as any;
+    const mockEvent = createMockEvent();
 
     act(() => {
       result.current.handleSubmit(mockEvent);
@@ -741,19 +745,11 @@ describe('useQuizSubmit', () => {
   });
 
   it('should use multiplier 1.0 when isExhausted is false', () => {
-    vi.mocked(useGameStore).mockReturnValue({
-      incrementCombo: vi.fn(),
-      resetCombo: vi.fn(),
-      isExhausted: false,
-      activeItems: [],
-      consumeActiveItem: vi.fn(),
-      lives: 3,
-      consumeLife: vi.fn(),
-    } as any);
+    vi.mocked(useGameStore).mockReturnValue(defaultGameStoreState);
 
     const { result } = renderHook(() => useQuizSubmit(defaultParams));
 
-    const mockEvent = { preventDefault: vi.fn() } as any;
+    const mockEvent = createMockEvent();
 
     act(() => {
       result.current.handleSubmit(mockEvent);
@@ -781,16 +777,11 @@ describe('useQuizSubmit', () => {
     );
 
     vi.mocked(useGameStore).mockReturnValue({
-      incrementCombo: vi.fn(),
-      resetCombo: vi.fn(),
-      isExhausted: false,
+      ...defaultGameStoreState,
       activeItems: ['safety_rope'],
-      consumeActiveItem: vi.fn(),
-      lives: 3,
-      consumeLife: vi.fn(),
-    } as any);
+    });
 
-    const mockEvent = { preventDefault: vi.fn() } as any;
+    const mockEvent = createMockEvent();
 
     act(() => {
       result.current.handleSubmit(mockEvent);
@@ -813,17 +804,9 @@ describe('useQuizSubmit', () => {
       })
     );
 
-    vi.mocked(useGameStore).mockReturnValue({
-      incrementCombo: vi.fn(),
-      resetCombo: vi.fn(),
-      isExhausted: false,
-      activeItems: [],
-      consumeActiveItem: vi.fn(),
-      lives: 3,
-      consumeLife: vi.fn(),
-    } as any);
+    vi.mocked(useGameStore).mockReturnValue(defaultGameStoreState);
 
-    const mockEvent = { preventDefault: vi.fn() } as any;
+    const mockEvent = createMockEvent();
 
     act(() => {
       result.current.handleSubmit(mockEvent);
@@ -848,17 +831,9 @@ describe('useQuizSubmit', () => {
       })
     );
 
-    vi.mocked(useGameStore).mockReturnValue({
-      incrementCombo: vi.fn(),
-      resetCombo: vi.fn(),
-      isExhausted: false,
-      activeItems: [],
-      consumeActiveItem: vi.fn(),
-      lives: 3,
-      consumeLife: vi.fn(),
-    } as any);
+    vi.mocked(useGameStore).mockReturnValue(defaultGameStoreState);
 
-    const mockEvent = { preventDefault: vi.fn() } as any;
+    const mockEvent = createMockEvent();
 
     act(() => {
       result.current.handleSubmit(mockEvent);
@@ -874,14 +849,9 @@ describe('useQuizSubmit', () => {
 
   it('should handle survival mode wrong answer without flare', async () => {
     vi.mocked(useGameStore).mockReturnValue({
-      incrementCombo: vi.fn(),
-      resetCombo: vi.fn(),
-      isExhausted: false,
-      activeItems: [],
-      consumeActiveItem: vi.fn(),
+      ...defaultGameStoreState,
       lives: 1,
-      consumeLife: vi.fn(),
-    } as any);
+    });
 
     const { result } = renderHook(() =>
       useQuizSubmit({
@@ -891,7 +861,7 @@ describe('useQuizSubmit', () => {
       })
     );
 
-    const mockEvent = { preventDefault: vi.fn() } as any;
+    const mockEvent = createMockEvent();
 
     act(() => {
       result.current.handleSubmit(mockEvent);
@@ -913,7 +883,7 @@ describe('useQuizSubmit', () => {
       })
     );
 
-    const mockEvent = { preventDefault: vi.fn() } as any;
+    const mockEvent = createMockEvent();
 
     act(() => {
       result.current.handleSubmit(mockEvent);
@@ -931,7 +901,7 @@ describe('useQuizSubmit', () => {
       })
     );
 
-    const mockEvent = { preventDefault: vi.fn() } as any;
+    const mockEvent = createMockEvent();
 
     act(() => {
       result.current.handleSubmit(mockEvent);
@@ -953,7 +923,7 @@ describe('useQuizSubmit', () => {
       })
     );
 
-    const mockEvent = { preventDefault: vi.fn() } as any;
+    const mockEvent = createMockEvent();
 
     act(() => {
       result.current.handleSubmit(mockEvent);
@@ -971,7 +941,7 @@ describe('useQuizSubmit', () => {
       })
     );
 
-    const mockEvent = { preventDefault: vi.fn() } as any;
+    const mockEvent = createMockEvent();
 
     act(() => {
       result.current.handleSubmit(mockEvent);
@@ -988,7 +958,7 @@ describe('useQuizSubmit', () => {
       })
     );
 
-    const mockEvent = { preventDefault: vi.fn() } as any;
+    const mockEvent = createMockEvent();
 
     act(() => {
       result.current.handleSubmit(mockEvent);
@@ -1005,7 +975,7 @@ describe('useQuizSubmit', () => {
       })
     );
 
-    const mockEvent = { preventDefault: vi.fn() } as any;
+    const mockEvent = createMockEvent();
 
     act(() => {
       result.current.handleSubmit(mockEvent);
@@ -1022,7 +992,7 @@ describe('useQuizSubmit', () => {
       })
     );
 
-    const mockEvent = { preventDefault: vi.fn() } as any;
+    const mockEvent = createMockEvent();
 
     act(() => {
       result.current.handleSubmit(mockEvent);
@@ -1045,17 +1015,9 @@ describe('useQuizSubmit', () => {
       })
     );
 
-    vi.mocked(useGameStore).mockReturnValue({
-      incrementCombo: vi.fn(),
-      resetCombo: vi.fn(),
-      isExhausted: false,
-      activeItems: [],
-      consumeActiveItem: vi.fn(),
-      lives: 3,
-      consumeLife: vi.fn(),
-    } as any);
+    vi.mocked(useGameStore).mockReturnValue(defaultGameStoreState);
 
-    const mockEvent = { preventDefault: vi.fn() } as any;
+    const mockEvent = createMockEvent();
 
     act(() => {
       result.current.handleSubmit(mockEvent);
@@ -1082,17 +1044,9 @@ describe('useQuizSubmit', () => {
       })
     );
 
-    vi.mocked(useGameStore).mockReturnValue({
-      incrementCombo: vi.fn(),
-      resetCombo: vi.fn(),
-      isExhausted: false,
-      activeItems: [],
-      consumeActiveItem: vi.fn(),
-      lives: 3,
-      consumeLife: vi.fn(),
-    } as any);
+    vi.mocked(useGameStore).mockReturnValue(defaultGameStoreState);
 
-    const mockEvent = { preventDefault: vi.fn() } as any;
+    const mockEvent = createMockEvent();
 
     act(() => {
       result.current.handleSubmit(mockEvent);
@@ -1114,17 +1068,9 @@ describe('useQuizSubmit', () => {
       })
     );
 
-    vi.mocked(useGameStore).mockReturnValue({
-      incrementCombo: vi.fn(),
-      resetCombo: vi.fn(),
-      isExhausted: false,
-      activeItems: [],
-      consumeActiveItem: vi.fn(),
-      lives: 3,
-      consumeLife: vi.fn(),
-    } as any);
+    vi.mocked(useGameStore).mockReturnValue(defaultGameStoreState);
 
-    const mockEvent = { preventDefault: vi.fn() } as any;
+    const mockEvent = createMockEvent();
 
     act(() => {
       result.current.handleSubmit(mockEvent);
@@ -1147,17 +1093,9 @@ describe('useQuizSubmit', () => {
       })
     );
 
-    vi.mocked(useGameStore).mockReturnValue({
-      incrementCombo: vi.fn(),
-      resetCombo: vi.fn(),
-      isExhausted: false,
-      activeItems: [],
-      consumeActiveItem: vi.fn(),
-      lives: 3,
-      consumeLife: vi.fn(),
-    } as any);
+    vi.mocked(useGameStore).mockReturnValue(defaultGameStoreState);
 
-    const mockEvent = { preventDefault: vi.fn() } as any;
+    const mockEvent = createMockEvent();
 
     act(() => {
       result.current.handleSubmit(mockEvent);
@@ -1179,17 +1117,9 @@ describe('useQuizSubmit', () => {
       })
     );
 
-    vi.mocked(useGameStore).mockReturnValue({
-      incrementCombo: vi.fn(),
-      resetCombo: vi.fn(),
-      isExhausted: false,
-      activeItems: [],
-      consumeActiveItem: vi.fn(),
-      lives: 3,
-      consumeLife: vi.fn(),
-    } as any);
+    vi.mocked(useGameStore).mockReturnValue(defaultGameStoreState);
 
-    const mockEvent = { preventDefault: vi.fn() } as any;
+    const mockEvent = createMockEvent();
 
     act(() => {
       result.current.handleSubmit(mockEvent);
@@ -1210,17 +1140,9 @@ describe('useQuizSubmit', () => {
       })
     );
 
-    vi.mocked(useGameStore).mockReturnValue({
-      incrementCombo: vi.fn(),
-      resetCombo: vi.fn(),
-      isExhausted: false,
-      activeItems: [],
-      consumeActiveItem: vi.fn(),
-      lives: 3,
-      consumeLife: vi.fn(),
-    } as any);
+    vi.mocked(useGameStore).mockReturnValue(defaultGameStoreState);
 
-    const mockEvent = { preventDefault: vi.fn() } as any;
+    const mockEvent = createMockEvent();
 
     act(() => {
       result.current.handleSubmit(mockEvent);
@@ -1237,16 +1159,11 @@ describe('useQuizSubmit', () => {
     const { result } = renderHook(() => useQuizSubmit(defaultParams));
 
     vi.mocked(useGameStore).mockReturnValue({
-      incrementCombo: vi.fn(),
-      resetCombo: vi.fn(),
+      ...defaultGameStoreState,
       isExhausted: true,
-      activeItems: [],
-      consumeActiveItem: vi.fn(),
-      lives: 3,
-      consumeLife: vi.fn(),
-    } as any);
+    });
 
-    const mockEvent = { preventDefault: vi.fn() } as any;
+    const mockEvent = createMockEvent();
 
     act(() => {
       result.current.handleSubmit(mockEvent);
@@ -1273,17 +1190,9 @@ describe('useQuizSubmit', () => {
       })
     );
 
-    vi.mocked(useGameStore).mockReturnValue({
-      incrementCombo: vi.fn(),
-      resetCombo: vi.fn(),
-      isExhausted: false,
-      activeItems: [],
-      consumeActiveItem: vi.fn(),
-      lives: 3,
-      consumeLife: vi.fn(),
-    } as any);
+    vi.mocked(useGameStore).mockReturnValue(defaultGameStoreState);
 
-    const mockEvent = { preventDefault: vi.fn() } as any;
+    const mockEvent = createMockEvent();
 
     act(() => {
       result.current.handleSubmit(mockEvent);
@@ -1307,17 +1216,9 @@ describe('useQuizSubmit', () => {
       })
     );
 
-    vi.mocked(useGameStore).mockReturnValue({
-      incrementCombo: vi.fn(),
-      resetCombo: vi.fn(),
-      isExhausted: false,
-      activeItems: [],
-      consumeActiveItem: vi.fn(),
-      lives: 3,
-      consumeLife: vi.fn(),
-    } as any);
+    vi.mocked(useGameStore).mockReturnValue(defaultGameStoreState);
 
-    const mockEvent = { preventDefault: vi.fn() } as any;
+    const mockEvent = createMockEvent();
 
     act(() => {
       result.current.handleSubmit(mockEvent);
@@ -1342,17 +1243,9 @@ describe('useQuizSubmit', () => {
       })
     );
 
-    vi.mocked(useGameStore).mockReturnValue({
-      incrementCombo: vi.fn(),
-      resetCombo: vi.fn(),
-      isExhausted: false,
-      activeItems: [],
-      consumeActiveItem: vi.fn(),
-      lives: 3,
-      consumeLife: vi.fn(),
-    } as any);
+    vi.mocked(useGameStore).mockReturnValue(defaultGameStoreState);
 
-    const mockEvent = { preventDefault: vi.fn() } as any;
+    const mockEvent = createMockEvent();
 
     act(() => {
       result.current.handleSubmit(mockEvent);
@@ -1372,17 +1265,9 @@ describe('useQuizSubmit', () => {
       })
     );
 
-    vi.mocked(useGameStore).mockReturnValue({
-      incrementCombo: vi.fn(),
-      resetCombo: vi.fn(),
-      isExhausted: false,
-      activeItems: [],
-      consumeActiveItem: vi.fn(),
-      lives: 3,
-      consumeLife: vi.fn(),
-    } as any);
+    vi.mocked(useGameStore).mockReturnValue(defaultGameStoreState);
 
-    const mockEvent = { preventDefault: vi.fn() } as any;
+    const mockEvent = createMockEvent();
 
     act(() => {
       result.current.handleSubmit(mockEvent);
@@ -1400,17 +1285,9 @@ describe('useQuizSubmit', () => {
       })
     );
 
-    vi.mocked(useGameStore).mockReturnValue({
-      incrementCombo: vi.fn(),
-      resetCombo: vi.fn(),
-      isExhausted: false,
-      activeItems: [],
-      consumeActiveItem: vi.fn(),
-      lives: 3,
-      consumeLife: vi.fn(),
-    } as any);
+    vi.mocked(useGameStore).mockReturnValue(defaultGameStoreState);
 
-    const mockEvent = { preventDefault: vi.fn() } as any;
+    const mockEvent = createMockEvent();
 
     act(() => {
       result.current.handleSubmit(mockEvent);
@@ -1432,17 +1309,9 @@ describe('useQuizSubmit', () => {
       })
     );
 
-    vi.mocked(useGameStore).mockReturnValue({
-      incrementCombo: vi.fn(),
-      resetCombo: vi.fn(),
-      isExhausted: false,
-      activeItems: [],
-      consumeActiveItem: vi.fn(),
-      lives: 3,
-      consumeLife: vi.fn(),
-    } as any);
+    vi.mocked(useGameStore).mockReturnValue(defaultGameStoreState);
 
-    const mockEvent = { preventDefault: vi.fn() } as any;
+    const mockEvent = createMockEvent();
 
     act(() => {
       result.current.handleSubmit(mockEvent);
@@ -1470,17 +1339,9 @@ describe('useQuizSubmit', () => {
       })
     );
 
-    vi.mocked(useGameStore).mockReturnValue({
-      incrementCombo: vi.fn(),
-      resetCombo: vi.fn(),
-      isExhausted: false,
-      activeItems: [],
-      consumeActiveItem: vi.fn(),
-      lives: 3,
-      consumeLife: vi.fn(),
-    } as any);
+    vi.mocked(useGameStore).mockReturnValue(defaultGameStoreState);
 
-    const mockEvent = { preventDefault: vi.fn() } as any;
+    const mockEvent = createMockEvent();
 
     act(() => {
       result.current.handleSubmit(mockEvent);
@@ -1501,7 +1362,7 @@ describe('useQuizSubmit', () => {
       })
     );
 
-    const mockEvent = { preventDefault: vi.fn() } as any;
+    const mockEvent = createMockEvent();
 
     act(() => {
       result.current.handleSubmit(mockEvent);
@@ -1524,17 +1385,9 @@ describe('useQuizSubmit', () => {
       })
     );
 
-    vi.mocked(useGameStore).mockReturnValue({
-      incrementCombo: vi.fn(),
-      resetCombo: vi.fn(),
-      isExhausted: false,
-      activeItems: [],
-      consumeActiveItem: vi.fn(),
-      lives: 3,
-      consumeLife: vi.fn(),
-    } as any);
+    vi.mocked(useGameStore).mockReturnValue(defaultGameStoreState);
 
-    const mockEvent = { preventDefault: vi.fn() } as any;
+    const mockEvent = createMockEvent();
 
     act(() => {
       result.current.handleSubmit(mockEvent);
@@ -1556,7 +1409,7 @@ describe('useQuizSubmit', () => {
       })
     );
 
-    const mockEvent = { preventDefault: vi.fn() } as any;
+    const mockEvent = createMockEvent();
 
     act(() => {
       result.current.handleSubmit(mockEvent);
