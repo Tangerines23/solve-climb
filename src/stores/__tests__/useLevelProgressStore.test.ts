@@ -3,6 +3,7 @@ import { renderHook, act, waitFor } from '@testing-library/react';
 import { useLevelProgressStore } from '../useLevelProgressStore';
 import type { GameMode } from '../../types/quiz';
 import { supabase } from '../../utils/supabaseClient';
+import type { UserResponse, PostgrestSingleResponse } from '@supabase/supabase-js';
 
 // Mock supabase
 vi.mock('../../utils/supabaseClient', () => {
@@ -29,6 +30,16 @@ vi.mock('../../utils/supabaseClient', () => {
   };
 });
 
+// Define generic mock response type
+// Define generic mock response type
+type MockSupabaseResponse<T> = {
+  data: T | null;
+  error: { message: string } | null;
+  count: number | null;
+  status: number;
+  statusText: string;
+};
+
 describe('useLevelProgressStore', () => {
   beforeEach(() => {
     vi.clearAllMocks();
@@ -43,12 +54,26 @@ describe('useLevelProgressStore', () => {
       eq: vi.fn().mockReturnThis(),
       single: vi.fn().mockReturnThis(),
       in: vi.fn().mockReturnThis(),
-      then: vi.fn((resolve) => resolve({ data: null, error: null })),
-    } as any;
+      then: vi.fn((resolve) =>
+        resolve({ data: null, error: null, count: null, status: 200, statusText: 'OK' })
+      ),
+    };
 
+    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+    // @ts-ignore - Mocking complex Supabase builder
     vi.mocked(supabase.from).mockReturnValue(mockBuilder);
-    vi.mocked(supabase.rpc).mockResolvedValue({ data: null, error: null });
-    vi.mocked(supabase.auth.getUser).mockResolvedValue({ data: { user: null }, error: null });
+    vi.mocked(supabase.rpc).mockResolvedValue({
+      data: null,
+      error: null,
+      count: null,
+      status: 200,
+      statusText: 'OK',
+    });
+    // Match UserResponse structure
+    vi.mocked(supabase.auth.getUser).mockResolvedValue({
+      data: { user: null },
+      error: null,
+    } as unknown as UserResponse);
 
     // Reset store state
     const { result } = renderHook(() => useLevelProgressStore());
@@ -127,7 +152,7 @@ describe('useLevelProgressStore', () => {
     vi.mocked(supabase.auth.getUser).mockResolvedValue({
       data: { user: { id: 'user-123' } },
       error: null,
-    } as any);
+    } as UserResponse);
 
     vi.mocked(supabase.from).mockReturnValue({
       upsert: vi.fn().mockResolvedValue({
@@ -151,7 +176,7 @@ describe('useLevelProgressStore', () => {
     vi.mocked(supabase.auth.getUser).mockResolvedValue({
       data: { user: { id: 'user-123' } },
       error: null,
-    } as any);
+    } as UserResponse);
 
     vi.mocked(supabase.from).mockReturnValue({
       upsert: vi.fn().mockResolvedValue({
@@ -178,7 +203,7 @@ describe('useLevelProgressStore', () => {
     vi.mocked(supabase.auth.getUser).mockResolvedValue({
       data: { user: { id: 'user-123' } },
       error: null,
-    } as any);
+    } as UserResponse);
 
     vi.mocked(supabase.from).mockReturnValue({
       upsert: vi.fn().mockResolvedValue({
@@ -205,7 +230,7 @@ describe('useLevelProgressStore', () => {
     vi.mocked(supabase.auth.getUser).mockResolvedValue({
       data: { user: { id: 'user-123' } },
       error: null,
-    } as any);
+    } as UserResponse);
 
     vi.mocked(supabase.from).mockReturnValue({
       upsert: vi.fn().mockResolvedValue({
@@ -231,14 +256,14 @@ describe('useLevelProgressStore', () => {
     vi.mocked(supabase.auth.getUser).mockResolvedValue({
       data: { user: { id: 'user-123' } },
       error: null,
-    } as any);
+    } as UserResponse);
 
     vi.mocked(supabase.from).mockReturnValue({
       upsert: vi.fn().mockResolvedValue({
         data: null,
         error: null,
       }),
-    } as any);
+    } as unknown as any);
 
     act(() => {
       result.current.clearLevel('math', 'addition', 1, 'time-attack', 100);
@@ -256,7 +281,7 @@ describe('useLevelProgressStore', () => {
     vi.mocked(supabase.auth.getUser).mockResolvedValue({
       data: { user: { id: 'user-123' } },
       error: null,
-    } as any);
+    } as UserResponse);
 
     vi.mocked(supabase.from).mockReturnValue({
       upsert: vi.fn().mockResolvedValue({
@@ -313,7 +338,7 @@ describe('useLevelProgressStore', () => {
     vi.mocked(supabase.auth.getUser).mockResolvedValue({
       data: { user: { id: 'user-123' } },
       error: null,
-    } as any);
+    } as UserResponse);
 
     vi.mocked(supabase.from).mockReturnValue({
       select: vi.fn().mockReturnValue({
@@ -344,7 +369,7 @@ describe('useLevelProgressStore', () => {
     vi.mocked(supabase.auth.getUser).mockResolvedValue({
       data: { user: { id: 'user-123' } },
       error: null,
-    } as any);
+    } as UserResponse);
 
     vi.mocked(supabase.from).mockReturnValue({
       select: vi.fn().mockReturnValue({
@@ -369,7 +394,7 @@ describe('useLevelProgressStore', () => {
     vi.mocked(supabase.auth.getUser).mockResolvedValue({
       data: { user: null },
       error: null,
-    } as any);
+    } as unknown as UserResponse);
 
     await act(async () => {
       await result.current.syncProgress();
@@ -412,7 +437,7 @@ describe('useLevelProgressStore', () => {
     } as any);
 
     await act(async () => {
-      await result.current.fetchRanking('math', 'weekly', 'total');
+      await result.current.fetchRanking('math', 'addition', 'weekly', 'total');
     });
 
     expect(consoleErrorSpy).toHaveBeenCalled();
@@ -425,7 +450,7 @@ describe('useLevelProgressStore', () => {
     vi.mocked(supabase.auth.getUser).mockResolvedValue({
       data: { user: { id: 'user-123' } },
       error: null,
-    } as any);
+    } as UserResponse);
 
     vi.mocked(supabase.from).mockReturnValue({
       upsert: vi.fn().mockResolvedValue({
@@ -452,7 +477,7 @@ describe('useLevelProgressStore', () => {
     vi.mocked(supabase.auth.getUser).mockResolvedValue({
       data: { user: { id: 'user-123' } },
       error: null,
-    } as any);
+    } as UserResponse);
 
     vi.mocked(supabase.from).mockReturnValue({
       upsert: vi.fn().mockResolvedValue({
@@ -478,7 +503,7 @@ describe('useLevelProgressStore', () => {
     vi.mocked(supabase.auth.getUser).mockResolvedValue({
       data: { user: { id: 'user-123' } },
       error: null,
-    } as any);
+    } as UserResponse);
 
     vi.mocked(supabase.from).mockReturnValue({
       upsert: vi.fn().mockResolvedValue({
@@ -504,7 +529,7 @@ describe('useLevelProgressStore', () => {
     vi.mocked(supabase.auth.getUser).mockResolvedValue({
       data: { user: null },
       error: null,
-    } as any);
+    } as unknown as UserResponse);
 
     await act(async () => {
       await result.current.clearLevel('math', 'addition', 1, 'time-attack', 100);
@@ -520,7 +545,7 @@ describe('useLevelProgressStore', () => {
     vi.mocked(supabase.auth.getUser).mockResolvedValue({
       data: { user: null },
       error: null,
-    } as any);
+    } as unknown as UserResponse);
 
     await act(async () => {
       await result.current.updateBestScore('math', 'addition', 1, 'time-attack', 100);
@@ -538,7 +563,7 @@ describe('useLevelProgressStore', () => {
     vi.mocked(supabase.auth.getUser).mockResolvedValue({
       data: { user: { id: 'user-123' } },
       error: null,
-    } as any);
+    } as UserResponse);
 
     vi.mocked(supabase.from).mockReturnValue({
       delete: vi.fn().mockReturnValue({
@@ -565,7 +590,7 @@ describe('useLevelProgressStore', () => {
     vi.mocked(supabase.auth.getUser).mockResolvedValue({
       data: { user: { id: 'user-123' } },
       error: null,
-    } as any);
+    } as UserResponse);
 
     vi.mocked(supabase.from).mockReturnValue({
       upsert: vi.fn().mockResolvedValue({
@@ -626,7 +651,7 @@ describe('useLevelProgressStore', () => {
     vi.mocked(supabase.auth.getUser).mockResolvedValue({
       data: { user: { id: 'user-123' } },
       error: null,
-    } as any);
+    } as UserResponse);
 
     vi.mocked(supabase.from).mockReturnValue({
       upsert: vi.fn().mockResolvedValue({
@@ -656,7 +681,7 @@ describe('useLevelProgressStore', () => {
     vi.mocked(supabase.auth.getUser).mockResolvedValue({
       data: { user: { id: 'user-123' } },
       error: null,
-    } as any);
+    } as UserResponse);
 
     vi.mocked(supabase.from).mockReturnValue({
       upsert: vi.fn().mockResolvedValue({
@@ -686,7 +711,7 @@ describe('useLevelProgressStore', () => {
     vi.mocked(supabase.auth.getUser).mockResolvedValue({
       data: { user: { id: 'user-123' } },
       error: null,
-    } as any);
+    } as UserResponse);
 
     vi.mocked(supabase.from).mockReturnValue({
       select: vi.fn().mockReturnValue({
@@ -711,7 +736,7 @@ describe('useLevelProgressStore', () => {
     vi.mocked(supabase.auth.getUser).mockResolvedValue({
       data: { user: { id: 'user-123' } },
       error: null,
-    } as any);
+    } as UserResponse);
 
     const mockRecords = [
       {
@@ -754,7 +779,7 @@ describe('useLevelProgressStore', () => {
     vi.mocked(supabase.auth.getUser).mockResolvedValue({
       data: { user: { id: 'user-123' } },
       error: null,
-    } as any);
+    } as UserResponse);
 
     const mockRecords = [
       {
@@ -797,7 +822,7 @@ describe('useLevelProgressStore', () => {
     vi.mocked(supabase.auth.getUser).mockResolvedValue({
       data: { user: { id: 'user-123' } },
       error: null,
-    } as any);
+    } as UserResponse);
 
     const mockRecords = [
       {
@@ -834,7 +859,7 @@ describe('useLevelProgressStore', () => {
     vi.mocked(supabase.auth.getUser).mockResolvedValue({
       data: { user: { id: 'user-123' } },
       error: null,
-    } as any);
+    } as UserResponse);
 
     const mockRecords = [
       {
@@ -871,7 +896,7 @@ describe('useLevelProgressStore', () => {
     vi.mocked(supabase.auth.getUser).mockResolvedValue({
       data: { user: { id: 'user-123' } },
       error: null,
-    } as any);
+    } as UserResponse);
 
     vi.mocked(supabase.from).mockReturnValue({
       upsert: vi.fn().mockResolvedValue({
@@ -902,12 +927,15 @@ describe('useLevelProgressStore', () => {
     vi.mocked(supabase.rpc).mockResolvedValue({
       data: null,
       error: null,
-    } as any);
+      count: null,
+      status: 200,
+      statusText: 'OK',
+    });
 
     const initialRankings = { ...result.current.rankings };
 
     await act(async () => {
-      await result.current.fetchRanking('math', 'weekly', 'total', 10);
+      await result.current.fetchRanking('math', 'addition', 'weekly', 'total', 10);
     });
 
     // Rankings should not be updated (should remain the same)
@@ -920,11 +948,14 @@ describe('useLevelProgressStore', () => {
 
     vi.mocked(supabase.rpc).mockResolvedValue({
       data: null,
-      error: { message: 'RPC failed' },
-    } as any);
+      error: { message: 'RPC failed', details: '', hint: '', code: '500', name: 'PostgrestError' },
+      count: null,
+      status: 500,
+      statusText: 'Error',
+    });
 
     await act(async () => {
-      await result.current.fetchRanking('math', 'weekly', 'total', 10);
+      await result.current.fetchRanking('math', 'addition', 'weekly', 'total', 10);
     });
 
     expect(consoleErrorSpy).toHaveBeenCalled();
@@ -942,7 +973,10 @@ describe('useLevelProgressStore', () => {
     vi.mocked(supabase.rpc).mockResolvedValue({
       data: mockRanking,
       error: null,
-    } as any);
+      count: null,
+      status: 200,
+      statusText: 'OK',
+    });
 
     await act(async () => {
       await result.current.fetchRanking('math', 'addition', 'all-time', 'survival', 20);

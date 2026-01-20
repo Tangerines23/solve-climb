@@ -108,10 +108,10 @@ export function LevelSelectPage() {
   }
 
   // 레벨 데이터 가져오기
-  const worldLevels = APP_CONFIG.LEVELS[worldParam as keyof typeof APP_CONFIG.LEVELS];
-  const levels = (worldLevels as any)?.[categoryParam] as
-    | Array<{ level: number; name: string; description: string }>
-    | undefined;
+  const worldLevels = APP_CONFIG.LEVELS[
+    worldParam as keyof typeof APP_CONFIG.LEVELS
+  ] as unknown as Record<string, { level: number; name: string; description: string }[]>;
+  const levels = worldLevels?.[categoryParam];
 
   if (!levels || levels.length === 0) {
     return (
@@ -174,13 +174,13 @@ export function LevelSelectPage() {
   // 월드 전환 핸들러
   const handleWorldChange = (direction: 'next' | 'prev') => {
     // 현재 산에 속한 월드만 필터링 (중요: 다른 산의 월드로 넘어가지 않도록 함)
-    const validWorldIds = APP_CONFIG.WORLDS.filter(
-      (w) => (w as any).mountainId === mountainParam
-    ).map((w) => w.id);
+    const validWorldIds = APP_CONFIG.WORLDS.filter((w) => w.mountainId === mountainParam).map(
+      (w) => w.id
+    );
 
     if (validWorldIds.length <= 1) return; // 전활할 월드가 없으면 무시
 
-    const currentIndex = validWorldIds.indexOf(worldParam as any);
+    const currentIndex = validWorldIds.indexOf(worldParam as World);
     let nextIndex = direction === 'next' ? currentIndex + 1 : currentIndex - 1;
 
     if (nextIndex >= validWorldIds.length) nextIndex = 0;

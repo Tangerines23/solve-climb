@@ -40,7 +40,8 @@ export function KeyboardInfoModal({ isOpen, onClose }: KeyboardInfoModalProps) {
           const categoryId = subTopic.id;
 
           // 현재 World1 고정 사용
-          const worldLevels = (APP_CONFIG.LEVELS as any)['World1'];
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          const worldLevels = (APP_CONFIG.LEVELS as Record<string, any>)['World1'];
           const levels =
             (worldLevels?.[categoryId] as Array<{
               level: number;
@@ -84,7 +85,7 @@ export function KeyboardInfoModal({ isOpen, onClose }: KeyboardInfoModalProps) {
           if (shouldInclude && kbType) {
             categories.push({
               category: mtnId,
-              categoryName: (APP_CONFIG.MOUNTAIN_MAP as any)[mtnId] || mtnId,
+              categoryName: (APP_CONFIG.MOUNTAIN_MAP as Record<string, string>)[mtnId] || mtnId,
               subTopic: categoryId,
               subTopicName: subTopic.name,
               icon: subTopic.icon,

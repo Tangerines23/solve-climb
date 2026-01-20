@@ -10,7 +10,17 @@ vi.mock('../../stores/useSettingsStore', () => ({
 }));
 
 vi.mock('../CustomKeypad', () => ({
-  CustomKeypad: ({ onNumberClick, onClear, onBackspace, onSubmit }: any) => (
+  CustomKeypad: ({
+    onNumberClick,
+    onClear,
+    onBackspace,
+    onSubmit,
+  }: {
+    onNumberClick: (val: string) => void;
+    onClear: () => void;
+    onBackspace: () => void;
+    onSubmit: () => void;
+  }) => (
     <div data-testid="custom-keypad">
       <button onClick={() => onNumberClick('1')}>1</button>
       <button onClick={onClear}>Clear</button>
@@ -21,7 +31,17 @@ vi.mock('../CustomKeypad', () => ({
 }));
 
 vi.mock('../QwertyKeypad', () => ({
-  QwertyKeypad: ({ onKeyPress, onClear, onBackspace, onSubmit }: any) => (
+  QwertyKeypad: ({
+    onKeyPress,
+    onClear,
+    onBackspace,
+    onSubmit,
+  }: {
+    onKeyPress: (key: string) => void;
+    onClear: () => void;
+    onBackspace: () => void;
+    onSubmit: () => void;
+  }) => (
     <div data-testid="qwerty-keypad">
       <button onClick={() => onKeyPress('a')}>A</button>
       <button onClick={onClear}>Clear</button>
@@ -38,7 +58,7 @@ describe('KeyboardInfoModal', () => {
     vi.clearAllMocks();
     vi.mocked(useSettingsStore).mockReturnValue({
       keyboardType: 'qwerty',
-    } as never);
+    } as unknown);
 
     // Mock screen.orientation
     Object.defineProperty(window, 'screen', {
@@ -98,7 +118,7 @@ describe('KeyboardInfoModal', () => {
   it('should render custom keypad when keyboardType is custom', () => {
     vi.mocked(useSettingsStore).mockReturnValue({
       keyboardType: 'custom',
-    } as never);
+    } as unknown);
 
     render(<KeyboardInfoModal isOpen={true} onClose={mockOnClose} />);
 
@@ -111,7 +131,7 @@ describe('KeyboardInfoModal', () => {
   it('should render qwerty keypad when keyboardType is qwerty', () => {
     vi.mocked(useSettingsStore).mockReturnValue({
       keyboardType: 'qwerty',
-    } as never);
+    } as unknown);
 
     render(<KeyboardInfoModal isOpen={true} onClose={mockOnClose} />);
 
@@ -124,7 +144,7 @@ describe('KeyboardInfoModal', () => {
   it('should handle keyboard type navigation', () => {
     vi.mocked(useSettingsStore).mockReturnValue({
       keyboardType: 'qwerty',
-    } as never);
+    } as unknown);
 
     render(<KeyboardInfoModal isOpen={true} onClose={mockOnClose} />);
 
@@ -140,7 +160,7 @@ describe('KeyboardInfoModal', () => {
   it('should handle category tab selection', () => {
     vi.mocked(useSettingsStore).mockReturnValue({
       keyboardType: 'qwerty',
-    } as never);
+    } as unknown);
 
     render(<KeyboardInfoModal isOpen={true} onClose={mockOnClose} />);
 
@@ -158,7 +178,7 @@ describe('KeyboardInfoModal', () => {
     // The actual empty state depends on APP_CONFIG which is complex to mock
     vi.mocked(useSettingsStore).mockReturnValue({
       keyboardType: 'custom',
-    } as never);
+    } as unknown);
 
     render(<KeyboardInfoModal isOpen={true} onClose={mockOnClose} />);
 

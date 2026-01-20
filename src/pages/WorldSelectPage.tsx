@@ -68,7 +68,7 @@ export function WorldSelectPage() {
     );
   }
 
-  const worlds = APP_CONFIG.WORLDS.filter((w) => (w as any).mountainId === mountainParam);
+  const worlds = APP_CONFIG.WORLDS.filter((w) => w.mountainId === mountainParam);
 
   const handleWorldClick = (worldId: string) => {
     if (!mountainParam || !categoryParam) return;

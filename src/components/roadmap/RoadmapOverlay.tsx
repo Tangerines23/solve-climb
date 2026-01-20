@@ -2,6 +2,13 @@ import React from 'react';
 import { HistoryStats } from '../../hooks/useHistoryData';
 import { LinearLandmarkItem, NonLinearTierItem } from './RoadmapItem';
 import { ALTITUDE_MILESTONES } from '../../constants/history';
+import { MilestoneItem } from '../../types/roadmap';
+
+interface RoadmapLayoutData {
+  nodes: MilestoneItem[];
+  BOTTOM_SAFETY_MARGIN: number;
+  gaugeHeight: number;
+}
 
 interface RoadmapOverlayProps {
   isMilestoneExpanded: boolean;
@@ -12,7 +19,7 @@ interface RoadmapOverlayProps {
   isScaling: boolean;
   showZoomIndicator: boolean;
   isLinearScale: boolean;
-  layoutData: any;
+  layoutData: RoadmapLayoutData;
   visibleAltRange: { min: number; max: number };
   roadmapData: { currentIdx: number; cardIndices: number[] };
   roadmapRef: React.RefObject<HTMLDivElement>;
@@ -57,6 +64,12 @@ export const RoadmapOverlay: React.FC<RoadmapOverlayProps> = ({
   getAltitudeY,
 }) => {
   if (!isMilestoneExpanded || !stats || !cardRect) return null;
+
+  const firstNode = layoutData?.nodes?.[0];
+  const dottedLineHeight =
+    isLinearScale && firstNode
+      ? `${(firstNode.bottom ?? 0) - (layoutData?.BOTTOM_SAFETY_MARGIN ?? 0) + 100}px`
+      : 'var(--dotted-height, 100%)';
 
   return (
     <div
@@ -136,10 +149,7 @@ export const RoadmapOverlay: React.FC<RoadmapOverlayProps> = ({
                   bottom: isLinearScale
                     ? layoutData?.BOTTOM_SAFETY_MARGIN || 0
                     : 'var(--gauge-bottom, 36px)',
-                  height:
-                    isLinearScale && layoutData
-                      ? `${layoutData.nodes[0].bottom - layoutData.BOTTOM_SAFETY_MARGIN + 100}px`
-                      : 'var(--dotted-height, 100%)',
+                  height: dottedLineHeight,
                   top: isLinearScale ? 'auto' : 'var(--dotted-top, 118px)',
                 }}
               />
@@ -190,10 +200,10 @@ export const RoadmapOverlay: React.FC<RoadmapOverlayProps> = ({
                 {isLinearScale && layoutData ? (
                   layoutData.nodes
                     .filter(
-                      (item: any) =>
+                      (item) =>
                         item.altitude >= visibleAltRange.min && item.altitude <= visibleAltRange.max
                     )
-                    .map((item: any) => {
+                    .map((item) => {
                       const isTier = item.isTier;
                       const isRefCurrent =
                         isTier &&
@@ -209,8 +219,8 @@ export const RoadmapOverlay: React.FC<RoadmapOverlayProps> = ({
                           key={isTier ? item.id : `${item.parentTierId}-sub-${item.label}`}
                           item={item}
                           stats={stats}
-                          isRefCurrent={isRefCurrent}
-                          isNext={isNext}
+                          isRefCurrent={isRefCurrent ?? false}
+                          isNext={isNext ?? false}
                           currentMarkerRef={currentMarkerRef}
                           nextMarkerRef={nextMarkerRef}
                         />

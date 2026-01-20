@@ -1,5 +1,10 @@
 import { describe, it, expect } from 'vitest';
-import { generateJapaneseQuestion, normalizeRomaji, HIRAGANA_MAPPINGS } from '../japanese';
+import {
+  generateJapaneseQuestion,
+  normalizeRomaji,
+  HIRAGANA_MAPPINGS,
+  type Difficulty,
+} from '../japanese';
 
 describe('japanese', () => {
   describe('generateJapaneseQuestion', () => {
@@ -101,7 +106,7 @@ describe('japanese', () => {
     });
 
     it('should handle default case for unknown difficulty', () => {
-      const result = generateJapaneseQuestion('unknown' as any);
+      const result = generateJapaneseQuestion('unknown' as unknown as Difficulty);
       expect(result).toHaveProperty('question');
       expect(result).toHaveProperty('answer');
       const found = HIRAGANA_MAPPINGS.find((m) => m.hiragana === result.question);

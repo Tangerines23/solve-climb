@@ -2,8 +2,9 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { TierSystemSection } from '../debug/TierSystemSection';
 import { supabase } from '../../utils/supabaseClient';
-import { useMyPageStats } from '../../hooks/useMyPageStats';
-import { loadTierDefinitions } from '../../constants/tiers';
+import { useMyPageStats, type UseMyPageStatsResult } from '../../hooks/useMyPageStats';
+import { loadTierDefinitions, type TierInfo } from '../../constants/tiers';
+import type { Session, AuthError } from '@supabase/supabase-js';
 
 // Mock dependencies
 vi.mock('../../stores/useLevelProgressStore', () => ({
@@ -43,15 +44,17 @@ describe('TierSystemSection', () => {
     vi.mocked(useMyPageStats).mockReturnValue({
       stats: null,
       refetch: vi.fn(),
-    } as never);
+      loading: false,
+      error: null,
+    } as unknown as UseMyPageStatsResult);
     vi.mocked(loadTierDefinitions).mockResolvedValue([
       { level: 0, name: '베이스캠프', icon: '⛺', minScore: 0, colorVar: '--tds-color-blue-500' },
       { level: 1, name: '등산로', icon: '🥾', minScore: 1000, colorVar: '--tds-color-green-500' },
-    ] as any);
+    ] as unknown as TierInfo[]);
     vi.mocked(supabase.auth.getSession).mockResolvedValue({
       data: { session: { user: { id: 'test-user' } } },
       error: null,
-    } as never);
+    } as unknown as { data: { session: Session }; error: null });
   });
 
   it('should render tier system section', async () => {

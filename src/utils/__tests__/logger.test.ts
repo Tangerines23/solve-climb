@@ -75,7 +75,7 @@ describe('logger', () => {
 
   it('should handle error without stack trace', () => {
     const error = new Error('Test error');
-    delete (error as any).stack;
+    delete (error as unknown as { stack?: string }).stack;
     logger.error('test', 'error message', error);
 
     expect(console.error).toHaveBeenCalled();

@@ -116,7 +116,7 @@ export function ClimbGraphic({
 
       data.push({
         id: levels[i].level,
-        status: status as any,
+        status: status as LevelData['status'],
         position: { x, y },
       });
     }

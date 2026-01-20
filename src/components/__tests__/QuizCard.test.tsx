@@ -113,7 +113,7 @@ describe('QuizCard', () => {
       consumeActiveItem: vi.fn(),
       consumeLife: vi.fn(),
       isExhausted: false,
-    } as any);
+    } as unknown);
   });
 
   it('should render question text', () => {
@@ -173,7 +173,7 @@ describe('QuizCard', () => {
   it('should call handleSubmit when submit button is clicked', () => {
     render(<QuizCard {...defaultProps} useSystemKeyboard={false} />);
 
-    const mockEvent = { preventDefault: vi.fn() } as any;
+    const mockEvent = { preventDefault: vi.fn() } as unknown as React.MouseEvent<HTMLButtonElement>;
     fireEvent.click(screen.getByText('Submit'), mockEvent);
 
     expect(defaultProps.handleSubmit).toHaveBeenCalled();

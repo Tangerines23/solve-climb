@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { calculateScoreForTier } from '../tierUtils';
-import { loadTierDefinitions, loadCycleCap } from '../../constants/tiers';
+import { loadTierDefinitions, loadCycleCap, type TierInfo } from '../../constants/tiers';
 
 // Mock tiers constants
 vi.mock('../../constants/tiers', () => ({
@@ -25,7 +25,7 @@ describe('tierUtils', () => {
         { level: 6, name: '전설', icon: '👑', minScore: 250000, colorVar: '--color-tier-legend' },
       ];
 
-      vi.mocked(loadTierDefinitions).mockResolvedValue(mockTierDefinitions as any);
+      vi.mocked(loadTierDefinitions).mockResolvedValue(mockTierDefinitions as TierInfo[]);
       vi.mocked(loadCycleCap).mockResolvedValue(250000);
 
       const result = await calculateScoreForTier(1, 0, 0);
@@ -40,7 +40,7 @@ describe('tierUtils', () => {
         { level: 1, name: '등산로', icon: '🥾', minScore: 1000, colorVar: '--color-tier-trail' },
       ];
 
-      vi.mocked(loadTierDefinitions).mockResolvedValue(mockTierDefinitions as any);
+      vi.mocked(loadTierDefinitions).mockResolvedValue(mockTierDefinitions as TierInfo[]);
       vi.mocked(loadCycleCap).mockResolvedValue(250000);
 
       const result = await calculateScoreForTier(1, 1, 0);
@@ -53,7 +53,7 @@ describe('tierUtils', () => {
         { level: 2, name: '중턱', icon: '⛰️', minScore: 5000, colorVar: '--color-tier-mid' },
       ];
 
-      vi.mocked(loadTierDefinitions).mockResolvedValue(mockTierDefinitions as any);
+      vi.mocked(loadTierDefinitions).mockResolvedValue(mockTierDefinitions as TierInfo[]);
       vi.mocked(loadCycleCap).mockResolvedValue(250000);
 
       const result = await calculateScoreForTier(2, 2, 0);
@@ -66,7 +66,7 @@ describe('tierUtils', () => {
         { level: 1, name: '등산로', icon: '🥾', minScore: 1000, colorVar: '--color-tier-trail' },
       ];
 
-      vi.mocked(loadTierDefinitions).mockResolvedValue(mockTierDefinitions as any);
+      vi.mocked(loadTierDefinitions).mockResolvedValue(mockTierDefinitions as TierInfo[]);
       vi.mocked(loadCycleCap).mockResolvedValue(250000);
 
       const result = await calculateScoreForTier(1, 0, 500);
@@ -79,7 +79,7 @@ describe('tierUtils', () => {
         { level: 1, name: '등산로', icon: '🥾', minScore: 1000, colorVar: '--color-tier-trail' },
       ];
 
-      vi.mocked(loadTierDefinitions).mockResolvedValue(mockTierDefinitions as any);
+      vi.mocked(loadTierDefinitions).mockResolvedValue(mockTierDefinitions as TierInfo[]);
       vi.mocked(loadCycleCap).mockResolvedValue(250000);
 
       const result = await calculateScoreForTier(1, 1, 500);
@@ -98,7 +98,7 @@ describe('tierUtils', () => {
         { level: 6, name: '전설', icon: '👑', minScore: 250000, colorVar: '--color-tier-legend' },
       ];
 
-      vi.mocked(loadTierDefinitions).mockResolvedValue(mockTierDefinitions as any);
+      vi.mocked(loadTierDefinitions).mockResolvedValue(mockTierDefinitions as TierInfo[]);
       vi.mocked(loadCycleCap).mockResolvedValue(250000);
 
       for (let level = 0; level <= 6; level++) {
@@ -113,7 +113,7 @@ describe('tierUtils', () => {
         { level: 1, name: '등산로', icon: '🥾', minScore: 1000, colorVar: '--color-tier-trail' },
       ];
 
-      vi.mocked(loadTierDefinitions).mockResolvedValue(mockTierDefinitions as any);
+      vi.mocked(loadTierDefinitions).mockResolvedValue(mockTierDefinitions as TierInfo[]);
       vi.mocked(loadCycleCap).mockResolvedValue(250000);
 
       const result = await calculateScoreForTier(99, 0, 0);
@@ -126,7 +126,7 @@ describe('tierUtils', () => {
         { level: 0, name: '베이스캠프', icon: '⛺', minScore: 0, colorVar: '--color-tier-base' },
       ];
 
-      vi.mocked(loadTierDefinitions).mockResolvedValue(mockTierDefinitions as any);
+      vi.mocked(loadTierDefinitions).mockResolvedValue(mockTierDefinitions as TierInfo[]);
       vi.mocked(loadCycleCap).mockResolvedValue(250000);
 
       const result = await calculateScoreForTier(0, 1, 0);
@@ -139,7 +139,7 @@ describe('tierUtils', () => {
         { level: 6, name: '전설', icon: '👑', minScore: 250000, colorVar: '--color-tier-legend' },
       ];
 
-      vi.mocked(loadTierDefinitions).mockResolvedValue(mockTierDefinitions as any);
+      vi.mocked(loadTierDefinitions).mockResolvedValue(mockTierDefinitions as TierInfo[]);
       vi.mocked(loadCycleCap).mockResolvedValue(250000);
 
       const result = await calculateScoreForTier(6, 10, 0);
@@ -152,7 +152,7 @@ describe('tierUtils', () => {
         { level: 1, name: '등산로', icon: '🥾', minScore: 1000, colorVar: '--color-tier-trail' },
       ];
 
-      vi.mocked(loadTierDefinitions).mockResolvedValue(mockTierDefinitions as any);
+      vi.mocked(loadTierDefinitions).mockResolvedValue(mockTierDefinitions as TierInfo[]);
       vi.mocked(loadCycleCap).mockResolvedValue(250000); // Default value
 
       const result = await calculateScoreForTier(1, 1, 0);
@@ -166,7 +166,7 @@ describe('tierUtils', () => {
         { level: 1, name: '등산로', icon: '🥾', minScore: 1000, colorVar: '--color-tier-trail' },
       ];
 
-      vi.mocked(loadTierDefinitions).mockResolvedValue(mockTierDefinitions as any);
+      vi.mocked(loadTierDefinitions).mockResolvedValue(mockTierDefinitions as TierInfo[]);
       vi.mocked(loadCycleCap).mockResolvedValue(250000);
 
       // 음수 stars는 0이 아니므로 사이클 계산에 사용됨
@@ -180,7 +180,7 @@ describe('tierUtils', () => {
         { level: 1, name: '등산로', icon: '🥾', minScore: 1000, colorVar: '--color-tier-trail' },
       ];
 
-      vi.mocked(loadTierDefinitions).mockResolvedValue(mockTierDefinitions as any);
+      vi.mocked(loadTierDefinitions).mockResolvedValue(mockTierDefinitions as TierInfo[]);
       vi.mocked(loadCycleCap).mockResolvedValue(250000);
 
       const result = await calculateScoreForTier(1, 0, -100);
@@ -193,7 +193,7 @@ describe('tierUtils', () => {
         { level: 1, name: '등산로', icon: '🥾', minScore: 1000, colorVar: '--color-tier-trail' },
       ];
 
-      vi.mocked(loadTierDefinitions).mockResolvedValue(mockTierDefinitions as any);
+      vi.mocked(loadTierDefinitions).mockResolvedValue(mockTierDefinitions as TierInfo[]);
       vi.mocked(loadCycleCap).mockResolvedValue(250000);
 
       const result = await calculateScoreForTier(1, 0, 1000000);
@@ -206,7 +206,7 @@ describe('tierUtils', () => {
         { level: 1, name: '등산로', icon: '🥾', minScore: 1000, colorVar: '--color-tier-trail' },
       ];
 
-      vi.mocked(loadTierDefinitions).mockResolvedValue(mockTierDefinitions as any);
+      vi.mocked(loadTierDefinitions).mockResolvedValue(mockTierDefinitions as TierInfo[]);
       vi.mocked(loadCycleCap).mockResolvedValue(250000);
 
       const result = await calculateScoreForTier(1, 100, 0);
@@ -219,7 +219,7 @@ describe('tierUtils', () => {
         { level: 1, name: '등산로', icon: '🥾', minScore: 1000, colorVar: '--color-tier-trail' },
       ];
 
-      vi.mocked(loadTierDefinitions).mockResolvedValue(mockTierDefinitions as any);
+      vi.mocked(loadTierDefinitions).mockResolvedValue(mockTierDefinitions as TierInfo[]);
       vi.mocked(loadCycleCap).mockResolvedValue(250000);
 
       // 소수점 stars는 0이 아니므로 사이클 계산에 사용됨
@@ -234,7 +234,7 @@ describe('tierUtils', () => {
         { level: 1, name: '등산로', icon: '🥾', minScore: 1000, colorVar: '--color-tier-trail' },
       ];
 
-      vi.mocked(loadTierDefinitions).mockResolvedValue(mockTierDefinitions as any);
+      vi.mocked(loadTierDefinitions).mockResolvedValue(mockTierDefinitions as TierInfo[]);
       vi.mocked(loadCycleCap).mockResolvedValue(250000);
 
       // 음수 level은 찾을 수 없으므로 0 반환
@@ -248,7 +248,7 @@ describe('tierUtils', () => {
         { level: 6, name: '전설', icon: '👑', minScore: 250000, colorVar: '--color-tier-legend' },
       ];
 
-      vi.mocked(loadTierDefinitions).mockResolvedValue(mockTierDefinitions as any);
+      vi.mocked(loadTierDefinitions).mockResolvedValue(mockTierDefinitions as TierInfo[]);
       vi.mocked(loadCycleCap).mockResolvedValue(250000);
 
       // 매우 큰 level은 찾을 수 없으므로 0 반환
@@ -262,7 +262,7 @@ describe('tierUtils', () => {
         { level: 1, name: '등산로', icon: '🥾', minScore: 1000, colorVar: '--color-tier-trail' },
       ];
 
-      vi.mocked(loadTierDefinitions).mockResolvedValue(mockTierDefinitions as any);
+      vi.mocked(loadTierDefinitions).mockResolvedValue(mockTierDefinitions as TierInfo[]);
       vi.mocked(loadCycleCap).mockResolvedValue(0);
 
       const result = await calculateScoreForTier(1, 1, 0);
@@ -275,7 +275,7 @@ describe('tierUtils', () => {
         { level: 6, name: '전설', icon: '👑', minScore: 250000, colorVar: '--color-tier-legend' },
       ];
 
-      vi.mocked(loadTierDefinitions).mockResolvedValue(mockTierDefinitions as any);
+      vi.mocked(loadTierDefinitions).mockResolvedValue(mockTierDefinitions as TierInfo[]);
       vi.mocked(loadCycleCap).mockResolvedValue(250000);
 
       // 최대 레벨, 최대 stars, 최대 bonusScore

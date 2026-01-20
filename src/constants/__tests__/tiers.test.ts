@@ -31,7 +31,7 @@ describe('tiers', () => {
             error: new Error('Database error'),
           }),
         }),
-      } as any);
+      } as unknown as any);
 
       const result = await loadTierDefinitions();
 
@@ -60,7 +60,7 @@ describe('tiers', () => {
         }),
       };
 
-      vi.mocked(supabase.from).mockReturnValue(mockFrom as any);
+      vi.mocked(supabase.from).mockReturnValue(mockFrom as unknown as any);
 
       // Clear cache before test
       vi.clearAllTimers();
@@ -151,7 +151,7 @@ describe('tiers', () => {
             }),
           }),
         }),
-      } as any);
+      } as unknown as any);
 
       const result = await loadCycleCap();
 
@@ -175,7 +175,7 @@ describe('tiers', () => {
         }),
       };
 
-      vi.mocked(supabase.from).mockReturnValue(mockFrom as any);
+      vi.mocked(supabase.from).mockReturnValue(mockFrom as unknown as any);
 
       // Clear cache before test
       vi.clearAllTimers();
@@ -265,7 +265,7 @@ describe('tiers', () => {
         }),
       };
 
-      vi.mocked(supabase.from).mockReturnValue(mockFrom as any);
+      vi.mocked(supabase.from).mockReturnValue(mockFrom as unknown as any);
 
       // First call
       const result1 = await loadTierDefinitions();
@@ -297,7 +297,7 @@ describe('tiers', () => {
             }),
           }),
         }),
-      } as any);
+      } as unknown as any);
 
       const result = await loadCycleCap();
 

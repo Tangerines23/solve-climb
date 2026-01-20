@@ -2,6 +2,7 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, waitFor } from '@testing-library/react';
 import { CyclePromotionModal } from '../CyclePromotionModal';
 import { supabase } from '../../utils/supabaseClient';
+import type { PostgrestSingleResponse } from '@supabase/supabase-js';
 
 // Mock supabase
 vi.mock('../../utils/supabaseClient', () => ({
@@ -48,7 +49,7 @@ describe('CyclePromotionModal', () => {
     vi.mocked(supabase.rpc).mockResolvedValue({
       data: { success: true },
       error: null,
-    } as never);
+    } as unknown as PostgrestSingleResponse<{ success: boolean; error?: string } | null>);
 
     render(
       <CyclePromotionModal
@@ -73,7 +74,7 @@ describe('CyclePromotionModal', () => {
     vi.mocked(supabase.rpc).mockResolvedValue({
       data: null,
       error: { message: 'RPC error' },
-    } as never);
+    } as unknown as PostgrestSingleResponse<{ success: boolean; error?: string } | null>);
 
     render(
       <CyclePromotionModal
@@ -100,7 +101,7 @@ describe('CyclePromotionModal', () => {
     vi.mocked(supabase.rpc).mockResolvedValue({
       data: { success: false, error: 'Promotion failed' },
       error: null,
-    } as never);
+    } as unknown as PostgrestSingleResponse<{ success: boolean; error?: string } | null>);
 
     render(
       <CyclePromotionModal
@@ -124,7 +125,7 @@ describe('CyclePromotionModal', () => {
 
   it('should show loading state when promoting', async () => {
     const onPromote = vi.fn();
-    let resolvePromotion: (value: any) => void;
+    let resolvePromotion: (value: { data: { success: boolean }; error: null }) => void;
     const promotionPromise = new Promise((resolve) => {
       resolvePromotion = resolve;
     });
@@ -162,7 +163,7 @@ describe('CyclePromotionModal', () => {
 
   it('should disable buttons when promoting', async () => {
     const onClose = vi.fn();
-    let resolvePromotion: (value: any) => void;
+    let resolvePromotion: (value: { data: { success: boolean }; error: null }) => void;
     const promotionPromise = new Promise((resolve) => {
       resolvePromotion = resolve;
     });

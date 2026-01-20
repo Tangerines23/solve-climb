@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { generateQuestion } from '../quizGenerator';
-import type { Category, Difficulty } from '../../types/quiz';
+import type { Category, Difficulty, World } from '../../types/quiz';
 
 // Mock math utilities
 vi.mock('../math', () => ({
@@ -68,7 +68,7 @@ describe('quizGenerator', () => {
 
   describe('Fallback & Error Handling', () => {
     it('should fallback to World 1 for unknown world', () => {
-      const result = generateQuestion('UnknownWorld' as any, '기초', 1, 'easy');
+      const result = generateQuestion('UnknownWorld' as unknown as World, '기초', 1, 'easy');
       expect(result).toHaveProperty('question');
       expect(result).toHaveProperty('answer');
     });

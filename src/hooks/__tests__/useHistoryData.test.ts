@@ -31,21 +31,21 @@ describe('useHistoryData', () => {
 
   beforeEach(() => {
     vi.clearAllMocks();
-    (supabase.from as any).mockImplementation(mockFrom);
+    vi.mocked(supabase.from).mockImplementation(mockFrom);
   });
 
   it('should return empty stats if no session exists', async () => {
     // Mock no local session
-    (storage.getString as any).mockReturnValue(null);
+    vi.mocked(storage.getString).mockReturnValue(null);
     // Mock no supabase session
-    (supabase.auth.getSession as any).mockResolvedValue({ data: { session: null } });
+    vi.mocked(supabase.auth.getSession).mockResolvedValue({ data: { session: null }, error: null });
 
     const { result } = renderHook(() => useHistoryData());
 
     await waitFor(() => expect(result.current.loading).toBe(false));
 
     expect(result.current.stats).not.toBeNull();
-    expect(result.current.stats?.userTitle).toBe('비로그인 유저');
+    expect(result.current.stats?.userTitle).toBe('비로그인 ?��?');
     expect(result.current.stats?.totalAltitude).toBe(0);
   });
 
@@ -56,11 +56,12 @@ describe('useHistoryData', () => {
 
     // Mock logged in session (Supabase)
     const mockUserId = 'user_123';
-    (storage.getString as any).mockReturnValue(null);
-    (supabase.auth.getSession as any).mockResolvedValue({
+    vi.mocked(storage.getString).mockReturnValue(null);
+    vi.mocked(supabase.auth.getSession).mockResolvedValue({
       data: {
-        session: { user: { id: mockUserId } },
+        session: { user: { id: mockUserId } } as any,
       },
+      error: null,
     });
 
     // Mock DB responses based on table name
@@ -120,7 +121,7 @@ describe('useHistoryData', () => {
           order: vi.fn().mockReturnThis(),
           limit: vi.fn().mockResolvedValue({ data: [], error: null }),
           single: vi.fn().mockResolvedValue({ data: {}, error: null }),
-          then: (resolve: any) => resolve({ data: [], error: null }),
+          then: (resolve: (val: unknown) => void) => resolve({ data: [], error: null }),
         })),
       };
     });
@@ -139,9 +140,10 @@ describe('useHistoryData', () => {
   it.skip('should handle streak calculation correctly', async () => {
     // TODO: Complex mock structure causes waitFor to timeout
     // Mock session
-    (storage.getString as any).mockReturnValue(null);
-    (supabase.auth.getSession as any).mockResolvedValue({
-      data: { session: { user: { id: 'temp' } } },
+    vi.mocked(storage.getString).mockReturnValue(null);
+    vi.mocked(supabase.auth.getSession).mockResolvedValue({
+      data: { session: { user: { id: 'temp' } } as any },
+      error: null,
     });
 
     mockFrom.mockImplementation((table: string) => {
@@ -189,7 +191,7 @@ describe('useHistoryData', () => {
           order: vi.fn().mockReturnThis(),
           limit: vi.fn().mockResolvedValue({ data: [], error: null }),
           single: vi.fn().mockResolvedValue({ data: {}, error: null }),
-          then: (resolve: any) => resolve({ data: [], error: null }),
+          then: (resolve: (val: unknown) => void) => resolve({ data: [], error: null }),
         })),
       };
     });
@@ -202,9 +204,10 @@ describe('useHistoryData', () => {
 
   it.skip('should handle API errors gracefully', async () => {
     // TODO: Complex mock structure causes waitFor to timeout
-    (storage.getString as any).mockReturnValue(null);
-    (supabase.auth.getSession as any).mockResolvedValue({
-      data: { session: { user: { id: 'temp' } } },
+    vi.mocked(storage.getString).mockReturnValue(null);
+    vi.mocked(supabase.auth.getSession).mockResolvedValue({
+      data: { session: { user: { id: 'temp' } } as any },
+      error: null,
     });
 
     mockFrom.mockImplementation((table) => {
@@ -221,7 +224,7 @@ describe('useHistoryData', () => {
           order: vi.fn().mockReturnThis(),
           limit: vi.fn().mockResolvedValue({ data: [], error: null }),
           single: vi.fn().mockResolvedValue({ data: {}, error: null }),
-          then: (resolve: any) => resolve({ data: [], error: null }),
+          then: (resolve: (val: unknown) => void) => resolve({ data: [], error: null }),
         })),
       };
     });

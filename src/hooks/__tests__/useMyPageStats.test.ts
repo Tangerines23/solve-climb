@@ -3,10 +3,15 @@ import { renderHook, waitFor, act } from '@testing-library/react';
 import { useMyPageStats } from '../useMyPageStats';
 import { supabase } from '../../utils/supabaseClient';
 import { storage } from '../../utils/storage';
+import type {
+  Subscription,
+  PostgrestQueryBuilder,
+  PostgrestSingleResponse,
+} from '@supabase/supabase-js';
 import { parseLocalSession } from '../../utils/safeJsonParse';
 
 // Helper for Supabase chain mocking
-const createMockChain = (data: any, error: any = null) => {
+const createMockChain = (data: unknown, error: unknown = null) => {
   const result = { data, error };
   const chain = {
     select: vi.fn().mockReturnThis(),
@@ -59,12 +64,17 @@ describe('useMyPageStats', () => {
     vi.mocked(supabase.auth.getSession).mockResolvedValue({
       data: { session: null },
       error: null,
-    } as any);
+    });
     vi.mocked(supabase.auth.onAuthStateChange).mockReturnValue({
       data: { subscription: { unsubscribe: vi.fn() } },
-    } as any);
-    vi.mocked(supabase.from).mockImplementation(() => createMockChain(null) as any);
-    vi.mocked(supabase.rpc).mockResolvedValue({ data: null, error: null } as any);
+    } as unknown as { data: { subscription: Subscription } });
+    vi.mocked(supabase.from).mockImplementation(
+      () => createMockChain(null) as unknown as PostgrestQueryBuilder<any, any, any, any>
+    );
+    vi.mocked(supabase.rpc).mockResolvedValue({
+      data: null,
+      error: null,
+    } as unknown as PostgrestSingleResponse<any>);
   });
 
   it('should return default stats when no session', async () => {
@@ -75,7 +85,7 @@ describe('useMyPageStats', () => {
       result = rendered.result;
     });
 
-    // Hook이 초기화되는지 확인
+    // Hook??초기?�되?��? ?�인
     expect(result.current).toBeTruthy();
     expect(typeof result.current.refetch).toBe('function');
     await waitFor(() => expect(result.current.loading).toBe(false));
@@ -668,7 +678,7 @@ describe('useMyPageStats', () => {
       { timeout: 3000 }
     );
 
-    // Refetch 호출
+    // Refetch ?�출
     await act(async () => {
       await result.current.refetch();
     });

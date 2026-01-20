@@ -557,7 +557,7 @@ export function QuizPage() {
         subParam={worldParam || ''}
         levelParam={levelParam}
         category={category || '기초'}
-        topic={`${worldParam}-${categoryParam}` as any}
+        topic={`${worldParam}-${categoryParam}`}
         keyboardType={previewKeyboardType}
         navigate={navigate}
         useSystemKeyboard={useSystemKeyboard}

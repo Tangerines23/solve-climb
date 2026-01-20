@@ -9,6 +9,38 @@ import { Session } from '@supabase/supabase-js';
 import { getTimeAgo } from '../utils/date';
 import { getUserTitle, getSmartComment, getTierInfo } from '../constants/history';
 
+interface DbThemeMapping {
+  code: number;
+  theme_id: string;
+  name: string;
+}
+
+interface DbLevelRecord {
+  theme_code: number;
+  level: number;
+  mode_code: number;
+  best_score: number;
+  updated_at: string;
+}
+
+interface DbSession {
+  category: string;
+  subject: string;
+  level: number;
+  game_mode: string;
+  score: number;
+  created_at: string;
+}
+
+interface DbProfile {
+  total_mastery_score: number;
+}
+
+type EnrichedRecord = DbLevelRecord & {
+  themeId: string;
+  themeName: string;
+};
+
 export interface HistoryStats {
   weeklyTotal: number;
   weeklyTotalLastWeek: number;
@@ -142,7 +174,12 @@ export function useHistoryData() {
         debugSupabaseQuery(
           supabase.from('profiles').select('total_mastery_score').eq('id', currentUserId).single()
         ),
-      ]);
+      ] as const);
+
+      const themeData = themeRes.data as unknown as DbThemeMapping[] | null;
+      const recordsData = recordsRes.data as unknown as DbLevelRecord[] | null;
+      const sessionsData = sessionsRes.data as unknown as DbSession[] | null;
+      const profileData = profileRes.data as unknown as DbProfile | null;
 
       if (recordsRes.error) throw recordsRes.error;
       if (sessionsRes.error) throw sessionsRes.error;
@@ -150,19 +187,19 @@ export function useHistoryData() {
       // 매핑 생성
       const themeCodeToId: Record<number, string> = {};
       const themeCodeToName: Record<number, string> = {};
-      themeRes.data?.forEach((tm) => {
+      themeData?.forEach((tm) => {
         themeCodeToId[tm.code] = tm.theme_id;
         themeCodeToName[tm.code] = tm.name;
       });
 
-      const records = (recordsRes.data || []).map((r) => ({
+      const records: EnrichedRecord[] = (recordsData || []).map((r) => ({
         ...r,
         themeId: themeCodeToId[r.theme_code] || '',
         themeName: themeCodeToName[r.theme_code] || '',
       }));
 
       // 세션 데이터를 기록 포맷으로 정규화 (활동 추적용)
-      const sessionsAsRecords = (sessionsRes.data || []).map((s) => {
+      const sessionsAsRecords = (sessionsData || []).map((s) => {
         const themeId = `${s.category}_${s.subject}`;
         const inverseThemeMap: Record<string, number> = {};
         Object.entries(themeCodeToId).forEach(([code, id]) => {
@@ -189,10 +226,7 @@ export function useHistoryData() {
 
       // 누적 고도 (기록 합산과 프로필 점수 중 큰 값 사용)
       const altitudeFromRecords = records.reduce((sum, r) => sum + (r.best_score || 0), 0);
-      const totalAltitude = Math.max(
-        altitudeFromRecords,
-        profileRes.data?.total_mastery_score || 0
-      );
+      const totalAltitude = Math.max(altitudeFromRecords, profileData?.total_mastery_score || 0);
       const userLevelCount = records.filter((r) => (r.best_score || 0) > 0).length;
 
       // 정밀 통계 계산 (정확도 & 정답 수 추정)
@@ -288,13 +322,16 @@ export function useHistoryData() {
 
       // 분야별 숙련도
       const categoryLevels = Object.values(
-        records.reduce((acc, r) => {
-          const key = `${r.theme_code}-${r.level}`;
-          if (!acc[key] || r.best_score > acc[key].best_score) acc[key] = r;
-          return acc;
-        }, {} as any)
+        records.reduce(
+          (acc, r) => {
+            const key = `${r.theme_code}-${r.level}`;
+            if (!acc[key] || r.best_score > acc[key].best_score) acc[key] = r;
+            return acc;
+          },
+          {} as Record<string, EnrichedRecord>
+        )
       )
-        .map((r: any) => {
+        .map((r) => {
           const [cat, sub] = r.themeId.split('_');
           const categoryName =
             APP_CONFIG.CATEGORY_MAP[cat as keyof typeof APP_CONFIG.CATEGORY_MAP] || cat;
@@ -321,8 +358,8 @@ export function useHistoryData() {
         monthlyTotalLastMonth: 0,
         monthlyDailyCounts: [],
         monthlyDays: [],
-        categoryLevels: categoryLevels as any,
-        recentRecords: recentRecords as any,
+        categoryLevels: categoryLevels,
+        recentRecords: recentRecords,
         totalAltitude,
         userTitle: getUserTitle(totalAltitude),
         totalCorrect,
@@ -336,9 +373,9 @@ export function useHistoryData() {
       };
 
       setStats(finalStats);
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error('History data error:', err);
-      setError(err.message);
+      setError((err as Error).message || '알 수 없는 오류가 발생했습니다.');
     } finally {
       setLoading(false);
     }

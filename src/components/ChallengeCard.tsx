@@ -43,7 +43,7 @@ export function ChallengeCard() {
         world: 'World1',
         category: challenge.topicId,
         level: challenge.level,
-        mode: challenge.mode as any,
+        mode: challenge.mode as import('../types/quiz').GameMode,
         challenge: 'today',
       })
     );

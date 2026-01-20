@@ -72,7 +72,9 @@ export function calculateSubTopicAltitude(category: string, subTopic: string): n
  * @returns 목표 고도(m)
  */
 export function calculateSubTopicTargetAltitude(category: string, subTopic: string): number {
-  const worldLevels = (APP_CONFIG.LEVELS as any)[category];
+  const worldLevels = (
+    APP_CONFIG.LEVELS as unknown as Record<string, Record<string, readonly { level: number }[]>>
+  )[category];
   if (!worldLevels) return 0;
 
   const subTopicLevels = worldLevels[subTopic];
@@ -84,7 +86,7 @@ export function calculateSubTopicTargetAltitude(category: string, subTopic: stri
   let totalTarget = 0;
 
   // 각 레벨별 목표 점수를 합산 (레벨당 20문제 기준)
-  (subTopicLevels as Array<any>).forEach((levelData: any) => {
+  subTopicLevels.forEach((levelData: { level: number }) => {
     const level = levelData.level;
     const baseLevelScore = BASE_CLIMB_DISTANCE + (level - 1) * DISTANCE_PER_LEVEL;
 

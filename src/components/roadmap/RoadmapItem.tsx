@@ -4,7 +4,7 @@ import { HistoryStats } from '../../hooks/useHistoryData';
 import { vibrateShort } from '../../utils/haptic';
 
 interface ItemProps {
-  item: any; // Using any for faster extraction, should be refined if time permits
+  item: MilestoneItem;
   stats: HistoryStats;
   isRefCurrent: boolean;
   isNext: boolean;

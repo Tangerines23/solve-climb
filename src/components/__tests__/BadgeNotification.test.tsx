@@ -2,6 +2,7 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, waitFor, fireEvent } from '@testing-library/react';
 import { BadgeNotification } from '../BadgeNotification';
 import { supabase } from '../../utils/supabaseClient';
+import type { SupabaseClient } from '@supabase/supabase-js';
 
 // Mock supabase
 vi.mock('../../utils/supabaseClient', () => ({
@@ -39,7 +40,7 @@ describe('BadgeNotification', () => {
 
     vi.mocked(supabase.from).mockReturnValue({
       select: mockSelect,
-    } as any);
+    } as unknown as ReturnType<SupabaseClient['from']>);
 
     render(<BadgeNotification badgeIds={['badge1']} onClose={vi.fn()} />);
 
@@ -78,7 +79,7 @@ describe('BadgeNotification', () => {
 
     vi.mocked(supabase.from).mockReturnValue({
       select: mockSelect,
-    } as any);
+    } as unknown as ReturnType<SupabaseClient['from']>);
 
     render(<BadgeNotification badgeIds={['badge1', 'badge2']} onClose={vi.fn()} />);
 
@@ -107,7 +108,7 @@ describe('BadgeNotification', () => {
 
     vi.mocked(supabase.from).mockReturnValue({
       select: mockSelect,
-    } as any);
+    } as unknown as ReturnType<SupabaseClient['from']>);
 
     render(<BadgeNotification badgeIds={['badge1']} onClose={vi.fn()} />);
 
@@ -137,7 +138,7 @@ describe('BadgeNotification', () => {
 
     vi.mocked(supabase.from).mockReturnValue({
       select: mockSelect,
-    } as any);
+    } as unknown as ReturnType<SupabaseClient['from']>);
 
     render(<BadgeNotification badgeIds={['badge1']} onClose={vi.fn()} />);
 
@@ -169,7 +170,7 @@ describe('BadgeNotification', () => {
 
     vi.mocked(supabase.from).mockReturnValue({
       select: mockSelect,
-    } as any);
+    } as unknown as ReturnType<SupabaseClient['from']>);
 
     render(<BadgeNotification badgeIds={['badge1']} onClose={onClose} />);
 
@@ -203,7 +204,7 @@ describe('BadgeNotification', () => {
 
     vi.mocked(supabase.from).mockReturnValue({
       select: mockSelect,
-    } as any);
+    } as unknown as ReturnType<SupabaseClient['from']>);
 
     render(<BadgeNotification badgeIds={['badge1']} onClose={onClose} />);
 
@@ -238,7 +239,7 @@ describe('BadgeNotification', () => {
 
     vi.mocked(supabase.from).mockReturnValue({
       select: mockSelect,
-    } as any);
+    } as unknown as ReturnType<SupabaseClient['from']>);
 
     render(<BadgeNotification badgeIds={['badge1']} onClose={onClose} />);
 
@@ -267,7 +268,7 @@ describe('BadgeNotification', () => {
 
     vi.mocked(supabase.from).mockReturnValue({
       select: mockSelect,
-    } as any);
+    } as unknown);
 
     render(<BadgeNotification badgeIds={['badge1']} onClose={vi.fn()} />);
 

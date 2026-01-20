@@ -61,7 +61,7 @@ export function CategorySelectPage() {
     );
   }
 
-  const categories = APP_CONFIG.CATEGORIES.filter((c) => (c as any).mountainId === mountainParam);
+  const categories = APP_CONFIG.CATEGORIES.filter((c) => c.mountainId === mountainParam);
 
   // 산별로 저장된 마지막 월드 정보를 가져옴
   const lastWorld =
@@ -69,7 +69,12 @@ export function CategorySelectPage() {
     (mountainParam === 'language' ? 'LangWorld1' : 'World1');
 
   const getCategoryProgress = (world: string, categoryId: string) => {
-    const totalLevels = (APP_CONFIG.LEVELS as any)[world]?.[categoryId]?.length || 0;
+    const levels = APP_CONFIG.LEVELS[world as keyof typeof APP_CONFIG.LEVELS] as unknown as Record<
+      string,
+      readonly unknown[]
+    >;
+    const categoryLevels = levels?.[categoryId];
+    const totalLevels = categoryLevels?.length || 0;
     if (totalLevels === 0) return 0;
 
     const clearedLevels = progressStore
@@ -98,8 +103,10 @@ export function CategorySelectPage() {
             <h2 className="topic-select-category-title">{mountainName} - 분야 선택</h2>
           </div>
           <div id="topic-list-container" className="topic-list-container">
-            {categories.map((category: any) => {
-              const unlockCondition = category.unlockCondition;
+            {categories.map((category) => {
+              const unlockCondition = (
+                category as { unlockCondition?: { categoryId: string; progress: number } }
+              ).unlockCondition;
               let isLocked = false;
               let unlockMessage = '';
 

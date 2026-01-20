@@ -82,8 +82,8 @@ export function MyPageQuickAccess({
                       navigate(
                         urls.levelSelect({
                           mountain: mountainId,
-                          world: lastWorld as any, // Cast if needed
-                          category: favorite.categoryId as any,
+                          world: lastWorld as World,
+                          category: favorite.categoryId as Category,
                         })
                       );
                     } else {

@@ -75,11 +75,12 @@ function generateTodayChallenge(): TodayChallenge {
   const rng = new SeededRandom(seed);
 
   // 기능 플래그(FEATURE_FLAGS)에 따라 활성화된 산 선택
-  const availableMountains = APP_CONFIG.MOUNTAINS.filter((mtn: any) => {
-    if (mtn.id === 'math') return APP_CONFIG.FEATURE_FLAGS.ENABLE_MATH_MOUNTAIN;
-    if (mtn.id === 'language') return APP_CONFIG.FEATURE_FLAGS.ENABLE_LANGUAGE_MOUNTAIN;
-    if (mtn.id === 'logic') return APP_CONFIG.FEATURE_FLAGS.ENABLE_LOGIC_MOUNTAIN;
-    if (mtn.id === 'general') return APP_CONFIG.FEATURE_FLAGS.ENABLE_GENERAL_MOUNTAIN;
+  const availableMountains = APP_CONFIG.MOUNTAINS.filter((mtn) => {
+    const mountainId = mtn.id as 'math' | 'language' | 'logic' | 'general';
+    if (mountainId === 'math') return APP_CONFIG.FEATURE_FLAGS.ENABLE_MATH_MOUNTAIN;
+    if (mountainId === 'language') return APP_CONFIG.FEATURE_FLAGS.ENABLE_LANGUAGE_MOUNTAIN;
+    if (mountainId === 'logic') return APP_CONFIG.FEATURE_FLAGS.ENABLE_LOGIC_MOUNTAIN;
+    if (mountainId === 'general') return APP_CONFIG.FEATURE_FLAGS.ENABLE_GENERAL_MOUNTAIN;
     return false;
   });
   const mountains = [...availableMountains].sort((a, b) => a.id.localeCompare(b.id));
@@ -91,8 +92,8 @@ function generateTodayChallenge(): TodayChallenge {
 
   // 수학의 산에서 수열 제거
   if (selectedMountain.id === 'math' && subTopics) {
-    subTopics = subTopics.filter(
-      (topic: any) => topic.id !== 'sequence'
+    subTopics = (subTopics as ReadonlyArray<{ id: string }>).filter(
+      (topic) => topic.id !== 'sequence'
     ) as unknown as typeof subTopics;
   }
 
@@ -118,8 +119,8 @@ function generateTodayChallenge(): TodayChallenge {
   const selectedTopic = sortedSubTopics[topicIndex];
 
   // 3. 레벨 랜덤 선택 (World1 고정 사용)
-  const categoryLevels = (APP_CONFIG.LEVELS as any)['World1'];
-  const levels = categoryLevels?.[selectedTopic.id] as
+  const categoryLevels = APP_CONFIG.LEVELS['World1' as keyof typeof APP_CONFIG.LEVELS];
+  const levels = categoryLevels?.[selectedTopic.id as keyof typeof categoryLevels] as
     | Array<{ level: number; name: string; description: string }>
     | undefined;
   if (!levels || !Array.isArray(levels) || levels.length === 0) {

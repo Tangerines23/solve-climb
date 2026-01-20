@@ -4,7 +4,7 @@ import { supabase } from '../utils/supabaseClient';
 import { parseLocalSession } from '../utils/safeJsonParse';
 import { storage, StorageKeys } from '../utils/storage';
 import { debugSupabaseQuery } from '../utils/debugFetch';
-import type { Session } from '@supabase/supabase-js';
+import type { Session, PostgrestError } from '@supabase/supabase-js';
 
 export interface MyPageStats {
   totalSolved: number;
@@ -16,7 +16,32 @@ export interface MyPageStats {
   pendingCycleScore: number;
 }
 
-interface UseMyPageStatsResult {
+interface ProfileData {
+  total_mastery_score: number | null;
+  current_tier_level: number | null;
+  cycle_promotion_pending: boolean | null;
+  pending_cycle_score: number | null;
+}
+
+interface RpcStats {
+  total_solved: number;
+  max_level: number;
+  best_subject: string | null;
+}
+
+interface ThemeMapping {
+  code: number;
+  theme_id: string;
+  name: string;
+}
+
+interface LevelRecordData {
+  theme_code: number;
+  level: number;
+  best_score: number;
+}
+
+export interface UseMyPageStatsResult {
   stats: MyPageStats | null;
   session: Session | null;
   loading: boolean;
@@ -65,7 +90,7 @@ export function useMyPageStats(): UseMyPageStatsResult {
       }
 
       // Supabase 세션 확인
-      debugSupabaseQuery(supabase.auth.getSession()).then((res: any) => {
+      debugSupabaseQuery(supabase.auth.getSession()).then((res) => {
         setSession(res?.data?.session || null);
       });
     };
@@ -73,7 +98,7 @@ export function useMyPageStats(): UseMyPageStatsResult {
     checkLocalSession();
 
     // 인증 상태 변경 리스너
-    const { data } = supabase.auth.onAuthStateChange((_event: any, session: any) => {
+    const { data } = supabase.auth.onAuthStateChange((_event, session) => {
       // Supabase 세션이 없으면 로컬 세션 확인
       if (!session) {
         checkLocalSession();
@@ -121,7 +146,7 @@ export function useMyPageStats(): UseMyPageStatsResult {
 
       // Supabase 세션 확인 (로컬 세션이 없을 때만)
       if (!currentSession) {
-        const authResult = (await debugSupabaseQuery(supabase.auth.getSession())) as any;
+        const authResult = await debugSupabaseQuery(supabase.auth.getSession());
         currentSession = authResult?.data?.session;
         setSession(currentSession);
       }
@@ -155,7 +180,7 @@ export function useMyPageStats(): UseMyPageStatsResult {
           )
           .eq('id', user_id)
           .single()
-      )) as any;
+      )) as unknown as { data: ProfileData | null; error: PostgrestError | null };
 
       const profileData = profileResult?.data;
       const profileError = profileResult?.error;
@@ -167,7 +192,9 @@ export function useMyPageStats(): UseMyPageStatsResult {
 
       // 방법 1: RPC 함수 사용 (권장 - Supabase에 함수가 생성되어 있는 경우)
       try {
-        const rpcResult = (await debugSupabaseQuery(supabase.rpc('get_user_game_stats'))) as any;
+        const rpcResult = (await debugSupabaseQuery(
+          supabase.rpc('get_user_game_stats')
+        )) as unknown as { data: RpcStats[] | null; error: PostgrestError | null };
         const rpcData = rpcResult?.data;
         const rpcError = rpcResult?.error;
 
@@ -208,7 +235,7 @@ export function useMyPageStats(): UseMyPageStatsResult {
       // theme_mapping 조회
       const themeResult = (await debugSupabaseQuery(
         supabase.from('theme_mapping').select('code, theme_id, name')
-      )) as any;
+      )) as unknown as { data: ThemeMapping[] | null; error: PostgrestError | null };
 
       const themeMapping = themeResult?.data;
       const themeError = themeResult?.error;
@@ -220,7 +247,7 @@ export function useMyPageStats(): UseMyPageStatsResult {
       // theme_code -> theme_id 매핑 생성
       const themeCodeToId: Record<number, string> = {};
       const themeCodeToName: Record<number, string> = {};
-      themeMapping?.forEach((tm: any) => {
+      themeMapping?.forEach((tm) => {
         themeCodeToId[tm.code] = tm.theme_id;
         themeCodeToName[tm.code] = tm.name;
       });
@@ -231,7 +258,7 @@ export function useMyPageStats(): UseMyPageStatsResult {
           .from('user_level_records')
           .select('theme_code, level, best_score')
           .eq('user_id', user_id)
-      )) as any;
+      )) as unknown as { data: LevelRecordData[] | null; error: PostgrestError | null };
 
       const levelRecords = recordsResult?.data;
       const queryError = recordsResult?.error;
@@ -256,20 +283,20 @@ export function useMyPageStats(): UseMyPageStatsResult {
 
       // 통계 계산 함수들
       const totalMasteryScoreFromRecords = levelRecords.reduce(
-        (sum: number, r: any) => sum + (r.best_score || 0),
+        (sum: number, r) => sum + (r.best_score || 0),
         0
       );
 
       // 완등 문제: user_level_records에 기록된 모든 행의 수 (theme/level/mode 조합)
-      const totalSolved = levelRecords.filter((r: any) => (r.best_score || 0) > 0).length;
+      const totalSolved = levelRecords.filter((r) => (r.best_score || 0) > 0).length;
 
       // 최고 레벨: 최대 level 값
       const maxLevel =
-        levelRecords.length > 0 ? Math.max(...levelRecords.map((r: any) => r.level || 0)) : 0;
+        levelRecords.length > 0 ? Math.max(...levelRecords.map((r) => r.level || 0)) : 0;
 
       // 주력 분야: theme_code별 best_score 합계, 가장 높은 theme_id 반환
       const themeScores: Record<number, number> = {};
-      levelRecords.forEach((record: any) => {
+      levelRecords.forEach((record) => {
         if (record.theme_code) {
           themeScores[record.theme_code] =
             (themeScores[record.theme_code] || 0) + (record.best_score || 0);

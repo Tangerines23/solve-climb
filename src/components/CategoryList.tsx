@@ -19,7 +19,15 @@ export function CategoryList() {
   };
 
   // 활성화된 산 목록
-  const mountains = (APP_CONFIG.MOUNTAINS as unknown as any[]).filter((mountain) => {
+  const mountains = (
+    APP_CONFIG.MOUNTAINS as readonly {
+      id: string;
+      name: string;
+      icon: string;
+      disabled: boolean;
+      color: string;
+    }[]
+  ).filter((mountain) => {
     if (mountain.id === 'math') return APP_CONFIG.FEATURE_FLAGS.ENABLE_MATH_MOUNTAIN;
     if (mountain.id === 'language') return APP_CONFIG.FEATURE_FLAGS.ENABLE_LANGUAGE_MOUNTAIN;
     if (mountain.id === 'logic') return APP_CONFIG.FEATURE_FLAGS.ENABLE_LOGIC_MOUNTAIN;

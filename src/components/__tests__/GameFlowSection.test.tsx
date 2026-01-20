@@ -2,6 +2,7 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, waitFor } from '@testing-library/react';
 import { GameFlowSection } from '../debug/GameFlowSection';
 import { supabase } from '../../utils/supabaseClient';
+import type { SupabaseClient, Session } from '@supabase/supabase-js';
 import { useQuizStore } from '../../stores/useQuizStore';
 
 // Mock dependencies
@@ -39,11 +40,11 @@ describe('GameFlowSection', () => {
       difficulty: 'easy',
       gameMode: 'time-attack',
       setGameMode: vi.fn(),
-    } as never);
+    } as unknown);
     vi.mocked(supabase.auth.getSession).mockResolvedValue({
       data: { session: { user: { id: 'test-user' } } },
       error: null,
-    } as never);
+    } as unknown as { data: { session: Session }; error: null });
     vi.mocked(supabase.from).mockReturnValue({
       select: vi.fn().mockReturnValue({
         eq: vi.fn().mockReturnValue({
@@ -55,7 +56,7 @@ describe('GameFlowSection', () => {
           }),
         }),
       }),
-    } as any);
+    } as unknown as ReturnType<SupabaseClient['from']>);
   });
 
   it('should render without crashing', async () => {

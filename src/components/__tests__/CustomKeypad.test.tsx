@@ -28,7 +28,7 @@ describe('CustomKeypad', () => {
     vi.clearAllMocks();
     vi.mocked(useSettingsStore).mockReturnValue({
       hapticEnabled: false,
-    } as any);
+    } as unknown);
   });
 
   it('should render all number buttons', () => {

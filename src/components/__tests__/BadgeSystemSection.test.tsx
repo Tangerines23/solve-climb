@@ -2,6 +2,7 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, waitFor } from '@testing-library/react';
 import { BadgeSystemSection } from '../debug/BadgeSystemSection';
 import { supabase } from '../../utils/supabaseClient';
+import type { SupabaseClient, Session, AuthError } from '@supabase/supabase-js';
 
 // Mock dependencies
 vi.mock('../../stores/useLevelProgressStore', () => ({
@@ -31,7 +32,7 @@ describe('BadgeSystemSection', () => {
     vi.mocked(supabase.auth.getSession).mockResolvedValue({
       data: { session: { user: { id: 'test-user' } } },
       error: null,
-    } as never);
+    } as unknown as { data: { session: Session }; error: null });
     vi.mocked(supabase.from).mockReturnValue({
       select: vi.fn().mockReturnValue({
         order: vi.fn().mockResolvedValue({
@@ -45,7 +46,7 @@ describe('BadgeSystemSection', () => {
           }),
         }),
       }),
-    } as any);
+    } as unknown as ReturnType<SupabaseClient['from']>);
   });
 
   it('should render badge system section', async () => {

@@ -2,6 +2,7 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, waitFor } from '@testing-library/react';
 import { ItemSystemSection } from '../debug/ItemSystemSection';
 import { supabase } from '../../utils/supabaseClient';
+import type { SupabaseClient } from '@supabase/supabase-js';
 import { useUserStore } from '../../stores/useUserStore';
 
 // Mock dependencies
@@ -25,7 +26,7 @@ describe('ItemSystemSection', () => {
       inventory: [],
       fetchUserData: vi.fn(),
       consumeItem: vi.fn(),
-    } as never);
+    } as unknown);
     vi.mocked(supabase.from).mockReturnValue({
       select: vi.fn().mockReturnValue({
         order: vi.fn().mockResolvedValue({
@@ -33,7 +34,7 @@ describe('ItemSystemSection', () => {
           error: null,
         }),
       }),
-    } as any);
+    } as unknown as ReturnType<SupabaseClient['from']>);
   });
 
   it('should render without crashing', async () => {

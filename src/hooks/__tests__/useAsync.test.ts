@@ -5,7 +5,7 @@ import { logError } from '../../utils/errorHandler';
 
 vi.mock('../../utils/errorHandler', () => ({
   logError: vi.fn(),
-  getUserErrorMessage: vi.fn((err: any) => err.message || 'Error'),
+  getUserErrorMessage: vi.fn((err: Error) => err.message || 'Error'),
 }));
 
 describe('useAsync', () => {

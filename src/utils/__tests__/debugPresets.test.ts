@@ -19,6 +19,7 @@ import { supabase } from '../supabaseClient';
 import { useUserStore as _useUserStore } from '../../stores/useUserStore';
 import { useQuizStore as _useQuizStore } from '../../stores/useQuizStore';
 import { calculateScoreForTier } from '../tierUtils';
+import type { PostgrestSingleResponse } from '@supabase/supabase-js';
 // Mock localStorage
 const localStorageMock = (() => {
   let store: Record<string, string> = {};
@@ -566,12 +567,18 @@ describe('debugPresets - executeDebugAction', () => {
       update: vi.fn(() => ({
         eq: vi.fn(() => Promise.resolve({ error: null })),
       })),
-    } as any);
+    } as unknown as any);
   });
 
   describe('reset action', () => {
     it('should execute reset action with target "all"', async () => {
-      vi.mocked(supabase.rpc).mockResolvedValue({ error: null } as any);
+      vi.mocked(supabase.rpc).mockResolvedValue({
+        data: null,
+        error: null,
+        count: null,
+        status: 200,
+        statusText: 'OK',
+      });
 
       const action: DebugAction = { type: 'reset', target: 'all' };
       await executeDebugAction(action, userId);
@@ -583,7 +590,13 @@ describe('debugPresets - executeDebugAction', () => {
     });
 
     it('should execute reset action with target "score"', async () => {
-      vi.mocked(supabase.rpc).mockResolvedValue({ error: null } as any);
+      vi.mocked(supabase.rpc).mockResolvedValue({
+        data: null,
+        error: null,
+        count: null,
+        status: 200,
+        statusText: 'OK',
+      });
 
       const action: DebugAction = { type: 'reset', target: 'score' };
       await executeDebugAction(action, userId);
@@ -595,7 +608,13 @@ describe('debugPresets - executeDebugAction', () => {
     });
 
     it('should execute reset action with default target "all"', async () => {
-      vi.mocked(supabase.rpc).mockResolvedValue({ error: null } as any);
+      vi.mocked(supabase.rpc).mockResolvedValue({
+        data: null,
+        error: null,
+        count: null,
+        status: 200,
+        statusText: 'OK',
+      });
 
       const action: DebugAction = { type: 'reset' };
       await executeDebugAction(action, userId);
@@ -607,7 +626,13 @@ describe('debugPresets - executeDebugAction', () => {
     });
 
     it('should execute reset action with target "minerals"', async () => {
-      vi.mocked(supabase.rpc).mockResolvedValue({ error: null } as any);
+      vi.mocked(supabase.rpc).mockResolvedValue({
+        data: null,
+        error: null,
+        count: null,
+        status: 200,
+        statusText: 'OK',
+      });
 
       const action: DebugAction = { type: 'reset', target: 'minerals' };
       await executeDebugAction(action, userId);
@@ -619,7 +644,13 @@ describe('debugPresets - executeDebugAction', () => {
     });
 
     it('should execute reset action with target "tier"', async () => {
-      vi.mocked(supabase.rpc).mockResolvedValue({ error: null } as any);
+      vi.mocked(supabase.rpc).mockResolvedValue({
+        data: null,
+        error: null,
+        count: null,
+        status: 200,
+        statusText: 'OK',
+      });
 
       const action: DebugAction = { type: 'reset', target: 'tier' };
       await executeDebugAction(action, userId);
@@ -632,7 +663,9 @@ describe('debugPresets - executeDebugAction', () => {
 
     it('should throw error when reset fails', async () => {
       const error = { message: 'Reset failed' };
-      vi.mocked(supabase.rpc).mockResolvedValue({ error } as any);
+      vi.mocked(supabase.rpc).mockResolvedValue({
+        error,
+      } as unknown as PostgrestSingleResponse<any>);
 
       const action: DebugAction = { type: 'reset', target: 'all' };
       await expect(executeDebugAction(action, userId)).rejects.toEqual(error);
@@ -641,7 +674,13 @@ describe('debugPresets - executeDebugAction', () => {
 
   describe('setTier action', () => {
     it('should execute setTier action with valid level', async () => {
-      vi.mocked(supabase.rpc).mockResolvedValue({ error: null } as any);
+      vi.mocked(supabase.rpc).mockResolvedValue({
+        data: null,
+        error: null,
+        count: null,
+        status: 200,
+        statusText: 'OK',
+      });
 
       const action: DebugAction = { type: 'setTier', level: 3 };
       await executeDebugAction(action, userId);
@@ -661,7 +700,9 @@ describe('debugPresets - executeDebugAction', () => {
 
     it('should throw error when setTier fails', async () => {
       const error = { message: 'Set tier failed' };
-      vi.mocked(supabase.rpc).mockResolvedValue({ error } as any);
+      vi.mocked(supabase.rpc).mockResolvedValue({
+        error,
+      } as unknown as PostgrestSingleResponse<any>);
 
       const action: DebugAction = { type: 'setTier', level: 3 };
       await expect(executeDebugAction(action, userId)).rejects.toEqual(error);
@@ -670,7 +711,13 @@ describe('debugPresets - executeDebugAction', () => {
 
   describe('setMasteryScore action', () => {
     it('should execute setMasteryScore action with valid value', async () => {
-      vi.mocked(supabase.rpc).mockResolvedValue({ error: null } as any);
+      vi.mocked(supabase.rpc).mockResolvedValue({
+        data: null,
+        error: null,
+        count: null,
+        status: 200,
+        statusText: 'OK',
+      });
 
       const action: DebugAction = { type: 'setMasteryScore', value: 100000 };
       await executeDebugAction(action, userId);
@@ -690,7 +737,9 @@ describe('debugPresets - executeDebugAction', () => {
 
     it('should throw error when setMasteryScore fails', async () => {
       const error = { message: 'Set mastery score failed' };
-      vi.mocked(supabase.rpc).mockResolvedValue({ error } as any);
+      vi.mocked(supabase.rpc).mockResolvedValue({
+        error,
+      } as unknown as PostgrestSingleResponse<any>);
 
       const action: DebugAction = { type: 'setMasteryScore', value: 100000 };
       await expect(executeDebugAction(action, userId)).rejects.toEqual(error);
@@ -709,9 +758,9 @@ describe('debugPresets - executeDebugAction', () => {
             update: vi.fn(() => ({
               eq: vi.fn(() => Promise.resolve({ error: null })),
             })),
-          } as any;
+          } as unknown as any;
         }
-        return {} as any;
+        return {} as unknown as any;
       });
 
       const action: DebugAction = { type: 'setMinerals', value: 5000 };
@@ -740,9 +789,9 @@ describe('debugPresets - executeDebugAction', () => {
             update: vi.fn(() => ({
               eq: vi.fn(() => Promise.resolve({ error: null })),
             })),
-          } as any;
+          } as unknown as any;
         }
-        return {} as any;
+        return {} as unknown as any;
       });
 
       const action: DebugAction = { type: 'setStamina', value: 5 };
@@ -767,7 +816,7 @@ describe('debugPresets - executeDebugAction', () => {
       vi.mocked(supabase.from).mockReturnValue({
         select: vi.fn(() => Promise.resolve({ data: mockItems, error: null })),
         upsert: mockUpsert,
-      } as any);
+      } as unknown as any);
 
       const action: DebugAction = { type: 'grantAllItems' };
       await executeDebugAction(action, userId);
@@ -788,7 +837,7 @@ describe('debugPresets - executeDebugAction', () => {
       vi.mocked(supabase.from).mockReturnValue({
         select: vi.fn(() => Promise.resolve({ data: mockItems, error: null })),
         upsert: mockUpsert,
-      } as any);
+      } as unknown as any);
 
       const action: DebugAction = { type: 'grantAllItems', quantity: 50 };
       await executeDebugAction(action, userId);
@@ -804,7 +853,7 @@ describe('debugPresets - executeDebugAction', () => {
 
       vi.mocked(supabase.from).mockReturnValue({
         select: vi.fn(() => Promise.resolve({ data: null, error })),
-      } as any);
+      } as unknown as any);
 
       const action: DebugAction = { type: 'grantAllItems' };
       await expect(executeDebugAction(action, userId)).rejects.toEqual(error);
@@ -817,7 +866,7 @@ describe('debugPresets - executeDebugAction', () => {
       vi.mocked(supabase.from).mockReturnValue({
         select: vi.fn(() => Promise.resolve({ data: mockItems, error: null })),
         upsert: vi.fn(() => Promise.resolve({ error })),
-      } as any);
+      } as unknown as any);
 
       const action: DebugAction = { type: 'grantAllItems' };
       await expect(executeDebugAction(action, userId)).rejects.toEqual(error);
@@ -829,7 +878,7 @@ describe('debugPresets - executeDebugAction', () => {
       vi.mocked(supabase.from).mockReturnValue({
         select: vi.fn(() => Promise.resolve({ data: [], error: null })),
         upsert: mockUpsert,
-      } as any);
+      } as unknown as any);
 
       const action: DebugAction = { type: 'grantAllItems' };
       await executeDebugAction(action, userId);
@@ -848,9 +897,9 @@ describe('debugPresets - executeDebugAction', () => {
 
       vi.mocked(supabase.rpc).mockImplementation((fnName: string) => {
         if (fnName === 'debug_grant_badge') {
-          return Promise.resolve({ error: null } as any);
+          return Promise.resolve({ error: null } as unknown as PostgrestSingleResponse<any>) as any;
         }
-        return Promise.resolve({ error: null } as any);
+        return Promise.resolve({ error: null } as unknown as PostgrestSingleResponse<any>) as any;
       });
 
       const action: DebugAction = { type: 'grantAllBadges' };
@@ -872,7 +921,7 @@ describe('debugPresets - executeDebugAction', () => {
       vi.mocked(supabase.rpc).mockImplementation(() => {
         callCount++;
         if (callCount === 1) {
-          return Promise.resolve({ error: null } as any);
+          return Promise.resolve({ error: null } as unknown as PostgrestSingleResponse<any>) as any;
         } else {
           return Promise.reject({ message: 'Badge grant failed' });
         }
@@ -897,7 +946,7 @@ describe('debugPresets - executeDebugAction', () => {
       // result.value.success가 false인 경우를 레이어링
       // supabase.rpc가 reject되면 .then()의 두번째 인자가 호출되어 { success: false, ... } 반환
       vi.mocked(supabase.rpc).mockImplementation(() => {
-        return Promise.reject({ message: 'Badge grant failed' });
+        return Promise.reject({ message: 'Badge grant failed' }) as any;
       });
 
       const action: DebugAction = { type: 'grantAllBadges' };
@@ -940,7 +989,7 @@ describe('debugPresets - executeDebugAction', () => {
           })),
         })),
         update: mockUpdate,
-      } as any);
+      } as unknown as any);
 
       const action: DebugAction = { type: 'setGameTime', seconds: 30 };
       await executeDebugAction(action, userId);
@@ -992,7 +1041,7 @@ describe('debugPresets - executeDebugAction', () => {
             })),
           })),
         })),
-      } as any);
+      } as unknown as any);
 
       mockGetQuizStoreState.mockReturnValue({
         setTimeLimit: mockSetTimeLimit,
@@ -1067,7 +1116,7 @@ describe('debugPresets - executeDebugAction', () => {
             })),
           })),
         })),
-      } as any);
+      } as unknown as any);
 
       const action: DebugAction = { type: 'setGameTime', seconds: 30 };
       await expect(executeDebugAction(action, userId)).rejects.toEqual(error);
@@ -1088,7 +1137,7 @@ describe('debugPresets - executeDebugAction', () => {
             })),
           })),
         })),
-      } as any);
+      } as unknown as any);
 
       const action: DebugAction = { type: 'setGameTime', seconds: 30 };
       await expect(executeDebugAction(action, userId)).rejects.toEqual(error);
@@ -1097,8 +1146,10 @@ describe('debugPresets - executeDebugAction', () => {
 
   describe('unknown action type', () => {
     it('should throw error for unknown action type', async () => {
-      const action = { type: 'unknown' as any };
-      await expect(executeDebugAction(action, userId)).rejects.toThrow('Unknown action type');
+      const action = { type: 'unknown' as DebugAction['type'] };
+      await expect(executeDebugAction(action as any, userId)).rejects.toThrow(
+        'Unknown action type'
+      );
     });
   });
 });
@@ -1125,7 +1176,7 @@ describe('debugPresets - applyPreset', () => {
       update: vi.fn(() => ({
         eq: vi.fn(() => Promise.resolve({ error: null })),
       })),
-    } as any);
+    } as unknown as any);
   });
 
   it('should apply newbie preset successfully', async () => {
@@ -1162,7 +1213,7 @@ describe('debugPresets - applyPreset', () => {
         update: vi.fn(() => ({
           eq: vi.fn(() => Promise.resolve({ error: null })),
         })),
-      } as any;
+      } as unknown as any;
     });
     mockGetUserStoreState.mockReturnValue({
       fetchUserData: mockFetchUserData,
@@ -1198,15 +1249,15 @@ describe('debugPresets - applyPreset', () => {
 
     vi.mocked(supabase.rpc).mockImplementation((fnName: string) => {
       if (fnName === 'debug_set_mastery_score') {
-        return Promise.resolve({ error: null } as any);
+        return Promise.resolve({ error: null } as unknown as PostgrestSingleResponse<any>);
       }
       if (fnName === 'debug_set_tier') {
-        return Promise.resolve({ error: null } as any);
+        return Promise.resolve({ error: null } as unknown as PostgrestSingleResponse<any>);
       }
       if (fnName === 'debug_grant_badge') {
-        return Promise.resolve({ error: null } as any);
+        return Promise.resolve({ error: null } as unknown as PostgrestSingleResponse<any>) as any;
       }
-      return Promise.resolve({ error: null } as any);
+      return Promise.resolve({ error: null } as unknown as PostgrestSingleResponse<any>) as any;
     });
 
     vi.mocked(supabase.from).mockImplementation((table: string) => {
@@ -1314,7 +1365,7 @@ describe('debugPresets - applyPreset', () => {
         update: vi.fn(() => ({
           eq: vi.fn(() => Promise.resolve({ error: null })),
         })),
-      } as any;
+      } as unknown as any;
     });
     mockGetUserStoreState.mockReturnValue({
       fetchUserData: mockFetchUserData,
@@ -1334,7 +1385,7 @@ describe('debugPresets - applyPreset', () => {
   it('should save failure history when action fails', async () => {
     const error = { message: 'Action failed' };
 
-    vi.mocked(supabase.rpc).mockResolvedValue({ error } as any);
+    vi.mocked(supabase.rpc).mockResolvedValue({ error } as unknown as PostgrestSingleResponse<any>);
 
     await expect(applyPreset('newbie', userId)).rejects.toBeDefined();
 
@@ -1350,7 +1401,9 @@ describe('debugPresets - applyPreset', () => {
     const mockSetMinerals = vi.fn(() => Promise.resolve());
     const mockSetStamina = vi.fn(() => Promise.resolve());
 
-    vi.mocked(supabase.rpc).mockResolvedValue({ error: null } as any);
+    vi.mocked(supabase.rpc).mockResolvedValue({
+      error: null,
+    } as unknown as PostgrestSingleResponse<any>);
     vi.mocked(supabase.from).mockImplementation((table: string) => {
       if (table === 'profiles') {
         return {
@@ -1379,7 +1432,7 @@ describe('debugPresets - applyPreset', () => {
         update: vi.fn(() => ({
           eq: vi.fn(() => Promise.resolve({ error: null })),
         })),
-      } as any;
+      } as unknown as any;
     });
     mockGetUserStoreState.mockReturnValue({
       fetchUserData: mockFetchUserData,
@@ -1397,7 +1450,9 @@ describe('debugPresets - applyPreset', () => {
     const mockSetMinerals = vi.fn(() => Promise.resolve());
     const mockSetStamina = vi.fn(() => Promise.resolve());
 
-    vi.mocked(supabase.rpc).mockResolvedValue({ error: null } as any);
+    vi.mocked(supabase.rpc).mockResolvedValue({
+      error: null,
+    } as unknown as PostgrestSingleResponse<any>);
     vi.mocked(supabase.from).mockImplementation((table: string) => {
       if (table === 'profiles') {
         return {
@@ -1426,7 +1481,7 @@ describe('debugPresets - applyPreset', () => {
         update: vi.fn(() => ({
           eq: vi.fn(() => Promise.resolve({ error: null })),
         })),
-      } as any;
+      } as unknown as any;
     });
     mockGetUserStoreState.mockReturnValue({
       fetchUserData: mockFetchUserData,

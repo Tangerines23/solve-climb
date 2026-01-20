@@ -1,7 +1,9 @@
 import { describe, it, expect, beforeEach } from 'vitest';
 import { renderHook, act } from '@testing-library/react';
 import { useQuizStore } from '../useQuizStore';
-import type { Category, Topic, GameMode, Difficulty, TimeLimit } from '../../types/quiz';
+import type { Category, Topic, GameMode, Difficulty, World } from '../../types/quiz';
+
+type TimeLimit = 10 | 15 | 60 | 120 | 180;
 
 describe('useQuizStore', () => {
   beforeEach(() => {
@@ -9,7 +11,7 @@ describe('useQuizStore', () => {
     const { result } = renderHook(() => useQuizStore());
     act(() => {
       result.current.resetQuiz();
-      result.current.setCategoryTopic(null as any, null as any);
+      result.current.setCategoryTopic(null as unknown as Category, null as unknown as World);
       result.current.setGameMode('time-attack');
     });
   });
@@ -99,11 +101,11 @@ describe('useQuizStore', () => {
     const { result } = renderHook(() => useQuizStore());
 
     act(() => {
-      result.current.setCategoryTopic('수학', '덧셈');
+      result.current.setCategoryTopic('기초', 'World1');
     });
 
-    expect(result.current.category).toBe('수학');
-    expect(result.current.world).toBe('덧셈');
+    expect(result.current.category).toBe('기초');
+    expect(result.current.world).toBe('World1');
   });
 
   it('should set time limit', () => {
@@ -127,7 +129,7 @@ describe('useQuizStore', () => {
       result.current.increaseScore(100);
       result.current.setDifficulty('hard');
       result.current.setTimeLimit(120);
-      result.current.setCategoryTopic('수학', '덧셈');
+      result.current.setCategoryTopic('기초', 'World1');
     });
 
     act(() => {
@@ -138,8 +140,8 @@ describe('useQuizStore', () => {
     expect(result.current.difficulty).toBe('easy');
     expect(result.current.timeLimit).toBe(60);
     // resetQuiz does not reset category/world
-    expect(result.current.category).toBe('수학');
-    expect(result.current.world).toBe('덧셈');
+    expect(result.current.category).toBe('기초');
+    expect(result.current.world).toBe('World1');
   });
 
   it('should handle multiple score operations', () => {

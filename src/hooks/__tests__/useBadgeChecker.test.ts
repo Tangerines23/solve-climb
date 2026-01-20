@@ -57,18 +57,18 @@ describe('useBadgeChecker', () => {
     vi.clearAllMocks();
 
     // Setup Supabase chain mocks
-    (supabase.from as any).mockImplementation((table: string) => {
+    vi.mocked(supabase.from).mockImplementation((table: string) => {
       mockFrom(table);
       return {
         select: (_cols: string) => {
           // Return separate chain for select vs insert if needed,
           // but here we just reuse chain for simplicity or customize based on table
           return {
-            eq: (_col: string, _val: any) => Promise.resolve({ data: [], error: null }), // Default empty badges
+            eq: (_col: string, _val: unknown) => Promise.resolve({ data: [], error: null }), // Default empty badges
           };
         },
         insert: mockInsert.mockResolvedValue({ error: null }),
-      };
+      } as unknown as any;
     });
 
     // We need more control over select chain specifically
@@ -78,16 +78,37 @@ describe('useBadgeChecker', () => {
       eq: vi.fn().mockResolvedValue({ data: [], error: null }),
       insert: mockInsert.mockResolvedValue({ error: null }), // default success
     };
-    (supabase.from as any).mockReturnValue(chain);
+    vi.mocked(supabase.from).mockReturnValue(chain as any);
     mockSelect.mockImplementation(chain.eq); // capture the final promise returner
   });
 
-  const baseStats: any = {
-    totalAltitude: 0,
-    streakCount: 0,
-    weeklyTotal: 0, // games played
-    averageAccuracy: 0,
+  const defaultStats: HistoryStats = {
+    weeklyTotal: 0,
+    weeklyTotalLastWeek: 0,
+    graphPercentage: 0,
+    wrongAnswers: 0,
+    dailyCounts: [],
+    weekDays: [],
+    monthlyTotal: 0,
+    monthlyTotalLastMonth: 0,
+    monthlyDailyCounts: [],
+    monthlyDays: [],
     categoryLevels: [],
+    recentRecords: [],
+    totalAltitude: 0,
+    userTitle: 'Beginner',
+    totalCorrect: 0,
+    averageAccuracy: 0,
+    maxCombo: 0,
+    nextTierGoal: 0,
+    nextTierName: '',
+    streakCount: 0,
+    heatmapData: [],
+    smartComment: '',
+  };
+
+  const baseStats: HistoryStats = {
+    ...defaultStats,
   };
 
   it('should not award badges if criteria not met', async () => {
@@ -136,18 +157,17 @@ describe('useBadgeChecker', () => {
   it('should award level badge when condition met', async () => {
     const { result } = renderHook(() => useBadgeChecker());
 
-    const stats: any = {
+    const stats: HistoryStats = {
       ...baseStats,
       categoryLevels: [
         {
           themeCode: 1,
           themeId: 'math_basic',
+          categoryName: '?�학', // Added missing property
           level: 5,
-          score: 100,
-          themeId_param: 'math',
           levelName: 'lv5',
           progress: 0,
-        } as any,
+        } as HistoryStats['categoryLevels'][0],
       ],
     }; // Goal: math, level 5
 
@@ -166,7 +186,7 @@ describe('useBadgeChecker', () => {
       }),
       insert: mockInsert,
     };
-    (supabase.from as any).mockReturnValue(chain);
+    vi.mocked(supabase.from).mockReturnValue(chain as any);
 
     const { result } = renderHook(() => useBadgeChecker());
     const stats = { ...baseStats, totalAltitude: 200 }; // Qualified for altitude

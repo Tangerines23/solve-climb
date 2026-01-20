@@ -5,6 +5,7 @@ import { supabase } from '../utils/supabaseClient';
 import { debugSupabaseQuery } from '../utils/debugFetch';
 import { GameMode } from '../types/quiz';
 import { useDebugStore } from './useDebugStore';
+import type { UserResponse } from '@supabase/supabase-js';
 
 export interface LevelRecord {
   level: number;
@@ -65,8 +66,8 @@ interface LevelProgressState {
   resetProgress: () => Promise<void>;
   // Global Ranking v2
   fetchRanking: (
-    world: string,
-    category: string,
+    world: string | null,
+    category: string | null,
     period: 'weekly' | 'all-time',
     type: 'total' | 'time-attack' | 'survival',
     limit?: number
@@ -157,7 +158,7 @@ export const useLevelProgressStore = create<LevelProgressState>()(
           return { progress: newProgress };
         });
 
-        const authResult = (await debugSupabaseQuery(supabase.auth.getUser())) as any;
+        const authResult = (await debugSupabaseQuery(supabase.auth.getUser())) as UserResponse;
         const user = authResult?.data?.user;
         console.log('[useLevelProgressStore] Current user:', user?.id);
 
@@ -191,7 +192,7 @@ export const useLevelProgressStore = create<LevelProgressState>()(
 
         // 3. Fallback: Direct game_records update (for compatibility)
         try {
-          const authResult = (await debugSupabaseQuery(supabase.auth.getUser())) as any;
+          const authResult = (await debugSupabaseQuery(supabase.auth.getUser())) as UserResponse;
           const user = authResult?.data?.user;
           if (!user) return;
 
@@ -393,10 +394,13 @@ export const useLevelProgressStore = create<LevelProgressState>()(
           if (error) throw error;
 
           if (data) {
+            const key =
+              world && category ? `${world}-${category}-${period}-${type}` : `${period}-${type}`;
+
             set((state) => ({
               rankings: {
                 ...state.rankings,
-                [`${world}-${category}-${period}-${type}`]: data as RankingRecord[],
+                [key]: data as RankingRecord[],
               },
             }));
           }

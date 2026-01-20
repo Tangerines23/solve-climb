@@ -200,8 +200,9 @@ export function useQuizSubmit({
         // 타임어택 등 레벨 고정 모드에서는 티어 배율 적용
         const categoryTopics =
           APP_CONFIG.SUB_TOPICS[categoryParam as keyof typeof APP_CONFIG.SUB_TOPICS] || [];
-        const currentTopic = categoryTopics.find((t: any) => t.id === subParam);
-        const tier = ((currentTopic as any)?.tier as ThemeTier) || 'basic';
+        const currentTopic = categoryTopics.find((t) => t.id === subParam);
+        const tier =
+          ((currentTopic as unknown as { tier?: ThemeTier })?.tier as ThemeTier) || 'basic';
         const themeMultiplier = gameMode === 'survival' ? 1.0 : THEME_MULTIPLIERS[tier];
 
         // 3. 콤보 배율 (Combo Multiplier)

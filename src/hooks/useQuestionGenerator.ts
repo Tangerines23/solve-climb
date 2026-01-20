@@ -57,7 +57,7 @@ export function useQuestionGenerator({
 
     // v2.2 상세 기획 반영: Phase별 레벨 범위 내에서 무작위 선택
     if (waveConfig) {
-      const { minLevel, maxLevel } = waveConfig as any;
+      const { minLevel, maxLevel } = waveConfig;
       // 해당 범위(min-max) 내에서 무작위 레벨 선택
       return Math.floor(Math.random() * (maxLevel - minLevel + 1)) + minLevel;
     }

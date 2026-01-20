@@ -2,21 +2,38 @@ import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { renderHook, act, waitFor } from '@testing-library/react';
 import { useUserStore } from '../useUserStore';
 import { supabase } from '../../utils/supabaseClient';
+import type {
+  UserResponse,
+  PostgrestResponse,
+  PostgrestSingleResponse,
+} from '@supabase/supabase-js';
 
 // Mock supabase
 // Mock supabase
+// Define generic mock response type
+type MockSupabaseResponse<T> = {
+  data: T | null;
+  error: { message: string; details: string; hint: string; code: string; name: string } | null;
+  count?: number | null;
+  status?: number;
+  statusText?: string;
+};
+
+// Mock supabase
 vi.mock('../../utils/supabaseClient', () => {
-  const builder: any = {
-    then: vi.fn((resolve) => resolve({ data: null, error: null })),
+  const builder = {
+    then: vi.fn((resolve) =>
+      resolve({ data: null, error: null, count: null, status: 200, statusText: 'OK' })
+    ),
+    select: vi.fn().mockReturnThis(),
+    insert: vi.fn().mockReturnThis(),
+    update: vi.fn().mockReturnThis(),
+    upsert: vi.fn().mockReturnThis(),
+    delete: vi.fn().mockReturnThis(),
+    eq: vi.fn().mockReturnThis(),
+    single: vi.fn().mockReturnThis(),
+    in: vi.fn().mockReturnThis(),
   };
-  builder.select = vi.fn(() => builder);
-  builder.insert = vi.fn(() => builder);
-  builder.update = vi.fn(() => builder);
-  builder.upsert = vi.fn(() => builder);
-  builder.delete = vi.fn(() => builder);
-  builder.eq = vi.fn(() => builder);
-  builder.single = vi.fn(() => builder);
-  builder.in = vi.fn(() => builder);
 
   return {
     supabase: {
@@ -51,12 +68,25 @@ describe('useUserStore', () => {
       eq: vi.fn().mockReturnThis(),
       single: vi.fn().mockReturnThis(),
       in: vi.fn().mockReturnThis(),
-      then: vi.fn((resolve) => resolve({ data: null, error: null })),
-    } as any;
+      then: vi.fn((resolve) =>
+        resolve({ data: null, error: null, count: null, status: 200, statusText: 'OK' })
+      ),
+    };
 
-    vi.mocked(supabase.from).mockReturnValue(mockBuilder);
-    vi.mocked(supabase.rpc).mockResolvedValue({ data: null, error: null });
-    vi.mocked(supabase.auth.getUser).mockResolvedValue({ data: { user: null }, error: null });
+    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+    // @ts-ignore - Mocking complex Supabase builder
+    vi.mocked(supabase.from).mockReturnValue(mockBuilder as unknown as any);
+    vi.mocked(supabase.rpc).mockResolvedValue({
+      data: null,
+      error: null,
+      count: null,
+      status: 200,
+      statusText: 'OK',
+    } as PostgrestSingleResponse<any>);
+    vi.mocked(supabase.auth.getUser).mockResolvedValue({
+      data: { user: null },
+      error: null,
+    } as unknown as UserResponse);
 
     // Reset store state
     const { result } = renderHook(() => useUserStore());
@@ -105,7 +135,7 @@ describe('useUserStore', () => {
     vi.mocked(supabase.auth.getUser).mockResolvedValue({
       data: { user: mockUser },
       error: null,
-    } as any);
+    } as unknown as UserResponse);
 
     vi.mocked(supabase.from).mockReturnValue({
       select: vi.fn().mockReturnValue({
@@ -116,7 +146,7 @@ describe('useUserStore', () => {
           }),
         }),
       }),
-    } as any);
+    } as unknown as any);
 
     // Mock inventory query
     const mockFromInventory = {
@@ -139,12 +169,12 @@ describe('useUserStore', () => {
               }),
             }),
           }),
-        } as any;
+        } as unknown as any;
       }
       if (table === 'inventory') {
-        return mockFromInventory as any;
+        return mockFromInventory as unknown as any;
       }
-      return {} as any;
+      return {} as unknown as any;
     });
 
     const { result } = renderHook(() => useUserStore());
@@ -171,7 +201,7 @@ describe('useUserStore', () => {
     vi.mocked(supabase.auth.getUser).mockResolvedValue({
       data: { user: null },
       error: null,
-    } as any);
+    } as UserResponse);
 
     const { result } = renderHook(() => useUserStore());
 
@@ -214,12 +244,12 @@ describe('useUserStore', () => {
     vi.mocked(supabase.auth.getUser).mockResolvedValue({
       data: { user: { id: 'user-123' } },
       error: null,
-    } as any);
+    } as UserResponse);
 
     vi.mocked(supabase.rpc).mockResolvedValue({
       data: { success: true },
       error: null,
-    } as any);
+    } as PostgrestSingleResponse<any>);
 
     const { result } = renderHook(() => useUserStore());
 
@@ -233,7 +263,7 @@ describe('useUserStore', () => {
     vi.mocked(supabase.auth.getUser).mockResolvedValue({
       data: { user: { id: 'user-123' } },
       error: null,
-    } as any);
+    } as UserResponse);
 
     vi.mocked(supabase.rpc).mockRejectedValue(new Error('Insufficient minerals'));
 
@@ -248,12 +278,12 @@ describe('useUserStore', () => {
     vi.mocked(supabase.auth.getUser).mockResolvedValue({
       data: { user: { id: 'user-123' } },
       error: null,
-    } as any);
+    } as UserResponse);
 
     vi.mocked(supabase.rpc).mockResolvedValue({
       data: { success: true },
       error: null,
-    } as any);
+    } as PostgrestSingleResponse<any>);
 
     const { result } = renderHook(() => useUserStore());
 
@@ -267,12 +297,12 @@ describe('useUserStore', () => {
     vi.mocked(supabase.auth.getUser).mockResolvedValue({
       data: { user: { id: 'user-123' } },
       error: null,
-    } as any);
+    } as UserResponse);
 
     vi.mocked(supabase.rpc).mockResolvedValue({
       data: { success: true, new_stamina: 4 },
       error: null,
-    } as any);
+    } as PostgrestSingleResponse<any>);
 
     const { result } = renderHook(() => useUserStore());
 
@@ -293,7 +323,7 @@ describe('useUserStore', () => {
     vi.mocked(supabase.auth.getUser).mockResolvedValue({
       data: { user: { id: 'user-123' } },
       error: null,
-    } as any);
+    } as UserResponse);
 
     vi.mocked(supabase.from).mockReturnValue({
       update: vi.fn().mockReturnValue({
@@ -302,7 +332,7 @@ describe('useUserStore', () => {
           error: null,
         }),
       }),
-    } as any);
+    } as unknown as any);
 
     const { result } = renderHook(() => useUserStore());
 
@@ -317,7 +347,7 @@ describe('useUserStore', () => {
     vi.mocked(supabase.auth.getUser).mockResolvedValue({
       data: { user: { id: 'user-123' } },
       error: null,
-    } as any);
+    } as UserResponse);
 
     vi.mocked(supabase.from).mockReturnValue({
       update: vi.fn().mockReturnValue({
@@ -326,7 +356,7 @@ describe('useUserStore', () => {
           error: null,
         }),
       }),
-    } as any);
+    } as unknown as any);
 
     const { result } = renderHook(() => useUserStore());
 
@@ -342,7 +372,7 @@ describe('useUserStore', () => {
     vi.mocked(supabase.auth.getUser).mockResolvedValue({
       data: { user: null },
       error: null,
-    } as any);
+    } as unknown as UserResponse);
 
     const { result } = renderHook(() => useUserStore());
 
@@ -358,13 +388,13 @@ describe('useUserStore', () => {
     vi.mocked(supabase.auth.getUser).mockResolvedValue({
       data: { user: { id: 'user-123' } },
       error: null,
-    } as any);
+    } as UserResponse);
 
     vi.mocked(supabase.from).mockReturnValue({
       update: vi.fn().mockReturnValue({
         eq: vi.fn().mockRejectedValue(new Error('Update failed')),
       }),
-    } as any);
+    } as unknown as any);
 
     const consoleErrorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
 
@@ -384,7 +414,7 @@ describe('useUserStore', () => {
     vi.mocked(supabase.auth.getUser).mockResolvedValue({
       data: { user: { id: 'user-123' } },
       error: null,
-    } as any);
+    } as UserResponse);
 
     vi.mocked(supabase.from).mockReturnValue({
       update: vi.fn().mockReturnValue({
@@ -393,7 +423,7 @@ describe('useUserStore', () => {
           error: null,
         }),
       }),
-    } as any);
+    } as unknown as any);
 
     const { result } = renderHook(() => useUserStore());
 
@@ -408,7 +438,7 @@ describe('useUserStore', () => {
     vi.mocked(supabase.auth.getUser).mockResolvedValue({
       data: { user: { id: 'user-123' } },
       error: null,
-    } as any);
+    } as UserResponse);
 
     vi.mocked(supabase.from).mockReturnValue({
       update: vi.fn().mockReturnValue({
@@ -417,7 +447,7 @@ describe('useUserStore', () => {
           error: null,
         }),
       }),
-    } as any);
+    } as unknown as any);
 
     const { result } = renderHook(() => useUserStore());
 
@@ -546,7 +576,7 @@ describe('useUserStore', () => {
         return Promise.resolve({
           data: { success: true },
           error: null,
-        } as any);
+        }) as unknown as any;
       }
       return Promise.resolve({ data: null, error: null } as any);
     });
@@ -583,7 +613,7 @@ describe('useUserStore', () => {
         return Promise.resolve({
           data: null,
           error: { message: 'RPC error' },
-        } as any);
+        }) as unknown as any;
       }
       return Promise.resolve({ data: null, error: null } as any);
     });
@@ -616,7 +646,7 @@ describe('useUserStore', () => {
         return Promise.resolve({
           data: { success: false, message: 'Insufficient stamina' },
           error: null,
-        } as any);
+        }) as unknown as any;
       }
       return Promise.resolve({ data: null, error: null } as any);
     });

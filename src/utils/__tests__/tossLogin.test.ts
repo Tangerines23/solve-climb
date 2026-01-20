@@ -15,7 +15,7 @@ describe('tossLogin', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     // Reset window.ReactNativeWebView
-    delete (window as any).ReactNativeWebView;
+    delete (window as unknown as { ReactNativeWebView?: unknown }).ReactNativeWebView;
   });
 
   it('should return error when not in Toss app environment', async () => {
@@ -26,11 +26,11 @@ describe('tossLogin', () => {
   });
 
   it('should handle successful login', async () => {
-    (window as any).ReactNativeWebView = {};
+    (window as unknown as { ReactNativeWebView: unknown }).ReactNativeWebView = {};
     vi.mocked(appLogin).mockResolvedValue({
       authorizationCode: 'test-code',
-      referrer: 'test-referrer',
-    } as never);
+      referrer: 'DEFAULT',
+    } as { authorizationCode: string; referrer: 'DEFAULT' | 'SANDBOX' });
 
     const result = await handleTossLogin();
 
@@ -39,7 +39,7 @@ describe('tossLogin', () => {
   });
 
   it('should handle login error', async () => {
-    (window as any).ReactNativeWebView = {};
+    (window as unknown as { ReactNativeWebView: unknown }).ReactNativeWebView = {};
     vi.mocked(appLogin).mockRejectedValue(new Error('Login failed'));
 
     const result = await handleTossLogin();
@@ -49,10 +49,10 @@ describe('tossLogin', () => {
   });
 
   it('should handle missing authorization code', async () => {
-    (window as any).ReactNativeWebView = {};
+    (window as unknown as { ReactNativeWebView: unknown }).ReactNativeWebView = {};
     vi.mocked(appLogin).mockResolvedValue({
       authorizationCode: null,
-    } as never);
+    } as unknown as { authorizationCode: string; referrer: 'DEFAULT' | 'SANDBOX' });
 
     const result = await handleTossLogin();
 

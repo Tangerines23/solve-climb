@@ -38,7 +38,8 @@ const ThrowError = ({ shouldThrow }: { shouldThrow: boolean }) => {
 };
 
 describe('ErrorBoundary', () => {
-  const originalEnv = (import.meta as any).env;
+  const originalEnv = (import.meta as unknown as { env: { DEV: boolean; [key: string]: unknown } })
+    .env;
   const _originalConsoleError = console.error;
 
   beforeEach(() => {
@@ -49,7 +50,7 @@ describe('ErrorBoundary', () => {
 
   afterEach(() => {
     vi.restoreAllMocks();
-    Object.defineProperty(import.meta as any, 'env', {
+    Object.defineProperty(import.meta as unknown, 'env', {
       value: originalEnv,
       writable: true,
     });
@@ -119,7 +120,7 @@ describe('ErrorBoundary', () => {
   });
 
   it('should log error to store in development mode', () => {
-    Object.defineProperty(import.meta as any, 'env', {
+    Object.defineProperty(import.meta as unknown, 'env', {
       value: { ...originalEnv, DEV: true },
       writable: true,
     });
@@ -140,7 +141,7 @@ describe('ErrorBoundary', () => {
   });
 
   it('should handle errorInfo without componentStack', () => {
-    Object.defineProperty(import.meta as any, 'env', {
+    Object.defineProperty(import.meta as unknown, 'env', {
       value: { ...originalEnv, DEV: true },
       writable: true,
     });

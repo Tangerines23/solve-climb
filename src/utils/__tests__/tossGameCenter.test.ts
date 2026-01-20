@@ -18,7 +18,7 @@ vi.mock('../errorHandler', () => ({
 describe('tossGameCenter', () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    delete (window as any).ReactNativeWebView;
+    delete (window as unknown as { ReactNativeWebView?: unknown }).ReactNativeWebView;
     Object.defineProperty(window, 'location', {
       value: { hostname: 'example.com' },
       writable: true,
@@ -49,14 +49,14 @@ describe('tossGameCenter', () => {
     });
 
     it('should handle submission error', async () => {
-      (window as any).ReactNativeWebView = {};
+      (window as unknown as { ReactNativeWebView: unknown }).ReactNativeWebView = {};
       Object.defineProperty(window, 'location', {
         value: { hostname: 'example.com' },
         writable: true,
       });
       vi.mocked(submitGameCenterLeaderBoardScore).mockResolvedValue({
-        statusCode: 'ERROR',
-      } as never);
+        statusCode: 'LEADERBOARD_NOT_FOUND',
+      } as { statusCode: 'SUCCESS' | 'LEADERBOARD_NOT_FOUND' });
 
       const result = await submitScoreToLeaderboard(1000);
 

@@ -145,12 +145,13 @@ export function validateSubTopicParam(
   }
 
   // 해당 카테고리의 서브토픽 목록 확인
-  const subTopics = (APP_CONFIG.SUB_TOPICS as any)[category];
+  const subTopics = APP_CONFIG.SUB_TOPICS[category as keyof typeof APP_CONFIG.SUB_TOPICS];
+
   if (!subTopics || !Array.isArray(subTopics)) {
     return null;
   }
 
-  const allowedSubTopics = subTopics.map((s: any) => s.id) as string[];
+  const allowedSubTopics = (subTopics as ReadonlyArray<{ id: string }>).map((s) => s.id);
   return validateStringParam(subTopic, allowedSubTopics);
 }
 

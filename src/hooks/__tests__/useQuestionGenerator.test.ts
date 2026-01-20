@@ -31,12 +31,10 @@ describe('useQuestionGenerator', () => {
   const mockInputRef = { current: null };
 
   const defaultParams = {
-    category: '수학' as const,
-    topic: '덧셈' as const,
+    category: '기초' as const,
     difficulty: 'easy' as const,
     gameMode: 'time-attack' as const,
     categoryParam: null,
-    subParam: null,
     levelParam: null,
     useSystemKeyboard: false,
     inputRef: mockInputRef,
@@ -105,7 +103,6 @@ describe('useQuestionGenerator', () => {
       useQuestionGenerator({
         ...defaultParams,
         categoryParam: '기초', // Changed from 'math'
-        subParam: 'arithmetic',
         levelParam: 1,
       })
     );
@@ -142,7 +139,6 @@ describe('useQuestionGenerator', () => {
       useQuestionGenerator({
         ...defaultParams,
         categoryParam: '대수', // Changed from 'math'
-        subParam: 'equations',
         levelParam: 1,
       })
     );
@@ -223,7 +219,6 @@ describe('useQuestionGenerator', () => {
       useQuestionGenerator({
         ...defaultParams,
         categoryParam: '대수',
-        subParam: 'equations',
         levelParam: null,
       })
     );
@@ -251,7 +246,6 @@ describe('useQuestionGenerator', () => {
       useQuestionGenerator({
         ...defaultParams,
         categoryParam: '심화',
-        subParam: 'calculus',
         levelParam: null,
       })
     );
@@ -274,7 +268,6 @@ describe('useQuestionGenerator', () => {
       useQuestionGenerator({
         ...defaultParams,
         category: null,
-        // topic: null,
       })
     );
 
@@ -290,7 +283,7 @@ describe('useQuestionGenerator', () => {
 
   it('should handle useSystemKeyboard focus', async () => {
     const mockFocus = vi.fn();
-    const mockInput = { focus: mockFocus } as any;
+    const mockInput = { focus: mockFocus } as unknown as HTMLInputElement;
     const inputRef = { current: mockInput };
 
     vi.mocked(generateQuestion).mockReturnValue({
@@ -352,7 +345,6 @@ describe('useQuestionGenerator', () => {
         useQuestionGenerator({
           ...defaultParams,
           categoryParam: '기초',
-          subParam: 'arithmetic',
           levelParam: level,
         })
       );
@@ -381,7 +373,6 @@ describe('useQuestionGenerator', () => {
       useQuestionGenerator({
         ...defaultParams,
         categoryParam: '기초',
-        subParam: 'other-topic',
         levelParam: null,
       })
     );

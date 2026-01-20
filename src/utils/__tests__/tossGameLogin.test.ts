@@ -26,7 +26,7 @@ vi.mock('../env', () => ({
 describe('tossGameLogin', () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    delete (window as any).ReactNativeWebView;
+    delete (window as unknown as { ReactNativeWebView?: unknown }).ReactNativeWebView;
   });
 
   it('should return error when not in Toss app environment', async () => {
@@ -37,7 +37,7 @@ describe('tossGameLogin', () => {
   });
 
   it('should return error when not integrated service', async () => {
-    (window as any).ReactNativeWebView = {};
+    (window as unknown as { ReactNativeWebView: unknown }).ReactNativeWebView = {};
     vi.mocked(getIsTossLoginIntegratedService).mockResolvedValue(false);
 
     const result = await getGameLoginHash();
@@ -47,12 +47,12 @@ describe('tossGameLogin', () => {
   });
 
   it('should get game login hash successfully', async () => {
-    (window as any).ReactNativeWebView = {};
+    (window as unknown as { ReactNativeWebView: unknown }).ReactNativeWebView = {};
     vi.mocked(getIsTossLoginIntegratedService).mockResolvedValue(true);
     vi.mocked(getUserKeyForGame).mockResolvedValue({
       type: 'HASH',
       hash: 'test-hash',
-    } as never);
+    } as { type: 'HASH'; hash: string });
 
     const result = await getGameLoginHash();
 
@@ -61,7 +61,7 @@ describe('tossGameLogin', () => {
   });
 
   it('should handle getUserKeyForGame error', async () => {
-    (window as any).ReactNativeWebView = {};
+    (window as unknown as { ReactNativeWebView: unknown }).ReactNativeWebView = {};
     vi.mocked(getIsTossLoginIntegratedService).mockResolvedValue(true);
     vi.mocked(getUserKeyForGame).mockRejectedValue(new Error('API error'));
 

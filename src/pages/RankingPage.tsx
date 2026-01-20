@@ -54,7 +54,7 @@ export function RankingPage() {
     const loadRanking = async () => {
       setLoading(true);
       // Note: passing null for world and category since RPC doesn't use them
-      await fetchRanking(null as any, null as any, activePeriod, activeType);
+      await fetchRanking(null, null, activePeriod, activeType);
       setLoading(false);
     };
     loadRanking();

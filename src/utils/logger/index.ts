@@ -15,26 +15,26 @@ class DebugLogger {
     return `${this.prefix} [${timestamp}] [${level.toUpperCase()}] ${message}`;
   }
 
-  debug(message: string, ...args: any[]) {
+  debug(message: string, ...args: unknown[]) {
     if (IS_DEV) {
       console.debug(this.formatMessage('debug', message), ...args);
     }
   }
 
-  info(message: string, ...args: any[]) {
+  info(message: string, ...args: unknown[]) {
     if (IS_DEV) {
       console.info(this.formatMessage('info', message), ...args);
     }
   }
 
-  warn(message: string, ...args: any[]) {
+  warn(message: string, ...args: unknown[]) {
     // 경고는 프로덕션에서도 최소한으로 출력할 수 있도록 설정 가능
     if (IS_DEV) {
       console.warn(this.formatMessage('warn', message), ...args);
     }
   }
 
-  error(message: string, error?: any, ...args: any[]) {
+  error(message: string, error?: unknown, ...args: unknown[]) {
     // 에러는 프로덕션에서도 추적을 위해 출력 (또는 외부 Sentry 등으로 전송 가능)
     console.error(this.formatMessage('error', message), error, ...args);
   }

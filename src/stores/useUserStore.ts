@@ -1,6 +1,7 @@
 import { create } from 'zustand';
 import { supabase } from '../utils/supabaseClient';
 import { debugSupabaseQuery } from '../utils/debugFetch';
+import { PostgrestError } from '@supabase/supabase-js';
 
 interface UserState {
   minerals: number;
@@ -68,7 +69,7 @@ export const useUserStore = create<UserState>((set, get) => ({
   fetchUserData: async () => {
     set({ isLoading: true });
     try {
-      const authResult = (await debugSupabaseQuery(supabase.auth.getUser())) as any;
+      const authResult = await debugSupabaseQuery(supabase.auth.getUser());
       const user = authResult?.data?.user;
       if (!user) {
         console.log('[UserStore] No user found, skipping fetch');
@@ -192,7 +193,7 @@ export const useUserStore = create<UserState>((set, get) => ({
     set({ minerals: value });
 
     try {
-      const authResult = (await debugSupabaseQuery(supabase.auth.getUser())) as any;
+      const authResult = await debugSupabaseQuery(supabase.auth.getUser());
       const user = authResult?.data?.user;
       if (user) {
         await debugSupabaseQuery(
@@ -209,7 +210,7 @@ export const useUserStore = create<UserState>((set, get) => ({
     set({ stamina: value });
 
     try {
-      const authResult = (await debugSupabaseQuery(supabase.auth.getUser())) as any;
+      const authResult = await debugSupabaseQuery(supabase.auth.getUser());
       const user = authResult?.data?.user;
       if (user) {
         await debugSupabaseQuery(
@@ -229,7 +230,7 @@ export const useUserStore = create<UserState>((set, get) => ({
 
     // PGRST202: RPC 함수가 DB에 없을 경우 (시뮬레이션 모드/마이그레이션 누락)
     if (error) {
-      if ((error as any).code === 'PGRST202') {
+      if ((error as PostgrestError).code === 'PGRST202') {
         console.warn(
           '[UserStore] recover_stamina_ads RPC not found. Falling back to manual update for simulation.'
         );
@@ -269,7 +270,7 @@ export const useUserStore = create<UserState>((set, get) => ({
 
   // DEV ONLY: 아이템 초기화
   debugResetItems: async () => {
-    const authResult = (await debugSupabaseQuery(supabase.auth.getUser())) as any;
+    const authResult = await debugSupabaseQuery(supabase.auth.getUser());
     const user = authResult?.data?.user;
     if (!user) return;
 
@@ -290,7 +291,7 @@ export const useUserStore = create<UserState>((set, get) => ({
 
   // DEV ONLY: 아이템 5개씩 감소
   debugRemoveItems: async () => {
-    const authResult = (await debugSupabaseQuery(supabase.auth.getUser())) as any;
+    const authResult = await debugSupabaseQuery(supabase.auth.getUser());
     const user = authResult?.data?.user;
     if (!user) return;
 
@@ -324,7 +325,7 @@ export const useUserStore = create<UserState>((set, get) => ({
   },
 
   refundStamina: async () => {
-    const authResult = (await debugSupabaseQuery(supabase.auth.getUser())) as any;
+    const authResult = await debugSupabaseQuery(supabase.auth.getUser());
     const user = authResult?.data?.user;
     if (!user) return { success: false, message: '로그인이 필요합니다.' };
 
@@ -338,7 +339,7 @@ export const useUserStore = create<UserState>((set, get) => ({
       const { error } = (await debugSupabaseQuery(supabase.rpc('recover_stamina_ads'))) || {};
       if (error) {
         // RPC가 없는 경우 (PGRST202) 시뮬레이션 모드로 간주하고 성공 반환
-        if ((error as any).code === 'PGRST202') {
+        if ((error as PostgrestError).code === 'PGRST202') {
           console.warn(
             '[UserStore] recover_stamina_ads RPC not found during refund. Using simulation fallback.'
           );
