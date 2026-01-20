@@ -27,7 +27,8 @@ const createSupabaseClient = (): SupabaseClient => {
   if (!ENV.SUPABASE_URL || !ENV.SUPABASE_ANON_KEY) {
     // 환경 변수가 없으면 더미 URL과 키로 클라이언트 생성
     // 실제 API 호출은 실패하지만 앱은 크래시하지 않음
-    return createClient('https://dummy.supabase.co', 'dummy-key');
+    // 테스트 환경에서는 http://localhost를 사용하여 DNS 에러 방지
+    return createClient('http://localhost', 'dummy-key');
   }
 
   // Supabase 클라이언트 옵션 설정
