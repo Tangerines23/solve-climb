@@ -2,7 +2,8 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { sendDebugLog } from '../debugLogger';
 
 // Mock fetch
-global.fetch = vi.fn();
+const fetchMock = vi.fn();
+vi.stubGlobal('fetch', fetchMock);
 
 describe('debugLogger', () => {
   beforeEach(() => {
@@ -32,9 +33,7 @@ describe('debugLogger', () => {
         writable: true,
       });
 
-      vi.mocked(fetch).mockResolvedValue({
-        ok: true,
-      } as Response);
+      fetchMock.mockResolvedValue(new Response(null, { status: 200 }));
 
       sendDebugLog('test', 'Test message', { data: 'test' });
 
@@ -42,7 +41,7 @@ describe('debugLogger', () => {
       await new Promise((resolve) => setTimeout(resolve, 10));
 
       if (import.meta.env.DEV && import.meta.env.VITE_DEBUG_URL) {
-        expect(fetch).toHaveBeenCalled();
+        expect(fetchMock).toHaveBeenCalled();
       }
 
       // Restore
@@ -59,7 +58,7 @@ describe('debugLogger', () => {
         writable: true,
       });
 
-      vi.mocked(fetch).mockRejectedValue(new Error('Network error'));
+      fetchMock.mockRejectedValue(new Error('Network error'));
 
       // Should not throw
       expect(() => {

@@ -23,7 +23,8 @@ vi.mock('../env', () => ({
   logEnvInfo: vi.fn(),
 }));
 
-global.fetch = vi.fn();
+const fetchMock = vi.fn();
+vi.stubGlobal('fetch', fetchMock);
 
 describe('tossAuth', () => {
   beforeEach(() => {
@@ -32,18 +33,23 @@ describe('tossAuth', () => {
 
   describe('getTossUserInfo', () => {
     it('should fetch user info from Toss API', async () => {
-      vi.mocked(fetch).mockResolvedValue({
-        ok: true,
-        json: async () => ({
-          resultType: 'SUCCESS',
-          success: {
-            userKey: 12345,
-            ci: 'test-ci',
-            name: 'Test User',
-            phone: '010-1234-5678',
-          },
-        }),
-      } as Response);
+      fetchMock.mockResolvedValue(
+        new Response(
+          JSON.stringify({
+            resultType: 'SUCCESS',
+            success: {
+              userKey: 12345,
+              ci: 'test-ci',
+              name: 'Test User',
+              phone: '010-1234-5678',
+            },
+          }),
+          {
+            status: 200,
+            headers: { 'Content-Type': 'application/json' },
+          }
+        )
+      );
 
       const result = await getTossUserInfo('test-token');
 
@@ -53,29 +59,35 @@ describe('tossAuth', () => {
     });
 
     it('should handle API error', async () => {
-      vi.mocked(fetch).mockResolvedValue({
-        ok: false,
-        status: 400,
-        json: async () => ({}),
-      } as Response);
+      fetchMock.mockResolvedValue(
+        new Response(JSON.stringify({}), {
+          status: 400,
+          headers: { 'Content-Type': 'application/json' },
+        })
+      );
 
       await expect(getTossUserInfo('test-token')).rejects.toThrow();
     });
 
     it('should handle network error', async () => {
-      vi.mocked(fetch).mockRejectedValue(new Error('Network error'));
+      fetchMock.mockRejectedValue(new Error('Network error'));
 
       await expect(getTossUserInfo('test-token')).rejects.toThrow();
     });
 
     it('should return null when resultType is not SUCCESS', async () => {
-      vi.mocked(fetch).mockResolvedValue({
-        ok: true,
-        json: async () => ({
-          resultType: 'FAILURE',
-          success: null,
-        }),
-      } as Response);
+      fetchMock.mockResolvedValue(
+        new Response(
+          JSON.stringify({
+            resultType: 'FAILURE',
+            success: null,
+          }),
+          {
+            status: 200,
+            headers: { 'Content-Type': 'application/json' },
+          }
+        )
+      );
 
       const result = await getTossUserInfo('test-token');
 
@@ -83,21 +95,26 @@ describe('tossAuth', () => {
     });
 
     it('should handle optional fields in user info', async () => {
-      vi.mocked(fetch).mockResolvedValue({
-        ok: true,
-        json: async () => ({
-          resultType: 'SUCCESS',
-          success: {
-            userKey: 12345,
-            ci: '',
-            name: '',
-            phone: '',
-            birthday: '1990-01-01',
-            gender: 'M',
-            nationality: 'KR',
-          },
-        }),
-      } as Response);
+      fetchMock.mockResolvedValue(
+        new Response(
+          JSON.stringify({
+            resultType: 'SUCCESS',
+            success: {
+              userKey: 12345,
+              ci: '',
+              name: '',
+              phone: '',
+              birthday: '1990-01-01',
+              gender: 'M',
+              nationality: 'KR',
+            },
+          }),
+          {
+            status: 200,
+            headers: { 'Content-Type': 'application/json' },
+          }
+        )
+      );
 
       const result = await getTossUserInfo('test-token');
 
@@ -108,13 +125,15 @@ describe('tossAuth', () => {
     });
 
     it('should handle JSON parse error in error response', async () => {
-      vi.mocked(fetch).mockResolvedValue({
-        ok: false,
-        status: 500,
-        json: async () => {
-          throw new Error('Invalid JSON');
-        },
-      } as Response);
+      fetchMock.mockResolvedValue(
+        new Response(null, {
+          status: 500,
+        })
+      );
+      // Simulate JSON error by mocking json() to throw
+      const response = (await fetchMock()) as Response;
+      vi.spyOn(response, 'json').mockRejectedValue(new Error('Invalid JSON'));
+      fetchMock.mockResolvedValue(response);
 
       await expect(getTossUserInfo('test-token')).rejects.toThrow();
     });
@@ -146,11 +165,12 @@ describe('tossAuth', () => {
       vi.mocked(ENV).SUPABASE_URL = 'https://test.supabase.co';
       vi.mocked(ENV).SUPABASE_ANON_KEY = 'test-key';
 
-      vi.mocked(fetch).mockResolvedValue({
-        ok: false,
-        status: 500,
-        json: async () => ({ error: 'Edge Function error' }),
-      } as Response);
+      fetchMock.mockResolvedValue(
+        new Response(JSON.stringify({ error: 'Edge Function error' }), {
+          status: 500,
+          headers: { 'Content-Type': 'application/json' },
+        })
+      );
 
       await expect(createOrUpdateSupabaseUser('test-token')).rejects.toThrow();
     });
@@ -159,7 +179,7 @@ describe('tossAuth', () => {
       vi.mocked(ENV).SUPABASE_URL = 'https://test.supabase.co';
       vi.mocked(ENV).SUPABASE_ANON_KEY = 'test-key';
 
-      vi.mocked(fetch).mockRejectedValue(new Error('Network error'));
+      fetchMock.mockRejectedValue(new Error('Network error'));
 
       await expect(createOrUpdateSupabaseUser('test-token')).rejects.toThrow();
     });
@@ -168,19 +188,19 @@ describe('tossAuth', () => {
       vi.mocked(ENV).SUPABASE_URL = 'https://test.supabase.co/';
       vi.mocked(ENV).SUPABASE_ANON_KEY = 'test-key';
 
-      vi.mocked(fetch).mockResolvedValue({
-        ok: false,
-        status: 500,
-        json: async () => ({}),
-      } as Response);
+      fetchMock.mockResolvedValue(
+        new Response(JSON.stringify({}), {
+          status: 500,
+          headers: { 'Content-Type': 'application/json' },
+        })
+      );
 
       await expect(createOrUpdateSupabaseUser('test-token')).rejects.toThrow();
 
       // Verify URL was constructed correctly
-      expect(fetch).toHaveBeenCalledWith(
-        expect.stringContaining('https://test.supabase.co/functions/v1/toss-auth'),
-        expect.any(Object)
-      );
+      const [firstArg] = fetchMock.mock.calls[0];
+      const calledUrl = typeof firstArg === 'string' ? firstArg : firstArg.url;
+      expect(calledUrl).toContain('https://test.supabase.co/functions/v1/toss-auth');
     });
   });
 });

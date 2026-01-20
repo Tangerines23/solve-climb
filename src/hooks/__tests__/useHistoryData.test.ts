@@ -45,7 +45,7 @@ describe('useHistoryData', () => {
     await waitFor(() => expect(result.current.loading).toBe(false));
 
     expect(result.current.stats).not.toBeNull();
-    expect(result.current.stats?.userTitle).toBe('비로그인 ?��?');
+    expect(result.current.stats?.userTitle).toBe('비로그인 유저');
     expect(result.current.stats?.totalAltitude).toBe(0);
   });
 

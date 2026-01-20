@@ -71,7 +71,7 @@ describe('useUserStore (with MSW)', () => {
   it('should handle fetch user data error', async () => {
     // Override handler to return error
     server.use(
-      http.get(`${SUPABASE_API_URL}/rest/v1/profiles`, () => {
+      http.get('*/rest/v1/profiles', () => {
         return new HttpResponse(null, { status: 500 });
       })
     );

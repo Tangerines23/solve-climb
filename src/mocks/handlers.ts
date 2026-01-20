@@ -1,14 +1,14 @@
 import { http, HttpResponse } from 'msw';
 
-// Supabase API URL 패턴
-// 테스트 환경에서는 'http://localhost'가 사용됨 (supabaseClient.ts 참고)
-const SUPABASE_API_URL = 'http://localhost';
+// Supabase API URL 패턴 (와일드카드를 사용하여 모든 호스트 대응)
+const SUPABASE_REST_URL = '*/rest/v1';
+const SUPABASE_AUTH_URL = '*/auth/v1';
 
 export const handlers = [
   // --------------------------------------------------------
   // Auth 핸들러
   // --------------------------------------------------------
-  http.get(`${SUPABASE_API_URL}/auth/v1/user`, () => {
+  http.get(`${SUPABASE_AUTH_URL}/user`, () => {
     return HttpResponse.json({
       id: 'test-user-id',
       aud: 'authenticated',
@@ -29,9 +29,11 @@ export const handlers = [
   // DB(Rest) 핸들러
   // --------------------------------------------------------
   // 프로필 조회 (GET /rest/v1/profiles)
-  http.get(`${SUPABASE_API_URL}/rest/v1/profiles`, ({ request }) => {
+  http.get(`${SUPABASE_REST_URL}/profiles`, ({ request }: { request: Request }) => {
     const url = new URL(request.url);
-    const userId = url.searchParams.get('user_id')?.replace('eq.', '');
+    const userId =
+      url.searchParams.get('user_id')?.replace('eq.', '') ||
+      url.searchParams.get('id')?.replace('eq.', '');
 
     return HttpResponse.json({
       user_id: userId || 'test-user-id',
@@ -45,7 +47,7 @@ export const handlers = [
   }),
 
   // 프로필 업데이트 (PATCH /rest/v1/profiles)
-  http.patch(`${SUPABASE_API_URL}/rest/v1/profiles`, async ({ request }) => {
+  http.patch(`${SUPABASE_REST_URL}/profiles`, async ({ request }: { request: Request }) => {
     const body = (await request.json()) as any;
     return HttpResponse.json(body); // 업데이트된 내용 반환 (단일 객체)
   }),
@@ -54,28 +56,31 @@ export const handlers = [
   // RPC 핸들러
   // --------------------------------------------------------
   // 게임 결과 제출 (POST /rest/v1/rpc/submit_game_result)
-  http.post(`${SUPABASE_API_URL}/rest/v1/rpc/submit_game_result`, async ({ request }) => {
-    const body = (await request.json()) as { p_minerals_earned: number };
-    return HttpResponse.json({
-      success: true,
-      new_minerals: 1000 + (body.p_minerals_earned || 0),
-      new_experience: 100,
-      level_up: false,
-    });
-  }),
+  http.post(
+    `${SUPABASE_REST_URL}/rpc/submit_game_result`,
+    async ({ request }: { request: Request }) => {
+      const body = (await request.json()) as { p_minerals_earned: number };
+      return HttpResponse.json({
+        success: true,
+        new_minerals: 1000 + (body.p_minerals_earned || 0),
+        new_experience: 100,
+        level_up: false,
+      });
+    }
+  ),
 
   // 스태미나 소모 (POST /rest/v1/rpc/consume_stamina)
-  http.post(`${SUPABASE_API_URL}/rest/v1/rpc/consume_stamina`, async () => {
+  http.post(`${SUPABASE_REST_URL}/rpc/consume_stamina`, async () => {
     return HttpResponse.json({ success: true, current_stamina: 4 });
   }),
 
   // 광고 보상 스태미나 (POST /rest/v1/rpc/recover_stamina_ads)
-  http.post(`${SUPABASE_API_URL}/rest/v1/rpc/recover_stamina_ads`, async () => {
+  http.post(`${SUPABASE_REST_URL}/rpc/recover_stamina_ads`, async () => {
     return HttpResponse.json({ success: true, current_stamina: 5 });
   }),
 
   // 인벤토리 조회 (GET /rest/v1/inventory)
-  http.get(`${SUPABASE_API_URL}/rest/v1/inventory`, () => {
+  http.get(`${SUPABASE_REST_URL}/inventory`, () => {
     return HttpResponse.json([]);
   }),
 ];
