@@ -6,6 +6,8 @@ interface TimerCircleProps {
   onComplete: () => void;
   isPaused?: boolean;
   enableFastForward?: boolean;
+  triggerPenalty?: number;
+  penaltyAmount?: number;
 }
 
 function TimerCircleComponent({
@@ -13,6 +15,8 @@ function TimerCircleComponent({
   onComplete,
   isPaused = false,
   enableFastForward = false,
+  triggerPenalty = 0,
+  penaltyAmount = 5,
 }: TimerCircleProps) {
   const [timeLeft, setTimeLeft] = useState(duration);
   const [isFastForward, setIsFastForward] = useState(false);
@@ -33,6 +37,19 @@ function TimerCircleComponent({
     }
     setTimeLeft(duration);
   }, [duration]);
+
+  // 패널티 발생 시 시간 차감
+  useEffect(() => {
+    if (triggerPenalty && triggerPenalty > 0) {
+      setTimeLeft((prev) => {
+        const next = Math.max(0, prev - penaltyAmount);
+        if (next === 0) {
+          setTimeout(() => onCompleteRef.current(), 0);
+        }
+        return next;
+      });
+    }
+  }, [triggerPenalty, penaltyAmount]);
 
   // 길게 누르기 핸들러 메모이제이션
   const handleMouseDown = useCallback(() => {
@@ -85,7 +102,7 @@ function TimerCircleComponent({
         intervalRef.current = null;
       }
     };
-  }, [isPaused, isFastForward, duration, timeLeft]); // timeLeft 추가
+  }, [isPaused, isFastForward, duration, timeLeft]);
 
   // 컴포넌트 언마운트 시 정리
   useEffect(() => {
@@ -97,7 +114,7 @@ function TimerCircleComponent({
 
   // 스타일 계산 메모이제이션
   const { circleStyle, timeLabel } = useMemo(() => {
-    const pct = timeLeft / duration;
+    const pct = Math.max(0, Math.min(1, timeLeft / duration));
     const ang = 360 * pct;
     return {
       percentage: pct,

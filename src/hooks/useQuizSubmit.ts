@@ -53,6 +53,7 @@ interface UseQuizSubmitParams {
   onSafetyRopeUsed?: () => void;
   setIsFlarePaused?: (paused: boolean) => void;
   onAnswerSubmitted?: (questionId: string, userAnswer: number) => void;
+  onPenalty?: (amount: number) => void;
   currentQuestionId?: string | null;
 }
 
@@ -107,6 +108,9 @@ export function useQuizSubmit({
     setTotalQuestions,
     setWrongAnswers,
     setSolveTimes,
+    categoryParam,
+    subParam,
+    onPenalty,
   });
 
   useEffect(() => {
@@ -116,8 +120,20 @@ export function useQuizSubmit({
       setTotalQuestions,
       setWrongAnswers,
       setSolveTimes,
+      categoryParam,
+      subParam,
+      onPenalty,
     };
-  }, [generateNewQuestion, handleGameOver, setTotalQuestions, setWrongAnswers, setSolveTimes]);
+  }, [
+    generateNewQuestion,
+    handleGameOver,
+    setTotalQuestions,
+    setWrongAnswers,
+    setSolveTimes,
+    categoryParam,
+    subParam,
+    onPenalty,
+  ]);
 
   const handleSubmit = useCallback(
     (e: FormEvent) => {
@@ -394,8 +410,9 @@ export function useQuizSubmit({
             }
           }, 800);
         } else {
-          // 타임어택 모드: 오답 시 감점 적용
-          if (!hasSafetyRope) {
+          if (gameMode === 'infinite') {
+            if (paramsRef.current.onPenalty) paramsRef.current.onPenalty(5);
+          } else if (!hasSafetyRope) {
             decreaseScore(SLIDE_PER_WRONG);
           }
 

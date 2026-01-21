@@ -424,6 +424,23 @@ export function QuizPage() {
     onAnswerSubmitted: (questionId, userAnswer) => {
       setGameQuestions((prev) => prev.map((q) => (q.id === questionId ? { ...q, userAnswer } : q)));
       gameState.setUserAnswers((prev) => [...prev, userAnswer]);
+
+      if (gameMode === 'infinite') {
+        const isCorrect = currentQuestion?.answer === userAnswer;
+        if (isCorrect) {
+          setTotalInfiniteSolved(prev => {
+            const next = prev + 1;
+            if (next % 10 === 0) {
+              setInfiniteTimeLimit(limit => Math.max(3, limit - 0.5));
+            }
+            return next;
+          });
+        }
+      }
+    },
+    onPenalty: (amount) => {
+      setPenaltyTrigger(prev => prev + 1);
+      feedbackRef.current?.show('PENALTY!', `-${amount}s Time Deducted`, 'info');
     },
     currentQuestionId,
   });
