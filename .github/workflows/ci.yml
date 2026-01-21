@@ -16,7 +16,7 @@ jobs:
   validate:
     name: Code Validation
     runs-on: ubuntu-latest
-    timeout-minutes: 10
+    timeout-minutes: 15
 
     steps:
       - name: Checkout code
@@ -27,9 +27,11 @@ jobs:
         with:
           node-version: '22.17.0'
           cache: 'npm'
+          cache-dependency-path: package-lock.json
+          # 캐시 강제 무효화를 위한 접두사 추가 가능
 
       - name: Install dependencies
-        run: npm ci
+        run: npm ci --verbose
 
       - name: TypeScript type check
         run: npm run type-check
@@ -83,7 +85,7 @@ jobs:
   test:
     name: Tests & Coverage
     runs-on: ubuntu-latest
-    timeout-minutes: 10
+    timeout-minutes: 15
 
     steps:
       - name: Checkout code
@@ -94,9 +96,11 @@ jobs:
         with:
           node-version: '22.17.0'
           cache: 'npm'
+          cache-dependency-path: package-lock.json
+          # 캐시 강제 무효화를 위한 접두사 추가 가능
 
       - name: Install dependencies
-        run: npm ci
+        run: npm ci --verbose
 
       - name: Run tests
         run: npm run test -- --run
@@ -177,7 +181,7 @@ jobs:
   security:
     name: Security Audit
     runs-on: ubuntu-latest
-    timeout-minutes: 5
+    timeout-minutes: 10
 
     steps:
       - name: Checkout code
@@ -188,9 +192,11 @@ jobs:
         with:
           node-version: '22.17.0'
           cache: 'npm'
+          cache-dependency-path: package-lock.json
+          # 캐시 강제 무효화를 위한 접두사 추가 가능
 
       - name: Install dependencies
-        run: npm ci
+        run: npm ci --verbose
 
       - name: Security audit
         run: npm run check:security
@@ -209,7 +215,7 @@ jobs:
   db-validation:
     name: Database Validation
     runs-on: ubuntu-latest
-    timeout-minutes: 10
+    timeout-minutes: 15
 
     steps:
       - name: Checkout code
@@ -220,9 +226,11 @@ jobs:
         with:
           node-version: '22.17.0'
           cache: 'npm'
+          cache-dependency-path: package-lock.json
+          # 캐시 강제 무효화를 위한 접두사 추가 가능
 
       - name: Install dependencies
-        run: npm ci
+        run: npm ci --verbose
 
       - name: Check for DB file changes
         id: db-check
@@ -256,7 +264,7 @@ jobs:
   e2e:
     name: E2E & Visual Tests
     runs-on: ubuntu-latest
-    timeout-minutes: 20
+    timeout-minutes: 25
     needs: validate
 
     steps:
@@ -270,7 +278,7 @@ jobs:
           cache: 'npm'
 
       - name: Install dependencies
-        run: npm ci
+        run: npm ci --verbose
 
       - name: Install Playwright Browsers
         run: npx playwright install --with-deps
