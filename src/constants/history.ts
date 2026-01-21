@@ -160,6 +160,11 @@ export const getTierInfo = (altitude: number) => {
 };
 
 /**
+ * 비로그인 유저를 위한 대표 칭호
+ */
+export const ANONYMOUS_USER_TITLE = '비로그인 유저';
+
+/**
  * 고도에 따른 유저 칭호 생성 로직
  */
 export const getUserTitle = (altitude: number): string => {

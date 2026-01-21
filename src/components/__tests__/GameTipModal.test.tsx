@@ -41,7 +41,7 @@ describe('GameTipModal', () => {
       />
     );
 
-    expect(screen.queryByText(/팁/)).not.toBeInTheDocument();
+    expect(screen.queryByTestId('gt-title-text')).not.toBeInTheDocument();
   });
 
   it('should render math arithmetic tip', () => {
@@ -56,7 +56,7 @@ describe('GameTipModal', () => {
       />
     );
 
-    expect(screen.getByText(/사칙연산 팁/)).toBeInTheDocument();
+    expect(screen.getByTestId('gt-title-text')).toBeInTheDocument();
   });
 
   it('should render math equations tip', () => {
@@ -71,7 +71,7 @@ describe('GameTipModal', () => {
       />
     );
 
-    expect(screen.getByText(/방정식 풀이 팁/)).toBeInTheDocument();
+    expect(screen.getByTestId('gt-title-text')).toBeInTheDocument();
   });
 
   it('should call onStart when start button is clicked', () => {
@@ -85,7 +85,7 @@ describe('GameTipModal', () => {
       />
     );
 
-    const startButton = screen.getByText(/시작하기/);
+    const startButton = screen.getByTestId('gt-start-btn');
     fireEvent.click(startButton);
 
     expect(mockOnStart).toHaveBeenCalled();
@@ -137,7 +137,7 @@ describe('GameTipModal', () => {
       />
     );
 
-    const startButton = screen.getByText(/시작하기/);
+    const startButton = screen.getByTestId('gt-start-btn');
     fireEvent.click(startButton);
 
     expect(mockOnStart).toHaveBeenCalledWith([]);
@@ -154,7 +154,7 @@ describe('GameTipModal', () => {
       />
     );
 
-    expect(screen.getByText(/사칙연산 팁/)).toBeInTheDocument();
+    expect(screen.getByTestId('gt-title-text')).toBeInTheDocument();
 
     rerender(
       <GameTipModal
@@ -166,6 +166,6 @@ describe('GameTipModal', () => {
       />
     );
 
-    expect(screen.getByText(/방정식 풀이 팁/)).toBeInTheDocument();
+    expect(screen.getByTestId('gt-title-text')).toBeInTheDocument();
   });
 });

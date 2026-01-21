@@ -7,7 +7,7 @@ import { parseLocalSession } from '../utils/safeJsonParse';
 import { storage, StorageKeys } from '../utils/storage';
 import { Session } from '@supabase/supabase-js';
 import { getTimeAgo } from '../utils/date';
-import { getUserTitle, getSmartComment, getTierInfo } from '../constants/history';
+import { getUserTitle, getSmartComment, getTierInfo, ANONYMOUS_USER_TITLE } from '../constants/history';
 
 interface DbThemeMapping {
   code: number;
@@ -130,7 +130,7 @@ export function useHistoryData() {
       }
 
       if (!currentSession) {
-        setStats(getEmptyStats('비로그인 유저'));
+        setStats(getEmptyStats(ANONYMOUS_USER_TITLE));
         setLoading(false);
         return;
       }

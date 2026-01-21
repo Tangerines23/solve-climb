@@ -359,7 +359,9 @@ export function GameTipModal({ isOpen, category, level, onStart, onClose }: Game
           <div className="gt-left-panel">
             <div className="gt-title-area">
               <span className="gt-title-icon">{tipData.icon}</span>
-              <h3 className="gt-title-text">{tipData.title}</h3>
+              <h3 className="gt-title-text" data-testid="gt-title-text">
+                {tipData.title}
+              </h3>
             </div>
 
             <div className="gt-controls-area">
@@ -372,7 +374,11 @@ export function GameTipModal({ isOpen, category, level, onStart, onClose }: Game
               </div>
 
               <div className="gt-button-group">
-                <button className="gt-start-btn" onClick={() => onStart(selectedItemIds)}>
+                <button
+                  className="gt-start-btn"
+                  data-testid="gt-start-btn"
+                  onClick={() => onStart(selectedItemIds)}
+                >
                   시작하기
                 </button>
                 <button className="gt-backpack-btn" onClick={() => setIsBackpackOpen(true)}>
