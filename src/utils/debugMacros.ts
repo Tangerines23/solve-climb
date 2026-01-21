@@ -33,18 +33,19 @@ export const builtInMacros: DebugMacro[] = [
   {
     id: 'quick-quiz',
     name: '퀴즈 빠른 진입',
-    description: '홈 → 월드 → 카테고리 → 레벨 → 퀴즈까지 자동 이동',
+    description: '홈 → 카테고리 → 레벨 → 퀴즈까지 자동 이동',
     icon: '🚀',
     steps: [
       { type: 'navigate', path: '/' },
       { type: 'wait', ms: 300 },
-      { type: 'navigate', path: '/world-select' },
+      // Top level: Mountain Select (implicitly handled by going to category-select with mountain param)
+      { type: 'navigate', path: '/category-select?mountain=math' },
       { type: 'wait', ms: 300 },
-      { type: 'navigate', path: '/category-select?world=1' },
+      // Level Select with fully qualified params
+      { type: 'navigate', path: '/level-select?mountain=math&world=World1&category=기초' },
       { type: 'wait', ms: 300 },
-      { type: 'navigate', path: '/level-select?world=1&category=addition' },
-      { type: 'wait', ms: 300 },
-      { type: 'navigate', path: '/quiz?world=1&category=addition&level=1' },
+      // Quiz Entry
+      { type: 'navigate', path: '/quiz?mountain=math&world=World1&category=기초&level=1' },
       { type: 'log', message: '퀴즈 페이지 도달 완료' },
     ],
   },
@@ -56,7 +57,7 @@ export const builtInMacros: DebugMacro[] = [
     steps: [
       { type: 'setResource', resource: 'stamina', value: 0 },
       { type: 'wait', ms: 100 },
-      { type: 'navigate', path: '/quiz?world=1&category=addition&level=1' },
+      { type: 'navigate', path: '/quiz?mountain=math&world=World1&category=기초&level=1' },
       { type: 'log', message: '스태미나 0 상태에서 퀴즈 진입 시도' },
     ],
   },

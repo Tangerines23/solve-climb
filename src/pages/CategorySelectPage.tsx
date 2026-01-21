@@ -7,10 +7,13 @@ import { useLevelProgressStore } from '@/stores/useLevelProgressStore';
 import { urls } from '@/utils/navigation';
 import './TopicSelectPage.css';
 
+import { useDebugStore } from '@/stores/useDebugStore'; // Added import
+
 export function CategorySelectPage() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const progressStore = useLevelProgressStore();
+  const bypassLevelLock = useDebugStore((state) => state.bypassLevelLock); // Added hook
   const mountainParam = searchParams.get('mountain');
 
   // [Phase 8] Persistence & Self-healing
@@ -110,7 +113,8 @@ export function CategorySelectPage() {
               let isLocked = false;
               let unlockMessage = '';
 
-              if (unlockCondition) {
+              if (unlockCondition && !bypassLevelLock) {
+                // Check bypass flag
                 const parentProgress = getCategoryProgress(lastWorld, unlockCondition.categoryId);
                 if (parentProgress < unlockCondition.progress) {
                   isLocked = true;

@@ -98,7 +98,11 @@ export function ClimbGraphic({
       const y = firstNodeY - (firstNodeY - lastNodeY) * progress;
       const centerX = SVG_WIDTH * 0.5;
       const amplitude = SVG_WIDTH * 0.3;
-      const offsetX = Math.sin(progress * Math.PI * 2) * amplitude;
+      // [수정] S자 굴곡을 레벨 개수와 상관없이 일정하게 유지
+      // 기존: Math.sin(progress * Math.PI * 2) -> 총 레벨 수에 따라 굴곡이 늘어짐
+      // 변경: Math.sin((i / 15) * Math.PI * 2) -> 15개 레벨마다 1회전하도록 고정 (인덱스 기반)
+      const FREQUENCY_PER_LEVELS = 15; // 15레벨마다 S자 한 번
+      const offsetX = Math.sin((i / FREQUENCY_PER_LEVELS) * Math.PI * 2) * amplitude;
       const x = centerX + offsetX;
 
       points.push({ x, y });
@@ -221,12 +225,16 @@ export function ClimbGraphic({
     >
       <div className="level-map-sky" style={{ background: stageConfig.skyGradient }} />
 
-      {category === '기초' && <ArithmeticBackground totalLevels={totalLevels} />}
+      {category === '기초' && <ArithmeticBackground key={world} totalLevels={totalLevels} />}
       {category === '대수' && (
-        <EquationsBackground totalLevels={totalLevels} config={stageConfig} />
+        <EquationsBackground key={world} totalLevels={totalLevels} config={stageConfig} />
       )}
-      {category === '논리' && <SequenceBackground totalLevels={totalLevels} config={stageConfig} />}
-      {category === '심화' && <CalculusBackground totalLevels={totalLevels} config={stageConfig} />}
+      {category === '논리' && (
+        <SequenceBackground key={world} totalLevels={totalLevels} config={stageConfig} />
+      )}
+      {category === '심화' && (
+        <CalculusBackground key={world} totalLevels={totalLevels} config={stageConfig} />
+      )}
 
       <div
         className="level-map-path-container"
