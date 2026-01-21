@@ -4,6 +4,7 @@ import { APP_CONFIG } from '@/config/app';
 import { TopicHeader } from '@/components/TopicHeader';
 import { FooterNav } from '@/components/FooterNav';
 import { urls } from '@/utils/navigation';
+import { useBaseCampStore } from '@/stores/useBaseCampStore';
 import './TopicSelectPage.css';
 
 export function WorldSelectPage() {
@@ -72,6 +73,18 @@ export function WorldSelectPage() {
 
   const handleWorldClick = (worldId: string) => {
     if (!mountainParam || !categoryParam) return;
+
+    // World1 최초 진입 시 베이스 캠프 진단 체크
+    if (worldId === 'World1') {
+      const { isCompleted } = useBaseCampStore.getState();
+      if (!isCompleted) {
+        navigate(
+          `/quiz?world=World1&mode=base-camp&mountain=${mountainParam}&category=${categoryParam}`
+        );
+        return;
+      }
+    }
+
     // level-select 페이지로 이동 (mountain, category, world 파라미터 전달)
     navigate(
       urls.levelSelect({

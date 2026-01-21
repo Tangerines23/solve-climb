@@ -10,6 +10,9 @@ import { APP_CONFIG } from '../config/app';
 import { SURVIVAL_CONFIG } from '../constants/game';
 import { getItemEmoji } from '../constants/items';
 import { useGameStore } from '../stores/useGameStore';
+import { TranspositionHint } from './quiz/TranspositionHint';
+import { CoordinateGrid } from './quiz/CoordinateGrid';
+import { CalculusVisualization } from './quiz/CalculusVisualization';
 import { sendDebugLog } from '../utils/debugLogger';
 
 interface QuizCardProps {
@@ -296,6 +299,7 @@ function QuizCardComponent({
       <header className="quiz-header-rework">
         {/* LEFT: Pause & Items */}
         <div className="header-left-controls">
+          <div className="world-info-header">World 1: 수리봉</div>
           <button className="pause-button" onClick={onPause} aria-label="일시정지">
             <svg
               className="pause-icon-svg"
@@ -382,6 +386,19 @@ function QuizCardComponent({
           >
             <div className={questionAnimation}>
               <h2 className="problem-text">{currentQuestion.question}</h2>
+              {currentQuestion.hintType === 'transposition' && currentQuestion.hintData && (
+                <TranspositionHint
+                  term={currentQuestion.hintData.term}
+                  targetSide={currentQuestion.hintData.targetSide}
+                  targetResult={currentQuestion.hintData.targetResult}
+                />
+              )}
+              {currentQuestion.hintType === 'calculus' && currentQuestion.hintData && (
+                <CalculusVisualization
+                  type={currentQuestion.hintData.type}
+                  func={currentQuestion.hintData.func}
+                />
+              )}
               {showAnswer && (
                 <div className="debug-answer-display">
                   정답: <strong>{currentQuestion.answer}</strong>
@@ -389,7 +406,24 @@ function QuizCardComponent({
               )}
             </div>
             {/* 답안 표시 영역 - 시스템 키보드 사용 시 input, 아니면 display */}
-            {shouldUseSystemKeyboard ? (
+            {currentQuestion.inputType === 'coordinate' ? (
+              <div className="coordinate-mini-game-wrapper">
+                <CoordinateGrid
+                  onShoot={(x, y) => {
+                    setAnswerInput(`${x},${y}`);
+                    setDisplayValue(`${x},${y}`);
+                    // 제출은 약간 지연 후 수행 (시각적 피드백 위해)
+                    setTimeout(() => {
+                      const fakeEvent = { preventDefault: () => { } } as React.FormEvent;
+                      handleSubmit(fakeEvent);
+                    }, 300);
+                  }}
+                  isFirstQuadrantOnly={levelParam === 1}
+                  disabled={isSubmitting || isError || effectiveInputPaused}
+                />
+              </div>
+            ) : shouldUseSystemKeyboard ? (
+              /* ... existing system keyboard code ... */
               <>
                 <div className={`answer-input-wrapper ${isError ? 'is-error' : ''}`}>
                   <input
@@ -529,8 +563,8 @@ function QuizCardComponent({
           </div>
         )}
 
-        {/* 하단 키보드 (카드 아래) - 시스템 키보드 사용 시 숨김 */}
-        {!shouldUseSystemKeyboard && (
+        {/* 하단 키보드 (카드 아래) - 시스템 키보드 사용 시 또는 좌표 사격 시 숨김 */}
+        {!shouldUseSystemKeyboard && currentQuestion.inputType !== 'coordinate' && (
           <>
             {isJapaneseQuiz ? (
               <QwertyKeypad
@@ -549,6 +583,8 @@ function QuizCardComponent({
                 onSubmit={handleSubmit}
                 disabled={isSubmitting || isError || effectiveInputPaused}
                 showNegative={allowNegative}
+                showDecimal={currentQuestion?.inputType === 'decimal'}
+                showFraction={currentQuestion?.inputType === 'fraction'}
               />
             )}
           </>

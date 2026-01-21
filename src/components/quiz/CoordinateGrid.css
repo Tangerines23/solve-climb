@@ -1,0 +1,117 @@
+.coordinate-grid-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: var(--spacing-md);
+    padding: var(--spacing-md);
+    background: rgba(0, 0, 0, 0.4);
+    border-radius: var(--rounded-lg);
+    border: 1px solid var(--color-gray-700);
+    margin: var(--spacing-md) 0;
+}
+
+.grid-box {
+    display: flex;
+    flex-direction: column;
+    border: 2px solid var(--color-gray-500);
+    background: var(--color-gray-900);
+}
+
+.grid-row {
+    display: flex;
+}
+
+.grid-cell {
+    width: 30px;
+    height: 30px;
+    border: 0.5px solid rgba(255, 255, 255, 0.1);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+
+.grid-cell:hover:NOT(.disabled) {
+    background: rgba(59, 130, 246, 0.2);
+}
+
+.grid-cell.axis {
+    background: rgba(255, 255, 255, 0.05);
+}
+
+.grid-cell.origin {
+    background: var(--color-blue-900);
+}
+
+.grid-cell.selected {
+    background: rgba(59, 130, 246, 0.4);
+}
+
+.crosshair {
+    width: 100%;
+    height: 100%;
+    border: 2px solid var(--color-blue-500);
+    border-radius: 50%;
+    position: absolute;
+    animation: pulse-crosshair 1s infinite;
+}
+
+.axis-label {
+    font-size: 0.6rem;
+    color: var(--color-gray-500);
+    position: absolute;
+    bottom: 2px;
+    right: 2px;
+}
+
+.grid-labels {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    position: relative;
+}
+
+.x-axis-label {
+    align-self: flex-end;
+    font-weight: bold;
+    font-size: 0.8rem;
+    color: var(--color-blue-400);
+}
+
+.y-axis-label {
+    font-weight: bold;
+    font-size: 0.8rem;
+    color: var(--color-blue-400);
+    margin-bottom: 4px;
+}
+
+.coordinate-display {
+    font-size: 1rem;
+    font-weight: 800;
+    color: var(--color-blue-400);
+    height: 1.5rem;
+}
+
+@keyframes pulse-crosshair {
+    0% {
+        transform: scale(0.8);
+        opacity: 0.6;
+    }
+
+    50% {
+        transform: scale(1.1);
+        opacity: 1;
+    }
+
+    100% {
+        transform: scale(0.8);
+        opacity: 0.6;
+    }
+}
+
+.disabled .grid-cell {
+    cursor: default;
+    opacity: 0.5;
+}

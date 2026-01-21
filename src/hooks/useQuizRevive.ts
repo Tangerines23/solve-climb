@@ -1,10 +1,10 @@
 import { useState, useCallback } from 'react';
 import { useQuizStore } from '../stores/useQuizStore';
-import { useQuizAnimations } from './useQuizAnimations';
 import { InventoryItem } from '../types/user';
+import { QuizQuestion, GameMode } from '../types/quiz';
 
-interface UseQuizReviveProps {
-  gameMode: 'survival' | 'time-attack';
+interface UseQuizReviveParams {
+  gameMode: GameMode;
   inventory: InventoryItem[];
   minerals: number;
   consumeItem: (itemId: number) => Promise<{ success: boolean; message: string }>;
@@ -12,10 +12,10 @@ interface UseQuizReviveProps {
   setTimerResetKey: (updater: (prev: number) => number) => void;
   setShowCountdown: (show: boolean) => void;
   generateNewQuestion: () => void;
-  animations: ReturnType<typeof useQuizAnimations>;
-  setDisplayValue: (value: string) => void;
+  animations: any;
+  setDisplayValue: (val: string) => void;
   handleGameOver: (reason?: string) => void;
-  setIsSubmitting: (isSubmitting: boolean) => void;
+  setIsSubmitting: (val: boolean) => void;
   isPreview: boolean;
 }
 
@@ -33,7 +33,7 @@ export function useQuizRevive({
   handleGameOver,
   setIsSubmitting,
   isPreview,
-}: UseQuizReviveProps) {
+}: UseQuizReviveParams) {
   const [hasUsedLastChance, setHasUsedLastChance] = useState(false);
 
   // Revive Logic

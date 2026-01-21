@@ -29,6 +29,8 @@ import { QuizQuestion } from '@/types/quiz';
 import { QuizPreview } from '@/components/quiz/QuizPreview';
 import { QuizModals } from '@/components/quiz/QuizModals';
 import { urls } from '@/utils/navigation';
+import { useBaseCampStore } from '@/stores/useBaseCampStore';
+import { TodaysPromise } from '@/components/quiz/TodaysPromise';
 
 export function QuizPage() {
   const score = useQuizStore((state) => state.score);
@@ -98,6 +100,8 @@ export function QuizPage() {
   const [showSafetyRope, setShowSafetyRope] = useState(false);
   const [showPauseModal, setShowPauseModal] = useState(false);
   const [remainingPauses, setRemainingPauses] = useState(3);
+  const [showPromise, setShowPromise] = useState(false);
+  const [promiseData, setPromiseData] = useState({ rule: '', example: '' });
 
   const {
     setExhausted,
@@ -250,7 +254,7 @@ export function QuizPage() {
   }, [gameState.handleGameOver]);
 
   const revive = useQuizRevive({
-    gameMode,
+    gameMode: gameMode as 'time-attack' | 'survival',
     inventory,
     minerals: useUserStore.getState().minerals,
     consumeItem,
@@ -430,6 +434,23 @@ export function QuizPage() {
       setShowStaminaModal(true);
       return;
     }
+
+    // [New] Logic Phase 3 "Today's Promise" Check
+    if (categoryParam === '논리' && levelParam && levelParam >= 11 && levelParam <= 15) {
+      const rules: Record<number, { rule: string; example: string }> = {
+        11: { rule: '절댓값: 부호 떼고 크기만!', example: '|-5| = 5' },
+        12: { rule: '나머지(Mod): 나눈 후 남는 조각!', example: '14 mod 3 = 2' },
+        13: { rule: '팩토리얼(!): 1부터 몽땅 곱하기!', example: '3! = 3x2x1 = 6' },
+        14: { rule: '사용자 연산: 기호 약속 지키기!', example: 'A ★ B = A+B+1' },
+      };
+      const rule = rules[levelParam] || { rule: '논리왕: 모든 규칙 혼합!', example: '팩토리얼 + 나머지' };
+      setPromiseData(rule);
+      setPendingItemIds(selectedItemIds);
+      setShowTipModal(false);
+      setShowPromise(true);
+      return;
+    }
+
     const res = await consumeStamina();
     if (!res.success) {
       setPendingItemIds(selectedItemIds);
@@ -462,6 +483,17 @@ export function QuizPage() {
     setShowStaminaModal(false);
   };
 
+  const handlePromiseComplete = async () => {
+    setShowPromise(false);
+    const res = await consumeStamina();
+    if (res.success) {
+      setStaminaConsumed(true);
+      await startWithItems(pendingItemIds);
+    } else {
+      setShowStaminaModal(true);
+    }
+  };
+
   const handlePlayAnyway = async () => {
     setExhausted(true);
     await startWithItems(pendingItemIds);
@@ -478,6 +510,13 @@ export function QuizPage() {
     checkStamina().then(() => {
       if (stamina <= 0) setExhausted(true);
     });
+
+    // 베이스 캠프 초기화
+    if (modeParam === 'base-camp') {
+      useBaseCampStore.getState().startDiagnostic();
+      setShowTipModal(false); // 베이스 캠프는 팁 생략
+    }
+
     gameStateRef.current.setTotalQuestions(0);
     gameStateRef.current.setWrongAnswers([]);
     gameStateRef.current.setSolveTimes([]);
@@ -486,7 +525,7 @@ export function QuizPage() {
     isCreatingSessionRef.current = false;
     setGameQuestions([]);
     setCurrentQuestionId(null);
-  }, [worldParam, categoryParam, levelParam, resetQuiz]);
+  }, [worldParam, categoryParam, levelParam, modeParam, resetQuiz]);
 
   const [sessionCreated, setSessionCreated] = useState(false);
   const isCreatingSessionRef = useRef(false);
@@ -499,6 +538,8 @@ export function QuizPage() {
       categoryParam &&
       levelParam !== null &&
       modeParam &&
+      modeParam !== 'base-camp' &&
+      modeParam !== 'base-camp-result' &&
       !sessionCreated &&
       !isCreatingSessionRef.current
     ) {
@@ -533,7 +574,9 @@ export function QuizPage() {
   }, [showTipModal, sessionCreated]);
 
   useEffect(() => {
-    if (modeParam) setGameMode(modeParam.includes('time') ? 'time-attack' : 'survival');
+    if (modeParam && (modeParam === 'time-attack' || modeParam === 'survival')) {
+      setGameMode(modeParam as 'time-attack' | 'survival');
+    }
   }, [modeParam, setGameMode]);
 
   useEffect(() => {
@@ -550,6 +593,8 @@ export function QuizPage() {
     })();
   }, [isPreview, checkStamina, isStaminaConsumed, setExhausted]);
 
+  const feverLevel = useGameStore((state) => state.feverLevel);
+
   if (isPreview)
     return (
       <QuizPreview
@@ -564,8 +609,55 @@ export function QuizPage() {
       />
     );
 
+  const handleKeypadNumber = useCallback(
+    (key: string) => {
+      if (answerInput.length >= 10) return;
+
+      if (key === '.') {
+        if (answerInput.includes('.')) return;
+        if (answerInput === '' || answerInput === '-') {
+          setAnswerInput(answerInput + '0.');
+          setDisplayValue(answerInput + '0.');
+          return;
+        }
+      }
+
+      if (key === '/') {
+        if (answerInput.includes('/') || answerInput === '' || answerInput === '-') return;
+      }
+
+      if (key === '-') {
+        if (answerInput === '') {
+          setAnswerInput('-');
+          setDisplayValue('-');
+        } else if (answerInput === '-') {
+          setAnswerInput('');
+          setDisplayValue('');
+        }
+        return;
+      }
+
+      const newValue = answerInput + key;
+      setAnswerInput(newValue);
+      setDisplayValue(newValue);
+    },
+    [answerInput, setAnswerInput, setDisplayValue]
+  );
+
+  const handleQwertyKeyPress = useCallback(
+    (k: string) => {
+      setAnswerInput((p) => (p + k).slice(0, 20));
+      setDisplayValue((p) => (p + k).slice(0, 20));
+    },
+    [setAnswerInput, setDisplayValue]
+  );
+
   return (
-    <div className="quiz-page" data-world={worldParam || world || 'World1'}>
+    <div
+      className={`quiz-page fever-level-${feverLevel}`}
+      data-world={worldParam || world || 'World1'}
+      data-category={categoryParam || ''}
+    >
       <QuizCard
         currentQuestion={currentQuestion}
         answerInput={answerInput}
@@ -603,14 +695,8 @@ export function QuizPage() {
         generateNewQuestion={generateNewQuestion}
         handleSubmit={handleSubmit}
         handleGameOver={smartHandleGameOver}
-        handleKeypadNumber={(n) => {
-          setAnswerInput((p) => (p + n).slice(0, 6));
-          setDisplayValue((p) => (p + n).slice(0, 6));
-        }}
-        handleQwertyKeyPress={(k) => {
-          setAnswerInput((p) => (p + k).slice(0, 20));
-          setDisplayValue((p) => (p + k).slice(0, 20));
-        }}
+        handleKeypadNumber={handleKeypadNumber}
+        handleQwertyKeyPress={handleQwertyKeyPress}
         handleKeypadClear={() => {
           setAnswerInput('');
           setDisplayValue('');
@@ -629,7 +715,7 @@ export function QuizPage() {
       <QuizModals
         feedbackRef={feedbackRef}
         showLastChanceModal={showLastChanceModal}
-        gameMode={gameMode}
+        gameMode={gameMode as 'time-attack' | 'survival'}
         inventory={inventory}
         minerals={useUserStore.getState().minerals}
         handleRevive={handleRevive}
@@ -654,6 +740,13 @@ export function QuizPage() {
         handlePauseClick={handlePauseClick}
         handlePauseResume={handlePauseResume}
         handlePauseExit={handlePauseExit}
+      />
+
+      <TodaysPromise
+        isVisible={showPromise}
+        rule={promiseData.rule}
+        example={promiseData.example}
+        onComplete={handlePromiseComplete}
       />
 
       {/* v2.2 Landmark Overlay */}

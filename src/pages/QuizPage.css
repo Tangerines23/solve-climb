@@ -30,6 +30,7 @@
 
 /* Correct answer flash */
 @keyframes correct-flash-animation {
+
   0%,
   100% {
     border: 2px solid transparent;
@@ -47,6 +48,7 @@
 
 /* Incorrect answer shake on CARD */
 @keyframes wrong-shake-animation {
+
   0%,
   100% {
     transform: translateX(0);
@@ -424,6 +426,7 @@
 }
 
 @keyframes caret-blink {
+
   0%,
   100% {
     opacity: 1;
@@ -622,6 +625,7 @@
 }
 
 @keyframes item-pulse {
+
   0%,
   100% {
     transform: scale(1);
@@ -718,7 +722,7 @@
   /* Let clicks pass through to card if needed, but buttons need pointer-events: auto */
 }
 
-.altimeter-hud > * {
+.altimeter-hud>* {
   pointer-events: auto;
 }
 
@@ -915,4 +919,89 @@
   font-weight: 700;
   color: rgba(255, 255, 255, 0.8);
   margin-left: var(--spacing-micro);
+}
+
+/* [Fever Mode World Themes] */
+.fever-level-2.quiz-page[data-world='World1'] {
+  background: linear-gradient(to bottom, #064e3b, #7f1d1d, #450a0a);
+}
+
+/* ==========================================================================
+   World 1: 수리봉 (Blue Peak) Theme
+   ========================================================================== */
+
+.quiz-page[data-world="World1"] {
+  --world-primary: var(--color-blue-500);
+  --world-secondary: var(--color-blue-600);
+  background: linear-gradient(180deg, #0f172a 0%, #1e293b 100%) !important;
+}
+
+.quiz-page[data-world="World1"] .top-bar {
+  border-bottom: 2px solid rgba(59, 130, 246, 0.2);
+  padding-bottom: var(--spacing-sm);
+}
+
+/* Category Specific Background Decorations */
+.quiz-page[data-world="World1"]::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  pointer-events: none;
+  z-index: 0;
+  opacity: 0.1;
+}
+
+/* 기초 (Basic) - Numbers Pattern */
+.quiz-page[data-world="World1"][data-category="기초"]::before {
+  background-image: radial-gradient(var(--color-blue-500) 1px, transparent 1px);
+  background-size: 20px 20px;
+}
+
+/* 논리 (Logic) - Magnifying Glass / Grid */
+.quiz-page[data-world="World1"][data-category="논리"]::before {
+  background-image:
+    linear-gradient(rgba(59, 130, 246, 0.1) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(59, 130, 246, 0.1) 1px, transparent 1px);
+  background-size: 40px 40px;
+}
+
+/* 대수 (Algebra) - Formula Blueprint */
+.quiz-page[data-world="World1"][data-category="대수"]::before {
+  background:
+    linear-gradient(45deg, rgba(59, 130, 246, 0.05) 25%, transparent 25%),
+    linear-gradient(-45deg, rgba(59, 130, 246, 0.05) 25%, transparent 25%);
+  background-size: 60px 60px;
+}
+
+/* 심화 (Advanced/Calculus) - Wave/Curve */
+.quiz-page[data-world="World1"][data-category="심화"]::before {
+  background: repeating-linear-gradient(0deg,
+      transparent,
+      transparent 100px,
+      rgba(59, 130, 246, 0.05) 100px,
+      rgba(59, 130, 246, 0.05) 101px);
+}
+
+.category-label {
+  display: inline-block;
+  padding: 4px 12px;
+  background: rgba(59, 130, 246, 0.15);
+  border: 1px solid rgba(59, 130, 246, 0.3);
+  border-radius: var(--rounded-md);
+  font-size: 0.75rem;
+  font-weight: 800;
+  color: var(--color-blue-400);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-bottom: var(--spacing-sm);
+}
+
+/* World 1 Score Capsule Enhancement */
+.quiz-page[data-world="World1"] .score-display-round {
+  background: rgba(15, 23, 42, 0.8);
+  border: 1px solid var(--color-blue-500);
+  box-shadow: 0 0 15px rgba(59, 130, 246, 0.3);
 }

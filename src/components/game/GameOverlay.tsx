@@ -70,13 +70,13 @@ export const GameOverlay: React.FC = () => {
               <style>{`
                 @keyframes speedMove {
                   0% { transform: scale(1); opacity: 0; }
-                  50% { opacity: 0.5; }
-                  100% { transform: scale(1.6); opacity: 0; }
+                  50% { opacity: 0.3; }
+                  100% { transform: scale(1.4); opacity: 0; }
                 }
                 .speed-line {
-                  animation: speedMove 0.4s infinite linear;
-                  stroke: ${feverLevel === 2 ? 'rgba(255, 215, 0, 0.6)' : 'rgba(255, 255, 255, 0.3)'};
-                  stroke-width: 2;
+                  animation: speedMove 0.8s infinite linear;
+                  stroke: ${feverLevel === 2 ? 'rgba(255, 215, 0, 0.4)' : 'rgba(255, 255, 255, 0.2)'};
+                  stroke-width: 1.5;
                   transform-origin: center;
                 }
               `}</style>
@@ -170,9 +170,9 @@ export const GameOverlay: React.FC = () => {
           {feverLevel === 2 ? '🔥 SECOND WIND 🔥' : '⚡ MOMENTUM ⚡'}
           <style>{`
             @keyframes pulse {
-              0% { transform: translateX(-50%) scale(1); }
-              50% { transform: translateX(-50%) scale(1.1); }
-              100% { transform: translateX(-50%) scale(1); }
+              0% { transform: translateX(-50%) scale(1); opacity: 0.8; }
+              50% { transform: translateX(-50%) scale(1.05); opacity: 1; }
+              100% { transform: translateX(-50%) scale(1); opacity: 0.8; }
             }
           `}</style>
         </div>

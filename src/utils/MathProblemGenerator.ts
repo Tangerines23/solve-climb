@@ -5,14 +5,14 @@ export interface StageConfig {
   world: number;
   description: string;
   type:
-    | 'standard'
-    | 'sequential'
-    | 'fill-blank'
-    | 'parentheses'
-    | 'decimal'
-    | 'fraction'
-    | 'time'
-    | 'modulo';
+  | 'standard'
+  | 'sequential'
+  | 'fill-blank'
+  | 'parentheses'
+  | 'decimal'
+  | 'fraction'
+  | 'time'
+  | 'modulo';
   operators: Operator[];
   operandCount: number;
   // Array of ranges for each operand position.
@@ -28,230 +28,304 @@ export interface StageConfig {
 }
 
 export const STAGES: StageConfig[] = [
-  // World 1 기초 (Training) Curriculum: 15 Levels
+  // [Phase 1: 산 입구 (Lv 1~10) - 반사신경]
   {
     id: 1,
     world: 1,
-    description: '한 자릿수 덧셈',
+    description: '가벼운 발걸음 (한 자릿수 덧셈)',
     type: 'standard',
     operators: ['+'],
     operandCount: 2,
-    ranges: [
-      { min: 1, max: 9 },
-      { min: 1, max: 9 },
-    ],
+    ranges: [{ min: 1, max: 9 }, { min: 1, max: 9 }],
     constraints: { resultMax: 10 },
   },
   {
     id: 2,
     world: 1,
-    description: '한 자릿수 뺄셈',
+    description: '내리막길 (한 자릿수 뺄셈)',
     type: 'standard',
     operators: ['-'],
     operandCount: 2,
-    ranges: [
-      { min: 1, max: 9 },
-      { min: 1, max: 9 },
-    ],
+    ranges: [{ min: 1, max: 9 }, { min: 1, max: 9 }],
     constraints: { resultMin: 0 },
   },
   {
     id: 3,
     world: 1,
-    description: '받아올림 덧셈',
+    description: '작은 돌부리 (받아올림)',
     type: 'standard',
     operators: ['+'],
     operandCount: 2,
-    ranges: [
-      { min: 1, max: 9 },
-      { min: 1, max: 9 },
-    ],
+    ranges: [{ min: 1, max: 9 }, { min: 1, max: 9 }],
     constraints: { resultMin: 10 },
   },
   {
     id: 4,
     world: 1,
-    description: '받아내림 뺄셈',
+    description: '미끄러운 길 (받아내림)',
     type: 'standard',
     operators: ['-'],
     operandCount: 2,
-    ranges: [
-      { min: 10, max: 19 },
-      { min: 1, max: 9 },
-    ],
+    ranges: [{ min: 10, max: 19 }, { min: 1, max: 9 }],
     constraints: { resultMax: 9 },
   },
   {
     id: 5,
     world: 1,
-    description: '기초 구구단',
-    type: 'standard',
-    operators: ['*'],
-    operandCount: 2,
-    ranges: [
-      { min: 2, max: 5 },
-      { min: 1, max: 9 },
-    ],
+    description: '[쉼터] 타임어택',
+    type: 'sequential',
+    operators: ['+', '-'],
+    operandCount: 3,
+    ranges: [{ min: 1, max: 10 }, { min: 1, max: 10 }, { min: 1, max: 10 }],
   },
   {
     id: 6,
     world: 1,
-    description: '심화 구구단',
+    description: '곱셈의 숲 (2~5단)',
     type: 'standard',
     operators: ['*'],
     operandCount: 2,
-    ranges: [
-      { min: 6, max: 9 },
-      { min: 1, max: 9 },
-    ],
+    ranges: [{ min: 2, max: 5 }, { min: 1, max: 9 }],
   },
   {
     id: 7,
     world: 1,
-    description: '나눗셈 기초',
+    description: '나눗셈 계곡',
     type: 'standard',
     operators: ['/'],
     operandCount: 2,
-    ranges: [
-      { min: 2, max: 9 },
-      { min: 2, max: 9 },
-    ],
+    ranges: [{ min: 2, max: 9 }, { min: 2, max: 9 }],
     constraints: { ensureIntegerDivision: true },
   },
   {
     id: 8,
     world: 1,
-    description: '사칙연산 혼합',
-    type: 'sequential',
-    operators: ['+', '-', '*'],
-    operandCount: 3,
-    ranges: [
-      { min: 1, max: 10 },
-      { min: 1, max: 10 },
-      { min: 1, max: 5 },
-    ],
+    description: '가파른 곱셈 (6~9단)',
+    type: 'standard',
+    operators: ['*'],
+    operandCount: 2,
+    ranges: [{ min: 6, max: 9 }, { min: 1, max: 9 }],
   },
   {
     id: 9,
     world: 1,
-    description: '연산 우선순위',
-    type: 'parentheses',
-    operators: ['+', '-', '*'],
-    operandCount: 3,
-    ranges: [
-      { min: 1, max: 10 },
-      { min: 1, max: 5 },
-      { min: 2, max: 5 },
-    ],
+    description: '0의 늪',
+    type: 'standard',
+    operators: ['+', '*'],
+    operandCount: 2,
+    ranges: [{ min: 0, max: 10 }, { min: 0, max: 1 }],
   },
   {
     id: 10,
     world: 1,
-    description: '소수(Decimal) 계산',
-    type: 'decimal',
-    operators: ['+', '-'],
-    operandCount: 2,
-    ranges: [
-      { min: 1, max: 5 },
-      { min: 1, max: 5 },
-    ],
-    constraints: { precision: 1 },
+    description: '[중턱] 사칙연산 믹스',
+    type: 'sequential',
+    operators: ['+', '-', '*', '/'],
+    operandCount: 3,
+    ranges: [{ min: 1, max: 10 }, { min: 1, max: 10 }, { min: 1, max: 5 }],
+    constraints: { ensureIntegerDivision: true },
   },
+
+  // [Phase 2: 중턱 (Lv 11~20) - 연산력]
   {
     id: 11,
     world: 1,
-    description: '분수(Fraction) 기초',
-    type: 'fraction',
+    description: '두 걸음씩 (두 자릿수 덧셈, 올림X)',
+    type: 'standard',
     operators: ['+'],
     operandCount: 2,
-    ranges: [
-      { min: 1, max: 4 },
-      { min: 1, max: 4 },
-    ],
-    constraints: { denominator: 4 },
+    ranges: [{ min: 10, max: 40 }, { min: 1, max: 9 }],
+    constraints: { resultMax: 50 }, // Simple addition
   },
   {
     id: 12,
     world: 1,
-    description: '60진법 시각 계산',
-    type: 'time',
+    description: '무거운 배낭 (두 자릿수 덧셈, 올림O)',
+    type: 'standard',
     operators: ['+'],
     operandCount: 2,
-    ranges: [
-      { min: 0, max: 59 },
-      { min: 5, max: 45 },
-    ],
+    ranges: [{ min: 18, max: 29 }, { min: 18, max: 29 }],
   },
   {
     id: 13,
     world: 1,
-    description: '두 자릿수 곱셈',
-    type: 'standard',
-    operators: ['*'],
-    operandCount: 2,
-    ranges: [
-      { min: 10, max: 50 },
-      { min: 2, max: 9 },
-    ],
+    description: '세 개의 돌탑 (3항 연산)',
+    type: 'sequential',
+    operators: ['+', '-'],
+    operandCount: 3,
+    ranges: [{ min: 10, max: 20 }, { min: 5, max: 10 }, { min: 1, max: 10 }],
   },
   {
     id: 14,
     world: 1,
-    description: '나눗셈 검산',
-    type: 'modulo',
-    operators: ['/'],
-    operandCount: 2,
-    ranges: [
-      { min: 10, max: 50 },
-      { min: 3, max: 7 },
-    ],
+    description: '곱하기 우선 (연산 순서)',
+    type: 'sequential',
+    operators: ['+', '*'],
+    operandCount: 3,
+    ranges: [{ min: 1, max: 10 }, { min: 2, max: 5 }, { min: 2, max: 5 }],
   },
   {
     id: 15,
     world: 1,
-    description: '기초 산수 마스터',
+    description: '[대피소] 암산왕',
     type: 'sequential',
-    operators: ['+', '-', '*', '/'],
+    operators: ['+', '-', '*'],
     operandCount: 3,
-    ranges: [
-      { min: 1, max: 20 },
-      { min: 1, max: 20 },
-      { min: 2, max: 10 },
-    ],
+    ranges: [{ min: 10, max: 20 }, { min: 1, max: 10 }, { min: 2, max: 5 }],
   },
   {
     id: 16,
     world: 1,
-    description: '빈칸 채우기 기초',
-    type: 'fill-blank',
-    operators: ['+', '-'],
-    operandCount: 2,
-    ranges: [
-      { min: 1, max: 20 },
-      { min: 1, max: 20 },
-    ],
-    constraints: { resultMin: 0 },
+    description: '괄호의 벽',
+    type: 'parentheses',
+    operators: ['+', '*', '/'],
+    operandCount: 3,
+    ranges: [{ min: 1, max: 10 }, { min: 1, max: 5 }, { min: 2, max: 5 }],
   },
   {
     id: 17,
     world: 1,
-    description: '괄호와 나눗셈',
-    type: 'parentheses',
-    operators: ['+', '-', '/'],
+    description: '큰 수의 위압감 (100단위 뺄셈)',
+    type: 'standard',
+    operators: ['-'],
+    operandCount: 2,
+    ranges: [{ min: 100, max: 100 }, { min: 1, max: 99 }],
+  },
+  {
+    id: 18,
+    world: 1,
+    description: '나머지 길 (나머지 구하기)',
+    type: 'modulo',
+    operators: ['/'],
+    operandCount: 2,
+    ranges: [{ min: 10, max: 50 }, { min: 3, max: 7 }],
+  },
+  {
+    id: 19,
+    world: 1,
+    description: '빈칸 맛보기 (역연산)',
+    type: 'fill-blank',
+    operators: ['+', '-'],
+    operandCount: 2,
+    ranges: [{ min: 1, max: 20 }, { min: 1, max: 20 }],
+  },
+  {
+    id: 20,
+    world: 1,
+    description: '[전망대] 정수 마스터',
+    type: 'sequential',
+    operators: ['+', '-', '*', '/'],
+    operandCount: 4,
+    ranges: [{ min: 1, max: 20 }, { min: 1, max: 10 }, { min: 1, max: 5 }, { min: 1, max: 5 }],
+  },
+
+  // [Phase 3: 정상 공격 (Lv 21~30) - 수의 확장]
+  {
+    id: 21,
+    world: 1,
+    description: '쪼개진 돌 (소수 덧셈)',
+    type: 'decimal',
+    operators: ['+'],
+    operandCount: 2,
+    ranges: [{ min: 0.1, max: 0.9 }, { min: 0.1, max: 0.9 }],
+    constraints: { precision: 1 },
+  },
+  {
+    id: 22,
+    world: 1,
+    description: '소수의 뺄셈',
+    type: 'decimal',
+    operators: ['-'],
+    operandCount: 2,
+    ranges: [{ min: 1.1, max: 2.0 }, { min: 0.1, max: 0.9 }],
+    constraints: { precision: 1 },
+  },
+  {
+    id: 23,
+    world: 1,
+    description: '정수 만들기 (소수 합)',
+    type: 'decimal',
+    operators: ['+'],
+    operandCount: 2,
+    ranges: [{ min: 0.1, max: 0.9 }, { min: 0.1, max: 0.9 }],
+    constraints: { precision: 1 }, // Need internal logic to force integer result in generator if needed
+  },
+  {
+    id: 24,
+    world: 1,
+    description: '반 조각 (분수 덧셈)',
+    type: 'fraction',
+    operators: ['+'],
+    operandCount: 2,
+    ranges: [{ min: 1, max: 3 }, { min: 1, max: 3 }],
+    constraints: { denominator: 4 },
+  },
+  {
+    id: 25,
+    world: 1,
+    description: '[캠프] 소수/분수 믹스',
+    type: 'standard', // Fallback for now, will implement mixed types if needed
+    operators: ['+'],
+    operandCount: 2,
+    ranges: [{ min: 1, max: 10 }, { min: 1, max: 10 }],
+  },
+  {
+    id: 26,
+    world: 1,
+    description: '피자 나누기 (자연수-분수)',
+    type: 'fraction',
+    operators: ['-'],
+    operandCount: 2,
+    ranges: [{ min: 1, max: 1 }, { min: 1, max: 3 }],
+    constraints: { denominator: 4 },
+  },
+  {
+    id: 27,
+    world: 1,
+    description: '쉬운 통분 (배수 분모)',
+    type: 'fraction',
+    operators: ['+'],
+    operandCount: 2,
+    ranges: [{ min: 1, max: 1 }, { min: 1, max: 1 }],
+    constraints: { denominator: 4 }, // Will need update to generator for mixed denominators
+  },
+  {
+    id: 28,
+    world: 1,
+    description: '작아지는 곱 (소수 곱셈)',
+    type: 'decimal',
+    operators: ['*'],
+    operandCount: 2,
+    ranges: [{ min: 10, max: 20 }, { min: 0.1, max: 0.1 }],
+    constraints: { precision: 1 },
+  },
+  {
+    id: 29,
+    world: 1,
+    description: '나누기의 변신 (소수 나눗셈)',
+    type: 'decimal',
+    operators: ['/'],
+    operandCount: 2,
+    ranges: [{ min: 1, max: 5 }, { min: 0.5, max: 0.5 }],
+    constraints: { precision: 1 },
+  },
+  {
+    id: 30,
+    world: 1,
+    description: '[정상] 계산의 신',
+    type: 'sequential',
+    operators: ['+', '-', '*', '/'],
     operandCount: 3,
-    ranges: [
-      { min: 1, max: 20 },
-      { min: 1, max: 20 },
-      { min: 2, max: 5 },
-    ],
+    ranges: [{ min: 1, max: 50 }, { min: 1, max: 20 }, { min: 1, max: 10 }],
     constraints: { ensureIntegerDivision: true },
   },
 ];
 
 export interface MathProblem {
   expression: string;
-  answer: number;
-  displayExpression?: string; // For fill-in-the-blank or specific formatting
+  answer: number | string;
+  displayExpression?: string;
+  inputType?: 'number' | 'decimal' | 'fraction';
 }
 
 function getRandomInt(min: number, max: number): number {
@@ -347,7 +421,14 @@ export function generateProblem(stageId: number): MathProblem {
   if (!isValid) {
     console.warn(`Failed to generate valid problem for stage ${stageId} after 100 attempts`);
     // Fallback to simple 1+1 to avoid crash
-    return { expression: '1 + 1', answer: 2 };
+    return { expression: '1 + 1', answer: 2, inputType: 'number' };
+  }
+
+  // Set inputType based on stage type if not already set
+  if (!problem.inputType) {
+    if (stage.type === 'decimal') problem.inputType = 'decimal';
+    else if (stage.type === 'fraction') problem.inputType = 'fraction';
+    else problem.inputType = 'number';
   }
 
   return problem;
@@ -524,6 +605,7 @@ function generateDecimalProblem(stage: StageConfig): MathProblem {
   return {
     expression: `${a.toFixed(precision)} ${op} ${b.toFixed(precision)}`,
     answer: roundedResult,
+    inputType: 'decimal',
   };
 }
 
@@ -533,14 +615,13 @@ function generateFractionProblem(stage: StageConfig): MathProblem {
   const num1 = getRandomInt(1, den - 1);
   const num2 = getRandomInt(1, den - 1);
 
-  // We'll return the answer as a decimal but show it as a fraction?
-  // Or handle fraction input in UI. For now, let's keep it simple: 1/4 + 2/4 = ?
-  // Answer as decimal: 0.75
+  // We'll return the answer as a string fraction if it's not an integer
   const result = (num1 + num2) / den;
 
   return {
     expression: `${num1}/${den} + ${num2}/${den}`,
-    answer: Math.round(result * 100) / 100,
+    answer: Number.isInteger(result) ? result : `${num1 + num2}/${den}`,
+    inputType: 'fraction',
   };
 }
 

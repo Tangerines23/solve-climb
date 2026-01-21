@@ -8,11 +8,12 @@ import { StaminaWarningModal } from '../game/StaminaWarningModal';
 import { RefObject } from 'react';
 import { InventoryItem } from '../../types/user';
 import { PauseModal } from '../game/PauseModal';
+import { GameMode } from '../../types/quiz';
 
 interface QuizModalsProps {
   feedbackRef: RefObject<ItemFeedbackRef | null>;
   showLastChanceModal: boolean;
-  gameMode: 'survival' | 'time-attack';
+  gameMode: GameMode;
   inventory: InventoryItem[];
   minerals: number;
   handleRevive: (useItem: boolean) => void;
@@ -73,8 +74,8 @@ export function QuizModals({
       <ItemFeedbackOverlay ref={feedbackRef} />
 
       <LastChanceModal
-        isVisible={showLastChanceModal}
-        gameMode={gameMode}
+        isVisible={showLastChanceModal && (gameMode === 'time-attack' || gameMode === 'survival')}
+        gameMode={gameMode as 'time-attack' | 'survival'}
         inventoryCount={
           inventory.find((i) => i.code === (gameMode === 'time-attack' ? 'last_spurt' : 'flare'))
             ?.quantity || 0

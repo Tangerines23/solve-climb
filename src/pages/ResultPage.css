@@ -366,6 +366,7 @@
 }
 
 @keyframes floating {
+
   0%,
   100% {
     transform: translateY(0px);
@@ -631,5 +632,93 @@
   100% {
     transform: translateY(100vh) rotate(720deg);
     opacity: 0;
+  }
+}
+
+/* [Base Camp Result Styles] */
+.base-camp-result .result-card {
+  max-height: none;
+  margin-top: var(--spacing-4xl);
+}
+
+.diagnostic-summary {
+  display: flex;
+  justify-content: center;
+  margin: var(--spacing-xl) 0;
+  padding: var(--spacing-lg);
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: var(--rounded-md);
+}
+
+.diagnostic-stat {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.diagnostic-stat .stat-label {
+  font-size: 0.875rem;
+  color: var(--color-text-secondary);
+  margin-bottom: var(--spacing-xs);
+}
+
+.diagnostic-stat .stat-value {
+  font-size: 2rem;
+  font-weight: 800;
+  color: var(--color-blue-400);
+}
+
+.recommendation-box {
+  margin-top: var(--spacing-2xl);
+  text-align: left;
+  width: 100%;
+}
+
+.recommendation-box h3 {
+  font-size: 1.125rem;
+  font-weight: 700;
+  color: var(--color-text-primary);
+  margin-bottom: var(--spacing-lg);
+}
+
+.recommendation-card {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-xl);
+  padding: var(--spacing-xl);
+  background: linear-gradient(135deg, rgba(59, 130, 246, 0.1), rgba(37, 99, 235, 0.1));
+  border: 1px solid rgba(59, 130, 246, 0.2);
+  border-radius: var(--rounded-lg);
+}
+
+.recommendation-icon {
+  font-size: 2.5rem;
+  line-height: 1;
+}
+
+.recommendation-info {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-xs);
+}
+
+.course-name {
+  font-size: 1.125rem;
+  font-weight: 700;
+  color: var(--color-blue-400);
+}
+
+.course-desc {
+  font-size: 0.875rem;
+  color: var(--color-text-secondary);
+  margin: 0;
+}
+
+@media (orientation: landscape) {
+  .base-camp-result .result-landscape-layout {
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: var(--spacing-4xl);
   }
 }

@@ -10,6 +10,8 @@ interface CustomKeypadProps {
   onSubmit: (e: FormEvent) => void;
   disabled?: boolean;
   showNegative?: boolean; // 음수 버튼 표시 여부
+  showDecimal?: boolean; // 소수점 버튼 표시 여부
+  showFraction?: boolean; // 분수 버튼 표시 여부
 }
 
 function CustomKeypadComponent({
@@ -19,6 +21,8 @@ function CustomKeypadComponent({
   onSubmit,
   disabled = false,
   showNegative = false,
+  showDecimal = false,
+  showFraction = false,
 }: CustomKeypadProps) {
   // Zustand Selector 패턴 적용
   const hapticEnabled = useSettingsStore((state) => state.hapticEnabled);
@@ -86,20 +90,22 @@ function CustomKeypadComponent({
         </button>
       </div>
       <div
-        className={`keypad-row keypad-row-last ${showNegative ? 'keypad-row-last-with-negative' : ''}`}
+        className={`keypad-row keypad-row-last ${(showNegative || showDecimal || showFraction) ? 'keypad-row-last-with-negative' : ''}`}
       >
-        {showNegative ? (
+        {(showNegative || showDecimal || showFraction) ? (
           <>
             <button
-              className="keypad-key keypad-key-negative"
+              className="keypad-key keypad-key-special"
               onClick={() => {
                 if (!disabled) {
-                  handleNumberClick('-');
+                  if (showDecimal) handleNumberClick('.');
+                  else if (showFraction) handleNumberClick('/');
+                  else if (showNegative) handleNumberClick('-');
                 }
               }}
               disabled={disabled}
             >
-              ±
+              {showDecimal ? '.' : showFraction ? '/' : '±'}
             </button>
             <button
               className="keypad-key keypad-key-backspace"

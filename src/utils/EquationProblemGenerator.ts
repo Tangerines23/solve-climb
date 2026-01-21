@@ -17,123 +17,39 @@ export interface EquationStageConfig {
 export interface EquationProblem {
   question: string;
   x: number;
+  transposition?: {
+    term: string;
+    targetSide: 'LHS' | 'RHS';
+    targetResult: string;
+  };
 }
 
 export const EQUATION_STAGES: EquationStageConfig[] = [
-  // World 1: Intuition (Fill-in-the-blank)
-  {
-    id: 1,
-    world: 1,
-    stage: 1,
-    description: '? + a = b',
-    format: 'fill_plus',
-  },
-  {
-    id: 2,
-    world: 1,
-    stage: 2,
-    description: '? - a = b',
-    format: 'fill_minus',
-  },
-  {
-    id: 3,
-    world: 1,
-    stage: 3,
-    description: 'a - ? = b',
-    format: 'fill_subtract',
-  },
+  // [Phase 1: x의 등장 (Lv 1~10)]
+  { id: 1, world: 1, stage: 1, description: '□ + a = b', format: 'fill_plus' },
+  { id: 2, world: 1, stage: 2, description: '□ - a = b', format: 'fill_minus' },
+  { id: 3, world: 1, stage: 3, description: 'a - □ = b', format: 'fill_subtract' },
+  { id: 4, world: 1, stage: 4, description: '□ x a = b', format: 'fill_multiply' },
+  { id: 5, world: 1, stage: 5, description: '□ / a = b', format: 'fill_divide' },
+  { id: 6, world: 1, stage: 6, description: 'x + a = b (시각적 치환)', format: 'x_plus' },
+  { id: 7, world: 1, stage: 7, description: 'ax = b (곱셈 생략)', format: 'coefficient_multiply' },
+  { id: 8, world: 1, stage: 8, description: 'ax + b = c (기초 방정식)', format: 'two_step_plus' },
+  { id: 9, world: 1, stage: 9, description: 'ax - b = c', format: 'two_step_minus' },
+  { id: 10, world: 1, stage: 10, description: 'ax + b = c (복합)', format: 'two_step_large' },
 
-  // World 2: Intro to 'x' (One-step)
-  {
-    id: 4,
-    world: 2,
-    stage: 4,
-    description: 'x + a = b',
-    format: 'x_plus',
-  },
-  {
-    id: 5,
-    world: 2,
-    stage: 5,
-    description: 'x - a = b',
-    format: 'x_minus',
-  },
-  {
-    id: 6,
-    world: 2,
-    stage: 6,
-    description: 'b = x + a',
-    format: 'x_plus_reverse',
-  },
+  // [Phase 2: 구조의 변형 (Lv 11~15)]
+  { id: 11, world: 1, stage: 11, description: '상수 이항 (x + a = b)', format: 'x_plus' },
+  { id: 12, world: 1, stage: 12, description: '부호 변환 (x - a = b)', format: 'x_minus' },
+  { id: 13, world: 1, stage: 13, description: '변수 이항 (ax = bx + c)', format: 'both_sides_simple' },
+  { id: 14, world: 1, stage: 14, description: '괄호 풀기 a(x + b) = c', format: 'parentheses' },
+  { id: 15, world: 1, stage: 15, description: '보스 (ax + b = cx + d)', format: 'both_sides_complex' },
 
-  // World 3: Coefficients
-  {
-    id: 7,
-    world: 3,
-    stage: 7,
-    description: 'ax = b',
-    format: 'coefficient_multiply',
-  },
-  {
-    id: 8,
-    world: 3,
-    stage: 8,
-    description: 'x / a = b',
-    format: 'coefficient_divide',
-  },
-  {
-    id: 9,
-    world: 3,
-    stage: 9,
-    description: '-ax = b',
-    format: 'coefficient_negative',
-  },
-
-  // World 4: Two-step Equations
-  {
-    id: 10,
-    world: 4,
-    stage: 10,
-    description: 'ax + b = c (a, b, x > 0)',
-    format: 'two_step_plus',
-  },
-  {
-    id: 11,
-    world: 4,
-    stage: 11,
-    description: 'ax - b = c',
-    format: 'two_step_minus',
-  },
-  {
-    id: 12,
-    world: 4,
-    stage: 12,
-    description: 'ax + b = c (Larger numbers)',
-    format: 'two_step_large',
-  },
-
-  // World 5: Master (Complex)
-  {
-    id: 13,
-    world: 5,
-    stage: 13,
-    description: 'ax = bx + c (Variables on both sides)',
-    format: 'both_sides_simple',
-  },
-  {
-    id: 14,
-    world: 5,
-    stage: 14,
-    description: 'a(x + b) = c (Parentheses)',
-    format: 'parentheses',
-  },
-  {
-    id: 15,
-    world: 5,
-    stage: 15,
-    description: 'ax + b = cx + d (Variables on both sides + constants)',
-    format: 'both_sides_complex',
-  },
+  // [Phase 3: 응용 (Lv 16~20)]
+  { id: 16, world: 1, stage: 16, description: '비례식 (a:b = c:x)', format: 'ratio' },
+  { id: 17, world: 1, stage: 17, description: '대입법 (y=x+a, y=b)', format: 'substitution' },
+  { id: 18, world: 1, stage: 18, description: '부등식 기초 (x > a)', format: 'inequality_basic' },
+  { id: 19, world: 1, stage: 19, description: '부등식 풀기 (ax > b)', format: 'inequality_solve' },
+  { id: 20, world: 1, stage: 20, description: '대수왕 (종합)', format: 'both_sides_complex' },
 ];
 
 /**
@@ -155,7 +71,7 @@ function generateFillPlus(): EquationProblem {
   const b = x + a;
 
   return {
-    question: `? + ${a} = ${b}`,
+    question: `□ + ${a} = ${b}`,
     x: x,
   };
 }
@@ -177,7 +93,7 @@ function generateFillMinus(): EquationProblem {
   }
 
   return {
-    question: `? - ${a} = ${b}`,
+    question: `□ - ${a} = ${b}`,
     x: x,
   };
 }
@@ -194,8 +110,28 @@ function generateFillSubtract(): EquationProblem {
   const b = a - x;
 
   return {
-    question: `${a} - ? = ${b}`,
+    question: `${a} - □ = ${b}`,
     x: x,
+  };
+}
+
+function generateFillMultiply(): EquationProblem {
+  const x = getRandomInt(1, 12);
+  const a = getRandomInt(2, 9);
+  const b = x * a;
+  return {
+    question: `□ x ${a} = ${b}`,
+    x: x,
+  };
+}
+
+function generateFillDivide(): EquationProblem {
+  const a = getRandomInt(2, 9);
+  const x = getRandomInt(1, 10);
+  const b = a * x;
+  return {
+    question: `□ ÷ ${a} = ${x}`,
+    x: b,
   };
 }
 
@@ -213,6 +149,7 @@ function generateXPlus(): EquationProblem {
   return {
     question: `x + ${a} = ${b}`,
     x: x,
+    transposition: { term: `+ ${a}`, targetSide: 'RHS', targetResult: `- ${a}` },
   };
 }
 
@@ -234,6 +171,7 @@ function generateXMinus(): EquationProblem {
   return {
     question: `x - ${a} = ${b}`,
     x: x,
+    transposition: { term: `- ${a}`, targetSide: 'RHS', targetResult: `+ ${a}` },
   };
 }
 
@@ -383,6 +321,7 @@ function generateBothSidesSimple(): EquationProblem {
   return {
     question: `${a}x = ${b}x + ${c}`,
     x: x,
+    transposition: { term: `${b}x`, targetSide: 'LHS', targetResult: `-${b}x` },
   };
 }
 
@@ -423,6 +362,52 @@ function generateBothSidesComplex(): EquationProblem {
   return {
     question: `${a}x + ${b} = ${c}x + ${d}`,
     x: x,
+    transposition: { term: `${c}x`, targetSide: 'LHS', targetResult: `-${c}x` },
+  };
+}
+
+function generateRatio(): EquationProblem {
+  // a:b = c:x -> ax = bc -> x = bc/a
+  const a = getRandomInt(1, 5);
+  const x = getRandomInt(1, 10);
+  const b = getRandomInt(1, 5);
+  const c = (a * x) / b;
+  if (!Number.isInteger(c)) return generateRatio();
+
+  return {
+    question: `${a} : ${b} = ${c} : x`,
+    x: x,
+  };
+}
+
+function generateSubstitution(): EquationProblem {
+  const x = getRandomInt(1, 15);
+  const a = getRandomInt(1, 10);
+  const b = x + a;
+  return {
+    question: `y = x + ${a}, y = ${b}`,
+    x: x,
+  };
+}
+
+function generateInequalityBasic(): EquationProblem {
+  const x = getRandomInt(1, 20);
+  const question = `x > ${x}, 최소 정수는?`;
+  return {
+    question,
+    x: x + 1,
+  };
+}
+
+function generateInequalitySolve(): EquationProblem {
+  const a = getRandomInt(2, 5);
+  // ax > rhs -> x > rhs/a
+  const x_ans = getRandomInt(5, 10);
+  const rhs = a * x_ans - a + 1; // so x > (rhs/a) -> x >= x_ans
+
+  return {
+    question: `${a}x > ${rhs}, 최소 정수는?`,
+    x: x_ans,
   };
 }
 
@@ -446,6 +431,10 @@ export function generateEquation(stageLevel: number): EquationProblem {
       return generateFillMinus();
     case 'fill_subtract':
       return generateFillSubtract();
+    case 'fill_multiply':
+      return generateFillMultiply();
+    case 'fill_divide':
+      return generateFillDivide();
     case 'x_plus':
       return generateXPlus();
     case 'x_minus':
@@ -470,6 +459,14 @@ export function generateEquation(stageLevel: number): EquationProblem {
       return generateParentheses();
     case 'both_sides_complex':
       return generateBothSidesComplex();
+    case 'ratio':
+      return generateRatio();
+    case 'substitution':
+      return generateSubstitution();
+    case 'inequality_basic':
+      return generateInequalityBasic();
+    case 'inequality_solve':
+      return generateInequalitySolve();
     default:
       throw new Error(`Unknown format: ${stage.format}`);
   }

@@ -14,6 +14,8 @@ import { normalizeRomaji } from '../utils/japanese';
 import { vibrateMedium, vibrateLong } from '../utils/haptic';
 import { useGameStore } from '../stores/useGameStore';
 import { APP_CONFIG } from '../config/app';
+import { useBaseCampStore } from '../stores/useBaseCampStore';
+import { useDeathNoteStore } from '../stores/useDeathNoteStore';
 
 interface UseQuizSubmitParams {
   answerInput: string;
@@ -169,6 +171,51 @@ export function useQuizSubmit({
         return currentWave;
       });
 
+      // [Base Camp Diagnostic Mode]
+      const isBaseCamp = new URLSearchParams(window.location.search).get('mode') === 'base-camp';
+      if (isBaseCamp) {
+        const solveTime = questionStartTime ? Date.now() - questionStartTime : 2000;
+        const { submitAnswer, currentQuestionIndex, getRecommendation, setCompleted } = useBaseCampStore.getState();
+
+        submitAnswer(isCorrect, solveTime);
+
+        if (currentQuestionIndex >= 9) { // 10th question submitted
+          setCompleted(true);
+          const { accuracy, recommendation } = getRecommendation();
+          // Redirect to result with diagnostic info
+          setTimeout(() => {
+            const params = new URLSearchParams(window.location.search);
+            params.set('mode', 'base-camp-result');
+            params.set('accuracy', accuracy.toString());
+            params.set('recommendation', recommendation);
+            window.location.href = `/result?${params.toString()}`;
+          }, 1000);
+          return;
+        }
+
+        // Show feedback and next question
+        if (isCorrect) {
+          setCardAnimation('correct-flash');
+          setTimeout(() => {
+            paramsRef.current.generateNewQuestion();
+            setCardAnimation('');
+            setIsSubmitting(false);
+          }, 300);
+        } else {
+          setIsError(true);
+          setDisplayValue(String(currentQuestion.answer));
+          setCardAnimation('wrong-shake');
+          setTimeout(() => {
+            setIsError(false);
+            setDisplayValue('');
+            paramsRef.current.generateNewQuestion();
+            setCardAnimation('');
+            setIsSubmitting(false);
+          }, 800);
+        }
+        return;
+      }
+
       if (isCorrect) {
         // 진동 피드백
         if (hapticEnabled) {
@@ -284,6 +331,12 @@ export function useQuizSubmit({
         setTimeout(() => {
           setShowFlash(false);
         }, 400); // 애니메이션 지속시간과 동일
+
+        // [v2.2 Death Note] - 정답을 틀렸을 때 기록 (부활 전 단계)
+        const { addMissedQuestion } = useDeathNoteStore.getState();
+        const targetWorld = (paramsRef.current.subParam || 'World1') as any;
+        const targetCategory = (paramsRef.current.categoryParam || '기초') as any;
+        addMissedQuestion(currentQuestion, targetWorld, targetCategory);
 
         // 진동 피드백 (토스 표준 API 사용)
         if (hapticEnabled) {

@@ -158,12 +158,23 @@ export function validateSubTopicParam(
 /**
  * 게임 모드 파라미터 검증
  */
-export function validateModeParam(value: string | null): 'time-attack' | 'survival' | null {
+export function validateModeParam(
+  value: string | null
+): 'time-attack' | 'survival' | 'base-camp' | 'base-camp-result' | 'smart-retry' | null {
   if (value === 'time_attack' || value === 'time-attack') {
     return 'time-attack';
   }
   if (value === 'survival') {
     return 'survival';
+  }
+  if (value === 'base-camp') {
+    return 'base-camp';
+  }
+  if (value === 'base-camp-result') {
+    return 'base-camp-result';
+  }
+  if (value === 'smart-retry') {
+    return 'smart-retry';
   }
   return null;
 }

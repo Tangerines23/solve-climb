@@ -105,29 +105,84 @@ export function generateSequenceProblem(
 
 export function generateLogicProblem(level: number, difficulty: Difficulty): LogicProblem {
   switch (level) {
+    // [Phase 1: 판단 (Lv 1~5) - 양자택일]
     case 1:
       return generateEvenOddProblem(difficulty);
     case 2:
       return generatePosNegProblem(difficulty);
     case 3:
-      return generateSequenceProblem(difficulty, 'arithmetic');
+      return generateMultipleProblem(difficulty); // 3의 배수 판별 등
     case 4:
-      return generateSequenceProblem(difficulty, 'geometric');
-    case 5:
-      return generateSequenceProblem(difficulty, 'fibonacci');
-    case 6:
       return generatePrimeProblem(difficulty);
+    case 5:
+      return generateComparisonProblem(difficulty); // 두 수 중 소수 찾기 등
+
+    // [Phase 2: 추론 (Lv 6~10) - 빈칸 채우기]
+    case 6:
+      return generateSequenceProblem(difficulty, 'arithmetic');
     case 7:
-      return generateModProblem(difficulty);
+      return generateSequenceProblem(difficulty, 'geometric');
     case 8:
-      return generateFactorialProblem(difficulty);
+      return generateSequenceProblem(difficulty, 'fibonacci');
     case 9:
-      return generateClockProblem(difficulty);
+      return generateSequenceProblem(difficulty, 'alternating'); // 건너뛰기/교대
     case 10:
-      return generateSequenceProblem(difficulty, 'incrementing_diff');
+      return generateSequenceProblem(difficulty, 'incrementing_diff'); // 계차
+
+    // [Phase 3: 약속 (Lv 11~15) - 규칙 학습]
+    case 11:
+      return generateAbsoluteProblem(difficulty);
+    case 12:
+      return generateModProblem(difficulty);
+    case 13:
+      return generateFactorialProblem(difficulty);
+    case 14:
+      return generateCustomOpProblem(difficulty); // A * B = A + B + 1
+    case 15:
+      return generateSequenceProblem(difficulty); // 보스: 랜덤 혼합
     default:
       return generateSequenceProblem(difficulty);
   }
+}
+
+function generateMultipleProblem(_difficulty: Difficulty): LogicProblem {
+  const base = [3, 4, 6, 7, 8, 9][Math.floor(Math.random() * 6)];
+  const isMultiple = Math.random() > 0.5;
+  const num = isMultiple ? base * getRandomInt(2, 12) : base * getRandomInt(2, 12) + 1;
+  const question = `${num}은(는) ${base}의 배수입니까? (1: 예, 2: 아니오)`;
+  return { question, answer: isMultiple ? 1 : 2 };
+}
+
+function generateComparisonProblem(_difficulty: Difficulty): LogicProblem {
+  const primes = [13, 17, 19, 23, 29];
+  const nonPrimes = [15, 21, 25, 27, 33];
+  const p = primes[Math.floor(Math.random() * primes.length)];
+  const np = nonPrimes[Math.floor(Math.random() * nonPrimes.length)];
+  const isPrimeFirst = Math.random() > 0.5;
+  const question = isPrimeFirst ? `[${p}] [${np}] 소수(Prime)인 것은? (1: 왼쪽, 2: 오른쪽)` : `[${np}] [${p}] 소수(Prime)인 것은? (1: 왼쪽, 2: 오른쪽)`;
+  return { question, answer: isPrimeFirst ? 1 : 2 };
+}
+
+function generateAbsoluteProblem(_difficulty: Difficulty): LogicProblem {
+  const num = getRandomInt(-50, -1);
+  const question = `|${num}| (절댓값)의 값은?`;
+  return { question, answer: Math.abs(num) };
+}
+
+function generateCustomOpProblem(_difficulty: Difficulty): LogicProblem {
+  const a = getRandomInt(1, 10);
+  const b = getRandomInt(1, 10);
+  const type = getRandomInt(1, 2);
+  let question = '';
+  let answer = 0;
+  if (type === 1) {
+    question = `A ★ B = A + B + 1 일 때, ${a} ★ ${b} = ?`;
+    answer = a + b + 1;
+  } else {
+    question = `A ○ B = A * B - 1 일 때, ${a} ○ ${b} = ?`;
+    answer = a * b - 1;
+  }
+  return { question, answer };
 }
 
 function generateEvenOddProblem(_difficulty: Difficulty): LogicProblem {
@@ -175,10 +230,4 @@ function generateFactorialProblem(_difficulty: Difficulty): LogicProblem {
   return { question, answer };
 }
 
-function generateClockProblem(_difficulty: Difficulty): LogicProblem {
-  const hour = getRandomInt(1, 12);
-  // Simple: Angle of hour hand from 12? No, let's do: "3시는 몇 도입니까?"
-  const angle = hour * 30;
-  const question = `시계의 시침이 ${hour}시를 가리킬 때, 12시와의 각도는? (0~360)`;
-  return { question, answer: angle };
-}
+

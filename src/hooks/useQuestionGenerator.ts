@@ -3,6 +3,8 @@ import { useCallback, useMemo } from 'react';
 import { Category, QuizQuestion, Difficulty, GameMode, World } from '../types/quiz';
 import { generateQuestion } from '../utils/quizGenerator';
 import { SURVIVAL_CONFIG } from '../constants/game';
+import { useBaseCampStore } from '../stores/useBaseCampStore';
+import { useDeathNoteStore } from '../stores/useDeathNoteStore';
 
 interface UseQuestionGeneratorParams {
   category: Category | null;
@@ -65,8 +67,66 @@ export function useQuestionGenerator({
     return 10; // Fallback
   }, [gameMode, levelParam, totalQuestions]);
 
+  // ... (inside useQuestionGenerator)
   const generateNewQuestion = useCallback(() => {
-    // 1. 월드/카테고리/레벨 결정 (파라미터 우선, 없으면 스토어 값 사용)
+    const mode = new URLSearchParams(window.location.search).get('mode');
+    const isBaseCamp = mode === 'base-camp';
+    const isSmartRetry = mode === 'smart-retry';
+
+    if (isBaseCamp) {
+      const { questions, currentQuestionIndex, setCompleted } = useBaseCampStore.getState();
+
+      // 진단 종료 체크
+      if (currentQuestionIndex >= 10) {
+        setCompleted(true);
+        // 결과 취합을 위해 약간 지연 후 이동 (submitAnswer에서 처리될 것임)
+        return;
+      }
+
+      const q = questions[currentQuestionIndex];
+      if (q) {
+        setQuestionAnimation('fade-out');
+        setTimeout(() => {
+          setCurrentQuestion(q);
+          setAnswerInput('');
+          setDisplayValue('');
+          setIsError(false);
+          setShowFlash(false);
+          setQuestionAnimation('fade-in');
+          setQuestionStartTime(Date.now());
+        }, 150);
+        return;
+      }
+    }
+
+    if (isSmartRetry) {
+      const targetWorld = (worldParam || world) as World;
+      const targetCategory = (categoryParam || category) as Category;
+      const { getQuestionsByCategory } = useDeathNoteStore.getState();
+      const missedQuestions = getQuestionsByCategory(targetWorld, targetCategory);
+
+      if (missedQuestions.length > 0) {
+        // 무작위로 하나 선택하거나 순차적으로? 일단 무작위
+        const randomIndex = Math.floor(Math.random() * missedQuestions.length);
+        const q = missedQuestions[randomIndex];
+
+        setQuestionAnimation('fade-out');
+        setTimeout(() => {
+          setCurrentQuestion(q);
+          setAnswerInput('');
+          setDisplayValue('');
+          setIsError(false);
+          setShowFlash(false);
+          setQuestionAnimation('fade-in');
+          setQuestionStartTime(Date.now());
+        }, 150);
+        return;
+      }
+      // 오답이 없으면 일반 모드로 전환 (콘솔 알림)
+      console.log('No missed questions found for smart-retry, falling back to normal mode');
+    }
+
+    // 2. 일반 월드/카테고리/레벨 결정 (파라미터 우선, 없으면 스토어 값 사용)
     const targetWorld = (worldParam || world) as World;
     const targetCategory = (categoryParam || category) as Category;
     const targetLevel = gameMode === 'survival' ? effectiveLevel : levelParam || 1;

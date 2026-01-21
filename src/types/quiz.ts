@@ -31,10 +31,13 @@ export interface QuizQuestion {
   options?: (number | string)[];
   level?: number;
   category?: Category;
+  inputType?: 'number' | 'decimal' | 'fraction' | 'coordinate';
+  hintType?: 'transposition' | 'coordinate' | 'calculus';
+  hintData?: any;
 }
 
 // 게임 모드 타입
-export type GameMode = 'time-attack' | 'survival';
+export type GameMode = 'time-attack' | 'survival' | 'base-camp' | 'base-camp-result' | 'infinite';
 
 // 난이도 타입
 export type Difficulty = 'easy' | 'medium' | 'hard';
