@@ -59,3 +59,11 @@ export const SURVIVAL_CONFIG = {
     { start: 51, end: 99999, minLevel: 1, maxLevel: 10, label: '무한 루프' },
   ],
 };
+
+// 랜드마크 매핑 (v2.2)
+export const LANDMARK_MAPPING: Record<number, { icon: string; text: string }> = {
+  100: { icon: '🌲', text: '첫 번째 숲 (100m)' },
+  300: { icon: '☁️', text: '구름 위 (300m)' },
+  500: { icon: '🏔️', text: '정상 정복 예정 (500m)' },
+  1000: { icon: '🏆', text: '전설의 시작 (1000m)' },
+};

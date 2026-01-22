@@ -53,12 +53,7 @@ export async function getGameLoginHash(): Promise<GameLoginHashResult> {
       };
     }
 
-    console.log('[게임 로그인] getUserKeyForGame 호출 시작');
     const result = await getUserKeyForGame();
-    console.log('[게임 로그인] getUserKeyForGame 호출 완료:', {
-      hasResult: !!result,
-      resultType: typeof result === 'string' ? result : result?.type,
-    });
 
     if (!result) {
       return {
@@ -331,7 +326,6 @@ export async function migrateToGameLogin(): Promise<{
 
     // 3. 토스 로그인이 연동되지 않은 사용자는 hash만 반환
     if (integrationStatus.isIntegrated !== true) {
-      console.log('[게임 로그인] 토스 로그인 미연동 사용자 - hash만 사용');
       return {
         success: true,
         hash,
@@ -349,7 +343,6 @@ export async function migrateToGameLogin(): Promise<{
 
     // 5. 이미 매핑된 사용자는 hash만 반환
     if (migrationStatus.isMapped === true) {
-      console.log('[게임 로그인] 이미 매핑된 사용자');
       return {
         success: true,
         hash,
@@ -357,18 +350,11 @@ export async function migrateToGameLogin(): Promise<{
     }
 
     // 6. 미매핑 사용자는 토스 로그인 후 매핑 생성
-    console.log('[게임 로그인] 미매핑 사용자 - 토스 로그인 후 매핑 생성');
 
     // 토스 로그인 실행 (appLogin은 상단에서 이미 임포트됨)
-    console.log('[게임 로그인] appLogin 호출 시작');
     let loginResult;
     try {
       loginResult = await appLogin();
-      console.log('[게임 로그인] appLogin 호출 완료:', {
-        hasResult: !!loginResult,
-        hasAuthorizationCode: !!loginResult?.authorizationCode,
-        authorizationCodePrefix: loginResult?.authorizationCode?.substring(0, 20) || 'N/A',
-      });
     } catch (error) {
       console.error('[게임 로그인] appLogin 호출 중 예외 발생:', error);
       return {
@@ -402,7 +388,6 @@ export async function migrateToGameLogin(): Promise<{
       };
     }
 
-    console.log('[게임 로그인] 매핑 완료');
     return {
       success: true,
       hash,

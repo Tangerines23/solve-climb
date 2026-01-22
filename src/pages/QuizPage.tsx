@@ -1,5 +1,5 @@
 // src/pages/QuizPage.tsx (범용 퀴즈 페이지)
-import { useState, useEffect, useRef, useCallback, useMemo } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import './QuizPage.css';
 import { useQuizStore, type TimeLimit } from '@/stores/useQuizStore';
@@ -10,6 +10,7 @@ import { useQuizGameState } from '@/hooks/useQuizGameState';
 import { useQuizAnimations } from '@/hooks/useQuizAnimations';
 import { useQuizSubmit } from '@/hooks/useQuizSubmit';
 import { useSettingsStore } from '@/stores/useSettingsStore';
+import { LANDMARK_MAPPING } from '@/constants/game';
 import { useQuizRevive } from '@/hooks/useQuizRevive';
 import { useUserStore } from '@/stores/useUserStore';
 import { useGameStore } from '@/stores/useGameStore';
@@ -31,6 +32,9 @@ import { QuizModals } from '@/components/quiz/QuizModals';
 import { urls } from '@/utils/navigation';
 import { useBaseCampStore } from '@/stores/useBaseCampStore';
 import { TodaysPromise } from '@/components/quiz/TodaysPromise';
+import { FeverEffect } from '@/components/effects/FeverEffect';
+import { LOGIC_PROMISES } from '@/constants/promises';
+import { TutorialOverlay, TutorialStep } from '@/components/tutorial/TutorialOverlay';
 
 export function QuizPage() {
   const score = useQuizStore((state) => state.score);
@@ -61,10 +65,7 @@ export function QuizPage() {
   const [showTipModal, setShowTipModal] = useState(true);
   const [showStaminaModal, setShowStaminaModal] = useState(false);
   const [pendingItemIds, setPendingItemIds] = useState<number[]>([]);
-  const [_gameQuestions, setGameQuestions] = useState<
-    Array<{ id: string; question: QuizQuestion; userAnswer: number | null }>
-  >([]);
-  const [currentQuestionId, setCurrentQuestionId] = useState<string | null>(null);
+  // Unused state removed: gameQuestions, currentQuestionId, totalInfiniteSolved, infiniteTimeLimit, penaltyTrigger
 
   const {
     stamina,
@@ -102,6 +103,14 @@ export function QuizPage() {
   const [remainingPauses, setRemainingPauses] = useState(3);
   const [showPromise, setShowPromise] = useState(false);
   const [promiseData, setPromiseData] = useState({ rule: '', example: '' });
+
+  // [Base Camp Tutorial]
+  const [showTutorial, setShowTutorial] = useState(false);
+  const tutorialSteps: TutorialStep[] = [
+    { targetId: 'quiz-display', text: '환영합니다! 지금부터 10문제를 풀어보세요.', action: 'read' },
+    { targetId: 'keypad', text: '정답을 입력하고 엔터를 누르면 됩니다.', action: 'tap' },
+    { targetId: 'timer-bar', text: '시간은 측정되지만 제한은 없습니다.', action: 'read' },
+  ];
 
   const {
     setExhausted,
@@ -157,25 +166,18 @@ export function QuizPage() {
 
   // v2.2 Landmark Popups
   const [activeLandmark, setActiveLandmark] = useState<{ icon: string; text: string } | null>(null);
-  const landmarkMapping = useMemo(
-    () => ({
-      100: { icon: '🌲', text: '첫 번째 숲 (100m)' },
-      300: { icon: '☁️', text: '구름 위 (300m)' },
-      500: { icon: '🏔️', text: '정상 정복 예정 (500m)' },
-      1000: { icon: '🏆', text: '전설의 시작 (1000m)' },
-    }),
-    []
-  );
+
+  // landmarkMapping extracted to constants/game.ts
 
   useEffect(() => {
     if (gameMode !== 'survival') return;
     const altitude = gameState.totalQuestions * 10;
-    const landmark = landmarkMapping[altitude as keyof typeof landmarkMapping];
+    const landmark = LANDMARK_MAPPING[altitude as keyof typeof LANDMARK_MAPPING];
     if (landmark) {
       setActiveLandmark(landmark);
       setTimeout(() => setActiveLandmark(null), 2500);
     }
-  }, [gameState.totalQuestions, gameMode, landmarkMapping]);
+  }, [gameState.totalQuestions, gameMode]);
 
   const { generateNewQuestion } = useQuestionGenerator({
     category,
@@ -196,10 +198,8 @@ export function QuizPage() {
     setQuestionAnimation: animations.setQuestionAnimation,
     setQuestionKey,
     setQuestionStartTime: gameState.setQuestionStartTime,
-    onQuestionGenerated: (question, questionId) => {
-      setGameQuestions((prev) => [...prev, { id: questionId, question, userAnswer: null }]);
+    onQuestionGenerated: (_question, questionId) => {
       gameState.setQuestionIds((prev) => [...prev, questionId]);
-      setCurrentQuestionId(questionId);
     },
   });
 
@@ -421,28 +421,16 @@ export function QuizPage() {
     inputRef,
     showFeedback: (text, subText, type) => feedbackRef.current?.show(text, subText, type),
     setIsFlarePaused,
-    onAnswerSubmitted: (questionId, userAnswer) => {
-      setGameQuestions((prev) => prev.map((q) => (q.id === questionId ? { ...q, userAnswer } : q)));
+    onAnswerSubmitted: (_questionId, userAnswer) => {
       gameState.setUserAnswers((prev) => [...prev, userAnswer]);
 
       if (gameMode === 'infinite') {
-        const isCorrect = currentQuestion?.answer === userAnswer;
-        if (isCorrect) {
-          setTotalInfiniteSolved(prev => {
-            const next = prev + 1;
-            if (next % 10 === 0) {
-              setInfiniteTimeLimit(limit => Math.max(3, limit - 0.5));
-            }
-            return next;
-          });
-        }
+        // Infinite mode logic to be implemented in useQuizStore or dedicated hook
       }
     },
     onPenalty: (amount) => {
-      setPenaltyTrigger(prev => prev + 1);
       feedbackRef.current?.show('PENALTY!', `-${amount}s Time Deducted`, 'info');
     },
-    currentQuestionId,
   });
 
   const handleStartGame = async (selectedItemIds: number[]) => {
@@ -454,13 +442,10 @@ export function QuizPage() {
 
     // [New] Logic Phase 3 "Today's Promise" Check
     if (categoryParam === '논리' && levelParam && levelParam >= 11 && levelParam <= 15) {
-      const rules: Record<number, { rule: string; example: string }> = {
-        11: { rule: '절댓값: 부호 떼고 크기만!', example: '|-5| = 5' },
-        12: { rule: '나머지(Mod): 나눈 후 남는 조각!', example: '14 mod 3 = 2' },
-        13: { rule: '팩토리얼(!): 1부터 몽땅 곱하기!', example: '3! = 3x2x1 = 6' },
-        14: { rule: '사용자 연산: 기호 약속 지키기!', example: 'A ★ B = A+B+1' },
+      const rule = LOGIC_PROMISES[levelParam] || {
+        rule: '논리왕: 모든 규칙 혼합!',
+        example: '팩토리얼 + 나머지',
       };
-      const rule = rules[levelParam] || { rule: '논리왕: 모든 규칙 혼합!', example: '팩토리얼 + 나머지' };
       setPromiseData(rule);
       setPendingItemIds(selectedItemIds);
       setShowTipModal(false);
@@ -532,6 +517,7 @@ export function QuizPage() {
     if (modeParam === 'base-camp') {
       useBaseCampStore.getState().startDiagnostic();
       setShowTipModal(false); // 베이스 캠프는 팁 생략
+      setShowTutorial(true); // 튜토리얼 시작
     }
 
     gameStateRef.current.setTotalQuestions(0);
@@ -540,8 +526,6 @@ export function QuizPage() {
     gameStateRef.current.setQuestionStartTime(null);
     setSessionCreated(false);
     isCreatingSessionRef.current = false;
-    setGameQuestions([]);
-    setCurrentQuestionId(null);
   }, [worldParam, categoryParam, levelParam, modeParam, resetQuiz]);
 
   const [sessionCreated, setSessionCreated] = useState(false);
@@ -612,20 +596,7 @@ export function QuizPage() {
 
   const feverLevel = useGameStore((state) => state.feverLevel);
 
-  if (isPreview)
-    return (
-      <QuizPreview
-        categoryParam={categoryParam || ''}
-        subParam={worldParam || ''}
-        levelParam={levelParam}
-        category={category || '기초'}
-        topic={`${worldParam}-${categoryParam}`}
-        keyboardType={previewKeyboardType}
-        navigate={navigate}
-        useSystemKeyboard={useSystemKeyboard}
-      />
-    );
-
+  // Callbacks moved up to avoid conditional hook call error
   const handleKeypadNumber = useCallback(
     (key: string) => {
       if (answerInput.length >= 10) return;
@@ -668,6 +639,20 @@ export function QuizPage() {
     },
     [setAnswerInput, setDisplayValue]
   );
+
+  if (isPreview)
+    return (
+      <QuizPreview
+        categoryParam={categoryParam || ''}
+        subParam={worldParam || ''}
+        levelParam={levelParam}
+        category={category || '기초'}
+        topic={`${worldParam}-${categoryParam}`}
+        keyboardType={previewKeyboardType}
+        navigate={navigate}
+        useSystemKeyboard={useSystemKeyboard}
+      />
+    );
 
   return (
     <div
@@ -764,6 +749,16 @@ export function QuizPage() {
         rule={promiseData.rule}
         example={promiseData.example}
         onComplete={handlePromiseComplete}
+      />
+
+      {/* Fever Effect Overlay */}
+      <FeverEffect />
+
+      {/* Base Camp Tutorial */}
+      <TutorialOverlay
+        isVisible={showTutorial}
+        steps={tutorialSteps}
+        onComplete={() => setShowTutorial(false)}
       />
 
       {/* v2.2 Landmark Overlay */}

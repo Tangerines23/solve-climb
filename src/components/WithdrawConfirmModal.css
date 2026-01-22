@@ -1,0 +1,130 @@
+.withdraw-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.7);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 2000;
+  backdrop-filter: blur(4px);
+  padding: 20px;
+}
+
+.withdraw-modal-container {
+  background-color: #ffffff;
+  border-radius: 20px;
+  width: 100%;
+  max-width: 360px;
+  overflow: hidden;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+  animation: modal-appear 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes modal-appear {
+  from {
+    opacity: 0;
+    transform: scale(0.9) translateY(20px);
+  }
+
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+.withdraw-modal-content {
+  padding: 24px;
+  text-align: center;
+}
+
+.withdraw-modal-icon {
+  font-size: 40px;
+  margin-bottom: 16px;
+}
+
+.withdraw-modal-title {
+  font-size: 20px;
+  font-weight: 700;
+  color: #1a1a1a;
+  margin-bottom: 16px;
+}
+
+.withdraw-modal-description {
+  font-size: 15px;
+  color: #4a4a4a;
+  line-height: 1.6;
+  text-align: left;
+  margin-bottom: 24px;
+}
+
+.withdraw-modal-description p {
+  margin-bottom: 12px;
+}
+
+.withdraw-modal-description ul {
+  margin: 0 0 16px 20px;
+  padding: 0;
+}
+
+.withdraw-modal-description li {
+  margin-bottom: 4px;
+}
+
+.withdraw-modal-warning-text {
+  color: #ff4d4f;
+  font-weight: 600;
+  text-align: center;
+  margin-top: 16px;
+}
+
+.withdraw-modal-actions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+.withdraw-modal-cancel-button {
+  padding: 14px;
+  border-radius: 12px;
+  font-size: 16px;
+  font-weight: 600;
+  background-color: #f5f5f5;
+  color: #4a4a4a;
+  border: none;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.withdraw-modal-cancel-button:active {
+  background-color: #e8e8e8;
+}
+
+.withdraw-modal-confirm-button {
+  padding: 14px;
+  border-radius: 12px;
+  font-size: 16px;
+  font-weight: 600;
+  background-color: #ff4d4f;
+  color: white;
+  border: none;
+  cursor: pointer;
+  transition:
+    transform 0.2s,
+    background-color 0.2s;
+}
+
+.withdraw-modal-confirm-button:hover {
+  background-color: #ff7875;
+}
+
+.withdraw-modal-confirm-button:active {
+  transform: scale(0.98);
+}
+
+.withdraw-modal-confirm-button:disabled {
+  background-color: #ffa39e;
+  cursor: not-allowed;
+}

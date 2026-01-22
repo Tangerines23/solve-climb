@@ -19,8 +19,7 @@ import { supabase } from '@/utils/supabaseClient';
 import { TierUpgradeModal } from '@/components/TierUpgradeModal';
 import { BadgeNotification } from '@/components/BadgeNotification';
 import { urls } from '@/utils/navigation';
-import { Category, GameMode } from '@/types/quiz';
-import { Button, Page } from '@tosspayments/tds-mobile';
+import { Category } from '@/types/quiz';
 import './ResultPage.css';
 
 function useCountUp(targetValue: number, duration = 1000) {
@@ -101,9 +100,21 @@ export function ResultPage() {
             ? Math.round((correctCount / total) * 100) >= 50 || correctCount >= 1
             : correctCount >= 1
         ) {
-          await clearLevel(worldParam, categoryParam, level, mode as 'time-attack' | 'survival', finalScore);
+          await clearLevel(
+            worldParam,
+            categoryParam,
+            level,
+            mode as 'time-attack' | 'survival',
+            finalScore
+          );
         } else {
-          await updateBestScore(worldParam, categoryParam, level, mode as 'time-attack' | 'survival', finalScore);
+          await updateBestScore(
+            worldParam,
+            categoryParam,
+            level,
+            mode as 'time-attack' | 'survival',
+            finalScore
+          );
         }
         // Correct signature: fetchRanking(world, category, period, type, limit?)
         await fetchRanking(
@@ -114,7 +125,7 @@ export function ResultPage() {
         );
         const ranks =
           useLevelProgressStore.getState().rankings[
-          `${worldParam}-${categoryParam}-weekly-${mode}`
+            `${worldParam}-${categoryParam}-weekly-${mode}`
           ];
         const {
           data: { user },
@@ -209,10 +220,10 @@ export function ResultPage() {
     const recommendation = searchParams.get('recommendation') as Category;
 
     const courseMap = {
-      '기초': { name: '일반 등반 (General)', icon: '🚶' },
-      '논리': { name: '탐험 등반 (Exploration)', icon: '🗺️' },
-      '대수': { name: '급경사 등반 (Steep)', icon: '🧗' },
-      '심화': { name: '암벽 등반 (Rock Climbing)', icon: '⛰️' },
+      기초: { name: '일반 등반 (General)', icon: '🚶' },
+      논리: { name: '탐험 등반 (Exploration)', icon: '🗺️' },
+      대수: { name: '급경사 등반 (Steep)', icon: '🧗' },
+      심화: { name: '암벽 등반 (Rock Climbing)', icon: '⛰️' },
     };
 
     const course = (courseMap as any)[recommendation] || courseMap['기초'];
@@ -220,7 +231,9 @@ export function ResultPage() {
     return (
       <div className="page-container result-page base-camp-result">
         <header className="result-header">
-          <button className="result-close-button" onClick={() => navigate(urls.home())}>✕</button>
+          <button className="result-close-button" onClick={() => navigate(urls.home())}>
+            ✕
+          </button>
         </header>
         <div className="result-card">
           <div className="result-header-section">
@@ -249,24 +262,27 @@ export function ResultPage() {
         </div>
 
         <div className="result-footer-actions">
-          <Button
-            size="large"
-            onClick={() => navigate(urls.levelSelect({
-              mountain: mountainParam || 'math',
-              world: 'World1',
-              category: recommendation
-            }))}
+          <button
+            className="result-button-primary"
+            onClick={() =>
+              navigate(
+                urls.levelSelect({
+                  mountain: mountainParam || 'math',
+                  world: 'World1',
+                  category: recommendation,
+                })
+              )
+            }
           >
             추천 코스로 등반 시작
-          </Button>
-          <Button
-            size="large"
-            type="tertiary"
+          </button>
+          <button
+            className="result-button-secondary"
             onClick={() => (window.location.href = `/world/${worldParam}`)}
             style={{ marginTop: 'var(--spacing-sm)' }}
           >
             월드로 돌아가기
-          </Button>
+          </button>
         </div>
       </div>
     );
@@ -342,15 +358,11 @@ export function ResultPage() {
       </div>
 
       <div className="result-footer-actions">
-        <Button
-          size="large"
-          onClick={handleRetry}
-        >
+        <button className="result-button-primary" onClick={handleRetry}>
           다시 도전하기
-        </Button>
-        <Button
-          size="large"
-          type="tertiary"
+        </button>
+        <button
+          className="result-button-secondary"
           onClick={() => {
             const params = new URLSearchParams(window.location.search);
             params.set('mode', 'smart-retry');
@@ -359,7 +371,7 @@ export function ResultPage() {
           style={{ marginTop: 'var(--spacing-sm)' }}
         >
           데스노트 복수하기 (맞춤 재시도)
-        </Button>
+        </button>
         <div className="result-button-group">
           <button
             onClick={() =>

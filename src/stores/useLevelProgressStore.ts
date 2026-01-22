@@ -151,7 +151,10 @@ export const useLevelProgressStore = create<LevelProgressState>()(
           record.cleared = true;
           record.clearedAt = new Date().toISOString();
 
-          if (record.bestScore[mode] === null || score > record.bestScore[mode]!) {
+          if (
+            (mode === 'time-attack' || mode === 'survival') &&
+            (record.bestScore[mode] === null || score > record.bestScore[mode]!)
+          ) {
             record.bestScore[mode] = score;
           }
 
@@ -234,7 +237,10 @@ export const useLevelProgressStore = create<LevelProgressState>()(
           }
 
           const record = newProgress[world][category][level];
-          if (record.bestScore[mode] === null || score > record.bestScore[mode]!) {
+          if (
+            (mode === 'time-attack' || mode === 'survival') &&
+            (record.bestScore[mode] === null || score > record.bestScore[mode]!)
+          ) {
             record.bestScore[mode] = score;
           }
 
@@ -342,11 +348,13 @@ export const useLevelProgressStore = create<LevelProgressState>()(
                 }
 
                 const modeKey = mode as GameMode;
-                if (
-                  localRecord.bestScore[modeKey] === null ||
-                  score > localRecord.bestScore[modeKey]!
-                ) {
-                  localRecord.bestScore[modeKey] = score;
+                if (modeKey === 'time-attack' || modeKey === 'survival') {
+                  if (
+                    localRecord.bestScore[modeKey] === null ||
+                    score > localRecord.bestScore[modeKey]!
+                  ) {
+                    localRecord.bestScore[modeKey] = score;
+                  }
                 }
               });
 

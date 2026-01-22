@@ -90,9 +90,9 @@ function CustomKeypadComponent({
         </button>
       </div>
       <div
-        className={`keypad-row keypad-row-last ${(showNegative || showDecimal || showFraction) ? 'keypad-row-last-with-negative' : ''}`}
+        className={`keypad-row keypad-row-last ${showNegative || showDecimal || showFraction ? 'keypad-row-last-with-negative' : ''}`}
       >
-        {(showNegative || showDecimal || showFraction) ? (
+        {showNegative || showDecimal || showFraction ? (
           <>
             <button
               className="keypad-key keypad-key-special"

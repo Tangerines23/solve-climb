@@ -1,4 +1,5 @@
 import packageJson from '../../package.json';
+import { WORLD1_LEVELS } from '@/constants/levels';
 
 /**
  * [ solve-climb 카테고리/주제 관리 가이드 ]
@@ -199,59 +200,7 @@ export const APP_CONFIG = {
   // 레벨 데이터 정의 (World -> Category -> Levels)
   LEVELS: {
     World1: {
-      기초: [
-        { level: 1, name: '한 자릿수 덧셈', description: '10 이하의 합' },
-        { level: 2, name: '한 자릿수 뺄셈', description: '0 이상의 차' },
-        { level: 3, name: '받아올림 덧셈', description: '2자리 합 기초' },
-        { level: 4, name: '받아내림 뺄셈', description: '2자리 차 기초' },
-        { level: 5, name: '기초 구구단', description: '2~5단' },
-        { level: 6, name: '심화 구구단', description: '6~9단' },
-        { level: 7, name: '나눗셈 기초', description: '딱 떨어지는 나눗셈' },
-        { level: 8, name: '사칙연산 혼합', description: '덧셈/뺄셈/곱셈 혼합' },
-        { level: 9, name: '연산 우선순위', description: '괄호와 우선순위' },
-        { level: 10, name: '소수(Decimal) 계산', description: '소수 덧셈/뺄셈' },
-        { level: 11, name: '분수(Fraction) 기초', description: '단위 분수 계산' },
-        { level: 12, name: '60진법 시각 계산', description: '시간 + 분 계산' },
-        { level: 13, name: '두 자릿수 곱셈', description: '2자리 x 1자리' },
-        { level: 14, name: '나눗셈 검산', description: '나머지가 있는 나눗셈' },
-        { level: 15, name: '기초 산수 마스터', description: '복합 실전 문제' },
-      ],
-      논리: [
-        { level: 1, name: '홀수와 짝수', description: '기본 홀짝 판별' },
-        { level: 2, name: '양수와 음수', description: '크기 비교 및 부호' },
-        { level: 3, name: '등차수열 기초', description: '일정한 차이 찾기' },
-        { level: 4, name: '등비수열 기초', description: '일정한 비율 찾기' },
-        { level: 5, name: '피보나치 수열', description: '앞의 두 수의 합' },
-        { level: 6, name: '소수(Prime) 판별', description: '약수가 2개인 수' },
-        { level: 7, name: '나머지 연산(Mod)', description: '나눈 후의 나머지' },
-        { level: 8, name: '기초 팩토리얼', description: '계승(!)의 개념' },
-        { level: 9, name: '시계 규칙(각도)', description: '분침과 시침의 위치' },
-        { level: 10, name: '논리 퀴즈 종합', description: '규칙 찾고 적용하기' },
-      ],
-      대수: [
-        { level: 1, name: '미지수 □ 채우기', description: '3 + □ = 10' },
-        { level: 2, name: '미지수 x로의 전환', description: 'x - 5 = 12' },
-        { level: 3, name: '일차방정식 (ax=b)', description: '계수 나누기' },
-        { level: 4, name: '이항 기초', description: 'x + b = c' },
-        { level: 5, name: '이항 심화', description: 'ax + b = c' },
-        { level: 6, name: '비례식 기초', description: 'a:b = c:x' },
-        { level: 7, name: '일차부등식', description: '범위 찾기' },
-        { level: 8, name: '구조의 변형', description: '식 정리하기' },
-        { level: 9, name: '연립방정식 기초', description: '두 미지수 찾기' },
-        { level: 10, name: '방정식 마스터', description: '심화 방정식 풀이' },
-      ],
-      심화: [
-        { level: 1, name: '함숫값 계산', description: 'f(a) 대입하기' },
-        { level: 2, name: '지수 법칙', description: '2^n x 2^m' },
-        { level: 3, name: '다항함수 미분', description: 'x^n 미분 공식' },
-        { level: 4, name: '초월함수 미분', description: 'sin, cos 미분' },
-        { level: 5, name: '직관적 극한', description: '무한대로 발산/수렴' },
-        { level: 6, name: '부정적분 기초', description: '미분의 역연산' },
-        { level: 7, name: '함수의 그래프', description: '기울기와 절편' },
-        { level: 8, name: '다항함수의 극점', description: '미분하여 0인 곳' },
-        { level: 9, name: '고급 응용', description: '함수와 기호 복합' },
-        { level: 10, name: '수학의 끝', description: '통합 공학적 개념' },
-      ],
+      ...WORLD1_LEVELS,
     },
     World2: {
       기초: [

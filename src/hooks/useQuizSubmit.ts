@@ -90,6 +90,7 @@ export function useQuizSubmit({
   setIsFlarePaused,
   onAnswerSubmitted,
   currentQuestionId,
+  onPenalty,
 }: UseQuizSubmitParams) {
   const {
     incrementCombo,
@@ -102,7 +103,20 @@ export function useQuizSubmit({
   } = useGameStore();
 
   // 함수 참조를 안정적으로 유지하기 위한 ref
-  const paramsRef = useRef({
+  const paramsRef = useRef<{
+    generateNewQuestion: () => void;
+    handleGameOver: (reason?: string) => void;
+    setTotalQuestions: (updater: (prev: number) => number) => void;
+    setWrongAnswers: (
+      updater: (
+        prev: Array<{ question: string; wrongAnswer: string; correctAnswer: string }>
+      ) => Array<{ question: string; wrongAnswer: string; correctAnswer: string }>
+    ) => void;
+    setSolveTimes: (updater: (prev: number[]) => number[]) => void;
+    categoryParam: string | null;
+    subParam: string | null;
+    onPenalty?: (amount: number) => void;
+  }>({
     generateNewQuestion,
     handleGameOver,
     setTotalQuestions,
@@ -191,11 +205,13 @@ export function useQuizSubmit({
       const isBaseCamp = new URLSearchParams(window.location.search).get('mode') === 'base-camp';
       if (isBaseCamp) {
         const solveTime = questionStartTime ? Date.now() - questionStartTime : 2000;
-        const { submitAnswer, currentQuestionIndex, getRecommendation, setCompleted } = useBaseCampStore.getState();
+        const { submitAnswer, currentQuestionIndex, getRecommendation, setCompleted } =
+          useBaseCampStore.getState();
 
         submitAnswer(isCorrect, solveTime);
 
-        if (currentQuestionIndex >= 9) { // 10th question submitted
+        if (currentQuestionIndex >= 9) {
+          // 10th question submitted
           setCompleted(true);
           const { accuracy, recommendation } = getRecommendation();
           // Redirect to result with diagnostic info

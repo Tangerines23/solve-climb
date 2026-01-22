@@ -60,7 +60,11 @@ function generateWorld1Question(
         };
       } catch {
         const fallback = generateProblem(1);
-        return { question: fallback.expression, answer: fallback.answer, inputType: fallback.inputType };
+        return {
+          question: fallback.expression,
+          answer: fallback.answer,
+          inputType: fallback.inputType,
+        };
       }
     case '대수':
       // 기존 EquationProblemGenerator 활용
@@ -341,6 +345,3 @@ function generateMathQuestion(
       };
   }
 }
-
-
-

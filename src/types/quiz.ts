@@ -32,8 +32,27 @@ export interface QuizQuestion {
   level?: number;
   category?: Category;
   inputType?: 'number' | 'decimal' | 'fraction' | 'coordinate';
-  hintType?: 'transposition' | 'coordinate' | 'calculus';
-  hintData?: any;
+  hintType?: 'transposition' | 'coordinate' | 'calculus' | 'function-machine' | 'integral-tank';
+  hintData?: FunctionMachineHint | IntegralTankHint | CalculusHint | any; // Keep any as fallback for now
+}
+
+export interface FunctionMachineHint {
+  type: string;
+  value: number;
+  input: number;
+}
+
+export interface IntegralTankHint {
+  type: 'power' | 'simple';
+  coeff?: number;
+  power?: number;
+  value?: number;
+  x: number;
+}
+
+export interface CalculusHint {
+  type: string;
+  func: string;
 }
 
 // 게임 모드 타입

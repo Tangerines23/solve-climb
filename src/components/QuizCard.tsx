@@ -9,10 +9,16 @@ import { CustomKeypad } from './CustomKeypad';
 import { APP_CONFIG } from '../config/app';
 import { SURVIVAL_CONFIG } from '../constants/game';
 import { getItemEmoji } from '../constants/items';
+import { ARITHMETIC_TOPIC_MAP, CALCULUS_TOPIC_MAP } from '../constants/math';
 import { useGameStore } from '../stores/useGameStore';
-import { TranspositionHint } from './quiz/TranspositionHint';
+// import { TranspositionHint } from './quiz/TranspositionHint';
 import { CoordinateGrid } from './quiz/CoordinateGrid';
+import { FunctionMachine } from './expert/FunctionMachine';
+import { ReasoningOverlay } from './effects/ReasoningOverlay';
+import { IntegralVisualizer } from './expert/IntegralVisualizer';
 import { CalculusVisualization } from './quiz/CalculusVisualization';
+import { EquationVisualizer } from './algebra/EquationVisualizer';
+import { parseEquation } from '../utils/algebra';
 import { sendDebugLog } from '../utils/debugLogger';
 
 interface QuizCardProps {
@@ -158,35 +164,9 @@ function QuizCardComponent({
     }
 
     if (subParam === 'arithmetic' && levelParam !== null) {
-      const level = levelParam;
-      const topicMap: Record<number, string> = {
-        1: '덧셈',
-        2: '뺄셈',
-        3: '덧셈',
-        4: '뺄셈',
-        5: '곱셈',
-        6: '나눗셈',
-        7: '혼합 연산',
-        8: '곱셈',
-        9: '나눗셈',
-        10: '종합 연산',
-      };
-      return topicMap[level] || '덧셈';
+      return ARITHMETIC_TOPIC_MAP[levelParam] || '덧셈';
     } else if (subParam === 'calculus' && levelParam !== null) {
-      const level = levelParam;
-      const topicMap: Record<number, string> = {
-        1: '기초 미분',
-        2: '상수배 미분',
-        3: '합과 차의 미분',
-        4: '곱의 미분',
-        5: '몫의 미분',
-        6: '합성함수 미분',
-        7: '삼각함수 미분',
-        8: '지수·로그 미분',
-        9: '고급 미분',
-        10: '미분 종합',
-      };
-      return topicMap[level] || '미적분';
+      return CALCULUS_TOPIC_MAP[levelParam] || '미적분';
     } else {
       const subTopics = APP_CONFIG.SUB_TOPICS[categoryParam as keyof typeof APP_CONFIG.SUB_TOPICS];
       const subTopicInfo = subTopics?.find((t) => t.id === subParam);
@@ -384,14 +364,47 @@ function QuizCardComponent({
             }}
             style={{ display: 'contents' }}
           >
+            <ReasoningOverlay
+              isVisible={
+                categoryParam === '논리' &&
+                levelParam !== null &&
+                levelParam >= 6 &&
+                levelParam <= 10
+              }
+              isCorrect={cardAnimation === 'correct-flash'}
+            />
             <div className={questionAnimation}>
-              <h2 className="problem-text">{currentQuestion.question}</h2>
-              {currentQuestion.hintType === 'transposition' && currentQuestion.hintData && (
-                <TranspositionHint
-                  term={currentQuestion.hintData.term}
-                  targetSide={currentQuestion.hintData.targetSide}
-                  targetResult={currentQuestion.hintData.targetResult}
-                />
+              <h2
+                className="problem-text"
+                style={{
+                  display:
+                    currentQuestion.hintType === 'transposition' ||
+                    currentQuestion.hintType === 'function-machine'
+                      ? 'none'
+                      : 'block',
+                }}
+              >
+                {currentQuestion.question}
+              </h2>
+              {currentQuestion.hintType === 'transposition' && (
+                <div style={{ marginBottom: '2rem' }}>
+                  <EquationVisualizer
+                    initialLeft={parseEquation(currentQuestion.question).left}
+                    initialRight={parseEquation(currentQuestion.question).right}
+                  />
+                </div>
+              )}
+              {currentQuestion.hintType === 'function-machine' && currentQuestion.hintData && (
+                <div style={{ marginBottom: '2rem' }}>
+                  <FunctionMachine
+                    type={currentQuestion.hintData.type}
+                    value={currentQuestion.hintData.value}
+                    input={currentQuestion.hintData.input}
+                  />
+                </div>
+              )}
+              {currentQuestion.hintType === 'integral-tank' && currentQuestion.hintData && (
+                <IntegralVisualizer hintData={currentQuestion.hintData} />
               )}
               {currentQuestion.hintType === 'calculus' && currentQuestion.hintData && (
                 <CalculusVisualization
@@ -414,7 +427,7 @@ function QuizCardComponent({
                     setDisplayValue(`${x},${y}`);
                     // 제출은 약간 지연 후 수행 (시각적 피드백 위해)
                     setTimeout(() => {
-                      const fakeEvent = { preventDefault: () => { } } as React.FormEvent;
+                      const fakeEvent = { preventDefault: () => {} } as React.FormEvent;
                       handleSubmit(fakeEvent);
                     }, 300);
                   }}

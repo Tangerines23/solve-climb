@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { renderHook, waitFor } from '@testing-library/react';
 import { useHistoryData } from '../useHistoryData';
 import { supabase } from '../../utils/supabaseClient';
@@ -27,12 +27,29 @@ vi.mock('../../utils/storage', () => ({
 // Mock date utilities to fix "now" for streak calculation
 const MOCK_DATE = new Date('2024-01-10T12:00:00Z');
 
+// Mock debugSupabaseQuery to passthrough
+vi.mock('../../utils/debugFetch', () => ({
+  debugSupabaseQuery: vi.fn((promise) => promise),
+}));
+
 describe('useHistoryData', () => {
   const mockFrom = vi.fn();
+  const RealDate = Date;
 
   beforeEach(() => {
     vi.clearAllMocks();
     vi.mocked(supabase.from).mockImplementation(mockFrom);
+
+    // Mock global Date
+    global.Date = class extends RealDate {
+      constructor(date?: string | number | Date) {
+        super(date || MOCK_DATE);
+      }
+    } as any;
+  });
+
+  afterEach(() => {
+    global.Date = RealDate;
   });
 
   it('should return empty stats if no session exists', async () => {
@@ -50,11 +67,7 @@ describe('useHistoryData', () => {
     expect(result.current.stats?.totalAltitude).toBe(0);
   });
 
-  it.skip('should fetch and calculate stats for logged in user', async () => {
-    // TODO: Complex mock structure causes waitFor to timeout
-    vi.useFakeTimers();
-    vi.setSystemTime(MOCK_DATE);
-
+  it('should fetch and calculate stats for logged in user', async () => {
     // Mock logged in session (Supabase)
     const mockUserId = 'user_123';
     vi.mocked(storage.getString).mockReturnValue(null);
@@ -138,8 +151,7 @@ describe('useHistoryData', () => {
     expect(stats?.categoryLevels).toHaveLength(1);
   });
 
-  it.skip('should handle streak calculation correctly', async () => {
-    // TODO: Complex mock structure causes waitFor to timeout
+  it('should handle streak calculation correctly', async () => {
     // Mock session
     vi.mocked(storage.getString).mockReturnValue(null);
     vi.mocked(supabase.auth.getSession).mockResolvedValue({
@@ -203,8 +215,7 @@ describe('useHistoryData', () => {
     expect(result.current.stats?.streakCount).toBe(2);
   });
 
-  it.skip('should handle API errors gracefully', async () => {
-    // TODO: Complex mock structure causes waitFor to timeout
+  it('should handle API errors gracefully', async () => {
     vi.mocked(storage.getString).mockReturnValue(null);
     vi.mocked(supabase.auth.getSession).mockResolvedValue({
       data: { session: { user: { id: 'temp' } } as any },

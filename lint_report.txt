@@ -1,577 +1,137 @@
-
-> react-vite-app@0.8.0 lint
-> eslint .
-
-
-C:\Users\예랑테크_안의민\.gemini\project\solve-climb\src\components\CategoryList.tsx
-  22:57  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
-
-C:\Users\예랑테크_안의민\.gemini\project\solve-climb\src\components\ChallengeCard.tsx
-  46:33  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
-
-C:\Users\예랑테크_안의민\.gemini\project\solve-climb\src\components\ClimbGraphic.tsx
-  119:27  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
-
-C:\Users\예랑테크_안의민\.gemini\project\solve-climb\src\components\KeyboardInfoModal.tsx
-  43:53  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
-  87:57  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
-
-C:\Users\예랑테크_안의민\.gemini\project\solve-climb\src\components\QuizCard.tsx
-  226:6  warning  React Hook useMemo has a missing dependency: 'currentQuestion?.level'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
-
-C:\Users\예랑테크_안의민\.gemini\project\solve-climb\src\components\__tests__\BadgeNotification.test.tsx
-   42:10  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
-   81:10  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
-  110:10  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
-  140:10  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
-  172:10  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
-  206:10  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
-  241:10  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
-  270:10  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
-
-C:\Users\예랑테크_안의민\.gemini\project\solve-climb\src\components\__tests__\BadgeSystemSection.test.tsx
-  48:10  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
-
-C:\Users\예랑테크_안의민\.gemini\project\solve-climb\src\components\__tests__\CustomKeypad.test.tsx
-  31:10  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
-
-C:\Users\예랑테크_안의민\.gemini\project\solve-climb\src\components\__tests__\CyclePromotionModal.test.tsx
-  127:35  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
-  165:35  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
-
-C:\Users\예랑테크_안의민\.gemini\project\solve-climb\src\components\__tests__\ErrorBoundary.test.tsx
-   41:39  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
-   52:42  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
-  122:42  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
-  143:42  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
-
-C:\Users\예랑테크_안의민\.gemini\project\solve-climb\src\components\__tests__\ErrorFallback.test.tsx
-   6:39  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
-  20:42  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
-  60:42  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
-  84:42  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
-
-C:\Users\예랑테크_안의민\.gemini\project\solve-climb\src\components\__tests__\GameFlowSection.test.tsx
-  58:10  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
-
-C:\Users\예랑테크_안의민\.gemini\project\solve-climb\src\components\__tests__\ItemSystemSection.test.tsx
-  36:10  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
-
-C:\Users\예랑테크_안의민\.gemini\project\solve-climb\src\components\__tests__\KeyboardInfoModal.test.tsx
-  13:69  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
-  24:66  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
-
-C:\Users\예랑테크_안의민\.gemini\project\solve-climb\src\components\__tests__\QuizCard.test.tsx
-  116:10  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
-  176:54  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
-
-C:\Users\예랑테크_안의민\.gemini\project\solve-climb\src\components\__tests__\TierSystemSection.test.tsx
-  50:10  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
-
-C:\Users\예랑테크_안의민\.gemini\project\solve-climb\src\components\debug\ProgressionSection.tsx
-   23:40  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
-  109:33  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
-
-C:\Users\예랑테크_안의민\.gemini\project\solve-climb\src\components\my\MyPageQuickAccess.tsx
-  85:47  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
-  86:60  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
-
-C:\Users\예랑테크_안의민\.gemini\project\solve-climb\src\components\roadmap\RoadmapItem.tsx
-  7:9  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
-
-C:\Users\예랑테크_안의민\.gemini\project\solve-climb\src\components\roadmap\RoadmapOverlay.tsx
-   15:15  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
-  193:30  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
-  196:33  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
-
-C:\Users\예랑테크_안의민\.gemini\project\solve-climb\src\constants\__tests__\tiers.test.ts
-   34:12  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
-   63:60  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
-  154:12  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
-  178:60  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
-  268:60  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
-  300:12  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
-  460:46  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
-
-C:\Users\예랑테크_안의민\.gemini\project\solve-climb\src\constants\badges.ts
-  6:22  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
-
-C:\Users\예랑테크_안의민\.gemini\project\solve-climb\src\hooks\__tests__\useAsync.test.ts
-  8:36  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
-
-C:\Users\예랑테크_안의민\.gemini\project\solve-climb\src\hooks\__tests__\useBadgeChecker.test.ts
-   60:23  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
-   67:38  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
-   81:23  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
-   85:20  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
-  139:18  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
-  150:14  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
-  169:23  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
-
-C:\Users\예랑테크_안의민\.gemini\project\solve-climb\src\hooks\__tests__\useHistoryData.test.ts
-   34:23  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
-   39:27  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
-   41:34  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
-   59:27  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
-   60:34  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
-  123:27  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
-  142:27  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
-  143:34  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
-  192:27  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
-  205:27  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
-  206:34  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
-  224:27  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
-
-C:\Users\예랑테크_안의민\.gemini\project\solve-climb\src\hooks\__tests__\useMyPageStats.test.ts
-    9:32  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
-    9:44  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
-   62:10  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
-   65:10  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
-   66:80  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
-   67:78  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
-   72:17  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
-  103:76  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
-  104:37  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
-  149:15  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
-  155:15  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
-  157:37  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
-
-C:\Users\예랑테크_안의민\.gemini\project\solve-climb\src\hooks\__tests__\useQuestionGenerator.test.ts
-  293:47  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
-
-C:\Users\예랑테크_안의민\.gemini\project\solve-climb\src\hooks\__tests__\useQuizRevive.test.ts
-   25:44  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
-  110:31  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
-
-C:\Users\예랑테크_안의민\.gemini\project\solve-climb\src\hooks\__tests__\useQuizSubmit.test.ts
-    12:24  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
-    75:10  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
-    97:54  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
-   115:54  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
-   132:54  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
-   144:54  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
-   169:54  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
-   201:54  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
-   220:10  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
-   230:54  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
-   254:54  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
-   272:10  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
-   283:54  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
-   313:54  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
-   337:54  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
-   355:54  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
-   374:54  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
-   393:10  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
-   405:54  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
-   434:10  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
-   438:54  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
-   464:54  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
-   483:54  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
-   494:47  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
-   505:54  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
-   528:54  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
-   545:54  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
-   563:54  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
-   584:54  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
-   601:54  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
-   621:54  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
-   639:54  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
-   655:47  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
-   666:54  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
-   690:54  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
-   712:54  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
-   730:54  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
-   752:10  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
-   756:54  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
-   791:10  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
-   793:54  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
-   824:10  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
-   826:54  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
-   859:10  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
-   861:54  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
-   884:10  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
-   894:54  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
-   916:54  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
-   934:54  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
-   950:26  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
-   956:54  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
-   974:54  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
-   991:54  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
-  1008:54  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
-  1025:54  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
-  1056:10  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
-  1058:54  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
-  1093:10  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
-  1095:54  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
-  1125:10  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
-  1127:54  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
-  1158:10  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
-  1160:54  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
-  1190:10  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
-  1192:54  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
-  1221:10  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
-  1223:54  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
-  1247:10  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
-  1249:54  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
-  1265:47  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
-  1284:10  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
-  1286:54  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
-  1318:10  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
-  1320:54  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
-  1353:10  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
-  1355:54  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
-  1383:10  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
-  1385:54  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
-  1411:10  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
-  1413:54  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
-  1443:10  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
-  1445:54  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
-  1460:47  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
-  1481:10  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
-  1483:54  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
-  1504:54  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
-  1535:10  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
-  1537:54  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
-  1559:54  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
-
-C:\Users\예랑테크_안의민\.gemini\project\solve-climb\src\hooks\useHistoryData.ts
-  295:18  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
-  297:18  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
-  324:43  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
-  325:41  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
-  339:19  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
-
-C:\Users\예랑테크_안의민\.gemini\project\solve-climb\src\hooks\useMyPageStats.ts
-   68:65  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
-   76:63  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
-   76:77  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
-  124:86  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
-  158:13  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
-  170:94  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
-  211:13  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
-  223:34  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
-  234:13  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
-  259:26  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
-  264:51  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
-  268:68  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
-  272:37  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
-
-C:\Users\예랑테크_안의민\.gemini\project\solve-climb\src\hooks\useQuestionGenerator.ts
-  60:52  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
-
-C:\Users\예랑테크_안의민\.gemini\project\solve-climb\src\hooks\useQuizSubmit.ts
-  203:54  warning  Unexpected any. Specify a different type                                                                                                                                                                                                     @typescript-eslint/no-explicit-any
-  204:40  warning  Unexpected any. Specify a different type                                                                                                                                                                                                     @typescript-eslint/no-explicit-any
-  389:5   warning  React Hook useCallback has a missing dependency: 'setToastValue'. Either include it or remove the dependency array. If 'setToastValue' changes too often, find the parent component that defines it and wrap that definition in useCallback  react-hooks/exhaustive-deps
-
-C:\Users\예랑테크_안의민\.gemini\project\solve-climb\src\pages\CategorySelectPage.tsx
-   64:64  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
-   72:47  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
-  101:40  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
-
-C:\Users\예랑테크_안의민\.gemini\project\solve-climb\src\pages\LevelSelectPage.tsx
-  112:34  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
-  178:20  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
-  183:62  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
-
-C:\Users\예랑테크_안의민\.gemini\project\solve-climb\src\pages\QuizPage.tsx
-  328:6   warning  React Hook useCallback has a missing dependency: 'exitConfirmTimeoutRef'. Either include it or remove the dependency array                                     react-hooks/exhaustive-deps
-  489:6   warning  React Hook useEffect has missing dependencies: 'checkStamina', 'resetGame', 'setExhausted', and 'stamina'. Either include them or remove the dependency array  react-hooks/exhaustive-deps
-  560:52  warning  Unexpected any. Specify a different type                                                                                                                       @typescript-eslint/no-explicit-any
-
-C:\Users\예랑테크_안의민\.gemini\project\solve-climb\src\pages\RankingPage.tsx
-  57:34  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
-  57:47  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
-
-C:\Users\예랑테크_안의민\.gemini\project\solve-climb\src\pages\WorldSelectPage.tsx
-  71:56  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
-
-C:\Users\예랑테크_안의민\.gemini\project\solve-climb\src\services\MockStorageService.ts
-  10:35  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
-  39:28  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
-
-C:\Users\예랑테크_안의민\.gemini\project\solve-climb\src\stores\__tests__\useLevelProgressStore.test.ts
-   47:10  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
-  130:10  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
-  137:10  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
-  154:10  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
-  161:10  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
-  181:10  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
-  188:10  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
-  208:10  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
-  215:10  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
-  234:10  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
-  241:10  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
-  259:10  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
-  272:10  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
-  316:10  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
-  325:10  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
-  347:10  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
-  356:10  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
-  372:10  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
-  393:10  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
-  412:10  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
-  428:10  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
-  435:10  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
-  455:10  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
-  462:10  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
-  481:10  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
-  488:10  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
-  507:10  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
-  523:10  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
-  541:10  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
-  550:10  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
-  568:10  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
-  575:10  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
-  629:10  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
-  636:10  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
-  659:10  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
-  666:10  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
-  689:10  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
-  698:10  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
-  714:10  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
-  735:10  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
-  757:10  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
-  778:10  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
-  800:10  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
-  821:10  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
-  837:10  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
-  858:10  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
-  874:10  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
-  881:10  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
-  905:10  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
-  924:10  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
-  945:10  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
-
-C:\Users\예랑테크_안의민\.gemini\project\solve-climb\src\stores\__tests__\useQuizStore.test.ts
-  12:47  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
-  12:60  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
-
-C:\Users\예랑테크_안의민\.gemini\project\solve-climb\src\stores\__tests__\useUserStore.test.ts
-     9:18  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
-    55:10  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
-   108:10  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
-   119:10  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
-   142:14  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
-   145:37  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
-   147:20  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
-   174:10  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
-   217:10  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
-   222:10  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
-   236:10  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
-   251:10  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
-   256:10  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
-   270:10  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
-   275:10  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
-   296:10  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
-   305:10  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
-   320:10  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
-   329:10  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
-   345:10  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
-   361:10  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
-   367:10  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
-   387:10  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
-   396:10  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
-   411:10  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
-   420:10  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
-   436:10  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
-   442:10  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
-   462:10  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
-   467:10  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
-   482:10  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
-   499:10  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
-   504:10  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
-   525:10  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
-   530:10  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
-   549:14  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
-   551:61  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
-   586:14  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
-   588:61  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
-   619:14  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
-   621:61  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
-   645:10  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
-   666:10  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
-   687:10  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
-   713:10  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
-   730:10  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
-   746:10  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
-   759:14  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
-   769:14  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
-   771:20  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
-   802:10  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
-   815:14  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
-   825:14  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
-   827:20  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
-   856:10  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
-   861:10  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
-   879:10  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
-   897:10  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
-   906:10  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
-   924:10  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
-   940:10  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
-   949:10  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
-   967:10  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
-  1001:37  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
-  1003:20  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
-  1012:39  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
-  1015:36  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
-  1017:36  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
-  1020:20  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
-  1037:10  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
-  1053:10  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
-  1064:67  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
-  1080:10  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
-  1099:16  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
-  1109:16  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
-  1116:16  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
-  1119:20  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
-
-C:\Users\예랑테크_안의민\.gemini\project\solve-climb\src\stores\useLevelProgressStore.ts
-  160:83  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
-  194:85  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
-
-C:\Users\예랑테크_안의민\.gemini\project\solve-climb\src\stores\useUserStore.ts
-   71:81  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
-  195:81  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
-  212:81  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
-  232:21  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
-  272:79  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
-  293:79  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
-  327:79  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
-  341:23  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
-
-C:\Users\예랑테크_안의민\.gemini\project\solve-climb\src\types\roadmap.ts
-  6:21  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
-
-C:\Users\예랑테크_안의민\.gemini\project\solve-climb\src\utils\__tests__\debugPresets.test.ts
-   569:10  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
-   574:68  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
-   586:68  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
-   598:68  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
-   610:68  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
-   622:68  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
-   635:62  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
-   644:68  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
-   664:62  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
-   673:68  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
-   693:62  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
-   712:16  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
-   714:22  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
-   743:16  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
-   745:22  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
-   770:12  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
-   791:12  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
-   807:12  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
-   820:12  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
-   832:12  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
-   847:12  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
-   851:53  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
-   853:51  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
-   868:12  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
-   875:53  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
-   895:12  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
-   916:12  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
-   943:12  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
-   967:12  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
-   995:12  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
-  1043:12  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
-  1070:12  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
-  1091:12  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
-  1100:43  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
-  1128:10  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
-  1136:66  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
-  1150:14  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
-  1157:14  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
-  1165:12  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
-  1201:51  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
-  1204:51  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
-  1207:51  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
-  1209:49  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
-  1217:14  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
-  1222:14  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
-  1236:14  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
-  1244:14  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
-  1252:12  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
-  1288:66  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
-  1302:14  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
-  1309:14  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
-  1317:12  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
-  1337:60  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
-  1353:66  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
-  1367:14  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
-  1374:14  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
-  1382:12  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
-  1400:66  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
-  1414:14  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
-  1421:14  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
-  1429:12  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
-
-C:\Users\예랑테크_안의민\.gemini\project\solve-climb\src\utils\__tests__\japanese.test.ts
-  104:60  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
-
-C:\Users\예랑테크_안의민\.gemini\project\solve-climb\src\utils\__tests__\logger.test.ts
-  78:22  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
-
-C:\Users\예랑테크_안의민\.gemini\project\solve-climb\src\utils\__tests__\quizGenerator.test.ts
-  71:57  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
-
-C:\Users\예랑테크_안의민\.gemini\project\solve-climb\src\utils\__tests__\tierUtils.test.ts
-   28:79  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
-   43:79  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
-   56:79  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
-   69:79  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
-   82:79  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
-  101:79  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
-  116:79  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
-  129:79  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
-  142:79  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
-  155:79  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
-  169:79  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
-  183:79  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
-  196:79  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
-  209:79  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
-  222:79  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
-  237:79  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
-  251:79  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
-  265:79  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
-  278:79  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
-
-C:\Users\예랑테크_안의민\.gemini\project\solve-climb\src\utils\__tests__\tossGameCenter.test.ts
-  21:23  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
-  52:18  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
-
-C:\Users\예랑테크_안의민\.gemini\project\solve-climb\src\utils\__tests__\tossGameLogin.test.ts
-  29:23  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
-  40:16  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
-  50:16  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
-  64:16  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
-
-C:\Users\예랑테크_안의민\.gemini\project\solve-climb\src\utils\__tests__\tossLogin.test.ts
-  18:23  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
-  29:16  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
-  42:16  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
-  52:16  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
-
-C:\Users\예랑테크_안의민\.gemini\project\solve-climb\src\utils\challenge.ts
-   78:64  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
-   95:15  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
-  121:48  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
-
-C:\Users\예랑테크_안의민\.gemini\project\solve-climb\src\utils\logger\index.ts
-  18:35  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
-  24:34  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
-  30:34  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
-  37:34  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
-  37:48  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
-
-C:\Users\예랑테크_안의민\.gemini\project\solve-climb\src\utils\scoreCalculator.ts
-  75:45  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
-  87:28  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
-  87:54  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
-
-C:\Users\예랑테크_안의민\.gemini\project\solve-climb\src\utils\urlParams.ts
-  148:47  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
-  153:46  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
-
-✖ 456 problems (0 errors, 456 warnings)
-
+[0m[0m
+[0m[4mC:\Users\예랑테크_안의민\.gemini\project\solve-climb\src\components\QuizCard.tsx[24m[0m
+[0m  [2m209:6[22m  [33mwarning[39m  React Hook useMemo has a missing dependency: 'currentQuestion?.level'. Either include it or remove the dependency array  [2mreact-hooks/exhaustive-deps[22m[0m
+[0m[0m
+[0m[4mC:\Users\예랑테크_안의민\.gemini\project\solve-climb\src\constants\__tests__\tiers.test.ts[24m[0m
+[0m   [2m34:23[22m  [33mwarning[39m  Unexpected any. Specify a different type  [2m@typescript-eslint/no-explicit-any[22m[0m
+[0m   [2m63:71[22m  [33mwarning[39m  Unexpected any. Specify a different type  [2m@typescript-eslint/no-explicit-any[22m[0m
+[0m  [2m154:23[22m  [33mwarning[39m  Unexpected any. Specify a different type  [2m@typescript-eslint/no-explicit-any[22m[0m
+[0m  [2m178:71[22m  [33mwarning[39m  Unexpected any. Specify a different type  [2m@typescript-eslint/no-explicit-any[22m[0m
+[0m  [2m268:71[22m  [33mwarning[39m  Unexpected any. Specify a different type  [2m@typescript-eslint/no-explicit-any[22m[0m
+[0m  [2m300:23[22m  [33mwarning[39m  Unexpected any. Specify a different type  [2m@typescript-eslint/no-explicit-any[22m[0m
+[0m  [2m460:46[22m  [33mwarning[39m  Unexpected any. Specify a different type  [2m@typescript-eslint/no-explicit-any[22m[0m
+[0m[0m
+[0m[4mC:\Users\예랑테크_안의민\.gemini\project\solve-climb\src\hooks\__tests__\useBadgeChecker.test.ts[24m[0m
+[0m   [2m71:23[22m  [33mwarning[39m  Unexpected any. Specify a different type  [2m@typescript-eslint/no-explicit-any[22m[0m
+[0m   [2m81:55[22m  [33mwarning[39m  Unexpected any. Specify a different type  [2m@typescript-eslint/no-explicit-any[22m[0m
+[0m  [2m189:55[22m  [33mwarning[39m  Unexpected any. Specify a different type  [2m@typescript-eslint/no-explicit-any[22m[0m
+[0m[0m
+[0m[4mC:\Users\예랑테크_안의민\.gemini\project\solve-climb\src\hooks\__tests__\useHistoryData.test.ts[24m[0m
+[0m   [2m48:10[22m  [33mwarning[39m  Unexpected any. Specify a different type  [2m@typescript-eslint/no-explicit-any[22m[0m
+[0m   [2m76:50[22m  [33mwarning[39m  Unexpected any. Specify a different type  [2m@typescript-eslint/no-explicit-any[22m[0m
+[0m  [2m158:52[22m  [33mwarning[39m  Unexpected any. Specify a different type  [2m@typescript-eslint/no-explicit-any[22m[0m
+[0m  [2m221:52[22m  [33mwarning[39m  Unexpected any. Specify a different type  [2m@typescript-eslint/no-explicit-any[22m[0m
+[0m[0m
+[0m[4mC:\Users\예랑테크_안의민\.gemini\project\solve-climb\src\hooks\__tests__\useMyPageStats.test.ts[24m[0m
+[0m   [2m72:71[22m  [33mwarning[39m  Unexpected any. Specify a different type  [2m@typescript-eslint/no-explicit-any[22m[0m
+[0m   [2m72:76[22m  [33mwarning[39m  Unexpected any. Specify a different type  [2m@typescript-eslint/no-explicit-any[22m[0m
+[0m   [2m72:81[22m  [33mwarning[39m  Unexpected any. Specify a different type  [2m@typescript-eslint/no-explicit-any[22m[0m
+[0m   [2m72:86[22m  [33mwarning[39m  Unexpected any. Specify a different type  [2m@typescript-eslint/no-explicit-any[22m[0m
+[0m   [2m77:45[22m  [33mwarning[39m  Unexpected any. Specify a different type  [2m@typescript-eslint/no-explicit-any[22m[0m
+[0m   [2m82:17[22m  [33mwarning[39m  Unexpected any. Specify a different type  [2m@typescript-eslint/no-explicit-any[22m[0m
+[0m  [2m113:76[22m  [33mwarning[39m  Unexpected any. Specify a different type  [2m@typescript-eslint/no-explicit-any[22m[0m
+[0m  [2m114:37[22m  [33mwarning[39m  Unexpected any. Specify a different type  [2m@typescript-eslint/no-explicit-any[22m[0m
+[0m  [2m159:15[22m  [33mwarning[39m  Unexpected any. Specify a different type  [2m@typescript-eslint/no-explicit-any[22m[0m
+[0m  [2m165:15[22m  [33mwarning[39m  Unexpected any. Specify a different type  [2m@typescript-eslint/no-explicit-any[22m[0m
+[0m  [2m167:37[22m  [33mwarning[39m  Unexpected any. Specify a different type  [2m@typescript-eslint/no-explicit-any[22m[0m
+[0m[0m
+[0m[4mC:\Users\예랑테크_안의민\.gemini\project\solve-climb\src\hooks\__tests__\useQuizRevive.test.ts[24m[0m
+[0m  [2m26:55[22m  [33mwarning[39m  Unexpected any. Specify a different type  [2m@typescript-eslint/no-explicit-any[22m[0m
+[0m[0m
+[0m[4mC:\Users\예랑테크_안의민\.gemini\project\solve-climb\src\hooks\__tests__\useQuizSubmit.test.ts[24m[0m
+[0m    [2m12:24[22m  [33mwarning[39m  Unexpected any. Specify a different type  [2m@typescript-eslint/no-explicit-any[22m[0m
+[0m    [2m99:70[22m  [33mwarning[39m  Unexpected any. Specify a different type  [2m@typescript-eslint/no-explicit-any[22m[0m
+[0m   [2m498:47[22m  [33mwarning[39m  Unexpected any. Specify a different type  [2m@typescript-eslint/no-explicit-any[22m[0m
+[0m   [2m659:47[22m  [33mwarning[39m  Unexpected any. Specify a different type  [2m@typescript-eslint/no-explicit-any[22m[0m
+[0m   [2m920:26[22m  [33mwarning[39m  Unexpected any. Specify a different type  [2m@typescript-eslint/no-explicit-any[22m[0m
+[0m  [2m1182:47[22m  [33mwarning[39m  Unexpected any. Specify a different type  [2m@typescript-eslint/no-explicit-any[22m[0m
+[0m  [2m1329:47[22m  [33mwarning[39m  Unexpected any. Specify a different type  [2m@typescript-eslint/no-explicit-any[22m[0m
+[0m[0m
+[0m[4mC:\Users\예랑테크_안의민\.gemini\project\solve-climb\src\hooks\useQuestionGenerator.ts[24m[0m
+[0m  [2m79:6[22m  [33mwarning[39m  React Hook useMemo has missing dependencies: 'category' and 'categoryParam'. Either include them or remove the dependency array  [2mreact-hooks/exhaustive-deps[22m[0m
+[0m[0m
+[0m[4mC:\Users\예랑테크_안의민\.gemini\project\solve-climb\src\hooks\useQuizSubmit.ts[24m[0m
+[0m  [2m367:73[22m  [33mwarning[39m  Unexpected any. Specify a different type                                                                                                                                                                                                     [2m@typescript-eslint/no-explicit-any[22m[0m
+[0m  [2m368:77[22m  [33mwarning[39m  Unexpected any. Specify a different type                                                                                                                                                                                                     [2m@typescript-eslint/no-explicit-any[22m[0m
+[0m  [2m474:5[22m   [33mwarning[39m  React Hook useCallback has a missing dependency: 'setToastValue'. Either include it or remove the dependency array. If 'setToastValue' changes too often, find the parent component that defines it and wrap that definition in useCallback  [2mreact-hooks/exhaustive-deps[22m[0m
+[0m[0m
+[0m[4mC:\Users\예랑테크_안의민\.gemini\project\solve-climb\src\mocks\handlers.ts[24m[0m
+[0m  [2m51:44[22m  [33mwarning[39m  Unexpected any. Specify a different type  [2m@typescript-eslint/no-explicit-any[22m[0m
+[0m[0m
+[0m[4mC:\Users\예랑테크_안의민\.gemini\project\solve-climb\src\pages\QuizPage.tsx[24m[0m
+[0m  [2m333:6[22m   [33mwarning[39m  React Hook useCallback has a missing dependency: 'exitConfirmTimeoutRef'. Either include it or remove the dependency array                                     [2mreact-hooks/exhaustive-deps[22m[0m
+[0m  [2m527:6[22m   [33mwarning[39m  React Hook useEffect has missing dependencies: 'checkStamina', 'resetGame', 'setExhausted', and 'stamina'. Either include them or remove the dependency array  [2mreact-hooks/exhaustive-deps[22m[0m
+[0m  [2m611:30[22m  [31merror[39m    React Hook "useCallback" is called conditionally. React Hooks must be called in the exact same order in every component render                                 [2mreact-hooks/rules-of-hooks[22m[0m
+[0m  [2m646:32[22m  [31merror[39m    React Hook "useCallback" is called conditionally. React Hooks must be called in the exact same order in every component render                                 [2mreact-hooks/rules-of-hooks[22m[0m
+[0m[0m
+[0m[4mC:\Users\예랑테크_안의민\.gemini\project\solve-climb\src\pages\ResultPage.tsx[24m[0m
+[0m  [2m217:34[22m  [33mwarning[39m  Unexpected any. Specify a different type  [2m@typescript-eslint/no-explicit-any[22m[0m
+[0m[0m
+[0m[4mC:\Users\예랑테크_안의민\.gemini\project\solve-climb\src\stores\__tests__\useLevelProgressStore.test.ts[24m[0m
+[0m   [2m53:28[22m  [33mwarning[39m  Unexpected any. Specify a different type  [2m@typescript-eslint/no-explicit-any[22m[0m
+[0m   [2m53:36[22m  [33mwarning[39m  Unexpected any. Specify a different type  [2m@typescript-eslint/no-explicit-any[22m[0m
+[0m   [2m54:28[22m  [33mwarning[39m  Unexpected any. Specify a different type  [2m@typescript-eslint/no-explicit-any[22m[0m
+[0m   [2m54:36[22m  [33mwarning[39m  Unexpected any. Specify a different type  [2m@typescript-eslint/no-explicit-any[22m[0m
+[0m   [2m55:16[22m  [33mwarning[39m  Unexpected any. Specify a different type  [2m@typescript-eslint/no-explicit-any[22m[0m
+[0m   [2m58:46[22m  [33mwarning[39m  Unexpected any. Specify a different type  [2m@typescript-eslint/no-explicit-any[22m[0m
+[0m   [2m59:18[22m  [33mwarning[39m  Unexpected any. Specify a different type  [2m@typescript-eslint/no-explicit-any[22m[0m
+[0m   [2m73:28[22m  [33mwarning[39m  Unexpected any. Specify a different type  [2m@typescript-eslint/no-explicit-any[22m[0m
+[0m   [2m73:36[22m  [33mwarning[39m  Unexpected any. Specify a different type  [2m@typescript-eslint/no-explicit-any[22m[0m
+[0m   [2m74:28[22m  [33mwarning[39m  Unexpected any. Specify a different type  [2m@typescript-eslint/no-explicit-any[22m[0m
+[0m   [2m74:36[22m  [33mwarning[39m  Unexpected any. Specify a different type  [2m@typescript-eslint/no-explicit-any[22m[0m
+[0m  [2m402:10[22m  [33mwarning[39m  Unexpected any. Specify a different type  [2m@typescript-eslint/no-explicit-any[22m[0m
+[0m  [2m421:10[22m  [33mwarning[39m  Unexpected any. Specify a different type  [2m@typescript-eslint/no-explicit-any[22m[0m
+[0m  [2m568:10[22m  [33mwarning[39m  Unexpected any. Specify a different type  [2m@typescript-eslint/no-explicit-any[22m[0m
+[0m  [2m629:10[22m  [33mwarning[39m  Unexpected any. Specify a different type  [2m@typescript-eslint/no-explicit-any[22m[0m
+[0m  [2m659:10[22m  [33mwarning[39m  Unexpected any. Specify a different type  [2m@typescript-eslint/no-explicit-any[22m[0m
+[0m  [2m691:10[22m  [33mwarning[39m  Unexpected any. Specify a different type  [2m@typescript-eslint/no-explicit-any[22m[0m
+[0m[0m
+[0m[4mC:\Users\예랑테크_안의민\.gemini\project\solve-climb\src\stores\__tests__\useUserStore.test.ts[24m[0m
+[0m  [2m22:14[22m  [33mwarning[39m  Unexpected any. Specify a different type  [2m@typescript-eslint/no-explicit-any[22m[0m
+[0m[0m
+[0m[4mC:\Users\예랑테크_안의민\.gemini\project\solve-climb\src\types\quiz.ts[24m[0m
+[0m  [2m36:70[22m  [33mwarning[39m  Unexpected any. Specify a different type  [2m@typescript-eslint/no-explicit-any[22m[0m
+[0m[0m
+[0m[4mC:\Users\예랑테크_안의민\.gemini\project\solve-climb\src\utils\CalculusProblemGenerator.ts[24m[0m
+[0m  [2m148:13[22m  [31merror[39m  Unexpected lexical declaration in case block  [2mno-case-declarations[22m[0m
+[0m[0m
+[0m[4mC:\Users\예랑테크_안의민\.gemini\project\solve-climb\src\utils\__tests__\debugPresets.test.ts[24m[0m
+[0m    [2m35:46[22m  [33mwarning[39m  Unexpected any. Specify a different type  [2m@typescript-eslint/no-explicit-any[22m[0m
+[0m    [2m36:18[22m  [33mwarning[39m  Unexpected any. Specify a different type  [2m@typescript-eslint/no-explicit-any[22m[0m
+[0m    [2m49:28[22m  [33mwarning[39m  Unexpected any. Specify a different type  [2m@typescript-eslint/no-explicit-any[22m[0m
+[0m    [2m49:36[22m  [33mwarning[39m  Unexpected any. Specify a different type  [2m@typescript-eslint/no-explicit-any[22m[0m
+[0m    [2m50:28[22m  [33mwarning[39m  Unexpected any. Specify a different type  [2m@typescript-eslint/no-explicit-any[22m[0m
+[0m    [2m50:36[22m  [33mwarning[39m  Unexpected any. Specify a different type  [2m@typescript-eslint/no-explicit-any[22m[0m
+[0m    [2m55:21[22m  [33mwarning[39m  Unexpected any. Specify a different type  [2m@typescript-eslint/no-explicit-any[22m[0m
+[0m   [2m589:21[22m  [33mwarning[39m  Unexpected any. Specify a different type  [2m@typescript-eslint/no-explicit-any[22m[0m
+[0m   [2m687:47[22m  [33mwarning[39m  Unexpected any. Specify a different type  [2m@typescript-eslint/no-explicit-any[22m[0m
+[0m   [2m724:47[22m  [33mwarning[39m  Unexpected any. Specify a different type  [2m@typescript-eslint/no-explicit-any[22m[0m
+[0m   [2m761:47[22m  [33mwarning[39m  Unexpected any. Specify a different type  [2m@typescript-eslint/no-explicit-any[22m[0m
+[0m   [2m780:27[22m  [33mwarning[39m  Unexpected any. Specify a different type  [2m@typescript-eslint/no-explicit-any[22m[0m
+[0m   [2m782:33[22m  [33mwarning[39m  Unexpected any. Specify a different type  [2m@typescript-eslint/no-explicit-any[22m[0m
+[0m   [2m913:88[22m  [33mwarning[39m  Unexpected any. Specify a different type  [2m@typescript-eslint/no-explicit-any[22m[0m
+[0m   [2m913:97[22m  [33mwarning[39m  Unexpected any. Specify a different type  [2m@typescript-eslint/no-explicit-any[22m[0m
+[0m   [2m915:86[22m  [33mwarning[39m  Unexpected any. Specify a different type  [2m@typescript-eslint/no-explicit-any[22m[0m
+[0m   [2m915:95[22m  [33mwarning[39m  Unexpected any. Specify a different type  [2m@typescript-eslint/no-explicit-any[22m[0m
+[0m   [2m937:88[22m  [33mwarning[39m  Unexpected any. Specify a different type  [2m@typescript-eslint/no-explicit-any[22m[0m
+[0m   [2m937:97[22m  [33mwarning[39m  Unexpected any. Specify a different type  [2m@typescript-eslint/no-explicit-any[22m[0m
+[0m   [2m962:69[22m  [33mwarning[39m  Unexpected any. Specify a different type  [2m@typescript-eslint/no-explicit-any[22m[0m
+[0m  [2m1016:12[22m  [33mwarning[39m  Unexpected any. Specify a different type  [2m@typescript-eslint/no-explicit-any[22m[0m
+[0m  [2m1044:23[22m  [33mwarning[39m  Unexpected any. Specify a different type  [2m@typescript-eslint/no-explicit-any[22m[0m
+[0m  [2m1092:12[22m  [33mwarning[39m  Unexpected any. Specify a different type  [2m@typescript-eslint/no-explicit-any[22m[0m
+[0m  [2m1119:23[22m  [33mwarning[39m  Unexpected any. Specify a different type  [2m@typescript-eslint/no-explicit-any[22m[0m
+[0m  [2m1140:23[22m  [33mwarning[39m  Unexpected any. Specify a different type  [2m@typescript-eslint/no-explicit-any[22m[0m
+[0m  [2m1181:66[22m  [33mwarning[39m  Unexpected any. Specify a different type  [2m@typescript-eslint/no-explicit-any[22m[0m
+[0m  [2m1229:86[22m  [33mwarning[39m  Unexpected any. Specify a different type  [2m@typescript-eslint/no-explicit-any[22m[0m
+[0m  [2m1232:86[22m  [33mwarning[39m  Unexpected any. Specify a different type  [2m@typescript-eslint/no-explicit-any[22m[0m
+[0m  [2m1235:86[22m  [33mwarning[39m  Unexpected any. Specify a different type  [2m@typescript-eslint/no-explicit-any[22m[0m
+[0m  [2m1235:95[22m  [33mwarning[39m  Unexpected any. Specify a different type  [2m@typescript-eslint/no-explicit-any[22m[0m
+[0m  [2m1237:84[22m  [33mwarning[39m  Unexpected any. Specify a different type  [2m@typescript-eslint/no-explicit-any[22m[0m
+[0m  [2m1237:93[22m  [33mwarning[39m  Unexpected any. Specify a different type  [2m@typescript-eslint/no-explicit-any[22m[0m
+[0m  [2m1293:66[22m  [33mwarning[39m  Unexpected any. Specify a different type  [2m@typescript-eslint/no-explicit-any[22m[0m
+[0m  [2m1325:95[22m  [33mwarning[39m  Unexpected any. Specify a different type  [2m@typescript-eslint/no-explicit-any[22m[0m
+[0m  [2m1343:45[22m  [33mwarning[39m  Unexpected any. Specify a different type  [2m@typescript-eslint/no-explicit-any[22m[0m
+[0m  [2m1375:45[22m  [33mwarning[39m  Unexpected any. Specify a different type  [2m@typescript-eslint/no-explicit-any[22m[0m
+[0m[0m
+[0m[31m[1m✖ 100 problems (3 errors, 97 warnings)[22m[39m[0m
+[0m[31m[1m[22m[39m[0m

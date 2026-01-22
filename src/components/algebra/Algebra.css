@@ -1,0 +1,95 @@
+.algebra-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  padding: 2rem;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: var(--rounded-card);
+  margin-top: 1rem;
+}
+
+.equation-display {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+  font-size: 2rem;
+  font-weight: bold;
+  font-family: 'Outfit', sans-serif;
+  /* Use app font */
+  min-height: 80px;
+}
+
+.equation-side {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem;
+  border-radius: var(--rounded-xs);
+  transition: background 0.3s ease;
+}
+
+.equation-side:hover {
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.equals-sign {
+  font-size: 2.5rem;
+  color: var(--color-text-secondary);
+  margin: 0 1rem;
+  transition: all 0.3s ease;
+}
+
+.equals-sign.active {
+  color: var(--color-primary);
+  text-shadow: 0 0 10px var(--color-primary-glow);
+  transform: scale(1.2);
+}
+
+.equation-term {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 0.2rem;
+  cursor: pointer;
+  padding: 0.2rem 0.5rem;
+  border-radius: var(--rounded-xs);
+  user-select: none;
+}
+
+.equation-term:hover {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.term-sign {
+  color: var(--color-text-tertiary);
+  font-weight: normal;
+  margin-right: 0.1rem;
+}
+
+.term-value {
+  color: inherit;
+}
+
+.equation-term.variable {
+  /* color depends on positive/negative handled in JS */
+}
+
+.transpose-hint {
+  position: absolute;
+  top: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  background: var(--color-surface-elevated);
+  border: 1px solid var(--color-border);
+  padding: var(--spacing-xs) var(--spacing-sm);
+  border-radius: var(--rounded-2xs);
+  font-size: 0.8rem;
+  color: var(--color-text-secondary);
+  white-space: nowrap;
+  pointer-events: none;
+  z-index: 10;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+}

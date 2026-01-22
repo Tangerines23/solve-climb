@@ -108,7 +108,7 @@ function generateTodayChallenge(): TodayChallenge {
       categoryId: selectedMountain.id,
       topic: '기본',
       topicId: 'default',
-      mode: 'time_attack',
+      mode: 'time-attack',
       level: 1,
     };
   }
@@ -134,7 +134,7 @@ function generateTodayChallenge(): TodayChallenge {
       categoryId: selectedMountain.id,
       topic: selectedTopic.name,
       topicId: selectedTopic.id,
-      mode: 'time_attack',
+      mode: 'time-attack',
       level: 1,
     };
   }
@@ -155,7 +155,7 @@ function generateTodayChallenge(): TodayChallenge {
     categoryId: selectedMountain.id,
     topic: selectedTopic.name,
     topicId: selectedTopic.id,
-    mode: 'time_attack',
+    mode: 'time-attack',
     level: selectedLevel.level,
   };
 }

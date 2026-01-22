@@ -159,7 +159,9 @@ function generateComparisonProblem(_difficulty: Difficulty): LogicProblem {
   const p = primes[Math.floor(Math.random() * primes.length)];
   const np = nonPrimes[Math.floor(Math.random() * nonPrimes.length)];
   const isPrimeFirst = Math.random() > 0.5;
-  const question = isPrimeFirst ? `[${p}] [${np}] 소수(Prime)인 것은? (1: 왼쪽, 2: 오른쪽)` : `[${np}] [${p}] 소수(Prime)인 것은? (1: 왼쪽, 2: 오른쪽)`;
+  const question = isPrimeFirst
+    ? `[${p}] [${np}] 소수(Prime)인 것은? (1: 왼쪽, 2: 오른쪽)`
+    : `[${np}] [${p}] 소수(Prime)인 것은? (1: 왼쪽, 2: 오른쪽)`;
   return { question, answer: isPrimeFirst ? 1 : 2 };
 }
 
@@ -229,5 +231,3 @@ function generateFactorialProblem(_difficulty: Difficulty): LogicProblem {
   const question = `${n}! (팩토리얼)의 값은?`;
   return { question, answer };
 }
-
-

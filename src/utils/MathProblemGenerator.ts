@@ -5,14 +5,14 @@ export interface StageConfig {
   world: number;
   description: string;
   type:
-  | 'standard'
-  | 'sequential'
-  | 'fill-blank'
-  | 'parentheses'
-  | 'decimal'
-  | 'fraction'
-  | 'time'
-  | 'modulo';
+    | 'standard'
+    | 'sequential'
+    | 'fill-blank'
+    | 'parentheses'
+    | 'decimal'
+    | 'fraction'
+    | 'time'
+    | 'modulo';
   operators: Operator[];
   operandCount: number;
   // Array of ranges for each operand position.
@@ -36,7 +36,10 @@ export const STAGES: StageConfig[] = [
     type: 'standard',
     operators: ['+'],
     operandCount: 2,
-    ranges: [{ min: 1, max: 9 }, { min: 1, max: 9 }],
+    ranges: [
+      { min: 1, max: 9 },
+      { min: 1, max: 9 },
+    ],
     constraints: { resultMax: 10 },
   },
   {
@@ -46,7 +49,10 @@ export const STAGES: StageConfig[] = [
     type: 'standard',
     operators: ['-'],
     operandCount: 2,
-    ranges: [{ min: 1, max: 9 }, { min: 1, max: 9 }],
+    ranges: [
+      { min: 1, max: 9 },
+      { min: 1, max: 9 },
+    ],
     constraints: { resultMin: 0 },
   },
   {
@@ -56,7 +62,10 @@ export const STAGES: StageConfig[] = [
     type: 'standard',
     operators: ['+'],
     operandCount: 2,
-    ranges: [{ min: 1, max: 9 }, { min: 1, max: 9 }],
+    ranges: [
+      { min: 1, max: 9 },
+      { min: 1, max: 9 },
+    ],
     constraints: { resultMin: 10 },
   },
   {
@@ -66,7 +75,10 @@ export const STAGES: StageConfig[] = [
     type: 'standard',
     operators: ['-'],
     operandCount: 2,
-    ranges: [{ min: 10, max: 19 }, { min: 1, max: 9 }],
+    ranges: [
+      { min: 10, max: 19 },
+      { min: 1, max: 9 },
+    ],
     constraints: { resultMax: 9 },
   },
   {
@@ -76,7 +88,11 @@ export const STAGES: StageConfig[] = [
     type: 'sequential',
     operators: ['+', '-'],
     operandCount: 3,
-    ranges: [{ min: 1, max: 10 }, { min: 1, max: 10 }, { min: 1, max: 10 }],
+    ranges: [
+      { min: 1, max: 10 },
+      { min: 1, max: 10 },
+      { min: 1, max: 10 },
+    ],
   },
   {
     id: 6,
@@ -85,7 +101,10 @@ export const STAGES: StageConfig[] = [
     type: 'standard',
     operators: ['*'],
     operandCount: 2,
-    ranges: [{ min: 2, max: 5 }, { min: 1, max: 9 }],
+    ranges: [
+      { min: 2, max: 5 },
+      { min: 1, max: 9 },
+    ],
   },
   {
     id: 7,
@@ -94,7 +113,10 @@ export const STAGES: StageConfig[] = [
     type: 'standard',
     operators: ['/'],
     operandCount: 2,
-    ranges: [{ min: 2, max: 9 }, { min: 2, max: 9 }],
+    ranges: [
+      { min: 2, max: 9 },
+      { min: 2, max: 9 },
+    ],
     constraints: { ensureIntegerDivision: true },
   },
   {
@@ -104,7 +126,10 @@ export const STAGES: StageConfig[] = [
     type: 'standard',
     operators: ['*'],
     operandCount: 2,
-    ranges: [{ min: 6, max: 9 }, { min: 1, max: 9 }],
+    ranges: [
+      { min: 6, max: 9 },
+      { min: 1, max: 9 },
+    ],
   },
   {
     id: 9,
@@ -113,7 +138,10 @@ export const STAGES: StageConfig[] = [
     type: 'standard',
     operators: ['+', '*'],
     operandCount: 2,
-    ranges: [{ min: 0, max: 10 }, { min: 0, max: 1 }],
+    ranges: [
+      { min: 0, max: 10 },
+      { min: 0, max: 1 },
+    ],
   },
   {
     id: 10,
@@ -122,7 +150,11 @@ export const STAGES: StageConfig[] = [
     type: 'sequential',
     operators: ['+', '-', '*', '/'],
     operandCount: 3,
-    ranges: [{ min: 1, max: 10 }, { min: 1, max: 10 }, { min: 1, max: 5 }],
+    ranges: [
+      { min: 1, max: 10 },
+      { min: 1, max: 10 },
+      { min: 1, max: 5 },
+    ],
     constraints: { ensureIntegerDivision: true },
   },
 
@@ -134,7 +166,10 @@ export const STAGES: StageConfig[] = [
     type: 'standard',
     operators: ['+'],
     operandCount: 2,
-    ranges: [{ min: 10, max: 40 }, { min: 1, max: 9 }],
+    ranges: [
+      { min: 10, max: 40 },
+      { min: 1, max: 9 },
+    ],
     constraints: { resultMax: 50 }, // Simple addition
   },
   {
@@ -144,7 +179,10 @@ export const STAGES: StageConfig[] = [
     type: 'standard',
     operators: ['+'],
     operandCount: 2,
-    ranges: [{ min: 18, max: 29 }, { min: 18, max: 29 }],
+    ranges: [
+      { min: 18, max: 29 },
+      { min: 18, max: 29 },
+    ],
   },
   {
     id: 13,
@@ -153,7 +191,11 @@ export const STAGES: StageConfig[] = [
     type: 'sequential',
     operators: ['+', '-'],
     operandCount: 3,
-    ranges: [{ min: 10, max: 20 }, { min: 5, max: 10 }, { min: 1, max: 10 }],
+    ranges: [
+      { min: 10, max: 20 },
+      { min: 5, max: 10 },
+      { min: 1, max: 10 },
+    ],
   },
   {
     id: 14,
@@ -162,7 +204,11 @@ export const STAGES: StageConfig[] = [
     type: 'sequential',
     operators: ['+', '*'],
     operandCount: 3,
-    ranges: [{ min: 1, max: 10 }, { min: 2, max: 5 }, { min: 2, max: 5 }],
+    ranges: [
+      { min: 1, max: 10 },
+      { min: 2, max: 5 },
+      { min: 2, max: 5 },
+    ],
   },
   {
     id: 15,
@@ -171,7 +217,11 @@ export const STAGES: StageConfig[] = [
     type: 'sequential',
     operators: ['+', '-', '*'],
     operandCount: 3,
-    ranges: [{ min: 10, max: 20 }, { min: 1, max: 10 }, { min: 2, max: 5 }],
+    ranges: [
+      { min: 10, max: 20 },
+      { min: 1, max: 10 },
+      { min: 2, max: 5 },
+    ],
   },
   {
     id: 16,
@@ -180,7 +230,11 @@ export const STAGES: StageConfig[] = [
     type: 'parentheses',
     operators: ['+', '*', '/'],
     operandCount: 3,
-    ranges: [{ min: 1, max: 10 }, { min: 1, max: 5 }, { min: 2, max: 5 }],
+    ranges: [
+      { min: 1, max: 10 },
+      { min: 1, max: 5 },
+      { min: 2, max: 5 },
+    ],
   },
   {
     id: 17,
@@ -189,7 +243,10 @@ export const STAGES: StageConfig[] = [
     type: 'standard',
     operators: ['-'],
     operandCount: 2,
-    ranges: [{ min: 100, max: 100 }, { min: 1, max: 99 }],
+    ranges: [
+      { min: 100, max: 100 },
+      { min: 1, max: 99 },
+    ],
   },
   {
     id: 18,
@@ -198,7 +255,10 @@ export const STAGES: StageConfig[] = [
     type: 'modulo',
     operators: ['/'],
     operandCount: 2,
-    ranges: [{ min: 10, max: 50 }, { min: 3, max: 7 }],
+    ranges: [
+      { min: 10, max: 50 },
+      { min: 3, max: 7 },
+    ],
   },
   {
     id: 19,
@@ -207,7 +267,10 @@ export const STAGES: StageConfig[] = [
     type: 'fill-blank',
     operators: ['+', '-'],
     operandCount: 2,
-    ranges: [{ min: 1, max: 20 }, { min: 1, max: 20 }],
+    ranges: [
+      { min: 1, max: 20 },
+      { min: 1, max: 20 },
+    ],
   },
   {
     id: 20,
@@ -216,7 +279,12 @@ export const STAGES: StageConfig[] = [
     type: 'sequential',
     operators: ['+', '-', '*', '/'],
     operandCount: 4,
-    ranges: [{ min: 1, max: 20 }, { min: 1, max: 10 }, { min: 1, max: 5 }, { min: 1, max: 5 }],
+    ranges: [
+      { min: 1, max: 20 },
+      { min: 1, max: 10 },
+      { min: 1, max: 5 },
+      { min: 1, max: 5 },
+    ],
   },
 
   // [Phase 3: 정상 공격 (Lv 21~30) - 수의 확장]
@@ -227,7 +295,10 @@ export const STAGES: StageConfig[] = [
     type: 'decimal',
     operators: ['+'],
     operandCount: 2,
-    ranges: [{ min: 0.1, max: 0.9 }, { min: 0.1, max: 0.9 }],
+    ranges: [
+      { min: 0.1, max: 0.9 },
+      { min: 0.1, max: 0.9 },
+    ],
     constraints: { precision: 1 },
   },
   {
@@ -237,7 +308,10 @@ export const STAGES: StageConfig[] = [
     type: 'decimal',
     operators: ['-'],
     operandCount: 2,
-    ranges: [{ min: 1.1, max: 2.0 }, { min: 0.1, max: 0.9 }],
+    ranges: [
+      { min: 1.1, max: 2.0 },
+      { min: 0.1, max: 0.9 },
+    ],
     constraints: { precision: 1 },
   },
   {
@@ -247,7 +321,10 @@ export const STAGES: StageConfig[] = [
     type: 'decimal',
     operators: ['+'],
     operandCount: 2,
-    ranges: [{ min: 0.1, max: 0.9 }, { min: 0.1, max: 0.9 }],
+    ranges: [
+      { min: 0.1, max: 0.9 },
+      { min: 0.1, max: 0.9 },
+    ],
     constraints: { precision: 1 }, // Need internal logic to force integer result in generator if needed
   },
   {
@@ -257,7 +334,10 @@ export const STAGES: StageConfig[] = [
     type: 'fraction',
     operators: ['+'],
     operandCount: 2,
-    ranges: [{ min: 1, max: 3 }, { min: 1, max: 3 }],
+    ranges: [
+      { min: 1, max: 3 },
+      { min: 1, max: 3 },
+    ],
     constraints: { denominator: 4 },
   },
   {
@@ -267,7 +347,10 @@ export const STAGES: StageConfig[] = [
     type: 'standard', // Fallback for now, will implement mixed types if needed
     operators: ['+'],
     operandCount: 2,
-    ranges: [{ min: 1, max: 10 }, { min: 1, max: 10 }],
+    ranges: [
+      { min: 1, max: 10 },
+      { min: 1, max: 10 },
+    ],
   },
   {
     id: 26,
@@ -276,7 +359,10 @@ export const STAGES: StageConfig[] = [
     type: 'fraction',
     operators: ['-'],
     operandCount: 2,
-    ranges: [{ min: 1, max: 1 }, { min: 1, max: 3 }],
+    ranges: [
+      { min: 1, max: 1 },
+      { min: 1, max: 3 },
+    ],
     constraints: { denominator: 4 },
   },
   {
@@ -286,7 +372,10 @@ export const STAGES: StageConfig[] = [
     type: 'fraction',
     operators: ['+'],
     operandCount: 2,
-    ranges: [{ min: 1, max: 1 }, { min: 1, max: 1 }],
+    ranges: [
+      { min: 1, max: 1 },
+      { min: 1, max: 1 },
+    ],
     constraints: { denominator: 4 }, // Will need update to generator for mixed denominators
   },
   {
@@ -296,7 +385,10 @@ export const STAGES: StageConfig[] = [
     type: 'decimal',
     operators: ['*'],
     operandCount: 2,
-    ranges: [{ min: 10, max: 20 }, { min: 0.1, max: 0.1 }],
+    ranges: [
+      { min: 10, max: 20 },
+      { min: 0.1, max: 0.1 },
+    ],
     constraints: { precision: 1 },
   },
   {
@@ -306,7 +398,10 @@ export const STAGES: StageConfig[] = [
     type: 'decimal',
     operators: ['/'],
     operandCount: 2,
-    ranges: [{ min: 1, max: 5 }, { min: 0.5, max: 0.5 }],
+    ranges: [
+      { min: 1, max: 5 },
+      { min: 0.5, max: 0.5 },
+    ],
     constraints: { precision: 1 },
   },
   {
@@ -316,7 +411,11 @@ export const STAGES: StageConfig[] = [
     type: 'sequential',
     operators: ['+', '-', '*', '/'],
     operandCount: 3,
-    ranges: [{ min: 1, max: 50 }, { min: 1, max: 20 }, { min: 1, max: 10 }],
+    ranges: [
+      { min: 1, max: 50 },
+      { min: 1, max: 20 },
+      { min: 1, max: 10 },
+    ],
     constraints: { ensureIntegerDivision: true },
   },
 ];
@@ -468,26 +567,17 @@ function generateStandardProblem(stage: StageConfig): MathProblem {
       throw new Error('Result too low');
     if (!stage.constraints?.allowNegative && result < 0) throw new Error('Negative result');
 
-    let expression = `${a} ${op} ${b}`;
-    let displayExpression = expression;
+    const displayOp = op === '*' ? '×' : op;
+    const expression = `${a} ${displayOp} ${b}`;
 
     if (stage.type === 'fill-blank') {
-      // Randomly hide a, op, or b? Usually hide operand.
-      // Let's hide the second operand for simplicity: "15 - ? = 6"
-      // Or hide result? No, result is the answer usually.
-      // Requirement: "Return the answer and the masked expression string"
-      // If the question is "15 - ? = 6", the answer the user types is 9.
-      // So the 'answer' field should be the missing value.
-
       const hideFirst = Math.random() > 0.5;
       if (hideFirst) {
-        // ? + b = result
-        displayExpression = `? ${op} ${b} = ${result}`;
-        return { expression: displayExpression, answer: a };
+        // □ op b = result
+        return { expression: `□ ${displayOp} ${b} = ${result}`, answer: a };
       } else {
-        // a + ? = result
-        displayExpression = `${a} ${op} ? = ${result}`;
-        return { expression: displayExpression, answer: b };
+        // a op □ = result
+        return { expression: `${a} ${displayOp} □ = ${result}`, answer: b };
       }
     }
 

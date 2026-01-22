@@ -10,6 +10,7 @@ interface MyPageSettingsProps {
   isResetting: boolean;
   onSendFeedback: () => void;
   onLogout: () => void;
+  onWithdraw: () => void;
 }
 
 export function MyPageSettings({
@@ -20,6 +21,7 @@ export function MyPageSettings({
   isResetting,
   onSendFeedback,
   onLogout,
+  onWithdraw,
 }: MyPageSettingsProps) {
   const navigate = useNavigate();
 
@@ -119,6 +121,34 @@ export function MyPageSettings({
               viewBox="0 0 20 20"
               fill="none"
               xmlns="http://www.w3.org/2000/svg"
+            >
+              <path
+                d="M7.5 15L12.5 10L7.5 5"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
+            </svg>
+          </button>
+          <button
+            className="my-page-settings-item my-page-settings-item-button"
+            onClick={onWithdraw}
+            style={{ color: '#ff4d4f' }}
+          >
+            <div className="my-page-settings-item-content">
+              <span className="my-page-settings-item-label" style={{ color: 'inherit' }}>
+                탈퇴하기
+              </span>
+            </div>
+            <svg
+              className="my-page-settings-item-arrow"
+              width="20"
+              height="20"
+              viewBox="0 0 20 20"
+              fill="none"
+              xmlns="http://www.w3.org/2000/svg"
+              style={{ color: 'inherit' }}
             >
               <path
                 d="M7.5 15L12.5 10L7.5 5"

@@ -34,7 +34,7 @@ describe('challenge', () => {
         categoryId: 'math',
         topic: '덧셈',
         topicId: 'addition',
-        mode: 'time_attack',
+        mode: 'time-attack',
         level: 1,
       };
 
@@ -109,7 +109,7 @@ describe('challenge', () => {
         categoryId: 'math',
         topic: '덧셈',
         topicId: 'addition',
-        mode: 'time_attack',
+        mode: 'time-attack',
         level: 1,
       };
 
@@ -135,7 +135,7 @@ describe('challenge', () => {
 
       expect(result.level).toBeGreaterThanOrEqual(1);
       expect(Number.isInteger(result.level)).toBe(true);
-      expect(result.mode).toBe('time_attack');
+      expect(result.mode).toBe('time-attack');
       expect(result.title).toBeTruthy();
     });
   });

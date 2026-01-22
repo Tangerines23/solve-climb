@@ -9,12 +9,17 @@ import { APP_CONFIG } from '@/config/app';
 /**
  * Interface for Quiz Page Parameters
  */
+import type { GameMode } from '../types/quiz';
+
+/**
+ * Interface for Quiz Page Parameters
+ */
 export interface QuizParams {
   mountain: string;
   world: string;
   category: string;
   level: number | string;
-  mode: 'time-attack' | 'survival';
+  mode: GameMode;
   preview?: boolean;
   challenge?: string;
 }

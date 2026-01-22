@@ -23,14 +23,14 @@ describe('quizGenerator', () => {
     });
 
     it('should generate equation question for World1-대수', () => {
-      const result = generateQuestion('World1', '대수', 5, 'easy');
+      const result = generateQuestion('World1', '대수', 10, 'easy');
       expect(result.question).toContain('x');
       expect(typeof result.answer).toBe('number');
     });
 
     it('should generate calculus question for World1-심화', () => {
       const result = generateQuestion('World1', '심화', 1, 'easy');
-      expect(result.question).toContain('d/dx');
+      expect(result.question).toMatch(/좌표|derivative|integral|d\/dx|∫/i);
     });
   });
 

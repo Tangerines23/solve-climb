@@ -30,6 +30,8 @@ import { ENV } from '../utils/env';
 import { handleTossLogin } from '../utils/tossLogin';
 import { handleTossLoginFlow } from '../utils/tossAuth';
 import { migrateToGameLogin, checkTossLoginIntegration } from '../utils/tossGameLogin';
+import { WithdrawConfirmModal } from '../components/WithdrawConfirmModal';
+import { withdrawAccount } from '../utils/userWithdraw';
 import { calculateTier } from '../constants/tiers';
 import './MyPage.css';
 
@@ -90,6 +92,8 @@ export function MyPage() {
   const [retryCount, setRetryCount] = useState(0);
   const [showPromotionModal, setShowPromotionModal] = useState(false);
   const [tierStars, setTierStars] = useState(0);
+  const [showWithdrawConfirm, setShowWithdrawConfirm] = useState(false);
+  const [isWithdrawing, setIsWithdrawing] = useState(false);
 
   // 오늘의 챌린지 가져오기
   useEffect(() => {
@@ -166,6 +170,32 @@ export function MyPage() {
 
   const handleCancelDataReset = () => {
     setShowDataResetConfirm(false);
+  };
+
+  const handleWithdraw = () => {
+    setShowWithdrawConfirm(true);
+  };
+
+  const handleConfirmWithdraw = async () => {
+    try {
+      setIsWithdrawing(true);
+      await withdrawAccount();
+      setShowWithdrawConfirm(false);
+      setToastMessage('회원 탈퇴가 완료되었습니다. 이용해 주셔서 감사합니다.');
+      setShowToast(true);
+
+      // 탈퇴 후 홈으로 이동하거나 초기 상태로 변경
+      setTimeout(() => {
+        navigate(urls.home(), { replace: true });
+        window.location.reload(); // 상태 완전 초기화를 위해 리로드
+      }, 2000);
+    } catch (error: any) {
+      console.error('Withdrawal failed:', error);
+      setToastMessage(error.message || '회원 탈퇴 중 오류가 발생했습니다.');
+      setShowToast(true);
+    } finally {
+      setIsWithdrawing(false);
+    }
   };
 
   const handleSendFeedback = () => {
@@ -674,6 +704,7 @@ export function MyPage() {
             isResetting={isResetting}
             onSendFeedback={handleSendFeedback}
             onLogout={handleLogout}
+            onWithdraw={handleWithdraw}
           />
 
           {/* Admin / Dev Playground */}
@@ -708,6 +739,12 @@ export function MyPage() {
         title="알림"
         message={alertMessage || '리더보드를 열 수 없습니다.'}
         onClose={() => setShowAlert(false)}
+      />
+      <WithdrawConfirmModal
+        isOpen={showWithdrawConfirm}
+        onConfirm={handleConfirmWithdraw}
+        onCancel={() => setShowWithdrawConfirm(false)}
+        isLoading={isWithdrawing}
       />
     </div>
   );

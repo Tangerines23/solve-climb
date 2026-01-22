@@ -40,9 +40,21 @@ export const EQUATION_STAGES: EquationStageConfig[] = [
   // [Phase 2: 구조의 변형 (Lv 11~15)]
   { id: 11, world: 1, stage: 11, description: '상수 이항 (x + a = b)', format: 'x_plus' },
   { id: 12, world: 1, stage: 12, description: '부호 변환 (x - a = b)', format: 'x_minus' },
-  { id: 13, world: 1, stage: 13, description: '변수 이항 (ax = bx + c)', format: 'both_sides_simple' },
+  {
+    id: 13,
+    world: 1,
+    stage: 13,
+    description: '변수 이항 (ax = bx + c)',
+    format: 'both_sides_simple',
+  },
   { id: 14, world: 1, stage: 14, description: '괄호 풀기 a(x + b) = c', format: 'parentheses' },
-  { id: 15, world: 1, stage: 15, description: '보스 (ax + b = cx + d)', format: 'both_sides_complex' },
+  {
+    id: 15,
+    world: 1,
+    stage: 15,
+    description: '보스 (ax + b = cx + d)',
+    format: 'both_sides_complex',
+  },
 
   // [Phase 3: 응용 (Lv 16~20)]
   { id: 16, world: 1, stage: 16, description: '비례식 (a:b = c:x)', format: 'ratio' },

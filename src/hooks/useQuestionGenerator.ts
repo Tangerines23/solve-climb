@@ -53,11 +53,16 @@ export function useQuestionGenerator({
     if (gameMode === 'infinite') {
       const targetCategory = (categoryParam || category) as Category;
       switch (targetCategory) {
-        case '기초': return Math.floor(Math.random() * 30) + 1;
-        case '논리': return Math.floor(Math.random() * 15) + 1;
-        case '대수': return Math.floor(Math.random() * 20) + 1;
-        case '심화': return Math.floor(Math.random() * 15) + 1;
-        default: return Math.floor(Math.random() * 10) + 1;
+        case '기초':
+          return Math.floor(Math.random() * 30) + 1;
+        case '논리':
+          return Math.floor(Math.random() * 15) + 1;
+        case '대수':
+          return Math.floor(Math.random() * 20) + 1;
+        case '심화':
+          return Math.floor(Math.random() * 15) + 1;
+        default:
+          return Math.floor(Math.random() * 10) + 1;
       }
     }
 
@@ -140,7 +145,8 @@ export function useQuestionGenerator({
     // 2. 일반 월드/카테고리/레벨 결정 (파라미터 우선, 없으면 스토어 값 사용)
     const targetWorld = (worldParam || world) as World;
     const targetCategory = (categoryParam || category) as Category;
-    const targetLevel = (gameMode === 'survival' || gameMode === 'infinite') ? effectiveLevel : levelParam || 1;
+    const targetLevel =
+      gameMode === 'survival' || gameMode === 'infinite' ? effectiveLevel : levelParam || 1;
 
     if (!targetWorld || !targetCategory) {
       console.warn('Missing world or category for question generation');

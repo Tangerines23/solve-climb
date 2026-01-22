@@ -1,7 +1,7 @@
 import { useState, useCallback } from 'react';
 import { useQuizStore } from '../stores/useQuizStore';
 import { InventoryItem } from '../types/user';
-import { QuizQuestion, GameMode } from '../types/quiz';
+import { GameMode } from '../types/quiz';
 
 interface UseQuizReviveParams {
   gameMode: GameMode;
@@ -12,7 +12,10 @@ interface UseQuizReviveParams {
   setTimerResetKey: (updater: (prev: number) => number) => void;
   setShowCountdown: (show: boolean) => void;
   generateNewQuestion: () => void;
-  animations: any;
+  animations: {
+    setIsError: (val: boolean) => void;
+    [key: string]: unknown; // Safer than any
+  };
   setDisplayValue: (val: string) => void;
   handleGameOver: (reason?: string) => void;
   setIsSubmitting: (val: boolean) => void;

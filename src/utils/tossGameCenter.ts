@@ -45,7 +45,6 @@ export async function submitScoreToLeaderboard(score: number): Promise<boolean> 
   try {
     // 로컬 개발 환경에서는 시뮬레이션만 수행
     if (isLocalDevelopment() && !isTossAppEnvironment()) {
-      console.log(`[로컬 개발] 점수 제출 흉내: ${score}점`);
       return true; // 개발 편의를 위해 성공으로 반환
     }
 
@@ -56,10 +55,6 @@ export async function submitScoreToLeaderboard(score: number): Promise<boolean> 
     }
 
     // 모든 Bridge 호출 전 로그 출력 (토스 앱 내 콘솔 확인용)
-    console.log('[토스 게임 센터] 점수 제출 데이터 확인:', {
-      rawScore: score,
-      formattedScore: score.toFixed(1),
-    });
 
     const result = await submitGameCenterLeaderBoardScore({
       score: score.toFixed(1), // SDK 가이드: "123.45" 형태의 실수 문자열 필수
@@ -71,7 +66,6 @@ export async function submitScoreToLeaderboard(score: number): Promise<boolean> 
     }
 
     if (result.statusCode === 'SUCCESS') {
-      console.log(`[토스 게임 센터] 점수 제출 성공: ${score}점`);
       return true;
     } else {
       console.error(`[토스 게임 센터] 점수 제출 실패: ${result.statusCode}`);
@@ -207,13 +201,9 @@ export async function openLeaderboard(
 
   try {
     // 디버깅 정보 로깅
-    if (debugInfo) {
-      console.log('[토스 게임 센터] 리더보드 열기 시도', debugInfo);
-    }
 
     // 로컬 개발 환경에서는 시뮬레이션만 수행
     if (isLocalDevelopment() && !isTossAppEnvironment()) {
-      console.log('[로컬 개발] 리더보드 열기 흉내');
       const message = '토스 앱에서만 리더보드를 볼 수 있습니다.';
       if (onError) onError(message);
       return { success: false, message };
@@ -242,7 +232,6 @@ export async function openLeaderboard(
 
     // 운영 환경 체크 (예제 코드 참고: 'toss' 환경에서만 작동)
     const operationalEnvironment = getOperationalEnvironment();
-    console.log('[토스 게임 센터] 운영 환경:', operationalEnvironment);
 
     if (operationalEnvironment === 'sandbox') {
       console.warn('[토스 게임 센터] 샌드박스 환경에서는 리더보드를 열 수 없습니다.');
@@ -263,20 +252,14 @@ export async function openLeaderboard(
 
     // 모든 검증 완료 - 리더보드 열기 호출
     // 예제 코드처럼 단순 호출 (await 없이, 토스 앱 내부에서 비동기 처리)
-    console.log('[토스 게임 센터] 리더보드 열기 호출 (모든 검증 완료)', {
-      operationalEnvironment,
-      isSupported,
-      isTossApp: isTossAppEnvironment(),
-    });
 
     try {
       // openGameCenterLeaderboard는 Promise<void>를 반환하지만,
       // 토스 앱 내부에서 처리되므로 await 없이 호출만 함
       // 주의: 이 함수는 에러를 throw하지 않을 수 있으며,
+      // 주의: 이 함수는 에러를 throw하지 않을 수 있으며,
       // 토스 앱 내부에서 "일시적인 오류" 메시지를 표시할 수 있음
-      console.log('[토스 게임 센터] openGameCenterLeaderboard 호출 직전');
       openGameCenterLeaderboard();
-      console.log('[토스 게임 센터] 리더보드 호출 완료');
       return { success: true };
     } catch (error) {
       // 호출 시점에 에러가 발생한 경우 (드물지만 가능)
