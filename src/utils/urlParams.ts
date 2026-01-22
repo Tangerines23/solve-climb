@@ -160,7 +160,7 @@ export function validateSubTopicParam(
  */
 export function validateModeParam(
   value: string | null
-): 'time-attack' | 'survival' | 'base-camp' | 'base-camp-result' | 'smart-retry' | null {
+): 'time-attack' | 'survival' | 'base-camp' | 'base-camp-result' | 'smart-retry' | 'infinite' | null {
   if (value === 'time_attack' || value === 'time-attack') {
     return 'time-attack';
   }
@@ -175,6 +175,9 @@ export function validateModeParam(
   }
   if (value === 'smart-retry') {
     return 'smart-retry';
+  }
+  if (value === 'infinite') {
+    return 'infinite';
   }
   return null;
 }

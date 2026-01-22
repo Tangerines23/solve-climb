@@ -84,7 +84,7 @@ export function ResultPage() {
       worldParam,
       categoryParam,
       level,
-      mode === 'time-attack' ? 'time_attack' : 'survival'
+      mode === 'infinite' ? 'infinite' : mode === 'time-attack' ? 'time_attack' : 'survival'
     );
     const existing = parseInt(localStorage.getItem(key) || '0', 10);
     if (finalScore > existing) {
@@ -100,19 +100,23 @@ export function ResultPage() {
             ? Math.round((correctCount / total) * 100) >= 50 || correctCount >= 1
             : correctCount >= 1
         ) {
-          await clearLevel(
-            worldParam,
-            categoryParam,
-            level,
-            mode as 'time-attack' | 'survival',
-            finalScore
-          );
+          if (mode !== 'infinite') {
+            await clearLevel(
+              worldParam,
+              categoryParam,
+              level,
+              mode as 'time-attack' | 'survival',
+              finalScore
+            );
+          } else {
+            await updateBestScore(worldParam, categoryParam, level, 'infinite', finalScore);
+          }
         } else {
           await updateBestScore(
             worldParam,
             categoryParam,
             level,
-            mode as 'time-attack' | 'survival',
+            mode as 'time-attack' | 'survival' | 'infinite',
             finalScore
           );
         }
@@ -125,7 +129,7 @@ export function ResultPage() {
         );
         const ranks =
           useLevelProgressStore.getState().rankings[
-            `${worldParam}-${categoryParam}-weekly-${mode}`
+          `${worldParam}-${categoryParam}-weekly-${mode}`
           ];
         const {
           data: { user },
@@ -203,7 +207,10 @@ export function ResultPage() {
   const statsList = useMemo(() => {
     const s = [];
     if (isNewRecord) s.push({ label: '최고 기록 달성', value: 'New! 🏆', isHighlight: true });
-    if (total > 0) {
+    if (mode === 'infinite') {
+      s.push({ label: '목표 도달', value: `${correctCount}단계`, isHighlight: true });
+    }
+    if (total > 0 && mode !== 'infinite') {
       s.push({ label: '정확도', value: `${Math.round((correctCount / total) * 100)}%` });
       s.push({ label: '진행', value: `${correctCount} / ${total}` });
     }
@@ -320,10 +327,15 @@ export function ResultPage() {
       {/* 세로모드 레이아웃 */}
       <div className="result-card">
         <div className="result-header-section">
-          <div className="result-icon floating">{mode === 'time-attack' ? '⏱️' : '💥'}</div>
-          <h1 className="result-title">{mode === 'time-attack' ? '시간 종료!' : '게임 오버'}</h1>
+          <div className="result-icon floating">
+            {mode === 'infinite' ? '🌌' : mode === 'time-attack' ? '⏱️' : '💥'}
+          </div>
+          <h1 className="result-title">
+            {mode === 'infinite' ? '한계 도달!' : mode === 'time-attack' ? '시간 종료!' : '게임 오버'}
+          </h1>
           <p className="result-subtitle">
-            {worldParam} - {categoryParam} Level {level}
+            {worldParam} - {categoryParam}{' '}
+            {mode === 'infinite' ? '인피니트 챌린지' : `Level ${level}`}
           </p>
           <div className="score-section">
             <p className="score-value">{animatedScore.toLocaleString()}m</p>
