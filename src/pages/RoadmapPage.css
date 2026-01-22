@@ -777,9 +777,37 @@
   margin-bottom: var(--spacing-xs);
 }
 
+.history-user-info-row {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-lg);
+  margin-top: var(--spacing-xs);
+}
+
 .history-user-altitude {
   font-size: 16px;
   color: var(--color-text-secondary);
+}
+
+.history-streak-badge {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 10px;
+  background-color: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+  box-shadow: 0 0 10px rgba(255, 153, 0, 0.1);
+}
+
+.streak-icon {
+  font-size: 14px;
+}
+
+.streak-count {
+  font-size: 13px;
+  font-weight: 800;
+  color: #ff9900;
 }
 
 .altitude-value {
@@ -1866,4 +1894,102 @@
 .badge-modal-body .badge-collection-title {
   display: none;
   /* Hide title inside modal as header has it */
+}
+
+/* --- Activity Tab Styles --- */
+.history-activity-container {
+  padding: 0 var(--spacing-xl);
+  margin-top: var(--spacing-lg);
+}
+
+.activity-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-md);
+}
+
+.activity-item {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-lg);
+  padding: var(--spacing-lg);
+  background-color: var(--bg-glass-overlay);
+  border-radius: var(--rounded-md);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  backdrop-filter: blur(10px);
+}
+
+.activity-icon-container {
+  width: 48px;
+  height: 48px;
+  background-color: var(--color-bg-tertiary);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 24px;
+  flex-shrink: 0;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+
+.activity-info {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.activity-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.activity-title {
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--color-text-primary);
+}
+
+.activity-time {
+  font-size: 12px;
+  color: var(--color-text-tertiary);
+}
+
+.activity-body {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.activity-desc {
+  font-size: 13px;
+  color: var(--color-text-secondary);
+}
+
+.activity-value {
+  font-size: 14px;
+  font-weight: 800;
+  color: var(--color-primary-light);
+}
+
+.empty-activity-message {
+  padding: var(--spacing-4xl) 0;
+  text-align: center;
+  color: var(--color-text-secondary);
+  font-size: 14px;
+  line-height: 1.6;
+}
+
+/* --- Segmented Indicator Adjustments --- */
+.segmented-indicator.tab-summary {
+  transform: translateX(0) !important;
+}
+
+.segmented-indicator.tab-analysis {
+  transform: translateX(100%) !important;
+}
+
+.segmented-indicator.tab-activity {
+  transform: translateX(200%) !important;
 }

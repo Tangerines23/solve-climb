@@ -39,6 +39,8 @@ interface DbSession {
 
 interface DbProfile {
   total_mastery_score: number;
+  login_streak: number;
+  last_login_at: string | null;
 }
 
 type EnrichedRecord = DbLevelRecord & {
@@ -88,6 +90,16 @@ export interface HistoryStats {
   streakCount: number;
   heatmapData: Array<{ date: string; count: number; intensity: number }>;
   smartComment: string;
+  allActivities: Array<{
+    type: 'game' | 'reward';
+    id: string;
+    title: string;
+    description: string;
+    value?: string;
+    timeAgo: string;
+    icon: string;
+    timestamp: string;
+  }>;
 }
 
 export function useHistoryData() {
@@ -177,7 +189,11 @@ export function useHistoryData() {
             .limit(50)
         ),
         debugSupabaseQuery(
-          supabase.from('profiles').select('total_mastery_score').eq('id', currentUserId).single()
+          supabase
+            .from('profiles')
+            .select('total_mastery_score, login_streak')
+            .eq('id', currentUserId)
+            .single()
         ),
       ] as const);
 
@@ -288,6 +304,41 @@ export function useHistoryData() {
         })
         .slice(0, 10);
 
+      // --- 일관된 활동 로그 생성 ---
+      const formattedActivities: HistoryStats['allActivities'] = allActivities.map((r) => {
+        const [cat, sub] = r.themeId.split('_');
+        const categoryName =
+          APP_CONFIG.CATEGORY_MAP[cat as keyof typeof APP_CONFIG.CATEGORY_MAP] || cat;
+        return {
+          type: 'game',
+          id: `game-${r.updated_at}`,
+          title: `${categoryName} 등반`,
+          description: `${sub} - Lv.${r.level}`,
+          value: `+${r.best_score}m`,
+          timeAgo: getTimeAgo(r.updated_at),
+          icon: '🧗',
+          timestamp: r.updated_at,
+        };
+      });
+
+      // 오늘 출석 보상이 있었다면 로그 추가
+      if (profileData?.last_login_at) {
+        const lastLoginDate = new Date(profileData.last_login_at).toDateString();
+        const todayStr = new Date().toDateString();
+        if (lastLoginDate === todayStr) {
+          formattedActivities.unshift({
+            type: 'reward',
+            id: `reward-${profileData.last_login_at}`,
+            title: '데일리 접속 보상',
+            description: `${profileData.login_streak}일 연속 등반 중!`,
+            value: '수령 완료',
+            timeAgo: '오늘',
+            icon: '🎁',
+            timestamp: profileData.last_login_at,
+          });
+        }
+      }
+
       // 활동 잔디 & 스트릭 (allActivities 기준)
       const activityMap = new Map<string, number>();
       allActivities.forEach((r) => {
@@ -309,16 +360,18 @@ export function useHistoryData() {
         heatmapData.push({ date: dateStr, count, intensity });
       }
 
-      // 스트릭
-      let streakCount = 0;
-      for (let i = 0; i < 30; i++) {
-        const d = new Date(todayStart);
-        d.setDate(todayStart.getDate() - i);
-        if (activityMap.has(d.toDateString())) {
-          streakCount++;
-        } else {
-          if (i === 0) continue;
-          break;
+      // 스트릭 (DB에서 가져온 값을 우선 사용, 없으면 계산된 값 사용)
+      let streakCount = profileData?.login_streak || 0;
+      if (streakCount === 0) {
+        for (let i = 0; i < 30; i++) {
+          const d = new Date(todayStart);
+          d.setDate(todayStart.getDate() - i);
+          if (activityMap.has(d.toDateString())) {
+            streakCount++;
+          } else {
+            if (i === 0) continue;
+            break;
+          }
         }
       }
 
@@ -375,6 +428,7 @@ export function useHistoryData() {
         streakCount,
         heatmapData,
         smartComment: getSmartComment({ streakCount, averageAccuracy, maxCombo: 0, totalAltitude }),
+        allActivities: formattedActivities,
       };
 
       setStats(finalStats);
@@ -417,5 +471,6 @@ function getEmptyStats(title: string): HistoryStats {
     streakCount: 0,
     heatmapData: [],
     smartComment: '등반을 시작해보세요!',
+    allActivities: [],
   };
 }

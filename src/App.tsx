@@ -9,6 +9,7 @@ import { ErrorBoundary } from '@/components/ErrorBoundary';
 import { GlobalLoadingIndicator } from '@/components/GlobalLoadingIndicator';
 import { useErrorLogStore } from '@/stores/useErrorLogStore';
 import { useDebugStore } from '@/stores/useDebugStore';
+import { useSettingsStore } from '@/stores/useSettingsStore';
 
 const HomePage = lazy(() =>
   import('@/pages/HomePage').then((module) => ({ default: module.HomePage }))
@@ -60,6 +61,18 @@ function App() {
   // ⚠️ 전역 디버그 단축키 (개발 환경에서만 활성화)
   useDebugShortcuts();
 
+  const { isDebugPanelOpen } = useDebugStore(); // Debug store state for conditional rendering
+  const animationEnabled = useSettingsStore((state) => state.animationEnabled);
+
+  // 정적 UI 모드 전환 (body 클래스 제어)
+  useEffect(() => {
+    if (!animationEnabled) {
+      document.body.classList.add('static-ui');
+    } else {
+      document.body.classList.remove('static-ui');
+    }
+  }, [animationEnabled]);
+
   useEffect(() => {
     initializeAuth().then(() => {
       syncProgress();
@@ -102,8 +115,6 @@ function App() {
       window.removeEventListener('unhandledrejection', handleUnhandledRejection);
     };
   }, []);
-
-  const { isDebugPanelOpen } = useDebugStore(); // Debug store state for conditional rendering
 
   return (
     <ErrorBoundary>

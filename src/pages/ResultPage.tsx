@@ -46,8 +46,11 @@ function useCountUp(targetValue: number, duration = 1000) {
   return count;
 }
 
+import { useSettingsStore } from '@/stores/useSettingsStore';
+
 export function ResultPage() {
   const score = useQuizStore((state) => state.score);
+  const animationEnabled = useSettingsStore((state) => state.animationEnabled);
   const clearLevel = useLevelProgressStore((state) => state.clearLevel);
   const updateBestScore = useLevelProgressStore((state) => state.updateBestScore);
   const { fetchUserData } = useUserStore();
@@ -72,7 +75,7 @@ export function ResultPage() {
   const finalScore =
     (validateNumberParam(searchParams.get('score'), 0, 1000000) ?? score) *
     (searchParams.get('exhausted') === 'true' ? 0.8 : 1);
-  const animatedScore = useCountUp(finalScore, 1500);
+  const animatedScore = useCountUp(finalScore, animationEnabled ? 1500 : 0);
   const total = validateNumberParam(searchParams.get('total'), 0, 10000) ?? 0;
   const correctCount = Math.floor(finalScore / SCORE_PER_CORRECT);
   const averageTime = validateFloatParam(searchParams.get('avg_time'), 0, 3600);
@@ -84,40 +87,57 @@ export function ResultPage() {
       worldParam,
       categoryParam,
       level,
-      mode === 'infinite' ? 'infinite' : mode === 'time-attack' ? 'time_attack' : 'survival'
+      mode === 'time-attack' ? 'time_attack' : 'survival'
     );
     const existing = parseInt(localStorage.getItem(key) || '0', 10);
     if (finalScore > existing) {
       localStorage.setItem(key, finalScore.toString());
       setIsNewRecord(true);
-      setShowConfetti(true);
-      setTimeout(() => setShowConfetti(false), 3000);
+      if (animationEnabled) {
+        setShowConfetti(true);
+        setTimeout(() => setShowConfetti(false), 3000);
+      }
     }
     const sync = async () => {
+      const sessionId = searchParams.get('session_id');
+      const answersRaw = searchParams.get('user_answers');
+      const questionIdsRaw = searchParams.get('question_ids');
+
+      let sessionData = undefined;
+      if (sessionId && answersRaw && questionIdsRaw) {
+        try {
+          sessionData = {
+            sessionId,
+            answers: JSON.parse(answersRaw),
+            questionIds: JSON.parse(questionIdsRaw),
+          };
+        } catch (e) {
+          console.error('[ResultPage] Failed to parse session data:', e);
+        }
+      }
+
       if (finalScore > 0) {
         if (
           mode === 'time-attack'
             ? Math.round((correctCount / total) * 100) >= 50 || correctCount >= 1
             : correctCount >= 1
         ) {
-          if (mode !== 'infinite') {
-            await clearLevel(
-              worldParam,
-              categoryParam,
-              level,
-              mode as 'time-attack' | 'survival',
-              finalScore
-            );
-          } else {
-            await updateBestScore(worldParam, categoryParam, level, 'infinite', finalScore);
-          }
+          await clearLevel(
+            worldParam!,
+            categoryParam!,
+            level,
+            mode === 'time-attack' ? 'time-attack' : 'survival',
+            finalScore,
+            sessionData
+          );
         } else {
           await updateBestScore(
-            worldParam,
-            categoryParam,
+            worldParam!,
+            categoryParam!,
             level,
-            mode as 'time-attack' | 'survival' | 'infinite',
-            finalScore
+            mode === 'time-attack' ? 'time-attack' : 'survival',
+            finalScore,
+            sessionData
           );
         }
         // Correct signature: fetchRanking(world, category, period, type, limit?)
@@ -129,7 +149,7 @@ export function ResultPage() {
         );
         const ranks =
           useLevelProgressStore.getState().rankings[
-          `${worldParam}-${categoryParam}-weekly-${mode}`
+            `${worldParam}-${categoryParam}-weekly-${mode === 'time-attack' ? 'time-attack' : 'survival'}`
           ];
         const {
           data: { user },
@@ -207,10 +227,10 @@ export function ResultPage() {
   const statsList = useMemo(() => {
     const s = [];
     if (isNewRecord) s.push({ label: '최고 기록 달성', value: 'New! 🏆', isHighlight: true });
-    if (mode === 'infinite') {
-      s.push({ label: '목표 도달', value: `${correctCount}단계`, isHighlight: true });
+    if (mode === 'survival' || mode === 'infinite') {
+      s.push({ label: '최고 고도', value: `${correctCount}m`, isHighlight: true });
     }
-    if (total > 0 && mode !== 'infinite') {
+    if (total > 0 && mode !== 'survival' && mode !== 'infinite') {
       s.push({ label: '정확도', value: `${Math.round((correctCount / total) * 100)}%` });
       s.push({ label: '진행', value: `${correctCount} / ${total}` });
     }
@@ -327,15 +347,11 @@ export function ResultPage() {
       {/* 세로모드 레이아웃 */}
       <div className="result-card">
         <div className="result-header-section">
-          <div className="result-icon floating">
-            {mode === 'infinite' ? '🌌' : mode === 'time-attack' ? '⏱️' : '💥'}
-          </div>
-          <h1 className="result-title">
-            {mode === 'infinite' ? '한계 도달!' : mode === 'time-attack' ? '시간 종료!' : '게임 오버'}
-          </h1>
+          <div className="result-icon floating">{mode === 'time-attack' ? '⏱️' : '🔥'}</div>
+          <h1 className="result-title">{mode === 'time-attack' ? '시간 종료!' : '도전 종료'}</h1>
           <p className="result-subtitle">
             {worldParam} - {categoryParam}{' '}
-            {mode === 'infinite' ? '인피니트 챌린지' : `Level ${level}`}
+            {mode === 'survival' || mode === 'infinite' ? '서바이벌 챌린지' : `Level ${level}`}
           </p>
           <div className="score-section">
             <p className="score-value">{animatedScore.toLocaleString()}m</p>

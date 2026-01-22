@@ -7,7 +7,6 @@ import { TimerCircle } from './TimerCircle';
 import { QwertyKeypad } from './QwertyKeypad';
 import { CustomKeypad } from './CustomKeypad';
 import { APP_CONFIG } from '../config/app';
-import { SURVIVAL_CONFIG } from '../constants/game';
 import { getItemEmoji } from '../constants/items';
 import { ARITHMETIC_TOPIC_MAP, CALCULUS_TOPIC_MAP } from '../constants/math';
 import { useGameStore } from '../stores/useGameStore';
@@ -43,6 +42,8 @@ interface QuizCardProps {
   totalQuestions: number; // 현재 푼 문제 수
   lives: number; // 현재 라이프
   onSafetyRopeUsed?: () => void;
+  triggerPenalty?: number;
+  penaltyAmount?: number;
 
   // Pause Props
   onPause: () => void;
@@ -137,6 +138,8 @@ function QuizCardComponent({
   toastValue,
   onPause,
   remainingPauses = 3,
+  triggerPenalty = 0,
+  penaltyAmount = 5,
 }: QuizCardProps) {
   // #region agent log
   const renderId = Math.random().toString(36).substring(7);
@@ -193,20 +196,8 @@ function QuizCardComponent({
   const { activeItems, consumeActiveItem, consumeLife, isExhausted, usedItems } = useGameStore();
 
   const currentSurvivalDuration = useMemo(() => {
-    if (gameMode !== 'survival') return SURVIVAL_QUESTION_TIME;
-
-    // v2.2 스마트 압박 (Smart Pressure) 적용
-    // A. 레벨별 권장 시간 (Base Time)
-    const baseTime =
-      SURVIVAL_CONFIG.PRESSURE_CONFIG.LEVEL_BASE_TIME[currentQuestion?.level || 1] || 10;
-
-    // B. 압박 배율 (Pressure Factor) - 연속 감소
-    // 공식: BaseTime * clamp(MIN, START - (totalQuestions * DECAY))
-    const { START, MIN, DECAY } = SURVIVAL_CONFIG.PRESSURE_CONFIG.PRESSURE_FACTOR;
-    const pressureMultiplier = Math.max(MIN, START - totalQuestions * DECAY);
-
-    return Math.floor(baseTime * pressureMultiplier);
-  }, [gameMode, totalQuestions, SURVIVAL_QUESTION_TIME]);
+    return SURVIVAL_QUESTION_TIME;
+  }, [SURVIVAL_QUESTION_TIME]);
 
   const isPositiveToast = useMemo(() => toastValue.startsWith('+'), [toastValue]);
 
@@ -275,11 +266,13 @@ function QuizCardComponent({
 
   return (
     <>
+      {/* World Info Banner - Top Center Overlay (Subtle) */}
+      <div className="world-info-header-floating">World 1: 수리봉</div>
+
       {/* Header Area with new 3-Column Grid or Flex */}
       <header className="quiz-header-rework">
-        {/* LEFT: Pause & Items */}
+        {/* LEFT: Pause & Items (v2.4 Row 1/Row 2 Stack) */}
         <div className="header-left-controls">
-          <div className="world-info-header">World 1: 수리봉</div>
           <button className="pause-button" onClick={onPause} aria-label="일시정지">
             <svg
               className="pause-icon-svg"
@@ -319,7 +312,9 @@ function QuizCardComponent({
                 duration={currentSurvivalDuration}
                 onComplete={handleTimeUp}
                 isPaused={isSubmitting || isPaused}
-                key={questionKey}
+                triggerPenalty={triggerPenalty}
+                penaltyAmount={penaltyAmount}
+                key={`${questionKey}-${timerResetKey || 0}`}
               />
             ) : (
               <TimerCircle
@@ -636,6 +631,8 @@ export const QuizCard = React.memo(QuizCardComponent, (prevProps, nextProps) => 
     prevProps.totalQuestions === nextProps.totalQuestions &&
     prevProps.generateNewQuestion === nextProps.generateNewQuestion &&
     prevProps.useSystemKeyboard === nextProps.useSystemKeyboard &&
-    prevProps.categoryParam === nextProps.categoryParam
+    prevProps.categoryParam === nextProps.categoryParam &&
+    prevProps.triggerPenalty === nextProps.triggerPenalty &&
+    prevProps.penaltyAmount === nextProps.penaltyAmount
   );
 });

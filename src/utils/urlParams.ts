@@ -160,7 +160,14 @@ export function validateSubTopicParam(
  */
 export function validateModeParam(
   value: string | null
-): 'time-attack' | 'survival' | 'base-camp' | 'base-camp-result' | 'smart-retry' | 'infinite' | null {
+):
+  | 'time-attack'
+  | 'survival'
+  | 'base-camp'
+  | 'base-camp-result'
+  | 'smart-retry'
+  | 'infinite'
+  | null {
   if (value === 'time_attack' || value === 'time-attack') {
     return 'time-attack';
   }

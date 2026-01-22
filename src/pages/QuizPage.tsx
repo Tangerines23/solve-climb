@@ -1,5 +1,5 @@
 // src/pages/QuizPage.tsx (범용 퀴즈 페이지)
-import { useState, useEffect, useRef, useCallback } from 'react';
+import { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import './QuizPage.css';
 import { useQuizStore, type TimeLimit } from '@/stores/useQuizStore';
@@ -10,7 +10,7 @@ import { useQuizGameState } from '@/hooks/useQuizGameState';
 import { useQuizAnimations } from '@/hooks/useQuizAnimations';
 import { useQuizSubmit } from '@/hooks/useQuizSubmit';
 import { useSettingsStore } from '@/stores/useSettingsStore';
-import { LANDMARK_MAPPING } from '@/constants/game';
+import { LANDMARK_MAPPING, SURVIVAL_CONFIG } from '@/constants/game';
 import { useQuizRevive } from '@/hooks/useQuizRevive';
 import { useUserStore } from '@/stores/useUserStore';
 import { useGameStore } from '@/stores/useGameStore';
@@ -65,7 +65,10 @@ export function QuizPage() {
   const [showTipModal, setShowTipModal] = useState(true);
   const [showStaminaModal, setShowStaminaModal] = useState(false);
   const [pendingItemIds, setPendingItemIds] = useState<number[]>([]);
-  // Unused state removed: gameQuestions, currentQuestionId, totalInfiniteSolved, infiniteTimeLimit, penaltyTrigger
+  const [timerResetKey, setTimerResetKey] = useState(0);
+  const [infiniteTimeLimit, setInfiniteTimeLimit] = useState(10);
+
+  const [totalInfiniteSolved, setTotalInfiniteSolved] = useState(0);
 
   const {
     stamina,
@@ -117,13 +120,12 @@ export function QuizPage() {
     resetGame,
     setActiveItems,
     incrementCombo,
-    setCombo,
     isStaminaConsumed,
     setStaminaConsumed,
   } = useGameStore();
 
   const [questionKey, setQuestionKey] = useState(0);
-  const [timerResetKey, setTimerResetKey] = useState(0);
+
   const [previewKeyboardType] = useState<'custom' | 'qwerty'>(() => keyboardType);
 
   const [exitConfirmTimeoutRef] = useState(() => ({ current: null as NodeJS.Timeout | null }));
@@ -179,6 +181,16 @@ export function QuizPage() {
     }
   }, [gameState.totalQuestions, gameMode]);
 
+  // v2.2 Altitude-based Background Phase calculation
+  const altitudePhase = useMemo(() => {
+    if (gameMode !== 'survival') return 'forest';
+    const altitude = gameState.totalQuestions * 10;
+    if (altitude < 500) return 'forest';
+    if (altitude < 1500) return 'rock';
+    if (altitude < 3000) return 'clouds';
+    return 'space';
+  }, [gameState.totalQuestions, gameMode]);
+
   const { generateNewQuestion } = useQuestionGenerator({
     category,
     world,
@@ -198,8 +210,45 @@ export function QuizPage() {
     setQuestionAnimation: animations.setQuestionAnimation,
     setQuestionKey,
     setQuestionStartTime: gameState.setQuestionStartTime,
-    onQuestionGenerated: (_question, questionId) => {
+    onQuestionGenerated: (question, questionId) => {
       gameState.setQuestionIds((prev) => [...prev, questionId]);
+
+      // v2.2 Smart Pressure Timer Logic
+      if (gameMode === 'survival' || gameMode === 'infinite') {
+        const { LEVEL_BASE_TIME, PRESSURE_FACTOR } = SURVIVAL_CONFIG.PRESSURE_CONFIG;
+
+        // 1. 현재 레벨 기반 Base Time 결정 (v2.4 고해상도 매핑)
+        const categoryMax =
+          question.category === '기초'
+            ? 30
+            : question.category === '논리'
+              ? 15
+              : question.category === '대수'
+                ? 20
+                : question.category === '심화'
+                  ? 15
+                  : 10;
+
+        // 기획서 10레벨 기준을 30레벨까지 확장 가능하도록 매핑
+        const normalizedLv = Math.max(1, Math.ceil((question.level! / categoryMax) * 10));
+
+        // v2.4: 10레벨 초과 시 선형 증가 로직 (Lv.30 -> 60초+ 보장)
+        const getBaseTime = (lv: number) => {
+          if (lv <= 10) return LEVEL_BASE_TIME[lv] || 10;
+          return 20 + (lv - 10) * 2; // 10레벨 이후 초당 2초씩 증가
+        };
+
+        const baseTime = getBaseTime(normalizedLv);
+
+        // 2. Pressure Factor 계산 (문제 수에 따라 감소)
+        const currentPressure = Math.max(
+          PRESSURE_FACTOR.MIN,
+          PRESSURE_FACTOR.START - gameState.totalQuestions * PRESSURE_FACTOR.DECAY
+        );
+
+        const calculatedTime = baseTime * currentPressure;
+        setInfiniteTimeLimit(calculatedTime);
+      }
     },
   });
 
@@ -372,7 +421,8 @@ export function QuizPage() {
     setRemainingPauses((prev) => prev - 1);
     generateNewQuestionRef.current();
     setShowPauseModal(false);
-    feedbackRef.current?.show('문제 교체!', '문제가 변경되었습니다.', 'info');
+    setShowCountdown(true); // v2.2: Reroll + Countdown on resume
+    feedbackRef.current?.show('START!', '3... 2... 1...', 'info');
   }, []);
 
   const handlePauseExit = useCallback(() => {
@@ -382,13 +432,13 @@ export function QuizPage() {
   }, [smartHandleGameOver]);
 
   const handleCountdownComplete = useCallback(() => {
-    setCombo(20);
     setShowCountdown(false);
-  }, [setCombo]);
+  }, []);
   const handleSafetyRopeUsed = useCallback(() => {
     setShowSafetyRope(true);
-    if (gameMode === 'time-attack') setTimerResetKey((prev) => prev + 1);
-  }, [gameMode]);
+    setTimerResetKey((prev) => prev + 1); // 서바이벌/타임어택 모두 타이머 리셋
+    feedbackRef.current?.show('SAFE!', 'Rope Protected!', 'success');
+  }, []);
 
   const { handleSubmit } = useQuizSubmit({
     answerInput,
@@ -424,13 +474,16 @@ export function QuizPage() {
     onAnswerSubmitted: (_questionId, userAnswer) => {
       gameState.setUserAnswers((prev) => [...prev, userAnswer]);
 
-      if (gameMode === 'infinite') {
-        // Infinite mode logic to be implemented in useQuizStore or dedicated hook
+      if (gameMode === 'infinite' || gameMode === 'survival') {
+        const nextSolved = totalInfiniteSolved + 1;
+        setTotalInfiniteSolved(nextSolved);
+        // 10문제마다 시간 0.5초 감소 (최소 3초)
+        if (nextSolved > 0 && nextSolved % 10 === 0) {
+          setInfiniteTimeLimit((prev) => Math.max(3, prev - 0.5));
+        }
       }
     },
-    onPenalty: (amount) => {
-      feedbackRef.current?.show('PENALTY!', `-${amount}s Time Deducted`, 'info');
-    },
+    onPenalty: undefined, // 서바이벌은 v2.2 기획에 따라 즉사(Instant Death) 규칙 적용
   });
 
   const handleStartGame = async (selectedItemIds: number[]) => {
@@ -659,6 +712,7 @@ export function QuizPage() {
       className={`quiz-page fever-level-${feverLevel}`}
       data-world={worldParam || world || 'World1'}
       data-category={categoryParam || ''}
+      data-altitude-phase={altitudePhase}
     >
       <QuizCard
         currentQuestion={currentQuestion}
@@ -670,10 +724,14 @@ export function QuizPage() {
         subParam={worldParam}
         levelParam={levelParam}
         gameMode={gameMode}
-        timeLimit={timeLimit}
+        timeLimit={
+          gameMode === 'survival' || gameMode === 'infinite' ? infiniteTimeLimit : timeLimit
+        }
         questionKey={questionKey}
         timerResetKey={timerResetKey}
-        SURVIVAL_QUESTION_TIME={5}
+        triggerPenalty={0}
+        penaltyAmount={5}
+        SURVIVAL_QUESTION_TIME={infiniteTimeLimit}
         totalQuestions={gameState.totalQuestions}
         lives={lives}
         onSafetyRopeUsed={handleSafetyRopeUsed}

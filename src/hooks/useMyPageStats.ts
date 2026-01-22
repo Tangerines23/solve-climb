@@ -14,6 +14,7 @@ export interface MyPageStats {
   currentTierLevel: number | null;
   cyclePromotionPending: boolean;
   pendingCycleScore: number;
+  loginStreak: number;
 }
 
 interface ProfileData {
@@ -21,6 +22,7 @@ interface ProfileData {
   current_tier_level: number | null;
   cycle_promotion_pending: boolean | null;
   pending_cycle_score: number | null;
+  login_streak: number | null;
 }
 
 interface RpcStats {
@@ -161,6 +163,7 @@ export function useMyPageStats(): UseMyPageStatsResult {
           currentTierLevel: null,
           cyclePromotionPending: false,
           pendingCycleScore: 0,
+          loginStreak: 0,
         });
         setLoading(false);
         return;
@@ -176,7 +179,7 @@ export function useMyPageStats(): UseMyPageStatsResult {
         supabase
           .from('profiles')
           .select(
-            'total_mastery_score, current_tier_level, cycle_promotion_pending, pending_cycle_score'
+            'total_mastery_score, current_tier_level, cycle_promotion_pending, pending_cycle_score, login_streak'
           )
           .eq('id', user_id)
           .single()
@@ -208,6 +211,7 @@ export function useMyPageStats(): UseMyPageStatsResult {
             currentTierLevel: profileData?.current_tier_level ?? null,
             cyclePromotionPending: profileData?.cycle_promotion_pending || false,
             pendingCycleScore: profileData?.pending_cycle_score || 0,
+            loginStreak: profileData?.login_streak || 0,
           });
           setLoading(false);
           return;
@@ -276,6 +280,7 @@ export function useMyPageStats(): UseMyPageStatsResult {
           currentTierLevel: profileData?.current_tier_level ?? null,
           cyclePromotionPending: profileData?.cycle_promotion_pending || false,
           pendingCycleScore: profileData?.pending_cycle_score || 0,
+          loginStreak: profileData?.login_streak || 0,
         });
         setLoading(false);
         return;
@@ -322,6 +327,7 @@ export function useMyPageStats(): UseMyPageStatsResult {
         currentTierLevel: profileData?.current_tier_level ?? null,
         cyclePromotionPending: profileData?.cycle_promotion_pending || false,
         pendingCycleScore: profileData?.pending_cycle_score || 0,
+        loginStreak: profileData?.login_streak || 0,
       });
     } catch (err) {
       console.error('Failed to fetch user stats:', err);
@@ -335,6 +341,7 @@ export function useMyPageStats(): UseMyPageStatsResult {
         currentTierLevel: null,
         cyclePromotionPending: false,
         pendingCycleScore: 0,
+        loginStreak: 0,
       });
     } finally {
       setLoading(false);

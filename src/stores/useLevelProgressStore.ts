@@ -13,6 +13,7 @@ export interface LevelRecord {
   bestScore: {
     'time-attack': number | null;
     survival: number | null;
+    infinite: number | null;
   };
   clearedAt?: string;
 }
@@ -46,14 +47,24 @@ interface LevelProgressState {
     category: string,
     level: number,
     mode: GameMode,
-    score: number
+    score: number,
+    sessionData?: {
+      answers: number[];
+      questionIds: string[];
+      sessionId: string;
+    }
   ) => void;
   updateBestScore: (
     world: string,
     category: string,
     level: number,
     mode: GameMode,
-    score: number
+    score: number,
+    sessionData?: {
+      answers: number[];
+      questionIds: string[];
+      sessionId: string;
+    }
   ) => void;
   getBestRecords: (
     world: string,
@@ -69,7 +80,7 @@ interface LevelProgressState {
     world: string | null,
     category: string | null,
     period: 'weekly' | 'all-time',
-    type: 'total' | 'time-attack' | 'survival',
+    type: 'total' | 'time-attack' | 'survival' | 'infinite',
     limit?: number
   ) => Promise<void>;
 }
@@ -80,6 +91,7 @@ const getDefaultLevelRecord = (level: number): LevelRecord => ({
   bestScore: {
     'time-attack': null,
     survival: null,
+    infinite: null,
   },
 });
 
@@ -128,13 +140,14 @@ export const useLevelProgressStore = create<LevelProgressState>()(
         return levels[0] + 1; // 마지막 클리어 레벨 + 1
       },
 
-      clearLevel: async (world, category, level, mode, score) => {
+      clearLevel: async (world, category, level, mode, score, sessionData) => {
         console.log('[useLevelProgressStore] clearLevel called:', {
           world,
           category,
           level,
           mode,
           score,
+          hasSessionData: !!sessionData,
         });
 
         // 1. Optimistic Update (Local) - Move to the beginning to be truly synchronous for UI/Tests
@@ -172,15 +185,20 @@ export const useLevelProgressStore = create<LevelProgressState>()(
 
         // 2. Call submit_game_result RPC to update weekly scores and log activity
         try {
-          const gameMode = mode === 'time-attack' ? 'timeattack' : 'survival';
+          const gameMode =
+            mode === 'time-attack' ? 'timeattack' : mode === 'survival' ? 'survival' : 'infinite';
           console.log('[clearLevel] Calling submit_game_result RPC:', { score, gameMode });
 
           const { error: rpcError } = await debugSupabaseQuery(
             supabase.rpc('submit_game_result', {
-              p_score: score,
-              p_minerals_earned: Math.floor(score / 10),
+              p_user_answers: sessionData?.answers || [],
+              p_question_ids: sessionData?.questionIds || [],
               p_game_mode: gameMode,
               p_items_used: null,
+              p_session_id: sessionData?.sessionId,
+              p_category: 'math', // TODO: Map world to category correctly
+              p_subject: 'add', // TODO: Map category to subject correctly
+              p_level: level,
             })
           );
 
@@ -225,7 +243,7 @@ export const useLevelProgressStore = create<LevelProgressState>()(
         }
       },
 
-      updateBestScore: async (world, category, level, mode, score) => {
+      updateBestScore: async (world, category, level, mode, score, sessionData) => {
         // 1. Optimistic Update (Local)
         set((state) => {
           const newProgress = { ...state.progress };
@@ -238,7 +256,7 @@ export const useLevelProgressStore = create<LevelProgressState>()(
 
           const record = newProgress[world][category][level];
           if (
-            (mode === 'time-attack' || mode === 'survival') &&
+            (mode === 'time-attack' || mode === 'survival' || mode === 'infinite') &&
             (record.bestScore[mode] === null || score > record.bestScore[mode]!)
           ) {
             record.bestScore[mode] = score;
@@ -247,7 +265,31 @@ export const useLevelProgressStore = create<LevelProgressState>()(
           return { progress: newProgress };
         });
 
-        // 2. Background Sync (Supabase)
+        // 2. Call submit_game_result RPC to update weekly scores
+        try {
+          const gameMode =
+            mode === 'time-attack' ? 'timeattack' : mode === 'survival' ? 'survival' : 'infinite';
+          const { error: rpcError } = await debugSupabaseQuery(
+            supabase.rpc('submit_game_result', {
+              p_user_answers: sessionData?.answers || [],
+              p_question_ids: sessionData?.questionIds || [],
+              p_game_mode: gameMode,
+              p_items_used: null,
+              p_session_id: sessionData?.sessionId,
+              p_category: 'math',
+              p_subject: 'add',
+              p_level: level,
+            })
+          );
+
+          if (rpcError) {
+            console.error('[updateBestScore] submit_game_result RPC failed:', rpcError);
+          }
+        } catch (error) {
+          console.error('[updateBestScore] Failed to call submit_game_result:', error);
+        }
+
+        // 3. Background Sync (Supabase game_records)
         try {
           const authResult = await debugSupabaseQuery(supabase.auth.getUser());
           const user = authResult?.data?.user;
@@ -298,11 +340,22 @@ export const useLevelProgressStore = create<LevelProgressState>()(
               bestSurvival = record.bestScore['survival']!;
             }
           }
+          if (record.bestScore['infinite'] !== null) {
+            // Infinite mode typically tracks the highest altitude, which we map to survival or its own
+            // For now, let's keep it separate if needed, or if survival best should be updated
+          }
         });
 
         return {
           'time-attack': bestTimeAttack,
           survival: bestSurvival,
+          infinite: records.reduce(
+            (max, r) =>
+              r.bestScore.infinite && r.bestScore.infinite > (max || 0)
+                ? r.bestScore.infinite
+                : max,
+            null as number | null
+          ),
         };
       },
 
@@ -348,7 +401,7 @@ export const useLevelProgressStore = create<LevelProgressState>()(
                 }
 
                 const modeKey = mode as GameMode;
-                if (modeKey === 'time-attack' || modeKey === 'survival') {
+                if (modeKey === 'time-attack' || modeKey === 'survival' || modeKey === 'infinite') {
                   if (
                     localRecord.bestScore[modeKey] === null ||
                     score > localRecord.bestScore[modeKey]!

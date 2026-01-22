@@ -4,7 +4,9 @@ import { urls } from '../../utils/navigation';
 
 interface MyPageSettingsProps {
   hapticEnabled: boolean;
+  animationEnabled: boolean;
   onToggleHaptic: () => void;
+  onToggleAnimation: () => void;
   onShowProfileForm: () => void;
   onDataReset: () => void;
   isResetting: boolean;
@@ -15,7 +17,9 @@ interface MyPageSettingsProps {
 
 export function MyPageSettings({
   hapticEnabled,
+  animationEnabled,
   onToggleHaptic,
+  onToggleAnimation,
   onShowProfileForm,
   onDataReset,
   isResetting,
@@ -61,6 +65,15 @@ export function MyPageSettings({
             </div>
             <label className="my-page-settings-toggle">
               <input type="checkbox" checked={hapticEnabled} onChange={onToggleHaptic} />
+              <span className="my-page-settings-toggle-slider"></span>
+            </label>
+          </div>
+          <div className="my-page-settings-item">
+            <div className="my-page-settings-item-content">
+              <span className="my-page-settings-item-label">정적 UI 모드</span>
+            </div>
+            <label className="my-page-settings-toggle">
+              <input type="checkbox" checked={!animationEnabled} onChange={onToggleAnimation} />
               <span className="my-page-settings-toggle-slider"></span>
             </label>
           </div>

@@ -8,7 +8,6 @@ import { FooterNav } from '@/components/FooterNav';
 import { Toast } from '@/components/Toast';
 import { World, Category } from '@/types/quiz';
 import { urls } from '@/utils/navigation';
-import { useLevelProgressStore } from '@/stores/useLevelProgressStore';
 import './LevelSelectPage.css';
 
 export function LevelSelectPage() {
@@ -140,13 +139,10 @@ export function LevelSelectPage() {
 
   const categoryColor = categoryInfo.color || '#10b981';
 
-  // 모든 레벨 클리어 여부 확인 (인피니트 모드 해금 조건)
-  const categoryLevels = useLevelProgressStore((state) =>
-    state.getLevelProgress(worldParam, categoryParam)
-  );
-  const totalLevelsInCategory = levels.length;
-  const clearedLevelsCount = categoryLevels.filter((l) => l.cleared).length;
-  const isInfiniteUnlocked = clearedLevelsCount >= totalLevelsInCategory;
+  // 모든 레벨 클리어 여부 확인 (필요 시 활용)
+  // const categoryLevels = useLevelProgressStore(
+  //   useShallow((state) => state.getLevelProgress(worldParam, categoryParam))
+  // );
 
   // 레벨 클릭 핸들러
   const handleLevelClick = (level: number) => {
@@ -176,19 +172,6 @@ export function LevelSelectPage() {
         category: categoryParam,
         level: 1,
         mode: 'survival',
-      })
-    );
-  };
-
-  // 인피니트 챌린지 진입 핸들러
-  const handleInfiniteClick = () => {
-    navigate(
-      urls.quiz({
-        mountain: mountainParam,
-        world: worldParam,
-        category: categoryParam,
-        level: 1, // 인피니트 모드는 내부적으로 레벨을 랜덤화함
-        mode: 'infinite',
       })
     );
   };
@@ -281,24 +264,13 @@ export function LevelSelectPage() {
             <span className="survival-icon">🔥</span>
             <div className="survival-text">
               <span className="survival-title">서바이벌 챌린지</span>
-              <span className="survival-desc">한 번의 실수도 용납되지 않는 무한 도전!</span>
+              <span className="survival-desc">
+                점점 빨라지는 한계 돌파! 무한 도전에 직면하세요.
+              </span>
             </div>
             <span className="survival-arrow">→</span>
           </button>
         </div>
-
-        {isInfiniteUnlocked && (
-          <div className="infinite-challenge-entry">
-            <button className="infinite-challenge-button" onClick={handleInfiniteClick}>
-              <span className="infinite-icon">🌌</span>
-              <div className="infinite-text">
-                <span className="infinite-title">인피니트 챌린지</span>
-                <span className="infinite-desc">점점 빨라지는 한계 돌파! 마지막 관문입니다.</span>
-              </div>
-              <span className="infinite-arrow">→</span>
-            </button>
-          </div>
-        )}
 
         <MyRecordCard
           world={worldParam}

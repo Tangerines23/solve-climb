@@ -14,6 +14,8 @@ import { MyPageStats } from '../components/my/MyPageStats';
 import { MyPageQuickAccess } from '../components/my/MyPageQuickAccess';
 import { MyPageSettings } from '../components/my/MyPageSettings';
 import { NotificationPlayground } from '../components/debug/NotificationPlayground';
+import { StaticUISection } from '../components/debug/StaticUISection';
+import { DailyRewardDebugSection } from '../components/debug/DailyRewardDebugSection';
 import { useProfileStore } from '../stores/useProfileStore';
 import { useSettingsStore } from '../stores/useSettingsStore';
 import { useMyPageStats } from '../hooks/useMyPageStats';
@@ -69,6 +71,8 @@ export function MyPage() {
   const nickname = profile?.nickname || '게이머';
   const hapticEnabled = useSettingsStore((state) => state.hapticEnabled);
   const setHapticEnabled = useSettingsStore((state) => state.setHapticEnabled);
+  const animationEnabled = useSettingsStore((state) => state.animationEnabled);
+  const setAnimationEnabled = useSettingsStore((state) => state.setAnimationEnabled);
   const { stats, session, loading: statsLoading, error: statsError, refetch } = useMyPageStats();
   const favorites = useFavoriteStore((state) => state.favorites);
   const setCategoryTopic = useQuizStore((state) => state.setCategoryTopic);
@@ -143,6 +147,13 @@ export function MyPage() {
       vibrateShort();
     }
     setToastMessage(newValue ? '진동이 켜졌습니다' : '진동이 꺼졌습니다');
+    setShowToast(true);
+  };
+
+  const handleToggleAnimation = () => {
+    const newValue = !animationEnabled;
+    setAnimationEnabled(newValue);
+    setToastMessage(newValue ? '애니메이션 효과가 켜졌습니다' : '정적 UI 모드가 활성화되었습니다');
     setShowToast(true);
   };
 
@@ -672,6 +683,7 @@ export function MyPage() {
           <MyPageProfile
             nickname={nickname}
             totalMasteryScore={stats?.totalMasteryScore || 0}
+            loginStreak={stats?.loginStreak || 0}
             loading={statsLoading}
             onEditProfile={() => setShowProfileForm(true)}
           />
@@ -698,7 +710,9 @@ export function MyPage() {
           {/* Settings List */}
           <MyPageSettings
             hapticEnabled={hapticEnabled}
+            animationEnabled={animationEnabled}
             onToggleHaptic={handleToggleHaptic}
+            onToggleAnimation={handleToggleAnimation}
             onShowProfileForm={() => setShowProfileForm(true)}
             onDataReset={handleDataReset}
             isResetting={isResetting}
@@ -709,7 +723,11 @@ export function MyPage() {
 
           {/* Admin / Dev Playground */}
           {(useProfileStore.getState().isAdmin || import.meta.env.DEV) && (
-            <div style={{ marginTop: '32px' }}>
+            <div
+              style={{ marginTop: '32px', display: 'flex', flexDirection: 'column', gap: '20px' }}
+            >
+              <DailyRewardDebugSection />
+              <StaticUISection />
               <NotificationPlayground />
             </div>
           )}

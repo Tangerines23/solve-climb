@@ -195,11 +195,7 @@ export function useQuizSubmit({
       }
 
       // 문제 수 증가
-      let currentWave = 1;
-      paramsRef.current.setTotalQuestions((prev) => {
-        currentWave = prev + 1;
-        return currentWave;
-      });
+      paramsRef.current.setTotalQuestions((prev) => prev + 1);
 
       // [Base Camp Diagnostic Mode]
       const isBaseCamp = new URLSearchParams(window.location.search).get('mode') === 'base-camp';
@@ -375,8 +371,45 @@ export function useQuizSubmit({
           vibrateLong(); // 긴 진동 사용
         }
 
-        // 서바이벌 모드: 틀리면 게임 종료 (오답 저장)
-        if (gameMode === 'survival') {
+        // 서바이벌/인피니트 모드: 패널티 로직 (onPenalty가 있으면 패널티, 없으면 종료)
+        if (paramsRef.current.onPenalty && (gameMode === 'survival' || gameMode === 'infinite')) {
+          paramsRef.current.onPenalty(5);
+
+          // 이전 토스트가 있다면 먼저 제거하고 새로 표시
+          setShowSlideToast(false);
+          setToastValue(`-5초`);
+
+          // 랜덤 위치 생성 (X: 10-80%, Y: 10-40%)
+          const randomLeft = Math.floor(Math.random() * 70) + 10;
+          const randomTop = Math.floor(Math.random() * 30) + 10;
+          setDamagePosition({ left: `${randomLeft}%`, top: `${randomTop}%` });
+
+          setShowSlideToast(true);
+
+          const toastHideTimer = setTimeout(() => {
+            setShowSlideToast(false);
+          }, 700);
+
+          // 800ms 후 다음 문제로 이동
+          setTimeout(() => {
+            clearTimeout(toastHideTimer);
+            setIsError(false);
+            setDisplayValue('');
+            setAnswerInput('');
+            setShowFlash(false);
+            setShowSlideToast(false);
+            setInputAnimation('');
+            setCardAnimation('');
+            paramsRef.current.generateNewQuestion();
+            setIsSubmitting(false);
+
+            if (useSystemKeyboard && inputRef.current) {
+              setTimeout(() => {
+                inputRef.current?.focus();
+              }, 100);
+            }
+          }, 800);
+        } else if (gameMode === 'survival') {
           // 오답 정보 저장
           const questionText = currentQuestion.question;
           paramsRef.current.setWrongAnswers((prev) => [
@@ -426,44 +459,36 @@ export function useQuizSubmit({
             }
           }, 800);
         } else {
-          if (gameMode === 'infinite') {
-            if (paramsRef.current.onPenalty) paramsRef.current.onPenalty(5);
-          } else if (!hasSafetyRope) {
+          // 타임어택 등 기타 모드: 점수 감점
+          if (!hasSafetyRope) {
             decreaseScore(SLIDE_PER_WRONG);
           }
 
-          // 이전 토스트가 있다면 먼저 제거하고 새로 표시
           setShowSlideToast(false);
           setToastValue(`-${SLIDE_PER_WRONG}m`);
 
-          // 랜덤 위치 생성 (X: 10-80%, Y: 10-40%)
-          const randomLeft = Math.floor(Math.random() * 70) + 10; // 10% ~ 80%
-          const randomTop = Math.floor(Math.random() * 30) + 10; // 10% ~ 40%
+          const randomLeft = Math.floor(Math.random() * 70) + 10;
+          const randomTop = Math.floor(Math.random() * 30) + 10;
           setDamagePosition({ left: `${randomLeft}%`, top: `${randomTop}%` });
 
-          // 토스트를 즉시 표시 (requestAnimationFrame 제거로 지연 없음)
           setShowSlideToast(true);
 
-          // 토스트 자동 종료 타이머 (700ms - 다음 문제 이동 전에 자연스럽게 사라짐)
           const toastHideTimer = setTimeout(() => {
             setShowSlideToast(false);
           }, 700);
 
-          // 800ms 후 다음 문제로 이동
           setTimeout(() => {
-            // 토스트 타이머 정리 (혹시 모를 중복 제거 방지)
             clearTimeout(toastHideTimer);
-
             setIsError(false);
             setDisplayValue('');
             setAnswerInput('');
             setShowFlash(false);
-            setShowSlideToast(false); // 명시적으로 초기화 (이미 사라졌을 수도 있음)
+            setShowSlideToast(false);
             setInputAnimation('');
             setCardAnimation('');
             paramsRef.current.generateNewQuestion();
             setIsSubmitting(false);
-            // 다음 문제로 넘어갈 때 포커스 유지 (시스템 키보드 사용 시만)
+
             if (useSystemKeyboard && inputRef.current) {
               setTimeout(() => {
                 inputRef.current?.focus();

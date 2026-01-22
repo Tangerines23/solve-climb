@@ -1,10 +1,10 @@
 // 문제 생성 로직을 관리하는 커스텀 훅
-import { useCallback, useMemo } from 'react';
+import { useCallback } from 'react';
 import { Category, QuizQuestion, Difficulty, GameMode, World } from '../types/quiz';
 import { generateQuestion } from '../utils/quizGenerator';
-import { SURVIVAL_CONFIG } from '../constants/game';
 import { useBaseCampStore } from '../stores/useBaseCampStore';
 import { useDeathNoteStore } from '../stores/useDeathNoteStore';
+import { SURVIVAL_CONFIG } from '../constants/game';
 
 interface UseQuestionGeneratorParams {
   category: Category | null;
@@ -49,39 +49,7 @@ export function useQuestionGenerator({
   setQuestionStartTime,
   onQuestionGenerated,
 }: UseQuestionGeneratorParams) {
-  const effectiveLevel = useMemo(() => {
-    if (gameMode === 'infinite') {
-      const targetCategory = (categoryParam || category) as Category;
-      switch (targetCategory) {
-        case '기초':
-          return Math.floor(Math.random() * 30) + 1;
-        case '논리':
-          return Math.floor(Math.random() * 15) + 1;
-        case '대수':
-          return Math.floor(Math.random() * 20) + 1;
-        case '심화':
-          return Math.floor(Math.random() * 15) + 1;
-        default:
-          return Math.floor(Math.random() * 10) + 1;
-      }
-    }
-
-    if (gameMode !== 'survival') return levelParam || 1;
-
-    const currentWave = totalQuestions + 1;
-    const waveConfig = SURVIVAL_CONFIG.WAVES.find(
-      (w) => currentWave >= w.start && currentWave <= w.end
-    );
-
-    // v2.2 상세 기획 반영: Phase별 레벨 범위 내에서 무작위 선택
-    if (waveConfig) {
-      const { minLevel, maxLevel } = waveConfig;
-      // 해당 범위(min-max) 내에서 무작위 레벨 선택
-      return Math.floor(Math.random() * (maxLevel - minLevel + 1)) + minLevel;
-    }
-
-    return 10; // Fallback
-  }, [gameMode, levelParam, totalQuestions]);
+  // effectiveLevel calculation moved inside generateNewQuestion to react to totalQuestions correctly
 
   // ... (inside useQuestionGenerator)
   const generateNewQuestion = useCallback(() => {
@@ -145,8 +113,57 @@ export function useQuestionGenerator({
     // 2. 일반 월드/카테고리/레벨 결정 (파라미터 우선, 없으면 스토어 값 사용)
     const targetWorld = (worldParam || world) as World;
     const targetCategory = (categoryParam || category) as Category;
-    const targetLevel =
-      gameMode === 'survival' || gameMode === 'infinite' ? effectiveLevel : levelParam || 1;
+
+    let targetLevel = levelParam || 1;
+
+    if (gameMode === 'survival' || gameMode === 'infinite') {
+      // v2.4 Sliding Window + Trap Algorithm
+      const { BASE_LEVEL_DIVIDER, MAIN_STREAM_DELTA, TRAP_PROBABILITY, TRAP_DELTA_MIN } =
+        SURVIVAL_CONFIG.SLIDING_WINDOW_CONFIG;
+
+      const baseLevel = Math.floor(totalQuestions / BASE_LEVEL_DIVIDER) + 1;
+      const isTrap = Math.random() < TRAP_PROBABILITY && baseLevel > TRAP_DELTA_MIN;
+
+      let categoryMax = 30;
+      switch (targetCategory) {
+        case '기초':
+          categoryMax = 30;
+          break;
+        case '논리':
+          categoryMax = 15;
+          break;
+        case '대수':
+          categoryMax = 20;
+          break;
+        case '심화':
+          categoryMax = 15;
+          break;
+      }
+
+      // v2.4 Note: Theoretically baseLevel can grow infinitely.
+      // We still scale it to the category's actual max level for generation.
+      const scaleFactor = (categoryMax - 1) / 9; // 1->1, 10->categoryMax 기준 비율
+
+      if (isTrap) {
+        // [20% 확률] 스피드 함정: 1 ~ (기준 레벨 - 3)
+        const trapMax = baseLevel - TRAP_DELTA_MIN;
+        const scaledTrapMax = Math.min(categoryMax, Math.ceil((trapMax - 1) * scaleFactor) + 1);
+        targetLevel = Math.floor(Math.random() * scaledTrapMax) + 1;
+      } else {
+        // [80% 확률] 메인 스트림: 기준 레벨 ± 2
+        const minWindow = Math.max(1, baseLevel - MAIN_STREAM_DELTA);
+        const maxWindow = baseLevel + MAIN_STREAM_DELTA;
+
+        // v2.4 Capping: Ensure scaled ranges remain within [1, categoryMax] and valid
+        const scaledMax = Math.min(categoryMax, Math.ceil((maxWindow - 1) * scaleFactor) + 1);
+        const scaledMin = Math.min(
+          scaledMax,
+          Math.max(1, Math.floor((minWindow - 1) * scaleFactor) + 1)
+        );
+
+        targetLevel = Math.floor(Math.random() * (scaledMax - scaledMin + 1)) + scaledMin;
+      }
+    }
 
     if (!targetWorld || !targetCategory) {
       console.warn('Missing world or category for question generation');
@@ -207,7 +224,7 @@ export function useQuestionGenerator({
     setQuestionKey,
     setQuestionStartTime,
     onQuestionGenerated,
-    effectiveLevel,
+    totalQuestions,
   ]);
 
   return {

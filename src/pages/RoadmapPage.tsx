@@ -821,6 +821,46 @@ export function RoadmapPage() {
     );
   };
 
+  const renderActivitySection = () => {
+    if (!stats || !stats.allActivities) return null;
+
+    return (
+      <div className="history-activity-container fade-in">
+        <div className="history-analysis-card">
+          <div className="history-card-header no-border">
+            <h3 className="history-card-title">기록 보관함 📜</h3>
+          </div>
+          <div className="activity-list">
+            {stats.allActivities.length > 0 ? (
+              stats.allActivities.map((activity) => (
+                <div key={activity.id} className="activity-item">
+                  <div className="activity-icon-container">
+                    <span className="activity-icon">{activity.icon}</span>
+                  </div>
+                  <div className="activity-info">
+                    <div className="activity-header">
+                      <span className="activity-title">{activity.title}</span>
+                      <span className="activity-time">{activity.timeAgo}</span>
+                    </div>
+                    <div className="activity-body">
+                      <span className="activity-desc">{activity.description}</span>
+                      <span className="activity-value">{activity.value}</span>
+                    </div>
+                  </div>
+                </div>
+              ))
+            ) : (
+              <div className="empty-activity-message">
+                아직 활동 기록이 없습니다.
+                <br />첫 번째 산을 정복해보세요!
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
+    );
+  };
+
   if (error) {
     return (
       <div className="history-page">
@@ -849,11 +889,19 @@ export function RoadmapPage() {
                 <div className="history-user-title">
                   {loading ? '분석 중...' : stats?.userTitle}
                 </div>
-                <div className="history-user-altitude">
-                  누적 고도{' '}
-                  <strong className="altitude-value">
-                    {loading ? '...' : stats?.totalAltitude.toLocaleString()}m
-                  </strong>
+                <div className="history-user-info-row">
+                  <div className="history-user-altitude">
+                    누적 고도{' '}
+                    <strong className="altitude-value">
+                      {loading ? '...' : stats?.totalAltitude.toLocaleString()}m
+                    </strong>
+                  </div>
+                  {!loading && stats && stats.streakCount > 0 && (
+                    <div className="history-streak-badge">
+                      <span className="streak-icon">🔥</span>
+                      <span className="streak-count">{stats.streakCount}일째</span>
+                    </div>
+                  )}
                 </div>
               </div>
             </div>
@@ -889,11 +937,20 @@ export function RoadmapPage() {
             <div className="history-segmented-control">
               <div
                 className={`segmented-indicator ${
-                  activeTab === 'summary' ? 'tab-summary' : 'tab-analysis'
+                  activeTab === 'summary'
+                    ? 'tab-summary'
+                    : activeTab === 'analysis'
+                      ? 'tab-analysis'
+                      : 'tab-activity'
                 }`}
                 style={{
-                  width: '50%',
-                  transform: activeTab === 'summary' ? 'translateX(0)' : 'translateX(100%)',
+                  width: '33.33%',
+                  transform:
+                    activeTab === 'summary'
+                      ? 'translateX(0)'
+                      : activeTab === 'analysis'
+                        ? 'translateX(100%)'
+                        : 'translateX(200%)',
                 }}
               />
               <button
@@ -913,6 +970,15 @@ export function RoadmapPage() {
                 }}
               >
                 분석 📊
+              </button>
+              <button
+                className={`segmented-item ${activeTab === 'activity' ? 'active' : ''}`}
+                onClick={() => {
+                  setActiveTab('activity');
+                  vibrateShort();
+                }}
+              >
+                활동 📜
               </button>
             </div>
           </div>
@@ -1007,8 +1073,10 @@ export function RoadmapPage() {
                   </>
                 )}
               </div>
-            ) : (
+            ) : activeTab === 'analysis' ? (
               renderAnalysisSection()
+            ) : (
+              renderActivitySection()
             )}
           </div>
         </div>

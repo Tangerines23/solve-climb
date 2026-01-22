@@ -1,0 +1,91 @@
+.static-ui-section {
+  background: rgba(0, 0, 0, 0.2);
+  border-radius: var(--rounded-card);
+  padding: 16px;
+  border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.main-toggle {
+  margin-bottom: 24px;
+  background: rgba(255, 255, 255, 0.03);
+  padding: 12px;
+  border-radius: var(--rounded-sm);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.static-effects-audit {
+  margin-top: 20px;
+}
+
+.static-effects-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 12px;
+  margin-top: 12px;
+}
+
+.static-effect-card {
+  background: rgba(255, 255, 255, 0.05);
+  padding: 12px;
+  border-radius: var(--rounded-md-alt);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  transition: all 0.3s ease;
+}
+
+.static-effect-card.suppressed {
+  opacity: 0.6;
+  filter: grayscale(1);
+  border-style: dashed;
+}
+
+.effect-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 6px;
+}
+
+.effect-title {
+  font-weight: 700;
+  font-size: 0.9rem;
+  color: var(--color-blue-400);
+}
+
+.suppressed .effect-title {
+  color: var(--adaptiveGrey500);
+  text-decoration: line-through;
+}
+
+.effect-status-tag {
+  font-size: 0.7rem;
+  padding: 2px 6px;
+  border-radius: 4px;
+  background: rgba(255, 255, 255, 0.1);
+  font-weight: 800;
+}
+
+.suppressed .effect-status-tag {
+  background: var(--adaptiveRed500);
+  color: white;
+}
+
+.effect-description {
+  font-size: 0.75rem;
+  color: var(--adaptiveGrey400);
+  line-height: 1.4;
+}
+
+.static-ui-notice {
+  margin-top: 24px;
+  padding: 12px;
+  background: rgba(59, 130, 246, 0.05);
+  border-left: 3px solid var(--color-blue-500);
+  border-radius: 4px;
+}
+
+.static-ui-notice p {
+  font-size: 0.7rem;
+  color: var(--adaptiveBlue300);
+  margin: 0;
+  line-height: 1.5;
+}

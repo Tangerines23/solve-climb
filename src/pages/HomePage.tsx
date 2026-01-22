@@ -8,6 +8,8 @@ import { CategoryList } from '@/components/CategoryList';
 import { FooterNav } from '@/components/FooterNav';
 import { Toast } from '@/components/Toast';
 import { StaminaGauge } from '@/components/StaminaGauge';
+import { DailyRewardModal } from '@/components/DailyRewardModal';
+import { useDailyRewardStore } from '@/stores/useDailyRewardStore';
 import { APP_CONFIG } from '@/config/app';
 import './HomePage.css';
 
@@ -19,6 +21,7 @@ export function HomePage() {
   // 연령 등급 표기 (가이드 필수: 초기 화면 우측 상단에 3초 이상 표시)
   // 매번 HomePage 진입 시 표시 (컴포넌트 마운트 시마다)
   const [showAgeRating, setShowAgeRating] = useState(true);
+  const checkDailyLogin = useDailyRewardStore((state) => state.checkDailyLogin);
 
   // 연령 등급 표기 (3초 후 자동 숨김)
   useEffect(() => {
@@ -31,6 +34,11 @@ export function HomePage() {
 
     return () => clearTimeout(timer);
   }, []); // 빈 의존성 배열: 컴포넌트 마운트 시 한 번만 실행
+
+  // 데일리 로그인 보상 체크
+  useEffect(() => {
+    checkDailyLogin();
+  }, [checkDailyLogin]);
 
   useEffect(() => {
     // 가이드: "진입 시 첫 화면에서는 백버튼을 사용하지 않아요"
@@ -142,6 +150,7 @@ export function HomePage() {
         </div>
       </main>
       <FooterNav />
+      <DailyRewardModal />
       <Toast
         message="한 번 더 누르면 종료됩니다"
         isOpen={showExitToast}

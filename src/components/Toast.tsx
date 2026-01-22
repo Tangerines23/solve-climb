@@ -52,7 +52,8 @@ export function Toast({
       textElement.style.whiteSpace = originalWhiteSpace;
 
       // 텍스트 너비가 사용 가능한 너비를 초과하면 줄바꿈 허용
-      setShouldWrap(textWidth > availableWidth);
+      const nextShouldWrap = textWidth > availableWidth;
+      setShouldWrap((prev) => (prev !== nextShouldWrap ? nextShouldWrap : prev));
     }, 10);
 
     return () => clearTimeout(measureTimeout);

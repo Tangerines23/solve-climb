@@ -27,12 +27,12 @@ export const NUMBER_RANGE_BY_DIFFICULTY: Record<Difficulty, { min: number; max: 
 
 export const MAX_POSSIBLE_ANSWER = 999 + 999;
 
-// 무한 서바이벌(첼린지) 설정 v2.2
+// 무한 서바이벌(첼린지) 설정 v2.4
 export const SURVIVAL_CONFIG = {
-  HEAL_INTERVAL: 10, // 10문제마다 회복
-  MAX_LIVES: 3, // 기획서 요건: 최대 3목숨까지 확보 가능
-  INITIAL_LIVES: 1, // v1.9+: 즉사 규칙 (기본 1개)
-  // 스마트 압박 타이머 설정 (v2.2 상세 기획 반영)
+  HEAL_INTERVAL: 10,
+  MAX_LIVES: 3,
+  INITIAL_LIVES: 1,
+  // 스마트 압박 타이머 설정 (v2.4 상세 기획 반영)
   PRESSURE_CONFIG: {
     LEVEL_BASE_TIME: {
       1: 3,
@@ -52,12 +52,13 @@ export const SURVIVAL_CONFIG = {
       DECAY: 0.01, // 문제당 감소량
     },
   },
-  WAVES: [
-    { start: 1, end: 10, minLevel: 1, maxLevel: 3, label: '워밍업' },
-    { start: 11, end: 30, minLevel: 4, maxLevel: 7, label: '등반' },
-    { start: 31, end: 50, minLevel: 8, maxLevel: 10, label: '고지대' },
-    { start: 51, end: 99999, minLevel: 1, maxLevel: 10, label: '무한 루프' },
-  ],
+  // v2.4 슬라이딩 윈도우 + 함정 알고리즘 설정
+  SLIDING_WINDOW_CONFIG: {
+    BASE_LEVEL_DIVIDER: 5, // Floor(문제 수 / 5) + 1
+    MAIN_STREAM_DELTA: 2, // 기준 레벨 ±2
+    TRAP_PROBABILITY: 0.2, // 20% 확률로 함정
+    TRAP_DELTA_MIN: 3, // 기준 레벨 - 3 이하
+  },
 };
 
 // 랜드마크 매핑 (v2.2)

@@ -509,3 +509,12 @@ body {
   margin-top: auto;
   align-self: center;
 }
+
+/* Static UI 모드: 모든 애니메이션 및 트랜지션 비활성화 */
+.static-ui *,
+.static-ui *::before,
+.static-ui *::after {
+  animation: none !important;
+  transition: none !important;
+  transform: none !important;
+}

@@ -55,11 +55,13 @@ export function useQuizRevive({
       setHasUsedLastChance(true);
       setIsSubmitting(false);
 
+      // v2.2: Countdown before resuming correctly for BOTH modes
+      setShowCountdown(true);
+
       if (gameMode === 'time-attack') {
         // 타임어택: 라스트 스퍼트 사용 시 +15초 추가
         useQuizStore.getState().setTimeLimit(15);
         setTimerResetKey((prev) => prev + 1);
-        setShowCountdown(true);
       } else {
         // 서바이벌: 새 문제로 진행
         generateNewQuestion();
@@ -105,12 +107,7 @@ export function useQuizRevive({
         handleGameOver(reason);
         return;
       }
-      // Prevent Last Chance on manual exit?
-      // Typically last chance is for wrong answers or timeout.
-      // If manual exit (reason === 'manual_exit'), skip last chance?
-      // For now, keep original behavior: always try last chance unless used.
-      // BUT, if it's a manual exit, maybe we should skip last chance?
-      // Let's decide: Manual Exit should probably just exit.
+
       if (reason === 'manual_exit') {
         handleGameOver(reason);
         return;

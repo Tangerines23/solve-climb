@@ -80,11 +80,11 @@ export function useQuizGameState({
       if (gameSessionId) {
         params.set('session_id', gameSessionId);
       }
-      if (userAnswers.length > 0) {
-        params.set('user_answers', userAnswers.join(','));
+      if (userAnswers && userAnswers.length > 0) {
+        params.set('user_answers', JSON.stringify(userAnswers));
       }
-      if (questionIds.length > 0) {
-        params.set('question_ids', questionIds.join(','));
+      if (questionIds && questionIds.length > 0) {
+        params.set('question_ids', JSON.stringify(questionIds));
       }
 
       navigate(urls.result(params));

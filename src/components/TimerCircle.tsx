@@ -116,11 +116,20 @@ function TimerCircleComponent({
   const { circleStyle, timeLabel } = useMemo(() => {
     const pct = Math.max(0, Math.min(1, timeLeft / duration));
     const ang = 360 * pct;
+
+    // v2.2 Ring Color Logic (Green -> Yellow -> Red)
+    let ringColor = '#00BFA5'; // Default Green (TDS Teal)
+    if (pct < 0.25) {
+      ringColor = '#F44336'; // Red
+    } else if (pct < 0.5) {
+      ringColor = '#FFC107'; // Yellow
+    }
+
     return {
       percentage: pct,
       angle: ang,
       circleStyle: {
-        background: `conic-gradient(#00BFA5 ${ang}deg, #2c2c2c 0deg)`,
+        background: `conic-gradient(${ringColor} ${ang}deg, #2c2c2c 0deg)`,
         borderRadius: '50%',
         width: '28px',
         height: '28px',

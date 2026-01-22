@@ -1,19 +1,23 @@
 import { motion, AnimatePresence } from 'framer-motion';
 import { useGameStore } from '../../stores/useGameStore';
+import { useSettingsStore } from '../../stores/useSettingsStore';
 import './Effects.css';
 
 export function FeverEffect() {
   const { feverLevel, combo } = useGameStore();
+  const animationEnabled = useSettingsStore((state) => state.animationEnabled);
 
-  if (feverLevel === 0) return null;
+  if (feverLevel === 0 && combo < 2) return null;
 
   return (
     <>
       {/* Edge Glow Overlay */}
-      <div className={`fever-overlay fever-level-${feverLevel}`} />
+      {feverLevel > 0 && <div className={`fever-overlay fever-level-${feverLevel}`} />}
 
       {/* Floating Particles (Simplified for performance) */}
-      <div className="fever-particles">{feverLevel >= 2 && <FeverParticles />}</div>
+      <div className="fever-particles">
+        {animationEnabled && feverLevel >= 2 && <FeverParticles />}
+      </div>
 
       {/* Combo Counter (Big) */}
       <AnimatePresence>
@@ -21,13 +25,23 @@ export function FeverEffect() {
           <motion.div
             className="combo-display"
             key={combo}
-            initial={{ scale: 1.5, opacity: 0, rotate: -15 }}
-            animate={{ scale: 1, opacity: 1, rotate: -10 }}
-            exit={{ scale: 0.5, opacity: 0 }}
-            transition={{ type: 'spring', stiffness: 300 }}
+            initial={{ scale: 1.5, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            exit={{ scale: 0.8, opacity: 0 }}
+            transition={{ type: 'spring', stiffness: 400, damping: 20 }}
           >
-            {combo}
-            <span className="combo-text">COMBO!</span>
+            <div className="combo-count">{combo}</div>
+            <div className="combo-text">Combo</div>
+
+            {/* Fever Progress Bar */}
+            <div className="fever-progress-track">
+              <motion.div
+                className="fever-progress-bar"
+                initial={{ width: 0 }}
+                animate={{ width: `${Math.min(100, (combo / 20) * 100)}%` }}
+                transition={{ type: 'spring', stiffness: 100 }}
+              />
+            </div>
           </motion.div>
         )}
       </AnimatePresence>

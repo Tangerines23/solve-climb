@@ -46,7 +46,7 @@ export const APP_CONFIG = {
   // 이 설정은 홈 화면 목록과 오늘의 챌린지 생성에 즉시 반영됩니다.
   FEATURE_FLAGS: {
     ENABLE_MATH_MOUNTAIN: true, // 수학의 산 (활성)
-    ENABLE_LANGUAGE_MOUNTAIN: false, // 언어의 산 (비활성)
+    ENABLE_LANGUAGE_MOUNTAIN: false, // 언어의 산 (비활성 - 출시 보류)
     ENABLE_LOGIC_MOUNTAIN: true, // 논리/상식 (활성)
     ENABLE_GENERAL_MOUNTAIN: true, // 상식 (활성)
   },
@@ -64,7 +64,13 @@ export const APP_CONFIG = {
   // 산 선택 (Mountain Selection - 최상위 분야)
   MOUNTAINS: [
     { id: 'math', name: '수학의 산', icon: '⛰️', color: '#10b981', disabled: false },
-    { id: 'language', name: '언어의 산', icon: '🗾', color: '#f87171', disabled: false },
+    {
+      id: 'language',
+      name: '언어의 산',
+      icon: '🗾',
+      color: '#f87171',
+      disabled: true, // 비활성 (향후 출시 예정)
+    },
   ],
 
   // 산 ID -> 이름 매핑

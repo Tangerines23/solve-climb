@@ -13,7 +13,7 @@ type RankingType = 'total' | 'time-attack' | 'survival';
 
 const validateModeParam = (param: string | null): RankingType | null => {
   if (param === 'total' || param === 'time-attack' || param === 'survival') {
-    return param;
+    return param as RankingType;
   }
   return null;
 };
@@ -27,7 +27,7 @@ export function RankingPage() {
   const modeParam = validateModeParam(searchParams.get('mode'));
 
   const [activePeriod, setActivePeriod] = useState<'weekly' | 'all-time'>('weekly');
-  const [activeType, setActiveType] = useState<'total' | 'time-attack' | 'survival'>(
+  const [activeType, setActiveType] = useState<RankingType>(
     modeParam === 'time-attack' ? 'time-attack' : modeParam === 'survival' ? 'survival' : 'total'
   );
   const [loading, setLoading] = useState(false);
