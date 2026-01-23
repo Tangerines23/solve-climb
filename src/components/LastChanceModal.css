@@ -164,6 +164,23 @@
   color: var(--color-toss-red);
 }
 
+.last-chance-btn.ad-btn {
+  background: linear-gradient(135deg, #ff4d4d, #f9cb28);
+  color: white;
+  border: none;
+  font-weight: 700;
+  box-shadow: 0 4px 15px rgba(255, 77, 77, 0.3);
+}
+
+.last-chance-btn.ad-btn span {
+  margin-right: 8px;
+}
+
+.last-chance-btn.ad-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(255, 77, 77, 0.4);
+}
+
 .give-up-btn {
   background: transparent;
   border: 1px solid rgba(255, 255, 255, 0.2);

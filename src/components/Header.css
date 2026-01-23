@@ -98,6 +98,34 @@
   min-width: 1.5rem;
 }
 
+.recharge-btn {
+  background: var(--color-blue-400);
+  color: white;
+  border: none;
+  border-radius: 50%;
+  width: 16px;
+  height: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 10px;
+  font-weight: bold;
+  cursor: pointer;
+  margin-left: 4px;
+  transition: all 0.2s ease;
+  padding: 0;
+  line-height: 1;
+}
+
+.recharge-btn:hover {
+  background: var(--color-blue-500);
+  transform: scale(1.1);
+}
+
+.recharge-btn:active {
+  transform: scale(0.9);
+}
+
 .status-item.selected {
   background-color: rgba(96, 165, 243, 0.2);
   border-radius: var(--rounded-sm);

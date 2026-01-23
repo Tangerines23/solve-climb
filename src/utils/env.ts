@@ -24,6 +24,10 @@ export interface EnvConfig {
   DEBUG_URL: string;
   /** Vercel 환경 여부 */
   IS_VERCEL: boolean;
+  /** AdMob App ID (Android/iOS 공용 혹은 환경별 설정 대기) */
+  ADMOB_APP_ID: string;
+  /** AdMob 보상형 광고 단위 ID */
+  ADMOB_REWARDED_ID: string;
 }
 
 /**
@@ -121,6 +125,8 @@ export const ENV: EnvConfig = (() => {
     IS_PRODUCTION: isProduction,
     DEBUG_URL: import.meta.env.VITE_DEBUG_URL || '',
     IS_VERCEL: !!import.meta.env.VITE_IS_VERCEL,
+    ADMOB_APP_ID: String(import.meta.env.VITE_ADMOB_APP_ID || 'ca-app-pub-6410061165772335~9825031776'),
+    ADMOB_REWARDED_ID: String(import.meta.env.VITE_ADMOB_REWARDED_ID || 'ca-app-pub-6410061165772335/6536523456'),
   };
 })();
 

@@ -1,10 +1,11 @@
-import { useRef, useEffect } from 'react';
+import { useRef, useEffect, useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { APP_CONFIG } from '../config/app';
 import { urls } from '../utils/navigation';
 import { useProfileStore } from '../stores/useProfileStore';
 import { useUserStore } from '../stores/useUserStore';
 import { useDebugStore } from '../stores/useDebugStore';
+import { useToastStore } from '../stores/useToastStore';
 import './Header.css';
 // DebugPanel.css는 DebugPanel 컴포넌트 내부에서 import하므로 여기서는 제거
 // (동적 import된 컴포넌트의 CSS는 자동으로 분리되어 로드됨)
@@ -15,8 +16,10 @@ import './Header.css';
 export function Header() {
   const navigate = useNavigate();
   const location = useLocation();
+  const [isMineralsLoading, setIsMineralsLoading] = useState(false);
   const isAdmin = useProfileStore((state) => state.isAdmin);
-  const { minerals, stamina, fetchUserData, checkStamina } = useUserStore();
+  const { minerals, stamina, fetchUserData, checkStamina, recoverMineralsAds } = useUserStore();
+  const { showToast } = useToastStore();
 
   // ⚠️ useDebugStore 사용
   const { isAdminMode, selectedResource, setSelectedResource, toggleDebugPanel, isDebugPanelOpen } =
@@ -91,6 +94,20 @@ export function Header() {
     setSelectedResource(selectedResource === 'minerals' ? null : 'minerals');
   };
 
+  const handleMineralsAdRecharge = async (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (isMineralsLoading) return;
+
+    setIsMineralsLoading(true);
+    showToast('광고를 불러오는 중... 📺', 'info');
+
+    const result = await recoverMineralsAds();
+    if (result.success) {
+      showToast(result.message, '💎');
+    }
+    setIsMineralsLoading(false);
+  };
+
   const handleItemsClick = (e: React.MouseEvent) => {
     if (!isAdminMode) return;
     e.stopPropagation();
@@ -145,7 +162,14 @@ export function Header() {
             <span role="img" aria-label="minerals">
               💎
             </span>
-            <span className="status-value">{minerals}</span>
+            <span className="status-value">{minerals.toLocaleString()}</span>
+            <button
+              className={`recharge-btn ${isMineralsLoading ? 'loading' : ''}`}
+              onClick={handleMineralsAdRecharge}
+              disabled={isMineralsLoading}
+            >
+              {isMineralsLoading ? '⏳' : '+'}
+            </button>
           </div>
           {isAdminMode && (
             <div

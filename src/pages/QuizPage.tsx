@@ -17,6 +17,7 @@ import { useGameStore } from '@/stores/useGameStore';
 import { useDebugStore } from '@/stores/useDebugStore';
 import { useToastStore } from '@/stores/useToastStore';
 import type { Category, World } from '@/types/quiz';
+import { AdService } from '@/utils/adService';
 import { ItemFeedbackRef } from '@/components/game/ItemFeedbackOverlay';
 import { supabase } from '@/utils/supabaseClient';
 import { debugSupabaseQuery } from '@/utils/debugFetch';
@@ -86,17 +87,41 @@ export function QuizPage() {
 
   const handleStaminaAdRecovery = useCallback(async () => {
     animations.setShowSlideToast(true);
-    setToastValue('시뮬레이션 모드에서는 광고 없이 충전됩니다! 🫧');
-    await new Promise((resolve) => setTimeout(resolve, 1500));
-    const result = await recoverStaminaAds();
-    if (result.success) {
-      setShowStaminaModal(false);
-      // setToastValue('산소통(스태미나)이 충전되었습니다! 🫧'); // redundant with above
-      setTimeout(() => window.location.reload(), 500);
+    setToastValue('광고 시청 중... 📺');
+
+    const adResult = await AdService.showRewardedAd('stamina_recharge');
+
+    if (adResult.success) {
+      const result = await recoverStaminaAds();
+      if (result.success) {
+        setShowStaminaModal(false);
+        animations.setShowSlideToast(true);
+        setToastValue('산소통(스태미나)이 충전되었습니다! 🫧');
+        setTimeout(() => window.location.reload(), 500);
+      } else {
+        setToastValue('충전 실패: ' + result.message);
+      }
     } else {
-      setToastValue('충전 실패: ' + result.message);
+      setToastValue('광고 시청 실패: ' + (adResult.error || '잠시 후 다시 시도해주세요.'));
     }
   }, [animations, recoverStaminaAds]);
+
+  const handleWatchAdRevive = useCallback(async () => {
+    animations.setShowSlideToast(true);
+    setToastValue('광고 시청 중... 📺');
+
+    const adResult = await AdService.showRewardedAd('revive');
+
+    if (adResult.success) {
+      animations.setShowSlideToast(true);
+      setToastValue('광고 시청 완료! 부활합니다. 🫧');
+      await new Promise((resolve) => setTimeout(resolve, 1000));
+      return true; // 성공 보답
+    } else {
+      setToastValue('광고 시청 실패: ' + (adResult.error || '잠시 후 다시 시도해주세요.'));
+      return false;
+    }
+  }, [animations]);
 
   const [showLastChanceModal, setShowLastChanceModal] = useState(false);
   const [showCountdown, setShowCountdown] = useState(false);
@@ -315,10 +340,24 @@ export function QuizPage() {
     setDisplayValue,
     handleGameOver: handleGameOverRef.current,
     setIsSubmitting,
+    onWatchAd: handleWatchAdRevive,
     isPreview,
   });
 
-  const { handleRevive, handlePurchaseAndRevive, handleGiveUp, stableHandleGameOver } = revive;
+  const {
+    handleRevive,
+    handlePurchaseAndRevive,
+    handleGiveUp,
+    stableHandleGameOver,
+  } = revive;
+
+  // 광고 보상 콜백과 부활 로직을 하나로 묶음
+  const handleWatchAdAndRevive = useCallback(async () => {
+    const success = await handleWatchAdRevive();
+    if (success) {
+      await handleRevive(false);
+    }
+  }, [handleWatchAdRevive, handleRevive]);
 
   const smartHandleGameOver = useCallback(
     async (reason?: string) => {
@@ -780,6 +819,7 @@ export function QuizPage() {
         minerals={useUserStore.getState().minerals}
         handleRevive={handleRevive}
         handlePurchaseAndRevive={handlePurchaseAndRevive}
+        handleWatchAdAndRevive={handleWatchAdAndRevive}
         handleGiveUp={handleGiveUp}
         showCountdown={showCountdown}
         handleCountdownComplete={handleCountdownComplete}

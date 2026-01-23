@@ -80,7 +80,7 @@ interface QuizCardProps {
   handleKeypadBackspace: () => void;
 
   // Refs
-  inputRef: React.RefObject<HTMLInputElement | null>;
+  inputRef: React.RefObject<HTMLInputElement>;
   exitConfirmTimeoutRef: React.MutableRefObject<NodeJS.Timeout | null>;
 
   // Setters

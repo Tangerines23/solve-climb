@@ -19,6 +19,7 @@ interface UseQuizReviveParams {
   setDisplayValue: (val: string) => void;
   handleGameOver: (reason?: string) => void;
   setIsSubmitting: (val: boolean) => void;
+  onWatchAd: () => void;
   isPreview: boolean;
 }
 
@@ -35,6 +36,7 @@ export function useQuizRevive({
   setDisplayValue,
   handleGameOver,
   setIsSubmitting,
+  onWatchAd,
   isPreview,
 }: UseQuizReviveParams) {
   const [hasUsedLastChance, setHasUsedLastChance] = useState(false);
@@ -85,34 +87,34 @@ export function useQuizRevive({
 
   const handlePurchaseAndRevive = useCallback(async () => {
     const itemType = gameMode === 'time-attack' ? 'last_spurt' : 'flare';
-    const basePrice = itemType === 'last_spurt' ? 800 : 800;
+    const basePrice = 800;
     const targetPrice = basePrice * 2;
 
     if (minerals >= targetPrice) {
       console.log(`Simulating purchase of ${itemType} for ${targetPrice} minerals`);
-      // TODO: 실제 구매 로직 연동
       await handleRevive(false);
     }
   }, [minerals, gameMode, handleRevive]);
+
+  const handleWatchAdAndRevive = useCallback(async () => {
+    onWatchAd();
+  }, [onWatchAd]);
 
   const handleGiveUp = useCallback(() => {
     setShowLastChanceModal(false);
     handleGameOver();
   }, [setShowLastChanceModal, handleGameOver]);
 
-  // 안정적인 handleGameOver 함수 (QuizCard에 전달) - LAST CHANCE INTERCEPT
   const stableHandleGameOver = useCallback(
     (reason?: string) => {
       if (hasUsedLastChance || isPreview) {
         handleGameOver(reason);
         return;
       }
-
       if (reason === 'manual_exit') {
         handleGameOver(reason);
         return;
       }
-
       setShowLastChanceModal(true);
     },
     [hasUsedLastChance, isPreview, handleGameOver, setShowLastChanceModal]
@@ -122,6 +124,7 @@ export function useQuizRevive({
     hasUsedLastChance,
     handleRevive,
     handlePurchaseAndRevive,
+    handleWatchAdAndRevive,
     handleGiveUp,
     stableHandleGameOver,
   };

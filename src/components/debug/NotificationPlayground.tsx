@@ -1,4 +1,5 @@
 import { useState, useRef } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useGameStore } from '../../stores/useGameStore';
 import { AlertModal } from '../AlertModal';
 import { ConfirmModal } from '../ConfirmModal';
@@ -28,6 +29,7 @@ import { StatusCard } from '../StatusCard';
 import './NotificationPlayground.css';
 
 export function NotificationPlayground() {
+  const navigate = useNavigate();
   const [activeModal, setActiveModal] = useState<string | null>(null);
   const [toastMessage, setToastMessage] = useState<string>('');
   const [showToast, setShowToast] = useState(false);
@@ -127,6 +129,21 @@ export function NotificationPlayground() {
           <button onClick={() => setActiveModal('cycle')}>Cycle Promotion</button>
           <button onClick={() => setBadgeIds(['first_login'])}>Badge Notification</button>
         </div>
+
+        {/* Group 5: Monetization & Ads */}
+        <div className="playground-section">
+          <h4>5. Monetization & Ads</h4>
+          <button onClick={() => setActiveModal('lastChance')}>Ad Revive (Modal)</button>
+          <button onClick={() => navigate('/shop')}>Go to Shop (Recharge)</button>
+          <button
+            onClick={() => navigate('/result?score=1250&mode=survival&world=earth&category=math')}
+          >
+            Go to Result (Double Reward)
+          </button>
+          <button onClick={() => triggerToast('Mineral +500 (Simulated)')}>
+            Simulate Ad Success
+          </button>
+        </div>
       </div>
 
       {/* --- 1. Modals --- */}
@@ -159,6 +176,7 @@ export function NotificationPlayground() {
         basePrice={50}
         onUseItem={() => triggerToast('Item Used')}
         onPurchaseAndUse={() => triggerToast('Purchased')}
+        onWatchAd={() => triggerToast('Ad Watched - Reviving...')}
         onGiveUp={closeModals}
       />
 
@@ -247,59 +265,63 @@ export function NotificationPlayground() {
       <GameOverlay />
 
       {/* --- 4. Cards Preview --- */}
-      {activeModal === 'cards_preview' && (
-        <div className="playground-overlay" onClick={closeModals}>
-          <div className="playground-card-scroll-container" onClick={(e) => e.stopPropagation()}>
-            <div className="card-preview-row">
-              <h5>Challenge Card</h5>
-              <div style={{ maxWidth: '300px' }}>
-                <ChallengeCard />
+      {
+        activeModal === 'cards_preview' && (
+          <div className="playground-overlay" onClick={closeModals}>
+            <div className="playground-card-scroll-container" onClick={(e) => e.stopPropagation()}>
+              <div className="card-preview-row">
+                <h5>Challenge Card</h5>
+                <div style={{ maxWidth: '300px' }}>
+                  <ChallengeCard />
+                </div>
               </div>
-            </div>
-            <div className="card-preview-row">
-              <h5>My Record Card</h5>
-              <div style={{ maxWidth: '300px' }}>
-                <MyRecordCard world="World1" category="기초" categoryName="사칙연산" />
+              <div className="card-preview-row">
+                <h5>My Record Card</h5>
+                <div style={{ maxWidth: '300px' }}>
+                  <MyRecordCard world="World1" category="기초" categoryName="사칙연산" />
+                </div>
               </div>
-            </div>
-            <div className="card-preview-row">
-              <h5>Unknown Mountain Card</h5>
-              <div style={{ maxWidth: '300px' }}>
-                <UnknownMountainCard onToast={triggerToast} />
+              <div className="card-preview-row">
+                <h5>Unknown Mountain Card</h5>
+                <div style={{ maxWidth: '300px' }}>
+                  <UnknownMountainCard onToast={triggerToast} />
+                </div>
               </div>
-            </div>
-            <div className="card-preview-row">
-              <h5>Status Card</h5>
-              <div style={{ maxWidth: '300px' }}>
-                <StatusCard />
+              <div className="card-preview-row">
+                <h5>Status Card</h5>
+                <div style={{ maxWidth: '300px' }}>
+                  <StatusCard />
+                </div>
               </div>
+              <button className="playground-close-btn" onClick={closeModals}>
+                닫기
+              </button>
             </div>
-            <button className="playground-close-btn" onClick={closeModals}>
-              닫기
-            </button>
           </div>
-        </div>
-      )}
+        )
+      }
 
-      {activeModal === 'levelList' && (
-        <div className="playground-overlay" onClick={closeModals}>
-          <div className="playground-card-container" onClick={(e) => e.stopPropagation()}>
-            <LevelListCard
-              world="World1"
-              category="기초"
-              levels={[
-                { level: 1, name: 'Level 1', description: 'Test' },
-                { level: 2, name: 'Level 2', description: 'Test' },
-              ]}
-              onLevelClick={(lvl) => triggerToast(`Level ${lvl}`)}
-              onLevelLongPress={(lvl) => triggerToast(`Long Press ${lvl}`)}
-            />
-            <button className="playground-close-btn" onClick={closeModals}>
-              닫기
-            </button>
+      {
+        activeModal === 'levelList' && (
+          <div className="playground-overlay" onClick={closeModals}>
+            <div className="playground-card-container" onClick={(e) => e.stopPropagation()}>
+              <LevelListCard
+                world="World1"
+                category="기초"
+                levels={[
+                  { level: 1, name: 'Level 1', description: 'Test' },
+                  { level: 2, name: 'Level 2', description: 'Test' },
+                ]}
+                onLevelClick={(lvl) => triggerToast(`Level ${lvl}`)}
+                onLevelLongPress={(lvl) => triggerToast(`Long Press ${lvl}`)}
+              />
+              <button className="playground-close-btn" onClick={closeModals}>
+                닫기
+              </button>
+            </div>
           </div>
-        </div>
-      )}
-    </div>
+        )
+      }
+    </div >
   );
 }

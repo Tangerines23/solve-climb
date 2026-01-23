@@ -15,11 +15,13 @@ import {
   createSafeStorageKey,
 } from '@/utils/urlParams';
 import { useUserStore } from '@/stores/useUserStore';
+import { useToastStore } from '@/stores/useToastStore';
 import { supabase } from '@/utils/supabaseClient';
 import { TierUpgradeModal } from '@/components/TierUpgradeModal';
 import { BadgeNotification } from '@/components/BadgeNotification';
 import { urls } from '@/utils/navigation';
 import { Category } from '@/types/quiz';
+import { AdService } from '@/utils/adService';
 import './ResultPage.css';
 
 function useCountUp(targetValue: number, duration = 1000) {
@@ -66,6 +68,8 @@ export function ResultPage() {
   const [awardedBadges, setAwardedBadges] = useState<string[]>([]);
   const [_showBadgeNotification, setShowBadgeNotification] = useState(false);
   const { fetchRanking } = useLevelProgressStore();
+  const { rewardMinerals } = useUserStore();
+  const { showToast } = useToastStore();
 
   const mountainParam = searchParams.get('mountain');
   const worldParam = validateWorldParam(searchParams.get('world'));
@@ -149,7 +153,7 @@ export function ResultPage() {
         );
         const ranks =
           useLevelProgressStore.getState().rankings[
-            `${worldParam}-${categoryParam}-weekly-${mode === 'time-attack' ? 'time-attack' : 'survival'}`
+          `${worldParam}-${categoryParam}-weekly-${mode === 'time-attack' ? 'time-attack' : 'survival'}`
           ];
         const {
           data: { user },
@@ -182,6 +186,32 @@ export function ResultPage() {
     searchParams,
     fetchUserData,
   ]);
+
+  const [hasDoubled, setHasDoubled] = useState(false);
+  const [isAdLoading, setIsAdLoading] = useState(false);
+  const baseMinerals = useMemo(() => Math.floor(finalScore / 10), [finalScore]);
+
+  const handleDoubleReward = async () => {
+    if (hasDoubled || isAdLoading || baseMinerals <= 0) return;
+
+    setIsAdLoading(true);
+    showToast('광고를 불러오는 중... 📺', 'info');
+
+    // 광고 시청 호출
+    const adResult = await AdService.showRewardedAd('double_reward');
+    if (!adResult.success) {
+      showToast(adResult.error || '광고 시청에 실패했습니다.', 'error');
+      setIsAdLoading(false);
+      return;
+    }
+
+    const result = await rewardMinerals(baseMinerals, true);
+    if (result.success) {
+      showToast(result.message, '💎');
+      setHasDoubled(true);
+    }
+    setIsAdLoading(false);
+  };
 
   // 디버그 로그 추가
   useEffect(() => {
@@ -383,6 +413,18 @@ export function ResultPage() {
             </li>
           ))}
         </ul>
+
+        {finalScore > 0 && !hasDoubled && (
+          <div className="double-reward-section">
+            <button
+              className="double-reward-btn"
+              onClick={handleDoubleReward}
+              disabled={isAdLoading}
+            >
+              <span>{isAdLoading ? '⌛' : '📺'}</span> {isAdLoading ? '보상 지급 중...' : `결과 보상 2배로 받기 (+${baseMinerals}💎)`}
+            </button>
+          </div>
+        )}
       </div>
 
       <div className="result-footer-actions">

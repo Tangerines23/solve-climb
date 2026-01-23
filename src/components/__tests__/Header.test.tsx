@@ -106,7 +106,7 @@ describe('Header', () => {
   it('should display user minerals and stamina', () => {
     render(<Header />);
 
-    expect(screen.getByText('1000')).toBeInTheDocument();
+    expect(screen.getByText('1,000')).toBeInTheDocument();
     expect(screen.getByText('5')).toBeInTheDocument();
   });
 

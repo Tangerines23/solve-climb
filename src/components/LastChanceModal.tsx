@@ -8,6 +8,7 @@ interface LastChanceModalProps {
   userMinerals: number;
   onUseItem: () => void; // 인벤토리 사용
   onPurchaseAndUse: () => void; // 즉시 구매 후 사용
+  onWatchAd: () => void; // 광고 보고 부활
   onGiveUp: () => void;
   basePrice: number; // 원래 가격 (이거의 2배로 계산)
 }
@@ -19,10 +20,12 @@ export function LastChanceModal({
   userMinerals,
   onUseItem,
   onPurchaseAndUse,
+  onWatchAd,
   onGiveUp,
   basePrice,
 }: LastChanceModalProps) {
   const [timeLeft, setTimeLeft] = useState(10); // 자동 포기 카운트다운 (선택 사항)
+  const [isAdLoading, setIsAdLoading] = useState(false);
 
   useEffect(() => {
     if (isVisible) {
@@ -43,6 +46,14 @@ export function LastChanceModal({
   }, [isVisible, onGiveUp]);
 
   if (!isVisible) return null;
+
+  const handleWatchAdClick = () => {
+    if (isAdLoading) return;
+    setIsAdLoading(true);
+    onWatchAd();
+    // 부활 로직은 부모가 처리하므로 여기서는 상태만 바꿈
+    // (보통 부모가 모달을 닫겠지만, 명시성을 위해 남겨둠)
+  };
 
   const itemName =
     gameMode === 'time-attack' ? '라스트 스퍼트 (+15초 + 피버)' : '구조 신호탄 (부활)';
@@ -85,6 +96,14 @@ export function LastChanceModal({
                 {!canAfford && <span className="error-text">미네랄 부족 ({userMinerals})</span>}
               </button>
             )}
+
+            <button
+              className={`last-chance-btn ad-btn ${isAdLoading ? 'loading' : ''}`}
+              onClick={handleWatchAdClick}
+              disabled={isAdLoading}
+            >
+              <span>{isAdLoading ? '⌛' : '📺'}</span> {isAdLoading ? '광고 시청 중...' : '광고 보고 무료 부활'}
+            </button>
 
             <button className="last-chance-btn give-up-btn" onClick={onGiveUp}>
               그냥 기록 남기기

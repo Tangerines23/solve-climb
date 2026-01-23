@@ -5,6 +5,7 @@ import { debugSupabaseQuery } from '../utils/debugFetch';
 import { useUserStore } from '../stores/useUserStore';
 import { Header } from '../components/Header';
 import { FooterNav } from '../components/FooterNav';
+import { useToastStore } from '../stores/useToastStore';
 import './ShopPage.css';
 
 interface Item {
@@ -24,7 +25,9 @@ export function ShopPage() {
     null
   );
   const [activeTab, setActiveTab] = useState<'shop' | 'bag'>('shop');
-  const { minerals, inventory, fetchUserData } = useUserStore();
+  const [isAdLoading, setIsAdLoading] = useState(false);
+  const { minerals, inventory, fetchUserData, recoverMineralsAds } = useUserStore();
+  const { showToast } = useToastStore();
 
   useEffect(() => {
     async function fetchItems() {
@@ -71,6 +74,18 @@ export function ShopPage() {
       setIsLoading(false);
       setTimeout(() => setPurchaseStatus(null), 2000);
     }
+  };
+
+  const handleMineralsAdRecharge = async () => {
+    if (isAdLoading) return;
+    setIsAdLoading(true);
+    showToast('광고를 불러오는 중... 📺', 'info');
+
+    const result = await recoverMineralsAds();
+    if (result.success) {
+      showToast(result.message, '💎');
+    }
+    setIsAdLoading(false);
   };
 
   const getItemEmoji = (code: string) => {
@@ -161,6 +176,22 @@ export function ShopPage() {
               <div className="loading">상점 물건을 진열 중...</div>
             ) : (
               <div className="item-grid fade-in">
+                {/* 광고 보상 섹션 */}
+                <div className="ad-reward-card">
+                  <div className="ad-reward-icon">🎁</div>
+                  <div className="ad-reward-info">
+                    <h3>무료 미네랄 충전</h3>
+                    <p>광고 보고 500💎 받기</p>
+                  </div>
+                  <button
+                    className="ad-reward-button"
+                    onClick={handleMineralsAdRecharge}
+                    disabled={isAdLoading}
+                  >
+                    {isAdLoading ? '⏳ 시청 중...' : '📺 광고 보기'}
+                  </button>
+                </div>
+
                 {items.map((item) => {
                   const owned = getOwnedCount(item.code);
                   return (

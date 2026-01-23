@@ -20,6 +20,7 @@ describe('LastChanceModal', () => {
         userMinerals={100}
         onUseItem={vi.fn()}
         onPurchaseAndUse={vi.fn()}
+        onWatchAd={vi.fn()}
         onGiveUp={vi.fn()}
         basePrice={50}
       />
@@ -36,6 +37,7 @@ describe('LastChanceModal', () => {
         userMinerals={100}
         onUseItem={vi.fn()}
         onPurchaseAndUse={vi.fn()}
+        onWatchAd={vi.fn()}
         onGiveUp={vi.fn()}
         basePrice={50}
       />
@@ -56,6 +58,7 @@ describe('LastChanceModal', () => {
         userMinerals={100}
         onUseItem={vi.fn()}
         onPurchaseAndUse={vi.fn()}
+        onWatchAd={vi.fn()}
         onGiveUp={vi.fn()}
         basePrice={50}
       />
@@ -75,6 +78,7 @@ describe('LastChanceModal', () => {
         userMinerals={100}
         onUseItem={vi.fn()}
         onPurchaseAndUse={vi.fn()}
+        onWatchAd={vi.fn()}
         onGiveUp={vi.fn()}
         basePrice={50}
       />
@@ -93,6 +97,7 @@ describe('LastChanceModal', () => {
         userMinerals={100}
         onUseItem={onUseItem}
         onPurchaseAndUse={vi.fn()}
+        onWatchAd={vi.fn()}
         onGiveUp={vi.fn()}
         basePrice={50}
       />
@@ -114,6 +119,7 @@ describe('LastChanceModal', () => {
         userMinerals={200}
         onUseItem={vi.fn()}
         onPurchaseAndUse={onPurchaseAndUse}
+        onWatchAd={vi.fn()}
         onGiveUp={vi.fn()}
         basePrice={50}
       />
@@ -135,6 +141,7 @@ describe('LastChanceModal', () => {
         userMinerals={100}
         onUseItem={vi.fn()}
         onPurchaseAndUse={vi.fn()}
+        onWatchAd={vi.fn()}
         onGiveUp={onGiveUp}
         basePrice={50}
       />
@@ -155,6 +162,7 @@ describe('LastChanceModal', () => {
         userMinerals={50}
         onUseItem={vi.fn()}
         onPurchaseAndUse={vi.fn()}
+        onWatchAd={vi.fn()}
         onGiveUp={vi.fn()}
         basePrice={50}
       />
@@ -174,6 +182,7 @@ describe('LastChanceModal', () => {
         userMinerals={100}
         onUseItem={vi.fn()}
         onPurchaseAndUse={vi.fn()}
+        onWatchAd={vi.fn()}
         onGiveUp={vi.fn()}
         basePrice={50}
       />
@@ -191,6 +200,7 @@ describe('LastChanceModal', () => {
         userMinerals={100}
         onUseItem={vi.fn()}
         onPurchaseAndUse={vi.fn()}
+        onWatchAd={vi.fn()}
         onGiveUp={vi.fn()}
         basePrice={50}
       />
@@ -199,5 +209,27 @@ describe('LastChanceModal', () => {
     // Timer should be displayed (initial value is 10)
     const timer = screen.getByText('10');
     expect(timer).toBeInTheDocument();
+  });
+
+  it('should call onWatchAd when watch ad button is clicked', () => {
+    const onWatchAd = vi.fn();
+    render(
+      <LastChanceModal
+        isVisible={true}
+        gameMode="time-attack"
+        inventoryCount={0}
+        userMinerals={100}
+        onUseItem={vi.fn()}
+        onPurchaseAndUse={vi.fn()}
+        onWatchAd={onWatchAd}
+        onGiveUp={vi.fn()}
+        basePrice={50}
+      />
+    );
+
+    const adButton = screen.getByText(/광고 보고 무료 부활/);
+    fireEvent.click(adButton);
+
+    expect(onWatchAd).toHaveBeenCalled();
   });
 });

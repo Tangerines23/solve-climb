@@ -11,13 +11,14 @@ import { PauseModal } from '../game/PauseModal';
 import { GameMode } from '../../types/quiz';
 
 interface QuizModalsProps {
-  feedbackRef: RefObject<ItemFeedbackRef | null>;
+  feedbackRef: RefObject<ItemFeedbackRef>;
   showLastChanceModal: boolean;
   gameMode: GameMode;
   inventory: InventoryItem[];
   minerals: number;
   handleRevive: (useItem: boolean) => void;
   handlePurchaseAndRevive: () => void;
+  handleWatchAdAndRevive: () => void;
   handleGiveUp: () => void;
   showCountdown: boolean;
   handleCountdownComplete: () => void;
@@ -49,6 +50,7 @@ export function QuizModals({
   minerals,
   handleRevive,
   handlePurchaseAndRevive,
+  handleWatchAdAndRevive,
   handleGiveUp,
   showCountdown,
   handleCountdownComplete,
@@ -83,6 +85,7 @@ export function QuizModals({
         userMinerals={minerals}
         onUseItem={() => handleRevive(true)}
         onPurchaseAndUse={handlePurchaseAndRevive}
+        onWatchAd={handleWatchAdAndRevive}
         onGiveUp={handleGiveUp}
         basePrice={gameMode === 'time-attack' ? 800 : 800}
       />
