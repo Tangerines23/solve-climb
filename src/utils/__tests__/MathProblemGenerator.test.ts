@@ -252,7 +252,7 @@ describe('MathProblemGenerator', () => {
     it('should handle sequential problems with multiple operators', () => {
       // Stage 10 has sequential with +, -, *, /
       const problem = generateProblem(10);
-      expect(problem.expression).toMatch(/[+−×÷]/); // Sequential replace uses standard symbols later
+      expect(problem.expression).toMatch(/[+\-−×÷]/); // Sequential replace uses standard symbols later
       expect(Number.isInteger(problem.answer)).toBe(true);
     });
 
