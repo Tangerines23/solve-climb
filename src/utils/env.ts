@@ -125,8 +125,12 @@ export const ENV: EnvConfig = (() => {
     IS_PRODUCTION: isProduction,
     DEBUG_URL: import.meta.env.VITE_DEBUG_URL || '',
     IS_VERCEL: !!import.meta.env.VITE_IS_VERCEL,
-    ADMOB_APP_ID: String(import.meta.env.VITE_ADMOB_APP_ID || 'ca-app-pub-6410061165772335~9825031776'),
-    ADMOB_REWARDED_ID: String(import.meta.env.VITE_ADMOB_REWARDED_ID || 'ca-app-pub-6410061165772335/6536523456'),
+    ADMOB_APP_ID: String(
+      import.meta.env.VITE_ADMOB_APP_ID || 'ca-app-pub-6410061165772335~9825031776'
+    ),
+    ADMOB_REWARDED_ID: String(
+      import.meta.env.VITE_ADMOB_REWARDED_ID || 'ca-app-pub-6410061165772335/6536523456'
+    ),
   };
 })();
 

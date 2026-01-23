@@ -265,63 +265,59 @@ export function NotificationPlayground() {
       <GameOverlay />
 
       {/* --- 4. Cards Preview --- */}
-      {
-        activeModal === 'cards_preview' && (
-          <div className="playground-overlay" onClick={closeModals}>
-            <div className="playground-card-scroll-container" onClick={(e) => e.stopPropagation()}>
-              <div className="card-preview-row">
-                <h5>Challenge Card</h5>
-                <div style={{ maxWidth: '300px' }}>
-                  <ChallengeCard />
-                </div>
+      {activeModal === 'cards_preview' && (
+        <div className="playground-overlay" onClick={closeModals}>
+          <div className="playground-card-scroll-container" onClick={(e) => e.stopPropagation()}>
+            <div className="card-preview-row">
+              <h5>Challenge Card</h5>
+              <div style={{ maxWidth: '300px' }}>
+                <ChallengeCard />
               </div>
-              <div className="card-preview-row">
-                <h5>My Record Card</h5>
-                <div style={{ maxWidth: '300px' }}>
-                  <MyRecordCard world="World1" category="기초" categoryName="사칙연산" />
-                </div>
-              </div>
-              <div className="card-preview-row">
-                <h5>Unknown Mountain Card</h5>
-                <div style={{ maxWidth: '300px' }}>
-                  <UnknownMountainCard onToast={triggerToast} />
-                </div>
-              </div>
-              <div className="card-preview-row">
-                <h5>Status Card</h5>
-                <div style={{ maxWidth: '300px' }}>
-                  <StatusCard />
-                </div>
-              </div>
-              <button className="playground-close-btn" onClick={closeModals}>
-                닫기
-              </button>
             </div>
+            <div className="card-preview-row">
+              <h5>My Record Card</h5>
+              <div style={{ maxWidth: '300px' }}>
+                <MyRecordCard world="World1" category="기초" categoryName="사칙연산" />
+              </div>
+            </div>
+            <div className="card-preview-row">
+              <h5>Unknown Mountain Card</h5>
+              <div style={{ maxWidth: '300px' }}>
+                <UnknownMountainCard onToast={triggerToast} />
+              </div>
+            </div>
+            <div className="card-preview-row">
+              <h5>Status Card</h5>
+              <div style={{ maxWidth: '300px' }}>
+                <StatusCard />
+              </div>
+            </div>
+            <button className="playground-close-btn" onClick={closeModals}>
+              닫기
+            </button>
           </div>
-        )
-      }
+        </div>
+      )}
 
-      {
-        activeModal === 'levelList' && (
-          <div className="playground-overlay" onClick={closeModals}>
-            <div className="playground-card-container" onClick={(e) => e.stopPropagation()}>
-              <LevelListCard
-                world="World1"
-                category="기초"
-                levels={[
-                  { level: 1, name: 'Level 1', description: 'Test' },
-                  { level: 2, name: 'Level 2', description: 'Test' },
-                ]}
-                onLevelClick={(lvl) => triggerToast(`Level ${lvl}`)}
-                onLevelLongPress={(lvl) => triggerToast(`Long Press ${lvl}`)}
-              />
-              <button className="playground-close-btn" onClick={closeModals}>
-                닫기
-              </button>
-            </div>
+      {activeModal === 'levelList' && (
+        <div className="playground-overlay" onClick={closeModals}>
+          <div className="playground-card-container" onClick={(e) => e.stopPropagation()}>
+            <LevelListCard
+              world="World1"
+              category="기초"
+              levels={[
+                { level: 1, name: 'Level 1', description: 'Test' },
+                { level: 2, name: 'Level 2', description: 'Test' },
+              ]}
+              onLevelClick={(lvl) => triggerToast(`Level ${lvl}`)}
+              onLevelLongPress={(lvl) => triggerToast(`Long Press ${lvl}`)}
+            />
+            <button className="playground-close-btn" onClick={closeModals}>
+              닫기
+            </button>
           </div>
-        )
-      }
-    </div >
+        </div>
+      )}
+    </div>
   );
 }

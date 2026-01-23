@@ -1,0 +1,24 @@
+{
+    "$schema": "https://unpkg.com/knip@5/schema.json",
+    "vitest": false,
+    "entry": [
+        "src/main.tsx",
+        "src/utils/tossAuth.ts"
+    ],
+    "project": [
+        "src/**/*.{ts,tsx}"
+    ],
+    "ignore": [
+        "src/vite-env.d.ts",
+        "vitest.workspace.js"
+    ],
+    "ignoreDependencies": [
+        "@typescript-eslint/eslint-plugin",
+        "@typescript-eslint/parser",
+        "eslint-plugin-react-hooks",
+        "eslint-plugin-react-refresh"
+    ],
+    "ignoreBinaries": [
+        "granite"
+    ]
+}

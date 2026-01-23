@@ -102,7 +102,8 @@ export function LastChanceModal({
               onClick={handleWatchAdClick}
               disabled={isAdLoading}
             >
-              <span>{isAdLoading ? '⌛' : '📺'}</span> {isAdLoading ? '광고 시청 중...' : '광고 보고 무료 부활'}
+              <span>{isAdLoading ? '⌛' : '📺'}</span>{' '}
+              {isAdLoading ? '광고 시청 중...' : '광고 보고 무료 부활'}
             </button>
 
             <button className="last-chance-btn give-up-btn" onClick={onGiveUp}>

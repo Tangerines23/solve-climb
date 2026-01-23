@@ -153,7 +153,7 @@ export function ResultPage() {
         );
         const ranks =
           useLevelProgressStore.getState().rankings[
-          `${worldParam}-${categoryParam}-weekly-${mode === 'time-attack' ? 'time-attack' : 'survival'}`
+            `${worldParam}-${categoryParam}-weekly-${mode === 'time-attack' ? 'time-attack' : 'survival'}`
           ];
         const {
           data: { user },
@@ -421,7 +421,8 @@ export function ResultPage() {
               onClick={handleDoubleReward}
               disabled={isAdLoading}
             >
-              <span>{isAdLoading ? '⌛' : '📺'}</span> {isAdLoading ? '보상 지급 중...' : `결과 보상 2배로 받기 (+${baseMinerals}💎)`}
+              <span>{isAdLoading ? '⌛' : '📺'}</span>{' '}
+              {isAdLoading ? '보상 지급 중...' : `결과 보상 2배로 받기 (+${baseMinerals}💎)`}
             </button>
           </div>
         )}

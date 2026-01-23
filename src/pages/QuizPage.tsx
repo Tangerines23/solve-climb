@@ -344,12 +344,7 @@ export function QuizPage() {
     isPreview,
   });
 
-  const {
-    handleRevive,
-    handlePurchaseAndRevive,
-    handleGiveUp,
-    stableHandleGameOver,
-  } = revive;
+  const { handleRevive, handlePurchaseAndRevive, handleGiveUp, stableHandleGameOver } = revive;
 
   // 광고 보상 콜백과 부활 로직을 하나로 묶음
   const handleWatchAdAndRevive = useCallback(async () => {

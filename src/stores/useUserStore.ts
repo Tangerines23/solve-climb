@@ -34,7 +34,10 @@ interface UserState {
   setStamina: (stamina: number) => void;
   recoverStaminaAds: () => Promise<{ success: boolean; message: string }>;
   recoverMineralsAds: () => Promise<{ success: boolean; message: string }>;
-  rewardMinerals: (amount: number, isBonus?: boolean) => Promise<{ success: boolean; message: string }>;
+  rewardMinerals: (
+    amount: number,
+    isBonus?: boolean
+  ) => Promise<{ success: boolean; message: string }>;
   refundStamina: () => Promise<{ success: boolean; message: string }>;
 
   // DEV ONLY
@@ -83,7 +86,11 @@ export const useUserStore = create<UserState>((set, get) => ({
 
       // Fetch profile
       const { data: profile } = await debugSupabaseQuery(
-        supabase.from('profiles').select('minerals, stamina, last_ad_stamina_recharge').eq('id', user.id).single()
+        supabase
+          .from('profiles')
+          .select('minerals, stamina, last_ad_stamina_recharge')
+          .eq('id', user.id)
+          .single()
       );
 
       // Fetch inventory
@@ -243,7 +250,7 @@ export const useUserStore = create<UserState>((set, get) => ({
         const remainingMinutes = Math.ceil((sixHours - (now - lastTime)) / (60 * 1000));
         return {
           success: false,
-          message: `아직 충전할 수 없습니다. (${remainingMinutes}분 남음)`
+          message: `아직 충전할 수 없습니다. (${remainingMinutes}분 남음)`,
         };
       }
     }
@@ -275,7 +282,7 @@ export const useUserStore = create<UserState>((set, get) => ({
       // 서버 응답 성공 시 로컬 상태 업데이트
       set({
         stamina: data.stamina || 5,
-        lastAdRechargeTime: new Date().toISOString()
+        lastAdRechargeTime: new Date().toISOString(),
       });
     }
     return data;
@@ -299,14 +306,14 @@ export const useUserStore = create<UserState>((set, get) => ({
     if (amount <= 0) return { success: false, message: 'Invalid amount' };
 
     // 보너스(2배) 성격일 경우 광고 시청 확인 (선택 사항: 호출부에서 할 수도 있음)
-    // 여기서는 범용 보상 함수이므로 보상 지급만 담당하도록 유지하고, 
+    // 여기서는 범용 보상 함수이므로 보상 지급만 담당하도록 유지하고,
     // 광고 시언은 호출부(ResultPage)에서 AdService를 직접 부르는 것이 더 유연함
 
     const currentMinerals = get().minerals;
     await get().setMinerals(currentMinerals + amount);
     return {
       success: true,
-      message: isBonus ? `${amount} 보너스 미네랄 획득! 💎` : `${amount} 미네랄 획득! 💎`
+      message: isBonus ? `${amount} 보너스 미네랄 획득! 💎` : `${amount} 미네랄 획득! 💎`,
     };
   },
 

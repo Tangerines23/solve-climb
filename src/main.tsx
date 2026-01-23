@@ -1,5 +1,20 @@
 import ReactDOM from 'react-dom/client';
 import React from 'react';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
+
+const queryClient = new QueryClient();
+import * as Sentry from '@sentry/react';
+
+Sentry.init({
+  dsn: import.meta.env.VITE_SENTRY_DSN as string,
+  integrations: [Sentry.browserTracingIntegration(), Sentry.replayIntegration()],
+  tracesSampleRate: 1.0,
+  replaysSessionSampleRate: 0.1,
+  replaysOnErrorSampleRate: 1.0,
+  enabled: !!import.meta.env.VITE_SENTRY_DSN,
+});
+
 import '@/index.css';
 import '@/utils/tossAuth';
 import AppContainer from '@/AppContainer';
@@ -24,7 +39,10 @@ try {
   // ThemeProvider 제거: UI 독립성을 위해 React.Fragment로 대체합니다.
   root.render(
     <React.Fragment>
-      <AppContainer />
+      <QueryClientProvider client={queryClient}>
+        <AppContainer />
+        <ReactQueryDevtools initialIsOpen={false} />
+      </QueryClientProvider>
     </React.Fragment>
   );
 
