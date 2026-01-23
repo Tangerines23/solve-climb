@@ -685,3 +685,84 @@
 .my-page-favorites-more:active {
   transform: scale(0.98);
 }
+
+/* Effects Guide Section */
+.my-page-effects-guide {
+  padding: 0 var(--spacing-xl) var(--spacing-3xl);
+  margin-top: var(--spacing-xl);
+}
+
+.effects-guide-container {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-2xl);
+}
+
+.effects-guide-group {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-md);
+}
+
+.effects-guide-subtitle {
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--color-text-primary);
+  margin: 0;
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-xs);
+}
+
+.effects-grid {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-md);
+  background-color: var(--bg-glass-overlay);
+  padding: var(--spacing-md);
+  border-radius: var(--rounded-card);
+  border: var(--border-glass);
+}
+
+.effect-card {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-md);
+  padding: var(--spacing-sm);
+  background-color: rgba(255, 255, 255, 0.03);
+  border-radius: var(--rounded-sm);
+  transition: background-color 0.2s;
+}
+
+.effect-card:hover {
+  background-color: rgba(255, 255, 255, 0.06);
+}
+
+.effect-icon-wrapper {
+  width: 44px;
+  height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--rounded-button);
+  font-size: var(--spacing-2xl);
+  flex-shrink: 0;
+}
+
+.effect-info {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.effect-name {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--color-text-primary);
+}
+
+.effect-description {
+  font-size: 13px;
+  color: var(--color-text-secondary);
+  line-height: 1.4;
+}

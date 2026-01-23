@@ -13,6 +13,7 @@ import { MyPageProfile } from '../components/my/MyPageProfile';
 import { MyPageStats } from '../components/my/MyPageStats';
 import { MyPageQuickAccess } from '../components/my/MyPageQuickAccess';
 import { MyPageSettings } from '../components/my/MyPageSettings';
+import { MyPageEffectsGuide } from '../components/my/MyPageEffectsGuide';
 import { NotificationPlayground } from '../components/debug/NotificationPlayground';
 import { StaticUISection } from '../components/debug/StaticUISection';
 import { DailyRewardDebugSection } from '../components/debug/DailyRewardDebugSection';
@@ -720,6 +721,9 @@ export function MyPage() {
             onLogout={handleLogout}
             onWithdraw={handleWithdraw}
           />
+
+          {/* Game Effects Guide */}
+          <MyPageEffectsGuide />
 
           {/* Admin / Dev Playground */}
           {(useProfileStore.getState().isAdmin || import.meta.env.DEV) && (
