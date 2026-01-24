@@ -67,6 +67,7 @@ describe('useBadgeChecker', () => {
             eq: (_col: string, _val: unknown) => Promise.resolve({ data: [], error: null }), // Default empty badges
           };
         },
+
         insert: mockInsert.mockResolvedValue({ error: null }),
       } as unknown as any;
     });
@@ -78,6 +79,7 @@ describe('useBadgeChecker', () => {
       eq: vi.fn().mockResolvedValue({ data: [], error: null }),
       insert: mockInsert.mockResolvedValue({ error: null }), // default success
     };
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     vi.mocked(supabase.from).mockReturnValue(chain as any);
     mockSelect.mockImplementation(chain.eq); // capture the final promise returner
   });
@@ -105,6 +107,7 @@ describe('useBadgeChecker', () => {
     streakCount: 0,
     heatmapData: [],
     smartComment: '',
+    allActivities: [],
   };
 
   const baseStats: HistoryStats = {
@@ -186,6 +189,7 @@ describe('useBadgeChecker', () => {
       }),
       insert: mockInsert,
     };
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     vi.mocked(supabase.from).mockReturnValue(chain as any);
 
     const { result } = renderHook(() => useBadgeChecker());
