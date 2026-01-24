@@ -19,6 +19,7 @@ import { useToastStore } from '@/stores/useToastStore';
 import type { Category, World } from '@/types/quiz';
 import { AdService } from '@/utils/adService';
 import { ItemFeedbackRef } from '@/components/game/ItemFeedbackOverlay';
+import { analytics } from '@/services/analytics';
 import { supabase } from '@/utils/supabaseClient';
 import { debugSupabaseQuery } from '@/utils/debugFetch';
 import {
@@ -556,7 +557,15 @@ export function QuizPage() {
       const item = inventory.find((i) => i.id === id);
       if (item && item.quantity > 0) {
         const res = await consumeItem(id);
-        if (res.success) activeCodes.push(item.code);
+        if (res.success) {
+          activeCodes.push(item.code);
+          analytics.trackEvent({
+            category: 'shop',
+            action: 'consume_item',
+            label: item.code,
+            data: { itemId: id }
+          });
+        }
       }
     }
     setActiveItems(activeCodes);
@@ -570,6 +579,9 @@ export function QuizPage() {
     if (activeCodes.includes('power_gel')) incrementCombo();
     setShowTipModal(false);
     setShowStaminaModal(false);
+
+    // [Added] Quiz Start Tracking
+    analytics.trackQuizStart(worldParam || 'default', categoryParam || 'default');
   };
 
   const handlePromiseComplete = async () => {

@@ -202,40 +202,15 @@ export const useUserStore = create<UserState>((set, get) => ({
   },
 
   setMinerals: async (minerals: number) => {
-    const value = Math.max(0, minerals);
-    set({ minerals: value });
-
-    try {
-      const authResult = await debugSupabaseQuery(supabase.auth.getUser());
-      const user = authResult?.data?.user;
-      if (user) {
-        await debugSupabaseQuery(
-          supabase.from('profiles').update({ minerals: value }).eq('id', user.id)
-        );
-      }
-    } catch (error) {
-      console.error('Error syncing debug minerals:', error);
-    }
+    // [보안 지침] 직접적인 profiles update 정책이 폐쇄되었습니다.
+    // 이 함수는 로컬 상태 업데이트용으로만 사용하고, 서버 동기화는 add_minerals RPC를 권장합니다.
+    set({ minerals: Math.max(0, minerals) });
+    console.warn('[UserStore] Direct setMinerals sync is disabled for security. Use rewardMinerals instead.');
   },
 
   setStamina: async (stamina: number) => {
-    const value = Math.max(0, stamina);
-    set({ stamina: value });
-
-    try {
-      const authResult = await debugSupabaseQuery(supabase.auth.getUser());
-      const user = authResult?.data?.user;
-      if (user) {
-        await debugSupabaseQuery(
-          supabase
-            .from('profiles')
-            .update({ stamina: value, last_stamina_update: new Date().toISOString() })
-            .eq('id', user.id)
-        );
-      }
-    } catch (error) {
-      console.error('Error syncing debug stamina:', error);
-    }
+    set({ stamina: Math.max(0, stamina) });
+    console.warn('[UserStore] Direct setStamina sync is disabled for security. Stamina recovery is handled server-side.');
   },
 
   recoverStaminaAds: async () => {
@@ -289,32 +264,52 @@ export const useUserStore = create<UserState>((set, get) => ({
   },
 
   recoverMineralsAds: async () => {
-    // 1. 광고 시청 (AdService 위임)
+    // 1. 광고 시청
     const adResult = await AdService.showRewardedAd('mineral_recharge');
     if (!adResult.success) {
       return { success: false, message: adResult.error || '광고 시청에 실패했습니다.' };
     }
 
-    // 2. 보상 지급 (500💎)
+    // 2. 서버 연동 (SECURE RPC)
     const amount = 500;
-    const currentMinerals = get().minerals;
-    await get().setMinerals(currentMinerals + amount);
-    return { success: true, message: `${amount} 미네랄이 충전되었습니다! 💎` };
+    const { data, error } = await debugSupabaseQuery(
+      supabase.rpc('add_minerals', { p_amount: amount })
+    );
+
+    if (error) {
+      console.error('Error rewarding minerals via RPC:', error);
+      return { success: false, message: '보상 지급 중 오류가 발생했습니다.' };
+    }
+
+    if (data.success) {
+      set({ minerals: data.minerals });
+      return { success: true, message: `${amount} 미네랄이 충전되었습니다! 💎` };
+    }
+
+    return { success: false, message: data.message };
   },
 
   rewardMinerals: async (amount: number, isBonus = false) => {
     if (amount <= 0) return { success: false, message: 'Invalid amount' };
 
-    // 보너스(2배) 성격일 경우 광고 시청 확인 (선택 사항: 호출부에서 할 수도 있음)
-    // 여기서는 범용 보상 함수이므로 보상 지급만 담당하도록 유지하고,
-    // 광고 시언은 호출부(ResultPage)에서 AdService를 직접 부르는 것이 더 유연함
+    const { data, error } = await debugSupabaseQuery(
+      supabase.rpc('add_minerals', { p_amount: amount })
+    );
 
-    const currentMinerals = get().minerals;
-    await get().setMinerals(currentMinerals + amount);
-    return {
-      success: true,
-      message: isBonus ? `${amount} 보너스 미네랄 획득! 💎` : `${amount} 미네랄 획득! 💎`,
-    };
+    if (error) {
+      console.error('Error rewarding minerals via RPC:', error);
+      return { success: false, message: '미네랄 지급 중 오류가 발생했습니다.' };
+    }
+
+    if (data.success) {
+      set({ minerals: data.minerals });
+      return {
+        success: true,
+        message: isBonus ? `${amount} 보너스 미네랄 획득! 💎` : `${amount} 미네랄 획득! 💎`,
+      };
+    }
+
+    return { success: false, message: data.message };
   },
 
   // DEV ONLY: 아이템 지급 치트 (RPC Version)

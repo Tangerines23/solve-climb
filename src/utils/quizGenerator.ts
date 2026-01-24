@@ -43,7 +43,7 @@ export function generateQuestion(
 /**
  * World 1: 수와 대수
  */
-function generateWorld1Question(
+export function generateWorld1Question(
   category: Category,
   level: number,
   difficulty: Difficulty
@@ -110,7 +110,7 @@ function generateWorld1Question(
 /**
  * World 2: 도형과 공간
  */
-function generateWorld2Question(
+export function generateWorld2Question(
   category: Category,
   level: number,
   difficulty: Difficulty
@@ -139,7 +139,7 @@ function generateWorld2Question(
 /**
  * World 3: 확률과 통계
  */
-function generateWorld3Question(
+export function generateWorld3Question(
   category: Category,
   level: number,
   difficulty: Difficulty
@@ -163,7 +163,7 @@ function generateWorld3Question(
 /**
  * World 4: 공학 및 응용
  */
-function generateWorld4Question(
+export function generateWorld4Question(
   category: Category,
   level: number,
   difficulty: Difficulty
@@ -249,9 +249,9 @@ function generateLogicGateQuestion(_difficulty: Difficulty): QuizQuestion {
 }
 
 /**
- * 수학 문제 생성
+ * 수학 문제 생성 (내부용/테이블 기반)
  */
-function generateMathQuestion(
+export function generateMathQuestion(
   topic: '덧셈' | '뺄셈' | '곱셈' | '나눗셈' | 'equations' | 'calculus' | Topic,
   difficulty: Difficulty
 ): QuizQuestion {
@@ -263,7 +263,11 @@ function generateMathQuestion(
 
   // 미적분 문제 처리
   if (topic === 'calculus') {
-    return generateCalculusProblem(1, difficulty) as unknown as QuizQuestion;
+    const calculusProblem = generateCalculusProblem(1, difficulty);
+    return {
+      question: calculusProblem.question,
+      answer: calculusProblem.answer,
+    };
   }
 
   // 기존 사칙연산 문제 (0이 나오지 않도록 처리)

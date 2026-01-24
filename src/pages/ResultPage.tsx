@@ -22,6 +22,7 @@ import { BadgeNotification } from '@/components/BadgeNotification';
 import { urls } from '@/utils/navigation';
 import { Category } from '@/types/quiz';
 import { AdService } from '@/utils/adService';
+import { analytics } from '@/services/analytics';
 import './ResultPage.css';
 
 function useCountUp(targetValue: number, duration = 1000) {
@@ -153,7 +154,7 @@ export function ResultPage() {
         );
         const ranks =
           useLevelProgressStore.getState().rankings[
-            `${worldParam}-${categoryParam}-weekly-${mode === 'time-attack' ? 'time-attack' : 'survival'}`
+          `${worldParam}-${categoryParam}-weekly-${mode === 'time-attack' ? 'time-attack' : 'survival'}`
           ];
         const {
           data: { user },
@@ -167,6 +168,28 @@ export function ResultPage() {
       }
     };
     sync();
+
+    // [Added] Quiz End Tracking
+    if (worldParam && categoryParam && finalScore >= 0) {
+      analytics.trackQuizEnd(
+        worldParam,
+        categoryParam,
+        finalScore,
+        correctCount > 0 // 최소 한 문제라도 맞추면 성공으로 간주
+      );
+
+      // 추가 상세 메트릭 트래킹
+      analytics.trackEvent({
+        category: 'quiz',
+        action: 'summary',
+        data: {
+          total_questions: total,
+          correct_count: correctCount,
+          accuracy: total > 0 ? Math.round((correctCount / total) * 100) : 0,
+          avg_time: averageTime,
+        },
+      });
+    }
 
     if (finalScore > 0 && !scoreSubmitted) {
       submitScoreToLeaderboard(finalScore).then(setScoreSubmitted);

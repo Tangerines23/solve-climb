@@ -16,6 +16,7 @@ import { useGameStore } from '../stores/useGameStore';
 import { APP_CONFIG } from '../config/app';
 import { useBaseCampStore } from '../stores/useBaseCampStore';
 import { useDeathNoteStore } from '../stores/useDeathNoteStore';
+import { analytics } from '@/services/analytics';
 
 interface UseQuizSubmitParams {
   answerInput: string;
@@ -193,6 +194,19 @@ export function useQuizSubmit({
           onAnswerSubmitted(currentQuestionId, answer);
         }
       }
+
+      // [Added] Answer Tracking
+      analytics.trackEvent({
+        category: 'quiz',
+        action: 'submit_answer',
+        label: isCorrect ? 'correct' : 'wrong',
+        data: {
+          category: categoryParam,
+          world: subParam,
+          isCorrect,
+          answer: answerInput,
+        },
+      });
 
       // 문제 수 증가
       paramsRef.current.setTotalQuestions((prev) => prev + 1);

@@ -5,6 +5,7 @@
 
 import { logger } from './logger';
 import { useErrorLogStore } from '../stores/useErrorLogStore';
+import { analytics } from '@/services/analytics';
 
 const isDevelopment = import.meta.env.DEV;
 
@@ -89,7 +90,17 @@ export function getUserErrorMessage(error: unknown): string {
  */
 export function logError(context: string, error: unknown): void {
   const errorMessage = error instanceof Error ? error.message : String(error);
+  const errorType = detectErrorType(error);
+
   logger.error(context, `Error: ${errorMessage}`, error);
+
+  // [Added] Analytics 에러 트래킹
+  analytics.trackEvent({
+    category: 'system',
+    action: 'error',
+    label: errorType,
+    data: { context, message: errorMessage }
+  });
 
   // 에러 로그 스토어에 기록 (개발 환경에서만)
   if (isDevelopment && error instanceof Error) {
