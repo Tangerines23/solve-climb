@@ -1,8 +1,3 @@
-/**
- * 에러 발생 시 표시되는 Fallback 컴포넌트
- * Error Boundary와 함께 사용됩니다.
- */
-
 import './ErrorFallback.css';
 
 interface ErrorFallbackProps {
@@ -15,17 +10,19 @@ export function ErrorFallback({ error, resetError }: ErrorFallbackProps) {
 
   return (
     <div className="error-fallback">
-      <div className="error-fallback-content">
-        <div className="error-fallback-icon">⚠️</div>
-        <h1 className="error-fallback-title">문제가 발생했습니다</h1>
+      <div className="error-fallback-content glass-card p-xl">
+        <div className="error-fallback-icon">🧗‍♀️</div>
+        <h1 className="error-fallback-title">산등성이에서 길을 잃었습니다</h1>
         <p className="error-fallback-message">
-          예상치 못한 오류가 발생했습니다. 페이지를 새로고침하거나 다시 시도해주세요.
+          예기치 못한 오류가 발생하여 정상으로 향하는 길이 일시적으로 차단되었습니다.
+          <br />
+          아래 버튼을 눌러 다시 등반을 시도해주세요.
         </p>
 
         {isDevelopment && (
           <div className="error-fallback-details">
             <details>
-              <summary>에러 상세 정보 (개발 환경)</summary>
+              <summary>🛠 개발자 전용 에러 로그</summary>
               <pre className="error-fallback-stack">{error.stack || error.message}</pre>
             </details>
           </div>
@@ -36,7 +33,7 @@ export function ErrorFallback({ error, resetError }: ErrorFallbackProps) {
             className="error-fallback-button error-fallback-button-primary"
             onClick={resetError}
           >
-            다시 시도
+            다시 시도하기
           </button>
           <button
             className="error-fallback-button error-fallback-button-secondary"

@@ -10,6 +10,7 @@ import { GlobalLoadingIndicator } from '@/components/GlobalLoadingIndicator';
 import { useErrorLogStore } from '@/stores/useErrorLogStore';
 import { useDebugStore } from '@/stores/useDebugStore';
 import { useSettingsStore } from '@/stores/useSettingsStore';
+import { useConnectivity } from '@/hooks/useConnectivity';
 
 const HomePage = lazy(() =>
   import('@/pages/HomePage').then((module) => ({ default: module.HomePage }))
@@ -50,8 +51,10 @@ const DebugPanel = import.meta.env.DEV ? lazy(() => import('./components/DebugPa
 const DebugOverlay = import.meta.env.DEV
   ? lazy(() => import('./components/debug/DebugOverlay').then((m) => ({ default: m.DebugOverlay })))
   : null;
-
 function App() {
+  // 네트워크 연결 상태 감시
+  useConnectivity();
+
   const { syncProgress } = useLevelProgressStore();
   const { initialize: initializeAuth } = useAuthStore();
 

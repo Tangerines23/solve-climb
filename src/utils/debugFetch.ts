@@ -1,4 +1,5 @@
 import { useDebugStore } from '../stores/useDebugStore';
+import { logError } from './errorHandler';
 
 /**
  * 디버그용 지연 함수
@@ -7,41 +8,59 @@ const delay = (ms: number): Promise<void> => new Promise((resolve) => setTimeout
 
 /**
  * 네트워크 시뮬레이션을 적용하는 래퍼 함수
- * 개발 환경에서만 작동하며, 지연 시간과 강제 에러를 시뮬레이션합니다.
- *
- * @example
- * const data = await debugFetch(() => supabase.from('users').select('*'));
  */
 export async function debugFetch<T>(fn: () => Promise<T>): Promise<T> {
-  // 프로덕션 환경에서는 바로 실행
   if (!import.meta.env.DEV) {
     return fn();
   }
 
   const { networkLatency, forceNetworkError } = useDebugStore.getState();
 
-  // 네트워크 지연 시뮬레이션
   if (networkLatency > 0) {
-    console.log(`[DEBUG] 네트워크 지연 ${networkLatency}ms 적용 중...`);
     await delay(networkLatency);
   }
 
-  // 강제 에러 시뮬레이션
   if (forceNetworkError) {
-    console.error('[DEBUG] 강제 네트워크 에러 발생');
-    throw new Error('[DEBUG] Forced network error - 디버그 패널에서 설정됨');
+    throw new Error('[DEBUG] Forced network error');
   }
 
   return fn();
 }
 
 /**
- * Supabase 쿼리에 디버그 래퍼 적용
+ * Supabase 쿼리에 리질리언스(재시도 및 로깅) 적용
  * @example
- * const { data, error } = await debugSupabaseQuery(
+ * const { data, error } = await safeSupabaseQuery(
  *   supabase.from('profiles').select('*')
  * );
  */
-export async function debugSupabaseQuery<T>(query: PromiseLike<T>): Promise<T> {
-  return debugFetch(() => Promise.resolve(query));
+export async function safeSupabaseQuery<T>(
+  query: PromiseLike<T>,
+  options: { retries?: number; context?: string } = {}
+): Promise<T> {
+  const { retries = 2, context = 'SupabaseQuery' } = options;
+  let lastError: any;
+
+  for (let i = 0; i <= retries; i++) {
+    try {
+      // debugFetch를 통해 지연/강제에러 시뮬레이션 포함
+      return await debugFetch(() => Promise.resolve(query));
+    } catch (err: any) {
+      lastError = err;
+
+      // 일시적인 에러(5xx, 네트워크)인 경우에만 재시도
+      const isTransient = !err.status || (err.status >= 500 && err.status <= 599);
+      if (!isTransient || i === retries) break;
+
+      console.warn(`[Resilience] ${context} 실패, 재시도 중... (${i + 1}/${retries})`);
+      await delay(Math.pow(2, i) * 500); // Exponential backoff
+    }
+  }
+
+  // 최종 실패 시 로깅
+  logError(context, lastError);
+  throw lastError;
 }
+
+/** 하위 호환성을 위한 별칭 */
+export const debugSupabaseQuery = safeSupabaseQuery;

@@ -58,12 +58,47 @@
 
 | 기능 | 이름 | 타입 | 명령어 및 인자 (Command/Args) | 비고 |
 | :--- | :--- | :--- | :--- | :--- |
-| **실시간 검색 (Brave)** | `BraveSearch` | `command` | `npx -y @modelcontextprotocol/server-brave-search` | `BRAVE_API_KEY` 필요 (월 2,000회 무료) |
+| **실시간 검색 (Brave)** | `BraveSearch` | `command` | `npx -y @modelcontextprotocol/server-brave-search` | `BRAVE_API_KEY=BSAB1XSUKnRqmg2qfF09Tu6CAsVClYx` 환경변수로 설정 |
 | **AI 장기 기억** | `Memory` | `command` | `npx -y @modelcontextprotocol/server-memory` | - |
 | **브라우저 제어** | `Playwright` | `command` | `npx -y @modelcontextprotocol/server-playwright` | - |
 | **파일 시스템** | `Files` | `command` | `npx -y @modelcontextprotocol/server-filesystem [사용자폴더경로]` | 전체 파일 읽기 |
 
 ---
+
+## 🚀 4. Antigravity (Gemini CLI) 전용 MCP 설정 가이드 (심화)
+
+이 섹션은 **Cursor가 아닌, 현재 실행 중인 AI 에이전트(Antigravity)**에게 툴을 추가하고 싶을 때 참조하세요.
+Antigravity는 보안상의 이유로 엄격한 실행 권한을 가집니다. Windows 환경에서는 아래 방법을 권장합니다.
+
+### 📁 설정 파일 위치
+`%APPDATA%\Antigravity\User\mcp.json`
+(보통 `C:\Users\사용자명\AppData\Roaming\Antigravity\User\mcp.json`)
+
+### 🛠️ Windows 연결 필승 전략
+`npx`를 사용하면 타임아웃이 발생할 수 있으므로, **전역 설치 후 직접 실행**하는 것이 가장 안정적입니다.
+
+1.  **전역 설치**: `npm install -g @modelcontextprotocol/server-filesystem @xiaocangpt/mcp-fetch-ya`
+2.  **설정 파일 수정 (`mcp.json`)**:
+    ```json
+    "filesystem": {
+      "command": "C:\\Windows\\System32\\cmd.exe",
+      "args": [
+        "/c",
+        "C:\\Users\\YOUR_USER_NAME\\AppData\\Roaming\\npm\\mcp-server-filesystem.cmd",
+        "C:\\Path\\To\\Your\\Project"
+      ]
+    },
+    "fetch": {
+      "command": "C:\\Windows\\System32\\cmd.exe",
+      "args": [
+        "/c",
+        "C:\\Users\\YOUR_USER_NAME\\AppData\\Roaming\\npm\\mcp-fetch-ya.cmd"
+      ]
+    }
+    ```
+
+---
+
 
 ### ℹ️ Brave Search API 가격 정보
 *   **무료 요금제:** **월 2,000회**까지 무료로 검색이 가능합니다.

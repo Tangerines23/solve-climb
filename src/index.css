@@ -1,3 +1,7 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
 /*
  * 전역 스타일 및 변수
  * --------------------------------------------------------------------------

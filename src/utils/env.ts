@@ -51,10 +51,33 @@ export const ENV = {
 
 export type EnvConfig = typeof ENV;
 
+// ... existing code ...
+/**
+ * 환경 변수 유효성 검사 (테스트용)
+ */
+export function checkEnv() {
+  const result = envSchema.safeParse(import.meta.env);
+  if (!result.success) {
+    const formatted = result.error.format();
+    const missing = Object.keys(formatted).filter(key => key !== '_errors');
+    return {
+      isValid: false,
+      missing,
+      errors: formatted
+    };
+  }
+  return {
+    isValid: true,
+    missing: [],
+    errors: {}
+  };
+}
+
 /**
  * 환경 변수 정보 출력 (개발 환경 전용)
  */
 export function logEnvInfo(): void {
+  // ... existing code ...
   if (!import.meta.env.DEV) return;
 
   logger.group('Env', '🚀 환경 변수 로드 완료', () => {

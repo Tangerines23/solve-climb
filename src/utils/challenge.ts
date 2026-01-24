@@ -43,7 +43,7 @@ function dateToSeed(dateString: string): number {
 /**
  * 시드 기반 랜덤 숫자 생성기 (선형 합동 생성기)
  */
-class SeededRandom {
+export class SeededRandom {
   private seed: number;
 
   constructor(seed: number) {
@@ -69,7 +69,7 @@ class SeededRandom {
 /**
  * 오늘의 챌린지를 생성합니다
  */
-function generateTodayChallenge(): TodayChallenge {
+export function generateTodayChallenge(): TodayChallenge {
   const todayDate = getTodayDateString();
   const seed = dateToSeed(todayDate);
   const rng = new SeededRandom(seed);

@@ -312,4 +312,37 @@ describe('useGameStore', () => {
     expect(result.current.activeItems).not.toContain('safety_rope');
     expect(result.current.activeItems).not.toContain('flare');
   });
+  it('should reset fever when incrementing combo while exhausted', () => {
+    const { result } = renderHook(() => useGameStore());
+
+    act(() => {
+      result.current.setCombo(10); // Fever Level 1
+      result.current.setExhausted(true);
+      result.current.incrementCombo();
+    });
+
+    expect(result.current.combo).toBe(11);
+    expect(result.current.feverLevel).toBe(0);
+    expect(result.current.showSpeedLines).toBe(false);
+  });
+
+  it('should consume a life', () => {
+    const { result } = renderHook(() => useGameStore());
+
+    const initialLives = result.current.lives;
+    act(() => {
+      result.current.consumeLife();
+    });
+
+    expect(result.current.lives).toBe(initialLives - 1);
+
+    act(() => {
+      // Consume all lives
+      for (let i = 0; i < 10; i++) {
+        result.current.consumeLife();
+      }
+    });
+
+    expect(result.current.lives).toBe(0);
+  });
 });

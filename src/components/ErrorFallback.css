@@ -1,115 +1,103 @@
+/* src/components/ErrorFallback.css */
 .error-fallback {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  min-height: 100vh;
-  padding: var(--spacing-xl);
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
   background-color: var(--color-bg-primary);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: var(--z-max);
+  padding: var(--spacing-2xl);
 }
 
 .error-fallback-content {
-  max-width: var(--modal-width-portrait);
   width: 100%;
+  max-width: 400px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
   text-align: center;
 }
 
 .error-fallback-icon {
-  font-size: 4rem;
-  margin-bottom: var(--spacing-lg);
+  font-size: 64px;
+  margin-bottom: var(--spacing-xl);
+  filter: drop-shadow(0 0 10px rgba(240, 68, 82, 0.3));
 }
 
 .error-fallback-title {
+  font-size: 24px;
+  font-weight: 700;
+  margin-bottom: var(--spacing-md);
   color: var(--color-text-primary);
-  font-size: 1.5rem;
-  font-weight: 600;
-  margin: 0 0 var(--spacing-md) 0;
 }
 
 .error-fallback-message {
+  font-size: 16px;
   color: var(--color-text-secondary);
-  font-size: 1rem;
   line-height: 1.6;
-  margin: 0 0 var(--spacing-2xl) 0;
+  margin-bottom: var(--spacing-3xl);
 }
 
 .error-fallback-details {
-  margin: var(--spacing-2xl) 0;
+  width: 100%;
+  margin-bottom: var(--spacing-2xl);
   text-align: left;
 }
 
 .error-fallback-details summary {
-  color: var(--color-text-secondary);
-  cursor: pointer;
   padding: var(--spacing-md);
   background-color: var(--color-bg-secondary);
   border-radius: var(--rounded-sm);
-  margin-bottom: var(--spacing-sm);
-}
-
-.error-fallback-details summary:hover {
-  background-color: var(--color-bg-tertiary);
+  cursor: pointer;
+  font-size: 14px;
+  color: var(--color-blue-400);
 }
 
 .error-fallback-stack {
-  background-color: var(--color-bg-secondary);
-  color: var(--color-toss-red);
-  padding: var(--spacing-lg);
+  margin-top: var(--spacing-sm);
+  padding: var(--spacing-md);
+  background-color: var(--color-bg-tertiary);
   border-radius: var(--rounded-sm);
-  font-size: 0.875rem;
-  line-height: 1.6;
+  font-size: 12px;
+  font-family: 'Courier New', Courier, monospace;
   overflow-x: auto;
-  text-align: left;
-  white-space: pre-wrap;
-  word-break: break-word;
+  color: var(--adaptiveGrey400);
+  max-height: 200px;
 }
 
 .error-fallback-actions {
   display: flex;
+  flex-direction: column;
   gap: var(--spacing-md);
-  justify-content: center;
-  flex-wrap: wrap;
+  width: 100%;
 }
 
 .error-fallback-button {
-  padding: var(--spacing-md) var(--spacing-2xl);
-  border: none;
+  width: 100%;
+  padding: var(--spacing-lg);
   border-radius: var(--rounded-button);
-  font-size: 1rem;
-  font-weight: 500;
+  font-size: 16px;
+  font-weight: 600;
+  border: none;
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: transform 0.1s ease;
+}
+
+.error-fallback-button:active {
+  transform: scale(0.98);
 }
 
 .error-fallback-button-primary {
   background-color: var(--color-blue-400);
-  color: var(--color-text-primary);
-}
-
-.error-fallback-button-primary:hover {
-  background-color: var(--color-blue-500);
-}
-
-.error-fallback-button-primary:active {
-  background-color: var(--color-blue-700);
-  transform: scale(0.98);
+  color: white;
 }
 
 .error-fallback-button-secondary {
   background-color: var(--color-bg-secondary);
   color: var(--color-text-primary);
-}
-
-.error-fallback-button-secondary:hover {
-  background-color: var(--color-bg-tertiary);
-}
-
-.error-fallback-button-secondary:active {
-  background-color: var(--color-gray-450);
-  transform: scale(0.98);
-}
-
-@media (orientation: landscape) {
-  .error-fallback-content {
-    max-width: var(--modal-width-landscape-small);
-  }
+  border: 1px solid var(--adaptiveGrey700);
 }

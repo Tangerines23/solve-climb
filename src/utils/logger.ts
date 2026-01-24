@@ -123,11 +123,20 @@ export const logger = {
       fn();
       return;
     }
-    console.group(`[${context}] ${label}`);
-    try {
-      fn();
-    } finally {
-      console.groupEnd();
+    if (typeof console.group === 'function') {
+      console.group(`[${context}] ${label}`);
+      try {
+        fn();
+      } finally {
+        console.groupEnd();
+      }
+    } else {
+      console.log(`[${context}] ${label} (Group Start)`);
+      try {
+        fn();
+      } finally {
+        console.log(`[${context}] ${label} (Group End)`);
+      }
     }
   },
 

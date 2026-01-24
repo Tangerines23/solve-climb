@@ -1,0 +1,66 @@
+﻿
+> react-vite-app@0.8.0 test:coverage
+> vitest --coverage --run --coverage.reporter=text --coverage.reporter=json-summary --coverage.reporter=lcov --coverage.reporter=html src/utils/__tests__/quizGenerator.test.ts
+
+
+[1m[46m RUN [49m[22m [36mv4.0.16 [39m[90mC:/Users/ghkdd/gemini-projects/solve-climb[39m
+      [2mCoverage enabled with [22m[33mistanbul[39m
+
+ [31m??[39m src/utils/__tests__/quizGenerator.test.ts [2m([22m[2m19 tests[22m[2m | [22m[31m1 failed[39m[2m)[22m[32m 17[2mms[22m[39m
+       [32m??[39m should generate arithmetic question for World1-湲곗큹[32m 3[2mms[22m[39m
+       [32m??[39m should generate equation question for World1-???[32m 1[2mms[22m[39m
+       [32m??[39m should generate logic question for World1-?쇰━[32m 0[2mms[22m[39m
+       [32m??[39m should generate calculus question for World1-?ы솕[32m 1[2mms[22m[39m
+       [32m??[39m should use default math question for unknown category in World 1[32m 0[2mms[22m[39m
+       [32m??[39m should generate geometry question for World2-湲곗큹[32m 0[2mms[22m[39m
+       [32m??[39m should generate symmetry question for World2-?쇰━[32m 0[2mms[22m[39m
+       [32m??[39m should handle繹뽩굺 以?for unknown category in World 2[32m 0[2mms[22m[39m
+       [32m??[39m should generate stats question for World3-湲곗큹[32m 1[2mms[22m[39m
+       [32m??[39m should handle繹뽩굺 以?for unknown category in World 3[32m 0[2mms[22m[39m
+       [32m??[39m should generate CS question for World4-湲곗큹[32m 0[2mms[22m[39m
+       [32m??[39m should generate logic gate question for World4-?쇰━[32m 0[2mms[22m[39m
+       [32m??[39m should handle繹뽩굺 以?for unknown category in World 4[32m 0[2mms[22m[39m
+       [32m??[39m should generate subtraction questions correctly[32m 0[2mms[22m[39m
+       [32m??[39m should test subtraction with specific random values to hit branches[32m 0[2mms[22m[39m
+[31m       [31m횞[31m should fallback to World 1 for unknown world[39m[32m 5[2mms[22m[39m
+       [32m??[39m should cover geometry basic questions via World 2 fallback[32m 0[2mms[22m[39m
+       [32m??[39m should cover stats basic questions via World 3 fallback[32m 0[2mms[22m[39m
+       [32m??[39m should cover CS basic questions via World 4 fallback[32m 0[2mms[22m[39m
+node.exe : 
+위치 C:\Program Files\nodejs\npm.ps1:29 문자:3
++   & $NODE_EXE $NPM_CLI_JS $args
++   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+[31m??렞??렞??렞??[39m[1m[41m Failed Tests 1 [49m[22m[31m??렞??렞??렞??[39m
+
+[41m[1m FAIL [22m[49m src/utils/__tests__/quizGenerator.test.ts[2m > [2
+2mquizGenerator[2m > [22mEdge Cases & Fallbacks[2m > [22mshould fallback 
+to World 1 for unknown world
+[31m[1mAssertionError[22m: expected '湲곗큹' to be 'Unknown' // Object.is equ
+ality[39m
+
+Expected: [32m"Unknown"[39m
+Received: [31m"湲곗큹"[39m
+
+[36m [2m??[22m src/utils/__tests__/quizGenerator.test.ts:[2m127:31[22m[3
+9m
+    [90m125| [39m    [34mit[39m([32m'should fallback to World 1 for unkn
+own world'[39m[33m,[39m () [33m=>[39m {
+    [90m126| [39m      const result = generateQuestion('UnknownWorld' as un
+known as Wor??    [90m127| [39m      [34mexpect[39m(result[33m.[39mcate
+gory)[33m.[39m[34mtoBe[39m([32m'Unknown'[39m [35mas[39m [33mCategory
+[39m)[33m;[39m
+    [90m   | [39m                              [31m^[39m
+    [90m128| [39m    })[33m;[39m
+    [90m129| [39m  })[33m;[39m
+
+[31m[2m??렞??렞??렞??렞??렞??렞??렞??렞??렞??렞??렞??렞[1/1]??[22m[39m
+
+
+[2m Test Files [22m [1m[31m1 failed[39m[22m[90m (1)[39m
+[2m      Tests [22m [1m[31m1 failed[39m[22m[2m | [22m[1m[32m18 passed[39m[22m[90m (19)[39m
+[2m   Start at [22m 21:48:48
+[2m   Duration [22m 2.78s[2m (transform 838ms, setup 489ms, import 826ms, tests 17ms, environment 1.19s)[22m
+

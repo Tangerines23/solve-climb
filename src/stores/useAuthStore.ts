@@ -28,7 +28,16 @@ export const useAuthStore = create<AuthState>((set) => ({
 
     // Listen for auth changes
     supabase.auth.onAuthStateChange((_event, session) => {
-      set({ session, user: session?.user ?? null, isLoading: false });
+      const user = session?.user ?? null;
+      set({ session, user, isLoading: false });
+
+      // [Added] Analytics 유저 컨텍스트 동기화
+      import('@/services/analytics').then(({ analytics }) => {
+        analytics.setUser(user?.id ?? null, {
+          email: user?.email,
+          last_sign_in: user?.last_sign_in_at
+        });
+      });
     });
 
     // If no session, try anonymous sign-in

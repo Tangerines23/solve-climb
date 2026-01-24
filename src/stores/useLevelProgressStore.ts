@@ -210,188 +210,176 @@ export const useLevelProgressStore = create<LevelProgressState>()(
         } catch (error) {
           console.error('[clearLevel] Failed to call submit_game_result:', error);
         }
-
-        console.log('[clearLevel] Weekly score updated successfully via RPC');
-      }
-    } catch (error) {
-      console.error('[clearLevel] Failed to call submit_game_result:', error);
-    }
       },
 
-updateBestScore: async (world, category, level, mode, score, sessionData) => {
-  // 1. Optimistic Update (Local)
-  set((state) => {
-    const newProgress = { ...state.progress };
-
-    if (!newProgress[world]) newProgress[world] = {};
-    if (!newProgress[world][category]) newProgress[world][category] = {};
-    if (!newProgress[world][category][level]) {
-      newProgress[world][category][level] = getDefaultLevelRecord(level);
-    }
-
-    const record = newProgress[world][category][level];
-    if (
-      (mode === 'time-attack' || mode === 'survival' || mode === 'infinite') &&
-      (record.bestScore[mode] === null || score > record.bestScore[mode]!)
-    ) {
-      record.bestScore[mode] = score;
-    }
-
-    return { progress: newProgress };
-  });
-
-  // 2. Call submit_game_result RPC to update weekly scores
-  try {
-    const gameMode =
-      mode === 'time-attack' ? 'timeattack' : mode === 'survival' ? 'survival' : 'infinite';
-    const { error: rpcError } = await debugSupabaseQuery(
-      supabase.rpc('submit_game_result', {
-        p_user_answers: sessionData?.answers || [],
-        p_question_ids: sessionData?.questionIds || [],
-        p_game_mode: gameMode,
-        p_items_used: null,
-        p_session_id: sessionData?.sessionId,
-        p_category: 'math',
-        p_subject: 'add',
-        p_level: level,
-      })
-    );
-
-    if (rpcError) {
-      console.error('[updateBestScore] submit_game_result RPC failed:', rpcError);
-    }
-  } catch (error) {
-    console.error('[updateBestScore] Failed to call submit_game_result:', error);
-  }
-
-  console.log('[updateBestScore] Weekly score updated successfully via RPC');
-}
-        } catch (error) {
-  console.error('[updateBestScore] Failed to call submit_game_result:', error);
-}
-      },
-
-getBestRecords: (world, category) => {
-  const state = get();
-  const worldProgress = state.progress[world];
-  if (!worldProgress || !worldProgress[category]) {
-    return { 'time-attack': null, survival: null };
-  }
-
-  const records = Object.values(worldProgress[category]);
-  let bestTimeAttack: number | null = null;
-  let bestSurvival: number | null = null;
-
-  records.forEach((record) => {
-    if (record.bestScore['time-attack'] !== null) {
-      if (bestTimeAttack === null || record.bestScore['time-attack']! > bestTimeAttack) {
-        bestTimeAttack = record.bestScore['time-attack']!;
-      }
-    }
-    if (record.bestScore['survival'] !== null) {
-      if (bestSurvival === null || record.bestScore['survival']! > bestSurvival) {
-        bestSurvival = record.bestScore['survival']!;
-      }
-    }
-    if (record.bestScore['infinite'] !== null) {
-      // Infinite mode typically tracks the highest altitude, which we map to survival or its own
-      // For now, let's keep it separate if needed, or if survival best should be updated
-    }
-  });
-
-  return {
-    'time-attack': bestTimeAttack,
-    survival: bestSurvival,
-    infinite: records.reduce(
-      (max, r) =>
-        r.bestScore.infinite && r.bestScore.infinite > (max || 0)
-          ? r.bestScore.infinite
-          : max,
-      null as number | null
-    ),
-  };
-},
-
-  syncProgress: async () => {
-    try {
-      const authResult = await debugSupabaseQuery(supabase.auth.getUser());
-      const user = authResult?.data?.user;
-      if (!user) return;
-
-      const { data: records, error } = await debugSupabaseQuery(
-        supabase.from('game_records').select('*').eq('user_id', user.id)
-      );
-
-      if (error) throw error;
-
-      if (records) {
+      updateBestScore: async (world, category, level, mode, score, sessionData) => {
+        // 1. Optimistic Update (Local)
         set((state) => {
           const newProgress = { ...state.progress };
 
-          records.forEach((serverRecord) => {
-            const {
-              category: world,
-              subject: category,
-              level,
-              mode,
-              score,
-              cleared,
-              cleared_at,
-            } = serverRecord;
+          if (!newProgress[world]) newProgress[world] = {};
+          if (!newProgress[world][category]) newProgress[world][category] = {};
+          if (!newProgress[world][category][level]) {
+            newProgress[world][category][level] = getDefaultLevelRecord(level);
+          }
 
-            if (!newProgress[world]) newProgress[world] = {};
-            if (!newProgress[world][category]) newProgress[world][category] = {};
-            if (!newProgress[world][category][level]) {
-              newProgress[world][category][level] = getDefaultLevelRecord(level);
-            }
-
-            const localRecord = newProgress[world][category][level];
-
-            // Merge logic: Server wins if data exists
-            if (cleared) {
-              localRecord.cleared = true;
-              localRecord.clearedAt = cleared_at || localRecord.clearedAt;
-            }
-
-            const modeKey = mode as GameMode;
-            if (modeKey === 'time-attack' || modeKey === 'survival' || modeKey === 'infinite') {
-              if (
-                localRecord.bestScore[modeKey] === null ||
-                score > localRecord.bestScore[modeKey]!
-              ) {
-                localRecord.bestScore[modeKey] = score;
-              }
-            }
-          });
+          const record = newProgress[world][category][level];
+          if (
+            (mode === 'time-attack' || mode === 'survival' || mode === 'infinite') &&
+            (record.bestScore[mode] === null || score > record.bestScore[mode]!)
+          ) {
+            record.bestScore[mode] = score;
+          }
 
           return { progress: newProgress };
         });
-      }
-    } catch (error) {
-      console.error('Failed to sync progress from Supabase:', error);
-    }
-  },
 
-    resetProgress: async () => {
-      // 1. Local State 리셋
-      set({ progress: {} });
+        // 2. Call submit_game_result RPC to update weekly scores
+        try {
+          const gameMode =
+            mode === 'time-attack' ? 'timeattack' : mode === 'survival' ? 'survival' : 'infinite';
+          const { error: rpcError } = await debugSupabaseQuery(
+            supabase.rpc('submit_game_result', {
+              p_user_answers: sessionData?.answers || [],
+              p_question_ids: sessionData?.questionIds || [],
+              p_game_mode: gameMode,
+              p_items_used: null,
+              p_session_id: sessionData?.sessionId,
+              p_category: 'math',
+              p_subject: 'add',
+              p_level: level,
+            })
+          );
 
-      // 2. Supabase에서도 삭제
-      try {
-        const authResult = await debugSupabaseQuery(supabase.auth.getUser());
-        const user = authResult?.data?.user;
-        if (!user) return;
+          if (rpcError) {
+            console.error('[updateBestScore] submit_game_result RPC failed:', rpcError);
+          }
+        } catch (error) {
+          console.error('[updateBestScore] Failed to call submit_game_result:', error);
+        }
+      },
 
-        const { error } = await debugSupabaseQuery(
-          supabase.from('game_records').delete().eq('user_id', user.id)
-        );
+      getBestRecords: (world, category) => {
+        const state = get();
+        const worldProgress = state.progress[world];
+        if (!worldProgress || !worldProgress[category]) {
+          return { 'time-attack': null, survival: null };
+        }
 
-        if (error) throw error;
-      } catch (error) {
-        console.error('Failed to reset progress in Supabase:', error);
-        // 에러가 발생해도 로컬은 이미 리셋되었으므로 계속 진행
-      }
-    },
+        const records = Object.values(worldProgress[category]);
+        let bestTimeAttack: number | null = null;
+        let bestSurvival: number | null = null;
+
+        records.forEach((record) => {
+          if (record.bestScore['time-attack'] !== null) {
+            if (bestTimeAttack === null || record.bestScore['time-attack']! > bestTimeAttack) {
+              bestTimeAttack = record.bestScore['time-attack']!;
+            }
+          }
+          if (record.bestScore['survival'] !== null) {
+            if (bestSurvival === null || record.bestScore['survival']! > bestSurvival) {
+              bestSurvival = record.bestScore['survival']!;
+            }
+          }
+          if (record.bestScore['infinite'] !== null) {
+            // Infinite mode typically tracks the highest altitude, which we map to survival or its own
+            // For now, let's keep it separate if needed, or if survival best should be updated
+          }
+        });
+
+        return {
+          'time-attack': bestTimeAttack,
+          survival: bestSurvival,
+          infinite: records.reduce(
+            (max, r) =>
+              r.bestScore.infinite && r.bestScore.infinite > (max || 0)
+                ? r.bestScore.infinite
+                : max,
+            null as number | null
+          ),
+        };
+      },
+
+      syncProgress: async () => {
+        try {
+          const authResult = await debugSupabaseQuery(supabase.auth.getUser());
+          const user = authResult?.data?.user;
+          if (!user) return;
+
+          const { data: records, error } = await debugSupabaseQuery(
+            supabase.from('game_records').select('*').eq('user_id', user.id)
+          );
+
+          if (error) throw error;
+
+          if (records) {
+            set((state) => {
+              const newProgress = { ...state.progress };
+
+              records.forEach((serverRecord) => {
+                const {
+                  category: world,
+                  subject: category,
+                  level,
+                  mode,
+                  score,
+                  cleared,
+                  cleared_at,
+                } = serverRecord;
+
+                if (!newProgress[world]) newProgress[world] = {};
+                if (!newProgress[world][category]) newProgress[world][category] = {};
+                if (!newProgress[world][category][level]) {
+                  newProgress[world][category][level] = getDefaultLevelRecord(level);
+                }
+
+                const localRecord = newProgress[world][category][level];
+
+                // Merge logic: Server wins if data exists
+                if (cleared) {
+                  localRecord.cleared = true;
+                  localRecord.clearedAt = cleared_at || localRecord.clearedAt;
+                }
+
+                const modeKey = mode as GameMode;
+                if (modeKey === 'time-attack' || modeKey === 'survival' || modeKey === 'infinite') {
+                  if (
+                    localRecord.bestScore[modeKey] === null ||
+                    score > localRecord.bestScore[modeKey]!
+                  ) {
+                    localRecord.bestScore[modeKey] = score;
+                  }
+                }
+              });
+
+              return { progress: newProgress };
+            });
+          }
+        } catch (error) {
+          console.error('Failed to sync progress from Supabase:', error);
+        }
+      },
+
+      resetProgress: async () => {
+        // 1. Local State 리셋
+        set({ progress: {} });
+
+        // 2. Supabase에서도 삭제
+        try {
+          const authResult = await debugSupabaseQuery(supabase.auth.getUser());
+          const user = authResult?.data?.user;
+          if (!user) return;
+
+          const { error } = await debugSupabaseQuery(
+            supabase.from('game_records').delete().eq('user_id', user.id)
+          );
+
+          if (error) throw error;
+        } catch (error) {
+          console.error('Failed to reset progress in Supabase:', error);
+          // 에러가 발생해도 로컬은 이미 리셋되었으므로 계속 진행
+        }
+      },
 
       fetchRanking: async (world, category, period, type, limit = 50) => {
         try {
@@ -423,8 +411,8 @@ getBestRecords: (world, category) => {
         }
       },
     }),
-{
-  name: 'solve-climb-level-progress',
+    {
+      name: 'solve-climb-level-progress',
     }
   )
 );

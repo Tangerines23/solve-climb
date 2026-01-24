@@ -146,42 +146,28 @@ CSS 파일을 작성하거나 수정할 때:
 }
 ```
 
-## 일반 코딩 규칙
+## 🤖 AI 에이전트 행동 및 작업 절차 (SOP)
 
-- TypeScript strict 모드 사용
-- 함수형 컴포넌트와 Hooks 사용
-- ESLint 규칙 준수
+모든 AI 에이전트는 작업을 수행할 때 다음 절차를 엄격히 준수해야 합니다.
 
-## UI 컴포넌트 작성 시 필수 참고
+### 1. 작업 시작 전 (Planning Phase)
+- **현행 코드 분석:** 수정 요청을 받으면 관련 파일을 먼저 읽고 현재 구조와 의존성을 파악합니다.
+- **구현 계획서 작성:** 규모가 큰 작업(파일 2개 이상 수정 등)의 경우 `implementation_plan.md`를 작성하여 사용자 승인을 먼저 받습니다.
+- **Task 리스트 정의:** `task.md`를 생성하거나 업데이트하여 세부 작업 단위를 관리합니다.
 
-새로운 UI 컴포넌트를 작성하거나 수정할 때는 반드시 다음 가이드를 참고하세요:
+### 2. 작업 수행 중 (Execution Phase)
+- **점진적 수정:** 파일을 통째로 새로 쓰기보다 변경이 필요한 부분 위주로 수정합니다 (Diff 중심).
+- **디자인 시스템 준수:** 새로운 UI 추가 시 반드시 `docs/DESIGN_SYSTEM.md`와 `docs/UI_GUIDE.md`를 참고합니다.
+- **로깅 생활화:** `console.log` 대신 반드시 `@/utils/logger`를 사용합니다.
 
-### 필수 참고 문서
-- **`docs/UI_GUIDE.md`**: 모든 UI 컴포넌트 패턴, 레이아웃 시스템, 인터랙션 패턴, Do's and Don'ts
-- **`docs/DESIGN_SYSTEM.md`**: CSS 변수 시스템, 디자인 토큰
+### 3. 작업 완료 후 (Verification Phase)
+- **자가 검증 실행:** 모든 수정 후에는 `npm run validate` (또는 최소한 `npm run type-check`)를 실행하여 오류 유무를 확인합니다.
+- **워크스루 작성:** 작업 내용과 검증 결과를 `walkthrough.md`에 기록합니다. 주요 UI 변경 시 스크린샷이나 레코딩을 첨부합니다.
+- **Task 완료 표시:** `task.md`의 모든 항목에 체크 표시를 확인한 후 사용자에게 보고합니다.
 
-## 📁 파일 경로 및 임포트 규칙
-- **절대 경로 사용**: 모든 내부 파일 임포트 시 `@/` 에일리어스를 사용해야 합니다. (예: `import { Header } from '@/components/Header'`)
-- **상대 경로 금지**: `../` 또는 `./`를 사용한 상대 경로 임포트는 지양합니다.
-
-## 📝 로깅 및 디버깅 규칙
-- **전용 로거 사용**: `console.log`를 직접 사용하는 대신 `src/utils/logger.ts`의 `logger`를 사용하세요.
-- **로깅 형식**: `logger.info(context, message)`, `logger.error(context, message, error)` 형식을 준수하세요.
+---
 
 ### UI 컴포넌트 작성 체크리스트
-1. 레이아웃: Header/Footer 높이 고려, 반응형 레이아웃 지원
-2. 스타일: CSS 변수 사용 (하드코딩 금지)
-3. 상태: Loading, Error, Empty, Success 상태 모두 고려
-4. 인터랙션: 호버 효과, 클릭 피드백, 부드러운 전환
-5. 접근성: aria-label, 키보드 네비게이션, 포커스 상태
-6. 컴포넌트 조합: `docs/UI_GUIDE.md`의 "컴포넌트 조합 예시" 참고
-7. 빈 상태: `docs/UI_GUIDE.md`의 "빈 상태 패턴" 참고
-8. Do's and Don'ts: `docs/UI_GUIDE.md`의 "Do's and Don'ts" 섹션 확인
+... (기존 내용 유지) ...
 
-### 컴포넌트 작성 전 확인사항
-- [ ] `docs/UI_GUIDE.md`에서 유사한 컴포넌트 패턴 확인
-- [ ] `docs/DESIGN_SYSTEM.md`에서 필요한 CSS 변수 확인
-- [ ] 기존 컴포넌트 예시 참고 (`src/components/` 디렉토리)
-- [ ] 반응형 디자인 고려 (세로/가로 모드)
-- [ ] 모든 상태 (Loading, Error, Empty, Success) 처리
 

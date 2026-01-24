@@ -1,0 +1,44 @@
+﻿
+> react-vite-app@0.8.0 test:coverage
+> vitest --coverage --run --coverage.reporter=text --coverage.reporter=json-summary --coverage.reporter=lcov --coverage.reporter=html src/utils/__tests__/quizGenerator.test.ts
+
+
+[1m[46m RUN [49m[22m [36mv4.0.16 [39m[90mC:/Users/ghkdd/gemini-projects/solve-climb[39m
+      [2mCoverage enabled with [22m[33mistanbul[39m
+
+ [32m??[39m src/utils/__tests__/quizGenerator.test.ts [2m([22m[2m10 tests[22m[2m)[22m[32m 10[2mms[22m[39m
+
+[2m Test Files [22m [1m[32m1 passed[39m[22m[90m (1)[39m
+[2m      Tests [22m [1m[32m10 passed[39m[22m[90m (10)[39m
+[2m   Start at [22m 21:47:19
+[2m   Duration [22m 2.79s[2m (transform 827ms, setup 513ms, import 812ms, tests 10ms, environment 1.20s)[22m
+
+[34m % [39m[2mCoverage report from [22m[33mistanbul[39m
+-------------------|---------|----------|---------|---------|-------------------
+File               | % Stmts | % Branch | % Funcs | % Lines | Uncovered Line #s 
+-------------------|---------|----------|---------|---------|-------------------
+All files          |   17.79 |    16.91 |   26.12 |   17.81 |                   
+ constants         |     100 |      100 |     100 |     100 |                   
+  game.ts          |     100 |      100 |     100 |     100 |                   
+ utils             |    16.4 |    16.91 |   26.12 |   16.37 |                   
+  ...mGenerator.ts |   17.14 |      2.7 |      25 |   17.14 | 17-35,49-115      
+  ...mGenerator.ts |   15.55 |    10.71 |      50 |   15.55 | 24-70,86-177      
+  ...mGenerator.ts |    9.09 |     6.25 |   14.28 |    8.52 | ...41-465,469-509 
+  ...mGenerator.ts |   11.76 |     4.76 |      25 |   11.76 | 17-35,54-155      
+  ...mGenerator.ts |       0 |        0 |       0 |       0 | 11-232            
+  ...mGenerator.ts |   23.27 |    27.27 |   46.15 |   23.64 | ...74-580,592-742 
+  ...mGenerator.ts |      20 |    14.28 |   18.75 |   19.56 | 17-35,54-131      
+  quizGenerator.ts |   36.11 |       40 |   58.33 |   35.84 | ...85-233,259-342 
+-------------------|---------|----------|---------|---------|-------------------
+node.exe : ERROR: Coverage for lines (17.81%) does not meet global threshold 
+(60%)
+위치 C:\Program Files\nodejs\npm.ps1:29 문자:3
++   & $NODE_EXE $NPM_CLI_JS $args
++   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (ERROR: Coverage...threshold (60 
+   %):String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+ERROR: Coverage for functions (26.12%) does not meet global threshold (60%)
+ERROR: Coverage for statements (17.79%) does not meet global threshold (60%)
+ERROR: Coverage for branches (16.91%) does not meet global threshold (50%)

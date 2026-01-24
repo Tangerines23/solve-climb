@@ -66,6 +66,22 @@ describe('useSettingsStore', () => {
     });
   });
 
+  it('should set animation enabled', () => {
+    const { result } = renderHook(() => useSettingsStore());
+
+    act(() => {
+      result.current.setAnimationEnabled(false);
+    });
+
+    expect(result.current.animationEnabled).toBe(false);
+
+    act(() => {
+      result.current.setAnimationEnabled(true);
+    });
+
+    expect(result.current.animationEnabled).toBe(true);
+  });
+
   it('should persist settings changes', () => {
     const { result } = renderHook(() => useSettingsStore());
 

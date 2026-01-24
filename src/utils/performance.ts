@@ -47,7 +47,7 @@ export const performanceMonitor = {
       });
 
       observer.observe({ type: entryType, buffered: true });
-    } catch (e) {
+    } catch (_e) {
       // 일부 구형 브라우저에서는 지원되지 않을 수 있음
     }
   },
@@ -70,4 +70,79 @@ export const performanceMonitor = {
       logger.debug('Performance', `${name}: ${roundedValue}`);
     }
   }
+};
+
+/**
+ * 성능 측정 메트릭 저장소
+ */
+interface PerformanceMetric {
+  name: string;
+  duration: number;
+  startTime: number;
+}
+
+let metricsStore: PerformanceMetric[] = [];
+
+/**
+ * 성능 측정 시작 함수
+ * @param name 측정 이름
+ * @returns 측정 종료 함수
+ */
+export const measurePerformance = (name: string) => {
+  const startTime = performance.now();
+  return () => {
+    const duration = performance.now() - startTime;
+    metricsStore.push({ name, duration, startTime });
+
+    // 개발 모드에서 로깅
+    if (import.meta.env.DEV) {
+      if (duration > 100) {
+        console.warn(`[Performance] Slow operation '${name}': ${duration.toFixed(2)}ms`);
+      }
+    }
+  };
+};
+
+/**
+ * API 호출 성능 측정 래퍼
+ * @param name API 이름
+ * @param apiCall 실행할 API 함수
+ */
+export const measureApiCall = async <T>(name: string, apiCall: () => Promise<T>): Promise<T> => {
+  const endMeasure = measurePerformance(`API: ${name}`);
+  try {
+    const result = await apiCall();
+    endMeasure();
+    return result;
+  } catch (error) {
+    endMeasure();
+    throw error;
+  }
+};
+
+/**
+ * 저장된 성능 메트릭 조회
+ */
+export const getPerformanceMetrics = () => {
+  return [...metricsStore];
+};
+
+/**
+ * 성능 메트릭 초기화
+ */
+export const clearPerformanceMetrics = () => {
+  metricsStore = [];
+};
+
+/**
+ * 성능 요약 로그 출력
+ */
+export const logPerformanceSummary = () => {
+  if (metricsStore.length === 0) return;
+
+  console.group('Performance Summary');
+  metricsStore.forEach(m => {
+    console.log(`${m.name}: ${m.duration.toFixed(2)}ms`);
+  });
+  console.groupEnd();
 };
