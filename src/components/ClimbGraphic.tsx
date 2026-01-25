@@ -50,7 +50,7 @@ export function ClimbGraphic({
   world,
   category,
   levels,
-  categoryColor = '#10b981',
+  categoryColor = 'var(--color-teal-500)',
   onLevelClick,
   onUnderDevelopmentClick,
 }: ClimbGraphicProps) {
@@ -260,7 +260,7 @@ export function ClimbGraphic({
             <path
               d={pathData}
               fill="none"
-              stroke="#E5E8EB"
+              stroke="var(--color-bg-tertiary-light)"
               strokeWidth="2"
               strokeDasharray="4,4"
               className="path-future"
@@ -271,7 +271,7 @@ export function ClimbGraphic({
             <path
               d={clearedPathData}
               fill="none"
-              stroke="#8B95A1"
+              stroke="var(--color-text-tertiary)"
               strokeWidth="2"
               className="path-cleared"
             />
@@ -369,7 +369,7 @@ export function ClimbGraphic({
                   y1={position.y}
                   x2={isLeftSide ? badgeX + badgeWidth - 2 : badgeX + 2}
                   y2={position.y}
-                  stroke="#E5E8EB"
+                  stroke="var(--color-bg-tertiary-light)"
                   strokeWidth="1.5"
                 />
 
@@ -377,12 +377,12 @@ export function ClimbGraphic({
                   transform={`translate(${badgeX}, ${badgeY})`}
                   style={{ filter: 'url(#toss-shadow)' }}
                 >
-                  <rect width={badgeWidth} height="30" rx="15" fill="#FFFFFF" />
+                  <rect width={badgeWidth} height="30" rx="15" fill="var(--color-bg-primary)" />
                   <circle cx={isLeftSide ? badgeWidth - 12 : 12} cy="15" r="4" fill={stage.color} />
                   <text
                     x={isLeftSide ? badgeWidth - 24 : 24}
                     y="20"
-                    fill="#333D4B"
+                    fill="var(--color-text-primary)"
                     fontSize="13px"
                     fontWeight="600"
                     fontFamily="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif"
@@ -403,7 +403,7 @@ export function ClimbGraphic({
         onClick={scrollToCurrentLevel}
         aria-label="내 레벨로 이동"
       >
-        <span style={{ fontSize: '18px', marginRight: '4px' }}>📍</span>
+        <span style={{ fontSize: '18px', marginRight: 'var(--spacing-xs)' }}>📍</span>
         <span style={{ fontSize: '14px', fontWeight: 'bold' }}>내 위치</span>
       </button>
     </div>

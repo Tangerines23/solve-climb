@@ -75,6 +75,7 @@ export function QuizPage() {
   const {
     stamina,
     inventory,
+    isAnonymous,
     checkStamina,
     consumeItem,
     consumeStamina,
@@ -469,6 +470,32 @@ export function QuizPage() {
   const handleCountdownComplete = useCallback(() => {
     setShowCountdown(false);
   }, []);
+
+  const handleLastSpurt = useCallback(() => {
+    // 1. 시간 추가 (+15초)
+    // QuizCard의 TimerCircle은 duration={timeLimit} 형태.
+    // 따라서 timeLimit를 15로 설정하면 15초 카운트다운 시작.
+    useQuizStore.getState().setTimeLimit(15);
+
+    // 2. 피버 발동 (콤보 증가 -> 피버 진입)
+    // 기획: +5초 피버? -> 일단 콤보를 늘려서 피버 상태(Lv2)로 만듦
+    incrementCombo();
+    incrementCombo();
+    incrementCombo();
+    incrementCombo();
+    incrementCombo(); // 대략 5콤보
+
+    // 3. 알림
+    setToastValue('🔥 LAST SPURT! +15s 🔥');
+    animations.setDamagePosition({ left: '50%', top: '50%' });
+    animations.setShowSlideToast(true);
+    setTimeout(() => animations.setShowSlideToast(false), 2000);
+
+    // 4. 아이템 소모 (로컬 UI 처리, 실제 소모는 QuizCard에서 호출됨)
+    // 여기서는 타이머 리셋 키를 업데이트하여 TimerCircle 강제 리렌더링 (안전장치)
+    setTimerResetKey(prev => prev + 1);
+  }, [incrementCombo, animations]);
+
   const handleSafetyRopeUsed = useCallback(() => {
     setShowSafetyRope(true);
     setTimerResetKey((prev) => prev + 1); // 서바이벌/타임어택 모두 타이머 리셋
@@ -599,6 +626,20 @@ export function QuizPage() {
     setExhausted(true);
     await startWithItems(pendingItemIds);
   };
+
+  const onAlertAction = useCallback(async (action: 'login' | 'charge' | 'play') => {
+    switch (action) {
+      case 'login':
+        navigate('/login', { state: { from: window.location.pathname + window.location.search } });
+        break;
+      case 'charge':
+        await handleStaminaAdRecovery();
+        break;
+      case 'play':
+        await handlePlayAnyway();
+        break;
+    }
+  }, [navigate, handleStaminaAdRecovery, handlePlayAnyway]);
 
   useEffect(() => {
     if (worldParam && categoryParam && levelParam !== null)
@@ -781,6 +822,7 @@ export function QuizPage() {
         totalQuestions={gameState.totalQuestions}
         lives={lives}
         onSafetyRopeUsed={handleSafetyRopeUsed}
+        onLastSpurt={handleLastSpurt}
         onPause={handlePauseClick}
         remainingPauses={remainingPauses}
         isSubmitting={isSubmitting}
@@ -838,15 +880,15 @@ export function QuizPage() {
         showTipModal={showTipModal}
         handleBack={handleBack}
         handleStartGame={handleStartGame}
-        showStaminaModal={showStaminaModal}
-        setShowStaminaModal={setShowStaminaModal}
-        handlePlayAnyway={handlePlayAnyway}
-        handleWatchAd={handleStaminaAdRecovery}
         showPauseModal={showPauseModal}
         remainingPauses={remainingPauses}
         handlePauseClick={handlePauseClick}
         handlePauseResume={handlePauseResume}
         handlePauseExit={handlePauseExit}
+        showStaminaModal={showStaminaModal}
+        setShowStaminaModal={setShowStaminaModal}
+        isAnonymous={isAnonymous}
+        onAlertAction={onAlertAction}
       />
 
       <TodaysPromise

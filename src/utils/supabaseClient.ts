@@ -24,10 +24,15 @@ const getRedirectUrl = (): string => {
 // 환경 변수 검증은 env.ts에서 자동으로 수행됨
 // 환경 변수가 없을 때는 더미 클라이언트를 생성 (심사 환경 대응)
 const createSupabaseClient = (): SupabaseClient => {
-  if (!ENV.SUPABASE_URL || !ENV.SUPABASE_ANON_KEY) {
-    // 환경 변수가 없으면 더미 URL과 키로 클라이언트 생성
-    // 실제 API 호출은 실패하지만 앱은 크래시하지 않음
-    // 테스트 환경에서는 http://localhost를 사용하여 DNS 에러 방지
+  const supabaseUrl = ENV.SUPABASE_URL;
+  const supabaseKey = ENV.SUPABASE_ANON_KEY;
+
+  if (ENV.IS_DEVELOPMENT) {
+    console.log(`[Supabase] 연결 시도 중... URL: ${supabaseUrl || 'http://localhost (Fallback)'}`);
+  }
+
+  if (!supabaseUrl || !supabaseKey) {
+    console.error('❌ [Supabase] 필수 환경 변수가 누락되었습니다 (VITE_SUPABASE_URL, VITE_SUPABASE_ANON_KEY). .env 파일을 확인하고 dev 서버를 재시작해주세요.');
     return createClient('http://localhost', 'dummy-key');
   }
 
@@ -51,15 +56,16 @@ const createSupabaseClient = (): SupabaseClient => {
     console.log('[Supabase] 콜백 URL:', redirectUrl);
   }
 
-  const client = createClient<Database>(ENV.SUPABASE_URL, ENV.SUPABASE_ANON_KEY, options);
+  const client = createClient<Database>(supabaseUrl, supabaseKey, options);
 
   // 익명 사용자 인증 자동 수행 (RLS 정책을 통과하기 위해)
   // 세션이 없을 때만 익명 로그인 시도 (비동기, 실패해도 무시)
   if (typeof window !== 'undefined') {
     client.auth.getSession().then(({ data: { session } }) => {
-      if (!session) {
+      // 더미 URL이 아닐 때만 익명 로그인 시도
+      if (!session && ENV.SUPABASE_URL) {
         client.auth.signInAnonymously().catch(() => {
-          // 익명 로그인 실패는 무시 (정책이 제대로 설정되어 있으면 작동할 수 있음)
+          // 익명 로그인 실패는 무시
         });
       }
     });

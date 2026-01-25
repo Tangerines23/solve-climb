@@ -60,13 +60,71 @@
 .error-fallback-stack {
   margin-top: var(--spacing-sm);
   padding: var(--spacing-md);
+  background-color: var(--color-bg-primary);
+  border-radius: var(--rounded-sm);
+  font-size: 11px;
+  font-family: 'Fira Code', 'Monaco', 'Courier New', monospace;
+  overflow-x: auto;
+  color: var(--color-text-secondary);
+  max-height: 250px;
+  border: 1px solid var(--color-bg-tertiary);
+}
+
+.debug-info-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: var(--spacing-sm);
+  margin-top: var(--spacing-md);
+  padding: var(--spacing-md);
   background-color: var(--color-bg-tertiary);
   border-radius: var(--rounded-sm);
+}
+
+.debug-info-item {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-micro);
+}
+
+.debug-label {
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--color-text-muted);
+}
+
+.debug-value {
   font-size: 12px;
-  font-family: 'Courier New', Courier, monospace;
-  overflow-x: auto;
-  color: var(--adaptiveGrey400);
-  max-height: 200px;
+  color: var(--color-text-primary);
+}
+
+.code-font {
+  font-family: monospace;
+  color: var(--color-blue-400);
+}
+
+.truncate {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.copy-debug-btn {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  padding: var(--spacing-xs) var(--spacing-sm);
+  font-size: 11px;
+  background-color: var(--color-bg-secondary);
+  color: var(--color-text-primary);
+  border: 1px solid var(--color-bg-tertiary);
+  border-radius: var(--rounded-xs);
+  cursor: pointer;
+  z-index: 10;
+}
+
+.copy-debug-btn:hover {
+  background-color: var(--color-bg-tertiary);
 }
 
 .error-fallback-actions {

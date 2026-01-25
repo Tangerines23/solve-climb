@@ -137,7 +137,7 @@ export function LevelSelectPage() {
     );
   }
 
-  const categoryColor = categoryInfo.color || '#10b981';
+  const categoryColor = categoryInfo.color || 'var(--color-teal-500)';
 
   // 모든 레벨 클리어 여부 확인 (필요 시 활용)
   // const categoryLevels = useLevelProgressStore(

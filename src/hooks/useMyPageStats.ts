@@ -188,7 +188,7 @@ export function useMyPageStats(): UseMyPageStatsResult {
             'total_mastery_score, current_tier_level, cycle_promotion_pending, pending_cycle_score, login_streak'
           )
           .eq('id', user_id)
-          .single()
+          .maybeSingle()
       )) as unknown as { data: ProfileData | null; error: PostgrestError | null };
 
       const profileData = profileResult?.data;

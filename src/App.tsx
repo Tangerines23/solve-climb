@@ -16,9 +16,6 @@ const HomePage = lazy(() =>
   import('@/pages/HomePage').then((module) => ({ default: module.HomePage }))
 );
 import { GlobalToastContainer } from '@/components/GlobalToastContainer';
-const WorldSelectPage = lazy(() =>
-  import('@/pages/WorldSelectPage').then((module) => ({ default: module.WorldSelectPage }))
-);
 const CategorySelectPage = lazy(() =>
   import('@/pages/CategorySelectPage').then((module) => ({ default: module.CategorySelectPage }))
 );
@@ -41,6 +38,9 @@ const MyPage = lazy(() => import('@/pages/MyPage').then((module) => ({ default: 
 const NotificationPage = lazy(() =>
   import('@/pages/NotificationPage').then((module) => ({ default: module.NotificationPage }))
 );
+const DebugPage = lazy(() =>
+  import('@/pages/DebugPage').then((module) => ({ default: module.DebugPage }))
+);
 // AuthCallbackPage & AuthTestPage imports removed
 const ShopPage = lazy(() =>
   import('@/pages/ShopPage').then((module) => ({ default: module.ShopPage }))
@@ -51,6 +51,10 @@ const DebugPanel = import.meta.env.DEV ? lazy(() => import('./components/DebugPa
 const DebugOverlay = import.meta.env.DEV
   ? lazy(() => import('./components/debug/DebugOverlay').then((m) => ({ default: m.DebugOverlay })))
   : null;
+const DebugReturnFloater = import.meta.env.DEV
+  ? lazy(() => import('./components/debug/DebugReturnFloater').then((m) => ({ default: m.DebugReturnFloater })))
+  : null;
+
 function App() {
   // 네트워크 연결 상태 감시
   useConnectivity();
@@ -140,7 +144,6 @@ function App() {
       >
         <Routes>
           <Route path="/" element={<HomePage />} />
-          <Route path="/world-select" element={<WorldSelectPage />} />
           <Route path="/category-select" element={<CategorySelectPage />} />
           <Route path="/level-select" element={<LevelSelectPage />} />
           <Route path="/quiz" element={<QuizPage />} />
@@ -149,6 +152,7 @@ function App() {
           <Route path="/roadmap" element={<RoadmapPage />} />
           <Route path="/my-page" element={<MyPage />} />
           <Route path="/notifications" element={<NotificationPage />} />
+          <Route path="/debug" element={<DebugPage />} />
           <Route path="/shop" element={<ShopPage />} />
         </Routes>
 
@@ -156,6 +160,8 @@ function App() {
         {import.meta.env.DEV && isDebugPanelOpen && DebugPanel && <DebugPanel />}
         {/* Debug Visual Overlay (SafeArea guides, component borders) */}
         {import.meta.env.DEV && DebugOverlay && <DebugOverlay />}
+        {/* Debug Return Floater (Quick back to debug page) */}
+        {import.meta.env.DEV && DebugReturnFloater && <DebugReturnFloater />}
       </Suspense>
     </ErrorBoundary>
   );

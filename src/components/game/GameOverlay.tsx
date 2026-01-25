@@ -60,7 +60,7 @@ export const GameOverlay: React.FC = () => {
               <linearGradient id="speedLineGradient" x1="0%" y1="0%" x2="100%" y2="100%">
                 <stop
                   offset="0%"
-                  stopColor={feverLevel === 2 ? '#FFD700' : '#FFFFFF'}
+                  stopColor={feverLevel === 2 ? 'var(--color-yellow-400)' : 'var(--color-white)'}
                   stopOpacity="0.4"
                 />
                 <stop offset="100%" stopColor="transparent" />
@@ -158,7 +158,7 @@ export const GameOverlay: React.FC = () => {
             top: '10%',
             left: '50%',
             transform: 'translateX(-50%)',
-            color: feverLevel === 2 ? '#FFD700' : '#FFFFFF',
+            color: feverLevel === 2 ? 'var(--color-yellow-400)' : 'var(--color-white)',
             fontSize: '24px',
             fontWeight: 'bold',
             textShadow: '0 0 10px rgba(0,0,0,0.5)',

@@ -68,7 +68,7 @@ export function IntegralVisualizer({ hintData }: IntegralVisualizerProps) {
           y1={HEIGHT - PADDING}
           x2={WIDTH - PADDING}
           y2={HEIGHT - PADDING}
-          stroke="#fff"
+          stroke="var(--color-white)"
           strokeWidth="2"
         />
         <line
@@ -76,12 +76,12 @@ export function IntegralVisualizer({ hintData }: IntegralVisualizerProps) {
           y1={HEIGHT - PADDING}
           x2={PADDING}
           y2={PADDING}
-          stroke="#fff"
+          stroke="var(--color-white)"
           strokeWidth="2"
         />
 
         {/* Function Curve */}
-        <path d={generatePath()} stroke="#4ecdc4" strokeWidth="3" fill="none" opacity="0.5" />
+        <path d={generatePath()} stroke="var(--color-teal-400)" strokeWidth="3" fill="none" opacity="0.5" />
 
         {/* Filled Area (Animated) */}
         <motion.path
@@ -94,7 +94,7 @@ export function IntegralVisualizer({ hintData }: IntegralVisualizerProps) {
         />
 
         {/* X-Label */}
-        <text x={scaleX(hintData.x)} y={HEIGHT - 5} fill="white" fontSize="12" textAnchor="middle">
+        <text x={scaleX(hintData.x)} y={HEIGHT - 5} fill="var(--color-white)" fontSize="12" textAnchor="middle">
           x={hintData.x}
         </text>
       </svg>

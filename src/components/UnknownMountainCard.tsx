@@ -61,15 +61,15 @@ export function UnknownMountainCard({ onToast }: UnknownMountainCardProps) {
             {/* 산 실루엣 (뒤) */}
             <path
               d="M20 80 L35 50 L50 60 L65 45 L80 70 L80 100 L20 100 Z"
-              fill="#9CA3AF"
+              fill="var(--color-disabled)"
               opacity="0.6"
             />
             {/* 구름 (앞) */}
-            <ellipse cx="30" cy="45" rx="15" ry="8" fill="#9CA3AF" opacity="0.8" />
-            <ellipse cx="40" cy="42" rx="12" ry="6" fill="#9CA3AF" opacity="0.8" />
-            <ellipse cx="50" cy="50" rx="18" ry="10" fill="#9CA3AF" opacity="0.8" />
-            <ellipse cx="60" cy="48" rx="14" ry="7" fill="#9CA3AF" opacity="0.8" />
-            <ellipse cx="70" cy="52" rx="16" ry="9" fill="#9CA3AF" opacity="0.8" />
+            <ellipse cx="30" cy="45" rx="15" ry="8" fill="var(--color-disabled)" opacity="0.8" />
+            <ellipse cx="40" cy="42" rx="12" ry="6" fill="var(--color-disabled)" opacity="0.8" />
+            <ellipse cx="50" cy="50" rx="18" ry="10" fill="var(--color-disabled)" opacity="0.8" />
+            <ellipse cx="60" cy="48" rx="14" ry="7" fill="var(--color-disabled)" opacity="0.8" />
+            <ellipse cx="70" cy="52" rx="16" ry="9" fill="var(--color-disabled)" opacity="0.8" />
           </svg>
         </div>
         <div className="unknown-mountain-text">

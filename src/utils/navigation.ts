@@ -34,14 +34,6 @@ export interface LevelSelectParams {
 }
 
 /**
- * Interface for World Select Page Parameters
- */
-export interface WorldSelectParams {
-  mountain: string;
-  category: string;
-}
-
-/**
  * Interface for Category Select Page Parameters
  */
 export interface CategorySelectParams {
@@ -62,13 +54,6 @@ export const urls = {
    */
   categorySelect: (params: CategorySelectParams) => {
     return `${APP_CONFIG.ROUTES.CATEGORY_SELECT}?mountain=${params.mountain}`;
-  },
-
-  /**
-   * World Select Page
-   */
-  worldSelect: (params: WorldSelectParams) => {
-    return `${APP_CONFIG.ROUTES.WORLD_SELECT}?mountain=${params.mountain}&category=${params.category}`;
   },
 
   /**
@@ -144,4 +129,9 @@ export const urls = {
    * Notifications Page
    */
   notifications: () => APP_CONFIG.ROUTES.NOTIFICATIONS,
+
+  /**
+   * Debug Page
+   */
+  debug: () => '/debug',
 };

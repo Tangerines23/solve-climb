@@ -17,17 +17,48 @@
 
 .debug-item-controls {
   margin-bottom: var(--spacing-lg);
+  display: flex;
+  gap: var(--spacing-md);
 }
 
 .debug-item-reset-button {
+  flex: 1;
   padding: var(--spacing-sm) var(--spacing-lg);
   background-color: var(--color-red-500);
   border: none;
   border-radius: var(--rounded-button);
   color: var(--color-text-primary);
   font-size: 0.875rem;
+  font-weight: 600;
   cursor: pointer;
   transition: background-color 0.2s ease;
+}
+
+.debug-item-restore-button {
+  flex: 1;
+  padding: var(--spacing-sm) var(--spacing-lg);
+  background-color: var(--color-blue-600);
+  border: none;
+  border-radius: var(--rounded-button);
+  color: var(--color-text-primary);
+  font-size: 0.875rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.debug-item-restore-button:hover:not(:disabled) {
+  background-color: var(--color-blue-700);
+  box-shadow: 0 0 12px rgba(37, 99, 235, 0.4);
+}
+
+.debug-item-restore-button:active:not(:disabled) {
+  transform: scale(0.98);
+}
+
+.debug-item-restore-button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
 }
 
 .debug-item-reset-button:hover:not(:disabled) {
@@ -182,6 +213,10 @@
 
 .debug-message-error {
   background-color: var(--color-red-500);
+  color: var(--color-text-primary);
+}
+.debug-message-info {
+  background-color: var(--color-blue-700);
   color: var(--color-text-primary);
 }
 

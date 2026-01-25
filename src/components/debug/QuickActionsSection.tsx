@@ -22,7 +22,15 @@ import { ConfirmModal } from '../ConfirmModal';
 import './QuickActionsSection.css';
 
 export const QuickActionsSection = React.memo(function QuickActionsSection() {
-  const { minerals, stamina, fetchUserData, setMinerals, setStamina } = useUserStore();
+  const {
+    minerals,
+    stamina,
+    fetchUserData,
+    setMinerals,
+    setStamina,
+    rewardMinerals,
+    debugSetStamina,
+  } = useUserStore();
   const {
     infiniteStamina,
     infiniteMinerals,
@@ -50,6 +58,26 @@ export const QuickActionsSection = React.memo(function QuickActionsSection() {
   const [showPresetModal, setShowPresetModal] = useState(false);
   const [editingPreset, setEditingPreset] = useState<CustomPreset | null>(null);
 
+  // 디버깅용 유저 정보
+  const [debugUserInfo, setDebugUserInfo] = useState<{ id: string; email?: string; hasProfile: boolean } | null>(null);
+
+  useEffect(() => {
+    const checkUser = async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (user) {
+        const { count } = await supabase.from('profiles').select('*', { count: 'exact', head: true }).eq('id', user.id);
+        setDebugUserInfo({
+          id: user.id,
+          email: user.email,
+          hasProfile: count !== null && count > 0
+        });
+      } else {
+        setDebugUserInfo(null);
+      }
+    };
+    checkUser();
+  }, []);
+
   // 컨펌 모달 상태
   const [confirmConfig, setConfirmConfig] = useState<{
     isOpen: boolean;
@@ -60,7 +88,7 @@ export const QuickActionsSection = React.memo(function QuickActionsSection() {
     isOpen: false,
     title: '',
     message: '',
-    onConfirm: () => {},
+    onConfirm: () => { },
   });
 
   const handleStaminaChange = async (delta: number) => {
@@ -70,8 +98,9 @@ export const QuickActionsSection = React.memo(function QuickActionsSection() {
     try {
       const newValue = Math.max(0, stamina + delta);
       setStaminaInput(newValue.toString());
-      await setStamina(newValue); // async 함수이므로 await 필요
-      await fetchUserData(); // 비동기 함수이므로 await 필요
+      await debugSetStamina(newValue);
+    } catch (e) {
+      console.error('Failed to update stamina:', e);
     } finally {
       setIsUpdating(false);
     }
@@ -100,8 +129,20 @@ export const QuickActionsSection = React.memo(function QuickActionsSection() {
     try {
       const newValue = Math.max(0, minerals + delta);
       setMineralsInput(newValue.toString());
-      await setMinerals(newValue); // 비동기 함수이므로 await 필요
-      await fetchUserData(); // 비동기 함수이므로 await 필요
+
+      if (delta > 0) {
+        // 양수는 rewardMinerals 사용 (보너스 등 로그 처리 가능)
+        await rewardMinerals(delta);
+      } else {
+        // 음수는 RPC 직접 호출 (차감)
+        // rewardMinerals는 기본적으로 양수만 허용하므로
+        // add_minerals RPC는 음수값도 처리 가능하다고 가정 (DB 함수 로직상)
+        const { error } = await supabase.rpc('add_minerals', { p_amount: delta });
+        if (error) throw error;
+        await fetchUserData();
+      }
+    } catch (e) {
+      console.error('Failed to update minerals:', e);
     } finally {
       setIsUpdating(false);
     }
@@ -215,6 +256,12 @@ export const QuickActionsSection = React.memo(function QuickActionsSection() {
     <div className="debug-section">
       <h3 className="debug-section-title">📊 게임 상태</h3>
 
+      {/* 유저 디버그 정보 표시 */}
+      <div className="debug-user-info-box">
+        <strong>Current User:</strong> {debugUserInfo ? `${debugUserInfo.id.slice(0, 8)}...` : 'Not Logged In'}<br />
+        <strong>Profile Exists:</strong> {debugUserInfo ? (debugUserInfo.hasProfile ? '✅ Yes' : '❌ No (DB Update Failed)') : '-'}
+      </div>
+
       <div className="debug-sync-control">
         <button className="debug-sync-button" onClick={handleVerifySync} disabled={isVerifyingSync}>
           {isVerifyingSync ? '검증 중...' : '동기화 확인'}
@@ -256,24 +303,24 @@ export const QuickActionsSection = React.memo(function QuickActionsSection() {
             syncResult.tier.issues.length > 0 ||
             syncResult.badges.issues.length > 0 ||
             syncResult.inventory.issues.length > 0) && (
-            <div className="debug-sync-issues">
-              <h5 className="debug-sync-issues-title">발견된 문제:</h5>
-              <ul className="debug-sync-issues-list">
-                {syncResult.profile.issues.map((issue, idx) => (
-                  <li key={`profile-${idx}`}>{issue}</li>
-                ))}
-                {syncResult.tier.issues.map((issue, idx) => (
-                  <li key={`tier-${idx}`}>{issue}</li>
-                ))}
-                {syncResult.badges.issues.map((issue, idx) => (
-                  <li key={`badges-${idx}`}>{issue}</li>
-                ))}
-                {syncResult.inventory.issues.map((issue, idx) => (
-                  <li key={`inventory-${idx}`}>{issue}</li>
-                ))}
-              </ul>
-            </div>
-          )}
+              <div className="debug-sync-issues">
+                <h5 className="debug-sync-issues-title">발견된 문제:</h5>
+                <ul className="debug-sync-issues-list">
+                  {syncResult.profile.issues.map((issue, idx) => (
+                    <li key={`profile-${idx}`}>{issue}</li>
+                  ))}
+                  {syncResult.tier.issues.map((issue, idx) => (
+                    <li key={`tier-${idx}`}>{issue}</li>
+                  ))}
+                  {syncResult.badges.issues.map((issue, idx) => (
+                    <li key={`badges-${idx}`}>{issue}</li>
+                  ))}
+                  {syncResult.inventory.issues.map((issue, idx) => (
+                    <li key={`inventory-${idx}`}>{issue}</li>
+                  ))}
+                </ul>
+              </div>
+            )}
         </div>
       )}
 

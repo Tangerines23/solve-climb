@@ -85,6 +85,26 @@ export function getUserErrorMessage(error: unknown): string {
 }
 
 /**
+ * 에러 메시지 기반의 짧은 고유 코드 생성
+ * 디버깅 시 참조용으로 사용
+ */
+export function getErrorCode(error: unknown): string {
+  if (!(error instanceof Error)) return 'UNKNOWN_ERR';
+
+  // 간단한 해시 함수
+  let hash = 0;
+  const str = error.message;
+  for (let i = 0; i < str.length; i++) {
+    const char = str.charCodeAt(i);
+    hash = ((hash << 5) - hash) + char;
+    hash |= 0; // Convert to 32bit integer
+  }
+
+  const type = detectErrorType(error);
+  return `${type}_${Math.abs(hash).toString(16).toUpperCase()}`;
+}
+
+/**
  * 개발자용 에러 로깅
  * 프로덕션에서는 로깅하지 않음
  */

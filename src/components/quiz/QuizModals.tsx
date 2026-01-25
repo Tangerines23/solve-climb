@@ -4,7 +4,7 @@ import { CountdownOverlay } from '../CountdownOverlay';
 import { SafetyRopeOverlay } from '../game/SafetyRopeOverlay';
 import { GameTipModal } from '../GameTipModal';
 import { GameOverlay } from '../game/GameOverlay';
-import { StaminaWarningModal } from '../game/StaminaWarningModal';
+import { GameAlertModal } from '../game/GameAlertModal';
 import { RefObject } from 'react';
 import { InventoryItem } from '../../types/user';
 import { PauseModal } from '../game/PauseModal';
@@ -32,14 +32,15 @@ interface QuizModalsProps {
   handleStartGame: (selectedItemIds: number[]) => void;
   showStaminaModal: boolean;
   setShowStaminaModal: (show: boolean) => void;
-  handlePlayAnyway: () => void;
-  handleWatchAd: () => void;
   // Pause System
   showPauseModal: boolean;
   remainingPauses: number;
   handlePauseClick: () => void;
   handlePauseResume: () => void;
   handlePauseExit: () => void;
+  // Alert Modal
+  isAnonymous: boolean;
+  onAlertAction: (action: 'login' | 'charge' | 'play') => void;
 }
 
 export function QuizModals({
@@ -62,14 +63,14 @@ export function QuizModals({
   showTipModal,
   handleBack,
   handleStartGame,
-  showStaminaModal,
-  setShowStaminaModal,
-  handlePlayAnyway,
-  handleWatchAd,
   showPauseModal,
   remainingPauses,
   handlePauseResume,
   handlePauseExit,
+  showStaminaModal,
+  setShowStaminaModal,
+  isAnonymous,
+  onAlertAction,
 }: QuizModalsProps) {
   return (
     <>
@@ -116,11 +117,11 @@ export function QuizModals({
         />
       )}
       <GameOverlay />
-      <StaminaWarningModal
+      <GameAlertModal
         isOpen={showStaminaModal}
         onClose={() => setShowStaminaModal(false)}
-        onPlayAnyway={handlePlayAnyway}
-        onWatchAd={handleWatchAd}
+        onAction={onAlertAction}
+        type={isAnonymous && (inventory.find(i => i.code === 'oxygen_tank')?.quantity || 0) <= 0 ? 'both' : isAnonymous ? 'anonymous' : 'stamina'}
       />
     </>
   );

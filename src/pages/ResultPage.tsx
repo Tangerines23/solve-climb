@@ -154,7 +154,7 @@ export function ResultPage() {
         );
         const ranks =
           useLevelProgressStore.getState().rankings[
-            `${worldParam}-${categoryParam}-weekly-${mode === 'time-attack' ? 'time-attack' : 'survival'}`
+          `${worldParam}-${categoryParam}-weekly-${mode === 'time-attack' ? 'time-attack' : 'survival'}`
           ];
         const {
           data: { user },
@@ -411,9 +411,13 @@ export function ResultPage() {
               style={{
                 left: `${Math.random() * 100}%`,
                 animationDelay: `${Math.random() * 0.5}s`,
-                backgroundColor: ['#00BFA5', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6'][
-                  Math.floor(Math.random() * 5)
-                ],
+                backgroundColor: [
+                  'var(--color-teal-500)',
+                  'var(--color-green-500)',
+                  'var(--color-yellow-500)',
+                  'var(--color-red-500)',
+                  'var(--color-purple-500)',
+                ][Math.floor(Math.random() * 5)],
               }}
             />
           ))}

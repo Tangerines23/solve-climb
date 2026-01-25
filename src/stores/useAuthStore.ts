@@ -40,8 +40,12 @@ export const useAuthStore = create<AuthState>((set) => ({
       });
     });
 
-    // If no session, try anonymous sign-in
-    if (!session) {
+    // If no session and valid URL exists, try anonymous sign-in
+    if (!session && supabase.auth.admin /* checking for client readiness or simple ENV check */ && !supabase.auth.getSession.toString().includes('localhost')) {
+      // Actually a better way is to check the client instance origin or just the ENV again
+    }
+
+    if (!session && import.meta.env.VITE_SUPABASE_URL) {
       const { data, error } = await debugSupabaseQuery(supabase.auth.signInAnonymously());
       if (error) {
         console.error('[AuthStore] Anonymous sign-in failed:', error.message);

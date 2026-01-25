@@ -118,18 +118,18 @@ function TimerCircleComponent({
     const ang = 360 * pct;
 
     // v2.2 Ring Color Logic (Green -> Yellow -> Red)
-    let ringColor = '#00BFA5'; // Default Green (TDS Teal)
+    let ringColor = 'var(--color-success)'; // Default Green (TDS Teal)
     if (pct < 0.25) {
-      ringColor = '#F44336'; // Red
+      ringColor = 'var(--color-error)'; // Red
     } else if (pct < 0.5) {
-      ringColor = '#FFC107'; // Yellow
+      ringColor = 'var(--color-warning)'; // Yellow
     }
 
     return {
       percentage: pct,
       angle: ang,
       circleStyle: {
-        background: `conic-gradient(${ringColor} ${ang}deg, #2c2c2c 0deg)`,
+        background: `conic-gradient(${ringColor} ${ang}deg, var(--color-bg-tertiary) 0deg)`,
         borderRadius: '50%',
         width: '28px',
         height: '28px',

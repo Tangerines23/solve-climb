@@ -13,6 +13,7 @@ const createMockChain = (data: unknown, error: unknown = null) => {
     select: vi.fn().mockReturnThis(),
     eq: vi.fn().mockReturnThis(),
     single: vi.fn().mockResolvedValue(result),
+    maybeSingle: vi.fn().mockResolvedValue(result),
     then: vi.fn((resolve) => Promise.resolve(result).then(resolve)),
     catch: vi.fn((reject) => Promise.resolve(result).catch(reject)),
   };
@@ -217,7 +218,7 @@ describe('useMyPageStats', () => {
 
     const mockProfilesSelect = vi.fn(() => ({
       eq: vi.fn(() => ({
-        single: vi.fn().mockResolvedValue({
+        maybeSingle: vi.fn().mockResolvedValue({
           data: {
             total_mastery_score: 1000,
             current_tier_level: 2,
@@ -292,7 +293,7 @@ describe('useMyPageStats', () => {
 
     const mockProfilesSelect = vi.fn(() => ({
       eq: vi.fn(() => ({
-        single: vi.fn().mockResolvedValue({
+        maybeSingle: vi.fn().mockResolvedValue({
           data: null,
           error: { message: 'Profile not found' },
         }),
@@ -362,7 +363,7 @@ describe('useMyPageStats', () => {
 
     const mockProfilesSelect = vi.fn(() => ({
       eq: vi.fn(() => ({
-        single: vi.fn().mockResolvedValue({
+        maybeSingle: vi.fn().mockResolvedValue({
           data: {
             total_mastery_score: 1000,
             current_tier_level: 2,
@@ -440,7 +441,7 @@ describe('useMyPageStats', () => {
 
     const mockProfilesSelect = vi.fn(() => ({
       eq: vi.fn(() => ({
-        single: vi.fn().mockResolvedValue({
+        maybeSingle: vi.fn().mockResolvedValue({
           data: {
             total_mastery_score: 1000,
             current_tier_level: 2,
@@ -522,7 +523,7 @@ describe('useMyPageStats', () => {
 
     const mockProfilesSelect = vi.fn(() => ({
       eq: vi.fn(() => ({
-        single: vi.fn().mockResolvedValue({
+        maybeSingle: vi.fn().mockResolvedValue({
           data: {
             total_mastery_score: 1000,
             current_tier_level: 2,
@@ -597,7 +598,7 @@ describe('useMyPageStats', () => {
 
     const mockProfilesSelect = vi.fn(() => ({
       eq: vi.fn(() => ({
-        single: vi.fn().mockResolvedValue({
+        maybeSingle: vi.fn().mockResolvedValue({
           data: {
             total_mastery_score: 1000,
             current_tier_level: 2,
@@ -697,7 +698,7 @@ describe('useMyPageStats', () => {
 
     const mockProfilesSelect = vi.fn(() => ({
       eq: vi.fn(() => ({
-        single: vi.fn().mockResolvedValue({
+        maybeSingle: vi.fn().mockResolvedValue({
           data: {
             total_mastery_score: 1000,
             current_tier_level: 2,
@@ -773,7 +774,7 @@ describe('useMyPageStats', () => {
 
     const mockProfilesSelect = vi.fn(() => ({
       eq: vi.fn(() => ({
-        single: vi.fn().mockResolvedValue({
+        maybeSingle: vi.fn().mockResolvedValue({
           data: {
             total_mastery_score: 1000,
             current_tier_level: 2,

@@ -1,5 +1,6 @@
 import { useDebugStore } from '../stores/useDebugStore';
 import { QuickActionsSection } from './debug/QuickActionsSection';
+import { NotificationPlayground } from './debug/NotificationPlayground';
 import { TierSystemSection } from './debug/TierSystemSection';
 import { BadgeSystemSection } from './debug/BadgeSystemSection';
 import { GameFlowSection } from './debug/GameFlowSection';
@@ -11,6 +12,7 @@ import { NetworkSection } from './debug/NetworkSection';
 import { VisualSection } from './debug/VisualSection';
 import { MacroSection } from './debug/MacroSection';
 import { ProgressionSection } from './debug/ProgressionSection';
+import { AuthModeSection } from './debug/AuthModeSection';
 import './DebugPanel.css';
 
 function DebugPanel() {
@@ -19,7 +21,9 @@ function DebugPanel() {
   if (!isDebugPanelOpen) return null;
 
   const tabs = [
-    { id: 'quick', label: '빠른 조작' },
+    { id: 'quick', label: '⚡ 빠른 조작' },
+    { id: 'auth', label: '🔐 인증 모드' },
+    { id: 'ui_lab', label: '🧩 UI 실험실' },
     { id: 'tier', label: '티어' },
     { id: 'badge', label: '뱃지' },
     { id: 'game', label: '게임' },
@@ -37,6 +41,10 @@ function DebugPanel() {
     switch (activeTab) {
       case 'quick':
         return <QuickActionsSection />;
+      case 'auth':
+        return <AuthModeSection />;
+      case 'ui_lab':
+        return <NotificationPlayground />;
       case 'tier':
         return <TierSystemSection />;
       case 'badge':

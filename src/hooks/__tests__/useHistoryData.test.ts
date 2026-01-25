@@ -126,7 +126,7 @@ describe('useHistoryData', () => {
         return {
           select: vi.fn().mockReturnThis(),
           eq: vi.fn().mockReturnThis(),
-          single: vi.fn().mockResolvedValue({ data: { total_mastery_score: 100 }, error: null }),
+          maybeSingle: vi.fn().mockResolvedValue({ data: { total_mastery_score: 100 }, error: null }),
         };
       }
       return {
@@ -134,7 +134,7 @@ describe('useHistoryData', () => {
           eq: vi.fn().mockReturnThis(),
           order: vi.fn().mockReturnThis(),
           limit: vi.fn().mockResolvedValue({ data: [], error: null }),
-          single: vi.fn().mockResolvedValue({ data: {}, error: null }),
+          maybeSingle: vi.fn().mockResolvedValue({ data: {}, error: null }),
           then: (resolve: (val: unknown) => void) => resolve({ data: [], error: null }),
         })),
       };
@@ -203,7 +203,7 @@ describe('useHistoryData', () => {
           eq: vi.fn().mockReturnThis(),
           order: vi.fn().mockReturnThis(),
           limit: vi.fn().mockResolvedValue({ data: [], error: null }),
-          single: vi.fn().mockResolvedValue({ data: {}, error: null }),
+          maybeSingle: vi.fn().mockResolvedValue({ data: {}, error: null }),
           then: (resolve: (val: unknown) => void) => resolve({ data: [], error: null }),
         })),
       };
@@ -235,7 +235,7 @@ describe('useHistoryData', () => {
           eq: vi.fn().mockReturnThis(),
           order: vi.fn().mockReturnThis(),
           limit: vi.fn().mockResolvedValue({ data: [], error: null }),
-          single: vi.fn().mockResolvedValue({ data: {}, error: null }),
+          maybeSingle: vi.fn().mockResolvedValue({ data: {}, error: null }),
           then: (resolve: (val: unknown) => void) => resolve({ data: [], error: null }),
         })),
       };

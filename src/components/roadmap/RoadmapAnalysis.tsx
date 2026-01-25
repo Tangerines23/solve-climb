@@ -51,7 +51,11 @@ export const RoadmapAnalysis: React.FC<RoadmapAnalysisProps> = ({ stats }) => {
                     style={{
                       width: `${(cat.level / maxLevel) * 100}%`,
                       backgroundColor:
-                        cat.level >= 10 ? '#4cd964' : cat.level >= 5 ? '#4facfe' : '#ff9500',
+                        cat.level >= 10
+                          ? 'var(--color-success)'
+                          : cat.level >= 5
+                            ? 'var(--color-info)'
+                            : 'var(--color-warning)',
                     }}
                   />
                 </div>

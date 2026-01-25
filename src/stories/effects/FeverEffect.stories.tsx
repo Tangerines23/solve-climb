@@ -1,10 +1,10 @@
-import type { Meta, StoryObj } from '@storybook/react-vite';
+import type { Meta, StoryObj } from '@storybook/react';
 import { motion, AnimatePresence } from 'framer-motion';
 import '@/components/effects/Effects.css';
+import '@/index.css';
 
-// Mock Component for Storybook (Decoupled from Zustand Store)
-// 실제 컴포넌트는 Store에 의존하므로, Storybook용으로 Props를 받는 버전을 만듭니다.
-const MockFeverEffect = ({
+// Mock Component that mimics Game Overlay
+const MockGameScreen = ({
   feverLevel,
   combo,
   animationEnabled = true,
@@ -13,35 +13,75 @@ const MockFeverEffect = ({
   combo: number;
   animationEnabled?: boolean;
 }) => {
-  if (feverLevel === 0 && combo < 2)
-    return (
-      <div className="text-white p-4">콤보를 2 이상으로 올리거나 피버 레벨을 설정해보세요!</div>
-    );
+  // 실제 게임 화면과 유사한 배경 (Slate-900 ~ Slate-800 Gradient)
+  const gameBackgroundStyle: React.CSSProperties = {
+    position: 'relative',
+    width: '100%',
+    height: '600px',
+    background: 'linear-gradient(to bottom, #0f172a, #1e293b)',
+    borderRadius: 'var(--rounded-card)',
+    overflow: 'hidden',
+    boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)',
+    fontFamily: '"Pretendard", "Inter", sans-serif', // 인게임 폰트 적용 시도
+  };
 
   return (
-    <div className="relative w-full h-[600px] bg-slate-900 overflow-hidden border border-slate-700 rounded-lg">
-      <div className="absolute top-4 left-4 text-white z-50">
-        <div>Fever Level: {feverLevel}</div>
-        <div>Combo: {combo}</div>
+    <div style={gameBackgroundStyle}>
+      {/* 가상의 게임 요소들 (배경 느낌 내기용) */}
+      <div
+        style={{ position: 'absolute', top: '20px', left: '20px', color: 'white', opacity: 0.5 }}
+      >
+        <div style={{ fontSize: '14px' }}>LEVEL 1</div>
+        <div style={{ fontSize: '24px', fontWeight: 'bold' }}>구구단 언덕</div>
       </div>
 
-      {/* Edge Glow Overlay */}
+      <div
+        style={{
+          position: 'absolute',
+          bottom: '100px',
+          width: '100%',
+          padding: '0 20px',
+          display: 'flex',
+          justifyContent: 'center',
+        }}
+      >
+        <div
+          style={{
+            width: '100%',
+            maxWidth: '300px',
+            height: '200px',
+            background: 'rgba(255,255,255,0.05)',
+            borderRadius: 'var(--rounded-md)',
+            border: '1px solid rgba(255,255,255,0.1)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            color: 'rgba(255,255,255,0.3)',
+          }}
+        >
+          (Quiz Area)
+        </div>
+      </div>
+
+      {/* --- 실제 이펙트 영역 --- */}
+
+      {/* 1. Fever Overlay (화면 테두리 효과) */}
       {feverLevel > 0 && (
         <div
           className={`fever-overlay fever-level-${feverLevel}`}
-          style={{ position: 'absolute' }}
+          style={{ position: 'absolute', inset: 0, zIndex: 10 }}
         />
       )}
 
-      {/* Floating Particles */}
+      {/* 2. Particles (피버 파티클) */}
       <div
         className="fever-particles"
-        style={{ position: 'absolute', width: '100%', height: '100%' }}
+        style={{ position: 'absolute', inset: 0, zIndex: 5, pointerEvents: 'none' }}
       >
         {animationEnabled && feverLevel >= 2 && <FeverParticles />}
       </div>
 
-      {/* Combo Counter */}
+      {/* 3. Combo Display (핵심 UI) */}
       <AnimatePresence>
         {combo >= 2 && (
           <motion.div
@@ -49,19 +89,22 @@ const MockFeverEffect = ({
             key={combo}
             style={{
               position: 'absolute',
-              top: '50%',
-              left: '50%',
-              transform: 'translate(-50%, -50%)',
-              right: 'auto',
+              top: '120px',
+              right: '20px',
+              zIndex: 20,
             }}
-            initial={{ scale: 1.5, opacity: 0 }}
-            animate={{ scale: 1, opacity: 1 }}
+            initial={{ scale: 1.5, opacity: 0, rotate: -5 }}
+            animate={{ scale: 1, opacity: 1, rotate: 0 }}
             exit={{ scale: 0.8, opacity: 0 }}
-            transition={{ type: 'spring', stiffness: 400, damping: 20 }}
+            transition={{ type: 'spring', stiffness: 500, damping: 15 }}
           >
-            <div className="combo-count text-white">{combo}</div>
+            <div
+              className={`combo-count ${feverLevel === 2 ? 'text-amber-300 drop-shadow-[0_0_10px_rgba(252,211,77,0.5)]' : 'text-white'}`}
+            >
+              {combo}
+            </div>
             <div className={`combo-text ${feverLevel === 2 ? 'text-amber-300' : 'text-slate-200'}`}>
-              Combo
+              {feverLevel === 2 ? '🔥 SUPER COMBO' : 'COMBO'}
             </div>
 
             {/* Fever Progress Bar */}
@@ -69,8 +112,8 @@ const MockFeverEffect = ({
               <motion.div
                 className="fever-progress-bar"
                 initial={{ width: 0 }}
-                animate={{ width: `${Math.min(100, (combo / 20) * 100)}%` }}
-                transition={{ type: 'spring', stiffness: 100 }}
+                animate={{ width: `${Math.min(100, (combo % 20) * 5)}%` }} // 콤보 게이지 시각화 수정
+                transition={{ type: 'tween', ease: 'linear', duration: 0.2 }}
               />
             </div>
           </motion.div>
@@ -80,8 +123,9 @@ const MockFeverEffect = ({
   );
 };
 
+// ... Particle code remains same ...
 function FeverParticles() {
-  const particles = Array.from({ length: 15 });
+  const particles = Array.from({ length: 20 }); // 파티클 개수 증가
   return (
     <>
       {particles.map((_, i) => (
@@ -91,17 +135,23 @@ function FeverParticles() {
   );
 }
 
-function Particle({ index: _index }: { index: number }) {
+function Particle({ index }: { index: number }) {
   const randomX = Math.random() * 100;
   const duration = 1 + Math.random() * 2;
-  const delay = Math.random() * 2;
+  const delay = Math.random() * 2 + index * 0.05;
+  const size = 5 + Math.random() * 10;
 
   return (
     <motion.div
       className="fever-particle"
-      style={{ left: `${randomX}%` }}
+      style={{
+        left: `${randomX}%`,
+        width: `${size}px`,
+        height: `${size}px`,
+        background: `radial-gradient(circle, rgba(255,255,255,0.8), rgba(255,100,0,0) 70%)`, // 더 불꽃같은 파티클
+      }}
       initial={{ y: '100%', opacity: 0, scale: 0 }}
-      animate={{ y: '-10%', opacity: [0, 1, 0], scale: [0.5, 1.5, 0.5] }}
+      animate={{ y: '-20%', opacity: [0, 1, 0], scale: [0.5, 1.2, 0.5] }}
       transition={{
         duration: duration,
         repeat: Infinity,
@@ -113,52 +163,38 @@ function Particle({ index: _index }: { index: number }) {
 }
 
 const meta = {
-  title: 'Effects/Fever & Combo',
-  component: MockFeverEffect,
+  title: 'Effects/Fever & Combo (Real)',
+  component: MockGameScreen,
   parameters: {
-    layout: 'centered',
+    layout: 'centered', // 화면 중앙에 배치
+    backgrounds: { default: 'dark' },
   },
   tags: ['autodocs'],
   argTypes: {
     feverLevel: {
-      control: { type: 'select' },
-      options: [0, 1, 2],
-      description: '0: 평소, 1: 모멘텀, 2: 세컨드 윈드',
+      control: { type: 'inline-radio', options: [0, 1, 2] },
+      description: '피버 레벨 (0: 없음, 1: 예열, 2: 폭발)',
     },
     combo: {
       control: { type: 'range', min: 0, max: 100, step: 1 },
-      description: '콤보 카운트',
+      description: '콤보 카운트 (슬라이더를 움직여보세요!)',
     },
   },
-} satisfies Meta<typeof MockFeverEffect>;
+} satisfies Meta<typeof MockGameScreen>;
 
 export default meta;
 type Story = StoryObj<typeof meta>;
 
-export const Default: Story = {
+export const InGamePreview: Story = {
   args: {
     feverLevel: 0,
     combo: 0,
   },
 };
 
-export const ComboActive: Story = {
-  args: {
-    feverLevel: 0,
-    combo: 5,
-  },
-};
-
-export const Level1_Momentum: Story = {
-  args: {
-    feverLevel: 1,
-    combo: 15,
-  },
-};
-
-export const Level2_SecondWind: Story = {
+export const FeverMode: Story = {
   args: {
     feverLevel: 2,
-    combo: 50,
+    combo: 45,
   },
 };

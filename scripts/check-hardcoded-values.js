@@ -32,7 +32,7 @@ const ALLOWED_PATTERNS = [
 ];
 
 // 검사할 파일 확장자
-const CSS_EXTENSIONS = ['.css'];
+const CSS_EXTENSIONS = ['.css', '.tsx'];
 
 // 검사 결과
 const issues = {
@@ -56,6 +56,8 @@ function checkFile(filePath) {
   const lines = content.split('\n');
 
   lines.forEach((line, index) => {
+    if (line.includes('console.log')) return; // console.log 스타일링 제외
+    if (line.includes('고정값 허용')) return; // 의도된 고정값 사용 제외
     const lineNum = index + 1;
 
     // 하드코딩된 색상 검사 (#RRGGBB 또는 #RGB)
@@ -72,8 +74,8 @@ function checkFile(filePath) {
       }
     }
 
-    // 하드코딩된 padding/margin 검사
-    const spacingMatch = line.match(/(padding|margin|gap):\s*(\d+)px/gi);
+    // 하드코딩된 padding/margin/gap 검사 (CSS 및 TSX CamelCase 대응)
+    const spacingMatch = line.match(/(padding|margin|gap|spacing)[a-z]*:\s*['"]?(\d+)px['"]?/gi);
     if (spacingMatch) {
       const hasVar = line.includes('var(--');
       if (!hasVar && !isAllowedHardcoding(filePath, line)) {
@@ -86,8 +88,8 @@ function checkFile(filePath) {
       }
     }
 
-    // 하드코딩된 border-radius 검사
-    const borderRadiusMatch = line.match(/border-radius:\s*(\d+)px/gi);
+    // 하드코딩된 border-radius 검사 (CSS 및 TSX CamelCase 대응)
+    const borderRadiusMatch = line.match(/border[a-z]*Radius:\s*['"]?(\d+)px['"]?/gi) || line.match(/border-radius:\s*(\d+)px/gi);
     if (borderRadiusMatch) {
       const hasVar = line.includes('var(--');
       if (!hasVar && !isAllowedHardcoding(filePath, line)) {
@@ -113,13 +115,14 @@ function walkDir(dir, fileList = []) {
     const stat = fs.statSync(filePath);
 
     if (stat.isDirectory()) {
-      // node_modules, dist 등 제외
-      if (!['node_modules', 'dist', '.git', 'apps-in-toss-examples-main'].includes(file)) {
+      // node_modules, dist, .git, apps-in-toss-examples-main, __tests__ 제외
+      if (!['node_modules', 'dist', '.git', 'apps-in-toss-examples-main', '__tests__'].includes(file)) {
         walkDir(filePath, fileList);
       }
     } else {
       const ext = path.extname(file);
-      if (CSS_EXTENSIONS.includes(ext)) {
+      // .test., .spec. 파일 제외하고 CSS/TSX 파일만 포함
+      if (CSS_EXTENSIONS.includes(ext) && !file.includes('.test.') && !file.includes('.spec.')) {
         fileList.push(filePath);
       }
     }

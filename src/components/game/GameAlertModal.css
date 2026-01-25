@@ -1,0 +1,114 @@
+.alert-modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0, 0, 0, 0.75);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 2000;
+    backdrop-filter: blur(4px);
+    padding: var(--spacing-lg);
+}
+
+.alert-modal-content {
+    background-color: var(--color-bg-secondary);
+    border-radius: var(--rounded-lg);
+    width: 100%;
+    max-width: 400px;
+    padding: var(--spacing-xl);
+    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.3);
+    border: 1px solid var(--color-border-primary);
+}
+
+.alert-modal-header {
+    text-align: center;
+    margin-bottom: var(--spacing-lg);
+}
+
+.alert-modal-header .warning-icon {
+    font-size: 3rem;
+    display: block;
+    margin-bottom: var(--spacing-sm);
+}
+
+.alert-modal-header h2 {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--color-text-primary);
+}
+
+.alert-modal-body {
+    margin-bottom: var(--spacing-xl);
+    color: var(--color-text-secondary);
+    line-height: 1.6;
+}
+
+.alert-modal-body p {
+    margin-bottom: var(--spacing-md);
+    text-align: center;
+}
+
+.penalty-list {
+    list-style: none;
+    padding: 0;
+    background-color: rgba(0, 0, 0, 0.2);
+    border-radius: var(--rounded-md);
+    padding: var(--spacing-md);
+}
+
+.penalty-list li {
+    margin-bottom: var(--spacing-xs);
+    font-size: 0.9375rem;
+}
+
+.penalty-list li:last-child {
+    margin-bottom: 0;
+}
+
+.alert-modal-footer {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-sm);
+}
+
+.alert-modal-footer button {
+    padding: var(--spacing-md);
+    border-radius: var(--rounded-button);
+    font-weight: 600;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    border: none;
+}
+
+.primary-button {
+    background: linear-gradient(135deg, var(--color-blue-500), var(--color-blue-600));
+    color: white;
+}
+
+.secondary-button {
+    background-color: var(--color-surface-elevated);
+    color: var(--color-text-primary);
+    border: 1px solid var(--color-border-primary) !important;
+}
+
+.play-button {
+    background-color: transparent;
+    color: var(--color-text-secondary);
+    font-size: 0.875rem !important;
+    text-decoration: underline;
+}
+
+.close-link {
+    background-color: transparent;
+    color: var(--color-text-muted);
+    font-size: 0.875rem !important;
+}
+
+.primary-button:active,
+.secondary-button:active {
+    transform: scale(0.98);
+}

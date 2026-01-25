@@ -13,7 +13,15 @@ import './Header.css';
 // ⚠️ 개발 환경에서만 동적 임포트
 // ⚠️ 개발 환경에서만 동적 임포트 (App.tsx에서 전역 처리)
 
-export function Header() {
+// ⚠️ 개발 환경에서만 동적 임포트 (App.tsx에서 전역 처리)
+
+interface HeaderProps {
+  title?: string;
+  showBack?: boolean;
+  onBack?: () => void;
+}
+
+export function Header({ title, showBack, onBack }: HeaderProps) {
   const navigate = useNavigate();
   const location = useLocation();
   const [isMineralsLoading, setIsMineralsLoading] = useState(false);
@@ -124,12 +132,20 @@ export function Header() {
       onClick={clearSelection}
     >
       <div className="header-content">
+        {showBack && (
+          <button
+            onClick={onBack}
+            className="header-back-button"
+          >
+            ←
+          </button>
+        )}
         <h1
           className="header-logo"
           onClick={handleLogoClick}
-          style={{ cursor: isAdmin ? 'pointer' : 'default' }}
+          style={{ cursor: isAdmin ? 'pointer' : 'default', fontSize: title ? '1.2rem' : undefined }}
         >
-          {APP_CONFIG.APP_NAME}
+          {title || APP_CONFIG.APP_NAME}
         </h1>
         <div className="header-status">
           {isAdminMode && (

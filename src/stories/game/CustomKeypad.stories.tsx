@@ -8,9 +8,9 @@ const KeypadContainer = (Story: any) => (
       width: '100%',
       maxWidth: '400px',
       margin: '0 auto',
-      backgroundColor: '#0f172a',
-      padding: '20px',
-      borderRadius: '16px',
+      backgroundColor: 'var(--color-bg-primary)',
+      padding: 'var(--spacing-lg)',
+      borderRadius: 'var(--rounded-card)',
     }}
   >
     <Story />
@@ -29,10 +29,10 @@ const meta = {
     showFraction: { control: 'boolean' },
   },
   args: {
-    onNumberClick: () => {},
-    onBackspace: () => {},
-    onClear: () => {},
-    onSubmit: () => {},
+    onNumberClick: () => { },
+    onBackspace: () => { },
+    onClear: () => { },
+    onSubmit: () => { },
     disabled: false,
     showNegative: false,
     showDecimal: false,

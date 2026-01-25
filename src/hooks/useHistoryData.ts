@@ -211,7 +211,7 @@ export function useHistoryData() {
             .from('profiles')
             .select('total_mastery_score, login_streak')
             .eq('id', currentUserId)
-            .single()
+            .maybeSingle()
         ),
       ] as const);
 

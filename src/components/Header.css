@@ -49,6 +49,21 @@
   min-width: 0;
   overflow: hidden;
   text-overflow: ellipsis;
+  flex: 1;
+  /* 테이틀이 남은 공간을 채우도록 */
+}
+
+.header-back-button {
+  background: none;
+  border: none;
+  color: white;
+  font-size: 24px;
+  cursor: pointer;
+  padding: var(--spacing-xs);
+  margin-right: var(--spacing-xs);
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .header-icons {
@@ -88,6 +103,7 @@
 .status-item {
   display: flex;
   align-items: center;
+  justify-content: center;
   gap: var(--spacing-micro);
   font-size: 0.75rem;
   font-weight: 600;
@@ -96,7 +112,9 @@
 
 .status-value {
   min-width: 1.5rem;
+  text-align: center;
 }
+
 
 .recharge-btn {
   background: var(--color-blue-400);

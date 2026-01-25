@@ -147,7 +147,7 @@ export function MyPageSettings({
           <button
             className="my-page-settings-item my-page-settings-item-button"
             onClick={onWithdraw}
-            style={{ color: '#ff4d4f' }}
+            style={{ color: 'var(--color-error)' }}
           >
             <div className="my-page-settings-item-content">
               <span className="my-page-settings-item-label" style={{ color: 'inherit' }}>

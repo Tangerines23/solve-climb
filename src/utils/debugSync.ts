@@ -21,17 +21,17 @@ async function verifyProfileSync(userId: string): Promise<{ synced: boolean; iss
       .from('profiles')
       .select('total_mastery_score')
       .eq('id', userId)
-      .single();
+      .maybeSingle();
 
     if (profileError) {
       issues.push(`프로필 조회 실패: ${profileError.message}`);
       return { synced: false, issues };
     }
 
-    // 실제 게임 기록 합계 계산
+    // 실제 게임 기록 합계 계산 (user_level_records에서 best_score 합산)
     const { data: gameRecords, error: recordsError } = await supabase
-      .from('game_results')
-      .select('mastery_score')
+      .from('user_level_records')
+      .select('best_score')
       .eq('user_id', userId);
 
     if (recordsError) {
@@ -40,7 +40,7 @@ async function verifyProfileSync(userId: string): Promise<{ synced: boolean; iss
     }
 
     const calculatedScore = (gameRecords || []).reduce(
-      (sum, record) => sum + (record.mastery_score || 0),
+      (sum, record) => sum + (record.best_score || 0),
       0
     );
     const profileScore = profile?.total_mastery_score || 0;
@@ -74,7 +74,7 @@ async function verifyTierSync(userId: string): Promise<{ synced: boolean; issues
       .from('profiles')
       .select('current_tier_level, total_mastery_score')
       .eq('id', userId)
-      .single();
+      .maybeSingle();
 
     if (profileError) {
       issues.push(`프로필 조회 실패: ${profileError.message}`);

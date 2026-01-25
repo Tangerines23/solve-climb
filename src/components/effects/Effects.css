@@ -100,19 +100,24 @@
 }
 
 .fever-level-2 .combo-display {
-  color: var(--color-red-500);
+  color: var(--color-toss-red);
   /* red-500 */
   border-color: rgba(239, 68, 68, 0.6);
   box-shadow: 0 0 20px rgba(239, 68, 68, 0.4);
 }
 
 .combo-count {
-  font-size: 2.5rem;
+  font-size: 3rem;
   font-weight: 900;
   line-height: 1;
   display: flex;
   align-items: baseline;
-  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.3));
+  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.5));
+  font-family: 'Pretendard', sans-serif;
+  /* Ensure font consistency */
+  transform: skewX(-5deg);
+  /* Add dynamic skew */
+  text-shadow: 0 0 10px rgba(255, 255, 255, 0.2);
 }
 
 .combo-text {

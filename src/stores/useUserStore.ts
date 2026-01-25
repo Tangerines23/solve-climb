@@ -15,6 +15,7 @@ interface UserState {
     quantity: number;
   }>;
   isLoading: boolean;
+  isAnonymous: boolean;
   lastAdRechargeTime: string | null;
 
   handleWatchAd: () => void;
@@ -44,6 +45,7 @@ interface UserState {
   debugAddItems: () => Promise<void>;
   debugResetItems: () => Promise<void>;
   debugRemoveItems: () => Promise<void>;
+  debugSetStamina: (amount: number) => Promise<void>;
 
   lastStaminaConsumeTime: number;
 }
@@ -53,6 +55,7 @@ export const useUserStore = create<UserState>((set, get) => ({
   stamina: 5,
   inventory: [],
   isLoading: false,
+  isAnonymous: false,
   lastAdRechargeTime: null,
 
   handleWatchAd: () => {
@@ -84,13 +87,15 @@ export const useUserStore = create<UserState>((set, get) => ({
         return;
       }
 
+      set({ isAnonymous: !!user.is_anonymous });
+
       // Fetch profile
       const { data: profile } = await debugSupabaseQuery(
         supabase
           .from('profiles')
           .select('minerals, stamina, last_ad_stamina_recharge')
           .eq('id', user.id)
-          .single()
+          .maybeSingle()
       );
 
       // Fetch inventory
@@ -386,6 +391,42 @@ export const useUserStore = create<UserState>((set, get) => ({
     }
 
     await get().fetchUserData();
+  },
+
+  // DEV ONLY: 스태미나 강제 설정 (DB Sync)
+  debugSetStamina: async (amount: number) => {
+    const authResult = await debugSupabaseQuery(supabase.auth.getUser());
+    const user = authResult?.data?.user;
+
+    if (!user) {
+      console.error('[DEBUG] debugSetStamina: No authenticated user found.');
+      return;
+    }
+
+    const newStamina = Math.max(0, amount);
+    console.log(`[DEBUG] Attempting to set stamina to ${newStamina} for user ${user.id}...`);
+
+    // 1. 프로필 존재 여부 확인 (디버깅용)
+    const { count } = await supabase.from('profiles').select('*', { count: 'exact', head: true }).eq('id', user.id);
+    if (count === 0) {
+      console.error('[DEBUG] debugSetStamina: Profile row not found for user. Inserting default profile...');
+      // 프로필 생성 시도
+      await supabase.from('profiles').insert({ id: user.id, stamina: newStamina });
+    }
+
+    const { error, status, statusText } = await debugSupabaseQuery(
+      supabase.from('profiles').update({ stamina: newStamina }).eq('id', user.id)
+    );
+
+    if (error) {
+      console.error('[DEBUG] Set Stamina Failed:', error);
+      console.error('[DEBUG] Status:', status, statusText);
+      return;
+    }
+
+    console.log('[DEBUG] Set Stamina Success. Updating local store.');
+    // 로컬 상태 업데이트
+    set({ stamina: newStamina });
   },
 
   refundStamina: async () => {

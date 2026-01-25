@@ -5,7 +5,7 @@ import { TopicHeader } from '@/components/TopicHeader';
 import { FooterNav } from '@/components/FooterNav';
 import { useLevelProgressStore } from '@/stores/useLevelProgressStore';
 import { urls } from '@/utils/navigation';
-import './TopicSelectPage.css';
+import './CategorySelectPage.css';
 
 import { useDebugStore } from '@/stores/useDebugStore'; // Added import
 

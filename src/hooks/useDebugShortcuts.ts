@@ -1,6 +1,7 @@
 import { useCallback, useEffect } from 'react';
 import { useDebugStore } from '../stores/useDebugStore';
 import { useUserStore } from '../stores/useUserStore';
+import { supabase } from '../utils/supabaseClient';
 
 /**
  * 전역 디버그 단축키 훅
@@ -16,7 +17,15 @@ export function useDebugShortcuts() {
   const { isAdminMode, selectedResource, toggleAdminMode, toggleDebugPanel, setSelectedResource } =
     useDebugStore();
 
-  const { stamina, minerals, setStamina, setMinerals } = useUserStore();
+  const {
+    stamina,
+    minerals,
+    setStamina,
+    setMinerals,
+    debugSetStamina,
+    rewardMinerals,
+    fetchUserData,
+  } = useUserStore();
 
   const handleKeyDown = useCallback(
     (e: KeyboardEvent) => {
@@ -45,16 +54,36 @@ export function useDebugShortcuts() {
 
       if (e.key === '+' || e.key === '=') {
         e.preventDefault();
-        if (selectedResource === 'stamina') setStamina(stamina + 1);
-        if (selectedResource === 'minerals') setMinerals(minerals + 100);
+        if (selectedResource === 'stamina') {
+          debugSetStamina(stamina + 1);
+        }
+        if (selectedResource === 'minerals') {
+          rewardMinerals(100);
+        }
         if (selectedResource === 'items') {
           const { debugAddItems } = useUserStore.getState();
           debugAddItems();
         }
       } else if (e.key === '-' || e.key === '_') {
         e.preventDefault();
-        if (selectedResource === 'stamina') setStamina(Math.max(0, stamina - 1));
-        if (selectedResource === 'minerals') setMinerals(Math.max(0, minerals - 100));
+        if (selectedResource === 'stamina') {
+          debugSetStamina(Math.max(0, stamina - 1));
+        }
+        if (selectedResource === 'minerals') {
+          // 음수 처리를 위해 RPC 직접 호출
+          const delta = -100;
+          const currentMinerals = minerals;
+          if (currentMinerals + delta < 0) {
+            console.warn('[Debug] Cannot reduce minerals below 0');
+            return;
+          }
+          supabase
+            .rpc('add_minerals', { p_amount: delta })
+            .then(({ error }) => {
+              if (error) console.error(error);
+              else fetchUserData();
+            });
+        }
         if (selectedResource === 'items') {
           const { debugRemoveItems } = useUserStore.getState();
           debugRemoveItems();

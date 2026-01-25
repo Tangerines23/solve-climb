@@ -8,18 +8,20 @@ interface DebugState {
   // Level 2: 고급 디버그 패널
   isDebugPanelOpen: boolean;
   activeTab:
-    | 'quick'
-    | 'tier'
-    | 'badge'
-    | 'game'
-    | 'item'
-    | 'data'
-    | 'errors'
-    | 'boundary'
-    | 'network'
-    | 'visual'
-    | 'macro'
-    | 'progression';
+  | 'quick'
+  | 'auth'
+  | 'ui_lab'
+  | 'tier'
+  | 'badge'
+  | 'game'
+  | 'item'
+  | 'data'
+  | 'errors'
+  | 'boundary'
+  | 'network'
+  | 'visual'
+  | 'macro'
+  | 'progression';
 
   // 무한 모드
   infiniteStamina: boolean;
@@ -36,6 +38,10 @@ interface DebugState {
 
   // 진행 및 이동 (Phase 6)
   bypassLevelLock: boolean;
+
+  // 플로팅 버튼 제어 (Phase 7)
+  showReturnFloater: boolean;
+  setShowReturnFloater: (value: boolean) => void;
 
   // Actions
   toggleAdminMode: () => void;
@@ -66,8 +72,10 @@ export const useDebugStore = create<DebugState>((set) => ({
   showSafeAreaGuide: false,
   showComponentBorders: false,
   bypassLevelLock: false,
+  showReturnFloater: false, // 기본값은 숨김
 
   // Actions
+  setShowReturnFloater: (value) => set({ showReturnFloater: value }),
   toggleAdminMode: () =>
     set((state) => {
       const newMode = !state.isAdminMode;

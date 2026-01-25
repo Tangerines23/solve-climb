@@ -8,9 +8,9 @@ export function StaminaGauge() {
 
   // 스태미나 상태에 따른 색상 결정
   const getColor = () => {
-    if (stamina === 0) return '#ff4d4d'; // Red for empty
-    if (stamina <= 2) return '#ffca28'; // Yellow for low
-    return '#4cd964'; // Green for good
+    if (stamina === 0) return 'var(--color-error)'; // Red for empty
+    if (stamina <= 2) return 'var(--color-warning)'; // Yellow for low
+    return 'var(--color-success)'; // Green for good
   };
 
   const isFull = stamina >= maxStamina;

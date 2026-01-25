@@ -190,7 +190,6 @@ export const APP_CONFIG = {
   // 라우팅 경로
   ROUTES: {
     HOME: '/',
-    WORLD_SELECT: '/world-select',
     CATEGORY_SELECT: '/category-select',
     SUB_CATEGORY: '/category-select', // 호환성을 위해 추가
     LEVEL_SELECT: '/level-select',

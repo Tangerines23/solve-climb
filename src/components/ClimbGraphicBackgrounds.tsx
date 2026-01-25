@@ -229,9 +229,9 @@ export function EquationsBackground({ config, totalLevels = 15 }: BackgroundProp
   const defaultConfig: StageBackgroundConfig = {
     skyGradient:
       'linear-gradient(180deg, #064E3B 0%, #065F46 20%, #047857 40%, #059669 60%, #10B981 80%, #5EEAD4 100%)',
-    mainColor: '#064E3B', // Cyan-900 (아주 어두운 청록)
-    secondaryColor: '#0891B2', // Cyan-600 (중간 청록)
-    accentColor: '#22D3EE', // Cyan-400 (밝은 청록)
+    mainColor: 'var(--color-cyan-900)', // Cyan-900 (아주 어두운 청록)
+    secondaryColor: 'var(--color-cyan-600)', // Cyan-600 (중간 청록)
+    accentColor: 'var(--color-cyan-400)', // Cyan-400 (밝은 청록)
   };
   const finalConfig = config || defaultConfig;
 
@@ -528,9 +528,9 @@ export function EquationsBackground({ config, totalLevels = 15 }: BackgroundProp
 export function SequenceBackground({ config }: BackgroundProps) {
   const defaultConfig: StageBackgroundConfig = {
     skyGradient: 'linear-gradient(180deg, #4B0082 0%, #6A5ACD 30%, #9370DB 60%, #BA55D3 100%)',
-    mainColor: '#4B0082',
-    secondaryColor: '#6A5ACD',
-    accentColor: '#9370DB',
+    mainColor: 'var(--color-purple-900)',
+    secondaryColor: 'var(--color-purple-600)',
+    accentColor: 'var(--color-purple-400)',
   };
   const finalConfig = config || defaultConfig;
 
@@ -646,9 +646,9 @@ export function SequenceBackground({ config }: BackgroundProps) {
 export function CalculusBackground({ config }: BackgroundProps) {
   const defaultConfig: StageBackgroundConfig = {
     skyGradient: 'linear-gradient(180deg, #000428 0%, #004e92 30%, #1a1a2e 60%, #16213e 100%)',
-    mainColor: '#000428',
-    secondaryColor: '#004e92',
-    accentColor: '#00D4FF',
+    mainColor: 'var(--color-slate-900)',
+    secondaryColor: 'var(--color-blue-800)',
+    accentColor: 'var(--color-cyan-400)',
   };
   const finalConfig = config || defaultConfig;
 
@@ -943,13 +943,13 @@ export function DefaultBackground({ categoryColor }: { categoryColor?: string })
       {/* 먼 산 - 전체 배경의 70% (y: -300 ~ 750) */}
       <polygon
         points="100,1200 400,-250 700,1200"
-        fill={categoryColor || '#00BFA5'}
+        fill={categoryColor || 'var(--color-teal-500)'}
         opacity="0.3"
         className="mountain-bg-far"
       />
       <polygon
         points="100,1200 400,0 700,1200"
-        fill={categoryColor || '#00BFA5'}
+        fill={categoryColor || 'var(--color-teal-500)'}
         opacity="0.3"
         className="mountain-bg-far"
       />
@@ -957,19 +957,19 @@ export function DefaultBackground({ categoryColor }: { categoryColor?: string })
       {/* 중간 산 - 전체 배경의 50% (y: 300 ~ 1050) */}
       <polygon
         points="-40,1200 160,350 360,1200"
-        fill={categoryColor || '#00BFA5'}
+        fill={categoryColor || 'var(--color-teal-500)'}
         opacity="0.5"
         className="mountain-bg-mid"
       />
       <polygon
         points="440,1200 640,400 840,1200"
-        fill={categoryColor || '#00BFA5'}
+        fill={categoryColor || 'var(--color-teal-500)'}
         opacity="0.5"
         className="mountain-bg-mid"
       />
       <polygon
         points="50,1050 250,650 450,1050"
-        fill={categoryColor || '#00BFA5'}
+        fill={categoryColor || 'var(--color-teal-500)'}
         opacity="0.4"
         className="mountain-bg-mid"
       />
@@ -977,25 +977,25 @@ export function DefaultBackground({ categoryColor }: { categoryColor?: string })
       {/* 가까운 산 - 전체 배경의 30% (y: 750 ~ 1200) */}
       <polygon
         points="0,1200 120,920 240,1200"
-        fill={categoryColor || '#00BFA5'}
+        fill={categoryColor || 'var(--color-teal-500)'}
         opacity="0.8"
         className="mountain-bg-near"
       />
       <polygon
         points="0,1200 400,980 800,1200"
-        fill={categoryColor || '#00BFA5'}
+        fill={categoryColor || 'var(--color-teal-500)'}
         opacity="0.8"
         className="mountain-bg-near"
       />
       <polygon
         points="560,1200 680,920 800,1200"
-        fill={categoryColor || '#00BFA5'}
+        fill={categoryColor || 'var(--color-teal-500)'}
         opacity="0.8"
         className="mountain-bg-near"
       />
       <polygon
         points="200,1200 400,1050 600,1200"
-        fill={categoryColor || '#00BFA5'}
+        fill={categoryColor || 'var(--color-teal-500)'}
         opacity="0.7"
         className="mountain-bg-near"
       />

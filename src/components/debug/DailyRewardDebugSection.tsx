@@ -22,7 +22,7 @@ export function DailyRewardDebugSection() {
       <h3 className="debug-section-title">🎁 데일리 시스템 관리</h3>
       <div
         className="debug-section-actions"
-        style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}
+        style={{ display: 'flex', gap: 'var(--spacing-sm)', flexWrap: 'wrap' }}
       >
         <button
           className="debug-button"

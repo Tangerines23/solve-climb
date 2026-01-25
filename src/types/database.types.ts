@@ -125,6 +125,64 @@ export interface Database {
           updated_at?: string;
         };
       };
+      items: {
+        Row: {
+          id: number;
+          code: string;
+          name: string;
+          price: number;
+          description: string | null;
+          category: string;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: number;
+          code: string;
+          name: string;
+          price?: number;
+          description?: string | null;
+          category?: string;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          id?: number;
+          code?: string;
+          name?: string;
+          price?: number;
+          description?: string | null;
+          category?: string;
+          created_at?: string;
+          updated_at?: string;
+        };
+      };
+      inventory: {
+        Row: {
+          id: number;
+          user_id: string;
+          item_id: number;
+          quantity: number;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: number;
+          user_id: string;
+          item_id: number;
+          quantity?: number;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          id?: number;
+          user_id?: string;
+          item_id?: number;
+          quantity?: number;
+          created_at?: string;
+          updated_at?: string;
+        };
+      };
     };
     Views: {
       [_ in never]: never;
@@ -142,6 +200,48 @@ export interface Database {
           total_score: number;
           rank: number;
         }[];
+      };
+      purchase_item: {
+        Args: {
+          p_item_id: number;
+        };
+        Returns: {
+          success: boolean;
+          message: string;
+        };
+      };
+      add_minerals: {
+        Args: {
+          p_amount: number;
+        };
+        Returns: {
+          success: boolean;
+          message: string;
+          minerals?: number;
+        };
+      };
+      recover_stamina_ads: {
+        Args: Record<string, never>;
+        Returns: {
+          success: boolean;
+          message: string;
+          stamina?: number;
+        };
+      };
+      check_and_recover_stamina: {
+        Args: Record<string, never>;
+        Returns: {
+          stamina: number;
+        };
+      };
+      handle_daily_login: {
+        Args: Record<string, never>;
+        Returns: {
+          success: boolean;
+          message: string;
+          reward_minerals?: number;
+          streak?: number;
+        };
       };
     };
     Enums: {

@@ -42,6 +42,7 @@ interface QuizCardProps {
   totalQuestions: number; // 현재 푼 문제 수
   lives: number; // 현재 라이프
   onSafetyRopeUsed?: () => void;
+  onLastSpurt?: () => void;
   triggerPenalty?: number;
   penaltyAmount?: number;
 
@@ -135,6 +136,7 @@ function QuizCardComponent({
   setShowExitConfirm,
   setIsFadingOut,
   onSafetyRopeUsed,
+  onLastSpurt,
   toastValue,
   onPause,
   remainingPauses = 3,
@@ -245,7 +247,9 @@ function QuizCardComponent({
       console.log('[Game] Safety Rope used! Saved from time up.');
       if (onSafetyRopeUsed) onSafetyRopeUsed();
     } else if (hasLastSpurt) {
-      handleGameOver('timeout');
+      consumeActiveItem('last_spurt');
+      console.log('[Game] Last Spurt used! Time extended.');
+      if (onLastSpurt) onLastSpurt();
     } else if (gameMode === 'survival') {
       const hasFlare = activeItems.includes('flare');
       if (hasFlare) {
@@ -374,7 +378,7 @@ function QuizCardComponent({
                 style={{
                   display:
                     currentQuestion.hintType === 'transposition' ||
-                    currentQuestion.hintType === 'function-machine'
+                      currentQuestion.hintType === 'function-machine'
                       ? 'none'
                       : 'block',
                 }}
@@ -422,7 +426,7 @@ function QuizCardComponent({
                     setDisplayValue(`${x},${y}`);
                     // 제출은 약간 지연 후 수행 (시각적 피드백 위해)
                     setTimeout(() => {
-                      const fakeEvent = { preventDefault: () => {} } as React.FormEvent;
+                      const fakeEvent = { preventDefault: () => { } } as React.FormEvent;
                       handleSubmit(fakeEvent);
                     }, 300);
                   }}

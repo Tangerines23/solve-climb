@@ -122,7 +122,7 @@
   font-size: 0.75rem;
   color: var(--color-text-secondary);
   text-transform: uppercase;
-  letter-spacing: 1px;
+  letter-spacing: 0.05em;
   margin-bottom: 2px;
 }
 
@@ -405,6 +405,7 @@
 }
 
 @keyframes float-infinite {
+
   0%,
   100% {
     transform: translateY(0) rotate(0deg);

@@ -10,9 +10,9 @@ const TimerContainer = (Story: any) => (
       display: 'flex',
       alignItems: 'center',
       justifyContent: 'center',
-      backgroundColor: '#0f172a',
-      padding: '20px',
-      borderRadius: '16px',
+      backgroundColor: 'var(--color-bg-primary)',
+      padding: 'var(--spacing-lg)',
+      borderRadius: 'var(--rounded-card)',
     }}
   >
     <Story />
@@ -33,7 +33,7 @@ const meta = {
   },
   args: {
     duration: 60,
-    onComplete: () => {},
+    onComplete: () => { },
     isPaused: false,
     enableFastForward: false,
     penaltyAmount: 5,

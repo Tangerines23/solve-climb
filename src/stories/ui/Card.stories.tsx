@@ -127,9 +127,9 @@ export const MyRecordLoading: Story = {
           style={{
             height: '20px',
             width: '60%',
-            backgroundColor: '#334155',
-            borderRadius: '4px',
-            marginBottom: '10px',
+            backgroundColor: 'var(--color-bg-tertiary)',
+            borderRadius: 'var(--rounded-xs)',
+            marginBottom: 'var(--spacing-sm)',
           }}
         ></div>
         <div
@@ -137,14 +137,14 @@ export const MyRecordLoading: Story = {
           style={{
             height: '16px',
             width: '80%',
-            backgroundColor: '#334155',
-            borderRadius: '4px',
-            marginBottom: '8px',
+            backgroundColor: 'var(--color-bg-tertiary)',
+            borderRadius: 'var(--rounded-xs)',
+            marginBottom: 'var(--spacing-xs)',
           }}
         ></div>
         <div
           className="skeleton-item"
-          style={{ height: '16px', width: '80%', backgroundColor: '#334155', borderRadius: '4px' }}
+          style={{ height: '16px', width: '80%', backgroundColor: 'var(--color-bg-tertiary)', borderRadius: 'var(--rounded-xs)' }}
         ></div>
       </div>
     </div>

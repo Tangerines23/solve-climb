@@ -14,9 +14,6 @@ import { MyPageStats } from '../components/my/MyPageStats';
 import { MyPageQuickAccess } from '../components/my/MyPageQuickAccess';
 import { MyPageSettings } from '../components/my/MyPageSettings';
 import { MyPageEffectsGuide } from '../components/my/MyPageEffectsGuide';
-import { NotificationPlayground } from '../components/debug/NotificationPlayground';
-import { StaticUISection } from '../components/debug/StaticUISection';
-import { DailyRewardDebugSection } from '../components/debug/DailyRewardDebugSection';
 import { useProfileStore } from '../stores/useProfileStore';
 import { useSettingsStore } from '../stores/useSettingsStore';
 import { useMyPageStats } from '../hooks/useMyPageStats';
@@ -601,12 +598,12 @@ export function MyPage() {
               {ENV.IS_VERCEL && (
                 <div
                   style={{
-                    backgroundColor: 'rgba(0, 106, 255, 0.05)',
-                    padding: '12px 16px',
-                    borderRadius: '12px',
-                    marginBottom: '20px',
+                    backgroundColor: 'rgba(0, 106, 255, 0.05)', // 특수 강조색 유지 (배경 투명도)
+                    padding: 'var(--spacing-md) var(--spacing-lg)',
+                    borderRadius: 'var(--rounded-button)',
+                    marginBottom: 'var(--spacing-xl)',
                     fontSize: '14px',
-                    color: '#0066ff',
+                    color: 'var(--adaptiveBlue500)',
                     textAlign: 'center',
                     fontWeight: '500',
                     border: '1px solid rgba(0, 106, 255, 0.1)',
@@ -723,14 +720,30 @@ export function MyPage() {
           {/* Game Effects Guide */}
           <MyPageEffectsGuide />
 
-          {/* Admin / Dev Playground */}
+          {/* Admin / Dev Tool Link */}
           {(useProfileStore.getState().isAdmin || import.meta.env.DEV) && (
-            <div
-              style={{ marginTop: '32px', display: 'flex', flexDirection: 'column', gap: '20px' }}
-            >
-              <DailyRewardDebugSection />
-              <StaticUISection />
-              <NotificationPlayground />
+            <div style={{ marginTop: 'var(--spacing-3xl)', paddingBottom: 'var(--spacing-4xl)' }}>
+              <button
+                style={{
+                  width: '100%',
+                  padding: 'var(--spacing-lg)',
+                  backgroundColor: 'var(--color-bg-secondary)',
+                  color: 'var(--color-text-secondary)',
+                  border: '1px dashed var(--color-bg-tertiary)',
+                  borderRadius: 'var(--rounded-card)',
+                  fontSize: '14px',
+                  fontWeight: '500',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  gap: 'var(--spacing-sm)',
+                  cursor: 'pointer',
+                  transition: 'all 0.2s',
+                }}
+                onClick={() => navigate(urls.debug())}
+              >
+                <span>🛠️</span> 관리자 도구 & UI 실험실 이동
+              </button>
             </div>
           )}
 

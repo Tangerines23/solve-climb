@@ -7,36 +7,36 @@ interface EffectItem {
 
 export function MyPageEffectsGuide() {
   const items: EffectItem[] = [
-    { icon: '🫧', name: '산소통', description: '제한 시간 10초 연장 (타임어택)', color: '#00d4ff' },
-    { icon: '🪢', name: '안전 로프', description: '오답 시 콤보 보호 및 재도전', color: '#ffcc00' },
+    { icon: '🫧', name: '산소통', description: '제한 시간 10초 연장 (타임어택)', color: 'var(--color-cyan-400)' },
+    { icon: '🪢', name: '안전 로프', description: '오답 시 콤보 보호 및 재도전', color: 'var(--color-yellow-400)' },
     {
       icon: '🚀',
       name: '조명탄',
       description: '게임 오버 시 1회 부활 (서바이벌)',
-      color: '#ff4d4d',
+      color: 'var(--color-red-400)',
     },
-    { icon: '⚡', name: '파워젤', description: '시작 시 콤보 1단계 획득', color: '#ffcc00' },
+    { icon: '⚡', name: '파워젤', description: '시작 시 콤보 1단계 획득', color: 'var(--color-yellow-400)' },
     {
       icon: '⏱️',
       name: '라스트 스퍼트',
       description: '종료 시 15초 추가 연장 (타임어택)',
-      color: '#00ffcc',
+      color: 'var(--color-teal-400)',
     },
   ];
 
   const effects: EffectItem[] = [
-    { icon: '🔥', name: 'Momentum', description: '5콤보 이상, 점수 1.2배 획득', color: '#ff9900' },
+    { icon: '🔥', name: 'Momentum', description: '5콤보 이상, 점수 1.2배 획득', color: 'var(--color-orange-500)' },
     {
       icon: '💎',
       name: 'Second Wind',
       description: '20콤보 이상, 점수 1.5배 획득',
-      color: '#0066ff',
+      color: 'var(--color-blue-500)',
     },
     {
       icon: '😫',
       name: '탈진 상태',
       description: '스태미나 0일 때 점수 20% 감소',
-      color: '#888888',
+      color: 'var(--color-gray-500)',
     },
   ];
 

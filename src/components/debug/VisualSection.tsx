@@ -1,5 +1,6 @@
 import React from 'react';
 import { useDebugStore } from '../../stores/useDebugStore';
+import { useGameStore } from '../../stores/useGameStore';
 import './VisualSection.css';
 
 export const VisualSection = React.memo(function VisualSection() {
@@ -36,6 +37,55 @@ export const VisualSection = React.memo(function VisualSection() {
             aria-label="컴포넌트 경계선 토글"
           >
             {showComponentBorders ? 'ON' : 'OFF'}
+          </button>
+        </div>
+      </div>
+
+      <div className="debug-visual-info">
+        <h4 className="debug-subsection-title">🔥 이펙트 테스트 (In-Game)</h4>
+        <div className="debug-effect-controls" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 'var(--spacing-sm)', marginTop: 'var(--spacing-sm)' }}>
+          <button
+            className="debug-action-button"
+            onClick={() => useGameStore.setState({ feverLevel: 1 })}
+          >
+            피버 1단계 (ON)
+          </button>
+          <button
+            className="debug-action-button"
+            onClick={() => useGameStore.setState({ feverLevel: 2 })}
+          >
+            피버 2단계 (ON)
+          </button>
+          <button
+            className="debug-action-button"
+            onClick={() => useGameStore.setState({ feverLevel: 0 })}
+          >
+            피버 끄기
+          </button>
+          <button
+            className="debug-action-button"
+            onClick={() => {
+              const currentwords = useGameStore.getState().combo;
+              useGameStore.getState().setCombo(currentwords + 1);
+            }}
+          >
+            콤보 +1
+          </button>
+          <button
+            className="debug-action-button"
+            onClick={() => {
+              useGameStore.getState().setCombo(10);
+            }}
+          >
+            콤보 10 설정
+          </button>
+          <button
+            className="debug-action-button"
+            onClick={() => {
+              useGameStore.getState().setCombo(50);
+            }}
+          >
+            콤보 50 (슈퍼)
           </button>
         </div>
       </div>

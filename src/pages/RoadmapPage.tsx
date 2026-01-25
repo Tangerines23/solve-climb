@@ -639,12 +639,12 @@ export function RoadmapPage() {
                   style={
                     isLinearScale
                       ? {
-                          height: `${getAltitudeY(ALTITUDE_MILESTONES[0].altitude + 10000, displayRatio)}px`,
-                          position: 'absolute',
-                          bottom: 0,
-                          left: 0,
-                          right: 0,
-                        }
+                        height: `${getAltitudeY(ALTITUDE_MILESTONES[0].altitude + 10000, displayRatio)}px`,
+                        position: 'absolute',
+                        bottom: 0,
+                        left: 0,
+                        right: 0,
+                      }
                       : undefined
                   }
                 >
@@ -793,7 +793,11 @@ export function RoadmapPage() {
                       style={{
                         width: `${(cat.level / maxLevel) * 100}%`,
                         backgroundColor:
-                          cat.level >= 10 ? '#4cd964' : cat.level >= 5 ? '#4facfe' : '#ff9500',
+                          cat.level >= 10
+                            ? 'var(--color-success)'
+                            : cat.level >= 5
+                              ? 'var(--color-info)'
+                              : 'var(--color-warning)',
                       }}
                     />
                   </div>
@@ -956,13 +960,12 @@ export function RoadmapPage() {
           <div className="history-tab-container">
             <div className="history-segmented-control">
               <div
-                className={`segmented-indicator ${
-                  activeTab === 'summary'
+                className={`segmented-indicator ${activeTab === 'summary'
                     ? 'tab-summary'
                     : activeTab === 'analysis'
                       ? 'tab-analysis'
                       : 'tab-activity'
-                }`}
+                  }`}
                 style={{
                   width: '33.33%',
                   transform:
@@ -1050,14 +1053,14 @@ export function RoadmapPage() {
                           const displayItems = hasExactMatch
                             ? items
                             : [
-                                ...items,
-                                {
-                                  label: '현재 위치',
-                                  altitude: stats.totalAltitude,
-                                  isMilestone: false,
-                                  icon: '🚶',
-                                },
-                              ];
+                              ...items,
+                              {
+                                label: '현재 위치',
+                                altitude: stats.totalAltitude,
+                                isMilestone: false,
+                                icon: '🚶',
+                              },
+                            ];
 
                           return displayItems
                             .sort((a, b) => b.altitude - a.altitude)

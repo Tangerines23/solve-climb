@@ -1,3 +1,5 @@
+import { getErrorCode } from '../utils/errorHandler';
+import { useToastStore } from '../stores/useToastStore';
 import './ErrorFallback.css';
 
 interface ErrorFallbackProps {
@@ -7,6 +9,18 @@ interface ErrorFallbackProps {
 
 export function ErrorFallback({ error, resetError }: ErrorFallbackProps) {
   const isDevelopment = import.meta.env.DEV;
+  const showToast = useToastStore((state) => state.showToast);
+
+  const handleCopyError = () => {
+    const errorCode = getErrorCode(error);
+    const errorText = `[${errorCode}] ${error.message}\n\nURL: ${window.location.href}\nTime: ${new Date().toLocaleString()}\n\nStack:\n${error.stack || ''}`;
+    navigator.clipboard.writeText(errorText).then(() => {
+      showToast('에러 로그가 복사되었습니다!', '📋');
+    }).catch(err => {
+      console.error('Failed to copy error:', err);
+      prompt('Ctrl+C를 눌러 복사하세요:', errorText);
+    });
+  };
 
   return (
     <div className="error-fallback">
@@ -21,9 +35,32 @@ export function ErrorFallback({ error, resetError }: ErrorFallbackProps) {
 
         {isDevelopment && (
           <div className="error-fallback-details">
-            <details>
-              <summary>🛠 개발자 전용 에러 로그</summary>
-              <pre className="error-fallback-stack">{error.stack || error.message}</pre>
+            <details open>
+              <summary>🛠 Developer Debug Console</summary>
+              <div className="debug-info-grid">
+                <div className="debug-info-item">
+                  <span className="debug-label">Error Code:</span>
+                  <span className="debug-value code-font">{getErrorCode(error)}</span>
+                </div>
+                <div className="debug-info-item">
+                  <span className="debug-label">Timestamp:</span>
+                  <span className="debug-value">{new Date().toLocaleTimeString()}</span>
+                </div>
+                <div className="debug-info-item">
+                  <span className="debug-label">Location:</span>
+                  <span className="debug-value truncate">{window.location.pathname}</span>
+                </div>
+              </div>
+              <div style={{ position: 'relative', marginTop: 'var(--spacing-md)' }}>
+                <pre className="error-fallback-stack">{error.stack || error.message}</pre>
+                <button
+                  className="copy-debug-btn"
+                  onClick={handleCopyError}
+                  title="에러 로그 전체 복사"
+                >
+                  📋 Copy Deep Log
+                </button>
+              </div>
             </details>
           </div>
         )}
