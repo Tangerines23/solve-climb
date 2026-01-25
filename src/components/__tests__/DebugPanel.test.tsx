@@ -85,7 +85,7 @@ describe('DebugPanel', () => {
   it('should switch tabs', () => {
     render(<DebugPanel />);
 
-    const tierTab = screen.getByText('티어');
+    const tierTab = screen.getByText(/티어/);
     fireEvent.click(tierTab);
 
     expect(mockSetActiveTab).toHaveBeenCalledWith('tier');
@@ -104,13 +104,13 @@ describe('DebugPanel', () => {
   it('should render all tabs', () => {
     render(<DebugPanel />);
 
-    expect(screen.getByText('빠른 조작')).toBeInTheDocument();
-    expect(screen.getByText('티어')).toBeInTheDocument();
-    expect(screen.getByText('뱃지')).toBeInTheDocument();
-    expect(screen.getByText('게임')).toBeInTheDocument();
-    expect(screen.getByText('아이템')).toBeInTheDocument();
-    expect(screen.getByText('데이터')).toBeInTheDocument();
-    expect(screen.getByText('에러 로그')).toBeInTheDocument();
+    expect(screen.getByText(/빠른 조작/)).toBeInTheDocument();
+    expect(screen.getByText(/티어/)).toBeInTheDocument();
+    expect(screen.getByText(/뱃지/)).toBeInTheDocument();
+    expect(screen.getByText(/게임/)).toBeInTheDocument();
+    expect(screen.getByText(/아이템/)).toBeInTheDocument();
+    expect(screen.getByText(/데이터/)).toBeInTheDocument();
+    expect(screen.getByText(/에러 로그/)).toBeInTheDocument();
     expect(screen.getByText('경계값')).toBeInTheDocument();
     expect(screen.getByText('🌐 네트워크')).toBeInTheDocument();
     expect(screen.getByText('📱 시각')).toBeInTheDocument();
@@ -121,11 +121,11 @@ describe('DebugPanel', () => {
   it('should switch to different tabs', () => {
     render(<DebugPanel />);
 
-    const badgeTab = screen.getByText('뱃지');
+    const badgeTab = screen.getByText(/뱃지/);
     fireEvent.click(badgeTab);
     expect(mockSetActiveTab).toHaveBeenCalledWith('badge');
 
-    const gameTab = screen.getByText('게임');
+    const gameTab = screen.getByText(/게임/);
     fireEvent.click(gameTab);
     expect(mockSetActiveTab).toHaveBeenCalledWith('game');
   });

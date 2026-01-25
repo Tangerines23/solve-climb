@@ -28,6 +28,7 @@ interface MockPostgrestBuilder {
   order: ReturnType<typeof vi.fn>;
   limit: ReturnType<typeof vi.fn>;
   single: ReturnType<typeof vi.fn>;
+  maybeSingle: ReturnType<typeof vi.fn>;
   upsert: ReturnType<typeof vi.fn>;
   update: ReturnType<typeof vi.fn>;
 }
@@ -41,6 +42,7 @@ const createMockQueryBuilder = (returnValue: any = { data: null, error: null }) 
   builder.order = vi.fn(() => builder);
   builder.limit = vi.fn(() => builder);
   builder.single = vi.fn(() => mockReturn);
+  builder.maybeSingle = vi.fn(() => mockReturn);
   builder.upsert = vi.fn(() => mockReturn);
   builder.update = vi.fn(() => builder);
 
@@ -580,13 +582,7 @@ describe('debugPresets - executeDebugAction', () => {
       setTimeLimit: vi.fn(),
     });
     // Reset supabase.from mock
-    vi.mocked(supabase.from).mockReturnValue({
-      select: vi.fn(),
-      upsert: vi.fn(() => Promise.resolve({ error: null })),
-      update: vi.fn(() => ({
-        eq: vi.fn(() => Promise.resolve({ error: null })),
-      })),
-    } as unknown as any);
+    vi.mocked(supabase.from).mockImplementation(() => createMockQueryBuilder());
   });
 
   describe('reset action', () => {
@@ -773,13 +769,13 @@ describe('debugPresets - executeDebugAction', () => {
       });
       vi.mocked(supabase.from).mockImplementation((table: string) => {
         if (table === 'profiles') {
-          return {
-            update: vi.fn(() => ({
-              eq: vi.fn(() => Promise.resolve({ error: null })),
-            })),
-          } as unknown as any;
+          const builder = createMockQueryBuilder();
+          builder.update = vi.fn(() => ({
+            eq: vi.fn(() => Promise.resolve({ error: null })),
+          }));
+          return builder;
         }
-        return {} as unknown as any;
+        return createMockQueryBuilder();
       });
 
       const action: DebugAction = { type: 'setMinerals', value: 5000 };
@@ -1001,19 +997,9 @@ describe('debugPresets - executeDebugAction', () => {
       const mockSetTimeLimit = vi.fn();
       const error = { code: 'PGRST116' }; // No rows returned
 
-      vi.mocked(supabase.from).mockReturnValue({
-        select: vi.fn(() => ({
-          eq: vi.fn(() => ({
-            eq: vi.fn(() => ({
-              order: vi.fn(() => ({
-                limit: vi.fn(() => ({
-                  single: vi.fn(() => Promise.resolve({ data: null, error })),
-                })),
-              })),
-            })),
-          })),
-        })),
-      } as any);
+      vi.mocked(supabase.from).mockImplementation(() =>
+        createMockQueryBuilder({ data: null, error })
+      );
 
       mockGetQuizStoreState.mockReturnValue({
         setTimeLimit: mockSetTimeLimit,
@@ -1029,19 +1015,9 @@ describe('debugPresets - executeDebugAction', () => {
       const mockSetTimeLimit = vi.fn();
       const error = { code: 'PGRST116' };
 
-      vi.mocked(supabase.from).mockReturnValue({
-        select: vi.fn(() => ({
-          eq: vi.fn(() => ({
-            eq: vi.fn(() => ({
-              order: vi.fn(() => ({
-                limit: vi.fn(() => ({
-                  single: vi.fn(() => Promise.resolve({ data: null, error })),
-                })),
-              })),
-            })),
-          })),
-        })),
-      } as unknown as any);
+      vi.mocked(supabase.from).mockImplementation(() =>
+        createMockQueryBuilder({ data: null, error })
+      );
 
       mockGetQuizStoreState.mockReturnValue({
         setTimeLimit: mockSetTimeLimit,
@@ -1077,19 +1053,9 @@ describe('debugPresets - executeDebugAction', () => {
       const mockSetTimeLimit = vi.fn();
       const error = { code: 'PGRST116' };
 
-      vi.mocked(supabase.from).mockReturnValue({
-        select: vi.fn(() => ({
-          eq: vi.fn(() => ({
-            eq: vi.fn(() => ({
-              order: vi.fn(() => ({
-                limit: vi.fn(() => ({
-                  single: vi.fn(() => Promise.resolve({ data: null, error })),
-                })),
-              })),
-            })),
-          })),
-        })),
-      } as any);
+      vi.mocked(supabase.from).mockImplementation(() =>
+        createMockQueryBuilder({ data: null, error })
+      );
 
       mockGetQuizStoreState.mockReturnValue({
         setTimeLimit: mockSetTimeLimit,
@@ -1104,19 +1070,9 @@ describe('debugPresets - executeDebugAction', () => {
     it('should throw error when sessionError code is not PGRST116', async () => {
       const error = { code: 'PGRST500', message: 'Server error' };
 
-      vi.mocked(supabase.from).mockReturnValue({
-        select: vi.fn(() => ({
-          eq: vi.fn(() => ({
-            eq: vi.fn(() => ({
-              order: vi.fn(() => ({
-                limit: vi.fn(() => ({
-                  single: vi.fn(() => Promise.resolve({ data: null, error })),
-                })),
-              })),
-            })),
-          })),
-        })),
-      } as unknown as any);
+      vi.mocked(supabase.from).mockImplementation(() =>
+        createMockQueryBuilder({ data: null, error })
+      );
 
       const action: DebugAction = { type: 'setGameTime', seconds: 30 };
       await expect(executeDebugAction(action, userId)).rejects.toEqual(error);
@@ -1125,19 +1081,9 @@ describe('debugPresets - executeDebugAction', () => {
     it('should throw error when session query fails (non-PGRST116)', async () => {
       const error = { code: 'PGRST500', message: 'Server error' };
 
-      vi.mocked(supabase.from).mockReturnValue({
-        select: vi.fn(() => ({
-          eq: vi.fn(() => ({
-            eq: vi.fn(() => ({
-              order: vi.fn(() => ({
-                limit: vi.fn(() => ({
-                  single: vi.fn(() => Promise.resolve({ data: null, error })),
-                })),
-              })),
-            })),
-          })),
-        })),
-      } as unknown as any);
+      vi.mocked(supabase.from).mockImplementation(() =>
+        createMockQueryBuilder({ data: null, error })
+      );
 
       const action: DebugAction = { type: 'setGameTime', seconds: 30 };
       await expect(executeDebugAction(action, userId)).rejects.toEqual(error);
@@ -1170,7 +1116,7 @@ describe('debugPresets - applyPreset', () => {
       setTimeLimit: vi.fn(),
     });
     // Reset supabase.from mock
-    vi.mocked(supabase.from).mockReturnValue(createMockQueryBuilder());
+    vi.mocked(supabase.from).mockImplementation(() => createMockQueryBuilder());
   });
 
   it('should apply newbie preset successfully', async () => {
