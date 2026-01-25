@@ -87,8 +87,10 @@ export default defineConfig(() => {
       ],
       // 성능 최적화: 파일 병렬 실행 활성화
       fileParallelism: true,
-      // 동시 실행 테스트 수 제한 (메모리 최적화)
-      maxConcurrency: 5,
+      // 동시 실행 테스트 수 제한 (메모리 최적화 - 안정성을 위해 5->3 하향 조정)
+      maxConcurrency: 3,
+      // 저사양 환경을 고려하여 타임아웃 15초로 연장 (기본값 5초)
+      testTimeout: 15000,
       // 테스트 격리 모드 (성능 향상, 단일 테스트 파일 내에서는 격리 유지)
       isolate: true,
       // Hybrid 실행 전략: localStorage 충돌 파일만 별도 프로세스에서 격리 실행
