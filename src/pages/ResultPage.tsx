@@ -154,7 +154,7 @@ export function ResultPage() {
         );
         const ranks =
           useLevelProgressStore.getState().rankings[
-          `${worldParam}-${categoryParam}-weekly-${mode === 'time-attack' ? 'time-attack' : 'survival'}`
+            `${worldParam}-${categoryParam}-weekly-${mode === 'time-attack' ? 'time-attack' : 'survival'}`
           ];
         const {
           data: { user },
@@ -189,6 +189,33 @@ export function ResultPage() {
           avg_time: averageTime,
         },
       });
+
+      // [Anonymous/Local History Saving]
+      // 익명 사용자를 위해 로컬 스토리지에 결과 저장
+      try {
+        const historyKey = 'solve-climb-local-history';
+        const rawHistory = localStorage.getItem(historyKey);
+        const history = rawHistory ? JSON.parse(rawHistory) : [];
+
+        const newRecord = {
+          id: `local-${Date.now()}`,
+          world: worldParam,
+          category: categoryParam,
+          level: level,
+          mode: mode,
+          score: finalScore,
+          correctCount: correctCount,
+          total: total,
+          date: new Date().toISOString(),
+        };
+
+        // 최신순 정렬 및 최대 100개 유지
+        const updatedHistory = [newRecord, ...history].slice(0, 100);
+        localStorage.setItem(historyKey, JSON.stringify(updatedHistory));
+        console.log('[ResultPage] Saved local history:', newRecord);
+      } catch (e) {
+        console.warn('[ResultPage] Failed to save local history:', e);
+      }
     }
 
     if (finalScore > 0 && !scoreSubmitted) {

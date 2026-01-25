@@ -165,11 +165,31 @@ export function RoadmapPage() {
   const { checkAndAwardBadges } = useBadgeChecker();
 
   useEffect(() => {
-    supabase.auth.getSession().then(({ data: { session } }) => {
+    const checkUser = async () => {
+      // 1. Supabase Session Check
+      const {
+        data: { session },
+      } = await supabase.auth.getSession();
       if (session?.user) {
         setUserId(session.user.id);
+        return;
       }
-    });
+
+      // 2. Local Session Check
+      try {
+        const localSessionStr = localStorage.getItem('solve-climb-local-session');
+        if (localSessionStr) {
+          const localSession = JSON.parse(localSessionStr);
+          if (localSession?.userId) {
+            setUserId(localSession.userId);
+          }
+        }
+      } catch (e) {
+        console.warn('Failed to parse local session:', e);
+      }
+    };
+
+    checkUser();
   }, []);
 
   // Check badges when stats are loaded

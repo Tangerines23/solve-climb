@@ -35,7 +35,7 @@ export const useAuthStore = create<AuthState>((set) => ({
       import('@/services/analytics').then(({ analytics }) => {
         analytics.setUser(user?.id ?? null, {
           email: user?.email,
-          last_sign_in: user?.last_sign_in_at
+          last_sign_in: user?.last_sign_in_at,
         });
       });
     });

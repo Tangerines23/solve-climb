@@ -48,7 +48,7 @@ vi.mock('../../utils/supabaseClient', () => ({
 }));
 
 describe('useBadgeChecker', () => {
-  const mockUserId = 'user_123';
+  const mockUserId = '00000000-0000-0000-0000-000000000000';
   const mockSelect = vi.fn();
   const mockInsert = vi.fn();
   const mockFrom = vi.fn();

@@ -1,14 +1,14 @@
 .static-ui-section {
   background: rgba(0, 0, 0, 0.2);
   border-radius: var(--rounded-card);
-  padding: 16px;
+  padding: var(--spacing-lg);
   border: 1px solid rgba(255, 255, 255, 0.05);
 }
 
 .main-toggle {
   margin-bottom: 24px;
   background: rgba(255, 255, 255, 0.03);
-  padding: 12px;
+  padding: var(--spacing-md);
   border-radius: var(--rounded-sm);
   border: 1px solid rgba(255, 255, 255, 0.1);
 }
@@ -20,13 +20,13 @@
 .static-effects-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-  gap: 12px;
+  gap: var(--spacing-md);
   margin-top: 12px;
 }
 
 .static-effect-card {
   background: rgba(255, 255, 255, 0.05);
-  padding: 12px;
+  padding: var(--spacing-md);
   border-radius: var(--rounded-md-alt);
   border: 1px solid rgba(255, 255, 255, 0.05);
   transition: all 0.3s ease;
@@ -58,8 +58,8 @@
 
 .effect-status-tag {
   font-size: 0.7rem;
-  padding: 2px 6px;
-  border-radius: 4px;
+  padding: var(--spacing-micro) var(--spacing-tiny);
+  border-radius: var(--rounded-2xs);
   background: rgba(255, 255, 255, 0.1);
   font-weight: 800;
 }
@@ -77,10 +77,10 @@
 
 .static-ui-notice {
   margin-top: 24px;
-  padding: 12px;
+  padding: var(--spacing-md);
   background: rgba(59, 130, 246, 0.05);
   border-left: 3px solid var(--color-blue-500);
-  border-radius: 4px;
+  border-radius: var(--rounded-2xs);
 }
 
 .static-ui-notice p {

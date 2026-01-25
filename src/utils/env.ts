@@ -9,7 +9,10 @@ const envSchema = z.object({
   VITE_SUPABASE_URL: z.string().url().startsWith('https://').default(''),
   VITE_SUPABASE_ANON_KEY: z.string().min(100).default(''),
   VITE_DEBUG_URL: z.string().optional().default(''),
-  VITE_IS_VERCEL: z.string().optional().transform(v => v === 'true'),
+  VITE_IS_VERCEL: z
+    .string()
+    .optional()
+    .transform((v) => v === 'true'),
   VITE_ADMOB_APP_ID: z.string().default('ca-app-pub-6410061165772335~9825031776'),
   VITE_ADMOB_REWARDED_ID: z.string().default('ca-app-pub-6410061165772335/6536523456'),
 });
@@ -59,17 +62,17 @@ export function checkEnv() {
   const result = envSchema.safeParse(import.meta.env);
   if (!result.success) {
     const formatted = result.error.format();
-    const missing = Object.keys(formatted).filter(key => key !== '_errors');
+    const missing = Object.keys(formatted).filter((key) => key !== '_errors');
     return {
       isValid: false,
       missing,
-      errors: formatted
+      errors: formatted,
     };
   }
   return {
     isValid: true,
     missing: [],
-    errors: {}
+    errors: {},
   };
 }
 

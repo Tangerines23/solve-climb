@@ -1,7 +1,7 @@
 // 사용자 게임 통계를 가져오는 Custom Hook
 import { useState, useEffect } from 'react';
 import { supabase } from '../utils/supabaseClient';
-import { parseLocalSession } from '../utils/safeJsonParse';
+import { isLocalSession, type LocalSession } from '../utils/safeJsonParse';
 import { storage, StorageKeys } from '../utils/storage';
 import { debugSupabaseQuery } from '../utils/debugFetch';
 import type { Session, PostgrestError } from '@supabase/supabase-js';
@@ -67,8 +67,11 @@ export function useMyPageStats(): UseMyPageStatsResult {
     // 로컬 세션 확인
     const checkLocalSession = () => {
       try {
-        const localSessionStr = storage.getString(StorageKeys.LOCAL_SESSION);
-        const localSession = parseLocalSession(localSessionStr);
+        const localSession = storage.get<LocalSession | null>(
+          StorageKeys.LOCAL_SESSION,
+          null,
+          isLocalSession
+        );
         if (localSession) {
           // 로컬 세션이 있으면 가상 세션 객체 생성
           const virtualSession = {
@@ -122,8 +125,11 @@ export function useMyPageStats(): UseMyPageStatsResult {
       let userId = null;
 
       try {
-        const localSessionStr = storage.getString(StorageKeys.LOCAL_SESSION);
-        const localSession = parseLocalSession(localSessionStr);
+        const localSession = storage.get<LocalSession | null>(
+          StorageKeys.LOCAL_SESSION,
+          null,
+          isLocalSession
+        );
         if (localSession) {
           userId = localSession.userId;
           // 로컬 세션이 있으면 가상 세션 객체 생성

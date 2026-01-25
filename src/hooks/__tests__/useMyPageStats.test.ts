@@ -3,11 +3,7 @@ import { renderHook, waitFor, act } from '@testing-library/react';
 import { useMyPageStats } from '../useMyPageStats';
 import { supabase } from '../../utils/supabaseClient';
 import { storage } from '../../utils/storage';
-import type {
-  Subscription,
-  PostgrestQueryBuilder,
-  PostgrestSingleResponse,
-} from '@supabase/supabase-js';
+import type { Subscription, PostgrestSingleResponse } from '@supabase/supabase-js';
 import { parseLocalSession } from '../../utils/safeJsonParse';
 
 // Helper for Supabase chain mocking
@@ -39,6 +35,7 @@ vi.mock('../../utils/supabaseClient', () => ({
 vi.mock('../../utils/storage', () => ({
   storage: {
     getString: vi.fn(),
+    get: vi.fn(),
   },
   StorageKeys: {
     LOCAL_SESSION: 'solve-climb-local-session',
@@ -52,6 +49,7 @@ vi.mock('../../utils/storage', () => ({
 
 vi.mock('../../utils/safeJsonParse', () => ({
   parseLocalSession: vi.fn(),
+  isLocalSession: vi.fn(),
 }));
 
 describe('useMyPageStats', () => {
@@ -60,6 +58,7 @@ describe('useMyPageStats', () => {
 
     // Default mocks
     vi.mocked(storage.getString).mockReturnValue(null);
+    vi.mocked(storage.get).mockReturnValue(null);
     vi.mocked(parseLocalSession).mockReturnValue(null);
     vi.mocked(supabase.auth.getSession).mockResolvedValue({
       data: { session: null },
@@ -68,9 +67,7 @@ describe('useMyPageStats', () => {
     vi.mocked(supabase.auth.onAuthStateChange).mockReturnValue({
       data: { subscription: { unsubscribe: vi.fn() } },
     } as unknown as { data: { subscription: Subscription } });
-    vi.mocked(supabase.from).mockImplementation(
-      () => createMockChain(null) as unknown as PostgrestQueryBuilder<any, any, any, any>
-    );
+    vi.mocked(supabase.from).mockImplementation(() => createMockChain(null) as unknown as any);
     vi.mocked(supabase.rpc).mockResolvedValue({
       data: null,
       error: null,
@@ -190,6 +187,7 @@ describe('useMyPageStats', () => {
       isAdmin: false,
     };
     vi.mocked(storage.getString).mockReturnValue(JSON.stringify(mockLocalSession));
+    vi.mocked(storage.get).mockReturnValue(mockLocalSession);
     vi.mocked(parseLocalSession).mockReturnValue(mockLocalSession);
 
     const { result } = renderHook(() => useMyPageStats());

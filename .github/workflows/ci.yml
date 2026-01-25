@@ -230,7 +230,6 @@ jobs:
           node-version: '22.17.0'
           cache: 'npm'
           cache-dependency-path: package-lock.json
-          # 캐시 강제 무효화를 위한 접두사 추가 가능
 
       - name: Install dependencies
         run: npm ci --verbose
@@ -261,6 +260,38 @@ jobs:
         run: npm run check:db
         env:
           SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+        continue-on-error: true
+
+  # Phase 6: Lighthouse CI (성능 점검)
+  lighthouse:
+    name: Lighthouse Performance Check
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    needs: validate
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22.17.0'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci --verbose
+
+      - name: Build project
+        run: npm run build
+
+      - name: Install LHCI CLI
+        run: npm install -g @lhci/cli
+
+      - name: Run Lighthouse CI
+        run: npm run check:score
+        env:
+          LHCI_GITHUB_APP_TOKEN: ${{ secrets.LHCI_GITHUB_APP_TOKEN }}
         continue-on-error: true
 
   # Phase 6: E2E 및 시각적 회귀 테스트 (Playwright)

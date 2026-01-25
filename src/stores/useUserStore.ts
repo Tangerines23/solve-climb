@@ -205,12 +205,16 @@ export const useUserStore = create<UserState>((set, get) => ({
     // [보안 지침] 직접적인 profiles update 정책이 폐쇄되었습니다.
     // 이 함수는 로컬 상태 업데이트용으로만 사용하고, 서버 동기화는 add_minerals RPC를 권장합니다.
     set({ minerals: Math.max(0, minerals) });
-    console.warn('[UserStore] Direct setMinerals sync is disabled for security. Use rewardMinerals instead.');
+    console.warn(
+      '[UserStore] Direct setMinerals sync is disabled for security. Use rewardMinerals instead.'
+    );
   },
 
   setStamina: async (stamina: number) => {
     set({ stamina: Math.max(0, stamina) });
-    console.warn('[UserStore] Direct setStamina sync is disabled for security. Stamina recovery is handled server-side.');
+    console.warn(
+      '[UserStore] Direct setStamina sync is disabled for security. Stamina recovery is handled server-side.'
+    );
   },
 
   recoverStaminaAds: async () => {

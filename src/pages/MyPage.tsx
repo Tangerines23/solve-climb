@@ -36,6 +36,7 @@ import { migrateToGameLogin, checkTossLoginIntegration } from '../utils/tossGame
 import { WithdrawConfirmModal } from '../components/WithdrawConfirmModal';
 import { withdrawAccount } from '../utils/userWithdraw';
 import { calculateTier } from '../constants/tiers';
+import { storage, StorageKeys } from '../utils/storage';
 import './MyPage.css';
 
 // theme_id를 읽기 쉬운 이름으로 변환하는 함수
@@ -520,15 +521,12 @@ export function MyPage() {
 
       // 로컬 세션 저장
       try {
-        localStorage.setItem(
-          'solve-climb-local-session',
-          JSON.stringify({
-            userId: userProfile.profileId,
-            isAdmin: false,
-            loginTime: new Date().toISOString(),
-            loginType: 'anonymous',
-          })
-        );
+        storage.set(StorageKeys.LOCAL_SESSION, {
+          userId: userProfile.profileId,
+          isAdmin: false,
+          loginTime: new Date().toISOString(),
+          loginType: 'anonymous',
+        });
       } catch (e) {
         console.warn('Failed to save local session:', e);
       }
@@ -564,7 +562,7 @@ export function MyPage() {
 
       // 로컬 세션 삭제
       try {
-        localStorage.removeItem('solve-climb-local-session');
+        storage.remove(StorageKeys.LOCAL_SESSION);
         console.log('[로그아웃] 로컬 세션 삭제 완료');
       } catch (e) {
         console.warn('Failed to remove local session:', e);

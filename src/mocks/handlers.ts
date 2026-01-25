@@ -79,6 +79,17 @@ export const handlers = [
     return HttpResponse.json({ success: true, current_stamina: 5 });
   }),
 
+  // 미네랄 지급 (POST /rest/v1/rpc/add_minerals)
+  http.post(`${SUPABASE_REST_URL}/rpc/add_minerals`, async ({ request }: { request: Request }) => {
+    const body = (await request.json()) as any;
+    const amount = body.p_minerals_earned || body.p_amount || 0;
+    return HttpResponse.json({
+      success: true,
+      minerals: amount, // 테스트 환경에서는 더하지 않고 요청값 그대로 반환하거나 적절히 처리
+      message: `${amount} 미네랄 획득! 💎`,
+    });
+  }),
+
   // 인벤토리 조회 (GET /rest/v1/inventory)
   http.get(`${SUPABASE_REST_URL}/inventory`, () => {
     return HttpResponse.json([]);

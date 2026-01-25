@@ -100,7 +100,7 @@ describe('useUserStore (Comprehensive Tests)', () => {
 
   it('should throttle consumeStamina calls', async () => {
     const { result } = renderHook(() => useUserStore());
-    const consoleLogSpy = vi.spyOn(console, 'log').mockImplementation(() => { });
+    const consoleLogSpy = vi.spyOn(console, 'log').mockImplementation(() => {});
 
     await act(async () => {
       await result.current.consumeStamina(); // first
@@ -113,9 +113,13 @@ describe('useUserStore (Comprehensive Tests)', () => {
 
   it('should handle pause system', async () => {
     const { result } = renderHook(() => useUserStore());
-    await act(async () => { result.current.handlePauseClick(); });
+    await act(async () => {
+      result.current.handlePauseClick();
+    });
     expect(result.current.showPauseModal).toBe(true);
-    await act(async () => { result.current.handlePauseResume(); });
+    await act(async () => {
+      result.current.handlePauseResume();
+    });
     expect(result.current.showPauseModal).toBe(false);
   });
 
@@ -148,10 +152,13 @@ describe('useUserStore (Comprehensive Tests)', () => {
     vi.mocked(AdService.showRewardedAd).mockResolvedValue({ success: true });
     server.use(
       http.post(`${SUPABASE_REST_URL}/rpc/recover_stamina_ads`, () => {
-        return new HttpResponse(JSON.stringify({
-          code: 'PGRST202',
-          message: 'Function not found'
-        }), { status: 404, headers: { 'Content-Type': 'application/json' } });
+        return new HttpResponse(
+          JSON.stringify({
+            code: 'PGRST202',
+            message: 'Function not found',
+          }),
+          { status: 404, headers: { 'Content-Type': 'application/json' } }
+        );
       })
     );
     const { result } = renderHook(() => useUserStore());
@@ -171,7 +178,9 @@ describe('useUserStore (Comprehensive Tests)', () => {
 
   it('should refund stamina', async () => {
     const { result } = renderHook(() => useUserStore());
-    await act(async () => { result.current.setStamina(3); });
+    await act(async () => {
+      result.current.setStamina(3);
+    });
     server.use(
       http.post(`${SUPABASE_REST_URL}/rpc/recover_stamina_ads`, () => {
         return HttpResponse.json({ success: true });
@@ -226,7 +235,10 @@ describe('useUserStore (Comprehensive Tests)', () => {
   });
 
   it('should return early in checkStamina if no session', async () => {
-    vi.spyOn(supabase.auth, 'getSession').mockResolvedValue({ data: { session: null } as any, error: null as any });
+    vi.spyOn(supabase.auth, 'getSession').mockResolvedValue({
+      data: { session: null } as any,
+      error: null as any,
+    });
     const { result } = renderHook(() => useUserStore());
     await act(async () => {
       await result.current.checkStamina();
@@ -243,7 +255,9 @@ describe('useUserStore (Comprehensive Tests)', () => {
         })
       );
       const { result } = renderHook(() => useUserStore());
-      await act(async () => { await result.current.debugAddItems(); });
+      await act(async () => {
+        await result.current.debugAddItems();
+      });
       expect(rpcSpy).toHaveBeenCalled();
     });
 
@@ -256,42 +270,57 @@ describe('useUserStore (Comprehensive Tests)', () => {
         })
       );
       const { result } = renderHook(() => useUserStore());
-      await act(async () => { await result.current.debugResetItems(); });
+      await act(async () => {
+        await result.current.debugResetItems();
+      });
       expect(delSpy).toHaveBeenCalled();
     });
 
     it('should handle item deletions in debugRemoveItems', async () => {
       server.use(
         http.get(`${SUPABASE_REST_URL}/inventory`, () => {
-          return HttpResponse.json([{ id: 1, quantity: 3, items: { id: 1, name: 'A', code: 'A' } }]);
+          return HttpResponse.json([
+            { id: 1, quantity: 3, items: { id: 1, name: 'A', code: 'A' } },
+          ]);
         }),
         http.delete(`${SUPABASE_REST_URL}/inventory`, () => HttpResponse.json({ success: true })),
         http.get(`${SUPABASE_REST_URL}/profiles`, () => HttpResponse.json([]))
       );
       const { result } = renderHook(() => useUserStore());
-      await act(async () => { await result.current.debugRemoveItems(); });
+      await act(async () => {
+        await result.current.debugRemoveItems();
+      });
     });
 
     it('should handle item updates in debugRemoveItems', async () => {
       server.use(
         http.get(`${SUPABASE_REST_URL}/inventory`, () => {
-          return HttpResponse.json([{ id: 1, quantity: 10, items: { id: 1, name: 'A', code: 'A' } }]);
+          return HttpResponse.json([
+            { id: 1, quantity: 10, items: { id: 1, name: 'A', code: 'A' } },
+          ]);
         }),
         http.post(`${SUPABASE_REST_URL}/inventory`, () => HttpResponse.json({ success: true })),
         http.get(`${SUPABASE_REST_URL}/profiles`, () => HttpResponse.json([]))
       );
       const { result } = renderHook(() => useUserStore());
-      await act(async () => { await result.current.debugRemoveItems(); });
+      await act(async () => {
+        await result.current.debugRemoveItems();
+      });
     });
   });
 
   it('should handle refundStamina simulation fallback (PGRST202)', async () => {
     const { result } = renderHook(() => useUserStore());
-    await act(async () => { result.current.setStamina(3); });
+    await act(async () => {
+      result.current.setStamina(3);
+    });
 
     server.use(
       http.post(`${SUPABASE_REST_URL}/rpc/recover_stamina_ads`, () => {
-        return new HttpResponse(JSON.stringify({ code: 'PGRST202' }), { status: 404, headers: { 'Content-Type': 'application/json' } });
+        return new HttpResponse(JSON.stringify({ code: 'PGRST202' }), {
+          status: 404,
+          headers: { 'Content-Type': 'application/json' },
+        });
       })
     );
 

@@ -1,23 +1,28 @@
-import js from '@eslint/js'
-import globals from 'globals'
-import reactHooks from 'eslint-plugin-react-hooks'
-import reactRefresh from 'eslint-plugin-react-refresh'
-import tseslint from '@typescript-eslint/eslint-plugin'
-import tsparser from '@typescript-eslint/parser'
-import { defineConfig, globalIgnores } from 'eslint/config'
+// For more info, see https://github.com/storybookjs/eslint-plugin-storybook#configuration-flat-config-format
+import storybook from 'eslint-plugin-storybook';
+
+import js from '@eslint/js';
+import globals from 'globals';
+import reactHooks from 'eslint-plugin-react-hooks';
+import reactRefresh from 'eslint-plugin-react-refresh';
+import tseslint from '@typescript-eslint/eslint-plugin';
+import tsparser from '@typescript-eslint/parser';
+import { defineConfig, globalIgnores } from 'eslint/config';
 
 export default defineConfig([
-  globalIgnores([
-    'dist',
-    'apps-in-toss-examples-main',
-    'node_modules',
-    'android/**',
-    'proxy-server/**',
-    'playwright/.cache/**',
-    'playwright-report/**',
-    'test-results/**',
-    '**/*.js.map',
-  ]),
+  {
+    ignores: [
+      '**/dist/**',
+      'apps-in-toss-examples-main',
+      'node_modules',
+      'android/**',
+      'proxy-server/**',
+      'playwright/.cache/**',
+      'playwright-report/**',
+      'test-results/**',
+      '**/*.js.map',
+    ],
+  },
   {
     files: ['**/*.{js,jsx,ts,tsx}'],
     ignores: ['**/*.backup.tsx', '**/*.refactored.tsx'],
@@ -63,8 +68,7 @@ export default defineConfig([
     rules: {
       'no-unused-vars': ['error', { varsIgnorePattern: '^[A-Z_]' }],
     },
-  },
-  // 새 기능 디렉토리에 대해서만 any 타입을 엄격하게 검사
+  }, // 새 기능 디렉토리에 대해서만 any 타입을 엄격하게 검사
   // 기존 코드는 warn 유지, 새 코드는 error로 설정
   {
     files: ['src/new-features/**/*.{ts,tsx}'],
@@ -72,4 +76,5 @@ export default defineConfig([
       '@typescript-eslint/no-explicit-any': 'error', // 새 코드는 엄격하게
     },
   },
-])
+  ...storybook.configs['flat/recommended'],
+]);

@@ -49,7 +49,7 @@ describe('env', () => {
       expect(result).toHaveProperty('errors');
       expect(typeof result.isValid).toBe('boolean');
       expect(Array.isArray(result.missing)).toBe(true);
-      expect(Array.isArray(result.errors)).toBe(true);
+      expect(typeof result.errors).toBe('object');
     });
 
     it('should validate environment variables correctly', () => {

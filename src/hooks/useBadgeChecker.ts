@@ -2,6 +2,7 @@ import { useCallback } from 'react';
 import { supabase } from '../utils/supabaseClient';
 import { debugSupabaseQuery } from '../utils/debugFetch';
 import { BADGE_DEFINITIONS } from '../constants/badges';
+import { useBadgeStore } from '../stores/useBadgeStore';
 import { HistoryStats } from '../hooks/useHistoryData';
 
 export function useBadgeChecker() {
@@ -75,6 +76,19 @@ export function useBadgeChecker() {
     // 3. Award new badges
     if (newBadges.length > 0) {
       console.log('Awarding new badges:', newBadges);
+
+      const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(userId);
+
+      if (!isUuid) {
+        // 익명 사용자: 로컬 스토리지 저장 (Store Action 사용)
+        const { addUserBadge } = useBadgeStore.getState();
+        for (const badgeId of newBadges) {
+          await addUserBadge(badgeId, userId);
+        }
+        return newBadges;
+      }
+
+      // 정회원: DB 저장
       // Use RPC grant or direct insert loop
       // Direct insert is safer if RPC is debug-only
       const inserts = newBadges.map((id) => ({
@@ -90,8 +104,13 @@ export function useBadgeChecker() {
       if (insertError) {
         console.error('Failed to grant badges:', insertError);
       } else {
-        // Notify? (Maybe return the new list for UI toast)
-        // For now just log
+        // 정회원도 스토어 업데이트 (UI 즉시 반영을 위해)
+        const { addUserBadge } = useBadgeStore.getState();
+        for (const badgeId of newBadges) {
+          // DB 저장은 위에서 했으므로, addUserBadge는 상태 업데이트 용도로만 사용
+          // (addUserBadge 내부 로직이 중복 저장해도 UI 상태만 갱신하므로 안전)
+          await addUserBadge(badgeId, userId);
+        }
       }
     }
 

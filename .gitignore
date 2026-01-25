@@ -72,3 +72,5 @@ coverage/
 playwright-report/
 test-results/
 playwright/.cache/
+*storybook.log
+storybook-static

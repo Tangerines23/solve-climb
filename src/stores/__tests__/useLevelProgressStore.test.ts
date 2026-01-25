@@ -458,9 +458,14 @@ describe('useLevelProgressStore', () => {
       error: null,
     } as UserResponse);
 
-    vi.mocked(supabase.from).mockReturnValue(
-      createMockQueryBuilder({ data: null, error: { message: 'Upsert failed' } })
-    );
+    // Mock RPC failure
+    vi.mocked(supabase.rpc).mockResolvedValue({
+      data: null,
+      error: { message: 'RPC failed', code: '500', details: '', hint: '', name: 'PostgrestError' },
+      count: null,
+      status: 500,
+      statusText: 'Error',
+    });
 
     await act(async () => {
       await result.current.clearLevel('math', 'addition', 1, 'time-attack', 100);
@@ -481,9 +486,14 @@ describe('useLevelProgressStore', () => {
       error: null,
     } as UserResponse);
 
-    vi.mocked(supabase.from).mockReturnValue(
-      createMockQueryBuilder({ data: null, error: { message: 'Upsert failed' } })
-    );
+    // Mock RPC failure
+    vi.mocked(supabase.rpc).mockResolvedValue({
+      data: null,
+      error: { message: 'RPC failed', code: '500', details: '', hint: '', name: 'PostgrestError' },
+      count: null,
+      status: 500,
+      statusText: 'Error',
+    });
 
     await act(async () => {
       await result.current.updateBestScore('math', 'addition', 1, 'time-attack', 100);

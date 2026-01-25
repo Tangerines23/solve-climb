@@ -31,6 +31,8 @@ export const StorageKeys = {
 
   // 세션 관련
   LOCAL_SESSION: 'solve-climb-local-session',
+  LOCAL_BADGES: 'solve-climb-local-badges',
+  LOCAL_HISTORY: 'solve-climb-local-history',
 
   // 게임 팁 관련
   GAME_TIP: (category: string, sub: string, level?: string) =>

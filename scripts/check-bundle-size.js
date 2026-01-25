@@ -22,9 +22,16 @@ function getAssetsReport(dirPath, report = { js: 0, css: 0, assets: 0, total: 0 
 
     if (stats.isFile()) {
       report.total += stats.size;
-      if (file.endsWith('.js')) report.js += stats.size;
-      else if (file.endsWith('.css')) report.css += stats.size;
-      else report.assets += stats.size;
+      if (file.endsWith('.js')) {
+        // ⚠️ 디버그 패널 관련 파일은 번들 사이즈 계산에서 제외 (사용자 다운로드 X)
+        if (file.includes('debug-')) return;
+        report.js += stats.size;
+      } else if (file.endsWith('.css')) {
+        if (file.includes('debug-')) return;
+        report.css += stats.size;
+      } else {
+        report.assets += stats.size;
+      }
     } else if (stats.isDirectory()) {
       getAssetsReport(filePath, report);
     }
@@ -52,7 +59,7 @@ try {
 
   if (report.total / (1024 * 1024) > BUNDLE_LIMIT_MB) {
     console.error('❌ 실패: 번들 사이즈가 임계값을 초과했습니다!');
-    console.error(`👉 초과량: ${((report.total / (1024 * 1024)) - BUNDLE_LIMIT_MB).toFixed(2)} MB`);
+    console.error(`👉 초과량: ${(report.total / (1024 * 1024) - BUNDLE_LIMIT_MB).toFixed(2)} MB`);
     console.error('💡 조치 방법:');
     console.error('  1. 불필요한 라이브러리 제거 (npm run diet)');
     console.error('  2. 대형 Asset 최적화');

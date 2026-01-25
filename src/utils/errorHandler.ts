@@ -99,7 +99,7 @@ export function logError(context: string, error: unknown): void {
     category: 'system',
     action: 'error',
     label: errorType,
-    data: { context, message: errorMessage }
+    data: { context, message: errorMessage },
   });
 
   // 에러 로그 스토어에 기록 (개발 환경에서만)

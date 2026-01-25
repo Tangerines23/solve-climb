@@ -34,7 +34,7 @@ export const performanceMonitor = {
       const observer = new PerformanceObserver((entryList) => {
         const entries = entryList.getEntries();
 
-        // CLS는 누적값이므로 마지막 엔트리까지 합산이 필요할 수 있으나, 
+        // CLS는 누적값이므로 마지막 엔트리까지 합산이 필요할 수 있으나,
         // 여기서는 단순화를 위해 개별 엔트리 발생 시 보고 (필요 시 로직 고도화 가능)
         entries.forEach((entry: any) => {
           let value = 0;
@@ -63,13 +63,13 @@ export const performanceMonitor = {
       action: 'performance_metric',
       label: name,
       value: roundedValue,
-      data: { metric: name, value: roundedValue }
+      data: { metric: name, value: roundedValue },
     });
 
     if (import.meta.env.DEV) {
       logger.debug('Performance', `${name}: ${roundedValue}`);
     }
-  }
+  },
 };
 
 /**
@@ -141,7 +141,7 @@ export const logPerformanceSummary = () => {
   if (metricsStore.length === 0) return;
 
   console.group('Performance Summary');
-  metricsStore.forEach(m => {
+  metricsStore.forEach((m) => {
     console.log(`${m.name}: ${m.duration.toFixed(2)}ms`);
   });
   console.groupEnd();

@@ -16,7 +16,7 @@ export interface LocalSession {
 /**
  * 로컬 세션 타입 가드
  */
-function isLocalSession(data: unknown): data is LocalSession {
+export function isLocalSession(data: unknown): data is LocalSession {
   return (
     typeof data === 'object' &&
     data !== null &&

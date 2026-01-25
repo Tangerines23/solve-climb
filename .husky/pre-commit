@@ -57,7 +57,17 @@ npm run check:security 2>/dev/null || {
   echo "💡 'npm audit' 실행하여 상세 확인 권장"
   echo "💡 계속하려면 'git commit --no-verify' 사용 가능 (권장하지 않음)"
   # exit 1  # 엄격하게 하려면 주석 해제
+  # exit 1  # 엄격하게 하려면 주석 해제
 }
+
+# 6. 용량 검사 (번들 사이즈 체크)
+echo "6️⃣ 용량 검사 (Bundle Size)..."
+if ! npm run check:size 2>&1; then
+  echo ""
+  echo "⚠️  용량 제한 초과"
+  echo "💡 'npm run analyze'를 실행하여 원인을 분석해보세요."
+  # exit 1  # 빡빡하게 막으려면 주석 해제
+fi
 
 # 6. 테스트 실행 (선택적 - 경고만)
 echo "6️⃣ 테스트 실행..."

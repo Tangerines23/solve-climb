@@ -1,5 +1,10 @@
 import { describe, it, expect, beforeEach, vi, afterEach } from 'vitest';
-import { getTodayChallenge, generateTodayChallenge, SeededRandom, type TodayChallenge } from '../challenge';
+import {
+  getTodayChallenge,
+  generateTodayChallenge,
+  SeededRandom,
+  type TodayChallenge,
+} from '../challenge';
 import { storage } from '../storage';
 import { APP_CONFIG } from '../../config/app';
 
@@ -49,7 +54,7 @@ describe('challenge', () => {
         math: [],
         language: [],
         logic: [],
-        general: []
+        general: [],
       };
 
       const challenge = generateTodayChallenge();
@@ -66,7 +71,7 @@ describe('challenge', () => {
       const originalLevels = APP_CONFIG.LEVELS;
       // @ts-expect-error -- Mocking invalid config
       APP_CONFIG.LEVELS = {
-        World1: {}
+        World1: {},
       };
 
       const challenge = generateTodayChallenge();

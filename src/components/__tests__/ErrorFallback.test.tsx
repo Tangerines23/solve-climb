@@ -31,9 +31,7 @@ describe('ErrorFallback', () => {
     const error = new Error('Test error');
     render(<ErrorFallback error={error} resetError={vi.fn()} />);
 
-    expect(screen.getByText('문제가 발생했습니다')).toBeInTheDocument();
-    expect(screen.getByText(/예상치 못한 오류가 발생했습니다/)).toBeInTheDocument();
-    expect(screen.getByText('⚠️')).toBeInTheDocument();
+    expect(screen.getByText('산등성이에서 길을 잃었습니다')).toBeInTheDocument();
   });
 
   it('should call resetError when retry button is clicked', () => {
@@ -41,7 +39,7 @@ describe('ErrorFallback', () => {
     const error = new Error('Test error');
     render(<ErrorFallback error={error} resetError={resetError} />);
 
-    const retryButton = screen.getByText('다시 시도');
+    const retryButton = screen.getByText('다시 시도하기');
     fireEvent.click(retryButton);
 
     expect(resetError).toHaveBeenCalled();
@@ -68,7 +66,7 @@ describe('ErrorFallback', () => {
     error.stack = 'Error stack trace';
     render(<ErrorFallback error={error} resetError={vi.fn()} />);
 
-    expect(screen.getByText('에러 상세 정보 (개발 환경)')).toBeInTheDocument();
+    expect(screen.getByText('🛠 개발자 전용 에러 로그')).toBeInTheDocument();
     expect(screen.getByText('Error stack trace')).toBeInTheDocument();
   });
 
@@ -78,7 +76,7 @@ describe('ErrorFallback', () => {
     render(<ErrorFallback error={error} resetError={vi.fn()} />);
 
     // Should still render error message
-    expect(screen.getByText('문제가 발생했습니다')).toBeInTheDocument();
+    expect(screen.getByText('산등성이에서 길을 잃었습니다')).toBeInTheDocument();
   });
 
   it('should display error message when stack is not available', () => {
@@ -108,7 +106,7 @@ describe('ErrorFallback', () => {
     const error = new Error('Test error');
     render(<ErrorFallback error={error} resetError={vi.fn()} />);
 
-    const retryButton = screen.getByText('다시 시도');
+    const retryButton = screen.getByText('다시 시도하기');
     const reloadButton = screen.getByText('페이지 새로고침');
 
     expect(retryButton).toHaveClass('error-fallback-button', 'error-fallback-button-primary');
@@ -121,6 +119,6 @@ describe('ErrorFallback', () => {
 
     const icon = container.querySelector('.error-fallback-icon');
     expect(icon).toBeInTheDocument();
-    expect(icon?.textContent).toBe('⚠️');
+    expect(icon?.textContent).toBe('🧗‍♀️');
   });
 });

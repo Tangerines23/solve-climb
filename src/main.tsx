@@ -1,24 +1,5 @@
 import ReactDOM from 'react-dom/client';
 import React from 'react';
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
-
-const queryClient = new QueryClient({
-  defaultOptions: {
-    queries: {
-      retry: (failureCount, error: any) => {
-        // 특정 에러 코드는 재시도하지 않음
-        if (error?.status === 404 || error?.status === 401 || error?.status === 403) return false;
-        return failureCount < 3;
-      },
-      retryDelay: 1000,
-      refetchOnWindowFocus: false,
-    },
-    mutations: {
-      retry: false, // Mutation은 수동 제어 권장
-    },
-  },
-});
 import * as Sentry from '@sentry/react';
 
 Sentry.init({
@@ -73,10 +54,7 @@ try {
   // ThemeProvider 제거: UI 독립성을 위해 React.Fragment로 대체합니다.
   root.render(
     <React.Fragment>
-      <QueryClientProvider client={queryClient}>
-        <AppContainer />
-        <ReactQueryDevtools initialIsOpen={false} />
-      </QueryClientProvider>
+      <AppContainer />
     </React.Fragment>
   );
 

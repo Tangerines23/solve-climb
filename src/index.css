@@ -144,7 +144,8 @@
   /* 큰 카드 */
   --rounded-tiny: var(--spacing-micro);
   /* 매우 작은 요소 */
-  --rounded-micro: var(--rounded-micro);
+  /* 미세한 요소 */
+  --rounded-micro: 3px;
   /* 미세한 요소 */
   --rounded-small-alt: 6px;
   /* 작은 요소 대체 */
@@ -202,6 +203,8 @@
   /* 중간-작은 간격 */
   --spacing-medium-alt: 14px;
   /* 중간 간격 */
+  --spacing-micro: 2px;
+  /* 2px 간격 */
 
   /* 반응형 레이아웃 값 (더 작게 최적화) */
   --header-height-portrait: 48px;
@@ -319,6 +322,10 @@
   --color-rank-gold: #ffd700;
   --color-rank-silver: #c0c0c0;
   --color-rank-bronze: #cd7f32;
+
+  /* Effect Colors */
+  --color-orange-400: #fb923c;
+  --color-amber-300: #fcd34d;
 }
 
 /* --- Premium Utility Classes --- */

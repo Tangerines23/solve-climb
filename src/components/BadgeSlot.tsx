@@ -1,11 +1,6 @@
 // src/components/BadgeSlot.tsx
 import React, { useEffect, useState } from 'react';
-import {
-  useBadgeDefinitions,
-  useUserBadges,
-  UserBadge,
-  BadgeDefinition,
-} from '../hooks/queries/useBadgeQueries';
+import { useBadgeStore, BadgeDefinition, UserBadge } from '../stores/useBadgeStore';
 import './BadgeSlot.css';
 
 interface BadgeSlotProps {
@@ -42,15 +37,30 @@ interface BadgeCollectionProps {
 }
 
 export const BadgeCollection: React.FC<BadgeCollectionProps> = ({ userId, mode = 'full' }) => {
-  const { data: userBadges, isLoading: isLoadingUserBadges } = useUserBadges(userId);
-  const { data: definitions, isLoading: isLoadingDefinitions } = useBadgeDefinitions();
+  // Zustand Store Hooks
+  const {
+    badgeDefinitions,
+    userBadges,
+    fetchBadgeDefinitions,
+    fetchUserBadges,
+    isLoadingDefinitions,
+    isLoadingUserBadges,
+  } = useBadgeStore();
+
+  // Initial Fetch
+  useEffect(() => {
+    fetchBadgeDefinitions();
+    if (userId) {
+      fetchUserBadges(userId);
+    }
+  }, [userId, fetchBadgeDefinitions, fetchUserBadges]);
 
   const [displayBadges, setDisplayBadges] = useState<UserBadge[]>([]);
 
   useEffect(() => {
-    if (!userBadges || !definitions) return;
+    if (!userBadges || !badgeDefinitions.length) return;
 
-    const allBadgeIds = definitions.map((d) => d.id);
+    const allBadgeIds = badgeDefinitions.map((d) => d.id);
     const earnedBadgeIds = new Set(userBadges.map((b) => b.badge_id));
 
     if (mode === 'preview') {
@@ -68,14 +78,14 @@ export const BadgeCollection: React.FC<BadgeCollectionProps> = ({ userId, mode =
         ...lockedBadges.map((id) => ({ badge_id: id, earned_at: '' })),
       ]);
     }
-  }, [userBadges, definitions, mode]);
+  }, [userBadges, badgeDefinitions, mode]);
 
   if (isLoadingUserBadges || isLoadingDefinitions) {
     return <div className="badge-collection-loading">뱃지 로딩...</div>;
   }
 
   const defMap: Record<string, BadgeDefinition> = {};
-  definitions?.forEach((def) => {
+  badgeDefinitions?.forEach((def) => {
     defMap[def.id] = def;
   });
 
@@ -104,9 +114,6 @@ export const BadgeCollection: React.FC<BadgeCollectionProps> = ({ userId, mode =
   // Full Mode UI (Existing)
   return (
     <div className="badge-collection">
-      {/* Title removed here, let parent handle it if needed, or keep it? Original had title. Keeping it for Full mode compatibility if used elsewhere. */}
-      {/* <h3 className="badge-collection-title">획득한 뱃지</h3> */}
-
       {displayBadges.length === 0 ? (
         <div className="badge-collection-empty">
           <p>아직 획득한 뱃지가 없습니다.</p>

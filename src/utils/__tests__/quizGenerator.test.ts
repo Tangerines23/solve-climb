@@ -5,7 +5,7 @@ import {
   generateWorld2Question,
   generateWorld3Question,
   generateWorld4Question,
-  generateMathQuestion
+  generateMathQuestion,
 } from '../quizGenerator';
 import * as MathProblemGenerator from '../MathProblemGenerator';
 import * as EquationProblemGenerator from '../EquationProblemGenerator';
@@ -48,10 +48,18 @@ describe('quizGenerator Unit Tests', () => {
     });
 
     it('should catch errors and fallback', () => {
-      vi.spyOn(MathProblemGenerator, 'generateProblem').mockImplementationOnce(() => { throw new Error('fail'); });
-      vi.spyOn(EquationProblemGenerator, 'generateEquation').mockImplementationOnce(() => { throw new Error('fail'); });
-      vi.spyOn(LogicProblemGenerator, 'generateLogicProblem').mockImplementationOnce(() => { throw new Error('fail'); });
-      vi.spyOn(CalculusProblemGenerator, 'generateCalculusProblem').mockImplementationOnce(() => { throw new Error('fail'); });
+      vi.spyOn(MathProblemGenerator, 'generateProblem').mockImplementationOnce(() => {
+        throw new Error('fail');
+      });
+      vi.spyOn(EquationProblemGenerator, 'generateEquation').mockImplementationOnce(() => {
+        throw new Error('fail');
+      });
+      vi.spyOn(LogicProblemGenerator, 'generateLogicProblem').mockImplementationOnce(() => {
+        throw new Error('fail');
+      });
+      vi.spyOn(CalculusProblemGenerator, 'generateCalculusProblem').mockImplementationOnce(() => {
+        throw new Error('fail');
+      });
 
       expect(generateWorld1Question('기초', 1, 'easy').question).toBeDefined();
       expect(generateWorld1Question('대수', 1, 'easy').question).toBeDefined();
@@ -70,7 +78,9 @@ describe('quizGenerator Unit Tests', () => {
     });
 
     it('should handle fallback in World 2 기초', () => {
-      vi.spyOn(GeometryProblemGenerator, 'generateGeometryProblem').mockImplementationOnce(() => { throw new Error('fail'); });
+      vi.spyOn(GeometryProblemGenerator, 'generateGeometryProblem').mockImplementationOnce(() => {
+        throw new Error('fail');
+      });
       expect(generateWorld2Question('기초', 1, 'easy').question).toBeTruthy();
     });
   });
@@ -82,7 +92,9 @@ describe('quizGenerator Unit Tests', () => {
     });
 
     it('should handle fallback in World 3 기초', () => {
-      vi.spyOn(StatsProblemGenerator, 'generateStatsProblem').mockImplementationOnce(() => { throw new Error('fail'); });
+      vi.spyOn(StatsProblemGenerator, 'generateStatsProblem').mockImplementationOnce(() => {
+        throw new Error('fail');
+      });
       expect(generateWorld3Question('기초', 1, 'easy').question).toBeTruthy();
     });
   });
@@ -95,7 +107,9 @@ describe('quizGenerator Unit Tests', () => {
     });
 
     it('should handle fallback in World 4 기초', () => {
-      vi.spyOn(CSProblemGenerator, 'generateCSProblem').mockImplementationOnce(() => { throw new Error('fail'); });
+      vi.spyOn(CSProblemGenerator, 'generateCSProblem').mockImplementationOnce(() => {
+        throw new Error('fail');
+      });
       expect(generateWorld4Question('기초', 1, 'easy').question).toBeTruthy();
     });
   });
@@ -116,8 +130,11 @@ describe('quizGenerator Unit Tests', () => {
       expect(q1.answer as number).toBeGreaterThan(0);
 
       // Case 2: x === y (triggers retry logic)
-      randomSpy.mockReturnValueOnce(0.5).mockReturnValueOnce(0.5) // initially same
-        .mockReturnValueOnce(0.7).mockReturnValueOnce(0.3); // retry different
+      randomSpy
+        .mockReturnValueOnce(0.5)
+        .mockReturnValueOnce(0.5) // initially same
+        .mockReturnValueOnce(0.7)
+        .mockReturnValueOnce(0.3); // retry different
       const q2 = generateMathQuestion('뺄셈', 'easy');
       expect(q2.answer as number).toBeGreaterThan(0);
 

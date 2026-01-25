@@ -124,7 +124,7 @@
 .ad-reward-info h3 {
   font-size: 1.1rem;
   margin: 0 0 0.1rem 0;
-  color: #fbbf24;
+  color: var(--color-amber-300);
 }
 
 .ad-reward-info p {

@@ -147,6 +147,24 @@ export function useHistoryData() {
       }
 
       if (!currentSession) {
+        // [Anonymous/Local User Support]
+        // DB 세션이 없어도 로컬 기록이 있으면 통계를 보여줌
+        try {
+          const localHistoryStr = localStorage.getItem(StorageKeys.LOCAL_HISTORY);
+          if (localHistoryStr) {
+            const localHistory = JSON.parse(localHistoryStr);
+            if (Array.isArray(localHistory) && localHistory.length > 0) {
+              // 로컬 데이터를 기반으로 통계 계산
+              const stats = calculateLocalStats(localHistory, ANONYMOUS_USER_TITLE);
+              setStats(stats);
+              setLoading(false);
+              return;
+            }
+          }
+        } catch (e) {
+          console.warn('Failed to load local history:', e);
+        }
+
         setStats(getEmptyStats(ANONYMOUS_USER_TITLE));
         setLoading(false);
         return;
@@ -472,5 +490,139 @@ function getEmptyStats(title: string): HistoryStats {
     heatmapData: [],
     smartComment: '등반을 시작해보세요!',
     allActivities: [],
+  };
+}
+
+// 로컬 기록을 기반으로 HistoryStats 생성 (DB 로직 모방)
+function calculateLocalStats(history: any[], _userTitle: string): HistoryStats {
+  const records = history as Array<{
+    score: number;
+    date: string; // ISO string
+    category: string;
+    world: string; // e.g. World1
+    level: number;
+    mode: string;
+    correctCount?: number;
+    total?: number;
+  }>;
+
+  // 1. 기본 집계
+  const totalAltitude = records.reduce((sum, r) => sum + (r.score || 0), 0);
+  const totalCorrect = records.reduce((sum, r) => sum + (r.correctCount || 0), 0);
+
+  // 정확도 계산
+  let totalAccuracySum = 0;
+  let accuracyCount = 0;
+  records.forEach((r) => {
+    if (r.total && r.total > 0) {
+      totalAccuracySum += ((r.correctCount || 0) / r.total) * 100;
+      accuracyCount++;
+    }
+  });
+  const averageAccuracy = accuracyCount > 0 ? Math.round(totalAccuracySum / accuracyCount) : 0;
+
+  // 2. 활동 로그 변환
+  const allActivities: HistoryStats['allActivities'] = records.map((r, idx) => ({
+    type: 'game',
+    id: `local-game-${idx}-${r.date}`,
+    title: `${APP_CONFIG.CATEGORY_MAP[r.category as keyof typeof APP_CONFIG.CATEGORY_MAP] || r.category} 등반`,
+    description: `Level ${r.level} (${r.mode === 'survival' ? 'Survival' : 'Normal'})`,
+    value: `+${r.score.toLocaleString()}m`,
+    timeAgo: getTimeAgo(r.date),
+    icon: '🧗',
+    timestamp: r.date,
+  }));
+
+  // 3. Heatmap
+  const activityMap = new Map<string, number>();
+  const now = new Date();
+  const todayStart = new Date(now);
+  todayStart.setHours(0, 0, 0, 0);
+
+  records.forEach((r) => {
+    const d = new Date(r.date).toDateString();
+    activityMap.set(d, (activityMap.get(d) || 0) + 1);
+  });
+
+  const heatmapData = [];
+  for (let i = 27; i >= 0; i--) {
+    const d = new Date(todayStart);
+    d.setDate(todayStart.getDate() - i);
+    const dateStr = d.toDateString();
+    const count = activityMap.get(dateStr) || 0;
+    let intensity = 0;
+    if (count > 10) intensity = 4;
+    else if (count > 5) intensity = 3;
+    else if (count > 2) intensity = 2;
+    else if (count > 0) intensity = 1;
+    heatmapData.push({ date: dateStr, count, intensity });
+  }
+
+  // 4. Streak
+  let streakCount = 0;
+  for (let i = 0; i < 30; i++) {
+    const d = new Date(todayStart);
+    d.setDate(todayStart.getDate() - i);
+    if (activityMap.has(d.toDateString())) {
+      streakCount++;
+    } else {
+      if (i === 0) continue; // 오늘은 아직 안 했을 수 있음
+      break;
+    }
+  }
+
+  // 5. 숙련도 (Category Levels) - 최고 레벨 추출
+  const bestLevels: Record<string, { level: number; category: string }> = {};
+  records.forEach((r) => {
+    const key = r.category;
+    if (!bestLevels[key] || r.level > bestLevels[key].level) {
+      bestLevels[key] = { level: r.level, category: r.category };
+    }
+  });
+
+  const categoryLevels = Object.values(bestLevels)
+    .map((r) => ({
+      themeCode: 0,
+      themeId: r.category,
+      categoryName:
+        APP_CONFIG.CATEGORY_MAP[r.category as keyof typeof APP_CONFIG.CATEGORY_MAP] || r.category,
+      subCategoryName: '',
+      level: r.level,
+      levelName: r.level >= 10 ? 'Expert' : r.level >= 5 ? 'Intermediate' : 'Beginner',
+      progress: Math.min(Math.round((r.level / 15) * 100), 100),
+    }))
+    .sort((a, b) => b.level - a.level);
+
+  const currentTier = getTierInfo(totalAltitude);
+
+  return {
+    weeklyTotal: records.filter((r) => {
+      const d = new Date(r.date);
+      const diffTime = Math.abs(now.getTime() - d.getTime());
+      const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+      return diffDays <= 7;
+    }).length,
+    weeklyTotalLastWeek: 0,
+    graphPercentage: 0,
+    wrongAnswers: 0,
+    dailyCounts: [0, 0, 0, 0, 0, 0, 0], // 그래프용 상세 데이터는 생략 (복잡도 감소)
+    weekDays: ['월', '화', '수', '목', '금', '토', '일'],
+    monthlyTotal: 0,
+    monthlyTotalLastMonth: 0,
+    monthlyDailyCounts: [],
+    monthlyDays: [],
+    categoryLevels,
+    recentRecords: [], // 상세 기록은 로그로 대체
+    totalAltitude,
+    userTitle: getUserTitle(totalAltitude),
+    totalCorrect,
+    averageAccuracy,
+    maxCombo: 0,
+    nextTierGoal: currentTier.nextGoal,
+    nextTierName: currentTier.nextTierName,
+    streakCount,
+    heatmapData,
+    smartComment: getSmartComment({ streakCount, averageAccuracy, maxCombo: 0, totalAltitude }),
+    allActivities,
   };
 }

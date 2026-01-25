@@ -18,20 +18,20 @@
   max-width: 320px;
   background: var(--adaptiveGrey900);
   border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: 24px;
+  border-radius: var(--rounded-large-card);
   overflow: hidden;
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
 }
 
 .daily-reward-header {
-  padding: 24px 20px 10px;
+  padding: var(--spacing-2xl) var(--spacing-xl) var(--spacing-small-alt);
   text-align: center;
 }
 
 .daily-reward-icon {
   font-size: 3rem;
   display: block;
-  margin-bottom: 8px;
+  margin-bottom: var(--spacing-sm);
 }
 
 .daily-reward-title {
@@ -42,17 +42,17 @@
 }
 
 .daily-reward-body {
-  padding: 10px 24px 24px;
+  padding: var(--spacing-small-alt) var(--spacing-2xl) var(--spacing-2xl);
 }
 
 .streak-info {
   display: flex;
   flex-direction: column;
   align-items: center;
-  margin-bottom: 20px;
-  padding: 12px;
+  margin-bottom: var(--spacing-xl);
+  padding: var(--spacing-md);
   background: rgba(255, 255, 255, 0.05);
-  border-radius: 16px;
+  border-radius: var(--rounded-card);
 }
 
 .streak-label {
@@ -75,8 +75,8 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 8px;
-  margin-bottom: 8px;
+  gap: var(--spacing-sm);
+  margin-bottom: var(--spacing-sm);
 }
 
 .reward-icon {
@@ -86,7 +86,7 @@
 .reward-amount {
   font-size: 1.4rem;
   font-weight: 800;
-  color: #ffcc00;
+  color: var(--color-rank-gold);
   /* Gold color for minerals */
 }
 
@@ -103,11 +103,11 @@
 
 .daily-reward-confirm-button {
   width: 100%;
-  padding: 14px;
+  padding: var(--spacing-medium-alt);
   background: var(--adaptiveBlue500);
   color: white;
   border: none;
-  border-radius: 14px;
+  border-radius: var(--rounded-md-alt);
   font-size: 1rem;
   font-weight: 700;
   cursor: pointer;

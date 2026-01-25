@@ -563,7 +563,7 @@ export function QuizPage() {
             category: 'shop',
             action: 'consume_item',
             label: item.code,
-            data: { itemId: id }
+            data: { itemId: id },
           });
         }
       }
