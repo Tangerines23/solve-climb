@@ -34,13 +34,14 @@ export const performanceMonitor = {
       const observer = new PerformanceObserver((entryList) => {
         const entries = entryList.getEntries();
 
-        // CLS는 누적값이므로 마지막 엔트리까지 합산이 필요할 수 있으나,
         // 여기서는 단순화를 위해 개별 엔트리 발생 시 보고 (필요 시 로직 고도화 가능)
-        entries.forEach((entry: any) => {
+        entries.forEach((entry: PerformanceEntry) => {
           let value = 0;
           if (metricName === 'LCP') value = entry.startTime;
-          else if (metricName === 'FID') value = entry.processingStart - entry.startTime;
-          else if (metricName === 'CLS') value = entry.value;
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          else if (metricName === 'FID') value = (entry as any).processingStart - entry.startTime;
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          else if (metricName === 'CLS') value = (entry as any).value;
 
           this.report(metricName, value);
         });

@@ -14,7 +14,7 @@ export interface AnalyticsEvent {
   action: string;
   label?: string;
   value?: number;
-  data?: Record<string, any>;
+  data?: Record<string, unknown>;
 }
 
 /**
@@ -22,7 +22,7 @@ export interface AnalyticsEvent {
  */
 interface IAnalyticsProvider {
   trackEvent(event: AnalyticsEvent): void;
-  setUser(userId: string | null, properties?: Record<string, any>): void;
+  setUser(userId: string | null, properties?: Record<string, unknown>): void;
 }
 
 /**
@@ -38,7 +38,7 @@ class SentryProvider implements IAnalyticsProvider {
     });
   }
 
-  setUser(userId: string | null, properties?: Record<string, any>): void {
+  setUser(userId: string | null, properties?: Record<string, unknown>): void {
     Sentry.setUser(userId ? { id: userId, ...properties } : null);
   }
 }
@@ -57,7 +57,7 @@ class AnalyticsService {
   /**
    * 사용자 정보 설정
    */
-  setUser(userId: string | null, properties?: Record<string, any>): void {
+  setUser(userId: string | null, properties?: Record<string, unknown>): void {
     if (import.meta.env.DEV) {
       logger.info('Analytics', `User set: ${userId}`, properties);
     }

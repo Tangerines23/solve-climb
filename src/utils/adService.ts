@@ -81,7 +81,7 @@ export const AdService = {
 
     try {
       const options: RewardAdOptions = {
-        adId: adId,
+        adId: String(adId),
         // npa: true, // 비개인화 광고 여부
       };
 
@@ -93,14 +93,16 @@ export const AdService = {
         success: true,
         message: '광고 시청이 완료되었습니다.',
       };
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('[AdService] AdMob Error:', error);
       // 에러 시 시뮬레이션으로 Fallback 할지, 사용자에게 알릴지 결정
       // 여기서는 실제 환경이므로 실패 처리가 정석이나,
       // UX를 위해 안내 메시지와 함께 리턴합니다.
       return {
         success: false,
-        error: error.message || '광고를 불러오는 중 오류가 발생했습니다.',
+        error:
+          (error instanceof Error ? error.message : String(error)) ||
+          '광고를 불러오는 중 오류가 발생했습니다.',
       };
     }
   },

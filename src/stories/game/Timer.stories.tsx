@@ -1,8 +1,9 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
+import React from 'react';
 import { TimerCircle } from '@/components/TimerCircle';
 
 // Timer Container
-const TimerContainer = (Story: any) => (
+const TimerContainer = (Story: React.ComponentType) => (
   <div
     style={{
       width: '100%',
@@ -33,7 +34,7 @@ const meta = {
   },
   args: {
     duration: 60,
-    onComplete: () => { },
+    onComplete: () => {},
     isPaused: false,
     enableFastForward: false,
     penaltyAmount: 5,

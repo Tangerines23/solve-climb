@@ -33,11 +33,11 @@ export interface QuizQuestion {
   category?: Category;
   inputType?: 'number' | 'decimal' | 'fraction' | 'coordinate';
   hintType?: 'transposition' | 'coordinate' | 'calculus' | 'function-machine' | 'integral-tank';
-  hintData?: FunctionMachineHint | IntegralTankHint | CalculusHint | any; // Keep any as fallback for now
+  hintData?: FunctionMachineHint | IntegralTankHint | CalculusHint | Record<string, unknown>;
 }
 
 export interface FunctionMachineHint {
-  type: string;
+  type: 'plus' | 'square';
   value: number;
   input: number;
 }
@@ -51,7 +51,7 @@ export interface IntegralTankHint {
 }
 
 export interface CalculusHint {
-  type: string;
+  type: 'limit' | 'derivative';
   func: string;
 }
 

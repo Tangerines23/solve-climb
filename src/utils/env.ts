@@ -26,23 +26,28 @@ if (!parsedEnv.success && import.meta.env.DEV) {
 }
 
 // 검증 결과 (실패 시에도 파싱 시도하여 가능한 값은 채움)
-const data = parsedEnv.success ? parsedEnv.data : ({} as any);
+const data = parsedEnv.success ? parsedEnv.data : undefined;
 
 /**
  * 프로젝트 전용 환경 변수 객체 (Type-Safe)
  * Zod 검증이 실패하더라도 import.meta.env에서 직접 값 추출 시도 (Resilience)
  */
 export const ENV = {
-  SUPABASE_URL: data.VITE_SUPABASE_URL || import.meta.env.VITE_SUPABASE_URL || '',
-  SUPABASE_ANON_KEY:
-    data.VITE_SUPABASE_ANON_KEY || import.meta.env.VITE_SUPABASE_ANON_KEY || '',
+  SUPABASE_URL: data?.VITE_SUPABASE_URL || import.meta.env.VITE_SUPABASE_URL || '',
+  SUPABASE_ANON_KEY: data?.VITE_SUPABASE_ANON_KEY || import.meta.env.VITE_SUPABASE_ANON_KEY || '',
   IS_DEVELOPMENT: import.meta.env.DEV,
   IS_PRODUCTION: import.meta.env.PROD,
-  DEBUG_URL: data.VITE_DEBUG_URL || import.meta.env.VITE_DEBUG_URL || '',
-  IS_VERCEL: !!(data.VITE_IS_VERCEL || import.meta.env.VITE_IS_VERCEL === 'true'),
-  ADMOB_APP_ID: data.VITE_ADMOB_APP_ID || import.meta.env.VITE_ADMOB_APP_ID || 'ca-app-pub-6410061165772335~9825031776',
-  ADMOB_REWARDED_ID: data.VITE_ADMOB_REWARDED_ID || import.meta.env.VITE_ADMOB_REWARDED_ID || 'ca-app-pub-6410061165772335/6536523456',
-  SENTRY_DSN: data.VITE_SENTRY_DSN || import.meta.env.VITE_SENTRY_DSN || '',
+  DEBUG_URL: data?.VITE_DEBUG_URL || import.meta.env.VITE_DEBUG_URL || '',
+  IS_VERCEL: !!(data?.VITE_IS_VERCEL || import.meta.env.VITE_IS_VERCEL === 'true'),
+  ADMOB_APP_ID:
+    data?.VITE_ADMOB_APP_ID ||
+    import.meta.env.VITE_ADMOB_APP_ID ||
+    'ca-app-pub-6410061165772335~9825031776',
+  ADMOB_REWARDED_ID:
+    data?.VITE_ADMOB_REWARDED_ID ||
+    import.meta.env.VITE_ADMOB_REWARDED_ID ||
+    'ca-app-pub-6410061165772335/6536523456',
+  SENTRY_DSN: data?.VITE_SENTRY_DSN || import.meta.env.VITE_SENTRY_DSN || '',
 } as const;
 
 export type EnvConfig = typeof ENV;
@@ -76,7 +81,10 @@ export function logEnvInfo(): void {
 
   logger.group('Env', '🚀 환경 변수 로드 완료', () => {
     logger.info('Env', `모드: ${import.meta.env.MODE}`);
-    logger.info('Env', `Supabase URL: ${ENV.SUPABASE_URL ? '✅ 연결됨' : '⚠️ 미설정 (Fallback: localhost)'}`);
+    logger.info(
+      'Env',
+      `Supabase URL: ${ENV.SUPABASE_URL ? '✅ 연결됨' : '⚠️ 미설정 (Fallback: localhost)'}`
+    );
     logger.info('Env', `Sentry: ${ENV.SENTRY_DSN ? '✅ 활성화' : '⚠️ 미설정'}`);
     logger.info('Env', `Vercel Host: ${ENV.IS_VERCEL ? '✅ Yes' : 'No'}`);
   });

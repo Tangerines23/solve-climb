@@ -39,17 +39,18 @@ export async function safeSupabaseQuery<T>(
   options: { retries?: number; context?: string } = {}
 ): Promise<T> {
   const { retries = 2, context = 'SupabaseQuery' } = options;
-  let lastError: any;
+  let lastError: unknown;
 
   for (let i = 0; i <= retries; i++) {
     try {
       // debugFetch를 통해 지연/강제에러 시뮬레이션 포함
       return await debugFetch(() => Promise.resolve(query));
-    } catch (err: any) {
+    } catch (err: unknown) {
       lastError = err;
 
       // 일시적인 에러(5xx, 네트워크)인 경우에만 재시도
-      const isTransient = !err.status || (err.status >= 500 && err.status <= 599);
+      const errorStatus = (err as { status?: number })?.status;
+      const isTransient = !errorStatus || (errorStatus >= 500 && errorStatus <= 599);
       if (!isTransient || i === retries) break;
 
       console.warn(`[Resilience] ${context} 실패, 재시도 중... (${i + 1}/${retries})`);

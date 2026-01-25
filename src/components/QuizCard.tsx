@@ -1,6 +1,6 @@
 // 퀴즈 카드 컴포넌트
 import React, { FormEvent, useMemo } from 'react';
-import { QuizQuestion } from '../types/quiz';
+import { QuizQuestion, FunctionMachineHint, IntegralTankHint, CalculusHint } from '../types/quiz';
 import { GameMode } from '../types/quiz';
 import { useQuizStore } from '../stores/useQuizStore';
 import { TimerCircle } from './TimerCircle';
@@ -378,7 +378,7 @@ function QuizCardComponent({
                 style={{
                   display:
                     currentQuestion.hintType === 'transposition' ||
-                      currentQuestion.hintType === 'function-machine'
+                    currentQuestion.hintType === 'function-machine'
                       ? 'none'
                       : 'block',
                 }}
@@ -396,19 +396,19 @@ function QuizCardComponent({
               {currentQuestion.hintType === 'function-machine' && currentQuestion.hintData && (
                 <div style={{ marginBottom: '2rem' }}>
                   <FunctionMachine
-                    type={currentQuestion.hintData.type}
-                    value={currentQuestion.hintData.value}
-                    input={currentQuestion.hintData.input}
+                    type={(currentQuestion.hintData as FunctionMachineHint).type}
+                    value={(currentQuestion.hintData as FunctionMachineHint).value}
+                    input={(currentQuestion.hintData as FunctionMachineHint).input}
                   />
                 </div>
               )}
               {currentQuestion.hintType === 'integral-tank' && currentQuestion.hintData && (
-                <IntegralVisualizer hintData={currentQuestion.hintData} />
+                <IntegralVisualizer hintData={currentQuestion.hintData as IntegralTankHint} />
               )}
               {currentQuestion.hintType === 'calculus' && currentQuestion.hintData && (
                 <CalculusVisualization
-                  type={currentQuestion.hintData.type}
-                  func={currentQuestion.hintData.func}
+                  type={(currentQuestion.hintData as CalculusHint).type}
+                  func={(currentQuestion.hintData as CalculusHint).func}
                 />
               )}
               {showAnswer && (
@@ -426,7 +426,7 @@ function QuizCardComponent({
                     setDisplayValue(`${x},${y}`);
                     // 제출은 약간 지연 후 수행 (시각적 피드백 위해)
                     setTimeout(() => {
-                      const fakeEvent = { preventDefault: () => { } } as React.FormEvent;
+                      const fakeEvent = { preventDefault: () => {} } as React.FormEvent;
                       handleSubmit(fakeEvent);
                     }, 300);
                   }}

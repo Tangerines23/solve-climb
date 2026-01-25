@@ -1,3 +1,4 @@
+// eslint-disable-next-line storybook/no-renderer-packages
 import type { Meta, StoryObj } from '@storybook/react';
 import { motion, AnimatePresence } from 'framer-motion';
 import '@/components/effects/Effects.css';

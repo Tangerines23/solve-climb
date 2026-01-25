@@ -1,8 +1,9 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
+import React from 'react';
 import { CustomKeypad } from '@/components/CustomKeypad';
 
 // Keypad needs special styling container to look good (usually it's at the bottom)
-const KeypadContainer = (Story: any) => (
+const KeypadContainer = (Story: React.ComponentType) => (
   <div
     style={{
       width: '100%',
@@ -29,10 +30,10 @@ const meta = {
     showFraction: { control: 'boolean' },
   },
   args: {
-    onNumberClick: () => { },
-    onBackspace: () => { },
-    onClear: () => { },
-    onSubmit: () => { },
+    onNumberClick: () => {},
+    onBackspace: () => {},
+    onClear: () => {},
+    onSubmit: () => {},
     disabled: false,
     showNegative: false,
     showDecimal: false,
