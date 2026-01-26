@@ -14,27 +14,14 @@ import {
   ANONYMOUS_USER_TITLE,
 } from '../constants/history';
 
-interface DbThemeMapping {
-  code: number;
-  theme_id: string;
-  name: string;
-}
-
 interface DbLevelRecord {
-  theme_code: number;
+  world_id: string;
+  category_id: string;
+  subject_id: string;
   level: number;
   mode_code: number;
   best_score: number;
   updated_at: string;
-}
-
-interface DbSession {
-  category: string;
-  subject: string;
-  level: number;
-  game_mode: string;
-  score: number;
-  created_at: string;
 }
 
 interface DbProfile {
@@ -60,7 +47,6 @@ export interface HistoryStats {
   monthlyDailyCounts: number[];
   monthlyDays: string[];
   categoryLevels: Array<{
-    themeCode: number;
     themeId: string;
     categoryName: string;
     subCategoryName?: string;
@@ -69,7 +55,6 @@ export interface HistoryStats {
     progress: number;
   }>;
   recentRecords: Array<{
-    themeCode: number;
     themeId: string;
     categoryName: string;
     subCategoryName?: string;
@@ -188,19 +173,18 @@ export function useHistoryData() {
       lastWeekStart.setDate(weekStart.getDate() - 7);
 
       // --- 2. 데이터 페칭 ---
-      const [themeRes, recordsRes, sessionsRes, profileRes] = await Promise.all([
-        debugSupabaseQuery(supabase.from('theme_mapping').select('code, theme_id, name')),
+      const [recordsRes, sessionsRes, profileRes] = await Promise.all([
         debugSupabaseQuery(
           supabase
             .from('user_level_records')
-            .select('theme_code, level, mode_code, best_score, updated_at')
+            .select('world_id, category_id, subject_id, level, mode_code, best_score, updated_at')
             .eq('user_id', currentUserId)
             .order('updated_at', { ascending: false })
         ),
         debugSupabaseQuery(
           supabase
             .from('game_sessions')
-            .select('category, subject, level, game_mode, score, created_at')
+            .select('world_id, category_id, subject_id, level, game_mode, score, created_at')
             .eq('user_id', currentUserId)
             .eq('status', 'completed')
             .order('created_at', { ascending: false })
@@ -215,38 +199,28 @@ export function useHistoryData() {
         ),
       ] as const);
 
-      const themeData = themeRes.data as unknown as DbThemeMapping[] | null;
-      const recordsData = recordsRes.data as unknown as DbLevelRecord[] | null;
-      const sessionsData = sessionsRes.data as unknown as DbSession[] | null;
+      const recordsData = recordsRes.data;
+      const sessionsData = sessionsRes.data;
       const profileData = profileRes.data as unknown as DbProfile | null;
 
       if (recordsRes.error) throw recordsRes.error;
       if (sessionsRes.error) throw sessionsRes.error;
 
-      // 매핑 생성
-      const themeCodeToId: Record<number, string> = {};
-      const themeCodeToName: Record<number, string> = {};
-      themeData?.forEach((tm) => {
-        themeCodeToId[tm.code] = tm.theme_id;
-        themeCodeToName[tm.code] = tm.name;
-      });
-
-      const records: EnrichedRecord[] = (recordsData || []).map((r) => ({
+      const records: EnrichedRecord[] = (recordsData || []).map((r: any) => ({
         ...r,
-        themeId: themeCodeToId[r.theme_code] || '',
-        themeName: themeCodeToName[r.theme_code] || '',
+        themeId: `${r.category_id}_${r.subject_id}`,
+        themeName:
+          APP_CONFIG.CATEGORY_MAP[r.subject_id as keyof typeof APP_CONFIG.CATEGORY_MAP] ||
+          r.subject_id,
       }));
 
       // 세션 데이터를 기록 포맷으로 정규화 (활동 추적용)
-      const sessionsAsRecords = (sessionsData || []).map((s) => {
-        const themeId = `${s.category}_${s.subject}`;
-        const inverseThemeMap: Record<string, number> = {};
-        Object.entries(themeCodeToId).forEach(([code, id]) => {
-          inverseThemeMap[id] = Number(code);
-        });
-
+      const sessionsAsRecords = (sessionsData || []).map((s: any) => {
+        const themeId = `${s.category_id}_${s.subject_id}`;
         return {
-          theme_code: inverseThemeMap[themeId] || 0,
+          world_id: s.world_id,
+          category_id: s.category_id,
+          subject_id: s.subject_id,
           themeId,
           level: s.level,
           mode_code: s.game_mode === 'timeattack' ? 1 : 2,
@@ -308,7 +282,6 @@ export function useHistoryData() {
             APP_CONFIG.CATEGORY_MAP[cat as keyof typeof APP_CONFIG.CATEGORY_MAP] || cat;
 
           return {
-            themeCode: r.theme_code,
             themeId: r.themeId,
             categoryName,
             subCategoryName: sub,
@@ -400,7 +373,7 @@ export function useHistoryData() {
       const categoryLevels = Object.values(
         records.reduce(
           (acc, r) => {
-            const key = `${r.theme_code}-${r.level}`;
+            const key = `${r.themeId}-${r.level}`;
             if (!acc[key] || r.best_score > acc[key].best_score) acc[key] = r;
             return acc;
           },
@@ -412,7 +385,6 @@ export function useHistoryData() {
           const categoryName =
             APP_CONFIG.CATEGORY_MAP[cat as keyof typeof APP_CONFIG.CATEGORY_MAP] || cat;
           return {
-            themeCode: r.theme_code,
             themeId: r.themeId,
             categoryName,
             subCategoryName: sub,

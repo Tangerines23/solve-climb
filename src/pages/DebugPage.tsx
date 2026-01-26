@@ -1,5 +1,6 @@
 import { useNavigate } from 'react-router-dom';
 import { Header } from '../components/Header';
+import { DummyPlayerManager } from '../components/debug/DummyPlayerManager';
 import { DailyRewardDebugSection } from '../components/debug/DailyRewardDebugSection';
 import { StaticUISection } from '../components/debug/StaticUISection';
 import { NotificationPlayground } from '../components/debug/NotificationPlayground';
@@ -29,6 +30,26 @@ export function DebugPage() {
           color: 'var(--color-text-primary)',
         }}
       >
+        <section className="debug-section-group">
+          <h2
+            style={{
+              borderBottom: '1px solid var(--color-bg-tertiary)',
+              paddingBottom: 'var(--spacing-sm)',
+              marginBottom: 'var(--spacing-xl)',
+            }}
+          >
+            👥 플레이어 관리 (Dummy Manager)
+          </h2>
+          <div
+            style={{
+              backgroundColor: 'var(--color-bg-secondary)',
+              padding: 'var(--spacing-lg)',
+              borderRadius: 'var(--rounded-card)',
+            }}
+          >
+            <DummyPlayerManager />
+          </div>
+        </section>
         <section className="debug-section-group">
           <h2
             style={{

@@ -1,6 +1,11 @@
 import { create } from 'zustand';
 import { supabase } from '../utils/supabaseClient';
 import { debugSupabaseQuery } from '../utils/debugFetch';
+import {
+  validatedRpc,
+  ItemActionResponseSchema,
+  CommonResponseSchema,
+} from '../utils/rpcValidator';
 import { PostgrestError } from '@supabase/supabase-js';
 import { AdService } from '../utils/adService';
 
@@ -143,15 +148,25 @@ export const useUserStore = create<UserState>((set, get) => ({
   },
 
   purchaseItem: async (itemId: number) => {
-    const { data, error } = await debugSupabaseQuery(
-      supabase.rpc('purchase_item', { p_item_id: itemId })
+    const { data, error } = await validatedRpc(
+      supabase.rpc('purchase_item', { p_item_id: itemId }),
+      ItemActionResponseSchema,
+      'purchase_item'
     );
     if (error) throw error;
+    if (!data || !data.success) {
+      return { success: false, message: data?.message || '구매 실패' };
+    }
 
     if (data.success) {
       await get().fetchUserData(); // Refresh data
     }
-    return data;
+    return {
+      success: true,
+      message: data.message || '구매 성공',
+      remaining_minerals: data.remaining_minerals,
+      new_quantity: data.new_quantity,
+    };
   },
 
   checkStamina: async () => {
@@ -171,15 +186,25 @@ export const useUserStore = create<UserState>((set, get) => ({
   },
 
   consumeItem: async (itemId: number) => {
-    const { data, error } = await debugSupabaseQuery(
-      supabase.rpc('consume_item', { p_item_id: itemId })
+    const { data, error } = await validatedRpc(
+      supabase.rpc('consume_item', { p_item_id: itemId }),
+      ItemActionResponseSchema,
+      'consume_item'
     );
     if (error) throw error;
+    if (!data || !data.success) {
+      return { success: false, message: data?.message || '아이템 사용 실패' };
+    }
 
     if (data.success) {
       await get().fetchUserData();
     }
-    return data;
+    return {
+      success: true,
+      message: data.message || '아이템 사용 성공',
+      remaining_minerals: data.remaining_minerals,
+      new_quantity: data.new_quantity,
+    };
   },
 
   consumeStamina: async () => {
@@ -366,28 +391,22 @@ export const useUserStore = create<UserState>((set, get) => ({
 
     // Get current inventory
     const { data: inventory } = await debugSupabaseQuery(
-      supabase.from('inventory').select('id, quantity').eq('user_id', user.id)
+      supabase.from('inventory').select('item_id, quantity').eq('user_id', user.id)
     );
     if (!inventory) return;
 
-    const updates: Array<{ id: number; quantity: number }> = [];
-    const deletions: number[] = [];
-
+    // 보안 RPC를 통해 루프를 돌며 개별 업데이트
     for (const item of inventory) {
-      const newQty = item.quantity - 5;
-      if (newQty <= 0) {
-        deletions.push(item.id);
-      } else {
-        updates.push({ id: item.id, quantity: newQty });
-      }
-    }
-
-    if (deletions.length > 0) {
-      await debugSupabaseQuery(supabase.from('inventory').delete().in('item_id', deletions));
-    }
-
-    if (updates.length > 0) {
-      await debugSupabaseQuery(supabase.from('inventory').upsert(updates));
+      const newQty = Math.max(0, item.quantity - 5);
+      await validatedRpc(
+        supabase.rpc('debug_set_inventory_quantity', {
+          p_user_id: user.id,
+          p_item_id: item.item_id,
+          p_quantity: newQty,
+        }),
+        CommonResponseSchema,
+        'debug_set_inventory_quantity'
+      );
     }
 
     await get().fetchUserData();
@@ -404,33 +423,23 @@ export const useUserStore = create<UserState>((set, get) => ({
     }
 
     const newStamina = Math.max(0, amount);
-    console.log(`[DEBUG] Attempting to set stamina to ${newStamina} for user ${user.id}...`);
 
-    // 1. 프로필 존재 여부 확인 (디버깅용)
-    const { count } = await supabase
-      .from('profiles')
-      .select('*', { count: 'exact', head: true })
-      .eq('id', user.id);
-    if (count === 0) {
-      console.error(
-        '[DEBUG] debugSetStamina: Profile row not found for user. Inserting default profile...'
-      );
-      // 프로필 생성 시도
-      await supabase.from('profiles').insert({ id: user.id, stamina: newStamina });
-    }
-
-    const { error, status, statusText } = await debugSupabaseQuery(
-      supabase.from('profiles').update({ stamina: newStamina }).eq('id', user.id)
+    // 보안 RPC를 통해 프로필 업데이트
+    const { data, error } = await validatedRpc(
+      supabase.rpc('debug_update_profile_stats', {
+        p_user_id: user.id,
+        p_stamina: newStamina,
+      }),
+      CommonResponseSchema,
+      'debug_update_profile_stats'
     );
 
-    if (error) {
-      console.error('[DEBUG] Set Stamina Failed:', error);
-      console.error('[DEBUG] Status:', status, statusText);
+    if (error || !data?.success) {
+      console.error('[DEBUG] Set Stamina Failed:', error || data?.message);
       return;
     }
 
-    console.log('[DEBUG] Set Stamina Success. Updating local store.');
-    // 로컬 상태 업데이트
+    console.log('[DEBUG] Set Stamina Success via RPC. Updating local store.');
     set({ stamina: newStamina });
   },
 

@@ -31,7 +31,6 @@ describe('tiers', () => {
             error: new Error('Database error'),
           }),
         }),
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
       } as unknown as any);
 
       const result = await loadTierDefinitions();
@@ -61,7 +60,6 @@ describe('tiers', () => {
         }),
       };
 
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       vi.mocked(supabase.from).mockReturnValue(mockFrom as unknown as any);
 
       // Clear cache before test
@@ -153,7 +151,6 @@ describe('tiers', () => {
             }),
           }),
         }),
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
       } as unknown as any);
 
       const result = await loadCycleCap();
@@ -178,7 +175,6 @@ describe('tiers', () => {
         }),
       };
 
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       vi.mocked(supabase.from).mockReturnValue(mockFrom as unknown as any);
 
       // Clear cache before test
@@ -269,7 +265,6 @@ describe('tiers', () => {
         }),
       };
 
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       vi.mocked(supabase.from).mockReturnValue(mockFrom as unknown as any);
 
       // First call
@@ -302,7 +297,6 @@ describe('tiers', () => {
             }),
           }),
         }),
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
       } as unknown as any);
 
       const result = await loadCycleCap();
@@ -463,7 +457,6 @@ describe('tiers', () => {
     });
 
     it('should return null for invalid level', async () => {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const result = await getTierInfo(99 as any);
 
       expect(result).toBeNull();

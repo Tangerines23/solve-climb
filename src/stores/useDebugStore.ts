@@ -21,7 +21,8 @@ interface DebugState {
     | 'network'
     | 'visual'
     | 'macro'
-    | 'progression';
+    | 'progression'
+    | 'dummy';
 
   // 무한 모드
   infiniteStamina: boolean;

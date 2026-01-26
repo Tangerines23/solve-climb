@@ -45,6 +45,8 @@ const createMockQueryBuilder = (returnValue: any = { data: null, error: null }) 
   builder.maybeSingle = vi.fn(() => mockReturn);
   builder.upsert = vi.fn(() => mockReturn);
   builder.update = vi.fn(() => builder);
+  builder.delete = vi.fn(() => builder);
+  builder.in = vi.fn(() => builder);
 
   // Make builder thenable to support await on the chain
   builder.then = (

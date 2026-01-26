@@ -13,6 +13,7 @@ import { VisualSection } from './debug/VisualSection';
 import { MacroSection } from './debug/MacroSection';
 import { ProgressionSection } from './debug/ProgressionSection';
 import { AuthModeSection } from './debug/AuthModeSection';
+import { DummyRecordSection } from './debug/DummyRecordSection';
 import './DebugPanel.css';
 
 function DebugPanel() {
@@ -35,6 +36,7 @@ function DebugPanel() {
     { id: 'visual', label: '📱 시각' },
     { id: 'macro', label: '🎬 매크로' },
     { id: 'progression', label: '🏆 진행' },
+    { id: 'dummy', label: '🎭 더미 생성' },
   ];
 
   const renderTabContent = () => {
@@ -67,6 +69,8 @@ function DebugPanel() {
         return <MacroSection />;
       case 'progression':
         return <ProgressionSection />;
+      case 'dummy':
+        return <DummyRecordSection />;
       default:
         return <QuickActionsSection />;
     }

@@ -44,6 +44,7 @@ vi.mock('../../utils/supabaseClient', () => ({
       eq: vi.fn(),
       insert: vi.fn(),
     })),
+    rpc: vi.fn(),
   },
 }));
 
@@ -52,6 +53,7 @@ describe('useBadgeChecker', () => {
   const mockSelect = vi.fn();
   const mockInsert = vi.fn();
   const mockFrom = vi.fn();
+  const mockRpc = vi.fn();
 
   beforeEach(() => {
     vi.clearAllMocks();
@@ -79,9 +81,21 @@ describe('useBadgeChecker', () => {
       eq: vi.fn().mockResolvedValue({ data: [], error: null }),
       insert: mockInsert.mockResolvedValue({ error: null }), // default success
     };
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+
     vi.mocked(supabase.from).mockReturnValue(chain as any);
     mockSelect.mockImplementation(chain.eq); // capture the final promise returner
+
+    // Setup RPC mock
+    vi.mocked(supabase.rpc).mockImplementation((fn: string, _args?: any) => {
+      mockRpc(fn);
+      if (fn === 'check_and_award_badges') {
+        return {
+          data: { success: true, awarded_badges: [] },
+          error: null,
+        } as any;
+      }
+      return { data: null, error: null } as any;
+    });
   });
 
   const defaultStats: HistoryStats = {
@@ -189,7 +203,7 @@ describe('useBadgeChecker', () => {
       }),
       insert: mockInsert,
     };
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+
     vi.mocked(supabase.from).mockReturnValue(chain as any);
 
     const { result } = renderHook(() => useBadgeChecker());

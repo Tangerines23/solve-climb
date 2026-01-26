@@ -106,40 +106,15 @@ export function ItemSystemSection() {
         return;
       }
 
-      // 인벤토리 업데이트 (직접 업데이트)
-      const newQuantity = Math.max(0, numValue);
+      // 보안 RPC를 통해 수량 설정 (Insert/Update/Delete 통합 처리)
+      const { error } = await supabase.rpc('debug_set_inventory_quantity', {
+        p_user_id: user.id,
+        p_item_id: itemId,
+        p_quantity: numValue,
+      });
 
-      if (currentQuantity === 0 && newQuantity > 0) {
-        // 새 아이템 추가
-        const { error } = await supabase.from('inventory').insert({
-          user_id: user.id,
-          item_id: itemId,
-          quantity: newQuantity,
-        });
-
-        if (error) throw error;
-        setMessage({ type: 'success', text: `아이템 ${newQuantity}개가 추가되었습니다.` });
-      } else if (newQuantity === 0) {
-        // 아이템 제거
-        const { error } = await supabase
-          .from('inventory')
-          .delete()
-          .eq('user_id', user.id)
-          .eq('item_id', itemId);
-
-        if (error) throw error;
-        setMessage({ type: 'success', text: '아이템이 제거되었습니다.' });
-      } else {
-        // 수량 업데이트
-        const { error } = await supabase
-          .from('inventory')
-          .update({ quantity: newQuantity })
-          .eq('user_id', user.id)
-          .eq('item_id', itemId);
-
-        if (error) throw error;
-        setMessage({ type: 'success', text: `아이템 수량이 ${newQuantity}개로 변경되었습니다.` });
-      }
+      if (error) throw error;
+      setMessage({ type: 'success', text: `아이템 수량이 ${numValue}개로 설정되었습니다.` });
 
       await fetchUserData();
     } catch (err) {
@@ -169,7 +144,9 @@ export function ItemSystemSection() {
       }
       const user = session.user;
 
-      const { error } = await supabase.from('inventory').delete().eq('user_id', user.id);
+      const { error } = await supabase.rpc('debug_reset_inventory', {
+        p_user_id: user.id,
+      });
 
       if (error) throw error;
 
@@ -198,58 +175,14 @@ export function ItemSystemSection() {
       setIsUpdating(true);
       setMessage({ type: 'info', text: '상점 복구 중...' });
 
-      // [보안] 클라이언트 사이드 시딩 (RPC 권한 이슈 방어용)
-      const defaultItems = [
-        {
-          id: 1,
-          code: 'oxygen_tank',
-          name: '산소통',
-          price: 500,
-          description: '제한 시간 +10초',
-          category: 'time',
-        },
-        {
-          id: 2,
-          code: 'power_gel',
-          name: '파워젤',
-          price: 300,
-          description: '시작 시 모멘텀(콤보1) 활성',
-          category: 'buff',
-        },
-        {
-          id: 3,
-          code: 'safety_rope',
-          name: '안전 로프',
-          price: 1000,
-          description: '오답 1회 방어',
-          category: 'defense',
-        },
-        {
-          id: 4,
-          code: 'flare',
-          name: '구조 신호탄',
-          price: 1500,
-          description: '게임 오버 시 부활',
-          category: 'revive',
-        },
-        {
-          id: 202,
-          code: 'last_spurt',
-          name: '라스트 스퍼트',
-          price: 800,
-          description: '시간 0초 시 +15초 추가 + 5초 피버',
-          category: 'trigger',
-        },
-      ];
+      // 서버 사이드 RPC 호출로 안전하게 복구
+      const { data, error } = await supabase.rpc('restore_default_items');
 
-      for (const item of defaultItems) {
-        const { error } = await supabase.from('items').upsert(item);
-        if (error) throw error;
-      }
+      if (error) throw error;
 
       setMessage({
         type: 'success',
-        text: '상점 아이템이 성공적으로 복구되었습니다! 상점 페이지를 새로고침하세요.',
+        text: `상점 아이템 ${data.restored_count}개가 성공적으로 복구/업데이트되었습니다!`,
       });
       await loadItems();
     } catch (err) {

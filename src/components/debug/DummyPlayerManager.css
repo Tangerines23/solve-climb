@@ -1,0 +1,182 @@
+.dummy-player-manager {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-xl);
+  font-family: inherit;
+}
+
+.manager-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.manager-title {
+  margin: 0;
+  font-size: 1.1rem;
+  font-weight: 600;
+}
+
+.delete-all-button {
+  padding: var(--spacing-xs) var(--spacing-sm);
+  background-color: rgba(239, 68, 68, 0.1);
+  color: var(--color-error);
+  border: 1px solid var(--color-error);
+  border-radius: var(--rounded-sm);
+  font-size: 0.8rem;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.delete-all-button:hover:not(:disabled) {
+  background-color: var(--color-error);
+  color: white;
+}
+
+.persona-generator-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: var(--spacing-sm);
+}
+
+.gen-btn {
+  padding: var(--spacing-md);
+  border: none;
+  border-radius: var(--rounded-md);
+  font-weight: 600;
+  cursor: pointer;
+  background: var(--color-bg-tertiary);
+  color: var(--color-text-primary);
+  transition:
+    transform 0.1s,
+    filter 0.2s;
+}
+
+.gen-btn:hover:not(:disabled) {
+  filter: brightness(1.1);
+}
+
+.gen-btn:active:not(:disabled) {
+  transform: scale(0.95);
+}
+
+.gen-btn.newbie {
+  border: 1px solid var(--color-success);
+  color: var(--color-success);
+}
+
+.gen-btn.regular {
+  border: 1px solid var(--color-primary);
+  color: var(--color-primary);
+}
+
+.gen-btn.veteran {
+  border: 1px solid var(--color-warning);
+  color: var(--color-warning);
+}
+
+.manager-message {
+  padding: var(--spacing-sm) var(--spacing-md);
+  border-radius: var(--rounded-sm);
+  font-size: 0.9rem;
+}
+
+.manager-message.success {
+  background: rgba(16, 185, 129, 0.1);
+  color: var(--color-success);
+}
+
+.manager-message.error {
+  background: rgba(239, 68, 68, 0.1);
+  color: var(--color-error);
+}
+
+.dummy-list-container {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-sm);
+  max-height: 300px;
+  overflow-y: auto;
+  background: var(--color-bg-tertiary);
+  padding: var(--spacing-sm);
+  border-radius: var(--rounded-md);
+}
+
+.dummy-card {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: var(--spacing-md);
+  background: var(--color-bg-secondary);
+  border-radius: var(--rounded-sm);
+  border: 1px solid var(--color-bg-tertiary);
+}
+
+.dummy-info {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-xs);
+}
+
+.dummy-main {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+}
+
+.dummy-nickname {
+  font-weight: 600;
+  font-size: 0.95rem;
+}
+
+.persona-tag {
+  font-size: 0.7rem;
+  padding: var(--spacing-xxs) var(--spacing-xs);
+  border-radius: var(--rounded-pill);
+  text-transform: uppercase;
+  font-weight: 700;
+}
+
+.persona-tag.newbie {
+  background: rgba(16, 185, 129, 0.1);
+  color: var(--color-success);
+}
+
+.persona-tag.regular {
+  background: rgba(59, 130, 246, 0.1);
+  color: var(--color-primary);
+}
+
+.persona-tag.veteran {
+  background: rgba(245, 158, 11, 0.1);
+  color: var(--color-warning);
+}
+
+.dummy-stats {
+  display: flex;
+  gap: var(--spacing-md);
+  font-size: 0.8rem;
+  color: var(--color-text-secondary);
+}
+
+.card-action-btn.delete {
+  background: transparent;
+  color: var(--color-error);
+  border: 1px solid var(--color-error);
+  padding: var(--spacing-xs) var(--spacing-sm);
+  border-radius: var(--rounded-sm);
+  font-size: 0.8rem;
+  cursor: pointer;
+}
+
+.card-action-btn.delete:hover {
+  background: var(--color-error);
+  color: white;
+}
+
+.empty-list {
+  text-align: center;
+  padding: var(--spacing-xl);
+  color: var(--color-text-secondary);
+  font-size: 0.9rem;
+}

@@ -4,11 +4,13 @@ import { TierLevel, calculateTier, getTierInfo, type TierInfo } from '../constan
 import './TierBadge.css';
 
 interface TierBadgeProps {
-  totalScore: number; // 점수로부터 티어 계산
+  totalScore?: number; // 점수로부터 티어 계산 (Optional로 변경)
   size?: 'small' | 'medium' | 'large';
   showLabel?: boolean;
   showStars?: boolean;
   currentTierLevel?: TierLevel; // 승급 대기자 구분용 (랭킹에서 사용)
+  fixedTierLevel?: number; // 박제된 티어 레벨 (명예의 전당용)
+  fixedTierStars?: number; // 박제된 티어 별 (명예의 전당용)
 }
 
 export function TierBadge({
@@ -17,6 +19,8 @@ export function TierBadge({
   showLabel = true,
   showStars = true,
   currentTierLevel,
+  fixedTierLevel,
+  fixedTierStars,
 }: TierBadgeProps) {
   const [tierInfo, setTierInfo] = useState<TierInfo | null>(null);
   const [tierResult, setTierResult] = useState<{ level: TierLevel; stars: number } | null>(null);
@@ -25,13 +29,21 @@ export function TierBadge({
   useEffect(() => {
     const loadTier = async () => {
       try {
-        const result = await calculateTier(totalScore);
-        setTierResult(result);
+        if (fixedTierLevel !== undefined) {
+          // 고정된 티어 정보가 있는 경우 (계산 불필요)
+          const level = fixedTierLevel as TierLevel;
+          setTierResult({ level, stars: fixedTierStars || 0 });
+          const info = await getTierInfo(level);
+          setTierInfo(info);
+        } else if (totalScore !== undefined) {
+          // 점수로부터 계산하는 경우
+          const result = await calculateTier(totalScore);
+          setTierResult(result);
 
-        // currentTierLevel이 제공되면 그것을 사용 (승급 대기자 구분용)
-        const levelToUse = currentTierLevel !== undefined ? currentTierLevel : result.level;
-        const info = await getTierInfo(levelToUse);
-        setTierInfo(info);
+          const levelToUse = currentTierLevel !== undefined ? currentTierLevel : result.level;
+          const info = await getTierInfo(levelToUse);
+          setTierInfo(info);
+        }
       } catch (error) {
         console.error('Failed to load tier:', error);
       } finally {
@@ -40,7 +52,7 @@ export function TierBadge({
     };
 
     loadTier();
-  }, [totalScore, currentTierLevel]);
+  }, [totalScore, currentTierLevel, fixedTierLevel, fixedTierStars]);
 
   if (loading || !tierInfo || !tierResult) {
     return (

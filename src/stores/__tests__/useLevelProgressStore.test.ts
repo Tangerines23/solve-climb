@@ -67,6 +67,7 @@ const createMockQueryBuilder = (returnValue: any = { data: null, error: null }) 
   builder.update = vi.fn(() => builder); // update usually returns builder or promise depending on usage, making it builder for chain
   builder.delete = vi.fn(() => builder);
   builder.in = vi.fn(() => builder);
+  builder.order = vi.fn(() => builder);
 
   // Make builder thenable to support await on the chain
   builder.then = (

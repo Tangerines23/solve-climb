@@ -22,9 +22,9 @@ export const ENV = createEnv({
     // 3. 디버그 및 플랫폼 설정
     VITE_DEBUG_URL: z.string().optional().default(''),
     VITE_IS_VERCEL: z
-      .string()
+      .union([z.string(), z.boolean()])
       .optional()
-      .transform((v) => v === 'true'),
+      .transform((v) => v === 'true' || v === true),
   },
 
   // Vite 환경에서는 import.meta.env를 runtimeEnv로 전달
@@ -32,6 +32,10 @@ export const ENV = createEnv({
 
   // 개발 환경에서만 에러 대신 경고를 출력하고 싶을 때 true (선택 사항)
   // emptyStringAsUndefined: true,
+  onValidationError: (issues) => {
+    console.error('❌ Invalid environment variables:', issues);
+    throw new Error(`Invalid environment variables: ${JSON.stringify(issues, null, 2)}`);
+  },
 });
 
 /**

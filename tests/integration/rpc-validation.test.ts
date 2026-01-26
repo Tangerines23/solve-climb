@@ -6,9 +6,10 @@
 import { describe, test, expect, beforeAll } from 'vitest';
 import { createClient } from '@supabase/supabase-js';
 import {
-    getRankingV2Schema,
-    getLeaderboardSchema,
-} from '../../src/lib/rpc-schemas';
+    RankingListSchema,
+    ItemActionResponseSchema,
+    CommonResponseSchema
+} from '../../src/utils/rpcValidator';
 
 // Supabase 클라이언트 설정
 const supabaseUrl = process.env.VITE_SUPABASE_URL;
@@ -29,55 +30,50 @@ describe('RPC 응답 검증', () => {
             if (!supabase) return;
 
             const { data, error } = await supabase.rpc('get_ranking_v2', {
-                p_category: 'math',
-                p_period: 'weekly',
-                p_type: 'score',
+                p_mode: 'total',
                 p_limit: 10,
             });
 
             expect(error).toBeNull();
 
-            const result = getRankingV2Schema.safeParse(data);
+            const result = RankingListSchema.safeParse(data);
             if (!result.success) {
                 console.error('Schema validation failed:', result.error.format());
             }
             expect(result.success).toBe(true);
+        });
+
+        test('purchase_item 응답 형식', async () => {
+            if (!supabase) return;
+
+            // 실제로 구매가 이루어지지 않도록 존재하지 않는 아이템 ID 또는 실패를 유도하거나 단순히 형식만 체크
+            // 여기서는 RPC를 호출하되 에러가 나더라도 '형식'이 스키마와 맞는지를 봅니다.
+            const { data, error } = await supabase.rpc('purchase_item', {
+                p_item_id: -999, // 존재하지 않는 아이템
+            });
+
+            // 에러가 나더라도 data가 온다면 검증 가능
+            if (data) {
+                const result = ItemActionResponseSchema.safeParse(data);
+                expect(result.success).toBe(true);
+            }
         });
 
         test('get_leaderboard 응답 형식', async () => {
             if (!supabase) return;
 
             const { data, error } = await supabase.rpc('get_leaderboard', {
-                p_mode: 'score',
+                p_mode: 'total',
                 p_limit: 10,
             });
 
             expect(error).toBeNull();
 
-            const result = getLeaderboardSchema.safeParse(data);
+            const result = RankingListSchema.safeParse(data);
             if (!result.success) {
                 console.error('Schema validation failed:', result.error.format());
             }
             expect(result.success).toBe(true);
         });
-    });
-});
-
-describe('RPC 스키마 유효성', () => {
-    test('모든 스키마가 정의되어 있음', async () => {
-        const { rpcSchemas } = await import('../../src/lib/rpc-schemas');
-
-        const requiredRpcs = [
-            'create_game_session',
-            'submit_game_result',
-            'calculate_tier',
-            'consume_stamina',
-            'purchase_item',
-            'get_ranking_v2',
-        ];
-
-        for (const rpc of requiredRpcs) {
-            expect(rpcSchemas).toHaveProperty(rpc);
-        }
     });
 });

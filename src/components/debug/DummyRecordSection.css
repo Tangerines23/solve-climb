@@ -1,0 +1,77 @@
+.dummy-record-section {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.dummy-form {
+  background: var(--color-bg-tertiary);
+  padding: var(--spacing-lg);
+  border-radius: var(--rounded-card);
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-md);
+}
+
+.dummy-field {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-xs);
+}
+
+.dummy-field label {
+  font-size: 0.85rem;
+  color: var(--color-text-secondary);
+}
+
+.dummy-field select,
+.dummy-field input {
+  background: var(--color-bg-secondary);
+  border: 1px solid var(--color-bg-tertiary);
+  color: var(--color-text-primary);
+  padding: var(--spacing-sm);
+  border-radius: var(--rounded-md);
+  outline: none;
+}
+
+.dummy-field input:focus {
+  border-color: var(--color-primary);
+}
+
+.dummy-submit-button {
+  background: var(--color-primary);
+  color: white;
+  border: none;
+  padding: var(--spacing-md);
+  border-radius: var(--rounded-md);
+  cursor: pointer;
+  font-weight: bold;
+  transition: opacity 0.2s;
+}
+
+.dummy-submit-button:hover {
+  background: var(--color-primary-dark, var(--color-primary));
+}
+
+.dummy-submit-button:disabled {
+  background: var(--color-bg-tertiary);
+  cursor: not-allowed;
+}
+
+.dummy-message {
+  padding: var(--spacing-sm);
+  border-radius: var(--rounded-sm);
+  font-size: 0.9rem;
+}
+
+.dummy-message.success {
+  background: rgba(16, 185, 129, 0.1);
+  color: var(--color-success);
+  border: 1px solid var(--color-success);
+}
+
+.dummy-message.error {
+  background: rgba(239, 68, 68, 0.1);
+  color: var(--color-error);
+  border: 1px solid var(--color-error);
+}

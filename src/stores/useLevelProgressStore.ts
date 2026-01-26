@@ -3,6 +3,7 @@ import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import { supabase } from '../utils/supabaseClient';
 import { debugSupabaseQuery } from '../utils/debugFetch';
+import { validatedRpc, RankingListSchema } from '../utils/rpcValidator';
 import { GameMode } from '../types/quiz';
 import { useDebugStore } from './useDebugStore';
 import type { UserResponse } from '@supabase/supabase-js';
@@ -33,6 +34,9 @@ export interface RankingRecord {
   nickname: string;
   score: number;
   rank: number;
+  week_start_date?: string; // 명예의 전당용 (시즌 시작일)
+  tier_level?: number; // 명예의 전당용 (박제된 티어 레벨)
+  tier_stars?: number; // 명예의 전당용 (박제된 티어 별)
 }
 
 interface LevelProgressState {
@@ -196,8 +200,9 @@ export const useLevelProgressStore = create<LevelProgressState>()(
               p_game_mode: gameMode,
               p_items_used: null,
               p_session_id: sessionData?.sessionId,
-              p_category: 'math', // TODO: Map world to category correctly
-              p_subject: 'add', // TODO: Map category to subject correctly
+              p_world_id: world,
+              p_category: category,
+              p_subject: sessionData?.answers?.[0] ? 'add' : 'add', // TODO: 정확한 subject 추론 로직 필요 (현재는 일단 category/world에서 파생)
               p_level: level,
             })
           );
@@ -245,8 +250,9 @@ export const useLevelProgressStore = create<LevelProgressState>()(
               p_game_mode: gameMode,
               p_items_used: null,
               p_session_id: sessionData?.sessionId,
-              p_category: 'math',
-              p_subject: 'add',
+              p_world_id: world,
+              p_category: category,
+              p_subject: 'add', // TODO: Map category to subject correctly
               p_level: level,
             })
           );
@@ -307,7 +313,10 @@ export const useLevelProgressStore = create<LevelProgressState>()(
           if (!user) return;
 
           const { data: records, error } = await debugSupabaseQuery(
-            supabase.from('game_records').select('*').eq('user_id', user.id)
+            supabase
+              .from('user_level_records')
+              .select('world_id, category_id, subject_id, level, mode_code, best_score, updated_at')
+              .eq('user_id', user.id)
           );
 
           if (error) throw error;
@@ -318,14 +327,18 @@ export const useLevelProgressStore = create<LevelProgressState>()(
 
               records.forEach((serverRecord) => {
                 const {
-                  category: world,
-                  subject: category,
+                  world_id: world,
+                  category_id,
+                  subject_id,
                   level,
-                  mode,
-                  score,
-                  cleared,
-                  cleared_at,
+                  mode_code,
+                  best_score: score,
+                  updated_at,
                 } = serverRecord;
+
+                // local store key: category is `${category_id}_${subject_id}` or just one of them?
+                // Based on previous code: subject was used as category key.
+                const category = `${category_id}_${subject_id}`;
 
                 if (!newProgress[world]) newProgress[world] = {};
                 if (!newProgress[world][category]) newProgress[world][category] = {};
@@ -335,20 +348,18 @@ export const useLevelProgressStore = create<LevelProgressState>()(
 
                 const localRecord = newProgress[world][category][level];
 
-                // Merge logic: Server wins if data exists
-                if (cleared) {
+                // Merge logic: Best score and cleared status
+                if (score > 0) {
                   localRecord.cleared = true;
-                  localRecord.clearedAt = cleared_at || localRecord.clearedAt;
+                  localRecord.clearedAt = updated_at || localRecord.clearedAt;
                 }
 
-                const modeKey = mode as GameMode;
-                if (modeKey === 'time-attack' || modeKey === 'survival' || modeKey === 'infinite') {
-                  if (
-                    localRecord.bestScore[modeKey] === null ||
-                    score > localRecord.bestScore[modeKey]!
-                  ) {
-                    localRecord.bestScore[modeKey] = score;
-                  }
+                const modeKey = mode_code === 1 ? 'time-attack' : 'survival';
+                if (
+                  localRecord.bestScore[modeKey] === null ||
+                  score > localRecord.bestScore[modeKey]!
+                ) {
+                  localRecord.bestScore[modeKey] = score;
                 }
               });
 
@@ -364,34 +375,53 @@ export const useLevelProgressStore = create<LevelProgressState>()(
         // 1. Local State 리셋
         set({ progress: {} });
 
-        // 2. Supabase에서도 삭제
+        // 2. Supabase 데이터 초기화 (주의: 모든 기록이 삭제됩니다)
         try {
           const authResult = await debugSupabaseQuery(supabase.auth.getUser());
           const user = authResult?.data?.user;
           if (!user) return;
 
           const { error } = await debugSupabaseQuery(
-            supabase.from('game_records').delete().eq('user_id', user.id)
+            supabase.from('user_level_records').delete().eq('user_id', user.id)
           );
 
           if (error) throw error;
         } catch (error) {
           console.error('Failed to reset progress in Supabase:', error);
-          // 에러가 발생해도 로컬은 이미 리셋되었으므로 계속 진행
         }
       },
 
       fetchRanking: async (world, category, period, type, limit = 50) => {
         try {
-          // Note: RPC function signature requires p_category
-          const { data, error } = await debugSupabaseQuery(
-            supabase.rpc('get_ranking_v2', {
-              p_category: world,
-              p_period: period,
-              p_type: type,
-              p_limit: limit,
-            })
-          );
+          let data: RankingRecord[] | null = null;
+          let error: any = null;
+
+          if (period === 'all-time') {
+            // 명예의 전당 조회 (hall_of_fame 테이블)
+            const { data: hofData, error: hofError } = await debugSupabaseQuery(
+              supabase
+                .from('hall_of_fame')
+                .select('user_id, nickname, score, rank, week_start_date, tier_level, tier_stars')
+                .eq('mode', type)
+                .order('week_start_date', { ascending: false }) // 최신 시즌부터 표시
+                .order('rank', { ascending: true }) // 각 시즌별 1등부터 표시
+                .limit(limit)
+            );
+            data = hofData;
+            error = hofError;
+          } else {
+            // 주간 랭킹 조회 (V2 RPC 사용)
+            const { data: rankData, error: rankError } = await validatedRpc(
+              supabase.rpc('get_ranking_v2', {
+                p_mode: type,
+                p_limit: limit,
+              }),
+              RankingListSchema,
+              'get_ranking_v2'
+            );
+            data = rankData;
+            error = rankError;
+          }
 
           if (error) throw error;
 
@@ -407,7 +437,7 @@ export const useLevelProgressStore = create<LevelProgressState>()(
             }));
           }
         } catch (error) {
-          console.error('Failed to fetch ranking v2:', error);
+          console.error('Failed to fetch ranking:', error);
         }
       },
     }),

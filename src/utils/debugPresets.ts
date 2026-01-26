@@ -150,23 +150,18 @@ export async function executeDebugAction(action: DebugAction, userId: string): P
     }
 
     case 'grantAllItems': {
-      // items 테이블에서 모든 아이템 조회
       const { data: items, error: itemsError } = await supabase.from('items').select('id');
-
       if (itemsError) throw itemsError;
 
-      // 배치 upsert: 한 번의 네트워크 요청으로 모든 아이템 처리
-      const inventoryData = (items || []).map((item) => ({
-        user_id: userId,
-        item_id: item.id,
-        quantity: action.quantity || 99,
-      }));
-
-      const { error: upsertError } = await supabase.from('inventory').upsert(inventoryData, {
-        onConflict: 'user_id,item_id',
-      });
-
-      if (upsertError) throw upsertError;
+      const quantity = action.quantity || 99;
+      // 개별 RPC 호출 (기존 upsert 대체)
+      for (const item of items || []) {
+        await supabase.rpc('debug_set_inventory_quantity', {
+          p_user_id: userId,
+          p_item_id: item.id,
+          p_quantity: quantity,
+        });
+      }
       break;
     }
 
@@ -235,13 +230,11 @@ export async function executeDebugAction(action: DebugAction, userId: string): P
       }
 
       if (session) {
-        // 진행 중인 게임 세션: expires_at을 정확한 시간으로 업데이트
-        const newExpiresAt = new Date(Date.now() + seconds * 1000).toISOString();
-
-        const { error: updateError } = await supabase
-          .from('game_sessions')
-          .update({ expires_at: newExpiresAt })
-          .eq('id', session.id);
+        // 보안 RPC를 통해 세션 타이머 업데이트
+        const { error: updateError } = await supabase.rpc('debug_set_session_timer', {
+          p_session_id: session.id,
+          p_seconds: seconds,
+        });
 
         if (updateError) throw updateError;
       } else {

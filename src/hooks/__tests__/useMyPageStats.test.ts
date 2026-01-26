@@ -9,9 +9,10 @@ import { parseLocalSession } from '../../utils/safeJsonParse';
 // Helper for Supabase chain mocking
 const createMockChain = (data: unknown, error: unknown = null) => {
   const result = { data, error };
-  const chain = {
+  const chain: any = {
     select: vi.fn().mockReturnThis(),
     eq: vi.fn().mockReturnThis(),
+    order: vi.fn().mockReturnThis(),
     single: vi.fn().mockResolvedValue(result),
     maybeSingle: vi.fn().mockResolvedValue(result),
     then: vi.fn((resolve) => Promise.resolve(result).then(resolve)),

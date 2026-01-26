@@ -19,25 +19,6 @@ import { WORLD1_LEVELS } from '@/constants/levels';
 
 // 앱 설정 상수 중앙 관리
 export const APP_CONFIG = {
-  // API 설정 (현재 사용하지 않음 - 백엔드 서버 없이 Supabase와 토스 SDK만 사용)
-  // API_BASE_URL: import.meta.env.VITE_API_BASE_URL || 'https://api.solveclimb.com',
-
-  // Deprecated: 구글 로그인 및 이메일 기반 어드민 기능 삭제됨
-  // Google OAuth 설정 (googleAuth.ts 파일 삭제로 인해 사용하지 않음)
-  // 방법 1: 환경변수 사용 (권장)
-  // frontend 폴더에 .env 파일을 만들고 VITE_GOOGLE_CLIENT_ID=your-client-id 추가
-  // 방법 2: 여기에 직접 입력 (개발용)
-  // GOOGLE_CLIENT_ID: 'your-google-client-id-here',
-  // GOOGLE_CLIENT_ID: import.meta.env.VITE_GOOGLE_CLIENT_ID || '',
-
-  // Deprecated: 구글 로그인 및 이메일 기반 어드민 기능 삭제됨
-  // 어드민 이메일 목록 (구글 로그인 이메일) - 현재 사용하지 않음
-  // 실제 어드민 이메일로 변경하세요
-  // ADMIN_EMAILS: [
-  //   // 예시: 'admin@yourdomain.com',
-  //   // 'another-admin@yourdomain.com',
-  // ],
-
   APP_NAME: 'Solve Climb',
   APP_VERSION: packageJson.version,
 

@@ -31,18 +31,6 @@ interface RpcStats {
   best_subject: string | null;
 }
 
-interface ThemeMapping {
-  code: number;
-  theme_id: string;
-  name: string;
-}
-
-interface LevelRecordData {
-  theme_code: number;
-  level: number;
-  best_score: number;
-}
-
 export interface UseMyPageStatsResult {
   stats: MyPageStats | null;
   session: Session | null;
@@ -241,41 +229,16 @@ export function useMyPageStats(): UseMyPageStatsResult {
         }
       }
 
-      // 방법 2: user_level_records 기반 직접 쿼리로 집계 (RPC 함수가 없는 경우 폴백)
-      // theme_mapping 조회
-      const themeResult = (await debugSupabaseQuery(
-        supabase.from('theme_mapping').select('code, theme_id, name')
-      )) as unknown as { data: ThemeMapping[] | null; error: PostgrestError | null };
-
-      const themeMapping = themeResult?.data;
-      const themeError = themeResult?.error;
-
-      if (themeError) {
-        console.warn('[useMyPageStats] theme_mapping 조회 실패:', themeError);
-      }
-
-      // theme_code -> theme_id 매핑 생성
-      const themeCodeToId: Record<number, string> = {};
-      const themeCodeToName: Record<number, string> = {};
-      themeMapping?.forEach((tm) => {
-        themeCodeToId[tm.code] = tm.theme_id;
-        themeCodeToName[tm.code] = tm.name;
-      });
-
-      // user_level_records 조회
+      // 방법 2: user_level_records 기반 직접 쿼리로 집계 (RPC 함수 실패 시 폴백)
       const recordsResult = (await debugSupabaseQuery(
         supabase
           .from('user_level_records')
-          .select('theme_code, level, best_score')
+          .select('world_id, category_id, subject_id, level, best_score')
           .eq('user_id', user_id)
-      )) as unknown as { data: LevelRecordData[] | null; error: PostgrestError | null };
+      )) as unknown as { data: any[] | null; error: PostgrestError | null };
 
       const levelRecords = recordsResult?.data;
-      const queryError = recordsResult?.error;
-
-      if (queryError) {
-        throw queryError;
-      }
+      if (recordsResult.error) throw recordsResult.error;
 
       if (!levelRecords || levelRecords.length === 0) {
         setStats({
@@ -292,40 +255,26 @@ export function useMyPageStats(): UseMyPageStatsResult {
         return;
       }
 
-      // 통계 계산 함수들
+      // 통계 계산
       const totalMasteryScoreFromRecords = levelRecords.reduce(
-        (sum: number, r) => sum + (r.best_score || 0),
+        (sum, r) => sum + (r.best_score || 0),
         0
       );
-
-      // 완등 문제: user_level_records에 기록된 모든 행의 수 (theme/level/mode 조합)
       const totalSolved = levelRecords.filter((r) => (r.best_score || 0) > 0).length;
+      const maxLevel = Math.max(...levelRecords.map((r) => r.level || 0));
 
-      // 최고 레벨: 최대 level 값
-      const maxLevel =
-        levelRecords.length > 0 ? Math.max(...levelRecords.map((r) => r.level || 0)) : 0;
-
-      // 주력 분야: theme_code별 best_score 합계, 가장 높은 theme_id 반환
-      const themeScores: Record<number, number> = {};
-      levelRecords.forEach((record) => {
-        if (record.theme_code) {
-          themeScores[record.theme_code] =
-            (themeScores[record.theme_code] || 0) + (record.best_score || 0);
-        }
+      // 주력 분야: subject_id별 best_score 합계
+      const subjectScores: Record<string, number> = {};
+      levelRecords.forEach((r) => {
+        subjectScores[r.subject_id] = (subjectScores[r.subject_id] || 0) + (r.best_score || 0);
       });
 
-      let bestSubject: string | null = null;
-      if (Object.keys(themeScores).length > 0) {
-        const bestThemeCode = Object.entries(themeScores).sort((a, b) => b[1] - a[1])[0][0];
-        const bestThemeCodeNum = parseInt(bestThemeCode, 10);
-        // theme_id 반환 (없으면 name, 그것도 없으면 null)
-        bestSubject = themeCodeToId[bestThemeCodeNum] || themeCodeToName[bestThemeCodeNum] || null;
-      }
+      const bestSubjectId = Object.entries(subjectScores).sort((a, b) => b[1] - a[1])[0]?.[0];
 
       setStats({
         totalSolved,
         maxLevel,
-        bestSubject,
+        bestSubject: bestSubjectId || null,
         totalMasteryScore: Math.max(
           totalMasteryScoreFromRecords,
           profileData?.total_mastery_score || 0
