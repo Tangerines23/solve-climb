@@ -24,15 +24,17 @@ const getRedirectUrl = (): string => {
 // 환경 변수 검증은 env.ts에서 자동으로 수행됨
 // 환경 변수가 없을 때는 더미 클라이언트를 생성 (심사 환경 대응)
 const createSupabaseClient = (): SupabaseClient => {
-  const supabaseUrl = ENV.SUPABASE_URL;
-  const supabaseKey = ENV.SUPABASE_ANON_KEY;
+  const supabaseUrl = ENV.VITE_SUPABASE_URL;
+  const supabaseKey = ENV.VITE_SUPABASE_ANON_KEY;
 
-  if (ENV.IS_DEVELOPMENT) {
+  if (import.meta.env.DEV) {
     console.log(`[Supabase] 연결 시도 중... URL: ${supabaseUrl || 'http://localhost (Fallback)'}`);
   }
 
   if (!supabaseUrl || !supabaseKey) {
-    console.error('❌ [Supabase] 필수 환경 변수가 누락되었습니다 (VITE_SUPABASE_URL, VITE_SUPABASE_ANON_KEY). .env 파일을 확인하고 dev 서버를 재시작해주세요.');
+    console.error(
+      '❌ [Supabase] 필수 환경 변수가 누락되었습니다. .env 파일을 확인하고 dev 서버를 재시작해주세요.'
+    );
     return createClient('http://localhost', 'dummy-key');
   }
 
@@ -52,7 +54,7 @@ const createSupabaseClient = (): SupabaseClient => {
   };
 
   // 개발 환경에서 콜백 URL 로그 출력
-  if (ENV.IS_DEVELOPMENT && redirectUrl) {
+  if (import.meta.env.DEV && redirectUrl) {
     console.log('[Supabase] 콜백 URL:', redirectUrl);
   }
 
@@ -63,7 +65,7 @@ const createSupabaseClient = (): SupabaseClient => {
   if (typeof window !== 'undefined') {
     client.auth.getSession().then(({ data: { session } }) => {
       // 더미 URL이 아닐 때만 익명 로그인 시도
-      if (!session && ENV.SUPABASE_URL) {
+      if (!session && ENV.VITE_SUPABASE_URL) {
         client.auth.signInAnonymously().catch(() => {
           // 익명 로그인 실패는 무시
         });

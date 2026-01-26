@@ -4,6 +4,12 @@ set -e
 
 echo "🔍 검증 시작..."
 
+# 0. 의존성 무결성 체크 (신규: 로컬 환경 누락 방지)
+echo "📦 의존성 무결성 체크..."
+if ! node scripts/check-dependency-integrity.js; then
+  exit 1
+fi
+
 # 1. TypeScript 타입 체크 (필수 - 전체 프로젝트)
 echo "1️⃣ TypeScript 타입 체크..."
 if ! npm run type-check 2>&1; then
