@@ -25,7 +25,7 @@ describe('debugSync', () => {
         return {
           select: vi.fn(() => ({
             eq: vi.fn(() => ({
-              single: vi.fn().mockResolvedValue({
+              maybeSingle: vi.fn().mockResolvedValue({
                 data: { total_mastery_score: 1000, current_tier_level: 1 },
                 error: null,
               }),
@@ -33,11 +33,11 @@ describe('debugSync', () => {
           })),
         } as never;
       }
-      if (table === 'game_results') {
+      if (table === 'user_level_records') {
         return {
           select: vi.fn(() => ({
             eq: vi.fn().mockResolvedValue({
-              data: [{ mastery_score: 1000 }],
+              data: [{ best_score: 1000 }],
               error: null,
             }),
           })),
@@ -87,8 +87,8 @@ describe('debugSync', () => {
     vi.mocked(calculateTier).mockResolvedValue({
       level: 1,
       stars: 0,
-      minScore: 0,
-      maxScore: 1000,
+      totalScore: 1000,
+      currentCycleScore: 1000,
     });
 
     const result = await verifySync('test-user');
@@ -105,7 +105,7 @@ describe('debugSync', () => {
         return {
           select: vi.fn(() => ({
             eq: vi.fn(() => ({
-              single: vi.fn().mockResolvedValue({
+              maybeSingle: vi.fn().mockResolvedValue({
                 data: { total_mastery_score: 2000 },
                 error: null,
               }),
@@ -134,8 +134,8 @@ describe('debugSync', () => {
     vi.mocked(calculateTier).mockResolvedValue({
       level: 1,
       stars: 0,
-      minScore: 0,
-      maxScore: 1000,
+      totalScore: 1000,
+      currentCycleScore: 1000,
     });
 
     const result = await verifySync('test-user');
@@ -150,7 +150,7 @@ describe('debugSync', () => {
         return {
           select: vi.fn(() => ({
             eq: vi.fn(() => ({
-              single: vi.fn().mockResolvedValue({
+              maybeSingle: vi.fn().mockResolvedValue({
                 data: { total_mastery_score: 1000, current_tier_level: 2 },
                 error: null,
               }),
@@ -169,8 +169,8 @@ describe('debugSync', () => {
     vi.mocked(calculateTier).mockResolvedValue({
       level: 1,
       stars: 0,
-      minScore: 0,
-      maxScore: 1000,
+      totalScore: 1000,
+      currentCycleScore: 1000,
     });
 
     const result = await verifySync('test-user');
@@ -185,7 +185,7 @@ describe('debugSync', () => {
         return {
           select: vi.fn(() => ({
             eq: vi.fn(() => ({
-              single: vi.fn().mockResolvedValue({
+              maybeSingle: vi.fn().mockResolvedValue({
                 data: { total_mastery_score: 1000 },
                 error: null,
               }),
@@ -222,8 +222,8 @@ describe('debugSync', () => {
     vi.mocked(calculateTier).mockResolvedValue({
       level: 1,
       stars: 0,
-      minScore: 0,
-      maxScore: 1000,
+      totalScore: 1000,
+      currentCycleScore: 1000,
     });
 
     const result = await verifySync('test-user');
@@ -238,7 +238,7 @@ describe('debugSync', () => {
         return {
           select: vi.fn(() => ({
             eq: vi.fn(() => ({
-              single: vi.fn().mockResolvedValue({
+              maybeSingle: vi.fn().mockResolvedValue({
                 data: { total_mastery_score: 1000 },
                 error: null,
               }),
@@ -275,8 +275,8 @@ describe('debugSync', () => {
     vi.mocked(calculateTier).mockResolvedValue({
       level: 1,
       stars: 0,
-      minScore: 0,
-      maxScore: 1000,
+      totalScore: 1000,
+      currentCycleScore: 1000,
     });
 
     const result = await verifySync('test-user');
@@ -291,7 +291,7 @@ describe('debugSync', () => {
         return {
           select: vi.fn(() => ({
             eq: vi.fn(() => ({
-              single: vi.fn().mockResolvedValue({
+              maybeSingle: vi.fn().mockResolvedValue({
                 data: null,
                 error: { message: 'Profile not found' },
               }),
@@ -319,7 +319,7 @@ describe('debugSync', () => {
         return {
           select: vi.fn(() => ({
             eq: vi.fn(() => ({
-              single: vi.fn().mockResolvedValue({
+              maybeSingle: vi.fn().mockResolvedValue({
                 data: { total_mastery_score: 1000 },
                 error: null,
               }),
@@ -357,7 +357,7 @@ describe('debugSync', () => {
         return {
           select: vi.fn(() => ({
             eq: vi.fn(() => ({
-              single: vi.fn().mockResolvedValue({
+              maybeSingle: vi.fn().mockResolvedValue({
                 data: { total_mastery_score: 1000, current_tier_level: 1 },
                 error: null,
               }),
@@ -387,7 +387,7 @@ describe('debugSync', () => {
         return {
           select: vi.fn(() => ({
             eq: vi.fn(() => ({
-              single: vi.fn().mockResolvedValue({
+              maybeSingle: vi.fn().mockResolvedValue({
                 data: { total_mastery_score: 1000 },
                 error: null,
               }),
@@ -416,8 +416,8 @@ describe('debugSync', () => {
     vi.mocked(calculateTier).mockResolvedValue({
       level: 1,
       stars: 0,
-      minScore: 0,
-      maxScore: 1000,
+      totalScore: 1000,
+      currentCycleScore: 1000,
     });
 
     const result = await verifySync('test-user');

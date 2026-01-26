@@ -17,8 +17,8 @@ vi.mock('../supabaseClient', () => ({
 
 vi.mock('../env', () => ({
   ENV: {
-    SUPABASE_URL: 'https://test.supabase.co',
-    SUPABASE_ANON_KEY: 'test-key',
+    VITE_SUPABASE_URL: 'https://test.supabase.co',
+    VITE_SUPABASE_ANON_KEY: 'test-key',
   },
   logEnvInfo: vi.fn(),
 }));
@@ -141,29 +141,29 @@ describe('tossAuth', () => {
 
   describe('createOrUpdateSupabaseUser', () => {
     it('should throw error when environment variables are missing', async () => {
-      vi.mocked(ENV).SUPABASE_URL = '';
-      vi.mocked(ENV).SUPABASE_ANON_KEY = '';
+      vi.mocked(ENV).VITE_SUPABASE_URL = '';
+      vi.mocked(ENV).VITE_SUPABASE_ANON_KEY = '';
 
       await expect(createOrUpdateSupabaseUser('test-token')).rejects.toThrow('환경 변수');
     });
 
     it('should handle missing SUPABASE_URL', async () => {
-      vi.mocked(ENV).SUPABASE_URL = '';
-      vi.mocked(ENV).SUPABASE_ANON_KEY = 'test-key';
+      vi.mocked(ENV).VITE_SUPABASE_URL = '';
+      vi.mocked(ENV).VITE_SUPABASE_ANON_KEY = 'test-key';
 
       await expect(createOrUpdateSupabaseUser('test-token')).rejects.toThrow('환경 변수');
     });
 
     it('should handle missing SUPABASE_ANON_KEY', async () => {
-      vi.mocked(ENV).SUPABASE_URL = 'https://test.supabase.co';
-      vi.mocked(ENV).SUPABASE_ANON_KEY = '';
+      vi.mocked(ENV).VITE_SUPABASE_URL = 'https://test.supabase.co';
+      vi.mocked(ENV).VITE_SUPABASE_ANON_KEY = '';
 
       await expect(createOrUpdateSupabaseUser('test-token')).rejects.toThrow('환경 변수');
     });
 
     it('should handle Edge Function call failure', async () => {
-      vi.mocked(ENV).SUPABASE_URL = 'https://test.supabase.co';
-      vi.mocked(ENV).SUPABASE_ANON_KEY = 'test-key';
+      vi.mocked(ENV).VITE_SUPABASE_URL = 'https://test.supabase.co';
+      vi.mocked(ENV).VITE_SUPABASE_ANON_KEY = 'test-key';
 
       fetchMock.mockResolvedValue(
         new Response(JSON.stringify({ error: 'Edge Function error' }), {
@@ -176,8 +176,8 @@ describe('tossAuth', () => {
     });
 
     it('should handle network error in Edge Function call', async () => {
-      vi.mocked(ENV).SUPABASE_URL = 'https://test.supabase.co';
-      vi.mocked(ENV).SUPABASE_ANON_KEY = 'test-key';
+      vi.mocked(ENV).VITE_SUPABASE_URL = 'https://test.supabase.co';
+      vi.mocked(ENV).VITE_SUPABASE_ANON_KEY = 'test-key';
 
       fetchMock.mockRejectedValue(new Error('Network error'));
 
@@ -185,8 +185,8 @@ describe('tossAuth', () => {
     });
 
     it('should remove trailing slash from SUPABASE_URL', async () => {
-      vi.mocked(ENV).SUPABASE_URL = 'https://test.supabase.co/';
-      vi.mocked(ENV).SUPABASE_ANON_KEY = 'test-key';
+      vi.mocked(ENV).VITE_SUPABASE_URL = 'https://test.supabase.co/';
+      vi.mocked(ENV).VITE_SUPABASE_ANON_KEY = 'test-key';
 
       fetchMock.mockResolvedValue(
         new Response(JSON.stringify({}), {

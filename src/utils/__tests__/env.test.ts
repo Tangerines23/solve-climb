@@ -1,77 +1,63 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { ENV, checkEnv, logEnvInfo } from '../env';
+import { ENV, config, logEnvInfo } from '../env';
 
 describe('env', () => {
   beforeEach(() => {
     vi.clearAllMocks();
   });
 
-  describe('ENV', () => {
-    it('should have required properties', () => {
-      expect(ENV).toHaveProperty('SUPABASE_URL');
-      expect(ENV).toHaveProperty('SUPABASE_ANON_KEY');
-      expect(ENV).toHaveProperty('IS_DEVELOPMENT');
-      expect(ENV).toHaveProperty('IS_PRODUCTION');
-      expect(ENV).toHaveProperty('DEBUG_URL');
-      expect(ENV).toHaveProperty('IS_VERCEL');
+  describe('ENV (t3-env)', () => {
+    it('should have client properties with VITE_ prefix', () => {
+      expect(ENV).toHaveProperty('VITE_SUPABASE_URL');
+      expect(ENV).toHaveProperty('VITE_SUPABASE_ANON_KEY');
+      expect(ENV).toHaveProperty('VITE_ADMOB_APP_ID');
+      expect(ENV).toHaveProperty('VITE_ADMOB_REWARDED_ID');
+      // optional properties might be undefined but keys exist in validated object if t3-env handles them
     });
 
-    it('should have boolean IS_DEVELOPMENT', () => {
-      expect(typeof ENV.IS_DEVELOPMENT).toBe('boolean');
-    });
-
-    it('should have boolean IS_PRODUCTION', () => {
-      expect(typeof ENV.IS_PRODUCTION).toBe('boolean');
-    });
-
-    it('should have boolean IS_VERCEL', () => {
-      expect(typeof ENV.IS_VERCEL).toBe('boolean');
-    });
-
-    it('should have string SUPABASE_URL', () => {
-      expect(typeof ENV.SUPABASE_URL).toBe('string');
-    });
-
-    it('should have string SUPABASE_ANON_KEY', () => {
-      expect(typeof ENV.SUPABASE_ANON_KEY).toBe('string');
-    });
-
-    it('should have string DEBUG_URL', () => {
-      expect(typeof ENV.DEBUG_URL).toBe('string');
+    it('should have correct types for VITE_ variables', () => {
+      expect(typeof ENV.VITE_SUPABASE_URL).toBe('string');
+      expect(typeof ENV.VITE_SUPABASE_ANON_KEY).toBe('string');
+      // VITE_IS_VERCEL is transformed to boolean
+      if (ENV.VITE_IS_VERCEL !== undefined) {
+        expect(typeof ENV.VITE_IS_VERCEL).toBe('boolean');
+      }
     });
   });
 
-  describe('checkEnv', () => {
-    it('should return validation result', () => {
-      const result = checkEnv();
-      expect(result).toHaveProperty('isValid');
-      expect(result).toHaveProperty('missing');
-      expect(result).toHaveProperty('errors');
-      expect(typeof result.isValid).toBe('boolean');
-      expect(Array.isArray(result.missing)).toBe(true);
-      expect(typeof result.errors).toBe('object');
+  describe('config (legacy compatibility)', () => {
+    it('should have required legacy properties mapped from ENV', () => {
+      expect(config).toHaveProperty('SUPABASE_URL');
+      expect(config).toHaveProperty('SUPABASE_ANON_KEY');
+      expect(config).toHaveProperty('IS_DEVELOPMENT');
+      expect(config).toHaveProperty('IS_PRODUCTION');
+      expect(config).toHaveProperty('DEBUG_URL');
+      expect(config).toHaveProperty('IS_VERCEL');
     });
 
-    it('should validate environment variables correctly', () => {
-      const result = checkEnv();
-      // checkEnv는 현재 환경 변수를 검증합니다
-      // 실제 값에 따라 isValid가 true 또는 false일 수 있습니다
-      expect(result).toHaveProperty('isValid');
-      expect(result).toHaveProperty('missing');
-      expect(result).toHaveProperty('errors');
+    it('should have boolean IS_DEVELOPMENT', () => {
+      expect(typeof config.IS_DEVELOPMENT).toBe('boolean');
+    });
+
+    it('should have boolean IS_PRODUCTION', () => {
+      expect(typeof config.IS_PRODUCTION).toBe('boolean');
+    });
+
+    it('should have boolean IS_VERCEL', () => {
+      expect(typeof config.IS_VERCEL).toBe('boolean');
+    });
+
+    it('should have string SUPABASE_URL', () => {
+      expect(typeof config.SUPABASE_URL).toBe('string');
+    });
+
+    it('should have string SUPABASE_ANON_KEY', () => {
+      expect(typeof config.SUPABASE_ANON_KEY).toBe('string');
     });
   });
 
   describe('logEnvInfo', () => {
     it('should not throw error', () => {
-      expect(() => {
-        logEnvInfo();
-      }).not.toThrow();
-    });
-
-    it('should handle production environment', () => {
-      // logEnvInfo는 isDevelopment가 false면 early return합니다
-      // 실제 환경에 따라 다르게 동작할 수 있습니다
       expect(() => {
         logEnvInfo();
       }).not.toThrow();
