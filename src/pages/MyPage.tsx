@@ -224,12 +224,12 @@ export function MyPage() {
         window.location.hostname === 'localhost' ||
         window.location.hostname === '127.0.0.1' ||
         window.location.hostname.includes('192.168.');
-      const isReviewMode = isLocalDev || ENV.IS_VERCEL;
+      const isReviewMode = isLocalDev || ENV.VITE_IS_VERCEL;
 
       // 심사/개발 모드에서 가상 로그인 사용
       if (isReviewMode) {
         console.log('[로그인] 심사/개발 환경 감지 - 가상 로그인 플로우 시작');
-        if (ENV.IS_VERCEL) {
+        if (ENV.VITE_IS_VERCEL) {
           console.log('[로그인] Vercel 환경: 모든 토스 API는 Mock으로 대체됩니다.');
         }
 
@@ -595,7 +595,7 @@ export function MyPage() {
           <div className="my-page-content">
             <div className="my-page-guest-view">
               <div className="my-page-guest-icon">🔒</div>
-              {ENV.IS_VERCEL && (
+              {ENV.VITE_IS_VERCEL && (
                 <div
                   style={{
                     backgroundColor: 'rgba(0, 106, 255, 0.05)', // 특수 강조색 유지 (배경 투명도)
@@ -623,7 +623,7 @@ export function MyPage() {
               </h1>
               <div className="my-page-guest-buttons">
                 <button className="my-page-guest-login-button" onClick={handleLogin}>
-                  {ENV.IS_VERCEL ? '체험 시작하기' : '3초 만에 시작하기'}
+                  {ENV.VITE_IS_VERCEL ? '체험 시작하기' : '3초 만에 시작하기'}
                 </button>
                 <button className="my-page-guest-anonymous-link" onClick={handleAnonymousLogin}>
                   익명 로그인하기

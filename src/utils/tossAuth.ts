@@ -71,18 +71,18 @@ export async function createOrUpdateSupabaseUser(
 ): Promise<{ user: User | null; loginInfo: { email: string; password: string } }> {
   try {
     // 환경 변수 검증
-    if (!ENV.SUPABASE_URL || !ENV.SUPABASE_ANON_KEY) {
+    if (!ENV.VITE_SUPABASE_URL || !ENV.VITE_SUPABASE_ANON_KEY) {
       const missing = [];
-      if (!ENV.SUPABASE_URL) missing.push('VITE_SUPABASE_URL');
-      if (!ENV.SUPABASE_ANON_KEY) missing.push('VITE_SUPABASE_ANON_KEY');
+      if (!ENV.VITE_SUPABASE_URL) missing.push('VITE_SUPABASE_URL');
+      if (!ENV.VITE_SUPABASE_ANON_KEY) missing.push('VITE_SUPABASE_ANON_KEY');
       throw new Error(
         `환경 변수가 설정되지 않았습니다: ${missing.join(', ')}\n` +
-          `Edge Function에 접근할 수 없습니다.`
+        `Edge Function에 접근할 수 없습니다.`
       );
     }
 
     // URL 끝의 슬래시 제거 후 경로 추가
-    const baseUrl = ENV.SUPABASE_URL.replace(/\/$/, '');
+    const baseUrl = ENV.VITE_SUPABASE_URL.replace(/\/$/, '');
     const authUrl = `${baseUrl}/functions/v1/toss-auth`;
 
     // Edge Function 호출
@@ -92,8 +92,8 @@ export async function createOrUpdateSupabaseUser(
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          apikey: ENV.SUPABASE_ANON_KEY,
-          Authorization: `Bearer ${ENV.SUPABASE_ANON_KEY}`,
+          apikey: ENV.VITE_SUPABASE_ANON_KEY,
+          Authorization: `Bearer ${ENV.VITE_SUPABASE_ANON_KEY}`,
         },
         body: JSON.stringify({
           accessToken,
@@ -106,11 +106,11 @@ export async function createOrUpdateSupabaseUser(
       if (errorMessage.includes('Failed to fetch') || errorMessage.includes('fetch')) {
         throw new Error(
           `Edge Function에 연결할 수 없습니다.\n\n` +
-            `가능한 원인:\n` +
-            `1. Edge Function이 배포되지 않았습니다 (supabase functions deploy toss-auth)\n` +
-            `2. Supabase URL이 잘못되었습니다: ${ENV.SUPABASE_URL}\n` +
-            `3. 네트워크 연결 문제 또는 CORS 설정 문제\n\n` +
-            `원본 오류: ${errorMessage}`
+          `가능한 원인:\n` +
+          `1. Edge Function이 배포되지 않았습니다 (supabase functions deploy toss-auth)\n` +
+          `2. Supabase URL이 잘못되었습니다: ${ENV.VITE_SUPABASE_URL}\n` +
+          `3. 네트워크 연결 문제 또는 CORS 설정 문제\n\n` +
+          `원본 오류: ${errorMessage}`
         );
       }
       throw fetchError;
@@ -132,8 +132,8 @@ export async function createOrUpdateSupabaseUser(
         JSON.stringify(errorData);
       throw new Error(
         `사용자 생성/업데이트 실패 (${response.status}):\n` +
-          `${errorMessage}\n\n` +
-          `Edge Function URL: ${authUrl}`
+        `${errorMessage}\n\n` +
+        `Edge Function URL: ${authUrl}`
       );
     }
 
@@ -171,19 +171,19 @@ export async function handleTossLoginFlow(
 ): Promise<{ user: User | null; session: { access_token: string; refresh_token: string } | null }> {
   try {
     // 환경 변수 검증
-    if (!ENV.SUPABASE_URL || !ENV.SUPABASE_ANON_KEY) {
+    if (!ENV.VITE_SUPABASE_URL || !ENV.VITE_SUPABASE_ANON_KEY) {
       // ... error handling ...
       const missing = [];
-      if (!ENV.SUPABASE_URL) missing.push('VITE_SUPABASE_URL');
-      if (!ENV.SUPABASE_ANON_KEY) missing.push('VITE_SUPABASE_ANON_KEY');
+      if (!ENV.VITE_SUPABASE_URL) missing.push('VITE_SUPABASE_URL');
+      if (!ENV.VITE_SUPABASE_ANON_KEY) missing.push('VITE_SUPABASE_ANON_KEY');
       throw new Error(
         `환경 변수가 설정되지 않았습니다: ${missing.join(', ')}\n` +
-          `Edge Function에 접근할 수 없습니다. .env 파일을 확인해주세요.`
+        `Edge Function에 접근할 수 없습니다. .env 파일을 확인해주세요.`
       );
     }
 
     // URL 끝의 슬래시 제거 후 경로 추가
-    const baseUrl = ENV.SUPABASE_URL.replace(/\/$/, '');
+    const baseUrl = ENV.VITE_SUPABASE_URL.replace(/\/$/, '');
     const oauthUrl = `${baseUrl}/functions/v1/toss-oauth`;
 
     // 1. Edge Function으로 AccessToken 받기
@@ -193,8 +193,8 @@ export async function handleTossLoginFlow(
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          apikey: ENV.SUPABASE_ANON_KEY,
-          Authorization: `Bearer ${ENV.SUPABASE_ANON_KEY}`,
+          apikey: ENV.VITE_SUPABASE_ANON_KEY,
+          Authorization: `Bearer ${ENV.VITE_SUPABASE_ANON_KEY}`,
         },
         body: JSON.stringify({
           authorizationCode,
@@ -208,11 +208,11 @@ export async function handleTossLoginFlow(
       if (errorMessage.includes('Failed to fetch') || errorMessage.includes('fetch')) {
         throw new Error(
           `Edge Function에 연결할 수 없습니다.\n\n` +
-            `가능한 원인:\n` +
-            `1. Edge Function이 배포되지 않았습니다 (supabase functions deploy toss-oauth)\n` +
-            `2. Supabase URL이 잘못되었습니다: ${ENV.SUPABASE_URL}\n` +
-            `3. 네트워크 연결 문제 또는 CORS 설정 문제\n\n` +
-            `원본 오류: ${errorMessage}`
+          `가능한 원인:\n` +
+          `1. Edge Function이 배포되지 않았습니다 (supabase functions deploy toss-oauth)\n` +
+          `2. Supabase URL이 잘못되었습니다: ${ENV.VITE_SUPABASE_URL}\n` +
+          `3. 네트워크 연결 문제 또는 CORS 설정 문제\n\n` +
+          `원본 오류: ${errorMessage}`
         );
       }
       throw fetchError;
@@ -241,14 +241,14 @@ export async function handleTossLoginFlow(
         if (isDevMode) {
           throw new Error(
             '개발 모드: 유효하지 않은 authorization code입니다.\n\n' +
-              '✅ Edge Function 호출 플로우는 정상적으로 작동하고 있습니다.'
+            '✅ Edge Function 호출 플로우는 정상적으로 작동하고 있습니다.'
           );
         }
 
         throw new Error(
           `AccessToken 요청 실패 (400):\n` +
-            `${errorMessage}\n\n` +
-            `Edge Function URL: ${oauthUrl}`
+          `${errorMessage}\n\n` +
+          `Edge Function URL: ${oauthUrl}`
         );
       }
 
@@ -295,8 +295,8 @@ export async function handleTossLoginFlow(
         errorDataTyped.error || errorDataTyped.message || JSON.stringify(errorData);
       throw new Error(
         `AccessToken 요청 실패 (${accessTokenResponse.status}):\n` +
-          `${errorMessage}\n\n` +
-          `Edge Function URL: ${oauthUrl}`
+        `${errorMessage}\n\n` +
+        `Edge Function URL: ${oauthUrl}`
       );
     }
 
@@ -309,7 +309,7 @@ export async function handleTossLoginFlow(
     if (!accessTokenData.success || !accessTokenData.accessToken) {
       throw new Error(
         accessTokenData.error ||
-          'AccessToken을 받을 수 없습니다. Edge Function 응답을 확인해주세요.'
+        'AccessToken을 받을 수 없습니다. Edge Function 응답을 확인해주세요.'
       );
     }
 

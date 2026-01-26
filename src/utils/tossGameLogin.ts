@@ -166,21 +166,21 @@ export interface MigrationStatusResult {
  */
 export async function getMigrationStatus(hash: string): Promise<MigrationStatusResult> {
   try {
-    if (!ENV.SUPABASE_URL || !ENV.SUPABASE_ANON_KEY) {
+    if (!ENV.VITE_SUPABASE_URL || !ENV.VITE_SUPABASE_ANON_KEY) {
       return {
         success: false,
         error: '환경 변수가 설정되지 않았습니다.',
       };
     }
 
-    const baseUrl = ENV.SUPABASE_URL.replace(/\/$/, '');
+    const baseUrl = ENV.VITE_SUPABASE_URL.replace(/\/$/, '');
     const migrationStatusUrl = `${baseUrl}/functions/v1/migration-status`;
 
     const response = await fetch(migrationStatusUrl, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        apikey: ENV.SUPABASE_ANON_KEY,
+        apikey: ENV.VITE_SUPABASE_ANON_KEY,
       },
       body: JSON.stringify({ hash }),
     });
@@ -239,21 +239,21 @@ export async function createMigrationLink(
   referrer?: string
 ): Promise<MigrationLinkResult> {
   try {
-    if (!ENV.SUPABASE_URL || !ENV.SUPABASE_ANON_KEY) {
+    if (!ENV.VITE_SUPABASE_URL || !ENV.VITE_SUPABASE_ANON_KEY) {
       return {
         success: false,
         error: '환경 변수가 설정되지 않았습니다.',
       };
     }
 
-    const baseUrl = ENV.SUPABASE_URL.replace(/\/$/, '');
+    const baseUrl = ENV.VITE_SUPABASE_URL.replace(/\/$/, '');
     const migrationLinkUrl = `${baseUrl}/functions/v1/migration-link`;
 
     const response = await fetch(migrationLinkUrl, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        apikey: ENV.SUPABASE_ANON_KEY,
+        apikey: ENV.VITE_SUPABASE_ANON_KEY,
       },
       body: JSON.stringify({
         hash,

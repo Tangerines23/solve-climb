@@ -16,7 +16,7 @@ export const withdrawAccount = async (): Promise<boolean> => {
     console.log('[탈퇴] 시작');
 
     // 1. Edge Function 호출하여 계정 삭제
-    const baseUrl = ENV.SUPABASE_URL?.replace(/\/$/, '');
+    const baseUrl = ENV.VITE_SUPABASE_URL?.replace(/\/$/, '');
     const withdrawUrl = `${baseUrl}/functions/v1/withdraw-account`;
 
     const {
@@ -33,7 +33,7 @@ export const withdrawAccount = async (): Promise<boolean> => {
           headers: {
             'Content-Type': 'application/json',
             Authorization: `Bearer ${session.access_token}`,
-            apikey: ENV.SUPABASE_ANON_KEY!,
+            apikey: ENV.VITE_SUPABASE_ANON_KEY!,
           },
           signal: controller.signal,
         });

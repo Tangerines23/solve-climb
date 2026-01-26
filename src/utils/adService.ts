@@ -30,7 +30,7 @@ export const AdService = {
         testingDevices: [
           /* '2077ef9a63d2b398840261cdd3d3a4b3' */
         ],
-        initializeForTesting: ENV.IS_DEVELOPMENT,
+        initializeForTesting: import.meta.env.DEV,
       });
       isAdMobInitialized = true;
       console.log('[AdService] AdMob Initialized');
@@ -76,7 +76,7 @@ export const AdService = {
    * 모바일 앱 전용 광고 호출 (AdMob)
    */
   async showMobileAppAd(_placement: AdPlacement): Promise<AdResult> {
-    const adId = ENV.ADMOB_REWARDED_ID;
+    const adId = ENV.VITE_ADMOB_REWARDED_ID;
     console.log(`[AdService] Attempting to show AdMob Rewarded Ad: ${adId}`);
 
     try {
@@ -111,7 +111,7 @@ export const AdService = {
    * 광고 시뮬레이션 (개발/심사 환경용)
    */
   async showSimulationAd(_placement: AdPlacement): Promise<AdResult> {
-    const isVercel = ENV.IS_VERCEL;
+    const isVercel = ENV.VITE_IS_VERCEL;
     const duration = isVercel ? 1500 : 2000; // 심사 환경에서는 약간 더 빠르게
 
     return new Promise((resolve) => {
