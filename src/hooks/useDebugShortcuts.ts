@@ -77,12 +77,10 @@ export function useDebugShortcuts() {
             console.warn('[Debug] Cannot reduce minerals below 0');
             return;
           }
-          supabase
-            .rpc('add_minerals', { p_amount: delta })
-            .then(({ error }) => {
-              if (error) console.error(error);
-              else fetchUserData();
-            });
+          supabase.rpc('add_minerals', { p_amount: delta }).then(({ error }) => {
+            if (error) console.error(error);
+            else fetchUserData();
+          });
         }
         if (selectedResource === 'items') {
           const { debugRemoveItems } = useUserStore.getState();

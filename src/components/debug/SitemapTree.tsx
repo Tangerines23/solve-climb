@@ -112,7 +112,7 @@ const TreeNode = ({
 
     console.log(
       `%c[Macro] 🏁 Full Trace Started: ${node.name}`,
-      'color: #3b82f6; font-weight: bold; font-size: 14px;'
+      'color: rgb(59, 130, 246); font-weight: bold; font-size: 14px;'
     );
 
     // 중복 제거된 순차 경로 생성 (예: 홈 -> 수학 -> 레벨)
@@ -129,7 +129,7 @@ const TreeNode = ({
         const emoji = isReturning ? '↩️' : '🚀';
         console.log(
           `%c[Macro] ${emoji} Step ${index + 1}/${fullTour.length}: ${path}`,
-          'color: #10b981'
+          'color: rgb(16, 185, 129)'
         );
 
         if (path !== '/') {
@@ -138,7 +138,10 @@ const TreeNode = ({
         navigate(path);
 
         if (index === fullTour.length - 1) {
-          console.log(`%c[Macro] ✅ Full Trace Completed!`, 'color: #10b981; font-weight: bold');
+          console.log(
+            `%c[Macro] ✅ Full Trace Completed!`,
+            'color: rgb(16, 185, 129); font-weight: bold'
+          );
         }
       }, delay);
       delay += STEP_TIME;

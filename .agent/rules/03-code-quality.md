@@ -1,0 +1,68 @@
+---
+description: 코드 품질 및 린팅 규칙
+globs: ["src/**/*.ts", "src/**/*.tsx"]
+alwaysApply: true
+---
+
+# 코드 품질 규칙
+
+## ESLint 핵심 규칙
+- `@typescript-eslint/no-explicit-any`: **warn** (새 코드는 error)
+- `no-unused-vars`: TypeScript 규칙 사용 (`^_` 패턴 허용)
+
+## 로깅 규칙
+
+```typescript
+// ❌ console.log 금지
+console.log('debug:', data);
+
+// ✅ logger 유틸리티 사용
+import { logger } from '@/utils/logger';
+logger.info('Component', '데이터 로드 완료', { data });
+logger.error('API', '요청 실패', error);
+```
+
+## TypeScript 규칙
+- `strict: true` 활성화
+- `noUnusedLocals`, `noUnusedParameters` 활성화
+- 인터페이스로 Props 타입 명시
+
+```typescript
+// ✅ 명시적 타입 정의
+interface ButtonProps {
+  label: string;
+  onClick: () => void;
+  variant?: 'primary' | 'secondary';
+}
+
+export function Button({ label, onClick, variant = 'primary' }: ButtonProps) {
+  // ...
+}
+```
+
+## Prettier 설정
+- `printWidth`: 100
+- `singleQuote`: true
+- `tabWidth`: 2
+- `trailingComma`: 'es5'
+
+## 네이밍 컨벤션
+| 대상 | 패턴 | 예시 |
+|------|------|------|
+| 컴포넌트 | PascalCase | `QuizCard.tsx` |
+| 훅 | camelCase + use 접두사 | `useQuizStore.ts` |
+| 유틸리티 | camelCase | `formatNumber.ts` |
+| 상수 | UPPER_SNAKE_CASE | `MAX_LEVEL = 15` |
+| CSS 클래스 | kebab-case | `.quiz-card-container` |
+
+## 금지 패턴
+- `== / !=` 대신 `=== / !==` 사용
+- 매직 넘버 사용 금지 (상수로 정의)
+- 중첩 삼항 연산자 금지
+
+## Deprecated 패턴 (사용 금지)
+- ❌ **Class 컴포넌트** → 함수형 컴포넌트 사용
+- ❌ **Redux** → Zustand 사용
+- ❌ **axios** → fetch 또는 Supabase 클라이언트 사용
+- ❌ **moment.js** → 네이티브 Date 또는 date-fns 사용
+- ❌ **CSS-in-JS (styled-components)** → TailwindCSS + CSS 변수 사용

@@ -133,17 +133,17 @@ export function Header({ title, showBack, onBack }: HeaderProps) {
     >
       <div className="header-content">
         {showBack && (
-          <button
-            onClick={onBack}
-            className="header-back-button"
-          >
+          <button onClick={onBack} className="header-back-button">
             ←
           </button>
         )}
         <h1
           className="header-logo"
           onClick={handleLogoClick}
-          style={{ cursor: isAdmin ? 'pointer' : 'default', fontSize: title ? '1.2rem' : undefined }}
+          style={{
+            cursor: isAdmin ? 'pointer' : 'default',
+            fontSize: title ? '1.2rem' : undefined,
+          }}
         >
           {title || APP_CONFIG.APP_NAME}
         </h1>

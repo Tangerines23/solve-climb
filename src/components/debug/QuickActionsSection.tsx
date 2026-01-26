@@ -59,17 +59,26 @@ export const QuickActionsSection = React.memo(function QuickActionsSection() {
   const [editingPreset, setEditingPreset] = useState<CustomPreset | null>(null);
 
   // 디버깅용 유저 정보
-  const [debugUserInfo, setDebugUserInfo] = useState<{ id: string; email?: string; hasProfile: boolean } | null>(null);
+  const [debugUserInfo, setDebugUserInfo] = useState<{
+    id: string;
+    email?: string;
+    hasProfile: boolean;
+  } | null>(null);
 
   useEffect(() => {
     const checkUser = async () => {
-      const { data: { user } } = await supabase.auth.getUser();
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
       if (user) {
-        const { count } = await supabase.from('profiles').select('*', { count: 'exact', head: true }).eq('id', user.id);
+        const { count } = await supabase
+          .from('profiles')
+          .select('*', { count: 'exact', head: true })
+          .eq('id', user.id);
         setDebugUserInfo({
           id: user.id,
           email: user.email,
-          hasProfile: count !== null && count > 0
+          hasProfile: count !== null && count > 0,
         });
       } else {
         setDebugUserInfo(null);
@@ -88,7 +97,7 @@ export const QuickActionsSection = React.memo(function QuickActionsSection() {
     isOpen: false,
     title: '',
     message: '',
-    onConfirm: () => { },
+    onConfirm: () => {},
   });
 
   const handleStaminaChange = async (delta: number) => {
@@ -258,8 +267,11 @@ export const QuickActionsSection = React.memo(function QuickActionsSection() {
 
       {/* 유저 디버그 정보 표시 */}
       <div className="debug-user-info-box">
-        <strong>Current User:</strong> {debugUserInfo ? `${debugUserInfo.id.slice(0, 8)}...` : 'Not Logged In'}<br />
-        <strong>Profile Exists:</strong> {debugUserInfo ? (debugUserInfo.hasProfile ? '✅ Yes' : '❌ No (DB Update Failed)') : '-'}
+        <strong>Current User:</strong>{' '}
+        {debugUserInfo ? `${debugUserInfo.id.slice(0, 8)}...` : 'Not Logged In'}
+        <br />
+        <strong>Profile Exists:</strong>{' '}
+        {debugUserInfo ? (debugUserInfo.hasProfile ? '✅ Yes' : '❌ No (DB Update Failed)') : '-'}
       </div>
 
       <div className="debug-sync-control">
@@ -303,24 +315,24 @@ export const QuickActionsSection = React.memo(function QuickActionsSection() {
             syncResult.tier.issues.length > 0 ||
             syncResult.badges.issues.length > 0 ||
             syncResult.inventory.issues.length > 0) && (
-              <div className="debug-sync-issues">
-                <h5 className="debug-sync-issues-title">발견된 문제:</h5>
-                <ul className="debug-sync-issues-list">
-                  {syncResult.profile.issues.map((issue, idx) => (
-                    <li key={`profile-${idx}`}>{issue}</li>
-                  ))}
-                  {syncResult.tier.issues.map((issue, idx) => (
-                    <li key={`tier-${idx}`}>{issue}</li>
-                  ))}
-                  {syncResult.badges.issues.map((issue, idx) => (
-                    <li key={`badges-${idx}`}>{issue}</li>
-                  ))}
-                  {syncResult.inventory.issues.map((issue, idx) => (
-                    <li key={`inventory-${idx}`}>{issue}</li>
-                  ))}
-                </ul>
-              </div>
-            )}
+            <div className="debug-sync-issues">
+              <h5 className="debug-sync-issues-title">발견된 문제:</h5>
+              <ul className="debug-sync-issues-list">
+                {syncResult.profile.issues.map((issue, idx) => (
+                  <li key={`profile-${idx}`}>{issue}</li>
+                ))}
+                {syncResult.tier.issues.map((issue, idx) => (
+                  <li key={`tier-${idx}`}>{issue}</li>
+                ))}
+                {syncResult.badges.issues.map((issue, idx) => (
+                  <li key={`badges-${idx}`}>{issue}</li>
+                ))}
+                {syncResult.inventory.issues.map((issue, idx) => (
+                  <li key={`inventory-${idx}`}>{issue}</li>
+                ))}
+              </ul>
+            </div>
+          )}
         </div>
       )}
 

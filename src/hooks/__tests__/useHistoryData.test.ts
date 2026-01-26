@@ -126,7 +126,9 @@ describe('useHistoryData', () => {
         return {
           select: vi.fn().mockReturnThis(),
           eq: vi.fn().mockReturnThis(),
-          maybeSingle: vi.fn().mockResolvedValue({ data: { total_mastery_score: 100 }, error: null }),
+          maybeSingle: vi
+            .fn()
+            .mockResolvedValue({ data: { total_mastery_score: 100 }, error: null }),
         };
       }
       return {

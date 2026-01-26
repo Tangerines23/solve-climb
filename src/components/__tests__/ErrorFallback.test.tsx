@@ -31,7 +31,7 @@ describe('ErrorFallback', () => {
     const error = new Error('Test error');
     render(<ErrorFallback error={error} resetError={vi.fn()} />);
 
-    expect(screen.getByText('산등성이에서 길을 잃었습니다')).toBeInTheDocument();
+    expect(screen.getByTestId('error-fallback-title')).toBeInTheDocument();
   });
 
   it('should call resetError when retry button is clicked', () => {
@@ -66,7 +66,7 @@ describe('ErrorFallback', () => {
     error.stack = 'Error stack trace';
     render(<ErrorFallback error={error} resetError={vi.fn()} />);
 
-    expect(screen.getByText('🛠 개발자 전용 에러 로그')).toBeInTheDocument();
+    expect(screen.getByText('🛠 Developer Debug Console')).toBeInTheDocument();
     expect(screen.getByText('Error stack trace')).toBeInTheDocument();
   });
 
@@ -76,7 +76,7 @@ describe('ErrorFallback', () => {
     render(<ErrorFallback error={error} resetError={vi.fn()} />);
 
     // Should still render error message
-    expect(screen.getByText('산등성이에서 길을 잃었습니다')).toBeInTheDocument();
+    expect(screen.getByTestId('error-fallback-title')).toBeInTheDocument();
   });
 
   it('should display error message when stack is not available', () => {

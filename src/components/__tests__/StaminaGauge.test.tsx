@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach } from 'vitest';
+import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { render, screen } from '@testing-library/react';
 import { StaminaGauge } from '../StaminaGauge';
 import { useUserStore } from '../../stores/useUserStore';
@@ -98,20 +98,20 @@ describe('StaminaGauge', () => {
     (useUserStore as unknown as ReturnType<typeof vi.fn>).mockReturnValue({ stamina: 0 });
     const { container } = render(<StaminaGauge />);
     const lightning = container.querySelector('.stamina-lightning');
-    expect(lightning).toHaveAttribute('fill', '#ff4d4d');
+    expect(lightning).toHaveAttribute('fill', 'var(--color-error)');
   });
 
   it('should use yellow color when stamina is low (<=2)', () => {
     (useUserStore as unknown as ReturnType<typeof vi.fn>).mockReturnValue({ stamina: 2 });
     const { container } = render(<StaminaGauge />);
     const lightning = container.querySelector('.stamina-lightning');
-    expect(lightning).toHaveAttribute('fill', '#ffca28');
+    expect(lightning).toHaveAttribute('fill', 'var(--color-warning)');
   });
 
   it('should use green color when stamina is good (>2)', () => {
     (useUserStore as unknown as ReturnType<typeof vi.fn>).mockReturnValue({ stamina: 3 });
     const { container } = render(<StaminaGauge />);
     const lightning = container.querySelector('.stamina-lightning');
-    expect(lightning).toHaveAttribute('fill', '#4cd964');
+    expect(lightning).toHaveAttribute('fill', 'var(--color-success)');
   });
 });

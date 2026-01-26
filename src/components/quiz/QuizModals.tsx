@@ -121,7 +121,13 @@ export function QuizModals({
         isOpen={showStaminaModal}
         onClose={() => setShowStaminaModal(false)}
         onAction={onAlertAction}
-        type={isAnonymous && (inventory.find(i => i.code === 'oxygen_tank')?.quantity || 0) <= 0 ? 'both' : isAnonymous ? 'anonymous' : 'stamina'}
+        type={
+          isAnonymous && (inventory.find((i) => i.code === 'oxygen_tank')?.quantity || 0) <= 0
+            ? 'both'
+            : isAnonymous
+              ? 'anonymous'
+              : 'stamina'
+        }
       />
     </>
   );

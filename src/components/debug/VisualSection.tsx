@@ -43,7 +43,15 @@ export const VisualSection = React.memo(function VisualSection() {
 
       <div className="debug-visual-info">
         <h4 className="debug-subsection-title">🔥 이펙트 테스트 (In-Game)</h4>
-        <div className="debug-effect-controls" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 'var(--spacing-sm)', marginTop: 'var(--spacing-sm)' }}>
+        <div
+          className="debug-effect-controls"
+          style={{
+            display: 'grid',
+            gridTemplateColumns: '1fr 1fr',
+            gap: 'var(--spacing-sm)',
+            marginTop: 'var(--spacing-sm)',
+          }}
+        >
           <button
             className="debug-action-button"
             onClick={() => useGameStore.setState({ feverLevel: 1 })}

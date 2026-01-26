@@ -493,7 +493,7 @@ export function QuizPage() {
 
     // 4. 아이템 소모 (로컬 UI 처리, 실제 소모는 QuizCard에서 호출됨)
     // 여기서는 타이머 리셋 키를 업데이트하여 TimerCircle 강제 리렌더링 (안전장치)
-    setTimerResetKey(prev => prev + 1);
+    setTimerResetKey((prev) => prev + 1);
   }, [incrementCombo, animations]);
 
   const handleSafetyRopeUsed = useCallback(() => {
@@ -627,19 +627,24 @@ export function QuizPage() {
     await startWithItems(pendingItemIds);
   };
 
-  const onAlertAction = useCallback(async (action: 'login' | 'charge' | 'play') => {
-    switch (action) {
-      case 'login':
-        navigate('/login', { state: { from: window.location.pathname + window.location.search } });
-        break;
-      case 'charge':
-        await handleStaminaAdRecovery();
-        break;
-      case 'play':
-        await handlePlayAnyway();
-        break;
-    }
-  }, [navigate, handleStaminaAdRecovery, handlePlayAnyway]);
+  const onAlertAction = useCallback(
+    async (action: 'login' | 'charge' | 'play') => {
+      switch (action) {
+        case 'login':
+          navigate('/login', {
+            state: { from: window.location.pathname + window.location.search },
+          });
+          break;
+        case 'charge':
+          await handleStaminaAdRecovery();
+          break;
+        case 'play':
+          await handlePlayAnyway();
+          break;
+      }
+    },
+    [navigate, handleStaminaAdRecovery, handlePlayAnyway]
+  );
 
   useEffect(() => {
     if (worldParam && categoryParam && levelParam !== null)

@@ -154,7 +154,7 @@ export function ResultPage() {
         );
         const ranks =
           useLevelProgressStore.getState().rankings[
-          `${worldParam}-${categoryParam}-weekly-${mode === 'time-attack' ? 'time-attack' : 'survival'}`
+            `${worldParam}-${categoryParam}-weekly-${mode === 'time-attack' ? 'time-attack' : 'survival'}`
           ];
         const {
           data: { user },

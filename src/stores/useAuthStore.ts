@@ -41,7 +41,11 @@ export const useAuthStore = create<AuthState>((set) => ({
     });
 
     // If no session and valid URL exists, try anonymous sign-in
-    if (!session && supabase.auth.admin /* checking for client readiness or simple ENV check */ && !supabase.auth.getSession.toString().includes('localhost')) {
+    if (
+      !session &&
+      supabase.auth.admin /* checking for client readiness or simple ENV check */ &&
+      !supabase.auth.getSession.toString().includes('localhost')
+    ) {
       // Actually a better way is to check the client instance origin or just the ENV again
     }
 

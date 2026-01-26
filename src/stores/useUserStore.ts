@@ -407,9 +407,14 @@ export const useUserStore = create<UserState>((set, get) => ({
     console.log(`[DEBUG] Attempting to set stamina to ${newStamina} for user ${user.id}...`);
 
     // 1. 프로필 존재 여부 확인 (디버깅용)
-    const { count } = await supabase.from('profiles').select('*', { count: 'exact', head: true }).eq('id', user.id);
+    const { count } = await supabase
+      .from('profiles')
+      .select('*', { count: 'exact', head: true })
+      .eq('id', user.id);
     if (count === 0) {
-      console.error('[DEBUG] debugSetStamina: Profile row not found for user. Inserting default profile...');
+      console.error(
+        '[DEBUG] debugSetStamina: Profile row not found for user. Inserting default profile...'
+      );
       // 프로필 생성 시도
       await supabase.from('profiles').insert({ id: user.id, stamina: newStamina });
     }

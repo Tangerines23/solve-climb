@@ -5,14 +5,14 @@ import { calculateScoreForTier } from './tierUtils';
 
 export interface DebugAction {
   type:
-  | 'reset'
-  | 'setTier'
-  | 'setMasteryScore'
-  | 'setMinerals'
-  | 'setStamina'
-  | 'grantAllItems'
-  | 'grantAllBadges'
-  | 'setGameTime';
+    | 'reset'
+    | 'setTier'
+    | 'setMasteryScore'
+    | 'setMinerals'
+    | 'setStamina'
+    | 'grantAllItems'
+    | 'grantAllBadges'
+    | 'setGameTime';
   target?: string; // reset 타입에서 사용 ('all' | 'score' | 'minerals' | 'tier')
   level?: number; // setTier에서 사용
   value?: number; // setMinerals, setStamina, setMasteryScore에서 사용

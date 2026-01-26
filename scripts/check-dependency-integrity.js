@@ -1,6 +1,5 @@
 import fs from 'fs';
 import path from 'path';
-import { execSync } from 'child_process';
 
 /**
  * [의존성 체크 스크립트]

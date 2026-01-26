@@ -1,19 +1,19 @@
 .debug-page {
-    background-color: var(--color-bg-primary);
-    /* Slate 900 */
-    /* min-height and overflow removed to allow natural body scroll */
-    min-height: 100vh;
-    height: auto !important;
-    display: block !important;
-    overflow-y: visible !important;
+  background-color: var(--color-bg-primary);
+  /* Slate 900 */
+  /* min-height and overflow removed to allow natural body scroll */
+  min-height: 100vh;
+  height: auto !important;
+  display: block !important;
+  overflow-y: visible !important;
 }
 
 .debug-page-content {
-    /* Custom scrollbar if needed */
+  /* Custom scrollbar if needed */
 }
 
 .debug-section-group h2 {
-    font-size: 1.25rem;
-    font-weight: 700;
-    color: var(--color-text-primary);
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: var(--color-text-primary);
 }

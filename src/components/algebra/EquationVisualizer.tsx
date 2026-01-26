@@ -105,7 +105,11 @@ export function EquationVisualizer({
 
       <p
         className="instruction-text"
-        style={{ marginTop: 'var(--spacing-lg)', color: 'var(--color-text-secondary)', fontSize: '0.9rem' }}
+        style={{
+          marginTop: 'var(--spacing-lg)',
+          color: 'var(--color-text-secondary)',
+          fontSize: '0.9rem',
+        }}
       >
         항을 클릭하여 이항해보세요!
       </p>

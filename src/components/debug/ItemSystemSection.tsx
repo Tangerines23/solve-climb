@@ -16,7 +16,10 @@ export function ItemSystemSection() {
   const [itemQuantities, setItemQuantities] = useState<Record<number, string>>({});
   const [isLoading, setIsLoading] = useState(true);
   const [isUpdating, setIsUpdating] = useState(false);
-  const [message, setMessage] = useState<{ type: 'success' | 'error' | 'info'; text: string } | null>(null);
+  const [message, setMessage] = useState<{
+    type: 'success' | 'error' | 'info';
+    text: string;
+  } | null>(null);
   const [usingItemId, setUsingItemId] = useState<number | null>(null);
 
   useEffect(() => {
@@ -184,7 +187,11 @@ export function ItemSystemSection() {
 
   const handleRestoreShopItems = async () => {
     if (isUpdating) return;
-    if (!confirm('상점 아이템 데이터베이스를 강제 복구하시겠습니까?\n(items 테이블의 데이터가 없거나 유실된 경우에만 실행하세요)'))
+    if (
+      !confirm(
+        '상점 아이템 데이터베이스를 강제 복구하시겠습니까?\n(items 테이블의 데이터가 없거나 유실된 경우에만 실행하세요)'
+      )
+    )
       return;
 
     try {
@@ -193,11 +200,46 @@ export function ItemSystemSection() {
 
       // [보안] 클라이언트 사이드 시딩 (RPC 권한 이슈 방어용)
       const defaultItems = [
-        { id: 1, code: 'oxygen_tank', name: '산소통', price: 500, description: '제한 시간 +10초', category: 'time' },
-        { id: 2, code: 'power_gel', name: '파워젤', price: 300, description: '시작 시 모멘텀(콤보1) 활성', category: 'buff' },
-        { id: 3, code: 'safety_rope', name: '안전 로프', price: 1000, description: '오답 1회 방어', category: 'defense' },
-        { id: 4, code: 'flare', name: '구조 신호탄', price: 1500, description: '게임 오버 시 부활', category: 'revive' },
-        { id: 202, code: 'last_spurt', 'name': '라스트 스퍼트', price: 800, description: '시간 0초 시 +15초 추가 + 5초 피버', category: 'trigger' }
+        {
+          id: 1,
+          code: 'oxygen_tank',
+          name: '산소통',
+          price: 500,
+          description: '제한 시간 +10초',
+          category: 'time',
+        },
+        {
+          id: 2,
+          code: 'power_gel',
+          name: '파워젤',
+          price: 300,
+          description: '시작 시 모멘텀(콤보1) 활성',
+          category: 'buff',
+        },
+        {
+          id: 3,
+          code: 'safety_rope',
+          name: '안전 로프',
+          price: 1000,
+          description: '오답 1회 방어',
+          category: 'defense',
+        },
+        {
+          id: 4,
+          code: 'flare',
+          name: '구조 신호탄',
+          price: 1500,
+          description: '게임 오버 시 부활',
+          category: 'revive',
+        },
+        {
+          id: 202,
+          code: 'last_spurt',
+          name: '라스트 스퍼트',
+          price: 800,
+          description: '시간 0초 시 +15초 추가 + 5초 피버',
+          category: 'trigger',
+        },
       ];
 
       for (const item of defaultItems) {
@@ -205,7 +247,10 @@ export function ItemSystemSection() {
         if (error) throw error;
       }
 
-      setMessage({ type: 'success', text: '상점 아이템이 성공적으로 복구되었습니다! 상점 페이지를 새로고침하세요.' });
+      setMessage({
+        type: 'success',
+        text: '상점 아이템이 성공적으로 복구되었습니다! 상점 페이지를 새로고침하세요.',
+      });
       await loadItems();
     } catch (err) {
       setMessage({

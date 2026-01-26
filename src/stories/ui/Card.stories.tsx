@@ -144,7 +144,12 @@ export const MyRecordLoading: Story = {
         ></div>
         <div
           className="skeleton-item"
-          style={{ height: '16px', width: '80%', backgroundColor: 'var(--color-bg-tertiary)', borderRadius: 'var(--rounded-xs)' }}
+          style={{
+            height: '16px',
+            width: '80%',
+            backgroundColor: 'var(--color-bg-tertiary)',
+            borderRadius: 'var(--rounded-xs)',
+          }}
         ></div>
       </div>
     </div>

@@ -43,10 +43,10 @@ export function FunctionMachine({ type, value, input }: FunctionMachineProps) {
           animate={
             phase === 'process'
               ? {
-                scale: [1, 1.05, 0.95, 1.05, 1],
-                rotate: [0, -2, 2, -1, 1, 0],
-                filter: ['brightness(1)', 'brightness(1.2)', 'brightness(1)'],
-              }
+                  scale: [1, 1.05, 0.95, 1.05, 1],
+                  rotate: [0, -2, 2, -1, 1, 0],
+                  filter: ['brightness(1)', 'brightness(1.2)', 'brightness(1)'],
+                }
               : {}
           }
           transition={{ duration: 0.5, repeat: phase === 'process' ? Infinity : 0 }}
@@ -72,11 +72,11 @@ export function FunctionMachine({ type, value, input }: FunctionMachineProps) {
               initial={{ x: -150, opacity: 0 }}
               animate={{ x: phase === 'input' ? -150 : 0, opacity: 1 }} // Start far left
               exit={{ x: 0, opacity: 0, scale: 0.5 }} // Move to center (0 relative to wrapper center? No, absolute positioning needed)
-            // Let's use layout animation or absolute positioning logic
-            // Actually, let's keep it simple relative to container.
-            // Container is flux center.
-            // Machine is center.
-            // Input starts left (-150px) and moves to center (0px) then disappears inside
+              // Let's use layout animation or absolute positioning logic
+              // Actually, let's keep it simple relative to container.
+              // Container is flux center.
+              // Machine is center.
+              // Input starts left (-150px) and moves to center (0px) then disappears inside
             >
               {input}
             </motion.div>
@@ -113,7 +113,11 @@ export function FunctionMachine({ type, value, input }: FunctionMachineProps) {
 
       <p
         className="instruction-text"
-        style={{ marginTop: 'var(--spacing-lg)', color: 'var(--color-text-secondary)', fontSize: '0.9rem' }}
+        style={{
+          marginTop: 'var(--spacing-lg)',
+          color: 'var(--color-text-secondary)',
+          fontSize: '0.9rem',
+        }}
       >
         {phase === 'output' ? '결과를 예측해보세요!' : '함수 상자가 작동 중입니다...'}
       </p>

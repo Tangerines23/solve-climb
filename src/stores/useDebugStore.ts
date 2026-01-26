@@ -8,20 +8,20 @@ interface DebugState {
   // Level 2: 고급 디버그 패널
   isDebugPanelOpen: boolean;
   activeTab:
-  | 'quick'
-  | 'auth'
-  | 'ui_lab'
-  | 'tier'
-  | 'badge'
-  | 'game'
-  | 'item'
-  | 'data'
-  | 'errors'
-  | 'boundary'
-  | 'network'
-  | 'visual'
-  | 'macro'
-  | 'progression';
+    | 'quick'
+    | 'auth'
+    | 'ui_lab'
+    | 'tier'
+    | 'badge'
+    | 'game'
+    | 'item'
+    | 'data'
+    | 'errors'
+    | 'boundary'
+    | 'network'
+    | 'visual'
+    | 'macro'
+    | 'progression';
 
   // 무한 모드
   infiniteStamina: boolean;

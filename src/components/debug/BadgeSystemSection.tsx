@@ -379,24 +379,24 @@ export function BadgeSystemSection() {
             syncResult.tier.issues.length > 0 ||
             syncResult.badges.issues.length > 0 ||
             syncResult.inventory.issues.length > 0) && (
-              <div className="debug-sync-issues">
-                <h5 className="debug-sync-issues-title">발견된 문제:</h5>
-                <ul className="debug-sync-issues-list">
-                  {syncResult.profile.issues.map((issue, idx) => (
-                    <li key={`profile-${idx}`}>{issue}</li>
-                  ))}
-                  {syncResult.tier.issues.map((issue, idx) => (
-                    <li key={`tier-${idx}`}>{issue}</li>
-                  ))}
-                  {syncResult.badges.issues.map((issue, idx) => (
-                    <li key={`badges-${idx}`}>{issue}</li>
-                  ))}
-                  {syncResult.inventory.issues.map((issue, idx) => (
-                    <li key={`inventory-${idx}`}>{issue}</li>
-                  ))}
-                </ul>
-              </div>
-            )}
+            <div className="debug-sync-issues">
+              <h5 className="debug-sync-issues-title">발견된 문제:</h5>
+              <ul className="debug-sync-issues-list">
+                {syncResult.profile.issues.map((issue, idx) => (
+                  <li key={`profile-${idx}`}>{issue}</li>
+                ))}
+                {syncResult.tier.issues.map((issue, idx) => (
+                  <li key={`tier-${idx}`}>{issue}</li>
+                ))}
+                {syncResult.badges.issues.map((issue, idx) => (
+                  <li key={`badges-${idx}`}>{issue}</li>
+                ))}
+                {syncResult.inventory.issues.map((issue, idx) => (
+                  <li key={`inventory-${idx}`}>{issue}</li>
+                ))}
+              </ul>
+            </div>
+          )}
         </div>
       )}
 

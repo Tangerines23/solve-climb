@@ -52,7 +52,11 @@ const DebugOverlay = import.meta.env.DEV
   ? lazy(() => import('./components/debug/DebugOverlay').then((m) => ({ default: m.DebugOverlay })))
   : null;
 const DebugReturnFloater = import.meta.env.DEV
-  ? lazy(() => import('./components/debug/DebugReturnFloater').then((m) => ({ default: m.DebugReturnFloater })))
+  ? lazy(() =>
+      import('./components/debug/DebugReturnFloater').then((m) => ({
+        default: m.DebugReturnFloater,
+      }))
+    )
   : null;
 
 function App() {
