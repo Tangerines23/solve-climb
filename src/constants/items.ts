@@ -33,5 +33,3 @@ export const ITEM_METADATA: Record<string, ItemMetadata> = {
 };
 
 export const getItemEmoji = (code: string) => ITEM_METADATA[code]?.emoji || '📦';
-export const getItemName = (code: string) => ITEM_METADATA[code]?.name || '알 수 없는 아이템';
-export const getItemDescription = (code: string) => ITEM_METADATA[code]?.description || '';

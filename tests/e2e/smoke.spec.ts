@@ -1,5 +1,6 @@
 import { test, expect } from '@playwright/test';
 import { AxeBuilder } from '@axe-core/playwright';
+import { expectNoOverflow } from './utils/overflow';
 
 test.describe('SMOKE TEST - 메인 화면 검증', () => {
   test('홈 화면이 정상적으로 로드되어야 한다', async ({ page }) => {
@@ -12,6 +13,9 @@ test.describe('SMOKE TEST - 메인 화면 검증', () => {
     // 3. 산 선택 카드(CategoryList)가 보이는지 확인
     const mountainCards = page.locator('.category-item-card');
     await expect(mountainCards.first()).toBeVisible();
+
+    // 4. UI 레이아웃 무결성 확인 (Overflow 체크)
+    await expectNoOverflow(page);
   });
 
   test('홈 화면 시각적 회귀 테스트 (Visual Regression)', async ({ page }) => {
@@ -54,5 +58,8 @@ test.describe('SMOKE TEST - 메인 화면 검증', () => {
     // 3. 페이지 렌더링 확인 (에러 메시지 없음)
     const container = page.locator('.category-select-container, .topic-select-page');
     await expect(container).toBeVisible();
+
+    // 4. UI 레이아웃 무결성 확인
+    await expectNoOverflow(page);
   });
 });

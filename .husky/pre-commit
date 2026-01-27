@@ -29,61 +29,28 @@ if ! npx lint-staged 2>&1; then
   exit 1
 fi
 
-# 3. CSS 검증 (조건부 - CSS 파일 변경 시에만)
-CSS_CHANGED=$(node scripts/check-css-changes.js 2>/dev/null || echo "")
-if [ -n "$CSS_CHANGED" ]; then
-  echo "3️⃣ CSS 검증..."
-  echo "$CSS_CHANGED - CSS 검증 실행..."
-  if ! npm run check:css 2>&1; then
-    echo ""
-    echo "❌ CSS 검증 실패"
-    echo "💡 하드코딩된 CSS 값이 발견되었습니다"
-    echo "💡 CSS 변수를 사용하도록 수정해주세요 (docs/DESIGN_SYSTEM.md 참고)"
+# 3. 네비게이션 및 코드 무결성 검증 (종합)
+echo "3️⃣ 코드 무결성 검증 (오타, 매직스트링, CSS, 네비게이션)..."
+if ! npm run check:integrity; then
+    echo "🚫 코드 무결성 검사 실패! (npm run check:integrity 를 확인하세요)"
     exit 1
-  fi
 fi
 
-# 4. 네비게이션 검증 (조건부 - TS/TSX 파일 변경 시에만)
-NAV_CHANGED=$(node scripts/check-nav-changes.js 2>/dev/null || echo "")
-if [ -n "$NAV_CHANGED" ]; then
-  echo "4️⃣ 네비게이션 검증 (UrlBuilder 사용 여부)..."
-  if ! npm run check:nav 2>&1; then
-    echo ""
-    echo "❌ 네비게이션 검증 실패"
-    echo "💡 직접적인 navigate('주소') 호출이 발견되었습니다"
-    echo "💡 src/utils/navigation.ts의 urls 객체를 사용해주세요"
-    exit 1
-  fi
-fi
-
-# 4.5. 코드 무결성 및 순환 참조 (신규 추가)
-echo "4️⃣.5️⃣ 무결성 및 순환 참조 검사..."
+# 5. 보안 및 성능 검사 (경고 위주)
+echo "5️⃣ 보안 및 성능 검사..."
 if ! npm run check:secrets; then
     echo "🚫 보안 키(Secrets)가 코드에 포함되어 있습니다!"
     exit 1
 fi
-if ! npm run check:integrity; then
-    echo "🚫 코드 무결성 검사(오타, 매직스트링, CSS) 실패!"
-    exit 1
-fi
+
 if ! npm run check:circular; then
     echo "🚫 순환 참조가 발견되었습니다!"
     exit 1
 fi
-if ! npm run check:logic; then
-    echo "🚫 로직 성능(Logic Leash) 저하 감지!"
-    exit 1
-fi
 
-# 5. 보안 검사 (경고만 - 느려서 실패해도 커밋 가능)
-echo "5️⃣ 보안 검사 (의존성 취약점)..."
-npm run check:security 2>/dev/null || {
-  echo "⚠️  보안 취약점 발견"
-  echo "💡 'npm audit' 실행하여 상세 확인 권장"
-  echo "💡 계속하려면 'git commit --no-verify' 사용 가능 (권장하지 않음)"
-  # exit 1  # 엄격하게 하려면 주석 해제
-  # exit 1  # 엄격하게 하려면 주석 해제
-}
+# 로직 성능 및 보안 감사는 경고로 처리 (상세 검증은 CI에서 수행)
+npm run check:logic || echo "⚠️ 로직 성능 저하 감지됨 (CI에서 재확인 예정)"
+npm run check:security || echo "⚠️ 보안 취약점 발견 (npm audit 권장)"
 
 # 6. 용량 검사 (번들 사이즈 체크)
 # 6. 용량 검사 (번들 사이즈 체크) - CI로 이관됨

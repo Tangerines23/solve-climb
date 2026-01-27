@@ -23,13 +23,6 @@ export const ItemActionResponseSchema = CommonResponseSchema.extend({
   new_quantity: z.number().optional(),
 });
 
-// 3. 스테미나 관련 응답
-export const StaminaResponseSchema = z.object({
-  current_stamina: z.number(),
-  max_stamina: z.number(),
-  last_recovery_at: z.string().nullable(),
-  next_recovery_seconds: z.number().optional(),
-});
 
 // 4. 랭킹 데이터 응답 (get_ranking_v2)
 export const RankingRecordSchema = z.object({
@@ -44,27 +37,8 @@ export const RankingRecordSchema = z.object({
 export const RankingListSchema = z.array(RankingRecordSchema);
 
 // 5. 게임 결과 제출 응답 (submit_game_result)
-export const TierInfoSchema = z.object({
-  level: z.number(),
-  stars: z.number(),
-  total_score: z.number(),
-  current_cycle_score: z.number(),
-});
 
-export const GameResultResponseSchema = z.object({
-  success: z.boolean(),
-  previous_tier: TierInfoSchema,
-  current_tier: TierInfoSchema,
-  is_tier_up: z.boolean(),
-  is_promotion_pending: z.boolean(),
-});
 
-// 6. 게임 세션 생성 응답
-export const GameSessionResponseSchema = z.object({
-  session_id: z.string(),
-  expires_at: z.string(),
-  questions: z.array(z.any()), // 복잡한 구조는 일단 any로 시작하되 점진적 고도화
-});
 
 /**
  * RPC 응답을 Zod 스키마로 검증하는 유틸리티

@@ -181,16 +181,3 @@ export const logger = {
   },
 };
 
-/**
- * 로그 레벨 확인 (개발 환경에서만)
- */
-export function getLogLevel(): LogLevel {
-  return LOG_LEVEL;
-}
-
-/**
- * 로깅 활성화 여부 확인
- */
-export function isLoggingEnabled(): boolean {
-  return isDevelopment || LOG_LEVEL <= LogLevel.ERROR;
-}

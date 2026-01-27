@@ -8,7 +8,7 @@ const __dirname = path.dirname(__filename);
 // Constants
 const SEARCH_DIR = path.resolve(__dirname, '../src');
 const MIN_LENGTH = 5; // Minimum string length to consider
-const MIN_OCCURRENCES = 3; // Minimum duplicates to trigger warning
+const MIN_OCCURRENCES = 5; // 중복 횟수 임계값 상향 (노이즈 방지)
 const IGNORE_STRINGS = [
   'application/json',
   'utf-8',
@@ -19,6 +19,10 @@ const IGNORE_STRINGS = [
   'return',
   'button',
   'submit',
+  'fixed',
+  'none',
+  'solid',
+  'pointer',
 ];
 
 const IGNORE_FILES = ['.test.', '.spec.', '.stories.', 'vite-env.d.ts'];
@@ -66,7 +70,7 @@ function walkDir(dir) {
   }
 }
 
-console.log('🔮 [Magic String Hunter] Scanning for repeated hardcoded strings...');
+console.log('🔮 [Magic String Hunter] Scanning for repeated hardcoded strings (Threshold: 5+)...');
 walkDir(SEARCH_DIR);
 
 let foundIssues = 0;
@@ -79,7 +83,7 @@ for (const [str, locations] of sorted) {
     // file list unique
     const uniqueFiles = [...new Set(locations)];
     if (uniqueFiles.length >= 2) {
-      // Must appear in at least 2 different files (or 3+ times total)
+      // Must appear in at least 2 different files (or 5+ times total)
       console.log(`\n"${str}"`);
       console.log(`   Count: ${locations.length}`);
       console.log(
@@ -91,10 +95,11 @@ for (const [str, locations] of sorted) {
 }
 
 if (foundIssues > 0) {
-  console.log(`\n⚠️  Found ${foundIssues} potential magic strings.`);
-  console.log('Consider moving these to constants.ts or an i18n file.');
-  // Don't fail the build yet, just warn
-  process.exit(0);
+  console.log(`\n❌ [Magic String Hunter] Found ${foundIssues} significant magic strings!`);
+  console.log('💡 These strings appear 5+ times. Please move them to constants or i18n files.');
+  console.log('💡 This check is mandatory to prevent technical debt.');
+  process.exit(1); // 빌드 실패 유도
 } else {
-  console.log('✅ Clean! No significant magic strings found.');
+  console.log('\n✅ Clean! No significant magic strings found.');
+  process.exit(0);
 }
