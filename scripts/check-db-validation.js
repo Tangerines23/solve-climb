@@ -10,8 +10,9 @@ const supabaseUrl = process.env.VITE_SUPABASE_URL;
 const supabaseKey = process.env.VITE_SUPABASE_ANON_KEY;
 
 if (!supabaseUrl || !supabaseKey) {
-    console.error('❌ Error: Supabase credentials not found');
-    console.error('Please set VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY');
+    console.error('❌ Error: Supabase credentials not found in environment variables.');
+    console.error('Expected VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY.');
+    console.error('Note: If running in GitHub Actions, ensure these are set as Repository Secrets.');
     process.exit(1);
 }
 
@@ -26,6 +27,13 @@ async function runDBValidation() {
 
         if (error) {
             console.error('❌ Error running DB tests:', error.message);
+            if (error.code === 'PGRST116') {
+                console.error('💡 Hint: The RPC function "test_db_all_validations" was not found.');
+                console.error('   Please ensure you have applied the latest SQL migrations to your Supabase project.');
+            } else if (error.message.includes('relation "public.game_records" does not exist')) {
+                console.error('💡 Hint: Your database is still using the old schema or the RPC function is outdated.');
+                console.error('   Please re-apply the updated migrations (20260126000004_add_db_validation_system.sql and 20260126000005_add_advanced_db_validation.sql).');
+            }
             process.exit(1);
         }
 
