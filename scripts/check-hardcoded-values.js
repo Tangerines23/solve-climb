@@ -89,7 +89,9 @@ function checkFile(filePath) {
     }
 
     // 하드코딩된 border-radius 검사 (CSS 및 TSX CamelCase 대응)
-    const borderRadiusMatch = line.match(/border[a-z]*Radius:\s*['"]?(\d+)px['"]?/gi) || line.match(/border-radius:\s*(\d+)px/gi);
+    const borderRadiusMatch =
+      line.match(/border[a-z]*Radius:\s*['"]?(\d+)px['"]?/gi) ||
+      line.match(/border-radius:\s*(\d+)px/gi);
     if (borderRadiusMatch) {
       const hasVar = line.includes('var(--');
       if (!hasVar && !isAllowedHardcoding(filePath, line)) {
@@ -116,7 +118,9 @@ function walkDir(dir, fileList = []) {
 
     if (stat.isDirectory()) {
       // node_modules, dist, .git, apps-in-toss-examples-main, __tests__ 제외
-      if (!['node_modules', 'dist', '.git', 'apps-in-toss-examples-main', '__tests__'].includes(file)) {
+      if (
+        !['node_modules', 'dist', '.git', 'apps-in-toss-examples-main', '__tests__'].includes(file)
+      ) {
         walkDir(filePath, fileList);
       }
     } else {
@@ -146,6 +150,10 @@ function main() {
     checkFile(file);
   });
 
+  console.log(
+    `\nDEBUG: Found ${issues.colors.length} color issues, ${issues.spacing.length} spacing issues, ${issues.borderRadius.length} radius issues.`
+  );
+
   // 결과 출력
   const totalIssues = issues.colors.length + issues.spacing.length + issues.borderRadius.length;
 
@@ -163,6 +171,8 @@ function main() {
       console.log(`   ${issue.code}`);
       console.log(`   → ${issue.value} → var(--color-*) 사용 권장\n`);
     });
+  } else {
+    console.log('DEBUG: No hardcoded colors found.');
   }
 
   if (issues.spacing.length > 0) {

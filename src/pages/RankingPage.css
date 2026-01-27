@@ -8,14 +8,14 @@
 
 .ranking-main {
   flex: 1;
-  padding-bottom: 80px;
+  padding-bottom: calc(var(--spacing-4xl) * 2);
   display: flex;
   flex-direction: column;
 }
 
 /* Layer 1: Tabs Styling */
 .ranking-tabs-container {
-  padding: 80px var(--spacing-xl) var(--spacing-small-alt);
+  padding: calc(var(--spacing-4xl) * 2) var(--spacing-xl) var(--spacing-small-alt);
   background: linear-gradient(180deg, rgba(0, 0, 0, 0.3) 0%, transparent 100%);
 }
 
@@ -173,7 +173,7 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 18px var(--spacing-xl);
+  padding: var(--spacing-lg) var(--spacing-xl);
   background: var(--bg-glass-card);
   border-radius: var(--rounded-md);
   border: var(--border-glass);
@@ -283,7 +283,7 @@
 /* My Rank Sticky */
 .my-rank-sticky {
   position: fixed;
-  bottom: 80px;
+  bottom: calc(var(--spacing-4xl) * 2);
   left: 0;
   right: 0;
   padding: var(--spacing-lg) var(--spacing-xl);
@@ -294,4 +294,39 @@
 
 .my-rank-sticky .ranking-item {
   box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.5);
+}
+
+/* Realtime Live Badge */
+.live-badge {
+  background-color: var(--color-toss-red);
+  color: white;
+  font-size: 0.75rem;
+  font-weight: bold;
+  padding: var(--spacing-micro) var(--spacing-tiny);
+  border-radius: var(--rounded-2xs);
+  animation: live-pulse 2s infinite;
+  box-shadow: 0 0 5px rgba(255, 75, 75, 0.5);
+  margin-left: 8px;
+  display: inline-block;
+  vertical-align: middle;
+}
+
+@keyframes live-pulse {
+  0% {
+    opacity: 1;
+    box-shadow: 0 0 5px rgba(255, 75, 75, 0.5);
+    transform: scale(1);
+  }
+
+  50% {
+    opacity: 0.8;
+    box-shadow: 0 0 10px rgba(255, 75, 75, 0.8);
+    transform: scale(1.05);
+  }
+
+  100% {
+    opacity: 1;
+    box-shadow: 0 0 5px rgba(255, 75, 75, 0.5);
+    transform: scale(1);
+  }
 }

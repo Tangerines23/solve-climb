@@ -43,47 +43,7 @@ export interface Database {
           updated_at?: string;
         };
       };
-      game_records: {
-        Row: {
-          id: string;
-          user_id: string;
-          category: string;
-          subject: string;
-          level: number;
-          mode: string;
-          score: number;
-          cleared: boolean;
-          cleared_at: string | null;
-          created_at: string;
-          updated_at: string;
-        };
-        Insert: {
-          id?: string;
-          user_id: string;
-          category: string;
-          subject: string;
-          level: number;
-          mode: string;
-          score?: number;
-          cleared?: boolean;
-          cleared_at?: string | null;
-          created_at?: string;
-          updated_at?: string;
-        };
-        Update: {
-          id?: string;
-          user_id?: string;
-          category?: string;
-          subject?: string;
-          level?: number;
-          mode?: string;
-          score?: number;
-          cleared?: boolean;
-          cleared_at?: string | null;
-          created_at?: string;
-          updated_at?: string;
-        };
-      };
+
       today_challenges: {
         Row: {
           id: string;
@@ -188,19 +148,6 @@ export interface Database {
       [_ in never]: never;
     };
     Functions: {
-      get_ranking: {
-        Args: {
-          p_category: string;
-          p_mode: string;
-          p_limit?: number;
-        };
-        Returns: {
-          user_id: string;
-          nickname: string;
-          total_score: number;
-          rank: number;
-        }[];
-      };
       purchase_item: {
         Args: {
           p_item_id: number;

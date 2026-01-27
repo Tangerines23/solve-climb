@@ -95,7 +95,7 @@ describe('debugPresets tests', () => {
     vi.mocked(supabase.rpc).mockResolvedValue({ data: null, error: null } as any);
   });
 
-  describe('Custom Presets Manaement', () => {
+  describe('Custom Presets Management', () => {
     it('should return empty array when localStorage is empty', () => {
       expect(getCustomPresets()).toEqual([]);
     });

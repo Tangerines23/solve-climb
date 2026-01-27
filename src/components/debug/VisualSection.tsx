@@ -73,8 +73,8 @@ export const VisualSection = React.memo(function VisualSection() {
           <button
             className="debug-action-button"
             onClick={() => {
-              const currentwords = useGameStore.getState().combo;
-              useGameStore.getState().setCombo(currentwords + 1);
+              const currentCombo = useGameStore.getState().combo;
+              useGameStore.getState().setCombo(currentCombo + 1);
             }}
           >
             콤보 +1

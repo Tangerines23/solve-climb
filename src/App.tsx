@@ -58,6 +58,11 @@ const DebugReturnFloater = import.meta.env.DEV
       }))
     )
   : null;
+const VisualGuardian = import.meta.env.DEV
+  ? lazy(() =>
+      import('./components/dev/VisualGuardian').then((m) => ({ default: m.VisualGuardian }))
+    )
+  : null;
 
 function App() {
   // 네트워크 연결 상태 감시
@@ -166,6 +171,8 @@ function App() {
         {import.meta.env.DEV && DebugOverlay && <DebugOverlay />}
         {/* Debug Return Floater (Quick back to debug page) */}
         {import.meta.env.DEV && DebugReturnFloater && <DebugReturnFloater />}
+        {/* Visual Guardian (Overflow Detector) */}
+        {import.meta.env.DEV && VisualGuardian && <VisualGuardian />}
       </Suspense>
     </ErrorBoundary>
   );

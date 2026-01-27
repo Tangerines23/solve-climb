@@ -40,6 +40,8 @@ describe('useUserStore (Comprehensive Tests)', () => {
       isLoading: false,
       lastStaminaConsumeTime: 0,
       showPauseModal: false,
+      isAnonymous: false,
+      remainingPauses: 3,
     });
   });
 

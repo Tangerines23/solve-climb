@@ -6,7 +6,7 @@ import { debugSupabaseQuery } from '../utils/debugFetch';
 import { validatedRpc, RankingListSchema } from '../utils/rpcValidator';
 import { GameMode } from '../types/quiz';
 import { useDebugStore } from './useDebugStore';
-import type { UserResponse } from '@supabase/supabase-js';
+import type { UserResponse, RealtimeChannel } from '@supabase/supabase-js';
 
 export interface LevelRecord {
   level: number;
@@ -41,8 +41,10 @@ export interface RankingRecord {
 
 interface LevelProgressState {
   progress: UserProgress;
-  rankings: { [key: string]: RankingRecord[] }; // category-mode key
-  // ... existing
+  rankings: { [key: string]: RankingRecord[] };
+  rankingVersion: number; // For triggering re-renders on realtime updates
+  _rankingSubscription: RealtimeChannel | null; // Internal subscription reference
+
   getLevelProgress: (world: string, category: string) => LevelRecord[];
   isLevelCleared: (world: string, category: string, level: number) => boolean;
   getNextLevel: (world: string, category: string) => number;
@@ -87,6 +89,8 @@ interface LevelProgressState {
     type: 'total' | 'time-attack' | 'survival' | 'infinite',
     limit?: number
   ) => Promise<void>;
+  subscribeToRankingUpdates: () => void;
+  unsubscribeFromRankingUpdates: () => void;
 }
 
 const getDefaultLevelRecord = (level: number): LevelRecord => ({
@@ -104,6 +108,8 @@ export const useLevelProgressStore = create<LevelProgressState>()(
     (set, get) => ({
       progress: {},
       rankings: {},
+      rankingVersion: 0,
+      _rankingSubscription: null,
 
       getLevelProgress: (world, category) => {
         const state = get();
@@ -440,9 +446,50 @@ export const useLevelProgressStore = create<LevelProgressState>()(
           console.error('Failed to fetch ranking:', error);
         }
       },
+
+      subscribeToRankingUpdates: () => {
+        const state = get();
+        if (state._rankingSubscription) return;
+
+        console.log('[useLevelProgressStore] Subscribing to Realtime Ranking updates...');
+
+        const channel = supabase
+          .channel('ranking-updates')
+          .on(
+            'postgres_changes',
+            {
+              event: 'UPDATE',
+              schema: 'public',
+              table: 'profiles',
+              filter: 'weekly_score_total=gt.0',
+            },
+            (payload) => {
+              console.log('[useLevelProgressStore] Realtime event received:', payload);
+              // Trigger re-render by incrementing version
+              set((state) => ({ rankingVersion: (state.rankingVersion || 0) + 1 }));
+            }
+          )
+          .subscribe();
+
+        set({ _rankingSubscription: channel });
+      },
+
+      unsubscribeFromRankingUpdates: () => {
+        const state = get();
+        if (state._rankingSubscription) {
+          console.log('[useLevelProgressStore] Unsubscribing from ranking updates...');
+          state._rankingSubscription.unsubscribe();
+          set({ _rankingSubscription: null });
+        }
+      },
     }),
     {
       name: 'solve-climb-level-progress',
+      partialize: (state) => ({
+        progress: state.progress,
+        rankings: state.rankings,
+        // Exclude _rankingSubscription and rankingVersion from persistence
+      }),
     }
   )
 );

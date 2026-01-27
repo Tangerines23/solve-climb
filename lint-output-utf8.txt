@@ -1,0 +1,173 @@
+﻿node.exe : Initialising login role...
+위치 C:\Program Files\nodejs\npx.ps1:29 문자:3
++   & $NODE_EXE $NPX_CLI_JS $args
++   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: 
+    (Initialising login role...:String) []  
+  , RemoteException
+    + FullyQualifiedErrorId : NativeCommand 
+   Error
+ 
+Connecting to remote database...
+Linting schema: extensions
+Linting schema: public
+[
+  {
+    "function": "public.debug_migrate_legacy_records",
+    "issues": [
+      {
+        "level": "error",
+        "message": "column \"theme_code\" does not exist",
+        "statement": {
+          "lineNumber": "7",
+          "text": "SQL statement"
+        },
+        "query": {
+          "position": "80",
+          "text": "UPDATE public.user_level_records SET\n        world_id = CASE \n            WHEN theme_code IN (1,2,3,4,6,7,8) THEN 'World1'\n            WHEN theme_code = 5 THEN 'LangWorld1'\n            ELSE 'World1'\n        END,\n        category_id = CASE \n            WHEN theme_code IN (1,2,3,4,7,8) THEN 'math'\n            WHEN theme_code = 5 THEN 'language'\n            WHEN theme_code = 6 THEN 'logic'\n            ELSE 'math'\n        END,\n        subject_id = CASE \n            WHEN theme_code = 1 THEN 'add'\n            WHEN theme_code = 2 THEN 'sub'\n            WHEN theme_code = 3 THEN 'mul'\n            WHEN theme_code = 4 THEN 'div'\n            WHEN theme_code = 5 THEN 'word'\n            WHEN theme_code = 6 THEN 'puzzle'\n            WHEN theme_code = 7 THEN 'arithmetic'\n            WHEN theme_code = 8 THEN 'equations'\n            ELSE 'unknown'\n        END\n    WHERE world_id IS NULL OR category_id IS NULL OR subject_id IS NULL"
+        },
+        "sqlState": "42703"
+      }
+    ]
+  },
+  {
+    "function": "public.reset_weekly_scores",
+    "issues": [
+      {
+        "level": "error",
+        "message": "function public.get_ranking_v2(unknown, integer) does not exist",
+        "statement": {
+          "lineNumber": "15",
+          "text": "FOR over SELECT rows"
+        },
+        "query": {
+          "position": "16",
+          "text": "(SELECT * FROM public.get_ranking_v2('total', 3))"
+        },
+        "hint": "No function matches the given name and argument types. You might need to add explicit type casts.",
+        "sqlState": "42883"
+      }
+    ]
+  },
+  {
+    "function": "public.submit_game_result",
+    "issues": [
+      {
+        "level": "error",
+        "message": "column \"updated_at\" of relation \"game_sessions\" does not exist",
+        "statement": {
+          "lineNumber": "60",
+          "text": "SQL statement"
+        },
+        "query": {
+          "position": "172",
+          "text": "UPDATE public.game_sessions SET\n        status = 'completed',\n        score = v_calculated_score,\n        world_id = p_world_id,\n        category_id = p_category,\n        updated_at = v_now\n    WHERE id = p_session_id"
+        },
+        "sqlState": "42703"
+      }
+    ]
+  },
+  {
+    "function": "public.promote_to_next_cycle",
+    "issues": [
+      {
+        "level": "warning extra",
+        "message": "never read variable \"v_total_mastery\"",
+        "sqlState": "00000"
+      }
+    ]
+  },
+  {
+    "function": "public.debug_create_persona_player",
+    "issues": [
+      {
+        "level": "warning extra",
+        "message": "auto variable \"v_level\" shadows a previously defined variable",
+        "statement": {
+          "lineNumber": "33",
+          "text": "FOR with integer loop variable"
+        },
+        "hint": "SET plpgsql.extra_warnings TO 'shadowed_variables'",
+        "sqlState": "00000"
+      },
+      {
+        "level": "warning",
+        "message": "unused variable \"v_level\"",
+        "sqlState": "00000"
+      },
+      {
+        "level": "warning",
+        "message": "unused variable \"v_tier_level\"",
+        "sqlState": "00000"
+      }
+    ]
+  },
+  {
+    "function": "public.debug_run_play_scenario",
+    "issues": [
+      {
+        "level": "error",
+        "message": "relation \"public.theme_mapping\" does not exist",
+        "statement": {
+          "lineNumber": "30",
+          "text": "SQL statement"
+        },
+        "query": {
+          "position": "36",
+          "text": "SELECT code                   FROM public.theme_mapping WHERE theme_id = v_theme_id"
+        },
+        "sqlState": "42P01"
+      }
+    ]
+  },
+  {
+    "function": "public.get_ranking_v2",
+    "issues": [
+      {
+        "level": "warning extra",
+        "message": "unused parameter \"p_category\"",
+        "sqlState": "00000"
+      }
+    ]
+  },
+  {
+    "function": "public.check_and_award_badges",
+    "issues": [
+      {
+        "level": "warning",
+        "message": "target type is different type than source type",
+        "statement": {
+          "lineNumber": "8",
+          "text": "statement block"
+        },
+        "hint": "The input expression type does not have an assignment cast to the target type.",
+        "detail": "cast \"text\" value to \"text[]\" type",
+        "context": "during statement block local variable \"v_awarded_badges\" initialization on line 5",
+        "sqlState": "42804"
+      }
+    ]
+  },
+  {
+    "function": "public.debug_run_play_scenario",
+    "issues": [
+      {
+        "level": "error",
+        "message": "function public.debug_generate_dummy_record(uuid, text, text, text, integer, unknown, integer) does not exist",
+        "statement": {
+          "lineNumber": "9",
+          "text": "assignment"
+        },
+        "query": {
+          "position": "10",
+          "text": "v_res := public.debug_generate_dummy_record(p_user_id, p_world_id, p_category, p_subject, i, 'survival', v_correct_count)"
+        },
+        "hint": "No function matches the given name and argument types. You might need to add explicit type casts.",
+        "context": "at assignment to variable \"v_res\" declared on line 4",
+        "sqlState": "42883"
+      }
+    ]
+  }
+]
+fail-on is set to error, non-zero exit
+Try rerunning the command with --debug to tr
+oubleshoot the error.

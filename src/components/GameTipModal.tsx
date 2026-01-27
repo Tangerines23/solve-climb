@@ -14,7 +14,7 @@ interface GameTipModalProps {
 }
 
 export function GameTipModal({ isOpen, category, level, onStart, onClose }: GameTipModalProps) {
-  // const [dontShowAgain, setDontShowAgain] = useState(false); // Removed
+  // const [doNotShowAgain, setDoNotShowAgain] = useState(false); // Removed
   const [isBackpackOpen, setIsBackpackOpen] = useState(false);
   const [selectedItemIds, setSelectedItemIds] = useState<number[]>([]);
 

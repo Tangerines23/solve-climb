@@ -33,7 +33,13 @@ export function RankingPage() {
   const [loading, setLoading] = useState(false);
   const [currentUserId, setCurrentUserId] = useState<string | null>(null);
 
-  const { fetchRanking, rankings } = useLevelProgressStore();
+  const {
+    fetchRanking,
+    rankings,
+    subscribeToRankingUpdates,
+    unsubscribeFromRankingUpdates,
+    rankingVersion,
+  } = useLevelProgressStore();
 
   // Fetch ranking data (category is not used by RPC)
   const currentRankings = useMemo(() => {
@@ -52,13 +58,27 @@ export function RankingPage() {
 
   useEffect(() => {
     const loadRanking = async () => {
-      setLoading(true);
+      // Don't show loading spinner for realtime updates (rankingVersion > 0)
+      if (rankingVersion === 0) setLoading(true);
+
       // Note: passing null for world and category since RPC doesn't use them
       await fetchRanking(null, null, activePeriod, activeType);
-      setLoading(false);
+
+      if (rankingVersion === 0) setLoading(false);
     };
     loadRanking();
-  }, [activeType, activePeriod, fetchRanking]);
+  }, [activeType, activePeriod, fetchRanking, rankingVersion]);
+
+  // Realtime Subscription
+  useEffect(() => {
+    // Only subscribe in Weekly mode (All-time doesn't change often/needs complex listener)
+    if (activePeriod === 'weekly') {
+      subscribeToRankingUpdates();
+      return () => {
+        unsubscribeFromRankingUpdates();
+      };
+    }
+  }, [activePeriod, subscribeToRankingUpdates, unsubscribeFromRankingUpdates]);
 
   // 디버그 로그 추가
   useEffect(() => {
@@ -139,7 +159,10 @@ export function RankingPage() {
         {/* Info Text */}
         <div className="ranking-info">
           {activePeriod === 'weekly' ? (
-            <p>🔥 이번 주 리그: 성실함과 노력의 결과!</p>
+            <p className="flex items-center gap-2">
+              <span>🔥 이번 주 리그: 성실함과 노력의 결과!</span>
+              <span className="live-badge">🔴 LIVE</span>
+            </p>
           ) : (
             <p className="hof-text">
               {activeType === 'total'

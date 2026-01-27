@@ -61,6 +61,18 @@ jobs:
       - name: Format check
         run: npm run format:check
 
+      - name: 🛡️ Security Shield (Secrets)
+        run: npm run check:secrets
+
+      - name: ⭕ Circular Dependency Check
+        run: npm run check:circular
+
+      - name: 🧹 Code Integrity (Spell & Magic & CSS)
+        run: npm run check:integrity
+
+      - name: ⚡ Logic Leash (Performance)
+        run: npm run check:logic
+
   # 3. 비즈니스 로직 및 컴포넌트 단위 테스트
   unit-test:
     needs: setup

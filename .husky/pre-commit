@@ -56,6 +56,25 @@ if [ -n "$NAV_CHANGED" ]; then
   fi
 fi
 
+# 4.5. 코드 무결성 및 순환 참조 (신규 추가)
+echo "4️⃣.5️⃣ 무결성 및 순환 참조 검사..."
+if ! npm run check:secrets; then
+    echo "🚫 보안 키(Secrets)가 코드에 포함되어 있습니다!"
+    exit 1
+fi
+if ! npm run check:integrity; then
+    echo "🚫 코드 무결성 검사(오타, 매직스트링, CSS) 실패!"
+    exit 1
+fi
+if ! npm run check:circular; then
+    echo "🚫 순환 참조가 발견되었습니다!"
+    exit 1
+fi
+if ! npm run check:logic; then
+    echo "🚫 로직 성능(Logic Leash) 저하 감지!"
+    exit 1
+fi
+
 # 5. 보안 검사 (경고만 - 느려서 실패해도 커밋 가능)
 echo "5️⃣ 보안 검사 (의존성 취약점)..."
 npm run check:security 2>/dev/null || {

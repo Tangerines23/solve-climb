@@ -1,5 +1,5 @@
 // 데이터 초기화 유틸리티
-import { supabase } from './supabaseClient';
+// import { supabase } from './supabaseClient';
 import { useProfileStore } from '../stores/useProfileStore';
 import { useLevelProgressStore } from '../stores/useLevelProgressStore';
 import { storage } from './storage';
@@ -13,21 +13,8 @@ import { logError } from './errorHandler';
  */
 export const resetAllData = async (): Promise<void> => {
   try {
-    // 1. Supabase에서 게임 기록 삭제
-    try {
-      const {
-        data: { user },
-      } = await supabase.auth.getUser();
-      if (user) {
-        const { error } = await supabase.from('game_records').delete().eq('user_id', user.id);
-
-        if (error) {
-          logError('데이터 초기화 - Supabase 게임 기록 삭제', error);
-        }
-      }
-    } catch (error) {
-      logError('데이터 초기화 - Supabase 접근', error);
-    }
+    // 1. Supabase에서 게임 기록 삭제 (Deprecated: game_records 테이블 삭제됨)
+    // 과거 데이터 삭제 로직 제거됨
 
     // 2. localStorage의 모든 앱 관련 데이터 삭제
     storage.clearAppData();
