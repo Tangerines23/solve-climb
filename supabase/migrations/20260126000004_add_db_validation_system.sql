@@ -30,12 +30,12 @@ ALTER TABLE public.inventory
   ADD CONSTRAINT check_quantity_positive 
   CHECK (quantity > 0);
 
--- game_records 테이블 검증
-ALTER TABLE public.game_records 
+-- user_level_records 테이블 검증
+ALTER TABLE public.user_level_records 
   ADD CONSTRAINT check_score_non_negative 
-  CHECK (score >= 0);
+  CHECK (best_score >= 0);
 
-ALTER TABLE public.game_records 
+ALTER TABLE public.user_level_records 
   ADD CONSTRAINT check_level_positive 
   CHECK (level > 0);
 

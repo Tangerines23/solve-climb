@@ -48,8 +48,23 @@ vi.mock('../../utils/supabaseClient', () => ({
   },
 }));
 
+const mockAddUserBadge = vi.fn();
+
+vi.mock('../../stores/useBadgeStore', () => ({
+  useBadgeStore: {
+    getState: () => ({
+      addUserBadge: mockAddUserBadge,
+    }),
+  },
+}));
+
+vi.mock('../useHistoryData', () => ({
+  // HistoryStats is a type, no need to mock if imported correctly,
+  // but if it's used as a value or for other things:
+}));
+
 describe('useBadgeChecker', () => {
-  const mockUserId = '00000000-0000-0000-0000-000000000000';
+  const mockUserId = 'test-user-simple';
   const mockSelect = vi.fn();
   const mockInsert = vi.fn();
   const mockFrom = vi.fn();
@@ -85,16 +100,21 @@ describe('useBadgeChecker', () => {
     vi.mocked(supabase.from).mockReturnValue(chain as any);
     mockSelect.mockImplementation(chain.eq); // capture the final promise returner
 
-    // Setup RPC mock
+    // Setup RPC mock for validatedRpc
     vi.mocked(supabase.rpc).mockImplementation((fn: string, _args?: any) => {
       mockRpc(fn);
       if (fn === 'check_and_award_badges') {
-        return {
-          data: { success: true, awarded_badges: [] },
+        const result = {
+          data: { success: true, awarded_badges: [], count: 0 },
           error: null,
-        } as any;
+          status: 200,
+          statusText: 'OK',
+          count: null,
+        };
+        // validatedRpc might expect the result to be thenable or just a promise
+        return Promise.resolve(result) as any;
       }
-      return { data: null, error: null } as any;
+      return Promise.resolve({ data: null, error: null }) as any;
     });
   });
 
@@ -133,7 +153,7 @@ describe('useBadgeChecker', () => {
 
     await result.current.checkAndAwardBadges(mockUserId, baseStats);
 
-    expect(mockInsert).not.toHaveBeenCalled();
+    expect(mockAddUserBadge).not.toHaveBeenCalled();
   });
 
   it('should award altitude badge when condition met', async () => {
@@ -144,11 +164,7 @@ describe('useBadgeChecker', () => {
     const newBadges = await result.current.checkAndAwardBadges(mockUserId, stats);
 
     expect(newBadges).toContain('test_altitude');
-    expect(mockInsert).toHaveBeenCalledWith(
-      expect.arrayContaining([
-        expect.objectContaining({ badge_id: 'test_altitude', user_id: mockUserId }),
-      ])
-    );
+    expect(mockAddUserBadge).toHaveBeenCalledWith('test_altitude', mockUserId);
   });
 
   it('should award streak badge when condition met', async () => {
@@ -212,6 +228,6 @@ describe('useBadgeChecker', () => {
     const newBadges = await result.current.checkAndAwardBadges(mockUserId, stats);
 
     expect(newBadges).not.toContain('test_altitude');
-    expect(mockInsert).not.toHaveBeenCalled();
+    expect(mockAddUserBadge).not.toHaveBeenCalled();
   });
 });

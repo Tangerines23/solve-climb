@@ -96,31 +96,31 @@ BEGIN
   RETURN QUERY
   SELECT 
     'check_negative_scores'::TEXT,
-    (SELECT COUNT(*) = 0 FROM public.game_records WHERE score < 0),
+    (SELECT COUNT(*) = 0 FROM public.user_level_records WHERE best_score < 0),
     CASE 
-      WHEN (SELECT COUNT(*) FROM public.game_records WHERE score < 0) = 0 
-      THEN 'No negative scores in game records'
+      WHEN (SELECT COUNT(*) FROM public.user_level_records WHERE best_score < 0) = 0 
+      THEN 'No negative scores in level records'
       ELSE 'Found negative scores'
     END::TEXT,
     (SELECT jsonb_build_object(
       'count', COUNT(*),
-      'min_score', MIN(score)
-    ) FROM public.game_records WHERE score < 0);
+      'min_score', MIN(best_score)
+    ) FROM public.user_level_records WHERE best_score < 0);
 
   -- Test 6: 비정상적으로 높은 점수 체크 (10억 이상)
   RETURN QUERY
   SELECT 
     'check_abnormal_scores'::TEXT,
-    (SELECT COUNT(*) = 0 FROM public.game_records WHERE score > 1000000000),
+    (SELECT COUNT(*) = 0 FROM public.user_level_records WHERE best_score > 1000000000),
     CASE 
-      WHEN (SELECT COUNT(*) FROM public.game_records WHERE score > 1000000000) = 0 
+      WHEN (SELECT COUNT(*) FROM public.user_level_records WHERE best_score > 1000000000) = 0 
       THEN 'No abnormally high scores'
       ELSE 'Found abnormally high scores'
     END::TEXT,
     (SELECT jsonb_build_object(
       'count', COUNT(*),
-      'max_score', MAX(score)
-    ) FROM public.game_records WHERE score > 1000000000);
+      'max_score', MAX(best_score)
+    ) FROM public.user_level_records WHERE best_score > 1000000000);
 END;
 $$ LANGUAGE plpgsql;
 
