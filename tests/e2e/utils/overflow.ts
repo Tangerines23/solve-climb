@@ -13,16 +13,18 @@ export async function expectNoOverflow(page: Page) {
     if (overflowElements.length > 0) {
         const errorDetails = await Promise.all(
             overflowElements.map(async (el) => {
-                const tag = await el.evaluate(node => node.tagName);
+                const tag = await el.evaluate(node => node.tagName.toLowerCase());
+                const classes = await el.evaluate(node => node.className);
                 const text = await el.innerText();
-                const overflowType = await el.getAttribute('title');
-                return `- Element: ${tag}, Type: ${overflowType}, Text: "${text.substring(0, 30)}..."`;
+                const overflowType = await el.getAttribute('title'); // VisualGuardian sets title with details
+                return `\nDETAILS:\n- Element: <${tag} class="${classes}">\n- Type: ${overflowType}\n- Content: "${text.substring(0, 50).replace(/\n/g, ' ')}..."`;
             })
         );
 
-        throw new Error(
-            `🚨 [UI Overflow Detected] 다음 요소에서 레이아웃 넘침이 발견되었습니다:\n${errorDetails.join('\n')}\n` +
-            `💡 브라우저 개발자 도구에서 해당 요소의 점선 테두리를 확인하세요.`
-        );
+        const errorMessage = `🚨 [UI Overflow Detected] Found ${overflowElements.length} elements with layout overflow:\n${errorDetails.join('\n')}\n` +
+            `💡 Check screenshot or browser devtools for elements with red dashed outlines.`;
+
+        console.log(errorMessage); // Ensure visibility in stdout
+        throw new Error(errorMessage);
     }
 }

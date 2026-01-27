@@ -30,8 +30,10 @@ describe('RPC 응답 검증', () => {
             if (!supabase) return;
 
             const { data, error } = await supabase.rpc('get_ranking_v2', {
-                p_mode: 'total',
+                p_category: 'arithmetic',
                 p_limit: 10,
+                p_period: 'weekly',
+                p_type: 'total',
             });
 
             expect(error).toBeNull();
