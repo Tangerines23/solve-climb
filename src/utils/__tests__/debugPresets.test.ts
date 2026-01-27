@@ -86,6 +86,8 @@ describe('debugPresets tests', () => {
       fetchUserData: vi.fn(() => Promise.resolve()),
       setMinerals: vi.fn(() => Promise.resolve()),
       setStamina: vi.fn(() => Promise.resolve()),
+      debugSetMinerals: vi.fn(() => Promise.resolve()),
+      debugSetStamina: vi.fn(() => Promise.resolve()),
     });
     mockGetQuizStoreState.mockReturnValue({
       setTimeLimit: vi.fn(),
@@ -202,10 +204,10 @@ describe('debugPresets tests', () => {
     });
 
     it('should handle setMinerals action via store', async () => {
-      const mockSetMinerals = vi.fn();
-      mockGetUserStoreState.mockReturnValue({ setMinerals: mockSetMinerals });
+      const mockDebugSetMinerals = vi.fn();
+      mockGetUserStoreState.mockReturnValue({ debugSetMinerals: mockDebugSetMinerals });
       await executeDebugAction({ type: 'setMinerals', value: 100 }, userId);
-      expect(mockSetMinerals).toHaveBeenCalledWith(100);
+      expect(mockDebugSetMinerals).toHaveBeenCalledWith(100);
     });
 
     it('should handle grantAllItems action with multiple items', async () => {
