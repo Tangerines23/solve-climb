@@ -5,7 +5,7 @@ import { useMyPageStats } from '../../hooks/useMyPageStats';
 import './BoundaryTestSection.css';
 
 export const BoundaryTestSection = React.memo(function BoundaryTestSection() {
-  const { setMinerals, setStamina, fetchUserData } = useUserStore();
+  const { debugSetMinerals, debugSetStamina } = useUserStore();
   const { refetch } = useMyPageStats();
   const [isUpdating, setIsUpdating] = useState(false);
   const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
@@ -16,8 +16,7 @@ export const BoundaryTestSection = React.memo(function BoundaryTestSection() {
     try {
       setIsUpdating(true);
       setMessage(null);
-      await setStamina(value);
-      await fetchUserData();
+      await debugSetStamina(value);
       setMessage({ type: 'success', text: `스태미나가 ${value}로 설정되었습니다.` });
     } catch (err) {
       setMessage({
@@ -35,8 +34,7 @@ export const BoundaryTestSection = React.memo(function BoundaryTestSection() {
     try {
       setIsUpdating(true);
       setMessage(null);
-      await setMinerals(value);
-      await fetchUserData();
+      await debugSetMinerals(value);
       setMessage({ type: 'success', text: `미네랄이 ${value.toLocaleString()}로 설정되었습니다.` });
     } catch (err) {
       setMessage({

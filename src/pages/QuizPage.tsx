@@ -631,7 +631,7 @@ export function QuizPage() {
     async (action: 'login' | 'charge' | 'play') => {
       switch (action) {
         case 'login':
-          navigate('/login', {
+          navigate(urls.login(), {
             state: { from: window.location.pathname + window.location.search },
           });
           break;

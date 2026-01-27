@@ -51,6 +51,7 @@ interface UserState {
   debugResetItems: () => Promise<void>;
   debugRemoveItems: () => Promise<void>;
   debugSetStamina: (amount: number) => Promise<void>;
+  debugSetMinerals: (amount: number) => Promise<void>;
 
   lastStaminaConsumeTime: number;
 }
@@ -441,6 +442,37 @@ export const useUserStore = create<UserState>((set, get) => ({
 
     console.log('[DEBUG] Set Stamina Success via RPC. Updating local store.');
     set({ stamina: newStamina });
+  },
+
+  // DEV ONLY: 미네랄 강제 설정 (DB Sync)
+  debugSetMinerals: async (amount: number) => {
+    const authResult = await debugSupabaseQuery(supabase.auth.getUser());
+    const user = authResult?.data?.user;
+
+    if (!user) {
+      console.error('[DEBUG] debugSetMinerals: No authenticated user found.');
+      return;
+    }
+
+    const newMinerals = Math.max(0, amount);
+
+    // 보안 RPC를 통해 프로필 업데이트
+    const { data, error } = await validatedRpc(
+      supabase.rpc('debug_update_profile_stats', {
+        p_user_id: user.id,
+        p_minerals: newMinerals,
+      }),
+      CommonResponseSchema,
+      'debug_update_profile_stats'
+    );
+
+    if (error || !data?.success) {
+      console.error('[DEBUG] Set Minerals Failed:', error || data?.message);
+      return;
+    }
+
+    console.log('[DEBUG] Set Minerals Success via RPC. Updating local store.');
+    set({ minerals: newMinerals });
   },
 
   refundStamina: async () => {

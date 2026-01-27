@@ -22,15 +22,8 @@ import { ConfirmModal } from '../ConfirmModal';
 import './QuickActionsSection.css';
 
 export const QuickActionsSection = React.memo(function QuickActionsSection() {
-  const {
-    minerals,
-    stamina,
-    fetchUserData,
-    setMinerals,
-    setStamina,
-    rewardMinerals,
-    debugSetStamina,
-  } = useUserStore();
+  const { minerals, stamina, fetchUserData, rewardMinerals, debugSetStamina, debugSetMinerals } =
+    useUserStore();
   const {
     infiniteStamina,
     infiniteMinerals,
@@ -123,8 +116,7 @@ export const QuickActionsSection = React.memo(function QuickActionsSection() {
     const numValue = parseInt(staminaInput, 10);
     if (!isNaN(numValue) && numValue >= 0) {
       setIsUpdating(true);
-      await setStamina(numValue);
-      await fetchUserData();
+      await debugSetStamina(numValue);
       setIsUpdating(false);
     } else {
       setStaminaInput(stamina.toString());
@@ -165,8 +157,7 @@ export const QuickActionsSection = React.memo(function QuickActionsSection() {
     const numValue = parseInt(mineralsInput, 10);
     if (!isNaN(numValue) && numValue >= 0) {
       setIsUpdating(true);
-      await setMinerals(numValue);
-      await fetchUserData();
+      await debugSetMinerals(numValue);
       setIsUpdating(false);
     } else {
       setMineralsInput(minerals.toString());

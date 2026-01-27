@@ -1,3 +1,5 @@
+import { useErrorLogStore } from '../stores/useErrorLogStore';
+
 /**
  * 로깅 유틸리티
  * 개발/프로덕션 환경 구분 및 일관된 로깅 형식 제공
@@ -55,6 +57,22 @@ function log(level: LogLevel, context: string, message: string, ...args: unknown
 
   const formattedMessage = formatMessage(context, message, ...args);
   const style = Object.values(LOG_STYLES)[level] || '';
+
+  // Dev 탭 에러 로그에 추가
+  if (level >= LogLevel.INFO) {
+    const errorLevel: 'info' | 'warning' | 'error' =
+      level === LogLevel.ERROR ? 'error' : level === LogLevel.WARN ? 'warning' : 'info';
+
+    // stack 정보 추출 (에러 객체가 있는 경우)
+    const err = args.find((a) => a instanceof Error) as Error | undefined;
+
+    try {
+      useErrorLogStore.getState().addLog(errorLevel, message, err?.stack, context);
+    } catch (e) {
+      // 스토어가 초기화되지 않았거나 순환 참조 등 대비
+      console.warn('Failed to add log to store', e);
+    }
+  }
 
   switch (level) {
     case LogLevel.DEBUG:

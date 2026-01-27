@@ -134,4 +134,9 @@ export const urls = {
    * Debug Page
    */
   debug: () => '/debug',
+
+  /**
+   * Login Page
+   */
+  login: () => APP_CONFIG.ROUTES.LOGIN,
 };

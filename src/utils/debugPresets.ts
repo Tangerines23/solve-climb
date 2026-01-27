@@ -135,8 +135,8 @@ export async function executeDebugAction(action: DebugAction, userId: string): P
       if (action.value === undefined) {
         throw new Error('setMinerals action requires value');
       }
-      const { setMinerals } = useUserStore.getState();
-      await setMinerals(action.value);
+      const { debugSetMinerals } = useUserStore.getState();
+      await debugSetMinerals(action.value);
       break;
     }
 
@@ -144,8 +144,8 @@ export async function executeDebugAction(action: DebugAction, userId: string): P
       if (action.value === undefined) {
         throw new Error('setStamina action requires value');
       }
-      const { setStamina } = useUserStore.getState();
-      await setStamina(action.value);
+      const { debugSetStamina } = useUserStore.getState();
+      await debugSetStamina(action.value);
       break;
     }
 

@@ -185,17 +185,16 @@ export function BadgeSystemSection() {
         throw new Error('유효한 Theme ID를 찾을 수 없습니다. (theme_mapping 확인 필요)');
       }
 
-      // upsert: id가 같으면 업데이트, 없으면 추가
-      const { error } = await supabase.from('badge_definitions').upsert(
-        BADGE_DEFINITIONS.map((def) => ({
+      // RPC를 통한 일괄 설치 (권한 문제 해결)
+      const { error } = await supabase.rpc('debug_seed_badge_definitions', {
+        p_badges: BADGE_DEFINITIONS.map((def) => ({
           id: def.id,
           name: def.name,
           description: def.description,
           emoji: def.emoji,
-          theme_id: defaultThemeId, // 모든 뱃지에 공통 할당 (Global 의미)
+          theme_id: defaultThemeId,
         })),
-        { onConflict: 'id' }
-      );
+      });
 
       if (error) throw error;
 
