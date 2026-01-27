@@ -4,7 +4,26 @@
  * Supabase DB의 데이터 무결성을 검증합니다.
  */
 
+import fs from 'fs';
+import path from 'path';
+import { fileURLToPath } from 'url';
 import { createClient } from '@supabase/supabase-js';
+
+// Load .env for local development
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+const envPath = path.join(__dirname, '..', '.env');
+
+if (fs.existsSync(envPath)) {
+    const envContent = fs.readFileSync(envPath, 'utf-8');
+    envContent.split('\n').forEach(line => {
+        const [key, ...valueParts] = line.split('=');
+        if (key && valueParts.length > 0) {
+            const value = valueParts.join('=').trim().replace(/^["']|["']$/g, '');
+            process.env[key.trim()] = value;
+        }
+    });
+}
 
 const supabaseUrl = process.env.VITE_SUPABASE_URL;
 const supabaseKey = process.env.VITE_SUPABASE_ANON_KEY;
