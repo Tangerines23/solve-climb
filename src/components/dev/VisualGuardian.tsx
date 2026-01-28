@@ -12,7 +12,10 @@ import { useEffect } from 'react';
 export function VisualGuardian() {
   useEffect(() => {
     // 프로덕션, CI, 또는 자동화 환경에서는 실행하지 않음
-    const isCI = !!import.meta.env.VITE_CI || window.navigator.userAgent.includes('Playwright');
+    const isCI =
+      !!import.meta.env.VITE_CI ||
+      window.navigator.userAgent.includes('Playwright') ||
+      (window as any).isPlaywrightLocal;
     if (!import.meta.env.DEV || isCI) return;
 
     console.log('👁️ Visual Guardian is watching against overflows...');

@@ -45,9 +45,9 @@
 }
 
 .ranking-tab.active {
-  background: var(--color-indigo-500);
-  color: var(--color-gray-100);
-  box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);
+  background: var(--color-indigo-600);
+  color: var(--color-gray-50);
+  box-shadow: 0 4px 12px rgba(99, 102, 241, 0.4);
 }
 
 /* Layer 2: Pill Switch Styling */
@@ -249,9 +249,12 @@
   display: flex;
   align-items: center;
   gap: var(--spacing-sm);
-  display: flex;
-  align-items: center;
-  gap: var(--spacing-lg);
+  flex: 1;
+  /* Allow taking available space */
+  min-width: 0;
+  /* Enable flex shrinkage */
+  overflow: hidden;
+  /* Contain children */
 }
 
 .ranking-rank {
@@ -260,11 +263,20 @@
   width: 32px;
   text-align: center;
   font-family: 'Outfit', sans-serif;
+  flex-shrink: 0;
 }
 
 .ranking-nickname {
   font-weight: 700;
   font-size: 1.05rem;
+  line-height: 1.2;
+  /* Fix vertical overflow */
+  display: inline-flex;
+  align-items: center;
+  gap: var(--spacing-xs);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .ranking-score {
@@ -297,7 +309,7 @@
 
 /* Realtime Live Badge */
 .live-badge {
-  background-color: var(--color-toss-red);
+  background-color: var(--color-red-700);
   color: white;
   font-size: 0.75rem;
   font-weight: bold;
@@ -312,13 +324,11 @@
 
 @keyframes live-pulse {
   0% {
-    opacity: 1;
     box-shadow: 0 0 5px rgba(255, 75, 75, 0.5);
     transform: scale(1);
   }
 
   50% {
-    opacity: 0.8;
     box-shadow: 0 0 10px rgba(255, 75, 75, 0.8);
     transform: scale(1.05);
   }

@@ -98,6 +98,7 @@
   /* 성공/완료 */
   --color-primary-light: #4facfe;
   /* Primary Light */
+  --color-gray-50: #f9fafb;
   --color-gray-100: #ffffff;
   --color-gray-200: #fafafc;
   --color-gray-300: #e2e2e2;
@@ -118,6 +119,8 @@
   /* Primary Danger */
   --color-red-600: #dc2626;
   /* Darker/Hover */
+  --color-red-700: #c0392b;
+  /* High Contrast Red */
   /* --color-red-400, 500 removed (Merged to toss-red or 600) */
 
   /* 추가 Gray 색상 */

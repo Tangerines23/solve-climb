@@ -35,7 +35,6 @@ export default defineConfig({
       name: 'chromium',
       use: { ...devices['Desktop Chrome'] },
     },
-    /* 필요 시 다른 브라우저 추가 가능 */
   ],
 
   /* 테스트 실행 전 로컬 개발 서버를 자동으로 구동 */
@@ -44,6 +43,9 @@ export default defineConfig({
     url: 'http://localhost:5173',
     reuseExistingServer: !process.env.CI,
     timeout: 120000,
+    env: {
+      VITE_CI: 'true',
+    },
   },
 
   /* 스냅샷(스크린샷 기준점) 저장 경로 설정 */
