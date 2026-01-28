@@ -121,7 +121,7 @@ jobs:
         run: npm run check:security
 
       - name: DB lint check
-        run: npm run check:db:lint
+        run: npm run check:db:lint:local
 
       - name: DB validation
         env:

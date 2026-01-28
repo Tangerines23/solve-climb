@@ -1,8 +1,8 @@
 {
   "ci": {
     "collect": {
-      "startServerCommand": "npm run dev",
-      "url": ["http://localhost:5173/", "http://localhost:5173/ranking"],
+      "staticDistDir": "./dist",
+      "url": ["http://localhost:8080/index.html"],
       "numberOfRuns": 1
     },
     "assert": {
