@@ -8,9 +8,9 @@ param(
 
 # 스크립트 파일이 있는 디렉토리로 이동
 $scriptDir = Split-Path -Parent $MyInvocation.MyCommand.Path
-Push-Location $scriptDir
+Push-Location "$scriptDir/.."
 
-$outputFile = "test_output_$(Get-Date -Format 'yyyyMMdd_HHmmss').txt"
+$outputFile = "reports/test_output_$(Get-Date -Format 'yyyyMMdd_HHmmss').txt"
 
 Write-Host "`n=== 테스트 실행 중... ===" -ForegroundColor Yellow
 Write-Host "출력 파일: $outputFile" -ForegroundColor Cyan
@@ -73,7 +73,8 @@ if ($tableLines.Count -gt 0) {
         Write-Host "`n[에러]:" -ForegroundColor Red
         $errorLines | ForEach-Object { Write-Host $_ -ForegroundColor Red }
     }
-} else {
+}
+else {
     Write-Host "커버리지 리포트를 찾을 수 없습니다." -ForegroundColor Yellow
     Write-Host "전체 출력에서 검색 중..." -ForegroundColor Gray
     $filtered = $lines | Select-String -Pattern $Pattern | Select-Object -First $First
