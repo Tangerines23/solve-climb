@@ -68,7 +68,9 @@
     "check:score": "lhci collect --static-dist-dir=./dist --url=http://localhost:8080/index.html && lhci assert",
     "prepare": "husky",
     "storybook": "storybook dev -p 6006",
-    "build-storybook": "storybook build"
+    "build-storybook": "storybook build",
+    "report:lint": "npm run lint > reports/lint_output.txt",
+    "report:test": "npm run test:all > reports/test_output.txt"
   },
   "dependencies": {
     "@apps-in-toss/web-framework": "^1.7.0",
