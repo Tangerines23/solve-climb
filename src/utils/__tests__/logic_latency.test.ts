@@ -1,6 +1,39 @@
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, vi } from 'vitest';
 import { calculateScoreForTier } from '../tierUtils';
 import { generateProblem } from '../MathProblemGenerator';
+
+// 🧪 Mock environment to bypass validation during logic tests
+vi.mock('@/utils/env', () => ({
+  ENV: {
+    VITE_SUPABASE_URL: 'https://mock.supabase.co',
+    VITE_SUPABASE_ANON_KEY: 'mock-key',
+    isProd: false,
+    isDev: true,
+  },
+  logEnvInfo: vi.fn(),
+  config: {
+    SUPABASE_URL: 'https://mock.supabase.co',
+    SUPABASE_ANON_KEY: 'mock-key',
+    IS_DEVELOPMENT: true,
+    IS_PRODUCTION: false,
+  },
+}));
+
+vi.mock('../env', () => ({
+  ENV: {
+    VITE_SUPABASE_URL: 'https://mock.supabase.co',
+    VITE_SUPABASE_ANON_KEY: 'mock-key',
+    isProd: false,
+    isDev: true,
+  },
+  logEnvInfo: vi.fn(),
+  config: {
+    SUPABASE_URL: 'https://mock.supabase.co',
+    SUPABASE_ANON_KEY: 'mock-key',
+    IS_DEVELOPMENT: true,
+    IS_PRODUCTION: false,
+  },
+}));
 
 /**
  * ⚡ Logic Leash (로직 목줄)
