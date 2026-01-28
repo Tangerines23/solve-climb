@@ -196,7 +196,7 @@ export function RankingPage() {
                           className="season-badge"
                           style={{
                             fontSize: '0.75rem',
-                            color: 'var(--color-text-secondary)',
+                            color: 'var(--color-text-dimmed)',
                             marginLeft: 'var(--spacing-sm)',
                             background: 'rgba(255, 255, 255, 0.1)',
                             padding: 'var(--spacing-xs) var(--spacing-tiny)',

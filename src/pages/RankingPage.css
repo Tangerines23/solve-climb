@@ -31,7 +31,7 @@
   padding: var(--spacing-small-alt);
   border: none;
   background: transparent;
-  color: var(--color-text-secondary);
+  color: var(--color-text-dimmed);
   font-weight: 700;
   font-size: 0.95rem;
   border-radius: var(--rounded-sm-alt);
@@ -91,7 +91,7 @@
   padding: var(--spacing-md);
   border: none;
   background: transparent;
-  color: var(--color-text-secondary);
+  color: var(--color-text-dimmed);
   font-weight: 700;
   font-size: 0.9rem;
   transition: color 0.3s ease;
@@ -114,9 +114,8 @@
 
 .ranking-info p {
   font-size: 0.85rem;
-  color: var(--color-text-secondary);
+  color: var(--color-text-dimmed);
   font-weight: 500;
-  opacity: 0.8;
 }
 
 /* Layer 3: Ranking List Styling */
@@ -131,7 +130,7 @@
   align-items: center;
   justify-content: center;
   padding: calc(var(--spacing-4xl) * 1.5) 0;
-  color: var(--color-text-secondary);
+  color: var(--color-text-dimmed);
 }
 
 .spinner {
@@ -153,7 +152,7 @@
 .ranking-empty {
   text-align: center;
   padding: calc(var(--spacing-4xl) * 2) 0;
-  color: var(--color-text-secondary);
+  color: var(--color-text-dimmed);
 }
 
 .empty-icon {

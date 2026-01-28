@@ -131,6 +131,10 @@
   /* 텍스트 색상 */
   --color-text-primary: var(--color-gray-100);
   --color-text-secondary: #aaa;
+  --color-text-dimmed: #ccc;
+  /* AA 준수 (배경 #121212 기준) */
+  --color-text-muted-alt: #bbb;
+  /* AA 준수 (배경 #121212 기준) */
 
   /* Border Radius 추가 */
   --rounded-card: 16px;

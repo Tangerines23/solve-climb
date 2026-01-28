@@ -63,11 +63,17 @@ try {
   // 성공 시 로더 제거
   setTimeout(() => {
     const loader = document.getElementById('loading-check');
+    const isCI = window.navigator.userAgent.includes('Playwright');
+
     if (loader) {
-      loader.style.opacity = '0';
-      setTimeout(() => {
+      if (isCI) {
         loader.style.display = 'none';
-      }, 500);
+      } else {
+        loader.style.opacity = '0';
+        setTimeout(() => {
+          loader.style.display = 'none';
+        }, 500);
+      }
     }
   }, 1000);
 } catch (err) {
