@@ -62,13 +62,12 @@ npm run check:security || echo "⚠️ 보안 취약점 발견 (npm audit 권장
 #   # exit 1  # 빡빡하게 막으려면 주석 해제
 # fi
 
-# 6. 테스트 실행 (선택적 - 경고만) - CI로 이관됨 (속도 최적화)
-# echo "6️⃣ 테스트 실행..."
-# npm run test -- --run || {
-#   echo "⚠️  테스트 실패"
-#   echo "💡 CI에서 재확인 예정"
-#   # exit 1  # 엄격하게 하려면 주석 해제
-# }
+# 6. E2E 및 가혹 환경 테스트 (선택적 - 속도를 위해 CI권장)
+# echo "6️⃣ 가혹 환경 테스트 (Stress/Chaos)..."
+# if ! npm run test:stress; then
+#   echo "❌ 가혹 환경 테스트 실패! 느린 네트워크 환경에서 대응이 부족합니다."
+#   exit 1
+# fi
 
 # 7. DB 검증 (조건부)
 DB_CHANGED=$(node scripts/check-db-changes.js 2>/dev/null || echo "")

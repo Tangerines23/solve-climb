@@ -185,6 +185,14 @@ jobs:
           VITE_SUPABASE_ANON_KEY: ${{ secrets.VITE_SUPABASE_ANON_KEY }}
         run: npm run test:visual
 
+      - name: 🐒 Run Chaos & Network Stress Tests
+        env:
+          VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
+          VITE_SUPABASE_ANON_KEY: ${{ secrets.VITE_SUPABASE_ANON_KEY }}
+        run: |
+          npm run test:chaos
+          npm run test:stress
+
   # 7. 성능 및 웹 표준 감사
   performance-audit:
     needs: build
