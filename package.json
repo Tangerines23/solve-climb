@@ -44,6 +44,7 @@
     "test:a11y:headed": "playwright test tests/e2e/accessibility.spec.ts --headed",
     "test:chaos": "playwright test tests/e2e/monkey-test.spec.ts",
     "test:stress": "playwright test tests/e2e/network-stress.spec.ts",
+    "test:fuzz": "vitest src/utils/__tests__/MathProblemGenerator.fuzz.test.ts --run",
     "check:css": "node scripts/check-hardcoded-values.js",
     "check:basic-auth": "node scripts/check-basic-auth.js",
     "check:migrations": "node scripts/check-migrations.js",
