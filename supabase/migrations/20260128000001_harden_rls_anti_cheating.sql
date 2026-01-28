@@ -52,6 +52,7 @@ COMMENT ON TABLE public.user_level_records IS '유저별 레벨 기록. 직접 U
 -- 3. inventory 테이블 보안 강화 (직접 수정 대신 RPC 강제)
 DROP POLICY IF EXISTS "Users can update own inventory" ON public.inventory;
 -- 인벤토리도 조회만 가능하게 하고 수량 변경은 purchase/consume RPC에서 처리
+DROP POLICY IF EXISTS "Users can view own inventory" ON public.inventory;
 CREATE POLICY "Users can view own inventory" 
   ON public.inventory FOR SELECT 
   USING (auth.uid() = user_id);

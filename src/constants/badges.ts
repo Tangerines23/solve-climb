@@ -1,5 +1,3 @@
-
-
 export const BADGE_DEFINITIONS = [
   // 1. 성장형 (누적 고도)
   {

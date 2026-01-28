@@ -151,6 +151,13 @@ jobs:
       - name: Build project
         run: npm run build
 
+      - name: Upload build artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: build-dist
+          path: dist
+          retention-days: 1
+
   # 6. E2E 및 시각적 테스트 (고급 품질 보증)
   e2e-visual-test:
     needs: build
@@ -212,8 +219,15 @@ jobs:
           path: node_modules
           key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
 
+      - name: Download build artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: build-dist
+          path: dist
+
       - name: 📦 Check Bundle Size
         run: npm run check:size
 
       - name: ⚡ Lighthouse Score Audit
         run: npm run check:score
+

@@ -180,4 +180,3 @@ export const logger = {
     console.log(`%c[${timestamp}] [SYSTEM] ${message}`, style);
   },
 };
-

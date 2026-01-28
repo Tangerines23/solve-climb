@@ -23,7 +23,6 @@ export const ItemActionResponseSchema = CommonResponseSchema.extend({
   new_quantity: z.number().optional(),
 });
 
-
 // 4. 랭킹 데이터 응답 (get_ranking_v2)
 export const RankingRecordSchema = z.object({
   user_id: z.string(),
@@ -37,8 +36,6 @@ export const RankingRecordSchema = z.object({
 export const RankingListSchema = z.array(RankingRecordSchema);
 
 // 5. 게임 결과 제출 응답 (submit_game_result)
-
-
 
 /**
  * RPC 응답을 Zod 스키마로 검증하는 유틸리티

@@ -922,7 +922,3 @@ export function CalculusBackground({ config }: BackgroundProps) {
     </svg>
   );
 }
-
-
-
-
