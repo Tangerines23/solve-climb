@@ -124,8 +124,9 @@ jobs:
       - name: Security audit
         run: npm run check:security
 
-      - name: DB lint check
-        run: npm run check:db:lint:local
+      # DB lint check는 로컬 DB 연결이 필요하여 CI에서는 일단 제외 (인증 문제 방지)
+      # - name: DB lint check
+      #   run: npm run check:db:lint:local
 
       - name: DB validation
         env:
