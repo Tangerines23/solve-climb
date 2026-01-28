@@ -57,7 +57,7 @@
     "check:circular": "madge --circular --extensions ts,tsx src/",
     "check:logic": "vitest src/utils/__tests__/logic_latency.test.ts",
     "check:secrets": "node scripts/check-secrets.js",
-    "check:spell": "cspell \"src/**/*.{ts,tsx}\"",
+    "check:spell": "npx cspell \"src/**/*.{ts,tsx}\"",
     "check:magic": "node scripts/check-magic-strings.js",
     "check:integrity": "npm run check:css && npm run check:nav && npm run check:spell && npm run check:magic",
     "check:size": "node scripts/check-bundle-size.js",

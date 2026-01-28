@@ -121,5 +121,22 @@ Antigravity는 보안상의 이유로 엄격한 실행 권한을 가집니다. W
 3.  **코드 클리닝**: 주기적으로 `npm run diet` (Knip)을 돌려 사용하지 않는 코드를 정리하세요. AI가 읽어야 할 코드가 적을수록 답변 속도와 정확도가 올라갑니다.
 
 ---
+🚀 5. 고효율 베타 테스트 (로컬 메크로)
+
+베타 테스트 기간 동안 사람 대신 로컬 환경에서 수백 번 이상 테스트를 수행하는 방법입니다.
+
+### 🎥 1) Playwright CodeGen (녹화형 메크로)
+사용자의 실제 브라우저 동작을 코드로 즉시 변환합니다. **토큰 소모가 0**입니다.
+1.  터미널에서 명령 실행: `npx playwright codegen localhost:5173`
+2.  브라우저가 열리면 테스트하고 싶은 시나리오(로그인, 게임 플레이 등)를 수행합니다.
+3.  `Playwright Inspector` 창에 자동으로 생성된 코드를 복사하여 `tests/e2e/my-beta-macro.spec.ts`에 저장합니다.
+4.  언제든 다시 실행: `npx playwright test tests/e2e/my-beta-macro.spec.ts`
+
+### 🙊 2) 무작위 클릭 테스트 (Monkey Test)
+특정 시나리오 없이 알고리즘이 무작위로 버튼을 눌러보며 앱이 터지는지(Crash) 검사합니다.
+*   실행: `npx playwright test tests/e2e/monkey-test.spec.ts`
+*   용도: 새로운 기능을 배포하기 전, 예기치 못한 예외 상황(예: 광클 시 에러)을 찾는 데 매우 효과적입니다.
+
+---
 > [!IMPORTANT]
-> **Zod**와 **Vitest**는 AI 협업의 '생명줄'입니다. 새로운 기능을 만들 때 반드시 이 두 가지를 먼저 챙기세요!
+> **Zod**와 **Vitest**는 AI 협업의 '생명줄'이며, **Playwright**는 베타 테스트의 '강철 자동화' 도구입니다!

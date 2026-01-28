@@ -8,9 +8,8 @@ import reactRefresh from 'eslint-plugin-react-refresh';
 import security from 'eslint-plugin-security';
 import tseslint from '@typescript-eslint/eslint-plugin';
 import tsparser from '@typescript-eslint/parser';
-import { defineConfig, globalIgnores } from 'eslint/config';
 
-export default defineConfig([
+export default [
   {
     ignores: [
       '**/dist/**',
@@ -24,15 +23,13 @@ export default defineConfig([
       '**/*.js.map',
     ],
   },
+  js.configs.recommended,
+  security.configs.recommended,
+  reactHooks.configs['recommended-latest'],
+  reactRefresh.configs.vite,
   {
     files: ['**/*.{js,jsx,ts,tsx}'],
     ignores: ['**/*.backup.tsx', '**/*.refactored.tsx'],
-    extends: [
-      js.configs.recommended,
-      security.configs.recommended,
-      reactHooks.configs['recommended-latest'],
-      reactRefresh.configs.vite,
-    ],
     languageOptions: {
       parser: tsparser,
       ecmaVersion: 2020,
@@ -62,13 +59,14 @@ export default defineConfig([
     },
   },
   {
-    files: ['scripts/**/*.js'],
+    files: ['scripts/**/*.{js,cjs}'],
     languageOptions: {
       ecmaVersion: 2020,
       globals: globals.node,
     },
     rules: {
       'no-unused-vars': ['error', { varsIgnorePattern: '^[A-Z_]' }],
+      'no-undef': 'off',
     },
   },
   {
@@ -86,4 +84,4 @@ export default defineConfig([
     },
   },
   ...storybook.configs['flat/recommended'],
-]);
+];

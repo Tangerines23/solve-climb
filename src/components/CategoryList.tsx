@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { APP_CONFIG } from '../config/app';
 import { urls } from '../utils/navigation';
 import { useFavoriteStore } from '../stores/useFavoriteStore';
+import { useFeatureFlagStore } from '../stores/useFeatureFlagStore';
 import { UnknownMountainCard } from './UnknownMountainCard';
 import { Toast } from './Toast';
 import { calculateCategoryAltitude } from '../utils/scoreCalculator';
@@ -18,6 +19,8 @@ export function CategoryList() {
     navigate(urls.categorySelect({ mountain: mountainId }));
   };
 
+  const { flags } = useFeatureFlagStore();
+
   // 활성화된 산 목록
   const mountains = (
     APP_CONFIG.MOUNTAINS as readonly {
@@ -28,10 +31,10 @@ export function CategoryList() {
       color: string;
     }[]
   ).filter((mountain) => {
-    if (mountain.id === 'math') return APP_CONFIG.FEATURE_FLAGS.ENABLE_MATH_MOUNTAIN;
-    if (mountain.id === 'language') return APP_CONFIG.FEATURE_FLAGS.ENABLE_LANGUAGE_MOUNTAIN;
-    if (mountain.id === 'logic') return APP_CONFIG.FEATURE_FLAGS.ENABLE_LOGIC_MOUNTAIN;
-    if (mountain.id === 'general') return APP_CONFIG.FEATURE_FLAGS.ENABLE_GENERAL_MOUNTAIN;
+    if (mountain.id === 'math') return flags.ENABLE_MATH_MOUNTAIN;
+    if (mountain.id === 'language') return flags.ENABLE_LANGUAGE_MOUNTAIN;
+    if (mountain.id === 'logic') return flags.ENABLE_LOGIC_MOUNTAIN;
+    if (mountain.id === 'general') return flags.ENABLE_GENERAL_MOUNTAIN;
     return true;
   });
 

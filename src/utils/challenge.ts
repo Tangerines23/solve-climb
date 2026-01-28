@@ -5,6 +5,7 @@
 
 import { APP_CONFIG } from '../config/app';
 import { storage } from './storage';
+import { useFeatureFlagStore } from '../stores/useFeatureFlagStore';
 
 const STORAGE_KEY_DATE = 'solve-climb-today-challenge-date';
 const STORAGE_KEY_CHALLENGE = 'solve-climb-today-challenge';
@@ -74,13 +75,15 @@ export function generateTodayChallenge(): TodayChallenge {
   const seed = dateToSeed(todayDate);
   const rng = new SeededRandom(seed);
 
+  const { flags } = useFeatureFlagStore.getState();
+
   // 기능 플래그(FEATURE_FLAGS)에 따라 활성화된 산 선택
   const availableMountains = APP_CONFIG.MOUNTAINS.filter((mtn) => {
     const mountainId = mtn.id as 'math' | 'language' | 'logic' | 'general';
-    if (mountainId === 'math') return APP_CONFIG.FEATURE_FLAGS.ENABLE_MATH_MOUNTAIN;
-    if (mountainId === 'language') return APP_CONFIG.FEATURE_FLAGS.ENABLE_LANGUAGE_MOUNTAIN;
-    if (mountainId === 'logic') return APP_CONFIG.FEATURE_FLAGS.ENABLE_LOGIC_MOUNTAIN;
-    if (mountainId === 'general') return APP_CONFIG.FEATURE_FLAGS.ENABLE_GENERAL_MOUNTAIN;
+    if (mountainId === 'math') return flags.ENABLE_MATH_MOUNTAIN;
+    if (mountainId === 'language') return flags.ENABLE_LANGUAGE_MOUNTAIN;
+    if (mountainId === 'logic') return flags.ENABLE_LOGIC_MOUNTAIN;
+    if (mountainId === 'general') return flags.ENABLE_GENERAL_MOUNTAIN;
     return false;
   });
   const mountains = [...availableMountains].sort((a, b) => a.id.localeCompare(b.id));

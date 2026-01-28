@@ -22,14 +22,13 @@ export const APP_CONFIG = {
   APP_NAME: 'Solve Climb',
   APP_VERSION: packageJson.version,
 
-  // 기능 플래그 (Feature Flags) - 산(카테고리) 활성화 상태 관리
-  // 연결을 끊고 싶으면 false, 다시 연결하고 싶으면 true로 설정하세요.
-  // 이 설정은 홈 화면 목록과 오늘의 챌린지 생성에 즉시 반영됩니다.
-  FEATURE_FLAGS: {
-    ENABLE_MATH_MOUNTAIN: true, // 수학의 산 (활성)
-    ENABLE_LANGUAGE_MOUNTAIN: false, // 언어의 산 (비활성 - 출시 보류)
-    ENABLE_LOGIC_MOUNTAIN: true, // 논리/상식 (활성)
-    ENABLE_GENERAL_MOUNTAIN: true, // 상식 (활성)
+  // 기능 플래그 (Feature Flags) - 초기 백업 설정
+  // 실제 제어는 useFeatureFlagStore를 사용하세요.
+  FEATURE_FLAGS_DEFAULT: {
+    ENABLE_MATH_MOUNTAIN: true,
+    ENABLE_LANGUAGE_MOUNTAIN: false,
+    ENABLE_LOGIC_MOUNTAIN: true,
+    ENABLE_GENERAL_MOUNTAIN: true,
   },
 
   // 오늘의 챌린지 설정
