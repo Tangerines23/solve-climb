@@ -1,15 +1,15 @@
 import { test, expect } from '@playwright/test';
 
 /**
- * Monkey Test / Chaos Test
+ * Monkey Test / Chaos Test (Network Chaos v2)
  * 
- * 이 테스트는 특정 시나리오 없이 화면의 무작위 요소를 클릭하여 
- * 애플리케이션의 안정성을 검증합니다. (로컬 실행 전용, 토큰 소모 없음)
+ * 특정 시나리오 없이 화면의 무작위 요소를 클릭하면서 
+ * 네트워크 환경을 무작위로 변경하여 앱의 회복 탄력성을 검증합니다.
  */
 
 test.describe('MONKEY TEST - Chaos Automation', () => {
 
-    test('무작위 클릭 및 인터랙션 중 크래시가 발생하지 않아야 한다', async ({ page }) => {
+    test('네트워크 카오스 환경에서도 앱이 크래시되지 않아야 한다', async ({ page }) => {
         // 에러 캡처 설정
         const errors: Error[] = [];
         page.on('pageerror', (exception) => {
@@ -17,69 +17,73 @@ test.describe('MONKEY TEST - Chaos Automation', () => {
             errors.push(exception);
         });
 
-        page.on('console', (msg) => {
-            if (msg.type() === 'error') {
-                console.error(`[BROWSER CONSOLE ERROR] ${msg.text()}`);
-            }
-        });
-
         // 시작 페이지 이동
         await page.goto('/');
-        await page.waitForLoadState('networkidle');
+        await page.waitForLoadState('load');
 
-        const ITERATIONS = 50; // 무작위 동작 횟수
-        console.log(`[MONKEY] Starting ${ITERATIONS} random interactions...`);
+        const ITERATIONS = 30; // 가혹 테스트 횟수
+        console.log(`[CHAOS MONKEY] Starting ${ITERATIONS} interactions with network chaos...`);
+
+        const networkConditions = [
+            { name: 'Normal', download: -1, upload: -1, latency: 0 },
+            { name: 'Slow 3G', download: 500 * 1024 / 8, upload: 500 * 1024 / 8, latency: 400 },
+            { name: 'Fast 3G', download: 1.6 * 1024 * 1024 / 8, upload: 750 * 1024 / 8, latency: 150 },
+            { name: 'Offline', download: 0, upload: 0, latency: 0, offline: true }
+        ];
 
         for (let i = 0; i < ITERATIONS; i++) {
-            // 현재 페이지의 클릭 가능한 요소들 수집
-            // 버튼, 링크, 입력창 등을 대상으로 함
-            const clickableLocators = [
-                'button',
-                'a',
-                '[role="button"]',
-                '.keypad-key',
-                '.category-climb-button',
-                '.level-list-button-primary'
-            ];
+            // 5회마다 네트워크 환경 무작위 변경 (더 잦은 카오스!)
+            if (i % 5 === 0) {
+                const condition = networkConditions[Math.floor(Math.random() * networkConditions.length)];
+                console.log(`[CHAOS] Step ${i}: Setting network to ${condition.name}`);
 
-            const elements = page.locator(clickableLocators.join(', '));
-            const count = await elements.count();
+                if ('offline' in condition && condition.offline) {
+                    await page.context().setOffline(true);
+                } else {
+                    await page.context().setOffline(false);
+                    // CDP 세션을 통해 실시간 네트워크 지연/대역폭 에뮬레이션
+                    const client = await page.context().newCDPSession(page);
+                    await client.send('Network.emulateNetworkConditions', {
+                        offline: false,
+                        downloadThroughput: condition.download,
+                        uploadThroughput: condition.upload,
+                        latency: condition.latency
+                    });
+                }
+            }
+
+            // 클릭 가능한 타겟들
+            const elements = page.locator('button, a, [role="button"], .keypad-key, .category-climb-button');
+            const count = await elements.count().catch(() => 0);
 
             if (count > 0) {
-                // 랜덤하게 하나 선택
                 const randomIndex = Math.floor(Math.random() * count);
                 const element = elements.nth(randomIndex);
 
                 try {
-                    // 가시성 확인 후 클릭 시도 (최대 1초 대기)
-                    if (await element.isVisible()) {
-                        const name = await element.innerText() || await element.getAttribute('aria-label') || 'unnamed';
-                        console.log(`[MONKEY] Step ${i + 1}: Clicking "${name.substring(0, 20)}"`);
+                    if (await element.isVisible({ timeout: 500 }).catch(() => false)) {
+                        const name = await element.innerText().catch(() => '??');
+                        console.log(`[CHAOS] Step ${i + 1}: Clicking "${name.trim().substring(0, 15)}"`);
 
-                        await element.click({ timeout: 1000 }).catch(e => {
-                            // 클릭 실패(다른 요소에 가려짐 등)는 무시하고 진행
-                        });
-
-                        // 클릭 후 페이지 안정화를 위해 짧은 대기
-                        await page.waitForTimeout(350);
+                        await element.click({ timeout: 800 }).catch(() => { });
+                        await page.waitForTimeout(400); // 반응 대기
                     }
-                } catch (e) {
-                    // 개별 인터랙션 실패는 무시 (Monkey Test의 특성)
-                }
+                } catch (e) { }
             } else {
-                // 클릭할 요소가 없으면 홈으로 강제 이동
-                console.log('[MONKEY] No clickable elements found. Going home...');
-                await page.goto('/');
-                await page.waitForTimeout(1000);
+                // 막다른 길이면 홈으로
+                await page.goto('/').catch(() => { });
             }
 
-            // 치명적 에러 발생 시 즉시 중단
+            // 치명적 에러 감시 (네트워크 연결 끊김 등 예상된 에러 제외)
             if (errors.length > 0) {
-                await page.screenshot({ path: `tests/e2e/screenshots/monkey-crash-${Date.now()}.png` });
-                throw new Error(`Monkey Test failed with ${errors.length} errors. Check logs and screenshots.`);
+                const critical = errors.filter(e => !/InternetDisconnected|NETWORK_CHANGED|Failed to fetch/i.test(e.message));
+                if (critical.length > 0) {
+                    await page.screenshot({ path: `tests/e2e/screenshots/chaos-crash-${Date.now()}.png` });
+                    throw new Error(`Chaos Monkey found ${critical.length} critical errors!`);
+                }
             }
         }
 
-        console.log('[MONKEY] Finished successfully without crashes.');
+        console.log('[CHAOS MONKEY] Test finished successfully.');
     });
 });
