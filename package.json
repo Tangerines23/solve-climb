@@ -66,6 +66,8 @@
     "check:integrity": "npm run check:css && npm run check:nav && npm run check:spell && npm run check:magic",
     "check:size": "node scripts/check-bundle-size.js",
     "check:security": "npm audit --audit-level=moderate",
+    "check:layout": "node scripts/check-layout-standalone.js",
+    "check:layout:deep": "node scripts/check-layout-standalone.js --deep",
     "check:score": "lhci collect --static-dist-dir=./dist && lhci assert",
     "prepare": "husky",
     "storybook": "storybook dev -p 6006",

@@ -249,11 +249,9 @@
   bottom: 0;
   top: 0;
   width: var(--spacing-micro);
-  background-image: linear-gradient(
-    to bottom,
-    color-mix(in srgb, var(--color-primary-light), transparent 60%) 40%,
-    rgba(255, 255, 255, 0) 0%
-  );
+  background-image: linear-gradient(to bottom,
+      color-mix(in srgb, var(--color-primary-light), transparent 60%) 40%,
+      rgba(255, 255, 255, 0) 0%);
   background-position: left;
   background-size: 2px 8px;
   /* 더 촘촘하고 예쁜 점선 */
@@ -441,11 +439,9 @@
   width: 27px;
   /* 64px(중심) - 19px(마커 반폭) - 18px(수직선) = 27px */
   height: var(--spacing-micro);
-  background: linear-gradient(
-    to left,
-    color-mix(in srgb, var(--color-primary-light), transparent 40%),
-    transparent
-  );
+  background: linear-gradient(to left,
+      color-mix(in srgb, var(--color-primary-light), transparent 40%),
+      transparent);
   z-index: -1;
 }
 
@@ -1016,13 +1012,11 @@
   top: 10px;
   bottom: 0px;
   width: var(--spacing-micro);
-  background: repeating-linear-gradient(
-    to bottom,
-    var(--color-primary-light),
-    var(--color-primary-light) 3px,
-    transparent 3px,
-    transparent 6px
-  );
+  background: repeating-linear-gradient(to bottom,
+      var(--color-primary-light),
+      var(--color-primary-light) 3px,
+      transparent 3px,
+      transparent 6px);
   opacity: 0.25;
 }
 
@@ -1045,6 +1039,8 @@
   justify-content: center;
   font-size: 13px;
   flex-shrink: 0;
+  overflow: hidden;
+  /* Fix micro-overflows */
 }
 
 .milestone-item-integrated.is-current .milestone-dot-integrated {
@@ -1643,11 +1639,9 @@
   font-size: 24px;
   font-weight: 800;
   color: var(--color-text-primary);
-  background: linear-gradient(
-    135deg,
-    var(--color-text-primary) 30%,
-    var(--color-primary-light) 100%
-  );
+  background: linear-gradient(135deg,
+      var(--color-text-primary) 30%,
+      var(--color-primary-light) 100%);
   -webkit-background-clip: text;
   background-clip: text;
   -webkit-text-fill-color: transparent;

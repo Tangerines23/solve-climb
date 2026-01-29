@@ -1,5 +1,8 @@
 .shop-page {
-  min-height: 100vh;
+  /* Fix overflow: contain scroll within the page container */
+  height: 100vh;
+  overflow-y: auto;
+  overflow-x: hidden;
   background-color: var(--color-slate-900);
   color: var(--color-text-primary);
   padding-bottom: 100px;

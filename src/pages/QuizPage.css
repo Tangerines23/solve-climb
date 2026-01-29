@@ -30,6 +30,7 @@
 
 /* Correct answer flash */
 @keyframes correct-flash-animation {
+
   0%,
   100% {
     border: 2px solid transparent;
@@ -47,6 +48,7 @@
 
 /* Incorrect answer shake on CARD */
 @keyframes wrong-shake-animation {
+
   0%,
   100% {
     transform: translateX(0);
@@ -187,7 +189,7 @@
   min-height: 44px;
   border-radius: var(--rounded-sm);
   font-weight: 300;
-  line-height: 1;
+  line-height: normal;
 }
 
 .quiz-back-button:hover {
@@ -424,6 +426,7 @@
 }
 
 @keyframes caret-blink {
+
   0%,
   100% {
     opacity: 1;
@@ -608,7 +611,7 @@
   font-size: 1rem;
   transition: all 0.3s ease;
   filter: drop-shadow(0 0 2px rgba(0, 0, 0, 0.3));
-  line-height: 1;
+  line-height: normal;
 }
 
 .quiz-life-item.used {
@@ -622,6 +625,7 @@
 }
 
 @keyframes item-pulse {
+
   0%,
   100% {
     transform: scale(1);
@@ -718,7 +722,7 @@
   /* Let clicks pass through to card if needed, but buttons need pointer-events: auto */
 }
 
-.altimeter-hud > * {
+.altimeter-hud>* {
   pointer-events: auto;
 }
 
@@ -742,7 +746,7 @@
   font-weight: 800;
   /* ExtraBold */
   font-size: 3rem;
-  line-height: 1;
+  line-height: normal;
   color: var(--color-gray-100);
   font-variant-numeric: tabular-nums;
   letter-spacing: -1px;
@@ -974,13 +978,11 @@
 
 /* 심화 (Advanced/Calculus) - Wave/Curve */
 .quiz-page[data-world='World1'][data-category='심화']::before {
-  background: repeating-linear-gradient(
-    0deg,
-    transparent,
-    transparent 100px,
-    rgba(59, 130, 246, 0.05) 100px,
-    rgba(59, 130, 246, 0.05) 101px
-  );
+  background: repeating-linear-gradient(0deg,
+      transparent,
+      transparent 100px,
+      rgba(59, 130, 246, 0.05) 100px,
+      rgba(59, 130, 246, 0.05) 101px);
 }
 
 .category-label {

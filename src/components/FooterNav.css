@@ -9,7 +9,8 @@
   display: flex;
   justify-content: space-around;
   align-items: center;
-  padding: var(--spacing-sm) 0;
+  /* Fix desktop overflow: reduced padding from var(--spacing-sm) to 4px */
+  padding: 4px 0;
   z-index: 100;
   height: var(--footer-height-portrait);
 }
@@ -35,14 +36,15 @@
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: var(--spacing-xs);
+  gap: 2px;
   background: none;
   border: none;
   cursor: pointer;
-  padding: var(--spacing-sm) var(--spacing-lg);
+  padding: 0 var(--spacing-lg);
   transition: opacity 0.2s;
   flex: 1;
   color: var(--color-text-secondary);
+  height: 100%;
 }
 
 .footer-nav-item:hover {
@@ -55,9 +57,16 @@
 
 .footer-nav-icon {
   font-size: 1.5rem;
+  line-height: 1;
+  /* Tighten for fixed height nav */
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .footer-nav-label {
   font-size: 0.75rem;
   font-weight: 500;
+  line-height: 1;
+  /* Tighten for fixed height nav */
 }

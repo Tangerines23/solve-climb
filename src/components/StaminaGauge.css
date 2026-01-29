@@ -8,18 +8,18 @@
   /* Removed background, border, box-shadow, backdrop-filter */
 }
 
-.stamina-icon-wrapper {
-  width: var(--spacing-3xl);
-  height: var(--spacing-3xl);
+.stamina-gauge-icon-wrapper-hardened {
   display: flex;
   align-items: center;
   justify-content: center;
   position: relative;
+  padding: 8px;
+  /* High clearance for shadows */
 }
 
 .stamina-lightning {
-  width: 100%;
-  height: 100%;
+  width: var(--spacing-3xl);
+  height: var(--spacing-3xl);
   /* Default shadow for visibility */
   filter: drop-shadow(0 0 2px rgba(0, 0, 0, 0.5));
   transition:
@@ -87,8 +87,7 @@
 
   50% {
     transform: scale(1.1);
-    filter: drop-shadow(0 0 8px rgba(76, 217, 100, 0.9))
-      drop-shadow(0 0 15px rgba(76, 217, 100, 0.5));
+    filter: drop-shadow(0 0 8px rgba(76, 217, 100, 0.9)) drop-shadow(0 0 15px rgba(76, 217, 100, 0.5));
   }
 
   100% {
@@ -98,6 +97,7 @@
 }
 
 @keyframes shake {
+
   0%,
   100% {
     transform: translateX(0);

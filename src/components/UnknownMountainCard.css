@@ -27,8 +27,9 @@
 }
 
 .unknown-mountain-icon-wrapper {
-  width: 40px;
-  height: 40px;
+  width: calc(40px + 8px);
+  /* 8px extra for shadow clearance */
+  height: calc(40px + 8px);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -54,12 +55,10 @@
   font-weight: 600;
   color: var(--color-text-primary);
   margin: 0;
-  background: linear-gradient(
-    to bottom,
-    var(--color-text-primary) 0%,
-    var(--color-text-primary) 60%,
-    rgba(255, 255, 255, 0.3) 100%
-  );
+  background: linear-gradient(to bottom,
+      var(--color-text-primary) 0%,
+      var(--color-text-primary) 60%,
+      rgba(255, 255, 255, 0.3) 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;

@@ -18,7 +18,7 @@ export function StaminaGauge() {
 
   return (
     <div className={`stamina-gauge-container ${isEmpty ? 'shake' : ''}`}>
-      <div className="stamina-icon-wrapper">
+      <div className="stamina-gauge-icon-wrapper-hardened">
         <svg
           viewBox="0 0 24 24"
           className={`stamina-lightning ${isFull ? 'pulse' : ''}`}

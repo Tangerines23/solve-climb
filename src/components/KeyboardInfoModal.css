@@ -23,6 +23,7 @@
   from {
     opacity: 0;
   }
+
   to {
     opacity: 1;
   }
@@ -51,6 +52,7 @@
     transform: translateY(var(--spacing-xl));
     opacity: 0;
   }
+
   to {
     transform: translateY(0);
     opacity: 1;
@@ -240,7 +242,7 @@
   pointer-events: none;
 }
 
-.keyboard-info-nav-wrapper > * {
+.keyboard-info-nav-wrapper>* {
   pointer-events: auto;
 }
 
@@ -269,7 +271,7 @@
   justify-content: center;
   flex-shrink: 0;
   padding: 0;
-  line-height: 1;
+  line-height: normal;
 }
 
 .keyboard-info-nav-button:hover {
@@ -283,8 +285,8 @@
 }
 
 /* 키보드는 quiz-content의 직접 자식으로 배치되어 퀴즈 페이지와 완전히 동일 */
-.keyboard-info-content-wrapper > .custom-keypad,
-.keyboard-info-content-wrapper > .qwerty-keypad {
+.keyboard-info-content-wrapper>.custom-keypad,
+.keyboard-info-content-wrapper>.qwerty-keypad {
   /* 퀴즈 페이지와 동일 - 위치 강제 고정 */
   width: 100% !important;
   max-width: var(--modal-width-portrait) !important;

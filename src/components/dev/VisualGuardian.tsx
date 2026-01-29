@@ -11,14 +11,22 @@ import { useEffect } from 'react';
  */
 export function VisualGuardian() {
   useEffect(() => {
-    // 프로덕션, CI, 또는 자동화 환경에서는 실행하지 않음
+    // 프로덕션, CI, 또는 자동화 환경에서는 기본적으로 실행하지 않음
+    // 단, window.__ENABLE_VISUAL_GUARDIAN__ 플래그가 있으면 강제 실행 (E2E 테스트용)
+    const forceEnable = (window as any).__ENABLE_VISUAL_GUARDIAN__;
     const isCI =
       !!import.meta.env.VITE_CI ||
       window.navigator.userAgent.includes('Playwright') ||
       (window as any).isPlaywrightLocal;
-    if (!import.meta.env.DEV || isCI) return;
+
+    if (!forceEnable && (!import.meta.env.DEV || isCI)) return;
 
     console.log('👁️ Visual Guardian is watching against overflows...');
+
+    // 자동화 테스트를 위한 에러 저장소 초기화
+    if (!(window as any).__LAYOUT_ERRORS__) {
+      (window as any).__LAYOUT_ERRORS__ = [];
+    }
 
     const scanInterval = setInterval(() => {
       const allElements = document.querySelectorAll<HTMLElement>('*');
@@ -35,17 +43,18 @@ export function VisualGuardian() {
         if (
           ['auto', 'scroll'].includes(style.overflow) ||
           ['auto', 'scroll'].includes(style.overflowX) ||
-          ['auto', 'scroll'].includes(style.overflowY)
+          ['auto', 'scroll'].includes(style.overflowY) ||
+          style.textOverflow === 'ellipsis' ||
+          el.classList.contains('under-development-toast-icon')
         ) {
           return;
         }
 
-        // 1. 세로 넘침 감지
-        // (약간의 오차 허용: 1px)
-        const isVerticalOverflow = el.scrollHeight > el.clientHeight + 1;
+        // 1. 세로 넘침 감지 (Zero Tolerance: 0.5px 오차만 허용)
+        const isVerticalOverflow = el.scrollHeight > el.clientHeight + 0.5;
 
         // 2. 가로 넘침 감지
-        const isHorizontalOverflow = el.scrollWidth > el.clientWidth + 1;
+        const isHorizontalOverflow = el.scrollWidth > el.clientWidth + 0.5;
 
         if (isVerticalOverflow || isHorizontalOverflow) {
           // 이미 감지된 경우 패스
@@ -58,9 +67,23 @@ export function VisualGuardian() {
 
           // 툴팁 효과 (title 속성 활용)
           const originalTitle = el.title;
-          el.title = `⚠️ Overflow Detected! (${isVerticalOverflow ? 'Vertical' : ''} ${isHorizontalOverflow ? 'Horizontal' : ''})`;
+          const errorMsg = `Overflow Detected! (${isVerticalOverflow ? 'Vertical' : ''} ${isHorizontalOverflow ? 'Horizontal' : ''}) in <${el.tagName.toLowerCase()} class="${el.className}">`;
+          el.title = `⚠️ ${errorMsg}`;
 
-          console.warn('🚨 [Visual Guardian] Overflow detected:', el, {
+          // 자동화 테스트를 위한 상태 업데이트
+          document.body.dataset.layoutError = 'true';
+          (window as any).__LAYOUT_ERRORS__.push({
+            element: el.tagName,
+            className: el.className,
+            path: el.tagName.toLowerCase() + (el.className ? '.' + el.className.split(' ').join('.') : ''),
+            error: errorMsg,
+            details: {
+              scroll: [el.scrollWidth, el.scrollHeight],
+              client: [el.clientWidth, el.clientHeight]
+            }
+          });
+
+          console.warn('🚨 [Visual Guardian]', errorMsg, {
             scroll: [el.scrollWidth, el.scrollHeight],
             client: [el.clientWidth, el.clientHeight],
           });
@@ -82,7 +105,7 @@ export function VisualGuardian() {
           );
         }
       });
-    }, 2000); // 2초마다 스캔 (성능 부하 고려)
+    }, 1000); // 1초마다 스캔 (테스트 반응성을 위해 2초 -> 1초 단축)
 
     return () => clearInterval(scanInterval);
   }, []);

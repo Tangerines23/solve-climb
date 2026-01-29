@@ -31,7 +31,8 @@
 
 .under-development-toast-icon {
   font-size: clamp(20px, 4vw, 24px);
-  line-height: 1;
+  line-height: normal;
+  /* Fix overflow (was 1) */
   flex-shrink: 0;
 }
 
@@ -47,6 +48,7 @@
     opacity: 0;
     transform: translateX(-50%) translateY(100%);
   }
+
   to {
     opacity: 1;
     transform: translateX(-50%) translateY(0);
@@ -58,6 +60,7 @@
     opacity: 1;
     transform: translateX(-50%) translateY(0);
   }
+
   to {
     opacity: 0;
     transform: translateX(-50%) translateY(100%);

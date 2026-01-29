@@ -48,7 +48,8 @@
 
 .tier-emoji {
   display: block;
-  line-height: 1;
+  line-height: normal;
+  /* "1" causes overflow if emoji font is taller */
 }
 
 .tier-label {
