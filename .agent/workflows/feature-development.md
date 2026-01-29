@@ -31,11 +31,15 @@ description: solve-climb 프로젝트의 표준 기능 개발 프로세스
 // turbo
 4. 데드 코드를 감지합니다: `npm run diet` (미사용 파일 및 의존성 체크)
 // turbo
-5. DB 변경이 있는 경우 검증합니다: `npm run check:db:lint` 및 `npm run check:db:validation`
+5. **레이아웃 검증**: `npm run check:layout:deep` (모든 뷰포트에서 오버플로우 확인)
 // turbo
-6. 유닛 테스트가 있는 경우 실행합니다: `npm run test`
-6. 구현된 기능이 의도대로 동작하는지 확인합니다(필요 시 브라우저 도구 활용).
+6. DB 변경이 있는 경우 검증합니다: `npm run check:db:lint` 및 `npm run check:db:validation`
+// turbo
+7. 유닛 테스트가 있는 경우 실행합니다: `npm run test:all`
+8. (선택) 시각적 회귀 테스트: `npx playwright test tests/e2e/visual.spec.ts`
+9. 구현된 기능이 의도대로 동작하는지 확인합니다(필요 시 브라우저 도구 활용).
 
 ### 5단계: 완료 및 문서화
 - `walkthrough.md`를 작성하여 변경 사항과 검증 결과를 요약합니다.
 - `notify_user`를 통해 최종 결과를 보고합니다.
+

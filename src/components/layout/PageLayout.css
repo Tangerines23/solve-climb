@@ -1,0 +1,31 @@
+/* Global Layout Enforcement */
+.page-layout-container {
+  position: absolute;
+  /* Changed from fixed to absolute to play nice with transitions */
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  /* Or min-height: 100vh */
+
+  /* CRITICAL: The "Waterproof Hull" */
+  overflow-x: hidden;
+  overflow-y: auto;
+
+  /* Mobile WebKit fixes */
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior-y: none;
+  /* Prevent rubber-banding on body */
+
+  /* Background base */
+  background-color: var(--color-bg-primary);
+
+  /* Box Sizing for safety */
+  box-sizing: border-box;
+}
+
+/* When used as a wrapper for full-screen pages like LevelSelect */
+.page-layout-container.fullscreen {
+  height: 100vh;
+  position: fixed;
+}

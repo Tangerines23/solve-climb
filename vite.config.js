@@ -3,6 +3,7 @@ import react from '@vitejs/plugin-react';
 import path from 'path';
 import { visualizer } from 'rollup-plugin-visualizer';
 import { sentryVitePlugin } from '@sentry/vite-plugin';
+import { VitePWA } from 'vite-plugin-pwa';
 
 /// <reference types="vitest" />
 
@@ -26,13 +27,15 @@ export default defineConfig(({ mode }) => {
         authToken: env.SENTRY_AUTH_TOKEN,
       }),
       // Bundle analyzer (only in analyze mode)
-      env.ANALYZE &&
-        visualizer({
-          open: true,
-          filename: 'dist/stats.html',
-          gzipSize: true,
-          brotliSize: true,
-        }),
+      // PWA support
+      VitePWA({
+        registerType: 'prompt',
+        manifest: {
+          name: 'Solve Climb',
+          short_name: 'Climb',
+          theme_color: '#ffffff',
+        },
+      }),
     ].filter(Boolean),
     resolve: {
       alias: {

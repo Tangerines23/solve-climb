@@ -15,9 +15,11 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  height: var(--header-height-portrait);
+  min-height: var(--header-height-portrait);
   max-width: 100%;
   gap: var(--spacing-sm);
+  padding: var(--spacing-xs) 0;
+  /* Add slight vertical padding for fluid safety */
 }
 
 /* 가로모드에서 헤더 높이 축소 */
@@ -27,7 +29,7 @@
   }
 
   .header-content {
-    height: var(--header-height-landscape);
+    min-height: var(--header-height-landscape);
   }
 
   .header-logo {
@@ -108,23 +110,28 @@
   font-size: 0.75rem;
   font-weight: 600;
   color: var(--color-text-primary);
-  line-height: normal;
-  padding: 2px 6px;
-  min-height: 24px;
+  line-height: 1.2;
+  padding: var(--spacing-xs) var(--spacing-tiny);
+  /* Fluid Safety: Use padding instead of fixed min-height to prevent vertical clipping */
 }
 
 .status-icon {
-  line-height: 1;
+  font-size: 0.9rem;
+  /* Increase for emojis */
+  line-height: 1.4;
   display: flex;
   align-items: center;
   justify-content: center;
-  height: 100%;
-  /* Inherit safe height (24px) from parent */
+  flex-shrink: 0;
+  /* Ensure emoji/icon has vertical room to prevent clipping */
 }
 
 .status-value {
   min-width: 1.5rem;
   text-align: center;
+  line-height: 1.4;
+  display: inline-block;
+  /* Extra vertical safety to prevent clipping */
 }
 
 .recharge-btn {
@@ -143,7 +150,7 @@
   margin-left: 4px;
   transition: all 0.2s ease;
   padding: 0;
-  line-height: normal;
+  line-height: 1.2;
   /* Fix potential overflow (was 1) */
 }
 

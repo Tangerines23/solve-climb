@@ -175,7 +175,7 @@ export function Header({ title, showBack, onBack }: HeaderProps) {
             onClick={handleMineralsClick}
             style={{ cursor: isAdminMode ? 'pointer' : 'default' }}
           >
-            <span role="img" aria-label="minerals">
+            <span role="img" aria-label="minerals" className="status-icon">
               💎
             </span>
             <span className="status-value">{minerals.toLocaleString()}</span>
@@ -193,7 +193,7 @@ export function Header({ title, showBack, onBack }: HeaderProps) {
               onClick={handleItemsClick}
               style={{ cursor: 'pointer' }}
             >
-              <span role="img" aria-label="items">
+              <span role="img" aria-label="items" className="status-icon">
                 📦
               </span>
             </div>

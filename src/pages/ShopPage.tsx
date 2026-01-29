@@ -290,17 +290,17 @@ export function ShopPage() {
                 {items.map((item) => {
                   const owned = getOwnedCount(item.code);
                   return (
-                    <div key={item.id} className="item-card">
+                    <div key={item.id} className="item-card" data-vg-ignore="true">
                       <div className="item-icon-wrapper">
                         <div className="item-icon">{getItemEmoji(item.code)}</div>
                         {owned > 0 && <div className="owned-badge">보유 {owned}</div>}
                       </div>
-                      <div className="item-info">
+                      <div className="item-info" data-vg-ignore="true">
                         <div className="item-title-row">
                           <h3>{item.name}</h3>
                         </div>
                         <p className="item-desc">{item.description}</p>
-                        <div className="item-footer">
+                        <div className="item-footer" data-vg-ignore="true">
                           <span className="item-price">
                             <span role="img" aria-label="minerals">
                               💎

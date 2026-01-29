@@ -56,7 +56,7 @@ export function ErrorFallback({ error, resetError }: ErrorFallbackProps) {
                   <span className="debug-value truncate">{window.location.pathname}</span>
                 </div>
               </div>
-              <div style={{ position: 'relative', marginTop: 'var(--spacing-md)' }}>
+              <div className="error-stack-container">
                 <pre className="error-fallback-stack">{error.stack || error.message}</pre>
                 <button
                   className="copy-debug-btn"

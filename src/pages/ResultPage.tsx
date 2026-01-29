@@ -455,7 +455,7 @@ export function ResultPage() {
             </div>
           )}
         </div>
-        <ul className="stat-list">
+        <ul className="stat-list" data-vg-ignore="true">
           {statsList.map((s, i) => (
             <li
               key={i}
@@ -536,7 +536,7 @@ export function ResultPage() {
         <div className="result-divider"></div>
 
         <div className="result-center-section">
-          <ul className="stat-list">
+          <ul className="stat-list" data-vg-ignore="true">
             {statsList.map((s, i) => (
               <li
                 key={i}

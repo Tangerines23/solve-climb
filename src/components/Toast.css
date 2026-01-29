@@ -42,8 +42,8 @@
   text-align: center;
   word-break: keep-all;
   overflow-wrap: break-word;
-  /* 기본적으로 한 줄로 표시 */
-  white-space: nowrap;
+  /* 자동 줄바꿈 허용으로 오버플로우 방지 */
+  white-space: normal;
 }
 
 /* 텍스트가 화면을 뚫을 때만 줄바꿈 허용 */

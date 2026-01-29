@@ -210,7 +210,7 @@ export const ErrorLogSection = React.memo(function ErrorLogSection() {
               {log.stack && (
                 <details className="debug-log-stack">
                   <summary>스택 트레이스</summary>
-                  <pre>{log.stack}</pre>
+                  <pre className="debug-log-pre">{log.stack}</pre>
                 </details>
               )}
             </div>

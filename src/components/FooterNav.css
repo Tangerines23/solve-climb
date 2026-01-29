@@ -10,7 +10,7 @@
   justify-content: space-around;
   align-items: center;
   /* Fix desktop overflow: reduced padding from var(--spacing-sm) to 4px */
-  padding: 4px 0;
+  padding: var(--spacing-xs) 0;
   z-index: 100;
   height: var(--footer-height-portrait);
 }
@@ -36,7 +36,7 @@
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 2px;
+  gap: var(--spacing-micro);
   background: none;
   border: none;
   cursor: pointer;
@@ -57,7 +57,7 @@
 
 .footer-nav-icon {
   font-size: 1.5rem;
-  line-height: 1;
+  line-height: 1.2;
   /* Tighten for fixed height nav */
   display: flex;
   align-items: center;
@@ -67,6 +67,6 @@
 .footer-nav-label {
   font-size: 0.75rem;
   font-weight: 500;
-  line-height: 1;
+  line-height: 1.2;
   /* Tighten for fixed height nav */
 }

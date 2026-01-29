@@ -7,7 +7,8 @@
   bottom: 0;
   background-color: rgba(0, 0, 0, 0.3);
   z-index: 9999;
-  pointer-events: auto; /* 오버레이 클릭 가능하도록 */
+  pointer-events: auto;
+  /* 오버레이 클릭 가능하도록 */
 }
 
 /* 사이드바 패널: 우측 고정, 슬라이드 인/아웃 */
@@ -21,17 +22,22 @@
   height: 100vh;
   background-color: var(--color-bg-secondary);
   box-shadow: var(--shadow-modal);
-  pointer-events: auto; /* 패널 영역만 클릭 가능 */
-  transform: translateX(100%); /* 초기 상태: 숨김 */
+  pointer-events: auto;
+  /* 패널 영역만 클릭 가능 */
+  transform: translateX(100%);
+  /* 초기 상태: 숨김 */
   transition: transform 0.3s ease;
   z-index: 10000;
   overflow-y: auto;
+  overflow-x: hidden;
+  max-width: 100%;
   display: flex;
   flex-direction: column;
 }
 
 .debug-panel.open {
-  transform: translateX(0); /* 열림 상태 */
+  transform: translateX(0);
+  /* 열림 상태 */
 }
 
 .debug-panel-header {
@@ -123,7 +129,8 @@
   .debug-panel {
     width: 100%;
     max-width: 100%;
-    transform: translateY(100%); /* 모바일: 아래에서 위로 */
+    transform: translateY(100%);
+    /* 모바일: 아래에서 위로 */
   }
 
   .debug-panel.open {

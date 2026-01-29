@@ -1,19 +1,8 @@
 .level-select-page {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background-color: var(--color-bg-primary);
-  /* Fallback */
-  overflow-y: auto;
-  overflow-x: auto;
-  -webkit-overflow-scrolling: touch;
-  overscroll-behavior-y: contain;
-  touch-action: pan-y;
-  scroll-behavior: auto;
-  min-width: 320px;
+  /* PageLayout handles positioning and overflow */
   transition: background 0.5s ease;
+  position: relative;
+  /* Maintain relative context for children */
 }
 
 /* World Themes */

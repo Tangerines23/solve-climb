@@ -57,6 +57,14 @@
   color: var(--color-blue-400);
 }
 
+.error-stack-container {
+  position: relative;
+  margin-top: var(--spacing-md);
+  max-width: 100%;
+  overflow: hidden;
+  /* Ensure wrapper doesn't leak */
+}
+
 .error-fallback-stack {
   margin-top: var(--spacing-sm);
   padding: var(--spacing-md);
@@ -68,6 +76,11 @@
   color: var(--color-text-secondary);
   max-height: 250px;
   border: 1px solid var(--color-bg-tertiary);
+  white-space: pre-wrap;
+  word-wrap: break-word;
+  word-break: break-all;
+  max-width: 100%;
+  box-sizing: border-box;
 }
 
 .debug-info-grid {

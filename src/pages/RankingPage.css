@@ -114,8 +114,15 @@
 
 .ranking-info p {
   font-size: 0.85rem;
+  line-height: 1.5;
+  /* Ensure enough height for emojis */
   color: var(--color-text-dimmed);
   font-weight: 500;
+  min-height: 24px;
+  /* Force minimum height for vertical safety */
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 /* Layer 3: Ranking List Styling */
@@ -318,8 +325,10 @@
   animation: live-pulse 2s infinite;
   box-shadow: 0 0 5px rgba(255, 75, 75, 0.5);
   margin-left: 8px;
-  display: inline-block;
-  vertical-align: middle;
+  display: flex;
+  /* Change to flex for better alignment in flex container */
+  align-items: center;
+  justify-content: center;
 }
 
 @keyframes live-pulse {

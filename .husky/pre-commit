@@ -69,7 +69,14 @@ npm run check:security || echo "⚠️ 보안 취약점 발견 (npm audit 권장
 #   exit 1
 # fi
 
-# 7. DB 검증 (조건부)
+# 7. 레이아웃 검증 (기본 모드 - 약 6초 소요)
+echo "7️⃣ 레이아웃 검증 (Basic Layout Check)..."
+if ! npm run check:layout; then
+    echo "🚫 레이아웃 깨짐 발견! (npm run check:layout 확인)"
+    exit 1
+fi
+
+# 8. DB 검증 (조건부)
 DB_CHANGED=$(node scripts/check-db-changes.js 2>/dev/null || echo "")
 if [ -n "$DB_CHANGED" ]; then
   echo "7️⃣ DB 검증..."

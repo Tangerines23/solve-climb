@@ -10,6 +10,7 @@ interface ToastProps {
   autoClose?: boolean;
   autoCloseDelay?: number;
   icon?: string;
+  children?: React.ReactNode;
 }
 
 export function Toast({
@@ -19,45 +20,12 @@ export function Toast({
   autoClose = true,
   autoCloseDelay = 2000,
   icon,
+  children,
 }: ToastProps) {
   const [isClosing, setIsClosing] = useState(false);
-  const [shouldWrap, setShouldWrap] = useState(false);
   const timerRef = useRef<NodeJS.Timeout | null>(null);
   const textRef = useRef<HTMLSpanElement>(null);
   const contentRef = useRef<HTMLDivElement>(null);
-
-  // 텍스트 너비 측정하여 줄바꿈 필요 여부 결정
-  useEffect(() => {
-    if (!isOpen || !message) {
-      setShouldWrap(false);
-      return;
-    }
-
-    // 렌더링 완료 후 측정
-    const measureTimeout = setTimeout(() => {
-      if (!textRef.current || !contentRef.current) return;
-
-      // 임시로 한 줄로 표시하여 실제 너비 측정
-      const textElement = textRef.current;
-
-      const originalWhiteSpace = textElement.style.whiteSpace;
-      textElement.style.whiteSpace = 'nowrap';
-
-      const textWidth = textElement.scrollWidth;
-      const iconWidth = icon ? 28 : 0; // 아이콘(20px) + gap(8px)
-      const padding = 40; // 좌우 padding (20px * 2)
-      const maxContentWidth = Math.min(400, window.innerWidth - 16);
-      const availableWidth = maxContentWidth - padding - iconWidth;
-
-      textElement.style.whiteSpace = originalWhiteSpace;
-
-      // 텍스트 너비가 사용 가능한 너비를 초과하면 줄바꿈 허용
-      const nextShouldWrap = textWidth > availableWidth;
-      setShouldWrap((prev) => (prev !== nextShouldWrap ? nextShouldWrap : prev));
-    }, 10);
-
-    return () => clearTimeout(measureTimeout);
-  }, [isOpen, message, icon]);
 
   useEffect(() => {
     // 타이머 정리
@@ -100,9 +68,10 @@ export function Toast({
     <div className={`toast ${isClosing ? 'closing' : ''}`}>
       <div ref={contentRef} className="toast-content">
         {icon && <span className="toast-icon">{icon}</span>}
-        <span ref={textRef} className={`toast-text ${shouldWrap ? 'wrap' : 'nowrap'}`}>
+        <span ref={textRef} className="toast-text">
           {message}
         </span>
+        {children}
       </div>
     </div>,
     document.body

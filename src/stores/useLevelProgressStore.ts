@@ -160,6 +160,9 @@ export const useLevelProgressStore = create<LevelProgressState>()(
           hasSessionData: !!sessionData,
         });
 
+        const startTime = (await import('./useGameStore')).useGameStore.getState().startTime;
+        const totalDurationMs = startTime ? Date.now() - startTime : undefined;
+
         // 1. Optimistic Update (Local) - Move to the beginning to be truly synchronous for UI/Tests
         set((state) => {
           const newProgress = { ...state.progress };
@@ -208,8 +211,9 @@ export const useLevelProgressStore = create<LevelProgressState>()(
               p_session_id: sessionData?.sessionId,
               p_world_id: world,
               p_category: category,
-              p_subject: sessionData?.answers?.[0] ? 'add' : 'add', // TODO: 정확한 subject 추론 로직 필요 (현재는 일단 category/world에서 파생)
+              p_subject: sessionData?.answers?.[0] ? 'add' : 'add',
               p_level: level,
+              p_total_time_ms: totalDurationMs,
             })
           );
 
@@ -361,11 +365,22 @@ export const useLevelProgressStore = create<LevelProgressState>()(
                 }
 
                 const modeKey = mode_code === 1 ? 'time-attack' : 'survival';
+
+                // [Self-Healing Reconciliation]
+                // Merge local and server best scores (Take the winner)
                 if (
                   localRecord.bestScore[modeKey] === null ||
                   score > localRecord.bestScore[modeKey]!
                 ) {
                   localRecord.bestScore[modeKey] = score;
+                  console.log(
+                    `[Reconciliation] Restored higher server score for ${category} L${level}`
+                  );
+                } else if (localRecord.bestScore[modeKey]! > score) {
+                  // Local is higher (e.g., played offline) -> We should eventually sync this back to server
+                  console.log(
+                    `[Reconciliation] Local score higher for ${category} L${level}. Needs delayed sync.`
+                  );
                 }
               });
 

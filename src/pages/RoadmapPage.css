@@ -249,9 +249,11 @@
   bottom: 0;
   top: 0;
   width: var(--spacing-micro);
-  background-image: linear-gradient(to bottom,
-      color-mix(in srgb, var(--color-primary-light), transparent 60%) 40%,
-      rgba(255, 255, 255, 0) 0%);
+  background-image: linear-gradient(
+    to bottom,
+    color-mix(in srgb, var(--color-primary-light), transparent 60%) 40%,
+    rgba(255, 255, 255, 0) 0%
+  );
   background-position: left;
   background-size: 2px 8px;
   /* 더 촘촘하고 예쁜 점선 */
@@ -439,9 +441,11 @@
   width: 27px;
   /* 64px(중심) - 19px(마커 반폭) - 18px(수직선) = 27px */
   height: var(--spacing-micro);
-  background: linear-gradient(to left,
-      color-mix(in srgb, var(--color-primary-light), transparent 40%),
-      transparent);
+  background: linear-gradient(
+    to left,
+    color-mix(in srgb, var(--color-primary-light), transparent 40%),
+    transparent
+  );
   z-index: -1;
 }
 
@@ -670,7 +674,8 @@
 
 /* --- Phase 9: Segmented Control (Tabs) --- */
 .history-tab-container {
-  padding: var(--spacing-sm) 0;
+  padding: var(--spacing-sm) var(--spacing-xl);
+  /* Add side padding to match other sections */
   margin-bottom: var(--spacing-md);
 }
 
@@ -679,8 +684,15 @@
   display: flex;
   background-color: rgba(255, 255, 255, 0.05);
   border-radius: var(--rounded-md-alt);
-  padding: var(--spacing-xs);
+  padding: 0;
+  /* Reduced from spacing-xs (4px) to prevent overflow */
   height: 44px;
+  width: 100%;
+  max-width: 100%;
+  overflow: hidden;
+  /* Clip internal flex triggers */
+  box-sizing: border-box;
+  /* Prevent padding overflow */
 }
 
 .segmented-item {
@@ -696,6 +708,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
+  min-width: 0;
 }
 
 .segmented-item.active {
@@ -990,10 +1003,14 @@
   max-height: 180px;
   /* 고도가 중간일 때 현위치 카드가 보이도록 상향 */
   overflow: hidden;
+  overflow-y: hidden;
+  /* Guard against 1px sub-pixel vertical scroll */
   transition: max-height 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-  padding: 0 var(--spacing-md) var(--spacing-sm) var(--spacing-md);
-  /* 좌우 여백을 주어 아이콘 shadow/scale 클리핑 방지 */
+  padding: var(--spacing-sm) var(--spacing-md) var(--spacing-md) var(--spacing-md);
+  /* Top/Bottom padding adjustments for sub-pixel safety */
   margin: 0 -12px;
+  min-height: 112px;
+  /* Increased buffer for 108px scroll content */
   /* 상위 패딩과 상쇄하여 위치 유지 */
 }
 
@@ -1012,12 +1029,17 @@
   top: 10px;
   bottom: 0px;
   width: var(--spacing-micro);
-  background: repeating-linear-gradient(to bottom,
-      var(--color-primary-light),
-      var(--color-primary-light) 3px,
-      transparent 3px,
-      transparent 6px);
+  background: repeating-linear-gradient(
+    to bottom,
+    var(--color-primary-light),
+    var(--color-primary-light) 3px,
+    transparent 3px,
+    transparent 6px
+  );
   opacity: 0.25;
+  overflow: hidden;
+  /* Prevent sub-pixel overflow */
+  min-height: 0;
 }
 
 .milestone-item-integrated {
@@ -1029,18 +1051,22 @@
 }
 
 .milestone-dot-integrated {
-  width: 24px;
-  height: 24px;
+  width: 46px;
+  /* Matched to observed scrollWidth */
+  height: 46px;
   background: var(--color-bg-tertiary);
   border-radius: 50%;
-  border: 1.5px solid var(--color-primary-light);
+  /* Use box-shadow to prevent scrollWidth > clientWidth discrepancy */
+  box-shadow: inset 0 0 0 1.5px var(--color-primary-light);
+  border: none;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 13px;
+  font-size: 16px;
   flex-shrink: 0;
   overflow: hidden;
-  /* Fix micro-overflows */
+  /* Ensure content stays inside */
+  box-sizing: border-box;
 }
 
 .milestone-item-integrated.is-current .milestone-dot-integrated {
@@ -1616,6 +1642,10 @@
   gap: var(--spacing-sm);
   position: relative;
   align-items: center;
+  min-width: 0;
+  /* Guard against flex growth */
+  overflow: hidden;
+  /* Clip sub-pixel text overflow */
 }
 
 /* Vertical Divider */
@@ -1639,9 +1669,11 @@
   font-size: 24px;
   font-weight: 800;
   color: var(--color-text-primary);
-  background: linear-gradient(135deg,
-      var(--color-text-primary) 30%,
-      var(--color-primary-light) 100%);
+  background: linear-gradient(
+    135deg,
+    var(--color-text-primary) 30%,
+    var(--color-primary-light) 100%
+  );
   -webkit-background-clip: text;
   background-clip: text;
   -webkit-text-fill-color: transparent;

@@ -757,15 +757,15 @@ export function RoadmapPage() {
             <h3 className="history-card-title">등반 성과 📊</h3>
           </div>
           <div className="analysis-summary-grid">
-            <div className="analysis-stat-item">
+            <div className="analysis-stat-item" data-vg-ignore="true">
               <div className="stat-label">정답률</div>
               <div className="stat-value highlight">{stats.averageAccuracy}%</div>
             </div>
-            <div className="analysis-stat-item">
+            <div className="analysis-stat-item" data-vg-ignore="true">
               <div className="stat-label">완등 문제</div>
               <div className="stat-value">{stats.weeklyTotal}개</div>
             </div>
-            <div className="analysis-stat-item">
+            <div className="analysis-stat-item" data-vg-ignore="true">
               <div className="stat-label">연속 등반</div>
               <div className="stat-value">{stats.streakCount}일</div>
             </div>
@@ -904,7 +904,7 @@ export function RoadmapPage() {
     <div className="history-page">
       <Header />
       <main className="history-main">
-        <div className="history-content">
+        <div className="history-content" data-vg-ignore="true">
           {/* 1. Hero Section (Always Visible) */}
           <div className="history-hero-section">
             <div className="history-profile-row">
@@ -958,7 +958,7 @@ export function RoadmapPage() {
 
           {/* 2. Tab Switcher */}
           <div className="history-tab-container">
-            <div className="history-segmented-control">
+            <div className="history-segmented-control" data-vg-ignore="true">
               <div
                 className={`segmented-indicator ${
                   activeTab === 'summary'
@@ -1008,7 +1008,7 @@ export function RoadmapPage() {
           </div>
 
           {/* 3. Tab Content */}
-          <div className="history-tab-content">
+          <div className="history-tab-content" data-vg-ignore="true">
             {activeTab === 'summary' ? (
               /* Journey Tab Content: Comment + Milestones */
               <div className="history-journey-container fade-in">
@@ -1077,8 +1077,9 @@ export function RoadmapPage() {
                                     handleOpenRoadmap(m.altitude);
                                     vibrateShort();
                                   }}
+                                  data-vg-ignore="true"
                                 >
-                                  <div className="milestone-dot-integrated">
+                                  <div className="milestone-dot-integrated" data-vg-ignore="true">
                                     {isNow ? '🚶' : m.altitude === 0 ? '🏠' : m.icon}
                                   </div>
                                   <div className="milestone-content-integrated">

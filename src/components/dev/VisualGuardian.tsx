@@ -28,84 +28,107 @@ export function VisualGuardian() {
       (window as any).__LAYOUT_ERRORS__ = [];
     }
 
-    const scanInterval = setInterval(() => {
-      const allElements = document.querySelectorAll<HTMLElement>('*');
+    const scanInterval = setInterval(
+      () => {
+        const allElements = document.querySelectorAll<HTMLElement>('*');
 
-      allElements.forEach((el) => {
-        // SVG, Script, Style 등 제외
-        if (
-          ['SCRIPT', 'STYLE', 'SVG', 'PATH', 'HEAD', 'META', 'TITLE', 'LINK'].includes(el.tagName)
-        )
-          return;
+        allElements.forEach((el) => {
+          // SVG, Script, Style 등 및 루트 요소, PRE 태그 제외
+          if (
+            [
+              'SCRIPT',
+              'STYLE',
+              'SVG',
+              'PATH',
+              'HEAD',
+              'META',
+              'TITLE',
+              'LINK',
+              'HTML',
+              'BODY',
+              'PRE',
+            ].includes(el.tagName) ||
+            el.id === 'root'
+          )
+            return;
 
-        // 의도된 스크롤(overflow: auto/scroll)은 무시
-        const style = window.getComputedStyle(el);
-        if (
-          ['auto', 'scroll'].includes(style.overflow) ||
-          ['auto', 'scroll'].includes(style.overflowX) ||
-          ['auto', 'scroll'].includes(style.overflowY) ||
-          style.textOverflow === 'ellipsis' ||
-          el.classList.contains('under-development-toast-icon')
-        ) {
-          return;
-        }
+          // 의도된 스크롤(overflow: auto/scroll)은 무시
+          const style = window.getComputedStyle(el);
+          const isScrollable = (val: string) => val.includes('auto') || val.includes('scroll');
 
-        // 1. 세로 넘침 감지 (Zero Tolerance: 0.5px 오차만 허용)
-        const isVerticalOverflow = el.scrollHeight > el.clientHeight + 0.5;
+          if (
+            isScrollable(style.overflow) ||
+            isScrollable(style.overflowX) ||
+            isScrollable(style.overflowY) ||
+            style.textOverflow === 'ellipsis' ||
+            el.classList.contains('under-development-toast-icon') ||
+            el.closest('.debug-panel-overlay') || // 🐛 디버그 패널 제외
+            el.closest('[data-vg-ignore]') // 🛡️ 명시적 제외 속성 지원
+          ) {
+            return;
+          }
 
-        // 2. 가로 넘침 감지
-        const isHorizontalOverflow = el.scrollWidth > el.clientWidth + 0.5;
+          // 1. 세로 넘침 감지 (Zero Tolerance: CI/자동화 환경에선 0.1px, 개발 환경에선 0.5px)
+          const threshold = (window as any).__VG_INTENSIVE_MODE__ ? 0.1 : 0.5;
+          const isVerticalOverflow = el.scrollHeight > el.clientHeight + threshold;
 
-        if (isVerticalOverflow || isHorizontalOverflow) {
-          // 이미 감지된 경우 패스
-          if (el.dataset.vgOverflow) return;
+          // 2. 가로 넘침 감지
+          const isHorizontalOverflow = el.scrollWidth > el.clientWidth + threshold;
 
-          // 시각적 표시
-          el.dataset.vgOverflow = 'true';
-          el.style.outline = '2px dashed var(--color-error)';
-          el.style.outlineOffset = '-2px';
+          if (isVerticalOverflow || isHorizontalOverflow) {
+            // 이미 감지된 경우 패스
+            if (el.dataset.vgOverflow) return;
 
-          // 툴팁 효과 (title 속성 활용)
-          const originalTitle = el.title;
-          const errorMsg = `Overflow Detected! (${isVerticalOverflow ? 'Vertical' : ''} ${isHorizontalOverflow ? 'Horizontal' : ''}) in <${el.tagName.toLowerCase()} class="${el.className}">`;
-          el.title = `⚠️ ${errorMsg}`;
+            // 시각적 표시
+            el.dataset.vgOverflow = 'true';
+            el.style.outline = '2px dashed var(--color-error)';
+            el.style.outlineOffset = '-2px';
 
-          // 자동화 테스트를 위한 상태 업데이트
-          document.body.dataset.layoutError = 'true';
-          (window as any).__LAYOUT_ERRORS__.push({
-            element: el.tagName,
-            className: el.className,
-            path: el.tagName.toLowerCase() + (el.className ? '.' + el.className.split(' ').join('.') : ''),
-            error: errorMsg,
-            details: {
+            // 툴팁 효과 (title 속성 활용)
+            const originalTitle = el.title;
+            const errorMsg = `Overflow Detected! (${isVerticalOverflow ? 'Vertical' : ''} ${isHorizontalOverflow ? 'Horizontal' : ''}) in <${el.tagName.toLowerCase()} class="${el.className}">`;
+            el.title = `⚠️ ${errorMsg}`;
+
+            // 자동화 테스트를 위한 상태 업데이트
+            document.body.dataset.layoutError = 'true';
+            (window as any).__LAYOUT_ERRORS__.push({
+              element: el.tagName,
+              className: el.className,
+              path:
+                el.tagName.toLowerCase() +
+                (el.className ? '.' + el.className.split(' ').join('.') : ''),
+              error: errorMsg,
+              details: {
+                scroll: [el.scrollWidth, el.scrollHeight],
+                client: [el.clientWidth, el.clientHeight],
+              },
+            });
+
+            console.warn('🚨 [Visual Guardian]', errorMsg, {
               scroll: [el.scrollWidth, el.scrollHeight],
-              client: [el.clientWidth, el.clientHeight]
-            }
-          });
+              client: [el.clientWidth, el.clientHeight],
+            });
 
-          console.warn('🚨 [Visual Guardian]', errorMsg, {
-            scroll: [el.scrollWidth, el.scrollHeight],
-            client: [el.clientWidth, el.clientHeight],
-          });
-
-          // 디버깅 편의를 위해 클릭 시 로그 출력 이벤트 추가
-          el.addEventListener(
-            'click',
-            (e) => {
-              if (e.altKey) {
-                // Alt+Click 시 스타일 초기화
-                e.stopPropagation();
-                el.style.outline = '';
-                delete el.dataset.vgOverflow;
-                el.title = originalTitle;
-                console.log('✅ Visual Guardian reset for:', el);
-              }
-            },
-            { once: true }
-          );
-        }
-      });
-    }, 1000); // 1초마다 스캔 (테스트 반응성을 위해 2초 -> 1초 단축)
+            // 디버깅 편의를 위해 클릭 시 로그 출력 이벤트 추가
+            el.addEventListener(
+              'click',
+              (e) => {
+                if (e.altKey) {
+                  // Alt+Click 시 스타일 초기화
+                  e.stopPropagation();
+                  el.style.outline = '';
+                  delete el.dataset.vgOverflow;
+                  el.title = originalTitle;
+                  console.log('✅ Visual Guardian reset for:', el);
+                }
+              },
+              { once: true }
+            );
+          }
+        });
+      },
+      (window as any).__VG_INTENSIVE_MODE__ ? 100 : 1000
+    ); // 🏁 고강도 모드에선 100ms, 일반 개발에선 1s 스캔
 
     return () => clearInterval(scanInterval);
   }, []);

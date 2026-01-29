@@ -1,4 +1,5 @@
 import { create } from 'zustand';
+import { persist, createJSONStorage } from 'zustand/middleware';
 import { SURVIVAL_CONFIG } from '../constants/game';
 
 interface GameState {
@@ -26,87 +27,13 @@ interface GameState {
   isStaminaConsumed: boolean;
   setStaminaConsumed: (consumed: boolean) => void;
   consumeLife: () => void;
+  startTime: number | null;
   resetGame: () => void;
 }
 
-export const useGameStore = create<GameState>((set) => ({
-  score: 0,
-  combo: 0,
-  feverLevel: 0,
-  isExhausted: false,
-  showSpeedLines: false,
-  showVignette: false,
-  activeItems: [],
-  isStaminaConsumed: false,
-  lives: SURVIVAL_CONFIG.INITIAL_LIVES,
-  usedItems: [],
-
-  setScore: (score) => set({ score }),
-
-  incrementCombo: () =>
-    set((state) => {
-      const newCombo = state.combo + 1;
-      let newFeverLevel = state.feverLevel;
-      let speedLines = state.showSpeedLines;
-
-      // 탈진 상태가 아닐 때만 피버 레벨 상승
-      if (!state.isExhausted) {
-        if (newCombo >= 20) {
-          newFeverLevel = 2;
-          speedLines = true;
-        } else if (newCombo >= 5) {
-          newFeverLevel = 1;
-          speedLines = true;
-        }
-      } else {
-        // 탈진 상태면 피버 초기화 (또는 미발동)
-        newFeverLevel = 0;
-        speedLines = false;
-      }
-
-      return {
-        combo: newCombo,
-        feverLevel: newFeverLevel as 0 | 1 | 2,
-        showSpeedLines: speedLines,
-      };
-    }),
-
-  resetCombo: () => set({ combo: 0, feverLevel: 0, showSpeedLines: false }),
-
-  setCombo: (combo) =>
-    set((state) => {
-      let newFeverLevel = 0;
-      let speedLines = false;
-
-      // 탈진 상태가 아닐 때만 피버 계산
-      if (!state.isExhausted) {
-        if (combo >= 20) {
-          newFeverLevel = 2;
-          speedLines = true;
-        } else if (combo >= 5) {
-          newFeverLevel = 1;
-          speedLines = true;
-        }
-      }
-
-      return {
-        combo,
-        feverLevel: newFeverLevel as 0 | 1 | 2,
-        showSpeedLines: speedLines,
-      };
-    }),
-
-  setExhausted: (exhausted) => set({ isExhausted: exhausted, showVignette: exhausted }),
-
-  setStaminaConsumed: (consumed) => set({ isStaminaConsumed: consumed }),
-
-  consumeLife: () =>
-    set((state) => ({
-      lives: Math.max(0, state.lives - 1),
-    })),
-
-  resetGame: () =>
-    set({
+export const useGameStore = create<GameState>()(
+  persist(
+    (set) => ({
       score: 0,
       combo: 0,
       feverLevel: 0,
@@ -114,16 +41,107 @@ export const useGameStore = create<GameState>((set) => ({
       showSpeedLines: false,
       showVignette: false,
       activeItems: [],
-      usedItems: [],
       isStaminaConsumed: false,
       lives: SURVIVAL_CONFIG.INITIAL_LIVES,
+      usedItems: [],
+      startTime: Date.now(),
+
+      setScore: (score) => set({ score }),
+
+      incrementCombo: () =>
+        set((state) => {
+          const newCombo = state.combo + 1;
+          let newFeverLevel = state.feverLevel;
+          let speedLines = state.showSpeedLines;
+
+          if (!state.isExhausted) {
+            if (newCombo >= 20) {
+              newFeverLevel = 2;
+              speedLines = true;
+            } else if (newCombo >= 5) {
+              newFeverLevel = 1;
+              speedLines = true;
+            }
+          } else {
+            newFeverLevel = 0;
+            speedLines = false;
+          }
+
+          return {
+            combo: newCombo,
+            feverLevel: newFeverLevel as 0 | 1 | 2,
+            showSpeedLines: speedLines,
+          };
+        }),
+
+      resetCombo: () => set({ combo: 0, feverLevel: 0, showSpeedLines: false }),
+
+      setCombo: (combo) =>
+        set((state) => {
+          let newFeverLevel = 0;
+          let speedLines = false;
+
+          if (!state.isExhausted) {
+            if (combo >= 20) {
+              newFeverLevel = 2;
+              speedLines = true;
+            } else if (combo >= 5) {
+              newFeverLevel = 1;
+              speedLines = true;
+            }
+          }
+
+          return {
+            combo,
+            feverLevel: newFeverLevel as 0 | 1 | 2,
+            showSpeedLines: speedLines,
+          };
+        }),
+
+      setExhausted: (exhausted) => set({ isExhausted: exhausted, showVignette: exhausted }),
+
+      setStaminaConsumed: (consumed) => set({ isStaminaConsumed: consumed }),
+
+      consumeLife: () =>
+        set((state) => ({
+          lives: Math.max(0, state.lives - 1),
+        })),
+
+      resetGame: () =>
+        set({
+          score: 0,
+          combo: 0,
+          feverLevel: 0,
+          isExhausted: false,
+          showSpeedLines: false,
+          showVignette: false,
+          activeItems: [],
+          usedItems: [],
+          isStaminaConsumed: false,
+          lives: SURVIVAL_CONFIG.INITIAL_LIVES,
+          startTime: Date.now(),
+        }),
+
+      setActiveItems: (codes) => set({ activeItems: codes }),
+
+      consumeActiveItem: (code) =>
+        set((state) => ({
+          activeItems: state.activeItems.filter((itemCode) => itemCode !== code),
+          usedItems: [...state.usedItems, code],
+        })),
     }),
-
-  setActiveItems: (codes) => set({ activeItems: codes }),
-
-  consumeActiveItem: (code) =>
-    set((state) => ({
-      activeItems: state.activeItems.filter((itemCode) => itemCode !== code),
-      usedItems: [...state.usedItems, code],
-    })),
-}));
+    {
+      name: 'climb-game-session',
+      storage: createJSONStorage(() => localStorage),
+      // Only persist specific fields that are essential for session recovery
+      partialize: (state) => ({
+        score: state.score,
+        combo: state.combo,
+        lives: state.lives,
+        activeItems: state.activeItems,
+        usedItems: state.usedItems,
+        isStaminaConsumed: state.isStaminaConsumed,
+      }),
+    }
+  )
+);

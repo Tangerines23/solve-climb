@@ -1,0 +1,15 @@
+{
+  "$schema": "https://node_modules/@stryker-mutator/api/data/stryker-config.schema.json",
+  "packageManager": "npm",
+  "reporters": ["html", "clear-text", "progress"],
+  "testRunner": "vitest",
+  "checkers": ["typescript"],
+  "vitest": {
+    "configFile": "vitest.config.ts"
+  },
+  "mutate": ["src/utils/MathProblemGenerator.ts", "src/stores/useGameStore.ts"],
+  "typescriptChecker": {
+    "prioritizePerformance": true
+  },
+  "coverageAnalysis": "perTest"
+}

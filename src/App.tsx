@@ -11,6 +11,7 @@ import { useErrorLogStore } from '@/stores/useErrorLogStore';
 import { useDebugStore } from '@/stores/useDebugStore';
 import { useSettingsStore } from '@/stores/useSettingsStore';
 import { useConnectivity } from '@/hooks/useConnectivity';
+import { PwaUpdateNotification } from '@/components/PwaUpdateNotification';
 
 const HomePage = lazy(() =>
   import('@/pages/HomePage').then((module) => ({ default: module.HomePage }))
@@ -136,18 +137,11 @@ function App() {
     <ErrorBoundary>
       <GlobalLoadingIndicator />
       <GlobalToastContainer />
+      <PwaUpdateNotification />
       <Suspense
         fallback={
-          <div
-            style={{
-              display: 'flex',
-              justifyContent: 'center',
-              alignItems: 'center',
-              height: '100vh',
-              color: 'var(--color-text-primary)',
-            }}
-          >
-            <div>로딩 중...</div>
+          <div className="loading-fallback">
+            <div className="loading-text">로딩 중...</div>
           </div>
         }
       >

@@ -195,6 +195,18 @@
   }
 }
 
+/* Loading Fallback */
+.loading-fallback {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+  color: var(--color-text-primary);
+  width: 100%;
+  max-width: 100%;
+  overflow: hidden;
+}
+
 :root {
   /* Spacing */
   --spacing-xs: 4px;
@@ -217,7 +229,7 @@
 
   /* 반응형 레이아웃 값 (더 작게 최적화) */
   --header-height-portrait: 48px;
-  --header-height-landscape: 40px;
+  --header-height-landscape: 48px;
   --footer-height-portrait: 64px;
   --footer-height-landscape: 56px;
   --modal-width-portrait: 400px;
@@ -391,7 +403,7 @@ body {
  */
 .page-container {
   position: relative;
-  width: 100vw;
+  width: 100%;
   height: 100vh;
   background-color: #121212;
   display: flex;

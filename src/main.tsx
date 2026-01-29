@@ -24,7 +24,8 @@ import { performanceMonitor } from '@/utils/performance';
 // 성능 모니터링 시작
 performanceMonitor.init();
 
-// 서비스 워커 등록 (프로덕션 환경)
+// 서비스 워커 등록 (Vite PWA 플러그인에 의해 자동으로 처리됨)
+/*
 if (import.meta.env.PROD && 'serviceWorker' in navigator) {
   window.addEventListener('load', () => {
     navigator.serviceWorker.register('/sw.js').catch((error) => {
@@ -32,6 +33,7 @@ if (import.meta.env.PROD && 'serviceWorker' in navigator) {
     });
   });
 }
+*/
 
 // 초기 환경 정보 출력
 logEnvInfo();

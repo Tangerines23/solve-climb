@@ -40,11 +40,84 @@ if (!supabaseUrl || !supabaseKey) {
 
 const supabase = createClient(supabaseUrl, supabaseKey);
 
+/**
+ * Deep DB Consistency Checks
+ * This runs logical validations that go beyond simple schema/resource existence.
+ */
+async function runDeepConsistencyChecks() {
+  console.log('🧪 Running Deep Logical Consistency Checks...');
+  const logs = [];
+  let failed = false;
+
+  // 1. Mastery Score Consistency Check
+  // total_mastery_score should equal the sum of best_scores in user_level_records
+  const { data: masteryCheck, error: masteryError } = await supabase.rpc(
+    'check_mastery_consistency'
+  );
+
+  if (masteryError) {
+    // If RPC doesn't exist, we fallback to a simplified check for first 10 users via JS
+    console.warn('⚠️  RPC "check_mastery_consistency" not found, falling back to basic check.');
+    const { data: profiles } = await supabase
+      .from('profiles')
+      .select('id, total_mastery_score')
+      .limit(5);
+    for (const profile of profiles || []) {
+      const { data: records } = await supabase
+        .from('user_level_records')
+        .select('best_score')
+        .eq('user_id', profile.id);
+      const sum = (records || []).reduce((acc, r) => acc + r.best_score, 0);
+      if (sum !== profile.total_mastery_score) {
+        logs.push(
+          `❌ Mastery Inconsistency for user ${profile.id}: Profile has ${profile.total_mastery_score}, Records sum to ${sum}`
+        );
+        failed = true;
+      }
+    }
+  } else if (masteryCheck && masteryCheck.length > 0) {
+    masteryCheck.forEach((err) => {
+      logs.push(`❌ Mastery Inconsistency: ${err.message}`);
+      failed = true;
+    });
+  }
+
+  // 2. Orphan User Level Records Check
+  const { data: orphans, error: orphanError } = await supabase
+    .from('user_level_records')
+    .select('user_id')
+    .limit(1); // Check if we can even join/query
+
+  // Real orphan check usually needs a left join which we can't easily do via JS client without a custom RPC
+  // So we skip or use a custom RPC if available.
+  // For now, let's add a placeholder for a known integrity check from the existing system
+
+  // 3. Impossibly High Score Check
+  const { data: highScores } = await supabase
+    .from('profiles')
+    .select('id, nickname, weekly_score_total')
+    .gt('weekly_score_total', 1000000);
+
+  if (highScores && highScores.length > 0) {
+    highScores.forEach((u) => {
+      logs.push(`⚠️  Suspiciously high weekly score: ${u.nickname} (${u.weekly_score_total})`);
+    });
+  }
+
+  if (logs.length === 0) {
+    console.log('✅ Deep consistency checks passed (or no obvious errors found).');
+  } else {
+    logs.forEach((log) => console.log(log));
+  }
+
+  return !failed;
+}
+
 async function runDBValidation() {
-  console.log('🔍 Running DB validation tests...\n');
+  console.log('🔍 Running DB validation system...\n');
 
   try {
-    // test_db_all_validations() 함수 실행 (기본 + 고급 검증)
+    // Phase 1: Resource & Schema Validation (Existing)
     const { data, error } = await supabase.rpc('test_db_all_validations');
 
     if (error) {
@@ -89,6 +162,14 @@ async function runDBValidation() {
 
     if (!allPassed) {
       console.error('\n❌ DB validation failed! Please check missing resources or data errors.');
+      process.exit(1);
+    }
+
+    // Phase 2: Deep Logical Validation
+    const deepPassed = await runDeepConsistencyChecks();
+
+    if (!deepPassed) {
+      console.error('\n❌ Deep DB consistency check failed!');
       process.exit(1);
     }
 
