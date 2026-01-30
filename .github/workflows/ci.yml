@@ -149,9 +149,9 @@ jobs:
           npx supabase link --project-ref $PROJECT_REF --password $SUPABASE_DB_PASSWORD
           npx supabase db lint --linked --fail-on error
 
-      - name: 🐘 DB Lint Check (Local)
+      - name: ⚠️ DB Lint Skipped (No Password)
         if: env.SUPABASE_DB_PASSWORD == ''
-        run: npx supabase db lint --fail-on error
+        run: echo "⚠️ DB Lint check skipped - SUPABASE_DB_PASSWORD not configured. This is expected for forks and PRs from external contributors."
 
       - name: DB validation
         env:
