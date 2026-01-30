@@ -212,7 +212,7 @@ export function RankingPage() {
                               const firstDay = new Date(date.getFullYear(), date.getMonth(), 1);
                               const week = Math.ceil((date.getDate() + firstDay.getDay()) / 7);
                               return `${month}월 ${week}주차 시즌`;
-                            } catch (e) {
+                            } catch (_e) {
                               return '시즌 정보 없음';
                             }
                           })() : '시즌 정보 없음'}

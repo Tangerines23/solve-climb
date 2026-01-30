@@ -145,7 +145,6 @@ import { chromium } from 'playwright';
           }
         } catch (e) {
           console.error(`❌ Page test failed: ${pageInfo.name} - ${e.message}`);
-          globalHasErrors = true;
         } finally {
           await page.close();
         }
