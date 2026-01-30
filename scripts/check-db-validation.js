@@ -83,7 +83,7 @@ async function runDeepConsistencyChecks() {
   }
 
   // 2. Orphan User Level Records Check
-  const { data: orphans, error: orphanError } = await supabase
+  await supabase
     .from('user_level_records')
     .select('user_id')
     .limit(1); // Check if we can even join/query

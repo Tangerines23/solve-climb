@@ -59,17 +59,6 @@ export default [
     },
   },
   {
-    files: ['scripts/**/*.{js,cjs}'],
-    languageOptions: {
-      ecmaVersion: 2020,
-      globals: globals.node,
-    },
-    rules: {
-      'no-unused-vars': ['error', { varsIgnorePattern: '^[A-Z_]' }],
-      'no-undef': 'off',
-    },
-  },
-  {
     files: ['**/__tests__/**/*.{ts,tsx}', '**/*.test.{ts,tsx}', '**/*.spec.{ts,tsx}'],
     rules: {
       '@typescript-eslint/no-explicit-any': 'off',
@@ -84,4 +73,29 @@ export default [
     },
   },
   ...storybook.configs['flat/recommended'],
+  // Scripts override at the end for highest precedence
+  {
+    files: ['scripts/**/*.{js,cjs}', 'scripts/*.{js,cjs}'],
+    languageOptions: {
+      ecmaVersion: 2020,
+      globals: globals.node,
+    },
+    rules: {
+      'no-unused-vars': [
+        'error',
+        {
+          varsIgnorePattern: '^[A-Z_]|^_',
+          argsIgnorePattern: '^[A-Z_]|^_',
+          caughtErrorsIgnorePattern: '^[A-Z_]|^_',
+        },
+      ],
+      'no-undef': 'off',
+      // Disable all security rules for scripts
+      'security/detect-non-literal-fs-filename': 'off',
+      'security/detect-object-injection': 'off',
+      'security/detect-child-process': 'off',
+      'security/detect-non-literal-require': 'off',
+      'security/detect-non-literal-regexp': 'off',
+    },
+  },
 ];

@@ -16,8 +16,8 @@ function getCssFiles(directory, fileList = []) {
         fileList.push(fullPath);
       }
     }
-  } catch (e) {
-    console.error('Error scanning dir:', directory, e);
+  } catch {
+    console.error('Error scanning dir:', directory);
   }
   return fileList;
 }
@@ -72,8 +72,8 @@ files.forEach((file) => {
       console.log(`Updated: ${path.basename(file)}`);
       count++;
     }
-  } catch (e) {
-    console.error('Error processing file:', file, e);
+  } catch {
+    console.error('Error processing file:', file);
   }
 });
 
