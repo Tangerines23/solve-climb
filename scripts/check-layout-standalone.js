@@ -1,5 +1,7 @@
 import { chromium } from 'playwright';
 
+let globalHasErrors = false;
+
 (async () => {
   console.log('🔍 Starting Standalone Layout Check...');
 
@@ -10,7 +12,32 @@ import { chromium } from 'playwright';
     { name: 'Desktop (Standard)', width: 1280, height: 800 },
   ];
 
-  const BASE_URL = process.env.VITE_URL || 'http://localhost:5174'; // Fallback to 5174 for current environment
+  let BASE_URL = process.env.VITE_URL;
+
+  if (!BASE_URL) {
+    // Try to detect active port (Vite defaults to 5173 or 5174)
+    const ports = [5173, 5174, 3000];
+    console.log('📡 Detecting active dev server port...');
+
+    for (const port of ports) {
+      try {
+        const testPage = await browser.newPage();
+        await testPage.goto(`http://localhost:${port}`, { timeout: 2000 });
+        await testPage.close();
+        BASE_URL = `http://localhost:${port}`;
+        console.log(`✅ Detected active server on port ${port}`);
+        break;
+      } catch (e) {
+        // Continue to next port
+      }
+    }
+  }
+
+  if (!BASE_URL) {
+    BASE_URL = 'http://localhost:5173'; // Final fallback
+    console.warn(`⚠️ No active server detected. Using default ${BASE_URL}`);
+  }
+
   console.log(`🌐 Target URL: ${BASE_URL}`);
 
   const pagesToCheck = [
@@ -74,8 +101,6 @@ import { chromium } from 'playwright';
       },
     },
   ];
-
-  let globalHasErrors = false;
 
   try {
     for (const viewport of viewports) {
@@ -154,8 +179,16 @@ import { chromium } from 'playwright';
     }
   } catch (err) {
     console.error('❌ Usage Error:', err);
+    globalHasErrors = true;
   } finally {
     await browser.close();
+    if (globalHasErrors) {
+      console.error('\n❌ Layout check failed with errors');
+      process.exit(1);
+    } else {
+      console.log('\n✅ All layout checks passed');
+      process.exit(0);
+    }
   }
 })();
 

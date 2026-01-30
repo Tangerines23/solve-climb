@@ -107,10 +107,13 @@ export function ClimbGraphic({
 
       points.push({ x, y });
 
-      const isCleared = isLevelCleared(world, category, levels[i].level);
+      const levelId = levels[i]?.level;
+      if (levelId === undefined) continue;
+
+      const isCleared = isLevelCleared(world, category, levelId);
       const status: 'locked' | 'current' | 'cleared' = isCleared
         ? 'cleared'
-        : levels[i].level === nextLevel || (isAdmin && !isCleared)
+        : levelId === nextLevel || (isAdmin && !isCleared)
           ? 'current'
           : 'locked';
 
@@ -119,7 +122,7 @@ export function ClimbGraphic({
       }
 
       data.push({
-        id: levels[i].level,
+        id: levelId,
         status: status as LevelData['status'],
         position: { x, y },
       });
@@ -141,6 +144,7 @@ export function ClimbGraphic({
     for (let i = 1; i < points.length; i++) {
       const prev = points[i - 1];
       const curr = points[i];
+      if (!prev || !curr) continue;
       const cpX = (prev.x + curr.x) / 2;
       const cpY = (prev.y + curr.y) / 2;
       path += ` Q ${cpX} ${cpY}, ${curr.x} ${curr.y}`;
@@ -176,39 +180,45 @@ export function ClimbGraphic({
       LangWorld1: 'linear-gradient(180deg, #f87171 0%, #7f1d1d 100%)',
     };
 
+    const worldKey = world as keyof typeof worldSkyGradients;
+    const worldSkyGradient = worldSkyGradients[worldKey] || worldSkyGradients['World1'];
+
     const configs: Record<string, StageBackgroundConfig> = {
       기초: {
-        skyGradient: worldSkyGradients[world] || worldSkyGradients['World1'],
+        skyGradient: worldSkyGradient,
         mainColor: 'var(--ground-color-near)',
         secondaryColor: 'var(--ground-color-mid)',
         accentColor: 'var(--symbol-color-near)',
       },
       대수: {
         skyGradient:
-          worldSkyGradients[world] ||
-          'linear-gradient(180deg, #064E3B 0%, #065F46 15%, #0891B2 40%, #06B6D4 65%, #22D3EE 85%, #67E8F9 100%)',
+          worldKey in worldSkyGradients
+            ? worldSkyGradients[worldKey]
+            : 'linear-gradient(180deg, #064E3B 0%, #065F46 15%, #0891B2 40%, #06B6D4 65%, #22D3EE 85%, #67E8F9 100%)',
         mainColor: 'var(--ground-color-near)',
         secondaryColor: 'var(--ground-color-mid)',
         accentColor: 'var(--symbol-color-near)',
       },
       논리: {
         skyGradient:
-          worldSkyGradients[world] ||
-          'linear-gradient(180deg, #4B0082 0%, #6A5ACD 30%, #9370DB 60%, #BA55D3 100%)',
+          worldKey in worldSkyGradients
+            ? worldSkyGradients[worldKey]
+            : 'linear-gradient(180deg, #4B0082 0%, #6A5ACD 30%, #9370DB 60%, #BA55D3 100%)',
         mainColor: 'var(--ground-color-near)',
         secondaryColor: 'var(--ground-color-mid)',
         accentColor: 'var(--symbol-color-near)',
       },
       심화: {
         skyGradient:
-          worldSkyGradients[world] ||
-          'linear-gradient(180deg, #000428 0%, #004e92 30%, #1a1a2e 60%, #16213e 100%)',
+          worldKey in worldSkyGradients
+            ? worldSkyGradients[worldKey]
+            : 'linear-gradient(180deg, #000428 0%, #004e92 30%, #1a1a2e 60%, #16213e 100%)',
         mainColor: 'var(--ground-color-near)',
         secondaryColor: 'var(--ground-color-mid)',
         accentColor: 'var(--symbol-color-near)',
       },
     };
-    return configs[category] || configs['기초'];
+    return category in configs ? configs[category] : configs['기초'];
   }, [category, world]);
 
   return (
@@ -345,7 +355,8 @@ export function ClimbGraphic({
 
           {STAGE_CONFIG.map((stage) => {
             const startLevelIdx = stage.range[0] - 1;
-            const position = levelData[startLevelIdx]?.position;
+            const levelNode = levelData[startLevelIdx];
+            const position = levelNode?.position;
 
             if (!position) return null;
 

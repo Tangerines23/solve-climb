@@ -160,10 +160,7 @@ export const useLevelProgressStore = create<LevelProgressState>()(
           hasSessionData: !!sessionData,
         });
 
-        const startTime = (await import('./useGameStore')).useGameStore.getState().startTime;
-        const totalDurationMs = startTime ? Date.now() - startTime : undefined;
-
-        // 1. Optimistic Update (Local) - Move to the beginning to be truly synchronous for UI/Tests
+        // 1. Optimistic Update (Local) - Immediate update to ensure synchronous test/UI response
         set((state) => {
           const newProgress = { ...state.progress };
 
@@ -186,6 +183,9 @@ export const useLevelProgressStore = create<LevelProgressState>()(
 
           return { progress: newProgress };
         });
+
+        const startTime = (await import('./useGameStore')).useGameStore.getState().startTime;
+        const totalDurationMs = startTime ? Date.now() - startTime : undefined;
 
         const authResult = (await debugSupabaseQuery(supabase.auth.getUser())) as UserResponse;
         const user = authResult?.data?.user;
