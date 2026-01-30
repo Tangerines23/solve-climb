@@ -128,11 +128,11 @@ export const useUserStore = create<UserState>((set, get) => ({
       };
       const formattedInventory =
         (inventoryData as InventoryItem[] | null)?.map((item) => ({
-          id: item.items.id,
-          code: item.items.code,
-          name: item.items.name,
-          description: item.items.description,
-          quantity: item.quantity,
+          id: item?.items?.id,
+          code: item?.items?.code,
+          name: item?.items?.name,
+          description: item?.items?.description,
+          quantity: item?.quantity || 0,
         })) || [];
 
       set({
@@ -159,7 +159,7 @@ export const useUserStore = create<UserState>((set, get) => ({
       return { success: false, message: data?.message || '구매 실패' };
     }
 
-    if (data.success) {
+    if (data?.success) {
       await get().fetchUserData(); // Refresh data
     }
     return {
@@ -181,7 +181,7 @@ export const useUserStore = create<UserState>((set, get) => ({
       console.error('Error checking stamina:', error);
       return;
     }
-    if (data && typeof data.stamina === 'number') {
+    if (data && typeof data?.stamina === 'number') {
       set({ stamina: data.stamina });
     }
   },
@@ -197,7 +197,7 @@ export const useUserStore = create<UserState>((set, get) => ({
       return { success: false, message: data?.message || '아이템 사용 실패' };
     }
 
-    if (data.success) {
+    if (data?.success) {
       await get().fetchUserData();
     }
     return {
@@ -223,13 +223,13 @@ export const useUserStore = create<UserState>((set, get) => ({
       return { success: false, message: '오류가 발생했습니다.' };
     }
 
-    if (data.success) {
+    if (data?.success) {
       set((state) => ({
         stamina: Math.max(0, state.stamina - 1),
         lastStaminaConsumeTime: now,
       }));
     }
-    return data;
+    return data || { success: false, message: 'Response failed' };
   },
 
   setMinerals: async (minerals: number) => {
@@ -288,14 +288,14 @@ export const useUserStore = create<UserState>((set, get) => ({
       return { success: false, message: '오류가 발생했습니다.' };
     }
 
-    if (data.success) {
+    if (data?.success) {
       // 서버 응답 성공 시 로컬 상태 업데이트
       set({
         stamina: data.stamina || 5,
         lastAdRechargeTime: new Date().toISOString(),
       });
     }
-    return data;
+    return data || { success: false, message: 'Response failed' };
   },
 
   recoverMineralsAds: async () => {

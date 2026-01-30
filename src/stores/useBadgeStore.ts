@@ -43,7 +43,7 @@ export const useBadgeStore = create<BadgeState>((set, get) => ({
       );
 
       if (error) throw error;
-      set({ badgeDefinitions: data as BadgeDefinition[] });
+      set({ badgeDefinitions: (data as BadgeDefinition[]) || [] });
     } catch (error) {
       console.error('Failed to fetch badge definitions:', error);
     } finally {
@@ -85,7 +85,7 @@ export const useBadgeStore = create<BadgeState>((set, get) => ({
       );
 
       if (error) throw error;
-      set({ userBadges: data as UserBadge[] });
+      set({ userBadges: (data as UserBadge[]) || [] });
     } catch (error) {
       console.error('Failed to fetch user badges:', error);
     } finally {

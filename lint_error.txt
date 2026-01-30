@@ -1,0 +1,10 @@
+﻿
+C:\Users\?덈옉?뚰겕_?덉쓽誘?.gemini\project\solve-climb\scripts\check-layout-standalone.js
+  148:11  error  'globalHasErrors' is assigned a value but never used. Allowed unused vars must match /^[A-Z_]|^_/u  no-unused-vars
+  148:11  error  'globalHasErrors' is assigned a value but never used. Allowed unused vars must match /^[A-Z_]|^_/u  @typescript-eslint/no-unused-vars
+
+C:\Users\?덈옉?뚰겕_?덉쓽誘?.gemini\project\solve-climb\scripts\fix_spacing.js
+  59:25  warning  Found non-literal argument to RegExp Constructor  security/detect-non-literal-regexp
+
+??3 problems (2 errors, 1 warning)
+

@@ -183,8 +183,8 @@ export function RankingPage() {
             <div className="ranking-list">
               {currentRankings.map((item) => (
                 <div
-                  key={item.user_id}
-                  className={`ranking-item ${Number(item.rank) <= 3 ? `top-rank rank-${item.rank}` : ''} ${item.user_id === currentUserId ? 'my-item' : ''}`}
+                  key={item?.user_id}
+                  className={`ranking-item ${item?.rank && Number(item.rank) <= 3 ? `top-rank rank-${item.rank}` : ''} ${item?.user_id === currentUserId ? 'my-item' : ''}`}
                 >
                   <div className="ranking-item-left">
                     <span className="ranking-rank">{getMedalIcon(Number(item.rank))}</span>
@@ -205,14 +205,17 @@ export function RankingPage() {
                             whiteSpace: 'nowrap',
                           }}
                         >
-                          {(() => {
-                            const date = new Date(item.week_start_date);
-                            const month = date.getMonth() + 1;
-                            const firstDay = new Date(date.getFullYear(), date.getMonth(), 1);
-                            // 간단하게: 해당 날짜가 그 달의 몇 번째 주인지
-                            const week = Math.ceil((date.getDate() + firstDay.getDay()) / 7);
-                            return `${month}월 ${week}주차 시즌`;
-                          })()}
+                          {item?.week_start_date ? (() => {
+                            try {
+                              const date = new Date(item.week_start_date);
+                              const month = date.getMonth() + 1;
+                              const firstDay = new Date(date.getFullYear(), date.getMonth(), 1);
+                              const week = Math.ceil((date.getDate() + firstDay.getDay()) / 7);
+                              return `${month}월 ${week}주차 시즌`;
+                            } catch (e) {
+                              return '시즌 정보 없음';
+                            }
+                          })() : '시즌 정보 없음'}
                         </span>
                       )}
                     </span>

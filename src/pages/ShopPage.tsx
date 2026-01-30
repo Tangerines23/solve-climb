@@ -136,11 +136,11 @@ export function ShopPage() {
 
       if (error) throw error;
 
-      if (data.success) {
+      if (data?.success) {
         setPurchaseStatus({ id: itemId, message: '구매 완료! 🎒' });
         await fetchUserData(); // Update minerals and inventory
       } else {
-        setPurchaseStatus({ id: itemId, message: data.message || '구매 실패' });
+        setPurchaseStatus({ id: itemId, message: data?.message || '구매 실패' });
       }
     } catch (err: any) {
       console.error('Purchase failed:', err);
@@ -247,13 +247,13 @@ export function ShopPage() {
               </div>
             </div>
             <div className="inventory-list">
-              {inventory.length > 0 ? (
+              {inventory?.length > 0 ? (
                 inventory.map((item) => (
-                  <div key={item.id} className="inventory-item">
-                    <span className="inventory-icon">{getItemEmoji(item.code)}</span>
+                  <div key={item?.id} className="inventory-item">
+                    <span className="inventory-icon">{getItemEmoji(item?.code || '')}</span>
                     <div className="inventory-item-info">
-                      <span className="inventory-name">{item.name}</span>
-                      <span className="inventory-qty">x{item.quantity}</span>
+                      <span className="inventory-name">{item?.name}</span>
+                      <span className="inventory-qty">x{item?.quantity}</span>
                     </div>
                   </div>
                 ))

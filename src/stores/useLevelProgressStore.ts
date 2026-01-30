@@ -138,9 +138,9 @@ export const useLevelProgressStore = create<LevelProgressState>()(
           return 1; // 첫 레벨부터 시작
         }
 
-        const levels = Object.values(worldProgress[category])
-          .filter((record) => record.cleared)
-          .map((record) => record.level)
+        const levels = Object.values(worldProgress[category] || {})
+          .filter((record) => record?.cleared)
+          .map((record) => record?.level)
           .sort((a, b) => b - a);
 
         if (levels.length === 0) {
@@ -282,7 +282,7 @@ export const useLevelProgressStore = create<LevelProgressState>()(
           return { 'time-attack': null, survival: null };
         }
 
-        const records = Object.values(worldProgress[category]);
+        const records = Object.values(worldProgress[category] || {});
         let bestTimeAttack: number | null = null;
         let bestSurvival: number | null = null;
 
@@ -335,7 +335,7 @@ export const useLevelProgressStore = create<LevelProgressState>()(
             set((state) => {
               const newProgress = { ...state.progress };
 
-              records.forEach((serverRecord) => {
+              records?.forEach((serverRecord) => {
                 const {
                   world_id: world,
                   category_id,
@@ -344,7 +344,9 @@ export const useLevelProgressStore = create<LevelProgressState>()(
                   mode_code,
                   best_score: score,
                   updated_at,
-                } = serverRecord;
+                } = serverRecord || {};
+
+                if (!world || !category_id) return;
 
                 // local store key: category is `${category_id}_${subject_id}` or just one of them?
                 // Based on previous code: subject was used as category key.
@@ -448,14 +450,14 @@ export const useLevelProgressStore = create<LevelProgressState>()(
 
           if (error) throw error;
 
-          if (data) {
+          if (data && Array.isArray(data)) {
             const key =
               world && category ? `${world}-${category}-${period}-${type}` : `${period}-${type}`;
 
             set((state) => ({
               rankings: {
                 ...state.rankings,
-                [key]: data as RankingRecord[],
+                [key]: data,
               },
             }));
           }
