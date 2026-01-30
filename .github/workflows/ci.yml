@@ -137,8 +137,7 @@ jobs:
       - name: Security audit
         run: npm run check:security
 
-      - name: 🐘 DB Lint Check (Remote)
-        if: secrets.SUPABASE_DB_PASSWORD != ''
+      - name: 🐘 DB Lint Check
         env:
           SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
           SUPABASE_DB_PASSWORD: ${{ secrets.SUPABASE_DB_PASSWORD }}
@@ -148,10 +147,6 @@ jobs:
           export PROJECT_REF=$(echo $VITE_SUPABASE_URL | sed -E 's/https:\/\/(.*)\.supabase\.co/\1/')
           npx supabase link --project-ref $PROJECT_REF --password $SUPABASE_DB_PASSWORD
           npx supabase db lint --linked --fail-on error
-
-      - name: ⚠️ DB Lint Skipped (No Password)
-        if: secrets.SUPABASE_DB_PASSWORD == ''
-        run: echo "⚠️ DB Lint check skipped - SUPABASE_DB_PASSWORD not configured. This is expected for forks and PRs from external contributors."
 
       - name: DB validation
         env:
