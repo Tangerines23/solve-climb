@@ -102,7 +102,7 @@ export function useQuestionGenerator({
 
         setQuestionAnimation('fade-out');
         setTimeout(() => {
-          setCurrentQuestion(q);
+          setCurrentQuestion(q ?? null);
           setAnswerInput('');
           setDisplayValue('');
           setIsError(false);

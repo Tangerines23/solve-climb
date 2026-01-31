@@ -234,15 +234,15 @@ export function useHistoryData() {
           level: s.level,
           mode_code: s.game_mode === 'timeattack' ? 1 : 2,
           best_score: s.score || 0,
-          updated_at: s.created_at,
+          updated_at: s.created_at || new Date().toISOString(),
           isFromSession: true,
         };
       });
 
       // 전체 활동 로그 (신기록 + 일반 플레이)
-      const allActivities = [...sessionsAsRecords, ...records].sort(
-        (a, b) => new Date(b.updated_at).getTime() - new Date(a.updated_at).getTime()
-      );
+      const allActivities = [...sessionsAsRecords, ...records]
+        .filter((r) => r.updated_at) // updated_at이 있는 것만 필터링
+        .sort((a, b) => new Date(b.updated_at).getTime() - new Date(a.updated_at).getTime());
 
       // --- 3. 통계 집계 ---
 
@@ -305,21 +305,23 @@ export function useHistoryData() {
         .slice(0, 10);
 
       // --- 일관된 활동 로그 생성 ---
-      const formattedActivities: HistoryStats['allActivities'] = allActivities.map((r) => {
-        const [cat, sub] = r.themeId.split('_');
-        const categoryName =
-          APP_CONFIG.CATEGORY_MAP[cat as keyof typeof APP_CONFIG.CATEGORY_MAP] || cat;
-        return {
-          type: 'game',
-          id: `game-${r.updated_at}`,
-          title: `${categoryName} 등반`,
-          description: `${sub} - Lv.${r.level}`,
-          value: `+${r.best_score}m`,
-          timeAgo: getTimeAgo(r.updated_at),
-          icon: '🧗',
-          timestamp: r.updated_at,
-        };
-      });
+      const formattedActivities: HistoryStats['allActivities'] = allActivities
+        .filter((r) => r.updated_at) // updated_at이 있는 것만 필터링
+        .map((r) => {
+          const [cat, sub] = r.themeId.split('_');
+          const categoryName =
+            APP_CONFIG.CATEGORY_MAP[cat as keyof typeof APP_CONFIG.CATEGORY_MAP] || cat;
+          return {
+            type: 'game' as const,
+            id: `game-${r.updated_at}`,
+            title: `${categoryName} 등반`,
+            description: `${sub} - Lv.${r.level}`,
+            value: `+${r.best_score}m`,
+            timeAgo: getTimeAgo(r.updated_at!),
+            icon: '🧗',
+            timestamp: r.updated_at!,
+          };
+        });
 
       // 오늘 출석 보상이 있었다면 로그 추가
       if (profileData?.last_login_at) {
@@ -342,8 +344,10 @@ export function useHistoryData() {
       // 활동 잔디 & 스트릭 (allActivities 기준)
       const activityMap = new Map<string, number>();
       allActivities.forEach((r) => {
-        const d = new Date(r.updated_at).toDateString();
-        activityMap.set(d, (activityMap.get(d) || 0) + 1);
+        if (r.updated_at) {
+          const d = new Date(r.updated_at).toDateString();
+          activityMap.set(d, (activityMap.get(d) || 0) + 1);
+        }
       });
 
       const heatmapData = [];
@@ -379,15 +383,12 @@ export function useHistoryData() {
       const currentTier = getTierInfo(totalAltitude);
 
       // 분야별 숙련도 (Map 사용으로 object-injection 경고 회피)
-      const recordMap = records.reduce(
-        (map, r) => {
-          const key = `${r.themeId}-${r.level}`;
-          const existing = map.get(key);
-          if (!existing || r.best_score > existing.best_score) map.set(key, r);
-          return map;
-        },
-        new Map<string, EnrichedRecord>()
-      );
+      const recordMap = records.reduce((map, r) => {
+        const key = `${r.themeId}-${r.level}`;
+        const existing = map.get(key);
+        if (!existing || r.best_score > existing.best_score) map.set(key, r);
+        return map;
+      }, new Map<string, EnrichedRecord>());
       const categoryLevels = Array.from(recordMap.values())
         .map((r) => {
           const [cat, sub] = r.themeId.split('_');

@@ -4,7 +4,13 @@ import { useEffect } from 'react';
 interface WindowWithGuardian extends Window {
   __ENABLE_VISUAL_GUARDIAN__?: boolean;
   isPlaywrightLocal?: boolean;
-  __LAYOUT_ERRORS__?: Array<{ element: string; className: string; path: string; error: string }>;
+  __LAYOUT_ERRORS__?: Array<{
+    element: string;
+    className: string;
+    path: string;
+    error: string;
+    details?: { scroll: number[]; client: number[] };
+  }>;
   __VG_INTENSIVE_MODE__?: boolean;
 }
 

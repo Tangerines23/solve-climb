@@ -40,7 +40,7 @@ export function KeyboardInfoModal({ isOpen, onClose }: KeyboardInfoModalProps) {
           const categoryId = subTopic.id;
 
           // 현재 World1 고정 사용
-          const levelsConfig = APP_CONFIG.LEVELS as Record<
+          const levelsConfig = APP_CONFIG.LEVELS as unknown as Record<
             string,
             Record<string, Array<{ level: number; name: string; description: string }>>
           >;
@@ -175,10 +175,14 @@ export function KeyboardInfoModal({ isOpen, onClose }: KeyboardInfoModalProps) {
 
   const currentCategory =
     currentCategories.length > 0
-      ? (Object.prototype.hasOwnProperty.call(currentCategories, selectedCategoryIndex)
+      ? ((Object.prototype.hasOwnProperty.call(currentCategories, selectedCategoryIndex)
           ? // eslint-disable-next-line security/detect-object-injection -- index validated above
             currentCategories[selectedCategoryIndex]
-          : undefined) ?? (Object.prototype.hasOwnProperty.call(currentCategories, 0) ? currentCategories[0] : undefined) ?? null
+          : undefined) ??
+        (Object.prototype.hasOwnProperty.call(currentCategories, 0)
+          ? currentCategories[0]
+          : undefined) ??
+        null)
       : null;
 
   // 카테고리 인덱스가 범위를 벗어나면 0으로 리셋

@@ -288,12 +288,17 @@ export function useQuizSubmit({
 
         // 2. 테마 난이도 배율 (Theme Multiplier) - 서바이벌은 기본 1.0 (또는 기획에 따라)
         // 타임어택 등 레벨 고정 모드에서는 티어 배율 적용
-        const subTopics = APP_CONFIG.SUB_TOPICS as Record<string, Array<{ id: string; tier?: ThemeTier }>>;
+        const subTopics = APP_CONFIG.SUB_TOPICS as unknown as Record<
+          string,
+          Array<{ id: string; tier?: ThemeTier }>
+        >;
         const categoryTopics =
           categoryParam && Object.prototype.hasOwnProperty.call(subTopics, categoryParam)
             ? (Object.getOwnPropertyDescriptor(subTopics, categoryParam)?.value ?? [])
             : [];
-        const currentTopic = categoryTopics.find((t) => t.id === subParam);
+        const currentTopic = categoryTopics.find(
+          (t: { id: string; tier?: ThemeTier }) => t.id === subParam
+        );
         const tier =
           ((currentTopic as unknown as { tier?: ThemeTier })?.tier as ThemeTier) || 'basic';
         const themeMultiplier =
