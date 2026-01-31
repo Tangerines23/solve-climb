@@ -126,11 +126,10 @@ export const getTierInfo = (altitude: number) => {
   const currentCycleScore = (Math.max(0, altitude - 1) % TIER_CYCLE_LIMIT) + 1;
 
   // 현재 티어: 현재 점수 이하인 가장 높은 목표를 가진 티어
-  const reachedTierIndex = [...ALTITUDE_TIERS]
-    .reverse()
-    .findIndex((t) => currentCycleScore >= t.goal);
+  const reversedTiers = [...ALTITUDE_TIERS].reverse();
+  const reachedTierIndex = reversedTiers.findIndex((t) => currentCycleScore >= t.goal);
   const currentTier =
-    reachedTierIndex === -1 ? ALTITUDE_TIERS[0] : [...ALTITUDE_TIERS].reverse()[reachedTierIndex];
+    reachedTierIndex === -1 ? ALTITUDE_TIERS[0] : reversedTiers.at(reachedTierIndex) ?? ALTITUDE_TIERS[0];
 
   // 다음 티어: 현재 점수보다 높은 첫 번째 목표
   let nextTierIndex = ALTITUDE_TIERS.findIndex((t) => currentCycleScore < t.goal);
@@ -144,7 +143,7 @@ export const getTierInfo = (altitude: number) => {
     nextStars = stars + 1;
     nextGoalAltitude = nextStars * TIER_CYCLE_LIMIT + nextTier.goal;
   } else {
-    nextTier = ALTITUDE_TIERS[nextTierIndex];
+    nextTier = ALTITUDE_TIERS.at(nextTierIndex) ?? ALTITUDE_TIERS[0];
     nextGoalAltitude = stars * TIER_CYCLE_LIMIT + nextTier.goal;
   }
 
@@ -184,25 +183,30 @@ export const getUserTitle = (altitude: number): string => {
 /**
  * 스마트 코멘트 생성을 위한 조건부 메시지
  */
-export const getSmartComment = (stats: {
+export const getSmartComment = ({
+  streakCount,
+  averageAccuracy,
+  maxCombo,
+  totalAltitude,
+}: {
   streakCount: number;
   averageAccuracy: number;
   maxCombo: number;
   totalAltitude: number;
 }): string => {
-  if (stats.streakCount >= 7)
-    return `${stats.streakCount}일 연속 완등! 등반의 신이 강림하셨나요? 🔥`;
-  if (stats.streakCount >= 3)
-    return `${stats.streakCount}일 연속 등반 중! 꾸준함이 곧 실력입니다. ✨`;
-  if (stats.averageAccuracy >= 98)
+  if (streakCount >= 7)
+    return `${streakCount}일 연속 완등! 등반의 신이 강림하셨나요? 🔥`;
+  if (streakCount >= 3)
+    return `${streakCount}일 연속 등반 중! 꾸준함이 곧 실력입니다. ✨`;
+  if (averageAccuracy >= 98)
     return '정교한 산악인이시네요! 단 하나의 실수도 용납하지 않는 군요. 🎯';
-  if (stats.maxCombo >= 100)
-    return `무려 ${stats.maxCombo}콤보! 폭발적인 집중력의 소유자입니다. ⚡`;
-  if (stats.totalAltitude >= 250000)
+  if (maxCombo >= 100)
+    return `무려 ${maxCombo}콤보! 폭발적인 집중력의 소유자입니다. ⚡`;
+  if (totalAltitude >= 250000)
     return '전설의 영역에 도달하셨습니다. 이제부터는 성급을 올릴 시간입니다! ⭐';
-  if (stats.totalAltitude >= 20000)
+  if (totalAltitude >= 20000)
     return '고산 지대에 진입하셨습니다. 이제부터가 진짜 등반입니다! 🏔️';
-  if (stats.totalAltitude >= 5000)
+  if (totalAltitude >= 5000)
     return '산중턱을 넘어섰네요. 정상이 조금씩 보이기 시작합니다. 🌲';
   return '오늘도 한 걸음 더 높은 곳으로! 즐거운 등반 되세요. 🥾';
 };

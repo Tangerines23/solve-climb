@@ -32,4 +32,7 @@ export const ITEM_METADATA: Record<string, ItemMetadata> = {
   },
 };
 
-export const getItemEmoji = (code: string) => ITEM_METADATA[code]?.emoji || '📦';
+export const getItemEmoji = (code: string): string => {
+  const entry = Object.entries(ITEM_METADATA).find(([k]) => k === code);
+  return entry ? entry[1].emoji : '📦';
+};

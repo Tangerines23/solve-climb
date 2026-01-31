@@ -72,12 +72,20 @@ export function calculateSubTopicAltitude(category: string, subTopic: string): n
  * @returns 목표 고도(m)
  */
 export function calculateSubTopicTargetAltitude(category: string, subTopic: string): number {
-  const worldLevels = (
-    APP_CONFIG.LEVELS as unknown as Record<string, Record<string, readonly { level: number }[]>>
-  )[category];
+  const levelsConfig = APP_CONFIG.LEVELS as unknown as Record<
+    string,
+    Record<string, readonly { level: number }[]>
+  >;
+  const categoryEntry = Object.entries(levelsConfig).find(([k]) => k === category);
+  const worldLevels = categoryEntry
+    ? (categoryEntry.at(1) as Record<string, readonly { level: number }[]> | undefined)
+    : undefined;
   if (!worldLevels) return 0;
 
-  const subTopicLevels = worldLevels[subTopic];
+  const subTopicEntry = Object.entries(worldLevels).find(([k]) => k === subTopic);
+  const subTopicLevels = subTopicEntry
+    ? (subTopicEntry.at(1) as readonly { level: number }[] | undefined)
+    : undefined;
   if (!subTopicLevels || !Array.isArray(subTopicLevels)) return 0;
 
   // 테마 난이도 배율 (Theme Multiplier - 현재는 고정값 1.0 사용하거나 로직 수정 필요)
@@ -134,7 +142,12 @@ export function calculateCategoryAltitude(category: string): {
   totalProblems: number;
 } {
   const { progress } = useLevelProgressStore.getState();
-  const categoryProgress = progress[category];
+  const prog = progress as Record<string, unknown>;
+  const categoryEntry = Object.entries(prog).find(([k]) => k === category);
+  const categoryProgress = categoryEntry?.at(1) as Record<
+    string,
+    Record<string, { bestScore: Record<string, number> }>
+  > | undefined;
 
   if (!categoryProgress) {
     return { totalAltitude: 0, totalProblems: 0 };

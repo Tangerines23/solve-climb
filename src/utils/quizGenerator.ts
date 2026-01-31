@@ -273,7 +273,9 @@ export function generateMathQuestion(
   // 기존 사칙연산 문제 (0이 나오지 않도록 처리)
   // 0이 나오지 않도록 랜덤 숫자 생성 (최소값 1)
   const generateNonZeroNumber = (difficulty: Difficulty): number => {
-    const range = NUMBER_RANGE_BY_DIFFICULTY[difficulty] || NUMBER_RANGE_BY_DIFFICULTY['easy'];
+    const ranges = NUMBER_RANGE_BY_DIFFICULTY as Record<string, { min: number; max: number }>;
+    const rangeDesc = Object.getOwnPropertyDescriptor(ranges, difficulty);
+    const range = (rangeDesc?.value as { min: number; max: number }) ?? ranges['easy'];
     const { min, max } = range;
     // 최소값이 0이면 1로 변경, 아니면 그대로 사용
     const adjustedMin = min === 0 ? 1 : min;

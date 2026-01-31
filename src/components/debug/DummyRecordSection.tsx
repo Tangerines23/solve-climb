@@ -62,8 +62,12 @@ export function DummyRecordSection() {
 
   // 카테고리 변경 시 서브젝트 초기화
   useEffect(() => {
-    if (SUBJECTS[selectedCategoryId]) {
-      setSelectedSubjectId(SUBJECTS[selectedCategoryId][0].id);
+    if (Object.prototype.hasOwnProperty.call(SUBJECTS, selectedCategoryId)) {
+      // eslint-disable-next-line security/detect-object-injection -- key validated above
+      const subjects = SUBJECTS[selectedCategoryId];
+      if (Array.isArray(subjects) && subjects.length > 0) {
+        setSelectedSubjectId(subjects[0].id);
+      }
     }
   }, [selectedCategoryId]);
 
@@ -167,7 +171,11 @@ export function DummyRecordSection() {
               onChange={(e) => setSelectedSubjectId(e.target.value)}
               disabled={isSubmitting}
             >
-              {(SUBJECTS[selectedCategoryId] || []).map((s) => (
+              {(Object.prototype.hasOwnProperty.call(SUBJECTS, selectedCategoryId)
+                ? // eslint-disable-next-line security/detect-object-injection -- key validated above
+                  SUBJECTS[selectedCategoryId]
+                : []
+              ).map((s) => (
                 <option key={s.id} value={s.id}>
                   {s.name}
                 </option>

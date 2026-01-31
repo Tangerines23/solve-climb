@@ -104,7 +104,7 @@
 .daily-reward-confirm-button {
   width: 100%;
   padding: var(--spacing-medium-alt);
-  background: var(--adaptiveBlue500);
+  background: var(--adaptiveBlue700); /* WCAG 2 AA: white on #3182f6=3.71, #1b64da≈4.7:1 */
   color: white;
   border: none;
   border-radius: var(--rounded-md-alt);
@@ -114,6 +114,6 @@
 }
 
 .daily-reward-confirm-button:active {
-  background: var(--adaptiveBlue600);
+  background: var(--adaptiveBlue800);
   transform: scale(0.98);
 }

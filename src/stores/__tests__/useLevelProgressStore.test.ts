@@ -275,6 +275,7 @@ describe('useLevelProgressStore', () => {
 
     await waitFor(() => {
       const key = `${world}-${category}-weekly-total`;
+      // eslint-disable-next-line security/detect-object-injection -- key is deterministic from test params
       expect(result.current.rankings[key]).toEqual(mockRanking);
     });
   });

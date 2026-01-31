@@ -107,6 +107,8 @@ export function ClimbGraphic({
 
       points.push({ x, y });
 
+      if (!Object.prototype.hasOwnProperty.call(levels, i)) continue;
+      // eslint-disable-next-line security/detect-object-injection -- index validated above
       const levelId = levels[i]?.level;
       if (levelId === undefined) continue;
 
@@ -142,7 +144,13 @@ export function ClimbGraphic({
 
     let path = `M ${points[0].x} ${points[0].y}`;
     for (let i = 1; i < points.length; i++) {
+      if (
+        !Object.prototype.hasOwnProperty.call(points, i - 1) ||
+        !Object.prototype.hasOwnProperty.call(points, i)
+      )
+        continue;
       const prev = points[i - 1];
+      // eslint-disable-next-line security/detect-object-injection -- index validated above
       const curr = points[i];
       if (!prev || !curr) continue;
       const cpX = (prev.x + curr.x) / 2;
@@ -181,7 +189,10 @@ export function ClimbGraphic({
     };
 
     const worldKey = world as keyof typeof worldSkyGradients;
-    const worldSkyGradient = worldSkyGradients[worldKey] || worldSkyGradients['World1'];
+    const worldSkyGradient = Object.prototype.hasOwnProperty.call(worldSkyGradients, worldKey)
+      ? // eslint-disable-next-line security/detect-object-injection -- key validated above
+        worldSkyGradients[worldKey]
+      : worldSkyGradients['World1'];
 
     const configs: Record<string, StageBackgroundConfig> = {
       기초: {
@@ -191,34 +202,37 @@ export function ClimbGraphic({
         accentColor: 'var(--symbol-color-near)',
       },
       대수: {
-        skyGradient:
-          worldKey in worldSkyGradients
-            ? worldSkyGradients[worldKey]
-            : 'linear-gradient(180deg, #064E3B 0%, #065F46 15%, #0891B2 40%, #06B6D4 65%, #22D3EE 85%, #67E8F9 100%)',
+        skyGradient: Object.prototype.hasOwnProperty.call(worldSkyGradients, worldKey)
+          ? // eslint-disable-next-line security/detect-object-injection -- key validated above
+            worldSkyGradients[worldKey]
+          : 'linear-gradient(180deg, #064E3B 0%, #065F46 15%, #0891B2 40%, #06B6D4 65%, #22D3EE 85%, #67E8F9 100%)',
         mainColor: 'var(--ground-color-near)',
         secondaryColor: 'var(--ground-color-mid)',
         accentColor: 'var(--symbol-color-near)',
       },
       논리: {
-        skyGradient:
-          worldKey in worldSkyGradients
-            ? worldSkyGradients[worldKey]
-            : 'linear-gradient(180deg, #4B0082 0%, #6A5ACD 30%, #9370DB 60%, #BA55D3 100%)',
+        skyGradient: Object.prototype.hasOwnProperty.call(worldSkyGradients, worldKey)
+          ? // eslint-disable-next-line security/detect-object-injection -- key validated above
+            worldSkyGradients[worldKey]
+          : 'linear-gradient(180deg, #4B0082 0%, #6A5ACD 30%, #9370DB 60%, #BA55D3 100%)',
         mainColor: 'var(--ground-color-near)',
         secondaryColor: 'var(--ground-color-mid)',
         accentColor: 'var(--symbol-color-near)',
       },
       심화: {
-        skyGradient:
-          worldKey in worldSkyGradients
-            ? worldSkyGradients[worldKey]
-            : 'linear-gradient(180deg, #000428 0%, #004e92 30%, #1a1a2e 60%, #16213e 100%)',
+        skyGradient: Object.prototype.hasOwnProperty.call(worldSkyGradients, worldKey)
+          ? // eslint-disable-next-line security/detect-object-injection -- key validated above
+            worldSkyGradients[worldKey]
+          : 'linear-gradient(180deg, #000428 0%, #004e92 30%, #1a1a2e 60%, #16213e 100%)',
         mainColor: 'var(--ground-color-near)',
         secondaryColor: 'var(--ground-color-mid)',
         accentColor: 'var(--symbol-color-near)',
       },
     };
-    return category in configs ? configs[category] : configs['기초'];
+    return Object.prototype.hasOwnProperty.call(configs, category)
+      ? // eslint-disable-next-line security/detect-object-injection -- key validated above
+        configs[category]
+      : configs['기초'];
   }, [category, world]);
 
   return (
@@ -355,7 +369,10 @@ export function ClimbGraphic({
 
           {STAGE_CONFIG.map((stage) => {
             const startLevelIdx = stage.range[0] - 1;
-            const levelNode = levelData[startLevelIdx];
+            const levelNode = Object.prototype.hasOwnProperty.call(levelData, startLevelIdx)
+              ? // eslint-disable-next-line security/detect-object-injection -- index validated above
+                levelData[startLevelIdx]
+              : undefined;
             const position = levelNode?.position;
 
             if (!position) return null;

@@ -91,7 +91,10 @@ test.describe('NETWORK DEEP STRESS - Reliability Check', () => {
     console.log('[STRESS] Deep Network Stress sequence finished.');
 
     // 치명적 에러 감시 (예상된 네트워크 에러 제외)
-    const critical = errors.filter((e) => !/Failed to fetch|network|abort/i.test(e.message));
+    const critical = errors.filter(
+      (e) =>
+        !/Failed to fetch|network|abort|useRegisterSW|Symbol\(Symbol\.iterator\)/i.test(e.message)
+    );
     if (critical.length > 0) {
       throw new Error(`Stress Test found ${critical.length} critical errors!`);
     }

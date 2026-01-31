@@ -27,7 +27,7 @@ let globalHasErrors = false;
         BASE_URL = `http://localhost:${port}`;
         console.log(`✅ Detected active server on port ${port}`);
         break;
-      } catch (e) {
+      } catch {
         // Continue to next port
       }
     }
@@ -168,8 +168,8 @@ let globalHasErrors = false;
               await page.setViewportSize(originalSize);
             }
           }
-        } catch (e) {
-          console.error(`❌ Page test failed: ${pageInfo.name} - ${e.message}`);
+        } catch (err) {
+          console.error(`❌ Page test failed: ${pageInfo.name} - ${err.message}`);
           globalHasErrors = true;
         } finally {
           await page.close();

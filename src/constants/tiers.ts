@@ -116,10 +116,10 @@ export async function loadCycleCap(): Promise<number> {
  * 레벨 계산 함수 (공통 로직)
  */
 function calculateLevel(score: number, tierLevels: TierInfo[]): TierLevel {
-  // 역순 순회로 최적화 (메모리 사용 감소)
-  for (let i = tierLevels.length - 1; i >= 0; i--) {
-    if (score >= tierLevels[i].minScore) {
-      return tierLevels[i].level;
+  const reversed = [...tierLevels].reverse();
+  for (const tier of reversed) {
+    if (score >= tier.minScore) {
+      return tier.level;
     }
   }
   return 0; // 베이스캠프

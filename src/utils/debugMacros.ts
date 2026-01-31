@@ -126,7 +126,8 @@ export async function executeMacro(
 
   try {
     for (let i = 0; i < macro.steps.length; i++) {
-      const step = macro.steps[i];
+      const step = macro.steps.at(i);
+      if (!step) continue;
       onProgress?.(i + 1, macro.steps.length);
 
       switch (step.type) {

@@ -192,7 +192,8 @@ export async function executeDebugAction(action: DebugAction, userId: string): P
       const failures = results
         .map((result, index) => {
           if (result.status === 'rejected') {
-            return { badgeId: badges?.[index]?.id || 'unknown', error: result.reason };
+            const badgeId = badges?.at(index)?.id;
+            return { badgeId: badgeId ?? 'unknown', error: result.reason };
           }
           if (result.status === 'fulfilled' && !result.value.success) {
             return {
@@ -320,7 +321,9 @@ export async function applyPreset(
   const executedActions: DebugAction[] = [];
   try {
     for (let i = 0; i < preset.actions.length; i++) {
-      let action = preset.actions[i];
+      const actionOrUndefined = preset.actions.at(i);
+      if (!actionOrUndefined) continue;
+      let action = actionOrUndefined;
 
       // setMasteryScore 액션에서 value가 -1이면 동적 계산 필요
       if (action.type === 'setMasteryScore' && action.value === -1) {
@@ -413,7 +416,7 @@ export function saveCustomPreset(preset: CustomPreset): void {
 
     if (existingIndex >= 0) {
       // 기존 프리셋 수정
-      presets[existingIndex] = preset;
+      presets.splice(existingIndex, 1, preset);
     } else {
       // 새 프리셋 추가
       presets.push(preset);

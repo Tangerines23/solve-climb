@@ -45,7 +45,8 @@ export function EquationVisualizer({
 
       const termIndex = sourceSide.findIndex((t) => t.id === id);
       if (termIndex === -1) return;
-
+      if (!Object.prototype.hasOwnProperty.call(sourceSide, termIndex)) return;
+      // eslint-disable-next-line security/detect-object-injection -- index validated above
       const term = sourceSide[termIndex];
 
       // Create transformed term (flip sign)

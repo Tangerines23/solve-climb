@@ -24,13 +24,11 @@ VALUES
   (3, 'safety_rope', '안전 로프', 1000, '오답 1회 방어', 'defense'),
   (4, 'flare', '구조 신호탄', 1500, '게임 오버 시 부활', 'revive'),
   (202, 'last_spurt', '라스트 스퍼트', 800, '시간 0초 시 +15초 추가 + 5초 피버', 'trigger')
-ON CONFLICT (id) DO UPDATE SET
-  code = EXCLUDED.code,
+ON CONFLICT (code) DO UPDATE SET
   name = EXCLUDED.name,
   price = EXCLUDED.price,
   description = EXCLUDED.description,
-  category = EXCLUDED.category,
-  updated_at = NOW();
+  category = EXCLUDED.category;
 
 -- 4. 인벤토리 정책 확인 (안전장치)
 ALTER TABLE public.inventory ENABLE ROW LEVEL SECURITY;

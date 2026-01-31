@@ -62,7 +62,10 @@ export function QuizPreview({
         9: '나눗셈',
         10: '종합 연산',
       };
-      return topicMap[level] || '덧셈';
+      return Object.prototype.hasOwnProperty.call(topicMap, level)
+        ? // eslint-disable-next-line security/detect-object-injection -- key validated above
+          topicMap[level]
+        : '덧셈';
     } else if (subParam === 'calculus' && levelParam !== null) {
       const level = levelParam;
       const topicMap: Record<number, string> = {
@@ -77,9 +80,17 @@ export function QuizPreview({
         9: '고급 미분',
         10: '미분 종합',
       };
-      return topicMap[level] || '미적분';
+      return Object.prototype.hasOwnProperty.call(topicMap, level)
+        ? // eslint-disable-next-line security/detect-object-injection -- key validated above
+          topicMap[level]
+        : '미적분';
     } else {
-      const subTopics = APP_CONFIG.SUB_TOPICS[categoryParam as keyof typeof APP_CONFIG.SUB_TOPICS];
+      const subTopics = Object.prototype.hasOwnProperty.call(
+        APP_CONFIG.SUB_TOPICS,
+        categoryParam as keyof typeof APP_CONFIG.SUB_TOPICS
+      )
+        ? APP_CONFIG.SUB_TOPICS[categoryParam as keyof typeof APP_CONFIG.SUB_TOPICS]
+        : undefined;
       const subTopicInfo = subTopics?.find((t) => t.id === subParam);
       return subTopicInfo?.name || subParam;
     }

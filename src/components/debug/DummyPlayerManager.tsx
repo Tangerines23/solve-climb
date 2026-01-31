@@ -62,8 +62,11 @@ export const DummyPlayerManager: React.FC = () => {
 
       setMessage({ type: 'success', text: `더미 플레이어 ${nickname} 생성 완료!` });
       fetchDummyPlayers();
-    } catch (err: any) {
-      setMessage({ type: 'error', text: `생성 실패: ${err.message}` });
+    } catch (err: unknown) {
+      setMessage({
+        type: 'error',
+        text: `생성 실패: ${err instanceof Error ? err.message : String(err)}`,
+      });
     } finally {
       setIsLoading(false);
     }
@@ -81,8 +84,11 @@ export const DummyPlayerManager: React.FC = () => {
           if (error) throw error;
           setMessage({ type: 'success', text: '삭제 완료' });
           fetchDummyPlayers();
-        } catch (err: any) {
-          setMessage({ type: 'error', text: `삭제 실패: ${err.message}` });
+        } catch (err: unknown) {
+          setMessage({
+            type: 'error',
+            text: `삭제 실패: ${err instanceof Error ? err.message : String(err)}`,
+          });
         } finally {
           setIsLoading(false);
           setConfirmConfig((prev) => ({ ...prev, isOpen: false }));
@@ -103,8 +109,11 @@ export const DummyPlayerManager: React.FC = () => {
           if (error) throw error;
           setMessage({ type: 'success', text: '전체 삭제 완료' });
           fetchDummyPlayers();
-        } catch (err: any) {
-          setMessage({ type: 'error', text: `삭제 실패: ${err.message}` });
+        } catch (err: unknown) {
+          setMessage({
+            type: 'error',
+            text: `삭제 실패: ${err instanceof Error ? err.message : String(err)}`,
+          });
         } finally {
           setIsLoading(false);
           setConfirmConfig((prev) => ({ ...prev, isOpen: false }));

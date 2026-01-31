@@ -20,9 +20,16 @@ export const ProgressionSection = React.memo(function ProgressionSection() {
   );
 
   // 현재 선택된 월드/카테고리에 해당하는 레벨 목록 가져오기
-  const worldLevels = APP_CONFIG.LEVELS[selectedWorld as keyof typeof APP_CONFIG.LEVELS];
+  const worldLevels = Object.prototype.hasOwnProperty.call(APP_CONFIG.LEVELS, selectedWorld)
+    ? APP_CONFIG.LEVELS[selectedWorld as keyof typeof APP_CONFIG.LEVELS]
+    : undefined;
+  const levelsRecord = worldLevels as unknown as Record<string, readonly unknown[]> | undefined;
   const levels =
-    (worldLevels as unknown as Record<string, readonly unknown[]>)?.[selectedCategory] || [];
+    (levelsRecord &&
+    Object.prototype.hasOwnProperty.call(levelsRecord, selectedCategory)
+      ? // eslint-disable-next-line security/detect-object-injection -- key validated above
+        levelsRecord[selectedCategory]
+      : undefined) || [];
 
   const handleTeleport = () => {
     const worldName = selectedWorld;

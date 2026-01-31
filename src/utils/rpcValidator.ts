@@ -44,14 +44,14 @@ export const RankingListSchema = z.array(RankingRecordSchema);
  * @param rpcName 디버깅용 RPC 이름
  */
 export async function validatedRpc<T>(
-  rpcPromise: PromiseLike<{ data: any; error: any }>,
+  rpcPromise: PromiseLike<{ data: unknown; error: unknown }>,
   schema: z.ZodSchema<T>,
   rpcName: string
-): Promise<{ data: T | null; error: any }> {
+): Promise<{ data: T | null; error: unknown }> {
   const result = await rpcPromise;
 
   if (result.error) {
-    return result;
+    return { data: null, error: result.error };
   }
 
   const parseResult = schema.safeParse(result.data);

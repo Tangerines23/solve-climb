@@ -8,7 +8,9 @@ import { NUMBER_RANGE_BY_DIFFICULTY } from '../constants/game';
  * 'easy' 레벨을 기준으로 숫자를 생성합니다. (Fallback 로직)
  */
 export const generateRandomNumber = (difficulty: Difficulty): number => {
-  const range = NUMBER_RANGE_BY_DIFFICULTY[difficulty] || NUMBER_RANGE_BY_DIFFICULTY['easy'];
+  const ranges = NUMBER_RANGE_BY_DIFFICULTY as Record<string, { min: number; max: number }>;
+  const rangeDesc = Object.getOwnPropertyDescriptor(ranges, difficulty);
+  const range = (rangeDesc?.value as { min: number; max: number }) ?? ranges['easy'];
 
   const { min, max } = range;
 

@@ -88,14 +88,19 @@ export function generateTodayChallenge(): TodayChallenge {
   });
   const mountains = [...availableMountains].sort((a, b) => a.id.localeCompare(b.id));
   const mountainIndex = rng.randomInt(0, mountains.length);
-  const selectedMountain = mountains[mountainIndex];
+  const selectedMountain = mountains.at(mountainIndex);
+  if (!selectedMountain) throw new Error('No mountain selected');
 
   // 2. 카테고리(기초, 논리 등) 랜덤 선택
-  let subTopics = APP_CONFIG.SUB_TOPICS[selectedMountain.id as keyof typeof APP_CONFIG.SUB_TOPICS];
+  const subTopicsMap = APP_CONFIG.SUB_TOPICS as Record<string, unknown>;
+  const subTopicsEntry = Object.entries(subTopicsMap).find(([k]) => k === selectedMountain.id);
+  let subTopics = subTopicsEntry
+    ? (subTopicsEntry[1] as ReadonlyArray<{ id: string; name?: string }>)
+    : undefined;
 
   // 수학의 산에서 수열 제거
   if (selectedMountain.id === 'math' && subTopics) {
-    subTopics = (subTopics as ReadonlyArray<{ id: string }>).filter(
+    subTopics = subTopics.filter(
       (topic) => topic.id !== 'sequence'
     ) as unknown as typeof subTopics;
   }
@@ -119,11 +124,18 @@ export function generateTodayChallenge(): TodayChallenge {
   // 서브토픽도 ID로 정렬하여 항상 같은 순서 보장
   const sortedSubTopics = [...subTopics].sort((a, b) => a.id.localeCompare(b.id));
   const topicIndex = rng.randomInt(0, sortedSubTopics.length);
-  const selectedTopic = sortedSubTopics[topicIndex];
+  const selectedTopic = sortedSubTopics.at(topicIndex);
+  if (!selectedTopic) throw new Error('No topic selected');
 
   // 3. 레벨 랜덤 선택 (World1 고정 사용)
-  const categoryLevels = APP_CONFIG.LEVELS['World1' as keyof typeof APP_CONFIG.LEVELS];
-  const levels = categoryLevels?.[selectedTopic.id as keyof typeof categoryLevels] as
+  const levelsConfig = APP_CONFIG.LEVELS as Record<string, Record<string, unknown>>;
+  const categoryLevels = Object.prototype.hasOwnProperty.call(levelsConfig, 'World1')
+    ? levelsConfig['World1']
+    : undefined;
+  const topicEntry = categoryLevels
+    ? Object.entries(categoryLevels).find(([k]) => k === selectedTopic.id)
+    : null;
+  const levels = (topicEntry ? topicEntry.at(1) : undefined) as
     | Array<{ level: number; name: string; description: string }>
     | undefined;
   if (!levels || !Array.isArray(levels) || levels.length === 0) {
@@ -145,7 +157,8 @@ export function generateTodayChallenge(): TodayChallenge {
   // 레벨도 level 값으로 정렬하여 항상 같은 순서 보장
   const sortedLevels = [...levels].sort((a, b) => a.level - b.level);
   const levelIndex = rng.randomInt(0, sortedLevels.length);
-  const selectedLevel = sortedLevels[levelIndex];
+  const selectedLevel = sortedLevels.at(levelIndex);
+  if (!selectedLevel) throw new Error('No level selected');
 
   // 챌린지 제목 생성
   const title = `${selectedTopic.name} ${selectedLevel.name}!`;

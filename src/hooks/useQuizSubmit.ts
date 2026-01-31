@@ -10,6 +10,7 @@ import {
   BOSS_BONUS,
   ThemeTier,
 } from '../constants/game';
+import type { World, Category } from '../types/quiz';
 import { normalizeRomaji } from '../utils/japanese';
 import { vibrateMedium, vibrateLong } from '../utils/haptic';
 import { useGameStore } from '../stores/useGameStore';
@@ -287,12 +288,22 @@ export function useQuizSubmit({
 
         // 2. 테마 난이도 배율 (Theme Multiplier) - 서바이벌은 기본 1.0 (또는 기획에 따라)
         // 타임어택 등 레벨 고정 모드에서는 티어 배율 적용
+        const subTopics = APP_CONFIG.SUB_TOPICS as Record<string, Array<{ id: string; tier?: ThemeTier }>>;
         const categoryTopics =
-          APP_CONFIG.SUB_TOPICS[categoryParam as keyof typeof APP_CONFIG.SUB_TOPICS] || [];
+          categoryParam && Object.prototype.hasOwnProperty.call(subTopics, categoryParam)
+            ? (Object.getOwnPropertyDescriptor(subTopics, categoryParam)?.value ?? [])
+            : [];
         const currentTopic = categoryTopics.find((t) => t.id === subParam);
         const tier =
           ((currentTopic as unknown as { tier?: ThemeTier })?.tier as ThemeTier) || 'basic';
-        const themeMultiplier = gameMode === 'survival' ? 1.0 : THEME_MULTIPLIERS[tier];
+        const themeMultiplier =
+          gameMode === 'survival'
+            ? 1.0
+            : tier === 'basic'
+              ? THEME_MULTIPLIERS.basic
+              : tier === 'advanced'
+                ? THEME_MULTIPLIERS.advanced
+                : THEME_MULTIPLIERS.expert;
 
         // 3. 콤보 배율 (Combo Multiplier)
         const comboMultiplier = feverLevel === 2 ? 1.5 : feverLevel === 1 ? 1.2 : 1.0;
@@ -376,8 +387,8 @@ export function useQuizSubmit({
 
         // [v2.2 Death Note] - 정답을 틀렸을 때 기록 (부활 전 단계)
         const { addMissedQuestion } = useDeathNoteStore.getState();
-        const targetWorld = (paramsRef.current.subParam || 'World1') as any;
-        const targetCategory = (paramsRef.current.categoryParam || '기초') as any;
+        const targetWorld = (paramsRef.current.subParam || 'World1') as World;
+        const targetCategory = (paramsRef.current.categoryParam || '기초') as Category;
         addMissedQuestion(currentQuestion, targetWorld, targetCategory);
 
         // 진동 피드백 (토스 표준 API 사용)
@@ -529,6 +540,7 @@ export function useQuizSubmit({
       setIsError,
       setShowFlash,
       setShowSlideToast,
+      setToastValue,
       setDamagePosition,
       setAnswerInput,
       increaseScore,

@@ -235,7 +235,10 @@ export function useMyPageStats(): UseMyPageStatsResult {
           .from('user_level_records')
           .select('world_id, category_id, subject_id, level, best_score')
           .eq('user_id', user_id)
-      )) as unknown as { data: any[] | null; error: PostgrestError | null };
+      )) as unknown as {
+        data: Array<{ world_id: string; category_id: string; subject_id: string; level: number; best_score: number }> | null;
+        error: PostgrestError | null;
+      };
 
       const levelRecords = recordsResult?.data;
       if (recordsResult.error) throw recordsResult.error;

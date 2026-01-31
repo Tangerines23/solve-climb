@@ -73,16 +73,16 @@ export function dumpLocalStorage(): void {
     return;
   }
 
-  const storage: Record<string, string> = {};
+  const storage = new Map<string, string>();
   try {
     for (let i = 0; i < localStorage.length; i++) {
       const key = localStorage.key(i);
       if (key) {
-        storage[key] = localStorage.getItem(key) || '';
+        storage.set(key, localStorage.getItem(key) || '');
       }
     }
     logger.group('Debug', 'LocalStorage Dump', () => {
-      logger.table('Debug', storage);
+      logger.table('Debug', Object.fromEntries(storage));
     });
   } catch (error) {
     logger.error('Debug', 'Failed to dump localStorage', error);
@@ -97,16 +97,16 @@ export function dumpSessionStorage(): void {
     return;
   }
 
-  const storage: Record<string, string> = {};
+  const storage = new Map<string, string>();
   try {
     for (let i = 0; i < sessionStorage.length; i++) {
       const key = sessionStorage.key(i);
       if (key) {
-        storage[key] = sessionStorage.getItem(key) || '';
+        storage.set(key, sessionStorage.getItem(key) || '');
       }
     }
     logger.group('Debug', 'SessionStorage Dump', () => {
-      logger.table('Debug', storage);
+      logger.table('Debug', Object.fromEntries(storage));
     });
   } catch (error) {
     logger.error('Debug', 'Failed to dump sessionStorage', error);

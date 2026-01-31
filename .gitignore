@@ -72,6 +72,8 @@ coverage/
 playwright-report/
 test-results/
 playwright/.cache/
+.auth/
+.e2e-result.json
 *storybook.log
 storybook-static
 

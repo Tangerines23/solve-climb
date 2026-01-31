@@ -1,5 +1,13 @@
 import { useEffect } from 'react';
 
+/** E2E/개발용 window 확장 타입 */
+interface WindowWithGuardian extends Window {
+  __ENABLE_VISUAL_GUARDIAN__?: boolean;
+  isPlaywrightLocal?: boolean;
+  __LAYOUT_ERRORS__?: Array<{ element: string; className: string; path: string; error: string }>;
+  __VG_INTENSIVE_MODE__?: boolean;
+}
+
 /**
  * 🛡️ Visual Guardian (시각적 감시자)
  *
@@ -11,21 +19,22 @@ import { useEffect } from 'react';
  */
 export function VisualGuardian() {
   useEffect(() => {
+    const win = window as WindowWithGuardian;
     // 프로덕션, CI, 또는 자동화 환경에서는 기본적으로 실행하지 않음
     // 단, window.__ENABLE_VISUAL_GUARDIAN__ 플래그가 있으면 강제 실행 (E2E 테스트용)
-    const forceEnable = (window as any).__ENABLE_VISUAL_GUARDIAN__;
+    const forceEnable = win.__ENABLE_VISUAL_GUARDIAN__;
     const isCI =
       !!import.meta.env.VITE_CI ||
       window.navigator.userAgent.includes('Playwright') ||
-      (window as any).isPlaywrightLocal;
+      !!win.isPlaywrightLocal;
 
     if (!forceEnable && (!import.meta.env.DEV || isCI)) return;
 
     console.log('👁️ Visual Guardian is watching against overflows...');
 
     // 자동화 테스트를 위한 에러 저장소 초기화
-    if (!(window as any).__LAYOUT_ERRORS__) {
-      (window as any).__LAYOUT_ERRORS__ = [];
+    if (!win.__LAYOUT_ERRORS__) {
+      win.__LAYOUT_ERRORS__ = [];
     }
 
     const scanInterval = setInterval(
@@ -69,7 +78,7 @@ export function VisualGuardian() {
           }
 
           // 1. 세로 넘침 감지 (Zero Tolerance: CI/자동화 환경에선 0.1px, 개발 환경에선 0.5px)
-          const threshold = (window as any).__VG_INTENSIVE_MODE__ ? 0.1 : 0.5;
+          const threshold = (window as WindowWithGuardian).__VG_INTENSIVE_MODE__ ? 0.1 : 0.5;
           const isVerticalOverflow = el.scrollHeight > el.clientHeight + threshold;
 
           // 2. 가로 넘침 감지
@@ -91,7 +100,7 @@ export function VisualGuardian() {
 
             // 자동화 테스트를 위한 상태 업데이트
             document.body.dataset.layoutError = 'true';
-            (window as any).__LAYOUT_ERRORS__.push({
+            (window as WindowWithGuardian).__LAYOUT_ERRORS__?.push({
               element: el.tagName,
               className: el.className,
               path:
@@ -127,7 +136,7 @@ export function VisualGuardian() {
           }
         });
       },
-      (window as any).__VG_INTENSIVE_MODE__ ? 100 : 1000
+      (window as WindowWithGuardian).__VG_INTENSIVE_MODE__ ? 100 : 1000
     ); // 🏁 고강도 모드에선 100ms, 일반 개발에선 1s 스캔
 
     return () => clearInterval(scanInterval);

@@ -57,7 +57,11 @@ export function ItemSystemSection() {
   };
 
   const handleQuantityChange = (itemId: number, delta: number) => {
-    const current = parseInt(itemQuantities[itemId] || '0', 10);
+    const raw = Object.prototype.hasOwnProperty.call(itemQuantities, itemId)
+      ? // eslint-disable-next-line security/detect-object-injection -- key validated above
+        itemQuantities[itemId]
+      : '0';
+    const current = parseInt(raw || '0', 10);
     const newValue = Math.max(0, current + delta);
     setItemQuantities((prev) => ({ ...prev, [itemId]: newValue.toString() }));
   };
@@ -67,7 +71,11 @@ export function ItemSystemSection() {
   };
 
   const handleQuantityInputBlur = (itemId: number) => {
-    const numValue = parseInt(itemQuantities[itemId] || '0', 10);
+    const raw = Object.prototype.hasOwnProperty.call(itemQuantities, itemId)
+      ? // eslint-disable-next-line security/detect-object-injection -- key validated above
+        itemQuantities[itemId]
+      : '0';
+    const numValue = parseInt(raw || '0', 10);
     if (isNaN(numValue) || numValue < 0) {
       const currentItem = inventory.find((item) => item.id === itemId);
       setItemQuantities((prev) => ({ ...prev, [itemId]: (currentItem?.quantity || 0).toString() }));
@@ -77,7 +85,11 @@ export function ItemSystemSection() {
   const handleSetQuantity = async (itemId: number) => {
     if (isUpdating) return;
 
-    const numValue = parseInt(itemQuantities[itemId] || '0', 10);
+    const raw = Object.prototype.hasOwnProperty.call(itemQuantities, itemId)
+      ? // eslint-disable-next-line security/detect-object-injection -- key validated above
+        itemQuantities[itemId]
+      : '0';
+    const numValue = parseInt(raw || '0', 10);
     if (isNaN(numValue) || numValue < 0) {
       setMessage({ type: 'error', text: '유효한 수량을 입력하세요.' });
       return;

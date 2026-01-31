@@ -40,14 +40,22 @@ export function KeyboardInfoModal({ isOpen, onClose }: KeyboardInfoModalProps) {
           const categoryId = subTopic.id;
 
           // 현재 World1 고정 사용
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          const worldLevels = (APP_CONFIG.LEVELS as Record<string, any>)['World1'];
+          const levelsConfig = APP_CONFIG.LEVELS as Record<
+            string,
+            Record<string, Array<{ level: number; name: string; description: string }>>
+          >;
+          const worldLevels = Object.prototype.hasOwnProperty.call(levelsConfig, 'World1')
+            ? levelsConfig['World1']
+            : undefined;
           const levels =
-            (worldLevels?.[categoryId] as Array<{
-              level: number;
-              name: string;
-              description: string;
-            }>) || [];
+            (worldLevels && Object.prototype.hasOwnProperty.call(worldLevels, categoryId)
+              ? // eslint-disable-next-line security/detect-object-injection -- key validated above
+                (worldLevels[categoryId] as Array<{
+                  level: number;
+                  name: string;
+                  description: string;
+                }>)
+              : undefined) || [];
 
           let kbType: 'qwerty-text' | 'custom' | 'qwerty-number' | null = null;
           let allowNegative = false;
@@ -85,7 +93,11 @@ export function KeyboardInfoModal({ isOpen, onClose }: KeyboardInfoModalProps) {
           if (shouldInclude && kbType) {
             categories.push({
               category: mtnId,
-              categoryName: (APP_CONFIG.MOUNTAIN_MAP as Record<string, string>)[mtnId] || mtnId,
+              categoryName:
+                (Object.prototype.hasOwnProperty.call(APP_CONFIG.MOUNTAIN_MAP, mtnId)
+                  ? // eslint-disable-next-line security/detect-object-injection -- key validated above
+                    (APP_CONFIG.MOUNTAIN_MAP as Record<string, string>)[mtnId]
+                  : null) || mtnId,
               subTopic: categoryId,
               subTopicName: subTopic.name,
               icon: subTopic.icon,
@@ -163,7 +175,10 @@ export function KeyboardInfoModal({ isOpen, onClose }: KeyboardInfoModalProps) {
 
   const currentCategory =
     currentCategories.length > 0
-      ? currentCategories[selectedCategoryIndex] || currentCategories[0]
+      ? (Object.prototype.hasOwnProperty.call(currentCategories, selectedCategoryIndex)
+          ? // eslint-disable-next-line security/detect-object-injection -- index validated above
+            currentCategories[selectedCategoryIndex]
+          : undefined) ?? (Object.prototype.hasOwnProperty.call(currentCategories, 0) ? currentCategories[0] : undefined) ?? null
       : null;
 
   // 카테고리 인덱스가 범위를 벗어나면 0으로 리셋
@@ -247,7 +262,12 @@ export function KeyboardInfoModal({ isOpen, onClose }: KeyboardInfoModalProps) {
     if (availableKeyboardTypes.length === 0 || !selectedKeyboardType) return;
     const currentIndex = availableKeyboardTypes.indexOf(selectedKeyboardType);
     const prevIndex = currentIndex > 0 ? currentIndex - 1 : availableKeyboardTypes.length - 1;
-    setSelectedKeyboardType(availableKeyboardTypes[prevIndex]);
+    setSelectedKeyboardType(
+      Object.prototype.hasOwnProperty.call(availableKeyboardTypes, prevIndex)
+        ? // eslint-disable-next-line security/detect-object-injection -- index validated above
+          availableKeyboardTypes[prevIndex]
+        : availableKeyboardTypes[0]
+    );
     setSelectedCategoryIndex(0);
   };
 
@@ -255,7 +275,12 @@ export function KeyboardInfoModal({ isOpen, onClose }: KeyboardInfoModalProps) {
     if (availableKeyboardTypes.length === 0 || !selectedKeyboardType) return;
     const currentIndex = availableKeyboardTypes.indexOf(selectedKeyboardType);
     const nextIndex = currentIndex < availableKeyboardTypes.length - 1 ? currentIndex + 1 : 0;
-    setSelectedKeyboardType(availableKeyboardTypes[nextIndex]);
+    setSelectedKeyboardType(
+      Object.prototype.hasOwnProperty.call(availableKeyboardTypes, nextIndex)
+        ? // eslint-disable-next-line security/detect-object-injection -- index validated above
+          availableKeyboardTypes[nextIndex]
+        : availableKeyboardTypes[0]
+    );
     setSelectedCategoryIndex(0);
   };
 

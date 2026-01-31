@@ -56,7 +56,8 @@ function log(level: LogLevel, context: string, message: string, ...args: unknown
   }
 
   const formattedMessage = formatMessage(context, message, ...args);
-  const style = Object.values(LOG_STYLES)[level] || '';
+  const styles = Object.values(LOG_STYLES) as string[];
+  const style = level >= 0 && level < styles.length ? styles.at(level) ?? '' : '';
 
   // Dev 탭 에러 로그에 추가
   if (level >= LogLevel.INFO) {

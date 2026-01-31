@@ -169,11 +169,22 @@ function QuizCardComponent({
     }
 
     if (subParam === 'arithmetic' && levelParam !== null) {
-      return ARITHMETIC_TOPIC_MAP[levelParam] || '덧셈';
+      return Object.prototype.hasOwnProperty.call(ARITHMETIC_TOPIC_MAP, levelParam)
+        ? // eslint-disable-next-line security/detect-object-injection -- key validated above
+          ARITHMETIC_TOPIC_MAP[levelParam]
+        : '덧셈';
     } else if (subParam === 'calculus' && levelParam !== null) {
-      return CALCULUS_TOPIC_MAP[levelParam] || '미적분';
+      return Object.prototype.hasOwnProperty.call(CALCULUS_TOPIC_MAP, levelParam)
+        ? // eslint-disable-next-line security/detect-object-injection -- key validated above
+          CALCULUS_TOPIC_MAP[levelParam]
+        : '미적분';
     } else {
-      const subTopics = APP_CONFIG.SUB_TOPICS[categoryParam as keyof typeof APP_CONFIG.SUB_TOPICS];
+      const subTopics = Object.prototype.hasOwnProperty.call(
+        APP_CONFIG.SUB_TOPICS,
+        categoryParam as keyof typeof APP_CONFIG.SUB_TOPICS
+      )
+        ? APP_CONFIG.SUB_TOPICS[categoryParam as keyof typeof APP_CONFIG.SUB_TOPICS]
+        : undefined;
       const subTopicInfo = subTopics?.find((t) => t.id === subParam);
       return subTopicInfo?.name || subParam;
     }

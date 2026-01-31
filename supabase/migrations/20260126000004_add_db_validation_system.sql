@@ -8,36 +8,41 @@
 -- Phase 1: 데이터 제약조건 추가
 -- ============================================================================
 
--- profiles 테이블 검증
-ALTER TABLE public.profiles 
-  ADD CONSTRAINT check_minerals_non_negative 
-  CHECK (minerals >= 0);
+-- profiles 테이블 검증 (멱등: 기존 제약 있으면 건너뜀)
+DO $$
+BEGIN
+  IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'check_minerals_non_negative' AND conrelid = 'public.profiles'::regclass) THEN
+    ALTER TABLE public.profiles ADD CONSTRAINT check_minerals_non_negative CHECK (minerals >= 0);
+  END IF;
+  IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'check_stamina_range' AND conrelid = 'public.profiles'::regclass) THEN
+    ALTER TABLE public.profiles ADD CONSTRAINT check_stamina_range CHECK (stamina >= 0 AND stamina <= 10);
+  END IF;
+  IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'check_tier_level_range' AND conrelid = 'public.profiles'::regclass) THEN
+    ALTER TABLE public.profiles ADD CONSTRAINT check_tier_level_range CHECK (current_tier_level >= 0 AND current_tier_level <= 100);
+  END IF;
+  IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'check_mastery_score_non_negative' AND conrelid = 'public.profiles'::regclass) THEN
+    ALTER TABLE public.profiles ADD CONSTRAINT check_mastery_score_non_negative CHECK (total_mastery_score >= 0);
+  END IF;
+END $$;
 
-ALTER TABLE public.profiles 
-  ADD CONSTRAINT check_stamina_range 
-  CHECK (stamina >= 0 AND stamina <= 10);
+-- inventory 테이블 검증 (멱등)
+DO $$
+BEGIN
+  IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'check_quantity_positive' AND conrelid = 'public.inventory'::regclass) THEN
+    ALTER TABLE public.inventory ADD CONSTRAINT check_quantity_positive CHECK (quantity > 0);
+  END IF;
+END $$;
 
-ALTER TABLE public.profiles 
-  ADD CONSTRAINT check_tier_level_range 
-  CHECK (current_tier_level >= 0 AND current_tier_level <= 100);
-
-ALTER TABLE public.profiles 
-  ADD CONSTRAINT check_mastery_score_non_negative 
-  CHECK (total_mastery_score >= 0);
-
--- inventory 테이블 검증
-ALTER TABLE public.inventory 
-  ADD CONSTRAINT check_quantity_positive 
-  CHECK (quantity > 0);
-
--- user_level_records 테이블 검증
-ALTER TABLE public.user_level_records 
-  ADD CONSTRAINT check_score_non_negative 
-  CHECK (best_score >= 0);
-
-ALTER TABLE public.user_level_records 
-  ADD CONSTRAINT check_level_positive 
-  CHECK (level > 0);
+-- user_level_records 테이블 검증 (멱등)
+DO $$
+BEGIN
+  IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'check_score_non_negative' AND conrelid = 'public.user_level_records'::regclass) THEN
+    ALTER TABLE public.user_level_records ADD CONSTRAINT check_score_non_negative CHECK (best_score >= 0);
+  END IF;
+  IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'check_level_positive' AND conrelid = 'public.user_level_records'::regclass) THEN
+    ALTER TABLE public.user_level_records ADD CONSTRAINT check_level_positive CHECK (level > 0);
+  END IF;
+END $$;
 
 -- ============================================================================
 -- Phase 2: 트리거 기반 자동 정리
@@ -55,6 +60,7 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
+DROP TRIGGER IF EXISTS trigger_cleanup_empty_inventory ON public.inventory;
 CREATE TRIGGER trigger_cleanup_empty_inventory
   AFTER UPDATE ON public.inventory
   FOR EACH ROW

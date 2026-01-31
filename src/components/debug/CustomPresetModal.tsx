@@ -50,6 +50,8 @@ export function CustomPresetModal({
   };
 
   const handleEditAction = (index: number) => {
+    if (!Object.prototype.hasOwnProperty.call(actions, index)) return;
+    // eslint-disable-next-line security/detect-object-injection -- index validated above
     setEditingAction({ ...actions[index] });
     setEditingActionIndex(index);
   };
@@ -116,7 +118,8 @@ export function CustomPresetModal({
       grantAllBadges: '모든 뱃지 지급',
       setGameTime: '게임 시간 설정',
     };
-    return labels[type] || type;
+    // eslint-disable-next-line security/detect-object-injection -- type is DebugAction['type']
+    return Object.prototype.hasOwnProperty.call(labels, type) ? labels[type] : type;
   };
 
   return (

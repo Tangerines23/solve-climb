@@ -17,15 +17,7 @@ export function useDebugShortcuts() {
   const { isAdminMode, selectedResource, toggleAdminMode, toggleDebugPanel, setSelectedResource } =
     useDebugStore();
 
-  const {
-    stamina,
-    minerals,
-    setStamina,
-    setMinerals,
-    debugSetStamina,
-    rewardMinerals,
-    fetchUserData,
-  } = useUserStore();
+  const { stamina, minerals, debugSetStamina, rewardMinerals, fetchUserData } = useUserStore();
 
   const handleKeyDown = useCallback(
     (e: KeyboardEvent) => {
@@ -100,9 +92,10 @@ export function useDebugShortcuts() {
       minerals,
       toggleAdminMode,
       toggleDebugPanel,
-      setStamina,
-      setMinerals,
       setSelectedResource,
+      debugSetStamina,
+      rewardMinerals,
+      fetchUserData,
     ]
   );
 

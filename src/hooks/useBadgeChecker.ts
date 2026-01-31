@@ -10,9 +10,13 @@ export function useBadgeChecker() {
   const checkAndAwardBadges = useCallback(async (userId: string, stats: HistoryStats) => {
     if (!userId || !stats) return [];
 
-    const isUuid =
-      /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(userId) ||
-      /^[0-9a-f]{8}-([0-9a-f]{4}-){3}[0-9a-f]{12}$/i.test(userId);
+    // 입력 길이 제한으로 ReDoS 방지 (UUID 최대 36자)
+    if (typeof userId !== 'string' || userId.length > 64) return [];
+
+    // UUID 형식 검증 (고정 길이 패턴으로 ReDoS 안전)
+    const uuidPattern =
+      /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+    const isUuid = uuidPattern.test(userId);
 
     // --- 1. 정회원 (Server-Side Logic) ---
     if (isUuid) {
@@ -50,7 +54,8 @@ export function useBadgeChecker() {
     const earnedBadgeIds = new Set(userBadges?.map((b) => b.badge_id) || []);
     const newBadges: string[] = [];
 
-    for (const badge of BADGE_DEFINITIONS as any[]) {
+    type BadgeDef = (typeof BADGE_DEFINITIONS)[number];
+    for (const badge of BADGE_DEFINITIONS as BadgeDef[]) {
       if (earnedBadgeIds.has(badge.id)) continue;
 
       let qualified = false;

@@ -235,6 +235,8 @@ export function ResultPage() {
     fetchRanking,
     searchParams,
     fetchUserData,
+    animationEnabled,
+    averageTime,
   ]);
 
   const [hasDoubled, setHasDoubled] = useState(false);
@@ -319,21 +321,22 @@ export function ResultPage() {
       s.push({ label: '지침 상태 패널티', value: '-20%', isHighlight: true });
     if (currentRank) s.push({ label: '현재 순위', value: `${currentRank}위`, isHighlight: true });
     return s;
-  }, [isNewRecord, total, correctCount, averageTime, searchParams, currentRank]);
+  }, [isNewRecord, total, correctCount, averageTime, searchParams, currentRank, mode]);
 
   // [Base Camp Result Handling]
   if (mode === 'base-camp-result') {
     const accuracy = searchParams.get('accuracy');
     const recommendation = searchParams.get('recommendation') as Category;
 
-    const courseMap = {
+    const courseMap: Record<string, { name: string; icon: string }> = {
       기초: { name: '일반 등반 (General)', icon: '🚶' },
       논리: { name: '탐험 등반 (Exploration)', icon: '🗺️' },
       대수: { name: '급경사 등반 (Steep)', icon: '🧗' },
       심화: { name: '암벽 등반 (Rock Climbing)', icon: '⛰️' },
     };
 
-    const course = (courseMap as any)[recommendation] || courseMap['기초'];
+    const courseEntry = Object.entries(courseMap).find(([k]) => k === recommendation);
+    const course = courseEntry ? courseEntry[1] : courseMap['기초'];
 
     return (
       <div className="page-container result-page base-camp-result">

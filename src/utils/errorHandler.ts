@@ -74,7 +74,11 @@ function detectErrorType(error: unknown): ErrorType {
  */
 export function getUserErrorMessage(error: unknown): string {
   const errorType = detectErrorType(error);
-  const baseMessage = USER_FRIENDLY_MESSAGES[errorType];
+  const msgDesc = Object.getOwnPropertyDescriptor(
+    USER_FRIENDLY_MESSAGES as Record<string, string>,
+    errorType
+  );
+  const baseMessage = (msgDesc?.value as string) ?? USER_FRIENDLY_MESSAGES[ErrorType.UNKNOWN];
 
   if (isDevelopment && error instanceof Error) {
     // 개발 환경에서는 상세 에러 메시지 포함

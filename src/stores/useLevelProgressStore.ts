@@ -1,4 +1,4 @@
-﻿// 레벨 진행 상태 관리 스토어
+// 레벨 진행 상태 관리 스토어
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import { supabase } from '../utils/supabaseClient';
@@ -105,7 +105,9 @@ const getDefaultLevelRecord = (level: number): LevelRecord => ({
 
 export const useLevelProgressStore = create<LevelProgressState>()(
   persist(
-    (set, get) => ({
+    (set, get) => {
+      /* eslint-disable security/detect-object-injection -- progress/rankings keys (world, category, level, mode) are validated store params */
+      return {
       progress: {},
       rankings: {},
       rankingVersion: 0,
@@ -184,9 +186,6 @@ export const useLevelProgressStore = create<LevelProgressState>()(
           return { progress: newProgress };
         });
 
-        const startTime = (await import('./useGameStore')).useGameStore.getState().startTime;
-        const totalDurationMs = startTime ? Date.now() - startTime : undefined;
-
         const authResult = (await debugSupabaseQuery(supabase.auth.getUser())) as UserResponse;
         const user = authResult?.data?.user;
         console.log('[useLevelProgressStore] Current user:', user?.id);
@@ -204,16 +203,15 @@ export const useLevelProgressStore = create<LevelProgressState>()(
 
           const { error: rpcError } = await debugSupabaseQuery(
             supabase.rpc('submit_game_result', {
-              p_user_answers: sessionData?.answers || [],
-              p_question_ids: sessionData?.questionIds || [],
+              p_user_answers: sessionData?.answers ?? [],
+              p_question_ids: (sessionData?.questionIds ?? []).map(String),
               p_game_mode: gameMode,
-              p_items_used: null,
+              p_items_used: [],
               p_session_id: sessionData?.sessionId,
               p_world_id: world,
               p_category: category,
-              p_subject: sessionData?.answers?.[0] ? 'add' : 'add',
+              p_subject: 'add',
               p_level: level,
-              p_total_time_ms: totalDurationMs,
             })
           );
 
@@ -255,14 +253,14 @@ export const useLevelProgressStore = create<LevelProgressState>()(
             mode === 'time-attack' ? 'timeattack' : mode === 'survival' ? 'survival' : 'infinite';
           const { error: rpcError } = await debugSupabaseQuery(
             supabase.rpc('submit_game_result', {
-              p_user_answers: sessionData?.answers || [],
-              p_question_ids: sessionData?.questionIds || [],
+              p_user_answers: sessionData?.answers ?? [],
+              p_question_ids: (sessionData?.questionIds ?? []).map(String),
               p_game_mode: gameMode,
-              p_items_used: null,
+              p_items_used: [],
               p_session_id: sessionData?.sessionId,
               p_world_id: world,
               p_category: category,
-              p_subject: 'add', // TODO: Map category to subject correctly
+              p_subject: 'add',
               p_level: level,
             })
           );
@@ -415,7 +413,7 @@ export const useLevelProgressStore = create<LevelProgressState>()(
       fetchRanking: async (world, category, period, type, limit = 50) => {
         try {
           let data: RankingRecord[] | null = null;
-          let error: any = null;
+          let error: unknown = null;
 
           if (period === 'all-time') {
             // 명예의 전당 조회 (hall_of_fame 테이블)
@@ -499,7 +497,9 @@ export const useLevelProgressStore = create<LevelProgressState>()(
           set({ _rankingSubscription: null });
         }
       },
-    }),
+        };
+      /* eslint-enable security/detect-object-injection */
+    },
     {
       name: 'solve-climb-level-progress',
       partialize: (state) => ({

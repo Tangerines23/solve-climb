@@ -64,9 +64,9 @@ function generateModeBasic(): StatsProblem {
   const base = getRandomInt(1, 10);
   const nums = [base, base, getRandomInt(1, 10), getRandomInt(1, 10)].sort();
   // Ensure mode is unique
-  const counts: Record<number, number> = {};
-  nums.forEach((n) => (counts[n] = (counts[n] || 0) + 1));
-  const mode = Object.entries(counts).reduce((a, b) => (b[1] > a[1] ? b : a));
+  const counts = new Map<number, number>();
+  nums.forEach((n) => counts.set(n, (counts.get(n) ?? 0) + 1));
+  const mode = Array.from(counts.entries()).reduce((a, b) => (b[1] > a[1] ? b : a));
 
   return {
     question: `${nums.join(', ')} 중 최빈값(Mode)은?`,

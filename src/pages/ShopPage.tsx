@@ -118,7 +118,7 @@ export function ShopPage() {
       isMounted = false;
       clearTimeout(safetyTimer);
     };
-  }, []);
+  }, [isLoading, items.length]);
 
   const handlePurchase = async (itemId: number, price: number) => {
     if (minerals < price) {
@@ -142,11 +142,15 @@ export function ShopPage() {
       } else {
         setPurchaseStatus({ id: itemId, message: data?.message || '구매 실패' });
       }
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error('Purchase failed:', err);
 
       // [오프라인/심사 대응] 네트워크 에러 또는 RPC를 찾을 수 없는 경우 시뮬레이션 모드로 처리
-      if (err.message?.includes('Failed to fetch') || err.code === 'PGRST202') {
+      const errObj = err instanceof Error ? err : { message: '', code: '' };
+      if (
+        (errObj as { message?: string; code?: string }).message?.includes('Failed to fetch') ||
+        (errObj as { message?: string; code?: string }).code === 'PGRST202'
+      ) {
         console.warn('[ShopPage] Switching to simulation mode for purchase');
 
         // 로컬 상태 강제 업데이트 (미네랄 감소 및 인벤토리 메시지)

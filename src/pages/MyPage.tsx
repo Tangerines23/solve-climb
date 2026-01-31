@@ -53,7 +53,8 @@ const formatBestSubject = (themeId: string | null): string => {
       puzzle: '퍼즐',
     };
 
-    const subjectName = subjectMap[subject] || subject;
+    const subjectEntry = Object.entries(subjectMap).find(([k]) => k === subject);
+    const subjectName = subjectEntry ? subjectEntry[1] : subject;
     return `${categoryName} ${subjectName} `;
   }
   return themeId;
@@ -199,9 +200,11 @@ export function MyPage() {
         navigate(urls.home(), { replace: true });
         window.location.reload(); // 상태 완전 초기화를 위해 리로드
       }, 2000);
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Withdrawal failed:', error);
-      setToastMessage(error.message || '회원 탈퇴 중 오류가 발생했습니다.');
+      setToastMessage(
+        error instanceof Error ? error.message : '회원 탈퇴 중 오류가 발생했습니다.'
+      );
       setShowToast(true);
     } finally {
       setIsWithdrawing(false);

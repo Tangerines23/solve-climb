@@ -206,7 +206,7 @@ export function useHistoryData() {
       if (recordsRes.error) throw recordsRes.error;
       if (sessionsRes.error) throw sessionsRes.error;
 
-      const records: EnrichedRecord[] = (recordsData || []).map((r: any) => ({
+      const records: EnrichedRecord[] = (recordsData || []).map((r: DbLevelRecord) => ({
         ...r,
         themeId: `${r.category_id}_${r.subject_id}`,
         themeName:
@@ -215,7 +215,16 @@ export function useHistoryData() {
       }));
 
       // 세션 데이터를 기록 포맷으로 정규화 (활동 추적용)
-      const sessionsAsRecords = (sessionsData || []).map((s: any) => {
+      type SessionRow = {
+        category_id: string;
+        subject_id: string;
+        world_id: string;
+        level: number;
+        game_mode?: string;
+        score?: number;
+        created_at?: string;
+      };
+      const sessionsAsRecords = (sessionsData || []).map((s: SessionRow) => {
         const themeId = `${s.category_id}_${s.subject_id}`;
         return {
           world_id: s.world_id,
@@ -369,17 +378,17 @@ export function useHistoryData() {
       // 티어 정보 (동적 사이클 계산)
       const currentTier = getTierInfo(totalAltitude);
 
-      // 분야별 숙련도
-      const categoryLevels = Object.values(
-        records.reduce(
-          (acc, r) => {
-            const key = `${r.themeId}-${r.level}`;
-            if (!acc[key] || r.best_score > acc[key].best_score) acc[key] = r;
-            return acc;
-          },
-          {} as Record<string, EnrichedRecord>
-        )
-      )
+      // 분야별 숙련도 (Map 사용으로 object-injection 경고 회피)
+      const recordMap = records.reduce(
+        (map, r) => {
+          const key = `${r.themeId}-${r.level}`;
+          const existing = map.get(key);
+          if (!existing || r.best_score > existing.best_score) map.set(key, r);
+          return map;
+        },
+        new Map<string, EnrichedRecord>()
+      );
+      const categoryLevels = Array.from(recordMap.values())
         .map((r) => {
           const [cat, sub] = r.themeId.split('_');
           const categoryName =
@@ -465,18 +474,21 @@ function getEmptyStats(title: string): HistoryStats {
   };
 }
 
+type LocalHistoryRecord = {
+  score: number;
+  date: string;
+  category: string;
+  world: string;
+  level: number;
+  mode: string;
+  correctCount?: number;
+  total?: number;
+};
+
 // 로컬 기록을 기반으로 HistoryStats 생성 (DB 로직 모방)
-function calculateLocalStats(history: any[], _userTitle: string): HistoryStats {
-  const records = history as Array<{
-    score: number;
-    date: string; // ISO string
-    category: string;
-    world: string; // e.g. World1
-    level: number;
-    mode: string;
-    correctCount?: number;
-    total?: number;
-  }>;
+function calculateLocalStats(history: LocalHistoryRecord[], _userTitle: string): HistoryStats {
+  const records = history;
+  const categoryMap = APP_CONFIG.CATEGORY_MAP as Record<string, string>;
 
   // 1. 기본 집계
   const totalAltitude = records.reduce((sum, r) => sum + (r.score || 0), 0);
@@ -497,7 +509,7 @@ function calculateLocalStats(history: any[], _userTitle: string): HistoryStats {
   const allActivities: HistoryStats['allActivities'] = records.map((r, idx) => ({
     type: 'game',
     id: `local-game-${idx}-${r.date}`,
-    title: `${APP_CONFIG.CATEGORY_MAP[r.category as keyof typeof APP_CONFIG.CATEGORY_MAP] || r.category} 등반`,
+    title: `${Object.prototype.hasOwnProperty.call(categoryMap, r.category) ? categoryMap[r.category] : r.category} 등반`,
     description: `Level ${r.level} (${r.mode === 'survival' ? 'Survival' : 'Normal'})`,
     value: `+${r.score.toLocaleString()}m`,
     timeAgo: getTimeAgo(r.date),
@@ -544,20 +556,22 @@ function calculateLocalStats(history: any[], _userTitle: string): HistoryStats {
   }
 
   // 5. 숙련도 (Category Levels) - 최고 레벨 추출
-  const bestLevels: Record<string, { level: number; category: string }> = {};
+  const bestLevels = new Map<string, { level: number; category: string }>();
   records.forEach((r) => {
     const key = r.category;
-    if (!bestLevels[key] || r.level > bestLevels[key].level) {
-      bestLevels[key] = { level: r.level, category: r.category };
+    const existing = bestLevels.get(key);
+    if (!existing || r.level > existing.level) {
+      bestLevels.set(key, { level: r.level, category: r.category });
     }
   });
 
-  const categoryLevels = Object.values(bestLevels)
+  const categoryLevels = Array.from(bestLevels.values())
     .map((r) => ({
       themeCode: 0,
       themeId: r.category,
-      categoryName:
-        APP_CONFIG.CATEGORY_MAP[r.category as keyof typeof APP_CONFIG.CATEGORY_MAP] || r.category,
+      categoryName: Object.prototype.hasOwnProperty.call(categoryMap, r.category)
+        ? categoryMap[r.category]
+        : r.category,
       subCategoryName: '',
       level: r.level,
       levelName: r.level >= 10 ? 'Expert' : r.level >= 5 ? 'Intermediate' : 'Beginner',

@@ -67,7 +67,17 @@ const shuffleArray = <T,>(array: T[]): T[] => {
   const newArr = [...array];
   for (let i = newArr.length - 1; i > 0; i--) {
     const j = Math.floor(Math.random() * (i + 1));
-    [newArr[i], newArr[j]] = [newArr[j], newArr[i]];
+    if (
+      Object.prototype.hasOwnProperty.call(newArr, i) &&
+      Object.prototype.hasOwnProperty.call(newArr, j)
+    ) {
+      // eslint-disable-next-line security/detect-object-injection -- indices i,j validated above
+      const tmp = newArr[i];
+      // eslint-disable-next-line security/detect-object-injection -- indices i,j validated above
+      newArr[i] = newArr[j];
+      // eslint-disable-next-line security/detect-object-injection -- indices i,j validated above
+      newArr[j] = tmp;
+    }
   }
   return newArr;
 };

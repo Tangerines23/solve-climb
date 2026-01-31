@@ -67,7 +67,10 @@ export function useQuestionGenerator({
         return;
       }
 
-      const q = questions[currentQuestionIndex];
+      const q =
+        currentQuestionIndex >= 0 && currentQuestionIndex < questions.length
+          ? questions.at(currentQuestionIndex)
+          : undefined;
       if (q) {
         setQuestionAnimation('fade-out');
         setTimeout(() => {
@@ -92,7 +95,10 @@ export function useQuestionGenerator({
       if (missedQuestions.length > 0) {
         // 무작위로 하나 선택하거나 순차적으로? 일단 무작위
         const randomIndex = Math.floor(Math.random() * missedQuestions.length);
-        const q = missedQuestions[randomIndex];
+        const q =
+          randomIndex >= 0 && randomIndex < missedQuestions.length
+            ? missedQuestions.at(randomIndex)
+            : missedQuestions[0];
 
         setQuestionAnimation('fade-out');
         setTimeout(() => {

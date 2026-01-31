@@ -109,7 +109,11 @@ export const useProfileStore = create<ProfileState>((set, get) => ({
 
     // 기존 프로필이 있으면 업데이트, 없으면 추가
     const existingIndex = updatedProfiles.findIndex((p) => p.profileId === profile.profileId);
-    if (existingIndex >= 0) {
+    if (
+      existingIndex >= 0 &&
+      Object.prototype.hasOwnProperty.call(updatedProfiles, existingIndex)
+    ) {
+      // eslint-disable-next-line security/detect-object-injection -- index from findIndex, validated above
       updatedProfiles[existingIndex] = profile;
     } else {
       // 새 프로필 추가 (최대 3개)

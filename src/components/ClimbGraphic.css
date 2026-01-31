@@ -68,11 +68,13 @@
   left: 0;
   right: 0;
   bottom: 0;
-  background: linear-gradient(180deg,
-      var(--color-blue-400) 0%,
-      var(--color-indigo-500) 30%,
-      var(--color-tier-mid) 60%,
-      var(--color-primary-light) 100%);
+  background: linear-gradient(
+    180deg,
+    var(--color-blue-400) 0%,
+    var(--color-indigo-500) 30%,
+    var(--color-tier-mid) 60%,
+    var(--color-primary-light) 100%
+  );
   z-index: 0;
   pointer-events: none;
   transition: background 1s ease-in-out;
@@ -270,7 +272,6 @@
 }
 
 @keyframes pulse {
-
   0%,
   100% {
     box-shadow:
@@ -373,7 +374,6 @@
 }
 
 @keyframes symbolFloat {
-
   0%,
   100% {
     transform: translateY(0);
@@ -385,7 +385,6 @@
 }
 
 @keyframes variableFloat {
-
   0%,
   100% {
     transform: translate(-50%, -50%) translateY(0);
@@ -429,7 +428,6 @@
 }
 
 @keyframes symbolGlow {
-
   0%,
   100% {
     opacity: 0.6;

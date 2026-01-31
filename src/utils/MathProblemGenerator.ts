@@ -462,9 +462,13 @@ function calculateWithPrecedence(numbers: number[], operators: Operator[]): numb
   // 먼저 곱셈과 나눗셈을 처리 (우선순위 높음)
   let i = 0;
   while (i < ops.length) {
-    if (ops[i] === '*' || ops[i] === '/') {
-      const result = calculate(nums[i], nums[i + 1], ops[i]);
-      nums[i] = result;
+    const op = ops.at(i);
+    const n0 = nums.at(i);
+    const n1 = nums.at(i + 1);
+    if (op === '*' || op === '/') {
+      if (n0 === undefined || n1 === undefined) break;
+      const result = calculate(n0, n1, op);
+      nums.splice(i, 1, result);
       nums.splice(i + 1, 1);
       ops.splice(i, 1);
       // i를 증가시키지 않고 다시 같은 위치 확인
@@ -474,9 +478,12 @@ function calculateWithPrecedence(numbers: number[], operators: Operator[]): numb
   }
 
   // 남은 덧셈과 뺄셈을 왼쪽에서 오른쪽으로 처리
-  let result = nums[0];
+  let result = nums.at(0) ?? 0;
   for (let j = 0; j < ops.length; j++) {
-    result = calculate(result, nums[j + 1], ops[j]);
+    const n = nums.at(j + 1);
+    const o = ops.at(j);
+    if (n === undefined || o === undefined) break;
+    result = calculate(result, n, o);
   }
 
   return result;
@@ -540,7 +547,8 @@ function generateStandardProblem(stage: StageConfig): MathProblem {
   if (op === '/') {
     // Special handling for division to ensure integer result
     // Generate divisor (b) and quotient (answer) first
-    const divisorRange = stage.ranges[1] || stage.ranges[0];
+    const divisorRange = stage.ranges.at(1) ?? stage.ranges.at(0);
+    if (!divisorRange) throw new Error('Stage has no ranges');
     const quotientRange = { min: 2, max: 9 }; // Reasonable quotient range for mental math
 
     b = getRandomInt(divisorRange.min, divisorRange.max);
@@ -552,11 +560,11 @@ function generateStandardProblem(stage: StageConfig): MathProblem {
       answer: answer,
     };
   } else {
-    a = getRandomInt(stage.ranges[0].min, stage.ranges[0].max);
-    b = getRandomInt(
-      stage.ranges[1]?.min ?? stage.ranges[0].min,
-      stage.ranges[1]?.max ?? stage.ranges[0].max
-    );
+    const r0 = stage.ranges.at(0);
+    const r1 = stage.ranges.at(1);
+    if (!r0) throw new Error('Stage has no ranges');
+    a = getRandomInt(r0.min, r0.max);
+    b = getRandomInt(r1?.min ?? r0.min, r1?.max ?? r0.max);
 
     const result = calculate(a, b, op);
 
@@ -597,14 +605,18 @@ function generateSequentialProblem(stage: StageConfig): MathProblem {
   }
 
   for (let i = 0; i < stage.operandCount; i++) {
-    const range = stage.ranges[i] || stage.ranges[stage.ranges.length - 1];
+    const range =
+      stage.ranges.at(i) ?? stage.ranges.at(stage.ranges.length - 1);
+    if (!range) throw new Error('Stage has no ranges');
     nums.push(getRandomInt(range.min, range.max));
   }
 
   // Construct expression string
-  let expression = `${nums[0]}`;
+  let expression = `${nums.at(0) ?? 0}`;
   for (let i = 0; i < ops.length; i++) {
-    expression += ` ${ops[i]} ${nums[i + 1]}`;
+    const op = ops.at(i);
+    const num = nums.at(i + 1);
+    if (op !== undefined && num !== undefined) expression += ` ${op} ${num}`;
   }
 
   // Calculate result respecting precedence

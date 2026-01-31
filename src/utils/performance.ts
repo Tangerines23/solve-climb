@@ -28,8 +28,17 @@ export const performanceMonitor = {
    */
   observeMetric(metricName: 'LCP' | 'FID' | 'CLS'): void {
     try {
-      const typeMap = { LCP: 'largest-contentful-paint', FID: 'first-input', CLS: 'layout-shift' };
-      const entryType = typeMap[metricName];
+      const typeMap: Record<'LCP' | 'FID' | 'CLS', string> = {
+        LCP: 'largest-contentful-paint',
+        FID: 'first-input',
+        CLS: 'layout-shift',
+      };
+      const entryType =
+        metricName === 'LCP'
+          ? typeMap.LCP
+          : metricName === 'FID'
+            ? typeMap.FID
+            : typeMap.CLS;
 
       const observer = new PerformanceObserver((entryList) => {
         const entries = entryList.getEntries();

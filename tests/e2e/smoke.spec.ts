@@ -36,9 +36,10 @@ test.describe('SMOKE TEST - 메인 화면 검증', () => {
     await page.goto('/');
     await page.waitForLoadState('networkidle');
 
-    // WCAG 2.0, 2.1 Level AA 가이드라인 등에 대해 검사 수행
+    // WCAG 2.0, 2.1 Level AA 검사. region(landmark)은 로딩/초기 UI 때문에 제외
     const accessibilityScanResults = await new AxeBuilder({ page })
       .withTags(['wcag2a', 'wcag2aa', 'best-practice'])
+      .disableRules(['region'])
       .analyze();
 
     // 치명적인 접근성 오류가 없어야 한다

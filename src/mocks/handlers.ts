@@ -48,7 +48,7 @@ export const handlers = [
 
   // 프로필 업데이트 (PATCH /rest/v1/profiles)
   http.patch(`${SUPABASE_REST_URL}/profiles`, async ({ request }: { request: Request }) => {
-    const body = (await request.json()) as any;
+    const body = (await request.json()) as Record<string, unknown>;
     return HttpResponse.json(body); // 업데이트된 내용 반환 (단일 객체)
   }),
 
@@ -81,8 +81,11 @@ export const handlers = [
 
   // 미네랄 지급 (POST /rest/v1/rpc/add_minerals)
   http.post(`${SUPABASE_REST_URL}/rpc/add_minerals`, async ({ request }: { request: Request }) => {
-    const body = (await request.json()) as any;
-    const amount = body.p_minerals_earned || body.p_amount || 0;
+    const body = (await request.json()) as {
+      p_minerals_earned?: number;
+      p_amount?: number;
+    };
+    const amount = body.p_minerals_earned ?? body.p_amount ?? 0;
     return HttpResponse.json({
       success: true,
       minerals: amount, // 테스트 환경에서는 더하지 않고 요청값 그대로 반환하거나 적절히 처리
@@ -93,5 +96,70 @@ export const handlers = [
   // 인벤토리 조회 (GET /rest/v1/inventory)
   http.get(`${SUPABASE_REST_URL}/inventory`, () => {
     return HttpResponse.json([]);
+  }),
+
+  // 게임 설정 조회 (GET /rest/v1/game_config) - tiers.ts loadCycleCap, AuthModeSection 등
+  // RegExp: MSW 2에서 */rest/v1 패턴이 다른 도메인(Supabase URL)과 매칭되지 않는 경우 대응
+  http.get(/.*\/rest\/v1\/game_config/, ({ request }) => {
+    const url = new URL(request.url);
+    const keyParam = url.searchParams.get('key') ?? '';
+    const key = keyParam.replace(/^eq\./, '');
+    if (key === 'tier_cycle_cap') {
+      return HttpResponse.json({ value: '250000' });
+    }
+    return HttpResponse.json({ value: null });
+  }),
+
+  // 티어 정의 조회 (GET /rest/v1/tier_definitions) - tiers.ts loadTierDefinitions
+  http.get(/.*\/rest\/v1\/tier_definitions/, () => {
+    return HttpResponse.json([
+      { level: 0, name: '베이스캠프', icon: '⛺', min_score: 0, color_var: '--color-tier-base' },
+      { level: 1, name: '등산로', icon: '🥾', min_score: 1000, color_var: '--color-tier-trail' },
+      { level: 2, name: '중턱', icon: '⛰️', min_score: 5000, color_var: '--color-tier-mid' },
+      { level: 3, name: '고지대', icon: '🏔️', min_score: 20000, color_var: '--color-tier-high' },
+      { level: 4, name: '봉우리', icon: '🦅', min_score: 50000, color_var: '--color-tier-peak' },
+      { level: 5, name: '정상', icon: '🚩', min_score: 100000, color_var: '--color-tier-summit' },
+      { level: 6, name: '전설', icon: '👑', min_score: 250000, color_var: '--color-tier-legend' },
+    ]);
+  }),
+
+  // 랭킹 조회 (POST /rest/v1/rpc/get_ranking_v2)
+  http.post(`${SUPABASE_REST_URL}/rpc/get_ranking_v2`, () => {
+    return HttpResponse.json([
+      {
+        user_id: 'user-1',
+        nickname: '테스트유저1',
+        score: 1000,
+        rank: 1,
+        tier_level: 2,
+        tier_stars: 1,
+      },
+      {
+        user_id: 'user-2',
+        nickname: '테스트유저2',
+        score: 800,
+        rank: 2,
+        tier_level: 1,
+        tier_stars: 3,
+      },
+    ]);
+  }),
+
+  // 아이템 구매 (POST /rest/v1/rpc/purchase_item)
+  http.post(`${SUPABASE_REST_URL}/rpc/purchase_item`, async ({ request }) => {
+    const body = (await request.json()) as { p_item_id?: number };
+    return HttpResponse.json({
+      success: body.p_item_id === -999 ? false : true,
+      remaining_minerals: 900,
+      new_quantity: 1,
+    });
+  }),
+
+  // 리더보드 조회 (POST /rest/v1/rpc/get_leaderboard)
+  http.post(`${SUPABASE_REST_URL}/rpc/get_leaderboard`, () => {
+    return HttpResponse.json([
+      { user_id: 'user-1', nickname: '리더1', score: 50000, rank: 1, tier_level: 4, tier_stars: 2 },
+      { user_id: 'user-2', nickname: '리더2', score: 45000, rank: 2, tier_level: 4, tier_stars: 0 },
+    ]);
   }),
 ];

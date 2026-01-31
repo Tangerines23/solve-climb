@@ -1042,10 +1042,19 @@ export function RoadmapPage() {
                       <div className="history-milestones-list-integrated">
                         <div className="milestone-line-integrated" />
                         {(() => {
-                          const items = roadmapData.cardIndices.map((idx) => ({
-                            ...ALTITUDE_MILESTONES[idx],
-                            isMilestone: true,
-                          }));
+                          const items = roadmapData.cardIndices.map((idx) => {
+                            const milestone = ALTITUDE_MILESTONES.at(idx);
+                            return milestone
+                              ? { ...milestone, isMilestone: true }
+                              : {
+                                  id: `fallback-${idx}`,
+                                  label: '',
+                                  altitude: 0,
+                                  icon: '',
+                                  type: 'landmark' as const,
+                                  isMilestone: true,
+                                };
+                          });
 
                           const hasExactMatch = items.some(
                             (m) => m.altitude === stats.totalAltitude

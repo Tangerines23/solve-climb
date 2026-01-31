@@ -6,12 +6,14 @@ declare module 'virtual:pwa-register/react' {
     onNeedRefresh?: () => void;
     onOfflineReady?: () => void;
     onRegistered?: (registration: ServiceWorkerRegistration | undefined) => void;
-    onRegisterError?: (error: any) => void;
+    onRegisterError?: (error: unknown) => void;
   }
 
-  export function useRegisterSW(options?: RegisterSWOptions): {
-    needUpdate: [boolean, Dispatch<SetStateAction<boolean>>];
-    offlineReady: [boolean, Dispatch<SetStateAction<boolean>>];
-    updateServiceWorker: (reloadPage?: boolean) => Promise<void>;
-  };
+  export function useRegisterSW(options?: RegisterSWOptions):
+    | {
+        needRefresh: [boolean, Dispatch<SetStateAction<boolean>>];
+        offlineReady: [boolean, Dispatch<SetStateAction<boolean>>];
+        updateServiceWorker: (reloadPage?: boolean) => Promise<void>;
+      }
+    | undefined;
 }

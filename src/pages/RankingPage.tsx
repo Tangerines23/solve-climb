@@ -43,9 +43,9 @@ export function RankingPage() {
 
   // Fetch ranking data (category is not used by RPC)
   const currentRankings = useMemo(() => {
-    // Use a simple key without category since RPC doesn't filter by it
     const key = `${activePeriod}-${activeType}`;
-    return rankings[key] || [];
+    const entry = Object.entries(rankings).find(([k]) => k === key);
+    return entry ? entry[1] : [];
   }, [rankings, activePeriod, activeType]);
 
   useEffect(() => {
@@ -205,17 +205,19 @@ export function RankingPage() {
                             whiteSpace: 'nowrap',
                           }}
                         >
-                          {item?.week_start_date ? (() => {
-                            try {
-                              const date = new Date(item.week_start_date);
-                              const month = date.getMonth() + 1;
-                              const firstDay = new Date(date.getFullYear(), date.getMonth(), 1);
-                              const week = Math.ceil((date.getDate() + firstDay.getDay()) / 7);
-                              return `${month}월 ${week}주차 시즌`;
-                            } catch (_e) {
-                              return '시즌 정보 없음';
-                            }
-                          })() : '시즌 정보 없음'}
+                          {item?.week_start_date
+                            ? (() => {
+                                try {
+                                  const date = new Date(item.week_start_date);
+                                  const month = date.getMonth() + 1;
+                                  const firstDay = new Date(date.getFullYear(), date.getMonth(), 1);
+                                  const week = Math.ceil((date.getDate() + firstDay.getDay()) / 7);
+                                  return `${month}월 ${week}주차 시즌`;
+                                } catch (_e) {
+                                  return '시즌 정보 없음';
+                                }
+                              })()
+                            : '시즌 정보 없음'}
                         </span>
                       )}
                     </span>

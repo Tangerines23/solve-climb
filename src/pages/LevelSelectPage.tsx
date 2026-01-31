@@ -117,7 +117,9 @@ export function LevelSelectPage() {
   const worldLevels = APP_CONFIG.LEVELS[
     worldParam as keyof typeof APP_CONFIG.LEVELS
   ] as unknown as Record<string, { level: number; name: string; description: string }[]>;
-  const levels = worldLevels?.[categoryParam];
+  const levelsEntry =
+    worldLevels && Object.entries(worldLevels).find(([k]) => k === categoryParam);
+  const levels = levelsEntry ? levelsEntry[1] : undefined;
 
   if (!levels || levels.length === 0) {
     return (
@@ -197,7 +199,7 @@ export function LevelSelectPage() {
     if (nextIndex >= validWorldIds.length) nextIndex = 0;
     if (nextIndex < 0) nextIndex = validWorldIds.length - 1;
 
-    const nextWorld = validWorldIds[nextIndex];
+    const nextWorld = validWorldIds.at(nextIndex) ?? validWorldIds[0];
 
     // 산별로 마지막 플레이 월드 분리 저장
     localStorage.setItem(`lastPlayedWorld_${mountainParam}`, nextWorld);

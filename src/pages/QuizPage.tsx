@@ -261,7 +261,10 @@ export function QuizPage() {
 
         // v2.4: 10레벨 초과 시 선형 증가 로직 (Lv.30 -> 60초+ 보장)
         const getBaseTime = (lv: number) => {
-          if (lv <= 10) return LEVEL_BASE_TIME[lv] || 10;
+          if (lv <= 10) {
+            const entry = Object.entries(LEVEL_BASE_TIME).find(([k]) => Number(k) === lv);
+            return entry ? entry[1] : 10;
+          }
           return 20 + (lv - 10) * 2; // 10레벨 이후 초당 2초씩 증가
         };
 
@@ -423,6 +426,7 @@ export function QuizPage() {
     categoryParam,
     navigate,
     smartHandleGameOver,
+    exitConfirmTimeoutRef,
   ]);
 
   // 브라우저 뒤로가기 가로채기 및 UI 뒤로가기(handleBack)와 동기화
@@ -557,10 +561,15 @@ export function QuizPage() {
 
     // [New] Logic Phase 3 "Today's Promise" Check
     if (categoryParam === '논리' && levelParam && levelParam >= 11 && levelParam <= 15) {
-      const rule = LOGIC_PROMISES[levelParam] || {
-        rule: '논리왕: 모든 규칙 혼합!',
-        example: '팩토리얼 + 나머지',
-      };
+      const promiseEntry = Object.entries(LOGIC_PROMISES).find(
+        ([k]) => Number(k) === levelParam
+      );
+      const rule = promiseEntry
+        ? promiseEntry[1]
+        : {
+            rule: '논리왕: 모든 규칙 혼합!',
+            example: '팩토리얼 + 나머지',
+          };
       setPromiseData(rule);
       setPendingItemIds(selectedItemIds);
       setShowTipModal(false);
@@ -578,38 +587,47 @@ export function QuizPage() {
     await startWithItems(selectedItemIds);
   };
 
-  const startWithItems = async (selectedItemIds: number[]) => {
-    const activeCodes: string[] = [];
-    for (const id of selectedItemIds) {
-      const item = inventory.find((i) => i.id === id);
-      if (item && item.quantity > 0) {
-        const res = await consumeItem(id);
-        if (res.success) {
-          activeCodes.push(item.code);
-          analytics.trackEvent({
-            category: 'shop',
-            action: 'consume_item',
-            label: item.code,
-            data: { itemId: id },
-          });
+  const startWithItems = useCallback(
+    async (selectedItemIds: number[]) => {
+      const activeCodes: string[] = [];
+      for (const id of selectedItemIds) {
+        const item = inventory.find((i) => i.id === id);
+        if (item && item.quantity > 0) {
+          const res = await consumeItem(id);
+          if (res.success) {
+            activeCodes.push(item.code);
+            analytics.trackEvent({
+              category: 'shop',
+              action: 'consume_item',
+              label: item.code,
+              data: { itemId: id },
+            });
+          }
         }
       }
-    }
-    setActiveItems(activeCodes);
-    if (activeCodes.includes('oxygen_tank')) {
-      const current = useQuizStore.getState().timeLimit;
-      const valid = [10, 20, 30, 60, 90, 120, 180];
-      useQuizStore
-        .getState()
-        .setTimeLimit((valid.find((l) => l >= current + 10) || 180) as TimeLimit);
-    }
-    if (activeCodes.includes('power_gel')) incrementCombo();
-    setShowTipModal(false);
-    setShowStaminaModal(false);
+      setActiveItems(activeCodes);
+      if (activeCodes.includes('oxygen_tank')) {
+        const current = useQuizStore.getState().timeLimit;
+        const valid = [10, 20, 30, 60, 90, 120, 180];
+        useQuizStore
+          .getState()
+          .setTimeLimit((valid.find((l) => l >= current + 10) || 180) as TimeLimit);
+      }
+      if (activeCodes.includes('power_gel')) incrementCombo();
+      setShowTipModal(false);
+      setShowStaminaModal(false);
 
-    // [Added] Quiz Start Tracking
-    analytics.trackQuizStart(worldParam || 'default', categoryParam || 'default');
-  };
+      analytics.trackQuizStart(worldParam || 'default', categoryParam || 'default');
+    },
+    [
+      inventory,
+      consumeItem,
+      setActiveItems,
+      incrementCombo,
+      worldParam,
+      categoryParam,
+    ]
+  );
 
   const handlePromiseComplete = async () => {
     setShowPromise(false);
@@ -620,11 +638,6 @@ export function QuizPage() {
     } else {
       setShowStaminaModal(true);
     }
-  };
-
-  const handlePlayAnyway = async () => {
-    setExhausted(true);
-    await startWithItems(pendingItemIds);
   };
 
   const onAlertAction = useCallback(
@@ -639,11 +652,12 @@ export function QuizPage() {
           await handleStaminaAdRecovery();
           break;
         case 'play':
-          await handlePlayAnyway();
+          setExhausted(true);
+          await startWithItems(pendingItemIds);
           break;
       }
     },
-    [navigate, handleStaminaAdRecovery, handlePlayAnyway]
+    [navigate, handleStaminaAdRecovery, setExhausted, pendingItemIds, startWithItems]
   );
 
   useEffect(() => {
@@ -671,7 +685,17 @@ export function QuizPage() {
     gameStateRef.current.setQuestionStartTime(null);
     setSessionCreated(false);
     isCreatingSessionRef.current = false;
-  }, [worldParam, categoryParam, levelParam, modeParam, resetQuiz]);
+  }, [
+    worldParam,
+    categoryParam,
+    levelParam,
+    modeParam,
+    resetQuiz,
+    resetGame,
+    checkStamina,
+    setExhausted,
+    stamina,
+  ]);
 
   const [sessionCreated, setSessionCreated] = useState(false);
   const isCreatingSessionRef = useRef(false);

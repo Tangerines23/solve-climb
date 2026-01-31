@@ -119,7 +119,11 @@ describe('tiers', () => {
       const result = await loadTierDefinitions();
 
       for (let i = 1; i < result.length; i++) {
-        expect(result[i].level).toBeGreaterThan(result[i - 1].level);
+        const prev = result.at(i - 1);
+        const curr = result.at(i);
+        if (prev != null && curr != null) {
+          expect(curr.level).toBeGreaterThan(prev.level);
+        }
       }
     });
 
@@ -135,7 +139,11 @@ describe('tiers', () => {
       const result = await loadTierDefinitions();
 
       for (let i = 1; i < result.length; i++) {
-        expect(result[i].minScore).toBeGreaterThanOrEqual(result[i - 1].minScore);
+        const prev = result.at(i - 1);
+        const curr = result.at(i);
+        if (prev != null && curr != null) {
+          expect(curr.minScore).toBeGreaterThanOrEqual(prev.minScore);
+        }
       }
     });
   });
@@ -201,39 +209,39 @@ describe('tiers', () => {
     it('should have all required fields for each tier', async () => {
       const result = await loadTierDefinitions();
 
-      result.forEach((tier: TierInfo) => {
-        expect(tier.level).toBeDefined();
-        expect(tier.name).toBeDefined();
-        expect(tier.icon).toBeDefined();
-        expect(tier.minScore).toBeDefined();
-        expect(tier.colorVar).toBeDefined();
+      result.forEach(({ level, name, icon, minScore, colorVar }: TierInfo) => {
+        expect(level).toBeDefined();
+        expect(name).toBeDefined();
+        expect(icon).toBeDefined();
+        expect(minScore).toBeDefined();
+        expect(colorVar).toBeDefined();
       });
     });
 
     it('should have valid tier names', async () => {
       const result = await loadTierDefinitions();
 
-      result.forEach((tier: TierInfo) => {
-        expect(tier.name.length).toBeGreaterThan(0);
-        expect(typeof tier.name).toBe('string');
+      result.forEach(({ name }: TierInfo) => {
+        expect(name.length).toBeGreaterThan(0);
+        expect(typeof name).toBe('string');
       });
     });
 
     it('should have valid tier icons', async () => {
       const result = await loadTierDefinitions();
 
-      result.forEach((tier: TierInfo) => {
-        expect(tier.icon.length).toBeGreaterThan(0);
-        expect(typeof tier.icon).toBe('string');
+      result.forEach(({ icon }: TierInfo) => {
+        expect(icon.length).toBeGreaterThan(0);
+        expect(typeof icon).toBe('string');
       });
     });
 
     it('should have valid color variables', async () => {
       const result = await loadTierDefinitions();
 
-      result.forEach((tier: TierInfo) => {
-        expect(tier.colorVar).toMatch(/^--color-/);
-        expect(typeof tier.colorVar).toBe('string');
+      result.forEach(({ colorVar }: TierInfo) => {
+        expect(colorVar).toMatch(/^--color-/);
+        expect(typeof colorVar).toBe('string');
       });
     });
   });

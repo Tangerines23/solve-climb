@@ -37,7 +37,11 @@ export function TutorialOverlay({ steps, isVisible, onComplete }: TutorialOverla
 
   if (!isVisible || currentStepIndex >= steps.length) return null;
 
-  const currentStep = steps[currentStepIndex];
+  const currentStep = Object.prototype.hasOwnProperty.call(steps, currentStepIndex)
+    ? // eslint-disable-next-line security/detect-object-injection -- index validated above
+      steps[currentStepIndex]
+    : undefined;
+  if (!currentStep) return null;
 
   // Find target element position
   // Note: In a real implementation, we might need a ResizeObserver or detailed positioning logic

@@ -39,7 +39,8 @@ describe('MathProblemGenerator - Fuzz Testing', () => {
     }
 
     try {
-      const evalResult = eval(cleanExpr);
+      // fuzz 테스트: 수식 검증용 (sandboxed Function으로 eval 대체)
+      const evalResult = new Function(`return (${cleanExpr})`)() as number;
 
       if (typeof expected === 'number') {
         // 부동 소수점 오차 허용 (0.0001)

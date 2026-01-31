@@ -3,15 +3,11 @@ import { Toast } from './Toast';
 import { useEffect, useState } from 'react';
 
 export function PwaUpdateNotification() {
-  const {
-    offlineReady: [offlineReady, setOfflineReady],
-    needUpdate: [needUpdate, setNeedUpdate],
-    updateServiceWorker,
-  } = useRegisterSW({
+  const swRegistration = useRegisterSW({
     onRegistered(r: ServiceWorkerRegistration | undefined) {
       console.log('SW Registered:', r);
     },
-    onRegisterError(error: any) {
+    onRegisterError(error: unknown) {
       console.error('SW registration error:', error);
     },
   });
@@ -19,11 +15,17 @@ export function PwaUpdateNotification() {
   const [show, setShow] = useState(false);
   const [message, setMessage] = useState('');
 
+  // optional chaining: E2E/테스트에서 vite-plugin-pwa 미로드 시 undefined 반환
+  const offlineReady = swRegistration?.offlineReady?.[0] ?? false;
+  const setOfflineReady = swRegistration?.offlineReady?.[1];
+  const needUpdate = swRegistration?.needRefresh?.[0] ?? false;
+  const setNeedUpdate = swRegistration?.needRefresh?.[1];
+  const updateServiceWorker = swRegistration?.updateServiceWorker;
+
   useEffect(() => {
     if (offlineReady) {
       setMessage('준비 완료! 이제 오프라인에서도 즐기실 수 있습니다.');
       setShow(true);
-      // 오프라인 준비 알림은 일정 시간 후 닫기
       const timer = setTimeout(() => setShow(false), 3000);
       return () => clearTimeout(timer);
     }
@@ -38,17 +40,17 @@ export function PwaUpdateNotification() {
 
   const handleClose = () => {
     setShow(false);
-    if (offlineReady) setOfflineReady(false);
-    if (needUpdate) setNeedUpdate(false);
+    if (offlineReady) setOfflineReady?.(false);
+    if (needUpdate) setNeedUpdate?.(false);
   };
 
   const handleConfirm = () => {
-    if (needUpdate) {
-      updateServiceWorker(true);
-    }
+    updateServiceWorker?.(true);
     setShow(false);
   };
 
+  // E2E/테스트에서 vite-plugin-pwa 미로드 시 null 렌더 (optional chaining으로 destructuring은 안전)
+  if (!swRegistration) return null;
   if (!show) return null;
 
   return (
