@@ -1,0 +1,16 @@
+{
+  "recommendations": [
+    "dbaeumer.vscode-eslint",
+    "esbenp.prettier-vscode",
+    "ms-playwright.playwright",
+    "bradlc.vscode-tailwindcss",
+    "ZixuanChen.vitest-explorer",
+    "mikestead.dotenv",
+    "storybook.storybook-vscode",
+    "usernamehw.errorlens",
+    "rishabhsai.cursor-prompt-enhancer-v2",
+    "adrianomelo.cursor-project-rules",
+    "eamodio.gitlens"
+  ],
+  "unwantedRecommendations": []
+}
