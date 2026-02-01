@@ -22,6 +22,16 @@ interface WindowWithGuardian extends Window {
  * - 가로 스크롤이 의도치 않게 생기는 경우 (scrollWidth > clientWidth)
  *
  * 감지된 요소에는 빨간색 점선 테두리가 표시됩니다.
+ *
+ * ## 의도적 무시(제외) 구분
+ * - **자동 제외**: overflow:auto/scroll, text-overflow:ellipsis, .debug-panel-overlay
+ * - **명시적 제외**: 요소 또는 조상에 `data-vg-ignore="true"`를 붙이면 해당 영역은
+ *   overflow 검사에서 제외됩니다.
+ *
+ * ## 실수/오류 vs 고쳐야 할 것 vs 의도적
+ * VG는 이걸 자동 구분하지 않습니다. "실수/오류"면 CSS로 수정, "의도적 허용"이면
+ * data-vg-ignore 사용. 의도한 것 중에도 오류가 있을 수 있으므로 data-vg-ignore는
+ * "VG 알림만 끄기"일 뿐 "오류 아님" 보장이 아닙니다.
  */
 export function VisualGuardian() {
   useEffect(() => {
@@ -36,7 +46,11 @@ export function VisualGuardian() {
 
     if (!forceEnable && (!import.meta.env.DEV || isCI)) return;
 
-    console.log('👁️ Visual Guardian is watching against overflows...');
+    // 자동화/검증 환경에서는 로그를 찍지 않음 (검증 도구가 __LAYOUT_ERRORS__만 읽어서 사용)
+    const isAutomation = forceEnable || isCI;
+    if (!isAutomation) {
+      console.log('👁️ Visual Guardian is watching against overflows...');
+    }
 
     // 자동화 테스트를 위한 에러 저장소 초기화
     if (!win.__LAYOUT_ERRORS__) {
@@ -48,7 +62,7 @@ export function VisualGuardian() {
         const allElements = document.querySelectorAll<HTMLElement>('*');
 
         allElements.forEach((el) => {
-          // SVG, Script, Style 등 및 루트 요소, PRE 태그 제외
+          // SVG, Script, Style 등 및 루트 요소, PRE 태그 제외 (SVG 자식은 className이 객체라 제외)
           if (
             [
               'SCRIPT',
@@ -63,9 +77,14 @@ export function VisualGuardian() {
               'BODY',
               'PRE',
             ].includes(el.tagName) ||
-            el.id === 'root'
+            el.id === 'root' ||
+            el.closest('svg')
           )
             return;
+
+          // SVG 등에서 className이 객체(SVGAnimatedString)인 경우 대비
+          const classStr =
+            typeof el.className === 'string' ? el.className : (el.getAttribute?.('class') ?? '');
 
           // 의도된 스크롤(overflow: auto/scroll)은 무시
           const style = window.getComputedStyle(el);
@@ -101,17 +120,16 @@ export function VisualGuardian() {
 
             // 툴팁 효과 (title 속성 활용)
             const originalTitle = el.title;
-            const errorMsg = `Overflow Detected! (${isVerticalOverflow ? 'Vertical' : ''} ${isHorizontalOverflow ? 'Horizontal' : ''}) in <${el.tagName.toLowerCase()} class="${el.className}">`;
+            const errorMsg = `Overflow Detected! (${isVerticalOverflow ? 'Vertical' : ''} ${isHorizontalOverflow ? 'Horizontal' : ''}) in <${el.tagName.toLowerCase()} class="${classStr}">`;
             el.title = `⚠️ ${errorMsg}`;
 
             // 자동화 테스트를 위한 상태 업데이트
             document.body.dataset.layoutError = 'true';
             (window as WindowWithGuardian).__LAYOUT_ERRORS__?.push({
               element: el.tagName,
-              className: el.className,
+              className: classStr,
               path:
-                el.tagName.toLowerCase() +
-                (el.className ? '.' + el.className.split(' ').join('.') : ''),
+                el.tagName.toLowerCase() + (classStr ? '.' + classStr.split(' ').join('.') : ''),
               error: errorMsg,
               details: {
                 scroll: [el.scrollWidth, el.scrollHeight],
@@ -119,10 +137,12 @@ export function VisualGuardian() {
               },
             });
 
-            console.warn('🚨 [Visual Guardian]', errorMsg, {
-              scroll: [el.scrollWidth, el.scrollHeight],
-              client: [el.clientWidth, el.clientHeight],
-            });
+            if (!isAutomation) {
+              console.warn('🚨 [Visual Guardian]', errorMsg, {
+                scroll: [el.scrollWidth, el.scrollHeight],
+                client: [el.clientWidth, el.clientHeight],
+              });
+            }
 
             // 디버깅 편의를 위해 클릭 시 로그 출력 이벤트 추가
             el.addEventListener(
@@ -134,7 +154,9 @@ export function VisualGuardian() {
                   el.style.outline = '';
                   delete el.dataset.vgOverflow;
                   el.title = originalTitle;
-                  console.log('✅ Visual Guardian reset for:', el);
+                  if (!isAutomation) {
+                    console.log('✅ Visual Guardian reset for:', el);
+                  }
                 }
               },
               { once: true }

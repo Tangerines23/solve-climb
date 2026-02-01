@@ -72,6 +72,37 @@
   text-decoration: none;
   color: inherit;
   display: block;
+  position: relative;
+}
+
+.topic-card-link .topic-favorite-button {
+  position: absolute;
+  top: var(--spacing-sm);
+  right: var(--spacing-sm);
+  width: 36px;
+  height: 36px;
+  padding: 0;
+  border: none;
+  background: transparent;
+  font-size: 1.25rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--rounded-sm);
+  transition: transform 0.2s;
+  color: var(--color-text-secondary);
+  z-index: 1;
+}
+
+.topic-card-link .topic-favorite-button:hover:not(:disabled) {
+  transform: scale(1.1);
+  color: var(--color-blue-400);
+}
+
+.topic-card-link .topic-favorite-button:disabled {
+  cursor: not-allowed;
+  opacity: 0.5;
 }
 
 .topic-card {

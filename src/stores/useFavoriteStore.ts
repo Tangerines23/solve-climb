@@ -13,12 +13,19 @@ export interface Favorite {
   timestamp: number;
 }
 
+/** 즐겨찾기 추가 시 전달하는 값 (id 미입력 시 스토어에서 생성) */
+export type AddFavoriteInput = Omit<Favorite, 'timestamp' | 'id'> & { id?: string };
+
 interface FavoriteState {
   favorites: Favorite[];
-  addFavorite: (favorite: Omit<Favorite, 'timestamp'>) => void;
+  addFavorite: (favorite: AddFavoriteInput) => void;
   removeFavorite: (id: string) => void;
   isFavorite: (categoryId: string, subCategoryId?: string) => boolean;
   getFavoriteId: (categoryId: string, subCategoryId?: string) => string | null;
+}
+
+function generateFavoriteId(categoryId: string, subCategoryId?: string): string {
+  return `fav-${categoryId}-${subCategoryId ?? 'cat'}-${Date.now()}`;
 }
 
 export const useFavoriteStore = create<FavoriteState>()(
@@ -31,9 +38,11 @@ export const useFavoriteStore = create<FavoriteState>()(
           // 이미 즐겨찾기에 있으면 제거 (토글)
           get().removeFavorite(existingId);
         } else {
-          // 즐겨찾기 추가
+          // 즐겨찾기 추가 (id 미입력 시 자동 생성)
+          const { id: _omit, ...rest } = favorite;
+          const id = favorite.id ?? generateFavoriteId(favorite.categoryId, favorite.subCategoryId);
           set((state) => ({
-            favorites: [{ ...favorite, timestamp: Date.now() }, ...state.favorites],
+            favorites: [{ ...rest, id, timestamp: Date.now() }, ...state.favorites],
           }));
         }
       },

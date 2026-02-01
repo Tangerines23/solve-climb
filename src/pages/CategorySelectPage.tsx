@@ -4,17 +4,30 @@ import { APP_CONFIG } from '@/config/app';
 import { TopicHeader } from '@/components/TopicHeader';
 import { FooterNav } from '@/components/FooterNav';
 import { useLevelProgressStore } from '@/stores/useLevelProgressStore';
+import { useFavoriteStore } from '@/stores/useFavoriteStore';
 import { urls } from '@/utils/navigation';
 import './CategorySelectPage.css';
 
-import { useDebugStore } from '@/stores/useDebugStore'; // Added import
+import { useDebugStore } from '@/stores/useDebugStore';
 
 export function CategorySelectPage() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const progressStore = useLevelProgressStore();
-  const bypassLevelLock = useDebugStore((state) => state.bypassLevelLock); // Added hook
+  const bypassLevelLock = useDebugStore((state) => state.bypassLevelLock);
+  const isFavorite = useFavoriteStore((state) => state.isFavorite);
+  const addFavorite = useFavoriteStore((state) => state.addFavorite);
   const mountainParam = searchParams.get('mountain');
+
+  const handleToggleFavorite = (e: React.MouseEvent, categoryId: string, categoryName: string) => {
+    e.preventDefault();
+    e.stopPropagation();
+    addFavorite({
+      type: 'subcategory',
+      categoryId,
+      name: categoryName,
+    });
+  };
 
   // [Phase 8] Persistence & Self-healing
   useEffect(() => {
@@ -123,6 +136,7 @@ export function CategorySelectPage() {
                 }
               }
 
+              const isFav = isFavorite(category.id);
               return (
                 <a
                   key={category.id}
@@ -131,12 +145,22 @@ export function CategorySelectPage() {
                     world: lastWorld,
                     category: category.id,
                   })}
-                  className={`topic-card-link ${isLocked ? 'is-locked' : ''}`}
+                  className={`topic-card-link ${isLocked ? 'is-locked' : ''} ${isFav ? 'favorite' : ''}`}
                   onClick={(e) => {
                     e.preventDefault();
                     handleCategoryClick(category.id, isLocked);
                   }}
                 >
+                  <button
+                    type="button"
+                    className="topic-favorite-button"
+                    aria-label={isFav ? '즐겨찾기 해제' : '즐겨찾기 추가'}
+                    title={isFav ? '즐겨찾기 해제' : '즐겨찾기 추가'}
+                    onClick={(e) => handleToggleFavorite(e, category.id, category.name)}
+                    disabled={isLocked}
+                  >
+                    {isFav ? '⭐' : '☆'}
+                  </button>
                   <div className="topic-card">
                     <div className="topic-card-left">
                       <span className="topic-icon">{isLocked ? '🔒' : category.icon}</span>

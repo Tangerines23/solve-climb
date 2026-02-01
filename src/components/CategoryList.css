@@ -25,6 +25,36 @@
   transition:
     transform 0.2s,
     border-color 0.2s;
+  position: relative;
+}
+
+.category-favorite-button {
+  position: absolute;
+  top: var(--spacing-sm);
+  right: var(--spacing-sm);
+  width: 36px;
+  height: 36px;
+  padding: 0;
+  border: none;
+  background: transparent;
+  font-size: 1.25rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--rounded-sm);
+  transition: transform 0.2s;
+  color: var(--color-text-secondary);
+}
+
+.category-favorite-button:hover:not(:disabled) {
+  transform: scale(1.1);
+  color: var(--color-blue-400);
+}
+
+.category-favorite-button:disabled {
+  cursor: not-allowed;
+  opacity: 0.5;
 }
 
 .category-item-card:hover {

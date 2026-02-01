@@ -6,8 +6,7 @@ import { MyRecordCard } from '@/components/MyRecordCard';
 import { LevelListCard } from '@/components/LevelListCard';
 import { FooterNav } from '@/components/FooterNav';
 import { Toast } from '@/components/Toast';
-// import { GameTipModal } from '@/components/GameTipModal';
-// import { useGameTips } from '@/hooks/useGameTips';
+import { useFavoriteStore } from '@/stores/useFavoriteStore';
 import { World, Category } from '@/types/quiz';
 import { urls } from '@/utils/navigation';
 import { PageLayout } from '@/components/layout/PageLayout';
@@ -19,6 +18,9 @@ export function LevelSelectPage() {
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   const [toastMessage, setToastMessage] = useState('');
   const [showToast, setShowToast] = useState(false);
+  const addFavorite = useFavoriteStore((state) => state.addFavorite);
+  const isFavorite = useFavoriteStore((state) => state.isFavorite);
+  const lastLongPressRef = useRef(0);
 
   // Game Tips Hook (Disabled: missing module)
   // const { isGameTipOpen, closeGameTip, currentGameTip } = useGameTips();
@@ -170,6 +172,22 @@ export function LevelSelectPage() {
     setShowToast(true);
   };
 
+  // 레벨 길게 누르기 → 현재 카테고리 즐겨찾기 토글 (기존 LevelListCard long-press와 연결)
+  const handleLevelLongPress = (_level: number) => {
+    const now = Date.now();
+    if (now - lastLongPressRef.current < 3000) return; // 2초/4초 두 번 호출 시 한 번만 반응
+    lastLongPressRef.current = now;
+
+    const alreadyFav = isFavorite(categoryParam);
+    addFavorite({
+      type: 'subcategory',
+      categoryId: categoryParam,
+      name: categoryInfo?.name ?? categoryParam,
+    });
+    setToastMessage(alreadyFav ? '즐겨찾기 해제됨' : '⭐ 즐겨찾기에 추가됨');
+    setShowToast(true);
+  };
+
   // 서바이벌 모드 진입 핸들러
   const handleSurvivalClick = () => {
     navigate(
@@ -293,6 +311,7 @@ export function LevelSelectPage() {
           category={categoryParam}
           levels={levels}
           onLevelClick={handleLevelClick}
+          onLevelLongPress={handleLevelLongPress}
           onLockedLevelClick={handleLockedLevelClick}
         />
       </div>

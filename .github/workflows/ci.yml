@@ -377,7 +377,7 @@ jobs:
         env:
           VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
           VITE_SUPABASE_ANON_KEY: ${{ secrets.VITE_SUPABASE_ANON_KEY }}
-        run: npm run check:layout:deep
+        run: npm run check:layout:deep:with-server
 
   # 8. 성능 및 웹 표준 감사
   performance-audit:

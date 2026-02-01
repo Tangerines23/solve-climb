@@ -440,7 +440,7 @@ export function ResultPage() {
             {worldParam} - {categoryParam}{' '}
             {mode === 'survival' || mode === 'infinite' ? '서바이벌 챌린지' : `Level ${level}`}
           </p>
-          <div className="score-section">
+          <div className="score-section" data-vg-ignore="true">
             <p className="score-value">{animatedScore.toLocaleString()}m</p>
           </div>
 
@@ -531,7 +531,7 @@ export function ResultPage() {
           <p className="result-subtitle">
             {worldParam} - {categoryParam} Level {level}
           </p>
-          <div className="score-section">
+          <div className="score-section" data-vg-ignore="true">
             <p className="score-value">{animatedScore.toLocaleString()}m</p>
           </div>
         </div>

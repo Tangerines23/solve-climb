@@ -24,6 +24,7 @@ export function FeverEffect() {
         {combo >= 2 && (
           <motion.div
             className="combo-display"
+            data-vg-ignore="true"
             key={combo}
             initial={{ scale: 1.5, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}

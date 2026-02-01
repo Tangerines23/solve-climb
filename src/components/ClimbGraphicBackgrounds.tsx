@@ -183,6 +183,7 @@ export function ArithmeticBackground({ totalLevels = 15 }: BackgroundProps) {
 
   return (
     <div
+      data-vg-ignore="true"
       style={{
         position: 'absolute',
         width: '100%',
@@ -291,6 +292,7 @@ export function EquationsBackground({ config, totalLevels = 15 }: BackgroundProp
 
   return (
     <div
+      data-vg-ignore="true"
       style={{
         position: 'absolute',
         width: '100%',

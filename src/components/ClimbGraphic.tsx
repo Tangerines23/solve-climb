@@ -240,6 +240,7 @@ export function ClimbGraphic({
       className="level-map-container"
       data-stage={category}
       data-world={world}
+      data-vg-ignore="true"
       style={
         {
           '--category-color': categoryColor,
@@ -262,6 +263,7 @@ export function ClimbGraphic({
 
       <div
         className="level-map-path-container"
+        data-vg-ignore="true"
         style={{
           height: `${svgHeight}px`,
           top: `${SCROLL_OFFSET}px`,

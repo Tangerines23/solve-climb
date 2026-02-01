@@ -12,7 +12,17 @@ import './CategoryList.css';
 export function CategoryList() {
   const navigate = useNavigate();
   const isFavorite = useFavoriteStore((state) => state.isFavorite);
+  const addFavorite = useFavoriteStore((state) => state.addFavorite);
   const [showExplorerToast, setShowExplorerToast] = useState<string | null>(null);
+
+  const handleToggleFavorite = (e: React.MouseEvent, mountainId: string, mountainName: string) => {
+    e.stopPropagation();
+    addFavorite({
+      type: 'category',
+      categoryId: mountainId,
+      name: mountainName,
+    });
+  };
 
   const handleMountainClick = (mountainId: string) => {
     // 산 선택 시 해당 산의 카테고리(기초, 논리 등) 선택 페이지로 이동
@@ -51,6 +61,16 @@ export function CategoryList() {
               key={mountain.id}
               className={`category-item-card ${isFav ? 'favorite' : ''} ${mountain.disabled ? 'disabled' : ''}`}
             >
+              <button
+                type="button"
+                className="category-favorite-button"
+                aria-label={isFav ? '즐겨찾기 해제' : '즐겨찾기 추가'}
+                title={isFav ? '즐겨찾기 해제' : '즐겨찾기 추가'}
+                onClick={(e) => handleToggleFavorite(e, mountain.id, mountain.name)}
+                disabled={mountain.disabled}
+              >
+                {isFav ? '⭐' : '☆'}
+              </button>
               <div className="category-item-content">
                 <span className="category-icon">{mountain.icon}</span>
                 <div className="category-item-text">

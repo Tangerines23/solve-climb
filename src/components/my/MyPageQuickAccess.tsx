@@ -72,13 +72,18 @@ export function MyPageQuickAccess({
                   key={favorite.id}
                   className="my-page-favorite-item"
                   onClick={() => {
-                    // favorite.categoryId가 산 ID인지 확인 (보통 mountain_category 형태일 수 있음)
-                    // 현재 스키마에서는 mountainID를 별도로 저장하지 않으므로 기본값(math) 또는 추론 필요
-                    const mountainId = 'math';
+                    // 산( mountain ) vs 카테고리( 기초, 논리 등 ) 구분: CATEGORIES에 있으면 카테고리 → levelSelect
+                    const isCategoryId = APP_CONFIG.CATEGORIES.some(
+                      (c) => c.id === favorite.categoryId
+                    );
+                    const mountainId = isCategoryId
+                      ? (APP_CONFIG.CATEGORIES.find((c) => c.id === favorite.categoryId)
+                          ?.mountainId ?? 'math')
+                      : favorite.categoryId;
                     const lastWorld =
                       localStorage.getItem(`lastPlayedWorld_${mountainId}`) || 'World1';
 
-                    if (favorite.subCategoryId) {
+                    if (favorite.subCategoryId || isCategoryId) {
                       navigate(
                         urls.levelSelect({
                           mountain: mountainId,

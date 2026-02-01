@@ -46,22 +46,25 @@ git clone <repository-url>
 cd solve-climb
 ```
 
-2. 의존성 설치
+2. **새 환경 한 번에 세팅** (권장)
+```bash
+npm run setup
+```
+- `.env` 없으면 `.env.example`을 복사해 생성
+- `node_modules` 없으면 `npm install` 실행
+- [새 환경 세팅 가이드](./docs/setup-new-environment.md) 참고
+
+3. 수동 설치 시: 의존성 설치 후 환경 변수 설정
 ```bash
 npm install
-# 또는
-yarn install
+# .env 없으면 .env.example 복사 후 아래 변수 설정
 ```
 
-3. 환경 변수 설정
-
-`.env` 파일을 생성하고 다음 변수를 설정하세요:
-
+`.env` 예시:
 ```env
 VITE_SUPABASE_URL=your_supabase_url
 VITE_SUPABASE_ANON_KEY=your_supabase_anon_key
 ```
-
 `.env.example` 파일을 참고하세요.
 
 ### 개발 서버 실행

@@ -3,8 +3,12 @@ import { test } from '@playwright/test';
 /**
  * Monkey Test / Chaos Test (Network Chaos v2)
  *
- * 특정 시나리오 없이 화면의 무작위 요소를 클릭하면서
+ * 특정 시나리오 없이 화면의 무작위 요소를 클릭(또는 길게 누르기)하면서
  * 네트워크 환경을 무작위로 변경하여 앱의 회복 탄력성을 검증합니다.
+ *
+ * - 클릭: element.click() 또는 input.fill()
+ * - 길게 누르기: pointer down → 800ms 대기 → pointer up (Playwright로 검증 가능.
+ *   앱에 long-press 핸들러가 있으면 동작하고, 없어도 크래시 없이 통과해야 함)
  */
 
 test.describe('MONKEY TEST - Chaos Automation', () => {
@@ -97,9 +101,23 @@ test.describe('MONKEY TEST - Chaos Automation', () => {
               `[CHAOS] Step ${i + 1}/${ITERATIONS}: Target "${name.trim().substring(0, 15)}"`
             );
 
-            // 무작위로 클릭 또는 입력
+            // 무작위로 클릭, 길게 누르기(10%), 또는 입력
+            const doLongPress = Math.random() < 0.1;
             if (await element.evaluate((el) => el.tagName === 'INPUT')) {
               await element.fill('Chaos Test').catch(() => {});
+            } else if (doLongPress) {
+              // 길게 누르기: pointer down → 800ms → pointer up (long-press 로직 검증)
+              const box = await element.boundingBox().catch(() => null);
+              if (box) {
+                const x = box.x + box.width / 2;
+                const y = box.y + box.height / 2;
+                await page.mouse.move(x, y);
+                await page.mouse.down();
+                await page.waitForTimeout(800);
+                await page.mouse.up();
+              } else {
+                await element.click({ timeout: 1000, force: true }).catch(() => {});
+              }
             } else {
               await element.click({ timeout: 1000, force: true }).catch(() => {});
             }
