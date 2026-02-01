@@ -14,7 +14,10 @@ const ROOT = path.resolve(__dirname, '..');
 const ENV_PATH = path.join(ROOT, '.env');
 const ENV_EXAMPLE_PATH = path.join(ROOT, '.env.example');
 
-if (fs.existsSync(ENV_PATH)) return;
-if (!fs.existsSync(ENV_EXAMPLE_PATH)) return;
-fs.copyFileSync(ENV_EXAMPLE_PATH, ENV_PATH);
-console.log('✅ .env 생성됨 (.env.example 복사). 값은 직접 설정하세요.');
+function main() {
+  if (fs.existsSync(ENV_PATH)) return;
+  if (!fs.existsSync(ENV_EXAMPLE_PATH)) return;
+  fs.copyFileSync(ENV_EXAMPLE_PATH, ENV_PATH);
+  console.log('✅ .env 생성됨 (.env.example 복사). 값은 직접 설정하세요.');
+}
+main();
