@@ -236,7 +236,13 @@ export function useMyPageStats(): UseMyPageStatsResult {
           .select('world_id, category_id, subject_id, level, best_score')
           .eq('user_id', user_id)
       )) as unknown as {
-        data: Array<{ world_id: string; category_id: string; subject_id: string; level: number; best_score: number }> | null;
+        data: Array<{
+          world_id: string;
+          category_id: string;
+          subject_id: string;
+          level: number;
+          best_score: number;
+        }> | null;
         error: PostgrestError | null;
       };
 

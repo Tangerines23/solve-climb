@@ -19,6 +19,7 @@
     "validate:fast": "npm run type-check && npm run lint",
     "validate:quick": "npm run lint -- --max-warnings=0",
     "validate:full": "npm run validate && npm run test && npm run check:db",
+    "ci:local": "npm run type-check && npm run lint && npm run format:check && npm run check:secrets && npm run check:circular && npm run check:integrity && npm run check:logic && npm run test:bench && npm run test:all && npm run check:security && npm run build && npm run test:e2e:critical",
     "test": "vitest",
     "test:ui": "vitest --ui",
     "test:unit": "vitest --project=unit",

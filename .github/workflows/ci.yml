@@ -176,8 +176,8 @@ jobs:
             exit 1
           fi
           echo "Extracted project ref: $PROJECT_REF"
-          # --skip-pooler: 풀러(Supavisor) 대신 직접 연결. 비밀번호가 맞아도 풀러 캐시/IP 차단으로 SASL 28P01 발생 시 해소
-          npx supabase link --project-ref "$PROJECT_REF" --password "$SUPABASE_DB_PASSWORD" --skip-pooler
+          # 풀러(Supavisor) 사용 → IPv4 연결. --skip-pooler 시 직접 연결은 GitHub Runner IPv6 미지원으로 실패
+          npx supabase link --project-ref "$PROJECT_REF" --password "$SUPABASE_DB_PASSWORD"
           npx supabase db lint --linked --fail-on error
 
       - name: DB validation
@@ -299,8 +299,11 @@ jobs:
           path: node_modules
           key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
 
+      # SUPABASE_ACCESS_TOKEN 미설정 시: Supabase 대시보드 → Account → Access Tokens에서 토큰 생성 후,
+      # GitHub 저장소 Settings → Secrets and variables → Actions에 SUPABASE_ACCESS_TOKEN으로 추가
       - name: Apply DB migrations (game_activity 등 db-status-check 필요 테이블)
         env:
+          SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
           SUPABASE_DB_PASSWORD: ${{ secrets.SUPABASE_DB_PASSWORD }}
           VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
         run: |
@@ -342,8 +345,11 @@ jobs:
           path: node_modules
           key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
 
+      # SUPABASE_ACCESS_TOKEN 미설정 시: Supabase 대시보드 → Account → Access Tokens에서 토큰 생성 후,
+      # GitHub 저장소 Settings → Secrets and variables → Actions에 SUPABASE_ACCESS_TOKEN으로 추가
       - name: Apply DB migrations (game_activity 등 E2E 필요 테이블)
         env:
+          SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
           SUPABASE_DB_PASSWORD: ${{ secrets.SUPABASE_DB_PASSWORD }}
           VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
         run: |

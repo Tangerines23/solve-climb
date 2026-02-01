@@ -1,5 +1,18 @@
 # CI 로컬 테스트 가이드
 
+## 🚀 푸시 전 한 번에 확인 (권장)
+
+```bash
+npm run ci:local
+```
+
+CI와 **같은 순서**로 validate → unit-test → security audit → build → e2e-critical 을 로컬에서 실행합니다.  
+한 단계라도 실패하면 중단되므로, **전부 통과한 뒤에 푸시**하면 CI 실패 가능성을 줄일 수 있습니다.
+
+- **로컬과 다른 점**: DB Lint(supabase link), Linux 스냅샷, CI 전용 Secrets/네트워크는 이 스크립트로 검증되지 않습니다. 필요하면 아래 단계별 명령으로 따로 실행하세요.
+
+---
+
 ## ✅ 로컬에서 CI와 동일하게 테스트 가능한 항목
 
 ### 1. Validate Job (코드 품질 검증)

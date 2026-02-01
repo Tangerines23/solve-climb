@@ -34,11 +34,7 @@ export const performanceMonitor = {
         CLS: 'layout-shift',
       };
       const entryType =
-        metricName === 'LCP'
-          ? typeMap.LCP
-          : metricName === 'FID'
-            ? typeMap.FID
-            : typeMap.CLS;
+        metricName === 'LCP' ? typeMap.LCP : metricName === 'FID' ? typeMap.FID : typeMap.CLS;
 
       const observer = new PerformanceObserver((entryList) => {
         const entries = entryList.getEntries();

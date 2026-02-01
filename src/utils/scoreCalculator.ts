@@ -144,10 +144,9 @@ export function calculateCategoryAltitude(category: string): {
   const { progress } = useLevelProgressStore.getState();
   const prog = progress as Record<string, unknown>;
   const categoryEntry = Object.entries(prog).find(([k]) => k === category);
-  const categoryProgress = categoryEntry?.at(1) as Record<
-    string,
-    Record<string, { bestScore: Record<string, number> }>
-  > | undefined;
+  const categoryProgress = categoryEntry?.at(1) as
+    | Record<string, Record<string, { bestScore: Record<string, number> }>>
+    | undefined;
 
   if (!categoryProgress) {
     return { totalAltitude: 0, totalProblems: 0 };

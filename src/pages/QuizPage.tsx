@@ -561,9 +561,7 @@ export function QuizPage() {
 
     // [New] Logic Phase 3 "Today's Promise" Check
     if (categoryParam === '논리' && levelParam && levelParam >= 11 && levelParam <= 15) {
-      const promiseEntry = Object.entries(LOGIC_PROMISES).find(
-        ([k]) => Number(k) === levelParam
-      );
+      const promiseEntry = Object.entries(LOGIC_PROMISES).find(([k]) => Number(k) === levelParam);
       const rule = promiseEntry
         ? promiseEntry[1]
         : {
@@ -619,14 +617,7 @@ export function QuizPage() {
 
       analytics.trackQuizStart(worldParam || 'default', categoryParam || 'default');
     },
-    [
-      inventory,
-      consumeItem,
-      setActiveItems,
-      incrementCombo,
-      worldParam,
-      categoryParam,
-    ]
+    [inventory, consumeItem, setActiveItems, incrementCombo, worldParam, categoryParam]
   );
 
   const handlePromiseComplete = async () => {

@@ -76,8 +76,7 @@ export function CategorySelectPage() {
       string,
       readonly unknown[]
     >;
-    const categoryEntry =
-      levels && Object.entries(levels).find(([k]) => k === categoryId);
+    const categoryEntry = levels && Object.entries(levels).find(([k]) => k === categoryId);
     const categoryLevels = categoryEntry ? categoryEntry[1] : undefined;
     const totalLevels = categoryLevels?.length || 0;
     if (totalLevels === 0) return 0;

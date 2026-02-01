@@ -202,9 +202,7 @@ export function MyPage() {
       }, 2000);
     } catch (error: unknown) {
       console.error('Withdrawal failed:', error);
-      setToastMessage(
-        error instanceof Error ? error.message : '회원 탈퇴 중 오류가 발생했습니다.'
-      );
+      setToastMessage(error instanceof Error ? error.message : '회원 탈퇴 중 오류가 발생했습니다.');
       setShowToast(true);
     } finally {
       setIsWithdrawing(false);

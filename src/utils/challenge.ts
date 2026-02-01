@@ -100,9 +100,7 @@ export function generateTodayChallenge(): TodayChallenge {
 
   // 수학의 산에서 수열 제거
   if (selectedMountain.id === 'math' && subTopics) {
-    subTopics = subTopics.filter(
-      (topic) => topic.id !== 'sequence'
-    ) as unknown as typeof subTopics;
+    subTopics = subTopics.filter((topic) => topic.id !== 'sequence') as unknown as typeof subTopics;
   }
 
   if (!subTopics || !Array.isArray(subTopics) || (subTopics as unknown[]).length === 0) {

@@ -605,8 +605,7 @@ function generateSequentialProblem(stage: StageConfig): MathProblem {
   }
 
   for (let i = 0; i < stage.operandCount; i++) {
-    const range =
-      stage.ranges.at(i) ?? stage.ranges.at(stage.ranges.length - 1);
+    const range = stage.ranges.at(i) ?? stage.ranges.at(stage.ranges.length - 1);
     if (!range) throw new Error('Stage has no ranges');
     nums.push(getRandomInt(range.min, range.max));
   }

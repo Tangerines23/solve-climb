@@ -25,8 +25,7 @@ export const ProgressionSection = React.memo(function ProgressionSection() {
     : undefined;
   const levelsRecord = worldLevels as unknown as Record<string, readonly unknown[]> | undefined;
   const levels =
-    (levelsRecord &&
-    Object.prototype.hasOwnProperty.call(levelsRecord, selectedCategory)
+    (levelsRecord && Object.prototype.hasOwnProperty.call(levelsRecord, selectedCategory)
       ? // eslint-disable-next-line security/detect-object-injection -- key validated above
         levelsRecord[selectedCategory]
       : undefined) || [];

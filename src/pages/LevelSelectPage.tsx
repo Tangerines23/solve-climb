@@ -117,8 +117,7 @@ export function LevelSelectPage() {
   const worldLevels = APP_CONFIG.LEVELS[
     worldParam as keyof typeof APP_CONFIG.LEVELS
   ] as unknown as Record<string, { level: number; name: string; description: string }[]>;
-  const levelsEntry =
-    worldLevels && Object.entries(worldLevels).find(([k]) => k === categoryParam);
+  const levelsEntry = worldLevels && Object.entries(worldLevels).find(([k]) => k === categoryParam);
   const levels = levelsEntry ? levelsEntry[1] : undefined;
 
   if (!levels || levels.length === 0) {

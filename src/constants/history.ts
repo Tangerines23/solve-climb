@@ -129,7 +129,9 @@ export const getTierInfo = (altitude: number) => {
   const reversedTiers = [...ALTITUDE_TIERS].reverse();
   const reachedTierIndex = reversedTiers.findIndex((t) => currentCycleScore >= t.goal);
   const currentTier =
-    reachedTierIndex === -1 ? ALTITUDE_TIERS[0] : reversedTiers.at(reachedTierIndex) ?? ALTITUDE_TIERS[0];
+    reachedTierIndex === -1
+      ? ALTITUDE_TIERS[0]
+      : (reversedTiers.at(reachedTierIndex) ?? ALTITUDE_TIERS[0]);
 
   // 다음 티어: 현재 점수보다 높은 첫 번째 목표
   let nextTierIndex = ALTITUDE_TIERS.findIndex((t) => currentCycleScore < t.goal);
@@ -194,19 +196,14 @@ export const getSmartComment = ({
   maxCombo: number;
   totalAltitude: number;
 }): string => {
-  if (streakCount >= 7)
-    return `${streakCount}일 연속 완등! 등반의 신이 강림하셨나요? 🔥`;
-  if (streakCount >= 3)
-    return `${streakCount}일 연속 등반 중! 꾸준함이 곧 실력입니다. ✨`;
+  if (streakCount >= 7) return `${streakCount}일 연속 완등! 등반의 신이 강림하셨나요? 🔥`;
+  if (streakCount >= 3) return `${streakCount}일 연속 등반 중! 꾸준함이 곧 실력입니다. ✨`;
   if (averageAccuracy >= 98)
     return '정교한 산악인이시네요! 단 하나의 실수도 용납하지 않는 군요. 🎯';
-  if (maxCombo >= 100)
-    return `무려 ${maxCombo}콤보! 폭발적인 집중력의 소유자입니다. ⚡`;
+  if (maxCombo >= 100) return `무려 ${maxCombo}콤보! 폭발적인 집중력의 소유자입니다. ⚡`;
   if (totalAltitude >= 250000)
     return '전설의 영역에 도달하셨습니다. 이제부터는 성급을 올릴 시간입니다! ⭐';
-  if (totalAltitude >= 20000)
-    return '고산 지대에 진입하셨습니다. 이제부터가 진짜 등반입니다! 🏔️';
-  if (totalAltitude >= 5000)
-    return '산중턱을 넘어섰네요. 정상이 조금씩 보이기 시작합니다. 🌲';
+  if (totalAltitude >= 20000) return '고산 지대에 진입하셨습니다. 이제부터가 진짜 등반입니다! 🏔️';
+  if (totalAltitude >= 5000) return '산중턱을 넘어섰네요. 정상이 조금씩 보이기 시작합니다. 🌲';
   return '오늘도 한 걸음 더 높은 곳으로! 즐거운 등반 되세요. 🥾';
 };
