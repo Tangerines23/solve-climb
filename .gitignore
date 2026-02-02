@@ -11,6 +11,8 @@ lerna-debug.log*
 node_modules
 dist
 dist-ssr
+build-dist
+unit-test-reports
 *.local
 
 # Editor directories and files
@@ -80,3 +82,17 @@ storybook-static
 # Periodic Reports
 reports/*
 !reports/.gitkeep
+
+# Temporary Logs
+build_error.txt
+changed_files.txt
+full_audit_report.txt
+*.json
+!package.json
+!package-lock.json
+!tsconfig.json
+!tsconfig.*.json
+layout_errors.txt
+logs.txt
+security_logs*.txt
+unit_test_logs.txt

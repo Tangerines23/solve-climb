@@ -153,7 +153,12 @@ export default defineConfig(({ mode }) => {
         clean: true,
         // 재실행 시 커버리지 디렉토리 정리
         cleanOnRerun: true,
+        // 리포트 출력 경로 변경
+        reportsDirectory: './reports/coverage', // 기본값: ./coverage
       },
+      // JUnit 리포터 설정 (CI 연동용)
+      outputFile: './reports/test-results.xml', // 기본값: root/test-results.xml (junit 사용 시)
+      reporters: ['default', 'junit'], // console output + junit xml
     },
   };
 });

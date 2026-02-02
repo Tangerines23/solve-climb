@@ -14,7 +14,18 @@ import { dirname, join } from 'path';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const ROOT = join(__dirname, '..');
-const DEFAULT_OUTPUT = join(ROOT, '.e2e-result.json');
+const REPORT_DIR = join(ROOT, 'reports');
+const DEFAULT_OUTPUT = join(REPORT_DIR, '.e2e-result.json');
+
+import { mkdirSync, existsSync } from 'fs';
+
+if (!existsSync(REPORT_DIR)) {
+  try {
+    mkdirSync(REPORT_DIR);
+  } catch (e) {
+    // ignore
+  }
+}
 
 async function getAvailablePort() {
   const { execSync } = await import('child_process');
@@ -90,8 +101,14 @@ async function main() {
 main().catch((err) => {
   console.error(err);
   writeFileSync(
-    process.argv.indexOf('--output') >= 0 ? process.argv[process.argv.indexOf('--output') + 1] : DEFAULT_OUTPUT,
-    JSON.stringify({ exitCode: 1, error: String(err), timestamp: new Date().toISOString() }, null, 2),
+    process.argv.indexOf('--output') >= 0
+      ? process.argv[process.argv.indexOf('--output') + 1]
+      : DEFAULT_OUTPUT,
+    JSON.stringify(
+      { exitCode: 1, error: String(err), timestamp: new Date().toISOString() },
+      null,
+      2
+    ),
     'utf8'
   );
   process.exit(1);
