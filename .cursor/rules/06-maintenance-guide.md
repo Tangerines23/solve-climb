@@ -21,3 +21,10 @@ alwaysApply: true
 ## 3. 의존성 및 무결성 확인
 - 새로운 파일을 생성하거나 삭제한 경우, `npm run check:integrity`를 실행하여 프로젝트의 전체적인 무결성(네비게이션, 스타일, 맞춤법 등)을 확인합니다.
 - CSS 수정 시 반드시 CSS 변수를 사용했는지 `npm run check:css`로 재검증합니다.
+
+## 4. Socket 토큰 돌려쓰기 (훅 + MCP)
+- Socket API 토큰은 **한 번만** socket.dev → Settings → API Tokens 에서 발급한다.
+- **같은 값**을 두 곳에 넣어 사용한다:
+  1. **커밋 훅**: `.env` 또는 시스템 환경변수 `SOCKET_API_KEY` 에 설정 (또는 `SOCKET_CLI_API_TOKEN` / `SOCKET_SECURITY_API_TOKEN`).
+  2. **Cursor MCP Socket**: Cursor 설정 → MCP → Socket 서버 → env 에 `SOCKET_API_KEY` 로 같은 토큰 설정.
+- 설정 여부 확인: `node scripts/check-mcp-env.js`

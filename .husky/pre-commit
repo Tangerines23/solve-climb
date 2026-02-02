@@ -52,6 +52,15 @@ fi
 npm run check:logic || echo "⚠️ 로직 성능 저하 감지됨 (CI에서 재확인 예정)"
 npm run check:security || echo "⚠️ 보안 취약점 발견 (npm audit 권장)"
 
+# Socket 의존성 보안 스캔 (토큰 하나 돌려쓰기: SOCKET_API_KEY 권장, CLI용 이름도 지원)
+if [ -n "$SOCKET_API_KEY" ] || [ -n "$SOCKET_CLI_API_TOKEN" ] || [ -n "$SOCKET_SECURITY_API_TOKEN" ]; then
+  echo "🔒 Socket 의존성 보안 스캔..."
+  [ -n "$SOCKET_API_KEY" ] && export SOCKET_CLI_API_TOKEN="$SOCKET_API_KEY"
+  npm run check:socket || echo "⚠️ Socket 스캔 이슈 (socket.dev 정책 확인 권장)"
+else
+  echo "⏭️ Socket 스캔 건너뜀 (SOCKET_API_KEY 등 미설정)"
+fi
+
 # Supabase 연결 확인 (실패해도 커밋 진행 — 네트워크/429 등 외부 요인 때문)
 echo "🔗 Supabase 연결 확인 (.env 키 유효성)..."
 npm run check:supabase:connection || echo "⚠️ Supabase 연결 실패 — 오프라인이거나 .env 키 확인 필요"
