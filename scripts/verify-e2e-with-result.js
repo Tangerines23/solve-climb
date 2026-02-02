@@ -22,7 +22,7 @@ import { mkdirSync, existsSync } from 'fs';
 if (!existsSync(REPORT_DIR)) {
   try {
     mkdirSync(REPORT_DIR);
-  } catch (e) {
+  } catch (_) {
     // ignore
   }
 }

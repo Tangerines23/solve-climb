@@ -312,7 +312,7 @@ jobs:
             exit 0
           fi
           export PROJECT_REF=$(echo "$VITE_SUPABASE_URL" | sed -E 's|https://([^.]+)\.supabase\.co.*|\1|')
-          npx supabase link --project-ref "$PROJECT_REF" --password "$SUPABASE_DB_PASSWORD" --skip-pooler
+          npx supabase link --project-ref "$PROJECT_REF" --password "$SUPABASE_DB_PASSWORD"
           npx supabase db push
 
       - name: Install Playwright Browsers
@@ -358,7 +358,7 @@ jobs:
             exit 0
           fi
           export PROJECT_REF=$(echo "$VITE_SUPABASE_URL" | sed -E 's|https://([^.]+)\.supabase\.co.*|\1|')
-          npx supabase link --project-ref "$PROJECT_REF" --password "$SUPABASE_DB_PASSWORD" --skip-pooler
+          npx supabase link --project-ref "$PROJECT_REF" --password "$SUPABASE_DB_PASSWORD"
           npx supabase db push
 
       - name: Install Playwright Browsers
