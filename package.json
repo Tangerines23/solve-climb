@@ -21,7 +21,9 @@
     "validate:quick": "npm run lint -- --max-warnings=0",
     "validate:full": "npm run validate && npm run test && npm run check:db",
     "ci:local": "npm run type-check && npm run lint && npm run format:check && npm run check:secrets && npm run check:circular && npm run check:integrity && npm run check:logic && npm run test:bench && npm run test:all && npm run check:security && npm run build && npm run test:e2e:critical",
+    "ci:local:stage1": "npm run type-check && npm run lint && npm run format:check && npm run check:secrets && npm run check:circular && npm run check:integrity && npm run check:logic && npm run check:migrations && npm run test:bench && npm run test:all && npm run check:security",
     "ci:local:full": "bash scripts/ci-local-full.sh",
+    "ci:local:all": "bash scripts/ci-local-all.sh",
     "test": "vitest",
     "test:ui": "vitest --ui",
     "test:unit": "vitest --project=unit",
@@ -120,6 +122,7 @@
     "@playwright/experimental-ct-react": "^1.57.0",
     "@playwright/test": "^1.57.0",
     "@sentry/vite-plugin": "^4.8.0",
+    "@socketsecurity/cli": "^1.1.0",
     "@storybook/addon-a11y": "^10.2.0",
     "@storybook/addon-docs": "^10.2.0",
     "@storybook/addon-onboarding": "^10.2.0",
@@ -151,7 +154,6 @@
     "eslint-plugin-storybook": "^10.2.0",
     "glob": "^13.0.0",
     "globals": "^16.4.0",
-    "@socketsecurity/cli": "^1.1.0",
     "husky": "^9.1.7",
     "jsdom": "^27.4.0",
     "knip": "^5.82.1",
@@ -172,6 +174,7 @@
     "vitest": "^4.0.16"
   },
   "overrides": {
+    "fast-xml-parser": "5.3.4",
     "find-my-way": "^8.2.2",
     "ip": "npm:ipaddr.js@^2.1.0",
     "@react-native-community/cli-doctor": {

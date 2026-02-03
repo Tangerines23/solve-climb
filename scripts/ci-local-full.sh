@@ -2,6 +2,8 @@
 # CI 로컬 풀 런: .github/workflows/ci.yml과 같은 순서로 job/step 실행
 # Secrets는 환경 변수로 설정 (예: .env 로드 또는 export VITE_SUPABASE_URL=...)
 #
+# 1차 검증만 (DB/E2E 없이): npm run ci:local:stage1
+#
 # 사용법:
 #   bash scripts/ci-local-full.sh
 #   CI_SKIP_DB=1 bash scripts/ci-local-full.sh   # security-db 단계 건너뛰기
