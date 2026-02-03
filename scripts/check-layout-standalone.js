@@ -66,6 +66,20 @@ let globalHasErrors = false;
       },
     },
     {
+      name: 'Dev Panel (Ctrl+`)',
+      url: `${BASE_URL}/`,
+      actions: async (page) => {
+        // Ctrl+` / Cmd+` 로 디버그 패널 열기 (useDebugShortcuts)
+        await page.keyboard.press('Escape');
+        await page.waitForTimeout(300);
+        await page.keyboard.press(process.platform === 'darwin' ? 'Meta+`' : 'Control+`');
+        await page
+          .waitForSelector('.debug-panel-overlay', { state: 'visible', timeout: 3000 })
+          .catch(() => null);
+        await page.waitForTimeout(800);
+      },
+    },
+    {
       name: 'Global Toasts Check',
       url: `${BASE_URL}/shop`,
       actions: async (page) => {

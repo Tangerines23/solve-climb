@@ -1,5 +1,6 @@
 // 토스 로그인 유틸리티
-import { appLogin } from '@apps-in-toss/web-framework';
+// @apps-in-toss/web-framework 제거 시 주석 처리. 패키지 복구 시 아래 주석 해제.
+// import { appLogin } from '@apps-in-toss/web-framework';
 import { logError } from './errorHandler';
 
 /**
@@ -31,7 +32,6 @@ export interface TossLoginResult {
  */
 export async function handleTossLogin(): Promise<TossLoginResult> {
   try {
-    // 토스 앱 환경 확인
     if (!isTossAppEnvironment()) {
       return {
         success: false,
@@ -39,40 +39,40 @@ export async function handleTossLogin(): Promise<TossLoginResult> {
       };
     }
 
-    // appLogin 함수 호출
-    console.log('[토스 로그인] appLogin 호출 시작');
-    let result;
-    try {
-      result = await appLogin();
-      console.log('[토스 로그인] appLogin 호출 완료:', {
-        hasResult: !!result,
-        hasAuthorizationCode: !!result?.authorizationCode,
-        authorizationCodePrefix: result?.authorizationCode?.substring(0, 20) || 'N/A',
-        referrer: result?.referrer || 'N/A',
-      });
-    } catch (error) {
-      console.error('[토스 로그인] appLogin 호출 중 예외 발생:', error);
-      return {
-        success: false,
-        error: error instanceof Error ? error.message : '토스 로그인 중 오류가 발생했습니다.',
-      };
-    }
-
-    if (!result || !result.authorizationCode) {
-      console.warn('[토스 로그인] appLogin 결과가 올바르지 않음:', {
-        result: result,
-        hasAuthorizationCode: !!result?.authorizationCode,
-      });
-      return {
-        success: false,
-        error: '토스 로그인에 실패했습니다. authorizationCode를 받을 수 없습니다.',
-      };
-    }
+    // @apps-in-toss/web-framework 제거 시: appLogin 미호출. 패키지 복구 시 아래 주석 해제.
+    // console.log('[토스 로그인] appLogin 호출 시작');
+    // let result;
+    // try {
+    //   result = await appLogin();
+    //   console.log('[토스 로그인] appLogin 호출 완료:', {
+    //     hasResult: !!result,
+    //     hasAuthorizationCode: !!result?.authorizationCode,
+    //     authorizationCodePrefix: result?.authorizationCode?.substring(0, 20) || 'N/A',
+    //     referrer: result?.referrer || 'N/A',
+    //   });
+    // } catch (error) {
+    //   console.error('[토스 로그인] appLogin 호출 중 예외 발생:', error);
+    //   return {
+    //     success: false,
+    //     error: error instanceof Error ? error.message : '토스 로그인 중 오류가 발생했습니다.',
+    //   };
+    // }
+    // if (!result || !result.authorizationCode) {
+    //   console.warn('[토스 로그인] appLogin 결과가 올바르지 않음:', { result, hasAuthorizationCode: !!result?.authorizationCode });
+    //   return {
+    //     success: false,
+    //     error: '토스 로그인에 실패했습니다. authorizationCode를 받을 수 없습니다.',
+    //   };
+    // }
+    // return {
+    //   success: true,
+    //   authorizationCode: result.authorizationCode,
+    //   referrer: result.referrer || 'DEFAULT',
+    // };
 
     return {
-      success: true,
-      authorizationCode: result.authorizationCode,
-      referrer: result.referrer || 'DEFAULT',
+      success: false,
+      error: '토스 웹 프레임워크가 비활성화되어 있습니다. (패키지 제거 상태)',
     };
   } catch (error) {
     logError('토스 로그인', error);

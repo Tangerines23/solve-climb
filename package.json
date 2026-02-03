@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "setup": "node scripts/setup-new-env.js",
-    "dev": "granite dev",
+    "dev": "vite --host",
     "generate": "plop",
     "diet": "knip",
     "images:optimize": "node scripts/optimize-images.js",
@@ -87,7 +87,7 @@
     "check:layout:with-server": "node scripts/run-layout-check-with-server.js",
     "check:layout:deep:with-server": "node scripts/run-layout-check-with-server.js --deep",
     "check:layout:analyze": "node scripts/analyze-layout-overflow.js",
-    "check:score": "lhci collect --static-dist-dir=./dist && lhci assert",
+    "check:score": "node scripts/check-lighthouse-score.js",
     "prepare": "husky",
     "postinstall": "node scripts/ensure-env.js",
     "storybook": "storybook dev -p 6006",
@@ -96,7 +96,6 @@
     "report:test": "npm run test:all > reports/test_output.txt"
   },
   "dependencies": {
-    "@apps-in-toss/web-framework": "^1.7.0",
     "@capacitor-community/admob": "^8.0.0",
     "@capacitor/android": "^8.0.0",
     "@capacitor/core": "^8.0.0",
@@ -118,7 +117,7 @@
     "@axe-core/playwright": "^4.11.0",
     "@capacitor/cli": "^8.0.1",
     "@eslint/js": "^9.36.0",
-    "@lhci/cli": "^0.15.1",
+    "lighthouse": "^12.6.0",
     "@playwright/experimental-ct-react": "^1.57.0",
     "@playwright/test": "^1.57.0",
     "@sentry/vite-plugin": "^4.8.0",

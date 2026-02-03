@@ -1,12 +1,11 @@
 // 토스 게임 센터 SDK 래퍼 유틸리티
-// 로컬 개발 환경에서는 실제 호출 없이 시뮬레이션만 수행
-
-import {
-  submitGameCenterLeaderBoardScore,
-  openGameCenterLeaderboard,
-  isMinVersionSupported,
-  getOperationalEnvironment,
-} from '@apps-in-toss/web-framework';
+// @apps-in-toss/web-framework 제거 시 주석 처리. 패키지 복구 시 아래 주석 해제.
+// import {
+//   submitGameCenterLeaderBoardScore,
+//   openGameCenterLeaderboard,
+//   isMinVersionSupported,
+//   getOperationalEnvironment,
+// } from '@apps-in-toss/web-framework';
 import { logError, getUserErrorMessage } from './errorHandler';
 
 /**
@@ -41,7 +40,7 @@ function isLocalDevelopment(): boolean {
  * @param score 점수 (숫자)
  * @returns 제출 성공 여부
  */
-export async function submitScoreToLeaderboard(score: number): Promise<boolean> {
+export async function submitScoreToLeaderboard(_score: number): Promise<boolean> {
   try {
     // 로컬 개발 환경에서는 시뮬레이션만 수행
     if (isLocalDevelopment() && !isTossAppEnvironment()) {
@@ -54,23 +53,13 @@ export async function submitScoreToLeaderboard(score: number): Promise<boolean> 
       return false;
     }
 
-    // 모든 Bridge 호출 전 로그 출력 (토스 앱 내 콘솔 확인용)
+    // @apps-in-toss/web-framework 제거 시: submitGameCenterLeaderBoardScore 미호출. 패키지 복구 시 아래 주석 해제.
+    // const result = await submitGameCenterLeaderBoardScore({ score: _score.toFixed(1) });
+    // if (!result) { console.warn('...'); return false; }
+    // if (result.statusCode === 'SUCCESS') return true;
+    // console.error(`... ${result.statusCode}`); return false;
 
-    const result = await submitGameCenterLeaderBoardScore({
-      score: score.toFixed(1), // SDK 가이드: "123.45" 형태의 실수 문자열 필수
-    });
-
-    if (!result) {
-      console.warn('[토스 게임 센터] 지원하지 않는 앱 버전이에요.');
-      return false;
-    }
-
-    if (result.statusCode === 'SUCCESS') {
-      return true;
-    } else {
-      console.error(`[토스 게임 센터] 점수 제출 실패: ${result.statusCode}`);
-      return false;
-    }
+    return false;
   } catch (error) {
     logError('토스 게임 센터 - 점수 제출', error);
     return false;
@@ -95,18 +84,18 @@ function collectDebugInfo() {
   const win = typeof window !== 'undefined' ? window : null;
 
   try {
-    const operationalEnvironment = getOperationalEnvironment();
+    // @apps-in-toss/web-framework 제거 시: getOperationalEnvironment 미호출
+    // const operationalEnvironment = getOperationalEnvironment();
     return {
       timestamp: new Date().toISOString(),
       isTossApp: isTossAppEnvironment(),
       isLocalDev: isLocalDevelopment(),
-      operationalEnvironment: operationalEnvironment || 'unknown',
+      operationalEnvironment: 'unknown',
       userAgent: win?.navigator?.userAgent || 'unknown',
       location: win?.location?.href || 'unknown',
       hasReactNativeWebView: !!(win as unknown as Record<string, unknown>)?.ReactNativeWebView,
     };
   } catch {
-    // getOperationalEnvironment가 실패할 수 있으므로 에러 처리
     return {
       timestamp: new Date().toISOString(),
       isTossApp: isTossAppEnvironment(),
@@ -217,55 +206,17 @@ export async function openLeaderboard(
       return { success: false, message };
     }
 
-    // 앱 버전 지원 여부 확인 (토스앱 5.221.0 이상 필요)
-    const isSupported = isMinVersionSupported({
-      android: '5.221.0',
-      ios: '5.221.0',
-    });
+    // @apps-in-toss/web-framework 제거 시: isMinVersionSupported, getOperationalEnvironment, openGameCenterLeaderboard 미호출. 패키지 복구 시 아래 주석 해제.
+    // const isSupported = isMinVersionSupported({ android: '5.221.0', ios: '5.221.0' });
+    // if (!isSupported) { ... return { success: false, message }; }
+    // const operationalEnvironment = getOperationalEnvironment();
+    // if (operationalEnvironment === 'sandbox') { ... }
+    // if (operationalEnvironment !== 'toss') { ... }
+    // openGameCenterLeaderboard(); return { success: true };
 
-    if (!isSupported) {
-      console.warn('[토스 게임 센터] 지원하지 않는 앱 버전이에요. (최소 버전: 5.221.0)');
-      const message = '리더보드를 열 수 없습니다. 토스 앱을 최신 버전으로 업데이트해주세요.';
-      if (onError) onError(message);
-      return { success: false, message };
-    }
-
-    // 운영 환경 체크 (예제 코드 참고: 'toss' 환경에서만 작동)
-    const operationalEnvironment = getOperationalEnvironment();
-
-    if (operationalEnvironment === 'sandbox') {
-      console.warn('[토스 게임 센터] 샌드박스 환경에서는 리더보드를 열 수 없습니다.');
-      const message = '랭킹 기능은 샌드박스 환경에서는 사용할 수 없어요.';
-      if (onError) onError(message);
-      return { success: false, message };
-    }
-
-    // 'toss' 환경이 아니면 리더보드를 열 수 없음 (예제 코드 참고)
-    if (operationalEnvironment !== 'toss') {
-      console.warn(
-        `[토스 게임 센터] ${operationalEnvironment} 환경에서는 리더보드를 열 수 없습니다. (toss 환경에서만 가능)`
-      );
-      const message = '리더보드를 열 수 없습니다. 토스 앱에서 실행 중인지 확인해주세요.';
-      if (onError) onError(message);
-      return { success: false, message };
-    }
-
-    // 모든 검증 완료 - 리더보드 열기 호출
-    // 예제 코드처럼 단순 호출 (await 없이, 토스 앱 내부에서 비동기 처리)
-
-    try {
-      // openGameCenterLeaderboard는 Promise<void>를 반환하지만,
-      // 토스 앱 내부에서 처리되므로 await 없이 호출만 함
-      // 주의: 이 함수는 에러를 throw하지 않을 수 있으며,
-      // 주의: 이 함수는 에러를 throw하지 않을 수 있으며,
-      // 토스 앱 내부에서 "일시적인 오류" 메시지를 표시할 수 있음
-      openGameCenterLeaderboard();
-      return { success: true };
-    } catch (error) {
-      // 호출 시점에 에러가 발생한 경우 (드물지만 가능)
-      console.error('[토스 게임 센터] 리더보드 열기 호출 시 에러 발생:', error);
-      throw error;
-    }
+    const message = '토스 웹 프레임워크가 비활성화되어 있습니다. (패키지 제거 상태)';
+    if (onError) onError(message);
+    return { success: false, message };
   } catch (error) {
     logError('토스 게임 센터 - 리더보드 열기', error);
 

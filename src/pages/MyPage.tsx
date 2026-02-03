@@ -30,6 +30,7 @@ import { ENV } from '../utils/env';
 import { handleTossLogin } from '../utils/tossLogin';
 import { handleTossLoginFlow } from '../utils/tossAuth';
 import { migrateToGameLogin, checkTossLoginIntegration } from '../utils/tossGameLogin';
+import { signInWithGoogle } from '../utils/auth';
 import { WithdrawConfirmModal } from '../components/WithdrawConfirmModal';
 import { withdrawAccount } from '../utils/userWithdraw';
 import { calculateTier } from '../constants/tiers';
@@ -541,6 +542,47 @@ export function MyPage() {
     }
   };
 
+  // 구글 한 번 클릭 로그인 (리다이렉트 후 /my-page로 복귀)
+  const handleGoogleLogin = async () => {
+    const { error } = await signInWithGoogle();
+    if (error) {
+      setToastMessage(error.message || '구글 로그인을 시작할 수 없습니다.');
+      setShowToast(true);
+      setLoginError(true);
+    }
+    // 성공 시 구글 페이지로 이동하므로 여기서 추가 처리 없음
+  };
+
+  // 구글 OAuth 리다이렉트 복귀 시 프로필 동기화
+  useEffect(() => {
+    if (!session?.user || !refetch) return;
+    const userId = session.user.id;
+    if (profile?.userId === userId) return;
+
+    const nickname =
+      session.user.user_metadata?.full_name ||
+      session.user.user_metadata?.name ||
+      session.user.email ||
+      '게이머';
+    setProfile({
+      profileId: userId,
+      nickname,
+      userId,
+      email: session.user.email ?? undefined,
+      avatar: session.user.user_metadata?.avatar_url,
+      createdAt: session.user.created_at || new Date().toISOString(),
+      isAdmin: false,
+    });
+    refetch();
+    try {
+      debugSupabaseQuery(supabase.rpc('update_profile_nickname', { p_nickname: nickname })).catch(
+        () => {}
+      );
+    } catch {
+      // 무시
+    }
+  }, [session?.user, profile?.userId, refetch, setProfile]);
+
   // 로그아웃 함수
   const handleLogout = async () => {
     try {
@@ -623,6 +665,13 @@ export function MyPage() {
                 <strong className="my-page-guest-highlight">내 기록을 평생 간직하세요.</strong>
               </h1>
               <div className="my-page-guest-buttons">
+                <button
+                  type="button"
+                  className="my-page-guest-login-button my-page-guest-google-button"
+                  onClick={handleGoogleLogin}
+                >
+                  Google로 로그인
+                </button>
                 <button className="my-page-guest-login-button" onClick={handleLogin}>
                   {ENV.VITE_IS_VERCEL ? '체험 시작하기' : '3초 만에 시작하기'}
                 </button>

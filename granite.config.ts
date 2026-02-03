@@ -1,6 +1,9 @@
-import { defineConfig } from '@apps-in-toss/web-framework/config';
+// @apps-in-toss/web-framework 제거 시: defineConfig 대신 plain export
+// 패키지 복구 시 아래 주석 해제 후 사용
+// import { defineConfig } from '@apps-in-toss/web-framework/config';
+// export default defineConfig({ ... });
 
-export default defineConfig({
+export default {
   appName: 'solve-climb-edu',
   brand: {
     displayName: 'solve-climb-edu',
@@ -17,9 +20,9 @@ export default defineConfig({
     },
   },
   webViewProps: {
-    type: 'game', // 게임 미니앱으로 설정 (공통 내비게이션 바 자동 적용)
+    type: 'game',
     overScrollMode: 'never',
   },
   permissions: [],
   outdir: 'dist',
-});
+};

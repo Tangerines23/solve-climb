@@ -1,4 +1,5 @@
 import { test } from '@playwright/test';
+import { expectNoOverflow } from './utils/overflow';
 
 /**
  * Monkey Test / Chaos Test (Network Chaos v2)
@@ -9,12 +10,21 @@ import { test } from '@playwright/test';
  * - 클릭: element.click() 또는 input.fill()
  * - 길게 누르기: pointer down → 800ms 대기 → pointer up (Playwright로 검증 가능.
  *   앱에 long-press 핸들러가 있으면 동작하고, 없어도 크래시 없이 통과해야 함)
+ *
+ * - Visual Guardian(VG): 카오스 루프 동안 VG를 켜 두고, 종료 시 오버플로우를 한 번 검사합니다.
+ *   (클릭으로 막 돌아다닌 뒤 최종 화면이 overflow 상태면 실패)
  */
 
 test.describe('MONKEY TEST - Chaos Automation', () => {
   test('네트워크 카오스 환경에서도 앱이 크래시되지 않아야 한다', async ({ page }) => {
     // 100회 × (네트워크 전환 + 클릭 + 500ms 대기) → 기본 30s 초과. CI와 동일하게 2분 허용
     test.setTimeout(120000);
+
+    // Visual Guardian 활성화 (카오스 중 돌아다닌 화면들의 오버플로우도 겸사겸사 검사)
+    await page.addInitScript(() => {
+      (window as unknown as { __ENABLE_VISUAL_GUARDIAN__?: boolean }).__ENABLE_VISUAL_GUARDIAN__ =
+        true;
+    });
 
     // 에러 캡처 설정
     const errors: Error[] = [];
@@ -23,7 +33,7 @@ test.describe('MONKEY TEST - Chaos Automation', () => {
       errors.push(exception);
     });
 
-    // 시작 페이지 이동
+    // 시작 페이지 이동 (addInitScript 적용된 상태로 로드)
     await page.goto('/');
     await page.waitForLoadState('load');
 
@@ -145,6 +155,11 @@ test.describe('MONKEY TEST - Chaos Automation', () => {
         }
       }
     }
+
+    // 카오스 종료 후 Visual Guardian 오버플로우 검사 (겸사겸사)
+    await page.context().setOffline(false);
+    await page.waitForTimeout(1500); // 레이아웃/VG 스캔 안정화
+    await expectNoOverflow(page);
 
     console.log('[CHAOS MONKEY] Test finished successfully.');
   });

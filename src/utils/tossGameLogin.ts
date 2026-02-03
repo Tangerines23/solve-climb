@@ -1,9 +1,10 @@
 // 게임 로그인 및 토스 로그인 마이그레이션 유틸리티
-import {
-  getUserKeyForGame,
-  getIsTossLoginIntegratedService,
-  appLogin,
-} from '@apps-in-toss/web-framework';
+// @apps-in-toss/web-framework 제거 시 주석 처리. 패키지 복구 시 아래 주석 해제.
+// import {
+//   getUserKeyForGame,
+//   getIsTossLoginIntegratedService,
+//   appLogin,
+// } from '@apps-in-toss/web-framework';
 import { logError } from './errorHandler';
 import { ENV } from './env';
 
@@ -53,43 +54,18 @@ export async function getGameLoginHash(): Promise<GameLoginHashResult> {
       };
     }
 
-    const result = await getUserKeyForGame();
-
-    if (!result) {
-      return {
-        success: false,
-        error: '지원하지 않는 앱 버전이에요.',
-        errorType: 'UNSUPPORTED_VERSION',
-      };
-    }
-
-    if (result === 'INVALID_CATEGORY') {
-      return {
-        success: false,
-        error: '게임 카테고리가 아닌 미니앱이에요.',
-        errorType: 'INVALID_CATEGORY',
-      };
-    }
-
-    if (result === 'ERROR') {
-      return {
-        success: false,
-        error: '사용자 키 조회 중 오류가 발생했어요.',
-        errorType: 'ERROR',
-      };
-    }
-
-    if (result.type !== 'HASH') {
-      return {
-        success: false,
-        error: '알 수 없는 반환값입니다.',
-        errorType: 'UNKNOWN',
-      };
-    }
+    // @apps-in-toss/web-framework 제거 시: getUserKeyForGame 미호출. 패키지 복구 시 아래 주석 해제.
+    // const result = await getUserKeyForGame();
+    // if (!result) { return { success: false, error: '지원하지 않는 앱 버전이에요.', errorType: 'UNSUPPORTED_VERSION' }; }
+    // if (result === 'INVALID_CATEGORY') { return { success: false, error: '게임 카테고리가 아닌 미니앱이에요.', errorType: 'INVALID_CATEGORY' }; }
+    // if (result === 'ERROR') { return { success: false, error: '사용자 키 조회 중 오류가 발생했어요.', errorType: 'ERROR' }; }
+    // if (result.type !== 'HASH') { return { success: false, error: '알 수 없는 반환값입니다.', errorType: 'UNKNOWN' }; }
+    // return { success: true, hash: result.hash };
 
     return {
-      success: true,
-      hash: result.hash,
+      success: false,
+      error: '토스 웹 프레임워크가 비활성화되어 있습니다. (패키지 제거 상태)',
+      errorType: 'ERROR',
     };
   } catch (error) {
     logError('게임 로그인 hash 발급', error);
@@ -116,38 +92,14 @@ export interface TossLoginIntegrationStatus {
  * @returns 토스 로그인 연동 여부
  */
 export async function checkTossLoginIntegration(): Promise<TossLoginIntegrationStatus> {
-  try {
-    const status = await getIsTossLoginIntegratedService();
-
-    if (status === undefined) {
-      return {
-        success: false,
-        error: '지원하지 않는 앱 버전이에요.',
-      };
-    }
-
-    return {
-      success: true,
-      isIntegrated: status === true,
-    };
-  } catch (error) {
-    // 토스 로그인을 사용하지 않는 미니앱에서는 예외가 발생할 수 있음
-    const errorMessage = error instanceof Error ? error.message : String(error);
-
-    if (errorMessage.includes('oauth2ClientId 설정이 필요합니다')) {
-      // 토스 로그인 기능이 없는 환경
-      return {
-        success: true,
-        isIntegrated: false,
-      };
-    }
-
-    logError('토스 로그인 연동 확인', error);
-    return {
-      success: false,
-      error: errorMessage,
-    };
-  }
+  // @apps-in-toss/web-framework 제거 시: getIsTossLoginIntegratedService 미호출. 패키지 복구 시 아래 주석 해제.
+  // const status = await getIsTossLoginIntegratedService();
+  // if (status === undefined) { return { success: false, error: '지원하지 않는 앱 버전이에요.' }; }
+  // return { success: true, isIntegrated: status === true };
+  return {
+    success: true,
+    isIntegrated: false,
+  };
 }
 
 /**
@@ -350,47 +302,14 @@ export async function migrateToGameLogin(): Promise<{
     }
 
     // 6. 미매핑 사용자는 토스 로그인 후 매핑 생성
-
-    // 토스 로그인 실행 (appLogin은 상단에서 이미 임포트됨)
-    let loginResult;
-    try {
-      loginResult = await appLogin();
-    } catch (error) {
-      console.error('[게임 로그인] appLogin 호출 중 예외 발생:', error);
-      return {
-        success: false,
-        error: error instanceof Error ? error.message : '토스 로그인 중 오류가 발생했습니다.',
-      };
-    }
-
-    if (!loginResult || !loginResult.authorizationCode) {
-      console.warn('[게임 로그인] appLogin 결과가 올바르지 않음:', {
-        result: loginResult,
-        hasAuthorizationCode: !!loginResult?.authorizationCode,
-      });
-      return {
-        success: false,
-        error: '토스 로그인에 실패했습니다. authorizationCode를 받을 수 없습니다.',
-      };
-    }
-
-    // 매핑 생성
-    const linkResult = await createMigrationLink(
-      hash,
-      loginResult.authorizationCode,
-      loginResult.referrer
-    );
-
-    if (!linkResult.success) {
-      return {
-        success: false,
-        error: linkResult.error || '마이그레이션 링크 생성에 실패했습니다.',
-      };
-    }
-
+    // @apps-in-toss/web-framework 제거 시: appLogin 미호출. 패키지 복구 시 아래 주석 해제 후 createMigrationLink 호출부 복구.
+    // let loginResult;
+    // try { loginResult = await appLogin(); } catch (error) { ... }
+    // const linkResult = await createMigrationLink(hash, loginResult.authorizationCode, loginResult.referrer);
+    // if (!linkResult.success) { return { success: false, error: linkResult.error }; }
     return {
-      success: true,
-      hash,
+      success: false,
+      error: '토스 웹 프레임워크가 비활성화되어 있습니다. (패키지 제거 상태)',
     };
   } catch (error) {
     logError('게임 로그인 마이그레이션', error);

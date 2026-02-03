@@ -1,17 +1,12 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { getGameLoginHash } from '../tossGameLogin';
-import {
-  getUserKeyForGame,
-  getIsTossLoginIntegratedService,
-  appLogin as _appLogin,
-} from '@apps-in-toss/web-framework';
 
-// Mock dependencies
-vi.mock('@apps-in-toss/web-framework', () => ({
-  getUserKeyForGame: vi.fn(),
-  getIsTossLoginIntegratedService: vi.fn(),
-  appLogin: vi.fn(),
-}));
+// @apps-in-toss/web-framework 제거 시 mock 제거. 패키지 복구 시 mock 및 기대값 복구.
+// vi.mock('@apps-in-toss/web-framework', () => ({
+//   getUserKeyForGame: vi.fn(),
+//   getIsTossLoginIntegratedService: vi.fn(),
+//   appLogin: vi.fn(),
+// }));
 
 vi.mock('../errorHandler', () => ({
   logError: vi.fn(),
@@ -36,38 +31,13 @@ describe('tossGameLogin', () => {
     expect(result.error).toBeDefined();
   });
 
-  it('should return error when not integrated service', async () => {
+  it('should return stub error when in Toss app (web-framework 비활성)', async () => {
     (window as unknown as { ReactNativeWebView: unknown }).ReactNativeWebView = {};
-    vi.mocked(getIsTossLoginIntegratedService).mockResolvedValue(false);
 
     const result = await getGameLoginHash();
 
     expect(result.success).toBe(false);
-    expect(result.errorType).toBe('UNSUPPORTED_VERSION');
-  });
-
-  it('should get game login hash successfully', async () => {
-    (window as unknown as { ReactNativeWebView: unknown }).ReactNativeWebView = {};
-    vi.mocked(getIsTossLoginIntegratedService).mockResolvedValue(true);
-    vi.mocked(getUserKeyForGame).mockResolvedValue({
-      type: 'HASH',
-      hash: 'test-hash',
-    } as { type: 'HASH'; hash: string });
-
-    const result = await getGameLoginHash();
-
-    expect(result.success).toBe(true);
-    expect(result.hash).toBe('test-hash');
-  });
-
-  it('should handle getUserKeyForGame error', async () => {
-    (window as unknown as { ReactNativeWebView: unknown }).ReactNativeWebView = {};
-    vi.mocked(getIsTossLoginIntegratedService).mockResolvedValue(true);
-    vi.mocked(getUserKeyForGame).mockRejectedValue(new Error('API error'));
-
-    const result = await getGameLoginHash();
-
-    expect(result.success).toBe(false);
-    expect(result.error).toBeDefined();
+    expect(result.error).toContain('비활성화');
+    expect(result.errorType).toBe('ERROR');
   });
 });

@@ -61,6 +61,7 @@
   color: var(--color-text-primary);
   border-bottom: var(--border-glass);
   backdrop-filter: blur(10px);
+  overflow-x: hidden; /* 393px 등 좁은 뷰포트에서 VG 오버플로우 방지 */
 }
 
 .my-page-profile-section {
@@ -69,6 +70,7 @@
   justify-content: center;
   gap: var(--spacing-lg);
   margin-bottom: var(--spacing-xl);
+  min-width: 0; /* flex 자식이 내용보다 줄어들 수 있게 */
 }
 
 .my-page-profile-icon {
@@ -83,12 +85,16 @@
   flex-direction: column;
   align-items: flex-start;
   gap: var(--spacing-sm);
+  min-width: 0; /* flex 축소 허용 */
+  flex: 1;
 }
 
 .my-page-nickname-row {
   display: flex;
   align-items: center;
   gap: var(--spacing-sm);
+  min-width: 0;
+  width: 100%;
 }
 
 .my-page-nickname {
@@ -97,6 +103,10 @@
   line-height: 1.4;
   margin: 0;
   color: var(--color-text-primary);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  min-width: 0;
 }
 
 .my-page-streak-badge {
@@ -505,6 +515,18 @@
 .my-page-guest-login-button:hover {
   background-color: var(--color-blue-500);
   box-shadow: 0 4px 12px rgba(0, 191, 165, 0.4);
+}
+
+.my-page-guest-google-button {
+  background-color: var(--color-bg-primary, #fff);
+  color: var(--color-text-primary, #1a1a1a);
+  border: 1px solid var(--color-border, #e0e0e0);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+}
+
+.my-page-guest-google-button:hover {
+  background-color: var(--color-bg-secondary, #f5f5f5);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
 }
 
 .my-page-guest-login-button:active {
