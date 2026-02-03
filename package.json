@@ -96,7 +96,7 @@
     "report:test": "npm run test:all > reports/test_output.txt"
   },
   "dependencies": {
-    "@apps-in-toss/web-framework": "^1.7.0",
+    "@apps-in-toss/web-framework": "^1.9.2",
     "@capacitor-community/admob": "^8.0.0",
     "@capacitor/android": "^8.0.0",
     "@capacitor/core": "^8.0.0",
