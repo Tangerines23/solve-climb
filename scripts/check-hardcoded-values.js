@@ -27,6 +27,8 @@ const ALLOWED_PATTERNS = [
   /linear-gradient/, // 그라데이션
   /radial-gradient/, // 방사형 그라데이션
   /#4285F4|#357ae8|#2d6cd9/, // Google 브랜드 색상
+  // Google Sign-in 버튼 가이드라인 (다크 테마 + G 로고 4색)
+  /#131314|#8[eE]918[fF]|#e3e3e3|#1f1f1f|#a8abaa|#2c2c2e|#34A853|#FBBC05|#EA4335/,
   /rgba\(var\(/, // rgba(var(...)) 형태
   /rgb\(var\(/, // rgb(var(...)) 형태
 ];
