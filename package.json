@@ -118,6 +118,7 @@
     "@axe-core/playwright": "^4.11.0",
     "@capacitor/cli": "^8.0.1",
     "@eslint/js": "^9.36.0",
+    "chrome-launcher": "^1.1.0",
     "lighthouse": "^12.6.0",
     "@playwright/experimental-ct-react": "^1.57.0",
     "@playwright/test": "^1.57.0",

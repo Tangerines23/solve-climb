@@ -327,7 +327,7 @@ jobs:
           fi
           export PROJECT_REF=$(echo "$VITE_SUPABASE_URL" | sed -E 's|https://([^.]+)\.supabase\.co.*|\1|')
           npx supabase link --project-ref "$PROJECT_REF" --password "$SUPABASE_DB_PASSWORD"
-          npx supabase db push || (npx supabase migration repair --status reverted 20260123 && npx supabase db push)
+          npx supabase db push --include-all || (npx supabase migration repair --status reverted 20260123 && npx supabase db push --include-all)
 
       - name: Install Playwright Browsers
         run: npx playwright install --with-deps
@@ -373,7 +373,7 @@ jobs:
           fi
           export PROJECT_REF=$(echo "$VITE_SUPABASE_URL" | sed -E 's|https://([^.]+)\.supabase\.co.*|\1|')
           npx supabase link --project-ref "$PROJECT_REF" --password "$SUPABASE_DB_PASSWORD"
-          npx supabase db push || (npx supabase migration repair --status reverted 20260123 && npx supabase db push)
+          npx supabase db push --include-all || (npx supabase migration repair --status reverted 20260123 && npx supabase db push --include-all)
 
       - name: Install Playwright Browsers
         run: npx playwright install --with-deps

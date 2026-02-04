@@ -109,11 +109,11 @@ async function main() {
     process.exit(1);
   }
 
-  const chromeLauncher = (await import('chrome-launcher')).default;
+  const { launch: launchChrome } = await import('chrome-launcher');
   const lighthouse = (await import('lighthouse')).default;
 
   try {
-    chrome = await chromeLauncher.launch({
+    chrome = await launchChrome({
       chromeFlags: ['--headless', '--no-sandbox', '--disable-gpu'],
     });
   } catch (err) {
