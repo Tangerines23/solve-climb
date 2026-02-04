@@ -2,15 +2,100 @@ import { chromium } from 'playwright';
 
 let globalHasErrors = false;
 
+/** CI/일상용: 대표 3개 뷰포트 */
+const VIEWPORTS_DEFAULT = [
+  { name: 'Mobile (Pixel 5)', width: 393, height: 851 },
+  { name: 'Mobile (iPhone SE)', width: 375, height: 667 },
+  { name: 'Desktop (Standard)', width: 1280, height: 800 },
+];
+
+/** --all-viewports: 대표 8종 (시간 대비 다양성 균형), 4개씩 병렬 실행 */
+const VIEWPORTS_EXTENDED = [
+  { name: 'Mobile (Small)', width: 320, height: 568 },
+  { name: 'Mobile (iPhone SE)', width: 375, height: 667 },
+  { name: 'Mobile (Pixel 5)', width: 393, height: 851 },
+  { name: 'Mobile (Landscape)', width: 844, height: 390 },
+  { name: 'Tablet (iPad)', width: 768, height: 1024 },
+  { name: 'Desktop (1280)', width: 1280, height: 800 },
+  { name: 'Desktop (1440)', width: 1440, height: 900 },
+  { name: 'Desktop (1920)', width: 1920, height: 1080 },
+];
+
+/** 뷰포트 병렬 실행 수 (너무 크면 메모리/타임아웃 위험) */
+const PARALLEL_VIEWPORTS = 4;
+
+async function runOneViewport(viewport, pagesToCheck, BASE_URL, browser) {
+  console.log(`\n📱 Checking Viewport: ${viewport.name} (${viewport.width}x${viewport.height})...`);
+  const isMobile = viewport.width < 600;
+  const userAgent = isMobile
+    ? 'Mozilla/5.0 (Linux; Android 11; Pixel 5) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/90.0.4430.91 Mobile Safari/537.36'
+    : 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/90.0.4430.91 Safari/537.36';
+  const context = await browser.newContext({
+    viewport: { width: viewport.width, height: viewport.height },
+    userAgent,
+    deviceScaleFactor: 2,
+  });
+  try {
+    for (const pageInfo of pagesToCheck) {
+      const page = await context.newPage();
+      try {
+        await page.goto(pageInfo.url, { waitUntil: 'load', timeout: 30000 });
+        await page.addInitScript(() => {
+          window.__ENABLE_VISUAL_GUARDIAN__ = true;
+          window.__VG_INTENSIVE_MODE__ = true;
+        });
+        await page.reload({ waitUntil: 'load' });
+        const waitAfterLoad = pageInfo.waitAfterLoad ?? 0;
+        if (waitAfterLoad > 0) await page.waitForTimeout(waitAfterLoad);
+        if (await checkOverflow(page, `${pageInfo.name} (Initial)`)) globalHasErrors = true;
+        if (pageInfo.actions) {
+          try {
+            await pageInfo.actions(page);
+            const waitAfterActions = pageInfo.waitAfterActions ?? 2000;
+            await page.waitForTimeout(waitAfterActions);
+            if (await checkOverflow(page, `${pageInfo.name} (After Manual Actions)`))
+              globalHasErrors = true;
+          } catch (actionErr) {
+            console.warn(`    ⚠️ Action failed on ${pageInfo.name}: ${actionErr.message}`);
+          }
+        }
+        if (process.argv.includes('--deep')) {
+          if (await runDeepScan(page, pageInfo.name)) globalHasErrors = true;
+          const originalSize = page.viewportSize();
+          if (originalSize) {
+            console.log(
+              `  ⚖️  Stress testing border size (${originalSize.width - 1}x${originalSize.height})...`
+            );
+            await page.setViewportSize({
+              width: originalSize.width - 1,
+              height: originalSize.height,
+            });
+            await page.waitForTimeout(1000);
+            if (await checkOverflow(page, `${pageInfo.name} (Stress -1px)`)) globalHasErrors = true;
+            await page.setViewportSize(originalSize);
+          }
+        }
+      } catch (err) {
+        console.error(`❌ Page test failed: ${pageInfo.name} - ${err.message}`);
+        globalHasErrors = true;
+      } finally {
+        await page.close();
+      }
+    }
+  } finally {
+    await context.close();
+  }
+}
+
 (async () => {
   console.log('🔍 Starting Standalone Layout Check...');
 
   const browser = await chromium.launch();
-  const viewports = [
-    { name: 'Mobile (Pixel 5)', width: 393, height: 851 },
-    { name: 'Mobile (iPhone SE)', width: 375, height: 667 },
-    { name: 'Desktop (Standard)', width: 1280, height: 800 },
-  ];
+  const useAllViewports = process.argv.includes('--all-viewports');
+  const viewports = useAllViewports ? VIEWPORTS_EXTENDED : VIEWPORTS_DEFAULT;
+  if (useAllViewports) {
+    console.log(`📐 Using ${viewports.length} viewports (--all-viewports)`);
+  }
 
   let BASE_URL = process.env.VITE_URL;
 
@@ -40,7 +125,14 @@ let globalHasErrors = false;
 
   console.log(`🌐 Target URL: ${BASE_URL}`);
 
-  const pagesToCheck = [
+  const onlyPage = process.argv.includes('--only')
+    ? process.argv[process.argv.indexOf('--only') + 1]
+    : null;
+  if (onlyPage) {
+    console.log(`📌 Only checking page: "${onlyPage}"`);
+  }
+
+  let pagesToCheck = [
     /* Skipping non-critical 404 check in current env to avoid timeout noise
     {
       name: 'Error Page (404 Fallback)',
@@ -94,11 +186,17 @@ let globalHasErrors = false;
     {
       name: 'My Page (Authenticated)',
       url: `${BASE_URL}/my-page`,
+      // 익명 로그인으로 진입 → 사용자가 보는 것과 동일한 프로필/통계 화면에서 VG 검사
+      waitAfterLoad: 5000,
+      waitAfterActions: 5000,
       actions: async (page) => {
         const loginBtn = page.locator('.my-page-guest-anonymous-link');
         if (await loginBtn.isVisible()) {
           await loginBtn.click();
-          await page.waitForSelector('.my-page-profile-section', { timeout: 5000 });
+          // 프로필 영역이 나올 때까지 대기 (refetch 완료 후 세션 반영)
+          await page.waitForSelector('.my-page-profile-section', { timeout: 10000 });
+          // 통계/레이아웃 안정화
+          await page.waitForTimeout(1500);
         }
       },
     },
@@ -116,80 +214,29 @@ let globalHasErrors = false;
     },
   ];
 
-  try {
-    for (const viewport of viewports) {
-      console.log(
-        `\n📱 Checking Viewport: ${viewport.name} (${viewport.width}x${viewport.height})...`
+  if (onlyPage) {
+    const before = pagesToCheck;
+    pagesToCheck = pagesToCheck.filter(
+      (p) =>
+        p.name.toLowerCase().includes(onlyPage.toLowerCase()) ||
+        (p.url && p.url.toLowerCase().includes(onlyPage.toLowerCase()))
+    );
+    if (pagesToCheck.length === 0) {
+      console.error(
+        `❌ No page matching "${onlyPage}". Available: ${before.map((p) => p.name).join(', ')}`
       );
+      process.exit(1);
+    }
+  }
 
-      const isMobile = viewport.width < 600;
-      const userAgent = isMobile
-        ? 'Mozilla/5.0 (Linux; Android 11; Pixel 5) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/90.0.4430.91 Mobile Safari/537.36'
-        : 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/90.0.4430.91 Safari/537.36';
+  const viewportsToUse = onlyPage && !useAllViewports ? [viewports[0]] : viewports;
 
-      const context = await browser.newContext({
-        viewport: { width: viewport.width, height: viewport.height },
-        userAgent: userAgent,
-        deviceScaleFactor: 2,
-      });
-
-      for (const pageInfo of pagesToCheck) {
-        const page = await context.newPage();
-
-        try {
-          // console.log(`  - Loading ${pageInfo.name}...`);
-          await page.goto(pageInfo.url, { waitUntil: 'load', timeout: 30000 });
-
-          // VisualGuardian 강제 활성화 및 고강도 검사 모드
-          await page.addInitScript(() => {
-            window.__ENABLE_VISUAL_GUARDIAN__ = true;
-            window.__VG_INTENSIVE_MODE__ = true;
-          });
-          await page.reload({ waitUntil: 'load' });
-
-          // 1. 초기 렌더링 검사
-          if (await checkOverflow(page, `${pageInfo.name} (Initial)`)) globalHasErrors = true;
-
-          // 2. 상호작용(모달/탭) 후 검사
-          if (pageInfo.actions) {
-            try {
-              await pageInfo.actions(page);
-              await page.waitForTimeout(2000);
-              if (await checkOverflow(page, `${pageInfo.name} (After Manual Actions)`))
-                globalHasErrors = true;
-            } catch (actionErr) {
-              console.warn(`    ⚠️ Action failed on ${pageInfo.name}: ${actionErr.message}`);
-            }
-          }
-
-          // 3. 지능형 크롤러 (Deep Scan)
-          if (process.argv.includes('--deep')) {
-            if (await runDeepScan(page, pageInfo.name)) globalHasErrors = true;
-
-            // 4. 경계 테스트 (Stress Viewport: -1px)
-            const originalSize = page.viewportSize();
-            if (originalSize) {
-              console.log(
-                `  ⚖️  Stress testing border size (${originalSize.width - 1}x${originalSize.height})...`
-              );
-              await page.setViewportSize({
-                width: originalSize.width - 1,
-                height: originalSize.height,
-              });
-              await page.waitForTimeout(1000); // Wait for layout recalc
-              if (await checkOverflow(page, `${pageInfo.name} (Stress -1px)`))
-                globalHasErrors = true;
-              await page.setViewportSize(originalSize);
-            }
-          }
-        } catch (err) {
-          console.error(`❌ Page test failed: ${pageInfo.name} - ${err.message}`);
-          globalHasErrors = true;
-        } finally {
-          await page.close();
-        }
-      }
-      await context.close();
+  try {
+    for (let i = 0; i < viewportsToUse.length; i += PARALLEL_VIEWPORTS) {
+      const chunk = viewportsToUse.slice(i, i + PARALLEL_VIEWPORTS);
+      await Promise.all(
+        chunk.map((viewport) => runOneViewport(viewport, pagesToCheck, BASE_URL, browser))
+      );
     }
   } catch (err) {
     console.error('❌ Usage Error:', err);

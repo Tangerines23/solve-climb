@@ -110,6 +110,10 @@
 .ranking-info {
   text-align: center;
   padding: 0 var(--spacing-2xl) var(--spacing-lg);
+  min-width: 0;
+  max-width: 100%;
+  overflow: hidden;
+  box-sizing: border-box;
 }
 
 .ranking-info p {
@@ -123,6 +127,24 @@
   display: flex;
   align-items: center;
   justify-content: center;
+}
+
+.ranking-info p.flex {
+  min-width: 0;
+  max-width: 100%;
+  overflow-x: auto;
+  overflow-y: hidden;
+}
+
+.ranking-info p.flex > span:first-of-type {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.ranking-info p.flex .live-badge {
+  flex-shrink: 0;
 }
 
 /* Layer 3: Ranking List Styling */
