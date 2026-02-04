@@ -1,0 +1,70 @@
+# Linux 환경에서 VRT 스냅샷을 생성한 뒤 저장소에 커밋·푸시합니다.
+# CI가 Linux runner에서 돌기 때문에 *-chromium-linux.png 스냅샷이 필요합니다.
+# 사용법: Actions → "Update VRT snapshots (Linux)" → Run workflow
+name: Update VRT snapshots (Linux)
+
+on:
+  workflow_dispatch:
+    inputs:
+      branch:
+        description: 'Branch to run on and push to'
+        required: true
+        default: 'main'
+
+permissions:
+  contents: write
+
+jobs:
+  update-snapshots:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.branch }}
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci --legacy-peer-deps
+
+      - name: Apply DB migrations (E2E 필요 시)
+        env:
+          SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+          SUPABASE_DB_PASSWORD: ${{ secrets.SUPABASE_DB_PASSWORD }}
+          VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
+        run: |
+          if [ -z "$SUPABASE_DB_PASSWORD" ] || [ -z "$VITE_SUPABASE_URL" ]; then
+            echo "::warning::Secrets not set — skipping db push"
+            exit 0
+          fi
+          export PROJECT_REF=$(echo "$VITE_SUPABASE_URL" | sed -E 's|https://([^.]+)\.supabase\.co.*|\1|')
+          npx supabase link --project-ref "$PROJECT_REF" --password "$SUPABASE_DB_PASSWORD"
+          npx supabase db push --include-all || true
+
+      - name: Install Playwright Browsers
+        run: npx playwright install --with-deps chromium
+
+      - name: Generate Linux VRT snapshots
+        env:
+          VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
+          VITE_SUPABASE_ANON_KEY: ${{ secrets.VITE_SUPABASE_ANON_KEY }}
+          CI: true
+        run: npm run test:visual:update
+
+      - name: Commit and push Linux snapshots
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add tests/e2e/snapshots
+          if git diff --staged --quiet; then
+            echo "No snapshot changes to commit"
+            exit 0
+          fi
+          git commit -m "chore(e2e): add/update Linux VRT snapshots [skip ci]"
+          git push
