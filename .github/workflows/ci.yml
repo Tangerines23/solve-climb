@@ -140,6 +140,20 @@ jobs:
       - name: Security audit
         run: npm run check:security
 
+      # 디버그: CI에서 어떤 시크릿이 보이는지만 출력 (값은 절대 노출 안 함)
+      - name: 🔍 Secrets availability (SET/NOT SET only)
+        env:
+          SUPABASE_DB_PASSWORD: ${{ secrets.SUPABASE_DB_PASSWORD }}
+          SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+          VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
+          VITE_SUPABASE_ANON_KEY: ${{ secrets.VITE_SUPABASE_ANON_KEY }}
+        run: |
+          echo "Repository: ${{ github.repository }}"
+          echo "SUPABASE_DB_PASSWORD:    $([ -n \"$SUPABASE_DB_PASSWORD\" ] && echo SET || echo NOT SET)"
+          echo "SUPABASE_ACCESS_TOKEN:   $([ -n \"$SUPABASE_ACCESS_TOKEN\" ] && echo SET || echo NOT SET)"
+          echo "VITE_SUPABASE_URL:       $([ -n \"$VITE_SUPABASE_URL\" ] && echo SET || echo NOT SET)"
+          echo "VITE_SUPABASE_ANON_KEY:  $([ -n \"$VITE_SUPABASE_ANON_KEY\" ] && echo SET || echo NOT SET)"
+
       # Secrets 미설정 시 supabase link 전에 바로 실패 → 오류 원인 명확화
       - name: 🔐 Validate required secrets
         env:

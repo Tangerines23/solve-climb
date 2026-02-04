@@ -74,6 +74,7 @@
     "check:logic": "vitest src/utils/__tests__/logic_latency.test.ts --run",
     "check:secrets": "node scripts/check-secrets.js",
     "check:supabase:connection": "node scripts/check-supabase-connection.js",
+    "check:env": "node scripts/check-env.js",
     "check:spell": "npx cspell \"src/**/*.{ts,tsx}\"",
     "check:magic": "node scripts/check-magic-strings.js",
     "check:integrity": "npm run check:css && npm run check:nav && npm run check:spell && npm run check:magic",

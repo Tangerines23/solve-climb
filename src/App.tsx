@@ -137,7 +137,7 @@ function App() {
     <ErrorBoundary>
       <GlobalLoadingIndicator />
       <GlobalToastContainer />
-      <PwaUpdateNotification />
+      {import.meta.env.VITE_CI !== 'true' && <PwaUpdateNotification />}
       <Suspense
         fallback={
           <div className="loading-fallback">
