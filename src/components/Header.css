@@ -112,7 +112,9 @@
   color: var(--color-text-primary);
   line-height: 1.2;
   padding: var(--spacing-xs) var(--spacing-tiny);
-  /* Fluid Safety: Use padding instead of fixed min-height to prevent vertical clipping */
+  min-height: 2rem;
+  box-sizing: border-box;
+  /* VG 세로 1px 넘침 방지 */
 }
 
 .status-icon {

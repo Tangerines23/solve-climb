@@ -331,7 +331,7 @@ async function runDeepScan(page, pageName, depth = 0) {
         const stepTag = `${pageName} (D:${depth} Click: "${text.substring(0, 10)}")`;
 
         await el.click({ timeout: 3000 });
-        await page.waitForTimeout(800);
+        await page.waitForTimeout(1200); // 모달·펼침 UI 렌더 후 VG 검사
 
         // 페이지 이동 감지
         if (page.url() !== currentUrl) {
@@ -365,7 +365,7 @@ async function runDeepScan(page, pageName, depth = 0) {
         if (SKIP_KEYWORDS.some((k) => textIdentifier.includes(k))) continue;
 
         await el.click({ timeout: 2000 });
-        await page.waitForTimeout(800);
+        await page.waitForTimeout(1200);
 
         if (page.url() !== currentUrl) {
           await page.goto(currentUrl, { waitUntil: 'load' });

@@ -108,6 +108,27 @@ npm run check:layout:analyze
 
 E2E에서 VG를 쓰려면 해당 페이지 로드 전/후에 `__ENABLE_VISUAL_GUARDIAN__ = true` 가 설정되어 있어야 하며, monkey-test에서는 이미 `addInitScript`로 설정함.
 
+### 4.1 몽키 테스트와 같이 돌아가는 스크립트
+
+**`scripts/ci-local-all.sh`** 가 CI와 동일한 순서로 로컬 검증을 돌리는 스크립트이며, **몽키(카오스) 테스트**와 **레이아웃 검사**가 둘 다 포함되어 있습니다.
+
+| 단계 | 내용 |
+|------|------|
+| **6. e2e-stability** | `npm run test:chaos` (몽키 테스트), `npm run test:stress:deep` |
+| **7b. e2e-visual-layout** | `npm run test:e2e:visual`, `npm run test:a11y`, **`npm run check:layout:deep:with-server`** |
+
+**실행**
+
+```bash
+bash scripts/ci-local-all.sh
+```
+
+**일부만 돌리기**
+
+- 몽키만: `npm run test:chaos` (서버는 `run-playwright-with-port.js`가 처리)
+- **몽키 + 레이아웃만**: `npm run test:chaos:and:layout` (카오스 테스트 통과 후 레이아웃 딥 검사)
+- 스킵 옵션: `CI_SKIP_E2E_STABILITY=1` (6단계 생략), `CI_SKIP_E2E_VISUAL=1` (7b 생략)
+
 ---
 
 ## 5. CI에서의 VG 가드
@@ -151,7 +172,31 @@ E2E에서 VG를 쓰려면 해당 페이지 로드 전/후에 `__ENABLE_VISUAL_GU
 - **`--all-viewports`**: 8종 뷰포트에서 동일 시나리오 실행(4개씩 병렬) → **다양한 기기** 커버하면서 **실행 시간** 부담을 줄임.
 - **권장**: PR 전에 `check:layout:all-viewports` 또는 `check:layout:my-page:all-viewports`로 한 번 돌리면, 특정 해상도에서만 나오는 오버플로우를 미리 잡기 쉽다.
 
-### 7.2 UI를 플렉시블하게 만들 때 (VG와 맞추기)
+### 7.2 버튼 상호작용 검사 (클릭 후 VG 잡기)
+
+**지금 검사되는 것**
+
+1. **페이지별 `actions`**  
+   각 페이지마다 정의된 동작(버튼 클릭, 탭 전환 등)을 한 뒤 **한 번** VG 검사합니다.  
+   예: 마이페이지 익명 로그인, Shop "내 배낭" 탭, 홈에서 ESC·Tab, 디버그 패널 열기 등.
+
+2. **Deep Scan (`--deep` 있을 때만)**  
+   페이지에서 **버튼·`[role="button"]`·탭·cursor:pointer** 등을 찾아서 **여러 개 클릭**하고, **클릭할 때마다** 800ms 대기 후 VG 검사합니다.  
+   → “버튼 누르니까 VG 뜨는” 경우는 **`npm run check:layout:deep`** 또는 **`check:layout:deep:with-server`** 를 돌려야 스크립트가 잡을 수 있습니다.
+
+**정리**
+
+- `check:layout` / `check:layout:all-viewports` 만 쓰면 → **페이지별 actions 1번 + 초기 화면**만 검사.  
+- **버튼 클릭 후에만 나오는 VG**를 스크립트로 잡으려면 → **`check:layout:deep`** 또는 **`check:layout:deep:with-server`** 를 실행해야 합니다.
+
+**직접 버튼 눌렀을 때 VG가 뜨는 경우**
+
+1. 개발자 도구 콘솔에서 `[Visual Guardian]` 로그와 **빨간 점선**으로 둘러싸인 요소(태그·class)를 확인합니다.  
+2. 그 **요소 경로(또는 class 이름)**를 알려주시면, 해당 컴포넌트 CSS 수정 또는 `data-vg-ignore` 적용 방법을 제안할 수 있습니다.
+
+---
+
+### 7.3 UI를 플렉시블하게 만들 때 (VG와 맞추기)
 
 - **폭 제한**: `max-width: 100%`, `min-width: 0`(flex 자식에서 넘침 방지), `box-sizing: border-box`로 패딩이 밖으로 나가지 않게.
 - **텍스트**: 긴 문장은 `overflow: hidden`, `text-overflow: ellipsis`, `white-space: nowrap` 또는 `overflow-wrap: break-word`로 한 줄/줄바꿈 제어.
