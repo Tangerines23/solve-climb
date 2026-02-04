@@ -167,7 +167,8 @@ jobs:
           [ -z "$VITE_SUPABASE_URL" ] && MISSING="$MISSING VITE_SUPABASE_URL"
           if [ -n "$MISSING" ]; then
             echo "::error::Required secrets are missing:$MISSING"
-            echo "Add them in: Settings → Secrets and variables → Actions"
+            echo "If this run is from a Pull Request from a FORK: GitHub does not pass repository secrets to fork PRs. Push to main or run on the default branch to use secrets."
+            echo "Otherwise add them in: Settings → Secrets and variables → Actions"
             echo "https://github.com/${{ github.repository }}/settings/secrets/actions"
             exit 1
           fi
