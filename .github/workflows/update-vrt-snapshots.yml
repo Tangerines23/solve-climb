@@ -50,12 +50,13 @@ jobs:
       - name: Install Playwright Browsers
         run: npx playwright install --with-deps chromium
 
+      # CI의 e2e-visual-layout과 동일하게 visual-regression.spec.ts만 실행 (visual.spec.ts 제외 → Ranking 페이지 타임아웃 방지)
       - name: Generate Linux VRT snapshots
         env:
           VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
           VITE_SUPABASE_ANON_KEY: ${{ secrets.VITE_SUPABASE_ANON_KEY }}
           CI: true
-        run: npm run test:visual:update
+        run: node scripts/run-playwright-with-port.js tests/e2e/visual-regression.spec.ts --update-snapshots
 
       - name: Commit and push Linux snapshots
         run: |
