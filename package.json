@@ -78,6 +78,7 @@
     "check:spell": "npx cspell \"src/**/*.{ts,tsx}\"",
     "check:magic": "node scripts/check-magic-strings.js",
     "check:integrity": "npm run check:css && npm run check:nav && npm run check:spell && npm run check:magic",
+    "check:assets": "node scripts/find-unused-assets.js",
     "check:size": "node scripts/check-bundle-size.js",
     "check:security": "npm audit --audit-level=moderate",
     "check:socket": "socket ci",

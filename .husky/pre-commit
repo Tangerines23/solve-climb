@@ -29,15 +29,22 @@ if ! npx lint-staged 2>&1; then
   exit 1
 fi
 
-# 3. 네비게이션 및 코드 무결성 검증 (종합)
-echo "3️⃣ 코드 무결성 검증 (오타, 매직스트링, CSS, 네비게이션)..."
+# 3. 미사용 자산(Assets) 검사 (Public 폴더)
+echo "3️⃣ 미사용 자산(Assets) 검사..."
+if ! npm run check:assets; then
+    echo "🚫 사용되지 않는 자산이 발견되었습니다! (scripts/find-unused-assets.js 확인)"
+    exit 1
+fi
+
+# 4. 네비게이션 및 코드 무결성 검증 (종합)
+echo "4️⃣ 코드 무결성 검증 (오타, 매직스트링, CSS, 네비게이션)..."
 if ! npm run check:integrity; then
     echo "🚫 코드 무결성 검사 실패! (npm run check:integrity 를 확인하세요)"
     exit 1
 fi
 
-# 5. 보안 및 성능 검사 (경고 위주)
-echo "5️⃣ 보안 및 성능 검사..."
+# 6. 보안 및 성능 검사 (경고 위주)
+echo "6️⃣ 보안 및 성능 검사..."
 if ! npm run check:secrets; then
     echo "🚫 보안 키(Secrets)가 코드에 포함되어 있습니다!"
     exit 1
