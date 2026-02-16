@@ -21,7 +21,7 @@ import { AdService } from '@/utils/adService';
 import { ItemFeedbackRef } from '@/components/game/ItemFeedbackOverlay';
 import { analytics } from '@/services/analytics';
 import { supabase } from '@/utils/supabaseClient';
-import { debugSupabaseQuery } from '@/utils/debugFetch';
+import { safeSupabaseQuery } from '@/utils/debugFetch';
 import {
   validateWorldParam,
   validateCategoryInWorldParam,
@@ -709,7 +709,7 @@ export function QuizPage() {
         try {
           const mode = modeParam.includes('time') ? 'timeattack' : 'survival';
           const { infiniteStamina } = useDebugStore.getState();
-          const { data } = await debugSupabaseQuery(
+          const { data } = await safeSupabaseQuery(
             supabase.rpc('create_game_session', {
               p_questions: [],
               p_category: categoryParam,

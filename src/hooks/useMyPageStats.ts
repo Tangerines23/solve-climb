@@ -3,7 +3,7 @@ import { useState, useEffect } from 'react';
 import { supabase } from '../utils/supabaseClient';
 import { isLocalSession, type LocalSession } from '../utils/safeJsonParse';
 import { storage, StorageKeys } from '../utils/storage';
-import { debugSupabaseQuery } from '../utils/debugFetch';
+import { safeSupabaseQuery } from '../utils/debugFetch';
 import type { Session, PostgrestError } from '@supabase/supabase-js';
 
 export interface MyPageStats {
@@ -83,7 +83,7 @@ export function useMyPageStats(): UseMyPageStatsResult {
       }
 
       // Supabase 세션 확인
-      debugSupabaseQuery(supabase.auth.getSession()).then((res) => {
+      safeSupabaseQuery(supabase.auth.getSession()).then((res) => {
         setSession(res?.data?.session || null);
       });
     };
@@ -142,7 +142,7 @@ export function useMyPageStats(): UseMyPageStatsResult {
 
       // Supabase 세션 확인 (로컬 세션이 없을 때만)
       if (!currentSession) {
-        const authResult = await debugSupabaseQuery(supabase.auth.getSession());
+        const authResult = await safeSupabaseQuery(supabase.auth.getSession());
         currentSession = authResult?.data?.session;
         setSession(currentSession);
       }
@@ -169,7 +169,7 @@ export function useMyPageStats(): UseMyPageStatsResult {
       // 로컬 세션 가드 제거 (DB 데이터가 있다면 조회 진행)
 
       // 프로필 정보 가져오기 (티어 정보 포함)
-      const profileResult = (await debugSupabaseQuery(
+      const profileResult = (await safeSupabaseQuery(
         supabase
           .from('profiles')
           .select(
@@ -189,7 +189,7 @@ export function useMyPageStats(): UseMyPageStatsResult {
 
       // 방법 1: RPC 함수 사용 (권장 - Supabase에 함수가 생성되어 있는 경우)
       try {
-        const rpcResult = (await debugSupabaseQuery(
+        const rpcResult = (await safeSupabaseQuery(
           supabase.rpc('get_user_game_stats')
         )) as unknown as { data: RpcStats[] | null; error: PostgrestError | null };
         const rpcData = rpcResult?.data;
@@ -230,7 +230,7 @@ export function useMyPageStats(): UseMyPageStatsResult {
       }
 
       // 방법 2: user_level_records 기반 직접 쿼리로 집계 (RPC 함수 실패 시 폴백)
-      const recordsResult = (await debugSupabaseQuery(
+      const recordsResult = (await safeSupabaseQuery(
         supabase
           .from('user_level_records')
           .select('world_id, category_id, subject_id, level, best_score')

@@ -23,7 +23,7 @@ import { useQuizStore } from '../stores/useQuizStore';
 import { resetAllData } from '../utils/dataReset';
 import { vibrateShort } from '../utils/haptic';
 import { supabase } from '../utils/supabaseClient';
-import { debugSupabaseQuery } from '../utils/debugFetch';
+import { safeSupabaseQuery } from '../utils/debugFetch';
 import { openLeaderboard } from '../utils/tossGameCenter';
 import { APP_CONFIG } from '../config/app';
 import { ENV } from '../utils/env';
@@ -355,7 +355,7 @@ export function MyPage() {
 
         // [New] 로그인 직후 닉네임 DB 동기화
         try {
-          await debugSupabaseQuery(
+          await safeSupabaseQuery(
             supabase.rpc('update_profile_nickname', { p_nickname: userProfile.nickname })
           );
         } catch (e) {
@@ -431,7 +431,7 @@ export function MyPage() {
 
         // [New] 로그인 직후 닉네임 DB 동기화
         try {
-          await debugSupabaseQuery(
+          await safeSupabaseQuery(
             supabase.rpc('update_profile_nickname', { p_nickname: userProfile.nickname })
           );
         } catch (e) {
@@ -575,7 +575,7 @@ export function MyPage() {
     });
     refetch();
     try {
-      debugSupabaseQuery(supabase.rpc('update_profile_nickname', { p_nickname: nickname })).catch(
+      safeSupabaseQuery(supabase.rpc('update_profile_nickname', { p_nickname: nickname })).catch(
         () => {}
       );
     } catch {
@@ -591,12 +591,12 @@ export function MyPage() {
       // Supabase 세션이 있으면 로그아웃
       const {
         data: { session: currentSession },
-      } = await debugSupabaseQuery(supabase.auth.getSession());
+      } = await safeSupabaseQuery(supabase.auth.getSession());
       console.log('[로그아웃] 현재 세션 확인:', { hasSession: !!currentSession });
 
       if (currentSession) {
         console.log('[로그아웃] Supabase signOut 호출 전');
-        await debugSupabaseQuery(supabase.auth.signOut());
+        await safeSupabaseQuery(supabase.auth.signOut());
         console.log('[로그아웃] Supabase signOut 완료');
       }
 

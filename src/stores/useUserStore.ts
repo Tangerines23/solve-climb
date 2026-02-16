@@ -1,12 +1,12 @@
 import { create } from 'zustand';
 import { supabase } from '../utils/supabaseClient';
-import { debugSupabaseQuery } from '../utils/debugFetch';
+import { safeSupabaseQuery } from '../utils/debugFetch';
 import {
   validatedRpc,
   ItemActionResponseSchema,
   CommonResponseSchema,
 } from '../utils/rpcValidator';
-import { PostgrestError } from '@supabase/supabase-js';
+import { PostgrestError, UserResponse } from '@supabase/supabase-js';
 import { AdService } from '../utils/adService';
 
 interface UserState {
@@ -86,7 +86,7 @@ export const useUserStore = create<UserState>((set, get) => ({
   fetchUserData: async () => {
     set({ isLoading: true });
     try {
-      const authResult = await debugSupabaseQuery(supabase.auth.getUser());
+      const authResult = await safeSupabaseQuery(supabase.auth.getUser());
       const user = authResult?.data?.user;
       if (!user) {
         console.log('[UserStore] No user found, skipping fetch');
@@ -96,7 +96,7 @@ export const useUserStore = create<UserState>((set, get) => ({
       set({ isAnonymous: !!user.is_anonymous });
 
       // Fetch profile
-      const { data: profile } = await debugSupabaseQuery(
+      const { data: profile } = await safeSupabaseQuery(
         supabase
           .from('profiles')
           .select('minerals, stamina, last_ad_stamina_recharge')
@@ -105,7 +105,7 @@ export const useUserStore = create<UserState>((set, get) => ({
       );
 
       // Fetch inventory
-      const { data: inventoryData } = await debugSupabaseQuery(
+      const { data: inventoryData } = await safeSupabaseQuery(
         supabase
           .from('inventory')
           .select(
@@ -173,10 +173,10 @@ export const useUserStore = create<UserState>((set, get) => ({
   checkStamina: async () => {
     const {
       data: { session },
-    } = await debugSupabaseQuery(supabase.auth.getSession());
+    } = await safeSupabaseQuery(supabase.auth.getSession());
     if (!session?.user) return;
 
-    const { data, error } = await debugSupabaseQuery(supabase.rpc('check_and_recover_stamina'));
+    const { data, error } = await safeSupabaseQuery(supabase.rpc('check_and_recover_stamina'));
     if (error) {
       console.error('Error checking stamina:', error);
       return;
@@ -217,7 +217,7 @@ export const useUserStore = create<UserState>((set, get) => ({
       return { success: true, message: 'Already consumed' };
     }
 
-    const { data, error } = await debugSupabaseQuery(supabase.rpc('consume_stamina'));
+    const { data, error } = await safeSupabaseQuery(supabase.rpc('consume_stamina'));
     if (error) {
       console.error('Error consuming stamina:', error);
       return { success: false, message: '오류가 발생했습니다.' };
@@ -272,7 +272,7 @@ export const useUserStore = create<UserState>((set, get) => ({
     }
 
     // 3. 서버 연동 (RPC 호출)
-    const { data, error } = await debugSupabaseQuery(supabase.rpc('recover_stamina_ads'));
+    const { data, error } = await safeSupabaseQuery(supabase.rpc('recover_stamina_ads'));
 
     // PGRST202: RPC 함수가 DB에 없을 경우 (마이그레이션 누락 시 시뮬레이션Fallback)
     if (error) {
@@ -307,7 +307,7 @@ export const useUserStore = create<UserState>((set, get) => ({
 
     // 2. 서버 연동 (SECURE RPC)
     const amount = 500;
-    const { data, error } = await debugSupabaseQuery(
+    const { data, error } = await safeSupabaseQuery(
       supabase.rpc('add_minerals', { p_amount: amount })
     );
 
@@ -327,7 +327,7 @@ export const useUserStore = create<UserState>((set, get) => ({
   rewardMinerals: async (amount: number, isBonus = false) => {
     if (amount <= 0) return { success: false, message: 'Invalid amount' };
 
-    const { data, error } = await debugSupabaseQuery(
+    const { data, error } = await safeSupabaseQuery(
       supabase.rpc('add_minerals', { p_amount: amount })
     );
 
@@ -350,7 +350,7 @@ export const useUserStore = create<UserState>((set, get) => ({
   // DEV ONLY: 아이템 지급 치트 (RPC Version)
   debugAddItems: async () => {
     console.log('[DEBUG] Calling debug_grant_items RPC...');
-    const { error } = await debugSupabaseQuery(supabase.rpc('debug_grant_items'));
+    const { error } = await safeSupabaseQuery(supabase.rpc('debug_grant_items'));
 
     if (error) {
       console.error('[DEBUG] RPC Failed:', error);
@@ -363,14 +363,13 @@ export const useUserStore = create<UserState>((set, get) => ({
     await get().fetchUserData();
   },
 
-  // DEV ONLY: 아이템 초기화
   debugResetItems: async () => {
-    const authResult = await debugSupabaseQuery(supabase.auth.getUser());
+    const authResult = (await safeSupabaseQuery(supabase.auth.getUser())) as UserResponse;
     const user = authResult?.data?.user;
     if (!user) return;
 
     console.log('[DEBUG] Resetting items...');
-    const { error } = await debugSupabaseQuery(
+    const { error } = await safeSupabaseQuery(
       supabase.from('inventory').delete().eq('user_id', user.id)
     );
 
@@ -386,12 +385,12 @@ export const useUserStore = create<UserState>((set, get) => ({
 
   // DEV ONLY: 아이템 5개씩 감소
   debugRemoveItems: async () => {
-    const authResult = await debugSupabaseQuery(supabase.auth.getUser());
+    const authResult = (await safeSupabaseQuery(supabase.auth.getUser())) as UserResponse;
     const user = authResult?.data?.user;
     if (!user) return;
 
     // Get current inventory
-    const { data: inventory } = await debugSupabaseQuery(
+    const { data: inventory } = await safeSupabaseQuery(
       supabase.from('inventory').select('item_id, quantity').eq('user_id', user.id)
     );
     if (!inventory) return;
@@ -415,7 +414,7 @@ export const useUserStore = create<UserState>((set, get) => ({
 
   // DEV ONLY: 스태미나 강제 설정 (DB Sync)
   debugSetStamina: async (amount: number) => {
-    const authResult = await debugSupabaseQuery(supabase.auth.getUser());
+    const authResult = (await safeSupabaseQuery(supabase.auth.getUser())) as UserResponse;
     const user = authResult?.data?.user;
 
     if (!user) {
@@ -446,9 +445,8 @@ export const useUserStore = create<UserState>((set, get) => ({
 
   // DEV ONLY: 미네랄 강제 설정 (DB Sync)
   debugSetMinerals: async (amount: number) => {
-    const authResult = await debugSupabaseQuery(supabase.auth.getUser());
+    const authResult = (await safeSupabaseQuery(supabase.auth.getUser())) as UserResponse;
     const user = authResult?.data?.user;
-
     if (!user) {
       console.error('[DEBUG] debugSetMinerals: No authenticated user found.');
       return;
@@ -476,7 +474,7 @@ export const useUserStore = create<UserState>((set, get) => ({
   },
 
   refundStamina: async () => {
-    const authResult = await debugSupabaseQuery(supabase.auth.getUser());
+    const authResult = (await safeSupabaseQuery(supabase.auth.getUser())) as UserResponse;
     const user = authResult?.data?.user;
     if (!user) return { success: false, message: '로그인이 필요합니다.' };
 
@@ -487,7 +485,7 @@ export const useUserStore = create<UserState>((set, get) => ({
     }
 
     try {
-      const { error } = (await debugSupabaseQuery(supabase.rpc('recover_stamina_ads'))) || {};
+      const { error } = (await safeSupabaseQuery(supabase.rpc('recover_stamina_ads'))) || {};
       if (error) {
         // RPC가 없는 경우 (PGRST202) 시뮬레이션 모드로 간주하고 성공 반환
         if ((error as PostgrestError).code === 'PGRST202') {

@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 import { supabase } from '../utils/supabaseClient';
-import { debugSupabaseQuery } from '../utils/debugFetch';
+import { safeSupabaseQuery } from '../utils/debugFetch';
 
 interface DailyRewardResult {
   success: boolean;
@@ -29,14 +29,14 @@ export const useDailyRewardStore = create<DailyRewardState>((set) => ({
       // 1. 세션 확인
       const {
         data: { session },
-      } = await debugSupabaseQuery(supabase.auth.getSession());
+      } = await safeSupabaseQuery(supabase.auth.getSession());
       if (!session) {
         set({ isLoading: false });
         return;
       }
 
       // 2. RPC 호출
-      const { data, error } = await debugSupabaseQuery(supabase.rpc('handle_daily_login'));
+      const { data, error } = await safeSupabaseQuery(supabase.rpc('handle_daily_login'));
 
       if (error) {
         console.error('[useDailyRewardStore] RPC Error:', error);

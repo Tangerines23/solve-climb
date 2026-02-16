@@ -1,6 +1,6 @@
 import { useCallback } from 'react';
 import { supabase } from '../utils/supabaseClient';
-import { debugSupabaseQuery } from '../utils/debugFetch';
+import { safeSupabaseQuery } from '../utils/debugFetch';
 import { BADGE_DEFINITIONS } from '../constants/badges';
 import { useBadgeStore } from '../stores/useBadgeStore';
 import { HistoryStats } from '../hooks/useHistoryData';
@@ -42,7 +42,7 @@ export function useBadgeChecker() {
     }
 
     // --- 2. 익명 사용자 (Local Logic Fallback) ---
-    const { data: userBadges, error: fetchError } = await debugSupabaseQuery(
+    const { data: userBadges, error: fetchError } = await safeSupabaseQuery(
       supabase.from('user_badges').select('badge_id').eq('user_id', userId)
     );
 

@@ -62,6 +62,3 @@ export async function safeSupabaseQuery<T>(
   logError(context, lastError);
   throw lastError;
 }
-
-/** 하위 호환성을 위한 별칭 */
-export const debugSupabaseQuery = safeSupabaseQuery;

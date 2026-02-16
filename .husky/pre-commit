@@ -19,6 +19,14 @@ if ! npm run type-check 2>&1; then
   exit 1
 fi
 
+# 1.5. 미사용 코드/파일 검사 (Knip) - 다이어트
+echo "1️⃣.5️⃣ 미사용 코드/파일 검사 (Knip)..."
+if ! npm run diet; then
+    echo "❌ 미사용 코드나 의존성이 발견되었습니다!"
+    echo "💡 'npm run diet' 결과를 확인하고 정리해주세요."
+    exit 1
+fi
+
 # 2. lint-staged 실행 (변경된 파일만 ESLint + Prettier)
 echo "2️⃣ lint-staged 실행 (변경된 파일만 검사 및 자동 수정)..."
 if ! npx lint-staged 2>&1; then

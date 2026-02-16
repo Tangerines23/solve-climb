@@ -27,9 +27,9 @@ vi.mock('../../utils/storage', () => ({
 // Mock date utilities to fix "now" for streak calculation
 const MOCK_DATE = new Date('2024-01-10T12:00:00Z');
 
-// Mock debugSupabaseQuery to passthrough
+// Mock safeSupabaseQuery to passthrough
 vi.mock('../../utils/debugFetch', () => ({
-  debugSupabaseQuery: vi.fn((promise) => promise),
+  safeSupabaseQuery: vi.fn((promise) => promise),
 }));
 
 describe('useHistoryData', () => {

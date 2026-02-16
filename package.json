@@ -206,5 +206,17 @@
     "workerDirectory": [
       "public"
     ]
+  },
+  "knip": {
+    "ignore": [
+      "src/stories/**"
+    ],
+    "ignoreBinaries": [
+      "ait"
+    ],
+    "ignoreDependencies": [
+      "rollup-plugin-visualizer",
+      "@storybook/react"
+    ]
   }
 }

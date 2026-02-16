@@ -1,7 +1,7 @@
 // src/hooks/useHistoryData.ts
 import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '../utils/supabaseClient';
-import { debugSupabaseQuery } from '../utils/debugFetch';
+import { safeSupabaseQuery } from '../utils/debugFetch';
 import { APP_CONFIG } from '../config/app';
 import { parseLocalSession } from '../utils/safeJsonParse';
 import { storage, StorageKeys } from '../utils/storage';
@@ -127,7 +127,7 @@ export function useHistoryData() {
       if (!currentSession) {
         const {
           data: { session: supabaseSession },
-        } = await debugSupabaseQuery(supabase.auth.getSession());
+        } = await safeSupabaseQuery(supabase.auth.getSession());
         currentSession = supabaseSession;
       }
 
@@ -174,14 +174,14 @@ export function useHistoryData() {
 
       // --- 2. 데이터 페칭 ---
       const [recordsRes, sessionsRes, profileRes] = await Promise.all([
-        debugSupabaseQuery(
+        safeSupabaseQuery(
           supabase
             .from('user_level_records')
             .select('world_id, category_id, subject_id, level, mode_code, best_score, updated_at')
             .eq('user_id', currentUserId)
             .order('updated_at', { ascending: false })
         ),
-        debugSupabaseQuery(
+        safeSupabaseQuery(
           supabase
             .from('game_sessions')
             .select('world_id, category_id, subject_id, level, game_mode, score, created_at')
@@ -190,7 +190,7 @@ export function useHistoryData() {
             .order('created_at', { ascending: false })
             .limit(50)
         ),
-        debugSupabaseQuery(
+        safeSupabaseQuery(
           supabase
             .from('profiles')
             .select('total_mastery_score, login_streak')

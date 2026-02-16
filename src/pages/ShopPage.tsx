@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '../utils/supabaseClient';
-import { debugSupabaseQuery } from '../utils/debugFetch';
+import { safeSupabaseQuery } from '../utils/debugFetch';
 import { useUserStore } from '../stores/useUserStore';
 import { Header } from '../components/Header';
 import { FooterNav } from '../components/FooterNav';
@@ -88,7 +88,7 @@ export function ShopPage() {
     async function fetchItems() {
       setIsLoading(true);
       try {
-        const { data, error } = await debugSupabaseQuery(
+        const { data, error } = await safeSupabaseQuery(
           supabase.from('items').select('*').order('id', { ascending: true })
         );
 
@@ -130,7 +130,7 @@ export function ShopPage() {
     setIsLoading(true);
     try {
       // 1. RPC 호출 시도
-      const { data, error } = await debugSupabaseQuery(
+      const { data, error } = await safeSupabaseQuery(
         supabase.rpc('purchase_item', { p_item_id: itemId })
       );
 

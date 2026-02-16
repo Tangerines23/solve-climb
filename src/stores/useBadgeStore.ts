@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 import { supabase } from '../utils/supabaseClient';
-import { debugSupabaseQuery } from '../utils/debugFetch';
+import { safeSupabaseQuery } from '../utils/debugFetch';
 
 export interface BadgeDefinition {
   id: string;
@@ -38,7 +38,7 @@ export const useBadgeStore = create<BadgeState>((set, get) => ({
 
     set({ isLoadingDefinitions: true });
     try {
-      const { data, error } = await debugSupabaseQuery(
+      const { data, error } = await safeSupabaseQuery(
         supabase.from('badge_definitions').select('id, name, description, emoji')
       );
 
@@ -76,7 +76,7 @@ export const useBadgeStore = create<BadgeState>((set, get) => ({
 
     set({ isLoadingUserBadges: true });
     try {
-      const { data, error } = await debugSupabaseQuery(
+      const { data, error } = await safeSupabaseQuery(
         supabase
           .from('user_badges')
           .select('badge_id, earned_at')

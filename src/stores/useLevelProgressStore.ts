@@ -2,7 +2,7 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import { supabase } from '../utils/supabaseClient';
-import { debugSupabaseQuery } from '../utils/debugFetch';
+import { safeSupabaseQuery } from '../utils/debugFetch';
 import { validatedRpc, RankingListSchema } from '../utils/rpcValidator';
 import { GameMode } from '../types/quiz';
 import { useDebugStore } from './useDebugStore';
@@ -186,7 +186,7 @@ export const useLevelProgressStore = create<LevelProgressState>()(
             return { progress: newProgress };
           });
 
-          const authResult = (await debugSupabaseQuery(supabase.auth.getUser())) as UserResponse;
+          const authResult = (await safeSupabaseQuery(supabase.auth.getUser())) as UserResponse;
           const user = authResult?.data?.user;
           console.log('[useLevelProgressStore] Current user:', user?.id);
 
@@ -201,7 +201,7 @@ export const useLevelProgressStore = create<LevelProgressState>()(
               mode === 'time-attack' ? 'timeattack' : mode === 'survival' ? 'survival' : 'infinite';
             console.log('[clearLevel] Calling submit_game_result RPC:', { score, gameMode });
 
-            const { error: rpcError } = await debugSupabaseQuery(
+            const { error: rpcError } = await safeSupabaseQuery(
               supabase.rpc('submit_game_result', {
                 p_user_answers: sessionData?.answers ?? [],
                 p_question_ids: (sessionData?.questionIds ?? []).map(String),
@@ -250,7 +250,7 @@ export const useLevelProgressStore = create<LevelProgressState>()(
           try {
             const gameMode =
               mode === 'time-attack' ? 'timeattack' : mode === 'survival' ? 'survival' : 'infinite';
-            const { error: rpcError } = await debugSupabaseQuery(
+            const { error: rpcError } = await safeSupabaseQuery(
               supabase.rpc('submit_game_result', {
                 p_user_answers: sessionData?.answers ?? [],
                 p_question_ids: (sessionData?.questionIds ?? []).map(String),
@@ -314,11 +314,11 @@ export const useLevelProgressStore = create<LevelProgressState>()(
 
         syncProgress: async () => {
           try {
-            const authResult = await debugSupabaseQuery(supabase.auth.getUser());
+            const authResult = await safeSupabaseQuery(supabase.auth.getUser());
             const user = authResult?.data?.user;
             if (!user) return;
 
-            const { data: records, error } = await debugSupabaseQuery(
+            const { data: records, error } = await safeSupabaseQuery(
               supabase
                 .from('user_level_records')
                 .select(
@@ -396,11 +396,11 @@ export const useLevelProgressStore = create<LevelProgressState>()(
 
           // 2. Supabase 데이터 초기화 (주의: 모든 기록이 삭제됩니다)
           try {
-            const authResult = await debugSupabaseQuery(supabase.auth.getUser());
+            const authResult = await safeSupabaseQuery(supabase.auth.getUser());
             const user = authResult?.data?.user;
             if (!user) return;
 
-            const { error } = await debugSupabaseQuery(
+            const { error } = await safeSupabaseQuery(
               supabase.from('user_level_records').delete().eq('user_id', user.id)
             );
 
@@ -417,7 +417,7 @@ export const useLevelProgressStore = create<LevelProgressState>()(
 
             if (period === 'all-time') {
               // 명예의 전당 조회 (hall_of_fame 테이블)
-              const { data: hofData, error: hofError } = await debugSupabaseQuery(
+              const { data: hofData, error: hofError } = await safeSupabaseQuery(
                 supabase
                   .from('hall_of_fame')
                   .select('user_id, nickname, score, rank, week_start_date, tier_level, tier_stars')
