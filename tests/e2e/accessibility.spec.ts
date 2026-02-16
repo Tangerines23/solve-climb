@@ -8,7 +8,9 @@ test.describe('♿ Accessibility Audit', () => {
     for (const path of pages) {
       console.log(`[A11Y] Auditing ${path}...`);
       await page.goto(path);
-      await page.waitForLoadState('networkidle');
+      // networkidle hangs due to Supabase realtime subscriptions
+      await page.waitForSelector('main, .app-header, .footer-nav', { timeout: 15000 });
+      await page.waitForTimeout(500); // 렌더링 안정을 위한 짧은 대기
 
       const accessibilityScanResults = await new AxeBuilder({ page })
         .withTags(['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa'])

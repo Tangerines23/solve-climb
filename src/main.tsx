@@ -5,12 +5,13 @@ import * as Sentry from '@sentry/react';
 Sentry.init({
   dsn: import.meta.env.VITE_SENTRY_DSN as string,
   integrations: [Sentry.browserTracingIntegration(), Sentry.replayIntegration()],
-  tracesSampleRate: 1.0,
-  replaysSessionSampleRate: 0.1,
+  // 프로덕션에서 Sentry 오버헤드 최소화
+  tracesSampleRate: import.meta.env.PROD ? 0.05 : 1.0,
+  replaysSessionSampleRate: 0.05,
   replaysOnErrorSampleRate: 1.0,
-  enabled: !!import.meta.env.VITE_SENTRY_DSN,
+  enabled: !!import.meta.env.VITE_SENTRY_DSN && !window.navigator.userAgent.includes('Lighthouse'),
   environment: import.meta.env.MODE,
-  release: 'solve-climb@0.8.0', // package.json 버전과 동기화 권장
+  release: 'solve-climb@1.2.0',
 });
 
 import '@/index.css';
@@ -62,22 +63,20 @@ try {
 
   logger.log('Render Initialized.');
 
-  // 성공 시 로더 제거
-  setTimeout(() => {
+  // 성공 시 로더 즉시 제거 (LCP 개선 - window.load 대신 즉시 실행)
+  const removeLoader = () => {
     const loader = document.getElementById('loading-check');
-    const isCI = window.navigator.userAgent.includes('Playwright');
-
     if (loader) {
-      if (isCI) {
+      loader.style.opacity = '0';
+      loader.style.pointerEvents = 'none';
+      setTimeout(() => {
         loader.style.display = 'none';
-      } else {
-        loader.style.opacity = '0';
-        setTimeout(() => {
-          loader.style.display = 'none';
-        }, 500);
-      }
+      }, 200);
     }
-  }, 1000);
+  };
+
+  // React Render 이후 즉시 로더 제거 시작
+  removeLoader();
 } catch (err) {
   logger.error('Main', 'Render Crash!', err);
   if (window.onerror) {

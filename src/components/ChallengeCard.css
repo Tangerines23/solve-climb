@@ -40,8 +40,8 @@
 .challenge-button {
   width: 100%;
   padding: var(--spacing-lg);
-  background-color: var(--color-blue-400);
-  color: var(--color-gray-900);
+  background-color: var(--color-blue-700); /* Dark Teal for 4.5:1 contrast against white */
+  color: var(--color-pure-white);
   border: none;
   border-radius: var(--rounded-button);
   font-size: 1rem;

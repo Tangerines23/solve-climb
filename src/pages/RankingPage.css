@@ -31,7 +31,7 @@
   padding: var(--spacing-small-alt);
   border: none;
   background: transparent;
-  color: var(--color-text-dimmed);
+  color: var(--color-text-secondary);
   font-weight: 700;
   font-size: 0.95rem;
   border-radius: var(--rounded-sm-alt);
@@ -93,6 +93,7 @@
   background: transparent;
   color: var(--color-text-dimmed);
   font-weight: 700;
+  color: var(--color-gray-200);
   font-size: 0.9rem;
   transition: color 0.3s ease;
   cursor: pointer;
@@ -120,7 +121,7 @@
   font-size: 0.85rem;
   line-height: 1.5;
   /* Ensure enough height for emojis */
-  color: var(--color-text-dimmed);
+  color: var(--color-text-secondary);
   font-weight: 500;
   min-height: 24px;
   /* Force minimum height for vertical safety */
@@ -338,7 +339,7 @@
 
 /* Realtime Live Badge */
 .live-badge {
-  background-color: var(--color-red-700);
+  background-color: var(--color-live-red); /* Improved contrast */
   color: white;
   font-size: 0.75rem;
   font-weight: bold;
@@ -348,7 +349,6 @@
   box-shadow: 0 0 5px rgba(255, 75, 75, 0.5);
   margin-left: 8px;
   display: flex;
-  /* Change to flex for better alignment in flex container */
   align-items: center;
   justify-content: center;
 }

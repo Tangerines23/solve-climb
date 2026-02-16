@@ -158,6 +158,7 @@ export function RoadmapPage() {
   const [visibleAltRange, setVisibleAltRange] = useState({ min: -1000, max: 20000 }); // Pruning Range
   const cameraRef = useRef<HTMLDivElement>(null); // 시각적 위치 업데이트용 Ref
   const indicatorTimerRef = useRef<NodeJS.Timeout | null>(null);
+  const lastPrunedAltRef = useRef(0);
 
   /* --- Badge Logic --- */
   const [userId, setUserId] = useState<string | null>(null);
@@ -422,16 +423,16 @@ export function RoadmapPage() {
         cameraRef.current.style.setProperty('--camera-offset', `-${offset}px`);
       }
 
-      // 3. Viewport Pruning Logic (Calculate visible altitude range)
-      // 화면 중앙 고도뿐 아니라 상하 뷰포트 영역에 해당하는 고도 계산
-      const buffer = 500 * displayRatio; // 500px 정도의 상하 버퍼
+      // 3. Viewport Pruning Logic (Throttled update for performance)
       const bottomAlt = layoutData ? layoutData.totalLogicalAltitude * currentProgress : 0;
-      const topAlt = bottomAlt + clientHeight * displayRatio;
-
-      setVisibleAltRange({
-        min: bottomAlt - buffer,
-        max: topAlt + buffer,
-      });
+      if (Math.abs(bottomAlt - lastPrunedAltRef.current) > 200) {
+        lastPrunedAltRef.current = bottomAlt;
+        const buffer = 500 * displayRatio;
+        setVisibleAltRange({
+          min: bottomAlt - buffer,
+          max: bottomAlt + clientHeight * displayRatio + buffer,
+        });
+      }
 
       // 4. Altitude Estimation for Ratio Logic
       const approxAltitude = bottomAlt;

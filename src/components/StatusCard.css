@@ -22,7 +22,7 @@
 .status-detail-link {
   background: none;
   border: none;
-  color: var(--color-blue-400);
+  color: var(--color-blue-400); /* Bright Teal for dark background (#1e1e1e) visibility */
   font-size: 0.875rem;
   cursor: pointer;
   padding: 0;

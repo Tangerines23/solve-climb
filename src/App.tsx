@@ -48,22 +48,26 @@ const ShopPage = lazy(() =>
 );
 
 // ⚠️ 개발 환경에서만 디버그 컴포넌트 로드
-const DebugPanel = import.meta.env.DEV ? lazy(() => import('./components/DebugPanel')) : null;
-const DebugOverlay = import.meta.env.DEV
-  ? lazy(() => import('./components/debug/DebugOverlay').then((m) => ({ default: m.DebugOverlay })))
-  : null;
-const DebugReturnFloater = import.meta.env.DEV
-  ? lazy(() =>
+const DebugPanel = import.meta.env.PROD
+  ? () => null
+  : lazy(() => import('./components/DebugPanel'));
+const DebugOverlay = import.meta.env.PROD
+  ? () => null
+  : lazy(() =>
+      import('./components/debug/DebugOverlay').then((m) => ({ default: m.DebugOverlay }))
+    );
+const DebugReturnFloater = import.meta.env.PROD
+  ? () => null
+  : lazy(() =>
       import('./components/debug/DebugReturnFloater').then((m) => ({
         default: m.DebugReturnFloater,
       }))
-    )
-  : null;
-const VisualGuardian = import.meta.env.DEV
-  ? lazy(() =>
+    );
+const VisualGuardian = import.meta.env.PROD
+  ? () => null
+  : lazy(() =>
       import('./components/dev/VisualGuardian').then((m) => ({ default: m.VisualGuardian }))
-    )
-  : null;
+    );
 
 function App() {
   // 네트워크 연결 상태 감시
@@ -91,9 +95,9 @@ function App() {
   }, [animationEnabled]);
 
   useEffect(() => {
-    initializeAuth().then(() => {
-      syncProgress();
-    });
+    // Parallelize initialization to avoid waterfalls
+    // syncProgress internally checks for user session, so it can run concurrently
+    Promise.all([initializeAuth(), syncProgress()]);
   }, [initializeAuth, syncProgress]);
 
   // 전역 에러 핸들러 설정 (개발 환경에서만)

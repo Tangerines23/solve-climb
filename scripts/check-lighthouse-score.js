@@ -9,7 +9,7 @@
  * 요구: ./dist 가 존재해야 함 (npm run build 후 실행).
  */
 
-import { existsSync } from 'fs';
+import { existsSync, writeFileSync } from 'fs';
 import { spawn } from 'child_process';
 import { fileURLToPath } from 'url';
 import { dirname, join } from 'path';
@@ -146,6 +146,40 @@ async function main() {
   if (!lhr || !lhr.categories) {
     console.error('❌ Invalid Lighthouse result (no categories).');
     process.exit(1);
+  }
+
+  // 리포트 저장 (디버깅용)
+  const reportPath = join(ROOT, 'lighthouse-report.json');
+  writeFileSync(reportPath, JSON.stringify(lhr, null, 2));
+  console.log(`\n📄 Lighthouse report saved to ${reportPath}`);
+
+  // 상세 감사 정보 출력 (실패한 항목들)
+  console.log('\n🔍 Detailed Audit Findings:');
+  const criticalAudits = [
+    'largest-contentful-paint',
+    'total-blocking-time',
+    'cumulative-layout-shift',
+    'speed-index',
+    'first-contentful-paint',
+  ];
+  for (const auditId of criticalAudits) {
+    const audit = lhr.audits[auditId];
+    if (audit) {
+      console.log(
+        `   ${audit.title}: ${audit.displayValue} (${audit.score >= 0.9 ? '✅' : audit.score >= 0.5 ? '⚠️' : '❌'})`
+      );
+    }
+  }
+
+  // 접근성 및 기타 실패 항목
+  const failedAudits = Object.values(lhr.audits).filter(
+    (a) => a.score !== null && a.score < 0.9 && a.id !== 'is-on-https'
+  );
+  if (failedAudits.length > 0) {
+    console.log('\n❌ Major Audit Failures:');
+    failedAudits.slice(0, 10).forEach((a) => {
+      console.log(`   [${a.id}] ${a.title}: ${a.score === 0 ? 'FAIL' : a.displayValue || a.score}`);
+    });
   }
 
   const failed = [];

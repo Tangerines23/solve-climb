@@ -294,12 +294,12 @@
 
 .landmark-label.sub {
   font-size: 13px;
-  color: rgba(255, 255, 255, 0.7);
+  color: var(--color-text-primary);
 }
 
 .landmark-altitude.sub {
   font-size: 11px;
-  color: color-mix(in srgb, var(--color-primary-light), transparent 40%);
+  color: var(--color-primary-light);
 }
 
 /* --- Badge Collection (New) --- */
@@ -608,10 +608,8 @@
 
 .landmark-altitude {
   font-size: 13px;
-  /* 약간 키움 */
-  color: var(--color-text-secondary);
-  /* 대비 상향 (기존 tertiary) */
-  font-weight: 500;
+  color: var(--color-text-primary);
+  font-weight: 600;
 }
 
 .current-location-tag {

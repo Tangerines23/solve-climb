@@ -110,9 +110,10 @@
   --color-gray-900: #121212;
 
   /* Primary Blue - 토스 스타일 (이 프로젝트에서는 민트/연초록 계열 사용) */
-  --color-blue-400: #00bfa5;
-  --color-blue-500: #00a693;
-  --color-blue-700: #00897a;
+  /* Accessibility: Bright Teal for high contrast against dark bg (#00e5c1) */
+  --color-blue-400: #00e5c1;
+  --color-blue-500: #00bfa5;
+  --color-blue-700: #00695c;
 
   /* Red Scale (Simplified) */
   --color-toss-red: #f04452;
@@ -121,7 +122,14 @@
   /* Darker/Hover */
   --color-red-700: #c0392b;
   /* High Contrast Red */
-  /* --color-red-400, 500 removed (Merged to toss-red or 600) */
+  --color-live-red: #d32f2f;
+  --color-survival-red: #ff5252;
+  /* Accessibility: Purple for Infinite mode */
+  --color-infinite-purple: #a78bfa;
+
+  /* Basic Colors */
+  --color-pure-black: #000000;
+  --color-pure-white: #ffffff;
 
   /* 추가 Gray 색상 */
   /* --color-gray-600 (#3c3c3c) -> use var(--color-bg-tertiary) */
@@ -133,7 +141,7 @@
 
   /* 텍스트 색상 */
   --color-text-primary: var(--color-gray-100);
-  --color-text-secondary: #aaa;
+  --color-text-secondary: #bbb; /* Improved from #aaa for dark bg AA */
   --color-text-dimmed: #ccc;
   /* AA 준수 (배경 #121212 기준) */
   --color-text-muted-alt: #bbb;
@@ -205,6 +213,11 @@
   width: 100%;
   max-width: 100%;
   overflow: hidden;
+}
+
+strong {
+  font-weight: 700;
+  color: #ffffff; /* Explicitly white for contrast in dark theme */
 }
 
 :root {
@@ -333,8 +346,8 @@
 
   /* Indigo (Purple-Blue) */
   --color-indigo-300: #a5b4fc;
-  --color-indigo-500: #6366f1;
-  --color-indigo-600: #4f46e5;
+  --color-indigo-500: #4f46e5; /* Updated from #6366f1 for >4.5:1 with white */
+  --color-indigo-600: #4338ca;
 
   /* Cyan (Bright) */
   --color-cyan-bright: #00f2fe;

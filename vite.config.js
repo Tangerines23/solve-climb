@@ -1,7 +1,7 @@
 import { defineConfig, loadEnv } from 'vite';
 import react from '@vitejs/plugin-react';
 import path from 'path';
-import { visualizer } from 'rollup-plugin-visualizer';
+// import { visualizer } from 'rollup-plugin-visualizer';
 import { sentryVitePlugin } from '@sentry/vite-plugin';
 import { VitePWA } from 'vite-plugin-pwa';
 
@@ -62,14 +62,11 @@ export default defineConfig(({ mode }) => {
       rollupOptions: {
         output: {
           manualChunks: (id) => {
-            // 디버그 관련 코드를 별도 청크로 분리 (프로덕션 빌드 최적화)
-            if (
-              id.includes('DebugPanel') ||
-              id.includes('useDebugStore') ||
-              id.includes('/debug/')
-            ) {
-              return 'debug';
+            if (id.includes('node_modules')) {
+              if (id.includes('vitals') || id.includes('sentry')) return 'monitor';
+              return 'vendor';
             }
+            if (id.includes('/debug/')) return 'debug';
           },
         },
       },
