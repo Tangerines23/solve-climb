@@ -32,8 +32,8 @@ vi.mock('../stores/useUserStore', () => ({
   useUserStore: {
     getState: vi.fn(() => ({
       fetchUserData: vi.fn(() => Promise.resolve()),
-      setMinerals: vi.fn(() => Promise.resolve()),
-      setStamina: vi.fn(() => Promise.resolve()),
+      debugSetMinerals: vi.fn(() => Promise.resolve()),
+      debugSetStamina: vi.fn(() => Promise.resolve()),
     })),
   },
 }));

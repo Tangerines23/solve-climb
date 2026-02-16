@@ -1,5 +1,4 @@
 import { readFileSync } from 'fs';
-import { join } from 'path';
 
 const reportPath = './lighthouse-report.json';
 const data = JSON.parse(readFileSync(reportPath, 'utf8'));

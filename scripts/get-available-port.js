@@ -6,7 +6,7 @@
  */
 import net from 'net';
 
-const BASE_PORT = 5173;
+const BASE_PORT = 5174;
 const MAX_ATTEMPTS = 100;
 
 function isPortAvailable(port) {
@@ -16,7 +16,7 @@ function isPortAvailable(port) {
     server.once('listening', () => {
       server.close(() => resolve(true));
     });
-    server.listen(port, '127.0.0.1');
+    server.listen(port, '0.0.0.0');
   });
 }
 
