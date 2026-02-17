@@ -1,11 +1,11 @@
 -- ============================================================================
--- today_challenges 테이블 RLS 정책 확인 및 강제 재생성
--- 작성일: 2025.12.28
+-- today_challenges ?�이�?RLS ?�책 ?�인 �?강제 ?�생??
+-- ?�성?? 2025.12.28
 -- ============================================================================
--- 문제: 정책이 제대로 생성되지 않았을 수 있음
--- 해결: 정책을 완전히 삭제하고 재생성
+-- 문제: ?�책???��?�??�성?��? ?�았?????�음
+-- ?�결: ?�책???�전????��?�고 ?�생??
 
--- 1. 현재 정책 확인
+-- 1. ?�재 ?�책 ?�인
 DO $$
 DECLARE
   policy_count INTEGER;
@@ -14,10 +14,10 @@ BEGIN
   FROM pg_policies
   WHERE tablename = 'today_challenges' AND schemaname = 'public';
   
-  RAISE NOTICE '현재 today_challenges 정책 개수: %', policy_count;
+  RAISE NOTICE '?�재 today_challenges ?�책 개수: %', policy_count;
 END $$;
 
--- 2. 모든 정책 삭제 (이름과 관계없이)
+-- 2. 모든 ?�책 ??�� (?�름�?관계없??
 DO $$
 DECLARE
   r RECORD;
@@ -28,20 +28,20 @@ BEGIN
     WHERE tablename = 'today_challenges' AND schemaname = 'public'
   LOOP
     EXECUTE format('DROP POLICY IF EXISTS %I ON public.today_challenges', r.policyname);
-    RAISE NOTICE '정책 삭제: %', r.policyname;
+    RAISE NOTICE '?�책 ??��: %', r.policyname;
   END LOOP;
 END $$;
 
--- 3. RLS 활성화 확인
+-- 3. RLS ?�성???�인
 ALTER TABLE IF EXISTS public.today_challenges ENABLE ROW LEVEL SECURITY;
 
--- 4. 새로운 정책 생성 (명시적으로 public 스키마 지정)
+-- 4. ?�로???�책 ?�성 (명시?�으�?public ?�키�?지??
 CREATE POLICY "Anyone can read today challenges" 
   ON public.today_challenges 
   FOR SELECT 
   USING (true);
 
--- 5. 정책 생성 확인
+-- 5. ?�책 ?�성 ?�인
 DO $$
 DECLARE
   policy_count INTEGER;
@@ -51,9 +51,9 @@ BEGIN
   WHERE tablename = 'today_challenges' AND schemaname = 'public';
   
   IF policy_count > 0 THEN
-    RAISE NOTICE '정책 생성 성공! 정책 개수: %', policy_count;
+    RAISE NOTICE '?�책 ?�성 ?�공! ?�책 개수: %', policy_count;
   ELSE
-    RAISE EXCEPTION '정책 생성 실패!';
+    RAISE EXCEPTION '?�책 ?�성 ?�패!';
   END IF;
 END $$;
 

@@ -1,20 +1,20 @@
 -- ============================================================================
--- today_challenges 테이블 RLS 정책 수정 (anon 역할 명시적 허용)
--- 작성일: 2025.12.28
+-- today_challenges ?�이�?RLS ?�책 ?�정 (anon ??�� 명시???�용)
+-- ?�성?? 2025.12.28
 -- ============================================================================
--- 문제: 익명 사용자(anon 역할)가 접근하지 못함
--- 해결: anon 역할도 명시적으로 허용하는 정책 추가
+-- 문제: ?�명 ?�용??anon ??��)가 ?�근?��? 못함
+-- ?�결: anon ??��??명시?�으�??�용?�는 ?�책 추�?
 
--- 기존 정책 삭제
+-- 기존 ?�책 ??��
 DROP POLICY IF EXISTS "Anyone can read today challenges" ON public.today_challenges;
 
--- 새로운 정책: USING (true)는 모든 역할(public, anon, authenticated)에 자동 적용됨
--- Supabase에서는 TO 절이 무시되므로 USING (true)만 사용
+-- ?�로???�책: USING (true)??모든 ??��(public, anon, authenticated)???�동 ?�용??
+-- Supabase?�서??TO ?�이 무시?��?�?USING (true)�??�용
 CREATE POLICY "Anyone can read today challenges" 
   ON public.today_challenges 
   FOR SELECT 
   USING (true);
 
--- 정책 확인
+-- ?�책 ?�인
 -- SELECT policyname, cmd, qual, roles FROM pg_policies WHERE tablename = 'today_challenges';
 

@@ -57,6 +57,9 @@ supabase/supabase/
 # Vitest 캐시 디렉토리
 .vitest/
 
+# Stryker test runner
+.stryker-tmp/
+
 # 개인 스크립트 및 개발 파일
 *.bat
 *.ait

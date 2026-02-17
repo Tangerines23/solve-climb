@@ -1,20 +1,20 @@
 -- ============================================================================
--- 디버그 전용: 뱃지 정의 일괄 설치 (Seeding) RPC
+-- ?�버�??�용: 뱃�? ?�의 ?�괄 ?�치 (Seeding) RPC
 -- ============================================================================
 
 CREATE OR REPLACE FUNCTION public.debug_seed_badge_definitions(
     p_badges JSONB
 )
-RETURNS JSON
+RETURNS JSONB
 LANGUAGE plpgsql
-SECURITY DEFINER -- 관리자 권한으로 실행 (RLS 무시)
+SECURITY DEFINER -- 관리자 권한?�로 ?�행 (RLS 무시)
 AS $$
 DECLARE
     v_badge RECORD;
     v_count INTEGER := 0;
 BEGIN
-    -- 입력된 JSONB 배열을 순회하며 upsert 수행
-    FOR v_badge IN SELECT * FROM jsonb_to_recordset(p_badges) AS x(id TEXT, name TEXT, description TEXT, emoji TEXT, theme_id TEXT)
+    -- ?�력??JSONB 배열???�회?�며 upsert ?�행
+    FOR v_badge IN SELECT * FROM JSONB_to_recordset(p_badges) AS x(id TEXT, name TEXT, description TEXT, emoji TEXT, theme_id TEXT)
     LOOP
         INSERT INTO public.badge_definitions (id, name, description, emoji, theme_id)
         VALUES (v_badge.id, v_badge.name, v_badge.description, v_badge.emoji, v_badge.theme_id)
@@ -27,12 +27,12 @@ BEGIN
         v_count := v_count + 1;
     END LOOP;
 
-    RETURN json_build_object(
+    RETURN JSONB_build_object(
         'success', true,
-        'message', v_count || '개의 뱃지 정의가 설치되었습니다.'
+        'message', v_count || '개의 뱃�? ?�의가 ?�치?�었?�니??'
     );
 END;
 $$;
 
--- 권한 부여
+-- 권한 부??
 GRANT EXECUTE ON FUNCTION public.debug_seed_badge_definitions(JSONB) TO authenticated;

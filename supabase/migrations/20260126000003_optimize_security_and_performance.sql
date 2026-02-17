@@ -1,63 +1,54 @@
 -- ============================================================================
--- DB 보안 및 성능 최적화 마이그레이션
--- 작성일: 2026.01.26
--- 목적: Supabase Advisor 경고 해소 및 성능 개선
+-- DB 보안 �??�능 최적??마이그레?�션
+-- ?�성?? 2026.01.26
+-- 목적: Supabase Advisor 경고 ?�소 �??�능 개선
 -- ============================================================================
 
 -- ============================================================================
--- 1. 함수 search_path 설정 (보안 강화)
+-- 1. ?�수 search_path ?�정 (보안 강화)
 -- ============================================================================
--- 모든 public 함수에 search_path를 명시적으로 설정하여
--- 악의적인 스키마 오염 공격 방지
+-- 모든 public ?�수??search_path�?명시?�으�??�정?�여
+-- ?�의?�인 ?�키�??�염 공격 방�?
 
-ALTER FUNCTION public.add_minerals SET search_path = public;
-ALTER FUNCTION public.calculate_tier SET search_path = public;
-ALTER FUNCTION public.calculate_tier_level SET search_path = public;
-ALTER FUNCTION public.check_and_award_badges SET search_path = public;
-ALTER FUNCTION public.check_and_recover_stamina SET search_path = public;
-ALTER FUNCTION public.consume_item SET search_path = public;
-ALTER FUNCTION public.consume_stamina SET search_path = public;
-ALTER FUNCTION public.create_game_session SET search_path = public;
-ALTER FUNCTION public.debug_grant_badge SET search_path = public;
-ALTER FUNCTION public.debug_grant_items SET search_path = public;
-ALTER FUNCTION public.debug_remove_badge SET search_path = public;
-ALTER FUNCTION public.debug_reset_profile SET search_path = public;
-ALTER FUNCTION public.debug_set_mastery_score SET search_path = public;
-ALTER FUNCTION public.debug_set_tier SET search_path = public;
-ALTER FUNCTION public.find_user_by_email SET search_path = public;
-ALTER FUNCTION public.find_user_by_toss_key SET search_path = public;
-ALTER FUNCTION public.get_leaderboard SET search_path = public;
-ALTER FUNCTION public.get_ranking SET search_path = public;
-ALTER FUNCTION public.get_ranking_v2 SET search_path = public;
-ALTER FUNCTION public.get_user_id_by_toss_key SET search_path = public;
-ALTER FUNCTION public.handle_daily_login SET search_path = public;
-ALTER FUNCTION public.handle_new_user SET search_path = public;
-ALTER FUNCTION public.migrate_existing_records SET search_path = public;
-ALTER FUNCTION public.promote_to_next_cycle SET search_path = public;
-ALTER FUNCTION public.purchase_item SET search_path = public;
-ALTER FUNCTION public.recalculate_mastery_scores SET search_path = public;
-ALTER FUNCTION public.recover_stamina_ads SET search_path = public;
-ALTER FUNCTION public.reset_weekly_scores SET search_path = public;
-ALTER FUNCTION public.submit_game_result SET search_path = public;
-ALTER FUNCTION public.update_profile_nickname SET search_path = public;
-ALTER FUNCTION public.update_updated_at_column SET search_path = public;
-ALTER FUNCTION public.update_user_tier SET search_path = public;
-ALTER FUNCTION public.user_exists_by_email SET search_path = public;
-ALTER FUNCTION public.validate_game_session SET search_path = public;
+DO $$
+DECLARE
+    r RECORD;
+    v_func_names TEXT[] := ARRAY[
+        'add_minerals', 'calculate_tier', 'calculate_tier_level', 'check_and_award_badges',
+        'check_and_recover_stamina', 'consume_item', 'consume_stamina', 'create_game_session',
+        'debug_grant_badge', 'debug_grant_items', 'debug_remove_badge', 'debug_reset_profile',
+        'debug_set_mastery_score', 'debug_set_tier', 'find_user_by_email', 'find_user_by_toss_key',
+        'get_leaderboard', 'get_ranking', 'get_ranking_v2', 'get_user_id_by_toss_key',
+        'handle_daily_login', 'handle_new_user', 'migrate_existing_records', 'promote_to_next_cycle',
+        'purchase_item', 'recalculate_mastery_scores', 'recover_stamina_ads', 'reset_weekly_scores',
+        'submit_game_result', 'update_profile_nickname', 'update_updated_at_column',
+        'update_user_tier', 'user_exists_by_email', 'validate_game_session'
+    ];
+BEGIN
+    FOR r IN (
+        SELECT n.nspname, p.proname, p.oid::regprocedure AS sig
+        FROM pg_proc p
+        JOIN pg_namespace n ON n.oid = p.pronamespace
+        WHERE n.nspname = 'public'
+          AND p.proname = ANY(v_func_names)
+    ) LOOP
+        EXECUTE format('ALTER FUNCTION %s SET search_path = public', r.sig);
+    END LOOP;
+END $$;
 
 -- ============================================================================
--- 2. 인덱스 추가 (성능 개선)
+-- 2. ?�덱??추�? (?�능 개선)
 -- ============================================================================
 
--- inventory 테이블 FK 인덱스 추가
+-- inventory ?�이�?FK ?�덱??추�?
 CREATE INDEX IF NOT EXISTS idx_inventory_item_id ON public.inventory(item_id);
 
 -- ============================================================================
--- 3. RLS 정책 최적화 (성능 개선)
+-- 3. RLS ?�책 최적??(?�능 개선)
 -- ============================================================================
--- auth.uid()를 (SELECT auth.uid())로 변경하여 매 행마다 재평가되지 않도록 최적화
+-- auth.uid()�?(SELECT auth.uid())�?변경하??�??�마???�평가?��? ?�도�?최적??
 
--- inventory 테이블
+-- inventory ?�이�?
 DROP POLICY IF EXISTS "Users can view own inventory" ON public.inventory;
 CREATE POLICY "Users can view own inventory" ON public.inventory
   FOR SELECT USING (user_id = (SELECT auth.uid()));
@@ -66,7 +57,7 @@ DROP POLICY IF EXISTS "Users can update own inventory" ON public.inventory;
 CREATE POLICY "Users can update own inventory" ON public.inventory
   FOR UPDATE USING (user_id = (SELECT auth.uid()));
 
--- game_records 테이블
+-- game_records ?�이�?
 DROP POLICY IF EXISTS "Users can view own records" ON public.game_records;
 CREATE POLICY "Users can view own records" ON public.game_records
   FOR SELECT USING (user_id = (SELECT auth.uid()));
@@ -79,7 +70,7 @@ DROP POLICY IF EXISTS "Users can update own records" ON public.game_records;
 CREATE POLICY "Users can update own records" ON public.game_records
   FOR UPDATE USING (user_id = (SELECT auth.uid()));
 
--- profiles 테이블
+-- profiles ?�이�?
 DROP POLICY IF EXISTS "Users can view own profile" ON public.profiles;
 CREATE POLICY "Users can view own profile" ON public.profiles
   FOR SELECT USING (id = (SELECT auth.uid()));
@@ -88,12 +79,12 @@ DROP POLICY IF EXISTS "Users can update own profile" ON public.profiles;
 CREATE POLICY "Users can update own profile" ON public.profiles
   FOR UPDATE USING (id = (SELECT auth.uid()));
 
--- user_badges 테이블
+-- user_badges ?�이�?
 DROP POLICY IF EXISTS "Users can view own badges" ON public.user_badges;
 CREATE POLICY "Users can view own badges" ON public.user_badges
   FOR SELECT USING (user_id = (SELECT auth.uid()));
 
--- user_level_records 테이블
+-- user_level_records ?�이�?
 DROP POLICY IF EXISTS "Users can view own records" ON public.user_level_records;
 CREATE POLICY "Users can view own records" ON public.user_level_records
   FOR SELECT USING (user_id = (SELECT auth.uid()));
@@ -106,7 +97,7 @@ DROP POLICY IF EXISTS "Users can update own records" ON public.user_level_record
 CREATE POLICY "Users can update own records" ON public.user_level_records
   FOR UPDATE USING (user_id = (SELECT auth.uid()));
 
--- game_sessions 테이블
+-- game_sessions ?�이�?
 DROP POLICY IF EXISTS "Users can view own sessions" ON public.game_sessions;
 CREATE POLICY "Users can view own sessions" ON public.game_sessions
   FOR SELECT USING (user_id = (SELECT auth.uid()));
@@ -119,20 +110,21 @@ DROP POLICY IF EXISTS "Users can update own sessions" ON public.game_sessions;
 CREATE POLICY "Users can update own sessions" ON public.game_sessions
   FOR UPDATE USING (user_id = (SELECT auth.uid()));
 
--- game_results 테이블
-DROP POLICY IF EXISTS "Users can view own results" ON public.game_results;
-CREATE POLICY "Users can view own results" ON public.game_results
-  FOR SELECT USING (user_id = (SELECT auth.uid()));
-
-DROP POLICY IF EXISTS "Users can insert own results" ON public.game_results;
-CREATE POLICY "Users can insert own results" ON public.game_results
-  FOR INSERT WITH CHECK (user_id = (SELECT auth.uid()));
+-- game_results 테이블 (존재하는 경우에만 정책 적용)
+DO $$ BEGIN
+  IF EXISTS (SELECT 1 FROM pg_tables WHERE schemaname = 'public' AND tablename = 'game_results') THEN
+    EXECUTE 'DROP POLICY IF EXISTS "Users can view own results" ON public.game_results';
+    EXECUTE 'CREATE POLICY "Users can view own results" ON public.game_results FOR SELECT USING (user_id = (SELECT auth.uid()))';
+    EXECUTE 'DROP POLICY IF EXISTS "Users can insert own results" ON public.game_results';
+    EXECUTE 'CREATE POLICY "Users can insert own results" ON public.game_results FOR INSERT WITH CHECK (user_id = (SELECT auth.uid()))';
+  END IF;
+END $$;
 
 -- ============================================================================
--- 4. 검증 쿼리
+-- 4. 검�?쿼리
 -- ============================================================================
 
--- 함수 search_path 확인
+-- ?�수 search_path ?�인
 SELECT 
   routine_name,
   prosrc LIKE '%search_path%' AS has_search_path
@@ -142,7 +134,7 @@ WHERE routine_schema = 'public'
   AND routine_type = 'FUNCTION'
 ORDER BY routine_name;
 
--- 인덱스 확인
+-- ?�덱???�인
 SELECT indexname, tablename 
 FROM pg_indexes 
 WHERE schemaname = 'public' 

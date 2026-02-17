@@ -1,9 +1,9 @@
 -- ============================================================================
--- RLS 비활성 public 테이블 전부 활성화 (check_rls_enabled 통과)
+-- RLS 비활??public ?�이�??��? ?�성??(check_rls_enabled ?�과)
 -- ============================================================================
--- pre-commit 훅의 check:db:validation → check_rls_enabled 실패 해소.
--- public 스키마에서 rowsecurity = false 인 테이블에 RLS 활성화 및 기본 SELECT 정책 추가.
--- (매핑 테이블·읽기 전용 테이블은 SELECT USING (true)로 충분. 사용자별 테이블은 기존 마이그레이션에서 이미 RLS+정책 적용됨.)
+-- pre-commit ?�의 check:db:validation ??check_rls_enabled ?�패 ?�소.
+-- public ?�키마에??rowsecurity = false ???�이블에 RLS ?�성??�?기본 SELECT ?�책 추�?.
+-- (매핑 ?�이블·읽�??�용 ?�이블�? SELECT USING (true)�?충분. ?�용?�별 ?�이블�? 기존 마이그레?�션?�서 ?��? RLS+?�책 ?�용??)
 -- ============================================================================
 
 DO $$

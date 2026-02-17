@@ -16,5 +16,6 @@
     "exports": "warn",
     "types": "warn",
     "files": "warn"
-  }
+  },
+  "ignoreDependencies": ["@stryker-mutator/core", "@stryker-mutator/typescript-checker", "@storybook/react"]
 }

@@ -1,8 +1,8 @@
 -- ============================================================================
--- submit_game_result: theme_code -> category_id/subject_id/world_id 기반으로 변경
--- 작성일: 2026.02.03
--- 목적: 원격 DB의 user_level_records가 theme_code 대신 category_id/subject_id/world_id를
---       사용하므로 submit_game_result의 user_level_records 참조를 수정
+-- submit_game_result: theme_code -> category_id/subject_id/world_id 기반?�로 변�?
+-- ?�성?? 2026.02.03
+-- 목적: ?�격 DB??user_level_records가 theme_code ?�??category_id/subject_id/world_id�?
+--       ?�용?��?�?submit_game_result??user_level_records 참조�??�정
 -- ============================================================================
 
 CREATE OR REPLACE FUNCTION public.submit_game_result(
@@ -15,7 +15,7 @@ CREATE OR REPLACE FUNCTION public.submit_game_result(
   p_subject TEXT DEFAULT 'add',
   p_level INTEGER DEFAULT 1
 )
-RETURNS JSON
+RETURNS JSONB
 LANGUAGE plpgsql
 SECURITY DEFINER
 SET search_path = public
@@ -44,23 +44,23 @@ DECLARE
   MINERALS_PER_SCORE INTEGER := 100;
 BEGIN
   IF v_user_id IS NULL THEN
-    RETURN json_build_object('success', false, 'error', 'Authentication required');
+    RETURN JSONB_build_object('success', false, 'error', 'Authentication required');
   END IF;
   
   IF p_game_mode NOT IN ('timeattack', 'survival') THEN
-    RETURN json_build_object('success', false, 'error', 'Invalid game mode');
+    RETURN JSONB_build_object('success', false, 'error', 'Invalid game mode');
   END IF;
   
   IF p_category NOT IN ('math', 'english', 'logic', 'language') THEN
-    RETURN json_build_object('success', false, 'error', 'Invalid category');
+    RETURN JSONB_build_object('success', false, 'error', 'Invalid category');
   END IF;
   
   IF p_subject NOT IN ('add', 'sub', 'mul', 'div', 'word', 'puzzle', 'japanese') THEN
-    RETURN json_build_object('success', false, 'error', 'Invalid subject');
+    RETURN JSONB_build_object('success', false, 'error', 'Invalid subject');
   END IF;
   
   IF p_level < MIN_LEVEL OR p_level > MAX_LEVEL THEN
-    RETURN json_build_object('success', false, 'error', 'Invalid level');
+    RETURN JSONB_build_object('success', false, 'error', 'Invalid level');
   END IF;
   
   DECLARE
@@ -74,22 +74,22 @@ BEGIN
     
     IF v_session_status IS NULL THEN
       INSERT INTO public.security_audit_log (user_id, event_type, event_data)
-      VALUES (v_user_id, 'invalid_session', json_build_object('session_id', p_session_id))
+      VALUES (v_user_id, 'invalid_session', JSONB_build_object('session_id', p_session_id))
       ON CONFLICT DO NOTHING;
-      RETURN json_build_object('success', false, 'error', 'Game session not found');
+      RETURN JSONB_build_object('success', false, 'error', 'Game session not found');
     END IF;
     
     IF v_session_status = 'completed' THEN
       IF v_previous_result IS NOT NULL THEN
         RETURN v_previous_result;
       ELSE
-        RETURN json_build_object('success', true, 'message', 'This game session was already processed', 'score', v_session_score, 'idempotent', true);
+        RETURN JSONB_build_object('success', true, 'message', 'This game session was already processed', 'score', v_session_score, 'idempotent', true);
       END IF;
     END IF;
     
     IF v_session_status = 'expired' OR
        (SELECT expires_at FROM public.game_sessions WHERE id = p_session_id) < NOW() THEN
-      RETURN json_build_object('success', false, 'error', 'Game session expired');
+      RETURN JSONB_build_object('success', false, 'error', 'Game session expired');
     END IF;
   END;
   
@@ -101,7 +101,7 @@ BEGIN
       v_is_exhausted := true;
       v_stamina_cost := 0;
       INSERT INTO public.security_audit_log (user_id, event_type, event_data)
-      VALUES (v_user_id, 'practice_mode_activated', json_build_object('stamina', v_current_stamina))
+      VALUES (v_user_id, 'practice_mode_activated', JSONB_build_object('stamina', v_current_stamina))
       ON CONFLICT DO NOTHING;
     END IF;
   END;
@@ -118,7 +118,7 @@ BEGIN
   BEGIN
     SELECT questions INTO v_session_questions FROM public.game_sessions WHERE id = p_session_id AND user_id = v_user_id;
     IF v_session_questions IS NULL THEN
-      RETURN json_build_object('success', false, 'error', 'Questions missing');
+      RETURN JSONB_build_object('success', false, 'error', 'Questions missing');
     END IF;
     
     v_total_questions := array_length(p_question_ids, 1);
@@ -129,7 +129,7 @@ BEGIN
     FOR v_question_index IN 1..array_length(p_question_ids, 1) LOOP
       v_question_id := p_question_ids[v_question_index];
       v_user_answer := p_user_answers[v_question_index];
-      SELECT q INTO v_question FROM jsonb_array_elements(v_session_questions) AS q WHERE (q->>'id')::UUID = v_question_id;
+      SELECT q INTO v_question FROM JSONB_array_elements(v_session_questions) AS q WHERE (q->>'id')::UUID = v_question_id;
       IF v_question IS NOT NULL THEN
         v_correct_answer := (v_question->>'correct_answer')::INTEGER;
         IF v_user_answer = v_correct_answer THEN
@@ -155,10 +155,10 @@ BEGIN
     END IF;
   END;
   
-  -- mode_mapping 조회 (theme_mapping은 user_level_records에 필요 없음)
+  -- mode_mapping 조회 (theme_mapping?� user_level_records???�요 ?�음)
   SELECT code INTO v_mode_code FROM public.mode_mapping WHERE mode_id = p_game_mode;
   IF v_mode_code IS NULL THEN
-    RETURN json_build_object('success', false, 'error', 'Invalid game mode');
+    RETURN JSONB_build_object('success', false, 'error', 'Invalid game mode');
   END IF;
   
   v_world_id := p_category || '_' || p_subject;
@@ -185,7 +185,7 @@ BEGIN
     UPDATE public.profiles SET weekly_score_survival = weekly_score_survival + v_calculated_score, weekly_score_total = weekly_score_total + v_calculated_score, best_score_survival = GREATEST(best_score_survival, v_calculated_score) WHERE id = v_user_id;
   END IF;
   
-  -- user_level_records: category_id/subject_id/world_id 기반 (theme_code 대체)
+  -- user_level_records: category_id/subject_id/world_id 기반 (theme_code ?��?
   SELECT best_score INTO v_old_best_score
   FROM public.user_level_records
   WHERE user_id = v_user_id
@@ -218,7 +218,7 @@ BEGIN
   DECLARE
     v_final_result JSON;
   BEGIN
-    v_final_result := json_build_object(
+    v_final_result := JSONB_build_object(
       'success', true,
       'is_exhausted', v_is_exhausted,
       'earned_minerals', v_earned_minerals,

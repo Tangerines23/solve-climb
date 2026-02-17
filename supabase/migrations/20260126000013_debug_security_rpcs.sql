@@ -1,17 +1,17 @@
 -- ============================================================================
--- 디버그 전용: 보안 강화 RPC 함수
+-- ?�버�??�용: 보안 강화 RPC ?�수
 -- ============================================================================
 
--- 1. 프로필 스탯 강제 설정 (스테미나, 미네랄, 마스터리 점수 등)
+-- 1. ?�로???�탯 강제 ?�정 (?�테미나, 미네?? 마스?�리 ?�수 ??
 CREATE OR REPLACE FUNCTION public.debug_update_profile_stats(
     p_user_id UUID,
     p_stamina INTEGER DEFAULT NULL,
     p_minerals INTEGER DEFAULT NULL,
     p_total_mastery_score INTEGER DEFAULT NULL
 )
-RETURNS JSON
+RETURNS JSONB
 LANGUAGE plpgsql
-SECURITY DEFINER -- 관리자 권한 실행
+SECURITY DEFINER -- 관리자 권한 ?�행
 AS $$
 BEGIN
     UPDATE public.profiles
@@ -22,20 +22,20 @@ BEGIN
         updated_at = NOW()
     WHERE id = p_user_id;
 
-    RETURN json_build_object(
+    RETURN JSONB_build_object(
         'success', true,
-        'message', '프로필 스탯이 업데이트되었습니다.'
+        'message', '?�로???�탯???�데?�트?�었?�니??'
     );
 END;
 $$;
 
--- 2. 인벤토리 수량 강제 설정
+-- 2. ?�벤?�리 ?�량 강제 ?�정
 CREATE OR REPLACE FUNCTION public.debug_set_inventory_quantity(
     p_user_id UUID,
     p_item_id INTEGER,
     p_quantity INTEGER
 )
-RETURNS JSON
+RETURNS JSONB
 LANGUAGE plpgsql
 SECURITY DEFINER
 AS $$
@@ -50,9 +50,9 @@ BEGIN
         DO UPDATE SET quantity = EXCLUDED.quantity;
     END IF;
 
-    RETURN json_build_object(
+    RETURN JSONB_build_object(
         'success', true,
-        'message', '인벤토리 수량이 조정되었습니다.'
+        'message', '?�벤?�리 ?�량??조정?�었?�니??'
     );
 END;
 $$;

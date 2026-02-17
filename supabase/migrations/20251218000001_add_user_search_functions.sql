@@ -4,8 +4,8 @@
 -- 작성일: 2025-12-18
 -- 목적: Supabase Admin API의 listUsers() 대신 DB 직접 쿼리
 -- 장점: 
---   - 네트워크 전송량 감소 (10,000명 → 1명)
---   - 인덱스 활용으로 검색 속도 향상
+--   - 네트워크 전송량 감소 (10,000명 -> 1명)
+--   - 인덱스 사용으로 검색 속도 향상
 --   - 메모리 사용량 감소
 -- ============================================================================
 
@@ -51,7 +51,7 @@ END;
 $$;
 
 COMMENT ON FUNCTION public.find_user_by_email(TEXT) IS 
-'이메일로 사용자 1명 검색 - idx_users_email 인덱스 활용';
+'이메일로 사용자 1명 검색 - idx_users_email 인덱스 사용';
 
 -- 함수 실행 권한 부여 (service_role)
 GRANT EXECUTE ON FUNCTION public.find_user_by_email(TEXT) TO service_role;
@@ -86,7 +86,7 @@ END;
 $$;
 
 COMMENT ON FUNCTION public.find_user_by_toss_key(TEXT) IS 
-'tossUserKey로 사용자 1명 검색 - idx_users_toss_user_key 인덱스 활용';
+'tossUserKey로 사용자 1명 검색 - idx_users_toss_user_key 인덱스 사용';
 
 -- 함수 실행 권한 부여 (service_role)
 GRANT EXECUTE ON FUNCTION public.find_user_by_toss_key(TEXT) TO service_role;
@@ -118,9 +118,8 @@ COMMENT ON FUNCTION public.user_exists_by_email(TEXT) IS
 GRANT EXECUTE ON FUNCTION public.user_exists_by_email(TEXT) TO service_role;
 
 -- ============================================================================
--- RPC 함수 생성 완료
 --
--- 사용 예시 (Edge Function):
+-- ?�용 ?�시 (Edge Function):
 --   const { data } = await supabaseAdmin.rpc('find_user_by_email', { 
 --     target_email: 'user@example.com' 
 --   });

@@ -1,9 +1,9 @@
 -- ============================================================================
--- 상점 시스템: 기본 아이템 복구 RPC 함수
+-- 상점 시스템 기본 아이템 복구 RPC 함수
 -- ============================================================================
 
 CREATE OR REPLACE FUNCTION public.restore_default_items()
-RETURNS JSON
+RETURNS JSONB
 LANGUAGE plpgsql
 SECURITY DEFINER -- 관리자 권한으로 실행
 AS $$
@@ -12,7 +12,7 @@ DECLARE
     v_count INTEGER := 0;
 BEGIN
     -- 기본 아이템 목록 정의 및 UPSERT
-    -- ID를 명시하여 기존 데이터와의 정합성을 유지합니다.
+    -- ID를 명시하여 기존 아이템과의 호환성을 유지합니다
     
     -- 1. 산소통
     INSERT INTO public.items (id, code, name, price, description, category)
@@ -69,10 +69,10 @@ BEGIN
         category = EXCLUDED.category;
     v_count := v_count + 1;
 
-    RETURN json_build_object(
+    RETURN JSONB_build_object(
         'success', true,
         'restored_count', v_count,
-        'message', '상점 기본 아이템이 성공적으로 복구/업데이트되었습니다.'
+        'message', '상점 기본 아이템이 성공적으로 복구/업데이트되었습니다'
     );
 END;
 $$;

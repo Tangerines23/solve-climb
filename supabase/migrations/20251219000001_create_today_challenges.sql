@@ -1,4 +1,4 @@
--- 오늘의 챌린지 테이블 생성
+-- ?�늘??챌린지 ?�이�??�성
 CREATE TABLE IF NOT EXISTS today_challenges (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   challenge_date DATE UNIQUE NOT NULL,
@@ -13,21 +13,21 @@ CREATE TABLE IF NOT EXISTS today_challenges (
   updated_at TIMESTAMPTZ DEFAULT NOW()
 );
 
--- 인덱스 추가 (날짜로 빠른 조회)
+-- ?�덱??추�? (?�짜�?빠른 조회)
 CREATE INDEX IF NOT EXISTS idx_today_challenges_date ON today_challenges(challenge_date);
 
--- RLS 정책 (모든 사용자가 읽기 가능)
+-- RLS ?�책 (모든 ?�용?��? ?�기 가??
 ALTER TABLE today_challenges ENABLE ROW LEVEL SECURITY;
 
--- 읽기 정책: 모든 사용자가 오늘의 챌린지를 읽을 수 있음
+-- ?�기 ?�책: 모든 ?�용?��? ?�늘??챌린지�??�을 ???�음
 DROP POLICY IF EXISTS "Anyone can read today challenges" ON today_challenges;
 CREATE POLICY "Anyone can read today challenges" ON today_challenges
   FOR SELECT USING (true);
 
--- 쓰기 정책: 서비스 역할만 쓸 수 있음 (Edge Function 또는 관리자만)
--- 일반 사용자는 읽기만 가능
+-- ?�기 ?�책: ?�비????���??????�음 (Edge Function ?�는 관리자�?
+-- ?�반 ?�용?�는 ?�기�?가??
 
--- updated_at 자동 업데이트 트리거
+-- updated_at ?�동 ?�데?�트 ?�리�?
 CREATE OR REPLACE FUNCTION update_updated_at_column()
 RETURNS TRIGGER AS $$
 BEGIN

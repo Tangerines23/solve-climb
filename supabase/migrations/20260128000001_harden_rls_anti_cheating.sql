@@ -8,10 +8,10 @@
 CREATE OR REPLACE FUNCTION public.check_profile_update_security()
 RETURNS TRIGGER AS $$
 BEGIN
-  -- 클라이언트(authenticated/anon) 권한으로 직접 업데이트가 시도된 경우만 체크
-  -- (SECURITY DEFINER 함수나 서비스 롤을 통한 업데이트는 허용)
+  -- 클라이언트(authenticated/anon) 권한으로 직접 업데이트가 시도될 경우를 체크
+  -- (SECURITY DEFINER 함수의 서비스 롤을 통한 업데이트는 허용)
   IF (auth.role() = 'authenticated' OR auth.role() = 'anon') THEN
-    -- 변경이 금지된 민감 컬럼들 체크
+    -- 변경이 금지된 민감 컬럼을 체크
     IF (NEW.minerals IS DISTINCT FROM OLD.minerals) OR
        (NEW.stamina IS DISTINCT FROM OLD.stamina) OR
        (NEW.total_mastery_score IS DISTINCT FROM OLD.total_mastery_score) OR
@@ -32,26 +32,26 @@ CREATE TRIGGER tr_check_profile_update_security
   FOR EACH ROW
   EXECUTE FUNCTION public.check_profile_update_security();
 
-COMMENT ON FUNCTION public.check_profile_update_security() IS '유저가 직접 재화나 점수 컬럼을 수정하는 것을 방지하는 보안 트리거';
+COMMENT ON FUNCTION public.check_profile_update_security() IS '유저가 직접 수치용 민감 컬럼을 수정하는 것을 방지하는 보안 트리거';
 
 -- 2. user_level_records 테이블 보안 강화 (직접 수정 권한 회수)
 -- 기존에는 업데이트가 가능했으나, 이제는 submit_game_result 함수를 통해서만 수정되어야 함
 ALTER TABLE public.user_level_records ENABLE ROW LEVEL SECURITY;
 
--- 기존 UPDATE 정책 삭제
+-- 기존 UPDATE 정책 제거
 DROP POLICY IF EXISTS "Users can update own records" ON public.user_level_records;
 
--- 조회만 가능하도록 유지
+-- 조회만 가능하도록 설정
 DROP POLICY IF EXISTS "Users can view own records" ON public.user_level_records;
 CREATE POLICY "Users can view own records" 
   ON public.user_level_records FOR SELECT 
   USING (auth.uid() = user_id);
 
-COMMENT ON TABLE public.user_level_records IS '유저별 레벨 기록. 직접 UPDATE는 금지되며 RPC 함수를 통해서만 기록됨.';
+COMMENT ON TABLE public.user_level_records IS '유저별 레벨 기록. 직접 UPDATE는 금지되며 RPC 함수를 통해서만 기록됨';
 
--- 3. inventory 테이블 보안 강화 (직접 수정 대신 RPC 강제)
+-- 3. inventory 테이블 보안 강화 (직접 수정 차단, RPC 강제)
 DROP POLICY IF EXISTS "Users can update own inventory" ON public.inventory;
--- 인벤토리도 조회만 가능하게 하고 수량 변경은 purchase/consume RPC에서 처리
+-- 인벤토리는 조회만 가능하고 수량 변경은 purchase/consume RPC에서 처리
 DROP POLICY IF EXISTS "Users can view own inventory" ON public.inventory;
 CREATE POLICY "Users can view own inventory" 
   ON public.inventory FOR SELECT 
@@ -59,4 +59,4 @@ CREATE POLICY "Users can view own inventory"
 
 -- 4. 보안 감사 로그에 정책 강화 기록
 INSERT INTO public.security_audit_log (event_type, event_data)
-VALUES ('security_hardened', json_build_object('reason', 'Anti-cheating hardening for profiles, records, and inventory'));
+VALUES ('security_hardened', JSONB_build_object('reason', 'Anti-cheating hardening for profiles, records, and inventory'));

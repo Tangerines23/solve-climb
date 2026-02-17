@@ -1,14 +1,14 @@
 -- ============================================================================
--- DB 검증 시스템 마이그레이션
--- 작성일: 2026.01.26
--- 목적: 데이터 무결성 보장 및 자동 검증 시스템 구축
+-- DB 검�??�스??마이그레?�션
+-- ?�성?? 2026.01.26
+-- 목적: ?�이??무결??보장 �??�동 검�??�스??구축
 -- ============================================================================
 
 -- ============================================================================
--- Phase 1: 데이터 제약조건 추가
+-- Phase 1: ?�이???�약조건 추�?
 -- ============================================================================
 
--- profiles 테이블 검증 (멱등: 기존 제약 있으면 건너뜀)
+-- profiles ?�이�?검�?(멱등: 기존 ?�약 ?�으�?건너?�)
 DO $$
 BEGIN
   IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'check_minerals_non_negative' AND conrelid = 'public.profiles'::regclass) THEN
@@ -25,7 +25,7 @@ BEGIN
   END IF;
 END $$;
 
--- inventory 테이블 검증 (멱등)
+-- inventory ?�이�?검�?(멱등)
 DO $$
 BEGIN
   IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'check_quantity_positive' AND conrelid = 'public.inventory'::regclass) THEN
@@ -33,7 +33,7 @@ BEGIN
   END IF;
 END $$;
 
--- user_level_records 테이블 검증 (멱등)
+-- user_level_records ?�이�?검�?(멱등)
 DO $$
 BEGIN
   IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'check_score_non_negative' AND conrelid = 'public.user_level_records'::regclass) THEN
@@ -45,10 +45,10 @@ BEGIN
 END $$;
 
 -- ============================================================================
--- Phase 2: 트리거 기반 자동 정리
+-- Phase 2: ?�리�?기반 ?�동 ?�리
 -- ============================================================================
 
--- 아이템 소모 시 자동으로 quantity=0인 항목 삭제
+-- ?�이???�모 ???�동?�로 quantity=0????�� ??��
 CREATE OR REPLACE FUNCTION cleanup_empty_inventory()
 RETURNS TRIGGER AS $$
 BEGIN
@@ -67,34 +67,34 @@ CREATE TRIGGER trigger_cleanup_empty_inventory
   EXECUTE FUNCTION cleanup_empty_inventory();
 
 -- ============================================================================
--- Phase 3: 자동 테스트 함수
+-- Phase 3: ?�동 ?�스???�수
 -- ============================================================================
 
 CREATE OR REPLACE FUNCTION test_db_constraints()
 RETURNS TABLE(test_name TEXT, result BOOLEAN, message TEXT) AS $$
 BEGIN
-  -- Test 1: minerals는 음수가 될 수 없음
+  -- Test 1: minerals???�수가 ?????�음
   RETURN QUERY
   SELECT 
     'check_minerals_non_negative'::TEXT,
     (SELECT COUNT(*) = 0 FROM public.profiles WHERE minerals < 0),
     'All profiles have non-negative minerals'::TEXT;
 
-  -- Test 2: stamina는 0-10 범위
+  -- Test 2: stamina??0-10 범위
   RETURN QUERY
   SELECT 
     'check_stamina_range'::TEXT,
     (SELECT COUNT(*) = 0 FROM public.profiles WHERE stamina < 0 OR stamina > 10),
     'All profiles have stamina in valid range (0-10)'::TEXT;
 
-  -- Test 3: inventory quantity는 양수
+  -- Test 3: inventory quantity???�수
   RETURN QUERY
   SELECT 
     'check_inventory_quantity'::TEXT,
     (SELECT COUNT(*) = 0 FROM public.inventory WHERE quantity <= 0),
     'All inventory items have positive quantity'::TEXT;
 
-  -- Test 4: tier level은 0-100 범위
+  -- Test 4: tier level?� 0-100 범위
   RETURN QUERY
   SELECT 
     'check_tier_level_range'::TEXT,
@@ -104,7 +104,7 @@ END;
 $$ LANGUAGE plpgsql;
 
 -- ============================================================================
--- 검증: 테스트 실행
+-- 검�? ?�스???�행
 -- ============================================================================
 
 SELECT * FROM test_db_constraints();

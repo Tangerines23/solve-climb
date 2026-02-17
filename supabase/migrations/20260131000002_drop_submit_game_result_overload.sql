@@ -1,8 +1,8 @@
 -- ============================================================================
--- submit_game_result 오버로드 1 제거 (PostgREST 404 해결)
--- 작성일: 2026.01.31
--- 원인: (integer[], uuid[]) 시그니처와 (jsonb, text[]) 시그니처 2개 존재 시
---       클라이언트 호출 시 PostgREST가 매칭 실패. (jsonb, text[], p_world_id) 버전만 유지.
+-- submit_game_result ?�버로드 1 ?�거 (PostgREST 404 ?�결)
+-- ?�성?? 2026.01.31
+-- ?�인: (integer[], uuid[]) ?�그?�처?� (JSONB, text[]) ?�그?�처 2�?존재 ??
+--       ?�라?�언???�출 ??PostgREST가 매칭 ?�패. (JSONB, text[], p_world_id) 버전�??��?.
 -- ============================================================================
 
 DROP FUNCTION IF EXISTS public.submit_game_result(

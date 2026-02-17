@@ -1,18 +1,18 @@
 -- ============================================================================
--- DB Lint 최종 수정 (2026.01.27)
--- 1. game_sessions: missing updated_at 컬럼 추가
--- 2. get_ranking_v2: 미사용 파라미터 p_category 대응
--- 3. check_and_award_badges: 배열 타입 캐스팅 경고 해결
--- 4. debug_run_play_scenario: debug_generate_dummy_record 호출 인자 Swapping 해결
--- 5. debug_create_persona_player: 가려진 변수 및 미사용 변수 제거, theme_mapping 의존성 제거
--- 6. reset_weekly_scores / promote_to_next_cycle: get_ranking_v2 호출 시그니처 수정
--- 7. debug_migrate_legacy_records: 호환되지 않는 레거시 함수 제거
+-- DB Lint 최종 ?�정 (2026.01.27)
+-- 1. game_sessions: missing updated_at 컬럼 추�?
+-- 2. get_ranking_v2: 미사???�라미터 p_category ?�??
+-- 3. check_and_award_badges: 배열 ?�??캐스??경고 ?�결
+-- 4. debug_run_play_scenario: debug_generate_dummy_record ?�출 ?�자 Swapping ?�결
+-- 5. debug_create_persona_player: 가?�진 변??�?미사??변???�거, theme_mapping ?�존???�거
+-- 6. reset_weekly_scores / promote_to_next_cycle: get_ranking_v2 ?�출 ?�그?�처 ?�정
+-- 7. debug_migrate_legacy_records: ?�환?��? ?�는 ?�거???�수 ?�거
 -- ============================================================================
 
 -- 1. game_sessions 컬럼 보강
 ALTER TABLE public.game_sessions ADD COLUMN IF NOT EXISTS updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW();
 
--- 2. get_ranking_v2 수정 (p_category 사용 및 시그니처 유지)
+-- 2. get_ranking_v2 ?�정 (p_category ?�용 �??�그?�처 ?��?)
 CREATE OR REPLACE FUNCTION public.get_ranking_v2(
     p_category TEXT,
     p_period TEXT,
@@ -33,7 +33,7 @@ BEGIN
         RETURN QUERY
         SELECT 
             p.id as user_id,
-            COALESCE(p.nickname, '익명 등반가') as nickname,
+            COALESCE(p.nickname, '?�명 ?�반가') as nickname,
             CASE 
                 WHEN p_type = 'time-attack' THEN p.weekly_score_timeattack::BIGINT
                 WHEN p_type = 'survival' THEN p.weekly_score_survival::BIGINT
@@ -56,7 +56,7 @@ BEGIN
                 ELSE p.weekly_score_total
             END
         ) > 0
-        AND (p_category IS NULL OR TRUE) -- p_category 매개변수 사용 (경고 제거)
+        AND (p_category IS NULL OR TRUE) -- p_category 매개변???�용 (경고 ?�거)
         ORDER BY score DESC
         LIMIT p_limit;
     ELSE
@@ -65,12 +65,12 @@ BEGIN
             WITH user_mastery AS (
                 SELECT ulr.user_id, SUM(ulr.best_score) as total_mastery
                 FROM public.user_level_records ulr
-                WHERE (p_category IS NULL OR ulr.category_id = p_category) -- p_category 필터링 적용
+                WHERE (p_category IS NULL OR ulr.category_id = p_category) -- p_category ?�터�??�용
                 GROUP BY ulr.user_id
             )
             SELECT 
                 um.user_id,
-                COALESCE(p.nickname, '익명 등반가') as nickname,
+                COALESCE(p.nickname, '?�명 ?�반가') as nickname,
                 um.total_mastery::BIGINT as score,
                 RANK() OVER (ORDER BY um.total_mastery DESC) as rank
             FROM user_mastery um
@@ -81,7 +81,7 @@ BEGIN
             RETURN QUERY
             SELECT 
                 p.id as user_id,
-                COALESCE(p.nickname, '익명 등반가') as nickname,
+                COALESCE(p.nickname, '?�명 ?�반가') as nickname,
                 CASE 
                     WHEN p_type = 'time-attack' THEN p.best_score_timeattack::BIGINT
                     ELSE p.best_score_survival::BIGINT
@@ -101,7 +101,7 @@ BEGIN
                     ELSE p.best_score_survival
                 END
             ) > 0
-            AND (p_category IS NULL OR TRUE) -- p_category 사용
+            AND (p_category IS NULL OR TRUE) -- p_category ?�용
             ORDER BY score DESC
             LIMIT p_limit;
         END IF;
@@ -109,9 +109,9 @@ BEGIN
 END;
 $$;
 
--- 3. check_and_award_badges (타입 캐스팅 수정)
+-- 3. check_and_award_badges (?�??캐스???�정)
 CREATE OR REPLACE FUNCTION public.check_and_award_badges(p_user_id UUID)
-RETURNS JSON AS $$
+RETURNS JSONB AS $$
 DECLARE
     v_badge_def RECORD;
     v_cleared_levels INTEGER[];
@@ -135,11 +135,11 @@ BEGIN
             END IF;
         END IF;
     END LOOP;
-    RETURN json_build_object('awarded_badges', (v_awarded_badges)::TEXT[], 'count', COALESCE(array_length(v_awarded_badges, 1), 0));
+    RETURN JSONB_build_object('awarded_badges', (v_awarded_badges)::TEXT[], 'count', COALESCE(array_length(v_awarded_badges, 1), 0));
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;
 
--- 4. debug_run_play_scenario (인자 순서 수정)
+-- 4. debug_run_play_scenario (?�자 ?�서 ?�정)
 CREATE OR REPLACE FUNCTION public.debug_run_play_scenario(
     p_user_id UUID,
     p_world_id TEXT,
@@ -149,13 +149,13 @@ CREATE OR REPLACE FUNCTION public.debug_run_play_scenario(
     p_level_end INTEGER,
     p_accuracy NUMERIC DEFAULT 0.8
 )
-RETURNS JSON AS $$
+RETURNS JSONB AS $$
 DECLARE
     v_correct_count INTEGER;
     v_res JSON;
     v_total_generated INTEGER := 0;
 BEGIN
-    -- 루프 변수 i 가리기 방지를 위해 i 사용 (이미 루프에서 선언됨)
+    -- 루프 변??i 가리기 방�?�??�해 i ?�용 (?��? 루프?�서 ?�언??
     FOR i IN p_level_start..p_level_end LOOP
         v_correct_count := FLOOR(10 * p_accuracy);
         
@@ -166,7 +166,7 @@ BEGIN
             p_category,
             p_subject,
             i,
-            v_correct_count, -- 순서 수정
+            v_correct_count, -- ?�서 ?�정
             'survival'
         );
         
@@ -175,7 +175,7 @@ BEGIN
 
     PERFORM public.check_and_award_badges(p_user_id);
 
-    RETURN json_build_object(
+    RETURN JSONB_build_object(
         'success', true,
         'levels_generated', v_total_generated,
         'user_id', p_user_id
@@ -183,12 +183,12 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;
 
--- 5. debug_create_persona_player (가리기/미사용/theme_mapping 제거)
+-- 5. debug_create_persona_player (가리기/미사??theme_mapping ?�거)
 CREATE OR REPLACE FUNCTION public.debug_create_persona_player(
     p_nickname TEXT,
     p_persona_type TEXT DEFAULT 'regular'
 )
-RETURNS JSON 
+RETURNS JSONB 
 LANGUAGE plpgsql
 SECURITY DEFINER
 AS $$
@@ -217,7 +217,7 @@ BEGIN
     END IF;
 
     FOREACH v_cat IN ARRAY v_categories LOOP
-        FOR i IN 1..v_max_level LOOP -- i 사용 (v_level 대신)
+        FOR i IN 1..v_max_level LOOP -- i ?�용 (v_level ?�??
             IF p_persona_type = 'newbie' AND i > 2 AND random() > 0.5 THEN EXIT; END IF;
             IF p_persona_type = 'regular' AND i > 6 AND random() > 0.3 THEN EXIT; END IF;
 
@@ -236,7 +236,7 @@ BEGIN
 
     UPDATE public.profiles SET total_mastery_score = v_total_score WHERE id = v_user_id;
 
-    RETURN json_build_object(
+    RETURN JSONB_build_object(
         'success', true,
         'user_id', v_user_id,
         'total_score', v_total_score
@@ -245,6 +245,7 @@ END;
 $$;
 
 -- 6. reset_weekly_scores (시그니처 수정)
+DROP FUNCTION IF EXISTS public.reset_weekly_scores();
 CREATE OR REPLACE FUNCTION public.reset_weekly_scores()
 RETURNS VOID AS $$
 DECLARE
@@ -252,7 +253,7 @@ DECLARE
     v_week_start DATE := date_trunc('week', NOW())::DATE;
     v_tier JSONB;
 BEGIN
-    -- TOTAL 랭킹 1-3위
+    -- TOTAL ??�� 1-3??
     FOR v_rec IN (SELECT * FROM public.get_ranking_v2(NULL, 'weekly', 'total', 3)) LOOP
         v_tier := public.calculate_tier(v_rec.score);
         INSERT INTO public.hall_of_fame (week_start_date, user_id, nickname, score, mode, rank, tier_level, tier_stars)
@@ -260,7 +261,7 @@ BEGIN
         ON CONFLICT DO NOTHING;
     END LOOP;
 
-    -- TIME-ATTACK 랭킹 1-3위
+    -- TIME-ATTACK ??�� 1-3??
     FOR v_rec IN (SELECT * FROM public.get_ranking_v2(NULL, 'weekly', 'time-attack', 3)) LOOP
         v_tier := public.calculate_tier(v_rec.score);
         INSERT INTO public.hall_of_fame (week_start_date, user_id, nickname, score, mode, rank, tier_level, tier_stars)
@@ -268,7 +269,7 @@ BEGIN
         ON CONFLICT DO NOTHING;
     END LOOP;
 
-    -- SURVIVAL 랭킹 1-3위
+    -- SURVIVAL ??�� 1-3??
     FOR v_rec IN (SELECT * FROM public.get_ranking_v2(NULL, 'weekly', 'survival', 3)) LOOP
         v_tier := public.calculate_tier(v_rec.score);
         INSERT INTO public.hall_of_fame (week_start_date, user_id, nickname, score, mode, rank, tier_level, tier_stars)
@@ -282,6 +283,7 @@ END;
 $$ LANGUAGE plpgsql;
 
 -- 7. promote_to_next_cycle (시그니처 수정 및 미사용 변수 제거)
+DROP FUNCTION IF EXISTS public.promote_to_next_cycle();
 CREATE OR REPLACE FUNCTION public.promote_to_next_cycle()
 RETURNS VOID AS $$
 DECLARE
@@ -301,10 +303,10 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
--- 8. debug_migrate_legacy_records 제거
+-- 8. debug_migrate_legacy_records ?�거
 DROP FUNCTION IF EXISTS public.debug_migrate_legacy_records();
 
--- 9. 최종 중복 오버로드 정리
+-- 9. 최종 중복 ?�버로드 ?�리
 DROP FUNCTION IF EXISTS public.get_ranking_v2(text, integer);
 DROP FUNCTION IF EXISTS public.check_and_award_badges(uuid, text, text, integer);
 DROP FUNCTION IF EXISTS public.debug_generate_dummy_record(uuid, text, text, integer, integer, text);

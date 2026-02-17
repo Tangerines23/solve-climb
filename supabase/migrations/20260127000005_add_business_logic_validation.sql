@@ -1,5 +1,5 @@
 -- ============================================================================
--- Phase 6: 비즈니스 로직 검증 (Business Logic Validation)
+-- Phase 6: 비즈?�스 로직 검�?(Business Logic Validation)
 -- ============================================================================
 
 CREATE OR REPLACE FUNCTION test_db_business_logic_validation()
@@ -31,9 +31,9 @@ BEGIN
       THEN 'All mastery scores match record sums'
       ELSE 'Found profiles with incorrect mastery scores'
     END::TEXT,
-    (SELECT jsonb_build_object(
+    (SELECT JSONB_build_object(
       'count', COUNT(*),
-      'mismatches', jsonb_agg(jsonb_build_object(
+      'mismatches', JSONB_agg(JSONB_build_object(
           'user_id', user_id,
           'nickname', nickname,
           'actual', actual_score,
@@ -54,28 +54,28 @@ BEGIN
     'check_minerals_non_negative'::TEXT,
     (SELECT COUNT(*) = 0 FROM public.profiles WHERE minerals < 0),
     'All profiles have non-negative minerals'::TEXT,
-    jsonb_build_object('count', (SELECT COUNT(*) FROM public.profiles WHERE minerals < 0));
+    JSONB_build_object('count', (SELECT COUNT(*) FROM public.profiles WHERE minerals < 0));
 
   RETURN QUERY
   SELECT 
     'check_stamina_range'::TEXT,
     (SELECT COUNT(*) = 0 FROM public.profiles WHERE stamina < 0 OR stamina > 10),
     'All profiles have stamina in valid range (0-10)'::TEXT,
-    jsonb_build_object('count', (SELECT COUNT(*) FROM public.profiles WHERE stamina < 0 OR stamina > 10));
+    JSONB_build_object('count', (SELECT COUNT(*) FROM public.profiles WHERE stamina < 0 OR stamina > 10));
 
   RETURN QUERY
   SELECT 
     'check_inventory_quantity'::TEXT,
     (SELECT COUNT(*) = 0 FROM public.inventory WHERE quantity <= 0),
     'All inventory items have positive quantity'::TEXT,
-    jsonb_build_object('count', (SELECT COUNT(*) FROM public.inventory WHERE quantity <= 0));
+    JSONB_build_object('count', (SELECT COUNT(*) FROM public.inventory WHERE quantity <= 0));
 
   RETURN QUERY
   SELECT 
     'check_tier_level_range'::TEXT,
     (SELECT COUNT(*) = 0 FROM public.profiles WHERE current_tier_level < 0 OR current_tier_level > 100),
     'All profiles have tier level in valid range (0-100)'::TEXT,
-    jsonb_build_object('count', (SELECT COUNT(*) FROM public.profiles WHERE current_tier_level < 0 OR current_tier_level > 100));
+    JSONB_build_object('count', (SELECT COUNT(*) FROM public.profiles WHERE current_tier_level < 0 OR current_tier_level > 100));
 
   -- 2. Advanced Logic
   RETURN QUERY SELECT * FROM test_db_advanced_validation();

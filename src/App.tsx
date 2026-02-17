@@ -4,7 +4,6 @@ import { Routes, Route } from 'react-router-dom';
 import { useLevelProgressStore } from '@/stores/useLevelProgressStore';
 import { useAuthStore } from '@/stores/useAuthStore';
 import { useCustomBackNavigation } from '@/hooks/useCustomBackNavigation';
-import { useDebugShortcuts } from '@/hooks/useDebugShortcuts';
 import { ErrorBoundary } from '@/components/ErrorBoundary';
 import { GlobalLoadingIndicator } from '@/components/GlobalLoadingIndicator';
 import { useErrorLogStore } from '@/stores/useErrorLogStore';
@@ -68,6 +67,9 @@ const VisualGuardian = import.meta.env.PROD
   : lazy(() =>
       import('./components/dev/VisualGuardian').then((m) => ({ default: m.VisualGuardian }))
     );
+const DebugShortcutsWrapper = import.meta.env.PROD
+  ? () => null
+  : lazy(() => import('./components/debug/DebugShortcutsWrapper'));
 
 function App() {
   // 네트워크 연결 상태 감시
@@ -78,9 +80,6 @@ function App() {
 
   // 커스텀 뒤로가기 네비게이션 적용
   useCustomBackNavigation();
-
-  // ⚠️ 전역 디버그 단축키 (개발 환경에서만 활성화)
-  useDebugShortcuts();
 
   const { isDebugPanelOpen } = useDebugStore(); // Debug store state for conditional rendering
   const animationEnabled = useSettingsStore((state) => state.animationEnabled);
@@ -171,6 +170,8 @@ function App() {
         {import.meta.env.DEV && DebugReturnFloater && <DebugReturnFloater />}
         {/* Visual Guardian (Overflow Detector) */}
         {import.meta.env.DEV && VisualGuardian && <VisualGuardian />}
+        {/* Debug Shortcuts (Lazy Loaded) */}
+        {import.meta.env.DEV && DebugShortcutsWrapper && <DebugShortcutsWrapper />}
       </Suspense>
     </ErrorBoundary>
   );

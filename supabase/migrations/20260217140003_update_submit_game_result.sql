@@ -1,10 +1,10 @@
 -- ============================================================================
--- submit_game_result 함수에 디버그 세션 예외 처리 추가
--- 작성일: 2025.01.01
+-- submit_game_result ?�수???�버�??�션 ?�외 처리 추�?
+-- ?�성?? 2025.01.01
 -- ============================================================================
 
--- submit_game_result 함수의 스태미나 검증 부분 수정
--- 전체 함수를 재생성하되, 스태미나 검증 블록만 수정
+-- submit_game_result ?�수???�태미나 검�?부�??�정
+-- ?�체 ?�수�??�생?�하?? ?�태미나 검�?블록�??�정
 
 CREATE OR REPLACE FUNCTION public.submit_game_result(
   p_user_answers INTEGER[],
@@ -16,7 +16,7 @@ CREATE OR REPLACE FUNCTION public.submit_game_result(
   p_subject TEXT DEFAULT 'add',
   p_level INTEGER DEFAULT 1
 )
-RETURNS JSON
+RETURNS JSONB
 LANGUAGE plpgsql
 SECURITY DEFINER
 AS $$
@@ -35,60 +35,60 @@ DECLARE
   v_total_mastery BIGINT;
   v_theme_code SMALLINT;
   v_mode_code SMALLINT;
-  v_is_debug_session BOOLEAN;  -- ⚠️ 추가: 디버그 세션 플래그 (함수 전체에서 사용)
-  -- 검증 상수
+  v_is_debug_session BOOLEAN;  -- ?�️ 추�?: ?�버�??�션 ?�래�?(?�수 ?�체?�서 ?�용)
+  -- 검�??�수
   MAX_SCORE INTEGER := 1000000;
   MAX_MINERALS INTEGER := 10000;
   MAX_LEVEL INTEGER := 100;
   MIN_LEVEL INTEGER := 1;
   MINERALS_PER_SCORE INTEGER := 100;
 BEGIN
-  -- 0. 디버그 세션 플래그 조회 (함수 전체에서 사용)
+  -- 0. ?�버�??�션 ?�래�?조회 (?�수 ?�체?�서 ?�용)
   SELECT is_debug_session INTO v_is_debug_session
   FROM public.game_sessions
   WHERE id = p_session_id AND user_id = v_user_id;
   
-  -- 1. 인증 검증
+  -- 1. ?�증 검�?
   IF v_user_id IS NULL THEN
-    RETURN json_build_object(
+    RETURN JSONB_build_object(
       'success', false, 
       'error', 'Authentication required'
     );
   END IF;
   
-  -- 2. 게임 모드 검증
+  -- 2. 게임 모드 검�?
   IF p_game_mode NOT IN ('timeattack', 'survival') THEN
-    RETURN json_build_object(
+    RETURN JSONB_build_object(
       'success', false, 
       'error', 'Invalid game mode'
     );
   END IF;
   
-  -- 3. 카테고리 검증 (SQL Injection 방지)
+  -- 3. 카테고리 검�?(SQL Injection 방�?)
   IF p_category NOT IN ('math', 'english', 'logic') THEN
-    RETURN json_build_object(
+    RETURN JSONB_build_object(
       'success', false, 
       'error', 'Invalid category'
     );
   END IF;
   
-  -- 4. 주제 검증 (SQL Injection 방지)
+  -- 4. 주제 검�?(SQL Injection 방�?)
   IF p_subject NOT IN ('add', 'sub', 'mul', 'div', 'word', 'puzzle') THEN
-    RETURN json_build_object(
+    RETURN JSONB_build_object(
       'success', false, 
       'error', 'Invalid subject'
     );
   END IF;
   
-  -- 5. 레벨 검증
+  -- 5. ?�벨 검�?
   IF p_level < MIN_LEVEL OR p_level > MAX_LEVEL THEN
-    RETURN json_build_object(
+    RETURN JSONB_build_object(
       'success', false, 
       'error', 'Invalid level'
     );
   END IF;
   
-  -- 6. 게임 세션 검증 및 멱등성 처리
+  -- 6. 게임 ?�션 검�?�?멱등??처리
   DECLARE
     v_session_status TEXT;
     v_session_score INTEGER;
@@ -98,24 +98,24 @@ BEGIN
     FROM public.game_sessions
     WHERE id = p_session_id AND user_id = v_user_id;
     
-    -- 세션이 없거나 만료된 경우
+    -- ?�션???�거??만료??경우
     IF v_session_status IS NULL THEN
       INSERT INTO public.security_audit_log (user_id, event_type, event_data)
-      VALUES (v_user_id, 'invalid_session', json_build_object('session_id', p_session_id))
+      VALUES (v_user_id, 'invalid_session', JSONB_build_object('session_id', p_session_id))
       ON CONFLICT DO NOTHING;
       
-      RETURN json_build_object(
+      RETURN JSONB_build_object(
         'success', false, 
         'error', 'Game session not found'
       );
     END IF;
     
-    -- ⚠️ 멱등성: 이미 완료된 세션인 경우 이전 결과 반환
+    -- ?�️ 멱등?? ?��? ?�료???�션??경우 ?�전 결과 반환
     IF v_session_status = 'completed' THEN
       IF v_previous_result IS NOT NULL THEN
         RETURN v_previous_result;
       ELSE
-        RETURN json_build_object(
+        RETURN JSONB_build_object(
           'success', true,
           'message', 'This game session was already processed',
           'score', v_session_score,
@@ -124,39 +124,39 @@ BEGIN
       END IF;
     END IF;
     
-    -- 세션이 만료된 경우
+    -- ?�션??만료??경우
     IF v_session_status = 'expired' OR 
        (SELECT expires_at FROM public.game_sessions WHERE id = p_session_id) < NOW() THEN
       INSERT INTO public.security_audit_log (user_id, event_type, event_data)
-      VALUES (v_user_id, 'expired_session', json_build_object('session_id', p_session_id))
+      VALUES (v_user_id, 'expired_session', JSONB_build_object('session_id', p_session_id))
       ON CONFLICT DO NOTHING;
       
-      RETURN json_build_object(
+      RETURN JSONB_build_object(
         'success', false, 
         'error', 'Game session expired'
       );
     END IF;
     
-    -- 세션이 'playing' 상태가 아닌 경우
+    -- ?�션??'playing' ?�태가 ?�닌 경우
     IF v_session_status != 'playing' THEN
       INSERT INTO public.security_audit_log (user_id, event_type, event_data)
-      VALUES (v_user_id, 'invalid_session_status', json_build_object('session_id', p_session_id, 'status', v_session_status))
+      VALUES (v_user_id, 'invalid_session_status', JSONB_build_object('session_id', p_session_id, 'status', v_session_status))
       ON CONFLICT DO NOTHING;
       
-      RETURN json_build_object(
+      RETURN JSONB_build_object(
         'success', false, 
         'error', 'Invalid session status'
       );
     END IF;
   END;
   
-  -- 7. 하트(체력) 검증 (서버 사이드 검증 필수) ⚠️ 보안
-  -- ⚠️ 수정: 디버그 세션 체크 추가
+  -- 7. ?�트(체력) 검�?(?�버 ?�이??검�??�수) ?�️ 보안
+  -- ?�️ ?�정: ?�버�??�션 체크 추�?
   DECLARE
     v_current_stamina INTEGER;
   BEGIN
-    -- 디버그 세션이 아닐 때만 스태미나 검증
-    -- (v_is_debug_session은 함수 상단에서 이미 조회됨)
+    -- ?�버�??�션???�닐 ?�만 ?�태미나 검�?
+    -- (v_is_debug_session?� ?�수 ?�단?�서 ?��? 조회??
     IF NOT COALESCE(v_is_debug_session, false) THEN
       SELECT stamina INTO v_current_stamina
       FROM public.profiles
@@ -164,24 +164,24 @@ BEGIN
       
       IF COALESCE(v_current_stamina, 0) <= 0 THEN
         INSERT INTO public.security_audit_log (user_id, event_type, event_data)
-        VALUES (v_user_id, 'insufficient_stamina', json_build_object('stamina', v_current_stamina))
+        VALUES (v_user_id, 'insufficient_stamina', JSONB_build_object('stamina', v_current_stamina))
         ON CONFLICT DO NOTHING;
         
-        RETURN json_build_object(
+        RETURN JSONB_build_object(
           'success', false, 
           'error', 'Not enough stamina'
         );
       END IF;
     ELSE
-      -- 디버그 세션: 스태미나 검증 스킵, 디버그 로그만 기록
+      -- ?�버�??�션: ?�태미나 검�??�킵, ?�버�?로그�?기록
       INSERT INTO public.security_audit_log (user_id, event_type, event_data)
       VALUES (v_user_id, 'debug_session_submit', 
-              json_build_object('session_id', p_session_id, 'stamina_bypassed', true))
+              JSONB_build_object('session_id', p_session_id, 'stamina_bypassed', true))
       ON CONFLICT DO NOTHING;
     END IF;
   END;
   
-  -- 8. 최소 쿨타임 검증 (Rate Limit) ⚠️ 보안
+  -- 8. 최소 쿨�???검�?(Rate Limit) ?�️ 보안
   DECLARE
     v_last_submit_at TIMESTAMP WITH TIME ZONE;
     v_min_cooldown_seconds INTEGER := 10;
@@ -194,17 +194,17 @@ BEGIN
        (NOW() - v_last_submit_at) < (v_min_cooldown_seconds || ' seconds')::INTERVAL THEN
       INSERT INTO public.security_audit_log (user_id, event_type, event_data)
       VALUES (v_user_id, 'rate_limit_exceeded', 
-              json_build_object('last_submit', v_last_submit_at, 'cooldown', v_min_cooldown_seconds))
+              JSONB_build_object('last_submit', v_last_submit_at, 'cooldown', v_min_cooldown_seconds))
       ON CONFLICT DO NOTHING;
       
-      RETURN json_build_object(
+      RETURN JSONB_build_object(
         'success', false, 
         'error', 'Rate limit exceeded. Please wait before submitting again.'
       );
     END IF;
   END;
   
-  -- 9. 서버 사이드 채점 (보안 필수) ⚠️ **보안 필수**
+  -- 9. ?�버 ?�이??채점 (보안 ?�수) ?�️ **보안 ?�수**
   DECLARE
     v_session_questions JSONB;
     v_question JSONB;
@@ -216,51 +216,51 @@ BEGIN
     v_question_index INTEGER;
     v_mode_weight NUMERIC := 1.0;
   BEGIN
-    -- 게임 세션에서 문제 정보 가져오기
+    -- 게임 ?�션?�서 문제 ?�보 가?�오�?
     SELECT questions INTO v_session_questions
     FROM public.game_sessions
     WHERE id = p_session_id AND user_id = v_user_id;
     
     IF v_session_questions IS NULL THEN
-      RETURN json_build_object(
+      RETURN JSONB_build_object(
         'success', false,
         'error', 'Game session not found or questions missing'
       );
     END IF;
     
-    -- 답안 배열과 문제 ID 배열 길이 검증
+    -- ?�안 배열�?문제 ID 배열 길이 검�?
     IF array_length(p_user_answers, 1) != array_length(p_question_ids, 1) THEN
       INSERT INTO public.security_audit_log (user_id, event_type, event_data)
-      VALUES (v_user_id, 'invalid_answers', json_build_object('answers_count', array_length(p_user_answers, 1), 'questions_count', array_length(p_question_ids, 1)))
+      VALUES (v_user_id, 'invalid_answers', JSONB_build_object('answers_count', array_length(p_user_answers, 1), 'questions_count', array_length(p_question_ids, 1)))
       ON CONFLICT DO NOTHING;
       
-      RETURN json_build_object(
+      RETURN JSONB_build_object(
         'success', false,
         'error', 'Answers and question IDs count mismatch'
       );
     END IF;
     
-    -- 답안 배열 순회하며 채점
+    -- ?�안 배열 ?�회?�며 채점
     v_total_questions := array_length(p_question_ids, 1);
     
     FOR v_question_index IN 1..v_total_questions LOOP
       v_question_id := p_question_ids[v_question_index];
       v_user_answer := p_user_answers[v_question_index];
       
-      -- 세션의 questions에서 해당 문제 찾기
+      -- ?�션??questions?�서 ?�당 문제 찾기
       SELECT q INTO v_question
-      FROM jsonb_array_elements(v_session_questions) AS q
+      FROM JSONB_array_elements(v_session_questions) AS q
       WHERE (q->>'id')::UUID = v_question_id;
       
       IF v_question IS NULL THEN
         INSERT INTO public.security_audit_log (user_id, event_type, event_data)
-        VALUES (v_user_id, 'invalid_question_id', json_build_object('question_id', v_question_id))
+        VALUES (v_user_id, 'invalid_question_id', JSONB_build_object('question_id', v_question_id))
         ON CONFLICT DO NOTHING;
         
         CONTINUE;
       END IF;
       
-      -- 정답 비교
+      -- ?�답 비교
       v_correct_answer := (v_question->>'correct_answer')::INTEGER;
       
       IF v_user_answer = v_correct_answer THEN
@@ -268,8 +268,8 @@ BEGIN
       END IF;
     END LOOP;
     
-    -- 점수 계산 (정답률 × 레벨별 기본 점수)
-    -- 모드별 가중치 적용 (타임어택과 서바이벌 점수 형평성 유지)
+    -- ?�수 계산 (?�답�?× ?�벨�?기본 ?�수)
+    -- 모드�?가중치 ?�용 (?�?�어?�과 ?�바?�벌 ?�수 ?�평???��?)
     IF p_game_mode = 'survival' THEN
       v_mode_weight := 0.8;
     ELSE
@@ -278,28 +278,28 @@ BEGIN
     
     v_calculated_score := FLOOR((v_correct_count * 100.0 / GREATEST(v_total_questions, 1)) * p_level * v_mode_weight);
     
-    -- 점수 검증
+    -- ?�수 검�?
     IF v_calculated_score < 0 OR v_calculated_score > MAX_SCORE THEN
       INSERT INTO public.security_audit_log (user_id, event_type, event_data)
-      VALUES (v_user_id, 'invalid_score', json_build_object('calculated_score', v_calculated_score))
+      VALUES (v_user_id, 'invalid_score', JSONB_build_object('calculated_score', v_calculated_score))
       ON CONFLICT DO NOTHING;
       
-      RETURN json_build_object(
+      RETURN JSONB_build_object(
         'success', false, 
         'error', 'Invalid calculated score'
       );
     END IF;
   END;
   
-  -- 현재 마스터리 점수 조회 (티어 계산용)
+  -- ?�재 마스?�리 ?�수 조회 (?�어 계산??
   SELECT total_mastery_score INTO v_total_mastery
   FROM public.profiles
   WHERE id = v_user_id;
   
-  -- 테마 ID 생성
+  -- ?�마 ID ?�성
   v_theme_id := p_category || '_' || p_subject;
   
-  -- 테마/모드 코드 조회
+  -- ?�마/모드 코드 조회
   SELECT code INTO v_theme_code
   FROM public.theme_mapping
   WHERE theme_id = v_theme_id;
@@ -309,22 +309,22 @@ BEGIN
   WHERE mode_id = p_game_mode;
   
   IF v_theme_code IS NULL OR v_mode_code IS NULL THEN
-    RETURN json_build_object(
+    RETURN JSONB_build_object(
       'success', false, 
       'error', 'Invalid theme or mode'
     );
   END IF;
   
-  -- 게임 세션 완료 처리 (재사용 불가) ⚠️ **보안 필수**
+  -- 게임 ?�션 ?�료 처리 (?�사??불�?) ?�️ **보안 ?�수**
   UPDATE public.game_sessions
   SET 
     status = 'completed',
     score = v_calculated_score
   WHERE id = p_session_id;
   
-  -- 하트(체력) 소모 (서버에서 처리) ⚠️ 보안
-  -- ⚠️ 수정: 디버그 세션일 때는 스태미나 소모 스킵
-  -- v_is_debug_session은 스태미나 검증 블록에서 이미 조회됨
+  -- ?�트(체력) ?�모 (?�버?�서 처리) ?�️ 보안
+  -- ?�️ ?�정: ?�버�??�션???�는 ?�태미나 ?�모 ?�킵
+  -- v_is_debug_session?� ?�태미나 검�?블록?�서 ?��? 조회??
   IF NOT COALESCE(v_is_debug_session, false) THEN
     UPDATE public.profiles 
     SET 
@@ -332,14 +332,14 @@ BEGIN
       last_game_submit_at = NOW()
     WHERE id = v_user_id;
   ELSE
-    -- 디버그 세션: 스태미나 소모 스킵, last_game_submit_at만 업데이트
+    -- ?�버�??�션: ?�태미나 ?�모 ?�킵, last_game_submit_at�??�데?�트
     UPDATE public.profiles 
     SET 
       last_game_submit_at = NOW()
     WHERE id = v_user_id;
   END IF;
   
-  -- 미네랄 지급 (서버에서 계산된 점수에 비례하여 자동 계산) ⚠️ **보안 필수**
+  -- 미네??지�?(?�버?�서 계산???�수??비�??�여 ?�동 계산) ?�️ **보안 ?�수**
   v_earned_minerals := FLOOR(v_calculated_score / MINERALS_PER_SCORE);
   v_earned_minerals := LEAST(v_earned_minerals, MAX_MINERALS);
   
@@ -347,7 +347,7 @@ BEGIN
   SET minerals = minerals + v_earned_minerals
   WHERE id = v_user_id;
   
-  -- 사용된 아이템 인벤토리에서 차감
+  -- ?�용???�이???�벤?�리?�서 차감
   IF p_items_used IS NOT NULL THEN
     FOREACH v_item_id IN ARRAY p_items_used LOOP
       UPDATE public.inventory 
@@ -356,7 +356,7 @@ BEGIN
     END LOOP;
   END IF;
   
-  -- 주간 점수 업데이트 (무조건 더하기) - 서버 계산 점수 사용
+  -- 주간 ?�수 ?�데?�트 (무조�??�하�? - ?�버 계산 ?�수 ?�용
   IF p_game_mode = 'timeattack' THEN
     UPDATE public.profiles 
     SET weekly_score_timeattack = weekly_score_timeattack + v_calculated_score,
@@ -369,7 +369,7 @@ BEGIN
     WHERE id = v_user_id;
   END IF;
   
-  -- 최고 기록 업데이트 - 서버 계산 점수 사용
+  -- 최고 기록 ?�데?�트 - ?�버 계산 ?�수 ?�용
   IF p_game_mode = 'timeattack' THEN
     UPDATE public.profiles 
     SET best_score_timeattack = GREATEST(best_score_timeattack, v_calculated_score)
@@ -388,14 +388,14 @@ BEGIN
     AND level = p_level
     AND mode_code = v_mode_code;
   
-  -- 신기록인지 확인 (서버 계산 점수 사용)
+  -- ?�기록인지 ?�인 (?�버 계산 ?�수 ?�용)
   v_new_best_score := GREATEST(COALESCE(v_old_best_score, 0), v_calculated_score);
   
   IF v_new_best_score > COALESCE(v_old_best_score, 0) THEN
-    -- 신기록! 점수 차이만큼 마스터리 점수 증가
+    -- ?�기�? ?�수 차이만큼 마스?�리 ?�수 증�?
     v_score_diff := v_new_best_score - COALESCE(v_old_best_score, 0);
     
-    -- user_level_records 업데이트 (UPSERT)
+    -- user_level_records ?�데?�트 (UPSERT)
     INSERT INTO public.user_level_records (
       user_id, theme_code, level, mode_code, best_score
     ) VALUES (
@@ -406,18 +406,18 @@ BEGIN
       best_score = v_new_best_score,
       updated_at = NOW();
     
-    -- 마스터리 점수 증가
+    -- 마스?�리 ?�수 증�?
     UPDATE public.profiles
     SET total_mastery_score = total_mastery_score + v_score_diff
     WHERE id = v_user_id;
     
-    -- 티어 업데이트 전 현재 티어 저장
+    -- ?�어 ?�데?�트 ???�재 ?�어 ?�??
     v_previous_tier := public.calculate_tier((v_total_mastery - v_score_diff)::INTEGER);
     
-    -- 티어 재계산 및 업데이트
+    -- ?�어 ?�계??�??�데?�트
     v_current_tier := public.update_user_tier(v_user_id);
     
-    -- 티어 업그레이드 확인
+    -- ?�어 ?�그?�이???�인
     DECLARE
       v_prev_level INTEGER := (v_previous_tier->>'level')::INTEGER;
       v_prev_stars INTEGER := (v_previous_tier->>'stars')::INTEGER;
@@ -431,11 +431,11 @@ BEGIN
       END IF;
     END;
   ELSE
-    -- 신기록이 아니어도 현재 티어 반환
+    -- ?�기록이 ?�니?�도 ?�재 ?�어 반환
     v_current_tier := public.calculate_tier(COALESCE(v_total_mastery, 0)::INTEGER);
   END IF;
   
-  -- 강제 멈춤(Parking) 시스템: 250,000점 도달 시 승급 대기
+  -- 강제 멈춤(Parking) ?�스?? 250,000???�달 ???�급 ?��?
   DECLARE
     v_cycle_cap INTEGER;
     v_new_total_mastery BIGINT;
@@ -452,7 +452,7 @@ BEGIN
     FROM public.profiles
     WHERE id = v_user_id;
     
-    -- 250,000점을 넘었고 현재 전설 레벨인 경우 승급 대기 상태로 설정
+    -- 250,000?�을 ?�었�??�재 ?�설 ?�벨??경우 ?�급 ?��??�태�??�정
     IF v_new_total_mastery >= v_cycle_cap AND 
        (v_current_tier->>'level')::INTEGER = 6 THEN
       UPDATE public.profiles
@@ -469,7 +469,7 @@ BEGIN
     v_badge_result JSON;
     v_awarded_badges TEXT[];
   BEGIN
-    -- 뱃지 획득 체크 (신기록일 때만)
+    -- 뱃�? ?�득 체크 (?�기록일 ?�만)
     IF v_new_best_score > COALESCE(v_old_best_score, 0) THEN
       v_badge_result := public.check_and_award_badges(v_user_id, p_category, p_subject, p_level);
       v_awarded_badges := ARRAY(SELECT json_array_elements_text(v_badge_result->'awarded_badges'));
@@ -477,7 +477,7 @@ BEGIN
       v_awarded_badges := ARRAY[]::TEXT[];
     END IF;
     
-    v_final_result := json_build_object(
+    v_final_result := JSONB_build_object(
       'success', true,
       'new_record', v_new_best_score > COALESCE(v_old_best_score, 0),
       'tier_upgraded', v_tier_upgraded,
@@ -489,7 +489,7 @@ BEGIN
       'awarded_badges', v_awarded_badges
     );
     
-    -- ⚠️ 멱등성: 결과를 세션에 저장 (네트워크 불안정 시 재요청 대응)
+    -- ?�️ 멱등?? 결과�??�션???�??(?�트?�크 불안?????�요�??�??
     UPDATE public.game_sessions
     SET result = v_final_result::JSONB
     WHERE id = p_session_id;
@@ -502,10 +502,10 @@ EXCEPTION
     RAISE LOG 'Error in submit_game_result: User %, Error %', v_user_id, SQLERRM;
     
     INSERT INTO public.security_audit_log (user_id, event_type, event_data)
-    VALUES (v_user_id, 'system_error', json_build_object('error', SQLERRM))
+    VALUES (v_user_id, 'system_error', JSONB_build_object('error', SQLERRM))
     ON CONFLICT DO NOTHING;
     
-    RETURN json_build_object(
+    RETURN JSONB_build_object(
       'success', false,
       'error', 'An error occurred. Please try again.'
     );

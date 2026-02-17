@@ -1,7 +1,7 @@
 import { defineConfig, loadEnv } from 'vite';
 import react from '@vitejs/plugin-react';
 import path from 'path';
-// import { visualizer } from 'rollup-plugin-visualizer';
+import { visualizer } from 'rollup-plugin-visualizer';
 import { sentryVitePlugin } from '@sentry/vite-plugin';
 import { VitePWA } from 'vite-plugin-pwa';
 
@@ -15,18 +15,27 @@ export default defineConfig(({ mode }) => {
 
   // Vercel 환경인지 확인
   const isVercel = process.env.VERCEL === '1';
+  const isAnalyze = process.env.ANALYZE === 'true';
 
   return {
     base: './',
     plugins: [
       react(),
-      // Sentry Source Map Upload
-      sentryVitePlugin({
-        org: env.SENTRY_ORG,
-        project: env.SENTRY_PROJECT,
-        authToken: env.SENTRY_AUTH_TOKEN,
-      }),
+      // Sentry Source Map Upload (Analysis 모드에서는 제외하여 경고 방지 및 속도 향상)
+      !isAnalyze &&
+        sentryVitePlugin({
+          org: env.SENTRY_ORG,
+          project: env.SENTRY_PROJECT,
+          authToken: env.SENTRY_AUTH_TOKEN,
+        }),
       // Bundle analyzer (only in analyze mode)
+      isAnalyze &&
+        visualizer({
+          filename: './dist/stats.html',
+          open: true,
+          gzipSize: true,
+          brotliSize: true,
+        }),
       // PWA support
       VitePWA({
         registerType: 'prompt',

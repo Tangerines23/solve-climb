@@ -21,14 +21,13 @@ function getAssetsReport(dirPath, report = { js: 0, css: 0, assets: 0, total: 0 
     const stats = fs.statSync(filePath);
 
     if (stats.isFile()) {
-      if (file.includes('debug-')) continue;
+      // ⚠️ 디버그 파일, 통계 파일, 소스맵은 번들 사이즈 계산에서 제외
+      if (file.includes('debug-') || file === 'stats.html' || file.endsWith('.map')) continue;
+
       report.total += stats.size;
       if (file.endsWith('.js')) {
-        // ⚠️ 디버그 패널 관련 파일은 번들 사이즈 계산에서 제외 (사용자 다운로드 X)
-        if (file.includes('debug-')) continue;
         report.js += stats.size;
       } else if (file.endsWith('.css')) {
-        if (file.includes('debug-')) continue;
         report.css += stats.size;
       } else {
         report.assets += stats.size;

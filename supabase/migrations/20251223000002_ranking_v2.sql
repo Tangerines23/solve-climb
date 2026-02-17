@@ -1,14 +1,16 @@
 -- ============================================================================
--- 랭킹 시스템 v2 (주간 리그 & 명예의 전당)
+-- ??�� ?�스??v2 (주간 리그 & 명예???�당)
 -- ============================================================================
 
--- 1. profiles 테이블에 주간 점수 캐싱 컬럼 추가
+-- 1. profiles ?�이블에 주간 ?�수 캐싱 컬럼 추�?
 ALTER TABLE public.profiles 
 ADD COLUMN IF NOT EXISTS weekly_score_total INTEGER DEFAULT 0,
 ADD COLUMN IF NOT EXISTS weekly_score_timeattack INTEGER DEFAULT 0,
-ADD COLUMN IF NOT EXISTS weekly_score_survival INTEGER DEFAULT 0;
+ADD COLUMN IF NOT EXISTS weekly_score_survival INTEGER DEFAULT 0,
+ADD COLUMN IF NOT EXISTS best_score_timeattack INTEGER DEFAULT 0,
+ADD COLUMN IF NOT EXISTS best_score_survival INTEGER DEFAULT 0;
 
--- 2. 게임 활동 로그 테이블 생성 (분석용)
+-- 2. 게임 ?�동 로그 ?�이�??�성 (분석??
 CREATE TABLE IF NOT EXISTS public.game_activity (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     user_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
@@ -18,23 +20,23 @@ CREATE TABLE IF NOT EXISTS public.game_activity (
     created_at TIMESTAMPTZ DEFAULT now()
 );
 
--- 인덱스 생성
+-- ?�덱???�성
 CREATE INDEX IF NOT EXISTS idx_game_activity_user_id ON public.game_activity(user_id);
 CREATE INDEX IF NOT EXISTS idx_game_activity_created_at ON public.game_activity(created_at);
 
--- RLS 설정
+-- RLS ?�정
 ALTER TABLE public.game_activity ENABLE ROW LEVEL SECURITY;
 DROP POLICY IF EXISTS "Users can view own activity" ON public.game_activity;
 CREATE POLICY "Users can view own activity" ON public.game_activity FOR SELECT USING (auth.uid() = user_id);
 
--- 3. 기존 submit_game_result 함수 업데이트 (주간 점수 가산 및 로그 기록)
+-- 3. 기존 submit_game_result ?�수 ?�데?�트 (주간 ?�수 가??�?로그 기록)
 CREATE OR REPLACE FUNCTION public.submit_game_result(
   p_score INTEGER,
   p_minerals_earned INTEGER,
-  p_game_mode TEXT, -- 'timeattack' 또는 'survival'
+  p_game_mode TEXT, -- 'timeattack' ?�는 'survival'
   p_items_used INTEGER[]
 )
-RETURNS JSON
+RETURNS JSONB
 LANGUAGE plpgsql
 SECURITY DEFINER
 AS $$
@@ -42,12 +44,12 @@ DECLARE
   v_user_id UUID := auth.uid();
   v_item_id INTEGER;
 BEGIN
-  -- 1. 미네랄 지급
+  -- 1. 미네??지�?
   UPDATE public.profiles 
   SET minerals = minerals + p_minerals_earned
   WHERE id = v_user_id;
 
-  -- 2. 사용된 아이템 인벤토리에서 차감
+  -- 2. ?�용???�이???�벤?�리?�서 차감
   IF p_items_used IS NOT NULL THEN
     FOREACH v_item_id IN ARRAY p_items_used LOOP
       UPDATE public.inventory 
@@ -56,7 +58,7 @@ BEGIN
     END LOOP;
   END IF;
 
-  -- 3. 최고 점수 갱신 및 주간 점수 가산
+  -- 3. 최고 ?�수 갱신 �?주간 ?�수 가??
   IF p_game_mode = 'timeattack' THEN
     UPDATE public.profiles 
     SET 
@@ -73,15 +75,15 @@ BEGIN
     WHERE id = v_user_id;
   END IF;
 
-  -- 4. 게임 활동 로그 기록
+  -- 4. 게임 ?�동 로그 기록
   INSERT INTO public.game_activity (user_id, category, mode, score)
-  VALUES (v_user_id, 'math', p_game_mode, p_score); -- 현재 기본 카테고리는 math
+  VALUES (v_user_id, 'math', p_game_mode, p_score); -- ?�재 기본 카테고리??math
 
-  RETURN json_build_object('success', true);
+  RETURN JSONB_build_object('success', true);
 END;
 $$;
 
--- 4. 랭킹 v2 조회 RPC 함수
+-- 4. ??�� v2 조회 RPC ?�수
 -- p_period: 'weekly', 'all-time'
 -- p_type: 'total', 'time-attack', 'survival'
 CREATE OR REPLACE FUNCTION public.get_ranking_v2(
@@ -105,7 +107,7 @@ BEGIN
         RETURN QUERY
         SELECT 
             p.id as user_id,
-            COALESCE(p.nickname, '익명 등반가') as nickname,
+            COALESCE(p.nickname, '?�명 ?�반가') as nickname,
             CASE 
                 WHEN p_type = 'time-attack' THEN p.weekly_score_timeattack::BIGINT
                 WHEN p_type = 'survival' THEN p.weekly_score_survival::BIGINT
@@ -131,9 +133,9 @@ BEGIN
         ORDER BY score DESC
         LIMIT p_limit;
 
-    -- 명예의 전당 (All-Time)
+    -- 명예???�당 (All-Time)
     ELSE
-        -- 종합 (총 마스터리 점수: game_records의 합산)
+        -- 종합 (�?마스?�리 ?�수: game_records???�산)
         IF p_type = 'total' THEN
             RETURN QUERY
             WITH user_mastery AS (
@@ -144,7 +146,7 @@ BEGIN
             )
             SELECT 
                 um.user_id,
-                COALESCE(p.nickname, '익명 등반가') as nickname,
+                COALESCE(p.nickname, '?�명 ?�반가') as nickname,
                 um.total_mastery::BIGINT as score,
                 RANK() OVER (ORDER BY um.total_mastery DESC) as rank
             FROM user_mastery um
@@ -152,12 +154,12 @@ BEGIN
             ORDER BY score DESC
             LIMIT p_limit;
             
-        -- 타임어택 / 서바이벌 (역대 최고 단일 점수)
+        -- ?�?�어??/ ?�바?�벌 (??? 최고 ?�일 ?�수)
         ELSE
             RETURN QUERY
             SELECT 
                 p.id as user_id,
-                COALESCE(p.nickname, '익명 등반가') as nickname,
+                COALESCE(p.nickname, '?�명 ?�반가') as nickname,
                 CASE 
                     WHEN p_type = 'time-attack' THEN p.best_score_timeattack::BIGINT
                     ELSE p.best_score_survival::BIGINT
@@ -184,7 +186,7 @@ BEGIN
 END;
 $$;
 
--- 5. 주간 초기화 함수
+-- 5. 주간 초기???�수
 CREATE OR REPLACE FUNCTION public.reset_weekly_scores()
 RETURNS void
 LANGUAGE plpgsql

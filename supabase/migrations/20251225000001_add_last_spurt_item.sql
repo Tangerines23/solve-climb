@@ -10,4 +10,3 @@ ON CONFLICT (id) DO UPDATE SET
   price = EXCLUDED.price,
   description = EXCLUDED.description,
   category = EXCLUDED.category;
-

@@ -1,19 +1,19 @@
 -- ============================================================================
--- 트리거: SECURITY DEFINER RPC에서 profiles 업데이트 허용
--- 작성일: 2026.01.31
--- 목적: check_profile_update_security 트리거가 RPC(consume_stamina 등)의
---       정당한 업데이트를 막는 문제 수정. 세션 변수로 RPC 호출 시 bypass.
+-- ?�리�? SECURITY DEFINER RPC?�서 profiles ?�데?�트 ?�용
+-- ?�성?? 2026.01.31
+-- 목적: check_profile_update_security ?�리거�? RPC(consume_stamina ????
+--       ?�당???�데?�트�?막는 문제 ?�정. ?�션 변?�로 RPC ?�출 ??bypass.
 -- ============================================================================
 
--- 1. 트리거 함수 수정: app.bypass_profile_security = '1' 이면 검사 생략
+-- 1. ?�리�??�수 ?�정: app.bypass_profile_security = '1' ?�면 검???�략
 CREATE OR REPLACE FUNCTION public.check_profile_update_security()
 RETURNS TRIGGER AS $$
 BEGIN
-  -- SECURITY DEFINER RPC에서 set_config('app.bypass_profile_security','1',true) 한 경우 허용
+  -- SECURITY DEFINER RPC?�서 set_config('app.bypass_profile_security','1',true) ??경우 ?�용
   IF current_setting('app.bypass_profile_security', true) = '1' THEN
     RETURN NEW;
   END IF;
-  -- 클라이언트(authenticated/anon) 권한으로 직접 업데이트가 시도된 경우만 체크
+  -- ?�라?�언??authenticated/anon) 권한?�로 직접 ?�데?�트가 ?�도??경우�?체크
   IF (auth.role() = 'authenticated' OR auth.role() = 'anon') THEN
     IF (NEW.minerals IS DISTINCT FROM OLD.minerals) OR
        (NEW.stamina IS DISTINCT FROM OLD.stamina) OR
@@ -28,7 +28,7 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;
 
--- 2. consume_stamina: UPDATE 전 bypass 설정
+-- 2. consume_stamina: UPDATE ??bypass ?�정
 CREATE OR REPLACE FUNCTION public.consume_stamina()
 RETURNS JSONB
 LANGUAGE plpgsql
@@ -55,14 +55,14 @@ BEGIN
                 ELSE last_stamina_update
             END
         WHERE id = v_user_id;
-        RETURN jsonb_build_object('success', true, 'stamina', v_current_stamina - 1);
+        RETURN JSONB_build_object('success', true, 'stamina', v_current_stamina - 1);
     ELSE
-        RETURN jsonb_build_object('success', true, 'stamina', 0, 'is_exhausted', true);
+        RETURN JSONB_build_object('success', true, 'stamina', 0, 'is_exhausted', true);
     END IF;
 END;
 $$;
 
--- 3. check_and_recover_stamina: UPDATE 전 bypass 설정
+-- 3. check_and_recover_stamina: UPDATE ??bypass ?�정
 CREATE OR REPLACE FUNCTION public.check_and_recover_stamina()
 RETURNS JSONB
 LANGUAGE plpgsql
@@ -81,7 +81,7 @@ BEGIN
     PERFORM set_config('app.bypass_profile_security', '1', true);
     v_user_id := auth.uid();
     IF v_user_id IS NULL THEN
-        RETURN jsonb_build_object('success', false, 'message', 'Not authenticated');
+        RETURN JSONB_build_object('success', false, 'message', 'Not authenticated');
     END IF;
 
     SELECT stamina, last_stamina_update
@@ -91,7 +91,7 @@ BEGIN
     FOR UPDATE;
 
     IF NOT FOUND THEN
-        RETURN jsonb_build_object('success', false, 'message', 'Profile not found');
+        RETURN JSONB_build_object('success', false, 'message', 'Profile not found');
     END IF;
 
     IF v_current_stamina < v_max_stamina THEN
@@ -117,11 +117,11 @@ BEGIN
         END IF;
     END IF;
 
-    RETURN jsonb_build_object('success', true, 'stamina', v_current_stamina);
+    RETURN JSONB_build_object('success', true, 'stamina', v_current_stamina);
 END;
 $$;
 
--- 4. recover_stamina_ads: UPDATE 전 bypass 설정
+-- 4. recover_stamina_ads: UPDATE ??bypass ?�정
 CREATE OR REPLACE FUNCTION public.recover_stamina_ads()
 RETURNS JSONB
 LANGUAGE plpgsql
@@ -145,16 +145,16 @@ BEGIN
         SET stamina = stamina + 1
         WHERE id = v_user_id;
 
-        RETURN jsonb_build_object('success', true, 'stamina', v_current_stamina + 1);
+        RETURN JSONB_build_object('success', true, 'stamina', v_current_stamina + 1);
     ELSE
-        RETURN jsonb_build_object('success', false, 'message', 'Stamina is already full', 'stamina', v_current_stamina);
+        RETURN JSONB_build_object('success', false, 'message', 'Stamina is already full', 'stamina', v_current_stamina);
     END IF;
 END;
 $$;
 
--- 5. handle_daily_login: minerals 업데이트 시 트리거 bypass
+-- 5. handle_daily_login: minerals ?�데?�트 ???�리�?bypass
 CREATE OR REPLACE FUNCTION public.handle_daily_login()
-RETURNS JSON
+RETURNS JSONB
 LANGUAGE plpgsql
 SECURITY DEFINER
 SET search_path = public
@@ -176,9 +176,9 @@ BEGIN
     v_last_login_date := (v_last_login_at AT TIME ZONE 'Asia/Seoul')::DATE;
 
     IF v_last_login_date = v_today THEN
-      RETURN json_build_object(
+      RETURN JSONB_build_object(
         'success', false,
-        'message', '이미 오늘 보상을 받았습니다.',
+        'message', '?��? ?�늘 보상??받았?�니??',
         'streak', v_current_streak
       );
     END IF;
@@ -202,13 +202,13 @@ BEGIN
     minerals = minerals + v_reward_minerals
   WHERE id = v_user_id;
 
-  RETURN json_build_object(
+  RETURN JSONB_build_object(
     'success', true,
     'reward_minerals', v_reward_minerals,
     'streak', v_current_streak,
-    'message', '출석 보상이 지급되었습니다!'
+    'message', '출석 보상??지급되?�습?�다!'
   );
 END;
 $$;
 
-COMMENT ON FUNCTION public.check_profile_update_security() IS 'RPC 업데이트 허용(bypass) 시 검사 생략, 그 외 클라이언트 직접 수정 방지';
+COMMENT ON FUNCTION public.check_profile_update_security() IS 'RPC ?�데?�트 ?�용(bypass) ??검???�략, �????�라?�언??직접 ?�정 방�?';

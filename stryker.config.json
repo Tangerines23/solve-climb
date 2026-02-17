@@ -3,13 +3,11 @@
   "packageManager": "npm",
   "reporters": ["html", "clear-text", "progress"],
   "testRunner": "vitest",
-  "checkers": ["typescript"],
+  "checkers": [],
   "vitest": {
-    "configFile": "vitest.config.ts"
+    "configFile": "vite.config.js"
   },
   "mutate": ["src/utils/MathProblemGenerator.ts", "src/stores/useGameStore.ts"],
-  "typescriptChecker": {
-    "prioritizePerformance": true
-  },
+
   "coverageAnalysis": "perTest"
 }

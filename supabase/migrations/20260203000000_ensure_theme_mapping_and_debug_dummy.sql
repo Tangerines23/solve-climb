@@ -32,7 +32,7 @@ ON CONFLICT (code) DO NOTHING;
 -- ============================================================================
 -- 2. debug_generate_dummy_record 7인자 버전
 --    시그니처: (uuid, text, text, text, integer, integer, text)
---    역할: debug_run_play_scenario 7인자 버전에서 호출
+--    용도: debug_run_play_scenario 7인자 버전에서 호출
 -- ============================================================================
 CREATE OR REPLACE FUNCTION public.debug_generate_dummy_record(
     p_user_id UUID,
@@ -43,7 +43,7 @@ CREATE OR REPLACE FUNCTION public.debug_generate_dummy_record(
     p_correct_count INTEGER,
     p_game_mode TEXT
 )
-RETURNS JSON
+RETURNS JSONB
 LANGUAGE plpgsql
 SECURITY DEFINER
 AS $$
@@ -78,7 +78,7 @@ BEGIN
     SELECT code INTO v_mode_code FROM public.mode_mapping WHERE mode_id = p_game_mode;
 
     IF v_theme_code IS NULL OR v_mode_code IS NULL THEN
-        RETURN json_build_object('success', false, 'error', 'Invalid theme or mode');
+        RETURN JSONB_build_object('success', false, 'error', 'Invalid theme or mode');
     END IF;
 
     -- 3. 레코드 기록 (theme_code 기반)
@@ -110,11 +110,11 @@ BEGIN
         WHERE id = p_user_id;
     END IF;
 
-    RETURN json_build_object(
+    RETURN JSONB_build_object(
         'success', true,
         'calculated_score', v_calculated_score,
         'score_diff', v_score_diff,
-        'message', '더미 레코드가 생성 및 반영되었습니다.'
+        'message', '더미 레코드가 생성 및 반영되었습니다'
     );
 END;
 $$;
@@ -122,7 +122,7 @@ $$;
 -- ============================================================================
 -- 3. debug_generate_dummy_record 6인자 버전 (래퍼)
 --    시그니처: (uuid, text, text, integer, integer, text)
---    역할: debug_run_play_scenario 9인자 버전에서 호출
+--    용도: debug_run_play_scenario 9인자 버전에서 호출
 -- ============================================================================
 CREATE OR REPLACE FUNCTION public.debug_generate_dummy_record(
     p_user_id UUID,
@@ -132,7 +132,7 @@ CREATE OR REPLACE FUNCTION public.debug_generate_dummy_record(
     p_correct_count INTEGER,
     p_game_mode TEXT
 )
-RETURNS JSON
+RETURNS JSONB
 LANGUAGE plpgsql
 SECURITY DEFINER
 AS $$

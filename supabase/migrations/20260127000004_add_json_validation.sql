@@ -1,5 +1,5 @@
 -- ============================================================================
--- Phase 5: JSON 데이터 무결성 검증 (JSON Schema Validation)
+-- Phase 5: JSON ?�이??무결??검�?(JSON Schema Validation)
 -- ============================================================================
 
 CREATE OR REPLACE FUNCTION test_db_json_validation()
@@ -11,37 +11,37 @@ BEGIN
     'check_completed_session_results'::TEXT,
     (SELECT COUNT(*) = 0 FROM public.game_sessions gs
      WHERE gs.status = 'completed' 
-     AND (gs.result IS NULL OR jsonb_typeof(gs.result) = 'null')),
+     AND (gs.result IS NULL OR JSONB_typeof(gs.result) = 'null')),
     CASE 
       WHEN (SELECT COUNT(*) FROM public.game_sessions gs
             WHERE gs.status = 'completed' 
-            AND (gs.result IS NULL OR jsonb_typeof(gs.result) = 'null')) = 0 
+            AND (gs.result IS NULL OR JSONB_typeof(gs.result) = 'null')) = 0 
       THEN 'All completed sessions have valid result JSON'
       ELSE 'Found completed sessions with missing result'
     END::TEXT,
-    (SELECT jsonb_build_object(
+    (SELECT JSONB_build_object(
       'count', COUNT(*),
-      'invalid_sessions', jsonb_agg(gs.id)
+      'invalid_sessions', JSONB_agg(gs.id)
     ) FROM public.game_sessions gs
     WHERE gs.status = 'completed' 
-    AND (gs.result IS NULL OR jsonb_typeof(gs.result) = 'null'));
+    AND (gs.result IS NULL OR JSONB_typeof(gs.result) = 'null'));
 
   -- Test 2: Check all sessions have questions JSON
   RETURN QUERY
   SELECT 
     'check_session_questions_exist'::TEXT,
     (SELECT COUNT(*) = 0 FROM public.game_sessions gs
-     WHERE gs.questions IS NULL OR jsonb_typeof(gs.questions) = 'null'),
+     WHERE gs.questions IS NULL OR JSONB_typeof(gs.questions) = 'null'),
     CASE 
       WHEN (SELECT COUNT(*) FROM public.game_sessions gs
-            WHERE gs.questions IS NULL OR jsonb_typeof(gs.questions) = 'null') = 0 
+            WHERE gs.questions IS NULL OR JSONB_typeof(gs.questions) = 'null') = 0 
       THEN 'All sessions have questions JSON'
       ELSE 'Found sessions with missing questions'
     END::TEXT,
-    (SELECT jsonb_build_object(
+    (SELECT JSONB_build_object(
       'count', COUNT(*)
     ) FROM public.game_sessions gs
-    WHERE gs.questions IS NULL OR jsonb_typeof(gs.questions) = 'null');
+    WHERE gs.questions IS NULL OR JSONB_typeof(gs.questions) = 'null');
 
 END;
 $$ LANGUAGE plpgsql;
@@ -56,28 +56,28 @@ BEGIN
     'check_minerals_non_negative'::TEXT,
     (SELECT COUNT(*) = 0 FROM public.profiles WHERE minerals < 0),
     'All profiles have non-negative minerals'::TEXT,
-    jsonb_build_object('count', (SELECT COUNT(*) FROM public.profiles WHERE minerals < 0));
+    JSONB_build_object('count', (SELECT COUNT(*) FROM public.profiles WHERE minerals < 0));
 
   RETURN QUERY
   SELECT 
     'check_stamina_range'::TEXT,
     (SELECT COUNT(*) = 0 FROM public.profiles WHERE stamina < 0 OR stamina > 10),
     'All profiles have stamina in valid range (0-10)'::TEXT,
-    jsonb_build_object('count', (SELECT COUNT(*) FROM public.profiles WHERE stamina < 0 OR stamina > 10));
+    JSONB_build_object('count', (SELECT COUNT(*) FROM public.profiles WHERE stamina < 0 OR stamina > 10));
 
   RETURN QUERY
   SELECT 
     'check_inventory_quantity'::TEXT,
     (SELECT COUNT(*) = 0 FROM public.inventory WHERE quantity <= 0),
     'All inventory items have positive quantity'::TEXT,
-    jsonb_build_object('count', (SELECT COUNT(*) FROM public.inventory WHERE quantity <= 0));
+    JSONB_build_object('count', (SELECT COUNT(*) FROM public.inventory WHERE quantity <= 0));
 
   RETURN QUERY
   SELECT 
     'check_tier_level_range'::TEXT,
     (SELECT COUNT(*) = 0 FROM public.profiles WHERE current_tier_level < 0 OR current_tier_level > 100),
     'All profiles have tier level in valid range (0-100)'::TEXT,
-    jsonb_build_object('count', (SELECT COUNT(*) FROM public.profiles WHERE current_tier_level < 0 OR current_tier_level > 100));
+    JSONB_build_object('count', (SELECT COUNT(*) FROM public.profiles WHERE current_tier_level < 0 OR current_tier_level > 100));
 
   -- 2. Advanced Logic
   RETURN QUERY SELECT * FROM test_db_advanced_validation();

@@ -1,5 +1,5 @@
 -- ============================================================================
--- 디버그 전용: 플레이 시나리오 시뮬레이션 RPC
+-- ?�버�??�용: ?�레???�나리오 ?��??�이??RPC
 -- ============================================================================
 
 CREATE OR REPLACE FUNCTION public.debug_run_play_scenario(
@@ -13,7 +13,7 @@ CREATE OR REPLACE FUNCTION public.debug_run_play_scenario(
     p_iterations INTEGER,
     p_game_mode TEXT DEFAULT 'timeattack'
 )
-RETURNS JSON
+RETURNS JSONB
 LANGUAGE plpgsql
 SECURITY DEFINER
 AS $$
@@ -23,23 +23,23 @@ DECLARE
     v_total_calculated_score INTEGER := 0;
     v_iteration_result JSON;
 BEGIN
-    -- 1. 콤보 배율 설정
+    -- 1. 콤보 배율 ?�정
     IF p_avg_combo = 1 THEN v_combo_multiplier := 1.2;
     ELSIF p_avg_combo = 2 THEN v_combo_multiplier := 1.5;
     END IF;
 
-    -- 2. 반복 횟수만큼 시뮬레이션 실행
+    -- 2. 반복 ?�수만큼 ?��??�이???�행
     FOR v_i IN 1..p_iterations LOOP
-        -- 기존에 생성해둔 단일 레코드 생성 함수 호출
-        -- 주의: debug_generate_dummy_record는 내부 점수 계산에 p_correct_count를 사용함.
-        -- 여기서는 콤보 배율을 정답 수에 곱해서 보정함 (간이 로직)
+        -- 기존???�성?�둔 ?�일 ?�코???�성 ?�수 ?�출
+        -- 주의: debug_generate_dummy_record???��? ?�수 계산??p_correct_count�??�용??
+        -- ?�기?�는 콤보 배율???�답 ?�에 곱해??보정??(간이 로직)
         
         v_iteration_result := public.debug_generate_dummy_record(
             p_user_id,
             p_category_id,
             p_subject_id,
             p_level,
-            p_avg_correct, -- 실제로는 정답 수 * 배율 등의 복잡한 처리가 필요하나, 일단 그대로 전달
+            p_avg_correct, -- ?�제로는 ?�답 ??* 배율 ?�의 복잡??처리가 ?�요?�나, ?�단 그�?�??�달
             p_game_mode
         );
 
@@ -48,14 +48,14 @@ BEGIN
         END IF;
     END LOOP;
 
-    RETURN json_build_object(
+    RETURN JSONB_build_object(
         'success', true,
         'total_iterations', p_iterations,
         'total_score_generated', v_total_calculated_score,
-        'message', p_iterations || '회의 플레이 시나리오가 성공적으로 반영되었습니다.'
+        'message', p_iterations || '?�의 ?�레???�나리오가 ?�공?�으�?반영?�었?�니??'
     );
 END;
 $$;
 
--- 권한 부여
+-- 권한 부??
 GRANT EXECUTE ON FUNCTION public.debug_run_play_scenario(UUID, TEXT, TEXT, TEXT, INTEGER, INTEGER, INTEGER, INTEGER, TEXT) TO authenticated;

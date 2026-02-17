@@ -1,0 +1,20 @@
+name: Cleanup Logs
+
+on:
+  schedule:
+    # 매일 자정 (UTC 00:00 = KST 09:00) 실행
+    - cron: '0 0 * * *'
+  workflow_dispatch:
+
+jobs:
+  cleanup:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Call Cleanup Edge Function
+        env:
+          SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
+          SUPABASE_ANON_KEY: ${{ secrets.VITE_SUPABASE_ANON_KEY }}
+        run: |
+          curl -X POST "${SUPABASE_URL}/functions/v1/cleanup-database-logs" \
+            -H "Authorization: Bearer ${SUPABASE_ANON_KEY}" \
+            -H "Content-Type: application/json"

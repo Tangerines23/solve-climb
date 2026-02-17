@@ -1,5 +1,5 @@
--- db lint 경고 해결: debug_run_play_scenario의 v_res 미사용 변수 제거
--- v_res는 debug_generate_dummy_record 반환값을 저장만 하고 사용하지 않음 → PERFORM로 변경
+-- db lint 경고 ?�결: debug_run_play_scenario??v_res 미사??변???�거
+-- v_res??debug_generate_dummy_record 반환값을 ?�?�만 ?�고 ?�용?��? ?�음 ??PERFORM�?변�?
 
 CREATE OR REPLACE FUNCTION public.debug_run_play_scenario(
     p_user_id UUID,
@@ -10,7 +10,7 @@ CREATE OR REPLACE FUNCTION public.debug_run_play_scenario(
     p_level_end INTEGER,
     p_accuracy NUMERIC DEFAULT 0.8
 )
-RETURNS JSON AS $$
+RETURNS JSONB AS $$
 DECLARE
     v_correct_count INTEGER;
     v_total_generated INTEGER := 0;
@@ -33,7 +33,7 @@ BEGIN
 
     PERFORM public.check_and_award_badges(p_user_id);
 
-    RETURN json_build_object(
+    RETURN JSONB_build_object(
         'success', true,
         'levels_generated', v_total_generated,
         'user_id', p_user_id

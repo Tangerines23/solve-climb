@@ -1,5 +1,5 @@
 -- ============================================================================
--- Phase 4: 보안 및 성능 검증 시스템 (Security & Performance Validation)
+-- Phase 4: 보안 �??�능 검�??�스??(Security & Performance Validation)
 -- ============================================================================
 
 -- 1. Fix identified security gap: Enable RLS on mode_mapping
@@ -34,8 +34,8 @@ BEGIN
       THEN 'All public tables have RLS enabled'
       ELSE 'Found tables with RLS disabled'
     END::TEXT,
-    (SELECT jsonb_build_object(
-      'tables_without_rls', jsonb_agg(tablename)
+    (SELECT JSONB_build_object(
+      'tables_without_rls', JSONB_agg(tablename)
     ) FROM pg_tables 
     WHERE schemaname = 'public' 
     AND rowsecurity = false);
@@ -71,8 +71,8 @@ BEGIN
       THEN 'All foreign keys are indexed'
       ELSE 'Found unindexed foreign keys'
     END::TEXT,
-    (SELECT jsonb_build_object(
-      'unindexed_constraints', jsonb_agg(jsonb_build_object(
+    (SELECT JSONB_build_object(
+      'unindexed_constraints', JSONB_agg(JSONB_build_object(
         'table', table_name,
         'constraint', constraint_name,
         'column', column_name
@@ -92,28 +92,28 @@ BEGIN
     'check_minerals_non_negative'::TEXT,
     (SELECT COUNT(*) = 0 FROM public.profiles WHERE minerals < 0),
     'All profiles have non-negative minerals'::TEXT,
-    jsonb_build_object('count', (SELECT COUNT(*) FROM public.profiles WHERE minerals < 0));
+    JSONB_build_object('count', (SELECT COUNT(*) FROM public.profiles WHERE minerals < 0));
 
   RETURN QUERY
   SELECT 
     'check_stamina_range'::TEXT,
     (SELECT COUNT(*) = 0 FROM public.profiles WHERE stamina < 0 OR stamina > 10),
     'All profiles have stamina in valid range (0-10)'::TEXT,
-    jsonb_build_object('count', (SELECT COUNT(*) FROM public.profiles WHERE stamina < 0 OR stamina > 10));
+    JSONB_build_object('count', (SELECT COUNT(*) FROM public.profiles WHERE stamina < 0 OR stamina > 10));
 
   RETURN QUERY
   SELECT 
     'check_inventory_quantity'::TEXT,
     (SELECT COUNT(*) = 0 FROM public.inventory WHERE quantity <= 0),
     'All inventory items have positive quantity'::TEXT,
-    jsonb_build_object('count', (SELECT COUNT(*) FROM public.inventory WHERE quantity <= 0));
+    JSONB_build_object('count', (SELECT COUNT(*) FROM public.inventory WHERE quantity <= 0));
 
   RETURN QUERY
   SELECT 
     'check_tier_level_range'::TEXT,
     (SELECT COUNT(*) = 0 FROM public.profiles WHERE current_tier_level < 0 OR current_tier_level > 100),
     'All profiles have tier level in valid range (0-100)'::TEXT,
-    jsonb_build_object('count', (SELECT COUNT(*) FROM public.profiles WHERE current_tier_level < 0 OR current_tier_level > 100));
+    JSONB_build_object('count', (SELECT COUNT(*) FROM public.profiles WHERE current_tier_level < 0 OR current_tier_level > 100));
 
   -- Advanced Logic Checks (From Phase 2)
   RETURN QUERY SELECT * FROM test_db_advanced_validation();

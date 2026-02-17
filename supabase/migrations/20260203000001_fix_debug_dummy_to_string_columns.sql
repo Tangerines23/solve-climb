@@ -1,12 +1,12 @@
 -- ============================================================================
--- debug_generate_dummy_record 수정: category_id/subject_id/world_id 기반으로 변경
--- 작성일: 2026.02.03
--- 목적: user_level_records가 theme_code 대신 category_id/subject_id/world_id를 사용하므로 함수 수정
+-- debug_generate_dummy_record ?�정: category_id/subject_id/world_id 기반?�로 변�?
+-- ?�성?? 2026.02.03
+-- 목적: user_level_records가 theme_code ?�??category_id/subject_id/world_id�??�용?��?�??�수 ?�정
 -- ============================================================================
 
 -- ============================================================================
--- 1. debug_generate_dummy_record 7인자 버전 (category_id/subject_id/world_id 기반)
---    시그니처: (uuid, text, text, text, integer, integer, text)
+-- 1. debug_generate_dummy_record 7?�자 버전 (category_id/subject_id/world_id 기반)
+--    ?�그?�처: (uuid, text, text, text, integer, integer, text)
 -- ============================================================================
 CREATE OR REPLACE FUNCTION public.debug_generate_dummy_record(
     p_user_id UUID,
@@ -17,7 +17,7 @@ CREATE OR REPLACE FUNCTION public.debug_generate_dummy_record(
     p_correct_count INTEGER,
     p_game_mode TEXT
 )
-RETURNS JSON
+RETURNS JSONB
 LANGUAGE plpgsql
 SECURITY DEFINER
 AS $$
@@ -30,7 +30,7 @@ DECLARE
     v_old_best INTEGER;
     v_score_diff INTEGER;
 BEGIN
-    -- 1. 기본 점수 및 배율 계산
+    -- 1. 기본 ?�수 �?배율 계산
     v_base_level_score := 10 + (p_level - 1) * 5;
     v_theme_id := p_category || '_' || p_subject;
     
@@ -38,22 +38,22 @@ BEGIN
         v_theme_multiplier := 1.0; 
     END IF;
 
-    -- 기본 점수 계산
+    -- 기본 ?�수 계산
     v_calculated_score := FLOOR(p_correct_count * v_base_level_score * v_theme_multiplier);
     
-    -- 보너스 (Boss Level 10)
+    -- 보너??(Boss Level 10)
     IF p_level = 10 THEN
         v_calculated_score := v_calculated_score + FLOOR(p_correct_count * 5.0);
     END IF;
 
-    -- 2. 매핑 정보 조회 (theme_mapping 제거, mode_mapping은 유지)
+    -- 2. 매핑 ?�보 조회 (theme_mapping ?�거, mode_mapping?� ?��?)
     SELECT code INTO v_mode_code FROM public.mode_mapping WHERE mode_id = p_game_mode;
 
     IF v_mode_code IS NULL THEN
-        RETURN json_build_object('success', false, 'error', 'Invalid mode');
+        RETURN JSONB_build_object('success', false, 'error', 'Invalid mode');
     END IF;
 
-    -- 3. 레코드 기록 (string ID 기반 - category_id/subject_id/world_id)
+    -- 3. ?�코??기록 (string ID 기반 - category_id/subject_id/world_id)
     SELECT best_score INTO v_old_best 
     FROM public.user_level_records 
     WHERE user_id = p_user_id 
@@ -73,7 +73,7 @@ BEGIN
         best_score = GREATEST(user_level_records.best_score, EXCLUDED.best_score),
         updated_at = NOW();
 
-    -- 4. 프로필 업데이트
+    -- 4. ?�로???�데?�트
     v_score_diff := GREATEST(0, v_calculated_score - COALESCE(v_old_best, 0));
     
     IF v_score_diff > 0 THEN
@@ -87,18 +87,18 @@ BEGIN
         WHERE id = p_user_id;
     END IF;
 
-    RETURN json_build_object(
+    RETURN JSONB_build_object(
         'success', true,
         'calculated_score', v_calculated_score,
         'score_diff', v_score_diff,
-        'message', '더미 레코드가 생성 및 반영되었습니다.'
+        'message', '?��? ?�코?��? ?�성 �?반영?�었?�니??'
     );
 END;
 $$;
 
 -- ============================================================================
--- 2. debug_generate_dummy_record 6인자 버전 (래퍼)
---    시그니처: (uuid, text, text, integer, integer, text)
+-- 2. debug_generate_dummy_record 6?�자 버전 (?�퍼)
+--    ?�그?�처: (uuid, text, text, integer, integer, text)
 -- ============================================================================
 CREATE OR REPLACE FUNCTION public.debug_generate_dummy_record(
     p_user_id UUID,
@@ -108,14 +108,14 @@ CREATE OR REPLACE FUNCTION public.debug_generate_dummy_record(
     p_correct_count INTEGER,
     p_game_mode TEXT
 )
-RETURNS JSON
+RETURNS JSONB
 LANGUAGE plpgsql
 SECURITY DEFINER
 AS $$
 DECLARE
     v_world_id TEXT;
 BEGIN
-    -- world_id를 p_category || '_' || p_subject로 설정 (7인자 버전 호출)
+    -- world_id�?p_category || '_' || p_subject�??�정 (7?�자 버전 ?�출)
     v_world_id := p_category || '_' || p_subject;
     
     RETURN public.debug_generate_dummy_record(

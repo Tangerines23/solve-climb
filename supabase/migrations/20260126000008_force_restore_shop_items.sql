@@ -16,7 +16,7 @@ DROP POLICY IF EXISTS "Items are viewable by everyone" ON public.items;
 CREATE POLICY "Items are viewable by everyone" ON public.items FOR SELECT USING (true);
 
 -- 3. 필수 아이템 강제 삽입/업데이트
--- 이 작업은 기존 데이터가 있더라도 최신 메타데이터로 덮어씁니다.
+-- 이 작업은 기존 아이템이 있더라도 최신 메타데이터로 갱신합니다
 INSERT INTO public.items (id, code, name, price, description, category)
 VALUES 
   (1, 'oxygen_tank', '산소통', 500, '제한 시간 +10초', 'time'),

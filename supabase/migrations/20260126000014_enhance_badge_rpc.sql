@@ -1,11 +1,11 @@
 -- ============================================================================
--- 통합 뱃지 수여 시스템 (보안 강화 버전)
+-- ?�합 뱃�? ?�여 ?�스??(보안 강화 버전)
 -- ============================================================================
 
 CREATE OR REPLACE FUNCTION public.check_and_award_badges(
     p_user_id UUID
 )
-RETURNS JSON
+RETURNS JSONB
 LANGUAGE plpgsql
 SECURITY DEFINER
 AS $$
@@ -16,13 +16,13 @@ DECLARE
     v_badge_id TEXT;
     v_record RECORD;
 BEGIN
-    -- 1. 유저 기초 통계 조회
+    -- 1. ?��? 기초 ?�계 조회
     SELECT total_mastery_score, login_streak 
     INTO v_total_altitude, v_streak
     FROM public.profiles
     WHERE id = p_user_id;
 
-    -- 2. 고도 기반 뱃지 (Growth)
+    -- 2. 고도 기반 뱃�? (Growth)
     FOR v_badge_id IN SELECT unnest(ARRAY['altitude_1', 'altitude_100', 'altitude_1000', 'altitude_8848', 'altitude_space']) LOOP
         IF (v_badge_id = 'altitude_1' AND v_total_altitude >= 1) OR
            (v_badge_id = 'altitude_100' AND v_total_altitude >= 100) OR
@@ -40,7 +40,7 @@ BEGIN
         END IF;
     END LOOP;
 
-    -- 3. 스트릭 기반 뱃지 (Persistence)
+    -- 3. ?�트�?기반 뱃�? (Persistence)
     FOR v_badge_id IN SELECT unnest(ARRAY['streak_3', 'streak_7']) LOOP
         IF (v_badge_id = 'streak_3' AND v_streak >= 3) OR
            (v_badge_id = 'streak_7' AND v_streak >= 7)
@@ -55,8 +55,8 @@ BEGIN
         END IF;
     END LOOP;
 
-    -- 4. 숙련도 기반 뱃지 (Mastery)
-    -- 사칙연산의 신 (arithmetic 15레벨 달성)
+    -- 4. ?�련??기반 뱃�? (Mastery)
+    -- ?�칙?�산????(arithmetic 15?�벨 ?�성)
     IF EXISTS (
         SELECT 1 FROM public.user_level_records ulr
         JOIN public.theme_mapping tm ON ulr.theme_code = tm.code
@@ -74,10 +74,10 @@ BEGIN
         END IF;
     END IF;
 
-    -- 5. 정확도 마스터 (Skill) - 최근 10게임 평균 90% 이상
-    -- 세션 데이터 기반으로 계산 (복잡하므로 추후 확장 가능, 여기서는 일단 뼈대만 유지)
+    -- 5. ?�확??마스??(Skill) - 최근 10게임 ?�균 90% ?�상
+    -- ?�션 ?�이??기반?�로 계산 (복잡?��?�?추후 ?�장 가?? ?�기?�는 ?�단 뼈�?�??��?)
 
-    RETURN json_build_object(
+    RETURN JSONB_build_object(
         'success', true,
         'awarded_badges', v_awarded_badges,
         'count', array_length(v_awarded_badges, 1)

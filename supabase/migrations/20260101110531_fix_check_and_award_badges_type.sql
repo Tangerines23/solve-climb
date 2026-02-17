@@ -1,5 +1,5 @@
--- Fix: v_all_cleared 타입을 BOOLEAN에서 INTEGER로 변경
--- 이슈: COUNT() 결과는 INTEGER인데 BOOLEAN 변수에 할당하여 타입 오류 발생
+-- Fix: v_all_cleared ?�?�을 BOOLEAN?�서 INTEGER�?변�?
+-- ?�슈: COUNT() 결과??INTEGER?�데 BOOLEAN 변?�에 ?�당?�여 ?�???�류 발생
 
 CREATE OR REPLACE FUNCTION public.check_and_award_badges(
   p_user_id UUID,
@@ -7,15 +7,15 @@ CREATE OR REPLACE FUNCTION public.check_and_award_badges(
   p_subject TEXT,
   p_level INTEGER
 )
-RETURNS JSON AS $$
+RETURNS JSONB AS $$
 DECLARE
   v_badge_id TEXT;
   v_badge_def RECORD;
   v_cleared_levels INTEGER[];
-  v_all_cleared INTEGER;  -- BOOLEAN에서 INTEGER로 수정
+  v_all_cleared INTEGER;  -- BOOLEAN?�서 INTEGER�??�정
   v_awarded_badges TEXT[] := ARRAY[]::TEXT[];
 BEGIN
-  -- 해당 카테고리/주제의 뱃지 정의 조회
+  -- ?�당 카테고리/주제??뱃�? ?�의 조회
   DECLARE
     v_theme_id TEXT := p_category || '_' || p_subject;
   BEGIN
@@ -23,7 +23,7 @@ BEGIN
       SELECT * FROM public.badge_definitions
       WHERE theme_id = v_theme_id OR theme_id = p_category
     LOOP
-    -- 이미 획득한 뱃지는 스킵
+    -- ?��? ?�득??뱃�????�킵
     IF EXISTS (
       SELECT 1 FROM public.user_badges
       WHERE user_id = p_user_id AND badge_id = v_badge_def.id
@@ -31,10 +31,10 @@ BEGIN
       CONTINUE;
     END IF;
     
-      -- required_levels가 NULL이면 전체 카테고리 마스터 뱃지 (모든 주제 클리어 확인)
+      -- required_levels가 NULL?�면 ?�체 카테고리 마스??뱃�? (모든 주제 ?�리???�인)
       IF v_badge_def.required_levels IS NULL THEN
-        -- 해당 카테고리의 모든 주제가 모든 레벨을 클리어했는지 확인
-        -- 예: math_arithmetic_master는 math 카테고리의 모든 주제(add, sub, mul, div)가 모두 클리어되어야 함
+        -- ?�당 카테고리??모든 주제가 모든 ?�벨???�리?�했?��? ?�인
+        -- ?? math_arithmetic_master??math 카테고리??모든 주제(add, sub, mul, div)가 모두 ?�리?�되?�야 ??
         SELECT COUNT(DISTINCT ulr.theme_code) INTO v_all_cleared
         FROM public.user_level_records ulr
         INNER JOIN public.theme_mapping tm ON tm.code = ulr.theme_code
@@ -42,10 +42,10 @@ BEGIN
           AND tm.theme_id LIKE p_category || '_%'
           AND ulr.best_score > 0;
         
-        -- TODO: 실제로는 모든 레벨이 클리어되었는지 더 정확하게 확인해야 함
-        -- 현재는 간단히 레벨이 있는지만 확인
-        IF v_all_cleared >= 4 THEN  -- math 카테고리는 4개 주제 (add, sub, mul, div)
-          -- 뱃지 획득
+        -- TODO: ?�제로는 모든 ?�벨???�리?�되?�는지 ???�확?�게 ?�인?�야 ??
+        -- ?�재??간단???�벨???�는지�??�인
+        IF v_all_cleared >= 4 THEN  -- math 카테고리??4�?주제 (add, sub, mul, div)
+          -- 뱃�? ?�득
           INSERT INTO public.user_badges (user_id, badge_id)
           VALUES (p_user_id, v_badge_def.id)
           ON CONFLICT (user_id, badge_id) DO NOTHING;
@@ -53,7 +53,7 @@ BEGIN
           v_awarded_badges := array_append(v_awarded_badges, v_badge_def.id);
         END IF;
       ELSE
-        -- 특정 레벨 목록이 있는 경우: 해당 레벨들이 모두 클리어되었는지 확인
+        -- ?�정 ?�벨 목록???�는 경우: ?�당 ?�벨?�이 모두 ?�리?�되?�는지 ?�인
         SELECT ARRAY_AGG(DISTINCT ulr.level) INTO v_cleared_levels
         FROM public.user_level_records ulr
         INNER JOIN public.theme_mapping tm ON tm.code = ulr.theme_code
@@ -62,9 +62,9 @@ BEGIN
           AND ulr.best_score > 0
           AND ulr.level = ANY(v_badge_def.required_levels);
         
-        -- 모든 필수 레벨이 클리어되었는지 확인
+        -- 모든 ?�수 ?�벨???�리?�되?�는지 ?�인
         IF array_length(v_cleared_levels, 1) = array_length(v_badge_def.required_levels, 1) THEN
-          -- 뱃지 획득
+          -- 뱃�? ?�득
           INSERT INTO public.user_badges (user_id, badge_id)
           VALUES (p_user_id, v_badge_def.id)
           ON CONFLICT (user_id, badge_id) DO NOTHING;
@@ -75,7 +75,7 @@ BEGIN
     END LOOP;
   END;
   
-  RETURN json_build_object(
+  RETURN JSONB_build_object(
     'awarded_badges', v_awarded_badges,
     'count', array_length(v_awarded_badges, 1)
   );

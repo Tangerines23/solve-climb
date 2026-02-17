@@ -1,26 +1,26 @@
 -- ============================================================================
--- profiles 테이블 RLS 정책 수정 (익명 사용자 접근 허용)
--- 작성일: 2025.12.28
+-- profiles ?�이�?RLS ?�책 ?�정 (?�명 ?�용???�근 ?�용)
+-- ?�성?? 2025.12.28
 -- ============================================================================
--- 문제: 익명 로그인 시 profiles 조회 시 406 에러 발생 가능
--- 해결: 익명 사용자도 랭킹 조회는 가능하도록 명시적으로 허용
+-- 문제: ?�명 로그????profiles 조회 ??406 ?�러 발생 가??
+-- ?�결: ?�명 ?�용?�도 ??�� 조회??가?�하?�록 명시?�으�??�용
 
--- 기존 정책 확인 및 유지
--- "Users can view own profile": auth.uid() = id (자신의 프로필만)
--- "Users can update own profile": auth.uid() = id (자신의 프로필만)
--- "Users can view all profiles for ranking": true (모든 프로필 조회 가능)
+-- 기존 ?�책 ?�인 �??��?
+-- "Users can view own profile": auth.uid() = id (?�신???�로?�만)
+-- "Users can update own profile": auth.uid() = id (?�신???�로?�만)
+-- "Users can view all profiles for ranking": true (모든 ?�로??조회 가??
 
--- 랭킹 조회 정책이 이미 USING (true)로 설정되어 있으므로
--- 익명 사용자도 접근 가능해야 합니다.
--- 하지만 정책이 제대로 적용되지 않았을 수 있으므로 재생성
+-- ??�� 조회 ?�책???��? USING (true)�??�정?�어 ?�으므�?
+-- ?�명 ?�용?�도 ?�근 가?�해???�니??
+-- ?��?�??�책???��?�??�용?��? ?�았?????�으므�??�생??
 
--- 랭킹 조회 정책 재생성 (익명 사용자 명시적 허용)
+-- ??�� 조회 ?�책 ?�생??(?�명 ?�용??명시???�용)
 DROP POLICY IF EXISTS "Users can view all profiles for ranking" ON public.profiles;
 CREATE POLICY "Users can view all profiles for ranking" 
   ON public.profiles 
   FOR SELECT 
   USING (true);
 
--- 정책 확인 쿼리 (주석 처리)
+-- ?�책 ?�인 쿼리 (주석 처리)
 -- SELECT policyname, cmd, qual FROM pg_policies WHERE tablename = 'profiles';
 

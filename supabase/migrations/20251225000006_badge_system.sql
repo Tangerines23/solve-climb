@@ -1,16 +1,14 @@
--- ============================================================================
 -- 뱃지 시스템 구현
 -- 작성일: 2025.12.25
--- ============================================================================
 
--- 1. 뱃지 정의 데이터 추가 (theme_id 사용)
+-- 1. 뱃지 정의 데이터 추가 (theme_id 활용)
 INSERT INTO public.badge_definitions (id, name, description, emoji, theme_id, required_levels)
 VALUES
   ('math_add_master', '덧셈 마스터', '덧셈 모든 레벨 클리어', '➕', 'math_add', ARRAY[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20]),
   ('math_sub_master', '뺄셈 마스터', '뺄셈 모든 레벨 클리어', '➖', 'math_sub', ARRAY[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20]),
   ('math_mul_master', '곱셈 마스터', '곱셈 모든 레벨 클리어', '✖️', 'math_mul', ARRAY[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20]),
   ('math_div_master', '나눗셈 마스터', '나눗셈 모든 레벨 클리어', '➗', 'math_div', ARRAY[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20]),
-  ('math_arithmetic_master', '사칙연산 완전정복', '사칙연산 모든 레벨 클리어', '🏔️', 'math', NULL)
+  ('math_arithmetic_master', '사칙연산 완전정복', '사칙연산 모든 레벨 클리어', '🎓', 'math', NULL)
 ON CONFLICT (id) DO UPDATE SET
   name = EXCLUDED.name,
   description = EXCLUDED.description,
@@ -25,7 +23,7 @@ CREATE OR REPLACE FUNCTION public.check_and_award_badges(
   p_subject TEXT,
   p_level INTEGER
 )
-RETURNS JSON AS $$
+RETURNS JSONB AS $$
 DECLARE
   v_badge_id TEXT;
   v_badge_def RECORD;
@@ -62,7 +60,7 @@ BEGIN
         
         -- TODO: 실제로는 모든 레벨이 클리어되었는지 더 정확하게 확인해야 함
         -- 현재는 간단히 레벨이 있는지만 확인
-        IF v_all_cleared >= 4 THEN  -- math 카테고리는 4개 주제 (add, sub, mul, div)
+        IF v_all_cleared >= 4 THEN  -- math 카테고리의 4개 주제 (add, sub, mul, div)
           -- 뱃지 획득
           INSERT INTO public.user_badges (user_id, badge_id)
           VALUES (p_user_id, v_badge_def.id)
@@ -93,13 +91,12 @@ BEGIN
     END LOOP;
   END;
   
-  RETURN json_build_object(
+  RETURN JSONB_build_object(
     'awarded_badges', v_awarded_badges,
-    'count', array_length(v_awarded_badges, 1)
+    'count', COALESCE(array_length(v_awarded_badges, 1), 0)
   );
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;
 
 -- 3. submit_game_result에 뱃지 체크 로직 추가
--- (이미 구현된 함수를 업데이트하는 대신, 별도 함수로 분리하여 호출)
-
+-- (기존 구현된 함수를 업데이트하는 대신 별도 함수로 분리하여 호출)

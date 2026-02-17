@@ -1,5 +1,5 @@
 -- ============================================================================
--- 디버그 전용: 시뮬레이션 기반 레코드 생성 시스템
+-- ?�버�??�용: ?��??�이??기반 ?�코???�성 ?�스??
 -- ============================================================================
 
 CREATE OR REPLACE FUNCTION public.debug_generate_dummy_record(
@@ -10,7 +10,7 @@ CREATE OR REPLACE FUNCTION public.debug_generate_dummy_record(
     p_correct_count INTEGER, -- 0~10
     p_game_mode TEXT DEFAULT 'timeattack'
 )
-RETURNS JSON
+RETURNS JSONB
 LANGUAGE plpgsql
 SECURITY DEFINER
 AS $$
@@ -24,7 +24,7 @@ DECLARE
     v_old_best INTEGER;
     v_score_diff INTEGER;
 BEGIN
-    -- 1. 기본 점수 및 배율 계산 (submit_game_result 로직 복제)
+    -- 1. 기본 ?�수 �?배율 계산 (submit_game_result 로직 복제)
     v_base_level_score := 10 + (p_level - 1) * 5;
     v_theme_id := p_category || '_' || p_subject;
     
@@ -32,23 +32,23 @@ BEGIN
         v_theme_multiplier := 1.0; 
     END IF;
 
-    -- 기본 점수 계산
+    -- 기본 ?�수 계산
     v_calculated_score := FLOOR(p_correct_count * v_base_level_score * v_theme_multiplier);
     
-    -- 보너스 (Boss Level 10)
+    -- 보너??(Boss Level 10)
     IF p_level = 10 THEN
-        v_calculated_score := v_calculated_score + FLOOR(p_correct_count * 5.0); -- 10문제 기준 50점 보너스
+        v_calculated_score := v_calculated_score + FLOOR(p_correct_count * 5.0); -- 10문제 기�? 50??보너??
     END IF;
 
-    -- 2. 매핑 정보 조회
+    -- 2. 매핑 ?�보 조회
     SELECT code INTO v_theme_code FROM public.theme_mapping WHERE theme_id = v_theme_id;
     SELECT code INTO v_mode_code FROM public.mode_mapping WHERE mode_id = p_game_mode;
 
     IF v_theme_code IS NULL OR v_mode_code IS NULL THEN
-        RETURN json_build_object('success', false, 'error', 'Invalid theme or mode');
+        RETURN JSONB_build_object('success', false, 'error', 'Invalid theme or mode');
     END IF;
 
-    -- 3. 레코드 기록 (User Level Records)
+    -- 3. ?�코??기록 (User Level Records)
     SELECT best_score INTO v_old_best 
     FROM public.user_level_records 
     WHERE user_id = p_user_id AND theme_code = v_theme_code AND level = p_level AND mode_code = v_mode_code;
@@ -60,8 +60,8 @@ BEGIN
         best_score = GREATEST(user_level_records.best_score, EXCLUDED.best_score),
         updated_at = NOW();
 
-    -- 4. 프로필 업데이트 (주간 점수 및 마스터리 점수 반영)
-    -- 실제 submit_game_result와 유사하게 작동하도록 diff 계산
+    -- 4. ?�로???�데?�트 (주간 ?�수 �?마스?�리 ?�수 반영)
+    -- ?�제 submit_game_result?� ?�사?�게 ?�동?�도�?diff 계산
     v_score_diff := GREATEST(0, v_calculated_score - COALESCE(v_old_best, 0));
     
     IF v_score_diff > 0 THEN
@@ -75,11 +75,11 @@ BEGIN
         WHERE id = p_user_id;
     END IF;
 
-    RETURN json_build_object(
+    RETURN JSONB_build_object(
         'success', true,
         'calculated_score', v_calculated_score,
         'score_diff', v_score_diff,
-        'message', '더미 레코드가 생성 및 반영되었습니다.'
+        'message', '?��? ?�코?��? ?�성 �?반영?�었?�니??'
     );
 END;
 $$;
