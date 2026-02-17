@@ -9,9 +9,9 @@
     "orientation": "portrait",
     "icons": [
         {
-            "src": "SolveClimb.png",
+            "src": "SolveClimb.webp",
             "sizes": "512x512",
-            "type": "image/png",
+            "type": "image/webp",
             "purpose": "any maskable"
         }
     ]
