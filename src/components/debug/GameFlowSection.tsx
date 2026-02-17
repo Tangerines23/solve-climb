@@ -223,7 +223,7 @@ export const GameFlowSection = React.memo(function GameFlowSection() {
 
   const handleGenerateQuestion = () => {
     try {
-      const question = generateQuestion('World1', selectedCategory, 1, selectedDifficulty);
+      const question = generateQuestion('math', 'World1', selectedTopic, 1, selectedDifficulty);
       setGeneratedQuestion(question);
       setMessage({ type: 'success', text: '문제가 생성되었습니다.' });
     } catch (err) {

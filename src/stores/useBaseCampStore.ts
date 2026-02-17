@@ -35,18 +35,18 @@ export const useBaseCampStore = create<BaseCampState>()(
         // Generate 10 diverse questions
         // 1-3: Basic (Math)
         for (let i = 1; i <= 3; i++) {
-          questions.push(generateQuestion('World1', '기초', i * 3, 'easy'));
+          questions.push(generateQuestion('math', 'World1', 'World1-기초', i * 3, 'easy'));
         }
         // 4-6: Logic
         for (let i = 1; i <= 3; i++) {
-          questions.push(generateQuestion('World1', '논리', i * 2, 'easy'));
+          questions.push(generateQuestion('math', 'World1', 'World1-논리', i * 2, 'easy'));
         }
         // 7-9: Algebra
         for (let i = 1; i <= 3; i++) {
-          questions.push(generateQuestion('World1', '대수', i * 2, 'easy'));
+          questions.push(generateQuestion('math', 'World1', 'World1-대수', i * 2, 'easy'));
         }
         // 10: Mixed/Random
-        questions.push(generateQuestion('World1', '기초', 15, 'medium'));
+        questions.push(generateQuestion('math', 'World1', 'World1-기초', 15, 'medium'));
 
         set({
           questions,

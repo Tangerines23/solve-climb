@@ -1,3 +1,5 @@
+import { Difficulty } from '../types/quiz';
+
 /**
  * EquationProblemGenerator
  *
@@ -67,97 +69,80 @@ export const EQUATION_STAGES: EquationStageConfig[] = [
 /**
  * 랜덤 정수 생성 (min 이상 max 이하)
  */
-function getRandomInt(min: number, max: number): number {
+function getRandomInt(
+  min: number,
+  max: number,
+  rng?: { randomInt: (min: number, max: number) => number }
+): number {
+  if (rng) return rng.randomInt(min, max + 1);
   return Math.floor(Math.random() * (max - min + 1)) + min;
 }
 
 /**
  * Stage 1: ? + a = b
  */
-function generateFillPlus(): EquationProblem {
-  // x를 먼저 선택 (1~20)
-  const x = getRandomInt(1, 20);
-  // a를 선택 (1~20)
-  const a = getRandomInt(1, 20);
-  // b = x + a
+/**
+ * Stage 1: ? + a = b
+ */
+function generateFillPlus(rng?: {
+  randomInt: (min: number, max: number) => number;
+}): EquationProblem {
+  const x = getRandomInt(1, 20, rng);
+  const a = getRandomInt(1, 20, rng);
   const b = x + a;
-
-  return {
-    question: `□ + ${a} = ${b}`,
-    x: x,
-  };
+  return { question: `□ + ${a} = ${b}`, x };
 }
 
 /**
  * Stage 2: ? - a = b
  */
-function generateFillMinus(): EquationProblem {
-  // x를 먼저 선택 (1~30)
-  const x = getRandomInt(1, 30);
-  // a를 선택 (1~20)
-  const a = getRandomInt(1, 20);
-  // b = x - a (b >= 0이 되도록)
+function generateFillMinus(rng?: {
+  randomInt: (min: number, max: number) => number;
+}): EquationProblem {
+  const x = getRandomInt(1, 30, rng);
+  const a = getRandomInt(1, 20, rng);
   const b = x - a;
-
-  if (b < 0) {
-    // x가 a보다 작으면 재생성
-    return generateFillMinus();
-  }
-
-  return {
-    question: `□ - ${a} = ${b}`,
-    x: x,
-  };
+  if (b < 0) return generateFillMinus(rng);
+  return { question: `□ - ${a} = ${b}`, x };
 }
 
 /**
  * Stage 3: a - ? = b
  */
-function generateFillSubtract(): EquationProblem {
-  // x를 먼저 선택 (1~20)
-  const x = getRandomInt(1, 20);
-  // a를 선택 (x보다 크게, 1~30)
-  const a = getRandomInt(x + 1, 30);
-  // b = a - x
+function generateFillSubtract(rng?: {
+  randomInt: (min: number, max: number) => number;
+}): EquationProblem {
+  const x = getRandomInt(1, 20, rng);
+  const a = getRandomInt(x + 1, 30, rng);
   const b = a - x;
-
-  return {
-    question: `${a} - □ = ${b}`,
-    x: x,
-  };
+  return { question: `${a} - □ = ${b}`, x };
 }
 
-function generateFillMultiply(): EquationProblem {
-  const x = getRandomInt(1, 12);
-  const a = getRandomInt(2, 9);
+function generateFillMultiply(rng?: {
+  randomInt: (min: number, max: number) => number;
+}): EquationProblem {
+  const x = getRandomInt(1, 12, rng);
+  const a = getRandomInt(2, 9, rng);
   const b = x * a;
-  return {
-    question: `□ x ${a} = ${b}`,
-    x: x,
-  };
+  return { question: `□ x ${a} = ${b}`, x };
 }
 
-function generateFillDivide(): EquationProblem {
-  const a = getRandomInt(2, 9);
-  const x = getRandomInt(1, 10);
+function generateFillDivide(rng?: {
+  randomInt: (min: number, max: number) => number;
+}): EquationProblem {
+  const a = getRandomInt(2, 9, rng);
+  const x = getRandomInt(1, 10, rng);
   const b = a * x;
-  return {
-    question: `□ ÷ ${a} = ${x}`,
-    x: b,
-  };
+  return { question: `□ ÷ ${a} = ${x}`, x: b };
 }
 
 /**
  * Stage 4: x + a = b
  */
-function generateXPlus(): EquationProblem {
-  // x를 먼저 선택 (1~20)
-  const x = getRandomInt(1, 20);
-  // a를 선택 (1~20)
-  const a = getRandomInt(1, 20);
-  // b = x + a
+function generateXPlus(rng?: { randomInt: (min: number, max: number) => number }): EquationProblem {
+  const x = getRandomInt(1, 20, rng);
+  const a = getRandomInt(1, 20, rng);
   const b = x + a;
-
   return {
     question: `x + ${a} = ${b}`,
     x: x,
@@ -168,18 +153,13 @@ function generateXPlus(): EquationProblem {
 /**
  * Stage 5: x - a = b
  */
-function generateXMinus(): EquationProblem {
-  // x를 먼저 선택 (1~30)
-  const x = getRandomInt(1, 30);
-  // a를 선택 (1~20)
-  const a = getRandomInt(1, 20);
-  // b = x - a (b >= 0)
+function generateXMinus(rng?: {
+  randomInt: (min: number, max: number) => number;
+}): EquationProblem {
+  const x = getRandomInt(1, 30, rng);
+  const a = getRandomInt(1, 20, rng);
   const b = x - a;
-
-  if (b < 0) {
-    return generateXMinus();
-  }
-
+  if (b < 0) return generateXMinus(rng);
   return {
     question: `x - ${a} = ${b}`,
     x: x,
@@ -188,148 +168,79 @@ function generateXMinus(): EquationProblem {
 }
 
 /**
- * Stage 6: b = x + a
- */
-function generateXPlusReverse(): EquationProblem {
-  // x를 먼저 선택 (1~20)
-  const x = getRandomInt(1, 20);
-  // a를 선택 (1~20)
-  const a = getRandomInt(1, 20);
-  // b = x + a
-  const b = x + a;
-
-  return {
-    question: `${b} = x + ${a}`,
-    x: x,
-  };
-}
-
-/**
  * Stage 7: ax = b
  */
-function generateCoefficientMultiply(): EquationProblem {
-  // x를 먼저 선택 (1~15)
-  const x = getRandomInt(1, 15);
-  // a를 선택 (2~9)
-  const a = getRandomInt(2, 9);
-  // b = a * x
+function generateCoefficientMultiply(rng?: {
+  randomInt: (min: number, max: number) => number;
+}): EquationProblem {
+  const x = getRandomInt(1, 15, rng);
+  const a = getRandomInt(2, 9, rng);
   const b = a * x;
-
-  return {
-    question: `${a}x = ${b}`,
-    x: x,
-  };
+  return { question: `${a}x = ${b}`, x };
 }
 
 /**
  * Stage 8: x / a = b
  */
-function generateCoefficientDivide(): EquationProblem {
-  // x를 먼저 선택 (a의 배수가 되도록)
-  // a를 먼저 선택 (2~9)
-  const a = getRandomInt(2, 9);
-  // b를 선택 (1~10)
-  const b = getRandomInt(1, 10);
-  // x = a * b
+function generateCoefficientDivide(rng?: {
+  randomInt: (min: number, max: number) => number;
+}): EquationProblem {
+  const a = getRandomInt(2, 9, rng);
+  const b = getRandomInt(1, 10, rng);
   const x = a * b;
-
-  return {
-    question: `x ÷ ${a} = ${b}`,
-    x: x,
-  };
-}
-
-/**
- * Stage 9: -ax = b (Result can be negative)
- */
-function generateCoefficientNegative(): EquationProblem {
-  // x를 먼저 선택 (1~15)
-  const x = getRandomInt(1, 15);
-  // a를 선택 (2~9)
-  const a = getRandomInt(2, 9);
-  // b = -a * x (음수)
-  const b = -a * x;
-
-  return {
-    question: `-${a}x = ${b}`,
-    x: x,
-  };
+  return { question: `x ÷ ${a} = ${b}`, x };
 }
 
 /**
  * Stage 10: ax + b = c (a, b, x > 0)
  */
-function generateTwoStepPlus(): EquationProblem {
-  // x를 먼저 선택 (1~15)
-  const x = getRandomInt(1, 15);
-  // a를 선택 (2~9)
-  const a = getRandomInt(2, 9);
-  // b를 선택 (1~20)
-  const b = getRandomInt(1, 20);
-  // c = a * x + b
+function generateTwoStepPlus(rng?: {
+  randomInt: (min: number, max: number) => number;
+}): EquationProblem {
+  const x = getRandomInt(1, 15, rng);
+  const a = getRandomInt(2, 9, rng);
+  const b = getRandomInt(1, 20, rng);
   const c = a * x + b;
-
-  return {
-    question: `${a}x + ${b} = ${c}`,
-    x: x,
-  };
+  return { question: `${a}x + ${b} = ${c}`, x };
 }
 
 /**
  * Stage 11: ax - b = c
  */
-function generateTwoStepMinus(): EquationProblem {
-  // x를 먼저 선택 (1~15)
-  const x = getRandomInt(1, 15);
-  // a를 선택 (2~9)
-  const a = getRandomInt(2, 9);
-  // b를 선택 (1~20)
-  const b = getRandomInt(1, 20);
-  // c = a * x - b (c >= 0이 되도록)
+function generateTwoStepMinus(rng?: {
+  randomInt: (min: number, max: number) => number;
+}): EquationProblem {
+  const x = getRandomInt(1, 15, rng);
+  const a = getRandomInt(2, 9, rng);
+  const b = getRandomInt(1, 20, rng);
   const c = a * x - b;
-
-  if (c < 0) {
-    return generateTwoStepMinus();
-  }
-
-  return {
-    question: `${a}x - ${b} = ${c}`,
-    x: x,
-  };
+  if (c < 0) return generateTwoStepMinus(rng);
+  return { question: `${a}x - ${b} = ${c}`, x };
 }
 
 /**
  * Stage 12: ax + b = c (Larger numbers)
  */
-function generateTwoStepLarge(): EquationProblem {
-  // x를 먼저 선택 (1~30)
-  const x = getRandomInt(1, 30);
-  // a를 선택 (2~15)
-  const a = getRandomInt(2, 15);
-  // b를 선택 (10~50)
-  const b = getRandomInt(10, 50);
-  // c = a * x + b
+function generateTwoStepLarge(rng?: {
+  randomInt: (min: number, max: number) => number;
+}): EquationProblem {
+  const x = getRandomInt(1, 30, rng);
+  const a = getRandomInt(2, 15, rng);
+  const b = getRandomInt(10, 50, rng);
   const c = a * x + b;
-
-  return {
-    question: `${a}x + ${b} = ${c}`,
-    x: x,
-  };
+  return { question: `${a}x + ${b} = ${c}`, x };
 }
 
 /**
  * Stage 13: ax = bx + c (Variables on both sides, ensure a > b for positive x)
  */
-function generateBothSidesSimple(): EquationProblem {
-  // x를 먼저 선택 (1~20)
-  const x = getRandomInt(1, 20);
-  // a를 선택 (2~10)
-  const a = getRandomInt(2, 10);
-  // b를 선택 (1~a-1, a > b 보장)
-  const b = getRandomInt(1, a - 1);
-  // c = a * x - b * x = (a - b) * x
+function generateBothSidesSimple(rng?: {
+  randomInt: (min: number, max: number) => number;
+}): EquationProblem {
+  const x = getRandomInt(1, 20, rng);
+  const a = getRandomInt(2, 10, rng);
+  const b = getRandomInt(1, a - 1, rng);
   const c = (a - b) * x;
-
   return {
     question: `${a}x = ${b}x + ${c}`,
     x: x,
@@ -340,37 +251,27 @@ function generateBothSidesSimple(): EquationProblem {
 /**
  * Stage 14: a(x + b) = c (Parentheses)
  */
-function generateParentheses(): EquationProblem {
-  // x를 먼저 선택 (1~20)
-  const x = getRandomInt(1, 20);
-  // a를 선택 (2~9)
-  const a = getRandomInt(2, 9);
-  // b를 선택 (1~15)
-  const b = getRandomInt(1, 15);
-  // c = a * (x + b)
+function generateParentheses(rng?: {
+  randomInt: (min: number, max: number) => number;
+}): EquationProblem {
+  const x = getRandomInt(1, 20, rng);
+  const a = getRandomInt(2, 9, rng);
+  const b = getRandomInt(1, 15, rng);
   const c = a * (x + b);
-
-  return {
-    question: `${a}(x + ${b}) = ${c}`,
-    x: x,
-  };
+  return { question: `${a}(x + ${b}) = ${c}`, x };
 }
 
 /**
  * Stage 15: ax + b = cx + d (Variables on both sides + constants)
  */
-function generateBothSidesComplex(): EquationProblem {
-  // x를 먼저 선택 (1~20)
-  const x = getRandomInt(1, 20);
-  // a를 선택 (2~10)
-  const a = getRandomInt(2, 10);
-  // c를 선택 (1~a-1, a > c 보장)
-  const c = getRandomInt(1, a - 1);
-  // b를 선택 (1~30)
-  const b = getRandomInt(1, 30);
-  // d = a * x + b - c * x = (a - c) * x + b
+function generateBothSidesComplex(rng?: {
+  randomInt: (min: number, max: number) => number;
+}): EquationProblem {
+  const x = getRandomInt(1, 20, rng);
+  const a = getRandomInt(2, 10, rng);
+  const c = getRandomInt(1, a - 1, rng);
+  const b = getRandomInt(1, 30, rng);
   const d = (a - c) * x + b;
-
   return {
     question: `${a}x + ${b} = ${c}x + ${d}`,
     x: x,
@@ -378,49 +279,38 @@ function generateBothSidesComplex(): EquationProblem {
   };
 }
 
-function generateRatio(): EquationProblem {
-  // a:b = c:x -> ax = bc -> x = bc/a
-  const a = getRandomInt(1, 5);
-  const x = getRandomInt(1, 10);
-  const b = getRandomInt(1, 5);
+function generateRatio(rng?: { randomInt: (min: number, max: number) => number }): EquationProblem {
+  const a = getRandomInt(1, 5, rng);
+  const x = getRandomInt(1, 10, rng);
+  const b = getRandomInt(1, 5, rng);
   const c = (a * x) / b;
-  if (!Number.isInteger(c)) return generateRatio();
-
-  return {
-    question: `${a} : ${b} = ${c} : x`,
-    x: x,
-  };
+  if (!Number.isInteger(c)) return generateRatio(rng);
+  return { question: `${a} : ${b} = ${c} : x`, x };
 }
 
-function generateSubstitution(): EquationProblem {
-  const x = getRandomInt(1, 15);
-  const a = getRandomInt(1, 10);
+function generateSubstitution(rng?: {
+  randomInt: (min: number, max: number) => number;
+}): EquationProblem {
+  const x = getRandomInt(1, 15, rng);
+  const a = getRandomInt(1, 10, rng);
   const b = x + a;
-  return {
-    question: `y = x + ${a}, y = ${b}`,
-    x: x,
-  };
+  return { question: `y = x + ${a}, y = ${b}`, x };
 }
 
-function generateInequalityBasic(): EquationProblem {
-  const x = getRandomInt(1, 20);
-  const question = `x > ${x}, 최소 정수는?`;
-  return {
-    question,
-    x: x + 1,
-  };
+function generateInequalityBasic(rng?: {
+  randomInt: (min: number, max: number) => number;
+}): EquationProblem {
+  const x = getRandomInt(1, 20, rng);
+  return { question: `x > ${x}, 최소 정수는?`, x: x + 1 };
 }
 
-function generateInequalitySolve(): EquationProblem {
-  const a = getRandomInt(2, 5);
-  // ax > rhs -> x > rhs/a
-  const x_ans = getRandomInt(5, 10);
-  const rhs = a * x_ans - a + 1; // so x > (rhs/a) -> x >= x_ans
-
-  return {
-    question: `${a}x > ${rhs}, 최소 정수는?`,
-    x: x_ans,
-  };
+function generateInequalitySolve(rng?: {
+  randomInt: (min: number, max: number) => number;
+}): EquationProblem {
+  const a = getRandomInt(2, 5, rng);
+  const x_ans = getRandomInt(5, 10, rng);
+  const rhs = a * x_ans - a + 1;
+  return { question: `${a}x > ${rhs}, 최소 정수는?`, x: x_ans };
 }
 
 /**
@@ -429,58 +319,55 @@ function generateInequalitySolve(): EquationProblem {
  * @param stageLevel 1~15 사이의 스테이지 레벨
  * @returns EquationProblem { question: string, x: number }
  */
-export function generateEquation(stageLevel: number): EquationProblem {
-  const stage = EQUATION_STAGES.find((s) => s.stage === stageLevel);
+export function generateEquation(
+  level: number,
+  _difficulty: Difficulty,
+  rng?: { random: () => number; randomInt: (min: number, max: number) => number }
+): EquationProblem {
+  const stage = EQUATION_STAGES.find((s) => s.id === level);
+  const format = stage ? stage.format : 'fill_plus';
 
-  if (!stage) {
-    throw new Error(`Stage ${stageLevel} not found. Valid stages are 1-15.`);
-  }
-
-  switch (stage.format) {
+  switch (format) {
     case 'fill_plus':
-      return generateFillPlus();
+      return generateFillPlus(rng);
     case 'fill_minus':
-      return generateFillMinus();
+      return generateFillMinus(rng);
     case 'fill_subtract':
-      return generateFillSubtract();
+      return generateFillSubtract(rng);
     case 'fill_multiply':
-      return generateFillMultiply();
+      return generateFillMultiply(rng);
     case 'fill_divide':
-      return generateFillDivide();
+      return generateFillDivide(rng);
     case 'x_plus':
-      return generateXPlus();
+      return generateXPlus(rng);
     case 'x_minus':
-      return generateXMinus();
-    case 'x_plus_reverse':
-      return generateXPlusReverse();
+      return generateXMinus(rng);
     case 'coefficient_multiply':
-      return generateCoefficientMultiply();
+      return generateCoefficientMultiply(rng);
     case 'coefficient_divide':
-      return generateCoefficientDivide();
-    case 'coefficient_negative':
-      return generateCoefficientNegative();
+      return generateCoefficientDivide(rng);
     case 'two_step_plus':
-      return generateTwoStepPlus();
+      return generateTwoStepPlus(rng);
     case 'two_step_minus':
-      return generateTwoStepMinus();
+      return generateTwoStepMinus(rng);
     case 'two_step_large':
-      return generateTwoStepLarge();
+      return generateTwoStepLarge(rng);
     case 'both_sides_simple':
-      return generateBothSidesSimple();
+      return generateBothSidesSimple(rng);
     case 'parentheses':
-      return generateParentheses();
+      return generateParentheses(rng);
     case 'both_sides_complex':
-      return generateBothSidesComplex();
+      return generateBothSidesComplex(rng);
     case 'ratio':
-      return generateRatio();
+      return generateRatio(rng);
     case 'substitution':
-      return generateSubstitution();
+      return generateSubstitution(rng);
     case 'inequality_basic':
-      return generateInequalityBasic();
+      return generateInequalityBasic(rng);
     case 'inequality_solve':
-      return generateInequalitySolve();
+      return generateInequalitySolve(rng);
     default:
-      throw new Error(`Unknown format: ${stage.format}`);
+      return generateFillPlus(rng);
   }
 }
 
@@ -492,7 +379,7 @@ export class EquationProblemGenerator {
    * 스테이지 레벨에 따른 방정식 문제 생성
    */
   static generate(stageLevel: number): EquationProblem {
-    return generateEquation(stageLevel);
+    return generateEquation(stageLevel, 'easy');
   }
 
   /**

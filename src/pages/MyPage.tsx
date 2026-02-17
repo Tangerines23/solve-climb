@@ -19,6 +19,7 @@ import { useSettingsStore } from '../stores/useSettingsStore';
 import { useMyPageStats } from '../hooks/useMyPageStats';
 import { useFavoriteStore } from '../stores/useFavoriteStore';
 import { getTodayChallenge, type TodayChallenge } from '../utils/challenge';
+import { useLevelProgressStore } from '../stores/useLevelProgressStore';
 import { useQuizStore } from '../stores/useQuizStore';
 import { resetAllData } from '../utils/dataReset';
 import { vibrateShort } from '../utils/haptic';
@@ -77,6 +78,7 @@ export function MyPage() {
   const { stats, session, loading: statsLoading, error: statsError, refetch } = useMyPageStats();
   const favorites = useFavoriteStore((state) => state.favorites);
   const setCategoryTopic = useQuizStore((state) => state.setCategoryTopic);
+  const progressMap = useLevelProgressStore((state) => state.progress);
 
   // 오늘의 챌린지 상태
   const [todayChallenge, setTodayChallenge] = useState<TodayChallenge | null>(null);
@@ -102,14 +104,14 @@ export function MyPage() {
 
   // 오늘의 챌린지 가져오기
   useEffect(() => {
-    getTodayChallenge()
+    getTodayChallenge(progressMap)
       .then((challengeData) => {
         setTodayChallenge(challengeData);
       })
       .catch((error) => {
         console.error('Failed to load today challenge:', error);
       });
-  }, []);
+  }, [progressMap]);
 
   // 승급 대기 상태 확인 및 모달 표시
   useEffect(() => {

@@ -1,8 +1,3 @@
-/**
- * 오늘의 챌린지 생성 유틸리티
- * 서버에서 먼저 가져오고, 실패 시 로컬에서 생성합니다.
- */
-
 import { APP_CONFIG } from '../config/app';
 import { storage } from './storage';
 import { useFeatureFlagStore } from '../stores/useFeatureFlagStore';
@@ -19,6 +14,7 @@ export interface TodayChallenge {
   topicId: string;
   mode: string;
   level: number;
+  worldId: string;
 }
 
 /**
@@ -36,13 +32,12 @@ function getTodayDateString(): string {
  * 날짜 문자열을 시드 숫자로 변환합니다
  */
 function dateToSeed(dateString: string): number {
-  // YYYY-MM-DD 형식을 숫자로 변환 (예: 2024-01-15 -> 20240115)
   const numeric = parseInt(dateString.replace(/-/g, ''), 10);
   return numeric;
 }
 
 /**
- * 시드 기반 랜덤 숫자 생성기 (선형 합동 생성기)
+ * 시드 기반 랜덤 숫자 생성기
  */
 export class SeededRandom {
   private seed: number;
@@ -51,149 +46,114 @@ export class SeededRandom {
     this.seed = seed;
   }
 
-  /**
-   * 0 이상 1 미만의 랜덤 숫자 생성
-   */
   random(): number {
     this.seed = (this.seed * 9301 + 49297) % 233280;
     return this.seed / 233280;
   }
 
-  /**
-   * min 이상 max 미만의 정수 생성
-   */
   randomInt(min: number, max: number): number {
     return Math.floor(this.random() * (max - min)) + min;
   }
 }
 
 /**
- * 오늘의 챌린지를 생성합니다
+ * 오늘의 챌린지를 생성합니다 (Categorized League System)
  */
-export function generateTodayChallenge(): TodayChallenge {
+export function generateTodayChallenge(progressMap: any): TodayChallenge {
   const todayDate = getTodayDateString();
   const seed = dateToSeed(todayDate);
   const rng = new SeededRandom(seed);
 
   const { flags } = useFeatureFlagStore.getState();
 
-  // 기능 플래그(FEATURE_FLAGS)에 따라 활성화된 산 선택
+  // 1. 산 선택 (활성화된 것 중)
   const availableMountains = APP_CONFIG.MOUNTAINS.filter((mtn) => {
     const mountainId = mtn.id as 'math' | 'language' | 'logic' | 'general';
     if (mountainId === 'math') return flags.ENABLE_MATH_MOUNTAIN;
     if (mountainId === 'language') return flags.ENABLE_LANGUAGE_MOUNTAIN;
-    if (mountainId === 'logic') return flags.ENABLE_LOGIC_MOUNTAIN;
-    if (mountainId === 'general') return flags.ENABLE_GENERAL_MOUNTAIN;
     return false;
   });
   const mountains = [...availableMountains].sort((a, b) => a.id.localeCompare(b.id));
-  const mountainIndex = rng.randomInt(0, mountains.length);
-  const selectedMountain = mountains.at(mountainIndex);
-  if (!selectedMountain) throw new Error('No mountain selected');
+  const selectedMountain = mountains[rng.randomInt(0, mountains.length)];
 
-  // 2. 카테고리(기초, 논리 등) 랜덤 선택
-  const subTopicsMap = APP_CONFIG.SUB_TOPICS as Record<string, unknown>;
-  const subTopicsEntry = Object.entries(subTopicsMap).find(([k]) => k === selectedMountain.id);
-  let subTopics = subTopicsEntry
-    ? (subTopicsEntry[1] as ReadonlyArray<{ id: string; name?: string }>)
-    : undefined;
+  // 2. 월드 선택 (해당 산의 월드 중)
+  const availableWorlds = APP_CONFIG.WORLDS.filter((w) => w.mountainId === selectedMountain.id);
+  const selectedWorld = availableWorlds[rng.randomInt(0, availableWorlds.length)];
 
-  // 수학의 산에서 수열 제거
-  if (selectedMountain.id === 'math' && subTopics) {
-    subTopics = subTopics.filter((topic) => topic.id !== 'sequence') as unknown as typeof subTopics;
+  // 3. 카테고리/분야 선택
+  const subTopics = APP_CONFIG.SUB_TOPICS[selectedMountain.id as 'math' | 'language'];
+  const filteredSubTopics =
+    selectedMountain.id === 'math'
+      ? subTopics.filter((t) => (t.id as string) !== 'sequence')
+      : subTopics;
+  const selectedTopic = filteredSubTopics[rng.randomInt(0, filteredSubTopics.length)];
+
+  // 4. 로컬 실력 확인 (해당 월드/분야의 Max Level)
+  let maxLevel = 0;
+  const worldProgress = progressMap?.[selectedWorld.id];
+  if (worldProgress && worldProgress[selectedTopic.id]) {
+    const topicLevels = Object.values(worldProgress[selectedTopic.id]) as unknown as Array<{
+      cleared: boolean;
+      level: number;
+    }>;
+    topicLevels.forEach((l) => {
+      if (l.cleared && l.level > maxLevel) maxLevel = l.level;
+    });
   }
 
-  if (!subTopics || !Array.isArray(subTopics) || (subTopics as unknown[]).length === 0) {
-    // 서브토픽이 없으면 기본값 사용
-    return {
-      id: `today_challenge_${todayDate}`,
-      title: '기본 챌린지',
-      category:
-        APP_CONFIG.MOUNTAINS.find((m) => m.id === selectedMountain.id)?.name ||
-        selectedMountain.name,
-      categoryId: selectedMountain.id,
-      topic: '기본',
-      topicId: 'default',
-      mode: 'time-attack',
-      level: 1,
-    };
+  // 5. 리그 결정 (10레벨 단위)
+  // League 1: 0-10, League 2: 11-20, League 3: 21-30 ...
+  const league = Math.floor(maxLevel / 10); // 0, 1, 2...
+  const leagueStart = league * 10 + 1;
+  const leagueEnd = (league + 1) * 10 + 2; // +2 Preview
+
+  // 6. 후보 레벨 필터링
+  const levelsConfig = APP_CONFIG.LEVELS as any;
+  const allLevels = (levelsConfig[selectedWorld.id]?.[selectedTopic.id] || []) as any[];
+
+  // 리그 범위 내의 레벨들
+  let candidateLevels = allLevels.filter((l) => l.level >= leagueStart && l.level <= leagueEnd);
+
+  // 만약 해당 리그 범위에 레벨이 없다면 (예: 월드2 기초는 10레벨까지만 있을 때)
+  if (candidateLevels.length === 0) {
+    // 가장 가까운 아래 범위 레벨들로 선택
+    candidateLevels = allLevels.filter((l) => l.level <= leagueEnd);
   }
 
-  // 서브토픽도 ID로 정렬하여 항상 같은 순서 보장
-  const sortedSubTopics = [...subTopics].sort((a, b) => a.id.localeCompare(b.id));
-  const topicIndex = rng.randomInt(0, sortedSubTopics.length);
-  const selectedTopic = sortedSubTopics.at(topicIndex);
-  if (!selectedTopic) throw new Error('No topic selected');
+  // 그래도 없으면 전체에서 선택
+  if (candidateLevels.length === 0) candidateLevels = allLevels;
 
-  // 3. 레벨 랜덤 선택 (World1 고정 사용)
-  const levelsConfig = APP_CONFIG.LEVELS as Record<string, Record<string, unknown>>;
-  const categoryLevels = Object.prototype.hasOwnProperty.call(levelsConfig, 'World1')
-    ? levelsConfig['World1']
-    : undefined;
-  const topicEntry = categoryLevels
-    ? Object.entries(categoryLevels).find(([k]) => k === selectedTopic.id)
-    : null;
-  const levels = (topicEntry ? topicEntry.at(1) : undefined) as
-    | Array<{ level: number; name: string; description: string }>
-    | undefined;
-  if (!levels || !Array.isArray(levels) || levels.length === 0) {
-    // 레벨이 없으면 기본값 사용
-    return {
-      id: `today_challenge_${todayDate}`,
-      title: `${selectedTopic.name} 도전!`,
-      category:
-        APP_CONFIG.MOUNTAINS.find((m) => m.id === selectedMountain.id)?.name ||
-        selectedMountain.name,
-      categoryId: selectedMountain.id,
-      topic: selectedTopic.name,
-      topicId: selectedTopic.id,
-      mode: 'time-attack',
-      level: 1,
-    };
-  }
-
-  // 레벨도 level 값으로 정렬하여 항상 같은 순서 보장
-  const sortedLevels = [...levels].sort((a, b) => a.level - b.level);
-  const levelIndex = rng.randomInt(0, sortedLevels.length);
-  const selectedLevel = sortedLevels.at(levelIndex);
-  if (!selectedLevel) throw new Error('No level selected');
-
-  // 챌린지 제목 생성
-  const title = `${selectedTopic.name} ${selectedLevel.name}!`;
+  const finalLevel =
+    candidateLevels.length > 0
+      ? candidateLevels[rng.randomInt(0, candidateLevels.length)]
+      : { level: 1, name: '입문' };
 
   return {
     id: `today_challenge_${todayDate}`,
-    title,
-    category:
-      APP_CONFIG.MOUNTAINS.find((m) => m.id === selectedMountain.id)?.name || selectedMountain.name,
+    title: `${selectedTopic.name} ${finalLevel.name}!`,
+    category: selectedMountain.name,
     categoryId: selectedMountain.id,
     topic: selectedTopic.name,
     topicId: selectedTopic.id,
     mode: 'time-attack',
-    level: selectedLevel.level,
+    level: finalLevel.level,
+    worldId: selectedWorld.id,
   };
 }
 
 /**
  * 오늘의 챌린지를 가져옵니다
- * 1. 서버에서 먼저 시도
- * 2. 실패 시 로컬 캐시 확인
- * 3. 모두 실패 시 로컬 생성 (폴백)
  */
-export async function getTodayChallenge(): Promise<TodayChallenge> {
+export async function getTodayChallenge(progressMap: any): Promise<TodayChallenge> {
   const todayDate = getTodayDateString();
   const storedDate = storage.getString(STORAGE_KEY_DATE, null);
   const storedChallenge = storage.get<TodayChallenge | null>(STORAGE_KEY_CHALLENGE, null);
 
-  // 같은 날짜면 캐시된 값 사용
   if (storedDate === todayDate && storedChallenge) {
     return storedChallenge;
   }
 
-  // 서버에 없거나 실패 시 로컬 생성 (폴백)
-  const newChallenge = generateTodayChallenge();
-
-  // 저장
+  const newChallenge = generateTodayChallenge(progressMap);
   storage.setString(STORAGE_KEY_DATE, todayDate);
   storage.set(STORAGE_KEY_CHALLENGE, newChallenge);
 

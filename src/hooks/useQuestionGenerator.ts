@@ -1,6 +1,6 @@
 // 문제 생성 로직을 관리하는 커스텀 훅
 import { useCallback } from 'react';
-import { Category, QuizQuestion, Difficulty, GameMode, World } from '../types/quiz';
+import { Category, QuizQuestion, Difficulty, GameMode, World, Topic } from '../types/quiz';
 import { generateQuestion } from '../utils/quizGenerator';
 import { useBaseCampStore } from '../stores/useBaseCampStore';
 import { useDeathNoteStore } from '../stores/useDeathNoteStore';
@@ -179,7 +179,13 @@ export function useQuestionGenerator({
     setQuestionAnimation('fade-out');
     setTimeout(() => {
       try {
-        const newQuestion = generateQuestion(targetWorld, targetCategory, targetLevel, difficulty);
+        const newQuestion = generateQuestion(
+          'math',
+          targetWorld,
+          `${targetWorld}-${targetCategory}` as Topic,
+          targetLevel,
+          difficulty
+        );
 
         if (newQuestion) {
           const questionId = crypto.randomUUID();
@@ -190,7 +196,7 @@ export function useQuestionGenerator({
         }
       } catch (e) {
         console.error('Failed to generate question:', e);
-        const fallbackQuestion = generateQuestion('World1', '기초', 1, difficulty);
+        const fallbackQuestion = generateQuestion('math', 'World1', 'World1-기초', 1, difficulty);
         setCurrentQuestion(fallbackQuestion);
       }
 

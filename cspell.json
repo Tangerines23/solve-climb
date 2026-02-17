@@ -61,7 +61,8 @@
     "autodocs",
     "safearea",
     "currentwords",
-    "Desaturation"
+    "Desaturation",
+    "Congruential"
   ],
   "ignorePaths": [
     "node_modules",

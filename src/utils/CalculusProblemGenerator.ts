@@ -8,20 +8,29 @@ export interface CalculusProblem {
   hintData?: FunctionMachineHint | IntegralTankHint | CalculusHint;
 }
 
-function getRandomInt(min: number, max: number): number {
+function getRandomInt(
+  min: number,
+  max: number,
+  rng?: { randomInt: (min: number, max: number) => number }
+): number {
+  if (rng) return rng.randomInt(min, max + 1);
   return Math.floor(Math.random() * (max - min + 1)) + min;
 }
 
-export function generateCalculusProblem(level: number, _difficulty: Difficulty): CalculusProblem {
+export function generateCalculusProblem(
+  level: number,
+  _difficulty: Difficulty,
+  rng?: { random: () => number; randomInt: (min: number, max: number) => number }
+): CalculusProblem {
   switch (level) {
     // [Phase 1: 좌표와 함수 (Lv 1~5)]
     case 1:
     case 2:
-      return generateCoordinateProblem(level);
+      return generateCoordinateProblem(level, rng);
     case 3:
     case 4:
     case 5:
-      return generateFunctionProblem();
+      return generateFunctionProblem(rng);
 
     // [Phase 2: 극한 (Lv 6~8)]
     case 6:
@@ -48,34 +57,39 @@ export function generateCalculusProblem(level: number, _difficulty: Difficulty):
 
     // [Phase 3: 미분 (Lv 9~12)]
     case 9:
-      return generateDerivativeProblem('basic');
+      return generateDerivativeProblem('basic', rng);
     case 10:
-      return generateDerivativeProblem('coefficient');
+      return generateDerivativeProblem('coefficient', rng);
     case 11:
-      return generateDerivativeProblem('linear');
+      return generateDerivativeProblem('linear', rng);
     case 12:
-      return generateDerivativeProblem('const');
+      return generateDerivativeProblem('const', rng);
 
     // [Phase 4: 적분 (Lv 13~15)]
     case 13:
-      return generateIntegralProblem('power');
+      return generateIntegralProblem('power', rng);
     case 14:
-      return generateIntegralProblem('simple');
-    case 15:
-      return Math.random() > 0.5
-        ? generateDerivativeProblem('basic')
-        : generateIntegralProblem('simple');
+      return generateIntegralProblem('simple', rng);
+    case 15: {
+      const randomVal = rng ? rng.random() : Math.random();
+      return randomVal > 0.5
+        ? generateDerivativeProblem('basic', rng)
+        : generateIntegralProblem('simple', rng);
+    }
 
     default:
-      return generateDerivativeProblem('basic');
+      return generateDerivativeProblem('basic', rng);
   }
 }
 
-function generateCoordinateProblem(level: number): CalculusProblem {
+function generateCoordinateProblem(
+  level: number,
+  rng?: { randomInt: (min: number, max: number) => number }
+): CalculusProblem {
   if (level === 1) {
     // 1사분면 (First quadrant)
-    const x = getRandomInt(1, 5);
-    const y = getRandomInt(1, 5);
+    const x = getRandomInt(1, 5, rng);
+    const y = getRandomInt(1, 5, rng);
     return {
       question: `좌표 (${x}, ${y})를 조준하세요!`,
       answer: `${x},${y}`,
@@ -83,8 +97,8 @@ function generateCoordinateProblem(level: number): CalculusProblem {
     };
   } else {
     // 전 사분면 (All quadrants)
-    const x = getRandomInt(-5, 5);
-    const y = getRandomInt(-5, 5);
+    const x = getRandomInt(-5, 5, rng);
+    const y = getRandomInt(-5, 5, rng);
     // 0은 너무 쉬울 수 있으니 제외 시도 (옵션)
     return {
       question: `좌표 (${x}, ${y})를 조준하세요!`,
@@ -94,11 +108,13 @@ function generateCoordinateProblem(level: number): CalculusProblem {
   }
 }
 
-function generateFunctionProblem(): CalculusProblem {
-  const x = getRandomInt(1, 4);
-  const type = getRandomInt(1, 2);
+function generateFunctionProblem(rng?: {
+  randomInt: (min: number, max: number) => number;
+}): CalculusProblem {
+  const x = getRandomInt(1, 4, rng);
+  const type = getRandomInt(1, 2, rng);
   if (type === 1) {
-    const a = getRandomInt(1, 5);
+    const a = getRandomInt(1, 5, rng);
     return {
       question: `f(x) = x + ${a}, f(${x}) = ?`,
       answer: x + a,
@@ -116,11 +132,12 @@ function generateFunctionProblem(): CalculusProblem {
 }
 
 function generateDerivativeProblem(
-  type: 'basic' | 'coefficient' | 'linear' | 'const'
+  type: 'basic' | 'coefficient' | 'linear' | 'const',
+  rng?: { randomInt: (min: number, max: number) => number }
 ): CalculusProblem {
-  const x = getRandomInt(1, 3);
-  const n = getRandomInt(2, 4);
-  const a = getRandomInt(2, 5);
+  const x = getRandomInt(1, 3, rng);
+  const n = getRandomInt(2, 4, rng);
+  const a = getRandomInt(2, 5, rng);
 
   switch (type) {
     case 'basic':
@@ -147,7 +164,7 @@ function generateDerivativeProblem(
         hintData: { type: 'derivative', func: `${a}x` },
       };
     case 'const': {
-      const c = getRandomInt(1, 100);
+      const c = getRandomInt(1, 100, rng);
       return {
         question: `d/dx(${c}) 의 값은?`,
         answer: 0,
@@ -158,14 +175,17 @@ function generateDerivativeProblem(
   }
 }
 
-function generateIntegralProblem(type: 'power' | 'simple'): CalculusProblem {
-  const n = getRandomInt(1, 3);
+function generateIntegralProblem(
+  type: 'power' | 'simple',
+  rng?: { randomInt: (min: number, max: number) => number }
+): CalculusProblem {
+  const n = getRandomInt(1, 3, rng);
   if (type === 'power') {
     // ∫ x^n dx = (1/n+1)x^(n+1)
     // Simplify for integer answers: ∫ (n+1)x^n dx = x^(n+1)
     const power = n;
     const coeff = n + 1;
-    const x = getRandomInt(1, 3);
+    const x = getRandomInt(1, 3, rng);
     return {
       question: `∫ ${coeff}x^${power} dx , x=${x} 일 때 값은? (C=0)`,
       answer: Math.pow(x, coeff),
@@ -173,7 +193,7 @@ function generateIntegralProblem(type: 'power' | 'simple'): CalculusProblem {
       hintData: { type: 'power', coeff: coeff, power: power, x: x },
     };
   } else {
-    const a = getRandomInt(2, 10);
+    const a = getRandomInt(2, 10, rng);
     return {
       question: `∫ ${a} dx , x=1 일 때 값은? (C=0)`,
       answer: a,

@@ -1,3 +1,5 @@
+import { Difficulty } from '../types/quiz';
+
 export type Operator = '+' | '-' | '*' | '/';
 
 export interface StageConfig {
@@ -427,12 +429,23 @@ export interface MathProblem {
   inputType?: 'number' | 'decimal' | 'fraction';
 }
 
-function getRandomInt(min: number, max: number): number {
+function getRandomInt(
+  min: number,
+  max: number,
+  rng?: { randomInt: (min: number, max: number) => number }
+): number {
+  if (rng) return rng.randomInt(min, max + 1);
   return Math.floor(Math.random() * (max - min + 1)) + min;
 }
 
-function getRandomOperator(operators: Operator[]): Operator {
-  return operators[Math.floor(Math.random() * operators.length)];
+function getRandomOperator(
+  operators: Operator[],
+  rng?: { randomInt: (min: number, max: number) => number }
+): Operator {
+  const idx = rng
+    ? rng.randomInt(0, operators.length)
+    : Math.floor(Math.random() * operators.length);
+  return operators[idx];
 }
 
 function calculate(a: number, b: number, op: Operator): number {
@@ -489,7 +502,11 @@ function calculateWithPrecedence(numbers: number[], operators: Operator[]): numb
   return result;
 }
 
-export function generateProblem(stageId: number): MathProblem {
+export function generateProblem(
+  stageId: number,
+  _difficulty: Difficulty,
+  rng?: { random: () => number; randomInt: (min: number, max: number) => number }
+): MathProblem {
   const stage = STAGES.find((s) => s.id === stageId);
   if (!stage) {
     throw new Error(`Stage ${stageId} not found`);
@@ -503,19 +520,19 @@ export function generateProblem(stageId: number): MathProblem {
     attempts++;
     try {
       if (stage.type === 'standard' || stage.type === 'fill-blank') {
-        problem = generateStandardProblem(stage);
+        problem = generateStandardProblem(stage, rng);
       } else if (stage.type === 'sequential') {
-        problem = generateSequentialProblem(stage);
+        problem = generateSequentialProblem(stage, rng);
       } else if (stage.type === 'parentheses') {
-        problem = generateParenthesesProblem(stage);
+        problem = generateParenthesesProblem(stage, rng);
       } else if (stage.type === 'decimal') {
-        problem = generateDecimalProblem(stage);
+        problem = generateDecimalProblem(stage, rng);
       } else if (stage.type === 'fraction') {
-        problem = generateFractionProblem(stage);
+        problem = generateFractionProblem(stage, rng);
       } else if (stage.type === 'time') {
-        problem = generateTimeProblem(stage);
+        problem = generateTimeProblem(stage, rng);
       } else if (stage.type === 'modulo') {
-        problem = generateModuloProblem(stage);
+        problem = generateModuloProblem(stage, rng);
       }
       isValid = true;
     } catch {
@@ -540,8 +557,11 @@ export function generateProblem(stageId: number): MathProblem {
   return problem;
 }
 
-function generateStandardProblem(stage: StageConfig): MathProblem {
-  const op = getRandomOperator(stage.operators);
+function generateStandardProblem(
+  stage: StageConfig,
+  rng?: { random: () => number; randomInt: (min: number, max: number) => number }
+): MathProblem {
+  const op = getRandomOperator(stage.operators, rng);
   let a: number, b: number;
 
   if (op === '/') {
@@ -551,8 +571,8 @@ function generateStandardProblem(stage: StageConfig): MathProblem {
     if (!divisorRange) throw new Error('Stage has no ranges');
     const quotientRange = { min: 2, max: 9 }; // Reasonable quotient range for mental math
 
-    b = getRandomInt(divisorRange.min, divisorRange.max);
-    const answer = getRandomInt(quotientRange.min, quotientRange.max);
+    b = getRandomInt(divisorRange.min, divisorRange.max, rng);
+    const answer = getRandomInt(quotientRange.min, quotientRange.max, rng);
     a = b * answer;
 
     return {
@@ -563,8 +583,8 @@ function generateStandardProblem(stage: StageConfig): MathProblem {
     const r0 = stage.ranges.at(0);
     const r1 = stage.ranges.at(1);
     if (!r0) throw new Error('Stage has no ranges');
-    a = getRandomInt(r0.min, r0.max);
-    b = getRandomInt(r1?.min ?? r0.min, r1?.max ?? r0.max);
+    a = getRandomInt(r0.min, r0.max, rng);
+    b = getRandomInt(r1?.min ?? r0.min, r1?.max ?? r0.max, rng);
 
     const result = calculate(a, b, op);
 
@@ -579,7 +599,7 @@ function generateStandardProblem(stage: StageConfig): MathProblem {
     const expression = `${a} ${displayOp} ${b}`;
 
     if (stage.type === 'fill-blank') {
-      const hideFirst = Math.random() > 0.5;
+      const hideFirst = rng ? rng.random() > 0.5 : Math.random() > 0.5;
       if (hideFirst) {
         // □ op b = result
         return { expression: `□ ${displayOp} ${b} = ${result}`, answer: a };
@@ -593,7 +613,10 @@ function generateStandardProblem(stage: StageConfig): MathProblem {
   }
 }
 
-function generateSequentialProblem(stage: StageConfig): MathProblem {
+function generateSequentialProblem(
+  stage: StageConfig,
+  rng?: { random: () => number; randomInt: (min: number, max: number) => number }
+): MathProblem {
   // e.g. a + b - c
   // Or 2 + 3 * 4 (Stage 13)
 
@@ -601,13 +624,13 @@ function generateSequentialProblem(stage: StageConfig): MathProblem {
   const nums = [];
 
   for (let i = 0; i < stage.operandCount - 1; i++) {
-    ops.push(getRandomOperator(stage.operators));
+    ops.push(getRandomOperator(stage.operators, rng));
   }
 
   for (let i = 0; i < stage.operandCount; i++) {
     const range = stage.ranges.at(i) ?? stage.ranges.at(stage.ranges.length - 1);
     if (!range) throw new Error('Stage has no ranges');
-    nums.push(getRandomInt(range.min, range.max));
+    nums.push(getRandomInt(range.min, range.max, rng));
   }
 
   // Construct expression string
@@ -619,13 +642,9 @@ function generateSequentialProblem(stage: StageConfig): MathProblem {
   }
 
   // Calculate result respecting precedence
-  // Stage 13 (Mixed Operators with Precedence) uses standard math precedence
-  // Other sequential problems also use precedence for consistency
   const result = calculateWithPrecedence(nums, ops as Operator[]);
 
   // Check constraints
-  // For Stage 13 (2 + 3 * 4), result is 14.
-  // Ensure result is integer (division might break this)
   if (!Number.isInteger(result)) throw new Error('Non-integer result');
   if (stage.constraints?.resultMin !== undefined && result < stage.constraints.resultMin)
     throw new Error('Result too low');
@@ -637,18 +656,19 @@ function generateSequentialProblem(stage: StageConfig): MathProblem {
   return { expression: displayExpression, answer: result };
 }
 
-function generateParenthesesProblem(stage: StageConfig): MathProblem {
-  // (a + b) * c
-  // Simple template: (a op1 b) op2 c
-  const op1 = getRandomOperator(['+', '-']); // Inside parens usually additive
-  const op2 = getRandomOperator(['*', '/']); // Outside usually multiplicative for "complex" feel
+function generateParenthesesProblem(
+  stage: StageConfig,
+  rng?: { random: () => number; randomInt: (min: number, max: number) => number }
+): MathProblem {
+  // template: (a op1 b) op2 c
+  const op1 = getRandomOperator(['+', '-'], rng);
+  const op2 = getRandomOperator(['*', '/'], rng);
 
   const range = stage.ranges[0];
-  const a = getRandomInt(range.min, range.max);
-  const b = getRandomInt(range.min, range.max);
-  const c = getRandomInt(2, 5); // Keep multiplier small
+  const a = getRandomInt(range.min, range.max, rng);
+  const b = getRandomInt(range.min, range.max, rng);
+  const c = getRandomInt(2, 5, rng);
 
-  // Ensure (a op1 b) is positive and valid
   const innerResult = calculate(a, b, op1);
   if (innerResult < 0) throw new Error('Negative inner result');
 
@@ -656,32 +676,22 @@ function generateParenthesesProblem(stage: StageConfig): MathProblem {
   let expression;
 
   if (op2 === '/') {
-    // Ensure divisibility
-    // (inner) / c = result -> inner must be multiple of c
-    // Hard to force random a,b to sum to multiple of c.
-    // Reverse: generate result, then inner = result * c.
-    // Then find a, b such that a op1 b = inner.
-    const finalResult = getRandomInt(2, 9);
+    const finalResult = getRandomInt(2, 9, rng);
     const targetInner = finalResult * c;
 
-    // a + b = targetInner OR a - b = targetInner
     if (op1 === '+') {
-      // a + b = targetInner
-      // split targetInner into two random parts
-      const split = getRandomInt(1, targetInner - 1);
+      const split = getRandomInt(1, targetInner - 1, rng);
       const newA = split;
       const newB = targetInner - split;
       expression = `(${newA} + ${newB}) ÷ ${c}`;
       result = finalResult;
     } else {
-      // a - b = targetInner
-      const newB = getRandomInt(1, 9);
+      const newB = getRandomInt(1, 9, rng);
       const newA = targetInner + newB;
       expression = `(${newA} - ${newB}) ÷ ${c}`;
       result = finalResult;
     }
   } else {
-    // Multiplication
     result = calculate(innerResult, c, op2);
     expression = `(${a} ${op1} ${b}) × ${c}`;
   }
@@ -689,16 +699,19 @@ function generateParenthesesProblem(stage: StageConfig): MathProblem {
   return { expression, answer: result };
 }
 
-function generateDecimalProblem(stage: StageConfig): MathProblem {
-  const op = getRandomOperator(stage.operators);
+function generateDecimalProblem(
+  stage: StageConfig,
+  rng?: { random: () => number; randomInt: (min: number, max: number) => number }
+): MathProblem {
+  const op = getRandomOperator(stage.operators, rng);
   const precision = stage.constraints?.precision || 1;
   const factor = Math.pow(10, precision);
 
   const range0 = stage.ranges[0];
   const range1 = stage.ranges[1] || stage.ranges[0];
 
-  const a = getRandomInt(range0.min * factor, range0.max * factor) / factor;
-  const b = getRandomInt(range1.min * factor, range1.max * factor) / factor;
+  const a = getRandomInt(range0.min * factor, range0.max * factor, rng) / factor;
+  const b = getRandomInt(range1.min * factor, range1.max * factor, rng) / factor;
 
   const result = calculate(a, b, op);
   const roundedResult = Math.round(result * factor) / factor;
@@ -710,13 +723,14 @@ function generateDecimalProblem(stage: StageConfig): MathProblem {
   };
 }
 
-function generateFractionProblem(stage: StageConfig): MathProblem {
-  // Simple unit fractions or same denominator for World 1 Level 11
+function generateFractionProblem(
+  stage: StageConfig,
+  rng?: { random: () => number; randomInt: (min: number, max: number) => number }
+): MathProblem {
   const den = stage.constraints?.denominator || 4;
-  const num1 = getRandomInt(1, den - 1);
-  const num2 = getRandomInt(1, den - 1);
+  const num1 = getRandomInt(1, den - 1, rng);
+  const num2 = getRandomInt(1, den - 1, rng);
 
-  // We'll return the answer as a string fraction if it's not an integer
   const result = (num1 + num2) / den;
 
   return {
@@ -726,11 +740,13 @@ function generateFractionProblem(stage: StageConfig): MathProblem {
   };
 }
 
-function generateTimeProblem(stage: StageConfig): MathProblem {
-  // 14:00 + 40min = 1440 (14:40)
-  const hour = getRandomInt(0, 23);
-  const min = getRandomInt(0, 59);
-  const addMin = getRandomInt(stage.ranges[1].min, stage.ranges[1].max);
+function generateTimeProblem(
+  stage: StageConfig,
+  rng?: { random: () => number; randomInt: (min: number, max: number) => number }
+): MathProblem {
+  const hour = getRandomInt(0, 23, rng);
+  const min = getRandomInt(0, 59, rng);
+  const addMin = getRandomInt(stage.ranges[1].min, stage.ranges[1].max, rng);
 
   const totalInMinutes = hour * 60 + min + addMin;
   const finalHour = Math.floor(totalInMinutes / 60) % 24;
@@ -745,9 +761,12 @@ function generateTimeProblem(stage: StageConfig): MathProblem {
   };
 }
 
-function generateModuloProblem(stage: StageConfig): MathProblem {
-  const a = getRandomInt(stage.ranges[0].min, stage.ranges[0].max);
-  const b = getRandomInt(stage.ranges[1].min, stage.ranges[1].max);
+function generateModuloProblem(
+  stage: StageConfig,
+  rng?: { random: () => number; randomInt: (min: number, max: number) => number }
+): MathProblem {
+  const a = getRandomInt(stage.ranges[0].min, stage.ranges[0].max, rng);
+  const b = getRandomInt(stage.ranges[1].min, stage.ranges[1].max, rng);
   const remainder = a % b;
 
   return {

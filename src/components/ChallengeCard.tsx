@@ -1,24 +1,26 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { urls } from '../utils/navigation';
 import { useQuizStore } from '../stores/useQuizStore';
-import { getTodayChallenge, type TodayChallenge } from '../utils/challenge';
-import type { Category } from '../types/quiz';
+// import { useGameStore } from '../stores/useGameStore'; // Removed unused import
+import { useLevelProgressStore } from '../stores/useLevelProgressStore';
+import { getTodayChallenge, TodayChallenge } from '../utils/challenge';
+import { urls } from '../utils/navigation';
+import { Category, World, GameMode } from '../types/quiz';
 import './ChallengeCard.css';
 
 export function ChallengeCard() {
   const navigate = useNavigate();
-  // Zustand Selector 패턴 적용
   const setCategoryTopic = useQuizStore((state) => state.setCategoryTopic);
   const setTimeLimit = useQuizStore((state) => state.setTimeLimit);
+  const progressMap = useLevelProgressStore((state) => state.progress);
 
   // 오늘의 챌린지 상태
   const [challenge, setChallenge] = useState<TodayChallenge | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // 서버에서 오늘의 챌린지 가져오기
-    getTodayChallenge()
+    // 챌린지 가져오기 (전체 진행도 전달)
+    getTodayChallenge(progressMap)
       .then((challengeData) => {
         setChallenge(challengeData);
         setLoading(false);
@@ -27,23 +29,23 @@ export function ChallengeCard() {
         console.error('Failed to load today challenge:', error);
         setLoading(false);
       });
-  }, []);
+  }, [progressMap]);
 
   const handleChallengeClick = () => {
     if (!challenge) return;
 
-    // 오늘의 챌린지 설정 적용
-    setCategoryTopic(challenge.categoryId as Category, 'World1');
-    setTimeLimit(60); // 기본 1분
+    // 오늘의 챌린지 설정 적용 (월드 유동적 대응)
+    setCategoryTopic(challenge.categoryId as Category, (challenge.worldId as World) || 'World1');
+    if (setTimeLimit) setTimeLimit(60); // 기본 1분
 
     // 게임 페이지로 이동 (산, 월드, 카테고리 파라미터 표준화)
     navigate(
       urls.quiz({
         mountain: challenge.categoryId,
-        world: 'World1',
+        world: challenge.worldId || 'World1',
         category: challenge.topicId,
         level: challenge.level,
-        mode: challenge.mode as import('../types/quiz').GameMode,
+        mode: challenge.mode as GameMode,
         challenge: 'today',
       })
     );
