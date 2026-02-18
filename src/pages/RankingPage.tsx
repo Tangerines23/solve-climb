@@ -115,21 +115,21 @@ export function RankingPage() {
       <main className="ranking-main">
         {/* Layer 1: 종목 선택 (Tabs) */}
         <div className="ranking-tabs-container">
-          <div className="ranking-tabs">
+          <div className="tab-container-base ranking-tabs">
             <button
-              className={`ranking-tab ${activeType === 'total' ? 'active' : ''}`}
+              className={`tab-base ranking-tab ${activeType === 'total' ? 'active' : ''}`}
               onClick={() => setActiveType('total')}
             >
               종합
             </button>
             <button
-              className={`ranking-tab ${activeType === 'time-attack' ? 'active' : ''}`}
+              className={`tab-base ranking-tab ${activeType === 'time-attack' ? 'active' : ''}`}
               onClick={() => setActiveType('time-attack')}
             >
               타임어택
             </button>
             <button
-              className={`ranking-tab ${activeType === 'survival' ? 'active' : ''}`}
+              className={`tab-base ranking-tab ${activeType === 'survival' ? 'active' : ''}`}
               onClick={() => setActiveType('survival')}
             >
               서바이벌
@@ -184,7 +184,7 @@ export function RankingPage() {
               {currentRankings.map((item) => (
                 <div
                   key={item?.user_id}
-                  className={`ranking-item ${item?.rank && Number(item.rank) <= 3 ? `top-rank rank-${item.rank}` : ''} ${item?.user_id === currentUserId ? 'my-item' : ''}`}
+                  className={`ranking-item card-interactive ${item?.rank && Number(item.rank) <= 3 ? `top-rank rank-${item.rank}` : ''} ${item?.user_id === currentUserId ? 'my-item' : ''}`}
                 >
                   <div className="ranking-item-left">
                     <span className="ranking-rank">{getMedalIcon(Number(item.rank))}</span>

@@ -538,7 +538,7 @@ export function RoadmapPage() {
               <span className="roadmap-subtitle">{stats.userTitle}</span>
             </div>
             <button
-              className="roadmap-close-button"
+              className="btn-icon roadmap-close-button"
               onClick={handleCloseRoadmap}
               aria-label="로드맵 닫기"
             >

@@ -17,8 +17,11 @@ export const StaminaWarningModal: React.FC<StaminaWarningModalProps> = ({
   if (!isOpen) return null;
 
   return (
-    <div className="stamina-modal-overlay">
-      <div className="stamina-modal-content fade-in">
+    <div className="modal-overlay animate-fade-in" onClick={onClose}>
+      <div
+        className="modal-base stamina-modal-content animate-scale-in"
+        onClick={(e) => e.stopPropagation()}
+      >
         <div className="stamina-modal-header">
           <span className="warning-icon">⚡</span>
           <h2>체력이 부족합니다</h2>

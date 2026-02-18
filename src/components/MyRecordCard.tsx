@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useLevelProgressStore } from '../stores/useLevelProgressStore';
+import { BaseCard } from './BaseCard';
 import './MyRecordCard.css';
 
 interface MyRecordCardProps {
@@ -44,7 +45,7 @@ export function MyRecordCard({ world, category, categoryName }: MyRecordCardProp
   }
 
   return (
-    <div className="my-record-card">
+    <BaseCard className="my-record-card" padding="none">
       <h3 className="my-record-card-title">{categoryName} 최고 기록</h3>
       <div className="my-record-card-content">
         <div className="my-record-item">
@@ -66,6 +67,6 @@ export function MyRecordCard({ world, category, categoryName }: MyRecordCardProp
           </span>
         </div>
       </div>
-    </div>
+    </BaseCard>
   );
 }

@@ -157,5 +157,5 @@ $$;
 -- ============================================================================
 -- 4. search_path 보안 강화 (20260128000002_harden_search_path.sql 패턴)
 -- ============================================================================
-ALTER FUNCTION public.debug_generate_dummy_record(uuid, text, text, text, integer, integer, text) SET search_path = public;
-ALTER FUNCTION public.debug_generate_dummy_record(uuid, text, text, integer, integer, text) SET search_path = public;
+DO $$ BEGIN ALTER FUNCTION public.debug_generate_dummy_record(uuid, text, text, text, integer, integer, text) SET search_path = public; EXCEPTION WHEN SQLSTATE '42883' OR SQLSTATE '42704' THEN NULL; END $$;
+DO $$ BEGIN ALTER FUNCTION public.debug_generate_dummy_record(uuid, text, text, integer, integer, text) SET search_path = public; EXCEPTION WHEN SQLSTATE '42883' OR SQLSTATE '42704' THEN NULL; END $$;

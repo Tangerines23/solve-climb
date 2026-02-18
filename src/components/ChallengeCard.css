@@ -39,21 +39,4 @@
 
 .challenge-button {
   width: 100%;
-  padding: var(--spacing-lg);
-  background-color: var(--color-blue-700); /* Dark Teal for 4.5:1 contrast against white */
-  color: var(--color-pure-white);
-  border: none;
-  border-radius: var(--rounded-button);
-  font-size: 1rem;
-  font-weight: bold;
-  cursor: pointer;
-  transition: all 0.2s ease;
-}
-
-.challenge-button:hover {
-  background-color: var(--color-blue-500);
-}
-
-.challenge-button:active {
-  background-color: var(--color-blue-700);
 }

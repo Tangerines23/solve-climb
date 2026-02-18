@@ -111,8 +111,7 @@ export const AdService = {
    * 광고 시뮬레이션 (개발/심사 환경용)
    */
   async showSimulationAd(_placement: AdPlacement): Promise<AdResult> {
-    const isVercel = ENV.VITE_IS_VERCEL;
-    const duration = isVercel ? 1500 : 2000; // 심사 환경에서는 약간 더 빠르게
+    const duration = 2000;
 
     return new Promise((resolve) => {
       setTimeout(() => {

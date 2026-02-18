@@ -57,7 +57,11 @@ export const BadgeNotification: React.FC<BadgeNotificationProps> = ({ badgeIds, 
   if (badgeIds.length === 0 || loading) return null;
 
   return (
-    <div className="badge-notification-overlay" onClick={onClose}>
+    <div
+      className="badge-notification-overlay"
+      style={{ zIndex: 'var(--z-toast)' }}
+      onClick={onClose}
+    >
       <div className="badge-notification" onClick={(e) => e.stopPropagation()}>
         <div className="badge-notification-header">
           <h2>🎉 뱃지 획득! 🎉</h2>

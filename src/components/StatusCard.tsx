@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { APP_CONFIG } from '../config/app';
 import { useLevelProgressStore } from '../stores/useLevelProgressStore';
+import { BaseCard } from './BaseCard';
 import './StatusCard.css';
 
 interface UserStatus {
@@ -68,7 +69,7 @@ export function StatusCard() {
   };
 
   return (
-    <div className={`status-card ${state}`}>
+    <BaseCard className={`status-card ${state}`} padding="none">
       {state === 'loading' && (
         <div className="status-card-skeleton">
           <div className="skeleton-line short"></div>
@@ -105,6 +106,6 @@ export function StatusCard() {
           </div>
         </>
       )}
-    </div>
+    </BaseCard>
   );
 }

@@ -1,6 +1,7 @@
 import React, { useState, useRef } from 'react';
 import { useLevelProgressStore } from '../stores/useLevelProgressStore';
 import { useProfileStore } from '../stores/useProfileStore';
+import { BaseCard } from './BaseCard';
 import { UnderDevelopmentModal } from './UnderDevelopmentModal';
 import './LevelListCard.css';
 
@@ -233,7 +234,7 @@ function LevelListCardComponent({
         autoClose={true}
         autoCloseDelay={2000}
       />
-      <div className="level-list-card">
+      <BaseCard className="level-list-card" padding="none">
         <div className="level-list-header">
           <h3 className="level-list-title">레벨 목록</h3>
         </div>
@@ -261,7 +262,7 @@ function LevelListCardComponent({
             );
           })}
         </div>
-      </div>
+      </BaseCard>
     </>
   );
 }

@@ -1,9 +1,10 @@
-import { useEffect, useState } from 'react';
+import { useEffect } from 'react';
+import { BaseModal } from './BaseModal';
 import './UnderDevelopmentModal.css';
 
 interface UnderDevelopmentModalProps {
   isOpen: boolean;
-  onClose?: () => void;
+  onClose: () => void;
   autoClose?: boolean;
   autoCloseDelay?: number;
 }
@@ -14,30 +15,22 @@ export function UnderDevelopmentModal({
   autoClose = true,
   autoCloseDelay = 2000,
 }: UnderDevelopmentModalProps) {
-  const [isClosing, setIsClosing] = useState(false);
-
   useEffect(() => {
     if (isOpen && autoClose && onClose) {
       const timer = setTimeout(() => {
-        setIsClosing(true);
-        setTimeout(() => {
-          onClose();
-          setIsClosing(false);
-        }, 300); // 페이드 아웃 애니메이션 시간
+        onClose();
       }, autoCloseDelay);
 
       return () => clearTimeout(timer);
     }
   }, [isOpen, autoClose, autoCloseDelay, onClose]);
 
-  if (!isOpen) return null;
-
   return (
-    <div className={`under-development-toast ${isClosing ? 'closing' : ''}`}>
-      <div className="under-development-toast-content">
-        <span className="under-development-toast-icon">🚧</span>
-        <span className="under-development-toast-text">아직 개발중입니다 :(</span>
+    <BaseModal isOpen={isOpen} onClose={onClose} className="under-development-modal">
+      <div className="under-development-modal-content">
+        <span className="under-development-modal-icon">🚧</span>
+        <span className="under-development-modal-text">아직 개발중입니다 :(</span>
       </div>
-    </div>
+    </BaseModal>
   );
 }

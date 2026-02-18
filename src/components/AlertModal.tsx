@@ -1,4 +1,4 @@
-// 알림 모달 컴포넌트
+import { BaseModal } from './BaseModal';
 import './AlertModal.css';
 
 interface AlertModalProps {
@@ -16,23 +16,18 @@ export function AlertModal({
   buttonText = '확인',
   onClose,
 }: AlertModalProps) {
-  if (!isOpen) return null;
-
   return (
-    <div className="alert-modal-overlay" onClick={onClose}>
-      <div className="alert-modal" onClick={(e) => e.stopPropagation()}>
-        <div className="alert-modal-header">
-          <h2 className="alert-modal-title">{title}</h2>
-        </div>
-        <div className="alert-modal-content">
-          <p className="alert-modal-message">{message}</p>
-        </div>
-        <div className="alert-modal-actions">
-          <button className="alert-modal-button" onClick={onClose}>
-            {buttonText}
-          </button>
-        </div>
-      </div>
-    </div>
+    <BaseModal
+      isOpen={isOpen}
+      onClose={onClose}
+      title={title}
+      actions={
+        <button className="btn-base btn-primary alert-modal-button" onClick={onClose}>
+          {buttonText}
+        </button>
+      }
+    >
+      <p className="alert-modal-message">{message}</p>
+    </BaseModal>
   );
 }

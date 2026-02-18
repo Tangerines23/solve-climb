@@ -54,18 +54,7 @@
   position: absolute;
   top: var(--spacing-2xl);
   left: var(--spacing-2xl);
-  background: none;
-  border: none;
-  color: var(--color-blue-400);
-  font-size: 0.875rem;
-  font-weight: 500;
-  cursor: pointer;
-  padding: var(--spacing-xs) var(--spacing-sm);
-  transition: opacity 0.2s;
-}
-
-.profile-form-back-button:hover {
-  opacity: 0.8;
+  z-index: 10;
 }
 
 .profile-form-title {
@@ -102,26 +91,6 @@
   color: var(--color-text-primary);
 }
 
-.profile-form-input {
-  width: 100%;
-  padding: var(--spacing-lg) var(--spacing-lg);
-  font-size: 1rem;
-  font-family: inherit;
-  border: 1px solid var(--color-bg-secondary);
-  border-radius: var(--rounded-button);
-  background-color: var(--color-bg-secondary);
-  color: var(--color-text-primary);
-  transition:
-    border-color 0.2s,
-    background-color 0.2s;
-}
-
-.profile-form-input:focus {
-  outline: none;
-  border-color: var(--color-blue-400);
-  background-color: var(--color-bg-primary);
-}
-
 .profile-form-input.error {
   border-color: var(--color-toss-red);
 }
@@ -141,24 +110,6 @@
 
 .profile-form-submit {
   width: 100%;
-  padding: var(--spacing-lg) var(--spacing-lg);
-  font-size: 1rem;
-  font-weight: bold;
-  font-family: inherit;
-  color: var(--color-text-primary);
-  background-color: var(--color-blue-400);
-  border: none;
-  border-radius: var(--rounded-button);
-  cursor: pointer;
-  transition: all 0.2s ease;
-}
-
-.profile-form-submit:hover {
-  background-color: var(--color-blue-500);
-}
-
-.profile-form-submit:active {
-  background-color: var(--color-blue-700);
 }
 
 .profile-form-password-container {

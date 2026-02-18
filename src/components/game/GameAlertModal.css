@@ -1,26 +1,8 @@
-.alert-modal-overlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background-color: rgba(0, 0, 0, 0.75);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 2000;
-  backdrop-filter: blur(4px);
-  padding: var(--spacing-lg);
-}
-
+/* GameAlertModal 전용 스타일 */
 .alert-modal-content {
-  background-color: var(--color-bg-secondary);
-  border-radius: var(--rounded-lg);
   width: 100%;
   max-width: 400px;
   padding: var(--spacing-xl);
-  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.3);
-  border: 1px solid var(--color-border-primary);
 }
 
 .alert-modal-header {
@@ -46,11 +28,6 @@
   line-height: 1.6;
 }
 
-.alert-modal-body p {
-  margin-bottom: var(--spacing-md);
-  text-align: center;
-}
-
 .penalty-list {
   list-style: none;
   padding: 0;
@@ -62,10 +39,6 @@
 .penalty-list li {
   margin-bottom: var(--spacing-xs);
   font-size: 0.9375rem;
-}
-
-.penalty-list li:last-child {
-  margin-bottom: 0;
 }
 
 .alert-modal-footer {
@@ -85,7 +58,7 @@
 }
 
 .primary-button {
-  background: linear-gradient(135deg, var(--color-blue-500), var(--color-blue-600));
+  background: var(--color-blue-500);
   color: white;
 }
 
@@ -106,9 +79,4 @@
   background-color: transparent;
   color: var(--color-text-muted);
   font-size: 0.875rem !important;
-}
-
-.primary-button:active,
-.secondary-button:active {
-  transform: scale(0.98);
 }

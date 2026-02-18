@@ -1,11 +1,11 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useQuizStore } from '../stores/useQuizStore';
-// import { useGameStore } from '../stores/useGameStore'; // Removed unused import
 import { useLevelProgressStore } from '../stores/useLevelProgressStore';
 import { getTodayChallenge, TodayChallenge } from '../utils/challenge';
 import { urls } from '../utils/navigation';
 import { Category, World, GameMode } from '../types/quiz';
+import { BaseCard } from './BaseCard';
 import './ChallengeCard.css';
 
 export function ChallengeCard() {
@@ -14,12 +14,10 @@ export function ChallengeCard() {
   const setTimeLimit = useQuizStore((state) => state.setTimeLimit);
   const progressMap = useLevelProgressStore((state) => state.progress);
 
-  // 오늘의 챌린지 상태
   const [challenge, setChallenge] = useState<TodayChallenge | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // 챌린지 가져오기 (전체 진행도 전달)
     getTodayChallenge(progressMap)
       .then((challengeData) => {
         setChallenge(challengeData);
@@ -33,12 +31,8 @@ export function ChallengeCard() {
 
   const handleChallengeClick = () => {
     if (!challenge) return;
-
-    // 오늘의 챌린지 설정 적용 (월드 유동적 대응)
     setCategoryTopic(challenge.categoryId as Category, (challenge.worldId as World) || 'World1');
-    if (setTimeLimit) setTimeLimit(60); // 기본 1분
-
-    // 게임 페이지로 이동 (산, 월드, 카테고리 파라미터 표준화)
+    if (setTimeLimit) setTimeLimit(60);
     navigate(
       urls.quiz({
         mountain: challenge.categoryId,
@@ -53,44 +47,50 @@ export function ChallengeCard() {
 
   if (loading) {
     return (
-      <div className="challenge-card">
+      <BaseCard className="challenge-card">
         <div className="challenge-header">
           <span className="challenge-icon">🔥</span>
           <h2 className="challenge-title">오늘의 챌린지</h2>
         </div>
         <p className="challenge-description">로딩 중...</p>
-        <button className="challenge-button" disabled>
+        <button className="btn-base challenge-button" disabled>
           도전하기
         </button>
-      </div>
+      </BaseCard>
     );
   }
 
   if (!challenge) {
     return (
-      <div className="challenge-card">
+      <BaseCard className="challenge-card">
         <div className="challenge-header">
           <span className="challenge-icon">🔥</span>
           <h2 className="challenge-title">오늘의 챌린지</h2>
         </div>
         <p className="challenge-description">챌린지를 불러올 수 없습니다.</p>
-        <button className="challenge-button" disabled>
+        <button className="btn-base challenge-button" disabled>
           도전하기
         </button>
-      </div>
+      </BaseCard>
     );
   }
 
   return (
-    <div className="challenge-card">
+    <BaseCard className="challenge-card" interactive onClick={handleChallengeClick}>
       <div className="challenge-header">
         <span className="challenge-icon">🔥</span>
         <h2 className="challenge-title">오늘의 챌린지</h2>
       </div>
       <p className="challenge-description">{challenge.title}</p>
-      <button className="challenge-button" onClick={handleChallengeClick}>
+      <button
+        className="btn-base btn-primary challenge-button"
+        onClick={(e) => {
+          e.stopPropagation();
+          handleChallengeClick();
+        }}
+      >
         도전하기
       </button>
-    </div>
+    </BaseCard>
   );
 }

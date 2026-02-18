@@ -2,6 +2,7 @@ import { useState } from 'react';
 // import { createSafeStorageKey } from '../utils/storageKey'; // Removed
 // import { storage } from '../utils/storage'; // Removed
 import { BackpackBottomSheet } from './game/BackpackBottomSheet';
+import { BaseModal } from './BaseModal';
 import './GameTipModal.css';
 
 interface GameTipModalProps {
@@ -592,52 +593,56 @@ export function GameTipModal({ isOpen, category, level, onStart, onClose }: Game
   const tipData = getTipData();
 
   return (
-    <div className="gt-modal-overlay">
-      <div className="gt-modal-content">
-        <div className="gt-layout-wrapper">
-          {/* Left Side: Title & Controls */}
-          <div className="gt-left-panel">
-            <div className="gt-title-area">
-              <span className="gt-title-icon">{tipData.icon}</span>
-              <h3 className="gt-title-text" data-testid="gt-title-text">
-                {tipData.title}
-              </h3>
-            </div>
-
-            <div className="gt-controls-area">
-              <div
-                className="gt-checkbox-label"
-                onClick={onClose}
-                style={{ cursor: 'pointer', display: 'inline-flex' }}
-              >
-                <span>← 뒤로</span>
-              </div>
-
-              <div className="gt-button-group">
-                <button
-                  className="gt-start-btn"
-                  data-testid="gt-start-btn"
-                  onClick={() => onStart(selectedItemIds)}
-                >
-                  시작하기
-                </button>
-                <button className="gt-backpack-btn" onClick={() => setIsBackpackOpen(true)}>
-                  🎒
-                  {selectedItemIds.length > 0 && (
-                    <span className="gt-badge">{selectedItemIds.length}</span>
-                  )}
-                </button>
-              </div>
-            </div>
+    <BaseModal
+      isOpen={isOpen}
+      onClose={onClose}
+      showOverlay={true}
+      closeOnOverlayClick={true}
+      title={null} // Custom layout used inside children
+    >
+      <div className="gt-layout-wrapper">
+        {/* Left Side: Title & Controls */}
+        <div className="gt-left-panel">
+          <div className="gt-title-area">
+            <span className="gt-title-icon">{tipData.icon}</span>
+            <h3 className="gt-title-text" data-testid="gt-title-text">
+              {tipData.title}
+            </h3>
           </div>
 
-          {/* Right Side: Tip Content */}
-          <div className="gt-right-panel">
-            <div className="gt-description">{tipData.description}</div>
-            <div className="gt-scroll-content">
-              {tipData.section}
-              {tipData.other}
+          <div className="gt-controls-area">
+            <div
+              className="gt-checkbox-label"
+              onClick={onClose}
+              style={{ cursor: 'pointer', display: 'inline-flex' }}
+            >
+              <span>← 뒤로</span>
             </div>
+
+            <div className="gt-button-group">
+              <button
+                className="btn-base btn-primary gt-start-btn"
+                data-testid="gt-start-btn"
+                onClick={() => onStart(selectedItemIds)}
+              >
+                시작하기
+              </button>
+              <button className="gt-backpack-btn" onClick={() => setIsBackpackOpen(true)}>
+                🎒
+                {selectedItemIds.length > 0 && (
+                  <span className="gt-badge">{selectedItemIds.length}</span>
+                )}
+              </button>
+            </div>
+          </div>
+        </div>
+
+        {/* Right Side: Tip Content */}
+        <div className="gt-right-panel">
+          <div className="gt-description">{tipData.description}</div>
+          <div className="gt-scroll-content">
+            {tipData.section}
+            {tipData.other}
           </div>
         </div>
       </div>
@@ -648,6 +653,6 @@ export function GameTipModal({ isOpen, category, level, onStart, onClose }: Game
         selectedItemIds={selectedItemIds}
         onToggleItem={toggleItem}
       />
-    </div>
+    </BaseModal>
   );
 }

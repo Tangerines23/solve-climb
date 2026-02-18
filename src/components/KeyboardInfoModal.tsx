@@ -310,8 +310,11 @@ export function KeyboardInfoModal({ isOpen, onClose }: KeyboardInfoModalProps) {
       !currentCategory
     ) {
       return (
-        <div className="keyboard-info-modal-overlay" onClick={onClose}>
-          <div className="keyboard-info-modal quiz-page" onClick={(e) => e.stopPropagation()}>
+        <div className="modal-overlay animate-fade-in" onClick={onClose}>
+          <div
+            className="modal-base keyboard-info-modal quiz-page animate-scale-in"
+            onClick={(e) => e.stopPropagation()}
+          >
             <div className="keyboard-info-modal-header">
               <h2 className="keyboard-info-modal-title">키보드 미리보기</h2>
               <p className="keyboard-info-modal-subtitle">
@@ -331,8 +334,11 @@ export function KeyboardInfoModal({ isOpen, onClose }: KeyboardInfoModalProps) {
     }
 
     return (
-      <div className="keyboard-info-modal-overlay" onClick={onClose}>
-        <div className="keyboard-info-modal quiz-page" onClick={(e) => e.stopPropagation()}>
+      <div className="modal-overlay animate-fade-in" onClick={onClose}>
+        <div
+          className="modal-base keyboard-info-modal quiz-page animate-scale-in"
+          onClick={(e) => e.stopPropagation()}
+        >
           {/* 퀴즈 페이지와 동일한 헤더 구조 */}
           <header className="quiz-header">
             <button className="quiz-back-button" onClick={onClose} aria-label="뒤로 가기">

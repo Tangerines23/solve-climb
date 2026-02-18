@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { BaseModal } from './BaseModal';
 import './LastChanceModal.css';
 
 interface LastChanceModalProps {
@@ -45,14 +46,10 @@ export function LastChanceModal({
     }
   }, [isVisible, onGiveUp]);
 
-  if (!isVisible) return null;
-
   const handleWatchAdClick = () => {
     if (isAdLoading) return;
     setIsAdLoading(true);
     onWatchAd();
-    // 부활 로직은 부모가 처리하므로 여기서는 상태만 바꿈
-    // (보통 부모가 모달을 닫겠지만, 명시성을 위해 남겨둠)
   };
 
   const itemName =
@@ -62,56 +59,59 @@ export function LastChanceModal({
   const canAfford = userMinerals >= purchasePrice;
 
   return (
-    <div className="last-chance-overlay">
-      <div className="last-chance-modal">
-        <div className="last-chance-header">
-          <h2>LAST CHANCE!</h2>
+    <BaseModal
+      isOpen={isVisible}
+      onClose={onGiveUp}
+      title={
+        <div className="last-chance-header-content">
+          <span className="last-chance-title-text">LAST CHANCE!</span>
           <div className="last-chance-timer">{timeLeft}</div>
         </div>
-
-        <div className="last-chance-content">
-          <p className="last-chance-message">
-            {gameMode === 'time-attack'
-              ? '라스트 스퍼트로 15초 더 뛸 수 있습니다!'
-              : '구조 신호탄을 사용하여 부활하시겠습니까?'}
-          </p>
-
-          <div className="item-status">
-            <div className={`item-icon ${itemType}`}></div>
-            <span className="item-name">{itemName}</span>
-          </div>
-
-          <div className="action-buttons">
-            {inventoryCount > 0 ? (
-              <button className="last-chance-btn use-btn" onClick={onUseItem}>
-                아이템 사용 (보유: {inventoryCount})
-              </button>
-            ) : (
-              <button
-                className={`last-chance-btn buy-btn ${!canAfford ? 'disabled' : ''}`}
-                onClick={canAfford ? onPurchaseAndUse : undefined}
-                disabled={!canAfford}
-              >
-                즉시 구매 & 사용 (-{purchasePrice}💎)
-                {!canAfford && <span className="error-text">미네랄 부족 ({userMinerals})</span>}
-              </button>
-            )}
-
+      }
+      actions={
+        <div className="action-buttons">
+          {inventoryCount > 0 ? (
+            <button className="btn-base btn-primary last-chance-btn use-btn" onClick={onUseItem}>
+              아이템 사용 (보유: {inventoryCount})
+            </button>
+          ) : (
             <button
-              className={`last-chance-btn ad-btn ${isAdLoading ? 'loading' : ''}`}
-              onClick={handleWatchAdClick}
-              disabled={isAdLoading}
+              className={`btn-base btn-primary last-chance-btn buy-btn ${!canAfford ? 'disabled' : ''}`}
+              onClick={canAfford ? onPurchaseAndUse : undefined}
+              disabled={!canAfford}
             >
-              <span>{isAdLoading ? '⌛' : '📺'}</span>{' '}
-              {isAdLoading ? '광고 시청 중...' : '광고 보고 무료 부활'}
+              즉시 구매 & 사용 (-{purchasePrice}💎)
+              {!canAfford && <span className="error-text">미네랄 부족 ({userMinerals})</span>}
             </button>
+          )}
 
-            <button className="last-chance-btn give-up-btn" onClick={onGiveUp}>
-              그냥 기록 남기기
-            </button>
-          </div>
+          <button
+            className={`btn-base btn-secondary last-chance-btn ad-btn ${isAdLoading ? 'loading' : ''}`}
+            onClick={handleWatchAdClick}
+            disabled={isAdLoading}
+          >
+            <span>{isAdLoading ? '⌛' : '📺'}</span>{' '}
+            {isAdLoading ? '광고 시청 중...' : '광고 보고 무료 부활'}
+          </button>
+
+          <button className="btn-base btn-secondary last-chance-btn give-up-btn" onClick={onGiveUp}>
+            그냥 기록 남기기
+          </button>
+        </div>
+      }
+    >
+      <div className="last-chance-content">
+        <p className="last-chance-message">
+          {gameMode === 'time-attack'
+            ? '라스트 스퍼트로 15초 더 뛸 수 있습니다!'
+            : '구조 신호탄을 사용하여 부활하시겠습니까?'}
+        </p>
+
+        <div className="item-status">
+          <div className={`item-icon ${itemType}`}></div>
+          <span className="item-name">{itemName}</span>
         </div>
       </div>
-    </div>
+    </BaseModal>
   );
 }

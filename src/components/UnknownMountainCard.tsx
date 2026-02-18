@@ -1,4 +1,5 @@
-import { useState, useRef } from 'react';
+import { useRef } from 'react';
+import { BaseCard } from './BaseCard';
 import './UnknownMountainCard.css';
 
 const explorerMessages = [
@@ -19,7 +20,6 @@ interface UnknownMountainCardProps {
 }
 
 export function UnknownMountainCard({ onToast }: UnknownMountainCardProps) {
-  const [isPressed, setIsPressed] = useState(false);
   const lastClickTimeRef = useRef<number>(0);
   const CLICK_COOLDOWN = 500; // 0.5초 쿨다운
 
@@ -41,15 +41,7 @@ export function UnknownMountainCard({ onToast }: UnknownMountainCardProps) {
   };
 
   return (
-    <div
-      className={`unknown-mountain-card ${isPressed ? 'pressed' : ''}`}
-      onClick={handleClick}
-      onMouseDown={() => setIsPressed(true)}
-      onMouseUp={() => setIsPressed(false)}
-      onMouseLeave={() => setIsPressed(false)}
-      onTouchStart={() => setIsPressed(true)}
-      onTouchEnd={() => setIsPressed(false)}
-    >
+    <BaseCard className="unknown-mountain-card" onClick={handleClick} interactive padding="none">
       <div className="unknown-mountain-content">
         <div className="unknown-mountain-icon-wrapper">
           <svg
@@ -78,6 +70,6 @@ export function UnknownMountainCard({ onToast }: UnknownMountainCardProps) {
           <button className="unknown-mountain-button">⛏️ 개척 중</button>
         </div>
       </div>
-    </div>
+    </BaseCard>
   );
 }

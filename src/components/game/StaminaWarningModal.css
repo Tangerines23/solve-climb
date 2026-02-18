@@ -1,28 +1,9 @@
-.stamina-modal-overlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: var(--color-overlay);
-  backdrop-filter: blur(12px);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 3000;
-  padding: 2rem;
-}
-
+/* StaminaWarningModal 전용 스타일 */
 .stamina-modal-content {
-  background: var(--color-bg-primary);
-  border-radius: 2rem;
-  padding: 2.5rem;
   width: 90%;
   max-width: 400px;
-  border: 1px solid var(--color-bg-secondary);
-  box-shadow: 0 40px 100px rgba(0, 0, 0, 0.8);
   text-align: center;
-  animation: scaleIn 0.25s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  padding: 2.5rem;
 }
 
 .stamina-modal-header {
@@ -65,10 +46,6 @@
   text-align: left;
 }
 
-.penalty-list li:last-child {
-  margin-bottom: 0;
-}
-
 .stamina-modal-footer {
   display: flex;
   flex-direction: column;
@@ -96,11 +73,6 @@
 .ad-button:hover {
   transform: translateY(-3px);
   background: var(--color-blue-500);
-  box-shadow: 0 12px 30px rgba(59, 130, 246, 0.4);
-}
-
-.ad-button:active {
-  transform: scale(0.97);
 }
 
 .play-anyway-button {
@@ -112,11 +84,6 @@
   font-weight: 700;
   cursor: pointer;
   transition: all 0.2s;
-}
-
-.play-anyway-button:hover {
-  background: rgba(255, 255, 255, 0.1);
-  border-color: rgba(255, 255, 255, 0.2);
 }
 
 .close-link {

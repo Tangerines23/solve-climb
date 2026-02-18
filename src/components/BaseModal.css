@@ -1,0 +1,32 @@
+/* BaseModal shared styles */
+.modal-header-base {
+  margin-bottom: var(--spacing-lg);
+  text-align: center;
+}
+
+.modal-title-base {
+  font-size: var(--font-size-xl);
+  font-weight: 700;
+  color: var(--color-text-primary);
+  margin: 0;
+}
+
+.modal-body-base {
+  margin-bottom: var(--spacing-xl);
+  color: var(--color-text-secondary);
+  line-height: 1.6;
+}
+
+.modal-footer-base {
+  display: flex;
+  gap: var(--spacing-md);
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+}
+
+/* Modifier for clean background without overlay dimming */
+.modal-overlay.no-overlay {
+  background: transparent;
+  backdrop-filter: none;
+}

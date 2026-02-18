@@ -372,7 +372,7 @@ function QuizCardComponent({
               if (isPaused || isSubmitting || isError) return;
               handleSubmit(e);
             }}
-            style={{ display: 'contents' }}
+            className="contents-display"
           >
             <ReasoningOverlay
               isVisible={
@@ -385,19 +385,17 @@ function QuizCardComponent({
             />
             <div className={questionAnimation}>
               <h2
-                className="problem-text"
-                style={{
-                  display:
-                    currentQuestion.hintType === 'transposition' ||
-                    currentQuestion.hintType === 'function-machine'
-                      ? 'none'
-                      : 'block',
-                }}
+                className={`problem-text ${
+                  currentQuestion.hintType === 'transposition' ||
+                  currentQuestion.hintType === 'function-machine'
+                    ? 'problem-hidden'
+                    : 'problem-visible'
+                }`}
               >
                 {currentQuestion.question}
               </h2>
               {currentQuestion.hintType === 'transposition' && (
-                <div style={{ marginBottom: '2rem' }}>
+                <div className="visualizer-container">
                   <EquationVisualizer
                     initialLeft={parseEquation(currentQuestion.question).left}
                     initialRight={parseEquation(currentQuestion.question).right}
@@ -405,7 +403,7 @@ function QuizCardComponent({
                 </div>
               )}
               {currentQuestion.hintType === 'function-machine' && currentQuestion.hintData && (
-                <div style={{ marginBottom: '2rem' }}>
+                <div className="visualizer-container">
                   <FunctionMachine
                     type={(currentQuestion.hintData as FunctionMachineHint).type}
                     value={(currentQuestion.hintData as FunctionMachineHint).value}
@@ -513,7 +511,7 @@ function QuizCardComponent({
                       }
                     }}
                     placeholder={isJapaneseQuiz ? '로마지 입력 (예: a, ki)' : '정답 입력'}
-                    className={`answer-input-system ${inputAnimation} ${isError ? 'error-state is-error' : ''} ${showFlash && !isExhausted ? 'input-error-flash' : ''}`}
+                    className={`input-base answer-input-field answer-input-system ${inputAnimation} ${isError ? 'error-state is-error' : ''} ${showFlash && !isExhausted ? 'input-error-flash' : ''}`}
                     disabled={(isSubmitting && !isError) || effectiveInputPaused}
                     readOnly={isError}
                     autoFocus={false}
@@ -521,7 +519,7 @@ function QuizCardComponent({
                 </div>
                 <button
                   type="submit"
-                  className="submit-button-system"
+                  className="btn-base btn-primary submit-button-system"
                   disabled={isSubmitting || !answerInput || isError || effectiveInputPaused}
                   onClick={(e) => {
                     e.preventDefault();

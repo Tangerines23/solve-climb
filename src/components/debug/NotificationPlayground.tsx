@@ -12,12 +12,7 @@ import { PauseModal } from '../game/PauseModal';
 import { LastChanceModal } from '../LastChanceModal';
 import { ModeSelectModal } from '../ModeSelectModal';
 import { GameTipModal } from '../GameTipModal';
-import { StaminaWarningModal } from '../game/StaminaWarningModal';
-import { TierUpgradeModal } from '../TierUpgradeModal';
-import { KeyboardInfoModal } from '../KeyboardInfoModal';
-import { UnderDevelopmentModal } from '../UnderDevelopmentModal';
-import { BackpackBottomSheet } from '../game/BackpackBottomSheet';
-import { BadgeNotification } from '../BadgeNotification';
+import { GameAlertModal } from '../game/GameAlertModal';
 import { ItemFeedbackOverlay, ItemFeedbackRef } from '../game/ItemFeedbackOverlay';
 import { CountdownOverlay } from '../CountdownOverlay';
 import { SafetyRopeOverlay } from '../game/SafetyRopeOverlay';
@@ -26,6 +21,11 @@ import { ChallengeCard } from '../ChallengeCard';
 import { MyRecordCard } from '../MyRecordCard';
 import { UnknownMountainCard } from '../UnknownMountainCard';
 import { StatusCard } from '../StatusCard';
+import { TierUpgradeModal } from '../TierUpgradeModal';
+import { KeyboardInfoModal } from '../KeyboardInfoModal';
+import { BackpackBottomSheet } from '../game/BackpackBottomSheet';
+import { BadgeNotification } from '../BadgeNotification';
+import { UnderDevelopmentModal } from '../UnderDevelopmentModal';
 import './NotificationPlayground.css';
 
 export function NotificationPlayground() {
@@ -40,6 +40,11 @@ export function NotificationPlayground() {
 
   // Store access for GameOverlay effects
   const { setExhausted, setCombo, resetCombo, isExhausted, feverLevel } = useGameStore();
+
+  const handleAlertAction = (action: 'login' | 'charge' | 'play') => {
+    triggerToast(`Action: ${action}`);
+    closeModals();
+  };
 
   const toggleVignette = () => {
     setExhausted(!isExhausted);
@@ -200,11 +205,11 @@ export function NotificationPlayground() {
         }}
       />
 
-      <StaminaWarningModal
+      <GameAlertModal
         isOpen={activeModal === 'stamina'}
         onClose={closeModals}
-        onPlayAnyway={closeModals}
-        onWatchAd={() => triggerToast('Ad Watched')}
+        onAction={handleAlertAction}
+        type="stamina"
       />
 
       <TierUpgradeModal

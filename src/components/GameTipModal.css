@@ -1,35 +1,16 @@
-.gt-modal-overlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: rgba(0, 0, 0, 0.85);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 2000;
-  padding: var(--spacing-lg);
-  backdrop-filter: blur(12px);
-}
-
+/* GameTipModal 전용 스타일 (전역 모달 스타일 외 추가 항목) */
 .gt-modal-content {
-  background: var(--color-bg-primary);
-  border-radius: var(--rounded-lg);
-  width: 100%;
   max-width: 920px;
   max-height: 90vh;
+  padding: 0; /* Layout wrapper deals with padding */
   overflow: hidden;
-  box-shadow: 0 40px 100px rgba(0, 0, 0, 0.8);
-  border: 1px solid var(--color-bg-secondary);
-  animation: scaleIn 0.25s cubic-bezier(0.175, 0.885, 0.32, 1.275);
 }
 
 .gt-layout-wrapper {
   display: flex;
   flex-direction: row;
   min-height: 0;
-  height: auto;
+  height: 100%;
 }
 
 .gt-left-panel {
@@ -60,17 +41,16 @@
 }
 
 .gt-title-icon {
-  font-size: 2.4rem;
+  font-size: 38px;
   filter: drop-shadow(0 0 10px rgba(45, 212, 191, 0.3));
 }
 
 .gt-title-text {
-  font-size: clamp(1.8rem, 4vh, 2.4rem);
+  font-size: clamp(24px, 4vh, 32px);
   font-weight: 900;
   color: var(--color-gray-100);
   margin: 0;
   line-height: 1.3;
-  /* Fix vertical overflow (was 1.1) */
   word-break: keep-all;
   letter-spacing: -0.02em;
 }
@@ -86,7 +66,7 @@
   align-items: center;
   gap: var(--spacing-md);
   color: rgba(255, 255, 255, 0.45);
-  font-size: 0.95rem;
+  font-size: 15px;
   cursor: pointer;
   margin-bottom: clamp(16px, 3vh, 32px);
   user-select: none;
@@ -97,13 +77,6 @@
   color: rgba(255, 255, 255, 0.8);
 }
 
-.gt-checkbox-label input {
-  width: var(--spacing-xl);
-  height: var(--spacing-xl);
-  cursor: pointer;
-  accent-color: var(--color-blue-400);
-}
-
 .gt-button-group {
   display: flex;
   gap: var(--spacing-md);
@@ -111,26 +84,9 @@
 
 .gt-start-btn {
   flex: 1;
-  background: var(--color-blue-400);
-  color: var(--color-gray-100);
-  border: none;
   padding: var(--spacing-xl);
-  border-radius: var(--rounded-md);
-  font-size: 1.3rem;
+  font-size: 20px;
   font-weight: 800;
-  cursor: pointer;
-  transition: all 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-  box-shadow: 0 10px 25px rgba(59, 130, 246, 0.3);
-}
-
-.gt-start-btn:hover {
-  transform: translateY(-3px);
-  background: var(--color-blue-500);
-  box-shadow: 0 15px 35px rgba(59, 130, 246, 0.4);
-}
-
-.gt-start-btn:active {
-  transform: scale(0.96);
 }
 
 .gt-backpack-btn {
@@ -142,7 +98,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 1.8rem;
+  font-size: 28px;
   cursor: pointer;
   position: relative;
   transition: all 0.2s;
@@ -159,9 +115,9 @@
   right: -6px;
   background: var(--color-blue-400);
   color: white;
-  font-size: 0.8rem;
+  font-size: 12px;
   font-weight: 800;
-  padding: var(--spacing-xs) var(--spacing-sm);
+  padding: var(--spacing-micro) var(--spacing-xs);
   border-radius: var(--rounded-sm-alt);
   border: 3px solid var(--color-bg-primary);
   box-shadow: 0 4px 10px rgba(59, 130, 246, 0.4);
@@ -170,7 +126,7 @@
 /* Right Side Content */
 .gt-description {
   color: rgba(255, 255, 255, 0.55);
-  font-size: 1.1rem;
+  font-size: 16px;
   margin-bottom: var(--spacing-2xl);
   line-height: 1.5;
   word-break: keep-all;
@@ -194,7 +150,7 @@
 }
 
 .level-tip-title {
-  font-size: 1.6rem;
+  font-size: 22px;
   font-weight: 800;
   color: var(--color-gray-100);
   margin: 0 0 var(--spacing-lg) 0;
@@ -203,7 +159,7 @@
 
 .level-tip-text,
 .level-tip-strategy {
-  font-size: 1.1rem;
+  font-size: 16px;
   color: rgba(255, 255, 255, 0.85);
   margin: 0 0 var(--spacing-md) 0;
   line-height: 1.65;
@@ -215,8 +171,7 @@
   padding: var(--spacing-lg) var(--spacing-2xl);
   border-radius: var(--rounded-card);
   margin-top: var(--spacing-xl);
-  font-family: 'Pretendard', sans-serif;
-  font-size: 1.2rem;
+  font-size: 18px;
   color: var(--color-blue-400);
   letter-spacing: 0.05em;
   border: 1px solid rgba(255, 255, 255, 0.1);
@@ -229,18 +184,13 @@
 
 .gt-scroll-content::-webkit-scrollbar-thumb {
   background: rgba(255, 255, 255, 0.12);
-  border-radius: var(--rounded-micro);
-}
-
-.gt-scroll-content::-webkit-scrollbar-thumb:hover {
-  background: rgba(255, 255, 255, 0.2);
+  border-radius: var(--rounded-button);
 }
 
 /* Landscape Mobile */
 @media (max-height: 480px) {
   .gt-modal-content {
     max-height: 98vh;
-    border-radius: var(--rounded-md);
   }
 
   .gt-left-panel,
@@ -254,22 +204,22 @@
 
   .gt-description {
     margin-bottom: var(--spacing-md);
-    font-size: 1rem;
+    font-size: 14px;
   }
 
   .gt-title-text {
-    font-size: 1.8rem;
+    font-size: 24px;
   }
 
   .gt-start-btn {
     padding: var(--spacing-md);
-    font-size: 1.1rem;
+    font-size: 16px;
   }
 
   .gt-backpack-btn {
     width: 48px;
     height: 48px;
-    font-size: 1.4rem;
+    font-size: 22px;
   }
 
   .level-tip-card {
@@ -286,7 +236,6 @@
 
   .gt-left-panel {
     display: contents;
-    /* Reordering hack */
   }
 
   .gt-title-area {
@@ -313,9 +262,5 @@
 
   .gt-checkbox-label {
     margin-bottom: var(--spacing-xl);
-  }
-
-  .gt-button-group {
-    margin-top: 0;
   }
 }

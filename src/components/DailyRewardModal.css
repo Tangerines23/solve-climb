@@ -1,53 +1,24 @@
-.daily-reward-overlay {
-  position: fixed;
-  inset: 0;
-  width: 100%;
-  height: 100%;
-  max-height: 100vh;
-  box-sizing: border-box;
-  background: rgba(0, 0, 0, 0.7);
-  backdrop-filter: blur(5px);
-  -webkit-backdrop-filter: blur(5px);
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  z-index: 2000;
-  overflow: hidden;
-}
-
-.daily-reward-modal {
-  width: 90%;
-  max-width: 320px;
-  max-height: 100%;
-  background: var(--adaptiveGrey900);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: var(--rounded-large-card);
-  overflow-x: hidden;
-  overflow-y: auto;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
-  box-sizing: border-box;
-}
-
+/* DailyRewardModal 전용 스타일 (전역 모달 스타일 외 추가 항목) */
 .daily-reward-header {
-  padding: var(--spacing-2xl) var(--spacing-xl) var(--spacing-small-alt);
+  padding-bottom: var(--spacing-md);
   text-align: center;
 }
 
 .daily-reward-icon {
-  font-size: 3rem;
+  font-size: 48px;
   display: block;
   margin-bottom: var(--spacing-sm);
 }
 
 .daily-reward-title {
-  font-size: 1.25rem;
+  font-size: 20px;
   font-weight: 800;
-  color: white;
+  color: var(--color-text-primary);
   margin: 0;
 }
 
 .daily-reward-body {
-  padding: var(--spacing-small-alt) var(--spacing-2xl) var(--spacing-2xl);
+  padding: var(--spacing-md) 0 var(--spacing-xl);
 }
 
 .streak-info {
@@ -56,20 +27,20 @@
   align-items: center;
   margin-bottom: var(--spacing-xl);
   padding: var(--spacing-md);
-  background: rgba(255, 255, 255, 0.05);
+  background-color: var(--color-bg-secondary);
   border-radius: var(--rounded-card);
 }
 
 .streak-label {
-  font-size: 0.8rem;
-  color: var(--adaptiveGrey400);
+  font-size: 13px;
+  color: var(--color-text-secondary);
   font-weight: 600;
 }
 
 .streak-value {
-  font-size: 1.5rem;
+  font-size: 24px;
   font-weight: 900;
-  color: var(--adaptiveBlue400);
+  color: var(--color-blue-400);
 }
 
 .reward-info {
@@ -85,40 +56,26 @@
 }
 
 .reward-icon {
-  font-size: 1.5rem;
+  font-size: 24px;
 }
 
 .reward-amount {
-  font-size: 1.4rem;
+  font-size: 22px;
   font-weight: 800;
   color: var(--color-rank-gold);
-  /* Gold color for minerals */
 }
 
 .reward-message {
-  font-size: 0.85rem;
-  color: var(--adaptiveGrey500);
+  font-size: 14px;
+  color: var(--color-text-secondary);
   line-height: 1.4;
   margin: 0;
 }
 
 .daily-reward-footer {
-  padding: 0 20px 20px;
+  width: 100%;
 }
 
 .daily-reward-confirm-button {
   width: 100%;
-  padding: var(--spacing-medium-alt);
-  background: var(--adaptiveBlue700); /* WCAG 2 AA: white on #3182f6=3.71, #1b64da≈4.7:1 */
-  color: white;
-  border: none;
-  border-radius: var(--rounded-md-alt);
-  font-size: 1rem;
-  font-weight: 700;
-  cursor: pointer;
-}
-
-.daily-reward-confirm-button:active {
-  background: var(--adaptiveBlue800);
-  transform: scale(0.98);
 }

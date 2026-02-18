@@ -1,6 +1,7 @@
 // src/components/CyclePromotionModal.tsx
 import React, { useState } from 'react';
 import { supabase } from '../utils/supabaseClient';
+import { BaseModal } from './BaseModal';
 import './CyclePromotionModal.css';
 
 interface CyclePromotionModalProps {
@@ -45,31 +46,38 @@ export const CyclePromotionModal: React.FC<CyclePromotionModalProps> = ({
     }
   };
 
-  if (!isOpen) return null;
-
   return (
-    <div className="cycle-promotion-modal-overlay" onClick={onClose}>
-      <div className="cycle-promotion-modal" onClick={(e) => e.stopPropagation()}>
-        <div className="cycle-promotion-header">
-          <h2>👑 전설 달성! 👑</h2>
-          <p>축하합니다! 새로운 사이클을 시작할 준비가 되었습니다.</p>
-        </div>
-
-        <div className="cycle-promotion-content">
-          <div className="stars-display">{'★'.repeat(stars + 1)}</div>
-          <p className="pending-score">이월될 점수: {pendingScore.toLocaleString()}점</p>
-          {error && <p className="error-message">{error}</p>}
-        </div>
-
+    <BaseModal
+      isOpen={isOpen}
+      onClose={onClose}
+      title="👑 전설 달성! 👑"
+      actions={
         <div className="cycle-promotion-actions">
-          <button className="promote-button" onClick={handlePromote} disabled={isPromoting}>
+          <button
+            className="btn-base btn-primary cycle-promotion-button"
+            onClick={handlePromote}
+            disabled={isPromoting}
+          >
             {isPromoting ? '처리 중...' : '다음 도전 시작하기'}
           </button>
-          <button className="cancel-button" onClick={onClose} disabled={isPromoting}>
+          <button
+            className="btn-base btn-secondary cycle-promotion-button"
+            onClick={onClose}
+            disabled={isPromoting}
+          >
             나중에
           </button>
         </div>
+      }
+    >
+      <div className="cycle-promotion-content">
+        <p className="cycle-promotion-subtitle">
+          축하합니다! 새로운 사이클을 시작할 준비가 되었습니다.
+        </p>
+        <div className="stars-display">{'★'.repeat(stars + 1)}</div>
+        <p className="pending-score">이월될 점수: {pendingScore.toLocaleString()}점</p>
+        {error && <p className="error-message">{error}</p>}
       </div>
-    </div>
+    </BaseModal>
   );
 };

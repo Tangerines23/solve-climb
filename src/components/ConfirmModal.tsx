@@ -1,3 +1,4 @@
+import { BaseModal } from './BaseModal';
 import './ConfirmModal.css';
 
 interface ConfirmModalProps {
@@ -21,26 +22,29 @@ export function ConfirmModal({
   onCancel,
   variant = 'primary',
 }: ConfirmModalProps) {
-  if (!isOpen) return null;
-
   return (
-    <div className="confirm-modal-overlay" onClick={onCancel}>
-      <div className="confirm-modal" onClick={(e) => e.stopPropagation()}>
-        <div className="confirm-modal-header">
-          <h2 className="confirm-modal-title">{title}</h2>
-        </div>
-        <div className="confirm-modal-content">
-          <p className="confirm-modal-message">{message}</p>
-        </div>
-        <div className="confirm-modal-actions">
-          <button className="confirm-modal-button cancel-button" onClick={onCancel}>
+    <BaseModal
+      isOpen={isOpen}
+      onClose={onCancel}
+      title={title}
+      actions={
+        <>
+          <button
+            className="btn-base btn-secondary confirm-modal-button cancel-button"
+            onClick={onCancel}
+          >
             {cancelText}
           </button>
-          <button className={`confirm-modal-button confirm-button ${variant}`} onClick={onConfirm}>
+          <button
+            className={`btn-base ${variant === 'danger' ? 'btn-danger' : 'btn-primary'} confirm-modal-button confirm-button`}
+            onClick={onConfirm}
+          >
             {confirmText}
           </button>
-        </div>
-      </div>
-    </div>
+        </>
+      }
+    >
+      <p className="confirm-modal-message">{message}</p>
+    </BaseModal>
   );
 }

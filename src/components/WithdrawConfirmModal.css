@@ -1,130 +1,53 @@
-.withdraw-modal-overlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background-color: rgba(0, 0, 0, 0.7);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 2000;
-  backdrop-filter: blur(4px);
-  padding: var(--spacing-xl);
-}
-
-.withdraw-modal-container {
-  background-color: var(--color-gray-100);
-  border-radius: var(--rounded-md);
-  width: 100%;
-  max-width: 360px;
-  overflow: hidden;
-  box-shadow: var(--shadow-modal);
-  animation: modal-appear 0.3s cubic-bezier(0.16, 1, 0.3, 1);
-}
-
-@keyframes modal-appear {
-  from {
-    opacity: 0;
-    transform: scale(0.9) translateY(20px);
-  }
-
-  to {
-    opacity: 1;
-    transform: scale(1) translateY(0);
-  }
-}
-
+/* WithdrawConfirmModal 전용 스타일 (전역 모달 스타일 외 추가 항목) */
 .withdraw-modal-content {
-  padding: var(--spacing-2xl);
   text-align: center;
 }
 
 .withdraw-modal-icon {
   font-size: 40px;
-  margin-bottom: 16px;
+  margin-bottom: var(--spacing-md);
 }
 
 .withdraw-modal-title {
   font-size: 20px;
   font-weight: 700;
-  color: var(--color-gray-900);
-  margin-bottom: 16px;
+  color: var(--color-text-primary);
+  margin-bottom: var(--spacing-md);
 }
 
 .withdraw-modal-description {
   font-size: 15px;
-  color: var(--color-gray-750);
+  color: var(--color-text-secondary);
   line-height: 1.6;
   text-align: left;
-  margin-bottom: 24px;
+  margin-bottom: var(--spacing-xl);
 }
 
 .withdraw-modal-description p {
-  margin-bottom: 12px;
+  margin-bottom: var(--spacing-sm);
 }
 
 .withdraw-modal-description ul {
-  margin: 0 0 16px 20px;
+  margin: 0 0 var(--spacing-md) var(--spacing-xl);
   padding: 0;
 }
 
 .withdraw-modal-description li {
-  margin-bottom: 4px;
+  margin-bottom: var(--spacing-xs);
 }
 
 .withdraw-modal-warning-text {
-  color: var(--color-toss-red);
+  color: var(--color-red-400);
   font-weight: 600;
   text-align: center;
-  margin-top: 16px;
+  margin-top: var(--spacing-md);
 }
 
 .withdraw-modal-actions {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
+  display: flex;
   gap: var(--spacing-md);
 }
 
-.withdraw-modal-cancel-button {
-  padding: var(--spacing-medium-alt);
-  border-radius: var(--rounded-sm);
-  font-size: 16px;
-  font-weight: 600;
-  background-color: var(--adaptiveGrey100);
-  color: var(--color-gray-750);
-  border: none;
-  cursor: pointer;
-  transition: background-color 0.2s;
-}
-
-.withdraw-modal-cancel-button:active {
-  background-color: var(--adaptiveGrey200);
-}
-
-.withdraw-modal-confirm-button {
-  padding: var(--spacing-medium-alt);
-  border-radius: var(--rounded-sm);
-  font-size: 16px;
-  font-weight: 600;
-  background-color: var(--color-toss-red);
-  color: white;
-  border: none;
-  cursor: pointer;
-  transition:
-    transform 0.2s,
-    background-color 0.2s;
-}
-
-.withdraw-modal-confirm-button:hover {
-  background-color: var(--adaptiveRed400);
-}
-
-.withdraw-modal-confirm-button:active {
-  transform: scale(0.98);
-}
-
-.withdraw-modal-confirm-button:disabled {
-  background-color: var(--adaptiveRed400);
-  cursor: not-allowed;
+.withdraw-modal-button {
+  flex: 1;
 }

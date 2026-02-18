@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { Header } from '../components/Header';
 import { FooterNav } from '../components/FooterNav';
@@ -27,10 +27,6 @@ import { supabase } from '../utils/supabaseClient';
 import { safeSupabaseQuery } from '../utils/debugFetch';
 import { openLeaderboard } from '../utils/tossGameCenter';
 import { APP_CONFIG } from '../config/app';
-import { ENV } from '../utils/env';
-import { handleTossLogin } from '../utils/tossLogin';
-import { handleTossLoginFlow } from '../utils/tossAuth';
-import { migrateToGameLogin, checkTossLoginIntegration } from '../utils/tossGameLogin';
 import { signInWithGoogle } from '../utils/auth';
 import { WithdrawConfirmModal } from '../components/WithdrawConfirmModal';
 import { withdrawAccount } from '../utils/userWithdraw';
@@ -102,6 +98,23 @@ export function MyPage() {
   const [showWithdrawConfirm, setShowWithdrawConfirm] = useState(false);
   const [isWithdrawing, setIsWithdrawing] = useState(false);
 
+  // 리다이렉트 경로 계산 (RequireAuth에서 넘겨준 정보)
+  const locationState = (location as any).state as { from?: { pathname: string } } | null;
+  const redirectPath = locationState?.from?.pathname;
+
+  // 로그인 성공 후 리다이렉트 처리 함수
+  const performRedirect = React.useCallback(() => {
+    const savedRedirect = localStorage.getItem('login_redirect_path');
+    if (redirectPath && redirectPath !== urls.myPage()) {
+      navigate(redirectPath, { replace: true });
+    } else if (savedRedirect && savedRedirect !== urls.myPage()) {
+      localStorage.removeItem('login_redirect_path');
+      navigate(savedRedirect, { replace: true });
+    } else {
+      // 기본적으로 메인 페이지로 이동
+      navigate(urls.home(), { replace: true });
+    }
+  }, [redirectPath, navigate]);
   // 오늘의 챌린지 가져오기
   useEffect(() => {
     getTodayChallenge(progressMap)
@@ -133,6 +146,10 @@ export function MyPage() {
     setShowProfileForm(false);
     // URL 파라미터 제거
     navigate(urls.myPage(), { replace: true });
+
+    // 리다이렉트 시도
+    performRedirect();
+
     refetch(); // 프로필 완성 후 통계 다시 불러오기
   };
 
@@ -218,259 +235,12 @@ export function MyPage() {
     window.location.href = `mailto:support @solveclimb.com?subject = ${subject}& body=${body} `;
   };
 
-  // 게임 로그인 마이그레이션 및 로그인 함수
+  /*
+  // 게임 로그인 마이그레이션 및 로그인 함수 (현재 미사용)
   const handleLogin = async () => {
-    try {
-      setLoginError(false);
-
-      // 로컬 개발 환경 또는 Vercel(심사) 환경 확인
-      const isLocalDev =
-        window.location.hostname === 'localhost' ||
-        window.location.hostname === '127.0.0.1' ||
-        window.location.hostname.includes('192.168.');
-      const isReviewMode = isLocalDev || ENV.VITE_IS_VERCEL;
-
-      // 심사/개발 모드에서 가상 로그인 사용
-      if (isReviewMode) {
-        console.log('[로그인] 심사/개발 환경 감지 - 가상 로그인 플로우 시작');
-        if (ENV.VITE_IS_VERCEL) {
-          console.log('[로그인] Vercel 환경: 모든 토스 API는 Mock으로 대체됩니다.');
-        }
-
-        // 개발 모드: 더미 authorization code로 플로우 테스트
-        // 실제 토스 API는 실패하지만, Edge Function 호출 플로우는 확인 가능
-        const devAuthorizationCode = 'DEV_MODE_AUTHORIZATION_CODE_' + Date.now();
-
-        try {
-          // 인가 코드로 AccessToken 받기 및 Supabase 사용자 생성/로그인 시도
-          // 실제 토스 API는 실패하지만, Edge Function 호출 플로우는 확인 가능
-          const { user, session } = await handleTossLoginFlow(devAuthorizationCode, 'DEV_MODE');
-
-          if (!user || !session) {
-            throw new Error('로그인 세션을 생성할 수 없습니다.');
-          }
-
-          // 프로필 설정
-          const userProfile = {
-            profileId: user.id,
-            nickname:
-              user.user_metadata?.tossName ||
-              user.user_metadata?.tossUserKey?.toString() ||
-              '게이머',
-            userId: user.id,
-            email: user.email,
-            createdAt: user.created_at || new Date().toISOString(),
-            isAdmin: false,
-          };
-
-          setProfile(userProfile);
-          await refetch();
-          setToastMessage(
-            '개발 모드: 로그인 플로우 테스트 완료 (실제 토스 API는 실패했을 수 있음)'
-          );
-          setShowToast(true);
-          setLoginError(false);
-          return;
-        } catch (devError) {
-          console.error('[로그인] 개발 모드 로그인 실패:', devError);
-
-          // 개발 모드에서 예상된 에러인 경우 사용자에게 안내
-          const errorMessage = devError instanceof Error ? devError.message : String(devError);
-          if (
-            errorMessage.includes('개발 모드') ||
-            errorMessage.includes('유효하지 않은 authorization code')
-          ) {
-            setToastMessage(errorMessage);
-            setShowToast(true);
-            setLoginError(false); // 에러가 아닌 안내 메시지
-            return;
-          }
-
-          // 개발 모드에서도 실패하면 실제 플로우로 진행
-          console.log('[로그인] 개발 모드 실패, 실제 토스 로그인 플로우로 진행');
-        }
-      }
-
-      // 1. 게임 로그인 마이그레이션 시도 (게임 로그인 hash 발급 및 필요시 토스 로그인 매핑)
-      console.log('[로그인] 게임 로그인 마이그레이션 시작');
-      const migrationResult = await migrateToGameLogin();
-
-      if (!migrationResult.success) {
-        // 게임 로그인 마이그레이션 실패 시 기존 토스 로그인으로 폴백
-        console.warn(
-          '[로그인] 게임 로그인 마이그레이션 실패, 기존 토스 로그인으로 폴백:',
-          migrationResult.error
-        );
-
-        // 기존 토스 로그인 플로우 실행
-        console.log('[로그인] 기존 토스 로그인 플로우 시작');
-        const loginResult = await handleTossLogin();
-
-        if (!loginResult.success || !loginResult.authorizationCode) {
-          // 더 구체적인 에러 메시지 제공
-          let errorMessage = loginResult.error || migrationResult.error || '로그인에 실패했습니다.';
-
-          if (isLocalDev && errorMessage.includes('토스 앱에서만')) {
-            errorMessage =
-              '로컬 개발 환경에서는 토스 앱이 필요합니다.\n\n' +
-              '개발 모드로 테스트하려면:\n' +
-              '1. 브라우저 콘솔에서 window.testTossOAuth() 실행\n' +
-              '2. 또는 실제 토스 앱에서 테스트\n' +
-              '3. 또는 AIT에 배포 후 테스트';
-          }
-
-          console.error('[로그인] 토스 로그인 실패:', {
-            error: loginResult.error,
-            migrationError: migrationResult.error,
-            isLocalDev,
-            hostname: window.location.hostname,
-          });
-
-          setToastMessage(errorMessage);
-          setShowToast(true);
-          setLoginError(true);
-          return;
-        }
-
-        // 인가 코드로 AccessToken 받기 및 Supabase 사용자 생성/로그인
-        const { user, session } = await handleTossLoginFlow(
-          loginResult.authorizationCode,
-          loginResult.referrer || 'DEFAULT'
-        );
-
-        if (!user || !session) {
-          throw new Error('로그인 세션을 생성할 수 없습니다.');
-        }
-
-        // 프로필 설정
-        const userProfile = {
-          profileId: user.id,
-          nickname:
-            user.user_metadata?.tossName || user.user_metadata?.tossUserKey?.toString() || '게이머',
-          userId: user.id,
-          email: user.email,
-          createdAt: user.created_at || new Date().toISOString(),
-          isAdmin: false,
-        };
-
-        setProfile(userProfile);
-
-        // [New] 로그인 직후 닉네임 DB 동기화
-        try {
-          await safeSupabaseQuery(
-            supabase.rpc('update_profile_nickname', { p_nickname: userProfile.nickname })
-          );
-        } catch (e) {
-          console.warn('Failed to sync nickname on login:', e);
-        }
-
-        await refetch();
-        setToastMessage('토스 로그인에 성공했습니다!');
-        setShowToast(true);
-        setLoginError(false);
-        return;
-      }
-
-      // 2. 게임 로그인 마이그레이션 성공
-      // hash는 발급되었지만, Supabase 사용자는 토스 로그인을 통해 생성해야 함
-      console.log(
-        '[로그인] 게임 로그인 마이그레이션 성공, hash:',
-        migrationResult.hash?.substring(0, 10) + '...'
-      );
-
-      // 토스 로그인 연동 여부 확인 (상단에서 이미 import됨)
-      const integrationStatus = await checkTossLoginIntegration();
-
-      if (integrationStatus.success && integrationStatus.isIntegrated === true) {
-        // 토스 로그인 연동 사용자: 토스 로그인으로 Supabase 사용자 생성
-        console.log('[로그인] 토스 로그인 연동 사용자 - 토스 로그인으로 Supabase 사용자 생성');
-
-        const loginResult = await handleTossLogin();
-
-        if (!loginResult.success || !loginResult.authorizationCode) {
-          // 토스 로그인 실패 시 게임 로그인 hash만으로 진행 (제한적 기능)
-          console.warn('[로그인] 토스 로그인 실패, 게임 로그인 hash만 사용');
-          const gameLoginProfile = {
-            profileId: `game_${migrationResult.hash} `,
-            nickname: '게이머',
-            userId: `game_${migrationResult.hash} `,
-            email: `game_${migrationResult.hash} @game.local`,
-            createdAt: new Date().toISOString(),
-            isAdmin: false,
-            gameLoginHash: migrationResult.hash,
-          };
-          setProfile(gameLoginProfile);
-          await refetch();
-          setToastMessage('게임 로그인에 성공했습니다! (일부 기능 제한)');
-          setShowToast(true);
-          setLoginError(false);
-          return;
-        }
-
-        // 토스 로그인 성공 - Supabase 사용자 생성/로그인
-        const { user, session } = await handleTossLoginFlow(
-          loginResult.authorizationCode,
-          loginResult.referrer || 'DEFAULT'
-        );
-
-        if (!user || !session) {
-          throw new Error('로그인 세션을 생성할 수 없습니다.');
-        }
-
-        // 프로필 설정 (게임 로그인 hash 포함)
-        const userProfile = {
-          profileId: user.id,
-          nickname:
-            user.user_metadata?.tossName || user.user_metadata?.tossUserKey?.toString() || '게이머',
-          userId: user.id,
-          email: user.email,
-          createdAt: user.created_at || new Date().toISOString(),
-          isAdmin: false,
-          gameLoginHash: migrationResult.hash, // 게임 로그인 hash 저장
-        };
-
-        setProfile(userProfile);
-
-        // [New] 로그인 직후 닉네임 DB 동기화
-        try {
-          await safeSupabaseQuery(
-            supabase.rpc('update_profile_nickname', { p_nickname: userProfile.nickname })
-          );
-        } catch (e) {
-          console.warn('Failed to sync nickname on login:', e);
-        }
-
-        await refetch();
-        setToastMessage('게임 로그인에 성공했습니다!');
-        setShowToast(true);
-        setLoginError(false);
-      } else {
-        // 토스 로그인 미연동 사용자: 게임 로그인 hash만 사용 (제한적 기능)
-        console.log('[로그인] 토스 로그인 미연동 사용자 - 게임 로그인 hash만 사용');
-        const gameLoginProfile = {
-          profileId: `game_${migrationResult.hash} `,
-          nickname: '게이머',
-          userId: `game_${migrationResult.hash} `,
-          email: `game_${migrationResult.hash} @game.local`,
-          createdAt: new Date().toISOString(),
-          isAdmin: false,
-          gameLoginHash: migrationResult.hash,
-        };
-        setProfile(gameLoginProfile);
-        await refetch();
-        setToastMessage('게임 로그인에 성공했습니다!');
-        setShowToast(true);
-        setLoginError(false);
-      }
-    } catch (error) {
-      console.error('Login error:', error);
-      const errorMessage =
-        error instanceof Error ? error.message : '로그인 중 오류가 발생했습니다.';
-      setToastMessage(errorMessage);
-      setShowToast(true);
-      setLoginError(true);
-    }
+    ...
   };
+*/
 
   // 리더보드 열기 함수
   const handleOpenLeaderboard = async () => {
@@ -510,6 +280,11 @@ export function MyPage() {
     try {
       setLoginError(false);
 
+      // 리다이렉트 경로 저장
+      if (redirectPath) {
+        localStorage.setItem('login_redirect_path', redirectPath);
+      }
+
       // 로컬 세션만 사용 (Supabase 인증 없이)
       const userProfile = {
         profileId: `user_${Date.now()}_${Math.random().toString(36).substr(2, 9)} `,
@@ -534,6 +309,10 @@ export function MyPage() {
 
       // 로그인 성공 후 통계 다시 불러오기
       await refetch();
+
+      // 리다이렉트 시도
+      performRedirect();
+
       setToastMessage('익명으로 로그인되었습니다.');
       setShowToast(true);
     } catch (error) {
@@ -546,6 +325,11 @@ export function MyPage() {
 
   // 구글 한 번 클릭 로그인 (리다이렉트 후 /my-page로 복귀)
   const handleGoogleLogin = async () => {
+    // 리다이렉트 경로 저장
+    if (redirectPath) {
+      localStorage.setItem('login_redirect_path', redirectPath);
+    }
+
     const { error } = await signInWithGoogle();
     if (error) {
       setToastMessage(error.message || '구글 로그인을 시작할 수 없습니다.');
@@ -576,6 +360,10 @@ export function MyPage() {
       isAdmin: false,
     });
     refetch();
+
+    // 리다이렉트 시도
+    performRedirect();
+
     try {
       safeSupabaseQuery(supabase.rpc('update_profile_nickname', { p_nickname: nickname })).catch(
         () => {}
@@ -583,7 +371,7 @@ export function MyPage() {
     } catch {
       // 무시
     }
-  }, [session?.user, profile?.userId, refetch, setProfile]);
+  }, [session?.user, profile?.userId, refetch, setProfile, performRedirect]);
 
   // 로그아웃 함수
   const handleLogout = async () => {
@@ -640,69 +428,14 @@ export function MyPage() {
           <div className="my-page-content">
             <div className="my-page-guest-view">
               <div className="my-page-guest-icon">🔒</div>
-              {ENV.VITE_IS_VERCEL && (
-                <div
-                  style={{
-                    backgroundColor: 'rgba(0, 106, 255, 0.05)', // 특수 강조색 유지 (배경 투명도)
-                    padding: 'var(--spacing-md) var(--spacing-lg)',
-                    borderRadius: 'var(--rounded-button)',
-                    marginBottom: 'var(--spacing-xl)',
-                    fontSize: '14px',
-                    color: 'var(--adaptiveBlue500)',
-                    textAlign: 'center',
-                    fontWeight: '500',
-                    border: '1px solid rgba(0, 106, 255, 0.1)',
-                  }}
-                >
-                  심사위원님 환영합니다! 🧗
-                  <br />
-                  <span style={{ fontSize: '12px', opacity: 0.8 }}>
-                    Vercel 환경에서는 가상 프로필로 모든 기능을 체험해보실 수 있습니다.
-                  </span>
-                </div>
-              )}
               <h1 className="my-page-guest-title">
                 로그인하고
                 <br />
                 <strong className="my-page-guest-highlight">내 기록을 평생 간직하세요.</strong>
               </h1>
               <div className="my-page-guest-buttons">
-                <button
-                  type="button"
-                  className="my-page-guest-google-button"
-                  onClick={handleGoogleLogin}
-                  aria-label="Google로 로그인"
-                >
-                  <span className="my-page-guest-google-icon" aria-hidden>
-                    {/* Google "G" logo - standard brand colors per Google Identity guidelines */}
-                    <svg
-                      width="18"
-                      height="18"
-                      viewBox="0 0 24 24"
-                      xmlns="http://www.w3.org/2000/svg"
-                    >
-                      <path
-                        fill="#4285F4"
-                        d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
-                      />
-                      <path
-                        fill="#34A853"
-                        d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"
-                      />
-                      <path
-                        fill="#FBBC05"
-                        d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"
-                      />
-                      <path
-                        fill="#EA4335"
-                        d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"
-                      />
-                    </svg>
-                  </span>
-                  <span className="my-page-guest-google-text">Google로 로그인</span>
-                </button>
-                <button className="my-page-guest-login-button" onClick={handleLogin}>
-                  {ENV.VITE_IS_VERCEL ? '체험 시작하기' : '3초 만에 시작하기'}
+                <button className="my-page-guest-login-button" onClick={handleGoogleLogin}>
+                  3초 만에 시작하기
                 </button>
                 <button className="my-page-guest-anonymous-link" onClick={handleAnonymousLogin}>
                   익명 로그인하기

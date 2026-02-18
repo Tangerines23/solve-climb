@@ -116,7 +116,7 @@ export function ProfileForm({ onComplete, showBackButton = false }: ProfileFormP
   return (
     <div className="profile-form-container">
       {showBackButton && (
-        <button className="profile-form-back-button" onClick={() => navigate(-1)}>
+        <button className="btn-icon profile-form-back-button" onClick={() => navigate(-1)}>
           ←
         </button>
       )}
@@ -142,7 +142,7 @@ export function ProfileForm({ onComplete, showBackButton = false }: ProfileFormP
               setError('');
             }}
             placeholder="닉네임을 입력하세요"
-            className={`profile-form-input ${error ? 'error' : ''}`}
+            className={`input-base profile-form-input ${error ? 'error' : ''}`}
             maxLength={10}
             autoFocus
             autoComplete="off"
@@ -205,7 +205,7 @@ export function ProfileForm({ onComplete, showBackButton = false }: ProfileFormP
           </div>
         )} */}
 
-        <button type="submit" className="profile-form-submit">
+        <button type="submit" className="btn-base btn-primary profile-form-submit">
           {profile ? '저장하기' : '시작하기'}
         </button>
       </form>

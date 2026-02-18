@@ -41,24 +41,8 @@
 }
 
 .back-button {
-  background: none;
-  border: none;
   color: inherit;
   font-size: 1.5rem;
-  cursor: pointer;
-  padding: 0.5rem;
-  transition:
-    transform 0.2s,
-    opacity 0.2s;
-}
-
-.back-button:hover {
-  transform: translateX(-4px);
-  opacity: 0.8;
-}
-
-.back-button:active {
-  transform: translateX(-4px) scale(0.95);
 }
 
 .user-minerals {
@@ -71,36 +55,12 @@
 }
 
 .shop-tabs {
-  display: flex;
-  background: rgba(255, 255, 255, 0.05);
-  padding: var(--spacing-xs);
-  border-radius: var(--rounded-sm);
   margin-bottom: 2rem;
-  border: 1px solid rgba(255, 255, 255, 0.1);
-}
-
-.tab-button {
-  flex: 1;
-  padding: 0.75rem;
-  border: none;
-  background: none;
-  color: var(--color-slate-400);
-  font-weight: 600;
-  font-size: 0.95rem;
-  cursor: pointer;
-  border-radius: var(--rounded-xs);
-  transition: all 0.2s ease;
-}
-
-.tab-button:hover:not(.active) {
-  background: rgba(255, 255, 255, 0.05);
-  color: var(--color-gray-300);
 }
 
 .tab-button.active {
-  background: rgba(255, 255, 255, 0.1);
-  color: var(--color-gray-100);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+  background: var(--color-blue-600);
+  box-shadow: 0 4px 12px rgba(0, 191, 165, 0.3);
 }
 
 .ad-reward-card {
@@ -176,22 +136,12 @@
   display: flex;
   align-items: center;
   background: var(--bg-glass-card);
-  backdrop-filter: blur(var(--backdrop-blur));
   -webkit-backdrop-filter: blur(var(--backdrop-blur));
+  backdrop-filter: blur(var(--backdrop-blur));
   border: var(--border-glass);
   border-radius: 1rem;
   padding: 1rem;
   box-shadow: var(--shadow-glass);
-  overflow: hidden;
-  /* 미세 넘침 방지 */
-  transition:
-    transform 0.2s ease,
-    background 0.2s ease;
-}
-
-.item-card:hover {
-  background: rgba(255, 255, 255, 0.05);
-  transform: translateY(-2px);
 }
 
 .item-icon-wrapper {

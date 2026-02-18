@@ -40,7 +40,7 @@ export const PreGameLobby: React.FC<PreGameLobbyProps> = ({ onStart, onBack, cat
     <div className="pre-game-lobby">
       <div className="lobby-content">
         <header className="lobby-header">
-          <button className="back-button" onClick={onBack}>
+          <button className="btn-base btn-ghost back-button" onClick={onBack}>
             ←
           </button>
           <h2>준비하기</h2>
@@ -76,7 +76,10 @@ export const PreGameLobby: React.FC<PreGameLobbyProps> = ({ onStart, onBack, cat
             ) : (
               <div className="empty-inventory-message">
                 <p>보유한 아이템이 없습니다.</p>
-                <button className="go-shop-btn" onClick={() => (window.location.href = '/shop')}>
+                <button
+                  className="btn-base btn-secondary go-shop-btn"
+                  onClick={() => (window.location.href = '/shop')}
+                >
                   상점 가기
                 </button>
               </div>
@@ -85,7 +88,10 @@ export const PreGameLobby: React.FC<PreGameLobbyProps> = ({ onStart, onBack, cat
         </section>
 
         <footer className="lobby-footer">
-          <button className="start-game-btn" onClick={() => onStart(selectedItemIds)}>
+          <button
+            className="btn-base btn-primary start-game-btn"
+            onClick={() => onStart(selectedItemIds)}
+          >
             등반 시작!
           </button>
         </footer>

@@ -214,7 +214,7 @@ export function ShopPage() {
       <Header />
       <main className="shop-content">
         <header className="shop-header">
-          <button className="back-button" onClick={() => navigate(-1)}>
+          <button className="btn-icon back-button" onClick={() => navigate(-1)}>
             ←
           </button>
           <h2>마운틴 스토어</h2>
@@ -226,15 +226,15 @@ export function ShopPage() {
           </div>
         </header>
 
-        <div className="shop-tabs">
+        <div className="tab-container-base shop-tabs">
           <button
-            className={`tab-button ${activeTab === 'shop' ? 'active' : ''}`}
+            className={`tab-base tab-button ${activeTab === 'shop' ? 'active' : ''}`}
             onClick={() => setActiveTab('shop')}
           >
             ⛰️ 상점
           </button>
           <button
-            className={`tab-button ${activeTab === 'bag' ? 'active' : ''}`}
+            className={`tab-base tab-button ${activeTab === 'bag' ? 'active' : ''}`}
             onClick={() => setActiveTab('bag')}
           >
             🎒 내 배낭
@@ -294,7 +294,7 @@ export function ShopPage() {
                 {items.map((item) => {
                   const owned = getOwnedCount(item.code);
                   return (
-                    <div key={item.id} className="item-card" data-vg-ignore="true">
+                    <div key={item.id} className="item-card card-interactive" data-vg-ignore="true">
                       <div className="item-icon-wrapper">
                         <div className="item-icon">{getItemEmoji(item.code)}</div>
                         {owned > 0 && <div className="owned-badge">보유 {owned}</div>}

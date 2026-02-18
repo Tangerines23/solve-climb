@@ -79,8 +79,11 @@ export const GameAlertModal: React.FC<GameAlertModalProps> = ({
   };
 
   return (
-    <div className="alert-modal-overlay">
-      <div className="alert-modal-content fade-in">
+    <div className="modal-overlay animate-fade-in" onClick={onClose}>
+      <div
+        className="modal-base alert-modal-content animate-scale-in"
+        onClick={(e) => e.stopPropagation()}
+      >
         {renderContent()}
         <div className="alert-modal-footer">
           {type !== 'stamina' && (

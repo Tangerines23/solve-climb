@@ -364,11 +364,11 @@ strong {
 
 /* --- Premium Utility Classes --- */
 .glass-card {
-  background-color: var(--bg-glass-card);
-  border: var(--border-glass);
-  border-radius: var(--rounded-large-card);
-  backdrop-filter: blur(var(--backdrop-blur));
+  background-color: rgba(15, 23, 42, 0.4);
+  color: var(--color-gray-100);
+  border: 1px solid rgba(255, 255, 255, 0.1);
   -webkit-backdrop-filter: blur(var(--backdrop-blur));
+  backdrop-filter: blur(var(--backdrop-blur));
   box-shadow: var(--shadow-glass);
   transition:
     transform 0.2s ease,
@@ -407,6 +407,7 @@ body {
 
 * {
   box-sizing: border-box;
+  -webkit-user-select: none;
   user-select: none;
 }
 
@@ -435,8 +436,8 @@ body {
   padding: var(--spacing-2xl) var(--spacing-lg);
   border-radius: 16px;
   box-shadow: var(--shadow-glass);
-  backdrop-filter: blur(var(--backdrop-blur));
   -webkit-backdrop-filter: blur(var(--backdrop-blur));
+  backdrop-filter: blur(var(--backdrop-blur));
   width: 90%;
   max-width: 320px;
   margin: 0 auto;
@@ -555,7 +556,279 @@ body {
   align-self: center;
 }
 
+/* ──────────────────────────────────────────────────────────────────────────
+ * 글로벌 버튼 시스템 (Standardized Buttons)
+ * ──────────────────────────────────────────────────────────────────────────
+ */
+
+.btn-base {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--spacing-md) var(--spacing-xl);
+  font-size: 1rem;
+  font-weight: 700;
+  border: none;
+  border-radius: var(--rounded-button);
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  -webkit-user-select: none;
+  user-select: none;
+  font-family: inherit;
+  gap: var(--spacing-sm);
+}
+
+.btn-base:hover:not(:disabled) {
+  transform: translateY(-2px);
+  filter: brightness(1.1);
+}
+
+.btn-base:active:not(:disabled) {
+  transform: scale(0.96);
+  filter: brightness(0.9);
+}
+
+.btn-base:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  filter: grayscale(1);
+}
+
+/* Variants */
+.btn-primary {
+  background: linear-gradient(135deg, var(--color-blue-400), var(--color-blue-500));
+  color: var(--color-gray-100);
+  box-shadow: 0 4px 12px rgba(0, 191, 165, 0.25);
+}
+
+.btn-primary:hover:not(:disabled) {
+  box-shadow: 0 8px 24px rgba(0, 191, 165, 0.35);
+}
+
+.btn-danger {
+  background-color: var(--color-toss-red);
+  color: var(--color-gray-100);
+  box-shadow: 0 4px 12px rgba(244, 63, 94, 0.25);
+}
+
+/* --- Global Interactive System --- */
+
+/* 1. Global Input Fields */
+.input-base {
+  width: 100%;
+  padding: var(--spacing-md) var(--spacing-lg);
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: var(--rounded-button);
+  color: var(--color-gray-100);
+  font-family: inherit;
+  font-size: 1rem;
+  transition: all 0.2s ease;
+  outline: none;
+  box-sizing: border-box;
+}
+
+.input-base:focus {
+  background: rgba(255, 255, 255, 0.08);
+  border-color: var(--color-blue-400);
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2);
+}
+
+.input-base:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* 2. Global Tab/Segmented Control */
+.tab-container-base {
+  display: flex;
+  background: rgba(255, 255, 255, 0.05);
+  padding: var(--spacing-xs);
+  border-radius: var(--rounded-md-alt);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.tab-base {
+  flex: 1;
+  padding: var(--spacing-sm);
+  border: none;
+  background: transparent;
+  color: var(--color-text-tertiary);
+  font-weight: 700;
+  font-size: 0.9rem;
+  border-radius: var(--rounded-sm-alt);
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--spacing-xs);
+}
+
+.tab-base:hover:not(.active) {
+  background: rgba(255, 255, 255, 0.08);
+  color: var(--color-gray-200);
+}
+
+.tab-base.active {
+  background: var(--color-blue-600);
+  color: var(--color-gray-50);
+  box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3);
+}
+
+/* 3. Global Icon Buttons (Back, Close, etc.) */
+.btn-icon {
+  background: transparent;
+  border: none;
+  color: var(--color-text-secondary);
+  cursor: pointer;
+  padding: var(--spacing-sm);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  transition: all 0.2s ease;
+  min-width: 40px;
+  min-height: 40px;
+}
+
+.btn-icon:hover {
+  background: rgba(255, 255, 255, 0.1);
+  color: var(--color-text-primary);
+  transform: scale(1.1);
+}
+
+.btn-icon:active {
+  background: rgba(255, 255, 255, 0.2);
+  transform: scale(0.95);
+}
+
+/* 4. Interactive Cards */
+.card-interactive {
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.card-interactive:hover {
+  transform: translateY(-4px) scale(1.01);
+  background: rgba(255, 255, 255, 0.08) !important;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
+}
+
+/* 5. Global Modal & Overlays */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: var(--bg-glass-overlay);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: var(--z-modal);
+  padding: var(--spacing-xl);
+  -webkit-backdrop-filter: blur(12px);
+  backdrop-filter: blur(12px);
+}
+
+.modal-base {
+  background-color: var(--color-bg-primary);
+  border-radius: var(--rounded-large-card);
+  width: 100%;
+  max-width: 400px;
+  padding: 2.5rem;
+  box-shadow: 0 40px 100px rgba(0, 0, 0, 0.8);
+  border: var(--border-glass);
+}
+
+/* 6. Global Glass Cards */
+.card-glass {
+  background-color: var(--bg-glass-card);
+  border: var(--border-glass);
+  -webkit-backdrop-filter: blur(var(--backdrop-blur));
+  backdrop-filter: blur(var(--backdrop-blur));
+  box-shadow: var(--shadow-glass);
+}
+
+/* 7. Shared Animations */
+@keyframes fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes slide-up {
+  from {
+    transform: translateY(var(--spacing-xl));
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+@keyframes scale-in {
+  from {
+    opacity: 0;
+    transform: scale(0.9);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.animate-fade-in {
+  animation: fade-in 0.3s ease;
+}
+.animate-slide-up {
+  animation: slide-up 0.3s ease-out;
+}
+.animate-scale-in {
+  animation: scale-in 0.25s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.card-interactive:active {
+  transform: translateY(-2px) scale(0.98);
+}
+
+.btn-danger:hover:not(:disabled) {
+  background-color: var(--color-red-600);
+  box-shadow: 0 8px 24px rgba(240, 68, 82, 0.35);
+}
+
+.btn-secondary {
+  background-color: rgba(255, 255, 255, 0.05);
+  color: var(--color-text-secondary);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  -webkit-backdrop-filter: blur(4px);
+  backdrop-filter: blur(4px);
+}
+
+.btn-secondary:hover:not(:disabled) {
+  background-color: rgba(255, 255, 255, 0.1);
+  color: var(--color-text-primary);
+}
+
+.btn-ghost {
+  background: transparent;
+  color: var(--color-text-secondary);
+  padding: var(--spacing-sm) var(--spacing-md);
+}
+
+.btn-ghost:hover:not(:disabled) {
+  background-color: rgba(255, 255, 255, 0.05);
+  color: var(--color-text-primary);
+  transform: none; /* Ghost buttons stay in place */
+}
+
 /* Static UI 모드: 모든 애니메이션 및 트랜지션 비활성화 */
+.static-ui *,
 .static-ui *,
 .static-ui *::before,
 .static-ui *::after {

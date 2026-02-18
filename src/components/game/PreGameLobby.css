@@ -5,6 +5,7 @@
   right: 0;
   bottom: 0;
   background-color: rgba(15, 23, 42, 0.95);
+  -webkit-backdrop-filter: blur(10px);
   backdrop-filter: blur(10px);
   z-index: 2000;
   display: flex;
@@ -133,19 +134,6 @@
   width: 100%;
   padding: 1.2rem;
   font-size: 1.2rem;
-  font-weight: 700;
-  border-radius: 1rem;
-  border: none;
-  background: linear-gradient(135deg, var(--color-blue-400), #2563eb);
-  color: white;
-  cursor: pointer;
-  box-shadow: 0 10px 15px -3px rgba(59, 130, 246, 0.4);
-  transition: all 0.2s ease;
-}
-
-.start-game-btn:hover {
-  transform: scale(1.02);
-  box-shadow: 0 20px 25px -5px rgba(59, 130, 246, 0.5);
 }
 
 .empty-inventory-message {

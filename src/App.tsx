@@ -11,6 +11,7 @@ import { useDebugStore } from '@/stores/useDebugStore';
 import { useSettingsStore } from '@/stores/useSettingsStore';
 import { useConnectivity } from '@/hooks/useConnectivity';
 import { PwaUpdateNotification } from '@/components/PwaUpdateNotification';
+import { RequireAuth } from '@/components/auth/RequireAuth';
 
 const HomePage = lazy(() =>
   import('@/pages/HomePage').then((module) => ({ default: module.HomePage }))
@@ -150,16 +151,72 @@ function App() {
       >
         <Routes>
           <Route path="/" element={<HomePage />} />
-          <Route path="/category-select" element={<CategorySelectPage />} />
-          <Route path="/level-select" element={<LevelSelectPage />} />
-          <Route path="/quiz" element={<QuizPage />} />
-          <Route path="/result" element={<ResultPage />} />
-          <Route path="/ranking" element={<RankingPage />} />
-          <Route path="/roadmap" element={<RoadmapPage />} />
+          <Route
+            path="/category-select"
+            element={
+              <RequireAuth>
+                <CategorySelectPage />
+              </RequireAuth>
+            }
+          />
+          <Route
+            path="/level-select"
+            element={
+              <RequireAuth>
+                <LevelSelectPage />
+              </RequireAuth>
+            }
+          />
+          <Route
+            path="/quiz"
+            element={
+              <RequireAuth>
+                <QuizPage />
+              </RequireAuth>
+            }
+          />
+          <Route
+            path="/result"
+            element={
+              <RequireAuth>
+                <ResultPage />
+              </RequireAuth>
+            }
+          />
+          <Route
+            path="/ranking"
+            element={
+              <RequireAuth>
+                <RankingPage />
+              </RequireAuth>
+            }
+          />
+          <Route
+            path="/roadmap"
+            element={
+              <RequireAuth>
+                <RoadmapPage />
+              </RequireAuth>
+            }
+          />
           <Route path="/my-page" element={<MyPage />} />
-          <Route path="/notifications" element={<NotificationPage />} />
+          <Route
+            path="/notifications"
+            element={
+              <RequireAuth>
+                <NotificationPage />
+              </RequireAuth>
+            }
+          />
           <Route path="/debug" element={<DebugPage />} />
-          <Route path="/shop" element={<ShopPage />} />
+          <Route
+            path="/shop"
+            element={
+              <RequireAuth>
+                <ShopPage />
+              </RequireAuth>
+            }
+          />
         </Routes>
 
         {/* Global Debug Panel (Outside Routes, High Z-Index) */}

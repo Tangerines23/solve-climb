@@ -1,29 +1,9 @@
-.pause-modal-overlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background-color: var(--color-overlay);
-  /* Darker backdrop */
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 3000;
-  backdrop-filter: blur(5px);
-  animation: fadeIn 0.2s ease-out;
-}
-
+/* PauseModal 전용 스타일 */
 .pause-modal-content {
-  background: var(--color-bg-primary);
-  border: 1px solid var(--color-bg-secondary);
-  border-radius: var(--rounded-md);
-  padding: var(--spacing-3xl) var(--spacing-2xl);
   width: 90%;
   max-width: 320px;
   text-align: center;
-  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
-  animation: scaleIn 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  padding: var(--spacing-3xl) var(--spacing-2xl);
 }
 
 .pause-title {
@@ -40,7 +20,6 @@
 
 .pause-warning {
   color: var(--color-toss-red);
-  /* Warning color */
   font-size: 0.9rem;
   margin-bottom: var(--spacing-md);
 }
@@ -52,14 +31,9 @@
 
 .count-value {
   color: var(--color-blue-400);
-  /* Electric blue for better contrast */
   font-weight: 800;
   font-size: 1.3rem;
   text-shadow: 0 0 10px rgba(79, 172, 254, 0.3);
-}
-
-.count-icon {
-  margin-right: var(--spacing-xs);
 }
 
 .pause-actions {
@@ -83,14 +57,6 @@
   gap: var(--spacing-sm);
 }
 
-.btn-icon {
-  font-size: 1.1rem;
-}
-
-.pause-btn:active {
-  transform: scale(0.98);
-}
-
 .pause-btn.resume {
   background: var(--color-success);
   color: var(--color-text-primary);
@@ -99,26 +65,4 @@
 .pause-btn.exit {
   background: rgba(255, 255, 255, 0.1);
   color: var(--color-gray-100);
-}
-
-@keyframes fadeIn {
-  from {
-    opacity: 0;
-  }
-
-  to {
-    opacity: 1;
-  }
-}
-
-@keyframes scaleIn {
-  from {
-    transform: scale(0.9);
-    opacity: 0;
-  }
-
-  to {
-    transform: scale(1);
-    opacity: 1;
-  }
 }

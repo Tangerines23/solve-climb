@@ -72,12 +72,14 @@
   min-height: clamp(28px, 5vw, 40px);
   background-color: var(--color-gray-900);
   border: none;
-  border-radius: clamp(8px, 1.5vh, 12px);
+  border-radius: var(--radius-md);
   color: var(--color-text-primary);
   font-size: clamp(0.9rem, 2.2vw, 1.3rem);
   font-weight: 600;
   cursor: pointer;
-  transition: all 0.1s ease;
+  transition:
+    transform 0.1s cubic-bezier(0.2, 0, 0.4, 1),
+    background-color 0.1s ease;
   user-select: none;
   -webkit-tap-highlight-color: transparent;
   display: flex;

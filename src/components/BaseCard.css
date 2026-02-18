@@ -1,0 +1,49 @@
+.base_card {
+  background-color: var(--color-toss-white);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-sm);
+  overflow: hidden;
+  transition:
+    transform var(--transition-bounce),
+    box-shadow var(--transition-base);
+  position: relative;
+  width: 100%;
+}
+
+/* Glass effect via class */
+.base_card.card-glass {
+  background: rgba(255, 255, 255, 0.7);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+}
+
+.base_card.card-interactive {
+  cursor: pointer;
+}
+
+.base_card.card-interactive:active {
+  transform: scale(0.98);
+  box-shadow: none;
+}
+
+@media (hover: hover) {
+  .base_card.card-interactive:hover {
+    transform: translateY(-4px);
+    box-shadow: var(--shadow-md);
+  }
+}
+
+/* Padding variants */
+.padding-none {
+  padding: 0;
+}
+.padding-sm {
+  padding: var(--spacing-sm);
+}
+.padding-md {
+  padding: var(--spacing-md);
+}
+.padding-lg {
+  padding: var(--spacing-lg);
+}

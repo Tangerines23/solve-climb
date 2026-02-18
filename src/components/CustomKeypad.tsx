@@ -128,7 +128,7 @@ function CustomKeypadComponent({
           0
         </button>
         <button
-          className="keypad-key keypad-key-submit"
+          className="btn-base btn-primary keypad-key keypad-key-submit"
           onClick={(e) => {
             e.preventDefault();
             handleSubmit(e);
