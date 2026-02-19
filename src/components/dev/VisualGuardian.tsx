@@ -11,6 +11,12 @@ interface WindowWithGuardian extends Window {
     error: string;
     details?: { scroll: number[]; client: number[] };
   }>;
+  __LAYOUT_IGNORED__?: Array<{
+    element: string;
+    className: string;
+    reason: string;
+    details: { scroll: number[]; client: number[] };
+  }>;
   __VG_INTENSIVE_MODE__?: boolean;
 }
 
@@ -90,6 +96,13 @@ export function VisualGuardian() {
           const style = window.getComputedStyle(el);
           const isScrollable = (val: string) => val.includes('auto') || val.includes('scroll');
 
+          // 1. 세로 넘침 감지 (서브픽셀/반올림 노이즈 무시: 0.5px 허용으로 VG 테스트 안정화)
+          const threshold = 0.5;
+          const isVerticalOverflow = el.scrollHeight > el.clientHeight + threshold;
+
+          // 2. 가로 넘침 감지
+          const isHorizontalOverflow = el.scrollWidth > el.clientWidth + threshold;
+
           if (
             isScrollable(style.overflow) ||
             isScrollable(style.overflowX) ||
@@ -99,15 +112,22 @@ export function VisualGuardian() {
             el.closest('.debug-panel-overlay') || // 🐛 디버그 패널 제외
             el.closest('[data-vg-ignore]') // 🛡️ 명시적 제외 속성 지원
           ) {
+            // 디버깅: 무시된 요소도 기록 (자동화 모드일 때만)
+            if (isAutomation && (isVerticalOverflow || isHorizontalOverflow)) {
+              (window as WindowWithGuardian).__LAYOUT_IGNORED__ =
+                (window as WindowWithGuardian).__LAYOUT_IGNORED__ || [];
+              (window as WindowWithGuardian).__LAYOUT_IGNORED__?.push({
+                element: el.tagName,
+                className: classStr,
+                reason: isScrollable(style.overflow) ? 'overflow:auto' : 'ignored',
+                details: {
+                  scroll: [el.scrollWidth, el.scrollHeight],
+                  client: [el.clientWidth, el.clientHeight],
+                },
+              });
+            }
             return;
           }
-
-          // 1. 세로 넘침 감지 (서브픽셀/반올림 노이즈 무시: 0.5px 허용으로 VG 테스트 안정화)
-          const threshold = 0.5;
-          const isVerticalOverflow = el.scrollHeight > el.clientHeight + threshold;
-
-          // 2. 가로 넘침 감지
-          const isHorizontalOverflow = el.scrollWidth > el.clientWidth + threshold;
 
           if (isVerticalOverflow || isHorizontalOverflow) {
             // 이미 감지된 경우 패스

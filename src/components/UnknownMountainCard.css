@@ -5,10 +5,10 @@
   padding: var(--spacing-lg);
   border: 1px solid rgba(255, 255, 255, 0.1);
   cursor: pointer;
+  /* Transition handled by BaseCard for transform/shadow */
   transition:
-    transform 0.2s,
-    border-color 0.2s,
-    background-color 0.2s;
+    background-color 0.2s,
+    border-color 0.2s;
 }
 
 .unknown-mountain-card:hover {

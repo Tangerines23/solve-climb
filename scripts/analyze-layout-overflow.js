@@ -1,7 +1,10 @@
 /**
- * Visual Guardian overflow 전수 분석
- * - check-layout-standalone과 동일한 페이지/뷰포트에서 __LAYOUT_ERRORS__ 수집
- * - 페이지별·셀렉터별 집계 후 reports/layout-overflow-report.json 및 콘솔 요약 출력
+ * 📊 Visual Guardian (VG) - Layout Analysis & Reporting
+ *
+ * [분석 모드]
+ * - 오버플로우가 발생해도 중단하지 않고 모든 페이지를 전수 조사합니다.
+ * - 결과는 'reports/layout-overflow-report.json'에 저장됩니다.
+ * - 대규모 리팩토링 후 전체적인 레이아웃 건강 상태를 진단할 때 유용합니다.
  *
  * 사용: npm run check:layout:analyze (개발 서버 선행 실행 필요)
  */

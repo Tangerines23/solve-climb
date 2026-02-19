@@ -1,7 +1,11 @@
 #!/usr/bin/env node
 /**
- * 레이아웃 검사 시 개발 서버가 없으면 자동 기동 후 검사 실행.
- * CI(e2e-visual-layout)에서 check:layout:deep 실행 시 서버가 없어 실패하는 문제 해결용.
+ * 🚀 Visual Guardian (VG) - Auto Server Launcher
+ *
+ * 레이아웃 검사(VG)를 실행할 때 개발 서버(localhost:5173)가 없으면 자동으로 띄워줍니다.
+ * 검사가 끝나면 서버도 함께 종료합니다.
+ *
+ * CI 환경이나 로컬에서 간편하게 검사를 돌릴 때 권장됩니다.
  *
  * 사용: node scripts/run-layout-check-with-server.js [--deep]
  *      npm run check:layout:with-server [-- --deep]

@@ -671,9 +671,11 @@ body {
 }
 
 .tab-base.active {
-  background: var(--color-blue-600);
-  color: var(--color-gray-50);
-  box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3);
+  background: linear-gradient(135deg, var(--color-blue-400) 0%, var(--color-blue-500) 100%);
+  color: #fff;
+  font-weight: 800;
+  box-shadow: 0 4px 12px rgba(0, 191, 165, 0.4);
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5); /* Stronger shadow for contrast */
 }
 
 /* 3. Global Icon Buttons (Back, Close, etc.) */

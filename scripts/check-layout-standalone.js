@@ -1,3 +1,12 @@
+/**
+ * 🛡️ Visual Guardian (VG) - Main Layout Check Script
+ *
+ * Playwright를 사용하여 페이지를 순회하며 레이아웃 깨짐(Overflow)을 감지합니다.
+ * - 기본 모드: 정해진 뷰포트에서 스크롤하며 검사
+ * - Deep 모드 (--deep): 버튼/링크를 클릭하며 숨겨진 UI까지 검사
+ *
+ * 실행: npm run check:layout (또는 check:layout:deep)
+ */
 import { chromium } from 'playwright';
 
 let globalHasErrors = false;
@@ -133,6 +142,11 @@ async function runOneViewport(viewport, pagesToCheck, BASE_URL, browser) {
   }
 
   let pagesToCheck = [
+    {
+      name: 'Home',
+      url: `${BASE_URL}/`,
+      waitAfterLoad: 3000,
+    },
     /* Skipping non-critical 404 check in current env to avoid timeout noise
     {
       name: 'Error Page (404 Fallback)',
@@ -405,9 +419,26 @@ async function checkOverflow(page, stepName) {
 
   const result = await page.evaluate(() => {
     const errors = window.__LAYOUT_ERRORS__ || [];
+    const ignored = window.__LAYOUT_IGNORED__ || [];
     const hasOverflow = document.body.dataset.layoutError === 'true';
-    return { hasOverflow, errors };
+    return { hasOverflow, errors, ignored };
   });
+
+  if (result.ignored && result.ignored.length > 0) {
+    console.log(`    ⚠️ Ignored Overflows (Auto-detected): ${result.ignored.length}`);
+    result.ignored.slice(0, 10).forEach((ig) => {
+      // 상위 10개로 증가
+      const wDiff = ig.details.scroll[0] - ig.details.client[0];
+      const hDiff = ig.details.scroll[1] - ig.details.client[1];
+      const type = [];
+      if (wDiff > 0.5) type.push(`X:+${Math.round(wDiff)}`);
+      if (hDiff > 0.5) type.push(`Y:+${Math.round(hDiff)}`);
+
+      console.log(
+        `      - [${ig.reason}] [${type.join(', ')}] <${ig.element} class="${ig.className}"> (${ig.details.scroll.join('x')} vs ${ig.details.client.join('x')})`
+      );
+    });
+  }
 
   if (result.hasOverflow) {
     console.error(`  🚨 Overflow on ${stepName}!`);

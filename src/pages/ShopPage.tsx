@@ -6,6 +6,7 @@ import { useUserStore } from '../stores/useUserStore';
 import { Header } from '../components/Header';
 import { FooterNav } from '../components/FooterNav';
 import { useToastStore } from '../stores/useToastStore';
+import { SegmentedControl } from '@/components/SegmentedControl';
 import './ShopPage.css';
 
 interface Item {
@@ -226,19 +227,15 @@ export function ShopPage() {
           </div>
         </header>
 
-        <div className="tab-container-base shop-tabs">
-          <button
-            className={`tab-base tab-button ${activeTab === 'shop' ? 'active' : ''}`}
-            onClick={() => setActiveTab('shop')}
-          >
-            ⛰️ 상점
-          </button>
-          <button
-            className={`tab-base tab-button ${activeTab === 'bag' ? 'active' : ''}`}
-            onClick={() => setActiveTab('bag')}
-          >
-            🎒 내 배낭
-          </button>
+        <div className="shop-tabs-wrapper" style={{ padding: '0 var(--spacing-4xl)' }}>
+          <SegmentedControl
+            options={[
+              { value: 'shop', label: '⛰️ 상점' },
+              { value: 'bag', label: '🎒 내 배낭' },
+            ]}
+            value={activeTab}
+            onChange={(val) => setActiveTab(val as 'shop' | 'bag')}
+          />
         </div>
 
         {activeTab === 'bag' ? (

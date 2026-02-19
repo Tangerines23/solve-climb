@@ -5,6 +5,7 @@ import { FooterNav } from '../components/FooterNav';
 import { supabase } from '../utils/supabaseClient';
 import { useLevelProgressStore } from '../stores/useLevelProgressStore';
 import { TierBadge } from '../components/TierBadge';
+import { SegmentedControl } from '../components/SegmentedControl';
 import './RankingPage.css';
 
 type RankingType = 'total' | 'time-attack' | 'survival';
@@ -115,25 +116,16 @@ export function RankingPage() {
       <main className="ranking-main">
         {/* Layer 1: 종목 선택 (Tabs) */}
         <div className="ranking-tabs-container">
-          <div className="tab-container-base ranking-tabs">
-            <button
-              className={`tab-base ranking-tab ${activeType === 'total' ? 'active' : ''}`}
-              onClick={() => setActiveType('total')}
-            >
-              종합
-            </button>
-            <button
-              className={`tab-base ranking-tab ${activeType === 'time-attack' ? 'active' : ''}`}
-              onClick={() => setActiveType('time-attack')}
-            >
-              타임어택
-            </button>
-            <button
-              className={`tab-base ranking-tab ${activeType === 'survival' ? 'active' : ''}`}
-              onClick={() => setActiveType('survival')}
-            >
-              서바이벌
-            </button>
+          <div className="ranking-tabs-wrapper" style={{ marginTop: 'var(--spacing-md)' }}>
+            <SegmentedControl
+              options={[
+                { value: 'total', label: '종합' },
+                { value: 'time-attack', label: '타임어택' },
+                { value: 'survival', label: '서바이벌' },
+              ]}
+              value={activeType}
+              onChange={(val) => setActiveType(val as 'total' | 'time-attack' | 'survival')}
+            />
           </div>
         </div>
 
