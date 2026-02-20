@@ -19,12 +19,15 @@ export function StaminaGauge() {
   return (
     <div className={`stamina-gauge-container ${isEmpty ? 'shake' : ''}`}>
       <div className="stamina-gauge-icon-wrapper-hardened">
-        <svg
-          viewBox="0 0 24 24"
-          className={`stamina-lightning ${isFull ? 'pulse' : ''}`}
-          fill={getColor()}
-        >
-          <path d="M13 2L3 14H11L9 22L19 10H11L13 2Z" />
+        <svg viewBox="0 0 24 24" className="stamina-lightning" style={{ overflow: 'visible' }}>
+          {isFull && (
+            <path
+              d="M13 2L3 14H11L9 22L19 10H11L13 2Z"
+              fill={getColor()}
+              className="stamina-glow-path"
+            />
+          )}
+          <path d="M13 2L3 14H11L9 22L19 10H11L13 2Z" fill={getColor()} />
         </svg>
       </div>
 

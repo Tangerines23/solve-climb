@@ -386,6 +386,13 @@ export function QuizPage() {
       // 환불 로직 실행
       refundStamina().catch(console.error);
 
+      // 오늘의 챌린지인 경우 홈으로 이동
+      const isTodayChallenge = searchParams.get('challenge') === 'today';
+      if (isTodayChallenge) {
+        navigate(urls.home(), { replace: true });
+        return;
+      }
+
       // 이전 선택 화면으로 이동
       if (mountainParam && worldParam && categoryParam) {
         navigate(
