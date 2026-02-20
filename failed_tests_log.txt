@@ -1,0 +1,1352 @@
+
+> react-vite-app@0.8.0 test
+> vitest --run src/hooks/__tests__/useQuestionGenerator.test.ts src/utils/__tests__/EquationProblemGenerator.test.ts src/components/__tests__/TierUpgradeModal.test.tsx src/utils/__tests__/quizGenerator.test.ts
+
+[sentry-vite-plugin] Info: Sending telemetry data on issues and performance to Sentry. To disable telemetry, set `options.telemetry` to `false`.
+
+[1m[46m RUN [49m[22m [36mv4.0.16 [39m[90mC:/Users/ghkdd/gemini-projects/solve-climb[39m
+
+ [31m❯[39m src/utils/__tests__/quizGenerator.test.ts [2m([22m[2m15 tests[22m[2m | [22m[31m15 failed[39m[2m)[22m[32m 24[2mms[22m[39m
+[31m       [31m×[31m should route to correct worlds[39m[32m 7[2mms[22m[39m
+[31m       [31m×[31m should handle all categories[39m[32m 3[2mms[22m[39m
+[31m       [31m×[31m should catch errors and fallback[39m[32m 1[2mms[22m[39m
+[31m       [31m×[31m should handle categories and symmetry levels[39m[32m 2[2mms[22m[39m
+[31m       [31m×[31m should handle fallback in World 2 기초[39m[32m 1[2mms[22m[39m
+[31m       [31m×[31m should handle categories[39m[32m 2[2mms[22m[39m
+[31m       [31m×[31m should handle fallback in World 3 기초[39m[32m 0[2mms[22m[39m
+[31m       [31m×[31m should handle categories[39m[32m 1[2mms[22m[39m
+[31m       [31m×[31m should handle fallback in World 4 기초[39m[32m 1[2mms[22m[39m
+[31m       [31m×[31m should cover addition[39m[32m 0[2mms[22m[39m
+[31m       [31m×[31m should cover subtraction and ensure no zero/negative[39m[32m 0[2mms[22m[39m
+[31m       [31m×[31m should cover multiplication[39m[32m 0[2mms[22m[39m
+[31m       [31m×[31m should cover division[39m[32m 0[2mms[22m[39m
+[31m       [31m×[31m should cover equations and calculus via redirect[39m[32m 0[2mms[22m[39m
+[31m       [31m×[31m should use default for unknown topics[39m[32m 0[2mms[22m[39m
+ [31m❯[39m src/utils/__tests__/EquationProblemGenerator.test.ts [2m([22m[2m27 tests[22m[2m | [22m[31m2 failed[39m[2m)[22m[32m 26[2mms[22m[39m
+       [32m✓[39m should generate equation for stage 1[32m 2[2mms[22m[39m
+       [32m✓[39m should generate equation for stage 2[32m 0[2mms[22m[39m
+       [32m✓[39m should generate equation for stage 3[32m 0[2mms[22m[39m
+       [32m✓[39m should generate equation for stage 4 (□ x a = b)[32m 0[2mms[22m[39m
+       [32m✓[39m should generate equation for stage 5 (□ / a = b)[32m 0[2mms[22m[39m
+       [32m✓[39m should generate equation for stage 7 (coefficient multiply)[32m 0[2mms[22m[39m
+       [32m✓[39m should generate equation for stage 8 (two-step)[32m 0[2mms[22m[39m
+       [32m✓[39m should generate equation for stage 13 (both sides)[32m 0[2mms[22m[39m
+       [32m✓[39m should generate equation for stage 14 (parentheses)[32m 0[2mms[22m[39m
+[31m       [31m×[31m should throw error for invalid stage[39m[32m 5[2mms[22m[39m
+       [32m✓[39m should generate valid equations for all stages[32m 4[2mms[22m[39m
+       [32m✓[39m should generate equations with integer solutions[32m 1[2mms[22m[39m
+       [32m✓[39m should generate equation using static method[32m 0[2mms[22m[39m
+       [32m✓[39m should generate same result as function[32m 0[2mms[22m[39m
+       [32m✓[39m should test all format branches: fill_plus, fill_minus, fill_subtract[32m 0[2mms[22m[39m
+       [32m✓[39m should test all format branches: x_plus, x_minus, x_plus_reverse[32m 0[2mms[22m[39m
+       [32m✓[39m should test all format branches: coefficient_multiply[32m 0[2mms[22m[39m
+       [32m✓[39m should test all format branches: two_step_plus, two_step_minus, two_step_large[32m 0[2mms[22m[39m
+       [32m✓[39m should test all format branches: both_sides_simple, parentheses, both_sides_complex[32m 1[2mms[22m[39m
+       [32m✓[39m should handle edge cases: boundary levels 1 and 15[32m 0[2mms[22m[39m
+[31m       [31m×[31m should handle error case: invalid stage level throws error[39m[32m 1[2mms[22m[39m
+       [32m✓[39m should handle recursive calls in generateFillMinus when b < 0[32m 1[2mms[22m[39m
+       [32m✓[39m should handle recursive calls in generateXMinus when b < 0[32m 0[2mms[22m[39m
+       [32m✓[39m should handle recursive calls in generateTwoStepMinus when c < 0[32m 0[2mms[22m[39m
+       [32m✓[39m should test EquationProblemGenerator.getStages()[32m 0[2mms[22m[39m
+       [32m✓[39m should test EquationProblemGenerator.getStage()[32m 0[2mms[22m[39m
+       [32m✓[39m should handle default case in switch statement[32m 1[2mms[22m[39m
+[90mstderr[2m | src/hooks/__tests__/useQuestionGenerator.test.ts[2m > [22m[2museQuestionGenerator[2m > [22m[2mshould return early when category or topic is null
+[22m[39mMissing world or category for question generation
+
+ [31m❯[39m src/hooks/__tests__/useQuestionGenerator.test.ts [2m([22m[2m12 tests[22m[2m | [22m[31m6 failed[39m[2m)[22m[32m 125[2mms[22m[39m
+     [32m✓[39m should generate question using generateQuestion when no URL params[32m 20[2mms[22m[39m
+[31m     [31m×[31m should generate arithmetic problem when subParam is arithmetic[39m[32m 15[2mms[22m[39m
+[31m     [31m×[31m should generate equation when subParam is equations[39m[32m 4[2mms[22m[39m
+     [32m✓[39m should reset input and display values[32m 3[2mms[22m[39m
+     [32m✓[39m should update question key in survival mode[32m 3[2mms[22m[39m
+[31m     [31m×[31m should handle equations subParam without levelParam[39m[32m 4[2mms[22m[39m
+[31m     [31m×[31m should handle calculus subParam[39m[32m 3[2mms[22m[39m
+     [32m✓[39m should return early when category or topic is null[32m 11[2mms[22m[39m
+     [32m✓[39m should handle useSystemKeyboard focus[32m 12[2mms[22m[39m
+     [32m✓[39m should call onQuestionGenerated callback[32m 4[2mms[22m[39m
+[31m     [31m×[31m should handle arithmetic with different levels[39m[32m 2[2mms[22m[39m
+[31m     [31m×[31m should handle other subParams[39m[32m 39[2mms[22m[39m
+ [32m✓[39m .stryker-tmp/sandbox-nlr3Gl/src/components/__tests__/TierUpgradeModal.test.tsx [2m([22m[2m11 tests[22m[2m)[22m[32m 172[2mms[22m[39m
+ [32m✓[39m .stryker-tmp/sandbox-nlr3Gl/src/utils/__tests__/EquationProblemGenerator.test.ts [2m([22m[2m27 tests[22m[2m)[22m[32m 18[2mms[22m[39m
+[90mstderr[2m | .stryker-tmp/sandbox-nlr3Gl/src/hooks/__tests__/useQuestionGenerator.test.ts[2m > [22m[2museQuestionGenerator[2m > [22m[2mshould return early when category or topic is null
+[22m[39mMissing world or category for question generation
+
+ [32m✓[39m .stryker-tmp/sandbox-nlr3Gl/src/hooks/__tests__/useQuestionGenerator.test.ts [2m([22m[2m12 tests[22m[2m)[22m[32m 54[2mms[22m[39m
+ [32m✓[39m .stryker-tmp/sandbox-c4M1rX/src/components/__tests__/TierUpgradeModal.test.tsx [2m([22m[2m11 tests[22m[2m)[22m[32m 128[2mms[22m[39m
+ [31m❯[39m src/components/__tests__/TierUpgradeModal.test.tsx [2m([22m[2m11 tests[22m[2m | [22m[31m4 failed[39m[2m)[22m[33m 4376[2mms[22m[39m
+     [32m✓[39m should not render when isOpen is false[32m 25[2mms[22m[39m
+[31m     [31m×[31m should render tier upgrade when tier level increases[39m[33m 1085[2mms[22m[39m
+[31m     [31m×[31m should render stars celebration when stars increase[39m[33m 1010[2mms[22m[39m
+     [32m✓[39m should not render when no upgrade or stars added[32m 8[2mms[22m[39m
+[31m     [31m×[31m should call onClose when close button is clicked[39m[33m 1052[2mms[22m[39m
+     [32m✓[39m should call onClose when overlay is clicked[32m 3[2mms[22m[39m
+     [32m✓[39m should not call onClose when modal content is clicked[32m 4[2mms[22m[39m
+     [32m✓[39m should display tier comparison with stars[32m 38[2mms[22m[39m
+     [32m✓[39m should display stars in ×N format when stars >= 5[32m 78[2mms[22m[39m
+[31m     [31m×[31m should display stars celebration when stars are added[39m[33m 1065[2mms[22m[39m
+     [32m✓[39m should not render when loading[32m 3[2mms[22m[39m
+ [32m✓[39m .stryker-tmp/sandbox-nlr3Gl/src/utils/__tests__/quizGenerator.test.ts [2m([22m[2m15 tests[22m[2m)[22m[32m 17[2mms[22m[39m
+ [32m✓[39m .stryker-tmp/sandbox-c4M1rX/src/utils/__tests__/EquationProblemGenerator.test.ts [2m([22m[2m27 tests[22m[2m)[22m[32m 18[2mms[22m[39m
+[90mstderr[2m | .stryker-tmp/sandbox-c4M1rX/src/hooks/__tests__/useQuestionGenerator.test.ts[2m > [22m[2museQuestionGenerator[2m > [22m[2mshould return early when category or topic is null
+[22m[39mMissing world or category for question generation
+
+ [32m✓[39m .stryker-tmp/sandbox-c4M1rX/src/hooks/__tests__/useQuestionGenerator.test.ts [2m([22m[2m12 tests[22m[2m)[22m[32m 54[2mms[22m[39m
+ [32m✓[39m .stryker-tmp/sandbox-c4M1rX/src/utils/__tests__/quizGenerator.test.ts [2m([22m[2m15 tests[22m[2m)[22m[32m 17[2mms[22m[39m
+
+[31m⎯⎯⎯⎯⎯⎯[39m[1m[41m Failed Tests 27 [49m[22m[31m⎯⎯⎯⎯⎯⎯⎯[39m
+
+[41m[1m FAIL [22m[49m src/components/__tests__/TierUpgradeModal.test.tsx[2m > [22mTierUpgradeModal[2m > [22mshould render tier upgrade when tier level increases
+[31m[1mTestingLibraryElementError[22m[39m: Unable to find an element with the text: /티어 업그레이드/. This could be because the text is broken up by multiple elements. In this case, you can provide a function for your text matcher to make your matcher more flexible.
+
+Ignored nodes: comments, script, style
+[36m<body>[39m
+  [36m<div>[39m
+    [36m<div[39m
+      [33mclass[39m=[32m"modal-overlay animate-fade-in "[39m
+    [36m>[39m
+      [36m<div[39m
+        [33mclass[39m=[32m"modal-base animate-scale-in "[39m
+      [36m>[39m
+        [36m<div[39m
+          [33mclass[39m=[32m"modal-header-base"[39m
+        [36m>[39m
+          [36m<h2[39m
+            [33mclass[39m=[32m"modal-title-base"[39m
+          [36m>[39m
+            [0m🎉 티어 승급! 🎉[0m
+          [36m</h2>[39m
+        [36m</div>[39m
+        [36m<div[39m
+          [33mclass[39m=[32m"modal-body-base"[39m
+        [36m>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"tier-upgrade-content"[39m
+          [36m>[39m
+            [36m<p[39m
+              [33mclass[39m=[32m"tier-upgrade-subtitle"[39m
+            [36m>[39m
+              [0m새로운 단계에 도달하신 것을 축하합니다![0m
+            [36m</p>[39m
+            [36m<div[39m
+              [33mclass[39m=[32m"tier-comparison"[39m
+            [36m>[39m
+              [36m<div[39m
+                [33mclass[39m=[32m"tier-before"[39m
+              [36m>[39m
+                [36m<div[39m
+                  [33mclass[39m=[32m"tier-icon-small"[39m
+                [36m>[39m
+                  [0m🏕️[0m
+                [36m</div>[39m
+                [36m<div[39m
+                  [33mclass[39m=[32m"tier-name-small"[39m
+                [36m>[39m
+                  [0mCamp 1[0m
+                [36m</div>[39m
+              [36m</div>[39m
+              [36m<div[39m
+                [33mclass[39m=[32m"tier-arrow"[39m
+              [36m>[39m
+                [0m→[0m
+              [36m</div>[39m
+              [36m<div[39m
+                [33mclass[39m=[32m"tier-after"[39m
+              [36m>[39m
+                [36m<div[39m
+                  [33mclass[39m=[32m"tier-icon-large "[39m
+                [36m>[39m
+                  [0m🏕️[0m
+                [36m</div>[39m
+                [36m<div[39m
+                  [33mclass[39m=[32m"tier-name-large"[39m
+                [36m>[39m
+                  [0mCamp 2[0m
+                [36m</div>[39m
+              [36m</div>[39m
+            [36m</div>[39m
+          [36m</div>[39m
+        [36m</div>[39m
+        [36m<div[39m
+          [33mclass[39m=[32m"modal-footer-base"[39m
+        [36m>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"tier-upgrade-actions"[39m
+          [36m>[39m
+            [36m<button[39m
+              [33mclass[39m=[32m"btn-base btn-primary tier-upgrade-button"[39m
+            [36m>[39m
+              [0m계속하기[0m
+            [36m</button>[39m
+          [36m</div>[39m
+        [36m</div>[39m
+      [36m</div>[39m
+    [36m</div>[39m
+  [36m</div>[39m
+[36m</body>[39m
+
+Ignored nodes: comments, script, style
+[36m<html>[39m
+  [36m<head />[39m
+  [36m<body>[39m
+    [36m<div>[39m
+      [36m<div[39m
+        [33mclass[39m=[32m"modal-overlay animate-fade-in "[39m
+      [36m>[39m
+        [36m<div[39m
+          [33mclass[39m=[32m"modal-base animate-scale-in "[39m
+        [36m>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"modal-header-base"[39m
+          [36m>[39m
+            [36m<h2[39m
+              [33mclass[39m=[32m"modal-title-base"[39m
+            [36m>[39m
+              [0m🎉 티어 승급! 🎉[0m
+            [36m</h2>[39m
+          [36m</div>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"modal-body-base"[39m
+          [36m>[39m
+            [36m<div[39m
+              [33mclass[39m=[32m"tier-upgrade-content"[39m
+            [36m>[39m
+              [36m<p[39m
+                [33mclass[39m=[32m"tier-upgrade-subtitle"[39m
+              [36m>[39m
+                [0m새로운 단계에 도달하신 것을 축하합니다![0m
+              [36m</p>[39m
+              [36m<div[39m
+                [33mclass[39m=[32m"tier-comparison"[39m
+              [36m>[39m
+                [36m<div[39m
+                  [33mclass[39m=[32m"tier-before"[39m
+                [36m>[39m
+                  [36m<div[39m
+                    [33mclass[39m=[32m"tier-icon-small"[39m
+                  [36m>[39m
+                    [0m🏕️[0m
+                  [36m</div>[39m
+                  [36m<div[39m
+                    [33mclass[39m=[32m"tier-name-small"[39m
+                  [36m>[39m
+                    [0mCamp 1[0m
+                  [36m</div>[39m
+                [36m</div>[39m
+                [36m<div[39m
+                  [33mclass[39m=[32m"tier-arrow"[39m
+                [36m>[39m
+                  [0m→[0m
+                [36m</div>[39m
+                [36m<div[39m
+                  [33mclass[39m=[32m"tier-after"[39m
+                [36m>[39m
+                  [36m<div[39m
+                    [33mclass[39m=[32m"tier-icon-large "[39m
+                  [36m>[39m
+                    [0m🏕️[0m
+                  [36m</div>[39m
+                  [36m<div[39m
+                    [33mclass[39m=[32m"tier-name-large"[39m
+                  [36m>[39m
+                    [0mCamp 2[0m
+                  [36m</div>[39m
+                [36m</div>[39m
+              [36m</div>[39m
+            [36m</div>[39m
+          [36m</div>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"modal-footer-base"[39m
+          [36m>[39m
+            [36m<div[39m
+              [33mclass[39m=[32m"tier-upgrade-actions"[39m
+            [36m>[39m
+              [36m<button[39m
+                [33mclass[39m=[32m"btn-base btn-primary tier-upgrade-button"[39m
+              [36m>[39m
+                [0m계속하기[0m
+              [36m</button>[39m
+            [36m</div>[39m
+          [36m</div>[39m
+        [36m</div>[39m
+      [36m</div>[39m
+    [36m</div>[39m
+  [36m</body>[39m
+[36m</html>[39m
+[90m [2m❯[22m Proxy.waitForWrapper node_modules/@testing-library/dom/dist/wait-for.js:[2m163:27[22m[39m
+[36m [2m❯[22m src/components/__tests__/TierUpgradeModal.test.tsx:[2m45:11[22m[39m
+    [90m 43| [39m    )[33m;[39m
+    [90m 44| [39m
+    [90m 45| [39m    [35mawait[39m [34mwaitFor[39m(() [33m=>[39m {
+    [90m   | [39m          [31m^[39m
+    [90m 46| [39m      [34mexpect[39m(screen[33m.[39m[34mgetByText[39m([36m/티어 업그레이드/[39m))[33m.[39m[34mtoBeInTheDocument[39m()[33m;[39m
+    [90m 47| [39m    })[33m;[39m
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/27]⎯[22m[39m
+
+[41m[1m FAIL [22m[49m src/components/__tests__/TierUpgradeModal.test.tsx[2m > [22mTierUpgradeModal[2m > [22mshould render stars celebration when stars increase
+[31m[1mTestingLibraryElementError[22m[39m: Unable to find an element with the text: /사이클 완료/. This could be because the text is broken up by multiple elements. In this case, you can provide a function for your text matcher to make your matcher more flexible.
+
+Ignored nodes: comments, script, style
+[36m<body>[39m
+  [36m<div>[39m
+    [36m<div[39m
+      [33mclass[39m=[32m"modal-overlay animate-fade-in "[39m
+    [36m>[39m
+      [36m<div[39m
+        [33mclass[39m=[32m"modal-base animate-scale-in "[39m
+      [36m>[39m
+        [36m<div[39m
+          [33mclass[39m=[32m"modal-header-base"[39m
+        [36m>[39m
+          [36m<h2[39m
+            [33mclass[39m=[32m"modal-title-base"[39m
+          [36m>[39m
+            [0m🎉 티어 승급! 🎉[0m
+          [36m</h2>[39m
+        [36m</div>[39m
+        [36m<div[39m
+          [33mclass[39m=[32m"modal-body-base"[39m
+        [36m>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"tier-upgrade-content"[39m
+          [36m>[39m
+            [36m<p[39m
+              [33mclass[39m=[32m"tier-upgrade-subtitle"[39m
+            [36m>[39m
+              [0m새로운 단계에 도달하신 것을 축하합니다![0m
+            [36m</p>[39m
+            [36m<div[39m
+              [33mclass[39m=[32m"tier-comparison"[39m
+            [36m>[39m
+              [36m<div[39m
+                [33mclass[39m=[32m"tier-before"[39m
+              [36m>[39m
+                [36m<div[39m
+                  [33mclass[39m=[32m"tier-icon-small"[39m
+                [36m>[39m
+                  [0m🏕️[0m
+                [36m</div>[39m
+                [36m<div[39m
+                  [33mclass[39m=[32m"tier-name-small"[39m
+                [36m>[39m
+                  [0mCamp 1[0m
+                [36m</div>[39m
+              [36m</div>[39m
+              [36m<div[39m
+                [33mclass[39m=[32m"tier-arrow"[39m
+              [36m>[39m
+                [0m→[0m
+              [36m</div>[39m
+              [36m<div[39m
+                [33mclass[39m=[32m"tier-after"[39m
+              [36m>[39m
+                [36m<div[39m
+                  [33mclass[39m=[32m"tier-icon-large stars-animation"[39m
+                [36m>[39m
+                  [0m🏕️[0m
+                [36m</div>[39m
+                [36m<div[39m
+                  [33mclass[39m=[32m"tier-name-large"[39m
+                [36m>[39m
+                  [0mCamp 1[0m
+                  [36m<span[39m
+                    [33mclass[39m=[32m"tier-stars-large"[39m
+                  [36m>[39m
+                    [0m★[0m
+                  [36m</span>[39m
+                [36m</div>[39m
+              [36m</div>[39m
+            [36m</div>[39m
+            [36m<div[39m
+              [33mclass[39m=[32m"stars-celebration"[39m
+            [36m>[39m
+              [36m<div[39m
+                [33mclass[39m=[32m"stars-display"[39m
+              [36m>[39m
+                [0m★[0m
+              [36m</div>[39m
+              [36m<p>[39m
+                [0m새로운 사이클이 시작됩니다![0m
+              [36m</p>[39m
+            [36m</div>[39m
+          [36m</div>[39m
+        [36m</div>[39m
+        [36m<div[39m
+          [33mclass[39m=[32m"modal-footer-base"[39m
+        [36m>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"tier-upgrade-actions"[39m
+          [36m>[39m
+            [36m<button[39m
+              [33mclass[39m=[32m"btn-base btn-primary tier-upgrade-button"[39m
+            [36m>[39m
+              [0m계속하기[0m
+            [36m</button>[39m
+          [36m</div>[39m
+        [36m</div>[39m
+      [36m</div>[39m
+    [36m</div>[39m
+  [36m</div>[39m
+[36m</body>[39m
+
+Ignored nodes: comments, script, style
+[36m<html>[39m
+  [36m<head />[39m
+  [36m<body>[39m
+    [36m<div>[39m
+      [36m<div[39m
+        [33mclass[39m=[32m"modal-overlay animate-fade-in "[39m
+      [36m>[39m
+        [36m<div[39m
+          [33mclass[39m=[32m"modal-base animate-scale-in "[39m
+        [36m>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"modal-header-base"[39m
+          [36m>[39m
+            [36m<h2[39m
+              [33mclass[39m=[32m"modal-title-base"[39m
+            [36m>[39m
+              [0m🎉 티어 승급! 🎉[0m
+            [36m</h2>[39m
+          [36m</div>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"modal-body-base"[39m
+          [36m>[39m
+            [36m<div[39m
+              [33mclass[39m=[32m"tier-upgrade-content"[39m
+            [36m>[39m
+              [36m<p[39m
+                [33mclass[39m=[32m"tier-upgrade-subtitle"[39m
+              [36m>[39m
+                [0m새로운 단계에 도달하신 것을 축하합니다![0m
+              [36m</p>[39m
+              [36m<div[39m
+                [33mclass[39m=[32m"tier-comparison"[39m
+              [36m>[39m
+                [36m<div[39m
+                  [33mclass[39m=[32m"tier-before"[39m
+                [36m>[39m
+                  [36m<div[39m
+                    [33mclass[39m=[32m"tier-icon-small"[39m
+                  [36m>[39m
+                    [0m🏕️[0m
+                  [36m</div>[39m
+                  [36m<div[39m
+                    [33mclass[39m=[32m"tier-name-small"[39m
+                  [36m>[39m
+                    [0mCamp 1[0m
+                  [36m</div>[39m
+                [36m</div>[39m
+                [36m<div[39m
+                  [33mclass[39m=[32m"tier-arrow"[39m
+                [36m>[39m
+                  [0m→[0m
+                [36m</div>[39m
+                [36m<div[39m
+                  [33mclass[39m=[32m"tier-after"[39m
+                [36m>[39m
+                  [36m<div[39m
+                    [33mclass[39m=[32m"tier-icon-large stars-animation"[39m
+                  [36m>[39m
+                    [0m🏕️[0m
+                  [36m</div>[39m
+                  [36m<div[39m
+                    [33mclass[39m=[32m"tier-name-large"[39m
+                  [36m>[39m
+                    [0mCamp 1[0m
+                    [36m<span[39m
+                      [33mclass[39m=[32m"tier-stars-large"[39m
+                    [36m>[39m
+                      [0m★[0m
+                    [36m</span>[39m
+                  [36m</div>[39m
+                [36m</div>[39m
+              [36m</div>[39m
+              [36m<div[39m
+                [33mclass[39m=[32m"stars-celebration"[39m
+              [36m>[39m
+                [36m<div[39m
+                  [33mclass[39m=[32m"stars-display"[39m
+                [36m>[39m
+                  [0m★[0m
+                [36m</div>[39m
+                [36m<p>[39m
+                  [0m새로운 사이클이 시작됩니다![0m
+                [36m</p>[39m
+              [36m</div>[39m
+            [36m</div>[39m
+          [36m</div>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"modal-footer-base"[39m
+          [36m>[39m
+            [36m<div[39m
+              [33mclass[39m=[32m"tier-upgrade-actions"[39m
+            [36m>[39m
+              [36m<button[39m
+                [33mclass[39m=[32m"btn-base btn-primary tier-upgrade-button"[39m
+              [36m>[39m
+                [0m계속하기[0m
+              [36m</button>[39m
+            [36m</div>[39m
+          [36m</div>[39m
+        [36m</div>[39m
+      [36m</div>[39m
+    [36m</div>[39m
+  [36m</body>[39m
+[36m</html>[39m
+[90m [2m❯[22m Proxy.waitForWrapper node_modules/@testing-library/dom/dist/wait-for.js:[2m163:27[22m[39m
+[36m [2m❯[22m src/components/__tests__/TierUpgradeModal.test.tsx:[2m70:11[22m[39m
+    [90m 68| [39m    )[33m;[39m
+    [90m 69| [39m
+    [90m 70| [39m    [35mawait[39m [34mwaitFor[39m(() [33m=>[39m {
+    [90m   | [39m          [31m^[39m
+    [90m 71| [39m      [34mexpect[39m(screen[33m.[39m[34mgetByText[39m([36m/사이클 완료/[39m))[33m.[39m[34mtoBeInTheDocument[39m()[33m;[39m
+    [90m 72| [39m    })[33m;[39m
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/27]⎯[22m[39m
+
+[41m[1m FAIL [22m[49m src/components/__tests__/TierUpgradeModal.test.tsx[2m > [22mTierUpgradeModal[2m > [22mshould call onClose when close button is clicked
+[31m[1mTestingLibraryElementError[22m[39m: Unable to find an element with the text: 확인. This could be because the text is broken up by multiple elements. In this case, you can provide a function for your text matcher to make your matcher more flexible.
+
+Ignored nodes: comments, script, style
+[36m<body>[39m
+  [36m<div>[39m
+    [36m<div[39m
+      [33mclass[39m=[32m"modal-overlay animate-fade-in "[39m
+    [36m>[39m
+      [36m<div[39m
+        [33mclass[39m=[32m"modal-base animate-scale-in "[39m
+      [36m>[39m
+        [36m<div[39m
+          [33mclass[39m=[32m"modal-header-base"[39m
+        [36m>[39m
+          [36m<h2[39m
+            [33mclass[39m=[32m"modal-title-base"[39m
+          [36m>[39m
+            [0m🎉 티어 승급! 🎉[0m
+          [36m</h2>[39m
+        [36m</div>[39m
+        [36m<div[39m
+          [33mclass[39m=[32m"modal-body-base"[39m
+        [36m>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"tier-upgrade-content"[39m
+          [36m>[39m
+            [36m<p[39m
+              [33mclass[39m=[32m"tier-upgrade-subtitle"[39m
+            [36m>[39m
+              [0m새로운 단계에 도달하신 것을 축하합니다![0m
+            [36m</p>[39m
+            [36m<div[39m
+              [33mclass[39m=[32m"tier-comparison"[39m
+            [36m>[39m
+              [36m<div[39m
+                [33mclass[39m=[32m"tier-before"[39m
+              [36m>[39m
+                [36m<div[39m
+                  [33mclass[39m=[32m"tier-icon-small"[39m
+                [36m>[39m
+                  [0m🏕️[0m
+                [36m</div>[39m
+                [36m<div[39m
+                  [33mclass[39m=[32m"tier-name-small"[39m
+                [36m>[39m
+                  [0mCamp 1[0m
+                [36m</div>[39m
+              [36m</div>[39m
+              [36m<div[39m
+                [33mclass[39m=[32m"tier-arrow"[39m
+              [36m>[39m
+                [0m→[0m
+              [36m</div>[39m
+              [36m<div[39m
+                [33mclass[39m=[32m"tier-after"[39m
+              [36m>[39m
+                [36m<div[39m
+                  [33mclass[39m=[32m"tier-icon-large "[39m
+                [36m>[39m
+                  [0m🏕️[0m
+                [36m</div>[39m
+                [36m<div[39m
+                  [33mclass[39m=[32m"tier-name-large"[39m
+                [36m>[39m
+                  [0mCamp 2[0m
+                [36m</div>[39m
+              [36m</div>[39m
+            [36m</div>[39m
+          [36m</div>[39m
+        [36m</div>[39m
+        [36m<div[39m
+          [33mclass[39m=[32m"modal-footer-base"[39m
+        [36m>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"tier-upgrade-actions"[39m
+          [36m>[39m
+            [36m<button[39m
+              [33mclass[39m=[32m"btn-base btn-primary tier-upgrade-button"[39m
+            [36m>[39m
+              [0m계속하기[0m
+            [36m</button>[39m
+          [36m</div>[39m
+        [36m</div>[39m
+      [36m</div>[39m
+    [36m</div>[39m
+  [36m</div>[39m
+[36m</body>[39m
+
+Ignored nodes: comments, script, style
+[36m<html>[39m
+  [36m<head />[39m
+  [36m<body>[39m
+    [36m<div>[39m
+      [36m<div[39m
+        [33mclass[39m=[32m"modal-overlay animate-fade-in "[39m
+      [36m>[39m
+        [36m<div[39m
+          [33mclass[39m=[32m"modal-base animate-scale-in "[39m
+        [36m>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"modal-header-base"[39m
+          [36m>[39m
+            [36m<h2[39m
+              [33mclass[39m=[32m"modal-title-base"[39m
+            [36m>[39m
+              [0m🎉 티어 승급! 🎉[0m
+            [36m</h2>[39m
+          [36m</div>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"modal-body-base"[39m
+          [36m>[39m
+            [36m<div[39m
+              [33mclass[39m=[32m"tier-upgrade-content"[39m
+            [36m>[39m
+              [36m<p[39m
+                [33mclass[39m=[32m"tier-upgrade-subtitle"[39m
+              [36m>[39m
+                [0m새로운 단계에 도달하신 것을 축하합니다![0m
+              [36m</p>[39m
+              [36m<div[39m
+                [33mclass[39m=[32m"tier-comparison"[39m
+              [36m>[39m
+                [36m<div[39m
+                  [33mclass[39m=[32m"tier-before"[39m
+                [36m>[39m
+                  [36m<div[39m
+                    [33mclass[39m=[32m"tier-icon-small"[39m
+                  [36m>[39m
+                    [0m🏕️[0m
+                  [36m</div>[39m
+                  [36m<div[39m
+                    [33mclass[39m=[32m"tier-name-small"[39m
+                  [36m>[39m
+                    [0mCamp 1[0m
+                  [36m</div>[39m
+                [36m</div>[39m
+                [36m<div[39m
+                  [33mclass[39m=[32m"tier-arrow"[39m
+                [36m>[39m
+                  [0m→[0m
+                [36m</div>[39m
+                [36m<div[39m
+                  [33mclass[39m=[32m"tier-after"[39m
+                [36m>[39m
+                  [36m<div[39m
+                    [33mclass[39m=[32m"tier-icon-large "[39m
+                  [36m>[39m
+                    [0m🏕️[0m
+                  [36m</div>[39m
+                  [36m<div[39m
+                    [33mclass[39m=[32m"tier-name-large"[39m
+                  [36m>[39m
+                    [0mCamp 2[0m
+                  [36m</div>[39m
+                [36m</div>[39m
+              [36m</div>[39m
+            [36m</div>[39m
+          [36m</div>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"modal-footer-base"[39m
+          [36m>[39m
+            [36m<div[39m
+              [33mclass[39m=[32m"tier-upgrade-actions"[39m
+            [36m>[39m
+              [36m<button[39m
+                [33mclass[39m=[32m"btn-base btn-primary tier-upgrade-button"[39m
+              [36m>[39m
+                [0m계속하기[0m
+              [36m</button>[39m
+            [36m</div>[39m
+          [36m</div>[39m
+        [36m</div>[39m
+      [36m</div>[39m
+    [36m</div>[39m
+  [36m</body>[39m
+[36m</html>[39m
+[90m [2m❯[22m Proxy.waitForWrapper node_modules/@testing-library/dom/dist/wait-for.js:[2m163:27[22m[39m
+[36m [2m❯[22m src/components/__tests__/TierUpgradeModal.test.tsx:[2m121:11[22m[39m
+    [90m119| [39m    )[33m;[39m
+    [90m120| [39m
+    [90m121| [39m    [35mawait[39m [34mwaitFor[39m(() [33m=>[39m {
+    [90m   | [39m          [31m^[39m
+    [90m122| [39m      [35mconst[39m closeButton [33m=[39m screen[33m.[39m[34mgetByText[39m([32m'확인'[39m)[33m;[39m
+    [90m123| [39m      closeButton[33m.[39m[34mclick[39m()[33m;[39m
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/27]⎯[22m[39m
+
+[41m[1m FAIL [22m[49m src/components/__tests__/TierUpgradeModal.test.tsx[2m > [22mTierUpgradeModal[2m > [22mshould display stars celebration when stars are added
+[31m[1mTestingLibraryElementError[22m[39m: Unable to find an element with the text: /사이클 완료/. This could be because the text is broken up by multiple elements. In this case, you can provide a function for your text matcher to make your matcher more flexible.
+
+Ignored nodes: comments, script, style
+[36m<body>[39m
+  [36m<div>[39m
+    [36m<div[39m
+      [33mclass[39m=[32m"modal-overlay animate-fade-in "[39m
+    [36m>[39m
+      [36m<div[39m
+        [33mclass[39m=[32m"modal-base animate-scale-in "[39m
+      [36m>[39m
+        [36m<div[39m
+          [33mclass[39m=[32m"modal-header-base"[39m
+        [36m>[39m
+          [36m<h2[39m
+            [33mclass[39m=[32m"modal-title-base"[39m
+          [36m>[39m
+            [0m🎉 티어 승급! 🎉[0m
+          [36m</h2>[39m
+        [36m</div>[39m
+        [36m<div[39m
+          [33mclass[39m=[32m"modal-body-base"[39m
+        [36m>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"tier-upgrade-content"[39m
+          [36m>[39m
+            [36m<p[39m
+              [33mclass[39m=[32m"tier-upgrade-subtitle"[39m
+            [36m>[39m
+              [0m새로운 단계에 도달하신 것을 축하합니다![0m
+            [36m</p>[39m
+            [36m<div[39m
+              [33mclass[39m=[32m"tier-comparison"[39m
+            [36m>[39m
+              [36m<div[39m
+                [33mclass[39m=[32m"tier-before"[39m
+              [36m>[39m
+                [36m<div[39m
+                  [33mclass[39m=[32m"tier-icon-small"[39m
+                [36m>[39m
+                  [0m🏕️[0m
+                [36m</div>[39m
+                [36m<div[39m
+                  [33mclass[39m=[32m"tier-name-small"[39m
+                [36m>[39m
+                  [0mCamp 1[0m
+                [36m</div>[39m
+              [36m</div>[39m
+              [36m<div[39m
+                [33mclass[39m=[32m"tier-arrow"[39m
+              [36m>[39m
+                [0m→[0m
+              [36m</div>[39m
+              [36m<div[39m
+                [33mclass[39m=[32m"tier-after"[39m
+              [36m>[39m
+                [36m<div[39m
+                  [33mclass[39m=[32m"tier-icon-large stars-animation"[39m
+                [36m>[39m
+                  [0m🏕️[0m
+                [36m</div>[39m
+                [36m<div[39m
+                  [33mclass[39m=[32m"tier-name-large"[39m
+                [36m>[39m
+                  [0mCamp 1[0m
+                  [36m<span[39m
+                    [33mclass[39m=[32m"tier-stars-large"[39m
+                  [36m>[39m
+                    [0m★★★[0m
+                  [36m</span>[39m
+                [36m</div>[39m
+              [36m</div>[39m
+            [36m</div>[39m
+            [36m<div[39m
+              [33mclass[39m=[32m"stars-celebration"[39m
+            [36m>[39m
+              [36m<div[39m
+                [33mclass[39m=[32m"stars-display"[39m
+              [36m>[39m
+                [0m★★★[0m
+              [36m</div>[39m
+              [36m<p>[39m
+                [0m새로운 사이클이 시작됩니다![0m
+              [36m</p>[39m
+            [36m</div>[39m
+          [36m</div>[39m
+        [36m</div>[39m
+        [36m<div[39m
+          [33mclass[39m=[32m"modal-footer-base"[39m
+        [36m>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"tier-upgrade-actions"[39m
+          [36m>[39m
+            [36m<button[39m
+              [33mclass[39m=[32m"btn-base btn-primary tier-upgrade-button"[39m
+            [36m>[39m
+              [0m계속하기[0m
+            [36m</button>[39m
+          [36m</div>[39m
+        [36m</div>[39m
+      [36m</div>[39m
+    [36m</div>[39m
+  [36m</div>[39m
+[36m</body>[39m
+
+Ignored nodes: comments, script, style
+[36m<html>[39m
+  [36m<head />[39m
+  [36m<body>[39m
+    [36m<div>[39m
+      [36m<div[39m
+        [33mclass[39m=[32m"modal-overlay animate-fade-in "[39m
+      [36m>[39m
+        [36m<div[39m
+          [33mclass[39m=[32m"modal-base animate-scale-in "[39m
+        [36m>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"modal-header-base"[39m
+          [36m>[39m
+            [36m<h2[39m
+              [33mclass[39m=[32m"modal-title-base"[39m
+            [36m>[39m
+              [0m🎉 티어 승급! 🎉[0m
+            [36m</h2>[39m
+          [36m</div>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"modal-body-base"[39m
+          [36m>[39m
+            [36m<div[39m
+              [33mclass[39m=[32m"tier-upgrade-content"[39m
+            [36m>[39m
+              [36m<p[39m
+                [33mclass[39m=[32m"tier-upgrade-subtitle"[39m
+              [36m>[39m
+                [0m새로운 단계에 도달하신 것을 축하합니다![0m
+              [36m</p>[39m
+              [36m<div[39m
+                [33mclass[39m=[32m"tier-comparison"[39m
+              [36m>[39m
+                [36m<div[39m
+                  [33mclass[39m=[32m"tier-before"[39m
+                [36m>[39m
+                  [36m<div[39m
+                    [33mclass[39m=[32m"tier-icon-small"[39m
+                  [36m>[39m
+                    [0m🏕️[0m
+                  [36m</div>[39m
+                  [36m<div[39m
+                    [33mclass[39m=[32m"tier-name-small"[39m
+                  [36m>[39m
+                    [0mCamp 1[0m
+                  [36m</div>[39m
+                [36m</div>[39m
+                [36m<div[39m
+                  [33mclass[39m=[32m"tier-arrow"[39m
+                [36m>[39m
+                  [0m→[0m
+                [36m</div>[39m
+                [36m<div[39m
+                  [33mclass[39m=[32m"tier-after"[39m
+                [36m>[39m
+                  [36m<div[39m
+                    [33mclass[39m=[32m"tier-icon-large stars-animation"[39m
+                  [36m>[39m
+                    [0m🏕️[0m
+                  [36m</div>[39m
+                  [36m<div[39m
+                    [33mclass[39m=[32m"tier-name-large"[39m
+                  [36m>[39m
+                    [0mCamp 1[0m
+                    [36m<span[39m
+                      [33mclass[39m=[32m"tier-stars-large"[39m
+                    [36m>[39m
+                      [0m★★★[0m
+                    [36m</span>[39m
+                  [36m</div>[39m
+                [36m</div>[39m
+              [36m</div>[39m
+              [36m<div[39m
+                [33mclass[39m=[32m"stars-celebration"[39m
+              [36m>[39m
+                [36m<div[39m
+                  [33mclass[39m=[32m"stars-display"[39m
+                [36m>[39m
+                  [0m★★★[0m
+                [36m</div>[39m
+                [36m<p>[39m
+                  [0m새로운 사이클이 시작됩니다![0m
+                [36m</p>[39m
+              [36m</div>[39m
+            [36m</div>[39m
+          [36m</div>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"modal-footer-base"[39m
+          [36m>[39m
+            [36m<div[39m
+              [33mclass[39m=[32m"tier-upgrade-actions"[39m
+            [36m>[39m
+              [36m<button[39m
+                [33mclass[39m=[32m"btn-base btn-primary tier-upgrade-button"[39m
+              [36m>[39m
+                [0m계속하기[0m
+              [36m</button>[39m
+            [36m</div>[39m
+          [36m</div>[39m
+        [36m</div>[39m
+      [36m</div>[39m
+    [36m</div>[39m
+  [36m</body>[39m
+[36m</html>[39m
+[90m [2m❯[22m Proxy.waitForWrapper node_modules/@testing-library/dom/dist/wait-for.js:[2m163:27[22m[39m
+[36m [2m❯[22m src/components/__tests__/TierUpgradeModal.test.tsx:[2m259:11[22m[39m
+    [90m257| [39m    )[33m;[39m
+    [90m258| [39m
+    [90m259| [39m    [35mawait[39m [34mwaitFor[39m(() [33m=>[39m {
+    [90m   | [39m          [31m^[39m
+    [90m260| [39m      [34mexpect[39m(screen[33m.[39m[34mgetByText[39m([36m/사이클 완료/[39m))[33m.[39m[34mtoBeInTheDocument[39m()[33m;[39m
+    [90m261| [39m      [34mexpect[39m(screen[33m.[39m[34mgetByText[39m([36m/새로운 사이클이 시작됩니다/[39m))[33m.[39m[34mtoBeInTheDocument[39m()[33m;[39m
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/27]⎯[22m[39m
+
+[41m[1m FAIL [22m[49m src/hooks/__tests__/useQuestionGenerator.test.ts[2m > [22museQuestionGenerator[2m > [22mshould generate arithmetic problem when subParam is arithmetic
+[31m[1mAssertionError[22m: expected "vi.fn()" to be called with arguments: [ 'World1', '기초', 1, 'easy' ][90m
+
+Received: 
+
+[1m  1st vi.fn() call:
+
+[22m[2m  [[22m
+[31m+   "math",[90m
+[2m    "World1",[22m
+[32m-   "기초",[90m
+[31m+   "World1-기초",[90m
+[2m    1,[22m
+[2m    "easy",[22m
+[2m  ][22m
+[31m[90m
+
+Number of calls: [1m1[22m
+[31m[39m
+[36m [2m❯[22m src/hooks/__tests__/useQuestionGenerator.test.ts:[2m129:30[22m[39m
+    [90m127| [39m    // So this test expectation `expect(generateProblem).toHaveBeenCal…
+    [90m128| [39m    [90m// We should check if generateQuestion called with correct args.[39m
+    [90m129| [39m    expect(generateQuestion).toHaveBeenCalledWith('World1', '기초', 1, '…
+    [90m   | [39m                             [31m^[39m
+    [90m130| [39m  })[33m;[39m
+    [90m131| [39m
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[5/27]⎯[22m[39m
+
+[41m[1m FAIL [22m[49m src/hooks/__tests__/useQuestionGenerator.test.ts[2m > [22museQuestionGenerator[2m > [22mshould generate equation when subParam is equations
+[31m[1mAssertionError[22m: expected "vi.fn()" to be called with arguments: [ 'World1', '대수', 1, 'easy' ][90m
+
+Received: 
+
+[1m  1st vi.fn() call:
+
+[22m[2m  [[22m
+[31m+   "math",[90m
+[2m    "World1",[22m
+[32m-   "대수",[90m
+[31m+   "World1-대수",[90m
+[2m    1,[22m
+[2m    "easy",[22m
+[2m  ][22m
+[31m[90m
+
+Number of calls: [1m1[22m
+[31m[39m
+[36m [2m❯[22m src/hooks/__tests__/useQuestionGenerator.test.ts:[2m156:30[22m[39m
+    [90m154| [39m    })[33m;[39m
+    [90m155| [39m
+    [90m156| [39m    expect(generateQuestion).toHaveBeenCalledWith('World1', '대수', 1, '…
+    [90m   | [39m                             [31m^[39m
+    [90m157| [39m  })[33m;[39m
+    [90m158| [39m
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[6/27]⎯[22m[39m
+
+[41m[1m FAIL [22m[49m src/hooks/__tests__/useQuestionGenerator.test.ts[2m > [22museQuestionGenerator[2m > [22mshould handle equations subParam without levelParam
+[31m[1mAssertionError[22m: expected "vi.fn()" to be called with arguments: [ 'World1', '대수', 1, 'easy' ][90m
+
+Received: 
+
+[1m  1st vi.fn() call:
+
+[22m[2m  [[22m
+[31m+   "math",[90m
+[2m    "World1",[22m
+[32m-   "대수",[90m
+[31m+   "World1-대수",[90m
+[2m    1,[22m
+[2m    "easy",[22m
+[2m  ][22m
+[31m[90m
+
+Number of calls: [1m1[22m
+[31m[39m
+[36m [2m❯[22m src/hooks/__tests__/useQuestionGenerator.test.ts:[2m236:30[22m[39m
+    [90m234| [39m    })[33m;[39m
+    [90m235| [39m
+    [90m236| [39m    expect(generateQuestion).toHaveBeenCalledWith('World1', '대수', 1, '…
+    [90m   | [39m                             [31m^[39m
+    [90m237| [39m  })[33m;[39m
+    [90m238| [39m
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[7/27]⎯[22m[39m
+
+[41m[1m FAIL [22m[49m src/hooks/__tests__/useQuestionGenerator.test.ts[2m > [22museQuestionGenerator[2m > [22mshould handle calculus subParam
+[31m[1mAssertionError[22m: expected "vi.fn()" to be called with arguments: [ 'World1', '심화', 1, 'easy' ][90m
+
+Received: 
+
+[1m  1st vi.fn() call:
+
+[22m[2m  [[22m
+[31m+   "math",[90m
+[2m    "World1",[22m
+[32m-   "심화",[90m
+[31m+   "World1-심화",[90m
+[2m    1,[22m
+[2m    "easy",[22m
+[2m  ][22m
+[31m[90m
+
+Number of calls: [1m1[22m
+[31m[39m
+[36m [2m❯[22m src/hooks/__tests__/useQuestionGenerator.test.ts:[2m263:30[22m[39m
+    [90m261| [39m    })[33m;[39m
+    [90m262| [39m
+    [90m263| [39m    expect(generateQuestion).toHaveBeenCalledWith('World1', '심화', 1, '…
+    [90m   | [39m                             [31m^[39m
+    [90m264| [39m  })[33m;[39m
+    [90m265| [39m
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[8/27]⎯[22m[39m
+
+[41m[1m FAIL [22m[49m src/hooks/__tests__/useQuestionGenerator.test.ts[2m > [22museQuestionGenerator[2m > [22mshould handle arithmetic with different levels
+[31m[1mAssertionError[22m: expected "vi.fn()" to be called with arguments: [ 'World1', '기초', 1, 'easy' ][90m
+
+Received: 
+
+[1m  1st vi.fn() call:
+
+[22m[2m  [[22m
+[31m+   "math",[90m
+[2m    "World1",[22m
+[32m-   "기초",[90m
+[31m+   "World1-기초",[90m
+[2m    1,[22m
+[2m    "easy",[22m
+[2m  ][22m
+[31m[90m
+
+Number of calls: [1m1[22m
+[31m[39m
+[36m [2m❯[22m src/hooks/__tests__/useQuestionGenerator.test.ts:[2m362:32[22m[39m
+    [90m360| [39m      })[33m;[39m
+    [90m361| [39m
+    [90m362| [39m      expect(generateQuestion).toHaveBeenCalledWith('World1', '기초', le…
+    [90m   | [39m                               [31m^[39m
+    [90m363| [39m    }
+    [90m364| [39m  })[33m;[39m
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[9/27]⎯[22m[39m
+
+[41m[1m FAIL [22m[49m src/hooks/__tests__/useQuestionGenerator.test.ts[2m > [22museQuestionGenerator[2m > [22mshould handle other subParams
+[31m[1mAssertionError[22m: expected "vi.fn()" to be called with arguments: [ 'World1', '기초', 1, 'easy' ][90m
+
+Received: 
+
+[1m  1st vi.fn() call:
+
+[22m[2m  [[22m
+[31m+   "math",[90m
+[2m    "World1",[22m
+[32m-   "기초",[90m
+[31m+   "World1-기초",[90m
+[2m    1,[22m
+[2m    "easy",[22m
+[2m  ][22m
+[31m[90m
+
+Number of calls: [1m1[22m
+[31m[39m
+[36m [2m❯[22m src/hooks/__tests__/useQuestionGenerator.test.ts:[2m390:30[22m[39m
+    [90m388| [39m    })[33m;[39m
+    [90m389| [39m
+    [90m390| [39m    expect(generateQuestion).toHaveBeenCalledWith('World1', '기초', 1, '…
+    [90m   | [39m                             [31m^[39m
+    [90m391| [39m  })[33m;[39m
+    [90m392| [39m})[33m;[39m
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[10/27]⎯[22m[39m
+
+[41m[1m FAIL [22m[49m src/utils/__tests__/EquationProblemGenerator.test.ts[2m > [22mEquationProblemGenerator[2m > [22mgenerateEquation[2m > [22mshould throw error for invalid stage
+[31m[1mAssertionError[22m: expected [Function] to throw an error[39m
+
+[32m- Expected:[39m 
+null
+
+[31m+ Received:[39m 
+undefined
+
+[36m [2m❯[22m src/utils/__tests__/EquationProblemGenerator.test.ts:[2m86:43[22m[39m
+    [90m 84| [39m
+    [90m 85| [39m    [34mit[39m([32m'should throw error for invalid stage'[39m[33m,[39m () [33m=>[39m {
+    [90m 86| [39m      expect(() => generateEquation(999)).toThrow('Stage 999 not found…
+    [90m   | [39m                                          [31m^[39m
+    [90m 87| [39m    })[33m;[39m
+    [90m 88| [39m
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[11/27]⎯[22m[39m
+
+[41m[1m FAIL [22m[49m src/utils/__tests__/EquationProblemGenerator.test.ts[2m > [22mEquationProblemGenerator[2m > [22mEquationProblemGenerator class[2m > [22mshould handle error case: invalid stage level throws error
+[31m[1mAssertionError[22m: expected [Function] to throw an error[39m
+
+[32m- Expected:[39m 
+null
+
+[31m+ Received:[39m 
+undefined
+
+[36m [2m❯[22m src/utils/__tests__/EquationProblemGenerator.test.ts:[2m210:41[22m[39m
+    [90m208| [39m
+    [90m209| [39m    it('should handle error case: invalid stage level throws error', (…
+    [90m210| [39m      [34mexpect[39m(() [33m=>[39m [34mgenerateEquation[39m([34m0[39m))[33m.[39m[34mtoThrow[39m([32m'Stage 0 not found'[39m)[33m;[39m
+    [90m   | [39m                                        [31m^[39m
+    [90m211| [39m      [34mexpect[39m(() [33m=>[39m [34mgenerateEquation[39m([33m-[39m[34m1[39m))[33m.[39m[34mtoThrow[39m([32m'Stage -1 not found'[39m)[33m;[39m
+    [90m212| [39m      [34mexpect[39m(() [33m=>[39m [34mgenerateEquation[39m([34m21[39m))[33m.[39m[34mtoThrow[39m([32m'Stage 21 not found'[39m)[33m;[39m
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[12/27]⎯[22m[39m
+
+[41m[1m FAIL [22m[49m src/utils/__tests__/quizGenerator.test.ts[2m > [22mquizGenerator Unit Tests[2m > [22mgenerateQuestion (Main Entry)[2m > [22mshould route to correct worlds
+[31m[1mError[22m: Stage easy not found[39m
+[36m [2m❯[22m generateProblem src/utils/MathProblemGenerator.ts:[2m512:11[22m[39m
+    [90m510| [39m  [35mconst[39m stage [33m=[39m [33mSTAGES[39m[33m.[39m[34mfind[39m((s) [33m=>[39m s[33m.[39mid [33m===[39m stageId)[33m;[39m
+    [90m511| [39m  [35mif[39m ([33m![39mstage) {
+    [90m512| [39m    [35mthrow[39m [35mnew[39m [33mError[39m([32m`Stage [39m[36m${[39mstageId[36m}[39m[32m not found`[39m)[33m;[39m
+    [90m   | [39m          [31m^[39m
+    [90m513| [39m  }
+    [90m514| [39m
+[90m [2m❯[22m Module.generateQuestion src/utils/quizGenerator.ts:[2m105:15[22m[39m
+[90m [2m❯[22m src/utils/__tests__/quizGenerator.test.ts:[2m33:14[22m[39m
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[13/27]⎯[22m[39m
+
+[41m[1m FAIL [22m[49m src/utils/__tests__/quizGenerator.test.ts[2m > [22mquizGenerator Unit Tests[2m > [22mgenerateWorld1Question (Arithmetic & Algebra)[2m > [22mshould handle all categories
+[31m[1mAssertionError[22m: expected '5 + 5' to match /□|x/[39m
+
+[32m- Expected:[39m 
+/□|x/
+
+[31m+ Received:[39m 
+"5 + 5"
+
+[36m [2m❯[22m src/utils/__tests__/quizGenerator.test.ts:[2m44:64[22m[39m
+    [90m 42| [39m    [34mit[39m([32m'should handle all categories'[39m[33m,[39m () [33m=>[39m {
+    [90m 43| [39m      expect(generateWorld1Question('기초', 1, 'easy').question).toBeDef…
+    [90m 44| [39m      expect(generateWorld1Question('대수', 1, 'easy').question).toMatch…
+    [90m   | [39m                                                               [31m^[39m
+    [90m 45| [39m      expect(generateWorld1Question('논리', 1, 'easy').question).toBeDef…
+    [90m 46| [39m      expect(generateWorld1Question('심화', 1, 'easy').question).toBeDef…
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[14/27]⎯[22m[39m
+
+[41m[1m FAIL [22m[49m src/utils/__tests__/quizGenerator.test.ts[2m > [22mquizGenerator Unit Tests[2m > [22mgenerateWorld1Question (Arithmetic & Algebra)[2m > [22mshould catch errors and fallback
+[31m[1mError[22m: fail[39m
+[36m [2m❯[22m src/utils/__tests__/quizGenerator.test.ts:[2m52:15[22m[39m
+    [90m 50| [39m    [34mit[39m([32m'should catch errors and fallback'[39m[33m,[39m () [33m=>[39m {
+    [90m 51| [39m      vi.spyOn(MathProblemGenerator, 'generateProblem').mockImplementa…
+    [90m 52| [39m        [35mthrow[39m [35mnew[39m [33mError[39m([32m'fail'[39m)[33m;[39m
+    [90m   | [39m              [31m^[39m
+    [90m 53| [39m      })[33m;[39m
+    [90m 54| [39m      vi.spyOn(EquationProblemGenerator, 'generateEquation').mockImple…
+[90m [2m❯[22m generateQuestion src/utils/quizGenerator.ts:[2m26:17[22m[39m
+[90m [2m❯[22m Module.generateWorld1Question src/utils/quizGenerator.ts:[2m117:10[22m[39m
+[90m [2m❯[22m src/utils/__tests__/quizGenerator.test.ts:[2m64:14[22m[39m
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[15/27]⎯[22m[39m
+
+[41m[1m FAIL [22m[49m src/utils/__tests__/quizGenerator.test.ts[2m > [22mquizGenerator Unit Tests[2m > [22mgenerateWorld2Question (Geometry)[2m > [22mshould handle categories and symmetry levels
+[31m[1mAssertionError[22m: expected '원(Circle)의 대칭축은 몇 개인가? (999: 무수히 많음)' to contain '정사각형'[39m
+
+Expected: [32m"정사각형"[39m
+Received: [31m"원(Circle)의 대칭축은 몇 개인가? (999: 무수히 많음)"[39m
+
+[36m [2m❯[22m src/utils/__tests__/quizGenerator.test.ts:[2m74:64[22m[39m
+    [90m 72| [39m    [34mit[39m([32m'should handle categories and symmetry levels'[39m[33m,[39m () [33m=>[39m {
+    [90m 73| [39m      expect(generateWorld2Question('기초', 1, 'easy').question).toBeDef…
+    [90m 74| [39m      expect(generateWorld2Question('논리', 9, 'easy').question).toConta…
+    [90m   | [39m                                                               [31m^[39m
+    [90m 75| [39m      expect(generateWorld2Question('논리', 10, 'easy').question).toCont…
+    [90m 76| [39m      expect(generateWorld2Question('논리', 1, 'easy').question).toBeTru…
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[16/27]⎯[22m[39m
+
+[41m[1m FAIL [22m[49m src/utils/__tests__/quizGenerator.test.ts[2m > [22mquizGenerator Unit Tests[2m > [22mgenerateWorld2Question (Geometry)[2m > [22mshould handle fallback in World 2 기초
+[31m[1mError[22m: fail[39m
+[36m [2m❯[22m src/utils/__tests__/quizGenerator.test.ts:[2m82:15[22m[39m
+    [90m 80| [39m    [34mit[39m([32m'should handle fallback in World 2 기초'[39m[33m,[39m () [33m=>[39m {
+    [90m 81| [39m      vi.spyOn(GeometryProblemGenerator, 'generateGeometryProblem').mo…
+    [90m 82| [39m        [35mthrow[39m [35mnew[39m [33mError[39m([32m'fail'[39m)[33m;[39m
+    [90m   | [39m              [31m^[39m
+    [90m 83| [39m      })[33m;[39m
+    [90m 84| [39m      expect(generateWorld2Question('기초', 1, 'easy').question).toBeTru…
+[90m [2m❯[22m generateQuestion src/utils/quizGenerator.ts:[2m45:17[22m[39m
+[90m [2m❯[22m Module.generateWorld2Question src/utils/quizGenerator.ts:[2m120:10[22m[39m
+[90m [2m❯[22m src/utils/__tests__/quizGenerator.test.ts:[2m84:14[22m[39m
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[17/27]⎯[22m[39m
+
+[41m[1m FAIL [22m[49m src/utils/__tests__/quizGenerator.test.ts[2m > [22mquizGenerator Unit Tests[2m > [22mgenerateWorld3Question (Stats)[2m > [22mshould handle categories
+[31m[1mAssertionError[22m: expected '6, 6, 6의 평균은?' to contain '준비 중'[39m
+
+Expected: [32m"준비 중"[39m
+Received: [31m"6, 6, 6의 평균은?"[39m
+
+[36m [2m❯[22m src/utils/__tests__/quizGenerator.test.ts:[2m91:76[22m[39m
+    [90m 89| [39m    [34mit[39m([32m'should handle categories'[39m[33m,[39m () [33m=>[39m {
+    [90m 90| [39m      expect(generateWorld3Question('기초', 1, 'easy').question).toBeDef…
+    [90m 91| [39m      expect(generateWorld3Question('Unknown' as any, 1, 'easy').quest…
+    [90m   | [39m                                                                           [31m^[39m
+    [90m 92| [39m    })[33m;[39m
+    [90m 93| [39m
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[18/27]⎯[22m[39m
+
+[41m[1m FAIL [22m[49m src/utils/__tests__/quizGenerator.test.ts[2m > [22mquizGenerator Unit Tests[2m > [22mgenerateWorld3Question (Stats)[2m > [22mshould handle fallback in World 3 기초
+[31m[1mError[22m: fail[39m
+[36m [2m❯[22m src/utils/__tests__/quizGenerator.test.ts:[2m96:15[22m[39m
+    [90m 94| [39m    [34mit[39m([32m'should handle fallback in World 3 기초'[39m[33m,[39m () [33m=>[39m {
+    [90m 95| [39m      vi.spyOn(StatsProblemGenerator, 'generateStatsProblem').mockImpl…
+    [90m 96| [39m        [35mthrow[39m [35mnew[39m [33mError[39m([32m'fail'[39m)[33m;[39m
+    [90m   | [39m              [31m^[39m
+    [90m 97| [39m      })[33m;[39m
+    [90m 98| [39m      expect(generateWorld3Question('기초', 1, 'easy').question).toBeTru…
+[90m [2m❯[22m generateQuestion src/utils/quizGenerator.ts:[2m53:17[22m[39m
+[90m [2m❯[22m Module.generateWorld3Question src/utils/quizGenerator.ts:[2m123:10[22m[39m
+[90m [2m❯[22m src/utils/__tests__/quizGenerator.test.ts:[2m98:14[22m[39m
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[19/27]⎯[22m[39m
+
+[41m[1m FAIL [22m[49m src/utils/__tests__/quizGenerator.test.ts[2m > [22mquizGenerator Unit Tests[2m > [22mgenerateWorld4Question (Engineering)[2m > [22mshould handle categories
+[31m[1mAssertionError[22m: expected '2진수 1000을(를) 10진수로 바꾸면?' to match /AND|OR|NOT/[39m
+
+[32m- Expected:[39m 
+/AND|OR|NOT/
+
+[31m+ Received:[39m 
+"2진수 1000을(를) 10진수로 바꾸면?"
+
+[36m [2m❯[22m src/utils/__tests__/quizGenerator.test.ts:[2m105:64[22m[39m
+    [90m103| [39m    [34mit[39m([32m'should handle categories'[39m[33m,[39m () [33m=>[39m {
+    [90m104| [39m      expect(generateWorld4Question('기초', 1, 'easy').question).toBeDef…
+    [90m105| [39m      expect(generateWorld4Question('논리', 1, 'easy').question).toMatch…
+    [90m   | [39m                                                               [31m^[39m
+    [90m106| [39m      expect(generateWorld4Question('Unknown' as any, 1, 'easy').quest…
+    [90m107| [39m    })[33m;[39m
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[20/27]⎯[22m[39m
+
+[41m[1m FAIL [22m[49m src/utils/__tests__/quizGenerator.test.ts[2m > [22mquizGenerator Unit Tests[2m > [22mgenerateWorld4Question (Engineering)[2m > [22mshould handle fallback in World 4 기초
+[31m[1mError[22m: fail[39m
+[36m [2m❯[22m src/utils/__tests__/quizGenerator.test.ts:[2m111:15[22m[39m
+    [90m109| [39m    [34mit[39m([32m'should handle fallback in World 4 기초'[39m[33m,[39m () [33m=>[39m {
+    [90m110| [39m      vi.spyOn(CSProblemGenerator, 'generateCSProblem').mockImplementa…
+    [90m111| [39m        [35mthrow[39m [35mnew[39m [33mError[39m([32m'fail'[39m)[33m;[39m
+    [90m   | [39m              [31m^[39m
+    [90m112| [39m      })[33m;[39m
+    [90m113| [39m      expect(generateWorld4Question('기초', 1, 'easy').question).toBeTru…
+[90m [2m❯[22m generateQuestion src/utils/quizGenerator.ts:[2m79:17[22m[39m
+[90m [2m❯[22m Module.generateWorld4Question src/utils/quizGenerator.ts:[2m126:10[22m[39m
+[90m [2m❯[22m src/utils/__tests__/quizGenerator.test.ts:[2m113:14[22m[39m
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[21/27]⎯[22m[39m
+
+[41m[1m FAIL [22m[49m src/utils/__tests__/quizGenerator.test.ts[2m > [22mquizGenerator Unit Tests[2m > [22mgenerateMathQuestion (The Math Core)[2m > [22mshould cover addition
+[31m[1mTypeError[22m: __vi_import_0__.generateMathQuestion is not a function[39m
+[36m [2m❯[22m src/utils/__tests__/quizGenerator.test.ts:[2m119:17[22m[39m
+    [90m117| [39m  [34mdescribe[39m([32m'generateMathQuestion (The Math Core)'[39m[33m,[39m () [33m=>[39m {
+    [90m118| [39m    [34mit[39m([32m'should cover addition'[39m[33m,[39m () [33m=>[39m {
+    [90m119| [39m      [35mconst[39m q [33m=[39m [34mgenerateMathQuestion[39m([32m'덧셈'[39m[33m,[39m [32m'easy'[39m)[33m;[39m
+    [90m   | [39m                [31m^[39m
+    [90m120| [39m      [34mexpect[39m(q[33m.[39mquestion)[33m.[39m[34mtoContain[39m([32m'+'[39m)[33m;[39m
+    [90m121| [39m    })[33m;[39m
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[22/27]⎯[22m[39m
+
+[41m[1m FAIL [22m[49m src/utils/__tests__/quizGenerator.test.ts[2m > [22mquizGenerator Unit Tests[2m > [22mgenerateMathQuestion (The Math Core)[2m > [22mshould cover subtraction and ensure no zero/negative
+[31m[1mTypeError[22m: __vi_import_0__.generateMathQuestion is not a function[39m
+[36m [2m❯[22m src/utils/__tests__/quizGenerator.test.ts:[2m128:18[22m[39m
+    [90m126| [39m      [90m// Case 1: x > y[39m
+    [90m127| [39m      randomSpy.mockReturnValueOnce(0.8).mockReturnValueOnce(0.2).mock…
+    [90m128| [39m      [35mconst[39m q1 [33m=[39m [34mgenerateMathQuestion[39m([32m'뺄셈'[39m[33m,[39m [32m'easy'[39m)[33m;[39m
+    [90m   | [39m                 [31m^[39m
+    [90m129| [39m      [34mexpect[39m(q1[33m.[39mquestion)[33m.[39m[34mtoContain[39m([32m'-'[39m)[33m;[39m
+    [90m130| [39m      [34mexpect[39m(q1[33m.[39manswer [35mas[39m number)[33m.[39m[34mtoBeGreaterThan[39m([34m0[39m)[33m;[39m
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[23/27]⎯[22m[39m
+
+[41m[1m FAIL [22m[49m src/utils/__tests__/quizGenerator.test.ts[2m > [22mquizGenerator Unit Tests[2m > [22mgenerateMathQuestion (The Math Core)[2m > [22mshould cover multiplication
+[31m[1mTypeError[22m: __vi_import_0__.generateMathQuestion is not a function[39m
+[36m [2m❯[22m src/utils/__tests__/quizGenerator.test.ts:[2m148:17[22m[39m
+    [90m146| [39m
+    [90m147| [39m    [34mit[39m([32m'should cover multiplication'[39m[33m,[39m () [33m=>[39m {
+    [90m148| [39m      [35mconst[39m q [33m=[39m [34mgenerateMathQuestion[39m([32m'곱셈'[39m[33m,[39m [32m'easy'[39m)[33m;[39m
+    [90m   | [39m                [31m^[39m
+    [90m149| [39m      [34mexpect[39m(q[33m.[39mquestion)[33m.[39m[34mtoContain[39m([32m'×'[39m)[33m;[39m
+    [90m150| [39m    })[33m;[39m
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[24/27]⎯[22m[39m
+
+[41m[1m FAIL [22m[49m src/utils/__tests__/quizGenerator.test.ts[2m > [22mquizGenerator Unit Tests[2m > [22mgenerateMathQuestion (The Math Core)[2m > [22mshould cover division
+[31m[1mTypeError[22m: __vi_import_0__.generateMathQuestion is not a function[39m
+[36m [2m❯[22m src/utils/__tests__/quizGenerator.test.ts:[2m153:17[22m[39m
+    [90m151| [39m
+    [90m152| [39m    [34mit[39m([32m'should cover division'[39m[33m,[39m () [33m=>[39m {
+    [90m153| [39m      [35mconst[39m q [33m=[39m [34mgenerateMathQuestion[39m([32m'나눗셈'[39m[33m,[39m [32m'easy'[39m)[33m;[39m
+    [90m   | [39m                [31m^[39m
+    [90m154| [39m      [34mexpect[39m(q[33m.[39mquestion)[33m.[39m[34mtoContain[39m([32m'÷'[39m)[33m;[39m
+    [90m155| [39m      [34mexpect[39m([33mNumber[39m[33m.[39m[34misInteger[39m(q[33m.[39manswer))[33m.[39m[34mtoBe[39m([35mtrue[39m)[33m;[39m
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[25/27]⎯[22m[39m
+
+[41m[1m FAIL [22m[49m src/utils/__tests__/quizGenerator.test.ts[2m > [22mquizGenerator Unit Tests[2m > [22mgenerateMathQuestion (The Math Core)[2m > [22mshould cover equations and calculus via redirect
+[31m[1mTypeError[22m: __vi_import_0__.generateMathQuestion is not a function[39m
+[36m [2m❯[22m src/utils/__tests__/quizGenerator.test.ts:[2m159:14[22m[39m
+    [90m157| [39m
+    [90m158| [39m    [34mit[39m([32m'should cover equations and calculus via redirect'[39m[33m,[39m () [33m=>[39m {
+    [90m159| [39m      expect(generateMathQuestion('equations', 'easy').question).toMat…
+    [90m   | [39m             [31m^[39m
+    [90m160| [39m      expect(generateMathQuestion('calculus', 'easy').question).toBeDe…
+    [90m161| [39m    })[33m;[39m
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[26/27]⎯[22m[39m
+
+[41m[1m FAIL [22m[49m src/utils/__tests__/quizGenerator.test.ts[2m > [22mquizGenerator Unit Tests[2m > [22mgenerateMathQuestion (The Math Core)[2m > [22mshould use default for unknown topics
+[31m[1mTypeError[22m: __vi_import_0__.generateMathQuestion is not a function[39m
+[36m [2m❯[22m src/utils/__tests__/quizGenerator.test.ts:[2m164:14[22m[39m
+    [90m162| [39m
+    [90m163| [39m    [34mit[39m([32m'should use default for unknown topics'[39m[33m,[39m () [33m=>[39m {
+    [90m164| [39m      expect(generateMathQuestion('Unknown' as any, 'easy').question).…
+    [90m   | [39m             [31m^[39m
+    [90m165| [39m    })[33m;[39m
+    [90m166| [39m  })[33m;[39m
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[27/27]⎯[22m[39m
+
+
+[2m Test Files [22m [1m[31m4 failed[39m[22m[2m | [22m[1m[32m8 passed[39m[22m[90m (12)[39m
+[2m      Tests [22m [1m[31m27 failed[39m[22m[2m | [22m[1m[32m168 passed[39m[22m[90m (195)[39m
+[2m   Start at [22m 20:41:04
+[2m   Duration [22m 13.22s[2m (transform 8.24s, setup 10.72s, import 8.06s, tests 5.03s, environment 28.23s)[22m
+
+JUNIT report written to C:/Users/ghkdd/gemini-projects/solve-climb/reports/test-results.xml

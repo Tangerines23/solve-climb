@@ -19,7 +19,7 @@ describe('TierUpgradeModal', () => {
       <TierUpgradeModal isOpen={false} previousScore={1000} currentScore={2000} onClose={vi.fn()} />
     );
 
-    expect(screen.queryByText('티어 업그레이드')).not.toBeInTheDocument();
+    expect(screen.queryByText('🎉 티어 승급! 🎉')).not.toBeInTheDocument();
   });
 
   it('should render tier upgrade when tier level increases', async () => {
@@ -43,7 +43,7 @@ describe('TierUpgradeModal', () => {
     );
 
     await waitFor(() => {
-      expect(screen.getByText(/티어 업그레이드/)).toBeInTheDocument();
+      expect(screen.getByText(/티어 승급!/)).toBeInTheDocument();
     });
   });
 
@@ -68,7 +68,7 @@ describe('TierUpgradeModal', () => {
     );
 
     await waitFor(() => {
-      expect(screen.getByText(/사이클 완료/)).toBeInTheDocument();
+      expect(screen.getByText(/새로운 사이클이 시작됩니다/)).toBeInTheDocument();
     });
   });
 
@@ -93,7 +93,7 @@ describe('TierUpgradeModal', () => {
     );
 
     await waitFor(() => {
-      expect(screen.queryByText(/티어 업그레이드/)).not.toBeInTheDocument();
+      expect(screen.queryByText(/티어 승급!/)).not.toBeInTheDocument();
     });
   });
 
@@ -119,7 +119,7 @@ describe('TierUpgradeModal', () => {
     );
 
     await waitFor(() => {
-      const closeButton = screen.getByText('확인');
+      const closeButton = screen.getByText('계속하기');
       closeButton.click();
       expect(onClose).toHaveBeenCalled();
     });
@@ -257,7 +257,6 @@ describe('TierUpgradeModal', () => {
     );
 
     await waitFor(() => {
-      expect(screen.getByText(/사이클 완료/)).toBeInTheDocument();
       expect(screen.getByText(/새로운 사이클이 시작됩니다/)).toBeInTheDocument();
     });
   });

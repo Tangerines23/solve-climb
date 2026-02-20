@@ -2,13 +2,33 @@ import { http, HttpResponse } from 'msw';
 
 // Supabase API URL 패턴 (와일드카드를 사용하여 모든 호스트 대응)
 const SUPABASE_REST_URL = '*/rest/v1';
-const SUPABASE_AUTH_URL = '*/auth/v1';
 
 export const handlers = [
   // --------------------------------------------------------
   // Auth 핸들러
   // --------------------------------------------------------
-  http.get(`${SUPABASE_AUTH_URL}/user`, () => {
+  http.post(/.*\/auth\/v1\/signup/, () => {
+    return HttpResponse.json({
+      access_token: 'fake-anonymous-token',
+      token_type: 'bearer',
+      expires_in: 3600,
+      user: {
+        id: 'anon-user-id',
+        aud: 'authenticated',
+        role: 'authenticated',
+        email: '',
+        is_anonymous: true,
+      },
+    });
+  }),
+  http.post(/.*\/auth\/v1\/token/, () => {
+    return HttpResponse.json({
+      access_token: 'fake-anonymous-token',
+      token_type: 'bearer',
+      expires_in: 3600,
+    });
+  }),
+  http.get(/.*\/auth\/v1\/user/, () => {
     return HttpResponse.json({
       id: 'test-user-id',
       aud: 'authenticated',

@@ -86,7 +86,12 @@ export function generateTodayChallenge(progressMap: any): TodayChallenge {
     selectedMountain.id === 'math'
       ? subTopics.filter((t) => (t.id as string) !== 'sequence')
       : subTopics;
-  const selectedTopic = filteredSubTopics[rng.randomInt(0, filteredSubTopics.length)];
+
+  const fallbackTopic = { id: 'default', name: '기본 챌린지' };
+  const selectedTopic =
+    filteredSubTopics && filteredSubTopics.length > 0
+      ? filteredSubTopics[rng.randomInt(0, filteredSubTopics.length)]
+      : fallbackTopic;
 
   // 4. 로컬 실력 확인 (해당 월드/분야의 Max Level)
   let maxLevel = 0;

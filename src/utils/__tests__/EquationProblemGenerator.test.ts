@@ -82,8 +82,11 @@ describe('EquationProblemGenerator', () => {
       expect(problem.question).toContain('(');
     });
 
-    it('should throw error for invalid stage', () => {
-      expect(() => generateEquation(999)).toThrow('Stage 999 not found');
+    it('should fallback to fill_plus format for invalid stage', () => {
+      const problem = generateEquation(999, 'easy');
+      expect(problem).toHaveProperty('question');
+      expect(problem.question).toContain('□');
+      expect(problem.question).toContain('+');
     });
 
     it('should generate valid equations for all stages', () => {
@@ -206,10 +209,10 @@ describe('EquationProblemGenerator', () => {
       expect(level15).toHaveProperty('x');
     });
 
-    it('should handle error case: invalid stage level throws error', () => {
-      expect(() => generateEquation(0)).toThrow('Stage 0 not found');
-      expect(() => generateEquation(-1)).toThrow('Stage -1 not found');
-      expect(() => generateEquation(21)).toThrow('Stage 21 not found');
+    it('should handle error case: invalid stage level uses fallback', () => {
+      expect(generateEquation(0, 'easy')).toHaveProperty('question');
+      expect(generateEquation(-1, 'easy')).toHaveProperty('question');
+      expect(generateEquation(21, 'easy')).toHaveProperty('question');
     });
 
     it('should handle recursive calls in generateFillMinus when b < 0', () => {

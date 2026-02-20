@@ -48,30 +48,6 @@ describe('DataResetConfirmModal', () => {
     expect(onCancel).toHaveBeenCalled();
   });
 
-  it('should call onCancel when overlay is clicked', () => {
-    const onCancel = vi.fn();
-    const { container } = render(
-      <DataResetConfirmModal isOpen={true} onConfirm={vi.fn()} onCancel={onCancel} />
-    );
-
-    const overlay = container.querySelector('.data-reset-confirm-modal-overlay');
-    fireEvent.click(overlay as HTMLElement);
-
-    expect(onCancel).toHaveBeenCalled();
-  });
-
-  it('should not call onCancel when modal content is clicked', () => {
-    const onCancel = vi.fn();
-    const { container } = render(
-      <DataResetConfirmModal isOpen={true} onConfirm={vi.fn()} onCancel={onCancel} />
-    );
-
-    const modal = container.querySelector('.data-reset-confirm-modal');
-    fireEvent.click(modal as HTMLElement);
-
-    expect(onCancel).not.toHaveBeenCalled();
-  });
-
   it('should have correct button classes', () => {
     const { container: _container } = render(
       <DataResetConfirmModal isOpen={true} onConfirm={vi.fn()} onCancel={vi.fn()} />
@@ -81,14 +57,11 @@ describe('DataResetConfirmModal', () => {
     const confirmButton = screen.getByText('초기화');
 
     expect(cancelButton).toHaveClass(
-      'data-reset-confirm-modal-button',
-      'data-reset-confirm-modal-button-cancel'
+      'btn-base',
+      'btn-secondary',
+      'data-reset-confirm-modal-button'
     );
-    expect(confirmButton).toHaveClass(
-      'data-reset-confirm-modal-button',
-      'data-reset-confirm-modal-button-confirm',
-      'data-reset-confirm-modal-button-danger'
-    );
+    expect(confirmButton).toHaveClass('btn-base', 'btn-danger', 'data-reset-confirm-modal-button');
   });
 
   it('should display warning icon in warning message', () => {

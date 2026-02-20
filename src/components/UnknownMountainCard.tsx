@@ -1,4 +1,4 @@
-import { useRef } from 'react';
+import { useRef, useState } from 'react';
 import { BaseCard } from './BaseCard';
 import './UnknownMountainCard.css';
 
@@ -21,6 +21,7 @@ interface UnknownMountainCardProps {
 
 export function UnknownMountainCard({ onToast }: UnknownMountainCardProps) {
   const lastClickTimeRef = useRef<number>(0);
+  const [isPressed, setIsPressed] = useState(false);
   const CLICK_COOLDOWN = 500; // 0.5초 쿨다운
 
   const handleClick = () => {
@@ -41,7 +42,17 @@ export function UnknownMountainCard({ onToast }: UnknownMountainCardProps) {
   };
 
   return (
-    <BaseCard className="unknown-mountain-card" onClick={handleClick} interactive padding="none">
+    <BaseCard
+      className={`unknown-mountain-card ${isPressed ? 'pressed' : ''}`}
+      onClick={handleClick}
+      interactive
+      padding="none"
+      onMouseDown={() => setIsPressed(true)}
+      onMouseUp={() => setIsPressed(false)}
+      onMouseLeave={() => setIsPressed(false)}
+      onTouchStart={() => setIsPressed(true)}
+      onTouchEnd={() => setIsPressed(false)}
+    >
       <div className="unknown-mountain-content">
         <div className="unknown-mountain-icon-wrapper">
           <svg
