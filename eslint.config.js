@@ -1,5 +1,5 @@
 // For more info, see https://github.com/storybookjs/eslint-plugin-storybook#configuration-flat-config-format
-import storybook from 'eslint-plugin-storybook';
+import _storybook from 'eslint-plugin-storybook';
 
 import js from '@eslint/js';
 import globals from 'globals';
@@ -25,15 +25,26 @@ export default [
   },
   js.configs.recommended,
   security.configs.recommended,
-  reactHooks.configs['recommended-latest'],
-  reactRefresh.configs.vite,
+  {
+    plugins: {
+      'react-hooks': reactHooks,
+      'react-refresh': reactRefresh,
+    },
+    rules: {
+      ...reactHooks.configs.recommended.rules,
+      'react-refresh/only-export-components': ['warn', { allowConstantExport: true }],
+    },
+  },
   {
     files: ['**/*.{js,jsx,ts,tsx}'],
     ignores: ['**/*.backup.tsx', '**/*.refactored.tsx'],
     languageOptions: {
       parser: tsparser,
       ecmaVersion: 2020,
-      globals: globals.browser,
+      globals: {
+        ...globals.browser,
+        ...globals.es2020,
+      },
       parserOptions: {
         ecmaVersion: 'latest',
         ecmaFeatures: { jsx: true },
@@ -53,9 +64,9 @@ export default [
           caughtErrorsIgnorePattern: '^[A-Z_]|^_',
         },
       ],
-      'no-unused-vars': 'off', // TypeScript 규칙 사용
-      '@typescript-eslint/no-explicit-any': 'warn', // any 타입 경고로 변경
-      'no-undef': 'off', // TypeScript가 타입 체크를 하므로 off
+      'no-unused-vars': 'off',
+      '@typescript-eslint/no-explicit-any': 'warn',
+      'no-undef': 'off',
     },
   },
   {
@@ -72,7 +83,7 @@ export default [
       '@typescript-eslint/no-explicit-any': 'error', // 새 코드는 엄격하게
     },
   },
-  ...storybook.configs['flat/recommended'],
+  // ...storybook.configs['flat/recommended'],
   // Scripts override at the end for highest precedence
   {
     files: ['scripts/**/*.{js,cjs}', 'scripts/*.{js,cjs}'],

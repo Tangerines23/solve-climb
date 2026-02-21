@@ -9,7 +9,8 @@
     "src/types/**",
     "src/utils/navigation.ts",
     "src/utils/tossGameLogin.ts",
-    "src/utils/MathProblemGenerator.ts"
+    "src/utils/MathProblemGenerator.ts",
+    "src/utils/seededRandom.ts"
   ],
   "ignoreExportsUsedInFile": true,
   "rules": {
@@ -17,5 +18,11 @@
     "types": "warn",
     "files": "warn"
   },
-  "ignoreDependencies": ["@stryker-mutator/core", "@stryker-mutator/typescript-checker", "@storybook/react"]
+  "ignoreDependencies": [
+    "@stryker-mutator/core",
+    "@stryker-mutator/typescript-checker",
+    "@storybook/react",
+    "hoist-non-react-statics",
+    "react-is"
+  ]
 }
