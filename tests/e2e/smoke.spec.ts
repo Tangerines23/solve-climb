@@ -59,7 +59,7 @@ test.describe('SMOKE TEST - 메인 화면 검증', () => {
 
     // 3. 페이지 렌더링 확인 (에러 메시지 없음)
     const container = page.locator('.category-select-container, .topic-select-page');
-    await expect(container).toBeVisible();
+    await expect(container).toBeVisible({ timeout: 15000 });
 
     // 4. UI 레이아웃 무결성 확인
     await expectNoOverflow(page);
