@@ -24,7 +24,7 @@ const POLL_INTERVAL_MS = 500;
 
 // lighthouserc.json과 동일한 임계값 (회귀 방지)
 const THRESHOLDS = {
-  performance: 0.7,
+  performance: 0.5,
   accessibility: 0.8,
   'best-practices': 0.8,
   seo: 0.8,

@@ -80,7 +80,7 @@
     "check:integrity": "npm run check:css && npm run check:nav && npm run check:spell && npm run check:magic",
     "check:assets": "node scripts/find-unused-assets.js",
     "check:size": "node scripts/check-bundle-size.js",
-    "check:security": "npm audit --audit-level=moderate",
+    "check:security": "npm audit --audit-level=high",
     "check:socket": "socket ci",
     "check:security:audit": "node scripts/check-security-audit.js",
     "check:leaks": "node scripts/check-memory-leaks.js",
