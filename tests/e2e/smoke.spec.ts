@@ -53,7 +53,8 @@ test.describe('SMOKE TEST - 메인 화면 검증', () => {
     const climbButton = page.locator('.category-climb-button').first();
     await climbButton.click();
 
-    // 2. 카테고리 선택 페이지로 이동했는지 확인 (URL 파라미터 체크)
+    // 2. 카테고리 선택 페이지로 이동했는지 확인 (URL 및 로딩 대기)
+    await page.waitForURL(/.*category-select.*/);
     await expect(page).toHaveURL(/.*mountain=.*/);
 
     // 3. 페이지 렌더링 확인 (에러 메시지 없음)
