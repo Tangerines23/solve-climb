@@ -24,10 +24,10 @@ const POLL_INTERVAL_MS = 500;
 
 // lighthouserc.json과 동일한 임계값 (회귀 방지)
 const THRESHOLDS = {
-  performance: 0.6,
-  accessibility: 0.8,
-  'best-practices': 0.8,
-  seo: 0.8,
+  performance: 0.7,
+  accessibility: 0.9,
+  'best-practices': 0.9,
+  seo: 0.9,
 };
 
 function waitForServer() {
@@ -149,7 +149,7 @@ async function main() {
   }
 
   // 리포트 저장 (디버깅용)
-  const reportPath = join(ROOT, 'lighthouse-report.json');
+  const reportPath = join(ROOT, 'reports', 'logs', 'lighthouse-report.json');
   writeFileSync(reportPath, JSON.stringify(lhr, null, 2));
   console.log(`\n📄 Lighthouse report saved to ${reportPath}`);
 

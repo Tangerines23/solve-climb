@@ -177,8 +177,8 @@ function generateComparisonProblem(
   const npIdx = rng
     ? rng.randomInt(0, nonPrimes.length)
     : Math.floor(Math.random() * nonPrimes.length);
-  const p = primes.at(pIdx) ?? primes[0];
-  const np = nonPrimes.at(npIdx) ?? nonPrimes[0];
+  const p = primes[pIdx % primes.length] ?? primes[0];
+  const np = nonPrimes[npIdx % nonPrimes.length] ?? nonPrimes[0];
   const isPrimeFirst = rng ? rng.random() > 0.5 : Math.random() > 0.5;
   const question = isPrimeFirst
     ? `[${p}] [${np}] 소수(Prime)인 것은? (1: 왼쪽, 2: 오른쪽)`

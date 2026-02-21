@@ -50,10 +50,6 @@ test.describe('SMOKE TEST - 메인 화면 검증', () => {
   // → CI에서 프로필 없이 접근 시 /my-page로 리다이렉트 → URL 매칭 타임아웃
   // 근본 해결: CI용 테스트 계정 또는 mock 인증 필요
   test('산 선택 및 페이지 이동 시나리오', async ({ page }) => {
-    test.skip(
-      !!process.env.CI,
-      'RequireAuth 가드: 프로필 없는 CI에서 /category-select 접근 불가'
-    );
     await page.goto('/');
 
     // 1. 첫 번째 산의 '등반하기' 버튼 클릭

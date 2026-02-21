@@ -1,4 +1,4 @@
-import { Category, Topic, QuizQuestion, Difficulty, World, Mountain } from '../types/quiz';
+import { Topic, QuizQuestion, Difficulty, World, Mountain } from '../types/quiz';
 import { generateProblem } from './MathProblemGenerator';
 import { generateEquation } from './EquationProblemGenerator';
 import { generateGeometryProblem } from './GeometryProblemGenerator';
@@ -18,110 +18,94 @@ export function generateQuestion(
   difficulty: Difficulty,
   rng?: { random: () => number; randomInt: (min: number, max: number) => number }
 ): QuizQuestion {
-  let problem: any;
-
   // dispatch based on mountain and world
   if (mountainId === 'math') {
     if (worldId === 'World1') {
-      problem = generateProblem(level, difficulty, rng);
+      const mathProb = generateProblem(level, difficulty, rng);
       return {
-        question: problem.expression,
-        answer: problem.answer,
-        inputType: problem.inputType,
+        question: mathProb.expression,
+        answer: mathProb.answer,
+        inputType: mathProb.inputType,
         level,
         category: topicId as any,
       };
     } else if (worldId === 'World2') {
-      problem = generateEquation(level, difficulty, rng);
+      const eqProb = generateEquation(level, difficulty, rng);
       return {
-        question: problem.question,
-        answer: problem.x,
-        hintType: problem.transposition ? 'transposition' : undefined,
-        hintData: problem.transposition,
+        question: eqProb.question,
+        answer: eqProb.x,
+        hintType: eqProb.transposition ? 'transposition' : undefined,
+        hintData: eqProb.transposition,
         level,
         category: topicId as any,
       };
     } else if (worldId === 'World3') {
-      problem = generateGeometryProblem(level, difficulty, rng);
+      const geoProb = generateGeometryProblem(level, difficulty, rng);
       return {
-        question: problem.question,
-        answer: problem.answer,
+        question: geoProb.question,
+        answer: geoProb.answer,
         level,
         category: topicId as any,
       };
     } else if (worldId === 'World4') {
-      problem = generateStatsProblem(level, difficulty, rng);
+      const statsProb = generateStatsProblem(level, difficulty, rng);
       return {
-        question: problem.question,
-        answer: problem.answer,
+        question: statsProb.question,
+        answer: statsProb.answer,
         level,
         category: topicId as any,
       };
     } else {
-      problem = generateProblem(level, difficulty, rng);
+      const mathProb = generateProblem(level, difficulty, rng);
       return {
-        question: problem.expression,
-        answer: problem.answer,
+        question: mathProb.expression,
+        answer: mathProb.answer,
         level,
         category: topicId as any,
       };
     }
   } else if (mountainId === 'logic') {
-    problem = generateLogicProblem(level, difficulty, rng);
+    const logicProb = generateLogicProblem(level, difficulty, rng);
     return {
-      question: problem.question,
-      answer: problem.answer,
+      question: logicProb.question,
+      answer: logicProb.answer,
       level,
       category: topicId as any,
     };
   } else if (mountainId === 'general') {
     if (worldId === 'World1') {
-      problem = generateCSProblem(level, difficulty, rng);
+      const csProb = generateCSProblem(level, difficulty, rng);
       return {
-        question: problem.question,
-        answer: problem.answer,
+        question: csProb.question,
+        answer: csProb.answer,
         level,
         category: topicId as any,
       };
     } else if (worldId === 'World2') {
-      problem = generateCalculusProblem(level, difficulty, rng);
+      const calcProb = generateCalculusProblem(level, difficulty, rng);
       return {
-        question: problem.question,
-        answer: problem.answer,
+        question: calcProb.question,
+        answer: calcProb.answer,
         level,
         category: topicId as any,
       };
     } else {
-      problem = generateLogicProblem(level, difficulty, rng);
+      const logicProb = generateLogicProblem(level, difficulty, rng);
       return {
-        question: problem.question,
-        answer: problem.answer,
+        question: logicProb.question,
+        answer: logicProb.answer,
         level,
         category: topicId as any,
       };
     }
   } else {
     // default/fallback
-    problem = generateProblem(level, difficulty, rng);
+    const mathProb = generateProblem(level, difficulty, rng);
     return {
-      question: problem.expression,
-      answer: problem.answer,
+      question: mathProb.expression,
+      answer: mathProb.answer,
       level,
       category: topicId as any,
     };
   }
-}
-
-// Legacy compatibility functions (could be moved or cleaned up later)
-export function generateWorld1Question(c: Category, l: number, d: Difficulty) {
-  return generateQuestion('math', 'World1', c as any, l, d);
-}
-export function generateWorld2Question(c: Category, l: number, d: Difficulty) {
-  return generateQuestion('math', 'World3', c as any, l, d); // Geometry was World3 in new mapping
-}
-export function generateWorld3Question(c: Category, l: number, d: Difficulty) {
-  return generateQuestion('math', 'World4', c as any, l, d); // Stats was World4
-}
-export function generateWorld4Question(c: Category, l: number, d: Difficulty) {
-  return generateQuestion('general', 'World1', c as any, l, d); // CS was General World1
 }

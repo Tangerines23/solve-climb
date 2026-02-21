@@ -97,8 +97,11 @@
     "postinstall": "node scripts/ensure-env.js",
     "storybook": "storybook dev -p 6006",
     "build-storybook": "storybook build",
-    "report:lint": "npm run lint > reports/lint_output.txt",
-    "report:test": "npm run test:all > reports/test_output.txt"
+    "report:lint": "npm run lint > reports/logs/lint_output.txt",
+    "report:test": "npm run test:all > reports/logs/test_output.txt",
+    "report:validate": "npm run validate > reports/logs/validate-log.txt",
+    "report:ci": "npm run ci:local > reports/logs/ci-local-log.txt",
+    "pre-report": "powershell -Command \"New-Item -ItemType Directory -Force reports/logs, reports/analysis, reports/security, reports/ci-reports\""
   },
   "dependencies": {
     "@capacitor-community/admob": "^8.0.0",

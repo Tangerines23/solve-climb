@@ -221,6 +221,8 @@ jobs:
           key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
 
       - name: Build project
+        env:
+          VITE_CI: true
         run: npm run build
 
       - name: Upload build artifacts
@@ -354,7 +356,6 @@ jobs:
     needs: build
     runs-on: ubuntu-latest
     timeout-minutes: 20
-    continue-on-error: true
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -399,10 +400,10 @@ jobs:
           npm run test:a11y
 
       - name: 📐 Layout Precision Audit (Deep Scan)
-        continue-on-error: true # Supabase RPC 부재 시 네트워크 에러 → 앱 에러 핸들링 개선 후 제거 예정
         env:
           VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
           VITE_SUPABASE_ANON_KEY: ${{ secrets.VITE_SUPABASE_ANON_KEY }}
+          VITE_CI: true
         run: npm run check:layout:deep:with-server
 
       - name: 📦 Upload Playwright Reports & Snapshots

@@ -1,45 +1,46 @@
-# TODO
+# TODO (Solve & Climb Master Checklist)
 
-## 🔴 CI 타협 항목 정식 해결
+## 🔴 최우선 기술 부채 (CI/검증 안정화)
 
-### 1. CI용 테스트 인증 구현 (~30분)
+### 1. CI용 테스트 인증 구현
+- [x] CI용 테스트 계정 생성 또는 E2E 테스트 내 mock 인증 구현 (VITE_CI 활용)
+- [x] `smoke.spec.ts` — `test.skip(CI)` 제거
+- [x] `accessibility.spec.ts` — `test.skip(CI)` 제거
+- [x] `ci.yml` Layout Deep Scan — `continue-on-error` 제거
 
-> smoke/a11y `test.skip`의 근본 원인은 `RequireAuth(isProfileComplete)` 가드.
-> CI에서 프로필 없이 `/category-select` 등 보호된 라우트에 접근 시
-> `/my-page`로 리다이렉트되어 테스트 실패.
-> ※ `useMyPageStats`의 RPC 에러 핸들링은 이미 정상 구현됨 (무한 재시도 아님)
-
-- [ ] CI용 테스트 계정 생성 또는 E2E 테스트 내 mock 인증 구현
-- [ ] `smoke.spec.ts` — `test.skip(CI)` 제거
-- [ ] `accessibility.spec.ts` — `test.skip(CI)` 제거
-- [ ] `ci.yml` Layout Deep Scan — `continue-on-error` 제거
-
-### ~~2. A11y `/settings` 라우트 수정~~ ✅ 완료
-
-- [x] `/settings` → `/my-page`로 수정 (실제 라우트와 일치)
-
-### 3. VRT 기준 이미지 갱신 (~10분)
-
-- [ ] CI 아티팩트에서 Linux 기준 스크린샷 다운로드
-- [ ] `tests/e2e/visual-regression.spec.ts-snapshots/`에 교체
+### 2. VRT 기준 이미지 갱신
+- [ ] CI 아티팩트에서 Linux 기준 스크린샷 다운로드 및 `tests/e2e/visual-regression.spec.ts-snapshots/` 교체
 - [ ] `maxDiffPixelRatio: 0.05` → `0.01`로 복원
 
----
-
-## 🟡 코드 품질 (validate 경고)
-
-- [ ] `src/utils/challenge.ts:62` — `any` 타입 제거
-- [ ] `src/pages/MyPage.tsx:102` — `any` 타입 제거
-- [ ] `src/pages/QuizPage.tsx:427` — useCallback 의존성 배열에 `searchParams` 추가
-- [ ] `src/components/SegmentedControl.tsx` — Object Injection Sink 경고 해결
-- [ ] `src/utils/MathProblemGenerator.ts:448` — Object Injection Sink 경고 해결
-- [ ] `src/utils/LogicProblemGenerator.ts:31,180,181` — Object Injection Sink 경고 해결
+### 3. 코드 품질 (validate 경고)
+- [x] `src/utils/challenge.ts` — `any` 타입 제거
+- [x] `src/pages/MyPage.tsx` — `any` 타입 제거 및 useCallback 의존성 정리
+- [x] `src/utils/MathProblemGenerator.ts` — Object Injection Sink 해결
+- [x] `src/utils/LogicProblemGenerator.ts` — Object Injection Sink 해결
+- [ ] `src/components/SegmentedControl.tsx` — ARIA 속성 및 인라인 스타일 수정
+- [ ] `src/components/StaminaGauge.tsx` — 인라인 스타일 외부 CSS 이관
 
 ---
 
-## 🟢 기타
+## 🟡 기능 보완 및 확장 (Feature Roadmap)
 
-- [ ] `get_user_game_stats` RPC 함수 — Supabase에 생성 또는 앱에서 호출 제거
-- [ ] Lighthouse 성능 임계값 `0.6` → 점진적으로 `0.7`로 복원
-- [ ] `StaminaGauge.tsx` — CSS inline 스타일을 외부 CSS로 이동
+### 1. 퀴즈 콘텐츠 및 생성기 확장
+- [ ] **Logic/Common Sense**: 문제 데이터 구축 (DB 또는 로컬 JSON)
+- [ ] **World Expansion**: World 2(도형), 3(확률), 4(공학) 생성기 로직 고도화 (현재 스켈레톤 상태)
+
+### 2. 유저 통계 및 마이페이지
+- [ ] `user_statistics` DB 구현 (총 플레이, 승률, 연승 등)
+- [ ] 마이페이지 '기본 정보' 외 '기록(History)' 탭 UI 구현
+- [ ] `get_user_game_stats` RPC 함수 Supabase 연동 확인
+
+### 3. 레이아웃 및 UX 수정
 - [ ] `Header.css` — `-webkit-backdrop-filter` 추가 (Safari 호환)
+- [ ] 모바일 환경 오버플로우 전수 조사 (Visual Guardian 로그 참고)
+
+---
+
+## 🟢 운영 및 출시 준비 (Compliance)
+
+- [ ] **Account Deletion**: '회원 탈퇴' 기능 구현 (스토어 필수)
+- [ ] **Legal**: `PRIVACY_POLICY.md` 내용을 기반으로 실제 인앱 페이지 구현
+- [ ] **AdMob**: 테스트 ID를 실제 서비스 ID로 전환

@@ -59,9 +59,13 @@ export class SeededRandom {
 /**
  * 오늘의 챌린지를 생성합니다 (Categorized League System)
  */
-export function generateTodayChallenge(
-  progressMap: Record<string, Record<string, Record<string, { cleared: boolean; level: number }>>>
-): TodayChallenge {
+export type ProgressData = { cleared: boolean; level: number };
+export type ProgressMap = Record<string, Record<string, Record<string, ProgressData>>>;
+
+/**
+ * 오늘의 챌린지를 생성합니다 (Categorized League System)
+ */
+export function generateTodayChallenge(progressMap: ProgressMap): TodayChallenge {
   const todayDate = getTodayDateString();
   const seed = dateToSeed(todayDate);
   const rng = new SeededRandom(seed);

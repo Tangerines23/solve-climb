@@ -19,10 +19,10 @@
     "files": "warn"
   },
   "ignoreDependencies": [
-    "@stryker-mutator/core",
     "@stryker-mutator/typescript-checker",
     "@storybook/react",
     "hoist-non-react-statics",
     "react-is"
-  ]
+  ],
+  "ignoreBinaries": ["powershell", "ait"]
 }
