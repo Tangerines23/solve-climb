@@ -46,12 +46,13 @@ test.describe('SMOKE TEST - 메인 화면 검증', () => {
     expect(accessibilityScanResults.violations).toEqual([]);
   });
 
-  // CI에서 Supabase RPC 함수(get_user_game_stats 등) 부재로 앱 내부 fallback 재시도 발생
-  // → 페이지 렌더링 지연. 근본 해결: 앱의 Supabase 에러 핸들링 개선 (별도 작업)
+  // /category-select가 RequireAuth(isProfileComplete) 가드로 보호됨
+  // → CI에서 프로필 없이 접근 시 /my-page로 리다이렉트 → URL 매칭 타임아웃
+  // 근본 해결: CI용 테스트 계정 또는 mock 인증 필요
   test('산 선택 및 페이지 이동 시나리오', async ({ page }) => {
     test.skip(
       !!process.env.CI,
-      'Supabase RPC 함수 부재로 인한 렌더링 지연 — 앱 에러 핸들링 개선 필요'
+      'RequireAuth 가드: 프로필 없는 CI에서 /category-select 접근 불가'
     );
     await page.goto('/');
 

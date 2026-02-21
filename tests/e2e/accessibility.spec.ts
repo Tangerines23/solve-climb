@@ -2,14 +2,14 @@ import { test, expect } from '@playwright/test';
 import { AxeBuilder } from '@axe-core/playwright';
 
 test.describe('♿ Accessibility Audit', () => {
-  // CI에서 Supabase RPC 부재로 에러 UI 렌더링 + /settings 라우트 미존재
-  // → a11y 위반 false positive. 근본 해결: 앱 에러 핸들링 개선 (별도 작업)
+  // CI에서 프로필 및 인증 없이 일부 페이지가 에러 UI를 표시함
+  // → a11y 위반 false positive. 근본 해결: CI용 테스트 계정 또는 mock 인증 필요
   test('Main pages should have no automatically detectable a11y violations', async ({ page }) => {
     test.skip(
       !!process.env.CI,
-      'Supabase RPC 부재 + /settings 라우트 미존재로 false positive 발생'
+      '프로필/인증 없는 CI 환경에서 에러 UI a11y 위반 false positive'
     );
-    const pages = ['/', '/shop', '/ranking', '/settings'];
+    const pages = ['/', '/shop', '/ranking', '/my-page'];
 
     for (const path of pages) {
       console.log(`[A11Y] Auditing ${path}...`);
