@@ -46,10 +46,7 @@ test.describe('SMOKE TEST - 메인 화면 검증', () => {
     expect(accessibilityScanResults.violations).toEqual([]);
   });
 
-  // CI에서 Supabase 미연결 시 앱 초기화가 블로킹되어 내비게이션이 동작하지 않음
-  // 로컬 환경(Supabase 연결)에서만 실행
   test('산 선택 및 페이지 이동 시나리오', async ({ page }) => {
-    test.skip(!!process.env.CI, 'CI 환경에서는 Supabase 미연결로 인해 내비게이션이 블로킹됨');
     await page.goto('/');
 
     // 1. 첫 번째 산의 '등반하기' 버튼 클릭

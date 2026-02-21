@@ -51,6 +51,16 @@ const createSupabaseClient = (): SupabaseClient => {
       // URL에서 세션 감지 활성화 (콜백 처리용)
       detectSessionInUrl: true,
     },
+    global: {
+      // 네트워크 요청에 5초 타임아웃 적용 (CI 등 Supabase 접근 불가 환경에서 무한 대기 방지)
+      fetch: (url: RequestInfo | URL, init?: RequestInit) => {
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 5000);
+        return fetch(url, { ...init, signal: controller.signal }).finally(() =>
+          clearTimeout(timeoutId)
+        );
+      },
+    },
   };
 
   // 개발 환경에서 콜백 URL 로그 출력

@@ -65,7 +65,7 @@ test.describe('Visual Regression Testing (VRT) - UI 일관성 검증', () => {
 
     await expect(page).toHaveScreenshot('vrt-quiz-result.png', {
       fullPage: true,
-      maxDiffPixelRatio: 0.25, // 리눅스/윈도우 폰트 렌더링 차이 허용 (25%)
+      maxDiffPixelRatio: 0.05, // 리눅스/윈도우 폰트 렌더링 미세 차이만 허용 (5%)
     });
   });
 });

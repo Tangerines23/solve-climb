@@ -2,9 +2,7 @@ import { test, expect } from '@playwright/test';
 import { AxeBuilder } from '@axe-core/playwright';
 
 test.describe('♿ Accessibility Audit', () => {
-  // CI에서 Supabase RPC 미연결로 에러 UI가 렌더링되어 a11y 위반이 false positive로 감지됨
   test('Main pages should have no automatically detectable a11y violations', async ({ page }) => {
-    test.skip(!!process.env.CI, 'CI에서 Supabase 미연결로 인해 에러 상태 a11y 위반 발생');
     const pages = ['/', '/shop', '/ranking', '/settings'];
 
     for (const path of pages) {
