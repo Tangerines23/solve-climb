@@ -292,6 +292,14 @@ jobs:
           CI: true
         run: npm run test:e2e:critical
 
+      - name: 📦 Upload Playwright Reports
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-report-critical
+          path: playwright-report/
+          retention-days: 7
+
   # 7a-2. auth/DB E2E (스케줄: 하루 1회) — 429 rate limit 절감
   e2e-auth-db:
     needs: build
@@ -395,6 +403,16 @@ jobs:
           VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
           VITE_SUPABASE_ANON_KEY: ${{ secrets.VITE_SUPABASE_ANON_KEY }}
         run: npm run check:layout:deep:with-server
+
+      - name: 📦 Upload Playwright Reports & Snapshots
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-report-visual
+          path: |
+            playwright-report/
+            test-results/
+          retention-days: 7
 
   # 8. 성능 및 웹 표준 감사 (Lighthouse 미달 시에도 워크플로 통과, 나중에 성능 개선 후 제거)
   performance-audit:
