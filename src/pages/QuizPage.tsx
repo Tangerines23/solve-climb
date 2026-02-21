@@ -434,6 +434,7 @@ export function QuizPage() {
     navigate,
     smartHandleGameOver,
     exitConfirmTimeoutRef,
+    searchParams,
   ]);
 
   // 브라우저 뒤로가기 가로채기 및 UI 뒤로가기(handleBack)와 동기화

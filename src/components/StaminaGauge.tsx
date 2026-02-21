@@ -19,11 +19,7 @@ export function StaminaGauge() {
   return (
     <div className={`stamina-gauge-container ${isEmpty ? 'shake' : ''}`}>
       <div className="stamina-gauge-icon-wrapper-hardened">
-        <svg
-          viewBox="0 0 24 24"
-          className={`stamina-lightning ${isFull ? 'pulse' : ''}`}
-          style={{ overflow: 'visible' }}
-        >
+        <svg viewBox="0 0 24 24" className={`stamina-lightning ${isFull ? 'pulse' : ''}`}>
           {isFull && (
             <path
               d="M13 2L3 14H11L9 22L19 10H11L13 2Z"
@@ -38,20 +34,26 @@ export function StaminaGauge() {
       <div className="stamina-bar-track">
         <div
           className="stamina-bar-fill"
-          style={{
-            width: `${percentage}%`,
-            backgroundColor: getColor(),
-            boxShadow: `0 0 10px ${getColor()}40`,
-          }}
+          style={
+            {
+              width: `${percentage}%`,
+              '--fill-color': getColor(),
+              '--glow-color': `${getColor()}40`,
+            } as React.CSSProperties
+          }
         />
         {/* 구분선 (1칸마다) */}
         {[1, 2, 3, 4].map((idx) => (
-          <div key={idx} className="stamina-bar-divider" style={{ left: `${idx * 20}%` }} />
+          <div
+            key={idx}
+            className="stamina-bar-divider"
+            style={{ '--left-pos': `${idx * 20}%` } as React.CSSProperties}
+          />
         ))}
       </div>
 
       <div className="stamina-text">
-        <span style={{ color: getColor() }}>{stamina}</span>
+        <span style={{ '--text-color': getColor() } as React.CSSProperties}>{stamina}</span>
         <span className="stamina-max">/{maxStamina}</span>
       </div>
     </div>

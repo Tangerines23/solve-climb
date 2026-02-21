@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate, useSearchParams } from 'react-router-dom';
+import { useNavigate, useSearchParams, useLocation } from 'react-router-dom';
 import { Header } from '../components/Header';
 import { FooterNav } from '../components/FooterNav';
 import { urls } from '../utils/navigation';
@@ -98,8 +98,8 @@ export function MyPage() {
   const [showWithdrawConfirm, setShowWithdrawConfirm] = useState(false);
   const [isWithdrawing, setIsWithdrawing] = useState(false);
 
-  // 리다이렉트 경로 계산 (RequireAuth에서 넘겨준 정보)
-  const locationState = (location as any).state as { from?: { pathname: string } } | null;
+  const routerLocation = useLocation();
+  const locationState = routerLocation.state as { from?: { pathname: string } } | null;
   const redirectPath = locationState?.from?.pathname;
 
   // 로그인 성공 후 리다이렉트 처리 함수

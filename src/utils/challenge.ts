@@ -59,7 +59,9 @@ export class SeededRandom {
 /**
  * 오늘의 챌린지를 생성합니다 (Categorized League System)
  */
-export function generateTodayChallenge(progressMap: any): TodayChallenge {
+export function generateTodayChallenge(
+  progressMap: Record<string, Record<string, Record<string, { cleared: boolean; level: number }>>>
+): TodayChallenge {
   const todayDate = getTodayDateString();
   const seed = dateToSeed(todayDate);
   const rng = new SeededRandom(seed);
@@ -113,8 +115,11 @@ export function generateTodayChallenge(progressMap: any): TodayChallenge {
   const leagueEnd = (league + 1) * 10 + 2; // +2 Preview
 
   // 6. 후보 레벨 필터링
-  const levelsConfig = APP_CONFIG.LEVELS as any;
-  const allLevels = (levelsConfig[selectedWorld.id]?.[selectedTopic.id] || []) as any[];
+  const levelsConfig = APP_CONFIG.LEVELS as unknown as Record<
+    string,
+    Record<string, { level: number; name: string }[]>
+  >;
+  const allLevels = levelsConfig[selectedWorld.id]?.[selectedTopic.id] || [];
 
   // 리그 범위 내의 레벨들
   let candidateLevels = allLevels.filter((l) => l.level >= leagueStart && l.level <= leagueEnd);
@@ -149,7 +154,9 @@ export function generateTodayChallenge(progressMap: any): TodayChallenge {
 /**
  * 오늘의 챌린지를 가져옵니다
  */
-export async function getTodayChallenge(progressMap: any): Promise<TodayChallenge> {
+export async function getTodayChallenge(
+  progressMap: Record<string, Record<string, Record<string, { cleared: boolean; level: number }>>>
+): Promise<TodayChallenge> {
   const todayDate = getTodayDateString();
   const storedDate = storage.getString(STORAGE_KEY_DATE, null);
   const storedChallenge = storage.get<TodayChallenge | null>(STORAGE_KEY_CHALLENGE, null);

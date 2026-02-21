@@ -445,7 +445,7 @@ function getRandomOperator(
   const idx = rng
     ? rng.randomInt(0, operators.length)
     : Math.floor(Math.random() * operators.length);
-  return operators[idx];
+  return operators.at(idx) ?? operators[0];
 }
 
 function calculate(a: number, b: number, op: Operator): number {

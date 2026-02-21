@@ -28,7 +28,7 @@ export function generateSequenceProblem(
   }
 
   const randomIdx = rng ? rng.randomInt(0, types.length) : Math.floor(Math.random() * types.length);
-  const type = specificType || types[randomIdx];
+  const type = specificType || types.at(randomIdx) || types[0];
   let sequence: number[] = [];
   let answer = 0;
 
@@ -177,8 +177,8 @@ function generateComparisonProblem(
   const npIdx = rng
     ? rng.randomInt(0, nonPrimes.length)
     : Math.floor(Math.random() * nonPrimes.length);
-  const p = primes[pIdx];
-  const np = nonPrimes[npIdx];
+  const p = primes.at(pIdx) ?? primes[0];
+  const np = nonPrimes.at(npIdx) ?? nonPrimes[0];
   const isPrimeFirst = rng ? rng.random() > 0.5 : Math.random() > 0.5;
   const question = isPrimeFirst
     ? `[${p}] [${np}] 소수(Prime)인 것은? (1: 왼쪽, 2: 오른쪽)`

@@ -37,7 +37,7 @@ export function SegmentedControl<T extends string>({
   // Update indicator position for fluid animation
   useEffect(() => {
     const container = containerRef.current;
-    const activeItem = itemsRef.current[activeIndex];
+    const activeItem = itemsRef.current.at(activeIndex) ?? null;
 
     if (container && activeItem) {
       const containerRect = container.getBoundingClientRect();
@@ -56,7 +56,7 @@ export function SegmentedControl<T extends string>({
     const handleResize = () => {
       // Trigger update logic again
       const container = containerRef.current;
-      const activeItem = itemsRef.current[activeIndex];
+      const activeItem = itemsRef.current.at(activeIndex) ?? null;
 
       if (container && activeItem) {
         const containerRect = container.getBoundingClientRect();
@@ -87,14 +87,18 @@ export function SegmentedControl<T extends string>({
       {options.map((option, index) => (
         <button
           key={option.value}
-          ref={(el) => (itemsRef.current[index] = el)}
+          ref={(el) => {
+            if (itemsRef.current) {
+              itemsRef.current[index] = el;
+            }
+          }}
           className={`segmented-control-item ${value === option.value ? 'active' : ''} ${
             option.disabled ? 'disabled' : ''
           }`}
           onClick={() => !option.disabled && onChange(option.value)}
           disabled={option.disabled}
           type="button"
-          aria-pressed={value === option.value}
+          aria-pressed={value === option.value ? 'true' : 'false'}
         >
           <span className="segmented-content">
             {option.icon && <span className="segmented-icon">{option.icon}</span>}
