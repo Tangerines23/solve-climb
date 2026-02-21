@@ -27,7 +27,7 @@ test.describe('Visual Regression Testing (VRT) - UI 일관성 검증', () => {
   });
 
   test('마이페이지 (My Page)', async ({ page }) => {
-    await page.goto('/mypage');
+    await page.goto('/my-page');
     await page.waitForLoadState('networkidle');
     await page.waitForTimeout(1000);
 
@@ -37,22 +37,12 @@ test.describe('Visual Regression Testing (VRT) - UI 일관성 검증', () => {
     });
   });
 
-  test('설정 페이지 (Settings Page)', async ({ page }) => {
-    await page.goto('/settings');
+  test('상점 페이지 (Shop Page)', async ({ page }) => {
+    await page.goto('/shop');
     await page.waitForLoadState('networkidle');
     await page.waitForTimeout(1000);
 
-    await expect(page).toHaveScreenshot('vrt-settings-page.png', {
-      fullPage: true,
-    });
-  });
-
-  test('가방(인벤토리) 페이지 (Backpack Page)', async ({ page }) => {
-    await page.goto('/backpack');
-    await page.waitForLoadState('networkidle');
-    await page.waitForTimeout(1000);
-
-    await expect(page).toHaveScreenshot('vrt-backpack-page.png', {
+    await expect(page).toHaveScreenshot('vrt-shop-page.png', {
       fullPage: true,
     });
   });
