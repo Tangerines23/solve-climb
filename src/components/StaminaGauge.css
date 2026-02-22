@@ -6,6 +6,21 @@
   /* Remove horizontal padding and background */
   margin-bottom: var(--spacing-2xl);
   /* Removed background, border, box-shadow, backdrop-filter */
+
+  /* State based colors */
+  --stamina-color: var(--color-success);
+  --stamina-glow: rgba(0, 200, 83, 0.4);
+}
+
+.stamina-gauge-container[data-stamina='0'] {
+  --stamina-color: var(--color-error);
+  --stamina-glow: rgba(255, 61, 0, 0.4);
+}
+
+.stamina-gauge-container[data-stamina='1'],
+.stamina-gauge-container[data-stamina='2'] {
+  --stamina-color: var(--color-warning);
+  --stamina-glow: rgba(255, 196, 0, 0.4);
 }
 
 .stamina-gauge-icon-wrapper-hardened {
@@ -29,12 +44,17 @@
 }
 
 .stamina-glow-path {
+  fill: var(--stamina-color);
   filter: blur(4px);
   transform-origin: center;
   animation: pulse-glow-opacity 2s infinite ease-in-out;
   /* Hardware acceleration hints */
   will-change: opacity, transform;
   transform: translateZ(0);
+}
+
+.stamina-main-path {
+  fill: var(--stamina-color);
 }
 
 .stamina-bar-track {
@@ -49,8 +69,8 @@
 .stamina-bar-fill {
   height: 100%;
   border-radius: var(--rounded-xs);
-  background-color: var(--fill-color, var(--color-success));
-  box-shadow: 0 0 10px var(--glow-color, rgba(0, 0, 0, 0.2));
+  background-color: var(--stamina-color);
+  box-shadow: 0 0 10px var(--stamina-glow);
   transition:
     width 0.5s cubic-bezier(0.34, 1.56, 0.64, 1),
     background-color 0.3s ease;
@@ -62,7 +82,6 @@
   bottom: 0;
   width: var(--spacing-micro);
   background: rgba(0, 0, 0, 0.2);
-  left: var(--left-pos);
   transform: translateX(-50%);
 }
 
@@ -78,8 +97,8 @@
   gap: var(--spacing-micro);
 }
 
-.stamina-text span:first-child {
-  color: var(--text-color);
+.current-stamina {
+  color: var(--stamina-color);
 }
 
 .stamina-max {

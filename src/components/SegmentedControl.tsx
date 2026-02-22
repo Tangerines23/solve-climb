@@ -73,39 +73,52 @@ export function SegmentedControl<T extends string>({
   }, [activeIndex]);
 
   return (
-    <div className={`segmented-control-container ${className}`} ref={containerRef} data-name={name}>
+    <div
+      className={`segmented-control-container ${className}`}
+      ref={containerRef}
+      data-name={name}
+      role="radiogroup"
+      aria-label={name}
+    >
       {/* Sliding Indicator */}
       <div
         className="segmented-control-indicator"
-        style={{
-          transform: `translateX(${indicatorStyle.left}px)`,
-          width: `${indicatorStyle.width}px`,
-        }}
+        style={
+          {
+            '--indicator-left': `${indicatorStyle.left}px`,
+            '--indicator-width': `${indicatorStyle.width}px`,
+          } as React.CSSProperties
+        }
       />
 
       {/* Items */}
-      {options.map((option, index) => (
-        <button
-          key={option.value}
-          ref={(el) => {
-            if (itemsRef.current) {
-              itemsRef.current[index] = el;
-            }
-          }}
-          className={`segmented-control-item ${value === option.value ? 'active' : ''} ${
-            option.disabled ? 'disabled' : ''
-          }`}
-          onClick={() => !option.disabled && onChange(option.value)}
-          disabled={option.disabled}
-          type="button"
-          aria-pressed={value === option.value ? 'true' : 'false'}
-        >
-          <span className="segmented-content">
-            {option.icon && <span className="segmented-icon">{option.icon}</span>}
-            <span className="segmented-label">{option.label}</span>
-          </span>
-        </button>
-      ))}
+      {options.map((option, index) => {
+        const isSelected = value === option.value;
+        return (
+          <button
+            key={option.value}
+            ref={(el) => {
+              if (itemsRef.current && typeof index === 'number') {
+                itemsRef.current[index] = el;
+              }
+            }}
+            className={`segmented-control-item ${isSelected ? 'active' : ''} ${
+              option.disabled ? 'disabled' : ''
+            }`}
+            onClick={() => !option.disabled && onChange(option.value)}
+            disabled={option.disabled}
+            type="button"
+            role="radio"
+            aria-checked={isSelected}
+            tabIndex={isSelected ? 0 : -1}
+          >
+            <span className="segmented-content">
+              {option.icon && <span className="segmented-icon">{option.icon}</span>}
+              <span className="segmented-label">{option.label}</span>
+            </span>
+          </button>
+        );
+      })}
     </div>
   );
 }

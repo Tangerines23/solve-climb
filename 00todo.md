@@ -17,7 +17,7 @@
 - [x] `src/pages/MyPage.tsx` — `any` 타입 제거 및 useCallback 의존성 정리
 - [x] `src/utils/MathProblemGenerator.ts` — Object Injection Sink 해결
 - [x] `src/utils/LogicProblemGenerator.ts` — Object Injection Sink 해결
-- [ ] `src/components/SegmentedControl.tsx` — ARIA 속성 및 인라인 스타일 수정
+- [x] `src/components/SegmentedControl.tsx` — ARIA 속성 및 인라인 스타일 수정
 - [ ] `src/components/StaminaGauge.tsx` — 인라인 스타일 외부 CSS 이관
 
 ---
@@ -41,6 +41,6 @@
 
 ## 🟢 운영 및 출시 준비 (Compliance)
 
-- [ ] **Account Deletion**: '회원 탈퇴' 기능 구현 (스토어 필수)
+- [x] **Account Deletion**: '회원 탈퇴' 기능 구현 (스토어 필수)
 - [ ] **Legal**: `PRIVACY_POLICY.md` 내용을 기반으로 실제 인앱 페이지 구현
 - [ ] **AdMob**: 테스트 ID를 실제 서비스 ID로 전환

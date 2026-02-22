@@ -18,6 +18,10 @@
   left: 0;
   border-radius: var(--rounded-sm-alt); /* Slightly smaller than container */
 
+  /* Position and size from JS */
+  transform: translateX(var(--indicator-left, 0));
+  width: var(--indicator-width, 0);
+
   /* Signature Teal Gradient */
   background: linear-gradient(135deg, var(--color-blue-400) 0%, var(--color-blue-500) 100%);
   box-shadow: 0 4px 12px rgba(0, 191, 165, 0.4);
