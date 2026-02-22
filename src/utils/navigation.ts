@@ -139,4 +139,9 @@ export const urls = {
    * Login Page
    */
   login: () => APP_CONFIG.ROUTES.LOGIN,
+
+  /**
+   * Privacy Policy Page
+   */
+  privacyPolicy: () => '/privacy-policy',
 };

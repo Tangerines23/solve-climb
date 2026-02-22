@@ -1,0 +1,120 @@
+.privacy-policy-page {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  background-color: var(--color-bg-primary);
+  color: var(--color-text-primary);
+}
+
+.privacy-policy-main {
+  flex: 1;
+  padding: calc(var(--header-height) + var(--spacing-md)) var(--spacing-md)
+    calc(var(--footer-height) + var(--spacing-xl));
+  overflow-y: auto;
+}
+
+.privacy-policy-container {
+  max-width: 800px;
+  margin: 0 auto;
+  background-color: var(--color-bg-secondary);
+  border-radius: var(--border-radius-lg);
+  padding: var(--spacing-lg);
+  box-shadow: var(--shadow-sm);
+}
+
+.privacy-policy-header {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-md);
+  margin-bottom: var(--spacing-lg);
+  border-bottom: 1px solid var(--color-border);
+  padding-bottom: var(--spacing-md);
+}
+
+.privacy-policy-header h1 {
+  font-size: 1.5rem;
+  font-weight: 700;
+  margin: 0;
+  color: var(--color-text-primary);
+}
+
+.back-button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  border: none;
+  background-color: var(--color-bg-tertiary);
+  color: var(--color-text-primary);
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.back-button:hover {
+  background-color: var(--color-border);
+  transform: translateX(-2px);
+}
+
+.back-icon {
+  font-size: 1.2rem;
+  font-weight: bold;
+}
+
+.privacy-policy-content {
+  line-height: 1.6;
+  font-size: 1rem;
+}
+
+.last-updated {
+  font-size: 0.875rem;
+  color: var(--color-text-secondary);
+  margin-bottom: var(--spacing-lg);
+  text-align: right;
+}
+
+.privacy-policy-content section {
+  margin-bottom: var(--spacing-xl);
+}
+
+.privacy-policy-content h2 {
+  font-size: 1.125rem;
+  font-weight: 600;
+  margin-top: 0;
+  margin-bottom: var(--spacing-md);
+  color: var(--color-accent);
+  border-left: 4px solid var(--color-accent);
+  padding-left: var(--spacing-sm);
+}
+
+.privacy-policy-content p {
+  margin-bottom: var(--spacing-sm);
+}
+
+.privacy-policy-content ul {
+  padding-left: var(--spacing-lg);
+  margin-bottom: var(--spacing-md);
+}
+
+.privacy-policy-content li {
+  margin-bottom: var(--spacing-xs);
+}
+
+.privacy-policy-content a {
+  color: var(--color-accent);
+  text-decoration: underline;
+}
+
+@media (max-width: 600px) {
+  .privacy-policy-container {
+    padding: var(--spacing-md);
+    border-radius: 0;
+    box-shadow: none;
+    background-color: transparent;
+  }
+
+  .privacy-policy-header h1 {
+    font-size: 1.25rem;
+  }
+}

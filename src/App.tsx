@@ -42,6 +42,9 @@ const NotificationPage = lazy(() =>
 const DebugPage = lazy(() =>
   import('@/pages/DebugPage').then((module) => ({ default: module.DebugPage }))
 );
+const PrivacyPolicyPage = lazy(() =>
+  import('@/pages/PrivacyPolicyPage').then((module) => ({ default: module.PrivacyPolicyPage }))
+);
 // AuthCallbackPage & AuthTestPage imports removed
 const ShopPage = lazy(() =>
   import('@/pages/ShopPage').then((module) => ({ default: module.ShopPage }))
@@ -209,6 +212,7 @@ function App() {
             }
           />
           <Route path="/debug" element={<DebugPage />} />
+          <Route path="/privacy-policy" element={<PrivacyPolicyPage />} />
           <Route
             path="/shop"
             element={

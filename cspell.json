@@ -62,7 +62,8 @@
     "safearea",
     "currentwords",
     "Desaturation",
-    "Congruential"
+    "Congruential",
+    "IDFA"
   ],
   "ignorePaths": [
     "node_modules",

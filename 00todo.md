@@ -42,5 +42,5 @@
 ## 🟢 운영 및 출시 준비 (Compliance)
 
 - [x] **Account Deletion**: '회원 탈퇴' 기능 구현 (스토어 필수)
-- [ ] **Legal**: `PRIVACY_POLICY.md` 내용을 기반으로 실제 인앱 페이지 구현
+- [x] **Legal**: `PRIVACY_POLICY.md` 내용을 기반으로 실제 인앱 페이지 구현
 - [ ] **AdMob**: 테스트 ID를 실제 서비스 ID로 전환

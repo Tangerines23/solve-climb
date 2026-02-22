@@ -105,14 +105,19 @@ export function MyPage() {
   // 로그인 성공 후 리다이렉트 처리 함수
   const performRedirect = React.useCallback(() => {
     const savedRedirect = localStorage.getItem('login_redirect_path');
+
+    // 1. 명시적인 복귀 경로가 있는 경우 (RequireAuth 등에서 전달됨)
     if (redirectPath && redirectPath !== urls.myPage()) {
       navigate(redirectPath, { replace: true });
-    } else if (savedRedirect && savedRedirect !== urls.myPage()) {
+    }
+    // 2. 이전에 저장된 리다이렉트 경로가 있는 경우
+    else if (savedRedirect && savedRedirect !== urls.myPage()) {
       localStorage.removeItem('login_redirect_path');
       navigate(savedRedirect, { replace: true });
-    } else {
-      // 기본적으로 메인 페이지로 이동
-      navigate(urls.home(), { replace: true });
+    }
+    // 3. 현재 위치가 이미 마이페이지이거나 복귀 경로가 마이페이지인 경우 이동하지 않음
+    else {
+      console.log('[MyPage] Stay on MyPage');
     }
   }, [redirectPath, navigate]);
   // 오늘의 챌린지 가져오기
