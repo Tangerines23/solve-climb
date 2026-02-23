@@ -1,7 +1,10 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen } from '@testing-library/react';
+import '@testing-library/jest-dom';
 import { BrowserRouter } from 'react-router-dom';
 import { FooterNav } from '../FooterNav';
+import { useProfileStore } from '../../stores/useProfileStore';
+import { useAuthStore } from '../../stores/useAuthStore';
 
 // Mock useNavigate and useLocation
 const mockNavigate = vi.fn();
@@ -16,10 +19,24 @@ vi.mock('react-router-dom', async () => {
   };
 });
 
+vi.mock('../../stores/useProfileStore', () => ({
+  useProfileStore: vi.fn(),
+}));
+
+vi.mock('../../stores/useAuthStore', () => ({
+  useAuthStore: vi.fn(),
+}));
+
 describe('FooterNav', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     mockLocation.pathname = '/';
+    vi.mocked(useProfileStore).mockImplementation((selector: any) =>
+      selector({ isProfileComplete: true })
+    );
+    vi.mocked(useAuthStore).mockImplementation((selector: any) =>
+      selector({ session: { user: { id: 'test' } } })
+    );
   });
 
   const renderFooterNav = () => {

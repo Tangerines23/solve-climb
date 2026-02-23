@@ -3,11 +3,17 @@ import { renderHook } from '@testing-library/react';
 import { useCustomBackNavigation } from '../useCustomBackNavigation';
 import { APP_CONFIG } from '../../config/app';
 import { useNavigate, useLocation } from 'react-router-dom';
-
+import { useProfileStore } from '../../stores/useProfileStore';
 // Mock dependencies
 vi.mock('react-router-dom', () => ({
   useNavigate: vi.fn(),
   useLocation: vi.fn(),
+}));
+
+vi.mock('../../stores/useProfileStore', () => ({
+  useProfileStore: {
+    getState: vi.fn(),
+  },
 }));
 
 describe('useCustomBackNavigation', () => {
@@ -24,6 +30,7 @@ describe('useCustomBackNavigation', () => {
     vi.clearAllMocks();
     vi.mocked(useNavigate).mockReturnValue(mockNavigate);
     vi.mocked(useLocation).mockReturnValue(mockLocation);
+    vi.mocked(useProfileStore.getState).mockReturnValue({ isProfileComplete: true });
 
     // Mock window.history
     Object.defineProperty(window, 'history', {
@@ -268,6 +275,21 @@ describe('useCustomBackNavigation', () => {
     window.dispatchEvent(popStateEvent);
 
     expect(mockNavigate).toHaveBeenCalledWith(APP_CONFIG.ROUTES.HOME, { replace: true });
+  });
+
+  it('should not navigate to home from my page if profile is incomplete', () => {
+    vi.mocked(useLocation).mockReturnValue({
+      ...mockLocation,
+      pathname: APP_CONFIG.ROUTES.MY_PAGE,
+    });
+    vi.mocked(useProfileStore.getState).mockReturnValue({ isProfileComplete: false });
+
+    renderHook(() => useCustomBackNavigation());
+
+    const popStateEvent = new PopStateEvent('popstate');
+    window.dispatchEvent(popStateEvent);
+
+    expect(mockNavigate).not.toHaveBeenCalled();
   });
 
   it('should handle result page with mode parameter', () => {

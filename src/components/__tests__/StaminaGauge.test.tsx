@@ -94,24 +94,24 @@ describe('StaminaGauge', () => {
     expect(dividers).toHaveLength(4);
   });
 
-  it('should use red color when stamina is 0', () => {
+  it('should set data-stamina to 0 when stamina is empty', () => {
     (useUserStore as unknown as ReturnType<typeof vi.fn>).mockReturnValue({ stamina: 0 });
     const { container } = render(<StaminaGauge />);
-    const lightning = container.querySelector('.stamina-lightning path:not(.stamina-glow-path)');
-    expect(lightning).toHaveAttribute('fill', 'var(--color-error)');
+    const gaugeContainer = container.querySelector('.stamina-gauge-container');
+    expect(gaugeContainer).toHaveAttribute('data-stamina', '0');
   });
 
-  it('should use yellow color when stamina is low (<=2)', () => {
+  it('should set data-stamina to low values correctly', () => {
     (useUserStore as unknown as ReturnType<typeof vi.fn>).mockReturnValue({ stamina: 2 });
     const { container } = render(<StaminaGauge />);
-    const lightning = container.querySelector('.stamina-lightning path:not(.stamina-glow-path)');
-    expect(lightning).toHaveAttribute('fill', 'var(--color-warning)');
+    const gaugeContainer = container.querySelector('.stamina-gauge-container');
+    expect(gaugeContainer).toHaveAttribute('data-stamina', '2');
   });
 
-  it('should use green color when stamina is good (>2)', () => {
+  it('should set data-stamina to high values correctly', () => {
     (useUserStore as unknown as ReturnType<typeof vi.fn>).mockReturnValue({ stamina: 3 });
     const { container } = render(<StaminaGauge />);
-    const lightning = container.querySelector('.stamina-lightning path:not(.stamina-glow-path)');
-    expect(lightning).toHaveAttribute('fill', 'var(--color-success)');
+    const gaugeContainer = container.querySelector('.stamina-gauge-container');
+    expect(gaugeContainer).toHaveAttribute('data-stamina', '3');
   });
 });
