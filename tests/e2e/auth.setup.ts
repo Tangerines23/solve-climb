@@ -43,6 +43,33 @@ setup('authenticate once (anonymous)', async ({ page }) => {
     const stat = fs.statSync(authPath);
     const hourAgo = Date.now() - 60 * 60 * 1000;
     if (stat.mtimeMs > hourAgo) {
+      console.log('[auth.setup] Using cached auth file.');
+      // 포트가 변경되었을 수 있으므로 origin을 현재 origin으로 업데이트!
+      const content = fs.readFileSync(authPath, 'utf8');
+      try {
+        const data = JSON.parse(content);
+        // Playwright test runner environment has process.env.E2E_DEV_PORT
+        const currentPort = process.env.E2E_DEV_PORT || '5173';
+        const expectedOrigin = `http://localhost:${currentPort}`;
+
+        let originUpdated = false;
+        if (Array.isArray(data.origins)) {
+          data.origins.forEach((org: { origin: string }) => {
+            if (org.origin && org.origin.includes('localhost')) {
+              if (org.origin !== expectedOrigin) {
+                console.log(`[auth.setup] Updating origin from ${org.origin} to ${expectedOrigin}`);
+                org.origin = expectedOrigin;
+                originUpdated = true;
+              }
+            }
+          });
+        }
+        if (originUpdated) {
+          fs.writeFileSync(authPath, JSON.stringify(data, null, 2), 'utf8');
+        }
+      } catch (e) {
+        console.error('[auth.setup] Failed to rewrite origin in cached auth file:', e);
+      }
       return;
     }
   }
