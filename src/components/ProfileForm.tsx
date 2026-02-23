@@ -7,9 +7,10 @@ import './ProfileForm.css';
 interface ProfileFormProps {
   onComplete: () => void;
   showBackButton?: boolean;
+  onCancel?: () => void;
 }
 
-export function ProfileForm({ onComplete, showBackButton = false }: ProfileFormProps) {
+export function ProfileForm({ onComplete, showBackButton = false, onCancel }: ProfileFormProps) {
   const navigate = useNavigate();
   // Zustand Selector 패턴 적용
   const setProfile = useProfileStore((state) => state.setProfile);
@@ -116,7 +117,10 @@ export function ProfileForm({ onComplete, showBackButton = false }: ProfileFormP
   return (
     <div className="profile-form-container">
       {showBackButton && (
-        <button className="btn-icon profile-form-back-button" onClick={() => navigate(-1)}>
+        <button
+          className="btn-icon profile-form-back-button"
+          onClick={() => (onCancel ? onCancel() : navigate(-1))}
+        >
           ←
         </button>
       )}

@@ -107,7 +107,7 @@ const savedAdminMode = loadAdminMode() || (savedProfile?.isAdmin ?? false);
 
 export const useProfileStore = create<ProfileState>((set, get) => ({
   profile: savedProfile,
-  isProfileComplete: !!savedProfile,
+  isProfileComplete: !!savedProfile && !!savedProfile.nickname,
   isAdmin: savedAdminMode,
   profiles: savedProfiles,
   setProfile: (profile) => {
@@ -145,9 +145,10 @@ export const useProfileStore = create<ProfileState>((set, get) => ({
     const currentProgress = levelProgressStore.progress;
 
     // 프로필 ID를 키로 사용하여 기록 저장
+    // 프로필 ID를 키로 사용하여 기록 저장
     storage.set(StorageKeys.PROGRESS(profile.profileId), currentProgress);
 
-    set({ profile, isProfileComplete: true, profiles: updatedProfiles });
+    set({ profile, isProfileComplete: !!profile.nickname, profiles: updatedProfiles });
 
     // 프로필이 변경되면 관리자 모드도 업데이트
     if (profile.isAdmin) {
@@ -190,7 +191,7 @@ export const useProfileStore = create<ProfileState>((set, get) => ({
     const progress = storage.get<UserProgress>(StorageKeys.PROGRESS(profileId), {});
     useLevelProgressStore.setState({ progress });
 
-    set({ profile, isProfileComplete: true });
+    set({ profile, isProfileComplete: !!profile.nickname });
 
     // 관리자 모드 업데이트
     if (profile.isAdmin) {

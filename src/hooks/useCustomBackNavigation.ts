@@ -1,6 +1,7 @@
 import { useEffect, useRef } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { APP_CONFIG } from '../config/app';
+import { useProfileStore } from '../stores/useProfileStore';
 
 /**
  * 브라우저 뒤로가기 버튼 동작을 커스터마이징하는 훅
@@ -79,6 +80,15 @@ export function useCustomBackNavigation() {
           }, 100);
           return;
         } else {
+          // 마이페이지인데 프로필 미완성(로그인 단계)일 경우 홈으로 보내지 않음 (앱 이탈 허용)
+          const profileStore = useProfileStore.getState();
+          if (pathToCheck === APP_CONFIG.ROUTES.MY_PAGE && !profileStore.isProfileComplete) {
+            setTimeout(() => {
+              isHandlingPopStateRef.current = false;
+            }, 100);
+            return;
+          }
+
           // 다른 메인 페이지에서 뒤로가기 → 홈으로 이동
           navigate(APP_CONFIG.ROUTES.HOME, { replace: true });
         }

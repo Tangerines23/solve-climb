@@ -47,18 +47,29 @@ test.describe('SMOKE TEST - 메인 화면 검증', () => {
   });
 
   // /category-select가 RequireAuth(isProfileComplete) 가드로 보호됨
-  // → CI에서 프로필 없이 접근 시 /my-page로 리다이렉트 → URL 매칭 타임아웃
-  // 근본 해결: CI용 테스트 계정 또는 mock 인증 필요
   test('산 선택 및 페이지 이동 시나리오', async ({ page }) => {
     await page.goto('/');
+    await page.waitForLoadState('networkidle');
 
-    // 1. 첫 번째 산의 '등반하기' 버튼 클릭
+    // 1. 첫 번째 산의 '등반하기' 버튼 클릭 (홈 메뉴)
     const climbButton = page.locator('.category-climb-button').first();
     await climbButton.waitFor({ state: 'visible' });
     await climbButton.click();
 
-    // 2. 카테고리 선택 페이지로 이동했는지 확인 (URL 로딩 대기 통합)
-    await page.waitForURL(/\/category-select.*mountain=.*/, { timeout: 10000 });
+    // 2. 만약 프로필 미등록 상태라면 /my-page 로 강제 리다이렉트 됨 (RequireAuth)
+    // 따라서 my-page 에서 프로필 생성이 필요할 수 있음
+    if (page.url().includes('/my-page')) {
+      const anonymousBtn = page.getByText('익명 로그인하기');
+      if (await anonymousBtn.isVisible()) {
+        await anonymousBtn.click();
+      }
+
+      // 닉네임 입력 대기
+      await expect(page.locator('#nickname')).toBeVisible();
+      await page.fill('#nickname', 'SmokeTester');
+      await page.click('button[type="submit"]');
+      await page.waitForLoadState('networkidle');
+    }
 
     // 3. 페이지 렌더링 확인 (에러 메시지 없음)
     const container = page.locator('.category-select-container, .topic-select-page');

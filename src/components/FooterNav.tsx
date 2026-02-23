@@ -1,4 +1,6 @@
 import { useNavigate, useLocation } from 'react-router-dom';
+import { useProfileStore } from '@/stores/useProfileStore';
+import { useAuthStore } from '@/stores/useAuthStore';
 import { APP_CONFIG } from '../config/app';
 import './FooterNav.css';
 
@@ -41,6 +43,15 @@ export function FooterNav() {
     }
     return location.pathname === item.route;
   };
+
+  // 마이페이지(로그인/프로필 설정)에서는 네비게이션 숨김
+  const isMyPage = location.pathname === APP_CONFIG.ROUTES.MY_PAGE;
+  const isProfileComplete = useProfileStore((state) => state.isProfileComplete);
+  const session = useAuthStore((state) => state.session);
+
+  if (isMyPage && (!session || !isProfileComplete)) {
+    return null;
+  }
 
   return (
     <nav className="footer-nav">

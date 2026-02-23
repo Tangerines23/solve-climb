@@ -81,6 +81,8 @@ export function MyPage() {
 
   // URL 파라미터에서 showProfileForm 확인
   const shouldShowProfileForm = searchParams.get('showProfileForm') === 'true';
+
+  // 프로필이 미완성이거나(닉네임 없음 포함) 명시적으로 요청된 경우 폼 표시
   const [showProfileForm, setShowProfileForm] = useState(
     !isProfileComplete || shouldShowProfileForm
   );
@@ -149,11 +151,27 @@ export function MyPage() {
 
   const handleProfileComplete = () => {
     setShowProfileForm(false);
-    // URL 파라미터 제거
-    navigate(urls.myPage(), { replace: true });
 
-    // 리다이렉트 시도
-    performRedirect();
+    // 이미 프로필이 있는 상태에서 수정한 경우 -> 마이페이지 유지
+    if (isProfileComplete) {
+      navigate(urls.myPage(), { replace: true, state: {} });
+      refetch(); // 프로필 완성 후 통계 다시 불러오기
+      return;
+    }
+
+    // 최초 프로필 생성인 경우 -> 이전 경로 또는 홈으로 이동
+    navigate(urls.myPage(), { replace: true, state: {} });
+
+    const savedRedirect = localStorage.getItem('login_redirect_path');
+    if (redirectPath && redirectPath !== urls.myPage()) {
+      navigate(redirectPath, { replace: true });
+    } else if (savedRedirect && savedRedirect !== urls.myPage()) {
+      localStorage.removeItem('login_redirect_path');
+      navigate(savedRedirect, { replace: true });
+    } else {
+      // 명시적 리다이렉트가 없으면 홈으로 보냄 (사용자 요청 사항)
+      navigate('/', { replace: true });
+    }
 
     refetch(); // 프로필 완성 후 통계 다시 불러오기
   };
@@ -220,11 +238,7 @@ export function MyPage() {
       setToastMessage('회원 탈퇴가 완료되었습니다. 이용해 주셔서 감사합니다.');
       setShowToast(true);
 
-      // 탈퇴 후 홈으로 이동하거나 초기 상태로 변경
-      setTimeout(() => {
-        navigate(urls.home(), { replace: true });
-        window.location.reload(); // 상태 완전 초기화를 위해 리로드
-      }, 2000);
+      /* Removed automatic redirect to home that caused a loop */
     } catch (error: unknown) {
       console.error('Withdrawal failed:', error);
       setToastMessage(error instanceof Error ? error.message : '회원 탈퇴 중 오류가 발생했습니다.');
@@ -292,8 +306,8 @@ export function MyPage() {
 
       // 로컬 세션만 사용 (Supabase 인증 없이)
       const userProfile = {
-        profileId: `user_${Date.now()}_${Math.random().toString(36).substr(2, 9)} `,
-        nickname: '게이머',
+        profileId: `user_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+        nickname: '',
         createdAt: new Date().toISOString(),
         isAdmin: false,
       };
@@ -349,6 +363,9 @@ export function MyPage() {
     if (!session?.user || !refetch) return;
     const userId = session.user.id;
     if (profile?.userId === userId) return;
+
+    // 익명 사용자는 이 이펙트에서 자동 프로필 생성을 처리하지 않음 (익명 로그인은 handleAnonymousLogin에서 처리)
+    if (session.user.is_anonymous) return;
 
     const nickname =
       session.user.user_metadata?.full_name ||
@@ -479,7 +496,11 @@ export function MyPage() {
         <Header />
         <main className="my-page-main">
           <div className="my-page-content">
-            <ProfileForm onComplete={handleProfileComplete} showBackButton={isProfileComplete} />
+            <ProfileForm
+              onComplete={handleProfileComplete}
+              showBackButton={isProfileComplete}
+              onCancel={() => setShowProfileForm(false)}
+            />
           </div>
         </main>
         <FooterNav />

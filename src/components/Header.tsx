@@ -3,6 +3,7 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import { APP_CONFIG } from '../config/app';
 import { urls } from '../utils/navigation';
 import { useProfileStore } from '../stores/useProfileStore';
+import { useAuthStore } from '../stores/useAuthStore';
 import { useUserStore } from '../stores/useUserStore';
 import { useDebugStore } from '../stores/useDebugStore';
 import { useToastStore } from '../stores/useToastStore';
@@ -125,6 +126,15 @@ export function Header({ title, showBack, onBack }: HeaderProps) {
   const clearSelection = () => {
     setSelectedResource(null);
   };
+
+  // 마이페이지(로그인/프로필 설정)에서는 헤더 숨김
+  const isProfileComplete = useProfileStore((state) => state.isProfileComplete);
+  const session = useAuthStore((state) => state.session);
+  const isMyPage = location.pathname === APP_CONFIG.ROUTES.MY_PAGE;
+
+  if (isMyPage && (!session || !isProfileComplete)) {
+    return null;
+  }
 
   return (
     <header

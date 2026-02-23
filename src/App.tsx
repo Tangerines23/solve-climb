@@ -153,7 +153,14 @@ function App() {
         }
       >
         <Routes>
-          <Route path="/" element={<HomePage />} />
+          <Route
+            path="/"
+            element={
+              <RequireAuth>
+                <HomePage />
+              </RequireAuth>
+            }
+          />
           <Route
             path="/category-select"
             element={

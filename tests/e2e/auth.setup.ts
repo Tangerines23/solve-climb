@@ -50,10 +50,52 @@ setup('authenticate once (anonymous)', async ({ page }) => {
   let authOk = false;
   for (let attempt = 1; attempt <= MAX_ATTEMPTS; attempt++) {
     await page.goto('/');
-    await page.waitForLoadState('load');
+    await page.waitForLoadState('networkidle');
 
     authOk = await waitForAuth(page);
-    if (authOk) break;
+    console.log(`[auth.setup] attempt ${attempt}: authOk = ${authOk}, url = ${page.url()}`);
+    if (authOk) {
+      // 익명 로그인 버튼 대기 (선택적)
+      const anonymousBtn = page.getByText('익명 로그인하기');
+      try {
+        await anonymousBtn.waitFor({ state: 'visible', timeout: 3000 });
+        await anonymousBtn.click();
+      } catch (_e) {
+        // 무시: 자동 익명 로그인이 활성화되어 이미 넘어갔을 수 있음
+      }
+
+      // 프로필 입력 폼 대기 (마이페이지 리다이렉트를 고려하여 대기)
+      const nicknameInput = page.locator('#nickname');
+      try {
+        // Redirection might take a moment, so wait for the input.
+        await nicknameInput.waitFor({ state: 'visible', timeout: 5000 });
+        console.log('[auth.setup] Filling nickname');
+        await nicknameInput.fill('SmokeTester');
+        await page.click('button[type="submit"]');
+
+        console.log('[auth.setup] Waiting for redirect after submit...');
+        await page.waitForURL('**/?(redirectPath=*)', { timeout: 10000 });
+
+        // 홈 또는 딴 곳에 도착해야 함
+        await page.waitForFunction(
+          () => {
+            return (
+              window.location.pathname === '/' || window.location.pathname === '/category-select'
+            );
+          },
+          { timeout: 10000 }
+        );
+        console.log('[auth.setup] Redirect completed!');
+      } catch (e) {
+        console.log(`[auth.setup] Profile creation skipped or failed: ${e}`);
+        // 만약 못찾았다면 현재 URL이 정상적인 페이지인지 확인
+        if (page.url().includes('my-page')) {
+          console.error('[auth.setup] Stuck on my-page without nickname input!');
+          throw new Error('Stuck on my-page during setup');
+        }
+      }
+      break;
+    }
 
     if (attempt < MAX_ATTEMPTS) {
       const backoffMs = BASE_BACKOFF_MS * Math.pow(2, attempt - 1);
