@@ -72,16 +72,6 @@ const saveActiveProfileId = (profileId: string | null) => {
 // 프로필 목록과 활성 프로필 로드
 const initialProfiles = loadProfiles();
 
-// CI Mock Logic: VITE_CI가 true이고 프로필이 비어있다면 가짜 프로필 주입
-if (import.meta.env.VITE_CI === 'true' && initialProfiles.length === 0) {
-  initialProfiles.push({
-    profileId: 'ci-test-profile',
-    nickname: 'CITester',
-    createdAt: new Date().toISOString(),
-    isAdmin: true,
-  });
-}
-
 const savedProfiles = initialProfiles;
 const activeProfileId = loadActiveProfileId();
 const savedProfile = activeProfileId

@@ -18,7 +18,7 @@ export function RequireAuth({ children }: RequireAuthProps) {
 
   if (isLoadingAuth) {
     return (
-      <div className="loading-fallback">
+      <div className="loading-fallback" role="alert" aria-busy="true">
         <div className="loading-text">인증 확인 중...</div>
       </div>
     );

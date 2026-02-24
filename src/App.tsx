@@ -50,28 +50,29 @@ const ShopPage = lazy(() =>
   import('@/pages/ShopPage').then((module) => ({ default: module.ShopPage }))
 );
 
-// ⚠️ 개발 환경에서만 디버그 컴포넌트 로드
-const DebugPanel = import.meta.env.PROD
-  ? () => null
-  : lazy(() => import('./components/DebugPanel'));
-const DebugOverlay = import.meta.env.PROD
+// ⚠️ 개발 환경에서만 디버그 컴포넌트 로드 (CI 환경 제외)
+const isCI = import.meta.env.VITE_CI === 'true';
+const shouldShowDebug = !import.meta.env.PROD && !isCI;
+
+const DebugPanel = !shouldShowDebug ? () => null : lazy(() => import('./components/DebugPanel'));
+const DebugOverlay = !shouldShowDebug
   ? () => null
   : lazy(() =>
       import('./components/debug/DebugOverlay').then((m) => ({ default: m.DebugOverlay }))
     );
-const DebugReturnFloater = import.meta.env.PROD
+const DebugReturnFloater = !shouldShowDebug
   ? () => null
   : lazy(() =>
       import('./components/debug/DebugReturnFloater').then((m) => ({
         default: m.DebugReturnFloater,
       }))
     );
-const VisualGuardian = import.meta.env.PROD
+const VisualGuardian = !shouldShowDebug
   ? () => null
   : lazy(() =>
       import('./components/dev/VisualGuardian').then((m) => ({ default: m.VisualGuardian }))
     );
-const DebugShortcutsWrapper = import.meta.env.PROD
+const DebugShortcutsWrapper = !shouldShowDebug
   ? () => null
   : lazy(() => import('./components/debug/DebugShortcutsWrapper'));
 

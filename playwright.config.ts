@@ -62,6 +62,7 @@ export default defineConfig({
     timeout: 120000,
     env: {
       VITE_CI: 'true',
+      E2E_DEV_PORT: process.env.E2E_DEV_PORT || '5173',
     },
   },
 

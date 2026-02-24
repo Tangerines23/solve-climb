@@ -2,6 +2,7 @@ import { create } from 'zustand';
 import { supabase } from '../utils/supabaseClient';
 import { Session, User } from '@supabase/supabase-js';
 import { safeSupabaseQuery } from '../utils/debugFetch';
+import { storage, StorageKeys } from '../utils/storage';
 
 interface AuthState {
   session: Session | null;
@@ -20,15 +21,39 @@ export const useAuthStore = create<AuthState>((set) => ({
   initialize: async () => {
     set({ isLoading: true });
 
-    // Check current session
+    // 1. 로컬 세션 우선 확인 (익명 사용자용, 가장 빠름)
+    const localSession = storage.get<any>(StorageKeys.LOCAL_SESSION, null);
+    if (localSession) {
+      const mockSession = { user: { id: localSession.userId, is_anonymous: true } } as any;
+      set({ session: mockSession, user: mockSession.user });
+    }
+
+    // 2. Supabase 세션 확인 (이미 로컬 세션이 있어도 Supabase 세션이 우선순위가 높을 수 있음)
     const {
-      data: { session },
+      data: { session: sbSession },
     } = await safeSupabaseQuery(supabase.auth.getSession());
-    set({ session, user: session?.user ?? null });
+
+    if (sbSession) {
+      set({ session: sbSession, user: sbSession.user });
+    }
 
     // Listen for auth changes
     supabase.auth.onAuthStateChange((_event, session) => {
       const user = session?.user ?? null;
+      // console.log('[AuthStore] Auth state change:', _event, user?.id);
+
+      // 만약 이미 로컬 익명 세션이 있는 상태에서 Supabase가 null 세션을 준 경우,
+      // 명시적인 로그아웃(SIGNED_OUT)이 아니라면 로컬 세션을 유지함
+      const eventName = _event as string;
+      if (!session && (eventName === 'INITIAL_SESSION' || eventName === 'MFA_CHALLENGE')) {
+        const state = useAuthStore.getState();
+        if (state.session?.user && (state.session.user as any).is_anonymous) {
+          // console.log('[AuthStore] Maintaining local session despite', _event, 'null');
+          set({ isLoading: false });
+          return;
+        }
+      }
+
       set({ session, user, isLoading: false });
 
       // [Added] Analytics 유저 컨텍스트 동기화
@@ -40,19 +65,13 @@ export const useAuthStore = create<AuthState>((set) => ({
       });
     });
 
-    // If no session and valid URL exists, try anonymous sign-in
-    if (
-      !session &&
-      supabase.auth.admin /* checking for client readiness or simple ENV check */ &&
-      !supabase.auth.getSession.toString().includes('localhost')
-    ) {
-      // Actually a better way is to check the client instance origin or just the ENV again
-    }
-
-    if (!session && import.meta.env.VITE_SUPABASE_URL) {
+    // If no session and valid URL exists, try anonymous sign-in (Supabase)
+    const currentSession = useAuthStore.getState().session;
+    if (!currentSession && import.meta.env.VITE_SUPABASE_URL) {
+      console.log('[AuthStore] Attempting Supabase anonymous sign-in...');
       const { data, error } = await safeSupabaseQuery(supabase.auth.signInAnonymously());
       if (error) {
-        console.error('[AuthStore] Anonymous sign-in failed:', error.message);
+        console.error('[AuthStore] Supabase anonymous sign-in failed:', error.message);
       } else {
         set({ session: data.session, user: data.user });
       }

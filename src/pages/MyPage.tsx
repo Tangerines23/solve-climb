@@ -83,9 +83,10 @@ export function MyPage() {
   const shouldShowProfileForm = searchParams.get('showProfileForm') === 'true';
 
   // 프로필이 미완성이거나(닉네임 없음 포함) 명시적으로 요청된 경우 폼 표시
-  const [showProfileForm, setShowProfileForm] = useState(
-    !isProfileComplete || shouldShowProfileForm
-  );
+  // [Fix] isProfileComplete 상태와 동기화되도록 하여 E2E/CI 환경에서의 레이스 컨디션 방지
+  const [showProfileForm, setShowProfileForm] = useState(shouldShowProfileForm);
+  const isFormVisible = !isProfileComplete || showProfileForm;
+
   const [showDataResetConfirm, setShowDataResetConfirm] = useState(false);
   const [showToast, setShowToast] = useState(false);
   const [toastMessage, setToastMessage] = useState('');
@@ -122,6 +123,7 @@ export function MyPage() {
       console.log('[MyPage] Stay on MyPage');
     }
   }, [redirectPath, navigate]);
+
   // 오늘의 챌린지 가져오기
   useEffect(() => {
     getTodayChallenge(progressMap)
@@ -251,7 +253,7 @@ export function MyPage() {
   const handleSendFeedback = () => {
     const subject = encodeURIComponent('[Solve Climb] 의견 보내기');
     const body = encodeURIComponent('안녕하세요,\n\n의견을 남겨주세요:\n\n');
-    window.location.href = `mailto:support @solveclimb.com?subject = ${subject}& body=${body} `;
+    window.location.href = `mailto:support@solveclimb.com?subject=${subject}&body=${body}`;
   };
 
   /*
@@ -259,7 +261,7 @@ export function MyPage() {
   const handleLogin = async () => {
     ...
   };
-*/
+  */
 
   // 리더보드 열기 함수
   const handleOpenLeaderboard = async () => {
@@ -490,7 +492,7 @@ export function MyPage() {
     );
   }
 
-  if (showProfileForm) {
+  if (isFormVisible) {
     return (
       <div className="my-page">
         <Header />
@@ -560,26 +562,8 @@ export function MyPage() {
 
           {/* Admin / Dev Tool Link */}
           {(useProfileStore.getState().isAdmin || import.meta.env.DEV) && (
-            <div style={{ marginTop: 'var(--spacing-3xl)', paddingBottom: 'var(--spacing-4xl)' }}>
-              <button
-                style={{
-                  width: '100%',
-                  padding: 'var(--spacing-lg)',
-                  backgroundColor: 'var(--color-bg-secondary)',
-                  color: 'var(--color-text-secondary)',
-                  border: '1px dashed var(--color-bg-tertiary)',
-                  borderRadius: 'var(--rounded-card)',
-                  fontSize: '14px',
-                  fontWeight: '500',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  gap: 'var(--spacing-sm)',
-                  cursor: 'pointer',
-                  transition: 'all 0.2s',
-                }}
-                onClick={() => navigate(urls.debug())}
-              >
+            <div className="mypage-admin-link-container">
+              <button className="mypage-admin-link-button" onClick={() => navigate(urls.debug())}>
                 <span>🛠️</span> 관리자 도구 & UI 실험실 이동
               </button>
             </div>
@@ -610,6 +594,13 @@ export function MyPage() {
         title="알림"
         message={alertMessage || '리더보드를 열 수 없습니다.'}
         onClose={() => setShowAlert(false)}
+      />
+      <CyclePromotionModal
+        isOpen={showPromotionModal}
+        stars={tierStars}
+        pendingScore={stats?.pendingCycleScore || 0}
+        onPromote={handlePromote}
+        onClose={() => setShowPromotionModal(false)}
       />
       <WithdrawConfirmModal
         isOpen={showWithdrawConfirm}

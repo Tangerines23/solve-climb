@@ -61,21 +61,41 @@ export function MyPageSettings({
           </button>
           <div className="my-page-settings-item">
             <div className="my-page-settings-item-content">
-              <span className="my-page-settings-item-label">진동</span>
+              <label htmlFor="haptic-toggle" className="my-page-settings-item-label">
+                진동
+              </label>
             </div>
-            <label className="my-page-settings-toggle">
-              <input type="checkbox" checked={hapticEnabled} onChange={onToggleHaptic} />
-              <span className="my-page-settings-toggle-slider"></span>
-            </label>
+            <div className="my-page-settings-toggle-wrapper">
+              <label className="my-page-settings-toggle">
+                <input
+                  id="haptic-toggle"
+                  type="checkbox"
+                  checked={hapticEnabled}
+                  onChange={onToggleHaptic}
+                  aria-label="진동 설정 제어"
+                />
+                <span className="my-page-settings-toggle-slider"></span>
+              </label>
+            </div>
           </div>
           <div className="my-page-settings-item">
             <div className="my-page-settings-item-content">
-              <span className="my-page-settings-item-label">정적 UI 모드</span>
+              <label htmlFor="animation-toggle" className="my-page-settings-item-label">
+                정적 UI 모드
+              </label>
             </div>
-            <label className="my-page-settings-toggle">
-              <input type="checkbox" checked={!animationEnabled} onChange={onToggleAnimation} />
-              <span className="my-page-settings-toggle-slider"></span>
-            </label>
+            <div className="my-page-settings-toggle-wrapper">
+              <label className="my-page-settings-toggle">
+                <input
+                  id="animation-toggle"
+                  type="checkbox"
+                  checked={!animationEnabled}
+                  onChange={onToggleAnimation}
+                  aria-label="정적 UI 모드 설정 제어"
+                />
+                <span className="my-page-settings-toggle-slider"></span>
+              </label>
+            </div>
           </div>
           <button
             className="my-page-settings-item my-page-settings-item-button"
@@ -147,7 +167,7 @@ export function MyPageSettings({
           <button
             className="my-page-settings-item my-page-settings-item-button"
             onClick={onWithdraw}
-            style={{ color: 'var(--color-error)' }}
+            style={{ color: 'var(--color-toss-red)' }}
           >
             <div className="my-page-settings-item-content">
               <span className="my-page-settings-item-label" style={{ color: 'inherit' }}>

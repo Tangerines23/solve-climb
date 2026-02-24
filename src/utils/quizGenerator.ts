@@ -1,4 +1,4 @@
-import { Topic, QuizQuestion, Difficulty, World, Mountain } from '../types/quiz';
+import { Topic, QuizQuestion, Difficulty, World, Mountain, Category } from '../types/quiz';
 import { generateProblem } from './MathProblemGenerator';
 import { generateEquation } from './EquationProblemGenerator';
 import { generateGeometryProblem } from './GeometryProblemGenerator';
@@ -27,7 +27,7 @@ export function generateQuestion(
         answer: mathProb.answer,
         inputType: mathProb.inputType,
         level,
-        category: topicId as any,
+        category: topicId as unknown as Category,
       };
     } else if (worldId === 'World2') {
       const eqProb = generateEquation(level, difficulty, rng);
@@ -37,7 +37,7 @@ export function generateQuestion(
         hintType: eqProb.transposition ? 'transposition' : undefined,
         hintData: eqProb.transposition,
         level,
-        category: topicId as any,
+        category: topicId as unknown as Category,
       };
     } else if (worldId === 'World3') {
       const geoProb = generateGeometryProblem(level, difficulty, rng);
@@ -45,7 +45,7 @@ export function generateQuestion(
         question: geoProb.question,
         answer: geoProb.answer,
         level,
-        category: topicId as any,
+        category: topicId as unknown as Category,
       };
     } else if (worldId === 'World4') {
       const statsProb = generateStatsProblem(level, difficulty, rng);
@@ -53,7 +53,7 @@ export function generateQuestion(
         question: statsProb.question,
         answer: statsProb.answer,
         level,
-        category: topicId as any,
+        category: topicId as unknown as Category,
       };
     } else {
       const mathProb = generateProblem(level, difficulty, rng);
@@ -61,7 +61,7 @@ export function generateQuestion(
         question: mathProb.expression,
         answer: mathProb.answer,
         level,
-        category: topicId as any,
+        category: topicId as unknown as Category,
       };
     }
   } else if (mountainId === 'logic') {
@@ -70,7 +70,7 @@ export function generateQuestion(
       question: logicProb.question,
       answer: logicProb.answer,
       level,
-      category: topicId as any,
+      category: topicId as unknown as Category,
     };
   } else if (mountainId === 'general') {
     if (worldId === 'World1') {
@@ -79,7 +79,7 @@ export function generateQuestion(
         question: csProb.question,
         answer: csProb.answer,
         level,
-        category: topicId as any,
+        category: topicId as unknown as Category,
       };
     } else if (worldId === 'World2') {
       const calcProb = generateCalculusProblem(level, difficulty, rng);
@@ -87,7 +87,7 @@ export function generateQuestion(
         question: calcProb.question,
         answer: calcProb.answer,
         level,
-        category: topicId as any,
+        category: topicId as unknown as Category,
       };
     } else {
       const logicProb = generateLogicProblem(level, difficulty, rng);
@@ -95,7 +95,7 @@ export function generateQuestion(
         question: logicProb.question,
         answer: logicProb.answer,
         level,
-        category: topicId as any,
+        category: topicId as unknown as Category,
       };
     }
   } else {
@@ -105,7 +105,7 @@ export function generateQuestion(
       question: mathProb.expression,
       answer: mathProb.answer,
       level,
-      category: topicId as any,
+      category: topicId as unknown as Category,
     };
   }
 }

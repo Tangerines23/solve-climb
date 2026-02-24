@@ -99,11 +99,11 @@
   background-color: var(--color-blue-400);
   padding: var(--spacing-4xl) var(--spacing-xl) var(--spacing-3xl);
   text-align: center;
-  color: var(--color-text-primary);
+  color: var(--color-gray-900) !important; /* Force high contrast text on teal background */
   border-bottom: var(--border-glass);
   -webkit-backdrop-filter: blur(10px);
   backdrop-filter: blur(10px);
-  overflow-x: hidden; /* 393px 등 좁은 뷰포트에서 VG 오버플로우 방지 */
+  overflow-x: hidden;
 }
 
 .my-page-profile-section {
@@ -144,7 +144,7 @@
   font-weight: 700;
   line-height: 1.4;
   margin: 0;
-  color: var(--color-text-primary);
+  color: var(--color-gray-900) !important; /* Ensure high contrast */
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -174,13 +174,13 @@
 }
 
 .my-page-profile-edit-button {
-  background-color: rgba(255, 255, 255, 0.2);
-  color: var(--color-text-primary);
-  border: 1px solid rgba(255, 255, 255, 0.3);
+  background-color: rgba(0, 0, 0, 0.1);
+  color: var(--color-gray-900) !important; /* Force dark text */
+  border: 1px solid rgba(0, 0, 0, 0.3) !important;
   border-radius: var(--rounded-button);
   padding: var(--spacing-xs) var(--spacing-md);
   font-size: 14px;
-  font-weight: 500;
+  font-weight: 600;
   font-family: inherit;
   cursor: pointer;
   transition: all 0.2s ease;
@@ -205,8 +205,8 @@
 
 .my-page-mastery-label {
   font-size: 14px;
-  font-weight: 500;
-  color: rgba(255, 255, 255, 0.9);
+  font-weight: 600;
+  color: rgba(0, 0, 0, 0.75) !important; /* Increased contrast on light teal */
   margin-bottom: var(--spacing-sm);
   overflow: hidden;
   text-overflow: ellipsis;
@@ -216,10 +216,11 @@
 .my-page-mastery-value {
   font-size: 36px;
   font-weight: 700;
-  color: var(--color-text-primary);
+  color: var(--color-gray-900) !important; /* Force high contrast */
   line-height: 1.2;
   overflow: hidden;
   text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .my-page-header-title {
@@ -233,7 +234,7 @@
 .my-page-header-highlight {
   font-size: 32px;
   font-weight: 700;
-  color: var(--color-text-primary);
+  color: var(--color-gray-900);
 }
 
 /* Stats Grid */
@@ -662,7 +663,7 @@
 }
 
 .my-page-settings-item-logout-label {
-  color: var(--color-toss-red);
+  color: var(--color-toss-red) !important; /* Lighter red for high contrast on dark background */
   font-weight: 600;
 }
 
@@ -721,7 +722,7 @@
 .my-page-quick-access-button {
   width: 100%;
   background-color: var(--color-blue-400);
-  color: var(--color-text-primary);
+  color: var(--color-gray-900) !important; /* High contrast text */
   border: none;
   border-radius: var(--rounded-button);
   padding: var(--spacing-md) var(--spacing-lg);

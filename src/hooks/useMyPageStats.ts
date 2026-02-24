@@ -66,6 +66,7 @@ export function useMyPageStats(): UseMyPageStatsResult {
             user: {
               id: localSession.userId,
               email: null,
+              is_anonymous: true,
               user_metadata: {
                 isAdmin: localSession.isAdmin || false,
               },
@@ -125,6 +126,7 @@ export function useMyPageStats(): UseMyPageStatsResult {
             user: {
               id: localSession.userId,
               email: null,
+              is_anonymous: true,
               user_metadata: {
                 isAdmin: localSession.isAdmin || false,
               },

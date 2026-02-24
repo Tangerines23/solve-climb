@@ -1,0 +1,88 @@
+﻿
+Running 1 test using 1 worker
+
+node.exe :   [38;5;45;1mpw:api [0m=> browserType.launch started [38;5
+;45m+0ms[0m
+위치 C:\Program Files\nodejs\npx.ps1:29 문자:3
++   & $NODE_EXE $NPX_CLI_JS $args
++   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (  [38;5;45;1mp...8;5;45m+ 
+   0ms[0m:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+  [38;5;45;1mpw:api [0m<= browserType.launch succeeded [38;5;45m+110m
+s[0m
+  [38;5;45;1mpw:api [0m=> browser.newContext started [38;5;45m+4ms[0
+m
+  [38;5;45;1mpw:api [0m<= browser.newContext succeeded [38;5;45m+9ms
+[0m
+  [38;5;45;1mpw:api [0m=> browserContext.newPage started [38;5;45m+3m
+s[0m
+  [38;5;45;1mpw:api [0m<= browserContext.newPage succeeded [38;5;45m+
+150ms[0m
+  [38;5;45;1mpw:api [0m=> page.goto started [38;5;45m+3ms[0m
+  [38;5;45;1mpw:api [0mnavigating to "http://localhost:5173/", waiting
+ until "load" [38;5;45m+1ms[0m
+  [38;5;45;1mpw:api [0m  "commit" event fired [38;5;45m+516ms[0m
+  [38;5;45;1mpw:api [0m  navigated to "http://localhost:5173/" [38;5;
+45m+1ms[0m
+  [38;5;45;1mpw:api [0m  "domcontentloaded" event fired [38;5;45m+1s
+[0m
+  [38;5;45;1mpw:api [0m  "load" event fired [38;5;45m+4ms[0m
+  [38;5;45;1mpw:api [0m<= page.goto succeeded [38;5;45m+0ms[0m
+  [38;5;45;1mpw:api [0m=> page.waitForLoadState started [38;5;45m+3ms
+[0m
+  [38;5;45;1mpw:api [0m  navigated to "http://localhost:5173/" [38;5;
+45m+3ms[0m
+  [38;5;45;1mpw:api [0m  navigated to "http://localhost:5173/my-page" 
+[38;5;45m+1s[0m
+  [38;5;45;1mpw:api [0m  navigated to "about:blank" [38;5;45m+369ms[
+0m
+  [38;5;45;1mpw:api [0m  "networkidle" event fired [38;5;45m+1s[0m
+  [38;5;45;1mpw:api [0m<= page.waitForLoadState succeeded [38;5;45m+2
+ms[0m
+  [38;5;45;1mpw:api [0m=> page.waitForFunction started [38;5;45m+3ms
+[0m
+  [38;5;45;1mpw:api [0mtaking page screenshot [38;5;45m+1m[0m
+  [38;5;45;1mpw:api [0mwaiting for fonts to load... [38;5;45m+4ms[0m
+  [38;5;45;1mpw:api [0mfonts loaded [38;5;45m+1ms[0m
+  [38;5;45;1mpw:api [0m=> browserContext.close started [38;5;45m+77ms
+[0m
+  [38;5;45;1mpw:api [0m<= page.waitForFunction failed [38;5;45m+8ms[
+0m
+[auth.setup] attempt 1: authOk = false, url = http://localhost:5173/my-page
+[auth.setup] Not authenticated, looking for anonymous button...
+  [38;5;45;1mpw:api [0m=> locator.waitFor started [38;5;45m+4ms[0m
+  [38;5;45;1mpw:api [0m<= browserContext.close succeeded [38;5;45m+2m
+s[0m
+  [38;5;45;1mpw:api [0m<= locator.waitFor failed [38;5;45m+1ms[0m
+[auth.setup] Anonymous login button not found or not clickable: locator.waitFor: Target page, context or browser has been closed
+    at [90mC:\Users\ghkdd\gemini-projects\solve-climb\[39mtests\e2e\auth.setup.ts:89:28
+[auth.setup] Checking for nickname input or my-page redirect...
+[auth.setup] On my-page or nickname input visible
+  [38;5;45;1mpw:api [0m=> locator.waitFor started [38;5;45m+1ms[0m
+  [38;5;45;1mpw:api [0m<= locator.waitFor failed [38;5;45m+1ms[0m
+[auth.setup] Profile creation failed: Error: locator.waitFor: Target page, context or browser has been closed
+[auth.setup] Finalizing attempt, checking auth state...
+  [38;5;45;1mpw:api [0m=> page.waitForFunction started [38;5;45m+1ms
+[0m
+  [38;5;45;1mpw:api [0m=> browser.close started [38;5;45m+13ms[0m
+  [38;5;45;1mpw:api [0m<= page.waitForFunction failed [38;5;45m+1ms[
+0m
+[auth.setup] attempt 1 final: authOk = false
+  [38;5;45;1mpw:api [0m<= browser.close succeeded [38;5;45m+37ms[0m
+  ?? 1 [setup] ??tests\e2e\auth.setup.ts:38:1 ??authenticate once (anonymous) (1.5m)
+
+
+  1) [setup] ??tests\e2e\auth.setup.ts:38:1 ??authenticate once (anonymous) ????????????????????????
+
+    [31mTest timeout of 90000ms exceeded.[39m
+
+    attachment #1: screenshot (image/png) ??????????????????????????????????????????????????????????
+    test-results\auth.setup.ts-authenticate-once-anonymous--setup\test-failed-1.png
+    ????????????????????????????????????????????????????????????????????????????????????????????????
+
+    Error Context: test-results\auth.setup.ts-authenticate-once-anonymous--setup\error-context.md
+
+  1 failed
+    [setup] ??tests\e2e\auth.setup.ts:38:1 ??authenticate once (anonymous) ?????????????????????????

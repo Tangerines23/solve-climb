@@ -99,7 +99,9 @@ export function SegmentedControl<T extends string>({
             key={option.value}
             ref={(el) => {
               if (itemsRef.current && typeof index === 'number') {
-                itemsRef.current[index] = el;
+                const items = itemsRef.current as (HTMLButtonElement | null)[];
+                // eslint-disable-next-line security/detect-object-injection
+                items[index] = el;
               }
             }}
             className={`segmented-control-item ${isSelected ? 'active' : ''} ${

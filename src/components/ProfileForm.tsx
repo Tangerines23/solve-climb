@@ -124,9 +124,9 @@ export function ProfileForm({ onComplete, showBackButton = false, onCancel }: Pr
           ←
         </button>
       )}
-      <h2 className="profile-form-title">{profile ? '프로필 수정' : '프로필 만들기'}</h2>
+      <h2 className="profile-form-title">{profile?.nickname ? '프로필 수정' : '프로필 만들기'}</h2>
       <p className="profile-form-description">
-        {profile
+        {profile?.nickname
           ? '프로필 정보를 수정할 수 있습니다.'
           : '게임을 시작하기 전에 프로필을 만들어주세요.\n한 번만 설정하면 됩니다!'}
       </p>
@@ -210,7 +210,7 @@ export function ProfileForm({ onComplete, showBackButton = false, onCancel }: Pr
         )} */}
 
         <button type="submit" className="btn-base btn-primary profile-form-submit">
-          {profile ? '저장하기' : '시작하기'}
+          {profile?.nickname ? '저장하기' : '시작하기'}
         </button>
       </form>
     </div>
