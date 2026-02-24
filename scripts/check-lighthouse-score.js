@@ -9,7 +9,7 @@
  * 요구: ./dist 가 존재해야 함 (npm run build 후 실행).
  */
 
-import { existsSync, writeFileSync } from 'fs';
+import { existsSync, writeFileSync, mkdirSync } from 'fs';
 import { spawn } from 'child_process';
 import { fileURLToPath } from 'url';
 import { dirname, join } from 'path';
@@ -149,7 +149,11 @@ async function main() {
   }
 
   // 리포트 저장 (디버깅용)
-  const reportPath = join(ROOT, 'reports', 'logs', 'lighthouse-report.json');
+  const reportDir = join(ROOT, 'reports', 'logs');
+  if (!existsSync(reportDir)) {
+    mkdirSync(reportDir, { recursive: true });
+  }
+  const reportPath = join(reportDir, 'lighthouse-report.json');
   writeFileSync(reportPath, JSON.stringify(lhr, null, 2));
   console.log(`\n📄 Lighthouse report saved to ${reportPath}`);
 
