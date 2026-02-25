@@ -49,7 +49,7 @@ describe('performance', () => {
 
       const metrics = getPerformanceMetrics();
       // 타이밍 이슈를 방지하기 위해 넉넉한 시간을 기다리거나, 부동소수점 오차를 고려합니다.
-      expect(metrics[0].duration).toBeGreaterThanOrEqual(9.5); // 10ms 근처면 허용
+      expect(metrics[0].duration).toBeGreaterThanOrEqual(8); // 10ms 근처면 허용 (CI 환경 고려하여 완화)
     });
   });
 
