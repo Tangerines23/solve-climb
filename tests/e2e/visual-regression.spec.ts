@@ -28,7 +28,7 @@ test.describe('Visual Regression Testing (VRT) - UI 일관성 검증', () => {
 
   test('마이페이지 (My Page)', async ({ page }) => {
     await page.goto('/my-page');
-    await page.waitForLoadState('networkidle');
+    await page.waitForSelector('.my-page', { timeout: 15000 });
     await page.waitForTimeout(1000);
 
     await expect(page).toHaveScreenshot('vrt-my-page.png', {
@@ -39,7 +39,7 @@ test.describe('Visual Regression Testing (VRT) - UI 일관성 검증', () => {
 
   test('상점 페이지 (Shop Page)', async ({ page }) => {
     await page.goto('/shop');
-    await page.waitForLoadState('networkidle');
+    await page.waitForSelector('.shop-page', { timeout: 15000 });
     await page.waitForTimeout(1000);
 
     await expect(page).toHaveScreenshot('vrt-shop-page.png', {
@@ -50,7 +50,7 @@ test.describe('Visual Regression Testing (VRT) - UI 일관성 검증', () => {
   test('퀴즈 종료 결과 화면 (Result Page Snippet)', async ({ page }) => {
     // 결과 화면은 특정 상태가 필요하므로 주요 컴포넌트 단위로 검증
     await page.goto('/result?score=1000&correct=10');
-    await page.waitForLoadState('networkidle');
+    await page.waitForSelector('.result-page', { timeout: 15000 });
     await page.waitForTimeout(2000);
 
     await expect(page).toHaveScreenshot('vrt-quiz-result.png', {
