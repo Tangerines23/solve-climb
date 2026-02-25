@@ -252,8 +252,21 @@ jobs:
           path: node_modules
           key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
 
+      - name: Cache Playwright Browsers
+        id: playwright-cache
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/ms-playwright
+          key: ${{ runner.os }}-playwright-${{ hashFiles('**/package-lock.json') }}
+
       - name: Install Playwright Browsers
+        if: steps.playwright-cache.outputs.cache-hit != 'true'
         run: npx playwright install --with-deps
+
+      # 캐시된 브라우저가 있을 경우 시스템 의존성(OS 라이브러리)만 추가 설치
+      - name: Install Playwright OS Dependencies
+        if: steps.playwright-cache.outputs.cache-hit == 'true'
+        run: npx playwright install-deps
 
       - name: 🐒 Run Chaos & Network Stress Tests
         env:
@@ -284,8 +297,21 @@ jobs:
           path: node_modules
           key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
 
+      - name: Cache Playwright Browsers
+        id: playwright-cache
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/ms-playwright
+          key: ${{ runner.os }}-playwright-${{ hashFiles('**/package-lock.json') }}
+
       - name: Install Playwright Browsers
+        if: steps.playwright-cache.outputs.cache-hit != 'true'
         run: npx playwright install --with-deps
+
+      # 캐시된 브라우저가 있을 경우 시스템 의존성(OS 라이브러리)만 추가 설치
+      - name: Install Playwright OS Dependencies
+        if: steps.playwright-cache.outputs.cache-hit == 'true'
+        run: npx playwright install-deps
 
       - name: Run E2E Critical (smoke, core, verify, diagnostic — auth/DB 제외)
         env:
@@ -340,8 +366,21 @@ jobs:
           npx supabase link --project-ref "$PROJECT_REF" --password "$SUPABASE_DB_PASSWORD"
           npx supabase db push --include-all --yes || (npx supabase migration repair --status reverted 20260123 && npx supabase db push --include-all --yes)
 
+      - name: Cache Playwright Browsers
+        id: playwright-cache
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/ms-playwright
+          key: ${{ runner.os }}-playwright-${{ hashFiles('**/package-lock.json') }}
+
       - name: Install Playwright Browsers
+        if: steps.playwright-cache.outputs.cache-hit != 'true'
         run: npx playwright install --with-deps
+
+      # 캐시된 브라우저가 있을 경우 시스템 의존성(OS 라이브러리)만 추가 설치
+      - name: Install Playwright OS Dependencies
+        if: steps.playwright-cache.outputs.cache-hit == 'true'
+        run: npx playwright install-deps
 
       - name: Run E2E auth/DB (auth-test, db-status-check)
         env:
@@ -387,8 +426,21 @@ jobs:
           npx supabase link --project-ref "$PROJECT_REF" --password "$SUPABASE_DB_PASSWORD"
           npx supabase db push --include-all --yes || (npx supabase migration repair --status reverted 20260123 && npx supabase db push --include-all --yes)
 
+      - name: Cache Playwright Browsers
+        id: playwright-cache
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/ms-playwright
+          key: ${{ runner.os }}-playwright-${{ hashFiles('**/package-lock.json') }}
+
       - name: Install Playwright Browsers
+        if: steps.playwright-cache.outputs.cache-hit != 'true'
         run: npx playwright install --with-deps
+
+      # 캐시된 브라우저가 있을 경우 시스템 의존성(OS 라이브러리)만 추가 설치
+      - name: Install Playwright OS Dependencies
+        if: steps.playwright-cache.outputs.cache-hit == 'true'
+        run: npx playwright install-deps
 
       - name: Run E2E Visual & A11y
         env:
