@@ -663,7 +663,9 @@
 }
 
 .my-page-settings-item-logout-label {
-  color: var(--color-toss-red) !important; /* Lighter red for high contrast on dark background */
+  color: var(
+    --color-toss-red-a11y
+  ) !important; /* Lighter red for high contrast on dark background > 4.5:1 */
   font-weight: 600;
 }
 

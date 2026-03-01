@@ -117,6 +117,7 @@
 
   /* Red Scale (Simplified) */
   --color-toss-red: #f04452;
+  --color-toss-red-a11y: #ff6b6b; /* High contrast variant */
   /* Primary Danger */
   --color-red-600: #dc2626;
   /* Darker/Hover */

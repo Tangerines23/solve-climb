@@ -167,7 +167,7 @@ export function MyPageSettings({
           <button
             className="my-page-settings-item my-page-settings-item-button"
             onClick={onWithdraw}
-            style={{ color: 'var(--color-toss-red)' }}
+            style={{ color: 'var(--color-toss-red-a11y)' }} // Higher contrast for a11y
           >
             <div className="my-page-settings-item-content">
               <span className="my-page-settings-item-label" style={{ color: 'inherit' }}>
