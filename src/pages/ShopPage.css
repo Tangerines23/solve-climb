@@ -92,7 +92,7 @@
 
 .ad-reward-info p {
   font-size: 0.85rem;
-  color: var(--color-gray-400);
+  color: var(--color-gray-300);
   margin: 0;
 }
 
@@ -182,7 +182,7 @@
 
 .item-desc {
   font-size: 0.9rem;
-  color: var(--color-slate-400);
+  color: var(--color-gray-300);
   margin-bottom: 1rem;
   line-height: 1.4;
 }
