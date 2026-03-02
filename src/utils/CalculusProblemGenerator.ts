@@ -22,6 +22,20 @@ export function generateCalculusProblem(
   _difficulty: Difficulty,
   rng?: { random: () => number; randomInt: (min: number, max: number) => number }
 ): CalculusProblem {
+  if (level > 15) {
+    const randomVal = rng ? rng.randomInt(1, 3) : Math.floor(Math.random() * 3) + 1;
+    switch (randomVal) {
+      case 1:
+        return generateDefiniteIntegral(rng);
+      case 2:
+        return generateAdvancedDerivative(rng);
+      case 3:
+        return generateFactorizationLimit(rng);
+      default:
+        return generateDefiniteIntegral(rng);
+    }
+  }
+
   switch (level) {
     // [Phase 1: 좌표와 함수 (Lv 1~5)]
     case 1:
@@ -201,4 +215,55 @@ function generateIntegralProblem(
       hintData: { type: 'simple', value: a, x: 1 },
     };
   }
+}
+
+function generateDefiniteIntegral(rng?: {
+  randomInt: (min: number, max: number) => number;
+}): CalculusProblem {
+  const a = getRandomInt(1, 5, rng);
+  const b = getRandomInt(1, 4, rng);
+  const coeff = 2 * a;
+
+  return {
+    question: `∫(0부터 ${b}까지) ${coeff}x dx 의 값은?`,
+    answer: a * b * b,
+    hintType: 'calculus',
+    hintData: { type: 'derivative', func: 'definite_integral' },
+  };
+}
+
+function generateAdvancedDerivative(rng?: {
+  random: () => number;
+  randomInt: (min: number, max: number) => number;
+}): CalculusProblem {
+  const isProduct = rng ? rng.random() > 0.5 : Math.random() > 0.5;
+  if (isProduct) {
+    const a = getRandomInt(1, 5, rng);
+    return {
+      question: `f(x) = x(x + ${a}) 일 때, f'(1) 의 값은?`,
+      answer: 2 + a,
+      hintType: 'calculus',
+      hintData: { type: 'derivative', func: 'product_rule' },
+    };
+  } else {
+    const a = getRandomInt(1, 5, rng);
+    return {
+      question: `f(x) = (x + ${a})² 일 때, f'(1) 의 값은?`,
+      answer: 2 * (1 + a),
+      hintType: 'calculus',
+      hintData: { type: 'derivative', func: 'chain_rule' },
+    };
+  }
+}
+
+function generateFactorizationLimit(rng?: {
+  randomInt: (min: number, max: number) => number;
+}): CalculusProblem {
+  const a = getRandomInt(2, 6, rng);
+  return {
+    question: `(x² - ${a * a}) / (x - ${a}) (x → ${a}) 의 극한값은?`,
+    answer: 2 * a,
+    hintType: 'calculus',
+    hintData: { type: 'limit', func: 'factorization' },
+  };
 }

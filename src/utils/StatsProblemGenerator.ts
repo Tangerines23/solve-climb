@@ -19,6 +19,22 @@ export function generateStatsProblem(
   _difficulty: Difficulty,
   rng?: { random: () => number; randomInt: (min: number, max: number) => number }
 ): StatsProblem {
+  if (level > 10) {
+    const randomVal = rng ? rng.randomInt(1, 4) : Math.floor(Math.random() * 4) + 1;
+    switch (randomVal) {
+      case 1:
+        return generatePermutations(rng);
+      case 2:
+        return generateConditionalProbability(rng);
+      case 3:
+        return generateVariance(rng);
+      case 4:
+        return generateCombinationsAdvanced(rng);
+      default:
+        return generatePermutations(rng);
+    }
+  }
+
   switch (level) {
     case 1:
       return generateMeanBasic(rng);
@@ -156,5 +172,52 @@ function generateStatsMaster(): StatsProblem {
   return {
     question: '데이터 2, 4, 6, 8, 10의 평균은?',
     answer: 6,
+  };
+}
+
+function generatePermutations(rng?: {
+  randomInt: (min: number, max: number) => number;
+}): StatsProblem {
+  const n = getRandomInt(4, 7, rng);
+  const r = 2; // P(n, 2)
+  const ans = n * (n - 1);
+  return {
+    question: `${n}P${r} (서로 다른 ${n}개 중 ${r}개를 선택해 나열하는 경우의 수) 의 값은?`,
+    answer: ans,
+  };
+}
+
+function generateCombinationsAdvanced(rng?: {
+  randomInt: (min: number, max: number) => number;
+}): StatsProblem {
+  const n = getRandomInt(4, 7, rng);
+  const r = 3; // C(n, 3)
+  const ans = (n * (n - 1) * (n - 2)) / 6;
+  return {
+    question: `${n}C${r} (서로 다른 ${n}개 중 순서없이 ${r}개를 선택하는 경우의 수) 의 값은?`,
+    answer: ans,
+  };
+}
+
+function generateConditionalProbability(rng?: {
+  randomInt: (min: number, max: number) => number;
+}): StatsProblem {
+  const a = getRandomInt(2, 5, rng);
+  const b = getRandomInt(2, 5, rng);
+  return {
+    question: `빨간 공 ${a}개, 파란 공 ${b}개가 있다. 두 번 연속 빨간 공을 뽑을 경우의 수(비복원)는?`,
+    answer: a * (a - 1),
+  };
+}
+
+function generateVariance(rng?: { randomInt: (min: number, max: number) => number }): StatsProblem {
+  const d = getRandomInt(1, 4, rng);
+  const m = getRandomInt(10, 20, rng);
+  const arr = [m - 2 * d, m - d, m, m + d, m + 2 * d];
+  const variance = 2 * d * d;
+
+  return {
+    question: `데이터 ${arr.join(', ')} 의 분산(Variance)은?`,
+    answer: variance,
   };
 }
