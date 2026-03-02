@@ -1,4 +1,4 @@
-import { Topic, QuizQuestion, Difficulty, World, Mountain, Category } from '../types/quiz';
+import { Topic, QuizQuestion, Difficulty, World, Mountain, Category, Tier } from '../types/quiz';
 import { generateProblem } from './MathProblemGenerator';
 import { generateEquation } from './EquationProblemGenerator';
 import { generateGeometryProblem } from './GeometryProblemGenerator';
@@ -16,12 +16,13 @@ export function generateQuestion(
   topicId: Topic,
   level: number,
   difficulty: Difficulty,
+  tier: Tier = 'normal',
   rng?: { random: () => number; randomInt: (min: number, max: number) => number }
 ): QuizQuestion {
   // dispatch based on mountain and world
   if (mountainId === 'math') {
     if (worldId === 'World1') {
-      const mathProb = generateProblem(level, difficulty, rng);
+      const mathProb = generateProblem(level, difficulty, tier, rng);
       return {
         question: mathProb.expression,
         answer: mathProb.answer,
@@ -56,7 +57,7 @@ export function generateQuestion(
         category: topicId as unknown as Category,
       };
     } else {
-      const mathProb = generateProblem(level, difficulty, rng);
+      const mathProb = generateProblem(level, difficulty, tier, rng);
       return {
         question: mathProb.expression,
         answer: mathProb.answer,
@@ -100,7 +101,7 @@ export function generateQuestion(
     }
   } else {
     // default/fallback
-    const mathProb = generateProblem(level, difficulty, rng);
+    const mathProb = generateProblem(level, difficulty, tier, rng);
     return {
       question: mathProb.expression,
       answer: mathProb.answer,

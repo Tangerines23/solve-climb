@@ -4,7 +4,7 @@ import { persist } from 'zustand/middleware';
 import { supabase } from '../utils/supabaseClient';
 import { safeSupabaseQuery } from '../utils/debugFetch';
 import { validatedRpc, RankingListSchema } from '../utils/rpcValidator';
-import { GameMode } from '../types/quiz';
+import { GameMode, Tier } from '../types/quiz';
 import { useDebugStore } from './useDebugStore';
 import type { UserResponse, RealtimeChannel } from '@supabase/supabase-js';
 
@@ -45,9 +45,9 @@ interface LevelProgressState {
   rankingVersion: number; // For triggering re-renders on realtime updates
   _rankingSubscription: RealtimeChannel | null; // Internal subscription reference
 
-  getLevelProgress: (world: string, category: string) => LevelRecord[];
-  isLevelCleared: (world: string, category: string, level: number) => boolean;
-  getNextLevel: (world: string, category: string) => number;
+  getLevelProgress: (world: string, category: string, tier?: Tier) => LevelRecord[];
+  isLevelCleared: (world: string, category: string, level: number, tier?: Tier) => boolean;
+  getNextLevel: (world: string, category: string, tier?: Tier) => number;
   clearLevel: (
     world: string,
     category: string,
@@ -58,7 +58,8 @@ interface LevelProgressState {
       answers: number[];
       questionIds: string[];
       sessionId: string;
-    }
+    },
+    tier?: Tier
   ) => void;
   updateBestScore: (
     world: string,
@@ -70,11 +71,13 @@ interface LevelProgressState {
       answers: number[];
       questionIds: string[];
       sessionId: string;
-    }
+    },
+    tier?: Tier
   ) => void;
   getBestRecords: (
     world: string,
-    category: string
+    category: string,
+    tier?: Tier
   ) => {
     'time-attack': number | null;
     survival: number | null;
@@ -113,24 +116,27 @@ export const useLevelProgressStore = create<LevelProgressState>()(
         rankingVersion: 0,
         _rankingSubscription: null,
 
-        getLevelProgress: (world, category) => {
+        getLevelProgress: (world, category, tier = 'normal') => {
           const state = get();
-          const worldProgress = state.progress[world];
+          const worldKey = tier === 'hard' ? `${world}_hard` : world;
+          const worldProgress = state.progress[worldKey];
           if (!worldProgress || !worldProgress[category]) {
             return [];
           }
           return Object.values(worldProgress[category]).sort((a, b) => a.level - b.level);
         },
 
-        isLevelCleared: (world, category, level) => {
+        isLevelCleared: (world, category, level, tier = 'normal') => {
           const state = get();
           if (import.meta.env.DEV && useDebugStore.getState().bypassLevelLock) return true;
-          return state.progress[world]?.[category]?.[level]?.cleared ?? false;
+          const worldKey = tier === 'hard' ? `${world}_hard` : world;
+          return state.progress[worldKey]?.[category]?.[level]?.cleared ?? false;
         },
 
-        getNextLevel: (world, category) => {
+        getNextLevel: (world, category, tier = 'normal') => {
           const state = get();
-          const worldProgress = state.progress[world];
+          const worldKey = tier === 'hard' ? `${world}_hard` : world;
+          const worldProgress = state.progress[worldKey];
 
           if (import.meta.env.DEV && useDebugStore.getState().bypassLevelLock) {
             return 999; // bypass 시에는 어떤 레벨이든 통과 가능하도록 큰 값 반환
@@ -152,9 +158,10 @@ export const useLevelProgressStore = create<LevelProgressState>()(
           return levels[0] + 1; // 마지막 클리어 레벨 + 1
         },
 
-        clearLevel: async (world, category, level, mode, score, sessionData) => {
+        clearLevel: async (world, category, level, mode, score, sessionData, tier = 'normal') => {
+          const worldKey = tier === 'hard' ? `${world}_hard` : world;
           console.log('[useLevelProgressStore] clearLevel called:', {
-            world,
+            world: worldKey,
             category,
             level,
             mode,
@@ -166,13 +173,13 @@ export const useLevelProgressStore = create<LevelProgressState>()(
           set((state) => {
             const newProgress = { ...state.progress };
 
-            if (!newProgress[world]) newProgress[world] = {};
-            if (!newProgress[world][category]) newProgress[world][category] = {};
-            if (!newProgress[world][category][level]) {
-              newProgress[world][category][level] = getDefaultLevelRecord(level);
+            if (!newProgress[worldKey]) newProgress[worldKey] = {};
+            if (!newProgress[worldKey][category]) newProgress[worldKey][category] = {};
+            if (!newProgress[worldKey][category][level]) {
+              newProgress[worldKey][category][level] = getDefaultLevelRecord(level);
             }
 
-            const record = newProgress[world][category][level];
+            const record = newProgress[worldKey][category][level];
             record.cleared = true;
             record.clearedAt = new Date().toISOString();
 
@@ -224,18 +231,27 @@ export const useLevelProgressStore = create<LevelProgressState>()(
           }
         },
 
-        updateBestScore: async (world, category, level, mode, score, sessionData) => {
+        updateBestScore: async (
+          world,
+          category,
+          level,
+          mode,
+          score,
+          sessionData,
+          tier = 'normal'
+        ) => {
+          const worldKey = tier === 'hard' ? `${world}_hard` : world;
           // 1. Optimistic Update (Local)
           set((state) => {
             const newProgress = { ...state.progress };
 
-            if (!newProgress[world]) newProgress[world] = {};
-            if (!newProgress[world][category]) newProgress[world][category] = {};
-            if (!newProgress[world][category][level]) {
-              newProgress[world][category][level] = getDefaultLevelRecord(level);
+            if (!newProgress[worldKey]) newProgress[worldKey] = {};
+            if (!newProgress[worldKey][category]) newProgress[worldKey][category] = {};
+            if (!newProgress[worldKey][category][level]) {
+              newProgress[worldKey][category][level] = getDefaultLevelRecord(level);
             }
 
-            const record = newProgress[world][category][level];
+            const record = newProgress[worldKey][category][level];
             if (
               (mode === 'time-attack' || mode === 'survival' || mode === 'infinite') &&
               (record.bestScore[mode] === null || score > record.bestScore[mode]!)
@@ -271,9 +287,10 @@ export const useLevelProgressStore = create<LevelProgressState>()(
           }
         },
 
-        getBestRecords: (world, category) => {
+        getBestRecords: (world, category, tier = 'normal') => {
           const state = get();
-          const worldProgress = state.progress[world];
+          const worldKey = tier === 'hard' ? `${world}_hard` : world;
+          const worldProgress = state.progress[worldKey];
           if (!worldProgress || !worldProgress[category]) {
             return { 'time-attack': null, survival: null };
           }

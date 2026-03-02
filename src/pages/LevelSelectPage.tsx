@@ -7,7 +7,7 @@ import { LevelListCard } from '@/components/LevelListCard';
 import { FooterNav } from '@/components/FooterNav';
 import { Toast } from '@/components/Toast';
 import { useFavoriteStore } from '@/stores/useFavoriteStore';
-import { World, Category } from '@/types/quiz';
+import { World, Category, Tier } from '@/types/quiz';
 import { urls } from '@/utils/navigation';
 import { PageLayout } from '@/components/layout/PageLayout';
 import './LevelSelectPage.css';
@@ -31,6 +31,8 @@ export function LevelSelectPage() {
   const mountainParam = searchParams.get('mountain');
   const worldParam = searchParams.get('world') as World | null;
   const categoryParam = searchParams.get('category') as Category | null;
+
+  const [tier] = useState<Tier>('normal'); // FIXME: 하드 티어 개발 완료 시 setTier 복구
 
   // [Phase 8] Persistence & Self-healing
   useEffect(() => {
@@ -162,6 +164,7 @@ export function LevelSelectPage() {
         category: categoryParam,
         level,
         mode: 'time-attack',
+        tier,
       })
     );
   };
@@ -197,6 +200,7 @@ export function LevelSelectPage() {
         category: categoryParam,
         level: 1,
         mode: 'survival',
+        tier,
       })
     );
   };
@@ -287,6 +291,25 @@ export function LevelSelectPage() {
           <p className="level-select-summary-desc">{categoryInfo.symbol} 주제를 정복해보세요!</p>
         </div>
 
+        {/* [TODO: Hard Mode 하드 티어 개발 이후에 주석 풀고 적용]
+        <div className="tier-toggle-container">
+          <div className="tier-toggle">
+            <button
+              className={`tier-toggle-btn ${tier === 'normal' ? 'active' : ''}`}
+              onClick={() => setTier('normal')}
+            >
+              노말 티어
+            </button>
+            <button
+              className={`tier-toggle-btn ${tier === 'hard' ? 'active' : ''}`}
+              onClick={() => setTier('hard')}
+            >
+              하드 티어
+            </button>
+          </div>
+        </div>
+        */}
+
         <div className="survival-challenge-entry">
           <button className="survival-challenge-button" onClick={handleSurvivalClick}>
             <span className="survival-icon">🔥</span>
@@ -313,6 +336,7 @@ export function LevelSelectPage() {
           onLevelClick={handleLevelClick}
           onLevelLongPress={handleLevelLongPress}
           onLockedLevelClick={handleLockedLevelClick}
+          tier={tier}
         />
       </div>
 

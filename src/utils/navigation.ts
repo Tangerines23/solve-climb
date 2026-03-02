@@ -9,7 +9,7 @@ import { APP_CONFIG } from '@/config/app';
 /**
  * Interface for Quiz Page Parameters
  */
-import type { GameMode } from '../types/quiz';
+import type { GameMode, Tier } from '../types/quiz';
 
 /**
  * Interface for Quiz Page Parameters
@@ -22,6 +22,7 @@ export interface QuizParams {
   mode: GameMode;
   preview?: boolean;
   challenge?: string;
+  tier?: Tier;
 }
 
 /**
@@ -77,6 +78,7 @@ export const urls = {
     });
     if (params.preview) query.append('preview', 'true');
     if (params.challenge) query.append('challenge', params.challenge);
+    if (params.tier && params.tier !== 'normal') query.append('tier', params.tier);
     return `${baseUrl}?${query.toString()}`;
   },
 

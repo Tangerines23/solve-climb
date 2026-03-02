@@ -3,6 +3,7 @@ import { useLevelProgressStore } from '../stores/useLevelProgressStore';
 import { useProfileStore } from '../stores/useProfileStore';
 import { BaseCard } from './BaseCard';
 import { UnderDevelopmentModal } from './UnderDevelopmentModal';
+import type { Tier } from '../types/quiz';
 import './LevelListCard.css';
 
 interface LevelListCardProps {
@@ -12,6 +13,7 @@ interface LevelListCardProps {
   onLevelClick: (level: number, levelName: string) => void;
   onLevelLongPress?: (level: number) => void;
   onLockedLevelClick?: (level: number, nextLevel: number) => void;
+  tier?: Tier;
 }
 
 // 개발 중인 레벨 목록 (월드_카테고리_레벨 형식)
@@ -109,7 +111,6 @@ function LevelListItem({
       onTouchEnd={!isDisabled ? handleLongPressEnd : undefined}
       onTouchCancel={!isDisabled ? handleLongPressEnd : undefined}
       onClick={isDisabled ? handleLockedClick : undefined}
-      style={isDisabled ? { cursor: 'pointer' } : undefined}
     >
       <div className="level-list-item-left">
         <div className="level-list-item-header">
@@ -156,11 +157,7 @@ function LevelListItem({
             다시하기 &gt;
           </button>
         ) : (
-          <button
-            className="level-list-button level-list-button-disabled"
-            disabled
-            style={{ opacity: 0.5, cursor: 'not-allowed' }}
-          >
+          <button className="level-list-button level-list-button-disabled" disabled>
             잠김
           </button>
         )}
@@ -176,6 +173,7 @@ function LevelListCardComponent({
   onLevelClick,
   onLevelLongPress,
   onLockedLevelClick,
+  tier = 'normal',
 }: LevelListCardProps) {
   const isLevelCleared = useLevelProgressStore((state) => state.isLevelCleared);
   const getLevelProgress = useLevelProgressStore((state) => state.getLevelProgress);
@@ -183,8 +181,8 @@ function LevelListCardComponent({
   const isAdmin = useProfileStore((state) => state.isAdmin);
   const [showUnderDevelopment, setShowUnderDevelopment] = useState(false);
 
-  const nextLevel = getNextLevel(world, category);
-  const progress = getLevelProgress(world, category);
+  const nextLevel = getNextLevel(world, category, tier);
+  const progress = getLevelProgress(world, category, tier);
 
   const isUnderDevelopment = (level: number) => {
     const levelKey = `${world}_${category}_${level}`;
@@ -194,14 +192,14 @@ function LevelListCardComponent({
   const getLevelStatus = (level: number) => {
     // 관리자 모드면 모든 레벨이 해금됨
     if (isAdmin) {
-      if (isLevelCleared(world, category, level)) {
+      if (isLevelCleared(world, category, level, tier)) {
         return 'cleared';
       }
       return 'next';
     }
 
     // 일반 모드
-    if (isLevelCleared(world, category, level)) {
+    if (isLevelCleared(world, category, level, tier)) {
       return 'cleared';
     }
     if (level === nextLevel) {
