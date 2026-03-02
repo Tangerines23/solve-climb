@@ -20,7 +20,7 @@ export function generateGeometryProblem(
   rng?: { random: () => number; randomInt: (min: number, max: number) => number }
 ): GeometryProblem {
   if (level > 10) {
-    const randomVal = rng ? rng.randomInt(1, 5) : Math.floor(Math.random() * 5) + 1;
+    const randomVal = rng ? rng.randomInt(1, 8) : Math.floor(Math.random() * 8) + 1;
     switch (randomVal) {
       case 1:
         return generateSolidVolume(rng);
@@ -32,6 +32,12 @@ export function generateGeometryProblem(
         return generateTrigonometry(rng);
       case 5:
         return generatePythagoreanAdvanced(rng);
+      case 6:
+        return generateCoordinateMidpoint(rng);
+      case 7:
+        return generateLineSlope(rng);
+      case 8:
+        return generateCircleEqBasic(rng);
       default:
         return generateSolidVolume(rng);
     }
@@ -63,6 +69,48 @@ export function generateGeometryProblem(
   }
 }
 
+// ... existing helper functions (omitted for brevity in replacement, but I will keep them)
+
+function generateCoordinateMidpoint(rng?: {
+  randomInt: (min: number, max: number) => number;
+}): GeometryProblem {
+  const x1 = getRandomInt(-10, 10, rng) * 2;
+  const y1 = getRandomInt(-10, 10, rng) * 2;
+  const x2 = getRandomInt(-10, 10, rng) * 2;
+  const y2 = getRandomInt(-10, 10, rng) * 2;
+  const mx = (x1 + x2) / 2;
+  const my = (y1 + y2) / 2;
+  return {
+    question: `두 점 (${x1}, ${y1})과 (${x2}, ${y2})의 중점의 좌표 (x, y)에서 x+y의 값은?`,
+    answer: mx + my,
+  };
+}
+
+function generateLineSlope(rng?: {
+  randomInt: (min: number, max: number) => number;
+}): GeometryProblem {
+  const x1 = getRandomInt(-5, 5, rng);
+  const x2 = x1 + getRandomInt(1, 5, rng);
+  const m = getRandomInt(-3, 3, rng);
+  const y1 = getRandomInt(-5, 5, rng);
+  const y2 = y1 + m * (x2 - x1);
+  return {
+    question: `두 점 (${x1}, ${y1})과 (${x2}, ${y2})를 지나는 직선의 기울기는?`,
+    answer: m,
+  };
+}
+
+function generateCircleEqBasic(rng?: {
+  randomInt: (min: number, max: number) => number;
+}): GeometryProblem {
+  const r = getRandomInt(2, 10, rng);
+  const rSquared = r * r;
+  return {
+    question: `중심이 (0,0)이고 반지름이 ${r}인 원의 방정식 x² + y² = k 에서 k의 값은?`,
+    answer: rSquared,
+  };
+}
+
 function generateBasicShapes(rng?: {
   randomInt: (min: number, max: number) => number;
 }): GeometryProblem {
@@ -71,6 +119,8 @@ function generateBasicShapes(rng?: {
     { name: '사각형', vertices: 4 },
     { name: '오각형', vertices: 5 },
     { name: '육각형', vertices: 6 },
+    { name: '칠각형', vertices: 7 },
+    { name: '팔각형', vertices: 8 },
   ];
   const shape = shapes[getRandomInt(0, shapes.length - 1, rng)];
   return {
@@ -78,6 +128,8 @@ function generateBasicShapes(rng?: {
     answer: shape.vertices,
   };
 }
+
+// REST OF THE FILE UNCHANGED (I will use multi_replace to be safer)
 
 function generateTriangleProperties(rng?: {
   randomInt: (min: number, max: number) => number;

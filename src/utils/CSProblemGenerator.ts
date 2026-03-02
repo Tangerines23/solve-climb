@@ -19,6 +19,22 @@ export function generateCSProblem(
   _difficulty: Difficulty,
   rng?: { random: () => number; randomInt: (min: number, max: number) => number }
 ): CSProblem {
+  if (level > 10) {
+    const randomVal = rng ? rng.randomInt(1, 4) : Math.floor(Math.random() * 4) + 1;
+    switch (randomVal) {
+      case 1:
+        return generateBinaryToDec(rng);
+      case 2:
+        return generateDecToBinary(rng);
+      case 3:
+        return generateBitwiseAdvanced(rng);
+      case 4:
+        return generateMemoryUnitMaster(rng);
+      default:
+        return generateBinaryToDec(rng);
+    }
+  }
+
   switch (level) {
     case 1:
       return generateBinaryToDec(rng);
@@ -35,11 +51,11 @@ export function generateCSProblem(
     case 7:
       return generateLogicXOR(rng);
     case 8:
-      return generateBitwiseBasic();
+      return generateBitwiseAdvanced(rng);
     case 9:
-      return generateAlgoBasic();
+      return generateAlgoVariety(rng);
     case 10:
-      return generateCSMaster();
+      return generateMemoryUnitMaster(rng);
     default:
       return generateBinaryToDec(rng);
   }
@@ -113,23 +129,59 @@ function generateLogicXOR(rng?: { random: () => number }): CSProblem {
   };
 }
 
-function generateBitwiseBasic(): CSProblem {
+function generateBitwiseAdvanced(rng?: {
+  randomInt: (min: number, max: number) => number;
+}): CSProblem {
+  const n1 = getRandomInt(1, 15, rng);
+  const n2 = getRandomInt(1, 15, rng);
+  const ops = ['&', '|', '^'];
+  const op = ops[getRandomInt(0, 2, rng)];
+  let ans = 0;
+  if (op === '&') ans = n1 & n2;
+  if (op === '|') ans = n1 | n2;
+  if (op === '^') ans = n1 ^ n2;
+
   return {
-    question: '8비트(bit)는 몇 바이트(byte)입니까?',
-    answer: 1,
+    question: `10진수 ${n1} ${op} ${n2} 의 비트 연산 결과는?`,
+    answer: ans,
   };
 }
 
-function generateAlgoBasic(): CSProblem {
-  return {
-    question: '데이터를 순서대로 나열하는 알고리즘의 이름은? (1: 정렬, 2: 탐색)',
-    answer: 1,
-  };
+function generateAlgoVariety(rng?: { randomInt: (min: number, max: number) => number }): CSProblem {
+  const type = getRandomInt(1, 3, rng);
+  if (type === 1) {
+    return {
+      question: '데이터를 마지막에 넣고 마지막에서 빼는 구조(LIFO)는? (1: 스택, 2: 큐)',
+      answer: 1,
+    };
+  } else if (type === 2) {
+    return {
+      question: '데이터를 마지막에 넣고 처음에서 빼는 구조(FIFO)는? (1: 스택, 2: 큐)',
+      answer: 2,
+    };
+  } else {
+    return {
+      question: '정렬된 데이터에서 절반씩 나누어 찾는 탐색법은? (1: 선형탐색, 2: 이진탐색)',
+      answer: 2,
+    };
+  }
 }
 
-function generateCSMaster(): CSProblem {
-  return {
-    question: '1024 킬로바이트(KB)는 몇 메가바이트(MB)입니까?',
-    answer: 1,
-  };
+function generateMemoryUnitMaster(rng?: {
+  randomInt: (min: number, max: number) => number;
+}): CSProblem {
+  const type = getRandomInt(1, 2, rng);
+  if (type === 1) {
+    const kb = Math.pow(2, getRandomInt(1, 4, rng));
+    return {
+      question: `${kb * 1024} 바이트(Byte)는 몇 KB입니까?`,
+      answer: kb,
+    };
+  } else {
+    const mb = Math.pow(2, getRandomInt(1, 2, rng));
+    return {
+      question: `${mb * 1024} KB는 몇 MB입니까?`,
+      answer: mb,
+    };
+  }
 }

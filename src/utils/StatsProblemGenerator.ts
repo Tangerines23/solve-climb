@@ -53,9 +53,9 @@ export function generateStatsProblem(
     case 8:
       return generateCombinationsBasic(rng);
     case 9:
-      return generateProbAdvanced();
+      return generateProbAdvanced(rng);
     case 10:
-      return generateStatsMaster();
+      return generateStatsMaster(rng);
     default:
       return generateMeanBasic(rng);
   }
@@ -161,17 +161,37 @@ function generateCombinationsBasic(rng?: {
   };
 }
 
-function generateProbAdvanced(): StatsProblem {
-  return {
-    question: '주사위 1개를 던질 때, 7 이상의 눈이 나올 확률(%)은?',
-    answer: 0,
-  };
+function generateProbAdvanced(rng?: {
+  randomInt: (min: number, max: number) => number;
+}): StatsProblem {
+  const type = getRandomInt(1, 2, rng);
+  if (type === 1) {
+    const total = getRandomInt(10, 20, rng);
+    const target = getRandomInt(1, total - 1, rng);
+    return {
+      question: `공이 ${total}개 들어있는 주머니에서 빨간 공이 ${target}개일 때, 공 1개를 뽑아 빨간 공이 아닐 확률(%)은?`,
+      answer: Math.round(((total - target) / total) * 100),
+    };
+  } else {
+    return {
+      question:
+        '주사위 1개를 던질 때, 2의 배수이면서 3의 배수인 눈이 나올 확률(%)은? (소수점 버림)',
+      answer: Math.floor((1 / 6) * 100),
+    };
+  }
 }
 
-function generateStatsMaster(): StatsProblem {
+function generateStatsMaster(rng?: {
+  randomInt: (min: number, max: number) => number;
+}): StatsProblem {
+  const base = getRandomInt(5, 15, rng);
+  const diff = getRandomInt(1, 4, rng);
+  const data = [base - 2 * diff, base - diff, base, base + diff, base + 2 * diff].sort(
+    (a, b) => a - b
+  );
   return {
-    question: '데이터 2, 4, 6, 8, 10의 평균은?',
-    answer: 6,
+    question: `데이터 [${data.join(', ')}]의 중앙값과 평균의 합은?`,
+    answer: base + base,
   };
 }
 
