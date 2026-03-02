@@ -15,7 +15,8 @@ import './LevelSelectPage.css';
 export function LevelSelectPage() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
-  const scrollContainerRef = useRef<HTMLDivElement>(null);
+  const mapAreaRef = useRef<HTMLDivElement>(null);
+  const [isSheetExpanded, setIsSheetExpanded] = useState(false);
   const [toastMessage, setToastMessage] = useState('');
   const [showToast, setShowToast] = useState(false);
   const addFavorite = useFavoriteStore((state) => state.addFavorite);
@@ -59,17 +60,18 @@ export function LevelSelectPage() {
   }, [mountainParam, worldParam, categoryParam, navigate]);
 
   useLayoutEffect(() => {
-    const container = scrollContainerRef.current;
+    const container = mapAreaRef.current;
 
     if (container) {
-      const contentElement = container.querySelector('.level-select-content') as HTMLElement;
+      // Find the SVG graphic to calculate target scroll
+      const graphic = container.querySelector('.climb-graphic') as HTMLElement;
 
-      if (contentElement) {
-        const contentTop = contentElement.offsetTop;
+      if (graphic) {
+        // Target scrolling to show current progress area (roughly 75% down from top of content)
         const viewportHeight = container.clientHeight;
+        const totalHeight = graphic.scrollHeight;
         const visibleRatio = 0.75;
-        const targetScrollTop = contentTop - viewportHeight * visibleRatio;
-        container.scrollTop = targetScrollTop;
+        container.scrollTop = totalHeight - viewportHeight * visibleRatio;
       }
 
       requestAnimationFrame(() => {
@@ -235,9 +237,8 @@ export function LevelSelectPage() {
 
   return (
     <PageLayout
-      className="level-select-page"
+      className={`level-select-page ${isSheetExpanded ? 'sheet-expanded' : ''}`}
       data-world={worldParam || 'World1'}
-      ref={scrollContainerRef}
       style={{
         opacity: isReady ? 1 : 0,
         transition: 'opacity 0.2s ease-out',
@@ -270,74 +271,75 @@ export function LevelSelectPage() {
         <div className="header-right-placeholder" />
       </header>
 
-      <div className="level-select-graphic-container">
-        <ClimbGraphic
-          world={worldParam}
-          category={categoryParam}
-          levels={levels}
-          categoryColor={categoryColor}
-          onLevelClick={handleLevelClick}
-          onUnderDevelopmentClick={() => {
-            setToastMessage('아직 개발중입니다 :(');
-            setShowToast(true);
-          }}
-          // className="level-select-graphic" // ClimbGraphic might not accept className, check if needed
-        />
+      {/* 상단 맵 영역: 독립 스크롤 */}
+      <div
+        className="map-area"
+        ref={mapAreaRef}
+        onScroll={() => {
+          if (isSheetExpanded) setIsSheetExpanded(false);
+        }}
+        onTouchStart={() => {
+          if (isSheetExpanded) setIsSheetExpanded(false);
+        }}
+      >
+        <div className="level-select-graphic-container">
+          <ClimbGraphic
+            world={worldParam}
+            category={categoryParam}
+            levels={levels}
+            categoryColor={categoryColor}
+            onLevelClick={handleLevelClick}
+            onUnderDevelopmentClick={() => {
+              setToastMessage('아직 개발중입니다 :(');
+              setShowToast(true);
+            }}
+          />
+        </div>
       </div>
 
-      <div className="level-select-content">
-        <div className="level-select-summary">
-          <h2 className="level-select-summary-title">{categoryInfo.name}</h2>
-          <p className="level-select-summary-desc">{categoryInfo.symbol} 주제를 정복해보세요!</p>
+      {/* 하단 시트: 레벨 리스트 및 상세 정보 */}
+      <div className={`bottom-sheet ${isSheetExpanded ? 'expanded' : ''}`}>
+        <div className="sheet-handle-bar" onClick={() => setIsSheetExpanded(!isSheetExpanded)}>
+          <div className="handle-indicator" />
         </div>
 
-        {/* [TODO: Hard Mode 하드 티어 개발 이후에 주석 풀고 적용]
-        <div className="tier-toggle-container">
-          <div className="tier-toggle">
-            <button
-              className={`tier-toggle-btn ${tier === 'normal' ? 'active' : ''}`}
-              onClick={() => setTier('normal')}
-            >
-              노말 티어
-            </button>
-            <button
-              className={`tier-toggle-btn ${tier === 'hard' ? 'active' : ''}`}
-              onClick={() => setTier('hard')}
-            >
-              하드 티어
-            </button>
+        <div className="sheet-header" onClick={() => setIsSheetExpanded(true)}>
+          <div className="level-select-summary">
+            <h2 className="level-select-summary-title">{categoryInfo.name}</h2>
+            <p className="level-select-summary-desc">{categoryInfo.symbol} 주제를 정복해보세요!</p>
           </div>
         </div>
-        */}
 
-        <div className="survival-challenge-entry">
-          <button className="survival-challenge-button" onClick={handleSurvivalClick}>
-            <span className="survival-icon">🔥</span>
-            <div className="survival-text">
-              <span className="survival-title">서바이벌 챌린지</span>
-              <span className="survival-desc">
-                점점 빨라지는 한계 돌파! 무한 도전에 직면하세요.
-              </span>
-            </div>
-            <span className="survival-arrow">→</span>
-          </button>
+        <div className="sheet-content">
+          <div className="survival-challenge-entry">
+            <button className="survival-challenge-button" onClick={handleSurvivalClick}>
+              <span className="survival-icon">🔥</span>
+              <div className="survival-text">
+                <span className="survival-title">서바이벌 챌린지</span>
+                <span className="survival-desc">
+                  점점 빨라지는 한계 돌파! 무한 도전에 직면하세요.
+                </span>
+              </div>
+              <span className="survival-arrow">→</span>
+            </button>
+          </div>
+
+          <MyRecordCard
+            world={worldParam}
+            category={categoryParam}
+            categoryName={categoryInfo.name}
+          />
+
+          <LevelListCard
+            world={worldParam}
+            category={categoryParam}
+            levels={levels}
+            onLevelClick={handleLevelClick}
+            onLevelLongPress={handleLevelLongPress}
+            onLockedLevelClick={handleLockedLevelClick}
+            tier={tier}
+          />
         </div>
-
-        <MyRecordCard
-          world={worldParam}
-          category={categoryParam}
-          categoryName={categoryInfo.name}
-        />
-
-        <LevelListCard
-          world={worldParam}
-          category={categoryParam}
-          levels={levels}
-          onLevelClick={handleLevelClick}
-          onLevelLongPress={handleLevelLongPress}
-          onLockedLevelClick={handleLockedLevelClick}
-          tier={tier}
-        />
       </div>
 
       <FooterNav />
