@@ -88,6 +88,12 @@ describe('useMyPageStats', () => {
       cyclePromotionPending: false,
       pendingCycleScore: 0,
       loginStreak: 0,
+      totalGames: 0,
+      totalCorrect: 0,
+      totalQuestions: 0,
+      bestStreak: 0,
+      avgSolveTime: 0,
+      lastPlayedAt: null,
     });
   });
 
@@ -110,6 +116,12 @@ describe('useMyPageStats', () => {
         total_solved: 50,
         max_level: 10,
         best_subject: 'Math',
+        total_games: 50,
+        total_correct: 45,
+        total_questions: 100,
+        best_streak: 20,
+        avg_solve_time: 15.5,
+        last_played_at: '2026-03-02T00:00:00Z',
       },
     ];
 
@@ -136,6 +148,12 @@ describe('useMyPageStats', () => {
       cyclePromotionPending: true,
       pendingCycleScore: 50,
       loginStreak: 5,
+      totalGames: 50,
+      totalCorrect: 45,
+      totalQuestions: 100,
+      bestStreak: 20,
+      avgSolveTime: 15.5,
+      lastPlayedAt: '2026-03-02T00:00:00Z',
     });
   });
 
@@ -183,6 +201,12 @@ describe('useMyPageStats', () => {
       cyclePromotionPending: false,
       pendingCycleScore: 0,
       loginStreak: 10,
+      totalGames: 0,
+      totalCorrect: 0,
+      totalQuestions: 0,
+      bestStreak: 0,
+      avgSolveTime: 0,
+      lastPlayedAt: null,
     });
   });
 
