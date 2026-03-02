@@ -29,13 +29,13 @@
 
 ### 1. 퀴즈 콘텐츠 및 생성기 확장
 
-- [ ] **World Expansion**: World 2(도형), 3(확률), 4(공학) 생성기 로직 고도화 (현재 스켈레톤 상태)
+- [x] **World Expansion**: World 2(도형), 3(확률), 4(공학) 생성기 로직 고도화 (현재 스켈레톤 상태)
 
 ### 2. 유저 통계 및 마이페이지
 
-- [ ] `user_statistics` DB 구현 (총 플레이, 승률, 연승 등)
-- [ ] 마이페이지 '기본 정보' 외 '기록(History)' 탭 UI 구현
-- [ ] `get_user_game_stats` RPC 함수 Supabase 연동 확인
+- [x] `user_statistics` DB 구현 (총 플레이, 승률, 연승 등)
+- [x] 마이페이지 '기본 정보' 외 '기록(History)' 탭 UI 구현
+- [x] `get_user_game_stats` RPC 함수 Supabase 연동 확인
 
 ### 3. 레이아웃 및 UX 수정
 

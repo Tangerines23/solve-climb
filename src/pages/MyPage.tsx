@@ -14,6 +14,7 @@ import { MyPageStats } from '../components/my/MyPageStats';
 import { MyPageQuickAccess } from '../components/my/MyPageQuickAccess';
 import { MyPageSettings } from '../components/my/MyPageSettings';
 import { MyPageEffectsGuide } from '../components/my/MyPageEffectsGuide';
+import { HistoryTab } from '../components/my/HistoryTab';
 import { useProfileStore } from '../stores/useProfileStore';
 import { useSettingsStore } from '../stores/useSettingsStore';
 import { useMyPageStats } from '../hooks/useMyPageStats';
@@ -100,6 +101,7 @@ export function MyPage() {
   const [tierStars, setTierStars] = useState(0);
   const [showWithdrawConfirm, setShowWithdrawConfirm] = useState(false);
   const [isWithdrawing, setIsWithdrawing] = useState(false);
+  const [activeTab, setActiveTab] = useState<'info' | 'history'>('info');
 
   const routerLocation = useLocation();
   const locationState = routerLocation.state as { from?: { pathname: string } } | null;
@@ -515,50 +517,72 @@ export function MyPage() {
       <Header />
       <main className="my-page-main">
         <div className="my-page-content">
-          {/* Header: Profile & Summary */}
-          <MyPageProfile
-            nickname={nickname}
-            totalMasteryScore={stats?.totalMasteryScore || 0}
-            loginStreak={stats?.loginStreak || 0}
-            loading={statsLoading}
-            onEditProfile={() => setShowProfileForm(true)}
-          />
+          {/* Tabs Navigation */}
+          <nav className="mypage-tabs">
+            <button
+              className={`mypage-tab ${activeTab === 'info' ? 'active' : ''}`}
+              onClick={() => setActiveTab('info')}
+            >
+              기본 정보
+            </button>
+            <button
+              className={`mypage-tab ${activeTab === 'history' ? 'active' : ''}`}
+              onClick={() => setActiveTab('history')}
+            >
+              성장 기록
+            </button>
+          </nav>
 
-          {/* Stats Grid */}
-          <MyPageStats
-            loading={statsLoading}
-            totalSolved={stats?.totalSolved || 0}
-            maxLevel={stats?.maxLevel}
-            bestSubject={formatBestSubject(stats?.bestSubject || null)}
-            isOpeningLeaderboard={isOpeningLeaderboard}
-            retryCount={retryCount}
-            onNavigateHistory={() => navigate(APP_CONFIG.ROUTES.HISTORY)}
-            onOpenLeaderboard={handleOpenLeaderboard}
-          />
+          {activeTab === 'info' ? (
+            <>
+              {/* Header: Profile & Summary */}
+              <MyPageProfile
+                nickname={nickname}
+                totalMasteryScore={stats?.totalMasteryScore || 0}
+                loginStreak={stats?.loginStreak || 0}
+                loading={statsLoading}
+                onEditProfile={() => setShowProfileForm(true)}
+              />
 
-          {/* Quick Access Section */}
-          <MyPageQuickAccess
-            todayChallenge={todayChallenge}
-            favorites={favorites}
-            setCategoryTopic={setCategoryTopic}
-          />
+              {/* Stats Grid */}
+              <MyPageStats
+                loading={statsLoading}
+                totalSolved={stats?.totalSolved || 0}
+                maxLevel={stats?.maxLevel}
+                bestSubject={formatBestSubject(stats?.bestSubject || null)}
+                isOpeningLeaderboard={isOpeningLeaderboard}
+                retryCount={retryCount}
+                onNavigateHistory={() => setActiveTab('history')}
+                onOpenLeaderboard={handleOpenLeaderboard}
+              />
 
-          {/* Settings List */}
-          <MyPageSettings
-            hapticEnabled={hapticEnabled}
-            animationEnabled={animationEnabled}
-            onToggleHaptic={handleToggleHaptic}
-            onToggleAnimation={handleToggleAnimation}
-            onShowProfileForm={() => setShowProfileForm(true)}
-            onDataReset={handleDataReset}
-            isResetting={isResetting}
-            onSendFeedback={handleSendFeedback}
-            onLogout={handleLogout}
-            onWithdraw={handleWithdraw}
-          />
+              {/* Quick Access Section */}
+              <MyPageQuickAccess
+                todayChallenge={todayChallenge}
+                favorites={favorites}
+                setCategoryTopic={setCategoryTopic}
+              />
 
-          {/* Game Effects Guide */}
-          <MyPageEffectsGuide />
+              {/* Settings List */}
+              <MyPageSettings
+                hapticEnabled={hapticEnabled}
+                animationEnabled={animationEnabled}
+                onToggleHaptic={handleToggleHaptic}
+                onToggleAnimation={handleToggleAnimation}
+                onShowProfileForm={() => setShowProfileForm(true)}
+                onDataReset={handleDataReset}
+                isResetting={isResetting}
+                onSendFeedback={handleSendFeedback}
+                onLogout={handleLogout}
+                onWithdraw={handleWithdraw}
+              />
+
+              {/* Game Effects Guide */}
+              <MyPageEffectsGuide />
+            </>
+          ) : (
+            <HistoryTab stats={stats} loading={statsLoading} />
+          )}
 
           {/* Admin / Dev Tool Link */}
           {(useProfileStore.getState().isAdmin || import.meta.env.DEV) && (
