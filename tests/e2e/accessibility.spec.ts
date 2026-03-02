@@ -26,9 +26,17 @@ test.describe('♿ Accessibility Audit', () => {
         console.log(`[HTML Dump] ${bodyHtml}`);
       }
 
-      // networkidle hangs due to Supabase realtime subscriptions
+      // Wait for main content area
       await page.waitForSelector('main', { timeout: 30000 });
-      await page.waitForTimeout(2000); // 렌더링 안정을 위한 대기 시간 증가
+
+      // Wait for dynamic lists to populate (e.g., Shop / Ranking / Inventory) and their 0.3s fade-in animations to finish
+      await page
+        .waitForSelector('.item-card, .rank-row, .inventory-item', {
+          state: 'visible',
+          timeout: 10000,
+        })
+        .catch(() => {});
+      await page.waitForTimeout(500); // Guaranteed to exceed 0.3s CSS animation duration
 
       const accessibilityScanResults = await new AxeBuilder({ page })
         .withTags(['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa'])
