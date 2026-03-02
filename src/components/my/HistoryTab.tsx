@@ -1,12 +1,40 @@
 import { MyPageStats } from '../../hooks/useMyPageStats';
+import { useGrowthJournal } from '../../hooks/useGrowthJournal';
+import { useMemo } from 'react';
 
 interface HistoryTabProps {
   stats: MyPageStats | null;
   loading: boolean;
 }
 
-export const HistoryTab: React.FC<HistoryTabProps> = ({ stats, loading }) => {
-  if (loading) {
+export const HistoryTab: React.FC<HistoryTabProps> = ({ stats, loading: statsLoading }) => {
+  const { logs, loading: logsLoading } = useGrowthJournal();
+
+  const loading = statsLoading || logsLoading;
+
+  // 주당 요일별 활동량 계산 (최근 7일)
+  const weeklyTrend = useMemo(() => {
+    const last7Days = Array.from({ length: 7 }, (_, i) => {
+      const d = new Date();
+      d.setDate(d.getDate() - i);
+      return d.toISOString().split('T')[0];
+    }).reverse();
+
+    return last7Days.map((date) => {
+      const dayLogs = logs.filter((log) => log.created_at.startsWith(date));
+      return {
+        date: date.slice(5), // MM-DD
+        count: dayLogs.length,
+      };
+    });
+  }, [logs]);
+
+  // 오답 모음 추출 (최근 30개 기록 중)
+  const recentWrongAnswers = useMemo(() => {
+    return logs.flatMap((log) => log.wrong_answers || []).slice(0, 5); // 상위 5개만 노출
+  }, [logs]);
+
+  if (loading && !stats) {
     return (
       <div className="history-tab-loading">
         <div className="loading-spinner"></div>
@@ -69,29 +97,77 @@ export const HistoryTab: React.FC<HistoryTabProps> = ({ stats, loading }) => {
       </div>
 
       <div className="history-info-section">
-        <h3 className="section-title">성장 리포트</h3>
-        <ul className="report-list">
-          <li className="report-item">
-            <span className="report-icon">✨</span>
-            <div className="report-content">
-              <span className="report-text">
-                지금까지 <strong>{stats.totalQuestions}문항</strong>을 성공적으로 풀이했습니다.
-              </span>
-            </div>
-          </li>
-          {stats.lastPlayedAt && (
-            <li className="report-item">
-              <span className="report-icon">📅</span>
-              <div className="report-content">
-                <span className="report-text">
-                  마지막 학습일:{' '}
-                  <strong>{new Date(stats.lastPlayedAt).toLocaleDateString()}</strong>
-                </span>
+        <h3 className="section-title">주간 활동 추이</h3>
+        <div className="trend-chart">
+          {weeklyTrend.map((day, i) => (
+            <div key={i} className="trend-bar-wrapper">
+              <div
+                className="trend-bar"
+                style={
+                  {
+                    '--bar-height': `${Math.min(day.count * 20, 100)}%`,
+                    opacity: day.count > 0 ? 1 : 0.3,
+                  } as React.CSSProperties
+                }
+              >
+                {day.count > 0 && <span className="trend-count">{day.count}</span>}
               </div>
-            </li>
-          )}
-        </ul>
+              <span className="trend-label">{day.date}</span>
+            </div>
+          ))}
+        </div>
       </div>
+
+      <div className="history-info-section">
+        <h3 className="section-title">최근 성장 일지</h3>
+        <div className="activity-log-list">
+          {logs.length > 0 ? (
+            logs.map((log) => (
+              <div key={log.id} className="activity-log-item">
+                <div className="log-header">
+                  <span className="log-mode">
+                    {log.game_mode === 'survival' ? '🔥 서바이벌' : '⏱️ 타임어택'}
+                  </span>
+                  <span className="log-date">{new Date(log.created_at).toLocaleDateString()}</span>
+                </div>
+                <div className="log-content">
+                  <div className="log-main">
+                    <span className="log-world">
+                      {log.world_id} - {log.category_id} (Lvl.{log.level})
+                    </span>
+                    <span className="log-score">{log.score.toLocaleString()}m</span>
+                  </div>
+                  <div className="log-details">
+                    <span>
+                      정답 {log.correct_count}/{log.total_questions}
+                    </span>
+                    <span>평균 {log.avg_solve_time.toFixed(1)}초</span>
+                  </div>
+                </div>
+              </div>
+            ))
+          ) : (
+            <p className="empty-log-text">아직 기록된 일지가 없습니다.</p>
+          )}
+        </div>
+      </div>
+
+      {recentWrongAnswers.length > 0 && (
+        <div className="history-info-section wrong-answer-section">
+          <h3 className="section-title">오답 노트 (복습 필요 ⚠️)</h3>
+          <div className="wrong-answer-grid">
+            {recentWrongAnswers.map((wa, i) => (
+              <div key={i} className="wrong-answer-card-mini">
+                <p className="wa-q">{wa.question}</p>
+                <div className="wa-footer">
+                  <span className="wa-wrong">오답: {wa.wrong_answer}</span>
+                  <span className="wa-correct">정답: {wa.correct_answer}</span>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
 
       <div className="history-tip-card">
         <div className="tip-icon">💡</div>

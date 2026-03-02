@@ -133,6 +133,7 @@ export function ResultPage() {
             level,
             mode === 'time-attack' ? 'time-attack' : 'survival',
             finalScore,
+            averageTime ?? undefined,
             sessionData
           );
         } else {
@@ -142,6 +143,7 @@ export function ResultPage() {
             level,
             mode === 'time-attack' ? 'time-attack' : 'survival',
             finalScore,
+            averageTime ?? undefined,
             sessionData
           );
         }

@@ -893,6 +893,10 @@ export function RoadmapPage() {
           <div className="history-content">
             <div className="history-error">
               데이터를 불러오지 못했습니다. 잠시 후 다시 시도해주세요.
+              <br />
+              <span style={{ fontSize: '0.8em', color: 'var(--color-text-secondary)' }}>
+                (에러: {error})
+              </span>
             </div>
           </div>
         </main>

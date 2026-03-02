@@ -184,7 +184,7 @@ export function useHistoryData() {
         safeSupabaseQuery(
           supabase
             .from('game_sessions')
-            .select('world_id, category_id, subject_id, level, game_mode, score, created_at')
+            .select('category, subject, level, game_mode, score, created_at')
             .eq('user_id', currentUserId)
             .eq('status', 'completed')
             .order('created_at', { ascending: false })
@@ -216,20 +216,19 @@ export function useHistoryData() {
 
       // 세션 데이터를 기록 포맷으로 정규화 (활동 추적용)
       type SessionRow = {
-        category_id: string;
-        subject_id: string;
-        world_id: string;
+        category: string;
+        subject: string;
         level: number;
         game_mode?: string;
         score?: number;
         created_at?: string;
       };
       const sessionsAsRecords = (sessionsData || []).map((s: SessionRow) => {
-        const themeId = `${s.category_id}_${s.subject_id}`;
+        const themeId = `${s.category}_${s.subject}`;
         return {
-          world_id: s.world_id,
-          category_id: s.category_id,
-          subject_id: s.subject_id,
+          world_id: s.subject,
+          category_id: s.category,
+          subject_id: s.subject,
           themeId,
           level: s.level,
           mode_code: s.game_mode === 'timeattack' ? 1 : 2,

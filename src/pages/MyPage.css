@@ -71,6 +71,160 @@
   }
 }
 
+/* Growth Journal Trends */
+.trend-chart {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  height: 120px;
+  padding: var(--spacing-md) 0;
+  gap: var(--spacing-xs);
+}
+
+.trend-bar-wrapper {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  height: 100%;
+}
+
+.trend-bar {
+  width: 100%;
+  height: var(--bar-height, 4px);
+  background: linear-gradient(to top, var(--color-teal-500), var(--color-teal-300));
+  border-radius: var(--rounded-xs) var(--rounded-xs) 0 0;
+  position: relative;
+  transition: height 0.3s ease;
+}
+
+.trend-count {
+  position: absolute;
+  top: -20px;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: var(--color-teal-300);
+}
+
+.trend-label {
+  font-size: 0.7rem;
+  color: var(--color-text-secondary);
+  margin-top: var(--spacing-xs);
+}
+
+/* Activity Log List */
+.activity-log-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-sm);
+}
+
+.activity-log-item {
+  background: var(--color-surface-elevated);
+  border: 1px solid var(--color-border);
+  border-radius: var(--rounded-sm);
+  padding: var(--spacing-sm);
+  transition: transform 0.2s ease;
+}
+
+.activity-log-item:hover {
+  transform: translateX(4px);
+  border-color: var(--color-teal-500);
+}
+
+.log-header {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: var(--spacing-xs);
+  font-size: 0.75rem;
+}
+
+.log-mode {
+  font-weight: 700;
+  color: var(--color-text-primary);
+}
+
+.log-date {
+  color: var(--color-text-secondary);
+}
+
+.log-main {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 2px;
+}
+
+.log-world {
+  font-size: 0.9rem;
+  font-weight: 600;
+}
+
+.log-score {
+  font-size: 1rem;
+  font-weight: 800;
+  color: var(--color-teal-400);
+}
+
+.log-details {
+  display: flex;
+  gap: var(--spacing-sm);
+  font-size: 0.75rem;
+  color: var(--color-text-secondary);
+}
+
+.empty-log-text {
+  text-align: center;
+  color: var(--color-text-secondary);
+  padding: var(--spacing-xl) 0;
+  font-style: italic;
+}
+
+/* Wrong Answer Note */
+.wrong-answer-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--spacing-sm);
+}
+
+.wrong-answer-card-mini {
+  background: rgba(255, 107, 107, 0.05);
+  border: 1px solid rgba(255, 107, 107, 0.2);
+  border-radius: var(--rounded-sm);
+  padding: var(--spacing-sm);
+}
+
+.wa-q {
+  font-size: 0.85rem;
+  font-weight: 600;
+  margin-bottom: var(--spacing-xs);
+  word-break: break-all;
+}
+
+.wa-footer {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.75rem;
+}
+
+.wa-wrong {
+  color: var(--color-red-400);
+  text-decoration: line-through;
+}
+
+.wa-correct {
+  color: var(--color-green-400);
+  font-weight: 700;
+}
+
+@media (max-width: 480px) {
+  .wrong-answer-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
 /* Header: Profile & Summary */
 .my-page-tier-section {
   margin-top: var(--spacing-xl);

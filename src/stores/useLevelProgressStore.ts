@@ -54,6 +54,7 @@ interface LevelProgressState {
     level: number,
     mode: GameMode,
     score: number,
+    avgSolveTime?: number,
     sessionData?: {
       answers: number[];
       questionIds: string[];
@@ -67,6 +68,7 @@ interface LevelProgressState {
     level: number,
     mode: GameMode,
     score: number,
+    avgSolveTime?: number,
     sessionData?: {
       answers: number[];
       questionIds: string[];
@@ -158,7 +160,16 @@ export const useLevelProgressStore = create<LevelProgressState>()(
           return levels[0] + 1; // 마지막 클리어 레벨 + 1
         },
 
-        clearLevel: async (world, category, level, mode, score, sessionData, tier = 'normal') => {
+        clearLevel: async (
+          world,
+          category,
+          level,
+          mode,
+          score,
+          avgSolveTime = 0,
+          sessionData,
+          tier = 'normal'
+        ) => {
           const worldKey = tier === 'hard' ? `${world}_hard` : world;
           console.log('[useLevelProgressStore] clearLevel called:', {
             world: worldKey,
@@ -166,6 +177,7 @@ export const useLevelProgressStore = create<LevelProgressState>()(
             level,
             mode,
             score,
+            avgSolveTime,
             hasSessionData: !!sessionData,
           });
 
@@ -218,6 +230,7 @@ export const useLevelProgressStore = create<LevelProgressState>()(
                 p_category: category,
                 p_subject: 'add',
                 p_level: level,
+                p_avg_solve_time: avgSolveTime,
               })
             );
 
@@ -237,6 +250,7 @@ export const useLevelProgressStore = create<LevelProgressState>()(
           level,
           mode,
           score,
+          avgSolveTime = 0,
           sessionData,
           tier = 'normal'
         ) => {
@@ -276,6 +290,7 @@ export const useLevelProgressStore = create<LevelProgressState>()(
                 p_category: category,
                 p_subject: 'add',
                 p_level: level,
+                p_avg_solve_time: avgSolveTime,
               })
             );
 
