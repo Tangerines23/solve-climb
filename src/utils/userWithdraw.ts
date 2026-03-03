@@ -48,14 +48,16 @@ export const withdrawAccount = async (): Promise<boolean> => {
         clearTimeout(timeoutId);
 
         if (!response.ok) {
-          // Edge Function이 없거나 실패하더라도 로컬 데이터 삭제는 진행합니다.
-          console.warn(
-            `[탈퇴] 서버 요청 실패 (${response.status}) - 로컬 데이터 삭제만 진행합니다.`
-          );
+          const errData = await response.json().catch(() => ({}));
+          console.error(`[탈퇴] 서버 요청 실패 (${response.status})`, errData);
+          throw new Error('계정 삭제 중 오류가 발생했습니다. (서버 응답 오류)');
         }
-      } catch (_fetchError) {
+      } catch (fetchError) {
         clearTimeout(timeoutId);
-        console.warn('[탈퇴] 서버 요청 중 오류 발생 - 로컬 데이터 삭제만 진행합니다.');
+        console.error('[탈퇴] 서버 요청 중 오류 발생:', fetchError);
+        throw new Error(
+          '계정 삭제 요청 중 오류가 발생했습니다. 네트워크 상태를 확인하시거나 다시 시도해 주세요.'
+        );
       }
     }
 

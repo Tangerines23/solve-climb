@@ -1,14 +1,11 @@
-import { MyPageStats } from '../../hooks/useMyPageStats';
+import { useMyPageStats } from '../../hooks/useMyPageStats';
 import { useGrowthJournal } from '../../hooks/useGrowthJournal';
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 
-interface HistoryTabProps {
-  stats: MyPageStats | null;
-  loading: boolean;
-}
-
-export const HistoryTab: React.FC<HistoryTabProps> = ({ stats, loading: statsLoading }) => {
+export const HistoryTab: React.FC = () => {
+  const { stats, loading: statsLoading } = useMyPageStats();
   const { logs, loading: logsLoading } = useGrowthJournal();
+  const [expandedLogId, setExpandedLogId] = useState<string | null>(null);
 
   const loading = statsLoading || logsLoading;
 
@@ -123,7 +120,12 @@ export const HistoryTab: React.FC<HistoryTabProps> = ({ stats, loading: statsLoa
         <div className="activity-log-list">
           {logs.length > 0 ? (
             logs.map((log) => (
-              <div key={log.id} className="activity-log-item">
+              <div
+                key={log.id}
+                className={`activity-log-item ${expandedLogId === log.id ? 'expanded' : ''}`}
+                onClick={() => setExpandedLogId(expandedLogId === log.id ? null : log.id)}
+                style={{ cursor: 'pointer' }}
+              >
                 <div className="log-header">
                   <span className="log-mode">
                     {log.game_mode === 'survival' ? '🔥 서바이벌' : '⏱️ 타임어택'}
@@ -142,8 +144,31 @@ export const HistoryTab: React.FC<HistoryTabProps> = ({ stats, loading: statsLoa
                       정답 {log.correct_count}/{log.total_questions}
                     </span>
                     <span>평균 {log.avg_solve_time.toFixed(1)}초</span>
+                    <span className="log-expand-icon">{expandedLogId === log.id ? '▲' : '▼'}</span>
                   </div>
                 </div>
+
+                {/* 확장이 되었을 때 보이는 상세 뷰 */}
+                {expandedLogId === log.id && (
+                  <div className="log-details-expanded">
+                    {log.wrong_answers && log.wrong_answers.length > 0 ? (
+                      <div className="log-wrong-answers">
+                        <h4 className="log-wrong-answers-title">오답 노트</h4>
+                        {log.wrong_answers.map((wa, i) => (
+                          <div key={i} className="log-wrong-answer-item">
+                            <span className="log-wa-q">{wa.question}</span>
+                            <span className="log-wa-wrong">오답: {wa.wrong_answer}</span>
+                            <span className="log-wa-correct">정답: {wa.correct_answer}</span>
+                          </div>
+                        ))}
+                      </div>
+                    ) : (
+                      <div className="log-perfect-score">
+                        <span className="perfect-icon">🎉</span> 모든 문제를 맞혔습니다!
+                      </div>
+                    )}
+                  </div>
+                )}
               </div>
             ))
           ) : (
