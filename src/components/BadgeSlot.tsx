@@ -18,8 +18,10 @@ export const BadgeSlot: React.FC<BadgeSlotProps> = ({ isEarned, badgeDef, earned
         // Simple alert for now, or assume parent handles click if passed
       }}
     >
-      <div className="badge-icon">{badgeDef?.emoji || '🔒'}</div>
-      <div className="badge-name">{badgeDef?.name || 'Loading...'}</div>
+      <div className="badge-icon" role="img" aria-label={badgeDef?.name || '잠긴 뱃지'}>
+        {badgeDef?.emoji || '🔒'}
+      </div>
+      <div className="badge-name">{badgeDef?.name || '데이터 로딩 중...'}</div>
       <div className="badge-desc">{badgeDef?.description || '목표를 달성하세요'}</div>
       {isEarned && earnedAt && (
         <div className="badge-date">
@@ -101,7 +103,11 @@ export const BadgeCollection: React.FC<BadgeCollectionProps> = ({ userId, mode =
           const badgeDef = defMap[badge.badge_id];
           return (
             <div key={badge.badge_id} className="badge-slot-mini">
-              <div className={`badge-icon-mini ${isEarned ? 'earned' : 'locked'}`}>
+              <div
+                className={`badge-icon-mini ${isEarned ? 'earned' : 'locked'}`}
+                role="img"
+                aria-label={isEarned && badgeDef ? badgeDef.name : '잠긴 뱃지'}
+              >
                 {isEarned && badgeDef?.emoji ? badgeDef.emoji : '🔒'}
               </div>
             </div>

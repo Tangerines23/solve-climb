@@ -796,7 +796,14 @@ export function RoadmapPage() {
                     %
                   </span>
                 </div>
-                <div className="tier-progress-bar-container">
+                <div
+                  className="tier-progress-bar-container"
+                  role="progressbar"
+                  aria-valuenow={Math.round((stats.totalAltitude / stats.nextTierGoal) * 100)}
+                  aria-valuemin={0}
+                  aria-valuemax={100}
+                  aria-label={`${stats.nextTierName} 등급 달성률`}
+                >
                   <div
                     className="tier-progress-bar-fill"
                     style={{
@@ -811,7 +818,7 @@ export function RoadmapPage() {
 
           {/* 2. Tab Switcher */}
           <div className="history-tab-container">
-            <div className="history-segmented-control" data-vg-ignore="true">
+            <div className="history-segmented-control" role="tablist" data-vg-ignore="true">
               <div
                 className={`segmented-indicator ${
                   activeTab === 'summary' ? 'tab-summary' : 'tab-history'
@@ -819,6 +826,9 @@ export function RoadmapPage() {
               />
               <button
                 className={`segmented-item ${activeTab === 'summary' ? 'active' : ''}`}
+                role="tab"
+                aria-selected={activeTab === 'summary'}
+                aria-controls="roadmap-tab-panel"
                 onClick={() => {
                   setActiveTab('summary');
                   vibrateShort();
@@ -828,6 +838,9 @@ export function RoadmapPage() {
               </button>
               <button
                 className={`segmented-item ${activeTab === 'history' ? 'active' : ''}`}
+                role="tab"
+                aria-selected={activeTab === 'history'}
+                aria-controls="stats-tab-panel"
                 onClick={() => {
                   setActiveTab('history');
                   vibrateShort();
@@ -842,11 +855,17 @@ export function RoadmapPage() {
           <div className="history-tab-content" data-vg-ignore="true">
             {activeTab === 'summary' ? (
               /* Journey Tab Content: Comment + Milestones */
-              <div className="history-journey-container fade-in">
+              <div
+                id="roadmap-tab-panel"
+                role="tabpanel"
+                className="history-journey-container fade-in"
+              >
                 {!loading && stats && (
                   <>
                     <div className="history-smart-comment">
-                      <span className="comment-icon">💬</span>
+                      <span className="comment-icon" role="img" aria-label="comment">
+                        💬
+                      </span>
                       <span className="comment-text">{stats.smartComment}</span>
                     </div>
 
@@ -855,7 +874,11 @@ export function RoadmapPage() {
                       <div className="history-badge-collection">
                         <div className="collection-header">
                           <span className="collection-title">나의 뱃지 보관함 🏆</span>
-                          <span className="collection-more" onClick={() => setShowBadgeModal(true)}>
+                          <span
+                            className="collection-more"
+                            role="button"
+                            onClick={() => setShowBadgeModal(true)}
+                          >
                             전체보기 &gt;
                           </span>
                         </div>
@@ -869,6 +892,8 @@ export function RoadmapPage() {
                       ref={cardRef}
                       className={`history-milestones-integrated ${isMilestoneExpanded ? 'hidden' : ''}`}
                       onClick={() => handleOpenRoadmap()}
+                      role="button"
+                      aria-label="로드맵 전체 보기"
                     >
                       <div className="history-milestones-list-integrated">
                         <div className="milestone-line-integrated" />
@@ -917,6 +942,8 @@ export function RoadmapPage() {
                                     handleOpenRoadmap(m.altitude);
                                     vibrateShort();
                                   }}
+                                  role="button"
+                                  aria-label={`${m.label} (${m.altitude}m) ${isNow ? '- 현재 위치' : ''}`}
                                   data-vg-ignore="true"
                                 >
                                   <div className="milestone-dot-integrated" data-vg-ignore="true">
@@ -939,7 +966,7 @@ export function RoadmapPage() {
                 )}
               </div>
             ) : (
-              <div className="fade-in">
+              <div id="stats-tab-panel" role="tabpanel" className="fade-in">
                 <HistoryTab />
               </div>
             )}
