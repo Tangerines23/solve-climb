@@ -143,6 +143,11 @@ export const urls = {
   login: () => APP_CONFIG.ROUTES.LOGIN,
 
   /**
+   * History (Progress Stats) Page - Tab deep link
+   */
+  history: () => APP_CONFIG.ROUTES.HISTORY + '?tab=history',
+
+  /**
    * Privacy Policy Page
    */
   privacyPolicy: () => '/privacy-policy',

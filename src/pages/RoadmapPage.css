@@ -9,7 +9,18 @@
   background-color: var(--color-bg-primary);
   overflow-y: auto;
   overflow-x: hidden;
-  -webkit-overflow-scrolling: touch;
+}
+
+.landmark-item {
+  position: absolute;
+  left: 0;
+  right: 0;
+  height: 0px;
+  min-height: 0;
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  will-change: bottom;
 }
 
 .history-main {
@@ -100,12 +111,14 @@
   right: 0;
   bottom: 0;
   background-color: rgba(0, 0, 0, 0);
+  -webkit-backdrop-filter: blur(0px);
   backdrop-filter: blur(0px);
   transition: all 0.5s ease;
 }
 
 .history-roadmap-overlay.fade-in .roadmap-backdrop {
   background-color: rgba(0, 0, 0, 0.85);
+  -webkit-backdrop-filter: blur(12px);
   backdrop-filter: blur(12px);
   /* 약간 더 깊게 */
 }
@@ -237,6 +250,7 @@
   bottom: 0px;
   width: var(--spacing-micro);
   background: linear-gradient(to top, var(--color-primary-light), var(--color-cyan-bright));
+  box-shadow: 0 0 10px rgba(79, 172, 254, 0.5); /* Fallback */
   box-shadow: 0 0 10px color-mix(in srgb, var(--color-primary-light), transparent 50%);
   transition: height 0.8s cubic-bezier(0.4, 0, 0.2, 1);
   z-index: 1;
@@ -506,6 +520,7 @@
   display: flex;
   flex-direction: column;
   gap: var(--spacing-tiny);
+  -webkit-backdrop-filter: blur(20px);
   backdrop-filter: blur(20px);
 }
 
@@ -523,6 +538,7 @@
 
 .footer-value {
   font-size: 15px;
+  color: var(--color-success); /* Fallback for color-mix */
   color: var(--color-primary-light);
   font-weight: 800;
   letter-spacing: -0.2px;
@@ -535,7 +551,8 @@
   /* 로드맵 푸터(고도 정보) 위로 올림 */
   right: 24px;
   background-color: rgba(25, 26, 30, 0.85);
-  border: 1px solid color-mix(in srgb, var(--color-primary-light), transparent 60%);
+  border: 1px solid rgba(79, 172, 254, 0.4); /* Fallback */
+  -webkit-backdrop-filter: blur(12px);
   backdrop-filter: blur(12px);
   padding: var(--spacing-tiny) var(--spacing-medium-alt);
   border-radius: var(--rounded-pill);
@@ -590,10 +607,12 @@
 
 .landmark-item.type-tier .landmark-dot {
   border-color: var(--color-cyan-bright);
+  background-color: rgba(79, 172, 254, 0.1); /* Fallback */
   background-color: color-mix(in srgb, var(--color-primary-light), transparent 90%);
 }
 
 .landmark-item.type-tier.is-passed .landmark-dot {
+  box-shadow: 0 0 15px rgba(0, 242, 254, 0.3); /* Fallback */
   box-shadow: 0 0 15px color-mix(in srgb, var(--color-cyan-bright), transparent 70%);
 }
 
@@ -1146,6 +1165,7 @@
   border: 1px solid rgba(76, 217, 100, 0.2);
   z-index: 1;
   text-align: right;
+  -webkit-backdrop-filter: blur(8px);
   backdrop-filter: blur(8px);
 }
 
@@ -1216,6 +1236,7 @@
   padding: 2px var(--spacing-small-alt);
   border-radius: var(--rounded-pill);
   border: 1px solid rgba(76, 217, 100, 0.4);
+  -webkit-backdrop-filter: blur(10px);
   backdrop-filter: blur(10px);
   white-space: nowrap;
   box-shadow: 0 0 15px rgba(0, 0, 0, 0.5);
@@ -1574,6 +1595,7 @@
   /* header 아래 */
   right: 20px;
   background: rgba(0, 0, 0, 0.45);
+  -webkit-backdrop-filter: blur(8px);
   backdrop-filter: blur(8px);
   color: var(--color-gray-100);
   padding: var(--spacing-xs) var(--spacing-md);
@@ -1595,6 +1617,82 @@
   transform: translateY(0);
 }
 
+.linear-landmark-container {
+  position: absolute;
+  left: 0;
+  right: 0;
+}
+
+.roadmap-floating-marker-container {
+  position: absolute;
+  z-index: 100;
+  pointer-events: none;
+  display: flex;
+  align-items: center;
+  transition: bottom 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+  left: -24px !important;
+  right: -24px !important;
+  width: auto;
+  transform: translateY(50%);
+}
+
+.roadmap-path-landmarks-container {
+  height: 100%;
+  width: 100%;
+}
+
+.roadmap-path-landmarks-container.is-linear {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+}
+
+.roadmap-scroll-spacer {
+  width: 100%;
+}
+
+.roadmap-scroll-spacer.bottom-spacer {
+  height: var(--spacer-height, 0px);
+}
+
+.roadmap-scroll-spacer.top-spacer {
+  height: var(--spacer-height, 4px);
+}
+
+.landmark-dot.sub-dot {
+  width: 12px;
+  height: 12px;
+}
+
+.landmark-label.sub,
+.landmark-altitude.sub {
+  font-size: 13px;
+  opacity: 0.6;
+}
+
+.landmark-progress-marker {
+  position: relative;
+  left: 0;
+}
+
+.history-segmented-control .segmented-indicator {
+  width: 50%;
+  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.history-segmented-control .segmented-indicator.tab-summary {
+  transform: translateX(0);
+}
+
+.history-segmented-control .segmented-indicator.tab-history {
+  transform: translateX(100%);
+}
+
+.history-segmented-control .segmented-item {
+  flex: 1;
+}
+
 /* --- Analysis View Styles (Premium) --- */
 .history-analysis-container {
   display: flex;
@@ -1610,8 +1708,8 @@
   padding: var(--spacing-2xl);
   box-shadow: var(--shadow-glass);
   border: var(--border-glass);
-  backdrop-filter: blur(var(--backdrop-blur));
   -webkit-backdrop-filter: blur(var(--backdrop-blur));
+  backdrop-filter: blur(var(--backdrop-blur));
   display: flex;
   flex-direction: column;
   gap: var(--spacing-xl);
@@ -1855,6 +1953,7 @@
   right: 0;
   bottom: 0;
   background-color: rgba(0, 0, 0, 0.8);
+  -webkit-backdrop-filter: blur(8px);
   backdrop-filter: blur(8px);
   z-index: 3000;
   display: flex;
@@ -1940,6 +2039,7 @@
   background-color: var(--bg-glass-overlay);
   border-radius: var(--rounded-md);
   border: 1px solid rgba(255, 255, 255, 0.05);
+  -webkit-backdrop-filter: blur(10px);
   backdrop-filter: blur(10px);
 }
 

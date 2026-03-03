@@ -36,7 +36,6 @@
   background-color: var(--color-gray-900);
   overflow-y: auto;
   overflow-x: hidden;
-  -webkit-overflow-scrolling: touch;
   overscroll-behavior-y: contain;
   touch-action: pan-y;
 }
@@ -209,7 +208,7 @@
   margin-bottom: var(--spacing-xs);
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: var(--spacing-xs);
 }
 
 .log-wrong-answer-item:last-child {

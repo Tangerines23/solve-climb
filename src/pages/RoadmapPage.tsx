@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo, useRef, memo } from 'react';
-// import { useNavigate } from 'react-router-dom';
+import { useSearchParams } from 'react-router-dom';
 import './RoadmapPage.css';
 import { Header } from '../components/Header';
 import { FooterNav } from '../components/FooterNav';
@@ -36,16 +36,8 @@ const LinearLandmarkItem = memo(
       <div
         className={`landmark-item ${isTier ? 'type-tier' : 'type-landmark'} ${isCurrent ? 'is-current' : ''} ${isPassed ? 'is-passed' : ''}`}
         style={{
-          position: 'absolute',
-          bottom: `${item.bottom}px`,
-          left: 0,
-          right: 0,
-          height: '0px',
-          minHeight: 0,
-          zIndex: 2,
-          display: 'flex',
-          alignItems: 'center',
-          willChange: 'bottom',
+          ['--item-bottom' as string]: `${item.bottom}px`,
+          bottom: 'var(--item-bottom)',
         }}
       >
         <div
@@ -110,7 +102,7 @@ const NonLinearTierItem = memo(
         className={`tier-group ${!isInCardView && !isRoadmapActive ? 'roadmap-extra-content' : ''}`}
       >
         <div
-          className={`landmark-item ${isPassed ? 'is-passed' : ''} ${isCurrentNode ? 'is-current' : ''} ${m.type === 'tier' || isZero ? 'type-tier' : ''}`}
+          className={`landmark-item ${isPassed ? 'is-passed' : ''} ${isCurrentNode ? 'is-current' : ''} ${m.type === 'tier' || isZero ? 'type-tier' : ''} clickable`}
           ref={(el) => {
             if (el) landmarkRefs.current.set(m.altitude, el);
           }}
@@ -118,7 +110,6 @@ const NonLinearTierItem = memo(
             setIsLinearScale(true);
             vibrateShort();
           }}
-          style={{ cursor: 'pointer' }}
         >
           <div
             className="landmark-progress-marker"
@@ -144,9 +135,14 @@ const NonLinearTierItem = memo(
 );
 
 export function RoadmapPage() {
-  // const navigate = useNavigate();
+  const [searchParams, setSearchParams] = useSearchParams();
+  const activeTab = (searchParams.get('tab') as 'summary' | 'history') || 'summary';
+
+  const setActiveTab = (tab: 'summary' | 'history') => {
+    setSearchParams({ tab }, { replace: true });
+  };
+
   const { stats, loading, error } = useHistoryData();
-  const [activeTab, setActiveTab] = useState<'summary' | 'history'>('summary');
   const [isMilestoneExpanded, setIsMilestoneExpanded] = useState(false);
   const [isRoadmapActive, setIsRoadmapActive] = useState(false);
   const [cardRect, setCardRect] = useState<DOMRect | null>(null);
@@ -552,100 +548,88 @@ export function RoadmapPage() {
             Zoom 1:{displayRatio}
           </div>
 
-          <div
-            className="roadmap-content"
-            style={{ position: 'relative', flex: 1, overflow: 'hidden' }}
-          >
+          <div className="roadmap-content-wrapper">
             {/* 1. Fixed Logical Scroll Rail (Ghost) */}
             <div
               ref={roadmapScrollRef}
-              className="roadmap-scroll-ghost"
+              className="roadmap-scroll-ghost-container"
               style={{
-                position: 'absolute',
-                inset: 0,
                 overflowY: isLinearScale ? 'auto' : 'hidden',
                 zIndex: isLinearScale ? 2 : 0,
                 pointerEvents: isLinearScale ? 'auto' : 'none',
+                ['--rail-height' as string]: `${VIRTUAL_RAIL_HEIGHT}px`,
               }}
             >
-              <div style={{ height: `${VIRTUAL_RAIL_HEIGHT}px`, width: '1px' }} />
+              <div style={{ height: 'var(--rail-height)', width: '1px' }} />
             </div>
 
             {/* 2. Virtual Camera View Container (Visual) */}
             <div
-              className="roadmap-virtual-viewport"
+              className="roadmap-virtual-viewport-container"
               style={{
-                position: 'absolute',
-                inset: 0,
-                zIndex: 1,
-                pointerEvents: 'none',
                 overflow: isLinearScale ? 'hidden' : 'auto',
               }}
             >
               <div
                 ref={cameraRef}
-                className={`roadmap-mountain-path ${isScaling ? 'is-scaling' : ''}`}
+                className={`roadmap-mountain-path-container ${isScaling ? 'is-scaling' : ''}`}
                 style={{
-                  position: 'absolute',
-                  pointerEvents: 'auto',
-                  left: 0,
-                  right: 0,
                   bottom: isLinearScale && layoutData ? 'var(--camera-offset, 0px)' : '0px',
-                  height: isLinearScale
+                  ['--path-height' as string]: isLinearScale
                     ? `${getAltitudeY(ALTITUDE_MILESTONES[0].altitude + 10000, displayRatio)}px`
                     : 'auto',
+                  height: 'var(--path-height)',
                 }}
               >
                 <div
                   className="roadmap-dotted-line"
                   style={{
-                    bottom: isLinearScale
+                    ['--dotted-bottom' as string]: isLinearScale
                       ? layoutData?.BOTTOM_SAFETY_MARGIN || 0
                       : 'var(--gauge-bottom, 36px)',
-                    height:
+                    ['--dotted-height-val' as string]:
                       isLinearScale && layoutData
                         ? `${layoutData.nodes[0].bottom - layoutData.BOTTOM_SAFETY_MARGIN + 100}px`
                         : 'var(--dotted-height, 100%)',
+                    bottom: 'var(--dotted-bottom)',
+                    height: 'var(--dotted-height-val)',
                     top: isLinearScale ? 'auto' : 'var(--dotted-top, 118px)',
                   }}
                 />
                 <div
                   className="path-line-fill"
                   style={{
-                    bottom: isLinearScale
+                    ['--fill-bottom' as string]: isLinearScale
                       ? layoutData?.BOTTOM_SAFETY_MARGIN || 0
                       : 'var(--gauge-bottom, 36px)',
-                    height:
+                    ['--fill-height' as string]:
                       isLinearScale && layoutData ? `${layoutData.gaugeHeight}px` : gaugeHeight,
+                    bottom: 'var(--fill-bottom)',
+                    height: 'var(--fill-height)',
                     top: 'auto',
                   }}
                 />
 
                 <div
-                  className="current-position-floating-marker"
+                  className="roadmap-floating-marker-container"
                   style={{
-                    bottom: `calc(${isLinearScale ? (layoutData?.BOTTOM_SAFETY_MARGIN || 0) + 'px' : 'var(--gauge-bottom, 36px)'} + ${isLinearScale && layoutData ? layoutData.gaugeHeight + 'px' : gaugeHeight})`,
+                    ['--marker-bottom' as string]: `calc(${isLinearScale ? (layoutData?.BOTTOM_SAFETY_MARGIN || 0) + 'px' : 'var(--gauge-bottom, 36px)'} + ${isLinearScale && layoutData ? layoutData.gaugeHeight + 'px' : gaugeHeight})`,
                     ['--current-alt-text' as string]: `"${stats.totalAltitude.toLocaleString()}m"`,
+                    bottom: 'var(--marker-bottom)',
                   }}
                 >
-                  <div
-                    className="landmark-progress-marker"
-                    style={{ position: 'relative', left: '0' }}
-                  >
+                  <div className="landmark-progress-marker">
                     <div className="landmark-dot">🚶</div>
                   </div>
                 </div>
 
                 <div
-                  className={`path-landmarks ${isLinearScale ? 'is-linear' : ''}`}
+                  className={`roadmap-path-landmarks-container ${isLinearScale ? 'is-linear' : ''}`}
                   style={
                     isLinearScale
                       ? {
-                          height: `${getAltitudeY(ALTITUDE_MILESTONES[0].altitude + 10000, displayRatio)}px`,
-                          position: 'absolute',
-                          bottom: 0,
-                          left: 0,
-                          right: 0,
+                          ['--landmarks-height' as string]: `${getAltitudeY(ALTITUDE_MILESTONES[0].altitude + 10000, displayRatio)}px`,
+                          height: 'var(--landmarks-height)',
                         }
                       : undefined
                   }
@@ -653,7 +637,10 @@ export function RoadmapPage() {
                   {/* 하단 여백: 확대맵(Linear)일 때는 센터링을 위해 길게, 기본 목록일 때는 짧게 */}
                   <div
                     className="roadmap-scroll-spacer bottom-spacer"
-                    style={{ height: isLinearScale ? '100px' : '0px' }}
+                    style={{
+                      ['--spacer-height' as string]: isLinearScale ? '100px' : '0px',
+                      height: 'var(--spacer-height)',
+                    }}
                   />
                   {isLinearScale && layoutData ? (
                     layoutData.nodes
@@ -710,7 +697,10 @@ export function RoadmapPage() {
                       })}
                       <div
                         className="roadmap-scroll-spacer top-spacer"
-                        style={{ height: isLinearScale ? '100px' : '4px' }}
+                        style={{
+                          ['--spacer-height' as string]: isLinearScale ? '100px' : '4px',
+                          height: 'var(--spacer-height)',
+                        }}
                       />
                     </>
                   )}
@@ -810,7 +800,8 @@ export function RoadmapPage() {
                   <div
                     className="tier-progress-bar-fill"
                     style={{
-                      width: `${Math.min((stats.totalAltitude / stats.nextTierGoal) * 100, 100)}%`,
+                      ['--progress-width' as string]: `${Math.min((stats.totalAltitude / stats.nextTierGoal) * 100, 100)}%`,
+                      width: 'var(--progress-width)',
                     }}
                   />
                 </div>
@@ -825,10 +816,6 @@ export function RoadmapPage() {
                 className={`segmented-indicator ${
                   activeTab === 'summary' ? 'tab-summary' : 'tab-history'
                 }`}
-                style={{
-                  width: '50%',
-                  transform: activeTab === 'summary' ? 'translateX(0)' : 'translateX(100%)',
-                }}
               />
               <button
                 className={`segmented-item ${activeTab === 'summary' ? 'active' : ''}`}
@@ -836,7 +823,6 @@ export function RoadmapPage() {
                   setActiveTab('summary');
                   vibrateShort();
                 }}
-                style={{ flex: 1 }}
               >
                 스테이지 🗺️
               </button>
@@ -846,7 +832,6 @@ export function RoadmapPage() {
                   setActiveTab('history');
                   vibrateShort();
                 }}
-                style={{ flex: 1 }}
               >
                 진행 통계 📊
               </button>
@@ -954,7 +939,7 @@ export function RoadmapPage() {
                 )}
               </div>
             ) : (
-              <div className="fade-in" style={{ padding: '0px' }}>
+              <div className="fade-in">
                 <HistoryTab />
               </div>
             )}

@@ -532,7 +532,7 @@ export function MyPage() {
             bestSubject={formatBestSubject(stats?.bestSubject || null)}
             isOpeningLeaderboard={isOpeningLeaderboard}
             retryCount={retryCount}
-            onNavigateHistory={() => navigate(APP_CONFIG.ROUTES.HISTORY)}
+            onNavigateHistory={() => navigate(urls.history())}
             onOpenLeaderboard={handleOpenLeaderboard}
           />
 
