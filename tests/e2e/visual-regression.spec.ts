@@ -61,7 +61,7 @@ test.describe('Visual Regression Testing (VRT) - UI 일관성 검증', () => {
 
   test('등반 일지 (Roadmap Page)', async ({ page }) => {
     await page.goto('/roadmap');
-    await page.waitForSelector('.roadmap-page', { timeout: 15000 });
+    await page.waitForSelector('.history-page', { timeout: 15000 });
     // 로드맵 애니메이션 및 데이터 로딩 대기
     await page.waitForTimeout(2000);
 
