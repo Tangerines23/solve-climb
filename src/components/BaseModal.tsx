@@ -28,6 +28,7 @@ export function BaseModal({
     <div
       className={`modal-overlay animate-fade-in ${!showOverlay ? 'no-overlay' : ''}`}
       onClick={closeOnOverlayClick ? onClose : undefined}
+      data-vg-ignore="true"
     >
       <div
         className={`modal-base animate-scale-in ${className}`}

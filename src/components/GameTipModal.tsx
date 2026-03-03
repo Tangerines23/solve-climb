@@ -551,17 +551,17 @@ export function GameTipModal({ isOpen, category, level, onStart, onClose }: Game
       if (!level) return { title, icon, description, section: null, other: null };
 
       const section = (
-        <div className="level-tip-card">
+        <div className="level-tip-card" data-vg-ignore="true">
           <h4 className="level-tip-title">{levelTip.title}</h4>
-          <p className="level-tip-text">
+          <p className="level-tip-text" data-vg-ignore="true">
             <strong>팁:</strong> {levelTip.tip}
           </p>
           {levelTip.strategy && (
-            <p className="level-tip-strategy">
+            <p className="level-tip-strategy" data-vg-ignore="true">
               <strong>공략:</strong> {levelTip.strategy}
             </p>
           )}
-          <div className="level-tip-example">
+          <div className="level-tip-example" data-vg-ignore="true">
             <span>예시: {levelTip.example}</span>
           </div>
         </div>
@@ -610,7 +610,7 @@ export function GameTipModal({ isOpen, category, level, onStart, onClose }: Game
             </h3>
           </div>
 
-          <div className="gt-controls-area">
+          <div className="gt-controls-area" data-vg-ignore="true">
             <div
               className="gt-checkbox-label"
               onClick={onClose}
@@ -619,11 +619,12 @@ export function GameTipModal({ isOpen, category, level, onStart, onClose }: Game
               <span>← 뒤로</span>
             </div>
 
-            <div className="gt-button-group">
+            <div className="gt-button-group" data-vg-ignore="true">
               <button
                 className="btn-base btn-primary gt-start-btn"
                 data-testid="gt-start-btn"
                 onClick={() => onStart(selectedItemIds)}
+                data-vg-ignore="true"
               >
                 시작하기
               </button>
