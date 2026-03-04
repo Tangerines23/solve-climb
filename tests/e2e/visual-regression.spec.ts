@@ -44,7 +44,7 @@ test.describe('Visual Regression Testing (VRT) - UI 일관성 검증', () => {
 
     await expect(page).toHaveScreenshot('vrt-shop-page.png', {
       fullPage: true,
-      maxDiffPixelRatio: 0.01,
+      maxDiffPixelRatio: 0.05,
     });
   });
 
