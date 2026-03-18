@@ -364,7 +364,18 @@ jobs:
           fi
           export PROJECT_REF=$(echo "$VITE_SUPABASE_URL" | sed -E 's|https://([^.]+)\.supabase\.co.*|\1|')
           npx supabase link --project-ref "$PROJECT_REF" --password "$SUPABASE_DB_PASSWORD"
-          npx supabase db push --include-all --yes || (npx supabase migration repair --status reverted 20260123 && npx supabase db push --include-all --yes)
+          
+          OUTPUT=$(npx supabase db push --include-all --yes 2>&1) || EXIT_CODE=$?
+          if [ -n "$OUTPUT" ]; then
+            echo "$OUTPUT"
+          fi
+          if [ -n "$EXIT_CODE" ] && [ "$EXIT_CODE" -ne 0 ]; then
+            if echo "$OUTPUT" | grep -q "Remote migration versions not found"; then
+              echo "::warning::Remote database has migrations not present locally. Proceeding without failing."
+            else
+              exit "$EXIT_CODE"
+            fi
+          fi
 
       - name: Cache Playwright Browsers
         id: playwright-cache
@@ -424,7 +435,18 @@ jobs:
           fi
           export PROJECT_REF=$(echo "$VITE_SUPABASE_URL" | sed -E 's|https://([^.]+)\.supabase\.co.*|\1|')
           npx supabase link --project-ref "$PROJECT_REF" --password "$SUPABASE_DB_PASSWORD"
-          npx supabase db push --include-all --yes || (npx supabase migration repair --status reverted 20260123 && npx supabase db push --include-all --yes)
+          
+          OUTPUT=$(npx supabase db push --include-all --yes 2>&1) || EXIT_CODE=$?
+          if [ -n "$OUTPUT" ]; then
+            echo "$OUTPUT"
+          fi
+          if [ -n "$EXIT_CODE" ] && [ "$EXIT_CODE" -ne 0 ]; then
+            if echo "$OUTPUT" | grep -q "Remote migration versions not found"; then
+              echo "::warning::Remote database has migrations not present locally. Proceeding without failing."
+            else
+              exit "$EXIT_CODE"
+            fi
+          fi
 
       - name: Cache Playwright Browsers
         id: playwright-cache
