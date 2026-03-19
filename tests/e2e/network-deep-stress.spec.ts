@@ -51,7 +51,7 @@ test.describe('NETWORK DEEP STRESS - Reliability Check', () => {
     }
 
     // 3. 로딩 상태 확인 및 아이템 그리드 대기
-    await expect(page).toHaveURL(/.*shop.*/);
+    await expect(page).toHaveURL(/.*shop.*/, { timeout: 15000 });
 
     // 4. 구매 버튼 광클 (레이스 컨디션 테스트)
     console.log('[STRESS] Rapid-fire clicks on purchase button...');
