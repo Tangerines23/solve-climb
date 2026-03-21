@@ -114,8 +114,9 @@ export function RankingPage() {
     <div className="ranking-page">
       <Header />
       <main className="ranking-main">
-        {/* Layer 1: 종목 선택 (Tabs) */}
-        <div className="ranking-tabs-container">
+        <div className="ranking-content">
+          {/* Layer 1: 종목 선택 (Tabs) */}
+          <div className="ranking-tabs-container">
           <div className="ranking-tabs-wrapper" style={{ marginTop: 'var(--spacing-md)' }}>
             <SegmentedControl
               options={[
@@ -239,24 +240,27 @@ export function RankingPage() {
         {/* 내 랭킹 (스티키) */}
         {myRank && (
           <div className="my-rank-sticky">
-            <div className="ranking-item my-item">
-              <div className="ranking-item-left">
-                <span className="ranking-rank">{getMedalIcon(Number(myRank.rank))}</span>
-                <span className="ranking-nickname">나 ({myRank.nickname})</span>
-                {/* 티어 뱃지 항상 표시 */}
-                <TierBadge
-                  fixedTierLevel={myRank.tier_level}
-                  fixedTierStars={myRank.tier_stars}
-                  totalScore={myRank.tier_level === undefined ? Number(myRank.score) : undefined}
-                  size="small"
-                  showLabel={false}
-                  showStars={true}
-                />
+            <div className="my-rank-sticky-content">
+              <div className="ranking-item my-item">
+                <div className="ranking-item-left">
+                  <span className="ranking-rank">{getMedalIcon(Number(myRank.rank))}</span>
+                  <span className="ranking-nickname">나 ({myRank.nickname})</span>
+                  {/* 티어 뱃지 항상 표시 */}
+                  <TierBadge
+                    fixedTierLevel={myRank.tier_level}
+                    fixedTierStars={myRank.tier_stars}
+                    totalScore={myRank.tier_level === undefined ? Number(myRank.score) : undefined}
+                    size="small"
+                    showLabel={false}
+                    showStars={true}
+                  />
+                </div>
+                <div className="ranking-score">{Number(myRank.score).toLocaleString()}점</div>
               </div>
-              <div className="ranking-score">{Number(myRank.score).toLocaleString()}점</div>
             </div>
           </div>
         )}
+        </div>
       </main>
       <FooterNav />
     </div>
