@@ -221,7 +221,7 @@
 
 strong {
   font-weight: 700;
-  color: #ffffff; /* Explicitly white for contrast in dark theme */
+  color: var(--color-text-primary); /* Explicitly white for contrast in dark theme */
 }
 
 :root {
@@ -470,7 +470,7 @@ body {
   border: var(--border-glass);
   border-radius: var(--rounded-sm);
   background-color: rgba(255, 255, 255, 0.05);
-  color: white;
+  color: var(--color-text-primary);
   margin-top: var(--spacing-lg);
 }
 
@@ -533,7 +533,7 @@ body {
 .result-score-label {
   font-size: 1.2rem;
   margin: var(--spacing-xl) 0;
-  color: white;
+  color: var(--color-text-primary);
 }
 
 .result-score {
@@ -678,7 +678,7 @@ body {
 
 .tab-base.active {
   background: linear-gradient(135deg, var(--color-blue-400) 0%, var(--color-blue-500) 100%);
-  color: #fff;
+  color: var(--color-text-primary);
   font-weight: 800;
   box-shadow: 0 4px 12px rgba(0, 191, 165, 0.4);
   text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5); /* Stronger shadow for contrast */
@@ -836,10 +836,9 @@ body {
 }
 
 /* Static UI 모드: 모든 애니메이션 및 트랜지션 비활성화 */
-.static-ui *,
-.static-ui *,
-.static-ui *::before,
-.static-ui *::after {
+.static-ui *:not(.toast):not(.toast-content),
+.static-ui *:not(.toast):not(.toast-content)::before,
+.static-ui *:not(.toast):not(.toast-content)::after {
   animation: none !important;
   transition: none !important;
   transform: none !important;
