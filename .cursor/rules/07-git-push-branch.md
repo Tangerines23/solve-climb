@@ -1,6 +1,6 @@
 ---
 description: Push할 때 main이 아닌 브랜치로만 push하기 (Git 워크플로우)
-globs: ["**/*"]
+globs: ['**/*']
 alwaysApply: true
 ---
 
