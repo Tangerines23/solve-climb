@@ -59,7 +59,7 @@
 
 .primary-button {
   background: var(--color-blue-500);
-  color: white;
+  color: var(--color-text-primary);
 }
 
 .secondary-button {
