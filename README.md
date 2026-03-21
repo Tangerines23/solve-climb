@@ -41,30 +41,36 @@
 ### 설치
 
 1. 저장소 클론
+
 ```bash
 git clone <repository-url>
 cd solve-climb
 ```
 
 2. **새 환경 한 번에 세팅** (권장)
+
 ```bash
 npm run setup
 ```
+
 - `.env` 없으면 `.env.example`을 복사해 생성
 - `node_modules` 없으면 `npm install` 실행
 - [새 환경 세팅 가이드](./docs/setup-new-environment.md) 참고
 
 3. 수동 설치 시: 의존성 설치 후 환경 변수 설정
+
 ```bash
 npm install
 # .env 없으면 .env.example 복사 후 아래 변수 설정
 ```
 
 `.env` 예시:
+
 ```env
 VITE_SUPABASE_URL=your_supabase_url
 VITE_SUPABASE_ANON_KEY=your_supabase_anon_key
 ```
+
 `.env.example` 파일을 참고하세요.
 
 ### 개발 서버 실행
@@ -130,15 +136,18 @@ solve-climb/
 ## 게임 모드
 
 ### 타임어택 모드
+
 - 제한 시간 내 최대한 많은 문제를 풀어 높은 점수를 획득
 - 정답: +10점, 오답: -3점 (등반 미끄러짐)
 
 ### 서바이벌 모드 (준비 중)
+
 - 연속 정답으로 최고 기록 도전
 
 ## 레벨 시스템
 
 ### 수학의 산 > 사칙연산
+
 1. 한 자리 덧셈 (결과 ≤ 10)
 2. 한 자리 뺄셈 (결과 ≥ 0)
 3. 덧셈과 뺄셈 혼합
@@ -158,6 +167,7 @@ solve-climb/
 ## 데이터베이스
 
 Supabase를 사용하여 다음 데이터를 저장합니다:
+
 - 사용자 프로필
 - 레벨 진행도
 - 게임 기록
@@ -176,6 +186,7 @@ Supabase를 사용하여 다음 데이터를 저장합니다:
 ### 상태 관리
 
 Zustand를 사용하여 전역 상태를 관리합니다:
+
 - `useQuizStore`: 퀴즈 게임 상태
 - `useLevelProgressStore`: 레벨 진행도
 - `useProfileStore`: 사용자 프로필
@@ -189,20 +200,24 @@ Zustand를 사용하여 전역 상태를 관리합니다:
 #### 색상 변수
 
 **배경 색상:**
+
 - `var(--color-bg-primary)` - 주요 배경 (#1e1e1e)
 - `var(--color-bg-secondary)` - 보조 배경 (#2c2c2c)
 - `var(--color-bg-tertiary)` - 3차 배경 (#3c3c3c)
 
 **텍스트 색상:**
+
 - `var(--color-text-primary)` - 주요 텍스트 (#ffffff)
 - `var(--color-text-secondary)` - 보조 텍스트 (#aaa)
 
 **Primary 색상 (버튼, 링크 등):**
+
 - `var(--color-blue-400)` - 기본 상태 (#00BFA5)
 - `var(--color-blue-500)` - hover 상태 (#00a693)
 - `var(--color-blue-700)` - active 상태 (#00897a)
 
 **에러/경고 색상:**
+
 - `var(--color-toss-red)` - 토스 빨간색 (#f04452)
 - `var(--color-red-500)` - 일반 빨간색 (#ef4444)
 - `var(--color-red-600)` - 위험 버튼 hover (#dc2626)
@@ -210,6 +225,7 @@ Zustand를 사용하여 전역 상태를 관리합니다:
 #### 간격 변수
 
 기본 간격:
+
 - `var(--spacing-xs)` - 4px
 - `var(--spacing-sm)` - 8px
 - `var(--spacing-md)` - 12px
@@ -220,6 +236,7 @@ Zustand를 사용하여 전역 상태를 관리합니다:
 - `var(--spacing-4xl)` - 40px
 
 특수 간격:
+
 - `var(--spacing-tiny)` - 6px
 - `var(--spacing-small-alt)` - 10px
 - `var(--spacing-medium-alt)` - 14px
@@ -258,6 +275,7 @@ Zustand를 사용하여 전역 상태를 관리합니다:
 ```
 
 **예외 사항:**
+
 - 그래픽/아트워크 요소의 그라데이션 색상
 - 브랜드 색상 (Google 등)
 - `index.css`의 변수 정의 자체

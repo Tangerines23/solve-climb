@@ -41,6 +41,7 @@ npm start
 #### 환경 변수 설정
 
 Vercel 대시보드에서:
+
 - `PORT`: 포트 번호 (선택사항, 기본값: 3000)
 
 ## 📡 API 엔드포인트
@@ -50,6 +51,7 @@ Vercel 대시보드에서:
 토스 OAuth AccessToken을 받기 위한 프록시 엔드포인트입니다.
 
 **요청**:
+
 ```json
 {
   "authorizationCode": "인가코드",
@@ -58,6 +60,7 @@ Vercel 대시보드에서:
 ```
 
 **응답**:
+
 ```json
 {
   "resultType": "SUCCESS",
@@ -76,6 +79,7 @@ Vercel 대시보드에서:
 서버 상태 확인 엔드포인트입니다.
 
 **응답**:
+
 ```json
 {
   "status": "ok",
@@ -94,4 +98,3 @@ Vercel 대시보드에서:
 
 - [토스 API 사용하기](https://developers-apps-in-toss.toss.im/development/integration-process.html)
 - `../docs/CERTIFICATE_REQUIRED_ERROR.md` - 오류 해결 가이드
-
