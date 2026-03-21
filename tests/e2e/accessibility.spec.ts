@@ -5,7 +5,7 @@ test.describe('♿ Accessibility Audit', () => {
   // CI에서 프로필 및 인증 없이 일부 페이지가 에러 UI를 표시함
   // → a11y 위반 false positive. 근본 해결: CI용 테스트 계정 또는 mock 인증 필요
   test('Main pages should have no automatically detectable a11y violations', async ({ page }) => {
-    const pages = ['/', '/shop', '/ranking', '/my-page'];
+    const pages = ['/', '/shop', '/ranking', '/my-page', '/roadmap'];
 
     for (const path of pages) {
       console.log(`[A11Y] Auditing ${path}...`);

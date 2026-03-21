@@ -70,15 +70,19 @@ test.describe('SMOKE TEST - 메인 화면 검증', () => {
       .first();
     if (await challengeBtn.isVisible()) {
       console.log('[smoke.spec] Clicking "도전하기" button...');
-      await challengeBtn.click();
+      await Promise.all([
+        page.waitForNavigation({ timeout: 15000 }).catch(() => null),
+        challengeBtn.click(),
+      ]);
 
-      //URL 변경 대기 (최대 10초)
-      try {
-        await page.waitForURL(/\/(category-select|level-select|quiz)/, { timeout: 10000 });
-        console.log('[smoke.spec] Navigation successful:', page.url());
-      } catch (_e) {
-        console.log('[smoke.spec] Navigation timed out. Attempting direct navigation...');
+      // URL 변경 확인
+      if (!page.url().match(/\/(category-select|level-select|quiz)/)) {
+        console.log(
+          '[smoke.spec] Navigation click did not change URL. Attempting direct navigation...'
+        );
         await page.goto('/category-select?mountain=math');
+      } else {
+        console.log('[smoke.spec] Navigation successful:', page.url());
       }
     } else {
       console.log('[smoke.spec] "도전하기" button not found. Attempting direct navigation...');

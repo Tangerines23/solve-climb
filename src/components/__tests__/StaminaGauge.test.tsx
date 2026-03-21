@@ -56,7 +56,8 @@ describe('StaminaGauge', () => {
     (useUserStore as unknown as ReturnType<typeof vi.fn>).mockReturnValue({ stamina: 5 });
     const { container } = render(<StaminaGauge />);
     const lightning = container.querySelector('.stamina-lightning');
-    expect(lightning).toHaveClass('pulse');
+    // We expect the svg to have both stamina-lightning and pulse classes
+    expect(lightning).toHaveClass('stamina-lightning', 'pulse');
   });
 
   it('should not apply pulse class when stamina is not full', () => {
@@ -109,9 +110,9 @@ describe('StaminaGauge', () => {
   });
 
   it('should set data-stamina to high values correctly', () => {
-    (useUserStore as unknown as ReturnType<typeof vi.fn>).mockReturnValue({ stamina: 3 });
+    (useUserStore as unknown as ReturnType<typeof vi.fn>).mockReturnValue({ stamina: 5 });
     const { container } = render(<StaminaGauge />);
     const gaugeContainer = container.querySelector('.stamina-gauge-container');
-    expect(gaugeContainer).toHaveAttribute('data-stamina', '3');
+    expect(gaugeContainer).toHaveAttribute('data-stamina', '5');
   });
 });

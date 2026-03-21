@@ -60,6 +60,8 @@ export function FooterNav() {
           key={item.id}
           className={`footer-nav-item ${isActive(item) ? 'active' : ''}`}
           onClick={() => handleNavClick(item)}
+          aria-current={isActive(item) ? 'page' : undefined}
+          aria-label={item.label}
         >
           <span className="footer-nav-icon">{item.icon}</span>
           <span className="footer-nav-label">{item.label}</span>

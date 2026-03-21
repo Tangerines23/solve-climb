@@ -6,9 +6,12 @@ import { z } from 'zod';
 
 /** check_and_award_badges 응답 스키마 */
 export const CheckAndAwardBadgesResponseSchema = z.object({
-  success: z.boolean(),
+  success: z.boolean().optional().default(true),
   awarded_badges: z.array(z.string()),
-  count: z.number(),
+  count: z
+    .number()
+    .nullable()
+    .transform((val) => val ?? 0),
 });
 
 // 1. 공통 성공/실패 응답

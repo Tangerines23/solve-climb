@@ -126,7 +126,15 @@ describe('useQuestionGenerator', () => {
     // We are NOT testing that generateQuestion calls generateProblem.
     // So this test expectation `expect(generateProblem).toHaveBeenCalled()` is WRONG if generateQuestion is mocked.
     // We should check if generateQuestion called with correct args.
-    expect(generateQuestion).toHaveBeenCalledWith('math', 'World1', 'World1-기초', 1, 'easy');
+    expect(generateQuestion).toHaveBeenCalledWith(
+      'math',
+      'World1',
+      'World1-기초',
+      1,
+      'easy',
+      'normal',
+      undefined
+    );
   });
 
   it('should generate equation when subParam is equations', async () => {
@@ -153,7 +161,15 @@ describe('useQuestionGenerator', () => {
       await vi.runAllTimersAsync();
     });
 
-    expect(generateQuestion).toHaveBeenCalledWith('math', 'World1', 'World1-대수', 1, 'easy');
+    expect(generateQuestion).toHaveBeenCalledWith(
+      'math',
+      'World1',
+      'World1-대수',
+      1,
+      'easy',
+      'normal',
+      undefined
+    );
   });
 
   it('should reset input and display values', async () => {
@@ -233,7 +249,15 @@ describe('useQuestionGenerator', () => {
       await vi.runAllTimersAsync();
     });
 
-    expect(generateQuestion).toHaveBeenCalledWith('math', 'World1', 'World1-대수', 1, 'easy');
+    expect(generateQuestion).toHaveBeenCalledWith(
+      'math',
+      'World1',
+      'World1-대수',
+      1,
+      'easy',
+      'normal',
+      undefined
+    );
   });
 
   it('should handle calculus subParam', async () => {
@@ -260,7 +284,15 @@ describe('useQuestionGenerator', () => {
       await vi.runAllTimersAsync();
     });
 
-    expect(generateQuestion).toHaveBeenCalledWith('math', 'World1', 'World1-심화', 1, 'easy');
+    expect(generateQuestion).toHaveBeenCalledWith(
+      'math',
+      'World1',
+      'World1-심화',
+      1,
+      'easy',
+      'normal',
+      undefined
+    );
   });
 
   it('should return early when category or topic is null', () => {
@@ -359,7 +391,15 @@ describe('useQuestionGenerator', () => {
         await vi.runAllTimersAsync();
       });
 
-      expect(generateQuestion).toHaveBeenCalledWith('math', 'World1', 'World1-기초', level, 'easy');
+      expect(generateQuestion).toHaveBeenCalledWith(
+        'math',
+        'World1',
+        'World1-기초',
+        level,
+        'easy',
+        'normal',
+        undefined
+      );
     }
   });
 
@@ -387,6 +427,14 @@ describe('useQuestionGenerator', () => {
       await vi.runAllTimersAsync();
     });
 
-    expect(generateQuestion).toHaveBeenCalledWith('math', 'World1', 'World1-기초', 1, 'easy');
+    expect(generateQuestion).toHaveBeenCalledWith(
+      'math',
+      'World1',
+      'World1-기초',
+      1,
+      'easy',
+      'normal',
+      undefined
+    );
   });
 });

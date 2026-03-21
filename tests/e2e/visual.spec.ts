@@ -15,14 +15,14 @@ test.describe('Visual Regression Tests', () => {
         test.setTimeout(60000); // 네트워크/인증 지연 시 여유 부여
         // Navigate to Level Select with valid params (math mountain, World1, 기초 category)
         await page.goto('/level-select?mountain=math&world=World1&category=기초');
-        await page.waitForSelector('.level-select-container, .level-select-content', {
+        await page.waitForSelector('.level-select-page', {
           timeout: 30000,
         });
 
         // Wait for key elements to ensure stability (최대 45초)
-        await page.waitForSelector('.level-select-content', { timeout: 45000 });
+        await page.waitForSelector('.sheet-content', { timeout: 45000 });
         // level-map-container는 ClimbGraphic 컴포넌트 로드 확인
-        await page.waitForSelector('.level-map-container', { timeout: 10000 });
+        await page.waitForSelector('.level-select-graphic-container', { timeout: 10000 });
 
         // Wait for any animations to settle
         await page.waitForTimeout(1000);

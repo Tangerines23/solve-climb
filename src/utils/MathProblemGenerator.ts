@@ -1,4 +1,5 @@
-import { Difficulty } from '../types/quiz';
+import { Difficulty, Tier, MathProblem } from '../types/quiz';
+import { generateHardAlgebraProblem } from './AlgebraAdvancedGenerator';
 
 export type Operator = '+' | '-' | '*' | '/';
 
@@ -422,13 +423,6 @@ export const STAGES: StageConfig[] = [
   },
 ];
 
-export interface MathProblem {
-  expression: string;
-  answer: number | string;
-  displayExpression?: string;
-  inputType?: 'number' | 'decimal' | 'fraction';
-}
-
 function getRandomInt(
   min: number,
   max: number,
@@ -505,8 +499,13 @@ function calculateWithPrecedence(numbers: number[], operators: Operator[]): numb
 export function generateProblem(
   stageId: number,
   _difficulty: Difficulty,
+  tier: Tier = 'normal',
   rng?: { random: () => number; randomInt: (min: number, max: number) => number }
 ): MathProblem {
+  if (tier === 'hard') {
+    return generateHardAlgebraProblem(stageId, _difficulty, rng);
+  }
+
   const stage = STAGES.find((s) => s.id === stageId);
   if (!stage) {
     throw new Error(`Stage ${stageId} not found`);

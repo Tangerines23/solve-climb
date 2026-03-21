@@ -12,6 +12,7 @@
 4. `supabase/setup_debug_mode.sql` 파일의 내용을 복사하여 실행
 
 이 스크립트는 다음을 자동으로 수행합니다:
+
 - `game_config` 테이블 생성 (없는 경우)
 - `debug_mode_enabled` 설정 추가/업데이트
 - `game_sessions.is_debug_session` 컬럼 추가
@@ -52,9 +53,11 @@ npx supabase db push
 ```
 
 **프로젝트 ref 찾는 방법:**
+
 - Supabase Dashboard → 프로젝트 설정 → General → Reference ID
 
 **주의사항:**
+
 - CLI 사용 시 프로젝트 링크와 인증이 필요합니다
 - 로컬 Supabase 사용 시 Docker가 필요합니다
 - 설정이 복잡할 수 있으므로, 웹 Dashboard 방법을 권장합니다
@@ -69,6 +72,7 @@ npx supabase db push
 2. `supabase/check_debug_setup.sql` 파일의 내용을 복사하여 실행
 
 이 스크립트는 다음을 확인합니다:
+
 - ✅ `game_config` 테이블 존재 여부
 - ✅ `debug_mode_enabled` 설정 존재 및 값
 - ✅ `game_sessions.is_debug_session` 컬럼 존재 여부
@@ -91,15 +95,15 @@ npx supabase db push
 **방법 2: 직접 SQL 실행**
 
 ```sql
-UPDATE public.game_config 
+UPDATE public.game_config
 SET value = 'true',
     updated_at = NOW()
 WHERE key = 'debug_mode_enabled';
 
 -- 설정이 없으면 추가
-INSERT INTO public.game_config (key, value, description) 
+INSERT INTO public.game_config (key, value, description)
 VALUES ('debug_mode_enabled', 'true', 'Enable debug RPC functions (dev only)')
-ON CONFLICT (key) DO UPDATE 
+ON CONFLICT (key) DO UPDATE
 SET value = 'true', updated_at = NOW();
 ```
 
@@ -113,7 +117,7 @@ SET value = 'true', updated_at = NOW();
 **방법 2: 직접 SQL 실행**
 
 ```sql
-UPDATE public.game_config 
+UPDATE public.game_config
 SET value = 'false',
     updated_at = NOW()
 WHERE key = 'debug_mode_enabled';
@@ -125,10 +129,10 @@ WHERE key = 'debug_mode_enabled';
 ### 현재 설정 확인
 
 ```sql
-SELECT 
+SELECT
     key,
     value,
-    CASE 
+    CASE
         WHEN value = 'true' THEN '✅ 활성화됨'
         WHEN value = 'false' THEN '❌ 비활성화됨'
         ELSE '❓ 알 수 없음'
@@ -172,8 +176,9 @@ WHERE key = 'debug_mode_enabled';
 **원인**: `debug_mode_enabled`가 `false`로 설정되어 있음
 
 **해결**:
+
 ```sql
-UPDATE public.game_config 
+UPDATE public.game_config
 SET value = 'true'
 WHERE key = 'debug_mode_enabled';
 ```
@@ -193,11 +198,13 @@ WHERE key = 'debug_mode_enabled';
 ### 함수가 작동하지 않는 경우
 
 1. **함수 존재 확인**:
+
    ```sql
    SELECT proname FROM pg_proc WHERE proname LIKE 'debug_%';
    ```
 
 2. **권한 확인**:
+
    ```sql
    SELECT has_function_privilege('authenticated', 'debug_set_mastery_score', 'EXECUTE');
    ```
@@ -228,4 +235,3 @@ WHERE key = 'debug_mode_enabled';
 5. `20251229000000_debug_rpc_functions.sql` - 디버그 RPC 함수들
 
 또는 `setup_debug_mode.sql` 파일 하나로 모든 설정을 적용할 수 있습니다.
-

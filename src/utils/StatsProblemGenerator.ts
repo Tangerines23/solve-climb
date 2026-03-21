@@ -19,6 +19,22 @@ export function generateStatsProblem(
   _difficulty: Difficulty,
   rng?: { random: () => number; randomInt: (min: number, max: number) => number }
 ): StatsProblem {
+  if (level > 10) {
+    const randomVal = rng ? rng.randomInt(1, 4) : Math.floor(Math.random() * 4) + 1;
+    switch (randomVal) {
+      case 1:
+        return generatePermutations(rng);
+      case 2:
+        return generateConditionalProbability(rng);
+      case 3:
+        return generateVariance(rng);
+      case 4:
+        return generateCombinationsAdvanced(rng);
+      default:
+        return generatePermutations(rng);
+    }
+  }
+
   switch (level) {
     case 1:
       return generateMeanBasic(rng);
@@ -37,9 +53,9 @@ export function generateStatsProblem(
     case 8:
       return generateCombinationsBasic(rng);
     case 9:
-      return generateProbAdvanced();
+      return generateProbAdvanced(rng);
     case 10:
-      return generateStatsMaster();
+      return generateStatsMaster(rng);
     default:
       return generateMeanBasic(rng);
   }
@@ -145,16 +161,83 @@ function generateCombinationsBasic(rng?: {
   };
 }
 
-function generateProbAdvanced(): StatsProblem {
+function generateProbAdvanced(rng?: {
+  randomInt: (min: number, max: number) => number;
+}): StatsProblem {
+  const type = getRandomInt(1, 2, rng);
+  if (type === 1) {
+    const total = getRandomInt(10, 20, rng);
+    const target = getRandomInt(1, total - 1, rng);
+    return {
+      question: `공이 ${total}개 들어있는 주머니에서 빨간 공이 ${target}개일 때, 공 1개를 뽑아 빨간 공이 아닐 확률(%)은?`,
+      answer: Math.round(((total - target) / total) * 100),
+    };
+  } else {
+    return {
+      question:
+        '주사위 1개를 던질 때, 2의 배수이면서 3의 배수인 눈이 나올 확률(%)은? (소수점 버림)',
+      answer: Math.floor((1 / 6) * 100),
+    };
+  }
+}
+
+function generateStatsMaster(rng?: {
+  randomInt: (min: number, max: number) => number;
+}): StatsProblem {
+  const base = getRandomInt(5, 15, rng);
+  const diff = getRandomInt(1, 4, rng);
+  const data = [base - 2 * diff, base - diff, base, base + diff, base + 2 * diff].sort(
+    (a, b) => a - b
+  );
   return {
-    question: '주사위 1개를 던질 때, 7 이상의 눈이 나올 확률(%)은?',
-    answer: 0,
+    question: `데이터 [${data.join(', ')}]의 중앙값과 평균의 합은?`,
+    answer: base + base,
   };
 }
 
-function generateStatsMaster(): StatsProblem {
+function generatePermutations(rng?: {
+  randomInt: (min: number, max: number) => number;
+}): StatsProblem {
+  const n = getRandomInt(4, 7, rng);
+  const r = 2; // P(n, 2)
+  const ans = n * (n - 1);
   return {
-    question: '데이터 2, 4, 6, 8, 10의 평균은?',
-    answer: 6,
+    question: `${n}P${r} (서로 다른 ${n}개 중 ${r}개를 선택해 나열하는 경우의 수) 의 값은?`,
+    answer: ans,
+  };
+}
+
+function generateCombinationsAdvanced(rng?: {
+  randomInt: (min: number, max: number) => number;
+}): StatsProblem {
+  const n = getRandomInt(4, 7, rng);
+  const r = 3; // C(n, 3)
+  const ans = (n * (n - 1) * (n - 2)) / 6;
+  return {
+    question: `${n}C${r} (서로 다른 ${n}개 중 순서없이 ${r}개를 선택하는 경우의 수) 의 값은?`,
+    answer: ans,
+  };
+}
+
+function generateConditionalProbability(rng?: {
+  randomInt: (min: number, max: number) => number;
+}): StatsProblem {
+  const a = getRandomInt(2, 5, rng);
+  const b = getRandomInt(2, 5, rng);
+  return {
+    question: `빨간 공 ${a}개, 파란 공 ${b}개가 있다. 두 번 연속 빨간 공을 뽑을 경우의 수(비복원)는?`,
+    answer: a * (a - 1),
+  };
+}
+
+function generateVariance(rng?: { randomInt: (min: number, max: number) => number }): StatsProblem {
+  const d = getRandomInt(1, 4, rng);
+  const m = getRandomInt(10, 20, rng);
+  const arr = [m - 2 * d, m - d, m, m + d, m + 2 * d];
+  const variance = 2 * d * d;
+
+  return {
+    question: `데이터 ${arr.join(', ')} 의 분산(Variance)은?`,
+    answer: variance,
   };
 }

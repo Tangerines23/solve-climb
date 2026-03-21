@@ -25,6 +25,13 @@ export interface CategoryTopic {
   world: World;
 }
 
+export interface MathProblem {
+  expression: string;
+  answer: number | string;
+  displayExpression?: string;
+  inputType?: 'number' | 'decimal' | 'fraction';
+}
+
 export interface QuizQuestion {
   question: string;
   answer: number | string;
@@ -60,3 +67,6 @@ export type GameMode = 'time-attack' | 'survival' | 'base-camp' | 'base-camp-res
 
 // 난이도 타입
 export type Difficulty = 'easy' | 'medium' | 'hard';
+
+// 학습/게임 티어 (현재의 난이도 체계)
+export type Tier = 'normal' | 'hard';

@@ -193,6 +193,7 @@ export function Header({ title, showBack, onBack }: HeaderProps) {
               className={`recharge-btn ${isMineralsLoading ? 'loading' : ''}`}
               onClick={handleMineralsAdRecharge}
               disabled={isMineralsLoading}
+              aria-label="미네랄 충전 (광고 시청)"
             >
               {isMineralsLoading ? '⏳' : '+'}
             </button>

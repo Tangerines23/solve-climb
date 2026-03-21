@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo, useRef, memo } from 'react';
-// import { useNavigate } from 'react-router-dom';
+import { useSearchParams } from 'react-router-dom';
 import './RoadmapPage.css';
 import { Header } from '../components/Header';
 import { FooterNav } from '../components/FooterNav';
@@ -10,6 +10,7 @@ import { MilestoneItem, ROADMAP_SCALE_CONFIG } from '../types/roadmap';
 import { BadgeCollection } from '../components/BadgeSlot';
 import { supabase } from '../utils/supabaseClient';
 import { useBadgeChecker } from '../hooks/useBadgeChecker';
+import { HistoryTab } from '../components/my/HistoryTab';
 
 // --- 전역 상수 및 설정 ---
 const VIRTUAL_RAIL_HEIGHT = 10000; // 스크롤바 길이를 고정하는 상수
@@ -35,16 +36,8 @@ const LinearLandmarkItem = memo(
       <div
         className={`landmark-item ${isTier ? 'type-tier' : 'type-landmark'} ${isCurrent ? 'is-current' : ''} ${isPassed ? 'is-passed' : ''}`}
         style={{
-          position: 'absolute',
-          bottom: `${item.bottom}px`,
-          left: 0,
-          right: 0,
-          height: '0px',
-          minHeight: 0,
-          zIndex: 2,
-          display: 'flex',
-          alignItems: 'center',
-          willChange: 'bottom',
+          ['--item-bottom' as string]: `${item.bottom}px`,
+          bottom: 'var(--item-bottom)',
         }}
       >
         <div
@@ -109,7 +102,7 @@ const NonLinearTierItem = memo(
         className={`tier-group ${!isInCardView && !isRoadmapActive ? 'roadmap-extra-content' : ''}`}
       >
         <div
-          className={`landmark-item ${isPassed ? 'is-passed' : ''} ${isCurrentNode ? 'is-current' : ''} ${m.type === 'tier' || isZero ? 'type-tier' : ''}`}
+          className={`landmark-item ${isPassed ? 'is-passed' : ''} ${isCurrentNode ? 'is-current' : ''} ${m.type === 'tier' || isZero ? 'type-tier' : ''} clickable`}
           ref={(el) => {
             if (el) landmarkRefs.current.set(m.altitude, el);
           }}
@@ -117,7 +110,6 @@ const NonLinearTierItem = memo(
             setIsLinearScale(true);
             vibrateShort();
           }}
-          style={{ cursor: 'pointer' }}
         >
           <div
             className="landmark-progress-marker"
@@ -143,9 +135,14 @@ const NonLinearTierItem = memo(
 );
 
 export function RoadmapPage() {
-  // const navigate = useNavigate();
+  const [searchParams, setSearchParams] = useSearchParams();
+  const activeTab = (searchParams.get('tab') as 'summary' | 'history') || 'summary';
+
+  const setActiveTab = (tab: 'summary' | 'history') => {
+    setSearchParams({ tab }, { replace: true });
+  };
+
   const { stats, loading, error } = useHistoryData();
-  const [activeTab, setActiveTab] = useState<'summary' | 'analysis' | 'activity'>('summary');
   const [isMilestoneExpanded, setIsMilestoneExpanded] = useState(false);
   const [isRoadmapActive, setIsRoadmapActive] = useState(false);
   const [cardRect, setCardRect] = useState<DOMRect | null>(null);
@@ -551,100 +548,88 @@ export function RoadmapPage() {
             Zoom 1:{displayRatio}
           </div>
 
-          <div
-            className="roadmap-content"
-            style={{ position: 'relative', flex: 1, overflow: 'hidden' }}
-          >
+          <div className="roadmap-content-wrapper">
             {/* 1. Fixed Logical Scroll Rail (Ghost) */}
             <div
               ref={roadmapScrollRef}
-              className="roadmap-scroll-ghost"
+              className="roadmap-scroll-ghost-container"
               style={{
-                position: 'absolute',
-                inset: 0,
                 overflowY: isLinearScale ? 'auto' : 'hidden',
                 zIndex: isLinearScale ? 2 : 0,
                 pointerEvents: isLinearScale ? 'auto' : 'none',
+                ['--rail-height' as string]: `${VIRTUAL_RAIL_HEIGHT}px`,
               }}
             >
-              <div style={{ height: `${VIRTUAL_RAIL_HEIGHT}px`, width: '1px' }} />
+              <div style={{ height: 'var(--rail-height)', width: '1px' }} />
             </div>
 
             {/* 2. Virtual Camera View Container (Visual) */}
             <div
-              className="roadmap-virtual-viewport"
+              className="roadmap-virtual-viewport-container"
               style={{
-                position: 'absolute',
-                inset: 0,
-                zIndex: 1,
-                pointerEvents: 'none',
                 overflow: isLinearScale ? 'hidden' : 'auto',
               }}
             >
               <div
                 ref={cameraRef}
-                className={`roadmap-mountain-path ${isScaling ? 'is-scaling' : ''}`}
+                className={`roadmap-mountain-path-container ${isScaling ? 'is-scaling' : ''}`}
                 style={{
-                  position: 'absolute',
-                  pointerEvents: 'auto',
-                  left: 0,
-                  right: 0,
                   bottom: isLinearScale && layoutData ? 'var(--camera-offset, 0px)' : '0px',
-                  height: isLinearScale
+                  ['--path-height' as string]: isLinearScale
                     ? `${getAltitudeY(ALTITUDE_MILESTONES[0].altitude + 10000, displayRatio)}px`
                     : 'auto',
+                  height: 'var(--path-height)',
                 }}
               >
                 <div
                   className="roadmap-dotted-line"
                   style={{
-                    bottom: isLinearScale
+                    ['--dotted-bottom' as string]: isLinearScale
                       ? layoutData?.BOTTOM_SAFETY_MARGIN || 0
                       : 'var(--gauge-bottom, 36px)',
-                    height:
+                    ['--dotted-height-val' as string]:
                       isLinearScale && layoutData
                         ? `${layoutData.nodes[0].bottom - layoutData.BOTTOM_SAFETY_MARGIN + 100}px`
                         : 'var(--dotted-height, 100%)',
+                    bottom: 'var(--dotted-bottom)',
+                    height: 'var(--dotted-height-val)',
                     top: isLinearScale ? 'auto' : 'var(--dotted-top, 118px)',
                   }}
                 />
                 <div
                   className="path-line-fill"
                   style={{
-                    bottom: isLinearScale
+                    ['--fill-bottom' as string]: isLinearScale
                       ? layoutData?.BOTTOM_SAFETY_MARGIN || 0
                       : 'var(--gauge-bottom, 36px)',
-                    height:
+                    ['--fill-height' as string]:
                       isLinearScale && layoutData ? `${layoutData.gaugeHeight}px` : gaugeHeight,
+                    bottom: 'var(--fill-bottom)',
+                    height: 'var(--fill-height)',
                     top: 'auto',
                   }}
                 />
 
                 <div
-                  className="current-position-floating-marker"
+                  className="roadmap-floating-marker-container"
                   style={{
-                    bottom: `calc(${isLinearScale ? (layoutData?.BOTTOM_SAFETY_MARGIN || 0) + 'px' : 'var(--gauge-bottom, 36px)'} + ${isLinearScale && layoutData ? layoutData.gaugeHeight + 'px' : gaugeHeight})`,
+                    ['--marker-bottom' as string]: `calc(${isLinearScale ? (layoutData?.BOTTOM_SAFETY_MARGIN || 0) + 'px' : 'var(--gauge-bottom, 36px)'} + ${isLinearScale && layoutData ? layoutData.gaugeHeight + 'px' : gaugeHeight})`,
                     ['--current-alt-text' as string]: `"${stats.totalAltitude.toLocaleString()}m"`,
+                    bottom: 'var(--marker-bottom)',
                   }}
                 >
-                  <div
-                    className="landmark-progress-marker"
-                    style={{ position: 'relative', left: '0' }}
-                  >
+                  <div className="landmark-progress-marker">
                     <div className="landmark-dot">🚶</div>
                   </div>
                 </div>
 
                 <div
-                  className={`path-landmarks ${isLinearScale ? 'is-linear' : ''}`}
+                  className={`roadmap-path-landmarks-container ${isLinearScale ? 'is-linear' : ''}`}
                   style={
                     isLinearScale
                       ? {
-                          height: `${getAltitudeY(ALTITUDE_MILESTONES[0].altitude + 10000, displayRatio)}px`,
-                          position: 'absolute',
-                          bottom: 0,
-                          left: 0,
-                          right: 0,
+                          ['--landmarks-height' as string]: `${getAltitudeY(ALTITUDE_MILESTONES[0].altitude + 10000, displayRatio)}px`,
+                          height: 'var(--landmarks-height)',
                         }
                       : undefined
                   }
@@ -652,7 +637,10 @@ export function RoadmapPage() {
                   {/* 하단 여백: 확대맵(Linear)일 때는 센터링을 위해 길게, 기본 목록일 때는 짧게 */}
                   <div
                     className="roadmap-scroll-spacer bottom-spacer"
-                    style={{ height: isLinearScale ? '100px' : '0px' }}
+                    style={{
+                      ['--spacer-height' as string]: isLinearScale ? '100px' : '0px',
+                      height: 'var(--spacer-height)',
+                    }}
                   />
                   {isLinearScale && layoutData ? (
                     layoutData.nodes
@@ -709,7 +697,10 @@ export function RoadmapPage() {
                       })}
                       <div
                         className="roadmap-scroll-spacer top-spacer"
-                        style={{ height: isLinearScale ? '100px' : '4px' }}
+                        style={{
+                          ['--spacer-height' as string]: isLinearScale ? '100px' : '4px',
+                          height: 'var(--spacer-height)',
+                        }}
                       />
                     </>
                   )}
@@ -742,150 +733,6 @@ export function RoadmapPage() {
     );
   };
 
-  /* --- Analysis View (Future Use) --- */
-  const renderAnalysisSection = () => {
-    if (!stats) return null;
-
-    // 카테고리별 숙련도 데이터 준비
-    const maxLevel = 15; // 최대 레벨 가정
-    const categoryData = stats.categoryLevels.slice(0, 5); // 상위 5개만
-
-    return (
-      <div className="history-analysis-container fade-in">
-        {/* 1. 종합 요약 카드 */}
-        <div className="history-analysis-card">
-          <div className="history-card-header no-border">
-            <h3 className="history-card-title">등반 성과 📊</h3>
-          </div>
-          <div className="analysis-summary-grid">
-            <div className="analysis-stat-item" data-vg-ignore="true">
-              <div className="stat-label">정답률</div>
-              <div className="stat-value highlight">{stats.averageAccuracy}%</div>
-            </div>
-            <div className="analysis-stat-item" data-vg-ignore="true">
-              <div className="stat-label">완등 문제</div>
-              <div className="stat-value">{stats.weeklyTotal}개</div>
-            </div>
-            <div className="analysis-stat-item" data-vg-ignore="true">
-              <div className="stat-label">연속 등반</div>
-              <div className="stat-value">{stats.streakCount}일</div>
-            </div>
-          </div>
-        </div>
-
-        {/* 2. 분야별 숙련도 (Bar Chart) */}
-        <div className="history-analysis-card">
-          <div className="history-card-header">
-            <h3 className="history-card-title">분야별 숙련도</h3>
-          </div>
-          <div className="skill-chart-container">
-            {categoryData.length > 0 ? (
-              categoryData.map((cat) => (
-                <div key={cat.themeId} className="skill-bar-row">
-                  <div className="skill-info">
-                    <span className="skill-name">
-                      {cat.categoryName} - {cat.subCategoryName}
-                    </span>
-                    <span className="skill-level">Lv.{cat.level}</span>
-                  </div>
-                  <div className="skill-track">
-                    <div
-                      className="skill-bar"
-                      style={{
-                        width: `${(cat.level / maxLevel) * 100}%`,
-                        backgroundColor:
-                          cat.level >= 10
-                            ? 'var(--color-success)'
-                            : cat.level >= 5
-                              ? 'var(--color-info)'
-                              : 'var(--color-warning)',
-                      }}
-                    />
-                  </div>
-                </div>
-              ))
-            ) : (
-              <div className="empty-chart-message">
-                아직 데이터가 충분하지 않습니다.
-                <br />
-                다양한 문제를 풀어보세요!
-              </div>
-            )}
-          </div>
-        </div>
-
-        {/* 3. 활동 히트맵 (Grass) */}
-        <div className="history-analysis-card">
-          <div className="history-card-header">
-            <h3 className="history-card-title">최근 등반 활동</h3>
-          </div>
-          <div className="activity-heatmap-container">
-            <div className="heatmap-grid">
-              {stats.heatmapData.map((day, idx) => (
-                <div
-                  key={idx}
-                  className={`heatmap-cell intensity-${day.intensity}`}
-                  title={`${day.date}: ${day.count}문제`}
-                />
-              ))}
-            </div>
-            <div className="heatmap-legend">
-              <span>Less</span>
-              <div className="legend-cells">
-                <div className="heatmap-cell intensity-0" />
-                <div className="heatmap-cell intensity-1" />
-                <div className="heatmap-cell intensity-2" />
-                <div className="heatmap-cell intensity-3" />
-                <div className="heatmap-cell intensity-4" />
-              </div>
-              <span>More</span>
-            </div>
-          </div>
-        </div>
-      </div>
-    );
-  };
-
-  const renderActivitySection = () => {
-    if (!stats || !stats.allActivities) return null;
-
-    return (
-      <div className="history-activity-container fade-in">
-        <div className="history-analysis-card">
-          <div className="history-card-header no-border">
-            <h3 className="history-card-title">기록 보관함 📜</h3>
-          </div>
-          <div className="activity-list">
-            {stats.allActivities.length > 0 ? (
-              stats.allActivities.map((activity) => (
-                <div key={activity.id} className="activity-item">
-                  <div className="activity-icon-container">
-                    <span className="activity-icon">{activity.icon}</span>
-                  </div>
-                  <div className="activity-info">
-                    <div className="activity-header">
-                      <span className="activity-title">{activity.title}</span>
-                      <span className="activity-time">{activity.timeAgo}</span>
-                    </div>
-                    <div className="activity-body">
-                      <span className="activity-desc">{activity.description}</span>
-                      <span className="activity-value">{activity.value}</span>
-                    </div>
-                  </div>
-                </div>
-              ))
-            ) : (
-              <div className="empty-activity-message">
-                아직 활동 기록이 없습니다.
-                <br />첫 번째 산을 정복해보세요!
-              </div>
-            )}
-          </div>
-        </div>
-      </div>
-    );
-  };
-
   if (error) {
     return (
       <div className="history-page">
@@ -893,6 +740,10 @@ export function RoadmapPage() {
           <div className="history-content">
             <div className="history-error">
               데이터를 불러오지 못했습니다. 잠시 후 다시 시도해주세요.
+              <br />
+              <span style={{ fontSize: '0.8em', color: 'var(--color-text-secondary)' }}>
+                (에러: {error})
+              </span>
             </div>
           </div>
         </main>
@@ -945,11 +796,19 @@ export function RoadmapPage() {
                     %
                   </span>
                 </div>
-                <div className="tier-progress-bar-container">
+                <div
+                  className="tier-progress-bar-container"
+                  role="progressbar"
+                  aria-valuenow={Math.round((stats.totalAltitude / stats.nextTierGoal) * 100)}
+                  aria-valuemin={0}
+                  aria-valuemax={100}
+                  aria-label={`${stats.nextTierName} 등급 달성률`}
+                >
                   <div
                     className="tier-progress-bar-fill"
                     style={{
-                      width: `${Math.min((stats.totalAltitude / stats.nextTierGoal) * 100, 100)}%`,
+                      ['--progress-width' as string]: `${Math.min((stats.totalAltitude / stats.nextTierGoal) * 100, 100)}%`,
+                      width: 'var(--progress-width)',
                     }}
                   />
                 </div>
@@ -959,51 +818,35 @@ export function RoadmapPage() {
 
           {/* 2. Tab Switcher */}
           <div className="history-tab-container">
-            <div className="history-segmented-control" data-vg-ignore="true">
+            <div className="history-segmented-control" role="tablist" data-vg-ignore="true">
               <div
                 className={`segmented-indicator ${
-                  activeTab === 'summary'
-                    ? 'tab-summary'
-                    : activeTab === 'analysis'
-                      ? 'tab-analysis'
-                      : 'tab-activity'
+                  activeTab === 'summary' ? 'tab-summary' : 'tab-history'
                 }`}
-                style={{
-                  width: '33.33%',
-                  transform:
-                    activeTab === 'summary'
-                      ? 'translateX(0)'
-                      : activeTab === 'analysis'
-                        ? 'translateX(100%)'
-                        : 'translateX(200%)',
-                }}
               />
               <button
                 className={`segmented-item ${activeTab === 'summary' ? 'active' : ''}`}
+                role="tab"
+                aria-selected={activeTab === 'summary'}
+                aria-controls="roadmap-tab-panel"
                 onClick={() => {
                   setActiveTab('summary');
                   vibrateShort();
                 }}
               >
-                여정 🗺️
+                스테이지 🗺️
               </button>
               <button
-                className={`segmented-item ${activeTab === 'analysis' ? 'active' : ''}`}
+                className={`segmented-item ${activeTab === 'history' ? 'active' : ''}`}
+                role="tab"
+                aria-selected={activeTab === 'history'}
+                aria-controls="stats-tab-panel"
                 onClick={() => {
-                  setActiveTab('analysis');
+                  setActiveTab('history');
                   vibrateShort();
                 }}
               >
-                분석 📊
-              </button>
-              <button
-                className={`segmented-item ${activeTab === 'activity' ? 'active' : ''}`}
-                onClick={() => {
-                  setActiveTab('activity');
-                  vibrateShort();
-                }}
-              >
-                활동 📜
+                진행 통계 📊
               </button>
             </div>
           </div>
@@ -1012,11 +855,17 @@ export function RoadmapPage() {
           <div className="history-tab-content" data-vg-ignore="true">
             {activeTab === 'summary' ? (
               /* Journey Tab Content: Comment + Milestones */
-              <div className="history-journey-container fade-in">
+              <div
+                id="roadmap-tab-panel"
+                role="tabpanel"
+                className="history-journey-container fade-in"
+              >
                 {!loading && stats && (
                   <>
                     <div className="history-smart-comment">
-                      <span className="comment-icon">💬</span>
+                      <span className="comment-icon" role="img" aria-label="comment">
+                        💬
+                      </span>
                       <span className="comment-text">{stats.smartComment}</span>
                     </div>
 
@@ -1025,7 +874,11 @@ export function RoadmapPage() {
                       <div className="history-badge-collection">
                         <div className="collection-header">
                           <span className="collection-title">나의 뱃지 보관함 🏆</span>
-                          <span className="collection-more" onClick={() => setShowBadgeModal(true)}>
+                          <span
+                            className="collection-more"
+                            role="button"
+                            onClick={() => setShowBadgeModal(true)}
+                          >
                             전체보기 &gt;
                           </span>
                         </div>
@@ -1039,6 +892,8 @@ export function RoadmapPage() {
                       ref={cardRef}
                       className={`history-milestones-integrated ${isMilestoneExpanded ? 'hidden' : ''}`}
                       onClick={() => handleOpenRoadmap()}
+                      role="button"
+                      aria-label="로드맵 전체 보기"
                     >
                       <div className="history-milestones-list-integrated">
                         <div className="milestone-line-integrated" />
@@ -1087,6 +942,8 @@ export function RoadmapPage() {
                                     handleOpenRoadmap(m.altitude);
                                     vibrateShort();
                                   }}
+                                  role="button"
+                                  aria-label={`${m.label} (${m.altitude}m) ${isNow ? '- 현재 위치' : ''}`}
                                   data-vg-ignore="true"
                                 >
                                   <div className="milestone-dot-integrated" data-vg-ignore="true">
@@ -1108,10 +965,10 @@ export function RoadmapPage() {
                   </>
                 )}
               </div>
-            ) : activeTab === 'analysis' ? (
-              renderAnalysisSection()
             ) : (
-              renderActivitySection()
+              <div id="stats-tab-panel" role="tabpanel" className="fade-in">
+                <HistoryTab />
+              </div>
             )}
           </div>
         </div>

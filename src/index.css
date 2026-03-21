@@ -139,10 +139,13 @@
   --color-bg-primary: #1e1e1e;
   --color-bg-secondary: #2c2c2c;
   --color-bg-tertiary: #3c3c3c;
+  --color-bg-tertiary-light: #4c4c4c;
+  --color-surface-elevated: #3c3c3c;
 
   /* 텍스트 색상 */
   --color-text-primary: var(--color-gray-100);
   --color-text-secondary: #bbb; /* Improved from #aaa for dark bg AA */
+  --color-text-tertiary: #8e94a0;
   --color-text-dimmed: #ccc;
   /* AA 준수 (배경 #121212 기준) */
   --color-text-muted-alt: #bbb;

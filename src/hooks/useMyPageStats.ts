@@ -15,6 +15,13 @@ export interface MyPageStats {
   cyclePromotionPending: boolean;
   pendingCycleScore: number;
   loginStreak: number;
+  // New statistics fields
+  totalGames: number;
+  totalCorrect: number;
+  totalQuestions: number;
+  bestStreak: number;
+  avgSolveTime: number;
+  lastPlayedAt: string | null;
 }
 
 interface ProfileData {
@@ -29,6 +36,12 @@ interface RpcStats {
   total_solved: number;
   max_level: number;
   best_subject: string | null;
+  total_games: number;
+  total_correct: number;
+  total_questions: number;
+  best_streak: number;
+  avg_solve_time: number;
+  last_played_at: string | null;
 }
 
 export interface UseMyPageStatsResult {
@@ -160,6 +173,12 @@ export function useMyPageStats(): UseMyPageStatsResult {
           cyclePromotionPending: false,
           pendingCycleScore: 0,
           loginStreak: 0,
+          totalGames: 0,
+          totalCorrect: 0,
+          totalQuestions: 0,
+          bestStreak: 0,
+          avgSolveTime: 0,
+          lastPlayedAt: null,
         });
         setLoading(false);
         return;
@@ -208,6 +227,12 @@ export function useMyPageStats(): UseMyPageStatsResult {
             cyclePromotionPending: profileData?.cycle_promotion_pending || false,
             pendingCycleScore: profileData?.pending_cycle_score || 0,
             loginStreak: profileData?.login_streak || 0,
+            totalGames: result.total_games || 0,
+            totalCorrect: result.total_correct || 0,
+            totalQuestions: result.total_questions || 0,
+            bestStreak: result.best_streak || 0,
+            avgSolveTime: result.avg_solve_time || 0,
+            lastPlayedAt: result.last_played_at || null,
           });
           setLoading(false);
           return;
@@ -261,6 +286,12 @@ export function useMyPageStats(): UseMyPageStatsResult {
           cyclePromotionPending: profileData?.cycle_promotion_pending || false,
           pendingCycleScore: profileData?.pending_cycle_score || 0,
           loginStreak: profileData?.login_streak || 0,
+          totalGames: 0,
+          totalCorrect: 0,
+          totalQuestions: 0,
+          bestStreak: 0,
+          avgSolveTime: 0,
+          lastPlayedAt: null,
         });
         setLoading(false);
         return;
@@ -294,6 +325,12 @@ export function useMyPageStats(): UseMyPageStatsResult {
         cyclePromotionPending: profileData?.cycle_promotion_pending || false,
         pendingCycleScore: profileData?.pending_cycle_score || 0,
         loginStreak: profileData?.login_streak || 0,
+        totalGames: 0,
+        totalCorrect: 0,
+        totalQuestions: 0,
+        bestStreak: 0,
+        avgSolveTime: 0,
+        lastPlayedAt: null,
       });
     } catch (err) {
       console.error('Failed to fetch user stats:', err);
@@ -308,6 +345,12 @@ export function useMyPageStats(): UseMyPageStatsResult {
         cyclePromotionPending: false,
         pendingCycleScore: 0,
         loginStreak: 0,
+        totalGames: 0,
+        totalCorrect: 0,
+        totalQuestions: 0,
+        bestStreak: 0,
+        avgSolveTime: 0,
+        lastPlayedAt: null,
       });
     } finally {
       setLoading(false);
