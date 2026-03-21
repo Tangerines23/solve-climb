@@ -98,7 +98,7 @@
 
 .ad-reward-button {
   background: linear-gradient(135deg, #f59e0b, #ea580c);
-  color: white;
+  color: var(--color-text-primary);
   border: none;
   padding: 0.75rem 1.25rem;
   border-radius: 0.75rem;
@@ -159,7 +159,7 @@
   bottom: -5px;
   right: -10px;
   background: var(--color-sky-500);
-  color: white;
+  color: var(--color-text-primary);
   font-size: 0.65rem;
   font-weight: 800;
   padding: 2px var(--spacing-tiny);
@@ -200,7 +200,7 @@
 
 .purchase-button {
   background: linear-gradient(135deg, var(--color-sky-500), var(--color-indigo-600));
-  color: white;
+  color: var(--color-text-primary);
   border: none;
   padding: 0.6rem 1.2rem;
   border-radius: 0.75rem;
