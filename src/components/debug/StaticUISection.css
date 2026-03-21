@@ -66,7 +66,7 @@
 
 .suppressed .effect-status-tag {
   background: var(--adaptiveRed500);
-  color: white;
+  color: var(--color-text-primary);
 }
 
 .effect-description {

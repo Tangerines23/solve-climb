@@ -54,7 +54,7 @@
 
 .playground-section button:hover {
   background-color: var(--color-blue-400);
-  color: white;
+  color: var(--color-text-primary);
   border-color: transparent;
 }
 
@@ -105,7 +105,7 @@
   background-color: var(--color-bg-tertiary);
   border: none;
   border-radius: var(--rounded-button);
-  color: white;
+  color: var(--color-text-primary);
   font-weight: bold;
   cursor: pointer;
 }

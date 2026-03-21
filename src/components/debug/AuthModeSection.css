@@ -44,7 +44,7 @@
 
 .debug-button-group button.active {
   background-color: var(--color-blue-400);
-  color: white;
+  color: var(--color-text-primary);
   border-color: var(--color-blue-500);
 }
 
