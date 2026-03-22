@@ -28,7 +28,6 @@
   }
 }
 
-
 .ranking-tabs-container {
   padding: calc(var(--spacing-4xl) * 2) var(--spacing-xl) var(--spacing-small-alt);
   background: linear-gradient(180deg, rgba(0, 0, 0, 0.3) 0%, transparent 100%);
