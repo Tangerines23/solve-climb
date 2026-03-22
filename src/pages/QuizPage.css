@@ -116,24 +116,41 @@
   padding: 0;
   box-sizing: border-box;
   overflow: hidden;
+  --world-bg-top: var(--color-world-forest-top);
+  --world-bg-mid: var(--color-world-forest-mid);
+  --world-bg-bottom: var(--color-world-forest-bottom);
+  background: linear-gradient(
+    to bottom,
+    var(--world-bg-top),
+    var(--world-bg-mid),
+    var(--world-bg-bottom)
+  );
   transition: background 0.5s ease;
 }
 
-/* World Themes */
+/* World Themes - Simplified through variables */
 .quiz-page[data-world='World1'] {
-  background: linear-gradient(to bottom, #065f46, #064e3b, #022c22);
+  --world-bg-top: var(--color-world1-top);
+  --world-bg-mid: var(--color-world1-mid);
+  --world-bg-bottom: var(--color-world1-bottom);
 }
 
 .quiz-page[data-world='World2'] {
-  background: linear-gradient(to bottom, #92400e, #78350f, #451a03);
+  --world-bg-top: var(--color-world2-top);
+  --world-bg-mid: var(--color-world2-mid);
+  --world-bg-bottom: var(--color-world2-bottom);
 }
 
 .quiz-page[data-world='World3'] {
-  background: linear-gradient(to bottom, #0e7490, #155e75, #083344);
+  --world-bg-top: var(--color-world3-top);
+  --world-bg-mid: var(--color-world3-mid);
+  --world-bg-bottom: var(--color-world3-bottom);
 }
 
 .quiz-page[data-world='World4'] {
-  background: linear-gradient(to bottom, #581c87, #3b0764, #000000);
+  --world-bg-top: var(--color-world4-top);
+  --world-bg-mid: var(--color-world4-mid);
+  --world-bg-bottom: var(--color-world4-bottom);
 }
 
 /* 상단 헤더 (뒤로가기 + 타이머) */
@@ -142,13 +159,13 @@
   top: 0;
   left: 0;
   right: 0;
-  height: clamp(56px, 8vh, 64px);
+  height: clamp(56px, 8vh, var(--header-height-portrait));
   background-color: transparent;
   display: flex;
   align-items: center;
   justify-content: space-between;
   justify-content: space-between;
-  padding: 0 clamp(12px, 2vw, 16px);
+  padding: 0 clamp(var(--spacing-md), 2vw, var(--spacing-lg));
   z-index: var(--z-header);
   flex-shrink: 0;
 }
@@ -192,7 +209,7 @@
 
 .quiz-back-button:hover {
   opacity: 0.7;
-  background-color: rgba(255, 255, 255, 0.05);
+  background-color: var(--glass-bg-low);
 }
 
 .quiz-back-button:active {
@@ -208,7 +225,8 @@
   max-width: var(--modal-width-portrait);
   margin: 0 auto;
   /* 안전 영역 고려: Dynamic Island, 노치 등 */
-  padding: max(clamp(12px, 2vh, 20px), env(safe-area-inset-top, 0px)) clamp(12px, 2vw, 16px) 0;
+  padding: max(clamp(var(--spacing-md), 2vh, var(--spacing-xl)), env(safe-area-inset-top, 0px))
+    clamp(var(--spacing-md), 2vw, var(--spacing-lg)) 0;
   gap: clamp(8px, 1.5vh, 20px);
   flex: 1;
   min-height: 0;
@@ -236,12 +254,13 @@
   display: flex;
   flex-direction: column;
   gap: clamp(12px, 2.5vh, 24px);
-  padding: clamp(16px, 3.5vh, 32px) clamp(12px, 2.5vw, 24px);
+  padding: clamp(var(--spacing-lg), 3.5vh, var(--spacing-3xl))
+    clamp(var(--spacing-md), 2.5vw, var(--spacing-2xl));
   background-color: var(--bg-glass-card);
   border: var(--border-glass);
-  backdrop-filter: blur(var(--backdrop-blur));
   -webkit-backdrop-filter: blur(var(--backdrop-blur));
-  border-radius: clamp(12px, 2.5vh, 24px);
+  backdrop-filter: blur(var(--backdrop-blur));
+  border-radius: clamp(var(--spacing-md), 2.5vh, var(--spacing-2xl));
   box-shadow: var(--shadow-glass);
   flex-shrink: 1;
   min-height: 0;
@@ -269,6 +288,7 @@
   width: calc(100% - var(--spacing-3xl));
   max-width: 320px;
   background-color: color-mix(in srgb, var(--color-bg-secondary), transparent 15%);
+  -webkit-backdrop-filter: blur(8px);
   backdrop-filter: blur(8px);
   border-radius: var(--rounded-button);
   padding: var(--spacing-md) var(--spacing-lg);
@@ -341,7 +361,7 @@
 }
 
 .question {
-  font-size: 1.5rem;
+  font-size: var(--text-2xl);
   font-weight: bold;
   color: var(--color-text-primary);
   text-align: center;
@@ -363,7 +383,7 @@
 }
 
 .problem-text {
-  font-size: clamp(1.5rem, 5vw, 2.5rem);
+  font-size: clamp(var(--text-2xl), 5vw, var(--text-4xl));
   font-weight: bold;
   color: var(--color-text-primary);
   text-align: center;
@@ -443,16 +463,16 @@
   font-weight: bold;
   border-radius: var(--rounded-button);
   border: var(--border-glass);
-  background-color: rgba(255, 255, 255, 0.05);
+  background-color: var(--glass-bg-low);
   color: var(--color-blue-400);
   text-align: center;
   transition:
     color 0.3s ease,
     border-color 0.3s ease,
     background-color 0.3s ease;
-  appearance: none;
   -webkit-appearance: none;
   -moz-appearance: textfield;
+  appearance: none;
 }
 
 .answer-input-system::-webkit-outer-spin-button,
@@ -697,7 +717,7 @@
 /* Digital Altimeter HUD Styles */
 .altimeter-hud {
   position: absolute;
-  top: 10px;
+  top: var(--spacing-sm);
   /* Below the linear timer */
   left: 0;
   right: 0;
@@ -726,7 +746,7 @@
 .altitude-display {
   display: flex;
   align-items: baseline;
-  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.8));
+  filter: drop-shadow(0 2px 4px var(--overlay-dark-high));
   /* Strong shadow */
 }
 
@@ -812,9 +832,9 @@
   width: 44px;
   height: 44px;
   border-radius: var(--rounded-sm);
-  background: rgba(255, 255, 255, 0.1);
+  background: var(--glass-bg-medium);
   backdrop-filter: blur(4px);
-  border: 1px solid rgba(255, 255, 255, 0.2);
+  border: 1px solid var(--glass-border-medium);
   color: var(--color-gray-100);
   display: flex;
   align-items: center;
@@ -825,7 +845,7 @@
 
 .pause-button:active {
   transform: scale(0.92);
-  background: rgba(255, 255, 255, 0.25);
+  background: var(--glass-bg-high);
 }
 
 .pause-icon-svg {
@@ -848,13 +868,13 @@
 .side-item {
   width: 36px;
   height: 36px;
-  background: rgba(0, 0, 0, 0.3);
+  background: var(--overlay-dark-medium);
   border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
   font-size: 1.2rem;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+  box-shadow: 0 2px 4px var(--overlay-dark-low);
 }
 
 .side-item.active {
@@ -885,11 +905,11 @@
   justify-content: center;
 
   /* Badge/Card Style */
-  background: rgba(0, 0, 0, 0.6);
+  background: var(--overlay-dark-high);
   padding: var(--spacing-tiny) var(--spacing-lg);
   border-radius: var(--rounded-md);
   backdrop-filter: blur(4px);
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  border: 1px solid var(--glass-border-low);
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
 }
 
@@ -912,7 +932,9 @@
 
 /* [Fever Mode World Themes] */
 .fever-level-2.quiz-page[data-world='World1'] {
-  background: linear-gradient(to bottom, #064e3b, #7f1d1d, #450a0a);
+  --world-bg-top: var(--color-world-fever-top);
+  --world-bg-mid: var(--color-world-fever-mid);
+  --world-bg-bottom: var(--color-world-fever-bottom);
 }
 
 /* ==========================================================================
@@ -922,7 +944,8 @@
 .quiz-page[data-world='World1'] {
   --world-primary: var(--color-blue-500);
   --world-secondary: var(--color-blue-600);
-  background: linear-gradient(180deg, #0f172a 0%, #1e293b 100%) !important;
+  --world-bg-top: var(--color-world-default-top);
+  --world-bg-bottom: var(--color-world-default-bottom);
 }
 
 .quiz-page[data-world='World1'] .top-bar {
@@ -992,31 +1015,39 @@
 
 /* Altitude Phases for Survival Mode */
 .quiz-page[data-altitude-phase='forest'] {
-  background: linear-gradient(to bottom, #065f46, #064e3b, #022c22) !important;
+  --world-bg-top: var(--color-world-forest-top);
+  --world-bg-mid: var(--color-world-forest-mid);
+  --world-bg-bottom: var(--color-world-forest-bottom);
 }
 
 .quiz-page[data-altitude-phase='rock'] {
-  background: linear-gradient(to bottom, #4b5563, #374151, #1f2937) !important;
+  --world-bg-top: var(--color-world-rock-top);
+  --world-bg-mid: var(--color-world-rock-mid);
+  --world-bg-bottom: var(--color-world-rock-bottom);
 }
 
 .quiz-page[data-altitude-phase='clouds'] {
-  background: linear-gradient(to bottom, #0ea5e9, #0284c7, #075985) !important;
+  --world-bg-top: var(--color-world-clouds-top);
+  --world-bg-mid: var(--color-world-clouds-mid);
+  --world-bg-bottom: var(--color-world-clouds-bottom);
 }
 
 .quiz-page[data-altitude-phase='space'] {
-  background: linear-gradient(to bottom, #1e1b4b, #0f172a, #000000) !important;
+  --world-bg-top: var(--color-world-space-top);
+  --world-bg-mid: var(--color-world-space-mid);
+  --world-bg-bottom: var(--color-world-space-bottom);
 }
 
 /* Score Pill Card Style v2.2 */
 .pill-card {
-  background: rgba(0, 0, 0, 0.4);
+  background: var(--overlay-dark-medium);
   -webkit-backdrop-filter: blur(10px);
   -webkit-backdrop-filter: blur(10px);
   backdrop-filter: blur(10px);
   padding: var(--spacing-sm) var(--spacing-lg);
   border-radius: var(--rounded-pill);
   /* Pill shape */
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  border: 1px solid var(--glass-border-low);
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
   display: flex;
   align-items: baseline;
@@ -1055,12 +1086,12 @@
 
 .world-info-header-floating {
   position: absolute;
-  top: 10px;
+  top: var(--spacing-sm);
   left: 50%;
   transform: translateX(-50%);
-  font-size: 0.7rem;
+  font-size: 0.75rem;
   font-weight: 800;
-  color: rgba(255, 255, 255, 0.4);
+  color: var(--glass-bg-high);
   letter-spacing: 0.1em;
   text-transform: uppercase;
   z-index: 90;
@@ -1095,7 +1126,7 @@
 }
 
 .landmark-popup {
-  background: rgba(0, 0, 0, 0.8);
+  background: var(--overlay-dark-high);
   backdrop-filter: blur(12px);
   padding: var(--spacing-md) var(--spacing-2xl);
   border-radius: var(--rounded-card);
