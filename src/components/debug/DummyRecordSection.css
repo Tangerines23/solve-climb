@@ -40,7 +40,7 @@
 
 .dummy-submit-button {
   background: var(--color-primary);
-  color: white;
+  color: var(--color-text-primary);
   border: none;
   padding: var(--spacing-md);
   border-radius: var(--rounded-md);

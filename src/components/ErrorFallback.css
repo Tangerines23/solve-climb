@@ -164,7 +164,7 @@
 
 .error-fallback-button-primary {
   background-color: var(--color-blue-400);
-  color: white;
+  color: var(--color-text-primary);
 }
 
 .error-fallback-button-secondary {

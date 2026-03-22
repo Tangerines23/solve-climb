@@ -54,7 +54,7 @@
   background: var(--color-primary);
   border: none;
   border-radius: var(--radius-sm);
-  color: white;
+  color: var(--color-text-primary);
   font-size: var(--font-size-sm);
   font-weight: 600;
   cursor: pointer;

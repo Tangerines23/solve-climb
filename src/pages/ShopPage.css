@@ -58,6 +58,11 @@
   margin-bottom: 2rem;
 }
 
+.shop-tabs-wrapper {
+  padding: 0 var(--spacing-4xl);
+  margin-bottom: var(--spacing-2xl);
+}
+
 .tab-button.active {
   background: var(--color-blue-600);
   box-shadow: 0 4px 12px rgba(0, 191, 165, 0.3);
@@ -98,7 +103,7 @@
 
 .ad-reward-button {
   background: linear-gradient(135deg, #f59e0b, #ea580c);
-  color: white;
+  color: var(--color-text-primary);
   border: none;
   padding: 0.75rem 1.25rem;
   border-radius: 0.75rem;
@@ -159,7 +164,7 @@
   bottom: -5px;
   right: -10px;
   background: var(--color-sky-500);
-  color: white;
+  color: var(--color-text-primary);
   font-size: 0.65rem;
   font-weight: 800;
   padding: 2px var(--spacing-tiny);
@@ -200,7 +205,7 @@
 
 .purchase-button {
   background: linear-gradient(135deg, var(--color-sky-500), var(--color-indigo-600));
-  color: white;
+  color: var(--color-text-primary);
   border: none;
   padding: 0.6rem 1.2rem;
   border-radius: 0.75rem;
@@ -235,8 +240,10 @@
 .inventory-header {
   display: flex;
   align-items: center;
+  justify-content: center;
   gap: 0.75rem;
   padding: 0 0.5rem;
+  text-align: center;
 }
 
 .inventory-logo {
@@ -259,6 +266,7 @@
 .inventory-list {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+  justify-content: center;
   gap: 0.75rem;
 }
 
@@ -303,9 +311,15 @@
 }
 
 .empty-inventory {
+  grid-column: 1 / -1;
   text-align: center;
-  padding: 1rem;
+  padding: 2rem 1rem;
   width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
 }
 
 .empty-inventory p {

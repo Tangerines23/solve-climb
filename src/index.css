@@ -221,7 +221,7 @@
 
 strong {
   font-weight: 700;
-  color: #ffffff; /* Explicitly white for contrast in dark theme */
+  color: var(--color-text-primary); /* Explicitly white for contrast in dark theme */
 }
 
 :root {
@@ -320,6 +320,15 @@ strong {
   --z-max: 9999;
 
   /* --- Premium Glass Design Tokens (V2) --- */
+  --glass-bg-low: rgba(255, 255, 255, 0.05);
+  --glass-bg-medium: rgba(255, 255, 255, 0.1);
+  --glass-bg-high: rgba(255, 255, 255, 0.2);
+  --glass-border-low: rgba(255, 255, 255, 0.1);
+  --glass-border-medium: rgba(255, 255, 255, 0.2);
+  --overlay-dark-low: rgba(0, 0, 0, 0.2);
+  --overlay-dark-medium: rgba(0, 0, 0, 0.4);
+  --overlay-dark-high: rgba(0, 0, 0, 0.6);
+
   --bg-glass-card: rgba(30, 31, 35, 0.6);
   --bg-glass-card-hover: rgba(40, 41, 45, 0.7);
   --bg-glass-overlay: rgba(30, 31, 35, 0.85);
@@ -362,6 +371,41 @@ strong {
   --color-rank-gold: #ffd700;
   --color-rank-silver: #c0c0c0;
   --color-rank-bronze: #cd7f32;
+
+  /* World Theme Colors */
+  --color-world1-top: #0f172a;
+  --color-world1-mid: #1e293b;
+  --color-world1-bottom: #0f172a;
+
+  --color-world2-top: #92400e;
+  --color-world2-mid: #78350f;
+  --color-world2-bottom: #451a03;
+
+  --color-world3-top: #0e7490;
+  --color-world3-mid: #155e75;
+  --color-world3-bottom: #083344;
+
+  --color-world4-top: #581c87;
+  --color-world4-mid: #3b0764;
+  --color-world4-bottom: #000000;
+
+  --color-world-forest-top: #065f46;
+  --color-world-forest-mid: #064e3b;
+  --color-world-forest-bottom: #022c22;
+  --color-world-rock-top: #4b5563;
+  --color-world-rock-mid: #374151;
+  --color-world-rock-bottom: #1f2937;
+  --color-world-clouds-top: #0ea5e9;
+  --color-world-clouds-mid: #0284c7;
+  --color-world-clouds-bottom: #075985;
+  --color-world-space-top: #1e1b4b;
+  --color-world-space-mid: #0f172a;
+  --color-world-space-bottom: #000000;
+  --color-world-fever-top: #064e3b;
+  --color-world-fever-mid: #7f1d1d;
+  --color-world-fever-bottom: #450a0a;
+  --color-world-default-top: #0f172a;
+  --color-world-default-bottom: #1e293b;
 
   /* Effect Colors */
   --color-orange-400: #fb923c;
@@ -470,7 +514,7 @@ body {
   border: var(--border-glass);
   border-radius: var(--rounded-sm);
   background-color: rgba(255, 255, 255, 0.05);
-  color: white;
+  color: var(--color-text-primary);
   margin-top: var(--spacing-lg);
 }
 
@@ -533,7 +577,7 @@ body {
 .result-score-label {
   font-size: 1.2rem;
   margin: var(--spacing-xl) 0;
-  color: white;
+  color: var(--color-text-primary);
 }
 
 .result-score {
@@ -678,7 +722,7 @@ body {
 
 .tab-base.active {
   background: linear-gradient(135deg, var(--color-blue-400) 0%, var(--color-blue-500) 100%);
-  color: #fff;
+  color: var(--color-text-primary);
   font-weight: 800;
   box-shadow: 0 4px 12px rgba(0, 191, 165, 0.4);
   text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5); /* Stronger shadow for contrast */
@@ -744,8 +788,8 @@ body {
   background-color: var(--color-bg-primary);
   border-radius: var(--rounded-large-card);
   width: 100%;
-  max-width: 400px;
-  padding: 2.5rem;
+  max-width: var(--modal-max-width, 400px);
+  padding: clamp(var(--spacing-xl), 5vh, var(--spacing-4xl));
   box-shadow: 0 40px 100px rgba(0, 0, 0, 0.8);
   border: var(--border-glass);
 }
@@ -836,10 +880,9 @@ body {
 }
 
 /* Static UI 모드: 모든 애니메이션 및 트랜지션 비활성화 */
-.static-ui *,
-.static-ui *,
-.static-ui *::before,
-.static-ui *::after {
+.static-ui *:not(.toast):not(.toast-content),
+.static-ui *:not(.toast):not(.toast-content)::before,
+.static-ui *:not(.toast):not(.toast-content)::after {
   animation: none !important;
   transition: none !important;
   transform: none !important;

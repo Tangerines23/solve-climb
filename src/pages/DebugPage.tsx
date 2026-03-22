@@ -71,11 +71,8 @@ export function DebugPage() {
               marginBottom: 'var(--spacing-xl)',
             }}
           >
-            🧩 UI 실험실 (UI Lab)
+            🔔 알림 테스트 (Notifications)
           </h2>
-          <p style={{ color: 'var(--color-text-secondary)', marginBottom: 'var(--spacing-xl)' }}>
-            모달, 알림, 이펙트 등 모든 UI 요소를 이곳에서 테스트할 수 있습니다.
-          </p>
           <div
             style={{
               backgroundColor: 'var(--color-bg-secondary)',

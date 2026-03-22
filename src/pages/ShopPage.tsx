@@ -227,7 +227,7 @@ export function ShopPage() {
           </div>
         </header>
 
-        <div className="shop-tabs-wrapper" style={{ padding: '0 var(--spacing-4xl)' }}>
+        <div className="shop-tabs-wrapper">
           <SegmentedControl
             options={[
               { value: 'shop', label: '⛰️ 상점' },

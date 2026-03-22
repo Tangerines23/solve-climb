@@ -44,7 +44,7 @@
   padding-top: var(--header-height-portrait);
   padding-bottom: 80px;
   min-height: calc(100vh - var(--header-height-portrait));
-  background-color: var(--color-bg-primary);
+  background-color: transparent;
 }
 
 /* 가로모드에서 패딩 조정 */

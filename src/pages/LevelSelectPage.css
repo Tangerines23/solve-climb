@@ -520,7 +520,7 @@
 
 .tier-toggle-btn.active {
   background: var(--color-blue-500);
-  color: white;
+  color: var(--color-text-primary);
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
 }
 

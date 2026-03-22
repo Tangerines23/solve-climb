@@ -30,7 +30,7 @@
 
 .delete-all-button:hover:not(:disabled) {
   background-color: var(--color-error);
-  color: white;
+  color: var(--color-text-primary);
 }
 
 .persona-generator-grid {
@@ -171,7 +171,7 @@
 
 .card-action-btn.delete:hover {
   background: var(--color-error);
-  color: white;
+  color: var(--color-text-primary);
 }
 
 .empty-list {

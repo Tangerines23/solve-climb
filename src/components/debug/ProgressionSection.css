@@ -81,7 +81,7 @@
   margin-top: var(--spacing-sm);
   padding: var(--spacing-md);
   background: linear-gradient(135deg, var(--color-primary), var(--adaptiveBlue600));
-  color: white;
+  color: var(--color-text-primary);
   border: none;
   border-radius: var(--rounded-small-alt);
   font-weight: 600;

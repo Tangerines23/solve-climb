@@ -1,9 +1,12 @@
 .challenge-card {
-  background-color: var(--color-bg-primary);
+  background-color: var(--bg-glass-card);
+  -webkit-backdrop-filter: blur(20px);
+  backdrop-filter: blur(20px);
   border-radius: var(--rounded-card);
   padding: var(--spacing-xl);
   margin-bottom: var(--spacing-2xl);
-  border: 1px solid var(--color-bg-secondary);
+  border: var(--border-glass);
+  box-shadow: var(--shadow-glass);
 }
 
 .challenge-header {

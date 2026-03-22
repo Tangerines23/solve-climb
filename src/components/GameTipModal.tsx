@@ -599,6 +599,7 @@ export function GameTipModal({ isOpen, category, level, onStart, onClose }: Game
       showOverlay={true}
       closeOnOverlayClick={true}
       title={null} // Custom layout used inside children
+      className="gt-modal-container"
     >
       <div className="gt-layout-wrapper">
         {/* Left Side: Title & Controls */}

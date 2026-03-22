@@ -22,9 +22,11 @@ export const useAuthStore = create<AuthState>((set) => ({
     set({ isLoading: true });
 
     // 1. 로컬 세션 우선 확인 (익명 사용자용, 가장 빠름)
-    const localSession = storage.get<any>(StorageKeys.LOCAL_SESSION, null);
+    const localSession = storage.get<{ userId: string } | null>(StorageKeys.LOCAL_SESSION, null);
     if (localSession) {
-      const mockSession = { user: { id: localSession.userId, is_anonymous: true } } as any;
+      const mockSession = {
+        user: { id: localSession.userId, is_anonymous: true },
+      } as unknown as Session;
       set({ session: mockSession, user: mockSession.user });
     }
 
@@ -47,7 +49,10 @@ export const useAuthStore = create<AuthState>((set) => ({
       const eventName = _event as string;
       if (!session && (eventName === 'INITIAL_SESSION' || eventName === 'MFA_CHALLENGE')) {
         const state = useAuthStore.getState();
-        if (state.session?.user && (state.session.user as any).is_anonymous) {
+        if (
+          state.session?.user &&
+          (state.session.user as unknown as { is_anonymous?: boolean }).is_anonymous
+        ) {
           // console.log('[AuthStore] Maintaining local session despite', _event, 'null');
           set({ isLoading: false });
           return;

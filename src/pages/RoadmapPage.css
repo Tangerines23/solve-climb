@@ -6,7 +6,7 @@
   left: 0;
   right: 0;
   bottom: 0;
-  background-color: var(--color-bg-primary);
+  background-color: var(--color-gray-900);
   overflow-y: auto;
   overflow-x: hidden;
 }
@@ -26,7 +26,7 @@
 .history-main {
   padding-top: var(--header-height-portrait);
   padding-bottom: 100px;
-  background-color: var(--color-bg-primary);
+  background-color: transparent;
 }
 
 .history-content {
@@ -38,6 +38,12 @@
   flex-direction: column;
   gap: 0;
   /* Gap handled by sections */
+}
+
+@media (orientation: landscape) {
+  .history-content {
+    max-width: var(--modal-width-landscape-small);
+  }
 }
 
 /* --- Phase 12: Hero Section UI --- */
@@ -1401,7 +1407,7 @@
 /* --- 4. Activity List (Activity & Review Button) --- */
 .history-review-climb-button {
   background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
-  color: white;
+  color: var(--color-text-primary);
   border: none;
   border-radius: var(--rounded-sm);
   padding: var(--spacing-sm) var(--spacing-lg);
