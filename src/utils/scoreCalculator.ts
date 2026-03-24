@@ -28,8 +28,8 @@ export function calculateTotalAltitude(): { totalAltitude: number; totalProblems
       // 모든 레벨 순회
       Object.values(subTopicData).forEach((levelRecord) => {
         // time-attack과 survival 중 최고 점수 선택
-        const timeAttack = levelRecord.bestScore['time-attack'] || 0;
-        const survival = levelRecord.bestScore['survival'] || 0;
+        const timeAttack = levelRecord.bestScore?.['time-attack'] || 0;
+        const survival = levelRecord.bestScore?.['survival'] || 0;
         const bestScore = Math.max(timeAttack, survival);
         totalAltitude += bestScore;
       });

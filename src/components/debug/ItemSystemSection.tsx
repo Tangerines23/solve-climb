@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '../../utils/supabaseClient';
 import { useUserStore } from '../../stores/useUserStore';
+import { ITEM_MAP } from '../../constants/items';
 import './ItemSystemSection.css';
 
 interface ItemDefinition {
@@ -280,10 +281,12 @@ export function ItemSystemSection() {
             <div key={item.id} className="debug-item-item">
               <div className="debug-item-info">
                 <label htmlFor={`debug-item-input-${item.id}`} className="debug-item-name">
-                  {item.name}
+                  {ITEM_MAP[item.code]?.emoji || '📦'} {item.name}
                 </label>
-                {item.description && (
-                  <div className="debug-item-description">{item.description}</div>
+                {(item.description || ITEM_MAP[item.code]?.description) && (
+                  <div className="debug-item-description">
+                    {item.description || ITEM_MAP[item.code]?.description}
+                  </div>
                 )}
               </div>
               <div className="debug-item-control">

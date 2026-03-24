@@ -146,10 +146,10 @@ export default defineConfig(({ mode }) => {
         ],
         // 커버리지 임계값 설정 (업계 표준: 80%)
         thresholds: {
-          lines: 60,
-          functions: 60,
-          branches: 50,
-          statements: 60,
+          lines: 80,
+          functions: 80,
+          branches: 80,
+          statements: 80,
         },
         // 성능 최적화: 100% 커버리지 파일 자동 제외
         all: false,

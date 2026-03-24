@@ -1,3 +1,5 @@
+import { ITEM_MAP } from './items';
+
 /**
  * UI 공통 메시지 및 이모지 정의
  */
@@ -11,14 +13,16 @@ export const UI_EMOJIS = {
   INFO: 'ℹ️',
   CHECK: '✅',
   BACKPACK: '🎒',
-  FIRE: '🔥',
   LOCK: '🔒',
   STAR: '⭐',
   TIME: '⌛',
-  ROPE: '🔗',
-  FLARE: '🧨',
-  OXYGEN: '🧪',
-  GEL: '⚡',
+
+  // Item Emojis from centralized ITEM_MAP
+  ROPE: ITEM_MAP['safety_rope']?.emoji || '🔗',
+  FLARE: ITEM_MAP['flare']?.emoji || '🧨',
+  OXYGEN: ITEM_MAP['oxygen_tank']?.emoji || '🧪',
+  GEL: ITEM_MAP['power_gel']?.emoji || '⚡',
+  FIRE: ITEM_MAP['last_spurt']?.emoji || '🔥',
 };
 
 export const UI_MESSAGES = {
