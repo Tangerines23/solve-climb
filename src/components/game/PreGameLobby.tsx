@@ -1,5 +1,6 @@
 import React from 'react';
 import { useUserStore } from '../../stores/useUserStore';
+import { getItemEmoji, getItemShortEffect } from '@/constants/items';
 import './PreGameLobby.css';
 
 interface PreGameLobbyProps {
@@ -17,23 +18,6 @@ export const PreGameLobby: React.FC<PreGameLobbyProps> = ({ onStart, onBack, cat
     setSelectedItemIds((prev) =>
       prev.includes(itemId) ? prev.filter((id) => id !== itemId) : [...prev, itemId]
     );
-  };
-
-  const getItemEmoji = (code: string) => {
-    switch (code) {
-      case 'oxygen_tank':
-        return '🧪';
-      case 'power_gel':
-        return '⚡';
-      case 'safety_rope':
-        return '🛡️'; // Updated to shield for consistency
-      case 'flare':
-        return '🧨';
-      case 'last_spurt':
-        return '🔥';
-      default:
-        return '📦';
-    }
   };
 
   return (
@@ -64,13 +48,7 @@ export const PreGameLobby: React.FC<PreGameLobbyProps> = ({ onStart, onBack, cat
                   <div className="item-badge">x{item.quantity}</div>
                   <div className="item-emoji">{getItemEmoji(item.code)}</div>
                   <div className="item-name">{item.name}</div>
-                  <div className="item-effect-desc">
-                    {item.code === 'oxygen_tank' && '+10초'}
-                    {item.code === 'power_gel' && '시작부터 질주'}
-                    {item.code === 'safety_rope' && '실수 1회 방어'}
-                    {item.code === 'flare' && '부활 1회'}
-                    {item.code === 'last_spurt' && '타임어택 부활'}
-                  </div>
+                  <div className="item-effect-desc">{getItemShortEffect(item.code)}</div>
                 </div>
               ))
             ) : (

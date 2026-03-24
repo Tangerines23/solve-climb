@@ -8,6 +8,7 @@ import {
 } from '../utils/rpcValidator';
 import { PostgrestError, UserResponse } from '@supabase/supabase-js';
 import { AdService } from '../utils/adService';
+import { UI_MESSAGES } from '../constants/ui';
 
 interface UserState {
   minerals: number;
@@ -156,7 +157,7 @@ export const useUserStore = create<UserState>((set, get) => ({
     );
     if (error) throw error;
     if (!data || !data.success) {
-      return { success: false, message: data?.message || '구매 실패' };
+      return { success: false, message: data?.message || UI_MESSAGES.PURCHASE_FAILED };
     }
 
     if (data?.success) {
@@ -164,7 +165,7 @@ export const useUserStore = create<UserState>((set, get) => ({
     }
     return {
       success: true,
-      message: data.message || '구매 성공',
+      message: data.message || UI_MESSAGES.PURCHASE_SUCCESS,
       remaining_minerals: data.remaining_minerals,
       new_quantity: data.new_quantity,
     };
@@ -220,7 +221,7 @@ export const useUserStore = create<UserState>((set, get) => ({
     const { data, error } = await safeSupabaseQuery(supabase.rpc('consume_stamina'));
     if (error) {
       console.error('Error consuming stamina:', error);
-      return { success: false, message: '오류가 발생했습니다.' };
+      return { success: false, message: UI_MESSAGES.COMMON_ERROR };
     }
 
     if (data?.success) {
@@ -281,11 +282,11 @@ export const useUserStore = create<UserState>((set, get) => ({
         const nowIso = new Date().toISOString();
         await get().setStamina(5); // 풀 충전
         set({ lastAdRechargeTime: nowIso });
-        return { success: true, message: '산소통이 전체 충전되었습니다! (시뮬레이션)' };
+        return { success: true, message: UI_MESSAGES.STAMINA_RECHARGED_FULL + ' (시뮬레이션)' };
       }
 
       console.error('Error recovering stamina (ads):', error);
-      return { success: false, message: '오류가 발생했습니다.' };
+      return { success: false, message: UI_MESSAGES.COMMON_ERROR };
     }
 
     if (data?.success) {
@@ -302,7 +303,7 @@ export const useUserStore = create<UserState>((set, get) => ({
     // 1. 광고 시청
     const adResult = await AdService.showRewardedAd('mineral_recharge');
     if (!adResult.success) {
-      return { success: false, message: adResult.error || '광고 시청에 실패했습니다.' };
+      return { success: false, message: adResult.error || UI_MESSAGES.AD_WATCH_FAILED() };
     }
 
     // 2. 서버 연동 (SECURE RPC)
@@ -318,7 +319,7 @@ export const useUserStore = create<UserState>((set, get) => ({
 
     if (data.success) {
       set({ minerals: data.minerals });
-      return { success: true, message: `${amount} 미네랄이 충전되었습니다! 💎` };
+      return { success: true, message: UI_MESSAGES.MINERAL_RECHARGED(amount) };
     }
 
     return { success: false, message: data.message };
@@ -340,7 +341,7 @@ export const useUserStore = create<UserState>((set, get) => ({
       set({ minerals: data.minerals });
       return {
         success: true,
-        message: isBonus ? `${amount} 보너스 미네랄 획득! 💎` : `${amount} 미네랄 획득! 💎`,
+        message: UI_MESSAGES.MINERAL_REWARD(amount, isBonus),
       };
     }
 
@@ -476,7 +477,7 @@ export const useUserStore = create<UserState>((set, get) => ({
   refundStamina: async () => {
     const authResult = (await safeSupabaseQuery(supabase.auth.getUser())) as UserResponse;
     const user = authResult?.data?.user;
-    if (!user) return { success: false, message: '로그인이 필요합니다.' };
+    if (!user) return { success: false, message: UI_MESSAGES.LOGIN_REQUIRED };
 
     // Optimistic update
     const currentStamina = get().stamina;
