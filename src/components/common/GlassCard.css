@@ -1,0 +1,16 @@
+.glass-card {
+  width: 100%;
+  border-radius: var(--rounded-md);
+  overflow: hidden;
+  transition:
+    transform 0.2s,
+    background-color 0.2s;
+}
+
+.glass-card.interactive:active {
+  transform: scale(0.98);
+}
+
+.glass-card.interactive:hover {
+  background-color: rgba(255, 255, 255, 0.05);
+}

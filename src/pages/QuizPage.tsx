@@ -10,7 +10,7 @@ import { useQuizGameState } from '@/hooks/useQuizGameState';
 import { useQuizAnimations } from '@/hooks/useQuizAnimations';
 import { useQuizSubmit } from '@/hooks/useQuizSubmit';
 import { useSettingsStore } from '@/stores/useSettingsStore';
-import { SURVIVAL_CONFIG } from '@/constants/game';
+import { SURVIVAL_CONFIG, CATEGORY_CONFIG, GAME_CONFIG, ANIMATION_CONFIG } from '@/constants/game';
 import { useQuizRevive } from '@/hooks/useQuizRevive';
 import { useUserStore } from '@/stores/useUserStore';
 import { useGameStore } from '@/stores/useGameStore';
@@ -35,7 +35,8 @@ import { useQuizNavigation } from '@/hooks/useQuizNavigation';
 import { useQuizStartLogic } from '@/hooks/useQuizStartLogic';
 import { useQuizSession } from '@/hooks/useQuizSession';
 import { useQuizGameplay } from '@/hooks/useQuizGameplay';
-import { UI_MESSAGES } from '@/constants/ui';
+import { UI_MESSAGES, TUTORIAL_STEPS } from '@/constants/ui';
+import { storageService, STORAGE_KEYS } from '@/services';
 
 export function QuizPage() {
   const score = useQuizStore((state) => state.score);
@@ -99,11 +100,7 @@ export function QuizPage() {
 
   // [Base Camp Tutorial]
   const [showTutorial, setShowTutorial] = useState(false);
-  const tutorialSteps: TutorialStep[] = [
-    { targetId: 'quiz-display', text: '환영합니다! 지금부터 10문제를 풀어보세요.', action: 'read' },
-    { targetId: 'keypad', text: '정답을 입력하고 엔터를 누르면 됩니다.', action: 'tap' },
-    { targetId: 'timer-bar', text: '시간은 측정되지만 제한은 없습니다.', action: 'read' },
-  ];
+  const tutorialSteps: TutorialStep[] = TUTORIAL_STEPS as unknown as TutorialStep[];
 
   const { setExhausted, resetGame, isStaminaConsumed, feverLevel, lives } = useGameStore();
 
@@ -133,9 +130,9 @@ export function QuizPage() {
 
   useEffect(() => {
     const mountain = searchParams.get('mountain');
-    if (mountain) localStorage.setItem('last_visited_mountain', mountain);
-    if (worldParam) localStorage.setItem('last_visited_world', worldParam);
-    if (categoryParam) localStorage.setItem('last_visited_category', categoryParam);
+    if (mountain) storageService.set(STORAGE_KEYS.LAST_VISITED_MOUNTAIN, mountain);
+    if (worldParam) storageService.set(STORAGE_KEYS.LAST_VISITED_WORLD, worldParam);
+    if (categoryParam) storageService.set(STORAGE_KEYS.LAST_VISITED_CATEGORY, categoryParam);
   }, [worldParam, categoryParam, searchParams]);
 
   const { generateNewQuestion } = useQuestionGenerator({
@@ -160,16 +157,8 @@ export function QuizPage() {
     onQuestionGenerated: (question) => {
       if (gameMode === 'survival' || gameMode === 'infinite') {
         const { LEVEL_BASE_TIME, PRESSURE_FACTOR } = SURVIVAL_CONFIG.PRESSURE_CONFIG;
-        const categoryMax =
-          question.category === '기초'
-            ? 30
-            : question.category === '논리'
-              ? 15
-              : question.category === '대수'
-                ? 20
-                : question.category === '심화'
-                  ? 15
-                  : 10;
+        const cat = question.category || '기초';
+        const categoryMax = CATEGORY_CONFIG[cat]?.maxLevel || CATEGORY_CONFIG.default.maxLevel;
         const normalizedLv = Math.max(1, Math.ceil((question.level! / categoryMax) * 10));
         const baseTime =
           normalizedLv <= 10
@@ -195,7 +184,7 @@ export function QuizPage() {
         try {
           const res = await refundStamina();
           if (res.success) {
-            showGlobalToast('첫 문제 도전 실패로 스태미나가 반환되었습니다.', '🫧');
+            showGlobalToast(UI_MESSAGES.STAMINA_REFUNDED, '🫧');
           }
         } catch (error) {
           console.error('[QuizPage] Refund error:', error);
@@ -219,7 +208,7 @@ export function QuizPage() {
           setShowStaminaModal(false);
           animations.setShowSlideToast(true);
           setToastValue(UI_MESSAGES.STAMINA_RECHARGED_FULL);
-          setTimeout(() => window.location.reload(), 500);
+          setTimeout(() => window.location.reload(), ANIMATION_CONFIG.RELOAD_DELAY);
         } else {
           setToastValue('충전 실패: ' + result.message);
         }
@@ -404,7 +393,8 @@ export function QuizPage() {
   ]);
 
   useEffect(() => {
-    if (!showTipModal && !sessionCreated) setTimeout(() => generateNewQuestionRef.current(), 50);
+    if (!showTipModal && !sessionCreated)
+      setTimeout(() => generateNewQuestionRef.current(), ANIMATION_CONFIG.QUERY_PARAM_DELAY);
   }, [showTipModal, sessionCreated]);
 
   useEffect(() => {
@@ -422,7 +412,7 @@ export function QuizPage() {
 
   const handleKeypadNumber = useCallback(
     (key: string) => {
-      if (answerInput.length >= 10) return;
+      if (answerInput.length >= GAME_CONFIG.MAX_ANSWER_LENGTH_KEYPAD) return;
       let newValue = answerInput;
       if (key === '.') {
         if (answerInput.includes('.')) return;
@@ -476,7 +466,7 @@ export function QuizPage() {
         questionKey={questionKey}
         timerResetKey={timerResetKey}
         triggerPenalty={0}
-        penaltyAmount={5}
+        penaltyAmount={GAME_CONFIG.PENALTY_AMOUNT}
         SURVIVAL_QUESTION_TIME={infiniteTimeLimit}
         totalQuestions={gameState.totalQuestions}
         lives={lives}
@@ -506,8 +496,8 @@ export function QuizPage() {
         handleGameOver={stableHandleGameOver}
         handleKeypadNumber={handleKeypadNumber}
         handleQwertyKeyPress={(k) => {
-          setAnswerInput((p) => (p + k).slice(0, 20));
-          setDisplayValue((p) => (p + k).slice(0, 20));
+          setAnswerInput((p) => (p + k).slice(0, GAME_CONFIG.MAX_ANSWER_LENGTH_KEYBOARD));
+          setDisplayValue((p) => (p + k).slice(0, GAME_CONFIG.MAX_ANSWER_LENGTH_KEYBOARD));
         }}
         handleKeypadClear={() => {
           setAnswerInput('');

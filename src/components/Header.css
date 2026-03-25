@@ -56,6 +56,14 @@
   /* 테이틀이 남은 공간을 채우도록 */
 }
 
+.header-logo.clickable {
+  cursor: pointer;
+}
+
+.header-logo.has-custom-title {
+  font-size: 1.2rem;
+}
+
 .header-back-button {
   background: none;
   border: none;
@@ -117,6 +125,10 @@
   box-sizing: border-box;
   overflow: hidden;
   /* VG 세로 1px 넘침 방지 */
+}
+
+.status-item.clickable {
+  cursor: pointer;
 }
 
 .status-icon {
@@ -193,6 +205,11 @@
   pointer-events: none;
   animation: pulse 1s infinite alternate;
   z-index: 101;
+}
+
+.admin-badge.clickable {
+  cursor: pointer;
+  pointer-events: auto;
 }
 
 @keyframes pulse {

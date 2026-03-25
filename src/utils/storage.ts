@@ -13,31 +13,13 @@ import {
   IStorageService,
   LocalStorageService,
   MockStorageService,
+  STORAGE_KEYS,
 } from '../services';
 
 /**
- * localStorage 키 이름 상수
- * 모든 키는 여기서 중앙 관리됩니다.
+ * @deprecated Use STORAGE_KEYS from @/services instead
  */
-export const StorageKeys = {
-  // 기기 관련
-  DEVICE_ID: 'solve-climb-device-id',
-
-  // 프로필 관련
-  PROFILES: (deviceId: string) => `solve-climb-profiles-${deviceId}`,
-  ACTIVE_PROFILE_ID: 'solve-climb-active-profile-id',
-  ADMIN_MODE: 'solve-climb-admin-mode',
-  PROGRESS: (profileId: string) => `solve-climb-progress-${profileId}`,
-
-  // 세션 관련
-  LOCAL_SESSION: 'solve-climb-local-session',
-  LOCAL_BADGES: 'solve-climb-local-badges',
-  LOCAL_HISTORY: 'solve-climb-local-history',
-
-  // 게임 팁 관련
-  GAME_TIP: (category: string, sub: string, level?: string) =>
-    level ? `gameTip_${category}_${sub}_${level}` : `gameTip_${category}_${sub}`,
-} as const;
+export const StorageKeys = STORAGE_KEYS;
 
 /**
  * localStorage 접두사 목록

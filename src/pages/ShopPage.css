@@ -140,13 +140,12 @@
 .item-card {
   display: flex;
   align-items: center;
-  background: var(--bg-glass-card);
-  -webkit-backdrop-filter: blur(var(--backdrop-blur));
-  backdrop-filter: blur(var(--backdrop-blur));
-  border: var(--border-glass);
+  background: var(--glass-bg);
+  -webkit-backdrop-filter: blur(var(--glass-blur));
+  backdrop-filter: blur(var(--glass-blur));
+  border: var(--glass-border);
   border-radius: 1rem;
-  padding: 1rem;
-  box-shadow: var(--shadow-glass);
+  box-shadow: var(--glass-shadow);
 }
 
 .item-icon-wrapper {
@@ -274,12 +273,13 @@
   display: flex;
   align-items: center;
   gap: 0.75rem;
-  background: var(--bg-glass-card);
+  background: var(--glass-bg);
   padding: 0.75rem;
   border-radius: 0.75rem;
-  border: var(--border-glass);
-  -webkit-backdrop-filter: blur(var(--backdrop-blur));
-  backdrop-filter: blur(var(--backdrop-blur));
+  border: var(--glass-border);
+  -webkit-backdrop-filter: blur(var(--glass-blur));
+  backdrop-filter: blur(var(--glass-blur));
+  box-shadow: var(--glass-shadow);
 }
 
 .inventory-icon {

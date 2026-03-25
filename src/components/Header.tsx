@@ -7,6 +7,7 @@ import { useAuthStore } from '../stores/useAuthStore';
 import { useUserStore } from '../stores/useUserStore';
 import { useDebugStore } from '../stores/useDebugStore';
 import { useToastStore } from '../stores/useToastStore';
+import { storageService, STORAGE_KEYS } from '../services';
 import './Header.css';
 // DebugPanel.css는 DebugPanel 컴포넌트 내부에서 import하므로 여기서는 제거
 // (동적 import된 컴포넌트의 CSS는 자동으로 분리되어 로드됨)
@@ -53,7 +54,7 @@ export function Header({ title, showBack, onBack }: HeaderProps) {
     }
 
     // localStorage 체크: debug_mode = 'true'
-    if (localStorage.getItem('debug_mode') === 'true' && !isDebugPanelOpen) {
+    if (storageService.get<string>(STORAGE_KEYS.DEBUG_MODE) === 'true' && !isDebugPanelOpen) {
       toggleDebugPanel();
     }
   }, [location.search, isDebugPanelOpen, toggleDebugPanel]);
@@ -148,32 +149,26 @@ export function Header({ title, showBack, onBack }: HeaderProps) {
           </button>
         )}
         <h1
-          className="header-logo"
+          className={`header-logo ${isAdmin ? 'clickable' : ''} ${title ? 'has-custom-title' : ''}`}
           onClick={handleLogoClick}
-          style={{
-            cursor: isAdmin ? 'pointer' : 'default',
-            fontSize: title ? '1.2rem' : undefined,
-          }}
         >
           {title || APP_CONFIG.APP_NAME}
         </h1>
         <div className="header-status">
           {isAdminMode && (
             <div
-              className="admin-badge"
+              className="admin-badge clickable"
               onClick={(e) => {
                 e.stopPropagation();
                 toggleDebugPanel();
               }}
-              style={{ cursor: 'pointer' }}
             >
               DEV
             </div>
           )}
           <div
-            className={`status-item ${selectedResource === 'stamina' ? 'selected' : ''}`}
+            className={`status-item ${selectedResource === 'stamina' ? 'selected' : ''} ${isAdminMode ? 'clickable' : ''}`}
             onClick={handleStaminaClick}
-            style={{ cursor: isAdminMode ? 'pointer' : 'default' }}
           >
             <span role="img" aria-label="stamina" className="status-icon stamina-icon">
               ⚡
@@ -181,9 +176,8 @@ export function Header({ title, showBack, onBack }: HeaderProps) {
             <span className="status-value">{stamina}</span>
           </div>
           <div
-            className={`status-item ${selectedResource === 'minerals' ? 'selected' : ''}`}
+            className={`status-item ${selectedResource === 'minerals' ? 'selected' : ''} ${isAdminMode ? 'clickable' : ''}`}
             onClick={handleMineralsClick}
-            style={{ cursor: isAdminMode ? 'pointer' : 'default' }}
           >
             <span role="img" aria-label="minerals" className="status-icon">
               💎
@@ -200,9 +194,8 @@ export function Header({ title, showBack, onBack }: HeaderProps) {
           </div>
           {isAdminMode && (
             <div
-              className={`status-item ${selectedResource === 'items' ? 'selected' : ''}`}
+              className={`status-item ${selectedResource === 'items' ? 'selected' : ''} clickable`}
               onClick={handleItemsClick}
-              style={{ cursor: 'pointer' }}
             >
               <span role="img" aria-label="items" className="status-icon">
                 📦

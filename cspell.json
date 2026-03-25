@@ -63,7 +63,10 @@
     "currentwords",
     "Desaturation",
     "Congruential",
-    "IDFA"
+    "IDFA",
+    "DEATHNOTE",
+    "TTFB",
+    "Glassmorphism"
   ],
   "ignorePaths": [
     "node_modules",

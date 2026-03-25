@@ -68,3 +68,38 @@ export const LANDMARK_MAPPING: Record<number, { icon: string; text: string }> = 
   500: { icon: '🏔️', text: '정상 정복 예정 (500m)' },
   1000: { icon: '🏆', text: '전설의 시작 (1000m)' },
 };
+
+/**
+ * 카테고리별 게임 설정 (v2.5)
+ */
+export const CATEGORY_CONFIG: Record<string, { maxLevel: number; baseTime: number }> = {
+  기초: { maxLevel: 30, baseTime: 30 },
+  논리: { maxLevel: 15, baseTime: 15 },
+  대수: { maxLevel: 20, baseTime: 20 },
+  심화: { maxLevel: 15, baseTime: 15 },
+  default: { maxLevel: 10, baseTime: 10 },
+};
+
+/**
+ * 전역 게임 설정 상수
+ */
+export const GAME_CONFIG = {
+  PROBLEMS_PER_LEVEL: 20,
+  MAX_ANSWER_LENGTH_KEYPAD: 10,
+  MAX_ANSWER_LENGTH_KEYBOARD: 20,
+  PENALTY_AMOUNT: 5,
+  INCORRECT_VIBRATION_DURATION: 200,
+};
+
+/**
+ * 애니메이션 및 지연 시간 설정
+ */
+export const ANIMATION_CONFIG = {
+  TRANSITION_DELAY: 150,
+  KEYBOARD_FOCUS_DELAY: 200,
+  TOAST_DURATION: 2000,
+  MODAL_DELAY: 300,
+  RELOAD_DELAY: 500,
+  QUERY_PARAM_DELAY: 100,
+  CONFETTI_DURATION: 3000,
+};

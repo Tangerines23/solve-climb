@@ -29,13 +29,15 @@ export interface IStorageService {
    */
   clear(): void;
 
+  get length(): number;
+
   /**
    * 저장소의 모든 키를 반환합니다
    */
   keys(): string[];
 
   /**
-   * 저장소의 항목 개수를 반환합니다
+   * 특정 키가 존재하는지 확인합니다.
    */
-  get length(): number;
+  hasItem(key: string): boolean;
 }

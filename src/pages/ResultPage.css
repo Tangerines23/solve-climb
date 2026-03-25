@@ -7,6 +7,10 @@
   /* 하단 버튼 공간 확보 */
 }
 
+.mt-sm {
+  margin-top: var(--spacing-sm) !important;
+}
+
 /* 가로모드용 레이아웃은 기본적으로 숨김 (세로모드) */
 .result-landscape-layout {
   display: none;
@@ -66,12 +70,12 @@
   align-items: stretch;
   gap: 0;
   /* Glass UI Update */
-  background-color: var(--bg-glass-card);
-  backdrop-filter: blur(var(--backdrop-blur));
-  -webkit-backdrop-filter: blur(var(--backdrop-blur));
-  border: var(--border-glass);
+  background-color: var(--glass-bg);
+  -webkit-backdrop-filter: blur(var(--glass-blur));
+  backdrop-filter: blur(var(--glass-blur));
+  border: var(--glass-border);
   border-radius: var(--rounded-large-card);
-  box-shadow: var(--shadow-glass);
+  box-shadow: var(--glass-shadow);
   width: 100%;
   max-width: var(--modal-width-portrait);
   max-height: calc(100vh - 200px);
@@ -117,12 +121,12 @@
     width: 90vw;
     max-width: 90vw;
     padding: var(--spacing-3xl);
-    background-color: var(--bg-glass-card);
-    backdrop-filter: blur(var(--backdrop-blur));
-    -webkit-backdrop-filter: blur(var(--backdrop-blur));
-    border: var(--border-glass);
+    background-color: var(--glass-bg);
+    -webkit-backdrop-filter: blur(var(--glass-blur));
+    backdrop-filter: blur(var(--glass-blur));
+    border: var(--glass-border);
     border-radius: var(--rounded-large-card);
-    box-shadow: var(--shadow-glass);
+    box-shadow: var(--glass-shadow);
     overflow: hidden;
   }
 
@@ -436,6 +440,7 @@
   padding: var(--spacing-lg) 0;
   border-bottom: 1px solid rgba(255, 255, 255, 0.05);
   animation: fadeInUp 0.5s ease-out both;
+  animation-delay: var(--delay, 0s);
 }
 
 .stat-item:last-child {
@@ -670,16 +675,22 @@
   height: 10px;
   top: -10px;
   animation: confettiFall 3s linear forwards;
+  left: var(--left, 50%);
+  animation-delay: var(--delay, 0s);
+  background-color: var(--color, var(--color-teal-500));
 }
 
 @keyframes confettiFall {
   0% {
-    transform: translateY(0) rotate(0deg);
+    transform: translateY(0) rotate(0deg) scale(0);
+    opacity: 0;
+  }
+  15% {
+    transform: translateY(15vh) rotate(100deg) scale(1.2);
     opacity: 1;
   }
-
   100% {
-    transform: translateY(100vh) rotate(720deg);
+    transform: translateY(100vh) rotate(720deg) scale(0.8);
     opacity: 0;
   }
 }

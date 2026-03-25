@@ -93,12 +93,3 @@ export const getItemEmoji = (code: string): string => {
 export const getItemShortEffect = (code: string): string => {
   return ITEM_MAP[code]?.shortEffect ?? '';
 };
-
-/** 기존 호환용: ITEM_METADATA (Record 형태) */
-export const ITEM_METADATA: Record<string, { name: string; emoji: string; description: string }> =
-  Object.fromEntries(
-    ITEM_LIST.map((item) => [
-      item.code,
-      { name: item.name, emoji: item.emoji, description: item.description },
-    ])
-  );

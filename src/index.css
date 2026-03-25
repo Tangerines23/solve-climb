@@ -434,7 +434,18 @@ strong {
 
   /* Effect Colors */
   --color-orange-400: #fb923c;
-  --color-amber-300: #fcd34d;
+  --glass-bg: var(--bg-glass-card);
+  --glass-border: var(--border-glass);
+  --glass-blur: var(--backdrop-blur);
+  --glass-shadow: var(--shadow-glass);
+}
+
+.glass-effect {
+  background: var(--glass-bg);
+  border: var(--glass-border);
+  -webkit-backdrop-filter: blur(var(--glass-blur));
+  backdrop-filter: blur(var(--glass-blur));
+  box-shadow: var(--glass-shadow);
 }
 
 /* --- Premium Utility Classes --- */

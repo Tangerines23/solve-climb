@@ -4,6 +4,7 @@
  */
 
 import { logger } from './logger';
+import { storageService } from '../services';
 
 const isDevelopment = import.meta.env.DEV;
 
@@ -73,16 +74,14 @@ export function dumpLocalStorage(): void {
     return;
   }
 
-  const storage = new Map<string, string>();
+  const storageDump = new Map<string, unknown>();
   try {
-    for (let i = 0; i < localStorage.length; i++) {
-      const key = localStorage.key(i);
-      if (key) {
-        storage.set(key, localStorage.getItem(key) || '');
-      }
+    const keys = storageService.keys();
+    for (const key of keys) {
+      storageDump.set(key, storageService.get<unknown>(key));
     }
     logger.group('Debug', 'LocalStorage Dump', () => {
-      logger.table('Debug', Object.fromEntries(storage));
+      logger.table('Debug', Object.fromEntries(storageDump));
     });
   } catch (error) {
     logger.error('Debug', 'Failed to dump localStorage', error);

@@ -23,6 +23,8 @@ interface UseQuizReviveParams {
   isPreview: boolean;
 }
 
+import { ITEM_MAP } from '../constants/items';
+
 export function useQuizRevive({
   gameMode,
   inventory,
@@ -87,8 +89,8 @@ export function useQuizRevive({
 
   const handlePurchaseAndRevive = useCallback(async () => {
     const itemType = gameMode === 'time-attack' ? 'last_spurt' : 'flare';
-    const basePrice = 800;
-    const targetPrice = basePrice * 2;
+    const basePrice = ITEM_MAP[itemType]?.price || 800;
+    const targetPrice = basePrice * 2; // "즉시 구매 & 사용"은 상점가의 2배 (긴급 할증)
 
     if (minerals >= targetPrice) {
       console.log(`Simulating purchase of ${itemType} for ${targetPrice} minerals`);

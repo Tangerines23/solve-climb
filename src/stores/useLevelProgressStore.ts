@@ -6,6 +6,8 @@ import { safeSupabaseQuery } from '../utils/debugFetch';
 import { validatedRpc, RankingListSchema } from '../utils/rpcValidator';
 import { GameMode, Tier } from '../types/quiz';
 import { useDebugStore } from './useDebugStore';
+import { useToastStore } from './useToastStore';
+import { UI_MESSAGES } from '../constants/ui';
 import type { UserResponse, RealtimeChannel } from '@supabase/supabase-js';
 
 export interface LevelRecord {
@@ -419,6 +421,7 @@ export const useLevelProgressStore = create<LevelProgressState>()(
             }
           } catch (error) {
             console.error('Failed to sync progress from Supabase:', error);
+            useToastStore.getState().showToast(UI_MESSAGES.FETCH_DATA_FAILED, 'error');
           }
         },
 
@@ -439,6 +442,7 @@ export const useLevelProgressStore = create<LevelProgressState>()(
             if (error) throw error;
           } catch (error) {
             console.error('Failed to reset progress in Supabase:', error);
+            useToastStore.getState().showToast(UI_MESSAGES.COMMON_ERROR, 'error');
           }
         },
 
@@ -491,6 +495,7 @@ export const useLevelProgressStore = create<LevelProgressState>()(
             }
           } catch (error) {
             console.error('Failed to fetch ranking:', error);
+            useToastStore.getState().showToast(UI_MESSAGES.RANKING_FETCH_FAILED, 'error');
           }
         },
 

@@ -64,16 +64,26 @@ export const useUserStore = create<UserState>((set, get) => {
     }
   };
 
+  interface RawInventoryItem {
+    quantity: number;
+    items: {
+      id: number;
+      code: string;
+      name: string;
+      description: string;
+    } | null;
+  }
+
   /**
    * 원시 인벤토리 데이터를 포맷팅
    */
-  const formatInventory = (raw: Record<string, any>[] | null): InventoryItem[] => {
+  const formatInventory = (raw: RawInventoryItem[] | null): InventoryItem[] => {
     return (
       raw?.map((item) => ({
-        id: item?.items?.id,
-        code: item?.items?.code,
-        name: item?.items?.name,
-        description: item?.items?.description,
+        id: item?.items?.id || 0,
+        code: item?.items?.code || '',
+        name: item?.items?.name || '',
+        description: item?.items?.description || '',
         quantity: item?.quantity || 0,
       })) || []
     );
@@ -126,7 +136,7 @@ export const useUserStore = create<UserState>((set, get) => {
           minerals: profileRes.data?.minerals || 0,
           stamina: profileRes.data?.stamina || 0,
           lastAdRechargeTime: profileRes.data?.last_ad_stamina_recharge || null,
-          inventory: formatInventory(inventoryRes.data as Record<string, any>[]),
+          inventory: formatInventory(inventoryRes.data as unknown as RawInventoryItem[]),
         });
       } catch (error) {
         console.error('Error fetching user data:', error);

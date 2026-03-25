@@ -1,5 +1,7 @@
 import { TierDefinition, MilestoneItem, TIER_CYCLE_LIMIT } from '../types/roadmap';
 
+export type { MilestoneItem };
+
 export { TIER_CYCLE_LIMIT }; // Re-export for compatibility
 
 /**
