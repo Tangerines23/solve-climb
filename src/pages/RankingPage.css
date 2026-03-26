@@ -106,9 +106,8 @@
   padding: var(--spacing-md);
   border: none;
   background: transparent;
-  color: var(--color-text-dimmed);
   font-weight: 700;
-  color: var(--color-gray-200);
+  color: var(--color-text-primary);
   font-size: 0.9rem;
   transition: color 0.3s ease;
   cursor: pointer;

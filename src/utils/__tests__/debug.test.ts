@@ -1,3 +1,4 @@
+/// <reference types="vite/client" />
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import {
   dumpState,
@@ -7,14 +8,22 @@ import {
   dumpSessionStorage,
 } from '../debug';
 import { logger } from '../logger';
+import { storageService } from '../../services';
 
 // Mock logger
 vi.mock('../logger', () => ({
   logger: {
-    group: vi.fn((_category, _title, fn) => fn()),
+    group: vi.fn((_category, _title, fn) => (fn ? fn() : undefined)),
     table: vi.fn(),
     debug: vi.fn(),
     error: vi.fn(),
+  },
+}));
+
+vi.mock('../../services', () => ({
+  storageService: {
+    keys: vi.fn(() => []),
+    get: vi.fn(),
   },
 }));
 
@@ -65,35 +74,25 @@ describe('debug', () => {
 
   describe('dumpLocalStorage', () => {
     it('should dump localStorage in development mode', () => {
-      // Mock localStorage
-      const mockLocalStorage = {
-        length: 2,
-        key: vi.fn((i: number) => (i === 0 ? 'key1' : 'key2')),
-        getItem: vi.fn((key: string) => (key === 'key1' ? 'value1' : 'value2')),
-      };
-      Object.defineProperty(window, 'localStorage', {
-        value: mockLocalStorage,
-        writable: true,
-      });
+      // Mock storageService
+      vi.mocked(storageService.keys).mockReturnValue(['key1', 'key2']);
+      vi.mocked(storageService.get).mockImplementation((key: string) =>
+        key === 'key1' ? 'value1' : 'value2'
+      );
 
       dumpLocalStorage();
 
       if (import.meta.env.DEV) {
+        expect(storageService.keys).toHaveBeenCalled();
+        expect(storageService.get).toHaveBeenCalledWith('key1');
+        expect(storageService.get).toHaveBeenCalledWith('key2');
         expect(logger.group).toHaveBeenCalled();
       }
     });
 
     it('should handle localStorage errors gracefully', () => {
-      const mockLocalStorage = {
-        length: 1,
-        key: vi.fn(() => {
-          throw new Error('Storage error');
-        }),
-        getItem: vi.fn(),
-      };
-      Object.defineProperty(window, 'localStorage', {
-        value: mockLocalStorage,
-        writable: true,
+      vi.mocked(storageService.keys).mockImplementation(() => {
+        throw new Error('Storage error');
       });
 
       dumpLocalStorage();
@@ -105,19 +104,12 @@ describe('debug', () => {
     });
 
     it('should handle empty localStorage', () => {
-      const mockLocalStorage = {
-        length: 0,
-        key: vi.fn(),
-        getItem: vi.fn(),
-      };
-      Object.defineProperty(window, 'localStorage', {
-        value: mockLocalStorage,
-        writable: true,
-      });
+      vi.mocked(storageService.keys).mockReturnValue([]);
 
       dumpLocalStorage();
 
       if (import.meta.env.DEV) {
+        expect(storageService.keys).toHaveBeenCalled();
         expect(logger.group).toHaveBeenCalled();
       }
     });

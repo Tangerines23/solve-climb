@@ -181,12 +181,12 @@
 .item-info h3 {
   font-size: 1.1rem;
   margin-bottom: 0.25rem;
-  color: var(--color-gray-200);
+  color: var(--color-text-primary);
 }
 
 .item-desc {
   font-size: 0.9rem;
-  color: var(--color-gray-300);
+  color: var(--color-text-secondary);
   margin-bottom: 1rem;
   line-height: 1.4;
 }
@@ -199,7 +199,7 @@
 
 .item-price {
   font-weight: 700;
-  color: var(--color-sky-200);
+  color: var(--color-sky-400); /* Slightly brighter for contrast */
 }
 
 .purchase-button {
@@ -301,7 +301,7 @@
 .inventory-name {
   font-size: 0.85rem;
   font-weight: 600;
-  color: var(--color-gray-300);
+  color: var(--color-text-primary);
 }
 
 .inventory-qty {

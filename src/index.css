@@ -389,6 +389,11 @@ strong {
   --color-indigo-500: #4f46e5; /* Updated from #6366f1 for >4.5:1 with white */
   --color-indigo-600: #4338ca;
 
+  /* Amber (Orange-Yellow) */
+  --color-amber-300: #fcd34d;
+  --color-amber-400: #fbbf24;
+  --color-amber-500: #f59e0b;
+
   /* Cyan (Bright) */
   --color-cyan-bright: #00f2fe;
 

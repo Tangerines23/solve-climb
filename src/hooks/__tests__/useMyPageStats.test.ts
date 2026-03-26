@@ -2,10 +2,9 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { renderHook, waitFor, act } from '@testing-library/react';
 import { useMyPageStats } from '../useMyPageStats';
 import { supabase } from '../../utils/supabaseClient';
-import { storage } from '../../utils/storage';
+import { storageService, STORAGE_KEYS } from '../../services';
 import type { Subscription, PostgrestError } from '@supabase/supabase-js';
 import { isLocalSession } from '../../utils/safeJsonParse';
-import { StorageKeys } from '../../utils/storage';
 
 // Helper for Supabase chain mocking
 const createMockChain = (data: unknown, error: unknown = null) => {
@@ -37,11 +36,11 @@ vi.mock('../../utils/supabaseClient', () => ({
   },
 }));
 
-vi.mock('../../utils/storage', () => ({
-  storage: {
+vi.mock('../../services', () => ({
+  storageService: {
     get: vi.fn(),
   },
-  StorageKeys: {
+  STORAGE_KEYS: {
     LOCAL_SESSION: 'solve-climb-local-session',
   },
 }));
@@ -57,7 +56,7 @@ describe('useMyPageStats', () => {
     vi.resetAllMocks();
 
     // Default mocks
-    vi.mocked(storage.get).mockReturnValue(null);
+    vi.mocked(storageService.get).mockReturnValue(null);
     vi.mocked(isLocalSession).mockReturnValue(false);
     vi.mocked(supabase.auth.getSession).mockResolvedValue({
       data: { session: null },
@@ -212,7 +211,7 @@ describe('useMyPageStats', () => {
 
   it('should handle local session correctly', async () => {
     const mockLocalSession = { userId: 'local-user', isAdmin: true };
-    vi.mocked(storage.get).mockReturnValue(mockLocalSession);
+    vi.mocked(storageService.get).mockReturnValue(mockLocalSession);
     vi.mocked(isLocalSession).mockReturnValue(true);
 
     const mockProfileData = {
