@@ -6,7 +6,7 @@ import './MacroSection.css';
 
 export const MacroSection = React.memo(function MacroSection() {
   const navigate = useNavigate();
-  const { setStamina, setMinerals } = useUserStore();
+  const { debugSetStamina, debugSetMinerals } = useUserStore();
 
   const [isRunning, setIsRunning] = useState(false);
   const [currentMacroId, setCurrentMacroId] = useState<string | null>(null);
@@ -22,12 +22,12 @@ export const MacroSection = React.memo(function MacroSection() {
     setProgress({ step: 0, total: macro.steps.length });
     setLastResult(null);
 
-    // 타입 래퍼: store 함수가 void를 반환해도 Promise로 래핑
+    // 타입 래퍼: store 함수가 비동기 RPC를 호출하므로 그대로 사용
     const wrappedSetStamina = async (v: number) => {
-      await Promise.resolve(setStamina(v));
+      await debugSetStamina(v);
     };
     const wrappedSetMinerals = async (v: number) => {
-      await Promise.resolve(setMinerals(v));
+      await debugSetMinerals(v);
     };
 
     const result = await executeMacro(

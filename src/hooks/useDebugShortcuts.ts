@@ -1,23 +1,21 @@
 import { useCallback, useEffect } from 'react';
 import { useDebugStore } from '../stores/useDebugStore';
 import { useUserStore } from '../stores/useUserStore';
-import { supabase } from '../utils/supabaseClient';
 
 /**
  * 전역 디버그 단축키 훅
  * 모든 페이지에서 작동하며, 개발 환경에서만 활성화됩니다.
  *
  * 단축키:
- * - ` (백틱): Admin Mode 토글
+ * - ` (백틱): Simple Dev (스태미너/미네랄 즉시 획득)
  * - Ctrl+` / Cmd+`: Debug Panel 토글
- * - +/=: 선택된 리소스 증가
- * - -/_: 선택된 리소스 감소
+ * - +/=: 선택된 리소스 증가 (디버그 패널 활성 시)
+ * - -/_: 선택된 리소스 감소 (디버그 패널 활성 시)
  */
 export function useDebugShortcuts() {
-  const { isAdminMode, selectedResource, toggleAdminMode, toggleDebugPanel, setSelectedResource } =
-    useDebugStore();
+  const { isAdminMode, selectedResource, toggleDebugPanel, setSelectedResource } = useDebugStore();
 
-  const { stamina, minerals, debugSetStamina, rewardMinerals, fetchUserData } = useUserStore();
+  const { stamina, minerals, debugSetStamina, debugSetMinerals } = useUserStore();
 
   const handleKeyDown = useCallback(
     (e: KeyboardEvent) => {
@@ -27,10 +25,13 @@ export function useDebugShortcuts() {
         return;
       }
 
-      // Level 1: 백틱(`) 단독 키: Admin Mode 토글
+      // Level 1: 백틱(`) 단독 키: Simple Dev (스태미너/미네랄 즉시 충전)
       if (e.key === '`' && !e.ctrlKey && !e.shiftKey && !e.metaKey) {
         e.preventDefault();
-        toggleAdminMode();
+        // 스태미너 가득 채우고 minerals 1000 추가
+        debugSetStamina(5);
+        debugSetMinerals(minerals + 1000);
+        console.log('[DEBUG] Simple Dev triggered: Stamina=5, Minerals+=1000');
         return;
       }
 
@@ -50,7 +51,7 @@ export function useDebugShortcuts() {
           debugSetStamina(stamina + 1);
         }
         if (selectedResource === 'minerals') {
-          rewardMinerals(100);
+          debugSetMinerals(minerals + 100);
         }
         if (selectedResource === 'items') {
           const { debugAddItems } = useUserStore.getState();
@@ -62,17 +63,13 @@ export function useDebugShortcuts() {
           debugSetStamina(Math.max(0, stamina - 1));
         }
         if (selectedResource === 'minerals') {
-          // 음수 처리를 위해 RPC 직접 호출
           const delta = -100;
           const currentMinerals = minerals;
           if (currentMinerals + delta < 0) {
             console.warn('[Debug] Cannot reduce minerals below 0');
             return;
           }
-          supabase.rpc('add_minerals', { p_amount: delta }).then(({ error }) => {
-            if (error) console.error(error);
-            else fetchUserData();
-          });
+          debugSetMinerals(currentMinerals + delta);
         }
         if (selectedResource === 'items') {
           const { debugRemoveItems } = useUserStore.getState();
@@ -90,12 +87,10 @@ export function useDebugShortcuts() {
       selectedResource,
       stamina,
       minerals,
-      toggleAdminMode,
       toggleDebugPanel,
       setSelectedResource,
       debugSetStamina,
-      rewardMinerals,
-      fetchUserData,
+      debugSetMinerals,
     ]
   );
 

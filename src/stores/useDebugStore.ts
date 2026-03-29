@@ -1,4 +1,5 @@
 import { create } from 'zustand';
+import { persist } from 'zustand/middleware';
 
 interface DebugState {
   // Level 1: 빠른 조작 모드 (기존 Admin Debug Mode)
@@ -46,6 +47,7 @@ interface DebugState {
 
   // Actions
   toggleAdminMode: () => void;
+  setAdminMode: (value: boolean) => void;
   setSelectedResource: (resource: 'stamina' | 'minerals' | 'items' | null) => void;
   toggleDebugPanel: () => void;
   setActiveTab: (tab: string) => void;
@@ -59,45 +61,69 @@ interface DebugState {
   setBypassLevelLock: (value: boolean) => void;
 }
 
-export const useDebugStore = create<DebugState>((set) => ({
-  // 초기 상태
-  isAdminMode: false,
-  selectedResource: null,
-  isDebugPanelOpen: false,
-  activeTab: 'quick',
-  infiniteStamina: false,
-  infiniteMinerals: false,
-  infiniteTime: false,
-  networkLatency: 0,
-  forceNetworkError: false,
-  showSafeAreaGuide: false,
-  showComponentBorders: false,
-  bypassLevelLock: false,
-  showReturnFloater: false, // 기본값은 숨김
+export const useDebugStore = create<DebugState>()(
+  persist(
+    (set) => ({
+      // 초기 상태
+      isAdminMode: false,
+      selectedResource: null,
+      isDebugPanelOpen: false,
+      activeTab: 'quick',
+      infiniteStamina: false,
+      infiniteMinerals: false,
+      infiniteTime: false,
+      networkLatency: 0,
+      forceNetworkError: false,
+      showSafeAreaGuide: false,
+      showComponentBorders: false,
+      bypassLevelLock: false,
+      showReturnFloater: false, // 기본값은 숨김
 
-  // Actions
-  setShowReturnFloater: (value) => set({ showReturnFloater: value }),
-  toggleAdminMode: () =>
-    set((state) => {
-      const newMode = !state.isAdminMode;
-      return {
-        isAdminMode: newMode,
-        selectedResource: newMode ? state.selectedResource : null,
-      };
+      // Actions
+      setShowReturnFloater: (value) => set({ showReturnFloater: value }),
+      toggleAdminMode: () =>
+        set((state) => {
+          const newMode = !state.isAdminMode;
+          return {
+            isAdminMode: newMode,
+            selectedResource: newMode ? state.selectedResource : null,
+          };
+        }),
+      setAdminMode: (value) =>
+        set((state) => ({
+          isAdminMode: value,
+          selectedResource: value ? state.selectedResource : null,
+        })),
+
+      setSelectedResource: (resource) => set({ selectedResource: resource }),
+
+      toggleDebugPanel: () => set((state) => ({ isDebugPanelOpen: !state.isDebugPanelOpen })),
+
+      setActiveTab: (tab) => set({ activeTab: tab as DebugState['activeTab'] }),
+
+      setInfiniteStamina: (value) => set({ infiniteStamina: value }),
+      setInfiniteMinerals: (value) => set({ infiniteMinerals: value }),
+      setInfiniteTime: (value) => set({ infiniteTime: value }),
+      setNetworkLatency: (ms) => set({ networkLatency: Math.max(0, ms) }),
+      setForceNetworkError: (value) => set({ forceNetworkError: value }),
+      setShowSafeAreaGuide: (value) => set({ showSafeAreaGuide: value }),
+      setShowComponentBorders: (value) => set({ showComponentBorders: value }),
+      setBypassLevelLock: (value) => set({ bypassLevelLock: value }),
     }),
-
-  setSelectedResource: (resource) => set({ selectedResource: resource }),
-
-  toggleDebugPanel: () => set((state) => ({ isDebugPanelOpen: !state.isDebugPanelOpen })),
-
-  setActiveTab: (tab) => set({ activeTab: tab as DebugState['activeTab'] }),
-
-  setInfiniteStamina: (value) => set({ infiniteStamina: value }),
-  setInfiniteMinerals: (value) => set({ infiniteMinerals: value }),
-  setInfiniteTime: (value) => set({ infiniteTime: value }),
-  setNetworkLatency: (ms) => set({ networkLatency: Math.max(0, ms) }),
-  setForceNetworkError: (value) => set({ forceNetworkError: value }),
-  setShowSafeAreaGuide: (value) => set({ showSafeAreaGuide: value }),
-  setShowComponentBorders: (value) => set({ showComponentBorders: value }),
-  setBypassLevelLock: (value) => set({ bypassLevelLock: value }),
-}));
+    {
+      name: 'solve-climb-debug-storage',
+      // UI 전용 상태 및 열림 여부는 영속성에서 제외
+      partialize: (state) => ({
+        isAdminMode: state.isAdminMode,
+        infiniteStamina: state.infiniteStamina,
+        infiniteMinerals: state.infiniteMinerals,
+        infiniteTime: state.infiniteTime,
+        networkLatency: state.networkLatency,
+        forceNetworkError: state.forceNetworkError,
+        showSafeAreaGuide: state.showSafeAreaGuide,
+        showComponentBorders: state.showComponentBorders,
+        bypassLevelLock: state.bypassLevelLock,
+      }),
+    }
+  )
+);

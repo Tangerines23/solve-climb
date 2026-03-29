@@ -97,3 +97,41 @@
   margin-top: 4px;
   word-break: break-all;
 }
+
+.debug-hint-box {
+  margin-top: 0.5rem;
+  padding: 0.75rem;
+  background-color: rgba(69, 147, 252, 0.05);
+  border: 1px dashed var(--adaptiveBlue300);
+  border-radius: var(--rounded-sm-alt);
+  font-size: 0.85rem;
+  color: var(--color-text-secondary);
+}
+
+.debug-info-list {
+  margin-top: 1rem;
+  padding: var(--spacing-md);
+  background-color: var(--color-bg-secondary);
+  border-radius: var(--rounded-md);
+}
+
+.debug-info-list h4 {
+  margin: 0 0 var(--spacing-sm) 0;
+  font-size: 0.95rem;
+  color: var(--color-blue-300);
+}
+
+.debug-info-list ul {
+  margin: 0;
+  padding-left: var(--spacing-xl);
+  font-size: 0.85rem;
+  color: var(--color-text-secondary);
+}
+
+.debug-info-list li {
+  margin-bottom: var(--spacing-xs);
+}
+
+.debug-info-list li strong {
+  color: var(--color-text-primary);
+}

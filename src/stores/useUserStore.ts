@@ -6,7 +6,6 @@ import {
   ItemActionResponseSchema,
   CommonResponseSchema,
 } from '../utils/rpcValidator';
-import { PostgrestError } from '@supabase/supabase-js';
 import { AdService } from '../utils/adService';
 import { UI_MESSAGES } from '../constants/ui';
 import { UserState, InventoryItem } from '../types/user';
@@ -29,7 +28,10 @@ export const useUserStore = create<UserState>((set, get) => {
     } = {}
   ): Promise<{ success: boolean; message: string } & Partial<T>> => {
     try {
-      const { data, error } = await rpcCall;
+      // Use safeSupabaseQuery to handle debug latency and forced errors
+      const { data, error } = await safeSupabaseQuery(rpcCall, {
+        context: 'UserStoreRPC',
+      });
 
       if (error) {
         console.error(`[UserStore RPC Error]`, error);
@@ -97,6 +99,13 @@ export const useUserStore = create<UserState>((set, get) => {
     isAnonymous: false,
     lastAdRechargeTime: null,
     lastStaminaConsumeTime: 0,
+    updateNickname: async (nickname: string) => {
+      const res = await callRpcAndRefresh<{ success: boolean; message: string }>(
+        supabase.rpc('rpc_update_nickname', { p_nickname: nickname }),
+        { refreshData: true, errorMessage: '닉네임 업데이트에 실패했습니다.' }
+      );
+      return res;
+    },
 
     handleWatchAd: () => {
       console.log('Watch Ad called (not implemented)');
@@ -180,6 +189,15 @@ export const useUserStore = create<UserState>((set, get) => {
     },
 
     consumeStamina: async () => {
+      // infiniteStamina 체크 (디버그 모드)
+      const { useDebugStore } = await import('./useDebugStore');
+      const { infiniteStamina } = useDebugStore.getState();
+
+      if (infiniteStamina) {
+        console.log('[DEBUG] Infinite Stamina active: skipping consume');
+        return { success: true, message: 'Infinite Stamina (Debug)' };
+      }
+
       const now = Date.now();
       if (now - get().lastStaminaConsumeTime < 3000) {
         console.log('[UserStore] Stamina consumption throttled');
@@ -207,67 +225,37 @@ export const useUserStore = create<UserState>((set, get) => {
     },
 
     recoverStaminaAds: async () => {
-      const lastRecharge = get().lastAdRechargeTime;
-      if (lastRecharge) {
-        const waitTime = 6 * 60 * 60 * 1000;
-        const remaining = waitTime - (Date.now() - new Date(lastRecharge).getTime());
-        if (remaining > 0) {
-          return {
-            success: false,
-            message: `아직 충전할 수 없습니다. (${Math.ceil(remaining / 60000)}분 남음)`,
-          };
-        }
-      }
-
       const adResult = await AdService.showRewardedAd('stamina_recharge');
       if (!adResult.success) {
         return { success: false, message: adResult.error || '광고 시청에 실패했습니다.' };
       }
 
-      const { data, error } = await safeSupabaseQuery(supabase.rpc('recover_stamina_ads'));
-      if (error && (error as PostgrestError).code === 'PGRST202') {
-        console.warn('[UserStore] Simulation fallback for recover_stamina_ads');
-        get().setStamina(5);
-        const nowIso = new Date().toISOString();
-        set({ lastAdRechargeTime: nowIso });
-        return { success: true, message: UI_MESSAGES.STAMINA_RECHARGED_FULL + ' (시뮬레이션)' };
-      }
+      const res = await callRpcAndRefresh<{
+        success: boolean;
+        stamina: number;
+        last_ad_stamina_recharge: string;
+      }>(supabase.rpc('secure_reward_ad_view', { p_ad_type: 'stamina_recharge' }), {
+        refreshData: true,
+      });
 
-      if (!error && data?.success) {
-        set({
-          stamina: data.stamina || 5,
-          lastAdRechargeTime: new Date().toISOString(),
-        });
-        return { success: true, message: UI_MESSAGES.STAMINA_RECHARGED_FULL };
-      }
-
-      return { success: false, message: UI_MESSAGES.COMMON_ERROR };
+      return res as { success: boolean; message: string };
     },
 
     recoverMineralsAds: async () => {
       const adResult = await AdService.showRewardedAd('mineral_recharge');
       if (!adResult.success) return { success: false, message: UI_MESSAGES.AD_WATCH_FAILED() };
 
-      const res = await callRpcAndRefresh<{ success: boolean; minerals: number }>(
-        supabase.rpc('add_minerals', { p_amount: 500 })
+      return callRpcAndRefresh<{ success: boolean; minerals: number }>(
+        supabase.rpc('secure_reward_ad_view', { p_ad_type: 'mineral_recharge' }),
+        { refreshData: true }
       );
-      if (res.success && res.minerals !== undefined) {
-        set({ minerals: res.minerals });
-        return { success: true, message: UI_MESSAGES.MINERAL_RECHARGED(500) };
-      }
-      return res as { success: false; message: string };
     },
 
-    rewardMinerals: async (amount: number, isBonus = false) => {
+    rewardMinerals: async (amount: number) => {
       if (amount <= 0) return { success: false, message: 'Invalid amount' };
-      const res = await callRpcAndRefresh<{ success: boolean; minerals: number }>(
-        supabase.rpc('add_minerals', { p_amount: amount })
-      );
-      if (res.success && res.minerals !== undefined) {
-        set({ minerals: res.minerals });
-        return { success: true, message: UI_MESSAGES.MINERAL_REWARD(amount, isBonus) };
-      }
-      return res as { success: false; message: string };
+      // [Security Warning] Generic mineral rewards are now discouraged.
+      // Use specific RPCs like secure_reward_ad_view or game result submission.
+      return { success: false, message: '보안 정책에 따라 직접적인 미네랄 지급이 제한됩니다.' };
     },
 
     debugAddItems: async () => {
@@ -277,37 +265,44 @@ export const useUserStore = create<UserState>((set, get) => {
 
     debugResetItems: async () => {
       const {
-        data: { user },
-      } = await safeSupabaseQuery(supabase.auth.getUser());
-      if (!user) return;
+        data: { session },
+      } = await safeSupabaseQuery(supabase.auth.getSession());
+      const userId = session?.user?.id || 'anonymous-debug-user';
 
-      const { error } = await safeSupabaseQuery(
-        supabase.from('inventory').delete().eq('user_id', user.id)
+      const res = await callRpcAndRefresh(
+        validatedRpc(
+          supabase.rpc('debug_reset_inventory', { p_user_id: userId }),
+          CommonResponseSchema,
+          'debug_reset_inventory'
+        ),
+        { refreshData: true }
       );
-      if (!error) await get().fetchUserData();
+      if (res.success) console.log('[DEBUG] Inventory Reset');
     },
 
     debugRemoveItems: async () => {
       const {
-        data: { user },
+        data: { user: _user },
       } = await safeSupabaseQuery(supabase.auth.getUser());
-      if (!user) return;
+      const userId = _user?.id || 'anonymous-debug-user';
 
       const { data: inventory } = await safeSupabaseQuery(
-        supabase.from('inventory').select('item_id, quantity').eq('user_id', user.id)
+        supabase.from('inventory').select('item_id, quantity').eq('user_id', userId)
       );
       if (!inventory) return;
 
       await Promise.all(
         inventory.map((item) =>
-          validatedRpc(
-            supabase.rpc('debug_set_inventory_quantity', {
-              p_user_id: user.id,
-              p_item_id: item.item_id,
-              p_quantity: Math.max(0, item.quantity - 5),
-            }),
-            CommonResponseSchema,
-            'debug_set_inventory_quantity'
+          callRpcAndRefresh(
+            validatedRpc(
+              supabase.rpc('debug_set_inventory_quantity', {
+                p_user_id: userId,
+                p_item_id: item.item_id,
+                p_quantity: Math.max(0, item.quantity - 5),
+              }),
+              CommonResponseSchema,
+              'debug_set_inventory_quantity'
+            )
           )
         )
       );
@@ -315,57 +310,34 @@ export const useUserStore = create<UserState>((set, get) => {
     },
 
     debugSetStamina: async (amount: number) => {
-      const {
-        data: { user },
-      } = await safeSupabaseQuery(supabase.auth.getUser());
-      if (!user) return;
-
       const res = await callRpcAndRefresh(
         validatedRpc(
-          supabase.rpc('debug_update_profile_stats', { p_user_id: user.id, p_stamina: amount }),
+          supabase.rpc('debug_set_stamina', { p_stamina: amount }),
           CommonResponseSchema,
-          'debug_update_profile_stats'
-        )
+          'debug_set_stamina'
+        ),
+        { refreshData: true }
       );
       if (res.success) set({ stamina: Math.max(0, amount) });
     },
 
     debugSetMinerals: async (amount: number) => {
-      const {
-        data: { user },
-      } = await safeSupabaseQuery(supabase.auth.getUser());
-      if (!user) return;
-
       const res = await callRpcAndRefresh(
         validatedRpc(
-          supabase.rpc('debug_update_profile_stats', { p_user_id: user.id, p_minerals: amount }),
+          supabase.rpc('debug_set_minerals', { p_minerals: amount }),
           CommonResponseSchema,
-          'debug_update_profile_stats'
-        )
+          'debug_set_minerals'
+        ),
+        { refreshData: true }
       );
       if (res.success) set({ minerals: Math.max(0, amount) });
     },
 
     refundStamina: async () => {
-      const {
-        data: { user },
-      } = await safeSupabaseQuery(supabase.auth.getUser());
-      if (!user) return { success: false, message: UI_MESSAGES.LOGIN_REQUIRED };
-
-      const current = get().stamina;
-      if (current < 5) set({ stamina: current + 1 });
-
-      try {
-        const { error } = await safeSupabaseQuery(supabase.rpc('recover_stamina_ads'));
-        if (error && (error as PostgrestError).code === 'PGRST202') {
-          return { success: true, message: 'Stamina refunded (Simulation)' };
-        }
-        if (error) throw error;
-        return { success: true, message: 'Stamina refunded' };
-      } catch (err) {
-        console.error('Error refunding stamina:', err);
-        return { success: false, message: 'Failed to refund stamina' };
-      }
+      // [Security Policy] Stamina refund is now strictly server-side.
+      // This function will be replaced by a secure RPC call in a future update if required.
+      // Currently, stamina is only consumed upon successful game start.
+      return { success: false, message: '보안 정책에 따라 직접적인 스태미나 수정이 제한됩니다.' };
     },
   };
 });

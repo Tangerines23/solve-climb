@@ -6,6 +6,7 @@ import { SegmentedControl } from '@/components/SegmentedControl';
 import { GlassCard } from '@/components/common/GlassCard';
 import { useShop } from '@/hooks/useShop';
 import { UI_MESSAGES, UI_EMOJIS } from '@/constants/ui';
+import { getItemEmoji } from '@/constants/items';
 import './ShopPage.css';
 
 export function ShopPage() {
@@ -65,9 +66,7 @@ export function ShopPage() {
               {inventory?.length > 0 ? (
                 inventory.map((item) => (
                   <GlassCard key={item?.id} className="inventory-item">
-                    <span className="inventory-icon">
-                      {UI_EMOJIS[item?.code?.toUpperCase() as keyof typeof UI_EMOJIS] || '📦'}
-                    </span>
+                    <span className="inventory-icon">{getItemEmoji(item?.code)}</span>
                     <div className="inventory-item-info">
                       <span className="inventory-name">{item?.name}</span>
                       <span className="inventory-qty">x{item?.quantity}</span>
@@ -108,9 +107,7 @@ export function ShopPage() {
                   return (
                     <GlassCard key={item.id} className="item-card" data-vg-ignore="true">
                       <div className="item-icon-wrapper">
-                        <div className="item-icon">
-                          {UI_EMOJIS[item.code.toUpperCase() as keyof typeof UI_EMOJIS] || '📦'}
-                        </div>
+                        <div className="item-icon">{getItemEmoji(item.code)}</div>
                         {owned > 0 && (
                           <div className="owned-badge">{UI_MESSAGES.OWNED_COUNT(owned)}</div>
                         )}

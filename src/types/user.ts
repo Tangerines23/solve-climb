@@ -46,6 +46,7 @@ export interface UserState {
     isBonus?: boolean
   ) => Promise<{ success: boolean; message: string }>;
   refundStamina: () => Promise<{ success: boolean; message: string }>;
+  updateNickname: (nickname: string) => Promise<{ success: boolean; message: string }>;
 
   // DEV ONLY
   debugAddItems: () => Promise<void>;

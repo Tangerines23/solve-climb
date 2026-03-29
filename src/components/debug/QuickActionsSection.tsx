@@ -22,9 +22,10 @@ import { ConfirmModal } from '../ConfirmModal';
 import './QuickActionsSection.css';
 
 export const QuickActionsSection = React.memo(function QuickActionsSection() {
-  const { minerals, stamina, fetchUserData, rewardMinerals, debugSetStamina, debugSetMinerals } =
-    useUserStore();
+  const { minerals, stamina, debugSetStamina, debugSetMinerals } = useUserStore();
   const {
+    isAdminMode,
+    toggleAdminMode,
     infiniteStamina,
     infiniteMinerals,
     infiniteTime,
@@ -58,6 +59,19 @@ export const QuickActionsSection = React.memo(function QuickActionsSection() {
     hasProfile: boolean;
   } | null>(null);
 
+  // 스토어 값이 변경될 때 입력 필드 동기화 (포커스 중이 아닐 때만)
+  useEffect(() => {
+    if (document.activeElement?.id !== 'debug-stamina-input') {
+      setStaminaInput(stamina.toString());
+    }
+  }, [stamina]);
+
+  useEffect(() => {
+    if (document.activeElement?.id !== 'debug-minerals-input') {
+      setMineralsInput(minerals.toString());
+    }
+  }, [minerals]);
+
   useEffect(() => {
     const checkUser = async () => {
       const {
@@ -77,7 +91,25 @@ export const QuickActionsSection = React.memo(function QuickActionsSection() {
         setDebugUserInfo(null);
       }
     };
+
     checkUser();
+
+    // 인증 상태 변화 감지 리스너 추가
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((_event, session) => {
+      if (session) {
+        checkUser();
+        // 로그인 시 유저 데이터 리프레시
+        useUserStore.getState().fetchUserData();
+      } else {
+        setDebugUserInfo(null);
+      }
+    });
+
+    return () => {
+      subscription.unsubscribe();
+    };
   }, []);
 
   // 컨펌 모달 상태
@@ -130,18 +162,7 @@ export const QuickActionsSection = React.memo(function QuickActionsSection() {
     try {
       const newValue = Math.max(0, minerals + delta);
       setMineralsInput(newValue.toString());
-
-      if (delta > 0) {
-        // 양수는 rewardMinerals 사용 (보너스 등 로그 처리 가능)
-        await rewardMinerals(delta);
-      } else {
-        // 음수는 RPC 직접 호출 (차감)
-        // rewardMinerals는 기본적으로 양수만 허용하므로
-        // add_minerals RPC는 음수값도 처리 가능하다고 가정 (DB 함수 로직상)
-        const { error } = await supabase.rpc('add_minerals', { p_amount: delta });
-        if (error) throw error;
-        await fetchUserData();
-      }
+      await debugSetMinerals(newValue);
     } catch (e) {
       console.error('Failed to update minerals:', e);
     } finally {
@@ -177,6 +198,7 @@ export const QuickActionsSection = React.memo(function QuickActionsSection() {
       setIsApplyingPreset(true);
       setPresetMessage(null);
 
+      /* 
       const {
         data: { session },
       } = await supabase.auth.getSession();
@@ -185,8 +207,15 @@ export const QuickActionsSection = React.memo(function QuickActionsSection() {
         return;
       }
       const user = session.user;
+      */
 
-      await applyPreset(presetId, user.id, refetch);
+      // [DEBUG] 로그인 없이도 프리셋 적용 가능하도록 주석 처리 (서버 연동은 실패할 수 있음)
+      const {
+        data: { session },
+      } = await supabase.auth.getSession();
+      const userId = session?.user?.id || 'anonymous-debug-user';
+
+      await applyPreset(presetId, userId, refetch);
       setPresetMessage({ type: 'success', text: '프리셋이 적용되었습니다.' });
 
       // 히스토리 새로고침
@@ -352,9 +381,10 @@ export const QuickActionsSection = React.memo(function QuickActionsSection() {
               disabled={isUpdating}
             />
             <button
-              className="debug-resource-button"
+              className="debug-resource-button plus"
               onClick={() => handleStaminaChange(1)}
               disabled={isUpdating}
+              aria-label="스태미나 1 추가"
             >
               +1
             </button>
@@ -385,9 +415,10 @@ export const QuickActionsSection = React.memo(function QuickActionsSection() {
               disabled={isUpdating}
             />
             <button
-              className="debug-resource-button"
+              className="debug-resource-button plus"
               onClick={() => handleMineralsChange(100)}
               disabled={isUpdating}
+              aria-label="미네랄 100 추가"
             >
               +100
             </button>
@@ -396,39 +427,89 @@ export const QuickActionsSection = React.memo(function QuickActionsSection() {
       </div>
 
       <div className="debug-infinite-modes">
-        <h4 className="debug-subsection-title">무한 모드</h4>
+        <h4 className="debug-subsection-title">디버그 설정</h4>
 
-        <div className="debug-toggle-item">
-          <span className="debug-toggle-label">무한 스태미나</span>
-          <button
-            className={`debug-toggle-button ${infiniteStamina ? 'active' : ''}`}
-            onClick={() => setInfiniteStamina(!infiniteStamina)}
-            aria-label="무한 스태미나 토글"
-          >
-            {infiniteStamina ? 'ON' : 'OFF'}
-          </button>
+        {!debugUserInfo && (
+          <div className="debug-warning-box login-required">
+            ⚠️ <strong>로그인 필요:</strong> 이 기능들은 서버 RPC를 호출하므로 로그인이 필요합니다.
+            <br />
+            (로그인하지 않으면 <code>auth.uid()</code>가 없어 데이터 동기화가 실패합니다.)
+          </div>
+        )}
+
+        <div className="debug-quick-grid">
+          <div className="debug-toggle-item">
+            <div className="debug-toggle-header">
+              <span className="debug-toggle-label">고급 UI (Admin Mode)</span>
+              <button
+                className={`debug-toggle-button ${isAdminMode ? 'active' : ''}`}
+                onClick={toggleAdminMode}
+                aria-label="Admin Mode 토글"
+              >
+                {isAdminMode ? 'ON' : 'OFF'}
+              </button>
+            </div>
+            <div className="debug-toggle-description">
+              Header의 자원 클릭 & +, - 키로 빠른 편집 활성화
+            </div>
+          </div>
+
+          <div className="debug-toggle-item">
+            <div className="debug-toggle-header">
+              <span className="debug-toggle-label">무한 스태미나</span>
+              <button
+                className={`debug-toggle-button ${infiniteStamina ? 'active' : ''}`}
+                onClick={() => setInfiniteStamina(!infiniteStamina)}
+                aria-label="무한 스태미나 토글"
+              >
+                {infiniteStamina ? 'ON' : 'OFF'}
+              </button>
+            </div>
+          </div>
+
+          <div className="debug-toggle-item">
+            <div className="debug-toggle-header">
+              <span className="debug-toggle-label">무한 미네랄</span>
+              <button
+                className={`debug-toggle-button ${infiniteMinerals ? 'active' : ''}`}
+                onClick={() => setInfiniteMinerals(!infiniteMinerals)}
+                aria-label="무한 미네랄 토글"
+              >
+                {infiniteMinerals ? 'ON' : 'OFF'}
+              </button>
+            </div>
+          </div>
+
+          <div className="debug-toggle-item">
+            <div className="debug-toggle-header">
+              <span className="debug-toggle-label">무한 시간</span>
+              <button
+                className={`debug-toggle-button ${infiniteTime ? 'active' : ''}`}
+                onClick={() => setInfiniteTime(!infiniteTime)}
+                aria-label="무한 시간 토글"
+              >
+                {infiniteTime ? 'ON' : 'OFF'}
+              </button>
+            </div>
+          </div>
         </div>
 
-        <div className="debug-toggle-item">
-          <span className="debug-toggle-label">무한 미네랄</span>
-          <button
-            className={`debug-toggle-button ${infiniteMinerals ? 'active' : ''}`}
-            onClick={() => setInfiniteMinerals(!infiniteMinerals)}
-            aria-label="무한 미네랄 토글"
-          >
-            {infiniteMinerals ? 'ON' : 'OFF'}
-          </button>
-        </div>
-
-        <div className="debug-toggle-item">
-          <span className="debug-toggle-label">무한 시간</span>
-          <button
-            className={`debug-toggle-button ${infiniteTime ? 'active' : ''}`}
-            onClick={() => setInfiniteTime(!infiniteTime)}
-            aria-label="무한 시간 토글"
-          >
-            {infiniteTime ? 'ON' : 'OFF'}
-          </button>
+        <div className="debug-shortcut-guide">
+          <h5>⌨️ 단축키 안내</h5>
+          <ul>
+            <li>
+              <code>Ctrl + `</code> : 디버그 패널 토글
+            </li>
+            <li>
+              <code>`</code> (백틱) : 스태미나 5, 미네랄 +1000 (즉시 충전)
+            </li>
+            <li>
+              <code>+</code> / <code>-</code> : 선택된 리소스 증가/감소 (Admin Mode ON 시)
+            </li>
+            <li>
+              <code>Esc</code> : 리소스 선택 해제
+            </li>
+          </ul>
         </div>
       </div>
 

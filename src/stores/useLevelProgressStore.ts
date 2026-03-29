@@ -183,7 +183,10 @@ export const useLevelProgressStore = create<LevelProgressState>()(
             hasSessionData: !!sessionData,
           });
 
-          // 1. Optimistic Update (Local) - Immediate update to ensure synchronous test/UI response
+          // 1. Save current state for potential rollback
+          const previousProgress = { ...get().progress };
+
+          // 2. Optimistic Update (Local)
           set((state) => {
             const newProgress = { ...state.progress };
 
@@ -209,20 +212,18 @@ export const useLevelProgressStore = create<LevelProgressState>()(
 
           const authResult = (await safeSupabaseQuery(supabase.auth.getUser())) as UserResponse;
           const user = authResult?.data?.user;
-          console.log('[useLevelProgressStore] Current user:', user?.id);
 
           if (!user) {
             console.warn('[useLevelProgressStore] No user found, skipping Supabase sync');
             return;
           }
 
-          // 2. Call submit_game_result RPC to update weekly scores and log activity
+          // 3. Call submit_game_result RPC
           try {
             const gameMode =
               mode === 'time-attack' ? 'timeattack' : mode === 'survival' ? 'survival' : 'infinite';
-            console.log('[clearLevel] Calling submit_game_result RPC:', { score, gameMode });
 
-            const { error: rpcError } = await safeSupabaseQuery(
+            const { data: rpcData, error: rpcError } = await safeSupabaseQuery(
               supabase.rpc('submit_game_result', {
                 p_user_answers: sessionData?.answers ?? [],
                 p_question_ids: (sessionData?.questionIds ?? []).map(String),
@@ -236,13 +237,22 @@ export const useLevelProgressStore = create<LevelProgressState>()(
               })
             );
 
-            if (rpcError) {
-              console.error('[clearLevel] submit_game_result RPC failed:', rpcError);
+            if (rpcError || !rpcData?.success) {
+              console.error('[clearLevel] RPC failed, rolling back:', rpcError || rpcData?.error);
+              // Rollback to previous state
+              set({ progress: previousProgress });
+              useToastStore
+                .getState()
+                .showToast(
+                  rpcData?.error || '게임 결과 저장에 실패했습니다. (보안 위반 또는 세션 만료)',
+                  'error'
+                );
             } else {
-              console.log('[clearLevel] Weekly score updated successfully via RPC');
+              console.log('[clearLevel] Sync successful');
             }
           } catch (error) {
-            console.error('[clearLevel] Failed to call submit_game_result:', error);
+            console.error('[clearLevel] Unexpected error, rolling back:', error);
+            set({ progress: previousProgress });
           }
         },
 
@@ -257,7 +267,10 @@ export const useLevelProgressStore = create<LevelProgressState>()(
           tier = 'normal'
         ) => {
           const worldKey = tier === 'hard' ? `${world}_hard` : world;
-          // 1. Optimistic Update (Local)
+          // 1. Save state for rollback
+          const previousProgress = { ...get().progress };
+
+          // 2. Optimistic Update (Local)
           set((state) => {
             const newProgress = { ...state.progress };
 
@@ -278,11 +291,11 @@ export const useLevelProgressStore = create<LevelProgressState>()(
             return { progress: newProgress };
           });
 
-          // 2. Call submit_game_result RPC to update weekly scores
+          // 3. Call submit_game_result RPC
           try {
             const gameMode =
               mode === 'time-attack' ? 'timeattack' : mode === 'survival' ? 'survival' : 'infinite';
-            const { error: rpcError } = await safeSupabaseQuery(
+            const { data: rpcData, error: rpcError } = await safeSupabaseQuery(
               supabase.rpc('submit_game_result', {
                 p_user_answers: sessionData?.answers ?? [],
                 p_question_ids: (sessionData?.questionIds ?? []).map(String),
@@ -296,11 +309,16 @@ export const useLevelProgressStore = create<LevelProgressState>()(
               })
             );
 
-            if (rpcError) {
-              console.error('[updateBestScore] submit_game_result RPC failed:', rpcError);
+            if (rpcError || !rpcData?.success) {
+              console.error(
+                '[updateBestScore] RPC failed, rolling back:',
+                rpcError || rpcData?.error
+              );
+              set({ progress: previousProgress });
             }
           } catch (error) {
             console.error('[updateBestScore] Failed to call submit_game_result:', error);
+            set({ progress: previousProgress });
           }
         },
 
@@ -426,22 +444,22 @@ export const useLevelProgressStore = create<LevelProgressState>()(
         },
 
         resetProgress: async () => {
-          // 1. Local State 리셋
-          set({ progress: {} });
-
-          // 2. Supabase 데이터 초기화 (주의: 모든 기록이 삭제됩니다)
+          // 1. Supabase 데이터 초기화 (Secure RPC 호출)
           try {
-            const authResult = await safeSupabaseQuery(supabase.auth.getUser());
-            const user = authResult?.data?.user;
-            if (!user) return;
+            const { data, error } = await safeSupabaseQuery(supabase.rpc('secure_reset_progress'));
 
-            const { error } = await safeSupabaseQuery(
-              supabase.from('user_level_records').delete().eq('user_id', user.id)
-            );
+            if (error || !data?.success) {
+              console.error('Failed to reset progress in Supabase:', error || data?.message);
+              useToastStore.getState().showToast(UI_MESSAGES.COMMON_ERROR, 'error');
+              return;
+            }
 
-            if (error) throw error;
+            // 2. Local State 리셋 (성공 시에만)
+            set({ progress: {} });
+            console.log('[useLevelProgressStore] Progress reset completed via RPC');
+            useToastStore.getState().showToast('진행 상태가 초기화되었습니다.', 'success');
           } catch (error) {
-            console.error('Failed to reset progress in Supabase:', error);
+            console.error('Unexpected error during progress reset:', error);
             useToastStore.getState().showToast(UI_MESSAGES.COMMON_ERROR, 'error');
           }
         },

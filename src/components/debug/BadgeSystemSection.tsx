@@ -89,12 +89,14 @@ export function BadgeSystemSection() {
 
       if (isEarned) {
         // 뱃지 제거 (RPC 함수 사용)
-        const { error } = await supabase.rpc('debug_remove_badge', {
+        const { data, error } = await supabase.rpc('debug_remove_badge', {
           p_user_id: user.id,
           p_badge_id: badgeId,
         });
 
         if (error) throw error;
+        if (data && !data.success) throw new Error(data.message || '뱃지 제거 실패');
+
         setUserBadges((prev) => {
           const next = new Set(prev);
           next.delete(badgeId);
@@ -103,12 +105,14 @@ export function BadgeSystemSection() {
         setMessage({ type: 'success', text: '뱃지가 제거되었습니다.' });
       } else {
         // 뱃지 부여
-        const { error } = await supabase.rpc('debug_grant_badge', {
+        const { data, error } = await supabase.rpc('debug_grant_badge', {
           p_user_id: user.id,
           p_badge_id: badgeId,
         });
 
         if (error) throw error;
+        if (data && !data.success) throw new Error(data.message || '뱃지 부여 실패');
+
         setUserBadges((prev) => new Set([...prev, badgeId]));
         setMessage({ type: 'success', text: '뱃지가 부여되었습니다.' });
       }

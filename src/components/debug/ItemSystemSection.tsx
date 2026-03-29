@@ -120,13 +120,15 @@ export function ItemSystemSection() {
       }
 
       // 보안 RPC를 통해 수량 설정 (Insert/Update/Delete 통합 처리)
-      const { error } = await supabase.rpc('debug_set_inventory_quantity', {
+      const { data, error } = await supabase.rpc('debug_set_inventory_quantity', {
         p_user_id: user.id,
         p_item_id: itemId,
         p_quantity: numValue,
       });
 
       if (error) throw error;
+      if (data && !data.success) throw new Error(data.message || '수량 설정 실패');
+
       setMessage({ type: 'success', text: `아이템 수량이 ${numValue}개로 설정되었습니다.` });
 
       await fetchUserData();
@@ -157,11 +159,12 @@ export function ItemSystemSection() {
       }
       const user = session.user;
 
-      const { error } = await supabase.rpc('debug_reset_inventory', {
+      const { data, error } = await supabase.rpc('debug_reset_inventory', {
         p_user_id: user.id,
       });
 
       if (error) throw error;
+      if (data && !data.success) throw new Error(data.message || '인벤토리 초기화 실패');
 
       setMessage({ type: 'success', text: '인벤토리가 초기화되었습니다.' });
       await fetchUserData();
