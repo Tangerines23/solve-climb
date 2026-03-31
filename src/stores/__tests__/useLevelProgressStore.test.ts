@@ -64,7 +64,7 @@ describe('useLevelProgressStore', () => {
   const world = 'math';
   const category = 'arithmetic_addition'; // Matches category_id + _ + subject_id logic
 
-  beforeEach(() => {
+  beforeEach(async () => {
     vi.clearAllMocks();
 
     vi.mocked(supabase.from).mockReturnValue(
@@ -74,7 +74,7 @@ describe('useLevelProgressStore', () => {
       })
     );
     vi.mocked(supabase.rpc).mockResolvedValue({
-      data: null,
+      data: { success: true },
       error: null,
     } as any);
     vi.mocked(supabase.auth.getUser).mockResolvedValue({
@@ -84,8 +84,8 @@ describe('useLevelProgressStore', () => {
 
     // Reset store state
     const { result } = renderHook(() => useLevelProgressStore());
-    act(() => {
-      result.current.resetProgress();
+    await act(async () => {
+      await result.current.resetProgress();
     });
   });
 

@@ -141,19 +141,32 @@ describe('useUserStore (Comprehensive Tests)', () => {
 
   it('should recover minerals via ads', async () => {
     vi.mocked(AdService.showRewardedAd).mockResolvedValue({ success: true });
+
+    // Mock RPC for secure_reward_ad_view
+    server.use(
+      http.post(`${SUPABASE_REST_URL}/rpc/secure_reward_ad_view`, () => {
+        return HttpResponse.json({ success: true, minerals: 500, message: 'Rewarded' });
+      }),
+      // Mock profiles fetch after refresh
+      http.get(`${SUPABASE_REST_URL}/profiles`, () => {
+        return HttpResponse.json([{ minerals: 500, stamina: 5 }]);
+      })
+    );
+
     const { result } = renderHook(() => useUserStore());
     await act(async () => {
       await result.current.recoverMineralsAds();
     });
+
     await waitFor(() => {
       expect(result.current.minerals).toBe(500);
     });
   });
 
-  it('should handle recoverStaminaAds fallback simulation (PGRST202)', async () => {
+  it('should handle recoverStaminaAds failure (PGRST202 / Missing RPC)', async () => {
     vi.mocked(AdService.showRewardedAd).mockResolvedValue({ success: true });
     server.use(
-      http.post(`${SUPABASE_REST_URL}/rpc/recover_stamina_ads`, () => {
+      http.post(`${SUPABASE_REST_URL}/rpc/secure_reward_ad_view`, () => {
         return new HttpResponse(
           JSON.stringify({
             code: 'PGRST202',
@@ -164,39 +177,49 @@ describe('useUserStore (Comprehensive Tests)', () => {
       })
     );
     const { result } = renderHook(() => useUserStore());
+    let response: { success: boolean } | undefined;
     await act(async () => {
-      await result.current.recoverStaminaAds();
+      response = await result.current.recoverStaminaAds();
     });
-    expect(result.current.stamina).toBe(5);
+    // Now it enters the error handler in callRpcAndRefresh and returns success: false
+    expect(response?.success).toBe(false);
   });
 
-  it('should reward minerals with bonus', async () => {
+  it('should reward minerals (failure expected due to security policy)', async () => {
     const { result } = renderHook(() => useUserStore());
+    let response: { success: boolean; message: string } | undefined;
     await act(async () => {
-      await result.current.rewardMinerals(100, true);
+      response = await result.current.rewardMinerals(100);
     });
-    expect(result.current.minerals).toBe(100);
+    expect(response?.success).toBe(false);
+    expect(response?.message).toContain('제한됩니다');
+    expect(result.current.minerals).toBe(0);
   });
 
-  it('should refund stamina', async () => {
+  it('should refund stamina (failure expected due to security policy)', async () => {
     const { result } = renderHook(() => useUserStore());
     await act(async () => {
       result.current.setStamina(3);
     });
-    server.use(
-      http.post(`${SUPABASE_REST_URL}/rpc/recover_stamina_ads`, () => {
-        return HttpResponse.json({ success: true });
-      })
-    );
+    let response: { success: boolean; message: string } | undefined;
     await act(async () => {
-      await result.current.refundStamina();
+      response = await result.current.refundStamina();
     });
-    expect(result.current.stamina).toBe(4);
+    expect(response?.success).toBe(false);
+    expect(response?.message).toContain('제한됩니다');
+    expect(result.current.stamina).toBe(3); // No change
   });
 
   it('should prevent stamina recovery if on cooldown', async () => {
-    const sixHoursAgo = new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString();
-    useUserStore.setState({ lastAdRechargeTime: sixHoursAgo });
+    const twoHoursAgo = new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString();
+    useUserStore.setState({ lastAdRechargeTime: twoHoursAgo });
+
+    server.use(
+      http.post(`${SUPABASE_REST_URL}/rpc/secure_reward_ad_view`, () => {
+        return HttpResponse.json({ success: false, message: '쿨다운 120분 남음' });
+      })
+    );
+
     const { result } = renderHook(() => useUserStore());
 
     let response: { success: boolean; message?: string } | undefined;
@@ -204,7 +227,7 @@ describe('useUserStore (Comprehensive Tests)', () => {
       response = await result.current.recoverStaminaAds();
     });
     expect(response?.success).toBe(false);
-    expect(response?.message).toContain('분 남음');
+    expect(response?.message).toContain('남음');
   });
 
   it('should handle recoverStaminaAds generic server error', async () => {
@@ -264,10 +287,10 @@ describe('useUserStore (Comprehensive Tests)', () => {
     });
 
     it('should call debugResetItems', async () => {
-      const delSpy = vi.fn();
+      const rpcSpy = vi.fn();
       server.use(
-        http.delete(`${SUPABASE_REST_URL}/inventory`, () => {
-          delSpy();
+        http.post(`${SUPABASE_REST_URL}/rpc/debug_reset_inventory`, () => {
+          rpcSpy();
           return HttpResponse.json({ success: true });
         })
       );
@@ -275,7 +298,7 @@ describe('useUserStore (Comprehensive Tests)', () => {
       await act(async () => {
         await result.current.debugResetItems();
       });
-      expect(delSpy).toHaveBeenCalled();
+      expect(rpcSpy).toHaveBeenCalled();
     });
 
     it('should handle item deletions in debugRemoveItems', async () => {
@@ -311,27 +334,18 @@ describe('useUserStore (Comprehensive Tests)', () => {
     });
   });
 
-  it('should handle refundStamina simulation fallback (PGRST202)', async () => {
+  it('should block refundStamina (Security Policy enforcement)', async () => {
     const { result } = renderHook(() => useUserStore());
     await act(async () => {
       result.current.setStamina(3);
     });
 
-    server.use(
-      http.post(`${SUPABASE_REST_URL}/rpc/recover_stamina_ads`, () => {
-        return new HttpResponse(JSON.stringify({ code: 'PGRST202' }), {
-          status: 404,
-          headers: { 'Content-Type': 'application/json' },
-        });
-      })
-    );
-
     await act(async () => {
       const response = await result.current.refundStamina();
-      expect(response.success).toBe(true);
-      expect(response.message).toContain('Simulation');
+      expect(response.success).toBe(false);
+      expect(response.message).toContain('제한됩니다');
     });
 
-    expect(result.current.stamina).toBe(4);
+    expect(result.current.stamina).toBe(3);
   });
 });

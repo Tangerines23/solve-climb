@@ -24,12 +24,17 @@ vi.mock('../../utils/supabaseClient', () => ({
     auth: {
       getSession: vi.fn(() => Promise.resolve({ data: { session: null }, error: null })),
       getUser: vi.fn(() => Promise.resolve({ data: { user: null }, error: null })),
+      onAuthStateChange: vi.fn(() => ({
+        data: { subscription: { unsubscribe: vi.fn() } },
+        error: null,
+      })),
     },
     from: vi.fn(() => ({
       select: vi.fn().mockReturnThis(),
       eq: vi.fn().mockReturnThis(),
       single: vi.fn().mockResolvedValue({ data: null, error: null }),
     })),
+    rpc: vi.fn().mockResolvedValue({ data: { success: true }, error: null }),
   },
 }));
 
@@ -97,7 +102,7 @@ describe('QuickActionsSection', () => {
 
   it('should render infinite modes section', () => {
     render(<QuickActionsSection />);
-    expect(screen.getByText(/무한 모드/)).toBeInTheDocument();
+    expect(screen.getByText(/디버그 설정/)).toBeInTheDocument();
   });
 
   it('should toggle infinite stamina', () => {
