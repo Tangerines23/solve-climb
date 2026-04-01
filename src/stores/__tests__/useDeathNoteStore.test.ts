@@ -20,7 +20,7 @@ describe('useDeathNoteStore', () => {
 
   it('should add a unique missed question to the store', () => {
     const { result } = renderHook(() => useDeathNoteStore());
-    
+
     act(() => {
       result.current.addMissedQuestion(mockQuizQuestion, 'World1', '기초');
     });
@@ -34,7 +34,7 @@ describe('useDeathNoteStore', () => {
 
   it('should prevent adding duplicate questions (same text, world, and category)', () => {
     const { result } = renderHook(() => useDeathNoteStore());
-    
+
     act(() => {
       result.current.addMissedQuestion(mockQuizQuestion, 'World1', '기초');
     });
@@ -49,7 +49,7 @@ describe('useDeathNoteStore', () => {
 
   it('should allow adding the same question text in a different world/category', () => {
     const { result } = renderHook(() => useDeathNoteStore());
-    
+
     act(() => {
       result.current.addMissedQuestion(mockQuizQuestion, 'World1', '기초');
       result.current.addMissedQuestion(mockQuizQuestion, 'World2', '기초');
@@ -60,7 +60,7 @@ describe('useDeathNoteStore', () => {
 
   it('should remove a missed question by its generated UUID', () => {
     const { result } = renderHook(() => useDeathNoteStore());
-    
+
     act(() => {
       result.current.addMissedQuestion(mockQuizQuestion, 'World1', '기초');
     });
@@ -76,7 +76,7 @@ describe('useDeathNoteStore', () => {
 
   it('should filter questions by world and category', () => {
     const { result } = renderHook(() => useDeathNoteStore());
-    
+
     act(() => {
       result.current.addMissedQuestion({ ...mockQuizQuestion, question: 'Q1' }, 'World1', '기초');
       result.current.addMissedQuestion({ ...mockQuizQuestion, question: 'Q2' }, 'World2', '대수');
@@ -89,7 +89,7 @@ describe('useDeathNoteStore', () => {
 
   it('should limit the number of stored missed questions to 50 (LRU-like)', () => {
     const { result } = renderHook(() => useDeathNoteStore());
-    
+
     act(() => {
       // Add 60 unique questions
       for (let i = 0; i < 60; i++) {
@@ -105,7 +105,7 @@ describe('useDeathNoteStore', () => {
 
   it('should clear all questions from the death note', () => {
     const { result } = renderHook(() => useDeathNoteStore());
-    
+
     act(() => {
       result.current.addMissedQuestion(mockQuizQuestion, 'World1', '기초');
       result.current.clearDeathNote();

@@ -153,35 +153,12 @@ export class StorageUtil {
 // ========================================
 
 /**
- * 기본 StorageUtil 인스턴스 (프로덕션용)
- */
-const defaultStorageUtil = new StorageUtil(storageService);
-
-/**
  * 타입 안전한 localStorage 관리 유틸리티
  *
  * @deprecated 새 코드에서는 StorageUtil 클래스를 직접 사용하세요
  * 기존 코드 호환성을 위해 유지됩니다
  */
-export const storage = {
-  get: <T>(key: string, defaultValue: T, validator?: (data: unknown) => data is T) =>
-    defaultStorageUtil.get(key, defaultValue, validator),
-
-  set: <T>(key: string, value: T) => defaultStorageUtil.set(key, value),
-
-  remove: (key: string) => defaultStorageUtil.remove(key),
-
-  setString: (key: string, value: string) => defaultStorageUtil.setString(key, value),
-
-  getString: (key: string, defaultValue: string | null = null) =>
-    defaultStorageUtil.getString(key, defaultValue),
-
-  getKeysByPrefix: (prefix: string) => defaultStorageUtil.getKeysByPrefix(prefix),
-
-  removeByPrefix: (prefix: string) => defaultStorageUtil.removeByPrefix(prefix),
-
-  clearAppData: () => defaultStorageUtil.clearAppData(),
-};
+// Unused export 'storage' removed to improve codebase hygiene.
 
 // 새 API Export (DI 지원)
 export type { IStorageService };

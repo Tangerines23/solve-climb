@@ -663,6 +663,8 @@
 /* 감점 토스트 스타일 - 카드 상단 영역 랜덤 위치 */
 .slide-toast {
   position: absolute;
+  left: var(--toast-left);
+  top: var(--toast-top);
   z-index: var(--z-toast-low);
   pointer-events: none;
   transform: translate(-50%, -50%);

@@ -7,15 +7,15 @@ describe('GeometryProblemGenerator', () => {
     let randIdx = 0;
     return {
       randomInt: (_min: number, _max: number) => {
-          const val = intValues[intIdx % intValues.length];
-          intIdx++;
-          return val;
+        const val = intValues[intIdx % intValues.length];
+        intIdx++;
+        return val;
       },
       random: () => {
-          const val = randomValues[randIdx % randomValues.length] ?? 0.5;
-          randIdx++;
-          return val;
-      }
+        const val = randomValues[randIdx % randomValues.length] ?? 0.5;
+        randIdx++;
+        return val;
+      },
     };
   };
 

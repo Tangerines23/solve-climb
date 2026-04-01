@@ -28,7 +28,7 @@ describe('useBaseCampStore', () => {
 
   it('should start diagnostic and generate 10 diverse questions', () => {
     const { result } = renderHook(() => useBaseCampStore());
-    
+
     act(() => {
       result.current.startDiagnostic();
     });
@@ -40,7 +40,7 @@ describe('useBaseCampStore', () => {
 
   it('should submit answers and track progress sequentially', () => {
     const { result } = renderHook(() => useBaseCampStore());
-    
+
     act(() => {
       result.current.startDiagnostic();
     });
@@ -58,7 +58,7 @@ describe('useBaseCampStore', () => {
 
   it('should recommend "심화" (Rock Climbing) for high accuracy and fast speed', () => {
     const { result } = renderHook(() => useBaseCampStore());
-    
+
     act(() => {
       result.current.startDiagnostic();
       // 100% correct, FAST (under 3s)
@@ -75,7 +75,7 @@ describe('useBaseCampStore', () => {
 
   it('should recommend "대수" (Steep) for 80% accuracy', () => {
     const { result } = renderHook(() => useBaseCampStore());
-    
+
     act(() => {
       result.current.startDiagnostic();
       for (let i = 0; i < 8; i++) result.current.submitAnswer(true, 3000);
@@ -89,7 +89,7 @@ describe('useBaseCampStore', () => {
 
   it('should recommend "논리" (Exploration) for 60% accuracy', () => {
     const { result } = renderHook(() => useBaseCampStore());
-    
+
     act(() => {
       result.current.startDiagnostic();
       for (let i = 0; i < 6; i++) result.current.submitAnswer(true, 4000);
@@ -103,7 +103,7 @@ describe('useBaseCampStore', () => {
 
   it('should recommend "기초" (General) for low accuracy', () => {
     const { result } = renderHook(() => useBaseCampStore());
-    
+
     act(() => {
       result.current.startDiagnostic();
       for (let i = 0; i < 4; i++) result.current.submitAnswer(true, 5000);
@@ -117,7 +117,7 @@ describe('useBaseCampStore', () => {
 
   it('should reset all state including questions and results', () => {
     const { result } = renderHook(() => useBaseCampStore());
-    
+
     act(() => {
       result.current.startDiagnostic();
       result.current.submitAnswer(true, 1000);
@@ -131,7 +131,7 @@ describe('useBaseCampStore', () => {
 
   it('should persist and update completion status', () => {
     const { result } = renderHook(() => useBaseCampStore());
-    
+
     act(() => {
       result.current.setCompleted(true);
     });

@@ -5,7 +5,7 @@ describe('AlgebraAdvancedGenerator', () => {
   const mockRng = (values: number[]) => {
     let i = 0;
     return {
-      randomInt: (_min: number, _max: number) => values[i++] ?? 0.5
+      randomInt: (_min: number, _max: number) => values[i++] ?? 0.5,
     };
   };
 
@@ -13,7 +13,7 @@ describe('AlgebraAdvancedGenerator', () => {
     // problemType = 1, a = 2, b = 3
     const rng = mockRng([1, 2, 3]);
     const problem = generateHardAlgebraProblem(5, 'hard', rng);
-    
+
     expect(problem.expression).toContain('x²');
     expect(problem.expression).toContain('- 5x'); // a+b
     expect(problem.expression).toContain('+ 6'); // a*b
@@ -25,7 +25,7 @@ describe('AlgebraAdvancedGenerator', () => {
     // base index = 0 (base=2), x = 3
     const rng = mockRng([3, 0, 3]);
     const problem = generateHardAlgebraProblem(5, 'hard', rng);
-    
+
     expect(problem.expression).toBe('2ˣ = 8, x = ?');
     expect(problem.answer).toBe(3);
   });
@@ -35,7 +35,7 @@ describe('AlgebraAdvancedGenerator', () => {
     // base index = 1 (base=3), x = 2
     const rng = mockRng([3, 1, 2]);
     const problem = generateHardAlgebraProblem(15, 'hard', rng);
-    
+
     // base 3 -> subMap gives '₃'
     expect(problem.expression).toBe('log₃(9) = ?');
     expect(problem.answer).toBe(2);

@@ -7,15 +7,15 @@ describe('CSProblemGenerator', () => {
     let randIdx = 0;
     return {
       randomInt: (_min: number, _max: number) => {
-          const val = intValues[intIdx % intValues.length];
-          intIdx++;
-          return val;
+        const val = intValues[intIdx % intValues.length];
+        intIdx++;
+        return val;
       },
       random: () => {
-          const val = randomValues[randIdx % randomValues.length] ?? 0.5;
-          randIdx++;
-          return val;
-      }
+        const val = randomValues[randIdx % randomValues.length] ?? 0.5;
+        randIdx++;
+        return val;
+      },
     };
   };
 
@@ -55,9 +55,12 @@ describe('CSProblemGenerator', () => {
 
     // Level 7: XOR (1 XOR 0 = 1)
     let toggle = 0;
-    const rngXorFixed = { 
-        randomInt: (_m: number, _x: number) => 0,
-        random: () => { toggle = 1 - toggle; return toggle > 0.5 ? 0.6 : 0.4; } 
+    const rngXorFixed = {
+      randomInt: (_m: number, _x: number) => 0,
+      random: () => {
+        toggle = 1 - toggle;
+        return toggle > 0.5 ? 0.6 : 0.4;
+      },
     };
     const pXor = generateCSProblem(7, 'easy', rngXorFixed);
     expect(pXor.question).toContain('XOR');
@@ -78,7 +81,7 @@ describe('CSProblemGenerator', () => {
 
   it('should generate Level 10 Memory Unit Master', () => {
     // Type 1: Byte to KB, kb value 2^3=8
-    const rngMem = mockRng([1, 3]); 
+    const rngMem = mockRng([1, 3]);
     const prob = generateCSProblem(10, 'easy', rngMem);
     expect(prob.answer).toBe(8);
     expect(prob.question).toContain('8192 바이트');

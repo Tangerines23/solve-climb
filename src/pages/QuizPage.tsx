@@ -1,9 +1,7 @@
-// src/pages/QuizPage.tsx (범용 퀴즈 페이지)
 import { useState, useCallback, useEffect, useRef } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import './QuizPage.css';
 import { useQuizStore } from '@/stores/useQuizStore';
-import { QuizCard } from '@/components/QuizCard';
 import { useQuestionGenerator } from '@/hooks/useQuestionGenerator';
 import { useQuizInput } from '@/hooks/useQuizInput';
 import { useQuizGameState } from '@/hooks/useQuizGameState';
@@ -15,7 +13,7 @@ import { useQuizRevive } from '@/hooks/useQuizRevive';
 import { useUserStore } from '@/stores/useUserStore';
 import { useGameStore } from '@/stores/useGameStore';
 import { useToastStore } from '@/stores/useToastStore';
-import type { Category, World } from '@/types/quiz';
+import type { Category, World, QuizQuestion } from '@/types/quiz';
 import { ItemFeedbackRef } from '@/components/game/ItemFeedbackOverlay';
 import {
   validateWorldParam,
@@ -23,14 +21,9 @@ import {
   validateLevelParam,
   validateModeParam,
 } from '@/utils/urlParams';
-import { QuizQuestion } from '@/types/quiz';
 import { QuizPreview } from '@/components/quiz/QuizPreview';
-import { QuizModals } from '@/components/quiz/QuizModals';
 import { useBaseCampStore } from '@/stores/useBaseCampStore';
-import { TodaysPromise } from '@/components/quiz/TodaysPromise';
-import { FeverEffect } from '@/components/effects/FeverEffect';
-import { TutorialOverlay, TutorialStep } from '@/components/tutorial/TutorialOverlay';
-import { LandmarkPopup } from '@/components/quiz/LandmarkPopup';
+import { TutorialStep } from '@/components/tutorial/TutorialOverlay';
 import { safeAccess } from '@/utils/validation';
 import { useQuizBusinessLogic } from '@/hooks/useQuizBusinessLogic';
 import { useQuizNavigation } from '@/hooks/useQuizNavigation';
@@ -39,6 +32,8 @@ import { useQuizSession } from '@/hooks/useQuizSession';
 import { useQuizGameplay } from '@/hooks/useQuizGameplay';
 import { TUTORIAL_STEPS } from '@/constants/ui';
 import { storageService, STORAGE_KEYS } from '@/services';
+import { QuizLayout } from '@/components/quiz/QuizLayout';
+import { QuizDisplayState, QuizAnimationState, QuizHandlers } from '@/types/quizProps';
 
 export function QuizPage() {
   const score = useQuizStore((state) => state.score);
@@ -384,6 +379,106 @@ export function QuizPage() {
     [answerInput]
   );
 
+  const handleQwertyKeyPress = useCallback((k: string) => {
+    setAnswerInput((p) => (p + k).slice(0, GAME_CONFIG.MAX_ANSWER_LENGTH_KEYBOARD));
+    setDisplayValue((p) => (p + k).slice(0, GAME_CONFIG.MAX_ANSWER_LENGTH_KEYBOARD));
+  }, []);
+
+  const handleKeypadClear = useCallback(() => {
+    setAnswerInput('');
+    setDisplayValue('');
+  }, []);
+
+  const handleKeypadBackspace = useCallback(() => {
+    setAnswerInput((p) => p.slice(0, -1));
+    setDisplayValue((p) => p.slice(0, -1));
+  }, []);
+
+  const quizState: QuizDisplayState = {
+    currentQuestion,
+    answerInput,
+    displayValue,
+    category,
+    topic: `${worldParam}-${categoryParam}`,
+    categoryParam,
+    subParam: worldParam,
+    levelParam,
+    gameMode,
+    timeLimit: gameMode === 'survival' || gameMode === 'infinite' ? infiniteTimeLimit : timeLimit,
+    questionKey,
+    timerResetKey,
+    totalQuestions: gameState.totalQuestions,
+    lives,
+    useSystemKeyboard,
+    activeLandmark,
+    remainingPauses,
+    altitudePhase,
+  };
+
+  const quizAnimations: QuizAnimationState = {
+    isSubmitting,
+    isError: animations.isError,
+    isPaused:
+      showTipModal || showLastChanceModal || showCountdown || isFlarePaused || showPauseModal,
+    isInputPaused: showTipModal || showLastChanceModal || showCountdown || showPauseModal,
+    showExitConfirm,
+    isFadingOut,
+    cardAnimation: animations.cardAnimation,
+    inputAnimation: animations.inputAnimation,
+    questionAnimation: animations.questionAnimation,
+    showFlash: animations.showFlash,
+    showSlideToast: animations.showSlideToast,
+    toastValue,
+    damagePosition: animations.damagePosition,
+  };
+
+  const quizHandlers: QuizHandlers = {
+    onSafetyRopeUsed: handleSafetyRopeUsed,
+    onLastSpurt: handleLastSpurt,
+    onPause: handlePauseClick,
+    generateNewQuestion,
+    handleSubmit: (e?: React.FormEvent) => handleSubmit(e as React.FormEvent),
+    handleGameOver: stableHandleGameOver,
+    handleKeypadNumber,
+    handleQwertyKeyPress,
+    handleKeypadClear,
+    handleKeypadBackspace,
+  };
+
+  const modalState = {
+    showLastChanceModal,
+    showCountdown,
+    showSafetyRope,
+    showTipModal,
+    showPauseModal,
+    showStaminaModal,
+    showTutorial,
+    showPromise,
+  };
+
+  const modalHandlers = {
+    handleRevive: async (useMineral: boolean) => {
+      await handleRevive(useMineral);
+    },
+    handlePurchaseAndRevive,
+    handleWatchAdAndRevive,
+    handleGiveUp: async () => {
+      handleGiveUp();
+    },
+    handleCountdownComplete,
+    setShowSafetyRope,
+    handleBack,
+    handleStartGame: async (selectedItems: number[]) => {
+      await handleStartGame(selectedItems);
+    },
+    handlePauseResume,
+    handlePauseExit,
+    setShowStaminaModal,
+    onAlertAction,
+    handlePromiseComplete,
+    setShowTutorial: (val: boolean) => setShowTutorial(val),
+  };
+
   if (isPreview)
     return (
       <QuizPreview
@@ -399,119 +494,21 @@ export function QuizPage() {
     );
 
   return (
-    <div
-      className={`quiz-page fever-level-${feverLevel}`}
-      data-world={worldParam || world || 'World1'}
-      data-category={categoryParam || ''}
-      data-altitude-phase={altitudePhase}
-    >
-      <QuizCard
-        currentQuestion={currentQuestion}
-        answerInput={answerInput}
-        displayValue={displayValue}
-        category={category}
-        topic={`${worldParam}-${categoryParam}`}
-        categoryParam={categoryParam}
-        subParam={worldParam}
-        levelParam={levelParam}
-        gameMode={gameMode}
-        timeLimit={
-          gameMode === 'survival' || gameMode === 'infinite' ? infiniteTimeLimit : timeLimit
-        }
-        questionKey={questionKey}
-        timerResetKey={timerResetKey}
-        triggerPenalty={0}
-        penaltyAmount={GAME_CONFIG.PENALTY_AMOUNT}
-        SURVIVAL_QUESTION_TIME={infiniteTimeLimit}
-        totalQuestions={gameState.totalQuestions}
-        lives={lives}
-        onSafetyRopeUsed={handleSafetyRopeUsed}
-        onLastSpurt={handleLastSpurt}
-        onPause={handlePauseClick}
-        remainingPauses={remainingPauses}
-        isSubmitting={isSubmitting}
-        isError={animations.isError}
-        useSystemKeyboard={useSystemKeyboard}
-        showTipModal={showTipModal}
-        isPaused={
-          showTipModal || showLastChanceModal || showCountdown || isFlarePaused || showPauseModal
-        }
-        isInputPaused={showTipModal || showLastChanceModal || showCountdown || showPauseModal}
-        showExitConfirm={showExitConfirm}
-        isFadingOut={isFadingOut}
-        cardAnimation={animations.cardAnimation}
-        inputAnimation={animations.inputAnimation}
-        questionAnimation={animations.questionAnimation}
-        showFlash={animations.showFlash}
-        showSlideToast={animations.showSlideToast}
-        toastValue={toastValue}
-        damagePosition={animations.damagePosition}
-        generateNewQuestion={generateNewQuestion}
-        handleSubmit={handleSubmit}
-        handleGameOver={stableHandleGameOver}
-        handleKeypadNumber={handleKeypadNumber}
-        handleQwertyKeyPress={(k) => {
-          setAnswerInput((p) => (p + k).slice(0, GAME_CONFIG.MAX_ANSWER_LENGTH_KEYBOARD));
-          setDisplayValue((p) => (p + k).slice(0, GAME_CONFIG.MAX_ANSWER_LENGTH_KEYBOARD));
-        }}
-        handleKeypadClear={() => {
-          setAnswerInput('');
-          setDisplayValue('');
-        }}
-        handleKeypadBackspace={() => {
-          setAnswerInput((p) => p.slice(0, -1));
-          setDisplayValue((p) => p.slice(0, -1));
-        }}
-        inputRef={inputRef}
-        exitConfirmTimeoutRef={{ current: null }}
-        setAnswerInput={setAnswerInput}
-        setDisplayValue={setDisplayValue}
-        setShowExitConfirm={() => {}}
-        setIsFadingOut={() => {}}
-      />
-      <QuizModals
-        feedbackRef={feedbackRef}
-        showLastChanceModal={showLastChanceModal}
-        gameMode={gameMode as 'time-attack' | 'survival'}
-        inventory={inventory}
-        minerals={useUserStore.getState().minerals}
-        handleRevive={handleRevive}
-        handlePurchaseAndRevive={handlePurchaseAndRevive}
-        handleWatchAdAndRevive={handleWatchAdAndRevive}
-        handleGiveUp={handleGiveUp}
-        showCountdown={showCountdown}
-        handleCountdownComplete={handleCountdownComplete}
-        showSafetyRope={showSafetyRope}
-        setShowSafetyRope={setShowSafetyRope}
-        categoryParam={categoryParam}
-        subParam={worldParam}
-        levelParam={levelParam}
-        showTipModal={showTipModal}
-        handleBack={handleBack}
-        handleStartGame={handleStartGame}
-        showPauseModal={showPauseModal}
-        remainingPauses={remainingPauses}
-        handlePauseClick={handlePauseClick}
-        handlePauseResume={handlePauseResume}
-        handlePauseExit={handlePauseExit}
-        showStaminaModal={showStaminaModal}
-        setShowStaminaModal={setShowStaminaModal}
-        isAnonymous={isAnonymous}
-        onAlertAction={onAlertAction}
-      />
-      <TodaysPromise
-        isVisible={showPromise}
-        rule={promiseData.rule}
-        example={promiseData.example}
-        onComplete={handlePromiseComplete}
-      />
-      <FeverEffect />
-      <TutorialOverlay
-        isVisible={showTutorial}
-        steps={tutorialSteps}
-        onComplete={() => setShowTutorial(false)}
-      />
-      <LandmarkPopup activeLandmark={activeLandmark} />
-    </div>
+    <QuizLayout
+      quizState={quizState}
+      quizAnimations={quizAnimations}
+      quizHandlers={quizHandlers}
+      inputRef={inputRef}
+      feedbackRef={feedbackRef}
+      modalState={modalState}
+      modalHandlers={modalHandlers}
+      inventory={inventory}
+      minerals={useUserStore.getState().minerals}
+      isAnonymous={isAnonymous}
+      feverLevel={feverLevel}
+      altitudePhase={altitudePhase}
+      promiseData={promiseData}
+      tutorialSteps={tutorialSteps}
+    />
   );
 }

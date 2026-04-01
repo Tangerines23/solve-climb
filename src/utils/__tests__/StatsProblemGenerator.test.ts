@@ -15,7 +15,7 @@ describe('StatsProblemGenerator', () => {
         const val = randomValues[randIdx % randomValues.length] ?? 0.5;
         randIdx++;
         return val;
-      }
+      },
     };
   };
 
@@ -48,7 +48,7 @@ describe('StatsProblemGenerator', () => {
   });
 
   it('should generate Level 5 Dice problem (random path sum)', () => {
-    const rng = { ...mockRng([]), random: () => 0.6 }; 
+    const rng = { ...mockRng([]), random: () => 0.6 };
     const problem = generateStatsProblem(5, 'easy', rng);
     expect(problem.question).toContain('합이 7');
     expect(problem.answer).toBe(6);

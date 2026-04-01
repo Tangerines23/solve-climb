@@ -42,13 +42,13 @@ describe('useBadgeStore', () => {
 
   it('should fetch badge definitions', async () => {
     const mockDefinitions = [{ id: '1', name: 'Badge 1', description: 'Desc 1', emoji: '🥇' }];
-    
+
     // Setup mock chain
     const selectMock = vi.fn().mockResolvedValue({ data: mockDefinitions, error: null });
     vi.mocked(supabase.from).mockReturnValue({ select: selectMock } as any);
 
     const { result } = renderHook(() => useBadgeStore());
-    
+
     await act(async () => {
       await result.current.fetchBadgeDefinitions();
     });
@@ -60,7 +60,7 @@ describe('useBadgeStore', () => {
 
   it('should not re-fetch if definitions already exist', async () => {
     useBadgeStore.setState({ badgeDefinitions: [{ id: '1', name: 'Existing' } as any] });
-    
+
     const { result } = renderHook(() => useBadgeStore());
     await act(async () => {
       await result.current.fetchBadgeDefinitions();
@@ -72,7 +72,7 @@ describe('useBadgeStore', () => {
   it('should fetch user badges for UUID user from Supabase', async () => {
     const userId = '12345678-1234-1234-1234-123456781234';
     const mockUserBadges = [{ badge_id: '1', earned_at: '2021-01-01' }];
-    
+
     const orderMock = vi.fn().mockResolvedValue({ data: mockUserBadges, error: null });
     const eqMock = vi.fn().mockReturnValue({ order: orderMock });
     const selectMock = vi.fn().mockReturnValue({ eq: eqMock });
@@ -105,7 +105,7 @@ describe('useBadgeStore', () => {
   it('should add a badge to state and storage for anonymous user', async () => {
     const userId = 'anonymous';
     const badgeId = 'new_badge';
-    
+
     const { result } = renderHook(() => useBadgeStore());
     await act(async () => {
       await result.current.addUserBadge(badgeId, userId);
@@ -122,7 +122,7 @@ describe('useBadgeStore', () => {
     const userId = 'anonymous';
     const badgeId = 'existing_badge';
     useBadgeStore.setState({ userBadges: [{ badge_id: badgeId, earned_at: 'some-date' }] });
-    
+
     const { result } = renderHook(() => useBadgeStore());
     await act(async () => {
       await result.current.addUserBadge(badgeId, userId);
@@ -135,7 +135,7 @@ describe('useBadgeStore', () => {
   it('should update state but not storage for UUID user (Server-Only Truth principle)', async () => {
     const userId = '12345678-1234-1234-1234-123456781234';
     const badgeId = 'server_badge';
-    
+
     const { result } = renderHook(() => useBadgeStore());
     await act(async () => {
       await result.current.addUserBadge(badgeId, userId);
