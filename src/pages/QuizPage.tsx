@@ -351,7 +351,6 @@ export function QuizPage() {
   }, [handleWatchAdRevive, handleRevive]);
 
   useQuizInput({
-    answerInput,
     isSubmitting,
     isError: animations.isError,
     isPaused:
