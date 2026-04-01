@@ -31,6 +31,8 @@ import { useBaseCampStore } from '@/stores/useBaseCampStore';
 import { TodaysPromise } from '@/components/quiz/TodaysPromise';
 import { FeverEffect } from '@/components/effects/FeverEffect';
 import { TutorialOverlay, TutorialStep } from '@/components/tutorial/TutorialOverlay';
+import { LandmarkPopup } from '@/components/quiz/LandmarkPopup';
+import { safeAccess } from '@/utils/validation';
 import { useQuizNavigation } from '@/hooks/useQuizNavigation';
 import { useQuizStartLogic } from '@/hooks/useQuizStartLogic';
 import { useQuizSession } from '@/hooks/useQuizSession';
@@ -158,7 +160,8 @@ export function QuizPage() {
       if (gameMode === 'survival' || gameMode === 'infinite') {
         const { LEVEL_BASE_TIME, PRESSURE_FACTOR } = SURVIVAL_CONFIG.PRESSURE_CONFIG;
         const cat = question.category || '기초';
-        const categoryMax = CATEGORY_CONFIG[cat]?.maxLevel || CATEGORY_CONFIG.default.maxLevel;
+        const categoryMax =
+          safeAccess(CATEGORY_CONFIG, cat)?.maxLevel || CATEGORY_CONFIG.default.maxLevel;
         const normalizedLv = Math.max(1, Math.ceil((question.level! / categoryMax) * 10));
         const baseTime =
           normalizedLv <= 10
@@ -555,14 +558,7 @@ export function QuizPage() {
         steps={tutorialSteps}
         onComplete={() => setShowTutorial(false)}
       />
-      {activeLandmark && (
-        <div className="landmark-popup-overlay">
-          <div className="landmark-popup">
-            <span className="landmark-icon">{activeLandmark.icon}</span>
-            <span className="landmark-text">{activeLandmark.text}</span>
-          </div>
-        </div>
-      )}
+      <LandmarkPopup activeLandmark={activeLandmark} />
     </div>
   );
 }
