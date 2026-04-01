@@ -660,8 +660,8 @@ describe('MyPage', () => {
     expect(screen.getByText(/익명 로그인 중 오류/i)).toBeTruthy();
   });
 
-  it('should handle profile form cancelation', () => {
-    mockStoreState.isProfileComplete = true; // Complete profile allows cancelation if requested
+  it('should handle profile form cancellation', () => {
+    mockStoreState.isProfileComplete = true; // Complete profile allows cancellation if requested
     render(
       <BrowserRouter>
         <MyPage />
@@ -745,8 +745,8 @@ describe('MyPage', () => {
     });
   });
 
-  it('should handle profile form cancelation', () => {
-    mockStoreState.isProfileComplete = true; // Complete profile allows cancelation if requested
+  it('should handle profile form cancellation', () => {
+    mockStoreState.isProfileComplete = true; // Complete profile allows cancellation if requested
     render(
       <BrowserRouter>
         <MyPage />

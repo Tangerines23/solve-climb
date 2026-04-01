@@ -15,7 +15,7 @@ describe('CalculusProblemGenerator', () => {
         const val = randomValues[randIdx % randomValues.length] ?? 0.5;
         randIdx++;
         return val;
-      }
+      },
     };
   };
 
@@ -89,8 +89,8 @@ describe('CalculusProblemGenerator', () => {
     const p1 = generateCalculusProblem(15, 'easy', rngDeriv);
     expect(p1.question).toContain('d/dx');
 
-    const rngInteg = mockRng([1, 5], [0.4]); // random <= 0.5 -> integral
-    const p2 = generateCalculusProblem(15, 'easy', rngInteg);
+    const rngIntegration = mockRng([1, 5], [0.4]); // random <= 0.5 -> integral
+    const p2 = generateCalculusProblem(15, 'easy', rngIntegration);
     expect(p2.question).toContain('∫');
   });
 
