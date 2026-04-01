@@ -183,31 +183,40 @@ export const useLevelProgressStore = create<LevelProgressState>()(
             hasSessionData: !!sessionData,
           });
 
-          // 1. Save current state for potential rollback
-          const previousProgress = { ...get().progress };
+          // 1. Save current state for potential rollback (Deep Clone to prevent contamination)
+          const previousProgress = JSON.parse(JSON.stringify(get().progress));
 
-          // 2. Optimistic Update (Local)
+          // 2. Optimistic Update (Local) - Immutable spread to ensure isolation
           set((state) => {
-            const newProgress = { ...state.progress };
+            const worldProgress = state.progress[worldKey] || {};
+            const categoryProgress = worldProgress[category] || {};
+            const levelRecord = categoryProgress[level] || getDefaultLevelRecord(level);
 
-            if (!newProgress[worldKey]) newProgress[worldKey] = {};
-            if (!newProgress[worldKey][category]) newProgress[worldKey][category] = {};
-            if (!newProgress[worldKey][category][level]) {
-              newProgress[worldKey][category][level] = getDefaultLevelRecord(level);
-            }
-
-            const record = newProgress[worldKey][category][level];
-            record.cleared = true;
-            record.clearedAt = new Date().toISOString();
+            const updatedRecord = {
+              ...levelRecord,
+              cleared: true,
+              clearedAt: new Date().toISOString(),
+            };
 
             if (
               (mode === 'time-attack' || mode === 'survival') &&
-              (record.bestScore[mode] === null || score > record.bestScore[mode]!)
+              (updatedRecord.bestScore[mode] === null || score > updatedRecord.bestScore[mode]!)
             ) {
-              record.bestScore[mode] = score;
+              updatedRecord.bestScore[mode] = score;
             }
 
-            return { progress: newProgress };
+            return {
+              progress: {
+                ...state.progress,
+                [worldKey]: {
+                  ...worldProgress,
+                  [category]: {
+                    ...categoryProgress,
+                    [level]: updatedRecord,
+                  },
+                },
+              },
+            };
           });
 
           const authResult = (await safeSupabaseQuery(supabase.auth.getUser())) as UserResponse;

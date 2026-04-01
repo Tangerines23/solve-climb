@@ -1,6 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { getTossUserInfo, createOrUpdateSupabaseUser } from '../tossAuth';
+import { getTossUserInfo, createOrUpdateSupabaseUser, handleTossLoginFlow } from '../tossAuth';
 import { ENV } from '../env';
+import { supabase } from '../supabaseClient';
 
 // Mock dependencies
 vi.mock('../errorHandler', () => ({
@@ -199,8 +200,94 @@ describe('tossAuth', () => {
 
       // Verify URL was constructed correctly
       const [firstArg] = fetchMock.mock.calls[0];
-      const calledUrl = typeof firstArg === 'string' ? firstArg : firstArg.url;
-      expect(calledUrl).toContain('https://test.supabase.co/functions/v1/toss-auth');
+      const request = firstArg as Request;
+      expect(request.url).toContain('https://test.supabase.co/functions/v1/toss-auth');
+    });
+  });
+
+  describe('handleTossLoginFlow', () => {
+    const mockAuthCode = 'test-code';
+    const mockReferrer = 'test-referrer';
+
+    beforeEach(() => {
+      vi.clearAllMocks();
+      vi.mocked(ENV).VITE_SUPABASE_URL = 'https://test.supabase.co';
+      vi.mocked(ENV).VITE_SUPABASE_ANON_KEY = 'test-key';
+    });
+
+    it('should complete full login flow successfully', async () => {
+      // 1. OAuth Result
+      fetchMock.mockResolvedValueOnce(
+        new Response(
+          JSON.stringify({
+            success: true,
+            accessToken: 'toss-access-token',
+          }),
+          { status: 200 }
+        )
+      );
+
+      // 2. User Update Result
+      fetchMock.mockResolvedValueOnce(
+        new Response(
+          JSON.stringify({
+            success: true,
+            user: { id: 'user-123' },
+            loginInfo: { email: 'test@example.com', password: 'password123' },
+          }),
+          { status: 200 }
+        )
+      );
+
+      // 3. Supabase Sign In
+      vi.mocked(supabase.auth.signInWithPassword).mockResolvedValue({
+        data: { session: { access_token: 'sb-token', refresh_token: 'sb-refresh' } },
+        error: null,
+      } as any);
+
+      const result = await handleTossLoginFlow(mockAuthCode, mockReferrer);
+
+      expect(result.user).toBeDefined();
+      expect(result.session).toBeDefined();
+      expect(fetchMock).toHaveBeenCalledTimes(2);
+    });
+
+    it('should handle 401 error with specific details', async () => {
+      fetchMock.mockResolvedValueOnce(
+        new Response(
+          JSON.stringify({
+            success: false,
+            message: 'Unauthorized',
+            details: { hint: 'Check your API keys' },
+          }),
+          { status: 401 }
+        )
+      );
+
+      await expect(handleTossLoginFlow(mockAuthCode, mockReferrer)).rejects.toThrow(
+        '토스 API 인증에 실패했습니다.'
+      );
+    });
+
+    it('should handle 400 error with dev mode message', async () => {
+      fetchMock.mockResolvedValueOnce(
+        new Response(
+          JSON.stringify({
+            error: 'Invalid Code',
+          }),
+          { status: 400 }
+        )
+      );
+
+      await expect(handleTossLoginFlow('DEV_MODE_CODE', mockReferrer)).rejects.toThrow('개발 모드');
+    });
+
+    it('should handle network failure during OAuth', async () => {
+      fetchMock.mockRejectedValueOnce(new Error('Failed to fetch'));
+
+      await expect(handleTossLoginFlow(mockAuthCode, mockReferrer)).rejects.toThrow(
+        'Edge Function에 연결할 수 없습니다.'
+      );
     });
   });
 });

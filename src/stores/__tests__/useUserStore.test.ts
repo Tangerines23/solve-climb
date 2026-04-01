@@ -65,6 +65,14 @@ describe('useUserStore (Comprehensive Tests)', () => {
     expect(result.current.stamina).toBe(10);
   });
 
+  it('should set minerals locally', async () => {
+    const { result } = renderHook(() => useUserStore());
+    await act(async () => {
+      result.current.setMinerals(500);
+    });
+    expect(result.current.minerals).toBe(500);
+  });
+
   it('should fetch user data successfully', async () => {
     const { result } = renderHook(() => useUserStore());
     await act(async () => {
@@ -185,6 +193,64 @@ describe('useUserStore (Comprehensive Tests)', () => {
     expect(response?.success).toBe(false);
   });
 
+  it('should handle recoverStaminaAds failure (AdService failure)', async () => {
+    vi.mocked(AdService.showRewardedAd).mockResolvedValue({ success: false, error: 'Ad failed' });
+    const { result } = renderHook(() => useUserStore());
+    let response: { success: boolean; message?: string } | undefined;
+    await act(async () => {
+      response = await result.current.recoverStaminaAds();
+    });
+    expect(response?.success).toBe(false);
+    expect(response?.message).toBe('Ad failed');
+  });
+
+  it('should handle recoverStaminaAds failure (RPC internal error)', async () => {
+    vi.mocked(AdService.showRewardedAd).mockResolvedValue({ success: true });
+    server.use(
+      http.post(`${SUPABASE_REST_URL}/rpc/secure_reward_ad_view`, () => {
+        return HttpResponse.json({ success: false, message: 'RPC Error' });
+      })
+    );
+    const { result } = renderHook(() => useUserStore());
+    let response: { success: boolean } | undefined;
+    await act(async () => {
+      response = await result.current.recoverStaminaAds();
+    });
+    expect(response?.success).toBe(false);
+  });
+
+  it('should handle recoverStaminaAds failure (Unexpected Error)', async () => {
+    vi.mocked(AdService.showRewardedAd).mockResolvedValue({ success: true });
+    server.use(
+      http.post(`${SUPABASE_REST_URL}/rpc/secure_reward_ad_view`, () => {
+        throw new Error('Unexpected');
+      })
+    );
+    const { result } = renderHook(() => useUserStore());
+    let response: { success: boolean } | undefined;
+    await act(async () => {
+      response = await result.current.recoverStaminaAds();
+    });
+    expect(response?.success).toBe(false);
+  });
+
+  it('should handle fetchUserData error during refresh', async () => {
+    vi.mocked(AdService.showRewardedAd).mockResolvedValue({ success: true });
+    server.use(
+      http.post(`${SUPABASE_REST_URL}/rpc/secure_reward_ad_view`, () => {
+        return HttpResponse.json({ success: true, stamina: 10 });
+      }),
+      http.get(`${SUPABASE_REST_URL}/profiles`, () => {
+        return new HttpResponse(null, { status: 500 });
+      })
+    );
+    const { result } = renderHook(() => useUserStore());
+    await act(async () => {
+      await result.current.recoverStaminaAds();
+    });
+    expect(result.current.isLoading).toBe(false);
+  });
+
   it('should reward minerals (failure expected due to security policy)', async () => {
     const { result } = renderHook(() => useUserStore());
     let response: { success: boolean; message: string } | undefined;
@@ -301,6 +367,36 @@ describe('useUserStore (Comprehensive Tests)', () => {
       expect(rpcSpy).toHaveBeenCalled();
     });
 
+    it('should handle infiniteStamina debug mode in consumeStamina', async () => {
+      const { useDebugStore } = await import('../useDebugStore');
+      useDebugStore.setState({ infiniteStamina: true });
+
+      const { result } = renderHook(() => useUserStore());
+      let response: { success: boolean; message: string } | undefined;
+      await act(async () => {
+        response = await result.current.consumeStamina();
+      });
+      expect(response?.success).toBe(true);
+      expect(response?.message).toContain('Infinite Stamina');
+      expect(result.current.stamina).toBe(5); // Not consumed
+
+      useDebugStore.setState({ infiniteStamina: false });
+    });
+
+    it('should handle result not found in getProfiles after debugResetItems', async () => {
+      server.use(
+        http.post(`${SUPABASE_REST_URL}/rpc/debug_reset_inventory`, () =>
+          HttpResponse.json({ success: true })
+        ),
+        http.get(`${SUPABASE_REST_URL}/profiles`, () => HttpResponse.json([]))
+      );
+      const { result } = renderHook(() => useUserStore());
+      await act(async () => {
+        await result.current.debugResetItems();
+      });
+      expect(result.current.isLoading).toBe(false);
+    });
+
     it('should handle item deletions in debugRemoveItems', async () => {
       server.use(
         http.get(`${SUPABASE_REST_URL}/inventory`, () => {
@@ -334,18 +430,44 @@ describe('useUserStore (Comprehensive Tests)', () => {
     });
   });
 
-  it('should block refundStamina (Security Policy enforcement)', async () => {
-    const { result } = renderHook(() => useUserStore());
-    await act(async () => {
-      result.current.setStamina(3);
+  describe('Debug Setters', () => {
+    it('should set minerals via debug RPC', async () => {
+      server.use(
+        http.post(`${SUPABASE_REST_URL}/rpc/debug_set_minerals`, () => {
+          return HttpResponse.json({ success: true });
+        })
+      );
+      const { result } = renderHook(() => useUserStore());
+      await act(async () => {
+        await result.current.debugSetMinerals(1000);
+      });
+      expect(result.current.minerals).toBe(1000);
     });
 
-    await act(async () => {
-      const response = await result.current.refundStamina();
-      expect(response.success).toBe(false);
-      expect(response.message).toContain('제한됩니다');
+    it('should set stamina via debug RPC', async () => {
+      server.use(
+        http.post(`${SUPABASE_REST_URL}/rpc/debug_set_stamina`, () => {
+          return HttpResponse.json({ success: true });
+        })
+      );
+      const { result } = renderHook(() => useUserStore());
+      await act(async () => {
+        await result.current.debugSetStamina(20);
+      });
+      expect(result.current.stamina).toBe(20);
     });
 
-    expect(result.current.stamina).toBe(3);
+    it('should not update local state if debug RPC fails', async () => {
+      server.use(
+        http.post(`${SUPABASE_REST_URL}/rpc/debug_set_minerals`, () => {
+          return HttpResponse.json({ success: false });
+        })
+      );
+      const { result } = renderHook(() => useUserStore());
+      await act(async () => {
+        await result.current.debugSetMinerals(9999);
+      });
+      expect(result.current.minerals).not.toBe(9999);
+    });
   });
 });

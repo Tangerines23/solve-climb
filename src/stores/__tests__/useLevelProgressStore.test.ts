@@ -27,11 +27,14 @@ vi.mock('../useToastStore', () => ({
 
 vi.mock('../useDebugStore', () => {
   const mockState = { bypassLevelLock: false };
-  const mockStore = Object.assign(vi.fn(() => mockState), {
-    getState: vi.fn(() => mockState),
-    setState: vi.fn(),
-    subscribe: vi.fn(),
-  });
+  const mockStore = Object.assign(
+    vi.fn(() => mockState),
+    {
+      getState: vi.fn(() => mockState),
+      setState: vi.fn(),
+      subscribe: vi.fn(),
+    }
+  );
   return { useDebugStore: mockStore };
 });
 
@@ -64,8 +67,13 @@ describe('useLevelProgressStore', () => {
 
   beforeEach(async () => {
     vi.clearAllMocks();
+    // Ensure bypassLevelLock is false by default for consistency
+    vi.mocked(useDebugStore.getState).mockReturnValue({ bypassLevelLock: false } as any);
     // Default mock setup for successful calls
-    vi.mocked(supabase.auth.getUser).mockResolvedValue({ data: { user: { id: 'user-123' } }, error: null } as any);
+    vi.mocked(supabase.auth.getUser).mockResolvedValue({
+      data: { user: { id: 'user-123' } },
+      error: null,
+    } as any);
     vi.mocked(supabase.rpc).mockImplementation(() => createMockRpcBuilder({ success: true }));
 
     vi.mocked(supabase.from).mockReturnValue({
@@ -97,16 +105,25 @@ describe('useLevelProgressStore', () => {
     it('should handle bypassLevelLock debug setting', () => {
       vi.mocked(useDebugStore.getState).mockReturnValue({ bypassLevelLock: true } as any);
       const { result } = renderHook(() => useLevelProgressStore());
-      
+
       expect(result.current.isLevelCleared(world, category, 1)).toBe(true);
       expect(result.current.getNextLevel(world, category)).toBe(999);
     });
 
     it('should handle tier support (Hard Mode)', async () => {
       const { result } = renderHook(() => useLevelProgressStore());
-      
+
       await act(async () => {
-        await result.current.clearLevel(world, category, 1, 'time-attack', 100, 0, undefined, 'hard');
+        await result.current.clearLevel(
+          world,
+          category,
+          1,
+          'time-attack',
+          100,
+          0,
+          undefined,
+          'hard'
+        );
       });
 
       expect(result.current.isLevelCleared(world, category, 1, 'hard')).toBe(true);
@@ -119,9 +136,9 @@ describe('useLevelProgressStore', () => {
     it('should rollback on RPC failure in clearLevel', async () => {
       const { result } = renderHook(() => useLevelProgressStore());
       const rollbackWorld = 'math_rollback';
-      
+
       // Specifically target this world for failure
-      vi.mocked(supabase.rpc).mockImplementationOnce(() => 
+      vi.mocked(supabase.rpc).mockImplementationOnce(() =>
         createMockRpcBuilder(null, { message: 'RPC Failure' })
       );
 
@@ -137,10 +154,19 @@ describe('useLevelProgressStore', () => {
     it('should handle tier support (Hard Mode) isolated from Normal', async () => {
       const { result } = renderHook(() => useLevelProgressStore());
       const tierWorld = 'math_tier';
-      
+
       await act(async () => {
         // Clear level 1 in HARD mode
-        await result.current.clearLevel(tierWorld, category, 1, 'time-attack', 100, 0, undefined, 'hard');
+        await result.current.clearLevel(
+          tierWorld,
+          category,
+          1,
+          'time-attack',
+          100,
+          0,
+          undefined,
+          'hard'
+        );
       });
 
       expect(result.current.isLevelCleared(tierWorld, category, 1, 'hard')).toBe(true);
@@ -153,7 +179,7 @@ describe('useLevelProgressStore', () => {
     it('should calculate global best records across levels', async () => {
       const { result } = renderHook(() => useLevelProgressStore());
       const bestWorld = 'math_best';
-      
+
       await act(async () => {
         await result.current.clearLevel(bestWorld, category, 1, 'time-attack', 100);
         await result.current.clearLevel(bestWorld, category, 2, 'time-attack', 200);
@@ -196,7 +222,7 @@ describe('useLevelProgressStore', () => {
           mode_code: 1,
           best_score: 500, // New from server
           updated_at: '2024-01-02',
-        }
+        },
       ];
 
       vi.mocked(supabase.from).mockReturnValue({
@@ -210,8 +236,8 @@ describe('useLevelProgressStore', () => {
       });
 
       const progress = result.current.getLevelProgress(world, 'arithmetic_addition');
-      expect(progress.find(p => p.level === 1)?.bestScore['time-attack']).toBe(300); // Local won
-      expect(progress.find(p => p.level === 2)?.bestScore['time-attack']).toBe(500); // Server added
+      expect(progress.find((p) => p.level === 1)?.bestScore['time-attack']).toBe(300); // Local won
+      expect(progress.find((p) => p.level === 2)?.bestScore['time-attack']).toBe(500); // Server added
     });
   });
 
@@ -239,7 +265,7 @@ describe('useLevelProgressStore', () => {
       const mockUnsubscribe = vi.fn();
       const mockSubscribe = vi.fn().mockReturnValue({ unsubscribe: mockUnsubscribe });
       const mockOn = vi.fn().mockReturnThis();
-      
+
       vi.mocked(supabase.channel).mockReturnValue({
         on: mockOn,
         subscribe: mockSubscribe,

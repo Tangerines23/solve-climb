@@ -90,6 +90,9 @@ export const useBadgeStore = create<BadgeState>((set, get) => ({
   },
 
   addUserBadge: async (badgeId: string, userId: string) => {
+    // 중복 방지 체크를 최상단으로 이동 (저장소 업데이트 방지)
+    if (get().userBadges.some((b) => b.badge_id === badgeId)) return;
+
     const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(userId);
     const newBadge: UserBadge = {
       badge_id: badgeId,
@@ -97,11 +100,7 @@ export const useBadgeStore = create<BadgeState>((set, get) => ({
     };
 
     // 상태 업데이트 (UI 즉시 반영)
-    set((state) => {
-      // 중복 방지
-      if (state.userBadges.some((b) => b.badge_id === badgeId)) return state;
-      return { userBadges: [newBadge, ...state.userBadges] };
-    });
+    set((state) => ({ userBadges: [newBadge, ...state.userBadges] }));
 
     if (!isUuid) {
       // 익명 사용자: 로컬 스토리지에 저장
