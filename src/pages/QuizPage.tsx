@@ -16,7 +16,6 @@ import { useUserStore } from '@/stores/useUserStore';
 import { useGameStore } from '@/stores/useGameStore';
 import { useToastStore } from '@/stores/useToastStore';
 import type { Category, World } from '@/types/quiz';
-import { AdService } from '@/utils/adService';
 import { ItemFeedbackRef } from '@/components/game/ItemFeedbackOverlay';
 import {
   validateWorldParam,
@@ -33,11 +32,12 @@ import { FeverEffect } from '@/components/effects/FeverEffect';
 import { TutorialOverlay, TutorialStep } from '@/components/tutorial/TutorialOverlay';
 import { LandmarkPopup } from '@/components/quiz/LandmarkPopup';
 import { safeAccess } from '@/utils/validation';
+import { useQuizBusinessLogic } from '@/hooks/useQuizBusinessLogic';
 import { useQuizNavigation } from '@/hooks/useQuizNavigation';
 import { useQuizStartLogic } from '@/hooks/useQuizStartLogic';
 import { useQuizSession } from '@/hooks/useQuizSession';
 import { useQuizGameplay } from '@/hooks/useQuizGameplay';
-import { UI_MESSAGES, TUTORIAL_STEPS } from '@/constants/ui';
+import { TUTORIAL_STEPS } from '@/constants/ui';
 import { storageService, STORAGE_KEYS } from '@/services';
 
 export function QuizPage() {
@@ -79,23 +79,6 @@ export function QuizPage() {
 
   const { showToast: showGlobalToast } = useToastStore();
   const animations = useQuizAnimations();
-
-  const handleWatchAdRevive = useCallback(async () => {
-    animations.setShowSlideToast(true);
-    setToastValue(UI_MESSAGES.AD_WATCH_START);
-
-    const adResult = await AdService.showRewardedAd('revive');
-
-    if (adResult.success) {
-      animations.setShowSlideToast(true);
-      setToastValue(UI_MESSAGES.AD_WATCH_COMPLETE);
-      await new Promise((resolve) => setTimeout(resolve, 1000));
-      return true;
-    } else {
-      setToastValue(UI_MESSAGES.AD_WATCH_FAILED(adResult.error));
-      return false;
-    }
-  }, [animations]);
 
   const [showLastChanceModal, setShowLastChanceModal] = useState(false);
   const [isFlarePaused, setIsFlarePaused] = useState(false);
@@ -181,46 +164,16 @@ export function QuizPage() {
     generateNewQuestionRef.current = generateNewQuestion;
   }, [generateNewQuestion]);
 
-  const smartHandleGameOver = useCallback(
-    async (reason?: string) => {
-      if (gameState.totalQuestions === 0 && (reason === 'timeout' || reason === 'manual_exit')) {
-        try {
-          const res = await refundStamina();
-          if (res.success) {
-            showGlobalToast(UI_MESSAGES.STAMINA_REFUNDED, '🫧');
-          }
-        } catch (error) {
-          console.error('[QuizPage] Refund error:', error);
-        }
-      }
-      gameState.handleGameOver(reason);
-    },
-    [gameState, refundStamina, showGlobalToast]
-  );
-
-  const handleStaminaAdRecovery = useCallback(
-    async (setShowStaminaModal: (s: boolean) => void) => {
-      animations.setShowSlideToast(true);
-      setToastValue(UI_MESSAGES.AD_WATCH_START);
-
-      const adResult = await AdService.showRewardedAd('stamina_recharge');
-
-      if (adResult.success) {
-        const result = await recoverStaminaAds();
-        if (result.success) {
-          setShowStaminaModal(false);
-          animations.setShowSlideToast(true);
-          setToastValue(UI_MESSAGES.STAMINA_RECHARGED_FULL);
-          setTimeout(() => window.location.reload(), ANIMATION_CONFIG.RELOAD_DELAY);
-        } else {
-          setToastValue('충전 실패: ' + result.message);
-        }
-      } else {
-        setToastValue(UI_MESSAGES.AD_WATCH_FAILED(adResult.error));
-      }
-    },
-    [animations, recoverStaminaAds]
-  );
+  const { handleWatchAdRevive, smartHandleGameOver, handleStaminaAdRecovery } =
+    useQuizBusinessLogic({
+      setToastValue,
+      setShowSlideToast: animations.setShowSlideToast,
+      showGlobalToast,
+      refundStamina,
+      recoverStaminaAds,
+      handleGameOver: gameState.handleGameOver,
+      totalQuestions: gameState.totalQuestions,
+    });
 
   const {
     showTipModal,
