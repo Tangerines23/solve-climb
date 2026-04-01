@@ -9,6 +9,7 @@ import { useDebugStore } from './useDebugStore';
 import { useToastStore } from './useToastStore';
 import { UI_MESSAGES } from '../constants/ui';
 import type { UserResponse, RealtimeChannel } from '@supabase/supabase-js';
+import { safeAccess } from '../utils/validation';
 
 export interface LevelRecord {
   level: number;
@@ -134,23 +135,29 @@ export const useLevelProgressStore = create<LevelProgressState>()(
           const state = get();
           if (import.meta.env.DEV && useDebugStore.getState().bypassLevelLock) return true;
           const worldKey = tier === 'hard' ? `${world}_hard` : world;
-          return state.progress[worldKey]?.[category]?.[level]?.cleared ?? false;
+
+          const worldProgress = safeAccess(state.progress, worldKey);
+          const categoryProgress = safeAccess(worldProgress, category);
+          const levelRecord = safeAccess(categoryProgress, level);
+
+          return levelRecord?.cleared ?? false;
         },
 
         getNextLevel: (world, category, tier = 'normal') => {
           const state = get();
           const worldKey = tier === 'hard' ? `${world}_hard` : world;
-          const worldProgress = state.progress[worldKey];
+          const worldProgress = safeAccess(state.progress, worldKey);
 
           if (import.meta.env.DEV && useDebugStore.getState().bypassLevelLock) {
             return 999; // bypass 시에는 어떤 레벨이든 통과 가능하도록 큰 값 반환
           }
 
-          if (!worldProgress || !worldProgress[category]) {
+          const categoryProgress = safeAccess(worldProgress, category);
+          if (!worldProgress || !categoryProgress) {
             return 1; // 첫 레벨부터 시작
           }
 
-          const levels = Object.values(worldProgress[category])
+          const levels = Object.values(categoryProgress)
             .filter((record) => record.cleared)
             .map((record) => record.level)
             .sort((a, b) => b - a);

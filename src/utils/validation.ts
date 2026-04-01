@@ -61,3 +61,20 @@ export const validateNickname = (nickname: string): { valid: boolean; error?: st
 
   return { valid: true };
 };
+
+/**
+ * 객체 속성에 안전하게 접근하기 위한 유틸리티
+ * - 키가 객체의 직접적인 속성인지 확인하여 Prototype Pollution 및 Object Injection 방지
+ */
+export const safeAccess = <T extends object, K extends keyof T>(
+  obj: T | undefined | null,
+  key: string | number | null | undefined
+): T[K] | undefined => {
+  if (!obj || key === null || key === undefined) return undefined;
+  const keyStr = String(key);
+  if (Object.prototype.hasOwnProperty.call(obj, keyStr)) {
+    // eslint-disable-next-line security/detect-object-injection
+    return (obj as Record<string, any>)[keyStr];
+  }
+  return undefined;
+};

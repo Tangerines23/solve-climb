@@ -19,6 +19,7 @@ import { CalculusVisualization } from './quiz/CalculusVisualization';
 import { EquationVisualizer } from './algebra/EquationVisualizer';
 import { parseEquation } from '../utils/algebra';
 import { sendDebugLog } from '../utils/debugLogger';
+import { safeAccess } from '../utils/validation';
 
 interface QuizCardProps {
   // 문제 관련
@@ -169,15 +170,9 @@ function QuizCardComponent({
     }
 
     if (subParam === 'arithmetic' && levelParam !== null) {
-      return Object.prototype.hasOwnProperty.call(ARITHMETIC_TOPIC_MAP, levelParam)
-        ? // eslint-disable-next-line security/detect-object-injection -- key validated above
-          ARITHMETIC_TOPIC_MAP[levelParam]
-        : '덧셈';
+      return safeAccess(ARITHMETIC_TOPIC_MAP, levelParam) || '덧셈';
     } else if (subParam === 'calculus' && levelParam !== null) {
-      return Object.prototype.hasOwnProperty.call(CALCULUS_TOPIC_MAP, levelParam)
-        ? // eslint-disable-next-line security/detect-object-injection -- key validated above
-          CALCULUS_TOPIC_MAP[levelParam]
-        : '미적분';
+      return safeAccess(CALCULUS_TOPIC_MAP, levelParam) || '미적분';
     } else {
       const subTopics = Object.prototype.hasOwnProperty.call(
         APP_CONFIG.SUB_TOPICS,
