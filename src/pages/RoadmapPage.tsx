@@ -653,7 +653,7 @@ export function RoadmapPage() {
                             });
                         })()}
                       </div>
-                      <div 
+                      <div
                         className="milestone-expand-hint"
                         onClick={(e) => {
                           e.stopPropagation();
@@ -671,7 +671,9 @@ export function RoadmapPage() {
                             vibrateShort();
                           }
                         }}
-                      >전체 일지 보기 🗺️</div>
+                      >
+                        전체 일지 보기 🗺️
+                      </div>
                     </div>
                   </>
                 )}
