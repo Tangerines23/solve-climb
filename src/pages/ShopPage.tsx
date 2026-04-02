@@ -30,7 +30,7 @@ export function ShopPage() {
       <Header />
       <main className="shop-content">
         <header className="shop-header">
-          <button className="btn-icon back-button" onClick={() => navigate(-1)}>
+          <button className="btn-icon back-button" onClick={() => navigate(-1)} aria-label="뒤로 가기">
             ←
           </button>
           <h2>{UI_MESSAGES.SHOP_TITLE}</h2>
@@ -50,6 +50,7 @@ export function ShopPage() {
             ]}
             value={activeTab}
             onChange={(val) => setActiveTab(val as 'shop' | 'bag')}
+            aria-label="상점 메뉴 선택"
           />
         </div>
 

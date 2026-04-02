@@ -58,11 +58,11 @@
 }
 
 .ranking-tab.active {
-  background: linear-gradient(135deg, var(--color-blue-400) 0%, var(--color-blue-500) 100%);
+  background: linear-gradient(135deg, var(--color-blue-500) 0%, var(--color-blue-700) 100%);
   color: var(--color-pure-white);
   font-weight: 800;
-  box-shadow: 0 4px 12px rgba(0, 191, 165, 0.4);
-  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5); /* Stronger shadow for contrast */
+  box-shadow: 0 4px 12px rgba(0, 105, 92, 0.4);
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.8); /* Stronger shadow for contrast */
 }
 
 /* Layer 2: Pill Switch Styling */
@@ -370,7 +370,7 @@
 
 /* Realtime Live Badge */
 .live-badge {
-  background-color: var(--color-live-red); /* Improved contrast */
+  background-color: #c62828; /* Darker red for >4.5:1 contrast against white */
   color: var(--color-text-primary);
   font-size: 0.75rem;
   font-weight: bold;

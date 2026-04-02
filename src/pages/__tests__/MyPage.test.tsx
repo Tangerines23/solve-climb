@@ -327,7 +327,9 @@ describe('MyPage', () => {
     await act(async () => {
       fireEvent.click(confirmBtn);
     });
-    expect(dataResetUtils.resetAllData).toHaveBeenCalled();
+    await waitFor(() => {
+      expect(dataResetUtils.resetAllData).toHaveBeenCalled();
+    });
   });
 
   it('should handle withdrawal flow', async () => {
@@ -342,7 +344,9 @@ describe('MyPage', () => {
     await act(async () => {
       fireEvent.click(confirmBtn);
     });
-    expect(withdrawUtils.withdrawAccount).toHaveBeenCalled();
+    await waitFor(() => {
+      expect(withdrawUtils.withdrawAccount).toHaveBeenCalled();
+    });
   });
 
   it('should show Guest View when session is missing', () => {
@@ -381,7 +385,9 @@ describe('MyPage', () => {
     await act(async () => {
       fireEvent.click(loginBtn);
     });
-    expect(mockStoreState.setProfile).toHaveBeenCalled();
+    await waitFor(() => {
+      expect(mockStoreState.setProfile).toHaveBeenCalled();
+    });
   });
 
   it('should handle google login', async () => {
@@ -403,7 +409,9 @@ describe('MyPage', () => {
     await act(async () => {
       fireEvent.click(loginBtn);
     });
-    expect(authUtils.signInWithGoogle).toHaveBeenCalled();
+    await waitFor(() => {
+      expect(authUtils.signInWithGoogle).toHaveBeenCalled();
+    });
   });
 
   it('should handle promotion flow', async () => {
@@ -429,7 +437,9 @@ describe('MyPage', () => {
     await act(async () => {
       fireEvent.click(promoteBtn);
     });
-    expect(mockRefetch).toHaveBeenCalled();
+    await waitFor(() => {
+      expect(mockRefetch).toHaveBeenCalled();
+    });
   });
 
   it('should handle logout', async () => {
@@ -444,7 +454,9 @@ describe('MyPage', () => {
       fireEvent.click(logoutBtn);
     });
 
-    expect(mockStoreState.clearProfile).toHaveBeenCalled();
+    await waitFor(() => {
+      expect(mockStoreState.clearProfile).toHaveBeenCalled();
+    });
   });
 
   it('should open leaderboard', async () => {

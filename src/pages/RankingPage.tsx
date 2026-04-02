@@ -46,22 +46,24 @@ export function RankingPage() {
                 ]}
                 value={activeType}
                 onChange={(val) => setActiveType(val as import('@/hooks/useRanking').RankingType)}
+                aria-label="랭킹 분야 선택"
               />
             </div>
           </div>
-
           <div className="ranking-switch-container">
-            <div className="ranking-switch">
+            <div className="ranking-switch" role="group" aria-label="기간 선택">
               <div className={`switch-bg ${activePeriod}`} />
               <button
                 className={`switch-option ${activePeriod === 'weekly' ? 'active' : ''}`}
                 onClick={() => setActivePeriod('weekly')}
+                aria-label="이번 주 리그"
               >
                 🔥 이번 주 리그
               </button>
               <button
                 className={`switch-option ${activePeriod === 'all-time' ? 'active' : ''}`}
                 onClick={() => setActivePeriod('all-time')}
+                aria-label="명예의 전당"
               >
                 👑 명예의 전당
               </button>

@@ -144,7 +144,7 @@ export function Header({ title, showBack, onBack }: HeaderProps) {
     >
       <div className="header-content">
         {showBack && (
-          <button onClick={onBack} className="header-back-button">
+          <button onClick={onBack} className="header-back-button" aria-label="뒤로 가기">
             ←
           </button>
         )}
