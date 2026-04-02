@@ -578,9 +578,6 @@ export function RoadmapPage() {
                     <div
                       ref={cardRef}
                       className={`history-milestones-integrated ${isMilestoneExpanded ? 'hidden' : ''}`}
-                      onClick={() => handleOpenRoadmap()}
-                      role="button"
-                      aria-label="로드맵 전체 보기"
                     >
                       <div className="history-milestones-list-integrated">
                         <div className="milestone-line-integrated" />
@@ -656,7 +653,25 @@ export function RoadmapPage() {
                             });
                         })()}
                       </div>
-                      <div className="milestone-expand-hint">전체 일지 보기 🗺️</div>
+                      <div 
+                        className="milestone-expand-hint"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleOpenRoadmap();
+                          vibrateShort();
+                        }}
+                        role="button"
+                        aria-label="로드맵 전체 보기"
+                        tabIndex={0}
+                        onKeyDown={(e) => {
+                          if (e.key === 'Enter' || e.key === ' ') {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            handleOpenRoadmap();
+                            vibrateShort();
+                          }
+                        }}
+                      >전체 일지 보기 🗺️</div>
                     </div>
                   </>
                 )}
