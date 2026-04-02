@@ -133,7 +133,7 @@ export function RankingPage() {
               </div>
             ) : (
               <div className="ranking-empty">
-                <span className="empty-icon">Desert</span>
+                <span className="empty-icon">🏜️</span>
                 <p>아직 등록된 랭킹이 없어요.</p>
                 <p>첫 번째 주인공이 되어보세요!</p>
               </div>
