@@ -34,7 +34,7 @@ CREATE POLICY "Level records are only updatable via secure RPC" ON public.user_l
     FOR ALL
     USING (auth.uid() = user_id)
     WITH CHECK (
-        current_setting('app.bypass_profile_security', true, true) = '1'
+        current_setting('app.bypass_profile_security', true) = '1'
     );
 
 -- [3] inventory RLS 강화
@@ -45,7 +45,7 @@ CREATE POLICY "Inventory is only updatable via secure RPC" ON public.inventory
     FOR UPDATE
     USING (auth.uid() = user_id)
     WITH CHECK (
-        current_setting('app.bypass_profile_security', true, true) = '1'
+        current_setting('app.bypass_profile_security', true) = '1'
     );
 
 -- [4] Helper function update

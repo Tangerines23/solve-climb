@@ -21,8 +21,6 @@ AS $$
 DECLARE
   v_user_id UUID := auth.uid();
   v_item_id INTEGER;
-  v_old_best_score INTEGER;
-  v_new_best_score INTEGER;
   v_score_diff INTEGER;
   v_calculated_score INTEGER := 0;
   v_earned_minerals INTEGER := 0;
@@ -106,7 +104,7 @@ BEGIN
     v_correct_ans INTEGER;
     v_correct_count INTEGER := 0;
     v_total_questions INTEGER;
-    v_idx INTEGER;
+
     v_mode_weight NUMERIC := 1.0;
   BEGIN
     SELECT questions INTO v_session_questions

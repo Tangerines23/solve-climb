@@ -4,6 +4,7 @@
 -- 현재 유저가 자신의 프로필을 마음대로 업데이트할 수 있는 권한을 제거합니다.
 -- 모든 필드 변경(미네랄, 스테미너 등)은 이제 보안이 보장된 RPC 함수를 통해서만 가능합니다.
 DROP POLICY IF EXISTS "Users can update own profile" ON public.profiles;
+DROP POLICY IF EXISTS "Profiles are only updatable via secure RPC" ON public.profiles;
 
 -- 내부 RPC 함수에서 프로필을 업데이트할 때 보안 검사를 건너뛰기 위해 사용하는 설정
 -- (함수 내부에서 'app.bypass_profile_security'를 '1'로 설정하여 작동)
@@ -11,7 +12,7 @@ CREATE POLICY "Profiles are only updatable via secure RPC" ON public.profiles
     FOR UPDATE 
     USING (auth.uid() = id)
     WITH CHECK (
-        current_setting('app.bypass_profile_security', true, true) = '1'
+        current_setting('app.bypass_profile_security', true) = '1'
     );
 
 -- [2] Security Audit Logging Utility
