@@ -139,7 +139,8 @@ export function QuizPage() {
         const { LEVEL_BASE_TIME, PRESSURE_FACTOR } = SURVIVAL_CONFIG.PRESSURE_CONFIG;
         const cat = question.category || '기초';
         const categoryMax =
-          safeAccess(CATEGORY_CONFIG, cat)?.maxLevel || CATEGORY_CONFIG.default.maxLevel;
+          (safeAccess(CATEGORY_CONFIG, cat) as { maxLevel: number } | undefined)?.maxLevel ||
+          CATEGORY_CONFIG.default.maxLevel;
         const normalizedLv = Math.max(1, Math.ceil((question.level! / categoryMax) * 10));
         const baseTime =
           normalizedLv <= 10

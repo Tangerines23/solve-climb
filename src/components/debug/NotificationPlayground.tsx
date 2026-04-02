@@ -1,5 +1,6 @@
 import { useState, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { urls } from '../../utils/navigation';
 import { useGameStore } from '../../stores/useGameStore';
 import { AlertModal } from '../AlertModal';
 import { ConfirmModal } from '../ConfirmModal';
@@ -139,9 +140,20 @@ export function NotificationPlayground() {
         <div className="playground-section">
           <h4>5. Monetization & Ads</h4>
           <button onClick={() => setActiveModal('lastChance')}>Ad Revive (Modal)</button>
-          <button onClick={() => navigate('/shop')}>Go to Shop (Recharge)</button>
+          <button onClick={() => navigate(urls.shop())}>Go to Shop (Recharge)</button>
           <button
-            onClick={() => navigate('/result?score=1250&mode=survival&world=earth&category=math')}
+            onClick={() =>
+              navigate(
+                urls.result(
+                  new URLSearchParams({
+                    score: '1250',
+                    mode: 'survival',
+                    world: 'earth',
+                    category: 'math',
+                  })
+                )
+              )
+            }
           >
             Go to Result (Double Reward)
           </button>
@@ -275,25 +287,25 @@ export function NotificationPlayground() {
           <div className="playground-card-scroll-container" onClick={(e) => e.stopPropagation()}>
             <div className="card-preview-row">
               <h5>Challenge Card</h5>
-              <div style={{ maxWidth: '300px' }}>
+              <div className="debug-card-wrapper">
                 <ChallengeCard />
               </div>
             </div>
             <div className="card-preview-row">
               <h5>My Record Card</h5>
-              <div style={{ maxWidth: '300px' }}>
+              <div className="debug-card-wrapper">
                 <MyRecordCard world="World1" category="기초" categoryName="사칙연산" />
               </div>
             </div>
             <div className="card-preview-row">
               <h5>Unknown Mountain Card</h5>
-              <div style={{ maxWidth: '300px' }}>
+              <div className="debug-card-wrapper">
                 <UnknownMountainCard onToast={triggerToast} />
               </div>
             </div>
             <div className="card-preview-row">
               <h5>Status Card</h5>
-              <div style={{ maxWidth: '300px' }}>
+              <div className="debug-card-wrapper">
                 <StatusCard />
               </div>
             </div>

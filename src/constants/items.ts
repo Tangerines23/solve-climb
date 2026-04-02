@@ -86,10 +86,16 @@ export const ITEM_MAP: Record<string, ItemMetadata> = Object.fromEntries(
 
 /** 기존 호환용: code → emoji */
 export const getItemEmoji = (code: string): string => {
-  return ITEM_MAP[code]?.emoji ?? '📦';
+  if (Object.prototype.hasOwnProperty.call(ITEM_MAP, code)) {
+    return ITEM_MAP[code as keyof typeof ITEM_MAP].emoji;
+  }
+  return '📦';
 };
 
 /** code → 짧은 효과 설명 */
 export const getItemShortEffect = (code: string): string => {
-  return ITEM_MAP[code]?.shortEffect ?? '';
+  if (Object.prototype.hasOwnProperty.call(ITEM_MAP, code)) {
+    return ITEM_MAP[code as keyof typeof ITEM_MAP].shortEffect;
+  }
+  return '';
 };

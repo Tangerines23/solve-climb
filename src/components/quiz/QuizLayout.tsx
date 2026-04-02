@@ -13,6 +13,7 @@ import {
   QuizModalHandlers,
 } from '@/types/quizProps';
 import { TutorialStep } from '@/components/tutorial/TutorialOverlay';
+import { InventoryItem } from '@/types/user';
 
 interface QuizLayoutProps {
   quizState: QuizDisplayState;
@@ -37,7 +38,7 @@ interface QuizLayoutProps {
   modalHandlers: QuizModalHandlers;
 
   // Other data
-  inventory: any;
+  inventory: InventoryItem[];
   minerals: number;
   isAnonymous: boolean;
   feverLevel: number;

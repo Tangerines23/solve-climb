@@ -4,6 +4,7 @@ import { useGameStore } from '@/stores/useGameStore';
 import { analytics } from '@/services/analytics';
 import { urls } from '@/utils/navigation';
 import { LANDMARK_MAPPING } from '@/constants/game';
+import { safeAccess } from '@/utils/validation';
 import { InventoryItem } from '@/types/user';
 
 interface UseQuizStartLogicProps {
@@ -45,7 +46,9 @@ export function useQuizStartLogic({
   }, [totalQuestions]);
 
   useEffect(() => {
-    const landmark = LANDMARK_MAPPING[totalQuestions];
+    const landmark = safeAccess(LANDMARK_MAPPING, totalQuestions) as
+      | { icon: string; text: string }
+      | undefined;
     if (landmark) {
       setActiveLandmark(landmark);
       setTimeout(() => setActiveLandmark(null), 3000);

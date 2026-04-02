@@ -10,7 +10,8 @@ import { InventoryItem } from '../../types/user';
 import { PauseModal } from '../game/PauseModal';
 import { GameMode } from '../../types/quiz';
 
-import { ITEM_MAP } from '../../constants/items';
+import { ITEM_MAP, ItemMetadata } from '../../constants/items';
+import { safeAccess } from '../../utils/validation';
 
 interface QuizModalsProps {
   feedbackRef: RefObject<ItemFeedbackRef>;
@@ -75,7 +76,8 @@ export function QuizModals({
   onAlertAction,
 }: QuizModalsProps) {
   const reviveItemCode = gameMode === 'time-attack' ? 'last_spurt' : 'flare';
-  const basePrice = ITEM_MAP[reviveItemCode]?.price || 800;
+  const itemMeta = safeAccess(ITEM_MAP, reviveItemCode) as ItemMetadata | undefined;
+  const basePrice = itemMeta?.price || 800;
 
   return (
     <>

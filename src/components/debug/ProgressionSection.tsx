@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useDebugStore } from '../../stores/useDebugStore';
 import { APP_CONFIG } from '../../config/app';
 import { useNavigate } from 'react-router-dom';
+import { urls } from '../../utils/navigation';
 import './ProgressionSection.css';
 
 export const ProgressionSection = React.memo(function ProgressionSection() {
@@ -38,7 +39,13 @@ export const ProgressionSection = React.memo(function ProgressionSection() {
     // /quiz?mountain=math&world=World1&category=기초&level=1&mode=survival
     const mountainId = worlds.find((w) => w.id === worldName)?.mountainId || 'math';
     navigate(
-      `/quiz?mountain=${mountainId}&world=${worldName}&category=${categoryName}&level=${levelNum}&mode=survival`
+      urls.quiz({
+        mountain: mountainId,
+        world: worldName,
+        category: categoryName,
+        level: levelNum,
+        mode: 'survival',
+      })
     );
 
     // 디버그 패널 닫기 (이건 useDebugStore의 toggleDebugPanel을 호출해야 함)
@@ -72,6 +79,7 @@ export const ProgressionSection = React.memo(function ProgressionSection() {
             <div className="debug-select-group">
               <label>월드</label>
               <select
+                title="월드 선택"
                 value={selectedWorld}
                 onChange={(e) => {
                   setSelectedWorld(e.target.value);
@@ -94,6 +102,7 @@ export const ProgressionSection = React.memo(function ProgressionSection() {
             <div className="debug-select-group">
               <label>분야</label>
               <select
+                title="분야 선택"
                 value={selectedCategory}
                 onChange={(e) => {
                   setSelectedCategory(e.target.value);
@@ -111,6 +120,7 @@ export const ProgressionSection = React.memo(function ProgressionSection() {
             <div className="debug-select-group">
               <label>레벨</label>
               <select
+                title="레벨 선택"
                 value={selectedLevel}
                 onChange={(e) => setSelectedLevel(Number(e.target.value))}
               >
