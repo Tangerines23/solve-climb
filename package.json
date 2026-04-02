@@ -16,7 +16,7 @@
     "format:check": "prettier --check \"src/**/*.{ts,tsx,js,jsx,json,css}\"",
     "type-check": "tsc --noEmit",
     "check": "npm run type-check && npm run lint && npm run format:check && npm run check:css && npm run check:nav",
-    "validate": "npm run type-check && npm run lint && npm run format:check && npm run check:css && npm run check:nav && npm run check:secrets && npm run check:circular && npm run check:integrity && npm run check:logic",
+    "validate": "npm run type-check && npm run lint && npm run format:check && npm run check:css && npm run check:nav && npm run check:secrets && npm run check:circular && npm run check:integrity && npm run check:logic && npm run report:collect",
     "validate:fast": "npm run type-check && npm run lint",
     "validate:quick": "npm run lint -- --max-warnings=0",
     "validate:full": "npm run validate && npm run test && npm run check:db",
@@ -101,6 +101,8 @@
     "report:test": "npm run test:all > reports/logs/test_output.txt",
     "report:validate": "npm run validate > reports/logs/validate-log.txt",
     "report:ci": "npm run ci:local > reports/logs/ci-local-log.txt",
+    "report:collect": "node scripts/collect-reports.js",
+    "report:clean": "powershell -Command \"Remove-Item reports/* -Recurse -Force\"",
     "pre-report": "powershell -Command \"New-Item -ItemType Directory -Force reports/logs, reports/analysis, reports/security, reports/ci-reports\""
   },
   "dependencies": {
@@ -188,7 +190,6 @@
     "lodash": "4.18.1",
     "lodash-es": "4.18.1",
     "@xmldom/xmldom": "0.9.9",
-    "ajv": "8.18.0",
     "brace-expansion": "5.0.5",
     "fast-xml-parser": "5.3.4",
     "find-my-way": "^8.2.2",
