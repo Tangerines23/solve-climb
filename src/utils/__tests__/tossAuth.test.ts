@@ -269,6 +269,93 @@ describe('tossAuth', () => {
       );
     });
 
+    it('should handle 401 error with full details', async () => {
+      fetchMock.mockResolvedValueOnce(
+        new Response(
+          JSON.stringify({
+            success: false,
+            message: 'Unauthorized',
+            details: {
+              hint: 'Secret Missing',
+              checkSecrets: 'Check ENV',
+              tossApiError: { message: 'Toss Internal error' },
+            },
+          }),
+          { status: 401 }
+        )
+      );
+
+      const result = handleTossLoginFlow(mockAuthCode, mockReferrer);
+      await expect(result).rejects.toThrow(/Secret Missing/);
+      await expect(result).rejects.toThrow(/Check ENV/);
+      await expect(result).rejects.toThrow(/Toss Internal error/);
+    });
+
+    it('should handle 400 error without dev mode', async () => {
+      fetchMock.mockResolvedValueOnce(
+        new Response(
+          JSON.stringify({
+            error: 'Bad Request',
+          }),
+          { status: 400 }
+        )
+      );
+
+      await expect(handleTossLoginFlow('REAL_CODE', mockReferrer)).rejects.toThrow(
+        /AccessToken 요청 실패 \(400\)/
+      );
+    });
+
+    it('should handle generic error status', async () => {
+      fetchMock.mockResolvedValueOnce(
+        new Response(
+          JSON.stringify({
+            error: 'Server Error',
+          }),
+          { status: 500 }
+        )
+      );
+
+      await expect(handleTossLoginFlow(mockAuthCode, mockReferrer)).rejects.toThrow(
+        /AccessToken 요청 실패 \(500\)/
+      );
+    });
+
+    it('should handle non-JSON error response', async () => {
+      fetchMock.mockResolvedValueOnce(new Response('Internal Server Error Text', { status: 500 }));
+
+      await expect(handleTossLoginFlow(mockAuthCode, mockReferrer)).rejects.toThrow(
+        /Internal Server Error Text/
+      );
+    });
+
+    it('should handle response with success: false', async () => {
+      fetchMock.mockResolvedValueOnce(
+        new Response(
+          JSON.stringify({
+            success: false,
+            error: 'Custom Error',
+          }),
+          { status: 200 }
+        )
+      );
+
+      await expect(handleTossLoginFlow(mockAuthCode, mockReferrer)).rejects.toThrow('Custom Error');
+    });
+
+    it('should handle JSON parse error in handleTossLoginFlow', async () => {
+      fetchMock.mockResolvedValueOnce(
+        new Response('invalid json', {
+          status: 200,
+          headers: { 'Content-Type': 'application/json' },
+        })
+      );
+
+      await expect(handleTossLoginFlow(mockAuthCode, mockReferrer)).rejects.toThrow(
+        '응답 파싱 실패'
+      );
+    });
+
     it('should handle 400 error with dev mode message', async () => {
       fetchMock.mockResolvedValueOnce(
         new Response(
