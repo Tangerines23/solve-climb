@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { getUserErrorMessage, logError, logWarning } from '../errorHandler';
+import { getUserErrorMessage, logError, logWarning, getErrorCode } from '../errorHandler';
 
 // Mock dependencies
 const mockAddLog = vi.fn();
@@ -191,6 +191,47 @@ describe('errorHandler', () => {
       // In development, addLog should be called
       // The function should execute without error
       expect(typeof logWarning).toBe('function');
+    });
+  });
+
+  describe('getErrorCode', () => {
+    it('should generate a consistent error code for Error instances', () => {
+      const error = new Error('Test unique error message');
+      const code = getErrorCode(error);
+      expect(code).toMatch(/^[A-Z_]+_[0-9A-F]+$/);
+
+      const code2 = getErrorCode(new Error('Test unique error message'));
+      expect(code).toBe(code2);
+    });
+
+    it('should return UNKNOWN_ERR for non-Error objects', () => {
+      expect(getErrorCode('string error')).toBe('UNKNOWN_ERR');
+      expect(getErrorCode(null)).toBe('UNKNOWN_ERR');
+    });
+
+    it('should generate different codes for different messages', () => {
+      const code1 = getErrorCode(new Error('Message one'));
+      const code2 = getErrorCode(new Error('Message two'));
+      expect(code1).not.toBe(code2);
+    });
+  });
+
+  describe('Internal detection logic', () => {
+    it('should handle various error message matches', () => {
+      expect(getUserErrorMessage(new Error('404'))).toContain('찾을 수 없습니다');
+      expect(getUserErrorMessage(new Error('500'))).toContain('서버 오류');
+      expect(getUserErrorMessage(new Error('permission denied'))).toContain('권한');
+      expect(getUserErrorMessage(new Error('invalid validation'))).toContain('정보를 확인');
+      expect(getUserErrorMessage(new Error('auth failed'))).toContain('로그인');
+    });
+
+    it('should detect TypeError as NETWORK error', () => {
+      const error = new TypeError('Failed to fetch');
+      expect(getUserErrorMessage(error)).toContain('네트워크');
+    });
+
+    it('should detect specifically labeled server errors', () => {
+      expect(getUserErrorMessage(new Error('Internal Server Error'))).toContain('서버 오류');
     });
   });
 });

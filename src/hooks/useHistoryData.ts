@@ -4,7 +4,7 @@ import { supabase } from '../utils/supabaseClient';
 import { safeSupabaseQuery } from '../utils/debugFetch';
 import { APP_CONFIG } from '../config/app';
 import { parseLocalSession } from '../utils/safeJsonParse';
-import { storage, StorageKeys } from '../utils/storage';
+import { storageService, STORAGE_KEYS } from '../services';
 import { Session } from '@supabase/supabase-js';
 import { getTimeAgo } from '../utils/date';
 import {
@@ -102,8 +102,8 @@ export function useHistoryData() {
       let userId = null;
 
       try {
-        const localSessionStr = storage.getString(StorageKeys.LOCAL_SESSION);
-        const localSession = parseLocalSession(localSessionStr);
+        const localSessionStr = storageService.get<string>(STORAGE_KEYS.LOCAL_SESSION);
+        const localSession = parseLocalSession(localSessionStr || '');
         if (localSession) {
           userId = localSession.userId;
           currentSession = {
@@ -135,16 +135,13 @@ export function useHistoryData() {
         // [Anonymous/Local User Support]
         // DB 세션이 없어도 로컬 기록이 있으면 통계를 보여줌
         try {
-          const localHistoryStr = localStorage.getItem(StorageKeys.LOCAL_HISTORY);
-          if (localHistoryStr) {
-            const localHistory = JSON.parse(localHistoryStr);
-            if (Array.isArray(localHistory) && localHistory.length > 0) {
-              // 로컬 데이터를 기반으로 통계 계산
-              const stats = calculateLocalStats(localHistory, ANONYMOUS_USER_TITLE);
-              setStats(stats);
-              setLoading(false);
-              return;
-            }
+          const localHistory = storageService.get<LocalHistoryRecord[]>(STORAGE_KEYS.LOCAL_HISTORY);
+          if (localHistory && Array.isArray(localHistory) && localHistory.length > 0) {
+            // 로컬 데이터를 기반으로 통계 계산
+            const stats = calculateLocalStats(localHistory, ANONYMOUS_USER_TITLE);
+            setStats(stats);
+            setLoading(false);
+            return;
           }
         } catch (e) {
           console.warn('Failed to load local history:', e);

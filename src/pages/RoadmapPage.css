@@ -110,6 +110,18 @@
   /* Hero expansion을 위해 여백 제거 */
 }
 
+/* Inline style replacements */
+.history-roadmap-overlay-vars {
+  --start-top: 50%;
+  --start-left: 50%;
+  --start-width: 90%;
+  --start-height: 180px;
+}
+
+.landmark-item-bottom {
+  bottom: var(--item-bottom);
+}
+
 .roadmap-backdrop {
   position: absolute;
   top: 0;
@@ -123,10 +135,9 @@
 }
 
 .history-roadmap-overlay.fade-in .roadmap-backdrop {
-  background-color: rgba(0, 0, 0, 0.85);
-  -webkit-backdrop-filter: blur(12px);
-  backdrop-filter: blur(12px);
-  /* 약간 더 깊게 */
+  background-color: var(--overlay-dark-high);
+  -webkit-backdrop-filter: blur(var(--glass-blur));
+  backdrop-filter: blur(var(--glass-blur));
 }
 
 .roadmap-container {
@@ -136,14 +147,14 @@
   left: var(--start-left, 50%);
   width: var(--start-width, 90%);
   height: var(--start-height, 180px);
-  background-color: rgba(0, 0, 0, 0.2);
+  background-color: var(--glass-bg);
   /* 카드와 100% 일치 */
   border-radius: var(--rounded-card);
   display: flex;
   flex-direction: column;
   box-shadow: none;
   overflow: hidden;
-  border: 1px solid rgba(255, 255, 255, 0.05);
+  border: var(--glass-border);
   /* 닫을 때는 0.7s 동안 부드럽게 수축 */
   transition: all 0.7s cubic-bezier(0.19, 1, 0.22, 1);
   z-index: 2001;
@@ -239,6 +250,37 @@
   padding: var(--spacing-2xl) var(--spacing-2xl) 0 var(--spacing-2xl);
 }
 
+.roadmap-scroll-ghost-container {
+  overflow-y: hidden;
+  z-index: 0;
+  pointer-events: none;
+  --rail-height: 10000px;
+}
+
+.roadmap-scroll-ghost-container.is-linear {
+  overflow-y: auto;
+  z-index: 2;
+  pointer-events: auto;
+}
+
+.roadmap-virtual-viewport-container {
+  overflow: auto;
+}
+
+.roadmap-virtual-viewport-container.is-linear {
+  overflow: hidden;
+}
+
+.roadmap-mountain-path-container {
+  bottom: 0px;
+  --path-height: auto;
+  height: var(--path-height);
+}
+
+.roadmap-mountain-path-container.is-linear {
+  bottom: var(--camera-offset, 0px);
+}
+
 .roadmap-mountain-path {
   transition: none;
 }
@@ -261,6 +303,11 @@
   transition: height 0.8s cubic-bezier(0.4, 0, 0.2, 1);
   z-index: 1;
   will-change: height;
+  --fill-bottom: var(--gauge-bottom, 36px);
+  --fill-height: 0px;
+  bottom: var(--fill-bottom);
+  height: var(--fill-height);
+  top: auto;
 }
 
 .roadmap-dotted-line {
@@ -279,6 +326,15 @@
   /* 더 촘촘하고 예쁜 점선 */
   background-repeat: repeat-y;
   z-index: 0;
+  --dotted-bottom: var(--gauge-bottom, 36px);
+  --dotted-height-val: var(--dotted-height, 100%);
+  bottom: var(--dotted-bottom);
+  height: var(--dotted-height-val);
+  top: var(--dotted-top, 118px);
+}
+
+.roadmap-dotted-line.is-linear {
+  top: auto;
 }
 
 /* Unused duplicate removed */
@@ -449,6 +505,8 @@
 .roadmap-scroll-spacer {
   width: 100%;
   pointer-events: none;
+  --spacer-height: 0px;
+  height: var(--spacer-height);
 }
 
 /* 티어와 수직선을 연결하는 가로 분기선 (마커 뒤로 겹치지 않게 왼쪽 끝에서 시작) */
@@ -503,6 +561,11 @@
   pointer-events: auto;
 }
 
+.roadmap-floating-marker-container {
+  --marker-bottom: var(--gauge-bottom, 36px);
+  bottom: var(--marker-bottom);
+}
+
 .landmark-info {
   margin-left: 56px;
   /* 수직선(18px) 기반 서브 지표용 충분한 간격 */
@@ -521,13 +584,13 @@
 /* --- 로드맵 하단 요약 (Footer) --- */
 .roadmap-footer {
   padding: var(--spacing-lg) var(--spacing-xl);
-  background-color: rgba(25, 26, 30, 0.95);
-  border-top: 1px solid rgba(255, 255, 255, 0.05);
+  background-color: var(--bg-glass-overlay);
+  border-top: var(--glass-border);
   display: flex;
   flex-direction: column;
   gap: var(--spacing-tiny);
-  -webkit-backdrop-filter: blur(20px);
-  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(var(--glass-blur));
+  backdrop-filter: blur(var(--glass-blur));
 }
 
 .roadmap-footer-row {
@@ -556,10 +619,10 @@
   bottom: 130px;
   /* 로드맵 푸터(고도 정보) 위로 올림 */
   right: 24px;
-  background-color: rgba(25, 26, 30, 0.85);
-  border: 1px solid rgba(79, 172, 254, 0.4); /* Fallback */
-  -webkit-backdrop-filter: blur(12px);
-  backdrop-filter: blur(12px);
+  background-color: var(--glass-bg);
+  border: var(--glass-border);
+  -webkit-backdrop-filter: blur(var(--glass-blur));
+  backdrop-filter: blur(var(--glass-blur));
   padding: var(--spacing-tiny) var(--spacing-medium-alt);
   border-radius: var(--rounded-pill);
   display: flex;
@@ -567,9 +630,9 @@
   gap: var(--spacing-tiny);
   z-index: 100;
   /* 최상단 배치 */
-  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.4);
+  box-shadow: var(--glass-shadow);
   pointer-events: none;
-  animation: scaleIndicatorIn 0.3s ease-out;
+  animation: scaleIndicatorIn 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
 }
 
 .scale-prefix {
@@ -2122,4 +2185,8 @@
 
 .segmented-indicator.tab-activity {
   transform: translateX(200%) !important;
+}
+.history-error-detail {
+  font-size: 0.8em;
+  color: var(--color-text-secondary);
 }

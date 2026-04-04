@@ -3,19 +3,16 @@ import { resetAllData } from '../dataReset';
 import { supabase } from '../supabaseClient';
 import { useProfileStore } from '../../stores/useProfileStore';
 import { useLevelProgressStore } from '../../stores/useLevelProgressStore';
-import { storage } from '../storage';
+import { storageService } from '../../services';
 
 // Mock dependencies
+// Mock dependencies (Supabase logic removed from resetAllData)
 vi.mock('../supabaseClient', () => ({
   supabase: {
     auth: {
       getUser: vi.fn(),
     },
-    from: vi.fn(() => ({
-      delete: vi.fn(() => ({
-        eq: vi.fn(() => Promise.resolve({ error: null })),
-      })),
-    })),
+    from: vi.fn(),
   },
 }));
 
@@ -35,9 +32,9 @@ vi.mock('../../stores/useLevelProgressStore', () => ({
   },
 }));
 
-vi.mock('../storage', () => ({
-  storage: {
-    clearAppData: vi.fn(),
+vi.mock('../../services', () => ({
+  storageService: {
+    clear: vi.fn(),
   },
 }));
 
@@ -74,7 +71,7 @@ describe('dataReset', () => {
 
       await resetAllData();
 
-      expect(storage.clearAppData).toHaveBeenCalled();
+      expect(storageService.clear).toHaveBeenCalled();
       expect(mockClearProfile).toHaveBeenCalled();
       expect(mockResetProgress).toHaveBeenCalled();
     });
@@ -87,7 +84,7 @@ describe('dataReset', () => {
 
       await resetAllData();
 
-      expect(storage.clearAppData).toHaveBeenCalled();
+      expect(storageService.clear).toHaveBeenCalled();
     });
 
     it('should handle Supabase getUser error gracefully', async () => {
@@ -105,7 +102,7 @@ describe('dataReset', () => {
       // 에러가 발생해도 계속 진행되어야 함
       await resetAllData();
 
-      expect(storage.clearAppData).toHaveBeenCalled();
+      expect(storageService.clear).toHaveBeenCalled();
       expect(mockClearProfile).toHaveBeenCalled();
       expect(mockResetProgress).toHaveBeenCalled();
     });
@@ -135,7 +132,7 @@ describe('dataReset', () => {
       // delete 에러가 발생해도 계속 진행되어야 함
       await resetAllData();
 
-      expect(storage.clearAppData).toHaveBeenCalled();
+      expect(storageService.clear).toHaveBeenCalled();
       expect(mockClearProfile).toHaveBeenCalled();
       expect(mockResetProgress).toHaveBeenCalled();
     });
@@ -152,7 +149,7 @@ describe('dataReset', () => {
         data: { user: { id: 'test-user' } },
         error: null,
       } as never);
-      vi.mocked(storage.clearAppData).mockImplementation(() => {
+      vi.mocked(storageService.clear).mockImplementation(() => {
         throw new Error('Storage error');
       });
 
@@ -178,8 +175,8 @@ describe('dataReset', () => {
       vi.mocked(useProfileStore.getState).mockReturnValue({
         clearProfile: mockClearProfile,
       } as never);
-      // storage.clearAppData는 정상 동작
-      vi.mocked(storage.clearAppData).mockImplementation(() => {});
+      // storageService.clear는 정상 동작
+      vi.mocked(storageService.clear).mockImplementation(() => {});
 
       // clearProfile 에러가 발생하면 전체 함수가 실패해야 함
       await expect(resetAllData()).rejects.toThrow('Clear profile error');
@@ -206,8 +203,8 @@ describe('dataReset', () => {
       vi.mocked(useLevelProgressStore.getState).mockReturnValue({
         resetProgress: mockResetProgress,
       } as never);
-      // storage.clearAppData는 정상 동작
-      vi.mocked(storage.clearAppData).mockImplementation(() => {});
+      // storageService.clear는 정상 동작
+      vi.mocked(storageService.clear).mockImplementation(() => {});
 
       // resetProgress 에러는 throw되어야 함
       await expect(resetAllData()).rejects.toThrow('Reset progress error');
@@ -227,7 +224,7 @@ describe('dataReset', () => {
       vi.mocked(useProfileStore.getState).mockReturnValue({
         clearProfile: mockClearProfile,
       } as never);
-      vi.mocked(storage.clearAppData).mockImplementation(() => {
+      vi.mocked(storageService.clear).mockImplementation(() => {
         throw new Error('Storage error');
       });
 

@@ -9,10 +9,31 @@ vi.mock('../../utils/supabaseClient', () => ({
       getSession: vi.fn(),
       signInAnonymously: vi.fn(),
       signOut: vi.fn(),
-      onAuthStateChange: vi.fn(() => ({
-        data: { subscription: { unsubscribe: vi.fn() } },
-      })),
+      onAuthStateChange: vi.fn((cb) => {
+        // Store the callback so we can trigger it in tests
+        (global as any).authCallback = cb;
+        return {
+          data: { subscription: { unsubscribe: vi.fn() } },
+        };
+      }),
     },
+  },
+}));
+
+vi.mock('../../services', () => ({
+  storageService: {
+    get: vi.fn(),
+    set: vi.fn(),
+    remove: vi.fn(),
+  },
+  STORAGE_KEYS: {
+    LOCAL_SESSION: 'local-session',
+  },
+}));
+
+vi.mock('@/services/analytics', () => ({
+  analytics: {
+    setUser: vi.fn(),
   },
 }));
 
@@ -202,5 +223,85 @@ describe('useAuthStore', () => {
 
     // isLoading should be false after sign-in
     expect(useAuthStore.getState().isLoading).toBe(false);
+  });
+
+  describe('Session Recovery & Auth Changes', () => {
+    it('should recover session from local storage', async () => {
+      const { storageService, STORAGE_KEYS } = await import('../../services');
+      vi.mocked(storageService.get).mockReturnValue({ userId: 'local-user' });
+
+      vi.mocked(supabase.auth.getSession).mockResolvedValue({
+        data: { session: null },
+        error: null,
+      } as any);
+
+      await useAuthStore.getState().initialize();
+
+      const { user } = useAuthStore.getState();
+      expect(user?.id).toBe('local-user');
+      expect((user as any).is_anonymous).toBe(true);
+    });
+
+    it('should handle auth state change events', async () => {
+      await useAuthStore.getState().initialize();
+      const callback = (global as any).authCallback;
+      expect(callback).toBeDefined();
+
+      // Trigger signed in
+      const mockSession = { user: { id: 'new-user' } };
+      callback('SIGNED_IN', mockSession);
+
+      expect(useAuthStore.getState().user?.id).toBe('new-user');
+
+      // Trigger signed out
+      callback('SIGNED_OUT', null);
+      expect(useAuthStore.getState().user).toBeNull();
+    });
+
+    it('should maintain anonymous session on INITIAL_SESSION or MFA_CHALLENGE with null session', async () => {
+      // Ensure no local session to interfere
+      const { storageService } = await import('../../services');
+      vi.mocked(storageService.get).mockReturnValue(null);
+
+      // Setup: existing anonymous session
+      useAuthStore.setState({
+        session: { user: { id: 'anon-id', is_anonymous: true } } as any,
+        user: { id: 'anon-id', is_anonymous: true } as any,
+      });
+
+      await useAuthStore.getState().initialize();
+      const callback = (global as any).authCallback;
+
+      // Trigger INITIAL_SESSION with null session
+      callback('INITIAL_SESSION', null);
+
+      // Should NOT clear session (stay as anon)
+      expect(useAuthStore.getState().user?.id).toBe('anon-id');
+
+      // Trigger MFA_CHALLENGE with null session
+      callback('MFA_CHALLENGE', null);
+      expect(useAuthStore.getState().user?.id).toBe('anon-id');
+
+      // But SIGNED_OUT should clear it
+      callback('SIGNED_OUT', null);
+      expect(useAuthStore.getState().user).toBeNull();
+    });
+
+    it('should synchronize analytics user on auth change', async () => {
+      const { analytics } = await import('@/services/analytics');
+      await useAuthStore.getState().initialize();
+      const callback = (global as any).authCallback;
+
+      const mockUser = { id: 'user-123', email: 'test@example.com', last_sign_in_at: '2023-01-01' };
+      callback('SIGNED_IN', { user: mockUser });
+
+      // Need to wait for dynamic import promise in the implementation
+      await new Promise((resolve) => setTimeout(resolve, 0));
+
+      expect(analytics.setUser).toHaveBeenCalledWith('user-123', {
+        email: 'test@example.com',
+        last_sign_in: '2023-01-01',
+      });
+    });
   });
 });

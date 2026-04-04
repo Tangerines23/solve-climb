@@ -1,9 +1,6 @@
 import { APP_CONFIG } from '../config/app';
-import { storage } from './storage';
+import { storageService, STORAGE_KEYS } from '../services';
 import { useFeatureFlagStore } from '../stores/useFeatureFlagStore';
-
-const STORAGE_KEY_DATE = 'solve-climb-today-challenge-date';
-const STORAGE_KEY_CHALLENGE = 'solve-climb-today-challenge';
 
 export interface TodayChallenge {
   id: string;
@@ -162,16 +159,16 @@ export async function getTodayChallenge(
   progressMap: Record<string, Record<string, Record<string, { cleared: boolean; level: number }>>>
 ): Promise<TodayChallenge> {
   const todayDate = getTodayDateString();
-  const storedDate = storage.getString(STORAGE_KEY_DATE, null);
-  const storedChallenge = storage.get<TodayChallenge | null>(STORAGE_KEY_CHALLENGE, null);
+  const storedDate = storageService.get<string>(STORAGE_KEYS.TODAY_CHALLENGE_DATE);
+  const storedChallenge = storageService.get<TodayChallenge>(STORAGE_KEYS.TODAY_CHALLENGE);
 
   if (storedDate === todayDate && storedChallenge) {
     return storedChallenge;
   }
 
   const newChallenge = generateTodayChallenge(progressMap);
-  storage.setString(STORAGE_KEY_DATE, todayDate);
-  storage.set(STORAGE_KEY_CHALLENGE, newChallenge);
+  storageService.set(STORAGE_KEYS.TODAY_CHALLENGE_DATE, todayDate);
+  storageService.set(STORAGE_KEYS.TODAY_CHALLENGE, newChallenge);
 
   return newChallenge;
 }

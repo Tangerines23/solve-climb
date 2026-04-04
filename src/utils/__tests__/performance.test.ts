@@ -5,6 +5,7 @@ import {
   getPerformanceMetrics,
   clearPerformanceMetrics,
   logPerformanceSummary,
+  performanceMonitor,
 } from '../performance';
 import { logger as _logger } from '../logger';
 
@@ -169,6 +170,73 @@ describe('performance', () => {
       const metrics = getPerformanceMetrics();
       expect(metrics.length).toBe(3);
       expect(metrics.map((m) => m.name)).toEqual(['op1', 'op2', 'op3']);
+    });
+  });
+
+  describe('performanceMonitor', () => {
+    let observeSpy: any;
+    let disconnectSpy: any;
+    let mockCallback: any;
+
+    beforeEach(() => {
+      observeSpy = vi.fn();
+      disconnectSpy = vi.fn();
+
+      // Mock PerformanceObserver
+      global.PerformanceObserver = class {
+        constructor(callback: any) {
+          mockCallback = callback;
+        }
+        observe = observeSpy;
+        disconnect = disconnectSpy;
+        takeRecords = vi.fn();
+      } as any;
+
+      // Mock environment
+      vi.stubGlobal('import.meta', { env: { DEV: true } });
+    });
+
+    it('should initialize and observe core metrics', () => {
+      performanceMonitor.init();
+
+      expect(observeSpy).toHaveBeenCalledTimes(3);
+      expect(observeSpy).toHaveBeenCalledWith({ type: 'largest-contentful-paint', buffered: true });
+      expect(observeSpy).toHaveBeenCalledWith({ type: 'first-input', buffered: true });
+      expect(observeSpy).toHaveBeenCalledWith({ type: 'layout-shift', buffered: true });
+    });
+
+    it('should report metrics correctly', () => {
+      const reportSpy = vi.spyOn(performanceMonitor, 'report');
+
+      // Manual trigger of observer callback
+      const mockEntries = {
+        getEntries: () => [{ name: 'LCP', startTime: 100, entryType: 'largest-contentful-paint' }],
+      };
+
+      performanceMonitor.observeMetric('LCP');
+      mockCallback(mockEntries);
+
+      expect(reportSpy).toHaveBeenCalledWith('LCP', 100);
+    });
+
+    it('should handle FID calculation', () => {
+      const reportSpy = vi.spyOn(performanceMonitor, 'report');
+
+      const mockEntries = {
+        getEntries: () => [
+          {
+            name: 'FID',
+            startTime: 50,
+            processingStart: 60,
+            entryType: 'first-input',
+          },
+        ],
+      };
+
+      performanceMonitor.observeMetric('FID');
+      mockCallback(mockEntries);
+
+      expect(reportSpy).toHaveBeenCalledWith('FID', 10); // 60 - 50
     });
   });
 });

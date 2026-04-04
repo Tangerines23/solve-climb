@@ -1,3 +1,4 @@
+import { EnhancedPerformanceEntry } from '@/types/performance';
 import { analytics } from '@/services/analytics';
 import { logger } from './logger';
 
@@ -43,10 +44,9 @@ export const performanceMonitor = {
         entries.forEach((entry: PerformanceEntry) => {
           let value = 0;
           if (metricName === 'LCP') value = entry.startTime;
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          else if (metricName === 'FID') value = (entry as any).processingStart - entry.startTime;
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          else if (metricName === 'CLS') value = (entry as any).value;
+          else if (metricName === 'FID')
+            value = (entry as EnhancedPerformanceEntry).processingStart! - entry.startTime;
+          else if (metricName === 'CLS') value = (entry as EnhancedPerformanceEntry).value!;
 
           this.report(metricName, value);
         });

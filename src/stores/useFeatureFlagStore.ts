@@ -1,5 +1,6 @@
 import { create } from 'zustand';
-import { persist } from 'zustand/middleware';
+import { persist, createJSONStorage } from 'zustand/middleware';
+import { zustandStorage } from '../services';
 
 /**
  * [ Dynamic Feature Flag Store ]
@@ -42,6 +43,7 @@ export const useFeatureFlagStore = create<FeatureFlagState>()(
     }),
     {
       name: 'solve-climb-feature-flags', // localStorage에 저장되어 베타 테스트 중 강점 발휘
+      storage: createJSONStorage(() => zustandStorage),
     }
   )
 );

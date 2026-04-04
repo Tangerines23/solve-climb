@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { User } from '@supabase/supabase-js';
 import { supabase } from '../../utils/supabaseClient';
+import { useDebugStore } from '../../stores/useDebugStore';
 import './AuthModeSection.css';
 
 type AuthMode = 'anonymous' | 'authenticated' | 'developer';
@@ -15,11 +16,14 @@ interface TestResultData {
 }
 
 export function AuthModeSection() {
-  const [currentMode, setCurrentMode] = useState<AuthMode>('authenticated');
+  const { isAdminMode, setAdminMode } = useDebugStore();
+  const [currentMode, setCurrentMode] = useState<AuthMode>(
+    isAdminMode ? 'developer' : 'authenticated'
+  );
   const [testResults, setTestResults] = useState<Record<string, TestResultData>>({});
   const [loading, setLoading] = useState(false);
   const [user, setUser] = useState<User | null>(null);
-  const [actualMode, setActualMode] = useState<AuthMode>('anonymous');
+  const [actualMode, setActualMode] = useState<AuthMode>(isAdminMode ? 'developer' : 'anonymous');
 
   const testDataAccess = async () => {
     setLoading(true);
@@ -116,9 +120,33 @@ export function AuthModeSection() {
 
   const handleModeChange = async (mode: AuthMode) => {
     setCurrentMode(mode);
+    setAdminMode(mode === 'developer');
 
-    // 실제로는 로그아웃/로그인 처리가 필요하지만,
-    // 여기서는 현재 상태만 표시
+    if (mode === 'anonymous') {
+      const { error } = await supabase.auth.signOut();
+      if (error) {
+        console.error('Sign out failed:', error);
+      } else {
+        setActualMode('anonymous');
+        setUser(null);
+      }
+    } else if (mode === 'authenticated' || mode === 'developer') {
+      // 실제 로그인이 안 되어 있다면 로그인 유도 메시지 표시
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+      if (!user) {
+        setTestResults((prev) => ({
+          ...prev,
+          auth_warning: {
+            accessible: false,
+            error: `${mode === 'developer' ? '개발자' : '일반'} 테스트를 위해서는 실제 로그인이 필요합니다. 로그인 페이지로 이동하여 로그인해 주세요.`,
+          },
+        }));
+        return;
+      }
+    }
+
     await testDataAccess();
   };
 
@@ -178,6 +206,12 @@ export function AuthModeSection() {
         </button>
       </div>
 
+      <div className="debug-hint-box">
+        <p>
+          ℹ️ <strong>익명 모드 테스트</strong> 클릭 시 현재 세션에서 로그아웃됩니다.
+        </p>
+      </div>
+
       {loading && <p>테스트 중...</p>}
 
       {Object.keys(testResults).length > 0 && (
@@ -233,7 +267,7 @@ export function AuthModeSection() {
         </div>
       )}
 
-      <div className="debug-user-info-box" style={{ marginTop: '1rem' }}>
+      <div className="debug-info-list">
         <h4>📋 모드별 차이</h4>
         <ul>
           <li>

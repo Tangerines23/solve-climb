@@ -5,7 +5,7 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '../utils/supabaseClient';
-import { storage, StorageKeys } from '../utils/storage';
+import { storageService, STORAGE_KEYS } from '../services';
 import { parseLocalSession } from '../utils/safeJsonParse';
 import type { Session } from '@supabase/supabase-js';
 
@@ -55,7 +55,7 @@ export function useSession(): UseSessionResult {
   // 로컬 세션 확인
   const checkLocalSession = (): Session | null => {
     try {
-      const localSessionStr = storage.getString(StorageKeys.LOCAL_SESSION);
+      const localSessionStr = storageService.get<string>(STORAGE_KEYS.LOCAL_SESSION);
       const localSession = parseLocalSession(localSessionStr);
       if (localSession) {
         return createVirtualSession(localSession.userId, localSession.isAdmin);

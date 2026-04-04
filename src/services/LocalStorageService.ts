@@ -64,4 +64,8 @@ export class LocalStorageService implements IStorageService {
   get length(): number {
     return this.storage.length;
   }
+
+  hasItem(key: string): boolean {
+    return this.storage.getItem(key) !== null;
+  }
 }

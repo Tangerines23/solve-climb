@@ -6,504 +6,338 @@ import {
   ItemActionResponseSchema,
   CommonResponseSchema,
 } from '../utils/rpcValidator';
-import { PostgrestError, UserResponse } from '@supabase/supabase-js';
 import { AdService } from '../utils/adService';
+import { UI_MESSAGES } from '../constants/ui';
+import { UserState, InventoryItem } from '../types/user';
 
-interface UserState {
-  minerals: number;
-  stamina: number;
-  inventory: Array<{
-    id: number;
-    code: string;
-    name: string;
-    description: string;
-    quantity: number;
-  }>;
-  isLoading: boolean;
-  isAnonymous: boolean;
-  lastAdRechargeTime: string | null;
-
-  handleWatchAd: () => void;
-  // Pause System
-  showPauseModal: boolean;
-  remainingPauses: number;
-  handlePauseClick: () => void;
-  handlePauseResume: () => void;
-  handlePauseExit: () => void;
-
-  fetchUserData: () => Promise<void>;
-  purchaseItem: (itemId: number) => Promise<{ success: boolean; message: string }>;
-  checkStamina: () => Promise<void>;
-  consumeItem: (itemId: number) => Promise<{ success: boolean; message: string }>;
-  consumeStamina: () => Promise<{ success: boolean; message: string }>;
-  setMinerals: (minerals: number) => Promise<void>;
-  setStamina: (stamina: number) => void;
-  recoverStaminaAds: () => Promise<{ success: boolean; message: string }>;
-  recoverMineralsAds: () => Promise<{ success: boolean; message: string }>;
-  rewardMinerals: (
-    amount: number,
-    isBonus?: boolean
-  ) => Promise<{ success: boolean; message: string }>;
-  refundStamina: () => Promise<{ success: boolean; message: string }>;
-
-  // DEV ONLY
-  debugAddItems: () => Promise<void>;
-  debugResetItems: () => Promise<void>;
-  debugRemoveItems: () => Promise<void>;
-  debugSetStamina: (amount: number) => Promise<void>;
-  debugSetMinerals: (amount: number) => Promise<void>;
-
-  lastStaminaConsumeTime: number;
-}
-
-export const useUserStore = create<UserState>((set, get) => ({
-  minerals: 0,
-  stamina: 5,
-  inventory: [],
-  isLoading: false,
-  isAnonymous: false,
-  lastAdRechargeTime: null,
-
-  handleWatchAd: () => {
-    console.log('Watch Ad called (not implemented)');
-    // Implement ad watching logic here
-  },
-  showPauseModal: false,
-  remainingPauses: 3, // Initial value
-  handlePauseClick: () => {
-    set(() => ({ showPauseModal: true }));
-  },
-  handlePauseResume: () => {
-    set(() => ({ showPauseModal: false }));
-  },
-  handlePauseExit: () => {
-    set(() => ({ showPauseModal: false }));
-    // Additional logic for exiting the quiz/game
-  },
-
-  lastStaminaConsumeTime: 0,
-
-  fetchUserData: async () => {
-    set({ isLoading: true });
+/**
+ * 전역 유저 스토어 (Zustand)
+ * - 미네랄, 스태미나, 인벤토리 등 유저 상태 관리
+ * - 서버 RPC와 연동하여 상태 동기화
+ */
+export const useUserStore = create<UserState>((set, get) => {
+  /**
+   * 공통 RPC 처리기
+   * - RPC 호출 -> 에러 핸들링 -> (선택적) 데이터 리프레시 -> 표준 응답 반환
+   */
+  const callRpcAndRefresh = async <T extends { success: boolean; message?: string }>(
+    rpcCall: PromiseLike<{ data: T | null; error: unknown }>,
+    options: {
+      refreshData?: boolean;
+      errorMessage?: string;
+    } = {}
+  ): Promise<{ success: boolean; message: string } & Partial<T>> => {
     try {
-      const authResult = await safeSupabaseQuery(supabase.auth.getUser());
-      const user = authResult?.data?.user;
-      if (!user) {
-        console.log('[UserStore] No user found, skipping fetch');
-        return;
-      }
-
-      set({ isAnonymous: !!user.is_anonymous });
-
-      // Fetch profile
-      const { data: profile } = await safeSupabaseQuery(
-        supabase
-          .from('profiles')
-          .select('minerals, stamina, last_ad_stamina_recharge')
-          .eq('id', user.id)
-          .maybeSingle()
-      );
-
-      // Fetch inventory
-      const { data: inventoryData } = await safeSupabaseQuery(
-        supabase
-          .from('inventory')
-          .select(
-            `
-                    quantity,
-                    items (id, code, name, description)
-                `
-          )
-          .eq('user_id', user.id)
-      );
-
-      type InventoryItem = {
-        quantity: number;
-        items: {
-          id: number;
-          code: string;
-          name: string;
-          description: string;
-        };
-      };
-      const formattedInventory =
-        (inventoryData as InventoryItem[] | null)?.map((item) => ({
-          id: item?.items?.id,
-          code: item?.items?.code,
-          name: item?.items?.name,
-          description: item?.items?.description,
-          quantity: item?.quantity || 0,
-        })) || [];
-
-      set({
-        minerals: profile?.minerals || 0,
-        stamina: profile?.stamina || 0,
-        lastAdRechargeTime: profile?.last_ad_stamina_recharge || null,
-        inventory: formattedInventory,
+      // Use safeSupabaseQuery to handle debug latency and forced errors
+      const { data, error } = await safeSupabaseQuery(rpcCall, {
+        context: 'UserStoreRPC',
       });
-    } catch (error) {
-      console.error('Error fetching user data:', error);
-    } finally {
-      set({ isLoading: false });
-    }
-  },
 
-  purchaseItem: async (itemId: number) => {
-    const { data, error } = await validatedRpc(
-      supabase.rpc('purchase_item', { p_item_id: itemId }),
-      ItemActionResponseSchema,
-      'purchase_item'
-    );
-    if (error) throw error;
-    if (!data || !data.success) {
-      return { success: false, message: data?.message || '구매 실패' };
-    }
-
-    if (data?.success) {
-      await get().fetchUserData(); // Refresh data
-    }
-    return {
-      success: true,
-      message: data.message || '구매 성공',
-      remaining_minerals: data.remaining_minerals,
-      new_quantity: data.new_quantity,
-    };
-  },
-
-  checkStamina: async () => {
-    const {
-      data: { session },
-    } = await safeSupabaseQuery(supabase.auth.getSession());
-    if (!session?.user) return;
-
-    const { data, error } = await safeSupabaseQuery(supabase.rpc('check_and_recover_stamina'));
-    if (error) {
-      console.error('Error checking stamina:', error);
-      return;
-    }
-    if (data && typeof data?.stamina === 'number') {
-      set({ stamina: data.stamina });
-    }
-  },
-
-  consumeItem: async (itemId: number) => {
-    const { data, error } = await validatedRpc(
-      supabase.rpc('consume_item', { p_item_id: itemId }),
-      ItemActionResponseSchema,
-      'consume_item'
-    );
-    if (error) throw error;
-    if (!data || !data.success) {
-      return { success: false, message: data?.message || '아이템 사용 실패' };
-    }
-
-    if (data?.success) {
-      await get().fetchUserData();
-    }
-    return {
-      success: true,
-      message: data.message || '아이템 사용 성공',
-      remaining_minerals: data.remaining_minerals,
-      new_quantity: data.new_quantity,
-    };
-  },
-
-  consumeStamina: async () => {
-    const now = Date.now();
-    const lastTime = get().lastStaminaConsumeTime;
-
-    if (now - lastTime < 3000) {
-      console.log('[UserStore] Stamina consumption throttled');
-      return { success: true, message: 'Already consumed' };
-    }
-
-    const { data, error } = await safeSupabaseQuery(supabase.rpc('consume_stamina'));
-    if (error) {
-      console.error('Error consuming stamina:', error);
-      return { success: false, message: '오류가 발생했습니다.' };
-    }
-
-    if (data?.success) {
-      set((state) => ({
-        stamina: Math.max(0, state.stamina - 1),
-        lastStaminaConsumeTime: now,
-      }));
-    }
-    return data || { success: false, message: 'Response failed' };
-  },
-
-  setMinerals: async (minerals: number) => {
-    // [보안 지침] 직접적인 profiles update 정책이 폐쇄되었습니다.
-    // 이 함수는 로컬 상태 업데이트용으로만 사용하고, 서버 동기화는 add_minerals RPC를 권장합니다.
-    set({ minerals: Math.max(0, minerals) });
-    console.warn(
-      '[UserStore] Direct setMinerals sync is disabled for security. Use rewardMinerals instead.'
-    );
-  },
-
-  setStamina: async (stamina: number) => {
-    set({ stamina: Math.max(0, stamina) });
-    console.warn(
-      '[UserStore] Direct setStamina sync is disabled for security. Stamina recovery is handled server-side.'
-    );
-  },
-
-  recoverStaminaAds: async () => {
-    // 1. 클라이언트 레벨 쿨타임 체크 (UX 향상)
-    const lastRecharge = get().lastAdRechargeTime;
-    if (lastRecharge) {
-      const lastTime = new Date(lastRecharge).getTime();
-      const now = Date.now();
-      const sixHours = 6 * 60 * 60 * 1000;
-
-      if (now - lastTime < sixHours) {
-        const remainingMinutes = Math.ceil((sixHours - (now - lastTime)) / (60 * 1000));
+      if (error) {
+        console.error(`[UserStore RPC Error]`, error);
         return {
           success: false,
-          message: `아직 충전할 수 없습니다. (${remainingMinutes}분 남음)`,
-        };
-      }
-    }
-
-    // 2. 광고 시청 (AdService 위임)
-    const adResult = await AdService.showRewardedAd('stamina_recharge');
-    if (!adResult.success) {
-      return { success: false, message: adResult.error || '광고 시청에 실패했습니다.' };
-    }
-
-    // 3. 서버 연동 (RPC 호출)
-    const { data, error } = await safeSupabaseQuery(supabase.rpc('recover_stamina_ads'));
-
-    // PGRST202: RPC 함수가 DB에 없을 경우 (마이그레이션 누락 시 시뮬레이션Fallback)
-    if (error) {
-      if ((error as PostgrestError).code === 'PGRST202') {
-        console.warn('[UserStore] recover_stamina_ads RPC not found. Simulation fallback.');
-        const nowIso = new Date().toISOString();
-        await get().setStamina(5); // 풀 충전
-        set({ lastAdRechargeTime: nowIso });
-        return { success: true, message: '산소통이 전체 충전되었습니다! (시뮬레이션)' };
+          message: options.errorMessage || UI_MESSAGES.COMMON_ERROR,
+        } as { success: false; message: string } & Partial<T>;
       }
 
-      console.error('Error recovering stamina (ads):', error);
-      return { success: false, message: '오류가 발생했습니다.' };
-    }
+      if (!data || !data.success) {
+        return {
+          success: false,
+          message: data?.message || options.errorMessage || '요청 처리에 실패했습니다.',
+        } as { success: false; message: string } & Partial<T>;
+      }
 
-    if (data?.success) {
-      // 서버 응답 성공 시 로컬 상태 업데이트
-      set({
-        stamina: data.stamina || 5,
-        lastAdRechargeTime: new Date().toISOString(),
-      });
-    }
-    return data || { success: false, message: 'Response failed' };
-  },
+      if (options.refreshData) {
+        await get().fetchUserData();
+      }
 
-  recoverMineralsAds: async () => {
-    // 1. 광고 시청
-    const adResult = await AdService.showRewardedAd('mineral_recharge');
-    if (!adResult.success) {
-      return { success: false, message: adResult.error || '광고 시청에 실패했습니다.' };
-    }
-
-    // 2. 서버 연동 (SECURE RPC)
-    const amount = 500;
-    const { data, error } = await safeSupabaseQuery(
-      supabase.rpc('add_minerals', { p_amount: amount })
-    );
-
-    if (error) {
-      console.error('Error rewarding minerals via RPC:', error);
-      return { success: false, message: '보상 지급 중 오류가 발생했습니다.' };
-    }
-
-    if (data.success) {
-      set({ minerals: data.minerals });
-      return { success: true, message: `${amount} 미네랄이 충전되었습니다! 💎` };
-    }
-
-    return { success: false, message: data.message };
-  },
-
-  rewardMinerals: async (amount: number, isBonus = false) => {
-    if (amount <= 0) return { success: false, message: 'Invalid amount' };
-
-    const { data, error } = await safeSupabaseQuery(
-      supabase.rpc('add_minerals', { p_amount: amount })
-    );
-
-    if (error) {
-      console.error('Error rewarding minerals via RPC:', error);
-      return { success: false, message: '미네랄 지급 중 오류가 발생했습니다.' };
-    }
-
-    if (data.success) {
-      set({ minerals: data.minerals });
       return {
+        ...(data as T),
         success: true,
-        message: isBonus ? `${amount} 보너스 미네랄 획득! 💎` : `${amount} 미네랄 획득! 💎`,
+        message: data.message || '성공',
       };
+    } catch (err) {
+      console.error(`[UserStore Unexpected Error]`, err);
+      return {
+        success: false,
+        message: UI_MESSAGES.COMMON_ERROR,
+      } as { success: false; message: string } & Partial<T>;
     }
+  };
 
-    return { success: false, message: data.message };
-  },
+  interface RawInventoryItem {
+    quantity: number;
+    items: {
+      id: number;
+      code: string;
+      name: string;
+      description: string;
+    } | null;
+  }
 
-  // DEV ONLY: 아이템 지급 치트 (RPC Version)
-  debugAddItems: async () => {
-    console.log('[DEBUG] Calling debug_grant_items RPC...');
-    const { error } = await safeSupabaseQuery(supabase.rpc('debug_grant_items'));
-
-    if (error) {
-      console.error('[DEBUG] RPC Failed:', error);
-      // alert replaced with console error. Caller components should handle UI feedback.
-      return;
-    }
-
-    console.log('[DEBUG] RPC Success');
-    // alert handled in UI (Header)
-    await get().fetchUserData();
-  },
-
-  debugResetItems: async () => {
-    const authResult = (await safeSupabaseQuery(supabase.auth.getUser())) as UserResponse;
-    const user = authResult?.data?.user;
-    if (!user) return;
-
-    console.log('[DEBUG] Resetting items...');
-    const { error } = await safeSupabaseQuery(
-      supabase.from('inventory').delete().eq('user_id', user.id)
+  /**
+   * 원시 인벤토리 데이터를 포맷팅
+   */
+  const formatInventory = (raw: RawInventoryItem[] | null): InventoryItem[] => {
+    return (
+      raw?.map((item) => ({
+        id: item?.items?.id || 0,
+        code: item?.items?.code || '',
+        name: item?.items?.name || '',
+        description: item?.items?.description || '',
+        quantity: item?.quantity || 0,
+      })) || []
     );
+  };
 
-    if (error) {
-      console.error('[DEBUG] Reset Failed:', error);
-      // alert replaced with console error.
-      return;
-    }
-
-    console.log('[DEBUG] Items Reset Success');
-    await get().fetchUserData();
-  },
-
-  // DEV ONLY: 아이템 5개씩 감소
-  debugRemoveItems: async () => {
-    const authResult = (await safeSupabaseQuery(supabase.auth.getUser())) as UserResponse;
-    const user = authResult?.data?.user;
-    if (!user) return;
-
-    // Get current inventory
-    const { data: inventory } = await safeSupabaseQuery(
-      supabase.from('inventory').select('item_id, quantity').eq('user_id', user.id)
-    );
-    if (!inventory) return;
-
-    // 보안 RPC를 통해 루프를 돌며 개별 업데이트
-    for (const item of inventory) {
-      const newQty = Math.max(0, item.quantity - 5);
-      await validatedRpc(
-        supabase.rpc('debug_set_inventory_quantity', {
-          p_user_id: user.id,
-          p_item_id: item.item_id,
-          p_quantity: newQty,
-        }),
-        CommonResponseSchema,
-        'debug_set_inventory_quantity'
+  return {
+    minerals: 0,
+    stamina: 5,
+    inventory: [],
+    isLoading: false,
+    isAnonymous: false,
+    lastAdRechargeTime: null,
+    lastStaminaConsumeTime: 0,
+    updateNickname: async (nickname: string) => {
+      const res = await callRpcAndRefresh<{ success: boolean; message: string }>(
+        supabase.rpc('rpc_update_nickname', { p_nickname: nickname }),
+        { refreshData: true, errorMessage: '닉네임 업데이트에 실패했습니다.' }
       );
-    }
+      return res;
+    },
 
-    await get().fetchUserData();
-  },
+    handleWatchAd: () => {
+      console.log('Watch Ad called (not implemented)');
+    },
+    showPauseModal: false,
+    remainingPauses: 3,
+    handlePauseClick: () => set({ showPauseModal: true }),
+    handlePauseResume: () => set({ showPauseModal: false }),
+    handlePauseExit: () => set({ showPauseModal: false }),
 
-  // DEV ONLY: 스태미나 강제 설정 (DB Sync)
-  debugSetStamina: async (amount: number) => {
-    const authResult = (await safeSupabaseQuery(supabase.auth.getUser())) as UserResponse;
-    const user = authResult?.data?.user;
+    fetchUserData: async () => {
+      set({ isLoading: true });
+      try {
+        const authResult = await safeSupabaseQuery(supabase.auth.getUser());
+        const user = authResult?.data?.user;
+        if (!user) return;
 
-    if (!user) {
-      console.error('[DEBUG] debugSetStamina: No authenticated user found.');
-      return;
-    }
+        set({ isAnonymous: !!user.is_anonymous });
 
-    const newStamina = Math.max(0, amount);
+        const [profileRes, inventoryRes] = await Promise.all([
+          safeSupabaseQuery(
+            supabase
+              .from('profiles')
+              .select('minerals, stamina, last_ad_stamina_recharge')
+              .eq('id', user.id)
+              .maybeSingle()
+          ),
+          safeSupabaseQuery(
+            supabase
+              .from('inventory')
+              .select('quantity, items (id, code, name, description)')
+              .eq('user_id', user.id)
+          ),
+        ]);
 
-    // 보안 RPC를 통해 프로필 업데이트
-    const { data, error } = await validatedRpc(
-      supabase.rpc('debug_update_profile_stats', {
-        p_user_id: user.id,
-        p_stamina: newStamina,
-      }),
-      CommonResponseSchema,
-      'debug_update_profile_stats'
-    );
-
-    if (error || !data?.success) {
-      console.error('[DEBUG] Set Stamina Failed:', error || data?.message);
-      return;
-    }
-
-    console.log('[DEBUG] Set Stamina Success via RPC. Updating local store.');
-    set({ stamina: newStamina });
-  },
-
-  // DEV ONLY: 미네랄 강제 설정 (DB Sync)
-  debugSetMinerals: async (amount: number) => {
-    const authResult = (await safeSupabaseQuery(supabase.auth.getUser())) as UserResponse;
-    const user = authResult?.data?.user;
-    if (!user) {
-      console.error('[DEBUG] debugSetMinerals: No authenticated user found.');
-      return;
-    }
-
-    const newMinerals = Math.max(0, amount);
-
-    // 보안 RPC를 통해 프로필 업데이트
-    const { data, error } = await validatedRpc(
-      supabase.rpc('debug_update_profile_stats', {
-        p_user_id: user.id,
-        p_minerals: newMinerals,
-      }),
-      CommonResponseSchema,
-      'debug_update_profile_stats'
-    );
-
-    if (error || !data?.success) {
-      console.error('[DEBUG] Set Minerals Failed:', error || data?.message);
-      return;
-    }
-
-    console.log('[DEBUG] Set Minerals Success via RPC. Updating local store.');
-    set({ minerals: newMinerals });
-  },
-
-  refundStamina: async () => {
-    const authResult = (await safeSupabaseQuery(supabase.auth.getUser())) as UserResponse;
-    const user = authResult?.data?.user;
-    if (!user) return { success: false, message: '로그인이 필요합니다.' };
-
-    // Optimistic update
-    const currentStamina = get().stamina;
-    if (currentStamina < 5) {
-      set({ stamina: currentStamina + 1 });
-    }
-
-    try {
-      const { error } = (await safeSupabaseQuery(supabase.rpc('recover_stamina_ads'))) || {};
-      if (error) {
-        // RPC가 없는 경우 (PGRST202) 시뮬레이션 모드로 간주하고 성공 반환
-        if ((error as PostgrestError).code === 'PGRST202') {
-          console.warn(
-            '[UserStore] recover_stamina_ads RPC not found during refund. Using simulation fallback.'
-          );
-          // 이미 위에서 set한 상태를 서버에 동기화
-          if (currentStamina < 5) {
-            await get().setStamina(currentStamina + 1);
-          }
-          return { success: true, message: 'Stamina refunded (Simulation)' };
-        }
-        throw error;
+        set({
+          minerals: profileRes.data?.minerals || 0,
+          stamina: profileRes.data?.stamina || 0,
+          lastAdRechargeTime: profileRes.data?.last_ad_stamina_recharge || null,
+          inventory: formatInventory(inventoryRes.data as unknown as RawInventoryItem[]),
+        });
+      } catch (error) {
+        console.error('Error fetching user data:', error);
+      } finally {
+        set({ isLoading: false });
       }
-      return { success: true, message: 'Stamina refunded' };
-    } catch (error) {
-      console.error('Error refunding stamina:', error);
-      return { success: false, message: 'Failed to refund stamina' };
-    }
-  },
-}));
+    },
+
+    purchaseItem: async (itemId: number) => {
+      return callRpcAndRefresh(
+        validatedRpc(
+          supabase.rpc('purchase_item', { p_item_id: itemId }),
+          ItemActionResponseSchema,
+          'purchase_item'
+        ),
+        { refreshData: true, errorMessage: UI_MESSAGES.PURCHASE_FAILED }
+      );
+    },
+
+    checkStamina: async () => {
+      const {
+        data: { session },
+      } = await safeSupabaseQuery(supabase.auth.getSession());
+      if (!session?.user) return;
+
+      const { data, error } = await safeSupabaseQuery(supabase.rpc('check_and_recover_stamina'));
+      if (!error && data && typeof data?.stamina === 'number') {
+        set({ stamina: data.stamina });
+      }
+    },
+
+    consumeItem: async (itemId: number) => {
+      return callRpcAndRefresh(
+        validatedRpc(
+          supabase.rpc('consume_item', { p_item_id: itemId }),
+          ItemActionResponseSchema,
+          'consume_item'
+        ),
+        { refreshData: true }
+      );
+    },
+
+    consumeStamina: async () => {
+      // infiniteStamina 체크 (디버그 모드)
+      const { useDebugStore } = await import('./useDebugStore');
+      const { infiniteStamina } = useDebugStore.getState();
+
+      if (infiniteStamina) {
+        console.log('[DEBUG] Infinite Stamina active: skipping consume');
+        return { success: true, message: 'Infinite Stamina (Debug)' };
+      }
+
+      const now = Date.now();
+      if (now - get().lastStaminaConsumeTime < 3000) {
+        console.log('[UserStore] Stamina consumption throttled');
+        return { success: true, message: 'Already consumed' };
+      }
+
+      const res = await callRpcAndRefresh(supabase.rpc('consume_stamina'));
+      if (res.success) {
+        set((state) => ({
+          stamina: Math.max(0, state.stamina - 1),
+          lastStaminaConsumeTime: now,
+        }));
+      }
+      return res;
+    },
+
+    setMinerals: async (minerals: number) => {
+      set({ minerals: Math.max(0, minerals) });
+      console.warn('[UserStore] Direct setMinerals is for local state only. Use rewardMinerals.');
+    },
+
+    setStamina: (stamina: number) => {
+      set({ stamina: Math.max(0, stamina) });
+      console.warn('[UserStore] Direct setStamina is for local state only.');
+    },
+
+    recoverStaminaAds: async () => {
+      const adResult = await AdService.showRewardedAd('stamina_recharge');
+      if (!adResult.success) {
+        return { success: false, message: adResult.error || '광고 시청에 실패했습니다.' };
+      }
+
+      const res = await callRpcAndRefresh<{
+        success: boolean;
+        stamina: number;
+        last_ad_stamina_recharge: string;
+      }>(supabase.rpc('secure_reward_ad_view', { p_ad_type: 'stamina_recharge' }), {
+        refreshData: true,
+      });
+
+      return res as { success: boolean; message: string };
+    },
+
+    recoverMineralsAds: async () => {
+      const adResult = await AdService.showRewardedAd('mineral_recharge');
+      if (!adResult.success) return { success: false, message: UI_MESSAGES.AD_WATCH_FAILED() };
+
+      return callRpcAndRefresh<{ success: boolean; minerals: number }>(
+        supabase.rpc('secure_reward_ad_view', { p_ad_type: 'mineral_recharge' }),
+        { refreshData: true }
+      );
+    },
+
+    rewardMinerals: async (amount: number) => {
+      if (amount <= 0) return { success: false, message: 'Invalid amount' };
+      // [Security Warning] Generic mineral rewards are now discouraged.
+      // Use specific RPCs like secure_reward_ad_view or game result submission.
+      return { success: false, message: '보안 정책에 따라 직접적인 미네랄 지급이 제한됩니다.' };
+    },
+
+    debugAddItems: async () => {
+      const res = await callRpcAndRefresh(supabase.rpc('debug_grant_items'), { refreshData: true });
+      if (res.success) console.log('[DEBUG] Items Added');
+    },
+
+    debugResetItems: async () => {
+      const {
+        data: { session },
+      } = await safeSupabaseQuery(supabase.auth.getSession());
+      const userId = session?.user?.id || 'anonymous-debug-user';
+
+      const res = await callRpcAndRefresh(
+        validatedRpc(
+          supabase.rpc('debug_reset_inventory', { p_user_id: userId }),
+          CommonResponseSchema,
+          'debug_reset_inventory'
+        ),
+        { refreshData: true }
+      );
+      if (res.success) console.log('[DEBUG] Inventory Reset');
+    },
+
+    debugRemoveItems: async () => {
+      const {
+        data: { user: _user },
+      } = await safeSupabaseQuery(supabase.auth.getUser());
+      const userId = _user?.id || 'anonymous-debug-user';
+
+      const { data: inventory } = await safeSupabaseQuery(
+        supabase.from('inventory').select('item_id, quantity').eq('user_id', userId)
+      );
+      if (!inventory) return;
+
+      await Promise.all(
+        inventory.map((item) =>
+          callRpcAndRefresh(
+            validatedRpc(
+              supabase.rpc('debug_set_inventory_quantity', {
+                p_user_id: userId,
+                p_item_id: item.item_id,
+                p_quantity: Math.max(0, item.quantity - 5),
+              }),
+              CommonResponseSchema,
+              'debug_set_inventory_quantity'
+            )
+          )
+        )
+      );
+      await get().fetchUserData();
+    },
+
+    debugSetStamina: async (amount: number) => {
+      const res = await callRpcAndRefresh(
+        validatedRpc(
+          supabase.rpc('debug_set_stamina', { p_stamina: amount }),
+          CommonResponseSchema,
+          'debug_set_stamina'
+        ),
+        { refreshData: true }
+      );
+      if (res.success) set({ stamina: Math.max(0, amount) });
+    },
+
+    debugSetMinerals: async (amount: number) => {
+      const res = await callRpcAndRefresh(
+        validatedRpc(
+          supabase.rpc('debug_set_minerals', { p_minerals: amount }),
+          CommonResponseSchema,
+          'debug_set_minerals'
+        ),
+        { refreshData: true }
+      );
+      if (res.success) set({ minerals: Math.max(0, amount) });
+    },
+
+    refundStamina: async () => {
+      // [Security Policy] Stamina refund is now strictly server-side.
+      // This function will be replaced by a secure RPC call in a future update if required.
+      // Currently, stamina is only consumed upon successful game start.
+      return { success: false, message: '보안 정책에 따라 직접적인 스태미나 수정이 제한됩니다.' };
+    },
+  };
+});

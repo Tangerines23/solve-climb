@@ -2,6 +2,7 @@ import { supabase } from './supabaseClient';
 import { useUserStore } from '../stores/useUserStore';
 import { useQuizStore, type TimeLimit } from '../stores/useQuizStore';
 import { calculateScoreForTier } from './tierUtils';
+import { storageService, STORAGE_KEYS } from '../services';
 
 export interface DebugAction {
   type:
@@ -258,7 +259,6 @@ export async function executeDebugAction(action: DebugAction, userId: string): P
 /**
  * 프리셋 히스토리 저장
  */
-const PRESET_HISTORY_KEY = 'debug_preset_history';
 const MAX_HISTORY_COUNT = 50;
 
 export function savePresetHistory(history: PresetHistory): void {
@@ -267,7 +267,7 @@ export function savePresetHistory(history: PresetHistory): void {
     histories.unshift(history);
     // 최대 개수 제한
     const limitedHistories = histories.slice(0, MAX_HISTORY_COUNT);
-    localStorage.setItem(PRESET_HISTORY_KEY, JSON.stringify(limitedHistories));
+    storageService.set(STORAGE_KEYS.DEBUG_PRESET_HISTORY, limitedHistories);
   } catch (error) {
     console.error('Failed to save preset history:', error);
   }
@@ -275,10 +275,9 @@ export function savePresetHistory(history: PresetHistory): void {
 
 export function getPresetHistories(): PresetHistory[] {
   try {
-    const stored = localStorage.getItem(PRESET_HISTORY_KEY);
-    if (!stored) return [];
+    const histories = storageService.get<PresetHistory[]>(STORAGE_KEYS.DEBUG_PRESET_HISTORY);
+    if (!histories) return [];
 
-    const histories = JSON.parse(stored) as PresetHistory[];
     // Date 객체 복원
     return histories.map((h) => ({
       ...h,
@@ -292,7 +291,7 @@ export function getPresetHistories(): PresetHistory[] {
 
 export function clearPresetHistory(): void {
   try {
-    localStorage.removeItem(PRESET_HISTORY_KEY);
+    storageService.remove(STORAGE_KEYS.DEBUG_PRESET_HISTORY);
   } catch (error) {
     console.error('Failed to clear preset history:', error);
   }
@@ -391,14 +390,12 @@ export async function applyPreset(
 /**
  * 커스텀 프리셋 관리
  */
-const CUSTOM_PRESET_KEY = 'debug_custom_presets';
 
 export function getCustomPresets(): CustomPreset[] {
   try {
-    const stored = localStorage.getItem(CUSTOM_PRESET_KEY);
-    if (!stored) return [];
+    const presets = storageService.get<CustomPreset[]>(STORAGE_KEYS.DEBUG_CUSTOM_PRESETS);
+    if (!presets) return [];
 
-    const presets = JSON.parse(stored) as CustomPreset[];
     return presets.map((p) => ({
       ...p,
       isCustom: true as const,
@@ -422,7 +419,7 @@ export function saveCustomPreset(preset: CustomPreset): void {
       presets.push(preset);
     }
 
-    localStorage.setItem(CUSTOM_PRESET_KEY, JSON.stringify(presets));
+    storageService.set(STORAGE_KEYS.DEBUG_CUSTOM_PRESETS, presets);
   } catch (error) {
     console.error('Failed to save custom preset:', error);
     throw error;
@@ -433,7 +430,7 @@ export function deleteCustomPreset(presetId: string): void {
   try {
     const presets = getCustomPresets();
     const filtered = presets.filter((p) => p.id !== presetId);
-    localStorage.setItem(CUSTOM_PRESET_KEY, JSON.stringify(filtered));
+    storageService.set(STORAGE_KEYS.DEBUG_CUSTOM_PRESETS, filtered);
   } catch (error) {
     console.error('Failed to delete custom preset:', error);
     throw error;
@@ -479,7 +476,7 @@ export function importCustomPresets(json: string): void {
       }
     }
 
-    localStorage.setItem(CUSTOM_PRESET_KEY, JSON.stringify(merged));
+    storageService.set(STORAGE_KEYS.DEBUG_CUSTOM_PRESETS, merged);
   } catch (error) {
     console.error('Failed to import custom presets:', error);
     throw error;

@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useUserStore } from '../../stores/useUserStore';
+import { getItemEmoji } from '@/constants/items';
 import './BackpackBottomSheet.css';
 
 interface BackpackBottomSheetProps {
@@ -76,21 +77,4 @@ export function BackpackBottomSheet({
       </div>
     </div>
   );
-}
-
-function getItemEmoji(code: string) {
-  switch (code) {
-    case 'oxygen_tank':
-      return '🧪';
-    case 'power_gel':
-      return '⚡';
-    case 'safety_rope':
-      return '🛡️';
-    case 'flare':
-      return '🧨';
-    case 'last_spurt':
-      return '🔥';
-    default:
-      return '📦';
-  }
 }

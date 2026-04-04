@@ -1,86 +1,19 @@
 // 퀴즈 카드 컴포넌트
-import React, { FormEvent, useMemo } from 'react';
-import { QuizQuestion, FunctionMachineHint, IntegralTankHint, CalculusHint } from '../types/quiz';
-import { GameMode } from '../types/quiz';
-import { useQuizStore } from '../stores/useQuizStore';
-import { TimerCircle } from './TimerCircle';
-import { QwertyKeypad } from './QwertyKeypad';
-import { CustomKeypad } from './CustomKeypad';
-import { APP_CONFIG } from '../config/app';
-import { getItemEmoji } from '../constants/items';
-import { ARITHMETIC_TOPIC_MAP, CALCULUS_TOPIC_MAP } from '../constants/math';
+import React from 'react';
 import { useGameStore } from '../stores/useGameStore';
-// import { TranspositionHint } from './quiz/TranspositionHint';
-import { CoordinateGrid } from './quiz/CoordinateGrid';
-import { FunctionMachine } from './expert/FunctionMachine';
-import { ReasoningOverlay } from './effects/ReasoningOverlay';
-import { IntegralVisualizer } from './expert/IntegralVisualizer';
-import { CalculusVisualization } from './quiz/CalculusVisualization';
-import { EquationVisualizer } from './algebra/EquationVisualizer';
-import { parseEquation } from '../utils/algebra';
-import { sendDebugLog } from '../utils/debugLogger';
+import { QuizDisplayState, QuizAnimationState, QuizHandlers } from '../types/quizProps';
+import { QuizHeader } from './quiz/QuizHeader';
+import { QuizQuestionArea } from './quiz/QuizQuestionArea';
+import { QuizAnswerArea } from './quiz/QuizAnswerArea';
+import { QuizFloatingFeedback } from './quiz/QuizFloatingFeedback';
+import { QuizInputSection } from './quiz/QuizInputSection';
 
 interface QuizCardProps {
-  // 문제 관련
-  currentQuestion: QuizQuestion | null;
-  answerInput: string;
-  displayValue: string;
+  quizState: QuizDisplayState;
+  quizAnimations: QuizAnimationState;
+  quizHandlers: QuizHandlers;
 
-  // 카테고리/토픽 정보
-  category: string | null;
-  topic: string | null;
-  categoryParam: string | null;
-  subParam: string | null;
-  levelParam: number | null;
-
-  // 게임 모드
-  gameMode: GameMode;
-  timeLimit: number;
-  questionKey: number;
-  timerResetKey?: number;
-  SURVIVAL_QUESTION_TIME: number;
-  totalQuestions: number; // 현재 푼 문제 수
-  lives: number; // 현재 라이프
-  onSafetyRopeUsed?: () => void;
-  onLastSpurt?: () => void;
-  triggerPenalty?: number;
-  penaltyAmount?: number;
-
-  // Pause Props
-  onPause: () => void;
-  remainingPauses?: number; // v2.2 일시정지 남은 횟수
-
-  // 상태
-  isSubmitting: boolean;
-  isError: boolean;
-  useSystemKeyboard: boolean;
-  showTipModal: boolean;
-  isPaused: boolean; // Timer pause (global)
-  isInputPaused?: boolean; // Input specific pause (defaults to isPaused if undefined)
-  showExitConfirm: boolean;
-  isFadingOut: boolean;
-  showAnswer?: boolean; // 디버그 모드: 정답 표시
-
-  // 애니메이션
-  cardAnimation: string;
-  inputAnimation: string;
-  questionAnimation: string;
-  showFlash: boolean;
-  showSlideToast: boolean;
-  toastValue: string; // "+10m" 또는 "-3m"
-  damagePosition: { left: string; top: string };
-
-  // 핸들러
-  generateNewQuestion: () => void;
-  handleSubmit: (e: FormEvent) => void;
-  // handleBack removed
-  handleGameOver: (reason?: string) => void;
-  handleKeypadNumber: (num: string) => void;
-  handleQwertyKeyPress: (key: string) => void;
-  handleKeypadClear: () => void;
-  handleKeypadBackspace: () => void;
-
-  // Refs
+  // Persistence/Refs
   inputRef: React.RefObject<HTMLInputElement>;
   exitConfirmTimeoutRef: React.MutableRefObject<NodeJS.Timeout | null>;
 
@@ -89,165 +22,45 @@ interface QuizCardProps {
   setDisplayValue: (value: string) => void;
   setShowExitConfirm: (value: boolean) => void;
   setIsFadingOut: (value: boolean) => void;
+
+  // Constants
+  SURVIVAL_QUESTION_TIME: number;
 }
 
 function QuizCardComponent({
-  currentQuestion,
-  answerInput,
-  displayValue,
-  category,
-  topic,
-  categoryParam,
-  subParam,
-  levelParam,
-  gameMode,
-  timeLimit,
-  questionKey,
-  timerResetKey,
-  SURVIVAL_QUESTION_TIME,
-  totalQuestions,
-  lives,
-  isSubmitting,
-  isError,
-  useSystemKeyboard,
-  showTipModal,
-  isPaused,
-  isInputPaused, // New prop
-  showExitConfirm,
-  isFadingOut,
-  generateNewQuestion,
-  showAnswer = false,
-  cardAnimation,
-  inputAnimation,
-  questionAnimation,
-  showFlash,
-  showSlideToast,
-  damagePosition,
-  handleSubmit,
-  handleGameOver,
-  handleKeypadNumber,
-  handleQwertyKeyPress,
-  handleKeypadClear,
-  handleKeypadBackspace,
+  quizState,
+  quizAnimations,
+  quizHandlers,
   inputRef,
   exitConfirmTimeoutRef,
   setAnswerInput,
   setDisplayValue,
   setShowExitConfirm,
   setIsFadingOut,
-  onSafetyRopeUsed,
-  onLastSpurt,
-  toastValue,
-  onPause,
-  remainingPauses = 3,
-  triggerPenalty = 0,
-  penaltyAmount = 5,
+  SURVIVAL_QUESTION_TIME,
 }: QuizCardProps) {
-  // #region agent log
-  const renderId = Math.random().toString(36).substring(7);
-  sendDebugLog('QuizCard.tsx:108', 'QuizCard component entry', {
-    renderId,
-    showTipModal,
-    isPaused,
-    hasCurrentQuestion: !!currentQuestion,
-  });
-  // #endregion
+  const { currentQuestion, gameMode, lives } = quizState;
+
+  const { isSubmitting, isError, isPaused, isInputPaused, showExitConfirm, isFadingOut } =
+    quizAnimations;
+
+  const {
+    onSafetyRopeUsed,
+    onLastSpurt,
+    onPause,
+    generateNewQuestion,
+    handleSubmit,
+    handleGameOver,
+  } = quizHandlers;
 
   // Determine effective input pause state
   const effectiveInputPaused = isInputPaused !== undefined ? isInputPaused : isPaused;
 
-  // URL 파라미터가 있으면 그것을 우선 사용, 없으면 store에서 가져오기
-  const displayCategory = useMemo(() => {
-    return categoryParam
-      ? APP_CONFIG.CATEGORY_MAP[categoryParam as keyof typeof APP_CONFIG.CATEGORY_MAP] || category
-      : category;
-  }, [categoryParam, category]);
-
-  const displayTopic = useMemo(() => {
-    if (!categoryParam || !subParam) {
-      return topic;
-    }
-
-    if (subParam === 'arithmetic' && levelParam !== null) {
-      return Object.prototype.hasOwnProperty.call(ARITHMETIC_TOPIC_MAP, levelParam)
-        ? // eslint-disable-next-line security/detect-object-injection -- key validated above
-          ARITHMETIC_TOPIC_MAP[levelParam]
-        : '덧셈';
-    } else if (subParam === 'calculus' && levelParam !== null) {
-      return Object.prototype.hasOwnProperty.call(CALCULUS_TOPIC_MAP, levelParam)
-        ? // eslint-disable-next-line security/detect-object-injection -- key validated above
-          CALCULUS_TOPIC_MAP[levelParam]
-        : '미적분';
-    } else {
-      const subTopics = Object.prototype.hasOwnProperty.call(
-        APP_CONFIG.SUB_TOPICS,
-        categoryParam as keyof typeof APP_CONFIG.SUB_TOPICS
-      )
-        ? APP_CONFIG.SUB_TOPICS[categoryParam as keyof typeof APP_CONFIG.SUB_TOPICS]
-        : undefined;
-      const subTopicInfo = subTopics?.find((t) => t.id === subParam);
-      return subTopicInfo?.name || subParam;
-    }
-  }, [categoryParam, subParam, levelParam, topic]);
-
-  const isJapaneseQuiz = useMemo(() => {
-    return categoryParam === 'language' && subParam === 'japanese';
-  }, [categoryParam, subParam]);
-
-  const isEquationQuiz = useMemo(() => {
-    return categoryParam === 'math' && subParam === 'equations';
-  }, [categoryParam, subParam]);
-
-  const isCalculusQuiz = useMemo(() => {
-    return categoryParam === 'math' && subParam === 'calculus';
-  }, [categoryParam, subParam]);
-
-  const allowNegative = useMemo(() => {
-    return isEquationQuiz || isCalculusQuiz;
-  }, [isEquationQuiz, isCalculusQuiz]);
+  const isEquationQuiz = quizState.categoryParam === 'math' && quizState.subParam === 'equations';
+  const isCalculusQuiz = quizState.categoryParam === 'math' && quizState.subParam === 'calculus';
+  const allowNegative = isEquationQuiz || isCalculusQuiz;
 
   const { activeItems, consumeActiveItem, consumeLife, isExhausted, usedItems } = useGameStore();
-
-  const currentSurvivalDuration = useMemo(() => {
-    return SURVIVAL_QUESTION_TIME;
-  }, [SURVIVAL_QUESTION_TIME]);
-
-  const isPositiveToast = useMemo(() => toastValue.startsWith('+'), [toastValue]);
-
-  const forceSystemKeyboard = useMemo(() => {
-    // 일반 상식 문제 중 정답이 텍스트인 경우 시스템 키보드 강제 사용 (한글 입력 지원)
-    return categoryParam === 'general' && typeof currentQuestion?.answer === 'string';
-  }, [categoryParam, currentQuestion]);
-
-  const shouldUseSystemKeyboard = useSystemKeyboard || forceSystemKeyboard;
-
-  // --- Early Returns must come AFTER all hooks ---
-
-  // 팁 모달이 열려있으면 게임 화면 숨김 -> REMOVED to show background
-  // if (showTipModal) {
-  //   sendDebugLog('QuizCard.tsx:earlyReturn1', 'Early return: showTipModal=true', { renderId });
-  //   return null;
-  // }
-
-  // 데이터 부족 시 로딩 반환
-  if (!currentQuestion || (!displayCategory && !categoryParam) || (!displayTopic && !subParam)) {
-    sendDebugLog('QuizCard.tsx:earlyReturn2', 'Early return: missing data', {
-      renderId,
-      hasCurrentQuestion: !!currentQuestion,
-      displayCategory,
-      displayTopic,
-      categoryParam,
-      subParam,
-    });
-    if (categoryParam && subParam) {
-      return (
-        <div className="quiz-page">
-          <div className="quiz-loading">문제를 생성하는 중...</div>
-        </div>
-      );
-    }
-    return null;
-  }
 
   const handleTimeUp = () => {
     const hasSafetyRope = activeItems.includes('safety_rope');
@@ -279,337 +92,63 @@ function QuizCardComponent({
     }
   };
 
+  // 데이터 부족 시 로딩 반환
+  if (!currentQuestion) {
+    if (quizState.categoryParam && quizState.subParam) {
+      return (
+        <div className="quiz-page">
+          <div className="quiz-loading">문제를 생성하는 중...</div>
+        </div>
+      );
+    }
+    return null;
+  }
+
   return (
     <>
-      {/* World Info Banner - Top Center Overlay (Subtle) */}
-      <div className="world-info-header-floating">World 1: 수리봉</div>
+      <QuizHeader
+        quizState={quizState}
+        activeItems={activeItems}
+        usedItems={usedItems}
+        onPause={onPause}
+        handleTimeUp={handleTimeUp}
+        isSubmitting={isSubmitting}
+        isPaused={isPaused}
+        currentSurvivalDuration={SURVIVAL_QUESTION_TIME}
+      />
 
-      {/* Header Area with new 3-Column Grid or Flex */}
-      <header className="quiz-header-rework">
-        {/* LEFT: Pause & Items (v2.4 Row 1/Row 2 Stack) */}
-        <div className="header-left-controls">
-          <button className="pause-button" onClick={onPause} aria-label="일시정지">
-            <svg
-              className="pause-icon-svg"
-              viewBox="0 0 24 24"
-              fill="currentColor"
-              xmlns="http://www.w3.org/2000/svg"
-            >
-              <rect x="6" y="5" width="4" height="14" rx="1.5" />
-              <rect x="14" y="5" width="4" height="14" rx="1.5" />
-            </svg>
-            {gameMode === 'survival' && (
-              <span className="pause-count-badge">{remainingPauses}</span>
-            )}
-          </button>
-
-          <div className="vertical-item-stack">
-            {/* Active Items */}
-            {activeItems.map((code, i) => (
-              <div key={`active-${i}`} className="side-item active">
-                {getItemEmoji(code)}
-              </div>
-            ))}
-            {/* Used Items */}
-            {usedItems.map((code, i) => (
-              <div key={`used-${i}`} className="side-item used">
-                {getItemEmoji(code)}
-              </div>
-            ))}
-          </div>
-        </div>
-
-        {/* CENTER: Timer Only */}
-        <div className="header-center-timer">
-          <div className="timer-wrapper">
-            {gameMode === 'survival' ? (
-              <TimerCircle
-                duration={currentSurvivalDuration}
-                onComplete={handleTimeUp}
-                isPaused={isSubmitting || isPaused}
-                triggerPenalty={triggerPenalty}
-                penaltyAmount={penaltyAmount}
-                key={`${questionKey}-${timerResetKey || 0}`}
-              />
-            ) : (
-              <TimerCircle
-                duration={timeLimit}
-                onComplete={handleTimeUp}
-                isPaused={isPaused}
-                enableFastForward={true}
-                key={`${timeLimit}-${timerResetKey || 0}`}
-              />
-            )}
-          </div>
-        </div>
-
-        {/* RIGHT: Score Pill Card */}
-        <div className="header-right-score">
-          {/* v2.2 캡슐형 카드 (Pill Card) */}
-          {/* Note: score is managed by store, but we wrap it in a pulse container */}
-          <div
-            className={`pill-card score-capsule ${totalQuestions > 0 ? 'pulse' : ''}`}
-            key={`score-${totalQuestions}`}
-          >
-            <span className="score-val">
-              {Math.floor(useQuizStore.getState().score).toLocaleString()}
-            </span>
-            <span className="score-unit">m</span>
-          </div>
-        </div>
-      </header>
-
-      {/* 메인 컨텐츠 영역 */}
       <div className="quiz-content">
-        {/* 퀴즈 카드 */}
-        <div className={`quiz-card ${cardAnimation}`}>
-          <div className="category-label">
-            {displayCategory} - {displayTopic}
-          </div>
-          <form
-            onSubmit={(e) => {
-              e.preventDefault();
-              if (isPaused || isSubmitting || isError) return;
-              handleSubmit(e);
-            }}
-            className="contents-display"
-          >
-            <ReasoningOverlay
-              isVisible={
-                categoryParam === '논리' &&
-                levelParam !== null &&
-                levelParam >= 6 &&
-                levelParam <= 10
-              }
-              isCorrect={cardAnimation === 'correct-flash'}
-            />
-            <div className={questionAnimation}>
-              <h2
-                className={`problem-text ${
-                  currentQuestion.hintType === 'transposition' ||
-                  currentQuestion.hintType === 'function-machine'
-                    ? 'problem-hidden'
-                    : 'problem-visible'
-                }`}
-              >
-                {currentQuestion.question}
-              </h2>
-              {currentQuestion.hintType === 'transposition' && (
-                <div className="visualizer-container">
-                  <EquationVisualizer
-                    initialLeft={parseEquation(currentQuestion.question).left}
-                    initialRight={parseEquation(currentQuestion.question).right}
-                  />
-                </div>
-              )}
-              {currentQuestion.hintType === 'function-machine' && currentQuestion.hintData && (
-                <div className="visualizer-container">
-                  <FunctionMachine
-                    type={(currentQuestion.hintData as FunctionMachineHint).type}
-                    value={(currentQuestion.hintData as FunctionMachineHint).value}
-                    input={(currentQuestion.hintData as FunctionMachineHint).input}
-                  />
-                </div>
-              )}
-              {currentQuestion.hintType === 'integral-tank' && currentQuestion.hintData && (
-                <IntegralVisualizer hintData={currentQuestion.hintData as IntegralTankHint} />
-              )}
-              {currentQuestion.hintType === 'calculus' && currentQuestion.hintData && (
-                <CalculusVisualization
-                  type={(currentQuestion.hintData as CalculusHint).type}
-                  func={(currentQuestion.hintData as CalculusHint).func}
-                />
-              )}
-              {showAnswer && (
-                <div className="debug-answer-display">
-                  정답: <strong>{currentQuestion.answer}</strong>
-                </div>
-              )}
-            </div>
-            {/* 답안 표시 영역 - 시스템 키보드 사용 시 input, 아니면 display */}
-            {currentQuestion.inputType === 'coordinate' ? (
-              <div className="coordinate-mini-game-wrapper">
-                <CoordinateGrid
-                  onShoot={(x, y) => {
-                    setAnswerInput(`${x},${y}`);
-                    setDisplayValue(`${x},${y}`);
-                    // 제출은 약간 지연 후 수행 (시각적 피드백 위해)
-                    setTimeout(() => {
-                      const fakeEvent = { preventDefault: () => {} } as React.FormEvent;
-                      handleSubmit(fakeEvent);
-                    }, 300);
-                  }}
-                  isFirstQuadrantOnly={levelParam === 1}
-                  disabled={isSubmitting || isError || effectiveInputPaused}
-                />
-              </div>
-            ) : shouldUseSystemKeyboard ? (
-              /* ... existing system keyboard code ... */
-              <>
-                <div className={`answer-input-wrapper ${isError ? 'is-error' : ''}`}>
-                  <input
-                    ref={inputRef}
-                    type={isJapaneseQuiz || forceSystemKeyboard ? 'text' : 'number'}
-                    inputMode={isJapaneseQuiz ? 'text' : forceSystemKeyboard ? 'text' : 'numeric'}
-                    value={isError ? displayValue : answerInput}
-                    onChange={(e) => {
-                      if (isError || isSubmitting || effectiveInputPaused) return; // Disable input on pause
+        <QuizQuestionArea quizState={quizState} quizAnimations={quizAnimations} />
 
-                      const value = e.target.value;
+        <QuizAnswerArea
+          quizState={quizState}
+          quizAnimations={quizAnimations}
+          inputRef={inputRef}
+          setAnswerInput={setAnswerInput}
+          setDisplayValue={setDisplayValue}
+          handleSubmit={handleSubmit}
+          effectiveInputPaused={effectiveInputPaused}
+        />
 
-                      if (isJapaneseQuiz) {
-                        // 일본어: 영문자만 허용 (로마지)
-                        const filtered = value.replace(/[^a-zA-Z]/g, '');
-                        if (filtered.length <= 20) {
-                          setAnswerInput(filtered);
-                          setDisplayValue(filtered);
-                        }
-                      } else if (forceSystemKeyboard) {
-                        // 상식(텍스트): 모든 입력 허용 (길이 제한만)
-                        if (value.length <= 10) {
-                          setAnswerInput(value);
-                          setDisplayValue(value);
-                        }
-                      } else {
-                        // 수학/논리/상식(숫자): 숫자 및 음수 처리
-                        if (allowNegative) {
-                          // 음수 기호와 숫자만 허용 (기존 로직 유지)
-                          let newValue = value.replace(/[^0-9-]/g, '');
-                          if (newValue.includes('-') && newValue.indexOf('-') !== 0) {
-                            newValue = newValue.replace(/-/g, '');
-                            newValue = '-' + newValue;
-                          }
-                          const minusCount = (newValue.match(/-/g) || []).length;
-                          if (minusCount > 1) {
-                            newValue = '-' + newValue.replace(/-/g, '');
-                          }
-                          if (newValue.length <= 6) {
-                            setAnswerInput(newValue);
-                            setDisplayValue(newValue);
-                          }
-                        } else {
-                          // 일반 숫자: 숫자만 허용
-                          const newValue = value.replace(/[^0-9]/g, '');
-                          if (newValue.length <= 6) {
-                            // 길이 제한 5->6으로 통일
-                            setAnswerInput(newValue);
-                            setDisplayValue(newValue);
-                          }
-                        }
-                      }
-                    }}
-                    onKeyDown={(e) => {
-                      if (e.key === 'Enter' && !isError && !effectiveInputPaused && !isSubmitting) {
-                        e.preventDefault();
-                        handleSubmit(e);
-                      }
-                    }}
-                    onClick={() => {
-                      // 클릭 시 키보드 포커스 (에러 상태가 아닐 때만)
-                      if (inputRef.current && !isSubmitting && !isError) {
-                        inputRef.current.focus();
-                      }
-                    }}
-                    placeholder={isJapaneseQuiz ? '로마지 입력 (예: a, ki)' : '정답 입력'}
-                    className={`input-base answer-input-field answer-input-system ${inputAnimation} ${isError ? 'error-state is-error' : ''} ${showFlash && !isExhausted ? 'input-error-flash' : ''}`}
-                    disabled={(isSubmitting && !isError) || effectiveInputPaused}
-                    readOnly={isError}
-                    autoFocus={false}
-                  />
-                </div>
-                <button
-                  type="submit"
-                  className="btn-base btn-primary submit-button-system"
-                  disabled={isSubmitting || !answerInput || isError || effectiveInputPaused}
-                  onClick={(e) => {
-                    e.preventDefault();
-                    if (!isError && !effectiveInputPaused && !isSubmitting) {
-                      handleSubmit(e);
-                    }
-                  }}
-                >
-                  제출
-                </button>
-              </>
-            ) : (
-              <div className={`answer-input-wrapper ${isError ? 'is-error' : ''}`}>
-                <div
-                  className={`answer-display ${inputAnimation} ${isError ? 'is-error' : ''} ${showFlash && !isExhausted ? 'input-error-flash' : ''}`}
-                >
-                  {(isError ? displayValue : answerInput) && (
-                    <span className="answer-display-text">
-                      {isError ? displayValue : answerInput}
-                    </span>
-                  )}
-                  {!isError && <span className="answer-caret"></span>}
-                </div>
-              </div>
-            )}
-          </form>
+        <QuizFloatingFeedback
+          quizAnimations={quizAnimations}
+          showExitConfirm={showExitConfirm}
+          isFadingOut={isFadingOut}
+          setIsFadingOut={setIsFadingOut}
+          setShowExitConfirm={setShowExitConfirm}
+          exitConfirmTimeoutRef={exitConfirmTimeoutRef}
+          isExhausted={isExhausted}
+        />
 
-          {/* 감점 토스트 - 오답 시 -3m 표시 (랜덤 위치) */}
-          {showSlideToast && (
-            <div
-              className={`slide-toast ${isPositiveToast ? 'is-positive' : ''}`}
-              style={{ left: damagePosition.left, top: damagePosition.top }}
-            >
-              <span
-                className={`slide-toast-text ${isPositiveToast ? 'is-positive' : ''} ${isExhausted && isPositiveToast ? 'is-exhausted' : ''}`}
-              >
-                {toastValue}
-              </span>
-            </div>
-          )}
-        </div>
-
-        {/* 중단 확인 알림 - fixed 토스트 알림 (퀴즈 카드 가리지 않음) */}
-        {showExitConfirm && (
-          <div
-            className={`exit-confirm-toast ${isFadingOut ? 'fade-out' : ''}`}
-            onClick={() => {
-              // 토스트 알림 클릭 시 즉시 닫기
-              if (exitConfirmTimeoutRef.current) {
-                clearTimeout(exitConfirmTimeoutRef.current);
-                exitConfirmTimeoutRef.current = null;
-              }
-              setIsFadingOut(true);
-              setTimeout(() => {
-                setShowExitConfirm(false);
-                setIsFadingOut(false);
-              }, 300);
-            }}
-          >
-            <p className="exit-confirm-text">게임을 중단하시겠습니까?</p>
-            <p className="exit-confirm-hint">한 번 더 누르면 나갑니다</p>
-          </div>
-        )}
-
-        {/* 하단 키보드 (카드 아래) - 시스템 키보드 사용 시 또는 좌표 사격 시 숨김 */}
-        {!shouldUseSystemKeyboard && currentQuestion.inputType !== 'coordinate' && (
-          <>
-            {isJapaneseQuiz ? (
-              <QwertyKeypad
-                onKeyPress={handleQwertyKeyPress}
-                onClear={handleKeypadClear}
-                onBackspace={handleKeypadBackspace}
-                onSubmit={handleSubmit}
-                disabled={isSubmitting || isError || effectiveInputPaused}
-                mode="text"
-              />
-            ) : (
-              <CustomKeypad
-                onNumberClick={handleKeypadNumber}
-                onClear={handleKeypadClear}
-                onBackspace={handleKeypadBackspace}
-                onSubmit={handleSubmit}
-                disabled={isSubmitting || isError || effectiveInputPaused}
-                showNegative={allowNegative}
-                showDecimal={currentQuestion?.inputType === 'decimal'}
-                showFraction={currentQuestion?.inputType === 'fraction'}
-              />
-            )}
-          </>
-        )}
+        <QuizInputSection
+          quizState={quizState}
+          quizHandlers={quizHandlers}
+          effectiveInputPaused={effectiveInputPaused}
+          allowNegative={allowNegative}
+          handleSubmit={handleSubmit}
+          isError={isError}
+          isSubmitting={isSubmitting}
+        />
       </div>
     </>
   );
@@ -617,35 +156,10 @@ function QuizCardComponent({
 
 // React.memo로 메모이제이션 - props가 변경되지 않으면 리렌더링 방지
 export const QuizCard = React.memo(QuizCardComponent, (prevProps, nextProps) => {
-  // 커스텀 비교 함수: 중요한 props만 비교
   return (
-    prevProps.currentQuestion?.question === nextProps.currentQuestion?.question &&
-    prevProps.currentQuestion?.answer === nextProps.currentQuestion?.answer &&
-    prevProps.answerInput === nextProps.answerInput &&
-    prevProps.displayValue === nextProps.displayValue &&
-    prevProps.isSubmitting === nextProps.isSubmitting &&
-    prevProps.isError === nextProps.isError &&
-    prevProps.showTipModal === nextProps.showTipModal &&
-    prevProps.isPaused === nextProps.isPaused &&
-    prevProps.isInputPaused === nextProps.isInputPaused &&
-    prevProps.showExitConfirm === nextProps.showExitConfirm &&
-    prevProps.isFadingOut === nextProps.isFadingOut &&
-    prevProps.cardAnimation === nextProps.cardAnimation &&
-    prevProps.inputAnimation === nextProps.inputAnimation &&
-    prevProps.questionAnimation === nextProps.questionAnimation &&
-    prevProps.showFlash === nextProps.showFlash &&
-    prevProps.showSlideToast === nextProps.showSlideToast &&
-    prevProps.toastValue === nextProps.toastValue &&
-    prevProps.damagePosition.left === nextProps.damagePosition.left &&
-    prevProps.damagePosition.top === nextProps.damagePosition.top &&
-    prevProps.gameMode === nextProps.gameMode &&
-    prevProps.questionKey === nextProps.questionKey &&
-    prevProps.lives === nextProps.lives &&
-    prevProps.totalQuestions === nextProps.totalQuestions &&
-    prevProps.generateNewQuestion === nextProps.generateNewQuestion &&
-    prevProps.useSystemKeyboard === nextProps.useSystemKeyboard &&
-    prevProps.categoryParam === nextProps.categoryParam &&
-    prevProps.triggerPenalty === nextProps.triggerPenalty &&
-    prevProps.penaltyAmount === nextProps.penaltyAmount
+    prevProps.quizState === nextProps.quizState &&
+    prevProps.quizAnimations === nextProps.quizAnimations &&
+    prevProps.quizHandlers === nextProps.quizHandlers &&
+    prevProps.SURVIVAL_QUESTION_TIME === nextProps.SURVIVAL_QUESTION_TIME
   );
 });

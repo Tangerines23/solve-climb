@@ -13,31 +13,13 @@ import {
   IStorageService,
   LocalStorageService,
   MockStorageService,
+  STORAGE_KEYS,
 } from '../services';
 
 /**
- * localStorage 키 이름 상수
- * 모든 키는 여기서 중앙 관리됩니다.
+ * @deprecated Use STORAGE_KEYS from @/services instead
  */
-export const StorageKeys = {
-  // 기기 관련
-  DEVICE_ID: 'solve-climb-device-id',
-
-  // 프로필 관련
-  PROFILES: (deviceId: string) => `solve-climb-profiles-${deviceId}`,
-  ACTIVE_PROFILE_ID: 'solve-climb-active-profile-id',
-  ADMIN_MODE: 'solve-climb-admin-mode',
-  PROGRESS: (profileId: string) => `solve-climb-progress-${profileId}`,
-
-  // 세션 관련
-  LOCAL_SESSION: 'solve-climb-local-session',
-  LOCAL_BADGES: 'solve-climb-local-badges',
-  LOCAL_HISTORY: 'solve-climb-local-history',
-
-  // 게임 팁 관련
-  GAME_TIP: (category: string, sub: string, level?: string) =>
-    level ? `gameTip_${category}_${sub}_${level}` : `gameTip_${category}_${sub}`,
-} as const;
+export const StorageKeys = STORAGE_KEYS;
 
 /**
  * localStorage 접두사 목록
@@ -171,35 +153,12 @@ export class StorageUtil {
 // ========================================
 
 /**
- * 기본 StorageUtil 인스턴스 (프로덕션용)
- */
-const defaultStorageUtil = new StorageUtil(storageService);
-
-/**
  * 타입 안전한 localStorage 관리 유틸리티
  *
  * @deprecated 새 코드에서는 StorageUtil 클래스를 직접 사용하세요
  * 기존 코드 호환성을 위해 유지됩니다
  */
-export const storage = {
-  get: <T>(key: string, defaultValue: T, validator?: (data: unknown) => data is T) =>
-    defaultStorageUtil.get(key, defaultValue, validator),
-
-  set: <T>(key: string, value: T) => defaultStorageUtil.set(key, value),
-
-  remove: (key: string) => defaultStorageUtil.remove(key),
-
-  setString: (key: string, value: string) => defaultStorageUtil.setString(key, value),
-
-  getString: (key: string, defaultValue: string | null = null) =>
-    defaultStorageUtil.getString(key, defaultValue),
-
-  getKeysByPrefix: (prefix: string) => defaultStorageUtil.getKeysByPrefix(prefix),
-
-  removeByPrefix: (prefix: string) => defaultStorageUtil.removeByPrefix(prefix),
-
-  clearAppData: () => defaultStorageUtil.clearAppData(),
-};
+// Unused export 'storage' removed to improve codebase hygiene.
 
 // 새 API Export (DI 지원)
 export type { IStorageService };

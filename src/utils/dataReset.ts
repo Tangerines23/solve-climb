@@ -2,7 +2,7 @@
 // import { supabase } from './supabaseClient';
 import { useProfileStore } from '../stores/useProfileStore';
 import { useLevelProgressStore } from '../stores/useLevelProgressStore';
-import { storage } from './storage';
+import { storageService } from '../services';
 import { logError } from './errorHandler';
 
 /**
@@ -17,7 +17,7 @@ export const resetAllData = async (): Promise<void> => {
     // 과거 데이터 삭제 로직 제거됨
 
     // 2. localStorage의 모든 앱 관련 데이터 삭제
-    storage.clearAppData();
+    storageService.clear();
 
     // 3. Zustand 스토어 초기화
     // 프로필 스토어 초기화

@@ -111,7 +111,10 @@
 
   /* Primary Blue - 토스 스타일 (이 프로젝트에서는 민트/연초록 계열 사용) */
   /* Accessibility: Bright Teal for high contrast against dark bg (#00e5c1) */
-  --color-blue-400: #00e5c1;
+  /* #00e5c1 is too light for white text on top of it in some cases, 
+     but here we use it as a primary color for icons and accents.
+     For buttons with white text, we might need a slightly darker version or dark text. */
+  --color-blue-400: #00d4b3;
   --color-blue-500: #00bfa5;
   --color-blue-700: #00695c;
 
@@ -144,8 +147,8 @@
 
   /* 텍스트 색상 */
   --color-text-primary: var(--color-gray-100);
-  --color-text-secondary: #bbb; /* Improved from #aaa for dark bg AA */
-  --color-text-tertiary: #8e94a0;
+  --color-text-secondary: #d1d6db; /* Improved from #bbb for better AA contrast on dark bg */
+  --color-text-tertiary: #a0a7b1; /* Improved from #8e94a0 */
   --color-text-dimmed: #ccc;
   /* AA 준수 (배경 #121212 기준) */
   --color-text-muted-alt: #bbb;
@@ -213,10 +216,32 @@
   justify-content: center;
   align-items: center;
   height: 100vh;
+  width: 100vw;
+  background-color: #0d1117;
   color: var(--color-text-primary);
-  width: 100%;
-  max-width: 100%;
   overflow: hidden;
+}
+
+.loader-title {
+  color: #00e5c1;
+  font-size: 24px;
+  font-weight: bold;
+  animation: pulse 1.5s infinite ease-in-out;
+}
+
+@keyframes pulse {
+  0% {
+    opacity: 0.6;
+    transform: scale(0.98);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  100% {
+    opacity: 0.6;
+    transform: scale(0.98);
+  }
 }
 
 strong {
@@ -364,6 +389,11 @@ strong {
   --color-indigo-500: #4f46e5; /* Updated from #6366f1 for >4.5:1 with white */
   --color-indigo-600: #4338ca;
 
+  /* Amber (Orange-Yellow) */
+  --color-amber-300: #fcd34d;
+  --color-amber-400: #fbbf24;
+  --color-amber-500: #f59e0b;
+
   /* Cyan (Bright) */
   --color-cyan-bright: #00f2fe;
 
@@ -409,7 +439,18 @@ strong {
 
   /* Effect Colors */
   --color-orange-400: #fb923c;
-  --color-amber-300: #fcd34d;
+  --glass-bg: var(--bg-glass-card);
+  --glass-border: var(--border-glass);
+  --glass-blur: var(--backdrop-blur);
+  --glass-shadow: var(--shadow-glass);
+}
+
+.glass-effect {
+  background: var(--glass-bg);
+  border: var(--glass-border);
+  -webkit-backdrop-filter: blur(var(--glass-blur));
+  backdrop-filter: blur(var(--glass-blur));
+  box-shadow: var(--glass-shadow);
 }
 
 /* --- Premium Utility Classes --- */

@@ -1,6 +1,7 @@
 import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
 import { SURVIVAL_CONFIG } from '../constants/game';
+import { zustandStorage } from '../services';
 
 interface GameState {
   score: number;
@@ -132,7 +133,7 @@ export const useGameStore = create<GameState>()(
     }),
     {
       name: 'climb-game-session',
-      storage: createJSONStorage(() => localStorage),
+      storage: createJSONStorage(() => zustandStorage),
       // Only persist specific fields that are essential for session recovery
       partialize: (state) => ({
         score: state.score,

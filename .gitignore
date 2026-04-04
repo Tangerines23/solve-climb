@@ -99,3 +99,6 @@ layout_errors.txt
 logs.txt
 security_logs*.txt
 unit_test_logs.txt
+failed_suites.txt
+final-coverage/
+tmp/

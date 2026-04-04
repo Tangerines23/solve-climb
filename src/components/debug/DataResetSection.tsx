@@ -4,13 +4,16 @@ import { useMyPageStats } from '../../hooks/useMyPageStats';
 import { useUserStore } from '../../stores/useUserStore';
 import { APP_CONFIG } from '../../config/app';
 import { ConfirmModal } from '../ConfirmModal';
+import { storageService, STORAGE_KEYS } from '../../services';
+import { DebugSnapshot } from '../../types/storage';
+import { UI_MESSAGES, STATUS_TYPES } from '@/constants/ui';
 import './DataResetSection.css';
 
 export const DataResetSection = React.memo(function DataResetSection() {
   const { stats, refetch } = useMyPageStats();
   const { fetchUserData } = useUserStore();
   const [isResetting, setIsResetting] = useState(false);
-  const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
+  const [message, setMessage] = useState<{ type: string; text: string } | null>(null);
 
   // 게임 기록 초기화 상태
   const [deleteCount, setDeleteCount] = useState('10');
@@ -57,7 +60,7 @@ export const DataResetSection = React.memo(function DataResetSection() {
         data: { session },
       } = await supabase.auth.getSession();
       if (!session?.user) {
-        setMessage({ type: 'error', text: '로그인이 필요합니다.' });
+        setMessage({ type: STATUS_TYPES.ERROR, text: UI_MESSAGES.LOGIN_REQUIRED });
         return;
       }
       const user = session.user;
@@ -69,11 +72,11 @@ export const DataResetSection = React.memo(function DataResetSection() {
 
       if (error) throw error;
 
-      setMessage({ type: 'success', text: '프로필이 초기화되었습니다.' });
+      setMessage({ type: STATUS_TYPES.SUCCESS, text: '프로필이 초기화되었습니다.' });
       await Promise.all([refetch(), fetchUserData()]);
     } catch (err) {
       setMessage({
-        type: 'error',
+        type: STATUS_TYPES.ERROR,
         text: `초기화 실패: ${err instanceof Error ? err.message : '알 수 없는 오류'}`,
       });
     } finally {
@@ -99,10 +102,10 @@ export const DataResetSection = React.memo(function DataResetSection() {
       document.body.removeChild(link);
       URL.revokeObjectURL(url);
 
-      setMessage({ type: 'success', text: '데이터가 내보내졌습니다.' });
+      setMessage({ type: STATUS_TYPES.SUCCESS, text: '데이터가 내보내졌습니다.' });
     } catch (err) {
       setMessage({
-        type: 'error',
+        type: STATUS_TYPES.ERROR,
         text: `내보내기 실패: ${err instanceof Error ? err.message : '알 수 없는 오류'}`,
       });
     }
@@ -125,7 +128,7 @@ export const DataResetSection = React.memo(function DataResetSection() {
           const data = JSON.parse(event.target?.result as string);
 
           if (!data.stats) {
-            setMessage({ type: 'error', text: '유효하지 않은 데이터 형식입니다.' });
+            setMessage({ type: STATUS_TYPES.ERROR, text: '유효하지 않은 데이터 형식입니다.' });
             setIsResetting(false);
             return;
           }
@@ -134,7 +137,7 @@ export const DataResetSection = React.memo(function DataResetSection() {
             data: { session },
           } = await supabase.auth.getSession();
           if (!session?.user) {
-            setMessage({ type: 'error', text: '로그인이 필요합니다.' });
+            setMessage({ type: STATUS_TYPES.ERROR, text: UI_MESSAGES.LOGIN_REQUIRED });
             setIsResetting(false);
             return;
           }
@@ -174,12 +177,12 @@ export const DataResetSection = React.memo(function DataResetSection() {
               .join(', ');
             setMessage({ type: 'error', text: `일부 데이터 적용 실패: ${errorMessages}` });
           } else {
-            setMessage({ type: 'success', text: '데이터가 가져와져 적용되었습니다.' });
+            setMessage({ type: STATUS_TYPES.SUCCESS, text: '데이터가 가져와져 적용되었습니다.' });
             await Promise.all([refetch(), fetchUserData()]);
           }
         } catch (err) {
           setMessage({
-            type: 'error',
+            type: STATUS_TYPES.ERROR,
             text: `가져오기 실패: ${err instanceof Error ? err.message : '알 수 없는 오류'}`,
           });
         } finally {
@@ -198,11 +201,11 @@ export const DataResetSection = React.memo(function DataResetSection() {
         timestamp: new Date().toISOString(),
       };
 
-      localStorage.setItem('debug_snapshot', JSON.stringify(snapshot));
-      setMessage({ type: 'success', text: '스냅샷이 저장되었습니다.' });
+      storageService.set(STORAGE_KEYS.DEBUG_SNAPSHOT, snapshot);
+      setMessage({ type: STATUS_TYPES.SUCCESS, text: '스냅샷이 저장되었습니다.' });
     } catch (err) {
       setMessage({
-        type: 'error',
+        type: STATUS_TYPES.ERROR,
         text: `스냅샷 저장 실패: ${err instanceof Error ? err.message : '알 수 없는 오류'}`,
       });
     }
@@ -213,17 +216,15 @@ export const DataResetSection = React.memo(function DataResetSection() {
       setIsResetting(true);
       setMessage(null);
 
-      const snapshotStr = localStorage.getItem('debug_snapshot');
-      if (!snapshotStr) {
-        setMessage({ type: 'error', text: '저장된 스냅샷이 없습니다.' });
+      const snapshot = storageService.get<DebugSnapshot>(STORAGE_KEYS.DEBUG_SNAPSHOT);
+      if (!snapshot) {
+        setMessage({ type: STATUS_TYPES.ERROR, text: '저장된 스냅샷이 없습니다.' });
         setIsResetting(false);
         return;
       }
 
-      const snapshot = JSON.parse(snapshotStr);
-
       if (!snapshot.stats) {
-        setMessage({ type: 'error', text: '유효하지 않은 스냅샷 형식입니다.' });
+        setMessage({ type: STATUS_TYPES.ERROR, text: '유효하지 않은 스냅샷 형식입니다.' });
         setIsResetting(false);
         return;
       }
@@ -232,7 +233,7 @@ export const DataResetSection = React.memo(function DataResetSection() {
         data: { session },
       } = await supabase.auth.getSession();
       if (!session?.user) {
-        setMessage({ type: 'error', text: '로그인이 필요합니다.' });
+        setMessage({ type: STATUS_TYPES.ERROR, text: UI_MESSAGES.LOGIN_REQUIRED });
         setIsResetting(false);
         return;
       }
@@ -269,9 +270,9 @@ export const DataResetSection = React.memo(function DataResetSection() {
         const errorMessages = errors
           .map((e) => (e.status === 'rejected' ? e.reason?.message || '알 수 없는 오류' : ''))
           .join(', ');
-        setMessage({ type: 'error', text: `일부 데이터 복원 실패: ${errorMessages}` });
+        setMessage({ type: STATUS_TYPES.ERROR, text: `일부 데이터 복원 실패: ${errorMessages}` });
       } else {
-        setMessage({ type: 'success', text: '스냅샷이 복원되었습니다.' });
+        setMessage({ type: STATUS_TYPES.SUCCESS, text: '스냅샷이 복원되었습니다.' });
         await Promise.all([refetch(), fetchUserData()]);
       }
     } catch (err) {
@@ -289,7 +290,7 @@ export const DataResetSection = React.memo(function DataResetSection() {
     if (isDeleting) return;
     const count = parseInt(deleteCount, 10);
     if (isNaN(count) || count <= 0) {
-      setMessage({ type: 'error', text: '유효한 개수를 입력하세요.' });
+      setMessage({ type: STATUS_TYPES.ERROR, text: '유효한 개수를 입력하세요.' });
       return;
     }
 
@@ -313,45 +314,20 @@ export const DataResetSection = React.memo(function DataResetSection() {
         data: { session },
       } = await supabase.auth.getSession();
       if (!session?.user) {
-        setMessage({ type: 'error', text: '로그인이 필요합니다.' });
+        setMessage({ type: STATUS_TYPES.ERROR, text: UI_MESSAGES.LOGIN_REQUIRED });
         return;
       }
       const user = session.user;
 
-      // 최근 N개 세션 ID 조회
-      const { data: sessions, error: sessionsError } = await supabase
-        .from('game_sessions')
-        .select('id')
-        .eq('user_id', user.id)
-        .order('created_at', { ascending: false })
-        .limit(count);
+      const { data, error } = await supabase.rpc('debug_clear_game_records', {
+        p_user_id: user.id,
+        p_count: count,
+      });
 
-      if (sessionsError) throw sessionsError;
+      if (error) throw error;
 
-      if (!sessions || sessions.length === 0) {
-        setMessage({ type: 'error', text: '삭제할 게임 기록이 없습니다.' });
-        return;
-      }
-
-      const sessionIds = sessions.map((s) => s.id);
-
-      // game_results 삭제
-      const { error: resultsError } = await supabase
-        .from('game_results')
-        .delete()
-        .in('session_id', sessionIds);
-
-      if (resultsError) throw resultsError;
-
-      // game_sessions 삭제
-      const { error: sessionsDeleteError } = await supabase
-        .from('game_sessions')
-        .delete()
-        .in('id', sessionIds);
-
-      if (sessionsDeleteError) throw sessionsDeleteError;
-
-      setMessage({ type: 'success', text: `${sessions.length}개의 게임 기록이 삭제되었습니다.` });
+      const deletedCount = (data as { deleted_sessions?: number })?.deleted_sessions || 0;
+      setMessage({ type: 'success', text: `${deletedCount}개의 게임 기록이 삭제되었습니다.` });
       await Promise.all([refetch(), fetchUserData()]);
     } catch (err) {
       setMessage({
@@ -385,26 +361,16 @@ export const DataResetSection = React.memo(function DataResetSection() {
         data: { session },
       } = await supabase.auth.getSession();
       if (!session?.user) {
-        setMessage({ type: 'error', text: '로그인이 필요합니다.' });
+        setMessage({ type: STATUS_TYPES.ERROR, text: UI_MESSAGES.LOGIN_REQUIRED });
         return;
       }
       const user = session.user;
 
-      // game_results 삭제
-      const { error: resultsError } = await supabase
-        .from('game_results')
-        .delete()
-        .eq('user_id', user.id);
+      const { error } = await supabase.rpc('debug_clear_game_records', {
+        p_user_id: user.id,
+      });
 
-      if (resultsError) throw resultsError;
-
-      // game_sessions 삭제
-      const { error: sessionsError } = await supabase
-        .from('game_sessions')
-        .delete()
-        .eq('user_id', user.id);
-
-      if (sessionsError) throw sessionsError;
+      if (error) throw error;
 
       setMessage({ type: 'success', text: '모든 게임 기록이 삭제되었습니다.' });
       await Promise.all([refetch(), fetchUserData()]);
@@ -430,51 +396,17 @@ export const DataResetSection = React.memo(function DataResetSection() {
         data: { session },
       } = await supabase.auth.getSession();
       if (!session?.user) {
-        setMessage({ type: 'error', text: '로그인이 필요합니다.' });
+        setMessage({ type: STATUS_TYPES.ERROR, text: UI_MESSAGES.LOGIN_REQUIRED });
         return;
       }
       const user = session.user;
 
-      // 해당 레벨의 세션 ID 조회
-      const { data: sessions, error: sessionsError } = await supabase
-        .from('game_sessions')
-        .select('id')
-        .eq('user_id', user.id)
-        .eq('level', selectedLevel);
+      const { error } = await supabase.rpc('debug_clear_game_records', {
+        p_user_id: user.id,
+        p_level: selectedLevel,
+      });
 
-      if (sessionsError) throw sessionsError;
-
-      if (!sessions || sessions.length === 0) {
-        setMessage({ type: 'error', text: '삭제할 게임 기록이 없습니다.' });
-        return;
-      }
-
-      const sessionIds = sessions.map((s) => s.id);
-
-      // game_results 삭제
-      const { error: resultsError } = await supabase
-        .from('game_results')
-        .delete()
-        .in('session_id', sessionIds);
-
-      if (resultsError) throw resultsError;
-
-      // game_sessions 삭제
-      const { error: sessionsDeleteError } = await supabase
-        .from('game_sessions')
-        .delete()
-        .in('id', sessionIds);
-
-      if (sessionsDeleteError) throw sessionsDeleteError;
-
-      // user_level_records 삭제 (해당 레벨)
-      const { error: recordsError } = await supabase
-        .from('user_level_records')
-        .delete()
-        .eq('user_id', user.id)
-        .eq('level', selectedLevel);
-
-      if (recordsError) throw recordsError;
+      if (error) throw error;
 
       setMessage({ type: 'success', text: `레벨 ${selectedLevel}의 게임 기록이 삭제되었습니다.` });
       await Promise.all([refetch(), fetchUserData()]);
@@ -513,26 +445,25 @@ export const DataResetSection = React.memo(function DataResetSection() {
         data: { session },
       } = await supabase.auth.getSession();
       if (!session?.user) {
-        setMessage({ type: 'error', text: '로그인이 필요합니다.' });
+        setMessage({ type: STATUS_TYPES.ERROR, text: UI_MESSAGES.LOGIN_REQUIRED });
         return;
       }
       const user = session.user;
 
       // user_level_records에서 해당 카테고리와 주제의 레벨 진행도 삭제
-      const { error: recordsError } = await supabase
-        .from('user_level_records')
-        .delete()
-        .eq('user_id', user.id)
-        .eq('category', selectedCategory)
-        .eq('subject', selectedSubject);
+      const { error } = await supabase.rpc('debug_reset_level_progress', {
+        p_user_id: user.id,
+        p_category_id: selectedCategory,
+        p_subject_id: selectedSubject,
+      });
 
-      if (recordsError) throw recordsError;
+      if (error) throw error;
 
       setMessage({ type: 'success', text: '레벨 진행도가 초기화되었습니다.' });
       await Promise.all([refetch(), fetchUserData()]);
     } catch (err) {
       setMessage({
-        type: 'error',
+        type: STATUS_TYPES.ERROR,
         text: `초기화 실패: ${err instanceof Error ? err.message : '알 수 없는 오류'}`,
       });
     } finally {

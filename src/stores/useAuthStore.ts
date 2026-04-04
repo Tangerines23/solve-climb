@@ -2,7 +2,7 @@ import { create } from 'zustand';
 import { supabase } from '../utils/supabaseClient';
 import { Session, User } from '@supabase/supabase-js';
 import { safeSupabaseQuery } from '../utils/debugFetch';
-import { storage, StorageKeys } from '../utils/storage';
+import { storageService, STORAGE_KEYS } from '../services';
 
 interface AuthState {
   session: Session | null;
@@ -22,7 +22,7 @@ export const useAuthStore = create<AuthState>((set) => ({
     set({ isLoading: true });
 
     // 1. 로컬 세션 우선 확인 (익명 사용자용, 가장 빠름)
-    const localSession = storage.get<{ userId: string } | null>(StorageKeys.LOCAL_SESSION, null);
+    const localSession = storageService.get<{ userId: string }>(STORAGE_KEYS.LOCAL_SESSION) || null;
     if (localSession) {
       const mockSession = {
         user: { id: localSession.userId, is_anonymous: true },

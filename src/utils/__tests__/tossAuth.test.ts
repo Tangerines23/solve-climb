@@ -1,6 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { getTossUserInfo, createOrUpdateSupabaseUser } from '../tossAuth';
+import { getTossUserInfo, createOrUpdateSupabaseUser, handleTossLoginFlow } from '../tossAuth';
 import { ENV } from '../env';
+import { supabase } from '../supabaseClient';
 
 // Mock dependencies
 vi.mock('../errorHandler', () => ({
@@ -199,8 +200,181 @@ describe('tossAuth', () => {
 
       // Verify URL was constructed correctly
       const [firstArg] = fetchMock.mock.calls[0];
-      const calledUrl = typeof firstArg === 'string' ? firstArg : firstArg.url;
-      expect(calledUrl).toContain('https://test.supabase.co/functions/v1/toss-auth');
+      const request = firstArg as Request;
+      expect(request.url).toContain('https://test.supabase.co/functions/v1/toss-auth');
+    });
+  });
+
+  describe('handleTossLoginFlow', () => {
+    const mockAuthCode = 'test-code';
+    const mockReferrer = 'test-referrer';
+
+    beforeEach(() => {
+      vi.clearAllMocks();
+      vi.mocked(ENV).VITE_SUPABASE_URL = 'https://test.supabase.co';
+      vi.mocked(ENV).VITE_SUPABASE_ANON_KEY = 'test-key';
+    });
+
+    it('should complete full login flow successfully', async () => {
+      // 1. OAuth Result
+      fetchMock.mockResolvedValueOnce(
+        new Response(
+          JSON.stringify({
+            success: true,
+            accessToken: 'toss-access-token',
+          }),
+          { status: 200 }
+        )
+      );
+
+      // 2. User Update Result
+      fetchMock.mockResolvedValueOnce(
+        new Response(
+          JSON.stringify({
+            success: true,
+            user: { id: 'user-123' },
+            loginInfo: { email: 'test@example.com', password: 'password123' },
+          }),
+          { status: 200 }
+        )
+      );
+
+      // 3. Supabase Sign In
+      vi.mocked(supabase.auth.signInWithPassword).mockResolvedValue({
+        data: { session: { access_token: 'sb-token', refresh_token: 'sb-refresh' } },
+        error: null,
+      } as any);
+
+      const result = await handleTossLoginFlow(mockAuthCode, mockReferrer);
+
+      expect(result.user).toBeDefined();
+      expect(result.session).toBeDefined();
+      expect(fetchMock).toHaveBeenCalledTimes(2);
+    });
+
+    it('should handle 401 error with specific details', async () => {
+      fetchMock.mockResolvedValueOnce(
+        new Response(
+          JSON.stringify({
+            success: false,
+            message: 'Unauthorized',
+            details: { hint: 'Check your API keys' },
+          }),
+          { status: 401 }
+        )
+      );
+
+      await expect(handleTossLoginFlow(mockAuthCode, mockReferrer)).rejects.toThrow(
+        '토스 API 인증에 실패했습니다.'
+      );
+    });
+
+    it('should handle 401 error with full details', async () => {
+      fetchMock.mockResolvedValueOnce(
+        new Response(
+          JSON.stringify({
+            success: false,
+            message: 'Unauthorized',
+            details: {
+              hint: 'Secret Missing',
+              checkSecrets: 'Check ENV',
+              tossApiError: { message: 'Toss Internal error' },
+            },
+          }),
+          { status: 401 }
+        )
+      );
+
+      const result = handleTossLoginFlow(mockAuthCode, mockReferrer);
+      await expect(result).rejects.toThrow(/Secret Missing/);
+      await expect(result).rejects.toThrow(/Check ENV/);
+      await expect(result).rejects.toThrow(/Toss Internal error/);
+    });
+
+    it('should handle 400 error without dev mode', async () => {
+      fetchMock.mockResolvedValueOnce(
+        new Response(
+          JSON.stringify({
+            error: 'Bad Request',
+          }),
+          { status: 400 }
+        )
+      );
+
+      await expect(handleTossLoginFlow('REAL_CODE', mockReferrer)).rejects.toThrow(
+        /AccessToken 요청 실패 \(400\)/
+      );
+    });
+
+    it('should handle generic error status', async () => {
+      fetchMock.mockResolvedValueOnce(
+        new Response(
+          JSON.stringify({
+            error: 'Server Error',
+          }),
+          { status: 500 }
+        )
+      );
+
+      await expect(handleTossLoginFlow(mockAuthCode, mockReferrer)).rejects.toThrow(
+        /AccessToken 요청 실패 \(500\)/
+      );
+    });
+
+    it('should handle non-JSON error response', async () => {
+      fetchMock.mockResolvedValueOnce(new Response('Internal Server Error Text', { status: 500 }));
+
+      await expect(handleTossLoginFlow(mockAuthCode, mockReferrer)).rejects.toThrow(
+        /Internal Server Error Text/
+      );
+    });
+
+    it('should handle response with success: false', async () => {
+      fetchMock.mockResolvedValueOnce(
+        new Response(
+          JSON.stringify({
+            success: false,
+            error: 'Custom Error',
+          }),
+          { status: 200 }
+        )
+      );
+
+      await expect(handleTossLoginFlow(mockAuthCode, mockReferrer)).rejects.toThrow('Custom Error');
+    });
+
+    it('should handle JSON parse error in handleTossLoginFlow', async () => {
+      fetchMock.mockResolvedValueOnce(
+        new Response('invalid json', {
+          status: 200,
+          headers: { 'Content-Type': 'application/json' },
+        })
+      );
+
+      await expect(handleTossLoginFlow(mockAuthCode, mockReferrer)).rejects.toThrow(
+        '응답 파싱 실패'
+      );
+    });
+
+    it('should handle 400 error with dev mode message', async () => {
+      fetchMock.mockResolvedValueOnce(
+        new Response(
+          JSON.stringify({
+            error: 'Invalid Code',
+          }),
+          { status: 400 }
+        )
+      );
+
+      await expect(handleTossLoginFlow('DEV_MODE_CODE', mockReferrer)).rejects.toThrow('개발 모드');
+    });
+
+    it('should handle network failure during OAuth', async () => {
+      fetchMock.mockRejectedValueOnce(new Error('Failed to fetch'));
+
+      await expect(handleTossLoginFlow(mockAuthCode, mockReferrer)).rejects.toThrow(
+        'Edge Function에 연결할 수 없습니다.'
+      );
     });
   });
 });

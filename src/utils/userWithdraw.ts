@@ -1,9 +1,9 @@
 import { supabase } from './supabaseClient';
 import { useProfileStore } from '../stores/useProfileStore';
 import { useLevelProgressStore } from '../stores/useLevelProgressStore';
-import { storage } from './storage';
 import { logError } from './errorHandler';
 import { ENV } from './env';
+import { storageService, STORAGE_KEYS } from '../services';
 
 /**
  * 회원 탈퇴를 처리합니다.
@@ -62,8 +62,8 @@ export const withdrawAccount = async (): Promise<boolean> => {
     }
 
     // 2. 로컬 데이터 삭제
-    storage.clearAppData();
-    localStorage.removeItem('solve-climb-local-session');
+    storageService.clear();
+    storageService.remove(STORAGE_KEYS.LOCAL_SESSION);
 
     // 3. Zustand 스토어 초기화 (순차적으로 처리하여 완결성 보장)
     const profileStore = useProfileStore.getState();

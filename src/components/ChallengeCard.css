@@ -28,10 +28,11 @@
 }
 
 .challenge-description {
-  font-size: 1rem;
+  font-size: 1.125rem;
   color: var(--color-text-primary);
-  margin: 0 0 var(--spacing-sm) 0;
-  font-weight: 500;
+  margin: 0 0 var(--spacing-md) 0;
+  font-weight: 700;
+  line-height: 1.4;
 }
 
 .challenge-participants {

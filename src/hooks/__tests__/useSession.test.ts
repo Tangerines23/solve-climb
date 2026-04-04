@@ -2,7 +2,7 @@ import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { renderHook, waitFor } from '@testing-library/react';
 import { useSession } from '../useSession';
 import { supabase } from '../../utils/supabaseClient';
-import { storage } from '../../utils/storage';
+import { storageService, STORAGE_KEYS } from '../../services';
 import type { Session, AuthError } from '@supabase/supabase-js';
 
 // Mock dependencies
@@ -15,11 +15,11 @@ vi.mock('../../utils/supabaseClient', () => ({
   },
 }));
 
-vi.mock('../../utils/storage', () => ({
-  storage: {
-    getString: vi.fn(),
+vi.mock('../../services', () => ({
+  storageService: {
+    get: vi.fn(),
   },
-  StorageKeys: {
+  STORAGE_KEYS: {
     LOCAL_SESSION: 'solve-climb-local-session',
   },
 }));
@@ -54,7 +54,7 @@ describe('useSession', () => {
 
   it('should initialize with loading state', () => {
     vi.mocked(supabase.auth.getSession).mockResolvedValue({ data: { session: null }, error: null });
-    vi.mocked(storage.getString).mockReturnValue(null);
+    vi.mocked(storageService.get).mockReturnValue(null);
 
     const { result } = renderHook(() => useSession());
 
@@ -67,7 +67,7 @@ describe('useSession', () => {
       isAdmin: false,
     };
 
-    vi.mocked(storage.getString).mockReturnValue(JSON.stringify(localSessionData));
+    vi.mocked(storageService.get).mockReturnValue(JSON.stringify(localSessionData));
     vi.mocked(supabase.auth.getSession).mockResolvedValue({ data: { session: null }, error: null });
 
     const { result } = renderHook(() => useSession());
@@ -96,7 +96,7 @@ describe('useSession', () => {
       token_type: 'bearer',
     } as unknown as Session;
 
-    vi.mocked(storage.getString).mockReturnValue(null);
+    vi.mocked(storageService.get).mockReturnValue(null);
     vi.mocked(supabase.auth.getSession).mockResolvedValue({
       data: { session: mockSupabaseSession },
       error: null,
@@ -113,7 +113,7 @@ describe('useSession', () => {
   });
 
   it('should return null session when neither local nor Supabase session exists', async () => {
-    vi.mocked(storage.getString).mockReturnValue(null);
+    vi.mocked(storageService.get).mockReturnValue(null);
     vi.mocked(supabase.auth.getSession).mockResolvedValue({ data: { session: null }, error: null });
 
     const { result } = renderHook(() => useSession());
@@ -128,7 +128,7 @@ describe('useSession', () => {
   });
 
   it('should register auth state change listener', () => {
-    vi.mocked(storage.getString).mockReturnValue(null);
+    vi.mocked(storageService.get).mockReturnValue(null);
     vi.mocked(supabase.auth.getSession).mockResolvedValue({ data: { session: null }, error: null });
 
     renderHook(() => useSession());

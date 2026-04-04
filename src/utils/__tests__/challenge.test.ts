@@ -5,16 +5,18 @@ import {
   SeededRandom,
   type TodayChallenge,
 } from '../challenge';
-import { storage } from '../storage';
+import { storageService, STORAGE_KEYS } from '../../services';
 import { APP_CONFIG } from '../../config/app';
 
 // Mock storage
-vi.mock('../storage', () => ({
-  storage: {
-    getString: vi.fn(),
+vi.mock('../../services', () => ({
+  storageService: {
     get: vi.fn(),
-    setString: vi.fn(),
     set: vi.fn(),
+  },
+  STORAGE_KEYS: {
+    TODAY_CHALLENGE: 'today_challenge',
+    TODAY_CHALLENGE_DATE: 'today_challenge_date',
   },
 }));
 
@@ -99,8 +101,11 @@ describe('challenge', () => {
         worldId: 'World1',
       };
 
-      vi.mocked(storage.getString).mockReturnValue(todayDate);
-      vi.mocked(storage.get).mockReturnValue(cachedChallenge);
+      vi.mocked(storageService.get).mockImplementation((key) => {
+        if (key === STORAGE_KEYS.TODAY_CHALLENGE_DATE) return todayDate;
+        if (key === STORAGE_KEYS.TODAY_CHALLENGE) return cachedChallenge;
+        return null;
+      });
 
       const result = await getTodayChallenge({});
 
@@ -108,17 +113,15 @@ describe('challenge', () => {
     });
 
     it('should generate local challenge when cache is missing', async () => {
-      vi.mocked(storage.getString).mockReturnValue(null);
-      vi.mocked(storage.get).mockReturnValue(null);
+      vi.mocked(storageService.get).mockReturnValue(null);
 
       const result = await getTodayChallenge({});
       expect(result.id).toContain('today_challenge_');
-      expect(storage.set).toHaveBeenCalled();
+      expect(storageService.set).toHaveBeenCalled();
     });
 
     it('should generate same challenge for same date', async () => {
-      vi.mocked(storage.getString).mockReturnValue(null);
-      vi.mocked(storage.get).mockReturnValue(null);
+      vi.mocked(storageService.get).mockReturnValue(null);
 
       const result1 = await getTodayChallenge({});
       const result2 = await getTodayChallenge({});

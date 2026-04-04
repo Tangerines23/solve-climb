@@ -1,5 +1,4 @@
 import storybook from 'eslint-plugin-storybook';
-
 import js from '@eslint/js';
 import globals from 'globals';
 import reactHooks from 'eslint-plugin-react-hooks';
@@ -12,18 +11,23 @@ export default [
   {
     ignores: [
       '**/dist/**',
-      'apps-in-toss-examples-main',
       'node_modules',
       'android/**',
       'proxy-server/**',
-      'playwright/.cache/**',
       'playwright-report/**',
       'test-results/**',
       '**/*.js.map',
     ],
   },
   js.configs.recommended,
-  security.configs.recommended,
+  {
+    plugins: {
+      security,
+    },
+    rules: {
+      ...security.configs.recommended.rules,
+    },
+  },
   {
     plugins: {
       'react-hooks': reactHooks,
@@ -74,16 +78,13 @@ export default [
       '@typescript-eslint/no-explicit-any': 'off',
     },
   },
-  // 새 기능 디렉토리에 대해서만 any 타입을 엄격하게 검사
-  // 기존 코드는 warn 유지, 새 코드는 error로 설정
   {
     files: ['src/new-features/**/*.{ts,tsx}'],
     rules: {
-      '@typescript-eslint/no-explicit-any': 'error', // 새 코드는 엄격하게
+      '@typescript-eslint/no-explicit-any': 'error',
     },
   },
   ...storybook.configs['flat/recommended'],
-  // Scripts override at the end for highest precedence
   {
     files: ['scripts/**/*.{js,cjs}', 'scripts/*.{js,cjs}'],
     languageOptions: {
@@ -91,16 +92,8 @@ export default [
       globals: globals.node,
     },
     rules: {
-      'no-unused-vars': [
-        'error',
-        {
-          varsIgnorePattern: '^[A-Z_]|^_',
-          argsIgnorePattern: '^[A-Z_]|^_',
-          caughtErrorsIgnorePattern: '^[A-Z_]|^_',
-        },
-      ],
+      'no-unused-vars': 'off',
       'no-undef': 'off',
-      // Disable all security rules for scripts
       'security/detect-non-literal-fs-filename': 'off',
       'security/detect-object-injection': 'off',
       'security/detect-child-process': 'off',

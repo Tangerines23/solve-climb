@@ -4,7 +4,7 @@ import { Category, QuizQuestion, Difficulty, GameMode, World, Topic, Tier } from
 import { generateQuestion } from '../utils/quizGenerator';
 import { useBaseCampStore } from '../stores/useBaseCampStore';
 import { useDeathNoteStore } from '../stores/useDeathNoteStore';
-import { SURVIVAL_CONFIG } from '../constants/game';
+import { SURVIVAL_CONFIG, CATEGORY_CONFIG, ANIMATION_CONFIG } from '../constants/game';
 
 interface UseQuestionGeneratorParams {
   category: Category | null;
@@ -83,7 +83,7 @@ export function useQuestionGenerator({
           setShowFlash(false);
           setQuestionAnimation('fade-in');
           setQuestionStartTime(Date.now());
-        }, 150);
+        }, ANIMATION_CONFIG.TRANSITION_DELAY);
         return;
       }
     }
@@ -102,7 +102,6 @@ export function useQuestionGenerator({
             ? missedQuestions.at(randomIndex)
             : missedQuestions[0];
 
-        setQuestionAnimation('fade-out');
         setTimeout(() => {
           setCurrentQuestion(q ?? null);
           setAnswerInput('');
@@ -111,7 +110,7 @@ export function useQuestionGenerator({
           setShowFlash(false);
           setQuestionAnimation('fade-in');
           setQuestionStartTime(Date.now());
-        }, 150);
+        }, ANIMATION_CONFIG.TRANSITION_DELAY);
         return;
       }
       // 오답이 없으면 일반 모드로 전환 (콘솔 알림)
@@ -132,21 +131,9 @@ export function useQuestionGenerator({
       const baseLevel = Math.floor(totalQuestions / BASE_LEVEL_DIVIDER) + 1;
       const isTrap = Math.random() < TRAP_PROBABILITY && baseLevel > TRAP_DELTA_MIN;
 
-      let categoryMax = 30;
-      switch (targetCategory) {
-        case '기초':
-          categoryMax = 30;
-          break;
-        case '논리':
-          categoryMax = 15;
-          break;
-        case '대수':
-          categoryMax = 20;
-          break;
-        case '심화':
-          categoryMax = 15;
-          break;
-      }
+      const categoryMax = Object.prototype.hasOwnProperty.call(CATEGORY_CONFIG, targetCategory)
+        ? CATEGORY_CONFIG[targetCategory as keyof typeof CATEGORY_CONFIG].maxLevel
+        : CATEGORY_CONFIG.default.maxLevel;
 
       // v2.4 Note: Theoretically baseLevel can grow infinitely.
       // We still scale it to the category's actual max level for generation.
@@ -218,9 +205,9 @@ export function useQuestionGenerator({
       if (useSystemKeyboard && inputRef.current) {
         setTimeout(() => {
           inputRef.current?.focus();
-        }, 200);
+        }, ANIMATION_CONFIG.KEYBOARD_FOCUS_DELAY);
       }
-    }, 150);
+    }, ANIMATION_CONFIG.TRANSITION_DELAY);
   }, [
     category,
     world,

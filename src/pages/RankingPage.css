@@ -33,6 +33,12 @@
   background: linear-gradient(180deg, rgba(0, 0, 0, 0.3) 0%, transparent 100%);
 }
 
+.ranking-tabs-wrapper {
+  margin-top: var(--spacing-md);
+  margin-bottom: var(--spacing-md);
+  width: 100%;
+}
+
 .ranking-tab {
   flex: 1;
   padding: var(--spacing-small-alt);
@@ -52,11 +58,11 @@
 }
 
 .ranking-tab.active {
-  background: linear-gradient(135deg, var(--color-blue-400) 0%, var(--color-blue-500) 100%);
+  background: linear-gradient(135deg, var(--color-blue-500) 0%, var(--color-blue-700) 100%);
   color: var(--color-pure-white);
   font-weight: 800;
-  box-shadow: 0 4px 12px rgba(0, 191, 165, 0.4);
-  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5); /* Stronger shadow for contrast */
+  box-shadow: 0 4px 12px rgba(0, 105, 92, 0.4);
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.8); /* Stronger shadow for contrast */
 }
 
 /* Layer 2: Pill Switch Styling */
@@ -100,9 +106,8 @@
   padding: var(--spacing-md);
   border: none;
   background: transparent;
-  color: var(--color-text-dimmed);
   font-weight: 700;
-  color: var(--color-gray-200);
+  color: var(--color-text-primary);
   font-size: 0.9rem;
   transition: color 0.3s ease;
   cursor: pointer;
@@ -198,7 +203,6 @@
   font-size: 4rem;
   display: block;
   margin-bottom: var(--spacing-xl);
-  opacity: 0.3;
 }
 
 .ranking-list {
@@ -212,12 +216,12 @@
   align-items: center;
   justify-content: space-between;
   padding: var(--spacing-lg) var(--spacing-xl);
-  background: var(--bg-glass-card);
+  background: var(--glass-bg);
   border-radius: var(--rounded-md);
-  border: var(--border-glass);
-  -webkit-backdrop-filter: blur(var(--backdrop-blur));
-  backdrop-filter: blur(var(--backdrop-blur));
-  box-shadow: var(--shadow-glass);
+  border: var(--glass-border);
+  -webkit-backdrop-filter: blur(var(--glass-blur));
+  backdrop-filter: blur(var(--glass-blur));
+  box-shadow: var(--glass-shadow);
   transition:
     transform 0.2s ease,
     background-color 0.2s,
@@ -242,6 +246,7 @@
     color-mix(in srgb, var(--color-rank-gold), transparent 90%) 0%,
     color-mix(in srgb, var(--color-gray-100), transparent 97%) 100%
   );
+  border-color: var(--color-rank-gold);
   border-color: color-mix(in srgb, var(--color-rank-gold), transparent 75%);
   box-shadow: 0 4px 15px color-mix(in srgb, var(--color-rank-gold), transparent 95%);
 }
@@ -252,6 +257,7 @@
     color-mix(in srgb, var(--color-rank-silver), transparent 90%) 0%,
     color-mix(in srgb, var(--color-gray-100), transparent 97%) 100%
   );
+  border-color: var(--color-rank-silver);
   border-color: color-mix(in srgb, var(--color-rank-silver), transparent 75%);
 }
 
@@ -261,6 +267,7 @@
     color-mix(in srgb, var(--color-rank-bronze), transparent 90%) 0%,
     color-mix(in srgb, var(--color-gray-100), transparent 97%) 100%
   );
+  border-color: var(--color-rank-bronze);
   border-color: color-mix(in srgb, var(--color-rank-bronze), transparent 75%);
 }
 
@@ -337,9 +344,9 @@
   left: 0;
   right: 0;
   padding: var(--spacing-lg) 0;
-  background: linear-gradient(180deg, transparent 0%, rgba(0, 0, 0, 0.9) 40%, #000 100%);
-  -webkit-backdrop-filter: blur(8px);
-  backdrop-filter: blur(8px);
+  background: var(--bg-glass-overlay);
+  -webkit-backdrop-filter: blur(var(--glass-blur));
+  backdrop-filter: blur(var(--glass-blur));
   z-index: 100;
 }
 
@@ -362,7 +369,7 @@
 
 /* Realtime Live Badge */
 .live-badge {
-  background-color: var(--color-live-red); /* Improved contrast */
+  background-color: var(--color-live-red); /* Darker red for >4.5:1 contrast against white */
   color: var(--color-text-primary);
   font-size: 0.75rem;
   font-weight: bold;

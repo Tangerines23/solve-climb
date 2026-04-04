@@ -2,20 +2,40 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/react';
 import { QuickActionsSection } from '../debug/QuickActionsSection';
 import { useUserStore } from '../../stores/useUserStore';
-import { useQuizStore } from '../../stores/useQuizStore';
-import { useGameStore } from '../../stores/useGameStore';
+import { useDebugStore } from '../../stores/useDebugStore';
+import { useMyPageStats } from '../../hooks/useMyPageStats';
+import '@testing-library/jest-dom';
 
 // Mock dependencies
 vi.mock('../../stores/useUserStore', () => ({
   useUserStore: vi.fn(),
 }));
 
-vi.mock('../../stores/useQuizStore', () => ({
-  useQuizStore: vi.fn(),
+vi.mock('../../stores/useDebugStore', () => ({
+  useDebugStore: vi.fn(),
 }));
 
-vi.mock('../../stores/useGameStore', () => ({
-  useGameStore: vi.fn(),
+vi.mock('../../hooks/useMyPageStats', () => ({
+  useMyPageStats: vi.fn(),
+}));
+
+vi.mock('../../utils/supabaseClient', () => ({
+  supabase: {
+    auth: {
+      getSession: vi.fn(() => Promise.resolve({ data: { session: null }, error: null })),
+      getUser: vi.fn(() => Promise.resolve({ data: { user: null }, error: null })),
+      onAuthStateChange: vi.fn(() => ({
+        data: { subscription: { unsubscribe: vi.fn() } },
+        error: null,
+      })),
+    },
+    from: vi.fn(() => ({
+      select: vi.fn().mockReturnThis(),
+      eq: vi.fn().mockReturnThis(),
+      single: vi.fn().mockResolvedValue({ data: null, error: null }),
+    })),
+    rpc: vi.fn().mockResolvedValue({ data: { success: true }, error: null }),
+  },
 }));
 
 describe('QuickActionsSection', () => {
@@ -24,19 +44,22 @@ describe('QuickActionsSection', () => {
     vi.mocked(useUserStore).mockReturnValue({
       minerals: 1000,
       stamina: 5,
-      setMinerals: vi.fn(() => Promise.resolve()),
-      setStamina: vi.fn(() => Promise.resolve()),
       fetchUserData: vi.fn(() => Promise.resolve()),
-      debugAddItems: vi.fn(() => Promise.resolve()),
-      debugRemoveItems: vi.fn(() => Promise.resolve()),
-    } as never);
-    vi.mocked(useQuizStore).mockReturnValue({
-      setTimeLimit: vi.fn(),
-    } as never);
-    vi.mocked(useGameStore).mockReturnValue({
-      setScore: vi.fn(),
-      setCombo: vi.fn(),
-    } as never);
+      rewardMinerals: vi.fn(() => Promise.resolve()),
+      debugSetStamina: vi.fn(() => Promise.resolve()),
+      debugSetMinerals: vi.fn(() => Promise.resolve()),
+    } as any);
+    vi.mocked(useDebugStore).mockReturnValue({
+      infiniteStamina: false,
+      infiniteMinerals: false,
+      infiniteTime: false,
+      setInfiniteStamina: vi.fn(),
+      setInfiniteMinerals: vi.fn(),
+      setInfiniteTime: vi.fn(),
+    } as any);
+    vi.mocked(useMyPageStats).mockReturnValue({
+      refetch: vi.fn(),
+    } as any);
   });
 
   it('should render without crashing', () => {
@@ -79,12 +102,12 @@ describe('QuickActionsSection', () => {
 
   it('should render infinite modes section', () => {
     render(<QuickActionsSection />);
-    expect(screen.getByText(/무한 모드/)).toBeInTheDocument();
+    expect(screen.getByText(/디버그 설정/)).toBeInTheDocument();
   });
 
-  it('should toggle infinite stamina', () => {
+  it('should toggle infinite stamina', async () => {
     render(<QuickActionsSection />);
-    const toggleButton = screen.getByLabelText(/무한 스태미나 토글/);
+    const toggleButton = await screen.findByLabelText(/무한 스태미나 토글/);
     fireEvent.click(toggleButton);
   });
 

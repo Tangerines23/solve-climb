@@ -1,6 +1,7 @@
 import { create } from 'zustand';
 import { supabase } from '../utils/supabaseClient';
 import { safeSupabaseQuery } from '../utils/debugFetch';
+import { storageService, STORAGE_KEYS } from '../services';
 
 export interface BadgeDefinition {
   id: string;
@@ -60,15 +61,10 @@ export const useBadgeStore = create<BadgeState>((set, get) => ({
     if (!isUuid) {
       // 익명 사용자: 로컬 스토리지에서 뱃지 조회
       try {
-        const localBadgesStr = localStorage.getItem('solve-climb-local-badges');
-        if (localBadgesStr) {
-          const localBadges = JSON.parse(localBadgesStr) as UserBadge[];
-          set({ userBadges: localBadges, isLoadingUserBadges: false });
-        } else {
-          set({ userBadges: [], isLoadingUserBadges: false });
-        }
+        const localBadges = storageService.get<UserBadge[]>(STORAGE_KEYS.LOCAL_BADGES);
+        set({ userBadges: localBadges || [], isLoadingUserBadges: false });
       } catch (e) {
-        console.warn('Failed to parse local badges:', e);
+        console.warn('Failed to get local badges:', e);
         set({ userBadges: [], isLoadingUserBadges: false });
       }
       return;
@@ -94,6 +90,9 @@ export const useBadgeStore = create<BadgeState>((set, get) => ({
   },
 
   addUserBadge: async (badgeId: string, userId: string) => {
+    // 중복 방지 체크를 최상단으로 이동 (저장소 업데이트 방지)
+    if (get().userBadges.some((b) => b.badge_id === badgeId)) return;
+
     const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(userId);
     const newBadge: UserBadge = {
       badge_id: badgeId,
@@ -101,17 +100,13 @@ export const useBadgeStore = create<BadgeState>((set, get) => ({
     };
 
     // 상태 업데이트 (UI 즉시 반영)
-    set((state) => {
-      // 중복 방지
-      if (state.userBadges.some((b) => b.badge_id === badgeId)) return state;
-      return { userBadges: [newBadge, ...state.userBadges] };
-    });
+    set((state) => ({ userBadges: [newBadge, ...state.userBadges] }));
 
     if (!isUuid) {
       // 익명 사용자: 로컬 스토리지에 저장
       try {
         const currentBadges = get().userBadges;
-        localStorage.setItem('solve-climb-local-badges', JSON.stringify(currentBadges));
+        storageService.set(STORAGE_KEYS.LOCAL_BADGES, currentBadges);
       } catch (e) {
         console.warn('Failed to save local badge:', e);
       }

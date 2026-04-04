@@ -3,6 +3,15 @@ import { beforeAll, afterEach, afterAll } from 'vitest';
 import { cleanup } from '@testing-library/react';
 import { server } from './mocks/server';
 
+// MSW 2.x requires global fetch, Headers, etc. In some Node/JSDOM environments
+// Headers can become undefined during teardown.
+if (typeof global.Headers === 'undefined' && typeof window !== 'undefined') {
+  console.log('global.Headers is undefined, window.Headers is:', typeof window.Headers);
+  global.Headers = window.Headers;
+} else {
+  console.log('global.Headers is already defined:', typeof global.Headers);
+}
+
 // MSW 서버 시작
 beforeAll(() => server.listen({ onUnhandledRequest: 'warn' }));
 
@@ -13,4 +22,15 @@ afterEach(() => {
 });
 
 // 테스트 완료 후 MSW 서버 종료
-afterAll(() => server.close());
+afterAll(() => {
+  try {
+    if (typeof server !== 'undefined' && server && typeof server.close === 'function') {
+      server.close();
+    }
+  } catch (error) {
+    // Silence Headers ReferenceError during teardown in limited environments
+    if (!(error instanceof ReferenceError && error.message.includes('Headers'))) {
+      throw error;
+    }
+  }
+});

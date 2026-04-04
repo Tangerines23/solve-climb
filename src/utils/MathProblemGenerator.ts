@@ -455,6 +455,8 @@ function calculate(a: number, b: number, op: Operator): number {
   }
 }
 
+const calculationCache = new Map<string, number>();
+
 /**
  * 안전하게 수식의 결과를 계산합니다 (연산자 우선순위 적용)
  * @param numbers 숫자 배열
@@ -462,6 +464,11 @@ function calculate(a: number, b: number, op: Operator): number {
  * @returns 계산 결과
  */
 function calculateWithPrecedence(numbers: number[], operators: Operator[]): number {
+  const cacheKey = `${numbers.join(',')}|${operators.join(',')}`;
+  if (calculationCache.has(cacheKey)) {
+    return calculationCache.get(cacheKey)!;
+  }
+
   // 배열을 복사하여 원본을 보존
   const nums = [...numbers];
   const ops = [...operators];
@@ -493,8 +500,17 @@ function calculateWithPrecedence(numbers: number[], operators: Operator[]): numb
     result = calculate(result, n, o);
   }
 
+  calculationCache.set(cacheKey, result);
+  // 캐시 크기 제한 (메모리 누수 방지)
+  if (calculationCache.size > 1000) {
+    const firstKey = calculationCache.keys().next().value;
+    if (firstKey !== undefined) calculationCache.delete(firstKey);
+  }
+
   return result;
 }
+
+const stageCache = new Map<number, StageConfig>();
 
 export function generateProblem(
   stageId: number,
@@ -506,7 +522,12 @@ export function generateProblem(
     return generateHardAlgebraProblem(stageId, _difficulty, rng);
   }
 
-  const stage = STAGES.find((s) => s.id === stageId);
+  let stage = stageCache.get(stageId);
+  if (!stage) {
+    stage = STAGES.find((s) => s.id === stageId);
+    if (stage) stageCache.set(stageId, stage);
+  }
+
   if (!stage) {
     throw new Error(`Stage ${stageId} not found`);
   }
@@ -532,6 +553,8 @@ export function generateProblem(
         problem = generateTimeProblem(stage, rng);
       } else if (stage.type === 'modulo') {
         problem = generateModuloProblem(stage, rng);
+      } else {
+        throw new Error(`Unknown stage type: ${stage.type}`);
       }
       isValid = true;
     } catch {

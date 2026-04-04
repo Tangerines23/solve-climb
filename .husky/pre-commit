@@ -117,5 +117,10 @@ if [ -n "$DB_CHANGED" ]; then
   fi
 fi
 
+# 9. 작업 완료 및 환경 정리 (로그 수집 장치 가동)
+echo "🧹 환경 정리 (배정되지 않은 로그 및 보고서 분류)..."
+npm run report:collect || echo "⚠️ 로그 수집 중 경고 발생 (수동 확인 권장)"
+
 echo ""
 echo "✅ 모든 검증 통과!"
+echo "🎉 워크스페이스가 정리되었습니다."

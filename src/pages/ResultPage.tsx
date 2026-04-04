@@ -1,5 +1,5 @@
 // src/pages/ResultPage.tsx
-import { useEffect, useState, useRef, useMemo } from 'react';
+import { useEffect, useState, useMemo } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useQuizStore } from '@/stores/useQuizStore';
 import { useLevelProgressStore } from '@/stores/useLevelProgressStore';
@@ -23,33 +23,15 @@ import { urls } from '@/utils/navigation';
 import { Category } from '@/types/quiz';
 import { AdService } from '@/utils/adService';
 import { analytics } from '@/services/analytics';
+import { UI_MESSAGES } from '@/constants/ui';
+import { ANIMATION_CONFIG } from '@/constants/game';
 import './ResultPage.css';
 
-function useCountUp(targetValue: number, duration = 1000) {
-  const [count, setCount] = useState(0);
-  const startTimeRef = useRef<number | undefined>(undefined);
-  useEffect(() => {
-    if (targetValue === 0) {
-      setCount(0);
-      return;
-    }
-    startTimeRef.current = Date.now();
-    let rid: number;
-    const animate = () => {
-      const elapsed = Date.now() - startTimeRef.current!;
-      const progress = Math.min(elapsed / duration, 1);
-      const eased = 1 - Math.pow(1 - progress, 3);
-      setCount(Math.floor(targetValue * eased));
-      if (progress < 1) rid = requestAnimationFrame(animate);
-      else setCount(targetValue);
-    };
-    rid = requestAnimationFrame(animate);
-    return () => cancelAnimationFrame(rid);
-  }, [targetValue, duration]);
-  return count;
-}
-
 import { useSettingsStore } from '@/stores/useSettingsStore';
+import { useCountUp } from '@/hooks/useCountUp';
+import { historyService } from '@/services/historyService';
+
+import { storageService, STORAGE_KEYS } from '@/services';
 
 export function ResultPage() {
   const score = useQuizStore((state) => state.score);
@@ -88,19 +70,19 @@ export function ResultPage() {
   useEffect(() => {
     if (!worldParam || !categoryParam || !level || !mode) return;
     const key = createSafeStorageKey(
-      'highscore',
+      STORAGE_KEYS.HIGH_SCORE_PREFIX,
       worldParam,
       categoryParam,
       level,
       mode === 'time-attack' ? 'time_attack' : 'survival'
     );
-    const existing = parseInt(localStorage.getItem(key) || '0', 10);
+    const existing = parseInt(storageService.get<string>(key) || '0', 10);
     if (finalScore > existing) {
-      localStorage.setItem(key, finalScore.toString());
+      storageService.set(key, finalScore.toString());
       setIsNewRecord(true);
       if (animationEnabled) {
         setShowConfetti(true);
-        setTimeout(() => setShowConfetti(false), 3000);
+        setTimeout(() => setShowConfetti(false), ANIMATION_CONFIG.CONFETTI_DURATION);
       }
     }
     const sync = async () => {
@@ -193,31 +175,17 @@ export function ResultPage() {
       });
 
       // [Anonymous/Local History Saving]
-      // 익명 사용자를 위해 로컬 스토리지에 결과 저장
-      try {
-        const historyKey = 'solve-climb-local-history';
-        const rawHistory = localStorage.getItem(historyKey);
-        const history = rawHistory ? JSON.parse(rawHistory) : [];
-
-        const newRecord = {
-          id: `local-${Date.now()}`,
-          world: worldParam,
-          category: categoryParam,
-          level: level,
-          mode: mode,
-          score: finalScore,
-          correctCount: correctCount,
-          total: total,
-          date: new Date().toISOString(),
-        };
-
-        // 최신순 정렬 및 최대 100개 유지
-        const updatedHistory = [newRecord, ...history].slice(0, 100);
-        localStorage.setItem(historyKey, JSON.stringify(updatedHistory));
-        console.log('[ResultPage] Saved local history:', newRecord);
-      } catch (e) {
-        console.warn('[ResultPage] Failed to save local history:', e);
-      }
+      // 익명 사용자를 위해 historyService를 통해 결과 저장
+      historyService.saveRecord({
+        world: worldParam,
+        category: categoryParam as Category,
+        level: level,
+        mode: mode as string,
+        score: finalScore,
+        correctCount: correctCount,
+        total: total,
+      });
+      console.log('[ResultPage] Saved local history via historyService');
     }
 
     if (finalScore > 0 && !scoreSubmitted) {
@@ -249,12 +217,12 @@ export function ResultPage() {
     if (hasDoubled || isAdLoading || baseMinerals <= 0) return;
 
     setIsAdLoading(true);
-    showToast('광고를 불러오는 중... 📺', 'info');
+    showToast(UI_MESSAGES.AD_LOADING, 'info');
 
     // 광고 시청 호출
     const adResult = await AdService.showRewardedAd('double_reward');
     if (!adResult.success) {
-      showToast(adResult.error || '광고 시청에 실패했습니다.', 'error');
+      showToast(adResult.error || UI_MESSAGES.AD_LOAD_FAILED, 'error');
       setIsAdLoading(false);
       return;
     }
@@ -310,18 +278,24 @@ export function ResultPage() {
 
   const statsList = useMemo(() => {
     const s = [];
-    if (isNewRecord) s.push({ label: '최고 기록 달성', value: 'New! 🏆', isHighlight: true });
+    if (isNewRecord)
+      s.push({ label: UI_MESSAGES.NEW_RECORD_LABEL, value: 'New! 🏆', isHighlight: true });
     if (mode === 'survival' || mode === 'infinite') {
-      s.push({ label: '최고 고도', value: `${correctCount}m`, isHighlight: true });
+      s.push({ label: UI_MESSAGES.CURRENT_ALTITUDE, value: `${correctCount}m`, isHighlight: true });
     }
     if (total > 0 && mode !== 'survival' && mode !== 'infinite') {
-      s.push({ label: '정확도', value: `${Math.round((correctCount / total) * 100)}%` });
-      s.push({ label: '진행', value: `${correctCount} / ${total}` });
+      s.push({
+        label: UI_MESSAGES.ACCURACY,
+        value: `${Math.round((correctCount / total) * 100)}%`,
+      });
+      s.push({ label: UI_MESSAGES.PROGRESS, value: `${correctCount} / ${total}` });
     }
-    if (averageTime) s.push({ label: '평균 시간', value: `${averageTime.toFixed(1)}초` });
+    if (averageTime)
+      s.push({ label: UI_MESSAGES.AVERAGE_TIME, value: `${averageTime.toFixed(1)}초` });
     if (searchParams.get('exhausted') === 'true')
-      s.push({ label: '지침 상태 패널티', value: '-20%', isHighlight: true });
-    if (currentRank) s.push({ label: '현재 순위', value: `${currentRank}위`, isHighlight: true });
+      s.push({ label: UI_MESSAGES.EXHAUSTED_PENALTY, value: '-20%', isHighlight: true });
+    if (currentRank)
+      s.push({ label: UI_MESSAGES.CURRENT_RANK, value: `${currentRank}위`, isHighlight: true });
     return s;
   }, [isNewRecord, total, correctCount, averageTime, searchParams, currentRank, mode]);
 
@@ -350,23 +324,23 @@ export function ResultPage() {
         <div className="result-card">
           <div className="result-header-section">
             <div className="result-icon floating">🚩</div>
-            <h1 className="result-title">진단 완료!</h1>
-            <p className="result-subtitle">베이스 캠프에서의 준비가 끝났습니다.</p>
+            <h1 className="result-title">{UI_MESSAGES.DIAGNOSIS_COMPLETE}</h1>
+            <p className="result-subtitle">{UI_MESSAGES.BASE_CAMP_PREP_DONE}</p>
 
             <div className="diagnostic-summary">
               <div className="diagnostic-stat">
-                <span className="stat-label">진단 정확도</span>
+                <span className="stat-label">진단 {UI_MESSAGES.ACCURACY}</span>
                 <span className="stat-value">{accuracy}%</span>
               </div>
             </div>
 
             <div className="recommendation-box">
-              <h3>추천 코스</h3>
+              <h3>{UI_MESSAGES.RECOMMENDED_COURSE}</h3>
               <div className="recommendation-card">
                 <span className="recommendation-icon">{course.icon}</span>
                 <div className="recommendation-info">
                   <span className="course-name">{course.name}</span>
-                  <p className="course-desc">당신의 실력에 딱 맞는 난이도입니다.</p>
+                  <p className="course-desc">{UI_MESSAGES.COURSE_MATCH_DESC}</p>
                 </div>
               </div>
             </div>
@@ -386,14 +360,13 @@ export function ResultPage() {
               )
             }
           >
-            추천 코스로 등반 시작
+            {UI_MESSAGES.START_RECOMMENDED_COURSE}
           </button>
           <button
-            className="result-button-secondary"
+            className="result-button-secondary mt-sm"
             onClick={() => (window.location.href = `/world/${worldParam}`)}
-            style={{ marginTop: 'var(--spacing-sm)' }}
           >
-            월드로 돌아가기
+            {UI_MESSAGES.RETURN_TO_WORLD}
           </button>
         </div>
       </div>
@@ -413,17 +386,19 @@ export function ResultPage() {
             <div
               key={i}
               className="confetti"
-              style={{
-                left: `${Math.random() * 100}%`,
-                animationDelay: `${Math.random() * 0.5}s`,
-                backgroundColor: [
-                  'var(--color-teal-500)',
-                  'var(--color-green-500)',
-                  'var(--color-yellow-500)',
-                  'var(--color-red-500)',
-                  'var(--color-purple-500)',
-                ][Math.floor(Math.random() * 5)],
-              }}
+              style={
+                {
+                  '--left': `${Math.random() * 100}%`,
+                  '--delay': `${Math.random() * 0.5}s`,
+                  '--color': [
+                    'var(--color-teal-500)',
+                    'var(--color-green-500)',
+                    'var(--color-yellow-500)',
+                    'var(--color-red-500)',
+                    'var(--color-purple-500)',
+                  ][Math.floor(Math.random() * 5)],
+                } as React.CSSProperties
+              }
             />
           ))}
         </div>
@@ -437,10 +412,14 @@ export function ResultPage() {
       <div className="result-card">
         <div className="result-header-section">
           <div className="result-icon floating">{mode === 'time-attack' ? '⏱️' : '🔥'}</div>
-          <h1 className="result-title">{mode === 'time-attack' ? '시간 종료!' : '도전 종료'}</h1>
+          <h1 className="result-title">
+            {mode === 'time-attack' ? UI_MESSAGES.TIME_UP : UI_MESSAGES.CHALLENGE_END}
+          </h1>
           <p className="result-subtitle">
             {worldParam} - {categoryParam}{' '}
-            {mode === 'survival' || mode === 'infinite' ? '서바이벌 챌린지' : `Level ${level}`}
+            {mode === 'survival' || mode === 'infinite'
+              ? UI_MESSAGES.SURVIVAL_CHALLENGE
+              : `${UI_MESSAGES.LEVEL_LABEL} ${level}`}
           </p>
           <div className="score-section" data-vg-ignore="true">
             <p className="score-value">{animatedScore.toLocaleString()}m</p>
@@ -449,12 +428,16 @@ export function ResultPage() {
           {/* v2.2 데스노트 (Death Note) - 생존 모드 전용 */}
           {mode === 'survival' && searchParams.get('last_q') && (
             <div className="death-note-container">
-              <h3 className="death-note-title">마지막 고비 💀</h3>
+              <h3 className="death-note-title">{UI_MESSAGES.LAST_HURDLE}</h3>
               <div className="death-note-card">
                 <div className="death-note-question">{searchParams.get('last_q')}</div>
                 <div className="death-note-answer-row">
-                  <span className="death-note-wrong">내 오답: {searchParams.get('wrong_a')}</span>
-                  <span className="death-note-correct">정답: {searchParams.get('correct_a')}</span>
+                  <span className="death-note-wrong">
+                    {UI_MESSAGES.MY_WRONG_ANSWER}: {searchParams.get('wrong_a')}
+                  </span>
+                  <span className="death-note-correct">
+                    {UI_MESSAGES.CORRECT_ANSWER}: {searchParams.get('correct_a')}
+                  </span>
                 </div>
               </div>
             </div>
@@ -465,7 +448,7 @@ export function ResultPage() {
             <li
               key={i}
               className={`stat-item ${s.isHighlight ? 'stat-item-highlight' : ''}`}
-              style={{ animationDelay: `${i * 0.1}s` }}
+              style={{ '--delay': `${i * 0.1}s` } as React.CSSProperties}
             >
               <span className="stat-label">{s.label}</span>
               <span className="stat-value">{s.value}</span>
@@ -481,7 +464,9 @@ export function ResultPage() {
               disabled={isAdLoading}
             >
               <span>{isAdLoading ? '⌛' : '📺'}</span>{' '}
-              {isAdLoading ? '보상 지급 중...' : `결과 보상 2배로 받기 (+${baseMinerals}💎)`}
+              {isAdLoading
+                ? UI_MESSAGES.REWARD_GIVING
+                : `${UI_MESSAGES.DOUBLE_REWARD} (+${baseMinerals}💎)`}
             </button>
           </div>
         )}
@@ -489,18 +474,17 @@ export function ResultPage() {
 
       <div className="result-footer-actions">
         <button className="result-button-primary" onClick={handleRetry}>
-          다시 도전하기
+          {UI_MESSAGES.RESULT_RETRY}
         </button>
         <button
-          className="result-button-secondary"
+          className="result-button-secondary mt-sm"
           onClick={() => {
             const params = new URLSearchParams(window.location.search);
             params.set('mode', 'smart-retry');
             window.location.href = `/quiz?${params.toString()}`;
           }}
-          style={{ marginTop: 'var(--spacing-sm)' }}
         >
-          데스노트 복수하기 (맞춤 재시도)
+          {UI_MESSAGES.REVENGE_DEATHNOTE}
         </button>
         <div className="result-button-group">
           <button
@@ -515,10 +499,10 @@ export function ResultPage() {
             }
             className="result-button-secondary"
           >
-            랭킹 보기
+            {UI_MESSAGES.RANKING_VIEW}
           </button>
           <button onClick={handleLevelSelect} className="result-button-secondary">
-            다른 레벨
+            {UI_MESSAGES.OTHER_LEVELS}
           </button>
         </div>
       </div>
@@ -528,10 +512,12 @@ export function ResultPage() {
         <div className="result-left-section">
           <div className="result-title-row">
             <div className="result-icon floating">{mode === 'time-attack' ? '⏱️' : '💥'}</div>
-            <h1 className="result-title">{mode === 'time-attack' ? '시간 종료!' : '게임 오버'}</h1>
+            <h1 className="result-title">
+              {mode === 'time-attack' ? UI_MESSAGES.TIME_UP : UI_MESSAGES.GAME_OVER}
+            </h1>
           </div>
           <p className="result-subtitle">
-            {worldParam} - {categoryParam} Level {level}
+            {worldParam} - {categoryParam} {UI_MESSAGES.LEVEL_LABEL} {level}
           </p>
           <div className="score-section" data-vg-ignore="true">
             <p className="score-value">{animatedScore.toLocaleString()}m</p>
@@ -546,7 +532,7 @@ export function ResultPage() {
               <li
                 key={i}
                 className={`stat-item ${s.isHighlight ? 'stat-item-highlight' : ''}`}
-                style={{ animationDelay: `${i * 0.1}s` }}
+                style={{ '--delay': `${i * 0.1}s` } as React.CSSProperties}
               >
                 <span className="stat-label">{s.label}</span>
                 <span className="stat-value">{s.value}</span>
@@ -557,13 +543,15 @@ export function ResultPage() {
           {/* 가로모드 데스노트 */}
           {mode === 'survival' && searchParams.get('last_q') && (
             <div className="wrong-answer-card">
-              <h3 className="wrong-answer-title">마지막 고비 💀</h3>
+              <h3 className="wrong-answer-title">{UI_MESSAGES.LAST_HURDLE}</h3>
               <div className="wrong-answer-item">
                 <div className="wrong-answer-question">{searchParams.get('last_q')}</div>
                 <div className="wrong-answer-row">
-                  <span className="wrong-answer-wrong">오답: {searchParams.get('wrong_a')}</span>
+                  <span className="wrong-answer-wrong">
+                    {UI_MESSAGES.MY_WRONG_ANSWER}: {searchParams.get('wrong_a')}
+                  </span>
                   <span className="wrong-answer-correct">
-                    정답: {searchParams.get('correct_a')}
+                    {UI_MESSAGES.CORRECT_ANSWER}: {searchParams.get('correct_a')}
                   </span>
                 </div>
               </div>
@@ -575,7 +563,7 @@ export function ResultPage() {
 
         <div className="result-right-section">
           <button onClick={handleRetry} className="result-button-primary">
-            다시 도전하기
+            {UI_MESSAGES.RESULT_RETRY}
           </button>
           <button
             onClick={() =>
@@ -589,13 +577,13 @@ export function ResultPage() {
             }
             className="result-button-secondary"
           >
-            랭킹 보기
+            {UI_MESSAGES.RANKING_VIEW}
           </button>
           <button onClick={handleLevelSelect} className="result-button-secondary">
-            다른 레벨
+            {UI_MESSAGES.OTHER_LEVELS}
           </button>
           <button onClick={() => navigate(urls.home())} className="result-button-secondary">
-            홈으로 이동
+            {UI_MESSAGES.GO_HOME}
           </button>
         </div>
       </div>

@@ -33,6 +33,10 @@ export class MockStorageService implements IStorageService {
     return this.store.size;
   }
 
+  hasItem(key: string): boolean {
+    return this.store.has(key);
+  }
+
   /**
    * 테스트 헬퍼: 현재 저장된 모든 데이터 반환
    */

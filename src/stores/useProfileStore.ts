@@ -1,7 +1,7 @@
 // 프로필 스토어
 import { create } from 'zustand';
 import { useLevelProgressStore } from './useLevelProgressStore';
-import { storage, StorageKeys } from '../utils/storage';
+import { storageService, STORAGE_KEYS } from '../services';
 import type { UserProgress } from './useLevelProgressStore';
 
 export interface UserProfile {
@@ -33,10 +33,10 @@ const generateProfileId = (): string => {
 
 // 기기 ID 가져오기 또는 생성
 const getDeviceId = (): string => {
-  let deviceId = storage.getString(StorageKeys.DEVICE_ID);
+  let deviceId = storageService.get<string>(STORAGE_KEYS.DEVICE_ID);
   if (!deviceId) {
     deviceId = `device_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
-    storage.setString(StorageKeys.DEVICE_ID, deviceId);
+    storageService.set(STORAGE_KEYS.DEVICE_ID, deviceId);
   }
   return deviceId;
 };
@@ -44,7 +44,7 @@ const getDeviceId = (): string => {
 // 프로필 목록 로드 (계정/기기당 최대 3개)
 const loadProfiles = (): UserProfile[] => {
   const deviceId = getDeviceId();
-  return storage.get<UserProfile[]>(StorageKeys.PROFILES(deviceId), []);
+  return storageService.get<UserProfile[]>(STORAGE_KEYS.PROFILES(deviceId)) || [];
 };
 
 // 프로필 목록 저장
@@ -52,20 +52,20 @@ const saveProfiles = (profiles: UserProfile[]) => {
   const deviceId = getDeviceId();
   // 최대 3개로 제한
   const limitedProfiles = profiles.slice(0, 3);
-  storage.set(StorageKeys.PROFILES(deviceId), limitedProfiles);
+  storageService.set(STORAGE_KEYS.PROFILES(deviceId), limitedProfiles);
 };
 
 // 현재 활성 프로필 ID 로드
 const loadActiveProfileId = (): string | null => {
-  return storage.getString(StorageKeys.ACTIVE_PROFILE_ID);
+  return storageService.get<string>(STORAGE_KEYS.ACTIVE_PROFILE_ID);
 };
 
 // 현재 활성 프로필 ID 저장
 const saveActiveProfileId = (profileId: string | null) => {
   if (profileId) {
-    storage.setString(StorageKeys.ACTIVE_PROFILE_ID, profileId);
+    storageService.set(STORAGE_KEYS.ACTIVE_PROFILE_ID, profileId);
   } else {
-    storage.remove(StorageKeys.ACTIVE_PROFILE_ID);
+    storageService.remove(STORAGE_KEYS.ACTIVE_PROFILE_ID);
   }
 };
 
@@ -80,15 +80,15 @@ const savedProfile = activeProfileId
 
 // 관리자 모드 상태를 localStorage에서 불러오기
 const loadAdminMode = (): boolean => {
-  const stored = storage.getString(StorageKeys.ADMIN_MODE);
+  const stored = storageService.get<string>(STORAGE_KEYS.ADMIN_MODE);
   return stored === 'true';
 };
 
 const saveAdminMode = (isAdmin: boolean) => {
   if (isAdmin) {
-    storage.setString(StorageKeys.ADMIN_MODE, 'true');
+    storageService.set(STORAGE_KEYS.ADMIN_MODE, 'true');
   } else {
-    storage.remove(StorageKeys.ADMIN_MODE);
+    storageService.remove(STORAGE_KEYS.ADMIN_MODE);
   }
 };
 
@@ -135,8 +135,7 @@ export const useProfileStore = create<ProfileState>((set, get) => ({
     const currentProgress = levelProgressStore.progress;
 
     // 프로필 ID를 키로 사용하여 기록 저장
-    // 프로필 ID를 키로 사용하여 기록 저장
-    storage.set(StorageKeys.PROGRESS(profile.profileId), currentProgress);
+    storageService.set(STORAGE_KEYS.PROGRESS(profile.profileId), currentProgress);
 
     set({ profile, isProfileComplete: !!profile.nickname, profiles: updatedProfiles });
 
@@ -178,7 +177,7 @@ export const useProfileStore = create<ProfileState>((set, get) => ({
     saveActiveProfileId(profileId);
 
     // 해당 프로필의 기록 로드
-    const progress = storage.get<UserProgress>(StorageKeys.PROGRESS(profileId), {});
+    const progress = storageService.get<UserProgress>(STORAGE_KEYS.PROGRESS(profileId)) || {};
     useLevelProgressStore.setState({ progress });
 
     set({ profile, isProfileComplete: !!profile.nickname });
@@ -198,7 +197,7 @@ export const useProfileStore = create<ProfileState>((set, get) => ({
     saveProfiles(updatedProfiles);
 
     // 삭제된 프로필의 기록도 삭제
-    storage.remove(StorageKeys.PROGRESS(profileId));
+    storageService.remove(STORAGE_KEYS.PROGRESS(profileId));
 
     // 현재 프로필이 삭제된 프로필이면 첫 번째 프로필로 전환
     if (state.profile?.profileId === profileId) {

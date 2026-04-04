@@ -221,10 +221,11 @@ export async function handleTossLoginFlow(
     if (!accessTokenResponse.ok) {
       // ... existing error handling ...
       let errorData: unknown = {};
+      const clonedResponse = accessTokenResponse.clone();
       try {
         errorData = await accessTokenResponse.json();
       } catch {
-        const text = await accessTokenResponse.text().catch(() => '');
+        const text = await clonedResponse.text().catch(() => '');
         errorData = { message: text || `HTTP ${accessTokenResponse.status}` };
       }
 

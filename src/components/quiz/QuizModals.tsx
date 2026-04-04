@@ -10,6 +10,9 @@ import { InventoryItem } from '../../types/user';
 import { PauseModal } from '../game/PauseModal';
 import { GameMode } from '../../types/quiz';
 
+import { ITEM_MAP, ItemMetadata } from '../../constants/items';
+import { safeAccess } from '../../utils/validation';
+
 interface QuizModalsProps {
   feedbackRef: RefObject<ItemFeedbackRef>;
   showLastChanceModal: boolean;
@@ -72,6 +75,10 @@ export function QuizModals({
   isAnonymous,
   onAlertAction,
 }: QuizModalsProps) {
+  const reviveItemCode = gameMode === 'time-attack' ? 'last_spurt' : 'flare';
+  const itemMeta = safeAccess(ITEM_MAP, reviveItemCode) as ItemMetadata | undefined;
+  const basePrice = itemMeta?.price || 800;
+
   return (
     <>
       <ItemFeedbackOverlay ref={feedbackRef} />
@@ -79,16 +86,13 @@ export function QuizModals({
       <LastChanceModal
         isVisible={showLastChanceModal && (gameMode === 'time-attack' || gameMode === 'survival')}
         gameMode={gameMode as 'time-attack' | 'survival'}
-        inventoryCount={
-          inventory.find((i) => i.code === (gameMode === 'time-attack' ? 'last_spurt' : 'flare'))
-            ?.quantity || 0
-        }
+        inventoryCount={inventory.find((i) => i.code === reviveItemCode)?.quantity || 0}
         userMinerals={minerals}
         onUseItem={() => handleRevive(true)}
         onPurchaseAndUse={handlePurchaseAndRevive}
         onWatchAd={handleWatchAdAndRevive}
         onGiveUp={handleGiveUp}
-        basePrice={gameMode === 'time-attack' ? 800 : 800}
+        basePrice={basePrice}
       />
 
       {showCountdown && (

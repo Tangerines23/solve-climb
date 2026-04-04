@@ -21,8 +21,12 @@ export function generateQuestion(
 ): QuizQuestion {
   // Category is often equivalent to topicId in current UI flow
   // but we should normalize it to Category type if it's in Topic format (WorldX-Category)
-  const categoryStr = topicId.includes('-') ? topicId.split('-')[1] : topicId;
-  const category = categoryStr as Category;
+  let category: Category;
+  if (topicId.includes('-')) {
+    category = topicId.split('-')[1] as Category;
+  } else {
+    category = topicId as Category;
+  }
 
   if (mountainId === 'math') {
     switch (worldId) {

@@ -146,21 +146,21 @@ export default defineConfig(({ mode }) => {
         ],
         // 커버리지 임계값 설정 (업계 표준: 80%)
         thresholds: {
-          lines: 60,
-          functions: 60,
-          branches: 50,
-          statements: 60,
+          lines: 80,
+          functions: 80,
+          branches: 80,
+          statements: 80,
         },
-        // 성능 최적화: 100% 커버리지 파일 자동 제외
-        all: false,
-        // 성능 최적화: 100% 커버리지 파일은 수집 스킵 (분석 필요 시 false로 변경)
+        // 모든 소스 파일에 대한 커버리지 수집 (테스트되지 않은 파일도 포함)
+        all: true,
+        // 100% 커버리지 파일은 수집 스킵 (분석 필요 시 false로 변경)
         skipFull: false,
         // 커버리지 디렉토리 자동 정리
         clean: true,
         // 재실행 시 커버리지 디렉토리 정리
         cleanOnRerun: true,
-        // 리포트 출력 경로 변경
-        reportsDirectory: './reports/coverage', // 기본값: ./coverage
+        // 리포트 출력 경로
+        reportsDirectory: './coverage', // 명시적으로 root/coverage로 고정
       },
       // JUnit 리포터 설정 (CI 연동용)
       outputFile: './reports/test-results.xml', // 기본값: root/test-results.xml (junit 사용 시)

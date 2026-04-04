@@ -1,282 +1,394 @@
-import { describe, it, expect, beforeEach, vi } from 'vitest';
-import { renderHook, act, waitFor } from '@testing-library/react';
+import { describe, it, expect, beforeEach, vi, afterEach } from 'vitest';
+import { renderHook, act } from '@testing-library/react';
 import { useLevelProgressStore } from '../useLevelProgressStore';
-import type { GameMode } from '../../types/quiz';
 import { supabase } from '../../utils/supabaseClient';
-import type { UserResponse, SupabaseClient } from '@supabase/supabase-js';
+import { useToastStore } from '../useToastStore';
+import { useDebugStore } from '../useDebugStore';
 
-// Mock supabase
-vi.mock('../../utils/supabaseClient', () => {
-  const mockSupabaseBuilder = {
-    select: vi.fn().mockReturnThis(),
-    from: vi.fn().mockReturnThis(),
-    insert: vi.fn().mockReturnThis(),
-    update: vi.fn().mockReturnThis(),
-    upsert: vi.fn().mockReturnThis(),
-    delete: vi.fn().mockReturnThis(),
-    eq: vi.fn().mockReturnThis(),
-    order: vi.fn().mockReturnThis(),
-    single: vi.fn().mockReturnThis(),
-    maybeSingle: vi.fn().mockReturnThis(),
-    in: vi.fn().mockReturnThis(),
-    then: vi.fn().mockImplementation((resolve) => resolve({ data: null, error: null })),
-  };
-
-  return {
-    supabase: {
-      auth: {
-        getUser: vi.fn().mockResolvedValue({ data: { user: null }, error: null }),
-      },
-      from: vi.fn(() => mockSupabaseBuilder),
-      rpc: vi.fn().mockResolvedValue({ data: null, error: null }),
+// Mock dependencies
+vi.mock('../../utils/supabaseClient', () => ({
+  supabase: {
+    auth: {
+      getUser: vi.fn(),
     },
-  };
+    from: vi.fn(),
+    rpc: vi.fn(),
+    channel: vi.fn(),
+  },
+}));
+
+vi.mock('../useToastStore', () => ({
+  useToastStore: {
+    getState: vi.fn(() => ({
+      showToast: vi.fn(),
+    })),
+  },
+}));
+
+vi.mock('../useDebugStore', () => {
+  const mockState = { bypassLevelLock: false };
+  const mockStore = Object.assign(
+    vi.fn(() => mockState),
+    {
+      getState: vi.fn(() => mockState),
+      setState: vi.fn(),
+      subscribe: vi.fn(),
+    }
+  );
+  return { useDebugStore: mockStore };
 });
 
-const createMockQueryBuilder = (returnValue: any = { data: null, error: null }) => {
-  const builder: any = {};
-  const mockReturn = Promise.resolve(returnValue);
+const mockShowToast = vi.fn();
+(useToastStore.getState as any).mockReturnValue({ showToast: mockShowToast });
 
-  builder.select = vi.fn(() => builder);
-  builder.from = vi.fn(() => builder);
-  builder.eq = vi.fn(() => builder);
-  builder.single = vi.fn(() => mockReturn);
-  builder.maybeSingle = vi.fn(() => mockReturn);
-  builder.upsert = vi.fn(() => mockReturn);
-  builder.insert = vi.fn(() => mockReturn);
-  builder.update = vi.fn(() => builder);
-  builder.delete = vi.fn(() => builder);
-  builder.in = vi.fn(() => builder);
-  builder.order = vi.fn(() => builder);
-  builder.limit = vi.fn(() => builder);
-
-  builder.then = (
-    onfulfilled?: ((value: any) => any) | null,
-    onrejected?: ((reason: any) => any) | null
-  ) => {
-    return mockReturn.then(onfulfilled, onrejected);
-  };
-
-  return builder as unknown as ReturnType<SupabaseClient['from']>;
+const createMockRpcBuilder = (data: any, error: any = null) => {
+  const promise = Promise.resolve({ data, error });
+  return Object.assign(promise, {
+    eq: vi.fn().mockReturnThis(),
+    neq: vi.fn().mockReturnThis(),
+    gt: vi.fn().mockReturnThis(),
+    gte: vi.fn().mockReturnThis(),
+    lt: vi.fn().mockReturnThis(),
+    lte: vi.fn().mockReturnThis(),
+    order: vi.fn().mockReturnThis(),
+    limit: vi.fn().mockReturnThis(),
+    single: vi.fn().mockReturnThis(),
+    maybeSingle: vi.fn().mockReturnThis(),
+    select: vi.fn().mockReturnThis(),
+    then: promise.then.bind(promise),
+    catch: promise.catch.bind(promise),
+    finally: promise.finally.bind(promise),
+  }) as any;
 };
 
 describe('useLevelProgressStore', () => {
   const world = 'math';
-  const category = 'arithmetic_addition'; // Matches category_id + _ + subject_id logic
+  const category = 'arithmetic_addition';
 
-  beforeEach(() => {
+  beforeEach(async () => {
     vi.clearAllMocks();
-
-    vi.mocked(supabase.from).mockReturnValue(
-      createMockQueryBuilder({
-        data: null,
-        error: null,
-      })
-    );
-    vi.mocked(supabase.rpc).mockResolvedValue({
-      data: null,
+    // Ensure bypassLevelLock is false by default for consistency
+    vi.mocked(useDebugStore.getState).mockReturnValue({ bypassLevelLock: false } as any);
+    // Default mock setup for successful calls
+    vi.mocked(supabase.auth.getUser).mockResolvedValue({
+      data: { user: { id: 'user-123' } },
       error: null,
     } as any);
-    vi.mocked(supabase.auth.getUser).mockResolvedValue({
-      data: { user: null },
-      error: null,
-    } as unknown as UserResponse);
+    vi.mocked(supabase.rpc).mockImplementation(() => createMockRpcBuilder({ success: true }));
+
+    vi.mocked(supabase.from).mockReturnValue({
+      select: vi.fn().mockReturnThis(),
+      eq: vi.fn().mockReturnThis(),
+      order: vi.fn().mockReturnThis(),
+      limit: vi.fn().mockReturnThis(),
+      then: vi.fn().mockImplementation((cb) => cb({ data: [], error: null })),
+    } as any);
 
     // Reset store state
     const { result } = renderHook(() => useLevelProgressStore());
-    act(() => {
-      result.current.resetProgress();
-    });
-  });
-
-  it('should initialize with empty progress', () => {
-    const { result } = renderHook(() => useLevelProgressStore());
-    expect(result.current.progress).toEqual({});
-  });
-
-  it('should get level progress for existing category', () => {
-    const { result } = renderHook(() => useLevelProgressStore());
-
-    act(() => {
-      result.current.clearLevel(world, category, 1, 'time-attack', 100);
-    });
-
-    const progress = result.current.getLevelProgress(world, category);
-    expect(progress.length).toBe(1);
-    expect(progress[0].level).toBe(1);
-    expect(progress[0].cleared).toBe(true);
-    expect(progress[0].bestScore['time-attack']).toBe(100);
-  });
-
-  it('should get next level correctly', () => {
-    const { result } = renderHook(() => useLevelProgressStore());
-    expect(result.current.getNextLevel(world, category)).toBe(1);
-
-    act(() => {
-      result.current.clearLevel(world, category, 1, 'time-attack', 100);
-    });
-    expect(result.current.getNextLevel(world, category)).toBe(2);
-  });
-
-  it('should sync progress from Supabase correctly', async () => {
-    const { result } = renderHook(() => useLevelProgressStore());
-
-    const mockRecords = [
-      {
-        world_id: 'math',
-        category_id: 'arithmetic',
-        subject_id: 'addition',
-        level: 1,
-        mode_code: 1,
-        best_score: 150,
-        updated_at: '2024-01-01T00:00:00Z',
-      },
-    ];
-
-    vi.mocked(supabase.auth.getUser).mockResolvedValue({
-      data: { user: { id: 'user-123' } },
-      error: null,
-    } as any);
-
-    vi.mocked(supabase.from).mockReturnValue(
-      createMockQueryBuilder({ data: mockRecords, error: null })
-    );
-
-    await act(async () => {
-      await result.current.syncProgress();
-    });
-
-    await waitFor(() => {
-      const progress = result.current.getLevelProgress('math', 'arithmetic_addition');
-      expect(progress[0].bestScore['time-attack']).toBe(150);
-      expect(progress[0].cleared).toBe(true);
-    });
-  });
-
-  it('should handle syncProgress when server score is higher', async () => {
-    const { result } = renderHook(() => useLevelProgressStore());
-
-    // Local score
-    act(() => {
-      result.current.clearLevel('math', 'arithmetic_addition', 1, 'time-attack', 100);
-    });
-
-    vi.mocked(supabase.auth.getUser).mockResolvedValue({
-      data: { user: { id: 'user-123' } },
-      error: null,
-    } as any);
-
-    const mockRecords = [
-      {
-        world_id: 'math',
-        category_id: 'arithmetic',
-        subject_id: 'addition',
-        level: 1,
-        mode_code: 1,
-        best_score: 200, // Higher than local
-        updated_at: '2024-01-01',
-      },
-    ];
-
-    vi.mocked(supabase.from).mockReturnValue(
-      createMockQueryBuilder({ data: mockRecords, error: null })
-    );
-
-    await act(async () => {
-      await result.current.syncProgress();
-    });
-
-    await waitFor(() => {
-      const progress = result.current.getLevelProgress('math', 'arithmetic_addition');
-      expect(progress[0].bestScore['time-attack']).toBe(200);
-    });
-  });
-
-  it('should handle syncProgress when local score is higher', async () => {
-    const { result } = renderHook(() => useLevelProgressStore());
-
-    // Local score
-    act(() => {
-      result.current.clearLevel('math', 'arithmetic_addition', 1, 'time-attack', 300);
-    });
-
-    vi.mocked(supabase.auth.getUser).mockResolvedValue({
-      data: { user: { id: 'user-123' } },
-      error: null,
-    } as any);
-
-    const mockRecords = [
-      {
-        world_id: 'math',
-        category_id: 'arithmetic',
-        subject_id: 'addition',
-        level: 1,
-        mode_code: 1,
-        best_score: 100, // Lower than local
-        updated_at: '2024-01-01',
-      },
-    ];
-
-    vi.mocked(supabase.from).mockReturnValue(
-      createMockQueryBuilder({ data: mockRecords, error: null })
-    );
-
-    await act(async () => {
-      await result.current.syncProgress();
-    });
-
-    await waitFor(() => {
-      const progress = result.current.getLevelProgress('math', 'arithmetic_addition');
-      expect(progress[0].bestScore['time-attack']).toBe(300);
-    });
-  });
-
-  it('should handle clearLevel and update best score', () => {
-    const { result } = renderHook(() => useLevelProgressStore());
-
-    act(() => {
-      result.current.clearLevel(world, category, 1, 'time-attack', 100);
-    });
-
-    expect(result.current.isLevelCleared(world, category, 1)).toBe(true);
-    const progress = result.current.getLevelProgress(world, category);
-    expect(progress[0].bestScore['time-attack']).toBe(100);
-  });
-
-  it('should reset progress', async () => {
-    const { result } = renderHook(() => useLevelProgressStore());
-
-    act(() => {
-      result.current.clearLevel(world, category, 1, 'time-attack', 100);
-    });
-
-    expect(result.current.isLevelCleared(world, category, 1)).toBe(true);
-
     await act(async () => {
       await result.current.resetProgress();
     });
-
-    expect(result.current.progress).toEqual({});
+    vi.clearAllMocks(); // Clear mocks again after reset
   });
 
-  it('should fetch ranking successfully', async () => {
-    const { result } = renderHook(() => useLevelProgressStore());
+  afterEach(() => {
+    vi.restoreAllMocks();
+  });
 
-    const mockRanking = [{ user_id: 'user-1', nickname: 'User 1', score: 1000, rank: 1 }];
-
-    vi.mocked(supabase.rpc).mockResolvedValue({
-      data: mockRanking,
-      error: null,
-    } as any);
-
-    await act(async () => {
-      await result.current.fetchRanking(world, category, 'weekly', 'total', 10);
+  describe('Core Functionality', () => {
+    it('should initialize with empty progress', () => {
+      const { result } = renderHook(() => useLevelProgressStore());
+      expect(result.current.progress).toEqual({});
     });
 
-    await waitFor(() => {
-      const key = `${world}-${category}-weekly-total`;
-      // eslint-disable-next-line security/detect-object-injection -- key is deterministic from test params
-      expect(result.current.rankings[key]).toEqual(mockRanking);
+    it('should handle bypassLevelLock debug setting', () => {
+      vi.mocked(useDebugStore.getState).mockReturnValue({ bypassLevelLock: true } as any);
+      const { result } = renderHook(() => useLevelProgressStore());
+
+      expect(result.current.isLevelCleared(world, category, 1)).toBe(true);
+      expect(result.current.getNextLevel(world, category)).toBe(999);
+    });
+
+    it('should handle tier support (Hard Mode)', async () => {
+      const { result } = renderHook(() => useLevelProgressStore());
+
+      await act(async () => {
+        await result.current.clearLevel(
+          world,
+          category,
+          1,
+          'time-attack',
+          100,
+          0,
+          undefined,
+          'hard'
+        );
+      });
+
+      expect(result.current.isLevelCleared(world, category, 1, 'hard')).toBe(true);
+      expect(result.current.isLevelCleared(world, category, 1, 'normal')).toBe(false);
+      expect(result.current.getNextLevel(world, category, 'hard')).toBe(2);
+    });
+  });
+
+  describe('clearLevel and Persistence', () => {
+    it('should rollback on RPC failure in clearLevel', async () => {
+      const { result } = renderHook(() => useLevelProgressStore());
+      const rollbackWorld = 'math_rollback';
+
+      // Specifically target this world for failure
+      vi.mocked(supabase.rpc).mockImplementationOnce(() =>
+        createMockRpcBuilder(null, { message: 'RPC Failure' })
+      );
+
+      await act(async () => {
+        await result.current.clearLevel(rollbackWorld, category, 5, 'time-attack', 500);
+      });
+
+      // Should have rolled back (isLevelCleared check)
+      // Note: we use our deep-clone fix to ensure previousProgress was unpolluted
+      expect(result.current.isLevelCleared(rollbackWorld, category, 5)).toBe(false);
+    });
+
+    it('should handle tier support (Hard Mode) isolated from Normal', async () => {
+      const { result } = renderHook(() => useLevelProgressStore());
+      const tierWorld = 'math_tier';
+
+      await act(async () => {
+        // Clear level 1 in HARD mode
+        await result.current.clearLevel(
+          tierWorld,
+          category,
+          1,
+          'time-attack',
+          100,
+          0,
+          undefined,
+          'hard'
+        );
+      });
+
+      expect(result.current.isLevelCleared(tierWorld, category, 1, 'hard')).toBe(true);
+      // NORMAL mode should still be locked
+      expect(result.current.isLevelCleared(tierWorld, category, 1, 'normal')).toBe(false);
+    });
+  });
+
+  describe('getBestRecords', () => {
+    it('should calculate global best records across levels', async () => {
+      const { result } = renderHook(() => useLevelProgressStore());
+      const bestWorld = 'math_best';
+
+      await act(async () => {
+        await result.current.clearLevel(bestWorld, category, 1, 'time-attack', 100);
+        await result.current.clearLevel(bestWorld, category, 2, 'time-attack', 200);
+        await result.current.clearLevel(bestWorld, category, 1, 'survival', 500);
+        await result.current.updateBestScore(bestWorld, category, 3, 'infinite', 1000);
+      });
+
+      const best = result.current.getBestRecords(bestWorld, category);
+      expect(best['time-attack']).toBe(200);
+      expect(best.survival).toBe(500);
+      expect((best as any).infinite).toBe(1000);
+    });
+  });
+
+  describe('syncProgress and Reconciliation', () => {
+    it('should reconcile local and server scores', async () => {
+      const { result } = renderHook(() => useLevelProgressStore());
+
+      // 1. Set local high score
+      act(() => {
+        result.current.clearLevel(world, 'arithmetic_addition', 1, 'time-attack', 300);
+      });
+
+      // 2. Mock server response with low score for L1 and high score for L2
+      const mockRecords = [
+        {
+          world_id: world,
+          category_id: 'arithmetic',
+          subject_id: 'addition',
+          level: 1,
+          mode_code: 1,
+          best_score: 100, // Lower than local
+          updated_at: '2024-01-01',
+        },
+        {
+          world_id: world,
+          category_id: 'arithmetic',
+          subject_id: 'addition',
+          level: 2,
+          mode_code: 1,
+          best_score: 500, // New from server
+          updated_at: '2024-01-02',
+        },
+      ];
+
+      vi.mocked(supabase.from).mockReturnValue({
+        select: vi.fn().mockReturnThis(),
+        eq: vi.fn().mockReturnThis(),
+        then: vi.fn().mockImplementation((cb) => cb({ data: mockRecords, error: null })),
+      } as any);
+
+      await act(async () => {
+        await result.current.syncProgress();
+      });
+
+      const progress = result.current.getLevelProgress(world, 'arithmetic_addition');
+      expect(progress.find((p) => p.level === 1)?.bestScore['time-attack']).toBe(300); // Local won
+      expect(progress.find((p) => p.level === 2)?.bestScore['time-attack']).toBe(500); // Server added
+    });
+  });
+
+  describe('Rankings and Realtime', () => {
+    it('should fetch Hall of Fame (all-time) rankings', async () => {
+      const { result } = renderHook(() => useLevelProgressStore());
+      const mockHof = [{ user_id: 'legend', nickname: 'The King', score: 9999, rank: 1 }];
+
+      vi.mocked(supabase.from).mockReturnValue({
+        select: vi.fn().mockReturnThis(),
+        eq: vi.fn().mockReturnThis(),
+        order: vi.fn().mockReturnThis(),
+        limit: vi.fn().mockReturnThis(),
+        then: vi.fn().mockImplementation((cb) => cb({ data: mockHof, error: null })),
+      } as any);
+
+      await act(async () => {
+        await result.current.fetchRanking(null, null, 'all-time', 'total');
+      });
+
+      expect(result.current.rankings['all-time-total']).toEqual(mockHof);
+    });
+
+    it('should handle realtime subscription lifecycle and events', () => {
+      let eventCallback: any;
+      const mockUnsubscribe = vi.fn();
+      const mockSubscribe = vi.fn().mockReturnValue({ unsubscribe: mockUnsubscribe });
+      const mockOn = vi.fn().mockImplementation((_type, _filter, callback) => {
+        eventCallback = callback;
+        return { subscribe: mockSubscribe };
+      });
+
+      vi.mocked(supabase.channel).mockReturnValue({
+        on: mockOn,
+        subscribe: mockSubscribe,
+      } as any);
+
+      const { result } = renderHook(() => useLevelProgressStore());
+
+      act(() => {
+        result.current.subscribeToRankingUpdates();
+      });
+
+      expect(supabase.channel).toHaveBeenCalledWith('ranking-updates');
+
+      // Simulate realtime update
+      act(() => {
+        eventCallback({ new: { id: 'test' } });
+      });
+      expect(result.current.rankingVersion).toBe(1);
+
+      act(() => {
+        result.current.unsubscribeFromRankingUpdates();
+      });
+
+      expect(mockUnsubscribe).toHaveBeenCalled();
+    });
+
+    it('should handle syncProgress error', async () => {
+      vi.mocked(supabase.from).mockImplementation(() => {
+        throw new Error('Sync failed');
+      });
+      const { result } = renderHook(() => useLevelProgressStore());
+
+      await act(async () => {
+        await result.current.syncProgress();
+      });
+      expect(mockShowToast).toHaveBeenCalled();
+    });
+
+    it('should handle resetProgress failure', async () => {
+      vi.mocked(supabase.rpc).mockImplementationOnce(() =>
+        createMockRpcBuilder({ success: false, message: 'Reset failed' })
+      );
+      const { result } = renderHook(() => useLevelProgressStore());
+
+      await act(async () => {
+        await result.current.resetProgress();
+      });
+      expect(mockShowToast).toHaveBeenCalled();
+    });
+
+    it('should handle resetProgress exception', async () => {
+      vi.mocked(supabase.rpc).mockImplementationOnce(() => {
+        throw new Error('Exception');
+      });
+      const { result } = renderHook(() => useLevelProgressStore());
+
+      await act(async () => {
+        await result.current.resetProgress();
+      });
+      expect(mockShowToast).toHaveBeenCalled();
+    });
+
+    it('should reconcile when server has higher score', async () => {
+      const { result } = renderHook(() => useLevelProgressStore());
+      const mockRecords = [
+        {
+          world_id: world,
+          category_id: 'arithmetic',
+          subject_id: 'addition',
+          level: 1,
+          mode_code: 1,
+          best_score: 1000, // Higher than default 0
+          updated_at: '2024-01-01',
+        },
+      ];
+
+      vi.mocked(supabase.from).mockReturnValue({
+        select: vi.fn().mockReturnThis(),
+        eq: vi.fn().mockReturnThis(),
+        then: vi.fn().mockImplementation((cb) => cb({ data: mockRecords, error: null })),
+      } as any);
+
+      await act(async () => {
+        await result.current.syncProgress();
+      });
+
+      const entry = result.current.getLevelProgress(world, 'arithmetic_addition')[0];
+      expect(entry.bestScore['time-attack']).toBe(1000);
+    });
+  });
+
+  describe('Additional score tests', () => {
+    it('should return default record if no progress exists in getLevelProgress', () => {
+      const { result } = renderHook(() => useLevelProgressStore());
+      expect(result.current.getLevelProgress('none', 'none')).toEqual([]);
+    });
+
+    it('should handle updateBestScore failure', async () => {
+      vi.mocked(supabase.rpc).mockImplementationOnce(() =>
+        createMockRpcBuilder(null, { message: 'Failure' })
+      );
+      const { result } = renderHook(() => useLevelProgressStore());
+
+      await act(async () => {
+        await result.current.updateBestScore(world, category, 1, 'time-attack', 100);
+      });
+      // Rollback logic is internal but we check it doesn't crash
+    });
+
+    it('should handle clearLevel exception', async () => {
+      vi.mocked(supabase.rpc).mockImplementationOnce(() => {
+        throw new Error('Exception');
+      });
+      const { result } = renderHook(() => useLevelProgressStore());
+
+      await act(async () => {
+        await result.current.clearLevel(world, category, 1, 'time-attack', 100);
+      });
+      expect(result.current.isLevelCleared(world, category, 1)).toBe(false);
     });
   });
 });

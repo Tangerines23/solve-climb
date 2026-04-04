@@ -31,7 +31,7 @@ import { signInWithGoogle } from '../utils/auth';
 import { WithdrawConfirmModal } from '../components/WithdrawConfirmModal';
 import { withdrawAccount } from '../utils/userWithdraw';
 import { calculateTier } from '../constants/tiers';
-import { storage, StorageKeys } from '../utils/storage';
+import { storageService, STORAGE_KEYS } from '../services';
 import './MyPage.css';
 
 // theme_id를 읽기 쉬운 이름으로 변환하는 함수
@@ -107,7 +107,7 @@ export function MyPage() {
 
   // 로그인 성공 후 리다이렉트 처리 함수
   const performRedirect = React.useCallback(() => {
-    const savedRedirect = localStorage.getItem('login_redirect_path');
+    const savedRedirect = storageService.get<string>(STORAGE_KEYS.LOGIN_REDIRECT);
 
     // 1. 명시적인 복귀 경로가 있는 경우 (RequireAuth 등에서 전달됨)
     if (redirectPath && redirectPath !== urls.myPage()) {
@@ -115,7 +115,7 @@ export function MyPage() {
     }
     // 2. 이전에 저장된 리다이렉트 경로가 있는 경우
     else if (savedRedirect && savedRedirect !== urls.myPage()) {
-      localStorage.removeItem('login_redirect_path');
+      storageService.remove(STORAGE_KEYS.LOGIN_REDIRECT);
       navigate(savedRedirect, { replace: true });
     }
     // 3. 현재 위치가 이미 마이페이지이거나 복귀 경로가 마이페이지인 경우 이동하지 않음
@@ -164,11 +164,11 @@ export function MyPage() {
     // 최초 프로필 생성인 경우 -> 이전 경로 또는 홈으로 이동
     navigate(urls.myPage(), { replace: true, state: {} });
 
-    const savedRedirect = localStorage.getItem('login_redirect_path');
+    const savedRedirect = storageService.get<string>(STORAGE_KEYS.LOGIN_REDIRECT);
     if (redirectPath && redirectPath !== urls.myPage()) {
       navigate(redirectPath, { replace: true });
     } else if (savedRedirect && savedRedirect !== urls.myPage()) {
-      localStorage.removeItem('login_redirect_path');
+      storageService.remove(STORAGE_KEYS.LOGIN_REDIRECT);
       navigate(savedRedirect, { replace: true });
     } else {
       // 명시적 리다이렉트가 없으면 홈으로 보냄 (사용자 요청 사항)
@@ -303,7 +303,7 @@ export function MyPage() {
 
       // 리다이렉트 경로 저장
       if (redirectPath) {
-        localStorage.setItem('login_redirect_path', redirectPath);
+        storageService.set(STORAGE_KEYS.LOGIN_REDIRECT, redirectPath);
       }
 
       // 로컬 세션만 사용 (Supabase 인증 없이)
@@ -318,7 +318,7 @@ export function MyPage() {
 
       // 로컬 세션 저장
       try {
-        storage.set(StorageKeys.LOCAL_SESSION, {
+        storageService.set(STORAGE_KEYS.LOCAL_SESSION, {
           userId: userProfile.profileId,
           isAdmin: false,
           loginTime: new Date().toISOString(),
@@ -348,7 +348,7 @@ export function MyPage() {
   const handleGoogleLogin = async () => {
     // 리다이렉트 경로 저장
     if (redirectPath) {
-      localStorage.setItem('login_redirect_path', redirectPath);
+      storageService.set(STORAGE_KEYS.LOGIN_REDIRECT, redirectPath);
     }
 
     const { error } = await signInWithGoogle();
@@ -416,7 +416,7 @@ export function MyPage() {
 
       // 로컬 세션 삭제
       try {
-        storage.remove(StorageKeys.LOCAL_SESSION);
+        storageService.remove(STORAGE_KEYS.LOCAL_SESSION);
         console.log('[로그아웃] 로컬 세션 삭제 완료');
       } catch (e) {
         console.warn('Failed to remove local session:', e);

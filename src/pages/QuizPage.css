@@ -256,12 +256,12 @@
   gap: clamp(12px, 2.5vh, 24px);
   padding: clamp(var(--spacing-lg), 3.5vh, var(--spacing-3xl))
     clamp(var(--spacing-md), 2.5vw, var(--spacing-2xl));
-  background-color: var(--bg-glass-card);
-  border: var(--border-glass);
-  -webkit-backdrop-filter: blur(var(--backdrop-blur));
-  backdrop-filter: blur(var(--backdrop-blur));
+  background-color: var(--glass-bg);
+  border: var(--glass-border);
+  -webkit-backdrop-filter: blur(var(--glass-blur));
+  backdrop-filter: blur(var(--glass-blur));
   border-radius: clamp(var(--spacing-md), 2.5vh, var(--spacing-2xl));
-  box-shadow: var(--shadow-glass);
+  box-shadow: var(--glass-shadow);
   flex-shrink: 1;
   min-height: 0;
   margin-bottom: clamp(8px, 1.5vh, 16px);
@@ -287,9 +287,9 @@
   transform: translateX(-50%);
   width: calc(100% - var(--spacing-3xl));
   max-width: 320px;
-  background-color: color-mix(in srgb, var(--color-bg-secondary), transparent 15%);
-  -webkit-backdrop-filter: blur(8px);
-  backdrop-filter: blur(8px);
+  background-color: var(--bg-glass-overlay);
+  -webkit-backdrop-filter: blur(var(--glass-blur));
+  backdrop-filter: blur(var(--glass-blur));
   border-radius: var(--rounded-button);
   padding: var(--spacing-md) var(--spacing-lg);
   text-align: center;
@@ -462,8 +462,8 @@
   font-size: clamp(1.5rem, 4vw, 2rem);
   font-weight: bold;
   border-radius: var(--rounded-button);
-  border: var(--border-glass);
-  background-color: var(--glass-bg-low);
+  border: var(--glass-border);
+  background-color: var(--glass-bg);
   color: var(--color-blue-400);
   text-align: center;
   transition:
@@ -495,14 +495,17 @@
 /* Flash Red 애니메이션 - 붉은색 플래시 효과 (answer-display용, border 없음) */
 @keyframes flash-red {
   0% {
+    background-color: transparent;
     background-color: color-mix(in srgb, var(--color-toss-red), transparent 100%);
   }
 
   20% {
+    background-color: rgba(240, 68, 82, 0.2);
     background-color: color-mix(in srgb, var(--color-toss-red), transparent 80%);
   }
 
   100% {
+    background-color: transparent;
     background-color: color-mix(in srgb, var(--color-toss-red), transparent 100%);
   }
 }
@@ -510,16 +513,19 @@
 /* Flash Red Input 애니메이션 - 테두리 색상 포함 (answer-input-system용) */
 @keyframes flash-red-input {
   0% {
+    background-color: transparent;
     background-color: color-mix(in srgb, var(--color-toss-red), transparent 100%);
     border-color: var(--color-bg-tertiary);
   }
 
   20% {
+    background-color: rgba(240, 68, 82, 0.2);
     background-color: color-mix(in srgb, var(--color-toss-red), transparent 80%);
     border-color: var(--color-toss-red);
   }
 
   100% {
+    background-color: transparent;
     background-color: color-mix(in srgb, var(--color-toss-red), transparent 100%);
     border-color: var(--color-bg-tertiary);
   }
@@ -529,6 +535,7 @@
 .answer-input-system.is-error {
   color: var(--color-toss-red);
   border: 2px solid var(--color-toss-red);
+  background-color: rgba(240, 68, 82, 0.1); /* Fallback approx for 90% transparent */
   background-color: color-mix(in srgb, var(--color-toss-red), transparent 90%);
 }
 
@@ -656,6 +663,8 @@
 /* 감점 토스트 스타일 - 카드 상단 영역 랜덤 위치 */
 .slide-toast {
   position: absolute;
+  left: var(--toast-left);
+  top: var(--toast-top);
   z-index: var(--z-toast-low);
   pointer-events: none;
   transform: translate(-50%, -50%);
@@ -665,6 +674,7 @@
 .slide-toast-text {
   display: inline-block;
   padding: var(--spacing-tiny) var(--spacing-md);
+  background-color: var(--color-toss-red); /* Fallback approx for 5% transparent */
   background-color: color-mix(in srgb, var(--color-toss-red), transparent 5%);
   color: var(--color-text-primary);
   font-size: 1.125rem;
@@ -675,6 +685,7 @@
 }
 
 .slide-toast-text.is-positive {
+  background-color: var(--color-confetti-green); /* Fallback approx for 5% transparent */
   background-color: color-mix(in srgb, var(--color-confetti-green), transparent 5%);
   /* emerald-500 */
   box-shadow: 0 4px 12px color-mix(in srgb, var(--color-confetti-green), transparent 50%);
@@ -682,6 +693,7 @@
 
 /* 탈진 상태용 득점 토스트 - 활력 저하 (채도 낮음, 크기 작음) */
 .slide-toast-text.is-positive.is-exhausted {
+  background-color: var(--color-success); /* Fallback approx for 40% transparent */
   background-color: color-mix(in srgb, var(--color-success), transparent 40%);
   /* 채도가 낮고 불투명도가 낮은 녹색 */
   box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
@@ -832,7 +844,7 @@
   width: 44px;
   height: 44px;
   border-radius: var(--rounded-sm);
-  background: var(--glass-bg-medium);
+  -webkit-backdrop-filter: blur(4px);
   backdrop-filter: blur(4px);
   border: 1px solid var(--glass-border-medium);
   color: var(--color-gray-100);
@@ -908,6 +920,7 @@
   background: var(--overlay-dark-high);
   padding: var(--spacing-tiny) var(--spacing-lg);
   border-radius: var(--rounded-md);
+  -webkit-backdrop-filter: blur(4px);
   backdrop-filter: blur(4px);
   border: 1px solid var(--glass-border-low);
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
@@ -1042,7 +1055,6 @@
 .pill-card {
   background: var(--overlay-dark-medium);
   -webkit-backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
   backdrop-filter: blur(10px);
   padding: var(--spacing-sm) var(--spacing-lg);
   border-radius: var(--rounded-pill);
@@ -1127,6 +1139,7 @@
 
 .landmark-popup {
   background: var(--overlay-dark-high);
+  -webkit-backdrop-filter: blur(12px);
   backdrop-filter: blur(12px);
   padding: var(--spacing-md) var(--spacing-2xl);
   border-radius: var(--rounded-card);

@@ -1,6 +1,8 @@
 // src/AppContainer.tsx
+import { lazy, Suspense } from 'react';
 import { BrowserRouter } from 'react-router-dom';
-import App from '@/App'; // <-- (신규) App.tsx를 임포트합니다.
+
+const App = lazy(() => import('@/App'));
 
 function AppContainer() {
   const diagnosis = (window as unknown as Record<string, unknown>).diagnosis;
@@ -9,10 +11,15 @@ function AppContainer() {
   }
   return (
     <BrowserRouter>
-      {/* 이제 AppContainer는 라우터 '컨텍스트'만 제공하고,
-        실제 라우트 정의(Routes, Route)는 App.tsx가 담당합니다.
-      */}
-      <App />
+      <Suspense
+        fallback={
+          <div className="loading-fallback">
+            <div className="loader-title">Solve Climb</div>
+          </div>
+        }
+      >
+        <App />
+      </Suspense>
     </BrowserRouter>
   );
 }

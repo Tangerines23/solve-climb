@@ -3,6 +3,7 @@ import { APP_CONFIG } from '../../config/app';
 import { urls } from '../../utils/navigation';
 import type { Category, World } from '../../types/quiz';
 import type { TodayChallenge } from '../../utils/challenge';
+import { storageService, STORAGE_KEYS } from '../../services';
 
 interface FavoriteItem {
   id: string;
@@ -81,7 +82,8 @@ export function MyPageQuickAccess({
                           ?.mountainId ?? 'math')
                       : favorite.categoryId;
                     const lastWorld =
-                      localStorage.getItem(`lastPlayedWorld_${mountainId}`) || 'World1';
+                      storageService.get<string>(STORAGE_KEYS.LAST_PLAYED_WORLD(mountainId)) ||
+                      'World1';
 
                     if (favorite.subCategoryId || isCategoryId) {
                       navigate(

@@ -1,4 +1,4 @@
-import { useNavigate, useSearchParams } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { useEffect } from 'react';
 import { APP_CONFIG } from '@/config/app';
 import { TopicHeader } from '@/components/TopicHeader';
@@ -9,15 +9,22 @@ import { urls } from '@/utils/navigation';
 import './CategorySelectPage.css';
 
 import { useDebugStore } from '@/stores/useDebugStore';
+import { storageService, STORAGE_KEYS } from '@/services';
+import { useNavigationContext } from '@/hooks/useNavigationContext';
 
 export function CategorySelectPage() {
   const navigate = useNavigate();
-  const [searchParams] = useSearchParams();
+  const { mountain: mountainParam, mountainName, tryRecover } = useNavigationContext();
+
+  // [Phase 8] Persistence & Self-healing - 파라미터가 없을 때 스토리지에서 복구 시도
+  useEffect(() => {
+    tryRecover(['mountain']);
+  }, [tryRecover]);
+
   const progressStore = useLevelProgressStore();
   const bypassLevelLock = useDebugStore((state) => state.bypassLevelLock);
   const isFavorite = useFavoriteStore((state) => state.isFavorite);
   const addFavorite = useFavoriteStore((state) => state.addFavorite);
-  const mountainParam = searchParams.get('mountain');
 
   const handleToggleFavorite = (e: React.MouseEvent, categoryId: string, categoryName: string) => {
     e.preventDefault();
@@ -28,30 +35,6 @@ export function CategorySelectPage() {
       name: categoryName,
     });
   };
-
-  // [Phase 8] Persistence & Self-healing
-  useEffect(() => {
-    if (mountainParam) {
-      localStorage.setItem('last_visited_mountain', mountainParam);
-    }
-  }, [mountainParam]);
-
-  // 파라미터가 없을 때 스토리지에서 복구 시도
-  useEffect(() => {
-    if (!mountainParam) {
-      const recoveredMountain = localStorage.getItem('last_visited_mountain');
-      if (
-        recoveredMountain &&
-        APP_CONFIG.MOUNTAIN_MAP[recoveredMountain as keyof typeof APP_CONFIG.MOUNTAIN_MAP]
-      ) {
-        navigate(urls.categorySelect({ mountain: recoveredMountain }), { replace: true });
-      }
-    }
-  }, [mountainParam, navigate]);
-
-  const mountainName = mountainParam
-    ? APP_CONFIG.MOUNTAIN_MAP[mountainParam as keyof typeof APP_CONFIG.MOUNTAIN_MAP]
-    : null;
 
   // 예외 처리
   if (!mountainParam || !mountainName) {
@@ -81,7 +64,7 @@ export function CategorySelectPage() {
 
   // 산별로 저장된 마지막 월드 정보를 가져옴
   const lastWorld =
-    localStorage.getItem(`lastPlayedWorld_${mountainParam}`) ||
+    storageService.get<string>(STORAGE_KEYS.LAST_PLAYED_WORLD(mountainParam as string)) ||
     (mountainParam === 'language' ? 'LangWorld1' : 'World1');
 
   const getCategoryProgress = (world: string, categoryId: string) => {

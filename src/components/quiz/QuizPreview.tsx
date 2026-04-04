@@ -4,6 +4,7 @@ import { CustomKeypad } from '../CustomKeypad';
 import { QwertyKeypad } from '../QwertyKeypad';
 import { APP_CONFIG } from '../../config/app';
 import { urls } from '../../utils/navigation';
+import './QuizPreview.css';
 
 interface QuizPreviewProps {
   categoryParam: string | null;
@@ -137,68 +138,23 @@ export function QuizPreview({
         >
           ←
         </button>
-        <div
-          className="quiz-timer-container"
-          style={{ display: 'flex', alignItems: 'center', gap: 'var(--spacing-md)' }}
-        >
+        <div className="quiz-timer-container preview-header-controls">
           {canSwitchKeyboard && (
             <button
               onClick={handlePrevKeyboard}
-              style={{
-                background: 'none',
-                border: 'none',
-                color: 'var(--color-text-primary)',
-                fontSize: '1.5rem',
-                cursor: 'pointer',
-                padding: 'var(--spacing-xs)',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                minWidth: '32px',
-                minHeight: '32px',
-                borderRadius: 'var(--rounded-sm)',
-                transition: 'background-color 0.2s',
-              }}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.1)';
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.backgroundColor = 'transparent';
-              }}
+              className="preview-nav-button"
               aria-label="이전 키보드"
             >
               ‹
             </button>
           )}
-          <h2
-            style={{ fontSize: '1.2rem', fontWeight: 'bold', color: 'var(--color-text-primary)' }}
-          >
+          <h2 className="preview-title">
             {currentPreviewType === 'custom' ? '커스텀 키패드' : '쿼티 키보드'}
           </h2>
           {canSwitchKeyboard && (
             <button
               onClick={handleNextKeyboard}
-              style={{
-                background: 'none',
-                border: 'none',
-                color: 'var(--color-text-primary)',
-                fontSize: '1.5rem',
-                cursor: 'pointer',
-                padding: 'var(--spacing-xs)',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                minWidth: '32px',
-                minHeight: '32px',
-                borderRadius: 'var(--rounded-sm)',
-                transition: 'background-color 0.2s',
-              }}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.1)';
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.backgroundColor = 'transparent';
-              }}
+              className="preview-nav-button"
               aria-label="다음 키보드"
             >
               ›
@@ -213,7 +169,7 @@ export function QuizPreview({
           <div className="category-label">
             {displayCategoryPreview} - {displayTopicPreview}
           </div>
-          <form onSubmit={handlePreviewSubmit} style={{ display: 'contents' }}>
+          <form onSubmit={handlePreviewSubmit} className="preview-form">
             <div>
               <h2 className="problem-text">미리보기</h2>
             </div>

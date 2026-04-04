@@ -192,5 +192,22 @@ describe('StorageUtil', () => {
       expect(storageUtil.get('float', 0)).toBe(3.14);
       expect(storageUtil.get('zero', -1)).toBe(0);
     });
+
+    it('should use validator to filter invalid data', () => {
+      const invalidData = { score: 'not-a-number' };
+      storageUtil.set('score-data', invalidData);
+
+      const defaultValue = { score: 0 };
+      const validator = (val: any): val is { score: number } => typeof val?.score === 'number';
+
+      const result = storageUtil.get('score-data', defaultValue, validator);
+      expect(result).toEqual(defaultValue);
+
+      // Valid case
+      const validData = { score: 100 };
+      storageUtil.set('score-data', validData);
+      const validResult = storageUtil.get('score-data', defaultValue, validator);
+      expect(validResult).toEqual(validData);
+    });
   });
 });

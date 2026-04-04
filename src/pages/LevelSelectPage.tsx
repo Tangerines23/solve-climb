@@ -1,5 +1,5 @@
 import { useState, useRef, useLayoutEffect, useEffect } from 'react';
-import { useNavigate, useSearchParams } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { APP_CONFIG } from '@/config/app';
 import { ClimbGraphic } from '@/components/ClimbGraphic';
 import { MyRecordCard } from '@/components/MyRecordCard';
@@ -7,14 +7,15 @@ import { LevelListCard } from '@/components/LevelListCard';
 import { FooterNav } from '@/components/FooterNav';
 import { Toast } from '@/components/Toast';
 import { useFavoriteStore } from '@/stores/useFavoriteStore';
-import { World, Category, Tier } from '@/types/quiz';
+import { World, Tier } from '@/types/quiz';
 import { urls } from '@/utils/navigation';
 import { PageLayout } from '@/components/layout/PageLayout';
 import './LevelSelectPage.css';
+import { storageService, STORAGE_KEYS } from '@/services';
+import { useNavigationContext } from '@/hooks/useNavigationContext';
 
 export function LevelSelectPage() {
   const navigate = useNavigate();
-  const [searchParams] = useSearchParams();
   const mapAreaRef = useRef<HTMLDivElement>(null);
   const [isSheetExpanded, setIsSheetExpanded] = useState(false);
   const [toastMessage, setToastMessage] = useState('');
@@ -29,35 +30,19 @@ export function LevelSelectPage() {
   // [핵심 1] 화면 준비 상태 (초기엔 숨김)
   const [isReady, setIsReady] = useState(false);
 
-  const mountainParam = searchParams.get('mountain');
-  const worldParam = searchParams.get('world') as World | null;
-  const categoryParam = searchParams.get('category') as Category | null;
+  const {
+    mountain: mountainParam,
+    world: worldParam,
+    category: categoryParam,
+    tryRecover,
+  } = useNavigationContext();
 
   const [tier] = useState<Tier>('normal'); // FIXME: 하드 티어 개발 완료 시 setTier 복구
 
-  // [Phase 8] Persistence & Self-healing
+  // [Phase 8] Persistence & Self-healing - URL 파라미터 결손 시 자동 복구 리다이렉트
   useEffect(() => {
-    if (mountainParam) localStorage.setItem('last_visited_mountain', mountainParam);
-    if (worldParam) localStorage.setItem('last_visited_world', worldParam);
-    if (categoryParam) localStorage.setItem('last_visited_category', categoryParam);
-  }, [mountainParam, worldParam, categoryParam]);
-
-  // URL 파라미터 결손 시 자동 복구 리다이렉트
-  useEffect(() => {
-    if (!mountainParam || !worldParam || !categoryParam) {
-      const recMountain = mountainParam || localStorage.getItem('last_visited_mountain');
-      const recWorld = worldParam || localStorage.getItem('last_visited_world');
-      const recCategory = categoryParam || localStorage.getItem('last_visited_category');
-
-      if (recMountain && recWorld && recCategory) {
-        // 모든 정보가 복구 가능하면 이동
-        navigate(
-          `${window.location.pathname}?mountain=${recMountain}&world=${recWorld}&category=${recCategory}`,
-          { replace: true }
-        );
-      }
-    }
-  }, [mountainParam, worldParam, categoryParam, navigate]);
+    tryRecover(['mountain', 'world', 'category']);
+  }, [tryRecover]);
 
   useLayoutEffect(() => {
     const container = mapAreaRef.current;
@@ -225,7 +210,7 @@ export function LevelSelectPage() {
     const nextWorld = validWorldIds.at(nextIndex) ?? validWorldIds[0];
 
     // 산별로 마지막 플레이 월드 분리 저장
-    localStorage.setItem(`lastPlayedWorld_${mountainParam}`, nextWorld);
+    storageService.set(STORAGE_KEYS.LAST_PLAYED_WORLD(mountainParam), nextWorld);
     navigate(
       urls.levelSelect({
         mountain: mountainParam,

@@ -23,6 +23,9 @@ interface UseQuizReviveParams {
   isPreview: boolean;
 }
 
+import { ITEM_MAP, ItemMetadata } from '../constants/items';
+import { safeAccess } from '../utils/validation';
+
 export function useQuizRevive({
   gameMode,
   inventory,
@@ -87,8 +90,9 @@ export function useQuizRevive({
 
   const handlePurchaseAndRevive = useCallback(async () => {
     const itemType = gameMode === 'time-attack' ? 'last_spurt' : 'flare';
-    const basePrice = 800;
-    const targetPrice = basePrice * 2;
+    const itemMeta = safeAccess(ITEM_MAP, itemType) as ItemMetadata | undefined;
+    const basePrice = itemMeta?.price || 800;
+    const targetPrice = basePrice * 2; // "즉시 구매 & 사용"은 상점가의 2배 (긴급 할증)
 
     if (minerals >= targetPrice) {
       console.log(`Simulating purchase of ${itemType} for ${targetPrice} minerals`);

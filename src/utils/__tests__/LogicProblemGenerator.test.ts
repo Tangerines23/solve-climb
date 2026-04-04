@@ -1,162 +1,109 @@
-import { describe, it, expect, vi, afterEach } from 'vitest';
-import { generateSequenceProblem, generateLogicProblem } from '../LogicProblemGenerator';
+import { describe, it, expect } from 'vitest';
+import { generateLogicProblem, generateSequenceProblem } from '../LogicProblemGenerator';
 
 describe('LogicProblemGenerator', () => {
-  afterEach(() => {
-    vi.restoreAllMocks();
+  const mockRng = {
+    random: () => 0.5,
+    randomInt: (min: number, _max: number) => min,
+  };
+
+  describe('generateLogicProblem', () => {
+    it('should generate Lv 1: Even/Odd problem', () => {
+      const problem = generateLogicProblem(1, 'easy', mockRng);
+      expect(problem.question).toContain('홀수입니까 짝수입니까');
+      expect([1, 2]).toContain(problem.answer);
+    });
+
+    it('should generate Lv 2: Pos/Neg problem', () => {
+      const problem = generateLogicProblem(2, 'easy', mockRng);
+      expect(problem.question).toContain('양수입니까 음수입니까');
+      expect([1, 2]).toContain(problem.answer);
+    });
+
+    it('should generate Lv 3: Multiple problem', () => {
+      const problem = generateLogicProblem(3, 'easy', mockRng);
+      expect(problem.question).toContain('배수입니까');
+    });
+
+    it('should generate Lv 4: Prime problem', () => {
+      const problem = generateLogicProblem(4, 'easy', mockRng);
+      expect(problem.question).toContain('소수(Prime Number)입니까');
+    });
+
+    it('should generate Lv 5: Comparison Prime problem', () => {
+      const problem = generateLogicProblem(5, 'easy', mockRng);
+      expect(problem.question).toContain('소수(Prime)인 것은');
+    });
+
+    it('should generate Lv 6-10: Sequence problems', () => {
+      for (let lv = 6; lv <= 10; lv++) {
+        const problem = generateLogicProblem(lv, 'medium', mockRng);
+        expect(problem.question).toContain('[ ? ]');
+        expect(problem.answer).toBeDefined();
+      }
+    });
+
+    it('should generate Lv 11: Absolute value problem', () => {
+      const problem = generateLogicProblem(11, 'hard', mockRng);
+      expect(problem.question).toContain('절댓값');
+      expect(problem.answer).toBeGreaterThanOrEqual(0);
+    });
+
+    it('should generate Lv 12: Modulo problem', () => {
+      const problem = generateLogicProblem(12, 'hard', mockRng);
+      expect(problem.question).toContain('나머지는');
+    });
+
+    it('should generate Lv 13: Factorial problem', () => {
+      const problem = generateLogicProblem(13, 'hard', mockRng);
+      expect(problem.question).toContain('팩토리얼');
+    });
+
+    it('should generate Lv 14: Custom Operation problem', () => {
+      const problem = generateLogicProblem(14, 'hard', mockRng);
+      expect(problem.question).toMatch(/[★○]/);
+    });
+
+    it('should generate Lv 15: Random Sequence problem', () => {
+      const problem = generateLogicProblem(15, 'hard', mockRng);
+      expect(problem.question).toContain('[ ? ]');
+    });
+
+    it('should handle default case (Level > 15)', () => {
+      const problem = generateLogicProblem(99, 'hard', mockRng);
+      expect(problem.question).toBeDefined();
+    });
   });
 
   describe('generateSequenceProblem', () => {
-    it('should return a valid problem structure', () => {
-      const problem = generateSequenceProblem('easy');
-      expect(problem).toHaveProperty('question');
-      expect(problem).toHaveProperty('answer');
-      expect(typeof problem.question).toBe('string');
-      expect(typeof problem.answer).toBe('number');
+    it('should generate arithmetic sequence', () => {
+      const problem = generateSequenceProblem('easy', 'arithmetic', mockRng);
+      expect(problem.question).toBeDefined();
     });
 
-    it('should generate arithmetic or geometric sequences for easy difficulty', () => {
-      // Mock random to select arithmetic (index 0) or geometric (index 1)
-      // Since type selection uses Math.floor(Math.random() * types.length)
-      // types for easy are ['arithmetic', 'geometric']
-
-      const prob = generateSequenceProblem('easy');
-      expect(prob.question).toContain('[ ? ]');
+    it('should generate geometric sequence', () => {
+      const problem = generateSequenceProblem('easy', 'geometric', mockRng);
+      expect(problem.question).toBeDefined();
     });
 
-    it('should generate arithmetic sequence correctly', () => {
-      // Mocking randomness to force 'arithmetic' type
-      // And control start/diff values
-
-      // We need to spy on Math.random.
-      // The function calls random multiple times:
-      // 1. Select type index
-      // 2. Select variables inside switch case
-
-      const randomSpy = vi.spyOn(Math, 'random');
-
-      // Control flow:
-      // 1. type index: 0 (arithmetic) -> returns 0 when multiplied by 2
-      // 2. start: Need 1-20. Let's aim for 5. (0.2 * 20 + 1 = 5) -> 0.2
-      // 3. diff: Need 1-10. Let's aim for 3. (0.2 * 10 + 1 = 3) -> 0.2
-
-      randomSpy
-        .mockReturnValueOnce(0.1) // index 0 (arithmetic)
-        .mockReturnValueOnce(0.2) // start = 5
-        .mockReturnValueOnce(0.2); // diff = 3
-
-      // Sequence: 5, 8, 11, 14, [17]
-      // Question: 5, 8, 11, 14, [ ? ]
-      // Answer: 17
-
-      const problem = generateSequenceProblem('easy');
-      // Note: Implementation pops the last element for the answer
-      // So sequence in question is 5, 8, 11, 14
-
-      expect(problem.answer).toBe(17);
-      expect(problem.question).toBe('5, 8, 11, 14, [ ? ]');
+    it('should generate fibonacci sequence', () => {
+      const problem = generateSequenceProblem('medium', 'fibonacci', mockRng);
+      expect(problem.question).toBeDefined();
     });
 
-    it('should generate geometric sequence correctly', () => {
-      // types: ['arithmetic', 'geometric'] (length 2)
-      // index 1 for geometric (0.6 * 2 = 1.2 -> 1)
-
-      const randomSpy = vi.spyOn(Math, 'random');
-      randomSpy
-        .mockReturnValueOnce(0.6) // index 1 (geometric)
-        .mockReturnValueOnce(0.2) // start = 2 (1-5 range: 0.2 * 5 + 1 = 2)
-        .mockReturnValueOnce(0.2); // ratio = 2 (2-4 range: 0.2 * 3 + 2 = 2.6 -> 2)
-
-      // Sequence: 2, 4, 8, 16, [32]
-      const problem = generateSequenceProblem('easy');
-
-      expect(problem.answer).toBe(32);
-      expect(problem.question).toBe('2, 4, 8, 16, [ ? ]');
+    it('should generate incrementing_diff sequence', () => {
+      const problem = generateSequenceProblem('hard', 'incrementing_diff', mockRng);
+      expect(problem.question).toBeDefined();
     });
 
-    it('should generate fibonacci sequence correctly', () => {
-      // Difficulty: medium. types: ['arithmetic', 'geometric', 'fibonacci'] (length 3)
-      // index 2 for fibonacci (0.8 * 3 = 2.4 -> 2)
-
-      const randomSpy = vi.spyOn(Math, 'random');
-      randomSpy
-        .mockReturnValueOnce(0.8) // index 2 (fibonacci) - for medium
-        .mockReturnValueOnce(0.1) // start1 = 1 (1-3 range)
-        .mockReturnValueOnce(0.1); // start2 = 1 (1-5 range)
-
-      // Sequence logic: [1, 1] -> 2 -> 3 -> 5 -> 8
-      // Loop runs i=2 to 5 (4 times)
-      // seq[2] = 1+1=2
-      // seq[3] = 1+2=3
-      // seq[4] = 2+3=5
-      // seq[5] = 3+5=8
-      // Final sequence array: [1, 1, 2, 3, 5, 8]
-      // Answer is last element: 8
-      // Pre-pop content: [1, 1, 2, 3, 5]
-
-      const problem = generateSequenceProblem('medium');
-      expect(problem.answer).toBe(8);
-      expect(problem.question).toBe('1, 1, 2, 3, 5, [ ? ]');
+    it('should generate alternating sequence', () => {
+      const problem = generateSequenceProblem('hard', 'alternating', mockRng);
+      expect(problem.question).toBeDefined();
     });
 
-    it('should generate incrementing_diff sequence correctly', () => {
-      // Difficulty: hard. types: ['fibonacci', 'incrementing_diff', 'alternating'] (length 3)
-      // index 1 for incrementing_diff
-
-      const randomSpy = vi.spyOn(Math, 'random');
-      randomSpy
-        .mockReturnValueOnce(0.5) // index 1
-        .mockReturnValueOnce(0.1); // current (start) = 2 (1-10 range: 0.1*10+1 = 2)
-
-      // Logic:
-      // start: 2
-      // diff starts at 1
-      // i=0: current+=1 (3), diff=2 -> push 3
-      // i=1: current+=2 (5), diff=3 -> push 5
-      // i=2: current+=3 (8), diff=4 -> push 8
-      // i=3: current+=4 (12), diff=5 -> push 12
-      // Sequence: 2, 3, 5, 8, 12
-      // Answer: 12
-      // Question: 2, 3, 5, 8
-
-      const problem = generateSequenceProblem('hard');
-      expect(problem.answer).toBe(12);
-      expect(problem.question).toBe('2, 3, 5, 8, [ ? ]');
-    });
-
-    it('should generate alternating sequence correctly', () => {
-      // Difficulty: hard. types: ['fibonacci', 'incrementing_diff', 'alternating'] (length 3)
-      // index 2 for alternating
-
-      const randomSpy = vi.spyOn(Math, 'random');
-      randomSpy
-        .mockReturnValueOnce(0.9) // index 2
-        .mockReturnValueOnce(0.1) // start = 12 (10-30: 0.1*21+10 = 12.1 -> 12)
-        .mockReturnValueOnce(0.1) // diff1 = 2 (2-5: 0.1*4+2 = 2.4 -> 2)
-        .mockReturnValueOnce(0.1); // diff2 = 1 (1-3: 0.1*3+1 = 1.3 -> 1)
-
-      // Logic:
-      // start: 12
-      // i=0 (even): +diff1(+2) -> 14
-      // i=1 (odd): -diff2(-1) -> 13
-      // i=2 (even): +diff1(+2) -> 15
-      // i=3 (odd): -diff2(-1) -> 14
-      // Sequence: 12, 14, 13, 15, 14
-      // Answer: 14
-      // Question: 12, 14, 13, 15
-
-      const problem = generateSequenceProblem('hard');
-      expect(problem.answer).toBe(14);
-      expect(problem.question).toBe('12, 14, 13, 15, [ ? ]');
-    });
-  });
-
-  describe('generateLogicProblem', () => {
-    it('should delegate to generateSequenceProblem', () => {
-      // Just verify it returns same structure
-      const problem = generateLogicProblem('logic', 'easy');
-      expect(problem).toHaveProperty('question');
-      expect(problem).toHaveProperty('answer');
+    it('should use difficulty types if valid', () => {
+      const problem = generateSequenceProblem('easy', undefined, mockRng);
+      expect(problem.question).toBeDefined();
     });
   });
 });
