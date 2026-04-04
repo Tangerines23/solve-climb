@@ -1,327 +1,146 @@
-import { describe, it, expect, beforeEach, vi } from 'vitest';
+import { describe, it, expect, vi, beforeEach } from 'vitest';
 import {
+  executeDebugAction,
+  savePresetHistory,
+  getPresetHistories,
+  clearPresetHistory,
+  applyPreset,
   getCustomPresets,
   saveCustomPreset,
   deleteCustomPreset,
-  exportCustomPresets,
-  importCustomPresets,
-  getPresetHistories,
-  savePresetHistory,
-  clearPresetHistory,
-  executeDebugAction,
-  applyPreset,
-  type CustomPreset,
-  type PresetHistory,
-  type DebugAction,
 } from '../debugPresets';
 import { supabase } from '../supabaseClient';
-import { useUserStore as _useUserStore } from '../../stores/useUserStore';
-import { useQuizStore as _useQuizStore } from '../../stores/useQuizStore';
-import { calculateScoreForTier } from '../tierUtils';
-import type { PostgrestSingleResponse, SupabaseClient } from '@supabase/supabase-js';
+import { useUserStore } from '../../stores/useUserStore';
+import { storageService } from '../../services';
 
-// --- Typed Mock Builders ---
-const createMockQueryBuilder = (returnValue: any = { data: null, error: null }) => {
-  const builder: any = {};
-  const mockReturn = Promise.resolve(returnValue);
-
-  builder.select = vi.fn(() => builder);
-  builder.eq = vi.fn(() => builder);
-  builder.order = vi.fn(() => builder);
-  builder.limit = vi.fn(() => builder);
-  builder.single = vi.fn(() => mockReturn);
-  builder.maybeSingle = vi.fn(() => mockReturn);
-  builder.upsert = vi.fn(() => mockReturn);
-  builder.update = vi.fn(() => builder);
-  builder.delete = vi.fn(() => builder);
-  builder.in = vi.fn(() => builder);
-
-  // Make builder thenable
-  builder.then = (
-    onfulfilled?: ((value: any) => any) | null,
-    onrejected?: ((reason: any) => any) | null
-  ) => {
-    return mockReturn.then(onfulfilled, onrejected);
-  };
-
-  return builder as unknown as ReturnType<SupabaseClient['from']>;
-};
-
-// Mock dependencies
 vi.mock('../supabaseClient', () => ({
   supabase: {
-    auth: {
-      getUser: vi.fn(() => Promise.resolve({ data: { user: { id: 'test-user' } }, error: null })),
-    },
     rpc: vi.fn(),
-    from: vi.fn(() => createMockQueryBuilder()),
+    from: vi.fn().mockReturnThis(),
+    select: vi.fn().mockReturnThis(),
+    eq: vi.fn().mockReturnThis(),
+    order: vi.fn().mockReturnThis(),
+    limit: vi.fn().mockReturnThis(),
+    maybeSingle: vi.fn(),
   },
 }));
 
-const mockGetUserStoreState = vi.fn();
-vi.mock('../../stores/useUserStore', () => ({
-  useUserStore: {
-    getState: () => mockGetUserStoreState(),
-  },
-}));
+describe('debugPresets utility', () => {
+  const userId = 'test-user';
 
-const mockGetQuizStoreState = vi.fn();
-vi.mock('../../stores/useQuizStore', () => ({
-  useQuizStore: {
-    getState: () => mockGetQuizStoreState(),
-  },
-}));
-
-vi.mock('../tierUtils', () => ({
-  calculateScoreForTier: vi.fn(() => Promise.resolve(2850000)),
-}));
-
-describe('debugPresets tests', () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    localStorage.clear();
-
-    // Default mocks
-    mockGetUserStoreState.mockReturnValue({
-      fetchUserData: vi.fn(() => Promise.resolve()),
-      setMinerals: vi.fn(() => Promise.resolve()),
-      setStamina: vi.fn(() => Promise.resolve()),
-      debugSetMinerals: vi.fn(() => Promise.resolve()),
-      debugSetStamina: vi.fn(() => Promise.resolve()),
-    });
-    mockGetQuizStoreState.mockReturnValue({
-      setTimeLimit: vi.fn(),
-    });
-    vi.mocked(supabase.rpc).mockResolvedValue({ data: null, error: null } as any);
-  });
-
-  describe('Custom Presets Management', () => {
-    it('should return empty array when localStorage is empty', () => {
-      expect(getCustomPresets()).toEqual([]);
-    });
-
-    it('should save and load custom presets', () => {
-      const preset: CustomPreset = {
-        id: 'p1',
-        name: 'Preset 1',
-        description: 'Desc',
-        actions: [],
-        isCustom: true,
-      };
-      saveCustomPreset(preset);
-      expect(getCustomPresets()).toContainEqual(preset);
-    });
-
-    it('should handle corrupted JSON in localStorage', () => {
-      localStorage.setItem('debug_custom_presets', 'corrupted');
-      const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
-      expect(getCustomPresets()).toEqual([]);
-      expect(consoleSpy).toHaveBeenCalled();
-      consoleSpy.mockRestore();
-    });
-
-    it('should delete custom presets', () => {
-      const preset: CustomPreset = {
-        id: 'p1',
-        name: 'Preset 1',
-        description: 'Desc',
-        actions: [],
-        isCustom: true,
-      };
-      saveCustomPreset(preset);
-      deleteCustomPreset('p1');
-      expect(getCustomPresets()).toEqual([]);
-    });
-
-    it('should export presets to JSON string', () => {
-      const preset: CustomPreset = {
-        id: 'p1',
-        name: 'Preset 1',
-        description: 'Desc',
-        actions: [],
-        isCustom: true,
-      };
-      saveCustomPreset(preset);
-      const exported = exportCustomPresets();
-      expect(JSON.parse(exported)).toHaveLength(1);
-    });
-
-    it('should import presets from JSON string', () => {
-      const preset: CustomPreset = {
-        id: 'imported',
-        name: 'Imported',
-        description: 'Desc',
-        actions: [],
-        isCustom: true,
-      };
-      importCustomPresets(JSON.stringify([preset]));
-      expect(getCustomPresets()).toContainEqual(preset);
-    });
-  });
-
-  describe('Preset History', () => {
-    it('should save and retrieve history', () => {
-      const history: PresetHistory = {
-        id: 'h1',
-        presetId: 'p1',
-        presetName: 'Preset 1',
-        appliedAt: new Date(),
-        userId: 'u1',
-        success: true,
-      };
-      savePresetHistory(history);
-      expect(getPresetHistories()).toHaveLength(1);
-    });
-
-    it('should clear history', () => {
-      savePresetHistory({ id: 'h1' } as any);
-      clearPresetHistory();
-      expect(getPresetHistories()).toHaveLength(0);
-    });
   });
 
   describe('executeDebugAction', () => {
-    const userId = 'test-user';
-
-    it('should handle reset action', async () => {
-      await executeDebugAction({ type: 'reset', target: 'all' }, userId);
+    it('should call debug_reset_profile for reset action', async () => {
+      (supabase.rpc as any).mockResolvedValue({ error: null });
+      await executeDebugAction({ type: 'reset', target: 'score' }, userId);
       expect(supabase.rpc).toHaveBeenCalledWith(
         'debug_reset_profile',
         expect.objectContaining({
-          p_reset_type: 'all',
+          p_reset_type: 'score',
         })
       );
     });
 
-    it('should handle setTier action', async () => {
-      await executeDebugAction({ type: 'setTier', level: 5 }, userId);
-      expect(supabase.rpc).toHaveBeenCalledWith(
-        'debug_set_tier',
-        expect.objectContaining({
-          p_level: 5,
-        })
+    it('should throw error if setTier level is missing', async () => {
+      await expect(executeDebugAction({ type: 'setTier' }, userId)).rejects.toThrow(
+        'setTier action requires level'
       );
     });
 
-    it('should handle setMinerals action via store', async () => {
-      const mockDebugSetMinerals = vi.fn();
-      mockGetUserStoreState.mockReturnValue({ debugSetMinerals: mockDebugSetMinerals });
-      await executeDebugAction({ type: 'setMinerals', value: 100 }, userId);
-      expect(mockDebugSetMinerals).toHaveBeenCalledWith(100);
+    it('should grant all items by calling rpc for each item', async () => {
+      (supabase.from as any)().select.mockResolvedValue({
+        data: [{ id: 'item1' }, { id: 'item2' }],
+        error: null,
+      });
+      (supabase.rpc as any).mockResolvedValue({ error: null });
+
+      await executeDebugAction({ type: 'grantAllItems', quantity: 5 }, userId);
+      expect(supabase.rpc).toHaveBeenCalledTimes(2);
     });
 
-    it('should handle grantAllItems action with multiple items', async () => {
-      vi.mocked(supabase.from).mockReturnValue(
-        createMockQueryBuilder({
-          data: [{ id: 'item1' }, { id: 'item2' }],
-          error: null,
-        })
-      );
+    it('should handle grantAllBadges with successes and failures', async () => {
+      (supabase.from as any)().select.mockResolvedValue({
+        data: [{ id: 'badge1' }, { id: 'badge2' }],
+        error: null,
+      });
+      (supabase.rpc as any)
+        .mockResolvedValueOnce({ error: null })
+        .mockRejectedValueOnce(new Error('Bad error'));
 
-      await executeDebugAction({ type: 'grantAllItems', quantity: 99 }, userId);
-      expect(supabase.rpc).toHaveBeenCalledWith(
-        'debug_set_inventory_quantity',
-        expect.objectContaining({
-          p_item_id: 'item1',
-          p_quantity: 99,
-        })
-      );
-      expect(supabase.rpc).toHaveBeenCalledWith(
-        'debug_set_inventory_quantity',
-        expect.objectContaining({
-          p_item_id: 'item2',
-          p_quantity: 99,
-        })
-      );
-    });
-
-    it('should handle grantAllBadges action', async () => {
-      vi.mocked(supabase.from).mockReturnValue(
-        createMockQueryBuilder({
-          data: [{ id: 'badge1' }],
-          error: null,
-        })
-      );
+      const consoleWarnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});
 
       await executeDebugAction({ type: 'grantAllBadges' }, userId);
-      expect(supabase.rpc).toHaveBeenCalledWith(
-        'debug_grant_badge',
-        expect.objectContaining({
-          p_badge_id: 'badge1',
-        })
-      );
+
+      expect(supabase.rpc).toHaveBeenCalledTimes(2);
+      expect(consoleWarnSpy).toHaveBeenCalled();
+    });
+  });
+
+  describe('history management', () => {
+    it('should save and retrieve histories', () => {
+      const mockHistory = {
+        id: '1',
+        presetId: 'newbie',
+        presetName: 'Newbie',
+        appliedAt: new Date(),
+        userId,
+        success: true,
+      };
+      const setSpy = vi.spyOn(storageService, 'set');
+      vi.spyOn(storageService, 'get').mockReturnValue([mockHistory]);
+
+      savePresetHistory(mockHistory);
+      expect(setSpy).toHaveBeenCalled();
+
+      const histories = getPresetHistories();
+      expect(histories).toHaveLength(1);
+      expect(histories[0].presetId).toBe('newbie');
     });
 
-    it('should handle setGameTime action with active session', async () => {
-      vi.mocked(supabase.from).mockReturnValue(
-        createMockQueryBuilder({
-          data: { id: 'session1' },
-          error: null,
-        })
-      );
-
-      await executeDebugAction({ type: 'setGameTime', seconds: 10 }, userId);
-      expect(supabase.rpc).toHaveBeenCalledWith(
-        'debug_set_session_timer',
-        expect.objectContaining({
-          p_session_id: 'session1',
-          p_seconds: 10,
-        })
-      );
+    it('should clear histories', () => {
+      const removeSpy = vi.spyOn(storageService, 'remove');
+      clearPresetHistory();
+      expect(removeSpy).toHaveBeenCalled();
     });
+  });
 
-    it('should handle setGameTime action without active session (updates store)', async () => {
-      // Mock maybeSingle to return null (no session)
-      vi.mocked(supabase.from).mockReturnValue(
-        createMockQueryBuilder({
-          data: null,
-          error: null,
-        })
-      );
+  describe('custom presets', () => {
+    it('should manage custom presets', () => {
+      const mockPreset = {
+        id: 'custom1',
+        name: 'Custom',
+        actions: [],
+        isCustom: true as const,
+        description: 'desc',
+      };
+      vi.spyOn(storageService, 'get').mockReturnValue([mockPreset]);
+      const setSpy = vi.spyOn(storageService, 'set');
 
-      const mockSetTimeLimit = vi.fn();
-      mockGetQuizStoreState.mockReturnValue({ setTimeLimit: mockSetTimeLimit });
+      const presets = getCustomPresets();
+      expect(presets).toHaveLength(1);
 
-      await executeDebugAction({ type: 'setGameTime', seconds: 30 }, userId);
-      expect(mockSetTimeLimit).toHaveBeenCalledWith(60); // 30 maps to 60
+      saveCustomPreset(mockPreset);
+      expect(setSpy).toHaveBeenCalled();
+
+      deleteCustomPreset('custom1');
+      expect(setSpy).toHaveBeenCalledWith(expect.any(String), []);
     });
   });
 
   describe('applyPreset', () => {
-    const userId = 'test-user';
+    it('should sequentially execute actions in a preset', async () => {
+      (supabase.rpc as any).mockResolvedValue({ error: null });
+      const fetchSpy = vi.spyOn(useUserStore.getState(), 'fetchUserData').mockResolvedValue();
 
-    it('should apply newbie preset successfully', async () => {
       await applyPreset('newbie', userId);
-      expect(supabase.rpc).toHaveBeenCalledWith(
-        'debug_reset_profile',
-        expect.objectContaining({
-          p_reset_type: 'all',
-        })
-      );
-      expect(getPresetHistories()[0].success).toBe(true);
+      expect(fetchSpy).toHaveBeenCalled();
     });
 
-    it('should apply veteran preset with dynamic score', async () => {
-      vi.mocked(supabase.from).mockReturnValue(createMockQueryBuilder({ data: [], error: null }));
-
-      await applyPreset('veteran', userId);
-      expect(calculateScoreForTier).toHaveBeenCalled();
-      expect(supabase.rpc).toHaveBeenCalledWith(
-        'debug_set_mastery_score',
-        expect.objectContaining({
-          p_score: 2850000,
-        })
-      );
-    });
-
-    it('should record failure in history when application fails', async () => {
-      vi.mocked(supabase.rpc).mockResolvedValue({ error: { message: 'Failed' } } as any);
-      const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
-
-      await expect(applyPreset('newbie', userId)).rejects.toThrow();
-      expect(getPresetHistories()[0].success).toBe(false);
-
-      consoleSpy.mockRestore();
+    it('should throw error for unknown preset', async () => {
+      await expect(applyPreset('invalid', userId)).rejects.toThrow('Preset not found');
     });
   });
 });

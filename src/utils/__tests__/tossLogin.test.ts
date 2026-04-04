@@ -1,32 +1,54 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { handleTossLogin } from '../tossLogin';
 
-// @apps-in-toss/web-framework 제거 시 mock 제거. 패키지 복구 시 아래 mock 및 기대값 복구.
-// vi.mock('@apps-in-toss/web-framework', () => ({ appLogin: vi.fn() }));
-
-vi.mock('../errorHandler', () => ({
-  logError: vi.fn(),
-}));
-
-describe('tossLogin', () => {
+describe('tossLogin utility', () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    delete (window as unknown as { ReactNativeWebView?: unknown }).ReactNativeWebView;
   });
 
-  it('should return error when not in Toss app environment', async () => {
-    const result = await handleTossLogin();
-
-    expect(result.success).toBe(false);
-    expect(result.error).toContain('토스 앱에서만');
+  afterEach(() => {
+    vi.unstubAllGlobals();
   });
 
-  it('should return stub error when in Toss app (web-framework 비활성)', async () => {
-    (window as unknown as { ReactNativeWebView: unknown }).ReactNativeWebView = {};
+  describe('handleTossLogin', () => {
+    it('should return error if not in Toss app environment', async () => {
+      vi.stubGlobal('window', {
+        location: { hostname: 'localhost' },
+      });
 
-    const result = await handleTossLogin();
+      const result = await handleTossLogin();
+      expect(result.success).toBe(false);
+      expect(result.error).toContain('토스 앱에서만');
+    });
 
-    expect(result.success).toBe(false);
-    expect(result.error).toContain('비활성화');
+    it('should return error since web-framework is disabled', async () => {
+      // Mock Toss app environment
+      vi.stubGlobal('window', {
+        ReactNativeWebView: {},
+        location: { hostname: 'toss.im' },
+      });
+
+      const result = await handleTossLogin();
+      expect(result.success).toBe(false);
+      expect(result.error).toContain('프레임워크가 비활성화');
+    });
+
+    it('should return error on SSR (window undefined)', async () => {
+      vi.stubGlobal('window', undefined);
+      const result = await handleTossLogin();
+      expect(result.success).toBe(false);
+    });
+
+    it('should catch errors during environment check', async () => {
+      vi.stubGlobal('window', {
+        get ReactNativeWebView() {
+          throw new Error('Test environment error');
+        },
+      });
+
+      const result = await handleTossLogin();
+      expect(result.success).toBe(false);
+      expect(result.error).toBe('Test environment error');
+    });
   });
 });

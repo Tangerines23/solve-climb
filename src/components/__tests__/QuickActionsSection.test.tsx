@@ -105,9 +105,9 @@ describe('QuickActionsSection', () => {
     expect(screen.getByText(/디버그 설정/)).toBeInTheDocument();
   });
 
-  it('should toggle infinite stamina', () => {
+  it('should toggle infinite stamina', async () => {
     render(<QuickActionsSection />);
-    const toggleButton = screen.getByLabelText(/무한 스태미나 토글/);
+    const toggleButton = await screen.findByLabelText(/무한 스태미나 토글/);
     fireEvent.click(toggleButton);
   });
 

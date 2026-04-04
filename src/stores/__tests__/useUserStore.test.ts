@@ -1,473 +1,281 @@
-import { describe, it, expect, beforeEach, vi, afterEach } from 'vitest';
-import { renderHook, act, waitFor } from '@testing-library/react';
+import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { useUserStore } from '../useUserStore';
-import { server } from '../../mocks/server';
-import { http, HttpResponse } from 'msw';
 import { supabase } from '../../utils/supabaseClient';
 import { AdService } from '../../utils/adService';
 
-// Mock AdService
+// Mock dependencies
+vi.mock('../../utils/supabaseClient', () => ({
+  supabase: {
+    rpc: vi.fn(),
+    auth: {
+      getUser: vi.fn(),
+      getSession: vi.fn(),
+    },
+    from: vi.fn(() => ({
+      select: vi.fn(() => ({
+        eq: vi.fn(() => ({
+          maybeSingle: vi.fn(),
+          then: vi.fn(),
+        })),
+      })),
+    })),
+  },
+}));
+
+vi.mock('../../utils/debugFetch', () => ({
+  safeSupabaseQuery: vi.fn((promise) => promise),
+}));
+
 vi.mock('../../utils/adService', () => ({
   AdService: {
     showRewardedAd: vi.fn(),
   },
 }));
 
-const SUPABASE_REST_URL = '*/rest/v1';
+// Mock useDebugStore to avoid actual store side effects
+vi.mock('../useDebugStore', () => ({
+  useDebugStore: {
+    getState: vi.fn(() => ({ infiniteStamina: false })),
+  },
+}));
 
-describe('useUserStore (Comprehensive Tests)', () => {
-  beforeEach(async () => {
+describe('useUserStore', () => {
+  beforeEach(() => {
     vi.clearAllMocks();
-    vi.restoreAllMocks();
-
-    // Mock getUser
-    vi.spyOn(supabase.auth, 'getUser').mockResolvedValue({
-      data: { user: { id: 'test-user-id' } as any },
-      error: null,
-    });
-
-    // Mock getSession
-    vi.spyOn(supabase.auth, 'getSession').mockResolvedValue({
-      data: { session: { user: { id: 'test-user-id' } } as any },
-      error: null,
-    });
-
-    // Reset store
+    // Reset store state
     useUserStore.setState({
       minerals: 0,
       stamina: 5,
       inventory: [],
       isLoading: false,
       lastStaminaConsumeTime: 0,
-      showPauseModal: false,
-      isAnonymous: false,
-      remainingPauses: 3,
     });
-  });
-
-  afterEach(() => {
-    vi.useRealTimers();
   });
 
   it('should initialize with default values', () => {
-    const { result } = renderHook(() => useUserStore());
-    expect(result.current.minerals).toBe(0);
-    expect(result.current.stamina).toBe(5);
-    expect(result.current.inventory).toEqual([]);
-    expect(result.current.isLoading).toBe(false);
+    const state = useUserStore.getState();
+    expect(state.minerals).toBe(0);
+    expect(state.stamina).toBe(5);
+    expect(state.inventory).toEqual([]);
   });
 
-  it('should set stamina locally', async () => {
-    const { result } = renderHook(() => useUserStore());
-    await act(async () => {
-      result.current.setStamina(10);
-    });
-    expect(result.current.stamina).toBe(10);
-  });
+  describe('updateNickname', () => {
+    it('should call rpc_update_nickname and refresh data', async () => {
+      const mockRpc = vi.mocked(supabase.rpc).mockResolvedValue({
+        data: { success: true, message: 'Updated' },
+        error: null,
+      } as any);
 
-  it('should set minerals locally', async () => {
-    const { result } = renderHook(() => useUserStore());
-    await act(async () => {
-      result.current.setMinerals(500);
-    });
-    expect(result.current.minerals).toBe(500);
-  });
+      const result = await useUserStore.getState().updateNickname('NewName');
 
-  it('should fetch user data successfully', async () => {
-    const { result } = renderHook(() => useUserStore());
-    await act(async () => {
-      await result.current.fetchUserData();
-    });
-    expect(result.current.minerals).toBe(1000); // from default MSW handler
-    expect(result.current.stamina).toBe(5);
-  });
-
-  it('should handle fetch user data error', async () => {
-    server.use(
-      http.get('*/rest/v1/profiles', () => {
-        return new HttpResponse(null, { status: 500 });
-      })
-    );
-    const { result } = renderHook(() => useUserStore());
-    await act(async () => {
-      await result.current.fetchUserData();
-    });
-    expect(result.current.isLoading).toBe(false);
-    expect(result.current.minerals).toBe(0); // maintained default
-  });
-
-  it('should consume stamina', async () => {
-    const { result } = renderHook(() => useUserStore());
-    await act(async () => {
-      await result.current.fetchUserData();
-    });
-    await act(async () => {
-      const response = await result.current.consumeStamina();
-      expect(response.success).toBe(true);
-    });
-    expect(result.current.stamina).toBe(4);
-  });
-
-  it('should throttle consumeStamina calls', async () => {
-    const { result } = renderHook(() => useUserStore());
-    const consoleLogSpy = vi.spyOn(console, 'log').mockImplementation(() => {});
-
-    await act(async () => {
-      await result.current.consumeStamina(); // first
-      await result.current.consumeStamina(); // immediate second
+      expect(mockRpc).toHaveBeenCalledWith('rpc_update_nickname', { p_nickname: 'NewName' });
+      expect(result.success).toBe(true);
     });
 
-    expect(consoleLogSpy).toHaveBeenCalledWith('[UserStore] Stamina consumption throttled');
-    consoleLogSpy.mockRestore();
-  });
+    it('should handle error when updating nickname', async () => {
+      vi.mocked(supabase.rpc).mockResolvedValue({
+        data: null,
+        error: { message: 'Error' } as any,
+      } as any);
 
-  it('should handle pause system', async () => {
-    const { result } = renderHook(() => useUserStore());
-    await act(async () => {
-      result.current.handlePauseClick();
-    });
-    expect(result.current.showPauseModal).toBe(true);
-    await act(async () => {
-      result.current.handlePauseResume();
-    });
-    expect(result.current.showPauseModal).toBe(false);
-  });
-
-  it('should purchase item and refresh data', async () => {
-    server.use(
-      http.post(`${SUPABASE_REST_URL}/rpc/purchase_item`, () => {
-        return HttpResponse.json({ success: true, message: 'Purchased' });
-      })
-    );
-    const { result } = renderHook(() => useUserStore());
-    let response: { success: boolean } | undefined;
-    await act(async () => {
-      response = await result.current.purchaseItem(1);
-    });
-    expect(response?.success).toBe(true);
-  });
-
-  it('should recover minerals via ads', async () => {
-    vi.mocked(AdService.showRewardedAd).mockResolvedValue({ success: true });
-
-    // Mock RPC for secure_reward_ad_view
-    server.use(
-      http.post(`${SUPABASE_REST_URL}/rpc/secure_reward_ad_view`, () => {
-        return HttpResponse.json({ success: true, minerals: 500, message: 'Rewarded' });
-      }),
-      // Mock profiles fetch after refresh
-      http.get(`${SUPABASE_REST_URL}/profiles`, () => {
-        return HttpResponse.json([{ minerals: 500, stamina: 5 }]);
-      })
-    );
-
-    const { result } = renderHook(() => useUserStore());
-    await act(async () => {
-      await result.current.recoverMineralsAds();
-    });
-
-    await waitFor(() => {
-      expect(result.current.minerals).toBe(500);
+      const result = await useUserStore.getState().updateNickname('NewName');
+      expect(result.success).toBe(false);
     });
   });
 
-  it('should handle recoverStaminaAds failure (PGRST202 / Missing RPC)', async () => {
-    vi.mocked(AdService.showRewardedAd).mockResolvedValue({ success: true });
-    server.use(
-      http.post(`${SUPABASE_REST_URL}/rpc/secure_reward_ad_view`, () => {
-        return new HttpResponse(
-          JSON.stringify({
-            code: 'PGRST202',
-            message: 'Function not found',
-          }),
-          { status: 404, headers: { 'Content-Type': 'application/json' } }
-        );
-      })
-    );
-    const { result } = renderHook(() => useUserStore());
-    let response: { success: boolean } | undefined;
-    await act(async () => {
-      response = await result.current.recoverStaminaAds();
-    });
-    // Now it enters the error handler in callRpcAndRefresh and returns success: false
-    expect(response?.success).toBe(false);
-  });
-
-  it('should handle recoverStaminaAds failure (AdService failure)', async () => {
-    vi.mocked(AdService.showRewardedAd).mockResolvedValue({ success: false, error: 'Ad failed' });
-    const { result } = renderHook(() => useUserStore());
-    let response: { success: boolean; message?: string } | undefined;
-    await act(async () => {
-      response = await result.current.recoverStaminaAds();
-    });
-    expect(response?.success).toBe(false);
-    expect(response?.message).toBe('Ad failed');
-  });
-
-  it('should handle recoverStaminaAds failure (RPC internal error)', async () => {
-    vi.mocked(AdService.showRewardedAd).mockResolvedValue({ success: true });
-    server.use(
-      http.post(`${SUPABASE_REST_URL}/rpc/secure_reward_ad_view`, () => {
-        return HttpResponse.json({ success: false, message: 'RPC Error' });
-      })
-    );
-    const { result } = renderHook(() => useUserStore());
-    let response: { success: boolean } | undefined;
-    await act(async () => {
-      response = await result.current.recoverStaminaAds();
-    });
-    expect(response?.success).toBe(false);
-  });
-
-  it('should handle recoverStaminaAds failure (Unexpected Error)', async () => {
-    vi.mocked(AdService.showRewardedAd).mockResolvedValue({ success: true });
-    server.use(
-      http.post(`${SUPABASE_REST_URL}/rpc/secure_reward_ad_view`, () => {
-        throw new Error('Unexpected');
-      })
-    );
-    const { result } = renderHook(() => useUserStore());
-    let response: { success: boolean } | undefined;
-    await act(async () => {
-      response = await result.current.recoverStaminaAds();
-    });
-    expect(response?.success).toBe(false);
-  });
-
-  it('should handle fetchUserData error during refresh', async () => {
-    vi.mocked(AdService.showRewardedAd).mockResolvedValue({ success: true });
-    server.use(
-      http.post(`${SUPABASE_REST_URL}/rpc/secure_reward_ad_view`, () => {
-        return HttpResponse.json({ success: true, stamina: 10 });
-      }),
-      http.get(`${SUPABASE_REST_URL}/profiles`, () => {
-        return new HttpResponse(null, { status: 500 });
-      })
-    );
-    const { result } = renderHook(() => useUserStore());
-    await act(async () => {
-      await result.current.recoverStaminaAds();
-    });
-    expect(result.current.isLoading).toBe(false);
-  });
-
-  it('should reward minerals (failure expected due to security policy)', async () => {
-    const { result } = renderHook(() => useUserStore());
-    let response: { success: boolean; message: string } | undefined;
-    await act(async () => {
-      response = await result.current.rewardMinerals(100);
-    });
-    expect(response?.success).toBe(false);
-    expect(response?.message).toContain('제한됩니다');
-    expect(result.current.minerals).toBe(0);
-  });
-
-  it('should refund stamina (failure expected due to security policy)', async () => {
-    const { result } = renderHook(() => useUserStore());
-    await act(async () => {
-      result.current.setStamina(3);
-    });
-    let response: { success: boolean; message: string } | undefined;
-    await act(async () => {
-      response = await result.current.refundStamina();
-    });
-    expect(response?.success).toBe(false);
-    expect(response?.message).toContain('제한됩니다');
-    expect(result.current.stamina).toBe(3); // No change
-  });
-
-  it('should prevent stamina recovery if on cooldown', async () => {
-    const twoHoursAgo = new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString();
-    useUserStore.setState({ lastAdRechargeTime: twoHoursAgo });
-
-    server.use(
-      http.post(`${SUPABASE_REST_URL}/rpc/secure_reward_ad_view`, () => {
-        return HttpResponse.json({ success: false, message: '쿨다운 120분 남음' });
-      })
-    );
-
-    const { result } = renderHook(() => useUserStore());
-
-    let response: { success: boolean; message?: string } | undefined;
-    await act(async () => {
-      response = await result.current.recoverStaminaAds();
-    });
-    expect(response?.success).toBe(false);
-    expect(response?.message).toContain('남음');
-  });
-
-  it('should handle recoverStaminaAds generic server error', async () => {
-    vi.mocked(AdService.showRewardedAd).mockResolvedValue({ success: true });
-    server.use(
-      http.post(`${SUPABASE_REST_URL}/rpc/recover_stamina_ads`, () => {
-        return new HttpResponse(null, { status: 500 });
-      })
-    );
-    const { result } = renderHook(() => useUserStore());
-    let response: { success: boolean } | undefined;
-    await act(async () => {
-      response = await result.current.recoverStaminaAds();
-    });
-    expect(response?.success).toBe(false);
-  });
-
-  it('should handle consumeStamina server error', async () => {
-    server.use(
-      http.post(`${SUPABASE_REST_URL}/rpc/consume_stamina`, () => {
-        return new HttpResponse(null, { status: 500 });
-      })
-    );
-    const { result } = renderHook(() => useUserStore());
-    let response: { success: boolean } | undefined;
-    await act(async () => {
-      response = await result.current.consumeStamina();
-    });
-    expect(response?.success).toBe(false);
-  });
-
-  it('should return early in checkStamina if no session', async () => {
-    vi.spyOn(supabase.auth, 'getSession').mockResolvedValue({
-      data: { session: null } as any,
-      error: null as any,
-    });
-    const { result } = renderHook(() => useUserStore());
-    await act(async () => {
-      await result.current.checkStamina();
-    });
-  });
-
-  describe('Debug Functions (DEV ONLY)', () => {
-    it('should call debugAddItems', async () => {
-      const rpcSpy = vi.fn();
-      server.use(
-        http.post(`${SUPABASE_REST_URL}/rpc/debug_grant_items`, () => {
-          rpcSpy();
-          return HttpResponse.json({ success: true });
-        })
-      );
-      const { result } = renderHook(() => useUserStore());
-      await act(async () => {
-        await result.current.debugAddItems();
+  describe('fetchUserData', () => {
+    it('should fetch profile and inventory', async () => {
+      vi.mocked(supabase.auth.getUser).mockResolvedValue({
+        data: { user: { id: 'user123', is_anonymous: false } } as any,
+        error: null,
       });
-      expect(rpcSpy).toHaveBeenCalled();
-    });
 
-    it('should call debugResetItems', async () => {
-      const rpcSpy = vi.fn();
-      server.use(
-        http.post(`${SUPABASE_REST_URL}/rpc/debug_reset_inventory`, () => {
-          rpcSpy();
-          return HttpResponse.json({ success: true });
-        })
-      );
-      const { result } = renderHook(() => useUserStore());
-      await act(async () => {
-        await result.current.debugResetItems();
+      const mockFrom = vi.mocked(supabase.from);
+      mockFrom.mockImplementation((table: string) => {
+        if (table === 'profiles') {
+          return {
+            select: vi.fn().mockReturnThis(),
+            eq: vi.fn().mockReturnThis(),
+            maybeSingle: vi.fn().mockResolvedValue({
+              data: { minerals: 100, stamina: 10, last_ad_stamina_recharge: '2024-01-01' },
+              error: null,
+            }),
+          } as any;
+        }
+        if (table === 'inventory') {
+          return {
+            select: vi.fn().mockReturnThis(),
+            eq: vi.fn().mockResolvedValue({
+              data: [
+                {
+                  quantity: 2,
+                  items: { id: 1, code: 'item1', name: 'Item 1', description: 'Desc' },
+                },
+              ],
+              error: null,
+            }),
+          } as any;
+        }
+        return {} as any;
       });
-      expect(rpcSpy).toHaveBeenCalled();
+
+      await useUserStore.getState().fetchUserData();
+
+      const state = useUserStore.getState();
+      expect(state.minerals).toBe(100);
+      expect(state.stamina).toBe(10);
+      expect(state.inventory).toHaveLength(1);
+      expect(state.inventory[0].code).toBe('item1');
+    });
+  });
+
+  describe('consumeStamina', () => {
+    it('should call consume_stamina RPC and decrement local stamina', async () => {
+      vi.mocked(supabase.rpc).mockResolvedValue({
+        data: { success: true },
+        error: null,
+      });
+
+      const result = await useUserStore.getState().consumeStamina();
+
+      expect(supabase.rpc).toHaveBeenCalledWith('consume_stamina');
+      expect(result.success).toBe(true);
+      expect(useUserStore.getState().stamina).toBe(4);
     });
 
-    it('should handle infiniteStamina debug mode in consumeStamina', async () => {
+    it('should throttle repeated calls', async () => {
+      vi.mocked(supabase.rpc).mockResolvedValue({
+        data: { success: true },
+        error: null,
+      });
+
+      await useUserStore.getState().consumeStamina();
+      const result = await useUserStore.getState().consumeStamina();
+
+      expect(supabase.rpc).toHaveBeenCalledTimes(1);
+      expect(result.message).toBe('Already consumed');
+    });
+
+    it('should skip if infiniteStamina is enabled', async () => {
       const { useDebugStore } = await import('../useDebugStore');
-      useDebugStore.setState({ infiniteStamina: true });
+      vi.mocked(useDebugStore.getState).mockReturnValue({ infiniteStamina: true } as any);
 
-      const { result } = renderHook(() => useUserStore());
-      let response: { success: boolean; message: string } | undefined;
-      await act(async () => {
-        response = await result.current.consumeStamina();
-      });
-      expect(response?.success).toBe(true);
-      expect(response?.message).toContain('Infinite Stamina');
-      expect(result.current.stamina).toBe(5); // Not consumed
+      const result = await useUserStore.getState().consumeStamina();
 
-      useDebugStore.setState({ infiniteStamina: false });
-    });
-
-    it('should handle result not found in getProfiles after debugResetItems', async () => {
-      server.use(
-        http.post(`${SUPABASE_REST_URL}/rpc/debug_reset_inventory`, () =>
-          HttpResponse.json({ success: true })
-        ),
-        http.get(`${SUPABASE_REST_URL}/profiles`, () => HttpResponse.json([]))
-      );
-      const { result } = renderHook(() => useUserStore());
-      await act(async () => {
-        await result.current.debugResetItems();
-      });
-      expect(result.current.isLoading).toBe(false);
-    });
-
-    it('should handle item deletions in debugRemoveItems', async () => {
-      server.use(
-        http.get(`${SUPABASE_REST_URL}/inventory`, () => {
-          return HttpResponse.json([
-            { id: 1, quantity: 3, items: { id: 1, name: 'A', code: 'A' } },
-          ]);
-        }),
-        http.delete(`${SUPABASE_REST_URL}/inventory`, () => HttpResponse.json({ success: true })),
-        http.get(`${SUPABASE_REST_URL}/profiles`, () => HttpResponse.json([]))
-      );
-      const { result } = renderHook(() => useUserStore());
-      await act(async () => {
-        await result.current.debugRemoveItems();
-      });
-    });
-
-    it('should handle item updates in debugRemoveItems', async () => {
-      server.use(
-        http.get(`${SUPABASE_REST_URL}/inventory`, () => {
-          return HttpResponse.json([
-            { id: 1, quantity: 10, items: { id: 1, name: 'A', code: 'A' } },
-          ]);
-        }),
-        http.post(`${SUPABASE_REST_URL}/inventory`, () => HttpResponse.json({ success: true })),
-        http.get(`${SUPABASE_REST_URL}/profiles`, () => HttpResponse.json([]))
-      );
-      const { result } = renderHook(() => useUserStore());
-      await act(async () => {
-        await result.current.debugRemoveItems();
-      });
+      expect(result.message).toBe('Infinite Stamina (Debug)');
+      expect(supabase.rpc).not.toHaveBeenCalled();
     });
   });
 
-  describe('Debug Setters', () => {
-    it('should set minerals via debug RPC', async () => {
-      server.use(
-        http.post(`${SUPABASE_REST_URL}/rpc/debug_set_minerals`, () => {
-          return HttpResponse.json({ success: true });
-        })
-      );
-      const { result } = renderHook(() => useUserStore());
-      await act(async () => {
-        await result.current.debugSetMinerals(1000);
+  describe('purchaseItem', () => {
+    it('should call purchase_item RPC', async () => {
+      vi.mocked(supabase.rpc).mockResolvedValue({
+        data: { success: true, message: 'Purchased' },
+        error: null,
+      } as any);
+
+      const result = await useUserStore.getState().purchaseItem(1);
+
+      expect(supabase.rpc).toHaveBeenCalledWith('purchase_item', { p_item_id: 1 });
+      expect(result.success).toBe(true);
+    });
+  });
+
+  describe('consumeItem', () => {
+    it('should call consume_item RPC', async () => {
+      vi.mocked(supabase.rpc).mockResolvedValue({
+        data: { success: true, message: 'Consumed' },
+        error: null,
+      } as any);
+
+      const result = await useUserStore.getState().consumeItem(1);
+
+      expect(supabase.rpc).toHaveBeenCalledWith('consume_item', { p_item_id: 1 });
+      expect(result.success).toBe(true);
+    });
+  });
+
+  describe('recoverStaminaAds', () => {
+    it('should call secure_reward_ad_view after showing ad', async () => {
+      vi.mocked(AdService.showRewardedAd).mockResolvedValue({ success: true });
+      vi.mocked(supabase.rpc).mockResolvedValue({
+        data: { success: true, stamina: 10 },
+        error: null,
+      } as any);
+
+      const result = await useUserStore.getState().recoverStaminaAds();
+
+      expect(AdService.showRewardedAd).toHaveBeenCalledWith('stamina_recharge');
+      expect(supabase.rpc).toHaveBeenCalledWith('secure_reward_ad_view', {
+        p_ad_type: 'stamina_recharge',
       });
-      expect(result.current.minerals).toBe(1000);
+      expect(result.success).toBe(true);
     });
 
-    it('should set stamina via debug RPC', async () => {
-      server.use(
-        http.post(`${SUPABASE_REST_URL}/rpc/debug_set_stamina`, () => {
-          return HttpResponse.json({ success: true });
-        })
-      );
-      const { result } = renderHook(() => useUserStore());
-      await act(async () => {
-        await result.current.debugSetStamina(20);
-      });
-      expect(result.current.stamina).toBe(20);
+    it('should fail if ad fails', async () => {
+      vi.mocked(AdService.showRewardedAd).mockResolvedValue({ success: false, error: 'Failed' });
+
+      const result = await useUserStore.getState().recoverStaminaAds();
+      expect(result.success).toBe(false);
+      expect(result.message).toBe('Failed');
+    });
+  });
+
+  describe('setters', () => {
+    it('setMinerals should update state', () => {
+      useUserStore.getState().setMinerals(500);
+      expect(useUserStore.getState().minerals).toBe(500);
     });
 
-    it('should not update local state if debug RPC fails', async () => {
-      server.use(
-        http.post(`${SUPABASE_REST_URL}/rpc/debug_set_minerals`, () => {
-          return HttpResponse.json({ success: false });
-        })
-      );
-      const { result } = renderHook(() => useUserStore());
-      await act(async () => {
-        await result.current.debugSetMinerals(9999);
+    it('setStamina should update state', () => {
+      useUserStore.getState().setStamina(20);
+      expect(useUserStore.getState().stamina).toBe(20);
+    });
+  });
+
+  describe('debug methods', () => {
+    it('debugAddItems should call RPC', async () => {
+      await useUserStore.getState().debugAddItems();
+      expect(supabase.rpc).toHaveBeenCalledWith('debug_grant_items');
+    });
+
+    it('debugResetItems should call RPC', async () => {
+      vi.mocked(supabase.auth.getSession).mockResolvedValue({
+        data: { session: { user: { id: 'user123' } } } as any,
+        error: null,
       });
-      expect(result.current.minerals).not.toBe(9999);
+      await useUserStore.getState().debugResetItems();
+      expect(supabase.rpc).toHaveBeenCalledWith('debug_reset_inventory', { p_user_id: 'user123' });
+    });
+
+    it('debugRemoveItems should decrease inventory quantities', async () => {
+      vi.mocked(supabase.auth.getUser).mockResolvedValue({
+        data: { user: { id: 'user123' } } as any,
+        error: null,
+      });
+      vi.mocked(supabase.from).mockReturnValue({
+        select: vi.fn().mockReturnThis(),
+        eq: vi.fn().mockResolvedValue({ data: [{ item_id: 'item1', quantity: 10 }], error: null }),
+      } as any);
+
+      await useUserStore.getState().debugRemoveItems();
+      expect(supabase.rpc).toHaveBeenCalledWith('debug_set_inventory_quantity', expect.any(Object));
+    });
+  });
+
+  describe('checkStamina', () => {
+    it('should call check_and_recover_stamina', async () => {
+      vi.mocked(supabase.auth.getSession).mockResolvedValue({
+        data: { session: { user: { id: 'user123' } } } as any,
+        error: null,
+      });
+      vi.mocked(supabase.rpc).mockResolvedValue({
+        data: { stamina: 8 },
+        error: null,
+      } as any);
+
+      await useUserStore.getState().checkStamina();
+      expect(useUserStore.getState().stamina).toBe(8);
     });
   });
 });

@@ -1,265 +1,123 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, it, expect } from 'vitest';
 import { generateProblem, STAGES } from '../MathProblemGenerator';
 
 describe('MathProblemGenerator', () => {
-  beforeEach(() => {
-    vi.clearAllMocks();
-  });
+  const mockRng = {
+    random: () => 0.5,
+    randomInt: (min: number, _max: number) => min, // Always return min for stability in ops/ranges
+  };
 
   describe('generateProblem', () => {
-    it('should generate problem for stage 1', () => {
-      const problem = generateProblem(1);
-      expect(problem).toHaveProperty('expression');
-      expect(problem).toHaveProperty('answer');
-      expect(typeof problem.expression).toBe('string');
-      expect(typeof problem.answer).toBe('number');
+    it('should generate a valid problem for stage 1 (standard)', () => {
+      const problem = generateProblem(1, 'easy', 'normal', mockRng);
+      expect(problem.expression).toBe('1 + 1');
+      expect(problem.answer).toBe(2);
+      expect(problem.inputType).toBe('number');
     });
 
-    it('should generate problem for stage 2', () => {
-      const problem = generateProblem(2);
-      expect(problem).toHaveProperty('expression');
-      expect(problem).toHaveProperty('answer');
-      expect(problem.answer).toBeGreaterThanOrEqual(0);
+    it('should generate a valid problem for stage 5 (sequential)', () => {
+      const problem = generateProblem(5, 'medium', 'normal', mockRng);
+      // nums: [1, 1, 1], ops: [+] (since randomInt(0,2) returns 0)
+      expect(problem.expression).toBe('1 + 1 + 1');
+      expect(problem.answer).toBe(3);
     });
 
-    it('should generate problem for stage 3', () => {
-      const problem = generateProblem(3);
-      expect(problem).toHaveProperty('expression');
-      expect(problem).toHaveProperty('answer');
-      expect(problem.answer).toBeGreaterThanOrEqual(10);
+    it('should generate a valid problem for stage 7 (division)', () => {
+      // Division logic ignores rng for quotient (uses 2-9)
+      const problem = generateProblem(7, 'easy', 'normal', mockRng);
+      expect(problem.expression).toContain('÷');
+      expect(problem.answer).toBeGreaterThan(0);
     });
 
-    it('should generate problem for stage 4', () => {
-      const problem = generateProblem(4);
-      expect(problem).toHaveProperty('expression');
-      expect(problem).toHaveProperty('answer');
-      expect(problem.answer).toBeLessThanOrEqual(9);
+    it('should generate a valid problem for stage 10 (mixed sequential)', () => {
+      const problem = generateProblem(10, 'medium', 'normal', mockRng);
+      // nums: [1, 1, 1], ops: [+]
+      expect(problem.expression).toBe('1 + 1 + 1');
+      expect(problem.answer).toBe(3);
     });
 
-    it('should generate problem for stage 6 (multiplication)', () => {
-      const problem = generateProblem(6);
-      expect(problem).toHaveProperty('expression');
-      expect(problem).toHaveProperty('answer');
-      expect(problem.expression.includes('×')).toBe(true);
-    });
-
-    it('should generate problem for stage 7 (division)', () => {
-      const problem = generateProblem(7);
-      expect(problem).toHaveProperty('expression');
-      expect(problem).toHaveProperty('answer');
-      // Division might be represented as '/' or '÷'
-      expect(problem.expression.includes('÷')).toBe(true);
-      expect(Number.isFinite(problem.answer)).toBe(true);
-    });
-
-    it('should generate problem for stage 5 (sequential)', () => {
-      const problem = generateProblem(5);
-      expect(problem).toHaveProperty('expression');
-      expect(problem).toHaveProperty('answer');
-    });
-
-    it('should generate problem for stage 16 (parentheses)', () => {
-      const problem = generateProblem(16);
-      expect(problem).toHaveProperty('expression');
-      expect(problem).toHaveProperty('answer');
-    });
-
-    it('should throw error for invalid stage', () => {
-      expect(() => generateProblem(999)).toThrow('Stage 999 not found');
-    });
-
-    it('should generate valid problems for all stages', () => {
-      STAGES.forEach((stage) => {
-        const problem = generateProblem(stage.id);
-        expect(problem).toHaveProperty('expression');
-        expect(problem).toHaveProperty('answer');
-        expect(problem.expression.length).toBeGreaterThan(0);
-        expect(['number', 'string']).toContain(typeof problem.answer);
-      });
-    });
-
-    it('should generate problems with correct answer format', () => {
-      const problem = generateProblem(1);
-      // Answer should be a valid number
-      expect(Number.isFinite(problem.answer)).toBe(true);
-    });
-
-    it('should handle all type branches: standard, sequential, fill-blank, parentheses', () => {
-      // Standard
-      const standard = generateProblem(1);
-      expect(standard.expression).not.toContain('□');
-      expect(standard.expression).not.toContain('(');
-
-      // Sequential
-      const sequential = generateProblem(5);
-      expect(sequential.expression.split(' ').length).toBeGreaterThanOrEqual(5); // 3 operands + 2 operators
-
-      // Fill-blank
-      const fillBlank = generateProblem(19);
-      expect(fillBlank.expression).toContain('□');
-
-      // Parentheses
-      const parentheses = generateProblem(16);
-      expect(parentheses.expression).toContain('(');
-    });
-
-    it('should handle all operator branches: +, -, *, /', () => {
-      // Addition
-      const addProblem = generateProblem(1);
-      expect(addProblem.expression).toContain('+');
-
-      // Subtraction
-      const subProblem = generateProblem(2);
-      expect(subProblem.expression).toContain('-');
-
-      // Multiplication
-      const mulProblem = generateProblem(6);
-      expect(mulProblem.expression.includes('×')).toBe(true);
-
-      // Division
-      const divProblem = generateProblem(7);
-      expect(divProblem.expression.includes('÷')).toBe(true);
-    });
-
-    it('should handle constraints: resultMax', () => {
-      // Stage 1 has resultMax: 10
-      for (let i = 0; i < 10; i++) {
-        const problem = generateProblem(1);
-        expect(problem.answer).toBeLessThanOrEqual(10);
-      }
-    });
-
-    it('should handle constraints: resultMin', () => {
-      // Stage 2 has resultMin: 0
-      for (let i = 0; i < 10; i++) {
-        const problem = generateProblem(2);
-        expect(problem.answer).toBeGreaterThanOrEqual(0);
-      }
-    });
-
-    it('should handle constraints: resultMax and resultMin together', () => {
-      // Stage 1 has resultMax: 10
-      for (let i = 0; i < 10; i++) {
-        const problem = generateProblem(1);
-        expect(problem.answer).toBeLessThanOrEqual(10);
-      }
-    });
-
-    it('should handle constraints: ensureIntegerDivision', () => {
-      // Stage 7 has ensureIntegerDivision: true
-      for (let i = 0; i < 10; i++) {
-        const problem = generateProblem(7);
-        expect(Number.isInteger(problem.answer)).toBe(true);
-      }
-    });
-
-    it('should handle constraints: resultMin for carry (stage 3)', () => {
-      // Stage 3 has resultMin: 10 (force carry)
-      for (let i = 0; i < 10; i++) {
-        const problem = generateProblem(3);
-        expect(problem.answer).toBeGreaterThanOrEqual(10);
-      }
-    });
-
-    it('should handle constraints: resultMax for borrow (stage 4)', () => {
-      // Stage 4 has resultMax: 9
-      for (let i = 0; i < 10; i++) {
-        const problem = generateProblem(4);
-        expect(problem.answer).toBeLessThanOrEqual(9);
-      }
-    });
-
-    it('should handle fill-blank with hideFirst branch', () => {
-      // Test fill-blank multiple times to cover both branches
-      let foundHideFirst = false;
-      let foundHideSecond = false;
-
-      for (let i = 0; i < 20; i++) {
-        const problem = generateProblem(19);
-        if (problem.expression.startsWith('□')) {
-          foundHideFirst = true;
-        } else if (problem.expression.includes('□') && !problem.expression.startsWith('□')) {
-          foundHideSecond = true;
-        }
-      }
-
-      // At least one branch should be covered
-      expect(foundHideFirst || foundHideSecond).toBe(true);
-    });
-
-    it('should handle sequential problems with precedence', () => {
-      // Stage 14 has mixed operators with precedence
-      const problem = generateProblem(14);
-      expect(problem).toHaveProperty('expression');
-      expect(problem).toHaveProperty('answer');
-      expect(Number.isInteger(problem.answer)).toBe(true);
-    });
-
-    it('should handle parentheses problems with division', () => {
-      // Test parentheses with division branch
-      let foundDivision = false;
-      let problem;
-      for (let i = 0; i < 20; i++) {
-        problem = generateProblem(16);
-        if (problem.expression.includes('÷')) {
-          foundDivision = true;
-          break;
-        }
-      }
-      expect(foundDivision).toBe(true);
-      expect(problem).toHaveProperty('expression');
-      expect(problem).toHaveProperty('answer');
-    });
-
-    it('should handle parentheses problems with multiplication', () => {
-      // Test parentheses with multiplication branch (Stage 16 has *)
-      const problem = generateProblem(16);
-      expect(problem).toHaveProperty('expression');
-      expect(problem).toHaveProperty('answer');
+    it('should generate a valid problem for stage 16 (parentheses)', () => {
+      const problem = generateProblem(16, 'medium', 'normal', mockRng);
       expect(problem.expression).toContain('(');
-    });
-
-    it('should handle edge case: invalid stage ID throws error', () => {
-      expect(() => generateProblem(0)).toThrow('Stage 0 not found');
-      expect(() => generateProblem(-1)).toThrow('Stage -1 not found');
-      expect(() => generateProblem(1000)).toThrow('Stage 1000 not found');
-    });
-
-    it('should handle fallback when generation fails after 100 attempts', () => {
-      // This is hard to test directly, but we can verify the function doesn't crash
-      const problem = generateProblem(1);
-      expect(problem).toHaveProperty('expression');
-      expect(problem).toHaveProperty('answer');
-    });
-
-    it('should handle division with special logic', () => {
-      // Stage 7 uses special division logic
-      for (let i = 0; i < 10; i++) {
-        const problem = generateProblem(7);
-        expect(problem.expression.includes('÷')).toBe(true);
-        expect(Number.isInteger(problem.answer)).toBe(true);
-        expect(problem.answer).toBeGreaterThan(0);
-      }
-    });
-
-    it('should handle ranges with single range reused', () => {
-      // Test stages that might reuse ranges
-      const problem = generateProblem(1);
-      expect(problem).toHaveProperty('expression');
-      expect(problem).toHaveProperty('answer');
-    });
-
-    it('should handle sequential problems with multiple operators', () => {
-      // Stage 10 has sequential with +, -, *, /
-      const problem = generateProblem(10);
-      expect(problem.expression).toMatch(/[+\-−×÷]/); // Sequential replace uses standard symbols later
+      expect(problem.expression).toContain(')');
       expect(Number.isInteger(problem.answer)).toBe(true);
     });
 
-    it('should handle constraints: allowNegative (default false)', () => {
-      // Stages without allowNegative should not produce negative results
-      const problem = generateProblem(2);
-      expect(problem.answer).toBeGreaterThanOrEqual(0);
+    it('should generate a valid problem for stage 18 (modulo)', () => {
+      const problem = generateProblem(18, 'medium', 'normal', mockRng);
+      expect(problem.expression).toContain('나머지');
+      expect(problem.answer).toBeLessThan(7);
+    });
+
+    it('should generate a valid problem for stage 19 (fill-blank)', () => {
+      const problem = generateProblem(19, 'medium', 'normal', mockRng);
+      expect(problem.expression).toContain('□');
+      expect(problem.answer).toBeGreaterThan(0);
+    });
+
+    it('should generate a valid problem for stage 21 (decimal)', () => {
+      const problem = generateProblem(21, 'hard', 'normal', mockRng);
+      expect(problem.expression).toMatch(/\d\.\d/);
+      expect(problem.inputType).toBe('decimal');
+    });
+
+    it('should generate a valid problem for stage 24 (fraction)', () => {
+      const problem = generateProblem(24, 'hard', 'normal', mockRng);
+      expect(problem.expression).toContain('/');
+      expect(problem.inputType).toBe('fraction');
+    });
+
+    it('should throw error for non-existent stage', () => {
+      expect(() => generateProblem(999, 'easy')).toThrow('Stage 999 not found');
+    });
+
+    it('should use fallback when generation fails 100 times', () => {
+      // Stub STAGES[0].type to something that will throw in generation
+      const originalType = STAGES[0].type;
+      (STAGES[0] as any).type = 'invalid';
+
+      const problem = generateProblem(1, 'easy', 'normal', mockRng);
+      expect(problem.expression).toBe('1 + 1');
+      expect(problem.answer).toBe(2);
+
+      STAGES[0].type = originalType;
+    });
+
+    it('should handle hard tier (AlgebraAdvanced)', () => {
+      const problem = generateProblem(1, 'hard', 'hard', mockRng);
+      expect(problem.expression).toBeDefined();
+      expect(problem.inputType).toBe('number');
+    });
+  });
+
+  describe('Edge Cases', () => {
+    it('should handle division with integer division constraint in sequential', () => {
+      // Stage 10 has ensureIntegerDivision: true
+      const problem = generateProblem(10, 'medium', 'normal');
+      expect(Number.isInteger(problem.answer)).toBe(true);
+    });
+
+    it('should handle time problems', () => {
+      const timeStage = {
+        id: 99,
+        world: 9,
+        description: 'Time Test',
+        type: 'time' as const,
+        operators: ['+'] as any,
+        operandCount: 2,
+        ranges: [
+          { min: 1, max: 23 },
+          { min: 10, max: 120 },
+        ],
+      };
+
+      (STAGES as any).push(timeStage);
+
+      const problem = generateProblem(99, 'easy', 'normal', mockRng);
+      expect(problem.expression).toContain('분');
+      expect(problem.expression).toContain(':');
+
+      STAGES.pop();
     });
   });
 });

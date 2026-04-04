@@ -6,44 +6,65 @@ import { FooterNav } from '../components/FooterNav';
 import { UnderDevelopmentModal } from '../components/UnderDevelopmentModal';
 import { Toast } from '../components/Toast';
 import { urls } from '../utils/navigation';
+import { useNotificationStore, Notification } from '../stores/useNotificationStore';
 import './NotificationPage.css';
-
-export type NotificationType = 'record_broken' | 'challenge';
-
-export interface Notification {
-  id: string;
-  type: NotificationType;
-  title: string;
-  message: string;
-  timestamp: Date;
-  read: boolean;
-  category?: string;
-  subCategory?: string;
-  level?: number;
-  challengerName?: string;
-  challengeId?: string;
-}
 
 export function NotificationPage() {
   const navigate = useNavigate();
-  const [notifications, setNotifications] = useState<Notification[]>([]);
-  const [loading, setLoading] = useState(true);
+  const { notifications, loading, unreadCount, markAsRead, markAllAsRead, setLoading } =
+    useNotificationStore();
+
   const [showUnderDevelopment, setShowUnderDevelopment] = useState(true);
   const [showToast, setShowToast] = useState(false);
   const [toastMessage] = useState('');
 
   useEffect(() => {
-    // 알림 데이터는 백엔드 서버 없이 사용할 수 없으므로 빈 배열로 설정
+    // 알림 데이터는 백엔드 서버 없이 사용할 수 없으므로 목 데이터로 설정
+    const mockNotifications: Notification[] = [
+      {
+        id: '1',
+        type: 'record_broken',
+        title: '신기록 달성!',
+        message: '산수 World 1 - 덧셈 1단계에서 새로운 신기록을 세웠습니다!',
+        timestamp: new Date(Date.now() - 1000 * 60 * 5), // 5분 전
+        read: false,
+        category: 'math',
+        subCategory: 'basic',
+        level: 1,
+      },
+      {
+        id: '2',
+        type: 'challenge',
+        title: '도전장 도착',
+        message: 'Tangerine23님이 당신에게 산수 대결 도전장을 보냈습니다.',
+        timestamp: new Date(Date.now() - 1000 * 60 * 60 * 2), // 2시간 전
+        read: false,
+        challengerName: 'Tangerine23',
+        challengeId: 'challenge-123',
+      },
+      {
+        id: '3',
+        type: 'record_broken',
+        title: '기록 경신 알림',
+        message: '도형 World 1 - 각도 2단계 기록이 다른 플레이어에 의해 깨졌습니다.',
+        timestamp: new Date(Date.now() - 1000 * 60 * 60 * 24), // 1일 전
+        read: true,
+        category: 'math',
+        subCategory: 'geometry',
+        level: 2,
+      },
+    ];
+
+    if (notifications.length === 0) {
+      useNotificationStore.getState().setNotifications(mockNotifications);
+    }
     setLoading(false);
-    setNotifications([]);
-  }, []);
+  }, [setLoading, notifications.length]);
 
   const handleNotificationClick = (notification: Notification) => {
     // 알림 읽음 처리
     if (!notification.read) {
-      setNotifications((prev) =>
-        prev.map((n) => (n.id === notification.id ? { ...n, read: true } : n))
-      );
+      markAsRead(notification.id);
     }
 
     // 알림 타입에 따라 다른 페이지로 이동
@@ -52,7 +73,6 @@ export function NotificationPage() {
     } else if (notification.type === 'record_broken') {
       // 기록이 깨진 레벨로 이동
       if (notification.category && notification.subCategory && notification.level) {
-        // notification.category는 산 ID (예: 'math'), subCategory는 카테고리 ID (예: '기초')
         const mountain = notification.category || 'math';
         const world = 'World1'; // 기본 월드
         const category = notification.subCategory;
@@ -65,10 +85,6 @@ export function NotificationPage() {
         );
       }
     }
-  };
-
-  const handleMarkAllAsRead = () => {
-    setNotifications((prev) => prev.map((n) => ({ ...n, read: true })));
   };
 
   const formatTimeAgo = (date: Date): string => {
@@ -85,7 +101,7 @@ export function NotificationPage() {
     return date.toLocaleDateString('ko-KR');
   };
 
-  const getNotificationIcon = (type: NotificationType): string => {
+  const getNotificationIcon = (type: string): string => {
     switch (type) {
       case 'record_broken':
         return '🏆';
@@ -95,8 +111,6 @@ export function NotificationPage() {
         return '🔔';
     }
   };
-
-  const unreadCount = notifications.filter((n) => !n.read).length;
 
   return (
     <>
@@ -113,7 +127,7 @@ export function NotificationPage() {
             <div className="notification-header">
               <h1 className="notification-title">알림</h1>
               {unreadCount > 0 && (
-                <button className="mark-all-read-button" onClick={handleMarkAllAsRead}>
+                <button className="mark-all-read-button" onClick={markAllAsRead}>
                   모두 읽음
                 </button>
               )}
@@ -135,6 +149,7 @@ export function NotificationPage() {
                     key={notification.id}
                     className={`notification-item ${notification.read ? 'read' : 'unread'}`}
                     onClick={() => handleNotificationClick(notification)}
+                    data-testid={`notification-item-${notification.id}`}
                   >
                     <div className="notification-icon">
                       {getNotificationIcon(notification.type)}

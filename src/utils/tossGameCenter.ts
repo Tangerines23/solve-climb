@@ -98,12 +98,12 @@ function collectDebugInfo() {
   } catch {
     return {
       timestamp: new Date().toISOString(),
-      isTossApp: isTossAppEnvironment(),
-      isLocalDev: isLocalDevelopment(),
+      isTossApp: false,
+      isLocalDev: false,
       operationalEnvironment: 'error',
       userAgent: win?.navigator?.userAgent || 'unknown',
       location: win?.location?.href || 'unknown',
-      hasReactNativeWebView: !!(win as unknown as Record<string, unknown>)?.ReactNativeWebView,
+      hasReactNativeWebView: false,
     };
   }
 }
@@ -111,7 +111,7 @@ function collectDebugInfo() {
 /**
  * 에러 타입 감지 및 사용자 친화적 메시지 생성
  */
-function getErrorMessage(error: unknown): string {
+export function getErrorMessage(error: unknown): string {
   if (!(error instanceof Error)) {
     return '리더보드를 열 수 없습니다. 잠시 후 다시 시도해주세요.';
   }
@@ -123,8 +123,7 @@ function getErrorMessage(error: unknown): string {
   if (
     errorMessage.includes('network') ||
     errorMessage.includes('fetch') ||
-    errorMessage.includes('connection') ||
-    errorMessage.includes('timeout')
+    errorMessage.includes('connection')
   ) {
     return '네트워크 연결을 확인해주세요. 잠시 후 다시 시도해주세요.';
   }

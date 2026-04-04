@@ -97,7 +97,9 @@ export function RoadmapPage() {
     }
 
     const updateGauge = () => {
-      const pathContainer = document.querySelector('.roadmap-mountain-path') as HTMLElement;
+      const pathContainer = document.querySelector(
+        '.roadmap-mountain-path-container'
+      ) as HTMLElement;
       if (!pathContainer || !stats) return;
 
       if (isLinearScale) return;
@@ -163,7 +165,7 @@ export function RoadmapPage() {
     };
 
     const resizeObserver = new ResizeObserver(updateGauge);
-    const observerTarget = document.querySelector('.roadmap-mountain-path');
+    const observerTarget = document.querySelector('.roadmap-mountain-path-container');
     if (observerTarget) resizeObserver.observe(observerTarget);
 
     updateGauge();

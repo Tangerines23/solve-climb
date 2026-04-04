@@ -261,10 +261,14 @@ describe('useLevelProgressStore', () => {
       expect(result.current.rankings['all-time-total']).toEqual(mockHof);
     });
 
-    it('should handle realtime subscription lifecycle', () => {
+    it('should handle realtime subscription lifecycle and events', () => {
+      let eventCallback: any;
       const mockUnsubscribe = vi.fn();
       const mockSubscribe = vi.fn().mockReturnValue({ unsubscribe: mockUnsubscribe });
-      const mockOn = vi.fn().mockReturnThis();
+      const mockOn = vi.fn().mockImplementation((_type, _filter, callback) => {
+        eventCallback = callback;
+        return { subscribe: mockSubscribe };
+      });
 
       vi.mocked(supabase.channel).mockReturnValue({
         on: mockOn,
@@ -278,13 +282,113 @@ describe('useLevelProgressStore', () => {
       });
 
       expect(supabase.channel).toHaveBeenCalledWith('ranking-updates');
-      expect(mockOn).toHaveBeenCalledWith('postgres_changes', expect.anything(), expect.anything());
+
+      // Simulate realtime update
+      act(() => {
+        eventCallback({ new: { id: 'test' } });
+      });
+      expect(result.current.rankingVersion).toBe(1);
 
       act(() => {
         result.current.unsubscribeFromRankingUpdates();
       });
 
       expect(mockUnsubscribe).toHaveBeenCalled();
+    });
+
+    it('should handle syncProgress error', async () => {
+      vi.mocked(supabase.from).mockImplementation(() => {
+        throw new Error('Sync failed');
+      });
+      const { result } = renderHook(() => useLevelProgressStore());
+
+      await act(async () => {
+        await result.current.syncProgress();
+      });
+      expect(mockShowToast).toHaveBeenCalled();
+    });
+
+    it('should handle resetProgress failure', async () => {
+      vi.mocked(supabase.rpc).mockImplementationOnce(() =>
+        createMockRpcBuilder({ success: false, message: 'Reset failed' })
+      );
+      const { result } = renderHook(() => useLevelProgressStore());
+
+      await act(async () => {
+        await result.current.resetProgress();
+      });
+      expect(mockShowToast).toHaveBeenCalled();
+    });
+
+    it('should handle resetProgress exception', async () => {
+      vi.mocked(supabase.rpc).mockImplementationOnce(() => {
+        throw new Error('Exception');
+      });
+      const { result } = renderHook(() => useLevelProgressStore());
+
+      await act(async () => {
+        await result.current.resetProgress();
+      });
+      expect(mockShowToast).toHaveBeenCalled();
+    });
+
+    it('should reconcile when server has higher score', async () => {
+      const { result } = renderHook(() => useLevelProgressStore());
+      const mockRecords = [
+        {
+          world_id: world,
+          category_id: 'arithmetic',
+          subject_id: 'addition',
+          level: 1,
+          mode_code: 1,
+          best_score: 1000, // Higher than default 0
+          updated_at: '2024-01-01',
+        },
+      ];
+
+      vi.mocked(supabase.from).mockReturnValue({
+        select: vi.fn().mockReturnThis(),
+        eq: vi.fn().mockReturnThis(),
+        then: vi.fn().mockImplementation((cb) => cb({ data: mockRecords, error: null })),
+      } as any);
+
+      await act(async () => {
+        await result.current.syncProgress();
+      });
+
+      const entry = result.current.getLevelProgress(world, 'arithmetic_addition')[0];
+      expect(entry.bestScore['time-attack']).toBe(1000);
+    });
+  });
+
+  describe('Additional score tests', () => {
+    it('should return default record if no progress exists in getLevelProgress', () => {
+      const { result } = renderHook(() => useLevelProgressStore());
+      expect(result.current.getLevelProgress('none', 'none')).toEqual([]);
+    });
+
+    it('should handle updateBestScore failure', async () => {
+      vi.mocked(supabase.rpc).mockImplementationOnce(() =>
+        createMockRpcBuilder(null, { message: 'Failure' })
+      );
+      const { result } = renderHook(() => useLevelProgressStore());
+
+      await act(async () => {
+        await result.current.updateBestScore(world, category, 1, 'time-attack', 100);
+      });
+      // Rollback logic is internal but we check it doesn't crash
+    });
+
+    it('should handle clearLevel exception', async () => {
+      vi.mocked(supabase.rpc).mockImplementationOnce(() => {
+        throw new Error('Exception');
+      });
+      const { result } = renderHook(() => useLevelProgressStore());
+
+      await act(async () => {
+        await result.current.clearLevel(world, category, 1, 'time-attack', 100);
+      });
+      expect(result.current.isLevelCleared(world, category, 1)).toBe(false);
     });
   });
 });

@@ -59,7 +59,7 @@ export const QuizAnswerArea = React.memo(
             <div className={`answer-input-wrapper ${isError ? 'is-error' : ''}`}>
               <input
                 ref={inputRef}
-                type={isJapaneseQuiz || forceSystemKeyboard ? 'text' : 'number'}
+                type={isJapaneseQuiz || forceSystemKeyboard ? 'text' : 'text'}
                 inputMode={isJapaneseQuiz ? 'text' : forceSystemKeyboard ? 'text' : 'numeric'}
                 value={isError ? displayValue : answerInput}
                 onChange={(e) => {
@@ -68,16 +68,13 @@ export const QuizAnswerArea = React.memo(
                   const value = e.target.value;
 
                   if (isJapaneseQuiz) {
-                    const filtered = value.replace(/[^a-zA-Z]/g, '');
-                    if (filtered.length <= 20) {
-                      setAnswerInput(filtered);
-                      setDisplayValue(filtered);
-                    }
+                    const filtered = value.replace(/[^a-zA-Z]/g, '').slice(0, 20);
+                    setAnswerInput(filtered);
+                    setDisplayValue(filtered);
                   } else if (forceSystemKeyboard) {
-                    if (value.length <= 10) {
-                      setAnswerInput(value);
-                      setDisplayValue(value);
-                    }
+                    const truncated = value.slice(0, 10);
+                    setAnswerInput(truncated);
+                    setDisplayValue(truncated);
                   } else {
                     if (allowNegative) {
                       let newValue = value.replace(/[^0-9-]/g, '');
@@ -89,16 +86,14 @@ export const QuizAnswerArea = React.memo(
                       if (minusCount > 1) {
                         newValue = '-' + newValue.replace(/-/g, '');
                       }
-                      if (newValue.length <= 6) {
-                        setAnswerInput(newValue);
-                        setDisplayValue(newValue);
-                      }
+                      const truncated = newValue.slice(0, 6);
+                      setAnswerInput(truncated);
+                      setDisplayValue(truncated);
                     } else {
                       const newValue = value.replace(/[^0-9]/g, '');
-                      if (newValue.length <= 6) {
-                        setAnswerInput(newValue);
-                        setDisplayValue(newValue);
-                      }
+                      const truncated = newValue.slice(0, 6);
+                      setAnswerInput(truncated);
+                      setDisplayValue(truncated);
                     }
                   }
                 }}

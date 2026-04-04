@@ -553,6 +553,8 @@ export function generateProblem(
         problem = generateTimeProblem(stage, rng);
       } else if (stage.type === 'modulo') {
         problem = generateModuloProblem(stage, rng);
+      } else {
+        throw new Error(`Unknown stage type: ${stage.type}`);
       }
       isValid = true;
     } catch {

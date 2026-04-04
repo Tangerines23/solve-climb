@@ -1,98 +1,68 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { logger } from '../logger';
+import { logger, LogLevel } from '../logger';
+import { useErrorLogStore } from '../../stores/useErrorLogStore';
 
-// Mock import.meta.env
-vi.mock('../logger', async () => {
-  const actual = await vi.importActual('../logger');
-  return {
-    ...actual,
-  };
-});
-
-describe('logger', () => {
+describe('logger.util', () => {
   beforeEach(() => {
-    vi.clearAllMocks();
     vi.spyOn(console, 'log').mockImplementation(() => {});
-    vi.spyOn(console, 'error').mockImplementation(() => {});
-    vi.spyOn(console, 'warn').mockImplementation(() => {});
     vi.spyOn(console, 'info').mockImplementation(() => {});
+    vi.spyOn(console, 'warn').mockImplementation(() => {});
+    vi.spyOn(console, 'error').mockImplementation(() => {});
     vi.spyOn(console, 'debug').mockImplementation(() => {});
+    vi.spyOn(console, 'group').mockImplementation(() => {});
+    vi.spyOn(console, 'groupEnd').mockImplementation(() => {});
+    vi.spyOn(console, 'table').mockImplementation(() => {});
   });
 
   afterEach(() => {
     vi.restoreAllMocks();
   });
 
-  it('should log info messages', () => {
-    logger.info('test', 'test message');
-    // 개발 환경에서만 로그가 출력되므로, 실제 호출 여부는 환경에 따라 다름
-    // 테스트는 함수가 호출되는지만 확인
-    expect(typeof logger.info).toBe('function');
-  });
+  it('should log info messages and add to store', () => {
+    const addLogSpy = vi.spyOn(useErrorLogStore.getState(), 'addLog');
+    logger.info('TestContext', 'Test Message', { data: 1 });
 
-  it('should log error messages', () => {
-    logger.error('test', 'error message');
-    expect(console.error).toHaveBeenCalled();
-  });
-
-  it('should log warn messages', () => {
-    logger.warn('test', 'warn message');
-    expect(console.warn).toHaveBeenCalled();
+    expect(console.info).toHaveBeenCalled();
+    expect(addLogSpy).toHaveBeenCalledWith('info', 'Test Message', undefined, 'TestContext');
   });
 
   it('should log debug messages', () => {
-    logger.debug('test', 'debug message');
-    // 개발 환경에서만 로그가 출력되므로, 실제 호출 여부는 환경에 따라 다름
-    // 테스트는 함수가 호출되는지만 확인
-    expect(typeof logger.debug).toBe('function');
+    logger.debug('TestContext', 'Debug Message');
+    expect(console.debug).toHaveBeenCalled();
   });
 
-  it('should handle all log levels: DEBUG, INFO, WARN, ERROR', () => {
-    logger.debug('test', 'debug');
-    logger.info('test', 'info');
-    logger.warn('test', 'warn');
-    logger.error('test', 'error');
-
-    // All functions should be callable
-    expect(typeof logger.debug).toBe('function');
-    expect(typeof logger.info).toBe('function');
-    expect(typeof logger.warn).toBe('function');
-    expect(typeof logger.error).toBe('function');
+  it('should log warn messages', () => {
+    logger.warn('TestContext', 'Warn Message');
+    expect(console.warn).toHaveBeenCalled();
   });
 
-  it('should handle error with Error instance', () => {
-    const error = new Error('Test error');
-    error.stack = 'Error: Test error\n    at test.js:1:1';
-    logger.error('test', 'error message', error);
-
+  it('should log error messages with Error object', () => {
+    const error = new Error('Test Error');
+    logger.error('TestContext', 'Error Message', error);
     expect(console.error).toHaveBeenCalled();
   });
 
-  it('should handle error without Error instance', () => {
-    logger.error('test', 'error message', 'string error');
+  it('should log error messages without Error object', () => {
+    logger.error('TestContext', 'String Error Message', 'Some details');
     expect(console.error).toHaveBeenCalled();
   });
 
-  it('should handle error without stack trace', () => {
-    const error = new Error('Test error');
-    delete (error as unknown as { stack?: string }).stack;
-    logger.error('test', 'error message', error);
-
-    expect(console.error).toHaveBeenCalled();
+  it('should handle groups', () => {
+    logger.group('GroupContext', 'Group Label', () => {
+      logger.info('GroupContext', 'Inside Group');
+    });
+    expect(console.group).toHaveBeenCalledWith('[GroupContext] Group Label');
+    expect(console.groupEnd).toHaveBeenCalled();
   });
 
-  it('should handle group in development mode', () => {
-    const fn = vi.fn();
-    logger.group('test', 'group label', fn);
-
-    expect(fn).toHaveBeenCalled();
+  it('should handle tables', () => {
+    logger.table('TableContext', [{ id: 1 }]);
+    expect(console.group).toHaveBeenCalledWith('[TableContext] Table');
+    expect(console.table).toHaveBeenCalled();
   });
 
-  it('should handle table in development mode', () => {
-    const data = { key: 'value' };
-    logger.table('test', data);
-
-    // Function should execute without error
-    expect(typeof logger.table).toBe('function');
+  it('should log system messages via log()', () => {
+    logger.log('System Message', '#ff0000');
+    expect(console.log).toHaveBeenCalled();
   });
 });

@@ -144,4 +144,52 @@ describe('useDebugStore', () => {
     setSelectedResource(null);
     expect(useDebugStore.getState().selectedResource).toBeNull();
   });
+
+  it('should handle admin mode explicitly', () => {
+    const { setAdminMode } = useDebugStore.getState();
+
+    setAdminMode(true);
+    expect(useDebugStore.getState().isAdminMode).toBe(true);
+
+    setAdminMode(false);
+    expect(useDebugStore.getState().isAdminMode).toBe(false);
+  });
+
+  it('should handle return floater visibility', () => {
+    const { setShowReturnFloater } = useDebugStore.getState();
+
+    setShowReturnFloater(true);
+    expect(useDebugStore.getState().showReturnFloater).toBe(true);
+
+    setShowReturnFloater(false);
+    expect(useDebugStore.getState().showReturnFloater).toBe(false);
+  });
+
+  it('should handle network simulation and visual guides', () => {
+    const {
+      setNetworkLatency,
+      setForceNetworkError,
+      setShowSafeAreaGuide,
+      setShowComponentBorders,
+      setBypassLevelLock,
+    } = useDebugStore.getState();
+
+    setNetworkLatency(100);
+    expect(useDebugStore.getState().networkLatency).toBe(100);
+
+    setNetworkLatency(-10); // Should be capped at 0
+    expect(useDebugStore.getState().networkLatency).toBe(0);
+
+    setForceNetworkError(true);
+    expect(useDebugStore.getState().forceNetworkError).toBe(true);
+
+    setShowSafeAreaGuide(true);
+    expect(useDebugStore.getState().showSafeAreaGuide).toBe(true);
+
+    setShowComponentBorders(true);
+    expect(useDebugStore.getState().showComponentBorders).toBe(true);
+
+    setBypassLevelLock(true);
+    expect(useDebugStore.getState().bypassLevelLock).toBe(true);
+  });
 });

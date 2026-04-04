@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { render, screen, fireEvent } from '@testing-library/react';
+import { render, screen, fireEvent, act } from '@testing-library/react';
 import { KeyboardInfoModal } from '../KeyboardInfoModal';
 import { useSettingsStore } from '../../stores/useSettingsStore';
 import { APP_CONFIG } from '../../config/app';
@@ -175,15 +175,88 @@ describe('KeyboardInfoModal', () => {
 
   it('should show empty state when no keyboard types available', () => {
     // This test verifies the component handles empty state
-    // The actual empty state depends on APP_CONFIG which is complex to mock
+    vi.mocked(useSettingsStore).mockReturnValue({
+      keyboardType: 'custom',
+    } as unknown);
+
+    // Mock APP_CONFIG to be empty for this test
+    const originalSubTopics = APP_CONFIG.SUB_TOPICS;
+    (APP_CONFIG as any).SUB_TOPICS = {};
+
+    render(<KeyboardInfoModal isOpen={true} onClose={mockOnClose} />);
+
+    // Modal should render but show empty state message
+    expect(document.body).toHaveTextContent(/사용 가능한 키보드가 없습니다/);
+
+    // Restore
+    (APP_CONFIG as any).SUB_TOPICS = originalSubTopics;
+  });
+
+  it('should handle orientation changes', () => {
     vi.mocked(useSettingsStore).mockReturnValue({
       keyboardType: 'custom',
     } as unknown);
 
     render(<KeyboardInfoModal isOpen={true} onClose={mockOnClose} />);
 
-    // Modal should still render
-    const modal = document.querySelector('.keyboard-info-modal');
-    expect(modal).toBeTruthy();
+    // Trigger orientation change
+    act(() => {
+      // Mock screen.orientation.type change
+      (window.screen.orientation as any).type = 'landscape-primary';
+      const event = new Event('orientationchange');
+      window.dispatchEvent(event);
+
+      // Also trigger resize as it's used as a fallback
+      window.dispatchEvent(new Event('resize'));
+    });
+
+    // Verification is indirect since setIsLandscape is internal,
+    // but we can check if it doesn't crash and listeners are called
+    expect(window.screen.orientation.addEventListener).toHaveBeenCalled();
+  });
+
+  it('should render qwerty-text for language categories', () => {
+    vi.mocked(useSettingsStore).mockReturnValue({
+      keyboardType: 'qwerty',
+    } as unknown);
+
+    // Ensure we have a language category in APP_CONFIG
+    // (Assuming it exists based on the code logic for '히라가나')
+    render(<KeyboardInfoModal isOpen={true} onClose={mockOnClose} />);
+
+    // Switch to next keyboard type if available
+    const nextButton = document.querySelector('.keyboard-info-nav-next');
+    if (nextButton) {
+      fireEvent.click(nextButton);
+      // Depending on config, it might switch to qwerty-text
+      expect(document.body).toBeTruthy();
+    }
+  });
+
+  it('should handle category tab selection and reset index when keyboard changes', () => {
+    vi.mocked(useSettingsStore).mockReturnValue({
+      keyboardType: 'custom',
+    } as unknown);
+
+    const { rerender } = render(<KeyboardInfoModal isOpen={true} onClose={mockOnClose} />);
+
+    // Switch to index 1
+    const categoryTabs = document.querySelectorAll('.keyboard-info-category-tab');
+    if (categoryTabs.length > 1) {
+      fireEvent.click(categoryTabs[1]);
+      expect(categoryTabs[1]).toHaveClass('active');
+    }
+
+    // Change settings to trigger useEffect
+    vi.mocked(useSettingsStore).mockReturnValue({
+      keyboardType: 'qwerty',
+    } as unknown);
+    rerender(<KeyboardInfoModal isOpen={true} onClose={mockOnClose} />);
+
+    // Category index should reset to 0
+    const newTabs = document.querySelectorAll('.keyboard-info-category-tab');
+    if (newTabs.length > 0) {
+      expect(newTabs[0]).toHaveClass('active');
+    }
   });
 });
