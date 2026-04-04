@@ -280,6 +280,10 @@ export function LevelSelectPage() {
             }}
           />
         </div>
+        {/* [Added] 빈 공간 클릭 시 시트 접기 위한 오버레이 */}
+        {isSheetExpanded && (
+          <div className="sheet-overlay" onClick={() => setIsSheetExpanded(false)} />
+        )}
       </div>
 
       {/* 하단 시트: 레벨 리스트 및 상세 정보 */}

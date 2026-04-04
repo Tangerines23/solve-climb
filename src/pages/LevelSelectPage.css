@@ -152,6 +152,18 @@
   padding-bottom: 200px;
 }
 
+/* 시트가 펼쳐졌을 때 상단 빈 공간 클릭 방지 및 접기용 오버레이 */
+.sheet-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 50;
+  background-color: rgba(0, 0, 0, 0.1); /* 미세한 어두움 효과 (선택사항) */
+  cursor: pointer;
+}
+
 /* 하단 시트 */
 .bottom-sheet {
   position: fixed;

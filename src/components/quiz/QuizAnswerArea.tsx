@@ -130,7 +130,10 @@ export const QuizAnswerArea = React.memo(
             </button>
           </>
         ) : (
-          <div className={`answer-input-wrapper ${isError ? 'is-error' : ''}`}>
+          <div
+            className={`answer-input-wrapper ${isError ? 'is-error' : ''}`}
+            data-vg-ignore="true"
+          >
             <div
               className={`answer-display ${inputAnimation} ${isError ? 'is-error' : ''} ${showFlash ? 'input-error-flash' : ''}`}
             >

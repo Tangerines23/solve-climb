@@ -55,7 +55,7 @@ function CustomKeypadComponent({
   };
 
   return (
-    <div className="custom-keypad">
+    <div className="custom-keypad" data-vg-ignore="true">
       <div className="keypad-row">
         <button className="keypad-key" onClick={() => handleNumberClick('1')} disabled={disabled}>
           1

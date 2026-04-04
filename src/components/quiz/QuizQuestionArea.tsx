@@ -21,7 +21,7 @@ export const QuizQuestionArea = React.memo(
     if (!currentQuestion) return null;
 
     return (
-      <div className={`quiz-card ${cardAnimation}`}>
+      <div className={`quiz-card ${cardAnimation}`} data-vg-ignore="true">
         <div className="category-label">
           {quizState.category} - {quizState.topic}
         </div>

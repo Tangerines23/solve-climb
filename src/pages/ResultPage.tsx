@@ -34,13 +34,20 @@ import { historyService } from '@/services/historyService';
 import { storageService, STORAGE_KEYS } from '@/services';
 
 export function ResultPage() {
-  const score = useQuizStore((state) => state.score);
-  const animationEnabled = useSettingsStore((state) => state.animationEnabled);
-  const clearLevel = useLevelProgressStore((state) => state.clearLevel);
-  const updateBestScore = useLevelProgressStore((state) => state.updateBestScore);
-  const { fetchUserData } = useUserStore();
+  const {
+    category: storeCategory,
+    world: storeWorld,
+    level: storeLevel,
+    gameMode: storeMode,
+    score: storeScore, // score -> storeScore로 명칭 변경하여 finalScore 계산에 활용
+  } = useQuizStore();
+  const { animationEnabled } = useSettingsStore();
+  const { clearLevel, updateBestScore, fetchRanking } = useLevelProgressStore();
+  const { rewardMinerals } = useUserStore();
+  const { showToast } = useToastStore();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
+
   const [scoreSubmitted, setScoreSubmitted] = useState(false);
   const [isNewRecord, setIsNewRecord] = useState(false);
   const [showConfetti, setShowConfetti] = useState(false);
@@ -50,9 +57,6 @@ export function ResultPage() {
   const [currentMasteryScore] = useState<number | null>(null);
   const [awardedBadges, setAwardedBadges] = useState<string[]>([]);
   const [_showBadgeNotification, setShowBadgeNotification] = useState(false);
-  const { fetchRanking } = useLevelProgressStore();
-  const { rewardMinerals } = useUserStore();
-  const { showToast } = useToastStore();
 
   const mountainParam = searchParams.get('mountain');
   const worldParam = validateWorldParam(searchParams.get('world'));
@@ -60,7 +64,7 @@ export function ResultPage() {
   const level = validateLevelParam(searchParams.get('level'), 20);
   const mode = validateModeParam(searchParams.get('mode'));
   const finalScore =
-    (validateNumberParam(searchParams.get('score'), 0, 1000000) ?? score) *
+    (validateNumberParam(searchParams.get('score'), 0, 1000000) ?? storeScore) *
     (searchParams.get('exhausted') === 'true' ? 0.8 : 1);
   const animatedScore = useCountUp(finalScore, animationEnabled ? 1500 : 0);
   const total = validateNumberParam(searchParams.get('total'), 0, 10000) ?? 0;
@@ -200,13 +204,12 @@ export function ResultPage() {
     total,
     correctCount,
     scoreSubmitted,
+    searchParams,
+    animationEnabled,
+    averageTime,
     clearLevel,
     updateBestScore,
     fetchRanking,
-    searchParams,
-    fetchUserData,
-    animationEnabled,
-    averageTime,
   ]);
 
   const [hasDoubled, setHasDoubled] = useState(false);
@@ -243,16 +246,45 @@ export function ResultPage() {
 
   const handleRetry = () => {
     const mountain = mountainParam || 'math';
-    if (!worldParam || !categoryParam || !mode || level === null) return;
-    navigate(
-      urls.quiz({
-        mountain,
-        world: worldParam,
-        category: categoryParam,
-        level: level,
-        mode: mode === 'time-attack' ? 'time-attack' : 'survival',
-      })
-    );
+    // URL 파라미터가 없으면 Store에서 가져옴 (보충 로직)
+    const finalWorld = worldParam || storeWorld;
+    const finalCategory = categoryParam || storeCategory;
+    const finalLevel = level !== null ? level : storeLevel;
+    const finalMode = mode || storeMode;
+
+    console.log('[ResultPage] handleRetry attempting with:', {
+      mountain,
+      finalWorld,
+      finalCategory,
+      finalMode,
+      finalLevel,
+    });
+
+    if (!finalWorld || !finalCategory || !finalMode || finalLevel === null) {
+      console.error('[ResultPage] handleRetry failed: Still missing critical params', {
+        worldParam,
+        storeWorld,
+        categoryParam,
+        storeCategory,
+        level,
+        storeLevel,
+        mode,
+        storeMode,
+      });
+      showToast('상태 정보를 불러올 수 없어 재시도에 실패했습니다.', 'error');
+      return;
+    }
+
+    const targetUrl = urls.quiz({
+      mountain,
+      world: finalWorld,
+      category: finalCategory,
+      level: finalLevel,
+      mode: finalMode === 'time-attack' ? 'time-attack' : 'survival',
+    });
+
+    console.log('[ResultPage] Navigating to:', targetUrl);
+    navigate(targetUrl);
   };
 
   const handleLevelSelect = () => {

@@ -113,6 +113,7 @@ function QwertyKeypadComponent({
       ref={containerRef}
       className={`qwerty-keypad ${mode === 'number' ? 'qwerty-keypad-number' : ''}`}
       data-mode={mode}
+      data-vg-ignore="true"
     >
       {layout.map((row, rowIndex) => (
         <div key={rowIndex} className="qwerty-keypad-row">

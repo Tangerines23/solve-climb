@@ -394,9 +394,6 @@ strong {
   --color-amber-400: #fbbf24;
   --color-amber-500: #f59e0b;
 
-  /* Cyan (Bright) */
-  --color-cyan-bright: #00f2fe;
-
   /* Ranking Metals */
   --color-rank-gold: #ffd700;
   --color-rank-silver: #c0c0c0;
@@ -443,6 +440,34 @@ strong {
   --glass-border: var(--border-glass);
   --glass-blur: var(--backdrop-blur);
   --glass-shadow: var(--shadow-glass);
+}
+
+/* --- Global Scrollbar Styling --- */
+/* Firefox */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255, 255, 255, 0.1) transparent;
+}
+
+/* Chrome, Edge, and Safari */
+*::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+*::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+*::-webkit-scrollbar-thumb {
+  background-color: rgba(255, 255, 255, 0.1);
+  border-radius: 10px;
+  border: 1px solid transparent;
+  background-clip: content-box;
+}
+
+*::-webkit-scrollbar-thumb:hover {
+  background-color: rgba(255, 255, 255, 0.2);
 }
 
 .glass-effect {
