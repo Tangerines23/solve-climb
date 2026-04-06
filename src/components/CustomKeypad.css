@@ -30,39 +30,40 @@
 
 .keypad-row-last .keypad-key-submit {
   aspect-ratio: 1;
-  height: clamp(72px, 16vw, 90px);
-  max-height: clamp(72px, 16vw, 90px);
-  min-height: clamp(72px, 16vw, 90px);
+  height: clamp(60px, 14vw, 76px);
+  max-height: clamp(60px, 14vw, 76px);
+  min-height: clamp(60px, 14vw, 76px);
 }
 
 .keypad-key {
   aspect-ratio: 1;
-  /* 큰 키보드 버튼 - 눌리는 영역 확대 */
-  height: clamp(72px, 16vw, 90px);
-  max-height: clamp(72px, 16vw, 90px);
-  min-height: clamp(72px, 16vw, 90px);
-  background-color: var(--color-gray-900);
-  border: none;
-  border-radius: var(--radius-lg);
+  /* 버튼 높이 통일 */
+  height: clamp(60px, 14vw, 76px);
+  max-height: clamp(60px, 14vw, 76px);
+  min-height: clamp(60px, 14vw, 76px);
+  background-color: var(--color-gray-900); /* 더 어두운 배경 */
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: var(--rounded-lg);
   color: var(--color-text-primary);
-  font-size: clamp(1.8rem, 4.5vw, 2.2rem);
-  font-weight: 600;
+  font-size: clamp(1.6rem, 4.5vw, 2rem);
+  font-weight: 700;
   cursor: pointer;
   transition:
     transform 0.1s cubic-bezier(0.2, 0, 0.4, 1),
-    background-color 0.1s ease;
+    background-color 0.1s ease,
+    box-shadow 0.1s ease;
   user-select: none;
   -webkit-tap-highlight-color: transparent;
   display: flex;
   align-items: center;
   justify-content: center;
-  box-shadow: none;
+  box-shadow: 0 4px 0 rgba(0, 0, 0, 0.3); /* 일관된 입체감 */
 }
 
 .keypad-key:active {
-  background-color: rgba(255, 255, 255, 0.1);
-  transform: scale(0.95);
-  box-shadow: none;
+  background-color: rgba(255, 255, 255, 0.12);
+  transform: translateY(2px); /* 살짝 눌리는 효과 */
+  box-shadow: 0 2px 0 rgba(0, 0, 0, 0.3);
 }
 
 .keypad-key:disabled {
@@ -102,16 +103,16 @@
   aspect-ratio: 1;
 }
 
-/* 터치 피드백 개선 - 큰 키보드 버튼 */
+/* 터치 피드백 개선 - 버튼 높이 동기화 */
 @media (hover: none) and (pointer: coarse) {
   .keypad-key {
-    min-height: clamp(72px, 16vw, 90px);
-    height: clamp(72px, 16vw, 90px);
+    min-height: clamp(60px, 14vw, 76px);
+    height: clamp(60px, 14vw, 76px);
   }
 
   .keypad-key-submit {
-    min-height: clamp(72px, 16vw, 90px);
-    height: clamp(72px, 16vw, 90px);
+    min-height: clamp(60px, 14vw, 76px);
+    height: clamp(60px, 14vw, 76px);
   }
 }
 

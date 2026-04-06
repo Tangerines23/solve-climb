@@ -117,18 +117,20 @@ function QuizCardComponent({
         currentSurvivalDuration={SURVIVAL_QUESTION_TIME}
       />
 
-      <div className="quiz-content">
-        <QuizQuestionArea quizState={quizState} quizAnimations={quizAnimations} />
+      <div className={`quiz-card ${quizAnimations.cardAnimation}`} data-vg-ignore="true">
+        <div className="quiz-content-inner">
+          <QuizQuestionArea quizState={quizState} quizAnimations={quizAnimations} />
 
-        <QuizAnswerArea
-          quizState={quizState}
-          quizAnimations={quizAnimations}
-          inputRef={inputRef}
-          setAnswerInput={setAnswerInput}
-          setDisplayValue={setDisplayValue}
-          handleSubmit={handleSubmit}
-          effectiveInputPaused={effectiveInputPaused}
-        />
+          <QuizAnswerArea
+            quizState={quizState}
+            quizAnimations={quizAnimations}
+            inputRef={inputRef}
+            setAnswerInput={setAnswerInput}
+            setDisplayValue={setDisplayValue}
+            handleSubmit={handleSubmit}
+            effectiveInputPaused={effectiveInputPaused}
+          />
+        </div>
 
         <QuizFloatingFeedback
           quizAnimations={quizAnimations}
@@ -139,17 +141,17 @@ function QuizCardComponent({
           exitConfirmTimeoutRef={exitConfirmTimeoutRef}
           isExhausted={isExhausted}
         />
-
-        <QuizInputSection
-          quizState={quizState}
-          quizHandlers={quizHandlers}
-          effectiveInputPaused={effectiveInputPaused}
-          allowNegative={allowNegative}
-          handleSubmit={handleSubmit}
-          isError={isError}
-          isSubmitting={isSubmitting}
-        />
       </div>
+
+      <QuizInputSection
+        quizState={quizState}
+        quizHandlers={quizHandlers}
+        effectiveInputPaused={effectiveInputPaused}
+        allowNegative={allowNegative}
+        handleSubmit={handleSubmit}
+        isError={isError}
+        isSubmitting={isSubmitting}
+      />
     </>
   );
 }
