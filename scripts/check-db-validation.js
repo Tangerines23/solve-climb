@@ -56,37 +56,19 @@ async function runDeepConsistencyChecks() {
   );
 
   if (masteryError) {
-    // If RPC doesn't exist, we fallback to a simplified check for first 10 users via JS
-    console.warn('⚠️  RPC "check_mastery_consistency" not found, falling back to basic check.');
-    const { data: profiles } = await supabase
-      .from('profiles')
-      .select('id, total_mastery_score')
-      .limit(5);
-    for (const profile of profiles || []) {
-      const { data: records } = await supabase
-        .from('user_level_records')
-        .select('best_score')
-        .eq('user_id', profile.id);
-      const sum = (records || []).reduce((acc, r) => acc + r.best_score, 0);
-      if (sum !== profile.total_mastery_score) {
-        logs.push(
-          `❌ Mastery Inconsistency for user ${profile.id}: Profile has ${profile.total_mastery_score}, Records sum to ${sum}`
-        );
-        failed = true;
-      }
-    }
+    console.error('❌ Error calling "check_mastery_consistency" RPC:', masteryError.message);
+    failed = true;
   } else if (masteryCheck && masteryCheck.length > 0) {
     masteryCheck.forEach((err) => {
-      logs.push(`❌ Mastery Inconsistency: ${err.message}`);
+      logs.push(
+        `❌ Mastery Inconsistency for user ${err.user_id} (${err.nickname}): ${err.message}`
+      );
       failed = true;
     });
   }
 
   // 2. Orphan User Level Records Check
-  await supabase
-    .from('user_level_records')
-    .select('user_id')
-    .limit(1); // Check if we can even join/query
+  await supabase.from('user_level_records').select('user_id').limit(1); // Check if we can even join/query
 
   // Real orphan check usually needs a left join which we can't easily do via JS client without a custom RPC
   // So we skip or use a custom RPC if available.

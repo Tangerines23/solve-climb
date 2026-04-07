@@ -34,6 +34,7 @@ DROP FUNCTION IF EXISTS public.debug_delete_dummy_user(uuid) CASCADE;
 DROP FUNCTION IF EXISTS public.debug_reset_level_progress(uuid, text, text) CASCADE;
 DROP FUNCTION IF EXISTS public.debug_run_play_scenario(uuid, text, text, integer, integer, integer, integer, text) CASCADE;
 DROP FUNCTION IF EXISTS public.purchase_item(integer) CASCADE;
+DROP FUNCTION IF EXISTS public.check_mastery_consistency() CASCADE;
 
 -- 2. HARDENED SD FUNCTIONS WITH SET search_path = ''
 
@@ -178,6 +179,124 @@ $function$;
 
 DROP TRIGGER IF EXISTS tr_check_profile_update_security ON public.profiles;
 CREATE TRIGGER tr_check_profile_update_security BEFORE UPDATE ON public.profiles FOR EACH ROW EXECUTE FUNCTION public.check_profile_update_security();
+
+-- 2.6 check_mastery_consistency (Secure auditor for CI)
+CREATE OR REPLACE FUNCTION public.check_mastery_consistency()
+ RETURNS TABLE (out_user_id uuid, out_nickname text, out_profile_score integer, out_records_sum bigint, out_message text)
+ LANGUAGE plpgsql
+ SECURITY DEFINER
+ SET search_path = pg_catalog, public
+AS $function$
+BEGIN
+    RETURN QUERY
+    SELECT 
+        p.id, 
+        p.nickname, 
+        p.total_mastery_score::integer,
+        COALESCE((SELECT sum(ulr.best_score::bigint) FROM public.user_level_records ulr WHERE ulr.user_id = p.id), 0::bigint)::bigint,
+        (('Inconsistency detected: profile='::text || p.total_mastery_score::text || ', records='::text || COALESCE((SELECT sum(ulr.best_score::bigint) FROM public.user_level_records ulr WHERE ulr.user_id = p.id), 0::bigint)::text))::text
+    FROM public.profiles p
+    WHERE p.total_mastery_score::bigint != COALESCE((SELECT sum(ulr.best_score::bigint) FROM public.user_level_records ulr WHERE ulr.user_id = p.id), 0::bigint)::bigint;
+END;
+$function$;
+
+-- 2.7 get_ranking_v2 (Hardened)
+CREATE OR REPLACE FUNCTION public.get_ranking_v2(
+    p_category TEXT,
+    p_period TEXT,
+    p_type TEXT,
+    p_limit INTEGER DEFAULT 50
+)
+RETURNS TABLE (
+    out_user_id UUID,
+    out_nickname TEXT,
+    out_score BIGINT,
+    out_rank BIGINT
+) 
+LANGUAGE plpgsql
+SECURITY DEFINER
+SET search_path = pg_catalog, public
+AS $$
+BEGIN
+    IF p_period = 'weekly'::text THEN
+        RETURN QUERY
+        SELECT 
+            p.id as out_user_id,
+            coalesce(p.nickname, '익명 등반가'::text) as out_nickname,
+            CASE 
+                WHEN p_type = 'time-attack'::text THEN p.weekly_score_timeattack::BIGINT
+                WHEN p_type = 'survival'::text THEN p.weekly_score_survival::BIGINT
+                ELSE p.weekly_score_total::BIGINT
+            END as out_score,
+            rank() OVER (
+                ORDER BY (
+                    CASE 
+                        WHEN p_type = 'time-attack'::text THEN p.weekly_score_timeattack::bigint
+                        WHEN p_type = 'survival'::text THEN p.weekly_score_survival::bigint
+                        ELSE p.weekly_score_total::bigint
+                    END
+                ) DESC
+            ) as out_rank
+        FROM public.profiles p
+        WHERE (
+            CASE 
+                WHEN p_type = 'time-attack'::text THEN p.weekly_score_timeattack::bigint
+                WHEN p_type = 'survival'::text THEN p.weekly_score_survival::bigint
+                ELSE p.weekly_score_total::bigint
+            END
+        ) > 0::bigint
+        AND p_category IS NOT NULL
+        ORDER BY out_score DESC
+        LIMIT (p_limit::bigint);
+    ELSE
+        IF p_type = 'total'::text THEN
+            RETURN QUERY
+            WITH user_mastery AS (
+                SELECT gr.user_id, sum(gr.score::bigint) as total_mastery
+                FROM public.game_records gr
+                WHERE gr.category = p_category::text
+                GROUP BY gr.user_id
+            )
+            SELECT 
+                um.user_id as out_user_id,
+                coalesce(p.nickname, '익명 등반가'::text) as out_nickname,
+                um.total_mastery::BIGINT as out_score,
+                rank() OVER (ORDER BY um.total_mastery::bigint DESC) as out_rank
+            FROM user_mastery um
+            LEFT JOIN public.profiles p ON um.user_id = p.id
+            ORDER BY out_score DESC
+            LIMIT (p_limit::bigint);
+        ELSE
+            RETURN QUERY
+            SELECT 
+                p.id as out_user_id,
+                coalesce(p.nickname, '익명 등반가'::text) as out_nickname,
+                CASE 
+                    WHEN p_type = 'time-attack'::text THEN p.best_score_timeattack::BIGINT
+                    ELSE p.best_score_survival::BIGINT
+                END as out_score,
+                rank() OVER (
+                    ORDER BY (
+                        CASE 
+                            WHEN p_type = 'time-attack'::text THEN p.best_score_timeattack::bigint
+                            ELSE p.best_score_survival::bigint
+                        END
+                    ) DESC
+                ) as out_rank
+            FROM public.profiles p
+            WHERE (
+                CASE 
+                    WHEN p_type = 'time-attack'::text THEN p.best_score_timeattack::bigint
+                    ELSE p.best_score_survival::bigint
+                END
+            ) > 0::bigint
+            AND p_category IS NOT NULL
+            ORDER BY out_score DESC
+            LIMIT (p_limit::bigint);
+        END IF;
+    END IF;
+END;
+$$;
 
 -- 3. RLS SECURITY TIGHTENING
 
