@@ -23,7 +23,8 @@ interface DebugState {
     | 'visual'
     | 'macro'
     | 'progression'
-    | 'dummy';
+    | 'dummy'
+    | 'scenario';
 
   // 무한 모드
   infiniteStamina: boolean;

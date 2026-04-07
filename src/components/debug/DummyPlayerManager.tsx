@@ -50,22 +50,23 @@ export const DummyPlayerManager: React.FC = () => {
     setIsLoading(true);
     setMessage(null);
     try {
-      const randSuffix = Math.floor(Math.random() * 10000);
-      const nickname = `${type === 'newbie' ? '🌱' : type === 'regular' ? '👤' : '🔥'} 더미-${randSuffix}`;
+      const timestamp = Date.now().toString().slice(-6);
+      const nickname = `${type === 'newbie' ? '🌱' : type === 'regular' ? '👤' : '🔥'} 더미-${timestamp}`;
 
-      const { error } = await supabase.rpc('debug_create_persona_player', {
+      const { data, error } = await supabase.rpc('debug_create_persona_player', {
         p_nickname: nickname,
         p_persona_type: type,
       });
 
       if (error) throw error;
+      if (data && !data.success) throw new Error(data.message || '생성 실패');
 
       setMessage({ type: 'success', text: `더미 플레이어 ${nickname} 생성 완료!` });
       fetchDummyPlayers();
     } catch (err: unknown) {
       setMessage({
         type: 'error',
-        text: `생성 실패: ${err instanceof Error ? err.message : String(err)}`,
+        text: `생성 실패: ${err instanceof Error ? err.message : typeof err === 'object' ? JSON.stringify(err) : String(err)}`,
       });
     } finally {
       setIsLoading(false);
@@ -87,7 +88,7 @@ export const DummyPlayerManager: React.FC = () => {
         } catch (err: unknown) {
           setMessage({
             type: 'error',
-            text: `삭제 실패: ${err instanceof Error ? err.message : String(err)}`,
+            text: `삭제 실패: ${err instanceof Error ? err.message : typeof err === 'object' ? JSON.stringify(err) : String(err)}`,
           });
         } finally {
           setIsLoading(false);
@@ -112,7 +113,7 @@ export const DummyPlayerManager: React.FC = () => {
         } catch (err: unknown) {
           setMessage({
             type: 'error',
-            text: `삭제 실패: ${err instanceof Error ? err.message : String(err)}`,
+            text: `삭제 실패: ${err instanceof Error ? err.message : typeof err === 'object' ? JSON.stringify(err) : String(err)}`,
           });
         } finally {
           setIsLoading(false);

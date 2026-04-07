@@ -59,18 +59,18 @@ export const QuickActionsSection = React.memo(function QuickActionsSection() {
     hasProfile: boolean;
   } | null>(null);
 
-  // 스토어 값이 변경될 때 입력 필드 동기화 (포커스 중이 아닐 때만)
+  // 스토어 값이 변경될 때 입력 필드 동기화 (포커스 중이 아니거나 업데이트 중이 아닐 때만)
   useEffect(() => {
-    if (document.activeElement?.id !== 'debug-stamina-input') {
+    if (document.activeElement?.id !== 'debug-stamina-input' && !isUpdating) {
       setStaminaInput(stamina.toString());
     }
-  }, [stamina]);
+  }, [stamina, isUpdating]);
 
   useEffect(() => {
-    if (document.activeElement?.id !== 'debug-minerals-input') {
+    if (document.activeElement?.id !== 'debug-minerals-input' && !isUpdating) {
       setMineralsInput(minerals.toString());
     }
-  }, [minerals]);
+  }, [minerals, isUpdating]);
 
   useEffect(() => {
     const checkUser = async () => {
@@ -146,12 +146,18 @@ export const QuickActionsSection = React.memo(function QuickActionsSection() {
 
   const handleStaminaInputBlur = async () => {
     const numValue = parseInt(staminaInput, 10);
-    if (!isNaN(numValue) && numValue >= 0) {
+    if (!isNaN(numValue) && numValue >= 0 && numValue !== stamina) {
       setIsUpdating(true);
       await debugSetStamina(numValue);
       setIsUpdating(false);
     } else {
       setStaminaInput(stamina.toString());
+    }
+  };
+
+  const handleStaminaKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Enter') {
+      (e.target as HTMLInputElement).blur();
     }
   };
 
@@ -176,12 +182,18 @@ export const QuickActionsSection = React.memo(function QuickActionsSection() {
 
   const handleMineralsInputBlur = async () => {
     const numValue = parseInt(mineralsInput, 10);
-    if (!isNaN(numValue) && numValue >= 0) {
+    if (!isNaN(numValue) && numValue >= 0 && numValue !== minerals) {
       setIsUpdating(true);
       await debugSetMinerals(numValue);
       setIsUpdating(false);
     } else {
       setMineralsInput(minerals.toString());
+    }
+  };
+
+  const handleMineralsKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Enter') {
+      (e.target as HTMLInputElement).blur();
     }
   };
 
@@ -377,6 +389,7 @@ export const QuickActionsSection = React.memo(function QuickActionsSection() {
               value={staminaInput}
               onChange={(e) => handleStaminaInputChange(e.target.value)}
               onBlur={handleStaminaInputBlur}
+              onKeyDown={handleStaminaKeyDown}
               min="0"
               disabled={isUpdating}
             />
@@ -411,6 +424,7 @@ export const QuickActionsSection = React.memo(function QuickActionsSection() {
               value={mineralsInput}
               onChange={(e) => handleMineralsInputChange(e.target.value)}
               onBlur={handleMineralsInputBlur}
+              onKeyDown={handleMineralsKeyDown}
               min="0"
               disabled={isUpdating}
             />

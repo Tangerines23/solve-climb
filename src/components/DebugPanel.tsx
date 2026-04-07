@@ -14,6 +14,7 @@ import { MacroSection } from './debug/MacroSection';
 import { ProgressionSection } from './debug/ProgressionSection';
 import { AuthModeSection } from './debug/AuthModeSection';
 import { DummyRecordSection } from './debug/DummyRecordSection';
+import { DummyPlayerManager } from './debug/DummyPlayerManager';
 import './DebugPanel.css';
 
 function DebugPanel() {
@@ -36,7 +37,8 @@ function DebugPanel() {
     { id: 'visual', label: '📱 시각' },
     { id: 'macro', label: '🎬 매크로' },
     { id: 'progression', label: '🏆 진행' },
-    { id: 'dummy', label: '🎭 더미 생성' },
+    { id: 'dummy', label: '👥 더미 생성' },
+    { id: 'scenario', label: '🎭 시나리오' },
   ];
 
   const renderTabContent = () => {
@@ -70,6 +72,8 @@ function DebugPanel() {
       case 'progression':
         return <ProgressionSection />;
       case 'dummy':
+        return <DummyPlayerManager />;
+      case 'scenario':
         return <DummyRecordSection />;
       default:
         return <QuickActionsSection />;

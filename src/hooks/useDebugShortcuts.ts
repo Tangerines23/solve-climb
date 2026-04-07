@@ -13,7 +13,8 @@ import { useUserStore } from '../stores/useUserStore';
  * - -/_: 선택된 리소스 감소 (디버그 패널 활성 시)
  */
 export function useDebugShortcuts() {
-  const { isAdminMode, selectedResource, toggleDebugPanel, setSelectedResource } = useDebugStore();
+  const { isAdminMode, selectedResource, toggleDebugPanel, toggleAdminMode, setSelectedResource } =
+    useDebugStore();
 
   const { stamina, minerals, debugSetStamina, debugSetMinerals } = useUserStore();
 
@@ -25,13 +26,14 @@ export function useDebugShortcuts() {
         return;
       }
 
-      // Level 1: 백틱(`) 단독 키: Simple Dev (스태미너/미네랄 즉시 충전)
+      // Level 1: 백틱(`) 단독 키: Simple Dev (스태미너/미너럴 즉시 충전 + Admin 모드 토글)
       if (e.key === '`' && !e.ctrlKey && !e.shiftKey && !e.metaKey) {
         e.preventDefault();
-        // 스태미너 가득 채우고 minerals 1000 추가
+        // 스태미너 가득 채우고 minerals 1000 추가 + 어드민 모드 토글
         debugSetStamina(5);
         debugSetMinerals(minerals + 1000);
-        console.log('[DEBUG] Simple Dev triggered: Stamina=5, Minerals+=1000');
+        toggleAdminMode();
+        console.log('[DEBUG] Simple Dev triggered: Stamina=5, Minerals+=1000, AdminMode toggled');
         return;
       }
 
@@ -88,6 +90,7 @@ export function useDebugShortcuts() {
       stamina,
       minerals,
       toggleDebugPanel,
+      toggleAdminMode,
       setSelectedResource,
       debugSetStamina,
       debugSetMinerals,
