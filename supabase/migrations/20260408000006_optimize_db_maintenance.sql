@@ -99,6 +99,9 @@ BEGIN
 END;
 $$;
 
+REVOKE ALL ON FUNCTION public.get_ranking_v2(pg_catalog.text, pg_catalog.text, pg_catalog.text, pg_catalog.int4) FROM PUBLIC;
+GRANT EXECUTE ON FUNCTION public.get_ranking_v2(pg_catalog.text, pg_catalog.text, pg_catalog.text, pg_catalog.int4) TO authenticated;
+
 -- 3. Automated Session Cleanup (TTL)
 CREATE OR REPLACE FUNCTION public.cleanup_expired_sessions(p_days_to_keep pg_catalog.int4 DEFAULT 7)
 RETURNS pg_catalog.jsonb
@@ -122,6 +125,9 @@ BEGIN
     );
 END;
 $$;
+
+REVOKE ALL ON FUNCTION public.cleanup_expired_sessions(pg_catalog.int4) FROM PUBLIC;
+GRANT EXECUTE ON FUNCTION public.cleanup_expired_sessions(pg_catalog.int4) TO service_role;
 
 COMMENT ON FUNCTION public.cleanup_expired_sessions IS 'Purges game sessions older than X days to prevent database bloat from large JSON payloads.';
 

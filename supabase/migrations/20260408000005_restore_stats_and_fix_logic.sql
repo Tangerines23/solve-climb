@@ -175,7 +175,7 @@ BEGIN
   v_earned_minerals := pg_catalog.LEAST(pg_catalog.floor(v_calculated_score::NUMERIC / MINERALS_PER_SCORE), MAX_MINERALS);
   
   -- Bypass security triggers for profile update within RPC
-  PERFORM pg_catalog.set_config('app.bypass_profile_security', '1', true);
+  PERFORM pg_catalog.set_config('app.bypass_profile_security', 'true', true);
   
   UPDATE public.profiles 
   SET minerals = minerals + v_earned_minerals,
@@ -216,7 +216,7 @@ BEGIN
     )
   );
 
-  PERFORM pg_catalog.set_config('app.bypass_profile_security', '0', true);
+  PERFORM pg_catalog.set_config('app.bypass_profile_security', '', true);
 
   -- 11. Finalize Session
   v_prev_result := pg_catalog.jsonb_build_object(
@@ -238,6 +238,9 @@ BEGIN
   RETURN v_prev_result;
 END;
 $$;
+
+REVOKE ALL ON FUNCTION public.submit_game_result(pg_catalog.jsonb, pg_catalog.jsonb, pg_catalog.text, pg_catalog.jsonb, pg_catalog.uuid, pg_catalog.text, pg_catalog.text, pg_catalog.int4, pg_catalog.float8) FROM PUBLIC;
+GRANT EXECUTE ON FUNCTION public.submit_game_result(pg_catalog.jsonb, pg_catalog.jsonb, pg_catalog.text, pg_catalog.jsonb, pg_catalog.uuid, pg_catalog.text, pg_catalog.text, pg_catalog.int4, pg_catalog.float8) TO authenticated;
 
 -- 5. Restore utility functions
 CREATE OR REPLACE FUNCTION public.get_user_game_stats()
@@ -271,6 +274,9 @@ BEGIN
 END;
 $$;
 
+REVOKE ALL ON FUNCTION public.get_user_game_stats() FROM PUBLIC;
+GRANT EXECUTE ON FUNCTION public.get_user_game_stats() TO authenticated;
+
 CREATE OR REPLACE FUNCTION public.get_recent_game_logs(p_limit pg_catalog.int4 DEFAULT 10)
 RETURNS pg_catalog.jsonb
 LANGUAGE plpgsql
@@ -297,3 +303,6 @@ BEGIN
     RETURN v_logs;
 END;
 $$;
+
+REVOKE ALL ON FUNCTION public.get_recent_game_logs(pg_catalog.int4) FROM PUBLIC;
+GRANT EXECUTE ON FUNCTION public.get_recent_game_logs(pg_catalog.int4) TO authenticated;
