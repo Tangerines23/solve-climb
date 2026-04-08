@@ -43,7 +43,7 @@ BEGIN
                         ELSE p.weekly_score_total
                     END
                 ) DESC
-            ) as out_rank
+            )::pg_catalog.int8 as out_rank
         FROM public.profiles p
         WHERE (
             CASE 
@@ -51,7 +51,7 @@ BEGIN
                 WHEN p_type = 'survival' THEN p.weekly_score_survival
                 ELSE p.weekly_score_total
             END
-        ) > 0
+        ) > 0::pg_catalog.int8
         ORDER BY out_score DESC
         LIMIT p_limit;
     ELSE
@@ -62,9 +62,9 @@ BEGIN
                 p.id as out_user_id,
                 pg_catalog.COALESCE(p.nickname, '익명 등반가'::pg_catalog.text) as out_nickname,
                 p.total_mastery_score::pg_catalog.int8 as out_score,
-                pg_catalog.rank() OVER (ORDER BY p.total_mastery_score DESC) as out_rank
+                pg_catalog.rank() OVER (ORDER BY p.total_mastery_score DESC)::pg_catalog.int8 as out_rank
             FROM public.profiles p
-            WHERE p.total_mastery_score > 0
+            WHERE p.total_mastery_score > 0::pg_catalog.int8
             ORDER BY out_score DESC
             LIMIT p_limit;
         ELSE
@@ -84,14 +84,14 @@ BEGIN
                             ELSE p.best_score_survival
                         END
                     ) DESC
-                ) as out_rank
+                )::pg_catalog.int8 as out_rank
             FROM public.profiles p
             WHERE (
                 CASE 
                     WHEN p_type = 'time-attack' THEN p.best_score_timeattack
                     ELSE p.best_score_survival
                 END
-            ) > 0
+            ) > 0::pg_catalog.int8
             ORDER BY out_score DESC
             LIMIT p_limit;
         END IF;
@@ -113,8 +113,8 @@ DECLARE
     v_deleted_count pg_catalog.int4;
 BEGIN
     DELETE FROM public.game_sessions
-    WHERE created_at < (pg_catalog.now() - (p_days_to_keep || ' days')::pg_catalog.INTERVAL)
-    AND status IN ('completed', 'expired'); -- Only cleanup finished sessions
+    WHERE created_at < (pg_catalog.now() - (p_days_to_keep * '1 day'::pg_catalog.interval))
+    AND status IN ('completed'::pg_catalog.text, 'expired'::pg_catalog.text); -- Only cleanup finished sessions
 
     GET DIAGNOSTICS v_deleted_count = ROW_COUNT;
 

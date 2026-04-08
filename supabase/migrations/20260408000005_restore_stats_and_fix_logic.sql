@@ -56,7 +56,7 @@ CREATE OR REPLACE FUNCTION public.submit_game_result(
   p_level pg_catalog.int4 DEFAULT 1,
   p_avg_solve_time pg_catalog.float8 DEFAULT 0.0
 )
-RETURNS JSONB
+RETURNS pg_catalog.jsonb
 LANGUAGE plpgsql
 SECURITY DEFINER
 SET search_path = ''
@@ -172,7 +172,7 @@ BEGIN
   SELECT code INTO v_mode_code FROM public.mode_mapping WHERE mode_id = p_game_mode;
 
   -- 9. Update Minerals (Profile)
-  v_earned_minerals := pg_catalog.LEAST(pg_catalog.floor(v_calculated_score::NUMERIC / MINERALS_PER_SCORE), MAX_MINERALS);
+  v_earned_minerals := pg_catalog.LEAST(pg_catalog.floor(v_calculated_score::pg_catalog.numeric / MINERALS_PER_SCORE), MAX_MINERALS);
   
   -- Bypass security triggers for profile update within RPC
   PERFORM pg_catalog.set_config('app.bypass_profile_security', 'true', true);
@@ -187,10 +187,10 @@ BEGIN
   FROM public.user_level_records 
   WHERE user_id = v_user_id AND theme_code = v_theme_code AND level = p_level AND mode_code = v_mode_code;
 
-  v_new_best_score := pg_catalog.GREATEST(pg_catalog.COALESCE(v_old_best_score, 0), v_calculated_score);
+  v_new_best_score := pg_catalog.GREATEST(pg_catalog.COALESCE(v_old_best_score, 0::pg_catalog.int4), v_calculated_score);
   
-  IF v_new_best_score > pg_catalog.COALESCE(v_old_best_score, 0) THEN
-    v_score_diff := v_new_best_score - pg_catalog.COALESCE(v_old_best_score, 0);
+  IF v_new_best_score > pg_catalog.COALESCE(v_old_best_score, 0::pg_catalog.int4) THEN
+    v_score_diff := v_new_best_score - pg_catalog.COALESCE(v_old_best_score, 0::pg_catalog.int4);
     
     INSERT INTO public.user_level_records (user_id, theme_code, level, mode_code, best_score, updated_at)
     VALUES (v_user_id, v_theme_code, p_level, v_mode_code, v_new_best_score, pg_catalog.now())
@@ -211,7 +211,7 @@ BEGIN
       'game_mode', p_game_mode,
       'score', v_calculated_score,
       'correct_count', v_correct_count,
-      'new_record', v_new_best_score > pg_catalog.COALESCE(v_old_best_score, 0),
+      'new_record', v_new_best_score > pg_catalog.COALESCE(v_old_best_score, 0::pg_catalog.int4),
       'session_id', p_session_id
     )
   );
@@ -225,12 +225,12 @@ BEGIN
     'correct_count', v_correct_count,
     'total_questions', v_total_questions,
     'earned_minerals', v_earned_minerals,
-    'new_record', v_new_best_score > pg_catalog.COALESCE(v_old_best_score, 0),
+    'new_record', v_new_best_score > pg_catalog.COALESCE(v_old_best_score, 0::pg_catalog.int4),
     'tier_info', v_tier_info
   );
 
   UPDATE public.game_sessions 
-  SET status = 'completed', 
+  SET status = 'completed'::pg_catalog.text, 
       score = v_calculated_score,
       result = v_prev_result
   WHERE id = p_session_id;
