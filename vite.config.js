@@ -83,19 +83,14 @@ export default defineConfig(({ mode }) => {
     },
     // optimizeDeps 설정을 최적화하여 CJS/ESM 호환성 이슈를 해결합니다.
     optimizeDeps: {
-      include: [
-        'hoist-non-react-statics',
-        'react-is',
-        ...(isVercel ? [] : ['@apps-in-toss/web-framework']),
-      ],
+      include: ['hoist-non-react-statics', 'react-is'],
     },
-    // Vitest 설정
+    // Vitest base 설정
     test: {
       globals: true,
       environment: 'jsdom',
       setupFiles: './src/setupTests.ts',
       css: true,
-      // Playwright E2E 및 CT 테스트 제외
       exclude: [
         'node_modules/**',
         'dist/**',
@@ -105,28 +100,13 @@ export default defineConfig(({ mode }) => {
         '**/*.spec.{ts,tsx}',
         '**/*.ct.spec.tsx',
       ],
-      // 성능 최적화: 파일 병렬 실행 활성화
       fileParallelism: true,
-      // 동시 실행 테스트 수 제한 (메모리 최적화 - 안정성을 위해 5->3 하향 조정)
       maxConcurrency: 3,
-      // 저사양 환경을 고려하여 타임아웃 15초로 연장 (기본값 5초)
       testTimeout: 15000,
-      // 테스트 격리 모드 (성능 향상, 단일 테스트 파일 내에서는 격리 유지)
       isolate: true,
-      // Hybrid 실행 전략: localStorage 충돌 파일만 별도 프로세스에서 격리 실행
-      poolMatchGlobs: [
-        // localStorage 전역 Mock 사용 파일들 → forks pool (완전 격리)
-        ['**/storage.test.ts', 'forks'],
-        ['**/debugPresets.test.ts', 'forks'],
-        ['**/debugPresets.error.test.ts', 'forks'],
-        ['**/useHistoryData.test.ts', 'forks'],
-        // 나머지 모든 테스트 → threads pool (병렬 실행, 기본값)
-      ],
       coverage: {
-        provider: 'istanbul', // v8 → istanbul (안정성 우선)
-        // 리포트 생성: text(콘솔), json-summary(CI), lcov(Codecov), html(로컬 분석)
+        provider: 'istanbul',
         reporter: ['text', 'json-summary', 'lcov', 'html'],
-        // 커버리지 수집 범위 제한: 테스트 파일과 설정 파일 제외
         exclude: [
           'node_modules/',
           'src/setupTests.ts',
@@ -140,31 +120,20 @@ export default defineConfig(({ mode }) => {
           '**/mocks/**',
           '**/types/**',
           'src/main.tsx',
-          'src/App.tsx',
-          'src/AppContainer.tsx',
-          'src/components/debug/**', // 개발용 디버그 컴포넌트 제외
+          'src/componnets/debug/**',
         ],
-        // 커버리지 임계값 설정 (업계 표준: 80%)
         thresholds: {
           lines: 80,
           functions: 80,
           branches: 80,
           statements: 80,
         },
-        // 모든 소스 파일에 대한 커버리지 수집 (테스트되지 않은 파일도 포함)
         all: true,
-        // 100% 커버리지 파일은 수집 스킵 (분석 필요 시 false로 변경)
-        skipFull: false,
-        // 커버리지 디렉토리 자동 정리
         clean: true,
-        // 재실행 시 커버리지 디렉토리 정리
-        cleanOnRerun: true,
-        // 리포트 출력 경로
-        reportsDirectory: './coverage', // 명시적으로 root/coverage로 고정
+        reportsDirectory: './coverage',
       },
-      // JUnit 리포터 설정 (CI 연동용)
-      outputFile: './reports/test-results.xml', // 기본값: root/test-results.xml (junit 사용 시)
-      reporters: ['default', 'junit'], // console output + junit xml
+      outputFile: './reports/test-results.xml',
+      reporters: ['default', 'junit'],
     },
   };
 });
