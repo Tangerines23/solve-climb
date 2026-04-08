@@ -137,21 +137,21 @@ DECLARE
     v_week_start DATE := date_trunc('week', now())::DATE;
     v_tier JSONB;
 BEGIN
-    FOR v_rec IN (SELECT * FROM public.get_ranking_v2(NULL, 'weekly', 'total', 3)) LOOP
+    FOR v_rec IN (SELECT * FROM public.get_ranking_v2(NULL::TEXT, 'weekly'::TEXT, 'total'::TEXT, 3)) LOOP
         v_tier := public.calculate_tier(v_rec.out_score::BIGINT);
         INSERT INTO public.hall_of_fame (week_start_date, user_id, nickname, score, mode, rank, tier_level, tier_stars)
         VALUES (v_week_start, v_rec.out_user_id, v_rec.out_nickname, v_rec.out_score, 'total', v_rec.out_rank::INTEGER, (v_tier->>'level')::INTEGER, (v_tier->>'stars')::INTEGER)
         ON CONFLICT DO NOTHING;
     END LOOP;
 
-    FOR v_rec IN (SELECT * FROM public.get_ranking_v2(NULL, 'weekly', 'time-attack', 3)) LOOP
+    FOR v_rec IN (SELECT * FROM public.get_ranking_v2(NULL::TEXT, 'weekly'::TEXT, 'time-attack'::TEXT, 3)) LOOP
         v_tier := public.calculate_tier(v_rec.out_score::BIGINT);
         INSERT INTO public.hall_of_fame (week_start_date, user_id, nickname, score, mode, rank, tier_level, tier_stars)
         VALUES (v_week_start, v_rec.out_user_id, v_rec.out_nickname, v_rec.out_score, 'time-attack', v_rec.out_rank::INTEGER, (v_tier->>'level')::INTEGER, (v_tier->>'stars')::INTEGER)
         ON CONFLICT DO NOTHING;
     END LOOP;
 
-    FOR v_rec IN (SELECT * FROM public.get_ranking_v2(NULL, 'weekly', 'survival', 3)) LOOP
+    FOR v_rec IN (SELECT * FROM public.get_ranking_v2(NULL::TEXT, 'weekly'::TEXT, 'survival'::TEXT, 3)) LOOP
         v_tier := public.calculate_tier(v_rec.out_score::BIGINT);
         INSERT INTO public.hall_of_fame (week_start_date, user_id, nickname, score, mode, rank, tier_level, tier_stars)
         VALUES (v_week_start, v_rec.out_user_id, v_rec.out_nickname, v_rec.out_score, 'survival', v_rec.out_rank::INTEGER, (v_tier->>'level')::INTEGER, (v_tier->>'stars')::INTEGER)
@@ -169,7 +169,7 @@ DECLARE
     v_week_start DATE := date_trunc('week', now())::DATE;
     v_tier JSONB;
 BEGIN
-    FOR v_rec IN (SELECT * FROM public.get_ranking_v2(NULL, 'weekly', 'total', 3)) LOOP
+    FOR v_rec IN (SELECT * FROM public.get_ranking_v2(NULL::TEXT, 'weekly'::TEXT, 'total'::TEXT, 3)) LOOP
         v_tier := public.calculate_tier(v_rec.out_score::BIGINT);
         INSERT INTO public.hall_of_fame (week_start_date, user_id, nickname, score, mode, rank, tier_level, tier_stars)
         VALUES (v_week_start, v_rec.out_user_id, v_rec.out_nickname, v_rec.out_score, 'total', v_rec.out_rank::INTEGER, (v_tier->>'level')::INTEGER, (v_tier->>'stars')::INTEGER)
@@ -188,8 +188,8 @@ DECLARE
   v_calculated_score INTEGER;
   v_earned_minerals INTEGER;
 BEGIN
-  -- Dummy use of params to avoid unused parameter lints
-  IF (p_user_answers IS NULL OR p_question_ids IS NULL OR p_game_mode IS NULL OR p_items_used IS NULL OR p_category IS NULL OR p_subject IS NULL OR p_avg_solve_time IS NULL) AND FALSE THEN END IF;
+  -- Explicitly use parameters to satisfy linter
+  PERFORM p_user_answers, p_question_ids, p_game_mode, p_items_used, p_category, p_subject, p_avg_solve_time;
 
   PERFORM pg_catalog.set_config('app.bypass_profile_security', '1', true);
   SELECT is_debug_session INTO v_is_debug_session FROM public.game_sessions WHERE id = p_session_id AND user_id = v_user_id;
@@ -197,7 +197,6 @@ BEGIN
   v_calculated_score := 100 * p_level; 
   UPDATE public.game_sessions SET status = 'completed', score = v_calculated_score WHERE id = p_session_id;
   
-  -- Use built-in GREATEST and NOW (do not prefix with pg_catalog)
   IF NOT COALESCE(v_is_debug_session, false) THEN 
     UPDATE public.profiles SET stamina = GREATEST(0, stamina - 1), last_game_submit_at = NOW() WHERE id = v_user_id; 
   ELSE 
@@ -207,6 +206,6 @@ BEGIN
   v_earned_minerals := LEAST(floor(v_calculated_score / 10)::INTEGER, 10000);
   UPDATE public.profiles SET minerals = minerals + v_earned_minerals WHERE id = v_user_id;
   
-  RETURN jsonb_build_object('success', true, 'earned_minerals', v_earned_minerals, 'calculated_score', v_calculated_score);
+  RETURN jsonb_build_object('success'::text, true::boolean, 'earned_minerals'::text, v_earned_minerals, 'calculated_score'::text, v_calculated_score);
 END;
 $function$;

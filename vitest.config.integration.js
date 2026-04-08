@@ -16,10 +16,8 @@ export default mergeConfig(baseConfig, {
       '**/useHistoryData.test.ts',
     ],
     pool: 'forks',
-    poolOptions: {
-      forks: {
-        singleFork: true,
-      },
+    forks: {
+      singleFork: true,
     },
     testTimeout: 10000,
   },
