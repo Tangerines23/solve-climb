@@ -76,17 +76,38 @@ BEGIN
     IF p_persona_type = 'newbie' THEN v_max_level := 3; v_score_multiplier := 0.7; ELSIF p_persona_type = 'regular' THEN v_max_level := 8; v_score_multiplier := 1.0; ELSE v_max_level := 15; v_score_multiplier := 1.5; END IF;
 
     FOR v_theme_id IN SELECT unnest(ARRAY['math_add', 'math_sub', 'math_mul', 'math_div']::text[]) LOOP
-        FOR i IN 1..10 LOOP
-            IF p_persona_type = 'newbie' AND i > 2 AND random() > 0.5 THEN EXIT; END IF;
-            IF p_persona_type = 'regular' AND i > 6 AND random() > 0.3 THEN EXIT; END IF;
-            
-            INSERT INTO public.user_level_records (user_id, world_id, mode_code, theme_code, level, play_mode, theme, max_score)
-            VALUES (v_user_id, v_world_id, split_part(v_theme_id, '_', 1), split_part(v_theme_id, '_', 2), i, v_mode_code, v_theme_code, (v_base_score * v_score_multiplier)::INTEGER)
-            ON CONFLICT (user_id, world_id, mode_code, theme_code, level) DO NOTHING;
-            
-            v_total_score := v_total_score + (v_base_score * v_score_multiplier);
-        END LOOP;
+        -- Get theme code from mapping
+        SELECT code INTO v_theme_code FROM public.theme_mapping WHERE theme_id = v_theme_id;
+        
+        IF v_theme_code IS NOT NULL THEN
+            FOR i IN 1..v_max_level LOOP
+                IF p_persona_type = 'newbie' AND i > 2 AND random() > 0.5 THEN CONTINUE; END IF;
+                IF p_persona_type = 'regular' AND i > 6 AND random() > 0.3 THEN CONTINUE; END IF;
+                
+                v_base_score := (10 + (i - 1) * 5) * 10;
+                
+                INSERT INTO public.user_level_records (
+                    user_id, world_id, mode_code, theme_code, level, best_score, category_id, subject_id
+                )
+                VALUES (
+                    v_user_id, 
+                    v_world_id, 
+                    v_mode_code, 
+                    v_theme_code, 
+                    i, 
+                    (v_base_score * v_score_multiplier)::INTEGER,
+                    pg_catalog.split_part(v_theme_id, '_', 1),
+                    pg_catalog.split_part(v_theme_id, '_', 2)
+                )
+                ON CONFLICT (user_id, category_id, subject_id, level, mode_code) DO NOTHING;
+                
+                v_total_score := v_total_score + (v_base_score * v_score_multiplier)::INTEGER;
+            END LOOP;
+        END IF;
     END LOOP;
+
+    -- Update final score in profile
+    UPDATE public.profiles SET total_mastery_score = v_total_score WHERE id = v_user_id;
 
     RETURN jsonb_build_object('success'::text, true::boolean, 'user_id'::text, v_user_id::uuid, 'total_score'::text, v_total_score::integer, 'message'::text, 'Dummy player created and synced successfully'::text);
 END;
