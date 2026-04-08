@@ -199,19 +199,23 @@ export const useUserStore = create<UserState>((set, get) => {
       }
 
       const now = Date.now();
-      if (now - get().lastStaminaConsumeTime < 3000) {
-        console.log('[UserStore] Stamina consumption throttled');
-        return { success: true, message: 'Already consumed' };
+      // 중복 요청 방지 (디바운스/쓰로틀링)
+      if (now - get().lastStaminaConsumeTime < 2000) {
+        return { success: true, message: 'Throttled' };
       }
 
-      const res = await callRpcAndRefresh(supabase.rpc('consume_stamina'));
-      if (res.success) {
-        set((state) => ({
-          stamina: Math.max(0, state.stamina - 1),
-          lastStaminaConsumeTime: now,
-        }));
-      }
-      return res;
+      // [Server-Only Truth] 더 이상 'consume_stamina' RPC를 직접 호출하지 않습니다.
+      // 스태미나는 서버의 'create_game_session' RPC 호출 시 원자적으로(Atomically) 차감됩니다.
+      // 여기서는 즉각적인 UI 피드백을 위해 로컬 상태만 먼저 업데이트합니다.
+      set((state) => ({
+        stamina: Math.max(0, state.stamina - 1),
+        lastStaminaConsumeTime: now,
+      }));
+
+      return {
+        success: true,
+        message: 'Stamina consumption handled by server-side session creation',
+      };
     },
 
     setMinerals: async (minerals: number) => {

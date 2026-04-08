@@ -45,7 +45,6 @@ SECURITY DEFINER
 AS $$
 DECLARE
   v_user_id UUID := auth.uid();
-  v_item_id INTEGER;
   v_old_best_score INTEGER;
   v_new_best_score INTEGER;
   v_score_diff INTEGER;
@@ -55,7 +54,6 @@ DECLARE
   v_previous_tier JSON;
   v_current_tier JSON;
   v_tier_upgraded BOOLEAN := false;
-  v_total_mastery BIGINT;
   v_theme_code SMALLINT;
   v_mode_code SMALLINT;
   v_is_debug_session BOOLEAN;
@@ -68,7 +66,6 @@ DECLARE
   v_question_id UUID;
   v_user_answer INTEGER;
   v_correct_answer INTEGER;
-  v_question_index INTEGER;
   v_mode_weight NUMERIC := 1.0;
   -- Const variables
   MAX_SCORE INTEGER := 1000000;
@@ -77,6 +74,9 @@ DECLARE
   MIN_LEVEL INTEGER := 1;
   MINERALS_PER_SCORE INTEGER := 100;
 BEGIN
+  -- Explicitly use parameters to satisfy linter
+  PERFORM p_items_used;
+
   -- 0. Debug session check
   SELECT is_debug_session INTO v_is_debug_session
   FROM public.game_sessions

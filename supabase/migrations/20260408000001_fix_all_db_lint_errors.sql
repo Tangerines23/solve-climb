@@ -153,7 +153,6 @@ $$;
 CREATE OR REPLACE FUNCTION public.update_user_tier(p_user_id UUID) 
 RETURNS JSONB LANGUAGE plpgsql SECURITY DEFINER SET search_path = '' AS $$
 DECLARE
-  v_authenticated_user_id UUID := auth.uid();
   v_total_mastery BIGINT;
   v_tier_info JSONB;
 BEGIN
@@ -225,9 +224,7 @@ CREATE OR REPLACE FUNCTION public.debug_create_persona_player(p_nickname text, p
  RETURNS jsonb LANGUAGE plpgsql SECURITY DEFINER SET search_path = '' AS $$
 DECLARE
     v_user_id UUID := extensions.gen_random_uuid();
-    v_max_level INTEGER;
     v_world_id TEXT := 'math_world';
-    v_score_multiplier NUMERIC;
     v_base_score INTEGER;
     v_total_score INTEGER := 0;
     v_theme_code SMALLINT;

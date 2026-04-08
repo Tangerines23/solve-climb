@@ -21,16 +21,11 @@ AS $$
 DECLARE
   v_user_id UUID := auth.uid();
   v_item_id INTEGER;
-  v_old_best_score INTEGER;
-  v_new_best_score INTEGER;
   v_score_diff INTEGER;
   v_calculated_score INTEGER := 0;  -- ?�버?�서 계산???�수
   v_earned_minerals INTEGER := 0;
   v_theme_id TEXT;
-  v_previous_tier JSON;
   v_current_tier JSON;
-  v_tier_upgraded BOOLEAN := false;
-  v_total_mastery BIGINT;
   v_theme_code SMALLINT;
   v_mode_code SMALLINT;
   v_is_exhausted BOOLEAN := false; -- 지�??�태(?�태미나 부�? ?��?
@@ -159,7 +154,6 @@ BEGIN
     v_correct_answer INTEGER;
     v_correct_count INTEGER := 0;
     v_total_questions INTEGER;
-    v_question_index INTEGER;
   BEGIN
     SELECT questions INTO v_session_questions
     FROM public.game_sessions

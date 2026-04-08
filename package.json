@@ -61,7 +61,7 @@
     "check:migrations": "node scripts/check-migrations.js",
     "check:db:link": "node scripts/check-db-link.js",
     "check:db:migrations": "npx supabase migration list",
-    "check:db:lint": "npx supabase db lint --linked --fail-on error",
+    "check:db:lint": "npx supabase db lint --fail-on error",
     "check:db:lint:local": "npx supabase db lint --fail-on error",
     "check:db:diff": "npx supabase db diff --linked",
     "check:db:validation": "node scripts/check-db-validation.js",

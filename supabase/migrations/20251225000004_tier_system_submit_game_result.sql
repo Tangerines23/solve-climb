@@ -194,7 +194,6 @@ BEGIN
     v_correct_answer INTEGER;
     v_correct_count INTEGER := 0;
     v_total_questions INTEGER;
-    v_question_index INTEGER;
     v_mode_weight NUMERIC := 1.0;
   BEGIN
     -- 게임 ?�션?�서 문제 ?�보 가?�오�?
