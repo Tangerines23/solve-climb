@@ -1,0 +1,136 @@
+-- [PERFORMANCE OPTIMIZATION] Ranking Speedup & Auto-Maintenance
+-- Date: 2026-04-08
+
+-- 1. Create Performance Indices for Ranking
+CREATE INDEX IF NOT EXISTS idx_profiles_total_mastery ON public.profiles(total_mastery_score DESC) WHERE total_mastery_score > 0;
+CREATE INDEX IF NOT EXISTS idx_profiles_weekly_total ON public.profiles(weekly_score_total DESC) WHERE weekly_score_total > 0;
+CREATE INDEX IF NOT EXISTS idx_profiles_best_timeattack ON public.profiles(best_score_timeattack DESC) WHERE best_score_timeattack > 0;
+CREATE INDEX IF NOT EXISTS idx_profiles_best_survival ON public.profiles(best_score_survival DESC) WHERE best_score_survival > 0;
+
+-- 2. Optimize get_ranking_v2 (Use Pre-calculated columns for all-time total)
+CREATE OR REPLACE FUNCTION public.get_ranking_v2(
+    p_category TEXT,
+    p_period TEXT,
+    p_type TEXT,
+    p_limit INTEGER DEFAULT 50
+)
+RETURNS TABLE (
+    user_id UUID,
+    nickname TEXT,
+    score BIGINT,
+    rank BIGINT
+) 
+LANGUAGE plpgsql
+SECURITY DEFINER
+SET search_path = public
+AS $$
+BEGIN
+    IF p_period = 'weekly' THEN
+        RETURN QUERY
+        SELECT 
+            p.id as out_user_id,
+            COALESCE(p.nickname, '익명 등반가'::TEXT) as out_nickname,
+            CASE 
+                WHEN p_type = 'time-attack' THEN p.weekly_score_timeattack::BIGINT
+                WHEN p_type = 'survival' THEN p.weekly_score_survival::BIGINT
+                ELSE p.weekly_score_total::BIGINT
+            END as out_score,
+            RANK() OVER (
+                ORDER BY (
+                    CASE 
+                        WHEN p_type = 'time-attack' THEN p.weekly_score_timeattack
+                        WHEN p_type = 'survival' THEN p.weekly_score_survival
+                        ELSE p.weekly_score_total
+                    END
+                ) DESC
+            ) as out_rank
+        FROM public.profiles p
+        WHERE (
+            CASE 
+                WHEN p_type = 'time-attack' THEN p.weekly_score_timeattack
+                WHEN p_type = 'survival' THEN p.weekly_score_survival
+                ELSE p.weekly_score_total
+            END
+        ) > 0
+        ORDER BY out_score DESC
+        LIMIT p_limit;
+    ELSE
+        -- All-Time (Total Mastery)
+        IF p_type = 'total' THEN
+            RETURN QUERY
+            SELECT 
+                p.id as out_user_id,
+                COALESCE(p.nickname, '익명 등반가'::TEXT) as out_nickname,
+                p.total_mastery_score::BIGINT as out_score,
+                RANK() OVER (ORDER BY p.total_mastery_score DESC) as out_rank
+            FROM public.profiles p
+            WHERE p.total_mastery_score > 0
+            ORDER BY out_score DESC
+            LIMIT p_limit;
+        ELSE
+            -- Best Score per mode (Using cached best scores in profile)
+            RETURN QUERY
+            SELECT 
+                p.id as out_user_id,
+                COALESCE(p.nickname, '익명 등반가'::TEXT) as out_nickname,
+                CASE 
+                    WHEN p_type = 'time-attack' THEN p.best_score_timeattack::BIGINT
+                    ELSE p.best_score_survival::BIGINT
+                END as out_score,
+                RANK() OVER (
+                    ORDER BY (
+                        CASE 
+                            WHEN p_type = 'time-attack' THEN p.best_score_timeattack
+                            ELSE p.best_score_survival
+                        END
+                    ) DESC
+                ) as out_rank
+            FROM public.profiles p
+            WHERE (
+                CASE 
+                    WHEN p_type = 'time-attack' THEN p.best_score_timeattack
+                    ELSE p.best_score_survival
+                END
+            ) > 0
+            ORDER BY out_score DESC
+            LIMIT p_limit;
+        END IF;
+    END IF;
+END;
+$$;
+
+-- 3. Automated Session Cleanup (TTL)
+CREATE OR REPLACE FUNCTION public.cleanup_expired_sessions(p_days_to_keep INTEGER DEFAULT 7)
+RETURNS JSONB
+LANGUAGE plpgsql
+SECURITY DEFINER
+SET search_path = public
+AS $$
+DECLARE
+    v_deleted_count INTEGER;
+BEGIN
+    DELETE FROM public.game_sessions
+    WHERE created_at < (NOW() - (p_days_to_keep || ' days')::INTERVAL)
+    AND status IN ('completed', 'expired'); -- Only cleanup finished sessions
+
+    GET DIAGNOSTICS v_deleted_count = ROW_COUNT;
+
+    RETURN jsonb_build_object(
+        'success', true,
+        'deleted_count', v_deleted_count,
+        'message', v_deleted_count || ' expired sessions purged.'
+    );
+END;
+$$;
+
+COMMENT ON FUNCTION public.cleanup_expired_sessions IS 'Purges game sessions older than X days to prevent database bloat from large JSON payloads.';
+
+-- 4. Prune Legacy/Redundant Functions
+DROP FUNCTION IF EXISTS public.update_user_game_stats(INTEGER, INTEGER, FLOAT);
+DROP FUNCTION IF EXISTS public.debug_clear_game_records(UUID, INTEGER, INTEGER);
+DROP FUNCTION IF EXISTS public.test_db_constraints();
+DROP FUNCTION IF EXISTS public.test_db_advanced_validation();
+
+-- 5. Ensure total_mastery_score is correct (Self-healing bit)
+-- This ensures the optimized ranking reflects current record state
+SELECT public.recalculate_mastery_scores();
