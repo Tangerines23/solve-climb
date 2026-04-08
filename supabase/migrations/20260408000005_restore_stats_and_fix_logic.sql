@@ -1,13 +1,13 @@
 -- 1. Restore user_statistics table
 CREATE TABLE IF NOT EXISTS public.user_statistics (
-    id UUID PRIMARY KEY REFERENCES auth.users(id) ON DELETE CASCADE,
-    total_games INTEGER DEFAULT 0,
-    total_correct INTEGER DEFAULT 0,
-    total_questions INTEGER DEFAULT 0,
-    best_streak INTEGER DEFAULT 0,
-    avg_solve_time FLOAT DEFAULT 0.0,
-    last_played_at TIMESTAMPTZ,
-    updated_at TIMESTAMPTZ DEFAULT pg_catalog.now(),
+    id pg_catalog.uuid PRIMARY KEY REFERENCES auth.users(id) ON DELETE CASCADE,
+    total_games pg_catalog.int4 DEFAULT 0,
+    total_correct pg_catalog.int4 DEFAULT 0,
+    total_questions pg_catalog.int4 DEFAULT 0,
+    best_streak pg_catalog.int4 DEFAULT 0,
+    avg_solve_time pg_catalog.float8 DEFAULT 0.0,
+    last_played_at pg_catalog.timestamptz,
+    updated_at pg_catalog.timestamptz DEFAULT pg_catalog.now(),
     CONSTRAINT check_positive_counts CHECK (total_games >= 0 AND total_correct >= 0 AND total_questions >= 0)
 );
 
@@ -15,18 +15,18 @@ COMMENT ON TABLE public.user_statistics IS 'User lifetime cumulative statistics 
 
 -- 2. Restore user_game_logs table
 CREATE TABLE IF NOT EXISTS public.user_game_logs (
-    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    user_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
-    game_mode TEXT NOT NULL,
-    world_id TEXT,
-    category_id TEXT,
-    level INTEGER,
-    score INTEGER DEFAULT 0,
-    correct_count INTEGER DEFAULT 0,
-    total_questions INTEGER DEFAULT 0,
-    avg_solve_time FLOAT DEFAULT 0.0,
-    wrong_answers JSONB DEFAULT '[]'::jsonb,
-    created_at TIMESTAMPTZ DEFAULT pg_catalog.now()
+    id pg_catalog.uuid PRIMARY KEY DEFAULT extensions.gen_random_uuid(),
+    user_id pg_catalog.uuid NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
+    game_mode pg_catalog.text NOT NULL,
+    world_id pg_catalog.text,
+    category_id pg_catalog.text,
+    level pg_catalog.int4,
+    score pg_catalog.int4 DEFAULT 0,
+    correct_count pg_catalog.int4 DEFAULT 0,
+    total_questions pg_catalog.int4 DEFAULT 0,
+    avg_solve_time pg_catalog.float8 DEFAULT 0.0,
+    wrong_answers pg_catalog.jsonb DEFAULT '[]'::pg_catalog.jsonb,
+    created_at pg_catalog.timestamptz DEFAULT pg_catalog.now()
 );
 
 COMMENT ON TABLE public.user_game_logs IS 'Detailed history of every completed game session including wrong answers for analytics.';
@@ -46,15 +46,15 @@ CREATE INDEX IF NOT EXISTS idx_user_game_logs_created_at ON public.user_game_log
 
 -- 4. Overhaul submit_game_result to fix logic and record data
 CREATE OR REPLACE FUNCTION public.submit_game_result(
-  p_user_answers JSONB,
-  p_question_ids JSONB,
-  p_game_mode TEXT,
-  p_items_used JSONB,
-  p_session_id UUID,
-  p_category TEXT DEFAULT 'math',
-  p_subject TEXT DEFAULT 'add',
-  p_level INTEGER DEFAULT 1,
-  p_avg_solve_time FLOAT DEFAULT 0.0
+  p_user_answers pg_catalog.jsonb,
+  p_question_ids pg_catalog.jsonb,
+  p_game_mode pg_catalog.text,
+  p_items_used pg_catalog.jsonb,
+  p_session_id pg_catalog.uuid,
+  p_category pg_catalog.text DEFAULT 'math',
+  p_subject pg_catalog.text DEFAULT 'add',
+  p_level pg_catalog.int4 DEFAULT 1,
+  p_avg_solve_time pg_catalog.float8 DEFAULT 0.0
 )
 RETURNS JSONB
 LANGUAGE plpgsql
@@ -62,32 +62,32 @@ SECURITY DEFINER
 SET search_path = ''
 AS $$
 DECLARE
-  v_user_id UUID := auth.uid();
-  v_calculated_score INTEGER := 0;
-  v_correct_count INTEGER := 0;
-  v_total_questions INTEGER := 0;
-  v_wrong_answers JSONB := '[]'::jsonb;
-  v_session_questions JSONB;
-  v_question JSONB;
-  v_question_id UUID;
-  v_user_answer INTEGER;
-  v_correct_answer INTEGER;
-  v_earned_minerals INTEGER := 0;
-  v_theme_id TEXT;
-  v_theme_code SMALLINT;
-  v_mode_code SMALLINT;
-  v_old_best_score INTEGER;
-  v_new_best_score INTEGER;
-  v_score_diff INTEGER;
-  v_tier_info JSONB;
-  v_mode_weight NUMERIC := 1.0;
-  v_is_debug BOOLEAN := false;
-  v_session_status TEXT;
-  v_prev_result JSONB;
+  v_user_id pg_catalog.uuid := auth.uid();
+  v_calculated_score pg_catalog.int4 := 0;
+  v_correct_count pg_catalog.int4 := 0;
+  v_total_questions pg_catalog.int4 := 0;
+  v_wrong_answers pg_catalog.jsonb := '[]'::pg_catalog.jsonb;
+  v_session_questions pg_catalog.jsonb;
+  v_question pg_catalog.jsonb;
+  v_question_id pg_catalog.uuid;
+  v_user_answer pg_catalog.int4;
+  v_correct_answer pg_catalog.int4;
+  v_earned_minerals pg_catalog.int4 := 0;
+  v_theme_id pg_catalog.text;
+  v_theme_code pg_catalog.int2;
+  v_mode_code pg_catalog.int2;
+  v_old_best_score pg_catalog.int4;
+  v_new_best_score pg_catalog.int4;
+  v_score_diff pg_catalog.int4;
+  v_tier_info pg_catalog.jsonb;
+  v_mode_weight pg_catalog.numeric := 1.0;
+  v_is_debug pg_catalog.bool := false;
+  v_session_status pg_catalog.text;
+  v_prev_result pg_catalog.jsonb;
   
   -- Constants
-  MINERALS_PER_SCORE CONSTANT INTEGER := 100;
-  MAX_MINERALS CONSTANT INTEGER := 1000;
+  MINERALS_PER_SCORE CONSTANT pg_catalog.int4 := 100;
+  MAX_MINERALS CONSTANT pg_catalog.int4 := 1000;
 BEGIN
   -- 1. Authentication Check
   IF v_user_id IS NULL THEN
@@ -116,16 +116,16 @@ BEGIN
   
   -- Loop through submitted answers
   FOR i IN 0..(v_total_questions - 1) LOOP
-    v_question_id := (p_question_ids->>i)::UUID;
-    v_user_answer := (p_user_answers->>i)::INTEGER;
+    v_question_id := (p_question_ids->>i)::pg_catalog.uuid;
+    v_user_answer := (p_user_answers->>i)::pg_catalog.int4;
 
     -- Find matching question in session
     SELECT q INTO v_question 
     FROM pg_catalog.jsonb_array_elements(v_session_questions) AS q 
-    WHERE (q->>'id')::UUID = v_question_id;
+    WHERE (q->>'id')::pg_catalog.uuid = v_question_id;
 
     IF v_question IS NOT NULL THEN
-      v_correct_answer := (v_question->>'correct_answer')::INTEGER;
+      v_correct_answer := (v_question->>'correct_answer')::pg_catalog.int4;
       IF v_user_answer = v_correct_answer THEN
         v_correct_count := v_correct_count + 1;
       ELSE
@@ -143,7 +143,7 @@ BEGIN
   IF p_game_mode = 'survival' THEN v_mode_weight := 0.8; END IF;
   
   -- Logic: (Correct Ratio) * Level * Mode Weight * 100
-  v_calculated_score := pg_catalog.floor((v_correct_count::NUMERIC / pg_catalog.GREATEST(v_total_questions, 1)) * p_level * v_mode_weight * 100);
+  v_calculated_score := pg_catalog.floor((v_correct_count::pg_catalog.numeric / pg_catalog.GREATEST(v_total_questions, 1)) * p_level * v_mode_weight * 100)::pg_catalog.int4;
 
   -- 6. Update Permanent Stats (Atomic)
   INSERT INTO public.user_statistics (id, total_games, total_correct, total_questions, last_played_at, updated_at)
@@ -202,6 +202,20 @@ BEGIN
 
   v_tier_info := public.update_user_tier(v_user_id);
   
+  -- 11. Security Audit Logging
+  INSERT INTO public.security_audit_log (user_id, event_type, event_data)
+  VALUES (
+    v_user_id,
+    'game_result_submitted',
+    pg_catalog.jsonb_build_object(
+      'game_mode', p_game_mode,
+      'score', v_calculated_score,
+      'correct_count', v_correct_count,
+      'new_record', v_new_best_score > pg_catalog.COALESCE(v_old_best_score, 0),
+      'session_id', p_session_id
+    )
+  );
+
   PERFORM pg_catalog.set_config('app.bypass_profile_security', '0', true);
 
   -- 11. Finalize Session
@@ -227,13 +241,13 @@ $$;
 
 -- 5. Restore utility functions
 CREATE OR REPLACE FUNCTION public.get_user_game_stats()
-RETURNS JSONB
+RETURNS pg_catalog.jsonb
 LANGUAGE plpgsql
 SECURITY DEFINER
 SET search_path = ''
 AS $$
 DECLARE
-    v_user_id UUID := auth.uid();
+    v_user_id pg_catalog.uuid := auth.uid();
     v_stats RECORD;
 BEGIN
     IF v_user_id IS NULL THEN
@@ -257,15 +271,15 @@ BEGIN
 END;
 $$;
 
-CREATE OR REPLACE FUNCTION public.get_recent_game_logs(p_limit INTEGER DEFAULT 10)
-RETURNS JSONB
+CREATE OR REPLACE FUNCTION public.get_recent_game_logs(p_limit pg_catalog.int4 DEFAULT 10)
+RETURNS pg_catalog.jsonb
 LANGUAGE plpgsql
 SECURITY DEFINER
 SET search_path = ''
 AS $$
 DECLARE
-    v_user_id UUID := auth.uid();
-    v_logs JSONB;
+    v_user_id pg_catalog.uuid := auth.uid();
+    v_logs pg_catalog.jsonb;
 BEGIN
     IF v_user_id IS NULL THEN
         RAISE EXCEPTION 'Not authenticated';
