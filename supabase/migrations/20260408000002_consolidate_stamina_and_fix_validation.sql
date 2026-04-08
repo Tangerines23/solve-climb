@@ -122,7 +122,7 @@ BEGIN
   UPDATE public.profiles SET last_game_submit_at = now() WHERE id = v_user_id; 
   
   -- Minerals reward logic
-  v_earned_minerals := LEAST(pg_catalog.floor(v_calculated_score / 10)::integer, 10000);
+  v_earned_minerals := LEAST(FLOOR(v_calculated_score / 10)::integer, 10000);
   UPDATE public.profiles SET minerals = minerals + v_earned_minerals WHERE id = v_user_id;
   
   RETURN pg_catalog.jsonb_build_object('success', true, 'earned_minerals', v_earned_minerals, 'calculated_score', v_calculated_score);
