@@ -7,7 +7,7 @@ CREATE TABLE IF NOT EXISTS public.user_statistics (
     best_streak INTEGER DEFAULT 0,
     avg_solve_time FLOAT DEFAULT 0.0,
     last_played_at TIMESTAMPTZ,
-    updated_at TIMESTAMPTZ DEFAULT NOW(),
+    updated_at TIMESTAMPTZ DEFAULT pg_catalog.now(),
     CONSTRAINT check_positive_counts CHECK (total_games >= 0 AND total_correct >= 0 AND total_questions >= 0)
 );
 
@@ -26,7 +26,7 @@ CREATE TABLE IF NOT EXISTS public.user_game_logs (
     total_questions INTEGER DEFAULT 0,
     avg_solve_time FLOAT DEFAULT 0.0,
     wrong_answers JSONB DEFAULT '[]'::jsonb,
-    created_at TIMESTAMPTZ DEFAULT NOW()
+    created_at TIMESTAMPTZ DEFAULT pg_catalog.now()
 );
 
 COMMENT ON TABLE public.user_game_logs IS 'Detailed history of every completed game session including wrong answers for analytics.';
@@ -59,7 +59,7 @@ CREATE OR REPLACE FUNCTION public.submit_game_result(
 RETURNS JSONB
 LANGUAGE plpgsql
 SECURITY DEFINER
-SET search_path = public
+SET search_path = ''
 AS $$
 DECLARE
   v_user_id UUID := auth.uid();
@@ -91,11 +91,11 @@ DECLARE
 BEGIN
   -- 1. Authentication Check
   IF v_user_id IS NULL THEN
-    RETURN jsonb_build_object('success', false, 'error', 'Authentication required');
+    RETURN pg_catalog.jsonb_build_object('success', false, 'error', 'Authentication required');
   END IF;
 
   -- 2. Debug Mode Check
-  SELECT COALESCE((value::BOOLEAN), false) INTO v_is_debug FROM public.game_config WHERE key = 'debug_mode_enabled';
+  SELECT pg_catalog.COALESCE((value::BOOLEAN), false) INTO v_is_debug FROM public.game_config WHERE key = 'debug_mode_enabled';
 
   -- 3. Session Validation & Idempotency
   SELECT status, result INTO v_session_status, v_prev_result
@@ -103,16 +103,16 @@ BEGIN
   WHERE id = p_session_id AND user_id = v_user_id;
 
   IF v_session_status IS NULL THEN
-    RETURN jsonb_build_object('success', false, 'error', 'Session not found');
+    RETURN pg_catalog.jsonb_build_object('success', false, 'error', 'Session not found');
   END IF;
 
   IF v_session_status = 'completed' THEN
-    RETURN COALESCE(v_prev_result, jsonb_build_object('success', true, 'idempotent', true));
+    RETURN pg_catalog.COALESCE(v_prev_result, pg_catalog.jsonb_build_object('success', true, 'idempotent', true));
   END IF;
 
   -- 4. Accuracy Calculation & Answer Validation
   SELECT questions INTO v_session_questions FROM public.game_sessions WHERE id = p_session_id;
-  v_total_questions := jsonb_array_length(p_question_ids);
+  v_total_questions := pg_catalog.jsonb_array_length(p_question_ids);
   
   -- Loop through submitted answers
   FOR i IN 0..(v_total_questions - 1) LOOP
@@ -121,7 +121,7 @@ BEGIN
 
     -- Find matching question in session
     SELECT q INTO v_question 
-    FROM jsonb_array_elements(v_session_questions) AS q 
+    FROM pg_catalog.jsonb_array_elements(v_session_questions) AS q 
     WHERE (q->>'id')::UUID = v_question_id;
 
     IF v_question IS NOT NULL THEN
@@ -129,7 +129,7 @@ BEGIN
       IF v_user_answer = v_correct_answer THEN
         v_correct_count := v_correct_count + 1;
       ELSE
-        v_wrong_answers := v_wrong_answers || jsonb_build_object(
+        v_wrong_answers := v_wrong_answers || pg_catalog.jsonb_build_object(
           'question_id', v_question_id,
           'user_answer', v_user_answer,
           'correct_answer', v_correct_answer,
@@ -143,11 +143,11 @@ BEGIN
   IF p_game_mode = 'survival' THEN v_mode_weight := 0.8; END IF;
   
   -- Logic: (Correct Ratio) * Level * Mode Weight * 100
-  v_calculated_score := FLOOR((v_correct_count::NUMERIC / GREATEST(v_total_questions, 1)) * p_level * v_mode_weight * 100);
+  v_calculated_score := pg_catalog.floor((v_correct_count::NUMERIC / pg_catalog.GREATEST(v_total_questions, 1)) * p_level * v_mode_weight * 100);
 
   -- 6. Update Permanent Stats (Atomic)
   INSERT INTO public.user_statistics (id, total_games, total_correct, total_questions, last_played_at, updated_at)
-  VALUES (v_user_id, 1, v_correct_count, v_total_questions, NOW(), NOW())
+  VALUES (v_user_id, 1, v_correct_count, v_total_questions, pg_catalog.now(), pg_catalog.now())
   ON CONFLICT (id) DO UPDATE SET
     total_games = user_statistics.total_games + 1,
     total_correct = user_statistics.total_correct + EXCLUDED.total_correct,
@@ -156,8 +156,8 @@ BEGIN
       WHEN user_statistics.total_games = 0 THEN p_avg_solve_time 
       ELSE (user_statistics.avg_solve_time * user_statistics.total_games + p_avg_solve_time) / (user_statistics.total_games + 1)
     END,
-    last_played_at = NOW(),
-    updated_at = NOW();
+    last_played_at = pg_catalog.now(),
+    updated_at = pg_catalog.now();
 
   -- 7. Log Game Session
   INSERT INTO public.user_game_logs (
@@ -172,14 +172,14 @@ BEGIN
   SELECT code INTO v_mode_code FROM public.mode_mapping WHERE mode_id = p_game_mode;
 
   -- 9. Update Minerals (Profile)
-  v_earned_minerals := LEAST(FLOOR(v_calculated_score::NUMERIC / MINERALS_PER_SCORE), MAX_MINERALS);
+  v_earned_minerals := pg_catalog.LEAST(pg_catalog.floor(v_calculated_score::NUMERIC / MINERALS_PER_SCORE), MAX_MINERALS);
   
   -- Bypass security triggers for profile update within RPC
-  PERFORM set_config('app.bypass_profile_security', '1', true);
+  PERFORM pg_catalog.set_config('app.bypass_profile_security', '1', true);
   
   UPDATE public.profiles 
   SET minerals = minerals + v_earned_minerals,
-      last_game_submit_at = NOW()
+      last_game_submit_at = pg_catalog.now()
   WHERE id = v_user_id;
 
   -- 10. Update Mastery & Tier
@@ -187,31 +187,31 @@ BEGIN
   FROM public.user_level_records 
   WHERE user_id = v_user_id AND theme_code = v_theme_code AND level = p_level AND mode_code = v_mode_code;
 
-  v_new_best_score := GREATEST(COALESCE(v_old_best_score, 0), v_calculated_score);
+  v_new_best_score := pg_catalog.GREATEST(pg_catalog.COALESCE(v_old_best_score, 0), v_calculated_score);
   
-  IF v_new_best_score > COALESCE(v_old_best_score, 0) THEN
-    v_score_diff := v_new_best_score - COALESCE(v_old_best_score, 0);
+  IF v_new_best_score > pg_catalog.COALESCE(v_old_best_score, 0) THEN
+    v_score_diff := v_new_best_score - pg_catalog.COALESCE(v_old_best_score, 0);
     
     INSERT INTO public.user_level_records (user_id, theme_code, level, mode_code, best_score, updated_at)
-    VALUES (v_user_id, v_theme_code, p_level, v_mode_code, v_new_best_score, NOW())
+    VALUES (v_user_id, v_theme_code, p_level, v_mode_code, v_new_best_score, pg_catalog.now())
     ON CONFLICT (user_id, theme_code, level, mode_code) 
-    DO UPDATE SET best_score = v_new_best_score, updated_at = NOW();
+    DO UPDATE SET best_score = v_new_best_score, updated_at = pg_catalog.now();
 
     UPDATE public.profiles SET total_mastery_score = total_mastery_score + v_score_diff WHERE id = v_user_id;
   END IF;
 
   v_tier_info := public.update_user_tier(v_user_id);
   
-  PERFORM set_config('app.bypass_profile_security', '0', true);
+  PERFORM pg_catalog.set_config('app.bypass_profile_security', '0', true);
 
   -- 11. Finalize Session
-  v_prev_result := jsonb_build_object(
+  v_prev_result := pg_catalog.jsonb_build_object(
     'success', true,
     'calculated_score', v_calculated_score,
     'correct_count', v_correct_count,
     'total_questions', v_total_questions,
     'earned_minerals', v_earned_minerals,
-    'new_record', v_new_best_score > COALESCE(v_old_best_score, 0),
+    'new_record', v_new_best_score > pg_catalog.COALESCE(v_old_best_score, 0),
     'tier_info', v_tier_info
   );
 
@@ -230,7 +230,7 @@ CREATE OR REPLACE FUNCTION public.get_user_game_stats()
 RETURNS JSONB
 LANGUAGE plpgsql
 SECURITY DEFINER
-SET search_path = public
+SET search_path = ''
 AS $$
 DECLARE
     v_user_id UUID := auth.uid();
@@ -246,7 +246,7 @@ BEGIN
         INSERT INTO public.user_statistics (id) VALUES (v_user_id) RETURNING * INTO v_stats;
     END IF;
 
-    RETURN jsonb_build_object(
+    RETURN pg_catalog.jsonb_build_object(
         'total_games', v_stats.total_games,
         'total_correct', v_stats.total_correct,
         'total_questions', v_stats.total_questions,
@@ -261,7 +261,7 @@ CREATE OR REPLACE FUNCTION public.get_recent_game_logs(p_limit INTEGER DEFAULT 1
 RETURNS JSONB
 LANGUAGE plpgsql
 SECURITY DEFINER
-SET search_path = public
+SET search_path = ''
 AS $$
 DECLARE
     v_user_id UUID := auth.uid();
@@ -271,7 +271,7 @@ BEGIN
         RAISE EXCEPTION 'Not authenticated';
     END IF;
 
-    SELECT jsonb_agg(l) INTO v_logs
+    SELECT pg_catalog.jsonb_agg(l) INTO v_logs
     FROM (
         SELECT id, game_mode, world_id, category_id, level, score, correct_count, total_questions, avg_solve_time, created_at, wrong_answers
         FROM public.user_game_logs

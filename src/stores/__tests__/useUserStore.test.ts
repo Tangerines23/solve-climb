@@ -130,30 +130,21 @@ describe('useUserStore', () => {
   });
 
   describe('consumeStamina', () => {
-    it('should call consume_stamina RPC and decrement local stamina', async () => {
-      vi.mocked(supabase.rpc).mockResolvedValue({
-        data: { success: true },
-        error: null,
-      });
-
+    it('should decrement local stamina without direct RPC call', async () => {
       const result = await useUserStore.getState().consumeStamina();
 
-      expect(supabase.rpc).toHaveBeenCalledWith('consume_stamina');
+      // [Server-Only Truth] No longer calls consume_stamina RPC directly
+      expect(supabase.rpc).not.toHaveBeenCalledWith('consume_stamina');
       expect(result.success).toBe(true);
       expect(useUserStore.getState().stamina).toBe(4);
     });
 
     it('should throttle repeated calls', async () => {
-      vi.mocked(supabase.rpc).mockResolvedValue({
-        data: { success: true },
-        error: null,
-      });
-
       await useUserStore.getState().consumeStamina();
       const result = await useUserStore.getState().consumeStamina();
 
-      expect(supabase.rpc).toHaveBeenCalledTimes(1);
-      expect(result.message).toBe('Already consumed');
+      expect(supabase.rpc).not.toHaveBeenCalled();
+      expect(result.message).toBe('Throttled');
     });
 
     it('should skip if infiniteStamina is enabled', async () => {

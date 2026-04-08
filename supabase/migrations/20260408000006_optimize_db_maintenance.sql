@@ -22,20 +22,20 @@ RETURNS TABLE (
 ) 
 LANGUAGE plpgsql
 SECURITY DEFINER
-SET search_path = public
+SET search_path = ''
 AS $$
 BEGIN
     IF p_period = 'weekly' THEN
         RETURN QUERY
         SELECT 
             p.id as out_user_id,
-            COALESCE(p.nickname, '익명 등반가'::TEXT) as out_nickname,
+            pg_catalog.COALESCE(p.nickname, '익명 등반가'::TEXT) as out_nickname,
             CASE 
                 WHEN p_type = 'time-attack' THEN p.weekly_score_timeattack::BIGINT
                 WHEN p_type = 'survival' THEN p.weekly_score_survival::BIGINT
                 ELSE p.weekly_score_total::BIGINT
             END as out_score,
-            RANK() OVER (
+            pg_catalog.rank() OVER (
                 ORDER BY (
                     CASE 
                         WHEN p_type = 'time-attack' THEN p.weekly_score_timeattack
@@ -60,9 +60,9 @@ BEGIN
             RETURN QUERY
             SELECT 
                 p.id as out_user_id,
-                COALESCE(p.nickname, '익명 등반가'::TEXT) as out_nickname,
+                pg_catalog.COALESCE(p.nickname, '익명 등반가'::TEXT) as out_nickname,
                 p.total_mastery_score::BIGINT as out_score,
-                RANK() OVER (ORDER BY p.total_mastery_score DESC) as out_rank
+                pg_catalog.rank() OVER (ORDER BY p.total_mastery_score DESC) as out_rank
             FROM public.profiles p
             WHERE p.total_mastery_score > 0
             ORDER BY out_score DESC
@@ -72,12 +72,12 @@ BEGIN
             RETURN QUERY
             SELECT 
                 p.id as out_user_id,
-                COALESCE(p.nickname, '익명 등반가'::TEXT) as out_nickname,
+                pg_catalog.COALESCE(p.nickname, '익명 등반가'::TEXT) as out_nickname,
                 CASE 
                     WHEN p_type = 'time-attack' THEN p.best_score_timeattack::BIGINT
                     ELSE p.best_score_survival::BIGINT
                 END as out_score,
-                RANK() OVER (
+                pg_catalog.rank() OVER (
                     ORDER BY (
                         CASE 
                             WHEN p_type = 'time-attack' THEN p.best_score_timeattack
@@ -104,18 +104,18 @@ CREATE OR REPLACE FUNCTION public.cleanup_expired_sessions(p_days_to_keep INTEGE
 RETURNS JSONB
 LANGUAGE plpgsql
 SECURITY DEFINER
-SET search_path = public
+SET search_path = ''
 AS $$
 DECLARE
     v_deleted_count INTEGER;
 BEGIN
     DELETE FROM public.game_sessions
-    WHERE created_at < (NOW() - (p_days_to_keep || ' days')::INTERVAL)
+    WHERE created_at < (pg_catalog.now() - (p_days_to_keep || ' days')::pg_catalog.INTERVAL)
     AND status IN ('completed', 'expired'); -- Only cleanup finished sessions
 
     GET DIAGNOSTICS v_deleted_count = ROW_COUNT;
 
-    RETURN jsonb_build_object(
+    RETURN pg_catalog.jsonb_build_object(
         'success', true,
         'deleted_count', v_deleted_count,
         'message', v_deleted_count || ' expired sessions purged.'
@@ -131,6 +131,5 @@ DROP FUNCTION IF EXISTS public.debug_clear_game_records(UUID, INTEGER, INTEGER);
 DROP FUNCTION IF EXISTS public.test_db_constraints();
 DROP FUNCTION IF EXISTS public.test_db_advanced_validation();
 
--- 5. Ensure total_mastery_score is correct (Self-healing bit)
--- This ensures the optimized ranking reflects current record state
+-- 5. Final self-healing
 SELECT public.recalculate_mastery_scores();
