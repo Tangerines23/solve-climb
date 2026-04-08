@@ -178,7 +178,7 @@
     "rollup-plugin-visualizer": "^6.0.5",
     "sharp": "^0.34.5",
     "storybook": "^10.2.0",
-    "supabase": "^2.76.12",
+    "supabase": "^2.88.1",
     "tailwindcss": "^4.1.18",
     "typescript": "^5.9.3",
     "vite": "^7.1.7",
