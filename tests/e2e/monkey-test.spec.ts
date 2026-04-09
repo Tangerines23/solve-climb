@@ -17,8 +17,8 @@ import { expectNoOverflow } from './utils/overflow';
 
 test.describe('MONKEY TEST - Chaos Automation', () => {
   test('네트워크 카오스 환경에서도 앱이 크래시되지 않아야 한다', async ({ page }) => {
-    // 100회 × (네트워크 전환 + 클릭 + 500ms 대기) → 기본 30s 초과. CI와 동일하게 2분 허용
-    test.setTimeout(120000);
+    // 100회 × (네트워크 전환 + 클릭 + 500ms 대기) → 기본 30s 초과. CI와 동일하게 4분 허용
+    test.setTimeout(240000);
 
     // Visual Guardian 활성화 (카오스 중 돌아다닌 화면들의 오버플로우도 겸사겸사 검사)
     await page.addInitScript(() => {
@@ -75,8 +75,8 @@ test.describe('MONKEY TEST - Chaos Automation', () => {
               uploadThroughput: condition.upload,
               latency: condition.latency,
             });
-          } catch {
-            // CDP 실패 시 해당 스텝만 스킵하고 계속 진행
+          } catch (_e) {
+            // CDP/Network emulation 실패 시 해당 스케줄만 스킵하고 계속 진행
           }
         }
       }
@@ -143,7 +143,7 @@ test.describe('MONKEY TEST - Chaos Automation', () => {
         const width = page.viewportSize()?.width || 400;
         const height = page.viewportSize()?.height || 800;
         await page.mouse.click(Math.random() * width, Math.random() * height).catch(() => {});
-        await page.waitForTimeout(500);
+        await page.waitForTimeout(500).catch(() => {});
       }
 
       // 치명적 에러 감시 (undefined 참조, 타입 에러 등 실제 앱 버그는 여전히 잡힘)

@@ -80,7 +80,10 @@ export const withdrawAccount = async (): Promise<boolean> => {
         .catch((e) => console.error('[탈퇴] Progress reset failed', e));
 
       // Supabase 로그아웃 (세션 무효화)
-      await supabase.auth.signOut().catch((e) => console.error('[탈퇴] Auth signOut failed', e));
+      const signOutResult = supabase.auth.signOut();
+      if (signOutResult && typeof signOutResult.catch === 'function') {
+        await signOutResult.catch((e) => console.error('[탈퇴] Auth signOut failed', e));
+      }
 
       console.log('[탈퇴] 로컬 정리 완료');
     } catch (cleanupError) {
@@ -90,11 +93,9 @@ export const withdrawAccount = async (): Promise<boolean> => {
 
   // 서버 삭제는 실패했지만 로컬 정리는 끝난 경우, 사용자에게 알림을 줄 수 있도록 결과 반환
   if (!serverDeleteSuccess && serverErrorMessage) {
-    console.warn(
-      `[탈퇴] 서버 데이터 삭제는 실패했습니다 (${serverErrorMessage}). 하지만 로컬 데이터는 정리되었습니다.`
+    throw new Error(
+      `계정 삭제 요청 중 오류가 발생했습니다. 네트워크 상태를 확인하시거나 다시 시도해 주세요. (상세: ${serverErrorMessage})`
     );
-    // 사용자에게 부분 성공(로컬만) 상태를 알리고 싶다면 여기서 throw 대신 success=true와 경고를 조합할 수 있음
-    // 여기서는 일단 성공으로 간주하되, 로그를 남겨 디버깅 가능하게 함
   }
 
   return true;
