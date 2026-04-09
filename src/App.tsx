@@ -1,10 +1,8 @@
-// src/App.tsx
-import { useEffect, lazy, Suspense } from 'react';
-import { Routes, Route } from 'react-router-dom';
+import { useEffect, lazy } from 'react';
+import { Routes, Route, Navigate } from 'react-router-dom';
 import { useLevelProgressStore } from '@/stores/useLevelProgressStore';
 import { useAuthStore } from '@/stores/useAuthStore';
 import { useCustomBackNavigation } from '@/hooks/useCustomBackNavigation';
-import { ErrorBoundary } from '@/components/ErrorBoundary';
 import { GlobalLoadingIndicator } from '@/components/GlobalLoadingIndicator';
 import { useErrorLogStore } from '@/stores/useErrorLogStore';
 import { useDebugStore } from '@/stores/useDebugStore';
@@ -142,107 +140,114 @@ function App() {
   }, []);
 
   return (
-    <ErrorBoundary>
+    <>
       <GlobalLoadingIndicator />
       <GlobalToastContainer />
       {import.meta.env.VITE_CI !== 'true' && <PwaUpdateNotification />}
-      <Suspense
-        fallback={
-          <div className="loading-fallback">
-            <div className="loading-text">로딩 중...</div>
-          </div>
-        }
-      >
-        <Routes>
-          <Route
-            path="/"
-            element={
-              <RequireAuth>
-                <HomePage />
-              </RequireAuth>
-            }
-          />
-          <Route
-            path="/category-select"
-            element={
-              <RequireAuth>
-                <CategorySelectPage />
-              </RequireAuth>
-            }
-          />
-          <Route
-            path="/level-select"
-            element={
-              <RequireAuth>
-                <LevelSelectPage />
-              </RequireAuth>
-            }
-          />
-          <Route
-            path="/quiz"
-            element={
-              <RequireAuth>
-                <QuizPage />
-              </RequireAuth>
-            }
-          />
-          <Route
-            path="/result"
-            element={
-              <RequireAuth>
-                <ResultPage />
-              </RequireAuth>
-            }
-          />
-          <Route
-            path="/ranking"
-            element={
-              <RequireAuth>
-                <RankingPage />
-              </RequireAuth>
-            }
-          />
-          <Route
-            path="/roadmap"
-            element={
-              <RequireAuth>
-                <RoadmapPage />
-              </RequireAuth>
-            }
-          />
-          <Route path="/my-page" element={<MyPage />} />
-          <Route
-            path="/notifications"
-            element={
-              <RequireAuth>
-                <NotificationPage />
-              </RequireAuth>
-            }
-          />
-          <Route path="/debug" element={<DebugPage />} />
-          <Route path="/privacy-policy" element={<PrivacyPolicyPage />} />
-          <Route
-            path="/shop"
-            element={
-              <RequireAuth>
-                <ShopPage />
-              </RequireAuth>
-            }
-          />
-        </Routes>
+      <Routes>
+        <Route
+          path="/"
+          element={
+            <RequireAuth>
+              <HomePage />
+            </RequireAuth>
+          }
+        />
+        <Route
+          path="/category-select"
+          element={
+            <RequireAuth>
+              <CategorySelectPage />
+            </RequireAuth>
+          }
+        />
+        <Route
+          path="/level-select"
+          element={
+            <RequireAuth>
+              <LevelSelectPage />
+            </RequireAuth>
+          }
+        />
+        <Route
+          path="/quiz"
+          element={
+            <RequireAuth>
+              <QuizPage />
+            </RequireAuth>
+          }
+        />
+        <Route
+          path="/result"
+          element={
+            <RequireAuth>
+              <ResultPage />
+            </RequireAuth>
+          }
+        />
+        <Route
+          path="/ranking"
+          element={
+            <RequireAuth>
+              <RankingPage />
+            </RequireAuth>
+          }
+        />
+        <Route
+          path="/roadmap"
+          element={
+            <RequireAuth>
+              <RoadmapPage />
+            </RequireAuth>
+          }
+        />
+        <Route path="/my-page" element={<MyPage />} />
+        <Route
+          path="/notifications"
+          element={
+            <RequireAuth>
+              <NotificationPage />
+            </RequireAuth>
+          }
+        />
+        <Route
+          path="/debug"
+          element={
+            <RequireAuth>
+              <DebugPage />
+            </RequireAuth>
+          }
+        />
+        <Route
+          path="/privacy-policy"
+          element={
+            <RequireAuth>
+              <PrivacyPolicyPage />
+            </RequireAuth>
+          }
+        />
+        <Route
+          path="/shop"
+          element={
+            <RequireAuth>
+              <ShopPage />
+            </RequireAuth>
+          }
+        />
+        <Route path="*" element={<Navigate to="/" replace />} />
+      </Routes>
 
-        {/* Global Debug Panel (Outside Routes, High Z-Index) */}
-        {import.meta.env.DEV && isDebugPanelOpen && DebugPanel && <DebugPanel />}
-        {/* Debug Visual Overlay (SafeArea guides, component borders) */}
-        {import.meta.env.DEV && DebugOverlay && <DebugOverlay />}
-        {/* Debug Return Floater (Quick back to debug page) */}
-        {import.meta.env.DEV && DebugReturnFloater && <DebugReturnFloater />}
-        {/* Visual Guardian (Overflow Detector) */}
-        {import.meta.env.DEV && VisualGuardian && <VisualGuardian />}
-        {/* Debug Shortcuts (Lazy Loaded) */}
-        {import.meta.env.DEV && DebugShortcutsWrapper && <DebugShortcutsWrapper />}
-      </Suspense>
-    </ErrorBoundary>
+      {/* Global Debug Panel (Outside Routes, High Z-Index) */}
+      {import.meta.env.DEV && isDebugPanelOpen && DebugPanel && <DebugPanel />}
+      {/* Debug Visual Overlay (SafeArea guides, component borders) */}
+      {import.meta.env.DEV && DebugOverlay && <DebugOverlay />}
+      {/* Debug Return Floater (Quick back to debug page) */}
+      {import.meta.env.DEV && DebugReturnFloater && <DebugReturnFloater />}
+      {/* Visual Guardian (Overflow Detector) */}
+      {import.meta.env.DEV && VisualGuardian && <VisualGuardian />}
+      {/* Debug Shortcuts (Lazy Loaded) */}
+      {import.meta.env.DEV && DebugShortcutsWrapper && <DebugShortcutsWrapper />}
+    </>
   );
 }
 

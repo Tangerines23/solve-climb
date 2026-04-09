@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { render, screen, fireEvent } from '@testing-library/react';
+import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { LevelSelectPage } from '../LevelSelectPage';
 import { BrowserRouter, useSearchParams } from 'react-router-dom';
 import { useLevelProgressStore } from '../../stores/useLevelProgressStore';
@@ -204,7 +204,7 @@ describe('LevelSelectPage', () => {
     expect(mockNavigate).toHaveBeenCalledWith(expect.stringContaining('mode=survival'));
   });
 
-  it('should handle world switching', () => {
+  it('should handle world switching', async () => {
     render(
       <BrowserRouter>
         <LevelSelectPage />
@@ -213,7 +213,10 @@ describe('LevelSelectPage', () => {
 
     const nextBtn = screen.getByText('›');
     fireEvent.click(nextBtn);
-    expect(mockNavigate).toHaveBeenCalledWith(expect.stringContaining('world=World2'));
+
+    await waitFor(() => {
+      expect(mockNavigate).toHaveBeenCalledWith(expect.stringContaining('world=World2'));
+    });
   });
 
   it('should toggle favorite on long press', () => {
@@ -229,7 +232,7 @@ describe('LevelSelectPage', () => {
     expect(defaultFavoriteStore.addFavorite).toHaveBeenCalled();
   });
 
-  it('should toggle sheet expansion', () => {
+  it('should toggle sheet expansion', async () => {
     const { container } = render(
       <BrowserRouter>
         <LevelSelectPage />
@@ -240,6 +243,8 @@ describe('LevelSelectPage', () => {
     fireEvent.click(handleBar!);
 
     const page = container.querySelector('.level-select-page');
-    expect(page).toHaveClass('sheet-expanded');
+    await waitFor(() => {
+      expect(page).toHaveClass('sheet-expanded');
+    });
   });
 });
