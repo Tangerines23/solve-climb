@@ -174,26 +174,14 @@ jobs:
           fi
           echo "✅ All required secrets are configured"
 
-      - name: 🐘 DB Lint Check
-        env:
-          SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
-          SUPABASE_DB_PASSWORD: ${{ secrets.SUPABASE_DB_PASSWORD }}
-          VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
+      - name: 🐘 DB Lint Check (Local-First)
         run: |
-          # Extract project ref from URL (e.g., https://abcdef.supabase.co -> abcdef)
-          if [ -z "$VITE_SUPABASE_URL" ]; then
-            echo "Error: VITE_SUPABASE_URL is not set"
-            exit 1
-          fi
-          export PROJECT_REF=$(echo "$VITE_SUPABASE_URL" | sed -E 's|https://([^.]+)\.supabase\.co.*|\1|')
-          if [ -z "$PROJECT_REF" ] || [ "$PROJECT_REF" = "$VITE_SUPABASE_URL" ]; then
-            echo "Error: Failed to extract project ref from URL: $VITE_SUPABASE_URL"
-            exit 1
-          fi
-          echo "Extracted project ref: $PROJECT_REF"
-          # 풀러(Supavisor) 사용 → IPv4 연결. --skip-pooler 시 직접 연결은 GitHub Runner IPv6 미지원으로 실패
-          npx supabase link --project-ref "$PROJECT_REF" --password "$SUPABASE_DB_PASSWORD"
-          npx supabase db lint --linked --fail-on error
+          # Start minimal Supabase services for linting (requires Docker)
+          npx supabase start -x realtime,storage,edge-functions,inbucket,auth,studio
+          # Apply current PR migrations to the local instance
+          npx supabase db reset
+          # Run lint against the newly reset local database
+          npm run check:db:lint
 
       - name: DB validation
         env:
