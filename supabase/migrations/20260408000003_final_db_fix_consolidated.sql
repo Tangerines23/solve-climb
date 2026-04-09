@@ -22,10 +22,10 @@ CREATE OR REPLACE FUNCTION public.get_ranking_v2(
     p_limit pg_catalog.int4 DEFAULT 50
 )
 RETURNS TABLE (
-    user_id pg_catalog.uuid,
-    nickname pg_catalog.text,
-    score pg_catalog.int8,
-    rank pg_catalog.int8
+    out_user_id pg_catalog.uuid,
+    out_nickname pg_catalog.text,
+    out_score pg_catalog.int8,
+    out_rank pg_catalog.int8
 ) 
 LANGUAGE plpgsql
 SECURITY DEFINER
@@ -36,7 +36,7 @@ BEGIN
         RETURN QUERY
         SELECT 
             p.id as out_user_id,
-            pg_catalog.COALESCE(p.nickname, '익명 등반가'::pg_catalog.text) as out_nickname,
+            COALESCE(p.nickname, '익명 등반가'::pg_catalog.text) as out_nickname,
             CASE 
                 WHEN p_type = 'time-attack' THEN p.weekly_score_timeattack::pg_catalog.int8
                 WHEN p_type = 'survival' THEN p.weekly_score_survival::pg_catalog.int8
@@ -52,14 +52,14 @@ BEGIN
                 ) DESC
             )::pg_catalog.int8 as out_rank
         FROM public.profiles p
-        WHERE (
+        WHERE p_category = p_category AND (
             CASE 
                 WHEN p_type = 'time-attack' THEN p.weekly_score_timeattack
                 WHEN p_type = 'survival' THEN p.weekly_score_survival
                 ELSE p.weekly_score_total
             END
         ) > 0::pg_catalog.int8
-        ORDER BY out_score DESC
+        ORDER BY 3 DESC
         LIMIT p_limit;
     ELSE
         -- All-Time (Total Mastery)
@@ -68,44 +68,46 @@ BEGIN
             WITH user_mastery AS (
                 SELECT ulr.user_id, pg_catalog.sum(ulr.best_score) as total_mastery
                 FROM public.user_level_records ulr
+                WHERE (p_category = 'all'::pg_catalog.text OR ulr.category_id = p_category)
                 GROUP BY ulr.user_id
             )
             SELECT 
                 um.user_id as out_user_id,
-                pg_catalog.COALESCE(p.nickname, '익명 등반가'::pg_catalog.text) as out_nickname,
+                COALESCE(p.nickname, '익명 등반가'::pg_catalog.text) as out_nickname,
                 um.total_mastery::pg_catalog.int8 as out_score,
                 pg_catalog.rank() OVER (ORDER BY um.total_mastery DESC)::pg_catalog.int8 as out_rank
             FROM user_mastery um
             LEFT JOIN public.profiles p ON um.user_id = p.id
-            ORDER BY out_score DESC
+            ORDER BY 3 DESC
             LIMIT p_limit;
         ELSE
             -- Best Score per mode
             RETURN QUERY
-        SELECT 
-            p.id as out_user_id,
-            pg_catalog.COALESCE(p.nickname, '익명 등반가'::pg_catalog.text) as out_nickname,
-            CASE 
-                WHEN p_type = 'time-attack' THEN p.best_score_timeattack::pg_catalog.int8
-                ELSE p.best_score_survival::pg_catalog.int8
-            END as out_score,
-            pg_catalog.rank() OVER (
-                ORDER BY (
-                    CASE 
-                        WHEN p_type = 'time-attack' THEN p.best_score_timeattack
-                        ELSE p.best_score_survival
-                    END
-                ) DESC
-            )::pg_catalog.int8 as out_rank
-        FROM public.profiles p
-        WHERE (
-            CASE 
-                WHEN p_type = 'time-attack' THEN p.best_score_timeattack
-                ELSE p.best_score_survival
-            END
-        ) > 0
-        ORDER BY out_score DESC
-        LIMIT p_limit;
+            SELECT 
+                p.id as out_user_id,
+                COALESCE(p.nickname, '익명 등반가'::pg_catalog.text) as out_nickname,
+                CASE 
+                    WHEN p_type = 'time-attack' THEN p.best_score_timeattack::pg_catalog.int8
+                    ELSE p.best_score_survival::pg_catalog.int8
+                END as out_score,
+                pg_catalog.rank() OVER (
+                    ORDER BY (
+                        CASE 
+                            WHEN p_type = 'time-attack' THEN p.best_score_timeattack
+                            ELSE p.best_score_survival
+                        END
+                    ) DESC
+                )::pg_catalog.int8 as out_rank
+            FROM public.profiles p
+            WHERE p_category = p_category AND (
+                CASE 
+                    WHEN p_type = 'time-attack' THEN p.best_score_timeattack
+                    ELSE p.best_score_survival
+                END
+            ) > 0
+            ORDER BY 3 DESC
+            LIMIT p_limit;
+        END IF;
     END IF;
 END;
 $$;
@@ -126,23 +128,23 @@ DECLARE
     v_tier pg_catalog.jsonb;
 BEGIN
     FOR v_rec IN (SELECT * FROM public.get_ranking_v2(NULL::pg_catalog.text, 'weekly'::pg_catalog.text, 'total'::pg_catalog.text, 3)) LOOP
-        v_tier := public.calculate_tier(v_rec.score::pg_catalog.int8);
+        v_tier := public.calculate_tier(v_rec.out_score::pg_catalog.int8);
         INSERT INTO public.hall_of_fame (week_start_date, user_id, nickname, score, mode, rank, tier_level, tier_stars)
-        VALUES (v_week_start, v_rec.user_id, v_rec.nickname, v_rec.score, 'total'::pg_catalog.text, v_rec.rank::pg_catalog.int4, (v_tier->>'level')::pg_catalog.int4, (v_tier->>'stars')::pg_catalog.int4)
+        VALUES (v_week_start, v_rec.out_user_id, v_rec.out_nickname, v_rec.out_score, 'total'::pg_catalog.text, v_rec.out_rank::pg_catalog.int4, (v_tier->>'level')::pg_catalog.int4, (v_tier->>'stars')::pg_catalog.int4)
         ON CONFLICT (id) DO NOTHING;
     END LOOP;
 
     FOR v_rec IN (SELECT * FROM public.get_ranking_v2(NULL::pg_catalog.text, 'weekly'::pg_catalog.text, 'time-attack'::pg_catalog.text, 3)) LOOP
-        v_tier := public.calculate_tier(v_rec.score::pg_catalog.int8);
+        v_tier := public.calculate_tier(v_rec.out_score::pg_catalog.int8);
         INSERT INTO public.hall_of_fame (week_start_date, user_id, nickname, score, mode, rank, tier_level, tier_stars)
-        VALUES (v_week_start, v_rec.user_id, v_rec.nickname, v_rec.score, 'time-attack'::pg_catalog.text, v_rec.rank::pg_catalog.int4, (v_tier->>'level')::pg_catalog.int4, (v_tier->>'stars')::pg_catalog.int4)
+        VALUES (v_week_start, v_rec.out_user_id, v_rec.out_nickname, v_rec.out_score, 'time-attack'::pg_catalog.text, v_rec.out_rank::pg_catalog.int4, (v_tier->>'level')::pg_catalog.int4, (v_tier->>'stars')::pg_catalog.int4)
         ON CONFLICT (id) DO NOTHING;
     END LOOP;
 
     FOR v_rec IN (SELECT * FROM public.get_ranking_v2(NULL::pg_catalog.text, 'weekly'::pg_catalog.text, 'survival'::pg_catalog.text, 3)) LOOP
-        v_tier := public.calculate_tier(v_rec.score::pg_catalog.int8);
+        v_tier := public.calculate_tier(v_rec.out_score::pg_catalog.int8);
         INSERT INTO public.hall_of_fame (week_start_date, user_id, nickname, score, mode, rank, tier_level, tier_stars)
-        VALUES (v_week_start, v_rec.user_id, v_rec.nickname, v_rec.score, 'survival'::pg_catalog.text, v_rec.rank::pg_catalog.int4, (v_tier->>'level')::pg_catalog.int4, (v_tier->>'stars')::pg_catalog.int4)
+        VALUES (v_week_start, v_rec.out_user_id, v_rec.out_nickname, v_rec.out_score, 'survival'::pg_catalog.text, v_rec.out_rank::pg_catalog.int4, (v_tier->>'level')::pg_catalog.int4, (v_tier->>'stars')::pg_catalog.int4)
         ON CONFLICT (id) DO NOTHING;
     END LOOP;
 
@@ -166,9 +168,9 @@ DECLARE
     v_tier pg_catalog.jsonb;
 BEGIN
     FOR v_rec IN (SELECT * FROM public.get_ranking_v2(NULL::pg_catalog.text, 'weekly'::pg_catalog.text, 'total'::pg_catalog.text, 3)) LOOP
-        v_tier := public.calculate_tier(v_rec.score::pg_catalog.int8);
+        v_tier := public.calculate_tier(v_rec.out_score::pg_catalog.int8);
         INSERT INTO public.hall_of_fame (week_start_date, user_id, nickname, score, mode, rank, tier_level, tier_stars)
-        VALUES (v_week_start, v_rec.user_id, v_rec.nickname, v_rec.score, 'total'::pg_catalog.text, v_rec.rank::pg_catalog.int4, (v_tier->>'level')::pg_catalog.int4, (v_tier->>'stars')::pg_catalog.int4)
+        VALUES (v_week_start, v_rec.out_user_id, v_rec.out_nickname, v_rec.out_score, 'total'::pg_catalog.text, v_rec.out_rank::pg_catalog.int4, (v_tier->>'level')::pg_catalog.int4, (v_tier->>'stars')::pg_catalog.int4)
         ON CONFLICT (id) DO NOTHING;
     END LOOP;
     UPDATE public.profiles SET weekly_score_total = 0, weekly_score_timeattack = 0, weekly_score_survival = 0, updated_at = pg_catalog.now();
@@ -190,10 +192,10 @@ DECLARE
   v_tier_info pg_catalog.jsonb;
 BEGIN
   SELECT total_mastery_score INTO v_total_mastery FROM public.profiles WHERE id = p_user_id;
-  v_tier_info := public.calculate_tier(pg_catalog.COALESCE(v_total_mastery, 0::pg_catalog.int8));
+  v_tier_info := public.calculate_tier(COALESCE(v_total_mastery, 0::pg_catalog.int8));
   
   UPDATE public.profiles
-  SET current_tier_level = pg_catalog.LEAST((v_tier_info->>'level')::pg_catalog.int4, 100),
+  SET current_tier_level = LEAST((v_tier_info->>'level')::pg_catalog.int4, 100),
       updated_at = pg_catalog.now()
   WHERE id = p_user_id;
   
@@ -240,7 +242,7 @@ BEGIN
   
   UPDATE public.profiles SET last_game_submit_at = pg_catalog.now() WHERE id = v_user_id; 
   
-  v_earned_minerals := pg_catalog.LEAST(pg_catalog.floor(v_calculated_score::pg_catalog.numeric / 10)::pg_catalog.int4, 10000);
+  v_earned_minerals := LEAST(pg_catalog.floor(v_calculated_score::pg_catalog.numeric / 10)::pg_catalog.int4, 10000);
   UPDATE public.profiles SET minerals = minerals + v_earned_minerals WHERE id = v_user_id;
   
   PERFORM pg_catalog.set_config('app.bypass_profile_security', '', true);
@@ -326,7 +328,7 @@ BEGIN
         ELSE weekly_score_total 
       END)::pg_catalog.int8 DESC
     )::pg_catalog.int8 as out_rank,
-    pg_catalog.COALESCE(p.nickname, '익명 등반가'::pg_catalog.text) as out_nickname,
+    COALESCE(p.nickname, '익명 등반가'::pg_catalog.text) as out_nickname,
     (CASE 
       WHEN p_mode = 'time-attack'::pg_catalog.text THEN weekly_score_timeattack 
       WHEN p_mode = 'survival'::pg_catalog.text THEN weekly_score_survival 
@@ -360,7 +362,7 @@ BEGIN
     
     UPDATE public.profiles
     SET minerals = minerals + v_reward_minerals,
-        stamina = CASE WHEN v_reward_stamina > 0 THEN pg_catalog.greatest(stamina, v_reward_stamina) ELSE stamina END,
+        stamina = CASE WHEN v_reward_stamina > 0 THEN GREATEST(stamina, v_reward_stamina) ELSE stamina END,
         last_ad_stamina_recharge = CASE WHEN v_reward_stamina > 0 THEN pg_catalog.now() ELSE last_ad_stamina_recharge END,
         updated_at = pg_catalog.now()
     WHERE id = v_user_id
@@ -422,11 +424,11 @@ CREATE OR REPLACE FUNCTION public.check_mastery_consistency()
  LANGUAGE plpgsql SECURITY DEFINER SET search_path = '' AS $$
 BEGIN
     RETURN QUERY
-    SELECT p.id, pg_catalog.COALESCE(p.nickname, '익명 등반가'::pg_catalog.text), p.total_mastery_score::pg_catalog.int8,
-        pg_catalog.COALESCE((SELECT pg_catalog.sum(ulr.best_score::pg_catalog.int8) FROM public.user_level_records ulr WHERE ulr.user_id = p.id), 0::pg_catalog.int8)::pg_catalog.int8,
-        (('Inconsistency detected: profile='::pg_catalog.text || p.total_mastery_score::pg_catalog.text || ', records='::pg_catalog.text || pg_catalog.COALESCE((SELECT pg_catalog.sum(ulr.best_score::pg_catalog.int8) FROM public.user_level_records ulr WHERE ulr.user_id = p.id), 0::pg_catalog.int8)::pg_catalog.text))::pg_catalog.text
+    SELECT p.id, COALESCE(p.nickname, '익명 등반가'::pg_catalog.text), p.total_mastery_score::pg_catalog.int8,
+        COALESCE((SELECT pg_catalog.sum(ulr.best_score::pg_catalog.int8) FROM public.user_level_records ulr WHERE ulr.user_id = p.id), 0::pg_catalog.int8)::pg_catalog.int8,
+        (('Inconsistency detected: profile='::pg_catalog.text || p.total_mastery_score::pg_catalog.text || ', records='::pg_catalog.text || COALESCE((SELECT pg_catalog.sum(ulr.best_score::pg_catalog.int8) FROM public.user_level_records ulr WHERE ulr.user_id = p.id), 0::pg_catalog.int8)::pg_catalog.text))::pg_catalog.text
     FROM public.profiles p
-    WHERE p.total_mastery_score::pg_catalog.int8 != pg_catalog.COALESCE((SELECT pg_catalog.sum(ulr.best_score::pg_catalog.int8) FROM public.user_level_records ulr WHERE ulr.user_id = p.id), 0::pg_catalog.int8)::pg_catalog.int8;
+    WHERE p.total_mastery_score::pg_catalog.int8 != COALESCE((SELECT pg_catalog.sum(ulr.best_score::pg_catalog.int8) FROM public.user_level_records ulr WHERE ulr.user_id = p.id), 0::pg_catalog.int8)::pg_catalog.int8;
 END;
 $$;
 

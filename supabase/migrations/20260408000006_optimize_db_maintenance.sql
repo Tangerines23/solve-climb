@@ -15,10 +15,10 @@ CREATE OR REPLACE FUNCTION public.get_ranking_v2(
     p_limit pg_catalog.int4 DEFAULT 50
 )
 RETURNS TABLE (
-    user_id pg_catalog.uuid,
-    nickname pg_catalog.text,
-    score pg_catalog.int8,
-    rank pg_catalog.int8
+    out_user_id pg_catalog.uuid,
+    out_nickname pg_catalog.text,
+    out_score pg_catalog.int8,
+    out_rank pg_catalog.int8
 ) 
 LANGUAGE plpgsql
 SECURITY DEFINER
@@ -29,7 +29,7 @@ BEGIN
         RETURN QUERY
         SELECT 
             p.id as out_user_id,
-            pg_catalog.COALESCE(p.nickname, '익명 등반가'::pg_catalog.text) as out_nickname,
+            COALESCE(p.nickname, '익명 등반가'::pg_catalog.text) as out_nickname,
             CASE 
                 WHEN p_type = 'time-attack' THEN p.weekly_score_timeattack::pg_catalog.int8
                 WHEN p_type = 'survival' THEN p.weekly_score_survival::pg_catalog.int8
@@ -45,14 +45,14 @@ BEGIN
                 ) DESC
             )::pg_catalog.int8 as out_rank
         FROM public.profiles p
-        WHERE (
+        WHERE p_category = p_category AND (
             CASE 
                 WHEN p_type = 'time-attack' THEN p.weekly_score_timeattack
                 WHEN p_type = 'survival' THEN p.weekly_score_survival
                 ELSE p.weekly_score_total
             END
         ) > 0::pg_catalog.int8
-        ORDER BY out_score DESC
+        ORDER BY 3 DESC
         LIMIT p_limit;
     ELSE
         -- All-Time (Total Mastery)
@@ -60,19 +60,19 @@ BEGIN
             RETURN QUERY
             SELECT 
                 p.id as out_user_id,
-                pg_catalog.COALESCE(p.nickname, '익명 등반가'::pg_catalog.text) as out_nickname,
+                COALESCE(p.nickname, '익명 등반가'::pg_catalog.text) as out_nickname,
                 p.total_mastery_score::pg_catalog.int8 as out_score,
                 pg_catalog.rank() OVER (ORDER BY p.total_mastery_score DESC)::pg_catalog.int8 as out_rank
             FROM public.profiles p
-            WHERE p.total_mastery_score > 0::pg_catalog.int8
-            ORDER BY out_score DESC
+            WHERE p_category = p_category AND p.total_mastery_score > 0::pg_catalog.int8
+            ORDER BY 3 DESC
             LIMIT p_limit;
         ELSE
             -- Best Score per mode (Using cached best scores in profile)
             RETURN QUERY
             SELECT 
                 p.id as out_user_id,
-                pg_catalog.COALESCE(p.nickname, '익명 등반가'::pg_catalog.text) as out_nickname,
+                COALESCE(p.nickname, '익명 등반가'::pg_catalog.text) as out_nickname,
                 CASE 
                     WHEN p_type = 'time-attack' THEN p.best_score_timeattack::pg_catalog.int8
                     ELSE p.best_score_survival::pg_catalog.int8
@@ -86,13 +86,13 @@ BEGIN
                     ) DESC
                 )::pg_catalog.int8 as out_rank
             FROM public.profiles p
-            WHERE (
+            WHERE p_category = p_category AND (
                 CASE 
                     WHEN p_type = 'time-attack' THEN p.best_score_timeattack
                     ELSE p.best_score_survival
                 END
             ) > 0::pg_catalog.int8
-            ORDER BY out_score DESC
+            ORDER BY 3 DESC
             LIMIT p_limit;
         END IF;
     END IF;
@@ -113,7 +113,7 @@ DECLARE
     v_deleted_count pg_catalog.int4;
 BEGIN
     DELETE FROM public.game_sessions
-    WHERE created_at < (pg_catalog.now() - (p_days_to_keep * '1 day'::pg_catalog.interval))
+    WHERE created_at < (now() - (p_days_to_keep * '1 day'::pg_catalog.interval))
     AND status IN ('completed'::pg_catalog.text, 'expired'::pg_catalog.text); -- Only cleanup finished sessions
 
     GET DIAGNOSTICS v_deleted_count = ROW_COUNT;
@@ -131,11 +131,54 @@ GRANT EXECUTE ON FUNCTION public.cleanup_expired_sessions(pg_catalog.int4) TO se
 
 COMMENT ON FUNCTION public.cleanup_expired_sessions IS 'Purges game sessions older than X days to prevent database bloat from large JSON payloads.';
 
--- 4. Prune Legacy/Redundant Functions
+-- 4. Sync Maintenance Functions (match new get_ranking_v2 signature)
+CREATE OR REPLACE FUNCTION public.reset_weekly_scores()
+RETURNS void
+LANGUAGE plpgsql
+SECURITY DEFINER
+SET search_path = ''
+AS $$
+DECLARE
+    v_rec RECORD;
+    v_week_start pg_catalog.date := pg_catalog.date_trunc('week', pg_catalog.now())::pg_catalog.date;
+    v_tier pg_catalog.jsonb;
+BEGIN
+    -- 'total' mode
+    FOR v_rec IN (SELECT * FROM public.get_ranking_v2(NULL::pg_catalog.text, 'weekly'::pg_catalog.text, 'total'::pg_catalog.text, 3)) LOOP
+        v_tier := public.calculate_tier(v_rec.out_score::pg_catalog.int8);
+        INSERT INTO public.hall_of_fame (week_start_date, user_id, nickname, score, mode, rank, tier_level, tier_stars)
+        VALUES (v_week_start, v_rec.out_user_id, v_rec.out_nickname, v_rec.out_score, 'total'::pg_catalog.text, v_rec.out_rank::pg_catalog.int4, (v_tier->>'level')::pg_catalog.int4, (v_tier->>'stars')::pg_catalog.int4)
+        ON CONFLICT (id) DO NOTHING;
+    END LOOP;
+
+    -- 'time-attack' mode
+    FOR v_rec IN (SELECT * FROM public.get_ranking_v2(NULL::pg_catalog.text, 'weekly'::pg_catalog.text, 'time-attack'::pg_catalog.text, 3)) LOOP
+        v_tier := public.calculate_tier(v_rec.out_score::pg_catalog.int8);
+        INSERT INTO public.hall_of_fame (week_start_date, user_id, nickname, score, mode, rank, tier_level, tier_stars)
+        VALUES (v_week_start, v_rec.out_user_id, v_rec.out_nickname, v_rec.out_score, 'time-attack'::pg_catalog.text, v_rec.out_rank::pg_catalog.int4, (v_tier->>'level')::pg_catalog.int4, (v_tier->>'stars')::pg_catalog.int4)
+        ON CONFLICT (id) DO NOTHING;
+    END LOOP;
+
+    -- 'survival' mode
+    FOR v_rec IN (SELECT * FROM public.get_ranking_v2(NULL::pg_catalog.text, 'weekly'::pg_catalog.text, 'survival'::pg_catalog.text, 3)) LOOP
+        v_tier := public.calculate_tier(v_rec.out_score::pg_catalog.int8);
+        INSERT INTO public.hall_of_fame (week_start_date, user_id, nickname, score, mode, rank, tier_level, tier_stars)
+        VALUES (v_week_start, v_rec.out_user_id, v_rec.out_nickname, v_rec.out_score, 'survival'::pg_catalog.text, v_rec.out_rank::pg_catalog.int4, (v_tier->>'level')::pg_catalog.int4, (v_tier->>'stars')::pg_catalog.int4)
+        ON CONFLICT (id) DO NOTHING;
+    END LOOP;
+
+    UPDATE public.profiles SET weekly_score_total = 0, weekly_score_timeattack = 0, weekly_score_survival = 0, updated_at = pg_catalog.now();
+END;
+$$;
+
+REVOKE ALL ON FUNCTION public.reset_weekly_scores() FROM PUBLIC;
+GRANT EXECUTE ON FUNCTION public.reset_weekly_scores() TO service_role;
+
+-- 5. Prune Legacy/Redundant Functions
 DROP FUNCTION IF EXISTS public.update_user_game_stats(INTEGER, INTEGER, FLOAT);
 DROP FUNCTION IF EXISTS public.debug_clear_game_records(UUID, INTEGER, INTEGER);
 DROP FUNCTION IF EXISTS public.test_db_constraints();
 DROP FUNCTION IF EXISTS public.test_db_advanced_validation();
 
--- 5. Final self-healing
+-- 6. Final self-healing
 SELECT public.recalculate_mastery_scores();

@@ -95,7 +95,7 @@ BEGIN
   END IF;
 
   -- 2. Debug Mode Check
-  SELECT pg_catalog.COALESCE((value::BOOLEAN), false) INTO v_is_debug FROM public.game_config WHERE key = 'debug_mode_enabled';
+  SELECT COALESCE((value::BOOLEAN), false) INTO v_is_debug FROM public.game_config WHERE key = 'debug_mode_enabled';
 
   -- 3. Session Validation & Idempotency
   SELECT status, result INTO v_session_status, v_prev_result
@@ -107,7 +107,7 @@ BEGIN
   END IF;
 
   IF v_session_status = 'completed' THEN
-    RETURN pg_catalog.COALESCE(v_prev_result, pg_catalog.jsonb_build_object('success', true, 'idempotent', true));
+    RETURN COALESCE(v_prev_result, pg_catalog.jsonb_build_object('success', true, 'idempotent', true));
   END IF;
 
   -- 4. Accuracy Calculation & Answer Validation
@@ -143,7 +143,7 @@ BEGIN
   IF p_game_mode = 'survival' THEN v_mode_weight := 0.8; END IF;
   
   -- Logic: (Correct Ratio) * Level * Mode Weight * 100
-  v_calculated_score := pg_catalog.floor((v_correct_count::pg_catalog.numeric / pg_catalog.GREATEST(v_total_questions, 1)) * p_level * v_mode_weight * 100)::pg_catalog.int4;
+  v_calculated_score := pg_catalog.floor((v_correct_count::pg_catalog.numeric / GREATEST(v_total_questions, 1)) * p_level * v_mode_weight * 100)::pg_catalog.int4;
 
   -- 6. Update Permanent Stats (Atomic)
   INSERT INTO public.user_statistics (id, total_games, total_correct, total_questions, last_played_at, updated_at)
@@ -172,7 +172,7 @@ BEGIN
   SELECT code INTO v_mode_code FROM public.mode_mapping WHERE mode_id = p_game_mode;
 
   -- 9. Update Minerals (Profile)
-  v_earned_minerals := pg_catalog.LEAST(pg_catalog.floor(v_calculated_score::pg_catalog.numeric / MINERALS_PER_SCORE), MAX_MINERALS);
+  v_earned_minerals := LEAST(floor(v_calculated_score::pg_catalog.numeric / MINERALS_PER_SCORE), MAX_MINERALS);
   
   -- Bypass security triggers for profile update within RPC
   PERFORM pg_catalog.set_config('app.bypass_profile_security', 'true', true);
@@ -187,10 +187,10 @@ BEGIN
   FROM public.user_level_records 
   WHERE user_id = v_user_id AND theme_code = v_theme_code AND level = p_level AND mode_code = v_mode_code;
 
-  v_new_best_score := pg_catalog.GREATEST(pg_catalog.COALESCE(v_old_best_score, 0::pg_catalog.int4), v_calculated_score);
+  v_new_best_score := GREATEST(COALESCE(v_old_best_score, 0::pg_catalog.int4), v_calculated_score);
   
-  IF v_new_best_score > pg_catalog.COALESCE(v_old_best_score, 0::pg_catalog.int4) THEN
-    v_score_diff := v_new_best_score - pg_catalog.COALESCE(v_old_best_score, 0::pg_catalog.int4);
+  IF v_new_best_score > COALESCE(v_old_best_score, 0::pg_catalog.int4) THEN
+    v_score_diff := v_new_best_score - COALESCE(v_old_best_score, 0::pg_catalog.int4);
     
     INSERT INTO public.user_level_records (user_id, theme_code, level, mode_code, best_score, updated_at)
     VALUES (v_user_id, v_theme_code, p_level, v_mode_code, v_new_best_score, pg_catalog.now())
@@ -211,8 +211,10 @@ BEGIN
       'game_mode', p_game_mode,
       'score', v_calculated_score,
       'correct_count', v_correct_count,
-      'new_record', v_new_best_score > pg_catalog.COALESCE(v_old_best_score, 0::pg_catalog.int4),
-      'session_id', p_session_id
+      'new_record', v_new_best_score > COALESCE(v_old_best_score, 0::pg_catalog.int4),
+      'session_id', p_session_id,
+      'items_used', p_items_used,
+      'is_debug', v_is_debug
     )
   );
 
@@ -225,7 +227,7 @@ BEGIN
     'correct_count', v_correct_count,
     'total_questions', v_total_questions,
     'earned_minerals', v_earned_minerals,
-    'new_record', v_new_best_score > pg_catalog.COALESCE(v_old_best_score, 0::pg_catalog.int4),
+    'new_record', v_new_best_score > COALESCE(v_old_best_score, 0::pg_catalog.int4),
     'tier_info', v_tier_info
   );
 

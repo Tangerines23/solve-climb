@@ -120,7 +120,7 @@ BEGIN
     UPDATE public.profiles SET last_game_submit_at = pg_catalog.now() WHERE id = v_user_id; 
   END IF;
   
-  v_earned_minerals := LEAST(FLOOR(v_calculated_score / 10)::INTEGER, 10000);
+  v_earned_minerals := LEAST(pg_catalog.floor(v_calculated_score / 10)::INTEGER, 10000);
   UPDATE public.profiles SET minerals = minerals + v_earned_minerals WHERE id = v_user_id;
   
   RETURN pg_catalog.jsonb_build_object('success'::text, true::boolean, 'earned_minerals'::text, v_earned_minerals, 'calculated_score'::text, v_calculated_score);
@@ -270,6 +270,6 @@ BEGIN
     'rpc_get_ranking_v2_exists'::TEXT,
     EXISTS (SELECT 1 FROM public.get_ranking_v2(NULL::TEXT, 'weekly'::TEXT, 'total'::TEXT, 1)),
     'get_ranking_v2 function works with explicit casts'::TEXT,
-    JSONB_build_object('result', (SELECT COUNT(*) FROM public.get_ranking_v2(NULL::TEXT, 'weekly'::TEXT, 'total'::TEXT, 1)));
+    JSONB_build_object('result', (SELECT pg_catalog.count(*) FROM public.get_ranking_v2(NULL::TEXT, 'weekly'::TEXT, 'total'::TEXT, 1)));
 END;
 $$ LANGUAGE plpgsql;
