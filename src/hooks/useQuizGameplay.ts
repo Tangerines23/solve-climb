@@ -21,6 +21,7 @@ export function useQuizGameplay({
   const [showCountdown, setShowCountdown] = useState(false);
   const [showSafetyRope, setShowSafetyRope] = useState(false);
   const [showPauseModal, setShowPauseModal] = useState(false);
+  const [showTutorial, setShowTutorial] = useState(false);
   const [remainingPauses, setRemainingPauses] = useState(3);
   const [timerResetKey, setTimerResetKey] = useState(0);
 
@@ -31,6 +32,10 @@ export function useQuizGameplay({
       setShowPauseModal(true);
     }
   }, [remainingPauses]);
+
+  const handleTutorialClick = useCallback(() => {
+    setShowTutorial(true);
+  }, []);
 
   const handlePauseResume = useCallback(() => {
     setRemainingPauses((prev) => prev - 1);
@@ -69,9 +74,12 @@ export function useQuizGameplay({
     showSafetyRope,
     setShowSafetyRope,
     showPauseModal,
+    showTutorial,
+    setShowTutorial,
     remainingPauses,
     timerResetKey,
     handlePauseClick,
+    handleTutorialClick,
     handlePauseResume,
     handlePauseExit,
     handleCountdownComplete,

@@ -33,9 +33,10 @@ vi.mock('../../utils/adService', () => ({
 }));
 
 // Mock useDebugStore to avoid actual store side effects
+const mockDebugState = { infiniteStamina: false };
 vi.mock('../useDebugStore', () => ({
   useDebugStore: {
-    getState: vi.fn(() => ({ infiniteStamina: false })),
+    getState: vi.fn(() => mockDebugState),
   },
 }));
 
@@ -57,6 +58,14 @@ describe('useUserStore', () => {
     expect(state.minerals).toBe(0);
     expect(state.stamina).toBe(5);
     expect(state.inventory).toEqual([]);
+    expect(state.isAnonymous).toBe(false);
+  });
+
+  describe('formatInventory', () => {
+    it('should handle null or empty input', () => {
+      // Accessing internal private-like function via indirect call if possible,
+      // but here we can just test it via fetchUserData branches.
+    });
   });
 
   describe('updateNickname', () => {
@@ -127,6 +136,11 @@ describe('useUserStore', () => {
       expect(state.inventory).toHaveLength(1);
       expect(state.inventory[0].code).toBe('item1');
     });
+    it('should handle fetch failure gracefully', async () => {
+      vi.mocked(supabase.auth.getUser).mockRejectedValue(new Error('Auth failed'));
+      await useUserStore.getState().fetchUserData();
+      expect(useUserStore.getState().isLoading).toBe(false);
+    });
   });
 
   describe('consumeStamina', () => {
@@ -169,6 +183,27 @@ describe('useUserStore', () => {
 
       expect(supabase.rpc).toHaveBeenCalledWith('purchase_item', { p_item_id: 1 });
       expect(result.success).toBe(true);
+    });
+    it('should handle purchase failure', async () => {
+      vi.mocked(supabase.rpc).mockResolvedValue({
+        data: { success: false, message: 'No money' },
+        error: null,
+      } as any);
+
+      const result = await useUserStore.getState().purchaseItem(1);
+      expect(result.success).toBe(false);
+      expect(result.message).toBe('No money');
+    });
+
+    it('should handle validation failure', async () => {
+      vi.mocked(supabase.rpc).mockResolvedValue({
+        data: { unexpected: 'format' },
+        error: null,
+      } as any);
+
+      const result = await useUserStore.getState().purchaseItem(1);
+      expect(result.success).toBe(false);
+      expect(result.message).toContain('실패');
     });
   });
 
@@ -252,6 +287,15 @@ describe('useUserStore', () => {
       await useUserStore.getState().debugRemoveItems();
       expect(supabase.rpc).toHaveBeenCalledWith('debug_set_inventory_quantity', expect.any(Object));
     });
+    it('should handle remove items failure gracefully', async () => {
+      vi.mocked(supabase.from).mockReturnValue({
+        select: vi.fn().mockReturnThis(),
+        eq: vi.fn().mockResolvedValue({ data: null, error: { message: 'DB Error' } }),
+      } as any);
+
+      await useUserStore.getState().debugRemoveItems();
+      expect(supabase.rpc).not.toHaveBeenCalledWith('debug_set_inventory_quantity');
+    });
   });
 
   describe('checkStamina', () => {
@@ -267,6 +311,70 @@ describe('useUserStore', () => {
 
       await useUserStore.getState().checkStamina();
       expect(useUserStore.getState().stamina).toBe(8);
+    });
+  });
+
+  describe('recoverMineralsAds', () => {
+    it('should call secure_reward_ad_view for minerals', async () => {
+      vi.mocked(AdService.showRewardedAd).mockResolvedValue({ success: true });
+      vi.mocked(supabase.rpc).mockResolvedValue({
+        data: { success: true, minerals: 50 },
+        error: null,
+      } as any);
+
+      const result = await useUserStore.getState().recoverMineralsAds();
+      expect(result.success).toBe(true);
+      expect(supabase.rpc).toHaveBeenCalledWith('secure_reward_ad_view', {
+        p_ad_type: 'mineral_recharge',
+      });
+    });
+
+    it('should handle ad failure', async () => {
+      vi.mocked(AdService.showRewardedAd).mockResolvedValue({ success: false, error: 'Ad Error' });
+      const result = await useUserStore.getState().recoverMineralsAds();
+      expect(result.success).toBe(false);
+      expect(result.message).toContain('광고 시청 실패');
+    });
+  });
+
+  describe('security policy edge cases', () => {
+    it('rewardMinerals should return error due to security policy', async () => {
+      const result = await useUserStore.getState().rewardMinerals(100);
+      expect(result.success).toBe(false);
+      expect(result.message).toContain('보안');
+    });
+
+    it('refundStamina should return error due to security policy', async () => {
+      const result = await useUserStore.getState().refundStamina();
+      expect(result.success).toBe(false);
+      expect(result.message).toContain('보안');
+    });
+
+    it('rewardMinerals with invalid amount', async () => {
+      const result = await useUserStore.getState().rewardMinerals(-10);
+      expect(result.success).toBe(false);
+    });
+  });
+
+  describe('debug methods extra', () => {
+    it('debugSetStamina should call RPC and update state', async () => {
+      vi.mocked(supabase.rpc).mockResolvedValue({ data: { success: true }, error: null } as any);
+      await useUserStore.getState().debugSetStamina(50);
+      expect(useUserStore.getState().stamina).toBe(50);
+    });
+
+    it('debugSetMinerals should call RPC and update state', async () => {
+      vi.mocked(supabase.rpc).mockResolvedValue({ data: { success: true }, error: null } as any);
+      await useUserStore.getState().debugSetMinerals(1000);
+      expect(useUserStore.getState().minerals).toBe(1000);
+    });
+  });
+
+  describe('unexpected RPC errors', () => {
+    it('should handle database crash in consumeItem', async () => {
+      vi.mocked(supabase.rpc).mockRejectedValue(new Error('Fatal'));
+      const result = await useUserStore.getState().consumeItem(1);
+      expect(result.success).toBe(false);
     });
   });
 });

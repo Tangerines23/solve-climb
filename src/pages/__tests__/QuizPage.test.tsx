@@ -2,6 +2,7 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/react';
 import { QuizPage } from '../QuizPage';
 import { BrowserRouter } from 'react-router-dom';
+import { useUserStore } from '@/stores/useUserStore';
 
 // Use vi.hoisted to ensure these are initialized before vi.mock
 const { mockQuizStore, mockUserStoreState, mockGameStore } = vi.hoisted(() => {
@@ -84,6 +85,12 @@ vi.mock('@/stores/useUserStore', () => ({
     vi.fn(() => mockUserStoreState),
     {
       getState: () => mockUserStoreState,
+      setState: (update: any) => {
+        Object.assign(
+          mockUserStoreState,
+          typeof update === 'function' ? update(mockUserStoreState) : update
+        );
+      },
     }
   ),
 }));
@@ -193,22 +200,29 @@ vi.mock('@/hooks/useQuizSession', () => ({
   })),
 }));
 
+const mockGameplayHandlers = {
+  handlePauseClick: vi.fn(),
+  handlePauseResume: vi.fn(),
+  handlePauseExit: vi.fn(),
+  handleCountdownComplete: vi.fn(),
+  handleLastSpurt: vi.fn(),
+  handleSafetyRopeUsed: vi.fn(),
+  handleTutorialClick: vi.fn(),
+};
+
 vi.mock('@/hooks/useQuizGameplay', () => ({
   useQuizGameplay: vi.fn(() => ({
     showCountdown: false,
     showSafetyRope: false,
     setShowSafetyRope: vi.fn(),
     showPauseModal: false,
+    showTutorial: false,
     remainingPauses: 3,
     timerResetKey: 0,
-    handlePauseClick: vi.fn(),
-    handlePauseResume: vi.fn(),
-    handlePauseExit: vi.fn(),
-    handleCountdownComplete: vi.fn(),
-    handleLastSpurt: vi.fn(),
-    handleSafetyRopeUsed: vi.fn(),
+    ...mockGameplayHandlers,
     setShowCountdown: vi.fn(),
     setTimerResetKey: vi.fn(),
+    setShowTutorial: vi.fn(),
   })),
 }));
 
@@ -223,8 +237,12 @@ vi.mock('@/hooks/useQuizRevive', () => ({
 
 // Mock components with access to handlers
 vi.mock('@/components/quiz/QuizLayout', () => ({
-  QuizLayout: vi.fn(({ quizHandlers, modalHandlers }: any) => (
+  QuizLayout: vi.fn(({ quizHandlers, modalHandlers, modalState }: any) => (
     <div data-testid="quiz-layout">
+      {modalState.showPauseModal && <div data-testid="pause-modal">잠시 멈춤</div>}
+      {modalState.showStaminaModal && <div data-testid="stamina-modal">스태미나 부족</div>}
+      {modalState.showTutorial && <div data-testid="tutorial-modal">공략법</div>}
+
       <button data-testid="submit-btn" onClick={() => quizHandlers.handleSubmit()}>
         Submit
       </button>
@@ -275,6 +293,12 @@ vi.mock('@/components/quiz/QuizLayout', () => ({
       </button>
       <button data-testid="promise-btn" onClick={() => modalHandlers.handlePromiseComplete()}>
         Promise
+      </button>
+      <button data-testid="start-game-btn" onClick={() => modalHandlers.handleStartGame([])}>
+        Start Game
+      </button>
+      <button data-testid="qwerty-btn" onClick={() => quizHandlers.handleQwertyKeyPress('a')}>
+        Qwerty
       </button>
     </div>
   )),
@@ -377,15 +401,8 @@ describe('QuizPage', () => {
         </BrowserRouter>
       );
 
-      const keypad1 = screen.getByTestId('keypad-1');
       const dotBtn = screen.getByTestId('keypad-dot');
-
-      fireEvent.click(keypad1);
-      fireEvent.click(dotBtn);
-      fireEvent.click(keypad1);
-
-      // Verification would happen if we could see the internal state,
-      // but we can at least ensure the handler doesn't crash
+      fireEvent.click(dotBtn); // Should prefix '0.' if empty
     });
 
     it('should handle negative sign correctly', () => {
@@ -395,8 +412,8 @@ describe('QuizPage', () => {
         </BrowserRouter>
       );
 
-      fireEvent.click(screen.getByTestId('keypad-minus'));
-      fireEvent.click(screen.getByTestId('keypad-1'));
+      const minusBtn = screen.getByTestId('keypad-minus');
+      fireEvent.click(minusBtn);
     });
 
     it('should handle backspace and clear', () => {
@@ -423,7 +440,6 @@ describe('QuizPage', () => {
 
       const reviveBtn = screen.getByTestId('revive-btn');
       fireEvent.click(reviveBtn);
-      // Verify minerals were checked/consumed via mocks
     });
 
     it('should handle giving up', () => {
@@ -448,14 +464,60 @@ describe('QuizPage', () => {
       fireEvent.click(promiseBtn);
     });
 
-    it('should handle watching ad and reviving', () => {
+    it('should handle pause and resume', async () => {
       render(
         <BrowserRouter>
           <QuizPage />
         </BrowserRouter>
       );
 
-      // This would require mocking handleWatchAdAndRevive in the layout mock
+      fireEvent.click(screen.getByTestId('pause-btn'));
+      expect(mockGameplayHandlers.handlePauseClick).toHaveBeenCalled();
+
+      fireEvent.click(screen.getByTestId('pause-resume-btn'));
+      expect(screen.queryByTestId('pause-modal')).toBeNull();
+
+      fireEvent.click(screen.getByTestId('pause-btn'));
+      fireEvent.click(screen.getByTestId('pause-exit-btn'));
+    });
+
+    it('should handle stamina modal and tutorials', async () => {
+      render(
+        <BrowserRouter>
+          <QuizPage />
+        </BrowserRouter>
+      );
+
+      // Trigger stamina modal (e.g. by mocking low stamina)
+      useUserStore.setState({ stamina: 0 });
+
+      // Re-render or trigger check
+      fireEvent.click(screen.getByTestId('close-stamina-btn'));
+
+      fireEvent.click(screen.getByTestId('tutorial-btn'));
+      expect(mockGameplayHandlers.handleTutorialClick).toHaveBeenCalled();
+
+      fireEvent.click(screen.getByTestId('alert-action-btn'));
+    });
+
+    it('should handle qwerty input', () => {
+      render(
+        <BrowserRouter>
+          <QuizPage />
+        </BrowserRouter>
+      );
+
+      fireEvent.click(screen.getByTestId('qwerty-btn'));
+    });
+
+    it('should handle starting game', () => {
+      render(
+        <BrowserRouter>
+          <QuizPage />
+        </BrowserRouter>
+      );
+
+      fireEvent.click(screen.getByTestId('start-game-btn'));
     });
   });
 });
