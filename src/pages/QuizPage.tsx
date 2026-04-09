@@ -78,10 +78,6 @@ export function QuizPage() {
   const [showLastChanceModal, setShowLastChanceModal] = useState(false);
   const [isFlarePaused, setIsFlarePaused] = useState(false);
 
-  // [Base Camp Tutorial]
-  const [showTutorial, setShowTutorial] = useState(false);
-  const tutorialSteps: TutorialStep[] = TUTORIAL_STEPS as unknown as TutorialStep[];
-
   const { setExhausted, resetGame, isStaminaConsumed, feverLevel, lives } = useGameStore();
 
   const [questionKey, setQuestionKey] = useState(0);
@@ -221,9 +217,11 @@ export function QuizPage() {
     showSafetyRope,
     setShowSafetyRope,
     showPauseModal,
+    showTutorial,
     remainingPauses,
     timerResetKey,
     handlePauseClick,
+    handleTutorialClick,
     handlePauseResume,
     handlePauseExit,
     handleCountdownComplete,
@@ -231,6 +229,7 @@ export function QuizPage() {
     handleSafetyRopeUsed,
     setShowCountdown,
     setTimerResetKey,
+    setShowTutorial,
   } = useQuizGameplay({
     generateNewQuestion: () => generateNewQuestionRef.current(),
     smartHandleGameOver,
@@ -477,8 +476,10 @@ export function QuizPage() {
     setShowStaminaModal,
     onAlertAction,
     handlePromiseComplete,
-    setShowTutorial: (val: boolean) => setShowTutorial(val),
+    setShowTutorial: () => handleTutorialClick(),
   };
+
+  const tutorialSteps: TutorialStep[] = TUTORIAL_STEPS as unknown as TutorialStep[];
 
   if (isPreview)
     return (

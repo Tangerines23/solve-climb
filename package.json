@@ -29,7 +29,7 @@
     "test:unit": "vitest -c vitest.config.unit.js --run",
     "test:integration": "vitest -c vitest.config.integration.js --run",
     "test:all": "vitest --run",
-    "test:coverage": "vitest --coverage --run --coverage.reporter=text --coverage.reporter=json-summary --coverage.reporter=lcov --coverage.reporter=html",
+    "test:coverage": "vitest --coverage --run --coverage.all --coverage.statements=80 --coverage.branches=75 --coverage.reporter=text --coverage.reporter=json-summary --coverage.reporter=lcov --coverage.reporter=html",
     "test:coverage:unit": "vitest --project=unit --coverage --run",
     "test:components": "vitest src/components src/pages --run",
     "test:utils": "vitest src/utils src/stores --run",

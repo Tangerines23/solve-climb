@@ -108,10 +108,10 @@ export function QuizLayout({
         quizHandlers={quizHandlers}
         inputRef={inputRef}
         exitConfirmTimeoutRef={exitConfirmTimeoutRef}
-        setAnswerInput={quizHandlers.handleKeypadNumber} // This needs careful mapping
-        setDisplayValue={() => {}} // Placeholder, will fix in QuizPage
-        setShowExitConfirm={() => {}} // Placeholder
-        setIsFadingOut={() => {}} // Placeholder
+        setAnswerInput={quizHandlers.handleKeypadNumber}
+        setDisplayValue={() => {}}
+        setShowExitConfirm={() => {}}
+        setIsFadingOut={() => {}}
         SURVIVAL_QUESTION_TIME={quizState.timeLimit}
       />
 
@@ -136,7 +136,7 @@ export function QuizLayout({
         handleBack={handleBack}
         handleStartGame={handleStartGame}
         showPauseModal={showPauseModal}
-        remainingPauses={3} // Should be in state
+        remainingPauses={3}
         handlePauseClick={quizHandlers.onPause}
         handlePauseResume={handlePauseResume}
         handlePauseExit={handlePauseExit}
