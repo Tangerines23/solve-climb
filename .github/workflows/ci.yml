@@ -174,20 +174,31 @@ jobs:
           fi
           echo "✅ All required secrets are configured"
 
-      - name: 🐘 DB Lint Check (Local-First)
+      - name: 🐘 DB Lint Check & Validation (Local-First)
         run: |
           # Start minimal Supabase services for linting (requires Docker)
-          npx supabase start -x realtime,storage,edge-functions,inbucket,auth,studio
+          # We include edge-functions if needed, but keeping it minimal for speed
+          npx supabase start -x realtime,storage,inbucket,studio
+          
+          # Wait for services to be ready
+          sleep 5
+          
           # Apply current PR migrations to the local instance
           npx supabase db reset
+          
           # Run lint against the newly reset local database
           npm run check:db:lint
-
-      - name: DB validation
-        env:
-          VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
-          VITE_SUPABASE_ANON_KEY: ${{ secrets.VITE_SUPABASE_ANON_KEY }}
-        run: npm run check:db:validation
+          
+          # Extract local keys for validation script
+          LOCAL_JSON=$(npx supabase status -o json)
+          VITE_SUPABASE_URL=$(echo $LOCAL_JSON | jq -r '.API_URL')
+          # Using Service Role Key for validation to bypass RLS on test functions
+          VITE_SUPABASE_ANON_KEY=$(echo $LOCAL_JSON | jq -r '.SERVICE_ROLE_KEY')
+          
+          # Export to environment and run validation
+          export VITE_SUPABASE_URL=$VITE_SUPABASE_URL
+          export VITE_SUPABASE_ANON_KEY=$VITE_SUPABASE_ANON_KEY
+          npm run check:db:validation
 
   # 5. 빌드 가능성 확인
   build:
