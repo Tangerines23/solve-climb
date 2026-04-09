@@ -54,6 +54,43 @@
         margin-bottom: 12px;
         color: #00e5c1;
       }
+      #recovery-ui {
+        display: none;
+        position: fixed;
+        bottom: 40px;
+        left: 50%;
+        transform: translateX(-50%);
+        flex-direction: column;
+        align-items: center;
+        width: 90%;
+        max-width: 320px;
+        padding: 24px;
+        background: rgba(30,30,30,0.9);
+        border: 1px solid rgba(0, 229, 193, 0.3);
+        border-radius: 16px;
+        backdrop-filter: blur(10px);
+        box-shadow: 0 10px 40px rgba(0,0,0,0.5);
+        z-index: 1001;
+        text-align: center;
+      }
+      .recovery-text {
+        color: #eee;
+        font-size: 14px;
+        margin-bottom: 20px;
+        line-height: 1.5;
+      }
+      .recovery-btn {
+        background: #00e5c1;
+        color: #121212;
+        border: none;
+        padding: 12px 24px;
+        border-radius: 10px;
+        font-weight: bold;
+        cursor: pointer;
+        width: 100%;
+        transition: transform 0.2s;
+      }
+      .recovery-btn:active { transform: scale(0.95); }
     </style>
   </head>
   <body>
@@ -69,6 +106,32 @@
       <div class="loader-title">Solve Climb</div>
       <div id="js-status" style="font-size: 14px; opacity: 0.8">Initializing...</div>
     </div>
+
+    <div id="recovery-ui">
+      <div class="recovery-text">
+        접속이 지연되고 있습니다.<br/>네트워크 상태를 확인하거나 아래 버튼을 눌러 다시 시도해주세요.
+      </div>
+      <button class="recovery-btn" onclick="window.location.reload()">새로고침</button>
+    </div>
+
+    <script>
+      // Emergency Recovery Monitor
+      setTimeout(function() {
+        var loader = document.getElementById('loading-check');
+        if (loader && loader.style.display !== 'none') {
+          var recovery = document.getElementById('recovery-ui');
+          if (recovery) {
+            recovery.style.display = 'flex';
+          }
+          var status = document.getElementById('js-status');
+          if (status) {
+            status.innerText = 'Something went wrong. Please reload.';
+            status.style.color = '#ff6b6b';
+          }
+        }
+      }, 10000); // 10 seconds timeout
+    </script>
+
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
   </body>

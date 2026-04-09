@@ -1,6 +1,6 @@
-// src/AppContainer.tsx
 import { lazy, Suspense } from 'react';
 import { BrowserRouter } from 'react-router-dom';
+import { ErrorBoundary } from '@/components/ErrorBoundary';
 
 const App = lazy(() => import('@/App'));
 
@@ -10,17 +10,23 @@ function AppContainer() {
     diagnosis('AppContainer Initializing...');
   }
   return (
-    <BrowserRouter>
-      <Suspense
-        fallback={
-          <div className="loading-fallback">
-            <div className="loader-title">Solve Climb</div>
-          </div>
-        }
-      >
-        <App />
-      </Suspense>
-    </BrowserRouter>
+    <ErrorBoundary>
+      <BrowserRouter>
+        <Suspense fallback={<LoadingFallback />}>
+          <App />
+        </Suspense>
+      </BrowserRouter>
+    </ErrorBoundary>
+  );
+}
+
+function LoadingFallback() {
+  return (
+    <div className="loading-fallback">
+      <div className="loader-ring"></div>
+      <div className="loader-title">Solve Climb</div>
+      <div className="loader-subtitle">게임을 준비하고 있습니다...</div>
+    </div>
   );
 }
 
