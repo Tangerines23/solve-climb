@@ -1,4 +1,4 @@
-import { getErrorCode } from '../utils/errorHandler';
+import { useConnectivity } from '../hooks/useConnectivity';
 import { useToastStore } from '../stores/useToastStore';
 import './ErrorFallback.css';
 
@@ -10,10 +10,16 @@ interface ErrorFallbackProps {
 export function ErrorFallback({ error, resetError }: ErrorFallbackProps) {
   const isDevelopment = import.meta.env.DEV;
   const showToast = useToastStore((state) => state.showToast);
+  const isOnline = useConnectivity();
+
+  // 특수 에러 타입 판별
+  const isChunkLoadError =
+    (error as any).isChunkLoadError ||
+    error.message.includes('fetch') ||
+    error.message.includes('Loading chunk');
 
   const handleCopyError = () => {
-    const errorCode = getErrorCode(error);
-    const errorText = `[${errorCode}] ${error.message}\n\nURL: ${window.location.href}\nTime: ${new Date().toLocaleString()}\n\nStack:\n${error.stack || ''}`;
+    const errorText = `[${isChunkLoadError ? 'CHUNK_ERROR' : 'APP_ERROR'}] ${error.message}\n\nURL: ${window.location.href}\nTime: ${new Date().toLocaleString()}\n\nStack:\n${error.stack || ''}`;
     navigator.clipboard
       .writeText(errorText)
       .then(() => {
@@ -28,14 +34,22 @@ export function ErrorFallback({ error, resetError }: ErrorFallbackProps) {
   return (
     <div className="error-fallback">
       <div className="error-fallback-content glass-card p-xl">
-        <div className="error-fallback-icon">🧗‍♀️</div>
+        <div className="error-fallback-icon">
+          {!isOnline ? '📡' : isChunkLoadError ? '📦' : '🧗‍♀️'}
+        </div>
         <h1 className="error-fallback-title" data-testid="error-fallback-title">
-          산등성이에서 길을 잃었습니다
+          {!isOnline
+            ? '네트워크 연결이 끊겼습니다'
+            : isChunkLoadError
+              ? '리소스 로드에 실패했습니다'
+              : '산등성이에서 길을 잃었습니다'}
         </h1>
         <p className="error-fallback-message" data-testid="error-fallback-message">
-          예기치 못한 오류가 발생하여 정상으로 향하는 길이 일시적으로 차단되었습니다.
-          <br />
-          아래 버튼을 눌러 다시 등반을 시도해주세요.
+          {!isOnline
+            ? '현재 오프라인 상태입니다. 네트워크가 다시 연결되면 자동으로 시도할 수 있습니다.'
+            : isChunkLoadError
+              ? '필요한 파일을 불러오지 못했습니다. 연결을 확인하고 다시 시도해주세요.'
+              : '예기치 못한 오류가 발생하여 정상으로 향하는 길이 일시적으로 차단되었습니다.'}
         </p>
 
         {isDevelopment && (
@@ -45,7 +59,9 @@ export function ErrorFallback({ error, resetError }: ErrorFallbackProps) {
               <div className="debug-info-grid">
                 <div className="debug-info-item">
                   <span className="debug-label">Error Code:</span>
-                  <span className="debug-value code-font">{getErrorCode(error)}</span>
+                  <span className="debug-value code-font">
+                    {isChunkLoadError ? 'CHUNK_LOAD_FAILURE' : 'APP_RUNTIME_ERROR'}
+                  </span>
                 </div>
                 <div className="debug-info-item">
                   <span className="debug-label">Timestamp:</span>
@@ -72,10 +88,11 @@ export function ErrorFallback({ error, resetError }: ErrorFallbackProps) {
 
         <div className="error-fallback-actions">
           <button
-            className="error-fallback-button error-fallback-button-primary"
+            className={`error-fallback-button error-fallback-button-primary ${!isOnline ? 'disabled' : ''}`}
             onClick={resetError}
+            disabled={!isOnline}
           >
-            다시 시도하기
+            {!isOnline ? '연결 대기 중...' : '다시 시도하기'}
           </button>
           <button
             className="error-fallback-button error-fallback-button-secondary"

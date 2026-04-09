@@ -1,8 +1,9 @@
-import { lazy, Suspense } from 'react';
+import { Suspense } from 'react';
+import { resilientLazy } from '@/utils/resilientLazy';
 import { BrowserRouter } from 'react-router-dom';
 import { ErrorBoundary } from '@/components/ErrorBoundary';
 
-const App = lazy(() => import('@/App'));
+const App = resilientLazy(() => import('@/App'), 'AppMain');
 
 function AppContainer() {
   const diagnosis = (window as unknown as Record<string, unknown>).diagnosis;

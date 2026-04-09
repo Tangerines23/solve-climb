@@ -1,4 +1,5 @@
-import { useEffect, lazy } from 'react';
+import { useEffect } from 'react';
+import { resilientLazy } from '@/utils/resilientLazy';
 import { Routes, Route, Navigate } from 'react-router-dom';
 import { useLevelProgressStore } from '@/stores/useLevelProgressStore';
 import { useAuthStore } from '@/stores/useAuthStore';
@@ -11,68 +12,93 @@ import { useConnectivity } from '@/hooks/useConnectivity';
 import { PwaUpdateNotification } from '@/components/PwaUpdateNotification';
 import { RequireAuth } from '@/components/auth/RequireAuth';
 
-const HomePage = lazy(() =>
-  import('@/pages/HomePage').then((module) => ({ default: module.HomePage }))
+const HomePage = resilientLazy(
+  () => import('@/pages/HomePage').then((module) => ({ default: module.HomePage })),
+  'HomePage'
 );
 import { GlobalToastContainer } from '@/components/GlobalToastContainer';
-const CategorySelectPage = lazy(() =>
-  import('@/pages/CategorySelectPage').then((module) => ({ default: module.CategorySelectPage }))
+const CategorySelectPage = resilientLazy(
+  () =>
+    import('@/pages/CategorySelectPage').then((module) => ({ default: module.CategorySelectPage })),
+  'CategorySelectPage'
 );
-const LevelSelectPage = lazy(() =>
-  import('@/pages/LevelSelectPage').then((module) => ({ default: module.LevelSelectPage }))
+const LevelSelectPage = resilientLazy(
+  () => import('@/pages/LevelSelectPage').then((module) => ({ default: module.LevelSelectPage })),
+  'LevelSelectPage'
 );
-const QuizPage = lazy(() =>
-  import('@/pages/QuizPage').then((module) => ({ default: module.QuizPage }))
+const QuizPage = resilientLazy(
+  () => import('@/pages/QuizPage').then((module) => ({ default: module.QuizPage })),
+  'QuizPage'
 );
-const ResultPage = lazy(() =>
-  import('@/pages/ResultPage').then((module) => ({ default: module.ResultPage }))
+const ResultPage = resilientLazy(
+  () => import('@/pages/ResultPage').then((module) => ({ default: module.ResultPage })),
+  'ResultPage'
 );
-const RankingPage = lazy(() =>
-  import('@/pages/RankingPage').then((module) => ({ default: module.RankingPage }))
+const RankingPage = resilientLazy(
+  () => import('@/pages/RankingPage').then((module) => ({ default: module.RankingPage })),
+  'RankingPage'
 );
-const RoadmapPage = lazy(() =>
-  import('@/pages/RoadmapPage').then((module) => ({ default: module.RoadmapPage }))
+const RoadmapPage = resilientLazy(
+  () => import('@/pages/RoadmapPage').then((module) => ({ default: module.RoadmapPage })),
+  'RoadmapPage'
 );
-const MyPage = lazy(() => import('@/pages/MyPage').then((module) => ({ default: module.MyPage })));
-const NotificationPage = lazy(() =>
-  import('@/pages/NotificationPage').then((module) => ({ default: module.NotificationPage }))
+const MyPage = resilientLazy(
+  () => import('@/pages/MyPage').then((module) => ({ default: module.MyPage })),
+  'MyPage'
 );
-const DebugPage = lazy(() =>
-  import('@/pages/DebugPage').then((module) => ({ default: module.DebugPage }))
+const NotificationPage = resilientLazy(
+  () => import('@/pages/NotificationPage').then((module) => ({ default: module.NotificationPage })),
+  'NotificationPage'
 );
-const PrivacyPolicyPage = lazy(() =>
-  import('@/pages/PrivacyPolicyPage').then((module) => ({ default: module.PrivacyPolicyPage }))
+const DebugPage = resilientLazy(
+  () => import('@/pages/DebugPage').then((module) => ({ default: module.DebugPage })),
+  'DebugPage'
+);
+const PrivacyPolicyPage = resilientLazy(
+  () =>
+    import('@/pages/PrivacyPolicyPage').then((module) => ({ default: module.PrivacyPolicyPage })),
+  'PrivacyPolicyPage'
 );
 // AuthCallbackPage & AuthTestPage imports removed
-const ShopPage = lazy(() =>
-  import('@/pages/ShopPage').then((module) => ({ default: module.ShopPage }))
+const ShopPage = resilientLazy(
+  () => import('@/pages/ShopPage').then((module) => ({ default: module.ShopPage })),
+  'ShopPage'
 );
 
 // ⚠️ 개발 환경에서만 디버그 컴포넌트 로드 (CI 환경 제외)
 const isCI = import.meta.env.VITE_CI === 'true';
 const shouldShowDebug = !import.meta.env.PROD && !isCI;
 
-const DebugPanel = !shouldShowDebug ? () => null : lazy(() => import('./components/DebugPanel'));
+const DebugPanel = !shouldShowDebug
+  ? () => null
+  : resilientLazy(() => import('./components/DebugPanel'), 'DebugPanel');
 const DebugOverlay = !shouldShowDebug
   ? () => null
-  : lazy(() =>
-      import('./components/debug/DebugOverlay').then((m) => ({ default: m.DebugOverlay }))
+  : resilientLazy(
+      () => import('./components/debug/DebugOverlay').then((m) => ({ default: m.DebugOverlay })),
+      'DebugOverlay'
     );
 const DebugReturnFloater = !shouldShowDebug
   ? () => null
-  : lazy(() =>
-      import('./components/debug/DebugReturnFloater').then((m) => ({
-        default: m.DebugReturnFloater,
-      }))
+  : resilientLazy(
+      () =>
+        import('./components/debug/DebugReturnFloater').then((m) => ({
+          default: m.DebugReturnFloater,
+        })),
+      'DebugReturnFloater'
     );
 const VisualGuardian = !shouldShowDebug
   ? () => null
-  : lazy(() =>
-      import('./components/dev/VisualGuardian').then((m) => ({ default: m.VisualGuardian }))
+  : resilientLazy(
+      () => import('./components/dev/VisualGuardian').then((m) => ({ default: m.VisualGuardian })),
+      'VisualGuardian'
     );
 const DebugShortcutsWrapper = !shouldShowDebug
   ? () => null
-  : lazy(() => import('./components/debug/DebugShortcutsWrapper'));
+  : resilientLazy(
+      () => import('./components/debug/DebugShortcutsWrapper'),
+      'DebugShortcutsWrapper'
+    );
 
 function App() {
   // 네트워크 연결 상태 감시
