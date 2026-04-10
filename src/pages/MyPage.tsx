@@ -13,7 +13,6 @@ import { MyPageProfile } from '../components/my/MyPageProfile';
 import { MyPageStats } from '../components/my/MyPageStats';
 import { MyPageQuickAccess } from '../components/my/MyPageQuickAccess';
 import { MyPageSettings } from '../components/my/MyPageSettings';
-import { MyPageEffectsGuide } from '../components/my/MyPageEffectsGuide';
 import { useProfileStore } from '../stores/useProfileStore';
 import { useSettingsStore } from '../stores/useSettingsStore';
 import { useMyPageStats } from '../hooks/useMyPageStats';
@@ -556,9 +555,6 @@ export function MyPage() {
             onLogout={handleLogout}
             onWithdraw={handleWithdraw}
           />
-
-          {/* Game Effects Guide */}
-          <MyPageEffectsGuide />
 
           {/* Admin / Dev Tool Link */}
           {(useProfileStore.getState().isAdmin || import.meta.env.DEV) && (
