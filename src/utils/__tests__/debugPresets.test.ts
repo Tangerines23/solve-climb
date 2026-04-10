@@ -142,5 +142,82 @@ describe('debugPresets utility', () => {
     it('should throw error for unknown preset', async () => {
       await expect(applyPreset('invalid', userId)).rejects.toThrow('Preset not found');
     });
+
+    it('should handle veteran preset with dynamic mastery score', async () => {
+      (supabase.rpc as any).mockResolvedValue({ error: null });
+      vi.spyOn(useUserStore.getState(), 'fetchUserData').mockResolvedValue();
+
+      await applyPreset('veteran', userId);
+      // calculateScoreForTier should be called (logic inside applyPreset)
+      expect(supabase.rpc).toHaveBeenCalledWith('debug_set_mastery_score', expect.any(Object));
+    });
+  });
+
+  describe('executeDebugAction - missing cases', () => {
+    it('should handle setTier, setMinerals, setStamina', async () => {
+      (supabase.rpc as any).mockResolvedValue({ error: null });
+      const store = useUserStore.getState();
+      const mineralSpy = vi.spyOn(store, 'debugSetMinerals').mockResolvedValue();
+      const staminaSpy = vi.spyOn(store, 'debugSetStamina').mockResolvedValue();
+
+      await executeDebugAction({ type: 'setTier', level: 5 }, userId);
+      expect(supabase.rpc).toHaveBeenCalledWith('debug_set_tier', {
+        p_user_id: userId,
+        p_level: 5,
+      });
+
+      await executeDebugAction({ type: 'setMinerals', value: 100 }, userId);
+      expect(mineralSpy).toHaveBeenCalledWith(100);
+
+      await executeDebugAction({ type: 'setStamina', value: 10 }, userId);
+      expect(staminaSpy).toHaveBeenCalledWith(10);
+    });
+
+    it('should handle setGameTime with active session', async () => {
+      (supabase.from as any)().select.mockReturnThis();
+      (supabase.from as any)().eq.mockReturnThis();
+      (supabase.from as any)().order.mockReturnThis();
+      (supabase.from as any)().limit.mockReturnThis();
+      (supabase.from as any)().maybeSingle.mockResolvedValue({
+        data: { id: 'session1' },
+        error: null,
+      });
+      (supabase.rpc as any).mockResolvedValue({ error: null });
+
+      await executeDebugAction({ type: 'setGameTime', seconds: 30 }, userId);
+      expect(supabase.rpc).toHaveBeenCalledWith('debug_set_session_timer', {
+        p_session_id: 'session1',
+        p_seconds: 30,
+      });
+    });
+  });
+
+  describe('import/export presets', () => {
+    it('should export and import custom presets correctly', () => {
+      const mockPresets = [
+        { id: 'exp1', name: 'Exported', actions: [], isCustom: true as const, description: '' },
+      ];
+      vi.spyOn(storageService, 'get').mockReturnValue(mockPresets);
+      const setSpy = vi.spyOn(storageService, 'set');
+
+      const exported = exportCustomPresets();
+      expect(exported).toContain('Exported');
+
+      // Clear mock and import
+      vi.spyOn(storageService, 'get').mockReturnValue([]);
+      importCustomPresets(exported);
+      expect(setSpy).toHaveBeenCalledWith(
+        STORAGE_KEYS.DEBUG_CUSTOM_PRESETS,
+        expect.arrayContaining([expect.objectContaining({ id: 'exp1' })])
+      );
+    });
+
+    it('should throw error for invalid import format', () => {
+      expect(() => importCustomPresets('invalid-json')).toThrow();
+      expect(() => importCustomPresets('[]')).not.toThrow();
+      expect(() => importCustomPresets('{}')).toThrow('must be an array');
+    });
   });
 });
+import { exportCustomPresets, importCustomPresets } from '../debugPresets';
+import { STORAGE_KEYS } from '../../services';

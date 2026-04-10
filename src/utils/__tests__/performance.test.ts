@@ -238,5 +238,38 @@ describe('performance', () => {
 
       expect(reportSpy).toHaveBeenCalledWith('FID', 10); // 60 - 50
     });
+
+    it('should handle CLS calculation', () => {
+      const reportSpy = vi.spyOn(performanceMonitor, 'report');
+
+      const mockEntries = {
+        getEntries: () => [
+          {
+            name: 'CLS',
+            value: 0.1,
+            entryType: 'layout-shift',
+          },
+        ],
+      };
+
+      performanceMonitor.observeMetric('CLS');
+      mockCallback(mockEntries);
+
+      expect(reportSpy).toHaveBeenCalledWith('CLS', 0.1);
+    });
+
+    it('should warn about slow operations in dev mode', () => {
+      const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});
+
+      // Mock performance.now to simulate delay
+      const nowSpy = vi.spyOn(performance, 'now');
+      nowSpy.mockReturnValueOnce(1000).mockReturnValueOnce(1150); // 150ms duration (>100ms)
+
+      const end = measurePerformance('slow-op');
+      end();
+
+      expect(warnSpy).toHaveBeenCalledWith(expect.stringContaining("Slow operation 'slow-op'"));
+      nowSpy.mockRestore();
+    });
   });
 });

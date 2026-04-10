@@ -65,4 +65,30 @@ describe('logger.util', () => {
     logger.log('System Message', '#ff0000');
     expect(console.log).toHaveBeenCalled();
   });
+
+  it('should fallback when console.group is not a function', () => {
+    // Force console.group to be undefined (temporarily)
+    const originalGroup = console.group;
+    Object.defineProperty(console, 'group', { value: undefined, configurable: true });
+
+    logger.group('FallbackContext', 'Label', () => {});
+
+    expect(console.log).toHaveBeenCalledWith(expect.stringContaining('(Group Start)'));
+    expect(console.log).toHaveBeenCalledWith(expect.stringContaining('(Group End)'));
+
+    Object.defineProperty(console, 'group', { value: originalGroup, configurable: true });
+  });
+
+  it('should handle store addLog failure gracefully', () => {
+    vi.spyOn(useErrorLogStore.getState(), 'addLog').mockImplementation(() => {
+      throw new Error('Store failure');
+    });
+
+    // Should not throw
+    logger.error('LogContext', 'LogMsg');
+    expect(console.warn).toHaveBeenCalledWith(
+      expect.stringContaining('Failed to add log to store'),
+      expect.any(Error)
+    );
+  });
 });

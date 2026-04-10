@@ -10,11 +10,6 @@ export default mergeConfig(baseConfig, {
   test: {
     name: 'unit',
     include: ['src/**/*.test.{ts,tsx}'],
-    exclude: [
-      '**/storage.test.ts',
-      '**/debugPresets.test.ts',
-      '**/debugPresets.error.test.ts',
-      '**/useHistoryData.test.ts',
-    ],
+    exclude: [],
   },
 });

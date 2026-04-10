@@ -11,44 +11,50 @@ export function resilientLazy<T extends ComponentType<any>>(
 ) {
   return lazy(async () => {
     const STORAGE_KEY = `resilient-lazy-retry-${componentName}`;
+    let retryCount = 0;
+    const MAX_RETRIES = 2;
 
-    try {
-      const component = await importFn();
-      // 성공하면 리트라이 기록 초기화
-      sessionStorage.removeItem(STORAGE_KEY);
-      return component;
-    } catch (error) {
-      const isNetworkError =
-        error instanceof Error &&
-        (error.message.includes('fetch') ||
-          error.message.includes('Loading chunk') ||
-          error.message.includes('dynamic import'));
+    while (retryCount <= MAX_RETRIES) {
+      try {
+        const component = await importFn();
+        // 성공하면 리트라이 기록 초기화
+        sessionStorage.removeItem(STORAGE_KEY);
+        return component;
+      } catch (error) {
+        const isNetworkError =
+          error instanceof Error &&
+          (error.message.includes('fetch') ||
+            error.message.includes('Loading chunk') ||
+            error.message.includes('dynamic import'));
 
-      if (isNetworkError) {
-        const retryCount = parseInt(sessionStorage.getItem(STORAGE_KEY) || '0', 10);
-
-        // 최대 2회까지 자동 재시도 (페이지 리로드 없이)
-        if (retryCount < 2) {
-          sessionStorage.setItem(STORAGE_KEY, (retryCount + 1).toString());
+        if (isNetworkError && retryCount < MAX_RETRIES) {
+          retryCount++;
+          sessionStorage.setItem(STORAGE_KEY, retryCount.toString());
           logger.warn(
             'ResilientLazy',
-            `Retrying ${componentName} due to network error (${retryCount + 1}/2)`
+            `Retrying ${componentName} due to network error (${retryCount}/${MAX_RETRIES})`
           );
 
           // 약간의 지연 후 재시도
           await new Promise((resolve) => setTimeout(resolve, 1000));
-          return importFn();
+          continue;
         }
 
-        logger.error('ResilientLazy', `Failed to load ${componentName} after retries.`, error);
-
-        // 에러를 던져서 ErrorBoundary에서 잡히게 함
-        // 이때 에러 객체에 마킹을 해서 ErrorFallback에서 특수 처리할 수 있게 함
-        (error as any).isChunkLoadError = true;
-        (error as any).componentName = componentName;
+        // 최종 실패 시 처리
+        if (isNetworkError) {
+          logger.error(
+            'ResilientLazy',
+            `Failed to load ${componentName} after ${retryCount} retries.`,
+            error
+          );
+          (error as any).isChunkLoadError = true;
+          (error as any).componentName = componentName;
+        }
+        throw error;
       }
-
-      throw error;
     }
+
+    // unreachable but for Typescript happiness
+    throw new Error(`Load failed for ${componentName}`);
   });
 }
