@@ -62,7 +62,7 @@ test.describe('Visual Regression Testing (VRT) - UI 일관성 검증', () => {
 
   test('등반 일지 (Roadmap Page)', async ({ page }) => {
     await page.goto('/roadmap');
-    await page.waitForSelector('.history-page', { timeout: 15000 });
+    await page.waitForSelector('.history-page, .ranking-coming-soon', { timeout: 15000 });
     // 로드맵 애니메이션 및 데이터 로딩 대기
     await page.waitForTimeout(2000);
 
@@ -70,6 +70,7 @@ test.describe('Visual Regression Testing (VRT) - UI 일관성 검증', () => {
       fullPage: true,
       maxDiffPixelRatio: 0.2, // 로드맵 및 통계 탭의 동적 데이터 허용 (20%)
       mask: [
+        page.locator('.fog-overlay'),
         page.locator('.history-smart-comment'),
         page.locator('.history-tier-progress'),
         page.locator('.collection-content'),

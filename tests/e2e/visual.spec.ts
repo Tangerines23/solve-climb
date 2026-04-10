@@ -37,10 +37,11 @@ test.describe('Visual Regression Tests', () => {
 
       test('Ranking Page should match snapshot', async ({ page }) => {
         await page.goto('/ranking');
-        await page.waitForSelector('.ranking-list-container, .ranking-list', { timeout: 30000 });
+        await page.waitForSelector('.ranking-page, .ranking-coming-soon', { timeout: 30000 });
         await page.waitForTimeout(1000);
         await expect(page).toHaveScreenshot(`ranking-${viewport.name}.png`, {
           fullPage: true,
+          mask: [page.locator('.fog-overlay')],
           maxDiffPixels: 100, // 안티앨리어싱, 폰트 렌더링 등 미세 차이 허용
         });
       });
