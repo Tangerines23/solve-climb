@@ -62,10 +62,10 @@ function RoadmapComingSoon() {
 
 export function RoadmapPage() {
   return (
-    <div className="history-page">
+    <main className="history-page">
       <Header />
       <RoadmapComingSoon />
       <FooterNav />
-    </div>
+    </main>
   );
 }

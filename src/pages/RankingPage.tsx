@@ -62,10 +62,10 @@ function RankingComingSoon() {
 
 export function RankingPage() {
   return (
-    <div className="ranking-page">
+    <main className="ranking-page">
       <Header />
       <RankingComingSoon />
       <FooterNav />
-    </div>
+    </main>
   );
 }
