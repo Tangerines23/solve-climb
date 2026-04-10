@@ -23,6 +23,7 @@ function RankingComingSoon() {
           <span
             key={fog.id}
             className="fog-icon"
+            aria-hidden="true"
             style={{
               left: fog.left,
               top: fog.top,
@@ -38,7 +39,9 @@ function RankingComingSoon() {
       </div>
 
       <div className="maintenance-card">
-        <span className="maintenance-visual">🏕️</span>
+        <span className="maintenance-visual" aria-hidden="true">
+          🏕️
+        </span>
         <div className="coming-soon-badge">Coming Soon</div>
         <h2 className="maintenance-title">베이스캠프 정비 중</h2>
         <p className="maintenance-description">
@@ -48,7 +51,9 @@ function RankingComingSoon() {
           <br />곧 정상으로 향하는 길이 다시 열립니다!
         </p>
         <div style={{ opacity: 0.5 }}>
-          <span className="gear-icon">⚒️</span>
+          <span className="gear-icon" aria-hidden="true">
+            ⚒️
+          </span>
         </div>
       </div>
     </div>

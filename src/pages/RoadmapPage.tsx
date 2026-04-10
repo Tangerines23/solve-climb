@@ -23,6 +23,7 @@ function RoadmapComingSoon() {
           <span
             key={fog.id}
             className="fog-icon"
+            aria-hidden="true"
             style={{
               left: fog.left,
               top: fog.top,
@@ -38,7 +39,9 @@ function RoadmapComingSoon() {
       </div>
 
       <div className="maintenance-card">
-        <span className="maintenance-visual">🗺️</span>
+        <span className="maintenance-visual" aria-hidden="true">
+          🗺️
+        </span>
         <div className="coming-soon-badge">Coming Soon</div>
         <h2 className="maintenance-title">일지 기록소 정비 중</h2>
         <p className="maintenance-description">
@@ -48,7 +51,9 @@ function RoadmapComingSoon() {
           <br />곧 상세한 분석 리포트와 함께 돌아올게요!
         </p>
         <div style={{ opacity: 0.5 }}>
-          <span className="gear-icon">⚒️</span>
+          <span className="gear-icon" aria-hidden="true">
+            ⚒️
+          </span>
         </div>
       </div>
     </div>
