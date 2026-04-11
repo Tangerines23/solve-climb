@@ -441,7 +441,8 @@
   flex-direction: column;
   align-items: center;
   width: 100%;
-  gap: var(--spacing-xs); /* 8px -> var(--spacing-xs) */
+  flex: 1;
+  gap: var(--spacing-xs);
 }
 
 .answer-text {
@@ -456,6 +457,7 @@
 
 .answer-caret {
   width: 80%;
+  min-width: 120px;
   height: 4px;
   background-color: var(--color-mint-400);
   border-radius: var(--rounded-xs); /* 2px -> var(--rounded-xs) */

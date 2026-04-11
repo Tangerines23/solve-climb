@@ -138,7 +138,9 @@ export const QuizAnswerArea = React.memo(
               className={`answer-display ${inputAnimation} ${isError ? 'is-error' : ''} ${showFlash ? 'input-error-flash' : ''}`}
             >
               <div className="answer-content-container">
-                <span className="answer-text">{(isError ? displayValue : answerInput) || ' '}</span>
+                <span className="answer-text">
+                  {(isError ? displayValue : answerInput) || '\u00A0'}
+                </span>
                 {!isError && <div className="answer-caret"></div>}
               </div>
             </div>
