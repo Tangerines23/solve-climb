@@ -148,8 +148,8 @@
 
 .level-select-graphic-container {
   position: relative;
-  min-height: 150vh; /* 충분한 스크롤 공간 확보 */
-  padding-bottom: 200px;
+  min-height: 120vh;
+  padding-bottom: 180px; /* 시트 가시 높이(160px) + 여유분 */
 }
 
 /* 시트가 펼쳐졌을 때 상단 빈 공간 클릭 방지 및 접기용 오버레이 */
@@ -183,8 +183,8 @@
   flex-direction: column;
 
   /* 접힌 상태: 요약 부분만 보이도록 transform 이동 */
-  /* 헤더 높이가 대략 120px 정도라고 가정 */
-  transform: translateY(calc(80vh - 120px));
+  /* 헤더 높이가 약 160px 정도라고 가정 (기존 140px에서 추가 확대) */
+  transform: translateY(calc(80vh - 160px));
   transition: transform 0.4s cubic-bezier(0.165, 0.84, 0.44, 1);
 
   box-shadow: 0 -10px 30px rgba(0, 0, 0, 0.5);
@@ -213,8 +213,14 @@
 
 /* 시트 헤더 (요약 정보) */
 .sheet-header {
-  padding: 0 var(--spacing-xl) var(--spacing-md);
+  /* 상단 패딩은 줄이고 하단 패딩을 대폭 늘려 타이틀을 위로 밀어올림 */
+  padding: var(--spacing-sm) var(--spacing-xl)
+    calc(var(--spacing-3xl) + env(safe-area-inset-bottom, 20px));
   cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start; /* 중앙 대신 상단 기준 정렬 후 패딩으로 조정 */
+  min-height: 120px;
 }
 
 .level-select-summary {
@@ -236,7 +242,7 @@
 
   .bottom-sheet {
     height: 85vh;
-    transform: translateY(calc(85vh - 100px));
+    transform: translateY(calc(85vh - 140px)); /* 가로모드 가시 높이 확대 */
     width: 60%; /* 가로모드에서는 너비를 줄여서 중앙 배치 가능 (선택 사항) */
     margin: 0 auto;
   }
@@ -248,22 +254,36 @@
 
 /* 주제 요약 */
 .level-select-summary {
-  margin-bottom: var(--spacing-2xl);
+  margin-bottom: 0;
   padding-top: 0px;
-  /* 그래픽 영역과의 간격 (더 많이 겹치게) */
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+}
+
+.level-select-summary-category {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--color-primary, #14b8a6);
+  background: rgba(20, 184, 166, 0.1);
+  padding: var(--spacing-micro) var(--spacing-sm);
+  border-radius: var(--rounded-2xs);
+  margin-bottom: var(--spacing-xs);
 }
 
 .level-select-summary-title {
   font-size: 1.5rem;
   font-weight: bold;
   color: var(--color-text-primary);
-  margin: 0 0 var(--spacing-sm) 0;
+  margin: 0 0 var(--spacing-md) 0; /* 간격 확대: 4px -> 12px */
+  line-height: 1.2;
 }
 
 .level-select-summary-desc {
-  font-size: 1rem;
+  font-size: 0.9375rem;
   color: var(--color-text-secondary);
   margin: 0;
+  line-height: 1.4;
 }
 
 /* 에러 메시지 */

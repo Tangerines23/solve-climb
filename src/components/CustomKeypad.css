@@ -1,12 +1,12 @@
 .custom-keypad {
   display: flex;
   flex-direction: column;
-  gap: clamp(8px, 1.5vh, 12px);
-  padding: clamp(12px, 2vh, 20px);
-  padding-bottom: max(clamp(12px, 2vh, 20px), env(safe-area-inset-bottom));
+  gap: clamp(10px, 2vh, 16px);
+  padding: clamp(16px, 2.5vh, 24px);
+  padding-bottom: max(clamp(16px, 2.5vh, 24px), env(safe-area-inset-bottom));
   background-color: transparent;
   width: 100%;
-  max-width: var(--modal-width-portrait);
+  max-width: min(500px, 94vw);
   margin: 0 auto;
   flex-shrink: 0;
   box-sizing: border-box;
@@ -15,9 +15,11 @@
 .keypad-row {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  gap: clamp(8px, 1.5vh, 12px);
+  gap: clamp(10px, 2vh, 16px);
   width: 100%;
   grid-auto-flow: row;
+  justify-items: center; /* 버튼을 그리드 칸 중앙에 배치 */
+  align-items: center;
 }
 
 .keypad-row-last {
@@ -30,22 +32,22 @@
 
 .keypad-row-last .keypad-key-submit {
   aspect-ratio: 1;
-  height: clamp(60px, 14vw, 76px);
-  max-height: clamp(60px, 14vw, 76px);
-  min-height: clamp(60px, 14vw, 76px);
+  height: clamp(74px, 18vw, 92px);
+  max-height: clamp(74px, 18vw, 92px);
+  min-height: clamp(74px, 18vw, 92px);
 }
 
 .keypad-key {
   aspect-ratio: 1;
   /* 버튼 높이 통일 */
-  height: clamp(60px, 14vw, 76px);
-  max-height: clamp(60px, 14vw, 76px);
-  min-height: clamp(60px, 14vw, 76px);
+  height: clamp(74px, 18vw, 92px);
+  max-height: clamp(74px, 18vw, 92px);
+  min-height: clamp(74px, 18vw, 92px);
   background-color: var(--color-gray-900); /* 더 어두운 배경 */
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  border-radius: var(--rounded-lg);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: var(--rounded-sm);
   color: var(--color-text-primary);
-  font-size: clamp(1.6rem, 4.5vw, 2rem);
+  font-size: clamp(1.8rem, 5.5vw, 2.4rem);
   font-weight: 700;
   cursor: pointer;
   transition:
@@ -57,7 +59,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  box-shadow: 0 4px 0 rgba(0, 0, 0, 0.3); /* 일관된 입체감 */
+  box-shadow: 0 5px 0 rgba(0, 0, 0, 0.4); /* 일관된 입체감 */
 }
 
 .keypad-key:active {
@@ -106,13 +108,13 @@
 /* 터치 피드백 개선 - 버튼 높이 동기화 */
 @media (hover: none) and (pointer: coarse) {
   .keypad-key {
-    min-height: clamp(60px, 14vw, 76px);
-    height: clamp(60px, 14vw, 76px);
+    min-height: clamp(74px, 18vw, 92px);
+    height: clamp(74px, 18vw, 92px);
   }
 
   .keypad-key-submit {
-    min-height: clamp(60px, 14vw, 76px);
-    height: clamp(60px, 14vw, 76px);
+    min-height: clamp(74px, 18vw, 92px);
+    height: clamp(74px, 18vw, 92px);
   }
 }
 

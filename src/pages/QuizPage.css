@@ -250,7 +250,7 @@
 .quiz-card {
   position: relative;
   width: 100%;
-  max-width: min(var(--modal-width-portrait), 92vw);
+  max-width: min(480px, 94vw);
   display: flex;
   flex-direction: column;
   justify-content: space-between; /* 상단 문제와 하단 입력창 사이 거리 확보 */
@@ -440,6 +440,7 @@
   display: flex;
   flex-direction: column;
   align-items: center;
+  width: 100%;
   gap: var(--spacing-xs); /* 8px -> var(--spacing-xs) */
 }
 
@@ -454,7 +455,7 @@
 }
 
 .answer-caret {
-  width: clamp(40px, 12vw, 60px);
+  width: 80%;
   height: 4px;
   background-color: var(--color-mint-400);
   border-radius: var(--rounded-xs); /* 2px -> var(--rounded-xs) */

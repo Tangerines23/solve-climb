@@ -151,10 +151,30 @@ export const APP_CONFIG = {
 
   // 월드 설정
   WORLDS: [
-    { id: 'World1', name: '기초 탐험', desc: '기초 개념과 핵심 연산', mountainId: 'math' },
-    { id: 'World2', name: '도형과 공간', desc: '공간 지각과 기하학', mountainId: 'math' },
-    { id: 'World3', name: '확률과 통계', desc: '데이터 분석과 예측', mountainId: 'math' },
-    { id: 'World4', name: '공학 및 응용', desc: '컴퓨터 과학과 신호 처리', mountainId: 'math' },
+    {
+      id: 'World1',
+      name: '수와 대수',
+      desc: '사칙연산의 기초부터 방정식의 논리까지, 수학적 사고의 근육을 키워보세요.',
+      mountainId: 'math',
+    },
+    {
+      id: 'World2',
+      name: '도형과 공간',
+      desc: '평면과 입체를 넘나들며 각도와 넓이, 피타고라스의 정리를 정복하세요.',
+      mountainId: 'math',
+    },
+    {
+      id: 'World3',
+      name: '확률과 통계',
+      desc: '평균부터 조합까지, 데이터 속에서 확률의 법칙과 정보를 읽어내는 힘.',
+      mountainId: 'math',
+    },
+    {
+      id: 'World4',
+      name: '공학 및 응용',
+      desc: '이진수와 논리 게이트로 배우는 컴퓨터 과학, 공학적 문제 해결의 첫걸음.',
+      mountainId: 'math',
+    },
     { id: 'LangWorld1', name: '일본어 시작', desc: '문자와 기본 표현', mountainId: 'language' },
   ],
 

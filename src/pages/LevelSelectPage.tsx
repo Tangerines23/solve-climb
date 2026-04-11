@@ -45,24 +45,11 @@ export function LevelSelectPage() {
   }, [tryRecover]);
 
   useLayoutEffect(() => {
-    const container = mapAreaRef.current;
-
-    if (container) {
-      // Find the SVG graphic to calculate target scroll
-      const graphic = container.querySelector('.climb-graphic') as HTMLElement;
-
-      if (graphic) {
-        // Target scrolling to show current progress area (roughly 75% down from top of content)
-        const viewportHeight = container.clientHeight;
-        const totalHeight = graphic.scrollHeight;
-        const visibleRatio = 0.75;
-        container.scrollTop = totalHeight - viewportHeight * visibleRatio;
-      }
-
-      requestAnimationFrame(() => {
-        setIsReady(true);
-      });
-    }
+    // 이제 스크롤 위치 제어는 ClimbGraphic 내부에서 더 정확하게(현재 레벨 기준) 처리하므로,
+    // 여기서는 화면 준비 상태만 전환합니다.
+    requestAnimationFrame(() => {
+      setIsReady(true);
+    });
   }, []);
 
   // URL 파라미터 검증 및 데이터 로드
@@ -84,7 +71,9 @@ export function LevelSelectPage() {
   }
 
   // 월드와 카테고리 정보 가져오기
-  const worldName = APP_CONFIG.WORLD_MAP[worldParam as keyof typeof APP_CONFIG.WORLD_MAP];
+  const worldInfo = APP_CONFIG.WORLDS.find((w) => w.id === worldParam);
+  const worldName =
+    worldInfo?.name || APP_CONFIG.WORLD_MAP[worldParam as keyof typeof APP_CONFIG.WORLD_MAP];
   const categoryInfo = APP_CONFIG.CATEGORIES.find((cat) => cat.id === categoryParam);
 
   if (!worldName || !categoryInfo) {
@@ -294,8 +283,9 @@ export function LevelSelectPage() {
 
         <div className="sheet-header" onClick={() => setIsSheetExpanded(true)}>
           <div className="level-select-summary">
-            <h2 className="level-select-summary-title">{categoryInfo.name}</h2>
-            <p className="level-select-summary-desc">{categoryInfo.symbol} 주제를 정복해보세요!</p>
+            <span className="level-select-summary-category">{categoryInfo.name}</span>
+            <h2 className="level-select-summary-title">{worldName}</h2>
+            <p className="level-select-summary-desc">{worldInfo?.desc}</p>
           </div>
         </div>
 
