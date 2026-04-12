@@ -116,7 +116,9 @@ export function useQuizNavigation({
 
   return {
     showExitConfirm,
+    setShowExitConfirm,
     isFadingOut,
+    setIsFadingOut,
     toastValue,
     setToastValue,
     handleBack,

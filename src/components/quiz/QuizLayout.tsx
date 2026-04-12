@@ -45,6 +45,19 @@ interface QuizLayoutProps {
   altitudePhase: string;
   promiseData: { rule: string; example: string };
   tutorialSteps: TutorialStep[];
+
+  // Game Logic Props (Passed to QuizCard)
+  activeItems: string[];
+  usedItems: string[];
+  score: number;
+  isExhausted: boolean;
+  handleTimeUp: () => void;
+
+  // Setters (Internal state management from Page)
+  setAnswerInput: (value: string) => void;
+  setDisplayValue: (value: string) => void;
+  setShowExitConfirm: (value: boolean) => void;
+  setIsFadingOut: (value: boolean) => void;
 }
 
 export function QuizLayout({
@@ -62,6 +75,15 @@ export function QuizLayout({
   altitudePhase,
   promiseData,
   tutorialSteps,
+  activeItems,
+  usedItems,
+  score,
+  isExhausted,
+  handleTimeUp,
+  setAnswerInput,
+  setDisplayValue,
+  setShowExitConfirm,
+  setIsFadingOut,
 }: QuizLayoutProps) {
   const exitConfirmTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
@@ -108,11 +130,16 @@ export function QuizLayout({
         quizHandlers={quizHandlers}
         inputRef={inputRef}
         exitConfirmTimeoutRef={exitConfirmTimeoutRef}
-        setAnswerInput={quizHandlers.handleKeypadNumber}
-        setDisplayValue={() => {}}
-        setShowExitConfirm={() => {}}
-        setIsFadingOut={() => {}}
+        setAnswerInput={setAnswerInput}
+        setDisplayValue={setDisplayValue}
+        setShowExitConfirm={setShowExitConfirm}
+        setIsFadingOut={setIsFadingOut}
         SURVIVAL_QUESTION_TIME={quizState.timeLimit}
+        activeItems={activeItems}
+        usedItems={usedItems}
+        score={score}
+        isExhausted={isExhausted}
+        handleTimeUp={handleTimeUp}
       />
 
       <QuizModals

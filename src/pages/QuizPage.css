@@ -263,10 +263,10 @@
   backdrop-filter: blur(var(--glass-blur));
   border-radius: clamp(24px, 4vh, 32px);
   box-shadow: var(--glass-shadow);
-  flex-shrink: 1;
-  min-height: clamp(280px, 45vh, 400px); /* 카드 높이 상향 조절 */
-  margin-bottom: clamp(12px, 2vh, 24px);
-  max-height: 100%;
+  flex-shrink: 0; /* Preview parity: Card doesn't shrink, keyboard takes remaining space */
+  min-height: clamp(280px, 45vh, 400px);
+  max-height: 50vh; /* Preview parity */
+  margin-bottom: var(--spacing-lg);
   overflow: hidden;
 }
 
@@ -277,7 +277,17 @@
   justify-content: flex-start;
   width: 100%;
   flex: 1;
-  gap: clamp(24px, 5vh, 40px);
+  gap: var(--spacing-sm);
+}
+
+.question-answer-group {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  flex: 1;
+  gap: clamp(24px, 5vh, 48px);
 }
 
 .question-area-content {
@@ -286,13 +296,12 @@
   align-items: center;
   justify-content: center;
   width: 100%;
-  flex: 1; /* 문제 영역이 남은 공간 차지 */
 }
 
 /* 가로모드에서 퀴즈 카드 크기 조정 */
 @media (orientation: landscape) {
   .quiz-card {
-    flex: 1;
+    flex: 1.2;
     max-width: var(--modal-width-portrait);
     margin-bottom: 0;
     max-height: calc(100vh - 120px);
@@ -417,6 +426,14 @@
     -1px 1px 0 rgba(0, 0, 0, 0.5),
     1px 1px 0 rgba(0, 0, 0, 0.5),
     0 4px 8px rgba(0, 0, 0, 0.4);
+}
+
+/* 답변 전체 섹션 - flex 정렬을 위해 추가 */
+.quiz-answer-section {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
 }
 
 /* 입력창 wrapper - 토스트 위치 기준 */
@@ -671,18 +688,6 @@
   50% {
     transform: scale(1.15);
   }
-}
-
-.category-label {
-  margin-bottom: clamp(12px, 2vh, 20px);
-  font-size: 0.8rem;
-  font-weight: 600;
-  letter-spacing: 0.05em;
-  text-transform: uppercase;
-  color: var(--color-blue-400);
-  opacity: 0.8;
-  text-align: center;
-  width: 100%;
 }
 
 /* 감점 토스트 스타일 - 카드 상단 영역 랜덤 위치 */
@@ -1039,7 +1044,7 @@
   color: var(--color-blue-400);
   text-transform: uppercase;
   letter-spacing: 0.05em;
-  margin-bottom: var(--spacing-sm);
+  margin-bottom: 0;
 }
 
 /* Altitude Phases for Survival Mode */
@@ -1220,4 +1225,45 @@
 
 .problem-visible {
   display: block;
+}
+
+/* Keyboard Container - Synced with QuizPreview.css for parity */
+.keyboard-container {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  flex: 1;
+  min-height: 250px;
+  /* Allow horizontal scroll for staggered QWERTY rows if container is very narrow */
+  overflow-x: auto;
+  overflow-y: hidden;
+  padding: 0 var(--spacing-xl) var(--spacing-xl) var(--spacing-xl);
+  box-sizing: border-box;
+  /* Hide scrollbar but allow scrolling */
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+.keyboard-container::-webkit-scrollbar {
+  display: none;
+}
+
+/* Fix for QWERTY crookedness/clipping */
+.keyboard-container .qwerty-keypad {
+  width: fit-content;
+  min-width: 100%;
+  max-width: none;
+  margin: 0 auto;
+  /* Extra side padding to accommodate row transforms */
+  padding-left: 30px;
+  padding-right: 30px;
+  box-sizing: border-box;
+}
+
+/* Custom keypad should also respect the padding */
+.keyboard-container .keypad-container {
+  width: 100%;
+  max-width: 420px;
+  margin: 0 auto;
 }

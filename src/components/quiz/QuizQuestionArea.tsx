@@ -22,9 +22,6 @@ export const QuizQuestionArea = React.memo(
 
     return (
       <div className="question-area-content" data-vg-ignore="true">
-        <div className="category-label">
-          {quizState.category} - {quizState.topic}
-        </div>
         <div className="contents-display">
           <ReasoningOverlay
             isVisible={
