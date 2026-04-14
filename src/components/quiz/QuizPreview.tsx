@@ -3,7 +3,7 @@ import { NavigateFunction } from 'react-router-dom';
 import { APP_CONFIG } from '../../config/app';
 import { urls } from '../../utils/navigation';
 import { QuizDisplayState, QuizAnimationState, QuizHandlers } from '../../types/quizProps';
-import { QuizQuestion } from '../../types/quiz';
+import { QuizQuestion, Category } from '../../types/quiz';
 import { QuizCard } from '../QuizCard';
 import './QuizPreview.css';
 
@@ -83,7 +83,10 @@ export function QuizPreview({
         9: '나눗셈',
         10: '종합 연산',
       };
-      return topicMap[levelParam] || '사칙연산';
+      if (levelParam != null) {
+        return (topicMap as Record<number, string>)[levelParam] || '사칙연산';
+      }
+      return '사칙연산';
     }
     return topic || '미리보기';
   }, [categoryParam, subParam, levelParam, topic]);
@@ -123,14 +126,14 @@ export function QuizPreview({
   const mockQuestion: QuizQuestion = {
     question: '12 + 34 = ?',
     answer: '46',
-    category: category as any,
+    category: category as Category,
   };
 
   const quizPreviewState: QuizDisplayState = {
     currentQuestion: mockQuestion,
     answerInput,
     displayValue,
-    category: displayCategoryPreview as any,
+    category: displayCategoryPreview as Category,
     topic: displayTopicPreview,
     categoryParam,
     subParam,

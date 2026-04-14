@@ -1,11 +1,11 @@
-import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { render, screen, waitFor } from '@testing-library/react';
+import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { render, screen, waitFor, act } from '@testing-library/react';
 import { MyRecordCard } from '../MyRecordCard';
 
 // Mock useLevelProgressStore
 const mockGetBestRecords = vi.fn(() => ({ 'time-attack': null, survival: null }));
 vi.mock('../../stores/useLevelProgressStore', () => ({
-  useLevelProgressStore: (selector: (state: unknown) => unknown) => {
+  useLevelProgressStore: (selector: (state: any) => any) => {
     const mockState = {
       getBestRecords: mockGetBestRecords,
     };
@@ -16,16 +16,13 @@ vi.mock('../../stores/useLevelProgressStore', () => ({
 describe('MyRecordCard', () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    vi.useFakeTimers();
     mockGetBestRecords.mockReturnValue({ 'time-attack': null, survival: null });
   });
 
-  afterEach(() => {
-    vi.useRealTimers();
-  });
-
-  it('should render loading state initially', () => {
-    render(<MyRecordCard world="math" category="arithmetic" categoryName="사칙연산" />);
+  it('should render loading state initially', async () => {
+    await act(async () => {
+      render(<MyRecordCard world="math" category="arithmetic" categoryName="사칙연산" />);
+    });
     expect(screen.queryByText('사칙연산 최고 기록')).not.toBeInTheDocument();
   });
 
@@ -35,16 +32,15 @@ describe('MyRecordCard', () => {
       survival: 2000,
     });
 
-    render(<MyRecordCard world="math" category="arithmetic" categoryName="사칙연산" />);
-
-    vi.advanceTimersByTime(300);
-    vi.useRealTimers();
+    await act(async () => {
+      render(<MyRecordCard world="math" category="arithmetic" categoryName="사칙연산" />);
+    });
 
     await waitFor(
       () => {
         expect(screen.getByText('사칙연산 최고 기록')).toBeInTheDocument();
       },
-      { timeout: 1000 }
+      { timeout: 2000 }
     );
 
     expect(screen.getByText(/타임 어택:/)).toBeInTheDocument();
@@ -59,16 +55,15 @@ describe('MyRecordCard', () => {
       survival: null,
     });
 
-    render(<MyRecordCard world="math" category="arithmetic" categoryName="사칙연산" />);
-
-    vi.advanceTimersByTime(300);
-    vi.useRealTimers();
+    await act(async () => {
+      render(<MyRecordCard world="math" category="arithmetic" categoryName="사칙연산" />);
+    });
 
     await waitFor(
       () => {
         expect(screen.getByText('사칙연산 최고 기록')).toBeInTheDocument();
       },
-      { timeout: 1000 }
+      { timeout: 2000 }
     );
 
     const noRecordTexts = screen.getAllByText('기록 없음');
@@ -81,16 +76,15 @@ describe('MyRecordCard', () => {
       survival: null,
     });
 
-    render(<MyRecordCard world="math" category="arithmetic" categoryName="사칙연산" />);
-
-    vi.advanceTimersByTime(300);
-    vi.useRealTimers();
+    await act(async () => {
+      render(<MyRecordCard world="math" category="arithmetic" categoryName="사칙연산" />);
+    });
 
     await waitFor(
       () => {
         expect(screen.getByText('사칙연산 최고 기록')).toBeInTheDocument();
       },
-      { timeout: 1000 }
+      { timeout: 2000 }
     );
 
     expect(screen.getByText('1,500m')).toBeInTheDocument();
@@ -103,16 +97,15 @@ describe('MyRecordCard', () => {
       survival: 3000,
     });
 
-    render(<MyRecordCard world="math" category="arithmetic" categoryName="사칙연산" />);
-
-    vi.advanceTimersByTime(300);
-    vi.useRealTimers();
+    await act(async () => {
+      render(<MyRecordCard world="math" category="arithmetic" categoryName="사칙연산" />);
+    });
 
     await waitFor(
       () => {
         expect(screen.getByText('사칙연산 최고 기록')).toBeInTheDocument();
       },
-      { timeout: 1000 }
+      { timeout: 2000 }
     );
 
     expect(screen.getByText('3,000m')).toBeInTheDocument();
@@ -125,16 +118,15 @@ describe('MyRecordCard', () => {
       survival: 9876543,
     });
 
-    render(<MyRecordCard world="math" category="arithmetic" categoryName="사칙연산" />);
-
-    vi.advanceTimersByTime(300);
-    vi.useRealTimers();
+    await act(async () => {
+      render(<MyRecordCard world="math" category="arithmetic" categoryName="사칙연산" />);
+    });
 
     await waitFor(
       () => {
         expect(screen.getByText('사칙연산 최고 기록')).toBeInTheDocument();
       },
-      { timeout: 1000 }
+      { timeout: 2000 }
     );
 
     expect(screen.getByText(/1,234,567m/)).toBeInTheDocument();

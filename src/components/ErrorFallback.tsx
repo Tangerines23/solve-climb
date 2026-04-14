@@ -14,7 +14,7 @@ export function ErrorFallback({ error, resetError }: ErrorFallbackProps) {
 
   // 특수 에러 타입 판별
   const isChunkLoadError =
-    (error as any).isChunkLoadError ||
+    ('isChunkLoadError' in error && Boolean((error as Record<string, unknown>).isChunkLoadError)) ||
     error.message.includes('fetch') ||
     error.message.includes('Loading chunk');
 

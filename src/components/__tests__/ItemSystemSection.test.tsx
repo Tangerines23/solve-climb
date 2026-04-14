@@ -58,8 +58,12 @@ describe('ItemSystemSection', () => {
     });
   });
 
-  it('should display loading state initially', () => {
+  it('should display loading state initially', async () => {
     render(<ItemSystemSection />);
     expect(screen.getByText(/아이템 불러오는 중/)).toBeInTheDocument();
+    // Await the data load to prevent act warnings from background updates
+    await waitFor(() => {
+      expect(screen.queryByText(/아이템 불러오는 중/)).not.toBeInTheDocument();
+    });
   });
 });

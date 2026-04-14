@@ -150,7 +150,7 @@ describe('LevelSelectPage', () => {
       </BrowserRouter>
     );
 
-    expect(screen.getByText('World 1')).toBeInTheDocument();
+    expect(screen.getByRole('heading', { level: 1, name: 'World 1' })).toBeInTheDocument();
   });
 
   it('should navigate back when back button is clicked', () => {

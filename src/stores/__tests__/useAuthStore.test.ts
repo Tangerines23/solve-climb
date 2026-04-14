@@ -295,9 +295,7 @@ describe('useAuthStore', () => {
       const mockUser = { id: 'user-123', email: 'test@example.com', last_sign_in_at: '2023-01-01' };
       callback('SIGNED_IN', { user: mockUser });
 
-      // Need to wait for dynamic import promise in the implementation
-      await new Promise((resolve) => setTimeout(resolve, 0));
-
+      // No longer needs complex vi.waitFor since the import is static and execution is immediate
       expect(analytics.setUser).toHaveBeenCalledWith('user-123', {
         email: 'test@example.com',
         last_sign_in: '2023-01-01',

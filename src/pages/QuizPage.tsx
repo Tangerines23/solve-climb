@@ -392,6 +392,7 @@ export function QuizPage() {
     setExhausted,
     stamina,
     setShowTipModal,
+    setShowTutorial,
   ]);
 
   useEffect(() => {

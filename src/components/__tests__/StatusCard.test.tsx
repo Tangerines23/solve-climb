@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { render, screen } from '@testing-library/react';
+import { render, screen, act, waitFor, fireEvent } from '@testing-library/react';
 import { BrowserRouter } from 'react-router-dom';
 import { StatusCard } from '../StatusCard';
 import { useLevelProgressStore } from '../../stores/useLevelProgressStore';
@@ -36,10 +36,9 @@ describe('StatusCard', () => {
   };
 
   it('should render loading state initially', async () => {
-    renderStatusCard();
-
-    // Wait a bit for initial render
-    await new Promise((resolve) => setTimeout(resolve, 10));
+    await act(async () => {
+      renderStatusCard();
+    });
 
     // Skeleton should be rendered or success state
     const skeleton = document.querySelector('.status-card-skeleton');
@@ -64,12 +63,13 @@ describe('StatusCard', () => {
       },
     } as unknown as ReturnType<typeof useLevelProgressStore.getState>);
 
-    renderStatusCard();
+    await act(async () => {
+      renderStatusCard();
+    });
 
-    // Wait for state to update
-    await new Promise((resolve) => setTimeout(resolve, 100));
-
-    expect(screen.getByText('나의 랭킹')).toBeInTheDocument();
+    await waitFor(() => {
+      expect(screen.getByText('나의 랭킹')).toBeInTheDocument();
+    });
   });
 
   it('should navigate to my page when detail button is clicked', async () => {
@@ -77,15 +77,17 @@ describe('StatusCard', () => {
       progress: {},
     } as unknown as ReturnType<typeof useLevelProgressStore.getState>);
 
-    renderStatusCard();
+    await act(async () => {
+      renderStatusCard();
+    });
 
-    await new Promise((resolve) => setTimeout(resolve, 100));
-
-    const detailButton = screen.queryByText('자세히');
-    if (detailButton) {
-      detailButton.click();
-      expect(mockNavigate).toHaveBeenCalled();
-    }
+    await waitFor(() => {
+      const detailButton = screen.queryByText('자세히');
+      if (detailButton) {
+        fireEvent.click(detailButton);
+        expect(mockNavigate).toHaveBeenCalled();
+      }
+    });
   });
 
   it('should display error state when fetchUserData fails', async () => {
@@ -93,11 +95,13 @@ describe('StatusCard', () => {
       throw new Error('Failed to get state');
     });
 
-    renderStatusCard();
+    await act(async () => {
+      renderStatusCard();
+    });
 
-    await new Promise((resolve) => setTimeout(resolve, 100));
-
-    expect(screen.getByText('정보를 불러올 수 없습니다')).toBeInTheDocument();
+    await waitFor(() => {
+      expect(screen.getByText('정보를 불러올 수 없습니다')).toBeInTheDocument();
+    });
   });
 
   it('should calculate bestScore from multiple categories', async () => {
@@ -128,10 +132,12 @@ describe('StatusCard', () => {
       },
     } as unknown as ReturnType<typeof useLevelProgressStore.getState>);
 
-    renderStatusCard();
+    await act(async () => {
+      renderStatusCard();
+    });
 
-    await new Promise((resolve) => setTimeout(resolve, 100));
-
-    expect(screen.getByText(/나의 랭킹/)).toBeInTheDocument();
+    await waitFor(() => {
+      expect(screen.getByText(/나의 랭킹/)).toBeInTheDocument();
+    });
   });
 });

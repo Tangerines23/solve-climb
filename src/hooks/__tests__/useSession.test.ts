@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
-import { renderHook, waitFor } from '@testing-library/react';
+import { renderHook, waitFor, act } from '@testing-library/react';
 import { useSession } from '../useSession';
 import { supabase } from '../../utils/supabaseClient';
 import { storageService, STORAGE_KEYS } from '../../services';
@@ -52,13 +52,16 @@ describe('useSession', () => {
     vi.mocked(supabase.auth.onAuthStateChange).mockImplementation(mockOnAuthStateChange);
   });
 
-  it('should initialize with loading state', () => {
+  it('should initialize with loading state', async () => {
     vi.mocked(supabase.auth.getSession).mockResolvedValue({ data: { session: null }, error: null });
     vi.mocked(storageService.get).mockReturnValue(null);
 
-    const { result } = renderHook(() => useSession());
+    let renderResult: any;
+    act(() => {
+      renderResult = renderHook(() => useSession());
+    });
 
-    expect(result.current.isLoading).toBe(true);
+    expect(renderResult.result.current.isLoading).toBe(true);
   });
 
   it('should return local session when available', async () => {
@@ -70,15 +73,18 @@ describe('useSession', () => {
     vi.mocked(storageService.get).mockReturnValue(JSON.stringify(localSessionData));
     vi.mocked(supabase.auth.getSession).mockResolvedValue({ data: { session: null }, error: null });
 
-    const { result } = renderHook(() => useSession());
-
-    await waitFor(() => {
-      expect(result.current.isLoading).toBe(false);
+    let renderResult: any;
+    await act(async () => {
+      renderResult = renderHook(() => useSession());
     });
 
-    expect(result.current.isAuthenticated).toBe(true);
-    expect(result.current.userId).toBe('local-user-123');
-    expect(result.current.isAdmin).toBe(false);
+    await waitFor(() => {
+      expect(renderResult.result.current.isLoading).toBe(false);
+    });
+
+    expect(renderResult.result.current.isAuthenticated).toBe(true);
+    expect(renderResult.result.current.userId).toBe('local-user-123');
+    expect(renderResult.result.current.isAdmin).toBe(false);
   });
 
   it('should return Supabase session when available', async () => {
@@ -102,36 +108,44 @@ describe('useSession', () => {
       error: null,
     });
 
-    const { result } = renderHook(() => useSession());
-
-    await waitFor(() => {
-      expect(result.current.isLoading).toBe(false);
+    let renderResult: any;
+    await act(async () => {
+      renderResult = renderHook(() => useSession());
     });
 
-    expect(result.current.isAuthenticated).toBe(true);
-    expect(result.current.userId).toBe('supabase-user-123');
+    await waitFor(() => {
+      expect(renderResult.result.current.isLoading).toBe(false);
+    });
+
+    expect(renderResult.result.current.isAuthenticated).toBe(true);
+    expect(renderResult.result.current.userId).toBe('supabase-user-123');
   });
 
   it('should return null session when neither local nor Supabase session exists', async () => {
     vi.mocked(storageService.get).mockReturnValue(null);
     vi.mocked(supabase.auth.getSession).mockResolvedValue({ data: { session: null }, error: null });
 
-    const { result } = renderHook(() => useSession());
-
-    await waitFor(() => {
-      expect(result.current.isLoading).toBe(false);
+    let renderResult: any;
+    await act(async () => {
+      renderResult = renderHook(() => useSession());
     });
 
-    expect(result.current.isAuthenticated).toBe(false);
-    expect(result.current.userId).toBeNull();
-    expect(result.current.session).toBeNull();
+    await waitFor(() => {
+      expect(renderResult.result.current.isLoading).toBe(false);
+    });
+
+    expect(renderResult.result.current.isAuthenticated).toBe(false);
+    expect(renderResult.result.current.userId).toBeNull();
+    expect(renderResult.result.current.session).toBeNull();
   });
 
-  it('should register auth state change listener', () => {
+  it('should register auth state change listener', async () => {
     vi.mocked(storageService.get).mockReturnValue(null);
     vi.mocked(supabase.auth.getSession).mockResolvedValue({ data: { session: null }, error: null });
 
-    renderHook(() => useSession());
+    await act(async () => {
+      renderHook(() => useSession());
+    });
 
     expect(supabase.auth.onAuthStateChange).toHaveBeenCalled();
   });
