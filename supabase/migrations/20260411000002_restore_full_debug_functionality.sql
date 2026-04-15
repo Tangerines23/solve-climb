@@ -259,6 +259,7 @@ END;
 $$ LANGUAGE plpgsql SECURITY DEFINER SET search_path = '';
 
 -- 9. debug_delete_dummy_user
+DROP FUNCTION IF EXISTS public.debug_delete_dummy_user(UUID);
 CREATE OR REPLACE FUNCTION public.debug_delete_dummy_user(p_user_id UUID)
 RETURNS JSONB AS $$
 DECLARE
@@ -293,6 +294,7 @@ END;
 $$ LANGUAGE plpgsql SECURITY DEFINER SET search_path = '';
 
 -- 10. debug_delete_all_dummies
+DROP FUNCTION IF EXISTS public.debug_delete_all_dummies();
 CREATE OR REPLACE FUNCTION public.debug_delete_all_dummies()
 RETURNS JSONB AS $$
 DECLARE

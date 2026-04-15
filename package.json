@@ -209,7 +209,9 @@
     "micromatch": "^4.0.8",
     "serialize-javascript": "^7.0.5",
     "basic-ftp": "5.2.2",
-    "ajv": "^8.18.0"
+    "@stryker-mutator/core": {
+      "ajv": "^8.18.0"
+    }
   },
   "lint-staged": {
     "*.{ts,tsx}": [
