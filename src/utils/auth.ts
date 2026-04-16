@@ -14,7 +14,9 @@ import { supabase } from './supabaseClient';
  * 구글 로그인 화면이 어둡게 나올 수 있습니다. 앱 내 로그인 버튼·배경은 MyPage.css에서 다크 테마로 맞춤.
  */
 export async function signInWithGoogle(): Promise<{ error: AuthError | null }> {
-  const redirectTo = `${window.location.origin}/my-page`;
+  // VITE_SITE_URL 환경 변수를 우선 사용, 없으면 현재 origin 사용
+  const origin = import.meta.env.VITE_SITE_URL || window.location.origin;
+  const redirectTo = `${origin}/my-page`;
   const { error } = await supabase.auth.signInWithOAuth({
     provider: 'google',
     options: {

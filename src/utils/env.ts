@@ -19,11 +19,11 @@ export const ENV = createEnv({
       .string()
       .url('Invalid Supabase URL')
       .min(1)
-      .default(isTestOrCI ? 'http://localhost:54321' : (undefined as unknown as string)),
+      .default(isTest ? 'http://localhost:54321' : (undefined as unknown as string)),
     VITE_SUPABASE_ANON_KEY: z
       .string()
       .min(1, 'Supabase Key is required')
-      .default(isTestOrCI ? 'dummy-anon-key' : (undefined as unknown as string)),
+      .default(isTest ? 'dummy-anon-key' : (undefined as unknown as string)),
 
     // 2. 광고 및 분석 설정 (기본값 제공)
     VITE_ADMOB_APP_ID: z.string().default('ca-app-pub-6410061165772335~9825031776'),
@@ -36,6 +36,9 @@ export const ENV = createEnv({
       .union([z.string(), z.boolean()])
       .optional()
       .transform((v) => v === 'true' || v === true),
+
+    // 4. 사이트 URL 설정 (프로덕션 리다이렉션 용)
+    VITE_SITE_URL: z.string().url('Invalid Site URL').optional(),
   },
 
   // Vite 환경에서는 import.meta.env를 runtimeEnv로 전달
@@ -82,4 +85,5 @@ export const config = {
   ADMOB_APP_ID: ENV.VITE_ADMOB_APP_ID,
   ADMOB_REWARDED_ID: ENV.VITE_ADMOB_REWARDED_ID,
   SENTRY_DSN: ENV.VITE_SENTRY_DSN || '',
+  SITE_URL: ENV.VITE_SITE_URL,
 } as const;
