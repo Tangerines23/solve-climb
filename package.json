@@ -162,7 +162,7 @@
     "eslint-plugin-security": "^4.0.0",
     "eslint-plugin-storybook": "^10.2.10",
     "glob": "^11.0.0",
-    "globals": "^16.4.0",
+    "globals": "^17.5.0",
     "hoist-non-react-statics": "^3.3.2",
     "husky": "^9.1.7",
     "jsdom": "^27.4.0",
