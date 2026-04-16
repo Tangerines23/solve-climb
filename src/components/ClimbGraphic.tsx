@@ -1,4 +1,4 @@
-import React, { useRef, useMemo, useCallback } from 'react';
+import React, { useRef, useMemo, useCallback, useEffect } from 'react';
 import { useLevelProgressStore } from '../stores/useLevelProgressStore';
 import { useProfileStore } from '../stores/useProfileStore';
 import {
@@ -168,14 +168,25 @@ export function ClimbGraphic({
     return createPath(clearedPoints);
   }, [pathPoints, lastClearedIndex]);
 
-  const scrollToCurrentLevel = useCallback(() => {
+  const scrollToCurrentLevel = useCallback((behavior: ScrollBehavior = 'smooth') => {
     if (currentLevelRef.current) {
       currentLevelRef.current.scrollIntoView({
-        behavior: 'smooth',
+        behavior,
         block: 'center',
       });
     }
   }, []);
+
+  // 진입 시 현재 레벨로 자동 스크롤
+  useEffect(() => {
+    // 월드나 카테고리가 바뀌면 현재 레벨로 자동 스크롤
+    // DOM이 완전히 업데이트된 후 스크롤하기 위해 약간의 지연을 둡니다.
+    const timer = setTimeout(() => {
+      scrollToCurrentLevel('auto');
+    }, 100);
+
+    return () => clearTimeout(timer);
+  }, [world, category, scrollToCurrentLevel, levelData]);
 
   // 카테고리 및 월드별 배경 매핑
   const stageConfig = useMemo(() => {
@@ -430,7 +441,7 @@ export function ClimbGraphic({
 
       <button
         className="fab-my-location"
-        onClick={scrollToCurrentLevel}
+        onClick={() => scrollToCurrentLevel()}
         aria-label="내 레벨로 이동"
       >
         <span style={{ fontSize: '18px', marginRight: 'var(--spacing-xs)' }}>📍</span>

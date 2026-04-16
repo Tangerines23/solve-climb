@@ -23,7 +23,7 @@ export const QuizInputSection = React.memo(
     isError,
     isSubmitting,
   }: QuizInputSectionProps) => {
-    const { currentQuestion, categoryParam, subParam, useSystemKeyboard } = quizState;
+    const { currentQuestion, categoryParam, subParam, useSystemKeyboard, keyboardType } = quizState;
     const { handleKeypadNumber, handleQwertyKeyPress, handleKeypadClear, handleKeypadBackspace } =
       quizHandlers;
 
@@ -39,7 +39,7 @@ export const QuizInputSection = React.memo(
     }
 
     return (
-      <>
+      <div className="keyboard-container">
         {isJapaneseQuiz ? (
           <QwertyKeypad
             onKeyPress={handleQwertyKeyPress}
@@ -48,6 +48,16 @@ export const QuizInputSection = React.memo(
             onSubmit={handleSubmit}
             disabled={isSubmitting || isError || effectiveInputPaused}
             mode="text"
+          />
+        ) : keyboardType === 'qwerty' ? (
+          <QwertyKeypad
+            onKeyPress={handleQwertyKeyPress}
+            onClear={handleKeypadClear}
+            onBackspace={handleKeypadBackspace}
+            onSubmit={handleSubmit}
+            disabled={isSubmitting || isError || effectiveInputPaused}
+            mode="number"
+            allowNegative={allowNegative}
           />
         ) : (
           <CustomKeypad
@@ -61,7 +71,7 @@ export const QuizInputSection = React.memo(
             showFraction={currentQuestion?.inputType === 'fraction'}
           />
         )}
-      </>
+      </div>
     );
   }
 );

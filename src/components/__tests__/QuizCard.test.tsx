@@ -3,13 +3,7 @@ import { render, screen, fireEvent } from '@testing-library/react';
 import '@testing-library/jest-dom';
 import { QuizCard } from '../QuizCard';
 import type { QuizQuestion, Category, GameMode } from '../../types/quiz';
-import { useGameStore } from '../../stores/useGameStore';
-
 // Mock dependencies
-vi.mock('../../stores/useGameStore', () => ({
-  useGameStore: vi.fn(),
-}));
-
 vi.mock('../../utils/debugLogger', () => ({
   sendDebugLog: vi.fn(),
 }));
@@ -125,18 +119,15 @@ describe('QuizCard', () => {
     setShowExitConfirm: vi.fn(),
     setIsFadingOut: vi.fn(),
     SURVIVAL_QUESTION_TIME: 30,
+    activeItems: [],
+    usedItems: [],
+    score: 0,
+    isExhausted: false,
+    handleTimeUp: vi.fn(),
   };
 
   beforeEach(() => {
     vi.clearAllMocks();
-    vi.mocked(useGameStore).mockReturnValue({
-      safetyRopeCount: 0,
-      activeItems: [],
-      usedItems: [],
-      consumeActiveItem: vi.fn(),
-      consumeLife: vi.fn(),
-      isExhausted: false,
-    } as any);
   });
 
   it('should render question text', () => {

@@ -1,6 +1,5 @@
 // 퀴즈 카드 컴포넌트
 import React from 'react';
-import { useGameStore } from '../stores/useGameStore';
 import { QuizDisplayState, QuizAnimationState, QuizHandlers } from '../types/quizProps';
 import { QuizHeader } from './quiz/QuizHeader';
 import { QuizQuestionArea } from './quiz/QuizQuestionArea';
@@ -25,6 +24,13 @@ interface QuizCardProps {
 
   // Constants
   SURVIVAL_QUESTION_TIME: number;
+
+  // Game Logic Props (Decoupled)
+  activeItems: string[];
+  usedItems: string[];
+  score: number;
+  isExhausted: boolean;
+  handleTimeUp: () => void;
 }
 
 function QuizCardComponent({
@@ -38,20 +44,18 @@ function QuizCardComponent({
   setShowExitConfirm,
   setIsFadingOut,
   SURVIVAL_QUESTION_TIME,
+  activeItems,
+  usedItems,
+  score,
+  isExhausted,
+  handleTimeUp,
 }: QuizCardProps) {
-  const { currentQuestion, gameMode, lives } = quizState;
+  const { currentQuestion } = quizState;
 
   const { isSubmitting, isError, isPaused, isInputPaused, showExitConfirm, isFadingOut } =
     quizAnimations;
 
-  const {
-    onSafetyRopeUsed,
-    onLastSpurt,
-    onPause,
-    generateNewQuestion,
-    handleSubmit,
-    handleGameOver,
-  } = quizHandlers;
+  const { onPause, handleSubmit } = quizHandlers;
 
   // Determine effective input pause state
   const effectiveInputPaused = isInputPaused !== undefined ? isInputPaused : isPaused;
@@ -59,38 +63,6 @@ function QuizCardComponent({
   const isEquationQuiz = quizState.categoryParam === 'math' && quizState.subParam === 'equations';
   const isCalculusQuiz = quizState.categoryParam === 'math' && quizState.subParam === 'calculus';
   const allowNegative = isEquationQuiz || isCalculusQuiz;
-
-  const { activeItems, consumeActiveItem, consumeLife, isExhausted, usedItems } = useGameStore();
-
-  const handleTimeUp = () => {
-    const hasSafetyRope = activeItems.includes('safety_rope');
-    const hasLastSpurt = gameMode === 'time-attack' && activeItems.includes('last_spurt');
-
-    if (hasSafetyRope) {
-      consumeActiveItem('safety_rope');
-      console.log('[Game] Safety Rope used! Saved from time up.');
-      if (onSafetyRopeUsed) onSafetyRopeUsed();
-    } else if (hasLastSpurt) {
-      consumeActiveItem('last_spurt');
-      console.log('[Game] Last Spurt used! Time extended.');
-      if (onLastSpurt) onLastSpurt();
-    } else if (gameMode === 'survival') {
-      const hasFlare = activeItems.includes('flare');
-      if (hasFlare) {
-        consumeActiveItem('flare');
-        console.log('[Game] Flare used! Revived from time up.');
-        generateNewQuestion();
-      } else if (lives > 1) {
-        consumeLife();
-        generateNewQuestion();
-      } else {
-        consumeLife();
-        handleGameOver('timeout');
-      }
-    } else {
-      handleGameOver('timeout');
-    }
-  };
 
   // 데이터 부족 시 로딩 반환
   if (!currentQuestion) {
@@ -110,6 +82,7 @@ function QuizCardComponent({
         quizState={quizState}
         activeItems={activeItems}
         usedItems={usedItems}
+        score={score}
         onPause={onPause}
         handleTimeUp={handleTimeUp}
         isSubmitting={isSubmitting}
@@ -117,41 +90,48 @@ function QuizCardComponent({
         currentSurvivalDuration={SURVIVAL_QUESTION_TIME}
       />
 
-      <div className={`quiz-card ${quizAnimations.cardAnimation}`} data-vg-ignore="true">
-        <div className="quiz-content-inner">
-          <QuizQuestionArea quizState={quizState} quizAnimations={quizAnimations} />
+      <div className="quiz-content">
+        <div className={`quiz-card ${quizAnimations.cardAnimation}`} data-vg-ignore="true">
+          <div className="quiz-content-inner">
+            <div className="category-label">
+              {quizState.category} - {quizState.topic}
+            </div>
+            <div className="question-answer-group">
+              <QuizQuestionArea quizState={quizState} quizAnimations={quizAnimations} />
 
-          <QuizAnswerArea
-            quizState={quizState}
+              <QuizAnswerArea
+                quizState={quizState}
+                quizAnimations={quizAnimations}
+                inputRef={inputRef}
+                setAnswerInput={setAnswerInput}
+                setDisplayValue={setDisplayValue}
+                handleSubmit={handleSubmit}
+                effectiveInputPaused={effectiveInputPaused}
+              />
+            </div>
+          </div>
+
+          <QuizFloatingFeedback
             quizAnimations={quizAnimations}
-            inputRef={inputRef}
-            setAnswerInput={setAnswerInput}
-            setDisplayValue={setDisplayValue}
-            handleSubmit={handleSubmit}
-            effectiveInputPaused={effectiveInputPaused}
+            showExitConfirm={showExitConfirm}
+            isFadingOut={isFadingOut}
+            setIsFadingOut={setIsFadingOut}
+            setShowExitConfirm={setShowExitConfirm}
+            exitConfirmTimeoutRef={exitConfirmTimeoutRef}
+            isExhausted={isExhausted}
           />
         </div>
 
-        <QuizFloatingFeedback
-          quizAnimations={quizAnimations}
-          showExitConfirm={showExitConfirm}
-          isFadingOut={isFadingOut}
-          setIsFadingOut={setIsFadingOut}
-          setShowExitConfirm={setShowExitConfirm}
-          exitConfirmTimeoutRef={exitConfirmTimeoutRef}
-          isExhausted={isExhausted}
+        <QuizInputSection
+          quizState={quizState}
+          quizHandlers={quizHandlers}
+          effectiveInputPaused={effectiveInputPaused}
+          allowNegative={allowNegative}
+          handleSubmit={handleSubmit}
+          isError={isError}
+          isSubmitting={isSubmitting}
         />
       </div>
-
-      <QuizInputSection
-        quizState={quizState}
-        quizHandlers={quizHandlers}
-        effectiveInputPaused={effectiveInputPaused}
-        allowNegative={allowNegative}
-        handleSubmit={handleSubmit}
-        isError={isError}
-        isSubmitting={isSubmitting}
-      />
     </>
   );
 }
@@ -162,6 +142,10 @@ export const QuizCard = React.memo(QuizCardComponent, (prevProps, nextProps) => 
     prevProps.quizState === nextProps.quizState &&
     prevProps.quizAnimations === nextProps.quizAnimations &&
     prevProps.quizHandlers === nextProps.quizHandlers &&
-    prevProps.SURVIVAL_QUESTION_TIME === nextProps.SURVIVAL_QUESTION_TIME
+    prevProps.SURVIVAL_QUESTION_TIME === nextProps.SURVIVAL_QUESTION_TIME &&
+    prevProps.activeItems === nextProps.activeItems &&
+    prevProps.usedItems === nextProps.usedItems &&
+    prevProps.score === nextProps.score &&
+    prevProps.isExhausted === nextProps.isExhausted
   );
 });

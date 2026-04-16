@@ -4,6 +4,8 @@ import { Session, User } from '@supabase/supabase-js';
 import { safeSupabaseQuery } from '../utils/debugFetch';
 import { storageService, STORAGE_KEYS } from '../services';
 
+import { analytics } from '@/services/analytics';
+
 interface AuthState {
   session: Session | null;
   user: User | null;
@@ -61,12 +63,10 @@ export const useAuthStore = create<AuthState>((set) => ({
 
       set({ session, user, isLoading: false });
 
-      // [Added] Analytics 유저 컨텍스트 동기화
-      import('@/services/analytics').then(({ analytics }) => {
-        analytics.setUser(user?.id ?? null, {
-          email: user?.email,
-          last_sign_in: user?.last_sign_in_at,
-        });
+      // Analytics 유저 컨텍스트 동기화 (Static import 사용)
+      analytics.setUser(user?.id ?? null, {
+        email: user?.email,
+        last_sign_in: user?.last_sign_in_at,
       });
     });
 

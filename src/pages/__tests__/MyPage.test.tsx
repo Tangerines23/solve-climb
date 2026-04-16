@@ -280,22 +280,26 @@ describe('MyPage', () => {
     });
   });
 
-  it('should render header and settings when profile is complete', () => {
-    render(
-      <BrowserRouter>
-        <MyPage />
-      </BrowserRouter>
-    );
+  it('', async () => {
+    await act(async () => {
+      render(
+        <BrowserRouter>
+          <MyPage />
+        </BrowserRouter>
+      );
+    });
     expect(screen.getByTestId('header')).toBeTruthy();
     expect(screen.getByTestId('settings')).toBeTruthy();
   });
 
   it('should handle haptic toggle', async () => {
-    render(
-      <BrowserRouter>
-        <MyPage />
-      </BrowserRouter>
-    );
+    await act(async () => {
+      render(
+        <BrowserRouter>
+          <MyPage />
+        </BrowserRouter>
+      );
+    });
     fireEvent.click(screen.getByText(/진동 효과/i));
     expect(mockStoreState.setHapticEnabled).toHaveBeenCalled();
     expect(screen.getByTestId('toast')).toBeTruthy();
@@ -306,21 +310,25 @@ describe('MyPage', () => {
   });
 
   it('should handle animation toggle', async () => {
-    render(
-      <BrowserRouter>
-        <MyPage />
-      </BrowserRouter>
-    );
+    await act(async () => {
+      render(
+        <BrowserRouter>
+          <MyPage />
+        </BrowserRouter>
+      );
+    });
     fireEvent.click(screen.getByText(/애니메이션/i));
     expect(mockStoreState.setAnimationEnabled).toHaveBeenCalled();
   });
 
   it('should handle data reset flow', async () => {
-    render(
-      <BrowserRouter>
-        <MyPage />
-      </BrowserRouter>
-    );
+    await act(async () => {
+      render(
+        <BrowserRouter>
+          <MyPage />
+        </BrowserRouter>
+      );
+    });
     fireEvent.click(screen.getByText(/데이터 초기화/i));
 
     const confirmBtn = screen.getByText('Confirm Reset');
@@ -333,11 +341,13 @@ describe('MyPage', () => {
   });
 
   it('should handle withdrawal flow', async () => {
-    render(
-      <BrowserRouter>
-        <MyPage />
-      </BrowserRouter>
-    );
+    await act(async () => {
+      render(
+        <BrowserRouter>
+          <MyPage />
+        </BrowserRouter>
+      );
+    });
     fireEvent.click(screen.getByText(/회원 탈퇴/i));
 
     const confirmBtn = screen.getByText('Confirm Withdraw');
@@ -349,7 +359,7 @@ describe('MyPage', () => {
     });
   });
 
-  it('should show Guest View when session is missing', () => {
+  it('', async () => {
     (useMyPageStats as any).mockReturnValue({
       stats: null,
       session: null,
@@ -358,11 +368,13 @@ describe('MyPage', () => {
       refetch: mockRefetch,
     });
 
-    render(
-      <BrowserRouter>
-        <MyPage />
-      </BrowserRouter>
-    );
+    await act(async () => {
+      render(
+        <BrowserRouter>
+          <MyPage />
+        </BrowserRouter>
+      );
+    });
     expect(screen.getByText(/로그인하고/i)).toBeTruthy();
   });
 
@@ -375,11 +387,13 @@ describe('MyPage', () => {
       refetch: mockRefetch,
     });
 
-    render(
-      <BrowserRouter>
-        <MyPage />
-      </BrowserRouter>
-    );
+    await act(async () => {
+      render(
+        <BrowserRouter>
+          <MyPage />
+        </BrowserRouter>
+      );
+    });
     const loginBtn = screen.getByText(/익명 로그인하기/i);
 
     await act(async () => {
@@ -399,11 +413,13 @@ describe('MyPage', () => {
       refetch: mockRefetch,
     });
 
-    render(
-      <BrowserRouter>
-        <MyPage />
-      </BrowserRouter>
-    );
+    await act(async () => {
+      render(
+        <BrowserRouter>
+          <MyPage />
+        </BrowserRouter>
+      );
+    });
     const loginBtn = screen.getByText(/3초 만에 시작하기/i);
 
     await act(async () => {
@@ -428,11 +444,13 @@ describe('MyPage', () => {
       refetch: mockRefetch,
     });
 
-    render(
-      <BrowserRouter>
-        <MyPage />
-      </BrowserRouter>
-    );
+    await act(async () => {
+      render(
+        <BrowserRouter>
+          <MyPage />
+        </BrowserRouter>
+      );
+    });
     const promoteBtn = await screen.findByText('Promote');
     await act(async () => {
       fireEvent.click(promoteBtn);
@@ -443,11 +461,13 @@ describe('MyPage', () => {
   });
 
   it('should handle logout', async () => {
-    render(
-      <BrowserRouter>
-        <MyPage />
-      </BrowserRouter>
-    );
+    await act(async () => {
+      render(
+        <BrowserRouter>
+          <MyPage />
+        </BrowserRouter>
+      );
+    });
     const logoutBtn = screen.getByText(/로그아웃/i);
 
     await act(async () => {
@@ -460,33 +480,39 @@ describe('MyPage', () => {
   });
 
   it('should open leaderboard', async () => {
-    render(
-      <BrowserRouter>
-        <MyPage />
-      </BrowserRouter>
-    );
+    await act(async () => {
+      render(
+        <BrowserRouter>
+          <MyPage />
+        </BrowserRouter>
+      );
+    });
     const rankBtn = screen.getByText(/명예의 전당/i);
     fireEvent.click(rankBtn);
     expect(tossUtils.openLeaderboard).toHaveBeenCalled();
   });
 
-  it('should show ProfileForm when profile is incomplete', () => {
+  it('', async () => {
     mockStoreState.isProfileComplete = false;
-    render(
-      <BrowserRouter>
-        <MyPage />
-      </BrowserRouter>
-    );
+    await act(async () => {
+      render(
+        <BrowserRouter>
+          <MyPage />
+        </BrowserRouter>
+      );
+    });
     expect(screen.getByTestId('profile-form')).toBeTruthy();
   });
 
   it('should handle data reset error', async () => {
     (dataResetUtils.resetAllData as any).mockRejectedValueOnce(new Error('Reset failed'));
-    render(
-      <BrowserRouter>
-        <MyPage />
-      </BrowserRouter>
-    );
+    await act(async () => {
+      render(
+        <BrowserRouter>
+          <MyPage />
+        </BrowserRouter>
+      );
+    });
     fireEvent.click(screen.getByText(/데이터 초기화/i));
 
     await act(async () => {
@@ -497,11 +523,13 @@ describe('MyPage', () => {
 
   it('should handle withdrawal error', async () => {
     (withdrawUtils.withdrawAccount as any).mockRejectedValueOnce(new Error('Withdraw failed'));
-    render(
-      <BrowserRouter>
-        <MyPage />
-      </BrowserRouter>
-    );
+    await act(async () => {
+      render(
+        <BrowserRouter>
+          <MyPage />
+        </BrowserRouter>
+      );
+    });
     fireEvent.click(screen.getByText(/회원 탈퇴/i));
 
     await act(async () => {
@@ -510,7 +538,7 @@ describe('MyPage', () => {
     expect(screen.getByText(/Withdraw failed/i)).toBeTruthy();
   });
 
-  it('should handle feedback button click', () => {
+  it('', async () => {
     // Mocking window.location.href via a helper is better than deleting it
     const locationMock = { href: '' };
     Object.defineProperty(window, 'location', {
@@ -519,11 +547,13 @@ describe('MyPage', () => {
       configurable: true,
     });
 
-    render(
-      <BrowserRouter>
-        <MyPage />
-      </BrowserRouter>
-    );
+    await act(async () => {
+      render(
+        <BrowserRouter>
+          <MyPage />
+        </BrowserRouter>
+      );
+    });
     fireEvent.click(screen.getByText(/의견 보내기/i));
     expect(window.location.href).toContain('mailto:support@solveclimb.com');
 
@@ -531,7 +561,7 @@ describe('MyPage', () => {
     Object.defineProperty(window, 'location', { value: originalLocation });
   });
 
-  it('should show stats error message', () => {
+  it('', async () => {
     (useMyPageStats as any).mockReturnValue({
       stats: null,
       session: { user: { id: 'test' } },
@@ -540,11 +570,13 @@ describe('MyPage', () => {
       refetch: mockRefetch,
     });
 
-    render(
-      <BrowserRouter>
-        <MyPage />
-      </BrowserRouter>
-    );
+    await act(async () => {
+      render(
+        <BrowserRouter>
+          <MyPage />
+        </BrowserRouter>
+      );
+    });
     expect(screen.getByText('Failed to load stats')).toBeTruthy();
   });
 
@@ -553,11 +585,13 @@ describe('MyPage', () => {
       success: false,
       message: 'Custom Error',
     });
-    render(
-      <BrowserRouter>
-        <MyPage />
-      </BrowserRouter>
-    );
+    await act(async () => {
+      render(
+        <BrowserRouter>
+          <MyPage />
+        </BrowserRouter>
+      );
+    });
     fireEvent.click(screen.getByText(/명예의 전당/i));
 
     await waitFor(() => {
@@ -570,11 +604,13 @@ describe('MyPage', () => {
 
   it('should handle profile complete with direct redirect', async () => {
     mockStoreState.isProfileComplete = false;
-    render(
-      <BrowserRouter>
-        <MyPage />
-      </BrowserRouter>
-    );
+    await act(async () => {
+      render(
+        <BrowserRouter>
+          <MyPage />
+        </BrowserRouter>
+      );
+    });
 
     const completeBtn = screen.getByText('Complete');
     await act(async () => {
@@ -585,22 +621,26 @@ describe('MyPage', () => {
     expect(mockNavigate).toHaveBeenCalledWith('/', expect.any(Object));
   });
 
-  it('should handle history navigation', () => {
-    render(
-      <BrowserRouter>
-        <MyPage />
-      </BrowserRouter>
-    );
+  it('', async () => {
+    await act(async () => {
+      render(
+        <BrowserRouter>
+          <MyPage />
+        </BrowserRouter>
+      );
+    });
     fireEvent.click(screen.getByText(/히스토리/i));
     expect(mockNavigate).toHaveBeenCalled();
   });
 
-  it('should close Reset Modal on cancel', () => {
-    render(
-      <BrowserRouter>
-        <MyPage />
-      </BrowserRouter>
-    );
+  it('', async () => {
+    await act(async () => {
+      render(
+        <BrowserRouter>
+          <MyPage />
+        </BrowserRouter>
+      );
+    });
     fireEvent.click(screen.getByText(/데이터 초기화/i));
     expect(screen.getByTestId('reset-modal')).toBeTruthy();
 
@@ -622,23 +662,27 @@ describe('MyPage', () => {
       refetch: mockRefetch,
     });
 
-    render(
-      <BrowserRouter>
-        <MyPage />
-      </BrowserRouter>
-    );
+    await act(async () => {
+      render(
+        <BrowserRouter>
+          <MyPage />
+        </BrowserRouter>
+      );
+    });
     const closeBtn = await screen.findByText('Close Promotion');
     fireEvent.click(closeBtn);
     expect(screen.queryByTestId('promotion-modal')).toBeNull();
   });
 
-  it('should render admin link for dev env', () => {
+  it('', async () => {
     mockStoreState.isAdmin = true;
-    render(
-      <BrowserRouter>
-        <MyPage />
-      </BrowserRouter>
-    );
+    await act(async () => {
+      render(
+        <BrowserRouter>
+          <MyPage />
+        </BrowserRouter>
+      );
+    });
     expect(screen.getByText(/관리자 도구/i)).toBeTruthy();
 
     fireEvent.click(screen.getByText(/관리자 도구/i));
@@ -659,11 +703,13 @@ describe('MyPage', () => {
       throw new Error('Login failed');
     });
 
-    render(
-      <BrowserRouter>
-        <MyPage />
-      </BrowserRouter>
-    );
+    await act(async () => {
+      render(
+        <BrowserRouter>
+          <MyPage />
+        </BrowserRouter>
+      );
+    });
     const loginBtn = screen.getByText(/익명 로그인하기/i);
 
     await act(async () => {
@@ -672,13 +718,15 @@ describe('MyPage', () => {
     expect(screen.getByText(/익명 로그인 중 오류/i)).toBeTruthy();
   });
 
-  it('should handle profile form cancellation', () => {
+  it('', async () => {
     mockStoreState.isProfileComplete = true; // Complete profile allows cancellation if requested
-    render(
-      <BrowserRouter>
-        <MyPage />
-      </BrowserRouter>
-    );
+    await act(async () => {
+      render(
+        <BrowserRouter>
+          <MyPage />
+        </BrowserRouter>
+      );
+    });
 
     // Trigger ProfileForm via edit button (there are two: one in Profile, one in Settings)
     const editButtons = screen.getAllByText(/프로필 수정/i);
@@ -690,12 +738,14 @@ describe('MyPage', () => {
     expect(screen.queryByTestId('profile-form')).toBeNull();
   });
 
-  it('should handle settings profile form trigger', () => {
-    render(
-      <BrowserRouter>
-        <MyPage />
-      </BrowserRouter>
-    );
+  it('', async () => {
+    await act(async () => {
+      render(
+        <BrowserRouter>
+          <MyPage />
+        </BrowserRouter>
+      );
+    });
     fireEvent.click(screen.getByText(/프로필 수정 설정/i));
     expect(screen.getByTestId('profile-form')).toBeTruthy();
   });
@@ -715,11 +765,15 @@ describe('MyPage', () => {
       refetch: mockRefetch,
     });
 
-    const { unmount } = render(
-      <BrowserRouter>
-        <MyPage />
-      </BrowserRouter>
-    );
+    let unmount: any;
+    await act(async () => {
+      const res = render(
+        <BrowserRouter>
+          <MyPage />
+        </BrowserRouter>
+      );
+      unmount = res.unmount;
+    });
     expect(await screen.findByTestId('promotion-modal')).toBeTruthy();
     expect(screen.getByText(/Stars: 3/i)).toBeTruthy();
 
@@ -745,11 +799,15 @@ describe('MyPage', () => {
       refetch: mockRefetch,
     });
 
-    const { findByText } = render(
-      <BrowserRouter>
-        <MyPage />
-      </BrowserRouter>
-    );
+    let findByText: any;
+    await act(async () => {
+      const res = render(
+        <BrowserRouter>
+          <MyPage />
+        </BrowserRouter>
+      );
+      findByText = res.findByText;
+    });
     const closeBtn = await findByText('Close Promotion');
     fireEvent.click(closeBtn);
     await waitFor(() => {
@@ -757,13 +815,15 @@ describe('MyPage', () => {
     });
   });
 
-  it('should handle profile form cancellation', () => {
+  it('should handle profile form cancellation', async () => {
     mockStoreState.isProfileComplete = true; // Complete profile allows cancellation if requested
-    render(
-      <BrowserRouter>
-        <MyPage />
-      </BrowserRouter>
-    );
+    await act(async () => {
+      render(
+        <BrowserRouter>
+          <MyPage />
+        </BrowserRouter>
+      );
+    });
 
     // Trigger ProfileForm via edit button (there are two: one in Profile, one in Settings)
     const editButtons = screen.getAllByText(/프로필 수정/i);
@@ -775,22 +835,26 @@ describe('MyPage', () => {
     expect(screen.queryByTestId('profile-form')).toBeNull();
   });
 
-  it('should handle settings profile form trigger', () => {
-    render(
-      <BrowserRouter>
-        <MyPage />
-      </BrowserRouter>
-    );
+  it('', async () => {
+    await act(async () => {
+      render(
+        <BrowserRouter>
+          <MyPage />
+        </BrowserRouter>
+      );
+    });
     fireEvent.click(screen.getByText(/프로필 수정 설정/i));
     expect(screen.getByTestId('profile-form')).toBeTruthy();
   });
 
-  it('should handle Toast and Alert close icons', () => {
-    render(
-      <BrowserRouter>
-        <MyPage />
-      </BrowserRouter>
-    );
+  it('', async () => {
+    await act(async () => {
+      render(
+        <BrowserRouter>
+          <MyPage />
+        </BrowserRouter>
+      );
+    });
 
     // Trigger toast
     fireEvent.click(screen.getByText(/진동 효과/i));

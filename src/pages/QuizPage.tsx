@@ -78,7 +78,18 @@ export function QuizPage() {
   const [showLastChanceModal, setShowLastChanceModal] = useState(false);
   const [isFlarePaused, setIsFlarePaused] = useState(false);
 
-  const { setExhausted, resetGame, isStaminaConsumed, feverLevel, lives } = useGameStore();
+  const {
+    setExhausted,
+    resetGame,
+    isStaminaConsumed,
+    feverLevel,
+    lives,
+    activeItems,
+    usedItems,
+    isExhausted,
+    consumeActiveItem,
+    consumeLife,
+  } = useGameStore();
 
   const [questionKey, setQuestionKey] = useState(0);
   const [previewKeyboardType] = useState<'custom' | 'qwerty'>(() => keyboardType);
@@ -191,17 +202,18 @@ export function QuizPage() {
     handleStaminaAdRecovery: () => handleStaminaAdRecovery(setShowStaminaModal),
   });
 
-  const { showExitConfirm, isFadingOut, handleBack } = useQuizNavigation({
-    totalQuestions: gameState.totalQuestions,
-    showTipModal,
-    refundStamina,
-    navigate,
-    smartHandleGameOver,
-    mountainParam: searchParams.get('mountain'),
-    worldParam,
-    categoryParam,
-    searchParams,
-  });
+  const { showExitConfirm, setShowExitConfirm, isFadingOut, setIsFadingOut, handleBack } =
+    useQuizNavigation({
+      totalQuestions: gameState.totalQuestions,
+      showTipModal,
+      refundStamina,
+      navigate,
+      smartHandleGameOver,
+      mountainParam: searchParams.get('mountain'),
+      worldParam,
+      categoryParam,
+      searchParams,
+    });
 
   const { sessionCreated } = useQuizSession({
     showTipModal,
@@ -236,6 +248,46 @@ export function QuizPage() {
     animations,
     setToastValue,
   });
+
+  const handleTimeUp = useCallback(() => {
+    const hasSafetyRope = activeItems.includes('safety_rope');
+    const hasLastSpurt = gameMode === 'time-attack' && activeItems.includes('last_spurt');
+
+    if (hasSafetyRope) {
+      consumeActiveItem('safety_rope');
+      console.log('[Game] Safety Rope used! Saved from time up.');
+      handleSafetyRopeUsed();
+    } else if (hasLastSpurt) {
+      consumeActiveItem('last_spurt');
+      console.log('[Game] Last Spurt used! Time extended.');
+      handleLastSpurt();
+    } else if (gameMode === 'survival') {
+      const hasFlare = activeItems.includes('flare');
+      if (hasFlare) {
+        consumeActiveItem('flare');
+        console.log('[Game] Flare used! Revived from time up.');
+        generateNewQuestion();
+      } else if (lives > 1) {
+        consumeLife();
+        generateNewQuestion();
+      } else {
+        consumeLife();
+        gameState.handleGameOver('timeout');
+      }
+    } else {
+      gameState.handleGameOver('timeout');
+    }
+  }, [
+    activeItems,
+    gameMode,
+    lives,
+    consumeActiveItem,
+    consumeLife,
+    handleSafetyRopeUsed,
+    handleLastSpurt,
+    generateNewQuestion,
+    gameState,
+  ]);
 
   const { handleSubmit } = useQuizSubmit({
     answerInput,
@@ -340,6 +392,7 @@ export function QuizPage() {
     setExhausted,
     stamina,
     setShowTipModal,
+    setShowTutorial,
   ]);
 
   useEffect(() => {
@@ -410,6 +463,7 @@ export function QuizPage() {
     totalQuestions: gameState.totalQuestions,
     lives,
     useSystemKeyboard,
+    keyboardType,
     activeLandmark,
     remainingPauses,
     altitudePhase,
@@ -484,11 +538,12 @@ export function QuizPage() {
   if (isPreview)
     return (
       <QuizPreview
-        categoryParam={categoryParam || ''}
+        mountainParam={searchParams.get('mountain') || ''}
+        categoryParam={categoryParam || searchParams.get('category') || ''}
         subParam={worldParam || ''}
         levelParam={levelParam}
         category={category || '기초'}
-        topic={`${worldParam}-${categoryParam}`}
+        topic={categoryParam ? `${worldParam}-${categoryParam}` : worldParam || '훈련'}
         keyboardType={previewKeyboardType}
         navigate={navigate}
         useSystemKeyboard={useSystemKeyboard}
@@ -511,6 +566,15 @@ export function QuizPage() {
       altitudePhase={altitudePhase}
       promiseData={promiseData}
       tutorialSteps={tutorialSteps}
+      activeItems={activeItems}
+      usedItems={usedItems}
+      score={score}
+      isExhausted={isExhausted}
+      handleTimeUp={handleTimeUp}
+      setAnswerInput={setAnswerInput}
+      setDisplayValue={setDisplayValue}
+      setShowExitConfirm={setShowExitConfirm}
+      setIsFadingOut={setIsFadingOut}
     />
   );
 }

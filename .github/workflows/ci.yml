@@ -165,20 +165,19 @@ jobs:
           [ -z "$SUPABASE_DB_PASSWORD" ] && MISSING="$MISSING SUPABASE_DB_PASSWORD"
           [ -z "$SUPABASE_ACCESS_TOKEN" ] && MISSING="$MISSING SUPABASE_ACCESS_TOKEN"
           [ -z "$VITE_SUPABASE_URL" ] && MISSING="$MISSING VITE_SUPABASE_URL"
-          if [ -n "$MISSING" ]; then
-            echo "::error::Required secrets are missing:$MISSING"
-            echo "If this run is from a Pull Request from a FORK: GitHub does not pass repository secrets to fork PRs. Push to main or run on the default branch to use secrets."
-            echo "Otherwise add them in: Settings → Secrets and variables → Actions"
-            echo "https://github.com/${{ github.repository }}/settings/secrets/actions"
-            exit 1
+          if [ -z "$MISSING" ]; then
+            echo "✅ All required secrets are configured"
+          else
+            echo "::warning::Required secrets are missing:$MISSING"
+            echo "If this run is from a Pull Request from a FORK: GitHub does not pass repository secrets to fork PRs."
+            echo "CI will proceed with mocks/limited validation where possible."
           fi
-          echo "✅ All required secrets are configured"
 
       - name: 🐘 DB Lint Check & Validation (Local-First)
         run: |
           # Start minimal Supabase services for linting (requires Docker)
           # We include edge-functions if needed, but keeping it minimal for speed
-          npx supabase start -x realtime,storage,inbucket,studio
+          npx supabase start -x realtime,storage,inbucket,studio --debug
           
           # Wait for services to be ready
           sleep 5

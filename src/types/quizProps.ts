@@ -19,6 +19,7 @@ export interface QuizDisplayState {
   totalQuestions: number;
   lives: number;
   useSystemKeyboard: boolean;
+  keyboardType: 'custom' | 'qwerty';
   showAnswer?: boolean;
   activeLandmark: { icon: string; text: string } | null;
   remainingPauses: number;

@@ -1,4 +1,4 @@
-import { useSearchParams, useNavigate } from 'react-router-dom';
+import { useSearchParams } from 'react-router-dom';
 import { useEffect, useMemo } from 'react';
 import { storageService, STORAGE_KEYS } from '@/services';
 import { World, Category } from '@/types/quiz';
@@ -11,8 +11,7 @@ import { APP_CONFIG } from '@/config/app';
  * - 결손 파라미터 복구 로직 제공
  */
 export function useNavigationContext() {
-  const [searchParams] = useSearchParams();
-  const navigate = useNavigate();
+  const [searchParams, setSearchParams] = useSearchParams();
 
   const mountain = searchParams.get('mountain');
   const world = searchParams.get('world') as World | null;
@@ -69,7 +68,7 @@ export function useNavigationContext() {
         if (recWorld) params.set('world', recWorld);
         if (recCategory) params.set('category', recCategory);
 
-        navigate(`${window.location.pathname}?${params.toString()}`, { replace: true });
+        setSearchParams(params, { replace: true });
         return true;
       }
     }

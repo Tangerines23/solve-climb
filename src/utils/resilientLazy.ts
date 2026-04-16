@@ -5,9 +5,10 @@ import { logger } from './logger';
  * React.lazy를 래핑하여 네트워크 에러(ChunkLoadError) 발생 시
  * 회복 탄력성을 제공하는 유틸리티입니다.
  */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export function resilientLazy<T extends ComponentType<any>>(
   importFn: () => Promise<{ default: T }>,
-  componentName: string = 'Unknown'
+  componentName = 'Unknown'
 ) {
   return lazy(async () => {
     const STORAGE_KEY = `resilient-lazy-retry-${componentName}`;
@@ -47,8 +48,10 @@ export function resilientLazy<T extends ComponentType<any>>(
             `Failed to load ${componentName} after ${retryCount} retries.`,
             error
           );
-          (error as any).isChunkLoadError = true;
-          (error as any).componentName = componentName;
+          Object.assign(error as Error, {
+            isChunkLoadError: true,
+            componentName,
+          });
         }
         throw error;
       }

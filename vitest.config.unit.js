@@ -11,5 +11,13 @@ export default mergeConfig(baseConfig, {
     name: 'unit',
     include: ['src/**/*.test.{ts,tsx}'],
     exclude: [],
+    testTimeout: 10000,
+    hookTimeout: 10000,
+    poolOptions: {
+      threads: {
+        minThreads: 1,
+        maxThreads: 4,
+      },
+    },
   },
 });

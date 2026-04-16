@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { render, screen, waitFor } from '@testing-library/react';
+import { render, screen, waitFor, fireEvent, act } from '@testing-library/react';
 import { CyclePromotionModal } from '../CyclePromotionModal';
 import { supabase } from '../../utils/supabaseClient';
 import type { PostgrestSingleResponse } from '@supabase/supabase-js';
@@ -62,7 +62,7 @@ describe('CyclePromotionModal', () => {
     );
 
     const promoteButton = screen.getByText('다음 도전 시작하기');
-    promoteButton.click();
+    fireEvent.click(promoteButton);
 
     await waitFor(() => {
       expect(onPromote).toHaveBeenCalled();
@@ -87,7 +87,7 @@ describe('CyclePromotionModal', () => {
     );
 
     const promoteButton = screen.getByText('다음 도전 시작하기');
-    promoteButton.click();
+    fireEvent.click(promoteButton);
 
     await waitFor(() => {
       expect(screen.getByText('승급 처리 중 오류가 발생했습니다.')).toBeInTheDocument();
@@ -114,7 +114,7 @@ describe('CyclePromotionModal', () => {
     );
 
     const promoteButton = screen.getByText('다음 도전 시작하기');
-    promoteButton.click();
+    fireEvent.click(promoteButton);
 
     await waitFor(() => {
       expect(screen.getByText('Promotion failed')).toBeInTheDocument();
@@ -143,7 +143,7 @@ describe('CyclePromotionModal', () => {
     );
 
     const promoteButton = screen.getByText('다음 도전 시작하기');
-    promoteButton.click();
+    fireEvent.click(promoteButton);
 
     // Should show loading state
     await waitFor(() => {
@@ -151,9 +151,11 @@ describe('CyclePromotionModal', () => {
     });
 
     // Resolve the promise
-    resolvePromotion!({
-      data: { success: true },
-      error: null,
+    await act(async () => {
+      resolvePromotion!({
+        data: { success: true },
+        error: null,
+      });
     });
 
     await waitFor(() => {
@@ -183,7 +185,7 @@ describe('CyclePromotionModal', () => {
     const promoteButton = screen.getByText('다음 도전 시작하기');
     const cancelButton = screen.getByText('나중에');
 
-    promoteButton.click();
+    fireEvent.click(promoteButton);
 
     // Buttons should be disabled during promotion
     await waitFor(() => {
@@ -192,9 +194,11 @@ describe('CyclePromotionModal', () => {
     });
 
     // Resolve the promise
-    resolvePromotion!({
-      data: { success: true },
-      error: null,
+    await act(async () => {
+      resolvePromotion!({
+        data: { success: true },
+        error: null,
+      });
     });
   });
 });

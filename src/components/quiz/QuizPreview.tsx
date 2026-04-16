@@ -1,12 +1,14 @@
-import { useState, useMemo, useEffect, useCallback, FormEvent } from 'react';
+import { useState, useMemo, useEffect, useCallback, useRef } from 'react';
 import { NavigateFunction } from 'react-router-dom';
-import { CustomKeypad } from '../CustomKeypad';
-import { QwertyKeypad } from '../QwertyKeypad';
 import { APP_CONFIG } from '../../config/app';
 import { urls } from '../../utils/navigation';
+import { QuizDisplayState, QuizAnimationState, QuizHandlers } from '../../types/quizProps';
+import { QuizQuestion, Category } from '../../types/quiz';
+import { QuizCard } from '../QuizCard';
 import './QuizPreview.css';
 
 interface QuizPreviewProps {
+  mountainParam: string | null;
   categoryParam: string | null;
   subParam: string | null;
   levelParam: number | null;
@@ -18,6 +20,7 @@ interface QuizPreviewProps {
 }
 
 export function QuizPreview({
+  mountainParam,
   categoryParam,
   subParam,
   levelParam,
@@ -30,27 +33,44 @@ export function QuizPreview({
   const [previewKeyboardType, setPreviewKeyboardType] = useState<'custom' | 'qwerty'>(
     () => keyboardType
   );
+  const [answerInput, setAnswerInput] = useState('');
+  const [displayValue, setDisplayValue] = useState('');
+
+  const inputRef = useRef<HTMLInputElement>(null);
+  const exitConfirmTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   // Preview 모드용 변수들
   const isJapaneseQuizPreview = categoryParam === 'language' && subParam === 'japanese';
-  const isEquationQuizPreview = categoryParam === 'math' && subParam === 'equations';
-  const isCalculusQuizPreview = categoryParam === 'math' && subParam === 'calculus';
-  const allowNegativePreview = isEquationQuizPreview || isCalculusQuizPreview;
 
   // displayCategory와 displayTopic 계산
   const displayCategoryPreview = useMemo(() => {
-    return categoryParam
-      ? APP_CONFIG.CATEGORY_MAP[categoryParam as keyof typeof APP_CONFIG.CATEGORY_MAP] ||
-          category ||
-          ''
-      : category || '';
-  }, [categoryParam, category]);
+    if (mountainParam) {
+      const mountainName =
+        APP_CONFIG.MOUNTAIN_MAP[mountainParam as keyof typeof APP_CONFIG.MOUNTAIN_MAP];
+      if (mountainName) return mountainName;
+    }
+    if (!categoryParam) return category || '연습';
+    return (
+      APP_CONFIG.WORLD_MAP[categoryParam as keyof typeof APP_CONFIG.WORLD_MAP] ||
+      APP_CONFIG.MOUNTAIN_MAP[categoryParam as keyof typeof APP_CONFIG.MOUNTAIN_MAP] ||
+      APP_CONFIG.CATEGORY_MAP[categoryParam as keyof typeof APP_CONFIG.CATEGORY_MAP] ||
+      category ||
+      '연습'
+    );
+  }, [mountainParam, categoryParam, category]);
 
   const displayTopicPreview = useMemo(() => {
-    if (!categoryParam || !subParam) return topic || '';
-
-    if (subParam === 'arithmetic' && levelParam !== null) {
-      const level = levelParam;
+    if (!categoryParam || !subParam) return topic || '미리보기';
+    if (categoryParam === 'arithmetic') {
+      return APP_CONFIG.CATEGORY_MAP['기초'] || '기초 (Training)';
+    }
+    if (subParam.startsWith('World')) {
+      const worldName = APP_CONFIG.WORLD_MAP[subParam as keyof typeof APP_CONFIG.WORLD_MAP];
+      if (worldName) return worldName;
+    }
+    const catName = APP_CONFIG.CATEGORY_MAP[categoryParam as keyof typeof APP_CONFIG.CATEGORY_MAP];
+    if (catName) return catName;
+    if (categoryParam === 'arithmetic' && levelParam !== null) {
       const topicMap: Record<number, string> = {
         1: '덧셈',
         2: '뺄셈',
@@ -63,38 +83,12 @@ export function QuizPreview({
         9: '나눗셈',
         10: '종합 연산',
       };
-      return Object.prototype.hasOwnProperty.call(topicMap, level)
-        ? // eslint-disable-next-line security/detect-object-injection -- key validated above
-          topicMap[level]
-        : '덧셈';
-    } else if (subParam === 'calculus' && levelParam !== null) {
-      const level = levelParam;
-      const topicMap: Record<number, string> = {
-        1: '기초 미분',
-        2: '상수배 미분',
-        3: '합과 차의 미분',
-        4: '곱의 미분',
-        5: '몫의 미분',
-        6: '합성함수 미분',
-        7: '삼각함수 미분',
-        8: '지수·로그 미분',
-        9: '고급 미분',
-        10: '미분 종합',
-      };
-      return Object.prototype.hasOwnProperty.call(topicMap, level)
-        ? // eslint-disable-next-line security/detect-object-injection -- key validated above
-          topicMap[level]
-        : '미적분';
-    } else {
-      const subTopics = Object.prototype.hasOwnProperty.call(
-        APP_CONFIG.SUB_TOPICS,
-        categoryParam as keyof typeof APP_CONFIG.SUB_TOPICS
-      )
-        ? APP_CONFIG.SUB_TOPICS[categoryParam as keyof typeof APP_CONFIG.SUB_TOPICS]
-        : undefined;
-      const subTopicInfo = subTopics?.find((t) => t.id === subParam);
-      return subTopicInfo?.name || subParam;
+      if (levelParam != null) {
+        return (topicMap as Record<number, string>)[levelParam] || '사칙연산';
+      }
+      return '사칙연산';
     }
+    return topic || '미리보기';
   }, [categoryParam, subParam, levelParam, topic]);
 
   // 키보드 타입 동기화
@@ -110,113 +104,123 @@ export function QuizPreview({
     setPreviewKeyboardType((prev) => (prev === 'custom' ? 'qwerty' : 'custom'));
   }, []);
 
-  // Handlers for preview (console logs)
-  const handlePreviewKeyPress = useCallback((key: string) => {
-    console.log('Preview key:', key);
-  }, []);
-  const handlePreviewClear = useCallback(() => {
-    console.log('Preview clear');
-  }, []);
-  const handlePreviewBackspace = useCallback(() => {
-    console.log('Preview backspace');
-  }, []);
-  const handlePreviewSubmit = useCallback((e: FormEvent) => {
-    e.preventDefault();
-    console.log('Preview submit');
-  }, []);
-
   const canSwitchKeyboard = !isJapaneseQuizPreview;
   const currentPreviewType = isJapaneseQuizPreview ? 'qwerty' : previewKeyboardType;
 
+  // Handlers for preview
+  const handlePreviewKeyPress = useCallback((key: string) => {
+    setAnswerInput((prev) => (prev + key).slice(0, 10));
+    setDisplayValue((prev) => (prev + key).slice(0, 10));
+  }, []);
+
+  const handlePreviewClear = useCallback(() => {
+    setAnswerInput('');
+    setDisplayValue('');
+  }, []);
+
+  const handlePreviewBackspace = useCallback(() => {
+    setAnswerInput((prev) => prev.slice(0, -1));
+    setDisplayValue((prev) => prev.slice(0, -1));
+  }, []);
+
+  const mockQuestion: QuizQuestion = {
+    question: '12 + 34 = ?',
+    answer: '46',
+    category: category as Category,
+  };
+
+  const quizPreviewState: QuizDisplayState = {
+    currentQuestion: mockQuestion,
+    answerInput,
+    displayValue,
+    category: displayCategoryPreview as Category,
+    topic: displayTopicPreview,
+    categoryParam,
+    subParam,
+    levelParam,
+    gameMode: 'base-camp',
+    timeLimit: 10,
+    questionKey: 0,
+    timerResetKey: 0,
+    totalQuestions: 1,
+    lives: 3,
+    useSystemKeyboard,
+    keyboardType: currentPreviewType,
+    altitudePhase: 'ground',
+    activeLandmark: null,
+    remainingPauses: 3,
+  };
+
+  const quizAnimations: QuizAnimationState = {
+    isSubmitting: false,
+    isError: false,
+    isPaused: true, // Preview is "paused" by default to stop timer
+    isInputPaused: false,
+    showExitConfirm: false,
+    isFadingOut: false,
+    cardAnimation: '',
+    inputAnimation: '',
+    questionAnimation: '',
+    showFlash: false,
+    showSlideToast: false,
+    toastValue: '',
+    damagePosition: { left: '50%', top: '50%' },
+  };
+
+  const quizHandlers: QuizHandlers = {
+    onSafetyRopeUsed: () => {},
+    onLastSpurt: () => {},
+    onPause: () => navigate(urls.myPage()), // Pause button acts as back in preview
+    generateNewQuestion: () => {},
+    handleSubmit: (e) => {
+      e?.preventDefault();
+      console.log('Preview submit');
+    },
+    handleGameOver: () => {},
+    handleKeypadNumber: handlePreviewKeyPress,
+    handleQwertyKeyPress: handlePreviewKeyPress,
+    handleKeypadClear: handlePreviewClear,
+    handleKeypadBackspace: handlePreviewBackspace,
+  };
+
   return (
-    <div className="quiz-page">
-      <header className="quiz-header">
-        <button
-          className="quiz-back-button"
-          onClick={() => navigate(urls.myPage())}
-          aria-label="뒤로 가기"
-        >
-          ←
-        </button>
-        <div className="quiz-timer-container preview-header-controls">
-          {canSwitchKeyboard && (
-            <button
-              onClick={handlePrevKeyboard}
-              className="preview-nav-button"
-              aria-label="이전 키보드"
-            >
-              ‹
-            </button>
-          )}
-          <h2 className="preview-title">
+    <div
+      className="quiz-page"
+      data-world={subParam || 'World1'}
+      data-category={categoryParam || ''}
+    >
+      <QuizCard
+        quizState={quizPreviewState}
+        quizAnimations={quizAnimations}
+        quizHandlers={quizHandlers}
+        inputRef={inputRef}
+        exitConfirmTimeoutRef={exitConfirmTimeoutRef}
+        setAnswerInput={setAnswerInput}
+        setDisplayValue={setDisplayValue}
+        setShowExitConfirm={() => {}}
+        setIsFadingOut={() => {}}
+        SURVIVAL_QUESTION_TIME={10}
+        activeItems={[]}
+        usedItems={[]}
+        score={0}
+        isExhausted={false}
+        handleTimeUp={() => {}}
+      />
+
+      {/* Keyboard Switcher Overlay (Only for Preview) */}
+      {canSwitchKeyboard && (
+        <div className="preview-keyboard-switcher">
+          <button onClick={handlePrevKeyboard} className="preview-nav-button">
+            ‹
+          </button>
+          <span className="preview-nav-label">
             {currentPreviewType === 'custom' ? '커스텀 키패드' : '쿼티 키보드'}
-          </h2>
-          {canSwitchKeyboard && (
-            <button
-              onClick={handleNextKeyboard}
-              className="preview-nav-button"
-              aria-label="다음 키보드"
-            >
-              ›
-            </button>
-          )}
+          </span>
+          <button onClick={handleNextKeyboard} className="preview-nav-button">
+            ›
+          </button>
         </div>
-        <div className="quiz-header-spacer"></div>
-      </header>
-
-      <div className="quiz-content">
-        <div className="quiz-card">
-          <div className="category-label">
-            {displayCategoryPreview} - {displayTopicPreview}
-          </div>
-          <form onSubmit={handlePreviewSubmit} className="preview-form">
-            <div>
-              <h2 className="problem-text">미리보기</h2>
-            </div>
-            {!useSystemKeyboard && (
-              <div className="answer-input-wrapper">
-                <div className="answer-display">
-                  <span className="answer-caret"></span>
-                </div>
-              </div>
-            )}
-          </form>
-        </div>
-
-        {!useSystemKeyboard && (
-          <>
-            {isJapaneseQuizPreview ? (
-              <QwertyKeypad
-                onKeyPress={handlePreviewKeyPress}
-                onClear={handlePreviewClear}
-                onBackspace={handlePreviewBackspace}
-                onSubmit={handlePreviewSubmit}
-                disabled={false}
-                mode="text"
-              />
-            ) : currentPreviewType === 'qwerty' ? (
-              <QwertyKeypad
-                onKeyPress={handlePreviewKeyPress}
-                onClear={handlePreviewClear}
-                onBackspace={handlePreviewBackspace}
-                onSubmit={handlePreviewSubmit}
-                disabled={false}
-                mode="number"
-                allowNegative={allowNegativePreview}
-              />
-            ) : (
-              <CustomKeypad
-                onNumberClick={handlePreviewKeyPress}
-                onClear={handlePreviewClear}
-                onBackspace={handlePreviewBackspace}
-                onSubmit={handlePreviewSubmit}
-                disabled={false}
-                showNegative={allowNegativePreview}
-              />
-            )}
-          </>
-        )}
-      </div>
+      )}
     </div>
   );
 }

@@ -37,7 +37,9 @@ describe('CountdownOverlay', () => {
 
     expect(screen.getByText('3')).toBeInTheDocument();
 
-    vi.advanceTimersByTime(1000);
+    act(() => {
+      vi.advanceTimersByTime(1000);
+    });
 
     rerender(<CountdownOverlay isVisible={false} onComplete={onComplete} />);
     rerender(<CountdownOverlay isVisible={true} onComplete={onComplete} />);
@@ -78,7 +80,9 @@ describe('CountdownOverlay', () => {
     const onComplete = vi.fn();
     render(<CountdownOverlay isVisible={false} onComplete={onComplete} />);
 
-    vi.advanceTimersByTime(5000);
+    act(() => {
+      vi.advanceTimersByTime(5000);
+    });
 
     expect(onComplete).not.toHaveBeenCalled();
   });

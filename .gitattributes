@@ -1,2 +1,5 @@
 # WSL/Linux에서 실행하는 셸 스크립트는 LF 유지
 *.sh text eol=lf
+
+# 모든 텍스트 파일에 대해 LF 강제 (Windows/Linux 간의 포맷팅 노이즈 방지)
+* text=auto eol=lf

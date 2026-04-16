@@ -1,13 +1,14 @@
 import React from 'react';
 import { TimerCircle } from '../TimerCircle';
 import { getItemEmoji } from '../../constants/items';
-import { useQuizStore } from '../../stores/useQuizStore';
+
 import { QuizDisplayState } from '../../types/quizProps';
 
 interface QuizHeaderProps {
   quizState: QuizDisplayState;
   activeItems: string[];
   usedItems: string[];
+  score: number;
   onPause: () => void;
   handleTimeUp: () => void;
   isSubmitting: boolean;
@@ -20,6 +21,7 @@ export const QuizHeader = React.memo(
     quizState,
     activeItems,
     usedItems,
+    score,
     onPause,
     handleTimeUp,
     isSubmitting,
@@ -87,9 +89,7 @@ export const QuizHeader = React.memo(
               className={`pill-card score-capsule ${totalQuestions > 0 ? 'pulse' : ''}`}
               key={`score-${totalQuestions}`}
             >
-              <span className="score-val">
-                {Math.floor(useQuizStore.getState().score).toLocaleString()}
-              </span>
+              <span className="score-val">{Math.floor(score).toLocaleString()}</span>
               <span className="score-unit">m</span>
             </div>
           </div>

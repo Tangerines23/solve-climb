@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { render, screen, fireEvent } from '@testing-library/react';
+import { render, screen, fireEvent, act } from '@testing-library/react';
 import { QuickActionsSection } from '../debug/QuickActionsSection';
 import { useUserStore } from '../../stores/useUserStore';
 import { useDebugStore } from '../../stores/useDebugStore';
@@ -62,58 +62,93 @@ describe('QuickActionsSection', () => {
     } as any);
   });
 
-  it('should render without crashing', () => {
-    const { container } = render(<QuickActionsSection />);
-    expect(container).toBeTruthy();
+  it('should render without crashing', async () => {
+    let container: HTMLElement;
+    await act(async () => {
+      const rendered = render(<QuickActionsSection />);
+      container = rendered.container;
+    });
+    expect(container!).toBeTruthy();
   });
 
-  it('should render game status section', () => {
-    render(<QuickActionsSection />);
+  it('should render game status section', async () => {
+    await act(async () => {
+      render(<QuickActionsSection />);
+    });
     expect(screen.getByText(/게임 상태/)).toBeInTheDocument();
   });
 
-  it('should render stamina input', () => {
-    const { container } = render(<QuickActionsSection />);
-    const staminaInput = container.querySelector('input[name="stamina"]');
+  it('should render stamina input', async () => {
+    let container: HTMLElement;
+    await act(async () => {
+      const rendered = render(<QuickActionsSection />);
+      container = rendered.container;
+    });
+    const staminaInput = container!.querySelector('input[name="stamina"]');
     expect(staminaInput).toBeInTheDocument();
   });
 
-  it('should render minerals input', () => {
-    const { container } = render(<QuickActionsSection />);
-    const mineralsInput = container.querySelector('input[name="minerals"]');
+  it('should render minerals input', async () => {
+    let container: HTMLElement;
+    await act(async () => {
+      const rendered = render(<QuickActionsSection />);
+      container = rendered.container;
+    });
+    const mineralsInput = container!.querySelector('input[name="minerals"]');
     expect(mineralsInput).toBeInTheDocument();
   });
 
-  it('should handle stamina increment', () => {
-    render(<QuickActionsSection />);
+  it('should handle stamina increment', async () => {
+    await act(async () => {
+      render(<QuickActionsSection />);
+    });
     const incrementButton = screen.getByText('+1').closest('button');
     if (incrementButton) {
-      fireEvent.click(incrementButton);
+      await act(async () => {
+        fireEvent.click(incrementButton);
+      });
+      expect(vi.mocked(useUserStore)().debugSetStamina).toHaveBeenCalled();
     }
   });
 
-  it('should handle minerals increment', () => {
-    render(<QuickActionsSection />);
+  it('should handle minerals increment', async () => {
+    await act(async () => {
+      render(<QuickActionsSection />);
+    });
     const incrementButton = screen.getByText('+100').closest('button');
     if (incrementButton) {
-      fireEvent.click(incrementButton);
+      await act(async () => {
+        fireEvent.click(incrementButton);
+      });
+      expect(vi.mocked(useUserStore)().debugSetMinerals).toHaveBeenCalled();
     }
   });
 
-  it('should render infinite modes section', () => {
-    render(<QuickActionsSection />);
+  it('should render infinite modes section', async () => {
+    await act(async () => {
+      render(<QuickActionsSection />);
+    });
     expect(screen.getByText(/디버그 설정/)).toBeInTheDocument();
   });
 
   it('should toggle infinite stamina', async () => {
-    render(<QuickActionsSection />);
+    await act(async () => {
+      render(<QuickActionsSection />);
+    });
     const toggleButton = await screen.findByLabelText(/무한 스태미나 토글/);
-    fireEvent.click(toggleButton);
+    await act(async () => {
+      fireEvent.click(toggleButton);
+    });
+    expect(vi.mocked(useDebugStore)().setInfiniteStamina).toHaveBeenCalled();
   });
 
-  it('should render preset section', () => {
-    const { container } = render(<QuickActionsSection />);
-    const presetSection = container.querySelector('.debug-preset-section');
+  it('should render preset section', async () => {
+    let container: HTMLElement;
+    await act(async () => {
+      const rendered = render(<QuickActionsSection />);
+      container = rendered.container;
+    });
+    const presetSection = container!.querySelector('.debug-preset-section');
     expect(presetSection).toBeInTheDocument();
   });
 });
