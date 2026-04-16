@@ -2,6 +2,7 @@
 -- Date: 2026-04-11
 
 -- 1. debug_set_tier
+DROP FUNCTION IF EXISTS public.debug_set_tier(UUID, INTEGER);
 CREATE OR REPLACE FUNCTION public.debug_set_tier(
   p_user_id UUID,
   p_level INTEGER
@@ -30,6 +31,7 @@ END;
 $$ LANGUAGE plpgsql SECURITY DEFINER SET search_path = '';
 
 -- 2. debug_set_mastery_score
+DROP FUNCTION IF EXISTS public.debug_set_mastery_score(UUID, INTEGER);
 CREATE OR REPLACE FUNCTION public.debug_set_mastery_score(
   p_user_id UUID,
   p_score INTEGER
@@ -58,6 +60,7 @@ END;
 $$ LANGUAGE plpgsql SECURITY DEFINER SET search_path = '';
 
 -- 3. debug_grant_badge
+DROP FUNCTION IF EXISTS public.debug_grant_badge(UUID, TEXT);
 CREATE OR REPLACE FUNCTION public.debug_grant_badge(
   p_user_id UUID,
   p_badge_id TEXT
@@ -82,6 +85,7 @@ END;
 $$ LANGUAGE plpgsql SECURITY DEFINER SET search_path = '';
 
 -- 4. debug_remove_badge
+DROP FUNCTION IF EXISTS public.debug_remove_badge(UUID, TEXT);
 CREATE OR REPLACE FUNCTION public.debug_remove_badge(
   p_user_id UUID,
   p_badge_id TEXT
@@ -105,6 +109,7 @@ END;
 $$ LANGUAGE plpgsql SECURITY DEFINER SET search_path = '';
 
 -- 5. debug_reset_profile
+DROP FUNCTION IF EXISTS public.debug_reset_profile(UUID, TEXT);
 CREATE OR REPLACE FUNCTION public.debug_reset_profile(
   p_user_id UUID,
   p_reset_type TEXT
@@ -152,6 +157,7 @@ END;
 $$ LANGUAGE plpgsql SECURITY DEFINER SET search_path = '';
 
 -- 6. debug_reset_level_progress
+DROP FUNCTION IF EXISTS public.debug_reset_level_progress(UUID, TEXT, TEXT);
 CREATE OR REPLACE FUNCTION public.debug_reset_level_progress(
     p_user_id UUID,
     p_category_id TEXT,
@@ -178,6 +184,7 @@ END;
 $$ LANGUAGE plpgsql SECURITY DEFINER SET search_path = '';
 
 -- 7. debug_seed_badge_definitions
+DROP FUNCTION IF EXISTS public.debug_seed_badge_definitions(JSONB);
 CREATE OR REPLACE FUNCTION public.debug_seed_badge_definitions(p_badges JSONB)
 RETURNS JSONB AS $$
 DECLARE
@@ -202,6 +209,7 @@ END;
 $$ LANGUAGE plpgsql SECURITY DEFINER SET search_path = '';
 
 -- 8. debug_create_persona_player
+DROP FUNCTION IF EXISTS public.debug_create_persona_player(TEXT, TEXT);
 CREATE OR REPLACE FUNCTION public.debug_create_persona_player(p_nickname text, p_persona_type text DEFAULT 'regular'::text)
  RETURNS jsonb AS $$
 DECLARE
@@ -322,6 +330,7 @@ END;
 $$ LANGUAGE plpgsql SECURITY DEFINER SET search_path = '';
 
 -- 11. debug_run_play_scenario
+DROP FUNCTION IF EXISTS public.debug_run_play_scenario(UUID, TEXT, TEXT, INTEGER, INTEGER, INTEGER, INTEGER, TEXT);
 CREATE OR REPLACE FUNCTION public.debug_run_play_scenario(
     p_user_id UUID,
     p_category_id TEXT,
@@ -353,6 +362,7 @@ END;
 $$ LANGUAGE plpgsql SECURITY DEFINER SET search_path = '';
 
 -- 12. debug_set_session_timer
+DROP FUNCTION IF EXISTS public.debug_set_session_timer(UUID, NUMERIC);
 CREATE OR REPLACE FUNCTION public.debug_set_session_timer(
     p_session_id UUID,
     p_seconds NUMERIC

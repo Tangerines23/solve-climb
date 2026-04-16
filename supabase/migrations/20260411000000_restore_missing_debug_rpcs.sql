@@ -2,6 +2,7 @@
 -- Date: 2026-04-11
 
 -- 1. debug_set_stamina
+DROP FUNCTION IF EXISTS public.debug_set_stamina(INTEGER);
 CREATE OR REPLACE FUNCTION public.debug_set_stamina(p_stamina INTEGER)
 RETURNS JSONB AS $$
 DECLARE
@@ -34,6 +35,7 @@ END;
 $$ LANGUAGE plpgsql SECURITY DEFINER SET search_path = '';
 
 -- 2. debug_set_minerals
+DROP FUNCTION IF EXISTS public.debug_set_minerals(INTEGER);
 CREATE OR REPLACE FUNCTION public.debug_set_minerals(p_minerals INTEGER)
 RETURNS JSONB AS $$
 DECLARE
@@ -66,6 +68,7 @@ END;
 $$ LANGUAGE plpgsql SECURITY DEFINER SET search_path = '';
 
 -- 3. debug_set_inventory_quantity
+DROP FUNCTION IF EXISTS public.debug_set_inventory_quantity(UUID, INT, INT);
 CREATE OR REPLACE FUNCTION public.debug_set_inventory_quantity(
     p_user_id UUID,
     p_item_id INT,
@@ -98,6 +101,7 @@ END;
 $$ LANGUAGE plpgsql SECURITY DEFINER SET search_path = '';
 
 -- 4. debug_reset_inventory
+DROP FUNCTION IF EXISTS public.debug_reset_inventory(UUID);
 CREATE OR REPLACE FUNCTION public.debug_reset_inventory(p_user_id UUID)
 RETURNS JSONB AS $$
 DECLARE
@@ -119,6 +123,7 @@ END;
 $$ LANGUAGE plpgsql SECURITY DEFINER SET search_path = '';
 
 -- 5. debug_grant_items
+DROP FUNCTION IF EXISTS public.debug_grant_items();
 CREATE OR REPLACE FUNCTION public.debug_grant_items()
 RETURNS JSONB AS $$
 DECLARE
