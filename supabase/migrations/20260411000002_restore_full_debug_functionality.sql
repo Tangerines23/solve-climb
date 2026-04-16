@@ -293,7 +293,7 @@ BEGIN
     DELETE FROM public.inventory WHERE user_id = p_user_id;
     DELETE FROM public.user_badges WHERE user_id = p_user_id;
     DELETE FROM public.game_sessions WHERE user_id = p_user_id;
-    DELETE FROM public.game_records WHERE user_id = p_user_id;
+    DELETE FROM public.user_level_records WHERE user_id = p_user_id;
     DELETE FROM public.profiles WHERE id = p_user_id;
     DELETE FROM auth.users WHERE id = p_user_id;
 
@@ -321,7 +321,7 @@ BEGIN
     DELETE FROM public.inventory WHERE user_id IN (SELECT id FROM public.profiles WHERE is_dummy = true);
     DELETE FROM public.user_badges WHERE user_id IN (SELECT id FROM public.profiles WHERE is_dummy = true);
     DELETE FROM public.game_sessions WHERE user_id IN (SELECT id FROM public.profiles WHERE is_dummy = true);
-    DELETE FROM public.game_records WHERE user_id IN (SELECT id FROM public.profiles WHERE is_dummy = true);
+    DELETE FROM public.user_level_records WHERE user_id IN (SELECT id FROM public.profiles WHERE is_dummy = true);
     DELETE FROM public.profiles WHERE is_dummy = true;
     DELETE FROM auth.users WHERE email LIKE 'dummy_%@solve-climb.local';
 
