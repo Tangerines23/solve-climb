@@ -32,8 +32,13 @@ if (fs.existsSync(envPath)) {
   });
 }
 
-const supabaseUrl = process.env.VITE_SUPABASE_URL;
+let supabaseUrl = process.env.VITE_SUPABASE_URL;
 const supabaseKey = process.env.VITE_SUPABASE_ANON_KEY;
+
+// Docker 내부에서 실행 중일 경우 localhost를 host.docker.internal로 전환
+if (process.env.IS_DOCKER && supabaseUrl?.includes('localhost')) {
+  supabaseUrl = supabaseUrl.replace('localhost', 'host.docker.internal');
+}
 
 if (!supabaseUrl || !supabaseKey) {
   console.error('❌ Supabase 자격 증명이 없습니다.');
