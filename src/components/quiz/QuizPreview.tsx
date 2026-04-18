@@ -19,6 +19,20 @@ interface QuizPreviewProps {
   useSystemKeyboard: boolean;
 }
 
+// topicMap을 컴포넌트 외부로 이동하여 보안 린트 에러(Object Injection) 해결
+const ARITHMETIC_TOPIC_MAP: Record<number, string> = {
+  1: '덧셈',
+  2: '뺄셈',
+  3: '덧셈',
+  4: '뺄셈',
+  5: '곱셈',
+  6: '나눗셈',
+  7: '혼합 연산',
+  8: '곱셈',
+  9: '나눗셈',
+  10: '종합 연산',
+};
+
 export function QuizPreview({
   mountainParam,
   categoryParam,
@@ -71,22 +85,7 @@ export function QuizPreview({
     const catName = APP_CONFIG.CATEGORY_MAP[categoryParam as keyof typeof APP_CONFIG.CATEGORY_MAP];
     if (catName) return catName;
     if (categoryParam === 'arithmetic' && levelParam !== null) {
-      const topicMap: Record<number, string> = {
-        1: '덧셈',
-        2: '뺄셈',
-        3: '덧셈',
-        4: '뺄셈',
-        5: '곱셈',
-        6: '나눗셈',
-        7: '혼합 연산',
-        8: '곱셈',
-        9: '나눗셈',
-        10: '종합 연산',
-      };
-      if (levelParam != null) {
-        return (topicMap as Record<number, string>)[levelParam] || '사칙연산';
-      }
-      return '사칙연산';
+      return ARITHMETIC_TOPIC_MAP[levelParam] || '사칙연산';
     }
     return topic || '미리보기';
   }, [categoryParam, subParam, levelParam, topic]);

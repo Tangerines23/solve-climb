@@ -33,7 +33,7 @@ function checkDockerStatus() {
     const output = execSync('npx supabase status --json').toString();
     const status = JSON.parse(output);
     return status.DB_URL && status.API_URL;
-  } catch (e) {
+  } catch (_e) {
     return false;
   }
 }
