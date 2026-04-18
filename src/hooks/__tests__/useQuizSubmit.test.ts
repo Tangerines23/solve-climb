@@ -96,6 +96,7 @@ describe('useQuizSubmit', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     vi.useFakeTimers();
+    vi.setSystemTime(new Date('2026-04-18T00:00:00Z'));
     vi.mocked(useGameStore).mockReturnValue(defaultGameStoreState as any); // Type assertion fix for partial mock
   });
 
@@ -446,9 +447,11 @@ describe('useQuizSubmit', () => {
     });
 
     expect(defaultParams.increaseScore).toHaveBeenCalled();
-    // Score should be reduced by 20% (multiplier 0.8)
+    // [v2.2] Score calculation: (Level 1 * 10 * Multiplier 1.0 * Combo 1.0) * Exhausted 0.8
+    // CLIMB_PER_CORRECT is 10 in game.ts
+    const expectedScore = Math.floor(10 * 0.8);
     const scoreCall = defaultParams.increaseScore.mock.calls[0][0];
-    expect(scoreCall).toBeLessThan(100); // Assuming CLIMB_PER_CORRECT is 100
+    expect(scoreCall).toBe(expectedScore);
   });
 
   it('should handle Japanese quiz wrong answer', () => {
