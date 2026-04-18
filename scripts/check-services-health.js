@@ -9,12 +9,14 @@ import { execSync } from 'child_process';
 
 const MAX_RETRIES = 30;
 const RETRY_INTERVAL_MS = 2000;
-const SUPABASE_API_URL = 'http://localhost:54321/rest/v1/';
+const SUPABASE_API_URL = process.env.SUPABASE_API_URL || 'http://localhost:54321/rest/v1/';
+const DOCKER_HOST = process.env.IS_DOCKER ? 'host.docker.internal' : 'localhost';
 
 async function checkSupabaseHealth() {
+  const url = SUPABASE_API_URL.replace('localhost', DOCKER_HOST);
   return new Promise((resolve) => {
     http
-      .get(SUPABASE_API_URL, (res) => {
+      .get(url, (res) => {
         // API가 응답하면 (인증 에러 401이어도 서비스는 살아있는 것)
         if (res.statusCode === 200 || res.statusCode === 401) {
           resolve(true);
