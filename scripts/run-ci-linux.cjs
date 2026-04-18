@@ -46,14 +46,20 @@ async function run() {
     `${process.cwd()}:${WORKSPACE_DIR}`,
     '-w',
     WORKSPACE_DIR,
+    '-v',
+    `solve-climb-node-modules:${WORKSPACE_DIR}/node_modules`,
+    '-v',
+    'solve-climb-playwright-browsers:/ms-playwright',
     '-e',
     'CI=true',
     '-e',
     'IS_DOCKER=true',
+    '-e',
+    'PLAYWRIGHT_BROWSERS_PATH=/ms-playwright',
     IMAGE_NAME,
     '/bin/bash',
     '-c',
-    'npm run ci:local:stage1',
+    'npm install && npx playwright install chromium --with-deps && npm run ci:local:stage1',
   ];
 
   const child = spawn('docker', dockerArgs, { stdio: 'inherit' });

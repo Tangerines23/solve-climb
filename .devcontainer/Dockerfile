@@ -24,8 +24,14 @@ RUN apt-get update && export DEBIAN_FRONTEND=noninteractive \
     postgresql-client \
     && apt-get clean && rm -rf /var/lib/apt/lists/*
 
-# 전역 프로젝트 도구 설치
+# 전역 프로젝트 도구 및 Playwright 브라우저 설치
 RUN su node -c "npm install -g npm@latest"
+
+# Playwright Chromium 및 필수 OS 종속성 설치 (전역 경로에 설치하여 모든 사용자 호환성 확보)
+ENV PLAYWRIGHT_BROWSERS_PATH=/ms-playwright
+RUN mkdir -p /ms-playwright && chown node:node /ms-playwright
+RUN su node -c "npx playwright install --with-deps chromium"
+
 # Supabase CLI 공식 바이너리 설치 (Linux)
 RUN curl -fsSL https://github.com/supabase/cli/releases/latest/download/supabase_linux_amd64.tar.gz -o supabase.tar.gz \
     && tar -xvf supabase.tar.gz \
