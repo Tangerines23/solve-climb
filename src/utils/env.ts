@@ -45,7 +45,14 @@ export const ENV = createEnv({
   // emptyStringAsUndefined: true,
   onValidationError: (issues) => {
     // CI/Test 환경에서 누락된 변수가 있더라도 에러를 던지지 않고 경고만 출력
-    console.warn('⚠️ Environment validation issues (Non-critical in CI/Test):', issues);
+    console.error('❌ Environment Validation Failed!');
+    console.error('--------------------------------------------------');
+    issues.forEach((issue) => {
+      console.error(`- [${issue.path?.join('.') || 'unknown'}] : ${issue.message}`);
+    });
+    console.error('--------------------------------------------------');
+    console.warn('⚠️ Above issues are non-critical in CI/Test but will cause failures in PROD.');
+
     if (!isTestOrCI) {
       throw new Error(`Invalid environment variables: ${JSON.stringify(issues, null, 2)}`);
     }
