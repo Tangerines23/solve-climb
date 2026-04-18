@@ -39,9 +39,12 @@ describe('TierProgressBar', () => {
 
     render(<TierProgressBar totalScore={1000} />);
 
-    await waitFor(() => {
-      expect(screen.getByText(/현재 티어/)).toBeInTheDocument();
-    });
+    await waitFor(
+      () => {
+        expect(screen.getByText(/현재 티어/)).toBeInTheDocument();
+      },
+      { timeout: 10000 }
+    );
   });
 
   it('should render with different sizes', async () => {

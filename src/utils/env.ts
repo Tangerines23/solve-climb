@@ -49,7 +49,7 @@ export const ENV = createEnv({
     if (!isTestOrCI) {
       throw new Error(`Invalid environment variables: ${JSON.stringify(issues, null, 2)}`);
     }
-    // Satisfy 'never' return type if required by some versions of t3-env
+    // Satisfy 'never' return type for t3-env
     throw new Error('Skip validation for CI/Test');
   },
 });

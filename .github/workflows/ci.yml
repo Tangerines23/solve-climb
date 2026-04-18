@@ -180,7 +180,7 @@ jobs:
           npx supabase start -x realtime,storage,inbucket,studio --debug
           
           # Wait for services to be ready
-          sleep 5
+          sleep 15
           
           # Apply current PR migrations to the local instance
           npx supabase db reset
