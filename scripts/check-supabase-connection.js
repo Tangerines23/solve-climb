@@ -37,7 +37,12 @@ const supabaseKey = process.env.VITE_SUPABASE_ANON_KEY;
 
 // Docker 내부에서 실행 중일 경우 localhost를 host.docker.internal로 전환 (로컬 시뮬레이션용)
 // GitHub Actions 등 CI 환경에서는 기본적으로 localhost를 유지
-if (process.env.IS_DOCKER && !process.env.GITHUB_ACTIONS && supabaseUrl?.includes('localhost')) {
+if (
+  process.env.IS_DOCKER &&
+  !process.env.GITHUB_ACTIONS &&
+  !process.env.CI &&
+  supabaseUrl?.includes('localhost')
+) {
   supabaseUrl = supabaseUrl.replace('localhost', 'host.docker.internal');
 }
 

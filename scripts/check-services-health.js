@@ -10,7 +10,10 @@ import { execSync } from 'child_process';
 const MAX_RETRIES = 30;
 const RETRY_INTERVAL_MS = 2000;
 const SUPABASE_API_URL = process.env.SUPABASE_API_URL || 'http://localhost:54321/rest/v1/';
-const DOCKER_HOST = process.env.IS_DOCKER ? 'host.docker.internal' : 'localhost';
+const DOCKER_HOST =
+  process.env.IS_DOCKER && !process.env.CI && !process.env.GITHUB_ACTIONS
+    ? 'host.docker.internal'
+    : 'localhost';
 
 async function checkSupabaseHealth() {
   const url = SUPABASE_API_URL.replace('localhost', DOCKER_HOST);
@@ -55,6 +58,7 @@ function checkDockerStatus() {
 
 async function wait() {
   console.log('🚀 Supabase 서비스 가용성 확인 시작...');
+  console.log(`🔗 Target Host: ${DOCKER_HOST}`);
 
   for (let i = 1; i <= MAX_RETRIES; i++) {
     process.stdout.write(`⏳ 체크 중... (${i}/${MAX_RETRIES})\r`);
