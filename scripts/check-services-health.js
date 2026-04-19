@@ -13,7 +13,7 @@ const SUPABASE_API_URL = process.env.SUPABASE_API_URL || 'http://localhost:54321
 const DOCKER_HOST =
   process.env.IS_DOCKER && !process.env.CI && !process.env.GITHUB_ACTIONS
     ? 'host.docker.internal'
-    : 'localhost';
+    : '127.0.0.1'; // Use 127.0.0.1 instead of localhost to avoid IPv6 issues in CI nodejs env
 
 async function checkSupabaseHealth() {
   const url = SUPABASE_API_URL.replace('localhost', DOCKER_HOST);
@@ -27,7 +27,11 @@ async function checkSupabaseHealth() {
           resolve(false);
         }
       })
-      .on('error', () => {
+      .on('error', (err) => {
+        // Only log errors if we're near the end or if it's not a common connection refused
+        if (err.code !== 'ECONNREFUSED') {
+          console.error(`\n⚠️ API Error (${err.code}): ${err.message}`);
+        }
         resolve(false);
       });
   });
