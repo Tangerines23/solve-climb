@@ -70,7 +70,16 @@ async function checkConnection() {
     } else {
       console.error('❌ 연결 실패:', error.message || error.code);
     }
-    process.exit(1);
+
+    // CI 환경에서만 엄격하게 실패 처리, 로컬에서는 경고 후 진행 허용
+    if (process.env.CI || process.env.GITHUB_ACTIONS) {
+      process.exit(1);
+    } else {
+      console.warn(
+        '⚠️  경고: Supabase 서비스가 로컬에서 실행 중이 아니거나 연결할 수 없습니다. (연결 검증 건너풂)'
+      );
+      process.exit(0);
+    }
   }
 
   console.log('✅ Supabase 연결 성공');
