@@ -52,15 +52,16 @@ function checkDockerStatus() {
     } catch {
       output = execSync('npx supabase status --json', {
         stdio: ['ignore', 'pipe', 'ignore'],
-        timeout: 15000,
+        timeout: 20000,
       }).toString();
     }
 
     const status = JSON.parse(output);
     const isUp = !!(status.DB_URL && status.API_URL && status.REST_URL);
     return { ok: isUp, status: isUp ? 'READY' : 'STARTING' };
-  } catch (_e) {
-    return { ok: false, status: 'ERROR' };
+  } catch (e) {
+    // CLI 체크 실패 시 에러 메시지 포함 (JSON 파싱 실패나 타임아웃 등)
+    return { ok: false, status: 'ERROR', error: e.message };
   }
 }
 
@@ -74,13 +75,24 @@ async function wait() {
     const api = await checkSupabaseHealth();
 
     const apiMsg = api.ok ? `✅ (${api.status})` : `⏳ (${api.status || api.error || 'WAITING'})`;
-    const dockerMsg = docker.ok ? `✅` : `⏳ (${docker.status})`;
+    const dockerMsg = docker.ok
+      ? `✅`
+      : `⏳ (${docker.status}${docker.error ? ': ' + docker.error : ''})`;
 
     const statusMsg = `[${i}/${MAX_RETRIES}] Docker Status: ${dockerMsg}, API Health: ${apiMsg}`;
+
+    // 로그가 너무 길어지지 않게 Docker Status 에러 시에는 줄바꿈 없이 출력 (한 줄 갱신)
     process.stdout.write(`⏳ 체크 중... ${statusMsg}\r`);
 
-    if (docker.ok && api.ok) {
-      console.log('\n✅ Supabase 모든 서비스가 정상적으로 가동되었습니다!');
+    // 핵심 로직: API가 200 OK를 반환하면 컨테이너 CLI 상태와 관계없이 가동된 것으로 간주 (견고함 확보)
+    if (api.ok) {
+      if (!docker.ok) {
+        console.log(
+          `\n⚠️  Docker Status 체크 실패(${docker.status})하였으나, API가 정상 응답하므로 진행합니다.`
+        );
+      } else {
+        console.log('\n✅ Supabase 모든 서비스가 정상적으로 가동되었습니다!');
+      }
       process.exit(0);
     }
 
