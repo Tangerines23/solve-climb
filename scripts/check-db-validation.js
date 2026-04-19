@@ -32,9 +32,14 @@ const supabaseUrl = process.env.VITE_SUPABASE_URL;
 const supabaseKey = process.env.VITE_SUPABASE_ANON_KEY;
 
 if (!supabaseUrl || !supabaseKey) {
-  console.error('❌ Error: Supabase credentials not found in environment variables.');
-  console.error('Expected VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY.');
-  console.error('Note: If running in GitHub Actions, ensure these are set as Repository Secrets.');
+  console.error('\n❌ Error: Supabase credentials not found in environment variables.');
+  console.error('--- Environment Status ---');
+  console.log(`VITE_SUPABASE_URL: ${supabaseUrl ? 'SET' : 'MISSING'}`);
+  console.log(`VITE_SUPABASE_ANON_KEY: ${supabaseKey ? 'SET' : 'MISSING'}`);
+  console.error('\nExpected VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY to be available.');
+  console.error(
+    'Note: If running in GitHub Actions, ensure the extract-and-export logic in ci.yml is correct.'
+  );
   process.exit(1);
 }
 

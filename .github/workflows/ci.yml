@@ -191,10 +191,11 @@ jobs:
           
           # Extract local keys for validation script
           LOCAL_JSON=$(npx supabase status -o json)
-          VITE_SUPABASE_URL=$(echo $LOCAL_JSON | jq -r '.API_URL')
+          VITE_SUPABASE_URL=$(echo $LOCAL_JSON | jq -r '.API_URL' | sed 's/localhost/127.0.0.1/')
           # Using Service Role Key for validation to bypass RLS on test functions
           VITE_SUPABASE_ANON_KEY=$(echo $LOCAL_JSON | jq -r '.SERVICE_ROLE_KEY')
           
+          export VITE_SUPABASE_URL=$VITE_SUPABASE_URL
           export VITE_SUPABASE_ANON_KEY=$VITE_SUPABASE_ANON_KEY
           npm run check:db:validation
 
