@@ -7,7 +7,7 @@
 import http from 'http';
 import { execSync } from 'child_process';
 
-const MAX_RETRIES = 30;
+const MAX_RETRIES = 150;
 const RETRY_INTERVAL_MS = 2000;
 const SUPABASE_API_URL = process.env.SUPABASE_API_URL || 'http://localhost:54321/rest/v1/';
 const DOCKER_HOST =
@@ -35,22 +35,21 @@ async function checkSupabaseHealth() {
 
 function checkDockerStatus() {
   try {
-    // 1. Try global supabase command first (faster)
-    // 2. Fallback to npx supabase
     let output;
     try {
       output = execSync('supabase status --json', {
         stdio: ['ignore', 'pipe', 'ignore'],
+        timeout: 10000,
       }).toString();
     } catch {
       output = execSync('npx supabase status --json', {
         stdio: ['ignore', 'pipe', 'ignore'],
+        timeout: 15000,
       }).toString();
     }
 
     const status = JSON.parse(output);
-    // Ensure essential URLs are present
-    return status.DB_URL && status.API_URL && status.REST_URL;
+    return !!(status.DB_URL && status.API_URL && status.REST_URL);
   } catch (_e) {
     return false;
   }
@@ -59,12 +58,16 @@ function checkDockerStatus() {
 async function wait() {
   console.log('🚀 Supabase 서비스 가용성 확인 시작...');
   console.log(`🔗 Target Host: ${DOCKER_HOST}`);
+  console.log(`🕙 예상 최대 대기 시간: ${MAX_RETRIES * (RETRY_INTERVAL_MS / 1000)}초`);
 
   for (let i = 1; i <= MAX_RETRIES; i++) {
-    process.stdout.write(`⏳ 체크 중... (${i}/${MAX_RETRIES})\r`);
-
     const isDockerUp = checkDockerStatus();
     const isApiResponsive = await checkSupabaseHealth();
+
+    const statusMsg = `[${i}/${MAX_RETRIES}] Docker: ${isDockerUp ? '✅' : '⏳'}, API: ${
+      isApiResponsive ? '✅' : '⏳'
+    }`;
+    process.stdout.write(`⏳ 체크 중... ${statusMsg}\r`);
 
     if (isDockerUp && isApiResponsive) {
       console.log('\n✅ Supabase 모든 서비스가 정상적으로 가동되었습니다!');
@@ -75,6 +78,9 @@ async function wait() {
   }
 
   console.error('\n❌ Supabase 서비스 가동 대기 시간이 초과되었습니다.');
+  console.error(
+    `🚦 최종 상태 - Docker: ${checkDockerStatus()}, API: ${await checkSupabaseHealth()}`
+  );
   process.exit(1);
 }
 
