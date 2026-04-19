@@ -122,6 +122,7 @@ jobs:
     runs-on: ubuntu-latest
     env:
       SUPABASE_DB_PASSWORD: ${{ secrets.SUPABASE_DB_PASSWORD }}
+      IS_DOCKER: true
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -177,7 +178,7 @@ jobs:
         run: |
           # Start minimal Supabase services for linting (requires Docker)
           # We include edge-functions if needed, but keeping it minimal for speed
-          npx supabase start -x realtime,storage,inbucket,studio --debug
+          npx supabase@v2.90.0 start -x realtime,storage,inbucket,studio --debug
           
           # Wait for services to be ready
           node scripts/check-services-health.js

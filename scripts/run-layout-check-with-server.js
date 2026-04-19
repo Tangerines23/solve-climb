@@ -19,8 +19,8 @@ const __dirname = dirname(fileURLToPath(import.meta.url));
 const ROOT = join(__dirname, '..');
 
 const PORT = 5173;
-const BASE_URL = `http://localhost:${PORT}`;
-const WAIT_TIMEOUT_MS = 120000; // 2분
+const BASE_URL = `http://127.0.0.1:${PORT}`;
+const WAIT_TIMEOUT_MS = 180000; // 3분으로 연장
 const POLL_INTERVAL_MS = 1000;
 
 function waitForServer() {

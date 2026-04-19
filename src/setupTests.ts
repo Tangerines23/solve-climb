@@ -6,10 +6,7 @@ import { server } from './mocks/server';
 // MSW 2.x requires global fetch, Headers, etc. In some Node/JSDOM environments
 // Headers can become undefined during teardown.
 if (typeof global.Headers === 'undefined' && typeof window !== 'undefined') {
-  console.log('global.Headers is undefined, window.Headers is:', typeof window.Headers);
   global.Headers = window.Headers;
-} else {
-  console.log('global.Headers is already defined:', typeof global.Headers);
 }
 
 // MSW 서버 시작

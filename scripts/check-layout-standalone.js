@@ -48,7 +48,7 @@ async function runOneViewport(viewport, pagesToCheck, BASE_URL, browser) {
     for (const pageInfo of pagesToCheck) {
       const page = await context.newPage();
       try {
-        await page.goto(pageInfo.url, { waitUntil: 'load', timeout: 30000 });
+        await page.goto(pageInfo.url, { waitUntil: 'load', timeout: 120000 }); // 120초로 연장 (Docker 내 컴파일 시간 고려)
         await page.addInitScript(() => {
           window.__ENABLE_VISUAL_GUARDIAN__ = true;
           window.__VG_INTENSIVE_MODE__ = true;

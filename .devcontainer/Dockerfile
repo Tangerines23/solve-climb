@@ -33,7 +33,7 @@ RUN mkdir -p /ms-playwright && chown node:node /ms-playwright
 RUN su node -c "npx playwright install --with-deps chromium"
 
 # Supabase CLI 공식 바이너리 설치 (Linux)
-RUN curl -fsSL https://github.com/supabase/cli/releases/latest/download/supabase_linux_amd64.tar.gz -o supabase.tar.gz \
+RUN curl -fsSL https://github.com/supabase/cli/releases/download/v2.90.0/supabase_linux_amd64.tar.gz -o supabase.tar.gz \
     && tar -xvf supabase.tar.gz \
     && mv supabase /usr/local/bin/ \
     && rm supabase.tar.gz

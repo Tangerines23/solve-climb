@@ -32,9 +32,22 @@ async function checkSupabaseHealth() {
 
 function checkDockerStatus() {
   try {
-    const output = execSync('npx supabase status --json').toString();
+    // 1. Try global supabase command first (faster)
+    // 2. Fallback to npx supabase
+    let output;
+    try {
+      output = execSync('supabase status --json', {
+        stdio: ['ignore', 'pipe', 'ignore'],
+      }).toString();
+    } catch {
+      output = execSync('npx supabase status --json', {
+        stdio: ['ignore', 'pipe', 'ignore'],
+      }).toString();
+    }
+
     const status = JSON.parse(output);
-    return status.DB_URL && status.API_URL;
+    // Ensure essential URLs are present
+    return status.DB_URL && status.API_URL && status.REST_URL;
   } catch (_e) {
     return false;
   }
