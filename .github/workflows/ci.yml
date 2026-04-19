@@ -195,10 +195,20 @@ jobs:
           # Using Service Role Key for validation to bypass RLS on test functions
           VITE_SUPABASE_ANON_KEY=$(echo $LOCAL_JSON | jq -r '.SERVICE_ROLE_KEY')
           
-          # Export to environment and run validation
-          export VITE_SUPABASE_URL=$VITE_SUPABASE_URL
           export VITE_SUPABASE_ANON_KEY=$VITE_SUPABASE_ANON_KEY
           npm run check:db:validation
+
+      # 가동 실패 시 원인 파악을 위한 데이터 덤프
+      - name: 📋 Post-failure Diagnostics
+        if: failure()
+        run: |
+          echo "==== Docker Container Status ===="
+          docker ps -a
+          echo -e "\n==== Supabase Status ===="
+          npx supabase status
+          echo -e "\n==== Recent Container Logs (Kong/PostgREST) ===="
+          docker logs supabase_kong_solve-climb --tail 100 || true
+          docker logs supabase_rest_solve-climb --tail 100 || true
 
   # 5. 빌드 가능성 확인
   build:

@@ -7,7 +7,7 @@
 import http from 'http';
 import { execSync } from 'child_process';
 
-const MAX_RETRIES = 150;
+const MAX_RETRIES = 300; // Increased to 10 minutes total for CI stability
 const RETRY_INTERVAL_MS = 2000;
 const SUPABASE_API_URL = process.env.SUPABASE_API_URL || 'http://localhost:54321/rest/v1/';
 const DOCKER_HOST =
@@ -18,13 +18,13 @@ const DOCKER_HOST =
 async function checkSupabaseHealth() {
   const url = SUPABASE_API_URL.replace('localhost', DOCKER_HOST);
   return new Promise((resolve) => {
-    http
-      .get(url, (res) => {
+    const req = http
+      .get(url, { timeout: 5000 }, (res) => {
         // API가 응답하면 (인증 에러 401이어도 서비스는 살아있는 것)
         if (res.statusCode === 200 || res.statusCode === 401) {
-          resolve(true);
+          resolve({ ok: true, status: res.statusCode });
         } else {
-          resolve(false);
+          resolve({ ok: false, status: res.statusCode });
         }
       })
       .on('error', (err) => {
@@ -32,7 +32,11 @@ async function checkSupabaseHealth() {
         if (err.code !== 'ECONNREFUSED') {
           console.error(`\n⚠️ API Error (${err.code}): ${err.message}`);
         }
-        resolve(false);
+        resolve({ ok: false, error: err.code });
+      })
+      .on('timeout', () => {
+        req.destroy();
+        resolve({ ok: false, error: 'TIMEOUT' });
       });
   });
 }
@@ -53,9 +57,10 @@ function checkDockerStatus() {
     }
 
     const status = JSON.parse(output);
-    return !!(status.DB_URL && status.API_URL && status.REST_URL);
+    const isUp = !!(status.DB_URL && status.API_URL && status.REST_URL);
+    return { ok: isUp, status: isUp ? 'READY' : 'STARTING' };
   } catch (_e) {
-    return false;
+    return { ok: false, status: 'ERROR' };
   }
 }
 
@@ -65,15 +70,16 @@ async function wait() {
   console.log(`🕙 예상 최대 대기 시간: ${MAX_RETRIES * (RETRY_INTERVAL_MS / 1000)}초`);
 
   for (let i = 1; i <= MAX_RETRIES; i++) {
-    const isDockerUp = checkDockerStatus();
-    const isApiResponsive = await checkSupabaseHealth();
+    const docker = checkDockerStatus();
+    const api = await checkSupabaseHealth();
 
-    const statusMsg = `[${i}/${MAX_RETRIES}] Docker: ${isDockerUp ? '✅' : '⏳'}, API: ${
-      isApiResponsive ? '✅' : '⏳'
-    }`;
+    const apiMsg = api.ok ? `✅ (${api.status})` : `⏳ (${api.status || api.error || 'WAITING'})`;
+    const dockerMsg = docker.ok ? `✅` : `⏳ (${docker.status})`;
+
+    const statusMsg = `[${i}/${MAX_RETRIES}] Docker Status: ${dockerMsg}, API Health: ${apiMsg}`;
     process.stdout.write(`⏳ 체크 중... ${statusMsg}\r`);
 
-    if (isDockerUp && isApiResponsive) {
+    if (docker.ok && api.ok) {
       console.log('\n✅ Supabase 모든 서비스가 정상적으로 가동되었습니다!');
       process.exit(0);
     }
@@ -82,8 +88,12 @@ async function wait() {
   }
 
   console.error('\n❌ Supabase 서비스 가동 대기 시간이 초과되었습니다.');
+  const finalDocker = checkDockerStatus();
+  const finalApi = await checkSupabaseHealth();
   console.error(
-    `🚦 최종 상태 - Docker: ${checkDockerStatus()}, API: ${await checkSupabaseHealth()}`
+    `🚦 최종 상태 - Docker: ${finalDocker.ok} (${finalDocker.status}), API: ${finalApi.ok} (${
+      finalApi.status || finalApi.error
+    })`
   );
   process.exit(1);
 }

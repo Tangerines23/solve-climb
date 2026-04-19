@@ -20,18 +20,18 @@ interface QuizPreviewProps {
 }
 
 // topicMap을 컴포넌트 외부로 이동하여 보안 린트 에러(Object Injection) 해결
-const ARITHMETIC_TOPIC_MAP: Record<number, string> = {
-  1: '덧셈',
-  2: '뺄셈',
-  3: '덧셈',
-  4: '뺄셈',
-  5: '곱셈',
-  6: '나눗셈',
-  7: '혼합 연산',
-  8: '곱셈',
-  9: '나눗셈',
-  10: '종합 연산',
-};
+const ARITHMETIC_TOPIC_MAP = new Map<number, string>([
+  [1, '덧셈'],
+  [2, '뺄셈'],
+  [3, '덧셈'],
+  [4, '뺄셈'],
+  [5, '곱셈'],
+  [6, '나눗셈'],
+  [7, '혼합 연산'],
+  [8, '곱셈'],
+  [9, '나눗셈'],
+  [10, '종합 연산'],
+]);
 
 export function QuizPreview({
   mountainParam,
@@ -59,18 +59,25 @@ export function QuizPreview({
   // displayCategory와 displayTopic 계산
   const displayCategoryPreview = useMemo(() => {
     if (mountainParam) {
-      const mountainName =
-        APP_CONFIG.MOUNTAIN_MAP[mountainParam as keyof typeof APP_CONFIG.MOUNTAIN_MAP];
-      if (mountainName) return mountainName;
+      const mountainMap = APP_CONFIG.MOUNTAIN_MAP as Record<string, string>;
+      if (Object.prototype.hasOwnProperty.call(mountainMap, mountainParam)) {
+        return mountainMap[mountainParam];
+      }
     }
     if (!categoryParam) return category || '연습';
-    return (
-      APP_CONFIG.WORLD_MAP[categoryParam as keyof typeof APP_CONFIG.WORLD_MAP] ||
-      APP_CONFIG.MOUNTAIN_MAP[categoryParam as keyof typeof APP_CONFIG.MOUNTAIN_MAP] ||
-      APP_CONFIG.CATEGORY_MAP[categoryParam as keyof typeof APP_CONFIG.CATEGORY_MAP] ||
-      category ||
-      '연습'
-    );
+
+    const worldMap = APP_CONFIG.WORLD_MAP as Record<string, string>;
+    const mountainMap = APP_CONFIG.MOUNTAIN_MAP as Record<string, string>;
+    const categoryMap = APP_CONFIG.CATEGORY_MAP as Record<string, string>;
+
+    if (Object.prototype.hasOwnProperty.call(worldMap, categoryParam))
+      return worldMap[categoryParam];
+    if (Object.prototype.hasOwnProperty.call(mountainMap, categoryParam))
+      return mountainMap[categoryParam];
+    if (Object.prototype.hasOwnProperty.call(categoryMap, categoryParam))
+      return categoryMap[categoryParam];
+
+    return category || '연습';
   }, [mountainParam, categoryParam, category]);
 
   const displayTopicPreview = useMemo(() => {
@@ -85,7 +92,7 @@ export function QuizPreview({
     const catName = APP_CONFIG.CATEGORY_MAP[categoryParam as keyof typeof APP_CONFIG.CATEGORY_MAP];
     if (catName) return catName;
     if (categoryParam === 'arithmetic' && levelParam !== null) {
-      return ARITHMETIC_TOPIC_MAP[levelParam] || '사칙연산';
+      return ARITHMETIC_TOPIC_MAP.get(levelParam) || '사칙연산';
     }
     return topic || '미리보기';
   }, [categoryParam, subParam, levelParam, topic]);
