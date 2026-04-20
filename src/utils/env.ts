@@ -36,6 +36,9 @@ export const ENV = createEnv({
       .union([z.string(), z.boolean()])
       .optional()
       .transform((v) => v === 'true' || v === true),
+
+    // 4. 사이트 URL 설정 (프로덕션 리다이렉션 용)
+    VITE_SITE_URL: z.string().url('Invalid Site URL').optional(),
   },
 
   // Vite 환경에서는 import.meta.env를 runtimeEnv로 전달
@@ -86,7 +89,7 @@ export const config = {
   IS_PRODUCTION: import.meta.env.PROD,
   DEBUG_URL: ENV.VITE_DEBUG_URL,
   IS_VERCEL: !!ENV.VITE_IS_VERCEL,
-  ADMOB_APP_ID: ENV.VITE_ADMOB_APP_ID,
   ADMOB_REWARDED_ID: ENV.VITE_ADMOB_REWARDED_ID,
   SENTRY_DSN: ENV.VITE_SENTRY_DSN || '',
+  SITE_URL: ENV.VITE_SITE_URL,
 } as const;
