@@ -14,8 +14,9 @@ const getRedirectUrl = (): string => {
     return '';
   }
 
-  // 현재 origin을 기반으로 콜백 URL 생성
-  const origin = window.location.origin;
+  // VITE_SITE_URL 환경 변수가 있으면 우선적으로 사용 (프로덕션 배포 시 권장)
+  // 없으면 현재 window.location.origin 사용 (로컬 개발 시 유용)
+  const origin = ENV.VITE_SITE_URL || window.location.origin;
   const callbackPath = '/auth/callback';
 
   return `${origin}${callbackPath}`;
@@ -24,11 +25,14 @@ const getRedirectUrl = (): string => {
 // 환경 변수 검증은 env.ts에서 자동으로 수행됨
 // 환경 변수가 없을 때는 더미 클라이언트를 생성 (심사 환경 대응)
 const createSupabaseClient = (): SupabaseClient => {
-  const supabaseUrl = ENV.VITE_SUPABASE_URL;
+  // URL 끝의 슬래시 제거 (주소 설정 실수 방지)
+  const supabaseUrl = ENV.VITE_SUPABASE_URL?.replace(/\/$/, '');
   const supabaseKey = ENV.VITE_SUPABASE_ANON_KEY;
+  const isFallback = !supabaseUrl || supabaseUrl.includes('localhost');
 
-  if (import.meta.env.DEV) {
-    console.log(`[Supabase] 연결 시도 중... URL: ${supabaseUrl || 'http://localhost (Fallback)'}`);
+  if (import.meta.env.DEV || isFallback) {
+    const logUrl = supabaseUrl || 'http://localhost (Fallback)';
+    console.log(`[Supabase] 연결 시도 중... URL: ${logUrl}`);
   }
 
   if (!supabaseUrl || !supabaseKey) {
