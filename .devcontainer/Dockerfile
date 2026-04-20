@@ -22,6 +22,7 @@ RUN apt-get update && export DEBIAN_FRONTEND=noninteractive \
     libxshmfence1 \
     libx11-xcb1 \
     postgresql-client \
+    jq \
     && apt-get clean && rm -rf /var/lib/apt/lists/*
 
 # 전역 프로젝트 도구 및 Playwright 브라우저 설치

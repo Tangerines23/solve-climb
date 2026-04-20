@@ -8,8 +8,12 @@ const path = require('path');
 const IMAGE_NAME = 'solve-climb-ci-env';
 const WORKSPACE_DIR = '/workspaces/solve-climb';
 
+// Check for --full argument
+const isFullMode = process.argv.includes('--full');
+
 async function run() {
-  console.log('\n🐧 [Linux CI Push Guard] 리눅스 환경 검증을 시작합니다...');
+  const modeText = isFullMode ? '[FULL 100% Mirror]' : '[STAGE 1 Fast-Guard]';
+  console.log(`\n🐧 [Linux CI Guard] ${modeText} 리눅스 환경 검증을 시작합니다...`);
 
   // 1. Docker 실행 여부 확인
   try {
@@ -20,7 +24,8 @@ async function run() {
     console.log('------------------------------------------------------------');
 
     try {
-      execSync('npm run ci:local:stage1', { stdio: 'inherit' });
+      const script = isFullMode ? 'ci:local:all' : 'ci:local:stage1';
+      execSync(`npm run ${script}`, { stdio: 'inherit' });
       process.exit(0);
     } catch (err) {
       process.exit(1);
@@ -37,11 +42,17 @@ async function run() {
   }
 
   // 3. 컨테이너 내부에서 CI 실행
-  console.log('\n🚀 Ubuntu 컨테이너 내부에서 전체 검증을 실행합니다...');
+  console.log(`\n🚀 Ubuntu 컨테이너 내부에서 ${isFullMode ? '전체(100%)' : '핵심'} 검증을 실행합니다...`);
+
+  const runCommand = isFullMode 
+    ? 'npm install && bash scripts/ci-local-all.sh' 
+    : 'npm install && npx playwright install chromium --with-deps && npm run ci:local:stage1';
 
   const dockerArgs = [
     'run',
     '--rm',
+    '--network',
+    'host',
     '-v',
     `${process.cwd()}:${WORKSPACE_DIR}`,
     '-w',
@@ -50,23 +61,32 @@ async function run() {
     `solve-climb-node-modules:${WORKSPACE_DIR}/node_modules`,
     '-v',
     'solve-climb-playwright-browsers:/ms-playwright',
+    '-v',
+    '/var/run/docker.sock:/var/run/docker.sock',
     '-e',
     'CI=true',
     '-e',
     'IS_DOCKER=true',
     '-e',
     'PLAYWRIGHT_BROWSERS_PATH=/ms-playwright',
+    // Pass essential environment variables if they exist
+    ...[
+      'VITE_SUPABASE_URL', 
+      'VITE_SUPABASE_ANON_KEY', 
+      'SUPABASE_DB_PASSWORD', 
+      'SUPABASE_ACCESS_TOKEN'
+    ].filter(key => process.env[key]).flatMap(key => ['-e', `${key}=${process.env[key]}`]),
     IMAGE_NAME,
     '/bin/bash',
     '-c',
-    'npm install && npx playwright install chromium --with-deps && npm run ci:local:stage1',
+    runCommand,
   ];
 
   const child = spawn('docker', dockerArgs, { stdio: 'inherit' });
 
   child.on('close', (code) => {
     if (code === 0) {
-      console.log('\n✅ [Success] 리눅스 환경 검증 통과! 푸시를 진행합니다.\n');
+      console.log(`\n✅ [Success] 리눅스 환경 (${isFullMode ? '100% Mirror' : 'Stage 1'}) 검증 통과!\n`);
       process.exit(0);
     } else {
       console.error('\n❌ [Failure] 리눅스 환경 검증 실패. 에러를 수정해 주세요.\n');
