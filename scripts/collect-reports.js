@@ -70,6 +70,10 @@ try {
           lowerFile.includes('dump') ||
           lowerFile.includes('schema') ||
           lowerFile.includes('fix') ||
+          lowerFile.includes('lint') ||
+          lowerFile.includes('status') ||
+          lowerFile.includes('job') ||
+          lowerFile.includes('diff') ||
           file === '.txt'; // 루트의 이상한 .txt 파일 포함
 
         if (isLogPattern) {
