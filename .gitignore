@@ -74,14 +74,13 @@ check_*.sql
 coverage/
 
 # Playwright
-playwright-report/
-test-results/
+reports/playwright-report/
+reports/test-results/
 playwright/.cache/
 tests/e2e/screenshots/
 .auth/
 .e2e-result.json
 *storybook.log
-storybook-static
 
 # Periodic Reports
 reports/*
