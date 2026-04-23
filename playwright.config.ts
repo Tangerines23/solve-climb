@@ -25,7 +25,9 @@ export default defineConfig({
   /* 병렬 실행 worker 수 */
   workers: process.env.CI ? 1 : undefined,
   /* 테스트 결과 리포터 설정 */
-  reporter: 'html',
+  reporter: [['html', { outputFolder: 'reports/playwright-report', open: 'never' }]],
+  /* 테스트 결과물(스크린샷, 비디오 등) 저장 경로 */
+  outputDir: 'reports/test-results',
 
   use: {
     /* 테스트 중 사용할 기본 주소 (동적 포트 지원) */
