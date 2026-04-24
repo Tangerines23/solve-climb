@@ -317,12 +317,17 @@
   padding: var(--spacing-4xl) var(--spacing-2xl);
   text-align: center;
   max-width: var(--modal-width-portrait);
-  margin: var(--spacing-3xl) auto;
+  margin: var(--spacing-xl) auto; /* Adjusted margin for better centering with header/footer */
   border: var(--border-glass);
   -webkit-backdrop-filter: blur(var(--backdrop-blur));
   backdrop-filter: blur(var(--backdrop-blur));
   box-shadow: var(--shadow-glass);
   animation: slideUp 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: calc(100vh - var(--header-height-portrait) - 80px - var(--spacing-3xl) * 2);
 }
 
 .my-page-header {
@@ -732,16 +737,14 @@
   font-size: 14px;
 }
 
-/* Guest View (비로그인 상태) - 게임과 동일한 어두운 배경 */
-.my-page-guest-view {
+.my-page-guest-view-container {
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  min-height: calc(100vh - 136px);
-  padding: var(--spacing-4xl) var(--spacing-xl);
+  min-height: calc(100vh - var(--header-height-portrait) - 80px);
+  padding: var(--spacing-xl);
   text-align: center;
-  background-color: var(--color-gray-900);
 }
 
 .my-page-guest-icon {
