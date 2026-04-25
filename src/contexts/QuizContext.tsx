@@ -517,6 +517,7 @@ export function QuizProvider({ children, params }: QuizProviderProps) {
       activeLandmark,
       remainingPauses,
       altitudePhase,
+      isPreview,
     }),
     [
       currentQuestion,
@@ -538,6 +539,7 @@ export function QuizProvider({ children, params }: QuizProviderProps) {
       activeLandmark,
       remainingPauses,
       altitudePhase,
+      isPreview,
     ]
   );
 

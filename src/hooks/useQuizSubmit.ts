@@ -175,10 +175,7 @@ export function useQuizSubmit({
       });
 
       // 3. Collect Math Answer
-      if (!isCorrect && onAnswerSubmitted && currentQuestionId) {
-        // Note: original code only tracked if math question.
-        // We'll keep it simple: if onAnswerSubmitted exists and we have ID.
-        // Actually original was `onAnswerSubmitted(currentQuestionId, answer)` where answer was parsed int.
+      if (onAnswerSubmitted && currentQuestionId) {
         const numericAnswer = parseInt(answerInput, 10);
         if (!isNaN(numericAnswer)) {
           onAnswerSubmitted(currentQuestionId, numericAnswer);

@@ -88,7 +88,7 @@ function CustomKeypadComponent({
       ))}
 
       <div
-        className={`keypad-row keypad-row-last ${showNegative || showDecimal || showFraction ? 'keypad-row-last-with-special' : ''}`}
+        className={`keypad-row keypad-row-last ${showNegative ? 'keypad-row-last-with-negative' : ''} ${showDecimal || showFraction ? 'keypad-row-last-with-special' : ''}`}
       >
         {renderSpecialKey() || (
           <div className="keypad-key-placeholder" style={{ flex: 1, visibility: 'hidden' }} />

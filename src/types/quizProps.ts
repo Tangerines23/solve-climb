@@ -26,6 +26,7 @@ export interface QuizDisplayState {
   remainingPauses: number;
   altitudePhase: string;
   totalSteps?: number;
+  isPreview?: boolean;
 }
 
 /**
