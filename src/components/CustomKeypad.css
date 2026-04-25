@@ -1,53 +1,51 @@
 .custom-keypad {
   display: flex;
   flex-direction: column;
-  gap: clamp(10px, 2vh, 16px);
-  padding: clamp(16px, 2.5vh, 24px);
-  padding-bottom: max(clamp(16px, 2.5vh, 24px), env(safe-area-inset-bottom));
+  gap: clamp(6px, 1.5vh, 12px);
+  padding: clamp(8px, 1.5vh, 16px);
+  padding-bottom: max(clamp(8px, 1.5vh, 16px), env(safe-area-inset-bottom));
   background-color: transparent;
   width: 100%;
   max-width: min(500px, 94vw);
   margin: 0 auto;
-  flex-shrink: 0;
+  flex: 1; /* Allow keypad to take up available space */
+  min-height: 0; /* Allow shrinking below content size */
+  max-height: 420px; /* Sensible maximum */
   box-sizing: border-box;
 }
 
 .keypad-row {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: clamp(10px, 2vh, 16px);
+  display: flex;
+  justify-content: center;
+  gap: clamp(6px, 1.5vh, 12px);
   width: 100%;
-  grid-auto-flow: row;
-  justify-items: center; /* 버튼을 그리드 칸 중앙에 배치 */
-  align-items: center;
+  flex: 1;
+  min-height: 0; /* Allow shrinking */
 }
 
 .keypad-row-last {
-  grid-template-columns: 1fr 1fr 1fr;
+  display: flex;
 }
 
 .keypad-row-last.keypad-row-last-with-negative {
-  grid-template-columns: repeat(4, 1fr);
+  /* No longer a grid, but flex handles this automatically */
 }
 
 .keypad-row-last .keypad-key-submit {
-  aspect-ratio: 1;
-  height: clamp(74px, 18vw, 92px);
-  max-height: clamp(74px, 18vw, 92px);
-  min-height: clamp(74px, 18vw, 92px);
+  /* Maintain same sizing logic as other keys */
 }
 
 .keypad-key {
+  height: 100%; /* Take full row height */
+  width: auto;
+  max-width: 100px; /* Don't get too wide */
+  max-height: 92px; /* Don't get too tall */
   aspect-ratio: 1;
-  /* 버튼 높이 통일 */
-  height: clamp(74px, 18vw, 92px);
-  max-height: clamp(74px, 18vw, 92px);
-  min-height: clamp(74px, 18vw, 92px);
   background-color: var(--color-gray-900); /* 더 어두운 배경 */
   border: 1px solid rgba(255, 255, 255, 0.1);
   border-radius: var(--rounded-sm);
   color: var(--color-text-primary);
-  font-size: clamp(1.8rem, 5.5vw, 2.4rem);
+  font-size: clamp(1.6rem, 5vw, 2.4rem);
   font-weight: 700;
   cursor: pointer;
   transition:
@@ -85,20 +83,20 @@
 
 .keypad-key-backspace {
   color: var(--color-text-secondary);
-  font-size: clamp(1.8rem, 4.5vw, 2.2rem);
+  font-size: clamp(1.6rem, 4vw, 2.2rem);
   font-weight: 600;
 }
 
 .keypad-key-negative {
   color: var(--color-text-secondary);
-  font-size: clamp(1.8rem, 4.5vw, 2.2rem);
+  font-size: clamp(1.6rem, 4vw, 2.2rem);
   font-weight: 600;
 }
 
 .keypad-key-submit {
   background: linear-gradient(135deg, var(--color-blue-400), var(--color-blue-500));
   color: var(--color-gray-100);
-  font-size: clamp(1.8rem, 4.5vw, 2.2rem);
+  font-size: clamp(1.6rem, 4vw, 2.2rem);
   font-weight: bold;
   grid-column: span 1;
   border: none;
@@ -107,15 +105,7 @@
 
 /* 터치 피드백 개선 - 버튼 높이 동기화 */
 @media (hover: none) and (pointer: coarse) {
-  .keypad-key {
-    min-height: clamp(74px, 18vw, 92px);
-    height: clamp(74px, 18vw, 92px);
-  }
-
-  .keypad-key-submit {
-    min-height: clamp(74px, 18vw, 92px);
-    height: clamp(74px, 18vw, 92px);
-  }
+  /* No height overrides needed, flex handles it */
 }
 
 /* 가로모드에서 키보드 크기 조정 */
@@ -131,23 +121,15 @@
   }
 
   .keypad-key {
-    height: clamp(50px, 8vw, 70px);
-    max-height: clamp(50px, 8vw, 70px);
-    min-height: clamp(50px, 8vw, 70px);
     font-size: clamp(1.2rem, 3vw, 1.6rem);
     border-radius: clamp(8px, 1.5vh, 12px);
   }
 
   .keypad-row-last .keypad-key-submit {
-    height: clamp(50px, 8vw, 70px);
-    max-height: clamp(50px, 8vw, 70px);
-    min-height: clamp(50px, 8vw, 70px);
+    /* Flex handles height */
   }
 
   .keypad-key-submit {
-    height: clamp(50px, 8vw, 70px);
-    max-height: clamp(50px, 8vw, 70px);
-    min-height: clamp(50px, 8vw, 70px);
     font-size: clamp(1.2rem, 3vw, 1.6rem);
   }
 

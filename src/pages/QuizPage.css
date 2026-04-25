@@ -256,18 +256,18 @@
   flex-direction: column;
   justify-content: space-between; /* 상단 문제와 하단 입력창 사이 거리 확보 */
   align-items: center;
-  gap: clamp(24px, 5vh, 48px);
-  padding: clamp(24px, 4.5vh, 48px) clamp(16px, 4vw, 32px);
+  gap: clamp(16px, 3vh, 48px);
+  padding: clamp(16px, 3.5vh, 48px) clamp(16px, 4vw, 32px);
   background-color: var(--glass-bg);
   border: var(--glass-border);
   -webkit-backdrop-filter: blur(var(--glass-blur));
   backdrop-filter: blur(var(--glass-blur));
   border-radius: clamp(24px, 4vh, 32px);
   box-shadow: var(--glass-shadow);
-  flex-shrink: 0; /* Preview parity: Card doesn't shrink, keyboard takes remaining space */
-  min-height: clamp(280px, 45vh, 400px);
-  max-height: 50vh; /* Preview parity */
-  margin-bottom: var(--spacing-lg);
+  flex-shrink: 1; /* Allow shrinking if viewport is constrained */
+  min-height: clamp(200px, 35vh, 400px);
+  max-height: 55vh;
+  margin-bottom: var(--spacing-sm);
   overflow: hidden;
 }
 
@@ -1233,7 +1233,7 @@
   flex-direction: column;
   align-items: center;
   flex: 1;
-  min-height: 250px;
+  min-height: 200px;
   /* Allow horizontal scroll for staggered QWERTY rows if container is very narrow */
   overflow-x: auto;
   overflow-y: hidden;
