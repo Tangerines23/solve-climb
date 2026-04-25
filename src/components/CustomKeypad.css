@@ -1,26 +1,28 @@
 .custom-keypad {
   display: flex;
   flex-direction: column;
-  gap: clamp(6px, 1.5vh, 12px);
-  padding: clamp(8px, 1.5vh, 16px);
-  padding-bottom: max(clamp(8px, 1.5vh, 16px), env(safe-area-inset-bottom));
-  background-color: transparent;
+  gap: clamp(8px, 1.5vh, 14px);
+  padding: clamp(10px, 2vh, 20px);
+  padding-bottom: max(clamp(10px, 2vh, 20px), env(safe-area-inset-bottom));
+  background-color: transparent; /* Completely transparent */
+  backdrop-filter: none;
+  border-top: none;
+  border-radius: 0;
   width: 100%;
-  max-width: min(500px, 94vw);
+  max-width: min(550px, 100vw);
   margin: 0 auto;
-  flex: 1; /* Allow keypad to take up available space */
-  min-height: 0; /* Allow shrinking below content size */
-  max-height: 420px; /* Sensible maximum */
+  flex: 0 0 auto;
+  min-height: 240px;
+  max-height: 380px;
   box-sizing: border-box;
 }
 
 .keypad-row {
   display: flex;
   justify-content: center;
-  gap: clamp(6px, 1.5vh, 12px);
+  gap: clamp(8px, 1.5vh, 14px);
   width: 100%;
   flex: 1;
-  min-height: 0; /* Allow shrinking */
 }
 
 .keypad-row-last {
@@ -36,11 +38,10 @@
 }
 
 .keypad-key {
-  height: 100%; /* Take full row height */
-  width: auto;
-  max-width: 100px; /* Don't get too wide */
-  max-height: 92px; /* Don't get too tall */
-  aspect-ratio: 1;
+  flex: 1; /* Fill the row width */
+  width: 0; /* Ensure equal distribution */
+  min-height: 52px; /* Minimum tappable height */
+  max-height: 80px; /* Don't get too tall */
   background-color: var(--color-gray-900); /* 더 어두운 배경 */
   border: 1px solid rgba(255, 255, 255, 0.1);
   border-radius: var(--rounded-sm);
@@ -94,13 +95,12 @@
 }
 
 .keypad-key-submit {
-  background: linear-gradient(135deg, var(--color-blue-400), var(--color-blue-500));
-  color: var(--color-gray-100);
+  background: linear-gradient(135deg, var(--color-mint-400), var(--color-mint-600));
+  color: var(--color-gray-900);
   font-size: clamp(1.6rem, 4vw, 2.2rem);
-  font-weight: bold;
-  grid-column: span 1;
+  font-weight: 800;
   border: none;
-  aspect-ratio: 1;
+  box-shadow: 0 4px 12px color-mix(in srgb, var(--color-mint-400), transparent 70%);
 }
 
 /* 터치 피드백 개선 - 버튼 높이 동기화 */

@@ -226,12 +226,12 @@
   max-width: var(--modal-width-portrait);
   margin: 0 auto;
   /* 안전 영역 고려: Dynamic Island, 노치 등 */
-  padding: max(clamp(var(--spacing-md), 2vh, var(--spacing-xl)), env(safe-area-inset-top, 0px))
+  padding: max(clamp(var(--spacing-md), 2vh, var(--spacing-lg)), env(safe-area-inset-top, 0px))
     clamp(var(--spacing-md), 2vw, var(--spacing-lg)) 0;
-  gap: clamp(8px, 1.5vh, 20px);
+  gap: clamp(10px, 2vh, 24px);
   flex: 1;
   min-height: 0;
-  justify-content: center;
+  justify-content: flex-end; /* Push keyboard to bottom */
   box-sizing: border-box;
   overflow: hidden;
 }
@@ -254,20 +254,20 @@
   max-width: min(480px, 94vw);
   display: flex;
   flex-direction: column;
-  justify-content: space-between; /* 상단 문제와 하단 입력창 사이 거리 확보 */
+  justify-content: center; /* Center content within card */
   align-items: center;
-  gap: clamp(16px, 3vh, 48px);
-  padding: clamp(16px, 3.5vh, 48px) clamp(16px, 4vw, 32px);
+  gap: clamp(12px, 2vh, 32px);
+  padding: clamp(20px, 4vh, 40px) clamp(16px, 4vw, 32px);
   background-color: var(--glass-bg);
   border: var(--glass-border);
   -webkit-backdrop-filter: blur(var(--glass-blur));
   backdrop-filter: blur(var(--glass-blur));
   border-radius: clamp(24px, 4vh, 32px);
   box-shadow: var(--glass-shadow);
-  flex-shrink: 1; /* Allow shrinking if viewport is constrained */
-  min-height: clamp(200px, 35vh, 400px);
-  max-height: 55vh;
-  margin-bottom: var(--spacing-sm);
+  flex: 1; /* Take remaining space */
+  min-height: 180px;
+  max-height: 48vh; /* Reduced to give keyboard more space */
+  margin-bottom: 0;
   overflow: hidden;
 }
 
@@ -1232,12 +1232,13 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  flex: 1;
-  min-height: 200px;
+  flex: 0 0 auto; /* Stable, sized by content */
+  min-height: auto;
+  margin-bottom: clamp(8px, 2vh, 20px); /* Lift slightly from the bottom edge */
   /* Allow horizontal scroll for staggered QWERTY rows if container is very narrow */
   overflow-x: auto;
   overflow-y: hidden;
-  padding: 0 var(--spacing-xl) var(--spacing-xl) var(--spacing-xl);
+  padding: 0; /* Let CustomKeypad handle its own padding */
   box-sizing: border-box;
   /* Hide scrollbar but allow scrolling */
   scrollbar-width: none;
