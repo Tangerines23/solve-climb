@@ -218,6 +218,7 @@
 
 /* 메인 컨텐츠 영역 */
 .quiz-content {
+  position: relative;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -866,6 +867,7 @@
   width: 44px;
   height: 44px;
   border-radius: var(--rounded-sm);
+  background: var(--overlay-dark-low);
   -webkit-backdrop-filter: blur(4px);
   backdrop-filter: blur(4px);
   border: 1px solid var(--glass-border-medium);
@@ -899,17 +901,6 @@
   gap: var(--spacing-sm);
 }
 
-.side-item {
-  width: 32px;
-  /* top-16 small square slots */
-  height: 32px;
-  background: rgba(255, 255, 255, 0.1);
-  border-radius: var(--rounded-2xs);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
 .side-item.active {
   background: rgba(40, 199, 111, 0.2);
   border: 1px solid rgba(40, 199, 111, 0.5);
@@ -930,6 +921,12 @@
   /* Align top */
 }
 
+.header-right-score {
+  pointer-events: auto;
+  display: flex;
+  justify-content: flex-end;
+}
+
 .score-display-round {
   margin-top: var(--spacing-sm);
   /* Space from timer */
@@ -947,6 +944,7 @@
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
 }
 
+.score-capsule .score-val,
 .score-display-round .score-val {
   font-family: 'Inter', system-ui, sans-serif;
   font-weight: 800;
@@ -957,6 +955,7 @@
   font-variant-numeric: tabular-nums;
 }
 
+.score-capsule .score-unit,
 .score-display-round .score-unit {
   font-size: 0.8rem;
   font-weight: 700;
@@ -1077,14 +1076,17 @@
   background: var(--overlay-dark-medium);
   -webkit-backdrop-filter: blur(10px);
   backdrop-filter: blur(10px);
-  padding: var(--spacing-sm) var(--spacing-lg);
+  padding: 0 var(--spacing-lg);
   border-radius: var(--rounded-pill);
   /* Pill shape */
   border: 1px solid var(--glass-border-low);
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
   display: flex;
-  align-items: baseline;
+  align-items: center;
+  justify-content: center;
   gap: var(--spacing-xs);
+  height: 44px;
+  box-sizing: border-box;
 }
 
 .pill-card.pulse {
@@ -1105,29 +1107,26 @@
   }
 }
 
-.side-item {
-  width: 32px;
-  /* top-16 small square slots */
-  height: 32px;
-  background: rgba(255, 255, 255, 0.1);
-  border-radius: var(--rounded-2xs);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 1.1rem;
-}
-
 .world-info-header-floating {
-  position: absolute;
-  top: var(--spacing-sm);
-  left: 50%;
-  transform: translateX(-50%);
-  font-size: 0.75rem;
-  font-weight: 800;
-  color: var(--glass-bg-high);
+  font-size: 0.7rem;
+  font-weight: 700;
+  color: var(--color-gray-500);
   letter-spacing: 0.1em;
   text-transform: uppercase;
-  z-index: 90;
+  text-align: center;
+  margin-bottom: var(--spacing-md);
+  z-index: 10;
+  white-space: nowrap;
+}
+
+@media (orientation: landscape) {
+  .world-info-header-floating {
+    position: absolute;
+    top: var(--spacing-sm);
+    left: 50%;
+    transform: translateX(-50%);
+    margin-bottom: 0;
+  }
 }
 
 .pause-count-badge {

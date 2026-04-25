@@ -32,8 +32,6 @@ export const QuizHeader = React.memo(
 
     return (
       <>
-        <div className="world-info-header-floating">World 1: 수리봉</div>
-
         <header className="quiz-header-rework">
           <div className="header-left-controls">
             <button className="pause-button" onClick={onPause} aria-label="일시정지">

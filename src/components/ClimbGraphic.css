@@ -477,31 +477,30 @@
 /* 내 위치로 가기 버튼 (FAB) */
 .fab-my-location {
   position: fixed;
-  bottom: 100px;
-  /* 하단 리스트 헤더 위에 떠 있도록 위치 조정 */
+  bottom: 180px;
   right: var(--spacing-xl);
   z-index: 100;
-  /* 가장 위에 */
 
   display: flex;
   align-items: center;
   justify-content: center;
 
   padding: var(--spacing-small-alt) var(--spacing-lg);
-  background-color: var(--color-text-primary);
-  color: var(--color-gray-700);
-  border: none;
+  background-color: rgba(0, 0, 0, 0.65);
+  -webkit-backdrop-filter: blur(8px);
+  backdrop-filter: blur(8px);
+  color: var(--color-text-primary);
+  border: 1px solid rgba(255, 255, 255, 0.2);
   border-radius: var(--rounded-lg);
-  /* 캡슐 형태 */
 
-  /* 토스 스타일 부드러운 그림자 */
   box-shadow:
-    0 4px 20px rgba(0, 0, 0, 0.15),
-    0 0 0 1px rgba(0, 0, 0, 0.05);
+    0 4px 20px rgba(0, 0, 0, 0.3),
+    0 0 0 1px rgba(0, 0, 0, 0.1);
 
   transition:
     transform 0.2s ease,
-    box-shadow 0.2s ease;
+    box-shadow 0.2s ease,
+    background-color 0.2s ease;
   cursor: pointer;
 
   /* 애니메이션: 뿅 하고 나타나기 */

@@ -95,6 +95,7 @@
 
   /* 색상 - 토스 표준 + 커스텀 */
   --color-success: #4cd964;
+  --color-warning: #ffcc00; /* 경고 (타이머 등) */
   /* 성공/완료 */
   --color-primary-light: #4facfe;
   /* Primary Light */

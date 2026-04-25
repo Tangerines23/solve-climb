@@ -91,6 +91,7 @@ function QuizCardComponent({
       />
 
       <div className="quiz-content">
+        <div className="world-info-header-floating">World 1: 수리봉</div>
         <div className={`quiz-card ${quizAnimations.cardAnimation}`} data-vg-ignore="true">
           <div className="quiz-content-inner">
             <div className="category-label">
