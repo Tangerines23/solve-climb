@@ -1,6 +1,15 @@
 // 문제 생성 로직을 관리하는 커스텀 훅
 import { useCallback } from 'react';
-import { Category, QuizQuestion, Difficulty, GameMode, World, Topic, Tier } from '../types/quiz';
+import {
+  Category,
+  QuizQuestion,
+  Difficulty,
+  GameMode,
+  World,
+  Topic,
+  Tier,
+  Mountain,
+} from '../types/quiz';
 import { generateQuestion } from '../utils/quizGenerator';
 import { useBaseCampStore } from '../stores/useBaseCampStore';
 import { useDeathNoteStore } from '../stores/useDeathNoteStore';
@@ -15,6 +24,7 @@ interface UseQuestionGeneratorParams {
   categoryParam: string | null;
   levelParam: number | null;
   tierParam?: string | null;
+  mountainParam?: string | null;
   totalQuestions: number; // 현재 푼 문제 수
   useSystemKeyboard: boolean;
   inputRef: React.RefObject<HTMLInputElement | null>;
@@ -38,6 +48,7 @@ export function useQuestionGenerator({
   categoryParam,
   levelParam,
   tierParam,
+  mountainParam,
   totalQuestions,
   useSystemKeyboard,
   inputRef,
@@ -169,7 +180,7 @@ export function useQuestionGenerator({
     setTimeout(() => {
       try {
         const newQuestion = generateQuestion(
-          'math',
+          (mountainParam as Mountain) || 'math',
           targetWorld,
           `${targetWorld}-${targetCategory}` as Topic,
           targetLevel,
@@ -217,6 +228,7 @@ export function useQuestionGenerator({
     categoryParam,
     levelParam,
     tierParam,
+    mountainParam,
     useSystemKeyboard,
     inputRef,
     setCurrentQuestion,

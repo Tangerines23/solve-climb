@@ -10,6 +10,7 @@ export interface QuizDisplayState {
   category: Category | null;
   topic: string;
   categoryParam: string | null;
+  worldParam: string | null;
   subParam: string | null;
   levelParam: number | null;
   gameMode: string;

@@ -1,7 +1,7 @@
 .custom-keypad {
   display: flex;
   flex-direction: column;
-  gap: clamp(8px, 1.5vh, 14px);
+  gap: var(--quiz-keypad-gap);
   padding: clamp(10px, 2vh, 20px);
   padding-bottom: max(clamp(10px, 2vh, 20px), env(safe-area-inset-bottom));
   background-color: transparent; /* Completely transparent */
@@ -9,18 +9,18 @@
   border-top: none;
   border-radius: 0;
   width: 100%;
-  max-width: min(550px, 100vw);
+  max-width: min(var(--quiz-keypad-max-width), 100vw);
   margin: 0 auto;
   flex: 0 0 auto;
-  min-height: 240px;
-  max-height: 380px;
+  min-height: var(--quiz-keypad-min-height);
+  max-height: var(--quiz-keypad-max-height);
   box-sizing: border-box;
 }
 
 .keypad-row {
   display: flex;
   justify-content: center;
-  gap: clamp(8px, 1.5vh, 14px);
+  gap: var(--quiz-keypad-gap);
   width: 100%;
   flex: 1;
 }

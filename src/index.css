@@ -473,6 +473,14 @@ strong {
   --glass-border: var(--border-glass);
   --glass-blur: var(--backdrop-blur);
   --glass-shadow: var(--shadow-glass);
+
+  /* Quiz Layout v2.6 */
+  --quiz-keypad-max-width: 550px;
+  --quiz-keypad-min-height: 240px;
+  --quiz-keypad-max-height: 380px;
+  --quiz-card-max-height: 48vh;
+  --quiz-keypad-bottom-margin: clamp(8px, 2vh, 20px);
+  --quiz-keypad-gap: clamp(8px, 1.5vh, 14px);
 }
 
 /* --- Global Scrollbar Styling --- */

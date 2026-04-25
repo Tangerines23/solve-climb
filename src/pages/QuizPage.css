@@ -228,7 +228,7 @@
   /* 안전 영역 고려: Dynamic Island, 노치 등 */
   padding: max(clamp(var(--spacing-md), 2vh, var(--spacing-lg)), env(safe-area-inset-top, 0px))
     clamp(var(--spacing-md), 2vw, var(--spacing-lg)) 0;
-  gap: clamp(10px, 2vh, 24px);
+  gap: var(--quiz-keypad-gap);
   flex: 1;
   min-height: 0;
   justify-content: flex-end; /* Push keyboard to bottom */
@@ -266,7 +266,7 @@
   box-shadow: var(--glass-shadow);
   flex: 1; /* Take remaining space */
   min-height: 180px;
-  max-height: 48vh; /* Reduced to give keyboard more space */
+  max-height: var(--quiz-card-max-height); /* Reduced to give keyboard more space */
   margin-bottom: 0;
   overflow: hidden;
 }
@@ -1234,7 +1234,7 @@
   align-items: center;
   flex: 0 0 auto; /* Stable, sized by content */
   min-height: auto;
-  margin-bottom: clamp(8px, 2vh, 20px); /* Lift slightly from the bottom edge */
+  margin-bottom: var(--quiz-keypad-bottom-margin); /* Lift slightly from the bottom edge */
   /* Allow horizontal scroll for staggered QWERTY rows if container is very narrow */
   overflow-x: auto;
   overflow-y: hidden;
