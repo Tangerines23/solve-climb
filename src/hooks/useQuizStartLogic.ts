@@ -40,9 +40,10 @@ export function useQuizStartLogic({
   const { setExhausted, setStaminaConsumed } = useGameStore();
 
   const altitudePhase = useMemo(() => {
-    if (totalQuestions <= 3) return 'forest';
-    if (totalQuestions <= 7) return 'cliff';
-    return 'peak';
+    if (totalQuestions <= 10) return 'forest';
+    if (totalQuestions <= 25) return 'rock';
+    if (totalQuestions <= 45) return 'clouds';
+    return 'space';
   }, [totalQuestions]);
 
   useEffect(() => {
