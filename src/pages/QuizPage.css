@@ -963,6 +963,53 @@
   margin-left: var(--spacing-micro);
 }
 
+.score-combo-stack {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: var(--spacing-xs);
+}
+
+.combo-mini-badge {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-top: -4px;
+  animation: mini-combo-pop 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.combo-num {
+  font-family: 'Inter', system-ui, sans-serif;
+  font-weight: 900;
+  font-size: 1.1rem;
+  color: var(--color-blue-400);
+  text-shadow: 0 0 8px rgba(59, 130, 246, 0.4);
+  font-variant-numeric: tabular-nums;
+  transform: skewX(-5deg);
+}
+
+.fever-level-1 .combo-num {
+  color: var(--color-orange-400);
+  text-shadow: 0 0 10px rgba(251, 146, 60, 0.5);
+}
+
+.fever-level-2 .combo-num {
+  color: var(--color-amber-400);
+  text-shadow: 0 0 12px rgba(251, 191, 36, 0.6);
+  font-size: 1.25rem;
+}
+
+@keyframes mini-combo-pop {
+  0% {
+    transform: scale(0.8);
+    opacity: 0;
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
 /* [Fever Mode World Themes] */
 .fever-level-2.quiz-page[data-world='World1'] {
   --world-bg-top: var(--color-world-fever-top);

@@ -3,10 +3,12 @@ import { TimerCircle } from '../TimerCircle';
 import { getItemEmoji } from '../../constants/items';
 import { useQuiz } from '@/contexts/QuizContext';
 import { GAME_MODES, UI_MESSAGES } from '../../constants/ui';
+import { useGameStore } from '../../stores/useGameStore';
 
 export const QuizHeader = React.memo(() => {
   const { quizState, quizAnimations, quizHandlers, activeItems, usedItems, score, handleTimeUp } =
     useQuiz();
+  const combo = useGameStore((state) => state.combo);
 
   const { gameMode, timeLimit, questionKey, timerResetKey, totalQuestions } = quizState;
   const { isSubmitting, isPaused } = quizAnimations;
@@ -71,12 +73,20 @@ export const QuizHeader = React.memo(() => {
         </div>
 
         <div className="header-right-score">
-          <div
-            className={`pill-card score-capsule ${totalQuestions > 0 ? 'pulse' : ''}`}
-            key={`score-${totalQuestions}`}
-          >
-            <span className="score-val">{Math.floor(score).toLocaleString()}</span>
-            <span className="score-unit">{UI_MESSAGES.UNIT_METERS}</span>
+          <div className="score-combo-stack">
+            <div
+              className={`pill-card score-capsule ${totalQuestions > 0 ? 'pulse' : ''}`}
+              key={`score-${totalQuestions}`}
+            >
+              <span className="score-val">{Math.floor(score).toLocaleString()}</span>
+              <span className="score-unit">{UI_MESSAGES.UNIT_METERS}</span>
+            </div>
+
+            {combo >= 2 && (
+              <div className="combo-mini-badge" key={`combo-${combo}`}>
+                <span className="combo-num">{combo}</span>
+              </div>
+            )}
           </div>
         </div>
       </header>
