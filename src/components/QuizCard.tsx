@@ -35,8 +35,7 @@ function QuizCardComponent() {
 
       <div className="quiz-content">
         <div className="world-info-header-floating">
-          {quizState.category}
-          {quizState.topic && ` · ${quizState.topic}`} - {worldName}
+          {quizState.category} · {worldName}
         </div>
         <div className={`quiz-card ${quizAnimations.cardAnimation}`} data-vg-ignore="true">
           <div className="quiz-content-inner">

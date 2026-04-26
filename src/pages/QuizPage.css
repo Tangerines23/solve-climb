@@ -864,18 +864,18 @@
 }
 
 .pause-button {
-  width: 44px;
-  height: 44px;
-  border-radius: var(--rounded-sm);
-  background: var(--overlay-dark-low);
-  -webkit-backdrop-filter: blur(4px);
-  backdrop-filter: blur(4px);
-  border: 1px solid var(--glass-border-medium);
+  background: none;
+  border: none;
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
   color: var(--color-gray-100);
   display: flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
+  padding: 0;
+  width: auto;
+  height: auto;
   transition: all 0.2s;
 }
 
@@ -981,9 +981,9 @@
 .combo-num {
   font-family: 'Inter', system-ui, sans-serif;
   font-weight: 900;
-  font-size: 1.1rem;
+  font-size: 0.95rem; /* Reduced from 1.1rem */
   color: var(--color-blue-400);
-  text-shadow: 0 0 8px rgba(59, 130, 246, 0.4);
+  text-shadow: 0 0 6px rgba(59, 130, 246, 0.4);
   font-variant-numeric: tabular-nums;
   transform: skewX(-5deg);
 }
@@ -1156,22 +1156,27 @@
 
 .world-info-header-floating {
   position: absolute;
-  top: 12px; /* Position slightly below the top of quiz-content */
+  top: 24px; /* Lower from the top as requested */
   left: 50%;
   transform: translateX(-50%);
-  font-size: 0.75rem;
-  font-weight: 800;
-  color: var(--color-blue-400);
-  background: var(--overlay-dark-low);
-  padding: var(--spacing-xs) var(--spacing-lg);
-  border-radius: var(--rounded-pill);
-  border: 1px solid var(--glass-border-low);
-  letter-spacing: 0.05em;
-  text-transform: uppercase;
+  width: auto;
+  min-width: max-content;
+  max-width: 90vw;
   text-align: center;
+  font-size: 13px;
+  font-weight: 700;
+  color: rgba(255, 255, 255, 0.7);
+  background: rgba(0, 0, 0, 0.25);
+  padding: var(--spacing-xs) var(--spacing-medium-alt);
+  border-radius: var(--rounded-md);
+  backdrop-filter: blur(8px);
+  white-space: nowrap; /* CRITICAL: Prevent wrapping */
+  overflow: hidden;
+  text-overflow: ellipsis;
   z-index: 10;
-  white-space: nowrap;
-  box-shadow: var(--shadow-glass);
+  pointer-events: none;
+  letter-spacing: -0.01em;
+  border: 1px solid rgba(255, 255, 255, 0.1);
 }
 
 @media (orientation: landscape) {
