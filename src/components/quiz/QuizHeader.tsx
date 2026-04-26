@@ -22,11 +22,15 @@ export const QuizHeader = React.memo(() => {
             <svg
               className="pause-icon-svg"
               viewBox="0 0 24 24"
-              fill="currentColor"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2.5"
+              strokeLinecap="round"
+              strokeLinejoin="round"
               xmlns="http://www.w3.org/2000/svg"
             >
-              <rect x="6" y="5" width="4" height="14" rx="1.5" />
-              <rect x="14" y="5" width="4" height="14" rx="1.5" />
+              <line x1="10" y1="16" x2="10" y2="8" />
+              <line x1="14" y1="16" x2="14" y2="8" />
             </svg>
             {gameMode === GAME_MODES.SURVIVAL && <span className="pause-count-badge">3</span>}
           </button>

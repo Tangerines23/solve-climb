@@ -34,12 +34,11 @@ function QuizCardComponent() {
       <QuizHeader />
 
       <div className="quiz-content">
-        <div className="world-info-header-floating">{worldName}</div>
+        <div className="world-info-header-floating">
+          {quizState.category} - {worldName}
+        </div>
         <div className={`quiz-card ${quizAnimations.cardAnimation}`} data-vg-ignore="true">
           <div className="quiz-content-inner">
-            <div className="category-label">
-              {quizState.category} - {quizState.topic}
-            </div>
             <div className="question-answer-group">
               <QuizQuestionArea />
               <QuizAnswerArea />

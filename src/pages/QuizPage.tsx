@@ -1,6 +1,7 @@
 import { useSearchParams } from 'react-router-dom';
 import { QuizProvider } from '@/contexts/QuizContext';
 import { QuizLayout } from '@/components/quiz/QuizLayout';
+import './QuizPage.css';
 import {
   validateWorldParam,
   validateCategoryInWorldParam,

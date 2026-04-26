@@ -15,12 +15,6 @@ interface CustomKeypadProps {
   showFraction?: boolean; // 분수 버튼 표시 여부
 }
 
-const KEY_ROWS = [
-  ['1', '2', '3'],
-  ['4', '5', '6'],
-  ['7', '8', '9'],
-];
-
 function CustomKeypadComponent({
   onNumberClick,
   onClear: _onClear,
@@ -72,52 +66,51 @@ function CustomKeypadComponent({
 
   return (
     <div className="custom-keypad" data-vg-ignore="true">
-      {KEY_ROWS.map((row, idx) => (
-        <div key={`row-${idx}`} className="keypad-row">
-          {row.map((num) => (
-            <button
-              key={num}
-              className="keypad-key"
-              onClick={() => handleNumberClick(num)}
-              disabled={disabled}
-            >
-              {num}
-            </button>
-          ))}
-        </div>
+      {/* 1 ~ 9 */}
+      {['1', '2', '3', '4', '5', '6', '7', '8', '9'].map((num) => (
+        <button
+          key={num}
+          className="keypad-key"
+          onClick={() => handleNumberClick(num)}
+          disabled={disabled}
+        >
+          {num}
+        </button>
       ))}
 
-      <div
-        className={`keypad-row keypad-row-last ${showNegative ? 'keypad-row-last-with-negative' : ''} ${showDecimal || showFraction ? 'keypad-row-last-with-special' : ''}`}
+      {/* 특수키(., -, /) 표시될 때만 렌더링 */}
+      {renderSpecialKey()}
+
+      {/* 0 (특수키가 없으면 2칸 차지하여 빈공간 메꿈) */}
+      <button
+        className={`keypad-key ${!renderSpecialKey() ? 'keypad-key-zero-wide' : ''}`}
+        onClick={() => handleNumberClick('0')}
+        disabled={disabled}
       >
-        {renderSpecialKey() || (
-          <div className="keypad-key-placeholder" style={{ flex: 1, visibility: 'hidden' }} />
-        )}
+        0
+      </button>
 
-        <button className="keypad-key" onClick={() => handleNumberClick('0')} disabled={disabled}>
-          0
-        </button>
+      {/* 지우기 */}
+      <button
+        className="keypad-key keypad-key-backspace"
+        onClick={handleBackspace}
+        disabled={disabled}
+      >
+        {KEYPAD_SYMBOLS.BACKSPACE}
+      </button>
 
-        <button
-          className="keypad-key keypad-key-backspace"
-          onClick={handleBackspace}
-          disabled={disabled}
-        >
-          {KEYPAD_SYMBOLS.BACKSPACE}
-        </button>
-
-        <button
-          className="btn-base btn-primary keypad-key keypad-key-submit"
-          onClick={(e) => {
-            e.preventDefault();
-            handleSubmit(e);
-          }}
-          disabled={disabled}
-          type="button"
-        >
-          {KEYPAD_SYMBOLS.SUBMIT}
-        </button>
-      </div>
+      {/* 확인 (3열 차지) */}
+      <button
+        className="btn-base btn-primary keypad-key keypad-key-submit"
+        onClick={(e) => {
+          e.preventDefault();
+          handleSubmit(e);
+        }}
+        disabled={disabled}
+        type="button"
+      >
+        {KEYPAD_SYMBOLS.SUBMIT}
+      </button>
     </div>
   );
 }
