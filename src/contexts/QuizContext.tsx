@@ -118,6 +118,7 @@ export function QuizProvider({ children, params }: QuizProviderProps) {
   const [infiniteTimeLimit, setInfiniteTimeLimit] = useState(10);
   const [, setTotalInfiniteSolved] = useState(0);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [currentQuestionId, setCurrentQuestionId] = useState<string | null>(null);
 
   const {
     stamina,
@@ -151,6 +152,7 @@ export function QuizProvider({ children, params }: QuizProviderProps) {
   } = useGameStore();
 
   const [questionKey, setQuestionKey] = useState(0);
+  const [showTipModal, setShowTipModal] = useState(true);
   const inputRef = useRef<HTMLInputElement>(null);
   const feedbackRef = useRef<ItemFeedbackRef>(null);
 
@@ -166,6 +168,18 @@ export function QuizProvider({ children, params }: QuizProviderProps) {
     isExhausted: useGameStore.getState().isExhausted,
     navigate,
   });
+
+  const useQuizSessionResult = useQuizSession({
+    showTipModal,
+    worldParam,
+    categoryParam,
+    levelParam,
+    modeParam,
+    mountainParam,
+    setGameSessionId: gameState.setGameSessionId,
+  });
+
+  const { sessionCreated } = useQuizSessionResult;
 
   const { generateNewQuestion } = useQuestionGenerator({
     category,
@@ -186,7 +200,9 @@ export function QuizProvider({ children, params }: QuizProviderProps) {
     setQuestionAnimation: animations.setQuestionAnimation,
     setQuestionKey,
     setQuestionStartTime: gameState.setQuestionStartTime,
-    onQuestionGenerated: (question) => {
+    preGeneratedQuestions: useQuizSessionResult.preGeneratedQuestions,
+    onQuestionGenerated: (question, qId) => {
+      setCurrentQuestionId(qId);
       if (gameMode === 'survival' || gameMode === 'infinite') {
         const { LEVEL_BASE_TIME, PRESSURE_FACTOR } = SURVIVAL_CONFIG.PRESSURE_CONFIG;
         const cat = question.category || '기초';
@@ -224,15 +240,13 @@ export function QuizProvider({ children, params }: QuizProviderProps) {
     });
 
   const {
-    showTipModal,
-    setShowTipModal,
+    handleStartGame,
     showStaminaModal,
     setShowStaminaModal,
     showPromise,
     promiseData,
     activeLandmark,
     altitudePhase,
-    handleStartGame,
     handlePromiseComplete,
     onAlertAction,
   } = useQuizStartLogic({
@@ -245,6 +259,8 @@ export function QuizProvider({ children, params }: QuizProviderProps) {
     gameMode,
     totalQuestions: gameState.totalQuestions,
     handleStaminaAdRecovery: () => handleStaminaAdRecovery(setShowStaminaModal),
+    showTipModal,
+    setShowTipModal,
   });
 
   const {
@@ -264,15 +280,6 @@ export function QuizProvider({ children, params }: QuizProviderProps) {
     worldParam,
     categoryParam,
     searchParams,
-  });
-
-  const { sessionCreated } = useQuizSession({
-    showTipModal,
-    worldParam,
-    categoryParam,
-    levelParam,
-    modeParam,
-    setGameSessionId: gameState.setGameSessionId,
   });
 
   const {
@@ -368,8 +375,10 @@ export function QuizProvider({ children, params }: QuizProviderProps) {
     inputRef,
     showFeedback: (text, subText, type) => feedbackRef.current?.show(text, subText, type),
     setIsFlarePaused,
-    onAnswerSubmitted: (_questionId, userAnswer) => {
+    currentQuestionId,
+    onAnswerSubmitted: (questionId, userAnswer) => {
       gameState.setUserAnswers((prev) => [...prev, userAnswer]);
+      gameState.setQuestionIds((prev) => [...prev, questionId]);
       if (gameMode === 'infinite' || gameMode === 'survival') {
         setTotalInfiniteSolved((p) => p + 1);
       }

@@ -37,6 +37,7 @@ interface UseQuestionGeneratorParams {
   setQuestionKey: (updater: (prev: number) => number) => void;
   setQuestionStartTime: (time: number | null) => void;
   onQuestionGenerated?: (question: QuizQuestion, questionId: string) => void;
+  preGeneratedQuestions?: QuizQuestion[];
 }
 
 export function useQuestionGenerator({
@@ -61,6 +62,7 @@ export function useQuestionGenerator({
   setQuestionKey,
   setQuestionStartTime,
   onQuestionGenerated,
+  preGeneratedQuestions,
 }: UseQuestionGeneratorParams) {
   // effectiveLevel calculation moved inside generateNewQuestion to react to totalQuestions correctly
 
@@ -128,6 +130,28 @@ export function useQuestionGenerator({
       console.log('No missed questions found for smart-retry, falling back to normal mode');
     }
 
+    // 1.5. 세션 사전 생성 문제 체크 (서버 검증용)
+    if (preGeneratedQuestions && totalQuestions < preGeneratedQuestions.length) {
+      const q = preGeneratedQuestions[totalQuestions];
+      if (q) {
+        setQuestionAnimation('fade-out');
+        setTimeout(() => {
+          setCurrentQuestion(q);
+          setAnswerInput('');
+          setDisplayValue('');
+          setIsError(false);
+          setShowFlash(false);
+          setQuestionAnimation('fade-in');
+          setQuestionStartTime(Date.now());
+
+          if (onQuestionGenerated && q.id) {
+            onQuestionGenerated(q, q.id);
+          }
+        }, ANIMATION_CONFIG.TRANSITION_DELAY);
+        return;
+      }
+    }
+
     // 2. 일반 월드/카테고리/레벨 결정 (파라미터 우선, 없으면 스토어 값 사용)
     const targetWorld = (worldParam || world) as World;
     const targetCategory = (categoryParam || category) as Category;
@@ -191,6 +215,7 @@ export function useQuestionGenerator({
 
         if (newQuestion) {
           const questionId = crypto.randomUUID();
+          newQuestion.id = questionId; // ID 부여
           setCurrentQuestion(newQuestion);
           if (onQuestionGenerated) {
             onQuestionGenerated(newQuestion, questionId);
@@ -241,6 +266,7 @@ export function useQuestionGenerator({
     setQuestionStartTime,
     onQuestionGenerated,
     totalQuestions,
+    preGeneratedQuestions,
   ]);
 
   return {

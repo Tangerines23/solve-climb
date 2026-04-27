@@ -17,6 +17,8 @@ interface UseQuizStartLogicProps {
   gameMode: string;
   totalQuestions: number;
   handleStaminaAdRecovery: () => Promise<void>;
+  showTipModal: boolean;
+  setShowTipModal: (show: boolean) => void;
 }
 
 export function useQuizStartLogic({
@@ -29,9 +31,10 @@ export function useQuizStartLogic({
   gameMode,
   totalQuestions,
   handleStaminaAdRecovery,
+  showTipModal,
+  setShowTipModal,
 }: UseQuizStartLogicProps) {
   const navigate = useNavigate();
-  const [showTipModal, setShowTipModal] = useState(true);
   const [showStaminaModal, setShowStaminaModal] = useState(false);
   const [showPromise, setShowPromise] = useState(false);
   const [promiseData] = useState({ rule: '', example: '' });
@@ -100,6 +103,7 @@ export function useQuizStartLogic({
       consumeItem,
       setStaminaConsumed,
       setExhausted,
+      setShowTipModal,
     ]
   );
 

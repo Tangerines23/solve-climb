@@ -46,9 +46,9 @@ interface UseQuizSubmitParams {
   showFeedback: (text: string, subText?: string, type?: 'success' | 'info') => void;
   onSafetyRopeUsed?: () => void;
   setIsFlarePaused?: (paused: boolean) => void;
+  currentQuestionId?: string | null;
   onAnswerSubmitted?: (questionId: string, userAnswer: number) => void;
   onPenalty?: (amount: number) => void;
-  currentQuestionId?: string | null;
 }
 
 export function useQuizSubmit({
