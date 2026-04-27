@@ -263,12 +263,16 @@ describe('QuizCard', () => {
     expect(submitButton).toBeDisabled();
   });
 
-  it('should display category and topic label', () => {
+  it('should display category and world info label', () => {
     renderWithContext({
       ...defaultMockValues,
-      quizState: { ...defaultMockValues.quizState, category: '수학', topic: '덧셈' },
+      quizState: {
+        ...defaultMockValues.quizState,
+        category: '수학',
+        worldParam: 'World1',
+      },
     });
-    expect(screen.getByText(/수학/)).toBeInTheDocument();
-    expect(screen.getByText(/덧셈/)).toBeInTheDocument();
+    // Renders as "{category} · {worldName}" in QuizCard.tsx
+    expect(screen.getByText(/수학 · World 1: 수리봉/)).toBeInTheDocument();
   });
 });
