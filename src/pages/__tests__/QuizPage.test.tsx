@@ -236,73 +236,86 @@ vi.mock('@/hooks/useQuizRevive', () => ({
 }));
 
 // Mock components with access to handlers
-vi.mock('@/components/quiz/QuizLayout', () => ({
-  QuizLayout: vi.fn(({ quizHandlers, modalHandlers, modalState }: any) => (
-    <div data-testid="quiz-layout">
-      {modalState.showPauseModal && <div data-testid="pause-modal">잠시 멈춤</div>}
-      {modalState.showStaminaModal && <div data-testid="stamina-modal">스태미나 부족</div>}
-      {modalState.showTutorial && <div data-testid="tutorial-modal">공략법</div>}
+vi.mock('@/components/quiz/QuizLayout', async () => {
+  const { useQuiz } = await import('@/contexts/QuizContext');
+  return {
+    QuizLayout: vi.fn(() => {
+      const { quizState, quizHandlers, modalHandlers, modalState } = useQuiz();
 
-      <button data-testid="submit-btn" onClick={() => quizHandlers.handleSubmit()}>
-        Submit
-      </button>
-      <button data-testid="keypad-1" onClick={() => quizHandlers.handleKeypadNumber('1')}>
-        1
-      </button>
-      <button data-testid="keypad-dot" onClick={() => quizHandlers.handleKeypadNumber('.')}>
-        .
-      </button>
-      <button data-testid="keypad-minus" onClick={() => quizHandlers.handleKeypadNumber('-')}>
-        -
-      </button>
-      <button data-testid="backspace-btn" onClick={() => quizHandlers.handleKeypadBackspace()}>
-        BS
-      </button>
-      <button data-testid="clear-btn" onClick={() => quizHandlers.handleKeypadClear()}>
-        C
-      </button>
-      <button data-testid="pause-btn" onClick={() => quizHandlers.onPause()}>
-        Pause
-      </button>
-      <button data-testid="revive-btn" onClick={() => modalHandlers.handleRevive(true)}>
-        Revive
-      </button>
-      <button data-testid="give-up-btn" onClick={() => modalHandlers.handleGiveUp()}>
-        Give Up
-      </button>
-      <button data-testid="pause-resume-btn" onClick={() => modalHandlers.handlePauseResume()}>
-        Resume
-      </button>
-      <button data-testid="pause-exit-btn" onClick={() => modalHandlers.handlePauseExit()}>
-        Exit
-      </button>
-      <button
-        data-testid="close-stamina-btn"
-        onClick={() => modalHandlers.setShowStaminaModal(false)}
-      >
-        Close Stamina
-      </button>
-      <button
-        data-testid="alert-action-btn"
-        onClick={() => modalHandlers.onAlertAction && modalHandlers.onAlertAction()}
-      >
-        Alert Action
-      </button>
-      <button data-testid="tutorial-btn" onClick={() => modalHandlers.setShowTutorial(true)}>
-        Tutorial
-      </button>
-      <button data-testid="promise-btn" onClick={() => modalHandlers.handlePromiseComplete()}>
-        Promise
-      </button>
-      <button data-testid="start-game-btn" onClick={() => modalHandlers.handleStartGame([])}>
-        Start Game
-      </button>
-      <button data-testid="qwerty-btn" onClick={() => quizHandlers.handleQwertyKeyPress('a')}>
-        Qwerty
-      </button>
-    </div>
-  )),
-}));
+      return (
+        <div data-testid="quiz-layout">
+          {modalState.showPauseModal && <div data-testid="pause-modal">잠시 멈춤</div>}
+          {modalState.showStaminaModal && <div data-testid="stamina-modal">스태미나 부족</div>}
+          {modalState.showTutorial && <div data-testid="tutorial-modal">공략법</div>}
+
+          {quizState.isPreview ? (
+            <div data-testid="quiz-preview" />
+          ) : (
+            <div data-testid="quiz-card" />
+          )}
+
+          <button data-testid="submit-btn" onClick={() => quizHandlers.handleSubmit()}>
+            Submit
+          </button>
+          <button data-testid="keypad-1" onClick={() => quizHandlers.handleKeypadNumber('1')}>
+            1
+          </button>
+          <button data-testid="keypad-dot" onClick={() => quizHandlers.handleKeypadNumber('.')}>
+            .
+          </button>
+          <button data-testid="keypad-minus" onClick={() => quizHandlers.handleKeypadNumber('-')}>
+            -
+          </button>
+          <button data-testid="backspace-btn" onClick={() => quizHandlers.handleKeypadBackspace()}>
+            BS
+          </button>
+          <button data-testid="clear-btn" onClick={() => quizHandlers.handleKeypadClear()}>
+            C
+          </button>
+          <button data-testid="pause-btn" onClick={() => quizHandlers.onPause()}>
+            Pause
+          </button>
+          <button data-testid="revive-btn" onClick={() => modalHandlers.handleRevive(true)}>
+            Revive
+          </button>
+          <button data-testid="give-up-btn" onClick={() => modalHandlers.handleGiveUp()}>
+            Give Up
+          </button>
+          <button data-testid="pause-resume-btn" onClick={() => modalHandlers.handlePauseResume()}>
+            Resume
+          </button>
+          <button data-testid="pause-exit-btn" onClick={() => modalHandlers.handlePauseExit()}>
+            Exit
+          </button>
+          <button
+            data-testid="close-stamina-btn"
+            onClick={() => modalHandlers.setShowStaminaModal(false)}
+          >
+            Close Stamina
+          </button>
+          <button
+            data-testid="alert-action-btn"
+            onClick={() => modalHandlers.onAlertAction && modalHandlers.onAlertAction()}
+          >
+            Alert Action
+          </button>
+          <button data-testid="tutorial-btn" onClick={() => modalHandlers.setShowTutorial(true)}>
+            Tutorial
+          </button>
+          <button data-testid="promise-btn" onClick={() => modalHandlers.handlePromiseComplete()}>
+            Promise
+          </button>
+          <button data-testid="start-game-btn" onClick={() => modalHandlers.handleStartGame([])}>
+            Start Game
+          </button>
+          <button data-testid="qwerty-btn" onClick={() => quizHandlers.handleQwertyKeyPress('a')}>
+            Qwerty
+          </button>
+        </div>
+      );
+    }),
+  };
+});
 
 vi.mock('@/components/quiz/QuizPreview', () => ({
   QuizPreview: vi.fn(() => <div data-testid="quiz-preview">Quiz Preview</div>),

@@ -4,12 +4,15 @@ import { APP_CONFIG } from '../../config/app';
 import { urls } from '../../utils/navigation';
 import { QuizDisplayState, QuizAnimationState, QuizHandlers } from '../../types/quizProps';
 import { QuizQuestion, Category } from '../../types/quiz';
+import { ItemFeedbackRef } from '../game/ItemFeedbackOverlay';
 import { QuizCard } from '../QuizCard';
+import { QuizContext } from '../../contexts/QuizContext';
 import './QuizPreview.css';
 
 interface QuizPreviewProps {
   mountainParam: string | null;
   categoryParam: string | null;
+  worldParam: string | null;
   subParam: string | null;
   levelParam: number | null;
   category: string | null;
@@ -36,6 +39,7 @@ const ARITHMETIC_TOPIC_MAP = new Map<number, string>([
 export function QuizPreview({
   mountainParam,
   categoryParam,
+  worldParam,
   subParam,
   levelParam,
   category,
@@ -51,7 +55,7 @@ export function QuizPreview({
   const [displayValue, setDisplayValue] = useState('');
 
   const inputRef = useRef<HTMLInputElement>(null);
-  const exitConfirmTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const feedbackRef = useRef<ItemFeedbackRef>(null);
 
   // Preview 모드용 변수들
   const isJapaneseQuizPreview = categoryParam === 'language' && subParam === 'japanese';
@@ -142,6 +146,7 @@ export function QuizPreview({
     category: displayCategoryPreview as Category,
     topic: displayTopicPreview,
     categoryParam,
+    worldParam,
     subParam,
     levelParam,
     gameMode: 'base-camp',
@@ -190,43 +195,79 @@ export function QuizPreview({
   };
 
   return (
-    <div
-      className="quiz-page"
-      data-world={subParam || 'World1'}
-      data-category={categoryParam || ''}
+    <QuizContext.Provider
+      value={{
+        quizState: quizPreviewState,
+        quizAnimations,
+        quizHandlers,
+        modalState: {
+          showLastChanceModal: false,
+          showCountdown: false,
+          showSafetyRope: false,
+          showTipModal: false,
+          showPauseModal: false,
+          showStaminaModal: false,
+          showTutorial: false,
+          showPromise: false,
+        },
+        modalHandlers: {
+          handleRevive: async () => {},
+          handlePurchaseAndRevive: async () => {},
+          handleWatchAdAndRevive: async () => {},
+          handleGiveUp: async () => {},
+          handleCountdownComplete: () => {},
+          setShowSafetyRope: () => {},
+          handleBack: () => {},
+          handleStartGame: async () => {},
+          handlePauseResume: () => {},
+          handlePauseExit: () => {},
+          setShowStaminaModal: () => {},
+          onAlertAction: () => {},
+          handlePromiseComplete: () => {},
+          setShowTutorial: () => {},
+        },
+        inputRef,
+        feedbackRef,
+        inventory: [],
+        minerals: 0,
+        isAnonymous: true,
+        feverLevel: 0,
+        altitudePhase: 'ground',
+        promiseData: null,
+        activeItems: [],
+        usedItems: [],
+        score: 0,
+        isExhausted: false,
+        handleTimeUp: () => {},
+        setAnswerInput,
+        setDisplayValue,
+        setShowExitConfirm: () => {},
+        setIsFadingOut: () => {},
+        cancelExitConfirm: () => {},
+      }}
     >
-      <QuizCard
-        quizState={quizPreviewState}
-        quizAnimations={quizAnimations}
-        quizHandlers={quizHandlers}
-        inputRef={inputRef}
-        exitConfirmTimeoutRef={exitConfirmTimeoutRef}
-        setAnswerInput={setAnswerInput}
-        setDisplayValue={setDisplayValue}
-        setShowExitConfirm={() => {}}
-        setIsFadingOut={() => {}}
-        SURVIVAL_QUESTION_TIME={10}
-        activeItems={[]}
-        usedItems={[]}
-        score={0}
-        isExhausted={false}
-        handleTimeUp={() => {}}
-      />
+      <div
+        className="quiz-page"
+        data-world={subParam || 'World1'}
+        data-category={categoryParam || ''}
+      >
+        <QuizCard />
 
-      {/* Keyboard Switcher Overlay (Only for Preview) */}
-      {canSwitchKeyboard && (
-        <div className="preview-keyboard-switcher">
-          <button onClick={handlePrevKeyboard} className="preview-nav-button">
-            ‹
-          </button>
-          <span className="preview-nav-label">
-            {currentPreviewType === 'custom' ? '커스텀 키패드' : '쿼티 키보드'}
-          </span>
-          <button onClick={handleNextKeyboard} className="preview-nav-button">
-            ›
-          </button>
-        </div>
-      )}
-    </div>
+        {/* Keyboard Switcher Overlay (Only for Preview) */}
+        {canSwitchKeyboard && (
+          <div className="preview-keyboard-switcher">
+            <button onClick={handlePrevKeyboard} className="preview-nav-button">
+              ‹
+            </button>
+            <span className="preview-nav-label">
+              {currentPreviewType === 'custom' ? '커스텀 키패드' : '쿼티 키보드'}
+            </span>
+            <button onClick={handleNextKeyboard} className="preview-nav-button">
+              ›
+            </button>
+          </div>
+        )}
+      </div>
+    </QuizContext.Provider>
   );
 }

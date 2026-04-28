@@ -449,20 +449,22 @@ export function MyPage() {
         <Header />
         <main className="my-page-main">
           <div className="my-page-content">
-            <div className="my-page-guest-view">
-              <div className="my-page-guest-icon">🔒</div>
-              <h1 className="my-page-guest-title">
-                로그인하고
-                <br />
-                <strong className="my-page-guest-highlight">내 기록을 평생 간직하세요.</strong>
-              </h1>
-              <div className="my-page-guest-buttons">
-                <button className="my-page-guest-login-button" onClick={handleGoogleLogin}>
-                  3초 만에 시작하기
-                </button>
-                <button className="my-page-guest-anonymous-link" onClick={handleAnonymousLogin}>
-                  익명 로그인하기
-                </button>
+            <div className="my-page-guest-view-container">
+              <div className="my-page-guest-view">
+                <div className="my-page-guest-icon">🔒</div>
+                <h1 className="my-page-guest-title">
+                  로그인하고
+                  <br />
+                  <strong className="my-page-guest-highlight">내 기록을 평생 간직하세요.</strong>
+                </h1>
+                <div className="my-page-guest-buttons">
+                  <button className="my-page-guest-login-button" onClick={handleGoogleLogin}>
+                    3초 만에 시작하기
+                  </button>
+                  <button className="my-page-guest-anonymous-link" onClick={handleAnonymousLogin}>
+                    익명 로그인하기
+                  </button>
+                </div>
               </div>
             </div>
           </div>

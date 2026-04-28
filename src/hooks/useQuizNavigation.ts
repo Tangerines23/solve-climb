@@ -114,6 +114,19 @@ export function useQuizNavigation({
     };
   }, [handleBack, showTipModal]);
 
+  const cancelExitConfirm = useCallback(() => {
+    if (exitConfirmTimeoutRef.current) {
+      clearTimeout(exitConfirmTimeoutRef.current);
+      exitConfirmTimeoutRef.current = null;
+    }
+    setIsFadingOut(true);
+    setTimeout(() => {
+      setShowExitConfirm(false);
+      showExitConfirmRef.current = false;
+      setIsFadingOut(false);
+    }, 300);
+  }, []);
+
   return {
     showExitConfirm,
     setShowExitConfirm,
@@ -122,5 +135,6 @@ export function useQuizNavigation({
     toastValue,
     setToastValue,
     handleBack,
+    cancelExitConfirm,
   };
 }

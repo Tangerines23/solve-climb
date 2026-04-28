@@ -95,6 +95,7 @@
 
   /* 색상 - 토스 표준 + 커스텀 */
   --color-success: #4cd964;
+  --color-warning: #ffcc00; /* 경고 (타이머 등) */
   /* 성공/완료 */
   --color-primary-light: #4facfe;
   /* Primary Light */
@@ -451,9 +452,9 @@ strong {
   --color-world-forest-top: #065f46;
   --color-world-forest-mid: #064e3b;
   --color-world-forest-bottom: #022c22;
-  --color-world-rock-top: #4b5563;
-  --color-world-rock-mid: #374151;
-  --color-world-rock-bottom: #1f2937;
+  --color-world-rock-top: #334155;
+  --color-world-rock-mid: #1e293b;
+  --color-world-rock-bottom: #0f172a;
   --color-world-clouds-top: #0ea5e9;
   --color-world-clouds-mid: #0284c7;
   --color-world-clouds-bottom: #075985;
@@ -472,6 +473,14 @@ strong {
   --glass-border: var(--border-glass);
   --glass-blur: var(--backdrop-blur);
   --glass-shadow: var(--shadow-glass);
+
+  /* Quiz Layout v2.6 */
+  --quiz-keypad-max-width: 550px;
+  --quiz-keypad-min-height: 240px;
+  --quiz-keypad-max-height: 380px;
+  --quiz-card-max-height: 48vh;
+  --quiz-keypad-bottom-margin: clamp(8px, 2vh, 20px);
+  --quiz-keypad-gap: clamp(8px, 1.5vh, 14px);
 }
 
 /* --- Global Scrollbar Styling --- */

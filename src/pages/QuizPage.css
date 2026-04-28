@@ -218,6 +218,7 @@
 
 /* 메인 컨텐츠 영역 */
 .quiz-content {
+  position: relative;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -225,12 +226,12 @@
   max-width: var(--modal-width-portrait);
   margin: 0 auto;
   /* 안전 영역 고려: Dynamic Island, 노치 등 */
-  padding: max(clamp(var(--spacing-md), 2vh, var(--spacing-xl)), env(safe-area-inset-top, 0px))
+  padding: max(clamp(var(--spacing-md), 2vh, var(--spacing-lg)), env(safe-area-inset-top, 0px))
     clamp(var(--spacing-md), 2vw, var(--spacing-lg)) 0;
-  gap: clamp(8px, 1.5vh, 20px);
+  gap: var(--quiz-keypad-gap);
   flex: 1;
   min-height: 0;
-  justify-content: center;
+  justify-content: flex-end; /* Push keyboard to bottom */
   box-sizing: border-box;
   overflow: hidden;
 }
@@ -253,20 +254,20 @@
   max-width: min(480px, 94vw);
   display: flex;
   flex-direction: column;
-  justify-content: space-between; /* 상단 문제와 하단 입력창 사이 거리 확보 */
+  justify-content: center; /* Center content within card */
   align-items: center;
-  gap: clamp(24px, 5vh, 48px);
-  padding: clamp(24px, 4.5vh, 48px) clamp(16px, 4vw, 32px);
+  gap: clamp(12px, 2vh, 32px);
+  padding: clamp(20px, 4vh, 40px) clamp(16px, 4vw, 32px);
   background-color: var(--glass-bg);
   border: var(--glass-border);
   -webkit-backdrop-filter: blur(var(--glass-blur));
   backdrop-filter: blur(var(--glass-blur));
   border-radius: clamp(24px, 4vh, 32px);
   box-shadow: var(--glass-shadow);
-  flex-shrink: 0; /* Preview parity: Card doesn't shrink, keyboard takes remaining space */
-  min-height: clamp(280px, 45vh, 400px);
-  max-height: 50vh; /* Preview parity */
-  margin-bottom: var(--spacing-lg);
+  flex: 1; /* Take remaining space */
+  min-height: 180px;
+  max-height: var(--quiz-card-max-height); /* Reduced to give keyboard more space */
+  margin-bottom: 0;
   overflow: hidden;
 }
 
@@ -863,17 +864,18 @@
 }
 
 .pause-button {
-  width: 44px;
-  height: 44px;
-  border-radius: var(--rounded-sm);
-  -webkit-backdrop-filter: blur(4px);
-  backdrop-filter: blur(4px);
-  border: 1px solid var(--glass-border-medium);
+  background: none;
+  border: none;
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
   color: var(--color-gray-100);
   display: flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
+  padding: 0;
+  width: auto;
+  height: auto;
   transition: all 0.2s;
 }
 
@@ -899,17 +901,6 @@
   gap: var(--spacing-sm);
 }
 
-.side-item {
-  width: 32px;
-  /* top-16 small square slots */
-  height: 32px;
-  background: rgba(255, 255, 255, 0.1);
-  border-radius: var(--rounded-2xs);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
 .side-item.active {
   background: rgba(40, 199, 111, 0.2);
   border: 1px solid rgba(40, 199, 111, 0.5);
@@ -930,6 +921,12 @@
   /* Align top */
 }
 
+.header-right-score {
+  pointer-events: auto;
+  display: flex;
+  justify-content: flex-end;
+}
+
 .score-display-round {
   margin-top: var(--spacing-sm);
   /* Space from timer */
@@ -947,6 +944,7 @@
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
 }
 
+.score-capsule .score-val,
 .score-display-round .score-val {
   font-family: 'Inter', system-ui, sans-serif;
   font-weight: 800;
@@ -957,11 +955,59 @@
   font-variant-numeric: tabular-nums;
 }
 
+.score-capsule .score-unit,
 .score-display-round .score-unit {
   font-size: 0.8rem;
   font-weight: 700;
   color: rgba(255, 255, 255, 0.8);
   margin-left: var(--spacing-micro);
+}
+
+.score-combo-stack {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: var(--spacing-xs);
+}
+
+.combo-mini-badge {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-top: -4px;
+  animation: mini-combo-pop 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.combo-num {
+  font-family: 'Inter', system-ui, sans-serif;
+  font-weight: 900;
+  font-size: 0.95rem; /* Reduced from 1.1rem */
+  color: var(--color-blue-400);
+  text-shadow: 0 0 6px rgba(59, 130, 246, 0.4);
+  font-variant-numeric: tabular-nums;
+  transform: skewX(-5deg);
+}
+
+.fever-level-1 .combo-num {
+  color: var(--color-orange-400);
+  text-shadow: 0 0 10px rgba(251, 146, 60, 0.5);
+}
+
+.fever-level-2 .combo-num {
+  color: var(--color-amber-400);
+  text-shadow: 0 0 12px rgba(251, 191, 36, 0.6);
+  font-size: 1.25rem;
+}
+
+@keyframes mini-combo-pop {
+  0% {
+    transform: scale(0.8);
+    opacity: 0;
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
 }
 
 /* [Fever Mode World Themes] */
@@ -1077,14 +1123,17 @@
   background: var(--overlay-dark-medium);
   -webkit-backdrop-filter: blur(10px);
   backdrop-filter: blur(10px);
-  padding: var(--spacing-sm) var(--spacing-lg);
+  padding: 0 var(--spacing-lg);
   border-radius: var(--rounded-pill);
   /* Pill shape */
   border: 1px solid var(--glass-border-low);
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
   display: flex;
-  align-items: baseline;
+  align-items: center;
+  justify-content: center;
   gap: var(--spacing-xs);
+  height: 44px;
+  box-sizing: border-box;
 }
 
 .pill-card.pulse {
@@ -1105,29 +1154,39 @@
   }
 }
 
-.side-item {
-  width: 32px;
-  /* top-16 small square slots */
-  height: 32px;
-  background: rgba(255, 255, 255, 0.1);
-  border-radius: var(--rounded-2xs);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 1.1rem;
-}
-
 .world-info-header-floating {
   position: absolute;
-  top: var(--spacing-sm);
+  top: 24px; /* Lower from the top as requested */
   left: 50%;
   transform: translateX(-50%);
-  font-size: 0.75rem;
-  font-weight: 800;
-  color: var(--glass-bg-high);
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-  z-index: 90;
+  width: auto;
+  min-width: max-content;
+  max-width: 90vw;
+  text-align: center;
+  font-size: 13px;
+  font-weight: 700;
+  color: rgba(255, 255, 255, 0.7);
+  background: rgba(0, 0, 0, 0.25);
+  padding: var(--spacing-xs) var(--spacing-medium-alt);
+  border-radius: var(--rounded-md);
+  backdrop-filter: blur(8px);
+  white-space: nowrap; /* CRITICAL: Prevent wrapping */
+  overflow: hidden;
+  text-overflow: ellipsis;
+  z-index: 10;
+  pointer-events: none;
+  letter-spacing: -0.01em;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+@media (orientation: landscape) {
+  .world-info-header-floating {
+    position: absolute;
+    top: var(--spacing-sm);
+    left: 50%;
+    transform: translateX(-50%);
+    margin-bottom: 0;
+  }
 }
 
 .pause-count-badge {
@@ -1233,12 +1292,13 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  flex: 1;
-  min-height: 250px;
+  flex: 0 0 auto; /* Stable, sized by content */
+  min-height: auto;
+  margin-bottom: var(--quiz-keypad-bottom-margin); /* Lift slightly from the bottom edge */
   /* Allow horizontal scroll for staggered QWERTY rows if container is very narrow */
   overflow-x: auto;
   overflow-y: hidden;
-  padding: 0 var(--spacing-xl) var(--spacing-xl) var(--spacing-xl);
+  padding: 0; /* Let CustomKeypad handle its own padding */
   box-sizing: border-box;
   /* Hide scrollbar but allow scrolling */
   scrollbar-width: none;
