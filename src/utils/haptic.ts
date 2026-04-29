@@ -1,9 +1,15 @@
 // 진동(Haptic) 유틸리티 - 브라우저 Vibration API 사용
 
+import { useSettingsStore } from '../stores/useSettingsStore';
+
 /**
  * 브라우저 진동 실행
  */
 const vibrateBrowser = (duration: number): void => {
+  // 전역 설정 확인
+  const hapticEnabled = useSettingsStore.getState().hapticEnabled;
+  if (!hapticEnabled) return;
+
   if (typeof navigator !== 'undefined' && 'vibrate' in navigator) {
     try {
       navigator.vibrate(duration);

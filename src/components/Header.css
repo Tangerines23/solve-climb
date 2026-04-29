@@ -75,6 +75,12 @@
   display: flex;
   align-items: center;
   justify-content: center;
+  transition: all 0.2s ease;
+}
+
+.header-back-button:active {
+  transform: scale(0.9);
+  opacity: 0.6;
 }
 
 .header-icons {

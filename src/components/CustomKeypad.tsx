@@ -1,6 +1,5 @@
 import React, { FormEvent } from 'react';
 import { vibrateShort } from '../utils/haptic';
-import { useSettingsStore } from '../stores/useSettingsStore';
 import { KEYPAD_SYMBOLS } from '../constants/ui';
 import './CustomKeypad.css';
 
@@ -26,11 +25,9 @@ function CustomKeypadComponent({
   showFraction = false,
 }: CustomKeypadProps) {
   // Zustand Selector 패턴 적용
-  const hapticEnabled = useSettingsStore((state) => state.hapticEnabled);
-
   const handleAction = (action: () => void) => {
     if (!disabled) {
-      if (hapticEnabled) vibrateShort();
+      vibrateShort();
       action();
     }
   };

@@ -1,6 +1,7 @@
 // 키보드 입력 처리 로직을 관리하는 커스텀 훅
 import { useCallback } from 'react';
 import type { Dispatch, SetStateAction } from 'react';
+import { vibrateShort } from '@/utils/haptic';
 
 interface UseQuizInputParams {
   isSubmitting: boolean;
@@ -40,14 +41,14 @@ export function useQuizInput({
             setDisplayValue(newValue);
             return newValue;
           });
-          if (navigator.vibrate) navigator.vibrate(15);
+          vibrateShort();
         }
         return;
       }
 
       const maxLength = allowNegative ? 6 : 5;
 
-      if (navigator.vibrate) navigator.vibrate(15);
+      vibrateShort();
       setAnswerInput((prev) => {
         if (prev.length >= maxLength) return prev;
         const newValue = prev + num;
@@ -97,14 +98,14 @@ export function useQuizInput({
             setDisplayValue(newValue);
             return newValue;
           });
-          if (navigator.vibrate) navigator.vibrate(15);
+          vibrateShort();
         }
         return;
       }
 
       if (/[0-9]/.test(key)) {
         const maxLength = allowNegative ? 6 : 5;
-        if (navigator.vibrate) navigator.vibrate(15);
+        vibrateShort();
         setAnswerInput((prev) => {
           if (prev.length >= maxLength) return prev;
           const newValue = prev + key;
@@ -127,12 +128,14 @@ export function useQuizInput({
 
   const handleKeypadClear = useCallback(() => {
     if (isSubmitting || isError || isPaused) return;
+    vibrateShort();
     setAnswerInput('');
     setDisplayValue('');
   }, [isSubmitting, isError, isPaused, setAnswerInput, setDisplayValue]);
 
   const handleKeypadBackspace = useCallback(() => {
     if (isSubmitting || isError || isPaused) return;
+    vibrateShort();
     setAnswerInput((prev) => prev.slice(0, -1));
     setDisplayValue('');
   }, [isSubmitting, isError, isPaused, setAnswerInput, setDisplayValue]);
