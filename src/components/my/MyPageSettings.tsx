@@ -59,7 +59,20 @@ export function MyPageSettings({
               />
             </svg>
           </button>
-          <label className="my-page-settings-item my-page-settings-item-clickable">
+          <div
+            className="my-page-settings-item my-page-settings-item-clickable"
+            onClick={onToggleHaptic}
+            data-vg-ignore="true"
+            role="button"
+            aria-pressed={hapticEnabled}
+            tabIndex={0}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter' || e.key === ' ') {
+                e.preventDefault();
+                onToggleHaptic();
+              }
+            }}
+          >
             <div className="my-page-settings-item-content">
               <span className="my-page-settings-item-label">진동</span>
             </div>
@@ -68,14 +81,28 @@ export function MyPageSettings({
                 <input
                   type="checkbox"
                   checked={hapticEnabled}
-                  onChange={onToggleHaptic}
+                  readOnly
                   aria-label="진동 설정 제어"
+                  tabIndex={-1}
                 />
                 <span className="my-page-settings-toggle-slider"></span>
               </div>
             </div>
-          </label>
-          <label className="my-page-settings-item my-page-settings-item-clickable">
+          </div>
+          <div
+            className="my-page-settings-item my-page-settings-item-clickable"
+            onClick={onToggleAnimation}
+            data-vg-ignore="true"
+            role="button"
+            aria-pressed={!animationEnabled}
+            tabIndex={0}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter' || e.key === ' ') {
+                e.preventDefault();
+                onToggleAnimation();
+              }
+            }}
+          >
             <div className="my-page-settings-item-content">
               <span className="my-page-settings-item-label">정적 UI 모드</span>
             </div>
@@ -84,13 +111,14 @@ export function MyPageSettings({
                 <input
                   type="checkbox"
                   checked={!animationEnabled}
-                  onChange={onToggleAnimation}
+                  readOnly
                   aria-label="정적 UI 모드 설정 제어"
+                  tabIndex={-1}
                 />
                 <span className="my-page-settings-toggle-slider"></span>
               </div>
             </div>
-          </label>
+          </div>
           <button
             className="my-page-settings-item my-page-settings-item-button"
             onClick={() =>

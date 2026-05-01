@@ -591,7 +591,6 @@
 
 .my-page-settings-item-clickable:active {
   background-color: rgba(255, 255, 255, 0.08);
-  transform: scale(0.985);
 }
 
 .my-page-settings-item:last-child {
@@ -612,7 +611,6 @@
 
 .my-page-settings-item-button:active {
   background-color: rgba(255, 255, 255, 0.1);
-  transform: scale(0.98);
 }
 
 .my-page-settings-item-logout-label {
@@ -1005,7 +1003,6 @@
 
 .my-page-quick-access-button:active {
   background-color: var(--color-blue-700);
-  transform: scale(0.98);
 }
 
 /* Favorites List */
