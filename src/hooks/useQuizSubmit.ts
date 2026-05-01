@@ -1,23 +1,16 @@
 // 답안 제출 로직을 관리하는 커스텀 훅
 import { useCallback, useRef, useEffect, FormEvent } from 'react';
-import { QuizQuestion } from '../types/quiz';
-import { GameMode } from '../types/quiz';
-import {
-  SLIDE_PER_WRONG,
-  MAX_POSSIBLE_ANSWER,
-  THEME_MULTIPLIERS,
-  BOSS_LEVEL,
-  BOSS_BONUS,
-  ThemeTier,
-} from '../constants/game';
-import type { World, Category } from '../types/quiz';
-import { normalizeRomaji } from '../utils/japanese';
-import { vibrateMedium, vibrateLong } from '../utils/haptic';
+import { QuizQuestion, GameMode, World, Category } from '../types/quiz';
+import { SLIDE_PER_WRONG } from '../constants/game';
 import { useGameStore } from '../stores/useGameStore';
-import { APP_CONFIG } from '../config/app';
 import { useBaseCampStore } from '../stores/useBaseCampStore';
 import { useDeathNoteStore } from '../stores/useDeathNoteStore';
 import { analytics } from '@/services/analytics';
+import { useQuizValidator } from './quiz/useQuizValidator';
+import { useQuizScoring } from './quiz/useQuizScoring';
+import { useQuizFeedback } from './quiz/useQuizFeedback';
+import { vibrateLong } from '@/utils/haptic';
+import { GAME_MODES } from '../constants/ui';
 
 interface UseQuizSubmitParams {
   answerInput: string;
@@ -54,9 +47,9 @@ interface UseQuizSubmitParams {
   showFeedback: (text: string, subText?: string, type?: 'success' | 'info') => void;
   onSafetyRopeUsed?: () => void;
   setIsFlarePaused?: (paused: boolean) => void;
+  currentQuestionId?: string | null;
   onAnswerSubmitted?: (questionId: string, userAnswer: number) => void;
   onPenalty?: (amount: number) => void;
-  currentQuestionId?: string | null;
 }
 
 export function useQuizSubmit({
@@ -104,21 +97,12 @@ export function useQuizSubmit({
     consumeLife,
   } = useGameStore();
 
+  const { validateAnswer } = useQuizValidator();
+  const { calculateScore } = useQuizScoring();
+  const { triggerSuccessFeedback, triggerWrongFeedback } = useQuizFeedback();
+
   // 함수 참조를 안정적으로 유지하기 위한 ref
-  const paramsRef = useRef<{
-    generateNewQuestion: () => void;
-    handleGameOver: (reason?: string) => void;
-    setTotalQuestions: (updater: (prev: number) => number) => void;
-    setWrongAnswers: (
-      updater: (
-        prev: Array<{ question: string; wrongAnswer: string; correctAnswer: string }>
-      ) => Array<{ question: string; wrongAnswer: string; correctAnswer: string }>
-    ) => void;
-    setSolveTimes: (updater: (prev: number[]) => number[]) => void;
-    categoryParam: string | null;
-    subParam: string | null;
-    onPenalty?: (amount: number) => void;
-  }>({
+  const paramsRef = useRef({
     generateNewQuestion,
     handleGameOver,
     setTotalQuestions,
@@ -155,48 +139,32 @@ export function useQuizSubmit({
     (e: FormEvent) => {
       e.preventDefault();
       if (isSubmitting || !currentQuestion) return;
-
-      // 값이 비어있으면 무시
       if (!answerInput || answerInput.trim() === '') return;
 
       setIsSubmitting(true);
 
-      // 일본어 퀴즈인지 확인 (category가 '언어'이고 subParam이 'japanese'인 경우)
-      const isJapaneseQuiz = categoryParam === 'language' && subParam === 'japanese';
-      // 방정식/미적분 문제인지 확인 (음수 답도 허용)
-      const isEquationQuiz = categoryParam === 'math' && subParam === 'equations';
-      const isCalculusQuiz = categoryParam === 'math' && subParam === 'calculus';
-      const allowNegative = isEquationQuiz || isCalculusQuiz;
+      // 1. Answer Validation
+      const validationResult = validateAnswer(
+        answerInput,
+        currentQuestion,
+        categoryParam,
+        subParam
+      );
 
-      let isCorrect = false;
-
-      if (isJapaneseQuiz) {
-        // 일본어 퀴즈: 문자열 답안 비교 (대소문자, 공백 무시)
-        const normalizedInput = normalizeRomaji(answerInput);
-        const normalizedAnswer = normalizeRomaji(String(currentQuestion.answer));
-        isCorrect = normalizedInput === normalizedAnswer;
-      } else {
-        // 수학 문제: 숫자 답안 비교
-        const answer = parseInt(answerInput, 10);
-        // 방정식/미적분 문제는 음수도 허용, 일반 수학 문제는 0 이상만 허용
-        const minValue = allowNegative ? -999 : 0;
-        if (isNaN(answer) || answer < minValue || answer > MAX_POSSIBLE_ANSWER) {
-          setCardAnimation('wrong-shake');
-          if (navigator.vibrate) navigator.vibrate(200);
-          setTimeout(() => setCardAnimation(''), 150);
-          setIsSubmitting(false);
-          return;
+      if (validationResult === null) {
+        // Invalid input format (e.g. out of range)
+        setCardAnimation('wrong-shake');
+        if (hapticEnabled) {
+          vibrateLong();
         }
-        isCorrect =
-          typeof currentQuestion.answer === 'number' ? currentQuestion.answer === answer : false;
-
-        // 답안 수집 (문제 ID와 함께)
-        if (onAnswerSubmitted && currentQuestionId) {
-          onAnswerSubmitted(currentQuestionId, answer);
-        }
+        setTimeout(() => setCardAnimation(''), 150);
+        setIsSubmitting(false);
+        return;
       }
 
-      // [Added] Answer Tracking
+      const isCorrect = validationResult;
+
+      // 2. Analytics Tracking
       analytics.trackEvent({
         category: 'quiz',
         action: 'submit_answer',
@@ -209,10 +177,17 @@ export function useQuizSubmit({
         },
       });
 
-      // 문제 수 증가
+      // 3. Collect Math Answer
+      if (onAnswerSubmitted && currentQuestionId) {
+        const numericAnswer = parseInt(answerInput, 10);
+        if (!isNaN(numericAnswer)) {
+          onAnswerSubmitted(currentQuestionId, numericAnswer);
+        }
+      }
+
       paramsRef.current.setTotalQuestions((prev) => prev + 1);
 
-      // [Base Camp Diagnostic Mode]
+      // 4. Base Camp Diagnostic Mode Logic
       const isBaseCamp = new URLSearchParams(window.location.search).get('mode') === 'base-camp';
       if (isBaseCamp) {
         const solveTime = questionStartTime ? Date.now() - questionStartTime : 2000;
@@ -222,10 +197,8 @@ export function useQuizSubmit({
         submitAnswer(isCorrect, solveTime);
 
         if (currentQuestionIndex >= 9) {
-          // 10th question submitted
           setCompleted(true);
           const { accuracy, recommendation } = getRecommendation();
-          // Redirect to result with diagnostic info
           setTimeout(() => {
             const params = new URLSearchParams(window.location.search);
             params.set('mode', 'base-camp-result');
@@ -236,7 +209,6 @@ export function useQuizSubmit({
           return;
         }
 
-        // Show feedback and next question
         if (isCorrect) {
           setCardAnimation('correct-flash');
           setTimeout(() => {
@@ -259,78 +231,42 @@ export function useQuizSubmit({
         return;
       }
 
+      // 5. Normal Game Logic
       if (isCorrect) {
-        // 진동 피드백
-        if (hapticEnabled) {
-          vibrateMedium();
-        }
-        // 서바이벌 모드: 정답을 맞춘 경우 풀이 시간 기록
-        if (gameMode === 'survival' && questionStartTime !== null) {
-          const solveTime = (Date.now() - questionStartTime) / 1000; // 초 단위
+        // Success Logic
+        if (gameMode === GAME_MODES.SURVIVAL && questionStartTime !== null) {
+          const solveTime = (Date.now() - questionStartTime) / 1000;
           paramsRef.current.setSolveTimes((prev) => [...prev, solveTime]);
         }
 
         setCardAnimation('correct-flash');
         setInputAnimation('correct-flash');
-
-        // 콤보 증가 및 가중치 적용
         incrementCombo();
 
-        // [v2.2 New Scoring System]
-        // 레벨은 문제에서 직접 가져오거나 URL 파라미터에서 가져옴
         const currentLevel =
           currentQuestion.level ||
           parseInt(new URLSearchParams(window.location.search).get('level') || '1', 10);
         const { feverLevel } = useGameStore.getState();
 
-        // 1. 기본 레벨 점수 (Base Score) - v2.2 공식: 레벨 * 10m
-        const baseLevelScore = currentLevel * 10;
-
-        // 2. 테마 난이도 배율 (Theme Multiplier) - 서바이벌은 기본 1.0 (또는 기획에 따라)
-        // 타임어택 등 레벨 고정 모드에서는 티어 배율 적용
-        const subTopics = APP_CONFIG.SUB_TOPICS as unknown as Record<
-          string,
-          Array<{ id: string; tier?: ThemeTier }>
-        >;
-        const categoryTopics =
-          categoryParam && Object.prototype.hasOwnProperty.call(subTopics, categoryParam)
-            ? (Object.getOwnPropertyDescriptor(subTopics, categoryParam)?.value ?? [])
-            : [];
-        const currentTopic = categoryTopics.find(
-          (t: { id: string; tier?: ThemeTier }) => t.id === subParam
+        const earnedDistance = calculateScore(
+          currentLevel,
+          categoryParam,
+          subParam,
+          gameMode,
+          feverLevel,
+          isExhausted
         );
-        const tier =
-          ((currentTopic as unknown as { tier?: ThemeTier })?.tier as ThemeTier) || 'basic';
-        const themeMultiplier =
-          gameMode === 'survival'
-            ? 1.0
-            : tier === 'basic'
-              ? THEME_MULTIPLIERS.basic
-              : tier === 'advanced'
-                ? THEME_MULTIPLIERS.advanced
-                : THEME_MULTIPLIERS.expert;
 
-        // 3. 콤보 배율 (Combo Multiplier)
-        const comboMultiplier = feverLevel === 2 ? 1.5 : feverLevel === 1 ? 1.2 : 1.0;
-
-        // 4. 최종 점수 계산
-        let earnedDistance = Math.floor(baseLevelScore * themeMultiplier * comboMultiplier);
-
-        // 5. 보스 보너스 (Lv.10) - 타임어택 전용 (서바이벌은 매번 점수가 다르므로 제외)
-        if (gameMode !== 'survival' && currentLevel === BOSS_LEVEL) {
-          earnedDistance += BOSS_BONUS;
-        }
-
-        // 탈진 상태 페널티 (20% 감점, 0.8배 적용)
-        if (isExhausted) {
-          earnedDistance = Math.floor(earnedDistance * 0.8);
-        }
-
-        // 득점 토스트 (문제를 가리지 않도록 우측 상단 인근 배치)
-        setToastValue(`+${earnedDistance}m`);
-        setDamagePosition({ left: '75%', top: '20%' });
-        setShowSlideToast(true);
-        setTimeout(() => setShowSlideToast(false), 700);
+        triggerSuccessFeedback(
+          earnedDistance,
+          {
+            setToastValue,
+            setDamagePosition,
+            setShowSlideToast,
+            setShowFlash,
+          },
+          hapticEnabled
+        );
 
         increaseScore(earnedDistance);
 
@@ -342,18 +278,13 @@ export function useQuizSubmit({
           setInputAnimation('');
           setCardAnimation('');
           setIsSubmitting(false);
-          // 다음 문제로 넘어갈 때 포커스 유지 (시스템 키보드 사용 시만)
           if (useSystemKeyboard && inputRef.current) {
-            setTimeout(() => {
-              inputRef.current?.focus();
-            }, 100);
+            setTimeout(() => inputRef.current?.focus(), 100);
           }
         }, 300);
       } else {
-        // 오답 처리: 정답을 빨간색으로 0.8초간 표시
+        // Failure Logic
         const correctAnswerText = String(currentQuestion.answer);
-
-        // 1단계: 에러 상태 활성화 및 정답 표시 (동시에 업데이트하여 깜빡임 방지)
         setIsError(true);
         setDisplayValue(correctAnswerText);
         setCardAnimation('wrong-shake');
@@ -361,68 +292,44 @@ export function useQuizSubmit({
         const hasSafetyRope = activeItems.includes('safety_rope');
         if (hasSafetyRope) {
           consumeActiveItem('safety_rope');
-
-          // 안전 로프 사용 시 정답 표시하지 않음 (오답 방어이므로)
-          // setDisplayValue는 호출하지 않음
-
-          // Trigger Safety Rope Overlay
           if (onSafetyRopeUsed) onSafetyRopeUsed();
 
-          console.log('[Game] Safety Rope used! Combo protected & Retry allowed.');
-
-          // Reset interaction state to allow retry
           setTimeout(() => {
             setIsError(false);
-            setDisplayValue(''); // 정답 표시 제거
+            setDisplayValue('');
             setCardAnimation('');
             setIsSubmitting(false);
-            setAnswerInput(''); // 입력 초기화하여 재시도 가능하게
-          }, 1000); // 1.5s animation, wait a bit before unlocking
-
-          return; // STOP Game Over Logic
-        } else {
-          resetCombo();
+            setAnswerInput('');
+          }, 1000);
+          return;
         }
 
-        // 플래시 애니메이션 트리거
-        setShowFlash(true);
-        setTimeout(() => {
-          setShowFlash(false);
-        }, 400); // 애니메이션 지속시간과 동일
+        resetCombo();
 
-        // [v2.2 Death Note] - 정답을 틀렸을 때 기록 (부활 전 단계)
+        // Death Note Recording
         const { addMissedQuestion } = useDeathNoteStore.getState();
         const targetWorld = (paramsRef.current.subParam || 'World1') as World;
         const targetCategory = (paramsRef.current.categoryParam || '기초') as Category;
         addMissedQuestion(currentQuestion, targetWorld, targetCategory);
 
-        // 진동 피드백 (토스 표준 API 사용)
-        if (hapticEnabled) {
-          vibrateLong(); // 긴 진동 사용
-        }
-
-        // 서바이벌/인피니트 모드: 패널티 로직 (onPenalty가 있으면 패널티, 없으면 종료)
-        if (paramsRef.current.onPenalty && (gameMode === 'survival' || gameMode === 'infinite')) {
+        // Penalty / Game Over Logic
+        if (
+          paramsRef.current.onPenalty &&
+          (gameMode === GAME_MODES.SURVIVAL || gameMode === 'infinite')
+        ) {
           paramsRef.current.onPenalty(5);
+          triggerWrongFeedback(
+            '-5초',
+            {
+              setToastValue,
+              setDamagePosition,
+              setShowSlideToast,
+              setShowFlash,
+            },
+            hapticEnabled
+          );
 
-          // 이전 토스트가 있다면 먼저 제거하고 새로 표시
-          setShowSlideToast(false);
-          setToastValue(`-5초`);
-
-          // 랜덤 위치 생성 (X: 10-80%, Y: 10-40%)
-          const randomLeft = Math.floor(Math.random() * 70) + 10;
-          const randomTop = Math.floor(Math.random() * 30) + 10;
-          setDamagePosition({ left: `${randomLeft}%`, top: `${randomTop}%` });
-
-          setShowSlideToast(true);
-
-          const toastHideTimer = setTimeout(() => {
-            setShowSlideToast(false);
-          }, 700);
-
-          // 800ms 후 다음 문제로 이동
           setTimeout(() => {
-            clearTimeout(toastHideTimer);
             setIsError(false);
             setDisplayValue('');
             setAnswerInput('');
@@ -432,32 +339,36 @@ export function useQuizSubmit({
             setCardAnimation('');
             paramsRef.current.generateNewQuestion();
             setIsSubmitting(false);
-
             if (useSystemKeyboard && inputRef.current) {
-              setTimeout(() => {
-                inputRef.current?.focus();
-              }, 100);
+              setTimeout(() => inputRef.current?.focus(), 100);
             }
           }, 800);
-        } else if (gameMode === 'survival') {
-          // 오답 정보 저장
-          const questionText = currentQuestion.question;
+        } else if (gameMode === GAME_MODES.SURVIVAL) {
           paramsRef.current.setWrongAnswers((prev) => [
             ...prev,
             {
-              question: questionText,
+              question: currentQuestion.question,
               wrongAnswer: answerInput,
               correctAnswer: correctAnswerText,
             },
           ]);
 
-          // 800ms 후 게임 종료 (Flare가 있으면 부활, Lives가 있으면 유지)
+          triggerWrongFeedback(
+            'WRONG',
+            {
+              setToastValue,
+              setDamagePosition,
+              setShowSlideToast,
+              setShowFlash,
+            },
+            hapticEnabled
+          );
+
           setTimeout(() => {
             const hasFlare = activeItems.includes('flare');
             if (hasFlare) {
               consumeActiveItem('flare');
               showFeedback('REVIVE!', 'Survival Continued', 'info');
-              console.log('[Game] Flare used! Revived in survival mode.');
               setIsError(false);
               setDisplayValue('');
               setShowFlash(false);
@@ -465,7 +376,6 @@ export function useQuizSubmit({
               paramsRef.current.generateNewQuestion();
               setIsSubmitting(false);
             } else if (lives > 1) {
-              // 라이프가 남아있으면 차감하고 계속 진행
               consumeLife();
               showFeedback('LIFE LOST', `${lives - 1} Hearts Left`, 'info');
               setIsError(false);
@@ -474,41 +384,30 @@ export function useQuizSubmit({
               paramsRef.current.generateNewQuestion();
               setIsSubmitting(false);
             } else {
-              // 라이프가 0이면 진짜 종료
-              consumeLife(); // 0으로 만들기
+              consumeLife();
               setIsError(false);
               setDisplayValue('');
               setShowFlash(false);
               setInputAnimation('');
               setCardAnimation('');
-
-              // v2.2 데스노트 데이터 전달을 위해 handleGameOver 인자 활용 (hook 파라미터에는 없으므로 navigate 직접 호출 또는 smartHandleGameOver 수정 필요)
-              // 여기서는 일단 수동으로 URL 조립 가능하도록 유도하거나 smartHandleGameOver가 currentQuestion 정보를 알게 함.
-              // QuizPage의 smartHandleGameOver가 gameState에서 정보를 가져갈 수 있게 설계됨.
               paramsRef.current.handleGameOver();
             }
           }, 800);
         } else {
-          // 타임어택 등 기타 모드: 점수 감점
-          if (!hasSafetyRope) {
-            decreaseScore(SLIDE_PER_WRONG);
-          }
-
-          setShowSlideToast(false);
-          setToastValue(`-${SLIDE_PER_WRONG}m`);
-
-          const randomLeft = Math.floor(Math.random() * 70) + 10;
-          const randomTop = Math.floor(Math.random() * 30) + 10;
-          setDamagePosition({ left: `${randomLeft}%`, top: `${randomTop}%` });
-
-          setShowSlideToast(true);
-
-          const toastHideTimer = setTimeout(() => {
-            setShowSlideToast(false);
-          }, 700);
+          // Time Attack etc.
+          decreaseScore(SLIDE_PER_WRONG);
+          triggerWrongFeedback(
+            `-${SLIDE_PER_WRONG}m`,
+            {
+              setToastValue,
+              setDamagePosition,
+              setShowSlideToast,
+              setShowFlash,
+            },
+            hapticEnabled
+          );
 
           setTimeout(() => {
-            clearTimeout(toastHideTimer);
             setIsError(false);
             setDisplayValue('');
             setAnswerInput('');
@@ -518,11 +417,8 @@ export function useQuizSubmit({
             setCardAnimation('');
             paramsRef.current.generateNewQuestion();
             setIsSubmitting(false);
-
             if (useSystemKeyboard && inputRef.current) {
-              setTimeout(() => {
-                inputRef.current?.focus();
-              }, 100);
+              setTimeout(() => inputRef.current?.focus(), 100);
             }
           }, 800);
         }
@@ -563,6 +459,10 @@ export function useQuizSubmit({
       setIsFlarePaused,
       lives,
       consumeLife,
+      validateAnswer,
+      calculateScore,
+      triggerSuccessFeedback,
+      triggerWrongFeedback,
     ]
   );
 

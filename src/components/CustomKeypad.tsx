@@ -1,6 +1,6 @@
 import React, { FormEvent } from 'react';
 import { vibrateShort } from '../utils/haptic';
-import { useSettingsStore } from '../stores/useSettingsStore';
+import { KEYPAD_SYMBOLS } from '../constants/ui';
 import './CustomKeypad.css';
 
 interface CustomKeypadProps {
@@ -25,120 +25,89 @@ function CustomKeypadComponent({
   showFraction = false,
 }: CustomKeypadProps) {
   // Zustand Selector 패턴 적용
-  const hapticEnabled = useSettingsStore((state) => state.hapticEnabled);
-
-  const handleNumberClick = (num: string) => {
+  const handleAction = (action: () => void) => {
     if (!disabled) {
-      if (hapticEnabled) {
-        vibrateShort();
-      }
-      onNumberClick(num);
+      vibrateShort();
+      action();
     }
   };
 
-  const handleBackspace = () => {
-    if (!disabled && onBackspace) {
-      if (hapticEnabled) {
-        vibrateShort();
-      }
-      onBackspace();
-    }
-  };
+  const handleNumberClick = (num: string) => handleAction(() => onNumberClick(num));
+  const handleBackspace = () => onBackspace && handleAction(onBackspace);
+  const handleSubmit = (e: FormEvent) => handleAction(() => onSubmit(e));
 
-  const handleSubmit = (e: FormEvent) => {
-    if (!disabled) {
-      if (hapticEnabled) {
-        vibrateShort();
-      }
-      onSubmit(e);
-    }
+  const renderSpecialKey = () => {
+    if (!showNegative && !showDecimal && !showFraction) return null;
+
+    const label = showDecimal
+      ? KEYPAD_SYMBOLS.DECIMAL
+      : showFraction
+        ? KEYPAD_SYMBOLS.FRACTION
+        : KEYPAD_SYMBOLS.NEGATIVE;
+    const value = showDecimal
+      ? KEYPAD_SYMBOLS.DECIMAL
+      : showFraction
+        ? KEYPAD_SYMBOLS.FRACTION
+        : '-';
+
+    return (
+      <button
+        className="keypad-key keypad-key-special"
+        onClick={() => handleNumberClick(value)}
+        disabled={disabled}
+      >
+        {label}
+      </button>
+    );
   };
 
   return (
     <div className="custom-keypad" data-vg-ignore="true">
-      <div className="keypad-row">
-        <button className="keypad-key" onClick={() => handleNumberClick('1')} disabled={disabled}>
-          1
-        </button>
-        <button className="keypad-key" onClick={() => handleNumberClick('2')} disabled={disabled}>
-          2
-        </button>
-        <button className="keypad-key" onClick={() => handleNumberClick('3')} disabled={disabled}>
-          3
-        </button>
-      </div>
-      <div className="keypad-row">
-        <button className="keypad-key" onClick={() => handleNumberClick('4')} disabled={disabled}>
-          4
-        </button>
-        <button className="keypad-key" onClick={() => handleNumberClick('5')} disabled={disabled}>
-          5
-        </button>
-        <button className="keypad-key" onClick={() => handleNumberClick('6')} disabled={disabled}>
-          6
-        </button>
-      </div>
-      <div className="keypad-row">
-        <button className="keypad-key" onClick={() => handleNumberClick('7')} disabled={disabled}>
-          7
-        </button>
-        <button className="keypad-key" onClick={() => handleNumberClick('8')} disabled={disabled}>
-          8
-        </button>
-        <button className="keypad-key" onClick={() => handleNumberClick('9')} disabled={disabled}>
-          9
-        </button>
-      </div>
-      <div
-        className={`keypad-row keypad-row-last ${showNegative || showDecimal || showFraction ? 'keypad-row-last-with-negative' : ''}`}
-      >
-        {showNegative || showDecimal || showFraction ? (
-          <>
-            <button
-              className="keypad-key keypad-key-special"
-              onClick={() => {
-                if (!disabled) {
-                  if (showDecimal) handleNumberClick('.');
-                  else if (showFraction) handleNumberClick('/');
-                  else if (showNegative) handleNumberClick('-');
-                }
-              }}
-              disabled={disabled}
-            >
-              {showDecimal ? '.' : showFraction ? '/' : '±'}
-            </button>
-            <button
-              className="keypad-key keypad-key-backspace"
-              onClick={handleBackspace}
-              disabled={disabled}
-            >
-              ⌫
-            </button>
-          </>
-        ) : (
-          <button
-            className="keypad-key keypad-key-backspace"
-            onClick={handleBackspace}
-            disabled={disabled}
-          >
-            ⌫
-          </button>
-        )}
-        <button className="keypad-key" onClick={() => handleNumberClick('0')} disabled={disabled}>
-          0
-        </button>
+      {/* 1 ~ 9 */}
+      {['1', '2', '3', '4', '5', '6', '7', '8', '9'].map((num) => (
         <button
-          className="btn-base btn-primary keypad-key keypad-key-submit"
-          onClick={(e) => {
-            e.preventDefault();
-            handleSubmit(e);
-          }}
+          key={num}
+          className="keypad-key"
+          onClick={() => handleNumberClick(num)}
           disabled={disabled}
-          type="button"
         >
-          ✓
+          {num}
         </button>
-      </div>
+      ))}
+
+      {/* 특수키(., -, /) 표시될 때만 렌더링 */}
+      {renderSpecialKey()}
+
+      {/* 0 (특수키가 없으면 2칸 차지하여 빈공간 메꿈) */}
+      <button
+        className={`keypad-key ${!renderSpecialKey() ? 'keypad-key-zero-wide' : ''}`}
+        onClick={() => handleNumberClick('0')}
+        disabled={disabled}
+      >
+        0
+      </button>
+
+      {/* 지우기 */}
+      <button
+        className="keypad-key keypad-key-backspace"
+        onClick={handleBackspace}
+        disabled={disabled}
+      >
+        {KEYPAD_SYMBOLS.BACKSPACE}
+      </button>
+
+      {/* 확인 (3열 차지) */}
+      <button
+        className="btn-base btn-primary keypad-key keypad-key-submit"
+        onClick={(e) => {
+          e.preventDefault();
+          handleSubmit(e);
+        }}
+        disabled={disabled}
+        type="button"
+      >
+        {KEYPAD_SYMBOLS.SUBMIT}
+      </button>
     </div>
   );
 }
