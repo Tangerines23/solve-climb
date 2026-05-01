@@ -13,8 +13,10 @@ interface FeedbackHandlers {
  */
 export function useQuizFeedback() {
   const triggerSuccessFeedback = useCallback(
-    (earnedDistance: number, handlers: FeedbackHandlers) => {
-      vibrateMedium();
+    (earnedDistance: number, handlers: FeedbackHandlers, hapticEnabled: boolean = true) => {
+      if (hapticEnabled) {
+        vibrateMedium();
+      }
 
       handlers.setToastValue(`+${earnedDistance}m`);
       handlers.setDamagePosition({ left: '75%', top: '20%' });
@@ -24,22 +26,27 @@ export function useQuizFeedback() {
     []
   );
 
-  const triggerWrongFeedback = useCallback((penaltyText: string, handlers: FeedbackHandlers) => {
-    vibrateLong();
+  const triggerWrongFeedback = useCallback(
+    (penaltyText: string, handlers: FeedbackHandlers, hapticEnabled: boolean = true) => {
+      if (hapticEnabled) {
+        vibrateLong();
+      }
 
-    handlers.setToastValue(penaltyText);
+      handlers.setToastValue(penaltyText);
 
-    // 랜덤 위치 생성 (X: 10-80%, Y: 10-40%)
-    const randomLeft = Math.floor(Math.random() * 70) + 10;
-    const randomTop = Math.floor(Math.random() * 30) + 10;
-    handlers.setDamagePosition({ left: `${randomLeft}%`, top: `${randomTop}%` });
+      // 랜덤 위치 생성 (X: 10-80%, Y: 10-40%)
+      const randomLeft = Math.floor(Math.random() * 70) + 10;
+      const randomTop = Math.floor(Math.random() * 30) + 10;
+      handlers.setDamagePosition({ left: `${randomLeft}%`, top: `${randomTop}%` });
 
-    handlers.setShowSlideToast(true);
-    setTimeout(() => handlers.setShowSlideToast(false), 700);
+      handlers.setShowSlideToast(true);
+      setTimeout(() => handlers.setShowSlideToast(false), 700);
 
-    handlers.setShowFlash(true);
-    setTimeout(() => handlers.setShowFlash(false), 400);
-  }, []);
+      handlers.setShowFlash(true);
+      setTimeout(() => handlers.setShowFlash(false), 400);
+    },
+    []
+  );
 
   return { triggerSuccessFeedback, triggerWrongFeedback };
 }

@@ -154,7 +154,9 @@ export function useQuizSubmit({
       if (validationResult === null) {
         // Invalid input format (e.g. out of range)
         setCardAnimation('wrong-shake');
-        vibrateLong();
+        if (hapticEnabled) {
+          vibrateLong();
+        }
         setTimeout(() => setCardAnimation(''), 150);
         setIsSubmitting(false);
         return;
@@ -255,12 +257,16 @@ export function useQuizSubmit({
           isExhausted
         );
 
-        triggerSuccessFeedback(earnedDistance, {
-          setToastValue,
-          setDamagePosition,
-          setShowSlideToast,
-          setShowFlash,
-        });
+        triggerSuccessFeedback(
+          earnedDistance,
+          {
+            setToastValue,
+            setDamagePosition,
+            setShowSlideToast,
+            setShowFlash,
+          },
+          hapticEnabled
+        );
 
         increaseScore(earnedDistance);
 
@@ -312,12 +318,16 @@ export function useQuizSubmit({
           (gameMode === GAME_MODES.SURVIVAL || gameMode === 'infinite')
         ) {
           paramsRef.current.onPenalty(5);
-          triggerWrongFeedback('-5초', {
-            setToastValue,
-            setDamagePosition,
-            setShowSlideToast,
-            setShowFlash,
-          });
+          triggerWrongFeedback(
+            '-5초',
+            {
+              setToastValue,
+              setDamagePosition,
+              setShowSlideToast,
+              setShowFlash,
+            },
+            hapticEnabled
+          );
 
           setTimeout(() => {
             setIsError(false);
@@ -343,12 +353,16 @@ export function useQuizSubmit({
             },
           ]);
 
-          triggerWrongFeedback('WRONG', {
-            setToastValue,
-            setDamagePosition,
-            setShowSlideToast,
-            setShowFlash,
-          });
+          triggerWrongFeedback(
+            'WRONG',
+            {
+              setToastValue,
+              setDamagePosition,
+              setShowSlideToast,
+              setShowFlash,
+            },
+            hapticEnabled
+          );
 
           setTimeout(() => {
             const hasFlare = activeItems.includes('flare');
@@ -382,12 +396,16 @@ export function useQuizSubmit({
         } else {
           // Time Attack etc.
           decreaseScore(SLIDE_PER_WRONG);
-          triggerWrongFeedback(`-${SLIDE_PER_WRONG}m`, {
-            setToastValue,
-            setDamagePosition,
-            setShowSlideToast,
-            setShowFlash,
-          });
+          triggerWrongFeedback(
+            `-${SLIDE_PER_WRONG}m`,
+            {
+              setToastValue,
+              setDamagePosition,
+              setShowSlideToast,
+              setShowFlash,
+            },
+            hapticEnabled
+          );
 
           setTimeout(() => {
             setIsError(false);
