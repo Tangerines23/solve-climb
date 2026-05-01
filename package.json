@@ -91,6 +91,7 @@
     "check:layout:with-server": "node scripts/run-layout-check-with-server.js",
     "check:layout:deep:with-server": "node scripts/run-layout-check-with-server.js --deep",
     "check:layout:analyze": "node scripts/analyze-layout-overflow.js",
+    "vg:check": "node scripts/vg-cli.js",
     "check:score": "node scripts/check-lighthouse-score.js",
     "prepare": "husky",
     "postinstall": "node scripts/ensure-env.js",

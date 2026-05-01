@@ -10,6 +10,16 @@ import { TutorialStep } from '@/components/tutorial/TutorialOverlay';
 import { QuizPreview } from '@/components/quiz/QuizPreview';
 import { useNavigate } from 'react-router-dom';
 
+const CATEGORY_MAP: Record<string, string> = {
+  기초: 'basic',
+  논리: 'logic',
+  대수: 'algebra',
+  심화: 'expert',
+  히라가나: 'hiragana',
+  가타카나: 'katakana',
+  어휘: 'vocabulary',
+};
+
 export function QuizLayout() {
   const { quizState, modalState, modalHandlers, feverLevel, altitudePhase } = useQuiz();
   const navigate = useNavigate();
@@ -17,6 +27,10 @@ export function QuizLayout() {
   const { showTutorial } = modalState;
   const { setShowTutorial } = modalHandlers;
   const tutorialSteps: TutorialStep[] = TUTORIAL_STEPS as unknown as TutorialStep[];
+
+  const categoryKey = quizState.categoryParam
+    ? CATEGORY_MAP[quizState.categoryParam] || quizState.categoryParam
+    : '';
 
   if (quizState.isPreview) {
     return (
@@ -39,7 +53,7 @@ export function QuizLayout() {
     <div
       className={`quiz-page fever-level-${feverLevel}`}
       data-world={quizState.subParam || 'World1'}
-      data-category={quizState.categoryParam || ''}
+      data-category={categoryKey}
       data-altitude-phase={altitudePhase}
     >
       <QuizCard />

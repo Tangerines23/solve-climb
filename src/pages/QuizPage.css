@@ -223,7 +223,7 @@
   flex-direction: column;
   align-items: center;
   width: 100%;
-  max-width: var(--modal-width-portrait);
+  max-width: min(var(--modal-width-portrait), 100%);
   margin: 0 auto;
   /* 안전 영역 고려: Dynamic Island, 노치 등 */
   padding: max(clamp(var(--spacing-md), 2vh, var(--spacing-lg)), env(safe-area-inset-top, 0px))
@@ -234,6 +234,7 @@
   justify-content: flex-end; /* Push keyboard to bottom */
   box-sizing: border-box;
   overflow: hidden;
+  overflow-x: hidden; /* Double safety */
 }
 
 /* 가로모드 레이아웃 개선 */
@@ -1043,40 +1044,85 @@
   bottom: 0;
   pointer-events: none;
   z-index: 0;
-  opacity: 0.1;
+  opacity: 0.4; /* Increased from 0.2 for better visibility */
 }
 
 /* 기초 (Basic) - Numbers Pattern */
-.quiz-page[data-world='World1'][data-category='기초']::before {
-  background-image: radial-gradient(var(--color-blue-500) 1px, transparent 1px);
-  background-size: 20px 20px;
+.quiz-page[data-world='World1'][data-category='basic']::before {
+  background-image: radial-gradient(var(--color-blue-500) 2px, transparent 2px);
+  background-size: 24px 24px;
 }
 
 /* 논리 (Logic) - Magnifying Glass / Grid */
-.quiz-page[data-world='World1'][data-category='논리']::before {
+.quiz-page[data-world='World1'][data-category='logic']::before {
   background-image:
-    linear-gradient(rgba(59, 130, 246, 0.1) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(59, 130, 246, 0.1) 1px, transparent 1px);
+    linear-gradient(rgba(59, 130, 246, 0.15) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(59, 130, 246, 0.15) 1px, transparent 1px);
   background-size: 40px 40px;
 }
 
 /* 대수 (Algebra) - Formula Blueprint */
-.quiz-page[data-world='World1'][data-category='대수']::before {
+.quiz-page[data-world='World1'][data-category='algebra']::before {
   background:
-    linear-gradient(45deg, rgba(59, 130, 246, 0.05) 25%, transparent 25%),
-    linear-gradient(-45deg, rgba(59, 130, 246, 0.05) 25%, transparent 25%);
+    linear-gradient(45deg, rgba(59, 130, 246, 0.1) 25%, transparent 25%),
+    linear-gradient(-45deg, rgba(59, 130, 246, 0.1) 25%, transparent 25%);
   background-size: 60px 60px;
 }
 
 /* 심화 (Advanced/Calculus) - Wave/Curve */
-.quiz-page[data-world='World1'][data-category='심화']::before {
+.quiz-page[data-world='World1'][data-category='expert']::before {
   background: repeating-linear-gradient(
     0deg,
     transparent,
     transparent 100px,
-    rgba(59, 130, 246, 0.05) 100px,
-    rgba(59, 130, 246, 0.05) 101px
+    rgba(59, 130, 246, 0.1) 100px,
+    rgba(59, 130, 246, 0.1) 101px
   );
+}
+
+/* ==========================================================================
+   Language World: 언어의 산 Theme
+   ========================================================================== */
+
+.quiz-page[data-world='language'] {
+  --world-primary: var(--adaptiveRed400);
+  --world-secondary: var(--adaptiveRed500);
+  --world-bg-top: hsl(0, 24%, 13%);
+  --world-bg-bottom: hsl(0, 30%, 8%);
+}
+
+.quiz-page[data-world='language']::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  pointer-events: none;
+  z-index: 0;
+  opacity: 0.2;
+}
+
+/* 히라가나 (Hiragana) */
+.quiz-page[data-world='language'][data-category='hiragana']::before {
+  background-image: radial-gradient(#f87171 1.5px, transparent 1.5px);
+  background-size: 30px 30px;
+}
+
+/* 가타카나 (Katakana) */
+.quiz-page[data-world='language'][data-category='katakana']::before {
+  background-image:
+    linear-gradient(45deg, rgba(248, 113, 113, 0.15) 1px, transparent 1px),
+    linear-gradient(-45deg, rgba(248, 113, 113, 0.15) 1px, transparent 1px);
+  background-size: 25px 25px;
+}
+
+/* 어휘 (Vocabulary) */
+.quiz-page[data-world='language'][data-category='vocabulary']::before {
+  background-image:
+    linear-gradient(rgba(248, 113, 113, 0.15) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(248, 113, 113, 0.15) 1px, transparent 1px);
+  background-size: 50px 50px;
 }
 
 .category-label {

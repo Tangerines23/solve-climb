@@ -127,7 +127,7 @@
   color: var(--color-text-primary);
   line-height: 1.2;
   padding: var(--spacing-xs) var(--spacing-tiny);
-  min-height: 2rem;
+  min-height: 2.2rem;
   box-sizing: border-box;
   overflow: hidden;
   /* VG 세로 1px 넘침 방지 */
@@ -140,20 +140,26 @@
 .status-icon {
   font-size: 0.9rem;
   /* Increase for emojis */
-  line-height: 1.4;
+  line-height: 1;
+  height: 1.6rem;
   display: flex;
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
+  overflow: hidden;
   /* Ensure emoji/icon has vertical room to prevent clipping */
 }
 
 .status-value {
   min-width: 1.5rem;
+  height: 1.6rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   text-align: center;
-  line-height: 1.4;
-  display: inline-block;
-  /* Extra vertical safety to prevent clipping */
+  line-height: 1;
+  overflow: hidden;
+  box-sizing: border-box;
 }
 
 .recharge-btn {
