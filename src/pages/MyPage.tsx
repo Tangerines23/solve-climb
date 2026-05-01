@@ -24,9 +24,10 @@ import { resetAllData } from '../utils/dataReset';
 import { vibrateShort } from '../utils/haptic';
 import { supabase } from '../utils/supabaseClient';
 import { safeSupabaseQuery } from '../utils/debugFetch';
-import { openLeaderboard } from '../utils/tossGameCenter';
+
 import { APP_CONFIG } from '../config/app';
 import { signInWithGoogle } from '../utils/auth';
+import { handleTossLogin, isTossAppEnvironment } from '../utils/tossLogin';
 import { WithdrawConfirmModal } from '../components/WithdrawConfirmModal';
 import { withdrawAccount } from '../utils/userWithdraw';
 import { calculateTier } from '../constants/tiers';
@@ -93,8 +94,7 @@ export function MyPage() {
   const [alertMessage, setAlertMessage] = useState('');
   const [isResetting, setIsResetting] = useState(false);
   const [_loginError, setLoginError] = useState(false);
-  const [isOpeningLeaderboard, setIsOpeningLeaderboard] = useState(false);
-  const [retryCount, setRetryCount] = useState(0);
+
   const [showPromotionModal, setShowPromotionModal] = useState(false);
   const [tierStars, setTierStars] = useState(0);
   const [showWithdrawConfirm, setShowWithdrawConfirm] = useState(false);
@@ -262,37 +262,19 @@ export function MyPage() {
   };
   */
 
-  // 리더보드 열기 함수
+  // 리더보드 및 개발 중 기능 안내 함수
   const handleOpenLeaderboard = async () => {
-    setIsOpeningLeaderboard(true);
-    setRetryCount(0);
+    // 기능 비활성화 및 개발 중 메시지 표시
+    setToastMessage('현재 개발 중인 기능입니다. 곧 만나보실 수 있어요!');
+    setShowToast(true);
+  };
 
-    try {
-      const result = await openLeaderboard(
-        (message) => {
-          // 에러 메시지를 AlertModal로 표시
-          setAlertMessage(message);
-          setShowAlert(true);
-        },
-        (attempt, maxRetries) => {
-          // 재시도 중일 때 사용자에게 알림
-          setRetryCount(attempt);
-          setToastMessage(`리더보드를 여는 중... (${attempt}/${maxRetries})`);
-          setShowToast(true);
-        }
-      );
-
-      // 결과가 실패이고 메시지가 없으면 기본 메시지 표시
-      if (!result.success && result.message) {
-        setAlertMessage(result.message);
-        setShowAlert(true);
-      } else if (!result.success) {
-        setAlertMessage('리더보드를 열 수 없습니다.');
-        setShowAlert(true);
-      }
-    } finally {
-      setIsOpeningLeaderboard(false);
-      setRetryCount(0);
+  // 토스 로그인 클릭 핸들러
+  const handleTossLoginClick = async () => {
+    const result = await handleTossLogin();
+    if (!result.success && result.error) {
+      setAlertMessage(result.error);
+      setShowAlert(true);
     }
   };
 
@@ -458,9 +440,15 @@ export function MyPage() {
                   <strong className="my-page-guest-highlight">내 기록을 평생 간직하세요.</strong>
                 </h1>
                 <div className="my-page-guest-buttons">
-                  <button className="my-page-guest-login-button" onClick={handleGoogleLogin}>
-                    3초 만에 시작하기
-                  </button>
+                  {isTossAppEnvironment() ? (
+                    <button className="my-page-guest-login-button" onClick={handleTossLoginClick}>
+                      3초 만에 시작하기
+                    </button>
+                  ) : (
+                    <button className="my-page-guest-login-button" onClick={handleGoogleLogin}>
+                      3초 만에 시작하기
+                    </button>
+                  )}
                   <button className="my-page-guest-anonymous-link" onClick={handleAnonymousLogin}>
                     익명 로그인하기
                   </button>
@@ -531,9 +519,9 @@ export function MyPage() {
             totalSolved={stats?.totalSolved || 0}
             maxLevel={stats?.maxLevel}
             bestSubject={formatBestSubject(stats?.bestSubject || null)}
-            isOpeningLeaderboard={isOpeningLeaderboard}
-            retryCount={retryCount}
-            onNavigateHistory={() => navigate(urls.history())}
+            isOpeningLeaderboard={false}
+            retryCount={0}
+            onNavigateHistory={handleOpenLeaderboard}
             onOpenLeaderboard={handleOpenLeaderboard}
           />
 

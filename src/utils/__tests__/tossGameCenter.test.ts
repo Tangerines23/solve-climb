@@ -62,7 +62,7 @@ describe('tossGameCenter', () => {
       const result = await openLeaderboard(onError);
 
       expect(result.success).toBe(false);
-      expect(result.message).toBe('토스 앱에서만 리더보드를 볼 수 있습니다.');
+      expect(result.message).toBe('현재 개발 중인 기능입니다. 곧 만나보실 수 있어요!');
       expect(onError).toHaveBeenCalledWith(result.message);
     });
 

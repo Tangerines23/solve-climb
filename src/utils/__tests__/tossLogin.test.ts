@@ -18,7 +18,7 @@ describe('tossLogin utility', () => {
 
       const result = await handleTossLogin();
       expect(result.success).toBe(false);
-      expect(result.error).toContain('토스 앱에서만');
+      expect(result.error).toContain('현재 개발 중');
     });
 
     it('should return error since web-framework is disabled', async () => {
