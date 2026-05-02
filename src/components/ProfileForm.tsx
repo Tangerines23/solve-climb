@@ -102,7 +102,7 @@ export function ProfileForm({ onComplete, showBackButton = false, onCancel }: Pr
         if (session?.user) {
           // RPC 함수 호출하여 닉네임 업데이트
           supabase
-            .rpc('update_profile_nickname', { p_nickname: sanitizedNickname })
+            .rpc('rpc_update_nickname', { p_nickname: sanitizedNickname })
             .then(({ error }) => {
               if (error) console.error('Failed to sync nickname to Supabase:', error);
               else console.log('Nickname synced to Supabase');

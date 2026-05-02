@@ -370,7 +370,7 @@ export function MyPage() {
     performRedirect();
 
     try {
-      safeSupabaseQuery(supabase.rpc('update_profile_nickname', { p_nickname: nickname })).catch(
+      safeSupabaseQuery(supabase.rpc('rpc_update_nickname', { p_nickname: nickname })).catch(
         () => {}
       );
     } catch {
