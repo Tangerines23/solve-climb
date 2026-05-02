@@ -93,7 +93,6 @@ export function MyPage() {
   const [showAlert, setShowAlert] = useState(false);
   const [alertMessage, setAlertMessage] = useState('');
   const [isResetting, setIsResetting] = useState(false);
-  const [_loginError, setLoginError] = useState(false);
 
   const [showPromotionModal, setShowPromotionModal] = useState(false);
   const [tierStars, setTierStars] = useState(0);
@@ -255,13 +254,6 @@ export function MyPage() {
     window.location.href = `mailto:support@solveclimb.com?subject=${subject}&body=${body}`;
   };
 
-  /*
-  // 게임 로그인 마이그레이션 및 로그인 함수 (현재 미사용)
-  const handleLogin = async () => {
-    ...
-  };
-  */
-
   // 리더보드 및 개발 중 기능 안내 함수
   const handleOpenLeaderboard = async () => {
     // 기능 비활성화 및 개발 중 메시지 표시
@@ -280,8 +272,6 @@ export function MyPage() {
 
   const handleAnonymousLogin = async () => {
     try {
-      setLoginError(false);
-
       // 리다이렉트 경로 저장
       if (redirectPath) {
         storageService.set(STORAGE_KEYS.LOGIN_REDIRECT, redirectPath);
@@ -321,7 +311,6 @@ export function MyPage() {
       console.error('Anonymous login error:', error);
       setToastMessage('익명 로그인 중 오류가 발생했습니다.');
       setShowToast(true);
-      setLoginError(true);
     }
   };
 
@@ -336,7 +325,6 @@ export function MyPage() {
     if (error) {
       setToastMessage(error.message || '구글 로그인을 시작할 수 없습니다.');
       setShowToast(true);
-      setLoginError(true);
     }
     // 성공 시 구글 페이지로 이동하므로 여기서 추가 처리 없음
   };
