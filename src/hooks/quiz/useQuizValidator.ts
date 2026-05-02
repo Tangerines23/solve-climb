@@ -36,8 +36,7 @@ export function useQuizValidator() {
         return null; // 입력 형식 오류 (shake 애니메이션 트리거용)
       }
 
-      const isCorrect =
-        typeof currentQuestion.answer === 'number' ? currentQuestion.answer === answer : false;
+      const isCorrect = Number(currentQuestion.answer) === answer;
 
       return isCorrect;
     },

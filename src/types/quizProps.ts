@@ -1,3 +1,4 @@
+import React from 'react';
 import { QuizQuestion, Category } from '@/types/quiz';
 
 /**
@@ -72,14 +73,14 @@ export interface QuizAnimationState {
  * 퀴즈 게임 핸들러 그룹
  */
 export interface QuizHandlers {
-  onSafetyRopeUsed: () => void;
-  onLastSpurt: () => void;
-  onPause: () => void;
-  generateNewQuestion: () => void;
-  handleSubmit: (e?: React.FormEvent) => void;
   handleGameOver: (reason?: string) => void;
   handleKeypadNumber: (key: string) => void;
   handleQwertyKeyPress: (key: string) => void;
   handleKeypadClear: () => void;
   handleKeypadBackspace: () => void;
+  handleSubmit: (e?: React.FormEvent) => void;
+  onPause: () => void;
+  onSafetyRopeUsed: () => void;
+  onLastSpurt: () => void;
+  generateNewQuestion: () => void;
 }

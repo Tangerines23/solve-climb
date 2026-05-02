@@ -6,6 +6,7 @@ import { urls } from '@/utils/navigation';
 import { LANDMARK_MAPPING } from '@/constants/game';
 import { safeAccess } from '@/utils/validation';
 import { InventoryItem } from '@/types/user';
+import { quizEventBus } from '@/lib/eventBus';
 
 interface UseQuizStartLogicProps {
   stamina: number;
@@ -17,8 +18,6 @@ interface UseQuizStartLogicProps {
   gameMode: string;
   totalQuestions: number;
   handleStaminaAdRecovery: () => Promise<void>;
-  showTipModal: boolean;
-  setShowTipModal: (show: boolean) => void;
 }
 
 export function useQuizStartLogic({
@@ -31,12 +30,8 @@ export function useQuizStartLogic({
   gameMode,
   totalQuestions,
   handleStaminaAdRecovery,
-  showTipModal,
-  setShowTipModal,
 }: UseQuizStartLogicProps) {
   const navigate = useNavigate();
-  const [showStaminaModal, setShowStaminaModal] = useState(false);
-  const [showPromise, setShowPromise] = useState(false);
   const [promiseData] = useState({ rule: '', example: '' });
   const [activeLandmark, setActiveLandmark] = useState<{ icon: string; text: string } | null>(null);
 
@@ -63,12 +58,12 @@ export function useQuizStartLogic({
     async (selectedItems: number[]) => {
       if (gameMode === 'base-camp') {
         analytics.trackQuizStart(worldParam || '', categoryParam || '');
-        setShowTipModal(false);
+        quizEventBus.emit('QUIZ:UI_MODAL_TOGGLE', { modal: 'tip', show: false });
         return;
       }
 
       if (stamina <= 0) {
-        setShowStaminaModal(true);
+        quizEventBus.emit('QUIZ:UI_MODAL_TOGGLE', { modal: 'stamina', show: true });
         return;
       }
 
@@ -88,9 +83,9 @@ export function useQuizStartLogic({
         }
 
         analytics.trackQuizStart(worldParam || '', categoryParam || '');
-        setShowTipModal(false);
+        quizEventBus.emit('QUIZ:UI_MODAL_TOGGLE', { modal: 'tip', show: false });
       } else {
-        setShowStaminaModal(true);
+        quizEventBus.emit('QUIZ:UI_MODAL_TOGGLE', { modal: 'stamina', show: true });
       }
     },
     [
@@ -103,12 +98,11 @@ export function useQuizStartLogic({
       consumeItem,
       setStaminaConsumed,
       setExhausted,
-      setShowTipModal,
     ]
   );
 
   const handlePromiseComplete = useCallback(() => {
-    setShowPromise(false);
+    quizEventBus.emit('QUIZ:UI_MODAL_TOGGLE', { modal: 'promise', show: false });
   }, []);
 
   const onAlertAction = useCallback(
@@ -121,11 +115,6 @@ export function useQuizStartLogic({
   );
 
   return {
-    showTipModal,
-    setShowTipModal,
-    showStaminaModal,
-    setShowStaminaModal,
-    showPromise,
     promiseData,
     activeLandmark,
     altitudePhase,

@@ -1,5 +1,5 @@
 // 문제 생성 로직을 관리하는 커스텀 훅
-import { useCallback } from 'react';
+import { useCallback, useEffect } from 'react';
 import {
   Category,
   QuizQuestion,
@@ -13,7 +13,8 @@ import {
 import { generateQuestion } from '../utils/quizGenerator';
 import { useBaseCampStore } from '../stores/useBaseCampStore';
 import { useDeathNoteStore } from '../stores/useDeathNoteStore';
-import { SURVIVAL_CONFIG, CATEGORY_CONFIG, ANIMATION_CONFIG } from '../constants/game';
+import { SURVIVAL_CONFIG, CATEGORY_CONFIG } from '../constants/game';
+import { quizEventBus } from '../lib/eventBus';
 
 interface UseQuestionGeneratorParams {
   category: Category | null;
@@ -26,17 +27,6 @@ interface UseQuestionGeneratorParams {
   tierParam?: string | null;
   mountainParam?: string | null;
   totalQuestions: number; // 현재 푼 문제 수
-  useSystemKeyboard: boolean;
-  inputRef: React.RefObject<HTMLInputElement | null>;
-  setCurrentQuestion: (question: QuizQuestion | null) => void;
-  setAnswerInput: (value: string) => void;
-  setDisplayValue: (value: string) => void;
-  setIsError: (value: boolean) => void;
-  setShowFlash: (value: boolean) => void;
-  setQuestionAnimation: (value: string) => void;
-  setQuestionKey: (updater: (prev: number) => number) => void;
-  setQuestionStartTime: (time: number | null) => void;
-  onQuestionGenerated?: (question: QuizQuestion, questionId: string) => void;
   preGeneratedQuestions?: QuizQuestion[];
 }
 
@@ -51,17 +41,6 @@ export function useQuestionGenerator({
   tierParam,
   mountainParam,
   totalQuestions,
-  useSystemKeyboard,
-  inputRef,
-  setCurrentQuestion,
-  setAnswerInput,
-  setDisplayValue,
-  setIsError,
-  setShowFlash,
-  setQuestionAnimation,
-  setQuestionKey,
-  setQuestionStartTime,
-  onQuestionGenerated,
   preGeneratedQuestions,
 }: UseQuestionGeneratorParams) {
   // effectiveLevel calculation moved inside generateNewQuestion to react to totalQuestions correctly
@@ -87,16 +66,10 @@ export function useQuestionGenerator({
           ? questions.at(currentQuestionIndex)
           : undefined;
       if (q) {
-        setQuestionAnimation('fade-out');
-        setTimeout(() => {
-          setCurrentQuestion(q);
-          setAnswerInput('');
-          setDisplayValue('');
-          setIsError(false);
-          setShowFlash(false);
-          setQuestionAnimation('fade-in');
-          setQuestionStartTime(Date.now());
-        }, ANIMATION_CONFIG.TRANSITION_DELAY);
+        quizEventBus.emit('QUIZ:QUESTION_GENERATED', {
+          question: q,
+          questionId: q.id || crypto.randomUUID(),
+        });
         return;
       }
     }
@@ -115,15 +88,10 @@ export function useQuestionGenerator({
             ? missedQuestions.at(randomIndex)
             : missedQuestions[0];
 
-        setTimeout(() => {
-          setCurrentQuestion(q ?? null);
-          setAnswerInput('');
-          setDisplayValue('');
-          setIsError(false);
-          setShowFlash(false);
-          setQuestionAnimation('fade-in');
-          setQuestionStartTime(Date.now());
-        }, ANIMATION_CONFIG.TRANSITION_DELAY);
+        quizEventBus.emit('QUIZ:QUESTION_GENERATED', {
+          question: q ?? null,
+          questionId: q?.id || crypto.randomUUID(),
+        });
         return;
       }
       // 오답이 없으면 일반 모드로 전환 (콘솔 알림)
@@ -134,20 +102,10 @@ export function useQuestionGenerator({
     if (preGeneratedQuestions && totalQuestions < preGeneratedQuestions.length) {
       const q = preGeneratedQuestions[totalQuestions];
       if (q) {
-        setQuestionAnimation('fade-out');
-        setTimeout(() => {
-          setCurrentQuestion(q);
-          setAnswerInput('');
-          setDisplayValue('');
-          setIsError(false);
-          setShowFlash(false);
-          setQuestionAnimation('fade-in');
-          setQuestionStartTime(Date.now());
-
-          if (onQuestionGenerated && q.id) {
-            onQuestionGenerated(q, q.id);
-          }
-        }, ANIMATION_CONFIG.TRANSITION_DELAY);
+        quizEventBus.emit('QUIZ:QUESTION_GENERATED', {
+          question: q,
+          questionId: q.id || crypto.randomUUID(),
+        });
         return;
       }
     }
@@ -200,10 +158,9 @@ export function useQuestionGenerator({
       return;
     }
 
-    setQuestionAnimation('fade-out');
-    setTimeout(() => {
-      try {
-        const newQuestion = generateQuestion(
+    quizEventBus.emit('QUIZ:QUESTION_GENERATED', {
+      question:
+        generateQuestion(
           (mountainParam as Mountain) || 'math',
           targetWorld,
           `${targetWorld}-${targetCategory}` as Topic,
@@ -211,39 +168,9 @@ export function useQuestionGenerator({
           difficulty,
           (tierParam as Tier) || 'normal',
           undefined
-        );
-
-        if (newQuestion) {
-          const questionId = crypto.randomUUID();
-          newQuestion.id = questionId; // ID 부여
-          setCurrentQuestion(newQuestion);
-          if (onQuestionGenerated) {
-            onQuestionGenerated(newQuestion, questionId);
-          }
-        }
-      } catch (e) {
-        console.error('Failed to generate question:', e);
-        const fallbackQuestion = generateQuestion('math', 'World1', 'World1-기초', 1, difficulty);
-        setCurrentQuestion(fallbackQuestion);
-      }
-
-      setAnswerInput('');
-      setDisplayValue('');
-      setIsError(false);
-      setShowFlash(false);
-      setQuestionAnimation('fade-in');
-
-      if (gameMode === 'survival' || gameMode === 'infinite') {
-        setQuestionKey((prev) => prev + 1);
-        setQuestionStartTime(Date.now());
-      }
-
-      if (useSystemKeyboard && inputRef.current) {
-        setTimeout(() => {
-          inputRef.current?.focus();
-        }, ANIMATION_CONFIG.KEYBOARD_FOCUS_DELAY);
-      }
-    }, ANIMATION_CONFIG.TRANSITION_DELAY);
+        ) || generateQuestion('math', 'World1', 'World1-기초', 1, difficulty),
+      questionId: crypto.randomUUID(),
+    });
   }, [
     category,
     world,
@@ -254,20 +181,14 @@ export function useQuestionGenerator({
     levelParam,
     tierParam,
     mountainParam,
-    useSystemKeyboard,
-    inputRef,
-    setCurrentQuestion,
-    setAnswerInput,
-    setDisplayValue,
-    setIsError,
-    setShowFlash,
-    setQuestionAnimation,
-    setQuestionKey,
-    setQuestionStartTime,
-    onQuestionGenerated,
     totalQuestions,
     preGeneratedQuestions,
   ]);
+
+  useEffect(() => {
+    const unsubscribe = quizEventBus.on('QUIZ:NEXT_QUESTION_REQUESTED', generateNewQuestion);
+    return () => unsubscribe();
+  }, [generateNewQuestion]);
 
   return {
     generateNewQuestion,

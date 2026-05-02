@@ -183,7 +183,7 @@ export function QuizPreview({
     onLastSpurt: () => {},
     onPause: () => navigate(urls.myPage()), // Pause button acts as back in preview
     generateNewQuestion: () => {},
-    handleSubmit: (e) => {
+    handleSubmit: (e?: React.FormEvent) => {
       e?.preventDefault();
       console.log('Preview submit');
     },

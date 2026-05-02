@@ -1,24 +1,13 @@
 import { useState, useCallback } from 'react';
-import { useQuizStore } from '../stores/useQuizStore';
 import { InventoryItem } from '../types/user';
 import { GameMode } from '../types/quiz';
+import { quizEventBus } from '@/lib/eventBus';
 
 interface UseQuizReviveParams {
   gameMode: GameMode;
   inventory: InventoryItem[];
   minerals: number;
   consumeItem: (itemId: number) => Promise<{ success: boolean; message: string }>;
-  setShowLastChanceModal: (show: boolean) => void;
-  setTimerResetKey: (updater: (prev: number) => number) => void;
-  setShowCountdown: (show: boolean) => void;
-  generateNewQuestion: () => void;
-  animations: {
-    setIsError: (val: boolean) => void;
-    [key: string]: unknown; // Safer than any
-  };
-  setDisplayValue: (val: string) => void;
-  handleGameOver: (reason?: string) => void;
-  setIsSubmitting: (val: boolean) => void;
   onWatchAd: () => void;
   isPreview: boolean;
 }
@@ -31,14 +20,6 @@ export function useQuizRevive({
   inventory,
   minerals,
   consumeItem,
-  setShowLastChanceModal,
-  setTimerResetKey,
-  setShowCountdown,
-  generateNewQuestion,
-  animations,
-  setDisplayValue,
-  handleGameOver,
-  setIsSubmitting,
   onWatchAd,
   isPreview,
 }: UseQuizReviveParams) {
@@ -56,36 +37,24 @@ export function useQuizRevive({
         }
       }
 
-      setShowLastChanceModal(false);
+      quizEventBus.emit('QUIZ:UI_MODAL_TOGGLE', { modal: 'lastChance', show: false });
       setHasUsedLastChance(true);
-      setIsSubmitting(false);
+
+      // Notify success
+      quizEventBus.emit('QUIZ:REVIVE_SUCCESS');
 
       // v2.2: Countdown before resuming correctly for BOTH modes
-      setShowCountdown(true);
+      quizEventBus.emit('QUIZ:UI_MODAL_TOGGLE', { modal: 'countdown', show: true });
 
       if (gameMode === 'time-attack') {
-        // 타임어택: 라스트 스퍼트 사용 시 +15초 추가
-        useQuizStore.getState().setTimeLimit(15);
-        setTimerResetKey((prev) => prev + 1);
+        // 타임어택: 라스트 스퍼트 사용 시 이벤트를 통해 처리
+        quizEventBus.emit('QUIZ:LAST_SPURT');
       } else {
-        // 서바이벌: 새 문제로 진행
-        generateNewQuestion();
-        animations.setIsError(false);
-        setDisplayValue('');
+        // 서바이벌: 새 문제 요청
+        quizEventBus.emit('QUIZ:NEXT_QUESTION_REQUESTED');
       }
     },
-    [
-      gameMode,
-      inventory,
-      consumeItem,
-      setShowLastChanceModal,
-      setTimerResetKey,
-      setShowCountdown,
-      generateNewQuestion,
-      animations,
-      setDisplayValue,
-      setIsSubmitting,
-    ]
+    [gameMode, inventory, consumeItem]
   );
 
   const handlePurchaseAndRevive = useCallback(async () => {
@@ -105,23 +74,23 @@ export function useQuizRevive({
   }, [onWatchAd]);
 
   const handleGiveUp = useCallback(() => {
-    setShowLastChanceModal(false);
-    handleGameOver();
-  }, [setShowLastChanceModal, handleGameOver]);
+    quizEventBus.emit('QUIZ:UI_MODAL_TOGGLE', { modal: 'lastChance', show: false });
+    quizEventBus.emit('QUIZ:GAME_OVER', { reason: 'manual_exit' });
+  }, []);
 
   const stableHandleGameOver = useCallback(
     (reason?: string) => {
       if (hasUsedLastChance || isPreview) {
-        handleGameOver(reason);
+        quizEventBus.emit('QUIZ:GAME_OVER', { reason });
         return;
       }
       if (reason === 'manual_exit') {
-        handleGameOver(reason);
+        quizEventBus.emit('QUIZ:GAME_OVER', { reason });
         return;
       }
-      setShowLastChanceModal(true);
+      quizEventBus.emit('QUIZ:UI_MODAL_TOGGLE', { modal: 'lastChance', show: true });
     },
-    [hasUsedLastChance, isPreview, handleGameOver, setShowLastChanceModal]
+    [hasUsedLastChance, isPreview]
   );
 
   return {

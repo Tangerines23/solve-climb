@@ -1,9 +1,10 @@
 import { useEffect, useState } from 'react';
 import './CountdownOverlay.css';
+import { quizEventBus } from '@/lib/eventBus';
 
 interface CountdownOverlayProps {
   isVisible: boolean;
-  onComplete: () => void;
+  onComplete?: () => void;
 }
 
 export function CountdownOverlay({ isVisible, onComplete }: CountdownOverlayProps) {
@@ -18,7 +19,7 @@ export function CountdownOverlay({ isVisible, onComplete }: CountdownOverlayProp
             clearInterval(timer);
             // Give a slight delay for the "1" to be seen or "Start!"
             setTimeout(() => {
-              onComplete();
+              quizEventBus.emit('QUIZ:COUNTDOWN_COMPLETE');
             }, 500);
             return 0; // or 0
           }

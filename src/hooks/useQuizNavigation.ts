@@ -3,13 +3,13 @@ import { NavigateFunction } from 'react-router-dom';
 import { urls } from '@/utils/navigation';
 import { Category } from '@/types/quiz';
 import { UI_MESSAGES } from '@/constants/ui';
+import { quizEventBus } from '@/lib/eventBus';
 
 interface UseQuizNavigationProps {
   totalQuestions: number;
   showTipModal: boolean;
   refundStamina: () => Promise<{ success: boolean; message: string }>;
   navigate: NavigateFunction;
-  smartHandleGameOver: (reason?: string) => void;
   mountainParam: string | null;
   worldParam: string | null;
   categoryParam: string | null;
@@ -21,7 +21,6 @@ export function useQuizNavigation({
   showTipModal,
   refundStamina,
   navigate,
-  smartHandleGameOver,
   mountainParam,
   worldParam,
   categoryParam,
@@ -68,7 +67,7 @@ export function useQuizNavigation({
     // 2. 게임 도중인 경우 안전 장치(2번 누르기) 작동
     if (showExitConfirmRef.current) {
       if (exitConfirmTimeoutRef.current) clearTimeout(exitConfirmTimeoutRef.current);
-      smartHandleGameOver('manual_exit');
+      quizEventBus.emit('QUIZ:GAME_OVER', { reason: 'manual_exit' });
     } else {
       setToastValue(UI_MESSAGES.BACK_NAV_CONFIRM);
       setShowExitConfirm(true);
@@ -88,7 +87,6 @@ export function useQuizNavigation({
     worldParam,
     categoryParam,
     navigate,
-    smartHandleGameOver,
     searchParams,
   ]);
 
