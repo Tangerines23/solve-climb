@@ -1,9 +1,9 @@
 import { describe, it, expect, beforeEach, vi, afterEach } from 'vitest';
 import { renderHook, act } from '@testing-library/react';
-import { useQuizSubmit } from '../useQuizSubmit';
-import type { QuizQuestion, GameMode } from '../../types/quiz';
-import { useGameStore } from '../../stores/useGameStore';
-import { CLIMB_PER_CORRECT, MAX_POSSIBLE_ANSWER } from '../../constants/game';
+import { useQuizSubmit } from '../quiz/useQuizSubmit';
+import type { QuizQuestion, GameMode } from '@/types/quiz';
+import { useGameStore } from '@/stores/useGameStore';
+import { CLIMB_PER_CORRECT, MAX_POSSIBLE_ANSWER } from '@/constants/game';
 import { quizEventBus } from '@/lib/eventBus';
 
 // Mock dependencies
@@ -79,7 +79,6 @@ describe('useQuizSubmit', () => {
     questionStartTime: Date.now(),
     hapticEnabled: false,
     useSystemKeyboard: false,
-    setIsSubmitting: vi.fn(),
     inputRef: { current: null },
     currentQuestionId: 'q1',
   };
@@ -116,7 +115,6 @@ describe('useQuizSubmit', () => {
       result.current.handleSubmit(mockEvent);
     });
 
-    expect(defaultParams.setIsSubmitting).not.toHaveBeenCalled();
     expect(quizEventBus.emit).not.toHaveBeenCalled();
   });
 
@@ -134,7 +132,6 @@ describe('useQuizSubmit', () => {
       result.current.handleSubmit(mockEvent);
     });
 
-    expect(defaultParams.setIsSubmitting).not.toHaveBeenCalled();
     expect(quizEventBus.emit).not.toHaveBeenCalled();
   });
 
@@ -152,7 +149,6 @@ describe('useQuizSubmit', () => {
       result.current.handleSubmit(mockEvent);
     });
 
-    expect(defaultParams.setIsSubmitting).not.toHaveBeenCalled();
     expect(quizEventBus.emit).not.toHaveBeenCalled();
   });
 
@@ -165,7 +161,7 @@ describe('useQuizSubmit', () => {
       result.current.handleSubmit(mockEvent);
     });
 
-    expect(defaultParams.setIsSubmitting).toHaveBeenCalledWith(true);
+    expect(quizEventBus.emit).toHaveBeenCalledWith('QUIZ:SUBMISSION_STARTED');
     expect(quizEventBus.emit).toHaveBeenCalledWith(
       'QUIZ:ANSWER_SUBMITTED',
       expect.objectContaining({
@@ -190,7 +186,7 @@ describe('useQuizSubmit', () => {
       result.current.handleSubmit(mockEvent);
     });
 
-    expect(defaultParams.setIsSubmitting).toHaveBeenCalledWith(true);
+    expect(quizEventBus.emit).toHaveBeenCalledWith('QUIZ:SUBMISSION_STARTED');
     expect(quizEventBus.emit).toHaveBeenCalledWith(
       'QUIZ:ANSWER_SUBMITTED',
       expect.objectContaining({
@@ -220,7 +216,7 @@ describe('useQuizSubmit', () => {
       result.current.handleSubmit(mockEvent);
     });
 
-    expect(defaultParams.setIsSubmitting).toHaveBeenCalledWith(true);
+    expect(quizEventBus.emit).toHaveBeenCalledWith('QUIZ:SUBMISSION_STARTED');
     expect(quizEventBus.emit).toHaveBeenCalledWith(
       'QUIZ:ANSWER_SUBMITTED',
       expect.objectContaining({
@@ -329,7 +325,7 @@ describe('useQuizSubmit', () => {
       result.current.handleSubmit(mockEvent);
     });
 
-    expect(defaultParams.setIsSubmitting).toHaveBeenCalledWith(true);
+    expect(quizEventBus.emit).toHaveBeenCalledWith('QUIZ:SUBMISSION_STARTED');
     expect(quizEventBus.emit).toHaveBeenCalledWith(
       'QUIZ:ANSWER_SUBMITTED',
       expect.objectContaining({
@@ -358,7 +354,7 @@ describe('useQuizSubmit', () => {
       result.current.handleSubmit(mockEvent);
     });
 
-    expect(defaultParams.setIsSubmitting).toHaveBeenCalledWith(true);
+    expect(quizEventBus.emit).toHaveBeenCalledWith('QUIZ:SUBMISSION_STARTED');
     expect(quizEventBus.emit).toHaveBeenCalledWith(
       'QUIZ:ANSWER_SUBMITTED',
       expect.objectContaining({
@@ -409,7 +405,6 @@ describe('useQuizSubmit', () => {
         answer: '999999',
       })
     );
-    expect(defaultParams.setIsSubmitting).toHaveBeenCalledWith(false);
   });
 
   it('should handle flare usage in survival mode', async () => {
@@ -527,7 +522,7 @@ describe('useQuizSubmit', () => {
       result.current.handleSubmit(mockEvent);
     });
 
-    expect(defaultParams.setIsSubmitting).not.toHaveBeenCalled();
+    expect(quizEventBus.emit).not.toHaveBeenCalled();
   });
 
   it('should handle invalid answer (NaN)', () => {
@@ -550,7 +545,6 @@ describe('useQuizSubmit', () => {
         answer: 'abc',
       })
     );
-    expect(defaultParams.setIsSubmitting).toHaveBeenCalledWith(false);
   });
 
   it('should not call onAnswerSubmitted when currentQuestionId is null', () => {
@@ -727,7 +721,6 @@ describe('useQuizSubmit', () => {
         answer: '-10',
       })
     );
-    expect(defaultParams.setIsSubmitting).toHaveBeenCalledWith(false);
   });
 
   it('should handle answer above MAX_POSSIBLE_ANSWER', () => {
@@ -750,7 +743,6 @@ describe('useQuizSubmit', () => {
         answer: '999999',
       })
     );
-    expect(defaultParams.setIsSubmitting).toHaveBeenCalledWith(false);
   });
   it('should handle invalid answer format by emitting INVALID_INPUT', () => {
     const { result } = renderHook(() =>
@@ -772,7 +764,6 @@ describe('useQuizSubmit', () => {
         answer: 'invalid',
       })
     );
-    expect(defaultParams.setIsSubmitting).toHaveBeenCalledWith(false);
   });
 
   it('should handle currentQuestion.answer as string for math question', () => {
@@ -816,7 +807,7 @@ describe('useQuizSubmit', () => {
       result.current.handleSubmit(mockEvent);
     });
 
-    expect(defaultParams.setIsSubmitting).not.toHaveBeenCalled();
+    expect(quizEventBus.emit).not.toHaveBeenCalled();
   });
 
   it('should return early when answerInput is only whitespace', () => {
@@ -833,7 +824,7 @@ describe('useQuizSubmit', () => {
       result.current.handleSubmit(mockEvent);
     });
 
-    expect(defaultParams.setIsSubmitting).not.toHaveBeenCalled();
+    expect(quizEventBus.emit).not.toHaveBeenCalled();
   });
 
   it('should return early when currentQuestion is null', () => {
@@ -850,7 +841,7 @@ describe('useQuizSubmit', () => {
       result.current.handleSubmit(mockEvent);
     });
 
-    expect(defaultParams.setIsSubmitting).not.toHaveBeenCalled();
+    expect(quizEventBus.emit).not.toHaveBeenCalled();
   });
 
   it('should return early when isSubmitting is true', () => {
@@ -867,7 +858,7 @@ describe('useQuizSubmit', () => {
       result.current.handleSubmit(mockEvent);
     });
 
-    expect(defaultParams.setIsSubmitting).not.toHaveBeenCalled();
+    expect(quizEventBus.emit).not.toHaveBeenCalled();
   });
 
   it('should handle equation quiz with negative answer', () => {
@@ -1026,7 +1017,6 @@ describe('useQuizSubmit', () => {
         answer: 'abc',
       })
     );
-    expect(defaultParams.setIsSubmitting).toHaveBeenCalledWith(false);
   });
 
   it('should handle answer at MAX_POSSIBLE_ANSWER boundary', () => {
@@ -1079,6 +1069,5 @@ describe('useQuizSubmit', () => {
         answer: String(maxAnswer + 1),
       })
     );
-    expect(defaultParams.setIsSubmitting).toHaveBeenCalledWith(false);
   });
 });

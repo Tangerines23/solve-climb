@@ -2,51 +2,47 @@ import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { renderHook, act } from '@testing-library/react';
 import { useQuestionGenerator } from '../useQuestionGenerator';
 import { generateQuestion } from '../../utils/quizGenerator';
-import { generateProblem } from '../../utils/MathProblemGenerator';
-import { generateEquation } from '../../utils/EquationProblemGenerator';
+
+import { quizEventBus } from '../../lib/eventBus';
 
 // Mock dependencies
 vi.mock('../../utils/quizGenerator', () => ({
   generateQuestion: vi.fn(),
 }));
 
-vi.mock('../../utils/MathProblemGenerator', () => ({
-  generateProblem: vi.fn(),
+vi.mock('../../lib/eventBus', () => ({
+  quizEventBus: {
+    emit: vi.fn(),
+    on: vi.fn(() => vi.fn()),
+    off: vi.fn(),
+  },
 }));
 
-vi.mock('../../utils/EquationProblemGenerator', () => ({
-  generateEquation: vi.fn(),
+vi.mock('../../stores/useBaseCampStore', () => ({
+  useBaseCampStore: {
+    getState: () => ({
+      questions: [],
+      currentQuestionIndex: 0,
+      setCompleted: vi.fn(),
+    }),
+  },
+}));
+
+vi.mock('../../stores/useDeathNoteStore', () => ({
+  useDeathNoteStore: {
+    getState: () => ({
+      getQuestionsByCategory: vi.fn().mockReturnValue([]),
+    }),
+  },
 }));
 
 describe('useQuestionGenerator', () => {
-  const mockSetCurrentQuestion = vi.fn();
-  const mockSetAnswerInput = vi.fn();
-  const mockSetDisplayValue = vi.fn();
-  const mockSetIsError = vi.fn();
-  const mockSetShowFlash = vi.fn();
-  const mockSetQuestionAnimation = vi.fn();
-  const mockSetQuestionKey = vi.fn();
-  const mockSetQuestionStartTime = vi.fn();
-  const mockOnQuestionGenerated = vi.fn();
-  const mockInputRef = { current: null };
-
   const defaultParams = {
     category: '기초' as const,
     difficulty: 'easy' as const,
     gameMode: 'time-attack' as const,
     categoryParam: null,
     levelParam: null,
-    useSystemKeyboard: false,
-    inputRef: mockInputRef,
-    setCurrentQuestion: mockSetCurrentQuestion,
-    setAnswerInput: mockSetAnswerInput,
-    setDisplayValue: mockSetDisplayValue,
-    setIsError: mockSetIsError,
-    setShowFlash: mockSetShowFlash,
-    setQuestionAnimation: mockSetQuestionAnimation,
-    setQuestionKey: mockSetQuestionKey,
-    setQuestionStartTime: mockSetQuestionStartTime,
-    onQuestionGenerated: mockOnQuestionGenerated,
     worldParam: null,
     world: 'World1' as const,
     totalQuestions: 0,
@@ -62,10 +58,10 @@ describe('useQuestionGenerator', () => {
     vi.clearAllMocks();
   });
 
-  it('should generate question using generateQuestion when no URL params', async () => {
+  it('should generate question and emit QUIZ:QUESTION_GENERATED event', () => {
     vi.mocked(generateQuestion).mockReturnValue({
       question: '1 + 1',
-      answer: 2, // Changed to number to match interface if needed, or string if mock expects it. Mock implementation usually returns string answer in types? QuizQuestion answer is number or string.
+      answer: 2,
     });
 
     const { result } = renderHook(() => useQuestionGenerator(defaultParams));
@@ -74,35 +70,26 @@ describe('useQuestionGenerator', () => {
       result.current.generateNewQuestion();
     });
 
-    vi.advanceTimersByTime(150);
-
-    await act(async () => {
-      await vi.runAllTimersAsync();
-    });
-
-    // Expect '수학', '덧셈' from defaultParams
-    // But wait, generateQuestion uses (world, category, level, difficulty).
-    // category='수학', topic='덧셈' (subParam).
-    // useQuestionGenerator implementation uses (worldParam || world) and (categoryParam || category).
-    // It passes `targetCategory` to generateQuestion.
-    // defaultParams.category is '수학'.
-    // So it calls generateQuestion('World1', '수학', ...)
-    // But QuizGenerator expects '기초', '대수' etc for World1?
-    // '수학' hits default case?
     expect(generateQuestion).toHaveBeenCalled();
-    expect(mockSetCurrentQuestion).toHaveBeenCalled();
+    expect(quizEventBus.emit).toHaveBeenCalledWith(
+      'QUIZ:QUESTION_GENERATED',
+      expect.objectContaining({
+        question: expect.objectContaining({ question: '1 + 1', answer: 2 }),
+        questionId: expect.any(String),
+      })
+    );
   });
 
-  it('should generate arithmetic problem when subParam is arithmetic', async () => {
-    vi.mocked(generateProblem).mockReturnValue({
-      expression: '2 + 3',
+  it('should generate arithmetic problem with correct params', () => {
+    vi.mocked(generateQuestion).mockReturnValue({
+      question: '2 + 3',
       answer: 5,
     });
 
     const { result } = renderHook(() =>
       useQuestionGenerator({
         ...defaultParams,
-        categoryParam: '기초', // Changed from 'math'
+        categoryParam: '기초',
         levelParam: 1,
       })
     );
@@ -111,21 +98,6 @@ describe('useQuestionGenerator', () => {
       result.current.generateNewQuestion();
     });
 
-    vi.advanceTimersByTime(150);
-
-    await act(async () => {
-      await vi.runAllTimersAsync();
-    });
-
-    // generateQuestion is called with '기초'.
-    // Inside generateQuestion (real implementation, if not mocked?), it calls generateProblem.
-    // BUT generateQuestion IS MOCKED in line 9.
-    // So generateProblem WON'T be called unless we mock generateQuestion implementation to call it?
-    // OR unless we unmock quizGenerator?
-    // If we mock quizGenerator, then we are testing that useQuestionGenerator calls generateQuestion correctly.
-    // We are NOT testing that generateQuestion calls generateProblem.
-    // So this test expectation `expect(generateProblem).toHaveBeenCalled()` is WRONG if generateQuestion is mocked.
-    // We should check if generateQuestion called with correct args.
     expect(generateQuestion).toHaveBeenCalledWith(
       'math',
       'World1',
@@ -137,28 +109,22 @@ describe('useQuestionGenerator', () => {
     );
   });
 
-  it('should generate equation when subParam is equations', async () => {
-    vi.mocked(generateEquation).mockReturnValue({
+  it('should generate equation with correct params', () => {
+    vi.mocked(generateQuestion).mockReturnValue({
       question: 'x + 1 = 3',
-      x: 2,
+      answer: 2,
     });
 
     const { result } = renderHook(() =>
       useQuestionGenerator({
         ...defaultParams,
-        categoryParam: '대수', // Changed from 'math'
+        categoryParam: '대수',
         levelParam: 1,
       })
     );
 
     act(() => {
       result.current.generateNewQuestion();
-    });
-
-    vi.advanceTimersByTime(150);
-
-    await act(async () => {
-      await vi.runAllTimersAsync();
     });
 
     expect(generateQuestion).toHaveBeenCalledWith(
@@ -172,7 +138,7 @@ describe('useQuestionGenerator', () => {
     );
   });
 
-  it('should reset input and display values', async () => {
+  it('should emit event with question data for downstream processing', () => {
     vi.mocked(generateQuestion).mockReturnValue({
       question: '1 + 1',
       answer: 2,
@@ -184,18 +150,18 @@ describe('useQuestionGenerator', () => {
       result.current.generateNewQuestion();
     });
 
-    vi.advanceTimersByTime(150);
-
-    await act(async () => {
-      await vi.runAllTimersAsync();
-    });
-
-    expect(mockSetAnswerInput).toHaveBeenCalledWith('');
-    expect(mockSetDisplayValue).toHaveBeenCalledWith('');
-    expect(mockSetIsError).toHaveBeenCalledWith(false);
+    // The hook now emits events instead of calling setters directly
+    // Input/display reset and error clearing are handled by useQuizEventProcessor
+    expect(quizEventBus.emit).toHaveBeenCalledWith(
+      'QUIZ:QUESTION_GENERATED',
+      expect.objectContaining({
+        question: expect.any(Object),
+        questionId: expect.any(String),
+      })
+    );
   });
 
-  it('should update question key in survival mode', async () => {
+  it('should generate survival mode questions with sliding window algorithm', () => {
     vi.mocked(generateQuestion).mockReturnValue({
       question: '1 + 1',
       answer: 2,
@@ -205,6 +171,7 @@ describe('useQuestionGenerator', () => {
       useQuestionGenerator({
         ...defaultParams,
         gameMode: 'survival',
+        totalQuestions: 10,
       })
     );
 
@@ -212,20 +179,18 @@ describe('useQuestionGenerator', () => {
       result.current.generateNewQuestion();
     });
 
-    vi.advanceTimersByTime(150);
-
-    await act(async () => {
-      await vi.runAllTimersAsync();
-    });
-
-    expect(mockSetQuestionKey).toHaveBeenCalled();
-    expect(mockSetQuestionStartTime).toHaveBeenCalled();
+    // In survival mode, level is dynamically calculated via sliding window
+    // The hook still emits QUIZ:QUESTION_GENERATED
+    expect(quizEventBus.emit).toHaveBeenCalledWith(
+      'QUIZ:QUESTION_GENERATED',
+      expect.objectContaining({
+        question: expect.any(Object),
+        questionId: expect.any(String),
+      })
+    );
   });
 
-  // Skipped legacy fallbacks as generateQuestion is mocked
-  // it('should fallback to legacy generator...', ...)
-
-  it('should handle equations subParam without levelParam', async () => {
+  it('should handle equations subParam without levelParam', () => {
     vi.mocked(generateQuestion).mockReturnValue({
       question: 'x + 1 = 3',
       answer: 2,
@@ -243,12 +208,6 @@ describe('useQuestionGenerator', () => {
       result.current.generateNewQuestion();
     });
 
-    vi.advanceTimersByTime(150);
-
-    await act(async () => {
-      await vi.runAllTimersAsync();
-    });
-
     expect(generateQuestion).toHaveBeenCalledWith(
       'math',
       'World1',
@@ -260,7 +219,7 @@ describe('useQuestionGenerator', () => {
     );
   });
 
-  it('should handle calculus subParam', async () => {
+  it('should handle calculus subParam', () => {
     vi.mocked(generateQuestion).mockReturnValue({
       question: 'd/dx(x^2)',
       answer: 2,
@@ -276,12 +235,6 @@ describe('useQuestionGenerator', () => {
 
     act(() => {
       result.current.generateNewQuestion();
-    });
-
-    vi.advanceTimersByTime(150);
-
-    await act(async () => {
-      await vi.runAllTimersAsync();
     });
 
     expect(generateQuestion).toHaveBeenCalledWith(
@@ -307,27 +260,34 @@ describe('useQuestionGenerator', () => {
       result.current.generateNewQuestion();
     });
 
-    vi.advanceTimersByTime(150);
-
     expect(generateQuestion).not.toHaveBeenCalled();
-    expect(mockSetCurrentQuestion).not.toHaveBeenCalled();
+    expect(quizEventBus.emit).not.toHaveBeenCalledWith(
+      'QUIZ:QUESTION_GENERATED',
+      expect.anything()
+    );
   });
 
-  it('should handle useSystemKeyboard focus', async () => {
-    const mockFocus = vi.fn();
-    const mockInput = { focus: mockFocus } as unknown as HTMLInputElement;
-    const inputRef = { current: mockInput };
+  it('should subscribe to QUIZ:NEXT_QUESTION_REQUESTED event', () => {
+    renderHook(() => useQuestionGenerator(defaultParams));
 
-    vi.mocked(generateQuestion).mockReturnValue({
-      question: '1 + 1',
-      answer: 2,
-    });
+    expect(quizEventBus.on).toHaveBeenCalledWith(
+      'QUIZ:NEXT_QUESTION_REQUESTED',
+      expect.any(Function)
+    );
+  });
+
+  it('should use preGeneratedQuestions when available', () => {
+    const preGenQ = {
+      question: 'Pre-gen question',
+      answer: 42,
+      id: 'pre-gen-id',
+    };
 
     const { result } = renderHook(() =>
       useQuestionGenerator({
         ...defaultParams,
-        useSystemKeyboard: true,
-        inputRef,
+        preGeneratedQuestions: [preGenQ as any],
+        totalQuestions: 0,
       })
     );
 
@@ -335,37 +295,18 @@ describe('useQuestionGenerator', () => {
       result.current.generateNewQuestion();
     });
 
-    vi.advanceTimersByTime(350);
-
-    await act(async () => {
-      await vi.runAllTimersAsync();
-    });
-
-    expect(mockFocus).toHaveBeenCalled();
+    expect(quizEventBus.emit).toHaveBeenCalledWith(
+      'QUIZ:QUESTION_GENERATED',
+      expect.objectContaining({
+        question: preGenQ,
+        questionId: 'pre-gen-id',
+      })
+    );
+    // Should NOT call generateQuestion since preGeneratedQuestions was used
+    expect(generateQuestion).not.toHaveBeenCalled();
   });
 
-  it('should call onQuestionGenerated callback', async () => {
-    vi.mocked(generateQuestion).mockReturnValue({
-      question: '1 + 1',
-      answer: 2,
-    });
-
-    const { result } = renderHook(() => useQuestionGenerator(defaultParams));
-
-    act(() => {
-      result.current.generateNewQuestion();
-    });
-
-    vi.advanceTimersByTime(150);
-
-    await act(async () => {
-      await vi.runAllTimersAsync();
-    });
-
-    expect(mockOnQuestionGenerated).toHaveBeenCalled();
-  });
-
-  it('should handle arithmetic with different levels', async () => {
+  it('should handle arithmetic with different levels', () => {
     vi.mocked(generateQuestion).mockReturnValue({
       question: '5 + 3',
       answer: 8,
@@ -385,12 +326,6 @@ describe('useQuestionGenerator', () => {
         result.current.generateNewQuestion();
       });
 
-      vi.advanceTimersByTime(150);
-
-      await act(async () => {
-        await vi.runAllTimersAsync();
-      });
-
       expect(generateQuestion).toHaveBeenCalledWith(
         'math',
         'World1',
@@ -403,7 +338,7 @@ describe('useQuestionGenerator', () => {
     }
   });
 
-  it('should handle other subParams', async () => {
+  it('should handle other subParams', () => {
     vi.mocked(generateQuestion).mockReturnValue({
       question: 'Test question',
       answer: 42,
@@ -419,12 +354,6 @@ describe('useQuestionGenerator', () => {
 
     act(() => {
       result.current.generateNewQuestion();
-    });
-
-    vi.advanceTimersByTime(150);
-
-    await act(async () => {
-      await vi.runAllTimersAsync();
     });
 
     expect(generateQuestion).toHaveBeenCalledWith(

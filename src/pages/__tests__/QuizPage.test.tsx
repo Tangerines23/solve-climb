@@ -99,6 +99,14 @@ vi.mock('@/stores/useGameStore', () => ({
   useGameStore: mockGameStore,
 }));
 
+vi.mock('@/stores/useDeathNoteStore', () => ({
+  useDeathNoteStore: {
+    getState: () => ({
+      addMissedQuestion: vi.fn(),
+    }),
+  },
+}));
+
 vi.mock('@/stores/useToastStore', () => ({
   useToastStore: vi.fn(() => ({
     showToast: vi.fn(),
@@ -120,10 +128,15 @@ vi.mock('@/hooks/useQuestionGenerator', () => ({
 }));
 
 vi.mock('@/hooks/useQuizInput', () => ({
-  useQuizInput: vi.fn(),
+  useQuizInput: vi.fn(() => ({
+    handleKeypadNumber: vi.fn(),
+    handleQwertyKeyPress: vi.fn(),
+    handleKeypadClear: vi.fn(),
+    handleKeypadBackspace: vi.fn(),
+  })),
 }));
 
-vi.mock('@/hooks/useQuizGameState', () => ({
+vi.mock('@/hooks/quiz/useQuizGameState', () => ({
   useQuizGameState: vi.fn(() => ({
     totalQuestions: 0,
     setTotalQuestions: vi.fn(),
@@ -156,7 +169,7 @@ vi.mock('@/hooks/useQuizAnimations', () => ({
   })),
 }));
 
-vi.mock('@/hooks/useQuizSubmit', () => ({
+vi.mock('@/hooks/quiz/useQuizSubmit', () => ({
   useQuizSubmit: vi.fn(() => ({
     handleSubmit: vi.fn(),
   })),
@@ -173,9 +186,68 @@ vi.mock('@/hooks/useQuizBusinessLogic', () => ({
 vi.mock('@/hooks/useQuizNavigation', () => ({
   useQuizNavigation: vi.fn(() => ({
     showExitConfirm: false,
+    setShowExitConfirm: vi.fn(),
     isFadingOut: false,
+    setIsFadingOut: vi.fn(),
     handleBack: vi.fn(),
+    cancelExitConfirm: vi.fn(),
   })),
+}));
+
+vi.mock('@/hooks/quiz/useQuizModals', () => ({
+  useQuizModals: vi.fn(() => ({
+    modals: {
+      showLastChanceModal: false,
+      showCountdown: false,
+      showSafetyRope: false,
+      showPauseModal: false,
+      showTutorial: false,
+      showPromise: false,
+      showStaminaModal: false,
+      showTipModal: true,
+      isFlarePaused: false,
+    },
+    modalHandlers: {
+      setShowLastChanceModal: vi.fn(),
+      setShowCountdown: vi.fn(),
+      setShowSafetyRope: vi.fn(),
+      setShowPauseModal: vi.fn(),
+      setShowTutorial: vi.fn(),
+      setShowPromise: vi.fn(),
+      setShowStaminaModal: vi.fn(),
+      setShowTipModal: vi.fn(),
+      setIsFlarePaused: vi.fn(),
+    },
+  })),
+}));
+
+vi.mock('@/hooks/quiz/useQuizScoreManager', () => ({
+  useQuizScoreManager: vi.fn(() => ({
+    score: 0,
+    combo: 0,
+    feverLevel: 0,
+    lives: 3,
+    isExhausted: false,
+    handleCorrectAnswer: vi.fn(),
+    handleWrongAnswer: vi.fn(),
+    increaseScore: vi.fn(),
+    decreaseScore: vi.fn(),
+    resetCombo: vi.fn(),
+    incrementCombo: vi.fn(),
+    consumeLife: vi.fn(),
+  })),
+}));
+
+vi.mock('@/hooks/quiz/useQuizEventProcessor', () => ({
+  useQuizEventProcessor: vi.fn(),
+}));
+
+vi.mock('@/lib/eventBus', () => ({
+  quizEventBus: {
+    emit: vi.fn(),
+    on: vi.fn(() => vi.fn()),
+    off: vi.fn(),
+  },
 }));
 
 vi.mock('@/hooks/useQuizStartLogic', () => ({
@@ -226,7 +298,7 @@ vi.mock('@/hooks/useQuizGameplay', () => ({
   })),
 }));
 
-vi.mock('@/hooks/useQuizRevive', () => ({
+vi.mock('@/hooks/quiz/useQuizRevive', () => ({
   useQuizRevive: vi.fn(() => ({
     handleRevive: vi.fn(),
     handlePurchaseAndRevive: vi.fn(),
@@ -478,6 +550,7 @@ describe('QuizPage', () => {
     });
 
     it('should handle pause and resume', async () => {
+      const { quizEventBus } = await import('@/lib/eventBus');
       render(
         <BrowserRouter>
           <QuizPage />
@@ -485,7 +558,10 @@ describe('QuizPage', () => {
       );
 
       fireEvent.click(screen.getByTestId('pause-btn'));
-      expect(mockGameplayHandlers.handlePauseClick).toHaveBeenCalled();
+      expect(quizEventBus.emit).toHaveBeenCalledWith('QUIZ:UI_MODAL_TOGGLE', {
+        modal: 'pause',
+        show: true,
+      });
 
       fireEvent.click(screen.getByTestId('pause-resume-btn'));
       expect(screen.queryByTestId('pause-modal')).toBeNull();

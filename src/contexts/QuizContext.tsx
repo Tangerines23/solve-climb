@@ -11,27 +11,27 @@ import { useNavigate } from 'react-router-dom';
 import { useQuizStore } from '@/stores/useQuizStore';
 import { useQuestionGenerator } from '@/hooks/useQuestionGenerator';
 import { useQuizInput } from '@/hooks/useQuizInput';
-import { useQuizGameState } from '@/hooks/useQuizGameState';
+import { useQuizGameState } from '@/hooks/quiz/useQuizGameState';
 import { useQuizAnimations } from '@/hooks/useQuizAnimations';
-import { useQuizSubmit } from '@/hooks/useQuizSubmit';
+import { useQuizSubmit } from '@/hooks/quiz/useQuizSubmit';
 import { useSettingsStore } from '@/stores/useSettingsStore';
-import { SURVIVAL_CONFIG, CATEGORY_CONFIG, ANIMATION_CONFIG } from '@/constants/game';
-import { useQuizRevive } from '@/hooks/useQuizRevive';
+import { ANIMATION_CONFIG } from '@/constants/game';
+import { useQuizRevive } from '@/hooks/quiz/useQuizRevive';
 import { useUserStore } from '@/stores/useUserStore';
 import { useGameStore } from '@/stores/useGameStore';
 import { useToastStore } from '@/stores/useToastStore';
 import type { Category, World, QuizQuestion } from '@/types/quiz';
 import { ItemFeedbackRef } from '@/components/game/ItemFeedbackOverlay';
 import { useBaseCampStore } from '@/stores/useBaseCampStore';
-import { safeAccess } from '@/utils/validation';
 import { useQuizBusinessLogic } from '@/hooks/useQuizBusinessLogic';
 import { useQuizNavigation } from '@/hooks/useQuizNavigation';
 import { useQuizStartLogic } from '@/hooks/useQuizStartLogic';
 import { useQuizSession } from '@/hooks/useQuizSession';
 import { useQuizGameplay } from '@/hooks/useQuizGameplay';
 import { quizEventBus } from '@/lib/eventBus';
-import { useDeathNoteStore } from '@/stores/useDeathNoteStore';
-import { vibrateLong } from '@/utils/haptic';
+import { useQuizModals } from '@/hooks/quiz/useQuizModals';
+import { useQuizEventProcessor } from '@/hooks/quiz/useQuizEventProcessor';
+import { useQuizScoreManager } from '@/hooks/quiz/useQuizScoreManager';
 import {
   QuizDisplayState,
   QuizAnimationState,
@@ -98,10 +98,9 @@ export function QuizProvider({ children, params }: QuizProviderProps) {
     searchParams,
   } = params;
 
-  const score = useQuizStore((state) => state.score);
+  const { score, feverLevel, lives, isExhausted, consumeLife } = useQuizScoreManager();
+
   const difficulty = useQuizStore((state) => state.difficulty);
-  const increaseScore = useQuizStore((state) => state.increaseScore);
-  const decreaseScore = useQuizStore((state) => state.decreaseScore);
   const resetQuiz = useQuizStore((state) => state.resetQuiz);
   const category = useQuizStore((state) => state.category);
   const world = useQuizStore((state) => state.world);
@@ -138,30 +137,35 @@ export function QuizProvider({ children, params }: QuizProviderProps) {
   const { showToast: showGlobalToast } = useToastStore();
   const animations = useQuizAnimations();
 
-  const [showLastChanceModal, setShowLastChanceModal] = useState(false);
-  const [showCountdown, setShowCountdown] = useState(false);
-  const [showSafetyRope, setShowSafetyRope] = useState(false);
-  const [showPauseModal, setShowPauseModal] = useState(false);
-  const [showTutorial, setShowTutorial] = useState(false);
-  const [showPromise, setShowPromise] = useState(false);
-  const [showStaminaModal, setShowStaminaModal] = useState(false);
-  const [isFlarePaused, setIsFlarePaused] = useState(false);
+  const { modals, modalHandlers: rawModalHandlers } = useQuizModals();
+  const {
+    showLastChanceModal,
+    showCountdown,
+    showSafetyRope,
+    showPauseModal,
+    showTutorial,
+    showPromise,
+    showStaminaModal,
+    showTipModal,
+    isFlarePaused,
+  } = modals;
 
   const {
-    setExhausted,
-    resetGame,
-    isStaminaConsumed,
-    feverLevel,
-    lives,
-    activeItems,
-    usedItems,
-    isExhausted,
-    consumeActiveItem,
-    consumeLife,
-  } = useGameStore();
+    setShowLastChanceModal,
+    setShowCountdown,
+    setShowSafetyRope,
+    setShowPauseModal,
+    setShowTutorial,
+    setShowPromise,
+    setShowStaminaModal,
+    setShowTipModal,
+    setIsFlarePaused,
+  } = rawModalHandlers;
+
+  const { setExhausted, resetGame, isStaminaConsumed, activeItems, usedItems, consumeActiveItem } =
+    useGameStore();
 
   const [questionKey, setQuestionKey] = useState(0);
-  const [showTipModal, setShowTipModal] = useState(true);
   const inputRef = useRef<HTMLInputElement>(null);
   const feedbackRef = useRef<ItemFeedbackRef>(null);
 
@@ -174,7 +178,7 @@ export function QuizProvider({ children, params }: QuizProviderProps) {
     subParam: worldParam,
     levelParam,
     modeParam,
-    isExhausted: useGameStore.getState().isExhausted,
+    isExhausted,
     navigate,
   });
 
@@ -207,16 +211,15 @@ export function QuizProvider({ children, params }: QuizProviderProps) {
     generateNewQuestionRef.current = generateNewQuestion;
   }, [generateNewQuestion]);
 
-  const { handleWatchAdRevive, smartHandleGameOver, handleStaminaAdRecovery } =
-    useQuizBusinessLogic({
-      setToastValue,
-      setShowSlideToast: animations.setShowSlideToast,
-      showGlobalToast,
-      refundStamina,
-      recoverStaminaAds,
-      handleGameOver: gameState.handleGameOver,
-      totalQuestions: gameState.totalQuestions,
-    });
+  const { handleWatchAdRevive, handleStaminaAdRecovery } = useQuizBusinessLogic({
+    setToastValue,
+    setShowSlideToast: animations.setShowSlideToast,
+    showGlobalToast,
+    refundStamina,
+    recoverStaminaAds,
+    handleGameOver: gameState.handleGameOver,
+    totalQuestions: gameState.totalQuestions,
+  });
 
   const {
     handleStartGame,
@@ -236,6 +239,16 @@ export function QuizProvider({ children, params }: QuizProviderProps) {
     totalQuestions: gameState.totalQuestions,
     handleStaminaAdRecovery: () => handleStaminaAdRecovery(setShowStaminaModal),
   });
+
+  const { handleRevive, handlePurchaseAndRevive, handleGiveUp, stableHandleGameOver } =
+    useQuizRevive({
+      gameMode: gameMode as 'time-attack' | 'survival',
+      inventory,
+      minerals,
+      consumeItem,
+      onWatchAd: handleWatchAdRevive,
+      isPreview,
+    });
 
   const {
     showExitConfirm,
@@ -304,16 +317,6 @@ export function QuizProvider({ children, params }: QuizProviderProps) {
     currentQuestionId,
   });
 
-  const { handleRevive, handlePurchaseAndRevive, handleGiveUp, stableHandleGameOver } =
-    useQuizRevive({
-      gameMode: gameMode as 'time-attack' | 'survival',
-      inventory,
-      minerals,
-      consumeItem,
-      onWatchAd: handleWatchAdRevive,
-      isPreview,
-    });
-
   const handleWatchAdAndRevive = useCallback(async () => {
     const success = await handleWatchAdRevive();
     if (success) {
@@ -375,244 +378,42 @@ export function QuizProvider({ children, params }: QuizProviderProps) {
     }
   }, [modeParam, setGameMode]);
 
-  useEffect(() => {
-    // quizEventBus 구독 설정
-    const unsubscribeAnswer = quizEventBus.on('QUIZ:ANSWER_SUBMITTED', (data) => {
-      const { isCorrect, score: earnedDistance, solveTime, answer } = data;
-
-      // 1. 공통 데이터 업데이트
-      gameState.setUserAnswers((prev) => [...prev, parseInt(answer, 10)]);
-      gameState.setSolveTimes((p) => [...p, solveTime]);
-      gameState.setTotalQuestions((p) => p + 1);
-
-      if (currentQuestionId) {
-        gameState.setQuestionIds((prev) => [...prev, currentQuestionId]);
-      }
-
-      if (gameMode === 'infinite' || gameMode === 'survival') {
-        setTotalInfiniteSolved((p) => p + 1);
-      }
-
-      // 2. 결과에 따른 처리
-      if (isCorrect) {
-        increaseScore(earnedDistance);
-        useGameStore.getState().incrementCombo();
-
-        animations.setCardAnimation('correct');
-        animations.setShowFlash(true);
-        feedbackRef.current?.show('SUCCESS', `+${earnedDistance}m`, 'success');
-      } else {
-        decreaseScore(earnedDistance);
-        useGameStore.getState().resetCombo();
-
-        animations.setCardAnimation('incorrect');
-        animations.setIsError(true);
-        if (hapticEnabled) vibrateLong();
-
-        // Damage effect
-        const rect = inputRef.current?.getBoundingClientRect();
-        if (rect) {
-          animations.setDamagePosition({
-            left: `${rect.left + rect.width / 2}px`,
-            top: `${rect.top}px`,
-          });
-        }
-
-        feedbackRef.current?.show('FAILURE', 'Wrong Answer', 'info'); // 'error' 대신 'info' 또는 'success'
-
-        // DeathNote
-        if (currentQuestion) {
-          useDeathNoteStore
-            .getState()
-            .addMissedQuestion(
-              currentQuestion,
-              (worldParam as any) || 'World1',
-              (categoryParam as any) || '기초'
-            );
-          gameState.setWrongAnswers((prev: any) => [...prev, currentQuestion]);
-        }
-
-        // Survival Mode life management
-        if (gameMode === 'survival') {
-          if (lives > 1) {
-            consumeLife();
-          } else {
-            consumeLife();
-            quizEventBus.emit('QUIZ:GAME_OVER', { reason: 'death' });
-            return; // Don't proceed to next question
-          }
-        }
-      }
-
-      // 3. BaseCamp logic
-      if (modeParam === 'base-camp') {
-        useBaseCampStore.getState().submitAnswer(isCorrect, solveTime);
-      }
-
-      // 4. Cleanup and Next Question
-      setTimeout(() => {
-        setAnswerInput('');
-        setDisplayValue('');
-        setIsSubmitting(false);
-        animations.setIsError(false);
-        animations.setCardAnimation('');
-
-        // If not game over, request next question
-        quizEventBus.emit('QUIZ:NEXT_QUESTION_REQUESTED');
-      }, 800);
-    });
-
-    // 다음 문제 요청 구독
-    const unsubscribeNext = quizEventBus.on('QUIZ:NEXT_QUESTION_REQUESTED', () => {
-      generateNewQuestionRef.current();
-    });
-
-    // 문제 생성 완료 구독
-    const unsubscribeQuestion = quizEventBus.on('QUIZ:QUESTION_GENERATED', (data) => {
-      const { question, questionId } = data;
-
-      animations.setQuestionAnimation('fade-out');
-
-      setTimeout(() => {
-        setCurrentQuestion(question);
-        setCurrentQuestionId(questionId);
-        setAnswerInput('');
-        setDisplayValue('');
-        animations.setIsError(false);
-        animations.setShowFlash(false);
-        animations.setQuestionAnimation('fade-in');
-
-        if (gameMode === 'survival' || gameMode === 'infinite') {
-          setQuestionKey((prev) => prev + 1);
-          gameState.setQuestionStartTime(Date.now());
-
-          // Time limit calculation for survival/infinite
-          const { LEVEL_BASE_TIME, PRESSURE_FACTOR } = SURVIVAL_CONFIG.PRESSURE_CONFIG;
-          const cat = question.category || '기초';
-          const categoryMax =
-            (safeAccess(CATEGORY_CONFIG, cat) as { maxLevel: number } | undefined)?.maxLevel ||
-            CATEGORY_CONFIG.default.maxLevel;
-          const normalizedLv = Math.max(1, Math.ceil((question.level! / categoryMax) * 10));
-          const baseTime =
-            normalizedLv <= 10
-              ? Object.entries(LEVEL_BASE_TIME).find(([k]) => Number(k) === normalizedLv)?.[1] || 10
-              : 20 + (normalizedLv - 10) * 2;
-          const currentPressure = Math.max(
-            PRESSURE_FACTOR.MIN,
-            PRESSURE_FACTOR.START - gameState.totalQuestions * PRESSURE_FACTOR.DECAY
-          );
-          setInfiniteTimeLimit(baseTime * currentPressure);
-        }
-
-        if (useSystemKeyboard && inputRef.current) {
-          setTimeout(() => {
-            inputRef.current?.focus();
-          }, ANIMATION_CONFIG.KEYBOARD_FOCUS_DELAY);
-        }
-      }, ANIMATION_CONFIG.TRANSITION_DELAY);
-    });
-
-    // 제출 시작 구독
-    const unsubscribeSubmissionStarted = quizEventBus.on('QUIZ:SUBMISSION_STARTED', () => {
-      setIsSubmitting(true);
-    });
-
-    // 부활 성공 구독
-    const unsubscribeReviveSuccess = quizEventBus.on('QUIZ:REVIVE_SUCCESS', () => {
-      setIsSubmitting(false);
-      animations.setIsError(false);
-      setDisplayValue('');
-    });
-
-    // UI 모달 토글 구독
-    const unsubscribeModalToggle = quizEventBus.on('QUIZ:UI_MODAL_TOGGLE', (data) => {
-      const { modal, show } = data;
-      switch (modal) {
-        case 'lastChance':
-          setShowLastChanceModal(show);
-          break;
-        case 'countdown':
-          setShowCountdown(show);
-          break;
-        case 'safetyRope':
-          setShowSafetyRope(show);
-          break;
-        case 'tip':
-          setShowTipModal(show);
-          break;
-        case 'pause':
-          setShowPauseModal(show);
-          break;
-        case 'stamina':
-          setShowStaminaModal(show);
-          break;
-        case 'tutorial':
-          setShowTutorial(show);
-          break;
-        case 'promise':
-          setShowPromise(show);
-          break;
-      }
-    });
-
-    // 잘못된 입력 구독
-    const unsubscribeInvalid = quizEventBus.on('QUIZ:INVALID_INPUT', () => {
-      animations.setIsError(true);
-      if (hapticEnabled) vibrateLong();
-      setTimeout(() => {
-        animations.setIsError(false);
-        setIsSubmitting(false);
-      }, 500);
-    });
-
-    // 게임 종료 구독
-    const unsubscribeGameOver = quizEventBus.on('QUIZ:GAME_OVER', (data) => {
-      smartHandleGameOver(data?.reason);
-    });
-
-    // 타이머 종료 구독
-    const unsubscribeTimerUp = quizEventBus.on('QUIZ:TIMER_UP', () => {
-      handleTimeUp();
-    });
-
-    // 페널티 구독
-    const unsubscribePenalty = quizEventBus.on('QUIZ:PENALTY', (data) => {
-      useQuizStore.getState().decreaseScore(data.amount);
-    });
-
-    return () => {
-      unsubscribeAnswer();
-      unsubscribeNext();
-      unsubscribeQuestion();
-      unsubscribeSubmissionStarted();
-      unsubscribeReviveSuccess();
-      unsubscribeModalToggle();
-      unsubscribeInvalid();
-      unsubscribeGameOver();
-      unsubscribeTimerUp();
-      unsubscribePenalty();
-    };
-  }, [
-    gameMode,
-    currentQuestionId,
+  // 3. Centralized Event Processor
+  useQuizEventProcessor({
     gameState,
-    smartHandleGameOver,
-    handleTimeUp,
-    increaseScore,
-    decreaseScore,
     animations,
-    hapticEnabled,
-    lives,
-    consumeLife,
-    modeParam,
+    feedbackRef,
+    inputRef,
     currentQuestion,
+    currentQuestionId,
+    gameMode,
+    modeParam,
+    worldParam,
+    categoryParam,
+    lives,
+    hapticEnabled,
+    useSystemKeyboard,
+    generateNewQuestion,
+    smartHandleGameOver: stableHandleGameOver,
+    handleTimeUp,
+    consumeLife,
     setAnswerInput,
     setDisplayValue,
     setIsSubmitting,
-    categoryParam,
-    worldParam,
-    useSystemKeyboard,
-  ]);
+    setCurrentQuestion,
+    setCurrentQuestionId,
+    setQuestionKey,
+    setInfiniteTimeLimit,
+    setTotalInfiniteSolved,
+    setShowLastChanceModal,
+    setShowCountdown,
+    setShowSafetyRope,
+    setShowTipModal,
+    setShowPauseModal,
+    setShowStaminaModal,
+    setShowTutorial,
+    setShowPromise,
+  });
 
   useEffect(() => {
     if (isPreview || isStaminaConsumed) return;

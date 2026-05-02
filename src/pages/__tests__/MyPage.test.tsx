@@ -489,7 +489,9 @@ describe('MyPage', () => {
     });
     const rankBtn = screen.getByText(/명예의 전당/i);
     fireEvent.click(rankBtn);
-    expect(tossUtils.openLeaderboard).toHaveBeenCalled();
+    await waitFor(() => {
+      expect(screen.getByText(/현재 개발 중인 기능입니다/i)).toBeTruthy();
+    });
   });
 
   it('', async () => {
@@ -518,7 +520,9 @@ describe('MyPage', () => {
     await act(async () => {
       fireEvent.click(screen.getByText('Confirm Reset'));
     });
-    expect(screen.getByText(/데이터 초기화 중 오류/i)).toBeTruthy();
+    await waitFor(() => {
+      expect(screen.getByText(/데이터 초기화 중 오류/i)).toBeTruthy();
+    });
   });
 
   it('should handle withdrawal error', async () => {
@@ -580,11 +584,7 @@ describe('MyPage', () => {
     expect(screen.getByText('Failed to load stats')).toBeTruthy();
   });
 
-  it('should open leaderboard with early failure', async () => {
-    (tossUtils.openLeaderboard as any).mockResolvedValueOnce({
-      success: false,
-      message: 'Custom Error',
-    });
+  it('should show development toast when leaderboard button clicked', async () => {
     await act(async () => {
       render(
         <BrowserRouter>
@@ -592,14 +592,13 @@ describe('MyPage', () => {
         </BrowserRouter>
       );
     });
-    fireEvent.click(screen.getByText(/명예의 전당/i));
-
-    await waitFor(() => {
-      expect(screen.getByText('Custom Error')).toBeTruthy();
+    await act(async () => {
+      fireEvent.click(screen.getByText(/명예의 전당/i));
     });
 
-    fireEvent.click(screen.getByTestId('alert-modal'));
-    expect(screen.queryByTestId('alert-modal')).toBeNull();
+    await waitFor(() => {
+      expect(screen.getByText(/현재 개발 중인 기능입니다/i)).toBeTruthy();
+    });
   });
 
   it('should handle profile complete with direct redirect', async () => {

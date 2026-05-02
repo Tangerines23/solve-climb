@@ -1,7 +1,7 @@
 // 게임 상태 관리 로직을 관리하는 커스텀 훅
 import { useState, useCallback } from 'react';
-import { urls } from '../utils/navigation';
-import { GameMode } from '../types/quiz';
+import { urls } from '@/utils/navigation';
+import { GameMode } from '@/types/quiz';
 
 interface UseQuizGameStateParams {
   score: number;

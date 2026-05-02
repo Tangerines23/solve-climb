@@ -1,6 +1,6 @@
 import { useState, useCallback } from 'react';
-import { InventoryItem } from '../types/user';
-import { GameMode } from '../types/quiz';
+import { InventoryItem } from '@/types/user';
+import { GameMode } from '@/types/quiz';
 import { quizEventBus } from '@/lib/eventBus';
 
 interface UseQuizReviveParams {
@@ -12,8 +12,8 @@ interface UseQuizReviveParams {
   isPreview: boolean;
 }
 
-import { ITEM_MAP, ItemMetadata } from '../constants/items';
-import { safeAccess } from '../utils/validation';
+import { ITEM_MAP, ItemMetadata } from '@/constants/items';
+import { safeAccess } from '@/utils/validation';
 
 export function useQuizRevive({
   gameMode,

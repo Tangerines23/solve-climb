@@ -1,7 +1,7 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { renderHook, act } from '@testing-library/react';
-import { useQuizGameState } from '../useQuizGameState';
-import type { GameMode } from '../../types/quiz';
+import { useQuizGameState } from '../quiz/useQuizGameState';
+import type { GameMode } from '@/types/quiz';
 
 describe('useQuizGameState', () => {
   const mockNavigate = vi.fn();

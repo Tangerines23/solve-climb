@@ -521,7 +521,7 @@ export function MyPage() {
             bestSubject={formatBestSubject(stats?.bestSubject || null)}
             isOpeningLeaderboard={false}
             retryCount={0}
-            onNavigateHistory={handleOpenLeaderboard}
+            onNavigateHistory={() => navigate(urls.history())}
             onOpenLeaderboard={handleOpenLeaderboard}
           />
 
