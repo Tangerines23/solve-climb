@@ -1,4 +1,4 @@
-import { Category, World } from '@/types/quiz';
+import { Category, World, QuizQuestion } from '@/types/quiz';
 
 /**
  * 전역 퀴즈 이벤트 타입 정의
@@ -55,7 +55,7 @@ export type QuizEventMap = {
 
   // 문제 생성 완료 이벤트
   'QUIZ:QUESTION_GENERATED': {
-    question: any;
+    question: QuizQuestion;
     questionId: string;
   };
 
@@ -80,13 +80,14 @@ export type QuizEventMap = {
   'QUIZ:REVIVE_SUCCESS': void;
 };
 
-type Handler<T = any> = (data: T) => void;
+type Handler<T = unknown> = (data: T) => void;
+type AnyHandler = Handler<unknown>;
 
 /**
  * 경량 타입 세이프 이벤트 버스
  */
-class EventBus<Events extends Record<string, any>> {
-  private handlers: Map<keyof Events, Set<Handler>> = new Map();
+class EventBus<Events extends Record<string, unknown>> {
+  private handlers: Map<keyof Events, Set<AnyHandler>> = new Map();
 
   /**
    * 이벤트 구독
@@ -95,7 +96,7 @@ class EventBus<Events extends Record<string, any>> {
     if (!this.handlers.has(type)) {
       this.handlers.set(type, new Set());
     }
-    this.handlers.get(type)!.add(handler);
+    this.handlers.get(type)!.add(handler as AnyHandler);
 
     // Unsubscribe function
     return () => this.off(type, handler);
@@ -107,7 +108,7 @@ class EventBus<Events extends Record<string, any>> {
   off<Key extends keyof Events>(type: Key, handler: Handler<Events[Key]>): void {
     const set = this.handlers.get(type);
     if (set) {
-      set.delete(handler);
+      set.delete(handler as AnyHandler);
     }
   }
 
@@ -121,7 +122,7 @@ class EventBus<Events extends Record<string, any>> {
     const data = args[0];
     const set = this.handlers.get(type);
     if (set) {
-      set.forEach((handler) => handler(data));
+      set.forEach((handler) => handler(data as unknown));
     }
   }
 

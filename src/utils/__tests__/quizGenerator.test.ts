@@ -7,6 +7,7 @@ import * as GeometryProblemGenerator from '../GeometryProblemGenerator';
 import * as StatsProblemGenerator from '../StatsProblemGenerator';
 import * as CSProblemGenerator from '../CSProblemGenerator';
 import * as CalculusProblemGenerator from '../CalculusProblemGenerator';
+import { Mountain, World } from '../../types/quiz';
 
 describe('quizGenerator Unit Tests', () => {
   beforeEach(() => {
@@ -59,12 +60,24 @@ describe('quizGenerator Unit Tests', () => {
     });
 
     it('should fallback to LogicProblemGenerator for general unknown world', () => {
-      const q = generateQuestion('general', 'UnknownWorld' as any, 'World1-기초', 1, 'easy');
+      const q = generateQuestion(
+        'general',
+        'UnknownWorld' as unknown as World,
+        'World1-기초',
+        1,
+        'easy'
+      );
       expect(q).toHaveProperty('question');
     });
 
     it('should fallback to MathProblemGenerator for unknown mountain/world', () => {
-      const q = generateQuestion('unknown' as any, 'UnknownWorld' as any, 'World1-기초', 1, 'easy');
+      const q = generateQuestion(
+        'unknown' as unknown as Mountain,
+        'UnknownWorld' as unknown as World,
+        'World1-기초',
+        1,
+        'easy'
+      );
       expect(q).toHaveProperty('question');
     });
   });

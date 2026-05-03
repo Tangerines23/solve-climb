@@ -7,11 +7,47 @@ import { useBaseCampStore } from '@/stores/useBaseCampStore';
 import { vibrateLong } from '@/utils/haptic';
 import { ANIMATION_CONFIG } from '@/constants/game';
 import { calculateDynamicTimeLimit } from '@/utils/quizTimeCalculator';
-import type { QuizQuestion } from '@/types/quiz';
+import type { QuizQuestion, World, Category, WrongAnswer } from '@/types/quiz';
+import { ItemFeedbackRef } from '@/types/feedback';
+
+interface GameState {
+  totalQuestions: number;
+  wrongAnswers: WrongAnswer[];
+  questionStartTime: number | null;
+  solveTimes: number[];
+  gameSessionId: string | null;
+  userAnswers: number[];
+  questionIds: string[];
+  setTotalQuestions: React.Dispatch<React.SetStateAction<number>>;
+  setWrongAnswers: React.Dispatch<React.SetStateAction<WrongAnswer[]>>;
+  setQuestionStartTime: React.Dispatch<React.SetStateAction<number | null>>;
+  setSolveTimes: React.Dispatch<React.SetStateAction<number[]>>;
+  setGameSessionId: React.Dispatch<React.SetStateAction<string | null>>;
+  setUserAnswers: React.Dispatch<React.SetStateAction<number[]>>;
+  setQuestionIds: React.Dispatch<React.SetStateAction<string[]>>;
+  handleGameOver: (reason?: string) => void;
+}
+
+interface Animations {
+  cardAnimation: string;
+  inputAnimation: string;
+  questionAnimation: string;
+  showFlash: boolean;
+  isError: boolean;
+  showSlideToast: boolean;
+  damagePosition: { left: string; top: string };
+  setCardAnimation: React.Dispatch<React.SetStateAction<string>>;
+  setInputAnimation: React.Dispatch<React.SetStateAction<string>>;
+  setQuestionAnimation: React.Dispatch<React.SetStateAction<string>>;
+  setShowFlash: React.Dispatch<React.SetStateAction<boolean>>;
+  setIsError: React.Dispatch<React.SetStateAction<boolean>>;
+  setShowSlideToast: React.Dispatch<React.SetStateAction<boolean>>;
+  setDamagePosition: React.Dispatch<React.SetStateAction<{ left: string; top: string }>>;
+}
 
 interface EventProcessorDeps {
   // Game State
-  gameState: any;
+  gameState: GameState;
   currentQuestion: QuizQuestion | null;
   currentQuestionId: string | null;
   gameMode: string;
@@ -23,8 +59,8 @@ interface EventProcessorDeps {
   categoryParam: string | null;
 
   // Animation & UI
-  animations: any;
-  feedbackRef: React.RefObject<any>;
+  animations: Animations;
+  feedbackRef: React.RefObject<ItemFeedbackRef>;
   inputRef: React.RefObject<HTMLInputElement>;
   hapticEnabled: boolean;
   useSystemKeyboard: boolean;
@@ -152,10 +188,17 @@ export function useQuizEventProcessor(deps: EventProcessorDeps) {
             .getState()
             .addMissedQuestion(
               currentQuestion,
-              (worldParam as any) || 'World1',
-              (categoryParam as any) || '기초'
+              (worldParam as World) || 'World1',
+              (categoryParam as Category) || '기초'
             );
-          gameState.setWrongAnswers((prev: any) => [...prev, currentQuestion]);
+          gameState.setWrongAnswers((prev) => [
+            ...prev,
+            {
+              question: currentQuestion.question,
+              wrongAnswer: answer,
+              correctAnswer: String(currentQuestion.answer),
+            },
+          ]);
         }
 
         // Life management for survival

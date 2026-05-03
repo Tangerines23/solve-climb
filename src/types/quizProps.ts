@@ -31,6 +31,28 @@ export interface QuizDisplayState {
 }
 
 /**
+ * 퀴즈 모달 상태 데이터 그룹
+ */
+export interface QuizModalState {
+  showLastChanceModal: boolean;
+  showCountdown: boolean;
+  showSafetyRope: boolean;
+  showTipModal: boolean;
+  showPauseModal: boolean;
+  showStaminaModal: boolean;
+  showTutorial: boolean;
+  showPromise: boolean;
+}
+
+/**
+ * 오늘의 약속 데이터 형식
+ */
+export interface PromiseData {
+  rule: string;
+  example: string;
+}
+
+/**
  * 퀴즈 모달 핸들러 그룹
  */
 export interface QuizModalHandlers {

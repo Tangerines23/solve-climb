@@ -4,7 +4,7 @@ import { APP_CONFIG } from '../../config/app';
 import { useNavigation } from '@/hooks/useNavigation';
 import { QuizDisplayState, QuizAnimationState, QuizHandlers } from '../../types/quizProps';
 import { QuizQuestion, Category } from '../../types/quiz';
-import { ItemFeedbackRef } from '../game/ItemFeedbackOverlay';
+import { ItemFeedbackRef } from '@/types/feedback';
 import { QuizCard } from '../QuizCard';
 import { QuizContext } from '../../contexts/QuizContext';
 import './QuizPreview.css';
@@ -66,7 +66,7 @@ export function QuizPreview({
     if (mountainParam) {
       const mountainMap = APP_CONFIG.MOUNTAIN_MAP as Record<string, string>;
       if (Object.prototype.hasOwnProperty.call(mountainMap, mountainParam)) {
-        return mountainMap[mountainParam];
+        return Reflect.get(mountainMap, mountainParam);
       }
     }
     if (!categoryParam) return category || '연습';
@@ -76,11 +76,11 @@ export function QuizPreview({
     const categoryMap = APP_CONFIG.CATEGORY_MAP as Record<string, string>;
 
     if (Object.prototype.hasOwnProperty.call(worldMap, categoryParam))
-      return worldMap[categoryParam];
+      return Reflect.get(worldMap, categoryParam);
     if (Object.prototype.hasOwnProperty.call(mountainMap, categoryParam))
-      return mountainMap[categoryParam];
+      return Reflect.get(mountainMap, categoryParam);
     if (Object.prototype.hasOwnProperty.call(categoryMap, categoryParam))
-      return categoryMap[categoryParam];
+      return Reflect.get(categoryMap, categoryParam);
 
     return category || '연습';
   }, [mountainParam, categoryParam, category]);
@@ -91,10 +91,10 @@ export function QuizPreview({
       return APP_CONFIG.CATEGORY_MAP['기초'] || '기초 (Training)';
     }
     if (subParam.startsWith('World')) {
-      const worldName = APP_CONFIG.WORLD_MAP[subParam as keyof typeof APP_CONFIG.WORLD_MAP];
+      const worldName = Reflect.get(APP_CONFIG.WORLD_MAP, subParam);
       if (worldName) return worldName;
     }
-    const catName = APP_CONFIG.CATEGORY_MAP[categoryParam as keyof typeof APP_CONFIG.CATEGORY_MAP];
+    const catName = Reflect.get(APP_CONFIG.CATEGORY_MAP, categoryParam);
     if (catName) return catName;
     if (categoryParam === 'arithmetic' && levelParam !== null) {
       return ARITHMETIC_TOPIC_MAP.get(levelParam) || '사칙연산';
@@ -234,7 +234,7 @@ export function QuizPreview({
         isAnonymous: true,
         feverLevel: 0,
         altitudePhase: 'ground',
-        promiseData: null,
+        promiseData: { rule: '', example: '' },
         activeItems: [],
         usedItems: [],
         score: 0,

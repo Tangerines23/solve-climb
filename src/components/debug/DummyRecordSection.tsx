@@ -11,7 +11,6 @@ export const DummyRecordSection: React.FC = () => {
     setSelectedCategoryId,
     selectedSubjectId,
     setSelectedSubjectId,
-    selectedMode: _selectedMode,
     level,
     setLevel,
     correctCount,
@@ -56,7 +55,9 @@ export const DummyRecordSection: React.FC = () => {
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div className="space-y-1.5">
-            <label className="text-xs font-bold text-gray-400 uppercase tracking-wider">월드 (World)</label>
+            <label className="text-xs font-bold text-gray-400 uppercase tracking-wider">
+              월드 (World)
+            </label>
             <select
               value={selectedWorldId}
               onChange={(e) => setSelectedWorldId(e.target.value)}
@@ -73,7 +74,9 @@ export const DummyRecordSection: React.FC = () => {
 
           <div className="grid grid-cols-2 gap-2">
             <div className="space-y-1.5">
-              <label className="text-xs font-bold text-gray-400 uppercase tracking-wider">카테고리</label>
+              <label className="text-xs font-bold text-gray-400 uppercase tracking-wider">
+                카테고리
+              </label>
               <select
                 value={selectedCategoryId}
                 onChange={(e) => setSelectedCategoryId(e.target.value)}
@@ -88,7 +91,9 @@ export const DummyRecordSection: React.FC = () => {
               </select>
             </div>
             <div className="space-y-1.5">
-              <label className="text-xs font-bold text-gray-400 uppercase tracking-wider">주제 (Subject)</label>
+              <label className="text-xs font-bold text-gray-400 uppercase tracking-wider">
+                주제 (Subject)
+              </label>
               <select
                 value={selectedSubjectId}
                 onChange={(e) => setSelectedSubjectId(e.target.value)}
@@ -107,7 +112,9 @@ export const DummyRecordSection: React.FC = () => {
 
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
           <div className="space-y-1.5">
-            <label className="text-xs font-bold text-gray-400 uppercase tracking-wider">레벨 (1~15)</label>
+            <label className="text-xs font-bold text-gray-400 uppercase tracking-wider">
+              레벨 (1~15)
+            </label>
             <input
               type="number"
               min="1"
@@ -119,7 +126,9 @@ export const DummyRecordSection: React.FC = () => {
             />
           </div>
           <div className="space-y-1.5">
-            <label className="text-xs font-bold text-gray-400 uppercase tracking-wider">정답 수 (0~10)</label>
+            <label className="text-xs font-bold text-gray-400 uppercase tracking-wider">
+              정답 수 (0~10)
+            </label>
             <input
               type="number"
               min="0"
@@ -131,7 +140,9 @@ export const DummyRecordSection: React.FC = () => {
             />
           </div>
           <div className="space-y-1.5">
-            <label className="text-xs font-bold text-gray-400 uppercase tracking-wider">평균 콤보</label>
+            <label className="text-xs font-bold text-gray-400 uppercase tracking-wider">
+              평균 콤보
+            </label>
             <select
               value={avgCombo}
               onChange={(e) => setAvgCombo(parseInt(e.target.value, 10))}
@@ -144,7 +155,9 @@ export const DummyRecordSection: React.FC = () => {
             </select>
           </div>
           <div className="space-y-1.5">
-            <label className="text-xs font-bold text-gray-400 uppercase tracking-wider">반복 (1~100)</label>
+            <label className="text-xs font-bold text-gray-400 uppercase tracking-wider">
+              반복 (1~100)
+            </label>
             <input
               type="number"
               min="1"

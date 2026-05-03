@@ -84,7 +84,6 @@ export function MyPage() {
 
   const nickname = profile?.nickname || '게이머';
 
-
   // 오늘의 챌린지 상태
   const [todayChallenge, setTodayChallenge] = useState<TodayChallenge | null>(null);
 
@@ -129,7 +128,7 @@ export function MyPage() {
     else {
       console.log('[MyPage] Stay on MyPage');
     }
-  }, [redirectPath, navigate]);
+  }, [redirectPath, navigate, urls]);
 
   // 오늘의 챌린지 가져오기
   useEffect(() => {
@@ -140,7 +139,7 @@ export function MyPage() {
       .catch((error) => {
         console.error('Failed to load today challenge:', error);
       });
-  }, [progressMap]);
+  }, [progressMap, flags, getTodayChallenge]);
 
   // 승급 대기 상태 확인 및 모달 표시
   useEffect(() => {
@@ -373,7 +372,15 @@ export function MyPage() {
     } catch {
       // 무시
     }
-  }, [session?.user, profile?.userId, refetch, setProfile, performRedirect]);
+  }, [
+    session?.user,
+    profile?.userId,
+    refetch,
+    setProfile,
+    performRedirect,
+    safeSupabaseQuery,
+    supabase,
+  ]);
 
   // 로그아웃 함수
   const handleLogout = async () => {

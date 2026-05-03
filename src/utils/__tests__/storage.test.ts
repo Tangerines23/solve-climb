@@ -198,7 +198,8 @@ describe('StorageUtil', () => {
       storageUtil.set('score-data', invalidData);
 
       const defaultValue = { score: 0 };
-      const validator = (val: any): val is { score: number } => typeof val?.score === 'number';
+      const validator = (val: unknown): val is { score: number } =>
+        typeof (val as { score?: unknown })?.score === 'number';
 
       const result = storageUtil.get('score-data', defaultValue, validator);
       expect(result).toEqual(defaultValue);

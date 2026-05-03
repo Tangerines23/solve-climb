@@ -38,7 +38,9 @@ describe('resilientLazy', () => {
   it('성공적으로 컴포넌트를 로드하면 sessionStorage를 정리하고 컴포넌트를 반환해야 함', async () => {
     mockImportFn.mockResolvedValueOnce(mockComponent);
 
-    const lazyComponent = resilientLazy(mockImportFn, 'TestComponent') as any;
+    const lazyComponent = resilientLazy(mockImportFn, 'TestComponent') as {
+      _payload: { _result: () => Promise<unknown> };
+    };
     const factory = lazyComponent._payload._result;
 
     const result = await factory();
@@ -56,7 +58,9 @@ describe('resilientLazy', () => {
       .mockRejectedValueOnce(networkError)
       .mockResolvedValueOnce(mockComponent);
 
-    const lazyComponent = resilientLazy(mockImportFn, 'RetryComponent') as any;
+    const lazyComponent = resilientLazy(mockImportFn, 'RetryComponent') as {
+      _payload: { _result: () => Promise<unknown> };
+    };
     const factory = lazyComponent._payload._result;
 
     const promise = factory();
@@ -75,13 +79,15 @@ describe('resilientLazy', () => {
     const runtimeError = new Error('Normal runtime error');
     mockImportFn.mockRejectedValueOnce(runtimeError);
 
-    const lazyComponent = resilientLazy(mockImportFn, 'RuntimeErrorComp') as any;
+    const lazyComponent = resilientLazy(mockImportFn, 'RuntimeErrorComp') as {
+      _payload: { _result: () => Promise<unknown> };
+    };
     const factory = lazyComponent._payload._result;
 
     const promise = factory();
     promise.catch(() => {}); // Swallow global unhandled rejection
 
-    let caughtError: any;
+    let caughtError: unknown;
     try {
       await promise;
     } catch (e) {
@@ -89,7 +95,7 @@ describe('resilientLazy', () => {
     }
 
     expect(caughtError).toBeDefined();
-    expect(caughtError.message).toBe('Normal runtime error');
+    expect((caughtError as Error).message).toBe('Normal runtime error');
     expect(mockImportFn).toHaveBeenCalledTimes(1);
     expect(logger.warn).not.toHaveBeenCalled();
   });
@@ -98,7 +104,9 @@ describe('resilientLazy', () => {
     const networkError = new Error('Loading chunk failed');
     mockImportFn.mockRejectedValue(networkError);
 
-    const lazyComponent = resilientLazy(mockImportFn, 'FailComponent') as any;
+    const lazyComponent = resilientLazy(mockImportFn, 'FailComponent') as {
+      _payload: { _result: () => Promise<unknown> };
+    };
     const factory = lazyComponent._payload._result;
 
     const promise = factory();
@@ -108,7 +116,7 @@ describe('resilientLazy', () => {
     await vi.runAllTimersAsync();
     await vi.runAllTimersAsync();
 
-    let caughtError: any;
+    let caughtError: unknown;
     try {
       await promise;
     } catch (e) {
@@ -116,8 +124,13 @@ describe('resilientLazy', () => {
     }
 
     expect(caughtError).toBeDefined();
-    expect(caughtError.isChunkLoadError).toBe(true);
-    expect(caughtError.componentName).toBe('FailComponent');
+    expect(
+      (caughtError as Error & { isChunkLoadError?: boolean; componentName?: string })
+        .isChunkLoadError
+    ).toBe(true);
+    expect(
+      (caughtError as Error & { isChunkLoadError?: boolean; componentName?: string }).componentName
+    ).toBe('FailComponent');
 
     expect(logger.error).toHaveBeenCalled();
     expect(mockImportFn).toHaveBeenCalledTimes(3);

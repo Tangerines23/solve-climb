@@ -1,6 +1,6 @@
 import { useState, useCallback } from 'react';
 import { supabase } from '../utils/supabaseClient';
-import { useMyPageStats } from './useMyPageStats';
+import { useMyPageStats, type MyPageStats } from './useMyPageStats';
 import { useUserStore } from '../stores/useUserStore';
 import { storageService, STORAGE_KEYS } from '../services';
 import type { DebugSnapshot } from '../types/storage';
@@ -8,7 +8,7 @@ import { STATUS_TYPES, UI_MESSAGES } from '../constants/ui';
 import { APP_CONFIG } from '../config/app';
 
 export interface DataResetDebugBridge {
-  stats: any;
+  stats: MyPageStats | null;
   isResetting: boolean;
   message: { type: string; text: string } | null;
   isDeleting: boolean;

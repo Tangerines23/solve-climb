@@ -3,31 +3,23 @@ import { supabase } from '../utils/supabaseClient';
 import { useUserStore } from '../stores/useUserStore';
 import { useDebugStore } from '../stores/useDebugStore';
 import { useMyPageStats } from './useMyPageStats';
-import {
-  getPresetHistories,
-  clearPresetHistory,
-  debugPresets,
-} from '../utils/debugPresets';
-import { 
-  type CustomPreset, 
-  type DebugPreset,
-  type PresetHistory 
-} from '../types/debug';
+import { getPresetHistories, clearPresetHistory, debugPresets } from '../utils/debugPresets';
+import { type CustomPreset, type DebugPreset, type PresetHistory } from '../types/debug';
 import { useDebugActions } from './useDebugActions';
 import { verifySync, type SyncResult } from '../utils/debugSync';
 
 export type { PresetHistory, CustomPreset, SyncResult, DebugPreset };
 export { debugPresets };
 
-let debugBridge: {
+let _debugBridge: {
   setMinerals: (val: number) => Promise<void>;
   setStamina: (val: number) => Promise<void>;
   setTimeLimit: (val: number) => void;
   fetchUserData: () => Promise<void>;
 } | null = null;
 
-export const registerDebugBridge = (bridge: typeof debugBridge): void => {
-  debugBridge = bridge;
+export const registerDebugBridge = (bridge: typeof _debugBridge): void => {
+  _debugBridge = bridge;
 };
 
 export function useQuickActionsDebugBridge() {
@@ -62,7 +54,9 @@ export function useQuickActionsDebugBridge() {
 
   useEffect(() => {
     const checkUser = async () => {
-      const { data: { user } } = await supabase.auth.getUser();
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
       if (user) {
         const { count } = await supabase
           .from('profiles')
@@ -80,7 +74,9 @@ export function useQuickActionsDebugBridge() {
 
     checkUser();
 
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((_event, session) => {
       if (session) {
         checkUser();
         useUserStore.getState().fetchUserData();
@@ -94,13 +90,13 @@ export function useQuickActionsDebugBridge() {
     };
   }, []);
 
-  const { 
-    applyPreset, 
-    getCustomPresets, 
-    saveCustomPreset, 
-    deleteCustomPreset, 
-    exportCustomPresets, 
-    importCustomPresets 
+  const {
+    applyPreset,
+    getCustomPresets,
+    saveCustomPreset,
+    deleteCustomPreset,
+    exportCustomPresets,
+    importCustomPresets,
   } = useDebugActions();
 
   useEffect(() => {
@@ -131,7 +127,9 @@ export function useQuickActionsDebugBridge() {
     try {
       setIsApplyingPreset(true);
       setPresetMessage(null);
-      const { data: { session } } = await supabase.auth.getSession();
+      const {
+        data: { session },
+      } = await supabase.auth.getSession();
       const userId = session?.user?.id || 'anonymous-debug-user';
       await applyPreset(presetId, userId, refetch);
       setPresetMessage({ type: 'success', text: '프리셋이 적용되었습니다.' });
@@ -158,7 +156,9 @@ export function useQuickActionsDebugBridge() {
     try {
       setIsVerifyingSync(true);
       setSyncResult(null);
-      const { data: { session } } = await supabase.auth.getSession();
+      const {
+        data: { session },
+      } = await supabase.auth.getSession();
       if (!session?.user) {
         setPresetMessage({ type: 'error', text: '로그인이 필요합니다.' });
         return;

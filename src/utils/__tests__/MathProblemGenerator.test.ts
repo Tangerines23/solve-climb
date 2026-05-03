@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { generateProblem, STAGES } from '../MathProblemGenerator';
+import { generateProblem, STAGES, type StageConfig } from '../MathProblemGenerator';
 
 describe('MathProblemGenerator', () => {
   const mockRng = {
@@ -74,7 +74,7 @@ describe('MathProblemGenerator', () => {
     it('should use fallback when generation fails 100 times', () => {
       // Stub STAGES[0].type to something that will throw in generation
       const originalType = STAGES[0].type;
-      (STAGES[0] as any).type = 'invalid';
+      (STAGES[0] as unknown as { type: string }).type = 'invalid';
 
       const problem = generateProblem(1, 'easy', 'normal', mockRng);
       expect(problem.expression).toBe('1 + 1');
@@ -98,12 +98,12 @@ describe('MathProblemGenerator', () => {
     });
 
     it('should handle time problems', () => {
-      const timeStage = {
+      const timeStage: StageConfig = {
         id: 99,
         world: 9,
         description: 'Time Test',
-        type: 'time' as const,
-        operators: ['+'] as any,
+        type: 'time',
+        operators: ['+'],
         operandCount: 2,
         ranges: [
           { min: 1, max: 23 },
@@ -111,7 +111,7 @@ describe('MathProblemGenerator', () => {
         ],
       };
 
-      (STAGES as any).push(timeStage);
+      STAGES.push(timeStage);
 
       const problem = generateProblem(99, 'easy', 'normal', mockRng);
       expect(problem.expression).toContain('분');

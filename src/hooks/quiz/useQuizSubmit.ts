@@ -1,6 +1,6 @@
 // 답안 제출 로직을 관리하는 커스텀 훅
 import { useCallback, FormEvent } from 'react';
-import { QuizQuestion, GameMode } from '@/types/quiz';
+import { QuizQuestion, GameMode, Category, World } from '@/types/quiz';
 import { useGameStore } from '@/stores/useGameStore';
 import { useQuizValidator } from '@/hooks/quiz/useQuizValidator';
 import { useQuizScoring } from '@/hooks/quiz/useQuizScoring';
@@ -74,15 +74,15 @@ export function useQuizSubmit({
       // 이 이벤트가 모든 후속 처리(점수 계산, 애니메이션, 피드백, 다음 문제 요청 등)를 트리거합니다.
       quizEventBus.emit('QUIZ:ANSWER_SUBMITTED', {
         questionId: currentQuestionId || '',
-        category: (categoryParam || '기초') as any,
-        world: (subParam || 'World1') as any,
+        category: (categoryParam as Category) || '기초',
+        world: (subParam as World) || 'World1',
         isCorrect,
         answer: answerInput,
         score: earnedDistance,
         combo: isCorrect ? combo + 1 : 0,
         timestamp: Date.now(),
         solveTime, // solveTime도 함께 보냄
-      } as any);
+      });
 
       // Note: setIsSubmitting(false)는 애니메이션이나 다음 문제 전환 후
       // QuizContext의 리스너에서 처리될 수 있도록 하거나,

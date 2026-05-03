@@ -88,9 +88,12 @@ export function useQuestionGenerator({
             ? missedQuestions.at(randomIndex)
             : missedQuestions[0];
 
+        const resolvedQuestion = q ?? missedQuestions[0];
+        if (!resolvedQuestion) return;
+
         quizEventBus.emit('QUIZ:QUESTION_GENERATED', {
-          question: q ?? null,
-          questionId: q?.id || crypto.randomUUID(),
+          question: resolvedQuestion,
+          questionId: resolvedQuestion.id || crypto.randomUUID(),
         });
         return;
       }
@@ -100,7 +103,7 @@ export function useQuestionGenerator({
 
     // 1.5. 세션 사전 생성 문제 체크 (서버 검증용)
     if (preGeneratedQuestions && totalQuestions < preGeneratedQuestions.length) {
-      const q = preGeneratedQuestions[totalQuestions];
+      const q = preGeneratedQuestions.at(totalQuestions);
       if (q) {
         quizEventBus.emit('QUIZ:QUESTION_GENERATED', {
           question: q,
@@ -125,7 +128,7 @@ export function useQuestionGenerator({
       const isTrap = Math.random() < TRAP_PROBABILITY && baseLevel > TRAP_DELTA_MIN;
 
       const categoryMax = Object.prototype.hasOwnProperty.call(CATEGORY_CONFIG, targetCategory)
-        ? CATEGORY_CONFIG[targetCategory as keyof typeof CATEGORY_CONFIG].maxLevel
+        ? Reflect.get(CATEGORY_CONFIG, targetCategory).maxLevel
         : CATEGORY_CONFIG.default.maxLevel;
 
       // v2.4 Note: Theoretically baseLevel can grow infinitely.

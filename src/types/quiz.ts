@@ -74,3 +74,12 @@ export type Tier = 'normal' | 'hard';
 
 // 시간 제한 타입 (초 단위)
 export type TimeLimit = 10 | 15 | 60 | 120 | 180; // 10s/15s(Revive), 1min, 2min, 3min
+
+/**
+ * 오답 정보 인터페이스
+ */
+export interface WrongAnswer {
+  question: string;
+  wrongAnswer: string;
+  correctAnswer: string;
+}

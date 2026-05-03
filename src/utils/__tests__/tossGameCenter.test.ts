@@ -28,7 +28,7 @@ describe('tossGameCenter', () => {
   describe('environment detection', () => {
     it('should identify non-toss environment', async () => {
       vi.stubGlobal('location', { hostname: 'solve-climb.com' });
-      delete (global.window as any).ReactNativeWebView;
+      delete (global.window as Window & { ReactNativeWebView?: unknown }).ReactNativeWebView;
 
       const result = await submitScoreToLeaderboard(100);
       expect(result).toBe(false);
@@ -36,7 +36,7 @@ describe('tossGameCenter', () => {
     });
 
     it('should identify toss environment', async () => {
-      (global.window as any).ReactNativeWebView = {};
+      (global.window as Window & { ReactNativeWebView?: unknown }).ReactNativeWebView = {};
 
       const result = await submitScoreToLeaderboard(100);
       // Since @apps-in-toss/web-framework is commented out in source, it returns false
@@ -46,7 +46,7 @@ describe('tossGameCenter', () => {
     it('should handle local development simulation', async () => {
       // Mock window.location.hostname
       vi.stubGlobal('location', { hostname: 'localhost' });
-      delete (global.window as any).ReactNativeWebView;
+      delete (global.window as Window & { ReactNativeWebView?: unknown }).ReactNativeWebView;
 
       const result = await submitScoreToLeaderboard(100);
       expect(result).toBe(true); // isLocalDevelopment && !isTossAppEnvironment returns true
@@ -56,7 +56,7 @@ describe('tossGameCenter', () => {
   describe('openLeaderboard', () => {
     it('should return error message in browser environment', async () => {
       vi.stubGlobal('location', { hostname: 'solve-climb.com' });
-      delete (global.window as any).ReactNativeWebView;
+      delete (global.window as Window & { ReactNativeWebView?: unknown }).ReactNativeWebView;
 
       const onError = vi.fn();
       const result = await openLeaderboard(onError);
@@ -67,7 +67,7 @@ describe('tossGameCenter', () => {
     });
 
     it('should handle errors and return friendly messages', async () => {
-      (global.window as any).ReactNativeWebView = {};
+      (global.window as Window & { ReactNativeWebView?: unknown }).ReactNativeWebView = {};
 
       const result = await openLeaderboard();
       expect(result.success).toBe(false);
@@ -117,7 +117,7 @@ describe('tossGameCenter', () => {
     it('should handle errors in openLeaderboard and collect debug info', async () => {
       // Force an error inside collectDebugInfo by making something it relies on throw
       // Since it uses isTossAppEnvironment which is safe, let's trigger the catch in openLeaderboard
-      (global.window as any).ReactNativeWebView = {};
+      (global.window as Window & { ReactNativeWebView?: unknown }).ReactNativeWebView = {};
 
       // We can't easily force an error in the try block of openLeaderboard because it's mostly synchronous calls
       // but we can mock isTossAppEnvironment to throw if we were using a real mock,

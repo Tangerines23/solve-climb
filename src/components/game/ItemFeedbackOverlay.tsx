@@ -1,9 +1,7 @@
 import { useState, useImperativeHandle, forwardRef } from 'react';
 import './ItemFeedbackOverlay.css';
 
-export interface ItemFeedbackRef {
-  show: (text: string, subText?: string, type?: 'success' | 'info') => void;
-}
+import { ItemFeedbackRef } from '@/types/feedback';
 
 export const ItemFeedbackOverlay = forwardRef<ItemFeedbackRef, object>((_, ref) => {
   const [isVisible, setIsVisible] = useState(false);

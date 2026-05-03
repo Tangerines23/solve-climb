@@ -53,7 +53,7 @@ export const performanceMonitor = {
       });
 
       observer.observe({ type: entryType, buffered: true });
-    } catch (_e) {
+    } catch {
       // 일부 구형 브라우저에서는 지원되지 않을 수 있음
     }
   },

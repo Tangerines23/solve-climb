@@ -7,13 +7,11 @@ import { CLIMB_PER_CORRECT, MAX_POSSIBLE_ANSWER } from '@/constants/game';
 import { quizEventBus } from '@/lib/eventBus';
 
 // Mock dependencies
-vi.mock('../../stores/useGameStore', () => {
-  const mockUseGameStore = vi.fn();
-  (mockUseGameStore as any).getState = vi.fn(() => ({ feverLevel: 0 }));
-  return {
-    useGameStore: mockUseGameStore,
-  };
-});
+vi.mock('../../stores/useGameStore', () => ({
+  useGameStore: Object.assign(vi.fn(), {
+    getState: vi.fn(() => ({ feverLevel: 0 })),
+  }),
+}));
 
 vi.mock('../../utils/haptic', () => ({
   vibrateMedium: vi.fn(),
@@ -40,19 +38,7 @@ const createMockEvent = () =>
     stopPropagation: vi.fn(),
   }) as unknown as React.FormEvent;
 
-// 2. Mock GameStore Helper
-type MockGameStore = {
-  incrementCombo: ReturnType<typeof vi.fn>;
-  resetCombo: ReturnType<typeof vi.fn>;
-  isExhausted: boolean;
-  activeItems: string[];
-  consumeActiveItem: ReturnType<typeof vi.fn>;
-  lives: number;
-  consumeLife: ReturnType<typeof vi.fn>;
-  feverLevel?: number;
-};
-
-const defaultGameStoreState: MockGameStore = {
+const defaultGameStoreState = {
   incrementCombo: vi.fn(),
   resetCombo: vi.fn(),
   isExhausted: false,
@@ -61,7 +47,7 @@ const defaultGameStoreState: MockGameStore = {
   lives: 3,
   consumeLife: vi.fn(),
   feverLevel: 0,
-};
+} as unknown as ReturnType<typeof useGameStore>;
 
 describe('useQuizSubmit', () => {
   const mockQuestion: QuizQuestion = {
@@ -87,7 +73,7 @@ describe('useQuizSubmit', () => {
     vi.clearAllMocks();
     vi.useFakeTimers();
     vi.setSystemTime(new Date('2026-04-18T00:00:00Z'));
-    vi.mocked(useGameStore).mockReturnValue(defaultGameStoreState as any);
+    vi.mocked(useGameStore).mockReturnValue(defaultGameStoreState);
   });
 
   afterEach(() => {
@@ -586,7 +572,7 @@ describe('useQuizSubmit', () => {
 
   it('should not focus input when useSystemKeyboard is false', () => {
     const mockFocus = vi.fn();
-    const mockInput = { focus: mockFocus } as any;
+    const mockInput = { focus: mockFocus } as unknown as HTMLInputElement;
     const inputRef = { current: mockInput };
 
     const { result } = renderHook(() =>
@@ -772,7 +758,7 @@ describe('useQuizSubmit', () => {
         ...defaultParams,
         currentQuestion: {
           question: '5 + 3 = ?',
-          answer: '8' as any, // String answer
+          answer: '8' as unknown as number, // String answer
         },
         answerInput: '8',
       })

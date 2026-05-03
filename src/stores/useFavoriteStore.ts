@@ -39,7 +39,7 @@ export const useFavoriteStore = create<FavoriteState>()(
           get().removeFavorite(existingId);
         } else {
           // 즐겨찾기 추가 (id 미입력 시 자동 생성)
-          const { id: _omit, ...rest } = favorite;
+          const { id: _, ...rest } = favorite;
           const id = favorite.id ?? generateFavoriteId(favorite.categoryId, favorite.subCategoryId);
           set((state) => ({
             favorites: [{ ...rest, id, timestamp: Date.now() }, ...state.favorites],

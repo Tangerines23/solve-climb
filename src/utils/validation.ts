@@ -73,8 +73,8 @@ export const safeAccess = <T extends object>(
   if (!obj || key === null || key === undefined) return undefined;
   const keyStr = String(key);
   if (Object.prototype.hasOwnProperty.call(obj, keyStr)) {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any, security/detect-object-injection
-    return (obj as Record<string, any>)[keyStr];
+    // eslint-disable-next-line security/detect-object-injection
+    return (obj as Record<string, unknown>)[keyStr];
   }
   return undefined;
 };

@@ -1,6 +1,7 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { render, screen, act } from '@testing-library/react';
-import { ItemFeedbackOverlay, ItemFeedbackRef } from '../game/ItemFeedbackOverlay';
+import { ItemFeedbackOverlay } from '../game/ItemFeedbackOverlay';
+import { ItemFeedbackRef } from '@/types/feedback';
 import React, { useRef } from 'react';
 
 describe('ItemFeedbackOverlay', () => {

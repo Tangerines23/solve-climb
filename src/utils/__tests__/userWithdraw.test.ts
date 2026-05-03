@@ -30,7 +30,7 @@ vi.mock('../../stores/useProfileStore', () => {
     const state = { clearProfile: vi.fn() };
     return typeof selector === 'function' ? selector(state) : state;
   });
-  (mockStore as any).getState = vi.fn(() => ({ clearProfile: vi.fn() }));
+  Object.assign(mockStore, { getState: vi.fn(() => ({ clearProfile: vi.fn() })) });
   return { useProfileStore: mockStore };
 });
 
@@ -39,10 +39,11 @@ vi.mock('../../stores/useLevelProgressStore', () => {
     const state = { resetProgress: vi.fn().mockResolvedValue(undefined) };
     return typeof selector === 'function' ? selector(state) : state;
   });
-  (mockStore as any).getState = vi.fn(() => ({ resetProgress: vi.fn().mockResolvedValue(undefined) }));
+  Object.assign(mockStore, {
+    getState: vi.fn(() => ({ resetProgress: vi.fn().mockResolvedValue(undefined) })),
+  });
   return { useLevelProgressStore: mockStore };
 });
-
 
 vi.mock('../errorHandler', () => ({
   logError: vi.fn(),
@@ -72,7 +73,7 @@ describe('userWithdraw', () => {
     vi.mocked(supabase.auth.getSession).mockResolvedValue({
       data: { session: mockSession },
       error: null,
-    } as any);
+    } as unknown as { data: { session: unknown }; error: null });
 
     fetchMock.mockResolvedValue(new Response(JSON.stringify({ success: true }), { status: 200 }));
 
@@ -95,7 +96,7 @@ describe('userWithdraw', () => {
     vi.mocked(supabase.auth.getSession).mockResolvedValue({
       data: { session: null },
       error: null,
-    } as any);
+    } as unknown as { data: { session: unknown }; error: null });
 
     const result = await withdrawAccount(mockClearProfile, mockResetProgress);
 
@@ -111,7 +112,7 @@ describe('userWithdraw', () => {
     vi.mocked(supabase.auth.getSession).mockResolvedValue({
       data: { session: mockSession },
       error: null,
-    } as any);
+    } as unknown as { data: { session: unknown }; error: null });
 
     fetchMock.mockResolvedValueOnce(
       new Response(JSON.stringify({ error: 'Server error' }), {
@@ -131,18 +132,20 @@ describe('userWithdraw', () => {
     vi.mocked(supabase.auth.getSession).mockResolvedValue({
       data: { session: mockSession },
       error: null,
-    } as any);
+    } as unknown as { data: { session: unknown }; error: null });
 
     fetchMock.mockRejectedValue(new Error('Network error'));
 
-    await expect(withdrawAccount(mockClearProfile, mockResetProgress)).rejects.toThrow('네트워크 상태를 확인하시거나');
+    await expect(withdrawAccount(mockClearProfile, mockResetProgress)).rejects.toThrow(
+      '네트워크 상태를 확인하시거나'
+    );
   });
 
   it('should handle store reset failure gracefully', async () => {
     vi.mocked(supabase.auth.getSession).mockResolvedValue({
       data: { session: null },
       error: null,
-    } as any);
+    } as unknown as { data: { session: unknown }; error: null });
 
     const failingResetProgress = vi.fn().mockRejectedValue(new Error('Reset fail'));
     const result = await withdrawAccount(mockClearProfile, failingResetProgress);
@@ -151,4 +154,3 @@ describe('userWithdraw', () => {
     expect(supabase.auth.signOut).toHaveBeenCalled();
   });
 });
-

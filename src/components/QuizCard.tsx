@@ -26,7 +26,8 @@ function QuizCardComponent() {
   }
 
   const worldName = quizState.worldParam
-    ? (UI_MESSAGES.WORLD_NAMES as any)[quizState.worldParam] || UI_MESSAGES.WORLD_1_NAME
+    ? (UI_MESSAGES.WORLD_NAMES as Record<string, string>)[quizState.worldParam] ||
+      UI_MESSAGES.WORLD_1_NAME
     : UI_MESSAGES.WORLD_1_NAME;
 
   return (

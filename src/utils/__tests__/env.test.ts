@@ -22,7 +22,7 @@ describe('env utility', () => {
 
   describe('logEnvInfo', () => {
     it('should log environment info if in DEV mode', () => {
-      vi.stubEnv('DEV', 'true' as any);
+      vi.stubEnv('DEV', 'true');
       const groupSpy = vi.spyOn(logger, 'group');
 
       logEnvInfo();
@@ -31,7 +31,7 @@ describe('env utility', () => {
     });
 
     it('should not log if not in DEV mode', () => {
-      vi.stubEnv('DEV', '' as any);
+      vi.stubEnv('DEV', '');
       const groupSpy = vi.spyOn(logger, 'group');
 
       logEnvInfo();

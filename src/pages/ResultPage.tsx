@@ -8,7 +8,6 @@ import { TierUpgradeModal } from '@/components/TierUpgradeModal';
 import { BadgeNotification } from '@/components/BadgeNotification';
 import { Category } from '@/types/quiz';
 
-
 import { analytics } from '@/services/analytics';
 import { UI_MESSAGES } from '@/constants/ui';
 import { ANIMATION_CONFIG } from '@/constants/game';
@@ -52,11 +51,14 @@ export function ResultPage() {
   const [previousMasteryScore] = useState<number | null>(null);
   const [currentMasteryScore] = useState<number | null>(null);
   const [awardedBadges, setAwardedBadges] = useState<string[]>([]);
-  const [_showBadgeNotification, setShowBadgeNotification] = useState(false);
+  const [, setShowBadgeNotification] = useState(false);
 
   const mountainParam = searchParams.get('mountain');
   const worldParam = urlParams.validateWorldParam(searchParams.get('world'));
-  const categoryParam = urlParams.validateCategoryInWorldParam(worldParam, searchParams.get('category'));
+  const categoryParam = urlParams.validateCategoryInWorldParam(
+    worldParam,
+    searchParams.get('category')
+  );
   const level = urlParams.validateLevelParam(searchParams.get('level'), 20);
   const mode = urlParams.validateModeParam(searchParams.get('mode'));
   const finalScore =
@@ -66,7 +68,6 @@ export function ResultPage() {
   const total = urlParams.validateNumberParam(searchParams.get('total'), 0, 10000) ?? 0;
   const correctCount = Math.floor(finalScore / SCORE_PER_CORRECT);
   const averageTime = urlParams.validateFloatParam(searchParams.get('avg_time'), 0, 3600);
-
 
   useEffect(() => {
     if (!worldParam || !categoryParam || !level || !mode) return;
@@ -209,6 +210,10 @@ export function ResultPage() {
     clearLevel,
     updateBestScore,
     fetchRanking,
+    rankings,
+    submitScoreToLeaderboard,
+    supabase,
+    urlParams,
   ]);
 
   const [hasDoubled, setHasDoubled] = useState(false);

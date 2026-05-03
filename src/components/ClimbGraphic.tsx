@@ -131,7 +131,7 @@ export function ClimbGraphic({
       svgHeight: calculatedSvgHeight,
       lastClearedIndex: lastClearedIdx,
     };
-  }, [world, category, levels, totalLevels, nextLevel, isLevelCleared, isAdmin]);
+  }, [levels, totalLevels, nextLevel, isLevelCleared, isAdmin]);
 
   const createPath = (points: Array<{ x: number; y: number }>): string => {
     if (points.length === 0) return '';

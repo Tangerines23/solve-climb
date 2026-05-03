@@ -1,4 +1,4 @@
-import { QuizProvider } from '@/contexts/QuizContext';
+import { QuizProvider } from '@/contexts/QuizProvider';
 import { QuizLayout } from '@/components/quiz/QuizLayout';
 import { useQuizPageBridge } from '@/hooks/useQuizPageBridge';
 import './QuizPage.css';

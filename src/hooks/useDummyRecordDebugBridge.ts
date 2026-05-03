@@ -59,7 +59,7 @@ export function useDummyRecordDebugBridge() {
   }, []);
 
   useEffect(() => {
-    const subjects = SUBJECTS[selectedCategoryId] || [];
+    const subjects = Reflect.get(SUBJECTS, selectedCategoryId) || [];
     if (subjects.length > 0) {
       setSelectedSubjectId(subjects[0].id);
     }
@@ -146,6 +146,6 @@ export function useDummyRecordDebugBridge() {
     handleSubmit,
     worlds: WORLDS,
     categories: CATEGORIES,
-    subjects: SUBJECTS[selectedCategoryId] || [],
+    subjects: Reflect.get(SUBJECTS, selectedCategoryId) || [],
   };
 }

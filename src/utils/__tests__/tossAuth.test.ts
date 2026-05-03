@@ -243,7 +243,7 @@ describe('tossAuth', () => {
       vi.mocked(supabase.auth.signInWithPassword).mockResolvedValue({
         data: { session: { access_token: 'sb-token', refresh_token: 'sb-refresh' } },
         error: null,
-      } as any);
+      } as unknown as Awaited<ReturnType<typeof supabase.auth.signInWithPassword>>);
 
       const result = await handleTossLoginFlow(mockAuthCode, mockReferrer);
 

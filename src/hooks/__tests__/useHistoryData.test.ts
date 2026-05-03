@@ -4,6 +4,7 @@ import { useHistoryData } from '../useHistoryData';
 import { supabase } from '../../utils/supabaseClient';
 import { storageService, STORAGE_KEYS } from '../../services';
 import { ANONYMOUS_USER_TITLE } from '../../constants/history';
+import type { Session, PostgrestError } from '@supabase/supabase-js';
 
 // Mock dependencies
 vi.mock('../../utils/supabaseClient', () => ({
@@ -45,7 +46,7 @@ describe('useHistoryData', () => {
       constructor(date?: string | number | Date) {
         super(date || MOCK_DATE);
       }
-    } as any;
+    } as unknown as typeof Date;
   });
 
   afterEach(() => {
@@ -73,10 +74,10 @@ describe('useHistoryData', () => {
     vi.mocked(storageService.get).mockReturnValue(null);
     vi.mocked(supabase.auth.getSession).mockResolvedValue({
       data: {
-        session: { user: { id: mockUserId } } as any,
+        session: { user: { id: mockUserId } } as unknown as Session,
       },
       error: null,
-    });
+    } as unknown as Awaited<ReturnType<typeof supabase.auth.getSession>>);
 
     // Mock DB responses based on table name
     mockFrom.mockImplementation((table: string) => {
@@ -157,9 +158,9 @@ describe('useHistoryData', () => {
     // Mock session
     vi.mocked(storageService.get).mockReturnValue(null);
     vi.mocked(supabase.auth.getSession).mockResolvedValue({
-      data: { session: { user: { id: 'temp' } } as any },
+      data: { session: { user: { id: 'temp' } } as unknown as Session },
       error: null,
-    });
+    } as unknown as Awaited<ReturnType<typeof supabase.auth.getSession>>);
 
     mockFrom.mockImplementation((table: string) => {
       if (table === 'user_level_records') {
@@ -220,9 +221,9 @@ describe('useHistoryData', () => {
   it('should handle API errors gracefully', async () => {
     vi.mocked(storageService.get).mockReturnValue(null);
     vi.mocked(supabase.auth.getSession).mockResolvedValue({
-      data: { session: { user: { id: 'temp' } } as any },
+      data: { session: { user: { id: 'temp' } } as unknown as Session },
       error: null,
-    });
+    } as unknown as Awaited<ReturnType<typeof supabase.auth.getSession>>);
 
     mockFrom.mockImplementation((table) => {
       if (table === 'user_level_records') {
@@ -280,9 +281,9 @@ describe('useHistoryData', () => {
   it('should calculate multipliers correctly for calculus and arithmetic', async () => {
     vi.mocked(storageService.get).mockReturnValue(null);
     vi.mocked(supabase.auth.getSession).mockResolvedValue({
-      data: { session: { user: { id: 'temp' } } as any },
+      data: { session: { user: { id: 'temp' } } as unknown as Session },
       error: null,
-    });
+    } as unknown as Awaited<ReturnType<typeof supabase.auth.getSession>>);
 
     mockFrom.mockImplementation((table) => {
       if (table === 'user_level_records') {
@@ -394,9 +395,9 @@ describe('useHistoryData', () => {
   it('should handle heat map intensity levels', async () => {
     vi.mocked(storageService.get).mockReturnValue(null);
     vi.mocked(supabase.auth.getSession).mockResolvedValue({
-      data: { session: { user: { id: 'temp' } } as any },
+      data: { session: { user: { id: 'temp' } } as unknown as Session },
       error: null,
-    });
+    } as unknown as Awaited<ReturnType<typeof supabase.auth.getSession>>);
 
     mockFrom.mockImplementation((table) => {
       if (table === 'user_level_records') {
@@ -441,9 +442,9 @@ describe('useHistoryData', () => {
   it('should calculate streak from activity map when profile streak is 0', async () => {
     vi.mocked(storageService.get).mockReturnValue(null);
     vi.mocked(supabase.auth.getSession).mockResolvedValue({
-      data: { session: { user: { id: 'temp' } } as any },
+      data: { session: { user: { id: 'temp' } } as unknown as Session },
       error: null,
-    });
+    } as unknown as Awaited<ReturnType<typeof supabase.auth.getSession>>);
 
     mockFrom.mockImplementation((table) => {
       if (table === 'user_level_records') {
@@ -494,9 +495,9 @@ describe('useHistoryData', () => {
   it('should handle duplicate category/level records and pick the best score', async () => {
     vi.mocked(storageService.get).mockReturnValue(null);
     vi.mocked(supabase.auth.getSession).mockResolvedValue({
-      data: { session: { user: { id: 'temp' } } as any },
+      data: { session: { user: { id: 'temp' } } as unknown as Session },
       error: null,
-    });
+    } as unknown as Awaited<ReturnType<typeof supabase.auth.getSession>>);
 
     mockFrom.mockImplementation((table) => {
       if (table === 'user_level_records') {

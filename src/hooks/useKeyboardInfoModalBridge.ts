@@ -31,15 +31,11 @@ export const useKeyboardInfoModalBridge = (_isOpen: boolean, _onClose: () => voi
             Record<string, Array<{ level: number; name: string; description: string }>>
           >;
           const worldLevels = Object.prototype.hasOwnProperty.call(levelsConfig, 'World1')
-            ? levelsConfig['World1']
+            ? Reflect.get(levelsConfig, 'World1')
             : undefined;
           const levels =
             (worldLevels && Object.prototype.hasOwnProperty.call(worldLevels, categoryId)
-              ? (worldLevels[categoryId] as Array<{
-                  level: number;
-                  name: string;
-                  description: string;
-                }>)
+              ? Reflect.get(worldLevels, categoryId)
               : undefined) || [];
 
           let kbType: 'qwerty-text' | 'custom' | 'qwerty-number' | null = null;
@@ -80,7 +76,7 @@ export const useKeyboardInfoModalBridge = (_isOpen: boolean, _onClose: () => voi
               category: mtnId,
               categoryName:
                 (Object.prototype.hasOwnProperty.call(APP_CONFIG.MOUNTAIN_MAP, mtnId)
-                  ? (APP_CONFIG.MOUNTAIN_MAP as Record<string, string>)[mtnId]
+                  ? Reflect.get(APP_CONFIG.MOUNTAIN_MAP, mtnId)
                   : null) || mtnId,
               subTopic: categoryId,
               subTopicName: subTopic.name,
@@ -105,20 +101,22 @@ export const useKeyboardInfoModalBridge = (_isOpen: boolean, _onClose: () => voi
     return types;
   }, [getKeyboardTypeInfo]);
 
-  const [selectedKeyboardType, setSelectedKeyboardType] = useState<KeyboardDisplayType | null>(null);
+  const [selectedKeyboardType, setSelectedKeyboardType] = useState<KeyboardDisplayType | null>(
+    null
+  );
   const [selectedCategoryIndex, setSelectedCategoryIndex] = useState(0);
 
   useEffect(() => {
     if (availableKeyboardTypes.length > 0 && !selectedKeyboardType) {
-        let initialType: KeyboardDisplayType | null = null;
-        if (keyboardType === 'qwerty' && availableKeyboardTypes.includes('qwerty-number')) {
-          initialType = 'qwerty-number';
-        } else if (keyboardType === 'custom' && availableKeyboardTypes.includes('custom')) {
-          initialType = 'custom';
-        } else {
-          initialType = availableKeyboardTypes[0];
-        }
-        setSelectedKeyboardType(initialType);
+      let initialType: KeyboardDisplayType | null = null;
+      if (keyboardType === 'qwerty' && availableKeyboardTypes.includes('qwerty-number')) {
+        initialType = 'qwerty-number';
+      } else if (keyboardType === 'custom' && availableKeyboardTypes.includes('custom')) {
+        initialType = 'custom';
+      } else {
+        initialType = availableKeyboardTypes[0];
+      }
+      setSelectedKeyboardType(initialType);
     }
   }, [availableKeyboardTypes, keyboardType, selectedKeyboardType]);
 
@@ -152,14 +150,15 @@ export const useKeyboardInfoModalBridge = (_isOpen: boolean, _onClose: () => voi
 
   const currentCategory = useMemo(() => {
     if (currentCategories.length === 0) return null;
-    return currentCategories[selectedCategoryIndex] || currentCategories[0];
+    return currentCategories.at(selectedCategoryIndex) || currentCategories.at(0) || null;
   }, [currentCategories, selectedCategoryIndex]);
 
   const handlePrevKeyboard = () => {
     if (availableKeyboardTypes.length === 0 || !selectedKeyboardType) return;
     const currentIndex = availableKeyboardTypes.indexOf(selectedKeyboardType);
     const prevIndex = currentIndex > 0 ? currentIndex - 1 : availableKeyboardTypes.length - 1;
-    setSelectedKeyboardType(availableKeyboardTypes[prevIndex]);
+    const targetType = availableKeyboardTypes.at(prevIndex);
+    if (targetType) setSelectedKeyboardType(targetType);
     setSelectedCategoryIndex(0);
   };
 
@@ -167,15 +166,19 @@ export const useKeyboardInfoModalBridge = (_isOpen: boolean, _onClose: () => voi
     if (availableKeyboardTypes.length === 0 || !selectedKeyboardType) return;
     const currentIndex = availableKeyboardTypes.indexOf(selectedKeyboardType);
     const nextIndex = currentIndex < availableKeyboardTypes.length - 1 ? currentIndex + 1 : 0;
-    setSelectedKeyboardType(availableKeyboardTypes[nextIndex]);
+    const targetType = availableKeyboardTypes.at(nextIndex);
+    if (targetType) setSelectedKeyboardType(targetType);
     setSelectedCategoryIndex(0);
   };
 
   const getKeyboardTypeName = (type: KeyboardDisplayType) => {
     switch (type) {
-      case 'qwerty-text': return '쿼티 키보드 (텍스트)';
-      case 'qwerty-number': return '숫자 키보드';
-      case 'custom': return '커스텀 키패드';
+      case 'qwerty-text':
+        return '쿼티 키보드 (텍스트)';
+      case 'qwerty-number':
+        return '숫자 키보드';
+      case 'custom':
+        return '커스텀 키패드';
     }
   };
 

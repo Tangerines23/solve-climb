@@ -26,11 +26,11 @@ export default tseslint.config(
     },
     rules: {
       ...reactHooks.configs.recommended.rules,
-      'react-refresh/only-export-components': [
+      'react-refresh/only-export-components': ['warn', { allowConstantExport: true }],
+      '@typescript-eslint/no-unused-vars': [
         'warn',
-        { allowConstantExport: true },
+        { argsIgnorePattern: '^_', varsIgnorePattern: '^_' },
       ],
-      '@typescript-eslint/no-unused-vars': ['warn', { argsIgnorePattern: '^_' }],
       '@typescript-eslint/no-explicit-any': 'warn',
     },
   },
@@ -120,26 +120,18 @@ export default tseslint.config(
           rules: [
             {
               from: { type: 'component' },
-              disallow: [
-                { to: { type: 'util' } },
-                { to: { type: 'store' } }
-              ],
-              message: 'UI Components must not import Utils or Stores directly. Use Hooks as a bridge.',
+              disallow: [{ to: { type: 'util' } }, { to: { type: 'store' } }],
+              message:
+                'UI Components must not import Utils or Stores directly. Use Hooks as a bridge.',
             },
             {
               from: { type: 'page' },
-              disallow: [
-                { to: { type: 'util' } },
-                { to: { type: 'store' } }
-              ],
+              disallow: [{ to: { type: 'util' } }, { to: { type: 'store' } }],
               message: 'Pages must not import Utils or Stores directly. Use Hooks as a bridge.',
             },
             {
               from: { type: 'hook' },
-              disallow: [
-                { to: { type: 'component' } },
-                { to: { type: 'page' } }
-              ],
+              disallow: [{ to: { type: 'component' } }, { to: { type: 'page' } }],
               message: 'Hooks must not import UI Components or Pages.',
             },
             {
@@ -148,7 +140,7 @@ export default tseslint.config(
                 { to: { type: 'hook' } },
                 { to: { type: 'store' } },
                 { to: { type: 'component' } },
-                { to: { type: 'page' } }
+                { to: { type: 'page' } },
               ],
               message: 'Utils must be pure and not depend on Hooks, Stores, or UI.',
             },
@@ -157,33 +149,27 @@ export default tseslint.config(
               disallow: [
                 { to: { type: 'component' } },
                 { to: { type: 'page' } },
-                { to: { type: 'hook' } }
+                { to: { type: 'hook' } },
               ],
               message: 'Stores must not depend on UI or Hooks.',
             },
             {
               from: { type: 'component/quiz' },
-              disallow: [
-                { to: { type: 'component/my' } },
-                { to: { type: 'component/roadmap' } }
-              ],
-              message: 'Quiz components should not depend on MyPage or Roadmap components directly.',
+              disallow: [{ to: { type: 'component/my' } }, { to: { type: 'component/roadmap' } }],
+              message:
+                'Quiz components should not depend on MyPage or Roadmap components directly.',
             },
             {
               from: { type: 'component/my' },
-              disallow: [
-                { to: { type: 'component/quiz' } },
-                { to: { type: 'component/roadmap' } }
-              ],
-              message: 'MyPage components should not depend on Quiz or Roadmap components directly.',
+              disallow: [{ to: { type: 'component/quiz' } }, { to: { type: 'component/roadmap' } }],
+              message:
+                'MyPage components should not depend on Quiz or Roadmap components directly.',
             },
             {
               from: { type: 'component/roadmap' },
-              disallow: [
-                { to: { type: 'component/quiz' } },
-                { to: { type: 'component/my' } }
-              ],
-              message: 'Roadmap components should not depend on Quiz or MyPage components directly.',
+              disallow: [{ to: { type: 'component/quiz' } }, { to: { type: 'component/my' } }],
+              message:
+                'Roadmap components should not depend on Quiz or MyPage components directly.',
             },
           ],
         },

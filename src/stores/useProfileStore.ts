@@ -102,7 +102,7 @@ export const useProfileStore = create<ProfileState>((set, get) => ({
   profiles: savedProfiles,
   setProfile: (profile) => {
     const state = get();
-    let updatedProfiles = [...state.profiles];
+    const updatedProfiles = [...state.profiles];
 
     // 프로필에 ID가 없거나 빈 문자열이면 생성 (새 프로필)
     if (!profile.profileId || profile.profileId === '') {

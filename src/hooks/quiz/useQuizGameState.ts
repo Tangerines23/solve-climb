@@ -1,7 +1,7 @@
 // 게임 상태 관리 로직을 관리하는 커스텀 훅
 import { useState, useCallback } from 'react';
 import { urls } from '@/utils/navigation';
-import { GameMode } from '@/types/quiz';
+import { GameMode, WrongAnswer } from '@/types/quiz';
 
 interface UseQuizGameStateParams {
   score: number;
@@ -29,9 +29,7 @@ export function useQuizGameState({
   navigate,
 }: UseQuizGameStateParams) {
   const [totalQuestionsState, setTotalQuestionsState] = useState(0);
-  const [wrongAnswersState, setWrongAnswersState] = useState<
-    Array<{ question: string; wrongAnswer: string; correctAnswer: string }>
-  >([]);
+  const [wrongAnswersState, setWrongAnswersState] = useState<WrongAnswer[]>([]);
   const [questionStartTime, setQuestionStartTime] = useState<number | null>(null);
   const [solveTimesState, setSolveTimesState] = useState<number[]>([]);
   const [gameSessionId, setGameSessionId] = useState<string | null>(null);

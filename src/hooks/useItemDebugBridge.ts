@@ -57,7 +57,7 @@ export function useItemDebugBridge() {
 
   const handleQuantityChange = useCallback((itemId: number, delta: number) => {
     setItemQuantities((prev) => {
-      const raw = prev[itemId] || '0';
+      const raw = Reflect.get(prev, itemId) || '0';
       const current = parseInt(raw, 10);
       const newValue = Math.max(0, current + delta);
       return { ...prev, [itemId]: newValue.toString() };
@@ -68,70 +68,76 @@ export function useItemDebugBridge() {
     setItemQuantities((prev) => ({ ...prev, [itemId]: value }));
   }, []);
 
-  const handleQuantityInputBlur = useCallback((itemId: number) => {
-    setItemQuantities((prev) => {
-      const raw = prev[itemId] || '0';
+  const handleQuantityInputBlur = useCallback(
+    (itemId: number) => {
+      setItemQuantities((prev) => {
+        const raw = Reflect.get(prev, itemId) || '0';
+        const numValue = parseInt(raw, 10);
+        if (isNaN(numValue) || numValue < 0) {
+          const currentItem = inventory.find((item) => item.id === itemId);
+          return { ...prev, [itemId]: (currentItem?.quantity || 0).toString() };
+        }
+        return prev;
+      });
+    },
+    [inventory]
+  );
+
+  const handleSetQuantity = useCallback(
+    async (itemId: number) => {
+      if (isUpdating) return;
+
+      const raw = Reflect.get(itemQuantities, itemId) || '0';
       const numValue = parseInt(raw, 10);
       if (isNaN(numValue) || numValue < 0) {
+        setMessage({ type: 'error', text: '유효한 수량을 입력하세요.' });
+        return;
+      }
+
+      try {
+        setIsUpdating(true);
+        setMessage(null);
+
+        const {
+          data: { session },
+        } = await supabase.auth.getSession();
+        if (!session?.user) {
+          setMessage({ type: 'error', text: '로그인이 필요합니다.' });
+          return;
+        }
+        const user = session.user;
+
         const currentItem = inventory.find((item) => item.id === itemId);
-        return { ...prev, [itemId]: (currentItem?.quantity || 0).toString() };
+        const currentQuantity = currentItem?.quantity || 0;
+        const quantityDiff = numValue - currentQuantity;
+
+        if (quantityDiff === 0) {
+          setMessage({ type: 'success', text: '수량이 변경되지 않았습니다.' });
+          return;
+        }
+
+        const { data, error } = await supabase.rpc('debug_set_inventory_quantity', {
+          p_user_id: user.id,
+          p_item_id: itemId,
+          p_quantity: numValue,
+        });
+
+        if (error) throw error;
+        if (data && !data.success) throw new Error(data.message || '수량 설정 실패');
+
+        setMessage({ type: 'success', text: `아이템 수량이 ${numValue}개로 설정되었습니다.` });
+        await fetchUserData();
+      } catch (err) {
+        setMessage({
+          type: 'error',
+          text: `아이템 조작 실패: ${err instanceof Error ? err.message : '알 수 없는 오류'}`,
+        });
+      } finally {
+        setIsUpdating(false);
       }
-      return prev;
-    });
-  }, [inventory]);
-
-  const handleSetQuantity = useCallback(async (itemId: number) => {
-    if (isUpdating) return;
-
-    const raw = itemQuantities[itemId] || '0';
-    const numValue = parseInt(raw, 10);
-    if (isNaN(numValue) || numValue < 0) {
-      setMessage({ type: 'error', text: '유효한 수량을 입력하세요.' });
-      return;
-    }
-
-    try {
-      setIsUpdating(true);
-      setMessage(null);
-
-      const {
-        data: { session },
-      } = await supabase.auth.getSession();
-      if (!session?.user) {
-        setMessage({ type: 'error', text: '로그인이 필요합니다.' });
-        return;
-      }
-      const user = session.user;
-
-      const currentItem = inventory.find((item) => item.id === itemId);
-      const currentQuantity = currentItem?.quantity || 0;
-      const quantityDiff = numValue - currentQuantity;
-
-      if (quantityDiff === 0) {
-        setMessage({ type: 'success', text: '수량이 변경되지 않았습니다.' });
-        return;
-      }
-
-      const { data, error } = await supabase.rpc('debug_set_inventory_quantity', {
-        p_user_id: user.id,
-        p_item_id: itemId,
-        p_quantity: numValue,
-      });
-
-      if (error) throw error;
-      if (data && !data.success) throw new Error(data.message || '수량 설정 실패');
-
-      setMessage({ type: 'success', text: `아이템 수량이 ${numValue}개로 설정되었습니다.` });
-      await fetchUserData();
-    } catch (err) {
-      setMessage({
-        type: 'error',
-        text: `아이템 조작 실패: ${err instanceof Error ? err.message : '알 수 없는 오류'}`,
-      });
-    } finally {
-      setIsUpdating(false);
-    }
-  }, [isUpdating, itemQuantities, inventory, fetchUserData]);
+    },
+    [isUpdating, itemQuantities, inventory, fetchUserData]
+  );
 
   const handleResetInventory = useCallback(async () => {
     if (isUpdating) return;
@@ -201,39 +207,42 @@ export function useItemDebugBridge() {
     }
   }, [isUpdating, loadItems]);
 
-  const handleUseItem = useCallback(async (itemId: number) => {
-    if (usingItemId === itemId || isUpdating) return;
+  const handleUseItem = useCallback(
+    async (itemId: number) => {
+      if (usingItemId === itemId || isUpdating) return;
 
-    const currentItem = inventory.find((item) => item.id === itemId);
-    if (!currentItem || currentItem.quantity <= 0) {
-      setMessage({ type: 'error', text: '사용할 수 있는 아이템이 없습니다.' });
-      return;
-    }
+      const currentItem = inventory.find((item) => item.id === itemId);
+      if (!currentItem || currentItem.quantity <= 0) {
+        setMessage({ type: 'error', text: '사용할 수 있는 아이템이 없습니다.' });
+        return;
+      }
 
-    try {
-      setUsingItemId(itemId);
-      setMessage(null);
+      try {
+        setUsingItemId(itemId);
+        setMessage(null);
 
-      const result = await consumeItem(itemId);
+        const result = await consumeItem(itemId);
 
-      if (result.success) {
-        setMessage({ type: 'success', text: `${currentItem.name} 아이템을 사용했습니다.` });
-        await fetchUserData();
-      } else {
+        if (result.success) {
+          setMessage({ type: 'success', text: `${currentItem.name} 아이템을 사용했습니다.` });
+          await fetchUserData();
+        } else {
+          setMessage({
+            type: 'error',
+            text: `아이템 사용 실패: ${result.message || '알 수 없는 오류'}`,
+          });
+        }
+      } catch (err) {
         setMessage({
           type: 'error',
-          text: `아이템 사용 실패: ${result.message || '알 수 없는 오류'}`,
+          text: `아이템 사용 실패: ${err instanceof Error ? err.message : '알 수 없는 오류'}`,
         });
+      } finally {
+        setUsingItemId(null);
       }
-    } catch (err) {
-      setMessage({
-        type: 'error',
-        text: `아이템 사용 실패: ${err instanceof Error ? err.message : '알 수 없는 오류'}`,
-      });
-    } finally {
-      setUsingItemId(null);
-    }
-  }, [usingItemId, isUpdating, inventory, consumeItem, fetchUserData]);
+    },
+    [usingItemId, isUpdating, inventory, consumeItem, fetchUserData]
+  );
 
   return {
     itemDefinitions,

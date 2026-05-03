@@ -2,6 +2,7 @@ import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { renderHook, act } from '@testing-library/react';
 import { useQuestionGenerator } from '../useQuestionGenerator';
 import { generateQuestion } from '../../utils/quizGenerator';
+import type { QuizQuestion } from '../../types/quiz';
 
 import { quizEventBus } from '../../lib/eventBus';
 
@@ -286,7 +287,7 @@ describe('useQuestionGenerator', () => {
     const { result } = renderHook(() =>
       useQuestionGenerator({
         ...defaultParams,
-        preGeneratedQuestions: [preGenQ as any],
+        preGeneratedQuestions: [preGenQ as unknown as QuizQuestion],
         totalQuestions: 0,
       })
     );

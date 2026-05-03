@@ -10,11 +10,7 @@ import { useHomePageBridge } from '@/hooks/useHomePageBridge';
 import './HomePage.css';
 
 export function HomePage() {
-  const {
-    showAgeRating,
-    showExitToast,
-    closeExitToast,
-  } = useHomePageBridge();
+  const { showAgeRating, showExitToast, closeExitToast } = useHomePageBridge();
 
   return (
     <div className="home-page">
@@ -28,7 +24,7 @@ export function HomePage() {
           alt="전체 이용가"
           className="age-rating-icon"
           loading="eager"
-          {...({ fetchpriority: 'high' } as any)}
+          fetchPriority="high"
         />
         <span>전체 이용가</span>
       </div>

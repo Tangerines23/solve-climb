@@ -13,6 +13,7 @@ import { PwaUpdateNotification } from '@/components/PwaUpdateNotification';
 import { RequireAuth } from '@/components/auth/RequireAuth';
 import { useUserStore } from '@/stores/useUserStore';
 import { useQuizStore } from '@/stores/useQuizStore';
+import type { TimeLimit } from '@/types/quiz';
 import { logger } from '@/utils/logger';
 import { registerHapticConfig } from '@/utils/haptic';
 import { registerDebugConfig } from '@/utils/debugFetch';
@@ -194,7 +195,7 @@ function App() {
         await useUserStore.getState().debugSetStamina(val);
       },
       setTimeLimit: (val: number) => {
-        useQuizStore.getState().setTimeLimit(val as any);
+        useQuizStore.getState().setTimeLimit(val as TimeLimit);
       },
       fetchUserData: async () => {
         await useUserStore.getState().fetchUserData();

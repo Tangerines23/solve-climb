@@ -3,13 +3,13 @@ import { renderHook, waitFor, act } from '@testing-library/react';
 import { useMyPageStats } from '../useMyPageStats';
 import { supabase } from '../../utils/supabaseClient';
 import { storageService, STORAGE_KEYS } from '../../services';
-import type { Subscription, PostgrestError } from '@supabase/supabase-js';
+import type { Subscription, PostgrestError, Session } from '@supabase/supabase-js';
 import { isLocalSession } from '../../utils/safeJsonParse';
 
 // Helper for Supabase chain mocking
 const createMockChain = (data: unknown, error: unknown = null) => {
   const result = { data, error };
-  const chain: any = {
+  const chain = {
     select: vi.fn().mockReturnThis(),
     from: vi.fn().mockReturnThis(),
     eq: vi.fn().mockReturnThis(),
@@ -20,7 +20,7 @@ const createMockChain = (data: unknown, error: unknown = null) => {
     then: vi.fn((resolve) => Promise.resolve(result).then(resolve)),
     catch: vi.fn((reject) => Promise.resolve(result).catch(reject)),
   };
-  return chain;
+  return chain as unknown as ReturnType<typeof supabase.from>;
 };
 
 vi.mock('../../utils/supabaseClient', () => ({
@@ -61,15 +61,15 @@ describe('useMyPageStats', () => {
     vi.mocked(supabase.auth.getSession).mockResolvedValue({
       data: { session: null },
       error: null,
-    } as any);
+    } as unknown as Awaited<ReturnType<typeof supabase.auth.getSession>>);
     vi.mocked(supabase.auth.onAuthStateChange).mockReturnValue({
       data: { subscription: { unsubscribe: vi.fn() } },
-    } as any);
-    vi.mocked(supabase.from).mockImplementation(() => createMockChain(null) as any);
+    } as unknown as ReturnType<typeof supabase.auth.onAuthStateChange>);
+    vi.mocked(supabase.from).mockImplementation(() => createMockChain(null));
     vi.mocked(supabase.rpc).mockResolvedValue({
       data: null,
       error: null,
-    } as any);
+    } as unknown as Awaited<ReturnType<typeof supabase.rpc>>);
   });
 
   it('should return default stats when no session', async () => {
@@ -98,9 +98,9 @@ describe('useMyPageStats', () => {
 
   it('should fetch stats from RPC when available', async () => {
     vi.mocked(supabase.auth.getSession).mockResolvedValue({
-      data: { session: { user: { id: mockUserId } } },
+      data: { session: { user: { id: mockUserId } } as unknown as Session },
       error: null,
-    } as any);
+    } as unknown as Awaited<ReturnType<typeof supabase.auth.getSession>>);
 
     const mockProfileData = {
       total_mastery_score: 1500,
@@ -132,7 +132,7 @@ describe('useMyPageStats', () => {
     vi.mocked(supabase.rpc).mockResolvedValue({
       data: mockRpcStats,
       error: null,
-    } as any);
+    } as unknown as Awaited<ReturnType<typeof supabase.rpc>>);
 
     const { result } = renderHook(() => useMyPageStats());
 
@@ -158,9 +158,9 @@ describe('useMyPageStats', () => {
 
   it('should fallback to direct query when RPC is not found (404/PGRST116)', async () => {
     vi.mocked(supabase.auth.getSession).mockResolvedValue({
-      data: { session: { user: { id: mockUserId } } },
+      data: { session: { user: { id: mockUserId } } as unknown as Session },
       error: null,
-    } as any);
+    } as unknown as Awaited<ReturnType<typeof supabase.auth.getSession>>);
 
     const mockProfileData = {
       total_mastery_score: 2000,
@@ -185,7 +185,7 @@ describe('useMyPageStats', () => {
     vi.mocked(supabase.rpc).mockResolvedValue({
       data: null,
       error: { code: 'PGRST116', message: 'Function not found' } as PostgrestError,
-    } as any);
+    } as unknown as Awaited<ReturnType<typeof supabase.rpc>>);
 
     const { result } = renderHook(() => useMyPageStats());
 
@@ -222,7 +222,10 @@ describe('useMyPageStats', () => {
       login_streak: 1,
     };
 
-    vi.mocked(supabase.rpc).mockResolvedValue({ data: null, error: { code: 'PGRST116' } } as any);
+    vi.mocked(supabase.rpc).mockResolvedValue({
+      data: null,
+      error: { code: 'PGRST116' },
+    } as unknown as Awaited<ReturnType<typeof supabase.rpc>>);
     vi.mocked(supabase.from).mockImplementation((table) => {
       if (table === 'profiles') return createMockChain(mockProfileData);
       if (table === 'user_level_records') return createMockChain([]);
@@ -239,14 +242,14 @@ describe('useMyPageStats', () => {
 
   it('should handle RPC errors and still perform fallback', async () => {
     vi.mocked(supabase.auth.getSession).mockResolvedValue({
-      data: { session: { user: { id: mockUserId } } },
+      data: { session: { user: { id: mockUserId } } as unknown as Session },
       error: null,
-    } as any);
+    } as unknown as Awaited<ReturnType<typeof supabase.auth.getSession>>);
 
     vi.mocked(supabase.rpc).mockResolvedValue({
       data: null,
       error: { code: 'PGRST500', message: 'Internal Server Error' } as PostgrestError,
-    } as any);
+    } as unknown as Awaited<ReturnType<typeof supabase.rpc>>);
 
     const mockRecords = [{ subject_id: 'Logic', level: 1, best_score: 100 }];
 
@@ -265,11 +268,13 @@ describe('useMyPageStats', () => {
 
   it('should handle refetch manually', async () => {
     vi.mocked(supabase.auth.getSession).mockResolvedValue({
-      data: { session: { user: { id: mockUserId } } },
+      data: { session: { user: { id: mockUserId } } as unknown as Session },
       error: null,
-    } as any);
+    } as unknown as Awaited<ReturnType<typeof supabase.auth.getSession>>);
 
-    vi.mocked(supabase.rpc).mockResolvedValue({ data: [], error: null } as any);
+    vi.mocked(supabase.rpc).mockResolvedValue({ data: [], error: null } as unknown as Awaited<
+      ReturnType<typeof supabase.rpc>
+    >);
     vi.mocked(supabase.from).mockImplementation(() => createMockChain([]));
 
     const { result } = renderHook(() => useMyPageStats());

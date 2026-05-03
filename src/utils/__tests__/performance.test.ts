@@ -174,9 +174,9 @@ describe('performance', () => {
   });
 
   describe('performanceMonitor', () => {
-    let observeSpy: any;
-    let disconnectSpy: any;
-    let mockCallback: any;
+    let observeSpy: ReturnType<typeof vi.fn>;
+    let disconnectSpy: ReturnType<typeof vi.fn>;
+    let mockCallback: (entries: { getEntries: () => Array<Record<string, unknown>> }) => void;
 
     beforeEach(() => {
       observeSpy = vi.fn();
@@ -184,13 +184,15 @@ describe('performance', () => {
 
       // Mock PerformanceObserver
       global.PerformanceObserver = class {
-        constructor(callback: any) {
+        constructor(
+          callback: (entries: { getEntries: () => Array<Record<string, unknown>> }) => void
+        ) {
           mockCallback = callback;
         }
         observe = observeSpy;
         disconnect = disconnectSpy;
         takeRecords = vi.fn();
-      } as any;
+      } as unknown as typeof PerformanceObserver;
 
       // Mock environment
       vi.stubGlobal('import.meta', { env: { DEV: true } });

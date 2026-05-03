@@ -11,10 +11,7 @@ interface EquationVisualizerProps {
   onSolved?: () => void;
 }
 
-export function EquationVisualizer({
-  initialLeft,
-  initialRight,
-}: EquationVisualizerProps) {
+export function EquationVisualizer({ initialLeft, initialRight }: EquationVisualizerProps) {
   const [leftSide, setLeftSide] = useState<Term[]>(initialLeft);
   const [rightSide, setRightSide] = useState<Term[]>(initialRight);
   const [isAnimating, setIsAnimating] = useState(false);
@@ -39,8 +36,9 @@ export function EquationVisualizer({
 
       const termIndex = sourceSide.findIndex((t) => t.id === id);
       if (termIndex === -1) return;
-      
-      const term = sourceSide[termIndex];
+
+      const term = sourceSide.at(termIndex);
+      if (!term) return;
 
       // Create transformed term (flip sign)
       const newSign = term.sign === '+' ? '-' : '+';

@@ -3,7 +3,6 @@ import { Difficulty } from '../types/quiz';
 
 export const SCORE_PER_CORRECT = 10;
 export const CLIMB_PER_CORRECT = 10; // 등반 시 10m 상승
-export const SLIDE_PER_WRONG = 3; // 오답 시 3m 감점 (미끄러짐)
 
 // 새로운 등반 거리 시스템 상수
 export const BASE_CLIMB_DISTANCE = 10;

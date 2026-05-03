@@ -50,29 +50,29 @@ describe('useShop', () => {
     vi.clearAllMocks();
 
     // Setup useUserStore mock
-    (useUserStore as any).mockReturnValue({
+    vi.mocked(useUserStore).mockReturnValue({
       minerals: 1000,
       inventory: [{ code: 'ITEM_01', quantity: 2 }],
       fetchUserData: mockFetchUserData,
       recoverMineralsAds: mockRecoverMineralsAds,
-    });
-    (useUserStore.getState as any).mockReturnValue({
+    } as unknown as ReturnType<typeof useUserStore>);
+    vi.mocked(useUserStore.getState).mockReturnValue({
       setMinerals: mockSetMinerals,
-    });
+    } as unknown as ReturnType<typeof useUserStore.getState>);
 
     // Setup useToastStore mock
-    (useToastStore as any).mockReturnValue({
+    vi.mocked(useToastStore).mockReturnValue({
       showToast: mockShowToast,
-    });
+    } as unknown as ReturnType<typeof useToastStore>);
 
     // Default safeSupabaseQuery behavior (empty success)
-    (safeSupabaseQuery as any).mockResolvedValue({ data: [], error: null });
+    vi.mocked(safeSupabaseQuery).mockResolvedValue({ data: [], error: null });
   });
 
   describe('Initialization (fetchItems)', () => {
     it('should fetch items from Supabase on mount', async () => {
       const mockItems = [{ id: 1, name: 'Cloudy Item', code: 'CLOUD_01', price: 50 }];
-      (safeSupabaseQuery as any).mockResolvedValue({ data: mockItems, error: null });
+      vi.mocked(safeSupabaseQuery).mockResolvedValue({ data: mockItems, error: null });
 
       const { result } = renderHook(() => useShop());
 
@@ -84,9 +84,9 @@ describe('useShop', () => {
     });
 
     it('should fallback to ITEM_LIST if Supabase fetch fails', async () => {
-      (safeSupabaseQuery as any).mockResolvedValue({
+      vi.mocked(safeSupabaseQuery).mockResolvedValue({
         data: null,
-        error: new Error('Network error'),
+        error: new Error('Network error') as unknown as Error,
       });
 
       const { result } = renderHook(() => useShop());
@@ -99,7 +99,7 @@ describe('useShop', () => {
     });
 
     it('should show toast error and fallback if fetching crashes', async () => {
-      (safeSupabaseQuery as any).mockRejectedValue(new Error('Crash'));
+      vi.mocked(safeSupabaseQuery).mockRejectedValue(new Error('Crash'));
 
       const { result } = renderHook(() => useShop());
 
@@ -114,10 +114,10 @@ describe('useShop', () => {
 
   describe('handlePurchase', () => {
     it('should show error if minerals are insufficient', async () => {
-      (useUserStore as any).mockReturnValue({
+      vi.mocked(useUserStore).mockReturnValue({
         minerals: 10,
         inventory: [],
-      });
+      } as unknown as ReturnType<typeof useUserStore>);
 
       const { result } = renderHook(() => useShop());
 
@@ -129,7 +129,7 @@ describe('useShop', () => {
     });
 
     it('should execute purchase RPC and refresh data on success', async () => {
-      (safeSupabaseQuery as any).mockResolvedValue({ data: { success: true }, error: null });
+      vi.mocked(safeSupabaseQuery).mockResolvedValue({ data: { success: true }, error: null });
 
       const { result } = renderHook(() => useShop());
 
@@ -142,7 +142,7 @@ describe('useShop', () => {
     });
 
     it('should show actual message from server if purchase fails', async () => {
-      (safeSupabaseQuery as any).mockResolvedValue({
+      vi.mocked(safeSupabaseQuery).mockResolvedValue({
         data: { success: false, message: 'Bad Luck' },
         error: null,
       });
@@ -158,7 +158,7 @@ describe('useShop', () => {
 
     it('should enter simulation mode if network fails (PGRST202)', async () => {
       const networkError = { message: 'Failed to fetch', code: 'PGRST202' };
-      (safeSupabaseQuery as any).mockRejectedValue(networkError);
+      vi.mocked(safeSupabaseQuery).mockRejectedValue(networkError);
 
       const { result } = renderHook(() => useShop());
 
@@ -175,7 +175,7 @@ describe('useShop', () => {
     });
 
     it('should show common error message on unexpected purchase crash', async () => {
-      (safeSupabaseQuery as any).mockRejectedValue(new Error('Total crash'));
+      vi.mocked(safeSupabaseQuery).mockRejectedValue(new Error('Total crash'));
 
       const { result } = renderHook(() => useShop());
 
