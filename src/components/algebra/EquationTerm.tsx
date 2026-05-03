@@ -2,14 +2,7 @@ import { motion } from 'framer-motion';
 import { useState } from 'react';
 import './Algebra.css';
 
-export interface Term {
-  id: string;
-  value: string | number; // 'x', '2x', '5', '-3'
-  side: 'left' | 'right';
-  type: 'variable' | 'constant';
-  sign: '+' | '-';
-  isFixed?: boolean; // e.g. the equals sign itself or immovable terms
-}
+import { Term } from '@/types/algebra';
 
 interface EquationTermProps {
   term: Term;

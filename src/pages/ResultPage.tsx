@@ -1,50 +1,46 @@
 // src/pages/ResultPage.tsx
 import { useEffect, useState, useMemo } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
-import { useQuizStore } from '@/stores/useQuizStore';
-import { useLevelProgressStore } from '@/stores/useLevelProgressStore';
-import { submitScoreToLeaderboard } from '@/utils/tossGameCenter';
+import { useResultPageBridge } from '@/hooks/useResultPageBridge';
 import { SCORE_PER_CORRECT } from '@/constants/game';
-import {
-  validateWorldParam,
-  validateCategoryInWorldParam,
-  validateLevelParam,
-  validateModeParam,
-  validateNumberParam,
-  validateFloatParam,
-  createSafeStorageKey,
-} from '@/utils/urlParams';
-import { useUserStore } from '@/stores/useUserStore';
-import { useToastStore } from '@/stores/useToastStore';
-import { supabase } from '@/utils/supabaseClient';
+
 import { TierUpgradeModal } from '@/components/TierUpgradeModal';
 import { BadgeNotification } from '@/components/BadgeNotification';
-import { urls } from '@/utils/navigation';
 import { Category } from '@/types/quiz';
-import { AdService } from '@/utils/adService';
+
+
 import { analytics } from '@/services/analytics';
 import { UI_MESSAGES } from '@/constants/ui';
 import { ANIMATION_CONFIG } from '@/constants/game';
 import './ResultPage.css';
 
-import { useSettingsStore } from '@/stores/useSettingsStore';
 import { useCountUp } from '@/hooks/useCountUp';
+
 import { historyService } from '@/services/historyService';
 
 import { storageService, STORAGE_KEYS } from '@/services';
 
 export function ResultPage() {
   const {
-    category: storeCategory,
-    world: storeWorld,
-    level: storeLevel,
-    gameMode: storeMode,
-    score: storeScore, // score -> storeScore로 명칭 변경하여 finalScore 계산에 활용
-  } = useQuizStore();
-  const { animationEnabled } = useSettingsStore();
-  const { clearLevel, updateBestScore, fetchRanking } = useLevelProgressStore();
-  const { rewardMinerals } = useUserStore();
-  const { showToast } = useToastStore();
+    storeCategory,
+    storeWorld,
+    storeLevel,
+    storeMode,
+    storeScore,
+    animationEnabled,
+    rankings,
+    clearLevel,
+    updateBestScore,
+    fetchRanking,
+    rewardMinerals,
+    showToast,
+    submitScoreToLeaderboard,
+    urls,
+    AdService,
+    supabase,
+    urlParams,
+  } = useResultPageBridge();
+
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
 
@@ -59,27 +55,29 @@ export function ResultPage() {
   const [_showBadgeNotification, setShowBadgeNotification] = useState(false);
 
   const mountainParam = searchParams.get('mountain');
-  const worldParam = validateWorldParam(searchParams.get('world'));
-  const categoryParam = validateCategoryInWorldParam(worldParam, searchParams.get('category'));
-  const level = validateLevelParam(searchParams.get('level'), 20);
-  const mode = validateModeParam(searchParams.get('mode'));
+  const worldParam = urlParams.validateWorldParam(searchParams.get('world'));
+  const categoryParam = urlParams.validateCategoryInWorldParam(worldParam, searchParams.get('category'));
+  const level = urlParams.validateLevelParam(searchParams.get('level'), 20);
+  const mode = urlParams.validateModeParam(searchParams.get('mode'));
   const finalScore =
-    (validateNumberParam(searchParams.get('score'), 0, 1000000) ?? storeScore) *
+    (urlParams.validateNumberParam(searchParams.get('score'), 0, 1000000) ?? storeScore) *
     (searchParams.get('exhausted') === 'true' ? 0.8 : 1);
   const animatedScore = useCountUp(finalScore, animationEnabled ? 1500 : 0);
-  const total = validateNumberParam(searchParams.get('total'), 0, 10000) ?? 0;
+  const total = urlParams.validateNumberParam(searchParams.get('total'), 0, 10000) ?? 0;
   const correctCount = Math.floor(finalScore / SCORE_PER_CORRECT);
-  const averageTime = validateFloatParam(searchParams.get('avg_time'), 0, 3600);
+  const averageTime = urlParams.validateFloatParam(searchParams.get('avg_time'), 0, 3600);
+
 
   useEffect(() => {
     if (!worldParam || !categoryParam || !level || !mode) return;
-    const key = createSafeStorageKey(
+    const key = urlParams.createSafeStorageKey(
       STORAGE_KEYS.HIGH_SCORE_PREFIX,
       worldParam,
       categoryParam,
       level,
       mode === 'time-attack' ? 'time_attack' : 'survival'
     );
+
     const existing = parseInt(storageService.get<string>(key) || '0', 10);
     if (finalScore > existing) {
       storageService.set(key, finalScore.toString());
@@ -141,9 +139,10 @@ export function ResultPage() {
           mode === 'time-attack' ? 'time-attack' : 'survival'
         );
         const ranks =
-          useLevelProgressStore.getState().rankings[
+          rankings[
             `${worldParam}-${categoryParam}-weekly-${mode === 'time-attack' ? 'time-attack' : 'survival'}`
           ];
+
         const {
           data: { user },
         } = await supabase.auth.getUser();

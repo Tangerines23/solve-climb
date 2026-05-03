@@ -1,7 +1,7 @@
 import { useState, useMemo, useEffect, useCallback, useRef } from 'react';
 import { NavigateFunction } from 'react-router-dom';
 import { APP_CONFIG } from '../../config/app';
-import { urls } from '../../utils/navigation';
+import { useNavigation } from '@/hooks/useNavigation';
 import { QuizDisplayState, QuizAnimationState, QuizHandlers } from '../../types/quizProps';
 import { QuizQuestion, Category } from '../../types/quiz';
 import { ItemFeedbackRef } from '../game/ItemFeedbackOverlay';
@@ -48,6 +48,7 @@ export function QuizPreview({
   navigate,
   useSystemKeyboard,
 }: QuizPreviewProps) {
+  const { urls } = useNavigation();
   const [previewKeyboardType, setPreviewKeyboardType] = useState<'custom' | 'qwerty'>(
     () => keyboardType
   );

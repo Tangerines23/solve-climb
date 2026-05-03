@@ -1,7 +1,5 @@
 import { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { APP_CONFIG } from '../config/app';
-import { useLevelProgressStore } from '../stores/useLevelProgressStore';
+import { useStatusCard } from '../hooks/useStatusCard';
 import { BaseCard } from './BaseCard';
 import './StatusCard.css';
 
@@ -14,7 +12,7 @@ interface UserStatus {
 type LoadingState = 'loading' | 'success' | 'error';
 
 export function StatusCard() {
-  const navigate = useNavigate();
+  const { getBestScore, navigateToMyPage } = useStatusCard();
   const [state, setState] = useState<LoadingState>('loading');
   const [status, setStatus] = useState<UserStatus | null>(null);
 
@@ -27,23 +25,7 @@ export function StatusCard() {
       setState('loading');
 
       // 로컬 데이터로 통계 계산
-      const { progress } = useLevelProgressStore.getState();
-
-      // 모든 카테고리에서 최고 점수 찾기
-      let bestScore = 0;
-
-      Object.values(progress).forEach((categoryData) => {
-        Object.values(categoryData).forEach((subTopicData) => {
-          Object.values(subTopicData).forEach((levelRecord) => {
-            if (levelRecord.bestScore['time-attack']) {
-              bestScore = Math.max(bestScore, levelRecord.bestScore['time-attack']);
-            }
-            if (levelRecord.bestScore['survival']) {
-              bestScore = Math.max(bestScore, levelRecord.bestScore['survival']);
-            }
-          });
-        });
-      });
+      getBestScore();
 
       // 로컬 데이터만으로는 순위와 퍼센트를 계산할 수 없음
       const userStatus: UserStatus = {
@@ -61,7 +43,7 @@ export function StatusCard() {
   };
 
   const handleDetailClick = () => {
-    navigate(APP_CONFIG.ROUTES.MY_PAGE);
+    navigateToMyPage();
   };
 
   const formatRank = (rank: number) => {

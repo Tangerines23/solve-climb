@@ -1,6 +1,5 @@
 import React, { useRef, useMemo, useCallback, useEffect } from 'react';
-import { useLevelProgressStore } from '../stores/useLevelProgressStore';
-import { useProfileStore } from '../stores/useProfileStore';
+import { useClimbGraphic } from '../hooks/useClimbGraphic';
 import {
   ArithmeticBackground,
   EquationsBackground,
@@ -54,12 +53,8 @@ export function ClimbGraphic({
   onLevelClick,
   onUnderDevelopmentClick,
 }: ClimbGraphicProps) {
-  const isLevelCleared = useLevelProgressStore((state) => state.isLevelCleared);
-  const getNextLevel = useLevelProgressStore((state) => state.getNextLevel);
-  const isAdmin = useProfileStore((state) => state.isAdmin);
+  const { isLevelCleared, nextLevel, isAdmin } = useClimbGraphic(world, category);
   const currentLevelRef = useRef<HTMLButtonElement>(null);
-
-  const nextLevel = getNextLevel(world, category);
   const totalLevels = levels.length;
 
   // 개발중인 레벨 체크 함수
@@ -112,7 +107,7 @@ export function ClimbGraphic({
       const levelId = levels[i]?.level;
       if (levelId === undefined) continue;
 
-      const isCleared = isLevelCleared(world, category, levelId);
+      const isCleared = isLevelCleared(levelId);
       const status: 'locked' | 'current' | 'cleared' = isCleared
         ? 'cleared'
         : levelId === nextLevel || (isAdmin && !isCleared)

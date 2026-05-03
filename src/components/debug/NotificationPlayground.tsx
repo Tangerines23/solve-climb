@@ -1,7 +1,7 @@
 import { useState, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { urls } from '../../utils/navigation';
-import { useGameStore } from '../../stores/useGameStore';
+import { useDebugActions } from '../../hooks/useDebugActions';
+import { useGameActions } from '../../hooks/useGameActions';
 import { AlertModal } from '../AlertModal';
 import { ConfirmModal } from '../ConfirmModal';
 import { CyclePromotionModal } from '../CyclePromotionModal';
@@ -31,6 +31,8 @@ import './NotificationPlayground.css';
 
 export function NotificationPlayground() {
   const navigate = useNavigate();
+  const { urls } = useDebugActions();
+  const { setExhausted, setCombo, resetCombo, isExhausted, feverLevel } = useGameActions();
   const [activeModal, setActiveModal] = useState<string | null>(null);
   const [toastMessage, setToastMessage] = useState<string>('');
   const [showToast, setShowToast] = useState(false);
@@ -38,9 +40,6 @@ export function NotificationPlayground() {
   const itemFeedbackRef = useRef<ItemFeedbackRef>(null);
   const [showCountdown, setShowCountdown] = useState(false);
   const [showSafetyRope, setShowSafetyRope] = useState(false);
-
-  // Store access for GameOverlay effects
-  const { setExhausted, setCombo, resetCombo, isExhausted, feverLevel } = useGameStore();
 
   const handleAlertAction = (action: 'login' | 'charge' | 'play') => {
     triggerToast(`Action: ${action}`);

@@ -1,4 +1,4 @@
-import { useDebugStore } from '../../stores/useDebugStore';
+import { useDebugActions } from '../../hooks/useDebugActions';
 import './DebugOverlay.css';
 
 /**
@@ -7,7 +7,7 @@ import './DebugOverlay.css';
  * - 컴포넌트 경계선: 모든 요소에 아웃라인 적용
  */
 export function DebugOverlay() {
-  const { showSafeAreaGuide, showComponentBorders } = useDebugStore();
+  const { showSafeAreaGuide, showComponentBorders } = useDebugActions();
 
   // 아무것도 활성화되지 않으면 렌더링하지 않음
   if (!showSafeAreaGuide && !showComponentBorders) {

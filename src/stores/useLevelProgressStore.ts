@@ -12,36 +12,12 @@ import type { RealtimeChannel } from '@supabase/supabase-js';
 import { safeAccess } from '../utils/validation';
 import { LevelSyncService } from '../services/LevelSyncService';
 
-export interface LevelRecord {
-  level: number;
-  cleared: boolean;
-  bestScore: {
-    'time-attack': number | null;
-    survival: number | null;
-    infinite: number | null;
-  };
-  clearedAt?: string;
-}
-
-export interface CategoryProgress {
-  [category: string]: {
-    [level: number]: LevelRecord;
-  };
-}
-
-export interface UserProgress {
-  [world: string]: CategoryProgress;
-}
-
-export interface RankingRecord {
-  user_id: string;
-  nickname: string;
-  score: number;
-  rank: number;
-  week_start_date?: string; // 명예의 전당용 (시즌 시작일)
-  tier_level?: number; // 명예의 전당용 (박제된 티어 레벨)
-  tier_stars?: number; // 명예의 전당용 (박제된 티어 별)
-}
+import {
+  LevelRecord,
+  UserProgress,
+  RankingRecord,
+} from '../types/progress';
+export { type UserProgress };
 
 interface LevelProgressState {
   progress: UserProgress;

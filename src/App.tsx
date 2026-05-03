@@ -11,6 +11,12 @@ import { useSettingsStore } from '@/stores/useSettingsStore';
 import { useConnectivity } from '@/hooks/useConnectivity';
 import { PwaUpdateNotification } from '@/components/PwaUpdateNotification';
 import { RequireAuth } from '@/components/auth/RequireAuth';
+import { useUserStore } from '@/stores/useUserStore';
+import { useQuizStore } from '@/stores/useQuizStore';
+import { logger } from '@/utils/logger';
+import { registerHapticConfig } from '@/utils/haptic';
+import { registerDebugConfig } from '@/utils/debugFetch';
+import { registerDebugBridge } from '@/hooks/useQuickActionsDebugBridge';
 
 const HomePage = resilientLazy(
   () => import('@/pages/HomePage').then((module) => ({ default: module.HomePage })),
@@ -163,6 +169,37 @@ function App() {
       window.removeEventListener('error', handleError);
       window.removeEventListener('unhandledrejection', handleUnhandledRejection);
     };
+  }, []);
+
+  // Logger -> Store 동기화 등록
+  useEffect(() => {
+    const unregister = logger.registerHandler((level, message, stack, context) => {
+      useErrorLogStore.getState().addLog(level, message, stack, context);
+    });
+    return unregister;
+  }, []);
+
+  // Utility -> Store 동기화 등록
+  useEffect(() => {
+    registerHapticConfig(() => useSettingsStore.getState().hapticEnabled);
+    registerDebugConfig(() => ({
+      networkLatency: useDebugStore.getState().networkLatency,
+      forceNetworkError: useDebugStore.getState().forceNetworkError,
+    }));
+    registerDebugBridge({
+      setMinerals: async (val: number) => {
+        await useUserStore.getState().debugSetMinerals(val);
+      },
+      setStamina: async (val: number) => {
+        await useUserStore.getState().debugSetStamina(val);
+      },
+      setTimeLimit: (val: number) => {
+        useQuizStore.getState().setTimeLimit(val as any);
+      },
+      fetchUserData: async () => {
+        await useUserStore.getState().fetchUserData();
+      },
+    });
   }, []);
 
   return (

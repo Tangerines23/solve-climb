@@ -1,6 +1,7 @@
 // src/components/BadgeSlot.tsx
 import React, { useEffect, useState } from 'react';
-import { useBadgeStore, BadgeDefinition, UserBadge } from '../stores/useBadgeStore';
+import { useBadge } from '@/hooks/useBadge';
+import { BadgeDefinition, UserBadge } from '@/types/badge';
 import './BadgeSlot.css';
 
 interface BadgeSlotProps {
@@ -39,23 +40,11 @@ interface BadgeCollectionProps {
 }
 
 export const BadgeCollection: React.FC<BadgeCollectionProps> = ({ userId, mode = 'full' }) => {
-  // Zustand Store Hooks
   const {
     badgeDefinitions,
     userBadges,
-    fetchBadgeDefinitions,
-    fetchUserBadges,
-    isLoadingDefinitions,
-    isLoadingUserBadges,
-  } = useBadgeStore();
-
-  // Initial Fetch
-  useEffect(() => {
-    fetchBadgeDefinitions();
-    if (userId) {
-      fetchUserBadges(userId);
-    }
-  }, [userId, fetchBadgeDefinitions, fetchUserBadges]);
+    isLoading,
+  } = useBadge(userId);
 
   const [displayBadges, setDisplayBadges] = useState<UserBadge[]>([]);
 
@@ -82,7 +71,7 @@ export const BadgeCollection: React.FC<BadgeCollectionProps> = ({ userId, mode =
     }
   }, [userBadges, badgeDefinitions, mode]);
 
-  if (isLoadingUserBadges || isLoadingDefinitions) {
+  if (isLoading) {
     return <div className="badge-collection-loading">뱃지 로딩...</div>;
   }
 

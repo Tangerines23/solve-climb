@@ -1,52 +1,19 @@
-import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { APP_CONFIG } from '../config/app';
-import { urls } from '../utils/navigation';
-import { useFavoriteStore } from '../stores/useFavoriteStore';
-import { useFeatureFlagStore } from '../stores/useFeatureFlagStore';
 import { UnknownMountainCard } from './UnknownMountainCard';
 import { Toast } from './Toast';
-import { calculateCategoryAltitude } from '../utils/scoreCalculator';
+import { useCategoryList } from '@/hooks/useCategoryList';
 import './CategoryList.css';
 
 export function CategoryList() {
-  const navigate = useNavigate();
-  const isFavorite = useFavoriteStore((state) => state.isFavorite);
-  const addFavorite = useFavoriteStore((state) => state.addFavorite);
-  const [showExplorerToast, setShowExplorerToast] = useState<string | null>(null);
+  const {
+    mountains,
+    isFavorite,
+    showExplorerToast,
+    setShowExplorerToast,
+    handleToggleFavorite,
+    handleMountainClick,
+    getMountainAltitudeInfo,
+  } = useCategoryList();
 
-  const handleToggleFavorite = (e: React.MouseEvent, mountainId: string, mountainName: string) => {
-    e.stopPropagation();
-    addFavorite({
-      type: 'category',
-      categoryId: mountainId,
-      name: mountainName,
-    });
-  };
-
-  const handleMountainClick = (mountainId: string) => {
-    // 산 선택 시 해당 산의 카테고리(기초, 논리 등) 선택 페이지로 이동
-    navigate(urls.categorySelect({ mountain: mountainId }));
-  };
-
-  const { flags } = useFeatureFlagStore();
-
-  // 활성화된 산 목록
-  const mountains = (
-    APP_CONFIG.MOUNTAINS as readonly {
-      id: string;
-      name: string;
-      icon: string;
-      disabled: boolean;
-      color: string;
-    }[]
-  ).filter((mountain) => {
-    if (mountain.id === 'math') return flags.ENABLE_MATH_MOUNTAIN;
-    if (mountain.id === 'language') return flags.ENABLE_LANGUAGE_MOUNTAIN;
-    if (mountain.id === 'logic') return flags.ENABLE_LOGIC_MOUNTAIN;
-    if (mountain.id === 'general') return flags.ENABLE_GENERAL_MOUNTAIN;
-    return true;
-  });
 
   return (
     <div className="category-list-container">
@@ -54,7 +21,7 @@ export function CategoryList() {
       <div className="category-list">
         {mountains.map((mountain) => {
           const isFav = isFavorite(mountain.id);
-          const { totalAltitude, totalProblems } = calculateCategoryAltitude(mountain.id);
+          const { totalAltitude, totalProblems } = getMountainAltitudeInfo(mountain.id);
 
           return (
             <div

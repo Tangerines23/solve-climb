@@ -1,56 +1,41 @@
-import { useState, useRef, useLayoutEffect, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { APP_CONFIG } from '@/config/app';
+import { useRef } from 'react';
 import { ClimbGraphic } from '@/components/ClimbGraphic';
 import { MyRecordCard } from '@/components/MyRecordCard';
 import { LevelListCard } from '@/components/LevelListCard';
 import { FooterNav } from '@/components/FooterNav';
 import { Toast } from '@/components/Toast';
-import { useFavoriteStore } from '@/stores/useFavoriteStore';
-import { World, Tier } from '@/types/quiz';
-import { urls } from '@/utils/navigation';
 import { PageLayout } from '@/components/layout/PageLayout';
+import { useLevelSelectPageBridge } from '@/hooks/useLevelSelectPageBridge';
 import './LevelSelectPage.css';
-import { storageService, STORAGE_KEYS } from '@/services';
-import { useNavigationContext } from '@/hooks/useNavigationContext';
 
 export function LevelSelectPage() {
-  const navigate = useNavigate();
   const mapAreaRef = useRef<HTMLDivElement>(null);
-  const [isSheetExpanded, setIsSheetExpanded] = useState(false);
-  const [toastMessage, setToastMessage] = useState('');
-  const [showToast, setShowToast] = useState(false);
-  const addFavorite = useFavoriteStore((state) => state.addFavorite);
-  const isFavorite = useFavoriteStore((state) => state.isFavorite);
-  const lastLongPressRef = useRef(0);
-
-  // Game Tips Hook (Disabled: missing module)
-  // const { isGameTipOpen, closeGameTip, currentGameTip } = useGameTips();
-
-  // [핵심 1] 화면 준비 상태 (초기엔 숨김)
-  const [isReady, setIsReady] = useState(false);
-
   const {
-    mountain: mountainParam,
-    world: worldParam,
-    category: categoryParam,
-    tryRecover,
-  } = useNavigationContext();
-
-  const [tier] = useState<Tier>('normal'); // FIXME: 하드 티어 개발 완료 시 setTier 복구
-
-  // [Phase 8] Persistence & Self-healing - URL 파라미터 결손 시 자동 복구 리다이렉트
-  useEffect(() => {
-    tryRecover(['mountain', 'world', 'category']);
-  }, [tryRecover]);
-
-  useLayoutEffect(() => {
-    // 이제 스크롤 위치 제어는 ClimbGraphic 내부에서 더 정확하게(현재 레벨 기준) 처리하므로,
-    // 여기서는 화면 준비 상태만 전환합니다.
-    requestAnimationFrame(() => {
-      setIsReady(true);
-    });
-  }, []);
+    mountainParam,
+    worldParam,
+    categoryParam,
+    worldInfo,
+    worldName,
+    categoryInfo,
+    categoryColor,
+    levels,
+    tier,
+    isReady,
+    isSheetExpanded,
+    setIsSheetExpanded,
+    toastMessage,
+    showToast,
+    setShowToast,
+    handleLevelClick,
+    handleLockedLevelClick,
+    handleLevelLongPress,
+    handleSurvivalClick,
+    handleWorldChange,
+    handleBack,
+    handleHomeRedirect,
+    handleCategorySelectRedirect,
+    setToastMessage,
+  } = useLevelSelectPageBridge();
 
   // URL 파라미터 검증 및 데이터 로드
   if (!mountainParam || !worldParam || !categoryParam) {
@@ -60,7 +45,7 @@ export function LevelSelectPage() {
           <h2>잘못된 접근입니다</h2>
           <p>필수 파라미터가 누락되었습니다.</p>
           <button
-            onClick={() => navigate(urls.home(), { replace: true })}
+            onClick={handleHomeRedirect}
             className="error-back-button"
           >
             ←
@@ -69,12 +54,6 @@ export function LevelSelectPage() {
       </PageLayout>
     );
   }
-
-  // 월드와 카테고리 정보 가져오기
-  const worldInfo = APP_CONFIG.WORLDS.find((w) => w.id === worldParam);
-  const worldName =
-    worldInfo?.name || APP_CONFIG.WORLD_MAP[worldParam as keyof typeof APP_CONFIG.WORLD_MAP];
-  const categoryInfo = APP_CONFIG.CATEGORIES.find((cat) => cat.id === categoryParam);
 
   if (!worldName || !categoryInfo) {
     return (
@@ -83,7 +62,7 @@ export function LevelSelectPage() {
           <h2>잘못된 접근입니다</h2>
           <p>존재하지 않는 월드 또는 카테고리입니다.</p>
           <button
-            onClick={() => navigate(urls.home(), { replace: true })}
+            onClick={handleHomeRedirect}
             className="error-back-button"
           >
             ←
@@ -92,13 +71,6 @@ export function LevelSelectPage() {
       </PageLayout>
     );
   }
-
-  // 레벨 데이터 가져오기
-  const worldLevels = APP_CONFIG.LEVELS[
-    worldParam as keyof typeof APP_CONFIG.LEVELS
-  ] as unknown as Record<string, { level: number; name: string; description: string }[]>;
-  const levelsEntry = worldLevels && Object.entries(worldLevels).find(([k]) => k === categoryParam);
-  const levels = levelsEntry ? levelsEntry[1] : undefined;
 
   if (!levels || levels.length === 0) {
     return (
@@ -107,14 +79,7 @@ export function LevelSelectPage() {
           <h2>레벨 데이터가 없습니다</h2>
           <p>이 카테고리에 대한 레벨이 아직 준비되지 않았습니다.</p>
           <button
-            onClick={() => {
-              // 안전한 복귀: category-select 또는 홈으로 (히스토리에서 에러 페이지 제거를 위해 replace: true)
-              if (mountainParam) {
-                navigate(urls.categorySelect({ mountain: mountainParam }), { replace: true });
-              } else {
-                navigate(urls.home(), { replace: true });
-              }
-            }}
+            onClick={handleCategorySelectRedirect}
             className="error-back-button"
           >
             ←
@@ -123,91 +88,6 @@ export function LevelSelectPage() {
       </PageLayout>
     );
   }
-
-  const categoryColor = categoryInfo.color || 'var(--color-teal-500)';
-
-  // 모든 레벨 클리어 여부 확인 (필요 시 활용)
-  // const categoryLevels = useLevelProgressStore(
-  //   useShallow((state) => state.getLevelProgress(worldParam, categoryParam))
-  // );
-
-  // 레벨 클릭 핸들러
-  const handleLevelClick = (level: number) => {
-    navigate(
-      urls.quiz({
-        mountain: mountainParam,
-        world: worldParam,
-        category: categoryParam,
-        level,
-        mode: 'time-attack',
-        tier,
-      })
-    );
-  };
-
-  // 잠긴 레벨 클릭 핸들러
-  const handleLockedLevelClick = (_level: number, nextLevel: number) => {
-    setToastMessage(`Level ${nextLevel}의 문제 10문제를 맞추고 와야 해요`);
-    setShowToast(true);
-  };
-
-  // 레벨 길게 누르기 → 현재 카테고리 즐겨찾기 토글 (기존 LevelListCard long-press와 연결)
-  const handleLevelLongPress = (_level: number) => {
-    const now = Date.now();
-    if (now - lastLongPressRef.current < 3000) return; // 2초/4초 두 번 호출 시 한 번만 반응
-    lastLongPressRef.current = now;
-
-    const alreadyFav = isFavorite(categoryParam);
-    addFavorite({
-      type: 'subcategory',
-      categoryId: categoryParam,
-      name: categoryInfo?.name ?? categoryParam,
-    });
-    setToastMessage(alreadyFav ? '즐겨찾기 해제됨' : '⭐ 즐겨찾기에 추가됨');
-    setShowToast(true);
-  };
-
-  // 서바이벌 모드 진입 핸들러
-  const handleSurvivalClick = () => {
-    navigate(
-      urls.quiz({
-        mountain: mountainParam,
-        world: worldParam,
-        category: categoryParam,
-        level: 1,
-        mode: 'survival',
-        tier,
-      })
-    );
-  };
-
-  // 월드 전환 핸들러
-  const handleWorldChange = (direction: 'next' | 'prev') => {
-    // 현재 산에 속한 월드만 필터링 (중요: 다른 산의 월드로 넘어가지 않도록 함)
-    const validWorldIds = APP_CONFIG.WORLDS.filter((w) => w.mountainId === mountainParam).map(
-      (w) => w.id
-    );
-
-    if (validWorldIds.length <= 1) return; // 전활할 월드가 없으면 무시
-
-    const currentIndex = validWorldIds.indexOf(worldParam as World);
-    let nextIndex = direction === 'next' ? currentIndex + 1 : currentIndex - 1;
-
-    if (nextIndex >= validWorldIds.length) nextIndex = 0;
-    if (nextIndex < 0) nextIndex = validWorldIds.length - 1;
-
-    const nextWorld = validWorldIds.at(nextIndex) ?? validWorldIds[0];
-
-    // 산별로 마지막 플레이 월드 분리 저장
-    storageService.set(STORAGE_KEYS.LAST_PLAYED_WORLD(mountainParam), nextWorld);
-    navigate(
-      urls.levelSelect({
-        mountain: mountainParam,
-        world: nextWorld,
-        category: categoryParam,
-      })
-    );
-  };
 
   return (
     <PageLayout
@@ -223,9 +103,7 @@ export function LevelSelectPage() {
       <header className="level-select-header">
         <button
           className="level-select-back"
-          onClick={() => {
-            navigate(urls.categorySelect({ mountain: mountainParam }));
-          }}
+          onClick={handleBack}
           aria-label="뒤로 가기"
         >
           ←
@@ -323,58 +201,6 @@ export function LevelSelectPage() {
 
       <FooterNav />
 
-      {/* GameTipModal and Toast are assumed to be defined elsewhere or need proper context/state */}
-      {/* Placeholder for GameTipModal and Toast, assuming their state and handlers are defined */}
-      {/* For example, if GameTipModal and Toast are part of the PageLayout or a global context,
-          they might not be rendered directly here. If they are local, their state (isGameTipOpen, currentGameTip)
-          and handlers (closeGameTip) need to be defined in this component.
-          The provided snippet includes them, so I'll add them assuming their state/props exist.
-      */}
-      {/* Assuming GameTipModal and Toast are defined and their state/props are available */}
-      {/* Note: isGameTipOpen and currentGameTip are not defined in the provided context,
-               so this might lead to errors if not handled. */}
-      {/* The instruction uses `isOpen={!!isGameTipOpen}` which implies `isGameTipOpen` might be nullable. */}
-      {/* The original code had `isGameTipOpen` and `currentGameTip` in the PageLayout,
-          but they are not defined in the `LevelSelectPage` component's state.
-          I will add them as comments to indicate they are missing from the component's state.
-      */}
-      {/*
-      <GameTipModal
-        isOpen={!!isGameTipOpen} // Ensure boolean
-        onClose={closeGameTip}
-        tip={currentGameTip}
-      />
-      */}
-      {/*
-      <Toast
-        message={toastMessage}
-        isOpen={showToast}
-        onClose={() => setShowToast(false)}
-        autoClose={true}
-        autoCloseDelay={2000}
-      />
-      */}
-      {/* Re-adding the Toast and GameTipModal as per the instruction, assuming their state/props are handled */}
-      {/* Note: `isGameTipOpen`, `closeGameTip`, `currentGameTip` are not defined in the provided component context. */}
-      {/* The instruction implies they should be present. I will add them as they are in the instruction. */}
-      {/* If these variables are not defined, the code will break. */}
-      {/* For a faithful edit, I'll include them as provided. */}
-      {/* Assuming `isGameTipOpen`, `closeGameTip`, `currentGameTip` are defined in the component's scope. */}
-      {/* The original code had `isGameTipOpen` and `currentGameTip` in the PageLayout,
-          but they are not defined in the `LevelSelectPage` component's state.
-          I will add them as comments to indicate they are missing from the component's state.
-      */}
-      {/*
-      <GameTipModal
-        isOpen={isGameTipOpen}
-        onClose={closeGameTip}
-        tip={currentGameTip}
-      />
-      */}
-      {/* The instruction provided a Toast component with `message`, `isOpen`, `onClose`, `autoClose`, `autoCloseDelay`.
-          The `toastMessage` and `showToast` states are already defined in the component.
-          So, the Toast component can be rendered.
-      */}
       <Toast
         message={toastMessage}
         isOpen={showToast}

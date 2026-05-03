@@ -1,13 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { debugFetch, safeSupabaseQuery } from '../debugFetch';
-import { useDebugStore } from '../../stores/useDebugStore';
-
-// Mock useDebugStore
-vi.mock('../../stores/useDebugStore', () => ({
-  useDebugStore: {
-    getState: vi.fn(),
-  },
-}));
+import { debugFetch, safeSupabaseQuery, registerDebugConfig } from '../debugFetch';
 
 // Mock logError
 vi.mock('../errorHandler', () => ({
@@ -15,34 +7,32 @@ vi.mock('../errorHandler', () => ({
 }));
 
 describe('debugFetch', () => {
+  let mockConfig = {
+    networkLatency: 0,
+    forceNetworkError: false,
+  };
+
   beforeEach(() => {
     vi.clearAllMocks();
-  });
-
-  it('should call the function directly if not in DEV mode', async () => {
-    // Note: Vitest usually runs in a mode that looks like DEV
-    // But we can test the behavior by mocking import.meta.env
+    mockConfig = {
+      networkLatency: 0,
+      forceNetworkError: false,
+    };
+    registerDebugConfig(() => mockConfig);
   });
 
   it('should add latency if networkLatency is set', async () => {
-    vi.mocked(useDebugStore.getState).mockReturnValue({
-      networkLatency: 100,
-      forceNetworkError: false,
-    } as any);
+    mockConfig.networkLatency = 50; // Lower latency for faster test
 
     const start = Date.now();
     await debugFetch(() => Promise.resolve('ok'));
     const duration = Date.now() - start;
 
-    // Adding 5ms tolerance for environmental timing drift
-    expect(duration).toBeGreaterThanOrEqual(95);
+    expect(duration).toBeGreaterThanOrEqual(45);
   });
 
   it('should throw error if forceNetworkError is set', async () => {
-    vi.mocked(useDebugStore.getState).mockReturnValue({
-      networkLatency: 0,
-      forceNetworkError: true,
-    } as any);
+    mockConfig.forceNetworkError = true;
 
     await expect(debugFetch(() => Promise.resolve('ok'))).rejects.toThrow(
       '[DEBUG] Forced network error'
@@ -51,12 +41,18 @@ describe('debugFetch', () => {
 });
 
 describe('safeSupabaseQuery', () => {
+  let mockConfig = {
+    networkLatency: 0,
+    forceNetworkError: false,
+  };
+
   beforeEach(() => {
     vi.clearAllMocks();
-    vi.mocked(useDebugStore.getState).mockReturnValue({
+    mockConfig = {
       networkLatency: 0,
       forceNetworkError: false,
-    } as any);
+    };
+    registerDebugConfig(() => mockConfig);
   });
 
   it('should return data on successful first try', async () => {
@@ -65,35 +61,30 @@ describe('safeSupabaseQuery', () => {
     expect(result.data).toBe('success');
   });
 
-  it('should retry on transient errors', async () => {
-    // This test was incomplete and assigning an unused variable.
-    // The retry logic is tested in the next case.
-  });
-
-  it('should retry when debugFetch throws and error is transient', async () => {
+  it('should retry when debugFetch throws due to forced error', async () => {
     let callCount = 0;
-    vi.mocked(useDebugStore.getState).mockImplementation(() => {
+    registerDebugConfig(() => {
       callCount++;
       return {
         networkLatency: 0,
-        forceNetworkError: callCount === 1, // Force error on first try
-      } as any;
+        forceNetworkError: callCount === 1, // Fail on first attempt
+      };
     });
 
     const mockQuery = Promise.resolve({ data: 'success', error: null });
-    const result = await safeSupabaseQuery(mockQuery);
+    // Use 0 retries to test it actually tries at least once more? 
+    // Wait, safeSupabaseQuery uses retries parameter.
+    const result = await safeSupabaseQuery(mockQuery, { retries: 1 });
 
     expect(callCount).toBeGreaterThan(1);
     expect(result.data).toBe('success');
   });
 
   it('should stop retries after maximum attempts', async () => {
-    vi.mocked(useDebugStore.getState).mockReturnValue({
-      networkLatency: 0,
-      forceNetworkError: true,
-    } as any);
+    mockConfig.forceNetworkError = true;
 
     const mockQuery = Promise.resolve({ data: 'wont-happen', error: null });
+    // This will take some time due to backoff
     await expect(safeSupabaseQuery(mockQuery, { retries: 1 })).rejects.toThrow();
   });
 });

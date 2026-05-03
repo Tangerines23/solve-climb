@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { DebugAction, CustomPreset } from '../../utils/debugPresets';
+import { type DebugAction, type CustomPreset } from '../../types/debug';
 import './CustomPresetModal.css';
 
 interface CustomPresetModalProps {

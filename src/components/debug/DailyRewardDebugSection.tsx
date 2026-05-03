@@ -1,20 +1,10 @@
-import { useDailyRewardStore } from '../../stores/useDailyRewardStore';
+import { useDebugActions } from '@/hooks/useDebugActions';
 
 export function DailyRewardDebugSection() {
-  const checkDailyLogin = useDailyRewardStore((state) => state.checkDailyLogin);
+  const { checkDailyLogin, triggerManualReward } = useDebugActions();
 
   const handleManualTrigger = () => {
-    // Note: This still calls the real RPC.
-    // If you want a pure UI test button that doesn't hit DB:
-    useDailyRewardStore.setState({
-      showModal: true,
-      rewardResult: {
-        success: true,
-        reward_minerals: 250,
-        streak: 5,
-        message: '매뉴얼 테스트 보상입니다!',
-      },
-    });
+    triggerManualReward();
   };
 
   return (

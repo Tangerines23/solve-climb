@@ -1,6 +1,4 @@
-import { useState, useEffect } from 'react';
-import { useUserStore } from '../../stores/useUserStore';
-import { getItemEmoji } from '@/constants/items';
+import { useBackpack } from '../../hooks/useBackpack';
 import './BackpackBottomSheet.css';
 
 interface BackpackBottomSheetProps {
@@ -16,17 +14,7 @@ export function BackpackBottomSheet({
   selectedItemIds,
   onToggleItem,
 }: BackpackBottomSheetProps) {
-  const { inventory } = useUserStore();
-  const [isAnimating, setIsAnimating] = useState(false);
-
-  useEffect(() => {
-    if (isOpen) {
-      setIsAnimating(true);
-    } else {
-      const timer = setTimeout(() => setIsAnimating(false), 300);
-      return () => clearTimeout(timer);
-    }
-  }, [isOpen]);
+  const { inventory, isAnimating, getItemEmoji } = useBackpack(isOpen);
 
   if (!isOpen && !isAnimating) return null;
 

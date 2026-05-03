@@ -1,13 +1,11 @@
 import { useState, useRef } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { urls } from '../../utils/navigation';
-import { useDebugStore } from '../../stores/useDebugStore';
+import { useDebugActions } from '../../hooks/useDebugActions';
 
 export function DebugReturnFloater() {
   const navigate = useNavigate();
   const location = useLocation();
-  const showReturnFloater = useDebugStore((state) => state.showReturnFloater);
-  const setShowReturnFloater = useDebugStore((state) => state.setShowReturnFloater);
+  const { showReturnFloater, setShowReturnFloater, urls } = useDebugActions();
 
   // 드래그 상태 관리
   const [position, setPosition] = useState({

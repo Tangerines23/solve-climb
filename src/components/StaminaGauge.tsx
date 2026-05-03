@@ -1,13 +1,8 @@
-import { useUserStore } from '../stores/useUserStore';
+import { useStamina } from '../hooks/useStamina';
 import './StaminaGauge.css';
 
 export function StaminaGauge() {
-  const { stamina } = useUserStore();
-  const maxStamina = 5;
-  const percentage = Math.min((stamina / maxStamina) * 100, 100);
-
-  const isFull = stamina >= maxStamina;
-  const isEmpty = stamina === 0;
+  const { stamina, maxStamina, percentage, isFull, isEmpty } = useStamina();
 
   return (
     <div

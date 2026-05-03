@@ -1,4 +1,4 @@
-import { Term } from '@/components/algebra/EquationTerm';
+import { Term } from '@/types/algebra';
 
 /**
  * Parses an equation string into left and right structured terms.
@@ -33,7 +33,7 @@ export function parseEquation(equation: string): { left: Term[]; right: Term[] }
 
     return matches.map((match, _) => {
       const sign = match[0] as '+' | '-';
-      let value = match.slice(1);
+      const value = match.slice(1);
 
       // Determine type variable vs constant
       // Heuristic: contains 'x', 'y' or other letters is variable

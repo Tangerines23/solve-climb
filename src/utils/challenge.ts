@@ -1,18 +1,9 @@
 import { APP_CONFIG } from '../config/app';
+import type { TodayChallenge, ProgressData, ProgressMap } from '@/types/challenge';
+export type { TodayChallenge, ProgressData, ProgressMap };
 import { storageService, STORAGE_KEYS } from '../services';
-import { useFeatureFlagStore } from '../stores/useFeatureFlagStore';
+import { FeatureFlags } from '../types/config';
 
-export interface TodayChallenge {
-  id: string;
-  title: string;
-  category: string;
-  categoryId: string;
-  topic: string;
-  topicId: string;
-  mode: string;
-  level: number;
-  worldId: string;
-}
 
 /**
  * 날짜 문자열을 반환합니다 (YYYY-MM-DD 형식)
@@ -56,18 +47,14 @@ export class SeededRandom {
 /**
  * 오늘의 챌린지를 생성합니다 (Categorized League System)
  */
-export type ProgressData = { cleared: boolean; level: number };
-export type ProgressMap = Record<string, Record<string, Record<string, ProgressData>>>;
 
 /**
  * 오늘의 챌린지를 생성합니다 (Categorized League System)
  */
-export function generateTodayChallenge(progressMap: ProgressMap): TodayChallenge {
+export function generateTodayChallenge(progressMap: ProgressMap, flags: FeatureFlags): TodayChallenge {
   const todayDate = getTodayDateString();
   const seed = dateToSeed(todayDate);
   const rng = new SeededRandom(seed);
-
-  const { flags } = useFeatureFlagStore.getState();
 
   // 1. 산 선택 (활성화된 것 중)
   const availableMountains = APP_CONFIG.MOUNTAINS.filter((mtn) => {
@@ -156,7 +143,8 @@ export function generateTodayChallenge(progressMap: ProgressMap): TodayChallenge
  * 오늘의 챌린지를 가져옵니다
  */
 export async function getTodayChallenge(
-  progressMap: Record<string, Record<string, Record<string, { cleared: boolean; level: number }>>>
+  progressMap: Record<string, Record<string, Record<string, { cleared: boolean; level: number }>>>,
+  flags: FeatureFlags
 ): Promise<TodayChallenge> {
   const todayDate = getTodayDateString();
   const storedDate = storageService.get<string>(STORAGE_KEYS.TODAY_CHALLENGE_DATE);
@@ -166,7 +154,7 @@ export async function getTodayChallenge(
     return storedChallenge;
   }
 
-  const newChallenge = generateTodayChallenge(progressMap);
+  const newChallenge = generateTodayChallenge(progressMap, flags);
   storageService.set(STORAGE_KEYS.TODAY_CHALLENGE_DATE, todayDate);
   storageService.set(STORAGE_KEYS.TODAY_CHALLENGE, newChallenge);
 

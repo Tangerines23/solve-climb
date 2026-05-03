@@ -1,9 +1,9 @@
-import { useDailyRewardStore } from '../stores/useDailyRewardStore';
+import { useDailyRewardModalBridge } from '../hooks/useDailyRewardModalBridge';
 import { BaseModal } from './BaseModal';
 import './DailyRewardModal.css';
 
 export function DailyRewardModal() {
-  const { showModal, rewardResult, closeModal } = useDailyRewardStore();
+  const { showModal, rewardResult, closeModal } = useDailyRewardModalBridge();
 
   if (!showModal || !rewardResult) return null;
 

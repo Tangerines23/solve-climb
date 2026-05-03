@@ -1,4 +1,4 @@
-import { useErrorLogStore } from '../stores/useErrorLogStore';
+// Removed direct store import to comply with boundary rules
 
 /**
  * 로깅 유틸리티
@@ -33,6 +33,9 @@ const LOG_STYLES = {
   error: 'color: #F44336; font-weight: bold;',
 } as const;
 
+type LogHandler = (level: 'info' | 'warning' | 'error', message: string, stack?: string, context?: string) => void;
+const logHandlers: LogHandler[] = [];
+
 /**
  * 로그 포맷터
  */
@@ -59,20 +62,18 @@ function log(level: LogLevel, context: string, message: string, ...args: unknown
   const styles = Object.values(LOG_STYLES) as string[];
   const style = level >= 0 && level < styles.length ? (styles.at(level) ?? '') : '';
 
-  // Dev 탭 에러 로그에 추가
-  if (level >= LogLevel.INFO) {
+  // 외부 핸들러 실행 (예: 스토어 저장)
+  if (logHandlers.length > 0) {
     const errorLevel: 'info' | 'warning' | 'error' =
       level === LogLevel.ERROR ? 'error' : level === LogLevel.WARN ? 'warning' : 'info';
-
-    // stack 정보 추출 (에러 객체가 있는 경우)
     const err = args.find((a) => a instanceof Error) as Error | undefined;
-
-    try {
-      useErrorLogStore.getState().addLog(errorLevel, message, err?.stack, context);
-    } catch (e) {
-      // 스토어가 초기화되지 않았거나 순환 참조 등 대비
-      console.warn('Failed to add log to store', e);
-    }
+    logHandlers.forEach((handler) => {
+      try {
+        handler(errorLevel, message, err?.stack, context);
+      } catch (e) {
+        console.warn('Log handler failed', e);
+      }
+    });
   }
 
   switch (level) {
@@ -179,5 +180,16 @@ export const logger = {
     const style = color ? `color: ${color}; font-weight: bold;` : LOG_STYLES.info;
     const timestamp = new Date().toISOString();
     console.log(`%c[${timestamp}] [SYSTEM] ${message}`, style);
+  },
+
+  /**
+   * 로그 핸들러 등록
+   */
+  registerHandler(handler: LogHandler): () => void {
+    logHandlers.push(handler);
+    return () => {
+      const index = logHandlers.indexOf(handler);
+      if (index > -1) logHandlers.splice(index, 1);
+    };
   },
 };

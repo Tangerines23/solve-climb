@@ -21,6 +21,13 @@ vi.mock('../../services', () => ({
 }));
 
 describe('challenge', () => {
+  const mockFlags = {
+    ENABLE_MATH_MOUNTAIN: true,
+    ENABLE_LANGUAGE_MOUNTAIN: true,
+    ENABLE_LOGIC_MOUNTAIN: true,
+    ENABLE_GENERAL_MOUNTAIN: true,
+  };
+
   beforeEach(() => {
     vi.clearAllMocks();
     vi.useFakeTimers();
@@ -59,7 +66,7 @@ describe('challenge', () => {
         general: [],
       };
 
-      const challenge = generateTodayChallenge({});
+      const challenge = generateTodayChallenge({}, mockFlags);
       expect(challenge.topicId).toBe('default');
       expect(challenge.title).toContain('기본 챌린지');
 
@@ -76,7 +83,7 @@ describe('challenge', () => {
         World1: {},
       };
 
-      const challenge = generateTodayChallenge({});
+      const challenge = generateTodayChallenge({}, mockFlags);
       expect(challenge.level).toBe(1);
       expect(challenge.title).toContain('입문!');
 
@@ -107,7 +114,7 @@ describe('challenge', () => {
         return null;
       });
 
-      const result = await getTodayChallenge({});
+      const result = await getTodayChallenge({}, mockFlags);
 
       expect(result).toEqual(cachedChallenge);
     });
@@ -115,7 +122,7 @@ describe('challenge', () => {
     it('should generate local challenge when cache is missing', async () => {
       vi.mocked(storageService.get).mockReturnValue(null);
 
-      const result = await getTodayChallenge({});
+      const result = await getTodayChallenge({}, mockFlags);
       expect(result.id).toContain('today_challenge_');
       expect(storageService.set).toHaveBeenCalled();
     });
@@ -123,8 +130,8 @@ describe('challenge', () => {
     it('should generate same challenge for same date', async () => {
       vi.mocked(storageService.get).mockReturnValue(null);
 
-      const result1 = await getTodayChallenge({});
-      const result2 = await getTodayChallenge({});
+      const result1 = await getTodayChallenge({}, mockFlags);
+      const result2 = await getTodayChallenge({}, mockFlags);
 
       expect(result1.id).toBe(result2.id);
       expect(result1.categoryId).toBe(result2.categoryId);

@@ -4,7 +4,6 @@
  */
 
 import { logger } from './logger';
-import { useErrorLogStore } from '../stores/useErrorLogStore';
 import { analytics } from '@/services/analytics';
 
 const isDevelopment = import.meta.env.DEV;
@@ -126,10 +125,7 @@ export function logError(context: string, error: unknown): void {
     data: { context, message: errorMessage },
   });
 
-  // 에러 로그 스토어에 기록 (개발 환경에서만)
-  if (isDevelopment && error instanceof Error) {
-    useErrorLogStore.getState().addLog('error', errorMessage, error.stack, context);
-  }
+  // logger.error internally triggers registered handlers (e.g. dev log store)
 }
 
 /**
@@ -139,8 +135,5 @@ export function logError(context: string, error: unknown): void {
 export function logWarning(context: string, message: string): void {
   logger.warn(context, message);
 
-  // 경고 로그 스토어에 기록 (개발 환경에서만)
-  if (isDevelopment) {
-    useErrorLogStore.getState().addLog('warning', message, undefined, context);
-  }
+  // logger.warn internally triggers registered handlers
 }

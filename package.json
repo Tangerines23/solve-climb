@@ -157,6 +157,8 @@
     "cross-env": "^10.1.0",
     "cspell": "^9.6.2",
     "eslint": "^9.20.0",
+    "eslint-import-resolver-typescript": "^4.4.4",
+    "eslint-plugin-boundaries": "^6.0.2",
     "eslint-plugin-react-hooks": "^5.2.0",
     "eslint-plugin-react-refresh": "^0.4.22",
     "eslint-plugin-security": "^4.0.0",
@@ -181,6 +183,7 @@
     "supabase": "^2.90.0",
     "tailwindcss": "^4.1.18",
     "typescript": "^5.9.3",
+    "typescript-eslint": "^8.59.1",
     "vite": "^7.3.2",
     "vite-plugin-pwa": "^1.2.0",
     "vitest": "^4.0.16"

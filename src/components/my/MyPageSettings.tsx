@@ -1,6 +1,6 @@
 import { useNavigate } from 'react-router-dom';
 import { APP_CONFIG } from '../../config/app';
-import { urls } from '../../utils/navigation';
+import { useNavigation } from '../../hooks/useNavigation';
 
 interface MyPageSettingsProps {
   hapticEnabled: boolean;
@@ -28,6 +28,7 @@ export function MyPageSettings({
   onWithdraw,
 }: MyPageSettingsProps) {
   const navigate = useNavigate();
+  const { urls } = useNavigation();
 
   return (
     <div className="my-page-settings">

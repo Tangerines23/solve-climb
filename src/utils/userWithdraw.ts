@@ -1,16 +1,16 @@
 import { supabase } from './supabaseClient';
-import { useProfileStore } from '../stores/useProfileStore';
-import { useLevelProgressStore } from '../stores/useLevelProgressStore';
 import { ENV } from './env';
 import { storageService, STORAGE_KEYS } from '../services';
 
 /**
  * 회원 탈퇴를 처리합니다.
- * - Supabase Edge Function을 호출하여 auth.users에서 삭제
- * - 로컬 데이터 완전 삭제
- * - 로그아웃 처리
+ * @param clearProfile 프로필 초기화 함수
+ * @param resetProgress 진행도 초기화 함수
  */
-export const withdrawAccount = async (): Promise<boolean> => {
+export const withdrawAccount = async (
+  clearProfile: () => void,
+  resetProgress: () => Promise<void>
+): Promise<boolean> => {
   let serverDeleteSuccess = false;
   let serverErrorMessage = '';
 
@@ -57,27 +57,21 @@ export const withdrawAccount = async (): Promise<boolean> => {
       }
     } else {
       console.warn('[탈퇴] 활성 세션이 없습니다. 로컬 데이터만 삭제합니다.');
-      serverDeleteSuccess = true; // 세션이 없으면 서버 삭제는 이미 된 것으로 간주하거나 무시
+      serverDeleteSuccess = true;
     }
   } catch (outerError) {
     console.error('[탈퇴] 외부 예외 발생:', outerError);
     serverErrorMessage = outerError instanceof Error ? outerError.message : String(outerError);
   } finally {
-    // 2. 서버 성공 여부와 관계없이 로컬 데이터 삭제 (매우 중요)
+    // 2. 서버 성공 여부와 관계없이 로컬 데이터 삭제
     console.log('[탈퇴] 로컬 데이터 정리 시작...');
     try {
-      // 로컬 스토리지 초기화
       storageService.clear();
       storageService.remove(STORAGE_KEYS.LOCAL_SESSION);
 
-      // Zustand 스토어 초기화
-      const profileStore = useProfileStore.getState();
-      profileStore.clearProfile();
-
-      const levelProgressStore = useLevelProgressStore.getState();
-      await levelProgressStore
-        .resetProgress()
-        .catch((e) => console.error('[탈퇴] Progress reset failed', e));
+      // 외부에서 주입된 스토어 초기화 로직 실행
+      clearProfile();
+      await resetProgress().catch((e) => console.error('[탈퇴] Progress reset failed', e));
 
       // Supabase 로그아웃 (세션 무효화)
       const signOutResult = supabase.auth.signOut();
@@ -91,7 +85,6 @@ export const withdrawAccount = async (): Promise<boolean> => {
     }
   }
 
-  // 서버 삭제는 실패했지만 로컬 정리는 끝난 경우, 사용자에게 알림을 줄 수 있도록 결과 반환
   if (!serverDeleteSuccess && serverErrorMessage) {
     throw new Error(
       `계정 삭제 요청 중 오류가 발생했습니다. 네트워크 상태를 확인하시거나 다시 시도해 주세요. (상세: ${serverErrorMessage})`

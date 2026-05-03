@@ -1,12 +1,13 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/react';
 import DebugPanel from '../DebugPanel';
-import { useDebugStore } from '../../stores/useDebugStore';
+import { useDebugPanel } from '../../hooks/useDebugPanel';
 
 // Mock dependencies
-vi.mock('../../stores/useDebugStore', () => ({
-  useDebugStore: vi.fn(),
+vi.mock('../../hooks/useDebugPanel', () => ({
+  useDebugPanel: vi.fn(),
 }));
+
 
 vi.mock('../debug/QuickActionsSection', () => ({
   QuickActionsSection: () => <div>Quick Actions</div>,
@@ -46,21 +47,22 @@ describe('DebugPanel', () => {
 
   beforeEach(() => {
     vi.clearAllMocks();
-    vi.mocked(useDebugStore).mockReturnValue({
+    vi.mocked(useDebugPanel).mockReturnValue({
       isDebugPanelOpen: true,
       activeTab: 'quick',
       toggleDebugPanel: mockToggleDebugPanel,
       setActiveTab: mockSetActiveTab,
-    } as never);
+    } as any);
   });
 
   it('should not render when isDebugPanelOpen is false', () => {
-    vi.mocked(useDebugStore).mockReturnValue({
+    vi.mocked(useDebugPanel).mockReturnValue({
       isDebugPanelOpen: false,
       activeTab: 'quick',
       toggleDebugPanel: mockToggleDebugPanel,
       setActiveTab: mockSetActiveTab,
-    } as never);
+    } as any);
+
 
     const { container } = render(<DebugPanel />);
     expect(container.firstChild).toBeNull();
@@ -131,12 +133,13 @@ describe('DebugPanel', () => {
   });
 
   it('should render active tab content', () => {
-    vi.mocked(useDebugStore).mockReturnValue({
+    vi.mocked(useDebugPanel).mockReturnValue({
       isDebugPanelOpen: true,
       activeTab: 'tier',
       toggleDebugPanel: mockToggleDebugPanel,
       setActiveTab: mockSetActiveTab,
-    } as never);
+    } as any);
+
 
     render(<DebugPanel />);
     expect(screen.getByText('Tier System')).toBeInTheDocument();

@@ -1,9 +1,10 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { useErrorLogStore, type ErrorLogEntry } from '../../stores/useErrorLogStore';
+import { useErrorLogActions } from '../../hooks/useErrorLogActions';
+import { type ErrorLogEntry } from '../../types/debug';
 import './ErrorLogSection.css';
 
 export const ErrorLogSection = React.memo(function ErrorLogSection() {
-  const { logs, clearLogs, filterLogs } = useErrorLogStore();
+  const { logs, clearLogs, filterLogs } = useErrorLogActions();
   const [filterLevel, setFilterLevel] = useState<'error' | 'warning' | 'info' | 'all'>('all');
   const [timeFilter, setTimeFilter] = useState<'1h' | '24h' | '7d' | 'all'>('all');
   const [searchQuery, setSearchQuery] = useState('');

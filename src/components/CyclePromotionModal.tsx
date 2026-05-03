@@ -1,6 +1,5 @@
-// src/components/CyclePromotionModal.tsx
-import React, { useState } from 'react';
-import { supabase } from '../utils/supabaseClient';
+import React from 'react';
+import { useCyclePromotionModalBridge } from '../hooks/useCyclePromotionModalBridge';
 import { BaseModal } from './BaseModal';
 import './CyclePromotionModal.css';
 
@@ -19,32 +18,7 @@ export const CyclePromotionModal: React.FC<CyclePromotionModalProps> = ({
   onPromote,
   onClose,
 }) => {
-  const [isPromoting, setIsPromoting] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-
-  const handlePromote = async () => {
-    setIsPromoting(true);
-    setError(null);
-
-    try {
-      const { data, error: rpcError } = await supabase.rpc('promote_to_next_cycle');
-
-      if (rpcError) {
-        throw rpcError;
-      }
-
-      if (data && data.success) {
-        onPromote();
-      } else {
-        setError(data?.error || '승급 처리에 실패했습니다.');
-      }
-    } catch (err) {
-      console.error('Failed to promote:', err);
-      setError('승급 처리 중 오류가 발생했습니다.');
-    } finally {
-      setIsPromoting(false);
-    }
-  };
+  const { isPromoting, error, handlePromote } = useCyclePromotionModalBridge(onPromote);
 
   return (
     <BaseModal

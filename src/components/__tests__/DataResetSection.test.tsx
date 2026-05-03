@@ -1,17 +1,13 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { DataResetSection } from '../debug/DataResetSection';
-import { useMyPageStats } from '../../hooks/useMyPageStats';
-import { useUserStore } from '../../stores/useUserStore';
+import { useDataResetDebugBridge } from '../../hooks/useDataResetDebugBridge';
 import { supabase } from '../../utils/supabaseClient';
 
-// Mock dependencies
-vi.mock('../../hooks/useMyPageStats', () => ({
-  useMyPageStats: vi.fn(),
-}));
 
-vi.mock('../../stores/useUserStore', () => ({
-  useUserStore: vi.fn(),
+// Mock dependencies
+vi.mock('../../hooks/useDataResetDebugBridge', () => ({
+  useDataResetDebugBridge: vi.fn(),
 }));
 
 vi.mock('../../utils/supabaseClient', () => ({
@@ -30,20 +26,36 @@ const mockConfirm = vi.fn(() => true);
 window.confirm = mockConfirm;
 
 describe('DataResetSection', () => {
-  const mockRefetch = vi.fn(() => Promise.resolve());
-  const mockFetchUserData = vi.fn(() => Promise.resolve());
+  const mockExecuteResetProfile = vi.fn(() => Promise.resolve());
+  const mockExecuteDeleteRecent = vi.fn(() => Promise.resolve());
+  const mockExecuteDeleteAll = vi.fn(() => Promise.resolve());
+  const mockExecuteDeleteByLevel = vi.fn(() => Promise.resolve());
+  const mockExecuteResetLevelProgress = vi.fn(() => Promise.resolve());
+  const mockGetAvailableCategories = vi.fn(() => [{ id: 'math', name: '수학' }]);
+  const mockGetSubjectsForCategory = vi.fn(() => ['arithmetic']);
 
   beforeEach(() => {
     vi.clearAllMocks();
     mockConfirm.mockReturnValue(true);
-    vi.mocked(useMyPageStats).mockReturnValue({
-      stats: {},
-      refetch: mockRefetch,
-    } as never);
-    vi.mocked(useUserStore).mockReturnValue({
-      fetchUserData: mockFetchUserData,
-    } as never);
+    vi.mocked(useDataResetDebugBridge).mockReturnValue({
+      isResetting: false,
+      isDeleting: false,
+      isResettingProgress: false,
+      executeResetProfile: mockExecuteResetProfile,
+      executeDeleteRecent: mockExecuteDeleteRecent,
+      executeDeleteAll: mockExecuteDeleteAll,
+      executeDeleteByLevel: mockExecuteDeleteByLevel,
+      executeResetLevelProgress: mockExecuteResetLevelProgress,
+      getAvailableCategories: mockGetAvailableCategories,
+      getSubjectsForCategory: mockGetSubjectsForCategory,
+      handleExportData: vi.fn(),
+      handleImportData: vi.fn(),
+      handleSaveSnapshot: vi.fn(),
+      handleRestoreSnapshot: vi.fn(),
+      message: null,
+    } as any);
   });
+
 
   it('should render without crashing', () => {
     const { container } = render(<DataResetSection />);

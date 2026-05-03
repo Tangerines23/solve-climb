@@ -1,4 +1,4 @@
-import { useLevelProgressStore, LevelRecord } from '../stores/useLevelProgressStore';
+import { LevelRecord, UserProgress as CategoryProgressMap } from '../types/progress';
 import { APP_CONFIG } from '../config/app';
 import {
   SCORE_PER_CORRECT,
@@ -21,9 +21,7 @@ const getBestScore = (record: LevelRecord): number => {
  * 전체 누적 등반 고도 계산 (모든 카테고리의 bestScore 합산)
  * @returns 총 고도(m)와 총 문제 수
  */
-export function calculateTotalAltitude(): { totalAltitude: number; totalProblems: number } {
-  const { progress } = useLevelProgressStore.getState();
-
+export function calculateTotalAltitude(progress: CategoryProgressMap): { totalAltitude: number; totalProblems: number } {
   let totalAltitude = 0;
 
   // 모든 카테고리 순회
@@ -41,15 +39,19 @@ export function calculateTotalAltitude(): { totalAltitude: number; totalProblems
 
 /**
  * 특정 서브토픽의 현재 고도 계산
- * @param category 카테고리 ID (실제로는 World ID로 쓰임)
- * @param subTopic 서브토픽 ID
- * @returns 현재 고도(m)
  */
-export function calculateSubTopicAltitude(category: string, subTopic: string): number {
-  const { getLevelProgress } = useLevelProgressStore.getState();
-  const levelProgress = getLevelProgress(category, subTopic);
+export function calculateSubTopicAltitude(
+  category: string,
+  subTopic: string,
+  progress: CategoryProgressMap
+): number {
+  const worldProgress = progress[category as keyof typeof progress];
+  if (!worldProgress) return 0;
 
-  return levelProgress.reduce((sum, record) => sum + getBestScore(record), 0);
+  const subTopicData = worldProgress[subTopic as keyof typeof worldProgress];
+  if (!subTopicData) return 0;
+
+  return Object.values(subTopicData).reduce((sum, record) => sum + getBestScore(record), 0);
 }
 
 /**
@@ -96,9 +98,10 @@ export function calculateSubTopicTargetAltitude(category: string, subTopic: stri
  */
 export function calculateSubTopicProgress(
   category: string,
-  subTopic: string
+  subTopic: string,
+  progress: CategoryProgressMap
 ): { progressPercent: number; currentAltitude: number; targetAltitude: number } {
-  const currentAltitude = calculateSubTopicAltitude(category, subTopic);
+  const currentAltitude = calculateSubTopicAltitude(category, subTopic, progress);
   const targetAltitude = calculateSubTopicTargetAltitude('World1', subTopic);
 
   const progressPercent =
@@ -110,12 +113,13 @@ export function calculateSubTopicProgress(
 /**
  * 특정 카테고리의 총 누적 고도 계산
  */
-export function calculateCategoryAltitude(category: string): {
+export function calculateCategoryAltitude(
+  category: string,
+  progress: CategoryProgressMap
+): {
   totalAltitude: number;
   totalProblems: number;
 } {
-  const { progress } = useLevelProgressStore.getState();
-
   // 1. 호환성 유지: 만약 category가 progress의 최상위 키(World)라면 해당 World 전체 고도 반환
   if (Object.prototype.hasOwnProperty.call(progress, category)) {
     let totalAltitude = 0;
@@ -157,12 +161,15 @@ export function calculateCategoryTargetAltitude(category: string): number {
 /**
  * 특정 카테고리의 진행률 계산
  */
-export function calculateCategoryProgress(category: string): {
+export function calculateCategoryProgress(
+  category: string,
+  progress: CategoryProgressMap
+): {
   progressPercent: number;
   currentAltitude: number;
   targetAltitude: number;
 } {
-  const { totalAltitude: currentAltitude } = calculateCategoryAltitude(category);
+  const { totalAltitude: currentAltitude } = calculateCategoryAltitude(category, progress);
   const targetAltitude = calculateCategoryTargetAltitude(category);
 
   const progressPercent =
@@ -170,3 +177,4 @@ export function calculateCategoryProgress(category: string): {
 
   return { progressPercent, currentAltitude, targetAltitude };
 }
+

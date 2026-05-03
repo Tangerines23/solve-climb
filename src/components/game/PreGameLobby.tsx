@@ -1,5 +1,5 @@
 import React from 'react';
-import { useUserStore } from '../../stores/useUserStore';
+import { usePreGameLobbyBridge } from '../../hooks/usePreGameLobbyBridge';
 import { getItemEmoji, getItemShortEffect } from '@/constants/items';
 import './PreGameLobby.css';
 
@@ -11,7 +11,7 @@ interface PreGameLobbyProps {
 }
 
 export const PreGameLobby: React.FC<PreGameLobbyProps> = ({ onStart, onBack, category, topic }) => {
-  const { inventory } = useUserStore();
+  const { inventory } = usePreGameLobbyBridge();
   const [selectedItemIds, setSelectedItemIds] = React.useState<number[]>([]);
 
   const toggleItem = (itemId: number) => {

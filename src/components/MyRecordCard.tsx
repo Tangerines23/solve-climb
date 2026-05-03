@@ -1,5 +1,4 @@
-import { useEffect, useState } from 'react';
-import { useLevelProgressStore } from '../stores/useLevelProgressStore';
+import { useMyRecordCardBridge } from '../hooks/useMyRecordCardBridge';
 import { BaseCard } from './BaseCard';
 import './MyRecordCard.css';
 
@@ -10,27 +9,7 @@ interface MyRecordCardProps {
 }
 
 export function MyRecordCard({ world, category, categoryName }: MyRecordCardProps) {
-  const [loading, setLoading] = useState(true);
-  const [records, setRecords] = useState<{
-    'time-attack': number | null;
-    survival: number | null;
-  }>({ 'time-attack': null, survival: null });
-
-  const getBestRecords = useLevelProgressStore((state) => state.getBestRecords);
-
-  useEffect(() => {
-    // 비동기 로딩 시뮬레이션 (실제로는 API 호출)
-    setLoading(true);
-    setTimeout(() => {
-      const bestRecords = getBestRecords(world, category);
-      // 점수를 그대로 사용 (미터 단위)
-      setRecords({
-        'time-attack': bestRecords['time-attack'],
-        survival: bestRecords['survival'],
-      });
-      setLoading(false);
-    }, 300);
-  }, [world, category, getBestRecords]);
+  const { loading, records } = useMyRecordCardBridge({ world, category });
 
   if (loading) {
     return (

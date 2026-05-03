@@ -1,6 +1,6 @@
 // 범용 쿼티 키보드 (수학 및 일본어 퀴즈 모두 지원)
 import React, { FormEvent, useEffect, useRef } from 'react';
-import { vibrateShort } from '../utils/haptic';
+import { useQwertyKeypadBridge } from '../hooks/useQwertyKeypadBridge';
 import './QwertyKeypad.css';
 
 interface QwertyKeypadProps {
@@ -33,6 +33,7 @@ function QwertyKeypadComponent({
   allowNegative = false,
 }: QwertyKeypadProps) {
   const containerRef = useRef<HTMLDivElement>(null);
+  const { vibrate } = useQwertyKeypadBridge();
 
   // PC 키보드 입력 지원
   useEffect(() => {
@@ -94,14 +95,14 @@ function QwertyKeypadComponent({
 
   const handleKeyClick = (key: string) => {
     if (!disabled) {
-      vibrateShort();
+      vibrate();
       onKeyPress(key);
     }
   };
 
   const handleBackspace = () => {
     if (!disabled) {
-      vibrateShort();
+      vibrate();
       onBackspace();
     }
   };
@@ -144,7 +145,7 @@ function QwertyKeypadComponent({
               onClick={(e) => {
                 e.preventDefault();
                 if (!disabled) {
-                  vibrateShort();
+                  vibrate();
                   onSubmit(e);
                 }
               }}

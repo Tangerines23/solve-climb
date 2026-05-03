@@ -1,13 +1,11 @@
 import { motion } from 'framer-motion';
-import { useGameStore } from '../../stores/useGameStore';
-import { useSettingsStore } from '../../stores/useSettingsStore';
+import { useFeverEffectBridge } from '../../hooks/useFeverEffectBridge';
 import './Effects.css';
 
 export function FeverEffect() {
-  const { feverLevel, combo } = useGameStore();
-  const animationEnabled = useSettingsStore((state) => state.animationEnabled);
+  const { feverLevel, animationEnabled, shouldShow } = useFeverEffectBridge();
 
-  if (feverLevel === 0 && combo < 2) return null;
+  if (!shouldShow) return null;
 
   return (
     <>

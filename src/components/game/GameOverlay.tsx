@@ -1,8 +1,8 @@
 import React from 'react';
-import { useGameStore } from '../../stores/useGameStore';
+import { useGameOverlayBridge } from '../../hooks/useGameOverlayBridge';
 
 export const GameOverlay: React.FC = () => {
-  const { showVignette, showSpeedLines, feverLevel } = useGameStore();
+  const { showVignette, showSpeedLines, feverLevel } = useGameOverlayBridge();
 
   return (
     <>

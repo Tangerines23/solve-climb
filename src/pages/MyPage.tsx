@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate, useSearchParams, useLocation } from 'react-router-dom';
 import { Header } from '../components/Header';
 import { FooterNav } from '../components/FooterNav';
-import { urls } from '../utils/navigation';
+// import { urls } from '../utils/navigation'; // Removed for architectural boundary compliance
 import { ProfileForm } from '../components/ProfileForm';
 import { DataResetConfirmModal } from '../components/DataResetConfirmModal';
 import { Toast } from '../components/Toast';
@@ -13,25 +13,12 @@ import { MyPageProfile } from '../components/my/MyPageProfile';
 import { MyPageStats } from '../components/my/MyPageStats';
 import { MyPageQuickAccess } from '../components/my/MyPageQuickAccess';
 import { MyPageSettings } from '../components/my/MyPageSettings';
-import { useProfileStore } from '../stores/useProfileStore';
-import { useSettingsStore } from '../stores/useSettingsStore';
-import { useMyPageStats } from '../hooks/useMyPageStats';
-import { useFavoriteStore } from '../stores/useFavoriteStore';
-import { getTodayChallenge, type TodayChallenge } from '../utils/challenge';
-import { useLevelProgressStore } from '../stores/useLevelProgressStore';
-import { useQuizStore } from '../stores/useQuizStore';
-import { resetAllData } from '../utils/dataReset';
-import { vibrateShort } from '../utils/haptic';
-import { supabase } from '../utils/supabaseClient';
-import { safeSupabaseQuery } from '../utils/debugFetch';
-
-import { APP_CONFIG } from '../config/app';
-import { signInWithGoogle } from '../utils/auth';
-import { handleTossLogin, isTossAppEnvironment } from '../utils/tossLogin';
+import { useMyPageBridge } from '../hooks/useMyPageBridge';
+import { type TodayChallenge } from '../types/challenge';
 import { WithdrawConfirmModal } from '../components/WithdrawConfirmModal';
-import { withdrawAccount } from '../utils/userWithdraw';
 import { calculateTier } from '../constants/tiers';
 import { storageService, STORAGE_KEYS } from '../services';
+import { APP_CONFIG } from '../config/app';
 import './MyPage.css';
 
 // theme_id를 읽기 쉬운 이름으로 변환하는 함수
@@ -61,20 +48,42 @@ const formatBestSubject = (themeId: string | null): string => {
 export function MyPage() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
-  // Zustand Selector 패턴 적용
-  const isProfileComplete = useProfileStore((state) => state.isProfileComplete);
-  const clearProfile = useProfileStore((state) => state.clearProfile);
-  const setProfile = useProfileStore((state) => state.setProfile);
-  const profile = useProfileStore((state) => state.profile);
+
+  // Use the Bridge Hook to access all backend/store logic
+  const {
+    profile,
+    isProfileComplete,
+    isAdmin,
+    hapticEnabled,
+    animationEnabled,
+    favorites,
+    progressMap,
+    stats,
+    session,
+    loading: statsLoading,
+    error: statsError,
+    refetch,
+    setProfile,
+    clearProfile,
+    setHapticEnabled,
+    setAnimationEnabled,
+    setCategoryTopic,
+    executeReset,
+    executeWithdraw,
+    getTodayChallenge,
+    vibrateShort,
+    signInWithGoogle,
+    handleTossLogin,
+    isTossAppEnvironment,
+    urls,
+    supabase,
+    safeSupabaseQuery,
+    flags,
+    getLastPlayedWorld,
+  } = useMyPageBridge();
+
   const nickname = profile?.nickname || '게이머';
-  const hapticEnabled = useSettingsStore((state) => state.hapticEnabled);
-  const setHapticEnabled = useSettingsStore((state) => state.setHapticEnabled);
-  const animationEnabled = useSettingsStore((state) => state.animationEnabled);
-  const setAnimationEnabled = useSettingsStore((state) => state.setAnimationEnabled);
-  const { stats, session, loading: statsLoading, error: statsError, refetch } = useMyPageStats();
-  const favorites = useFavoriteStore((state) => state.favorites);
-  const setCategoryTopic = useQuizStore((state) => state.setCategoryTopic);
-  const progressMap = useLevelProgressStore((state) => state.progress);
+
 
   // 오늘의 챌린지 상태
   const [todayChallenge, setTodayChallenge] = useState<TodayChallenge | null>(null);
@@ -124,7 +133,7 @@ export function MyPage() {
 
   // 오늘의 챌린지 가져오기
   useEffect(() => {
-    getTodayChallenge(progressMap)
+    getTodayChallenge(progressMap, flags)
       .then((challengeData) => {
         setTodayChallenge(challengeData);
       })
@@ -207,7 +216,7 @@ export function MyPage() {
   const handleConfirmDataReset = async () => {
     try {
       setIsResetting(true);
-      await resetAllData();
+      await executeReset();
       setShowDataResetConfirm(false);
       setToastMessage('모든 데이터가 초기화되었습니다.');
       setShowToast(true);
@@ -233,7 +242,7 @@ export function MyPage() {
   const handleConfirmWithdraw = async () => {
     try {
       setIsWithdrawing(true);
-      await withdrawAccount();
+      await executeWithdraw();
       setShowWithdrawConfirm(false);
       setToastMessage('회원 탈퇴가 완료되었습니다. 이용해 주셔서 감사합니다.');
       setShowToast(true);
@@ -518,6 +527,7 @@ export function MyPage() {
             todayChallenge={todayChallenge}
             favorites={favorites}
             setCategoryTopic={setCategoryTopic}
+            getLastPlayedWorld={getLastPlayedWorld}
           />
 
           {/* Settings List */}
@@ -535,7 +545,7 @@ export function MyPage() {
           />
 
           {/* Admin / Dev Tool Link */}
-          {(useProfileStore.getState().isAdmin || import.meta.env.DEV) && (
+          {(isAdmin || import.meta.env.DEV) && (
             <div className="mypage-admin-link-container">
               <button className="mypage-admin-link-button" onClick={() => navigate(urls.debug())}>
                 <span>🛠️</span> 관리자 도구 & UI 실험실 이동

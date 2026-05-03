@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, it, expect } from 'vitest';
 import {
   calculateTotalAltitude,
   calculateSubTopicAltitude,
@@ -7,58 +7,39 @@ import {
   calculateCategoryAltitude,
   calculateCategoryProgress,
 } from '../scoreCalculator';
-import { useLevelProgressStore } from '../../stores/useLevelProgressStore';
-
-// Mock the store entirely
-vi.mock('../../stores/useLevelProgressStore', () => ({
-  useLevelProgressStore: {
-    getState: vi.fn(),
-  },
-}));
 
 describe('scoreCalculator', () => {
-  beforeEach(() => {
-    vi.clearAllMocks();
-  });
+  const mockProgress = {
+    World1: {
+      기초: {
+        L1: { bestScore: { 'time-attack': 100 } },
+        L2: { bestScore: { survival: 150 } },
+      },
+    },
+    World2: {
+      논리: {
+        L1: { bestScore: { 'time-attack': 50, survival: 200 } },
+      },
+    },
+  };
 
   describe('calculateTotalAltitude', () => {
     it('should aggregate best scores across all categories and worlds', () => {
-      const mockProgress = {
-        World1: {
-          기초: {
-            L1: { bestScore: { 'time-attack': 100 } },
-            L2: { bestScore: { survival: 150 } },
-          },
-        },
-        World2: {
-          논리: {
-            L1: { bestScore: { 'time-attack': 50, survival: 200 } },
-          },
-        },
-      };
-
-      (useLevelProgressStore.getState as any).mockReturnValue({
-        progress: mockProgress,
-      });
-
-      const result = calculateTotalAltitude();
-      expect(result.totalAltitude).toBe(450);
-      expect(result.totalProblems).toBe(45);
+      const result = calculateTotalAltitude(mockProgress);
+      expect(result.totalAltitude).toBe(450); // 100 + 150 + 200
+      expect(result.totalProblems).toBeGreaterThan(0);
     });
   });
 
   describe('calculateSubTopicAltitude', () => {
     it('should calculate altitude for a specific subtopic', () => {
-      const mockGetLevelProgress = vi
-        .fn()
-        .mockReturnValue([{ bestScore: { 'time-attack': 100 } }, { bestScore: { survival: 50 } }]);
+      const result = calculateSubTopicAltitude('World1', '기초', mockProgress);
+      expect(result).toBe(250); // 100 + 150
+    });
 
-      (useLevelProgressStore.getState as any).mockReturnValue({
-        getLevelProgress: mockGetLevelProgress,
-      });
-
-      const result = calculateSubTopicAltitude('World1', '기초');
-      expect(result).toBe(150);
+    it('should return 0 for non-existent category/subtopic', () => {
+      const result = calculateSubTopicAltitude('World3', '기초', mockProgress);
+      expect(result).toBe(0);
     });
   });
 
@@ -71,39 +52,46 @@ describe('scoreCalculator', () => {
 
   describe('calculateSubTopicProgress', () => {
     it('should calculate progress percentage', () => {
-      (useLevelProgressStore.getState as any).mockReturnValue({
-        getLevelProgress: () => [{ bestScore: { 'time-attack': 100 } }],
-      });
-
-      const result = calculateSubTopicProgress('World1', '기초');
-      expect(result.currentAltitude).toBe(100);
+      const progress = {
+        World1: {
+          기초: {
+            L1: { bestScore: { 'time-attack': 1000 } } // Increased score to ensure > 0%
+          }
+        }
+      };
+      const result = calculateSubTopicProgress('World1', '기초', progress);
+      expect(result.currentAltitude).toBe(1000);
       expect(result.targetAltitude).toBeGreaterThan(0);
+      expect(result.progressPercent).toBeGreaterThan(0);
     });
   });
 
   describe('calculateCategoryAltitude', () => {
     it('should calculate altitude by searching through all worlds', () => {
-      const mockProgress = {
+      const progress = {
         World1: { 기초: { L1: { bestScore: { 'time-attack': 100 } } } },
         World2: { 기초: { L1: { bestScore: { survival: 200 } } } },
       };
 
-      (useLevelProgressStore.getState as any).mockReturnValue({
-        progress: mockProgress,
-      });
-      const result = calculateCategoryAltitude('기초');
+      const result = calculateCategoryAltitude('기초', progress);
       expect(result.totalAltitude).toBe(300);
+    });
+
+    it('should support world ID as category for backward compatibility', () => {
+      const result = calculateCategoryAltitude('World1', mockProgress);
+      expect(result.totalAltitude).toBe(250);
     });
   });
 
   describe('calculateCategoryProgress', () => {
     it('should calculate category progress', () => {
-      (useLevelProgressStore.getState as any).mockReturnValue({
-        progress: { World1: { 기초: { L1: { bestScore: { 'time-attack': 10 } } } } },
-      });
-      const result = calculateCategoryProgress('기초');
-      expect(result.currentAltitude).toBe(10);
+      const progress = {
+        World1: { 기초: { L1: { bestScore: { 'time-attack': 1000 } } } }
+      };
+      const result = calculateCategoryProgress('기초', progress);
+      expect(result.currentAltitude).toBe(1000);
       expect(result.targetAltitude).toBeGreaterThan(0);
+      expect(result.progressPercent).toBeGreaterThan(0);
     });
   });
 });

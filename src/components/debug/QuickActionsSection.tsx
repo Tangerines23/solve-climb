@@ -1,29 +1,15 @@
 import React, { useState, useEffect } from 'react';
-import { supabase } from '../../utils/supabaseClient';
-import { useUserStore } from '../../stores/useUserStore';
-import { useDebugStore } from '../../stores/useDebugStore';
-import { useMyPageStats } from '../../hooks/useMyPageStats';
-import {
-  debugPresets,
-  applyPreset,
-  getPresetHistories,
-  clearPresetHistory,
-  getCustomPresets,
-  saveCustomPreset,
-  deleteCustomPreset,
-  exportCustomPresets,
-  importCustomPresets,
-  type PresetHistory,
-  type CustomPreset,
-} from '../../utils/debugPresets';
-import { verifySync, type SyncResult } from '../../utils/debugSync';
+import { useQuickActionsDebugBridge, type CustomPreset, type DebugPreset } from '../../hooks/useQuickActionsDebugBridge';
 import { CustomPresetModal } from './CustomPresetModal';
 import { ConfirmModal } from '../ConfirmModal';
 import './QuickActionsSection.css';
 
 export const QuickActionsSection = React.memo(function QuickActionsSection() {
-  const { minerals, stamina, debugSetStamina, debugSetMinerals } = useUserStore();
   const {
+    stamina,
+    minerals,
+    handleStaminaUpdate,
+    handleMineralsUpdate,
     isAdminMode,
     toggleAdminMode,
     infiniteStamina,
@@ -32,34 +18,33 @@ export const QuickActionsSection = React.memo(function QuickActionsSection() {
     setInfiniteStamina,
     setInfiniteMinerals,
     setInfiniteTime,
-  } = useDebugStore();
-  const { refetch } = useMyPageStats();
+    isUpdating,
+    isApplyingPreset,
+    presetMessage,
+    setPresetMessage,
+    presetHistories,
+    handlePresetApply,
+    handleClearHistory,
+    syncResult,
+    isVerifyingSync,
+    handleVerifySync,
+    customPresets,
+    handleSaveCustomPreset,
+    handleDeleteCustomPreset,
+    handleExportPresets,
+    handleImportPresets,
+    debugUserInfo,
+    debugPresets,
+  } = useQuickActionsDebugBridge();
 
   const [staminaInput, setStaminaInput] = useState(stamina.toString());
   const [mineralsInput, setMineralsInput] = useState(minerals.toString());
-  const [isUpdating, setIsUpdating] = useState(false);
-  const [isApplyingPreset, setIsApplyingPreset] = useState(false);
-  const [presetMessage, setPresetMessage] = useState<{
-    type: 'success' | 'error';
-    text: string;
-  } | null>(null);
-  const [presetHistories, setPresetHistories] = useState<PresetHistory[]>([]);
   const [showHistory, setShowHistory] = useState(false);
-  const [syncResult, setSyncResult] = useState<SyncResult | null>(null);
-  const [isVerifyingSync, setIsVerifyingSync] = useState(false);
-  const [customPresets, setCustomPresets] = useState<CustomPreset[]>([]);
   const [showCustomPresets, setShowCustomPresets] = useState(false);
   const [showPresetModal, setShowPresetModal] = useState(false);
   const [editingPreset, setEditingPreset] = useState<CustomPreset | null>(null);
 
-  // 디버깅용 유저 정보
-  const [debugUserInfo, setDebugUserInfo] = useState<{
-    id: string;
-    email?: string;
-    hasProfile: boolean;
-  } | null>(null);
-
-  // 스토어 값이 변경될 때 입력 필드 동기화 (포커스 중이 아니거나 업데이트 중이 아닐 때만)
+  // 스토어 값이 변경될 때 입력 필드 동기화
   useEffect(() => {
     if (document.activeElement?.id !== 'debug-stamina-input' && !isUpdating) {
       setStaminaInput(stamina.toString());
@@ -71,46 +56,6 @@ export const QuickActionsSection = React.memo(function QuickActionsSection() {
       setMineralsInput(minerals.toString());
     }
   }, [minerals, isUpdating]);
-
-  useEffect(() => {
-    const checkUser = async () => {
-      const {
-        data: { user },
-      } = await supabase.auth.getUser();
-      if (user) {
-        const { count } = await supabase
-          .from('profiles')
-          .select('*', { count: 'exact', head: true })
-          .eq('id', user.id);
-        setDebugUserInfo({
-          id: user.id,
-          email: user.email,
-          hasProfile: count !== null && count > 0,
-        });
-      } else {
-        setDebugUserInfo(null);
-      }
-    };
-
-    checkUser();
-
-    // 인증 상태 변화 감지 리스너 추가
-    const {
-      data: { subscription },
-    } = supabase.auth.onAuthStateChange((_event, session) => {
-      if (session) {
-        checkUser();
-        // 로그인 시 유저 데이터 리프레시
-        useUserStore.getState().fetchUserData();
-      } else {
-        setDebugUserInfo(null);
-      }
-    });
-
-    return () => {
-      subscription.unsubscribe();
-    };
-  }, []);
 
   // 컨펌 모달 상태
   const [confirmConfig, setConfirmConfig] = useState<{
@@ -125,179 +70,54 @@ export const QuickActionsSection = React.memo(function QuickActionsSection() {
     onConfirm: () => {},
   });
 
-  const handleStaminaChange = async (delta: number) => {
-    if (isUpdating) return; // 중복 클릭 방지
-
-    setIsUpdating(true);
-    try {
-      const newValue = Math.max(0, stamina + delta);
-      setStaminaInput(newValue.toString());
-      await debugSetStamina(newValue);
-    } catch (e) {
-      console.error('Failed to update stamina:', e);
-    } finally {
-      setIsUpdating(false);
-    }
+  const handleStaminaChange = (delta: number) => {
+    if (isUpdating) return;
+    const newValue = Math.max(0, stamina + delta);
+    setStaminaInput(newValue.toString());
+    handleStaminaUpdate(newValue);
   };
 
-  const handleStaminaInputChange = (value: string) => {
-    setStaminaInput(value);
-  };
-
-  const handleStaminaInputBlur = async () => {
+  const handleStaminaInputBlur = () => {
     const numValue = parseInt(staminaInput, 10);
     if (!isNaN(numValue) && numValue >= 0 && numValue !== stamina) {
-      setIsUpdating(true);
-      await debugSetStamina(numValue);
-      setIsUpdating(false);
+      handleStaminaUpdate(numValue);
     } else {
       setStaminaInput(stamina.toString());
     }
   };
 
-  const handleStaminaKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === 'Enter') {
-      (e.target as HTMLInputElement).blur();
-    }
+  const handleMineralsChange = (delta: number) => {
+    if (isUpdating) return;
+    const newValue = Math.max(0, minerals + delta);
+    setMineralsInput(newValue.toString());
+    handleMineralsUpdate(newValue);
   };
 
-  const handleMineralsChange = async (delta: number) => {
-    if (isUpdating) return; // 중복 클릭 방지
-
-    setIsUpdating(true);
-    try {
-      const newValue = Math.max(0, minerals + delta);
-      setMineralsInput(newValue.toString());
-      await debugSetMinerals(newValue);
-    } catch (e) {
-      console.error('Failed to update minerals:', e);
-    } finally {
-      setIsUpdating(false);
-    }
-  };
-
-  const handleMineralsInputChange = (value: string) => {
-    setMineralsInput(value);
-  };
-
-  const handleMineralsInputBlur = async () => {
+  const handleMineralsInputBlur = () => {
     const numValue = parseInt(mineralsInput, 10);
     if (!isNaN(numValue) && numValue >= 0 && numValue !== minerals) {
-      setIsUpdating(true);
-      await debugSetMinerals(numValue);
-      setIsUpdating(false);
+      handleMineralsUpdate(numValue);
     } else {
       setMineralsInput(minerals.toString());
     }
   };
 
-  const handleMineralsKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === 'Enter') {
-      (e.target as HTMLInputElement).blur();
-    }
-  };
-
-  useEffect(() => {
-    // 히스토리 및 커스텀 프리셋 로드
-    setPresetHistories(getPresetHistories());
-    setCustomPresets(getCustomPresets());
-  }, []);
-
-  const handlePresetApply = async (presetId: string) => {
-    if (isApplyingPreset) return;
-
-    try {
-      setIsApplyingPreset(true);
-      setPresetMessage(null);
-
-      /* 
-      const {
-        data: { session },
-      } = await supabase.auth.getSession();
-      if (!session?.user) {
-        setPresetMessage({ type: 'error', text: '로그인이 필요합니다.' });
-        return;
-      }
-      const user = session.user;
-      */
-
-      // [DEBUG] 로그인 없이도 프리셋 적용 가능하도록 주석 처리 (서버 연동은 실패할 수 있음)
-      const {
-        data: { session },
-      } = await supabase.auth.getSession();
-      const userId = session?.user?.id || 'anonymous-debug-user';
-
-      await applyPreset(presetId, userId, refetch);
-      setPresetMessage({ type: 'success', text: '프리셋이 적용되었습니다.' });
-
-      // 히스토리 새로고침
-      setPresetHistories(getPresetHistories());
-    } catch (err) {
-      setPresetMessage({
-        type: 'error',
-        text: `프리셋 적용 실패: ${err instanceof Error ? err.message : '알 수 없는 오류'}`,
-      });
-
-      // 히스토리 새로고침 (실패 기록 포함)
-      setPresetHistories(getPresetHistories());
-    } finally {
-      setIsApplyingPreset(false);
-    }
-  };
-
-  const handleHistoryReapply = async (history: PresetHistory) => {
-    if (isApplyingPreset) return;
-    await handlePresetApply(history.presetId);
-  };
-
-  const handleClearHistory = () => {
+  const handleClearHistoryConfirm = () => {
     setConfirmConfig({
       isOpen: true,
       title: '히스토리 삭제',
       message: '히스토리를 모두 삭제하시겠습니까?',
       onConfirm: () => {
-        clearPresetHistory();
-        setPresetHistories([]);
-        setPresetMessage({ type: 'success', text: '히스토리가 삭제되었습니다.' });
+        handleClearHistory();
         setConfirmConfig((prev) => ({ ...prev, isOpen: false }));
       },
     });
-  };
-
-  const handleVerifySync = async () => {
-    if (isVerifyingSync) return;
-
-    try {
-      setIsVerifyingSync(true);
-      setSyncResult(null);
-
-      const {
-        data: { session },
-      } = await supabase.auth.getSession();
-      if (!session?.user) {
-        setPresetMessage({ type: 'error', text: '로그인이 필요합니다.' });
-        return;
-      }
-      const user = session.user;
-
-      const result = await verifySync(user.id);
-      setSyncResult(result);
-      setPresetMessage({ type: 'success', text: '동기화 검증이 완료되었습니다.' });
-    } catch (err) {
-      setPresetMessage({
-        type: 'error',
-        text: `동기화 검증 실패: ${err instanceof Error ? err.message : '알 수 없는 오류'}`,
-      });
-    } finally {
-      setIsVerifyingSync(false);
-    }
   };
 
   return (
     <div className="debug-section">
       <h3 className="debug-section-title">📊 게임 상태</h3>
 
-      {/* 유저 디버그 정보 표시 */}
       <div className="debug-user-info-box">
         <strong>Current User:</strong>{' '}
         {debugUserInfo ? `${debugUserInfo.id.slice(0, 8)}...` : 'Not Logged In'}
@@ -387,9 +207,9 @@ export const QuickActionsSection = React.memo(function QuickActionsSection() {
               name="stamina"
               className="debug-resource-input"
               value={staminaInput}
-              onChange={(e) => handleStaminaInputChange(e.target.value)}
+              onChange={(e) => setStaminaInput(e.target.value)}
               onBlur={handleStaminaInputBlur}
-              onKeyDown={handleStaminaKeyDown}
+              onKeyDown={(e) => e.key === 'Enter' && (e.target as HTMLInputElement).blur()}
               min="0"
               disabled={isUpdating}
             />
@@ -422,9 +242,9 @@ export const QuickActionsSection = React.memo(function QuickActionsSection() {
               name="minerals"
               className="debug-resource-input"
               value={mineralsInput}
-              onChange={(e) => handleMineralsInputChange(e.target.value)}
+              onChange={(e) => setMineralsInput(e.target.value)}
               onBlur={handleMineralsInputBlur}
-              onKeyDown={handleMineralsKeyDown}
+              onKeyDown={(e) => e.key === 'Enter' && (e.target as HTMLInputElement).blur()}
               min="0"
               disabled={isUpdating}
             />
@@ -542,7 +362,7 @@ export const QuickActionsSection = React.memo(function QuickActionsSection() {
           <div className="debug-preset-history-section">
             <div className="debug-preset-history-header">
               <span className="debug-preset-history-title">최근 적용 내역</span>
-              <button className="debug-preset-history-clear" onClick={handleClearHistory}>
+              <button className="debug-preset-history-clear" onClick={handleClearHistoryConfirm}>
                 전체 삭제
               </button>
             </div>
@@ -565,7 +385,7 @@ export const QuickActionsSection = React.memo(function QuickActionsSection() {
                   </div>
                   <button
                     className="debug-preset-history-reapply"
-                    onClick={() => handleHistoryReapply(history)}
+                    onClick={() => handlePresetApply(history.presetId)}
                     disabled={isApplyingPreset || !history.success}
                     title="다시 적용"
                   >
@@ -582,7 +402,7 @@ export const QuickActionsSection = React.memo(function QuickActionsSection() {
         )}
 
         <div className="debug-preset-list">
-          {debugPresets.map((preset) => (
+          {debugPresets.map((preset: DebugPreset) => (
             <div key={preset.id} className="debug-preset-item">
               <button
                 className="debug-preset-button"
@@ -601,7 +421,6 @@ export const QuickActionsSection = React.memo(function QuickActionsSection() {
           </div>
         )}
 
-        {/* 커스텀 프리셋 섹션 */}
         <div className="debug-custom-presets-section">
           <div className="debug-preset-header">
             <h4 className="debug-subsection-title">커스텀 프리셋</h4>
@@ -660,12 +479,7 @@ export const QuickActionsSection = React.memo(function QuickActionsSection() {
                             title: '프리셋 삭제',
                             message: `프리셋 "${preset.name}"을 삭제하시겠습니까?`,
                             onConfirm: () => {
-                              deleteCustomPreset(preset.id);
-                              setCustomPresets(getCustomPresets());
-                              setPresetMessage({
-                                type: 'success',
-                                text: '프리셋이 삭제되었습니다.',
-                              });
+                              handleDeleteCustomPreset(preset.id);
                               setConfirmConfig((prev) => ({ ...prev, isOpen: false }));
                             },
                           });
@@ -685,7 +499,7 @@ export const QuickActionsSection = React.memo(function QuickActionsSection() {
               className="debug-custom-preset-button"
               onClick={() => {
                 try {
-                  const json = exportCustomPresets();
+                  const json = handleExportPresets();
                   const blob = new Blob([json], { type: 'application/json' });
                   const url = URL.createObjectURL(blob);
                   const link = document.createElement('a');
@@ -720,8 +534,7 @@ export const QuickActionsSection = React.memo(function QuickActionsSection() {
                   reader.onload = (event) => {
                     try {
                       const json = event.target?.result as string;
-                      importCustomPresets(json);
-                      setCustomPresets(getCustomPresets());
+                      handleImportPresets(json);
                       setPresetMessage({
                         type: 'success',
                         text: '커스텀 프리셋이 가져와졌습니다.',
@@ -752,9 +565,8 @@ export const QuickActionsSection = React.memo(function QuickActionsSection() {
           setEditingPreset(null);
         }}
         onSave={(preset) => {
-          saveCustomPreset(preset);
-          setCustomPresets(getCustomPresets());
-          setPresetMessage({ type: 'success', text: `프리셋 "${preset.name}"이 저장되었습니다.` });
+          handleSaveCustomPreset(preset);
+          setShowPresetModal(false);
         }}
       />
 

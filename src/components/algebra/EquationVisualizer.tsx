@@ -1,8 +1,9 @@
 import { useState, useCallback, useEffect } from 'react';
 import { motion, AnimatePresence, LayoutGroup } from 'framer-motion';
-import { EquationTerm, Term } from './EquationTerm';
+import { EquationTerm } from './EquationTerm';
+import { Term } from '@/types/algebra';
 import './Algebra.css';
-import { vibrateMedium } from '@/utils/haptic';
+import { useEquationVisualizerBridge } from '@/hooks/useEquationVisualizerBridge';
 
 interface EquationVisualizerProps {
   initialLeft: Term[];
@@ -13,40 +14,32 @@ interface EquationVisualizerProps {
 export function EquationVisualizer({
   initialLeft,
   initialRight,
-  onSolved: _onSolved,
 }: EquationVisualizerProps) {
   const [leftSide, setLeftSide] = useState<Term[]>(initialLeft);
   const [rightSide, setRightSide] = useState<Term[]>(initialRight);
   const [isAnimating, setIsAnimating] = useState(false);
+  const { vibrate } = useEquationVisualizerBridge();
 
   // Check if solved: x = constant or constant = x
   useEffect(() => {
-    // Simple check logic: One side has only 1 variable, Other side has only 1 constant
-    // const isLeftSolved = leftSide.length === 1 && leftSide[0].type === 'variable' && rightSide.every(t => t.type === 'constant');
-    // const isRightSolved = rightSide.length === 1 && rightSide[0].type === 'variable' && leftSide.every(t => t.type === 'constant');
-    // In a real scenario, we might need to sum constants.
-    // This visualizer focuses on the *movement* part first.
-    // If we want to simulate "solving", we need to merge terms.
-    // For Level 11-15 (Transposition), the goal is often just to move terms correctly.
+    // Simple check logic could be added here
   }, [leftSide, rightSide]);
 
   const handleTranspose = useCallback(
     (id: string) => {
       if (isAnimating) return;
       setIsAnimating(true);
-      vibrateMedium();
+      vibrate();
 
       // Determine current side
       const isLeft = leftSide.some((t) => t.id === id);
       const sourceSide = isLeft ? leftSide : rightSide;
-      // const targetSide = isLeft ? rightSide : leftSide;
       const setSource = isLeft ? setLeftSide : setRightSide;
       const setTarget = isLeft ? setRightSide : setLeftSide;
 
       const termIndex = sourceSide.findIndex((t) => t.id === id);
       if (termIndex === -1) return;
-      if (!Object.prototype.hasOwnProperty.call(sourceSide, termIndex)) return;
-      // eslint-disable-next-line security/detect-object-injection -- index validated above
+      
       const term = sourceSide[termIndex];
 
       // Create transformed term (flip sign)
@@ -64,7 +57,7 @@ export function EquationVisualizer({
       // Cleanup animation lock
       setTimeout(() => setIsAnimating(false), 600);
     },
-    [leftSide, rightSide, isAnimating]
+    [leftSide, rightSide, isAnimating, vibrate]
   );
 
   return (
@@ -78,7 +71,7 @@ export function EquationVisualizer({
             transition={{ duration: 0.5, type: 'spring' }}
           >
             <AnimatePresence mode="popLayout">
-              {leftSide.map((term, _) => (
+              {leftSide.map((term) => (
                 <EquationTerm key={term.id} term={term} onTranspose={handleTranspose} />
               ))}
             </AnimatePresence>
@@ -95,7 +88,7 @@ export function EquationVisualizer({
             transition={{ duration: 0.5, type: 'spring' }}
           >
             <AnimatePresence mode="popLayout">
-              {rightSide.map((term, _) => (
+              {rightSide.map((term) => (
                 <EquationTerm key={term.id} term={term} onTranspose={handleTranspose} />
               ))}
             </AnimatePresence>

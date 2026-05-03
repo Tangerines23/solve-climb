@@ -1,9 +1,8 @@
-import React, { useState, useRef } from 'react';
-import { useLevelProgressStore } from '../stores/useLevelProgressStore';
-import { useProfileStore } from '../stores/useProfileStore';
+import React, { useRef } from 'react';
 import { BaseCard } from './BaseCard';
 import { UnderDevelopmentModal } from './UnderDevelopmentModal';
-import type { Tier } from '../types/quiz';
+import { useLevelList } from '@/hooks/useLevelList';
+import type { Tier } from '@/types/quiz';
 import './LevelListCard.css';
 
 interface LevelListCardProps {
@@ -15,11 +14,6 @@ interface LevelListCardProps {
   onLockedLevelClick?: (level: number, nextLevel: number) => void;
   tier?: Tier;
 }
-
-// 개발 중인 레벨 목록 (월드_카테고리_레벨 형식)
-const UNDER_DEVELOPMENT_LEVELS = new Set<string>([
-  // 개발 중인 레벨이 있으면 여기에 추가
-]);
 
 interface LevelListItemProps {
   levelData: { level: number; name: string; description: string };
@@ -175,54 +169,14 @@ function LevelListCardComponent({
   onLockedLevelClick,
   tier = 'normal',
 }: LevelListCardProps) {
-  const isLevelCleared = useLevelProgressStore((state) => state.isLevelCleared);
-  const getLevelProgress = useLevelProgressStore((state) => state.getLevelProgress);
-  const getNextLevel = useLevelProgressStore((state) => state.getNextLevel);
-  const isAdmin = useProfileStore((state) => state.isAdmin);
-  const [showUnderDevelopment, setShowUnderDevelopment] = useState(false);
-
-  const nextLevel = getNextLevel(world, category, tier);
-  const progress = getLevelProgress(world, category, tier);
-
-  const isUnderDevelopment = (level: number) => {
-    const levelKey = `${world}_${category}_${level}`;
-    return UNDER_DEVELOPMENT_LEVELS.has(levelKey);
-  };
-
-  const getLevelStatus = (level: number) => {
-    // 관리자 모드면 모든 레벨이 해금됨
-    if (isAdmin) {
-      if (isLevelCleared(world, category, level, tier)) {
-        return 'cleared';
-      }
-      return 'next';
-    }
-
-    // 일반 모드
-    if (isLevelCleared(world, category, level, tier)) {
-      return 'cleared';
-    }
-    if (level === nextLevel) {
-      return 'next';
-    }
-    if (level > nextLevel) {
-      return 'locked';
-    }
-    return 'next';
-  };
-
-  const getBestScore = (level: number): number | null => {
-    const record = progress.find((r) => r.level === level);
-    if (!record) return null;
-    const timeAttack = record.bestScore['time-attack'];
-    const survival = record.bestScore['survival'];
-    if (timeAttack === null && survival === null) return null;
-
-    // 점수를 그대로 사용 (미터 단위)
-    if (timeAttack === null) return survival;
-    if (survival === null) return timeAttack;
-    return Math.max(timeAttack, survival);
-  };
+  const {
+    showUnderDevelopment,
+    setShowUnderDevelopment,
+    nextLevel,
+    isUnderDevelopment,
+    getLevelStatus,
+    getBestScore,
+  } = useLevelList(world, category, tier);
 
   return (
     <>

@@ -1,339 +1,131 @@
-import { useState, useEffect } from 'react';
-import { supabase } from '../../utils/supabaseClient';
-import { useUserStore } from '../../stores/useUserStore';
+import React from 'react';
+import { useItemDebugBridge } from '../../hooks/useItemDebugBridge';
 import { ITEM_MAP } from '../../constants/items';
-import './ItemSystemSection.css';
 
-interface ItemDefinition {
-  id: number;
-  code: string;
-  name: string;
-  description: string | null;
-}
-
-export function ItemSystemSection() {
-  const { inventory, fetchUserData, consumeItem } = useUserStore();
-  const [itemDefinitions, setItemDefinitions] = useState<ItemDefinition[]>([]);
-  const [itemQuantities, setItemQuantities] = useState<Record<number, string>>({});
-  const [isLoading, setIsLoading] = useState(true);
-  const [isUpdating, setIsUpdating] = useState(false);
-  const [message, setMessage] = useState<{
-    type: 'success' | 'error' | 'info';
-    text: string;
-  } | null>(null);
-  const [usingItemId, setUsingItemId] = useState<number | null>(null);
-
-  useEffect(() => {
-    loadItems();
-  }, []);
-
-  useEffect(() => {
-    // 인벤토리 변경 시 입력 필드 업데이트
-    const quantities: Record<number, string> = {};
-    inventory.forEach((item) => {
-      quantities[item.id] = item.quantity.toString();
-    });
-    setItemQuantities(quantities);
-  }, [inventory]);
-
-  const loadItems = async () => {
-    try {
-      setIsLoading(true);
-
-      const { data, error } = await supabase
-        .from('items')
-        .select('id, code, name, description')
-        .order('id');
-
-      if (error) throw error;
-      setItemDefinitions(data || []);
-    } catch (err) {
-      setMessage({
-        type: 'error',
-        text: `아이템 로드 실패: ${err instanceof Error ? err.message : '알 수 없는 오류'}`,
-      });
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  const handleQuantityChange = (itemId: number, delta: number) => {
-    const raw = Object.prototype.hasOwnProperty.call(itemQuantities, itemId)
-      ? // eslint-disable-next-line security/detect-object-injection -- key validated above
-        itemQuantities[itemId]
-      : '0';
-    const current = parseInt(raw || '0', 10);
-    const newValue = Math.max(0, current + delta);
-    setItemQuantities((prev) => ({ ...prev, [itemId]: newValue.toString() }));
-  };
-
-  const handleQuantityInputChange = (itemId: number, value: string) => {
-    setItemQuantities((prev) => ({ ...prev, [itemId]: value }));
-  };
-
-  const handleQuantityInputBlur = (itemId: number) => {
-    const raw = Object.prototype.hasOwnProperty.call(itemQuantities, itemId)
-      ? // eslint-disable-next-line security/detect-object-injection -- key validated above
-        itemQuantities[itemId]
-      : '0';
-    const numValue = parseInt(raw || '0', 10);
-    if (isNaN(numValue) || numValue < 0) {
-      const currentItem = inventory.find((item) => item.id === itemId);
-      setItemQuantities((prev) => ({ ...prev, [itemId]: (currentItem?.quantity || 0).toString() }));
-    }
-  };
-
-  const handleSetQuantity = async (itemId: number) => {
-    if (isUpdating) return;
-
-    const raw = Object.prototype.hasOwnProperty.call(itemQuantities, itemId)
-      ? // eslint-disable-next-line security/detect-object-injection -- key validated above
-        itemQuantities[itemId]
-      : '0';
-    const numValue = parseInt(raw || '0', 10);
-    if (isNaN(numValue) || numValue < 0) {
-      setMessage({ type: 'error', text: '유효한 수량을 입력하세요.' });
-      return;
-    }
-
-    try {
-      setIsUpdating(true);
-      setMessage(null);
-
-      const {
-        data: { session },
-      } = await supabase.auth.getSession();
-      if (!session?.user) {
-        setMessage({ type: 'error', text: '로그인이 필요합니다.' });
-        return;
-      }
-      const user = session.user;
-
-      // 현재 인벤토리에서 해당 아이템 찾기
-      const currentItem = inventory.find((item) => item.id === itemId);
-      const currentQuantity = currentItem?.quantity || 0;
-      const quantityDiff = numValue - currentQuantity;
-
-      if (quantityDiff === 0) {
-        setMessage({ type: 'success', text: '수량이 변경되지 않았습니다.' });
-        return;
-      }
-
-      // 보안 RPC를 통해 수량 설정 (Insert/Update/Delete 통합 처리)
-      const { data, error } = await supabase.rpc('debug_set_inventory_quantity', {
-        p_user_id: user.id,
-        p_item_id: itemId,
-        p_quantity: numValue,
-      });
-
-      if (error) throw error;
-      if (data && !data.success) throw new Error(data.message || '수량 설정 실패');
-
-      setMessage({ type: 'success', text: `아이템 수량이 ${numValue}개로 설정되었습니다.` });
-
-      await fetchUserData();
-    } catch (err) {
-      setMessage({
-        type: 'error',
-        text: `아이템 조작 실패: ${err instanceof Error ? err.message : '알 수 없는 오류'}`,
-      });
-    } finally {
-      setIsUpdating(false);
-    }
-  };
-
-  const handleResetInventory = async () => {
-    if (isUpdating) return;
-    if (!confirm('인벤토리를 초기화하시겠습니까?')) return;
-
-    try {
-      setIsUpdating(true);
-      setMessage(null);
-
-      const {
-        data: { session },
-      } = await supabase.auth.getSession();
-      if (!session?.user) {
-        setMessage({ type: 'error', text: '로그인이 필요합니다.' });
-        return;
-      }
-      const user = session.user;
-
-      const { data, error } = await supabase.rpc('debug_reset_inventory', {
-        p_user_id: user.id,
-      });
-
-      if (error) throw error;
-      if (data && !data.success) throw new Error(data.message || '인벤토리 초기화 실패');
-
-      setMessage({ type: 'success', text: '인벤토리가 초기화되었습니다.' });
-      await fetchUserData();
-    } catch (err) {
-      setMessage({
-        type: 'error',
-        text: `인벤토리 초기화 실패: ${err instanceof Error ? err.message : '알 수 없는 오류'}`,
-      });
-    } finally {
-      setIsUpdating(false);
-    }
-  };
-
-  const handleRestoreShopItems = async () => {
-    if (isUpdating) return;
-    if (
-      !confirm(
-        '상점 아이템 데이터베이스를 강제 복구하시겠습니까?\n(items 테이블의 데이터가 없거나 유실된 경우에만 실행하세요)'
-      )
-    )
-      return;
-
-    try {
-      setIsUpdating(true);
-      setMessage({ type: 'info', text: '상점 복구 중...' });
-
-      // 서버 사이드 RPC 호출로 안전하게 복구
-      const { data, error } = await supabase.rpc('restore_default_items');
-
-      if (error) throw error;
-
-      setMessage({
-        type: 'success',
-        text: `상점 아이템 ${data.restored_count}개가 성공적으로 복구/업데이트되었습니다!`,
-      });
-      await loadItems();
-    } catch (err) {
-      setMessage({
-        type: 'error',
-        text: `상점 복구 실패: ${err instanceof Error ? err.message : '알 수 없는 오류'}`,
-      });
-    } finally {
-      setIsUpdating(false);
-    }
-  };
-
-  const handleUseItem = async (itemId: number) => {
-    if (usingItemId === itemId || isUpdating) return;
-
-    const currentItem = inventory.find((item) => item.id === itemId);
-    if (!currentItem || currentItem.quantity <= 0) {
-      setMessage({ type: 'error', text: '사용할 수 있는 아이템이 없습니다.' });
-      return;
-    }
-
-    try {
-      setUsingItemId(itemId);
-      setMessage(null);
-
-      const result = await consumeItem(itemId);
-
-      if (result.success) {
-        setMessage({ type: 'success', text: `${currentItem.name} 아이템을 사용했습니다.` });
-        await fetchUserData();
-      } else {
-        setMessage({
-          type: 'error',
-          text: `아이템 사용 실패: ${result.message || '알 수 없는 오류'}`,
-        });
-      }
-    } catch (err) {
-      setMessage({
-        type: 'error',
-        text: `아이템 사용 실패: ${err instanceof Error ? err.message : '알 수 없는 오류'}`,
-      });
-    } finally {
-      setUsingItemId(null);
-    }
-  };
+export const ItemSystemSection: React.FC = () => {
+  const {
+    itemDefinitions,
+    itemQuantities,
+    inventory,
+    isLoading,
+    isUpdating,
+    message,
+    usingItemId,
+    handleQuantityChange,
+    handleQuantityInputChange,
+    handleQuantityInputBlur,
+    handleSetQuantity,
+    handleResetInventory,
+    handleRestoreShopItems,
+    handleUseItem,
+  } = useItemDebugBridge();
 
   if (isLoading) {
     return (
-      <div className="debug-section">
-        <div className="debug-loading">아이템 불러오는 중...</div>
+      <div className="p-6 bg-gray-900/50 rounded-xl border border-gray-800 animate-pulse">
+        <div className="h-7 w-40 bg-gray-800 rounded-lg mb-6"></div>
+        <div className="space-y-4">
+          {[1, 2, 3].map((i) => (
+            <div key={i} className="h-20 bg-gray-800/50 rounded-lg"></div>
+          ))}
+        </div>
       </div>
     );
   }
 
   return (
-    <div className="debug-section">
-      <h3 className="debug-section-title">📦 아이템 시스템</h3>
-
-      <div className="debug-item-controls">
-        <button
-          className="debug-item-reset-button"
-          onClick={handleResetInventory}
-          disabled={isUpdating}
-        >
-          🎒 인벤토리 초기화
-        </button>
-        <button
-          className="debug-item-restore-button"
-          onClick={handleRestoreShopItems}
-          disabled={isUpdating}
-        >
-          🏪 상점 물품 긴급 복구
-        </button>
+    <div className="p-6 bg-gray-900/50 rounded-xl border border-gray-800 backdrop-blur-sm shadow-xl">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
+        <h3 className="text-xl font-bold text-white flex items-center gap-2">
+          <span className="text-blue-400">📦</span> 아이템 시스템
+        </h3>
+        <div className="flex flex-wrap gap-2">
+          <button
+            className="px-4 py-2 bg-red-500/10 hover:bg-red-500/20 text-red-400 text-sm font-medium rounded-lg border border-red-500/20 transition-all active:scale-95 disabled:opacity-50"
+            onClick={handleResetInventory}
+            disabled={isUpdating}
+          >
+            🗑️ 인벤토리 초기화
+          </button>
+          <button
+            className="px-4 py-2 bg-blue-500/10 hover:bg-blue-500/20 text-blue-400 text-sm font-medium rounded-lg border border-blue-500/20 transition-all active:scale-95 disabled:opacity-50"
+            onClick={handleRestoreShopItems}
+            disabled={isUpdating}
+          >
+            🏪 상점 복구
+          </button>
+        </div>
       </div>
 
-      <div className="debug-item-list">
+      <div className="space-y-3 max-h-[500px] overflow-y-auto pr-2 custom-scrollbar">
         {itemDefinitions.map((item) => {
           const currentItem = inventory.find((inv) => inv.id === item.id);
           const currentQuantity = currentItem?.quantity || 0;
           const inputValue = itemQuantities[item.id] ?? currentQuantity.toString();
+          const meta = ITEM_MAP[item.code];
 
           return (
-            <div key={item.id} className="debug-item-item">
-              <div className="debug-item-info">
-                <label htmlFor={`debug-item-input-${item.id}`} className="debug-item-name">
-                  {ITEM_MAP[item.code]?.emoji || '📦'} {item.name}
-                </label>
-                {(item.description || ITEM_MAP[item.code]?.description) && (
-                  <div className="debug-item-description">
-                    {item.description || ITEM_MAP[item.code]?.description}
-                  </div>
-                )}
+            <div
+              key={item.id}
+              className="p-4 bg-gray-800/30 rounded-lg border border-gray-700/50 hover:border-blue-500/30 transition-colors flex flex-col md:flex-row md:items-center justify-between gap-4"
+            >
+              <div className="flex-1">
+                <div className="flex items-center gap-2 mb-1">
+                  <span className="text-xl">{meta?.emoji || '📦'}</span>
+                  <span className="font-semibold text-gray-100">{item.name}</span>
+                  <span className="text-xs px-2 py-0.5 bg-gray-700 text-gray-400 rounded-full">
+                    ID: {item.id}
+                  </span>
+                </div>
+                <p className="text-sm text-gray-400 line-clamp-1">
+                  {item.description || meta?.description || '설명 없음'}
+                </p>
               </div>
-              <div className="debug-item-control">
-                <button
-                  className="debug-item-button-small"
-                  onClick={() => handleQuantityChange(item.id, -5)}
-                  disabled={isUpdating}
-                >
-                  -5
-                </button>
-                <input
-                  type="number"
-                  id={`debug-item-input-${item.id}`}
-                  name={`item-${item.id}`}
-                  className="debug-item-input"
-                  value={inputValue}
-                  onChange={(e) => handleQuantityInputChange(item.id, e.target.value)}
-                  onBlur={() => handleQuantityInputBlur(item.id)}
-                  min="0"
-                  disabled={isUpdating}
-                />
-                <button
-                  className="debug-item-button-small"
-                  onClick={() => handleQuantityChange(item.id, 5)}
-                  disabled={isUpdating}
-                >
-                  +5
-                </button>
-                <button
-                  className="debug-item-button"
-                  onClick={() => handleSetQuantity(item.id)}
-                  disabled={isUpdating}
-                >
-                  설정
-                </button>
-                {currentQuantity > 0 && (
+
+              <div className="flex items-center gap-3 bg-gray-900/50 p-2 rounded-lg border border-gray-700/30">
+                <div className="flex items-center">
                   <button
-                    className="debug-item-use-button"
-                    onClick={() => handleUseItem(item.id)}
-                    disabled={isUpdating || usingItemId === item.id}
+                    className="w-8 h-8 flex items-center justify-center bg-gray-700 hover:bg-gray-600 text-gray-200 rounded-l transition-colors disabled:opacity-50"
+                    onClick={() => handleQuantityChange(item.id, -5)}
+                    disabled={isUpdating}
                   >
-                    {usingItemId === item.id ? '사용 중...' : '즉시 사용'}
+                    -5
                   </button>
-                )}
+                  <input
+                    type="number"
+                    className="w-16 h-8 bg-gray-800 text-center text-white border-x border-gray-700 focus:outline-none focus:ring-1 focus:ring-blue-500 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                    value={inputValue}
+                    onChange={(e) => handleQuantityInputChange(item.id, e.target.value)}
+                    onBlur={() => handleQuantityInputBlur(item.id)}
+                    disabled={isUpdating}
+                  />
+                  <button
+                    className="w-8 h-8 flex items-center justify-center bg-gray-700 hover:bg-gray-600 text-gray-200 rounded-r transition-colors disabled:opacity-50"
+                    onClick={() => handleQuantityChange(item.id, 5)}
+                    disabled={isUpdating}
+                  >
+                    +5
+                  </button>
+                </div>
+
+                <div className="flex gap-2 border-l border-gray-700 pl-3">
+                  <button
+                    className="px-3 py-1.5 bg-blue-600 hover:bg-blue-500 text-white text-sm font-medium rounded transition-all active:scale-95 disabled:opacity-50"
+                    onClick={() => handleSetQuantity(item.id)}
+                    disabled={isUpdating}
+                  >
+                    설정
+                  </button>
+                  {currentQuantity > 0 && (
+                    <button
+                      className="px-3 py-1.5 bg-purple-600/20 hover:bg-purple-600/30 text-purple-400 text-sm font-medium rounded border border-purple-500/30 transition-all active:scale-95 disabled:opacity-50"
+                      onClick={() => handleUseItem(item.id)}
+                      disabled={isUpdating || usingItemId === item.id}
+                    >
+                      {usingItemId === item.id ? '...' : '사용'}
+                    </button>
+                  )}
+                </div>
               </div>
             </div>
           );
@@ -341,8 +133,18 @@ export function ItemSystemSection() {
       </div>
 
       {message && (
-        <div className={`debug-message debug-message-${message.type}`}>{message.text}</div>
+        <div
+          className={`mt-6 p-4 rounded-lg border text-sm font-medium animate-in fade-in slide-in-from-bottom-2 ${
+            message.type === 'success'
+              ? 'bg-green-500/10 border-green-500/20 text-green-400'
+              : message.type === 'error'
+              ? 'bg-red-500/10 border-red-500/20 text-red-400'
+              : 'bg-blue-500/10 border-blue-500/20 text-blue-400'
+          }`}
+        >
+          {message.text}
+        </div>
       )}
     </div>
   );
-}
+};

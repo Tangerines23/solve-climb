@@ -1,9 +1,7 @@
 // src/stores/useQuizStore.ts
 import { create } from 'zustand';
-import { Category, World, GameMode, Difficulty } from '../types/quiz';
-
-// 시간 설정 (초 단위)
-export type TimeLimit = 10 | 15 | 60 | 120 | 180; // 10s/15s(Revive), 1min, 2min, 3min
+import { Category, World, GameMode, Difficulty, TimeLimit } from '../types/quiz';
+export { type TimeLimit };
 
 export interface QuizState {
   score: number;

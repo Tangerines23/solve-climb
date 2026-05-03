@@ -71,3 +71,6 @@ export type Difficulty = 'easy' | 'medium' | 'hard';
 
 // 학습/게임 티어 (현재의 난이도 체계)
 export type Tier = 'normal' | 'hard';
+
+// 시간 제한 타입 (초 단위)
+export type TimeLimit = 10 | 15 | 60 | 120 | 180; // 10s/15s(Revive), 1min, 2min, 3min
