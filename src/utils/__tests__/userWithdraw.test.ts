@@ -1,9 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { withdrawAccount } from '../userWithdraw';
 import { supabase } from '../supabaseClient';
-import { storageService, STORAGE_KEYS } from '../../services';
-import { useLevelProgressStore } from '@/features/quiz';
-import { ENV } from '../env';
+import { storageService } from '../../services';
 
 // Mock dependencies
 vi.mock('../supabaseClient', () => ({

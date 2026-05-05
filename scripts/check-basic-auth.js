@@ -1,16 +1,16 @@
 /**
  * TOSS_API_BASIC_AUTH 값 검증 스크립트
- * 
+ *
  * 사용법:
  * node scripts/check-basic-auth.js "your_base64_value"
- * 
+ *
  * 또는 브라우저 콘솔에서:
  * checkBasicAuth("your_base64_value")
  */
 
 function checkBasicAuth(base64Value) {
   console.log('🔍 TOSS_API_BASIC_AUTH 값 검증 시작...\n');
-  
+
   if (!base64Value || typeof base64Value !== 'string') {
     console.error('❌ 값이 비어있거나 문자열이 아닙니다.');
     return false;
@@ -38,7 +38,7 @@ function checkBasicAuth(base64Value) {
   try {
     const decoded = atob(value);
     console.log(`\n📝 디코딩된 값: ${decoded.substring(0, 50)}...`);
-    
+
     // client_id:client_secret 형식인지 확인
     if (decoded.includes(':')) {
       const parts = decoded.split(':');
@@ -70,7 +70,7 @@ if (typeof require !== 'undefined' && require.main === module) {
     console.log('node scripts/check-basic-auth.js "Y2xpZW50X2lkOmNsaWVudF9zZWNyZXQ="');
     process.exit(1);
   }
-  
+
   const result = checkBasicAuth(args[0]);
   process.exit(result ? 0 : 1);
 }

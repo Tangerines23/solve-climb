@@ -6,7 +6,6 @@ import {
   createMigrationLink,
   migrateToGameLogin,
 } from '../tossGameLogin';
-import { ENV } from '../env';
 
 describe('tossGameLogin utility', () => {
   beforeEach(() => {

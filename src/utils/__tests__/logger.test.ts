@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { logger, LogLevel } from '../logger';
+import { logger } from '../logger';
 import { useErrorLogStore } from '../../stores/useErrorLogStore';
 
 describe('logger.util', () => {

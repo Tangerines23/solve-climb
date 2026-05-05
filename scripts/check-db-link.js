@@ -62,10 +62,10 @@ env.SUPABASE_DB_PASSWORD = SUPABASE_DB_PASSWORD;
 env.VITE_SUPABASE_URL = VITE_SUPABASE_URL;
 
 try {
-  execSync(
-    `npx supabase link --project-ref "${PROJECT_REF}" ${linkArgs}`.trim(),
-    { stdio: 'inherit', env }
-  );
+  execSync(`npx supabase link --project-ref "${PROJECT_REF}" ${linkArgs}`.trim(), {
+    stdio: 'inherit',
+    env,
+  });
   console.log('✅ supabase link 성공');
 } catch {
   console.error('❌ supabase link 실패 (비밀번호 또는 풀러/네트워크 문제 가능)');
