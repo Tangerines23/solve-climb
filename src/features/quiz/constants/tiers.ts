@@ -158,9 +158,6 @@ export async function calculateTier(totalScore: number): Promise<TierCalculation
 }
 
 
-
-}
-
 /**
  * 다음 티어까지 필요한 점수
  */
