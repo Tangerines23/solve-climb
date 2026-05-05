@@ -1,7 +1,6 @@
+import { UI_MESSAGES, ANIMATION_CONFIG } from '@/features/quiz/constants/game';
 import { useCallback } from 'react';
 import { AdService } from '@/utils/adService';
-import { UI_MESSAGES } from '@/features/quiz';
-import { ANIMATION_CONFIG } from '@/features/quiz';
 
 interface UseQuizBusinessLogicParams {
   setToastValue: (v: string) => void;

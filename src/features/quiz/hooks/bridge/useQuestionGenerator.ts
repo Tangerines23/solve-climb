@@ -1,3 +1,4 @@
+import { CATEGORY_CONFIG, SURVIVAL_CONFIG } from '@/features/quiz/constants/game';
 // 문제 생성 로직을 관리하는 커스텀 훅
 import { useCallback, useEffect } from 'react';
 import {
@@ -13,7 +14,6 @@ import {
 import { generateQuestion } from '../../utils/quizGenerator';
 import { useBaseCampStore } from '../../stores/useBaseCampStore';
 import { useDeathNoteStore } from '../../stores/useDeathNoteStore';
-import { SURVIVAL_CONFIG, CATEGORY_CONFIG } from '@/features/quiz';
 import { quizEventBus } from '@/lib/eventBus';
 
 interface UseQuestionGeneratorParams {

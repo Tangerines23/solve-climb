@@ -2,17 +2,17 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, waitFor } from '@testing-library/react';
 import { BrowserRouter } from 'react-router-dom';
 import { ChallengeCard } from '../ChallengeCard';
-import { getTodayChallenge } from '../../utils/challenge';
+import { getTodayChallenge } from '@/features/quiz/utils/challenge';
 
 // Mock dependencies
-vi.mock('../../utils/challenge', () => ({
+vi.mock('@/features/quiz/utils/challenge', () => ({
   getTodayChallenge: vi.fn(),
 }));
 
 const mockSetCategoryTopic = vi.fn();
 const mockSetTimeLimit = vi.fn();
 
-vi.mock('../../stores/useQuizStore', () => ({
+vi.mock('@/features/quiz/stores/useQuizStore', () => ({
   useQuizStore: vi.fn((selector) => {
     const state = {
       setCategoryTopic: mockSetCategoryTopic,

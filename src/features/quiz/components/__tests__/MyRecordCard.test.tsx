@@ -4,7 +4,7 @@ import { MyRecordCard } from '../MyRecordCard';
 
 // Mock useLevelProgressStore
 const mockGetBestRecords = vi.fn(() => ({ 'time-attack': null, survival: null }));
-vi.mock('../../features/quiz/stores/useLevelProgressStore', () => ({
+vi.mock('@/features/quiz/stores/useLevelProgressStore', () => ({
   useLevelProgressStore: (selector: (state: any) => any) => {
     const mockState = {
       getBestRecords: mockGetBestRecords,

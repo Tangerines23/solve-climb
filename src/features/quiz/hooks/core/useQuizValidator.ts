@@ -1,9 +1,12 @@
+import {
+  MAX_POSSIBLE_ANSWER,
+  CATEGORY_IDS,
+  MATH_SUB_IDS,
+  SUB_CATEGORY_IDS,
+} from '@/features/quiz/constants/game';
 import { useCallback } from 'react';
 import { QuizQuestion } from '../../types/quiz';
 import { normalizeRomaji } from '../../utils/japanese';
-import { MAX_POSSIBLE_ANSWER } from '@/features/quiz';
-import { CATEGORY_IDS, MATH_SUB_IDS, SUB_CATEGORY_IDS } from '@/features/quiz';
-
 /**
  * 퀴즈 정답 유효성 검사를 담당하는 훅
  */

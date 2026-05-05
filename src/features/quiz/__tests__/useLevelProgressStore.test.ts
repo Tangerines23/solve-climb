@@ -1,12 +1,12 @@
 import { describe, it, expect, beforeEach, vi, afterEach } from 'vitest';
 import { renderHook, act } from '@testing-library/react';
-import { useLevelProgressStore } from '../stores/useLevelProgressStore';
-import { supabase } from '../../../utils/supabaseClient';
-import { useToastStore } from '../../../stores/useToastStore';
-import { useDebugStore } from '../../../stores/useDebugStore';
+import { useLevelProgressStore } from '@/features/quiz/stores/useLevelProgressStore';
+import { supabase } from '@/utils/supabaseClient';
+import { useToastStore } from '@/stores/useToastStore';
+import { useDebugStore } from '@/stores/useDebugStore';
 
 // Mock dependencies
-vi.mock('../../../utils/supabaseClient', () => ({
+vi.mock('@/utils/supabaseClient', () => ({
   supabase: {
     auth: {
       getUser: vi.fn(),
@@ -17,7 +17,7 @@ vi.mock('../../../utils/supabaseClient', () => ({
   },
 }));
 
-vi.mock('../../../stores/useToastStore', () => ({
+vi.mock('@/stores/useToastStore', () => ({
   useToastStore: {
     getState: vi.fn(() => ({
       showToast: vi.fn(),
@@ -25,7 +25,7 @@ vi.mock('../../../stores/useToastStore', () => ({
   },
 }));
 
-vi.mock('../../../stores/useDebugStore', () => {
+vi.mock('@/stores/useDebugStore', () => {
   const mockState = { bypassLevelLock: false };
   const mockStore = Object.assign(
     vi.fn(() => mockState),

@@ -1,19 +1,19 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/react';
-import { CategorySelectPage } from '../pages/CategorySelectPage';
+import { CategorySelectPage } from '@/features/quiz/pages/CategorySelectPage';
 import { BrowserRouter } from 'react-router-dom';
-import { useLevelProgressStore } from '../stores/useLevelProgressStore';
-import { useNavigationContext } from '../../../hooks/useNavigationContext';
-import { useFavoriteStore } from '../../../stores/useFavoriteStore';
-import { useDebugStore } from '../../../stores/useDebugStore';
+import { useLevelProgressStore } from '@/features/quiz/stores/useLevelProgressStore';
+import { useNavigationContext } from '@/hooks/useNavigationContext';
+import { useFavoriteStore } from '@/stores/useFavoriteStore';
+import { useDebugStore } from '@/stores/useDebugStore';
 import '@testing-library/jest-dom/vitest';
 
 // Mock dependencies
-vi.mock('../stores/useLevelProgressStore');
-vi.mock('../../../hooks/useNavigationContext');
-vi.mock('../../../stores/useFavoriteStore');
-vi.mock('../../../stores/useDebugStore');
-vi.mock('../../../config/app', () => ({
+vi.mock('@/features/quiz/stores/useLevelProgressStore');
+vi.mock('@/hooks/useNavigationContext');
+vi.mock('@/stores/useFavoriteStore');
+vi.mock('@/stores/useDebugStore');
+vi.mock('@/config/app', () => ({
   APP_CONFIG: {
     CATEGORIES: [
       {
@@ -41,14 +41,14 @@ vi.mock('../../../config/app', () => ({
     },
   },
 }));
-vi.mock('../components/ClimbGraphic', () => ({
+vi.mock('@/features/quiz/components/ClimbGraphic', () => ({
   ClimbGraphic: () => <div data-testid="climb-graphic" />,
 }));
-vi.mock('../../../components/FooterNav', () => ({
+vi.mock('@/components/FooterNav', () => ({
   FooterNav: () => <div data-testid="footer-nav" />,
 }));
-vi.mock('../../../components/Header', () => ({ Header: () => <div data-testid="header" /> }));
-vi.mock('../components/TopicHeader', () => ({
+vi.mock('@/components/Header', () => ({ Header: () => <div data-testid="header" /> }));
+vi.mock('@/features/quiz/components/TopicHeader', () => ({
   TopicHeader: ({ title, onBack }: any) => (
     <div data-testid="topic-header">
       <h1>{title}</h1>

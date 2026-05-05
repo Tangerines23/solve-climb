@@ -3,11 +3,11 @@ import { render, screen, fireEvent } from '@testing-library/react';
 import { GameTipModal } from '../GameTipModal';
 
 // Mock dependencies
-vi.mock('../../../../utils/storageKey', () => ({
+vi.mock('@/utils/storageKey', () => ({
   createSafeStorageKey: vi.fn((...args) => args.join('_')),
 }));
 
-vi.mock('../../../../utils/storage', () => ({
+vi.mock('@/utils/storage', () => ({
   storage: {
     setString: vi.fn(),
   },

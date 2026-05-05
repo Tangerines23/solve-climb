@@ -1,11 +1,11 @@
+import { ANIMATION_CONFIG } from '@/features/quiz/constants/game';
 import { useEffect } from 'react';
 import { quizEventBus } from '@/lib/eventBus';
 import { useQuizStore } from '../../stores/useQuizStore';
-import { useGameStore } from '@/features/quiz';
+import { useGameStore } from '@/features/quiz/stores/useGameStore';
 import { useDeathNoteStore } from '../../stores/useDeathNoteStore';
 import { useBaseCampStore } from '../../stores/useBaseCampStore';
 import { vibrateLong } from '@/utils/haptic';
-import { ANIMATION_CONFIG } from '@/features/quiz';
 import { calculateDynamicTimeLimit } from '../../utils/quizTimeCalculator';
 import type { QuizQuestion, World, Category, WrongAnswer } from '../../types/quiz';
 import { ItemFeedbackRef } from '../../types/feedback';

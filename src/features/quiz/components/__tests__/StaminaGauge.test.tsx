@@ -1,10 +1,10 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { render, screen } from '@testing-library/react';
 import { StaminaGauge } from '../StaminaGauge';
-import { useUserStore } from '../../stores/useUserStore';
+import { useUserStore } from '@/stores/useUserStore';
 
 // Mock useUserStore
-vi.mock('../../stores/useUserStore', () => ({
+vi.mock('@/stores/useUserStore', () => ({
   useUserStore: vi.fn(),
 }));
 

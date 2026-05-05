@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { renderHook, act } from '@testing-library/react';
-import { useBaseCampStore } from '../stores/useBaseCampStore';
+import { useBaseCampStore } from '@/features/quiz/stores/useBaseCampStore';
 
 // Mock generateQuestion
 vi.mock('../utils/quizGenerator', () => ({

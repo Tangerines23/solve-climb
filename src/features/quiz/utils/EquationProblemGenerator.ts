@@ -374,4 +374,8 @@ export function generateEquation(
 /**
  * EquationProblemGenerator 클래스 (선택적 사용)
  */
-
+export const EquationProblemGenerator = {
+  generate: generateEquation,
+  getStages: () => EQUATION_STAGES,
+  getStage: (level: number) => EQUATION_STAGES.find((s) => s.id === level),
+};

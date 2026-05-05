@@ -1,19 +1,19 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
-import { LevelSelectPage } from '../pages/LevelSelectPage';
+import { LevelSelectPage } from '@/features/quiz/pages/LevelSelectPage';
 import { BrowserRouter, useSearchParams } from 'react-router-dom';
-import { useLevelProgressStore } from '../stores/useLevelProgressStore';
-import { useNavigationContext } from '../../../hooks/useNavigationContext';
-import { useFavoriteStore } from '../../../stores/useFavoriteStore';
-import { useDebugStore } from '../../../stores/useDebugStore';
+import { useLevelProgressStore } from '@/features/quiz/stores/useLevelProgressStore';
+import { useNavigationContext } from '@/hooks/useNavigationContext';
+import { useFavoriteStore } from '@/stores/useFavoriteStore';
+import { useDebugStore } from '@/stores/useDebugStore';
 import '@testing-library/jest-dom/vitest';
 
 // Mock dependencies
-vi.mock('../stores/useLevelProgressStore');
-vi.mock('../../../hooks/useNavigationContext');
-vi.mock('../../../stores/useFavoriteStore');
-vi.mock('../../../stores/useDebugStore');
-vi.mock('../../../config/app', () => ({
+vi.mock('@/features/quiz/stores/useLevelProgressStore');
+vi.mock('@/hooks/useNavigationContext');
+vi.mock('@/stores/useFavoriteStore');
+vi.mock('@/stores/useDebugStore');
+vi.mock('@/config/app', () => ({
   APP_CONFIG: {
     WORLD_MAP: {
       World1: 'World 1',
@@ -49,10 +49,10 @@ vi.mock('../../../config/app', () => ({
     },
   },
 }));
-vi.mock('../components/ClimbGraphic', () => ({
+vi.mock('@/features/quiz/components/ClimbGraphic', () => ({
   ClimbGraphic: () => <div data-testid="climb-graphic" />,
 }));
-vi.mock('../../../components/MyRecordCard', () => ({
+vi.mock('../components/MyRecordCard', () => ({
   MyRecordCard: () => <div data-testid="my-record-card" />,
 }));
 vi.mock('../components/LevelListCard', () => ({
@@ -66,11 +66,11 @@ vi.mock('../components/LevelListCard', () => ({
     </div>
   ),
 }));
-vi.mock('../../../components/FooterNav', () => ({
+vi.mock('@/components/FooterNav', () => ({
   FooterNav: () => <div data-testid="footer-nav" />,
 }));
-vi.mock('../../../components/Header', () => ({ Header: () => <div data-testid="header" /> }));
-vi.mock('../../../components/Toast', () => ({
+vi.mock('@/components/Header', () => ({ Header: () => <div data-testid="header" /> }));
+vi.mock('@/components/Toast', () => ({
   Toast: ({ message, isOpen }: any) => (isOpen ? <div data-testid="toast">{message}</div> : null),
 }));
 
@@ -105,6 +105,7 @@ describe('LevelSelectPage', () => {
     error: null,
     fetchWorlds: vi.fn(),
     getLevelProgress: vi.fn(() => ({ best_score: 20 })),
+    getNextLevel: vi.fn(() => 1),
   };
 
   const defaultNavContext = {

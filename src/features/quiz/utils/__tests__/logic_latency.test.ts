@@ -3,7 +3,7 @@ import { calculateScoreForTier } from '../tierUtils';
 import { generateProblem } from '../MathProblemGenerator';
 
 // 🧪 Mock environment and constants to avoid network requests during logic tests
-vi.mock('../constants/tiers', () => ({
+vi.mock('@/features/quiz/constants/tiers', () => ({
   loadTierDefinitions: vi.fn().mockResolvedValue([
     { level: 0, name: 'Base', icon: '', minScore: 0, colorVar: '' },
     { level: 5, name: 'Summit', icon: '', minScore: 100000, colorVar: '' },

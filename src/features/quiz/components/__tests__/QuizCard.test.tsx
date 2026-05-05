@@ -2,8 +2,8 @@ import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/react';
 import '@testing-library/jest-dom';
 import { QuizCard } from '../QuizCard';
-import type { QuizQuestion, Category, GameMode } from '../../types/quiz';
-import { QuizContext } from '../../contexts/QuizContext';
+import type { QuizQuestion, Category, GameMode } from '@/features/quiz/types/quiz';
+import { QuizContext } from '@/features/quiz/contexts/QuizContext';
 
 // Mock dependencies
 vi.mock('../../utils/debugLogger', () => ({

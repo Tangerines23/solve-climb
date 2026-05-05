@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen } from '@testing-library/react';
-import { QwertyKeypad } from '../input/QwertyKeypad';
+import { QwertyKeypad } from '@/features/quiz/components/input/QwertyKeypad';
 
 // Mock navigator.vibrate
 Object.defineProperty(navigator, 'vibrate', {

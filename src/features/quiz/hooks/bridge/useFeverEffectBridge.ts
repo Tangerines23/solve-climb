@@ -1,4 +1,4 @@
-import { useGameStore } from '@/features/quiz';
+import { useGameStore } from '@/features/quiz/stores/useGameStore';
 import { useSettingsStore } from '@/stores/useSettingsStore';
 
 export function useFeverEffectBridge() {

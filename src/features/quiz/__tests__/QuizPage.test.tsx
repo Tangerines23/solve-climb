@@ -1,8 +1,8 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/react';
-import { QuizPage } from '../pages/QuizPage';
+import { QuizPage } from '@/features/quiz/pages/QuizPage';
 import { BrowserRouter } from 'react-router-dom';
-import { useUserStore } from '../../../stores/useUserStore';
+import { useUserStore } from '@/stores/useUserStore';
 
 // Use vi.hoisted to ensure these are initialized before vi.mock
 const { mockQuizStore, mockUserStoreState, mockGameStore } = vi.hoisted(() => {
@@ -66,13 +66,13 @@ const { mockQuizStore, mockUserStoreState, mockGameStore } = vi.hoisted(() => {
   };
 });
 
-vi.mock('../stores/useQuizStore', () => ({
+vi.mock('@/features/quiz/stores/useQuizStore', () => ({
   useQuizStore: mockQuizStore,
 }));
 
-vi.mock('../../../stores/useSettingsStore', () => ({
-    useSettingsStore: vi.fn((selector) => {
-      const state = {
+vi.mock('@/stores/useSettingsStore', () => ({
+  useSettingsStore: vi.fn((selector) => {
+    const state = {
       keyboardType: 'custom',
       hapticEnabled: true,
     };
@@ -80,7 +80,7 @@ vi.mock('../../../stores/useSettingsStore', () => ({
   }),
 }));
 
-vi.mock('../../../stores/useUserStore', () => ({
+vi.mock('@/stores/useUserStore', () => ({
   useUserStore: Object.assign(
     vi.fn(() => mockUserStoreState),
     {
@@ -95,11 +95,11 @@ vi.mock('../../../stores/useUserStore', () => ({
   ),
 }));
 
-vi.mock('../../../stores/useGameStore', () => ({
+vi.mock('@/features/quiz/stores/useGameStore', () => ({
   useGameStore: mockGameStore,
 }));
 
-vi.mock('../stores/useDeathNoteStore', () => ({
+vi.mock('@/features/quiz/stores/useDeathNoteStore', () => ({
   useDeathNoteStore: {
     getState: () => ({
       addMissedQuestion: vi.fn(),
@@ -107,13 +107,13 @@ vi.mock('../stores/useDeathNoteStore', () => ({
   },
 }));
 
-vi.mock('../../../stores/useToastStore', () => ({
+vi.mock('@/stores/useToastStore', () => ({
   useToastStore: vi.fn(() => ({
     showToast: vi.fn(),
   })),
 }));
 
-vi.mock('../stores/useBaseCampStore', () => ({
+vi.mock('@/features/quiz/stores/useBaseCampStore', () => ({
   useBaseCampStore: {
     getState: () => ({
       startDiagnostic: vi.fn(),
@@ -121,13 +121,13 @@ vi.mock('../stores/useBaseCampStore', () => ({
   },
 }));
 
-vi.mock('../hooks/bridge/useQuestionGenerator', () => ({
+vi.mock('@/features/quiz/hooks/bridge/useQuestionGenerator', () => ({
   useQuestionGenerator: vi.fn(() => ({
     generateNewQuestion: vi.fn(),
   })),
 }));
 
-vi.mock('../hooks/bridge/useQuizInput', () => ({
+vi.mock('@/features/quiz/hooks/bridge/useQuizInput', () => ({
   useQuizInput: vi.fn(() => ({
     handleKeypadNumber: vi.fn(),
     handleQwertyKeyPress: vi.fn(),
@@ -136,7 +136,7 @@ vi.mock('../hooks/bridge/useQuizInput', () => ({
   })),
 }));
 
-vi.mock('../hooks/core/useQuizGameState', () => ({
+vi.mock('@/features/quiz/hooks/core/useQuizGameState', () => ({
   useQuizGameState: vi.fn(() => ({
     totalQuestions: 0,
     setTotalQuestions: vi.fn(),
@@ -150,7 +150,7 @@ vi.mock('../hooks/core/useQuizGameState', () => ({
   })),
 }));
 
-vi.mock('../hooks/bridge/useQuizAnimations', () => ({
+vi.mock('@/features/quiz/hooks/bridge/useQuizAnimations', () => ({
   useQuizAnimations: vi.fn(() => ({
     setIsError: vi.fn(),
     setShowFlash: vi.fn(),
@@ -169,13 +169,13 @@ vi.mock('../hooks/bridge/useQuizAnimations', () => ({
   })),
 }));
 
-vi.mock('../hooks/core/useQuizSubmit', () => ({
+vi.mock('@/features/quiz/hooks/core/useQuizSubmit', () => ({
   useQuizSubmit: vi.fn(() => ({
     handleSubmit: vi.fn(),
   })),
 }));
 
-vi.mock('../hooks/bridge/useQuizBusinessLogic', () => ({
+vi.mock('@/features/quiz/hooks/bridge/useQuizBusinessLogic', () => ({
   useQuizBusinessLogic: vi.fn(() => ({
     handleWatchAdRevive: vi.fn(),
     smartHandleGameOver: vi.fn(),
@@ -183,7 +183,7 @@ vi.mock('../hooks/bridge/useQuizBusinessLogic', () => ({
   })),
 }));
 
-vi.mock('../hooks/bridge/useQuizNavigation', () => ({
+vi.mock('@/features/quiz/hooks/bridge/useQuizNavigation', () => ({
   useQuizNavigation: vi.fn(() => ({
     showExitConfirm: false,
     setShowExitConfirm: vi.fn(),
@@ -194,7 +194,7 @@ vi.mock('../hooks/bridge/useQuizNavigation', () => ({
   })),
 }));
 
-vi.mock('../hooks/core/useQuizModals', () => ({
+vi.mock('@/features/quiz/hooks/core/useQuizModals', () => ({
   useQuizModals: vi.fn(() => ({
     modals: {
       showLastChanceModal: false,
@@ -221,7 +221,7 @@ vi.mock('../hooks/core/useQuizModals', () => ({
   })),
 }));
 
-vi.mock('../hooks/core/useQuizScoreManager', () => ({
+vi.mock('@/features/quiz/hooks/core/useQuizScoreManager', () => ({
   useQuizScoreManager: vi.fn(() => ({
     score: 0,
     combo: 0,
@@ -238,11 +238,11 @@ vi.mock('../hooks/core/useQuizScoreManager', () => ({
   })),
 }));
 
-vi.mock('../hooks/core/useQuizEventProcessor', () => ({
+vi.mock('@/features/quiz/hooks/core/useQuizEventProcessor', () => ({
   useQuizEventProcessor: vi.fn(),
 }));
 
-vi.mock('../../../lib/eventBus', () => ({
+vi.mock('@/lib/eventBus', () => ({
   quizEventBus: {
     emit: vi.fn(),
     on: vi.fn(() => vi.fn()),
@@ -250,7 +250,7 @@ vi.mock('../../../lib/eventBus', () => ({
   },
 }));
 
-vi.mock('../hooks/bridge/useQuizStartLogic', () => ({
+vi.mock('@/features/quiz/hooks/bridge/useQuizStartLogic', () => ({
   useQuizStartLogic: vi.fn(() => ({
     showTipModal: true,
     setShowTipModal: vi.fn(),
@@ -266,7 +266,7 @@ vi.mock('../hooks/bridge/useQuizStartLogic', () => ({
   })),
 }));
 
-vi.mock('../hooks/bridge/useQuizSession', () => ({
+vi.mock('@/features/quiz/hooks/bridge/useQuizSession', () => ({
   useQuizSession: vi.fn(() => ({
     sessionCreated: false,
   })),
@@ -282,7 +282,7 @@ const mockGameplayHandlers = {
   handleTutorialClick: vi.fn(),
 };
 
-vi.mock('../hooks/bridge/useQuizGameplay', () => ({
+vi.mock('@/features/quiz/hooks/bridge/useQuizGameplay', () => ({
   useQuizGameplay: vi.fn(() => ({
     showCountdown: false,
     showSafetyRope: false,
@@ -298,7 +298,7 @@ vi.mock('../hooks/bridge/useQuizGameplay', () => ({
   })),
 }));
 
-vi.mock('../hooks/core/useQuizRevive', () => ({
+vi.mock('@/features/quiz/hooks/core/useQuizRevive', () => ({
   useQuizRevive: vi.fn(() => ({
     handleRevive: vi.fn(),
     handlePurchaseAndRevive: vi.fn(),
@@ -308,8 +308,8 @@ vi.mock('../hooks/core/useQuizRevive', () => ({
 }));
 
 // Mock components with access to handlers
-vi.mock('../components/QuizLayout', async () => {
-  const { useQuiz } = await import('../contexts/QuizContext');
+vi.mock('@/features/quiz/components/QuizLayout', async () => {
+  const { useQuiz } = await import('@/features/quiz/contexts/QuizContext');
   return {
     QuizLayout: vi.fn(() => {
       const { quizState, quizHandlers, modalHandlers, modalState } = useQuiz();
@@ -389,12 +389,12 @@ vi.mock('../components/QuizLayout', async () => {
   };
 });
 
-vi.mock('../components/QuizPreview', () => ({
+vi.mock('@/features/quiz/components/QuizPreview', () => ({
   QuizPreview: vi.fn(() => <div data-testid="quiz-preview">Quiz Preview</div>),
 }));
 
 // Mock URL params validation
-vi.mock('../../../utils/urlParams', () => ({
+vi.mock('@/features/quiz/utils/urlParams', () => ({
   validateWorldParam: vi.fn((v) => v || 'World1'),
   validateCategoryInWorldParam: vi.fn((w, c) => c || '기초'),
   validateLevelParam: vi.fn((l) => (l ? parseInt(l) : 1)),
@@ -550,7 +550,7 @@ describe('QuizPage', () => {
     });
 
     it('should handle pause and resume', async () => {
-      const { quizEventBus } = await import('../../../lib/eventBus');
+      const { quizEventBus } = await import('@/lib/eventBus');
       render(
         <BrowserRouter>
           <QuizPage />

@@ -16,7 +16,7 @@ vi.mock('react-router-dom', async () => {
 const mockIsFavorite = vi.fn(() => false);
 const mockAddFavorite = vi.fn();
 
-vi.mock('../../stores/useFavoriteStore', () => ({
+vi.mock('@/stores/useFavoriteStore', () => ({
   useFavoriteStore: vi.fn((selector) => {
     const state = {
       isFavorite: mockIsFavorite,

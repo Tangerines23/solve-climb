@@ -20,19 +20,21 @@ vi.mock('../../utils/errorHandler', () => ({
 }));
 
 // Mock useErrorLogStore
-const mockAddLog = vi.fn();
-const mockUseErrorLogStore = vi.fn((selector) => {
-  if (typeof selector === 'function') {
-    return selector({ addLog: mockAddLog });
-  }
-  return { addLog: mockAddLog };
+const { mockAddLog, mockUseErrorLogStore } = vi.hoisted(() => {
+  const addLog = vi.fn();
+  const useStore = vi.fn((selector) => {
+    if (typeof selector === 'function') {
+      return selector({ addLog });
+    }
+    return { addLog };
+  });
+  (useStore as any).getState = () => ({ addLog });
+  return { mockAddLog: addLog, mockUseErrorLogStore: useStore };
 });
-(mockUseErrorLogStore as any).getState = () => ({ addLog: mockAddLog });
 
 vi.mock('../../stores/useErrorLogStore', () => ({
   useErrorLogStore: mockUseErrorLogStore,
 }));
-
 
 // Component that throws error
 const ThrowError = ({ shouldThrow }: { shouldThrow: boolean }) => {

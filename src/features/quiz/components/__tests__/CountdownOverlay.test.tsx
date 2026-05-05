@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { render, screen, act } from '@testing-library/react';
-import { CountdownOverlay } from '../overlays/CountdownOverlay';
+import { CountdownOverlay } from '@/features/quiz/components/overlays/CountdownOverlay';
 
 describe('CountdownOverlay', () => {
   beforeEach(() => {

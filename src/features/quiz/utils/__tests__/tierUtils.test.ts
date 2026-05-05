@@ -1,9 +1,9 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { calculateScoreForTier } from '../tierUtils';
-import { loadTierDefinitions, loadCycleCap, type TierInfo } from '../../constants/tiers';
+import { loadTierDefinitions, loadCycleCap, type TierInfo } from '@/features/quiz/constants/tiers';
 
 // Mock tiers constants
-vi.mock('../../constants/tiers', () => ({
+vi.mock('@/features/quiz/constants/tiers', () => ({
   loadTierDefinitions: vi.fn(),
   loadCycleCap: vi.fn(),
 }));

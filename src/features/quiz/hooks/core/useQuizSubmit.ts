@@ -1,7 +1,7 @@
 // 답안 제출 로직을 관리하는 커스텀 훅
 import { useCallback, FormEvent } from 'react';
 import { QuizQuestion, GameMode, Category, World } from '../../types/quiz';
-import { useGameStore } from '@/features/quiz';
+import { useGameStore } from '@/features/quiz/stores/useGameStore';
 import { useQuizValidator } from './useQuizValidator';
 import { useQuizScoring } from './useQuizScoring';
 import { quizEventBus } from '@/lib/eventBus';

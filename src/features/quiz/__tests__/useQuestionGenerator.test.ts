@@ -1,16 +1,17 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { renderHook, act } from '@testing-library/react';
-import { useQuestionGenerator } from '../hooks/bridge/useQuestionGenerator';
-import { generateQuestion } from '../utils/quizGenerator';
-import type { QuizQuestion } from '../types/quiz';
-import { quizEventBus } from '../../../lib/eventBus';
+import { useQuestionGenerator } from '@/features/quiz/hooks/bridge/useQuestionGenerator';
+import { generateQuestion } from '@/features/quiz/utils/quizGenerator';
+import type { QuizQuestion } from '@/features/quiz/types/quiz';
+
+import { quizEventBus } from '@/lib/eventBus';
 
 // Mock dependencies
-vi.mock('../utils/quizGenerator', () => ({
+vi.mock('@/features/quiz/utils/quizGenerator', () => ({
   generateQuestion: vi.fn(),
 }));
 
-vi.mock('../../../lib/eventBus', () => ({
+vi.mock('@/lib/eventBus', () => ({
   quizEventBus: {
     emit: vi.fn(),
     on: vi.fn(() => vi.fn()),
@@ -18,7 +19,7 @@ vi.mock('../../../lib/eventBus', () => ({
   },
 }));
 
-vi.mock('../stores/useBaseCampStore', () => ({
+vi.mock('@/features/quiz/stores/useBaseCampStore', () => ({
   useBaseCampStore: {
     getState: () => ({
       questions: [],
@@ -28,7 +29,7 @@ vi.mock('../stores/useBaseCampStore', () => ({
   },
 }));
 
-vi.mock('../stores/useDeathNoteStore', () => ({
+vi.mock('@/features/quiz/stores/useDeathNoteStore', () => ({
   useDeathNoteStore: {
     getState: () => ({
       getQuestionsByCategory: vi.fn().mockReturnValue([]),

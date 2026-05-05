@@ -1,10 +1,10 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, waitFor } from '@testing-library/react';
 import { TierUpgradeModal } from '../TierUpgradeModal';
-import { calculateTier, getTierInfo } from '../../constants/tiers';
+import { calculateTier, getTierInfo } from '@/features/quiz/constants/tiers';
 
 // Mock dependencies
-vi.mock('../../constants/tiers', () => ({
+vi.mock('@/features/quiz/constants/tiers', () => ({
   calculateTier: vi.fn(),
   getTierInfo: vi.fn(),
 }));

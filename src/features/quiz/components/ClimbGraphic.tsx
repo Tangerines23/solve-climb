@@ -7,7 +7,7 @@ import {
   CalculusBackground,
 } from './ClimbGraphicBackgrounds';
 import { STAGE_CONFIG, type StageConfig } from '../constants/stages';
-import { World, Category } from '@/features/quiz';
+import { World, Category } from '@/features/quiz/types/quiz';
 import './ClimbGraphic.css';
 
 // 단순화된 LevelButton
@@ -67,8 +67,9 @@ export function ClimbGraphic({
   // ========== 스테이지 헬퍼 함수 ==========
   const getStageInfo = useCallback((levelId: number): StageConfig => {
     return (
-      STAGE_CONFIG.find((stage: StageConfig) => levelId >= stage.range[0] && levelId <= stage.range[1]) ||
-      STAGE_CONFIG[0]
+      STAGE_CONFIG.find(
+        (stage: StageConfig) => levelId >= stage.range[0] && levelId <= stage.range[1]
+      ) || STAGE_CONFIG[0]
     );
   }, []);
 

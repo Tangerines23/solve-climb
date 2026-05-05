@@ -1,10 +1,10 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/react';
 import { BackpackBottomSheet } from '../game/BackpackBottomSheet';
-import { useUserStore } from '../../stores/useUserStore';
+import { useUserStore } from '@/stores/useUserStore';
 
 // Mock dependencies
-vi.mock('../../stores/useUserStore', () => ({
+vi.mock('@/stores/useUserStore', () => ({
   useUserStore: vi.fn(),
 }));
 

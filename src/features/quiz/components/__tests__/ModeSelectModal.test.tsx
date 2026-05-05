@@ -1,6 +1,6 @@
 import { describe, it, expect, vi } from 'vitest';
 import { render, screen } from '@testing-library/react';
-import { ModeSelectModal } from '../ModeSelectModal';
+import { ModeSelectModal } from '@/features/quiz/components/modals/ModeSelectModal';
 
 describe('ModeSelectModal', () => {
   it('should not render when isOpen is false', () => {

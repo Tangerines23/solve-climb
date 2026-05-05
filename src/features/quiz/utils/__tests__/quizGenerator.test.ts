@@ -7,7 +7,7 @@ import * as GeometryProblemGenerator from '../GeometryProblemGenerator';
 import * as StatsProblemGenerator from '../StatsProblemGenerator';
 import * as CSProblemGenerator from '../CSProblemGenerator';
 import * as CalculusProblemGenerator from '../CalculusProblemGenerator';
-import { Mountain, World } from '../../types/quiz';
+import { Mountain, World } from '@/features/quiz/types/quiz';
 
 describe('quizGenerator Unit Tests', () => {
   beforeEach(() => {

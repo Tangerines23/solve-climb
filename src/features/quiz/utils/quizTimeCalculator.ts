@@ -1,4 +1,4 @@
-import { SURVIVAL_CONFIG, CATEGORY_CONFIG } from '@/features/quiz';
+import { SURVIVAL_CONFIG, CATEGORY_CONFIG } from '@/features/quiz/constants/game';
 import { safeAccess } from '@/utils/validation';
 
 interface DynamicTimeLimitParams {

@@ -1,4 +1,4 @@
-import { useGameStore } from '@/features/quiz';
+import { useGameStore } from '@/features/quiz/stores/useGameStore';
 
 export function useGameActions() {
   const { setExhausted, setCombo, resetCombo, isExhausted, feverLevel } = useGameStore();

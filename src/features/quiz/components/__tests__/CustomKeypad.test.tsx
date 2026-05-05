@@ -1,21 +1,21 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/react';
-import { CustomKeypad } from '../input/CustomKeypad';
-import { useSettingsStore } from '../../../../stores/useSettingsStore';
-import { KEYPAD_SYMBOLS } from '../../../../constants/ui';
+import { CustomKeypad } from '@/features/quiz/components/input/CustomKeypad';
+import { useSettingsStore } from '@/stores/useSettingsStore';
+import { KEYPAD_SYMBOLS } from '@/constants/ui';
 
 // Mock haptic
-vi.mock('../../../../utils/haptic', () => ({
+vi.mock('../../utils/haptic', () => ({
   vibrateShort: vi.fn(),
 }));
 
 // Mock stores
-vi.mock('../../../../stores/useSettingsStore', () => ({
+vi.mock('@/stores/useSettingsStore', () => ({
   useSettingsStore: vi.fn(),
 }));
 
 // Mock haptic
-vi.mock('../../../../utils/haptic', () => ({
+vi.mock('../../utils/haptic', () => ({
   vibrateShort: vi.fn(),
 }));
 

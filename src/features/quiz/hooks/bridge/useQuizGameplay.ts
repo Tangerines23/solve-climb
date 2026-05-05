@@ -1,6 +1,6 @@
 import { useState, useCallback, useEffect } from 'react';
 import { useQuizStore } from '../../stores/useQuizStore';
-import { useGameStore } from '@/features/quiz';
+import { useGameStore } from '@/features/quiz/stores/useGameStore';
 
 import { quizEventBus } from '@/lib/eventBus';
 

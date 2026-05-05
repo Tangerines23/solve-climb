@@ -1,10 +1,25 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render } from '@testing-library/react';
-import { ResultPage } from '../pages/ResultPage';
+import { ResultPage } from '@/features/quiz/pages/ResultPage';
 import { BrowserRouter } from 'react-router-dom';
 
 // Mock dependencies
-vi.mock('../stores/useQuizStore', () => {
+vi.mock('@/features/quiz/stores/useQuizStore');
+vi.mock('@/features/quiz/stores/useLevelProgressStore');
+vi.mock('@/stores/useUserStore');
+vi.mock('../components/TierUpgradeModal');
+vi.mock('../components/BadgeNotification');
+vi.mock('../utils/tossGameCenter');
+vi.mock('@/utils/supabaseClient', () => ({
+  supabase: {
+    auth: {
+      getUser: vi.fn().mockResolvedValue({ data: { user: null }, error: null }),
+    },
+  },
+}));
+vi.mock('../utils/urlParams');
+vi.mock('../utils/debugLogger');
+vi.mock('@/features/quiz/stores/useQuizStore', () => {
   const mockState = { score: 100 };
   const fn = vi.fn((selector) =>
     typeof selector === 'function' ? selector(mockState) : mockState
@@ -12,7 +27,7 @@ vi.mock('../stores/useQuizStore', () => {
   return { useQuizStore: Object.assign(fn, { getState: () => mockState }) };
 });
 
-vi.mock('../stores/useLevelProgressStore', () => {
+vi.mock('@/features/quiz/stores/useLevelProgressStore', () => {
   const mockState = {
     progress: {},
     rankings: {},
@@ -33,7 +48,7 @@ vi.mock('../stores/useLevelProgressStore', () => {
   };
 });
 
-vi.mock('../../../stores/useUserStore', () => {
+vi.mock('@/stores/useUserStore', () => {
   const mockState = {
     minerals: 100,
     fetchUserData: vi.fn().mockResolvedValue({ success: true }),
@@ -51,7 +66,7 @@ vi.mock('../../../stores/useUserStore', () => {
   };
 });
 
-vi.mock('../../../stores/useSettingsStore', () => {
+vi.mock('@/stores/useSettingsStore', () => {
   const mockStore = (initialState: any) => {
     const store = vi.fn((selector) =>
       typeof selector === 'function' ? selector(initialState) : initialState
@@ -62,7 +77,7 @@ vi.mock('../../../stores/useSettingsStore', () => {
   return { useSettingsStore: mockStore({ animationEnabled: true }) };
 });
 
-vi.mock('../../../stores/useToastStore', () => {
+vi.mock('@/stores/useToastStore', () => {
   const mockStore = (initialState: any) => {
     const store = vi.fn((selector) =>
       typeof selector === 'function' ? selector(initialState) : initialState
@@ -73,14 +88,14 @@ vi.mock('../../../stores/useToastStore', () => {
   return { useToastStore: mockStore({ showToast: vi.fn() }) };
 });
 
-vi.mock('../../../services/analytics', () => ({
+vi.mock('@/services/analytics', () => ({
   analytics: {
     trackQuizEnd: vi.fn(),
     trackEvent: vi.fn(),
   },
 }));
 
-vi.mock('../../../utils/adService', () => ({
+vi.mock('@/utils/adService', () => ({
   AdService: {
     showRewardedAd: vi.fn(() => Promise.resolve({ success: true })),
   },
@@ -139,8 +154,8 @@ describe('ResultPage', () => {
   });
 
   it('should handle Double Reward with AdSuccess', async () => {
-    const { useUserStore } = await import('../../../stores/useUserStore');
-    const { AdService } = await import('../../../utils/adService');
+    const { useUserStore } = await import('@/stores/useUserStore');
+    const { AdService } = await import('@/utils/adService');
     const params = new URLSearchParams({
       score: '200',
       mode: 'time-attack',

@@ -1,11 +1,11 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, fireEvent, act } from '@testing-library/react';
-import { KeyboardInfoModal } from '../modals/KeyboardInfoModal';
-import { useSettingsStore } from '../../../../stores/useSettingsStore';
-import { APP_CONFIG } from '../../../../config/app';
+import { KeyboardInfoModal } from '@/features/quiz/components/modals/KeyboardInfoModal';
+import { useSettingsStore } from '@/stores/useSettingsStore';
+import { APP_CONFIG } from '@/config/app';
 
 // Mock dependencies
-vi.mock('../../../../stores/useSettingsStore', () => ({
+vi.mock('@/stores/useSettingsStore', () => ({
   useSettingsStore: vi.fn(),
 }));
 
@@ -56,6 +56,9 @@ describe('KeyboardInfoModal', () => {
 
   beforeEach(() => {
     vi.clearAllMocks();
+    vi.spyOn(window, 'addEventListener');
+    vi.spyOn(window, 'removeEventListener');
+
     vi.mocked(useSettingsStore).mockReturnValue({
       keyboardType: 'qwerty',
     } as unknown);
@@ -81,9 +84,6 @@ describe('KeyboardInfoModal', () => {
       })),
       writable: true,
     });
-
-    vi.spyOn(window, 'addEventListener');
-    vi.spyOn(window, 'removeEventListener');
   });
 
   it('should not render when isOpen is false', () => {
@@ -213,8 +213,7 @@ describe('KeyboardInfoModal', () => {
       window.dispatchEvent(new Event('resize'));
     });
 
-    // Verification is indirect since setIsLandscape is internal,
-    // but we can check if it doesn't crash and listeners are called
+    expect(window.addEventListener).toHaveBeenCalledWith('resize', expect.any(Function));
     expect(window.addEventListener).toHaveBeenCalledWith('orientationchange', expect.any(Function));
   });
 
@@ -236,7 +235,7 @@ describe('KeyboardInfoModal', () => {
     }
   });
 
-  it('should handle category tab selection and reset index when keyboard changes', async () => {
+  it('should handle category tab selection and reset index when keyboard changes', () => {
     vi.mocked(useSettingsStore).mockReturnValue({
       keyboardType: 'custom',
     } as unknown);
@@ -254,10 +253,7 @@ describe('KeyboardInfoModal', () => {
     vi.mocked(useSettingsStore).mockReturnValue({
       keyboardType: 'qwerty',
     } as unknown);
-    
-    await act(async () => {
-      rerender(<KeyboardInfoModal isOpen={true} onClose={mockOnClose} />);
-    });
+    rerender(<KeyboardInfoModal isOpen={true} onClose={mockOnClose} />);
 
     // Category index should reset to 0
     const newTabs = document.querySelectorAll('.keyboard-info-category-tab');

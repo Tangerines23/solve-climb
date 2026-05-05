@@ -1,11 +1,11 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { renderHook, act } from '@testing-library/react';
-import { useQuizRevive } from '../useQuizRevive';
-import type { InventoryItem } from '../../../../../types/user';
-import { quizEventBus } from '../../../../../lib/eventBus';
+import { useQuizRevive } from '@/features/quiz/hooks/core/useQuizRevive';
+import type { InventoryItem } from '@/types/user';
+import { quizEventBus } from '@/lib/eventBus';
 
 // Mock dependencies
-vi.mock('../../../../../lib/eventBus', () => ({
+vi.mock('@/lib/eventBus', () => ({
   quizEventBus: {
     emit: vi.fn(),
     on: vi.fn(),

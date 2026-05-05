@@ -1,6 +1,6 @@
 import { useCallback } from 'react';
 import { useQuizStore } from '../../stores/useQuizStore';
-import { useGameStore } from '@/features/quiz';
+import { useGameStore } from '@/features/quiz/stores/useGameStore';
 import { useQuizScoring } from './useQuizScoring';
 
 /**

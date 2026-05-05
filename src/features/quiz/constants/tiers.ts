@@ -1,5 +1,5 @@
 // src/constants/tiers.ts
-import { supabase } from '@/utils/supabaseClient';
+import { supabase } from '../../../utils/supabaseClient';
 
 export type TierLevel = 0 | 1 | 2 | 3 | 4 | 5 | 6;
 
@@ -157,6 +157,35 @@ export async function calculateTier(totalScore: number): Promise<TierCalculation
   };
 }
 
+/**
+ * 동기 버전 (캐시된 값 사용)
+ */
+export function calculateTierSync(
+  totalScore: number,
+  tierLevels: TierInfo[],
+  cycleCap: number
+): TierCalculationResult {
+  // 첫 사이클 이전 (250,000점 이하)
+  if (totalScore <= cycleCap) {
+    return {
+      level: calculateLevel(totalScore, tierLevels),
+      stars: 0,
+      totalScore,
+      currentCycleScore: totalScore,
+    };
+  }
+
+  // 사이클 이후: 250,001점부터 다음 사이클 시작 (버퍼 적용)
+  const cycleCount = Math.floor((totalScore - 1) / cycleCap);
+  const currentCycleScore = ((totalScore - 1) % cycleCap) + 1;
+
+  return {
+    level: calculateLevel(currentCycleScore, tierLevels),
+    stars: cycleCount,
+    totalScore,
+    currentCycleScore,
+  };
+}
 
 /**
  * 다음 티어까지 필요한 점수

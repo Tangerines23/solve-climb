@@ -83,16 +83,6 @@ vi.mock('../../components/AlertModal', () => ({
       </div>
     ) : null,
 }));
-vi.mock('../../components/CyclePromotionModal', () => ({
-  CyclePromotionModal: ({ isOpen, onPromote, onClose, stars }: any) =>
-    isOpen ? (
-      <div data-testid="promotion-modal">
-        <span>Stars: {stars}</span>
-        <button onClick={() => onPromote()}>Promote</button>
-        <button onClick={() => onClose()}>Close Promotion</button>
-      </div>
-    ) : null,
-}));
 
 // Mock sub-components
 vi.mock('../../components/my/MyPageProfile', () => ({
@@ -140,9 +130,6 @@ vi.mock('../../components/my/MyPageEffectsGuide', () => ({
 }));
 
 // 2. Mock Utilities and Supabase Client
-vi.mock('../../utils/challenge', () => ({
-  getTodayChallenge: vi.fn(() => Promise.resolve({ id: 'test' })),
-}));
 vi.mock('../../utils/dataReset', () => ({
   resetAllData: vi.fn(() => Promise.resolve(true)),
 }));
@@ -161,9 +148,6 @@ vi.mock('../../utils/debugFetch', () => ({
     if (typeof p === 'function') return p();
     return Promise.resolve(p);
   }),
-}));
-vi.mock('../../constants/tiers', () => ({
-  calculateTier: vi.fn(() => Promise.resolve({ stars: 3 })),
 }));
 
 vi.mock('../../utils/supabaseClient', () => ({
@@ -186,7 +170,28 @@ vi.mock('../../utils/supabaseClient', () => ({
   },
 }));
 
-// 3. Mock Stores
+// 3. Mock Quiz Feature and Stores
+vi.mock('@/features/quiz', () => ({
+  CyclePromotionModal: ({ isOpen, onPromote, onClose, stars }: any) =>
+    isOpen ? (
+      <div data-testid="promotion-modal">
+        <span>Stars: {stars}</span>
+        <button onClick={() => onPromote()}>Promote</button>
+        <button onClick={() => onClose()}>Close Promotion</button>
+      </div>
+    ) : null,
+  calculateTier: vi.fn(() => Promise.resolve({ stars: 3 })),
+  getTodayChallenge: vi.fn(() => Promise.resolve({ id: 'test' })),
+  useQuizStore: Object.assign((selector: any) => selector(mockStoreState), {
+    getState: () => mockStoreState,
+    subscribe: vi.fn(),
+  }),
+  useLevelProgressStore: Object.assign((selector: any) => selector(mockStoreState), {
+    getState: () => mockStoreState,
+    subscribe: vi.fn(),
+  }),
+}));
+
 vi.mock('../../stores/useProfileStore', () => ({
   useProfileStore: Object.assign((selector: any) => selector(mockStoreState), {
     getState: () => mockStoreState,
@@ -201,18 +206,6 @@ vi.mock('../../stores/useSettingsStore', () => ({
 }));
 vi.mock('../../stores/useFavoriteStore', () => ({
   useFavoriteStore: Object.assign((selector: any) => selector(mockStoreState), {
-    getState: () => mockStoreState,
-    subscribe: vi.fn(),
-  }),
-}));
-vi.mock('../../features/quiz/stores/useQuizStore', () => ({
-  useQuizStore: Object.assign((selector: any) => selector(mockStoreState), {
-    getState: () => mockStoreState,
-    subscribe: vi.fn(),
-  }),
-}));
-vi.mock('../../features/quiz/stores/useLevelProgressStore', () => ({
-  useLevelProgressStore: Object.assign((selector: any) => selector(mockStoreState), {
     getState: () => mockStoreState,
     subscribe: vi.fn(),
   }),

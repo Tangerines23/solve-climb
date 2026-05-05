@@ -55,9 +55,9 @@ describe('scoreCalculator', () => {
       const progress = {
         World1: {
           기초: {
-            L1: { bestScore: { 'time-attack': 1000 } } // Increased score to ensure > 0%
-          }
-        }
+            L1: { bestScore: { 'time-attack': 1000 } }, // Increased score to ensure > 0%
+          },
+        },
       };
       const result = calculateSubTopicProgress('World1', '기초', progress);
       expect(result.currentAltitude).toBe(1000);
@@ -86,7 +86,7 @@ describe('scoreCalculator', () => {
   describe('calculateCategoryProgress', () => {
     it('should calculate category progress', () => {
       const progress = {
-        World1: { 기초: { L1: { bestScore: { 'time-attack': 1000 } } } }
+        World1: { 기초: { L1: { bestScore: { 'time-attack': 1000 } } } },
       };
       const result = calculateCategoryProgress('기초', progress);
       expect(result.currentAltitude).toBe(1000);

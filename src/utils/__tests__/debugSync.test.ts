@@ -1,7 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { verifySync } from '../debugSync';
 import { supabase } from '../supabaseClient';
-import { calculateTier } from '../../constants/tiers';
+import { calculateTier } from '@/features/quiz/constants/tiers';
 
 // Mock dependencies
 vi.mock('../supabaseClient', () => ({
@@ -10,7 +10,7 @@ vi.mock('../supabaseClient', () => ({
   },
 }));
 
-vi.mock('../../constants/tiers', () => ({
+vi.mock('@/features/quiz/constants/tiers', () => ({
   calculateTier: vi.fn(),
 }));
 

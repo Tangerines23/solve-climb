@@ -7,11 +7,11 @@ import {
   getNextTierInfo,
   getTierInfo,
   type TierInfo,
-} from '../tiers';
-import { supabase } from '../../utils/supabaseClient';
+} from '@/features/quiz/constants/tiers';
+import { supabase } from '@/utils/supabaseClient';
 
 // Mock supabase
-vi.mock('../../utils/supabaseClient', () => ({
+vi.mock('@/utils/supabaseClient', () => ({
   supabase: {
     from: vi.fn(),
   },

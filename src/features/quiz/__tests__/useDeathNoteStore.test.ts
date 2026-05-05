@@ -1,7 +1,7 @@
 import { describe, it, expect, beforeEach } from 'vitest';
 import { renderHook, act } from '@testing-library/react';
-import { useDeathNoteStore } from '../stores/useDeathNoteStore';
-import { QuizQuestion } from '../types/quiz';
+import { useDeathNoteStore } from '@/features/quiz/stores/useDeathNoteStore';
+import { QuizQuestion } from '@/features/quiz/types/quiz';
 
 describe('useDeathNoteStore', () => {
   const mockQuizQuestion: QuizQuestion = {

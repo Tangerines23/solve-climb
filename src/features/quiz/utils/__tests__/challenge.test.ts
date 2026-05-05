@@ -5,11 +5,11 @@ import {
   SeededRandom,
   type TodayChallenge,
 } from '../challenge';
-import { storageService, STORAGE_KEYS } from '../../services';
-import { APP_CONFIG } from '../../config/app';
+import { storageService, STORAGE_KEYS } from '@/services';
+import { APP_CONFIG } from '@/config/app';
 
 // Mock storage
-vi.mock('../../services', () => ({
+vi.mock('@/services', () => ({
   storageService: {
     get: vi.fn(),
     set: vi.fn(),

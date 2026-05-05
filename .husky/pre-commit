@@ -130,11 +130,14 @@ fi
 echo "🧹 환경 정리 (배정되지 않은 로그 및 보고서 분류)..."
 npm run report:collect || echo "⚠️ 로그 수집 중 경고 발생 (수동 확인 권장)"
 
-# 자동 수정된 파일이 있을 경우 다시 스테이지에 추가 (최종 확인)
-# 소스 코드 외에 자동 생성되거나 수정된 파일들을 안전하게 포함시킵니다.
+# 자동 수정된 파일이 있을 경우 다시 스테이지에 추가합니다.
+# 리네임(R)된 경우와 일반 수정(M, A)된 경우를 모두 처리합니다.
 if [ -n "$(git status --porcelain | grep -E 'package-lock.json|src/.*\.tsx?|src/.*\.css')" ]; then
   echo "♻️ 누락된 자동 수정 사항을 스테이지에 추가합니다..."
-  git status --porcelain | grep -E 'package-lock.json|src/.*\.tsx?|src/.*\.css' | awk '{print $2}' | xargs git add
+  # 일반 변경 사항 추가
+  git status --porcelain | grep -v " -> " | grep -E 'package-lock.json|src/.*\.tsx?|src/.*\.css' | awk '{print $2}' | xargs git add 2>/dev/null || true
+  # 리네임 변경 사항 추가 (new_path 만 추출)
+  git status --porcelain | grep " -> " | grep -E 'package-lock.json|src/.*\.tsx?|src/.*\.css' | awk '{print $4}' | xargs git add 2>/dev/null || true
 fi
 
 echo ""

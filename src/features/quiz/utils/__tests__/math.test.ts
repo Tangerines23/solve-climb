@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { generateRandomNumber } from '../math';
-import { Difficulty } from '@/features/quiz';
+import { Difficulty } from '@/features/quiz/types/quiz';
 
 // Mock NUMBER_RANGE_BY_DIFFICULTY
 vi.mock('../constants/game', () => ({

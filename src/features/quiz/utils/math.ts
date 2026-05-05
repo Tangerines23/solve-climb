@@ -1,4 +1,4 @@
-// src/features/quiz/utils/math.ts
+// src/utils/math.ts
 import { Difficulty } from '../types/quiz';
 import { NUMBER_RANGE_BY_DIFFICULTY } from '../constants/game';
 

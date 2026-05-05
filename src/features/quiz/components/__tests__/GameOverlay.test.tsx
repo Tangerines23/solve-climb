@@ -1,7 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen } from '@testing-library/react';
 import { GameOverlay } from '../game/GameOverlay';
-import { useGameStore } from '../../stores/useGameStore';
+import { useGameStore } from '@/features/quiz/stores/useGameStore';
 
 vi.mock('../../stores/useGameStore', () => ({
   useGameStore: vi.fn(),

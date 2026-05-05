@@ -1,9 +1,9 @@
+import { LANDMARK_MAPPING } from '@/features/quiz/constants/game';
 import { useState, useCallback, useMemo, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useGameStore } from '@/features/quiz';
+import { useGameStore } from '@/features/quiz/stores/useGameStore';
 import { analytics } from '@/services/analytics';
 import { urls } from '@/utils/navigation';
-import { LANDMARK_MAPPING } from '@/features/quiz';
 import { safeAccess } from '@/utils/validation';
 import { InventoryItem } from '@/types/user';
 import { quizEventBus } from '@/lib/eventBus';

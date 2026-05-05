@@ -1,28 +1,28 @@
 import { describe, it, expect, beforeEach, vi, afterEach } from 'vitest';
 import { renderHook, act } from '@testing-library/react';
-import { useQuizSubmit } from '../useQuizSubmit';
-import type { QuizQuestion, GameMode } from '../../types/quiz';
-import { useGameStore } from '../../../../../stores/useGameStore';
-import { CLIMB_PER_CORRECT, MAX_POSSIBLE_ANSWER } from '../../../../../constants/game';
-import { quizEventBus } from '../../../../../lib/eventBus';
+import { useQuizSubmit } from '@/features/quiz/hooks/core/useQuizSubmit';
+import type { QuizQuestion, GameMode } from '@/features/quiz/types/quiz';
+import { useGameStore } from '@/features/quiz/stores/useGameStore';
+import { CLIMB_PER_CORRECT, MAX_POSSIBLE_ANSWER } from '@/features/quiz/constants/game';
+import { quizEventBus } from '@/lib/eventBus';
 
 // Mock dependencies
-vi.mock('../../../../../stores/useGameStore', () => ({
+vi.mock('@/features/quiz/stores/useGameStore', () => ({
   useGameStore: Object.assign(vi.fn(), {
     getState: vi.fn(() => ({ feverLevel: 0 })),
   }),
 }));
 
-vi.mock('../../utils/haptic', () => ({
+vi.mock('@/features/quiz/utils/haptic', () => ({
   vibrateMedium: vi.fn(),
   vibrateLong: vi.fn(),
 }));
 
-vi.mock('../../utils/japanese', () => ({
+vi.mock('@/features/quiz/utils/japanese', () => ({
   normalizeRomaji: vi.fn((str: string) => str.toLowerCase().trim()),
 }));
 
-vi.mock('../../../../../lib/eventBus', () => ({
+vi.mock('@/lib/eventBus', () => ({
   quizEventBus: {
     emit: vi.fn(),
     on: vi.fn(),

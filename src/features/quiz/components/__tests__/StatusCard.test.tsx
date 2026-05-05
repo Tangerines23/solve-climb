@@ -2,10 +2,10 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, act, waitFor, fireEvent } from '@testing-library/react';
 import { BrowserRouter } from 'react-router-dom';
 import { StatusCard } from '../StatusCard';
-import { useLevelProgressStore } from '@/features/quiz';
+import { useLevelProgressStore } from '@/features/quiz/stores/useLevelProgressStore';
 
 // Mock dependencies
-vi.mock('../../features/quiz/stores/useLevelProgressStore', () => ({
+vi.mock('@/features/quiz/stores/useLevelProgressStore', () => ({
   useLevelProgressStore: {
     getState: vi.fn(() => ({
       progress: {},

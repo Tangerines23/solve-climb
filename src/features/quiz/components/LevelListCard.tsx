@@ -2,7 +2,7 @@ import React, { useRef } from 'react';
 import { BaseCard } from '@/components/BaseCard';
 import { UnderDevelopmentModal } from '@/components/UnderDevelopmentModal';
 import { useLevelList } from '../hooks/bridge/useLevelList';
-import type { Tier } from '@/features/quiz';
+import type { Tier } from '@/features/quiz/types/quiz';
 import './LevelListCard.css';
 
 interface LevelListCardProps {

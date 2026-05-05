@@ -8,7 +8,7 @@ const mockGetNextLevel = vi.fn(() => 1);
 const mockIsAdmin = vi.fn(() => false);
 
 // Mock dependencies
-vi.mock('../../features/quiz/stores/useLevelProgressStore', () => ({
+vi.mock('@/features/quiz/stores/useLevelProgressStore', () => ({
   useLevelProgressStore: (selector: (state: unknown) => unknown) => {
     const state = {
       isLevelCleared: mockIsLevelCleared,
@@ -111,9 +111,9 @@ describe('LevelListCard', () => {
     );
 
     // Level 2는 잠겨있어야 함 (잠김 텍스트가 있는지 확인)
-    const lockedText = screen.queryByText(/잠김/);
-    if (lockedText) {
-      expect(lockedText).toBeInTheDocument();
+    const lockedElements = screen.queryAllByText(/잠김/);
+    if (lockedElements.length > 0) {
+      expect(lockedElements[0]).toBeInTheDocument();
     } else {
       // If locked status not shown, verify component rendered
       expect(screen.getByText('레벨 목록')).toBeInTheDocument();
@@ -151,9 +151,9 @@ describe('LevelListCard', () => {
     );
 
     // Try to find locked item and click it
-    const lockedText = screen.queryByText(/잠김/);
-    if (lockedText) {
-      const lockedItem = lockedText.closest('.level-list-item');
+    const lockedElements = screen.queryAllByText(/잠김/);
+    if (lockedElements.length > 0) {
+      const lockedItem = lockedElements[0].closest('.level-list-item');
       if (lockedItem) {
         lockedItem.click();
         expect(onLockedLevelClick).toHaveBeenCalled();
