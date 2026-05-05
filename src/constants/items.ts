@@ -92,10 +92,4 @@ export const getItemEmoji = (code: string): string => {
   return '📦';
 };
 
-/** code → 짧은 효과 설명 */
-export const getItemShortEffect = (code: string): string => {
-  if (Object.prototype.hasOwnProperty.call(ITEM_MAP, code)) {
-    return ITEM_MAP[code as keyof typeof ITEM_MAP].shortEffect;
-  }
-  return '';
-};
+
