@@ -29,7 +29,6 @@ export {
   loadTierDefinitions,
   loadCycleCap,
   calculateTier,
-  calculateTierSync,
   getNextTierInfo,
   getTierInfo,
 } from './constants/tiers';

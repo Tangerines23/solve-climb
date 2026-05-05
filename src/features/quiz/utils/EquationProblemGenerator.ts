@@ -374,7 +374,7 @@ export function generateEquation(
 /**
  * EquationProblemGenerator 클래스 (선택적 사용)
  */
-export class EquationProblemGenerator {
+class EquationProblemGenerator {
   /**
    * 스테이지 레벨에 따른 방정식 문제 생성
    */

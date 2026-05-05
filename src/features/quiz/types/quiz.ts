@@ -10,20 +10,11 @@ export type Category = '기초' | '논리' | '대수' | '심화' | '히라가나
 export type World = 'World1' | 'World2' | 'World3' | 'World4' | 'LangWorld1';
 
 // 호환성을 위한 기존 타입 별칭
-export type MathTopic = '덧셈' | '뺄셈' | '곱셈' | '나눗셈';
 export type LanguageType = '한글' | '일본어' | '영어';
 export type LanguageSubTopic = '문자' | '어휘' | '회화' | '문법';
-export type LanguageTopic = `${LanguageType}-${LanguageSubTopic}`;
-export type LogicTopic = '추론' | '퍼즐' | '패턴' | '공간';
-export type GeneralTopic = '역사' | '과학' | '지리' | '문화';
 
 // 월드별 고유 ID 조합 타입
 export type Topic = `${World}-${Category}`;
-
-export interface CategoryTopic {
-  category: Category;
-  world: World;
-}
 
 export interface MathProblem {
   expression: string;

@@ -160,7 +160,7 @@ export async function calculateTier(totalScore: number): Promise<TierCalculation
 /**
  * 동기 버전 (캐시된 값 사용)
  */
-export function calculateTierSync(
+function calculateTierSync(
   totalScore: number,
   tierLevels: TierInfo[],
   cycleCap: number

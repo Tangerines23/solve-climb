@@ -2,7 +2,6 @@
 import { Difficulty } from '../types/quiz';
 
 export const SCORE_PER_CORRECT = 10;
-export const CLIMB_PER_CORRECT = 10; // 등반 시 10m 상승
 
 // 새로운 등반 거리 시스템 상수
 export const BASE_CLIMB_DISTANCE = 10;
