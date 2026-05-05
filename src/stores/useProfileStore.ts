@@ -1,8 +1,8 @@
 // 프로필 스토어
 import { create } from 'zustand';
-import { useLevelProgressStore } from './useLevelProgressStore';
+import { useLevelProgressStore } from '@/features/quiz';
 import { storageService, STORAGE_KEYS } from '../services';
-import type { UserProgress } from './useLevelProgressStore';
+import type { UserProgress } from '@/features/quiz';
 
 export interface UserProfile {
   profileId: string; // 고유 프로필 ID

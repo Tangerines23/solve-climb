@@ -1,7 +1,7 @@
 import { useEffect } from 'react';
 import { resilientLazy } from '@/utils/resilientLazy';
 import { Routes, Route, Navigate } from 'react-router-dom';
-import { useLevelProgressStore } from '@/stores/useLevelProgressStore';
+import { useLevelProgressStore } from '@/features/quiz';
 import { useAuthStore } from '@/stores/useAuthStore';
 import { useCustomBackNavigation } from '@/hooks/useCustomBackNavigation';
 import { GlobalLoadingIndicator } from '@/components/GlobalLoadingIndicator';
@@ -12,8 +12,7 @@ import { useConnectivity } from '@/hooks/useConnectivity';
 import { PwaUpdateNotification } from '@/components/PwaUpdateNotification';
 import { RequireAuth } from '@/components/auth/RequireAuth';
 import { useUserStore } from '@/stores/useUserStore';
-import { useQuizStore } from '@/stores/useQuizStore';
-import type { TimeLimit } from '@/types/quiz';
+import { useQuizStore, type TimeLimit } from '@/features/quiz';
 import { logger } from '@/utils/logger';
 import { registerHapticConfig } from '@/utils/haptic';
 import { registerDebugConfig } from '@/utils/debugFetch';
@@ -26,19 +25,19 @@ const HomePage = resilientLazy(
 import { GlobalToastContainer } from '@/components/GlobalToastContainer';
 const CategorySelectPage = resilientLazy(
   () =>
-    import('@/pages/CategorySelectPage').then((module) => ({ default: module.CategorySelectPage })),
+    import('@/features/quiz').then((module) => ({ default: module.CategorySelectPage })),
   'CategorySelectPage'
 );
 const LevelSelectPage = resilientLazy(
-  () => import('@/pages/LevelSelectPage').then((module) => ({ default: module.LevelSelectPage })),
+  () => import('@/features/quiz').then((module) => ({ default: module.LevelSelectPage })),
   'LevelSelectPage'
 );
 const QuizPage = resilientLazy(
-  () => import('@/pages/QuizPage').then((module) => ({ default: module.QuizPage })),
+  () => import('@/features/quiz').then((module) => ({ default: module.QuizPage })),
   'QuizPage'
 );
 const ResultPage = resilientLazy(
-  () => import('@/pages/ResultPage').then((module) => ({ default: module.ResultPage })),
+  () => import('@/features/quiz').then((module) => ({ default: module.ResultPage })),
   'ResultPage'
 );
 const RankingPage = resilientLazy(

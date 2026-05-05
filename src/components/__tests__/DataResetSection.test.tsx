@@ -21,9 +21,7 @@ vi.mock('../../utils/supabaseClient', () => ({
   },
 }));
 
-// Mock window.confirm
-const mockConfirm = vi.fn(() => true);
-window.confirm = mockConfirm;
+// Mock window.confirm is no longer needed as we use ConfirmModal
 
 describe('DataResetSection', () => {
   const mockExecuteResetProfile = vi.fn(() => Promise.resolve());
@@ -36,7 +34,6 @@ describe('DataResetSection', () => {
 
   beforeEach(() => {
     vi.clearAllMocks();
-    mockConfirm.mockReturnValue(true);
     vi.mocked(useDataResetDebugBridge).mockReturnValue({
       isResetting: false,
       isDeleting: false,
@@ -70,38 +67,38 @@ describe('DataResetSection', () => {
 
   it('should call confirm before resetting', async () => {
     render(<DataResetSection />);
-    // Find any reset button
-    const resetButtons = screen.queryAllByRole('button');
-    if (resetButtons.length > 0) {
-      const resetButton = resetButtons.find(
-        (btn) => btn.textContent?.includes('초기화') || btn.textContent?.includes('리셋')
-      );
-      if (resetButton) {
-        fireEvent.click(resetButton);
-        await waitFor(() => {
-          expect(mockConfirm).toHaveBeenCalled();
-        });
-      }
-    }
+    // Find "전체" reset button in "프로필 초기화" section
+    const resetButton = screen.getByText('전체');
+    
+    fireEvent.click(resetButton);
+    // Wait for ConfirmModal to appear
+    await waitFor(() => {
+      expect(screen.getByText(/확인/)).toBeTruthy();
+    });
+    
+    // Click confirm
+    fireEvent.click(screen.getByText('확인'));
+    
+    await waitFor(() => {
+      expect(mockExecuteResetProfile).toHaveBeenCalledWith('all');
+    });
   });
 
   it('should not reset if confirm is cancelled', async () => {
-    mockConfirm.mockReturnValue(false);
     render(<DataResetSection />);
-    // Find any reset button
-    const resetButtons = screen.queryAllByRole('button');
-    if (resetButtons.length > 0) {
-      const resetButton = resetButtons.find(
-        (btn) => btn.textContent?.includes('초기화') || btn.textContent?.includes('리셋')
-      );
-      if (resetButton) {
-        fireEvent.click(resetButton);
-        await waitFor(() => {
-          expect(mockConfirm).toHaveBeenCalled();
-        });
-        // Should not proceed with reset (no RPC call)
-      }
-    }
+    const resetButton = screen.getByText('전체');
+    
+    fireEvent.click(resetButton);
+    // Wait for ConfirmModal to appear
+    await waitFor(() => {
+      expect(screen.getByText(/취소/)).toBeTruthy();
+    });
+    
+    // Click cancel
+    fireEvent.click(screen.getByText('취소'));
+    
+    // Should not have called reset
+    expect(mockExecuteResetProfile).not.toHaveBeenCalled();
   });
 
   it('should render reset section title', () => {
@@ -112,7 +109,6 @@ describe('DataResetSection', () => {
   });
 
   it('should handle reset operations', async () => {
-    mockConfirm.mockReturnValue(true);
     vi.mocked(supabase.rpc).mockResolvedValue({ error: null } as never);
 
     render(<DataResetSection />);

@@ -1,6 +1,6 @@
 import React from 'react';
-import { useItemDebugBridge } from '../../hooks/useItemDebugBridge';
-import { ITEM_MAP } from '../../constants/items';
+import { useItemDebugBridge } from '@/features/quiz/hooks/bridge/useItemDebugBridge';
+import { ITEM_MAP } from '@/constants/items';
 
 export const ItemSystemSection: React.FC = () => {
   const {
@@ -22,9 +22,10 @@ export const ItemSystemSection: React.FC = () => {
 
   if (isLoading) {
     return (
-      <div className="p-6 bg-gray-900/50 rounded-xl border border-gray-800 animate-pulse">
+      <div className="p-6 bg-gray-900/50 rounded-xl border border-gray-800 animate-pulse flex flex-col items-center justify-center min-h-[300px]">
+        <div className="text-blue-400 text-lg font-medium mb-4">아이템 불러오는 중...</div>
         <div className="h-7 w-40 bg-gray-800 rounded-lg mb-6"></div>
-        <div className="space-y-4">
+        <div className="space-y-4 w-full">
           {[1, 2, 3].map((i) => (
             <div key={i} className="h-20 bg-gray-800/50 rounded-lg"></div>
           ))}
@@ -58,8 +59,8 @@ export const ItemSystemSection: React.FC = () => {
       </div>
 
       <div className="space-y-3 max-h-[500px] overflow-y-auto pr-2 custom-scrollbar">
-        {itemDefinitions.map((item) => {
-          const currentItem = inventory.find((inv) => inv.id === item.id);
+        {itemDefinitions.map((item: any) => {
+          const currentItem = inventory.find((inv: any) => inv.id === item.id);
           const currentQuantity = currentItem?.quantity || 0;
           const inputValue = itemQuantities[item.id] ?? currentQuantity.toString();
           const meta = ITEM_MAP[item.code];

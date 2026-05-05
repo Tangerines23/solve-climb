@@ -46,7 +46,7 @@ vi.mock('../../stores/useUserStore', () => {
   return { useUserStore: mockStore };
 });
 
-vi.mock('../../stores/useQuizStore', () => ({
+vi.mock('../../features/quiz/stores/useQuizStore', () => ({
   useQuizStore: vi.fn(() => ({
     setTimeLimit: vi.fn(),
   })),

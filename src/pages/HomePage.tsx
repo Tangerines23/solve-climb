@@ -1,10 +1,7 @@
 import { Header } from '@/components/Header';
-import { StatusCard } from '@/components/StatusCard';
-import { ChallengeCard } from '@/components/ChallengeCard';
-import { CategoryList } from '@/components/CategoryList';
+import { StatusCard, ChallengeCard, CategoryList, StaminaGauge } from '@/features/quiz';
 import { FooterNav } from '@/components/FooterNav';
 import { Toast } from '@/components/Toast';
-import { StaminaGauge } from '@/components/StaminaGauge';
 import { DailyRewardModal } from '@/components/DailyRewardModal';
 import { useHomePageBridge } from '@/hooks/useHomePageBridge';
 import './HomePage.css';
@@ -24,7 +21,7 @@ export function HomePage() {
           alt="전체 이용가"
           className="age-rating-icon"
           loading="eager"
-          fetchPriority="high"
+          {...({ fetchpriority: 'high' } as any)}
         />
         <span>전체 이용가</span>
       </div>

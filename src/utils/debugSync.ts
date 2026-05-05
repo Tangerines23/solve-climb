@@ -1,5 +1,5 @@
 import { supabase } from './supabaseClient';
-import { calculateTier } from '../constants/tiers';
+import { calculateTier } from '@/features/quiz';
 
 export interface SyncResult {
   profile: { synced: boolean; issues: string[] };

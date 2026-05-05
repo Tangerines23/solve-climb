@@ -7,7 +7,7 @@ import { BrowserRouter } from 'react-router-dom';
 const mockIsLevelCleared = vi.fn(() => false);
 const mockGetNextLevel = vi.fn(() => ({ level: 1, name: 'Level 1' }));
 
-vi.mock('../stores/useLevelProgressStore', () => ({
+vi.mock('../../features/quiz/stores/useLevelProgressStore', () => ({
   useLevelProgressStore: vi.fn((selector) => {
     const state = {
       isLevelCleared: mockIsLevelCleared,

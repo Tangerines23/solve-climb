@@ -1,6 +1,6 @@
 import { supabase } from '../utils/supabaseClient';
 import { safeSupabaseQuery } from '../utils/debugFetch';
-import { GameMode, Tier } from '../types/quiz';
+import { GameMode, Tier } from '../features/quiz/types/quiz';
 import { UserResponse } from '@supabase/supabase-js';
 
 export interface LevelSyncResult {

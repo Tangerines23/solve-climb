@@ -7,7 +7,7 @@ import boundaries from 'eslint-plugin-boundaries';
 import security from 'eslint-plugin-security';
 
 export default tseslint.config(
-  { ignores: ['dist', 'node_modules', '.agent'] },
+  { ignores: ['dist', 'node_modules', '.agent', 'scripts/archive'] },
   {
     extends: [
       js.configs.recommended,
@@ -32,6 +32,7 @@ export default tseslint.config(
         { argsIgnorePattern: '^_', varsIgnorePattern: '^_' },
       ],
       '@typescript-eslint/no-explicit-any': 'warn',
+      '@typescript-eslint/no-require-imports': 'off',
     },
   },
   {
@@ -81,6 +82,19 @@ export default tseslint.config(
           type: 'component/ui',
           pattern: 'src/components/ui/**',
           mode: 'folder',
+        },
+        {
+          type: 'feature/quiz',
+          pattern: 'src/features/quiz/**',
+        },
+        {
+          type: 'feature/quiz/internal',
+          pattern: 'src/features/quiz/!(index.ts)**',
+          private: true,
+        },
+        {
+          type: 'feature/quiz/public',
+          pattern: 'src/features/quiz/index.ts',
         },
         {
           type: 'hook',
@@ -167,9 +181,20 @@ export default tseslint.config(
             },
             {
               from: { type: 'component/roadmap' },
-              disallow: [{ to: { type: 'component/quiz' } }, { to: { type: 'component/my' } }],
+              disallow: [{ to: { type: 'component/my' } }],
               message:
-                'Roadmap components should not depend on Quiz or MyPage components directly.',
+                'Roadmap components should not depend on MyPage components directly.',
+            },
+            {
+              from: '*',
+              disallow: [{ to: { type: 'feature/quiz/internal' } }],
+              message: 'Quiz feature internals must not be accessed from outside. Use the barrel file (@/features/quiz) instead.',
+            },
+            {
+              from: { type: 'feature/quiz/internal' },
+              allow: [{ to: { type: 'feature/quiz/internal' } }, { to: { type: 'type' } }, { to: { type: 'config' } }, { to: { type: 'util' } }, { to: { type: 'context' } }],
+              disallow: [{ to: { type: 'store' } }, { to: { type: 'hook' } }],
+              message: 'Quiz feature internals should use internal relative paths and avoid legacy global stores/hooks where possible.',
             },
           ],
         },

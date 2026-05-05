@@ -1,14 +1,17 @@
 import { useCallback } from 'react';
 import { supabase } from '../utils/supabaseClient';
 import { useUserStore } from '../stores/useUserStore';
-import { useQuizStore, type TimeLimit } from '../stores/useQuizStore';
-import { calculateScoreForTier } from '../utils/tierUtils';
+import { 
+  useQuizStore, 
+  useGameStore,
+  calculateScoreForTier,
+  type TimeLimit 
+} from '@/features/quiz';
 import { storageService, STORAGE_KEYS } from '../services';
 import { useDailyRewardStore } from '../stores/useDailyRewardStore';
 import { useNotificationStore } from '../stores/useNotificationStore';
 import { useDebugStore } from '../stores/useDebugStore';
 import { urls } from '../utils/navigation';
-import { useGameStore } from '../stores/useGameStore';
 import { type DebugAction, type CustomPreset } from '../types/debug';
 import { debugPresets, getCustomPresets, savePresetHistory } from '../utils/debugPresets';
 

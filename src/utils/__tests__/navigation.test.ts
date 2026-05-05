@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import { urls, type QuizParams } from '../navigation';
 import { APP_CONFIG } from '../../config/app';
-import type { GameMode, Tier } from '../../types/quiz';
+import type { GameMode, Tier } from '@/features/quiz';
 
 describe('navigation urls', () => {
   it('should return correct home URL', () => {

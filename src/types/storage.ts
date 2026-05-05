@@ -1,5 +1,5 @@
 // 스토리지 관련 타입 정의
-import { World, Category } from './quiz';
+import { World, Category } from '@/features/quiz';
 import { MyPageStats } from '../hooks/useMyPageStats';
 
 export interface LocalSession {

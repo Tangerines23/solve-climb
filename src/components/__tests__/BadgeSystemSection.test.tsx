@@ -5,7 +5,7 @@ import { supabase } from '../../utils/supabaseClient';
 import type { SupabaseClient, Session, AuthError } from '@supabase/supabase-js';
 
 // Mock dependencies
-vi.mock('../../stores/useLevelProgressStore', () => ({
+vi.mock('../../features/quiz/stores/useLevelProgressStore', () => ({
   useLevelProgressStore: vi.fn(() => ({
     progress: {},
   })),

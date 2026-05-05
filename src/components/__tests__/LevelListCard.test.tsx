@@ -8,7 +8,7 @@ const mockGetNextLevel = vi.fn(() => 1);
 const mockIsAdmin = vi.fn(() => false);
 
 // Mock dependencies
-vi.mock('../../stores/useLevelProgressStore', () => ({
+vi.mock('../../features/quiz/stores/useLevelProgressStore', () => ({
   useLevelProgressStore: (selector: (state: unknown) => unknown) => {
     const state = {
       isLevelCleared: mockIsLevelCleared,

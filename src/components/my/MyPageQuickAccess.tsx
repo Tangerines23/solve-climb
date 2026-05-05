@@ -1,8 +1,7 @@
 import { useNavigate } from 'react-router-dom';
 import { APP_CONFIG } from '../../config/app';
 import { useNavigation } from '../../hooks/useNavigation';
-import type { Category, World } from '../../types/quiz';
-import type { TodayChallenge } from '../../types/challenge';
+import type { Category, World, TodayChallenge } from '@/features/quiz';
 
 interface FavoriteItem {
   id: string;

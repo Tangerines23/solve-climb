@@ -2,7 +2,7 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { withdrawAccount } from '../userWithdraw';
 import { supabase } from '../supabaseClient';
 import { storageService, STORAGE_KEYS } from '../../services';
-import { useLevelProgressStore } from '../../stores/useLevelProgressStore';
+import { useLevelProgressStore } from '@/features/quiz';
 import { ENV } from '../env';
 
 // Mock dependencies
@@ -34,7 +34,7 @@ vi.mock('../../stores/useProfileStore', () => {
   return { useProfileStore: mockStore };
 });
 
-vi.mock('../../stores/useLevelProgressStore', () => {
+vi.mock('../../features/quiz/stores/useLevelProgressStore', () => {
   const mockStore = vi.fn((selector) => {
     const state = { resetProgress: vi.fn().mockResolvedValue(undefined) };
     return typeof selector === 'function' ? selector(state) : state;

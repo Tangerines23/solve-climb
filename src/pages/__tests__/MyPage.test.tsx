@@ -205,13 +205,13 @@ vi.mock('../../stores/useFavoriteStore', () => ({
     subscribe: vi.fn(),
   }),
 }));
-vi.mock('../../stores/useQuizStore', () => ({
+vi.mock('../../features/quiz/stores/useQuizStore', () => ({
   useQuizStore: Object.assign((selector: any) => selector(mockStoreState), {
     getState: () => mockStoreState,
     subscribe: vi.fn(),
   }),
 }));
-vi.mock('../../stores/useLevelProgressStore', () => ({
+vi.mock('../../features/quiz/stores/useLevelProgressStore', () => ({
   useLevelProgressStore: Object.assign((selector: any) => selector(mockStoreState), {
     getState: () => mockStoreState,
     subscribe: vi.fn(),

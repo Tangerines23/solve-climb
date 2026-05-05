@@ -8,15 +8,18 @@ import { DataResetConfirmModal } from '../components/DataResetConfirmModal';
 import { Toast } from '../components/Toast';
 import { AlertModal } from '../components/AlertModal';
 
-import { CyclePromotionModal } from '../components/CyclePromotionModal';
+import { 
+  CyclePromotionModal,
+  calculateTier,
+  type TodayChallenge 
+} from '@/features/quiz';
 import { MyPageProfile } from '../components/my/MyPageProfile';
 import { MyPageStats } from '../components/my/MyPageStats';
 import { MyPageQuickAccess } from '../components/my/MyPageQuickAccess';
 import { MyPageSettings } from '../components/my/MyPageSettings';
 import { useMyPageBridge } from '../hooks/useMyPageBridge';
-import { type TodayChallenge } from '../types/challenge';
 import { WithdrawConfirmModal } from '../components/WithdrawConfirmModal';
-import { calculateTier } from '../constants/tiers';
+// calculateTier imported from @/features/quiz above
 import { storageService, STORAGE_KEYS } from '../services';
 import { APP_CONFIG } from '../config/app';
 import './MyPage.css';

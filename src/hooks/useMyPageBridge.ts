@@ -1,13 +1,15 @@
 import { useProfileStore } from '../stores/useProfileStore';
 import { useSettingsStore } from '../stores/useSettingsStore';
 import { useFavoriteStore } from '../stores/useFavoriteStore';
-import { useQuizStore } from '../stores/useQuizStore';
-import { useLevelProgressStore } from '../stores/useLevelProgressStore';
+import { 
+  useQuizStore, 
+  useLevelProgressStore, 
+  getTodayChallenge 
+} from '@/features/quiz';
 import { useMyPageStats } from './useMyPageStats';
 import { useDataReset } from './useDataReset';
 import { useUserWithdraw } from './useUserWithdraw';
 import { urls } from '../utils/navigation';
-import { getTodayChallenge } from '../utils/challenge';
 import { vibrateShort } from '../utils/haptic';
 import { signInWithGoogle } from '../utils/auth';
 import { handleTossLogin, isTossAppEnvironment } from '../utils/tossLogin';

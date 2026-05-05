@@ -1,6 +1,5 @@
 import React from 'react';
-import { useGameFlowDebugBridge } from '../../hooks/useGameFlowDebugBridge';
-import { Category, Topic, Difficulty, GameMode } from '../../types/quiz';
+import { useGameFlowDebugBridge, Category, Topic, Difficulty, GameMode } from '@/features/quiz';
 import './GameFlowSection.css';
 
 export const GameFlowSection = React.memo(function GameFlowSection() {

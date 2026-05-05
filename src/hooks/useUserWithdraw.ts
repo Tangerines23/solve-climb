@@ -1,6 +1,6 @@
 import { useCallback } from 'react';
 import { useProfileStore } from '@/stores/useProfileStore';
-import { useLevelProgressStore } from '@/stores/useLevelProgressStore';
+import { useLevelProgressStore } from '@/features/quiz';
 import { withdrawAccount } from '@/utils/userWithdraw';
 
 /**

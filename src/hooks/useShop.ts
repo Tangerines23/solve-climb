@@ -5,7 +5,7 @@ import { useUserStore } from '@/stores/useUserStore';
 import { useToastStore } from '@/stores/useToastStore';
 import { ITEM_LIST, ItemMetadata } from '@/constants/items';
 import { UI_MESSAGES, STATUS_TYPES } from '@/constants/ui';
-import { ANIMATION_CONFIG } from '@/constants/game';
+import { ANIMATION_CONFIG } from '@/features/quiz';
 
 export function useShop() {
   const [items, setItems] = useState<ItemMetadata[]>([]);

@@ -1,4 +1,4 @@
-import { Category, World, QuizQuestion } from '@/types/quiz';
+import { Category, World, QuizQuestion } from '@/features/quiz';
 
 /**
  * 전역 퀴즈 이벤트 타입 정의
