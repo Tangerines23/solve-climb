@@ -75,12 +75,12 @@ export * from './types/quiz';
 export * from './types/challenge';
 
 // Constants
-export { 
-  ANIMATION_CONFIG, 
-  GAME_CONFIG, 
-  CATEGORY_CONFIG, 
-  LANDMARK_MAPPING, 
-  SURVIVAL_CONFIG, 
+export {
+  ANIMATION_CONFIG,
+  GAME_CONFIG,
+  CATEGORY_CONFIG,
+  LANDMARK_MAPPING,
+  SURVIVAL_CONFIG,
   MAX_POSSIBLE_ANSWER,
   THEME_MULTIPLIERS,
   BOSS_LEVEL,
@@ -89,5 +89,5 @@ export {
   CATEGORY_IDS,
   MATH_SUB_IDS,
   SUB_CATEGORY_IDS,
-  type ThemeTier
+  type ThemeTier,
 } from './constants/game';

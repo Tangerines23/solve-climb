@@ -8,11 +8,7 @@ import { DataResetConfirmModal } from '../components/DataResetConfirmModal';
 import { Toast } from '../components/Toast';
 import { AlertModal } from '../components/AlertModal';
 
-import { 
-  CyclePromotionModal,
-  calculateTier,
-  type TodayChallenge 
-} from '@/features/quiz';
+import { CyclePromotionModal, calculateTier, type TodayChallenge } from '@/features/quiz';
 import { MyPageProfile } from '../components/my/MyPageProfile';
 import { MyPageStats } from '../components/my/MyPageStats';
 import { MyPageQuickAccess } from '../components/my/MyPageQuickAccess';

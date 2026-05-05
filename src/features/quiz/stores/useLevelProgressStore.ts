@@ -12,11 +12,7 @@ import type { RealtimeChannel } from '@supabase/supabase-js';
 import { safeAccess } from '@/utils/validation';
 import { LevelSyncService } from '@/services/LevelSyncService';
 
-import {
-  LevelRecord,
-  UserProgress,
-  RankingRecord,
-} from '../types/progress';
+import { LevelRecord, UserProgress, RankingRecord } from '../types/progress';
 export { type UserProgress };
 
 interface LevelProgressState {
@@ -105,7 +101,9 @@ export const useLevelProgressStore = create<LevelProgressState>()(
           if (!worldProgress || !worldProgress[category]) {
             return [];
           }
-          return (Object.values(worldProgress[category]) as LevelRecord[]).sort((a, b) => a.level - b.level);
+          return (Object.values(worldProgress[category]) as LevelRecord[]).sort(
+            (a, b) => a.level - b.level
+          );
         },
 
         isLevelCleared: (world, category, level, tier = 'normal') => {

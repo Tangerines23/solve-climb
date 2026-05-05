@@ -14,7 +14,6 @@ export function CategoryList() {
     getMountainAltitudeInfo,
   } = useCategoryList();
 
-
   return (
     <div className="category-list-container">
       <h3 className="category-list-title">등반할 산 선택하기</h3>

@@ -8,7 +8,6 @@ vi.mock('../../hooks/useDebugPanel', () => ({
   useDebugPanel: vi.fn(),
 }));
 
-
 vi.mock('../debug/QuickActionsSection', () => ({
   QuickActionsSection: () => <div>Quick Actions</div>,
 }));
@@ -62,7 +61,6 @@ describe('DebugPanel', () => {
       toggleDebugPanel: mockToggleDebugPanel,
       setActiveTab: mockSetActiveTab,
     } as any);
-
 
     const { container } = render(<DebugPanel />);
     expect(container.firstChild).toBeNull();
@@ -139,7 +137,6 @@ describe('DebugPanel', () => {
       toggleDebugPanel: mockToggleDebugPanel,
       setActiveTab: mockSetActiveTab,
     } as any);
-
 
     render(<DebugPanel />);
     expect(screen.getByText('Tier System')).toBeInTheDocument();

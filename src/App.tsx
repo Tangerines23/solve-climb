@@ -24,8 +24,7 @@ const HomePage = resilientLazy(
 );
 import { GlobalToastContainer } from '@/components/GlobalToastContainer';
 const CategorySelectPage = resilientLazy(
-  () =>
-    import('@/features/quiz').then((module) => ({ default: module.CategorySelectPage })),
+  () => import('@/features/quiz').then((module) => ({ default: module.CategorySelectPage })),
   'CategorySelectPage'
 );
 const LevelSelectPage = resilientLazy(

@@ -12,18 +12,13 @@ export function useHeader() {
   const navigate = useNavigate();
   const location = useLocation();
   const [isMineralsLoading, setIsMineralsLoading] = useState(false);
-  
+
   const isAdmin = useProfileStore((state) => state.isAdmin);
   const { minerals, stamina, fetchUserData, checkStamina, recoverMineralsAds } = useUserStore();
   const { showToast } = useToastStore();
-  
-  const { 
-    isAdminMode, 
-    selectedResource, 
-    setSelectedResource, 
-    toggleDebugPanel, 
-    isDebugPanelOpen 
-  } = useDebugStore();
+
+  const { isAdminMode, selectedResource, setSelectedResource, toggleDebugPanel, isDebugPanelOpen } =
+    useDebugStore();
 
   const doubleClickTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const lastClickTimeRef = useRef<number>(0);
@@ -80,37 +75,49 @@ export function useHeader() {
     lastClickTimeRef.current = now;
   }, [isAdmin, handleLogoDoubleClick]);
 
-  const handleStaminaClick = useCallback((e: React.MouseEvent) => {
-    if (!isAdminMode) return;
-    e.stopPropagation();
-    setSelectedResource(selectedResource === 'stamina' ? null : 'stamina');
-  }, [isAdminMode, selectedResource, setSelectedResource]);
+  const handleStaminaClick = useCallback(
+    (e: React.MouseEvent) => {
+      if (!isAdminMode) return;
+      e.stopPropagation();
+      setSelectedResource(selectedResource === 'stamina' ? null : 'stamina');
+    },
+    [isAdminMode, selectedResource, setSelectedResource]
+  );
 
-  const handleMineralsClick = useCallback((e: React.MouseEvent) => {
-    if (!isAdminMode) return;
-    e.stopPropagation();
-    setSelectedResource(selectedResource === 'minerals' ? null : 'minerals');
-  }, [isAdminMode, selectedResource, setSelectedResource]);
+  const handleMineralsClick = useCallback(
+    (e: React.MouseEvent) => {
+      if (!isAdminMode) return;
+      e.stopPropagation();
+      setSelectedResource(selectedResource === 'minerals' ? null : 'minerals');
+    },
+    [isAdminMode, selectedResource, setSelectedResource]
+  );
 
-  const handleMineralsAdRecharge = useCallback(async (e: React.MouseEvent) => {
-    e.stopPropagation();
-    if (isMineralsLoading) return;
+  const handleMineralsAdRecharge = useCallback(
+    async (e: React.MouseEvent) => {
+      e.stopPropagation();
+      if (isMineralsLoading) return;
 
-    setIsMineralsLoading(true);
-    showToast('광고를 불러오는 중... 📺', 'info');
+      setIsMineralsLoading(true);
+      showToast('광고를 불러오는 중... 📺', 'info');
 
-    const result = await recoverMineralsAds();
-    if (result.success) {
-      showToast(result.message, '💎');
-    }
-    setIsMineralsLoading(false);
-  }, [isMineralsLoading, recoverMineralsAds, showToast]);
+      const result = await recoverMineralsAds();
+      if (result.success) {
+        showToast(result.message, '💎');
+      }
+      setIsMineralsLoading(false);
+    },
+    [isMineralsLoading, recoverMineralsAds, showToast]
+  );
 
-  const handleItemsClick = useCallback((e: React.MouseEvent) => {
-    if (!isAdminMode) return;
-    e.stopPropagation();
-    setSelectedResource(selectedResource === 'items' ? null : 'items');
-  }, [isAdminMode, selectedResource, setSelectedResource]);
+  const handleItemsClick = useCallback(
+    (e: React.MouseEvent) => {
+      if (!isAdminMode) return;
+      e.stopPropagation();
+      setSelectedResource(selectedResource === 'items' ? null : 'items');
+    },
+    [isAdminMode, selectedResource, setSelectedResource]
+  );
 
   const clearSelection = useCallback(() => {
     setSelectedResource(null);

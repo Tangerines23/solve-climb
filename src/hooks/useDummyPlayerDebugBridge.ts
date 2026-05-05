@@ -33,49 +33,55 @@ export function useDummyPlayerDebugBridge() {
     fetchDummyPlayers();
   }, [fetchDummyPlayers]);
 
-  const handleCreateDummy = useCallback(async (type: 'newbie' | 'regular' | 'veteran') => {
-    setIsLoading(true);
-    setMessage(null);
-    try {
-      const timestamp = Date.now().toString().slice(-6);
-      const nickname = `${type === 'newbie' ? '🌱' : type === 'regular' ? '👤' : '🔥'} 더미-${timestamp}`;
+  const handleCreateDummy = useCallback(
+    async (type: 'newbie' | 'regular' | 'veteran') => {
+      setIsLoading(true);
+      setMessage(null);
+      try {
+        const timestamp = Date.now().toString().slice(-6);
+        const nickname = `${type === 'newbie' ? '🌱' : type === 'regular' ? '👤' : '🔥'} 더미-${timestamp}`;
 
-      const { data, error } = await supabase.rpc('debug_create_persona_player', {
-        p_nickname: nickname,
-        p_persona_type: type,
-      });
+        const { data, error } = await supabase.rpc('debug_create_persona_player', {
+          p_nickname: nickname,
+          p_persona_type: type,
+        });
 
-      if (error) throw error;
-      if (data && !data.success) throw new Error(data.message || '생성 실패');
+        if (error) throw error;
+        if (data && !data.success) throw new Error(data.message || '생성 실패');
 
-      setMessage({ type: 'success', text: `더미 플레이어 ${nickname} 생성 완료!` });
-      await fetchDummyPlayers();
-    } catch (err) {
-      setMessage({
-        type: 'error',
-        text: `생성 실패: ${err instanceof Error ? err.message : '알 수 없는 오류'}`,
-      });
-    } finally {
-      setIsLoading(false);
-    }
-  }, [fetchDummyPlayers]);
+        setMessage({ type: 'success', text: `더미 플레이어 ${nickname} 생성 완료!` });
+        await fetchDummyPlayers();
+      } catch (err) {
+        setMessage({
+          type: 'error',
+          text: `생성 실패: ${err instanceof Error ? err.message : '알 수 없는 오류'}`,
+        });
+      } finally {
+        setIsLoading(false);
+      }
+    },
+    [fetchDummyPlayers]
+  );
 
-  const handleDeleteDummy = useCallback(async (userId: string) => {
-    setIsLoading(true);
-    try {
-      const { error } = await supabase.rpc('debug_delete_dummy_user', { p_user_id: userId });
-      if (error) throw error;
-      setMessage({ type: 'success', text: '삭제 완료' });
-      await fetchDummyPlayers();
-    } catch (err) {
-      setMessage({
-        type: 'error',
-        text: `삭제 실패: ${err instanceof Error ? err.message : '알 수 없는 오류'}`,
-      });
-    } finally {
-      setIsLoading(false);
-    }
-  }, [fetchDummyPlayers]);
+  const handleDeleteDummy = useCallback(
+    async (userId: string) => {
+      setIsLoading(true);
+      try {
+        const { error } = await supabase.rpc('debug_delete_dummy_user', { p_user_id: userId });
+        if (error) throw error;
+        setMessage({ type: 'success', text: '삭제 완료' });
+        await fetchDummyPlayers();
+      } catch (err) {
+        setMessage({
+          type: 'error',
+          text: `삭제 실패: ${err instanceof Error ? err.message : '알 수 없는 오류'}`,
+        });
+      } finally {
+        setIsLoading(false);
+      }
+    },
+    [fetchDummyPlayers]
+  );
 
   const handleDeleteAll = useCallback(async () => {
     setIsLoading(true);

@@ -1,15 +1,15 @@
 import { useSettingsStore } from '../stores/useSettingsStore';
 
 export function useSettingsActions() {
-  const { 
-    animationEnabled, 
-    setAnimationEnabled, 
-    hapticEnabled, 
+  const {
+    animationEnabled,
+    setAnimationEnabled,
+    hapticEnabled,
     setHapticEnabled,
     keyboardType,
     setKeyboardType,
     staticMode,
-    setStaticMode
+    setStaticMode,
   } = useSettingsStore();
 
   return {
@@ -20,6 +20,6 @@ export function useSettingsActions() {
     keyboardType,
     setKeyboardType,
     staticMode,
-    setStaticMode
+    setStaticMode,
   };
 }

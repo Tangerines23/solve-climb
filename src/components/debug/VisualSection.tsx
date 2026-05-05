@@ -3,13 +3,13 @@ import { useDebugActions } from '../../hooks/useDebugActions';
 import './VisualSection.css';
 
 export const VisualSection = React.memo(function VisualSection() {
-  const { 
-    showSafeAreaGuide, 
-    showComponentBorders, 
-    setShowSafeAreaGuide, 
+  const {
+    showSafeAreaGuide,
+    showComponentBorders,
+    setShowSafeAreaGuide,
     setShowComponentBorders,
     setGameCombo,
-    setFeverLevel 
+    setFeverLevel,
   } = useDebugActions();
 
   return (
@@ -57,31 +57,22 @@ export const VisualSection = React.memo(function VisualSection() {
             marginTop: 'var(--spacing-sm)',
           }}
         >
-          <button
-            className="debug-action-button"
-            onClick={() => setFeverLevel(1)}
-          >
+          <button className="debug-action-button" onClick={() => setFeverLevel(1)}>
             피버 1단계 (ON)
           </button>
-          <button
-            className="debug-action-button"
-            onClick={() => setFeverLevel(2)}
-          >
+          <button className="debug-action-button" onClick={() => setFeverLevel(2)}>
             피버 2단계 (ON)
           </button>
-          <button
-            className="debug-action-button"
-            onClick={() => setFeverLevel(0)}
-          >
+          <button className="debug-action-button" onClick={() => setFeverLevel(0)}>
             피버 끄기
           </button>
           <button
             className="debug-action-button"
             onClick={() => {
-              // Note: For incremental combo, we might need to get current value, 
+              // Note: For incremental combo, we might need to get current value,
               // but for debug panel, absolute setters are usually fine.
               // If needed, we could add incrementGameCombo to useDebugActions.
-              setGameCombo(1); 
+              setGameCombo(1);
             }}
           >
             콤보 1 설정

@@ -91,5 +91,3 @@ export const getItemEmoji = (code: string): string => {
   }
   return '📦';
 };
-
-

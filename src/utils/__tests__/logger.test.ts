@@ -21,7 +21,7 @@ describe('logger.util', () => {
   it('should log info messages and add to store', () => {
     const store = useErrorLogStore.getState();
     const addLogSpy = vi.spyOn(store, 'addLog');
-    
+
     // Register handler for testing
     const unregister = logger.registerHandler((level, message, stack, context) => {
       store.addLog(level, message, stack, context);
@@ -31,10 +31,9 @@ describe('logger.util', () => {
 
     expect(console.info).toHaveBeenCalled();
     expect(addLogSpy).toHaveBeenCalledWith('info', 'Test Message', undefined, 'TestContext');
-    
+
     unregister();
   });
-
 
   it('should log debug messages', () => {
     logger.debug('TestContext', 'Debug Message');
@@ -107,8 +106,6 @@ describe('logger.util', () => {
       expect.any(Error)
     );
 
-
     unregister();
   });
-
 });

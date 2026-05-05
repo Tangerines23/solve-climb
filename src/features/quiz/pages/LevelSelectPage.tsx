@@ -44,10 +44,7 @@ export function LevelSelectPage() {
         <div className="level-select-error">
           <h2>잘못된 접근입니다</h2>
           <p>필수 파라미터가 누락되었습니다.</p>
-          <button
-            onClick={handleHomeRedirect}
-            className="error-back-button"
-          >
+          <button onClick={handleHomeRedirect} className="error-back-button">
             ←
           </button>
         </div>
@@ -61,10 +58,7 @@ export function LevelSelectPage() {
         <div className="level-select-error">
           <h2>잘못된 접근입니다</h2>
           <p>존재하지 않는 월드 또는 카테고리입니다.</p>
-          <button
-            onClick={handleHomeRedirect}
-            className="error-back-button"
-          >
+          <button onClick={handleHomeRedirect} className="error-back-button">
             ←
           </button>
         </div>
@@ -78,10 +72,7 @@ export function LevelSelectPage() {
         <div className="level-select-error">
           <h2>레벨 데이터가 없습니다</h2>
           <p>이 카테고리에 대한 레벨이 아직 준비되지 않았습니다.</p>
-          <button
-            onClick={handleCategorySelectRedirect}
-            className="error-back-button"
-          >
+          <button onClick={handleCategorySelectRedirect} className="error-back-button">
             ←
           </button>
         </div>
@@ -101,11 +92,7 @@ export function LevelSelectPage() {
     >
       {/* 상단 헤더 */}
       <header className="level-select-header">
-        <button
-          className="level-select-back"
-          onClick={handleBack}
-          aria-label="뒤로 가기"
-        >
+        <button className="level-select-back" onClick={handleBack} aria-label="뒤로 가기">
           ←
         </button>
         <div className="world-switcher">

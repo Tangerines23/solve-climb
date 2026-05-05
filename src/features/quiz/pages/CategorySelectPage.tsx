@@ -42,7 +42,6 @@ export function CategorySelectPage() {
     );
   }
 
-
   return (
     <div className="topic-select-page">
       <TopicHeader title={mountainName} onBack={() => navigate(urls.home())} />

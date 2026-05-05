@@ -11,7 +11,7 @@ import * as urlParams from '@/utils/urlParams';
 
 /**
  * ResultPageBridge Hook
- * 
+ *
  * This hook acts as a bridge between the ResultPage UI and the underlying business logic
  * (Stores, Utils, Services). It enforces the architectural boundary that UI components
  * should not directly import from the data or utility layers.
@@ -40,14 +40,14 @@ export function useResultPageBridge() {
     storeScore,
     animationEnabled,
     rankings,
-    
+
     // Actions
     clearLevel,
     updateBestScore,
     fetchRanking,
     rewardMinerals,
     showToast,
-    
+
     // Utils (Wrapped for boundary compliance)
     submitScoreToLeaderboard,
     urls,

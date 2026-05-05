@@ -32,7 +32,6 @@ export function Header({ title, showBack, onBack }: HeaderProps) {
       className={`app-header ${isAdminMode ? 'admin-mode-active' : ''}`}
       onClick={clearSelection}
     >
-
       <div className="header-content">
         {showBack && (
           <button onClick={onBack} className="header-back-button" aria-label="뒤로 가기">

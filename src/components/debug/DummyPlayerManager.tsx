@@ -48,7 +48,11 @@ export const DummyPlayerManager: React.FC = () => {
         </h4>
         <button
           onClick={() =>
-            openConfirm('전체 더미 삭제', '모든 더미 플레이어와 기록을 삭제하시겠습니까?', handleDeleteAll)
+            openConfirm(
+              '전체 더미 삭제',
+              '모든 더미 플레이어와 기록을 삭제하시겠습니까?',
+              handleDeleteAll
+            )
           }
           disabled={dummyPlayers.length === 0 || isLoading}
           className="px-3 py-1.5 bg-red-900/20 text-red-400 hover:bg-red-900/40 rounded text-xs font-bold transition-colors border border-red-900/30 disabled:opacity-30"
@@ -121,7 +125,9 @@ export const DummyPlayerManager: React.FC = () => {
                 </div>
                 <div className="flex gap-3 mt-1">
                   <span className="text-[11px] text-gray-400">🏆 {player.total_mastery_score}</span>
-                  <span className="text-[11px] text-gray-400">🛡️ Tier {player.current_tier_level}</span>
+                  <span className="text-[11px] text-gray-400">
+                    🛡️ Tier {player.current_tier_level}
+                  </span>
                 </div>
               </div>
               <button

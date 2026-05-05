@@ -178,4 +178,3 @@ export const TierSystemSection = React.memo(function TierSystemSection() {
     </div>
   );
 });
-

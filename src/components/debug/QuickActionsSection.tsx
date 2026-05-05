@@ -1,5 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import { useQuickActionsDebugBridge, type CustomPreset, type DebugPreset } from '../../hooks/useQuickActionsDebugBridge';
+import {
+  useQuickActionsDebugBridge,
+  type CustomPreset,
+  type DebugPreset,
+} from '../../hooks/useQuickActionsDebugBridge';
 import { CustomPresetModal } from './CustomPresetModal';
 import { ConfirmModal } from '../ConfirmModal';
 import './QuickActionsSection.css';

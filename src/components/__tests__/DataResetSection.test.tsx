@@ -4,7 +4,6 @@ import { DataResetSection } from '../debug/DataResetSection';
 import { useDataResetDebugBridge } from '../../hooks/useDataResetDebugBridge';
 import { supabase } from '../../utils/supabaseClient';
 
-
 // Mock dependencies
 vi.mock('../../hooks/useDataResetDebugBridge', () => ({
   useDataResetDebugBridge: vi.fn(),
@@ -53,7 +52,6 @@ describe('DataResetSection', () => {
     } as any);
   });
 
-
   it('should render without crashing', () => {
     const { container } = render(<DataResetSection />);
     expect(container).toBeTruthy();
@@ -69,16 +67,16 @@ describe('DataResetSection', () => {
     render(<DataResetSection />);
     // Find "전체" reset button in "프로필 초기화" section
     const resetButton = screen.getByText('전체');
-    
+
     fireEvent.click(resetButton);
     // Wait for ConfirmModal to appear
     await waitFor(() => {
       expect(screen.getByText(/확인/)).toBeTruthy();
     });
-    
+
     // Click confirm
     fireEvent.click(screen.getByText('확인'));
-    
+
     await waitFor(() => {
       expect(mockExecuteResetProfile).toHaveBeenCalledWith('all');
     });
@@ -87,16 +85,16 @@ describe('DataResetSection', () => {
   it('should not reset if confirm is cancelled', async () => {
     render(<DataResetSection />);
     const resetButton = screen.getByText('전체');
-    
+
     fireEvent.click(resetButton);
     // Wait for ConfirmModal to appear
     await waitFor(() => {
       expect(screen.getByText(/취소/)).toBeTruthy();
     });
-    
+
     // Click cancel
     fireEvent.click(screen.getByText('취소'));
-    
+
     // Should not have called reset
     expect(mockExecuteResetProfile).not.toHaveBeenCalled();
   });

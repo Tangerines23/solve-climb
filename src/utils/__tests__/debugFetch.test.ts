@@ -72,7 +72,7 @@ describe('safeSupabaseQuery', () => {
     });
 
     const mockQuery = Promise.resolve({ data: 'success', error: null });
-    // Use 0 retries to test it actually tries at least once more? 
+    // Use 0 retries to test it actually tries at least once more?
     // Wait, safeSupabaseQuery uses retries parameter.
     const result = await safeSupabaseQuery(mockQuery, { retries: 1 });
 

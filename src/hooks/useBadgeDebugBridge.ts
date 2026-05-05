@@ -191,10 +191,7 @@ export function useBadgeDebugBridge(): BadgeDebugBridge {
       const { BADGE_DEFINITIONS } = await import('../constants/badges');
 
       // theme_id가 required이므로, 임의의 유효한 theme_id 하나를 가져옴
-      const { data: themes } = await supabase
-        .from('theme_mapping')
-        .select('theme_id')
-        .limit(1);
+      const { data: themes } = await supabase.from('theme_mapping').select('theme_id').limit(1);
 
       const defaultThemeId = themes?.[0]?.theme_id;
 

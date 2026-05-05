@@ -6,6 +6,6 @@ export const useDailyRewardModalBridge = () => {
   return {
     showModal,
     rewardResult,
-    closeModal
+    closeModal,
   };
 };

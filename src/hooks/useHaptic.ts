@@ -1,5 +1,11 @@
 import { useCallback } from 'react';
-import { vibrateShort as vibrateShortUtil, vibrateMedium as vibrateMediumUtil, vibrateLong as vibrateLongUtil, vibrateSuccess as vibrateSuccessUtil, vibrateError as vibrateErrorUtil } from '@/utils/haptic';
+import {
+  vibrateShort as vibrateShortUtil,
+  vibrateMedium as vibrateMediumUtil,
+  vibrateLong as vibrateLongUtil,
+  vibrateSuccess as vibrateSuccessUtil,
+  vibrateError as vibrateErrorUtil,
+} from '@/utils/haptic';
 
 /**
  * Hook for haptic feedback related operations.

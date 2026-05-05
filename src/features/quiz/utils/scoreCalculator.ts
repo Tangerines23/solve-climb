@@ -21,7 +21,10 @@ const getBestScore = (record: LevelRecord): number => {
  * 전체 누적 등반 고도 계산 (모든 카테고리의 bestScore 합산)
  * @returns 총 고도(m)와 총 문제 수
  */
-export function calculateTotalAltitude(progress: CategoryProgressMap): { totalAltitude: number; totalProblems: number } {
+export function calculateTotalAltitude(progress: CategoryProgressMap): {
+  totalAltitude: number;
+  totalProblems: number;
+} {
   let totalAltitude = 0;
 
   // 모든 카테고리 순회
@@ -177,4 +180,3 @@ export function calculateCategoryProgress(
 
   return { progressPercent, currentAltitude, targetAltitude };
 }
-

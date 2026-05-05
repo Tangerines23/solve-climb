@@ -1,12 +1,7 @@
 import { useCallback } from 'react';
 import { supabase } from '../utils/supabaseClient';
 import { useUserStore } from '../stores/useUserStore';
-import { 
-  useQuizStore, 
-  useGameStore,
-  calculateScoreForTier,
-  type TimeLimit 
-} from '@/features/quiz';
+import { useQuizStore, useGameStore, calculateScoreForTier, type TimeLimit } from '@/features/quiz';
 import { storageService, STORAGE_KEYS } from '../services';
 import { useDailyRewardStore } from '../stores/useDailyRewardStore';
 import { useNotificationStore } from '../stores/useNotificationStore';

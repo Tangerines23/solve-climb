@@ -132,7 +132,7 @@ const TreeNode = ({
           `%c[Macro] ${emoji} Step ${index + 1}/${fullTour.length}: ${path}`,
           'color: rgb(16, 185, 129)'
         );
-        
+
         if (path !== '/') {
           setShowReturnFloater(true);
         }

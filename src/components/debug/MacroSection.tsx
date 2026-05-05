@@ -72,7 +72,9 @@ export const MacroSection: React.FC = React.memo(function MacroSection() {
       )}
 
       <div className="mt-6 p-4 bg-blue-900/10 rounded-lg border border-blue-900/20">
-        <h4 className="text-xs font-bold text-blue-400 uppercase tracking-wider mb-2">매크로 도움말</h4>
+        <h4 className="text-xs font-bold text-blue-400 uppercase tracking-wider mb-2">
+          매크로 도움말
+        </h4>
         <ul className="space-y-1.5">
           {[
             '매크로는 여러 동작을 순차적으로 실행합니다.',

@@ -53,7 +53,9 @@ export function QuizModals() {
       <LastChanceModal
         isVisible={showLastChanceModal && (gameMode === 'time-attack' || gameMode === 'survival')}
         gameMode={gameMode as 'time-attack' | 'survival'}
-        inventoryCount={inventory.find((i: InventoryItem) => i.code === reviveItemCode)?.quantity || 0}
+        inventoryCount={
+          inventory.find((i: InventoryItem) => i.code === reviveItemCode)?.quantity || 0
+        }
         userMinerals={minerals}
         onUseItem={() => handleRevive(true)}
         onPurchaseAndUse={handlePurchaseAndRevive}
@@ -93,7 +95,8 @@ export function QuizModals() {
         onClose={() => setShowStaminaModal(false)}
         onAction={onAlertAction}
         type={
-          isAnonymous && (inventory.find((i: InventoryItem) => i.code === 'oxygen_tank')?.quantity || 0) <= 0
+          isAnonymous &&
+          (inventory.find((i: InventoryItem) => i.code === 'oxygen_tank')?.quantity || 0) <= 0
             ? 'both'
             : isAnonymous
               ? 'anonymous'

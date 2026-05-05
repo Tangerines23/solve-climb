@@ -1,9 +1,5 @@
 import { storageService, STORAGE_KEYS } from '../services';
-import {
-  type DebugPreset,
-  type PresetHistory,
-  type CustomPreset,
-} from '../types/debug';
+import { type DebugPreset, type PresetHistory, type CustomPreset } from '../types/debug';
 
 /**
  * 프리셋 데이터 정의
@@ -56,7 +52,6 @@ export const debugPresets: DebugPreset[] = [
   },
 ];
 
-
 /**
  * 프리셋 히스토리 저장
  */
@@ -97,7 +92,6 @@ export function clearPresetHistory(): void {
     console.error('Failed to clear preset history:', error);
   }
 }
-
 
 /**
  * 커스텀 프리셋 관리

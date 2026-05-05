@@ -2,15 +2,8 @@ import { useAuthModeDebugBridge } from '../../hooks/useAuthModeDebugBridge';
 import './AuthModeSection.css';
 
 export function AuthModeSection() {
-  const {
-    currentMode,
-    actualMode,
-    user,
-    testResults,
-    loading,
-    handleModeChange,
-  } = useAuthModeDebugBridge();
-
+  const { currentMode, actualMode, user, testResults, loading, handleModeChange } =
+    useAuthModeDebugBridge();
 
   return (
     <div className="debug-section">

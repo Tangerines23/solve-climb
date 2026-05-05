@@ -31,7 +31,6 @@ export const GameFlowSection = React.memo(function GameFlowSection() {
     handleGameModeChange,
   } = useGameFlowDebugBridge();
 
-
   if (isLoading) {
     return (
       <div className="debug-section">

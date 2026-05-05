@@ -35,7 +35,7 @@ class ErrorBoundaryClass extends Component<InternalProps, State> {
 
   componentDidCatch(error: Error, errorInfo: ErrorInfo) {
     const { captureError, onError } = this.props;
-    
+
     // 에러 로깅 (브릿지 사용)
     captureError('ErrorBoundary', error, errorInfo.componentStack || undefined);
 

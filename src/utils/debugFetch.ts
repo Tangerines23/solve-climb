@@ -1,4 +1,3 @@
-
 import { logError } from './errorHandler';
 
 interface DebugConfig {

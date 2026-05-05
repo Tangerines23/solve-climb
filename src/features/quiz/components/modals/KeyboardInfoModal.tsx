@@ -1,5 +1,8 @@
 import { createPortal } from 'react-dom';
-import { useKeyboardInfoModalBridge, KeyboardInfo } from '../../hooks/bridge/useKeyboardInfoModalBridge';
+import {
+  useKeyboardInfoModalBridge,
+  KeyboardInfo,
+} from '../../hooks/bridge/useKeyboardInfoModalBridge';
 import { CustomKeypad } from '../input/CustomKeypad';
 import { QwertyKeypad } from '../input/QwertyKeypad';
 import '../../pages/QuizPage.css';
@@ -24,7 +27,7 @@ export function KeyboardInfoModal({ isOpen, onClose }: KeyboardInfoModalProps) {
     handleKeyPress,
     handleClear,
     handleBackspace,
-    handleSubmit
+    handleSubmit,
   } = useKeyboardInfoModalBridge(isOpen, onClose);
 
   // Portal을 사용해서 document.body의 직접 자식으로 렌더링 (MyPage 위에 올라오지 않도록)

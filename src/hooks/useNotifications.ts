@@ -5,14 +5,14 @@ import { urls } from '@/utils/navigation';
 
 export function useNotifications() {
   const navigate = useNavigate();
-  const { 
-    notifications, 
-    loading, 
-    unreadCount, 
-    markAsRead, 
-    markAllAsRead, 
+  const {
+    notifications,
+    loading,
+    unreadCount,
+    markAsRead,
+    markAllAsRead,
     setLoading,
-    setNotifications 
+    setNotifications,
   } = useNotificationStore();
 
   const [showUnderDevelopment, setShowUnderDevelopment] = useState(true);
@@ -62,31 +62,34 @@ export function useNotifications() {
     setLoading(false);
   }, [setLoading, setNotifications, notifications.length]);
 
-  const handleNotificationClick = useCallback((notification: Notification) => {
-    // 알림 읽음 처리
-    if (!notification.read) {
-      markAsRead(notification.id);
-    }
-
-    // 알림 타입에 따라 다른 페이지로 이동
-    if (notification.type === 'challenge' && notification.challengeId) {
-      navigate(urls.challenge({ id: notification.challengeId }));
-    } else if (notification.type === 'record_broken') {
-      // 기록이 깨진 레벨로 이동
-      if (notification.category && notification.subCategory && notification.level) {
-        const mountain = notification.category || 'math';
-        const world = 'World1'; // 기본 월드
-        const category = notification.subCategory;
-        navigate(
-          urls.levelSelect({
-            mountain,
-            world,
-            category,
-          })
-        );
+  const handleNotificationClick = useCallback(
+    (notification: Notification) => {
+      // 알림 읽음 처리
+      if (!notification.read) {
+        markAsRead(notification.id);
       }
-    }
-  }, [markAsRead, navigate]);
+
+      // 알림 타입에 따라 다른 페이지로 이동
+      if (notification.type === 'challenge' && notification.challengeId) {
+        navigate(urls.challenge({ id: notification.challengeId }));
+      } else if (notification.type === 'record_broken') {
+        // 기록이 깨진 레벨로 이동
+        if (notification.category && notification.subCategory && notification.level) {
+          const mountain = notification.category || 'math';
+          const world = 'World1'; // 기본 월드
+          const category = notification.subCategory;
+          navigate(
+            urls.levelSelect({
+              mountain,
+              world,
+              category,
+            })
+          );
+        }
+      }
+    },
+    [markAsRead, navigate]
+  );
 
   const formatTimeAgo = useCallback((date: Date): string => {
     const now = new Date();

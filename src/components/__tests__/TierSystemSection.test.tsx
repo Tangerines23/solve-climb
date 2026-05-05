@@ -39,8 +39,6 @@ vi.mock('@/utils/supabaseClient', () => ({
   },
 }));
 
-
-
 describe('TierSystemSection', () => {
   beforeEach(() => {
     vi.clearAllMocks();

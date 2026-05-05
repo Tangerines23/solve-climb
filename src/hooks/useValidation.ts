@@ -1,5 +1,10 @@
 import { useCallback } from 'react';
-import { safeAccess as safeAccessUtil, sanitizeNickname as sanitizeNicknameUtil, validateNickname as validateNicknameUtil, isValidUUID as isValidUUIDUtil } from '@/utils/validation';
+import {
+  safeAccess as safeAccessUtil,
+  sanitizeNickname as sanitizeNicknameUtil,
+  validateNickname as validateNicknameUtil,
+  isValidUUID as isValidUUIDUtil,
+} from '@/utils/validation';
 
 /**
  * Hook for validation and sanitization related operations.
@@ -9,12 +14,15 @@ export function useValidation() {
   /**
    * Safely accesses an object property.
    */
-  const safeAccess = useCallback(<T extends object>(
-    obj: T | undefined | null,
-    key: string | number | null | undefined
-  ): unknown | undefined => {
-    return safeAccessUtil(obj, key);
-  }, []);
+  const safeAccess = useCallback(
+    <T extends object>(
+      obj: T | undefined | null,
+      key: string | number | null | undefined
+    ): unknown | undefined => {
+      return safeAccessUtil(obj, key);
+    },
+    []
+  );
 
   /**
    * Sanitizes a nickname.

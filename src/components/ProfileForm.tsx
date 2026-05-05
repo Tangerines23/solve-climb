@@ -171,12 +171,12 @@ export function ProfileForm({ onComplete, showBackButton = false, onCancel }: Pr
           </div>
         )} */}
 
-        <button 
-          type="submit" 
+        <button
+          type="submit"
           className="btn-base btn-primary profile-form-submit"
           disabled={isUpdating}
         >
-          {isUpdating ? '저장 중...' : (profile?.nickname ? '저장하기' : '시작하기')}
+          {isUpdating ? '저장 중...' : profile?.nickname ? '저장하기' : '시작하기'}
         </button>
       </form>
     </div>

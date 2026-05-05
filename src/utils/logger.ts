@@ -33,7 +33,12 @@ const LOG_STYLES = {
   error: 'color: #F44336; font-weight: bold;',
 } as const;
 
-type LogHandler = (level: 'info' | 'warning' | 'error', message: string, stack?: string, context?: string) => void;
+type LogHandler = (
+  level: 'info' | 'warning' | 'error',
+  message: string,
+  stack?: string,
+  context?: string
+) => void;
 const logHandlers: LogHandler[] = [];
 
 /**

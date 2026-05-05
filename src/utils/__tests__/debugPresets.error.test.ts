@@ -98,7 +98,8 @@ describe('debugPresets - Error Handling & Edge Cases', () => {
     });
 
     it('should handle multiple rapid save operations', () => {
-      for (let i = 0; i < 20; i++) { // 20 is enough for rapid check
+      for (let i = 0; i < 20; i++) {
+        // 20 is enough for rapid check
         const preset: CustomPreset = {
           id: `rapid-${i}`,
           name: `Rapid ${i}`,

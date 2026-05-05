@@ -10,7 +10,7 @@ export function useErrorHandling() {
 
   const captureError = (componentName: string, error: Error, componentStack?: string) => {
     logError(componentName, error);
-    
+
     if (import.meta.env.DEV) {
       addLog(
         'error',
@@ -23,7 +23,7 @@ export function useErrorHandling() {
 
   const copyErrorToClipboard = (error: Error, isChunkLoadError: boolean) => {
     const errorText = `[${isChunkLoadError ? 'CHUNK_ERROR' : 'APP_ERROR'}] ${error.message}\n\nURL: ${window.location.href}\nTime: ${new Date().toLocaleString()}\n\nStack:\n${error.stack || ''}`;
-    
+
     navigator.clipboard
       .writeText(errorText)
       .then(() => {

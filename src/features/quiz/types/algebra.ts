@@ -9,6 +9,3 @@ export interface Term {
   sign: '+' | '-';
   isFixed?: boolean; // e.g. the equals sign itself or immovable terms
 }
-
-
-

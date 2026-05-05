@@ -32,6 +32,6 @@ export const useCyclePromotionModalBridge = (onPromote: () => void) => {
   return {
     isPromoting,
     error,
-    handlePromote
+    handlePromote,
   };
 };

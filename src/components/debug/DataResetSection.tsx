@@ -91,7 +91,7 @@ export const DataResetSection = () => {
 
   const handleDeleteByLevelClick = async () => {
     if (isDeleting || selectedLevel === null) return;
-    
+
     setConfirmConfig({
       isOpen: true,
       title: '레벨 기록 삭제',
@@ -105,8 +105,9 @@ export const DataResetSection = () => {
 
   const handleResetLevelProgressClick = async () => {
     if (isResettingProgress) return;
-    
-    const categoryName = getAvailableCategories().find(c => c.id === selectedCategory)?.name || selectedCategory;
+
+    const categoryName =
+      getAvailableCategories().find((c) => c.id === selectedCategory)?.name || selectedCategory;
 
     setConfirmConfig({
       isOpen: true,

@@ -4,7 +4,6 @@ export type { TodayChallenge, ProgressData, ProgressMap };
 import { storageService, STORAGE_KEYS } from '@/services';
 import { FeatureFlags } from '@/types/config';
 
-
 /**
  * 날짜 문자열을 반환합니다 (YYYY-MM-DD 형식)
  */
@@ -51,7 +50,10 @@ export class SeededRandom {
 /**
  * 오늘의 챌린지를 생성합니다 (Categorized League System)
  */
-export function generateTodayChallenge(progressMap: ProgressMap, flags: FeatureFlags): TodayChallenge {
+export function generateTodayChallenge(
+  progressMap: ProgressMap,
+  flags: FeatureFlags
+): TodayChallenge {
   const todayDate = getTodayDateString();
   const seed = dateToSeed(todayDate);
   const rng = new SeededRandom(seed);
