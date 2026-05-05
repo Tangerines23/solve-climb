@@ -1,10 +1,14 @@
-export interface TierDefinition {
-  name: string;
-  goal: number;
-  icon: string;
-  colorVar: string;
+import { Database } from './database.types';
+
+type DBTierDef = Database['public']['Tables']['tier_definitions']['Row'];
+
+export type TierDefinition = {
+  name: DBTierDef['name'];
+  goal: DBTierDef['min_score'];
+  icon: DBTierDef['icon'];
+  colorVar: DBTierDef['color_var'];
   overlapLandmark?: MilestoneItem;
-}
+};
 
 export interface MilestoneItem {
   id: string;

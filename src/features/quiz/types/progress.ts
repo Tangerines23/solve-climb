@@ -1,3 +1,7 @@
+import { Database } from '@/types/database.types';
+
+type DBHallOfFame = Database['public']['Tables']['hall_of_fame']['Row'];
+
 export interface LevelRecord {
   level: number;
   cleared: boolean;
@@ -19,12 +23,6 @@ export interface UserProgress {
   [world: string]: CategoryProgress;
 }
 
-export interface RankingRecord {
-  user_id: string;
-  nickname: string;
-  score: number;
-  rank: number;
+export type RankingRecord = Omit<DBHallOfFame, 'created_at' | 'id' | 'mode' | 'week_start_date'> & {
   week_start_date?: string;
-  tier_level?: number;
-  tier_stars?: number;
-}
+};

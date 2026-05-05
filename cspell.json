@@ -67,7 +67,8 @@
     "DEATHNOTE",
     "TTFB",
     "Glassmorphism",
-    "unstub"
+    "unstub",
+    "fkey"
   ],
   "ignorePaths": [
     "node_modules",

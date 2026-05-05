@@ -1,11 +1,10 @@
-export interface BadgeDefinition {
-  id: string;
-  name: string;
-  description: string | null;
-  emoji: string | null;
-}
+import { Database } from './database.types';
 
-export interface UserBadge {
-  badge_id: string;
-  earned_at: string;
-}
+type DBBadgeDef = Database['public']['Tables']['badge_definitions']['Row'];
+type DBUserBadge = Database['public']['Tables']['user_badges']['Row'];
+
+export type BadgeDefinition = Pick<DBBadgeDef, 'id' | 'name' | 'description' | 'emoji'>;
+
+export type UserBadge = Pick<DBUserBadge, 'badge_id'> & {
+  earned_at: string; // Keep as string for compatibility if needed, though DB is string | null
+};
