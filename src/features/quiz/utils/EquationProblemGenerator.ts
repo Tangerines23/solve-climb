@@ -374,25 +374,4 @@ export function generateEquation(
 /**
  * EquationProblemGenerator 클래스 (선택적 사용)
  */
-class EquationProblemGenerator {
-  /**
-   * 스테이지 레벨에 따른 방정식 문제 생성
-   */
-  static generate(stageLevel: number): EquationProblem {
-    return generateEquation(stageLevel, 'easy');
-  }
 
-  /**
-   * 모든 스테이지 설정 조회
-   */
-  static getStages(): EquationStageConfig[] {
-    return EQUATION_STAGES;
-  }
-
-  /**
-   * 특정 스테이지 설정 조회
-   */
-  static getStage(stageLevel: number): EquationStageConfig | undefined {
-    return EQUATION_STAGES.find((s) => s.stage === stageLevel);
-  }
-}
