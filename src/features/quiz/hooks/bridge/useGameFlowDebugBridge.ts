@@ -3,6 +3,7 @@ import { supabase } from '@/utils/supabaseClient';
 import { generateQuestion } from '../../utils/quizGenerator';
 import { Category, Topic, Difficulty, QuizQuestion, GameMode } from '../../types/quiz';
 import { useQuizStore } from '../../stores/useQuizStore';
+import { STATUS, type StatusType } from '@/constants/status';
 
 export interface GameSession {
   id: string;
@@ -21,7 +22,7 @@ export function useGameFlowDebugBridge() {
   const [selectedSessionId, setSelectedSessionId] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isUpdating, setIsUpdating] = useState(false);
-  const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
+  const [message, setMessage] = useState<{ type: StatusType; text: string } | null>(null);
   const [extendSeconds, setExtendSeconds] = useState('60');
 
   // 문제 생성 테스트 상태
@@ -72,7 +73,7 @@ export function useGameFlowDebugBridge() {
       }
     } catch (err) {
       setMessage({
-        type: 'error',
+        type: STATUS.ERROR,
         text: `세션 로드 실패: ${err instanceof Error ? err.message : '알 수 없는 오류'}`,
       });
     } finally {
@@ -109,11 +110,11 @@ export function useGameFlowDebugBridge() {
 
       if (error) throw error;
 
-      setMessage({ type: 'success', text: '게임이 종료되었습니다.' });
+      setMessage({ type: STATUS.SUCCESS, text: '게임이 종료되었습니다.' });
       await loadSessions();
     } catch (err) {
       setMessage({
-        type: 'error',
+        type: STATUS.ERROR,
         text: `게임 종료 실패: ${err instanceof Error ? err.message : '알 수 없는 오류'}`,
       });
     } finally {
@@ -146,11 +147,11 @@ export function useGameFlowDebugBridge() {
 
       if (error) throw error;
 
-      setMessage({ type: 'success', text: '세션이 만료 처리되었습니다.' });
+      setMessage({ type: STATUS.SUCCESS, text: '세션이 만료 처리되었습니다.' });
       await loadSessions();
     } catch (err) {
       setMessage({
-        type: 'error',
+        type: STATUS.ERROR,
         text: `세션 만료 실패: ${err instanceof Error ? err.message : '알 수 없는 오류'}`,
       });
     } finally {
@@ -163,7 +164,7 @@ export function useGameFlowDebugBridge() {
 
     const seconds = parseInt(extendSeconds, 10);
     if (isNaN(seconds) || seconds <= 0) {
-      setMessage({ type: 'error', text: '유효한 시간(초)을 입력하세요.' });
+      setMessage({ type: STATUS.ERROR, text: '유효한 시간(초)을 입력하세요.' });
       return;
     }
 
@@ -191,11 +192,11 @@ export function useGameFlowDebugBridge() {
 
       if (error) throw error;
 
-      setMessage({ type: 'success', text: `세션 시간이 ${seconds}초 연장되었습니다.` });
+      setMessage({ type: STATUS.SUCCESS, text: `세션 시간이 ${seconds}초 연장되었습니다.` });
       await loadSessions();
     } catch (err) {
       setMessage({
-        type: 'error',
+        type: STATUS.ERROR,
         text: `시간 연장 실패: ${err instanceof Error ? err.message : '알 수 없는 오류'}`,
       });
     } finally {
@@ -222,10 +223,10 @@ export function useGameFlowDebugBridge() {
     try {
       const question = generateQuestion('math', 'World1', selectedTopic, 1, selectedDifficulty);
       setGeneratedQuestion(question);
-      setMessage({ type: 'success', text: '문제가 생성되었습니다.' });
+      setMessage({ type: STATUS.SUCCESS, text: '문제가 생성되었습니다.' });
     } catch (err) {
       setMessage({
-        type: 'error',
+        type: STATUS.ERROR,
         text: `문제 생성 실패: ${err instanceof Error ? err.message : '알 수 없는 오류'}`,
       });
       setGeneratedQuestion(null);
@@ -236,12 +237,12 @@ export function useGameFlowDebugBridge() {
     try {
       setGameMode(selectedGameMode);
       setMessage({
-        type: 'success',
+        type: STATUS.SUCCESS,
         text: `게임 모드가 ${selectedGameMode === 'time-attack' ? '타임어택' : '서바이벌'}으로 변경되었습니다.`,
       });
     } catch (err) {
       setMessage({
-        type: 'error',
+        type: STATUS.ERROR,
         text: `게임 모드 변경 실패: ${err instanceof Error ? err.message : '알 수 없는 오류'}`,
       });
     }

@@ -1,4 +1,4 @@
-﻿import { describe, it, expect, beforeEach, vi, afterEach } from 'vitest';
+import { describe, it, expect, beforeEach, vi, afterEach } from 'vitest';
 import { renderHook, act } from '@testing-library/react';
 import { useLevelProgressStore } from '@/features/quiz/stores/useLevelProgressStore';
 import { supabase } from '@/utils/supabaseClient';
@@ -39,11 +39,11 @@ vi.mock('@/stores/useDebugStore', () => {
 });
 
 const mockShowToast = vi.fn();
-(useToastStore.getState as any).mockReturnValue({ showToast: mockShowToast });
+(useToastStore.getState as unknown as vi.Mock).mockReturnValue({ showToast: mockShowToast });
 
-const createMockRpcBuilder = (data: any, error: any = null) => {
+const createMockRpcBuilder = (data: unknown, error: unknown = null) => {
   const promise = Promise.resolve({ data, error });
-  return Object.assign(promise, {
+  const builder = Object.assign(promise, {
     eq: vi.fn().mockReturnThis(),
     neq: vi.fn().mockReturnThis(),
     gt: vi.fn().mockReturnThis(),
@@ -58,7 +58,8 @@ const createMockRpcBuilder = (data: any, error: any = null) => {
     then: promise.then.bind(promise),
     catch: promise.catch.bind(promise),
     finally: promise.finally.bind(promise),
-  }) as any;
+  });
+  return builder as unknown as ReturnType<typeof supabase.rpc>;
 };
 
 describe('useLevelProgressStore', () => {
@@ -68,12 +69,12 @@ describe('useLevelProgressStore', () => {
   beforeEach(async () => {
     vi.clearAllMocks();
     // Ensure bypassLevelLock is false by default for consistency
-    vi.mocked(useDebugStore.getState).mockReturnValue({ bypassLevelLock: false } as any);
+    vi.mocked(useDebugStore.getState).mockReturnValue({ bypassLevelLock: false });
     // Default mock setup for successful calls
     vi.mocked(supabase.auth.getUser).mockResolvedValue({
-      data: { user: { id: 'user-123' } },
+      data: { user: { id: 'user-123' } as unknown } as { user: { id: string } },
       error: null,
-    } as any);
+    } as unknown as { data: { user: { id: string } }; error: null });
     vi.mocked(supabase.rpc).mockImplementation(() => createMockRpcBuilder({ success: true }));
 
     vi.mocked(supabase.from).mockReturnValue({
@@ -82,7 +83,7 @@ describe('useLevelProgressStore', () => {
       order: vi.fn().mockReturnThis(),
       limit: vi.fn().mockReturnThis(),
       then: vi.fn().mockImplementation((cb) => cb({ data: [], error: null })),
-    } as any);
+    } as unknown as ReturnType<typeof supabase.from>);
 
     // Reset store state
     const { result } = renderHook(() => useLevelProgressStore());
@@ -103,7 +104,7 @@ describe('useLevelProgressStore', () => {
     });
 
     it('should handle bypassLevelLock debug setting', () => {
-      vi.mocked(useDebugStore.getState).mockReturnValue({ bypassLevelLock: true } as any);
+      vi.mocked(useDebugStore.getState).mockReturnValue({ bypassLevelLock: true });
       const { result } = renderHook(() => useLevelProgressStore());
 
       expect(result.current.isLevelCleared(world, category, 1)).toBe(true);
@@ -190,7 +191,7 @@ describe('useLevelProgressStore', () => {
       const best = result.current.getBestRecords(bestWorld, category);
       expect(best['time-attack']).toBe(200);
       expect(best.survival).toBe(500);
-      expect((best as any).infinite).toBe(1000);
+      expect((best as Record<string, unknown>).infinite).toBe(1000);
     });
   });
 
@@ -229,7 +230,7 @@ describe('useLevelProgressStore', () => {
         select: vi.fn().mockReturnThis(),
         eq: vi.fn().mockReturnThis(),
         then: vi.fn().mockImplementation((cb) => cb({ data: mockRecords, error: null })),
-      } as any);
+      } as unknown as ReturnType<typeof supabase.from>);
 
       await act(async () => {
         await result.current.syncProgress();
@@ -252,7 +253,7 @@ describe('useLevelProgressStore', () => {
         order: vi.fn().mockReturnThis(),
         limit: vi.fn().mockReturnThis(),
         then: vi.fn().mockImplementation((cb) => cb({ data: mockHof, error: null })),
-      } as any);
+      } as unknown as ReturnType<typeof supabase.from>);
 
       await act(async () => {
         await result.current.fetchRanking(null, null, 'all-time', 'total');
@@ -262,7 +263,7 @@ describe('useLevelProgressStore', () => {
     });
 
     it('should handle realtime subscription lifecycle and events', () => {
-      let eventCallback: any;
+      let eventCallback: (payload: { new: { id: string } }) => void;
       const mockUnsubscribe = vi.fn();
       const mockSubscribe = vi.fn().mockReturnValue({ unsubscribe: mockUnsubscribe });
       const mockOn = vi.fn().mockImplementation((_type, _filter, callback) => {
@@ -273,7 +274,7 @@ describe('useLevelProgressStore', () => {
       vi.mocked(supabase.channel).mockReturnValue({
         on: mockOn,
         subscribe: mockSubscribe,
-      } as any);
+      } as unknown as ReturnType<typeof supabase.channel>);
 
       const { result } = renderHook(() => useLevelProgressStore());
 
@@ -350,7 +351,7 @@ describe('useLevelProgressStore', () => {
         select: vi.fn().mockReturnThis(),
         eq: vi.fn().mockReturnThis(),
         then: vi.fn().mockImplementation((cb) => cb({ data: mockRecords, error: null })),
-      } as any);
+      } as unknown as ReturnType<typeof supabase.from>);
 
       await act(async () => {
         await result.current.syncProgress();

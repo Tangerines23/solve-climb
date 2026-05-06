@@ -26,8 +26,8 @@ export const ENV = createEnv({
       .default(isTestOrCI ? 'dummy-anon-key' : (undefined as unknown as string)),
 
     // 2. 광고 및 분석 설정 (기본값 제공)
-    VITE_ADMOB_APP_ID: z.string().default('ca-app-pub-6410061165772335~9825031776'),
-    VITE_ADMOB_REWARDED_ID: z.string().default('ca-app-pub-6410061165772335/6536523456'),
+    VITE_ADMOB_APP_ID: z.string().min(1, 'AdMob App ID is required'),
+    VITE_ADMOB_REWARDED_ID: z.string().min(1, 'AdMob Rewarded ID is required'),
     VITE_SENTRY_DSN: z.string().optional(),
 
     // 3. 디버그 및 플랫폼 설정

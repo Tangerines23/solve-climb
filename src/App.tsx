@@ -17,6 +17,7 @@ import { logger } from '@/utils/logger';
 import { registerHapticConfig } from '@/utils/haptic';
 import { registerDebugConfig } from '@/utils/debugFetch';
 import { registerDebugBridge } from '@/hooks/useQuickActionsDebugBridge';
+import { STATUS } from '@/constants/status';
 
 const HomePage = resilientLazy(
   () => import('@/pages/HomePage').then((module) => ({ default: module.HomePage })),
@@ -141,7 +142,7 @@ function App() {
       useErrorLogStore
         .getState()
         .addLog(
-          'error',
+          STATUS.ERROR,
           event.message || 'Unknown error',
           event.error?.stack,
           `Global: ${event.filename || 'unknown'}:${event.lineno || 0}`
@@ -154,7 +155,7 @@ function App() {
       useErrorLogStore
         .getState()
         .addLog(
-          'error',
+          STATUS.ERROR,
           `Unhandled Promise Rejection: ${error.message}`,
           error.stack,
           'Global: UnhandledRejection'

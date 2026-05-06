@@ -13,9 +13,10 @@ import { safeAccess } from '@/utils/validation';
 import { LevelSyncService } from '@/services/LevelSyncService';
 
 import { LevelRecord, UserProgress, RankingRecord } from '../types/progress';
+import { STATUS } from '@/constants/status';
 export { type UserProgress };
 
-interface LevelProgressState {
+export interface LevelProgressState {
   progress: UserProgress;
   rankings: { [key: string]: RankingRecord[] };
   rankingVersion: number; // For triggering re-renders on realtime updates
@@ -215,7 +216,7 @@ export const useLevelProgressStore = create<LevelProgressState>()(
             console.error('[clearLevel] Sync failed, rolling back:', result.error);
             set({ progress: previousProgress });
             if (result.error !== 'No user found') {
-              useToastStore.getState().showToast(result.error || '저장 실패', 'error');
+              useToastStore.getState().showToast(result.error || '저장 실패', STATUS.ERROR);
             }
           }
         },
@@ -389,7 +390,7 @@ export const useLevelProgressStore = create<LevelProgressState>()(
             }
           } catch (error) {
             console.error('Failed to sync progress from Supabase:', error);
-            useToastStore.getState().showToast(UI_MESSAGES.FETCH_DATA_FAILED, 'error');
+            useToastStore.getState().showToast(UI_MESSAGES.FETCH_DATA_FAILED, STATUS.ERROR);
           }
         },
 
@@ -398,14 +399,16 @@ export const useLevelProgressStore = create<LevelProgressState>()(
 
           if (!result.success) {
             console.error('Failed to reset progress:', result.error);
-            useToastStore.getState().showToast(result.error || UI_MESSAGES.COMMON_ERROR, 'error');
+            useToastStore
+              .getState()
+              .showToast(result.error || UI_MESSAGES.COMMON_ERROR, STATUS.ERROR);
             return;
           }
 
           // Local State 리셋 (성공 시에만)
           set({ progress: {} });
           console.log('[useLevelProgressStore] Progress reset completed via Service');
-          useToastStore.getState().showToast('진행 상태가 초기화되었습니다.', 'success');
+          useToastStore.getState().showToast('진행 상태가 초기화되었습니다.', STATUS.SUCCESS);
         },
 
         fetchRanking: async (world, category, period, type, limit = 50) => {
@@ -457,7 +460,7 @@ export const useLevelProgressStore = create<LevelProgressState>()(
             }
           } catch (error) {
             console.error('Failed to fetch ranking:', error);
-            useToastStore.getState().showToast(UI_MESSAGES.RANKING_FETCH_FAILED, 'error');
+            useToastStore.getState().showToast(UI_MESSAGES.RANKING_FETCH_FAILED, STATUS.ERROR);
           }
         },
 

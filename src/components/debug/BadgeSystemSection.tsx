@@ -1,5 +1,6 @@
 import { useBadgeDebugBridge } from '../../hooks/useBadgeDebugBridge';
 import { Toast } from '../Toast';
+import { STATUS } from '../../constants/status';
 import './BadgeSystemSection.css';
 
 export function BadgeSystemSection() {
@@ -136,27 +137,31 @@ export function BadgeSystemSection() {
           <div className="debug-sync-item">
             <span className="debug-sync-label">프로필:</span>
             <span
-              className={`debug-sync-status ${syncResult.profile.synced ? 'success' : 'error'}`}
+              className={`debug-sync-status ${syncResult.profile.synced ? STATUS.SUCCESS : STATUS.ERROR}`}
             >
               {syncResult.profile.synced ? '✅ 동기화됨' : '❌ 문제 있음'}
             </span>
           </div>
           <div className="debug-sync-item">
             <span className="debug-sync-label">티어:</span>
-            <span className={`debug-sync-status ${syncResult.tier.synced ? 'success' : 'error'}`}>
+            <span
+              className={`debug-sync-status ${syncResult.tier.synced ? STATUS.SUCCESS : STATUS.ERROR}`}
+            >
               {syncResult.tier.synced ? '✅ 동기화됨' : '❌ 문제 있음'}
             </span>
           </div>
           <div className="debug-sync-item">
             <span className="debug-sync-label">뱃지:</span>
-            <span className={`debug-sync-status ${syncResult.badges.synced ? 'success' : 'error'}`}>
+            <span
+              className={`debug-sync-status ${syncResult.badges.synced ? STATUS.SUCCESS : STATUS.ERROR}`}
+            >
               {syncResult.badges.synced ? '✅ 동기화됨' : '❌ 문제 있음'}
             </span>
           </div>
           <div className="debug-sync-item">
             <span className="debug-sync-label">인벤토리:</span>
             <span
-              className={`debug-sync-status ${syncResult.inventory.synced ? 'success' : 'error'}`}
+              className={`debug-sync-status ${syncResult.inventory.synced ? STATUS.SUCCESS : STATUS.ERROR}`}
             >
               {syncResult.inventory.synced ? '✅ 동기화됨' : '❌ 문제 있음'}
             </span>

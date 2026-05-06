@@ -7,6 +7,7 @@ import { getPresetHistories, clearPresetHistory, debugPresets } from '../utils/d
 import { type CustomPreset, type DebugPreset, type PresetHistory } from '../types/debug';
 import { useDebugActions } from './useDebugActions';
 import { verifySync, type SyncResult } from '../utils/debugSync';
+import { STATUS, type StatusType } from '../constants/status';
 
 export type { PresetHistory, CustomPreset, SyncResult, DebugPreset };
 export { debugPresets };
@@ -39,7 +40,7 @@ export function useQuickActionsDebugBridge() {
   const [isUpdating, setIsUpdating] = useState(false);
   const [isApplyingPreset, setIsApplyingPreset] = useState(false);
   const [presetMessage, setPresetMessage] = useState<{
-    type: 'success' | 'error';
+    type: StatusType;
     text: string;
   } | null>(null);
   const [presetHistories, setPresetHistories] = useState<PresetHistory[]>([]);
@@ -132,11 +133,11 @@ export function useQuickActionsDebugBridge() {
       } = await supabase.auth.getSession();
       const userId = session?.user?.id || 'anonymous-debug-user';
       await applyPreset(presetId, userId, refetch);
-      setPresetMessage({ type: 'success', text: '프리셋이 적용되었습니다.' });
+      setPresetMessage({ type: STATUS.SUCCESS, text: '프리셋이 적용되었습니다.' });
       setPresetHistories(getPresetHistories());
     } catch (err) {
       setPresetMessage({
-        type: 'error',
+        type: STATUS.ERROR,
         text: `프리셋 적용 실패: ${err instanceof Error ? err.message : '알 수 없는 오류'}`,
       });
       setPresetHistories(getPresetHistories());
@@ -148,7 +149,7 @@ export function useQuickActionsDebugBridge() {
   const handleClearHistory = () => {
     clearPresetHistory();
     setPresetHistories([]);
-    setPresetMessage({ type: 'success', text: '히스토리가 삭제되었습니다.' });
+    setPresetMessage({ type: STATUS.SUCCESS, text: '히스토리가 삭제되었습니다.' });
   };
 
   const handleVerifySync = async () => {
@@ -160,15 +161,15 @@ export function useQuickActionsDebugBridge() {
         data: { session },
       } = await supabase.auth.getSession();
       if (!session?.user) {
-        setPresetMessage({ type: 'error', text: '로그인이 필요합니다.' });
+        setPresetMessage({ type: STATUS.ERROR, text: '로그인이 필요합니다.' });
         return;
       }
       const result = await verifySync(session.user.id);
       setSyncResult(result);
-      setPresetMessage({ type: 'success', text: '동기화 검증이 완료되었습니다.' });
+      setPresetMessage({ type: STATUS.SUCCESS, text: '동기화 검증이 완료되었습니다.' });
     } catch (err) {
       setPresetMessage({
-        type: 'error',
+        type: STATUS.ERROR,
         text: `동기화 검증 실패: ${err instanceof Error ? err.message : '알 수 없는 오류'}`,
       });
     } finally {
@@ -179,13 +180,13 @@ export function useQuickActionsDebugBridge() {
   const handleSaveCustomPreset = (preset: CustomPreset) => {
     saveCustomPreset(preset);
     setCustomPresets(getCustomPresets());
-    setPresetMessage({ type: 'success', text: `프리셋 "${preset.name}"이 저장되었습니다.` });
+    setPresetMessage({ type: STATUS.SUCCESS, text: `프리셋 "${preset.name}"이 저장되었습니다.` });
   };
 
   const handleDeleteCustomPreset = (id: string) => {
     deleteCustomPreset(id);
     setCustomPresets(getCustomPresets());
-    setPresetMessage({ type: 'success', text: '프리셋이 삭제되었습니다.' });
+    setPresetMessage({ type: STATUS.SUCCESS, text: '프리셋이 삭제되었습니다.' });
   };
 
   const handleExportPresets = () => exportCustomPresets();

@@ -2,6 +2,7 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/react';
 import DebugPanel from '../DebugPanel';
 import { useDebugPanel } from '../../hooks/useDebugPanel';
+import { type DebugState } from '../../stores/useDebugStore';
 
 // Mock dependencies
 vi.mock('../../hooks/useDebugPanel', () => ({
@@ -51,7 +52,7 @@ describe('DebugPanel', () => {
       activeTab: 'quick',
       toggleDebugPanel: mockToggleDebugPanel,
       setActiveTab: mockSetActiveTab,
-    } as any);
+    } as unknown as ReturnType<typeof useDebugPanel>);
   });
 
   it('should not render when isDebugPanelOpen is false', () => {
@@ -60,7 +61,7 @@ describe('DebugPanel', () => {
       activeTab: 'quick',
       toggleDebugPanel: mockToggleDebugPanel,
       setActiveTab: mockSetActiveTab,
-    } as any);
+    } as unknown as ReturnType<typeof useDebugPanel>);
 
     const { container } = render(<DebugPanel />);
     expect(container.firstChild).toBeNull();
@@ -136,7 +137,7 @@ describe('DebugPanel', () => {
       activeTab: 'tier',
       toggleDebugPanel: mockToggleDebugPanel,
       setActiveTab: mockSetActiveTab,
-    } as any);
+    } as unknown as ReturnType<typeof useDebugPanel>);
 
     render(<DebugPanel />);
     expect(screen.getByText('Tier System')).toBeInTheDocument();

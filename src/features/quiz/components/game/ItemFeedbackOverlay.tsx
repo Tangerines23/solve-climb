@@ -1,14 +1,18 @@
 import { useState, useImperativeHandle, forwardRef } from 'react';
 import './ItemFeedbackOverlay.css';
-
+import { STATUS, StatusType } from '@/constants/status';
 import { ItemFeedbackRef } from '../../types/feedback';
 
 export const ItemFeedbackOverlay = forwardRef<ItemFeedbackRef, object>((_, ref) => {
   const [isVisible, setIsVisible] = useState(false);
-  const [content, setContent] = useState({ text: '', subText: '', type: 'success' });
+  const [content, setContent] = useState({
+    text: '',
+    subText: '',
+    type: STATUS.SUCCESS as StatusType | 'info',
+  });
 
   useImperativeHandle(ref, () => ({
-    show(text: string, subText: string = '', type: 'success' | 'info' = 'success') {
+    show(text: string, subText: string = '', type: StatusType | 'info' = STATUS.SUCCESS) {
       setContent({ text, subText, type });
       setIsVisible(true);
       setTimeout(() => setIsVisible(false), 2000);

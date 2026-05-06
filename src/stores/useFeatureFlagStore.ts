@@ -11,7 +11,7 @@ import { zustandStorage } from '../services';
 
 import { FeatureFlags } from '../types/config';
 
-interface FeatureFlagState {
+export interface FeatureFlagState {
   flags: FeatureFlags;
   setFlag: (key: keyof FeatureFlags, value: boolean) => void;
   resetFlags: () => void;

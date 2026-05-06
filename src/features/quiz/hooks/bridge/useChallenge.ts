@@ -1,8 +1,8 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useQuizStore } from '../../stores/useQuizStore';
-import { useLevelProgressStore } from '../../stores/useLevelProgressStore';
-import { useFeatureFlagStore } from '@/stores/useFeatureFlagStore';
+import { useQuizStore, type QuizState } from '../../stores/useQuizStore';
+import { useLevelProgressStore, type LevelProgressState } from '../../stores/useLevelProgressStore';
+import { useFeatureFlagStore, type FeatureFlagState } from '@/stores/useFeatureFlagStore';
 import { getTodayChallenge } from '../../utils/challenge';
 import type { TodayChallenge } from '../../types/challenge';
 import { urls } from '@/utils/navigation';
@@ -10,21 +10,21 @@ import { Category, World, GameMode } from '../../types/quiz';
 
 export function useChallenge() {
   const navigate = useNavigate();
-  const setCategoryTopic = useQuizStore((state: any) => state.setCategoryTopic);
-  const setTimeLimit = useQuizStore((state: any) => state.setTimeLimit);
-  const progressMap = useLevelProgressStore((state: any) => state.progress);
-  const flags = useFeatureFlagStore((state: any) => state.flags);
+  const setCategoryTopic = useQuizStore((state: QuizState) => state.setCategoryTopic);
+  const setTimeLimit = useQuizStore((state: QuizState) => state.setTimeLimit);
+  const progressMap = useLevelProgressStore((state: LevelProgressState) => state.progress);
+  const flags = useFeatureFlagStore((state: FeatureFlagState) => state.flags);
 
   const [challenge, setChallenge] = useState<TodayChallenge | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     getTodayChallenge(progressMap, flags)
-      .then((challengeData: any) => {
+      .then((challengeData: TodayChallenge | null) => {
         setChallenge(challengeData);
         setLoading(false);
       })
-      .catch((error: any) => {
+      .catch((error: Error) => {
         console.error('Failed to load today challenge:', error);
         setLoading(false);
       });

@@ -8,6 +8,7 @@ import {
   type TierLevel,
 } from '../../constants/tiers';
 import { calculateScoreForTier } from '../../utils/tierUtils';
+import { STATUS, type StatusType } from '@/constants/status';
 
 export function useTierDebugBridge() {
   const { stats, refetch } = useMyPageStats();
@@ -20,7 +21,7 @@ export function useTierDebugBridge() {
     currentCycleScore: number;
   } | null>(null);
   const [isUpdating, setIsUpdating] = useState(false);
-  const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
+  const [message, setMessage] = useState<{ type: StatusType; text: string } | null>(null);
 
   // 티어 업그레이드 시뮬레이션 상태
   const [previousTierLevel, setPreviousTierLevel] = useState<TierLevel>(0);
@@ -62,7 +63,7 @@ export function useTierDebugBridge() {
         data: { session },
       } = await supabase.auth.getSession();
       if (!session?.user) {
-        setMessage({ type: 'error', text: '로그인이 필요합니다.' });
+        setMessage({ type: STATUS.ERROR, text: '로그인이 필요합니다.' });
         return;
       }
       const user = session.user;
@@ -73,15 +74,15 @@ export function useTierDebugBridge() {
       });
 
       if (error) {
-        setMessage({ type: 'error', text: `티어 변경 실패: ${error.message}` });
+        setMessage({ type: STATUS.ERROR, text: `티어 변경 실패: ${error.message}` });
         return;
       }
 
-      setMessage({ type: 'success', text: '티어가 변경되었습니다.' });
+      setMessage({ type: STATUS.SUCCESS, text: '티어가 변경되었습니다.' });
       await refetch();
     } catch (err) {
       setMessage({
-        type: 'error',
+        type: STATUS.ERROR,
         text: `오류: ${err instanceof Error ? err.message : '알 수 없는 오류'}`,
       });
     } finally {
@@ -94,7 +95,7 @@ export function useTierDebugBridge() {
 
     const numValue = parseInt(masteryInput, 10);
     if (isNaN(numValue) || numValue < 0) {
-      setMessage({ type: 'error', text: '유효한 점수를 입력하세요.' });
+      setMessage({ type: STATUS.ERROR, text: '유효한 점수를 입력하세요.' });
       return;
     }
 
@@ -106,7 +107,7 @@ export function useTierDebugBridge() {
         data: { session },
       } = await supabase.auth.getSession();
       if (!session?.user) {
-        setMessage({ type: 'error', text: '로그인이 필요합니다.' });
+        setMessage({ type: STATUS.ERROR, text: '로그인이 필요합니다.' });
         return;
       }
       const user = session.user;
@@ -117,15 +118,15 @@ export function useTierDebugBridge() {
       });
 
       if (error) {
-        setMessage({ type: 'error', text: `점수 설정 실패: ${error.message}` });
+        setMessage({ type: STATUS.ERROR, text: `점수 설정 실패: ${error.message}` });
         return;
       }
 
-      setMessage({ type: 'success', text: '마스터리 점수가 설정되었습니다.' });
+      setMessage({ type: STATUS.SUCCESS, text: '마스터리 점수가 설정되었습니다.' });
       await refetch();
     } catch (err) {
       setMessage({
-        type: 'error',
+        type: STATUS.ERROR,
         text: `오류: ${err instanceof Error ? err.message : '알 수 없는 오류'}`,
       });
     } finally {
@@ -159,7 +160,7 @@ export function useTierDebugBridge() {
       setShowUpgradeModal(true);
     } catch (err) {
       setMessage({
-        type: 'error',
+        type: STATUS.ERROR,
         text: `점수 계산 실패: ${err instanceof Error ? err.message : '알 수 없는 오류'}`,
       });
     }

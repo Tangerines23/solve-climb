@@ -4,13 +4,14 @@ import { useMyPageStats, type MyPageStats } from './useMyPageStats';
 import { useUserStore } from '../stores/useUserStore';
 import { storageService, STORAGE_KEYS } from '../services';
 import type { DebugSnapshot } from '../types/storage';
-import { STATUS_TYPES, UI_MESSAGES } from '../constants/ui';
+import { STATUS, type StatusType } from '../constants/status';
+import { UI_MESSAGES } from '../constants/ui';
 import { APP_CONFIG } from '../config/app';
 
 export interface DataResetDebugBridge {
   stats: MyPageStats | null;
   isResetting: boolean;
-  message: { type: string; text: string } | null;
+  message: { type: StatusType; text: string } | null;
   isDeleting: boolean;
   isResettingProgress: boolean;
   executeResetProfile: (resetType: 'all' | 'score' | 'minerals' | 'tier') => Promise<void>;
@@ -22,7 +23,7 @@ export interface DataResetDebugBridge {
   executeDeleteAll: () => Promise<void>;
   executeDeleteByLevel: (level: number) => Promise<void>;
   executeResetLevelProgress: (category: string, subject: string) => Promise<void>;
-  setMessage: (message: { type: string; text: string } | null) => void;
+  setMessage: (message: { type: StatusType; text: string } | null) => void;
   getAvailableCategories: () => { id: string; name: string }[];
   getSubjectsForCategory: (category: string) => string[];
 }
@@ -31,7 +32,7 @@ export function useDataResetDebugBridge(): DataResetDebugBridge {
   const { stats, refetch } = useMyPageStats();
   const { fetchUserData } = useUserStore();
   const [isResetting, setIsResetting] = useState(false);
-  const [message, setMessage] = useState<{ type: string; text: string } | null>(null);
+  const [message, setMessage] = useState<{ type: StatusType; text: string } | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
   const [isResettingProgress, setIsResettingProgress] = useState(false);
 
@@ -44,7 +45,7 @@ export function useDataResetDebugBridge(): DataResetDebugBridge {
         data: { session },
       } = await supabase.auth.getSession();
       if (!session?.user) {
-        setMessage({ type: STATUS_TYPES.ERROR, text: UI_MESSAGES.LOGIN_REQUIRED });
+        setMessage({ type: STATUS.ERROR, text: UI_MESSAGES.LOGIN_REQUIRED });
         return;
       }
       const user = session.user;
@@ -56,11 +57,11 @@ export function useDataResetDebugBridge(): DataResetDebugBridge {
 
       if (error) throw error;
 
-      setMessage({ type: STATUS_TYPES.SUCCESS, text: '프로필이 초기화되었습니다.' });
+      setMessage({ type: STATUS.SUCCESS, text: '프로필이 초기화되었습니다.' });
       await Promise.all([refetch(), fetchUserData()]);
     } catch (err) {
       setMessage({
-        type: STATUS_TYPES.ERROR,
+        type: STATUS.ERROR,
         text: `초기화 실패: ${err instanceof Error ? err.message : '알 수 없는 오류'}`,
       });
     } finally {
@@ -86,10 +87,10 @@ export function useDataResetDebugBridge(): DataResetDebugBridge {
       document.body.removeChild(link);
       URL.revokeObjectURL(url);
 
-      setMessage({ type: STATUS_TYPES.SUCCESS, text: '데이터가 내보내졌습니다.' });
+      setMessage({ type: STATUS.SUCCESS, text: '데이터가 내보내졌습니다.' });
     } catch (err) {
       setMessage({
-        type: STATUS_TYPES.ERROR,
+        type: STATUS.ERROR,
         text: `내보내기 실패: ${err instanceof Error ? err.message : '알 수 없는 오류'}`,
       });
     }
@@ -112,7 +113,7 @@ export function useDataResetDebugBridge(): DataResetDebugBridge {
           const data = JSON.parse(event.target?.result as string);
 
           if (!data.stats) {
-            setMessage({ type: STATUS_TYPES.ERROR, text: '유효하지 않은 데이터 형식입니다.' });
+            setMessage({ type: STATUS.ERROR, text: '유효하지 않은 데이터 형식입니다.' });
             setIsResetting(false);
             return;
           }
@@ -121,7 +122,7 @@ export function useDataResetDebugBridge(): DataResetDebugBridge {
             data: { session },
           } = await supabase.auth.getSession();
           if (!session?.user) {
-            setMessage({ type: STATUS_TYPES.ERROR, text: UI_MESSAGES.LOGIN_REQUIRED });
+            setMessage({ type: STATUS.ERROR, text: UI_MESSAGES.LOGIN_REQUIRED });
             setIsResetting(false);
             return;
           }
@@ -154,14 +155,14 @@ export function useDataResetDebugBridge(): DataResetDebugBridge {
             const errorMessages = errors
               .map((e) => (e.status === 'rejected' ? e.reason?.message || '알 수 없는 오류' : ''))
               .join(', ');
-            setMessage({ type: 'error', text: `일부 데이터 적용 실패: ${errorMessages}` });
+            setMessage({ type: STATUS.ERROR, text: `일부 데이터 적용 실패: ${errorMessages}` });
           } else {
-            setMessage({ type: STATUS_TYPES.SUCCESS, text: '데이터가 가져와져 적용되었습니다.' });
+            setMessage({ type: STATUS.SUCCESS, text: '데이터가 가져와져 적용되었습니다.' });
             await Promise.all([refetch(), fetchUserData()]);
           }
         } catch (err) {
           setMessage({
-            type: STATUS_TYPES.ERROR,
+            type: STATUS.ERROR,
             text: `가져오기 실패: ${err instanceof Error ? err.message : '알 수 없는 오류'}`,
           });
         } finally {
@@ -181,10 +182,10 @@ export function useDataResetDebugBridge(): DataResetDebugBridge {
       };
 
       storageService.set(STORAGE_KEYS.DEBUG_SNAPSHOT, snapshot);
-      setMessage({ type: STATUS_TYPES.SUCCESS, text: '스냅샷이 저장되었습니다.' });
+      setMessage({ type: STATUS.SUCCESS, text: '스냅샷이 저장되었습니다.' });
     } catch (err) {
       setMessage({
-        type: STATUS_TYPES.ERROR,
+        type: STATUS.ERROR,
         text: `스냅샷 저장 실패: ${err instanceof Error ? err.message : '알 수 없는 오류'}`,
       });
     }
@@ -197,13 +198,13 @@ export function useDataResetDebugBridge(): DataResetDebugBridge {
 
       const snapshot = storageService.get<DebugSnapshot>(STORAGE_KEYS.DEBUG_SNAPSHOT);
       if (!snapshot) {
-        setMessage({ type: STATUS_TYPES.ERROR, text: '저장된 스냅샷이 없습니다.' });
+        setMessage({ type: STATUS.ERROR, text: '저장된 스냅샷이 없습니다.' });
         setIsResetting(false);
         return;
       }
 
       if (!snapshot.stats) {
-        setMessage({ type: STATUS_TYPES.ERROR, text: '유효하지 않은 스냅샷 형식입니다.' });
+        setMessage({ type: STATUS.ERROR, text: '유효하지 않은 스냅샷 형식입니다.' });
         setIsResetting(false);
         return;
       }
@@ -212,7 +213,7 @@ export function useDataResetDebugBridge(): DataResetDebugBridge {
         data: { session },
       } = await supabase.auth.getSession();
       if (!session?.user) {
-        setMessage({ type: STATUS_TYPES.ERROR, text: UI_MESSAGES.LOGIN_REQUIRED });
+        setMessage({ type: STATUS.ERROR, text: UI_MESSAGES.LOGIN_REQUIRED });
         setIsResetting(false);
         return;
       }
@@ -248,14 +249,14 @@ export function useDataResetDebugBridge(): DataResetDebugBridge {
         const errorMessages = errors
           .map((e) => (e.status === 'rejected' ? e.reason?.message || '알 수 없는 오류' : ''))
           .join(', ');
-        setMessage({ type: STATUS_TYPES.ERROR, text: `일부 데이터 복원 실패: ${errorMessages}` });
+        setMessage({ type: STATUS.ERROR, text: `일부 데이터 복원 실패: ${errorMessages}` });
       } else {
-        setMessage({ type: STATUS_TYPES.SUCCESS, text: '스냅샷이 복원되었습니다.' });
+        setMessage({ type: STATUS.SUCCESS, text: '스냅샷이 복원되었습니다.' });
         await Promise.all([refetch(), fetchUserData()]);
       }
     } catch (err) {
       setMessage({
-        type: 'error',
+        type: STATUS.ERROR,
         text: `스냅샷 복원 실패: ${err instanceof Error ? err.message : '알 수 없는 오류'}`,
       });
     } finally {
@@ -272,7 +273,7 @@ export function useDataResetDebugBridge(): DataResetDebugBridge {
         data: { session },
       } = await supabase.auth.getSession();
       if (!session?.user) {
-        setMessage({ type: STATUS_TYPES.ERROR, text: UI_MESSAGES.LOGIN_REQUIRED });
+        setMessage({ type: STATUS.ERROR, text: UI_MESSAGES.LOGIN_REQUIRED });
         return;
       }
       const user = session.user;
@@ -285,11 +286,11 @@ export function useDataResetDebugBridge(): DataResetDebugBridge {
       if (error) throw error;
 
       const deletedCount = (data as { deleted_sessions?: number })?.deleted_sessions || 0;
-      setMessage({ type: 'success', text: `${deletedCount}개의 게임 기록이 삭제되었습니다.` });
+      setMessage({ type: STATUS.SUCCESS, text: `${deletedCount}개의 게임 기록이 삭제되었습니다.` });
       await Promise.all([refetch(), fetchUserData()]);
     } catch (err) {
       setMessage({
-        type: 'error',
+        type: STATUS.ERROR,
         text: `삭제 실패: ${err instanceof Error ? err.message : '알 수 없는 오류'}`,
       });
     } finally {
@@ -306,7 +307,7 @@ export function useDataResetDebugBridge(): DataResetDebugBridge {
         data: { session },
       } = await supabase.auth.getSession();
       if (!session?.user) {
-        setMessage({ type: STATUS_TYPES.ERROR, text: UI_MESSAGES.LOGIN_REQUIRED });
+        setMessage({ type: STATUS.ERROR, text: UI_MESSAGES.LOGIN_REQUIRED });
         return;
       }
       const user = session.user;
@@ -317,11 +318,11 @@ export function useDataResetDebugBridge(): DataResetDebugBridge {
 
       if (error) throw error;
 
-      setMessage({ type: 'success', text: '모든 게임 기록이 삭제되었습니다.' });
+      setMessage({ type: STATUS.SUCCESS, text: '모든 게임 기록이 삭제되었습니다.' });
       await Promise.all([refetch(), fetchUserData()]);
     } catch (err) {
       setMessage({
-        type: 'error',
+        type: STATUS.ERROR,
         text: `삭제 실패: ${err instanceof Error ? err.message : '알 수 없는 오류'}`,
       });
     } finally {
@@ -338,7 +339,7 @@ export function useDataResetDebugBridge(): DataResetDebugBridge {
         data: { session },
       } = await supabase.auth.getSession();
       if (!session?.user) {
-        setMessage({ type: STATUS_TYPES.ERROR, text: UI_MESSAGES.LOGIN_REQUIRED });
+        setMessage({ type: STATUS.ERROR, text: UI_MESSAGES.LOGIN_REQUIRED });
         return;
       }
       const user = session.user;
@@ -350,11 +351,11 @@ export function useDataResetDebugBridge(): DataResetDebugBridge {
 
       if (error) throw error;
 
-      setMessage({ type: 'success', text: `레벨 ${level}의 게임 기록이 삭제되었습니다.` });
+      setMessage({ type: STATUS.SUCCESS, text: `레벨 ${level}의 게임 기록이 삭제되었습니다.` });
       await Promise.all([refetch(), fetchUserData()]);
     } catch (err) {
       setMessage({
-        type: 'error',
+        type: STATUS.ERROR,
         text: `삭제 실패: ${err instanceof Error ? err.message : '알 수 없는 오류'}`,
       });
     } finally {
@@ -371,7 +372,7 @@ export function useDataResetDebugBridge(): DataResetDebugBridge {
         data: { session },
       } = await supabase.auth.getSession();
       if (!session?.user) {
-        setMessage({ type: STATUS_TYPES.ERROR, text: UI_MESSAGES.LOGIN_REQUIRED });
+        setMessage({ type: STATUS.ERROR, text: UI_MESSAGES.LOGIN_REQUIRED });
         return;
       }
       const user = session.user;
@@ -384,11 +385,11 @@ export function useDataResetDebugBridge(): DataResetDebugBridge {
 
       if (error) throw error;
 
-      setMessage({ type: 'success', text: '레벨 진행도가 초기화되었습니다.' });
+      setMessage({ type: STATUS.SUCCESS, text: '레벨 진행도가 초기화되었습니다.' });
       await Promise.all([refetch(), fetchUserData()]);
     } catch (err) {
       setMessage({
-        type: STATUS_TYPES.ERROR,
+        type: STATUS.ERROR,
         text: `초기화 실패: ${err instanceof Error ? err.message : '알 수 없는 오류'}`,
       });
     } finally {

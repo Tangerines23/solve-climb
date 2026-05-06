@@ -1,6 +1,12 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { useAuthStore } from '../useAuthStore';
 import { supabase } from '../../utils/supabaseClient';
+import { createAuthSessionMock } from '../../utils/__tests__/supabaseMockUtils';
+
+// Mock types
+declare global {
+  var authCallback: ((event: any, session: any) => void) | undefined;
+}
 
 // Mock dependencies
 vi.mock('../../utils/supabaseClient', () => ({
@@ -11,7 +17,7 @@ vi.mock('../../utils/supabaseClient', () => ({
       signOut: vi.fn(),
       onAuthStateChange: vi.fn((cb) => {
         // Store the callback so we can trigger it in tests
-        (global as any).authCallback = cb;
+        global.authCallback = cb;
         return {
           data: { subscription: { unsubscribe: vi.fn() } },
         };
@@ -55,15 +61,12 @@ describe('useAuthStore', () => {
   });
 
   it('should initialize and check session', async () => {
-    vi.mocked(supabase.auth.getSession).mockResolvedValue({
-      data: {
-        session: {
-          user: { id: '00000000-0000-0000-0000-000000000003' },
-          access_token: 'token',
-        },
-      },
-      error: null,
-    } as never);
+    vi.mocked(supabase.auth.getSession).mockResolvedValue(
+      createAuthSessionMock({
+        user: { id: '00000000-0000-0000-0000-000000000003' },
+        access_token: 'token',
+      })
+    );
 
     await useAuthStore.getState().initialize();
 
@@ -71,21 +74,14 @@ describe('useAuthStore', () => {
   });
 
   it('should sign in anonymously when no session', async () => {
-    vi.mocked(supabase.auth.getSession).mockResolvedValue({
-      data: { session: null },
-      error: null,
-    } as never);
+    vi.mocked(supabase.auth.getSession).mockResolvedValue(createAuthSessionMock(null));
 
-    vi.mocked(supabase.auth.signInAnonymously).mockResolvedValue({
-      data: {
-        session: {
-          user: { id: '00000000-0000-0000-0000-000000000004' },
-          access_token: 'token',
-        },
+    vi.mocked(supabase.auth.signInAnonymously).mockResolvedValue(
+      createAuthSessionMock({
         user: { id: '00000000-0000-0000-0000-000000000004' },
-      },
-      error: null,
-    } as never);
+        access_token: 'token',
+      })
+    );
 
     await useAuthStore.getState().initialize();
 
@@ -93,16 +89,12 @@ describe('useAuthStore', () => {
   });
 
   it('should handle manual anonymous sign-in', async () => {
-    vi.mocked(supabase.auth.signInAnonymously).mockResolvedValue({
-      data: {
-        session: {
-          user: { id: '00000000-0000-0000-0000-000000000004' },
-          access_token: 'token',
-        },
+    vi.mocked(supabase.auth.signInAnonymously).mockResolvedValue(
+      createAuthSessionMock({
         user: { id: '00000000-0000-0000-0000-000000000004' },
-      },
-      error: null,
-    } as never);
+        access_token: 'token',
+      })
+    );
 
     await useAuthStore.getState().signInAnonymously();
 
@@ -114,7 +106,7 @@ describe('useAuthStore', () => {
   it('should sign out', async () => {
     vi.mocked(supabase.auth.signOut).mockResolvedValue({
       error: null,
-    } as never);
+    });
 
     await useAuthStore.getState().signOut();
 
@@ -130,10 +122,7 @@ describe('useAuthStore', () => {
       access_token: 'token',
     };
 
-    vi.mocked(supabase.auth.getSession).mockResolvedValue({
-      data: { session: mockSession },
-      error: null,
-    } as never);
+    vi.mocked(supabase.auth.getSession).mockResolvedValue(createAuthSessionMock(mockSession));
 
     await useAuthStore.getState().initialize();
 
@@ -142,15 +131,11 @@ describe('useAuthStore', () => {
   });
 
   it('should handle anonymous sign-in error during initialize', async () => {
-    vi.mocked(supabase.auth.getSession).mockResolvedValue({
-      data: { session: null },
-      error: null,
-    } as never);
+    vi.mocked(supabase.auth.getSession).mockResolvedValue(createAuthSessionMock(null));
 
-    vi.mocked(supabase.auth.signInAnonymously).mockResolvedValue({
-      data: { session: null, user: null },
-      error: { message: 'Sign-in failed' },
-    } as never);
+    vi.mocked(supabase.auth.signInAnonymously).mockResolvedValue(
+      createAuthSessionMock(null, { message: 'Sign-in failed' })
+    );
 
     await useAuthStore.getState().initialize();
 
@@ -161,10 +146,9 @@ describe('useAuthStore', () => {
   });
 
   it('should handle anonymous sign-in error during manual sign-in', async () => {
-    vi.mocked(supabase.auth.signInAnonymously).mockResolvedValue({
-      data: { session: null, user: null },
-      error: { message: 'Sign-in failed' },
-    } as never);
+    vi.mocked(supabase.auth.signInAnonymously).mockResolvedValue(
+      createAuthSessionMock(null, { message: 'Sign-in failed' })
+    );
 
     await useAuthStore.getState().signInAnonymously();
 
@@ -175,21 +159,14 @@ describe('useAuthStore', () => {
   });
 
   it('should handle isLoading state during initialize', async () => {
-    vi.mocked(supabase.auth.getSession).mockResolvedValue({
-      data: { session: null },
-      error: null,
-    } as never);
+    vi.mocked(supabase.auth.getSession).mockResolvedValue(createAuthSessionMock(null));
 
-    vi.mocked(supabase.auth.signInAnonymously).mockResolvedValue({
-      data: {
-        session: {
-          user: { id: '00000000-0000-0000-0000-000000000004' },
-          access_token: 'token',
-        },
+    vi.mocked(supabase.auth.signInAnonymously).mockResolvedValue(
+      createAuthSessionMock({
         user: { id: '00000000-0000-0000-0000-000000000004' },
-      },
-      error: null,
-    } as never);
+        access_token: 'token',
+      })
+    );
 
     const initializePromise = useAuthStore.getState().initialize();
 
@@ -203,16 +180,12 @@ describe('useAuthStore', () => {
   });
 
   it('should handle isLoading state during signInAnonymously', async () => {
-    vi.mocked(supabase.auth.signInAnonymously).mockResolvedValue({
-      data: {
-        session: {
-          user: { id: '00000000-0000-0000-0000-000000000004' },
-          access_token: 'token',
-        },
+    vi.mocked(supabase.auth.signInAnonymously).mockResolvedValue(
+      createAuthSessionMock({
         user: { id: '00000000-0000-0000-0000-000000000004' },
-      },
-      error: null,
-    } as never);
+        access_token: 'token',
+      })
+    );
 
     const signInPromise = useAuthStore.getState().signInAnonymously();
 
@@ -232,21 +205,18 @@ describe('useAuthStore', () => {
         userId: '00000000-0000-0000-0000-000000000005',
       });
 
-      vi.mocked(supabase.auth.getSession).mockResolvedValue({
-        data: { session: null },
-        error: null,
-      } as any);
+      vi.mocked(supabase.auth.getSession).mockResolvedValue(createAuthSessionMock(null));
 
       await useAuthStore.getState().initialize();
 
       const { user } = useAuthStore.getState();
       expect(user?.id).toBe('00000000-0000-0000-0000-000000000005');
-      expect((user as any).is_anonymous).toBe(true);
+      expect(user?.is_anonymous).toBe(true);
     });
 
     it('should handle auth state change events', async () => {
       await useAuthStore.getState().initialize();
-      const callback = (global as any).authCallback;
+      const callback = global.authCallback;
       expect(callback).toBeDefined();
 
       // Trigger signed in
@@ -267,13 +237,14 @@ describe('useAuthStore', () => {
 
       // Setup: existing anonymous session
       const anonId = '00000000-0000-0000-0000-000000000007';
+      const mockAuth = createAuthSessionMock({ user: { id: anonId, is_anonymous: true } });
       useAuthStore.setState({
-        session: { user: { id: anonId, is_anonymous: true } } as any,
-        user: { id: anonId, is_anonymous: true } as any,
+        session: mockAuth.data.session,
+        user: mockAuth.data.user,
       });
 
       await useAuthStore.getState().initialize();
-      const callback = (global as any).authCallback;
+      const callback = global.authCallback;
 
       // Trigger INITIAL_SESSION with null session
       callback('INITIAL_SESSION', null);
@@ -293,7 +264,7 @@ describe('useAuthStore', () => {
     it('should synchronize analytics user on auth change', async () => {
       const { analytics } = await import('@/services/analytics');
       await useAuthStore.getState().initialize();
-      const callback = (global as any).authCallback;
+      const callback = global.authCallback;
 
       const mockUser = {
         id: '00000000-0000-0000-0000-000000000008',

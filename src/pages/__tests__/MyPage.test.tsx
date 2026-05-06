@@ -259,7 +259,7 @@ describe('MyPage', () => {
     mockRefetch.mockReturnValue(Promise.resolve());
 
     // Reset default hook behavior
-    (useMyPageStats as any).mockReturnValue({
+    vi.mocked(useMyPageStats).mockReturnValue({
       stats: {
         totalSolved: 10,
         totalMasteryScore: 1000,
@@ -270,7 +270,7 @@ describe('MyPage', () => {
       loading: false,
       error: null,
       refetch: mockRefetch,
-    });
+    } as any);
   });
 
   it('', async () => {
@@ -353,13 +353,13 @@ describe('MyPage', () => {
   });
 
   it('', async () => {
-    (useMyPageStats as any).mockReturnValue({
+    vi.mocked(useMyPageStats).mockReturnValue({
       stats: null,
       session: null,
       loading: false,
       error: null,
       refetch: mockRefetch,
-    });
+    } as any);
 
     await act(async () => {
       render(
@@ -372,13 +372,13 @@ describe('MyPage', () => {
   });
 
   it('should handle anonymous login', async () => {
-    (useMyPageStats as any).mockReturnValue({
+    vi.mocked(useMyPageStats).mockReturnValue({
       stats: null,
       session: null,
       loading: false,
       error: null,
       refetch: mockRefetch,
-    });
+    } as any);
 
     await act(async () => {
       render(
@@ -398,13 +398,13 @@ describe('MyPage', () => {
   });
 
   it('should handle google login', async () => {
-    (useMyPageStats as any).mockReturnValue({
+    vi.mocked(useMyPageStats).mockReturnValue({
       stats: null,
       session: null,
       loading: false,
       error: null,
       refetch: mockRefetch,
-    });
+    } as any);
 
     await act(async () => {
       render(
@@ -424,7 +424,7 @@ describe('MyPage', () => {
   });
 
   it('should handle promotion flow', async () => {
-    (useMyPageStats as any).mockReturnValue({
+    vi.mocked(useMyPageStats).mockReturnValue({
       stats: {
         totalSolved: 10,
         totalMasteryScore: 1000,
@@ -435,7 +435,7 @@ describe('MyPage', () => {
       loading: false,
       error: null,
       refetch: mockRefetch,
-    });
+    } as any);
 
     await act(async () => {
       render(
@@ -500,7 +500,7 @@ describe('MyPage', () => {
   });
 
   it('should handle data reset error', async () => {
-    (dataResetUtils.resetAllData as any).mockRejectedValueOnce(new Error('Reset failed'));
+    vi.mocked(dataResetUtils.resetAllData).mockRejectedValueOnce(new Error('Reset failed'));
     await act(async () => {
       render(
         <BrowserRouter>
@@ -519,7 +519,7 @@ describe('MyPage', () => {
   });
 
   it('should handle withdrawal error', async () => {
-    (withdrawUtils.withdrawAccount as any).mockRejectedValueOnce(new Error('Withdraw failed'));
+    vi.mocked(withdrawUtils.withdrawAccount).mockRejectedValueOnce(new Error('Withdraw failed'));
     await act(async () => {
       render(
         <BrowserRouter>
@@ -559,13 +559,13 @@ describe('MyPage', () => {
   });
 
   it('', async () => {
-    (useMyPageStats as any).mockReturnValue({
+    vi.mocked(useMyPageStats).mockReturnValue({
       stats: null,
       session: { user: { id: 'test' } },
       loading: false,
       error: 'Failed to load stats',
       refetch: mockRefetch,
-    });
+    } as any);
 
     await act(async () => {
       render(
@@ -641,7 +641,7 @@ describe('MyPage', () => {
   });
 
   it('should close Promotion Modal', async () => {
-    (useMyPageStats as any).mockReturnValue({
+    vi.mocked(useMyPageStats).mockReturnValue({
       stats: {
         totalSolved: 10,
         totalMasteryScore: 1000,
@@ -652,7 +652,7 @@ describe('MyPage', () => {
       loading: false,
       error: null,
       refetch: mockRefetch,
-    });
+    } as any);
 
     await act(async () => {
       render(
@@ -682,13 +682,13 @@ describe('MyPage', () => {
   });
 
   it('should handle anonymous login error', async () => {
-    (useMyPageStats as any).mockReturnValue({
+    vi.mocked(useMyPageStats).mockReturnValue({
       stats: null,
       session: null,
       loading: false,
       error: null,
       refetch: mockRefetch,
-    });
+    } as any);
 
     // Extract setProfile from store mock to force error
     mockStoreState.setProfile.mockImplementationOnce(() => {
@@ -743,7 +743,7 @@ describe('MyPage', () => {
   });
 
   it('should handle Promotion Modal actions', async () => {
-    (useMyPageStats as any).mockReturnValue({
+    vi.mocked(useMyPageStats).mockReturnValue({
       stats: {
         totalSolved: 10,
         totalMasteryScore: 1000,
@@ -755,7 +755,7 @@ describe('MyPage', () => {
       loading: false,
       error: null,
       refetch: mockRefetch,
-    });
+    } as any);
 
     let unmount: any;
     await act(async () => {
@@ -777,7 +777,7 @@ describe('MyPage', () => {
     unmount();
 
     // Test close vs promote branch coverage
-    (useMyPageStats as any).mockReturnValue({
+    vi.mocked(useMyPageStats).mockReturnValue({
       stats: {
         totalSolved: 10,
         totalMasteryScore: 1000,
@@ -789,7 +789,7 @@ describe('MyPage', () => {
       loading: false,
       error: null,
       refetch: mockRefetch,
-    });
+    } as any);
 
     let findByText: any;
     await act(async () => {

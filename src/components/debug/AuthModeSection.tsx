@@ -1,4 +1,5 @@
 import { useAuthModeDebugBridge } from '../../hooks/useAuthModeDebugBridge';
+import { STATUS } from '@/constants/status';
 import './AuthModeSection.css';
 
 export function AuthModeSection() {
@@ -59,7 +60,7 @@ export function AuthModeSection() {
 
           <div className="test-result-item">
             <strong>랭킹 뷰 (ranking_view):</strong>
-            <span className={testResults.ranking_view?.accessible ? 'success' : 'error'}>
+            <span className={testResults.ranking_view?.accessible ? STATUS.SUCCESS : STATUS.ERROR}>
               {testResults.ranking_view?.accessible ? '✅ 접근 가능' : '❌ 접근 불가'}
             </span>
             {(testResults.ranking_view?.data ?? 0) > 0 && (
@@ -69,7 +70,7 @@ export function AuthModeSection() {
 
           <div className="test-result-item">
             <strong>전체 프로필 (profiles):</strong>
-            <span className={testResults.profiles_all?.accessible ? 'success' : 'error'}>
+            <span className={testResults.profiles_all?.accessible ? STATUS.SUCCESS : STATUS.ERROR}>
               {testResults.profiles_all?.accessible ? '✅ 접근 가능' : '❌ 접근 불가'}
             </span>
             {testResults.profiles_all?.error && (
@@ -79,7 +80,7 @@ export function AuthModeSection() {
 
           <div className="test-result-item">
             <strong>내 프로필:</strong>
-            <span className={testResults.own_profile?.accessible ? 'success' : 'error'}>
+            <span className={testResults.own_profile?.accessible ? STATUS.SUCCESS : STATUS.ERROR}>
               {testResults.own_profile?.accessible ? '✅ 접근 가능' : '❌ 접근 불가'}
             </span>
             {(testResults.own_profile?.columns ?? 0) > 0 && (
@@ -89,14 +90,14 @@ export function AuthModeSection() {
 
           <div className="test-result-item">
             <strong>게임 설정 (game_config):</strong>
-            <span className={testResults.game_config?.accessible ? 'success' : 'error'}>
+            <span className={testResults.game_config?.accessible ? STATUS.SUCCESS : STATUS.ERROR}>
               {testResults.game_config?.accessible ? '✅ 접근 가능' : '❌ 접근 불가'}
             </span>
           </div>
 
           <div className="test-result-item">
             <strong>게임 플레이:</strong>
-            <span className={testResults.game_play?.accessible ? 'success' : 'error'}>
+            <span className={testResults.game_play?.accessible ? STATUS.SUCCESS : STATUS.ERROR}>
               {testResults.game_play?.accessible ? '✅ 가능' : '❌ 불가능'}
             </span>
             {testResults.game_play?.error && (

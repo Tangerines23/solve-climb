@@ -1,6 +1,10 @@
 import React from 'react';
-import { useItemDebugBridge } from '@/features/quiz/hooks/bridge/useItemDebugBridge';
+import {
+  useItemDebugBridge,
+  type ItemDefinition,
+} from '@/features/quiz/hooks/bridge/useItemDebugBridge';
 import { ITEM_MAP } from '@/constants/items';
+import { type InventoryItem } from '@/types/user';
 
 export const ItemSystemSection: React.FC = () => {
   const {
@@ -59,8 +63,8 @@ export const ItemSystemSection: React.FC = () => {
       </div>
 
       <div className="space-y-3 max-h-[500px] overflow-y-auto pr-2 custom-scrollbar">
-        {itemDefinitions.map((item: any) => {
-          const currentItem = inventory.find((inv: any) => inv.id === item.id);
+        {itemDefinitions.map((item: ItemDefinition) => {
+          const currentItem = inventory.find((inv: InventoryItem) => inv.id === item.id);
           const currentQuantity = currentItem?.quantity || 0;
           const inputValue = itemQuantities[item.id] ?? currentQuantity.toString();
           const meta = ITEM_MAP[item.code];

@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useStatusCard } from '../hooks/bridge/useStatusCard';
+import { STATUS, StatusType } from '@/constants/status';
 import { BaseCard } from '@/components/BaseCard';
 import './StatusCard.css';
 
@@ -9,7 +10,7 @@ interface UserStatus {
   rankChange: number;
 }
 
-type LoadingState = 'loading' | 'success' | 'error';
+type LoadingState = StatusType;
 
 export function StatusCard() {
   const { getBestScore, navigateToMyPage } = useStatusCard();
@@ -19,7 +20,7 @@ export function StatusCard() {
   useEffect(() => {
     const fetchUserData = () => {
       try {
-        setState('loading');
+        setState(STATUS.LOADING);
 
         // 로컬 데이터로 통계 계산
         getBestScore();
@@ -32,10 +33,10 @@ export function StatusCard() {
         };
 
         setStatus(userStatus);
-        setState('success');
+        setState(STATUS.SUCCESS);
       } catch (error) {
         console.error('Failed to calculate user data:', error);
-        setState('error');
+        setState(STATUS.ERROR);
       }
     };
 
@@ -52,7 +53,7 @@ export function StatusCard() {
 
   return (
     <BaseCard className={`status-card ${state}`} padding="none">
-      {state === 'loading' && (
+      {state === STATUS.LOADING && (
         <div className="status-card-skeleton">
           <div className="skeleton-line short"></div>
           <div className="skeleton-line long"></div>
@@ -60,13 +61,13 @@ export function StatusCard() {
         </div>
       )}
 
-      {state === 'error' && (
+      {state === STATUS.ERROR && (
         <div className="status-card-error">
           <p>정보를 불러올 수 없습니다</p>
         </div>
       )}
 
-      {state === 'success' && status && (
+      {state === STATUS.SUCCESS && status && (
         <>
           <div className="status-card-header">
             <span className="status-subtitle">나의 랭킹</span>

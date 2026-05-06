@@ -14,7 +14,7 @@ export interface UserProfile {
   isAdmin?: boolean; // 관리자 모드 플래그
 }
 
-interface ProfileState {
+export interface ProfileState {
   profile: UserProfile | null;
   isProfileComplete: boolean;
   isAdmin: boolean; // 관리자 모드 상태

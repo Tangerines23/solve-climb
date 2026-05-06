@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '../utils/supabaseClient';
 import { verifySync, type SyncResult } from '../utils/debugSync';
+import { STATUS } from '../constants/status';
 
 export interface BadgeDefinition {
   id: string;
@@ -14,7 +15,7 @@ export interface BadgeDebugBridge {
   userBadges: Set<string>;
   isLoading: boolean;
   isUpdating: boolean;
-  message: { type: 'success' | 'error'; text: string } | null;
+  message: { type: typeof STATUS.SUCCESS | typeof STATUS.ERROR; text: string } | null;
   isVerifyingSync: boolean;
   syncResult: SyncResult | null;
   earnedBadges: BadgeDefinition[];
@@ -29,7 +30,9 @@ export interface BadgeDebugBridge {
   handleSeedBadges: () => Promise<void>;
   handleVerifySync: () => Promise<void>;
   handleShowBadgeNotification: () => void;
-  setMessage: (message: { type: 'success' | 'error'; text: string } | null) => void;
+  setMessage: (
+    message: { type: typeof STATUS.SUCCESS | typeof STATUS.ERROR; text: string } | null
+  ) => void;
 }
 
 export function useBadgeDebugBridge(): BadgeDebugBridge {
@@ -37,7 +40,10 @@ export function useBadgeDebugBridge(): BadgeDebugBridge {
   const [userBadges, setUserBadges] = useState<Set<string>>(new Set());
   const [isLoading, setIsLoading] = useState(true);
   const [isUpdating, setIsUpdating] = useState(false);
-  const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
+  const [message, setMessage] = useState<{
+    type: typeof STATUS.SUCCESS | typeof STATUS.ERROR;
+    text: string;
+  } | null>(null);
   const [isVerifyingSync, setIsVerifyingSync] = useState(false);
   const [syncResult, setSyncResult] = useState<SyncResult | null>(null);
 
@@ -57,7 +63,7 @@ export function useBadgeDebugBridge(): BadgeDebugBridge {
         data: { session },
       } = await supabase.auth.getSession();
       if (!session?.user) {
-        setMessage({ type: 'error', text: '로그인이 필요합니다.' });
+        setMessage({ type: STATUS.ERROR, text: '로그인이 필요합니다.' });
         return;
       }
       const user = session.user;
@@ -81,7 +87,7 @@ export function useBadgeDebugBridge(): BadgeDebugBridge {
       setUserBadges(new Set(badges?.map((b) => b.badge_id) || []));
     } catch (err) {
       setMessage({
-        type: 'error',
+        type: STATUS.ERROR,
         text: `뱃지 로드 실패: ${err instanceof Error ? err.message : '알 수 없는 오류'}`,
       });
     } finally {
@@ -104,7 +110,7 @@ export function useBadgeDebugBridge(): BadgeDebugBridge {
         data: { session },
       } = await supabase.auth.getSession();
       if (!session?.user) {
-        setMessage({ type: 'error', text: '로그인이 필요합니다.' });
+        setMessage({ type: STATUS.ERROR, text: '로그인이 필요합니다.' });
         return;
       }
       const user = session.user;
@@ -126,7 +132,7 @@ export function useBadgeDebugBridge(): BadgeDebugBridge {
           next.delete(badgeId);
           return next;
         });
-        setMessage({ type: 'success', text: '뱃지가 제거되었습니다.' });
+        setMessage({ type: STATUS.SUCCESS, text: '뱃지가 제거되었습니다.' });
       } else {
         // 뱃지 부여
         const { data, error } = await supabase.rpc('debug_grant_badge', {
@@ -138,11 +144,11 @@ export function useBadgeDebugBridge(): BadgeDebugBridge {
         if (data && !data.success) throw new Error(data.message || '뱃지 부여 실패');
 
         setUserBadges((prev) => new Set([...prev, badgeId]));
-        setMessage({ type: 'success', text: '뱃지가 부여되었습니다.' });
+        setMessage({ type: STATUS.SUCCESS, text: '뱃지가 부여되었습니다.' });
       }
     } catch (err) {
       setMessage({
-        type: 'error',
+        type: STATUS.ERROR,
         text: `뱃지 조작 실패: ${err instanceof Error ? err.message : '알 수 없는 오류'}`,
       });
     } finally {
@@ -161,7 +167,7 @@ export function useBadgeDebugBridge(): BadgeDebugBridge {
         data: { session },
       } = await supabase.auth.getSession();
       if (!session?.user) {
-        setMessage({ type: 'error', text: '로그인이 필요합니다.' });
+        setMessage({ type: STATUS.ERROR, text: '로그인이 필요합니다.' });
         return;
       }
       const user = session.user;
@@ -170,10 +176,10 @@ export function useBadgeDebugBridge(): BadgeDebugBridge {
 
       if (error) throw error;
       setUserBadges(new Set());
-      setMessage({ type: 'success', text: '모든 뱃지가 제거되었습니다.' });
+      setMessage({ type: STATUS.SUCCESS, text: '모든 뱃지가 제거되었습니다.' });
     } catch (err) {
       setMessage({
-        type: 'error',
+        type: STATUS.ERROR,
         text: `뱃지 초기화 실패: ${err instanceof Error ? err.message : '알 수 없는 오류'}`,
       });
     } finally {
@@ -212,12 +218,12 @@ export function useBadgeDebugBridge(): BadgeDebugBridge {
 
       if (error) throw error;
 
-      setMessage({ type: 'success', text: '기본 뱃지 설치 완료!' });
+      setMessage({ type: STATUS.SUCCESS, text: '기본 뱃지 설치 완료!' });
       loadBadges(); // Reload list
     } catch (err) {
       console.error(err);
       setMessage({
-        type: 'error',
+        type: STATUS.ERROR,
         text: `뱃지 설치 실패: ${err instanceof Error ? err.message : '알 수 없는 오류'}`,
       });
     } finally {
@@ -236,7 +242,7 @@ export function useBadgeDebugBridge(): BadgeDebugBridge {
         data: { session },
       } = await supabase.auth.getSession();
       if (!session?.user) {
-        setMessage({ type: 'error', text: '로그인이 필요합니다.' });
+        setMessage({ type: STATUS.ERROR, text: '로그인이 필요합니다.' });
         return;
       }
       const user = session.user;
@@ -245,7 +251,7 @@ export function useBadgeDebugBridge(): BadgeDebugBridge {
       setSyncResult(result);
     } catch (err) {
       setMessage({
-        type: 'error',
+        type: STATUS.ERROR,
         text: `동기화 검증 실패: ${err instanceof Error ? err.message : '알 수 없는 오류'}`,
       });
     } finally {
