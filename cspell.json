@@ -68,7 +68,8 @@
     "TTFB",
     "Glassmorphism",
     "unstub",
-    "fkey"
+    "fkey",
+    "fetchpriority"
   ],
   "ignorePaths": [
     "node_modules",

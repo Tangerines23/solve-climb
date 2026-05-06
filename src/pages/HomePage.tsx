@@ -21,7 +21,7 @@ export function HomePage() {
           alt="전체 이용가"
           className="age-rating-icon"
           loading="eager"
-          fetchPriority="high"
+          fetchpriority="high"
         />
         <span>전체 이용가</span>
       </div>
