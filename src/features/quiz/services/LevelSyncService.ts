@@ -1,6 +1,6 @@
-import { supabase } from '../utils/supabaseClient';
-import { safeSupabaseQuery } from '../utils/debugFetch';
-import { GameMode, Tier } from '../features/quiz/types/quiz';
+import { supabase } from '../../../utils/supabaseClient';
+import { safeSupabaseQuery } from '../../../utils/debugFetch';
+import { GameMode, Tier } from '../types/quiz';
 import { UserResponse } from '@supabase/supabase-js';
 
 export interface LevelSyncResult {
@@ -27,8 +27,9 @@ export class LevelSyncService {
       sessionId: string;
     };
     tier?: Tier;
+    subject?: string;
   }): Promise<LevelSyncResult> {
-    const { category, level, mode, avgSolveTime = 0, sessionData } = params;
+    const { category, level, mode, avgSolveTime = 0, sessionData, subject = 'add' } = params;
 
     try {
       const authResult = (await safeSupabaseQuery(supabase.auth.getUser())) as UserResponse;
@@ -49,7 +50,7 @@ export class LevelSyncService {
           p_items_used: [],
           p_session_id: sessionData?.sessionId ?? null,
           p_category: category,
-          p_subject: 'add', // TODO: subject 처리 동적화 필요할 수 있음
+          p_subject: subject,
           p_level: level,
           p_avg_solve_time: avgSolveTime,
         })

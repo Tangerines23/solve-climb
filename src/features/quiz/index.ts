@@ -20,6 +20,7 @@ export { useTierDebugBridge } from './hooks/bridge/useTierDebugBridge';
 export { useGameActions } from './hooks/bridge/useGameActions';
 export { useStamina } from './hooks/core/useStamina';
 export { useStatusCard } from './hooks/bridge/useStatusCard';
+export { LevelSyncService } from './services/LevelSyncService';
 export { calculateScoreForTier } from './utils/tierUtils';
 
 // Utils

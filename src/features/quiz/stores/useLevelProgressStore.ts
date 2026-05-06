@@ -10,7 +10,7 @@ import { useToastStore } from '@/stores/useToastStore';
 import { UI_MESSAGES } from '@/constants/ui';
 import type { RealtimeChannel } from '@supabase/supabase-js';
 import { safeAccess } from '@/utils/validation';
-import { LevelSyncService } from '@/services/LevelSyncService';
+import { LevelSyncService } from '@/features/quiz/services/LevelSyncService';
 
 import { LevelRecord, UserProgress, RankingRecord } from '../types/progress';
 import { STATUS } from '@/constants/status';
