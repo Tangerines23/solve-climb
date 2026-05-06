@@ -2,6 +2,13 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { useUserStore } from '../useUserStore';
 import { supabase } from '../../utils/supabaseClient';
 import { AdService } from '../../utils/adService';
+import {
+  createAuthUserMock,
+  createAuthSessionMock,
+  createSuccessResponse,
+  createErrorResponse,
+  createChainableMock,
+} from '../../utils/__tests__/supabaseMockUtils';
 
 // Mock dependencies
 vi.mock('../../utils/supabaseClient', () => ({
@@ -70,10 +77,9 @@ describe('useUserStore', () => {
 
   describe('updateNickname', () => {
     it('should call rpc_update_nickname and refresh data', async () => {
-      const mockRpc = vi.mocked(supabase.rpc).mockResolvedValue({
-        data: { success: true, message: 'Updated' },
-        error: null,
-      } as any);
+      const mockRpc = vi
+        .mocked(supabase.rpc)
+        .mockResolvedValue(createSuccessResponse({ success: true, message: 'Updated' }));
 
       const result = await useUserStore.getState().updateNickname('NewName');
 
@@ -82,10 +88,7 @@ describe('useUserStore', () => {
     });
 
     it('should handle error when updating nickname', async () => {
-      vi.mocked(supabase.rpc).mockResolvedValue({
-        data: null,
-        error: { message: 'Error' } as any,
-      } as any);
+      vi.mocked(supabase.rpc).mockResolvedValue(createErrorResponse('Error'));
 
       const result = await useUserStore.getState().updateNickname('NewName');
       expect(result.success).toBe(false);
@@ -94,38 +97,32 @@ describe('useUserStore', () => {
 
   describe('fetchUserData', () => {
     it('should fetch profile and inventory', async () => {
-      vi.mocked(supabase.auth.getUser).mockResolvedValue({
-        data: { user: { id: 'user123', is_anonymous: false } } as any,
-        error: null,
-      });
+      vi.mocked(supabase.auth.getUser).mockResolvedValue(
+        createAuthUserMock({ id: 'user123', is_anonymous: false })
+      );
 
       const mockFrom = vi.mocked(supabase.from);
       mockFrom.mockImplementation((table: string) => {
         if (table === 'profiles') {
-          return {
-            select: vi.fn().mockReturnThis(),
-            eq: vi.fn().mockReturnThis(),
-            maybeSingle: vi.fn().mockResolvedValue({
-              data: { minerals: 100, stamina: 10, last_ad_stamina_recharge: '2024-01-01' },
-              error: null,
-            }),
-          } as any;
+          return createChainableMock(
+            createSuccessResponse({
+              minerals: 100,
+              stamina: 10,
+              last_ad_stamina_recharge: '2024-01-01',
+            })
+          );
         }
         if (table === 'inventory') {
-          return {
-            select: vi.fn().mockReturnThis(),
-            eq: vi.fn().mockResolvedValue({
-              data: [
-                {
-                  quantity: 2,
-                  items: { id: 1, code: 'item1', name: 'Item 1', description: 'Desc' },
-                },
-              ],
-              error: null,
-            }),
-          } as any;
+          return createChainableMock(
+            createSuccessResponse([
+              {
+                quantity: 2,
+                items: { id: 1, code: 'item1', name: 'Item 1', description: 'Desc' },
+              },
+            ])
+          );
         }
-        return {} as any;
+        return createChainableMock(createSuccessResponse(null));
       });
 
       await useUserStore.getState().fetchUserData();
@@ -174,10 +171,9 @@ describe('useUserStore', () => {
 
   describe('purchaseItem', () => {
     it('should call purchase_item RPC', async () => {
-      vi.mocked(supabase.rpc).mockResolvedValue({
-        data: { success: true, message: 'Purchased' },
-        error: null,
-      } as any);
+      vi.mocked(supabase.rpc).mockResolvedValue(
+        createSuccessResponse({ success: true, message: 'Purchased' })
+      );
 
       const result = await useUserStore.getState().purchaseItem(1);
 
@@ -185,10 +181,9 @@ describe('useUserStore', () => {
       expect(result.success).toBe(true);
     });
     it('should handle purchase failure', async () => {
-      vi.mocked(supabase.rpc).mockResolvedValue({
-        data: { success: false, message: 'No money' },
-        error: null,
-      } as any);
+      vi.mocked(supabase.rpc).mockResolvedValue(
+        createSuccessResponse({ success: false, message: 'No money' })
+      );
 
       const result = await useUserStore.getState().purchaseItem(1);
       expect(result.success).toBe(false);
@@ -196,10 +191,7 @@ describe('useUserStore', () => {
     });
 
     it('should handle validation failure', async () => {
-      vi.mocked(supabase.rpc).mockResolvedValue({
-        data: { unexpected: 'format' },
-        error: null,
-      } as any);
+      vi.mocked(supabase.rpc).mockResolvedValue(createSuccessResponse({ unexpected: 'format' }));
 
       const result = await useUserStore.getState().purchaseItem(1);
       expect(result.success).toBe(false);
@@ -209,10 +201,9 @@ describe('useUserStore', () => {
 
   describe('consumeItem', () => {
     it('should call consume_item RPC', async () => {
-      vi.mocked(supabase.rpc).mockResolvedValue({
-        data: { success: true, message: 'Consumed' },
-        error: null,
-      } as any);
+      vi.mocked(supabase.rpc).mockResolvedValue(
+        createSuccessResponse({ success: true, message: 'Consumed' })
+      );
 
       const result = await useUserStore.getState().consumeItem(1);
 
@@ -224,10 +215,9 @@ describe('useUserStore', () => {
   describe('recoverStaminaAds', () => {
     it('should call secure_reward_ad_view after showing ad', async () => {
       vi.mocked(AdService.showRewardedAd).mockResolvedValue({ success: true });
-      vi.mocked(supabase.rpc).mockResolvedValue({
-        data: { success: true, stamina: 10 },
-        error: null,
-      } as any);
+      vi.mocked(supabase.rpc).mockResolvedValue(
+        createSuccessResponse({ success: true, stamina: 10 })
+      );
 
       const result = await useUserStore.getState().recoverStaminaAds();
 
@@ -266,32 +256,26 @@ describe('useUserStore', () => {
     });
 
     it('debugResetItems should call RPC', async () => {
-      vi.mocked(supabase.auth.getSession).mockResolvedValue({
-        data: { session: { user: { id: 'user123' } } } as any,
-        error: null,
-      });
+      vi.mocked(supabase.auth.getSession).mockResolvedValue(
+        createAuthSessionMock({ user: { id: 'user123' } })
+      );
       await useUserStore.getState().debugResetItems();
       expect(supabase.rpc).toHaveBeenCalledWith('debug_reset_inventory', { p_user_id: 'user123' });
     });
 
     it('debugRemoveItems should decrease inventory quantities', async () => {
-      vi.mocked(supabase.auth.getUser).mockResolvedValue({
-        data: { user: { id: 'user123' } } as any,
-        error: null,
-      });
-      vi.mocked(supabase.from).mockReturnValue({
-        select: vi.fn().mockReturnThis(),
-        eq: vi.fn().mockResolvedValue({ data: [{ item_id: 'item1', quantity: 10 }], error: null }),
-      } as any);
+      vi.mocked(supabase.auth.getUser).mockResolvedValue(createAuthUserMock({ id: 'user123' }));
+      vi.mocked(supabase.from).mockReturnValue(
+        createChainableMock(createSuccessResponse([{ item_id: 'item1', quantity: 10 }]))
+      );
 
       await useUserStore.getState().debugRemoveItems();
       expect(supabase.rpc).toHaveBeenCalledWith('debug_set_inventory_quantity', expect.any(Object));
     });
     it('should handle remove items failure gracefully', async () => {
-      vi.mocked(supabase.from).mockReturnValue({
-        select: vi.fn().mockReturnThis(),
-        eq: vi.fn().mockResolvedValue({ data: null, error: { message: 'DB Error' } }),
-      } as any);
+      vi.mocked(supabase.from).mockReturnValue(
+        createChainableMock(createErrorResponse('DB Error'))
+      );
 
       await useUserStore.getState().debugRemoveItems();
       expect(supabase.rpc).not.toHaveBeenCalledWith('debug_set_inventory_quantity');
@@ -300,14 +284,10 @@ describe('useUserStore', () => {
 
   describe('checkStamina', () => {
     it('should call check_and_recover_stamina', async () => {
-      vi.mocked(supabase.auth.getSession).mockResolvedValue({
-        data: { session: { user: { id: 'user123' } } } as any,
-        error: null,
-      });
-      vi.mocked(supabase.rpc).mockResolvedValue({
-        data: { stamina: 8 },
-        error: null,
-      } as any);
+      vi.mocked(supabase.auth.getSession).mockResolvedValue(
+        createAuthSessionMock({ user: { id: 'user123' } })
+      );
+      vi.mocked(supabase.rpc).mockResolvedValue(createSuccessResponse({ stamina: 8 }));
 
       await useUserStore.getState().checkStamina();
       expect(useUserStore.getState().stamina).toBe(8);
@@ -317,10 +297,9 @@ describe('useUserStore', () => {
   describe('recoverMineralsAds', () => {
     it('should call secure_reward_ad_view for minerals', async () => {
       vi.mocked(AdService.showRewardedAd).mockResolvedValue({ success: true });
-      vi.mocked(supabase.rpc).mockResolvedValue({
-        data: { success: true, minerals: 50 },
-        error: null,
-      } as any);
+      vi.mocked(supabase.rpc).mockResolvedValue(
+        createSuccessResponse({ success: true, minerals: 50 })
+      );
 
       const result = await useUserStore.getState().recoverMineralsAds();
       expect(result.success).toBe(true);
@@ -358,13 +337,13 @@ describe('useUserStore', () => {
 
   describe('debug methods extra', () => {
     it('debugSetStamina should call RPC and update state', async () => {
-      vi.mocked(supabase.rpc).mockResolvedValue({ data: { success: true }, error: null } as any);
+      vi.mocked(supabase.rpc).mockResolvedValue(createSuccessResponse({ success: true }));
       await useUserStore.getState().debugSetStamina(50);
       expect(useUserStore.getState().stamina).toBe(50);
     });
 
     it('debugSetMinerals should call RPC and update state', async () => {
-      vi.mocked(supabase.rpc).mockResolvedValue({ data: { success: true }, error: null } as any);
+      vi.mocked(supabase.rpc).mockResolvedValue(createSuccessResponse({ success: true }));
       await useUserStore.getState().debugSetMinerals(1000);
       expect(useUserStore.getState().minerals).toBe(1000);
     });
@@ -417,27 +396,17 @@ describe('useUserStore', () => {
     });
 
     it('formatInventory should handle null items and missing properties', async () => {
-      vi.mocked(supabase.auth.getUser).mockResolvedValue({
-        data: { user: { id: 'user1' } },
-      } as any);
+      vi.mocked(supabase.auth.getUser).mockResolvedValue(createAuthUserMock({ id: 'user1' }));
       vi.mocked(supabase.from).mockImplementation((table: string) => {
         if (table === 'profiles') {
-          return {
-            select: vi.fn().mockReturnThis(),
-            eq: vi.fn().mockReturnThis(),
-            maybeSingle: vi.fn().mockResolvedValue({ data: null, error: null }),
-          } as any;
+          return createChainableMock(createSuccessResponse(null));
         }
-        return {
-          select: vi.fn().mockReturnThis(),
-          eq: vi.fn().mockResolvedValue({
-            data: [
-              { quantity: 1, items: null },
-              { quantity: 2, items: { id: 2 } },
-            ],
-            error: null,
-          }),
-        } as any;
+        return createChainableMock(
+          createSuccessResponse([
+            { quantity: 1, items: null },
+            { quantity: 2, items: { id: 2 } },
+          ])
+        );
       });
 
       await useUserStore.getState().fetchUserData();
@@ -459,10 +428,7 @@ describe('useUserStore', () => {
       });
 
       vi.mocked(supabase.auth.getUser).mockResolvedValue({ data: { user: null }, error: null });
-      vi.mocked(supabase.from).mockReturnValue({
-        select: vi.fn().mockReturnThis(),
-        eq: vi.fn().mockResolvedValue({ data: [], error: null }),
-      } as any);
+      vi.mocked(supabase.from).mockReturnValue(createChainableMock(createSuccessResponse([])));
       await useUserStore.getState().debugRemoveItems();
       // Should handle null userId and empty inventory
     });

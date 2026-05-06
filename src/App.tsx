@@ -1,7 +1,7 @@
 import { useEffect } from 'react';
 import { resilientLazy } from '@/utils/resilientLazy';
 import { Routes, Route, Navigate } from 'react-router-dom';
-import { useLevelProgressStore } from '@/stores/useLevelProgressStore';
+import { useLevelProgressStore } from '@/features/quiz';
 import { useAuthStore } from '@/stores/useAuthStore';
 import { useCustomBackNavigation } from '@/hooks/useCustomBackNavigation';
 import { GlobalLoadingIndicator } from '@/components/GlobalLoadingIndicator';
@@ -11,6 +11,13 @@ import { useSettingsStore } from '@/stores/useSettingsStore';
 import { useConnectivity } from '@/hooks/useConnectivity';
 import { PwaUpdateNotification } from '@/components/PwaUpdateNotification';
 import { RequireAuth } from '@/components/auth/RequireAuth';
+import { useUserStore } from '@/stores/useUserStore';
+import { useQuizStore, type TimeLimit } from '@/features/quiz';
+import { logger } from '@/utils/logger';
+import { registerHapticConfig } from '@/utils/haptic';
+import { registerDebugConfig } from '@/utils/debugFetch';
+import { registerDebugBridge } from '@/hooks/useQuickActionsDebugBridge';
+import { STATUS } from '@/constants/status';
 
 const HomePage = resilientLazy(
   () => import('@/pages/HomePage').then((module) => ({ default: module.HomePage })),
@@ -18,20 +25,19 @@ const HomePage = resilientLazy(
 );
 import { GlobalToastContainer } from '@/components/GlobalToastContainer';
 const CategorySelectPage = resilientLazy(
-  () =>
-    import('@/pages/CategorySelectPage').then((module) => ({ default: module.CategorySelectPage })),
+  () => import('@/features/quiz').then((module) => ({ default: module.CategorySelectPage })),
   'CategorySelectPage'
 );
 const LevelSelectPage = resilientLazy(
-  () => import('@/pages/LevelSelectPage').then((module) => ({ default: module.LevelSelectPage })),
+  () => import('@/features/quiz').then((module) => ({ default: module.LevelSelectPage })),
   'LevelSelectPage'
 );
 const QuizPage = resilientLazy(
-  () => import('@/pages/QuizPage').then((module) => ({ default: module.QuizPage })),
+  () => import('@/features/quiz').then((module) => ({ default: module.QuizPage })),
   'QuizPage'
 );
 const ResultPage = resilientLazy(
-  () => import('@/pages/ResultPage').then((module) => ({ default: module.ResultPage })),
+  () => import('@/features/quiz').then((module) => ({ default: module.ResultPage })),
   'ResultPage'
 );
 const RankingPage = resilientLazy(
@@ -136,7 +142,7 @@ function App() {
       useErrorLogStore
         .getState()
         .addLog(
-          'error',
+          STATUS.ERROR,
           event.message || 'Unknown error',
           event.error?.stack,
           `Global: ${event.filename || 'unknown'}:${event.lineno || 0}`
@@ -149,7 +155,7 @@ function App() {
       useErrorLogStore
         .getState()
         .addLog(
-          'error',
+          STATUS.ERROR,
           `Unhandled Promise Rejection: ${error.message}`,
           error.stack,
           'Global: UnhandledRejection'
@@ -163,6 +169,37 @@ function App() {
       window.removeEventListener('error', handleError);
       window.removeEventListener('unhandledrejection', handleUnhandledRejection);
     };
+  }, []);
+
+  // Logger -> Store 동기화 등록
+  useEffect(() => {
+    const unregister = logger.registerHandler((level, message, stack, context) => {
+      useErrorLogStore.getState().addLog(level, message, stack, context);
+    });
+    return unregister;
+  }, []);
+
+  // Utility -> Store 동기화 등록
+  useEffect(() => {
+    registerHapticConfig(() => useSettingsStore.getState().hapticEnabled);
+    registerDebugConfig(() => ({
+      networkLatency: useDebugStore.getState().networkLatency,
+      forceNetworkError: useDebugStore.getState().forceNetworkError,
+    }));
+    registerDebugBridge({
+      setMinerals: async (val: number) => {
+        await useUserStore.getState().debugSetMinerals(val);
+      },
+      setStamina: async (val: number) => {
+        await useUserStore.getState().debugSetStamina(val);
+      },
+      setTimeLimit: (val: number) => {
+        useQuizStore.getState().setTimeLimit(val as TimeLimit);
+      },
+      fetchUserData: async () => {
+        await useUserStore.getState().fetchUserData();
+      },
+    });
   }, []);
 
   return (

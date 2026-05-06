@@ -1,7 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { urls, type QuizParams } from '../navigation';
 import { APP_CONFIG } from '../../config/app';
-import type { GameMode, Tier } from '../../types/quiz';
 
 describe('navigation urls', () => {
   it('should return correct home URL', () => {
@@ -14,7 +13,7 @@ describe('navigation urls', () => {
   });
 
   it('should return correct levelSelect URL', () => {
-    const params = { mountain: 'math', world: 'World1' as any, category: '기초' as any };
+    const params = { mountain: 'math', world: 'World1', category: '기초' };
     expect(urls.levelSelect(params)).toBe(
       `${APP_CONFIG.ROUTES.LEVEL_SELECT}?mountain=math&world=World1&category=기초`
     );

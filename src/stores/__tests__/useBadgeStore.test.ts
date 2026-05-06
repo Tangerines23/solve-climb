@@ -3,6 +3,8 @@ import { renderHook, act } from '@testing-library/react';
 import { useBadgeStore } from '../useBadgeStore';
 import { supabase } from '../../utils/supabaseClient';
 import { storageService, STORAGE_KEYS } from '../../services';
+import { createListResponse, createChainableMock } from '../../utils/__tests__/supabaseMockUtils';
+import { BadgeDefinition } from '@/types/badge';
 
 // Mock supabase and services
 vi.mock('../../utils/supabaseClient', () => ({
@@ -44,8 +46,8 @@ describe('useBadgeStore', () => {
     const mockDefinitions = [{ id: '1', name: 'Badge 1', description: 'Desc 1', emoji: '🥇' }];
 
     // Setup mock chain
-    const selectMock = vi.fn().mockResolvedValue({ data: mockDefinitions, error: null });
-    vi.mocked(supabase.from).mockReturnValue({ select: selectMock } as any);
+    const finalResponse = createListResponse(mockDefinitions);
+    vi.mocked(supabase.from).mockReturnValue(createChainableMock(finalResponse));
 
     const { result } = renderHook(() => useBadgeStore());
 
@@ -59,7 +61,9 @@ describe('useBadgeStore', () => {
   });
 
   it('should not re-fetch if definitions already exist', async () => {
-    useBadgeStore.setState({ badgeDefinitions: [{ id: '1', name: 'Existing' } as any] });
+    useBadgeStore.setState({
+      badgeDefinitions: [{ id: '1', name: 'Existing' } as unknown as BadgeDefinition],
+    });
 
     const { result } = renderHook(() => useBadgeStore());
     await act(async () => {
@@ -73,10 +77,8 @@ describe('useBadgeStore', () => {
     const userId = '12345678-1234-1234-1234-123456781234';
     const mockUserBadges = [{ badge_id: '1', earned_at: '2021-01-01' }];
 
-    const orderMock = vi.fn().mockResolvedValue({ data: mockUserBadges, error: null });
-    const eqMock = vi.fn().mockReturnValue({ order: orderMock });
-    const selectMock = vi.fn().mockReturnValue({ eq: eqMock });
-    vi.mocked(supabase.from).mockReturnValue({ select: selectMock } as any);
+    const finalResponse = createListResponse(mockUserBadges);
+    vi.mocked(supabase.from).mockReturnValue(createChainableMock(finalResponse));
 
     const { result } = renderHook(() => useBadgeStore());
     await act(async () => {

@@ -1,4 +1,4 @@
-import { useDebugStore } from '../stores/useDebugStore';
+import { useDebugPanel } from '../hooks/useDebugPanel';
 import { QuickActionsSection } from './debug/QuickActionsSection';
 import { NotificationPlayground } from './debug/NotificationPlayground';
 import { TierSystemSection } from './debug/TierSystemSection';
@@ -18,7 +18,7 @@ import { DummyPlayerManager } from './debug/DummyPlayerManager';
 import './DebugPanel.css';
 
 function DebugPanel() {
-  const { isDebugPanelOpen, activeTab, toggleDebugPanel, setActiveTab } = useDebugStore();
+  const { isDebugPanelOpen, activeTab, toggleDebugPanel, setActiveTab } = useDebugPanel();
 
   if (!isDebugPanelOpen) return null;
 

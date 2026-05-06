@@ -1,13 +1,5 @@
 import { create } from 'zustand';
-
-export interface ErrorLogEntry {
-  id: string;
-  timestamp: Date;
-  level: 'error' | 'warning' | 'info';
-  message: string;
-  stack?: string;
-  context?: string;
-}
+import { type ErrorLogEntry } from '../types/debug';
 
 interface ErrorLogState {
   logs: ErrorLogEntry[];

@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useDebugStore } from '../../stores/useDebugStore';
-import { APP_CONFIG } from '../../config/app';
+import { useDebugActions } from '@/hooks/useDebugActions';
+import { APP_CONFIG } from '@/config/app';
 
 interface SiteNode {
   name: string;
@@ -85,6 +85,7 @@ const TreeNode = ({
   ancestorPaths?: string[];
 }) => {
   const navigate = useNavigate();
+  const { setShowReturnFloater } = useDebugActions();
   const [isOpen, setIsOpen] = useState(node.isOpen || false);
   const hasChildren = node.children && node.children.length > 0;
 
@@ -101,7 +102,7 @@ const TreeNode = ({
   const handleLinkClick = (e: React.MouseEvent) => {
     e.stopPropagation();
     if (node.path) {
-      useDebugStore.getState().setShowReturnFloater(true);
+      setShowReturnFloater(true);
       navigate(node.path);
     }
   };
@@ -133,7 +134,7 @@ const TreeNode = ({
         );
 
         if (path !== '/') {
-          useDebugStore.getState().setShowReturnFloater(true);
+          setShowReturnFloater(true);
         }
         navigate(path);
 

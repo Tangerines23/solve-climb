@@ -9,7 +9,6 @@
     "src/types/**",
     "src/utils/navigation.ts",
     "src/utils/tossGameLogin.ts",
-    "src/utils/MathProblemGenerator.ts",
     "src/utils/seededRandom.ts"
   ],
   "ignoreExportsUsedInFile": true,

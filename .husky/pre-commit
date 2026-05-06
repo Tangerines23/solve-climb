@@ -65,7 +65,16 @@ fi
 
 # 로직 성능 및 보안 감사는 경고로 처리 (상세 검증은 CI에서 수행)
 npm run check:logic || echo "⚠️ 로직 성능 저하 감지됨 (CI에서 재확인 예정)"
-npm run check:security || echo "⚠️ 보안 취약점 발견 (npm audit 권장)"
+if npm run check:security; then
+  echo "✅ 보안 검사 완료"
+else
+  echo "⚠️ 보안 취약점 발견 (자동 수정을 시도했습니다)"
+  # package-lock.json이 수정되었다면 다시 스테이지에 추가
+  if [ -n "$(git status --porcelain package-lock.json)" ]; then
+    echo "♻️ 자동 수정된 package-lock.json을 스테이지에 추가합니다..."
+    git add package-lock.json
+  fi
+fi
 
 # Socket 의존성 보안 스캔 (토큰 하나 돌려쓰기: SOCKET_API_KEY 권장, CLI용 이름도 지원)
 if [ -n "$SOCKET_API_KEY" ] || [ -n "$SOCKET_CLI_API_TOKEN" ] || [ -n "$SOCKET_SECURITY_API_TOKEN" ]; then
@@ -120,6 +129,16 @@ fi
 # 9. 작업 완료 및 환경 정리 (로그 수집 장치 가동)
 echo "🧹 환경 정리 (배정되지 않은 로그 및 보고서 분류)..."
 npm run report:collect || echo "⚠️ 로그 수집 중 경고 발생 (수동 확인 권장)"
+
+# 자동 수정된 파일이 있을 경우 다시 스테이지에 추가합니다.
+# 리네임(R)된 경우와 일반 수정(M, A)된 경우를 모두 처리합니다.
+if [ -n "$(git status --porcelain | grep -E 'package-lock.json|src/.*\.tsx?|src/.*\.css')" ]; then
+  echo "♻️ 누락된 자동 수정 사항을 스테이지에 추가합니다..."
+  # 일반 변경 사항 추가
+  git status --porcelain | grep -v " -> " | grep -E 'package-lock.json|src/.*\.tsx?|src/.*\.css' | awk '{print $2}' | xargs git add 2>/dev/null || true
+  # 리네임 변경 사항 추가 (new_path 만 추출)
+  git status --porcelain | grep " -> " | grep -E 'package-lock.json|src/.*\.tsx?|src/.*\.css' | awk '{print $4}' | xargs git add 2>/dev/null || true
+fi
 
 echo ""
 echo "✅ 모든 검증 통과!"

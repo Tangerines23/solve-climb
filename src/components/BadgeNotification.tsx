@@ -1,14 +1,6 @@
-// src/components/BadgeNotification.tsx
-import React, { useEffect, useState } from 'react';
-import { supabase } from '../utils/supabaseClient';
+import React from 'react';
+import { useBadgeNotification } from '../hooks/useBadgeNotification';
 import './BadgeNotification.css';
-
-interface BadgeDefinition {
-  id: string;
-  name: string;
-  description: string | null;
-  emoji: string | null;
-}
 
 interface BadgeNotificationProps {
   badgeIds: string[];
@@ -16,43 +8,7 @@ interface BadgeNotificationProps {
 }
 
 export const BadgeNotification: React.FC<BadgeNotificationProps> = ({ badgeIds, onClose }) => {
-  const [badgeDefs, setBadgeDefs] = useState<BadgeDefinition[]>([]);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    const loadBadgeDefinitions = async () => {
-      if (badgeIds.length === 0) {
-        setLoading(false);
-        return;
-      }
-
-      try {
-        const { data, error } = await supabase
-          .from('badge_definitions')
-          .select('id, name, description, emoji')
-          .in('id', badgeIds);
-
-        if (error) throw error;
-        setBadgeDefs(data || []);
-      } catch (error) {
-        console.error('Failed to load badge definitions:', error);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    loadBadgeDefinitions();
-  }, [badgeIds]);
-
-  useEffect(() => {
-    // 3초 후 자동으로 닫기
-    if (badgeIds.length > 0 && !loading) {
-      const timer = setTimeout(() => {
-        onClose();
-      }, 3000);
-      return () => clearTimeout(timer);
-    }
-  }, [badgeIds, loading, onClose]);
+  const { badgeDefs, loading } = useBadgeNotification(badgeIds, onClose);
 
   if (badgeIds.length === 0 || loading) return null;
 

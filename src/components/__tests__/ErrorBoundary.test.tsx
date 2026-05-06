@@ -20,13 +20,20 @@ vi.mock('../../utils/errorHandler', () => ({
 }));
 
 // Mock useErrorLogStore
-const mockAddLog = vi.fn();
+const { mockAddLog, mockUseErrorLogStore } = vi.hoisted(() => {
+  const addLog = vi.fn();
+  const useStore = vi.fn((selector) => {
+    if (typeof selector === 'function') {
+      return selector({ addLog });
+    }
+    return { addLog };
+  });
+  (useStore as any).getState = () => ({ addLog });
+  return { mockAddLog: addLog, mockUseErrorLogStore: useStore };
+});
+
 vi.mock('../../stores/useErrorLogStore', () => ({
-  useErrorLogStore: {
-    getState: () => ({
-      addLog: mockAddLog,
-    }),
-  },
+  useErrorLogStore: mockUseErrorLogStore,
 }));
 
 // Component that throws error

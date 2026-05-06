@@ -1,9 +1,9 @@
 import React from 'react';
-import { useSettingsStore } from '../../stores/useSettingsStore';
+import { useSettingsActions } from '../../hooks/useSettingsActions';
 import './StaticUISection.css';
 
 export const StaticUISection = React.memo(function StaticUISection() {
-  const { animationEnabled, setAnimationEnabled } = useSettingsStore();
+  const { animationEnabled, setAnimationEnabled } = useSettingsActions();
 
   const dynamicEffects = [
     { title: 'Fever Particles', desc: '피버 모드 시 화면 하단에서 솟구치는 불꽃 효과' },

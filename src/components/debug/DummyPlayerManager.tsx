@@ -1,21 +1,17 @@
-import React, { useState, useEffect, useCallback } from 'react';
-import { supabase } from '../../utils/supabaseClient';
+import React, { useState } from 'react';
+import { useDummyPlayerDebugBridge } from '../../hooks/useDummyPlayerDebugBridge';
 import { ConfirmModal } from '../ConfirmModal';
-import './DummyPlayerManager.css';
-
-interface DummyPlayer {
-  id: string;
-  nickname: string;
-  persona_type: string;
-  total_mastery_score: number;
-  current_tier_level: number;
-  created_at: string;
-}
 
 export const DummyPlayerManager: React.FC = () => {
-  const [dummyPlayers, setDummyPlayers] = useState<DummyPlayer[]>([]);
-  const [isLoading, setIsLoading] = useState(false);
-  const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
+  const {
+    dummyPlayers,
+    isLoading,
+    message,
+    handleCreateDummy,
+    handleDeleteDummy,
+    handleDeleteAll,
+  } = useDummyPlayerDebugBridge();
+
   const [confirmConfig, setConfirmConfig] = useState<{
     isOpen: boolean;
     title: string;
@@ -28,167 +24,123 @@ export const DummyPlayerManager: React.FC = () => {
     onConfirm: () => {},
   });
 
-  const fetchDummyPlayers = useCallback(async () => {
-    const { data, error } = await supabase
-      .from('profiles')
-      .select('id, nickname, persona_type, total_mastery_score, current_tier_level, created_at')
-      .eq('is_dummy', true)
-      .order('created_at', { ascending: false });
-
-    if (error) {
-      console.error('Failed to fetch dummy players:', error);
-    } else {
-      setDummyPlayers(data || []);
-    }
-  }, []);
-
-  useEffect(() => {
-    fetchDummyPlayers();
-  }, [fetchDummyPlayers]);
-
-  const handleCreateDummy = async (type: 'newbie' | 'regular' | 'veteran') => {
-    setIsLoading(true);
-    setMessage(null);
-    try {
-      const timestamp = Date.now().toString().slice(-6);
-      const nickname = `${type === 'newbie' ? '🌱' : type === 'regular' ? '👤' : '🔥'} 더미-${timestamp}`;
-
-      const { data, error } = await supabase.rpc('debug_create_persona_player', {
-        p_nickname: nickname,
-        p_persona_type: type,
-      });
-
-      if (error) throw error;
-      if (data && !data.success) throw new Error(data.message || '생성 실패');
-
-      setMessage({ type: 'success', text: `더미 플레이어 ${nickname} 생성 완료!` });
-      fetchDummyPlayers();
-    } catch (err: unknown) {
-      setMessage({
-        type: 'error',
-        text: `생성 실패: ${err instanceof Error ? err.message : typeof err === 'object' ? JSON.stringify(err) : String(err)}`,
-      });
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  const handleDeleteDummy = (userId: string, nickname: string) => {
+  const openConfirm = (title: string, message: string, onConfirm: () => void) => {
     setConfirmConfig({
       isOpen: true,
-      title: '더미 삭제',
-      message: `더미 플레이어 "${nickname}"를 삭제하시겠습니까?`,
-      onConfirm: async () => {
-        setIsLoading(true);
-        try {
-          const { error } = await supabase.rpc('debug_delete_dummy_user', { p_user_id: userId });
-          if (error) throw error;
-          setMessage({ type: 'success', text: '삭제 완료' });
-          fetchDummyPlayers();
-        } catch (err: unknown) {
-          setMessage({
-            type: 'error',
-            text: `삭제 실패: ${err instanceof Error ? err.message : typeof err === 'object' ? JSON.stringify(err) : String(err)}`,
-          });
-        } finally {
-          setIsLoading(false);
-          setConfirmConfig((prev) => ({ ...prev, isOpen: false }));
-        }
-      },
+      title,
+      message,
+      onConfirm,
     });
   };
 
-  const handleDeleteAll = () => {
-    setConfirmConfig({
-      isOpen: true,
-      title: '전체 더미 삭제',
-      message: '생성된 모든 더미 플레이어를 삭제하시겠습니까? (연관 기록 포함)',
-      onConfirm: async () => {
-        setIsLoading(true);
-        try {
-          const { error } = await supabase.rpc('debug_delete_all_dummies');
-          if (error) throw error;
-          setMessage({ type: 'success', text: '전체 삭제 완료' });
-          fetchDummyPlayers();
-        } catch (err: unknown) {
-          setMessage({
-            type: 'error',
-            text: `삭제 실패: ${err instanceof Error ? err.message : typeof err === 'object' ? JSON.stringify(err) : String(err)}`,
-          });
-        } finally {
-          setIsLoading(false);
-          setConfirmConfig((prev) => ({ ...prev, isOpen: false }));
-        }
-      },
-    });
+  const closeConfirm = () => {
+    setConfirmConfig((prev) => ({ ...prev, isOpen: false }));
   };
 
   return (
-    <div className="dummy-player-manager">
-      <div className="manager-header">
-        <h4 className="manager-title">👥 더미 플레이어 관리 ({dummyPlayers.length})</h4>
+    <div className="p-4 bg-gray-900 rounded-lg border border-gray-700">
+      <div className="flex justify-between items-center mb-4">
+        <h4 className="text-lg font-bold text-white flex items-center gap-2">
+          <span>👥</span> 더미 플레이어 관리
+          <span className="text-xs bg-gray-800 text-gray-400 px-2 py-0.5 rounded-full font-normal">
+            {dummyPlayers.length}
+          </span>
+        </h4>
         <button
-          className="delete-all-button"
-          onClick={handleDeleteAll}
+          onClick={() =>
+            openConfirm(
+              '전체 더미 삭제',
+              '모든 더미 플레이어와 기록을 삭제하시겠습니까?',
+              handleDeleteAll
+            )
+          }
           disabled={dummyPlayers.length === 0 || isLoading}
+          className="px-3 py-1.5 bg-red-900/20 text-red-400 hover:bg-red-900/40 rounded text-xs font-bold transition-colors border border-red-900/30 disabled:opacity-30"
         >
           전체 삭제
         </button>
       </div>
 
-      <div className="persona-generator-grid">
+      <div className="grid grid-cols-3 gap-2 mb-4">
         <button
           onClick={() => handleCreateDummy('newbie')}
           disabled={isLoading}
-          className="gen-btn newbie"
+          className="p-2 bg-green-900/20 text-green-400 hover:bg-green-900/40 rounded border border-green-900/30 text-xs font-bold transition-all disabled:opacity-30"
         >
           🌱 뉴비 생성
         </button>
         <button
           onClick={() => handleCreateDummy('regular')}
           disabled={isLoading}
-          className="gen-btn regular"
+          className="p-2 bg-blue-900/20 text-blue-400 hover:bg-blue-900/40 rounded border border-blue-900/30 text-xs font-bold transition-all disabled:opacity-30"
         >
           👤 일반 생성
         </button>
         <button
           onClick={() => handleCreateDummy('veteran')}
           disabled={isLoading}
-          className="gen-btn veteran"
+          className="p-2 bg-purple-900/20 text-purple-400 hover:bg-purple-900/40 rounded border border-purple-900/30 text-xs font-bold transition-all disabled:opacity-30"
         >
           🔥 고인물 생성
         </button>
       </div>
 
-      {message && <div className={`manager-message ${message.type}`}>{message.text}</div>}
+      {message && (
+        <div
+          className={`mb-4 p-3 rounded text-sm animate-in fade-in zoom-in-95 ${
+            message.type === 'success'
+              ? 'bg-green-900/30 text-green-400 border border-green-900/50'
+              : 'bg-red-900/30 text-red-400 border border-red-900/50'
+          }`}
+        >
+          {message.text}
+        </div>
+      )}
 
-      <div className="dummy-list-container">
+      <div className="space-y-2 max-h-[300px] overflow-y-auto pr-1 custom-scrollbar">
         {dummyPlayers.length === 0 ? (
-          <div className="empty-list">데이터가 없습니다.</div>
+          <div className="py-8 text-center text-gray-500 text-sm border-2 border-dashed border-gray-800 rounded-lg">
+            데이터가 없습니다.
+          </div>
         ) : (
           dummyPlayers.map((player) => (
-            <div key={player.id} className="dummy-card">
-              <div className="dummy-info">
-                <div className="dummy-main">
-                  <span className="dummy-nickname">{player.nickname}</span>
-                  <span className={`persona-tag ${player.persona_type}`}>
+            <div
+              key={player.id}
+              className="p-3 bg-gray-800/50 rounded-lg border border-gray-700 flex items-center justify-between hover:border-gray-600 transition-colors"
+            >
+              <div className="flex-1">
+                <div className="flex items-center gap-2">
+                  <span className="text-sm font-bold text-white">{player.nickname}</span>
+                  <span
+                    className={`text-[10px] px-1.5 rounded uppercase font-bold ${
+                      player.persona_type === 'newbie'
+                        ? 'bg-green-900/40 text-green-400'
+                        : player.persona_type === 'regular'
+                          ? 'bg-blue-900/40 text-blue-400'
+                          : 'bg-purple-900/40 text-purple-400'
+                    }`}
+                  >
                     {player.persona_type}
                   </span>
                 </div>
-                <div className="dummy-stats">
-                  <span>🏆 {player.total_mastery_score}</span>
-                  <span>🛡️ Tier {player.current_tier_level}</span>
+                <div className="flex gap-3 mt-1">
+                  <span className="text-[11px] text-gray-400">🏆 {player.total_mastery_score}</span>
+                  <span className="text-[11px] text-gray-400">
+                    🛡️ Tier {player.current_tier_level}
+                  </span>
                 </div>
               </div>
-              <div className="dummy-actions">
-                <button
-                  className="card-action-btn delete"
-                  onClick={() => handleDeleteDummy(player.id, player.nickname)}
-                  disabled={isLoading}
-                >
-                  삭제
-                </button>
-              </div>
+              <button
+                onClick={() =>
+                  openConfirm('더미 삭제', `"${player.nickname}"를 삭제하시겠습니까?`, () =>
+                    handleDeleteDummy(player.id)
+                  )
+                }
+                disabled={isLoading}
+                className="p-1.5 text-gray-500 hover:text-red-400 hover:bg-red-900/20 rounded transition-all"
+              >
+                <span className="text-xs">삭제</span>
+              </button>
             </div>
           ))
         )}
@@ -198,8 +150,11 @@ export const DummyPlayerManager: React.FC = () => {
         isOpen={confirmConfig.isOpen}
         title={confirmConfig.title}
         message={confirmConfig.message}
-        onConfirm={confirmConfig.onConfirm}
-        onCancel={() => setConfirmConfig((prev) => ({ ...prev, isOpen: false }))}
+        onConfirm={() => {
+          confirmConfig.onConfirm();
+          closeConfirm();
+        }}
+        onCancel={closeConfirm}
         variant="danger"
       />
     </div>

@@ -7,7 +7,7 @@ import { logError } from './errorHandler';
  * 토스 앱 환경인지 확인
  * @returns 토스 앱 내부에서 실행 중인지 여부
  */
-function isTossAppEnvironment(): boolean {
+export function isTossAppEnvironment(): boolean {
   if (typeof window === 'undefined') {
     return false;
   }
@@ -35,7 +35,7 @@ export async function handleTossLogin(): Promise<TossLoginResult> {
     if (!isTossAppEnvironment()) {
       return {
         success: false,
-        error: '토스 앱에서만 로그인할 수 있습니다.',
+        error: '현재 개발 중인 기능입니다. 곧 만나보실 수 있어요!',
       };
     }
 

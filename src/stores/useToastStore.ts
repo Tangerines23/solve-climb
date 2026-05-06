@@ -1,11 +1,12 @@
 import { create } from 'zustand';
+import { StatusType } from '../constants/status';
 
 interface ToastState {
   message: string;
   isOpen: boolean;
-  icon?: string;
+  icon?: StatusType;
   duration: number;
-  showToast: (message: string, icon?: string, duration?: number) => void;
+  showToast: (message: string, icon?: StatusType, duration?: number) => void;
   hideToast: () => void;
 }
 

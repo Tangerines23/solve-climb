@@ -1,9 +1,7 @@
 import { useNavigate } from 'react-router-dom';
 import { APP_CONFIG } from '../../config/app';
-import { urls } from '../../utils/navigation';
-import type { Category, World } from '../../types/quiz';
-import type { TodayChallenge } from '../../utils/challenge';
-import { storageService, STORAGE_KEYS } from '../../services';
+import { useNavigation } from '../../hooks/useNavigation';
+import type { Category, World, TodayChallenge } from '@/features/quiz';
 
 interface FavoriteItem {
   id: string;
@@ -15,14 +13,17 @@ interface MyPageQuickAccessProps {
   todayChallenge: TodayChallenge | null;
   favorites: FavoriteItem[];
   setCategoryTopic: (category: Category, world: World) => void;
+  getLastPlayedWorld: (mountainId: string) => string;
 }
 
 export function MyPageQuickAccess({
   todayChallenge,
   favorites,
   setCategoryTopic,
+  getLastPlayedWorld,
 }: MyPageQuickAccessProps) {
   const navigate = useNavigate();
+  const { urls } = useNavigation();
 
   return (
     <div className="my-page-quick-access">
@@ -37,8 +38,8 @@ export function MyPageQuickAccess({
           <button
             className="my-page-quick-access-button"
             onClick={() => {
-              setCategoryTopic(todayChallenge.topicId as Category, 'World1' as World);
-              navigate(urls.categorySelect({ mountain: todayChallenge.categoryId }));
+              setCategoryTopic(todayChallenge.topicId! as Category, 'World1' as World);
+              navigate(urls.categorySelect({ mountain: todayChallenge.categoryId! }));
             }}
           >
             도전하기
@@ -81,9 +82,7 @@ export function MyPageQuickAccess({
                       ? (APP_CONFIG.CATEGORIES.find((c) => c.id === favorite.categoryId)
                           ?.mountainId ?? 'math')
                       : favorite.categoryId;
-                    const lastWorld =
-                      storageService.get<string>(STORAGE_KEYS.LAST_PLAYED_WORLD(mountainId)) ||
-                      'World1';
+                    const lastWorld = getLastPlayedWorld(mountainId);
 
                     if (favorite.subCategoryId || isCategoryId) {
                       navigate(

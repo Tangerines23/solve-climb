@@ -3,17 +3,7 @@ import { supabase } from '../utils/supabaseClient';
 import { safeSupabaseQuery } from '../utils/debugFetch';
 import { storageService, STORAGE_KEYS } from '../services';
 
-export interface BadgeDefinition {
-  id: string;
-  name: string;
-  description: string | null;
-  emoji: string | null;
-}
-
-export interface UserBadge {
-  badge_id: string;
-  earned_at: string;
-}
+import { BadgeDefinition, UserBadge } from '@/types/badge';
 
 interface BadgeState {
   badgeDefinitions: BadgeDefinition[];

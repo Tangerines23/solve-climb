@@ -1,10 +1,12 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { useErrorLogStore, type ErrorLogEntry } from '../../stores/useErrorLogStore';
+import { useErrorLogActions } from '../../hooks/useErrorLogActions';
+import { type ErrorLogEntry } from '../../types/debug';
+import { STATUS } from '../../constants/status';
 import './ErrorLogSection.css';
 
 export const ErrorLogSection = React.memo(function ErrorLogSection() {
-  const { logs, clearLogs, filterLogs } = useErrorLogStore();
-  const [filterLevel, setFilterLevel] = useState<'error' | 'warning' | 'info' | 'all'>('all');
+  const { logs, clearLogs, filterLogs } = useErrorLogActions();
+  const [filterLevel, setFilterLevel] = useState<ErrorLogEntry['level'] | 'all'>('all');
   const [timeFilter, setTimeFilter] = useState<'1h' | '24h' | '7d' | 'all'>('all');
   const [searchQuery, setSearchQuery] = useState('');
   const [filteredLogs, setFilteredLogs] = useState<ErrorLogEntry[]>([]);
@@ -95,7 +97,7 @@ export const ErrorLogSection = React.memo(function ErrorLogSection() {
 
   const getLevelColor = (level: string) => {
     switch (level) {
-      case 'error':
+      case STATUS.ERROR:
         return 'var(--color-red-500)';
       case 'warning':
         return 'var(--color-bg-tertiary)';
@@ -131,8 +133,8 @@ export const ErrorLogSection = React.memo(function ErrorLogSection() {
               전체
             </button>
             <button
-              className={`debug-log-filter-button ${filterLevel === 'error' ? 'active' : ''}`}
-              onClick={() => setFilterLevel('error')}
+              className={`debug-log-filter-button ${filterLevel === STATUS.ERROR ? 'active' : ''}`}
+              onClick={() => setFilterLevel(STATUS.ERROR)}
             >
               에러
             </button>

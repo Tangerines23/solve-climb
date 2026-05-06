@@ -1,7 +1,7 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 
-interface DebugState {
+export interface DebugState {
   // Level 1: 빠른 조작 모드 (기존 Admin Debug Mode)
   isAdminMode: boolean;
   selectedResource: 'stamina' | 'minerals' | 'items' | null;

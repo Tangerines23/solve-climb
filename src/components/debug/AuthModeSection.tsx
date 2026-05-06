@@ -1,170 +1,10 @@
-import { useState, useEffect } from 'react';
-import { User } from '@supabase/supabase-js';
-import { supabase } from '../../utils/supabaseClient';
-import { useDebugStore } from '../../stores/useDebugStore';
+import { useAuthModeDebugBridge } from '../../hooks/useAuthModeDebugBridge';
+import { STATUS } from '@/constants/status';
 import './AuthModeSection.css';
 
-type AuthMode = 'anonymous' | 'authenticated' | 'developer';
-
-interface TestResultData {
-  accessible: boolean;
-  data?: number;
-  error?: string;
-  hasData?: boolean;
-  columns?: number;
-  canPlay?: boolean;
-}
-
 export function AuthModeSection() {
-  const { isAdminMode, setAdminMode } = useDebugStore();
-  const [currentMode, setCurrentMode] = useState<AuthMode>(
-    isAdminMode ? 'developer' : 'authenticated'
-  );
-  const [testResults, setTestResults] = useState<Record<string, TestResultData>>({});
-  const [loading, setLoading] = useState(false);
-  const [user, setUser] = useState<User | null>(null);
-  const [actualMode, setActualMode] = useState<AuthMode>(isAdminMode ? 'developer' : 'anonymous');
-
-  const testDataAccess = async () => {
-    setLoading(true);
-    const results: Record<string, TestResultData> = {};
-
-    try {
-      // Test 1: ranking_view 조회
-      const { data: rankingData, error: rankingError } = await supabase
-        .from('ranking_view')
-        .select('*')
-        .limit(3);
-
-      results.ranking_view = {
-        accessible: !rankingError,
-        data: rankingData?.length || 0,
-        error: rankingError?.message,
-      };
-
-      // Test 2: profiles 전체 조회 시도
-      const { data: profilesData, error: profilesError } = await supabase
-        .from('profiles')
-        .select('*')
-        .limit(3);
-
-      results.profiles_all = {
-        accessible: !profilesError,
-        data: profilesData?.length || 0,
-        error: profilesError?.message,
-      };
-
-      // Test 3: 자기 프로필 조회
-      const {
-        data: { user },
-      } = await supabase.auth.getUser();
-      if (user) {
-        const { data: ownProfile, error: ownError } = await supabase
-          .from('profiles')
-          .select('*')
-          .eq('id', user.id)
-          .single();
-
-        results.own_profile = {
-          accessible: !ownError,
-          hasData: !!ownProfile,
-          columns: ownProfile ? Object.keys(ownProfile).length : 0,
-          error: ownError?.message,
-        };
-      } else {
-        results.own_profile = {
-          accessible: false,
-          error: 'Not authenticated',
-        };
-      }
-
-      // Test 4: game_config 조회 (공개 데이터)
-      const { data: configData, error: configError } = await supabase
-        .from('game_config')
-        .select('*')
-        .limit(1);
-
-      results.game_config = {
-        accessible: !configError,
-        data: configData?.length || 0,
-        error: configError?.message,
-      };
-
-      // Test 5: 게임 플레이 시도 (RPC 호출)
-      if (user) {
-        const { data: staminaData, error: staminaError } = await supabase.rpc(
-          'check_and_recover_stamina'
-        );
-
-        results.game_play = {
-          accessible: !staminaError,
-          canPlay: !!staminaData,
-          error: staminaError?.message,
-        };
-      } else {
-        results.game_play = {
-          accessible: false,
-          error: 'Authentication required',
-        };
-      }
-    } catch (error: unknown) {
-      results.system_error = {
-        accessible: false,
-        error: error instanceof Error ? error.message : String(error),
-      };
-    }
-
-    setTestResults(results);
-    setLoading(false);
-  };
-
-  const handleModeChange = async (mode: AuthMode) => {
-    setCurrentMode(mode);
-    setAdminMode(mode === 'developer');
-
-    if (mode === 'anonymous') {
-      const { error } = await supabase.auth.signOut();
-      if (error) {
-        console.error('Sign out failed:', error);
-      } else {
-        setActualMode('anonymous');
-        setUser(null);
-      }
-    } else if (mode === 'authenticated' || mode === 'developer') {
-      // 실제 로그인이 안 되어 있다면 로그인 유도 메시지 표시
-      const {
-        data: { user },
-      } = await supabase.auth.getUser();
-      if (!user) {
-        setTestResults((prev) => ({
-          ...prev,
-          auth_warning: {
-            accessible: false,
-            error: `${mode === 'developer' ? '개발자' : '일반'} 테스트를 위해서는 실제 로그인이 필요합니다. 로그인 페이지로 이동하여 로그인해 주세요.`,
-          },
-        }));
-        return;
-      }
-    }
-
-    await testDataAccess();
-  };
-
-  // 초기 로드 시 자동으로 테스트 실행
-  useEffect(() => {
-    testDataAccess();
-  }, []);
-
-  useEffect(() => {
-    const checkUser = async () => {
-      const {
-        data: { user },
-      } = await supabase.auth.getUser();
-      setActualMode(user ? 'authenticated' : 'anonymous');
-      setUser(user);
-    };
-    checkUser();
-  }, []);
+  const { currentMode, actualMode, user, testResults, loading, handleModeChange } =
+    useAuthModeDebugBridge();
 
   return (
     <div className="debug-section">
@@ -220,7 +60,7 @@ export function AuthModeSection() {
 
           <div className="test-result-item">
             <strong>랭킹 뷰 (ranking_view):</strong>
-            <span className={testResults.ranking_view?.accessible ? 'success' : 'error'}>
+            <span className={testResults.ranking_view?.accessible ? STATUS.SUCCESS : STATUS.ERROR}>
               {testResults.ranking_view?.accessible ? '✅ 접근 가능' : '❌ 접근 불가'}
             </span>
             {(testResults.ranking_view?.data ?? 0) > 0 && (
@@ -230,7 +70,7 @@ export function AuthModeSection() {
 
           <div className="test-result-item">
             <strong>전체 프로필 (profiles):</strong>
-            <span className={testResults.profiles_all?.accessible ? 'success' : 'error'}>
+            <span className={testResults.profiles_all?.accessible ? STATUS.SUCCESS : STATUS.ERROR}>
               {testResults.profiles_all?.accessible ? '✅ 접근 가능' : '❌ 접근 불가'}
             </span>
             {testResults.profiles_all?.error && (
@@ -240,7 +80,7 @@ export function AuthModeSection() {
 
           <div className="test-result-item">
             <strong>내 프로필:</strong>
-            <span className={testResults.own_profile?.accessible ? 'success' : 'error'}>
+            <span className={testResults.own_profile?.accessible ? STATUS.SUCCESS : STATUS.ERROR}>
               {testResults.own_profile?.accessible ? '✅ 접근 가능' : '❌ 접근 불가'}
             </span>
             {(testResults.own_profile?.columns ?? 0) > 0 && (
@@ -250,14 +90,14 @@ export function AuthModeSection() {
 
           <div className="test-result-item">
             <strong>게임 설정 (game_config):</strong>
-            <span className={testResults.game_config?.accessible ? 'success' : 'error'}>
+            <span className={testResults.game_config?.accessible ? STATUS.SUCCESS : STATUS.ERROR}>
               {testResults.game_config?.accessible ? '✅ 접근 가능' : '❌ 접근 불가'}
             </span>
           </div>
 
           <div className="test-result-item">
             <strong>게임 플레이:</strong>
-            <span className={testResults.game_play?.accessible ? 'success' : 'error'}>
+            <span className={testResults.game_play?.accessible ? STATUS.SUCCESS : STATUS.ERROR}>
               {testResults.game_play?.accessible ? '✅ 가능' : '❌ 불가능'}
             </span>
             {testResults.game_play?.error && (

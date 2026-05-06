@@ -37,7 +37,7 @@ describe('ShopPage', () => {
 
   beforeEach(() => {
     vi.clearAllMocks();
-    (useShop as any).mockReturnValue(defaultShopValues);
+    vi.mocked(useShop).mockReturnValue(defaultShopValues as any);
   });
 
   it('should render shop title and user minerals', () => {
@@ -82,10 +82,10 @@ describe('ShopPage', () => {
   });
 
   it('should display empty bag message when inventory is empty', () => {
-    (useShop as any).mockReturnValue({
+    vi.mocked(useShop).mockReturnValue({
       ...defaultShopValues,
       inventory: [],
-    });
+    } as any);
 
     render(
       <BrowserRouter>
@@ -98,10 +98,10 @@ describe('ShopPage', () => {
   });
 
   it('should display inventory items in bag tab', () => {
-    (useShop as any).mockReturnValue({
+    vi.mocked(useShop).mockReturnValue({
       ...defaultShopValues,
       inventory: [{ id: 'inv-1', code: 'ITEM_01', name: '보유 아이템 1', quantity: 5 }],
-    });
+    } as any);
 
     render(
       <BrowserRouter>
@@ -115,11 +115,11 @@ describe('ShopPage', () => {
   });
 
   it('should show loading indicator when shop is loading and no items', () => {
-    (useShop as any).mockReturnValue({
+    vi.mocked(useShop).mockReturnValue({
       ...defaultShopValues,
       items: [],
       isLoading: true,
-    });
+    } as any);
 
     render(
       <BrowserRouter>
@@ -132,10 +132,10 @@ describe('ShopPage', () => {
 
   it('should trigger ad recharge handler when ad button is clicked', () => {
     const handleMineralsAdRecharge = vi.fn();
-    (useShop as any).mockReturnValue({
+    vi.mocked(useShop).mockReturnValue({
       ...defaultShopValues,
       handleMineralsAdRecharge,
-    });
+    } as any);
 
     render(
       <BrowserRouter>
@@ -149,10 +149,10 @@ describe('ShopPage', () => {
   });
 
   it('should show "AD_WATCHING" text when ad is loading', () => {
-    (useShop as any).mockReturnValue({
+    vi.mocked(useShop).mockReturnValue({
       ...defaultShopValues,
       isAdLoading: true,
-    });
+    } as any);
 
     render(
       <BrowserRouter>
@@ -170,10 +170,10 @@ describe('ShopPage', () => {
       return 0;
     });
 
-    (useShop as any).mockReturnValue({
+    vi.mocked(useShop).mockReturnValue({
       ...defaultShopValues,
       getOwnedCount,
-    });
+    } as any);
 
     render(
       <BrowserRouter>
@@ -186,10 +186,10 @@ describe('ShopPage', () => {
 
   it('should trigger purchase handler when purchase button is clicked', () => {
     const handlePurchase = vi.fn();
-    (useShop as any).mockReturnValue({
+    vi.mocked(useShop).mockReturnValue({
       ...defaultShopValues,
       handlePurchase,
-    });
+    } as any);
 
     render(
       <BrowserRouter>
@@ -203,10 +203,10 @@ describe('ShopPage', () => {
   });
 
   it('should show purchase status message for a specific item', () => {
-    (useShop as any).mockReturnValue({
+    vi.mocked(useShop).mockReturnValue({
       ...defaultShopValues,
       purchaseStatus: { id: '2', message: '구매 완료!' },
-    });
+    } as any);
 
     render(
       <BrowserRouter>

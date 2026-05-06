@@ -1,6 +1,6 @@
 import { useNavigate } from 'react-router-dom';
 import { APP_CONFIG } from '../../config/app';
-import { urls } from '../../utils/navigation';
+import { useNavigation } from '../../hooks/useNavigation';
 
 interface MyPageSettingsProps {
   hapticEnabled: boolean;
@@ -28,6 +28,7 @@ export function MyPageSettings({
   onWithdraw,
 }: MyPageSettingsProps) {
   const navigate = useNavigate();
+  const { urls } = useNavigation();
 
   return (
     <div className="my-page-settings">
@@ -59,44 +60,44 @@ export function MyPageSettings({
               />
             </svg>
           </button>
-          <div className="my-page-settings-item">
+          <label
+            className="my-page-settings-item my-page-settings-item-clickable"
+            data-vg-ignore="true"
+          >
             <div className="my-page-settings-item-content">
-              <label htmlFor="haptic-toggle" className="my-page-settings-item-label">
-                진동
-              </label>
+              <span className="my-page-settings-item-label">진동</span>
             </div>
             <div className="my-page-settings-toggle-wrapper">
-              <label className="my-page-settings-toggle">
+              <div className="my-page-settings-toggle">
                 <input
-                  id="haptic-toggle"
                   type="checkbox"
                   checked={hapticEnabled}
                   onChange={onToggleHaptic}
                   aria-label="진동 설정 제어"
                 />
                 <span className="my-page-settings-toggle-slider"></span>
-              </label>
+              </div>
             </div>
-          </div>
-          <div className="my-page-settings-item">
+          </label>
+          <label
+            className="my-page-settings-item my-page-settings-item-clickable"
+            data-vg-ignore="true"
+          >
             <div className="my-page-settings-item-content">
-              <label htmlFor="animation-toggle" className="my-page-settings-item-label">
-                정적 UI 모드
-              </label>
+              <span className="my-page-settings-item-label">정적 UI 모드</span>
             </div>
             <div className="my-page-settings-toggle-wrapper">
-              <label className="my-page-settings-toggle">
+              <div className="my-page-settings-toggle">
                 <input
-                  id="animation-toggle"
                   type="checkbox"
                   checked={!animationEnabled}
                   onChange={onToggleAnimation}
                   aria-label="정적 UI 모드 설정 제어"
                 />
                 <span className="my-page-settings-toggle-slider"></span>
-              </label>
+              </div>
             </div>
-          </div>
+          </label>
           <button
             className="my-page-settings-item my-page-settings-item-button"
             onClick={() =>

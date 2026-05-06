@@ -6,7 +6,6 @@ import {
   createMigrationLink,
   migrateToGameLogin,
 } from '../tossGameLogin';
-import { ENV } from '../env';
 
 describe('tossGameLogin utility', () => {
   beforeEach(() => {
@@ -60,7 +59,7 @@ describe('tossGameLogin utility', () => {
         ok: true,
         json: async () => ({ isMapped: true }),
       };
-      (fetch as any).mockResolvedValue(mockResponse);
+      vi.mocked(fetch).mockResolvedValue(mockResponse);
 
       const result = await getMigrationStatus('test-hash');
       expect(result.success).toBe(true);
@@ -77,7 +76,7 @@ describe('tossGameLogin utility', () => {
         status: 400,
         json: async () => ({ error: 'Bad Request' }),
       };
-      (fetch as any).mockResolvedValue(mockResponse);
+      vi.mocked(fetch).mockResolvedValue(mockResponse);
 
       const result = await getMigrationStatus('test-hash');
       expect(result.success).toBe(false);
@@ -91,7 +90,7 @@ describe('tossGameLogin utility', () => {
         ok: true,
         json: async () => ({ success: true }),
       };
-      (fetch as any).mockResolvedValue(mockResponse);
+      vi.mocked(fetch).mockResolvedValue(mockResponse);
 
       const result = await createMigrationLink('hash', 'code', 'ref');
       expect(result.success).toBe(true);
@@ -135,7 +134,7 @@ describe('tossGameLogin utility', () => {
     });
 
     it('getMigrationStatus should handle fetch errors', async () => {
-      (fetch as any).mockImplementationOnce(() => {
+      vi.mocked(fetch).mockImplementationOnce(() => {
         throw new Error('Fetch error');
       });
       const res = await getMigrationStatus('hash');
@@ -144,7 +143,7 @@ describe('tossGameLogin utility', () => {
     });
 
     it('createMigrationLink should handle fetch errors', async () => {
-      (fetch as any).mockImplementationOnce(() => {
+      vi.mocked(fetch).mockImplementationOnce(() => {
         throw new Error('Link error');
       });
       const res = await createMigrationLink('hash', 'code');
@@ -153,7 +152,7 @@ describe('tossGameLogin utility', () => {
     });
 
     it('getMigrationStatus should handle non-ok responses with no body', async () => {
-      (fetch as any).mockResolvedValue({
+      vi.mocked(fetch).mockResolvedValue({
         ok: false,
         status: 500,
         json: () => Promise.reject(),

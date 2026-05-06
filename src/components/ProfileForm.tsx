@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { UserProfile, useProfileStore } from '../stores/useProfileStore';
-import { sanitizeNickname, validateNickname } from '../utils/validation';
+import { useProfile } from '../hooks/useProfile';
 import './ProfileForm.css';
 
 interface ProfileFormProps {
@@ -12,9 +11,7 @@ interface ProfileFormProps {
 
 export function ProfileForm({ onComplete, showBackButton = false, onCancel }: ProfileFormProps) {
   const navigate = useNavigate();
-  // Zustand Selector 패턴 적용
-  const setProfile = useProfileStore((state) => state.setProfile);
-  const profile = useProfileStore((state) => state.profile);
+  const { profile, updateProfile, isUpdating } = useProfile();
   const [nickname, setNickname] = useState(profile?.nickname || '');
   const [error, setError] = useState('');
   // const [isGoogleLoading, setIsGoogleLoading] = useState(false);
@@ -66,52 +63,17 @@ export function ProfileForm({ onComplete, showBackButton = false, onCancel }: Pr
   //   }
   // };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setError('');
 
-    // 닉네임 정제 (HTML 태그 제거, 공백 정규화)
-    const sanitizedNickname = sanitizeNickname(nickname);
+    const result = await updateProfile(nickname);
 
-    // 닉네임 검증
-    const validation = validateNickname(sanitizedNickname);
-    if (!validation.valid) {
-      setError(validation.error || '닉네임이 올바르지 않습니다.');
-      return;
+    if (result.success) {
+      onComplete();
+    } else {
+      setError(result.error || '닉네임이 올바르지 않습니다.');
     }
-
-    // 닉네임으로는 관리자 권한 부여 안 함
-    // 관리자 권한은 키보드 입력으로만 가능 (출시 전 확인 필요)
-    const isAdmin = false;
-
-    const existingProfile = profile;
-    const profileData: UserProfile = {
-      profileId: existingProfile?.profileId || '', // 기존 프로필이 있으면 ID 유지, 없으면 빈 문자열 (스토어에서 생성)
-      nickname: sanitizedNickname,
-      // email: googleUser?.email,
-      // avatar: googleUser?.picture,
-      // userId: googleUser?.email,
-      createdAt: existingProfile?.createdAt || new Date().toISOString(),
-      isAdmin: isAdmin,
-    };
-
-    setProfile(profileData);
-
-    // [New] Supabase 프로필 닉네임 동기화 (비동기 처리)
-    import('../utils/supabaseClient').then(({ supabase }) => {
-      supabase.auth.getSession().then(({ data: { session } }) => {
-        if (session?.user) {
-          // RPC 함수 호출하여 닉네임 업데이트
-          supabase
-            .rpc('update_profile_nickname', { p_nickname: sanitizedNickname })
-            .then(({ error }) => {
-              if (error) console.error('Failed to sync nickname to Supabase:', error);
-              else console.log('Nickname synced to Supabase');
-            });
-        }
-      });
-    });
-
-    onComplete();
   };
 
   return (
@@ -209,8 +171,12 @@ export function ProfileForm({ onComplete, showBackButton = false, onCancel }: Pr
           </div>
         )} */}
 
-        <button type="submit" className="btn-base btn-primary profile-form-submit">
-          {profile?.nickname ? '저장하기' : '시작하기'}
+        <button
+          type="submit"
+          className="btn-base btn-primary profile-form-submit"
+          disabled={isUpdating}
+        >
+          {isUpdating ? '저장 중...' : profile?.nickname ? '저장하기' : '시작하기'}
         </button>
       </form>
     </div>

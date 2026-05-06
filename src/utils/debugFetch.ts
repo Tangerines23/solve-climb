@@ -1,5 +1,18 @@
-import { useDebugStore } from '../stores/useDebugStore';
 import { logError } from './errorHandler';
+
+interface DebugConfig {
+  networkLatency: number;
+  forceNetworkError: boolean;
+}
+
+let debugConfigGetter: (() => DebugConfig) | null = null;
+
+/**
+ * 디버그 설정을 연결하기 위한 등록 함수
+ */
+export const registerDebugConfig = (getter: () => DebugConfig): void => {
+  debugConfigGetter = getter;
+};
 
 /**
  * 디버그용 지연 함수
@@ -14,7 +27,9 @@ export async function debugFetch<T>(fn: () => Promise<T>): Promise<T> {
     return fn();
   }
 
-  const { networkLatency, forceNetworkError } = useDebugStore.getState();
+  const { networkLatency, forceNetworkError } = debugConfigGetter
+    ? debugConfigGetter()
+    : { networkLatency: 0, forceNetworkError: false };
 
   if (networkLatency > 0) {
     await delay(networkLatency);

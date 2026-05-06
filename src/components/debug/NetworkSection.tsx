@@ -1,10 +1,10 @@
 import React from 'react';
-import { useDebugStore } from '../../stores/useDebugStore';
+import { useDebugActions } from '../../hooks/useDebugActions';
 import './NetworkSection.css';
 
 export const NetworkSection = React.memo(function NetworkSection() {
   const { networkLatency, forceNetworkError, setNetworkLatency, setForceNetworkError } =
-    useDebugStore();
+    useDebugActions();
 
   const presetLatencies = [0, 500, 1000, 2000, 5000];
 

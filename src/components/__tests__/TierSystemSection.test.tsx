@@ -1,41 +1,42 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { TierSystemSection } from '../debug/TierSystemSection';
-import { supabase } from '../../utils/supabaseClient';
-import { useMyPageStats, type UseMyPageStatsResult } from '../../hooks/useMyPageStats';
-import { loadTierDefinitions, type TierInfo } from '../../constants/tiers';
-import type { Session, AuthError } from '@supabase/supabase-js';
+import { supabase } from '@/utils/supabaseClient';
+import { useMyPageStats, type UseMyPageStatsResult } from '@/hooks/useMyPageStats';
+import { loadTierDefinitions, type TierInfo, TierBadge } from '@/features/quiz';
+import type { Session } from '@supabase/supabase-js';
 
 // Mock dependencies
-vi.mock('../../stores/useLevelProgressStore', () => ({
-  useLevelProgressStore: vi.fn(() => ({
-    progress: {},
-  })),
-}));
+vi.mock('@/features/quiz', async () => {
+  const actual = await vi.importActual('@/features/quiz');
+  return {
+    ...actual,
+    useLevelProgressStore: vi.fn(() => ({
+      progress: {},
+    })),
+    loadTierDefinitions: vi.fn(),
+    calculateTier: vi.fn(),
+    calculateScoreForTier: vi.fn(),
+  };
+});
 
-vi.mock('../../stores/useProfileStore', () => ({
+vi.mock('@/stores/useProfileStore', () => ({
   useProfileStore: vi.fn(() => ({
     profile: null,
   })),
 }));
 
-vi.mock('../../hooks/useMyPageStats', () => ({
+vi.mock('@/hooks/useMyPageStats', () => ({
   useMyPageStats: vi.fn(),
 }));
 
-vi.mock('../../utils/supabaseClient', () => ({
+vi.mock('@/utils/supabaseClient', () => ({
   supabase: {
     auth: {
       getSession: vi.fn(),
     },
     rpc: vi.fn(),
   },
-}));
-
-vi.mock('../../constants/tiers', () => ({
-  loadTierDefinitions: vi.fn(),
-  calculateTier: vi.fn(),
-  calculateScoreForTier: vi.fn(),
 }));
 
 describe('TierSystemSection', () => {

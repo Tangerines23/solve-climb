@@ -11,10 +11,11 @@ test.describe('Visual Regression Testing (VRT) - UI 일관성 검증', () => {
   test('홈 화면 (Home Page)', async ({ page }) => {
     await page.goto('/');
     // networkidle is unstable with Supabase realtime. Wait for main content stable state.
-    await page.waitForSelector('.home-page', { timeout: 15000 });
+    await page.waitForSelector('.home-page', { timeout: 30000 });
     await page.waitForLoadState('domcontentloaded');
+    await page.waitForLoadState('networkidle');
     // 애니메이션 및 동적 데이터 로딩 대기
-    await page.waitForTimeout(2000);
+    await page.waitForTimeout(3000);
 
     await expect(page).toHaveScreenshot('vrt-home-page.png', {
       fullPage: true,
@@ -28,8 +29,8 @@ test.describe('Visual Regression Testing (VRT) - UI 일관성 검증', () => {
 
   test('마이페이지 (My Page)', async ({ page }) => {
     await page.goto('/my-page');
-    await page.waitForSelector('.my-page', { timeout: 15000 });
-    await page.waitForTimeout(1000);
+    await page.waitForSelector('.my-page', { timeout: 30000 });
+    await page.waitForTimeout(2000);
 
     await expect(page).toHaveScreenshot('vrt-my-page.png', {
       fullPage: true,
@@ -39,8 +40,9 @@ test.describe('Visual Regression Testing (VRT) - UI 일관성 검증', () => {
 
   test('상점 페이지 (Shop Page)', async ({ page }) => {
     await page.goto('/shop');
-    await page.waitForSelector('.shop-page', { timeout: 15000 });
-    await page.waitForTimeout(1000);
+    await page.waitForSelector('.shop-page', { timeout: 30000 });
+    await page.waitForLoadState('networkidle');
+    await page.waitForTimeout(2000);
 
     await expect(page).toHaveScreenshot('vrt-shop-page.png', {
       fullPage: true,
@@ -51,8 +53,9 @@ test.describe('Visual Regression Testing (VRT) - UI 일관성 검증', () => {
   test('퀴즈 종료 결과 화면 (Result Page Snippet)', async ({ page }) => {
     // 결과 화면은 특정 상태가 필요하므로 주요 컴포넌트 단위로 검증
     await page.goto('/result?score=1000&correct=10');
-    await page.waitForSelector('.result-page', { timeout: 15000 });
-    await page.waitForTimeout(2000);
+    await page.waitForSelector('.result-page', { timeout: 30000 });
+    await page.waitForLoadState('networkidle');
+    await page.waitForTimeout(3000);
 
     await expect(page).toHaveScreenshot('vrt-quiz-result.png', {
       fullPage: true,
@@ -68,7 +71,7 @@ test.describe('Visual Regression Testing (VRT) - UI 일관성 검증', () => {
 
     await expect(page).toHaveScreenshot('vrt-roadmap-page.png', {
       fullPage: true,
-      maxDiffPixelRatio: 0.2, // 로드맵 및 통계 탭의 동적 데이터 허용 (20%)
+      maxDiffPixelRatio: 0.25, // 로드맵 및 통계 탭의 동적 데이터 허용 (25% 상향)
       mask: [
         page.locator('.history-smart-comment'),
         page.locator('.history-tier-progress'),

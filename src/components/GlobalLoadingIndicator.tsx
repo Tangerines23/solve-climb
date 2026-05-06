@@ -3,11 +3,11 @@
  * 여러 로딩 작업이 진행 중일 때 표시됩니다.
  */
 
-import { useLoadingStore } from '../stores/useLoadingStore';
+import { useGlobalLoading } from '../hooks/useGlobalLoading';
 import './GlobalLoadingIndicator.css';
 
 export function GlobalLoadingIndicator() {
-  const isAnyLoading = useLoadingStore((state) => state.isAnyLoading());
+  const { isAnyLoading } = useGlobalLoading();
 
   if (!isAnyLoading) {
     return null;

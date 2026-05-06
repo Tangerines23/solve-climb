@@ -1,21 +1,6 @@
-import { useRef, useEffect, useState } from 'react';
-import { useNavigate, useLocation } from 'react-router-dom';
-import { APP_CONFIG } from '../config/app';
-import { urls } from '../utils/navigation';
-import { useProfileStore } from '../stores/useProfileStore';
-import { useAuthStore } from '../stores/useAuthStore';
-import { useUserStore } from '../stores/useUserStore';
-import { useDebugStore } from '../stores/useDebugStore';
-import { useToastStore } from '../stores/useToastStore';
-import { storageService, STORAGE_KEYS } from '../services';
+import { APP_CONFIG } from '@/config/app';
+import { useHeader } from '@/hooks/useHeader';
 import './Header.css';
-// DebugPanel.css는 DebugPanel 컴포넌트 내부에서 import하므로 여기서는 제거
-// (동적 import된 컴포넌트의 CSS는 자동으로 분리되어 로드됨)
-
-// ⚠️ 개발 환경에서만 동적 임포트
-// ⚠️ 개발 환경에서만 동적 임포트 (App.tsx에서 전역 처리)
-
-// ⚠️ 개발 환경에서만 동적 임포트 (App.tsx에서 전역 처리)
 
 interface HeaderProps {
   title?: string;
@@ -24,118 +9,23 @@ interface HeaderProps {
 }
 
 export function Header({ title, showBack, onBack }: HeaderProps) {
-  const navigate = useNavigate();
-  const location = useLocation();
-  const [isMineralsLoading, setIsMineralsLoading] = useState(false);
-  const isAdmin = useProfileStore((state) => state.isAdmin);
-  const { minerals, stamina, fetchUserData, checkStamina, recoverMineralsAds } = useUserStore();
-  const { showToast } = useToastStore();
-
-  // ⚠️ useDebugStore 사용
-  const { isAdminMode, selectedResource, setSelectedResource, toggleDebugPanel, isDebugPanelOpen } =
-    useDebugStore();
-
-  const doubleClickTimeoutRef = useRef<NodeJS.Timeout | null>(null);
-  const lastClickTimeRef = useRef<number>(0);
-
-  useEffect(() => {
-    fetchUserData();
-    checkStamina();
-  }, [fetchUserData, checkStamina]);
-
-  // URL 파라미터 및 localStorage로 디버그 패널 자동 활성화
-  useEffect(() => {
-    if (!import.meta.env.DEV) return;
-
-    // URL 파라미터 체크: ?debug=true
-    const urlParams = new URLSearchParams(location.search);
-    if (urlParams.get('debug') === 'true' && !isDebugPanelOpen) {
-      toggleDebugPanel();
-    }
-
-    // localStorage 체크: debug_mode = 'true'
-    if (storageService.get<string>(STORAGE_KEYS.DEBUG_MODE) === 'true' && !isDebugPanelOpen) {
-      toggleDebugPanel();
-    }
-  }, [location.search, isDebugPanelOpen, toggleDebugPanel]);
-
-  const handleNotificationClick = () => {
-    navigate(APP_CONFIG.ROUTES.NOTIFICATIONS);
-  };
-
-  const handleLogoDoubleClick = () => {
-    if (isAdmin) {
-      navigate(urls.myPage({ showProfileForm: true }));
-    }
-  };
-
-  const handleLogoClick = () => {
-    if (!isAdmin) return;
-
-    const now = Date.now();
-    const timeSinceLastClick = now - lastClickTimeRef.current;
-
-    if (timeSinceLastClick < 300) {
-      handleLogoDoubleClick();
-      if (doubleClickTimeoutRef.current) {
-        clearTimeout(doubleClickTimeoutRef.current);
-        doubleClickTimeoutRef.current = null;
-      }
-    } else {
-      doubleClickTimeoutRef.current = setTimeout(() => {
-        doubleClickTimeoutRef.current = null;
-      }, 300);
-    }
-
-    lastClickTimeRef.current = now;
-  };
-
-  // --- Admin Debug Mode: 클릭 기반 조작 (키보드 단축키는 App.tsx의 useDebugShortcuts 훅에서 처리) ---
-
-  const handleStaminaClick = (e: React.MouseEvent) => {
-    if (!isAdminMode) return;
-    e.stopPropagation();
-    setSelectedResource(selectedResource === 'stamina' ? null : 'stamina');
-  };
-
-  const handleMineralsClick = (e: React.MouseEvent) => {
-    if (!isAdminMode) return;
-    e.stopPropagation();
-    setSelectedResource(selectedResource === 'minerals' ? null : 'minerals');
-  };
-
-  const handleMineralsAdRecharge = async (e: React.MouseEvent) => {
-    e.stopPropagation();
-    if (isMineralsLoading) return;
-
-    setIsMineralsLoading(true);
-    showToast('광고를 불러오는 중... 📺', 'info');
-
-    const result = await recoverMineralsAds();
-    if (result.success) {
-      showToast(result.message, '💎');
-    }
-    setIsMineralsLoading(false);
-  };
-
-  const handleItemsClick = (e: React.MouseEvent) => {
-    if (!isAdminMode) return;
-    e.stopPropagation();
-    setSelectedResource(selectedResource === 'items' ? null : 'items');
-  };
-
-  const clearSelection = () => {
-    setSelectedResource(null);
-  };
-
-  // 마이페이지(로그인/프로필 설정)에서는 헤더 숨김
-  const isProfileComplete = useProfileStore((state) => state.isProfileComplete);
-  const session = useAuthStore((state) => state.session);
-  const isMyPage = location.pathname === APP_CONFIG.ROUTES.MY_PAGE;
-
-  if (isMyPage && (!session || !isProfileComplete)) {
-    return null;
-  }
+  const {
+    minerals,
+    stamina,
+    isAdmin,
+    isAdminMode,
+    selectedResource,
+    isMineralsLoading,
+    handleNotificationClick,
+    handleLogoClick,
+    handleStaminaClick,
+    handleMineralsClick,
+    handleMineralsAdRecharge,
+    handleItemsClick,
+    clearSelection,
+    toggleDebugPanel,
+    navigate,
+  } = useHeader();
 
   return (
     <header

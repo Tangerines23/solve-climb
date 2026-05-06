@@ -2,35 +2,22 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate, useSearchParams, useLocation } from 'react-router-dom';
 import { Header } from '../components/Header';
 import { FooterNav } from '../components/FooterNav';
-import { urls } from '../utils/navigation';
+// import { urls } from '../utils/navigation'; // Removed for architectural boundary compliance
 import { ProfileForm } from '../components/ProfileForm';
 import { DataResetConfirmModal } from '../components/DataResetConfirmModal';
 import { Toast } from '../components/Toast';
 import { AlertModal } from '../components/AlertModal';
 
-import { CyclePromotionModal } from '../components/CyclePromotionModal';
+import { CyclePromotionModal, calculateTier, type TodayChallenge } from '@/features/quiz';
 import { MyPageProfile } from '../components/my/MyPageProfile';
 import { MyPageStats } from '../components/my/MyPageStats';
 import { MyPageQuickAccess } from '../components/my/MyPageQuickAccess';
 import { MyPageSettings } from '../components/my/MyPageSettings';
-import { useProfileStore } from '../stores/useProfileStore';
-import { useSettingsStore } from '../stores/useSettingsStore';
-import { useMyPageStats } from '../hooks/useMyPageStats';
-import { useFavoriteStore } from '../stores/useFavoriteStore';
-import { getTodayChallenge, type TodayChallenge } from '../utils/challenge';
-import { useLevelProgressStore } from '../stores/useLevelProgressStore';
-import { useQuizStore } from '../stores/useQuizStore';
-import { resetAllData } from '../utils/dataReset';
-import { vibrateShort } from '../utils/haptic';
-import { supabase } from '../utils/supabaseClient';
-import { safeSupabaseQuery } from '../utils/debugFetch';
-import { openLeaderboard } from '../utils/tossGameCenter';
-import { APP_CONFIG } from '../config/app';
-import { signInWithGoogle } from '../utils/auth';
+import { useMyPageBridge } from '../hooks/useMyPageBridge';
 import { WithdrawConfirmModal } from '../components/WithdrawConfirmModal';
-import { withdrawAccount } from '../utils/userWithdraw';
-import { calculateTier } from '../constants/tiers';
+// calculateTier imported from @/features/quiz above
 import { storageService, STORAGE_KEYS } from '../services';
+import { APP_CONFIG } from '../config/app';
 import './MyPage.css';
 
 // theme_id를 읽기 쉬운 이름으로 변환하는 함수
@@ -60,20 +47,41 @@ const formatBestSubject = (themeId: string | null): string => {
 export function MyPage() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
-  // Zustand Selector 패턴 적용
-  const isProfileComplete = useProfileStore((state) => state.isProfileComplete);
-  const clearProfile = useProfileStore((state) => state.clearProfile);
-  const setProfile = useProfileStore((state) => state.setProfile);
-  const profile = useProfileStore((state) => state.profile);
+
+  // Use the Bridge Hook to access all backend/store logic
+  const {
+    profile,
+    isProfileComplete,
+    isAdmin,
+    hapticEnabled,
+    animationEnabled,
+    favorites,
+    progressMap,
+    stats,
+    session,
+    loading: statsLoading,
+    error: statsError,
+    refetch,
+    setProfile,
+    clearProfile,
+    setHapticEnabled,
+    setAnimationEnabled,
+    setCategoryTopic,
+    executeReset,
+    executeWithdraw,
+    getTodayChallenge,
+    vibrateShort,
+    signInWithGoogle,
+    handleTossLogin,
+    isTossAppEnvironment,
+    urls,
+    supabase,
+    safeSupabaseQuery,
+    flags,
+    getLastPlayedWorld,
+  } = useMyPageBridge();
+
   const nickname = profile?.nickname || '게이머';
-  const hapticEnabled = useSettingsStore((state) => state.hapticEnabled);
-  const setHapticEnabled = useSettingsStore((state) => state.setHapticEnabled);
-  const animationEnabled = useSettingsStore((state) => state.animationEnabled);
-  const setAnimationEnabled = useSettingsStore((state) => state.setAnimationEnabled);
-  const { stats, session, loading: statsLoading, error: statsError, refetch } = useMyPageStats();
-  const favorites = useFavoriteStore((state) => state.favorites);
-  const setCategoryTopic = useQuizStore((state) => state.setCategoryTopic);
-  const progressMap = useLevelProgressStore((state) => state.progress);
 
   // 오늘의 챌린지 상태
   const [todayChallenge, setTodayChallenge] = useState<TodayChallenge | null>(null);
@@ -92,9 +100,7 @@ export function MyPage() {
   const [showAlert, setShowAlert] = useState(false);
   const [alertMessage, setAlertMessage] = useState('');
   const [isResetting, setIsResetting] = useState(false);
-  const [_loginError, setLoginError] = useState(false);
-  const [isOpeningLeaderboard, setIsOpeningLeaderboard] = useState(false);
-  const [retryCount, setRetryCount] = useState(0);
+
   const [showPromotionModal, setShowPromotionModal] = useState(false);
   const [tierStars, setTierStars] = useState(0);
   const [showWithdrawConfirm, setShowWithdrawConfirm] = useState(false);
@@ -121,18 +127,18 @@ export function MyPage() {
     else {
       console.log('[MyPage] Stay on MyPage');
     }
-  }, [redirectPath, navigate]);
+  }, [redirectPath, navigate, urls]);
 
   // 오늘의 챌린지 가져오기
   useEffect(() => {
-    getTodayChallenge(progressMap)
+    getTodayChallenge(progressMap, flags)
       .then((challengeData) => {
         setTodayChallenge(challengeData);
       })
       .catch((error) => {
         console.error('Failed to load today challenge:', error);
       });
-  }, [progressMap]);
+  }, [progressMap, flags, getTodayChallenge]);
 
   // 승급 대기 상태 확인 및 모달 표시
   useEffect(() => {
@@ -208,7 +214,7 @@ export function MyPage() {
   const handleConfirmDataReset = async () => {
     try {
       setIsResetting(true);
-      await resetAllData();
+      await executeReset();
       setShowDataResetConfirm(false);
       setToastMessage('모든 데이터가 초기화되었습니다.');
       setShowToast(true);
@@ -234,7 +240,7 @@ export function MyPage() {
   const handleConfirmWithdraw = async () => {
     try {
       setIsWithdrawing(true);
-      await withdrawAccount();
+      await executeWithdraw();
       setShowWithdrawConfirm(false);
       setToastMessage('회원 탈퇴가 완료되었습니다. 이용해 주셔서 감사합니다.');
       setShowToast(true);
@@ -255,51 +261,24 @@ export function MyPage() {
     window.location.href = `mailto:support@solveclimb.com?subject=${subject}&body=${body}`;
   };
 
-  /*
-  // 게임 로그인 마이그레이션 및 로그인 함수 (현재 미사용)
-  const handleLogin = async () => {
-    ...
-  };
-  */
-
-  // 리더보드 열기 함수
+  // 리더보드 및 개발 중 기능 안내 함수
   const handleOpenLeaderboard = async () => {
-    setIsOpeningLeaderboard(true);
-    setRetryCount(0);
+    // 기능 비활성화 및 개발 중 메시지 표시
+    setToastMessage('현재 개발 중인 기능입니다. 곧 만나보실 수 있어요!');
+    setShowToast(true);
+  };
 
-    try {
-      const result = await openLeaderboard(
-        (message) => {
-          // 에러 메시지를 AlertModal로 표시
-          setAlertMessage(message);
-          setShowAlert(true);
-        },
-        (attempt, maxRetries) => {
-          // 재시도 중일 때 사용자에게 알림
-          setRetryCount(attempt);
-          setToastMessage(`리더보드를 여는 중... (${attempt}/${maxRetries})`);
-          setShowToast(true);
-        }
-      );
-
-      // 결과가 실패이고 메시지가 없으면 기본 메시지 표시
-      if (!result.success && result.message) {
-        setAlertMessage(result.message);
-        setShowAlert(true);
-      } else if (!result.success) {
-        setAlertMessage('리더보드를 열 수 없습니다.');
-        setShowAlert(true);
-      }
-    } finally {
-      setIsOpeningLeaderboard(false);
-      setRetryCount(0);
+  // 토스 로그인 클릭 핸들러
+  const handleTossLoginClick = async () => {
+    const result = await handleTossLogin();
+    if (!result.success && result.error) {
+      setAlertMessage(result.error);
+      setShowAlert(true);
     }
   };
 
   const handleAnonymousLogin = async () => {
     try {
-      setLoginError(false);
-
       // 리다이렉트 경로 저장
       if (redirectPath) {
         storageService.set(STORAGE_KEYS.LOGIN_REDIRECT, redirectPath);
@@ -339,7 +318,6 @@ export function MyPage() {
       console.error('Anonymous login error:', error);
       setToastMessage('익명 로그인 중 오류가 발생했습니다.');
       setShowToast(true);
-      setLoginError(true);
     }
   };
 
@@ -354,7 +332,6 @@ export function MyPage() {
     if (error) {
       setToastMessage(error.message || '구글 로그인을 시작할 수 없습니다.');
       setShowToast(true);
-      setLoginError(true);
     }
     // 성공 시 구글 페이지로 이동하므로 여기서 추가 처리 없음
   };
@@ -388,13 +365,21 @@ export function MyPage() {
     performRedirect();
 
     try {
-      safeSupabaseQuery(supabase.rpc('update_profile_nickname', { p_nickname: nickname })).catch(
+      safeSupabaseQuery(supabase.rpc('rpc_update_nickname', { p_nickname: nickname })).catch(
         () => {}
       );
     } catch {
       // 무시
     }
-  }, [session?.user, profile?.userId, refetch, setProfile, performRedirect]);
+  }, [
+    session?.user,
+    profile?.userId,
+    refetch,
+    setProfile,
+    performRedirect,
+    safeSupabaseQuery,
+    supabase,
+  ]);
 
   // 로그아웃 함수
   const handleLogout = async () => {
@@ -449,20 +434,28 @@ export function MyPage() {
         <Header />
         <main className="my-page-main">
           <div className="my-page-content">
-            <div className="my-page-guest-view">
-              <div className="my-page-guest-icon">🔒</div>
-              <h1 className="my-page-guest-title">
-                로그인하고
-                <br />
-                <strong className="my-page-guest-highlight">내 기록을 평생 간직하세요.</strong>
-              </h1>
-              <div className="my-page-guest-buttons">
-                <button className="my-page-guest-login-button" onClick={handleGoogleLogin}>
-                  3초 만에 시작하기
-                </button>
-                <button className="my-page-guest-anonymous-link" onClick={handleAnonymousLogin}>
-                  익명 로그인하기
-                </button>
+            <div className="my-page-guest-view-container">
+              <div className="my-page-guest-view">
+                <div className="my-page-guest-icon">🔒</div>
+                <h1 className="my-page-guest-title">
+                  로그인하고
+                  <br />
+                  <strong className="my-page-guest-highlight">내 기록을 평생 간직하세요.</strong>
+                </h1>
+                <div className="my-page-guest-buttons">
+                  {isTossAppEnvironment() ? (
+                    <button className="my-page-guest-login-button" onClick={handleTossLoginClick}>
+                      3초 만에 시작하기
+                    </button>
+                  ) : (
+                    <button className="my-page-guest-login-button" onClick={handleGoogleLogin}>
+                      3초 만에 시작하기
+                    </button>
+                  )}
+                  <button className="my-page-guest-anonymous-link" onClick={handleAnonymousLogin}>
+                    익명 로그인하기
+                  </button>
+                </div>
               </div>
             </div>
           </div>
@@ -529,8 +522,8 @@ export function MyPage() {
             totalSolved={stats?.totalSolved || 0}
             maxLevel={stats?.maxLevel}
             bestSubject={formatBestSubject(stats?.bestSubject || null)}
-            isOpeningLeaderboard={isOpeningLeaderboard}
-            retryCount={retryCount}
+            isOpeningLeaderboard={false}
+            retryCount={0}
             onNavigateHistory={() => navigate(urls.history())}
             onOpenLeaderboard={handleOpenLeaderboard}
           />
@@ -540,6 +533,7 @@ export function MyPage() {
             todayChallenge={todayChallenge}
             favorites={favorites}
             setCategoryTopic={setCategoryTopic}
+            getLastPlayedWorld={getLastPlayedWorld}
           />
 
           {/* Settings List */}
@@ -557,7 +551,7 @@ export function MyPage() {
           />
 
           {/* Admin / Dev Tool Link */}
-          {(useProfileStore.getState().isAdmin || import.meta.env.DEV) && (
+          {(isAdmin || import.meta.env.DEV) && (
             <div className="mypage-admin-link-container">
               <button className="mypage-admin-link-button" onClick={() => navigate(urls.debug())}>
                 <span>🛠️</span> 관리자 도구 & UI 실험실 이동

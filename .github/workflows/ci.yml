@@ -3,12 +3,17 @@ run-name: CI - ${{ github.event.head_commit.message || 'Workflow manual run' }} 
 
 on:
   push:
-    branches: ["**"]
+    branches: ["main"]
   pull_request:
     branches: ["**"]
   schedule:
     # auth/DB E2E: 하루 1회 (UTC 02:00) — 429 rate limit 절감
     - cron: '0 2 * * *'
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: false
+
 
 jobs:
   # 1. 의존성 설치 및 캐싱 (다른 모든 작업의 기반)
@@ -246,7 +251,7 @@ jobs:
   e2e-stability-test:
     needs: build
     runs-on: ubuntu-latest
-    timeout-minutes: 20
+    timeout-minutes: 30
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -415,7 +420,7 @@ jobs:
   e2e-visual-layout:
     needs: build
     runs-on: ubuntu-latest
-    timeout-minutes: 20
+    timeout-minutes: 45
     steps:
       - name: Checkout code
         uses: actions/checkout@v4

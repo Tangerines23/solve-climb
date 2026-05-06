@@ -1,29 +1,34 @@
-import React, { useState, useEffect, useCallback } from 'react';
-import { supabase } from '../../utils/supabaseClient';
-import { useMyPageStats } from '../../hooks/useMyPageStats';
-import { useUserStore } from '../../stores/useUserStore';
-import { APP_CONFIG } from '../../config/app';
+import { useState, useEffect } from 'react';
+import { useDataResetDebugBridge } from '../../hooks/useDataResetDebugBridge';
 import { ConfirmModal } from '../ConfirmModal';
-import { storageService, STORAGE_KEYS } from '../../services';
-import { DebugSnapshot } from '../../types/storage';
-import { UI_MESSAGES, STATUS_TYPES } from '@/constants/ui';
 import './DataResetSection.css';
 
-export const DataResetSection = React.memo(function DataResetSection() {
-  const { stats, refetch } = useMyPageStats();
-  const { fetchUserData } = useUserStore();
-  const [isResetting, setIsResetting] = useState(false);
-  const [message, setMessage] = useState<{ type: string; text: string } | null>(null);
+export const DataResetSection = () => {
+  const {
+    isResetting,
+    isDeleting,
+    isResettingProgress,
+    executeResetProfile,
+    executeDeleteRecent,
+    executeDeleteAll,
+    executeDeleteByLevel,
+    executeResetLevelProgress,
+    getAvailableCategories,
+    getSubjectsForCategory,
+    handleExportData,
+    handleImportData,
+    handleSaveSnapshot,
+    handleRestoreSnapshot,
+    message,
+  } = useDataResetDebugBridge();
 
   // 게임 기록 초기화 상태
   const [deleteCount, setDeleteCount] = useState('10');
   const [selectedLevel, setSelectedLevel] = useState<number | null>(null);
-  const [isDeleting, setIsDeleting] = useState(false);
 
   // 레벨 진행도 초기화 상태
   const [selectedCategory, setSelectedCategory] = useState<string>('math');
   const [selectedSubject, setSelectedSubject] = useState<string>('arithmetic');
-  const [isResettingProgress, setIsResettingProgress] = useState(false);
 
   // 컨펌 모달 상태
   const [confirmConfig, setConfirmConfig] = useState<{
@@ -38,259 +43,24 @@ export const DataResetSection = React.memo(function DataResetSection() {
     onConfirm: () => {},
   });
 
-  const handleResetProfile = (resetType: 'all' | 'score' | 'minerals' | 'tier') => {
+  const handleResetProfileClick = (resetType: 'all' | 'score' | 'minerals' | 'tier') => {
     if (isResetting) return;
 
     setConfirmConfig({
       isOpen: true,
       title: '프로필 초기화',
       message: `프로필을 초기화하시겠습니까? (초기화 항목: ${resetType === 'all' ? '전체' : resetType}) 이 작업은 되돌릴 수 없습니다.`,
-      onConfirm: () => executeResetProfile(resetType),
+      onConfirm: async () => {
+        setConfirmConfig((prev) => ({ ...prev, isOpen: false }));
+        await executeResetProfile(resetType);
+      },
     });
   };
 
-  const executeResetProfile = async (resetType: 'all' | 'score' | 'minerals' | 'tier') => {
-    setConfirmConfig((prev) => ({ ...prev, isOpen: false }));
-
-    try {
-      setIsResetting(true);
-      setMessage(null);
-
-      const {
-        data: { session },
-      } = await supabase.auth.getSession();
-      if (!session?.user) {
-        setMessage({ type: STATUS_TYPES.ERROR, text: UI_MESSAGES.LOGIN_REQUIRED });
-        return;
-      }
-      const user = session.user;
-
-      const { error } = await supabase.rpc('debug_reset_profile', {
-        p_user_id: user.id,
-        p_reset_type: resetType,
-      });
-
-      if (error) throw error;
-
-      setMessage({ type: STATUS_TYPES.SUCCESS, text: '프로필이 초기화되었습니다.' });
-      await Promise.all([refetch(), fetchUserData()]);
-    } catch (err) {
-      setMessage({
-        type: STATUS_TYPES.ERROR,
-        text: `초기화 실패: ${err instanceof Error ? err.message : '알 수 없는 오류'}`,
-      });
-    } finally {
-      setIsResetting(false);
-    }
-  };
-
-  const handleExportData = () => {
-    try {
-      const exportData = {
-        stats: stats,
-        timestamp: new Date().toISOString(),
-      };
-
-      const dataStr = JSON.stringify(exportData, null, 2);
-      const dataBlob = new Blob([dataStr], { type: 'application/json' });
-      const url = URL.createObjectURL(dataBlob);
-      const link = document.createElement('a');
-      link.href = url;
-      link.download = `solve-climb-data-${new Date().toISOString().split('T')[0]}.json`;
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-      URL.revokeObjectURL(url);
-
-      setMessage({ type: STATUS_TYPES.SUCCESS, text: '데이터가 내보내졌습니다.' });
-    } catch (err) {
-      setMessage({
-        type: STATUS_TYPES.ERROR,
-        text: `내보내기 실패: ${err instanceof Error ? err.message : '알 수 없는 오류'}`,
-      });
-    }
-  };
-
-  const handleImportData = () => {
-    const input = document.createElement('input');
-    input.type = 'file';
-    input.accept = 'application/json';
-    input.onchange = async (e) => {
-      const file = (e.target as HTMLInputElement).files?.[0];
-      if (!file) return;
-
-      const reader = new FileReader();
-      reader.onload = async (event) => {
-        try {
-          setIsResetting(true);
-          setMessage(null);
-
-          const data = JSON.parse(event.target?.result as string);
-
-          if (!data.stats) {
-            setMessage({ type: STATUS_TYPES.ERROR, text: '유효하지 않은 데이터 형식입니다.' });
-            setIsResetting(false);
-            return;
-          }
-
-          const {
-            data: { session },
-          } = await supabase.auth.getSession();
-          if (!session?.user) {
-            setMessage({ type: STATUS_TYPES.ERROR, text: UI_MESSAGES.LOGIN_REQUIRED });
-            setIsResetting(false);
-            return;
-          }
-          const user = session.user;
-
-          // 실제 데이터 적용
-          const updatePromises: Promise<unknown>[] = [];
-
-          // 마스터리 점수 적용
-          if (data.stats.totalMasteryScore !== undefined) {
-            updatePromises.push(
-              supabase.rpc('debug_set_mastery_score', {
-                p_user_id: user.id,
-                p_score: data.stats.totalMasteryScore,
-              }) as unknown as Promise<unknown>
-            );
-          }
-
-          // 티어 레벨 적용
-          if (data.stats.currentTierLevel !== undefined && data.stats.currentTierLevel !== null) {
-            updatePromises.push(
-              supabase.rpc('debug_set_tier', {
-                p_user_id: user.id,
-                p_level: data.stats.currentTierLevel,
-              }) as unknown as Promise<unknown>
-            );
-          }
-
-          // 모든 업데이트 실행
-          const results = await Promise.allSettled(updatePromises);
-
-          // 에러 확인
-          const errors = results.filter((r) => r.status === 'rejected');
-          if (errors.length > 0) {
-            const errorMessages = errors
-              .map((e) => (e.status === 'rejected' ? e.reason?.message || '알 수 없는 오류' : ''))
-              .join(', ');
-            setMessage({ type: 'error', text: `일부 데이터 적용 실패: ${errorMessages}` });
-          } else {
-            setMessage({ type: STATUS_TYPES.SUCCESS, text: '데이터가 가져와져 적용되었습니다.' });
-            await Promise.all([refetch(), fetchUserData()]);
-          }
-        } catch (err) {
-          setMessage({
-            type: STATUS_TYPES.ERROR,
-            text: `가져오기 실패: ${err instanceof Error ? err.message : '알 수 없는 오류'}`,
-          });
-        } finally {
-          setIsResetting(false);
-        }
-      };
-      reader.readAsText(file);
-    };
-    input.click();
-  };
-
-  const handleSaveSnapshot = () => {
-    try {
-      const snapshot = {
-        stats: stats,
-        timestamp: new Date().toISOString(),
-      };
-
-      storageService.set(STORAGE_KEYS.DEBUG_SNAPSHOT, snapshot);
-      setMessage({ type: STATUS_TYPES.SUCCESS, text: '스냅샷이 저장되었습니다.' });
-    } catch (err) {
-      setMessage({
-        type: STATUS_TYPES.ERROR,
-        text: `스냅샷 저장 실패: ${err instanceof Error ? err.message : '알 수 없는 오류'}`,
-      });
-    }
-  };
-
-  const handleRestoreSnapshot = async () => {
-    try {
-      setIsResetting(true);
-      setMessage(null);
-
-      const snapshot = storageService.get<DebugSnapshot>(STORAGE_KEYS.DEBUG_SNAPSHOT);
-      if (!snapshot) {
-        setMessage({ type: STATUS_TYPES.ERROR, text: '저장된 스냅샷이 없습니다.' });
-        setIsResetting(false);
-        return;
-      }
-
-      if (!snapshot.stats) {
-        setMessage({ type: STATUS_TYPES.ERROR, text: '유효하지 않은 스냅샷 형식입니다.' });
-        setIsResetting(false);
-        return;
-      }
-
-      const {
-        data: { session },
-      } = await supabase.auth.getSession();
-      if (!session?.user) {
-        setMessage({ type: STATUS_TYPES.ERROR, text: UI_MESSAGES.LOGIN_REQUIRED });
-        setIsResetting(false);
-        return;
-      }
-      const user = session.user;
-
-      // 실제 데이터 적용 (JSON 가져오기와 동일한 로직)
-      const updatePromises: Promise<unknown>[] = [];
-
-      if (snapshot.stats.totalMasteryScore !== undefined) {
-        updatePromises.push(
-          supabase.rpc('debug_set_mastery_score', {
-            p_user_id: user.id,
-            p_score: snapshot.stats.totalMasteryScore,
-          }) as unknown as Promise<unknown>
-        );
-      }
-
-      if (
-        snapshot.stats.currentTierLevel !== undefined &&
-        snapshot.stats.currentTierLevel !== null
-      ) {
-        updatePromises.push(
-          supabase.rpc('debug_set_tier', {
-            p_user_id: user.id,
-            p_level: snapshot.stats.currentTierLevel,
-          }) as unknown as Promise<unknown>
-        );
-      }
-
-      const results = await Promise.allSettled(updatePromises);
-
-      const errors = results.filter((r) => r.status === 'rejected');
-      if (errors.length > 0) {
-        const errorMessages = errors
-          .map((e) => (e.status === 'rejected' ? e.reason?.message || '알 수 없는 오류' : ''))
-          .join(', ');
-        setMessage({ type: STATUS_TYPES.ERROR, text: `일부 데이터 복원 실패: ${errorMessages}` });
-      } else {
-        setMessage({ type: STATUS_TYPES.SUCCESS, text: '스냅샷이 복원되었습니다.' });
-        await Promise.all([refetch(), fetchUserData()]);
-      }
-    } catch (err) {
-      setMessage({
-        type: 'error',
-        text: `스냅샷 복원 실패: ${err instanceof Error ? err.message : '알 수 없는 오류'}`,
-      });
-    } finally {
-      setIsResetting(false);
-    }
-  };
-
-  // 게임 기록 초기화 함수들
-  const handleDeleteRecent = async () => {
+  const handleDeleteRecentClick = () => {
     if (isDeleting) return;
     const count = parseInt(deleteCount, 10);
     if (isNaN(count) || count <= 0) {
-      setMessage({ type: STATUS_TYPES.ERROR, text: '유효한 개수를 입력하세요.' });
       return;
     }
 
@@ -298,177 +68,56 @@ export const DataResetSection = React.memo(function DataResetSection() {
       isOpen: true,
       title: '게임 기록 삭제',
       message: `최근 ${count}개의 게임 기록을 삭제하시겠습니까? 이 작업은 되돌릴 수 없습니다.`,
-      onConfirm: executeDeleteRecent,
+      onConfirm: async () => {
+        setConfirmConfig((prev) => ({ ...prev, isOpen: false }));
+        await executeDeleteRecent(count);
+      },
     });
   };
 
-  const executeDeleteRecent = async () => {
-    setConfirmConfig((prev) => ({ ...prev, isOpen: false }));
-    const count = parseInt(deleteCount, 10);
-
-    try {
-      setIsDeleting(true);
-      setMessage(null);
-
-      const {
-        data: { session },
-      } = await supabase.auth.getSession();
-      if (!session?.user) {
-        setMessage({ type: STATUS_TYPES.ERROR, text: UI_MESSAGES.LOGIN_REQUIRED });
-        return;
-      }
-      const user = session.user;
-
-      const { data, error } = await supabase.rpc('debug_clear_game_records', {
-        p_user_id: user.id,
-        p_count: count,
-      });
-
-      if (error) throw error;
-
-      const deletedCount = (data as { deleted_sessions?: number })?.deleted_sessions || 0;
-      setMessage({ type: 'success', text: `${deletedCount}개의 게임 기록이 삭제되었습니다.` });
-      await Promise.all([refetch(), fetchUserData()]);
-    } catch (err) {
-      setMessage({
-        type: 'error',
-        text: `삭제 실패: ${err instanceof Error ? err.message : '알 수 없는 오류'}`,
-      });
-    } finally {
-      setIsDeleting(false);
-    }
-  };
-
-  const handleDeleteAll = () => {
+  const handleDeleteAllClick = () => {
     if (isDeleting) return;
 
     setConfirmConfig({
       isOpen: true,
       title: '전체 기록 삭제',
       message: '모든 게임 기록을 삭제하시겠습니까? 이 작업은 되돌릴 수 없습니다.',
-      onConfirm: executeDeleteAll,
+      onConfirm: async () => {
+        setConfirmConfig((prev) => ({ ...prev, isOpen: false }));
+        await executeDeleteAll();
+      },
     });
   };
 
-  const executeDeleteAll = async () => {
-    setConfirmConfig((prev) => ({ ...prev, isOpen: false }));
-
-    try {
-      setIsDeleting(true);
-      setMessage(null);
-
-      const {
-        data: { session },
-      } = await supabase.auth.getSession();
-      if (!session?.user) {
-        setMessage({ type: STATUS_TYPES.ERROR, text: UI_MESSAGES.LOGIN_REQUIRED });
-        return;
-      }
-      const user = session.user;
-
-      const { error } = await supabase.rpc('debug_clear_game_records', {
-        p_user_id: user.id,
-      });
-
-      if (error) throw error;
-
-      setMessage({ type: 'success', text: '모든 게임 기록이 삭제되었습니다.' });
-      await Promise.all([refetch(), fetchUserData()]);
-    } catch (err) {
-      setMessage({
-        type: 'error',
-        text: `삭제 실패: ${err instanceof Error ? err.message : '알 수 없는 오류'}`,
-      });
-    } finally {
-      setIsDeleting(false);
-    }
-  };
-
-  const handleDeleteByLevel = async () => {
+  const handleDeleteByLevelClick = async () => {
     if (isDeleting || selectedLevel === null) return;
-    if (!confirm(`레벨 ${selectedLevel}의 모든 게임 기록을 삭제하시겠습니까?`)) return;
 
-    try {
-      setIsDeleting(true);
-      setMessage(null);
-
-      const {
-        data: { session },
-      } = await supabase.auth.getSession();
-      if (!session?.user) {
-        setMessage({ type: STATUS_TYPES.ERROR, text: UI_MESSAGES.LOGIN_REQUIRED });
-        return;
-      }
-      const user = session.user;
-
-      const { error } = await supabase.rpc('debug_clear_game_records', {
-        p_user_id: user.id,
-        p_level: selectedLevel,
-      });
-
-      if (error) throw error;
-
-      setMessage({ type: 'success', text: `레벨 ${selectedLevel}의 게임 기록이 삭제되었습니다.` });
-      await Promise.all([refetch(), fetchUserData()]);
-    } catch (err) {
-      setMessage({
-        type: 'error',
-        text: `삭제 실패: ${err instanceof Error ? err.message : '알 수 없는 오류'}`,
-      });
-    } finally {
-      setIsDeleting(false);
-    }
+    setConfirmConfig({
+      isOpen: true,
+      title: '레벨 기록 삭제',
+      message: `레벨 ${selectedLevel}의 모든 게임 기록을 삭제하시겠습니까?`,
+      onConfirm: async () => {
+        setConfirmConfig((prev) => ({ ...prev, isOpen: false }));
+        await executeDeleteByLevel(selectedLevel);
+      },
+    });
   };
 
-  // 카테고리별 주제 목록 반환
-  const getSubjectsForCategory = useCallback((category: string): string[] => {
-    const subTopics = APP_CONFIG.SUB_TOPICS[category as keyof typeof APP_CONFIG.SUB_TOPICS];
-    if (!subTopics) return [];
-    return subTopics.map((topic) => topic.id);
-  }, []);
-
-  // 레벨 진행도 초기화
-  const handleResetLevelProgress = async () => {
+  const handleResetLevelProgressClick = async () => {
     if (isResettingProgress) return;
-    if (
-      !confirm(
-        `${APP_CONFIG.CATEGORY_MAP[selectedCategory as keyof typeof APP_CONFIG.CATEGORY_MAP]} > ${selectedSubject}의 레벨 진행도를 초기화하시겠습니까?`
-      )
-    )
-      return;
 
-    try {
-      setIsResettingProgress(true);
-      setMessage(null);
+    const categoryName =
+      getAvailableCategories().find((c) => c.id === selectedCategory)?.name || selectedCategory;
 
-      const {
-        data: { session },
-      } = await supabase.auth.getSession();
-      if (!session?.user) {
-        setMessage({ type: STATUS_TYPES.ERROR, text: UI_MESSAGES.LOGIN_REQUIRED });
-        return;
-      }
-      const user = session.user;
-
-      // user_level_records에서 해당 카테고리와 주제의 레벨 진행도 삭제
-      const { error } = await supabase.rpc('debug_reset_level_progress', {
-        p_user_id: user.id,
-        p_category_id: selectedCategory,
-        p_subject_id: selectedSubject,
-      });
-
-      if (error) throw error;
-
-      setMessage({ type: 'success', text: '레벨 진행도가 초기화되었습니다.' });
-      await Promise.all([refetch(), fetchUserData()]);
-    } catch (err) {
-      setMessage({
-        type: STATUS_TYPES.ERROR,
-        text: `초기화 실패: ${err instanceof Error ? err.message : '알 수 없는 오류'}`,
-      });
-    } finally {
-      setIsResettingProgress(false);
-    }
+    setConfirmConfig({
+      isOpen: true,
+      title: '레벨 진행도 초기화',
+      message: `${categoryName} > ${selectedSubject}의 레벨 진행도를 초기화하시겠습니까?`,
+      onConfirm: async () => {
+        setConfirmConfig((prev) => ({ ...prev, isOpen: false }));
+        await executeResetLevelProgress(selectedCategory, selectedSubject);
+      },
+    });
   };
 
   // 카테고리 변경 시 주제 초기화
@@ -488,28 +137,28 @@ export const DataResetSection = React.memo(function DataResetSection() {
         <div className="debug-reset-buttons">
           <button
             className="debug-reset-button debug-reset-button-score"
-            onClick={() => handleResetProfile('score')}
+            onClick={() => handleResetProfileClick('score')}
             disabled={isResetting}
           >
             점수만
           </button>
           <button
             className="debug-reset-button debug-reset-button-minerals"
-            onClick={() => handleResetProfile('minerals')}
+            onClick={() => handleResetProfileClick('minerals')}
             disabled={isResetting}
           >
             미네랄만
           </button>
           <button
             className="debug-reset-button debug-reset-button-tier"
-            onClick={() => handleResetProfile('tier')}
+            onClick={() => handleResetProfileClick('tier')}
             disabled={isResetting}
           >
             티어만
           </button>
           <button
             className="debug-reset-button debug-reset-button-all"
-            onClick={() => handleResetProfile('all')}
+            onClick={() => handleResetProfileClick('all')}
             disabled={isResetting}
           >
             전체
@@ -561,7 +210,7 @@ export const DataResetSection = React.memo(function DataResetSection() {
             />
             <button
               className="debug-game-records-button"
-              onClick={handleDeleteRecent}
+              onClick={handleDeleteRecentClick}
               disabled={isDeleting}
             >
               삭제
@@ -571,7 +220,7 @@ export const DataResetSection = React.memo(function DataResetSection() {
           <div className="debug-game-records-row">
             <button
               className="debug-game-records-button debug-game-records-button-danger"
-              onClick={handleDeleteAll}
+              onClick={handleDeleteAllClick}
               disabled={isDeleting}
             >
               전체 삭제
@@ -601,7 +250,7 @@ export const DataResetSection = React.memo(function DataResetSection() {
             </select>
             <button
               className="debug-game-records-button"
-              onClick={handleDeleteByLevel}
+              onClick={handleDeleteByLevelClick}
               disabled={isDeleting || selectedLevel === null}
             >
               레벨 삭제
@@ -625,10 +274,11 @@ export const DataResetSection = React.memo(function DataResetSection() {
               onChange={(e) => setSelectedCategory(e.target.value)}
               disabled={isResettingProgress}
             >
-              <option value="math">수학</option>
-              <option value="language">언어</option>
-              <option value="logic">논리</option>
-              <option value="general">상식</option>
+              {getAvailableCategories().map((cat) => (
+                <option key={cat.id} value={cat.id}>
+                  {cat.name}
+                </option>
+              ))}
             </select>
           </div>
           <div className="debug-level-progress-row">
@@ -653,7 +303,7 @@ export const DataResetSection = React.memo(function DataResetSection() {
           <div className="debug-level-progress-row">
             <button
               className="debug-level-progress-button"
-              onClick={handleResetLevelProgress}
+              onClick={handleResetLevelProgressClick}
               disabled={isResettingProgress}
             >
               진행도 초기화
@@ -676,4 +326,4 @@ export const DataResetSection = React.memo(function DataResetSection() {
       />
     </div>
   );
-});
+};

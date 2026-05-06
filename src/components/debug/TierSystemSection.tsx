@@ -1,171 +1,33 @@
-import React, { useState, useEffect } from 'react';
-import { supabase } from '../../utils/supabaseClient';
-import { useMyPageStats } from '../../hooks/useMyPageStats';
-import {
-  loadTierDefinitions,
-  calculateTier,
-  type TierInfo,
-  type TierLevel,
-} from '../../constants/tiers';
-import { calculateScoreForTier } from '../../utils/tierUtils';
-import { TierUpgradeModal } from '../TierUpgradeModal';
+import React from 'react';
+import { useTierDebugBridge } from '@/features/quiz/hooks/bridge/useTierDebugBridge';
+import { type TierLevel } from '@/features/quiz/constants/tiers';
+import { TierUpgradeModal } from '@/features/quiz/components/TierUpgradeModal';
 import './TierSystemSection.css';
 
 export const TierSystemSection = React.memo(function TierSystemSection() {
-  const { stats, refetch } = useMyPageStats();
-  const [tierDefinitions, setTierDefinitions] = useState<TierInfo[]>([]);
-  const [selectedTierLevel, setSelectedTierLevel] = useState<TierLevel>(0);
-  const [masteryInput, setMasteryInput] = useState('0');
-  const [calculationResult, setCalculationResult] = useState<{
-    level: TierLevel;
-    stars: number;
-    currentCycleScore: number;
-  } | null>(null);
-  const [isUpdating, setIsUpdating] = useState(false);
-  const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
-
-  // 티어 업그레이드 시뮬레이션 상태
-  const [previousTierLevel, setPreviousTierLevel] = useState<TierLevel>(0);
-  const [currentTierLevel, setCurrentTierLevel] = useState<TierLevel>(1);
-  const [showUpgradeModal, setShowUpgradeModal] = useState(false);
-  const [previousScore, setPreviousScore] = useState(0);
-  const [currentScore, setCurrentScore] = useState(0);
-
-  useEffect(() => {
-    loadTierDefinitions().then(setTierDefinitions);
-  }, []);
-
-  useEffect(() => {
-    if (stats) {
-      const masteryScore = stats.totalMasteryScore ?? 0;
-      setMasteryInput(masteryScore.toString());
-      if (stats.currentTierLevel !== null) {
-        setSelectedTierLevel(stats.currentTierLevel as TierLevel);
-      }
-      // 계산 결과 업데이트
-      calculateTier(masteryScore).then((result) => {
-        setCalculationResult({
-          level: result.level,
-          stars: result.stars,
-          currentCycleScore: result.currentCycleScore,
-        });
-      });
-    }
-  }, [stats]);
-
-  const handleTierChange = async () => {
-    if (isUpdating) return;
-
-    try {
-      setIsUpdating(true);
-      setMessage(null);
-
-      const {
-        data: { session },
-      } = await supabase.auth.getSession();
-      if (!session?.user) {
-        setMessage({ type: 'error', text: '로그인이 필요합니다.' });
-        return;
-      }
-      const user = session.user;
-
-      const { error } = await supabase.rpc('debug_set_tier', {
-        p_user_id: user.id,
-        p_level: selectedTierLevel,
-      });
-
-      if (error) {
-        setMessage({ type: 'error', text: `티어 변경 실패: ${error.message}` });
-        return;
-      }
-
-      setMessage({ type: 'success', text: '티어가 변경되었습니다.' });
-      await refetch();
-    } catch (err) {
-      setMessage({
-        type: 'error',
-        text: `오류: ${err instanceof Error ? err.message : '알 수 없는 오류'}`,
-      });
-    } finally {
-      setIsUpdating(false);
-    }
-  };
-
-  const handleMasteryChange = (delta: number) => {
-    const current = parseInt(masteryInput, 10) || 0;
-    const newValue = Math.max(0, current + delta);
-    setMasteryInput(newValue.toString());
-  };
-
-  const handleMasteryInputBlur = () => {
-    const numValue = parseInt(masteryInput, 10);
-    if (isNaN(numValue) || numValue < 0) {
-      const masteryScore = stats?.totalMasteryScore ?? 0;
-      setMasteryInput(masteryScore.toString());
-    }
-  };
-
-  const handleMasterySet = async () => {
-    if (isUpdating) return;
-
-    const numValue = parseInt(masteryInput, 10);
-    if (isNaN(numValue) || numValue < 0) {
-      setMessage({ type: 'error', text: '유효한 점수를 입력하세요.' });
-      return;
-    }
-
-    try {
-      setIsUpdating(true);
-      setMessage(null);
-
-      const {
-        data: { session },
-      } = await supabase.auth.getSession();
-      if (!session?.user) {
-        setMessage({ type: 'error', text: '로그인이 필요합니다.' });
-        return;
-      }
-      const user = session.user;
-
-      const { error } = await supabase.rpc('debug_set_mastery_score', {
-        p_user_id: user.id,
-        p_score: numValue,
-      });
-
-      if (error) {
-        setMessage({ type: 'error', text: `점수 설정 실패: ${error.message}` });
-        return;
-      }
-
-      setMessage({ type: 'success', text: '마스터리 점수가 설정되었습니다.' });
-      await refetch();
-    } catch (err) {
-      setMessage({
-        type: 'error',
-        text: `오류: ${err instanceof Error ? err.message : '알 수 없는 오류'}`,
-      });
-    } finally {
-      setIsUpdating(false);
-    }
-  };
-
-  const handleShowUpgradeModal = async () => {
-    try {
-      // 이전 티어와 현재 티어의 점수 계산
-      // 티어 레벨에서 기본 점수를 계산 (별 0개, 보너스 0점)
-      const prevScore = await calculateScoreForTier(previousTierLevel, 0, 0);
-      const currScore = await calculateScoreForTier(currentTierLevel, 0, 0);
-
-      setPreviousScore(prevScore);
-      setCurrentScore(currScore);
-      setShowUpgradeModal(true);
-    } catch (err) {
-      setMessage({
-        type: 'error',
-        text: `점수 계산 실패: ${err instanceof Error ? err.message : '알 수 없는 오류'}`,
-      });
-    }
-  };
+  const {
+    tierDefinitions,
+    selectedTierLevel,
+    setSelectedTierLevel,
+    masteryInput,
+    setMasteryInput,
+    calculationResult,
+    isUpdating,
+    message,
+    previousTierLevel,
+    setPreviousTierLevel,
+    currentTierLevel,
+    setCurrentTierLevel,
+    showUpgradeModal,
+    setShowUpgradeModal,
+    previousScore,
+    currentScore,
+    handleTierChange,
+    handleMasterySet,
+    handleMasteryChange,
+    handleMasteryInputBlur,
+    handleShowUpgradeModal,
+  } = useTierDebugBridge();
 
   return (
     <div className="debug-section">

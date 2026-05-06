@@ -1,11 +1,16 @@
 import React from 'react';
-import { useDebugStore } from '../../stores/useDebugStore';
-import { useGameStore } from '../../stores/useGameStore';
+import { useDebugActions } from '../../hooks/useDebugActions';
 import './VisualSection.css';
 
 export const VisualSection = React.memo(function VisualSection() {
-  const { showSafeAreaGuide, showComponentBorders, setShowSafeAreaGuide, setShowComponentBorders } =
-    useDebugStore();
+  const {
+    showSafeAreaGuide,
+    showComponentBorders,
+    setShowSafeAreaGuide,
+    setShowComponentBorders,
+    setGameCombo,
+    setFeverLevel,
+  } = useDebugActions();
 
   return (
     <div className="debug-section">
@@ -52,37 +57,30 @@ export const VisualSection = React.memo(function VisualSection() {
             marginTop: 'var(--spacing-sm)',
           }}
         >
-          <button
-            className="debug-action-button"
-            onClick={() => useGameStore.setState({ feverLevel: 1 })}
-          >
+          <button className="debug-action-button" onClick={() => setFeverLevel(1)}>
             피버 1단계 (ON)
           </button>
-          <button
-            className="debug-action-button"
-            onClick={() => useGameStore.setState({ feverLevel: 2 })}
-          >
+          <button className="debug-action-button" onClick={() => setFeverLevel(2)}>
             피버 2단계 (ON)
           </button>
-          <button
-            className="debug-action-button"
-            onClick={() => useGameStore.setState({ feverLevel: 0 })}
-          >
+          <button className="debug-action-button" onClick={() => setFeverLevel(0)}>
             피버 끄기
           </button>
           <button
             className="debug-action-button"
             onClick={() => {
-              const currentCombo = useGameStore.getState().combo;
-              useGameStore.getState().setCombo(currentCombo + 1);
+              // Note: For incremental combo, we might need to get current value,
+              // but for debug panel, absolute setters are usually fine.
+              // If needed, we could add incrementGameCombo to useDebugActions.
+              setGameCombo(1);
             }}
           >
-            콤보 +1
+            콤보 1 설정
           </button>
           <button
             className="debug-action-button"
             onClick={() => {
-              useGameStore.getState().setCombo(10);
+              setGameCombo(10);
             }}
           >
             콤보 10 설정
@@ -90,7 +88,7 @@ export const VisualSection = React.memo(function VisualSection() {
           <button
             className="debug-action-button"
             onClick={() => {
-              useGameStore.getState().setCombo(50);
+              setGameCombo(50);
             }}
           >
             콤보 50 (슈퍼)

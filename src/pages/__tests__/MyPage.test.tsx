@@ -83,16 +83,6 @@ vi.mock('../../components/AlertModal', () => ({
       </div>
     ) : null,
 }));
-vi.mock('../../components/CyclePromotionModal', () => ({
-  CyclePromotionModal: ({ isOpen, onPromote, onClose, stars }: any) =>
-    isOpen ? (
-      <div data-testid="promotion-modal">
-        <span>Stars: {stars}</span>
-        <button onClick={() => onPromote()}>Promote</button>
-        <button onClick={() => onClose()}>Close Promotion</button>
-      </div>
-    ) : null,
-}));
 
 // Mock sub-components
 vi.mock('../../components/my/MyPageProfile', () => ({
@@ -140,9 +130,6 @@ vi.mock('../../components/my/MyPageEffectsGuide', () => ({
 }));
 
 // 2. Mock Utilities and Supabase Client
-vi.mock('../../utils/challenge', () => ({
-  getTodayChallenge: vi.fn(() => Promise.resolve({ id: 'test' })),
-}));
 vi.mock('../../utils/dataReset', () => ({
   resetAllData: vi.fn(() => Promise.resolve(true)),
 }));
@@ -161,9 +148,6 @@ vi.mock('../../utils/debugFetch', () => ({
     if (typeof p === 'function') return p();
     return Promise.resolve(p);
   }),
-}));
-vi.mock('../../constants/tiers', () => ({
-  calculateTier: vi.fn(() => Promise.resolve({ stars: 3 })),
 }));
 
 vi.mock('../../utils/supabaseClient', () => ({
@@ -186,7 +170,28 @@ vi.mock('../../utils/supabaseClient', () => ({
   },
 }));
 
-// 3. Mock Stores
+// 3. Mock Quiz Feature and Stores
+vi.mock('@/features/quiz', () => ({
+  CyclePromotionModal: ({ isOpen, onPromote, onClose, stars }: any) =>
+    isOpen ? (
+      <div data-testid="promotion-modal">
+        <span>Stars: {stars}</span>
+        <button onClick={() => onPromote()}>Promote</button>
+        <button onClick={() => onClose()}>Close Promotion</button>
+      </div>
+    ) : null,
+  calculateTier: vi.fn(() => Promise.resolve({ stars: 3 })),
+  getTodayChallenge: vi.fn(() => Promise.resolve({ id: 'test' })),
+  useQuizStore: Object.assign((selector: any) => selector(mockStoreState), {
+    getState: () => mockStoreState,
+    subscribe: vi.fn(),
+  }),
+  useLevelProgressStore: Object.assign((selector: any) => selector(mockStoreState), {
+    getState: () => mockStoreState,
+    subscribe: vi.fn(),
+  }),
+}));
+
 vi.mock('../../stores/useProfileStore', () => ({
   useProfileStore: Object.assign((selector: any) => selector(mockStoreState), {
     getState: () => mockStoreState,
@@ -201,18 +206,6 @@ vi.mock('../../stores/useSettingsStore', () => ({
 }));
 vi.mock('../../stores/useFavoriteStore', () => ({
   useFavoriteStore: Object.assign((selector: any) => selector(mockStoreState), {
-    getState: () => mockStoreState,
-    subscribe: vi.fn(),
-  }),
-}));
-vi.mock('../../stores/useQuizStore', () => ({
-  useQuizStore: Object.assign((selector: any) => selector(mockStoreState), {
-    getState: () => mockStoreState,
-    subscribe: vi.fn(),
-  }),
-}));
-vi.mock('../../stores/useLevelProgressStore', () => ({
-  useLevelProgressStore: Object.assign((selector: any) => selector(mockStoreState), {
     getState: () => mockStoreState,
     subscribe: vi.fn(),
   }),
@@ -266,7 +259,7 @@ describe('MyPage', () => {
     mockRefetch.mockReturnValue(Promise.resolve());
 
     // Reset default hook behavior
-    (useMyPageStats as any).mockReturnValue({
+    vi.mocked(useMyPageStats).mockReturnValue({
       stats: {
         totalSolved: 10,
         totalMasteryScore: 1000,
@@ -277,7 +270,7 @@ describe('MyPage', () => {
       loading: false,
       error: null,
       refetch: mockRefetch,
-    });
+    } as any);
   });
 
   it('', async () => {
@@ -360,13 +353,13 @@ describe('MyPage', () => {
   });
 
   it('', async () => {
-    (useMyPageStats as any).mockReturnValue({
+    vi.mocked(useMyPageStats).mockReturnValue({
       stats: null,
       session: null,
       loading: false,
       error: null,
       refetch: mockRefetch,
-    });
+    } as any);
 
     await act(async () => {
       render(
@@ -379,13 +372,13 @@ describe('MyPage', () => {
   });
 
   it('should handle anonymous login', async () => {
-    (useMyPageStats as any).mockReturnValue({
+    vi.mocked(useMyPageStats).mockReturnValue({
       stats: null,
       session: null,
       loading: false,
       error: null,
       refetch: mockRefetch,
-    });
+    } as any);
 
     await act(async () => {
       render(
@@ -405,13 +398,13 @@ describe('MyPage', () => {
   });
 
   it('should handle google login', async () => {
-    (useMyPageStats as any).mockReturnValue({
+    vi.mocked(useMyPageStats).mockReturnValue({
       stats: null,
       session: null,
       loading: false,
       error: null,
       refetch: mockRefetch,
-    });
+    } as any);
 
     await act(async () => {
       render(
@@ -431,7 +424,7 @@ describe('MyPage', () => {
   });
 
   it('should handle promotion flow', async () => {
-    (useMyPageStats as any).mockReturnValue({
+    vi.mocked(useMyPageStats).mockReturnValue({
       stats: {
         totalSolved: 10,
         totalMasteryScore: 1000,
@@ -442,7 +435,7 @@ describe('MyPage', () => {
       loading: false,
       error: null,
       refetch: mockRefetch,
-    });
+    } as any);
 
     await act(async () => {
       render(
@@ -489,7 +482,9 @@ describe('MyPage', () => {
     });
     const rankBtn = screen.getByText(/명예의 전당/i);
     fireEvent.click(rankBtn);
-    expect(tossUtils.openLeaderboard).toHaveBeenCalled();
+    await waitFor(() => {
+      expect(screen.getByText(/현재 개발 중인 기능입니다/i)).toBeTruthy();
+    });
   });
 
   it('', async () => {
@@ -505,7 +500,7 @@ describe('MyPage', () => {
   });
 
   it('should handle data reset error', async () => {
-    (dataResetUtils.resetAllData as any).mockRejectedValueOnce(new Error('Reset failed'));
+    vi.mocked(dataResetUtils.resetAllData).mockRejectedValueOnce(new Error('Reset failed'));
     await act(async () => {
       render(
         <BrowserRouter>
@@ -518,11 +513,13 @@ describe('MyPage', () => {
     await act(async () => {
       fireEvent.click(screen.getByText('Confirm Reset'));
     });
-    expect(screen.getByText(/데이터 초기화 중 오류/i)).toBeTruthy();
+    await waitFor(() => {
+      expect(screen.getByText(/데이터 초기화 중 오류/i)).toBeTruthy();
+    });
   });
 
   it('should handle withdrawal error', async () => {
-    (withdrawUtils.withdrawAccount as any).mockRejectedValueOnce(new Error('Withdraw failed'));
+    vi.mocked(withdrawUtils.withdrawAccount).mockRejectedValueOnce(new Error('Withdraw failed'));
     await act(async () => {
       render(
         <BrowserRouter>
@@ -562,13 +559,13 @@ describe('MyPage', () => {
   });
 
   it('', async () => {
-    (useMyPageStats as any).mockReturnValue({
+    vi.mocked(useMyPageStats).mockReturnValue({
       stats: null,
       session: { user: { id: 'test' } },
       loading: false,
       error: 'Failed to load stats',
       refetch: mockRefetch,
-    });
+    } as any);
 
     await act(async () => {
       render(
@@ -580,11 +577,7 @@ describe('MyPage', () => {
     expect(screen.getByText('Failed to load stats')).toBeTruthy();
   });
 
-  it('should open leaderboard with early failure', async () => {
-    (tossUtils.openLeaderboard as any).mockResolvedValueOnce({
-      success: false,
-      message: 'Custom Error',
-    });
+  it('should show development toast when leaderboard button clicked', async () => {
     await act(async () => {
       render(
         <BrowserRouter>
@@ -592,14 +585,13 @@ describe('MyPage', () => {
         </BrowserRouter>
       );
     });
-    fireEvent.click(screen.getByText(/명예의 전당/i));
-
-    await waitFor(() => {
-      expect(screen.getByText('Custom Error')).toBeTruthy();
+    await act(async () => {
+      fireEvent.click(screen.getByText(/명예의 전당/i));
     });
 
-    fireEvent.click(screen.getByTestId('alert-modal'));
-    expect(screen.queryByTestId('alert-modal')).toBeNull();
+    await waitFor(() => {
+      expect(screen.getByText(/현재 개발 중인 기능입니다/i)).toBeTruthy();
+    });
   });
 
   it('should handle profile complete with direct redirect', async () => {
@@ -649,7 +641,7 @@ describe('MyPage', () => {
   });
 
   it('should close Promotion Modal', async () => {
-    (useMyPageStats as any).mockReturnValue({
+    vi.mocked(useMyPageStats).mockReturnValue({
       stats: {
         totalSolved: 10,
         totalMasteryScore: 1000,
@@ -660,7 +652,7 @@ describe('MyPage', () => {
       loading: false,
       error: null,
       refetch: mockRefetch,
-    });
+    } as any);
 
     await act(async () => {
       render(
@@ -690,13 +682,13 @@ describe('MyPage', () => {
   });
 
   it('should handle anonymous login error', async () => {
-    (useMyPageStats as any).mockReturnValue({
+    vi.mocked(useMyPageStats).mockReturnValue({
       stats: null,
       session: null,
       loading: false,
       error: null,
       refetch: mockRefetch,
-    });
+    } as any);
 
     // Extract setProfile from store mock to force error
     mockStoreState.setProfile.mockImplementationOnce(() => {
@@ -751,7 +743,7 @@ describe('MyPage', () => {
   });
 
   it('should handle Promotion Modal actions', async () => {
-    (useMyPageStats as any).mockReturnValue({
+    vi.mocked(useMyPageStats).mockReturnValue({
       stats: {
         totalSolved: 10,
         totalMasteryScore: 1000,
@@ -763,7 +755,7 @@ describe('MyPage', () => {
       loading: false,
       error: null,
       refetch: mockRefetch,
-    });
+    } as any);
 
     let unmount: any;
     await act(async () => {
@@ -785,7 +777,7 @@ describe('MyPage', () => {
     unmount();
 
     // Test close vs promote branch coverage
-    (useMyPageStats as any).mockReturnValue({
+    vi.mocked(useMyPageStats).mockReturnValue({
       stats: {
         totalSolved: 10,
         totalMasteryScore: 1000,
@@ -797,7 +789,7 @@ describe('MyPage', () => {
       loading: false,
       error: null,
       refetch: mockRefetch,
-    });
+    } as any);
 
     let findByText: any;
     await act(async () => {

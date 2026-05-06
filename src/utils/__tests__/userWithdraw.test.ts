@@ -1,9 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { withdrawAccount } from '../userWithdraw';
 import { supabase } from '../supabaseClient';
-import { storageService, STORAGE_KEYS } from '../../services';
-import { useLevelProgressStore } from '../../stores/useLevelProgressStore';
-import { ENV } from '../env';
+import { storageService } from '../../services';
 
 // Mock dependencies
 vi.mock('../supabaseClient', () => ({
@@ -25,21 +23,25 @@ vi.mock('../../services', () => ({
   },
 }));
 
-vi.mock('../../stores/useProfileStore', () => ({
-  useProfileStore: {
-    getState: vi.fn(() => ({
-      clearProfile: vi.fn(),
-    })),
-  },
-}));
+vi.mock('../../stores/useProfileStore', () => {
+  const mockStore = vi.fn((selector) => {
+    const state = { clearProfile: vi.fn() };
+    return typeof selector === 'function' ? selector(state) : state;
+  });
+  Object.assign(mockStore, { getState: vi.fn(() => ({ clearProfile: vi.fn() })) });
+  return { useProfileStore: mockStore };
+});
 
-vi.mock('../../stores/useLevelProgressStore', () => ({
-  useLevelProgressStore: {
-    getState: vi.fn(() => ({
-      resetProgress: vi.fn().mockResolvedValue(undefined),
-    })),
-  },
-}));
+vi.mock('../../features/quiz/stores/useLevelProgressStore', () => {
+  const mockStore = vi.fn((selector) => {
+    const state = { resetProgress: vi.fn().mockResolvedValue(undefined) };
+    return typeof selector === 'function' ? selector(state) : state;
+  });
+  Object.assign(mockStore, {
+    getState: vi.fn(() => ({ resetProgress: vi.fn().mockResolvedValue(undefined) })),
+  });
+  return { useLevelProgressStore: mockStore };
+});
 
 vi.mock('../errorHandler', () => ({
   logError: vi.fn(),
@@ -56,6 +58,9 @@ const fetchMock = vi.fn();
 vi.stubGlobal('fetch', fetchMock);
 
 describe('userWithdraw', () => {
+  const mockClearProfile = vi.fn();
+  const mockResetProgress = vi.fn().mockResolvedValue(undefined);
+
   beforeEach(() => {
     vi.clearAllMocks();
     vi.useFakeTimers();
@@ -66,14 +71,13 @@ describe('userWithdraw', () => {
     vi.mocked(supabase.auth.getSession).mockResolvedValue({
       data: { session: mockSession },
       error: null,
-    } as any);
+    } as unknown as { data: { session: unknown }; error: null });
 
     fetchMock.mockResolvedValue(new Response(JSON.stringify({ success: true }), { status: 200 }));
 
-    const result = await withdrawAccount();
+    const result = await withdrawAccount(mockClearProfile, mockResetProgress);
 
     expect(result).toBe(true);
-    // When fetch is called with a Request object instead of (url, options)
     const [call] = fetchMock.mock.calls;
     const request = call[0] as Request;
     expect(request.url).toContain('/functions/v1/withdraw-account');
@@ -81,6 +85,8 @@ describe('userWithdraw', () => {
     expect(request.headers.get('Authorization')).toBe('Bearer test-token');
 
     expect(storageService.clear).toHaveBeenCalled();
+    expect(mockClearProfile).toHaveBeenCalled();
+    expect(mockResetProgress).toHaveBeenCalled();
     expect(supabase.auth.signOut).toHaveBeenCalled();
   });
 
@@ -88,13 +94,15 @@ describe('userWithdraw', () => {
     vi.mocked(supabase.auth.getSession).mockResolvedValue({
       data: { session: null },
       error: null,
-    } as any);
+    } as unknown as { data: { session: unknown }; error: null });
 
-    const result = await withdrawAccount();
+    const result = await withdrawAccount(mockClearProfile, mockResetProgress);
 
     expect(result).toBe(true);
     expect(fetchMock).not.toHaveBeenCalled();
     expect(storageService.clear).toHaveBeenCalled();
+    expect(mockClearProfile).toHaveBeenCalled();
+    expect(mockResetProgress).toHaveBeenCalled();
   });
 
   it('should throw error if server request fails', async () => {
@@ -102,10 +110,8 @@ describe('userWithdraw', () => {
     vi.mocked(supabase.auth.getSession).mockResolvedValue({
       data: { session: mockSession },
       error: null,
-    } as any);
+    } as unknown as { data: { session: unknown }; error: null });
 
-    // MSW will sometimes interfere with manually mocked Response objects if they don't look "real"
-    // Use a standard Response constructor
     fetchMock.mockResolvedValueOnce(
       new Response(JSON.stringify({ error: 'Server error' }), {
         status: 500,
@@ -114,7 +120,7 @@ describe('userWithdraw', () => {
       })
     );
 
-    await expect(withdrawAccount()).rejects.toThrow(
+    await expect(withdrawAccount(mockClearProfile, mockResetProgress)).rejects.toThrow(
       '계정 삭제 요청 중 오류가 발생했습니다. 네트워크 상태를 확인하시거나 다시 시도해 주세요.'
     );
   });
@@ -124,25 +130,23 @@ describe('userWithdraw', () => {
     vi.mocked(supabase.auth.getSession).mockResolvedValue({
       data: { session: mockSession },
       error: null,
-    } as any);
+    } as unknown as { data: { session: unknown }; error: null });
 
     fetchMock.mockRejectedValue(new Error('Network error'));
 
-    await expect(withdrawAccount()).rejects.toThrow('네트워크 상태를 확인하시거나');
+    await expect(withdrawAccount(mockClearProfile, mockResetProgress)).rejects.toThrow(
+      '네트워크 상태를 확인하시거나'
+    );
   });
 
   it('should handle store reset failure gracefully', async () => {
     vi.mocked(supabase.auth.getSession).mockResolvedValue({
       data: { session: null },
       error: null,
-    } as any);
+    } as unknown as { data: { session: unknown }; error: null });
 
-    const resetProgress = vi.fn().mockRejectedValue(new Error('Reset fail'));
-    vi.mocked(useLevelProgressStore.getState).mockReturnValue({
-      resetProgress,
-    } as any);
-
-    const result = await withdrawAccount();
+    const failingResetProgress = vi.fn().mockRejectedValue(new Error('Reset fail'));
+    const result = await withdrawAccount(mockClearProfile, failingResetProgress);
 
     expect(result).toBe(true); // Should still return true as it catches the error
     expect(supabase.auth.signOut).toHaveBeenCalled();

@@ -1,36 +1,43 @@
 import { useState, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { urls } from '../../utils/navigation';
-import { useGameStore } from '../../stores/useGameStore';
+import { useDebugActions } from '../../hooks/useDebugActions';
+import {
+  PauseModal,
+  LastChanceModal,
+  GameTipModal,
+  GameAlertModal,
+  ItemFeedbackOverlay,
+  CountdownOverlay,
+  SafetyRopeOverlay,
+  GameOverlay,
+  BackpackBottomSheet,
+  KeyboardInfoModal,
+  useGameActions,
+  ChallengeCard,
+  UnknownMountainCard,
+} from '@/features/quiz';
+import {
+  CyclePromotionModal,
+  ModeSelectModal,
+  MyRecordCard,
+  StatusCard,
+  TierUpgradeModal,
+  LevelListCard,
+} from '@/features/quiz';
 import { AlertModal } from '../AlertModal';
 import { ConfirmModal } from '../ConfirmModal';
-import { CyclePromotionModal } from '../CyclePromotionModal';
 import { DataResetConfirmModal } from '../DataResetConfirmModal';
 import { CustomPresetModal } from './CustomPresetModal';
 import { Toast } from '../Toast';
-import { LevelListCard } from '../LevelListCard';
-import { PauseModal } from '../game/PauseModal';
-import { LastChanceModal } from '../LastChanceModal';
-import { ModeSelectModal } from '../ModeSelectModal';
-import { GameTipModal } from '../GameTipModal';
-import { GameAlertModal } from '../game/GameAlertModal';
-import { ItemFeedbackOverlay, ItemFeedbackRef } from '../game/ItemFeedbackOverlay';
-import { CountdownOverlay } from '../CountdownOverlay';
-import { SafetyRopeOverlay } from '../game/SafetyRopeOverlay';
-import { GameOverlay } from '../game/GameOverlay';
-import { ChallengeCard } from '../ChallengeCard';
-import { MyRecordCard } from '../MyRecordCard';
-import { UnknownMountainCard } from '../UnknownMountainCard';
-import { StatusCard } from '../StatusCard';
-import { TierUpgradeModal } from '../TierUpgradeModal';
-import { KeyboardInfoModal } from '../KeyboardInfoModal';
-import { BackpackBottomSheet } from '../game/BackpackBottomSheet';
+import { ItemFeedbackRef } from '@/features/quiz/types/feedback';
 import { BadgeNotification } from '../BadgeNotification';
 import { UnderDevelopmentModal } from '../UnderDevelopmentModal';
 import './NotificationPlayground.css';
 
 export function NotificationPlayground() {
   const navigate = useNavigate();
+  const { urls } = useDebugActions();
+  const { setExhausted, setCombo, resetCombo, isExhausted, feverLevel } = useGameActions();
   const [activeModal, setActiveModal] = useState<string | null>(null);
   const [toastMessage, setToastMessage] = useState<string>('');
   const [showToast, setShowToast] = useState(false);
@@ -38,9 +45,6 @@ export function NotificationPlayground() {
   const itemFeedbackRef = useRef<ItemFeedbackRef>(null);
   const [showCountdown, setShowCountdown] = useState(false);
   const [showSafetyRope, setShowSafetyRope] = useState(false);
-
-  // Store access for GameOverlay effects
-  const { setExhausted, setCombo, resetCombo, isExhausted, feverLevel } = useGameStore();
 
   const handleAlertAction = (action: 'login' | 'charge' | 'play') => {
     triggerToast(`Action: ${action}`);
@@ -202,7 +206,7 @@ export function NotificationPlayground() {
         level={5}
         levelName="Multiplication"
         onClose={closeModals}
-        onSelectMode={(mode) => triggerToast(`Selected: ${mode}`)}
+        onSelectMode={(mode: string) => triggerToast(`Selected: ${mode}`)}
       />
 
       <GameTipModal
@@ -326,8 +330,8 @@ export function NotificationPlayground() {
                 { level: 1, name: 'Level 1', description: 'Test' },
                 { level: 2, name: 'Level 2', description: 'Test' },
               ]}
-              onLevelClick={(lvl) => triggerToast(`Level ${lvl}`)}
-              onLevelLongPress={(lvl) => triggerToast(`Long Press ${lvl}`)}
+              onLevelClick={(lvl: number) => triggerToast(`Level ${lvl}`)}
+              onLevelLongPress={(lvl: number) => triggerToast(`Long Press ${lvl}`)}
             />
             <button className="playground-close-btn" onClick={closeModals}>
               닫기

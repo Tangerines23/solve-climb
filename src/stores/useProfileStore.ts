@@ -1,8 +1,8 @@
 // 프로필 스토어
 import { create } from 'zustand';
-import { useLevelProgressStore } from './useLevelProgressStore';
+import { useLevelProgressStore } from '@/features/quiz';
 import { storageService, STORAGE_KEYS } from '../services';
-import type { UserProgress } from './useLevelProgressStore';
+import type { UserProgress } from '@/features/quiz';
 
 export interface UserProfile {
   profileId: string; // 고유 프로필 ID
@@ -14,7 +14,7 @@ export interface UserProfile {
   isAdmin?: boolean; // 관리자 모드 플래그
 }
 
-interface ProfileState {
+export interface ProfileState {
   profile: UserProfile | null;
   isProfileComplete: boolean;
   isAdmin: boolean; // 관리자 모드 상태
@@ -102,7 +102,7 @@ export const useProfileStore = create<ProfileState>((set, get) => ({
   profiles: savedProfiles,
   setProfile: (profile) => {
     const state = get();
-    let updatedProfiles = [...state.profiles];
+    const updatedProfiles = [...state.profiles];
 
     // 프로필에 ID가 없거나 빈 문자열이면 생성 (새 프로필)
     if (!profile.profileId || profile.profileId === '') {

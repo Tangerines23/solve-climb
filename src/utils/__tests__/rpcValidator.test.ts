@@ -42,7 +42,7 @@ describe('rpcValidator', () => {
 
       expect(result.data).toBeNull();
       expect(result.error).toBeDefined();
-      expect((result.error as any).message).toContain('데이터 검증 실패');
+      expect((result.error as { message?: string }).message).toContain('데이터 검증 실패');
     });
 
     it('should handle missing data', async () => {

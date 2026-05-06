@@ -1,20 +1,20 @@
-export interface InventoryItem {
-  id: number;
-  code: string;
-  name: string;
-  description: string;
-  quantity: number;
-}
+import { Database } from './database.types';
 
-export interface UserProfile {
-  id: string;
+type DBProfile = Database['public']['Tables']['profiles']['Row'];
+type DBItem = Database['public']['Tables']['items']['Row'];
+type DBInventory = Database['public']['Tables']['inventory']['Row'];
+
+export type InventoryItem = Pick<DBItem, 'id' | 'code' | 'name'> & {
+  description: string;
+  quantity: DBInventory['quantity'];
+};
+
+export type UserProfile = Omit<DBProfile, 'nickname' | 'avatar_url' | 'updated_at'> & {
   email: string;
   nickname?: string;
   avatar_url?: string;
-  minerals: number;
-  stamina: number;
   last_stamina_update?: string;
-}
+};
 
 export interface UserState {
   minerals: number;

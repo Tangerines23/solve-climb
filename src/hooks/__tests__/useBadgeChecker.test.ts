@@ -86,7 +86,7 @@ describe('useBadgeChecker', () => {
         },
 
         insert: mockInsert.mockResolvedValue({ error: null }),
-      } as unknown as any;
+      } as unknown as ReturnType<typeof supabase.from>;
     });
 
     // We need more control over select chain specifically
@@ -97,7 +97,7 @@ describe('useBadgeChecker', () => {
       insert: mockInsert.mockResolvedValue({ error: null }), // default success
     };
 
-    vi.mocked(supabase.from).mockReturnValue(chain as any);
+    vi.mocked(supabase.from).mockReturnValue(chain as unknown as ReturnType<typeof supabase.from>);
     mockSelect.mockImplementation(chain.eq); // capture the final promise returner
 
     // Setup RPC mock for validatedRpc
@@ -112,9 +112,11 @@ describe('useBadgeChecker', () => {
           count: null,
         };
         // validatedRpc might expect the result to be thenable or just a promise
-        return Promise.resolve(result) as any;
+        return Promise.resolve(result) as unknown as Awaited<ReturnType<typeof supabase.rpc>>;
       }
-      return Promise.resolve({ data: null, error: null }) as any;
+      return Promise.resolve({ data: null, error: null }) as unknown as Awaited<
+        ReturnType<typeof supabase.rpc>
+      >;
     });
   });
 
@@ -220,7 +222,7 @@ describe('useBadgeChecker', () => {
       insert: mockInsert,
     };
 
-    vi.mocked(supabase.from).mockReturnValue(chain as any);
+    vi.mocked(supabase.from).mockReturnValue(chain as unknown as ReturnType<typeof supabase.from>);
 
     const { result } = renderHook(() => useBadgeChecker());
     const stats = { ...baseStats, totalAltitude: 200 }; // Qualified for altitude

@@ -1,7 +1,7 @@
 import { useSearchParams } from 'react-router-dom';
 import { useEffect, useMemo } from 'react';
 import { storageService, STORAGE_KEYS } from '@/services';
-import { World, Category } from '@/types/quiz';
+import { World, Category } from '@/features/quiz';
 import { APP_CONFIG } from '@/config/app';
 
 /**

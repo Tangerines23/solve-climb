@@ -1,4 +1,4 @@
-import { Category } from '@/types/quiz';
+import { Category } from '../features/quiz/types/quiz';
 import { storageService, STORAGE_KEYS } from './index';
 
 const MAX_HISTORY_ITEMS = 100;

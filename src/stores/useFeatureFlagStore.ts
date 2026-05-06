@@ -9,15 +9,9 @@ import { zustandStorage } from '../services';
  * 향후 서버(Supabase) 설정과 연동하여 실시간 제어가 가능하도록 설계되었습니다.
  */
 
-interface FeatureFlags {
-  ENABLE_MATH_MOUNTAIN: boolean;
-  ENABLE_LANGUAGE_MOUNTAIN: boolean;
-  ENABLE_LOGIC_MOUNTAIN: boolean;
-  ENABLE_GENERAL_MOUNTAIN: boolean;
-  ENABLE_BETA_FEEDBACK: boolean; // 베타 피드백 모달 활성화 여부
-}
+import { FeatureFlags } from '../types/config';
 
-interface FeatureFlagState {
+export interface FeatureFlagState {
   flags: FeatureFlags;
   setFlag: (key: keyof FeatureFlags, value: boolean) => void;
   resetFlags: () => void;

@@ -3,6 +3,7 @@ import { supabase } from '../utils/supabaseClient';
 import { Session, User } from '@supabase/supabase-js';
 import { safeSupabaseQuery } from '../utils/debugFetch';
 import { storageService, STORAGE_KEYS } from '../services';
+import { isValidUUID } from '../utils/validation';
 
 import { analytics } from '@/services/analytics';
 
@@ -25,11 +26,15 @@ export const useAuthStore = create<AuthState>((set) => ({
 
     // 1. 로컬 세션 우선 확인 (익명 사용자용, 가장 빠름)
     const localSession = storageService.get<{ userId: string }>(STORAGE_KEYS.LOCAL_SESSION) || null;
-    if (localSession) {
+    if (localSession && isValidUUID(localSession.userId)) {
       const mockSession = {
         user: { id: localSession.userId, is_anonymous: true },
       } as unknown as Session;
       set({ session: mockSession, user: mockSession.user });
+    } else if (localSession) {
+      // UUID가 아닌 레거시 ID가 있는 경우 삭제
+      console.warn('[AuthStore] Clearing legacy non-UUID session:', localSession.userId);
+      storageService.remove(STORAGE_KEYS.LOCAL_SESSION);
     }
 
     // 2. Supabase 세션 확인 (이미 로컬 세션이 있어도 Supabase 세션이 우선순위가 높을 수 있음)

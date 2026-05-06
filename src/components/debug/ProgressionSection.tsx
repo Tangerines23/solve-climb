@@ -1,12 +1,11 @@
 import React, { useState } from 'react';
-import { useDebugStore } from '../../stores/useDebugStore';
+import { useDebugActions } from '../../hooks/useDebugActions';
 import { APP_CONFIG } from '../../config/app';
 import { useNavigate } from 'react-router-dom';
-import { urls } from '../../utils/navigation';
 import './ProgressionSection.css';
 
 export const ProgressionSection = React.memo(function ProgressionSection() {
-  const { bypassLevelLock, setBypassLevelLock } = useDebugStore();
+  const { bypassLevelLock, setBypassLevelLock, urls } = useDebugActions();
   const navigate = useNavigate();
 
   const [selectedWorld, setSelectedWorld] = useState<string>(APP_CONFIG.WORLDS[0].id);
