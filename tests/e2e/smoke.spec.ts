@@ -92,9 +92,11 @@ test.describe('SMOKE TEST - 메인 화면 검증', () => {
     await page.waitForLoadState('networkidle');
 
     // 2. 페이지 렌더링 확인 (에러 메시지 없음)
-    const container = page.locator(
-      '.category-select-container, .topic-select-page, .quiz-page-container, .category-list-container'
-    );
+    const container = page
+      .locator(
+        '.category-select-container, .topic-select-page, .quiz-page, .category-list-container, .level-select-page'
+      )
+      .first();
     await expect(container).toBeVisible({ timeout: 20000 });
 
     // 3. UI 레이아웃 무결성 확인

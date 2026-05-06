@@ -26,8 +26,18 @@ export const ENV = createEnv({
       .default(isTestOrCI ? 'dummy-anon-key' : (undefined as unknown as string)),
 
     // 2. 광고 및 분석 설정 (기본값 제공)
-    VITE_ADMOB_APP_ID: z.string().min(1, 'AdMob App ID is required'),
-    VITE_ADMOB_REWARDED_ID: z.string().min(1, 'AdMob Rewarded ID is required'),
+    VITE_ADMOB_APP_ID: z
+      .string()
+      .min(1, 'AdMob App ID is required')
+      .default(
+        isTestOrCI ? 'ca-app-pub-3940256099942544~3347511713' : (undefined as unknown as string)
+      ),
+    VITE_ADMOB_REWARDED_ID: z
+      .string()
+      .min(1, 'AdMob Rewarded ID is required')
+      .default(
+        isTestOrCI ? 'ca-app-pub-3940256099942544/5224354917' : (undefined as unknown as string)
+      ),
     VITE_SENTRY_DSN: z.string().optional(),
 
     // 3. 디버그 및 플랫폼 설정
@@ -47,20 +57,20 @@ export const ENV = createEnv({
   // 개발 환경에서만 에러 대신 경고를 출력하고 싶을 때 true (선택 사항)
   // emptyStringAsUndefined: true,
   onValidationError: (issues) => {
-    // CI/Test 환경에서 누락된 변수가 있더라도 에러를 던지지 않고 경고만 출력
     console.error('❌ Environment Validation Failed!');
     console.error('--------------------------------------------------');
     issues.forEach((issue) => {
       console.error(`- [${issue.path?.join('.') || 'unknown'}] : ${issue.message}`);
     });
     console.error('--------------------------------------------------');
-    console.warn('⚠️ Above issues are non-critical in CI/Test but will cause failures in PROD.');
 
-    if (!isTestOrCI) {
-      throw new Error(`Invalid environment variables: ${JSON.stringify(issues, null, 2)}`);
+    const errorMsg = `Invalid environment variables: ${JSON.stringify(issues, null, 2)}`;
+    if (isTestOrCI) {
+      console.warn('⚠️ Above issues were detected in CI/Test environment.');
+      console.warn('If defaults are not working, the build will fail now.');
     }
-    // Satisfy 'never' return type for t3-env
-    throw new Error('Skip validation for CI/Test');
+
+    throw new Error(errorMsg);
   },
 });
 
