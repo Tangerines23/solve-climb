@@ -15,12 +15,12 @@ Sentry.init({
 });
 
 import '@/index.css';
-import '@/utils/tossAuth';
+import '@/features/auth/utils/tossAuth';
 import AppContainer from '@/AppContainer';
 
 import { logger } from '@/utils/logger';
 import { logEnvInfo } from '@/utils/env';
-import { performanceMonitor } from '@/utils/performance';
+import { performanceMonitor } from '@/features/debug';
 
 // 성능 모니터링 시작
 performanceMonitor.init();

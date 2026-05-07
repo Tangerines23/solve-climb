@@ -1,8 +1,8 @@
 import { useQuizStore } from '../../stores/useQuizStore';
 import { useLevelProgressStore } from '../../stores/useLevelProgressStore';
-import { useUserStore } from '@/stores/useUserStore';
+import { useUserStore } from '@/features/auth';
 import { useToastStore } from '@/stores/useToastStore';
-import { useSettingsStore } from '@/stores/useSettingsStore';
+import { useSettingsStore } from '@/features/mypage';
 import { submitScoreToLeaderboard } from '@/utils/tossGameCenter';
 import { urls } from '@/utils/navigation';
 import { AdService } from '@/utils/adService';

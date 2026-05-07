@@ -14,9 +14,9 @@ vi.mock('@supabase/supabase-js', () => ({
 // Mock env
 vi.mock('../env', () => ({
   ENV: {
-    SUPABASE_URL: 'https://test.supabase.co',
-    SUPABASE_ANON_KEY: 'test-key',
-    IS_DEVELOPMENT: false,
+    VITE_SUPABASE_URL: 'https://test.supabase.co',
+    VITE_SUPABASE_ANON_KEY: 'test-key',
+    VITE_IS_VERCEL: false,
   },
   logEnvInfo: vi.fn(),
 }));
@@ -35,8 +35,8 @@ describe('supabaseClient', () => {
 
   it('should handle missing environment variables', async () => {
     // Mock ENV with missing values
-    vi.mocked(ENV).SUPABASE_URL = '';
-    vi.mocked(ENV).SUPABASE_ANON_KEY = '';
+    vi.mocked(ENV).VITE_SUPABASE_URL = '';
+    vi.mocked(ENV).VITE_SUPABASE_ANON_KEY = '';
 
     // Re-import to test fallback behavior
     const { supabase } = await import('../supabaseClient');

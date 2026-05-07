@@ -8,7 +8,7 @@ import {
   PromiseData,
 } from '../types/quizProps';
 import { ItemFeedbackRef } from '../types/feedback';
-import { InventoryItem } from '@/types/user';
+import { InventoryItem } from '@/features/auth';
 
 export interface QuizContextType {
   quizState: QuizDisplayState;

@@ -69,7 +69,8 @@
     "Glassmorphism",
     "unstub",
     "fkey",
-    "fetchpriority"
+    "fetchpriority",
+    "ilike"
   ],
   "ignorePaths": [
     "node_modules",

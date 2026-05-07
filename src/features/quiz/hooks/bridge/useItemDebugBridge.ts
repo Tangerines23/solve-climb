@@ -1,7 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/utils/supabaseClient';
-import { useUserStore } from '@/stores/useUserStore';
-import { type InventoryItem } from '@/types/user';
+import { useUserStore, type InventoryItem } from '@/features/auth';
 import { STATUS, type StatusType } from '@/constants/status';
 
 export interface ItemDefinition {

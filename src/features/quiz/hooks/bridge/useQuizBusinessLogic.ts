@@ -1,4 +1,4 @@
-import { UI_MESSAGES, ANIMATION_CONFIG } from '@/features/quiz/constants/game';
+import { UI_MESSAGES, ANIMATION_CONFIG } from '../../constants/game';
 import { useCallback } from 'react';
 import { AdService } from '@/utils/adService';
 

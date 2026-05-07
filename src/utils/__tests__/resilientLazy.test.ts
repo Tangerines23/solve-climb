@@ -38,7 +38,7 @@ describe('resilientLazy', () => {
   it('성공적으로 컴포넌트를 로드하면 sessionStorage를 정리하고 컴포넌트를 반환해야 함', async () => {
     mockImportFn.mockResolvedValueOnce(mockComponent);
 
-    const lazyComponent = resilientLazy(mockImportFn, 'TestComponent') as {
+    const lazyComponent = resilientLazy(mockImportFn, 'TestComponent') as unknown as {
       _payload: { _result: () => Promise<unknown> };
     };
     const factory = lazyComponent._payload._result;
@@ -58,7 +58,7 @@ describe('resilientLazy', () => {
       .mockRejectedValueOnce(networkError)
       .mockResolvedValueOnce(mockComponent);
 
-    const lazyComponent = resilientLazy(mockImportFn, 'RetryComponent') as {
+    const lazyComponent = resilientLazy(mockImportFn, 'RetryComponent') as unknown as {
       _payload: { _result: () => Promise<unknown> };
     };
     const factory = lazyComponent._payload._result;
@@ -79,7 +79,7 @@ describe('resilientLazy', () => {
     const runtimeError = new Error('Normal runtime error');
     mockImportFn.mockRejectedValueOnce(runtimeError);
 
-    const lazyComponent = resilientLazy(mockImportFn, 'RuntimeErrorComp') as {
+    const lazyComponent = resilientLazy(mockImportFn, 'RuntimeErrorComp') as unknown as {
       _payload: { _result: () => Promise<unknown> };
     };
     const factory = lazyComponent._payload._result;
@@ -104,7 +104,7 @@ describe('resilientLazy', () => {
     const networkError = new Error('Loading chunk failed');
     mockImportFn.mockRejectedValue(networkError);
 
-    const lazyComponent = resilientLazy(mockImportFn, 'FailComponent') as {
+    const lazyComponent = resilientLazy(mockImportFn, 'FailComponent') as unknown as {
       _payload: { _result: () => Promise<unknown> };
     };
     const factory = lazyComponent._payload._result;

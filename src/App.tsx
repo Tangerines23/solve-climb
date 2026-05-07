@@ -2,21 +2,20 @@ import { useEffect } from 'react';
 import { resilientLazy } from '@/utils/resilientLazy';
 import { Routes, Route, Navigate } from 'react-router-dom';
 import { useLevelProgressStore } from '@/features/quiz';
-import { useAuthStore } from '@/stores/useAuthStore';
+import { useAuthStore } from '@/features/auth';
 import { useCustomBackNavigation } from '@/hooks/useCustomBackNavigation';
 import { GlobalLoadingIndicator } from '@/components/GlobalLoadingIndicator';
-import { useErrorLogStore } from '@/stores/useErrorLogStore';
-import { useDebugStore } from '@/stores/useDebugStore';
-import { useSettingsStore } from '@/stores/useSettingsStore';
+import { useErrorLogStore } from '@/features/debug';
+import { useDebugStore } from '@/features/debug';
+import { useSettingsStore } from '@/features/mypage';
 import { useConnectivity } from '@/hooks/useConnectivity';
 import { PwaUpdateNotification } from '@/components/PwaUpdateNotification';
-import { RequireAuth } from '@/components/auth/RequireAuth';
-import { useUserStore } from '@/stores/useUserStore';
+import { RequireAuth } from '@/features/auth';
+import { useUserStore } from '@/features/auth';
 import { useQuizStore, type TimeLimit } from '@/features/quiz';
 import { logger } from '@/utils/logger';
 import { registerHapticConfig } from '@/utils/haptic';
-import { registerDebugConfig } from '@/utils/debugFetch';
-import { registerDebugBridge } from '@/hooks/useQuickActionsDebugBridge';
+import { registerDebugConfig, registerDebugBridge } from '@/features/debug';
 import { STATUS } from '@/constants/status';
 
 const HomePage = resilientLazy(
@@ -49,7 +48,7 @@ const RoadmapPage = resilientLazy(
   'RoadmapPage'
 );
 const MyPage = resilientLazy(
-  () => import('@/pages/MyPage').then((module) => ({ default: module.MyPage })),
+  () => import('@/features/mypage').then((module) => ({ default: module.MyPage })),
   'MyPage'
 );
 const NotificationPage = resilientLazy(
@@ -57,17 +56,19 @@ const NotificationPage = resilientLazy(
   'NotificationPage'
 );
 const DebugPage = resilientLazy(
-  () => import('@/pages/DebugPage').then((module) => ({ default: module.DebugPage })),
+  () => import('@/features/debug').then((module) => ({ default: module.DebugPage })),
   'DebugPage'
 );
 const PrivacyPolicyPage = resilientLazy(
   () =>
-    import('@/pages/PrivacyPolicyPage').then((module) => ({ default: module.PrivacyPolicyPage })),
+    import('@/features/auth/pages/PrivacyPolicyPage').then((module) => ({
+      default: module.PrivacyPolicyPage,
+    })),
   'PrivacyPolicyPage'
 );
 // AuthCallbackPage & AuthTestPage imports removed
 const ShopPage = resilientLazy(
-  () => import('@/pages/ShopPage').then((module) => ({ default: module.ShopPage })),
+  () => import('@/features/item').then((module) => ({ default: module.ShopPage })),
   'ShopPage'
 );
 
@@ -77,32 +78,32 @@ const shouldShowDebug = !import.meta.env.PROD && !isCI;
 
 const DebugPanel = !shouldShowDebug
   ? () => null
-  : resilientLazy(() => import('./components/DebugPanel'), 'DebugPanel');
+  : resilientLazy(
+      () => import('@/features/debug').then((m) => ({ default: m.DebugPanel })),
+      'DebugPanel'
+    );
 const DebugOverlay = !shouldShowDebug
   ? () => null
   : resilientLazy(
-      () => import('./components/debug/DebugOverlay').then((m) => ({ default: m.DebugOverlay })),
+      () => import('@/features/debug').then((m) => ({ default: m.DebugOverlay })),
       'DebugOverlay'
     );
 const DebugReturnFloater = !shouldShowDebug
   ? () => null
   : resilientLazy(
-      () =>
-        import('./components/debug/DebugReturnFloater').then((m) => ({
-          default: m.DebugReturnFloater,
-        })),
+      () => import('@/features/debug').then((m) => ({ default: m.DebugReturnFloater })),
       'DebugReturnFloater'
     );
 const VisualGuardian = !shouldShowDebug
   ? () => null
   : resilientLazy(
-      () => import('./components/dev/VisualGuardian').then((m) => ({ default: m.VisualGuardian })),
+      () => import('@/features/debug').then((m) => ({ default: m.VisualGuardian })),
       'VisualGuardian'
     );
 const DebugShortcutsWrapper = !shouldShowDebug
   ? () => null
   : resilientLazy(
-      () => import('./components/debug/DebugShortcutsWrapper'),
+      () => import('@/features/debug').then((m) => ({ default: m.DebugShortcutsWrapper })),
       'DebugShortcutsWrapper'
     );
 
@@ -117,7 +118,9 @@ function App() {
   useCustomBackNavigation();
 
   const { isDebugPanelOpen } = useDebugStore(); // Debug store state for conditional rendering
-  const animationEnabled = useSettingsStore((state) => state.animationEnabled);
+  const animationEnabled = useSettingsStore(
+    (state: { animationEnabled: boolean }) => state.animationEnabled
+  );
 
   // 정적 UI 모드 전환 (body 클래스 제어)
   useEffect(() => {

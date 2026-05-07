@@ -1,7 +1,7 @@
 import { useEffect, useRef } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { APP_CONFIG } from '../config/app';
-import { useProfileStore } from '../stores/useProfileStore';
+import { useProfileStore } from '@/features/auth';
 
 /**
  * 브라우저 뒤로가기 버튼 동작을 커스터마이징하는 훅

@@ -1,5 +1,5 @@
 import { describe, it, expect, vi } from 'vitest';
-import { render, screen } from '@testing-library/react';
+import { render, screen, fireEvent } from '@testing-library/react';
 import { AlertModal } from '../AlertModal';
 
 describe('AlertModal', () => {
@@ -26,7 +26,7 @@ describe('AlertModal', () => {
     render(<AlertModal isOpen={true} title="Test" message="Test message" onClose={onClose} />);
 
     const button = screen.getByText('확인');
-    button.click();
+    fireEvent.click(button);
 
     expect(onClose).toHaveBeenCalled();
   });
@@ -55,7 +55,7 @@ describe('AlertModal', () => {
     // Find overlay by class name and click
     const overlay = container.querySelector('.alert-modal-overlay');
     if (overlay) {
-      (overlay as HTMLElement).click();
+      fireEvent.click(overlay as HTMLElement);
       expect(onClose).toHaveBeenCalled();
     } else {
       // If overlay not found, just verify modal is rendered
@@ -68,7 +68,7 @@ describe('AlertModal', () => {
     render(<AlertModal isOpen={true} title="Test" message="Test message" onClose={onClose} />);
 
     const modal = screen.getByText('Test message').closest('.alert-modal');
-    modal?.click();
+    if (modal) fireEvent.click(modal);
 
     expect(onClose).not.toHaveBeenCalled();
   });

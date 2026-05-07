@@ -1,7 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { renderHook, act } from '@testing-library/react';
-import { useQuizRevive } from '@/features/quiz/hooks/core/useQuizRevive';
-import type { InventoryItem } from '@/types/user';
+import { useQuizRevive } from '../useQuizRevive';
+import type { InventoryItem } from '@/features/auth';
 import { quizEventBus } from '@/lib/eventBus';
 
 // Mock dependencies

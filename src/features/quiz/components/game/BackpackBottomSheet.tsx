@@ -1,5 +1,5 @@
 import { useBackpack } from '../../hooks/bridge/useBackpack';
-import { InventoryItem } from '@/types/user';
+import { InventoryItem } from '@/features/auth';
 import './BackpackBottomSheet.css';
 
 interface BackpackBottomSheetProps {

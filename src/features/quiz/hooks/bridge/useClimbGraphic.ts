@@ -1,5 +1,5 @@
 import { useLevelProgressStore, type LevelProgressState } from '../../stores/useLevelProgressStore';
-import { useProfileStore, type ProfileState } from '@/stores/useProfileStore';
+import { useProfileStore, type ProfileState } from '@/features/auth';
 import { World, Category } from '../../types/quiz';
 
 export function useClimbGraphic(world: World, category: Category) {

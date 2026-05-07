@@ -2,9 +2,9 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/react';
 import { Header } from '../Header';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { useProfileStore } from '../../stores/useProfileStore';
-import { useUserStore } from '../../stores/useUserStore';
-import { useDebugStore } from '../../stores/useDebugStore';
+import { useProfileStore } from '@/features/auth/stores/useProfileStore';
+import { useUserStore } from '@/features/auth/stores/useUserStore';
+import { useDebugStore } from '@/features/debug/stores/useDebugStore';
 import { APP_CONFIG } from '../../config/app';
 
 // Mock dependencies
@@ -13,15 +13,15 @@ vi.mock('react-router-dom', () => ({
   useLocation: vi.fn(),
 }));
 
-vi.mock('../../stores/useProfileStore', () => ({
+vi.mock('@/features/auth/stores/useProfileStore', () => ({
   useProfileStore: vi.fn(),
 }));
 
-vi.mock('../../stores/useUserStore', () => ({
+vi.mock('@/features/auth/stores/useUserStore', () => ({
   useUserStore: vi.fn(),
 }));
 
-vi.mock('../../stores/useDebugStore', () => ({
+vi.mock('@/features/debug/stores/useDebugStore', () => ({
   useDebugStore: vi.fn(),
 }));
 

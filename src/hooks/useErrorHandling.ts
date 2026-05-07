@@ -1,10 +1,10 @@
 import { logError } from '../utils/errorHandler';
-import { useErrorLogStore } from '../stores/useErrorLogStore';
+import { useErrorLogStore } from '@/features/debug';
 import { useToastStore } from '../stores/useToastStore';
 import { useConnectivity } from './useConnectivity';
 
 export function useErrorHandling() {
-  const addLog = useErrorLogStore((state) => state.addLog);
+  const addLog = useErrorLogStore((state: any) => state.addLog);
   const showToast = useToastStore((state) => state.showToast);
   const isOnline = useConnectivity();
 

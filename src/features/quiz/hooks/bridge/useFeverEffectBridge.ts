@@ -1,9 +1,9 @@
-import { useGameStore } from '@/features/quiz/stores/useGameStore';
-import { useSettingsStore } from '@/stores/useSettingsStore';
+import { useGameStore } from '../../stores/useGameStore';
+import { useSettingsStore } from '@/features/mypage';
 
 export function useFeverEffectBridge() {
   const { feverLevel, combo } = useGameStore();
-  const animationEnabled = useSettingsStore((state) => state.animationEnabled);
+  const animationEnabled = useSettingsStore((state: any) => state.animationEnabled);
 
   return {
     feverLevel,

@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useUserStore } from '@/stores/useUserStore';
+import { useUserStore } from '@/features/auth';
 import { getItemEmoji } from '@/constants/items';
 
 export function useBackpack(isOpen: boolean) {

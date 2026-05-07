@@ -2,15 +2,14 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import { supabase } from '@/utils/supabaseClient';
-import { safeSupabaseQuery } from '@/utils/debugFetch';
+import { safeSupabaseQuery, useDebugStore } from '@/features/debug';
 import { validatedRpc, RankingListSchema } from '@/utils/rpcValidator';
 import type { GameMode, Tier } from '../types/quiz';
-import { useDebugStore } from '@/stores/useDebugStore';
 import { useToastStore } from '@/stores/useToastStore';
 import { UI_MESSAGES } from '@/constants/ui';
 import type { RealtimeChannel } from '@supabase/supabase-js';
 import { safeAccess } from '@/utils/validation';
-import { LevelSyncService } from '@/features/quiz/services/LevelSyncService';
+import { LevelSyncService } from '../services/LevelSyncService';
 
 import { LevelRecord, UserProgress, RankingRecord } from '../types/progress';
 import { STATUS } from '@/constants/status';
@@ -336,7 +335,7 @@ export const useLevelProgressStore = create<LevelProgressState>()(
               set((state) => {
                 const newProgress = { ...state.progress };
 
-                records.forEach((serverRecord) => {
+                records.forEach((serverRecord: any) => {
                   const {
                     world_id: world,
                     category_id,
@@ -349,7 +348,7 @@ export const useLevelProgressStore = create<LevelProgressState>()(
 
                   // local store key: category is `${category_id}_${subject_id}` or just one of them?
                   // Based on previous code: subject was used as category key.
-                  const category = `${category_id}_${subject_id}`;
+                  const category = subject_id ? `${category_id}_${subject_id}` : category_id;
 
                   if (!newProgress[world]) newProgress[world] = {};
                   if (!newProgress[world][category]) newProgress[world][category] = {};

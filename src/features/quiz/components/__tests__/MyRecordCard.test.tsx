@@ -3,8 +3,11 @@ import { render, screen, waitFor, act } from '@testing-library/react';
 import { MyRecordCard } from '../MyRecordCard';
 
 // Mock useLevelProgressStore
-const mockGetBestRecords = vi.fn(() => ({ 'time-attack': null, survival: null }));
-vi.mock('@/features/quiz/stores/useLevelProgressStore', () => ({
+const mockGetBestRecords = vi.fn(() => ({
+  'time-attack': null as number | null,
+  survival: null as number | null,
+}));
+vi.mock('../../stores/useLevelProgressStore', () => ({
   useLevelProgressStore: (selector: (state: any) => any) => {
     const mockState = {
       getBestRecords: mockGetBestRecords,

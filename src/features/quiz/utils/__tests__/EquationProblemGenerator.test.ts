@@ -8,7 +8,7 @@ import {
 describe('EquationProblemGenerator', () => {
   describe('generateEquation', () => {
     it('should generate equation for stage 1', () => {
-      const problem = generateEquation(1);
+      const problem = generateEquation(1, 'medium');
       expect(problem).toHaveProperty('question');
       expect(problem).toHaveProperty('x');
       expect(problem.question).toContain('□');
@@ -16,20 +16,20 @@ describe('EquationProblemGenerator', () => {
     });
 
     it('should generate equation for stage 2', () => {
-      const problem = generateEquation(2);
+      const problem = generateEquation(2, 'medium');
       expect(problem).toHaveProperty('question');
       expect(problem).toHaveProperty('x');
       expect(problem.question).toContain('□');
     });
 
     it('should generate equation for stage 3', () => {
-      const problem = generateEquation(3);
+      const problem = generateEquation(3, 'medium');
       expect(problem).toHaveProperty('question');
       expect(problem).toHaveProperty('x');
     });
 
     it('should generate equation for stage 4 (□ x a = b)', () => {
-      const problem = generateEquation(4);
+      const problem = generateEquation(4, 'medium');
       expect(problem).toHaveProperty('question');
       expect(problem).toHaveProperty('x');
       expect(problem.question).toContain('□');
@@ -37,7 +37,7 @@ describe('EquationProblemGenerator', () => {
     });
 
     it('should generate equation for stage 5 (□ / a = b)', () => {
-      const problem = generateEquation(5);
+      const problem = generateEquation(5, 'medium');
       expect(problem).toHaveProperty('question');
       expect(problem).toHaveProperty('x');
       expect(problem.question).toContain('□');
@@ -47,7 +47,7 @@ describe('EquationProblemGenerator', () => {
     it('should generate equation for stage 7 (coefficient multiply)', () => {
       const stage = EQUATION_STAGES.find((s) => s.format === 'coefficient_multiply');
       if (stage) {
-        const problem = generateEquation(stage.stage);
+        const problem = generateEquation(stage.stage, 'medium');
         expect(problem).toHaveProperty('question');
         expect(problem).toHaveProperty('x');
         expect(problem.question).toContain('x');
@@ -57,7 +57,7 @@ describe('EquationProblemGenerator', () => {
     it('should generate equation for stage 8 (two-step)', () => {
       const stage = EQUATION_STAGES.find((s) => s.format === 'two_step_plus');
       if (stage) {
-        const problem = generateEquation(stage.stage);
+        const problem = generateEquation(stage.stage, 'medium');
         expect(problem).toHaveProperty('question');
         expect(problem).toHaveProperty('x');
         expect(problem.question).toContain('x');
@@ -68,7 +68,7 @@ describe('EquationProblemGenerator', () => {
     it('should generate equation for stage 13 (both sides)', () => {
       const stage = EQUATION_STAGES.find((s) => s.format === 'both_sides_simple');
       if (stage) {
-        const problem = generateEquation(stage.stage);
+        const problem = generateEquation(stage.stage, 'medium');
         expect(problem).toHaveProperty('question');
         expect(problem).toHaveProperty('x');
         expect(problem.question).toContain('x');
@@ -76,7 +76,7 @@ describe('EquationProblemGenerator', () => {
     });
 
     it('should generate equation for stage 14 (parentheses)', () => {
-      const problem = generateEquation(14);
+      const problem = generateEquation(14, 'medium');
       expect(problem).toHaveProperty('question');
       expect(problem).toHaveProperty('x');
       expect(problem.question).toContain('(');
@@ -91,7 +91,7 @@ describe('EquationProblemGenerator', () => {
 
     it('should generate valid equations for all stages', () => {
       EQUATION_STAGES.forEach((stage) => {
-        const problem = generateEquation(stage.stage);
+        const problem = generateEquation(stage.stage, 'medium');
         expect(problem).toHaveProperty('question');
         expect(problem).toHaveProperty('x');
         expect(problem.question.length).toBeGreaterThan(0);
@@ -102,7 +102,7 @@ describe('EquationProblemGenerator', () => {
 
     it('should generate equations with integer solutions', () => {
       for (let i = 1; i <= 20; i++) {
-        const problem = generateEquation(i);
+        const problem = generateEquation(i, 'medium');
         expect(Number.isInteger(problem.x)).toBe(true);
       }
     });
@@ -110,14 +110,14 @@ describe('EquationProblemGenerator', () => {
 
   describe('EquationProblemGenerator class', () => {
     it('should generate equation using static method', () => {
-      const problem = EquationProblemGenerator.generate(1);
+      const problem = EquationProblemGenerator.generate(1, 'medium');
       expect(problem).toHaveProperty('question');
       expect(problem).toHaveProperty('x');
     });
 
     it('should generate same result as function', () => {
-      const problem1 = generateEquation(4);
-      const problem2 = EquationProblemGenerator.generate(4);
+      const problem1 = generateEquation(4, 'medium');
+      const problem2 = EquationProblemGenerator.generate(4, 'medium');
       // Both should have valid structure
       expect(problem1).toHaveProperty('question');
       expect(problem2).toHaveProperty('question');
@@ -127,36 +127,36 @@ describe('EquationProblemGenerator', () => {
 
     it('should test all format branches: fill_plus, fill_minus, fill_subtract', () => {
       // fill_plus (stage 1)
-      const fillPlus = generateEquation(1);
+      const fillPlus = generateEquation(1, 'medium');
       expect(fillPlus.question).toContain('□');
       expect(fillPlus.question).toContain('+');
 
       // fill_minus (stage 2)
-      const fillMinus = generateEquation(2);
+      const fillMinus = generateEquation(2, 'medium');
       expect(fillMinus.question).toContain('□');
       expect(fillMinus.question).toContain('-');
 
       // fill_subtract (stage 3)
-      const fillSubtract = generateEquation(3);
+      const fillSubtract = generateEquation(3, 'medium');
       expect(fillSubtract.question).toContain('□');
       expect(fillSubtract.question).toContain('-');
     });
 
     it('should test all format branches: x_plus, x_minus, x_plus_reverse', () => {
       // x_plus (stage 6)
-      const xPlus = generateEquation(6);
+      const xPlus = generateEquation(6, 'medium');
       expect(xPlus.question).toContain('x');
       expect(xPlus.question).toContain('+');
       // note: stage 4 matches fill_multiply, stage 5 matches fill_divide in current config
 
       // x_minus (stage 12 is x_minus or similar? Check config.
       // Actually stage 12 is 'x - a = b' in Phase 2 description? code says 12 is x_minus -> No, config says stage 12 is x_minus format.
-      const xMinus = generateEquation(12);
+      const xMinus = generateEquation(12, 'medium');
       expect(xMinus.question).toContain('x');
       expect(xMinus.question).toContain('-');
 
       // x_plus_reverse (stage 6)
-      const xPlusReverse = generateEquation(6);
+      const xPlusReverse = generateEquation(6, 'medium');
       expect(xPlusReverse.question).toContain('x');
       expect(xPlusReverse.question).toContain('+');
     });
@@ -164,47 +164,47 @@ describe('EquationProblemGenerator', () => {
     it('should test all format branches: coefficient_multiply', () => {
       const stage = EQUATION_STAGES.find((s) => s.format === 'coefficient_multiply');
       if (stage) {
-        const problem = generateEquation(stage.stage);
+        const problem = generateEquation(stage.stage, 'medium');
         expect(problem.question).toContain('x');
       }
     });
 
     it('should test all format branches: two_step_plus, two_step_minus, two_step_large', () => {
       const sp = EQUATION_STAGES.find((s) => s.format === 'two_step_plus');
-      if (sp) expect(generateEquation(sp.stage).question).toContain('+');
+      if (sp) expect(generateEquation(sp.stage, 'medium').question).toContain('+');
 
       const sm = EQUATION_STAGES.find((s) => s.format === 'two_step_minus');
-      if (sm) expect(generateEquation(sm.stage).question).toContain('-');
+      if (sm) expect(generateEquation(sm.stage, 'medium').question).toContain('-');
 
       const sl = EQUATION_STAGES.find((s) => s.format === 'two_step_large');
-      if (sl) expect(generateEquation(sl.stage).question).toContain('+');
+      if (sl) expect(generateEquation(sl.stage, 'medium').question).toContain('+');
     });
 
     it('should test all format branches: both_sides_simple, parentheses, both_sides_complex', () => {
       const ss = EQUATION_STAGES.find((s) => s.format === 'both_sides_simple');
       if (ss) {
-        const p = generateEquation(ss.stage);
+        const p = generateEquation(ss.stage, 'medium');
         expect(p.question).toContain('x');
         expect(p.question.split('x').length).toBeGreaterThan(2);
       }
 
       const sp = EQUATION_STAGES.find((s) => s.format === 'parentheses');
-      if (sp) expect(generateEquation(sp.stage).question).toContain('(');
+      if (sp) expect(generateEquation(sp.stage, 'medium').question).toContain('(');
 
       const sc = EQUATION_STAGES.find((s) => s.format === 'both_sides_complex');
       if (sc) {
-        const p = generateEquation(sc.stage);
+        const p = generateEquation(sc.stage, 'medium');
         expect(p.question).toContain('x');
         expect(p.question.split('x').length).toBeGreaterThan(2);
       }
     });
 
     it('should handle edge cases: boundary levels 1 and 15', () => {
-      const level1 = generateEquation(1);
+      const level1 = generateEquation(1, 'medium');
       expect(level1).toHaveProperty('question');
       expect(level1).toHaveProperty('x');
 
-      const level15 = generateEquation(15);
+      const level15 = generateEquation(15, 'medium');
       expect(level15).toHaveProperty('question');
       expect(level15).toHaveProperty('x');
     });
@@ -218,7 +218,7 @@ describe('EquationProblemGenerator', () => {
     it('should handle recursive calls in generateFillMinus when b < 0', () => {
       // This tests the recursive branch in generateFillMinus
       for (let i = 0; i < 10; i++) {
-        const problem = generateEquation(2);
+        const problem = generateEquation(2, 'medium');
         expect(problem.x).toBeGreaterThanOrEqual(problem.x - 1); // x should be valid
         expect(problem.x).toBeGreaterThan(0);
       }
@@ -227,7 +227,7 @@ describe('EquationProblemGenerator', () => {
     it('should handle recursive calls in generateXMinus when b < 0', () => {
       // This tests the recursive branch in generateXMinus
       for (let i = 0; i < 10; i++) {
-        const problem = generateEquation(5);
+        const problem = generateEquation(5, 'medium');
         expect(problem.x).toBeGreaterThan(0);
       }
     });
@@ -235,7 +235,7 @@ describe('EquationProblemGenerator', () => {
     it('should handle recursive calls in generateTwoStepMinus when c < 0', () => {
       // This tests the recursive branch in generateTwoStepMinus
       for (let i = 0; i < 10; i++) {
-        const problem = generateEquation(11);
+        const problem = generateEquation(11, 'medium');
         expect(problem.x).toBeGreaterThan(0);
       }
     });
@@ -266,7 +266,7 @@ describe('EquationProblemGenerator', () => {
       allFormats.forEach((format) => {
         const stage = EQUATION_STAGES.find((s) => s.format === format);
         if (stage) {
-          const problem = generateEquation(stage.stage);
+          const problem = generateEquation(stage.stage, 'medium');
           expect(problem).toHaveProperty('question');
           expect(problem).toHaveProperty('x');
         }

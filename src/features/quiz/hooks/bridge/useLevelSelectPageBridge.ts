@@ -1,8 +1,8 @@
 import { useState, useRef, useLayoutEffect, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { APP_CONFIG } from '@/config/app';
-import { useFavoriteStore } from '@/stores/useFavoriteStore';
-import { World, Tier } from '@/features/quiz/types/quiz';
+import { useFavoriteStore } from '@/features/mypage';
+import { World, Tier } from '../../types/quiz';
 import { urls } from '@/utils/navigation';
 import { storageService, STORAGE_KEYS } from '@/services';
 import { useNavigationContext } from '@/hooks/useNavigationContext';
@@ -20,8 +20,8 @@ export function useLevelSelectPageBridge() {
   const [tier] = useState<Tier>('normal'); // FIXME: 복구 시 로직 추가
   const lastLongPressRef = useRef(0);
 
-  const addFavorite = useFavoriteStore((state) => state.addFavorite);
-  const isFavorite = useFavoriteStore((state) => state.isFavorite);
+  const addFavorite = useFavoriteStore((state: any) => state.addFavorite);
+  const isFavorite = useFavoriteStore((state: any) => state.isFavorite);
 
   const {
     mountain: mountainParam,

@@ -1,18 +1,18 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/react';
-import { CategorySelectPage } from '@/features/quiz/pages/CategorySelectPage';
+import { CategorySelectPage } from '../pages/CategorySelectPage';
 import { BrowserRouter } from 'react-router-dom';
-import { useLevelProgressStore } from '@/features/quiz/stores/useLevelProgressStore';
+import { useLevelProgressStore } from '../stores/useLevelProgressStore';
 import { useNavigationContext } from '@/hooks/useNavigationContext';
-import { useFavoriteStore } from '@/stores/useFavoriteStore';
-import { useDebugStore } from '@/stores/useDebugStore';
+import { useFavoriteStore } from '@/features/mypage';
+import { useDebugStore } from '@/features/debug';
 import '@testing-library/jest-dom/vitest';
 
 // Mock dependencies
-vi.mock('@/features/quiz/stores/useLevelProgressStore');
+vi.mock('../stores/useLevelProgressStore');
 vi.mock('@/hooks/useNavigationContext');
-vi.mock('@/stores/useFavoriteStore');
-vi.mock('@/stores/useDebugStore');
+vi.mock('@/features/mypage');
+vi.mock('@/features/debug');
 vi.mock('@/config/app', () => ({
   APP_CONFIG: {
     CATEGORIES: [
@@ -23,6 +23,13 @@ vi.mock('@/config/app', () => ({
         color: 'blue',
         mountainId: 'math',
         icon: '🚀',
+      },
+    ],
+    WORLDS: [
+      {
+        id: 'World1',
+        name: 'World 1',
+        mountainId: 'math',
       },
     ],
     LEVELS: {
@@ -41,14 +48,14 @@ vi.mock('@/config/app', () => ({
     },
   },
 }));
-vi.mock('@/features/quiz/components/ClimbGraphic', () => ({
+vi.mock('../components/ClimbGraphic', () => ({
   ClimbGraphic: () => <div data-testid="climb-graphic" />,
 }));
 vi.mock('@/components/FooterNav', () => ({
   FooterNav: () => <div data-testid="footer-nav" />,
 }));
 vi.mock('@/components/Header', () => ({ Header: () => <div data-testid="header" /> }));
-vi.mock('@/features/quiz/components/TopicHeader', () => ({
+vi.mock('../components/TopicHeader', () => ({
   TopicHeader: ({ title, onBack }: any) => (
     <div data-testid="topic-header">
       <h1>{title}</h1>

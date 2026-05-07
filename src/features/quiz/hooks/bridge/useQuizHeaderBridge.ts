@@ -1,4 +1,4 @@
-import { useGameStore } from '@/features/quiz/stores/useGameStore';
+import { useGameStore } from '../../stores/useGameStore';
 
 export function useQuizHeaderBridge() {
   const combo = useGameStore((state) => state.combo);

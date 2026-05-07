@@ -1,4 +1,4 @@
-import { useUserStore } from '@/stores/useUserStore';
+import { useUserStore } from '@/features/auth';
 
 export function useStamina() {
   const { stamina } = useUserStore();

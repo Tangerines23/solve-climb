@@ -3,8 +3,8 @@ import { useNavigate } from 'react-router-dom';
 import { APP_CONFIG } from '@/config/app';
 import { urls } from '@/utils/navigation';
 import { useLevelProgressStore } from '../../stores/useLevelProgressStore';
-import { useFavoriteStore } from '@/stores/useFavoriteStore';
-import { useDebugStore } from '@/stores/useDebugStore';
+import { useFavoriteStore } from '@/features/mypage';
+import { useDebugStore } from '@/features/debug';
 import { storageService, STORAGE_KEYS } from '@/services';
 import { useNavigationContext } from '@/hooks/useNavigationContext';
 
@@ -18,9 +18,9 @@ export function useCategorySelect() {
   }, [tryRecover]);
 
   const progressStore = useLevelProgressStore();
-  const bypassLevelLock = useDebugStore((state) => state.bypassLevelLock);
-  const isFavorite = useFavoriteStore((state) => state.isFavorite);
-  const addFavorite = useFavoriteStore((state) => state.addFavorite);
+  const bypassLevelLock = useDebugStore((state: any) => state.bypassLevelLock);
+  const isFavorite = useFavoriteStore((state: any) => state.isFavorite);
+  const addFavorite = useFavoriteStore((state: any) => state.addFavorite);
 
   const handleToggleFavorite = useCallback(
     (e: React.MouseEvent, categoryId: string, categoryName: string) => {

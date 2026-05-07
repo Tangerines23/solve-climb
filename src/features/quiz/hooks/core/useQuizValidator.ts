@@ -3,7 +3,7 @@ import {
   CATEGORY_IDS,
   MATH_SUB_IDS,
   SUB_CATEGORY_IDS,
-} from '@/features/quiz/constants/game';
+} from '../../constants/game';
 import { useCallback } from 'react';
 import { QuizQuestion } from '../../types/quiz';
 import { normalizeRomaji } from '../../utils/japanese';

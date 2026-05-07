@@ -1,7 +1,7 @@
 import { useState, useCallback, useMemo } from 'react';
 import { useLevelProgressStore } from '../../stores/useLevelProgressStore';
-import { useProfileStore } from '@/stores/useProfileStore';
-import type { Tier } from '@/features/quiz/types/quiz';
+import { useProfileStore } from '@/features/auth';
+import type { Tier } from '../../types/quiz';
 
 // 개발 중인 레벨 목록 (월드_카테고리_레벨 형식)
 const UNDER_DEVELOPMENT_LEVELS = new Set<string>([
@@ -9,10 +9,10 @@ const UNDER_DEVELOPMENT_LEVELS = new Set<string>([
 ]);
 
 export function useLevelList(world: string, category: string, tier: Tier = 'normal') {
-  const isLevelCleared = useLevelProgressStore((state) => state.isLevelCleared);
-  const getLevelProgress = useLevelProgressStore((state) => state.getLevelProgress);
-  const getNextLevel = useLevelProgressStore((state) => state.getNextLevel);
-  const isAdmin = useProfileStore((state) => state.isAdmin);
+  const isLevelCleared = useLevelProgressStore((state: any) => state.isLevelCleared);
+  const getLevelProgress = useLevelProgressStore((state: any) => state.getLevelProgress);
+  const getNextLevel = useLevelProgressStore((state: any) => state.getNextLevel);
+  const isAdmin = useProfileStore((state: any) => state.isAdmin);
   const [showUnderDevelopment, setShowUnderDevelopment] = useState(false);
 
   const nextLevel = useMemo(
@@ -59,7 +59,7 @@ export function useLevelList(world: string, category: string, tier: Tier = 'norm
 
   const getBestScore = useCallback(
     (level: number): number | null => {
-      const record = progress.find((r) => r.level === level);
+      const record = progress.find((r: any) => r.level === level);
       if (!record) return null;
       const timeAttack = record.bestScore['time-attack'];
       const survival = record.bestScore['survival'];

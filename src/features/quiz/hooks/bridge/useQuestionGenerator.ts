@@ -1,4 +1,4 @@
-import { CATEGORY_CONFIG, SURVIVAL_CONFIG } from '@/features/quiz/constants/game';
+import { CATEGORY_CONFIG, SURVIVAL_CONFIG } from '../../constants/game';
 // 문제 생성 로직을 관리하는 커스텀 훅
 import { useCallback, useEffect } from 'react';
 import {

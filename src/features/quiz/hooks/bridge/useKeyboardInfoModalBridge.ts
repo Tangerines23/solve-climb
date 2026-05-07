@@ -1,6 +1,6 @@
 import { useState, useEffect, useMemo, FormEvent } from 'react';
 import { APP_CONFIG } from '@/config/app';
-import { useSettingsStore } from '@/stores/useSettingsStore';
+import { useSettingsStore } from '@/features/mypage';
 
 export interface KeyboardInfo {
   category: string;
@@ -16,7 +16,7 @@ export interface KeyboardInfo {
 export type KeyboardDisplayType = 'qwerty-text' | 'qwerty-number' | 'custom';
 
 export const useKeyboardInfoModalBridge = (_isOpen: boolean, _onClose: () => void) => {
-  const keyboardType = useSettingsStore((state) => state.keyboardType);
+  const keyboardType = useSettingsStore((state: any) => state.keyboardType);
   const [isLandscape, setIsLandscape] = useState(false);
 
   const getKeyboardTypeInfo = useMemo(() => {

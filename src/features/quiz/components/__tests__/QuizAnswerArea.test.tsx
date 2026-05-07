@@ -1,11 +1,10 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, fireEvent, act } from '@testing-library/react';
 import { QuizAnswerArea } from '../QuizAnswerArea';
-import React from 'react';
-import { useQuiz } from '@/features/quiz/contexts/QuizContext';
+import { useQuiz } from '../../contexts/QuizContext';
 
 // Mock useQuiz
-vi.mock('@/features/quiz/contexts/QuizContext', () => ({
+vi.mock('../../contexts/QuizContext', () => ({
   useQuiz: vi.fn(),
 }));
 

@@ -6,9 +6,9 @@ import { useQuizInput } from '../hooks/bridge/useQuizInput';
 import { useQuizGameState } from '../hooks/core/useQuizGameState';
 import { useQuizAnimations } from '../hooks/bridge/useQuizAnimations';
 import { useQuizSubmit } from '../hooks/core/useQuizSubmit';
-import { useSettingsStore } from '@/stores/useSettingsStore';
+import { useSettingsStore } from '@/features/mypage';
 import { useQuizRevive } from '../hooks/core/useQuizRevive';
-import { useUserStore } from '@/stores/useUserStore';
+import { useUserStore } from '@/features/auth';
 import { useGameStore } from '../stores/useGameStore';
 import { useToastStore } from '@/stores/useToastStore';
 import type { Category, World, QuizQuestion } from '../types/quiz';
@@ -67,8 +67,8 @@ export function QuizProvider({ children, params }: QuizProviderProps) {
   const setGameMode = useQuizStore((state) => state.setGameMode);
   const gameMode = useQuizStore((state) => state.gameMode);
   const setQuizContext = useQuizStore((state) => state.setQuizContext);
-  const keyboardType = useSettingsStore((state) => state.keyboardType);
-  const hapticEnabled = useSettingsStore((state) => state.hapticEnabled);
+  const keyboardType = useSettingsStore((state: any) => state.keyboardType);
+  const hapticEnabled = useSettingsStore((state: any) => state.hapticEnabled);
   const navigate = useNavigate();
 
   const [currentQuestion, setCurrentQuestion] = useState<QuizQuestion | null>(null);

@@ -2,7 +2,7 @@ import { Header } from '@/components/Header';
 import { StatusCard, ChallengeCard, CategoryList, StaminaGauge } from '@/features/quiz';
 import { FooterNav } from '@/components/FooterNav';
 import { Toast } from '@/components/Toast';
-import { DailyRewardModal } from '@/components/DailyRewardModal';
+import { DailyRewardModal } from '@/features/item';
 import { useHomePageBridge } from '@/hooks/useHomePageBridge';
 import './HomePage.css';
 

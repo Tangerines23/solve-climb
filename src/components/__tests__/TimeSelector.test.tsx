@@ -1,5 +1,5 @@
 import { describe, it, expect, vi } from 'vitest';
-import { render, screen } from '@testing-library/react';
+import { render, screen, fireEvent } from '@testing-library/react';
 import { TimeSelector } from '../TimeSelector';
 
 describe('TimeSelector', () => {
@@ -17,7 +17,7 @@ describe('TimeSelector', () => {
     render(<TimeSelector onSelect={onSelect} />);
 
     const option1 = screen.getByText('1분').closest('.time-card');
-    option1?.click();
+    if (option1) fireEvent.click(option1);
 
     expect(onSelect).toHaveBeenCalledWith(60);
   });
@@ -36,15 +36,15 @@ describe('TimeSelector', () => {
     render(<TimeSelector onSelect={onSelect} />);
 
     const option1 = screen.getByText('1분').closest('.time-card');
-    option1?.click();
+    if (option1) fireEvent.click(option1);
     expect(onSelect).toHaveBeenCalledWith(60);
 
     const option2 = screen.getByText('2분').closest('.time-card');
-    option2?.click();
+    if (option2) fireEvent.click(option2);
     expect(onSelect).toHaveBeenCalledWith(120);
 
     const option3 = screen.getByText('3분').closest('.time-card');
-    option3?.click();
+    if (option3) fireEvent.click(option3);
     expect(onSelect).toHaveBeenCalledWith(180);
   });
 

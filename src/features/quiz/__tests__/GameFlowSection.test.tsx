@@ -1,12 +1,12 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, waitFor } from '@testing-library/react';
-import { GameFlowSection } from '@/components/debug/GameFlowSection';
+import { GameFlowSection } from '@/features/debug/components/GameFlowSection';
 import { supabase } from '@/utils/supabaseClient';
 import type { SupabaseClient, Session } from '@supabase/supabase-js';
-import { useQuizStore } from '@/features/quiz/stores/useQuizStore';
+import { useQuizStore } from '../stores/useQuizStore';
 
 // Mock dependencies
-vi.mock('@/features/quiz/stores/useQuizStore', () => ({
+vi.mock('../stores/useQuizStore', () => ({
   useQuizStore: vi.fn(),
 }));
 

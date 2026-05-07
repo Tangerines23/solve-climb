@@ -7,7 +7,7 @@ import {
   getNextTierInfo,
   getTierInfo,
   type TierInfo,
-} from '@/features/quiz/constants/tiers';
+} from '../tiers';
 import { supabase } from '@/utils/supabaseClient';
 
 // Mock supabase

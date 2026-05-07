@@ -1,9 +1,4 @@
-import {
-  THEME_MULTIPLIERS,
-  BOSS_LEVEL,
-  BOSS_BONUS,
-  ThemeTier,
-} from '@/features/quiz/constants/game';
+import { THEME_MULTIPLIERS, BOSS_LEVEL, BOSS_BONUS, ThemeTier } from '../../constants/game';
 import { useCallback } from 'react';
 
 import { APP_CONFIG } from '@/config/app';

@@ -1,6 +1,6 @@
 import { describe, it, expect, vi } from 'vitest';
 import { render, screen } from '@testing-library/react';
-import { ModeSelectModal } from '@/features/quiz/components/modals/ModeSelectModal';
+import { ModeSelectModal } from '../modals/ModeSelectModal';
 
 describe('ModeSelectModal', () => {
   it('should not render when isOpen is false', () => {
@@ -104,7 +104,7 @@ describe('ModeSelectModal', () => {
 
     const overlay = screen.getByText(/Level 1/).closest('.mode-select-modal-overlay');
     if (overlay) {
-      overlay.click();
+      (overlay as HTMLElement).click();
       expect(onClose).toHaveBeenCalled();
     }
   });
@@ -123,7 +123,7 @@ describe('ModeSelectModal', () => {
 
     const modal = screen.getByText(/Level 1/).closest('.mode-select-modal');
     if (modal) {
-      modal.click();
+      (modal as HTMLElement).click();
       // stopPropagation should prevent onClose from being called
       expect(onClose).not.toHaveBeenCalled();
     }

@@ -2,15 +2,15 @@ import { useState, useCallback, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { APP_CONFIG } from '@/config/app';
 import { urls } from '@/utils/navigation';
-import { useFavoriteStore } from '@/stores/useFavoriteStore';
+import { useFavoriteStore } from '@/features/mypage';
 import { useFeatureFlagStore } from '@/stores/useFeatureFlagStore';
 import { useLevelProgressStore } from '../../stores/useLevelProgressStore';
 import { calculateCategoryAltitude } from '../../utils/scoreCalculator';
 
 export function useCategoryList() {
   const navigate = useNavigate();
-  const isFavorite = useFavoriteStore((state) => state.isFavorite);
-  const addFavorite = useFavoriteStore((state) => state.addFavorite);
+  const isFavorite = useFavoriteStore((state: any) => state.isFavorite);
+  const addFavorite = useFavoriteStore((state: any) => state.addFavorite);
   const [showExplorerToast, setShowExplorerToast] = useState<string | null>(null);
   const { flags } = useFeatureFlagStore();
   const progress = useLevelProgressStore((state) => state.progress);

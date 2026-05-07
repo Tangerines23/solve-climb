@@ -1,11 +1,11 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, fireEvent, act } from '@testing-library/react';
-import { KeyboardInfoModal } from '@/features/quiz/components/modals/KeyboardInfoModal';
-import { useSettingsStore } from '@/stores/useSettingsStore';
+import { KeyboardInfoModal } from '../modals/KeyboardInfoModal';
+import { useSettingsStore } from '@/features/mypage';
 import { APP_CONFIG } from '@/config/app';
 
 // Mock dependencies
-vi.mock('@/stores/useSettingsStore', () => ({
+vi.mock('@/features/mypage', () => ({
   useSettingsStore: vi.fn(),
 }));
 

@@ -58,7 +58,7 @@ describe('MathProblemGenerator - Fuzz Testing', () => {
   STAGES.forEach((stage) => {
     it(`Stage ${stage.id} (${stage.description}) - Robustness & Correctness (${ITERATIONS_PER_STAGE} runs)`, () => {
       for (let i = 0; i < ITERATIONS_PER_STAGE; i++) {
-        const problem = generateProblem(stage.id);
+        const problem = generateProblem(stage.id, 'medium');
         const { expression, answer } = problem;
 
         // 1. 유효성 검사 (NaN/Infinity)
@@ -85,7 +85,7 @@ describe('MathProblemGenerator - Fuzz Testing', () => {
 
   it('Extreme Range Test - Should not crash with very large stage IDs', () => {
     STAGES.forEach((s) => {
-      expect(() => generateProblem(s.id)).not.toThrow();
+      expect(() => generateProblem(s.id, 'medium')).not.toThrow();
     });
   });
 });

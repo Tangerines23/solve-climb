@@ -1,12 +1,12 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render } from '@testing-library/react';
-import { ResultPage } from '@/features/quiz/pages/ResultPage';
+import { ResultPage } from '../pages/ResultPage';
 import { BrowserRouter } from 'react-router-dom';
 
 // Mock dependencies
-vi.mock('@/features/quiz/stores/useQuizStore');
-vi.mock('@/features/quiz/stores/useLevelProgressStore');
-vi.mock('@/stores/useUserStore');
+vi.mock('../stores/useQuizStore');
+vi.mock('../stores/useLevelProgressStore');
+vi.mock('@/features/auth');
 vi.mock('../components/TierUpgradeModal');
 vi.mock('../components/BadgeNotification');
 vi.mock('../utils/tossGameCenter');
@@ -19,7 +19,7 @@ vi.mock('@/utils/supabaseClient', () => ({
 }));
 vi.mock('../utils/urlParams');
 vi.mock('../utils/debugLogger');
-vi.mock('@/features/quiz/stores/useQuizStore', () => {
+vi.mock('../stores/useQuizStore', () => {
   const mockState = { score: 100 };
   const fn = vi.fn((selector) =>
     typeof selector === 'function' ? selector(mockState) : mockState
@@ -27,7 +27,7 @@ vi.mock('@/features/quiz/stores/useQuizStore', () => {
   return { useQuizStore: Object.assign(fn, { getState: () => mockState }) };
 });
 
-vi.mock('@/features/quiz/stores/useLevelProgressStore', () => {
+vi.mock('../stores/useLevelProgressStore', () => {
   const mockState = {
     progress: {},
     rankings: {},
@@ -48,7 +48,7 @@ vi.mock('@/features/quiz/stores/useLevelProgressStore', () => {
   };
 });
 
-vi.mock('@/stores/useUserStore', () => {
+vi.mock('@/features/auth', () => {
   const mockState = {
     minerals: 100,
     fetchUserData: vi.fn().mockResolvedValue({ success: true }),
@@ -66,7 +66,7 @@ vi.mock('@/stores/useUserStore', () => {
   };
 });
 
-vi.mock('@/stores/useSettingsStore', () => {
+vi.mock('@/features/mypage', () => {
   const mockStore = (initialState: any) => {
     const store = vi.fn((selector) =>
       typeof selector === 'function' ? selector(initialState) : initialState
@@ -154,7 +154,7 @@ describe('ResultPage', () => {
   });
 
   it('should handle Double Reward with AdSuccess', async () => {
-    const { useUserStore } = await import('@/stores/useUserStore');
+    const { useUserStore } = await import('@/features/auth');
     const { AdService } = await import('@/utils/adService');
     const params = new URLSearchParams({
       score: '200',

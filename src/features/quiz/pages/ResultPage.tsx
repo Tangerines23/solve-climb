@@ -5,8 +5,8 @@ import { useResultPageBridge } from '../hooks/bridge/useResultPageBridge';
 import { SCORE_PER_CORRECT } from '../constants/game';
 
 import { TierUpgradeModal } from '../components/TierUpgradeModal';
-import { BadgeNotification } from '@/components/BadgeNotification';
-import { Category } from '@/features/quiz/types/quiz';
+import { BadgeNotification } from '@/features/item';
+import { Category } from '../types/quiz';
 
 import { analytics } from '@/services/analytics';
 import { UI_MESSAGES } from '@/constants/ui';

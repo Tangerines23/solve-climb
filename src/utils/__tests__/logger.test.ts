@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { logger } from '../logger';
-import { useErrorLogStore } from '../../stores/useErrorLogStore';
+import { logger } from '@/utils/logger';
+import { useErrorLogStore } from '@/features/debug/stores/useErrorLogStore';
 
 describe('logger.util', () => {
   beforeEach(() => {

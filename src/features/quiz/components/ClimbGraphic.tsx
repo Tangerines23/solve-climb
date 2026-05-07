@@ -7,7 +7,7 @@ import {
   CalculusBackground,
 } from './ClimbGraphicBackgrounds';
 import { STAGE_CONFIG, type StageConfig } from '../constants/stages';
-import { World, Category } from '@/features/quiz/types/quiz';
+import { World, Category } from '../types/quiz';
 import './ClimbGraphic.css';
 
 // 단순화된 LevelButton

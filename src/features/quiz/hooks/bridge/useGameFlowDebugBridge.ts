@@ -33,7 +33,7 @@ export function useGameFlowDebugBridge() {
 
   // 게임 모드 전환 상태
   const [selectedGameMode, setSelectedGameMode] = useState<GameMode>('time-attack');
-  const setGameMode = useQuizStore((state) => state.setGameMode);
+  const setGameMode = useQuizStore((state: any) => state.setGameMode);
 
   const selectedSession = sessions.find((s) => s.id === selectedSessionId) || null;
 

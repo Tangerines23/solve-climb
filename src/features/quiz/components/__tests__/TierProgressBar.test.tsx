@@ -1,10 +1,10 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, waitFor } from '@testing-library/react';
 import { TierProgressBar } from '../TierProgressBar';
-import { calculateTier, getNextTierInfo } from '@/features/quiz/constants/tiers';
+import { calculateTier, getNextTierInfo } from '../../constants/tiers';
 
 // Mock tier functions
-vi.mock('@/features/quiz/constants/tiers', () => ({
+vi.mock('../../constants/tiers', () => ({
   calculateTier: vi.fn(),
   getNextTierInfo: vi.fn(),
 }));
@@ -23,8 +23,9 @@ describe('TierProgressBar', () => {
 
   it('should render tier progress when loaded', async () => {
     const mockTier = {
-      tier: 'Bronze',
+      level: 1 as const,
       stars: 2,
+      totalScore: 1000,
       currentCycleScore: 500,
     };
 
@@ -49,8 +50,9 @@ describe('TierProgressBar', () => {
 
   it('should render with different sizes', async () => {
     const mockTier = {
-      tier: 'Bronze',
+      level: 1 as const,
       stars: 2,
+      totalScore: 1000,
       currentCycleScore: 500,
     };
 
@@ -75,8 +77,9 @@ describe('TierProgressBar', () => {
 
   it('should display stars when stars > 0', async () => {
     const mockTier = {
-      tier: 'Bronze',
+      level: 1 as const,
       stars: 3,
+      totalScore: 1000,
       currentCycleScore: 500,
     };
 
@@ -98,8 +101,9 @@ describe('TierProgressBar', () => {
 
   it('should display stars in ×N format when stars >= 5', async () => {
     const mockTier = {
-      tier: 'Bronze',
+      level: 1 as const,
       stars: 5,
+      totalScore: 1000,
       currentCycleScore: 500,
     };
 
@@ -121,8 +125,9 @@ describe('TierProgressBar', () => {
 
   it('should display remaining score', async () => {
     const mockTier = {
-      tier: 'Bronze',
+      level: 1 as const,
       stars: 2,
+      totalScore: 1000,
       currentCycleScore: 500,
     };
 
@@ -144,8 +149,9 @@ describe('TierProgressBar', () => {
 
   it('should display next tier name', async () => {
     const mockTier = {
-      tier: 'Bronze',
+      level: 1 as const,
       stars: 2,
+      totalScore: 1000,
       currentCycleScore: 500,
     };
 
@@ -167,8 +173,9 @@ describe('TierProgressBar', () => {
 
   it('should calculate progress correctly', async () => {
     const mockTier = {
-      tier: 'Bronze',
+      level: 1 as const,
       stars: 0,
+      totalScore: 500,
       currentCycleScore: 0,
     };
 
@@ -192,8 +199,9 @@ describe('TierProgressBar', () => {
 
   it('should not render when nextTierInfo is null', async () => {
     const mockTier = {
-      tier: 'Bronze',
+      level: 1 as const,
       stars: 2,
+      totalScore: 1000,
       currentCycleScore: 500,
     };
 

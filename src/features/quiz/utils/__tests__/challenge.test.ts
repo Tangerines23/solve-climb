@@ -26,6 +26,7 @@ describe('challenge', () => {
     ENABLE_LANGUAGE_MOUNTAIN: true,
     ENABLE_LOGIC_MOUNTAIN: true,
     ENABLE_GENERAL_MOUNTAIN: true,
+    ENABLE_BETA_FEEDBACK: false,
   };
 
   beforeEach(() => {

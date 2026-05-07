@@ -7,7 +7,7 @@ import { BrowserRouter } from 'react-router-dom';
 const mockIsLevelCleared = vi.fn(() => false);
 const mockGetNextLevel = vi.fn(() => ({ level: 1, name: 'Level 1' }));
 
-vi.mock('@/features/quiz/stores/useLevelProgressStore', () => ({
+vi.mock('../../stores/useLevelProgressStore', () => ({
   useLevelProgressStore: vi.fn((selector) => {
     const state = {
       isLevelCleared: mockIsLevelCleared,
@@ -49,8 +49,8 @@ describe('ClimbGraphic', () => {
     const { container } = render(
       <BrowserRouter>
         <ClimbGraphic
-          category="math"
-          subTopic="arithmetic"
+          category="기초"
+          world="World1"
           levels={[
             { level: 1, name: 'Level 1', description: 'Test' },
             { level: 2, name: 'Level 2', description: 'Test' },
@@ -66,8 +66,8 @@ describe('ClimbGraphic', () => {
     const { container } = render(
       <BrowserRouter>
         <ClimbGraphic
-          category="math"
-          subTopic="arithmetic"
+          category="기초"
+          world="World1"
           levels={[
             { level: 1, name: 'Level 1', description: 'Test' },
             { level: 2, name: 'Level 2', description: 'Test' },
@@ -85,8 +85,8 @@ describe('ClimbGraphic', () => {
     const { container } = render(
       <BrowserRouter>
         <ClimbGraphic
-          category="math"
-          subTopic="arithmetic"
+          category="기초"
+          world="World1"
           levels={[
             { level: 1, name: 'Level 1', description: 'Test' },
             { level: 2, name: 'Level 2', description: 'Test' },
@@ -113,8 +113,8 @@ describe('ClimbGraphic', () => {
     const { container } = render(
       <BrowserRouter>
         <ClimbGraphic
-          category="math"
-          subTopic="arithmetic"
+          category="기초"
+          world="World1"
           levels={[
             { level: 1, name: 'Level 1', description: 'Test' },
             { level: 2, name: 'Level 2', description: 'Test' },
@@ -133,8 +133,8 @@ describe('ClimbGraphic', () => {
     const { container } = render(
       <BrowserRouter>
         <ClimbGraphic
-          category="math"
-          subTopic="equations"
+          category="기초"
+          world="World2"
           levels={[
             { level: 1, name: 'Level 1', description: 'Test' },
             { level: 2, name: 'Level 2', description: 'Test' },
@@ -150,8 +150,8 @@ describe('ClimbGraphic', () => {
     const { container } = render(
       <BrowserRouter>
         <ClimbGraphic
-          category="math"
-          subTopic="arithmetic"
+          category="기초"
+          world="World1"
           levels={[
             { level: 1, name: 'Level 1', description: 'Test' },
             { level: 2, name: 'Level 2', description: 'Test' },
@@ -171,8 +171,8 @@ describe('ClimbGraphic', () => {
     const { container } = render(
       <BrowserRouter>
         <ClimbGraphic
-          category="math"
-          subTopic="arithmetic"
+          category="기초"
+          world="World1"
           levels={[
             { level: 1, name: 'Level 1', description: 'Test' },
             { level: 2, name: 'Level 2', description: 'Test' },

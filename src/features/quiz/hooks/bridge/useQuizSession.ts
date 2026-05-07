@@ -1,7 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { supabase } from '@/utils/supabaseClient';
-import { safeSupabaseQuery } from '@/utils/debugFetch';
-import { useDebugStore } from '@/stores/useDebugStore';
+import { useDebugStore, safeSupabaseQuery } from '@/features/debug';
 import { generateQuestion } from '../../utils/quizGenerator';
 import { Mountain, World, Topic, QuizQuestion } from '../../types/quiz';
 

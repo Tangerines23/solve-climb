@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/utils/supabaseClient';
-import { useMyPageStats } from '@/hooks/useMyPageStats';
+import { useMyPageStats } from '@/features/mypage';
 import {
   loadTierDefinitions,
   calculateTier,

@@ -1,5 +1,5 @@
 import { useState, useCallback } from 'react';
-import { InventoryItem } from '@/types/user';
+import { InventoryItem } from '@/features/auth';
 import { GameMode } from '../../types/quiz';
 import { quizEventBus } from '@/lib/eventBus';
 

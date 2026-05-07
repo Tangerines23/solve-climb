@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { useAppNavigation } from './useAppNavigation';
-import { useDailyRewardStore } from '@/stores/useDailyRewardStore';
+import { useDailyRewardStore } from '@/features/item';
 import { APP_CONFIG } from '@/config/app';
 
 /**
@@ -15,7 +15,7 @@ export function useHomePageBridge() {
   const isWaitingForSecondBackRef = useRef<boolean>(false);
   const [showAgeRating, setShowAgeRating] = useState(true);
 
-  const checkDailyLogin = useDailyRewardStore((state) => state.checkDailyLogin);
+  const checkDailyLogin = useDailyRewardStore((state: any) => state.checkDailyLogin);
 
   // Age rating visibility logic
   useEffect(() => {

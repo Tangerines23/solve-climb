@@ -1,10 +1,10 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { render, screen, waitFor } from '@testing-library/react';
 import { TierBadge } from '../TierBadge';
-import { calculateTier, getTierInfo } from '@/features/quiz/constants/tiers';
+import { calculateTier, getTierInfo } from '../../constants/tiers';
 
 // Mock tiers functions
-vi.mock('@/features/quiz/constants/tiers', () => ({
+vi.mock('../../constants/tiers', () => ({
   calculateTier: vi.fn(),
   getTierInfo: vi.fn(),
 }));

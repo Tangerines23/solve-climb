@@ -18,11 +18,24 @@ export const createAuthUserMock = (user: any = null, error: any = null): UserRes
 /**
  * Creates a typed mock for Supabase Auth Session response
  */
-export const createAuthSessionMock = (session: any = null, error: any = null): AuthResponse =>
-  ({
-    data: { session, user: session?.user ?? null },
-    error,
-  }) as AuthResponse;
+export const createAuthSessionMock = (session: any = null, error: any = null): AuthResponse => {
+  if (error) {
+    return {
+      data: { session: null, user: null },
+      error,
+    } as AuthResponse;
+  }
+  if (!session) {
+    return {
+      data: { session: null, user: null },
+      error: null,
+    } as AuthResponse;
+  }
+  return {
+    data: { session, user: session.user },
+    error: null,
+  } as any as AuthResponse;
+};
 
 /**
  * Creates a typed mock for Supabase RPC or Single Row response
@@ -44,6 +57,7 @@ export const createErrorResponse = (
 ): PostgrestSingleResponse<any> => ({
   data: null,
   error: {
+    name: 'PostgrestError',
     message,
     details: '',
     hint: '',
@@ -75,17 +89,48 @@ export const createChainableMock = (finalResponse: any) => {
     update: vi.fn().mockReturnThis(),
     delete: vi.fn().mockReturnThis(),
     eq: vi.fn().mockReturnThis(),
+    neq: vi.fn().mockReturnThis(),
+    gt: vi.fn().mockReturnThis(),
+    gte: vi.fn().mockReturnThis(),
+    lt: vi.fn().mockReturnThis(),
+    lte: vi.fn().mockReturnThis(),
+    like: vi.fn().mockReturnThis(),
+    ilike: vi.fn().mockReturnThis(),
+    in: vi.fn().mockReturnThis(),
+    is: vi.fn().mockReturnThis(),
+    match: vi.fn().mockReturnThis(),
     order: vi.fn().mockReturnThis(),
+    limit: vi.fn().mockReturnThis(),
     single: vi.fn().mockResolvedValue(finalResponse),
     maybeSingle: vi.fn().mockResolvedValue(finalResponse),
-    then: (resolve: any) => Promise.resolve(finalResponse).then(resolve),
+    csv: vi.fn().mockReturnThis(),
+    abortSignal: vi.fn().mockReturnThis(),
+    // To handle the promise-like behavior of Supabase queries
+    then: (onfulfilled?: any) => Promise.resolve(finalResponse).then(onfulfilled),
+    catch: (onrejected?: any) => Promise.resolve(finalResponse).catch(onrejected),
   };
 
-  // Also support direct calling of the mock as a promise
+  // Mock-like helpers
   mock.mockResolvedValue = (val: any) => {
+    finalResponse = val;
+    return mock;
+  };
+  mock.mockResolvedValueOnce = (val: any) => {
     finalResponse = val;
     return mock;
   };
 
   return mock;
+};
+
+/**
+ * Creates a mock for Supabase auth.getSession() response.
+ */
+export const createGetSessionMock = (session: any = null) => {
+  return {
+    data: {
+      session,
+    },
+    error: null,
+  };
 };

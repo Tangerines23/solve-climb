@@ -2,14 +2,14 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen } from '@testing-library/react';
 import { LevelListCard } from '../LevelListCard';
 
-const mockIsLevelCleared = vi.fn(() => false);
-const mockGetLevelProgress = vi.fn(() => []);
-const mockGetNextLevel = vi.fn(() => 1);
-const mockIsAdmin = vi.fn(() => false);
+const mockIsLevelCleared = vi.fn() as any;
+const mockGetLevelProgress = vi.fn() as any;
+const mockGetNextLevel = vi.fn() as any;
+const mockIsAdmin = vi.fn() as any;
 
 // Mock dependencies
-vi.mock('@/features/quiz/stores/useLevelProgressStore', () => ({
-  useLevelProgressStore: (selector: (state: unknown) => unknown) => {
+vi.mock('../../stores/useLevelProgressStore', () => ({
+  useLevelProgressStore: (selector: (state: any) => any) => {
     const state = {
       isLevelCleared: mockIsLevelCleared,
       getLevelProgress: mockGetLevelProgress,
@@ -49,8 +49,8 @@ describe('LevelListCard', () => {
   it('should render level list header', () => {
     render(
       <LevelListCard
-        category="math"
-        subTopic="arithmetic"
+        world="math"
+        category="arithmetic"
         levels={mockLevels}
         onLevelClick={vi.fn()}
       />
@@ -62,8 +62,8 @@ describe('LevelListCard', () => {
   it('should render level items', () => {
     const { container } = render(
       <LevelListCard
-        category="math"
-        subTopic="arithmetic"
+        world="math"
+        category="arithmetic"
         levels={mockLevels}
         onLevelClick={vi.fn()}
       />
@@ -80,8 +80,8 @@ describe('LevelListCard', () => {
 
     render(
       <LevelListCard
-        category="math"
-        subTopic="arithmetic"
+        world="math"
+        category="arithmetic"
         levels={mockLevels}
         onLevelClick={onLevelClick}
       />
@@ -90,7 +90,7 @@ describe('LevelListCard', () => {
     // Find and click the challenge button if it exists
     const challengeButtons = screen.queryAllByText(/도전하기/);
     if (challengeButtons.length > 0) {
-      challengeButtons[0].click();
+      (challengeButtons[0] as HTMLElement).click();
       expect(onLevelClick).toHaveBeenCalled();
     } else {
       // If no challenge button, verify component rendered
@@ -103,8 +103,8 @@ describe('LevelListCard', () => {
 
     render(
       <LevelListCard
-        category="math"
-        subTopic="arithmetic"
+        world="math"
+        category="arithmetic"
         levels={mockLevels}
         onLevelClick={vi.fn()}
       />
@@ -121,13 +121,15 @@ describe('LevelListCard', () => {
   });
 
   it('should display cleared status for cleared levels', () => {
-    mockIsLevelCleared.mockImplementation((cat: string, sub: string, level: number) => level === 1);
+    mockIsLevelCleared.mockImplementation(
+      (_world: string, _cat: string, level: number) => level === 1
+    );
     mockGetNextLevel.mockReturnValue(2);
 
     render(
       <LevelListCard
-        category="math"
-        subTopic="arithmetic"
+        world="math"
+        category="arithmetic"
         levels={mockLevels}
         onLevelClick={vi.fn()}
       />
@@ -142,8 +144,8 @@ describe('LevelListCard', () => {
 
     render(
       <LevelListCard
-        category="math"
-        subTopic="arithmetic"
+        world="math"
+        category="arithmetic"
         levels={mockLevels}
         onLevelClick={vi.fn()}
         onLockedLevelClick={onLockedLevelClick}
@@ -155,7 +157,7 @@ describe('LevelListCard', () => {
     if (lockedElements.length > 0) {
       const lockedItem = lockedElements[0].closest('.level-list-item');
       if (lockedItem) {
-        lockedItem.click();
+        (lockedItem as HTMLElement).click();
         expect(onLockedLevelClick).toHaveBeenCalled();
       }
     } else {
@@ -179,8 +181,8 @@ describe('LevelListCard', () => {
 
     render(
       <LevelListCard
-        category="math"
-        subTopic="arithmetic"
+        world="math"
+        category="arithmetic"
         levels={mockLevels}
         onLevelClick={vi.fn()}
       />
@@ -190,13 +192,15 @@ describe('LevelListCard', () => {
   });
 
   it('should show "다시하기" button for cleared levels', () => {
-    mockIsLevelCleared.mockImplementation((cat: string, sub: string, level: number) => level === 1);
+    mockIsLevelCleared.mockImplementation(
+      (_world: string, _cat: string, level: number) => level === 1
+    );
     mockGetNextLevel.mockReturnValue(2);
 
     render(
       <LevelListCard
-        category="math"
-        subTopic="arithmetic"
+        world="math"
+        category="arithmetic"
         levels={mockLevels}
         onLevelClick={vi.fn()}
       />

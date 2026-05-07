@@ -28,14 +28,5 @@
     "skipDefaultLibCheck": true
   },
   "include": ["src/**/*.ts", "src/**/*.tsx", "src/vite-env.d.ts"],
-  "exclude": [
-    "**/node_modules/**",
-    "**/dist/**",
-    "**/__tests__/**",
-    "**/__mocks__/**",
-    "**/*.test.ts",
-    "**/*.test.tsx",
-    "**/*.spec.ts",
-    "**/*.spec.tsx"
-  ]
+  "exclude": ["**/node_modules/**", "**/dist/**"]
 }

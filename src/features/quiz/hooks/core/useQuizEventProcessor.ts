@@ -1,8 +1,8 @@
-import { ANIMATION_CONFIG } from '@/features/quiz/constants/game';
+import { ANIMATION_CONFIG } from '../../constants/game';
 import { useEffect } from 'react';
 import { quizEventBus } from '@/lib/eventBus';
 import { useQuizStore } from '../../stores/useQuizStore';
-import { useGameStore } from '@/features/quiz/stores/useGameStore';
+import { useGameStore } from '../../stores/useGameStore';
 import { useDeathNoteStore } from '../../stores/useDeathNoteStore';
 import { useBaseCampStore } from '../../stores/useBaseCampStore';
 import { vibrateLong } from '@/utils/haptic';

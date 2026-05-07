@@ -1,18 +1,18 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
-import { LevelSelectPage } from '@/features/quiz/pages/LevelSelectPage';
+import { LevelSelectPage } from '../pages/LevelSelectPage';
 import { BrowserRouter, useSearchParams } from 'react-router-dom';
-import { useLevelProgressStore } from '@/features/quiz/stores/useLevelProgressStore';
+import { useLevelProgressStore } from '../stores/useLevelProgressStore';
 import { useNavigationContext } from '@/hooks/useNavigationContext';
-import { useFavoriteStore } from '@/stores/useFavoriteStore';
-import { useDebugStore } from '@/stores/useDebugStore';
+import { useFavoriteStore } from '@/features/mypage';
+import { useDebugStore } from '@/features/debug';
 import '@testing-library/jest-dom/vitest';
 
 // Mock dependencies
-vi.mock('@/features/quiz/stores/useLevelProgressStore');
+vi.mock('../stores/useLevelProgressStore');
 vi.mock('@/hooks/useNavigationContext');
-vi.mock('@/stores/useFavoriteStore');
-vi.mock('@/stores/useDebugStore');
+vi.mock('@/features/mypage');
+vi.mock('@/features/debug');
 vi.mock('@/config/app', () => ({
   APP_CONFIG: {
     WORLD_MAP: {
@@ -49,7 +49,7 @@ vi.mock('@/config/app', () => ({
     },
   },
 }));
-vi.mock('@/features/quiz/components/ClimbGraphic', () => ({
+vi.mock('../components/ClimbGraphic', () => ({
   ClimbGraphic: () => <div data-testid="climb-graphic" />,
 }));
 vi.mock('../components/MyRecordCard', () => ({

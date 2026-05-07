@@ -1,5 +1,5 @@
-import { supabase } from '../../../utils/supabaseClient';
-import { safeSupabaseQuery } from '../../../utils/debugFetch';
+import { supabase } from '@/utils/supabaseClient';
+import { safeSupabaseQuery } from '@/features/debug';
 import { GameMode, Tier } from '../types/quiz';
 import { UserResponse } from '@supabase/supabase-js';
 

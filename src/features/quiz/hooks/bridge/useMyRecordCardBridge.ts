@@ -13,7 +13,7 @@ export function useMyRecordCardBridge({ world, category }: UseMyRecordCardBridge
     survival: number | null;
   }>({ 'time-attack': null, survival: null });
 
-  const getBestRecords = useLevelProgressStore((state) => state.getBestRecords);
+  const getBestRecords = useLevelProgressStore((state: any) => state.getBestRecords);
 
   useEffect(() => {
     setLoading(true);

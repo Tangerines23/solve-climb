@@ -6,30 +6,30 @@ describe('Performance Benchmarks', () => {
   describe('Quiz Generation', () => {
     bench('산술 문제 100개 생성', () => {
       for (let i = 0; i < 100; i++) {
-        generateProblem(Math.floor(Math.random() * 15) + 1);
+        generateProblem(Math.floor(Math.random() * 15) + 1, 'medium');
       }
     });
 
     bench('다양한 레벨 문제 생성', () => {
       for (let level = 1; level <= 15; level++) {
         for (let i = 0; i < 10; i++) {
-          generateProblem(level);
+          generateProblem(level, 'medium');
         }
       }
     });
   });
 
   describe('Score Calculation', () => {
-    bench('티어 점수 계산 1000회', () => {
+    bench('티어 점수 계산 1000회', async () => {
       for (let i = 0; i < 1000; i++) {
-        calculateScoreForTier(5, 10, 1000);
+        await calculateScoreForTier(5, 10, 1000);
       }
     });
 
-    bench('다양한 티어 점수 계산', () => {
+    bench('다양한 티어 점수 계산', async () => {
       for (let tier = 1; tier <= 10; tier++) {
         for (let stars = 0; stars <= 10; stars++) {
-          calculateScoreForTier(tier, stars, tier * 1000);
+          await calculateScoreForTier(tier, stars, tier * 1000);
         }
       }
     });

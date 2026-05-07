@@ -1,24 +1,23 @@
 import { describe, it, expect, beforeEach, vi, afterEach } from 'vitest';
 import { renderHook, act } from '@testing-library/react';
-import { useQuizSubmit } from '@/features/quiz/hooks/core/useQuizSubmit';
-import type { QuizQuestion, GameMode } from '@/features/quiz/types/quiz';
-import { useGameStore } from '@/features/quiz/stores/useGameStore';
-import { CLIMB_PER_CORRECT, MAX_POSSIBLE_ANSWER } from '@/features/quiz/constants/game';
+import { useQuizSubmit } from '../useQuizSubmit';
+import type { QuizQuestion, GameMode } from '../../../types/quiz';
+import { useGameStore } from '../../../stores/useGameStore';
 import { quizEventBus } from '@/lib/eventBus';
 
 // Mock dependencies
-vi.mock('@/features/quiz/stores/useGameStore', () => ({
+vi.mock('../../../stores/useGameStore', () => ({
   useGameStore: Object.assign(vi.fn(), {
     getState: vi.fn(() => ({ feverLevel: 0 })),
   }),
 }));
 
-vi.mock('@/features/quiz/utils/haptic', () => ({
+vi.mock('../../../utils/haptic', () => ({
   vibrateMedium: vi.fn(),
   vibrateLong: vi.fn(),
 }));
 
-vi.mock('@/features/quiz/utils/japanese', () => ({
+vi.mock('../../../utils/japanese', () => ({
   normalizeRomaji: vi.fn((str: string) => str.toLowerCase().trim()),
 }));
 
@@ -63,9 +62,6 @@ describe('useQuizSubmit', () => {
     subParam: 'addition',
     gameMode: 'time-attack' as GameMode,
     questionStartTime: Date.now(),
-    hapticEnabled: false,
-    useSystemKeyboard: false,
-    inputRef: { current: null },
     currentQuestionId: 'q1',
   };
 
@@ -213,7 +209,7 @@ describe('useQuizSubmit', () => {
 
   it('should handle survival mode wrong answer', async () => {
     vi.mocked(useGameStore).mockReturnValue({
-      ...defaultGameStoreState,
+      ...(defaultGameStoreState as any),
       lives: 1,
     });
 
@@ -266,7 +262,7 @@ describe('useQuizSubmit', () => {
 
   it('should handle safety rope usage on wrong answer', async () => {
     vi.mocked(useGameStore).mockReturnValue({
-      ...defaultGameStoreState,
+      ...(defaultGameStoreState as any),
       activeItems: ['safety_rope'],
     });
 
@@ -395,7 +391,7 @@ describe('useQuizSubmit', () => {
 
   it('should handle flare usage in survival mode', async () => {
     vi.mocked(useGameStore).mockReturnValue({
-      ...defaultGameStoreState,
+      ...(defaultGameStoreState as any),
       activeItems: ['flare'],
     });
 
@@ -423,7 +419,7 @@ describe('useQuizSubmit', () => {
 
   it('should apply exhausted multiplier to score', () => {
     vi.mocked(useGameStore).mockReturnValue({
-      ...defaultGameStoreState,
+      ...(defaultGameStoreState as any),
       isExhausted: true,
     });
 
@@ -533,87 +529,6 @@ describe('useQuizSubmit', () => {
     );
   });
 
-  it('should not call onAnswerSubmitted when currentQuestionId is null', () => {
-    const onAnswerSubmitted = vi.fn();
-    const { result } = renderHook(() =>
-      useQuizSubmit({
-        ...defaultParams,
-        onAnswerSubmitted,
-        currentQuestionId: null,
-      })
-    );
-
-    const mockEvent = createMockEvent();
-
-    act(() => {
-      result.current.handleSubmit(mockEvent);
-    });
-
-    expect(onAnswerSubmitted).not.toHaveBeenCalled();
-  });
-
-  it('should not call onAnswerSubmitted when onAnswerSubmitted is not provided', () => {
-    const { result } = renderHook(() =>
-      useQuizSubmit({
-        ...defaultParams,
-        currentQuestionId: 'q1',
-      })
-    );
-
-    const mockEvent = createMockEvent();
-
-    act(() => {
-      result.current.handleSubmit(mockEvent);
-    });
-
-    // onAnswerSubmitted is no longer called directly
-    expect(quizEventBus.emit).toHaveBeenCalled();
-  });
-
-  it('should not focus input when useSystemKeyboard is false', () => {
-    const mockFocus = vi.fn();
-    const mockInput = { focus: mockFocus } as unknown as HTMLInputElement;
-    const inputRef = { current: mockInput };
-
-    const { result } = renderHook(() =>
-      useQuizSubmit({
-        ...defaultParams,
-        useSystemKeyboard: false,
-        inputRef,
-      })
-    );
-
-    const mockEvent = createMockEvent();
-
-    act(() => {
-      result.current.handleSubmit(mockEvent);
-    });
-
-    expect(mockFocus).not.toHaveBeenCalled();
-  });
-
-  it('should handle haptic feedback settings by emitting events', () => {
-    const { result } = renderHook(() =>
-      useQuizSubmit({
-        ...defaultParams,
-        hapticEnabled: true,
-      })
-    );
-
-    const mockEvent = createMockEvent();
-
-    act(() => {
-      result.current.handleSubmit(mockEvent);
-    });
-
-    expect(quizEventBus.emit).toHaveBeenCalledWith(
-      'QUIZ:ANSWER_SUBMITTED',
-      expect.objectContaining({
-        isCorrect: true,
-      })
-    );
-  });
-
   it('should use multiplier 1.0 when isExhausted is false', () => {
     vi.mocked(useGameStore).mockReturnValue(defaultGameStoreState);
 
@@ -661,7 +576,7 @@ describe('useQuizSubmit', () => {
 
   it('should handle survival mode wrong answer without flare', async () => {
     vi.mocked(useGameStore).mockReturnValue({
-      ...defaultGameStoreState,
+      ...(defaultGameStoreState as any),
       lives: 1,
     });
 
@@ -961,7 +876,7 @@ describe('useQuizSubmit', () => {
 
   it('should handle correct answer with isExhausted true', () => {
     vi.mocked(useGameStore).mockReturnValue({
-      ...defaultGameStoreState,
+      ...(defaultGameStoreState as any),
       isExhausted: true,
     });
 

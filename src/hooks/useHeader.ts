@@ -2,9 +2,8 @@ import { useRef, useEffect, useState, useCallback } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { APP_CONFIG } from '@/config/app';
 import { urls } from '@/utils/navigation';
-import { useProfileStore } from '@/stores/useProfileStore';
-import { useUserStore } from '@/stores/useUserStore';
-import { useDebugStore } from '@/stores/useDebugStore';
+import { useProfileStore, useUserStore, type ProfileState } from '@/features/auth';
+import { useDebugStore } from '@/features/debug';
 import { useToastStore } from '@/stores/useToastStore';
 import { storageService, STORAGE_KEYS } from '@/services';
 
@@ -13,7 +12,7 @@ export function useHeader() {
   const location = useLocation();
   const [isMineralsLoading, setIsMineralsLoading] = useState(false);
 
-  const isAdmin = useProfileStore((state) => state.isAdmin);
+  const isAdmin = useProfileStore((state: ProfileState) => state.isAdmin);
   const { minerals, stamina, fetchUserData, checkStamina, recoverMineralsAds } = useUserStore();
   const { showToast } = useToastStore();
 

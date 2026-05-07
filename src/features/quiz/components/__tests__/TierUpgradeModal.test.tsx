@@ -1,10 +1,10 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, waitFor } from '@testing-library/react';
 import { TierUpgradeModal } from '../TierUpgradeModal';
-import { calculateTier, getTierInfo } from '@/features/quiz/constants/tiers';
+import { calculateTier, getTierInfo } from '../../constants/tiers';
 
 // Mock dependencies
-vi.mock('@/features/quiz/constants/tiers', () => ({
+vi.mock('../../constants/tiers', () => ({
   calculateTier: vi.fn(),
   getTierInfo: vi.fn(),
 }));
@@ -26,17 +26,22 @@ describe('TierUpgradeModal', () => {
     vi.mocked(calculateTier).mockResolvedValueOnce({
       level: 1,
       stars: 0,
-      minScore: 0,
-      maxScore: 1000,
+      totalScore: 1000,
+      currentCycleScore: 1000,
     });
     vi.mocked(calculateTier).mockResolvedValueOnce({
       level: 2,
       stars: 0,
-      minScore: 1000,
-      maxScore: 2000,
+      totalScore: 2000,
+      currentCycleScore: 2000,
     });
-    vi.mocked(getTierInfo).mockResolvedValueOnce({ icon: '🏕️', name: 'Camp 1' });
-    vi.mocked(getTierInfo).mockResolvedValueOnce({ icon: '🏕️', name: 'Camp 2' });
+    vi.mocked(getTierInfo).mockResolvedValue({
+      level: 1,
+      icon: '🏕️',
+      name: 'Camp 1',
+      minScore: 0,
+      colorVar: '--color-tier-base',
+    });
 
     render(
       <TierUpgradeModal isOpen={true} previousScore={1000} currentScore={2000} onClose={vi.fn()} />
@@ -51,17 +56,22 @@ describe('TierUpgradeModal', () => {
     vi.mocked(calculateTier).mockResolvedValueOnce({
       level: 1,
       stars: 0,
-      minScore: 0,
-      maxScore: 1000,
+      totalScore: 1000,
+      currentCycleScore: 1000,
     });
     vi.mocked(calculateTier).mockResolvedValueOnce({
       level: 1,
       stars: 1,
-      minScore: 0,
-      maxScore: 1000,
+      totalScore: 1500,
+      currentCycleScore: 1500,
     });
-    vi.mocked(getTierInfo).mockResolvedValueOnce({ icon: '🏕️', name: 'Camp 1' });
-    vi.mocked(getTierInfo).mockResolvedValueOnce({ icon: '🏕️', name: 'Camp 1' });
+    vi.mocked(getTierInfo).mockResolvedValue({
+      level: 1,
+      icon: '🏕️',
+      name: 'Camp 1',
+      minScore: 0,
+      colorVar: '--color-tier-base',
+    });
 
     render(
       <TierUpgradeModal isOpen={true} previousScore={1000} currentScore={1500} onClose={vi.fn()} />
@@ -76,17 +86,22 @@ describe('TierUpgradeModal', () => {
     vi.mocked(calculateTier).mockResolvedValueOnce({
       level: 1,
       stars: 0,
-      minScore: 0,
-      maxScore: 1000,
+      totalScore: 1000,
+      currentCycleScore: 1000,
     });
     vi.mocked(calculateTier).mockResolvedValueOnce({
       level: 1,
       stars: 0,
-      minScore: 0,
-      maxScore: 1000,
+      totalScore: 1100,
+      currentCycleScore: 1100,
     });
-    vi.mocked(getTierInfo).mockResolvedValueOnce({ icon: '🏕️', name: 'Camp 1' });
-    vi.mocked(getTierInfo).mockResolvedValueOnce({ icon: '🏕️', name: 'Camp 1' });
+    vi.mocked(getTierInfo).mockResolvedValue({
+      level: 1,
+      icon: '🏕️',
+      name: 'Camp 1',
+      minScore: 0,
+      colorVar: '--color-tier-base',
+    });
 
     render(
       <TierUpgradeModal isOpen={true} previousScore={1000} currentScore={1100} onClose={vi.fn()} />
@@ -102,17 +117,22 @@ describe('TierUpgradeModal', () => {
     vi.mocked(calculateTier).mockResolvedValueOnce({
       level: 1,
       stars: 0,
-      minScore: 0,
-      maxScore: 1000,
+      totalScore: 1000,
+      currentCycleScore: 1000,
     });
     vi.mocked(calculateTier).mockResolvedValueOnce({
       level: 2,
       stars: 0,
-      minScore: 1000,
-      maxScore: 2000,
+      totalScore: 2000,
+      currentCycleScore: 2000,
     });
-    vi.mocked(getTierInfo).mockResolvedValueOnce({ icon: '🏕️', name: 'Camp 1' });
-    vi.mocked(getTierInfo).mockResolvedValueOnce({ icon: '🏕️', name: 'Camp 2' });
+    vi.mocked(getTierInfo).mockResolvedValue({
+      level: 1,
+      icon: '🏕️',
+      name: 'Camp 1',
+      minScore: 0,
+      colorVar: '--color-tier-base',
+    });
 
     render(
       <TierUpgradeModal isOpen={true} previousScore={1000} currentScore={2000} onClose={onClose} />
@@ -130,17 +150,22 @@ describe('TierUpgradeModal', () => {
     vi.mocked(calculateTier).mockResolvedValueOnce({
       level: 1,
       stars: 0,
-      minScore: 0,
-      maxScore: 1000,
+      totalScore: 1000,
+      currentCycleScore: 1000,
     });
     vi.mocked(calculateTier).mockResolvedValueOnce({
       level: 2,
       stars: 0,
-      minScore: 1000,
-      maxScore: 2000,
+      totalScore: 2000,
+      currentCycleScore: 2000,
     });
-    vi.mocked(getTierInfo).mockResolvedValueOnce({ icon: '🏕️', name: 'Camp 1' });
-    vi.mocked(getTierInfo).mockResolvedValueOnce({ icon: '🏕️', name: 'Camp 2' });
+    vi.mocked(getTierInfo).mockResolvedValue({
+      level: 1,
+      icon: '🏕️',
+      name: 'Camp 1',
+      minScore: 0,
+      colorVar: '--color-tier-base',
+    });
 
     const { container } = render(
       <TierUpgradeModal isOpen={true} previousScore={1000} currentScore={2000} onClose={onClose} />
@@ -149,7 +174,7 @@ describe('TierUpgradeModal', () => {
     await waitFor(() => {
       const overlay = container.querySelector('.tier-upgrade-modal-overlay');
       if (overlay) {
-        overlay.click();
+        (overlay as HTMLElement).click();
         expect(onClose).toHaveBeenCalled();
       }
     });
@@ -160,17 +185,22 @@ describe('TierUpgradeModal', () => {
     vi.mocked(calculateTier).mockResolvedValueOnce({
       level: 1,
       stars: 0,
-      minScore: 0,
-      maxScore: 1000,
+      totalScore: 1000,
+      currentCycleScore: 1000,
     });
     vi.mocked(calculateTier).mockResolvedValueOnce({
       level: 2,
       stars: 0,
-      minScore: 1000,
-      maxScore: 2000,
+      totalScore: 2000,
+      currentCycleScore: 2000,
     });
-    vi.mocked(getTierInfo).mockResolvedValueOnce({ icon: '🏕️', name: 'Camp 1' });
-    vi.mocked(getTierInfo).mockResolvedValueOnce({ icon: '🏕️', name: 'Camp 2' });
+    vi.mocked(getTierInfo).mockResolvedValue({
+      level: 1,
+      icon: '🏕️',
+      name: 'Camp 1',
+      minScore: 0,
+      colorVar: '--color-tier-base',
+    });
 
     const { container } = render(
       <TierUpgradeModal isOpen={true} previousScore={1000} currentScore={2000} onClose={onClose} />
@@ -179,7 +209,7 @@ describe('TierUpgradeModal', () => {
     await waitFor(() => {
       const modal = container.querySelector('.tier-upgrade-modal');
       if (modal) {
-        modal.click();
+        (modal as HTMLElement).click();
         expect(onClose).not.toHaveBeenCalled();
       }
     });
@@ -189,17 +219,22 @@ describe('TierUpgradeModal', () => {
     vi.mocked(calculateTier).mockResolvedValueOnce({
       level: 1,
       stars: 2,
-      minScore: 0,
-      maxScore: 1000,
+      totalScore: 1000,
+      currentCycleScore: 1000,
     });
     vi.mocked(calculateTier).mockResolvedValueOnce({
       level: 2,
       stars: 3,
-      minScore: 1000,
-      maxScore: 2000,
+      totalScore: 2000,
+      currentCycleScore: 2000,
     });
-    vi.mocked(getTierInfo).mockResolvedValueOnce({ icon: '🏕️', name: 'Camp 1' });
-    vi.mocked(getTierInfo).mockResolvedValueOnce({ icon: '🏕️', name: 'Camp 2' });
+    vi.mocked(getTierInfo).mockImplementation(async (level) => ({
+      level: level as any,
+      icon: '🏕️',
+      name: `Camp ${level}`,
+      minScore: 0,
+      colorVar: '--color-tier-base',
+    }));
 
     render(
       <TierUpgradeModal isOpen={true} previousScore={1000} currentScore={2000} onClose={vi.fn()} />
@@ -215,17 +250,22 @@ describe('TierUpgradeModal', () => {
     vi.mocked(calculateTier).mockResolvedValueOnce({
       level: 1,
       stars: 5,
-      minScore: 0,
-      maxScore: 1000,
+      totalScore: 1000,
+      currentCycleScore: 1000,
     });
     vi.mocked(calculateTier).mockResolvedValueOnce({
       level: 1,
       stars: 6,
-      minScore: 0,
-      maxScore: 1000,
+      totalScore: 1500,
+      currentCycleScore: 1500,
     });
-    vi.mocked(getTierInfo).mockResolvedValueOnce({ icon: '🏕️', name: 'Camp 1' });
-    vi.mocked(getTierInfo).mockResolvedValueOnce({ icon: '🏕️', name: 'Camp 1' });
+    vi.mocked(getTierInfo).mockResolvedValue({
+      level: 1,
+      icon: '🏕️',
+      name: 'Camp 1',
+      minScore: 0,
+      colorVar: '--color-tier-base',
+    });
 
     render(
       <TierUpgradeModal isOpen={true} previousScore={1000} currentScore={1500} onClose={vi.fn()} />
@@ -240,17 +280,22 @@ describe('TierUpgradeModal', () => {
     vi.mocked(calculateTier).mockResolvedValueOnce({
       level: 1,
       stars: 0,
-      minScore: 0,
-      maxScore: 1000,
+      totalScore: 1000,
+      currentCycleScore: 1000,
     });
     vi.mocked(calculateTier).mockResolvedValueOnce({
       level: 1,
       stars: 3,
-      minScore: 0,
-      maxScore: 1000,
+      totalScore: 1500,
+      currentCycleScore: 1500,
     });
-    vi.mocked(getTierInfo).mockResolvedValueOnce({ icon: '🏕️', name: 'Camp 1' });
-    vi.mocked(getTierInfo).mockResolvedValueOnce({ icon: '🏕️', name: 'Camp 1' });
+    vi.mocked(getTierInfo).mockResolvedValue({
+      level: 1,
+      icon: '🏕️',
+      name: 'Camp 1',
+      minScore: 0,
+      colorVar: '--color-tier-base',
+    });
 
     render(
       <TierUpgradeModal isOpen={true} previousScore={1000} currentScore={1500} onClose={vi.fn()} />
