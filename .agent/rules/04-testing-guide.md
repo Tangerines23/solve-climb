@@ -12,21 +12,25 @@ alwaysApply: false
 - **E2E 테스트**: Playwright
 - **컴포넌트 테스트**: Playwright CT
 
-## 테스트 파일 위치
+## 테스트 파일 위치 (Test Locations)
+
+본 프로젝트는 테스트 코드와 실제 코드의 **지리적 근접성**을 중시합니다.
 
 ```
 src/
+├── features/
+│   └── [feature]/
+│       └── __tests__/       # 해당 피처의 모든 테스트 (단위, 훅, 컴포넌트)
+│           ├── Component.test.tsx
+│           ├── useHook.test.ts
+│           └── logic.test.ts
 ├── components/
-│   └── __tests__/           # 컴포넌트 테스트
-│       └── Button.test.tsx
+│   └── __tests__/           # 공통 UI 컴포넌트 테스트
 ├── utils/
-│   └── __tests__/           # 유틸리티 테스트
-│       └── formatNumber.test.ts
+│   └── __tests__/           # 전역 유틸리티 테스트
 tests/
-├── e2e/                     # E2E 테스트
-│   └── quiz-flow.spec.ts
-└── integration/             # 통합 테스트
-    └── rpc-validation.test.ts
+├── e2e/                     # 시스템 전체 E2E 테스트 (Playwright)
+└── integration/             # 서버/DB 통합 테스트
 ```
 
 ## 단위 테스트 패턴

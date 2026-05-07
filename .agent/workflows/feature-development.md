@@ -14,6 +14,9 @@ description: solve-climb 프로젝트의 표준 기능 개발 프로세스
 - `implementation_plan.md`를 생성하여 다음 내용을 포함합니다:
   - 구현할 기능 요약
   - 수정/신규 생성할 파일 목록
+  - **아키텍처 설계**: Hook Bridge 패턴 적용 방식 및 계층 분리 계획
+  - **객체 체조 준수**: 가드 클로즈 및 Depth-1 유지 전략
+  - **타입 설계**: `database.types.ts`에서 추출할 타입 목록 (SSOT)
   - 디자인 시스템(TDS, CSS 변수) 활용 계획
   - 검증 방법 (테스트 코드 등)
 - `notify_user`를 사용하여 사용자에게 계획의 승인을 요청합니다.
@@ -22,6 +25,9 @@ description: solve-climb 프로젝트의 표준 기능 개발 프로세스
 
 - 승인된 계획에 따라 코드를 작성합니다.
 - **규칙 준수:** `.agent/rules`에 정의된 코딩 컨벤션과 에이전트 행동 지침을 따릅니다.
+  - **UI**: Dumb 컴포넌트로 작성
+  - **Logic**: `use[Feature]Bridge`를 통해 연결
+  - **Quality**: `else` 사용 금지, Depth 1단계 유지
 - **점진적 커밋 가능:** 각 세부 작업이 완료될 때마다 상태를 보고합니다.
 
 ### 4단계: 검증 및 품질 확인 (VERIFICATION)
