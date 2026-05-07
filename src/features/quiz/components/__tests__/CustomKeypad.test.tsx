@@ -5,18 +5,13 @@ import { useSettingsStore } from '@/features/mypage';
 import { KEYPAD_SYMBOLS } from '@/constants/ui';
 
 // Mock haptic
-vi.mock('../../utils/haptic', () => ({
+vi.mock('../../../../utils/haptic', () => ({
   vibrateShort: vi.fn(),
 }));
 
 // Mock stores
 vi.mock('@/features/mypage', () => ({
   useSettingsStore: vi.fn(),
-}));
-
-// Mock haptic
-vi.mock('../../utils/haptic', () => ({
-  vibrateShort: vi.fn(),
 }));
 
 describe('CustomKeypad', () => {

@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
-import { TierSystemSection } from '@/features/debug/components/TierSystemSection';
+import { TierSystemSection } from '../TierSystemSection';
 import { supabase } from '@/utils/supabaseClient';
 import { useMyPageStats, type UseMyPageStatsResult } from '@/features/mypage/hooks/useMyPageStats';
 import { loadTierDefinitions, type TierInfo } from '@/features/quiz';

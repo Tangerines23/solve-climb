@@ -39,10 +39,20 @@ vi.mock('@/utils/supabaseClient', () => ({
 vi.mock('@/services', () => ({
   storageService: {
     get: vi.fn(),
+    set: vi.fn(),
+    remove: vi.fn(),
   },
   STORAGE_KEYS: {
     LOCAL_SESSION: 'solve-climb-local-session',
+    DEVICE_ID: 'device-id',
+    PROFILES: (id: string) => `profiles-${id}`,
+    ACTIVE_PROFILE_ID: 'active-profile-id',
+    ADMIN_MODE: 'admin-mode',
   },
+}));
+
+vi.mock('@/features/debug', () => ({
+  safeSupabaseQuery: vi.fn((p) => p),
 }));
 
 vi.mock('@/utils/safeJsonParse', () => ({

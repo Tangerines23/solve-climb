@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { verifySync } from '@/features/debug/utils/debugSync';
+import { verifySync } from '../debugSync';
 import { supabase } from '@/utils/supabaseClient';
 import { calculateTier } from '@/features/quiz/constants/tiers';
 

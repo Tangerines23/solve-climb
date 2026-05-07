@@ -6,7 +6,7 @@ import {
   logNetworkResponse,
   dumpLocalStorage,
   dumpSessionStorage,
-} from '@/features/debug/utils/debug';
+} from '../debug';
 import { logger } from '@/utils/logger';
 import { storageService } from '@/services';
 

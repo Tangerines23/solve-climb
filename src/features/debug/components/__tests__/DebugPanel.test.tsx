@@ -1,42 +1,42 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/react';
-import DebugPanel from '@/features/debug/components/DebugPanel';
-import { useDebugPanel } from '@/features/debug/hooks/useDebugPanel';
+import DebugPanel from '../DebugPanel';
+import { useDebugPanel } from '../../hooks/useDebugPanel';
 
 // Mock dependencies
-vi.mock('@/features/debug/hooks/useDebugPanel', () => ({
+vi.mock('../../hooks/useDebugPanel', () => ({
   useDebugPanel: vi.fn(),
 }));
 
-vi.mock('@/features/debug/components/QuickActionsSection', () => ({
+vi.mock('../QuickActionsSection', () => ({
   QuickActionsSection: () => <div>Quick Actions</div>,
 }));
 
-vi.mock('@/features/debug/components/TierSystemSection', () => ({
+vi.mock('../TierSystemSection', () => ({
   TierSystemSection: () => <div>Tier System</div>,
 }));
 
-vi.mock('@/features/debug/components/BadgeSystemSection', () => ({
+vi.mock('../BadgeSystemSection', () => ({
   BadgeSystemSection: () => <div>Badge System</div>,
 }));
 
-vi.mock('@/features/debug/components/GameFlowSection', () => ({
+vi.mock('../GameFlowSection', () => ({
   GameFlowSection: () => <div>Game Flow</div>,
 }));
 
-vi.mock('@/features/debug/components/ItemSystemSection', () => ({
+vi.mock('../ItemSystemSection', () => ({
   ItemSystemSection: () => <div>Item System</div>,
 }));
 
-vi.mock('@/features/debug/components/DataResetSection', () => ({
+vi.mock('../DataResetSection', () => ({
   DataResetSection: () => <div>Data Reset</div>,
 }));
 
-vi.mock('@/features/debug/components/ErrorLogSection', () => ({
+vi.mock('../ErrorLogSection', () => ({
   ErrorLogSection: () => <div>Error Log</div>,
 }));
 
-vi.mock('@/features/debug/components/BoundaryTestSection', () => ({
+vi.mock('../BoundaryTestSection', () => ({
   BoundaryTestSection: () => <div>Boundary Test</div>,
 }));
 

@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { executeMacro, builtInMacros, DebugMacro } from '@/features/debug/utils/debugMacros';
+import { executeMacro, builtInMacros, DebugMacro } from '../debugMacros';
 
 describe('debugMacros', () => {
   const mockNavigate = vi.fn();

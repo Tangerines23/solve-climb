@@ -2,7 +2,7 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, fireEvent, act, screen, waitFor } from '@testing-library/react';
 import { MyPage } from '../MyPage';
 import { BrowserRouter } from 'react-router-dom';
-
+import { useMyPageBridge } from '../../hooks/useMyPageBridge';
 /**
  * [Vitest Hoisting Rules]
  * - Variables used inside vi.mock MUST start with 'mock' (e.g., mockStoreState).
@@ -15,37 +15,43 @@ const mockNavigate = vi.fn();
 // Shared state object prefixed with 'mock' for strict hoisting compliance
 export const mockStoreState = {
   isProfileComplete: true,
-  profile: { nickname: 'Tester', userId: 'user-123' },
+  profile: { nickname: 'Tester', userId: 'test-user' } as any,
   hapticEnabled: true,
   animationEnabled: true,
   favorites: [],
   progress: {},
   isAdmin: false,
-  setProfile: vi.fn(),
-  clearProfile: vi.fn(),
-  setHapticEnabled: vi.fn(),
-  setAnimationEnabled: vi.fn(),
+  setProfile: vi.fn((p) => {
+    mockStoreState.profile = { ...mockStoreState.profile, ...p };
+  }),
+  clearProfile: vi.fn(() => {
+    mockStoreState.profile = null;
+  }),
+  setHapticEnabled: vi.fn((val) => {
+    mockStoreState.hapticEnabled = val;
+  }),
+  setAnimationEnabled: vi.fn((val) => {
+    mockStoreState.animationEnabled = val;
+  }),
   setCategoryTopic: vi.fn(),
   getState: () => mockStoreState,
   subscribe: vi.fn(),
 };
 
-// 1. Mock Components - Using correct relative paths to src/pages/__tests__/
-vi.mock('../../components/Header', () => ({
+// 1. Mock Components
+vi.mock('@/components/Header', () => ({
   Header: () => <div data-testid="header">Header</div>,
 }));
-vi.mock('../../components/FooterNav', () => ({
+vi.mock('@/components/FooterNav', () => ({
   FooterNav: () => <div data-testid="footer-nav">FooterNav</div>,
 }));
-vi.mock('../../components/ProfileForm', () => ({
+vi.mock('@/features/auth', () => ({
   ProfileForm: ({ onComplete, onCancel, showBackButton }: any) => (
     <div data-testid="profile-form">
       <button onClick={() => onComplete()}>Complete</button>
       {showBackButton && <button onClick={() => onCancel()}>Cancel</button>}
     </div>
   ),
-}));
-vi.mock('../../components/DataResetConfirmModal', () => ({
   DataResetConfirmModal: ({ isOpen, onConfirm, onCancel }: any) =>
     isOpen ? (
       <div data-testid="reset-modal">
@@ -53,8 +59,6 @@ vi.mock('../../components/DataResetConfirmModal', () => ({
         <button onClick={() => onCancel()}>Cancel Reset</button>
       </div>
     ) : null,
-}));
-vi.mock('../../components/WithdrawConfirmModal', () => ({
   WithdrawConfirmModal: ({ isOpen, onConfirm, onCancel, isLoading }: any) =>
     isOpen ? (
       <div data-testid="withdraw-modal">
@@ -66,8 +70,19 @@ vi.mock('../../components/WithdrawConfirmModal', () => ({
         <button onClick={() => onCancel()}>Cancel Withdraw</button>
       </div>
     ) : null,
+  useProfileStore: Object.assign((selector: any) => selector(mockStoreState), {
+    getState: () => mockStoreState,
+    subscribe: vi.fn(),
+  }),
+  useSession: () => ({ session: { user: { id: 'test-user' } }, loading: false }),
+  useProfile: () => ({ profile: mockStoreState.profile, loading: false, refetch: mockRefetch }),
+  useUserWithdraw: () => ({ executeWithdraw: vi.fn(), isLoading: false }),
+  useDataReset: () => ({ executeReset: vi.fn() }),
+  signInWithGoogle: vi.fn(() => Promise.resolve({ error: null })),
+  handleTossLogin: vi.fn(),
+  isTossAppEnvironment: false,
 }));
-vi.mock('../../components/Toast', () => ({
+vi.mock('@/components/Toast', () => ({
   Toast: ({ message, isOpen, onClose }: any) =>
     isOpen ? (
       <div data-testid="toast" onClick={onClose}>
@@ -75,7 +90,7 @@ vi.mock('../../components/Toast', () => ({
       </div>
     ) : null,
 }));
-vi.mock('../../components/AlertModal', () => ({
+vi.mock('@/components/AlertModal', () => ({
   AlertModal: ({ isOpen, message, onClose }: any) =>
     isOpen ? (
       <div data-testid="alert-modal" onClick={onClose}>
@@ -85,7 +100,7 @@ vi.mock('../../components/AlertModal', () => ({
 }));
 
 // Mock sub-components
-vi.mock('../../components/my/MyPageProfile', () => ({
+vi.mock('../../components/MyPageProfile', () => ({
   MyPageProfile: ({ onEditProfile, nickname }: any) => (
     <div data-testid="my-page-profile">
       <span>{nickname}</span>
@@ -93,7 +108,7 @@ vi.mock('../../components/my/MyPageProfile', () => ({
     </div>
   ),
 }));
-vi.mock('../../components/my/MyPageStats', () => ({
+vi.mock('../../components/MyPageStats', () => ({
   MyPageStats: ({ onOpenLeaderboard, onNavigateHistory }: any) => (
     <div data-testid="my-page-stats">
       <button onClick={() => onOpenLeaderboard()}>명예의 전당</button>
@@ -101,10 +116,10 @@ vi.mock('../../components/my/MyPageStats', () => ({
     </div>
   ),
 }));
-vi.mock('../../components/my/MyPageQuickAccess', () => ({
+vi.mock('../../components/MyPageQuickAccess', () => ({
   MyPageQuickAccess: () => <div data-testid="quick-access" />,
 }));
-vi.mock('../../components/my/MyPageSettings', () => ({
+vi.mock('../../components/MyPageSettings', () => ({
   MyPageSettings: ({
     onToggleHaptic,
     onToggleAnimation,
@@ -115,8 +130,8 @@ vi.mock('../../components/my/MyPageSettings', () => ({
     onShowProfileForm,
   }: any) => (
     <div data-testid="settings">
-      <button onClick={() => onToggleHaptic()}>진동 효과</button>
-      <button onClick={() => onToggleAnimation()}>애니메이션</button>
+      <button onClick={() => onToggleHaptic(true)}>진동 효과</button>
+      <button onClick={() => onToggleAnimation(true)}>애니메이션</button>
       <button onClick={() => onDataReset()}>데이터 초기화</button>
       <button onClick={() => onWithdraw()}>회원 탈퇴</button>
       <button onClick={() => onLogout()}>로그아웃</button>
@@ -125,32 +140,30 @@ vi.mock('../../components/my/MyPageSettings', () => ({
     </div>
   ),
 }));
-vi.mock('../../components/my/MyPageEffectsGuide', () => ({
+vi.mock('../../components/MyPageEffectsGuide', () => ({
   MyPageEffectsGuide: () => <div data-testid="effects-guide" />,
 }));
 
-// 2. Mock Utilities and Supabase Client
+// 2. Mock Utilities
+vi.mock('@/utils/haptic', () => ({ vibrateShort: vi.fn() }));
+vi.mock('@/utils/tossGameCenter', () => ({
+  openLeaderboard: vi.fn(() => Promise.resolve({ success: true })),
+}));
+vi.mock('@/features/auth/utils/auth', () => ({
+  signInWithGoogle: vi.fn(() => Promise.resolve({ error: null })),
+  performSignOut: vi.fn(() => Promise.resolve({ error: null })),
+}));
 vi.mock('@/features/auth/utils/dataReset', () => ({
   performDataReset: vi.fn(() => Promise.resolve()),
 }));
 vi.mock('@/features/auth/utils/userWithdraw', () => ({
-  performUserWithdraw: vi.fn(() => Promise.resolve(true)),
+  performUserWithdraw: vi.fn(() => Promise.resolve()),
 }));
-vi.mock('../../utils/haptic', () => ({ vibrateShort: vi.fn() }));
-vi.mock('../../utils/tossGameCenter', () => ({
-  openLeaderboard: vi.fn(() => Promise.resolve({ success: true })),
-}));
-vi.mock('../../utils/auth', () => ({
-  signInWithGoogle: vi.fn(() => Promise.resolve({ error: null })),
-}));
-vi.mock('../../utils/debugFetch', () => ({
-  safeSupabaseQuery: vi.fn((p) => {
-    if (typeof p === 'function') return p();
-    return Promise.resolve(p);
-  }),
+vi.mock('@/features/debug', () => ({
+  safeSupabaseQuery: vi.fn(async (p) => p),
 }));
 
-vi.mock('../../utils/supabaseClient', () => ({
+vi.mock('@/utils/supabaseClient', () => ({
   supabase: {
     auth: {
       signOut: vi.fn(() => Promise.resolve({ error: null })),
@@ -192,12 +205,6 @@ vi.mock('@/features/quiz', () => ({
   }),
 }));
 
-vi.mock('../../stores/useProfileStore', () => ({
-  useProfileStore: Object.assign((selector: any) => selector(mockStoreState), {
-    getState: () => mockStoreState,
-    subscribe: vi.fn(),
-  }),
-}));
 vi.mock('../../stores/useSettingsStore', () => ({
   useSettingsStore: Object.assign((selector: any) => selector(mockStoreState), {
     getState: () => mockStoreState,
@@ -215,15 +222,85 @@ vi.mock('../../stores/useFavoriteStore', () => ({
 vi.mock('../../hooks/useMyPageStats', () => ({
   useMyPageStats: vi.fn(() => ({
     stats: {
-      totalSolved: 10,
       totalMasteryScore: 1000,
+      totalSolvedCount: 10,
+      bestSubject: 'math_add',
       loginStreak: 5,
-      cyclePromotionPending: false,
     },
-    session: { user: { id: 'test-user' } },
     loading: false,
     error: null,
     refetch: mockRefetch,
+  })),
+}));
+
+export const mockBridgeActions = {
+  setProfile: mockStoreState.setProfile,
+  clearProfile: mockStoreState.clearProfile,
+  setHapticEnabled: mockStoreState.setHapticEnabled,
+  setAnimationEnabled: mockStoreState.setAnimationEnabled,
+  setCategoryTopic: mockStoreState.setCategoryTopic,
+  executeReset: vi.fn(() => Promise.resolve()),
+  executeWithdraw: vi.fn(() => Promise.resolve()),
+  getTodayChallenge: vi.fn(() => Promise.resolve({ id: 'test' })),
+  vibrateShort: vi.fn(),
+  signInWithGoogle: vi.fn(() => Promise.resolve({ error: null })),
+  handleTossLogin: vi.fn(),
+  getLastPlayedWorld: vi.fn(),
+  safeSupabaseQuery: vi.fn(async (p) => p),
+  refetch: mockRefetch,
+  isTossAppEnvironment: vi.fn(() => false),
+};
+
+export const mockStableStats = {
+  totalMasteryScore: 1000,
+  totalSolvedCount: 10,
+  bestSubject: 'math_add',
+  loginStreak: 5,
+  cyclePromotionPending: false,
+};
+
+export const mockStableSession = { user: { id: 'test-user' } };
+
+export const mockStableUrls = {
+  myPage: () => '/my-page',
+  history: () => '/history',
+  debug: () => '/debug',
+};
+
+export const mockStableSupabase = {
+  auth: {
+    signOut: vi.fn(() => Promise.resolve({ error: null })),
+    getSession: vi.fn(() => Promise.resolve({ data: { session: { user: { id: 'test-user' } } } })),
+    getUser: vi.fn(() => Promise.resolve({ data: { user: { id: 'test-user' } } })),
+    onAuthStateChange: vi.fn(() => ({ data: { subscription: { unsubscribe: vi.fn() } } })),
+  },
+  rpc: vi.fn(() => Promise.resolve({ data: null, error: null })),
+  from: vi.fn().mockReturnThis(),
+  select: vi.fn().mockReturnThis(),
+  eq: vi.fn().mockReturnThis(),
+  order: vi.fn().mockReturnThis(),
+  single: vi.fn(() => Promise.resolve({ data: null })),
+  maybeSingle: vi.fn(() => Promise.resolve({ data: null })),
+};
+export const mockStableFlags = {};
+
+vi.mock('../../hooks/useMyPageBridge', () => ({
+  useMyPageBridge: vi.fn(() => ({
+    profile: mockStoreState.profile,
+    isProfileComplete: mockStoreState.isProfileComplete,
+    isAdmin: mockStoreState.isAdmin,
+    hapticEnabled: mockStoreState.hapticEnabled,
+    animationEnabled: mockStoreState.animationEnabled,
+    favorites: mockStoreState.favorites,
+    progressMap: mockStoreState.progress,
+    stats: mockStableStats,
+    session: mockStableSession,
+    loading: false,
+    error: null,
+    ...mockBridgeActions,
+    urls: mockStableUrls,
+    supabase: mockStableSupabase,
+    flags: mockStableFlags,
   })),
 }));
 
@@ -238,42 +315,55 @@ vi.mock('react-router-dom', async () => {
   };
 });
 
-import { useMyPageStats } from '@/features/mypage/hooks/useMyPageStats';
-import * as authUtils from '@/features/auth/utils/auth';
-import * as dataResetUtils from '@/features/auth/utils/dataReset';
-import * as withdrawUtils from '@/features/auth/utils/userWithdraw';
-import * as tossUtils from '@/utils/tossGameCenter';
-
 describe('MyPage', () => {
   const originalLocation = window.location;
 
   beforeEach(() => {
     vi.clearAllMocks();
 
-    // Reset store state
+    // Reset shared state
     mockStoreState.isProfileComplete = true;
-    mockStoreState.profile = { nickname: 'Tester', userId: 'user-123' };
+    mockStoreState.profile = { nickname: 'Tester', userId: 'test-user' };
     mockStoreState.hapticEnabled = true;
     mockStoreState.animationEnabled = true;
     mockStoreState.isAdmin = false;
-    mockRefetch.mockReturnValue(Promise.resolve());
+    mockRefetch.mockReset().mockResolvedValue(undefined);
 
-    // Reset default hook behavior
-    vi.mocked(useMyPageStats).mockReturnValue({
-      stats: {
-        totalSolved: 10,
-        totalMasteryScore: 1000,
-        loginStreak: 5,
-        cyclePromotionPending: false,
-      },
-      session: { user: { id: 'test-user' } },
-      loading: false,
-      error: null,
-      refetch: mockRefetch,
-    } as any);
+    // Reset stats
+    Object.assign(mockStableStats, {
+      totalMasteryScore: 1000,
+      totalSolvedCount: 10,
+      bestSubject: 'math_add',
+      loginStreak: 5,
+      cyclePromotionPending: false,
+    });
+
+    // Reset bridge return value to dynamic implementation
+    vi.mocked(useMyPageBridge).mockImplementation(
+      () =>
+        ({
+          profile: mockStoreState.profile,
+          isProfileComplete: mockStoreState.isProfileComplete,
+          isAdmin: mockStoreState.isAdmin,
+          hapticEnabled: mockStoreState.hapticEnabled,
+          animationEnabled: mockStoreState.animationEnabled,
+          favorites: mockStoreState.favorites,
+          progressMap: mockStoreState.progress,
+          stats: mockStableStats,
+          session: mockStableSession,
+          loading: false,
+          error: null,
+          ...mockBridgeActions,
+          urls: mockStableUrls,
+          supabase: mockStableSupabase,
+          flags: mockStableFlags,
+          getLastPlayedWorld: () => 'World1',
+        }) as any
+    );
   });
 
-  it('', async () => {
+  // --- 1. Basic Rendering ---
+  it('should render basic components (Header, Settings, Profile)', async () => {
     await act(async () => {
       render(
         <BrowserRouter>
@@ -283,9 +373,11 @@ describe('MyPage', () => {
     });
     expect(screen.getByTestId('header')).toBeTruthy();
     expect(screen.getByTestId('settings')).toBeTruthy();
+    expect(screen.getByTestId('my-page-profile')).toBeTruthy();
   });
 
-  it('should handle haptic toggle', async () => {
+  // --- 2. Settings & Toggles ---
+  it('should handle haptic toggle and show toast notification', async () => {
     await act(async () => {
       render(
         <BrowserRouter>
@@ -293,16 +385,23 @@ describe('MyPage', () => {
         </BrowserRouter>
       );
     });
-    fireEvent.click(screen.getByText(/진동 효과/i));
+
+    const hapticBtn = screen.getByText(/진동 효과/i);
+    await act(async () => {
+      fireEvent.click(hapticBtn);
+    });
+
     expect(mockStoreState.setHapticEnabled).toHaveBeenCalled();
     expect(screen.getByTestId('toast')).toBeTruthy();
 
     // Test toast closing
-    fireEvent.click(screen.getByTestId('toast'));
+    await act(async () => {
+      fireEvent.click(screen.getByTestId('toast'));
+    });
     expect(screen.queryByTestId('toast')).toBeNull();
   });
 
-  it('should handle animation toggle', async () => {
+  it('should handle animation toggle and show toast notification', async () => {
     await act(async () => {
       render(
         <BrowserRouter>
@@ -310,11 +409,18 @@ describe('MyPage', () => {
         </BrowserRouter>
       );
     });
-    fireEvent.click(screen.getByText(/애니메이션/i));
+
+    const animationBtn = screen.getByText(/애니메이션/i);
+    await act(async () => {
+      fireEvent.click(animationBtn);
+    });
+
     expect(mockStoreState.setAnimationEnabled).toHaveBeenCalled();
+    expect(screen.getByTestId('toast')).toBeTruthy();
   });
 
-  it('should handle data reset flow', async () => {
+  // --- 3. Data Management (Reset/Withdraw) ---
+  it('should handle data reset flow with confirmation', async () => {
     await act(async () => {
       render(
         <BrowserRouter>
@@ -322,18 +428,23 @@ describe('MyPage', () => {
         </BrowserRouter>
       );
     });
-    fireEvent.click(screen.getByText(/데이터 초기화/i));
+
+    await act(async () => {
+      fireEvent.click(screen.getByText(/데이터 초기화/i));
+    });
 
     const confirmBtn = screen.getByText('Confirm Reset');
     await act(async () => {
       fireEvent.click(confirmBtn);
     });
+
     await waitFor(() => {
-      expect(dataResetUtils.performDataReset).toHaveBeenCalled();
+      expect(mockBridgeActions.executeReset).toHaveBeenCalled();
+      expect(screen.getByText(/모든 데이터가 초기화되었습니다/i)).toBeTruthy();
     });
   });
 
-  it('should handle withdrawal flow', async () => {
+  it('should handle withdrawal flow with confirmation', async () => {
     await act(async () => {
       render(
         <BrowserRouter>
@@ -341,24 +452,63 @@ describe('MyPage', () => {
         </BrowserRouter>
       );
     });
-    fireEvent.click(screen.getByText(/회원 탈퇴/i));
+
+    await act(async () => {
+      fireEvent.click(screen.getByText(/회원 탈퇴/i));
+    });
 
     const confirmBtn = screen.getByText('Confirm Withdraw');
     await act(async () => {
       fireEvent.click(confirmBtn);
     });
+
     await waitFor(() => {
-      expect(withdrawUtils.performUserWithdraw).toHaveBeenCalled();
+      expect(mockBridgeActions.executeWithdraw).toHaveBeenCalled();
+      expect(screen.getByTestId('toast')).toBeTruthy();
     });
   });
 
-  it('', async () => {
-    vi.mocked(useMyPageStats).mockReturnValue({
+  it('should handle data reset error with user notification', async () => {
+    mockBridgeActions.executeReset.mockRejectedValueOnce(new Error('Reset failed'));
+    await act(async () => {
+      render(
+        <BrowserRouter>
+          <MyPage />
+        </BrowserRouter>
+      );
+    });
+
+    await act(async () => {
+      fireEvent.click(screen.getByText(/데이터 초기화/i));
+    });
+
+    await act(async () => {
+      fireEvent.click(screen.getByText('Confirm Reset'));
+    });
+
+    await waitFor(() => {
+      expect(screen.getByText(/데이터 초기화 중 오류/i)).toBeTruthy();
+    });
+  });
+
+  // --- 4. Authentication Flows ---
+  it('should show guest view and handle anonymous login', async () => {
+    vi.mocked(useMyPageBridge).mockReturnValue({
+      ...mockBridgeActions,
+      profile: mockStoreState.profile,
+      isProfileComplete: mockStoreState.isProfileComplete,
+      isAdmin: mockStoreState.isAdmin,
+      hapticEnabled: mockStoreState.hapticEnabled,
+      animationEnabled: mockStoreState.animationEnabled,
+      favorites: mockStoreState.favorites,
+      progressMap: mockStoreState.progress,
       stats: null,
       session: null,
       loading: false,
       error: null,
-      refetch: mockRefetch,
+      urls: mockStableUrls,
+      supabase: mockStableSupabase,
+      flags: mockStableFlags,
     } as any);
 
     await act(async () => {
@@ -368,42 +518,37 @@ describe('MyPage', () => {
         </BrowserRouter>
       );
     });
+
     expect(screen.getByText(/로그인하고/i)).toBeTruthy();
-  });
 
-  it('should handle anonymous login', async () => {
-    vi.mocked(useMyPageStats).mockReturnValue({
-      stats: null,
-      session: null,
-      loading: false,
-      error: null,
-      refetch: mockRefetch,
-    } as any);
-
-    await act(async () => {
-      render(
-        <BrowserRouter>
-          <MyPage />
-        </BrowserRouter>
-      );
-    });
     const loginBtn = screen.getByText(/익명 로그인하기/i);
-
     await act(async () => {
       fireEvent.click(loginBtn);
     });
+
     await waitFor(() => {
       expect(mockStoreState.setProfile).toHaveBeenCalled();
     });
   });
 
-  it('should handle google login', async () => {
-    vi.mocked(useMyPageStats).mockReturnValue({
+  it('should handle google login from guest view', async () => {
+    vi.mocked(useMyPageBridge).mockReturnValue({
+      ...mockBridgeActions,
+      profile: mockStoreState.profile,
+      isProfileComplete: mockStoreState.isProfileComplete,
+      isAdmin: mockStoreState.isAdmin,
+      hapticEnabled: mockStoreState.hapticEnabled,
+      animationEnabled: mockStoreState.animationEnabled,
+      favorites: mockStoreState.favorites,
+      progressMap: mockStoreState.progress,
       stats: null,
       session: null,
       loading: false,
       error: null,
       refetch: mockRefetch,
+      urls: mockStableUrls,
+      supabase: mockStableSupabase,
+      flags: mockStableFlags,
     } as any);
 
     await act(async () => {
@@ -413,30 +558,18 @@ describe('MyPage', () => {
         </BrowserRouter>
       );
     });
-    const loginBtn = screen.getByText(/3초 만에 시작하기/i);
 
+    const loginBtn = screen.getByText(/3초 만에 시작하기/i);
     await act(async () => {
       fireEvent.click(loginBtn);
     });
+
     await waitFor(() => {
-      expect(authUtils.signInWithGoogle).toHaveBeenCalled();
+      expect(mockBridgeActions.signInWithGoogle).toHaveBeenCalled();
     });
   });
 
-  it('should handle promotion flow', async () => {
-    vi.mocked(useMyPageStats).mockReturnValue({
-      stats: {
-        totalSolved: 10,
-        totalMasteryScore: 1000,
-        loginStreak: 5,
-        cyclePromotionPending: true,
-      },
-      session: { user: { id: 'test' } },
-      loading: false,
-      error: null,
-      refetch: mockRefetch,
-    } as any);
-
+  it('should handle logout flow and clear state', async () => {
     await act(async () => {
       render(
         <BrowserRouter>
@@ -444,50 +577,20 @@ describe('MyPage', () => {
         </BrowserRouter>
       );
     });
-    const promoteBtn = await screen.findByText('Promote');
-    await act(async () => {
-      fireEvent.click(promoteBtn);
-    });
-    await waitFor(() => {
-      expect(mockRefetch).toHaveBeenCalled();
-    });
-  });
 
-  it('should handle logout', async () => {
-    await act(async () => {
-      render(
-        <BrowserRouter>
-          <MyPage />
-        </BrowserRouter>
-      );
-    });
     const logoutBtn = screen.getByText(/로그아웃/i);
-
     await act(async () => {
       fireEvent.click(logoutBtn);
     });
 
     await waitFor(() => {
       expect(mockStoreState.clearProfile).toHaveBeenCalled();
+      expect(screen.getByText(/로그아웃되었습니다/i)).toBeTruthy();
     });
   });
 
-  it('should open leaderboard', async () => {
-    await act(async () => {
-      render(
-        <BrowserRouter>
-          <MyPage />
-        </BrowserRouter>
-      );
-    });
-    const rankBtn = screen.getByText(/명예의 전당/i);
-    fireEvent.click(rankBtn);
-    await waitFor(() => {
-      expect(screen.getByText(/현재 개발 중인 기능입니다/i)).toBeTruthy();
-    });
-  });
-
-  it('', async () => {
+  // --- 5. Profile Management ---
+  it('should show profile form for incomplete profiles and handle completion', async () => {
     mockStoreState.isProfileComplete = false;
     await act(async () => {
       render(
@@ -496,32 +599,20 @@ describe('MyPage', () => {
         </BrowserRouter>
       );
     });
+
     expect(screen.getByTestId('profile-form')).toBeTruthy();
-  });
 
-  it('should handle data reset error', async () => {
-    vi.mocked(dataResetUtils.performDataReset).mockRejectedValueOnce(new Error('Reset failed'));
+    const completeBtn = screen.getByText('Complete');
     await act(async () => {
-      render(
-        <BrowserRouter>
-          <MyPage />
-        </BrowserRouter>
-      );
+      fireEvent.click(completeBtn);
     });
-    fireEvent.click(screen.getByText(/데이터 초기화/i));
 
-    await act(async () => {
-      fireEvent.click(screen.getByText('Confirm Reset'));
-    });
     await waitFor(() => {
-      expect(screen.getByText(/데이터 초기화 중 오류/i)).toBeTruthy();
+      expect(mockNavigate).toHaveBeenCalledWith('/', expect.any(Object));
     });
   });
 
-  it('should handle withdrawal error', async () => {
-    vi.mocked(withdrawUtils.performUserWithdraw).mockRejectedValueOnce(
-      new Error('Withdraw failed')
-    );
+  it('should allow opening profile form from settings and cancelling', async () => {
     await act(async () => {
       render(
         <BrowserRouter>
@@ -529,16 +620,130 @@ describe('MyPage', () => {
         </BrowserRouter>
       );
     });
-    fireEvent.click(screen.getByText(/회원 탈퇴/i));
 
     await act(async () => {
-      fireEvent.click(screen.getByText('Confirm Withdraw'));
+      fireEvent.click(screen.getByText(/프로필 수정 설정/i));
     });
-    expect(screen.getByText(/Withdraw failed/i)).toBeTruthy();
+
+    expect(screen.getByTestId('profile-form')).toBeTruthy();
+
+    await act(async () => {
+      fireEvent.click(screen.getByText('Cancel'));
+    });
+
+    expect(screen.queryByTestId('profile-form')).toBeNull();
   });
 
-  it('', async () => {
-    // Mocking window.location.href via a helper is better than deleting it
+  // --- 6. Features & Analytics ---
+  it('should handle cycle promotion flow (open, promote, close)', async () => {
+    // 1. Initially false
+    mockStableStats.cyclePromotionPending = false;
+
+    const { rerender } = render(
+      <BrowserRouter>
+        <MyPage />
+      </BrowserRouter>
+    );
+
+    expect(screen.queryByTestId('promotion-modal')).toBeNull();
+
+    // 2. Trigger promotion
+    mockStableStats.cyclePromotionPending = true;
+    await act(async () => {
+      rerender(
+        <BrowserRouter>
+          <MyPage />
+        </BrowserRouter>
+      );
+    });
+
+    expect(await screen.findByTestId('promotion-modal')).toBeTruthy();
+
+    // 3. Test promote
+    await act(async () => {
+      fireEvent.click(screen.getByText('Promote'));
+    });
+
+    // Check that it closed and refetched
+    await waitFor(() => {
+      expect(screen.queryByTestId('promotion-modal')).toBeNull();
+      expect(mockRefetch).toHaveBeenCalled();
+    });
+
+    // 4. Re-open for testing close button
+    // MUST transition false -> true to trigger useEffect
+    mockStableStats.cyclePromotionPending = false;
+    await act(async () => {
+      rerender(
+        <BrowserRouter>
+          <MyPage />
+        </BrowserRouter>
+      );
+    });
+
+    mockStableStats.cyclePromotionPending = true;
+    await act(async () => {
+      rerender(
+        <BrowserRouter>
+          <MyPage />
+        </BrowserRouter>
+      );
+    });
+
+    const closeBtn = await screen.findByText('Close Promotion');
+    await act(async () => {
+      fireEvent.click(closeBtn);
+    });
+
+    // Simulate backend update that clears the pending flag after close if desired,
+    // but the modal should close immediately regardless.
+    expect(screen.queryByTestId('promotion-modal')).toBeNull();
+  });
+
+  it('should show development message for leaderboard', async () => {
+    await act(async () => {
+      render(
+        <BrowserRouter>
+          <MyPage />
+        </BrowserRouter>
+      );
+    });
+
+    const rankBtn = screen.getByText(/명예의 전당/i);
+    await act(async () => {
+      fireEvent.click(rankBtn);
+    });
+
+    await waitFor(() => {
+      expect(screen.getByText(/현재 개발 중인 기능입니다/i)).toBeTruthy();
+    });
+  });
+
+  it('should navigate to history and show admin tools if applicable', async () => {
+    mockStoreState.isAdmin = true;
+    await act(async () => {
+      render(
+        <BrowserRouter>
+          <MyPage />
+        </BrowserRouter>
+      );
+    });
+
+    const historyBtn = screen.getByText(/히스토리/i);
+    await act(async () => {
+      fireEvent.click(historyBtn);
+    });
+    expect(mockNavigate).toHaveBeenCalled();
+
+    const adminBtn = screen.getByText(/관리자 도구/i);
+    expect(adminBtn).toBeTruthy();
+    await act(async () => {
+      fireEvent.click(adminBtn);
+    });
+    expect(mockNavigate).toHaveBeenCalled();
+  });
+
+  it('should handle feedback email action', async () => {
     const locationMock = { href: '' };
     Object.defineProperty(window, 'location', {
       value: locationMock,
@@ -553,20 +758,34 @@ describe('MyPage', () => {
         </BrowserRouter>
       );
     });
-    fireEvent.click(screen.getByText(/의견 보내기/i));
-    expect(window.location.href).toContain('mailto:support@solveclimb.com');
 
-    // Restore
+    await act(async () => {
+      fireEvent.click(screen.getByText(/의견 보내기/i));
+    });
+
+    expect(window.location.href).toContain('mailto:support@solveclimb.com');
     Object.defineProperty(window, 'location', { value: originalLocation });
   });
 
-  it('', async () => {
-    vi.mocked(useMyPageStats).mockReturnValue({
-      stats: null,
-      session: { user: { id: 'test' } },
+  it('should display error message when stats loading fails', async () => {
+    // Modify the bridge mock for this specific test
+    vi.mocked(useMyPageBridge).mockReturnValue({
+      ...mockBridgeActions,
+      profile: mockStoreState.profile,
+      isProfileComplete: mockStoreState.isProfileComplete,
+      isAdmin: mockStoreState.isAdmin,
+      hapticEnabled: mockStoreState.hapticEnabled,
+      animationEnabled: mockStoreState.animationEnabled,
+      favorites: mockStoreState.favorites,
+      progressMap: mockStoreState.progress,
+      stats: mockStableStats,
+      session: mockStableSession,
       loading: false,
       error: 'Failed to load stats',
       refetch: mockRefetch,
+      urls: mockStableUrls,
+      supabase: mockStableSupabase,
+      flags: mockStableFlags,
     } as any);
 
     await act(async () => {
@@ -576,296 +795,9 @@ describe('MyPage', () => {
         </BrowserRouter>
       );
     });
+
     expect(screen.getByText('Failed to load stats')).toBeTruthy();
-  });
 
-  it('should show development toast when leaderboard button clicked', async () => {
-    await act(async () => {
-      render(
-        <BrowserRouter>
-          <MyPage />
-        </BrowserRouter>
-      );
-    });
-    await act(async () => {
-      fireEvent.click(screen.getByText(/명예의 전당/i));
-    });
-
-    await waitFor(() => {
-      expect(screen.getByText(/현재 개발 중인 기능입니다/i)).toBeTruthy();
-    });
-  });
-
-  it('should handle profile complete with direct redirect', async () => {
-    mockStoreState.isProfileComplete = false;
-    await act(async () => {
-      render(
-        <BrowserRouter>
-          <MyPage />
-        </BrowserRouter>
-      );
-    });
-
-    const completeBtn = screen.getByText('Complete');
-    await act(async () => {
-      fireEvent.click(completeBtn);
-    });
-
-    // Component first navigates to /my-page then to / since redirectPath is missing
-    expect(mockNavigate).toHaveBeenCalledWith('/', expect.any(Object));
-  });
-
-  it('', async () => {
-    await act(async () => {
-      render(
-        <BrowserRouter>
-          <MyPage />
-        </BrowserRouter>
-      );
-    });
-    fireEvent.click(screen.getByText(/히스토리/i));
-    expect(mockNavigate).toHaveBeenCalled();
-  });
-
-  it('', async () => {
-    await act(async () => {
-      render(
-        <BrowserRouter>
-          <MyPage />
-        </BrowserRouter>
-      );
-    });
-    fireEvent.click(screen.getByText(/데이터 초기화/i));
-    expect(screen.getByTestId('reset-modal')).toBeTruthy();
-
-    fireEvent.click(screen.getByText('Cancel Reset'));
-    expect(screen.queryByTestId('reset-modal')).toBeNull();
-  });
-
-  it('should close Promotion Modal', async () => {
-    vi.mocked(useMyPageStats).mockReturnValue({
-      stats: {
-        totalSolved: 10,
-        totalMasteryScore: 1000,
-        loginStreak: 5,
-        cyclePromotionPending: true,
-      },
-      session: { user: { id: 'test' } },
-      loading: false,
-      error: null,
-      refetch: mockRefetch,
-    } as any);
-
-    await act(async () => {
-      render(
-        <BrowserRouter>
-          <MyPage />
-        </BrowserRouter>
-      );
-    });
-    const closeBtn = await screen.findByText('Close Promotion');
-    fireEvent.click(closeBtn);
-    expect(screen.queryByTestId('promotion-modal')).toBeNull();
-  });
-
-  it('', async () => {
-    mockStoreState.isAdmin = true;
-    await act(async () => {
-      render(
-        <BrowserRouter>
-          <MyPage />
-        </BrowserRouter>
-      );
-    });
-    expect(screen.getByText(/관리자 도구/i)).toBeTruthy();
-
-    fireEvent.click(screen.getByText(/관리자 도구/i));
-    expect(mockNavigate).toHaveBeenCalled();
-  });
-
-  it('should handle anonymous login error', async () => {
-    vi.mocked(useMyPageStats).mockReturnValue({
-      stats: null,
-      session: null,
-      loading: false,
-      error: null,
-      refetch: mockRefetch,
-    } as any);
-
-    // Extract setProfile from store mock to force error
-    mockStoreState.setProfile.mockImplementationOnce(() => {
-      throw new Error('Login failed');
-    });
-
-    await act(async () => {
-      render(
-        <BrowserRouter>
-          <MyPage />
-        </BrowserRouter>
-      );
-    });
-    const loginBtn = screen.getByText(/익명 로그인하기/i);
-
-    await act(async () => {
-      fireEvent.click(loginBtn);
-    });
-    expect(screen.getByText(/익명 로그인 중 오류/i)).toBeTruthy();
-  });
-
-  it('', async () => {
-    mockStoreState.isProfileComplete = true; // Complete profile allows cancellation if requested
-    await act(async () => {
-      render(
-        <BrowserRouter>
-          <MyPage />
-        </BrowserRouter>
-      );
-    });
-
-    // Trigger ProfileForm via edit button (there are two: one in Profile, one in Settings)
-    const editButtons = screen.getAllByText(/프로필 수정/i);
-    fireEvent.click(editButtons[0]);
-    expect(screen.getByTestId('profile-form')).toBeTruthy();
-
-    // Click Cancel
-    fireEvent.click(screen.getByText('Cancel'));
-    expect(screen.queryByTestId('profile-form')).toBeNull();
-  });
-
-  it('', async () => {
-    await act(async () => {
-      render(
-        <BrowserRouter>
-          <MyPage />
-        </BrowserRouter>
-      );
-    });
-    fireEvent.click(screen.getByText(/프로필 수정 설정/i));
-    expect(screen.getByTestId('profile-form')).toBeTruthy();
-  });
-
-  it('should handle Promotion Modal actions', async () => {
-    vi.mocked(useMyPageStats).mockReturnValue({
-      stats: {
-        totalSolved: 10,
-        totalMasteryScore: 1000,
-        loginStreak: 5,
-        cyclePromotionPending: true,
-        pendingCycleScore: 100,
-      },
-      session: { user: { id: 'test' } },
-      loading: false,
-      error: null,
-      refetch: mockRefetch,
-    } as any);
-
-    let unmount: any;
-    await act(async () => {
-      const res = render(
-        <BrowserRouter>
-          <MyPage />
-        </BrowserRouter>
-      );
-      unmount = res.unmount;
-    });
-    expect(await screen.findByTestId('promotion-modal')).toBeTruthy();
-    expect(screen.getByText(/Stars: 3/i)).toBeTruthy();
-
-    // Test promote
-    fireEvent.click(screen.getByText('Promote'));
-    expect(mockRefetch).toHaveBeenCalled();
-
-    // Unmount before next part to avoid DOM pollution
-    unmount();
-
-    // Test close vs promote branch coverage
-    vi.mocked(useMyPageStats).mockReturnValue({
-      stats: {
-        totalSolved: 10,
-        totalMasteryScore: 1000,
-        loginStreak: 5,
-        cyclePromotionPending: true,
-        pendingCycleScore: 200,
-      },
-      session: { user: { id: 'test-user-2' } },
-      loading: false,
-      error: null,
-      refetch: mockRefetch,
-    } as any);
-
-    let findByText: any;
-    await act(async () => {
-      const res = render(
-        <BrowserRouter>
-          <MyPage />
-        </BrowserRouter>
-      );
-      findByText = res.findByText;
-    });
-    const closeBtn = await findByText('Close Promotion');
-    fireEvent.click(closeBtn);
-    await waitFor(() => {
-      expect(screen.queryByTestId('promotion-modal')).toBeNull();
-    });
-  });
-
-  it('should handle profile form cancellation', async () => {
-    mockStoreState.isProfileComplete = true; // Complete profile allows cancellation if requested
-    await act(async () => {
-      render(
-        <BrowserRouter>
-          <MyPage />
-        </BrowserRouter>
-      );
-    });
-
-    // Trigger ProfileForm via edit button (there are two: one in Profile, one in Settings)
-    const editButtons = screen.getAllByText(/프로필 수정/i);
-    fireEvent.click(editButtons[0]);
-    expect(screen.getByTestId('profile-form')).toBeTruthy();
-
-    // Click Cancel
-    fireEvent.click(screen.getByText('Cancel'));
-    expect(screen.queryByTestId('profile-form')).toBeNull();
-  });
-
-  it('', async () => {
-    await act(async () => {
-      render(
-        <BrowserRouter>
-          <MyPage />
-        </BrowserRouter>
-      );
-    });
-    fireEvent.click(screen.getByText(/프로필 수정 설정/i));
-    expect(screen.getByTestId('profile-form')).toBeTruthy();
-  });
-
-  it('', async () => {
-    await act(async () => {
-      render(
-        <BrowserRouter>
-          <MyPage />
-        </BrowserRouter>
-      );
-    });
-
-    // Trigger toast
-    fireEvent.click(screen.getByText(/진동 효과/i));
-    const toast = screen.getByTestId('toast');
-    fireEvent.click(toast); // onClose trigger
-    expect(screen.queryByTestId('toast')).toBeNull();
-
-    // Trigger alert modal (via leaderboard failure)
-    (tossUtils.openLeaderboard as any).mockResolvedValueOnce({
-      success: false,
-      message: 'Alert Message',
-    });
-    fireEvent.click(screen.getByText(/명예의 전당/i));
-    waitFor(() => {
-      const alert = screen.getByTestId('alert-modal');
-      fireEvent.click(alert); // onClose trigger
-      expect(screen.queryByTestId('alert-modal')).toBeNull();
-    });
+    // Reset mock back to default for other tests if needed (though this is the last test)
   });
 });

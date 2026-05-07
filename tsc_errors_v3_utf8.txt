@@ -1,0 +1,3 @@
+﻿src/features/quiz/components/game/BackpackBottomSheet.tsx(2,1): error TS6133: 'InventoryItem' is declared but its value is never read.
+src/features/quiz/components/QuizModals.tsx(12,1): error TS6133: 'InventoryItem' is declared but its value is never read.
+src/features/quiz/hooks/core/useQuizRevive.ts(2,31): error TS2307: Cannot find module '@/types/user' or its corresponding type declarations.

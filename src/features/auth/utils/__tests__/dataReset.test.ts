@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { performDataReset as resetAllData } from '@/features/auth/utils/dataReset';
+import { performDataReset as resetAllData } from '../dataReset';
 import { storageService } from '@/services';
 
 // Mock dependencies

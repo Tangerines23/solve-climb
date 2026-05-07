@@ -4,8 +4,8 @@ import {
   saveCustomPreset,
   exportCustomPresets,
   importCustomPresets,
-} from '@/features/debug/utils/debugPresets';
-import type { CustomPreset } from '@/features/debug/types/debug';
+} from '../debugPresets';
+import type { CustomPreset } from '../../types/debug';
 
 describe('debugPresets - Error Handling & Edge Cases', () => {
   beforeEach(() => {

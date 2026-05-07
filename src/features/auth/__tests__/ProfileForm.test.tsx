@@ -10,7 +10,7 @@ vi.mock('../stores/useProfileStore', () => ({
   useProfileStore: vi.fn(),
 }));
 
-vi.mock('../../utils/validation', () => ({
+vi.mock('../../../utils/validation', () => ({
   sanitizeNickname: (name: string) => name.trim(),
   validateNickname: (name: string) => {
     if (!name || name.length === 0) {
@@ -33,7 +33,7 @@ vi.mock('react-router-dom', async () => {
 });
 
 // Mock supabaseClient
-vi.mock('../../utils/supabaseClient', () => ({
+vi.mock('../../../utils/supabaseClient', () => ({
   supabase: {
     auth: {
       getSession: vi.fn(() => Promise.resolve({ data: { session: null } })),

@@ -1,17 +1,17 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { useUserStore } from '../stores/useUserStore';
-import { supabase } from '@/utils/supabaseClient';
-import { AdService } from '@/utils/adService';
+import { supabase } from '../../../utils/supabaseClient';
+import { AdService } from '../../../utils/adService';
 import {
   createAuthUserMock,
   createAuthSessionMock,
   createSuccessResponse,
   createErrorResponse,
   createChainableMock,
-} from '@/utils/__tests__/supabaseMockUtils';
+} from '../../../utils/__tests__/supabaseMockUtils';
 
 // Mock dependencies
-vi.mock('@/utils/supabaseClient', () => ({
+vi.mock('../../../utils/supabaseClient', () => ({
   supabase: {
     rpc: vi.fn(),
     auth: {
@@ -29,7 +29,7 @@ vi.mock('@/utils/supabaseClient', () => ({
   },
 }));
 
-vi.mock('@/services/storageService', () => ({
+vi.mock('../../../services/storageService', () => ({
   storageService: {
     get: vi.fn(),
     set: vi.fn(),
@@ -40,19 +40,19 @@ vi.mock('@/services/storageService', () => ({
   },
 }));
 
-vi.mock('@/services/analytics', () => ({
+vi.mock('../../../services/analytics', () => ({
   analytics: {
     setUser: vi.fn(),
   },
 }));
 
-vi.mock('@/utils/adService', () => ({
+vi.mock('../../../utils/adService', () => ({
   AdService: {
     showRewardedAd: vi.fn(),
   },
 }));
 
-vi.mock('@/features/debug', () => ({
+vi.mock('../../debug', () => ({
   useDebugStore: {
     getState: vi.fn(() => ({ infiniteStamina: false })),
   },
@@ -171,7 +171,7 @@ describe('useUserStore', () => {
     });
 
     it('should skip if infiniteStamina is enabled', async () => {
-      const { useDebugStore } = await import('@/features/debug');
+      const { useDebugStore } = await import('../../debug');
       vi.mocked(useDebugStore.getState).mockReturnValue({ infiniteStamina: true } as any);
 
       const result = await useUserStore.getState().consumeStamina();

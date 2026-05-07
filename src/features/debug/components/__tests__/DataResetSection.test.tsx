@@ -1,11 +1,11 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
-import { DataResetSection } from '@/features/debug/components/DataResetSection';
-import { useDataResetDebugBridge } from '@/features/debug/hooks/useDataResetDebugBridge';
+import { DataResetSection } from '../DataResetSection';
+import { useDataResetDebugBridge } from '../../hooks/useDataResetDebugBridge';
 import { supabase } from '@/utils/supabaseClient';
 
 // Mock dependencies
-vi.mock('@/features/debug/hooks/useDataResetDebugBridge', () => ({
+vi.mock('../../hooks/useDataResetDebugBridge', () => ({
   useDataResetDebugBridge: vi.fn(),
 }));
 

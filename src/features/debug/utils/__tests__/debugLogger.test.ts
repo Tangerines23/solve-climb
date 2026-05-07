@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { sendDebugLog } from '@/features/debug/utils/debugLogger';
+import { sendDebugLog } from '../debugLogger';
 
 // Mock fetch
 const fetchMock = vi.fn();

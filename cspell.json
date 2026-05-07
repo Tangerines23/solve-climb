@@ -70,7 +70,9 @@
     "unstub",
     "fkey",
     "fetchpriority",
-    "ilike"
+    "ilike",
+    "refetched",
+    "refetching"
   ],
   "ignorePaths": [
     "node_modules",

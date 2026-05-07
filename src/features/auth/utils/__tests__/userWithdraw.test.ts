@@ -1,10 +1,10 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { performUserWithdraw as withdrawAccount } from '@/features/auth/utils/userWithdraw';
-import { supabase } from '@/utils/supabaseClient';
-import { storageService } from '@/services';
+import { performUserWithdraw as withdrawAccount } from '../userWithdraw';
+import { supabase } from '../../../../utils/supabaseClient';
+import { storageService } from '../../../../services';
 
 // Mock dependencies
-vi.mock('@/utils/supabaseClient', () => ({
+vi.mock('../../../../utils/supabaseClient', () => ({
   supabase: {
     auth: {
       getSession: vi.fn(),
@@ -13,7 +13,7 @@ vi.mock('@/utils/supabaseClient', () => ({
   },
 }));
 
-vi.mock('@/services', () => ({
+vi.mock('../../../../services', () => ({
   storageService: {
     clear: vi.fn(),
     remove: vi.fn(),
@@ -23,7 +23,7 @@ vi.mock('@/services', () => ({
   },
 }));
 
-vi.mock('@/features/auth/stores/useProfileStore', () => {
+vi.mock('../../stores/useProfileStore', () => {
   const mockStore = vi.fn((selector) => {
     const state = { clearProfile: vi.fn() };
     return typeof selector === 'function' ? selector(state) : state;
@@ -32,7 +32,7 @@ vi.mock('@/features/auth/stores/useProfileStore', () => {
   return { useProfileStore: mockStore };
 });
 
-vi.mock('@/features/quiz/stores/useLevelProgressStore', () => {
+vi.mock('../../../quiz/stores/useLevelProgressStore', () => {
   const mockStore = vi.fn((selector) => {
     const state = { resetProgress: vi.fn().mockResolvedValue(undefined) };
     return typeof selector === 'function' ? selector(state) : state;
@@ -43,11 +43,11 @@ vi.mock('@/features/quiz/stores/useLevelProgressStore', () => {
   return { useLevelProgressStore: mockStore };
 });
 
-vi.mock('@/utils/errorHandler', () => ({
+vi.mock('../../../../utils/errorHandler', () => ({
   logError: vi.fn(),
 }));
 
-vi.mock('@/utils/env', () => ({
+vi.mock('../../../../utils/env', () => ({
   ENV: {
     VITE_SUPABASE_URL: 'https://test.supabase.co',
     VITE_SUPABASE_ANON_KEY: 'test-anon-key',

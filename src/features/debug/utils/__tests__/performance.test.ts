@@ -6,7 +6,7 @@ import {
   clearPerformanceMetrics,
   logPerformanceSummary,
   performanceMonitor,
-} from '@/features/debug/utils/performance';
+} from '../performance';
 import { logger as _logger } from '@/utils/logger';
 
 describe('performance', () => {

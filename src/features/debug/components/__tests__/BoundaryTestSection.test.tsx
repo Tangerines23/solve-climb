@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen } from '@testing-library/react';
-import { BoundaryTestSection } from '@/features/debug/components/BoundaryTestSection';
+import { BoundaryTestSection } from '../BoundaryTestSection';
 import { useUserStore } from '@/features/auth';
 import { useMyPageStats } from '@/features/mypage/hooks/useMyPageStats';
 import { supabase } from '@/utils/supabaseClient';

@@ -1,9 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import {
-  getTossUserInfo,
-  createOrUpdateSupabaseUser,
-  handleTossLoginFlow,
-} from '@/features/auth/utils/tossAuth';
+import { getTossUserInfo, createOrUpdateSupabaseUser, handleTossLoginFlow } from '../tossAuth';
 import { ENV } from '@/utils/env';
 import { supabase } from '@/utils/supabaseClient';
 

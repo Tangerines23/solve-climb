@@ -41,7 +41,7 @@ export function MyPageSettings({
             onClick={onShowProfileForm}
           >
             <div className="my-page-settings-item-content">
-              <span className="my-page-settings-item-label">프로필 수정</span>
+              <span className="my-page-settings-item-label">프로필 수정 설정</span>
             </div>
             <svg
               className="my-page-settings-item-arrow"
@@ -65,7 +65,7 @@ export function MyPageSettings({
             data-vg-ignore="true"
           >
             <div className="my-page-settings-item-content">
-              <span className="my-page-settings-item-label">진동</span>
+              <span className="my-page-settings-item-label">진동 효과</span>
             </div>
             <div className="my-page-settings-toggle-wrapper">
               <div className="my-page-settings-toggle">

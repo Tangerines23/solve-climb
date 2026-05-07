@@ -1,12 +1,12 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { renderHook, waitFor, act } from '@testing-library/react';
 import { useSession } from '../hooks/useSession';
-import { supabase } from '@/utils/supabaseClient';
-import { storageService } from '@/services';
+import { supabase } from '../../../utils/supabaseClient';
+import { storageService } from '../../../services';
 import type { Session } from '@supabase/supabase-js';
 
 // Mock dependencies
-vi.mock('@/utils/supabaseClient', () => ({
+vi.mock('../../../utils/supabaseClient', () => ({
   supabase: {
     auth: {
       getSession: vi.fn(),
@@ -15,7 +15,7 @@ vi.mock('@/utils/supabaseClient', () => ({
   },
 }));
 
-vi.mock('@/services', () => ({
+vi.mock('../../../services', () => ({
   storageService: {
     get: vi.fn(),
   },
@@ -28,7 +28,7 @@ vi.mock('@/services', () => ({
   },
 }));
 
-vi.mock('@/utils/safeJsonParse', () => ({
+vi.mock('../../../utils/safeJsonParse', () => ({
   parseLocalSession: vi.fn((str: string | null) => {
     if (!str) return null;
     try {

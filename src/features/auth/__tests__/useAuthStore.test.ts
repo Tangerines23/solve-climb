@@ -1,7 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { useAuthStore } from '../stores/useAuthStore';
-import { supabase } from '@/utils/supabaseClient';
-import { createAuthSessionMock } from '@/utils/__tests__/supabaseMockUtils';
+import { supabase } from '../../../utils/supabaseClient';
+import { createAuthSessionMock } from '../../../utils/__tests__/supabaseMockUtils';
 
 // Mock types
 declare global {
@@ -9,7 +9,7 @@ declare global {
 }
 
 // Mock dependencies
-vi.mock('@/utils/supabaseClient', () => ({
+vi.mock('../../../utils/supabaseClient', () => ({
   supabase: {
     auth: {
       getSession: vi.fn(),
@@ -26,7 +26,7 @@ vi.mock('@/utils/supabaseClient', () => ({
   },
 }));
 
-vi.mock('@/services', () => ({
+vi.mock('../../../services', () => ({
   storageService: {
     get: vi.fn(),
     set: vi.fn(),
@@ -41,7 +41,7 @@ vi.mock('@/services', () => ({
   },
 }));
 
-vi.mock('@/services/analytics', () => ({
+vi.mock('../../../services/analytics', () => ({
   analytics: {
     setUser: vi.fn(),
   },
@@ -206,7 +206,7 @@ describe('useAuthStore', () => {
 
   describe('Session Recovery & Auth Changes', () => {
     it('should recover session from local storage', async () => {
-      const { storageService } = await import('@/services');
+      const { storageService } = await import('../../../services');
       vi.mocked(storageService.get).mockReturnValue({
         userId: '00000000-0000-0000-0000-000000000005',
       });
@@ -238,7 +238,7 @@ describe('useAuthStore', () => {
 
     it('should maintain anonymous session on INITIAL_SESSION or MFA_CHALLENGE with null session', async () => {
       // Ensure no local session to interfere
-      const { storageService } = await import('@/services');
+      const { storageService } = await import('../../../services');
       vi.mocked(storageService.get).mockReturnValue(null);
 
       // Setup: existing anonymous session
@@ -268,7 +268,7 @@ describe('useAuthStore', () => {
     });
 
     it('should synchronize analytics user on auth change', async () => {
-      const { analytics } = await import('@/services/analytics');
+      const { analytics } = await import('../../../services/analytics');
       await useAuthStore.getState().initialize();
       const callback = global.authCallback;
 

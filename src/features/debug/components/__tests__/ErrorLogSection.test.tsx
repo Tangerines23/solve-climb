@@ -1,10 +1,10 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/react';
-import { ErrorLogSection } from '@/features/debug/components/ErrorLogSection';
-import { useErrorLogStore } from '@/features/debug/stores/useErrorLogStore';
+import { ErrorLogSection } from '../ErrorLogSection';
+import { useErrorLogStore } from '../../stores/useErrorLogStore';
 
 // Mock dependencies
-vi.mock('@/features/debug/stores/useErrorLogStore', () => ({
+vi.mock('../../stores/useErrorLogStore', () => ({
   useErrorLogStore: vi.fn(),
 }));
 

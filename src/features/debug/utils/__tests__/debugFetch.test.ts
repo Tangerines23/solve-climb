@@ -1,9 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import {
-  debugFetch,
-  safeSupabaseQuery,
-  registerDebugConfig,
-} from '@/features/debug/utils/debugFetch';
+import { debugFetch, safeSupabaseQuery, registerDebugConfig } from '../debugFetch';
 
 // Mock logError
 vi.mock('@/utils/errorHandler', () => ({

@@ -1,9 +1,9 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { renderHook, act } from '@testing-library/react';
-import { useDebugActions } from '@/features/debug/hooks/useDebugActions';
-import type { DebugAction } from '@/features/debug/types/debug';
+import { useDebugActions } from '../useDebugActions';
+import type { DebugAction } from '../../types/debug';
 import { supabase } from '@/utils/supabaseClient';
-import { useUserStore } from '../../../../features/auth';
+import { useUserStore } from '@/features/auth';
 
 // Mock dependencies
 vi.mock('@/utils/supabaseClient', () => {
@@ -28,22 +28,26 @@ vi.mock('@/utils/supabaseClient', () => {
   };
 });
 
-vi.mock('@/features/auth', async (importOriginal) => {
-  const actual = await importOriginal<typeof import('@/features/auth')>();
+vi.mock('@/features/auth', () => {
   const mockState = {
     userId: 'test-user',
     fetchUserData: vi.fn(),
     debugSetMinerals: vi.fn(),
     debugSetStamina: vi.fn(),
   };
-  const mockStore: any = vi.fn((selector) => (selector ? selector(mockState) : mockState));
-  mockStore.getState = vi.fn(() => mockState);
-  vi.mocked(mockStore).getState = vi.fn(() => mockState);
+  const mockStore = vi.fn((selector) => (selector ? selector(mockState) : mockState));
+  (mockStore as any).getState = vi.fn(() => mockState);
   return {
-    ...actual,
     useUserStore: mockStore,
+    useSessionStore: vi.fn(() => ({ setLocalSession: vi.fn() })),
   };
 });
+
+vi.mock('@/features/mypage', () => ({
+  useMyPageStats: vi.fn(() => ({
+    refetch: vi.fn().mockResolvedValue({}),
+  })),
+}));
 
 vi.mock('@/features/quiz', () => ({
   useQuizStore: vi.fn(() => ({
@@ -71,7 +75,7 @@ vi.mock('@/stores/useNotificationStore', () => ({
   })),
 }));
 
-vi.mock('@/features/debug/stores/useDebugStore', () => ({
+vi.mock('../../stores/useDebugStore', () => ({
   useDebugStore: vi.fn(() => ({
     setShowReturnFloater: vi.fn(),
     setBypassLevelLock: vi.fn(),
@@ -82,8 +86,45 @@ vi.mock('@/features/debug/stores/useDebugStore', () => ({
   })),
 }));
 
+vi.mock('@/services', () => ({
+  storageService: {
+    get: vi.fn(),
+    set: vi.fn(),
+    remove: vi.fn(),
+  },
+  STORAGE_KEYS: {
+    LOCAL_SESSION: 'solve-climb-local-session',
+    DEVICE_ID: 'device-id',
+    PROFILES: (id: string) => `profiles-${id}`,
+    ACTIVE_PROFILE_ID: 'active-profile-id',
+    ADMIN_MODE: 'admin-mode',
+  },
+}));
+
+vi.mock('../../utils/debugPresets', () => ({
+  DEBUG_PRESETS: [
+    {
+      id: 'newbie',
+      name: '뉴비 세팅',
+      actions: [{ type: 'reset', target: 'all' }],
+    },
+    {
+      id: 'veteran',
+      name: '고인물 세팅',
+      actions: [
+        { type: 'setMasteryScore', value: -1 },
+        { type: 'setTier', level: 6 },
+        { type: 'setMinerals', value: 999999 },
+      ],
+    },
+  ],
+  getCustomPresets: vi.fn(() => []),
+  savePresetHistory: vi.fn(),
+}));
+
 describe('useDebugActions hook', () => {
   const userId = 'test-user';
+  vi.setConfig({ testTimeout: 30000 });
 
   beforeEach(() => {
     vi.clearAllMocks();

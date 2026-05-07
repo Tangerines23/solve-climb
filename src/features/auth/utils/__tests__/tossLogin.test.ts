@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { handleTossLogin } from '@/features/auth/utils/tossLogin';
+import { handleTossLogin } from '../tossLogin';
 
 describe('tossLogin utility', () => {
   beforeEach(() => {

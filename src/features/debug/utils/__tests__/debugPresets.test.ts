@@ -8,7 +8,7 @@ import {
   deleteCustomPreset,
   exportCustomPresets,
   importCustomPresets,
-} from '@/features/debug/utils/debugPresets';
+} from '../debugPresets';
 import { storageService, STORAGE_KEYS } from '@/services';
 
 describe('debugPresets utility', () => {

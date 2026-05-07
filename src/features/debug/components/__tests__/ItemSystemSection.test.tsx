@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, waitFor } from '@testing-library/react';
-import { ItemSystemSection } from '@/features/debug/components/ItemSystemSection';
+import { ItemSystemSection } from '../ItemSystemSection';
 import { supabase } from '@/utils/supabaseClient';
 import type { SupabaseClient } from '@supabase/supabase-js';
 import { useUserStore } from '@/features/auth/stores/useUserStore';

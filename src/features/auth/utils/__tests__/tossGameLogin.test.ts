@@ -5,7 +5,7 @@ import {
   getMigrationStatus,
   createMigrationLink,
   migrateToGameLogin,
-} from '@/features/auth/utils/tossGameLogin';
+} from '../tossGameLogin';
 
 describe('tossGameLogin utility', () => {
   beforeEach(() => {

@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, waitFor } from '@testing-library/react';
-import { BadgeSystemSection } from '@/features/debug/components/BadgeSystemSection';
+import { BadgeSystemSection } from '../BadgeSystemSection';
 import { supabase } from '@/utils/supabaseClient';
 
 // Mock dependencies

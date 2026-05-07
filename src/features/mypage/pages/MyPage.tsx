@@ -12,6 +12,7 @@ import { MyPageProfile } from '../components/MyPageProfile';
 import { MyPageStats } from '../components/MyPageStats';
 import { MyPageQuickAccess } from '../components/MyPageQuickAccess';
 import { MyPageSettings } from '../components/MyPageSettings';
+import { MyPageEffectsGuide } from '../components/MyPageEffectsGuide';
 import { useMyPageBridge } from '../hooks/useMyPageBridge';
 // calculateTier imported from @/features/quiz above
 import { storageService, STORAGE_KEYS } from '@/services';
@@ -123,7 +124,7 @@ export function MyPage() {
     }
     // 3. 현재 위치가 이미 마이페이지이거나 복귀 경로가 마이페이지인 경우 이동하지 않음
     else {
-      console.log('[MyPage] Stay on MyPage');
+      // Stay on MyPage
     }
   }, [redirectPath, navigate, urls]);
 
@@ -141,13 +142,12 @@ export function MyPage() {
   // 승급 대기 상태 확인 및 모달 표시
   useEffect(() => {
     if (stats?.cyclePromotionPending && !showPromotionModal) {
-      // 티어 정보 계산하여 별 개수 가져오기
       calculateTier(stats.totalMasteryScore).then((tierResult) => {
         setTierStars(tierResult.stars);
         setShowPromotionModal(true);
       });
     }
-  }, [stats?.cyclePromotionPending, stats?.totalMasteryScore, showPromotionModal]);
+  }, [stats?.cyclePromotionPending, stats?.totalMasteryScore]); // Removed showPromotionModal from deps to prevent re-triggering on close
 
   const handlePromote = async () => {
     setShowPromotionModal(false);
@@ -382,42 +382,30 @@ export function MyPage() {
   // 로그아웃 함수
   const handleLogout = async () => {
     try {
-      console.log('[로그아웃] 시작');
-
       // Supabase 세션이 있으면 로그아웃
       const {
         data: { session: currentSession },
       } = await safeSupabaseQuery(supabase.auth.getSession());
-      console.log('[로그아웃] 현재 세션 확인:', { hasSession: !!currentSession });
 
       if (currentSession) {
-        console.log('[로그아웃] Supabase signOut 호출 전');
         await safeSupabaseQuery(supabase.auth.signOut());
-        console.log('[로그아웃] Supabase signOut 완료');
       }
 
       // 로컬 세션 삭제
       try {
         storageService.remove(STORAGE_KEYS.LOCAL_SESSION);
-        console.log('[로그아웃] 로컬 세션 삭제 완료');
       } catch (e) {
         console.warn('Failed to remove local session:', e);
       }
 
       // 로컬 상태 초기화
-      console.log('[로그아웃] 프로필 초기화 전');
       clearProfile();
-      console.log('[로그아웃] 프로필 초기화 완료');
 
       setToastMessage('로그아웃되었습니다.');
       setShowToast(true);
 
       // 통계 다시 불러오기 (세션 없음 상태로)
-      console.log('[로그아웃] refetch 호출 전');
       await refetch();
-      console.log('[로그아웃] refetch 완료');
-
-      console.log('[로그아웃] 전체 과정 완료');
     } catch (error) {
       console.error('[로그아웃] 오류 발생:', error);
       setToastMessage('로그아웃 중 오류가 발생했습니다.');
@@ -425,145 +413,127 @@ export function MyPage() {
     }
   };
 
-  // Guest View (비로그인 상태)
-  if (!session && !statsLoading) {
-    return (
-      <div className="my-page">
-        <Header />
-        <main className="my-page-main">
-          <div className="my-page-content">
-            <div className="my-page-guest-view-container">
-              <div className="my-page-guest-view">
-                <div className="my-page-guest-icon">🔒</div>
-                <h1 className="my-page-guest-title">
-                  로그인하고
-                  <br />
-                  <strong className="my-page-guest-highlight">내 기록을 평생 간직하세요.</strong>
-                </h1>
-                <div className="my-page-guest-buttons">
-                  {isTossAppEnvironment() ? (
-                    <button className="my-page-guest-login-button" onClick={handleTossLoginClick}>
-                      3초 만에 시작하기
-                    </button>
-                  ) : (
-                    <button className="my-page-guest-login-button" onClick={handleGoogleLogin}>
-                      3초 만에 시작하기
-                    </button>
-                  )}
-                  <button className="my-page-guest-anonymous-link" onClick={handleAnonymousLogin}>
-                    익명 로그인하기
-                  </button>
-                </div>
-              </div>
+  const renderContent = () => {
+    if (statsLoading && !profile) {
+      return (
+        <div className="my-page-loading-container" data-testid="loading-spinner">
+          <div className="loading-spinner" />
+        </div>
+      );
+    }
+
+    // Guest View (비로그인 상태)
+    if (!session && !statsLoading) {
+      return (
+        <div className="my-page-guest-view-container">
+          <div className="my-page-guest-view">
+            <div className="my-page-guest-icon">🔒</div>
+            <h1 className="my-page-guest-title">
+              로그인하고
+              <br />
+              <strong className="my-page-guest-highlight">내 기록을 평생 간직하세요.</strong>
+            </h1>
+            <div className="my-page-guest-buttons">
+              {isTossAppEnvironment() ? (
+                <button className="my-page-guest-login-button" onClick={handleTossLoginClick}>
+                  3초 만에 시작하기
+                </button>
+              ) : (
+                <button className="my-page-guest-login-button" onClick={handleGoogleLogin}>
+                  3초 만에 시작하기
+                </button>
+              )}
+              <button className="my-page-guest-anonymous-link" onClick={handleAnonymousLogin}>
+                익명 로그인하기
+              </button>
             </div>
           </div>
-        </main>
-        <FooterNav />
-        <Toast
-          message={toastMessage}
-          isOpen={showToast}
-          onClose={() => setShowToast(false)}
-          icon="⚠️"
-        />
-        <AlertModal
-          isOpen={showAlert}
-          title="알림"
-          message={alertMessage || '리더보드를 열 수 없습니다.'}
-          onClose={() => setShowAlert(false)}
-        />
-        <CyclePromotionModal
-          isOpen={showPromotionModal}
-          stars={tierStars}
-          pendingScore={stats?.pendingCycleScore || 0}
-          onPromote={handlePromote}
-          onClose={() => setShowPromotionModal(false)}
-        />
-      </div>
-    );
-  }
+        </div>
+      );
+    }
 
-  if (isFormVisible) {
+    if (isFormVisible) {
+      return (
+        <ProfileForm
+          onComplete={handleProfileComplete}
+          showBackButton={isProfileComplete}
+          onCancel={() => setShowProfileForm(false)}
+        />
+      );
+    }
+
     return (
-      <div className="my-page">
-        <Header />
-        <main className="my-page-main">
-          <div className="my-page-content">
-            <ProfileForm
-              onComplete={handleProfileComplete}
-              showBackButton={isProfileComplete}
-              onCancel={() => setShowProfileForm(false)}
-            />
+      <>
+        {/* Header: Profile & Summary */}
+        <MyPageProfile
+          nickname={nickname}
+          totalMasteryScore={stats?.totalMasteryScore || 0}
+          loginStreak={stats?.loginStreak || 0}
+          loading={statsLoading}
+          onEditProfile={() => setShowProfileForm(true)}
+        />
+
+        {/* Stats Grid */}
+        <MyPageStats
+          loading={statsLoading}
+          totalSolved={stats?.totalSolved || 0}
+          maxLevel={stats?.maxLevel}
+          bestSubject={formatBestSubject(stats?.bestSubject || null)}
+          isOpeningLeaderboard={false}
+          retryCount={0}
+          onNavigateHistory={() => navigate(urls.history())}
+          onOpenLeaderboard={handleOpenLeaderboard}
+        />
+
+        {/* Quick Access Section */}
+        <MyPageQuickAccess
+          todayChallenge={todayChallenge}
+          favorites={favorites}
+          setCategoryTopic={setCategoryTopic}
+          getLastPlayedWorld={getLastPlayedWorld}
+        />
+
+        {/* Settings List */}
+        <MyPageSettings
+          hapticEnabled={hapticEnabled}
+          animationEnabled={animationEnabled}
+          onToggleHaptic={handleToggleHaptic}
+          onToggleAnimation={handleToggleAnimation}
+          onShowProfileForm={() => setShowProfileForm(true)}
+          onDataReset={handleDataReset}
+          isResetting={isResetting}
+          onSendFeedback={handleSendFeedback}
+          onLogout={handleLogout}
+          onWithdraw={handleWithdraw}
+        />
+
+        {/* Admin / Dev Tool Link */}
+        {(isAdmin || import.meta.env.DEV) && (
+          <div className="mypage-admin-link-container">
+            <button className="mypage-admin-link-button" onClick={() => navigate(urls.debug())}>
+              <span>🛠️</span> 관리자 도구 & UI 실험실 이동
+            </button>
           </div>
-        </main>
-        <FooterNav />
-      </div>
+        )}
+
+        {/* 에러 메시지 (있는 경우) */}
+        {statsError && (
+          <div className="my-page-error">
+            <p>{statsError}</p>
+          </div>
+        )}
+
+        {/* Support & Community Links */}
+        <MyPageEffectsGuide />
+      </>
     );
-  }
+  };
 
   return (
     <div className="my-page">
       <Header />
       <main className="my-page-main">
-        <div className="my-page-content">
-          {/* Header: Profile & Summary */}
-          <MyPageProfile
-            nickname={nickname}
-            totalMasteryScore={stats?.totalMasteryScore || 0}
-            loginStreak={stats?.loginStreak || 0}
-            loading={statsLoading}
-            onEditProfile={() => setShowProfileForm(true)}
-          />
-
-          {/* Stats Grid */}
-          <MyPageStats
-            loading={statsLoading}
-            totalSolved={stats?.totalSolved || 0}
-            maxLevel={stats?.maxLevel}
-            bestSubject={formatBestSubject(stats?.bestSubject || null)}
-            isOpeningLeaderboard={false}
-            retryCount={0}
-            onNavigateHistory={() => navigate(urls.history())}
-            onOpenLeaderboard={handleOpenLeaderboard}
-          />
-
-          {/* Quick Access Section */}
-          <MyPageQuickAccess
-            todayChallenge={todayChallenge}
-            favorites={favorites}
-            setCategoryTopic={setCategoryTopic}
-            getLastPlayedWorld={getLastPlayedWorld}
-          />
-
-          {/* Settings List */}
-          <MyPageSettings
-            hapticEnabled={hapticEnabled}
-            animationEnabled={animationEnabled}
-            onToggleHaptic={handleToggleHaptic}
-            onToggleAnimation={handleToggleAnimation}
-            onShowProfileForm={() => setShowProfileForm(true)}
-            onDataReset={handleDataReset}
-            isResetting={isResetting}
-            onSendFeedback={handleSendFeedback}
-            onLogout={handleLogout}
-            onWithdraw={handleWithdraw}
-          />
-
-          {/* Admin / Dev Tool Link */}
-          {(isAdmin || import.meta.env.DEV) && (
-            <div className="mypage-admin-link-container">
-              <button className="mypage-admin-link-button" onClick={() => navigate(urls.debug())}>
-                <span>🛠️</span> 관리자 도구 & UI 실험실 이동
-              </button>
-            </div>
-          )}
-
-          {/* 에러 메시지 (있는 경우) */}
-          {statsError && (
-            <div className="my-page-error">
-              <p>{statsError}</p>
-            </div>
-          )}
-        </div>
+        <div className="my-page-content">{renderContent()}</div>
       </main>
       <FooterNav />
       <DataResetConfirmModal
