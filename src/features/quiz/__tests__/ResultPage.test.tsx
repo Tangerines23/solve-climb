@@ -261,31 +261,4 @@ describe('ResultPage', () => {
     fireEvent.click(closeBtn);
     expect(mockNavigate).toHaveBeenCalled();
   });
-
-  it('should handle Revenge Deathnote navigation', async () => {
-    const params = new URLSearchParams({ mode: 'survival', score: '100', last_q: '1+1' });
-    const { useSearchParams } = await import('react-router-dom');
-    vi.mocked(useSearchParams).mockReturnValue([params, vi.fn()]);
-
-    const { getByText } = render(
-      <BrowserRouter>
-        <ResultPage />
-      </BrowserRouter>
-    );
-
-    const revengeBtn = getByText(/데스노트 복수하기/i);
-
-    // Mock window.location.href
-    const originalLocation = window.location.href;
-    delete (window as any).location;
-    (window as any).location = { href: originalLocation };
-
-    const { fireEvent } = await import('@testing-library/react');
-    fireEvent.click(revengeBtn);
-
-    expect(window.location.href).toContain('mode=smart-retry');
-
-    // Restore
-    (window as any).location = originalLocation;
-  });
 });

@@ -41,5 +41,5 @@ export function calculateDynamicTimeLimit({
     PRESSURE_FACTOR.START - totalQuestionsAnswered * PRESSURE_FACTOR.DECAY
   );
 
-  return Math.floor(baseTime * currentPressure);
+  return baseTime * currentPressure;
 }
