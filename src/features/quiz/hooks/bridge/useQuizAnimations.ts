@@ -6,6 +6,7 @@ export function useQuizAnimations() {
   const [inputAnimation, setInputAnimation] = useState('');
   const [questionAnimation, setQuestionAnimation] = useState('fade-in');
   const [showFlash, setShowFlash] = useState(false);
+  const [showSuccessFlash, setShowSuccessFlash] = useState(false);
   const [isError, setIsError] = useState(false);
   const [showSlideToast, setShowSlideToast] = useState(false);
   const [damagePosition, setDamagePosition] = useState<{ left: string; top: string }>({
@@ -18,6 +19,7 @@ export function useQuizAnimations() {
     inputAnimation,
     questionAnimation,
     showFlash,
+    showSuccessFlash,
     isError,
     showSlideToast,
     damagePosition,
@@ -25,6 +27,7 @@ export function useQuizAnimations() {
     setInputAnimation,
     setQuestionAnimation,
     setShowFlash,
+    setShowSuccessFlash,
     setIsError,
     setShowSlideToast,
     setDamagePosition,

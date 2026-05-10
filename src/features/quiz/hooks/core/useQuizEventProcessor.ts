@@ -1,5 +1,5 @@
 import { ANIMATION_CONFIG } from '../../constants/game';
-import { useEffect } from 'react';
+import React, { useEffect } from 'react';
 import { quizEventBus } from '@/lib/eventBus';
 import { useQuizStore } from '../../stores/useQuizStore';
 import { useGameStore } from '../../stores/useGameStore';
@@ -33,6 +33,7 @@ interface Animations {
   inputAnimation: string;
   questionAnimation: string;
   showFlash: boolean;
+  showSuccessFlash: boolean;
   isError: boolean;
   showSlideToast: boolean;
   damagePosition: { left: string; top: string };
@@ -40,6 +41,7 @@ interface Animations {
   setInputAnimation: React.Dispatch<React.SetStateAction<string>>;
   setQuestionAnimation: React.Dispatch<React.SetStateAction<string>>;
   setShowFlash: React.Dispatch<React.SetStateAction<boolean>>;
+  setShowSuccessFlash: React.Dispatch<React.SetStateAction<boolean>>;
   setIsError: React.Dispatch<React.SetStateAction<boolean>>;
   setShowSlideToast: React.Dispatch<React.SetStateAction<boolean>>;
   setDamagePosition: React.Dispatch<React.SetStateAction<{ left: string; top: string }>>;
@@ -98,6 +100,7 @@ interface EventProcessorDeps {
  * Following SRP by separating event processing from the main Context.
  */
 export function useQuizEventProcessor(deps: EventProcessorDeps) {
+  const isGameOverProcessed = React.useRef(false);
   const {
     gameState,
     animations,
@@ -142,6 +145,13 @@ export function useQuizEventProcessor(deps: EventProcessorDeps) {
     const unsubscribeAnswer = quizEventBus.on('QUIZ:ANSWER_SUBMITTED', (data) => {
       const { isCorrect, score: earnedDistance, solveTime, answer } = data;
 
+      // Reset any previous visual states immediately
+      animations.setIsError(false);
+      animations.setShowFlash(false);
+      animations.setShowSuccessFlash(false);
+      animations.setCardAnimation('');
+      animations.setInputAnimation('');
+
       // Update game progression data
       gameState.setUserAnswers((prev: number[]) => [...prev, parseInt(answer, 10)]);
       gameState.setSolveTimes((p: number[]) => [...p, solveTime]);
@@ -160,15 +170,18 @@ export function useQuizEventProcessor(deps: EventProcessorDeps) {
         increaseScore(earnedDistance);
         useGameStore.getState().incrementCombo();
 
-        animations.setCardAnimation('correct');
-        animations.setShowFlash(true);
+        animations.setCardAnimation('correct-flash');
+        animations.setInputAnimation('input-success-flash');
+        animations.setShowSuccessFlash(true);
         feedbackRef.current?.show('SUCCESS', `+${earnedDistance}m`, 'success');
       } else {
         decreaseScore(earnedDistance);
         useGameStore.getState().resetCombo();
 
-        animations.setCardAnimation('incorrect');
+        animations.setCardAnimation('wrong-shake');
+        animations.setInputAnimation('input-error-flash');
         animations.setIsError(true);
+        animations.setShowFlash(true);
         if (hapticEnabled) vibrateLong();
 
         // Damage visual effect position
@@ -224,6 +237,8 @@ export function useQuizEventProcessor(deps: EventProcessorDeps) {
         setDisplayValue('');
         setIsSubmitting(false);
         animations.setIsError(false);
+        animations.setShowFlash(false);
+        animations.setShowSuccessFlash(false);
         animations.setCardAnimation('');
 
         quizEventBus.emit('QUIZ:NEXT_QUESTION_REQUESTED');
@@ -326,6 +341,8 @@ export function useQuizEventProcessor(deps: EventProcessorDeps) {
 
     // 8. Game Over Listener
     const unsubscribeGameOver = quizEventBus.on('QUIZ:GAME_OVER', (data) => {
+      if (isGameOverProcessed.current) return;
+      isGameOverProcessed.current = true;
       smartHandleGameOver(data?.reason);
     });
 
@@ -387,5 +404,6 @@ export function useQuizEventProcessor(deps: EventProcessorDeps) {
     setShowPromise,
     feedbackRef,
     inputRef,
+    animations,
   ]);
 }

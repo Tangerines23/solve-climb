@@ -19,6 +19,7 @@ describe('useQuizRevive', () => {
     minerals: 1000,
     consumeItem: vi.fn().mockResolvedValue({ success: true }),
     onWatchAd: vi.fn(),
+    onGameOver: vi.fn(),
     isPreview: false,
   };
 
@@ -37,7 +38,7 @@ describe('useQuizRevive', () => {
       modal: 'lastChance',
       show: true,
     });
-    expect(quizEventBus.emit).not.toHaveBeenCalledWith('QUIZ:GAME_OVER', expect.any(Object));
+    expect(mockProps.onGameOver).not.toHaveBeenCalled();
   });
 
   it('stableHandleGameOver should exit directly on manual exit', () => {
@@ -51,7 +52,7 @@ describe('useQuizRevive', () => {
       modal: 'lastChance',
       show: true,
     });
-    expect(quizEventBus.emit).toHaveBeenCalledWith('QUIZ:GAME_OVER', { reason: 'manual_exit' });
+    expect(mockProps.onGameOver).toHaveBeenCalledWith('manual_exit');
   });
 
   it('stableHandleGameOver should exit directly if revive already used', async () => {
@@ -76,7 +77,7 @@ describe('useQuizRevive', () => {
       modal: 'lastChance',
       show: true,
     });
-    expect(quizEventBus.emit).toHaveBeenCalledWith('QUIZ:GAME_OVER', { reason: 'timeout' });
+    expect(mockProps.onGameOver).toHaveBeenCalledWith('timeout');
   });
 
   it('handleRevive should consume item if useItem is true', async () => {
@@ -132,6 +133,6 @@ describe('useQuizRevive', () => {
       modal: 'lastChance',
       show: false,
     });
-    expect(quizEventBus.emit).toHaveBeenCalledWith('QUIZ:GAME_OVER', { reason: 'manual_exit' });
+    expect(mockProps.onGameOver).toHaveBeenCalledWith('manual_exit');
   });
 });

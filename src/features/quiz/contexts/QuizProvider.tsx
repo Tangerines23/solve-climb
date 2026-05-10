@@ -206,6 +206,7 @@ export function QuizProvider({ children, params }: QuizProviderProps) {
       minerals,
       consumeItem,
       onWatchAd: handleWatchAdRevive,
+      onGameOver: gameState.handleGameOver,
       isPreview,
     });
 
@@ -442,6 +443,7 @@ export function QuizProvider({ children, params }: QuizProviderProps) {
       inputAnimation: animations.inputAnimation,
       questionAnimation: animations.questionAnimation,
       showFlash: animations.showFlash,
+      showSuccessFlash: animations.showSuccessFlash,
       showSlideToast: animations.showSlideToast,
       toastValue,
       damagePosition: animations.damagePosition,

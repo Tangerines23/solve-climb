@@ -87,6 +87,7 @@ export interface QuizAnimationState {
   questionAnimation: string;
   showFlash: boolean;
   showSlideToast: boolean;
+  showSuccessFlash: boolean;
   toastValue: string;
   damagePosition: { left: string; top: string };
 }

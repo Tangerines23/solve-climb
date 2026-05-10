@@ -18,11 +18,12 @@ function TimerCircleComponent({
   triggerPenalty = 0,
   penaltyAmount = 5,
 }: TimerCircleProps) {
-  const [timeLeft, setTimeLeft] = useState(duration);
+  const [timeLeft, setTimeLeft] = useState(Math.round(duration));
   const [isFastForward, setIsFastForward] = useState(false);
   const pressTimerRef = useRef<NodeJS.Timeout | null>(null);
   const intervalRef = useRef<NodeJS.Timeout | null>(null);
   const onCompleteRef = useRef(onComplete);
+  const hasTriggeredComplete = useRef(false);
 
   // onComplete 콜백을 ref로 저장하여 최신 값 유지
   useEffect(() => {
@@ -35,7 +36,8 @@ function TimerCircleComponent({
       clearInterval(intervalRef.current);
       intervalRef.current = null;
     }
-    setTimeLeft(duration);
+    setTimeLeft(Math.round(duration));
+    hasTriggeredComplete.current = false;
   }, [duration]);
 
   // 패널티 발생 시 시간 차감
@@ -43,7 +45,8 @@ function TimerCircleComponent({
     if (triggerPenalty && triggerPenalty > 0) {
       setTimeLeft((prev) => {
         const next = Math.max(0, prev - penaltyAmount);
-        if (next === 0) {
+        if (next === 0 && !hasTriggeredComplete.current) {
+          hasTriggeredComplete.current = true;
           setTimeout(() => onCompleteRef.current(), 0);
         }
         return next;
@@ -75,7 +78,10 @@ function TimerCircleComponent({
     if (isPaused) return;
 
     if (timeLeft <= 0 && duration > 0) {
-      onCompleteRef.current();
+      if (!hasTriggeredComplete.current) {
+        hasTriggeredComplete.current = true;
+        onCompleteRef.current();
+      }
       return;
     }
 
@@ -89,7 +95,10 @@ function TimerCircleComponent({
             intervalRef.current = null;
           }
           // ref를 통해 최신 콜백 호출
-          setTimeout(() => onCompleteRef.current(), 0);
+          if (!hasTriggeredComplete.current) {
+            hasTriggeredComplete.current = true;
+            setTimeout(() => onCompleteRef.current(), 0);
+          }
           return 0;
         }
         return newTime;
@@ -134,7 +143,9 @@ function TimerCircleComponent({
         width: '28px',
         height: '28px',
       },
-      timeLabel: `${Math.floor(timeLeft / 60)}:${(timeLeft % 60).toString().padStart(2, '0')}`,
+      timeLabel: `${Math.floor(Math.max(0, timeLeft) / 60)}:${Math.ceil(Math.max(0, timeLeft) % 60)
+        .toString()
+        .padStart(2, '0')}`,
     };
   }, [timeLeft, duration]);
 

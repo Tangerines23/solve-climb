@@ -15,8 +15,15 @@ export const QuizAnswerArea = React.memo(() => {
     subParam,
     useSystemKeyboard,
   } = quizState;
-  const { isSubmitting, isError, isPaused, isInputPaused, inputAnimation, showFlash } =
-    quizAnimations;
+  const {
+    isSubmitting,
+    isError,
+    isPaused,
+    isInputPaused,
+    inputAnimation,
+    showFlash,
+    showSuccessFlash,
+  } = quizAnimations;
   const { handleSubmit } = quizHandlers;
 
   if (!currentQuestion) return null;
@@ -103,7 +110,7 @@ export const QuizAnswerArea = React.memo(() => {
                 }
               }}
               placeholder={isJapaneseQuiz ? '로마지 입력 (예: a, ki)' : '정답 입력'}
-              className={`input-base answer-input-field answer-input-system ${inputAnimation} ${isError ? 'error-state is-error' : ''} ${showFlash ? 'input-error-flash' : ''}`}
+              className={`input-base answer-input-field answer-input-system ${inputAnimation} ${isError ? 'error-state is-error' : ''} ${showFlash ? 'input-error-flash' : ''} ${showSuccessFlash ? 'input-success-flash' : ''}`}
               disabled={(isSubmitting && !isError) || effectiveInputPaused}
               readOnly={isError}
               autoFocus={false}
@@ -126,7 +133,7 @@ export const QuizAnswerArea = React.memo(() => {
       ) : (
         <div className={`answer-input-wrapper ${isError ? 'is-error' : ''}`} data-vg-ignore="true">
           <div
-            className={`answer-display ${inputAnimation} ${isError ? 'is-error' : ''} ${showFlash ? 'input-error-flash' : ''}`}
+            className={`answer-display ${inputAnimation} ${isError ? 'is-error' : ''} ${showFlash ? 'input-error-flash' : ''} ${showSuccessFlash ? 'input-success-flash' : ''}`}
           >
             <div className="answer-content-container">
               <span className="answer-text">

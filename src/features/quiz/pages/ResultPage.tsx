@@ -1,5 +1,5 @@
 // src/pages/ResultPage.tsx
-import { useEffect, useState, useMemo } from 'react';
+import { useEffect, useState, useMemo, useRef } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useResultPageBridge } from '../hooks/bridge/useResultPageBridge';
 import { SCORE_PER_CORRECT } from '../constants/game';
@@ -51,6 +51,7 @@ export function ResultPage() {
   const [previousMasteryScore] = useState<number | null>(null);
   const [currentMasteryScore] = useState<number | null>(null);
   const [awardedBadges, setAwardedBadges] = useState<string[]>([]);
+  const hasProcessed = useRef(false);
   const [, setShowBadgeNotification] = useState(false);
 
   const mountainParam = searchParams.get('mountain');
@@ -68,9 +69,15 @@ export function ResultPage() {
   const total = urlParams.validateNumberParam(searchParams.get('total'), 0, 10000) ?? 0;
   const correctCount = Math.floor(finalScore / SCORE_PER_CORRECT);
   const averageTime = urlParams.validateFloatParam(searchParams.get('avg_time'), 0, 3600);
+  const altitudeParam = searchParams.get('altitude') || 'forest';
 
+  // 1. 일회성 초기화 및 서버 동기화 로직 (Once per mount)
   useEffect(() => {
     if (!worldParam || !categoryParam || !level || !mode) return;
+    if (hasProcessed.current) return;
+    hasProcessed.current = true;
+
+    // 로컬 최고 기록 체크
     const key = urlParams.createSafeStorageKey(
       STORAGE_KEYS.HIGH_SCORE_PREFIX,
       worldParam,
@@ -88,7 +95,8 @@ export function ResultPage() {
         setTimeout(() => setShowConfetti(false), ANIMATION_CONFIG.CONFETTI_DURATION);
       }
     }
-    const sync = async () => {
+
+    const processResults = async () => {
       const sessionId = searchParams.get('session_id');
       const answersRaw = searchParams.get('user_answers');
       const questionIdsRaw = searchParams.get('question_ids');
@@ -107,14 +115,15 @@ export function ResultPage() {
       }
 
       if (finalScore > 0) {
+        // 레벨 클리어/점수 업데이트 (서버)
         if (
           mode === 'time-attack'
             ? Math.round((correctCount / total) * 100) >= 50 || correctCount >= 1
             : correctCount >= 1
         ) {
           await clearLevel(
-            worldParam!,
-            categoryParam!,
+            worldParam,
+            categoryParam,
             level,
             mode === 'time-attack' ? 'time-attack' : 'survival',
             finalScore,
@@ -123,8 +132,8 @@ export function ResultPage() {
           );
         } else {
           await updateBestScore(
-            worldParam!,
-            categoryParam!,
+            worldParam,
+            categoryParam,
             level,
             mode === 'time-attack' ? 'time-attack' : 'survival',
             finalScore,
@@ -132,89 +141,76 @@ export function ResultPage() {
             sessionData
           );
         }
-        // Correct signature: fetchRanking(world, category, period, type, limit?)
+
+        // 랭킹 초기 로드
         await fetchRanking(
-          worldParam!,
-          categoryParam!,
+          worldParam,
+          categoryParam,
           'weekly',
           mode === 'time-attack' ? 'time-attack' : 'survival'
         );
-        const ranks =
-          rankings[
-            `${worldParam}-${categoryParam}-weekly-${mode === 'time-attack' ? 'time-attack' : 'survival'}`
-          ];
-
-        const {
-          data: { user },
-        } = await supabase.auth.getUser();
-        if (user && ranks && Array.isArray(ranks)) {
-          const myRanking = ranks.find((r) => r.user_id === user.id);
-          if (myRanking) {
-            setCurrentRank(Number(myRanking.rank));
-          }
-        }
       }
     };
-    sync();
 
-    // [Added] Quiz End Tracking
-    if (worldParam && categoryParam && finalScore >= 0) {
-      analytics.trackQuizEnd(
-        worldParam,
-        categoryParam,
-        finalScore,
-        correctCount > 0 // 최소 한 문제라도 맞추면 성공으로 간주
-      );
+    processResults();
 
-      // 추가 상세 메트릭 트래킹
-      analytics.trackEvent({
-        category: 'quiz',
-        action: 'summary',
-        data: {
-          total_questions: total,
-          correct_count: correctCount,
-          accuracy: total > 0 ? Math.round((correctCount / total) * 100) : 0,
-          avg_time: averageTime,
-        },
-      });
+    // 분석 이벤트 전송 (딱 한 번)
+    analytics.trackQuizEnd(worldParam, categoryParam, finalScore, correctCount > 0);
+    analytics.trackEvent({
+      category: 'quiz',
+      action: 'summary',
+      data: {
+        total_questions: total,
+        correct_count: correctCount,
+        accuracy: total > 0 ? Math.round((correctCount / total) * 100) : 0,
+        avg_time: averageTime,
+      },
+    });
 
-      // [Anonymous/Local History Saving]
-      // 익명 사용자를 위해 historyService를 통해 결과 저장
-      historyService.saveRecord({
-        world: worldParam,
-        category: categoryParam as Category,
-        level: level,
-        mode: mode as string,
-        score: finalScore,
-        correctCount: correctCount,
-        total: total,
-      });
-      console.log('[ResultPage] Saved local history via historyService');
-    }
+    // 로컬 히스토리 저장
+    historyService.saveRecord({
+      world: worldParam,
+      category: categoryParam as Category,
+      level: level,
+      mode: mode as string,
+      score: finalScore,
+      correctCount: correctCount,
+      total: total,
+    });
+    console.log('[ResultPage] Initial processing complete.');
 
+    // 전역 리더보드 제출
     if (finalScore > 0 && !scoreSubmitted) {
       submitScoreToLeaderboard(finalScore).then(setScoreSubmitted);
     }
-  }, [
-    worldParam,
-    categoryParam,
-    level,
-    mode,
-    finalScore,
-    total,
-    correctCount,
-    scoreSubmitted,
-    searchParams,
-    animationEnabled,
-    averageTime,
-    clearLevel,
-    updateBestScore,
-    fetchRanking,
-    rankings,
-    submitScoreToLeaderboard,
-    supabase,
-    urlParams,
-  ]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []); // Strictly run-once on mount
+
+  // 2. 랭킹 데이터 동기화 (Reactive)
+  useEffect(() => {
+    if (!worldParam || !categoryParam || !mode) return;
+
+    const syncRank = async () => {
+      const ranks =
+        rankings[
+          `${worldParam}-${categoryParam}-weekly-${mode === 'time-attack' ? 'time-attack' : 'survival'}`
+        ];
+
+      if (!ranks || !Array.isArray(ranks)) return;
+
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+      if (user) {
+        const myRanking = ranks.find((r) => r.user_id === user.id);
+        if (myRanking) {
+          setCurrentRank(Number(myRanking.rank));
+        }
+      }
+    };
+
+    syncRank();
+  }, [rankings, worldParam, categoryParam, mode, supabase.auth]);
 
   const [hasDoubled, setHasDoubled] = useState(false);
   const [isAdLoading, setIsAdLoading] = useState(false);
@@ -415,7 +411,11 @@ export function ResultPage() {
   }
 
   return (
-    <div className={`page-container result-page ${mode}`}>
+    <div
+      className={`page-container result-page ${mode}`}
+      data-world={worldParam || 'World1'}
+      data-altitude-phase={altitudeParam}
+    >
       {showConfetti && (
         <div className="confetti-container">
           {Array.from({ length: 50 }).map((_, i) => (
@@ -511,16 +511,6 @@ export function ResultPage() {
       <div className="result-footer-actions">
         <button className="result-button-primary" onClick={handleRetry}>
           {UI_MESSAGES.RESULT_RETRY}
-        </button>
-        <button
-          className="result-button-secondary mt-sm"
-          onClick={() => {
-            const params = new URLSearchParams(window.location.search);
-            params.set('mode', 'smart-retry');
-            window.location.href = `/quiz?${params.toString()}`;
-          }}
-        >
-          {UI_MESSAGES.REVENGE_DEATHNOTE}
         </button>
         <div className="result-button-group">
           <button

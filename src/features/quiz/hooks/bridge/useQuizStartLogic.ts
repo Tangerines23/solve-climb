@@ -1,4 +1,5 @@
 import { LANDMARK_MAPPING } from '../../constants/game';
+import { calculateAltitudePhase } from '../../utils/altitude';
 import { useState, useCallback, useMemo, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useGameStore } from '../../stores/useGameStore';
@@ -38,10 +39,7 @@ export function useQuizStartLogic({
   const { setExhausted, setStaminaConsumed } = useGameStore();
 
   const altitudePhase = useMemo(() => {
-    if (totalQuestions <= 10) return 'forest';
-    if (totalQuestions <= 25) return 'rock';
-    if (totalQuestions <= 45) return 'clouds';
-    return 'space';
+    return calculateAltitudePhase(totalQuestions);
   }, [totalQuestions]);
 
   useEffect(() => {

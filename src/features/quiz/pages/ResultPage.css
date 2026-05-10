@@ -1,10 +1,53 @@
 /* src/pages/ResultPage.css */
 
 .result-page {
-  background-color: var(--color-gray-900);
+  position: relative;
+  width: 100vw;
   min-height: 100vh;
-  padding-bottom: 120px;
-  /* 하단 버튼 공간 확보 */
+  display: flex;
+  flex-direction: column;
+  padding-bottom: 160px; /* 하단 버튼 공간 확보 (footer height + buffer) */
+  box-sizing: border-box;
+  overflow-x: hidden;
+
+  /* World Theme Variables */
+  --world-bg-top: var(--color-world1-top);
+  --world-bg-mid: var(--color-world1-mid);
+  --world-bg-bottom: var(--color-world1-bottom);
+
+  background: linear-gradient(
+    to bottom,
+    var(--world-bg-top),
+    var(--world-bg-mid),
+    var(--world-bg-bottom)
+  );
+  transition: background 0.5s ease;
+}
+
+/* World Themes */
+/* Altitude Phase Overrides - Results should match game background */
+.result-page[data-altitude-phase='forest'] {
+  --world-bg-top: var(--color-world-forest-top);
+  --world-bg-mid: var(--color-world-forest-mid);
+  --world-bg-bottom: var(--color-world-forest-bottom);
+}
+
+.result-page[data-altitude-phase='rock'] {
+  --world-bg-top: var(--color-world-rock-top);
+  --world-bg-mid: var(--color-world-rock-mid);
+  --world-bg-bottom: var(--color-world-rock-bottom);
+}
+
+.result-page[data-altitude-phase='clouds'] {
+  --world-bg-top: var(--color-world-clouds-top);
+  --world-bg-mid: var(--color-world-clouds-mid);
+  --world-bg-bottom: var(--color-world-clouds-bottom);
+}
+
+.result-page[data-altitude-phase='space'] {
+  --world-bg-top: var(--color-world-space-top);
+  --world-bg-mid: var(--color-world-space-mid);
+  --world-bg-bottom: var(--color-world-space-bottom);
 }
 
 .mt-sm {
@@ -22,7 +65,7 @@
   top: 0;
   left: 0;
   right: 0;
-  height: 60px;
+  height: calc(var(--spacing-xl) * 3);
   display: flex;
   justify-content: flex-end;
   align-items: center;
@@ -76,11 +119,13 @@
   border: var(--glass-border);
   border-radius: var(--rounded-large-card);
   box-shadow: var(--glass-shadow);
-  width: 100%;
+  width: 92%;
   max-width: var(--modal-width-portrait);
-  max-height: calc(100vh - 200px);
-  margin: calc(var(--spacing-4xl) * 2) auto 0;
+  max-height: calc(100vh - 200px); /* 헤더 + 푸터 공간 확보 */
+  margin: calc(var(--spacing-xl) * 3) auto var(--spacing-xl);
   overflow-y: auto;
+  scrollbar-gutter: stable; /* 스크롤바 생성 시 레이아웃 뒤틀림 방지 */
+  -webkit-overflow-scrolling: touch;
   color: var(--color-text-primary);
   transition: all 0.3s ease;
 }
@@ -597,12 +642,13 @@
   right: 0;
   background-color: var(--color-gray-900);
   border-top: 1px solid var(--color-bg-secondary);
-  padding: var(--spacing-lg) var(--spacing-xl);
-  padding-bottom: calc(var(--spacing-lg) + env(safe-area-inset-bottom));
+  padding: var(--spacing-md) var(--spacing-xl);
+  padding-bottom: calc(var(--spacing-md) + env(safe-area-inset-bottom));
   z-index: var(--z-header);
   display: flex;
   flex-direction: column;
-  gap: var(--spacing-md);
+  gap: var(--spacing-sm);
+  box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.3);
 }
 
 .result-button-primary {

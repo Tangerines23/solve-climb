@@ -153,6 +153,31 @@
   --world-bg-bottom: var(--color-world4-bottom);
 }
 
+/* Altitude Phase Overrides - Specific phases for World 1 or Global */
+.quiz-page[data-altitude-phase='forest'] {
+  --world-bg-top: var(--color-world-forest-top);
+  --world-bg-mid: var(--color-world-forest-mid);
+  --world-bg-bottom: var(--color-world-forest-bottom);
+}
+
+.quiz-page[data-altitude-phase='rock'] {
+  --world-bg-top: var(--color-world-rock-top);
+  --world-bg-mid: var(--color-world-rock-mid);
+  --world-bg-bottom: var(--color-world-rock-bottom);
+}
+
+.quiz-page[data-altitude-phase='clouds'] {
+  --world-bg-top: var(--color-world-clouds-top);
+  --world-bg-mid: var(--color-world-clouds-mid);
+  --world-bg-bottom: var(--color-world-clouds-bottom);
+}
+
+.quiz-page[data-altitude-phase='space'] {
+  --world-bg-top: var(--color-world-space-top);
+  --world-bg-mid: var(--color-world-space-mid);
+  --world-bg-bottom: var(--color-world-space-bottom);
+}
+
 /* 상단 헤더 (뒤로가기 + 타이머) */
 .quiz-header {
   position: relative;
@@ -550,16 +575,32 @@
   }
 }
 
+/* Flash Green 애니메이션 - 초록색 플래시 효과 */
+@keyframes flash-green {
+  0% {
+    background-color: transparent;
+    background-color: color-mix(in srgb, var(--color-confetti-green), transparent 100%);
+  }
+
+  20% {
+    background-color: color-mix(in srgb, var(--color-confetti-green), transparent 80%);
+  }
+
+  100% {
+    background-color: transparent;
+    background-color: color-mix(in srgb, var(--color-confetti-green), transparent 100%);
+  }
+}
+
 /* Flash Red Input 애니메이션 - 테두리 색상 포함 (answer-input-system용) */
 @keyframes flash-red-input {
   0% {
     background-color: transparent;
     background-color: color-mix(in srgb, var(--color-toss-red), transparent 100%);
-    border-color: var(--color-bg-tertiary);
+    border-color: var(--glass-border-color);
   }
 
   20% {
-    background-color: rgba(240, 68, 82, 0.2);
     background-color: color-mix(in srgb, var(--color-toss-red), transparent 80%);
     border-color: var(--color-toss-red);
   }
@@ -567,7 +608,27 @@
   100% {
     background-color: transparent;
     background-color: color-mix(in srgb, var(--color-toss-red), transparent 100%);
-    border-color: var(--color-bg-tertiary);
+    border-color: var(--glass-border-color);
+  }
+}
+
+/* Flash Green Input 애니메이션 */
+@keyframes flash-green-input {
+  0% {
+    background-color: transparent;
+    background-color: color-mix(in srgb, var(--color-confetti-green), transparent 100%);
+    border-color: var(--glass-border-color);
+  }
+
+  20% {
+    background-color: color-mix(in srgb, var(--color-confetti-green), transparent 80%);
+    border-color: var(--color-confetti-green);
+  }
+
+  100% {
+    background-color: transparent;
+    background-color: color-mix(in srgb, var(--color-confetti-green), transparent 100%);
+    border-color: var(--glass-border-color);
   }
 }
 
@@ -585,6 +646,14 @@
 
 .answer-display.input-error-flash {
   animation: flash-red 0.4s ease-out;
+}
+
+.answer-input-system.input-success-flash {
+  animation: flash-green-input 0.4s ease-out;
+}
+
+.answer-display.input-success-flash {
+  animation: flash-green 0.4s ease-out;
 }
 
 .answer-input-system.is-error:focus {

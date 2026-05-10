@@ -2,6 +2,7 @@
 import { useState, useCallback } from 'react';
 import { urls } from '@/utils/navigation';
 import { GameMode, WrongAnswer } from '../../types/quiz';
+import { calculateAltitudePhase } from '../../utils/altitude';
 
 interface UseQuizGameStateParams {
   score: number;
@@ -84,6 +85,10 @@ export function useQuizGameState({
       if (questionIds && questionIds.length > 0) {
         params.set('question_ids', JSON.stringify(questionIds));
       }
+
+      // 고도 단계 정보 추가
+      const altitudePhase = calculateAltitudePhase(totalQuestionsState);
+      params.set('altitude', altitudePhase);
 
       navigate(urls.result(params));
     },

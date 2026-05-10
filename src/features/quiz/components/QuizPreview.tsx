@@ -174,6 +174,7 @@ export function QuizPreview({
     inputAnimation: '',
     questionAnimation: '',
     showFlash: false,
+    showSuccessFlash: false,
     showSlideToast: false,
     toastValue: '',
     damagePosition: { left: '50%', top: '50%' },

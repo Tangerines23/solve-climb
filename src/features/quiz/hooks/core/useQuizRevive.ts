@@ -9,6 +9,7 @@ interface UseQuizReviveParams {
   minerals: number;
   consumeItem: (itemId: number) => Promise<{ success: boolean; message: string }>;
   onWatchAd: () => void;
+  onGameOver: (reason?: string) => void;
   isPreview: boolean;
 }
 
@@ -21,6 +22,7 @@ export function useQuizRevive({
   minerals,
   consumeItem,
   onWatchAd,
+  onGameOver,
   isPreview,
 }: UseQuizReviveParams) {
   const [hasUsedLastChance, setHasUsedLastChance] = useState(false);
@@ -75,22 +77,22 @@ export function useQuizRevive({
 
   const handleGiveUp = useCallback(() => {
     quizEventBus.emit('QUIZ:UI_MODAL_TOGGLE', { modal: 'lastChance', show: false });
-    quizEventBus.emit('QUIZ:GAME_OVER', { reason: 'manual_exit' });
-  }, []);
+    onGameOver('manual_exit');
+  }, [onGameOver]);
 
   const stableHandleGameOver = useCallback(
     (reason?: string) => {
       if (hasUsedLastChance || isPreview) {
-        quizEventBus.emit('QUIZ:GAME_OVER', { reason });
+        onGameOver(reason);
         return;
       }
       if (reason === 'manual_exit') {
-        quizEventBus.emit('QUIZ:GAME_OVER', { reason });
+        onGameOver(reason);
         return;
       }
       quizEventBus.emit('QUIZ:UI_MODAL_TOGGLE', { modal: 'lastChance', show: true });
     },
-    [hasUsedLastChance, isPreview]
+    [hasUsedLastChance, isPreview, onGameOver]
   );
 
   return {
