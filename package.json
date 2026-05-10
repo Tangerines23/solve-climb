@@ -209,7 +209,7 @@
     "cross-spawn": "^7.0.5",
     "micromatch": "^4.0.8",
     "serialize-javascript": "^7.0.5",
-    "basic-ftp": "5.3.0",
+    "basic-ftp": "5.3.1",
     "@stryker-mutator/core": {
       "ajv": "^8.18.0"
     }
