@@ -225,14 +225,13 @@ export async function getNextTierInfo(
       minScore: nextTier.minScore,
       remaining: nextTier.minScore - tierResult.currentCycleScore,
     };
-  } else {
-    // 전설까지 도달: 다음 사이클 시작까지
-    return {
-      name: '다음 사이클',
-      minScore: cycleCap,
-      remaining: cycleCap - tierResult.currentCycleScore,
-    };
   }
+  // 전설까지 도달: 다음 사이클 시작까지
+  return {
+    name: '다음 사이클',
+    minScore: cycleCap,
+    remaining: cycleCap - tierResult.currentCycleScore,
+  };
 }
 
 /**

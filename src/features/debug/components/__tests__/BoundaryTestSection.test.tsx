@@ -2,7 +2,7 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen } from '@testing-library/react';
 import { BoundaryTestSection } from '../BoundaryTestSection';
 import { useUserStore } from '@/features/auth';
-import { useMyPageStats } from '@/features/mypage/hooks/useMyPageStats';
+import { useMyPageStats } from '@/features/mypage';
 import { supabase } from '@/utils/supabaseClient';
 
 // Mock dependencies

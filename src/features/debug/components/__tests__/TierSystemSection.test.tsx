@@ -2,7 +2,7 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { TierSystemSection } from '../TierSystemSection';
 import { supabase } from '@/utils/supabaseClient';
-import { useMyPageStats, type UseMyPageStatsResult } from '@/features/mypage/hooks/useMyPageStats';
+import { useMyPageStats, type UseMyPageStatsResult } from '@/features/mypage';
 import { loadTierDefinitions, type TierInfo } from '@/features/quiz';
 import type { Session } from '@supabase/supabase-js';
 
@@ -20,13 +20,13 @@ vi.mock('@/features/quiz', async () => {
   };
 });
 
-vi.mock('@/stores/useProfileStore', () => ({
+vi.mock('@/features/auth', () => ({
   useProfileStore: vi.fn(() => ({
     profile: null,
   })),
 }));
 
-vi.mock('@/features/mypage/hooks/useMyPageStats', () => ({
+vi.mock('@/features/mypage', () => ({
   useMyPageStats: vi.fn(),
 }));
 

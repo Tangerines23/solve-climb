@@ -1,13 +1,13 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, fireEvent, act } from '@testing-library/react';
 import { QuickActionsSection } from '../QuickActionsSection';
-import { useUserStore } from '@/features/auth/stores/useUserStore';
+import { useUserStore } from '@/features/auth';
 import { useDebugStore } from '../../stores/useDebugStore';
-import { useMyPageStats } from '@/features/mypage/hooks/useMyPageStats';
+import { useMyPageStats } from '@/features/mypage';
 import '@testing-library/jest-dom';
 
 // Mock dependencies
-vi.mock('@/features/auth/stores/useUserStore', () => ({
+vi.mock('@/features/auth', () => ({
   useUserStore: vi.fn(),
 }));
 
@@ -15,7 +15,7 @@ vi.mock('../../stores/useDebugStore', () => ({
   useDebugStore: vi.fn(),
 }));
 
-vi.mock('@/features/mypage/hooks/useMyPageStats', () => ({
+vi.mock('@/features/mypage', () => ({
   useMyPageStats: vi.fn(),
 }));
 

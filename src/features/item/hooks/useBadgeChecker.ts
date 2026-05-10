@@ -2,7 +2,7 @@ import { useCallback } from 'react';
 import { supabase } from '@/utils/supabaseClient';
 import { safeSupabaseQuery } from '@/features/debug';
 import { BADGE_DEFINITIONS } from '@/constants/badges';
-import { useBadgeStore } from '@/features/item/stores/useBadgeStore';
+import { useBadgeStore } from '../stores/useBadgeStore';
 import { type HistoryStats } from '@/features/mypage';
 import { validatedRpc, CheckAndAwardBadgesResponseSchema } from '@/utils/rpcValidator';
 

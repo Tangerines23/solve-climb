@@ -141,11 +141,10 @@ function generateTriangleProperties(rng?: {
   const type = types[getRandomInt(0, types.length - 1, rng)];
   if (type.name === '정삼각형') {
     return { question: '정삼각형의 한 내각의 크기는? (도)', answer: 60 };
-  } else {
-    const a = getRandomInt(30, 60, rng);
-    const b = 90 - a;
-    return { question: `직각삼각형의 한 예각이 ${a}도일 때, 다른 예각은?`, answer: b };
   }
+  const a = getRandomInt(30, 60, rng);
+  const b = 90 - a;
+  return { question: `직각삼각형의 한 예각이 ${a}도일 때, 다른 예각은?`, answer: b };
 }
 
 function generateQuadrilateralProperties(rng?: {
@@ -203,9 +202,8 @@ function generateCircleAdvanced(rng?: {
   // Use pi = 3 for World 1/2 mental math
   if (type === '둘레') {
     return { question: `반지름이 ${r}인 원의 둘레는? (원주율=3)`, answer: 2 * 3 * r };
-  } else {
-    return { question: `반지름이 ${r}인 원의 넓이는? (원주율=3)`, answer: 3 * r * r };
   }
+  return { question: `반지름이 ${r}인 원의 넓이는? (원주율=3)`, answer: 3 * r * r };
 }
 
 function generateSolidBasic(rng?: {
@@ -254,12 +252,11 @@ function generatePythagorean(rng?: {
       question: `직각삼각형의 두 변이 ${triple.a}, ${triple.b}일 때 빗변의 길이는?`,
       answer: triple.c,
     };
-  } else {
-    return {
-      question: `직각삼각형의 빗변이 ${triple.c}, 한 변이 ${triple.a}일 때 다른 변의 길이는?`,
-      answer: triple.b,
-    };
   }
+  return {
+    question: `직각삼각형의 빗변이 ${triple.c}, 한 변이 ${triple.a}일 때 다른 변의 길이는?`,
+    answer: triple.b,
+  };
 }
 
 function generateSolidVolume(rng?: {
@@ -274,15 +271,14 @@ function generateSolidVolume(rng?: {
       question: `반지름이 ${r}, 높이가 ${h}인 원기둥의 부피는? (원주율=3)`,
       answer: 3 * r * r * h,
     };
-  } else {
-    const w = getRandomInt(2, 8, rng);
-    const d = getRandomInt(2, 8, rng);
-    const h = getRandomInt(3, 10, rng);
-    return {
-      question: `가로 ${w}, 세로 ${d}, 높이 ${h}인 직육면체의 부피는?`,
-      answer: w * d * h,
-    };
   }
+  const w = getRandomInt(2, 8, rng);
+  const d = getRandomInt(2, 8, rng);
+  const h = getRandomInt(3, 10, rng);
+  return {
+    question: `가로 ${w}, 세로 ${d}, 높이 ${h}인 직육면체의 부피는?`,
+    answer: w * d * h,
+  };
 }
 
 function generateSolidSurfaceArea(rng?: {

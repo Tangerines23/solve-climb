@@ -3,8 +3,7 @@ import { render, screen, fireEvent } from '@testing-library/react';
 import '@testing-library/jest-dom';
 import { BrowserRouter } from 'react-router-dom';
 import { FooterNav } from '../FooterNav';
-import { useProfileStore } from '@/features/auth/stores/useProfileStore';
-import { useAuthStore } from '@/features/auth/stores/useAuthStore';
+import { useProfileStore, useAuthStore } from '@/features/auth';
 
 // Mock useNavigate and useLocation
 const mockNavigate = vi.fn();

@@ -71,26 +71,24 @@ export const QuizAnswerArea = React.memo(() => {
                   const truncated = value.slice(0, 10);
                   setAnswerInput(truncated);
                   setDisplayValue(truncated);
-                } else {
-                  if (allowNegative) {
-                    let newValue = value.replace(/[^0-9-]/g, '');
-                    if (newValue.includes('-') && newValue.indexOf('-') !== 0) {
-                      newValue = newValue.replace(/-/g, '');
-                      newValue = '-' + newValue;
-                    }
-                    const minusCount = (newValue.match(/-/g) || []).length;
-                    if (minusCount > 1) {
-                      newValue = '-' + newValue.replace(/-/g, '');
-                    }
-                    const truncated = newValue.slice(0, 6);
-                    setAnswerInput(truncated);
-                    setDisplayValue(truncated);
-                  } else {
-                    const newValue = value.replace(/[^0-9]/g, '');
-                    const truncated = newValue.slice(0, 6);
-                    setAnswerInput(truncated);
-                    setDisplayValue(truncated);
+                } else if (allowNegative) {
+                  let newValue = value.replace(/[^0-9-]/g, '');
+                  if (newValue.includes('-') && newValue.indexOf('-') !== 0) {
+                    newValue = newValue.replace(/-/g, '');
+                    newValue = '-' + newValue;
                   }
+                  const minusCount = (newValue.match(/-/g) || []).length;
+                  if (minusCount > 1) {
+                    newValue = '-' + newValue.replace(/-/g, '');
+                  }
+                  const truncated = newValue.slice(0, 6);
+                  setAnswerInput(truncated);
+                  setDisplayValue(truncated);
+                } else {
+                  const newValue = value.replace(/[^0-9]/g, '');
+                  const truncated = newValue.slice(0, 6);
+                  setAnswerInput(truncated);
+                  setDisplayValue(truncated);
                 }
               }}
               onKeyDown={(e) => {

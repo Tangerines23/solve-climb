@@ -1,7 +1,5 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
-import { DailyRewardDebugSection } from '@/features/debug/components/DailyRewardDebugSection';
-import { StaticUISection } from '@/features/debug/components/StaticUISection';
-import { NotificationPlayground } from '@/features/debug/components/NotificationPlayground';
+import { DailyRewardDebugSection, StaticUISection, NotificationPlayground } from '@/features/debug';
 
 const meta = {
   title: 'Tools/DevTools',

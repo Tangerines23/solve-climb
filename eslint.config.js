@@ -23,6 +23,7 @@ export default tseslint.config(
       'react-hooks': reactHooks,
       'react-refresh': reactRefresh,
       security,
+      boundaries,
     },
     rules: {
       ...reactHooks.configs.recommended.rules,
@@ -33,13 +34,9 @@ export default tseslint.config(
       ],
       '@typescript-eslint/no-explicit-any': 'warn',
       '@typescript-eslint/no-require-imports': 'off',
-    },
-  },
-  {
-    files: ['src/**/*.{ts,tsx}'],
-    ignores: ['src/**/__tests__/**', 'src/**/*.test.{ts,tsx}', 'src/**/*.spec.{ts,tsx}'],
-    plugins: {
-      boundaries,
+      'no-else-return': 'warn',
+      'no-lonely-if': 'warn',
+      'max-depth': ['warn', 1],
     },
     settings: {
       'import/resolver': {
@@ -84,17 +81,15 @@ export default tseslint.config(
           mode: 'folder',
         },
         {
-          type: 'feature/quiz',
-          pattern: 'src/features/quiz/**',
+          type: 'feature/public',
+          pattern: ['src/features/*/index.ts', 'src/features/*'],
+          capture: ['domain'],
         },
         {
-          type: 'feature/quiz/internal',
-          pattern: 'src/features/quiz/!(index.ts)**',
+          type: 'feature/internal',
+          pattern: 'src/features/*/**',
+          capture: ['domain'],
           private: true,
-        },
-        {
-          type: 'feature/quiz/public',
-          pattern: 'src/features/quiz/index.ts',
         },
         {
           type: 'hook',
@@ -125,6 +120,13 @@ export default tseslint.config(
           pattern: 'src/contexts/**',
         },
       ],
+    },
+  },
+  {
+    files: ['src/**/*.{ts,tsx}'],
+    ignores: ['src/**/__tests__/**', 'src/**/*.test.{ts,tsx}', 'src/**/*.spec.{ts,tsx}'],
+    plugins: {
+      boundaries,
     },
     rules: {
       'boundaries/dependencies': [
@@ -182,19 +184,27 @@ export default tseslint.config(
             {
               from: { type: 'component/roadmap' },
               disallow: [{ to: { type: 'component/my' } }],
+              message: 'Roadmap components should not depend on MyPage components directly.',
+            },
+            {
+              from: { type: '*' },
+              disallow: [{ to: { type: 'feature/internal' } }],
               message:
-                'Roadmap components should not depend on MyPage components directly.',
+                'Feature internals must not be accessed from outside. Use the barrel file (@/features/[domain]) instead.',
             },
             {
-              from: '*',
-              disallow: [{ to: { type: 'feature/quiz/internal' } }],
-              message: 'Quiz feature internals must not be accessed from outside. Use the barrel file (@/features/quiz) instead.',
-            },
-            {
-              from: { type: 'feature/quiz/internal' },
-              allow: [{ to: { type: 'feature/quiz/internal' } }, { to: { type: 'type' } }, { to: { type: 'config' } }, { to: { type: 'util' } }, { to: { type: 'context' } }],
+              from: { type: 'feature/internal' },
+              allow: [
+                { to: { type: 'feature/internal', captured: { domain: '{{from.domain}}' } } },
+                { to: { type: 'feature/public' } },
+                { to: { type: 'type' } },
+                { to: { type: 'config' } },
+                { to: { type: 'util' } },
+                { to: { type: 'context' } },
+              ],
               disallow: [{ to: { type: 'store' } }, { to: { type: 'hook' } }],
-              message: 'Quiz feature internals should use internal relative paths and avoid legacy global stores/hooks where possible.',
+              message:
+                'Feature internals should stay within their domain or use public APIs. Avoid legacy global stores/hooks directly.',
             },
           ],
         },

@@ -2,7 +2,7 @@ import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { render, screen, fireEvent, act, cleanup } from '@testing-library/react';
 import { HomePage } from '../HomePage';
 import { MemoryRouter } from 'react-router-dom';
-import { useDailyRewardStore } from '@/features/item/stores/useDailyRewardStore';
+import { useDailyRewardStore } from '@/features/item';
 import { APP_CONFIG } from '@/config/app';
 
 // Local Mock for Toast using relative path correctly

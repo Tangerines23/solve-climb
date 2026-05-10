@@ -64,10 +64,8 @@ export function NotificationPlayground() {
     if (level === 1) {
       if (feverLevel >= 1) resetCombo();
       else setCombo(5);
-    } else {
-      if (feverLevel === 2) resetCombo();
-      else setCombo(20);
-    }
+    } else if (feverLevel === 2) resetCombo();
+    else setCombo(20);
   };
 
   const closeModals = () => {

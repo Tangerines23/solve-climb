@@ -1,7 +1,5 @@
 import React from 'react';
-import { useTierDebugBridge } from '@/features/quiz/hooks/bridge/useTierDebugBridge';
-import { type TierLevel } from '@/features/quiz/constants/tiers';
-import { TierUpgradeModal } from '@/features/quiz/components/TierUpgradeModal';
+import { useTierDebugBridge, type TierLevel, TierUpgradeModal } from '@/features/quiz';
 import './TierSystemSection.css';
 
 export const TierSystemSection = React.memo(function TierSystemSection() {

@@ -19,6 +19,9 @@ UI 컴포넌트(View)는 어떻게 데이터를 가져오거나 저장하는지 
 2. **명명 규칙**: 브릿지 훅의 이름은 반드시 `use[FeatureName]Bridge` 형태여야 합니다.
 3. **인터페이스 최소화**: 브릿지 훅은 UI가 화면을 그리는 데 필요한 `state`와 수행할 `actions`만 객체 형태로 반환합니다.
 
+> [!IMPORTANT]
+> **자동 검증**: 위 규칙은 `eslint-plugin-boundaries`를 통해 강제됩니다. UI 컴포넌트나 페이지에서 Store/Util을 직접 참조할 경우 린트 에러가 발생하며 커밋이 차단됩니다.
+
 ## 코드 예시
 
 ### ✅ 올바른 패턴 (Hook Bridge)

@@ -22,11 +22,10 @@ export function generateHardAlgebraProblem(
     if (problemType === 1) return generateQuadratic(rng);
     if (problemType === 2) return generateExponential(rng);
     return generateLogarithm(rng);
-  } else {
-    if (problemType === 1) return generateQuadratic(rng);
-    if (problemType === 2) return generateExponential(rng);
-    return generateLogarithm(rng);
   }
+  if (problemType === 1) return generateQuadratic(rng);
+  if (problemType === 2) return generateExponential(rng);
+  return generateLogarithm(rng);
 }
 
 function generateQuadratic(rng?: { randomInt: (min: number, max: number) => number }): MathProblem {

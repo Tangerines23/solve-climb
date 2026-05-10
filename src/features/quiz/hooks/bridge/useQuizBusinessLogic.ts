@@ -36,10 +36,9 @@ export const useQuizBusinessLogic = ({
       setToastValue(UI_MESSAGES.AD_WATCH_COMPLETE);
       await new Promise((resolve) => setTimeout(resolve, 1000));
       return true;
-    } else {
-      setToastValue(UI_MESSAGES.AD_WATCH_FAILED(adResult.error));
-      return false;
     }
+    setToastValue(UI_MESSAGES.AD_WATCH_FAILED(adResult.error));
+    return false;
   }, [setShowSlideToast, setToastValue]);
 
   // [스마트 게임 오버 처리]

@@ -3,10 +3,10 @@ import { render, screen, waitFor } from '@testing-library/react';
 import { ItemSystemSection } from '../ItemSystemSection';
 import { supabase } from '@/utils/supabaseClient';
 import type { SupabaseClient } from '@supabase/supabase-js';
-import { useUserStore } from '@/features/auth/stores/useUserStore';
+import { useUserStore } from '@/features/auth';
 
 // Mock dependencies
-vi.mock('@/features/auth/stores/useUserStore', () => ({
+vi.mock('@/features/auth', () => ({
   useUserStore: vi.fn(),
 }));
 

@@ -601,38 +601,36 @@ function generateStandardProblem(
       expression: `${a} ÷ ${b}`,
       answer: answer,
     };
-  } else {
-    const r0 = stage.ranges.at(0);
-    const r1 = stage.ranges.at(1);
-    if (!r0) throw new Error('Stage has no ranges');
-    a = getRandomInt(r0.min, r0.max, rng);
-    b = getRandomInt(r1?.min ?? r0.min, r1?.max ?? r0.max, rng);
-
-    const result = calculate(a, b, op);
-
-    // Check constraints
-    if (stage.constraints?.resultMax !== undefined && result > stage.constraints.resultMax)
-      throw new Error('Result too high');
-    if (stage.constraints?.resultMin !== undefined && result < stage.constraints.resultMin)
-      throw new Error('Result too low');
-    if (!stage.constraints?.allowNegative && result < 0) throw new Error('Negative result');
-
-    const displayOp = op === '*' ? '×' : op;
-    const expression = `${a} ${displayOp} ${b}`;
-
-    if (stage.type === 'fill-blank') {
-      const hideFirst = rng ? rng.random() > 0.5 : Math.random() > 0.5;
-      if (hideFirst) {
-        // □ op b = result
-        return { expression: `□ ${displayOp} ${b} = ${result}`, answer: a };
-      } else {
-        // a op □ = result
-        return { expression: `${a} ${displayOp} □ = ${result}`, answer: b };
-      }
-    }
-
-    return { expression, answer: result };
   }
+  const r0 = stage.ranges.at(0);
+  const r1 = stage.ranges.at(1);
+  if (!r0) throw new Error('Stage has no ranges');
+  a = getRandomInt(r0.min, r0.max, rng);
+  b = getRandomInt(r1?.min ?? r0.min, r1?.max ?? r0.max, rng);
+
+  const result = calculate(a, b, op);
+
+  // Check constraints
+  if (stage.constraints?.resultMax !== undefined && result > stage.constraints.resultMax)
+    throw new Error('Result too high');
+  if (stage.constraints?.resultMin !== undefined && result < stage.constraints.resultMin)
+    throw new Error('Result too low');
+  if (!stage.constraints?.allowNegative && result < 0) throw new Error('Negative result');
+
+  const displayOp = op === '*' ? '×' : op;
+  const expression = `${a} ${displayOp} ${b}`;
+
+  if (stage.type === 'fill-blank') {
+    const hideFirst = rng ? rng.random() > 0.5 : Math.random() > 0.5;
+    if (hideFirst) {
+      // □ op b = result
+      return { expression: `□ ${displayOp} ${b} = ${result}`, answer: a };
+    }
+    // a op □ = result
+    return { expression: `${a} ${displayOp} □ = ${result}`, answer: b };
+  }
+
+  return { expression, answer: result };
 }
 
 function generateSequentialProblem(

@@ -17,9 +17,8 @@ export function IntegralVisualizer({ hintData }: IntegralVisualizerProps) {
     if (hintData.type === 'power') {
       const h = hintData;
       return (h.coeff || 1) * Math.pow(x, h.power || 1);
-    } else {
-      return hintData.value || 1;
     }
+    return hintData.value || 1;
   };
 
   // SVG scaling constants

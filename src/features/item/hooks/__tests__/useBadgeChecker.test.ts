@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { renderHook } from '@testing-library/react';
-import { useBadgeChecker } from '@/features/item/hooks/useBadgeChecker';
+import { useBadgeChecker } from '../useBadgeChecker';
 import { supabase } from '@/utils/supabaseClient';
 import { type HistoryStats } from '@/features/mypage';
 import { createChainableMock } from '@/utils/__tests__/supabaseMockUtils';

@@ -1,4 +1,4 @@
-﻿import { useCallback } from 'react';
+import { useCallback } from 'react';
 import { supabase } from '@/utils/supabaseClient';
 import { useUserStore } from '@/features/auth';
 import { useQuizStore, useGameStore, calculateScoreForTier, type TimeLimit } from '@/features/quiz';

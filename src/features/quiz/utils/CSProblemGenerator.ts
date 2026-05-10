@@ -159,12 +159,11 @@ function generateAlgoVariety(rng?: { randomInt: (min: number, max: number) => nu
       question: '데이터를 마지막에 넣고 처음에서 빼는 구조(FIFO)는? (1: 스택, 2: 큐)',
       answer: 2,
     };
-  } else {
-    return {
-      question: '정렬된 데이터에서 절반씩 나누어 찾는 탐색법은? (1: 선형탐색, 2: 이진탐색)',
-      answer: 2,
-    };
   }
+  return {
+    question: '정렬된 데이터에서 절반씩 나누어 찾는 탐색법은? (1: 선형탐색, 2: 이진탐색)',
+    answer: 2,
+  };
 }
 
 function generateMemoryUnitMaster(rng?: {
@@ -177,11 +176,10 @@ function generateMemoryUnitMaster(rng?: {
       question: `${kb * 1024} 바이트(Byte)는 몇 KB입니까?`,
       answer: kb,
     };
-  } else {
-    const mb = Math.pow(2, getRandomInt(1, 2, rng));
-    return {
-      question: `${mb * 1024} KB는 몇 MB입니까?`,
-      answer: mb,
-    };
   }
+  const mb = Math.pow(2, getRandomInt(1, 2, rng));
+  return {
+    question: `${mb * 1024} KB는 몇 MB입니까?`,
+    answer: mb,
+  };
 }

@@ -16,3 +16,6 @@ export { debug } from './utils/debug';
 export { debugFetch, safeSupabaseQuery, registerDebugConfig } from './utils/debugFetch';
 export { DEBUG_PRESETS } from './utils/debugPresets';
 export * from './utils/performance';
+export { DailyRewardDebugSection } from './components/DailyRewardDebugSection';
+export { StaticUISection } from './components/StaticUISection';
+export { NotificationPlayground } from './components/NotificationPlayground';

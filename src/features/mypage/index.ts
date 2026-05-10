@@ -5,7 +5,11 @@ export { MyPage } from './pages/MyPage';
 
 // Hooks
 export { useMyPageBridge } from './hooks/useMyPageBridge';
-export { useMyPageStats, type MyPageStats as MyPageStatsData } from './hooks/useMyPageStats';
+export {
+  useMyPageStats,
+  type MyPageStats as MyPageStatsData,
+  type UseMyPageStatsResult,
+} from './hooks/useMyPageStats';
 export { useHistoryData, type HistoryStats } from './hooks/useHistoryData';
 export { useSettingsActions } from './hooks/useSettingsActions';
 

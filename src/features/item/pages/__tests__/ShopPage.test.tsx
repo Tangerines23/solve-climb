@@ -2,7 +2,7 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/react';
 import { ShopPage } from '@/features/item/pages/ShopPage';
 import { BrowserRouter } from 'react-router-dom';
-import { useShop } from '@/features/item/hooks/useShop';
+import { useShop } from '../../hooks/useShop';
 import { UI_MESSAGES } from '@/constants/ui';
 
 // Mock dependencies

@@ -3,7 +3,7 @@ import { renderHook } from '@testing-library/react';
 import { useCustomBackNavigation } from '../useCustomBackNavigation';
 import { APP_CONFIG } from '@/config/app';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { useProfileStore } from '@/features/auth/stores/useProfileStore';
+import { useProfileStore } from '@/features/auth';
 
 // Mock dependencies
 vi.mock('react-router-dom', () => ({

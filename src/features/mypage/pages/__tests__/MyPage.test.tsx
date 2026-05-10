@@ -6,7 +6,7 @@ import { useMyPageBridge } from '../../hooks/useMyPageBridge';
 /**
  * [Vitest Hoisting Rules]
  * - Variables used inside vi.mock MUST start with 'mock' (e.g., mockStoreState).
- * - Component paths must be relative to the test file: src/pages/__tests__/MyPage.test.tsx
+ * - Component paths must be relative to the test file: src/features/mypage/pages/__tests__/MyPage.test.tsx
  */
 
 const mockRefetch = vi.fn(() => Promise.resolve());

@@ -1,20 +1,18 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, waitFor } from '@testing-library/react';
-import { GameFlowSection } from '@/features/debug/components/GameFlowSection';
+import { GameFlowSection } from '../GameFlowSection';
 import { supabase } from '@/utils/supabaseClient';
 import type { SupabaseClient, Session } from '@supabase/supabase-js';
-import { useQuizStore } from '../stores/useQuizStore';
+import { useQuizStore } from '@/features/quiz';
 
 // Mock dependencies
-vi.mock('../stores/useQuizStore', () => ({
+vi.mock('@/features/quiz', () => ({
   useQuizStore: vi.fn(),
-}));
-
-vi.mock('../stores/useGameStore', () => ({
   useGameStore: vi.fn(() => ({
     score: 0,
     combo: 0,
   })),
+  generateQuestion: vi.fn(),
 }));
 
 vi.mock('@/utils/supabaseClient', () => ({
@@ -25,10 +23,6 @@ vi.mock('@/utils/supabaseClient', () => ({
     from: vi.fn(),
     rpc: vi.fn(),
   },
-}));
-
-vi.mock('../utils/quizGenerator', () => ({
-  generateQuestion: vi.fn(),
 }));
 
 describe('GameFlowSection', () => {

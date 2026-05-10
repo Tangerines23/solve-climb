@@ -2,9 +2,8 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/react';
 import { Header } from '../Header';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { useProfileStore } from '@/features/auth/stores/useProfileStore';
-import { useUserStore } from '@/features/auth/stores/useUserStore';
-import { useDebugStore } from '@/features/debug/stores/useDebugStore';
+import { useProfileStore, useUserStore } from '@/features/auth';
+import { useDebugStore } from '@/features/debug';
 import { APP_CONFIG } from '../../config/app';
 
 // Mock dependencies

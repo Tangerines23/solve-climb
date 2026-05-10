@@ -121,9 +121,8 @@ function generateProbDice(rng?: {
   const type = randomVal > 0.5 ? 'sum' : 'count';
   if (type === 'sum') {
     return { question: '주사위 2개를 던질 때, 합이 7이 되는 경우의 수는?', answer: 6 };
-  } else {
-    return { question: '주사위 1개를 던질 때, 3의 배수가 나올 경우의 수는?', answer: 2 };
   }
+  return { question: '주사위 1개를 던질 때, 3의 배수가 나올 경우의 수는?', answer: 2 };
 }
 
 function generateProbMarbles(rng?: {
@@ -172,13 +171,11 @@ function generateProbAdvanced(rng?: {
       question: `공이 ${total}개 들어있는 주머니에서 빨간 공이 ${target}개일 때, 공 1개를 뽑아 빨간 공이 아닐 확률(%)은?`,
       answer: Math.round(((total - target) / total) * 100),
     };
-  } else {
-    return {
-      question:
-        '주사위 1개를 던질 때, 2의 배수이면서 3의 배수인 눈이 나올 확률(%)은? (소수점 버림)',
-      answer: Math.floor((1 / 6) * 100),
-    };
   }
+  return {
+    question: '주사위 1개를 던질 때, 2의 배수이면서 3의 배수인 눈이 나올 확률(%)은? (소수점 버림)',
+    answer: Math.floor((1 / 6) * 100),
+  };
 }
 
 function generateStatsMaster(rng?: {

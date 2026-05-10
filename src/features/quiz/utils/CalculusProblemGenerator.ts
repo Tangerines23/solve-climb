@@ -109,17 +109,16 @@ function generateCoordinateProblem(
       answer: `${x},${y}`,
       inputType: 'coordinate',
     };
-  } else {
-    // 전 사분면 (All quadrants)
-    const x = getRandomInt(-5, 5, rng);
-    const y = getRandomInt(-5, 5, rng);
-    // 0은 너무 쉬울 수 있으니 제외 시도 (옵션)
-    return {
-      question: `좌표 (${x}, ${y})를 조준하세요!`,
-      answer: `${x},${y}`,
-      inputType: 'coordinate',
-    };
   }
+  // 전 사분면 (All quadrants)
+  const x = getRandomInt(-5, 5, rng);
+  const y = getRandomInt(-5, 5, rng);
+  // 0은 너무 쉬울 수 있으니 제외 시도 (옵션)
+  return {
+    question: `좌표 (${x}, ${y})를 조준하세요!`,
+    answer: `${x},${y}`,
+    inputType: 'coordinate',
+  };
 }
 
 function generateFunctionProblem(rng?: {
@@ -135,14 +134,13 @@ function generateFunctionProblem(rng?: {
       hintType: 'function-machine',
       hintData: { type: 'plus', value: a, input: x },
     };
-  } else {
-    return {
-      question: `f(x) = x², f(${x}) = ?`,
-      answer: x * x,
-      hintType: 'function-machine',
-      hintData: { type: 'square', value: 2, input: x },
-    };
   }
+  return {
+    question: `f(x) = x², f(${x}) = ?`,
+    answer: x * x,
+    hintType: 'function-machine',
+    hintData: { type: 'square', value: 2, input: x },
+  };
 }
 
 function generateDerivativeProblem(
@@ -206,15 +204,14 @@ function generateIntegralProblem(
       hintType: 'integral-tank',
       hintData: { type: 'power', coeff: coeff, power: power, x: x },
     };
-  } else {
-    const a = getRandomInt(2, 10, rng);
-    return {
-      question: `∫ ${a} dx , x=1 일 때 값은? (C=0)`,
-      answer: a,
-      hintType: 'integral-tank',
-      hintData: { type: 'simple', value: a, x: 1 },
-    };
   }
+  const a = getRandomInt(2, 10, rng);
+  return {
+    question: `∫ ${a} dx , x=1 일 때 값은? (C=0)`,
+    answer: a,
+    hintType: 'integral-tank',
+    hintData: { type: 'simple', value: a, x: 1 },
+  };
 }
 
 function generateDefiniteIntegral(rng?: {
@@ -245,15 +242,14 @@ function generateAdvancedDerivative(rng?: {
       hintType: 'calculus',
       hintData: { type: 'derivative', func: 'product_rule' },
     };
-  } else {
-    const a = getRandomInt(1, 5, rng);
-    return {
-      question: `f(x) = (x + ${a})² 일 때, f'(1) 의 값은?`,
-      answer: 2 * (1 + a),
-      hintType: 'calculus',
-      hintData: { type: 'derivative', func: 'chain_rule' },
-    };
   }
+  const a = getRandomInt(1, 5, rng);
+  return {
+    question: `f(x) = (x + ${a})² 일 때, f'(1) 의 값은?`,
+    answer: 2 * (1 + a),
+    hintType: 'calculus',
+    hintData: { type: 'derivative', func: 'chain_rule' },
+  };
 }
 
 function generateFactorizationLimit(rng?: {

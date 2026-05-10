@@ -4,7 +4,7 @@ import { Header } from '@/components/Header';
 import { FooterNav } from '@/components/FooterNav';
 import { SegmentedControl } from '@/components/SegmentedControl';
 import { GlassCard } from '@/components/common/GlassCard';
-import { useShop } from '@/features/item/hooks/useShop';
+import { useShop } from '../hooks/useShop';
 import { UI_MESSAGES, UI_EMOJIS } from '@/constants/ui';
 import { getItemEmoji } from '@/constants/items';
 import './ShopPage.css';
