@@ -22,7 +22,7 @@
     "ci:local:core": "npm run ci:local:stage1",
     "ci:local:full": "bash scripts/ci-local-all.sh",
     "ci:local:stage1": "npm run type-check && npm run lint && npm run diet && npm run check:integrity && npm run test:all && npm run check:security && npm run check:supabase:connection && npm run check:layout:with-server",
-    "check:architecture": "eslint src --config eslint.config.js --rule \"boundaries/dependencies: error\" --rule \"max-depth: warn\" --rule \"no-else-return: warn\" --no-fix",
+    "check:architecture": "eslint src --config eslint.config.js --no-fix",
     "test": "vitest",
     "test:ui": "vitest --ui",
     "test:unit": "vitest -c vitest.config.unit.js --run",

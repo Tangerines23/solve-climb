@@ -406,7 +406,7 @@
 /* 결과 아이콘 (floating 애니메이션) */
 .result-icon {
   font-size: 64px;
-  margin: 0 0 var(--spacing-md) 0;
+  margin: 0 0 var(--spacing-2xl) 0;
   line-height: normal;
 }
 
@@ -446,7 +446,7 @@
   border-radius: var(--rounded-md);
   font-size: 0.75rem;
   font-weight: 600;
-  margin-bottom: var(--spacing-md);
+  margin-bottom: var(--spacing-2xl);
   border: 1px solid color-mix(in srgb, var(--color-toss-red), transparent 70%);
   display: inline-block;
   animation: fadeInUp 0.5s ease-out;
