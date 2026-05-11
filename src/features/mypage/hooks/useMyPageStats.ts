@@ -8,12 +8,14 @@ import { isValidUUID } from '@/utils/validation';
 
 import type { Session, PostgrestError } from '@supabase/supabase-js';
 
+import { Tier } from '@/features/auth/domain/Tier';
+
 export interface MyPageStats {
   totalSolved: number;
   maxLevel: number;
   bestSubject: string | null;
   totalMasteryScore: number;
-  currentTierLevel: number | null;
+  tier: Tier;
   cyclePromotionPending: boolean;
   pendingCycleScore: number;
   loginStreak: number;
@@ -166,7 +168,7 @@ export function useMyPageStats(): UseMyPageStatsResult {
           maxLevel: 0,
           bestSubject: null,
           totalMasteryScore: 0,
-          currentTierLevel: null,
+          tier: Tier.UNRANKED,
           cyclePromotionPending: false,
           pendingCycleScore: 0,
           loginStreak: 0,
@@ -220,7 +222,7 @@ export function useMyPageStats(): UseMyPageStatsResult {
             maxLevel: result.max_level || 0,
             bestSubject: result.best_subject || null,
             totalMasteryScore: profileData?.total_mastery_score || 0,
-            currentTierLevel: profileData?.current_tier_level ?? null,
+            tier: Tier.create(profileData?.current_tier_level),
             cyclePromotionPending: profileData?.cycle_promotion_pending || false,
             pendingCycleScore: profileData?.pending_cycle_score || 0,
             loginStreak: profileData?.login_streak || 0,
@@ -279,7 +281,7 @@ export function useMyPageStats(): UseMyPageStatsResult {
           maxLevel: 0,
           bestSubject: null,
           totalMasteryScore: profileData?.total_mastery_score || 0,
-          currentTierLevel: profileData?.current_tier_level ?? null,
+          tier: Tier.create(profileData?.current_tier_level),
           cyclePromotionPending: profileData?.cycle_promotion_pending || false,
           pendingCycleScore: profileData?.pending_cycle_score || 0,
           loginStreak: profileData?.login_streak || 0,
@@ -318,7 +320,7 @@ export function useMyPageStats(): UseMyPageStatsResult {
           totalMasteryScoreFromRecords,
           profileData?.total_mastery_score || 0
         ),
-        currentTierLevel: profileData?.current_tier_level ?? null,
+        tier: Tier.create(profileData?.current_tier_level),
         cyclePromotionPending: profileData?.cycle_promotion_pending || false,
         pendingCycleScore: profileData?.pending_cycle_score || 0,
         loginStreak: profileData?.login_streak || 0,
@@ -338,7 +340,7 @@ export function useMyPageStats(): UseMyPageStatsResult {
         maxLevel: 0,
         bestSubject: null,
         totalMasteryScore: 0,
-        currentTierLevel: null,
+        tier: Tier.UNRANKED,
         cyclePromotionPending: false,
         pendingCycleScore: 0,
         loginStreak: 0,

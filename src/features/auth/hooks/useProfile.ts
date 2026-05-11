@@ -1,5 +1,6 @@
 import { useState, useCallback } from 'react';
 import { UserProfile, useProfileStore } from '../stores/useProfileStore';
+import { Email } from '../domain/Email';
 import { sanitizeNickname, validateNickname } from '@/utils/validation';
 import { supabase } from '@/utils/supabaseClient';
 
@@ -22,6 +23,7 @@ export function useProfile() {
         const profileData: UserProfile = {
           profileId: profile?.profileId || '',
           nickname: sanitizedNickname,
+          email: profile?.email || Email.ANONYMOUS,
           createdAt: profile?.createdAt || new Date().toISOString(),
           isAdmin: profile?.isAdmin || false,
         };

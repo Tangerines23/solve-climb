@@ -38,5 +38,9 @@ export {
 export { performUserWithdraw } from './utils/userWithdraw';
 export { performDataReset } from './utils/dataReset';
 
+// Domain (Value Objects)
+export { Tier } from './domain/Tier';
+export { Email } from './domain/Email';
+
 // Types
 export * from './types/user';

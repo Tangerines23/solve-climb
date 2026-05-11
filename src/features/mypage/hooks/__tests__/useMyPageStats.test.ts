@@ -5,6 +5,7 @@ import { supabase } from '@/utils/supabaseClient';
 import { storageService } from '@/services';
 import type { PostgrestError, Session } from '@supabase/supabase-js';
 import { isLocalSession } from '@/utils/safeJsonParse';
+import { Tier } from '@/features/auth';
 
 // Helper for Supabase chain mocking
 const createMockChain = (data: unknown, error: unknown = null) => {
@@ -93,7 +94,7 @@ describe('useMyPageStats', () => {
       maxLevel: 0,
       bestSubject: null,
       totalMasteryScore: 0,
-      currentTierLevel: null,
+      tier: Tier.UNRANKED,
       cyclePromotionPending: false,
       pendingCycleScore: 0,
       loginStreak: 0,
@@ -153,7 +154,7 @@ describe('useMyPageStats', () => {
       maxLevel: 10,
       bestSubject: 'Math',
       totalMasteryScore: 1500,
-      currentTierLevel: 3,
+      tier: Tier.create(3),
       cyclePromotionPending: true,
       pendingCycleScore: 50,
       loginStreak: 5,
@@ -206,7 +207,7 @@ describe('useMyPageStats', () => {
       maxLevel: 6,
       bestSubject: 'Math',
       totalMasteryScore: 2000, // Profile score (2000) > Records sum (1500)
-      currentTierLevel: 4,
+      tier: Tier.create(4),
       cyclePromotionPending: false,
       pendingCycleScore: 0,
       loginStreak: 10,

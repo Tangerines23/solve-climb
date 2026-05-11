@@ -38,8 +38,8 @@ export function useTierDebugBridge() {
     if (stats) {
       const masteryScore = stats.totalMasteryScore ?? 0;
       setMasteryInput(masteryScore.toString());
-      if (stats.currentTierLevel !== null) {
-        setSelectedTierLevel(stats.currentTierLevel as TierLevel);
+      if (stats.tier) {
+        setSelectedTierLevel(stats.tier.value as TierLevel);
       }
       // 계산 결과 업데이트
       calculateTier(masteryScore).then((result) => {

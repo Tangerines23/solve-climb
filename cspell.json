@@ -72,7 +72,9 @@
     "fetchpriority",
     "ilike",
     "refetched",
-    "refetching"
+    "refetching",
+    "UNRANKED",
+    "unranked"
   ],
   "ignorePaths": [
     "node_modules",

@@ -4,12 +4,14 @@ import { useLevelProgressStore } from '@/features/quiz';
 import { storageService, STORAGE_KEYS } from '@/services';
 import type { UserProgress } from '@/features/quiz';
 
+import { Email } from '../domain/Email';
+
 export interface UserProfile {
   profileId: string; // 고유 프로필 ID
   nickname: string;
   avatar?: string;
   userId?: string;
-  email?: string; // 구글 로그인 이메일
+  email: Email; // 구글 로그인 이메일
   createdAt: string;
   isAdmin?: boolean; // 관리자 모드 플래그
 }
@@ -44,7 +46,11 @@ const getDeviceId = (): string => {
 // 프로필 목록 로드 (계정/기기당 최대 3개)
 const loadProfiles = (): UserProfile[] => {
   const deviceId = getDeviceId();
-  return storageService.get<UserProfile[]>(STORAGE_KEYS.PROFILES(deviceId)) || [];
+  const profiles = storageService.get<any[]>(STORAGE_KEYS.PROFILES(deviceId)) || [];
+  return profiles.map((p) => ({
+    ...p,
+    email: Email.create(p.email),
+  }));
 };
 
 // 프로필 목록 저장

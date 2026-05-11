@@ -17,6 +17,8 @@ import { useMyPageBridge } from '../hooks/useMyPageBridge';
 // calculateTier imported from @/features/quiz above
 import { storageService, STORAGE_KEYS } from '@/services';
 import { APP_CONFIG } from '@/config/app';
+import { Tier } from '@/features/auth/domain/Tier';
+import { Email } from '@/features/auth/domain/Email';
 import './MyPage.css';
 
 // theme_id를 읽기 쉬운 이름으로 변환하는 함수
@@ -286,6 +288,7 @@ export function MyPage() {
       const userProfile = {
         profileId: `user_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
         nickname: '',
+        email: Email.ANONYMOUS,
         createdAt: new Date().toISOString(),
         isAdmin: false,
       };
@@ -352,7 +355,7 @@ export function MyPage() {
       profileId: userId,
       nickname,
       userId,
-      email: session.user.email ?? undefined,
+      email: Email.create(session.user.email),
       avatar: session.user.user_metadata?.avatar_url,
       createdAt: session.user.created_at || new Date().toISOString(),
       isAdmin: false,
@@ -467,8 +470,10 @@ export function MyPage() {
         {/* Header: Profile & Summary */}
         <MyPageProfile
           nickname={nickname}
+          email={profile?.email || Email.ANONYMOUS}
           totalMasteryScore={stats?.totalMasteryScore || 0}
           loginStreak={stats?.loginStreak || 0}
+          tier={stats?.tier || Tier.UNRANKED}
           loading={statsLoading}
           onEditProfile={() => setShowProfileForm(true)}
         />

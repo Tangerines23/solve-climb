@@ -139,11 +139,13 @@ export function useDataResetDebugBridge(): DataResetDebugBridge {
             );
           }
 
-          if (data.stats.currentTierLevel !== undefined && data.stats.currentTierLevel !== null) {
+          const stats = data.stats as any;
+          const tierLevel = stats.tier !== undefined ? stats.tier : stats.currentTierLevel;
+          if (tierLevel !== undefined && tierLevel !== null) {
             updatePromises.push(
               supabase.rpc('debug_set_tier', {
                 p_user_id: user.id,
-                p_level: data.stats.currentTierLevel,
+                p_level: tierLevel,
               }) as unknown as Promise<unknown>
             );
           }
@@ -230,14 +232,13 @@ export function useDataResetDebugBridge(): DataResetDebugBridge {
         );
       }
 
-      if (
-        snapshot.stats.currentTierLevel !== undefined &&
-        snapshot.stats.currentTierLevel !== null
-      ) {
+      const stats = snapshot.stats as any;
+      const tierLevel = stats.tier !== undefined ? stats.tier : stats.currentTierLevel;
+      if (tierLevel !== undefined && tierLevel !== null) {
         updatePromises.push(
           supabase.rpc('debug_set_tier', {
             p_user_id: user.id,
-            p_level: snapshot.stats.currentTierLevel,
+            p_level: tierLevel,
           }) as unknown as Promise<unknown>
         );
       }

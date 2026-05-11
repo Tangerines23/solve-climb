@@ -1,5 +1,6 @@
 import { describe, it, expect, beforeEach } from 'vitest';
 import { useProfileStore } from '../stores/useProfileStore';
+import { Email } from '../domain/Email';
 
 describe('useProfileStore', () => {
   beforeEach(() => {
@@ -18,6 +19,7 @@ describe('useProfileStore', () => {
       profileId: 'test-profile',
       nickname: 'Test User',
       createdAt: new Date().toISOString(),
+      email: Email.ANONYMOUS,
     };
 
     setProfile(newProfile);
@@ -33,6 +35,7 @@ describe('useProfileStore', () => {
       profileId: 'test-profile',
       nickname: 'Test User',
       createdAt: new Date().toISOString(),
+      email: Email.ANONYMOUS,
     });
 
     clearProfile();
@@ -56,6 +59,7 @@ describe('useProfileStore', () => {
       profileId: '',
       nickname: 'Test User',
       createdAt: new Date().toISOString(),
+      email: Email.ANONYMOUS,
     };
 
     setProfile(newProfile);
@@ -72,6 +76,7 @@ describe('useProfileStore', () => {
       profileId,
       nickname: 'Initial User',
       createdAt: new Date().toISOString(),
+      email: Email.ANONYMOUS,
     };
 
     setProfile(initialProfile);
@@ -80,6 +85,7 @@ describe('useProfileStore', () => {
       profileId,
       nickname: 'Updated User',
       createdAt: new Date().toISOString(),
+      email: Email.ANONYMOUS,
     };
 
     setProfile(updatedProfile);
@@ -95,11 +101,13 @@ describe('useProfileStore', () => {
       profileId: 'profile-1',
       nickname: 'User 1',
       createdAt: new Date().toISOString(),
+      email: Email.ANONYMOUS,
     };
     const profile2 = {
       profileId: 'profile-2',
       nickname: 'User 2',
       createdAt: new Date().toISOString(),
+      email: Email.ANONYMOUS,
     };
 
     setProfile(profile1);
@@ -115,21 +123,25 @@ describe('useProfileStore', () => {
       profileId: 'profile-1',
       nickname: 'User 1',
       createdAt: new Date().toISOString(),
+      email: Email.ANONYMOUS,
     };
     const profile2 = {
       profileId: 'profile-2',
       nickname: 'User 2',
       createdAt: new Date().toISOString(),
+      email: Email.ANONYMOUS,
     };
     const profile3 = {
       profileId: 'profile-3',
       nickname: 'User 3',
       createdAt: new Date().toISOString(),
+      email: Email.ANONYMOUS,
     };
     const profile4 = {
       profileId: 'profile-4',
       nickname: 'User 4',
       createdAt: new Date().toISOString(),
+      email: Email.ANONYMOUS,
     };
 
     setProfile(profile1);
@@ -149,6 +161,7 @@ describe('useProfileStore', () => {
       profileId: 'admin-profile',
       nickname: 'Admin User',
       createdAt: new Date().toISOString(),
+      email: Email.ANONYMOUS,
       isAdmin: true,
     };
 
@@ -164,11 +177,13 @@ describe('useProfileStore', () => {
       profileId: 'profile-1',
       nickname: 'User 1',
       createdAt: new Date().toISOString(),
+      email: Email.ANONYMOUS,
     };
     const profile2 = {
       profileId: 'profile-2',
       nickname: 'User 2',
       createdAt: new Date().toISOString(),
+      email: Email.ANONYMOUS,
     };
 
     setProfile(profile1);
@@ -186,6 +201,7 @@ describe('useProfileStore', () => {
       profileId: 'profile-1',
       nickname: 'User 1',
       createdAt: new Date().toISOString(),
+      email: Email.ANONYMOUS,
     };
 
     setProfile(profile1);
@@ -203,11 +219,13 @@ describe('useProfileStore', () => {
       profileId: 'profile-1',
       nickname: 'User 1',
       createdAt: new Date().toISOString(),
+      email: Email.ANONYMOUS,
     };
     const profile2 = {
       profileId: 'profile-2',
       nickname: 'User 2',
       createdAt: new Date().toISOString(),
+      email: Email.ANONYMOUS,
     };
 
     setProfile(profile1);
@@ -225,6 +243,7 @@ describe('useProfileStore', () => {
       profileId: 'profile-1',
       nickname: 'User 1',
       createdAt: new Date().toISOString(),
+      email: Email.ANONYMOUS,
     };
 
     setProfile(profile1);
@@ -242,11 +261,13 @@ describe('useProfileStore', () => {
       profileId: 'profile-1',
       nickname: 'User 1',
       createdAt: new Date().toISOString(),
+      email: Email.ANONYMOUS,
     };
     const profile2 = {
       profileId: 'profile-2',
       nickname: 'User 2',
       createdAt: new Date().toISOString(),
+      email: Email.ANONYMOUS,
     };
 
     setProfile(profile1);
@@ -263,12 +284,14 @@ describe('useProfileStore', () => {
       profileId: 'profile-1',
       nickname: 'User 1',
       createdAt: new Date().toISOString(),
+      email: Email.ANONYMOUS,
       isAdmin: false,
     };
     const profile2 = {
       profileId: 'profile-2',
       nickname: 'Admin User',
       createdAt: new Date().toISOString(),
+      email: Email.ANONYMOUS,
       isAdmin: true,
     };
 
@@ -286,12 +309,14 @@ describe('useProfileStore', () => {
       profileId: 'profile-1',
       nickname: 'Admin User',
       createdAt: new Date().toISOString(),
+      email: Email.ANONYMOUS,
       isAdmin: true,
     };
     const profile2 = {
       profileId: 'profile-2',
       nickname: 'User 2',
       createdAt: new Date().toISOString(),
+      email: Email.ANONYMOUS,
       isAdmin: false,
     };
 
@@ -309,6 +334,7 @@ describe('useProfileStore', () => {
       profileId: 'profile-1',
       nickname: 'User 1',
       createdAt: new Date().toISOString(),
+      email: Email.ANONYMOUS,
       isAdmin: false,
     };
 
