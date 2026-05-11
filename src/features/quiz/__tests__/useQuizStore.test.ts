@@ -19,7 +19,7 @@ describe('useQuizStore', () => {
   it('should initialize with default values', () => {
     const { result } = renderHook(() => useQuizStore());
 
-    expect(result.current.score).toBe(0);
+    expect(result.current.score.value).toBe(0);
     expect(result.current.difficulty).toBe('easy');
     expect(result.current.gameMode).toBe('time-attack');
     expect(result.current.category).toBeNull();
@@ -34,13 +34,13 @@ describe('useQuizStore', () => {
       result.current.increaseScore(10);
     });
 
-    expect(result.current.score).toBe(10);
+    expect(result.current.score.value).toBe(10);
 
     act(() => {
       result.current.increaseScore(20);
     });
 
-    expect(result.current.score).toBe(30);
+    expect(result.current.score.value).toBe(30);
   });
 
   it('should decrease score', () => {
@@ -51,7 +51,7 @@ describe('useQuizStore', () => {
       result.current.decreaseScore(20);
     });
 
-    expect(result.current.score).toBe(30);
+    expect(result.current.score.value).toBe(30);
   });
 
   it('should not decrease score below zero', () => {
@@ -62,7 +62,7 @@ describe('useQuizStore', () => {
       result.current.decreaseScore(20);
     });
 
-    expect(result.current.score).toBe(0);
+    expect(result.current.score.value).toBe(0);
   });
 
   it('should set difficulty', () => {
@@ -136,7 +136,7 @@ describe('useQuizStore', () => {
       result.current.resetQuiz();
     });
 
-    expect(result.current.score).toBe(0);
+    expect(result.current.score.value).toBe(0);
     expect(result.current.difficulty).toBe('easy');
     expect(result.current.timeLimit).toBe(60);
     // resetQuiz does not reset category/world
@@ -154,6 +154,6 @@ describe('useQuizStore', () => {
       result.current.increaseScore(15);
     });
 
-    expect(result.current.score).toBe(40);
+    expect(result.current.score.value).toBe(40);
   });
 });

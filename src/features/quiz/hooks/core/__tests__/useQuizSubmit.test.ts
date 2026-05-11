@@ -5,6 +5,9 @@ import type { QuizQuestion, GameMode } from '../../../types/quiz';
 import { useGameStore } from '../../../stores/useGameStore';
 import { quizEventBus } from '@/lib/eventBus';
 
+import { Combo } from '../../../domain/Combo';
+import { Altitude } from '../../../domain/Altitude';
+
 // Mock dependencies
 vi.mock('../../../stores/useGameStore', () => ({
   useGameStore: Object.assign(vi.fn(), {
@@ -46,6 +49,8 @@ const defaultGameStoreState = {
   lives: 3,
   consumeLife: vi.fn(),
   feverLevel: 0,
+  combo: Combo.reset(),
+  score: Altitude.reset(),
 } as unknown as ReturnType<typeof useGameStore>;
 
 describe('useQuizSubmit', () => {

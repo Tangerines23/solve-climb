@@ -7,11 +7,11 @@ import { useQuizScoring } from './useQuizScoring';
  * 퀴즈 점수 및 콤보 상태 관리를 전담하는 훅
  */
 export function useQuizScoreManager() {
-  const score = useQuizStore((state) => state.score);
+  const score = useQuizStore((state) => state.score.value);
   const increaseScore = useQuizStore((state) => state.increaseScore);
   const decreaseScore = useQuizStore((state) => state.decreaseScore);
 
-  const combo = useGameStore((state) => state.combo);
+  const combo = useGameStore((state) => state.combo.value);
   const feverLevel = useGameStore((state) => state.feverLevel);
   const lives = useGameStore((state) => state.lives);
   const isExhausted = useGameStore((state) => state.isExhausted);

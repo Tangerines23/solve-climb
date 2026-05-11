@@ -2,10 +2,12 @@ import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
 import { SURVIVAL_CONFIG } from '../constants/game';
 import { zustandStorage } from '@/services';
+import { Altitude } from '../domain/Altitude';
+import { Combo } from '../domain/Combo';
 
 interface GameState {
-  score: number;
-  combo: number;
+  score: Altitude;
+  combo: Combo;
   feverLevel: 0 | 1 | 2; // 0: Normal, 1: Momentum, 2: Second Wind
   isExhausted: boolean; // Stamina 0 state
 
@@ -35,8 +37,8 @@ interface GameState {
 export const useGameStore = create<GameState>()(
   persist(
     (set) => ({
-      score: 0,
-      combo: 0,
+      score: Altitude.reset(),
+      combo: Combo.reset(),
       feverLevel: 0,
       isExhausted: false,
       showSpeedLines: false,
@@ -47,54 +49,50 @@ export const useGameStore = create<GameState>()(
       usedItems: [],
       startTime: Date.now(),
 
-      setScore: (score) => set({ score }),
+      setScore: (value) =>
+        set((state) => {
+          const result = Altitude.create(value);
+          if (!result.success) return state;
+          return { score: result.data };
+        }),
 
       incrementCombo: () =>
         set((state) => {
-          const newCombo = state.combo + 1;
-          let newFeverLevel = state.feverLevel;
-          let speedLines = state.showSpeedLines;
+          const newCombo = state.combo.increment();
+          let newFeverLevel = newCombo.feverLevel;
+          let speedLines = newCombo.showSpeedLines;
 
-          if (!state.isExhausted) {
-            if (newCombo >= 20) {
-              newFeverLevel = 2;
-              speedLines = true;
-            } else if (newCombo >= 5) {
-              newFeverLevel = 1;
-              speedLines = true;
-            }
-          } else {
+          if (state.isExhausted) {
             newFeverLevel = 0;
             speedLines = false;
           }
 
           return {
             combo: newCombo,
-            feverLevel: newFeverLevel as 0 | 1 | 2,
+            feverLevel: newFeverLevel,
             showSpeedLines: speedLines,
           };
         }),
 
-      resetCombo: () => set({ combo: 0, feverLevel: 0, showSpeedLines: false }),
+      resetCombo: () => set({ combo: Combo.reset(), feverLevel: 0, showSpeedLines: false }),
 
-      setCombo: (combo) =>
+      setCombo: (value) =>
         set((state) => {
-          let newFeverLevel = 0;
-          let speedLines = false;
+          const result = Combo.create(value);
+          if (!result.success) return state;
 
-          if (!state.isExhausted) {
-            if (combo >= 20) {
-              newFeverLevel = 2;
-              speedLines = true;
-            } else if (combo >= 5) {
-              newFeverLevel = 1;
-              speedLines = true;
-            }
+          const newCombo = result.data;
+          let newFeverLevel = newCombo.feverLevel;
+          let speedLines = newCombo.showSpeedLines;
+
+          if (state.isExhausted) {
+            newFeverLevel = 0;
+            speedLines = false;
           }
 
           return {
-            combo,
-            feverLevel: newFeverLevel as 0 | 1 | 2,
+            combo: newCombo,
+            feverLevel: newFeverLevel,
             showSpeedLines: speedLines,
           };
         }),
@@ -110,8 +108,8 @@ export const useGameStore = create<GameState>()(
 
       resetGame: () =>
         set({
-          score: 0,
-          combo: 0,
+          score: Altitude.reset(),
+          combo: Combo.reset(),
           feverLevel: 0,
           isExhausted: false,
           showSpeedLines: false,
@@ -134,7 +132,30 @@ export const useGameStore = create<GameState>()(
     {
       name: 'climb-game-session',
       storage: createJSONStorage(() => zustandStorage),
-      // Only persist specific fields that are essential for session recovery
+      // Custom merge logic to rehydrate Combo instances
+      merge: (persistedState, currentState) => {
+        const state = persistedState as Partial<GameState>;
+        if (!state) return currentState;
+
+        return {
+          ...currentState,
+          ...state,
+          score: (() => {
+            if (state.score && typeof (state.score as any).value === 'number') {
+              const result = Altitude.create((state.score as any).value);
+              return result.success ? result.data : Altitude.reset();
+            }
+            return Altitude.reset();
+          })(),
+          combo: (() => {
+            if (state.combo && typeof (state.combo as any).value === 'number') {
+              const result = Combo.create((state.combo as any).value);
+              return result.success ? result.data : Combo.reset();
+            }
+            return Combo.reset();
+          })(),
+        };
+      },
       partialize: (state) => ({
         score: state.score,
         combo: state.combo,

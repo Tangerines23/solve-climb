@@ -1,10 +1,11 @@
 // src/stores/useQuizStore.ts
 import { create } from 'zustand';
 import { Category, World, GameMode, Difficulty, TimeLimit } from '../types/quiz';
+import { Altitude } from '../domain/Altitude';
 export { type TimeLimit };
 
 export interface QuizState {
-  score: number;
+  score: Altitude;
   difficulty: Difficulty;
   gameMode: GameMode;
   // 카테고리와 월드
@@ -27,17 +28,17 @@ export interface QuizState {
 }
 
 export const useQuizStore = create<QuizState>((set) => ({
-  score: 0,
+  score: Altitude.reset(),
   difficulty: 'easy',
   gameMode: 'time-attack',
   category: null,
   world: null,
   level: 1,
   timeLimit: 60, // 기본 1분
-  increaseScore: (amount) => set((state) => ({ score: state.score + amount })),
-  decreaseScore: (amount) => set((state) => ({ score: Math.max(0, state.score - amount) })),
+  increaseScore: (amount) => set((state) => ({ score: state.score.add(amount) })),
+  decreaseScore: (amount) => set((state) => ({ score: state.score.subtract(amount) })),
   setDifficulty: (level) => set({ difficulty: level }),
-  resetQuiz: () => set({ score: 0, difficulty: 'easy', timeLimit: 60, level: 1 }),
+  resetQuiz: () => set({ score: Altitude.reset(), difficulty: 'easy', timeLimit: 60, level: 1 }),
   setGameMode: (mode) => set({ gameMode: mode }),
   setQuizContext: (category, world, level) => set({ category, world, level }),
   setCategoryTopic: (category, world) => set({ category, world }),

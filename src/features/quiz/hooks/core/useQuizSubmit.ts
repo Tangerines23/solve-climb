@@ -79,7 +79,7 @@ export function useQuizSubmit({
         isCorrect,
         answer: answerInput,
         score: earnedDistance,
-        combo: isCorrect ? combo + 1 : 0,
+        combo: isCorrect ? combo.value + 1 : 0,
         timestamp: Date.now(),
         solveTime, // solveTime도 함께 보냄
       });

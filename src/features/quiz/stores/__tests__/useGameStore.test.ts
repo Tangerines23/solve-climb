@@ -14,8 +14,8 @@ describe('useGameStore', () => {
   it('should initialize with default values', () => {
     const { result } = renderHook(() => useGameStore());
 
-    expect(result.current.score).toBe(0);
-    expect(result.current.combo).toBe(0);
+    expect(result.current.score.value).toBe(0);
+    expect(result.current.combo.value).toBe(0);
     expect(result.current.feverLevel).toBe(0);
     expect(result.current.isExhausted).toBe(false);
     expect(result.current.showSpeedLines).toBe(false);
@@ -31,7 +31,7 @@ describe('useGameStore', () => {
       result.current.setScore(100);
     });
 
-    expect(result.current.score).toBe(100);
+    expect(result.current.score.value).toBe(100);
   });
 
   it('should increment combo', () => {
@@ -41,7 +41,7 @@ describe('useGameStore', () => {
       result.current.incrementCombo();
     });
 
-    expect(result.current.combo).toBe(1);
+    expect(result.current.combo.value).toBe(1);
   });
 
   it('should set fever level to 1 when combo reaches 5', () => {
@@ -53,7 +53,7 @@ describe('useGameStore', () => {
       }
     });
 
-    expect(result.current.combo).toBe(5);
+    expect(result.current.combo.value).toBe(5);
     expect(result.current.feverLevel).toBe(1);
     expect(result.current.showSpeedLines).toBe(true);
   });
@@ -67,7 +67,7 @@ describe('useGameStore', () => {
       }
     });
 
-    expect(result.current.combo).toBe(20);
+    expect(result.current.combo.value).toBe(20);
     expect(result.current.feverLevel).toBe(2);
     expect(result.current.showSpeedLines).toBe(true);
   });
@@ -81,7 +81,7 @@ describe('useGameStore', () => {
       result.current.resetCombo();
     });
 
-    expect(result.current.combo).toBe(0);
+    expect(result.current.combo.value).toBe(0);
     expect(result.current.feverLevel).toBe(0);
     expect(result.current.showSpeedLines).toBe(false);
   });
@@ -93,7 +93,7 @@ describe('useGameStore', () => {
       result.current.setCombo(10);
     });
 
-    expect(result.current.combo).toBe(10);
+    expect(result.current.combo.value).toBe(10);
     expect(result.current.feverLevel).toBe(1);
     expect(result.current.showSpeedLines).toBe(true);
   });
@@ -170,8 +170,8 @@ describe('useGameStore', () => {
       result.current.resetGame();
     });
 
-    expect(result.current.score).toBe(0);
-    expect(result.current.combo).toBe(0);
+    expect(result.current.score.value).toBe(0);
+    expect(result.current.combo.value).toBe(0);
     expect(result.current.feverLevel).toBe(0);
     expect(result.current.isExhausted).toBe(false);
     expect(result.current.showSpeedLines).toBe(false);
@@ -187,7 +187,7 @@ describe('useGameStore', () => {
     act(() => {
       result.current.setCombo(4);
     });
-    expect(result.current.combo).toBe(4);
+    expect(result.current.combo.value).toBe(4);
     expect(result.current.feverLevel).toBe(0);
     expect(result.current.showSpeedLines).toBe(false);
 
@@ -195,7 +195,7 @@ describe('useGameStore', () => {
     act(() => {
       result.current.setCombo(5);
     });
-    expect(result.current.combo).toBe(5);
+    expect(result.current.combo.value).toBe(5);
     expect(result.current.feverLevel).toBe(1);
     expect(result.current.showSpeedLines).toBe(true);
 
@@ -203,7 +203,7 @@ describe('useGameStore', () => {
     act(() => {
       result.current.setCombo(19);
     });
-    expect(result.current.combo).toBe(19);
+    expect(result.current.combo.value).toBe(19);
     expect(result.current.feverLevel).toBe(1);
     expect(result.current.showSpeedLines).toBe(true);
 
@@ -211,7 +211,7 @@ describe('useGameStore', () => {
     act(() => {
       result.current.setCombo(20);
     });
-    expect(result.current.combo).toBe(20);
+    expect(result.current.combo.value).toBe(20);
     expect(result.current.feverLevel).toBe(2);
     expect(result.current.showSpeedLines).toBe(true);
 
@@ -219,7 +219,7 @@ describe('useGameStore', () => {
     act(() => {
       result.current.setCombo(0);
     });
-    expect(result.current.combo).toBe(0);
+    expect(result.current.combo.value).toBe(0);
     expect(result.current.feverLevel).toBe(0);
     expect(result.current.showSpeedLines).toBe(false);
   });
@@ -233,7 +233,7 @@ describe('useGameStore', () => {
         result.current.incrementCombo();
       }
     });
-    expect(result.current.combo).toBe(4);
+    expect(result.current.combo.value).toBe(4);
     expect(result.current.feverLevel).toBe(0);
     expect(result.current.showSpeedLines).toBe(false);
 
@@ -241,7 +241,7 @@ describe('useGameStore', () => {
     act(() => {
       result.current.incrementCombo();
     });
-    expect(result.current.combo).toBe(5);
+    expect(result.current.combo.value).toBe(5);
     expect(result.current.feverLevel).toBe(1);
     expect(result.current.showSpeedLines).toBe(true);
 
@@ -251,7 +251,7 @@ describe('useGameStore', () => {
         result.current.incrementCombo();
       }
     });
-    expect(result.current.combo).toBe(19);
+    expect(result.current.combo.value).toBe(19);
     expect(result.current.feverLevel).toBe(1);
     expect(result.current.showSpeedLines).toBe(true);
 
@@ -259,7 +259,7 @@ describe('useGameStore', () => {
     act(() => {
       result.current.incrementCombo();
     });
-    expect(result.current.combo).toBe(20);
+    expect(result.current.combo.value).toBe(20);
     expect(result.current.feverLevel).toBe(2);
     expect(result.current.showSpeedLines).toBe(true);
   });
@@ -294,7 +294,7 @@ describe('useGameStore', () => {
       result.current.setCombo(100);
     });
 
-    expect(result.current.combo).toBe(100);
+    expect(result.current.combo.value).toBe(100);
     expect(result.current.feverLevel).toBe(2);
     expect(result.current.showSpeedLines).toBe(true);
   });
@@ -321,7 +321,7 @@ describe('useGameStore', () => {
       result.current.incrementCombo();
     });
 
-    expect(result.current.combo).toBe(11);
+    expect(result.current.combo.value).toBe(11);
     expect(result.current.feverLevel).toBe(0);
     expect(result.current.showSpeedLines).toBe(false);
   });

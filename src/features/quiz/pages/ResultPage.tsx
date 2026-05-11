@@ -63,7 +63,7 @@ export function ResultPage() {
   const level = urlParams.validateLevelParam(searchParams.get('level'), 20);
   const mode = urlParams.validateModeParam(searchParams.get('mode'));
   const finalScore =
-    (urlParams.validateNumberParam(searchParams.get('score'), 0, 1000000) ?? storeScore) *
+    (urlParams.validateNumberParam(searchParams.get('score'), 0, 1000000) ?? storeScore.value) *
     (searchParams.get('exhausted') === 'true' ? 0.8 : 1);
   const animatedScore = useCountUp(finalScore, animationEnabled ? 1500 : 0);
   const total = urlParams.validateNumberParam(searchParams.get('total'), 0, 10000) ?? 0;
