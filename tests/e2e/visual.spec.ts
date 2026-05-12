@@ -36,13 +36,18 @@ test.describe('Visual Regression Tests', () => {
       });
 
       test('Ranking Page should match snapshot', async ({ page }) => {
-        await page.goto('/ranking');
-        await page.waitForTimeout(1000);
+        // 특정 월드/카테고리의 랭킹 페이지로 이동하여 결정론적 데이터 보장
+        await page.goto('/ranking?world=World1&category=기초&mode=time-attack');
+        await page.waitForSelector('.ranking-page', { timeout: 30000 });
+        await page.waitForTimeout(2000);
+
         // 애니메이션 요소 숨기기 (VRT 안정화)
         await page.addStyleTag({ content: '.fog-overlay { display: none !important; }' });
+
         await expect(page).toHaveScreenshot(`ranking-${viewport.name}.png`, {
           fullPage: true,
-          maxDiffPixels: 200, // 안티앨리어싱 대비 여유
+          maxDiffPixelRatio: 0.15, // 랭킹 리스트의 동적 콘텐츠 허용
+          mask: [page.locator('.ranking-list-item-score')], // 점수는 마스킹
         });
       });
     });

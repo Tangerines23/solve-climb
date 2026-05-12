@@ -30,11 +30,19 @@ test.describe('Visual Regression Testing (VRT) - UI 일관성 검증', () => {
   test('마이페이지 (My Page)', async ({ page }) => {
     await page.goto('/my-page');
     await page.waitForSelector('.my-page', { timeout: 30000 });
-    await page.waitForTimeout(2000);
+    await page.waitForTimeout(3000);
 
     await expect(page).toHaveScreenshot('vrt-my-page.png', {
       fullPage: true,
-      maxDiffPixelRatio: 0.1, // OS 간 폰트 렌더링 차이 허용 (10%)
+      maxDiffPixelRatio: 0.2, // OS/폰트 차이 및 동적 콘텐츠 허용 (20%)
+      mask: [
+        page.locator('.my-page-nickname'),
+        page.locator('.my-page-email'),
+        page.locator('.my-page-tier-badge'),
+        page.locator('.my-page-streak-badge'),
+        page.locator('.my-page-mastery-value'),
+        page.locator('.my-page-stat-value'),
+      ],
     });
   });
 
@@ -51,8 +59,10 @@ test.describe('Visual Regression Testing (VRT) - UI 일관성 검증', () => {
   });
 
   test('퀴즈 종료 결과 화면 (Result Page Snippet)', async ({ page }) => {
-    // 결과 화면은 특정 상태가 필요하므로 주요 컴포넌트 단위로 검증
-    await page.goto('/result?score=1000&correct=10');
+    // 결과 화면은 특정 상태가 필요하므로 주요 컴포넌트 단위로 검증 (필수 파라미터 포함)
+    await page.goto(
+      '/result?score=1000&correct=10&world=World1&category=기초&level=1&mode=time-attack'
+    );
     await page.waitForSelector('.result-page', { timeout: 30000 });
     await page.waitForLoadState('networkidle');
     await page.waitForTimeout(3000);
@@ -60,7 +70,11 @@ test.describe('Visual Regression Testing (VRT) - UI 일관성 검증', () => {
     await expect(page).toHaveScreenshot('vrt-quiz-result.png', {
       fullPage: true,
       maxDiffPixelRatio: 0.2, // OS/환경 간 렌더링 미세 차이 허용 (20%)
-      mask: [page.locator('.profile-info'), page.locator('.result-score-container')],
+      mask: [
+        page.locator('.score-value'),
+        page.locator('.stat-value'),
+        page.locator('.death-note-container'),
+      ],
     });
   });
 

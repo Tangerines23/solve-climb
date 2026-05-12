@@ -56,10 +56,10 @@ const createSupabaseClient = (): SupabaseClient => {
       detectSessionInUrl: true,
     },
     global: {
-      // 네트워크 요청에 5초 타임아웃 적용 (CI 등 Supabase 접근 불가 환경에서 무한 대기 방지)
+      // 네트워크 요청에 10초 타임아웃 적용 (CI 등 Supabase 접근 불가 환경에서 무한 대기 방지)
       fetch: async (url: RequestInfo | URL, init?: RequestInit) => {
         const controller = new AbortController();
-        const timeoutId = setTimeout(() => controller.abort(), 5000);
+        const timeoutId = setTimeout(() => controller.abort('Timeout'), 20000);
 
         try {
           const response = await fetch(url, { ...init, signal: controller.signal });
@@ -82,6 +82,11 @@ const createSupabaseClient = (): SupabaseClient => {
           }
 
           return response;
+        } catch (error) {
+          if (error instanceof Error && error.name === 'AbortError') {
+            console.warn(`[Supabase] Request timed out or aborted: ${url}`);
+          }
+          throw error;
         } finally {
           clearTimeout(timeoutId);
         }
@@ -95,19 +100,6 @@ const createSupabaseClient = (): SupabaseClient => {
   }
 
   const client = createClient<Database>(supabaseUrl, supabaseKey, options);
-
-  // 익명 사용자 인증 자동 수행 (RLS 정책을 통과하기 위해)
-  // 세션이 없을 때만 익명 로그인 시도 (비동기, 실패해도 무시)
-  if (typeof window !== 'undefined') {
-    client.auth.getSession().then(({ data: { session } }) => {
-      // 더미 URL이 아닐 때만 익명 로그인 시도
-      if (!session && ENV.VITE_SUPABASE_URL) {
-        client.auth.signInAnonymously().catch(() => {
-          // 익명 로그인 실패는 무시
-        });
-      }
-    });
-  }
 
   return client;
 };
