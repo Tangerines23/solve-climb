@@ -84,7 +84,7 @@ describe('useBadgeChecker', () => {
           // Return separate chain for select vs insert if needed,
           // but here we just reuse chain for simplicity or customize based on table
           return {
-            eq: (_col: string, _val: unknown) => Promise.resolve({ data: [], error: null }), // Default empty badges
+            eq: (_col: string, _val: unknown) => Promise.resolve({ data: [], error: null } as any), // Default empty badges
           };
         },
 
@@ -113,7 +113,7 @@ describe('useBadgeChecker', () => {
           status: 200,
           statusText: 'OK',
           count: null,
-        };
+        } as any;
         // validatedRpc might expect the result to be thenable or just a promise
         return createChainableMock(result);
       }

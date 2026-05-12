@@ -275,7 +275,7 @@ describe('useDebugActions hook', () => {
         count: null,
         status: 200,
         statusText: 'OK',
-      });
+      } as any);
 
       const { result } = renderHook(() => useDebugActions());
 

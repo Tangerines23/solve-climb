@@ -40,44 +40,45 @@ export const createAuthSessionMock = (session: any = null, error: any = null): A
 /**
  * Creates a typed mock for Supabase RPC or Single Row response
  */
-export const createSuccessResponse = <T>(data: T): PostgrestSingleResponse<T> => ({
-  data,
-  error: null,
-  count: null,
-  status: 200,
-  statusText: 'OK',
-});
+export const createSuccessResponse = <T>(data: T): PostgrestSingleResponse<T> =>
+  ({
+    data,
+    error: null,
+    count: null,
+    status: 200,
+    statusText: 'OK',
+  }) as any as PostgrestSingleResponse<T>;
 
 /**
  * Creates a typed mock for Supabase Error response
  */
-export const createErrorResponse = (
-  message: string,
-  status = 400
-): PostgrestSingleResponse<any> => ({
-  data: null,
-  error: {
-    name: 'PostgrestError',
-    message,
-    details: '',
-    hint: '',
-    code: status.toString(),
-  },
-  count: null,
-  status,
-  statusText: 'Error',
-});
+export const createErrorResponse = (message: string, status = 400): PostgrestSingleResponse<any> =>
+  ({
+    data: null,
+    error: {
+      name: 'PostgrestError',
+      message,
+      details: '',
+      hint: '',
+      code: status.toString(),
+      toJSON: () => ({ message, status }),
+    },
+    count: null,
+    status,
+    statusText: 'Error',
+  }) as any as PostgrestSingleResponse<any>;
 
 /**
  * Creates a typed mock for Supabase List response
  */
-export const createListResponse = <T>(data: T[]): PostgrestResponse<T> => ({
-  data,
-  error: null,
-  count: data.length,
-  status: 200,
-  statusText: 'OK',
-});
+export const createListResponse = <T>(data: T[]): PostgrestResponse<T> =>
+  ({
+    data,
+    error: null,
+    count: data.length,
+    status: 200,
+    statusText: 'OK',
+  }) as any as PostgrestResponse<T>;
 
 /**
  * Helper to create a chainable mock for supabase.from().select()...
