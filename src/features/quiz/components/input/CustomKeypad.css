@@ -36,7 +36,7 @@
   font-size: clamp(1.4rem, 4vw, 1.8rem);
   font-weight: 800;
   border: none;
-  margin-top: 8px; /* 키패드와 분리된 느낌 강조 */
+  margin-top: var(--spacing-sm); /* 키패드와 분리된 느낌 강조 */
   border-radius: var(--rounded-lg); /* 좀 더 둥글고 독립적인 버튼 모양 */
   box-shadow: 0 4px 16px color-mix(in srgb, var(--color-mint-500), transparent 70%);
 }

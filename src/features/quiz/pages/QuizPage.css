@@ -1431,8 +1431,8 @@
   max-width: none;
   margin: 0 auto;
   /* Extra side padding to accommodate row transforms */
-  padding-left: 30px;
-  padding-right: 30px;
+  padding-left: var(--spacing-3xl);
+  padding-right: var(--spacing-3xl);
   box-sizing: border-box;
 }
 

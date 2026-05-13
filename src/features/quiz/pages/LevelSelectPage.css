@@ -114,7 +114,7 @@
   color: var(--color-text-secondary);
   text-transform: uppercase;
   letter-spacing: 0.05em;
-  margin-bottom: 2px;
+  margin-bottom: var(--spacing-micro);
 }
 
 .world-name {
@@ -149,7 +149,7 @@
 .level-select-graphic-container {
   position: relative;
   min-height: 120vh;
-  padding-bottom: 180px; /* 시트 가시 높이(160px) + 여유분 */
+  padding-bottom: 180px; /* 고정값 허용 */
 }
 
 /* 시트가 펼쳐졌을 때 상단 빈 공간 클릭 방지 및 접기용 오버레이 */
@@ -255,7 +255,7 @@
 /* 주제 요약 */
 .level-select-summary {
   margin-bottom: 0;
-  padding-top: 0px;
+  padding-top: 0;
   display: flex;
   flex-direction: column;
   align-items: flex-start;

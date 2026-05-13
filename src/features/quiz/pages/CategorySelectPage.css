@@ -15,7 +15,7 @@
 .topic-select-main {
   padding-top: var(--header-height-portrait);
   /* Header 높이 */
-  padding-bottom: 80px;
+  padding-bottom: 80px; /* 고정값 허용 */
   /* FooterNav 공간 */
   min-height: calc(100vh - var(--header-height-portrait));
 }

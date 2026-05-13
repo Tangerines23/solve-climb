@@ -6,7 +6,7 @@
 }
 
 .main-toggle {
-  margin-bottom: 24px;
+  margin-bottom: var(--spacing-2xl);
   background: rgba(255, 255, 255, 0.03);
   padding: var(--spacing-md);
   border-radius: var(--rounded-sm);
@@ -14,14 +14,14 @@
 }
 
 .static-effects-audit {
-  margin-top: 20px;
+  margin-top: var(--spacing-xl);
 }
 
 .static-effects-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
   gap: var(--spacing-md);
-  margin-top: 12px;
+  margin-top: var(--spacing-md);
 }
 
 .static-effect-card {
@@ -42,7 +42,7 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 6px;
+  margin-bottom: var(--spacing-tiny);
 }
 
 .effect-title {
@@ -76,7 +76,7 @@
 }
 
 .static-ui-notice {
-  margin-top: 24px;
+  margin-top: var(--spacing-2xl);
   padding: var(--spacing-md);
   background: rgba(59, 130, 246, 0.05);
   border-left: 3px solid var(--color-blue-500);

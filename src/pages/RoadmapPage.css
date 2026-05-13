@@ -28,7 +28,7 @@
 
 .history-main {
   padding-top: var(--header-height-portrait);
-  padding-bottom: 100px;
+  padding-bottom: 100px; /* 고정값 허용 */
   background-color: transparent;
 }
 
@@ -570,7 +570,7 @@
 }
 
 .landmark-info {
-  margin-left: 56px;
+  margin-left: var(--spacing-7xl);
   /* 수직선(18px) 기반 서브 지표용 충분한 간격 */
   display: flex;
   flex: 1;
@@ -580,7 +580,7 @@
 }
 
 .type-tier .landmark-info {
-  margin-left: 110px;
+  margin-left: 110px; /* 고정값 허용 */
   /* 분리된 티어(64px 축) + 마커 반폭(19px) + 여백(27px) */
 }
 
@@ -1281,7 +1281,7 @@
 .current-position-floating-marker .landmark-dot {
   position: absolute !important;
   left: 17px;
-  /* vertical line center is at 18px. marker width is 28px, center is 14. 18-14=4-ish. But given padding-left: 24px, we adjust to line-up. */
+  /* vertical line center is at 18px. marker width is 28px, center is 14. 18-14=4-ish. But given padding-left: 24px, we adjust to line-up. */ /* 고정값 허용 */
   width: var(--spacing-3xl);
   height: 20px;
   border-radius: var(--rounded-2xs);

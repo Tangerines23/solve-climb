@@ -75,7 +75,7 @@
 
 .test-result-item strong {
   color: var(--color-text-secondary);
-  margin-bottom: 2px;
+  margin-bottom: var(--spacing-micro);
 }
 
 .success {
@@ -94,7 +94,7 @@
   background-color: rgba(240, 68, 82, 0.1);
   padding: var(--spacing-xs);
   border-radius: var(--rounded-xs);
-  margin-top: 4px;
+  margin-top: var(--spacing-xs);
   word-break: break-all;
 }
 

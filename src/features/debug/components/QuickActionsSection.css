@@ -130,7 +130,7 @@
 .debug-toggle-description {
   font-size: 11px;
   color: var(--adaptiveGrey500);
-  margin-top: 4px;
+  margin-top: var(--spacing-xs);
   line-height: 1.3;
 }
 

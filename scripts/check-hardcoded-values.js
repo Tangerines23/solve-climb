@@ -77,7 +77,7 @@ function checkFile(filePath) {
     }
 
     // 하드코딩된 padding/margin/gap 검사 (CSS 및 TSX CamelCase 대응)
-    const spacingMatch = line.match(/(padding|margin|gap|spacing)[a-z]*:\s*['"]?(\d+)px['"]?/gi);
+    const spacingMatch = line.match(/(padding|margin|gap|spacing)[a-z-]*:\s*['"]?(\d+)px['"]?/gi);
     if (spacingMatch) {
       const hasVar = line.includes('var(--');
       if (!hasVar && !isAllowedHardcoding(filePath, line)) {

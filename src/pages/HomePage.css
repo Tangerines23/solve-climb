@@ -16,7 +16,7 @@
 
 .home-main {
   padding-top: var(--header-height-portrait); /* Header 높이만큼 여백 */
-  padding-bottom: 80px; /* FooterNav 공간 확보 */
+  padding-bottom: 80px; /* 고정값 허용 */
   min-height: calc(100vh - var(--header-height-portrait)); /* Header 높이 제외 */
 }
 

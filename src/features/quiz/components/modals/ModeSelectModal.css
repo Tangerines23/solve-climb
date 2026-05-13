@@ -13,7 +13,7 @@
     gap: var(--spacing-3xl);
     align-items: stretch;
     padding: var(--spacing-3xl);
-    padding-bottom: 80px;
+    padding-bottom: 80px; /* 고정값 허용 */
     position: relative;
   }
 

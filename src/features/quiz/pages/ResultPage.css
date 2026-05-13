@@ -6,7 +6,7 @@
   min-height: 100vh;
   display: flex;
   flex-direction: column;
-  padding-bottom: 160px; /* 하단 버튼 공간 확보 (footer height + buffer) */
+  padding-bottom: calc(var(--spacing-4xl) * 4); /* 하단 버튼 공간 확보 (footer height + buffer) */
   box-sizing: border-box;
   overflow-x: hidden;
 
@@ -85,11 +85,11 @@
   background: none;
   border: none;
   color: var(--color-text-primary);
-  font-size: 24px;
+  font-size: var(--spacing-2xl);
   cursor: pointer;
   padding: var(--spacing-sm);
-  width: 40px;
-  height: 40px;
+  width: var(--spacing-4xl);
+  height: var(--spacing-4xl);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -121,7 +121,7 @@
   box-shadow: var(--glass-shadow);
   width: 92%;
   max-width: var(--modal-width-portrait);
-  max-height: calc(100vh - 200px); /* 헤더 + 푸터 공간 확보 */
+  max-height: calc(100vh - (var(--spacing-4xl) * 5)); /* 헤더 + 푸터 공간 확보 */
   margin: calc(var(--spacing-xl) * 3) auto var(--spacing-xl);
   overflow-y: auto;
   scrollbar-gutter: stable; /* 스크롤바 생성 시 레이아웃 뒤틀림 방지 */
@@ -205,7 +205,7 @@
   }
 
   .result-left-section .result-title-row .result-icon {
-    font-size: 24px;
+    font-size: var(--spacing-2xl);
     margin: 0;
     line-height: normal;
     flex-shrink: 0;
@@ -239,7 +239,7 @@
   }
 
   .result-left-section .score-value {
-    font-size: 48px;
+    font-size: calc(var(--spacing-3xl) * 1.5);
     font-weight: 800;
     color: var(--color-blue-400);
     margin: 0;
@@ -298,7 +298,7 @@
     width: 100% !important;
     min-width: 0 !important;
     min-height: 44px !important;
-    height: 44px !important;
+    height: calc(var(--spacing-xl) * 2.2) !important;
     padding: var(--spacing-md) var(--spacing-lg) !important;
     flex: none !important;
 
@@ -367,7 +367,7 @@
 /* 스크롤바 스타일링 - 공통 */
 .result-card::-webkit-scrollbar,
 .result-center-section::-webkit-scrollbar {
-  width: 6px;
+  width: var(--spacing-tiny);
 }
 
 .result-card::-webkit-scrollbar-track,
@@ -399,7 +399,7 @@
 
 /* 결과 아이콘 (floating 애니메이션) */
 .result-icon {
-  font-size: 64px;
+  font-size: calc(var(--spacing-3xl) * 2);
   margin: 0 0 var(--spacing-2xl) 0;
   line-height: normal;
 }
@@ -455,7 +455,7 @@
 }
 
 .score-value {
-  font-size: 48px;
+  font-size: calc(var(--spacing-3xl) * 1.5);
   font-weight: 800;
   color: var(--color-blue-400);
   margin: 0;
@@ -515,7 +515,7 @@
 @keyframes fadeInUp {
   from {
     opacity: 0;
-    transform: translateY(10px);
+    transform: translateY(var(--spacing-small-alt));
   }
 
   to {
@@ -655,13 +655,13 @@
 
 .confetti {
   position: absolute;
-  width: 10px;
-  height: 10px;
-  top: -10px;
+  width: var(--spacing-small-alt);
+  height: var(--spacing-small-alt);
+  top: calc(-1 * var(--spacing-small-alt));
   animation: confettiFall 3s linear forwards;
   left: var(--left, 50%);
   animation-delay: var(--delay, 0s);
-  background-color: var(--color, var(--color-teal-500));
+  background-color: var(--color, var(--color-mint-500));
 }
 
 @keyframes confettiFall {

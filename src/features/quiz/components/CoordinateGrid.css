@@ -84,7 +84,7 @@
   font-weight: bold;
   font-size: 0.8rem;
   color: var(--color-blue-400);
-  margin-bottom: 4px;
+  margin-bottom: var(--spacing-xs);
 }
 
 .coordinate-display {

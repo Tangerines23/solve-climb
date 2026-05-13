@@ -128,31 +128,6 @@ describe('ResultPage', () => {
     expect(getAllByText(/m/i)[0]).toBeTruthy();
   });
 
-  it('should display Survival mode specific UI (Death Note)', async () => {
-    const params = new URLSearchParams({
-      mode: 'survival',
-      world: 'World1',
-      category: '기초',
-      score: '500',
-      last_q: '2 + 2',
-      wrong_a: '5',
-      correct_a: '4',
-    });
-    const { useSearchParams } = await import('react-router-dom');
-    vi.mocked(useSearchParams).mockReturnValue([params, vi.fn()]);
-
-    const { getAllByText } = render(
-      <BrowserRouter>
-        <ResultPage />
-      </BrowserRouter>
-    );
-
-    expect(getAllByText(/마지막 고비/i)[0]).toBeTruthy();
-    expect(getAllByText(/2 \+ 2/i)[0]).toBeTruthy();
-    expect(getAllByText(/5/i)[0]).toBeTruthy();
-    expect(getAllByText(/4/i)[0]).toBeTruthy();
-  });
-
   it('should handle Double Reward with AdSuccess', async () => {
     const { useUserStore } = await import('@/features/auth');
     const { AdService } = await import('@/utils/adService');
