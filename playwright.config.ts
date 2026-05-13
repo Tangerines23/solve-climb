@@ -6,7 +6,7 @@ import { defineConfig, devices } from '@playwright/test';
  * run-playwright-with-port.js를 통해 포트 점유 시 자동으로 다른 포트 사용.
  */
 const DEV_PORT = parseInt(process.env.E2E_DEV_PORT || '5173', 10);
-const BASE_URL = `http://localhost:${DEV_PORT}`;
+const BASE_URL = `http://127.0.0.1:${DEV_PORT}`;
 
 /**
  * Playwright 설정 파일
@@ -49,7 +49,10 @@ export default defineConfig({
     {
       name: 'chromium',
       use: {
-        ...devices['Desktop Chrome'],
+        viewport: { width: 375, height: 812 },
+        deviceScaleFactor: 1,
+        isMobile: true,
+        hasTouch: true,
         storageState: '.auth/user.json',
       },
       dependencies: ['setup'],
@@ -70,4 +73,5 @@ export default defineConfig({
 
   /* 스냅샷(스크린샷 기준점) 저장 경로 설정 */
   snapshotDir: './tests/e2e/snapshots',
+  snapshotPathTemplate: '{snapshotDir}/{testFileName}-snapshots/{arg}{-projectName}{ext}',
 });

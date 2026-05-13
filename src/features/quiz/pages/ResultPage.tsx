@@ -61,10 +61,12 @@ export function ResultPage() {
     searchParams.get('category')
   );
   const level = urlParams.validateLevelParam(searchParams.get('level'), 20);
+
   const mode = urlParams.validateModeParam(searchParams.get('mode'));
   const finalScore =
     (urlParams.validateNumberParam(searchParams.get('score'), 0, 1000000) ?? storeScore.value) *
     (searchParams.get('exhausted') === 'true' ? 0.8 : 1);
+
   const animatedScore = useCountUp(finalScore, animationEnabled ? 1500 : 0);
   const total = urlParams.validateNumberParam(searchParams.get('total'), 0, 10000) ?? 0;
   const correctCount = Math.floor(finalScore / SCORE_PER_CORRECT);
@@ -460,24 +462,6 @@ export function ResultPage() {
           <div className="score-section" data-vg-ignore="true">
             <p className="score-value">{animatedScore.toLocaleString()}m</p>
           </div>
-
-          {/* v2.2 데스노트 (Death Note) - 생존 모드 전용 */}
-          {mode === 'survival' && searchParams.get('last_q') && (
-            <div className="death-note-container">
-              <h3 className="death-note-title">{UI_MESSAGES.LAST_HURDLE}</h3>
-              <div className="death-note-card">
-                <div className="death-note-question">{searchParams.get('last_q')}</div>
-                <div className="death-note-answer-row">
-                  <span className="death-note-wrong">
-                    {UI_MESSAGES.MY_WRONG_ANSWER}: {searchParams.get('wrong_a')}
-                  </span>
-                  <span className="death-note-correct">
-                    {UI_MESSAGES.CORRECT_ANSWER}: {searchParams.get('correct_a')}
-                  </span>
-                </div>
-              </div>
-            </div>
-          )}
         </div>
         <ul className="stat-list" data-vg-ignore="true">
           {statsList.map((s, i) => (
@@ -565,24 +549,6 @@ export function ResultPage() {
               </li>
             ))}
           </ul>
-
-          {/* 가로모드 데스노트 */}
-          {mode === 'survival' && searchParams.get('last_q') && (
-            <div className="wrong-answer-card">
-              <h3 className="wrong-answer-title">{UI_MESSAGES.LAST_HURDLE}</h3>
-              <div className="wrong-answer-item">
-                <div className="wrong-answer-question">{searchParams.get('last_q')}</div>
-                <div className="wrong-answer-row">
-                  <span className="wrong-answer-wrong">
-                    {UI_MESSAGES.MY_WRONG_ANSWER}: {searchParams.get('wrong_a')}
-                  </span>
-                  <span className="wrong-answer-correct">
-                    {UI_MESSAGES.CORRECT_ANSWER}: {searchParams.get('correct_a')}
-                  </span>
-                </div>
-              </div>
-            </div>
-          )}
         </div>
 
         <div className="result-divider"></div>

@@ -17,8 +17,8 @@ function RoadmapComingSoon() {
   }, []);
 
   return (
-    <div className="ranking-coming-soon">
-      <div className="fog-overlay">
+    <div className="history-coming-soon">
+      <div className="fog-overlay" data-vg-ignore="true">
         {fogIcons.map((fog) => (
           <span
             key={fog.id}
@@ -39,7 +39,7 @@ function RoadmapComingSoon() {
       </div>
 
       <div className="maintenance-card">
-        <span className="maintenance-visual" aria-hidden="true">
+        <span className="maintenance-visual" aria-hidden="true" data-vg-ignore="true">
           🗺️
         </span>
         <div className="coming-soon-badge">Coming Soon</div>
@@ -50,7 +50,7 @@ function RoadmapComingSoon() {
           일지 시스템을 개선하고 있습니다.
           <br />곧 상세한 분석 리포트와 함께 돌아올게요!
         </p>
-        <div style={{ opacity: 0.5 }}>
+        <div style={{ opacity: 0.5 }} data-vg-ignore="true">
           <span className="gear-icon" aria-hidden="true">
             ⚒️
           </span>

@@ -11,14 +11,27 @@
  *      npm run check:layout:with-server [-- --deep]
  */
 
-import { spawn } from 'child_process';
+import { spawn, execSync } from 'child_process';
 import { fileURLToPath } from 'url';
 import { dirname, join } from 'path';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const ROOT = join(__dirname, '..');
 
-const PORT = 5173;
+function getAvailablePort() {
+  try {
+    const out = execSync(`node "${join(ROOT, 'scripts/get-available-port.js')}"`, {
+      cwd: ROOT,
+      encoding: 'utf8',
+    });
+    return parseInt(String(out).trim(), 10) || 5173;
+  } catch (err) {
+    console.warn('⚠️ Failed to get available port, falling back to 5173:', err.message);
+    return 5173;
+  }
+}
+
+const PORT = getAvailablePort();
 const BASE_URL = `http://127.0.0.1:${PORT}`;
 const WAIT_TIMEOUT_MS = 180000; // 3분으로 연장
 const POLL_INTERVAL_MS = 1000;

@@ -5,4 +5,4 @@ export interface EnhancedPerformanceEntry extends PerformanceEntry {
   value?: number;
 }
 
-export type MetricName = 'FCP' | 'LCP' | 'FID' | 'CLS' | 'TTFB';
+// export type MetricName = 'FCP' | 'LCP' | 'FID' | 'CLS' | 'TTFB';

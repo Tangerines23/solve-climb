@@ -98,11 +98,11 @@
 }
 
 .result-close-button:hover {
-  background-color: rgba(255, 255, 255, 0.1);
+  background-color: var(--glass-bg-medium);
 }
 
 .result-close-button:active {
-  background-color: rgba(255, 255, 255, 0.2);
+  background-color: var(--glass-bg-high);
 }
 
 .result-card {
@@ -178,7 +178,7 @@
   /* 구분선 */
   .result-divider {
     width: 1px;
-    background-color: rgba(255, 255, 255, 0.1);
+    background-color: var(--glass-border-low);
     flex-shrink: 0;
     margin: 0 var(--spacing-lg);
   }
@@ -271,7 +271,7 @@
     border-top: none !important;
     border-left: none !important;
     border-right: none !important;
-    box-shadow: 0 1px 0 0 rgba(255, 255, 255, 0.2) !important;
+    box-shadow: 0 1px 0 0 var(--glass-border-medium) !important;
   }
 
   .result-center-section .stat-item:last-child {
@@ -280,12 +280,6 @@
 
   .result-center-section .stat-item-highlight {
     border-bottom: none !important;
-  }
-
-  .result-center-section .wrong-answer-card {
-    margin-top: var(--spacing-2xl);
-    max-width: 250px;
-    width: 100%;
   }
 
   /* 오른쪽: 버튼 영역 (Flex 1) - Compact 스타일, 간격 조정 */
@@ -483,7 +477,7 @@
   justify-content: space-between;
   align-items: center;
   padding: var(--spacing-lg) 0;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  border-bottom: 1px solid var(--glass-border-low);
   animation: fadeInUp 0.5s ease-out both;
   animation-delay: var(--delay, 0s);
 }
@@ -533,16 +527,16 @@
 .double-reward-section {
   margin-top: var(--spacing-xl);
   padding: var(--spacing-md);
-  background: rgba(255, 255, 255, 0.03);
+  background: var(--glass-bg-low);
   border-radius: var(--rounded-lg);
-  border: 1px dashed rgba(255, 255, 255, 0.1);
+  border: 1px dashed var(--glass-border-low);
   animation: fadeInUp 0.5s ease-out 0.5s both;
 }
 
 .double-reward-btn {
   width: 100%;
   padding: var(--spacing-lg);
-  background: linear-gradient(135deg, #f59e0b, #ef4444);
+  background: linear-gradient(135deg, var(--color-amber-500), var(--color-toss-red));
   color: var(--color-text-primary);
   border: none;
   border-radius: var(--rounded-button);
@@ -576,62 +570,6 @@
 
 .double-reward-btn span {
   font-size: 1.2rem;
-}
-
-/* [오답 노트 영역] - 서바이벌 전용 */
-.wrong-answer-card {
-  margin-top: var(--spacing-2xl);
-  padding-top: var(--spacing-2xl);
-  border-top: 1px solid rgba(255, 255, 255, 0.1);
-  background-color: color-mix(in srgb, var(--color-toss-red), transparent 90%);
-  border-radius: var(--rounded-button);
-  padding: var(--spacing-lg);
-  animation: fadeInUp 0.5s ease-out both;
-}
-
-.wrong-answer-title {
-  font-size: 1rem;
-  font-weight: 600;
-  color: var(--color-text-primary);
-  margin: 0 0 var(--spacing-lg) 0;
-  text-align: left;
-}
-
-.wrong-answer-list {
-  display: flex;
-  flex-direction: column;
-  gap: var(--spacing-md);
-}
-
-.wrong-answer-item {
-  background-color: rgba(255, 255, 255, 0.05);
-  border-radius: var(--rounded-sm);
-  padding: var(--spacing-md);
-  text-align: left;
-}
-
-.wrong-answer-question {
-  font-size: 0.875rem;
-  color: var(--color-text-primary);
-  margin-bottom: var(--spacing-sm);
-  font-weight: 500;
-}
-
-.wrong-answer-row {
-  display: flex;
-  align-items: center;
-  gap: var(--spacing-md);
-  font-size: 0.875rem;
-}
-
-.wrong-answer-wrong {
-  color: var(--color-text-secondary);
-  text-decoration: line-through;
-}
-
-.wrong-answer-correct {
-  color: var(--color-blue-400);
-  font-weight: 700;
 }
 
 /* 하단 액션 버튼 */
@@ -752,7 +690,7 @@
   justify-content: center;
   margin: var(--spacing-xl) 0;
   padding: var(--spacing-lg);
-  background: rgba(255, 255, 255, 0.05);
+  background: var(--glass-bg-low);
   border-radius: var(--rounded-md);
 }
 

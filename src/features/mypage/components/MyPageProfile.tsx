@@ -22,7 +22,7 @@ export function MyPageProfile({
 }: MyPageProfileProps) {
   return (
     <div className="my-page-header">
-      <div className="my-page-profile-section">
+      <div className="my-page-profile-section" data-vg-ignore="true">
         <div className="my-page-profile-icon" style={{ borderColor: `var(${tier.colorVar})` }}>
           {tier.icon}
         </div>
@@ -50,7 +50,7 @@ export function MyPageProfile({
           </button>
         </div>
       </div>
-      <div className="my-page-mastery-section">
+      <div className="my-page-mastery-section" data-vg-ignore="true">
         <div className="my-page-mastery-label">누적 고도</div>
         <div className="my-page-mastery-value">
           {loading ? '...' : (totalMasteryScore || 0).toLocaleString()}m
