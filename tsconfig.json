@@ -27,6 +27,12 @@
     /* Prevent .d.ts file conflicts */
     "skipDefaultLibCheck": true
   },
-  "include": ["src/**/*.ts", "src/**/*.tsx", "src/vite-env.d.ts"],
+  "include": [
+    "src/**/*.ts",
+    "src/**/*.tsx",
+    "src/vite-env.d.ts",
+    "tests/**/*.ts",
+    "tests/**/*.tsx"
+  ],
   "exclude": ["**/node_modules/**", "**/dist/**"]
 }

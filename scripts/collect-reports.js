@@ -84,7 +84,17 @@ try {
             fs.unlinkSync(targetPath);
           }
 
-          fs.renameSync(fullPath, targetPath);
+          // cross-partition safe move
+          try {
+            fs.renameSync(fullPath, targetPath);
+          } catch (err) {
+            if (err.code === 'EXDEV') {
+              fs.copyFileSync(fullPath, targetPath);
+              fs.unlinkSync(fullPath);
+            } else {
+              throw err;
+            }
+          }
           console.log(`✅ 이동 완료: ${file} -> reports/logs/`);
           movedCount++;
         }

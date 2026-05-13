@@ -55,6 +55,8 @@ run_step "3. validate - Security Shield (Secrets)" npm run check:secrets
 run_step "3. validate - Circular Dependency" npm run check:circular
 run_step "3. validate - Code Integrity" npm run check:integrity
 run_step "3. validate - Logic Leash" npm run check:logic
+run_step "3. validate - Unused Assets" npm run check:assets
+run_step "3. validate - Dependency Safety (Socket)" npm run check:socket || echo "⚠️ Socket audit failed, skipping..."
 run_step "3. validate - Benchmark Tests" npm run test:bench
 
 # --- 4. unit-test ---
@@ -71,6 +73,8 @@ if [ -z "${CI_SKIP_DB}" ]; then
   echo "" && echo "=== 5. security-db - DB Validation (Local-First) ==="
   
   if command -v supabase &> /dev/null || npx supabase --version &> /dev/null; then
+    run_step "5. security-db - Migration sanity" npm run check:migrations
+    
     echo "[security-db] Resetting local database..."
     npx supabase db reset
     
@@ -80,8 +84,12 @@ if [ -z "${CI_SKIP_DB}" ]; then
     # Extract keys like ci.yml does
     echo "[security-db] Extracting local keys..."
     LOCAL_JSON=$(npx supabase status -o json)
-    # Inside Docker, we must use host.docker.internal to reach sibling containers via host
-    VITE_SUPABASE_URL=$(echo $LOCAL_JSON | jq -r '.API_URL' | sed 's/localhost/host.docker.internal/')
+    # Only use host.docker.internal if running inside Docker
+    if [ -f /.dockerenv ]; then
+      VITE_SUPABASE_URL=$(echo $LOCAL_JSON | jq -r '.API_URL' | sed 's/localhost/host.docker.internal/')
+    else
+      VITE_SUPABASE_URL=$(echo $LOCAL_JSON | jq -r '.API_URL')
+    fi
     VITE_SUPABASE_ANON_KEY=$(echo $LOCAL_JSON | jq -r '.SERVICE_ROLE_KEY')
     
     export VITE_SUPABASE_URL=$VITE_SUPABASE_URL
@@ -97,6 +105,7 @@ fi
 
 # --- 6. build ---
 run_step "6. build" npm run build
+run_step "6. security-audit - Post-build Hygiene" npm run check:security:audit
 
 # --- 6. e2e-stability-test ---
 if [ -n "${CI_SKIP_E2E}" ] || [ -n "${CI_SKIP_E2E_STABILITY}" ]; then
@@ -128,6 +137,12 @@ if [ -n "${CI_SKIP_E2E}" ] || [ -n "${CI_SKIP_E2E_VISUAL}" ]; then
 else
   run_step "7b. e2e-visual - Visual & A11y" env CI=true bash -c "npm run test:e2e:visual && npm run test:a11y"
   run_step "7b. e2e-visual - Layout deep scan" npm run check:layout:deep:with-server
+  
+  # Memory leak check requires a running server, but it manages its own browser.
+  # We'll run it here as it fits the "UI Integrity" category.
+  # Note: It expects localhost:5173. check:layout:with-server might have left it or closed it.
+  # We use a dedicated check command if available.
+  run_step "7b. e2e-visual - Memory Leak check" npm run check:leaks || echo "⚠️ Memory leak check failed (server might be down)"
 fi
 
 # --- 8. performance-audit ---

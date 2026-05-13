@@ -27,22 +27,17 @@ function getAllFiles(dirPath, arrayOfFiles = []) {
   return arrayOfFiles;
 }
 
-// 소스 코드 내에서 문자열 검색
-function searchInSource(filename) {
-  const sourceFiles = getAllFiles(SRC_DIR);
-  let found = false;
-
-  for (const srcFile of sourceFiles) {
-    const content = fs.readFileSync(srcFile, 'utf8');
-    if (content.includes(filename)) {
-      found = true;
-      break;
-    }
-  }
-  return found;
+// 1. 소스 코드 및 관련 파일들 모두 읽기
+console.log('📖 Loading source files into memory...');
+const sourceFiles = [...getAllFiles(SRC_DIR), path.resolve(process.cwd(), 'index.html')];
+const manifestPath = path.resolve(PUBLIC_DIR, 'manifest.json');
+if (fs.existsSync(manifestPath)) {
+  sourceFiles.push(manifestPath);
 }
 
-console.log('🔍 Unused Asset Scanner\n');
+const sourceContents = sourceFiles.map((file) => fs.readFileSync(file, 'utf8')).join('\n');
+
+console.log('🔍 Scanning for unused assets...\n');
 
 const publicFiles = getAllFiles(PUBLIC_DIR);
 let unusedCount = 0;
@@ -52,18 +47,14 @@ publicFiles.forEach((filePath) => {
 
   if (IGNORE_FILES.includes(filename)) return;
 
-  // index.html도 검색 대상에 포함
-  const indexHtml = fs.readFileSync(path.resolve(process.cwd(), 'index.html'), 'utf8');
-  if (indexHtml.includes(filename)) return;
+  // Use a more precise regex to find the filename in source
+  // This helps avoid matching "logo.png" inside "my-logo.png"
+  // It checks for boundary characters or quotes
+  const escapedFilename = filename.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  const searchRegex = new RegExp(`["'/]${escapedFilename}["']`, 'i');
 
-  // manifest.json도 검색 대상에 포함
-  const manifestPath = path.resolve(PUBLIC_DIR, 'manifest.json');
-  if (fs.existsSync(manifestPath)) {
-    const manifestContent = fs.readFileSync(manifestPath, 'utf8');
-    if (manifestContent.includes(filename)) return;
-  }
-
-  const isUsed = searchInSource(filename);
+  // Also support direct mentions (e.g. in comments or non-quoted strings)
+  const isUsed = searchRegex.test(sourceContents) || sourceContents.includes(filename);
 
   if (!isUsed) {
     console.log(`❌ Unused: ${path.relative(process.cwd(), filePath)}`);

@@ -54,6 +54,18 @@ function waitForServer() {
   });
 }
 
+function killServer(proc) {
+  if (process.platform === 'win32') {
+    try {
+      execSync(`taskkill /pid ${proc.pid} /t /f`, { stdio: 'ignore' });
+    } catch (e) {
+      // Process might already be dead
+    }
+  } else {
+    proc.kill('SIGTERM');
+  }
+}
+
 async function main() {
   const args = process.argv.slice(2); // e.g. ['--deep']
 
@@ -105,7 +117,7 @@ async function main() {
     await waitForServer();
     console.log('✅ Dev server ready at', BASE_URL);
   } catch (err) {
-    devServer.kill('SIGTERM');
+    killServer(devServer);
     console.error('❌', err.message);
     process.exit(1);
   }
@@ -119,7 +131,7 @@ async function main() {
   });
 
   layout.on('close', (code) => {
-    devServer.kill('SIGTERM');
+    killServer(devServer);
     process.exit(code ?? 0);
   });
 }

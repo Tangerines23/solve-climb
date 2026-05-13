@@ -30,6 +30,11 @@ async function findAvailablePort() {
   throw new Error(`No available port found in range ${BASE_PORT}-${BASE_PORT + MAX_ATTEMPTS - 1}`);
 }
 
-findAvailablePort().then((port) => {
-  process.stdout.write(String(port));
-});
+findAvailablePort()
+  .then((port) => {
+    process.stdout.write(String(port));
+  })
+  .catch((err) => {
+    console.error(err.message);
+    process.exit(1);
+  });

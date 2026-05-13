@@ -116,15 +116,24 @@ export default tseslint.config(
           pattern: 'src/config/**',
         },
         {
-          type: 'context',
-          pattern: 'src/contexts/**',
+          type: 'test',
+          pattern: 'tests/**',
+        },
+        {
+          type: 'test/unit',
+          pattern: 'src/**/__tests__/**',
         },
       ],
     },
   },
   {
-    files: ['src/**/*.{ts,tsx}'],
-    ignores: ['src/**/__tests__/**', 'src/**/*.test.{ts,tsx}', 'src/**/*.spec.{ts,tsx}'],
+    files: ['src/**/*.{ts,tsx}', 'tests/**/*.{ts,tsx}'],
+    ignores: [
+      'src/**/__tests__/**',
+      'src/**/*.test.{ts,tsx}',
+      'src/**/*.spec.{ts,tsx}',
+      'tests/**/*.spec.ts',
+    ],
     plugins: {
       boundaries,
     },
@@ -205,6 +214,17 @@ export default tseslint.config(
               disallow: [{ to: { type: 'store' } }, { to: { type: 'hook' } }],
               message:
                 'Feature internals should stay within their domain or use public APIs. Avoid legacy global stores/hooks directly.',
+            },
+            {
+              from: { type: 'test' },
+              disallow: [{ to: { type: 'feature/internal' } }],
+              message:
+                'Tests must not import feature internals. Use public APIs (@/features/[domain]).',
+            },
+            {
+              from: { type: 'test/unit' },
+              disallow: [{ to: { type: 'feature/internal' } }],
+              message: 'Unit tests should prefer public APIs to avoid coupling to internals.',
             },
           ],
         },

@@ -26,16 +26,29 @@ async function checkMemoryLeaks() {
     console.log(`[LEAK] Performing ${ITERATIONS} iterations of Modal/Action stress...`);
 
     for (let i = 0; i < ITERATIONS; i++) {
-      // "+" 버튼 클릭 (모달 오픈 시나리오)
+      // 1. Try Modal open/close (if "+" button exists)
       const plusBtn = page.locator('button:has-text("+")').first();
       if (await plusBtn.isVisible()) {
         await plusBtn.click();
-        await page.waitForTimeout(300);
-
-        // 닫기 버튼 또는 바깥 클릭 (모달 닫기)
+        await page.waitForTimeout(200);
         await page.keyboard.press('Escape');
-        await page.waitForTimeout(300);
+        await page.waitForTimeout(200);
+      } else {
+        // 2. Fallback: Navigation stress
+        // Toggle between home and ranking/mypage if they exist in nav
+        const navLink = page.locator('nav a, header a').first();
+        if (await navLink.isVisible()) {
+          await navLink.click();
+          await page.waitForLoadState('networkidle');
+          await page.goBack();
+          await page.waitForLoadState('networkidle');
+        } else {
+          // 3. Last resort: Just reload
+          await page.reload();
+          await page.waitForLoadState('networkidle');
+        }
       }
+      if (i % 5 === 0) console.log(`[LEAK] ... completed ${i} iterations`);
     }
 
     // 3. GC 대기 및 최종 측정

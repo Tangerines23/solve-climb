@@ -16,8 +16,10 @@ const envPath = path.join(__dirname, '..', '.env');
 
 if (fs.existsSync(envPath)) {
   const envContent = fs.readFileSync(envPath, 'utf-8');
-  envContent.split('\n').forEach((line) => {
-    const [key, ...valueParts] = line.split('=');
+  envContent.split(/\r?\n/).forEach((line) => {
+    const trimmedLine = line.trim();
+    if (!trimmedLine || trimmedLine.startsWith('#')) return;
+    const [key, ...valueParts] = trimmedLine.split('=');
     if (key && valueParts.length > 0) {
       const value = valueParts
         .join('=')
@@ -34,11 +36,11 @@ const supabaseKey = process.env.VITE_SUPABASE_ANON_KEY;
 if (!supabaseUrl || !supabaseKey) {
   console.error('\n❌ Error: Supabase credentials not found in environment variables.');
   console.error('--- Environment Status ---');
-  console.log(`VITE_SUPABASE_URL: ${supabaseUrl ? 'SET' : 'MISSING'}`);
-  console.log(`VITE_SUPABASE_ANON_KEY: ${supabaseKey ? 'SET' : 'MISSING'}`);
-  console.error('\nExpected VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY to be available.');
+  console.log(`VITE_SUPABASE_URL: ${supabaseUrl ? 'OK' : 'MISSING'}`);
+  console.log(`VITE_SUPABASE_ANON_KEY: ${supabaseKey ? 'OK' : 'MISSING'}`);
+  console.error('\nEnsure VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY are set.');
   console.error(
-    'Note: If running in GitHub Actions, ensure the extract-and-export logic in ci.yml is correct.'
+    'Note: In CI/Local validation, VITE_SUPABASE_ANON_KEY should typically be the SERVICE_ROLE_KEY.'
   );
   process.exit(1);
 }

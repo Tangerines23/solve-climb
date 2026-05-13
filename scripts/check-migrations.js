@@ -75,6 +75,26 @@ function validateMigrationFiles() {
         message: 'SQL 키워드가 없거나 주석만 있는 파일일 수 있습니다.',
       });
     }
+
+    // 보안/위험 요소 확인
+    if (/GRANT\s+ALL/i.test(content)) {
+      errors.push({
+        file,
+        message: '보안 위험: "GRANT ALL" 사용이 감지되었습니다. 구체적인 권한만 부여하세요.',
+      });
+    }
+    if (/ALTER\s+ROLE/i.test(content)) {
+      warnings.push({
+        file,
+        message: '주의: "ALTER ROLE" 사용이 감지되었습니다. 권한 설정을 재확인하세요.',
+      });
+    }
+    if (/DROP\s+TABLE\s+(?!IF\s+EXISTS)/i.test(content)) {
+      warnings.push({
+        file,
+        message: '주의: "IF EXISTS" 없이 "DROP TABLE"을 사용했습니다.',
+      });
+    }
   });
 
   // 형식에 맞는 파일만 필터링
