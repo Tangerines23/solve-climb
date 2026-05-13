@@ -175,4 +175,22 @@ test.describe('Visual Regression Testing (VRT) - UI 일관성 검증', () => {
       ],
     });
   });
+
+  test('랭킹 페이지 (Ranking Page)', async ({ page }) => {
+    await page.goto('/ranking');
+    await page.waitForSelector('.ranking-page', { state: 'visible', timeout: 30000 });
+    await page.waitForSelector('.maintenance-card', { state: 'visible', timeout: 15000 });
+
+    await page.addStyleTag({
+      content: `
+        .fog-overlay, .fog-icon, .gear-icon { display: none !important; visibility: hidden !important; opacity: 0 !important; }
+        .maintenance-card { animation: none !important; transform: none !important; }
+      `,
+    });
+
+    await expect(page).toHaveScreenshot('vrt-ranking-page.png', {
+      fullPage: true,
+      maxDiffPixelRatio: 0.1,
+    });
+  });
 });

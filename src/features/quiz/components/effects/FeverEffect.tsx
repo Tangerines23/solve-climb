@@ -1,5 +1,6 @@
 import { motion } from 'framer-motion';
 import { useFeverEffectBridge } from '../../hooks/bridge/useFeverEffectBridge';
+import { SeededRandom } from '@/utils/seededRandom';
 import './Effects.css';
 
 export function FeverEffect() {
@@ -34,10 +35,11 @@ function FeverParticles() {
   );
 }
 
-function Particle({ index: _index }: { index: number }) {
-  const randomX = Math.random() * 100; // %
-  const duration = 1 + Math.random() * 2; // 1-3s
-  const delay = Math.random() * 2;
+function Particle({ index }: { index: number }) {
+  const rng = new SeededRandom(`fever-particle-${index}`);
+  const randomX = rng.next() * 100; // %
+  const duration = 1 + rng.next() * 2; // 1-3s
+  const delay = rng.next() * 2;
 
   return (
     <motion.div

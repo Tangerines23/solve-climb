@@ -2,17 +2,19 @@ import { useMemo } from 'react';
 import './RoadmapPage.css';
 import { Header } from '../components/Header';
 import { FooterNav } from '../components/FooterNav';
+import { useSeededRandom } from '@/hooks/useSeededRandom';
 
 function RoadmapComingSoon() {
+  const rng = useSeededRandom('roadmap-fog');
   const fogIcons = useMemo(() => {
     return Array.from({ length: 24 }).map((_, i) => ({
       id: i,
-      left: `${Math.random() * 100}%`,
-      top: `${Math.random() * 100}%`,
-      duration: `${15 + Math.random() * 20}s`,
-      delay: `${-Math.random() * 20}s`,
-      size: `${5 + Math.random() * 8}rem`,
-      opacity: 0.3 + Math.random() * 0.4,
+      left: `${rng.next() * 100}%`,
+      top: `${rng.next() * 100}%`,
+      duration: `${15 + rng.next() * 20}s`,
+      delay: `${-rng.next() * 20}s`,
+      size: `${5 + rng.next() * 8}rem`,
+      opacity: 0.3 + rng.next() * 0.4,
     }));
   }, []);
 
