@@ -1,0 +1,4 @@
+﻿
+> react-vite-app@0.8.0 diet
+> knip
+

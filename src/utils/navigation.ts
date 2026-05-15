@@ -9,7 +9,7 @@ import { APP_CONFIG } from '@/config/app';
 /**
  * Interface for Quiz Page Parameters
  */
-import type { GameMode, Tier } from '../types/quiz';
+import type { GameMode, Tier } from '@/features/quiz';
 
 /**
  * Interface for Quiz Page Parameters

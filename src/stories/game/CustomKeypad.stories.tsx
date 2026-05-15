@@ -1,6 +1,6 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
 import React from 'react';
-import { CustomKeypad } from '@/components/CustomKeypad';
+import { CustomKeypad } from '@/features/quiz';
 
 // Keypad needs special styling container to look good (usually it's at the bottom)
 const KeypadContainer = (Story: React.ComponentType) => (

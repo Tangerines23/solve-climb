@@ -1,10 +1,9 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { render, screen } from '@testing-library/react';
+import { render, screen, fireEvent } from '@testing-library/react';
 import '@testing-library/jest-dom';
 import { BrowserRouter } from 'react-router-dom';
 import { FooterNav } from '../FooterNav';
-import { useProfileStore } from '../../stores/useProfileStore';
-import { useAuthStore } from '../../stores/useAuthStore';
+import { useProfileStore, useAuthStore } from '@/features/auth';
 
 // Mock useNavigate and useLocation
 const mockNavigate = vi.fn();
@@ -19,11 +18,11 @@ vi.mock('react-router-dom', async () => {
   };
 });
 
-vi.mock('../../stores/useProfileStore', () => ({
+vi.mock('@/features/auth/stores/useProfileStore', () => ({
   useProfileStore: vi.fn(),
 }));
 
-vi.mock('../../stores/useAuthStore', () => ({
+vi.mock('@/features/auth/stores/useAuthStore', () => ({
   useAuthStore: vi.fn(),
 }));
 
@@ -67,7 +66,7 @@ describe('FooterNav', () => {
     renderFooterNav();
 
     const rankingButton = screen.getByText('랭킹');
-    rankingButton.click();
+    fireEvent.click(rankingButton);
 
     expect(mockNavigate).toHaveBeenCalled();
   });
@@ -78,7 +77,7 @@ describe('FooterNav', () => {
     renderFooterNav();
 
     const homeButton = screen.getByText('홈');
-    homeButton.click();
+    fireEvent.click(homeButton);
 
     expect(scrollToSpy).toHaveBeenCalledWith({ top: 0, behavior: 'smooth' });
     expect(mockNavigate).toHaveBeenCalled();
@@ -92,7 +91,7 @@ describe('FooterNav', () => {
     renderFooterNav();
 
     const homeButton = screen.getByText('홈');
-    homeButton.click();
+    fireEvent.click(homeButton);
 
     expect(scrollToSpy).toHaveBeenCalled();
     // Should not navigate if already on home
@@ -128,7 +127,7 @@ describe('FooterNav', () => {
     renderFooterNav();
 
     const rankingButton = screen.getByText('랭킹');
-    rankingButton.click();
+    fireEvent.click(rankingButton);
 
     expect(mockNavigate).toHaveBeenCalledWith('/ranking');
   });
@@ -138,7 +137,7 @@ describe('FooterNav', () => {
     renderFooterNav();
 
     const roadmapButton = screen.getByText('일지');
-    roadmapButton.click();
+    fireEvent.click(roadmapButton);
 
     expect(mockNavigate).toHaveBeenCalledWith('/roadmap');
   });
@@ -148,7 +147,7 @@ describe('FooterNav', () => {
     renderFooterNav();
 
     const myButton = screen.getByText('마이');
-    myButton.click();
+    fireEvent.click(myButton);
 
     expect(mockNavigate).toHaveBeenCalledWith('/my-page');
   });

@@ -1,0 +1,148 @@
+﻿// ?쇰낯???덈씪媛??濡쒕쭏吏 留ㅽ븨 ?곗씠??
+export interface HiraganaMapping {
+  hiragana: string;
+  romaji: string;
+}
+
+// 湲곕낯 ?덈씪媛??46??+ ?곸쓬, 諛섑긽?? ?붿쓬 ?ы븿
+export const HIRAGANA_MAPPINGS: HiraganaMapping[] = [
+  // 湲곕낯 紐⑥쓬
+  { hiragana: '??, romaji: 'a' },
+  { hiragana: '??, romaji: 'i' },
+  { hiragana: '??, romaji: 'u' },
+  { hiragana: '??, romaji: 'e' },
+  { hiragana: '??, romaji: 'o' },
+  
+  // K??  { hiragana: '??, romaji: 'ka' },
+  { hiragana: '??, romaji: 'ki' },
+  { hiragana: '??, romaji: 'ku' },
+  { hiragana: '??, romaji: 'ke' },
+  { hiragana: '??, romaji: 'ko' },
+  
+  // S??  { hiragana: '??, romaji: 'sa' },
+  { hiragana: '??, romaji: 'shi' },
+  { hiragana: '??, romaji: 'su' },
+  { hiragana: '??, romaji: 'se' },
+  { hiragana: '??, romaji: 'so' },
+  
+  // T??  { hiragana: '??, romaji: 'ta' },
+  { hiragana: '??, romaji: 'chi' },
+  { hiragana: '??, romaji: 'tsu' },
+  { hiragana: '??, romaji: 'te' },
+  { hiragana: '??, romaji: 'to' },
+  
+  // N??  { hiragana: '??, romaji: 'na' },
+  { hiragana: '??, romaji: 'ni' },
+  { hiragana: '??, romaji: 'nu' },
+  { hiragana: '??, romaji: 'ne' },
+  { hiragana: '??, romaji: 'no' },
+  
+  // H??  { hiragana: '??, romaji: 'ha' },
+  { hiragana: '??, romaji: 'hi' },
+  { hiragana: '??, romaji: 'fu' },
+  { hiragana: '??, romaji: 'he' },
+  { hiragana: '??, romaji: 'ho' },
+  
+  // M??  { hiragana: '??, romaji: 'ma' },
+  { hiragana: '??, romaji: 'mi' },
+  { hiragana: '?', romaji: 'mu' },
+  { hiragana: '??, romaji: 'me' },
+  { hiragana: '??, romaji: 'mo' },
+  
+  // Y??  { hiragana: '??, romaji: 'ya' },
+  { hiragana: '??, romaji: 'yu' },
+  { hiragana: '??, romaji: 'yo' },
+  
+  // R??  { hiragana: '??, romaji: 'ra' },
+  { hiragana: '??, romaji: 'ri' },
+  { hiragana: '??, romaji: 'ru' },
+  { hiragana: '??, romaji: 're' },
+  { hiragana: '??, romaji: 'ro' },
+  
+  // W??  { hiragana: '??, romaji: 'wa' },
+  { hiragana: '??, romaji: 'wo' },
+  { hiragana: '??, romaji: 'n' },
+  
+  // ?곸쓬 (嚥곲윹)
+  { hiragana: '??, romaji: 'ga' },
+  { hiragana: '??, romaji: 'gi' },
+  { hiragana: '??, romaji: 'gu' },
+  { hiragana: '??, romaji: 'ge' },
+  { hiragana: '??, romaji: 'go' },
+  { hiragana: '??, romaji: 'za' },
+  { hiragana: '??, romaji: 'ji' },
+  { hiragana: '??, romaji: 'zu' },
+  { hiragana: '??, romaji: 'ze' },
+  { hiragana: '??, romaji: 'zo' },
+  { hiragana: '??, romaji: 'da' },
+  { hiragana: '??, romaji: 'ji' },
+  { hiragana: '??, romaji: 'zu' },
+  { hiragana: '??, romaji: 'de' },
+  { hiragana: '??, romaji: 'do' },
+  { hiragana: '??, romaji: 'ba' },
+  { hiragana: '??, romaji: 'bi' },
+  { hiragana: '??, romaji: 'bu' },
+  { hiragana: '??, romaji: 'be' },
+  { hiragana: '??, romaji: 'bo' },
+  
+  // 諛섑긽??(?딀퓖??
+  { hiragana: '??, romaji: 'pa' },
+  { hiragana: '??, romaji: 'pi' },
+  { hiragana: '??, romaji: 'pu' },
+  { hiragana: '??, romaji: 'pe' },
+  { hiragana: '??, romaji: 'po' },
+];
+
+/**
+ * ?쒕뜡 ?덈씪媛??臾몄젣 ?앹꽦
+ */
+export function generateJapaneseQuestion(difficulty: 'easy' | 'medium' | 'hard'): {
+  hiragana: string;
+  romaji: string;
+} {
+  // ?쒖씠?꾩뿉 ?곕씪 ?ъ슜???덈씪媛??踰붿쐞 議곗젙
+  let availableMappings: HiraganaMapping[];
+  
+  switch (difficulty) {
+    case 'easy':
+      // 湲곕낯 紐⑥쓬 + K, S, T, N, H, M?됰쭔 (湲곗큹)
+      availableMappings = HIRAGANA_MAPPINGS.filter(m => {
+        const firstChar = m.hiragana[0];
+        return ['??, '??, '??, '??, '??, '??, '??, '??, '??, '??, 
+                '??, '??, '??, '??, '??, '??, '??, '??, '??, '??,
+                '??, '??, '??, '??, '??, '??, '??, '??, '??, '??,
+                '??, '??, '?', '??, '??].includes(firstChar);
+      });
+      break;
+    case 'medium':
+      // 湲곕낯 ?덇??쇰굹 46??(Y, R, W???ы븿)
+      availableMappings = HIRAGANA_MAPPINGS.filter(m => {
+        const romaji = m.romaji;
+        return romaji.length <= 2; // 湲곕낯 臾몄옄留?(?붿쓬 ?쒖쇅)
+      });
+      break;
+    case 'hard':
+      // 紐⑤뱺 ?덈씪媛??(?곸쓬, 諛섑긽???ы븿)
+      availableMappings = HIRAGANA_MAPPINGS;
+      break;
+    default:
+      availableMappings = HIRAGANA_MAPPINGS;
+  }
+  
+  // ?쒕뜡?쇰줈 ?섎굹 ?좏깮
+  const randomIndex = Math.floor(Math.random() * availableMappings.length);
+  const selected = availableMappings[randomIndex];
+  
+  return {
+    hiragana: selected.hiragana,
+    romaji: selected.romaji,
+  };
+}
+
+/**
+ * 濡쒕쭏吏 ?듭븞 ?뺢퇋??(??뚮Ц?? 怨듬갚 臾댁떆)
+ */
+export function normalizeRomaji(input: string): string {
+  return input.toLowerCase().trim();
+}
+

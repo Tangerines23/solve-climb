@@ -4,11 +4,19 @@ globs: ['src/**/*.ts', 'src/**/*.tsx']
 alwaysApply: true
 ---
 
-# 코드 품질 규칙
+# 코드 품질 및 객체 체조 (Object Calisthenics)
+
+본 프로젝트는 극단적인 클린 코드를 위해 **객체 체조 원칙**을 엄격히 준수합니다.
+
+## 객체 체조 핵심 규칙 (Object Calisthenics)
+
+1. **Else 키워드 전면 금지**: `else` 및 `else if` 사용을 금지합니다. 가드 클로즈(Guard Clauses)와 Early Return으로 대체하십시오.
+2. **함수 들여쓰기(Depth) 1단계 유지**: `if`, `for`, `switch` 등의 중첩을 최소화하여 로직을 평탄화(Flatten)하십시오. 2단계 이상이 필요하다면 별도 함수로 추출하십시오.
+3. **가드 클로즈 (Guard Clauses)**: 예외 및 실패 조건은 함수의 최상단에서 먼저 처리하고 즉시 반환하십시오.
 
 ## ESLint 핵심 규칙
 
-- `@typescript-eslint/no-explicit-any`: **warn** (새 코드는 error)
+- `@typescript-eslint/no-explicit-any`: **ERROR** (any 사용 엄격 금지)
 - `no-unused-vars`: TypeScript 규칙 사용 (`^_` 패턴 허용)
 
 ## 로깅 규칙
@@ -23,11 +31,18 @@ logger.info('Component', '데이터 로드 완료', { data });
 logger.error('API', '요청 실패', error);
 ```
 
-## TypeScript 규칙
+## 타입 안전성 (Zero Any & SSOT)
 
-- `strict: true` 활성화
-- `noUnusedLocals`, `noUnusedParameters` 활성화
-- 인터페이스로 Props 타입 명시
+- **any 사용 금지**: 어떠한 경우에도 `any`를 사용하지 마십시오. 필요한 경우 제네릭이나 `unknown`을 사용하고 타입을 좁히십시오.
+- **SSOT (Single Source of Truth)**: Supabase DB 스키마 관련 타입은 수동으로 interface를 선언하지 말고, `src/types/database.types.ts`의 `Database` 타입에서 추출하여 사용하십시오.
+
+```typescript
+// ✅ 올바른 타입 추출 방식
+import { Database } from '@/types/database.types';
+
+type Profile = Database['public']['Tables']['profiles']['Row'];
+type UpdateProfile = Database['public']['Tables']['profiles']['Update'];
+```
 
 ```typescript
 // ✅ 명시적 타입 정의
@@ -51,13 +66,13 @@ export function Button({ label, onClick, variant = 'primary' }: ButtonProps) {
 
 ## 네이밍 컨벤션
 
-| 대상       | 패턴                   | 예시                   |
-| ---------- | ---------------------- | ---------------------- |
-| 컴포넌트   | PascalCase             | `QuizCard.tsx`         |
-| 훅         | camelCase + use 접두사 | `useQuizStore.ts`      |
-| 유틸리티   | camelCase              | `formatNumber.ts`      |
-| 상수       | UPPER_SNAKE_CASE       | `MAX_LEVEL = 15`       |
-| CSS 클래스 | kebab-case             | `.quiz-card-container` |
+| 대상       | 패턴                   | 위치 예시 (Feature 내부 권장) |
+| ---------- | ---------------------- | ---------------------------- |
+| 컴포넌트   | PascalCase             | `features/quiz/components/QuizCard.tsx` |
+| 스토어     | camelCase + use 접두사 | `features/auth/stores/useAuthStore.ts` |
+| 훅         | camelCase + use 접두사 | `features/quiz/hooks/useQuizLogic.ts` |
+| 유틸리티   | camelCase              | `features/quiz/utils/mathEngine.ts` |
+| 상수       | UPPER_SNAKE_CASE       | `constants/index.ts` (전역) |
 
 ### DB 품질 관리 (DB Quality)
 

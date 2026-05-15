@@ -2,10 +2,10 @@
 
 /**
  * 마이그레이션 파일 검증 스크립트
- * 
+ *
  * 사용법:
  *   node scripts/check-migrations.js
- * 
+ *
  * 검증 항목:
  *   - 마이그레이션 파일명 형식 (YYYYMMDDHHMMSS_description.sql)
  *   - 마이그레이션 파일 목록 확인
@@ -35,7 +35,7 @@ function validateMigrationFiles() {
   }
 
   const files = fs.readdirSync(MIGRATIONS_DIR);
-  const sqlFiles = files.filter(file => file.endsWith('.sql'));
+  const sqlFiles = files.filter((file) => file.endsWith('.sql'));
 
   if (sqlFiles.length === 0) {
     console.log('⚠️  마이그레이션 파일이 없습니다.');
@@ -45,7 +45,7 @@ function validateMigrationFiles() {
   const errors = [];
   const warnings = [];
 
-  sqlFiles.forEach(file => {
+  sqlFiles.forEach((file) => {
     const filePath = path.join(MIGRATIONS_DIR, file);
 
     // 파일명 형식 검증
@@ -53,7 +53,7 @@ function validateMigrationFiles() {
       // 형식에 맞지 않는 파일은 경고로 처리 (Supabase CLI에서도 Skip됨)
       warnings.push({
         file,
-        message: `파일명 형식이 올바르지 않습니다. 형식: YYYYMMDDHHMMSS_description.sql (Supabase CLI에서 Skip됨)`
+        message: `파일명 형식이 올바르지 않습니다. 형식: YYYYMMDDHHMMSS_description.sql (Supabase CLI에서 Skip됨)`,
       });
       return;
     }
@@ -63,7 +63,7 @@ function validateMigrationFiles() {
     if (content.length === 0) {
       warnings.push({
         file,
-        message: '파일이 비어있습니다.'
+        message: '파일이 비어있습니다.',
       });
     }
 
@@ -72,19 +72,56 @@ function validateMigrationFiles() {
     if (!hasSqlKeywords && content.length > 0) {
       warnings.push({
         file,
-        message: 'SQL 키워드가 없거나 주석만 있는 파일일 수 있습니다.'
+        message: 'SQL 키워드가 없거나 주석만 있는 파일일 수 있습니다.',
+      });
+    }
+
+    // 보안/위험 요소 확인
+    if (/GRANT\s+ALL/i.test(content)) {
+      errors.push({
+        file,
+        message: '보안 위험: "GRANT ALL" 사용이 감지되었습니다. 구체적인 권한만 부여하세요.',
+      });
+    }
+    if (/ALTER\s+ROLE/i.test(content)) {
+      warnings.push({
+        file,
+        message: '주의: "ALTER ROLE" 사용이 감지되었습니다. 권한 설정을 재확인하세요.',
+      });
+    }
+    if (/DROP\s+TABLE\s+(?!IF\s+EXISTS)/i.test(content)) {
+      warnings.push({
+        file,
+        message: '주의: "IF EXISTS" 없이 "DROP TABLE"을 사용했습니다.',
+      });
+    }
+
+    // [강화] SECURITY DEFINER 함수 체크 (search_path 설정 권장)
+    if (/SECURITY\s+DEFINER/i.test(content) && !/SET\s+search_path\s*=/i.test(content)) {
+      warnings.push({
+        file,
+        message:
+          "보안 주의: SECURITY DEFINER 함수는 반드시 SET search_path = '' (또는 구체적인 스키마) 설정을 포함해야 합니다.",
+      });
+    }
+
+    // [강화] Public 스키마에 대한 불필요한 권한 부여 체크
+    if (/GRANT\s+\w+\s+ON\s+ALL\s+TABLES\s+IN\s+SCHEMA\s+public/i.test(content)) {
+      warnings.push({
+        file,
+        message: '보안 주의: public 스키마의 모든 테이블에 대한 일괄 권한 부여는 지양해야 합니다.',
       });
     }
   });
 
   // 형식에 맞는 파일만 필터링
-  const validFiles = sqlFiles.filter(file => MIGRATION_FILE_PATTERN.test(file));
+  const validFiles = sqlFiles.filter((file) => MIGRATION_FILE_PATTERN.test(file));
 
   // 결과 출력
   if (validFiles.length > 0) {
     console.log(`✅ 검증된 마이그레이션 파일: ${validFiles.length}개`);
     console.log('\n📋 마이그레이션 파일 목록:');
-    validFiles.forEach(file => {
+    validFiles.forEach((file) => {
       console.log(`   ✅ ${file}`);
     });
   }
@@ -110,7 +147,7 @@ function validateMigrationFiles() {
 // 메인 실행
 try {
   const result = validateMigrationFiles();
-  
+
   if (!result.valid) {
     console.error('\n❌ 마이그레이션 파일 검증 실패');
     process.exit(1);
@@ -125,4 +162,3 @@ try {
   console.error('❌ 검증 중 오류 발생:', error.message);
   process.exit(1);
 }
-

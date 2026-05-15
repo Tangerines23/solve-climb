@@ -206,53 +206,6 @@ $$;
 REVOKE ALL ON FUNCTION public.update_user_tier(pg_catalog.uuid) FROM PUBLIC;
 GRANT EXECUTE ON FUNCTION public.update_user_tier(pg_catalog.uuid) TO authenticated;
 
--- 6. submit_game_result
-CREATE OR REPLACE FUNCTION public.submit_game_result(
-  p_user_answers pg_catalog.jsonb, 
-  p_question_ids pg_catalog.jsonb, 
-  p_game_mode pg_catalog.text, 
-  p_items_used pg_catalog.int4[], 
-  p_session_id pg_catalog.uuid, 
-  p_category pg_catalog.text, 
-  p_subject pg_catalog.text, 
-  p_level pg_catalog.int4, 
-  p_avg_solve_time pg_catalog.float8
-)
-RETURNS pg_catalog.jsonb 
-LANGUAGE plpgsql 
-SECURITY DEFINER 
-SET search_path = '' 
-AS $$
-DECLARE
-  v_user_id pg_catalog.uuid := auth.uid();
-  v_calculated_score pg_catalog.int4;
-  v_earned_minerals pg_catalog.int4;
-BEGIN
-  -- Suppress unused parameter lints
-  PERFORM p_user_answers, p_question_ids, p_game_mode, p_items_used, p_category, p_subject, p_avg_solve_time;
-
-  PERFORM pg_catalog.set_config('app.bypass_profile_security', 'true', true);
-  
-  IF NOT EXISTS (SELECT 1 FROM public.game_sessions WHERE id = p_session_id AND user_id = v_user_id) THEN
-    RETURN pg_catalog.jsonb_build_object('success', false, 'message', 'Session not found'::pg_catalog.text);
-  END IF;
-
-  v_calculated_score := (100 * p_level)::pg_catalog.int4; 
-  UPDATE public.game_sessions SET status = 'completed'::pg_catalog.text, score = v_calculated_score WHERE id = p_session_id;
-  
-  UPDATE public.profiles SET last_game_submit_at = pg_catalog.now() WHERE id = v_user_id; 
-  
-  v_earned_minerals := LEAST(pg_catalog.floor(v_calculated_score::pg_catalog.numeric / 10)::pg_catalog.int4, 10000);
-  UPDATE public.profiles SET minerals = minerals + v_earned_minerals WHERE id = v_user_id;
-  
-  PERFORM pg_catalog.set_config('app.bypass_profile_security', '', true);
-  
-  RETURN pg_catalog.jsonb_build_object('success', true, 'earned_minerals', v_earned_minerals, 'calculated_score', v_calculated_score);
-END;
-$$;
-
-REVOKE ALL ON FUNCTION public.submit_game_result(pg_catalog.jsonb, pg_catalog.jsonb, pg_catalog.text, pg_catalog.int4[], pg_catalog.uuid, pg_catalog.text, pg_catalog.text, pg_catalog.int4, pg_catalog.float8) FROM PUBLIC;
-GRANT EXECUTE ON FUNCTION public.submit_game_result(pg_catalog.jsonb, pg_catalog.jsonb, pg_catalog.text, pg_catalog.int4[], pg_catalog.uuid, pg_catalog.text, pg_catalog.text, pg_catalog.int4, pg_catalog.float8) TO authenticated;
 
 -- 7. purchase_item
 CREATE OR REPLACE FUNCTION public.purchase_item(p_item_id pg_catalog.int4, p_quantity pg_catalog.int4 DEFAULT 1)

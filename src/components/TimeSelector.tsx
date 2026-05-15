@@ -1,4 +1,4 @@
-import { TimeLimit } from '../stores/useQuizStore';
+import { TimeLimit } from '@/features/quiz';
 import './TimeSelector.css';
 
 interface TimeSelectorProps {

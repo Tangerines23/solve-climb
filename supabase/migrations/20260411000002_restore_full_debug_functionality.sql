@@ -348,7 +348,7 @@ BEGIN
     FOR v_i IN 1..p_iterations LOOP
         -- Internal call to submit_game_result
         SELECT public.submit_game_result(
-            '[]'::jsonb, '[]'::jsonb, p_game_mode, ARRAY[]::INTEGER[], 
+            '[]'::jsonb, '[]'::jsonb, p_game_mode, '[]'::jsonb, 
             extensions.gen_random_uuid(), p_category_id, p_subject_id, p_level, 1.0
         ) INTO v_it_result;
 

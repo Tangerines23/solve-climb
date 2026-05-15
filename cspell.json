@@ -67,7 +67,15 @@
     "DEATHNOTE",
     "TTFB",
     "Glassmorphism",
-    "unstub"
+    "unstub",
+    "fkey",
+    "fetchpriority",
+    "ilike",
+    "refetched",
+    "refetching",
+    "UNRANKED",
+    "unranked",
+    "noninteractive"
   ],
   "ignorePaths": [
     "node_modules",

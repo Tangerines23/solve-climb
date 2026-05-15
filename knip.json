@@ -1,6 +1,6 @@
 {
   "$schema": "https://unpkg.com/knip@5/schema.json",
-  "vitest": false,
+  "vitest": true,
   "entry": ["src/main.tsx", "src/utils/tossAuth.ts"],
   "project": ["src/**/*.{ts,tsx}"],
   "ignore": [
@@ -9,7 +9,6 @@
     "src/types/**",
     "src/utils/navigation.ts",
     "src/utils/tossGameLogin.ts",
-    "src/utils/MathProblemGenerator.ts",
     "src/utils/seededRandom.ts"
   ],
   "ignoreExportsUsedInFile": true,

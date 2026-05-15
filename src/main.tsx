@@ -1,25 +1,26 @@
 import ReactDOM from 'react-dom/client';
 import React from 'react';
 import * as Sentry from '@sentry/react';
+import { logger } from '@/utils/logger';
+
+import { ENV, logEnvInfo } from '@/utils/env';
 
 Sentry.init({
-  dsn: import.meta.env.VITE_SENTRY_DSN as string,
+  dsn: ENV.VITE_SENTRY_DSN,
   integrations: [Sentry.browserTracingIntegration(), Sentry.replayIntegration()],
   // 프로덕션에서 Sentry 오버헤드 최소화
   tracesSampleRate: import.meta.env.PROD ? 0.05 : 1.0,
   replaysSessionSampleRate: 0.05,
   replaysOnErrorSampleRate: 1.0,
-  enabled: !!import.meta.env.VITE_SENTRY_DSN && !window.navigator.userAgent.includes('Lighthouse'),
+  enabled: !!ENV.VITE_SENTRY_DSN && !window.navigator.userAgent.includes('Lighthouse'),
   environment: import.meta.env.MODE,
   release: 'solve-climb@1.2.0',
 });
 
 import '@/index.css';
-import '@/utils/tossAuth';
+import '@/features/auth/utils/tossAuth';
 import AppContainer from '@/AppContainer';
 
-import { logger } from '@/utils/logger';
-import { logEnvInfo } from '@/utils/env';
 import { performanceMonitor } from '@/utils/performance';
 
 // 성능 모니터링 시작

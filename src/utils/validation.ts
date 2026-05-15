@@ -73,8 +73,16 @@ export const safeAccess = <T extends object>(
   if (!obj || key === null || key === undefined) return undefined;
   const keyStr = String(key);
   if (Object.prototype.hasOwnProperty.call(obj, keyStr)) {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any, security/detect-object-injection
-    return (obj as Record<string, any>)[keyStr];
+    // eslint-disable-next-line security/detect-object-injection
+    return (obj as Record<string, unknown>)[keyStr];
   }
   return undefined;
+};
+/**
+ * UUID 형식 검증 함수 (PostgreSQL UUID 타입과 호환)
+ */
+export const isValidUUID = (uuid: string | null | undefined): boolean => {
+  if (!uuid) return false;
+  const uuidPattern = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+  return uuidPattern.test(uuid);
 };

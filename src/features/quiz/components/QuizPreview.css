@@ -1,0 +1,142 @@
+.preview-header-controls {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-md);
+}
+
+.preview-nav-button {
+  background: none;
+  border: none;
+  color: var(--color-text-primary);
+  font-size: var(--font-size-2xl);
+  cursor: pointer;
+  padding: var(--spacing-xs);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 32px;
+  min-height: 32px;
+  border-radius: var(--rounded-xs);
+  transition: background-color 0.2s;
+}
+
+.preview-nav-button:hover {
+  background-color: var(--glass-bg-medium);
+}
+
+.preview-title {
+  font-size: var(--font-size-xl);
+  font-weight: bold;
+  color: var(--color-text-primary);
+}
+
+.preview-form {
+  /* Inherits .question-answer-group flex behavior from QuizPage.css */
+}
+
+/* Ensure the quiz-card in preview has the same sophisticated style as in-game */
+.quiz-page .quiz-card {
+  height: auto;
+  min-height: clamp(280px, 45vh, 400px);
+  max-height: 50vh;
+  margin-bottom: var(--spacing-lg);
+  flex-shrink: 0;
+}
+
+.preview-keyboard-container {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  flex: 1;
+  min-height: 250px;
+  /* Allow horizontal scroll for staggered QWERTY rows if container is very narrow */
+  overflow-x: auto;
+  overflow-y: hidden;
+  padding: 0 var(--spacing-xl) var(--spacing-xl) var(--spacing-xl);
+  box-sizing: border-box;
+  /* Hide scrollbar but allow scrolling */
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+.preview-keyboard-container::-webkit-scrollbar {
+  display: none;
+}
+
+/* Fix for QWERTY crookedness/clipping */
+.preview-keyboard-container .qwerty-keypad {
+  width: fit-content;
+  min-width: 100%;
+  max-width: none;
+  margin: 0 auto;
+  /* Extra side padding to accommodate row transforms */
+  padding-left: var(--spacing-3xl);
+  padding-right: var(--spacing-3xl);
+  box-sizing: border-box;
+}
+
+/* Custom keypad should also respect the padding */
+.preview-keyboard-container .keypad-container {
+  width: 100%;
+  max-width: var(--modal-width-portrait);
+  margin: 0 auto;
+}
+
+@media (orientation: landscape) {
+  .quiz-page .quiz-card {
+    max-height: calc(100vh - 120px);
+    flex: 1.2;
+  }
+}
+
+.preview-keyboard-switcher {
+  position: fixed;
+  top: var(--spacing-small-alt);
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-md);
+  background: var(--overlay-dark-high);
+  padding: var(--spacing-tiny) var(--spacing-lg);
+  border-radius: var(--rounded-xl);
+  backdrop-filter: blur(8px);
+  border: var(--border-width-sm) solid var(--glass-border-low);
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+  pointer-events: auto;
+}
+
+.preview-nav-label {
+  color: white;
+  font-weight: 600;
+  font-size: var(--font-size-medium);
+  min-width: 100px;
+  text-align: center;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
+}
+
+.preview-nav-button {
+  background: var(--glass-bg-medium);
+  border: none;
+  color: white;
+  width: 28px;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--rounded-full);
+  cursor: pointer;
+  font-size: var(--font-size-xl);
+  transition: all 0.2s;
+}
+
+.preview-nav-button:hover {
+  background: var(--glass-bg-high);
+  transform: scale(1.1);
+}
+
+.preview-nav-button:active {
+  transform: scale(0.9);
+}

@@ -192,7 +192,7 @@ export async function openLeaderboard(
 
     // 로컬 개발 환경에서는 시뮬레이션만 수행
     if (isLocalDevelopment() && !isTossAppEnvironment()) {
-      const message = '토스 앱에서만 리더보드를 볼 수 있습니다.';
+      const message = '현재 개발 중인 기능입니다. 곧 만나보실 수 있어요!';
       if (onError) onError(message);
       return { success: false, message };
     }
@@ -200,7 +200,7 @@ export async function openLeaderboard(
     // 토스 앱 환경이 아니면 열지 않음
     if (!isTossAppEnvironment()) {
       console.warn('[토스 게임 센터] 브라우저 환경에서는 리더보드를 열 수 없습니다.');
-      const message = '토스 앱에서만 리더보드를 볼 수 있습니다.';
+      const message = '현재 개발 중인 기능입니다. 곧 만나보실 수 있어요!';
       if (onError) onError(message);
       return { success: false, message };
     }

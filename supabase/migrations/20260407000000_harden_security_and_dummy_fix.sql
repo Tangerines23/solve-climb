@@ -133,7 +133,7 @@ END;
 $function$;
 
 -- 2.3 submit_game_result
-CREATE OR REPLACE FUNCTION public.submit_game_result(p_user_answers jsonb, p_question_ids jsonb, p_game_mode text, p_items_used integer[], p_session_id uuid, p_category text, p_subject text, p_level integer, p_avg_solve_time double precision)
+CREATE OR REPLACE FUNCTION public.submit_game_result(p_user_answers jsonb, p_question_ids jsonb, p_game_mode text, p_items_used jsonb, p_session_id uuid, p_category text, p_subject text, p_level integer, p_avg_solve_time float8)
  RETURNS jsonb
  LANGUAGE plpgsql
  SECURITY DEFINER

@@ -1,16 +1,23 @@
 import { useEffect } from 'react';
 import { resilientLazy } from '@/utils/resilientLazy';
 import { Routes, Route, Navigate } from 'react-router-dom';
-import { useLevelProgressStore } from '@/stores/useLevelProgressStore';
-import { useAuthStore } from '@/stores/useAuthStore';
+import { useLevelProgressStore } from '@/features/quiz';
+import { useAuthStore } from '@/features/auth';
 import { useCustomBackNavigation } from '@/hooks/useCustomBackNavigation';
 import { GlobalLoadingIndicator } from '@/components/GlobalLoadingIndicator';
-import { useErrorLogStore } from '@/stores/useErrorLogStore';
-import { useDebugStore } from '@/stores/useDebugStore';
-import { useSettingsStore } from '@/stores/useSettingsStore';
+import { useErrorLogStore } from '@/features/debug/stores/useErrorLogStore';
+import { useDebugStore } from '@/features/debug/stores/useDebugStore';
+import { useSettingsStore } from '@/features/mypage/stores/useSettingsStore';
 import { useConnectivity } from '@/hooks/useConnectivity';
 import { PwaUpdateNotification } from '@/components/PwaUpdateNotification';
-import { RequireAuth } from '@/components/auth/RequireAuth';
+import { RequireAuth } from '@/features/auth';
+import { useUserStore } from '@/features/auth';
+import { useQuizStore, type TimeLimit } from '@/features/quiz';
+import { logger } from '@/utils/logger';
+import { registerHapticConfig } from '@/utils/haptic';
+import { registerDebugConfig } from '@/features/debug/utils/debugFetch';
+import { registerDebugBridge } from '@/features/debug/hooks/useQuickActionsDebugBridge';
+import { STATUS } from '@/constants/status';
 
 const HomePage = resilientLazy(
   () => import('@/pages/HomePage').then((module) => ({ default: module.HomePage })),
@@ -18,20 +25,19 @@ const HomePage = resilientLazy(
 );
 import { GlobalToastContainer } from '@/components/GlobalToastContainer';
 const CategorySelectPage = resilientLazy(
-  () =>
-    import('@/pages/CategorySelectPage').then((module) => ({ default: module.CategorySelectPage })),
+  () => import('@/features/quiz').then((module) => ({ default: module.CategorySelectPage })),
   'CategorySelectPage'
 );
 const LevelSelectPage = resilientLazy(
-  () => import('@/pages/LevelSelectPage').then((module) => ({ default: module.LevelSelectPage })),
+  () => import('@/features/quiz').then((module) => ({ default: module.LevelSelectPage })),
   'LevelSelectPage'
 );
 const QuizPage = resilientLazy(
-  () => import('@/pages/QuizPage').then((module) => ({ default: module.QuizPage })),
+  () => import('@/features/quiz').then((module) => ({ default: module.QuizPage })),
   'QuizPage'
 );
 const ResultPage = resilientLazy(
-  () => import('@/pages/ResultPage').then((module) => ({ default: module.ResultPage })),
+  () => import('@/features/quiz').then((module) => ({ default: module.ResultPage })),
   'ResultPage'
 );
 const RankingPage = resilientLazy(
@@ -43,7 +49,7 @@ const RoadmapPage = resilientLazy(
   'RoadmapPage'
 );
 const MyPage = resilientLazy(
-  () => import('@/pages/MyPage').then((module) => ({ default: module.MyPage })),
+  () => import('@/features/mypage').then((module) => ({ default: module.MyPage })),
   'MyPage'
 );
 const NotificationPage = resilientLazy(
@@ -51,52 +57,56 @@ const NotificationPage = resilientLazy(
   'NotificationPage'
 );
 const DebugPage = resilientLazy(
-  () => import('@/pages/DebugPage').then((module) => ({ default: module.DebugPage })),
+  () => import('@/features/debug').then((module) => ({ default: module.DebugPage })),
   'DebugPage'
 );
 const PrivacyPolicyPage = resilientLazy(
   () =>
-    import('@/pages/PrivacyPolicyPage').then((module) => ({ default: module.PrivacyPolicyPage })),
+    import('@/features/auth/pages/PrivacyPolicyPage').then((module) => ({
+      default: module.PrivacyPolicyPage,
+    })),
   'PrivacyPolicyPage'
 );
 // AuthCallbackPage & AuthTestPage imports removed
 const ShopPage = resilientLazy(
-  () => import('@/pages/ShopPage').then((module) => ({ default: module.ShopPage })),
+  () => import('@/features/item').then((module) => ({ default: module.ShopPage })),
   'ShopPage'
 );
 
 // ⚠️ 개발 환경에서만 디버그 컴포넌트 로드 (CI 환경 제외)
 const isCI = import.meta.env.VITE_CI === 'true';
-const shouldShowDebug = !import.meta.env.PROD && !isCI;
+const isAuditMode =
+  typeof window !== 'undefined' && (window as any).__ENABLE_VISUAL_GUARDIAN__ === true;
+const shouldShowDebug = (!import.meta.env.PROD && !isCI) || isAuditMode;
 
 const DebugPanel = !shouldShowDebug
   ? () => null
-  : resilientLazy(() => import('./components/DebugPanel'), 'DebugPanel');
+  : resilientLazy(
+      () => import('@/features/debug').then((m) => ({ default: m.DebugPanel })),
+      'DebugPanel'
+    );
 const DebugOverlay = !shouldShowDebug
   ? () => null
   : resilientLazy(
-      () => import('./components/debug/DebugOverlay').then((m) => ({ default: m.DebugOverlay })),
+      () => import('@/features/debug').then((m) => ({ default: m.DebugOverlay })),
       'DebugOverlay'
     );
 const DebugReturnFloater = !shouldShowDebug
   ? () => null
   : resilientLazy(
-      () =>
-        import('./components/debug/DebugReturnFloater').then((m) => ({
-          default: m.DebugReturnFloater,
-        })),
+      () => import('@/features/debug').then((m) => ({ default: m.DebugReturnFloater })),
       'DebugReturnFloater'
     );
 const VisualGuardian = !shouldShowDebug
   ? () => null
   : resilientLazy(
-      () => import('./components/dev/VisualGuardian').then((m) => ({ default: m.VisualGuardian })),
+      () => import('@/features/debug').then((m) => ({ default: m.VisualGuardian })),
       'VisualGuardian'
     );
 const DebugShortcutsWrapper = !shouldShowDebug
   ? () => null
   : resilientLazy(
-      () => import('./components/debug/DebugShortcutsWrapper'),
+      () => import('@/features/debug').then((m) => ({ default: m.DebugShortcutsWrapper })),
       'DebugShortcutsWrapper'
     );
 
@@ -111,7 +121,9 @@ function App() {
   useCustomBackNavigation();
 
   const { isDebugPanelOpen } = useDebugStore(); // Debug store state for conditional rendering
-  const animationEnabled = useSettingsStore((state) => state.animationEnabled);
+  const animationEnabled = useSettingsStore(
+    (state: { animationEnabled: boolean }) => state.animationEnabled
+  );
 
   // 정적 UI 모드 전환 (body 클래스 제어)
   useEffect(() => {
@@ -136,7 +148,7 @@ function App() {
       useErrorLogStore
         .getState()
         .addLog(
-          'error',
+          STATUS.ERROR,
           event.message || 'Unknown error',
           event.error?.stack,
           `Global: ${event.filename || 'unknown'}:${event.lineno || 0}`
@@ -149,7 +161,7 @@ function App() {
       useErrorLogStore
         .getState()
         .addLog(
-          'error',
+          STATUS.ERROR,
           `Unhandled Promise Rejection: ${error.message}`,
           error.stack,
           'Global: UnhandledRejection'
@@ -163,6 +175,37 @@ function App() {
       window.removeEventListener('error', handleError);
       window.removeEventListener('unhandledrejection', handleUnhandledRejection);
     };
+  }, []);
+
+  // Logger -> Store 동기화 등록
+  useEffect(() => {
+    const unregister = logger.registerHandler((level, message, stack, context) => {
+      useErrorLogStore.getState().addLog(level, message, stack, context);
+    });
+    return unregister;
+  }, []);
+
+  // Utility -> Store 동기화 등록
+  useEffect(() => {
+    registerHapticConfig(() => useSettingsStore.getState().hapticEnabled);
+    registerDebugConfig(() => ({
+      networkLatency: useDebugStore.getState().networkLatency,
+      forceNetworkError: useDebugStore.getState().forceNetworkError,
+    }));
+    registerDebugBridge({
+      setMinerals: async (val: number) => {
+        await useUserStore.getState().debugSetMinerals(val);
+      },
+      setStamina: async (val: number) => {
+        await useUserStore.getState().debugSetStamina(val);
+      },
+      setTimeLimit: (val: number) => {
+        useQuizStore.getState().setTimeLimit(val as TimeLimit);
+      },
+      fetchUserData: async () => {
+        await useUserStore.getState().fetchUserData();
+      },
+    });
   }, []);
 
   return (

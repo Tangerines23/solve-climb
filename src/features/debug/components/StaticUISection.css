@@ -1,0 +1,91 @@
+.static-ui-section {
+  background: rgba(0, 0, 0, 0.2);
+  border-radius: var(--rounded-card);
+  padding: var(--spacing-lg);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.main-toggle {
+  margin-bottom: var(--spacing-2xl);
+  background: rgba(255, 255, 255, 0.03);
+  padding: var(--spacing-md);
+  border-radius: var(--rounded-sm);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.static-effects-audit {
+  margin-top: var(--spacing-xl);
+}
+
+.static-effects-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: var(--spacing-md);
+  margin-top: var(--spacing-md);
+}
+
+.static-effect-card {
+  background: rgba(255, 255, 255, 0.05);
+  padding: var(--spacing-md);
+  border-radius: var(--rounded-md-alt);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  transition: all 0.3s ease;
+}
+
+.static-effect-card.suppressed {
+  opacity: 0.6;
+  filter: grayscale(1);
+  border-style: dashed;
+}
+
+.effect-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: var(--spacing-tiny);
+}
+
+.effect-title {
+  font-weight: 700;
+  font-size: 0.9rem;
+  color: var(--color-blue-400);
+}
+
+.suppressed .effect-title {
+  color: var(--adaptiveGrey500);
+  text-decoration: line-through;
+}
+
+.effect-status-tag {
+  font-size: 0.7rem;
+  padding: var(--spacing-micro) var(--spacing-tiny);
+  border-radius: var(--rounded-2xs);
+  background: rgba(255, 255, 255, 0.1);
+  font-weight: 800;
+}
+
+.suppressed .effect-status-tag {
+  background: var(--adaptiveRed500);
+  color: var(--color-text-primary);
+}
+
+.effect-description {
+  font-size: 0.75rem;
+  color: var(--adaptiveGrey400);
+  line-height: 1.4;
+}
+
+.static-ui-notice {
+  margin-top: var(--spacing-2xl);
+  padding: var(--spacing-md);
+  background: rgba(59, 130, 246, 0.05);
+  border-left: 3px solid var(--color-blue-500);
+  border-radius: var(--rounded-2xs);
+}
+
+.static-ui-notice p {
+  font-size: 0.7rem;
+  color: var(--adaptiveBlue300);
+  margin: 0;
+  line-height: 1.5;
+}

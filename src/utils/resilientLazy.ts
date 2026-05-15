@@ -5,8 +5,7 @@ import { logger } from './logger';
  * React.lazy를 래핑하여 네트워크 에러(ChunkLoadError) 발생 시
  * 회복 탄력성을 제공하는 유틸리티입니다.
  */
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-export function resilientLazy<T extends ComponentType<any>>(
+export function resilientLazy<P extends object, T extends ComponentType<P>>(
   importFn: () => Promise<{ default: T }>,
   componentName = 'Unknown'
 ) {

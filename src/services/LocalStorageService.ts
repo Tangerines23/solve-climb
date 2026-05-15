@@ -15,7 +15,7 @@ export class LocalStorageService implements IStorageService {
 
       try {
         return JSON.parse(item) as T;
-      } catch (_parseError) {
+      } catch {
         // JSON 파싱 실패 시, T가 string이면 원본 그대로 반환 시도
         // 이는 setString 등으로 raw string이 저장된 경우를 위함
         return item as unknown as T;

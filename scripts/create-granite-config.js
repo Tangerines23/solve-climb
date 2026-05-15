@@ -2,10 +2,10 @@
 
 /**
  * 배포용 granite.config.js 자동 생성 스크립트
- * 
+ *
  * 사용법:
  *   node scripts/create-granite-config.js
- * 
+ *
  * 이 스크립트는 dist/web/granite.config.js 파일을 생성합니다.
  * import 없이 순수 JavaScript로 작성되어 .ait 파일 배포 시 node_modules 없이도 동작합니다.
  */
@@ -52,4 +52,3 @@ if (!fs.existsSync(distPath)) {
 // granite.config.js 파일 생성
 fs.writeFileSync(configPath, configContent, 'utf-8');
 console.log('✓ Created dist/granite.config.js');
-

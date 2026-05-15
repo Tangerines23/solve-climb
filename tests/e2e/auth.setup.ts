@@ -47,12 +47,15 @@ setup('authenticate once (anonymous)', async ({ page }) => {
       try {
         const data = JSON.parse(content);
         const currentPort = process.env.E2E_DEV_PORT || '5173';
-        const expectedOrigin = `http://localhost:${currentPort}`;
+        const expectedOrigin = `http://127.0.0.1:${currentPort}`;
 
         let originUpdated = false;
         if (Array.isArray(data.origins)) {
           data.origins.forEach((org: { origin: string }) => {
-            if (org.origin && org.origin.includes('localhost')) {
+            if (
+              org.origin &&
+              (org.origin.includes('localhost') || org.origin.includes('127.0.0.1'))
+            ) {
               if (org.origin !== expectedOrigin) {
                 console.log(`[auth.setup] Updating origin from ${org.origin} to ${expectedOrigin}`);
                 org.origin = expectedOrigin;

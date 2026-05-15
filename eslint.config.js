@@ -1,104 +1,240 @@
-import storybook from 'eslint-plugin-storybook';
 import js from '@eslint/js';
 import globals from 'globals';
 import reactHooks from 'eslint-plugin-react-hooks';
 import reactRefresh from 'eslint-plugin-react-refresh';
+import tseslint from 'typescript-eslint';
+import boundaries from 'eslint-plugin-boundaries';
 import security from 'eslint-plugin-security';
-import tseslint from '@typescript-eslint/eslint-plugin';
-import tsparser from '@typescript-eslint/parser';
+import jsxA11y from 'eslint-plugin-jsx-a11y';
 
-export default [
+export default tseslint.config(
+  { ignores: ['dist', 'node_modules', '.agent', 'scripts/archive'] },
   {
-    ignores: [
-      '**/dist/**',
-      'node_modules',
-      'android/**',
-      'proxy-server/**',
-      'playwright-report/**',
-      'test-results/**',
-      '**/*.js.map',
+    extends: [
+      js.configs.recommended,
+      ...tseslint.configs.recommended,
+      security.configs.recommended,
+      jsxA11y.flatConfigs.recommended,
     ],
-  },
-  js.configs.recommended,
-  {
-    plugins: {
-      security,
+    files: ['**/*.{ts,tsx}'],
+    languageOptions: {
+      ecmaVersion: 2020,
+      globals: globals.browser,
     },
-    rules: {
-      ...security.configs.recommended.rules,
-    },
-  },
-  {
     plugins: {
       'react-hooks': reactHooks,
       'react-refresh': reactRefresh,
+      security,
+      boundaries,
     },
     rules: {
       ...reactHooks.configs.recommended.rules,
       'react-refresh/only-export-components': ['warn', { allowConstantExport: true }],
-    },
-  },
-  {
-    files: ['**/*.{js,jsx,ts,tsx}'],
-    ignores: ['**/*.backup.tsx', '**/*.refactored.tsx'],
-    languageOptions: {
-      parser: tsparser,
-      ecmaVersion: 2020,
-      globals: {
-        ...globals.browser,
-        ...globals.es2020,
-      },
-      parserOptions: {
-        ecmaVersion: 'latest',
-        ecmaFeatures: { jsx: true },
-        sourceType: 'module',
-      },
-    },
-    plugins: {
-      '@typescript-eslint': tseslint,
-    },
-    rules: {
-      ...tseslint.configs.recommended.rules,
       '@typescript-eslint/no-unused-vars': [
-        'error',
+        'warn',
+        { argsIgnorePattern: '^_', varsIgnorePattern: '^_' },
+      ],
+      '@typescript-eslint/no-explicit-any': 'warn',
+      '@typescript-eslint/no-require-imports': 'off',
+      'no-else-return': 'warn',
+      'no-lonely-if': 'warn',
+      'max-depth': ['warn', 1],
+      'jsx-a11y/anchor-is-valid': 'warn',
+      'jsx-a11y/click-events-have-key-events': 'warn',
+      'jsx-a11y/no-static-element-interactions': 'warn',
+      'jsx-a11y/label-has-associated-control': 'off',
+    },
+    settings: {
+      'import/resolver': {
+        typescript: {
+          alwaysTryTypes: true,
+          project: './tsconfig.json',
+        },
+      },
+      'boundaries/elements': [
         {
-          varsIgnorePattern: '^[A-Z_]|^_',
-          argsIgnorePattern: '^[A-Z_]|^_',
-          caughtErrorsIgnorePattern: '^[A-Z_]|^_',
+          type: 'component',
+          pattern: 'src/components/**',
+        },
+        {
+          type: 'component/quiz',
+          pattern: 'src/components/quiz/**',
+          mode: 'folder',
+        },
+        {
+          type: 'component/my',
+          pattern: 'src/components/my/**',
+          mode: 'folder',
+        },
+        {
+          type: 'component/algebra',
+          pattern: 'src/components/algebra/**',
+          mode: 'folder',
+        },
+        {
+          type: 'component/roadmap',
+          pattern: 'src/components/roadmap/**',
+          mode: 'folder',
+        },
+        {
+          type: 'component/common',
+          pattern: 'src/components/common/**',
+          mode: 'folder',
+        },
+        {
+          type: 'component/ui',
+          pattern: 'src/components/ui/**',
+          mode: 'folder',
+        },
+        {
+          type: 'feature/public',
+          pattern: ['src/features/*/index.ts', 'src/features/*'],
+          capture: ['domain'],
+        },
+        {
+          type: 'feature/internal',
+          pattern: 'src/features/*/**',
+          capture: ['domain'],
+          private: true,
+        },
+        {
+          type: 'hook',
+          pattern: 'src/hooks/**',
+        },
+        {
+          type: 'util',
+          pattern: 'src/utils/**',
+        },
+        {
+          type: 'store',
+          pattern: 'src/stores/**',
+        },
+        {
+          type: 'page',
+          pattern: 'src/pages/**',
+        },
+        {
+          type: 'type',
+          pattern: 'src/types/**',
+        },
+        {
+          type: 'config',
+          pattern: 'src/config/**',
+        },
+        {
+          type: 'test',
+          pattern: 'tests/**',
+        },
+        {
+          type: 'test/unit',
+          pattern: 'src/**/__tests__/**',
         },
       ],
-      'no-unused-vars': 'off',
-      '@typescript-eslint/no-explicit-any': 'warn',
-      'no-undef': 'off',
     },
   },
   {
-    files: ['**/__tests__/**/*.{ts,tsx}', '**/*.test.{ts,tsx}', '**/*.spec.{ts,tsx}'],
-    rules: {
-      '@typescript-eslint/no-explicit-any': 'off',
-    },
-  },
-  {
-    files: ['src/new-features/**/*.{ts,tsx}'],
-    rules: {
-      '@typescript-eslint/no-explicit-any': 'error',
-    },
-  },
-  ...storybook.configs['flat/recommended'],
-  {
-    files: ['scripts/**/*.{js,cjs}', 'scripts/*.{js,cjs}'],
-    languageOptions: {
-      ecmaVersion: 2020,
-      globals: globals.node,
+    files: ['src/**/*.{ts,tsx}', 'tests/**/*.{ts,tsx}'],
+    ignores: [
+      'src/**/__tests__/**',
+      'src/**/*.test.{ts,tsx}',
+      'src/**/*.spec.{ts,tsx}',
+      'tests/**/*.spec.ts',
+    ],
+    plugins: {
+      boundaries,
     },
     rules: {
-      'no-unused-vars': 'off',
-      'no-undef': 'off',
-      'security/detect-non-literal-fs-filename': 'off',
-      'security/detect-object-injection': 'off',
-      'security/detect-child-process': 'off',
-      'security/detect-non-literal-require': 'off',
-      'security/detect-non-literal-regexp': 'off',
+      'boundaries/dependencies': [
+        'error',
+        {
+          default: 'allow',
+          rules: [
+            {
+              from: { type: 'component' },
+              disallow: [{ to: { type: 'util' } }, { to: { type: 'store' } }],
+              message:
+                'UI Components must not import Utils or Stores directly. Use Hooks as a bridge.',
+            },
+            {
+              from: { type: 'page' },
+              disallow: [{ to: { type: 'util' } }, { to: { type: 'store' } }],
+              message: 'Pages must not import Utils or Stores directly. Use Hooks as a bridge.',
+            },
+            {
+              from: { type: 'hook' },
+              disallow: [{ to: { type: 'component' } }, { to: { type: 'page' } }],
+              message: 'Hooks must not import UI Components or Pages.',
+            },
+            {
+              from: { type: 'util' },
+              disallow: [
+                { to: { type: 'hook' } },
+                { to: { type: 'store' } },
+                { to: { type: 'component' } },
+                { to: { type: 'page' } },
+              ],
+              message: 'Utils must be pure and not depend on Hooks, Stores, or UI.',
+            },
+            {
+              from: { type: 'store' },
+              disallow: [
+                { to: { type: 'component' } },
+                { to: { type: 'page' } },
+                { to: { type: 'hook' } },
+              ],
+              message: 'Stores must not depend on UI or Hooks.',
+            },
+            {
+              from: { type: 'component/quiz' },
+              disallow: [{ to: { type: 'component/my' } }, { to: { type: 'component/roadmap' } }],
+              message:
+                'Quiz components should not depend on MyPage or Roadmap components directly.',
+            },
+            {
+              from: { type: 'component/my' },
+              disallow: [{ to: { type: 'component/quiz' } }, { to: { type: 'component/roadmap' } }],
+              message:
+                'MyPage components should not depend on Quiz or Roadmap components directly.',
+            },
+            {
+              from: { type: 'component/roadmap' },
+              disallow: [{ to: { type: 'component/my' } }],
+              message: 'Roadmap components should not depend on MyPage components directly.',
+            },
+            {
+              from: { type: '*' },
+              disallow: [{ to: { type: 'feature/internal' } }],
+              message:
+                'Feature internals must not be accessed from outside. Use the barrel file (@/features/[domain]) instead.',
+            },
+            {
+              from: { type: 'feature/internal' },
+              allow: [
+                { to: { type: 'feature/internal', captured: { domain: '{{from.domain}}' } } },
+                { to: { type: 'feature/public' } },
+                { to: { type: 'type' } },
+                { to: { type: 'config' } },
+                { to: { type: 'util' } },
+                { to: { type: 'context' } },
+              ],
+              disallow: [{ to: { type: 'store' } }, { to: { type: 'hook' } }],
+              message:
+                'Feature internals should stay within their domain or use public APIs. Avoid legacy global stores/hooks directly.',
+            },
+            {
+              from: { type: 'test' },
+              disallow: [{ to: { type: 'feature/internal' } }],
+              message:
+                'Tests must not import feature internals. Use public APIs (@/features/[domain]).',
+            },
+            {
+              from: { type: 'test/unit' },
+              disallow: [{ to: { type: 'feature/internal' } }],
+              message: 'Unit tests should prefer public APIs to avoid coupling to internals.',
+            },
+          ],
+        },
+      ],
     },
-  },
-];
+  }
+);

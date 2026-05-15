@@ -4,12 +4,12 @@
   left: 0;
   right: 0;
   background-color: var(--color-gray-900);
-  border-bottom: 1px solid var(--color-bg-secondary);
-  z-index: 100;
+  border-bottom: var(--border-width-sm) solid var(--color-bg-secondary);
+  z-index: var(--z-header);
   padding: 0 var(--spacing-md);
-  -webkit-backdrop-filter: blur(10px);
-  backdrop-filter: blur(10px);
-  background-color: rgba(18, 18, 18, 0.9);
+  -webkit-backdrop-filter: blur(var(--backdrop-blur));
+  backdrop-filter: blur(var(--backdrop-blur));
+  background-color: var(--bg-glass-overlay);
 }
 
 .header-content {
@@ -20,7 +20,8 @@
   max-width: 100%;
   gap: var(--spacing-sm);
   padding: var(--spacing-xs) 0;
-  /* Add slight vertical padding for fluid safety */
+  min-width: 0; /* Ensure content can shrink */
+  overflow: hidden; /* Prevent child overflow from affecting layout */
 }
 
 /* 가로모드에서 헤더 높이 축소 */
@@ -34,16 +35,16 @@
   }
 
   .header-logo {
-    font-size: 1.125rem;
+    font-size: var(--font-size-lg);
   }
 
   .header-icon-button {
-    font-size: 1.375rem;
+    font-size: var(--font-size-2xl);
   }
 }
 
 .header-logo {
-  font-size: 1.05rem;
+  font-size: var(--font-size-lg);
   font-weight: bold;
   color: var(--color-text-primary);
   margin: 0;
@@ -61,33 +62,40 @@
 }
 
 .header-logo.has-custom-title {
-  font-size: 1.2rem;
+  font-size: var(--font-size-xl);
 }
 
 .header-back-button {
   background: none;
   border: none;
   color: var(--color-text-primary);
-  font-size: 24px;
+  font-size: var(--font-size-2xl);
   cursor: pointer;
   padding: var(--spacing-xs);
   margin-right: var(--spacing-xs);
   display: flex;
   align-items: center;
   justify-content: center;
+  transition: all 0.2s ease;
+}
+
+.header-back-button:active {
+  transform: scale(0.9);
+  opacity: 0.6;
 }
 
 .header-icons {
   display: flex;
   gap: var(--spacing-sm);
   align-items: center;
-  flex-shrink: 0;
+  flex-shrink: 1; /* Allow to shrink if needed */
+  min-width: 0;
 }
 
 .header-icon-button {
   background: none;
   border: none;
-  font-size: 1.3rem;
+  font-size: var(--font-size-2xl);
   cursor: pointer;
   padding: var(--spacing-xs);
   transition: opacity 0.2s;
@@ -105,10 +113,12 @@
 .header-status {
   display: flex;
   gap: var(--spacing-xs);
-  background-color: rgba(255, 255, 255, 0.05);
-  padding: 2px var(--spacing-sm);
+  background-color: var(--bg-glass-low);
+  padding: var(--spacing-micro) var(--spacing-sm);
   border-radius: var(--rounded-md);
-  flex-shrink: 0;
+  flex-shrink: 1; /* Allow to shrink if needed */
+  min-width: 0;
+  overflow: hidden;
 }
 
 .status-item {
@@ -116,15 +126,16 @@
   align-items: center;
   justify-content: center;
   gap: var(--spacing-micro);
-  font-size: 0.75rem;
+  font-size: var(--font-size-xs);
   font-weight: 600;
   color: var(--color-text-primary);
-  line-height: 1.2;
+  line-height: var(--line-height-tight);
   padding: var(--spacing-xs) var(--spacing-tiny);
-  min-height: 2rem;
+  min-height: calc(var(--spacing-xl) * 1.5);
   box-sizing: border-box;
   overflow: hidden;
-  /* VG 세로 1px 넘침 방지 */
+  min-width: 0;
+  flex-shrink: 1;
 }
 
 .status-item.clickable {
@@ -132,42 +143,43 @@
 }
 
 .status-icon {
-  font-size: 0.9rem;
-  /* Increase for emojis */
-  line-height: 1.4;
+  font-size: var(--font-size-sm);
+  line-height: var(--line-height-none);
+  min-height: var(--icon-size-sm);
   display: flex;
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
-  /* Ensure emoji/icon has vertical room to prevent clipping */
 }
 
 .status-value {
-  min-width: 1.5rem;
+  min-width: var(--font-size-2xl);
+  min-height: var(--icon-size-sm);
+  display: flex;
+  align-items: center;
+  justify-content: center;
   text-align: center;
-  line-height: 1.4;
-  display: inline-block;
-  /* Extra vertical safety to prevent clipping */
+  line-height: var(--line-height-none);
+  white-space: nowrap;
 }
 
 .recharge-btn {
   background: var(--color-blue-400);
   color: var(--color-text-primary);
   border: none;
-  border-radius: 50%;
-  width: 16px;
-  height: 16px;
+  border-radius: var(--rounded-full);
+  width: var(--spacing-lg);
+  height: var(--spacing-lg);
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 10px;
+  font-size: var(--font-size-2xs);
   font-weight: bold;
   cursor: pointer;
-  margin-left: 4px;
+  margin-left: var(--spacing-xs);
   transition: all 0.2s ease;
   padding: 0;
-  line-height: 1.2;
-  /* Fix potential overflow (was 1) */
+  line-height: var(--line-height-tight);
 }
 
 .recharge-btn:hover {
@@ -180,26 +192,26 @@
 }
 
 .status-item.selected {
-  background-color: rgba(96, 165, 243, 0.2);
+  background-color: var(--color-blue-alpha-20);
   border-radius: var(--rounded-sm);
   padding: 0 var(--spacing-sm);
-  box-shadow: 0 0 8px rgba(96, 165, 243, 0.5);
+  box-shadow: 0 0 var(--spacing-sm) var(--color-blue-alpha-50);
   transition: all 0.2s ease;
 }
 
 .admin-mode-active .header-status {
-  border: 1px solid rgba(255, 165, 0, 0.5);
-  box-shadow: 0 0 10px rgba(255, 165, 0, 0.3);
+  border: var(--border-width-sm) solid var(--color-orange-alpha-50);
+  box-shadow: 0 0 var(--spacing-md) var(--color-orange-alpha-30);
 }
 
 .admin-badge {
   position: absolute;
-  top: 4px;
-  left: 10px;
+  top: var(--spacing-tiny);
+  left: var(--spacing-small-alt);
   background-color: var(--color-confetti-yellow);
   color: var(--color-text-primary);
-  font-size: 0.6rem;
-  padding: 2px var(--spacing-tiny);
+  font-size: var(--font-size-2xs);
+  padding: var(--spacing-micro) var(--spacing-tiny);
   border-radius: var(--rounded-2xs);
   font-weight: bold;
   pointer-events: none;
@@ -224,6 +236,117 @@
   }
 }
 
+/* Small Viewport Optimization (Mobile-First Hardening) */
+@media (max-width: 360px) {
+  .app-header {
+    padding: 0 var(--spacing-xs);
+  }
+
+  .header-content {
+    gap: var(--spacing-tiny);
+  }
+
+  .header-logo {
+    font-size: var(--font-size-sm);
+    flex: 0 1 auto;
+    margin-right: var(--spacing-xs);
+    max-width: 80px; /* Limit logo width to prevent pushing icons out */
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .header-logo.has-custom-title {
+    font-size: var(--font-size-base);
+  }
+
+  .header-status {
+    gap: var(--spacing-micro);
+    padding: var(--spacing-micro) var(--spacing-tiny);
+    flex: 1;
+    justify-content: center;
+  }
+
+  .status-item {
+    gap: var(--spacing-micro);
+    padding: var(--spacing-micro) var(--spacing-tiny);
+    min-height: var(--spacing-xl);
+  }
+
+  .status-icon {
+    font-size: var(--font-size-sm);
+  }
+
+  .status-value {
+    font-size: var(--font-size-2xs);
+    min-width: unset;
+  }
+
+  .recharge-btn {
+    width: var(--spacing-sm);
+    height: var(--spacing-sm);
+    font-size: var(--font-size-3xs);
+    margin-left: var(--spacing-micro);
+  }
+
+  .header-icons {
+    gap: var(--spacing-micro);
+    flex-shrink: 0;
+  }
+
+  .header-icon-button {
+    padding: var(--spacing-xs);
+    font-size: var(--font-size-lg);
+  }
+}
+
+/* Ultra Small Viewport (330px) Extreme Hardening */
+@media (max-width: 330px) {
+  .app-header {
+    padding: 0 var(--spacing-xs);
+  }
+
+  .header-content {
+    gap: 0;
+  }
+
+  .header-logo {
+    display: none; /* Hide logo text to save space */
+  }
+
+  .header-status {
+    flex: 1;
+    justify-content: center;
+    gap: var(--spacing-micro);
+    padding: 0;
+  }
+
+  .status-item {
+    padding: var(--spacing-micro) var(--rounded-micro);
+    gap: var(--border-width-sm);
+    background: none;
+    border: none;
+  }
+
+  .status-value {
+    letter-spacing: -0.5px; /* 고정값 허용: 극소형 레이아웃 보정 */
+    font-size: var(--font-size-2xs);
+  }
+
+  .recharge-btn {
+    display: none !important; /* Hide recharge button at 330px to save space */
+  }
+
+  .header-icons {
+    gap: 0;
+    flex-shrink: 0;
+  }
+
+  .header-icon-button {
+    font-size: var(--font-size-sm);
+    padding: var(--spacing-micro);
+  }
+}
+
 /* 디버그 패널 로딩 스타일 (개발 환경 전용, Suspense fallback용) */
 .debug-panel-loading {
   position: fixed;
@@ -231,10 +354,10 @@
   left: 0;
   right: 0;
   bottom: 0;
-  background: rgba(0, 0, 0, 0.5);
+  background: var(--adaptiveBackgroundDimmed);
   display: flex;
   justify-content: center;
   align-items: center;
-  z-index: 9999;
+  z-index: var(--z-max);
   color: var(--color-text-primary);
 }

@@ -1,5 +1,4 @@
-import { useConnectivity } from '../hooks/useConnectivity';
-import { useToastStore } from '../stores/useToastStore';
+import { useErrorHandling } from '../hooks/useErrorHandling';
 import './ErrorFallback.css';
 
 interface ErrorFallbackProps {
@@ -9,8 +8,7 @@ interface ErrorFallbackProps {
 
 export function ErrorFallback({ error, resetError }: ErrorFallbackProps) {
   const isDevelopment = import.meta.env.DEV;
-  const showToast = useToastStore((state) => state.showToast);
-  const isOnline = useConnectivity();
+  const { copyErrorToClipboard, isOnline } = useErrorHandling();
 
   // 특수 에러 타입 판별
   const isChunkLoadError =
@@ -19,16 +17,7 @@ export function ErrorFallback({ error, resetError }: ErrorFallbackProps) {
     error.message.includes('Loading chunk');
 
   const handleCopyError = () => {
-    const errorText = `[${isChunkLoadError ? 'CHUNK_ERROR' : 'APP_ERROR'}] ${error.message}\n\nURL: ${window.location.href}\nTime: ${new Date().toLocaleString()}\n\nStack:\n${error.stack || ''}`;
-    navigator.clipboard
-      .writeText(errorText)
-      .then(() => {
-        showToast('에러 로그가 복사되었습니다!', '📋');
-      })
-      .catch((err) => {
-        console.error('Failed to copy error:', err);
-        prompt('Ctrl+C를 눌러 복사하세요:', errorText);
-      });
+    copyErrorToClipboard(error, isChunkLoadError);
   };
 
   return (

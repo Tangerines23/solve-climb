@@ -6,18 +6,20 @@
   right: 0;
   bottom: 0;
   background-color: var(--color-gray-900);
-  overflow-y: auto; /* 스크롤 가능하게 */
-  overflow-x: hidden; /* 가로 스크롤 방지 */
-  -webkit-overflow-scrolling: touch; /* iOS 부드러운 스크롤 */
-  overscroll-behavior-y: contain; /* 바운스 효과 제어 */
-  touch-action: pan-y; /* 세로 스크롤만 허용 */
-  will-change: scroll-position; /* 스크롤 성능 최적화 */
+  overflow-y: auto;
+  overflow-x: hidden; /* Strict horizontal boundary */
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior-y: contain;
+  touch-action: pan-y;
+  will-change: scroll-position;
 }
 
 .home-main {
-  padding-top: var(--header-height-portrait); /* Header 높이만큼 여백 */
-  padding-bottom: 80px; /* FooterNav 공간 확보 */
-  min-height: calc(100vh - var(--header-height-portrait)); /* Header 높이 제외 */
+  padding-top: var(--header-height-portrait);
+  padding-bottom: var(--spacing-bottom-nav);
+  min-height: calc(100vh - var(--header-height-portrait));
+  height: auto;
+  overflow: visible;
 }
 
 /* 가로모드에서 패딩 조정 */
@@ -30,9 +32,15 @@
 
 .home-content {
   max-width: var(--modal-width-portrait);
+  width: 100%;
   margin: 0 auto;
-  padding: var(--spacing-xl);
-  padding-bottom: var(--spacing-xl); /* 하단 여백 */
+  padding: var(--spacing-md);
+  box-sizing: border-box;
+  height: auto;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-lg);
 }
 
 /* 가로모드에서 콘텐츠 너비 확장 */
@@ -46,23 +54,23 @@
 .age-rating-overlay {
   position: fixed;
   top: calc(var(--header-height-portrait) + var(--spacing-md));
-  right: var(--spacing-lg);
-  z-index: 10000;
-  padding: var(--spacing-md) var(--spacing-xl);
-  background-color: var(--color-pure-black); /* Solid black for perfect contrast */
-  color: var(--color-pure-white); /* Explicit white */
+  right: var(--spacing-md); /* Reduced from spacing-lg for safety */
+  z-index: var(--z-modal);
+  padding: var(--spacing-sm) var(--spacing-md);
+  background-color: var(--bg-glass-heavy);
+  color: var(--color-text-primary);
   border-radius: var(--rounded-sm);
-  font-size: 1rem;
-  font-weight: 600;
-  box-shadow: var(--shadow-card);
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-semibold);
+  box-shadow: var(--shadow-modal);
   pointer-events: none;
-  border: 2px solid var(--color-blue-400);
-  min-width: 120px;
+  border: var(--border-width-sm) solid var(--color-bg-secondary);
+  max-width: calc(100% - var(--spacing-md) * 2); /* Prevent overflow */
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: var(--spacing-sm);
-  letter-spacing: 0.5px;
+  gap: var(--spacing-xs);
+  letter-spacing: var(--spacing-micro);
   opacity: 0;
   transform: translateY(-10px);
   transition:
@@ -76,8 +84,8 @@
 }
 
 .age-rating-icon {
-  width: 24px;
-  height: 24px;
+  width: var(--icon-size-md);
+  height: var(--icon-size-md);
   object-fit: contain;
 }
 

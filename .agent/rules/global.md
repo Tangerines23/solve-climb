@@ -18,7 +18,7 @@ This file serves as the **Master Protocol**. Detailed standards are defined in `
 
 - **Source of Truth**: strictly follow `.agent/rules/01-tech-stack.md` and `.agent/rules/02-styling-guide.md`.
 - **CSS Variables**: Use `var(--color-...)` and `var(--spacing-...)` variables. **NO hardcoded styles**.
-- **Imports**: Use absolute paths (`@/...`) as defined in `01-tech-stack.md`.
+- **Imports**: 피처 내부는 **상대 경로**, 피처 외부 및 전역 참조는 **절대 경로 별칭(@/)**을 사용합니다. (`01-tech-stack.md` 참조)
 
 ## 3. 🧠 Workflow & Behavior
 

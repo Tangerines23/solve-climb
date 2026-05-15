@@ -1,5 +1,5 @@
 // knip-ignore-next-line
-import type { Meta, StoryObj } from '@storybook/react'; // eslint-disable-line storybook/no-renderer-packages
+import type { Meta, StoryObj } from '@storybook/react';
 import { motion, AnimatePresence } from 'framer-motion';
 import '@/components/effects/Effects.css';
 import '@/index.css';

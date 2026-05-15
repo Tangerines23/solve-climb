@@ -97,7 +97,7 @@ END;
 $$;
 
 -- 4. FIX submit_game_result & secure_reward_ad_view (Remove pg_catalog. from variable GREATEST/LEAST)
-CREATE OR REPLACE FUNCTION public.submit_game_result(p_user_answers jsonb, p_question_ids jsonb, p_game_mode text, p_items_used integer[], p_session_id uuid, p_category text, p_subject text, p_level integer, p_avg_solve_time double precision)
+CREATE OR REPLACE FUNCTION public.submit_game_result(p_user_answers jsonb, p_question_ids jsonb, p_game_mode text, p_items_used jsonb, p_session_id uuid, p_category text, p_subject text, p_level integer, p_avg_solve_time float8)
  RETURNS jsonb LANGUAGE plpgsql SECURITY DEFINER SET search_path = '' AS $$
 DECLARE
   v_user_id UUID := auth.uid();

@@ -33,8 +33,8 @@ export const RankingRecordSchema = z.object({
   score: z.number(),
   rank: z.number(),
   week_start_date: z.string().optional(),
-  tier_level: z.number().optional(),
-  tier_stars: z.number().optional(),
+  tier_level: z.number().nullable(),
+  tier_stars: z.number().nullable(),
 });
 export const RankingListSchema = z.array(RankingRecordSchema);
 

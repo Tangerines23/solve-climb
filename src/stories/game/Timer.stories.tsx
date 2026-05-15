@@ -1,6 +1,6 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
 import React from 'react';
-import { TimerCircle } from '@/components/TimerCircle';
+import { TimerCircle } from '@/features/quiz';
 
 // Timer Container
 const TimerContainer = (Story: React.ComponentType) => (

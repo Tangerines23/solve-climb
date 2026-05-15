@@ -74,7 +74,8 @@ async function run() {
       'VITE_SUPABASE_URL', 
       'VITE_SUPABASE_ANON_KEY', 
       'SUPABASE_DB_PASSWORD', 
-      'SUPABASE_ACCESS_TOKEN'
+      'SUPABASE_ACCESS_TOKEN',
+      'SUPABASE_SERVICE_ROLE_KEY'
     ].filter(key => process.env[key]).flatMap(key => ['-e', `${key}=${process.env[key]}`]),
     IMAGE_NAME,
     '/bin/bash',

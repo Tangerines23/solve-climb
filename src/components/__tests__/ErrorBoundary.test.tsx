@@ -1,7 +1,7 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/react';
 import { ErrorBoundary } from '../ErrorBoundary';
-import { ErrorFallback } from '../ErrorFallback';
+
 import { logError } from '../../utils/errorHandler';
 
 // Mock ErrorFallback
@@ -20,14 +20,25 @@ vi.mock('../../utils/errorHandler', () => ({
 }));
 
 // Mock useErrorLogStore
-const mockAddLog = vi.fn();
-vi.mock('../../stores/useErrorLogStore', () => ({
-  useErrorLogStore: {
-    getState: () => ({
-      addLog: mockAddLog,
-    }),
-  },
-}));
+const { mockAddLog, mockUseErrorLogStore } = vi.hoisted(() => {
+  const addLog = vi.fn();
+  const useStore = vi.fn((selector) => {
+    if (typeof selector === 'function') {
+      return selector({ addLog });
+    }
+    return { addLog };
+  });
+  (useStore as any).getState = () => ({ addLog });
+  return { mockAddLog: addLog, mockUseErrorLogStore: useStore };
+});
+
+vi.mock('@/features/debug', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('@/features/debug')>();
+  return {
+    ...actual,
+    useErrorLogStore: mockUseErrorLogStore,
+  };
+});
 
 // Component that throws error
 const ThrowError = ({ shouldThrow }: { shouldThrow: boolean }) => {
@@ -40,7 +51,6 @@ const ThrowError = ({ shouldThrow }: { shouldThrow: boolean }) => {
 describe('ErrorBoundary', () => {
   const originalEnv = (import.meta as unknown as { env: { DEV: boolean; [key: string]: unknown } })
     .env;
-  const _originalConsoleError = console.error;
 
   beforeEach(() => {
     vi.clearAllMocks();
@@ -124,11 +134,6 @@ describe('ErrorBoundary', () => {
       value: { ...originalEnv, DEV: true },
       writable: true,
     });
-
-    const _error = new Error('Test error');
-    const _errorInfo = {
-      componentStack: 'TestComponent\n  at ErrorBoundary',
-    } as React.ErrorInfo;
 
     render(
       <ErrorBoundary>

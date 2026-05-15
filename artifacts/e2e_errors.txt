@@ -1,0 +1,539 @@
+﻿
+> e2e-visual-layout	Run E2E Visual & A11y	癤?026-05-06T03:33:25.3171875Z ##[group]Run npm run test:e2e:visual
+> e2e-visual-layout	Run E2E Visual & A11y	2026-05-06T03:33:25.3172244Z [36;1mnpm run test:e2e:visual[0m
+> e2e-visual-layout	Run E2E Visual & A11y	2026-05-06T03:33:25.3172511Z [36;1mnpm run test:a11y[0m
+> e2e-visual-layout	Run E2E Visual & A11y	2026-05-06T03:33:25.3194949Z shell: /usr/bin/bash -e {0}
+> e2e-visual-layout	Run E2E Visual & A11y	2026-05-06T03:33:25.3195389Z env:
+> e2e-visual-layout	Run E2E Visual & A11y	2026-05-06T03:33:25.3196476Z   VITE_SUPABASE_URL: ***
+> e2e-visual-layout	Run E2E Visual & A11y	2026-05-06T03:33:25.3197826Z   VITE_SUPABASE_ANON_KEY: ***
+> e2e-visual-layout	Run E2E Visual & A11y	2026-05-06T03:33:25.3198086Z   CI: true
+> e2e-visual-layout	Run E2E Visual & A11y	2026-05-06T03:33:25.3198292Z ##[endgroup]
+> e2e-visual-layout	Run E2E Visual & A11y	2026-05-06T03:33:25.4400648Z 
+> e2e-visual-layout	Run E2E Visual & A11y	2026-05-06T03:33:25.4401538Z > react-vite-app@0.8.0 test:e2e:visual
+> e2e-visual-layout	Run E2E Visual & A11y	2026-05-06T03:33:25.4402702Z > node scripts/run-playwright-with-port.js --gre
+p Visual tests/e2e/visual-regression.spec.ts
+> e2e-visual-layout	Run E2E Visual & A11y	2026-05-06T03:33:25.4403383Z 
+> e2e-visual-layout	Run E2E Visual & A11y	2026-05-06T03:33:28.6521244Z 
+> e2e-visual-layout	Run E2E Visual & A11y	2026-05-06T03:33:28.6522061Z Running 6 tests using 1 worker
+> e2e-visual-layout	Run E2E Visual & A11y	2026-05-06T03:33:29.9733719Z [auth.setup] Attempt 1 starting...
+> e2e-visual-layout	Run E2E Visual & A11y	2026-05-06T03:33:35.8100520Z [auth.setup] Initial auth check: false, URL: htt
+p://localhost:5174/
+> e2e-visual-layout	Run E2E Visual & A11y	2026-05-06T03:33:35.8101399Z [auth.setup] Not authenticated. Navigating to My
+Page Guest View...
+> e2e-visual-layout	Run E2E Visual & A11y	2026-05-06T03:33:46.3875920Z [auth.setup] Anonymous login link not found. URL
+: http://localhost:5174/my-page
+> e2e-visual-layout	Run E2E Visual & A11y	2026-05-06T03:33:46.3876835Z [auth.setup] Checking for Profile Form...
+> e2e-visual-layout	Run E2E Visual & A11y	2026-05-06T03:33:56.3885338Z [auth.setup] Profile Form did not appear or time
+d out. Current URL: http://localhost:5174/my-page
+> e2e-visual-layout	Run E2E Visual & A11y	2026-05-06T03:34:06.4338070Z [auth.setup] Retrying in 2000ms...
+> e2e-visual-layout	Run E2E Visual & A11y	2026-05-06T03:34:08.4334337Z [auth.setup] Attempt 2 starting...
+> e2e-visual-layout	Run E2E Visual & A11y	2026-05-06T03:34:14.0518899Z [auth.setup] Initial auth check: false, URL: htt
+p://localhost:5174/
+> e2e-visual-layout	Run E2E Visual & A11y	2026-05-06T03:34:14.0519803Z [auth.setup] Not authenticated. Navigating to My
+Page Guest View...
+> e2e-visual-layout	Run E2E Visual & A11y	2026-05-06T03:34:24.6141023Z [auth.setup] Anonymous login link not found. URL
+: http://localhost:5174/my-page
+> e2e-visual-layout	Run E2E Visual & A11y	2026-05-06T03:34:24.6142322Z [auth.setup] Checking for Profile Form...
+> e2e-visual-layout	Run E2E Visual & A11y	2026-05-06T03:34:34.6140114Z [auth.setup] Profile Form did not appear or time
+d out. Current URL: http://localhost:5174/my-page
+> e2e-visual-layout	Run E2E Visual & A11y	2026-05-06T03:34:44.6510447Z [auth.setup] Retrying in 4000ms...
+> e2e-visual-layout	Run E2E Visual & A11y	2026-05-06T03:34:48.6507439Z [auth.setup] Attempt 3 starting...
+> e2e-visual-layout	Run E2E Visual & A11y	2026-05-06T03:34:54.2579576Z [auth.setup] Initial auth check: false, URL: htt
+p://localhost:5174/
+> e2e-visual-layout	Run E2E Visual & A11y	2026-05-06T03:34:54.2580516Z [auth.setup] Not authenticated. Navigating to My
+Page Guest View...
+> e2e-visual-layout	Run E2E Visual & A11y	2026-05-06T03:35:04.8179234Z [auth.setup] Anonymous login link not found. URL
+: http://localhost:5174/my-page
+> e2e-visual-layout	Run E2E Visual & A11y	2026-05-06T03:35:04.8180130Z [auth.setup] Checking for Profile Form...
+> e2e-visual-layout	Run E2E Visual & A11y	2026-05-06T03:35:14.8197578Z [auth.setup] Profile Form did not appear or time
+d out. Current URL: http://localhost:5174/my-page
+> e2e-visual-layout	Run E2E Visual & A11y	2026-05-06T03:35:24.8708803Z [auth.setup] Storage state saved to .auth/user.j
+son
+> e2e-visual-layout	Run E2E Visual & A11y	2026-05-06T03:38:26.7368640Z 쨌횞횞F횞횞F횞횞F횞횞
+> e2e-visual-layout	Run E2E Visual & A11y	2026-05-06T03:38:26.7370959Z Timed out waiting 300s for the test suite to run
+> e2e-visual-layout	Run E2E Visual & A11y	2026-05-06T03:38:26.7371777Z 
+> e2e-visual-layout	Run E2E Visual & A11y	2026-05-06T03:38:26.7372618Z Timed out waiting 300s for the teardown for test
+ suite to run
+> e2e-visual-layout	Run E2E Visual & A11y	2026-05-06T03:38:26.7373314Z 
+> e2e-visual-layout	Run E2E Visual & A11y	2026-05-06T03:38:26.7385954Z 
+> e2e-visual-layout	Run E2E Visual & A11y	2026-05-06T03:38:26.7402444Z   1) [chromium] ??tests/e2e/visual-regression.sp
+ec.ts:11:3 ??Visual Regression Testing (VRT) - UI ?쇨???寃利??????붾㈃ (Home Page) 
+> e2e-visual-layout	Run E2E Visual & A11y	2026-05-06T03:38:26.7403292Z 
+> e2e-visual-layout	Run E2E Visual & A11y	2026-05-06T03:38:26.7403664Z     TimeoutError: page.waitForSelector: Timeout 
+15000ms exceeded.
+> e2e-visual-layout	Run E2E Visual & A11y	2026-05-06T03:38:26.7404251Z     Call log:
+> e2e-visual-layout	Run E2E Visual & A11y	2026-05-06T03:38:26.7405480Z     [2m  - waiting for locator('.home-page') to
+ be visible[22m
+> e2e-visual-layout	Run E2E Visual & A11y	2026-05-06T03:38:26.7405876Z 
+> e2e-visual-layout	Run E2E Visual & A11y	2026-05-06T03:38:26.7405887Z 
+> e2e-visual-layout	Run E2E Visual & A11y	2026-05-06T03:38:26.7406090Z       12 |     await page.goto('/');
+> e2e-visual-layout	Run E2E Visual & A11y	2026-05-06T03:38:26.7406979Z       13 |     // networkidle is unstable with S
+upabase realtime. Wait for main content stable state.
+> e2e-visual-layout	Run E2E Visual & A11y	2026-05-06T03:38:26.7407961Z     > 14 |     await page.waitForSelector('.home
+-page', { timeout: 15000 });
+> e2e-visual-layout	Run E2E Visual & A11y	2026-05-06T03:38:26.7408547Z          |                ^
+> e2e-visual-layout	Run E2E Visual & A11y	2026-05-06T03:38:26.7409080Z       15 |     await page.waitForLoadState('domc
+ontentloaded');
+> e2e-visual-layout	Run E2E Visual & A11y	2026-05-06T03:38:26.7409779Z       16 |     // ?좊땲硫붿씠??諛??숈쟻 ?곗씠??濡쒕뵫 ?湲?e2e
+-visual-layout	Run E2E Visual & A11y	2026-05-06T03:38:26.7410277Z       17 |     await page.waitForTimeout(2000);
+> e2e-visual-layout	Run E2E Visual & A11y	2026-05-06T03:38:26.7411111Z         at /home/runner/work/solve-climb/solve-c
+limb/tests/e2e/visual-regression.spec.ts:14:16
+> e2e-visual-layout	Run E2E Visual & A11y	2026-05-06T03:38:26.7412111Z 
+> e2e-visual-layout	Run E2E Visual & A11y	2026-05-06T03:38:26.7412836Z     attachment #1: screenshot (image/png) ???
+???????????????????????????????????????????????????????
+> e2e-visual-layout	Run E2E Visual & A11y	2026-05-06T03:38:26.7414520Z     reports/test-results/visual-regression-Visua
+l-R-066af---UI-?쇨???寃利????붾㈃-Home-Page--chromium/test-failed-1.png
+> e2e-visual-layout	Run E2E Visual & A11y	2026-05-06T03:38:26.7416090Z     ??????????????????????
+????????????????????????????????????????????????????????????
+??????????????
+> e2e-visual-layout	Run E2E Visual & A11y	2026-05-06T03:38:26.7416559Z 
+> e2e-visual-layout	Run E2E Visual & A11y	2026-05-06T03:38:26.7417513Z     Error Context: reports/test-results/visual-r
+egression-Visual-R-066af---UI-?쇨???寃利????붾㈃-Home-Page--chromium/error-context.md
+> e2e-visual-layout	Run E2E Visual & A11y	2026-05-06T03:38:26.7418317Z 
+> e2e-visual-layout	Run E2E Visual & A11y	2026-05-06T03:38:26.7418798Z     Retry #1 ??????????????????
+???????????????????????????????????????????????????????????
+??????????
+> e2e-visual-layout	Run E2E Visual & A11y	2026-05-06T03:38:26.7419091Z 
+> e2e-visual-layout	Run E2E Visual & A11y	2026-05-06T03:38:26.7419313Z     TimeoutError: page.waitForSelector: Timeout 
+15000ms exceeded.
+> e2e-visual-layout	Run E2E Visual & A11y	2026-05-06T03:38:26.7419672Z     Call log:
+> e2e-visual-layout	Run E2E Visual & A11y	2026-05-06T03:38:26.7420078Z     [2m  - waiting for locator('.home-page') to
+ be visible[22m
+> e2e-visual-layout	Run E2E Visual & A11y	2026-05-06T03:38:26.7420336Z 
+> e2e-visual-layout	Run E2E Visual & A11y	2026-05-06T03:38:26.7420342Z 
+> e2e-visual-layout	Run E2E Visual & A11y	2026-05-06T03:38:26.7420472Z       12 |     await page.goto('/');
+> e2e-visual-layout	Run E2E Visual & A11y	2026-05-06T03:38:26.7420986Z       13 |     // networkidle is unstable with S
+upabase realtime. Wait for main content stable state.
+> e2e-visual-layout	Run E2E Visual & A11y	2026-05-06T03:38:26.7421562Z     > 14 |     await page.waitForSelector('.home
+-page', { timeout: 15000 });
+> e2e-visual-layout	Run E2E Visual & A11y	2026-05-06T03:38:26.7421935Z          |                ^
+> e2e-visual-layout	Run E2E Visual & A11y	2026-05-06T03:38:26.7422277Z       15 |     await page.waitForLoadState('domc
+ontentloaded');
+> e2e-visual-layout	Run E2E Visual & A11y	2026-05-06T03:38:26.7422695Z       16 |     // ?좊땲硫붿씠??諛??숈쟻 ?곗씠??濡쒕뵫 ?湲?e2e
+-visual-layout	Run E2E Visual & A11y	2026-05-06T03:38:26.7423013Z       17 |     await page.waitForTimeout(2000);
+> e2e-visual-layout	Run E2E Visual & A11y	2026-05-06T03:38:26.7423532Z         at /home/runner/work/solve-climb/solve-c
+limb/tests/e2e/visual-regression.spec.ts:14:16
+> e2e-visual-layout	Run E2E Visual & A11y	2026-05-06T03:38:26.7423889Z 
+> e2e-visual-layout	Run E2E Visual & A11y	2026-05-06T03:38:26.7424285Z     attachment #1: screenshot (image/png) ???
+???????????????????????????????????????????????????????
+> e2e-visual-layout	Run E2E Visual & A11y	2026-05-06T03:38:26.7425664Z     reports/test-results/visual-regression-Visua
+l-R-066af---UI-?쇨???寃利????붾㈃-Home-Page--chromium-retry1/test-failed-1.png
+> e2e-visual-layout	Run E2E Visual & A11y	2026-05-06T03:38:26.7426975Z     ??????????????????????
+????????????????????????????????????????????????????????????
+??????????????
+> e2e-visual-layout	Run E2E Visual & A11y	2026-05-06T03:38:26.7427634Z 
+> e2e-visual-layout	Run E2E Visual & A11y	2026-05-06T03:38:26.7428156Z     attachment #2: video (video/webm) ?????
+?????????????????????????????????????????????????????????
+> e2e-visual-layout	Run E2E Visual & A11y	2026-05-06T03:38:26.7429107Z     reports/test-results/visual-regression-Visua
+l-R-066af---UI-?쇨???寃利????붾㈃-Home-Page--chromium-retry1/video.webm
+> e2e-visual-layout	Run E2E Visual & A11y	2026-05-06T03:38:26.7429899Z     ??????????????????????
+????????????????????????????????????????????????????????????
+??????????????
+> e2e-visual-layout	Run E2E Visual & A11y	2026-05-06T03:38:26.7430282Z 
+> e2e-visual-layout	Run E2E Visual & A11y	2026-05-06T03:38:26.7431149Z     Error Context: reports/test-results/visual-r
+egression-Visual-R-066af---UI-?쇨???寃利????붾㈃-Home-Page--chromium-retry1/error-context.md
+> e2e-visual-layout	Run E2E Visual & A11y	2026-05-06T03:38:26.7431934Z 
+> e2e-visual-layout	Run E2E Visual & A11y	2026-05-06T03:38:26.7432576Z     attachment #4: trace (application/zip) ???
+??????????????????????????????????????????????????????
+> e2e-visual-layout	Run E2E Visual & A11y	2026-05-06T03:38:26.7434215Z     reports/test-results/visual-regression-Visua
+l-R-066af---UI-?쇨???寃利????붾㈃-Home-Page--chromium-retry1/trace.zip
+> e2e-visual-layout	Run E2E Visual & A11y	2026-05-06T03:38:26.7435054Z     Usage:
+> e2e-visual-layout	Run E2E Visual & A11y	2026-05-06T03:38:26.7435498Z 
+> e2e-visual-layout	Run E2E Visual & A11y	2026-05-06T03:38:26.7436623Z         npx playwright show-trace reports/test-r
+esults/visual-regression-Visual-R-066af---UI-?쇨???寃利????붾㈃-Home-Page--chromium-retry1/trace.zip
+> e2e-visual-layout	Run E2E Visual & A11y	2026-05-06T03:38:26.7437535Z 
+> e2e-visual-layout	Run E2E Visual & A11y	2026-05-06T03:38:26.7438096Z     ??????????????????????
+????????????????????????????????????????????????????????????
+??????????????
+> e2e-visual-layout	Run E2E Visual & A11y	2026-05-06T03:38:26.7438813Z 
+> e2e-visual-layout	Run E2E Visual & A11y	2026-05-06T03:38:26.7439405Z     Retry #2 ??????????????????
+???????????????????????????????????????????????????????????
+??????????
+> e2e-visual-layout	Run E2E Visual & A11y	2026-05-06T03:38:26.7439851Z 
+> e2e-visual-layout	Run E2E Visual & A11y	2026-05-06T03:38:26.7440221Z     TimeoutError: page.waitForSelector: Timeout 
+15000ms exceeded.
+> e2e-visual-layout	Run E2E Visual & A11y	2026-05-06T03:38:26.7440792Z     Call log:
+> e2e-visual-layout	Run E2E Visual & A11y	2026-05-06T03:38:26.7441405Z     [2m  - waiting for locator('.home-page') to
+ be visible[22m
+> e2e-visual-layout	Run E2E Visual & A11y	2026-05-06T03:38:26.7441831Z 
+> e2e-visual-layout	Run E2E Visual & A11y	2026-05-06T03:38:26.7441847Z 
+> e2e-visual-layout	Run E2E Visual & A11y	2026-05-06T03:38:26.7442034Z       12 |     await page.goto('/');
+> e2e-visual-layout	Run E2E Visual & A11y	2026-05-06T03:38:26.7442777Z       13 |     // networkidle is unstable with S
+upabase realtime. Wait for main content stable state.
+> e2e-visual-layout	Run E2E Visual & A11y	2026-05-06T03:38:26.7443594Z     > 14 |     await page.waitForSelector('.home
+-page', { timeout: 15000 });
+> e2e-visual-layout	Run E2E Visual & A11y	2026-05-06T03:38:26.7443971Z          |                ^
+> e2e-visual-layout	Run E2E Visual & A11y	2026-05-06T03:38:26.7444317Z       15 |     await page.waitForLoadState('domc
+ontentloaded');
+> e2e-visual-layout	Run E2E Visual & A11y	2026-05-06T03:38:26.7444767Z       16 |     // ?좊땲硫붿씠??諛??숈쟻 ?곗씠??濡쒕뵫 ?湲?e2e
+-visual-layout	Run E2E Visual & A11y	2026-05-06T03:38:26.7445089Z       17 |     await page.waitForTimeout(2000);
+> e2e-visual-layout	Run E2E Visual & A11y	2026-05-06T03:38:26.7445874Z         at /home/runner/work/solve-climb/solve-c
+limb/tests/e2e/visual-regression.spec.ts:14:16
+> e2e-visual-layout	Run E2E Visual & A11y	2026-05-06T03:38:26.7446401Z 
+> e2e-visual-layout	Run E2E Visual & A11y	2026-05-06T03:38:26.7446816Z     attachment #1: screenshot (image/png) ???
+???????????????????????????????????????????????????????
+> e2e-visual-layout	Run E2E Visual & A11y	2026-05-06T03:38:26.7447733Z     reports/test-results/visual-regression-Visua
+l-R-066af---UI-?쇨???寃利????붾㈃-Home-Page--chromium-retry2/test-failed-1.png
+> e2e-visual-layout	Run E2E Visual & A11y	2026-05-06T03:38:26.7448587Z     ??????????????????????
+????????????????????????????????????????????????????????????
+??????????????
+> e2e-visual-layout	Run E2E Visual & A11y	2026-05-06T03:38:26.7448861Z 
+> e2e-visual-layout	Run E2E Visual & A11y	2026-05-06T03:38:26.7450436Z     Error Context: reports/test-results/visual-r
+egression-Visual-R-066af---UI-?쇨???寃利????붾㈃-Home-Page--chromium-retry2/error-context.md
+> e2e-visual-layout	Run E2E Visual & A11y	2026-05-06T03:38:26.7452103Z 
+> e2e-visual-layout	Run E2E Visual & A11y	2026-05-06T03:38:26.7454179Z   2) [chromium] ??tests/e2e/visual-regression.sp
+ec.ts:29:3 ??Visual Regression Testing (VRT) - UI ?쇨???寃利???留덉씠?섏씠吏 (My Page) 
+> e2e-visual-layout	Run E2E Visual & A11y	2026-05-06T03:38:26.7455960Z 
+> e2e-visual-layout	Run E2E Visual & A11y	2026-05-06T03:38:26.7456378Z     TimeoutError: page.waitForSelector: Timeout 
+15000ms exceeded.
+> e2e-visual-layout	Run E2E Visual & A11y	2026-05-06T03:38:26.7456941Z     Call log:
+> e2e-visual-layout	Run E2E Visual & A11y	2026-05-06T03:38:26.7457571Z     [2m  - waiting for locator('.my-page') to b
+e visible[22m
+> e2e-visual-layout	Run E2E Visual & A11y	2026-05-06T03:38:26.7458246Z 
+> e2e-visual-layout	Run E2E Visual & A11y	2026-05-06T03:38:26.7458261Z 
+> e2e-visual-layout	Run E2E Visual & A11y	2026-05-06T03:38:26.7458546Z       29 |   test('留덉씠?섏씠吏 (My Page)', async ({
+ page }) => {
+> e2e-visual-layout	Run E2E Visual & A11y	2026-05-06T03:38:26.7458951Z       30 |     await page.goto('/my-page');
+> e2e-visual-layout	Run E2E Visual & A11y	2026-05-06T03:38:26.7459620Z     > 31 |     await page.waitForSelector('.my-p
+age', { timeout: 15000 });
+> e2e-visual-layout	Run E2E Visual & A11y	2026-05-06T03:38:26.7459988Z          |                ^
+> e2e-visual-layout	Run E2E Visual & A11y	2026-05-06T03:38:26.7460289Z       32 |     await page.waitForTimeout(1000);
+> e2e-visual-layout	Run E2E Visual & A11y	2026-05-06T03:38:26.7460586Z       33 |
+> e2e-visual-layout	Run E2E Visual & A11y	2026-05-06T03:38:26.7460911Z       34 |     await expect(page).toHaveScreensh
+ot('vrt-my-page.png', {
+> e2e-visual-layout	Run E2E Visual & A11y	2026-05-06T03:38:26.7461497Z         at /home/runner/work/solve-climb/solve-c
+limb/tests/e2e/visual-regression.spec.ts:31:16
+> e2e-visual-layout	Run E2E Visual & A11y	2026-05-06T03:38:26.7461849Z 
+> e2e-visual-layout	Run E2E Visual & A11y	2026-05-06T03:38:26.7462272Z     attachment #1: screenshot (image/png) ???
+???????????????????????????????????????????????????????
+> e2e-visual-layout	Run E2E Visual & A11y	2026-05-06T03:38:26.7463166Z     reports/test-results/visual-regression-Visua
+l-R-515ad----UI-?쇨???寃利?留덉씠?섏씠吏-My-Page--chromium/test-failed-1.png
+> e2e-visual-layout	Run E2E Visual & A11y	2026-05-06T03:38:26.7463974Z     ??????????????????????
+????????????????????????????????????????????????????????????
+??????????????
+> e2e-visual-layout	Run E2E Visual & A11y	2026-05-06T03:38:26.7464298Z 
+> e2e-visual-layout	Run E2E Visual & A11y	2026-05-06T03:38:26.7465379Z     Error Context: reports/test-results/visual-r
+egression-Visual-R-515ad----UI-?쇨???寃利?留덉씠?섏씠吏-My-Page--chromium/error-context.md
+> e2e-visual-layout	Run E2E Visual & A11y	2026-05-06T03:38:26.7466191Z 
+> e2e-visual-layout	Run E2E Visual & A11y	2026-05-06T03:38:26.7466811Z     Retry #1 ??????????????????
+???????????????????????????????????????????????????????????
+??????????
+> e2e-visual-layout	Run E2E Visual & A11y	2026-05-06T03:38:26.7467331Z 
+> e2e-visual-layout	Run E2E Visual & A11y	2026-05-06T03:38:26.7467698Z     TimeoutError: page.waitForSelector: Timeout 
+15000ms exceeded.
+> e2e-visual-layout	Run E2E Visual & A11y	2026-05-06T03:38:26.7468245Z     Call log:
+> e2e-visual-layout	Run E2E Visual & A11y	2026-05-06T03:38:26.7468814Z     [2m  - waiting for locator('.my-page') to b
+e visible[22m
+> e2e-visual-layout	Run E2E Visual & A11y	2026-05-06T03:38:26.7469207Z 
+> e2e-visual-layout	Run E2E Visual & A11y	2026-05-06T03:38:26.7469217Z 
+> e2e-visual-layout	Run E2E Visual & A11y	2026-05-06T03:38:26.7469616Z       29 |   test('留덉씠?섏씠吏 (My Page)', async ({
+ page }) => {
+> e2e-visual-layout	Run E2E Visual & A11y	2026-05-06T03:38:26.7470184Z       30 |     await page.goto('/my-page');
+> e2e-visual-layout	Run E2E Visual & A11y	2026-05-06T03:38:26.7470848Z     > 31 |     await page.waitForSelector('.my-p
+age', { timeout: 15000 });
+> e2e-visual-layout	Run E2E Visual & A11y	2026-05-06T03:38:26.7471448Z          |                ^
+> e2e-visual-layout	Run E2E Visual & A11y	2026-05-06T03:38:26.7471912Z       32 |     await page.waitForTimeout(1000);
+> e2e-visual-layout	Run E2E Visual & A11y	2026-05-06T03:38:26.7472394Z       33 |
+> e2e-visual-layout	Run E2E Visual & A11y	2026-05-06T03:38:26.7472902Z       34 |     await expect(page).toHaveScreensh
+ot('vrt-my-page.png', {
+> e2e-visual-layout	Run E2E Visual & A11y	2026-05-06T03:38:26.7473857Z         at /home/runner/work/solve-climb/solve-c
+limb/tests/e2e/visual-regression.spec.ts:31:16
+> e2e-visual-layout	Run E2E Visual & A11y	2026-05-06T03:38:26.7474472Z 
+> e2e-visual-layout	Run E2E Visual & A11y	2026-05-06T03:38:26.7475427Z     attachment #1: screenshot (image/png) ???
+???????????????????????????????????????????????????????
+> e2e-visual-layout	Run E2E Visual & A11y	2026-05-06T03:38:26.7477008Z     reports/test-results/visual-regression-Visua
+l-R-515ad----UI-?쇨???寃利?留덉씠?섏씠吏-My-Page--chromium-retry1/test-failed-1.png
+> e2e-visual-layout	Run E2E Visual & A11y	2026-05-06T03:38:26.7478424Z     ??????????????????????
+????????????????????????????????????????????????????????????
+??????????????
+> e2e-visual-layout	Run E2E Visual & A11y	2026-05-06T03:38:26.7478868Z 
+> e2e-visual-layout	Run E2E Visual & A11y	2026-05-06T03:38:26.7479510Z     attachment #2: video (video/webm) ?????
+?????????????????????????????????????????????????????????
+> e2e-visual-layout	Run E2E Visual & A11y	2026-05-06T03:38:26.7480914Z     reports/test-results/visual-regression-Visua
+l-R-515ad----UI-?쇨???寃利?留덉씠?섏씠吏-My-Page--chromium-retry1/video.webm
+> e2e-visual-layout	Run E2E Visual & A11y	2026-05-06T03:38:26.7482289Z     ??????????????????????
+????????????????????????????????????????????????????????????
+??????????????
+> e2e-visual-layout	Run E2E Visual & A11y	2026-05-06T03:38:26.7483027Z 
+> e2e-visual-layout	Run E2E Visual & A11y	2026-05-06T03:38:26.7484081Z     Error Context: reports/test-results/visual-r
+egression-Visual-R-515ad----UI-?쇨???寃利?留덉씠?섏씠吏-My-Page--chromium-retry1/error-context.md
+> e2e-visual-layout	Run E2E Visual & A11y	2026-05-06T03:38:26.7485394Z 
+> e2e-visual-layout	Run E2E Visual & A11y	2026-05-06T03:38:26.7486124Z     attachment #4: trace (application/zip) ???
+??????????????????????????????????????????????????????
+> e2e-visual-layout	Run E2E Visual & A11y	2026-05-06T03:38:26.7487571Z     reports/test-results/visual-regression-Visua
+l-R-515ad----UI-?쇨???寃利?留덉씠?섏씠吏-My-Page--chromium-retry1/trace.zip
+> e2e-visual-layout	Run E2E Visual & A11y	2026-05-06T03:38:26.7488469Z     Usage:
+> e2e-visual-layout	Run E2E Visual & A11y	2026-05-06T03:38:26.7488649Z 
+> e2e-visual-layout	Run E2E Visual & A11y	2026-05-06T03:38:26.7489777Z         npx playwright show-trace reports/test-r
+esults/visual-regression-Visual-R-515ad----UI-?쇨???寃利?留덉씠?섏씠吏-My-Page--chromium-retry1/trace.zip
+> e2e-visual-layout	Run E2E Visual & A11y	2026-05-06T03:38:26.7490674Z 
+> e2e-visual-layout	Run E2E Visual & A11y	2026-05-06T03:38:26.7491279Z     ??????????????????????
+????????????????????????????????????????????????????????????
+??????????????
+> e2e-visual-layout	Run E2E Visual & A11y	2026-05-06T03:38:26.7491736Z 
+> e2e-visual-layout	Run E2E Visual & A11y	2026-05-06T03:38:26.7492385Z     Retry #2 ??????????????????
+???????????????????????????????????????????????????????????
+??????????
+> e2e-visual-layout	Run E2E Visual & A11y	2026-05-06T03:38:26.7492873Z 
+> e2e-visual-layout	Run E2E Visual & A11y	2026-05-06T03:38:26.7493241Z     TimeoutError: page.waitForSelector: Timeout 
+15000ms exceeded.
+> e2e-visual-layout	Run E2E Visual & A11y	2026-05-06T03:38:26.7493842Z     Call log:
+> e2e-visual-layout	Run E2E Visual & A11y	2026-05-06T03:38:26.7494441Z     [2m  - waiting for locator('.my-page') to b
+e visible[22m
+> e2e-visual-layout	Run E2E Visual & A11y	2026-05-06T03:38:26.7494839Z 
+> e2e-visual-layout	Run E2E Visual & A11y	2026-05-06T03:38:26.7494848Z 
+> e2e-visual-layout	Run E2E Visual & A11y	2026-05-06T03:38:26.7495362Z       29 |   test('留덉씠?섏씠吏 (My Page)', async ({
+ page }) => {
+> e2e-visual-layout	Run E2E Visual & A11y	2026-05-06T03:38:26.7495920Z       30 |     await page.goto('/my-page');
+> e2e-visual-layout	Run E2E Visual & A11y	2026-05-06T03:38:26.7496573Z     > 31 |     await page.waitForSelector('.my-p
+age', { timeout: 15000 });
+> e2e-visual-layout	Run E2E Visual & A11y	2026-05-06T03:38:26.7497159Z          |                ^
+> e2e-visual-layout	Run E2E Visual & A11y	2026-05-06T03:38:26.7497623Z       32 |     await page.waitForTimeout(1000);
+> e2e-visual-layout	Run E2E Visual & A11y	2026-05-06T03:38:26.7498072Z       33 |
+> e2e-visual-layout	Run E2E Visual & A11y	2026-05-06T03:38:26.7498589Z       34 |     await expect(page).toHaveScreensh
+ot('vrt-my-page.png', {
+> e2e-visual-layout	Run E2E Visual & A11y	2026-05-06T03:38:26.7499546Z         at /home/runner/work/solve-climb/solve-c
+limb/tests/e2e/visual-regression.spec.ts:31:16
+> e2e-visual-layout	Run E2E Visual & A11y	2026-05-06T03:38:26.7500174Z 
+> e2e-visual-layout	Run E2E Visual & A11y	2026-05-06T03:38:26.7500902Z     attachment #1: screenshot (image/png) ???
+???????????????????????????????????????????????????????
+> e2e-visual-layout	Run E2E Visual & A11y	2026-05-06T03:38:26.7502668Z     reports/test-results/visual-regression-Visua
+l-R-515ad----UI-?쇨???寃利?留덉씠?섏씠吏-My-Page--chromium-retry2/test-failed-1.png
+> e2e-visual-layout	Run E2E Visual & A11y	2026-05-06T03:38:26.7504107Z     ??????????????????????
+????????????????????????????????????????????????????????????
+??????????????
+> e2e-visual-layout	Run E2E Visual & A11y	2026-05-06T03:38:26.7504571Z 
+> e2e-visual-layout	Run E2E Visual & A11y	2026-05-06T03:38:26.7505919Z     Error Context: reports/test-results/visual-r
+egression-Visual-R-515ad----UI-?쇨???寃利?留덉씠?섏씠吏-My-Page--chromium-retry2/error-context.md
+> e2e-visual-layout	Run E2E Visual & A11y	2026-05-06T03:38:26.7506859Z 
+> e2e-visual-layout	Run E2E Visual & A11y	2026-05-06T03:38:26.7507819Z   3) [chromium] ??tests/e2e/visual-regression.sp
+ec.ts:40:3 ??Visual Regression Testing (VRT) - UI ?쇨???寃利????곸젏 ?섏씠吏 (Shop Page) 
+> e2e-visual-layout	Run E2E Visual & A11y	2026-05-06T03:38:26.7508555Z 
+> e2e-visual-layout	Run E2E Visual & A11y	2026-05-06T03:38:26.7508903Z     TimeoutError: page.waitForSelector: Timeout 
+15000ms exceeded.
+> e2e-visual-layout	Run E2E Visual & A11y	2026-05-06T03:38:26.7509678Z     Call log:
+> e2e-visual-layout	Run E2E Visual & A11y	2026-05-06T03:38:26.7510294Z     [2m  - waiting for locator('.shop-page') to
+ be visible[22m
+> e2e-visual-layout	Run E2E Visual & A11y	2026-05-06T03:38:26.7510706Z 
+> e2e-visual-layout	Run E2E Visual & A11y	2026-05-06T03:38:26.7510716Z 
+> e2e-visual-layout	Run E2E Visual & A11y	2026-05-06T03:38:26.7511069Z       40 |   test('?곸젏 ?섏씠吏 (Shop Page)', async
+ ({ page }) => {
+> e2e-visual-layout	Run E2E Visual & A11y	2026-05-06T03:38:26.7511640Z       41 |     await page.goto('/shop');
+> e2e-visual-layout	Run E2E Visual & A11y	2026-05-06T03:38:26.7512315Z     > 42 |     await page.waitForSelector('.shop
+-page', { timeout: 15000 });
+> e2e-visual-layout	Run E2E Visual & A11y	2026-05-06T03:38:26.7512913Z          |                ^
+> e2e-visual-layout	Run E2E Visual & A11y	2026-05-06T03:38:26.7513381Z       43 |     await page.waitForTimeout(1000);
+> e2e-visual-layout	Run E2E Visual & A11y	2026-05-06T03:38:26.7513846Z       44 |
+> e2e-visual-layout	Run E2E Visual & A11y	2026-05-06T03:38:26.7514386Z       45 |     await expect(page).toHaveScreensh
+ot('vrt-shop-page.png', {
+> e2e-visual-layout	Run E2E Visual & A11y	2026-05-06T03:38:26.7515581Z         at /home/runner/work/solve-climb/solve-c
+limb/tests/e2e/visual-regression.spec.ts:42:16
+> e2e-visual-layout	Run E2E Visual & A11y	2026-05-06T03:38:26.7516211Z 
+> e2e-visual-layout	Run E2E Visual & A11y	2026-05-06T03:38:26.7516897Z     attachment #1: screenshot (image/png) ???
+???????????????????????????????????????????????????????
+> e2e-visual-layout	Run E2E Visual & A11y	2026-05-06T03:38:26.7518368Z     reports/test-results/visual-regression-Visua
+l-R-874fb-UI-?쇨???寃利??곸젏-?섏씠吏-Shop-Page--chromium/test-failed-1.png
+> e2e-visual-layout	Run E2E Visual & A11y	2026-05-06T03:38:26.7519778Z     ??????????????????????
+????????????????????????????????????????????????????????????
+??????????????
+> e2e-visual-layout	Run E2E Visual & A11y	2026-05-06T03:38:26.7520286Z 
+> e2e-visual-layout	Run E2E Visual & A11y	2026-05-06T03:38:26.7521245Z     Error Context: reports/test-results/visual-r
+egression-Visual-R-874fb-UI-?쇨???寃利??곸젏-?섏씠吏-Shop-Page--chromium/error-context.md
+> e2e-visual-layout	Run E2E Visual & A11y	2026-05-06T03:38:26.7522058Z 
+> e2e-visual-layout	Run E2E Visual & A11y	2026-05-06T03:38:26.7522628Z     Retry #1 ??????????????????
+???????????????????????????????????????????????????????????
+??????????
+> e2e-visual-layout	Run E2E Visual & A11y	2026-05-06T03:38:26.7523079Z 
+> e2e-visual-layout	Run E2E Visual & A11y	2026-05-06T03:38:26.7523421Z     TimeoutError: page.waitForSelector: Timeout 
+15000ms exceeded.
+> e2e-visual-layout	Run E2E Visual & A11y	2026-05-06T03:38:26.7523966Z     Call log:
+> e2e-visual-layout	Run E2E Visual & A11y	2026-05-06T03:38:26.7524521Z     [2m  - waiting for locator('.shop-page') to
+ be visible[22m
+> e2e-visual-layout	Run E2E Visual & A11y	2026-05-06T03:38:26.7524903Z 
+> e2e-visual-layout	Run E2E Visual & A11y	2026-05-06T03:38:26.7524912Z 
+> e2e-visual-layout	Run E2E Visual & A11y	2026-05-06T03:38:26.7525443Z       40 |   test('?곸젏 ?섏씠吏 (Shop Page)', async
+ ({ page }) => {
+> e2e-visual-layout	Run E2E Visual & A11y	2026-05-06T03:38:26.7526011Z       41 |     await page.goto('/shop');
+> e2e-visual-layout	Run E2E Visual & A11y	2026-05-06T03:38:26.7526650Z     > 42 |     await page.waitForSelector('.shop
+-page', { timeout: 15000 });
+> e2e-visual-layout	Run E2E Visual & A11y	2026-05-06T03:38:26.7527285Z          |                ^
+> e2e-visual-layout	Run E2E Visual & A11y	2026-05-06T03:38:26.7527942Z       43 |     await page.waitForTimeout(1000);
+> e2e-visual-layout	Run E2E Visual & A11y	2026-05-06T03:38:26.7528376Z       44 |
+> e2e-visual-layout	Run E2E Visual & A11y	2026-05-06T03:38:26.7528889Z       45 |     await expect(page).toHaveScreensh
+ot('vrt-shop-page.png', {
+> e2e-visual-layout	Run E2E Visual & A11y	2026-05-06T03:38:26.7529821Z         at /home/runner/work/solve-climb/solve-c
+limb/tests/e2e/visual-regression.spec.ts:42:16
+> e2e-visual-layout	Run E2E Visual & A11y	2026-05-06T03:38:26.7530396Z 
+> e2e-visual-layout	Run E2E Visual & A11y	2026-05-06T03:38:26.7531072Z     attachment #1: screenshot (image/png) ???
+???????????????????????????????????????????????????????
+> e2e-visual-layout	Run E2E Visual & A11y	2026-05-06T03:38:26.7532576Z     reports/test-results/visual-regression-Visua
+l-R-874fb-UI-?쇨???寃利??곸젏-?섏씠吏-Shop-Page--chromium-retry1/test-failed-1.png
+> e2e-visual-layout	Run E2E Visual & A11y	2026-05-06T03:38:26.7533868Z     ??????????????????????
+????????????????????????????????????????????????????????????
+??????????????
+> e2e-visual-layout	Run E2E Visual & A11y	2026-05-06T03:38:26.7534323Z 
+> e2e-visual-layout	Run E2E Visual & A11y	2026-05-06T03:38:26.7534963Z     attachment #2: video (video/webm) ?????
+?????????????????????????????????????????????????????????
+> e2e-visual-layout	Run E2E Visual & A11y	2026-05-06T03:38:26.7536569Z     reports/test-results/visual-regression-Visua
+l-R-874fb-UI-?쇨???寃利??곸젏-?섏씠吏-Shop-Page--chromium-retry1/video.webm
+> e2e-visual-layout	Run E2E Visual & A11y	2026-05-06T03:38:26.7537885Z     ??????????????????????
+????????????????????????????????????????????????????????????
+??????????????
+> e2e-visual-layout	Run E2E Visual & A11y	2026-05-06T03:38:26.7538341Z 
+> e2e-visual-layout	Run E2E Visual & A11y	2026-05-06T03:38:26.7539278Z     Error Context: reports/test-results/visual-r
+egression-Visual-R-874fb-UI-?쇨???寃利??곸젏-?섏씠吏-Shop-Page--chromium-retry1/error-context.md
+> e2e-visual-layout	Run E2E Visual & A11y	2026-05-06T03:38:26.7540158Z 
+> e2e-visual-layout	Run E2E Visual & A11y	2026-05-06T03:38:26.7540851Z     attachment #4: trace (application/zip) ???
+??????????????????????????????????????????????????????
+> e2e-visual-layout	Run E2E Visual & A11y	2026-05-06T03:38:26.7542258Z     reports/test-results/visual-regression-Visua
+l-R-874fb-UI-?쇨???寃利??곸젏-?섏씠吏-Shop-Page--chromium-retry1/trace.zip
+> e2e-visual-layout	Run E2E Visual & A11y	2026-05-06T03:38:26.7543162Z     Usage:
+> e2e-visual-layout	Run E2E Visual & A11y	2026-05-06T03:38:26.7543343Z 
+> e2e-visual-layout	Run E2E Visual & A11y	2026-05-06T03:38:26.7544755Z         npx playwright show-trace reports/test-r
+esults/visual-regression-Visual-R-874fb-UI-?쇨???寃利??곸젏-?섏씠吏-Shop-Page--chromium-retry1/trace.zip
+> e2e-visual-layout	Run E2E Visual & A11y	2026-05-06T03:38:26.7545927Z 
+> e2e-visual-layout	Run E2E Visual & A11y	2026-05-06T03:38:26.7546583Z     ??????????????????????
+????????????????????????????????????????????????????????????
+??????????????
+> e2e-visual-layout	Run E2E Visual & A11y	2026-05-06T03:38:26.7547109Z 
+> e2e-visual-layout	Run E2E Visual & A11y	2026-05-06T03:38:26.7547727Z     Retry #2 ??????????????????
+???????????????????????????????????????????????????????????
+??????????
+> e2e-visual-layout	Run E2E Visual & A11y	2026-05-06T03:38:26.7548209Z 
+> e2e-visual-layout	Run E2E Visual & A11y	2026-05-06T03:38:26.7548581Z     TimeoutError: page.waitForSelector: Timeout 
+15000ms exceeded.
+> e2e-visual-layout	Run E2E Visual & A11y	2026-05-06T03:38:26.7549161Z     Call log:
+> e2e-visual-layout	Run E2E Visual & A11y	2026-05-06T03:38:26.7549780Z     [2m  - waiting for locator('.shop-page') to
+ be visible[22m
+> e2e-visual-layout	Run E2E Visual & A11y	2026-05-06T03:38:26.7550191Z 
+> e2e-visual-layout	Run E2E Visual & A11y	2026-05-06T03:38:26.7550201Z 
+> e2e-visual-layout	Run E2E Visual & A11y	2026-05-06T03:38:26.7550588Z       40 |   test('?곸젏 ?섏씠吏 (Shop Page)', async
+ ({ page }) => {
+> e2e-visual-layout	Run E2E Visual & A11y	2026-05-06T03:38:26.7551141Z       41 |     await page.goto('/shop');
+> e2e-visual-layout	Run E2E Visual & A11y	2026-05-06T03:38:26.7551821Z     > 42 |     await page.waitForSelector('.shop
+-page', { timeout: 15000 });
+> e2e-visual-layout	Run E2E Visual & A11y	2026-05-06T03:38:26.7552468Z          |                ^
+> e2e-visual-layout	Run E2E Visual & A11y	2026-05-06T03:38:26.7552943Z       43 |     await page.waitForTimeout(1000);
+> e2e-visual-layout	Run E2E Visual & A11y	2026-05-06T03:38:26.7553402Z       44 |
+> e2e-visual-layout	Run E2E Visual & A11y	2026-05-06T03:38:26.7553929Z       45 |     await expect(page).toHaveScreensh
+ot('vrt-shop-page.png', {
+> e2e-visual-layout	Run E2E Visual & A11y	2026-05-06T03:38:26.7555368Z         at /home/runner/work/solve-climb/solve-c
+limb/tests/e2e/visual-regression.spec.ts:42:16
+> e2e-visual-layout	Run E2E Visual & A11y	2026-05-06T03:38:26.7555984Z 
+> e2e-visual-layout	Run E2E Visual & A11y	2026-05-06T03:38:26.7556724Z     attachment #1: screenshot (image/png) ???
+???????????????????????????????????????????????????????
+> e2e-visual-layout	Run E2E Visual & A11y	2026-05-06T03:38:26.7558280Z     reports/test-results/visual-regression-Visua
+l-R-874fb-UI-?쇨???寃利??곸젏-?섏씠吏-Shop-Page--chromium-retry2/test-failed-1.png
+> e2e-visual-layout	Run E2E Visual & A11y	2026-05-06T03:38:26.7559747Z     ??????????????????????
+????????????????????????????????????????????????????????????
+??????????????
+> e2e-visual-layout	Run E2E Visual & A11y	2026-05-06T03:38:26.7560231Z 
+> e2e-visual-layout	Run E2E Visual & A11y	2026-05-06T03:38:26.7561298Z     Error Context: reports/test-results/visual-r
+egression-Visual-R-874fb-UI-?쇨???寃利??곸젏-?섏씠吏-Shop-Page--chromium-retry2/error-context.md
+> e2e-visual-layout	Run E2E Visual & A11y	2026-05-06T03:38:26.7562508Z 
+> e2e-visual-layout	Run E2E Visual & A11y	2026-05-06T03:38:26.7563599Z   4) [chromium] ??tests/e2e/visual-regression.sp
+ec.ts:51:3 ??Visual Regression Testing (VRT) - UI ?쇨???寃利????댁쫰 醫낅즺 寃곌낵 ?붾㈃ (Result Page Snippet) 
+> e2e-visual-layout	Run E2E Visual & A11y	2026-05-06T03:38:26.7564497Z 
+> e2e-visual-layout	Run E2E Visual & A11y	2026-05-06T03:38:26.7564884Z     TimeoutError: page.waitForSelector: Timeout 
+15000ms exceeded.
+> e2e-visual-layout	Run E2E Visual & A11y	2026-05-06T03:38:26.7565648Z     Call log:
+> e2e-visual-layout	Run E2E Visual & A11y	2026-05-06T03:38:26.7566305Z     [2m  - waiting for locator('.result-page') 
+to be visible[22m
+> e2e-visual-layout	Run E2E Visual & A11y	2026-05-06T03:38:26.7566717Z 
+> e2e-visual-layout	Run E2E Visual & A11y	2026-05-06T03:38:26.7566727Z 
+> e2e-visual-layout	Run E2E Visual & A11y	2026-05-06T03:38:26.7567117Z       52 |     // 寃곌낵 ?붾㈃? ?뱀젙 ?곹깭媛 ?꾩슂?섎?濡?二쇱
+슂 而댄룷?뚰듃 ?⑥쐞濡?寃利?e2e-visual-layout	Run E2E Visual & A11y	2026-05-06T03:38:26.7567768Z       53 |     await page.goto('
+/result?score=1000&correct=10');
+> e2e-visual-layout	Run E2E Visual & A11y	2026-05-06T03:38:26.7568547Z     > 54 |     await page.waitForSelector('.resu
+lt-page', { timeout: 15000 });
+> e2e-visual-layout	Run E2E Visual & A11y	2026-05-06T03:38:26.7569194Z          |                ^
+> e2e-visual-layout	Run E2E Visual & A11y	2026-05-06T03:38:26.7569668Z       55 |     await page.waitForTimeout(2000);
+> e2e-visual-layout	Run E2E Visual & A11y	2026-05-06T03:38:26.7570123Z       56 |
+> e2e-visual-layout	Run E2E Visual & A11y	2026-05-06T03:38:26.7570700Z       57 |     await expect(page).toHaveScreensh
+ot('vrt-quiz-result.png', {
+> e2e-visual-layout	Run E2E Visual & A11y	2026-05-06T03:38:26.7571694Z         at /home/runner/work/solve-climb/solve-c
+limb/tests/e2e/visual-regression.spec.ts:54:16
+> e2e-visual-layout	Run E2E Visual & A11y	2026-05-06T03:38:26.7572325Z 
+> e2e-visual-layout	Run E2E Visual & A11y	2026-05-06T03:38:26.7573045Z     attachment #1: screenshot (image/png) ???
+???????????????????????????????????????????????????????
+> e2e-visual-layout	Run E2E Visual & A11y	2026-05-06T03:38:26.7574539Z     reports/test-results/visual-regression-Visua
+l-R-ce828--寃곌낵-?붾㈃-Result-Page-Snippet--chromium/test-failed-1.png
+> e2e-visual-layout	Run E2E Visual & A11y	2026-05-06T03:38:26.7576207Z     ??????????????????????
+????????????????????????????????????????????????????????????
+??????????????
+> e2e-visual-layout	Run E2E Visual & A11y	2026-05-06T03:38:26.7576635Z 
+> e2e-visual-layout	Run E2E Visual & A11y	2026-05-06T03:38:26.7577628Z     Error Context: reports/test-results/visual-r
+egression-Visual-R-ce828--寃곌낵-?붾㈃-Result-Page-Snippet--chromium/error-context.md
+> e2e-visual-layout	Run E2E Visual & A11y	2026-05-06T03:38:26.7578487Z 
+> e2e-visual-layout	Run E2E Visual & A11y	2026-05-06T03:38:26.7579103Z     Retry #1 ??????????????????
+???????????????????????????????????????????????????????????
+??????????
+> e2e-visual-layout	Run E2E Visual & A11y	2026-05-06T03:38:26.7579525Z 
+> e2e-visual-layout	Run E2E Visual & A11y	2026-05-06T03:38:26.7579868Z     TimeoutError: page.waitForSelector: Timeout 
+15000ms exceeded.
+> e2e-visual-layout	Run E2E Visual & A11y	2026-05-06T03:38:26.7580437Z     Call log:
+> e2e-visual-layout	Run E2E Visual & A11y	2026-05-06T03:38:26.7581028Z     [2m  - waiting for locator('.result-page') 
+to be visible[22m
+> e2e-visual-layout	Run E2E Visual & A11y	2026-05-06T03:38:26.7581679Z 
+> e2e-visual-layout	Run E2E Visual & A11y	2026-05-06T03:38:26.7581689Z 
+> e2e-visual-layout	Run E2E Visual & A11y	2026-05-06T03:38:26.7582050Z       52 |     // 寃곌낵 ?붾㈃? ?뱀젙 ?곹깭媛 ?꾩슂?섎?濡?二쇱
+슂 而댄룷?뚰듃 ?⑥쐞濡?寃利?e2e-visual-layout	Run E2E Visual & A11y	2026-05-06T03:38:26.7582678Z       53 |     await page.goto('
+/result?score=1000&correct=10');
+> e2e-visual-layout	Run E2E Visual & A11y	2026-05-06T03:38:26.7583465Z     > 54 |     await page.waitForSelector('.resu
+lt-page', { timeout: 15000 });
+> e2e-visual-layout	Run E2E Visual & A11y	2026-05-06T03:38:26.7584078Z          |                ^
+> e2e-visual-layout	Run E2E Visual & A11y	2026-05-06T03:38:26.7584551Z       55 |     await page.waitForTimeout(2000);
+> e2e-visual-layout	Run E2E Visual & A11y	2026-05-06T03:38:26.7585006Z       56 |
+> e2e-visual-layout	Run E2E Visual & A11y	2026-05-06T03:38:26.7585733Z       57 |     await expect(page).toHaveScreensh
+ot('vrt-quiz-result.png', {
+> e2e-visual-layout	Run E2E Visual & A11y	2026-05-06T03:38:26.7586729Z         at /home/runner/work/solve-climb/solve-c
+limb/tests/e2e/visual-regression.spec.ts:54:16
+> e2e-visual-layout	Run E2E Visual & A11y	2026-05-06T03:38:26.7587357Z 
+> e2e-visual-layout	Run E2E Visual & A11y	2026-05-06T03:38:26.7588080Z     attachment #1: screenshot (image/png) ???
+???????????????????????????????????????????????????????
+> e2e-visual-layout	Run E2E Visual & A11y	2026-05-06T03:38:26.7589655Z     reports/test-results/visual-regression-Visua
+l-R-ce828--寃곌낵-?붾㈃-Result-Page-Snippet--chromium-retry1/test-failed-1.png
+> e2e-visual-layout	Run E2E Visual & A11y	2026-05-06T03:38:26.7591126Z     ??????????????????????
+????????????????????????????????????????????????????????????
+??????????????
+> e2e-visual-layout	Run E2E Visual & A11y	2026-05-06T03:38:26.7591602Z 
+> e2e-visual-layout	Run E2E Visual & A11y	2026-05-06T03:38:26.7592265Z     attachment #2: video (video/webm) ?????
+?????????????????????????????????????????????????????????
+> e2e-visual-layout	Run E2E Visual & A11y	2026-05-06T03:38:26.7593689Z     reports/test-results/visual-regression-Visua
+l-R-ce828--寃곌낵-?붾㈃-Result-Page-Snippet--chromium-retry1/video.webm
+> e2e-visual-layout	Run E2E Visual & A11y	2026-05-06T03:38:26.7595309Z     ??????????????????????
+????????????????????????????????????????????????????????????
+??????????????
+> e2e-visual-layout	Run E2E Visual & A11y	2026-05-06T03:38:26.7595800Z 
+> e2e-visual-layout	Run E2E Visual & A11y	2026-05-06T03:38:26.7596848Z     Error Context: reports/test-results/visual-r
+egression-Visual-R-ce828--寃곌낵-?붾㈃-Result-Page-Snippet--chromium-retry1/error-context.md
+> e2e-visual-layout	Run E2E Visual & A11y	2026-05-06T03:38:26.7598014Z 
+> e2e-visual-layout	Run E2E Visual & A11y	2026-05-06T03:38:26.7598734Z     attachment #4: trace (application/zip) ???
+??????????????????????????????????????????????????????
+> e2e-visual-layout	Run E2E Visual & A11y	2026-05-06T03:38:26.7600178Z     reports/test-results/visual-regression-Visua
+l-R-ce828--寃곌낵-?붾㈃-Result-Page-Snippet--chromium-retry1/trace.zip
+> e2e-visual-layout	Run E2E Visual & A11y	2026-05-06T03:38:26.7601134Z     Usage:
+> e2e-visual-layout	Run E2E Visual & A11y	2026-05-06T03:38:26.7601309Z 
+> e2e-visual-layout	Run E2E Visual & A11y	2026-05-06T03:38:26.7602462Z         npx playwright show-trace reports/test-r
+esults/visual-regression-Visual-R-ce828--寃곌낵-?붾㈃-Result-Page-Snippet--chromium-retry1/trace.zip
+> e2e-visual-layout	Run E2E Visual & A11y	2026-05-06T03:38:26.7603382Z 
+> e2e-visual-layout	Run E2E Visual & A11y	2026-05-06T03:38:26.7603989Z     ??????????????????????
+????????????????????????????????????????????????????????????
+??????????????
+> e2e-visual-layout	Run E2E Visual & A11y	2026-05-06T03:38:26.7604472Z 
+> e2e-visual-layout	Run E2E Visual & A11y	2026-05-06T03:38:26.7604597Z   4 failed
+> e2e-visual-layout	Run E2E Visual & A11y	2026-05-06T03:38:26.7605885Z     [chromium] ??tests/e2e/visual-regression.spe
+c.ts:11:3 ??Visual Regression Testing (VRT) - UI ?쇨???寃利??????붾㈃ (Home Page) 
+> e2e-visual-layout	Run E2E Visual & A11y	2026-05-06T03:38:26.7607623Z     [chromium] ??tests/e2e/visual-regression.spe
+c.ts:29:3 ??Visual Regression Testing (VRT) - UI ?쇨???寃利???留덉씠?섏씠吏 (My Page) 
+> e2e-visual-layout	Run E2E Visual & A11y	2026-05-06T03:38:26.7609104Z     [chromium] ??tests/e2e/visual-regression.spe
+c.ts:40:3 ??Visual Regression Testing (VRT) - UI ?쇨???寃利????곸젏 ?섏씠吏 (Shop Page) 
+> e2e-visual-layout	Run E2E Visual & A11y	2026-05-06T03:38:26.7610799Z     [chromium] ??tests/e2e/visual-regression.spe
+c.ts:51:3 ??Visual Regression Testing (VRT) - UI ?쇨???寃利????댁쫰 醫낅즺 寃곌낵 ?붾㈃ (Result Page Snippet) 
+> e2e-visual-layout	Run E2E Visual & A11y	2026-05-06T03:38:26.7612049Z   1 did not run
+> e2e-visual-layout	Run E2E Visual & A11y	2026-05-06T03:38:26.7612379Z   1 passed (5.0m)
+> e2e-visual-layout	Run E2E Visual & A11y	2026-05-06T03:38:26.7612902Z   2 errors were not a part of any test, see abov
+e for details
+> e2e-visual-layout	Run E2E Visual & A11y	2026-05-06T03:38:26.8522267Z ##[error]Process completed with exit code 1.
+
+

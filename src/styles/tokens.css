@@ -1,0 +1,292 @@
+@charset "UTF-8";
+
+:root {
+  /* Toss Design System CSS Variables (Standalone) */
+  --adaptiveGrey50: #f9fafb;
+  --adaptiveGrey100: #f2f4f6;
+  --adaptiveGrey200: #e5e8eb;
+  --adaptiveGrey300: #d1d6db;
+  --adaptiveGrey400: #b0b8c1;
+  --adaptiveGrey500: #8b95a1;
+  --adaptiveGrey600: #6b7684;
+  --adaptiveGrey700: #4e5968;
+  --adaptiveGrey800: #333d4b;
+  --adaptiveGrey900: #191f28;
+
+  --adaptiveBlue50: #e8f3ff;
+  --adaptiveBlue100: #c9e2ff;
+  --adaptiveBlue200: #90c2ff;
+  --adaptiveBlue300: #64a8ff;
+  --adaptiveBlue400: #4593fc;
+  --adaptiveBlue500: #3182f6;
+  --adaptiveBlue600: #2272eb;
+  --adaptiveBlue700: #1b64da;
+  --adaptiveBlue800: #1957c2;
+  --adaptiveBlue900: #194aa6;
+
+  --adaptiveRed50: #ffeeee;
+  --adaptiveRed100: #ffd4d6;
+  --adaptiveRed400: #f66570;
+  --adaptiveRed500: #f04452;
+  --adaptiveRed600: #e42939;
+
+  --adaptiveGreen500: #03b26c;
+
+  --adaptiveBackground: #ffffff;
+  --adaptiveBackgroundDimmed: rgba(0, 0, 0, 0.5);
+
+  --icon-size-xs: 16px;
+  --icon-size-sm: 20px;
+  --icon-size-md: 24px;
+  --icon-size-lg: 32px;
+  --icon-size-button: 36px;
+  --icon-size-xl: 40px;
+  --icon-size-2xl: 48px;
+
+  /* Border Width */
+  --border-width-sm: 1px;
+  --border-width-md: 2px;
+  --border-width-lg: 3px;
+  --border-width-xl: 4px;
+
+  /* Border Radius */
+  --rounded-micro: 3px;
+  --rounded-2xs: 4px;
+  --rounded-xs: 6px;
+  --rounded-sm-alt: 10px;
+  --rounded-sm: 12px;
+  --rounded-md-alt: 14px;
+  --rounded-card: 16px;
+  --rounded-md: 20px;
+  --rounded-large-card: 24px;
+  --rounded-lg-alt: 26px;
+  --rounded-toggle: 32px;
+  --rounded-xl: 30px;
+  --rounded-lg: 32px;
+  --rounded-pill: 100px;
+  --rounded-button: 12px;
+  --rounded-full: 9999px;
+
+  /* Colors - Standard + Custom */
+  --color-success: #4cd964;
+  --color-warning: #ffcc00;
+  --color-primary-light: #4facfe;
+
+  --color-gray-50: #f9fafb;
+  --color-gray-100: #ffffff;
+  --color-gray-200: #fafafc;
+  --color-gray-300: #e2e2e2;
+  --color-gray-300-alpha: #e2e2e299;
+  --color-gray-400: #bebec0;
+  --color-gray-500: #9b9b9b;
+  --color-gray-900: #121212;
+
+  --color-blue-400: #00d4b3;
+  --color-blue-500: #00bfa5;
+  --color-blue-700: #00695c;
+
+  --color-mint-400: #00d4b3;
+  --color-mint-400-alpha-10: rgba(0, 212, 179, 0.1);
+  --color-mint-400-alpha-30: rgba(0, 212, 179, 0.3);
+  --color-mint-500: #00bfa5;
+  --color-mint-600: #00897b;
+
+  --color-toss-red: #f04452;
+  --color-toss-red-a11y: #ff6b6b;
+  --color-red-600: #dc2626;
+  --color-red-700: #c0392b;
+  --color-live-red: #d32f2f;
+  --color-survival-red: #ff5252;
+  --color-infinite-purple: #a78bfa;
+
+  --color-pure-black: #000000;
+  --color-pure-white: #ffffff;
+
+  --color-bg-primary: #1e1e1e;
+  --color-bg-secondary: #2c2c2c;
+  --color-bg-tertiary: #3c3c3c;
+  --color-bg-tertiary-light: #4c4c4c;
+  --color-surface-elevated: #3c3c3c;
+
+  --color-text-primary: var(--color-gray-100);
+  --color-text-secondary: #d1d6db;
+  --color-text-tertiary: #a0a7b1;
+  --color-text-dimmed: #ccc;
+  --color-text-muted-alt: #bbb;
+
+  --shadow-modal: 0 8px 32px rgba(0, 0, 0, 0.5);
+  --shadow-card: 0 4px 12px rgba(0, 0, 0, 0.3);
+  --color-overlay: rgba(0, 0, 0, 0.7);
+
+  --color-tier-base: #888888;
+  --color-tier-trail: #00bfa5;
+  --color-tier-mid: #2196f3;
+  --color-tier-high: #9c27b0;
+  --color-tier-peak: #8b5cf6;
+  --color-tier-summit: #f43f5e;
+  --color-tier-legend: #ffd700;
+
+  /* Spacing */
+  --spacing-xs: 4px;
+  --spacing-sm: 8px;
+  --spacing-md: 12px;
+  --spacing-lg: 16px;
+  --spacing-xl: 20px;
+  --spacing-2xl: 24px;
+  --spacing-3xl: 32px;
+  --spacing-4xl: 40px;
+  --spacing-tiny: 6px;
+  --spacing-small-alt: 10px;
+  --spacing-medium-alt: 14px;
+  --spacing-micro: 2px;
+  --spacing-bottom-nav: 80px;
+
+  /* Alpha Colors */
+  --adaptiveGrey50-alpha-80: rgba(249, 250, 251, 0.8);
+  --adaptiveGrey900-alpha-90: rgba(25, 31, 40, 0.9);
+
+  /* Layout */
+  --header-height-portrait: 48px;
+  --header-height-landscape: 48px;
+  --header-height-tall: 56px;
+  --footer-height-portrait: 64px;
+  --footer-height-landscape: 56px;
+  --modal-width-portrait: 400px;
+  --modal-width-landscape-small: 600px;
+  --modal-width-landscape-medium: 700px;
+  --modal-width-landscape-large: 900px;
+
+  /* Effects */
+  --backdrop-blur: 20px;
+  --glass-blur: 20px;
+  --shadow-glass: 0 8px 32px rgba(0, 0, 0, 0.2);
+  --shadow-glass-hover: 0 12px 40px rgba(0, 0, 0, 0.3);
+  --glass-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+  --bg-glass: rgba(255, 255, 255, 0.05);
+  --bg-glass-low: rgba(255, 255, 255, 0.05);
+  --bg-glass-heavy: rgba(20, 21, 23, 0.85);
+  --glass-bg: rgba(255, 255, 255, 0.05);
+  --glass-bg-low: rgba(255, 255, 255, 0.05);
+  --glass-bg-medium: rgba(255, 255, 255, 0.1);
+  --glass-bg-high: rgba(255, 255, 255, 0.2);
+  --glass-border-low: rgba(255, 255, 255, 0.08);
+  --glass-border-medium: rgba(255, 255, 255, 0.15);
+  --glass-border-heavy: rgba(255, 255, 255, 0.3);
+  --border-glass: 1px solid rgba(255, 255, 255, 0.08);
+  --border-glass-hover: 1px solid rgba(255, 255, 255, 0.15);
+  --shadow-modal: 0 20px 40px rgba(0, 0, 0, 0.4);
+  --shadow-card: 0 4px 12px rgba(0, 0, 0, 0.1);
+
+  --overlay-dark-xs: rgba(0, 0, 0, 0.1);
+  --overlay-dark-low: rgba(0, 0, 0, 0.2);
+  --overlay-dark-low-alt: rgba(0, 0, 0, 0.3);
+  --overlay-dark-medium: rgba(0, 0, 0, 0.4);
+  --overlay-dark-high: rgba(0, 0, 0, 0.6);
+
+  --bg-glass-card: rgba(30, 31, 35, 0.6);
+  --bg-glass-card-hover: rgba(40, 41, 45, 0.7);
+  --bg-glass-overlay: rgba(30, 31, 35, 0.85);
+
+  --quiz-keypad-max-width: 550px;
+  --quiz-keypad-min-height: 240px;
+  --quiz-keypad-max-height: 380px;
+  --quiz-card-max-height: 48vh;
+
+  /* Typography */
+  --font-size-2xs: 0.625rem; /* 10px */
+  --font-size-xs: 0.75rem; /* 12px */
+  --font-size-sm: 0.875rem; /* 14px */
+  --font-size-base: 1rem; /* 16px */
+  --font-size-lg: 1.125rem; /* 18px */
+  --font-size-xl: 1.25rem; /* 20px */
+  --font-size-2xl: 1.5rem; /* 24px */
+  --font-size-3xl: 1.875rem; /* 30px */
+  --font-size-4xl: 2.25rem; /* 36px */
+  --font-size-5xl: 3rem; /* 48px */
+
+  --font-size-tight: 0.6875rem; /* 11px */
+  --font-size-compact: 0.8125rem; /* 13px */
+  --font-size-medium: 0.9375rem; /* 15px */
+  --font-size-md-alt: 1.1rem; /* 17.6px */
+  --font-size-h3: 1.75rem; /* 28px */
+  --font-size-h2: 2rem; /* 32px */
+  --font-size-6xl: 4rem; /* 64px */
+  --font-size-display: 5rem; /* 80px */
+
+  --line-height-none: 1;
+  --line-height-tight: 1.2;
+  --line-height-snug: 1.35;
+  --line-height-normal: 1.5;
+  --line-height-relaxed: 1.6;
+  --line-height-loose: 1.8;
+
+  /* Z-Index */
+  --z-background: 0;
+  --z-content: 10;
+  --z-glass-overlay: 20;
+  --z-header: 50;
+  --z-sticky: 60;
+  --z-toast-low: 100;
+  --z-modal: 1000;
+  --z-toast-high: 2000;
+  --z-max: 9999;
+
+  /* --- UI Restoration Tokens --- */
+  --transition-normal: 0.2s ease;
+  --transition-slow: 0.3s ease;
+  --transition-fast: 0.1s ease;
+  --scale-pressed: 0.98;
+  --scale-hover: 1.02;
+  --border-thin: 1px solid;
+  --border-medium: 2px solid;
+  --color-bg-secondary-alpha: rgba(44, 44, 44, 0.6);
+  --color-bg-tertiary-alpha: rgba(60, 60, 60, 0.8);
+  --color-bg-card-alpha: rgba(30, 31, 35, 0.6);
+  --overlay-white-low: rgba(255, 255, 255, 0.05);
+  --overlay-white-medium: rgba(255, 255, 255, 0.1);
+  --overlay-white-alt: rgba(255, 255, 255, 0.2);
+  --overlay-red-high: rgba(255, 61, 0, 0.4);
+  --overlay-orange-high: rgba(255, 196, 0, 0.4);
+
+  /* --- Quiz & World Theme Tokens --- */
+  --color-world1-top: #0f172a;
+  --color-world1-mid: #1e293b;
+  --color-world1-bottom: #0f172a;
+
+  --color-world2-top: #92400e;
+  --color-world2-mid: #78350f;
+  --color-world2-bottom: #451a03;
+
+  --color-world3-top: #0e7490;
+  --color-world3-mid: #155e75;
+  --color-world3-bottom: #083344;
+
+  --color-world4-top: #581c87;
+  --color-world4-mid: #3b0764;
+  --color-world4-bottom: #000000;
+
+  --color-world-forest-top: #065f46;
+  --color-world-forest-mid: #064e3b;
+  --color-world-forest-bottom: #022c22;
+  --color-world-rock-top: #334155;
+  --color-world-rock-mid: #1e293b;
+  --color-world-rock-bottom: #0f172a;
+  --color-world-clouds-top: #0ea5e9;
+  --color-world-clouds-mid: #0284c7;
+  --color-world-clouds-bottom: #075985;
+  --color-world-space-top: #1e1b4b;
+  --color-world-space-mid: #0f172a;
+  --color-world-space-bottom: #000000;
+  --color-world-fever-top: #064e3b;
+  --color-world-fever-mid: #7f1d1d;
+  --color-world-fever-bottom: #450a0a;
+  --color-world-default-top: #0f172a;
+  --color-world-default-bottom: #1e293b;
+
+  /* UI & Animation Colors */
+  --color-confetti-green: #10b981;
+  --color-orange-400: #fb923c;
+  --color-amber-300: #fcd34d;
+  --color-amber-400: #fbbf24;
+  --color-amber-500: #f59e0b;
+}

@@ -1,8 +1,8 @@
-import { useToastStore } from '../stores/useToastStore';
+import { useGlobalToast } from '../hooks/useGlobalToast';
 import { Toast } from './Toast';
 
 export function GlobalToastContainer() {
-  const { message, isOpen, icon, duration, hideToast } = useToastStore();
+  const { message, isOpen, icon, duration, hideToast } = useGlobalToast();
 
   return (
     <Toast

@@ -3,17 +3,13 @@
   <head>
     <meta charset="UTF-8" />
     <link rel="icon" type="image/webp" href="/SolveClimb.webp" />
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link
-      rel="preload"
-      as="style"
-      href="https://fonts.googleapis.com/css2?family=Pretendard+Variable:wght@400;700&display=swap"
-    />
-    <link
-      href="https://fonts.googleapis.com/css2?family=Pretendard+Variable:wght@400;700&display=swap"
-      rel="stylesheet"
-    />
+    <link rel="preload" as="image" href="/SolveClimb.webp" fetchpriority="high" />
+    <link rel="preload" as="image" href="/age-rating-all.webp" type="image/webp" />
+    
+    <!-- Font Optimization: Pretendard Variable -->
+    <link rel="preconnect" href="https://cdn.jsdelivr.net" />
+    <link rel="preload" as="style" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.css" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.css" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <link rel="manifest" href="/manifest.json" />
     <meta name="theme-color" content="#00BFA5" />
@@ -32,8 +28,8 @@
     <title>Solve Climb</title>
     <style>
       body {
-        background-color: #121212;
-        color: #ffffff;
+        background-color: var(--color-bg-primary, #121212);
+        color: var(--color-text-primary, #ffffff);
         margin: 0;
         font-family: 'Pretendard Variable', sans-serif;
       }
@@ -44,15 +40,15 @@
         flex-direction: column;
         align-items: center;
         justify-content: center;
-        background: #121212;
+        background: var(--color-bg-primary, #121212);
         z-index: 1000;
         transition: opacity 0.3s ease-out;
       }
       .loader-title {
-        font-size: 24px;
+        font-size: var(--font-size-2xl, 24px);
         font-weight: bold;
-        margin-bottom: 12px;
-        color: #00e5c1;
+        margin-bottom: var(--spacing-md, 12px);
+        color: var(--color-mint-400, #00d4b3);
       }
       #recovery-ui {
         display: none;
@@ -64,27 +60,27 @@
         align-items: center;
         width: 90%;
         max-width: 320px;
-        padding: 24px;
-        background: rgba(30,30,30,0.9);
-        border: 1px solid rgba(0, 229, 193, 0.3);
-        border-radius: 16px;
-        backdrop-filter: blur(10px);
-        box-shadow: 0 10px 40px rgba(0,0,0,0.5);
+        padding: var(--spacing-2xl, 24px);
+        background: var(--bg-glass-overlay, rgba(30, 31, 35, 0.85));
+        border: 1px solid var(--glass-border-medium, rgba(255, 255, 255, 0.2));
+        border-radius: var(--rounded-card, 16px);
+        backdrop-filter: blur(var(--backdrop-blur, 20px));
+        box-shadow: var(--shadow-glass, 0 8px 32px rgba(0, 0, 0, 0.2));
         z-index: 1001;
         text-align: center;
       }
       .recovery-text {
-        color: #eee;
-        font-size: 14px;
-        margin-bottom: 20px;
-        line-height: 1.5;
+        color: var(--color-text-secondary, #d1d6db);
+        font-size: var(--font-size-sm, 14px);
+        margin-bottom: var(--spacing-xl, 20px);
+        line-height: var(--line-height-normal, 1.5);
       }
       .recovery-btn {
-        background: #00e5c1;
-        color: #121212;
+        background: var(--color-mint-400, #00d4b3);
+        color: var(--color-bg-primary, #121212);
         border: none;
-        padding: 12px 24px;
-        border-radius: 10px;
+        padding: var(--spacing-md, 12px) var(--spacing-2xl, 24px);
+        border-radius: var(--rounded-button, 10px);
         font-weight: bold;
         cursor: pointer;
         width: 100%;
@@ -95,16 +91,11 @@
   </head>
   <body>
     <div id="loading-check">
-      <img
-        src="/SolveClimb.webp"
-        width="120"
-        height="120"
-        alt="Logo"
-        style="margin-bottom: 20px"
-        fetchpriority="high"
-      />
-      <div class="loader-title">Solve Climb</div>
-      <div id="js-status" style="font-size: 14px; opacity: 0.8">Initializing...</div>
+      <div class="loader-content">
+        <img src="/logo.svg" alt="Solve-Climb Logo" class="loader-logo" style="margin-bottom: var(--spacing-xl, 20px)" />
+        <div class="loader-title" style="margin-top: var(--spacing-md, 12px)">산행 준비 중...</div>
+        <div id="js-status" style="font-size: var(--font-size-sm, 14px); opacity: 0.8; margin-top: var(--spacing-sm, 8px);">Initializing...</div>
+      </div>
     </div>
 
     <div id="recovery-ui">

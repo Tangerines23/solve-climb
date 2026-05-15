@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { logger, LogLevel } from '../logger';
-import { useErrorLogStore } from '../../stores/useErrorLogStore';
+import { logger } from '@/utils/logger';
+import { useErrorLogStore } from '@/features/debug';
 
 describe('logger.util', () => {
   beforeEach(() => {
@@ -19,11 +19,20 @@ describe('logger.util', () => {
   });
 
   it('should log info messages and add to store', () => {
-    const addLogSpy = vi.spyOn(useErrorLogStore.getState(), 'addLog');
+    const store = useErrorLogStore.getState();
+    const addLogSpy = vi.spyOn(store, 'addLog');
+
+    // Register handler for testing
+    const unregister = logger.registerHandler((level, message, stack, context) => {
+      store.addLog(level, message, stack, context);
+    });
+
     logger.info('TestContext', 'Test Message', { data: 1 });
 
     expect(console.info).toHaveBeenCalled();
     expect(addLogSpy).toHaveBeenCalledWith('info', 'Test Message', undefined, 'TestContext');
+
+    unregister();
   });
 
   it('should log debug messages', () => {
@@ -80,15 +89,23 @@ describe('logger.util', () => {
   });
 
   it('should handle store addLog failure gracefully', () => {
-    vi.spyOn(useErrorLogStore.getState(), 'addLog').mockImplementation(() => {
+    const store = useErrorLogStore.getState();
+    vi.spyOn(store, 'addLog').mockImplementation(() => {
       throw new Error('Store failure');
+    });
+
+    // Register handler that delegates to the failing store
+    const unregister = logger.registerHandler((level, message, stack, context) => {
+      store.addLog(level, message, stack, context);
     });
 
     // Should not throw
     logger.error('LogContext', 'LogMsg');
     expect(console.warn).toHaveBeenCalledWith(
-      expect.stringContaining('Failed to add log to store'),
+      expect.stringContaining('Log handler failed'),
       expect.any(Error)
     );
+
+    unregister();
   });
 });

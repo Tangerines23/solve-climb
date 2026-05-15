@@ -8,7 +8,15 @@ description: 코드 변경 후 전체 검증 파이프라인 실행 프로세스
 
 - 개발 서버가 실행 중이어야 합니다 (레이아웃 체크에 필요): `npm run dev`
 
-### 1단계: 정적 분석 (Static Analysis)
+### 1단계: 아키텍처 자가 진단 (Architectural Self-Audit)
+
+작업을 완료하기 전, 다음 체크리스트를 확인합니다:
+- [ ] **Hook Bridge**: 컴포넌트가 직접 스토어/API를 참조하지 않는가?
+- [ ] **Object Calisthenics**: `else` 키워드가 없고, Depth가 1단계로 유지되었는가?
+- [ ] **SSOT Type**: `database.types.ts`에서 타입을 추출했는가?
+- [ ] **Path Integrity**: 피처 내부 테스트에서 상대 경로(`../`)를 사용했는가?
+
+### 2단계: 정적 분석 (Static Analysis)
 
 // turbo
 
@@ -18,7 +26,7 @@ description: 코드 변경 후 전체 검증 파이프라인 실행 프로세스
    // turbo
 3. 코드 포맷: `npm run format:check`
 
-### 2단계: 코드 무결성 검사 (Code Integrity)
+### 3단계: 코드 무결성 검사 (Code Integrity)
 
 // turbo
 
@@ -28,7 +36,7 @@ description: 코드 변경 후 전체 검증 파이프라인 실행 프로세스
 2. 데드 코드 탐지: `npm run diet`
    - 미사용 파일, 미사용 exports, 미사용 의존성 확인
 
-### 3단계: 레이아웃 검증 (Layout Verification)
+### 4단계: 레이아웃 검증 (Layout Verification)
 
 // turbo
 
@@ -36,7 +44,7 @@ description: 코드 변경 후 전체 검증 파이프라인 실행 프로세스
    - 모든 페이지의 모든 뷰포트(모바일, 태블릿, 데스크탑)에서 오버플로우 탐지
    - 100% clean이 아니면 `/layout-fix` 워크플로우 참조
 
-### 4단계: 로직 검증 (Logic Verification)
+### 5단계: 로직 검증 (Logic Verification)
 
 // turbo
 
@@ -44,7 +52,7 @@ description: 코드 변경 후 전체 검증 파이프라인 실행 프로세스
    - Vitest로 모든 단위/통합 테스트 실행
 2. (선택) Mutation Testing: 수동으로 핵심 로직을 고장 내어 테스트가 감지하는지 확인
 
-### 5단계: E2E 및 시각적 검증 (E2E & Visual)
+### 6단계: E2E 및 시각적 검증 (E2E & Visual)
 
 // turbo
 
@@ -53,7 +61,7 @@ description: 코드 변경 후 전체 검증 파이프라인 실행 프로세스
 2. 시각적 회귀 테스트 (스냅샷 존재 시):
    `npx playwright test tests/e2e/visual.spec.ts`
 
-### 6단계: DB 검증 (Supabase 관련 변경 시)
+### 7단계: DB 검증 (Supabase 관련 변경 시)
 
 // turbo
 

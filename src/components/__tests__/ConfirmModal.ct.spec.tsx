@@ -4,9 +4,6 @@ import { ConfirmModal } from '../ConfirmModal';
 test.use({ viewport: { width: 500, height: 500 } });
 
 test('should render and handle confirm/cancel actions', async ({ mount }) => {
-  let _confirmed = false;
-  let _cancelled = false;
-
   const component = await mount(
     <ConfirmModal
       isOpen={true}
@@ -14,12 +11,8 @@ test('should render and handle confirm/cancel actions', async ({ mount }) => {
       message="테스트 메시지입니다."
       confirmText="확인 버튼"
       cancelText="취소 버튼"
-      onConfirm={() => {
-        _confirmed = true;
-      }}
-      onCancel={() => {
-        _cancelled = true;
-      }}
+      onConfirm={() => {}}
+      onCancel={() => {}}
     />
   );
 

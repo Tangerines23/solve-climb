@@ -22,13 +22,20 @@ const BASE_URL = `http://localhost:${PORT}/`;
 const WAIT_TIMEOUT_MS = 60000;
 const POLL_INTERVAL_MS = 500;
 
-// lighthouserc.json과 동일한 임계값 (회귀 방지)
+// 엄격한 프로덕션 임계값 (CI 환경 노이즈 고려하여 performance 0.65로 조정)
 const THRESHOLDS = {
-  performance: 0.6,
-  accessibility: 0.9,
-  'best-practices': 0.9,
-  seo: 0.9,
+  performance: 0.65,
+  accessibility: 0.95,
+  'best-practices': 0.95,
+  seo: 1.0,
 };
+
+// 검사할 핵심 페이지들
+const TARGET_PAGES = [
+  { name: 'Home', path: '/' },
+  { name: 'Quiz', path: '/quiz' },
+  { name: 'Profile', path: '/my-page' },
+];
 
 function waitForServer() {
   const start = Date.now();
@@ -48,104 +55,35 @@ function waitForServer() {
   });
 }
 
-async function main() {
-  let previewProcess = null;
-  let chrome = null;
+async function runAudit(pagePath, pageName, chromePort) {
+  const targetUrl = `${BASE_URL.replace(/\/$/, '')}${pagePath}`;
+  console.log(`\n🚀 Auditing ${pageName} (${targetUrl})...`);
 
-  const cleanup = () => {
-    if (previewProcess) {
-      previewProcess.kill('SIGTERM');
-      previewProcess = null;
-    }
-    if (chrome) {
-      chrome.kill().catch(() => {});
-      chrome = null;
-    }
-  };
-
-  process.on('SIGINT', () => {
-    cleanup();
-    process.exit(130);
-  });
-  process.on('SIGTERM', () => {
-    cleanup();
-    process.exit(143);
-  });
-
-  const distDir = join(ROOT, 'dist');
-  if (!existsSync(distDir)) {
-    console.error('❌ ./dist not found. Run "npm run build" first.');
-    process.exit(1);
-  }
-
-  console.log('📡 Starting vite preview for Lighthouse audit...');
-  previewProcess = spawn('npx', ['vite', 'preview', '--port', String(PORT)], {
-    cwd: ROOT,
-    stdio: 'pipe',
-    shell: true,
-  });
-
-  previewProcess.stderr?.on('data', (d) => process.stderr.write(d));
-  previewProcess.stdout?.on('data', (d) => process.stdout.write(d));
-
-  previewProcess.on('error', (err) => {
-    console.error('❌ Failed to start vite preview:', err.message);
-    cleanup();
-    process.exit(1);
-  });
-
-  previewProcess.on('exit', (code) => {
-    if (code !== 0 && code !== null && previewProcess) {
-      console.error('❌ vite preview exited with code', code);
-    }
-  });
-
-  try {
-    await waitForServer();
-    console.log('✅ Preview ready at', BASE_URL);
-  } catch (err) {
-    console.error('❌', err.message);
-    cleanup();
-    process.exit(1);
-  }
-
-  const { launch: launchChrome } = await import('chrome-launcher');
   const lighthouse = (await import('lighthouse')).default;
 
-  try {
-    chrome = await launchChrome({
-      chromeFlags: ['--headless', '--no-sandbox', '--disable-gpu'],
-    });
-  } catch (err) {
-    console.error('❌ Chrome launch failed:', err.message);
-    cleanup();
-    process.exit(1);
-  }
-
   const options = {
-    port: chrome.port,
+    port: chromePort,
     logLevel: 'silent',
     output: 'json',
   };
 
   let runnerResult;
-  try {
-    runnerResult = await lighthouse(BASE_URL, options);
-  } catch (err) {
-    console.error('❌ Lighthouse run failed:', err.message);
-    cleanup();
-    process.exit(1);
+  const MAX_RETRIES = 3;
+  for (let i = 0; i < MAX_RETRIES; i++) {
+    try {
+      runnerResult = await lighthouse(targetUrl, options);
+      if (runnerResult) break;
+    } catch (err) {
+      console.error(`⚠️ Lighthouse run failed (Attempt ${i + 1}/${MAX_RETRIES}):`, err.message);
+      if (i === MAX_RETRIES - 1) throw err;
+      await new Promise((resolve) => setTimeout(resolve, 2000));
+    }
   }
-
-  await chrome.kill();
-  chrome = null;
-  previewProcess.kill('SIGTERM');
-  previewProcess = null;
 
   const lhr = runnerResult.lhr;
   if (!lhr || !lhr.categories) {
     console.error('❌ Invalid Lighthouse result (no categories).');
-    process.exit(1);
+    return false;
   }
 
   // 리포트 저장 (디버깅용)
@@ -153,7 +91,7 @@ async function main() {
   if (!existsSync(reportDir)) {
     mkdirSync(reportDir, { recursive: true });
   }
-  const reportPath = join(reportDir, 'lighthouse-report.json');
+  const reportPath = join(reportDir, `lighthouse-report-${pageName.toLowerCase()}.json`);
   writeFileSync(reportPath, JSON.stringify(lhr, null, 2));
   console.log(`\n📄 Lighthouse report saved to ${reportPath}`);
 
@@ -186,30 +124,119 @@ async function main() {
     });
   }
 
+  console.log('\n📊 Lighthouse Audit Summary:');
+  console.log('='.repeat(50));
+  console.log(
+    `${'Category'.padEnd(20)} | ${'Score'.padEnd(10)} | ${'Target'.padEnd(10)} | ${'Status'}`
+  );
+  console.log('-'.repeat(50));
+
   const failed = [];
   for (const [categoryId, minScore] of Object.entries(THRESHOLDS)) {
     const cat = lhr.categories[categoryId];
     const score = cat?.score ?? -1;
     const label = score >= 0 ? `${(score * 100).toFixed(0)}` : 'N/A';
+    const status =
+      score >= minScore ? `${colors.green}PASS${colors.reset}` : `${colors.red}FAIL${colors.reset}`;
+
+    console.log(
+      `${categoryId.padEnd(20)} | ${label.padEnd(10)} | ${(minScore * 100).toString().padEnd(10)} | ${status}`
+    );
+
     if (score < minScore) {
       failed.push({ id: categoryId, score, minScore, label });
     }
-    console.log(`  ${categoryId}: ${label} (min ${minScore * 100})`);
   }
+  console.log('='.repeat(50));
 
   if (failed.length > 0) {
-    console.error('\n❌ Lighthouse score assertions failed:');
-    for (const { id, label, minScore } of failed) {
-      console.error(`   ${id}: ${label} < ${minScore * 100}`);
+    console.error(
+      `\n${colors.red}❌ Lighthouse score assertions failed for ${targetUrl}${colors.reset}`
+    );
+    return false;
+  }
+
+  console.log(`\n${colors.green}✅ Lighthouse score check passed for ${targetUrl}${colors.reset}`);
+  return true;
+}
+
+const colors = {
+  red: '\x1b[31m',
+  green: '\x1b[32m',
+  reset: '\x1b[0m',
+};
+
+async function runAll() {
+  let previewProcess = null;
+  let chrome = null;
+
+  const cleanup = async () => {
+    if (chrome && typeof chrome.kill === 'function') {
+      try {
+        await chrome.kill();
+      } catch (e) {}
+      chrome = null;
     }
+    if (previewProcess) {
+      previewProcess.kill('SIGTERM');
+      previewProcess = null;
+    }
+  };
+
+  process.on('SIGINT', async () => {
+    await cleanup();
+    process.exit(130);
+  });
+  process.on('SIGTERM', async () => {
+    await cleanup();
+    process.exit(143);
+  });
+
+  const distDir = join(ROOT, 'dist');
+  if (!existsSync(distDir)) {
+    console.error('❌ ./dist not found. Run "npm run build" first.');
     process.exit(1);
   }
 
-  console.log('\n✅ Lighthouse score check passed.');
-  process.exit(0);
+  console.log('📡 Starting vite preview for Lighthouse audit...');
+  previewProcess = spawn('npx', ['vite', 'preview', '--port', String(PORT)], {
+    cwd: ROOT,
+    stdio: 'pipe',
+    shell: true,
+  });
+
+  try {
+    await waitForServer();
+    console.log('✅ Preview server ready.');
+
+    const { launch: launchChrome } = await import('chrome-launcher');
+    chrome = await launchChrome({
+      chromeFlags: ['--headless', '--no-sandbox', '--disable-gpu'],
+    });
+
+    let allPassed = true;
+    for (const page of TARGET_PAGES) {
+      const passed = await runAudit(page.path, page.name, chrome.port);
+      if (!passed) allPassed = false;
+    }
+
+    await cleanup();
+    if (!allPassed) {
+      console.error(
+        `\n${colors.red}❌ Some Lighthouse audits failed. Check the summary above.${colors.reset}`
+      );
+      process.exit(1);
+    }
+    console.log(`\n${colors.green}✨ All Lighthouse audits passed successfully!${colors.reset}`);
+    process.exit(0);
+  } catch (err) {
+    console.error('❌ Audit process failed:', err.message);
+    await cleanup();
+    process.exit(1);
+  }
 }
 
-main().catch((err) => {
+runAll().catch((err) => {
   console.error(err);
   process.exit(1);
 });

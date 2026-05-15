@@ -42,7 +42,9 @@ const REQUIRED = [
     key: 'VITE_SUPABASE_URL',
     desc: 'Supabase 프로젝트 URL',
     validate: (v) =>
-      /^https:\/\/[^.]+\.supabase\.co/.test(v) && '형식 OK (https://xxx.supabase.co)',
+      (/https:\/\/[^.]+\.supabase\.co/.test(v) ||
+        /http:\/\/(localhost|127\.0\.0\.1|host\.docker\.internal):/.test(v)) &&
+      '형식 OK',
   },
   {
     key: 'VITE_SUPABASE_ANON_KEY',
@@ -59,6 +61,16 @@ const REQUIRED = [
     desc: 'Supabase Access Token (선택, db push 등)',
     validate: (v) => v.length >= 1 && `설정됨 (${v.length}자)`,
   },
+  {
+    key: 'SUPABASE_SERVICE_ROLE_KEY',
+    desc: 'Supabase Service Role Key (보안 감사/백엔드 권한)',
+    validate: (v) => v.length >= 50 && v.startsWith('eyJ') && `설정됨 (${v.length}자)`,
+  },
+  {
+    key: 'SUPABASE_PROJECT_ID',
+    desc: 'Supabase 프로젝트 ID (선택, 원격 DB 연동용)',
+    validate: (v) => /^[a-z0-9]{20}$/.test(v) || (v.length > 0 && `설정됨 (${v.length}자)`),
+  },
 ];
 
 let hasError = false;
@@ -66,7 +78,7 @@ console.log('📋 .env 키 검사 (값 노출 없음)\n');
 
 for (const { key, desc, validate } of REQUIRED) {
   const value = env[key];
-  const required = key !== 'SUPABASE_ACCESS_TOKEN'; // 토큰은 선택
+  const required = !['SUPABASE_ACCESS_TOKEN', 'SUPABASE_PROJECT_ID'].includes(key); // 선택 항목 제외
   if (!value || value.trim() === '') {
     if (required) {
       console.log(`❌ ${key}`);

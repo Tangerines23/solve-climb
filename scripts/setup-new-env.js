@@ -61,7 +61,9 @@ function main() {
   const envResult = ensureEnv();
   if (envResult.created) {
     console.log('✅ .env 생성됨 (.env.example 복사).');
-    console.log('   → .env에서 VITE_SUPABASE_URL, VITE_SUPABASE_ANON_KEY 등 실제 값으로 수정하세요.\n');
+    console.log(
+      '   → .env에서 VITE_SUPABASE_URL, VITE_SUPABASE_ANON_KEY 등 실제 값으로 수정하세요.\n'
+    );
   } else {
     console.log('✅ .env 이미 존재 (유지).\n');
   }

@@ -1,0 +1,146 @@
+.stamina-gauge-container {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+  padding: var(--spacing-sm) 0;
+  margin-bottom: var(--spacing-lg);
+  width: 100%;
+  box-sizing: border-box;
+  min-width: 0;
+
+  /* State based colors */
+  --stamina-color: var(--color-success);
+  --stamina-glow: var(--color-mint-400-alpha-30);
+}
+
+.stamina-gauge-container[data-stamina='0'] {
+  --stamina-color: var(--color-error);
+  --stamina-glow: var(--overlay-red-high);
+}
+
+.stamina-gauge-container[data-stamina='1'],
+.stamina-gauge-container[data-stamina='2'] {
+  --stamina-color: var(--color-warning);
+  --stamina-glow: var(--overlay-orange-high);
+}
+
+.stamina-gauge-icon-wrapper-hardened {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  padding: var(--spacing-sm);
+  /* High clearance for shadows */
+}
+
+.stamina-lightning {
+  width: var(--spacing-3xl);
+  height: var(--spacing-3xl);
+  filter: drop-shadow(0 0 2px var(--overlay-dark-high));
+  overflow: visible;
+  transition:
+    filter var(--transition-normal) ease,
+    transform var(--transition-normal) ease;
+}
+
+.stamina-glow-path {
+  fill: var(--stamina-color);
+  filter: blur(var(--spacing-xs));
+  transform-origin: center;
+  animation: pulse-glow-opacity var(--transition-slow) infinite ease-in-out;
+  /* Hardware acceleration hints */
+  will-change: opacity, transform;
+  transform: translateZ(0);
+}
+
+.stamina-main-path {
+  fill: var(--stamina-color);
+}
+
+.stamina-bar-track {
+  flex: 1;
+  height: var(--spacing-small-alt);
+  background: var(--overlay-dark-low-alt);
+  border-radius: var(--rounded-xs);
+  position: relative;
+  overflow: hidden;
+}
+
+.stamina-bar-fill {
+  height: 100%;
+  border-radius: var(--rounded-xs);
+  background-color: var(--stamina-color);
+  box-shadow: 0 0 var(--spacing-md) var(--stamina-glow);
+  transition:
+    width var(--transition-slow) cubic-bezier(0.34, 1.56, 0.64, 1),
+    background-color var(--transition-normal) ease;
+}
+
+.stamina-bar-divider {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: var(--spacing-micro);
+  background: var(--overlay-dark-low);
+  transform: translateX(-50%);
+}
+
+.stamina-text {
+  font-size: var(--font-size-base);
+  font-weight: var(--font-weight-semibold);
+  font-family: 'Outfit', sans-serif;
+  min-width: var(--spacing-4xl);
+  text-align: right;
+  display: flex;
+  align-items: baseline;
+  justify-content: flex-end;
+  gap: var(--spacing-micro);
+}
+
+.current-stamina {
+  color: var(--stamina-color);
+}
+
+.stamina-max {
+  font-size: var(--font-size-tight);
+  color: var(--color-text-muted-alt);
+  font-weight: var(--font-weight-medium);
+}
+
+/* Animations */
+@keyframes pulse-glow-opacity {
+  0% {
+    opacity: 0.4;
+    transform: scale(1) translateZ(0);
+  }
+
+  50% {
+    opacity: 0.95;
+    transform: scale(1.2) translateZ(0);
+  }
+
+  100% {
+    opacity: 0.4;
+    transform: scale(1) translateZ(0);
+  }
+}
+
+@keyframes shake {
+  0%,
+  100% {
+    transform: translateX(0);
+  }
+
+  25% {
+    transform: translateX(-2px) rotate(-1deg);
+  }
+
+  75% {
+    transform: translateX(2px) rotate(1deg);
+  }
+}
+
+.shake .stamina-lightning {
+  animation: shake var(--transition-normal) ease-in-out;
+  filter: drop-shadow(0 0 var(--spacing-sm) var(--overlay-red-high));
+}

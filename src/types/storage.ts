@@ -1,6 +1,6 @@
 // 스토리지 관련 타입 정의
-import { World, Category } from './quiz';
-import { MyPageStats } from '../hooks/useMyPageStats';
+import { World, Category } from '@/features/quiz';
+import { MyPageStatsData as MyPageStats } from '@/features/mypage';
 
 export interface LocalSession {
   userId?: string;

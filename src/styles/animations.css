@@ -1,0 +1,73 @@
+/* Shared Animations */
+
+@keyframes fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes slide-up {
+  from {
+    transform: translateY(20px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+@keyframes scale-in {
+  from {
+    opacity: 0;
+    transform: scale(0.9);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes pulse {
+  0%,
+  100% {
+    opacity: 0.5;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+
+@keyframes tier-glow {
+  0%,
+  100% {
+    box-shadow: 0 0 8px var(--color-tier-legend);
+  }
+  50% {
+    box-shadow:
+      0 0 16px var(--color-tier-legend),
+      0 0 24px var(--color-tier-legend);
+  }
+}
+
+.animate-fade-in {
+  animation: fade-in 0.3s ease;
+}
+.animate-slide-up {
+  animation: slide-up 0.3s ease-out;
+}
+.animate-scale-in {
+  animation: scale-in 0.25s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}

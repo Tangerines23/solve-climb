@@ -1,16 +1,17 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { renderHook } from '@testing-library/react';
 import { useCustomBackNavigation } from '../useCustomBackNavigation';
-import { APP_CONFIG } from '../../config/app';
+import { APP_CONFIG } from '@/config/app';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { useProfileStore } from '../../stores/useProfileStore';
+import { useProfileStore } from '@/features/auth';
+
 // Mock dependencies
 vi.mock('react-router-dom', () => ({
   useNavigate: vi.fn(),
   useLocation: vi.fn(),
 }));
 
-vi.mock('../../stores/useProfileStore', () => ({
+vi.mock('@/features/auth/stores/useProfileStore', () => ({
   useProfileStore: {
     getState: vi.fn(),
   },
@@ -30,7 +31,7 @@ describe('useCustomBackNavigation', () => {
     vi.clearAllMocks();
     vi.mocked(useNavigate).mockReturnValue(mockNavigate);
     vi.mocked(useLocation).mockReturnValue(mockLocation);
-    vi.mocked(useProfileStore.getState).mockReturnValue({ isProfileComplete: true });
+    vi.mocked(useProfileStore.getState).mockReturnValue({ isProfileComplete: true } as any);
 
     // Mock window.history
     Object.defineProperty(window, 'history', {
@@ -282,7 +283,7 @@ describe('useCustomBackNavigation', () => {
       ...mockLocation,
       pathname: APP_CONFIG.ROUTES.MY_PAGE,
     });
-    vi.mocked(useProfileStore.getState).mockReturnValue({ isProfileComplete: false });
+    vi.mocked(useProfileStore.getState).mockReturnValue({ isProfileComplete: false } as any);
 
     renderHook(() => useCustomBackNavigation());
 
