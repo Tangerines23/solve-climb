@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 import { supabase } from '@/utils/supabaseClient';
-import { safeSupabaseQuery } from '@/features/debug';
+import { safeSupabaseQuery } from '@/utils/safeQuery';
 import { validatedRpc, ItemActionResponseSchema, CommonResponseSchema } from '@/utils/rpcValidator';
 import { AdService } from '@/utils/adService';
 import { UI_MESSAGES } from '@/constants/ui';

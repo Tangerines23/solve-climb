@@ -218,13 +218,13 @@
 }
 
 .roadmap-title {
-  font-size: 20px;
+  font-size: var(--font-size-xl);
   font-weight: 800;
   color: var(--color-text-primary);
 }
 
 .roadmap-subtitle {
-  font-size: 13px;
+  font-size: var(--font-size-compact);
   color: var(--color-primary-light);
   font-weight: 600;
 }
@@ -372,12 +372,12 @@
 }
 
 .landmark-label.sub {
-  font-size: 13px;
+  font-size: var(--font-size-compact);
   color: var(--color-text-primary);
 }
 
 .landmark-altitude.sub {
-  font-size: 11px;
+  font-size: var(--font-size-tight);
   color: var(--color-primary-light);
 }
 
@@ -397,7 +397,7 @@
 }
 
 .collection-title {
-  font-size: 15px;
+  font-size: var(--font-size-medium);
   font-weight: 700;
   color: var(--color-text-primary);
 }
@@ -451,7 +451,7 @@
 }
 
 .sub-landmark-hint {
-  font-size: 11px;
+  font-size: var(--font-size-tight);
   color: var(--color-primary-light);
   font-weight: 600;
   margin-top: var(--spacing-xs);
@@ -603,13 +603,13 @@
 }
 
 .footer-label {
-  font-size: 14px;
+  font-size: var(--font-size-sm);
   color: rgba(255, 255, 255, 0.7);
   font-weight: 500;
 }
 
 .footer-value {
-  font-size: 15px;
+  font-size: var(--font-size-medium);
   color: var(--color-success); /* Fallback for color-mix */
   color: var(--color-primary-light);
   font-weight: 800;

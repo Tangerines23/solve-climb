@@ -10,6 +10,15 @@ Deno.serve(async (req) => {
     return new Response('ok', { headers: corsHeaders });
   }
 
+  // 보안 강화: Authorization 헤더 검증 (Service Role Key 필요)
+  const authHeader = req.headers.get('Authorization');
+  if (!authHeader || !authHeader.includes(Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? '')) {
+    return new Response(JSON.stringify({ error: 'Unauthorized: Service role key required' }), {
+      status: 401,
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+    });
+  }
+
   try {
     const supabase = createClient(
       Deno.env.get('SUPABASE_URL') ?? '',

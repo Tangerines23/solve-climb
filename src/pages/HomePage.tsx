@@ -1,10 +1,18 @@
 import { Header } from '@/components/Header';
-import { StatusCard, ChallengeCard, CategoryList, StaminaGauge } from '@/features/quiz';
+import { StatusCard, ChallengeCard, StaminaGauge } from '@/features/quiz';
 import { FooterNav } from '@/components/FooterNav';
 import { Toast } from '@/components/Toast';
-import { DailyRewardModal } from '@/features/item';
 import { useHomePageBridge } from '@/hooks/useHomePageBridge';
+import { lazy, Suspense } from 'react';
 import './HomePage.css';
+
+// 성능 최적화: 비임계 컴포넌트 지연 로딩
+const CategoryList = lazy(() =>
+  import('@/features/quiz').then((m) => ({ default: m.CategoryList }))
+);
+const DailyRewardModal = lazy(() =>
+  import('@/features/item').then((m) => ({ default: m.DailyRewardModal }))
+);
 
 export function HomePage() {
   const { showAgeRating, showExitToast, closeExitToast } = useHomePageBridge();
@@ -31,11 +39,15 @@ export function HomePage() {
           <StaminaGauge />
           <StatusCard />
           <ChallengeCard />
-          <CategoryList />
+          <Suspense fallback={<div className="loading-placeholder" />}>
+            <CategoryList />
+          </Suspense>
         </div>
       </main>
       <FooterNav />
-      <DailyRewardModal />
+      <Suspense>
+        <DailyRewardModal />
+      </Suspense>
       <Toast
         message="한 번 더 누르면 종료됩니다"
         isOpen={showExitToast}

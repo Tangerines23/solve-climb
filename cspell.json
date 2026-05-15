@@ -74,7 +74,8 @@
     "refetched",
     "refetching",
     "UNRANKED",
-    "unranked"
+    "unranked",
+    "noninteractive"
   ],
   "ignorePaths": [
     "node_modules",

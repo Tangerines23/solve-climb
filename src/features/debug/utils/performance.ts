@@ -18,6 +18,8 @@ export const performanceMonitor = {
     this.observeMetric('FID');
     // CLS (Cumulative Layout Shift) 측정
     this.observeMetric('CLS');
+    // INP (Interaction to Next Paint) 측정
+    this.observeMetric('INP');
 
     if (import.meta.env.DEV) {
       logger.info('Performance', 'Runtime performance monitoring initialized.');
@@ -27,15 +29,15 @@ export const performanceMonitor = {
   /**
    * 브라우저 API를 사용한 지표 관찰
    */
-  observeMetric(metricName: 'LCP' | 'FID' | 'CLS'): void {
+  observeMetric(metricName: 'LCP' | 'FID' | 'CLS' | 'INP'): void {
     try {
-      const typeMap: Record<'LCP' | 'FID' | 'CLS', string> = {
+      const typeMap: Record<'LCP' | 'FID' | 'CLS' | 'INP', string> = {
         LCP: 'largest-contentful-paint',
         FID: 'first-input',
         CLS: 'layout-shift',
+        INP: 'event',
       };
-      const entryType =
-        metricName === 'LCP' ? typeMap.LCP : metricName === 'FID' ? typeMap.FID : typeMap.CLS;
+      const entryType = typeMap[metricName];
 
       const observer = new PerformanceObserver((entryList) => {
         const entries = entryList.getEntries();
@@ -47,6 +49,7 @@ export const performanceMonitor = {
           else if (metricName === 'FID')
             value = (entry as EnhancedPerformanceEntry).processingStart! - entry.startTime;
           else if (metricName === 'CLS') value = (entry as EnhancedPerformanceEntry).value!;
+          else if (metricName === 'INP') value = entry.duration;
 
           this.report(metricName, value);
         });

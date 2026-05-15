@@ -3,7 +3,7 @@
   justify-content: space-between;
   align-items: center;
   width: 100%;
-  max-width: 400px;
+  max-width: var(--modal-width-portrait);
   margin-bottom: var(--spacing-xl);
   padding: 0 var(--spacing-sm);
   /* Add some padding */
@@ -18,7 +18,7 @@
 
 /* Score display */
 .score-display {
-  font-size: 1.2rem;
+  font-size: var(--font-size-xl);
   /* Reduced size */
   font-weight: bold;
   color: var(--color-text-primary);
@@ -218,7 +218,7 @@
   background: none;
   border: none;
   color: var(--color-text-secondary);
-  font-size: 1.75rem;
+  font-size: var(--font-size-h3);
   cursor: pointer;
   padding: var(--spacing-md);
   display: flex;
@@ -403,21 +403,21 @@
 .exit-confirm-text {
   margin: 0;
   color: var(--color-text-primary);
-  font-size: 0.875rem;
+  font-size: var(--font-size-sm);
   font-weight: 500;
-  line-height: 1.4;
+  line-height: var(--line-height-snug);
 }
 
 .exit-confirm-hint {
   margin: var(--spacing-xs) 0 0 0 !important;
-  font-size: 0.75rem !important;
+  font-size: var(--font-size-xs) !important;
   color: var(--color-text-secondary) !important;
   font-weight: 400 !important;
-  line-height: 1.3;
+  line-height: var(--line-height-tight);
 }
 
 .question {
-  font-size: var(--text-2xl);
+  font-size: var(--font-size-2xl);
   font-weight: bold;
   color: var(--color-text-primary);
   text-align: center;
@@ -429,21 +429,21 @@
   background-color: var(--color-blue-400);
   color: var(--color-text-primary);
   border-radius: var(--rounded-button);
-  font-size: 0.875rem;
+  font-size: var(--font-size-sm);
   text-align: center;
 }
 
 .debug-answer-display strong {
-  font-size: 1.125rem;
+  font-size: var(--font-size-lg);
   font-weight: 600;
 }
 
 .problem-text {
-  font-size: clamp(2.8rem, 10vw, 3.8rem); /* 키패드 글자보다 더 크게 (최소 동일 이상) */
+  font-size: clamp(var(--font-size-3xl), 10vw, var(--font-size-5xl)); /* 1.875rem to 3rem approx */
   font-weight: 900;
   color: var(--color-text-primary);
   text-align: center;
-  line-height: 1.1;
+  line-height: var(--line-height-none);
   margin: 0;
   word-break: keep-all;
   /* 가독성을 위한 텍스트 외곽선 (텍스트 셰도우 활용) */
@@ -490,7 +490,7 @@
 }
 
 .answer-text {
-  font-size: clamp(2.2rem, 7vw, 3rem);
+  font-size: clamp(var(--font-size-2xl), 7vw, var(--font-size-5xl));
   font-weight: 800;
   color: var(--color-mint-400); /* 정답 텍스트 색상 강조 */
   min-height: 1.2em;
@@ -680,7 +680,7 @@
   width: 100%;
   padding: var(--spacing-md);
   margin-top: var(--spacing-md);
-  font-size: 1.1rem;
+  font-size: var(--font-size-lg);
 }
 
 .submit-button-system:hover:not(:disabled) {
@@ -700,7 +700,7 @@
 
 .submit-button {
   padding: var(--spacing-medium-alt) 0;
-  font-size: 1rem;
+  font-size: var(--font-size-base);
   font-weight: bold;
   background: linear-gradient(135deg, var(--color-blue-400), var(--color-blue-500));
   color: var(--color-gray-100);
@@ -734,10 +734,10 @@
 }
 
 .quiz-life-item {
-  font-size: 1rem;
+  font-size: var(--font-size-base);
   transition: all 0.3s ease;
   filter: drop-shadow(0 0 2px rgba(0, 0, 0, 0.3));
-  line-height: normal;
+  line-height: var(--line-height-none);
 }
 
 .quiz-life-item.used {
@@ -778,7 +778,7 @@
   background-color: var(--color-toss-red); /* Fallback approx for 5% transparent */
   background-color: color-mix(in srgb, var(--color-toss-red), transparent 5%);
   color: var(--color-text-primary);
-  font-size: 1.125rem;
+  font-size: var(--font-size-lg);
   font-weight: bold;
   border-radius: var(--rounded-small-alt);
   box-shadow: 0 4px 12px color-mix(in srgb, var(--color-toss-red), transparent 50%);

@@ -3,11 +3,11 @@ import { useProfileStore, type ProfileState } from '@/features/auth';
 import { World, Category } from '../../types/quiz';
 
 export function useClimbGraphic(world: World, category: Category) {
-  const isLevelCleared = useLevelProgressStore((state: LevelProgressState) => state.isLevelCleared);
-  const getNextLevel = useLevelProgressStore((state: LevelProgressState) => state.getNextLevel);
+  const nextLevel = useLevelProgressStore((state: LevelProgressState) =>
+    state.getNextLevel(world, category)
+  );
   const isAdmin = useProfileStore((state: ProfileState) => state.isAdmin);
-
-  const nextLevel = getNextLevel(world, category);
+  const isLevelCleared = useLevelProgressStore((state: LevelProgressState) => state.isLevelCleared);
 
   return {
     isLevelCleared: (levelId: number) => isLevelCleared(world, category, levelId),

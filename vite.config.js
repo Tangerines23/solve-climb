@@ -38,11 +38,34 @@ export default defineConfig(({ mode }) => {
         }),
       // PWA support
       VitePWA({
-        registerType: 'prompt',
+        registerType: 'autoUpdate',
+        includeAssets: ['favicon.ico', 'apple-touch-icon.png', 'mask-icon.svg'],
         manifest: {
-          name: 'Solve Climb',
-          short_name: 'Climb',
+          name: 'Solve Climb: 수학 정복의 길',
+          short_name: 'SolveClimb',
+          description: '수학 문제를 풀며 산을 정복하는 두뇌 계발 게임',
           theme_color: '#ffffff',
+          background_color: '#ffffff',
+          display: 'standalone',
+          start_url: './',
+          icons: [
+            {
+              src: 'pwa-192x192.png',
+              sizes: '192x192',
+              type: 'image/png',
+            },
+            {
+              src: 'pwa-512x512.png',
+              sizes: '512x512',
+              type: 'image/png',
+            },
+            {
+              src: 'pwa-512x512.png',
+              sizes: '512x512',
+              type: 'image/png',
+              purpose: 'any maskable',
+            },
+          ],
         },
       }),
     ].filter(Boolean),
@@ -72,10 +95,24 @@ export default defineConfig(({ mode }) => {
         output: {
           manualChunks: (id) => {
             if (id.includes('node_modules')) {
+              // 자주 변경되지 않는 대형 라이브러리 분리 (캐싱 전략)
+              if (id.includes('framer-motion')) return 'vendor-animation';
+              if (id.includes('@supabase')) return 'vendor-supabase';
+              if (id.includes('react-router')) return 'vendor-router';
               if (id.includes('vitals') || id.includes('sentry')) return 'monitor';
+              if (id.includes('react') || id.includes('react-dom') || id.includes('scheduler'))
+                return 'vendor-core';
+              if (id.includes('zustand') || id.includes('lodash') || id.includes('date-fns'))
+                return 'vendor-utils';
               return 'vendor';
             }
-            if (id.includes('/debug/')) return 'debug';
+            // 기능 도메인별 분리 (Feature-based code splitting)
+            if (id.includes('/features/quiz/')) return 'feat-quiz';
+            if (id.includes('/features/mypage/')) return 'feat-mypage';
+            if (id.includes('/features/debug/') || id.includes('/debug/')) return 'feat-debug';
+
+            // 공통 컴포넌트 분리
+            if (id.includes('/components/common/')) return 'shared-ui';
           },
         },
       },

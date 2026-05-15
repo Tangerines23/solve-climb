@@ -1,26 +1,27 @@
 .stamina-gauge-container {
   display: flex;
   align-items: center;
-  gap: var(--spacing-md);
-  padding: var(--spacing-md) 0;
-  /* Remove horizontal padding and background */
-  margin-bottom: var(--spacing-2xl);
-  /* Removed background, border, box-shadow, backdrop-filter */
+  gap: var(--spacing-sm);
+  padding: var(--spacing-sm) 0;
+  margin-bottom: var(--spacing-lg);
+  width: 100%;
+  box-sizing: border-box;
+  min-width: 0;
 
   /* State based colors */
   --stamina-color: var(--color-success);
-  --stamina-glow: rgba(0, 200, 83, 0.4);
+  --stamina-glow: var(--color-mint-400-alpha-30);
 }
 
 .stamina-gauge-container[data-stamina='0'] {
   --stamina-color: var(--color-error);
-  --stamina-glow: rgba(255, 61, 0, 0.4);
+  --stamina-glow: var(--overlay-red-high);
 }
 
 .stamina-gauge-container[data-stamina='1'],
 .stamina-gauge-container[data-stamina='2'] {
   --stamina-color: var(--color-warning);
-  --stamina-glow: rgba(255, 196, 0, 0.4);
+  --stamina-glow: var(--overlay-orange-high);
 }
 
 .stamina-gauge-icon-wrapper-hardened {
@@ -35,19 +36,18 @@
 .stamina-lightning {
   width: var(--spacing-3xl);
   height: var(--spacing-3xl);
-  /* Default shadow for visibility */
-  filter: drop-shadow(0 0 2px rgba(0, 0, 0, 0.5));
+  filter: drop-shadow(0 0 2px var(--overlay-dark-high));
   overflow: visible;
   transition:
-    filter 0.3s ease,
-    transform 0.3s ease;
+    filter var(--transition-normal) ease,
+    transform var(--transition-normal) ease;
 }
 
 .stamina-glow-path {
   fill: var(--stamina-color);
-  filter: blur(4px);
+  filter: blur(var(--spacing-xs));
   transform-origin: center;
-  animation: pulse-glow-opacity 2s infinite ease-in-out;
+  animation: pulse-glow-opacity var(--transition-slow) infinite ease-in-out;
   /* Hardware acceleration hints */
   will-change: opacity, transform;
   transform: translateZ(0);
@@ -60,7 +60,7 @@
 .stamina-bar-track {
   flex: 1;
   height: var(--spacing-small-alt);
-  background: rgba(0, 0, 0, 0.3);
+  background: var(--overlay-dark-low-alt);
   border-radius: var(--rounded-xs);
   position: relative;
   overflow: hidden;
@@ -70,10 +70,10 @@
   height: 100%;
   border-radius: var(--rounded-xs);
   background-color: var(--stamina-color);
-  box-shadow: 0 0 10px var(--stamina-glow);
+  box-shadow: 0 0 var(--spacing-md) var(--stamina-glow);
   transition:
-    width 0.5s cubic-bezier(0.34, 1.56, 0.64, 1),
-    background-color 0.3s ease;
+    width var(--transition-slow) cubic-bezier(0.34, 1.56, 0.64, 1),
+    background-color var(--transition-normal) ease;
 }
 
 .stamina-bar-divider {
@@ -81,15 +81,15 @@
   top: 0;
   bottom: 0;
   width: var(--spacing-micro);
-  background: rgba(0, 0, 0, 0.2);
+  background: var(--overlay-dark-low);
   transform: translateX(-50%);
 }
 
 .stamina-text {
-  font-size: 1.1rem;
-  font-weight: 800;
+  font-size: var(--font-size-base);
+  font-weight: var(--font-weight-semibold);
   font-family: 'Outfit', sans-serif;
-  min-width: 40px;
+  min-width: var(--spacing-4xl);
   text-align: right;
   display: flex;
   align-items: baseline;
@@ -102,9 +102,9 @@
 }
 
 .stamina-max {
-  font-size: 0.8rem;
+  font-size: var(--font-size-tight);
   color: var(--color-text-muted-alt);
-  font-weight: 500;
+  font-weight: var(--font-weight-medium);
 }
 
 /* Animations */
@@ -141,6 +141,6 @@
 }
 
 .shake .stamina-lightning {
-  animation: shake 0.4s ease-in-out;
-  filter: drop-shadow(0 0 5px rgba(255, 77, 77, 0.6));
+  animation: shake var(--transition-normal) ease-in-out;
+  filter: drop-shadow(0 0 var(--spacing-sm) var(--overlay-red-high));
 }

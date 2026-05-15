@@ -1,13 +1,14 @@
 import React from 'react';
 import { TimerCircle } from './TimerCircle';
 import { getItemEmoji } from '@/constants/items';
-import { useQuiz } from '../contexts/QuizContext';
+import { useQuizState, useQuizHandlers, useQuizAnimations } from '../contexts/QuizContext';
 import { GAME_MODES, UI_MESSAGES } from '@/constants/ui';
 import { useQuizHeaderBridge } from '../hooks/bridge/useQuizHeaderBridge';
 
 export const QuizHeader = React.memo(() => {
-  const { quizState, quizAnimations, quizHandlers, activeItems, usedItems, score, handleTimeUp } =
-    useQuiz();
+  const { quizState, activeItems, usedItems, score } = useQuizState();
+  const { quizAnimations } = useQuizAnimations();
+  const { quizHandlers, handleTimeUp } = useQuizHandlers();
   const { combo } = useQuizHeaderBridge();
 
   const { gameMode, timeLimit, questionKey, timerResetKey, totalQuestions } = quizState;

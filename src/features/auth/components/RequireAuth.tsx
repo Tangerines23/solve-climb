@@ -19,8 +19,11 @@ export function RequireAuth({ children }: RequireAuthProps) {
     );
   }
 
-  // 세션이 없거나 프로필이 미완성인 경우 마이페이지로 이동
-  if (!isAuthenticated) {
+  // Visual Guardian 감사 모드인 경우 인증 건너뜀 (전체 페이지 접근 허용)
+  const isGuardianMode = (window as any).__ENABLE_VISUAL_GUARDIAN__ === true;
+
+  // 세션이 없거나 프로필이 미완성인 경우 마이페이지로 이동 (감사 모드 제외)
+  if (!isAuthenticated && !isGuardianMode) {
     return <Navigate to={loginPath} state={{ from: location }} replace />;
   }
 

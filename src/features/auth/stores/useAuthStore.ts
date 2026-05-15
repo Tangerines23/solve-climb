@@ -1,7 +1,7 @@
 import { create } from 'zustand';
 import { supabase } from '@/utils/supabaseClient';
 import { Session, User } from '@supabase/supabase-js';
-import { safeSupabaseQuery } from '@/features/debug';
+import { safeSupabaseQuery } from '@/utils/safeQuery';
 import { storageService, STORAGE_KEYS } from '@/services';
 import { isValidUUID } from '@/utils/validation';
 

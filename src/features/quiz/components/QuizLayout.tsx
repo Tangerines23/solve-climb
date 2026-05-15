@@ -4,11 +4,12 @@ import { TodaysPromise } from './TodaysPromise';
 import { FeverEffect } from './effects/FeverEffect';
 import { TutorialOverlay } from './tutorial/TutorialOverlay';
 import { LandmarkPopup } from './LandmarkPopup';
-import { useQuiz } from '../contexts/QuizContext';
+import { useQuizState, useQuizHandlers, useQuizModals } from '../contexts/QuizContext';
 import { TUTORIAL_STEPS } from '@/constants/ui';
 import { TutorialStep } from './tutorial/TutorialOverlay';
 import { QuizPreview } from './QuizPreview';
 import { useNavigate } from 'react-router-dom';
+import { useRenderTracker } from '@/features/debug';
 
 const CATEGORY_MAP: Record<string, string> = {
   기초: 'basic',
@@ -21,7 +22,17 @@ const CATEGORY_MAP: Record<string, string> = {
 };
 
 export function QuizLayout() {
-  const { quizState, modalState, modalHandlers, feverLevel, altitudePhase } = useQuiz();
+  const { quizState, feverLevel, altitudePhase } = useQuizState();
+  const { modalState } = useQuizModals();
+
+  useRenderTracker('QuizLayout', {
+    feverLevel,
+    altitudePhase,
+    quizState: {
+      isPreview: quizState.isPreview,
+    },
+  });
+  const { modalHandlers } = useQuizHandlers();
   const navigate = useNavigate();
 
   const { showTutorial } = modalState;

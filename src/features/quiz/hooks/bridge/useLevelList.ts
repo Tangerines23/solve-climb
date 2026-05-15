@@ -9,20 +9,27 @@ const UNDER_DEVELOPMENT_LEVELS = new Set<string>([
 ]);
 
 export function useLevelList(world: string, category: string, tier: Tier = 'normal') {
-  const isLevelCleared = useLevelProgressStore((state: any) => state.isLevelCleared);
-  const getLevelProgress = useLevelProgressStore((state: any) => state.getLevelProgress);
-  const getNextLevel = useLevelProgressStore((state: any) => state.getNextLevel);
-  const isAdmin = useProfileStore((state: any) => state.isAdmin);
+  // 해당 월드/카테고리에 속하는 레벨 기록들만 선택적으로 구독
+  const relevantRecords = useLevelProgressStore((state) => {
+    const prefix = `${tier}:${world}:${category}:`;
+    return Object.entries(state.records)
+      .filter(([key]) => key.startsWith(prefix))
+      .map(([, record]) => record)
+      .sort((a, b) => a.level - b.level);
+  });
+
+  const isLevelCleared = useLevelProgressStore((state) => state.isLevelCleared);
+  const getNextLevel = useLevelProgressStore((state) => state.getNextLevel);
+  const isAdmin = useProfileStore((state) => state.isAdmin);
   const [showUnderDevelopment, setShowUnderDevelopment] = useState(false);
 
+  // relevantRecords가 변경될 때마다(Zustand Selector에 의해) 자동으로 갱신됨
   const nextLevel = useMemo(
     () => getNextLevel(world, category, tier),
-    [getNextLevel, world, category, tier]
+    [getNextLevel, world, category, tier, relevantRecords]
   );
-  const progress = useMemo(
-    () => getLevelProgress(world, category, tier),
-    [getLevelProgress, world, category, tier]
-  );
+
+  const progress = relevantRecords;
 
   const isUnderDevelopment = useCallback(
     (level: number) => {

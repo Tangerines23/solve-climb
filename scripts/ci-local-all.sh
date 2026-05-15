@@ -75,7 +75,7 @@ if [ -z "${CI_SKIP_DB}" ]; then
   if command -v supabase &> /dev/null || npx supabase --version &> /dev/null; then
     run_step "5. security-db - Migration sanity" npm run check:migrations
     
-    echo "[security-db] Resetting local database..."
+    echo "[security-db] Resetting local database (this applies seed.sql)..."
     npx supabase db reset
     
     echo "[security-db] Running DB lint..."
@@ -105,7 +105,8 @@ fi
 
 # --- 6. build ---
 run_step "6. build" npm run build
-run_step "6. security-audit - Post-build Hygiene" npm run check:security:audit
+run_step "6. audit:pre-deploy - Hygiene & Security scan" npm run audit:pre-deploy
+run_step "6. security-audit - Post-build Legacy check" npm run check:security:audit
 
 # --- 6. e2e-stability-test ---
 if [ -n "${CI_SKIP_E2E}" ] || [ -n "${CI_SKIP_E2E_STABILITY}" ]; then
@@ -153,5 +154,9 @@ else
   run_step "8. performance - Lighthouse" npm run check:score
 fi
 
+# --- 9. diagnostic-report ---
+run_step "9. diagnostic-report" npm run report:diagnostic
+
 echo ""
 echo "=== ci-local-all 완료: CI와 동일한 검증을 모두 통과했습니다 ==="
+echo "📊 성능 및 부채 리포트 확인: reports/diagnostic-dashboard.html"

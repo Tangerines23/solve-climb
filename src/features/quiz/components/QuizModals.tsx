@@ -7,13 +7,14 @@ import { GameOverlay } from './game/GameOverlay';
 import { GameAlertModal } from './game/GameAlertModal';
 import { PauseModal } from './game/PauseModal';
 import { ITEM_MAP, ItemMetadata } from '@/constants/items';
-import { useQuiz } from '../contexts/QuizContext';
+import { useQuizState, useQuizHandlers, useQuizModals } from '../contexts/QuizContext';
 import { useValidation } from '@/hooks/useValidation';
 import { InventoryItem } from '@/features/auth';
 
 export function QuizModals() {
-  const { quizState, modalState, modalHandlers, feedbackRef, inventory, minerals, isAnonymous } =
-    useQuiz();
+  const { quizState, inventory, minerals, isAnonymous } = useQuizState();
+  const { modalState } = useQuizModals();
+  const { modalHandlers, feedbackRef } = useQuizHandlers();
   const { safeAccess } = useValidation();
 
   const {

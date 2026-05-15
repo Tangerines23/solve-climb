@@ -31,7 +31,13 @@ import {
 } from '../types/quizProps';
 import { ANIMATION_CONFIG } from '../constants/game';
 
-import { QuizContext } from './QuizContext';
+import {
+  QuizStateContext,
+  QuizHandlersContext,
+  QuizAnimationContext,
+  QuizModalContext,
+  QuizInputContext,
+} from './QuizContext';
 
 interface QuizProviderProps {
   children: ReactNode;
@@ -385,8 +391,6 @@ export function QuizProvider({ children, params }: QuizProviderProps) {
   const quizState: QuizDisplayState = useMemo(
     () => ({
       currentQuestion,
-      answerInput,
-      displayValue,
       category,
       topic: `${worldParam}-${categoryParam}`,
       categoryParam,
@@ -408,8 +412,6 @@ export function QuizProvider({ children, params }: QuizProviderProps) {
     }),
     [
       currentQuestion,
-      answerInput,
-      displayValue,
       category,
       worldParam,
       categoryParam,
@@ -550,31 +552,78 @@ export function QuizProvider({ children, params }: QuizProviderProps) {
     ]
   );
 
-  const value = {
-    quizState,
-    quizAnimations,
-    quizHandlers,
-    modalState,
-    modalHandlers,
-    inputRef,
-    feedbackRef,
-    inventory,
-    minerals,
-    isAnonymous,
-    feverLevel,
-    altitudePhase,
-    promiseData,
-    activeItems,
-    usedItems,
-    score,
-    isExhausted,
-    handleTimeUp,
-    setAnswerInput,
-    setDisplayValue,
-    setShowExitConfirm,
-    setIsFadingOut,
-    cancelExitConfirm,
-  };
+  const stateValue = useMemo(
+    () => ({
+      quizState,
+      inventory,
+      minerals,
+      isAnonymous,
+      feverLevel,
+      altitudePhase,
+      promiseData,
+      activeItems,
+      usedItems,
+      score,
+      isExhausted,
+    }),
+    [
+      quizState,
+      inventory,
+      minerals,
+      isAnonymous,
+      feverLevel,
+      altitudePhase,
+      promiseData,
+      activeItems,
+      usedItems,
+      score,
+      isExhausted,
+    ]
+  );
 
-  return <QuizContext.Provider value={value}>{children}</QuizContext.Provider>;
+  const handlersValue = useMemo(
+    () => ({
+      quizHandlers,
+      modalHandlers,
+      handleTimeUp,
+      setAnswerInput,
+      setDisplayValue,
+      setShowExitConfirm,
+      setIsFadingOut,
+      cancelExitConfirm,
+      inputRef,
+      feedbackRef,
+    }),
+    [
+      quizHandlers,
+      modalHandlers,
+      handleTimeUp,
+      setAnswerInput,
+      setDisplayValue,
+      setShowExitConfirm,
+      setIsFadingOut,
+      cancelExitConfirm,
+      inputRef,
+      feedbackRef,
+    ]
+  );
+
+  const animationValue = useMemo(() => ({ quizAnimations }), [quizAnimations]);
+  const modalValue = useMemo(() => ({ modalState }), [modalState]);
+  const inputValue = useMemo(
+    () => ({ userInput: answerInput, displayValue }),
+    [answerInput, displayValue]
+  );
+
+  return (
+    <QuizHandlersContext.Provider value={handlersValue}>
+      <QuizStateContext.Provider value={stateValue}>
+        <QuizInputContext.Provider value={inputValue}>
+          <QuizAnimationContext.Provider value={animationValue}>
+            <QuizModalContext.Provider value={modalValue}>{children}</QuizModalContext.Provider>
+          </QuizAnimationContext.Provider>
+        </QuizInputContext.Provider>
+      </QuizStateContext.Provider>
+    </QuizHandlersContext.Provider>
+  );
 }

@@ -1,23 +1,21 @@
 .unknown-mountain-card {
-  background-color: rgba(44, 44, 44, 0.6);
-  /* var(--color-bg-secondary) with alpha */
+  background-color: var(--color-bg-secondary-alpha);
   border-radius: var(--rounded-card);
-  padding: var(--spacing-lg);
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  padding: var(--spacing-md); /* Reduced from lg */
+  border: var(--border-thin) var(--overlay-white-low);
   cursor: pointer;
-  /* Transition handled by BaseCard for transform/shadow */
   transition:
-    background-color 0.2s,
-    border-color 0.2s;
+    background-color var(--transition-normal),
+    border-color var(--transition-normal);
 }
 
 .unknown-mountain-card:hover {
-  background-color: rgba(60, 60, 60, 0.8);
-  border-color: rgba(255, 255, 255, 0.2);
+  background-color: var(--color-bg-tertiary-alpha);
+  border-color: var(--overlay-white-medium);
 }
 
 .unknown-mountain-card.pressed {
-  transform: scale(0.98);
+  transform: scale(var(--scale-pressed));
 }
 
 .unknown-mountain-content {
@@ -27,9 +25,8 @@
 }
 
 .unknown-mountain-icon-wrapper {
-  width: calc(40px + 8px);
-  /* 8px extra for shadow clearance */
-  height: calc(40px + 8px);
+  width: calc(var(--icon-size-lg) + var(--spacing-xs));
+  height: calc(var(--icon-size-lg) + var(--spacing-xs));
   display: flex;
   align-items: center;
   justify-content: center;
@@ -39,8 +36,8 @@
 }
 
 .unknown-mountain-icon {
-  width: 32px;
-  height: 32px;
+  width: var(--icon-size-md);
+  height: var(--icon-size-md);
 }
 
 .unknown-mountain-text {
@@ -51,39 +48,41 @@
 }
 
 .unknown-mountain-title {
-  font-size: 1rem;
-  font-weight: 600;
+  font-size: var(--font-size-base);
+  font-weight: var(--font-weight-semibold);
   color: var(--color-text-primary);
   margin: 0;
   background: linear-gradient(
     to bottom,
     var(--color-text-primary) 0%,
     var(--color-text-primary) 60%,
-    rgba(255, 255, 255, 0.3) 100%
+    var(--overlay-white-alt) 100%
   );
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .unknown-mountain-description {
-  font-size: 0.875rem;
+  font-size: var(--font-size-sm);
   color: var(--color-gray-400);
-  /* Lighter gray for better contrast */
   margin: 0;
 }
 
 .unknown-mountain-button {
   background: transparent;
-  border: 1px solid var(--color-bg-tertiary);
+  border: var(--border-thin) var(--color-bg-tertiary);
   border-radius: var(--rounded-sm);
   padding: var(--spacing-tiny) var(--spacing-md);
-  font-size: 0.8125rem;
+  font-size: var(--font-size-tiny-alt);
   color: var(--color-text-primary);
   font-family: inherit;
-  font-weight: 500;
+  font-weight: var(--font-weight-medium);
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: all var(--transition-normal) ease;
   margin-top: var(--spacing-xs);
   width: fit-content;
 }
@@ -91,5 +90,5 @@
 .unknown-mountain-button:hover {
   border-color: var(--color-text-primary);
   color: var(--color-text-primary);
-  background-color: rgba(255, 255, 255, 0.1);
+  background-color: var(--overlay-white-low);
 }

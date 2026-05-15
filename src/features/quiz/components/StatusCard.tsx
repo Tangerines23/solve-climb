@@ -13,7 +13,7 @@ interface UserStatus {
 type LoadingState = StatusType;
 
 export function StatusCard() {
-  const { getBestScore, navigateToMyPage } = useStatusCard();
+  const { bestScore, navigateToMyPage } = useStatusCard();
   const [state, setState] = useState<LoadingState>('loading');
   const [status, setStatus] = useState<UserStatus | null>(null);
 
@@ -22,12 +22,12 @@ export function StatusCard() {
       try {
         setState(STATUS.LOADING);
 
-        // 로컬 데이터로 통계 계산
-        getBestScore();
+        // 로컬 데이터 기반 순위 산출 로직 (v2.0 고도화 예정)
+        // 현재는 bestScore를 사용하여 로직을 확장할 수 있는 기반만 마련
+        console.debug('Current best score from local records:', bestScore);
 
-        // 로컬 데이터만으로는 순위와 퍼센트를 계산할 수 없음
         const userStatus: UserStatus = {
-          totalRank: 0, // 랭킹 정보 산출 불가 상황 (v2.0 고도화 예정)
+          totalRank: 0,
           rankPercent: 0,
           rankChange: 0,
         };
@@ -41,7 +41,7 @@ export function StatusCard() {
     };
 
     fetchUserData();
-  }, [getBestScore]);
+  }, [bestScore]);
 
   const handleDetailClick = () => {
     navigateToMyPage();

@@ -6,7 +6,13 @@ import { QuizDisplayState, QuizAnimationState, QuizHandlers } from '../types/qui
 import { QuizQuestion, Category } from '../types/quiz';
 import { ItemFeedbackRef } from '../types/feedback';
 import { QuizCard } from './QuizCard';
-import { QuizContext } from '../contexts/QuizContext';
+import {
+  QuizStateContext,
+  QuizHandlersContext,
+  QuizAnimationContext,
+  QuizModalContext,
+  QuizInputContext,
+} from '../contexts/QuizContext';
 import './QuizPreview.css';
 
 interface QuizPreviewProps {
@@ -142,8 +148,6 @@ export function QuizPreview({
 
   const quizPreviewState: QuizDisplayState = {
     currentQuestion: mockQuestion,
-    answerInput,
-    displayValue,
     category: displayCategoryPreview as Category,
     topic: displayTopicPreview,
     categoryParam,
@@ -197,39 +201,9 @@ export function QuizPreview({
   };
 
   return (
-    <QuizContext.Provider
+    <QuizStateContext.Provider
       value={{
         quizState: quizPreviewState,
-        quizAnimations,
-        quizHandlers,
-        modalState: {
-          showLastChanceModal: false,
-          showCountdown: false,
-          showSafetyRope: false,
-          showTipModal: false,
-          showPauseModal: false,
-          showStaminaModal: false,
-          showTutorial: false,
-          showPromise: false,
-        },
-        modalHandlers: {
-          handleRevive: async () => {},
-          handlePurchaseAndRevive: async () => {},
-          handleWatchAdAndRevive: async () => {},
-          handleGiveUp: async () => {},
-          handleCountdownComplete: () => {},
-          setShowSafetyRope: () => {},
-          handleBack: () => {},
-          handleStartGame: async () => {},
-          handlePauseResume: () => {},
-          handlePauseExit: () => {},
-          setShowStaminaModal: () => {},
-          onAlertAction: () => {},
-          handlePromiseComplete: () => {},
-          setShowTutorial: () => {},
-        },
-        inputRef,
-        feedbackRef,
         inventory: [],
         minerals: 0,
         isAnonymous: true,
@@ -240,36 +214,84 @@ export function QuizPreview({
         usedItems: [],
         score: 0,
         isExhausted: false,
-        handleTimeUp: () => {},
-        setAnswerInput,
-        setDisplayValue,
-        setShowExitConfirm: () => {},
-        setIsFadingOut: () => {},
-        cancelExitConfirm: () => {},
       }}
     >
-      <div
-        className="quiz-page"
-        data-world={subParam || 'World1'}
-        data-category={categoryParam || ''}
+      <QuizHandlersContext.Provider
+        value={{
+          quizHandlers,
+          modalHandlers: {
+            handleRevive: async () => {},
+            handlePurchaseAndRevive: async () => {},
+            handleWatchAdAndRevive: async () => {},
+            handleGiveUp: async () => {},
+            handleCountdownComplete: () => {},
+            setShowSafetyRope: () => {},
+            handleBack: () => {},
+            handleStartGame: async () => {},
+            handlePauseResume: () => {},
+            handlePauseExit: () => {},
+            setShowStaminaModal: () => {},
+            onAlertAction: () => {},
+            handlePromiseComplete: () => {},
+            setShowTutorial: () => {},
+          },
+          inputRef,
+          feedbackRef,
+          handleTimeUp: () => {},
+          setAnswerInput,
+          setDisplayValue,
+          setShowExitConfirm: () => {},
+          setIsFadingOut: () => {},
+          cancelExitConfirm: () => {},
+        }}
       >
-        <QuizCard />
+        <QuizAnimationContext.Provider value={{ quizAnimations }}>
+          <QuizModalContext.Provider
+            value={{
+              modalState: {
+                showLastChanceModal: false,
+                showCountdown: false,
+                showSafetyRope: false,
+                showTipModal: false,
+                showPauseModal: false,
+                showStaminaModal: false,
+                showTutorial: false,
+                showPromise: false,
+              },
+            }}
+          >
+            <QuizInputContext.Provider
+              value={{
+                userInput: answerInput,
+                displayValue,
+              }}
+            >
+              <div
+                className="quiz-page"
+                data-world={subParam || 'World1'}
+                data-category={categoryParam || ''}
+              >
+                <QuizCard />
 
-        {/* Keyboard Switcher Overlay (Only for Preview) */}
-        {canSwitchKeyboard && (
-          <div className="preview-keyboard-switcher">
-            <button onClick={handlePrevKeyboard} className="preview-nav-button">
-              ‹
-            </button>
-            <span className="preview-nav-label">
-              {currentPreviewType === 'custom' ? '커스텀 키패드' : '쿼티 키보드'}
-            </span>
-            <button onClick={handleNextKeyboard} className="preview-nav-button">
-              ›
-            </button>
-          </div>
-        )}
-      </div>
-    </QuizContext.Provider>
+                {/* Keyboard Switcher Overlay (Only for Preview) */}
+                {canSwitchKeyboard && (
+                  <div className="preview-keyboard-switcher">
+                    <button onClick={handlePrevKeyboard} className="preview-nav-button">
+                      ‹
+                    </button>
+                    <span className="preview-nav-label">
+                      {currentPreviewType === 'custom' ? '커스텀 키패드' : '쿼티 키보드'}
+                    </span>
+                    <button onClick={handleNextKeyboard} className="preview-nav-button">
+                      ›
+                    </button>
+                  </div>
+                )}
+              </div>
+            </QuizInputContext.Provider>
+          </QuizModalContext.Provider>
+        </QuizAnimationContext.Provider>
+      </QuizHandlersContext.Provider>
+    </QuizStateContext.Provider>
   );
 }

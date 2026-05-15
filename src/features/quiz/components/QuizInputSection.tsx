@@ -1,7 +1,7 @@
 import React from 'react';
 import { QwertyKeypad } from './input/QwertyKeypad';
 import { CustomKeypad } from './input/CustomKeypad';
-import { useQuiz } from '../contexts/QuizContext';
+import { useQuizState, useQuizHandlers, useQuizAnimations } from '../contexts/QuizContext';
 import {
   CATEGORY_IDS,
   SUB_CATEGORY_IDS,
@@ -11,7 +11,9 @@ import {
 } from '@/constants/ui';
 
 export const QuizInputSection = React.memo(() => {
-  const { quizState, quizHandlers, quizAnimations } = useQuiz();
+  const { quizState } = useQuizState();
+  const { quizHandlers } = useQuizHandlers();
+  const { quizAnimations } = useQuizAnimations();
 
   const { currentQuestion, categoryParam, subParam, useSystemKeyboard, keyboardType } = quizState;
   const { isSubmitting, isError, isPaused, isInputPaused } = quizAnimations;

@@ -38,9 +38,17 @@ export function Header({ title, showBack, onBack }: HeaderProps) {
             ←
           </button>
         )}
+        {/* eslint-disable-next-line jsx-a11y/no-noninteractive-element-interactions */}
         <h1
           className={`header-logo ${isAdmin ? 'clickable' : ''} ${title ? 'has-custom-title' : ''}`}
           onClick={handleLogoClick}
+          role={isAdmin ? 'button' : undefined}
+          tabIndex={isAdmin ? 0 : undefined}
+          onKeyDown={(e) => {
+            if (isAdmin && (e.key === 'Enter' || e.key === ' ')) {
+              handleLogoClick();
+            }
+          }}
         >
           {title || APP_CONFIG.APP_NAME}
         </h1>

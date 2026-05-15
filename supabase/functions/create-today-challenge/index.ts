@@ -1,18 +1,27 @@
 // Supabase Edge Function: 오늘의 챌린지 자동 생성
 // 이 함수는 매일 자정에 실행되어 오늘의 챌린지를 생성합니다.
 
-import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
-import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
+import { serve } from 'https://deno.land/std@0.168.0/http/server.ts';
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
-}
+};
 
 serve(async (req) => {
   // CORS preflight 요청 처리
   if (req.method === 'OPTIONS') {
-    return new Response('ok', { headers: corsHeaders })
+    return new Response('ok', { headers: corsHeaders });
+  }
+
+  // 보안 강화: Authorization 헤더 검증 (Service Role Key 필요)
+  const authHeader = req.headers.get('Authorization');
+  if (!authHeader || !authHeader.includes(Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? '')) {
+    return new Response(JSON.stringify({ error: 'Unauthorized: Service role key required' }), {
+      status: 401,
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+    });
   }
 
   try {
@@ -22,19 +31,19 @@ serve(async (req) => {
       {
         auth: {
           autoRefreshToken: false,
-          persistSession: false
-        }
+          persistSession: false,
+        },
       }
-    )
+    );
 
-    const today = new Date().toISOString().split('T')[0]
-    
+    const today = new Date().toISOString().split('T')[0];
+
     // 오늘 챌린지가 이미 있는지 확인
     const { data: existing } = await supabaseAdmin
       .from('today_challenges')
       .select('*')
       .eq('challenge_date', today)
-      .single()
+      .single();
 
     if (existing) {
       return new Response(
@@ -43,35 +52,35 @@ serve(async (req) => {
           headers: { ...corsHeaders, 'Content-Type': 'application/json' },
           status: 200,
         }
-      )
+      );
     }
 
     // 날짜를 시드로 변환 (YYYYMMDD)
-    const dateParts = today.split('-')
-    const seed = parseInt(dateParts[0] + dateParts[1] + dateParts[2], 10)
+    const dateParts = today.split('-');
+    const seed = parseInt(dateParts[0] + dateParts[1] + dateParts[2], 10);
 
     // 시드 기반 랜덤 생성기
     class SeededRandom {
-      private seed: number
+      private seed: number;
       constructor(seed: number) {
-        this.seed = seed
+        this.seed = seed;
       }
       random(): number {
-        this.seed = (this.seed * 9301 + 49297) % 233280
-        return this.seed / 233280
+        this.seed = (this.seed * 9301 + 49297) % 233280;
+        return this.seed / 233280;
       }
       randomInt(min: number, max: number): number {
-        return Math.floor(this.random() * (max - min)) + min
+        return Math.floor(this.random() * (max - min)) + min;
       }
     }
 
-    const rng = new SeededRandom(seed)
+    const rng = new SeededRandom(seed);
 
     // 카테고리 목록 (수학의 산, 언어의 산만 사용 - 논리, 상식 제외)
     const categories = [
       { id: 'language', name: '언어' },
       { id: 'math', name: '수학' },
-    ].sort((a, b) => a.id.localeCompare(b.id))
+    ].sort((a, b) => a.id.localeCompare(b.id));
 
     // 서브토픽 매핑 (수열 제외)
     const subTopicsMap: Record<string, Array<{ id: string; name: string }>> = {
@@ -87,7 +96,7 @@ serve(async (req) => {
         { id: 'japanese', name: '일본어' },
         { id: 'korean', name: '한글' },
       ],
-    }
+    };
 
     // 레벨 범위 (각 서브토픽별)
     const levelRanges: Record<string, Record<string, number>> = {
@@ -103,27 +112,27 @@ serve(async (req) => {
         japanese: 10,
         korean: 10,
       },
-    }
+    };
 
     // 1. 카테고리 선택
-    const categoryIndex = rng.randomInt(0, categories.length)
-    const selectedCategory = categories[categoryIndex]
+    const categoryIndex = rng.randomInt(0, categories.length);
+    const selectedCategory = categories[categoryIndex];
 
     // 2. 서브토픽 선택
-    const subTopics = subTopicsMap[selectedCategory.id] || []
+    const subTopics = subTopicsMap[selectedCategory.id] || [];
     if (subTopics.length === 0) {
-      throw new Error(`No sub topics for category: ${selectedCategory.id}`)
+      throw new Error(`No sub topics for category: ${selectedCategory.id}`);
     }
-    const sortedSubTopics = [...subTopics].sort((a, b) => a.id.localeCompare(b.id))
-    const topicIndex = rng.randomInt(0, sortedSubTopics.length)
-    const selectedTopic = sortedSubTopics[topicIndex]
+    const sortedSubTopics = [...subTopics].sort((a, b) => a.id.localeCompare(b.id));
+    const topicIndex = rng.randomInt(0, sortedSubTopics.length);
+    const selectedTopic = sortedSubTopics[topicIndex];
 
     // 3. 레벨 선택
-    const maxLevel = levelRanges[selectedCategory.id]?.[selectedTopic.id] || 10
-    const level = rng.randomInt(1, maxLevel + 1)
+    const maxLevel = levelRanges[selectedCategory.id]?.[selectedTopic.id] || 10;
+    const level = rng.randomInt(1, maxLevel + 1);
 
     // 챌린지 제목 생성
-    const title = `${selectedTopic.name} Level ${level}!`
+    const title = `${selectedTopic.name} Level ${level}!`;
 
     // 새 챌린지 생성
     const { data: newChallenge, error } = await supabaseAdmin
@@ -139,27 +148,20 @@ serve(async (req) => {
         title: title,
       })
       .select()
-      .single()
+      .single();
 
     if (error) {
-      throw error
+      throw error;
     }
 
-    return new Response(
-      JSON.stringify({ message: 'Challenge created', challenge: newChallenge }),
-      {
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-        status: 201,
-      }
-    )
+    return new Response(JSON.stringify({ message: 'Challenge created', challenge: newChallenge }), {
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      status: 201,
+    });
   } catch (error) {
-    return new Response(
-      JSON.stringify({ error: error.message }),
-      {
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-        status: 500,
-      }
-    )
+    return new Response(JSON.stringify({ error: error.message }), {
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      status: 500,
+    });
   }
-})
-
+});

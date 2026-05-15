@@ -1,8 +1,10 @@
 import React from 'react';
-import { useQuiz } from '../contexts/QuizContext';
+import { useQuizState, useQuizHandlers, useQuizAnimations } from '../contexts/QuizContext';
 
 export const QuizFloatingFeedback = React.memo(() => {
-  const { quizAnimations, isExhausted, cancelExitConfirm } = useQuiz();
+  const { isExhausted } = useQuizState();
+  const { quizAnimations } = useQuizAnimations();
+  const { cancelExitConfirm } = useQuizHandlers();
 
   const { showSlideToast, toastValue, damagePosition, showExitConfirm, isFadingOut } =
     quizAnimations;

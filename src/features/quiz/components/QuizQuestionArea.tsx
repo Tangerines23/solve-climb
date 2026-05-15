@@ -5,11 +5,12 @@ import { FunctionMachine } from './expert/FunctionMachine';
 import { IntegralVisualizer } from './expert/IntegralVisualizer';
 import { CalculusVisualization } from './CalculusVisualization';
 import { ReasoningOverlay } from './effects/ReasoningOverlay';
-import { useQuiz } from '../contexts/QuizContext';
+import { useQuizState, useQuizAnimations } from '../contexts/QuizContext';
 import { useAlgebra } from '../hooks/core/useAlgebra';
 
 export const QuizQuestionArea = React.memo(() => {
-  const { quizState, quizAnimations } = useQuiz();
+  const { quizState } = useQuizState();
+  const { quizAnimations } = useQuizAnimations();
   const { parseEquation } = useAlgebra();
   const { currentQuestion, categoryParam, levelParam, showAnswer } = quizState;
   const { cardAnimation, questionAnimation } = quizAnimations;

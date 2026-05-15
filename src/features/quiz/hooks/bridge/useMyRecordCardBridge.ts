@@ -1,4 +1,3 @@
-import { useEffect, useState } from 'react';
 import { useLevelProgressStore } from '../../stores/useLevelProgressStore';
 
 interface UseMyRecordCardBridgeProps {
@@ -7,31 +6,17 @@ interface UseMyRecordCardBridgeProps {
 }
 
 export function useMyRecordCardBridge({ world, category }: UseMyRecordCardBridgeProps) {
-  const [loading, setLoading] = useState(true);
-  const [records, setRecords] = useState<{
-    'time-attack': number | null;
-    survival: number | null;
-  }>({ 'time-attack': null, survival: null });
+  // 해당 월드/카테고리의 최고 기록을 실시간으로 구독
+  const bestRecords = useLevelProgressStore((state) => state.getBestRecords(world, category));
 
-  const getBestRecords = useLevelProgressStore((state: any) => state.getBestRecords);
-
-  useEffect(() => {
-    setLoading(true);
-    // Simulate async loading (matches original implementation)
-    const timer = setTimeout(() => {
-      const bestRecords = getBestRecords(world, category);
-      setRecords({
-        'time-attack': bestRecords['time-attack'],
-        survival: bestRecords['survival'],
-      });
-      setLoading(false);
-    }, 300);
-
-    return () => clearTimeout(timer);
-  }, [world, category, getBestRecords]);
+  // 로딩 상태는 데이터가 계산되면 즉시 해제 (또는 필요시 유지)
+  const loading = false;
 
   return {
     loading,
-    records,
+    records: {
+      'time-attack': bestRecords['time-attack'],
+      survival: bestRecords['survival'],
+    },
   };
 }

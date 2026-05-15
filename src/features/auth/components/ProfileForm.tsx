@@ -110,7 +110,6 @@ export function ProfileForm({ onComplete, showBackButton = false, onCancel }: Pr
             placeholder="닉네임을 입력하세요"
             className={`input-base profile-form-input ${error ? 'error' : ''}`}
             maxLength={10}
-            autoFocus
             autoComplete="off"
             autoCorrect="off"
             autoCapitalize="off"

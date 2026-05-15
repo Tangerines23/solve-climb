@@ -4,7 +4,10 @@
   "version": "0.8.0",
   "type": "module",
   "scripts": {
-    "setup": "node scripts/setup-new-env.js",
+    "setup": "node scripts/doctor.js && npm install && npm run gen-types",
+    "doctor": "node scripts/doctor.js",
+    "gen-types": "node scripts/gen-db-types.js",
+    "db:verify": "npm run check:db:validation",
     "dev": "vite --host",
     "generate": "plop",
     "diet": "knip",
@@ -22,7 +25,7 @@
     "ci:local": "npm run ci:local:stage1",
     "ci:local:core": "npm run ci:local:stage1",
     "ci:local:full": "bash scripts/ci-local-all.sh",
-    "ci:local:stage1": "npm run type-check && npm run lint && npm run diet && npm run check:integrity && npm run test:all && npm run check:security && npm run check:supabase:connection && npm run check:layout:with-server",
+    "ci:local:stage1": "npm run check:env && npm run type-check && npm run lint && npm run diet && npm run check:integrity && npm run test:all && npm run check:security && npm run check:supabase:connection && npm run check:db:security && npm run db:verify && npm run check:layout:with-server",
     "check:architecture": "eslint src tests --config eslint.config.js --no-fix",
     "test": "vitest",
     "test:ui": "vitest --ui",
@@ -64,9 +67,11 @@
     "check:db:lint": "npx supabase db lint --fail-on error",
     "check:db:lint:local": "npx supabase db lint --fail-on error",
     "check:db:diff": "npx supabase db diff --linked",
+    "check:db:security": "node scripts/check-db-security.js",
     "check:db:validation": "node scripts/check-db-validation.js",
-    "check:db:full": "npm run check:migrations && npm run check:db:migrations && npm run check:db:lint && npm run check:db:diff && npm run check:db:validation",
-    "check:db": "npm run check:migrations && npm run check:db:migrations && npm run check:db:lint && npm run check:db:validation",
+    "audit:db:security": "node scripts/audit-db-security.js",
+    "check:db:full": "npm run check:migrations && npm run check:db:migrations && npm run check:db:lint && npm run check:db:diff && npm run check:db:validation && npm run check:db:security && npm run audit:db:security",
+    "check:db": "npm run check:migrations && npm run check:db:migrations && npm run check:db:lint && npm run check:db:validation && npm run check:db:security",
     "audit": "npm audit",
     "audit:fix": "npm audit fix",
     "audit:auto-fix": "npm audit fix --audit-level=high || true",
@@ -76,10 +81,15 @@
     "check:secrets": "node scripts/check-secrets.js",
     "check:supabase:connection": "node scripts/check-supabase-connection.js",
     "check:env": "node scripts/check-env.js",
+    "check:env:sync": "node scripts/sync-env-example.js",
+    "check:system": "node scripts/check-system-deps.js",
     "check:spell": "npx cspell \"src/**/*.{ts,tsx}\"",
     "check:magic": "node scripts/check-magic-strings.js",
     "check:integrity": "npm run check:css && npm run check:nav && npm run check:spell && npm run check:magic",
     "check:assets": "node scripts/find-unused-assets.js",
+    "check:dependencies:duplication": "node scripts/check-dependency-duplication.js",
+    "check:rerender": "node scripts/check-rerender-cycle.js",
+    "check:heap": "node scripts/check-heap-snapshot.js",
     "check:size": "node scripts/check-bundle-size.js",
     "check:security": "npm run audit:auto-fix && npm audit --audit-level=high",
     "check:socket": "socket ci",
@@ -94,9 +104,15 @@
     "check:layout:deep:with-server": "node scripts/run-layout-check-with-server.js --deep",
     "check:layout:analyze": "node scripts/analyze-layout-overflow.js",
     "vg:check": "node scripts/vg-cli.js",
+    "audit:pre-deploy": "node scripts/pre-deploy-audit.js",
+    "audit:perf": "npm run check:size && npm run check:dependencies:duplication && npm run check:rerender && npm run check:heap && npm run check:score",
+    "audit:full": "npm run validate && npm run test:e2e:critical && npm run audit:perf && npm run audit:pre-deploy",
     "check:score": "node scripts/check-lighthouse-score.js",
     "prepare": "husky",
     "postinstall": "node scripts/ensure-env.js",
+    "clean": "rimraf dist node_modules/.vite coverage reports .vitest-cache",
+    "clean:full": "npm run clean && rimraf node_modules",
+    "clean:db": "supabase stop && supabase start",
     "storybook": "storybook dev -p 6006",
     "build-storybook": "storybook build",
     "report:lint": "npm run lint > reports/logs/lint_output.txt",
@@ -105,7 +121,10 @@
     "report:ci": "npm run ci:local > reports/logs/ci-local-log.txt",
     "report:collect": "node scripts/collect-reports.js",
     "report:clean": "powershell -Command \"Remove-Item reports/* -Recurse -Force\"",
-    "pre-report": "powershell -Command \"New-Item -ItemType Directory -Force reports/logs, reports/analysis, reports/security, reports/ci-reports\""
+    "pre-report": "powershell -Command \"New-Item -ItemType Directory -Force reports/logs, reports/analysis, reports/security, reports/ci-reports\"",
+    "check:debt": "node scripts/hunt-debt.js",
+    "check:visual": "node scripts/audit-visual-integrity.js",
+    "report:diagnostic": "npm run check:debt && npm run check:visual && npm run report:collect"
   },
   "dependencies": {
     "@capacitor-community/admob": "^8.0.0",
@@ -128,6 +147,8 @@
   "devDependencies": {
     "@axe-core/playwright": "^4.11.0",
     "@capacitor/cli": "^8.0.1",
+    "chalk": "^5.3.0",
+    "dotenv": "^16.4.1",
     "@eslint/js": "^9.20.0",
     "@playwright/experimental-ct-react": "^1.57.0",
     "@playwright/test": "^1.57.0",
@@ -159,6 +180,7 @@
     "eslint": "^9.20.0",
     "eslint-import-resolver-typescript": "^4.4.4",
     "eslint-plugin-boundaries": "^6.0.2",
+    "eslint-plugin-jsx-a11y": "^6.10.2",
     "eslint-plugin-react-hooks": "^5.2.0",
     "eslint-plugin-react-refresh": "^0.4.22",
     "eslint-plugin-security": "^4.0.0",
@@ -176,6 +198,7 @@
     "postcss": "^8.5.6",
     "prettier": "^3.7.4",
     "react-is": "^19.2.4",
+    "rimraf": "^6.0.1",
     "rollup-plugin-visualizer": "^6.0.5",
     "sharp": "^0.34.5",
     "storybook": "^10.2.0",
@@ -183,7 +206,7 @@
     "tailwindcss": "^4.1.18",
     "typescript": "^5.9.3",
     "typescript-eslint": "^8.59.1",
-    "vite": "^7.3.2",
+    "vite": "^7.3.3",
     "vite-plugin-pwa": "^1.2.0",
     "vitest": "^4.0.16"
   },
@@ -213,7 +236,19 @@
     "basic-ftp": "5.3.1",
     "@stryker-mutator/core": {
       "ajv": "^8.18.0"
-    }
+    },
+    "typescript": "^5.9.3",
+    "vite": "^7.3.3",
+    "zod": "^4.3.6",
+    "@sentry/core": "^10.52.0",
+    "@typescript-eslint/typescript-estree": "^8.59.3",
+    "@typescript-eslint/types": "^8.59.3",
+    "@typescript-eslint/visitor-keys": "^8.59.3",
+    "@vitest/expect": "^4.1.6",
+    "@vitest/spy": "^4.1.6",
+    "@vitest/utils": "^4.1.6",
+    "@vitest/pretty-format": "^4.1.6",
+    "chai": "^6.2.2"
   },
   "lint-staged": {
     "*.{ts,tsx}": [
@@ -231,7 +266,8 @@
   },
   "knip": {
     "ignore": [
-      "src/stories/**"
+      "src/stories/**",
+      "src/components/SEO.tsx"
     ],
     "ignoreBinaries": [
       "ait"

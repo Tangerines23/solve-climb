@@ -1,5 +1,6 @@
 import { useQuizStore } from '../../stores/useQuizStore';
 import { useLevelProgressStore } from '../../stores/useLevelProgressStore';
+import { useRankingStore } from '../../stores/useRankingStore';
 import { useUserStore } from '@/features/auth';
 import { useToastStore } from '@/stores/useToastStore';
 import { useSettingsStore } from '@/features/mypage';
@@ -18,18 +19,23 @@ import * as urlParams from '@/utils/urlParams';
  */
 export function useResultPageBridge() {
   // Stores
-  const {
-    category: storeCategory,
-    world: storeWorld,
-    level: storeLevel,
-    gameMode: storeMode,
-    score: storeScore,
-  } = useQuizStore();
+  // Stores - 개별 Selector 사용으로 리렌더링 최소화
+  const storeCategory = useQuizStore((state) => state.category);
+  const storeWorld = useQuizStore((state) => state.world);
+  const storeLevel = useQuizStore((state) => state.level);
+  const storeMode = useQuizStore((state) => state.gameMode);
+  const storeScore = useQuizStore((state) => state.score);
 
-  const { animationEnabled } = useSettingsStore();
-  const { clearLevel, updateBestScore, fetchRanking, rankings } = useLevelProgressStore();
-  const { rewardMinerals } = useUserStore();
-  const { showToast } = useToastStore();
+  const animationEnabled = useSettingsStore((state) => state.animationEnabled);
+
+  const clearLevel = useLevelProgressStore((state) => state.clearLevel);
+  const updateBestScore = useLevelProgressStore((state) => state.updateBestScore);
+
+  const fetchRanking = useRankingStore((state) => state.fetchRanking);
+  const rankings = useRankingStore((state) => state.rankings);
+
+  const rewardMinerals = useUserStore((state) => state.rewardMinerals);
+  const showToast = useToastStore((state) => state.showToast);
 
   return {
     // State

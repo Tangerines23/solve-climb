@@ -6,32 +6,23 @@ import { useNavigate } from 'react-router-dom';
 export function useStatusCard() {
   const navigate = useNavigate();
 
-  const getBestScore = useCallback(() => {
-    const { progress } = useLevelProgressStore.getState();
-    let bestScore = 0;
-
-    Object.values(progress).forEach((categoryData) => {
-      Object.values(categoryData).forEach((subTopicData) => {
-        Object.values(subTopicData).forEach((levelRecord) => {
-          if (levelRecord.bestScore['time-attack']) {
-            bestScore = Math.max(bestScore, levelRecord.bestScore['time-attack']);
-          }
-          if (levelRecord.bestScore['survival']) {
-            bestScore = Math.max(bestScore, levelRecord.bestScore['survival']);
-          }
-        });
-      });
+  // 모든 레벨 기록 중 최고 점수를 Selector에서 계산하여 구독
+  const bestScore = useLevelProgressStore((state) => {
+    let max = 0;
+    Object.values(state.records).forEach((record) => {
+      const { 'time-attack': ta, survival: sv } = record.bestScore;
+      if (ta) max = Math.max(max, ta);
+      if (sv) max = Math.max(max, sv);
     });
-
-    return bestScore;
-  }, []);
+    return max;
+  });
 
   const navigateToMyPage = useCallback(() => {
     navigate(APP_CONFIG.ROUTES.MY_PAGE);
   }, [navigate]);
 
   return {
-    getBestScore,
+    bestScore,
     navigateToMyPage,
   };
 }

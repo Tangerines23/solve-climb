@@ -1,10 +1,10 @@
 .challenge-card {
   background-color: var(--bg-glass-card);
-  -webkit-backdrop-filter: blur(20px);
-  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(var(--backdrop-blur));
+  backdrop-filter: blur(var(--backdrop-blur));
   border-radius: var(--rounded-card);
-  padding: var(--spacing-xl);
-  margin-bottom: var(--spacing-2xl);
+  padding: var(--spacing-lg); /* Reduced from xl */
+  margin-bottom: var(--spacing-lg); /* Reduced from 2xl */
   border: var(--border-glass);
   box-shadow: var(--shadow-glass);
 }
@@ -17,26 +17,26 @@
 }
 
 .challenge-icon {
-  font-size: 1.5rem;
+  font-size: var(--font-size-2xl);
 }
 
 .challenge-title {
-  font-size: 1.25rem;
-  font-weight: bold;
+  font-size: var(--font-size-xl);
+  font-weight: var(--font-weight-bold);
   color: var(--color-text-primary);
   margin: 0;
 }
 
 .challenge-description {
-  font-size: 1.125rem;
+  font-size: var(--font-size-lg);
   color: var(--color-text-primary);
   margin: 0 0 var(--spacing-md) 0;
-  font-weight: 700;
-  line-height: 1.4;
+  font-weight: var(--font-weight-bold);
+  line-height: var(--line-height-snug);
 }
 
 .challenge-participants {
-  font-size: 0.875rem;
+  font-size: var(--font-size-sm);
   color: var(--color-text-secondary);
   margin: 0 0 var(--spacing-lg) 0;
 }

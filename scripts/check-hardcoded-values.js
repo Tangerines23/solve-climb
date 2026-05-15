@@ -22,6 +22,7 @@ const __dirname = path.dirname(__filename);
 // 허용되는 하드코딩 패턴
 const ALLOWED_PATTERNS = [
   /index\.css/, // index.css 파일 전체
+  /tokens\.css/, // 토큰 정의 파일
   /tds-theme\.css/, // 테마 정의 파일
   /ClimbGraphic\.css/, // 그래픽 정의 파일
   /linear-gradient/, // 그라데이션

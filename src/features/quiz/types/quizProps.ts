@@ -6,8 +6,6 @@ import { QuizQuestion, Category } from './quiz';
  */
 export interface QuizDisplayState {
   currentQuestion: QuizQuestion | null;
-  answerInput: string;
-  displayValue: string;
   category: Category | null;
   topic: string;
   categoryParam: string | null;

@@ -5,6 +5,7 @@ import reactRefresh from 'eslint-plugin-react-refresh';
 import tseslint from 'typescript-eslint';
 import boundaries from 'eslint-plugin-boundaries';
 import security from 'eslint-plugin-security';
+import jsxA11y from 'eslint-plugin-jsx-a11y';
 
 export default tseslint.config(
   { ignores: ['dist', 'node_modules', '.agent', 'scripts/archive'] },
@@ -13,6 +14,7 @@ export default tseslint.config(
       js.configs.recommended,
       ...tseslint.configs.recommended,
       security.configs.recommended,
+      jsxA11y.flatConfigs.recommended,
     ],
     files: ['**/*.{ts,tsx}'],
     languageOptions: {
@@ -37,6 +39,10 @@ export default tseslint.config(
       'no-else-return': 'warn',
       'no-lonely-if': 'warn',
       'max-depth': ['warn', 1],
+      'jsx-a11y/anchor-is-valid': 'warn',
+      'jsx-a11y/click-events-have-key-events': 'warn',
+      'jsx-a11y/no-static-element-interactions': 'warn',
+      'jsx-a11y/label-has-associated-control': 'off',
     },
     settings: {
       'import/resolver': {

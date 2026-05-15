@@ -1,7 +1,7 @@
 /* category-list-container margin handled by page padding */
 
 .category-list-title {
-  font-size: 0.875rem;
+  font-size: var(--font-size-sm);
   color: var(--color-text-secondary);
   font-weight: 500;
   margin: 0 0 var(--spacing-md) 0;
@@ -19,7 +19,7 @@
   -webkit-backdrop-filter: blur(20px);
   backdrop-filter: blur(20px);
   border-radius: var(--rounded-card);
-  padding: var(--spacing-lg);
+  padding: var(--spacing-md); /* Reduced from lg */
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -36,12 +36,12 @@
   position: absolute;
   top: var(--spacing-sm);
   right: var(--spacing-sm);
-  width: 36px;
-  height: 36px;
+  width: var(--icon-size-button);
+  height: var(--icon-size-button);
   padding: 0;
   border: none;
   background: transparent;
-  font-size: 1.25rem;
+  font-size: var(--font-size-xl);
   cursor: pointer;
   display: flex;
   align-items: center;
@@ -74,14 +74,14 @@
 }
 
 .category-icon {
-  font-size: 1.5rem;
-  width: 40px;
-  height: 40px;
+  font-size: var(--font-size-2xl);
+  width: var(--spacing-4xl);
+  height: var(--spacing-4xl);
   display: flex;
   align-items: center;
   justify-content: center;
-  background-color: rgba(255, 255, 255, 0.05);
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  background-color: var(--glass-bg-low);
+  border: var(--border-width-sm) solid var(--glass-border-low);
   border-radius: var(--rounded-sm);
   position: relative;
 }
@@ -100,14 +100,14 @@
 }
 
 .mountain-silhouette {
-  font-size: 1.5rem;
+  font-size: var(--font-size-2xl);
   filter: grayscale(100%) brightness(0.3) contrast(1.5);
   opacity: 0.7;
   position: absolute;
 }
 
 .question-overlay {
-  font-size: 1.2rem;
+  font-size: var(--font-size-lg);
   font-weight: bold;
   color: var(--color-text-primary);
   position: absolute;
@@ -122,14 +122,17 @@
 }
 
 .category-item-title {
-  font-size: 1rem;
+  font-size: var(--font-size-base);
   font-weight: bold;
   color: var(--color-text-primary);
   margin: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .category-item-subtitle {
-  font-size: 0.875rem;
+  font-size: var(--font-size-sm);
   color: var(--color-text-secondary);
   margin: 0;
 }
@@ -141,7 +144,7 @@
 }
 
 .category-altitude-main {
-  font-size: 0.9375rem;
+  font-size: var(--font-size-medium);
   color: var(--color-text-primary);
   margin: 0;
   font-weight: 500;
@@ -150,22 +153,22 @@
 .category-altitude-main strong {
   font-weight: 800;
   color: var(--color-blue-400);
-  font-size: 1.0625rem;
+  font-size: var(--font-size-md-alt);
 }
 
 .category-altitude-sub {
-  font-size: 0.75rem;
+  font-size: var(--font-size-xs);
   color: var(--color-text-secondary);
   margin: 0;
 }
 
 .category-climb-button {
-  padding: var(--spacing-small-alt) var(--spacing-xl);
+  padding: var(--spacing-small-alt) var(--spacing-lg); /* Reduced from xl */
   background-color: var(--color-bg-secondary);
   color: var(--color-text-primary);
   border: none;
   border-radius: var(--rounded-button);
-  font-size: 0.875rem;
+  font-size: var(--font-size-sm);
   font-weight: 500;
   cursor: pointer;
   transition: background-color 0.2s;
@@ -182,12 +185,12 @@
 
 .category-item-card.favorite {
   border-color: var(--color-blue-400);
-  background-color: rgba(0, 191, 165, 0.15);
-  box-shadow: 0 0 20px rgba(0, 191, 165, 0.1);
+  background-color: var(--color-mint-400-alpha-10);
+  box-shadow: 0 0 var(--spacing-xl) var(--color-mint-400-alpha-10);
 }
 
 .favorite-star {
-  font-size: 1rem;
+  font-size: var(--font-size-base);
   margin-right: var(--spacing-xs);
 }
 
@@ -196,14 +199,14 @@
   bottom: 100px;
   left: 50%;
   transform: translateX(-50%);
-  background-color: rgba(30, 31, 35, 0.9);
-  -webkit-backdrop-filter: blur(15px);
-  backdrop-filter: blur(15px);
+  background-color: var(--bg-glass-overlay);
+  -webkit-backdrop-filter: blur(var(--backdrop-blur));
+  backdrop-filter: blur(var(--backdrop-blur));
   color: var(--color-text-primary);
   padding: var(--spacing-md) var(--spacing-2xl);
   border-radius: var(--rounded-lg);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  font-size: 0.875rem;
+  border: var(--border-width-sm) solid var(--glass-border-low);
+  font-size: var(--font-size-sm);
   font-weight: 500;
   z-index: 1000;
   box-shadow: var(--shadow-glass);

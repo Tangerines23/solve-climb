@@ -10,6 +10,7 @@ export { useDebugActions } from './hooks/useDebugActions';
 export { useErrorLogActions } from './hooks/useErrorLogActions';
 export { useDebugShortcuts } from './hooks/useDebugShortcuts';
 export { useDebugPanel } from './hooks/useDebugPanel';
+export { useRenderTracker } from './hooks/useRenderTracker';
 export { registerDebugBridge } from './hooks/useQuickActionsDebugBridge';
 export { debugLogger } from './utils/debugLogger';
 export { debug } from './utils/debug';

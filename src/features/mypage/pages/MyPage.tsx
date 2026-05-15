@@ -14,6 +14,7 @@ import { MyPageQuickAccess } from '../components/MyPageQuickAccess';
 import { MyPageSettings } from '../components/MyPageSettings';
 import { MyPageEffectsGuide } from '../components/MyPageEffectsGuide';
 import { useMyPageBridge } from '../hooks/useMyPageBridge';
+import { useRenderTracker } from '@/features/debug';
 // calculateTier imported from @/features/quiz above
 import { storageService, STORAGE_KEYS } from '@/services';
 import { APP_CONFIG } from '@/config/app';
@@ -81,6 +82,13 @@ export function MyPage() {
     flags,
     getLastPlayedWorld,
   } = useMyPageBridge();
+
+  useRenderTracker('MyPage', {
+    profileId: profile?.profileId,
+    statsLoading,
+    hasStats: !!stats,
+    isProfileComplete,
+  });
 
   const nickname = profile?.nickname || '게이머';
 

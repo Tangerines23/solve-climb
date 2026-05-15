@@ -5,9 +5,9 @@ import { useLevelProgressStore } from '@/features/quiz';
 import { useAuthStore } from '@/features/auth';
 import { useCustomBackNavigation } from '@/hooks/useCustomBackNavigation';
 import { GlobalLoadingIndicator } from '@/components/GlobalLoadingIndicator';
-import { useErrorLogStore } from '@/features/debug';
-import { useDebugStore } from '@/features/debug';
-import { useSettingsStore } from '@/features/mypage';
+import { useErrorLogStore } from '@/features/debug/stores/useErrorLogStore';
+import { useDebugStore } from '@/features/debug/stores/useDebugStore';
+import { useSettingsStore } from '@/features/mypage/stores/useSettingsStore';
 import { useConnectivity } from '@/hooks/useConnectivity';
 import { PwaUpdateNotification } from '@/components/PwaUpdateNotification';
 import { RequireAuth } from '@/features/auth';
@@ -15,7 +15,8 @@ import { useUserStore } from '@/features/auth';
 import { useQuizStore, type TimeLimit } from '@/features/quiz';
 import { logger } from '@/utils/logger';
 import { registerHapticConfig } from '@/utils/haptic';
-import { registerDebugConfig, registerDebugBridge } from '@/features/debug';
+import { registerDebugConfig } from '@/features/debug/utils/debugFetch';
+import { registerDebugBridge } from '@/features/debug/hooks/useQuickActionsDebugBridge';
 import { STATUS } from '@/constants/status';
 
 const HomePage = resilientLazy(
@@ -74,7 +75,9 @@ const ShopPage = resilientLazy(
 
 // ⚠️ 개발 환경에서만 디버그 컴포넌트 로드 (CI 환경 제외)
 const isCI = import.meta.env.VITE_CI === 'true';
-const shouldShowDebug = !import.meta.env.PROD && !isCI;
+const isAuditMode =
+  typeof window !== 'undefined' && (window as any).__ENABLE_VISUAL_GUARDIAN__ === true;
+const shouldShowDebug = (!import.meta.env.PROD && !isCI) || isAuditMode;
 
 const DebugPanel = !shouldShowDebug
   ? () => null

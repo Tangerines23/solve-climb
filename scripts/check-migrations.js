@@ -95,6 +95,23 @@ function validateMigrationFiles() {
         message: '주의: "IF EXISTS" 없이 "DROP TABLE"을 사용했습니다.',
       });
     }
+
+    // [강화] SECURITY DEFINER 함수 체크 (search_path 설정 권장)
+    if (/SECURITY\s+DEFINER/i.test(content) && !/SET\s+search_path\s*=/i.test(content)) {
+      warnings.push({
+        file,
+        message:
+          "보안 주의: SECURITY DEFINER 함수는 반드시 SET search_path = '' (또는 구체적인 스키마) 설정을 포함해야 합니다.",
+      });
+    }
+
+    // [강화] Public 스키마에 대한 불필요한 권한 부여 체크
+    if (/GRANT\s+\w+\s+ON\s+ALL\s+TABLES\s+IN\s+SCHEMA\s+public/i.test(content)) {
+      warnings.push({
+        file,
+        message: '보안 주의: public 스키마의 모든 테이블에 대한 일괄 권한 부여는 지양해야 합니다.',
+      });
+    }
   });
 
   // 형식에 맞는 파일만 필터링

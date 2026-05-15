@@ -1,9 +1,11 @@
 import React, { useEffect, useState } from 'react';
 import './TodaysPromise.css';
-import { useQuiz } from '../contexts/QuizContext';
+import { useQuizState, useQuizHandlers, useQuizModals } from '../contexts/QuizContext';
 
 export const TodaysPromise: React.FC = () => {
-  const { modalState, modalHandlers, promiseData } = useQuiz();
+  const { promiseData } = useQuizState();
+  const { modalState } = useQuizModals();
+  const { modalHandlers } = useQuizHandlers();
   const { showPromise: isVisible } = modalState;
   const { handlePromiseComplete: onComplete } = modalHandlers;
   const { rule, example } = promiseData;

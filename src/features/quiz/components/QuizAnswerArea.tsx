@@ -1,20 +1,19 @@
 import React from 'react';
 import { CoordinateGrid } from './CoordinateGrid';
-import { useQuiz } from '../contexts/QuizContext';
+import {
+  useQuizState,
+  useQuizInputState,
+  useQuizHandlers,
+  useQuizAnimations,
+} from '../contexts/QuizContext';
 
 export const QuizAnswerArea = React.memo(() => {
-  const { quizState, quizAnimations, quizHandlers, inputRef, setAnswerInput, setDisplayValue } =
-    useQuiz();
+  const { quizState } = useQuizState();
+  const { userInput: answerInput, displayValue } = useQuizInputState();
+  const { quizAnimations } = useQuizAnimations();
+  const { quizHandlers, inputRef, setAnswerInput, setDisplayValue } = useQuizHandlers();
 
-  const {
-    currentQuestion,
-    answerInput,
-    displayValue,
-    levelParam,
-    categoryParam,
-    subParam,
-    useSystemKeyboard,
-  } = quizState;
+  const { currentQuestion, levelParam, categoryParam, subParam, useSystemKeyboard } = quizState;
   const {
     isSubmitting,
     isError,
@@ -113,7 +112,6 @@ export const QuizAnswerArea = React.memo(() => {
               className={`input-base answer-input-field answer-input-system ${inputAnimation} ${isError ? 'error-state is-error' : ''} ${showFlash ? 'input-error-flash' : ''} ${showSuccessFlash ? 'input-success-flash' : ''}`}
               disabled={(isSubmitting && !isError) || effectiveInputPaused}
               readOnly={isError}
-              autoFocus={false}
             />
           </div>
           <button

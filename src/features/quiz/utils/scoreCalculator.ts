@@ -123,6 +123,8 @@ export function calculateCategoryAltitude(
   totalAltitude: number;
   totalProblems: number;
 } {
+  if (!progress) return { totalAltitude: 0, totalProblems: 0 };
+
   // 1. 호환성 유지: 만약 category가 progress의 최상위 키(World)라면 해당 World 전체 고도 반환
   if (Object.prototype.hasOwnProperty.call(progress, category)) {
     let totalAltitude = 0;

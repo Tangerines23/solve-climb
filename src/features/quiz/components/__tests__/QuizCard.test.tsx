@@ -3,7 +3,7 @@ import { render, screen, fireEvent } from '@testing-library/react';
 import '@testing-library/jest-dom';
 import { QuizCard } from '../QuizCard';
 import type { QuizQuestion, Category, GameMode } from '../../types/quiz';
-import { QuizContext } from '../../contexts/QuizContext';
+import { QuizTestProvider } from '../../contexts/QuizContext';
 
 // Mock dependencies
 vi.mock('../../utils/debugLogger', () => ({
@@ -135,9 +135,9 @@ describe('QuizCard', () => {
 
   const renderWithContext = (value = defaultMockValues) => {
     return render(
-      <QuizContext.Provider value={value}>
+      <QuizTestProvider value={value}>
         <QuizCard />
-      </QuizContext.Provider>
+      </QuizTestProvider>
     );
   };
 

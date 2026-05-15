@@ -6,10 +6,12 @@ import { QuizAnswerArea } from './QuizAnswerArea';
 import { QuizFloatingFeedback } from './QuizFloatingFeedback';
 import { QuizInputSection } from './QuizInputSection';
 import { UI_MESSAGES } from '@/constants/ui';
-import { useQuiz } from '../contexts/QuizContext';
+import { useQuizState, useQuizAnimations } from '../contexts/QuizContext';
+import '../styles/quiz-shared.css';
 
 function QuizCardComponent() {
-  const { quizState, quizAnimations } = useQuiz();
+  const { quizState } = useQuizState();
+  const { quizAnimations } = useQuizAnimations();
 
   const { currentQuestion } = quizState;
 
