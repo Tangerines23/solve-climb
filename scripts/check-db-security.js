@@ -65,7 +65,14 @@ async function verifyRLS() {
     );
     if (!table.is_rls_enabled) {
       // 일부 시스템 테이블이나 의도적으로 비활성화된 테이블이 있을 수 있으므로 무조건 실패시키지는 않고 경고 후 특정 민감 테이블이면 실패
-      const SENSITIVE_TABLES = ['profiles', 'user_level_records', 'inventory', 'items'];
+      const SENSITIVE_TABLES = [
+        'profiles',
+        'user_level_records',
+        'inventory',
+        'items',
+        'user_game_logs',
+        'user_statistics',
+      ];
       if (SENSITIVE_TABLES.includes(table.table_name)) {
         console.error(
           `   ❌ CRITICAL: 민감 테이블 ${table.table_name}의 RLS가 비활성화되어 있습니다!`
@@ -84,11 +91,25 @@ async function verifyRLS() {
  * RLS RPC가 없을 경우의 대체 테스트
  */
 async function fallbackRLSTest() {
-  const SENSITIVE_TABLES = ['profiles', 'user_level_records'];
+  const READ_PROTECTED_TABLES = [
+    'profiles',
+    'user_level_records',
+    'inventory',
+    'user_game_logs',
+    'user_statistics',
+  ];
+  const WRITE_PROTECTED_TABLES = [
+    'profiles',
+    'user_level_records',
+    'inventory',
+    'items',
+    'user_game_logs',
+    'user_statistics',
+  ];
   let allPassed = true;
 
   console.log('🧪 민감 테이블 익명 접근 차단 테스트 중 (SELECT)...');
-  for (const table of SENSITIVE_TABLES) {
+  for (const table of READ_PROTECTED_TABLES) {
     const { data, error } = await supabase.from(table).select('*').limit(1);
     if (error) {
       console.log(`✅ ${table} (SELECT): 익명 접근 차단됨 (${error.message})`);
@@ -103,7 +124,7 @@ async function fallbackRLSTest() {
   }
 
   console.log('\n🧪 민감 테이블 익명 쓰기 차단 테스트 중 (INSERT)...');
-  for (const table of SENSITIVE_TABLES) {
+  for (const table of WRITE_PROTECTED_TABLES) {
     // 테이블별 유효한 더미 데이터 생성
     let dummyData = {};
     if (table === 'profiles') {
@@ -114,6 +135,33 @@ async function fallbackRLSTest() {
         theme_code: 101,
         level: 1,
         mode_code: 1,
+      };
+    } else if (table === 'inventory') {
+      dummyData = {
+        user_id: '00000000-0000-0000-0000-000000000000',
+        item_id: 1,
+        quantity: 1,
+      };
+    } else if (table === 'items') {
+      dummyData = {
+        code: 'forbidden_item',
+        name: 'Forbidden Item',
+        description: 'Should not be insertable',
+        price: 1000,
+        category: 'cosmetic',
+      };
+    } else if (table === 'user_game_logs') {
+      dummyData = {
+        user_id: '00000000-0000-0000-0000-000000000000',
+        game_mode: 'normal',
+        score: 100,
+        correct_count: 5,
+        total_questions: 5,
+      };
+    } else if (table === 'user_statistics') {
+      dummyData = {
+        id: '00000000-0000-0000-0000-000000000000',
+        total_games: 1,
       };
     }
 
