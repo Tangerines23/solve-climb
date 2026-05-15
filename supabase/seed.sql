@@ -21,27 +21,27 @@ SELECT public.debug_seed_badge_definitions('[
 ]'::jsonb);
 
 -- 3. Create dummy profiles for ranking visibility
-INSERT INTO public.profiles (id, nickname, avatar_url, bio, coins, mastery_exp, level, stamina)
+-- Bypass security trigger for seeding
+SELECT pg_catalog.set_config('app.bypass_profile_security', '1', true);
+INSERT INTO public.profiles (id, nickname, minerals, total_mastery_score, current_tier_level, stamina)
 VALUES 
-  ('00000000-0000-0000-0000-000000000001', 'ProClimber', 'https://api.dicebear.com/7.x/avataaars/svg?seed=1', 'Climbing to the top!', 5000, 1500, 10, 100),
-  ('00000000-0000-0000-0000-000000000002', 'SolveMaster', 'https://api.dicebear.com/7.x/avataaars/svg?seed=2', 'Math is fun.', 2000, 800, 5, 80),
-  ('00000000-0000-0000-0000-000000000003', 'BeginnerJo', 'https://api.dicebear.com/7.x/avataaars/svg?seed=3', 'Just started.', 100, 50, 1, 50)
+  ('00000000-0000-0000-0000-000000000001', 'ProClimber', 5000, 2750, 10, 100),
+  ('00000000-0000-0000-0000-000000000002', 'SolveMaster', 2000, 800, 5, 80),
+  ('00000000-0000-0000-0000-000000000003', 'BeginnerJo', 100, 0, 1, 50)
 ON CONFLICT (id) DO UPDATE SET
   nickname = EXCLUDED.nickname,
-  avatar_url = EXCLUDED.avatar_url,
-  bio = EXCLUDED.bio,
-  coins = EXCLUDED.coins,
-  mastery_exp = EXCLUDED.mastery_exp,
-  level = EXCLUDED.level,
+  minerals = EXCLUDED.minerals,
+  total_mastery_score = EXCLUDED.total_mastery_score,
+  current_tier_level = EXCLUDED.current_tier_level,
   stamina = EXCLUDED.stamina;
 
--- 4. Add some game records
-INSERT INTO public.game_records (user_id, category, subject, level, mode, score, cleared, cleared_at)
+-- 4. Add some user level records for testing
+INSERT INTO public.user_level_records (user_id, world_id, category_id, subject_id, level, mode_code, theme_code, best_score)
 VALUES 
-  ('00000000-0000-0000-0000-000000000001', 'math', 'add', 1, 'time-attack', 1250, true, now()),
-  ('00000000-0000-0000-0000-000000000001', 'math', 'add', 2, 'time-attack', 1500, true, now()),
-  ('00000000-0000-0000-0000-000000000002', 'math', 'sub', 1, 'survival', 800, true, now())
-ON CONFLICT (user_id, category, subject, level, mode) DO NOTHING;
+  ('00000000-0000-0000-0000-000000000001', 'math_world', 'math', 'add', 1, 1, 1, 1250),
+  ('00000000-0000-0000-0000-000000000001', 'math_world', 'math', 'add', 2, 1, 1, 1500),
+  ('00000000-0000-0000-0000-000000000002', 'math_world', 'math', 'sub', 1, 2, 2, 800)
+ON CONFLICT (user_id, theme_code, level, mode_code) DO NOTHING;
 
 -- 5. Initialize Daily Challenges
 INSERT INTO public.today_challenges (challenge_date, category_id, category_name, topic_id, topic_name, level, mode, title)

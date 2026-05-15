@@ -68,7 +68,7 @@ async function runDeepConsistencyChecks() {
   } else if (masteryCheck && masteryCheck.length > 0) {
     masteryCheck.forEach((err) => {
       logs.push(
-        `❌ Mastery Inconsistency for user ${err.user_id} (${err.nickname}): ${err.message}`
+        `❌ Mastery Inconsistency for user ${err.out_user_id} (${err.out_nickname}): ${err.out_message}`
       );
       failed = true;
     });

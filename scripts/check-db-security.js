@@ -65,13 +65,7 @@ async function verifyRLS() {
     );
     if (!table.is_rls_enabled) {
       // 일부 시스템 테이블이나 의도적으로 비활성화된 테이블이 있을 수 있으므로 무조건 실패시키지는 않고 경고 후 특정 민감 테이블이면 실패
-      const SENSITIVE_TABLES = [
-        'profiles',
-        'user_level_records',
-        'game_records',
-        'inventory',
-        'items',
-      ];
+      const SENSITIVE_TABLES = ['profiles', 'user_level_records', 'inventory', 'items'];
       if (SENSITIVE_TABLES.includes(table.table_name)) {
         console.error(
           `   ❌ CRITICAL: 민감 테이블 ${table.table_name}의 RLS가 비활성화되어 있습니다!`
@@ -90,7 +84,7 @@ async function verifyRLS() {
  * RLS RPC가 없을 경우의 대체 테스트
  */
 async function fallbackRLSTest() {
-  const SENSITIVE_TABLES = ['profiles', 'user_level_records', 'game_records'];
+  const SENSITIVE_TABLES = ['profiles', 'user_level_records'];
   let allPassed = true;
 
   console.log('🧪 민감 테이블 익명 접근 차단 테스트 중 (SELECT)...');
@@ -110,15 +104,31 @@ async function fallbackRLSTest() {
 
   console.log('\n🧪 민감 테이블 익명 쓰기 차단 테스트 중 (INSERT)...');
   for (const table of SENSITIVE_TABLES) {
-    // 임의의 데이터를 삽입 시도
-    const { error } = await supabase
-      .from(table)
-      .insert([{ id: '00000000-0000-0000-0000-000000000000', dummy: true }])
-      .select();
+    // 테이블별 유효한 더미 데이터 생성
+    let dummyData = {};
+    if (table === 'profiles') {
+      dummyData = { id: '00000000-0000-0000-0000-000000000000', nickname: 'unauthorized' };
+    } else if (table === 'user_level_records') {
+      dummyData = {
+        user_id: '00000000-0000-0000-0000-000000000000',
+        theme_code: 101,
+        level: 1,
+        mode_code: 1,
+      };
+    }
 
-    // RLS가 작동하면 에러가 발생하거나, 삽입된 데이터가 반환되지 않아야 함
+    const { error } = await supabase.from(table).insert([dummyData]).select();
+
+    // RLS가 작동하면 42501(Permission Denied) 에러가 발생해야 함
     if (error) {
-      console.log(`✅ ${table} (INSERT): 익명 쓰기 차단됨 (${error.message})`);
+      if (error.code === '42501') {
+        console.log(`✅ ${table} (INSERT): RLS에 의해 정상적으로 차단됨 (42501)`);
+      } else {
+        console.warn(
+          `⚠️  ${table} (INSERT): 예기치 않은 에러로 차단됨 (${error.code}: ${error.message})`
+        );
+        // 스키마 에러 등은 보안 설정 확인이 불가능하므로 실패로 간주하지는 않되 경고
+      }
     } else {
       console.error(`❌ SECURITY CRITICAL: ${table} 테이블에 익명 쓰기가 허용되었습니다!`);
       allPassed = false;
