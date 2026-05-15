@@ -342,16 +342,19 @@ export type Database = {
       };
       theme_mapping: {
         Row: {
+          category: string;
           code: number;
           name: string;
           theme_id: string;
         };
         Insert: {
+          category: string;
           code: number;
           name: string;
           theme_id: string;
         };
         Update: {
+          category?: string;
           code?: number;
           name?: string;
           theme_id?: string;

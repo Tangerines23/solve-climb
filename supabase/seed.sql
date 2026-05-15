@@ -60,6 +60,16 @@ ON CONFLICT DO NOTHING;
 -- 7. Seed Theme Mapping (If needed by logic)
 INSERT INTO public.theme_mapping (code, theme_id, category, name)
 VALUES 
-  ('math_add', 'math_add', 'math', '덧셈'),
-  ('math_sub', 'math_sub', 'math', '뺄셈')
-ON CONFLICT (code) DO NOTHING;
+  (1, 'math_add', 'math', '덧셈'),
+  (2, 'math_sub', 'math', '뺄셈'),
+  (3, 'math_mul', 'math', '곱셈'),
+  (4, 'math_div', 'math', '나눗셈'),
+  (5, 'eng_word', 'english', '영어 단어'),
+  (6, 'logic_puzzle', 'logic', '논리 퍼즐'),
+  (7, 'math_arithmetic', 'math', '사칙연산'),
+  (8, 'math_equations', 'math', '방정식')
+ON CONFLICT (code) DO UPDATE SET
+  theme_id = EXCLUDED.theme_id,
+  category = EXCLUDED.category,
+  name = EXCLUDED.name;
+
