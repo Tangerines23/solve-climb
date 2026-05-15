@@ -248,6 +248,7 @@ export const mockBridgeActions = {
   handleTossLogin: vi.fn(),
   getLastPlayedWorld: vi.fn(),
   safeSupabaseQuery: vi.fn(async (p) => p),
+  updateProfile: vi.fn(() => Promise.resolve({ success: true })),
   refetch: mockRefetch,
   isTossAppEnvironment: vi.fn(() => false),
 };

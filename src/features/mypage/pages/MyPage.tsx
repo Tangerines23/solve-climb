@@ -64,6 +64,7 @@ export function MyPage() {
     loading: statsLoading,
     error: statsError,
     refetch,
+    updateProfile,
     setProfile,
     clearProfile,
     setHapticEnabled,
@@ -359,7 +360,9 @@ export function MyPage() {
       session.user.user_metadata?.name ||
       session.user.email ||
       '게이머';
-    setProfile({
+
+    // updateProfile을 사용하여 로컬 스토어와 Supabase 동기화 통합 처리
+    updateProfile({
       profileId: userId,
       nickname,
       userId,
@@ -367,28 +370,12 @@ export function MyPage() {
       avatar: session.user.user_metadata?.avatar_url,
       createdAt: session.user.created_at || new Date().toISOString(),
       isAdmin: false,
+    }).then(() => {
+      refetch();
+      // 리다이렉트 시도
+      performRedirect();
     });
-    refetch();
-
-    // 리다이렉트 시도
-    performRedirect();
-
-    try {
-      safeSupabaseQuery(supabase.rpc('rpc_update_nickname', { p_nickname: nickname })).catch(
-        () => {}
-      );
-    } catch {
-      // 무시
-    }
-  }, [
-    session?.user,
-    profile?.userId,
-    refetch,
-    setProfile,
-    performRedirect,
-    safeSupabaseQuery,
-    supabase,
-  ]);
+  }, [session?.user, profile?.userId, refetch, updateProfile, performRedirect]);
 
   // 로그아웃 함수
   const handleLogout = async () => {

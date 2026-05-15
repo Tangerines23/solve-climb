@@ -12,23 +12,30 @@ export function useMyRecordCardBridge({ world, category }: UseMyRecordCardBridge
 
   // 해당 월드/카테고리의 최고 기록을 실시간으로 구독
   const bestRecords = useLevelProgressStore(
-    useShallow((state) => state.getBestRecords(world, category))
+    useShallow((state) => {
+      // Defensive check for store method existence
+      if (typeof state.getBestRecords !== 'function') {
+        return null;
+      }
+      return state.getBestRecords(world, category);
+    })
   );
 
   useEffect(() => {
     // 컴포넌트 마운트 시 데이터 로딩 상태 시뮬레이션
-    // 실제로는 스토어 초기화 확인 등이 필요할 수 있으나, 현재는 마운트 후 해제
     const timer = setTimeout(() => {
       setLoading(false);
     }, 0);
     return () => clearTimeout(timer);
   }, []);
 
+  const recordsFallback = {
+    'time-attack': null,
+    survival: null,
+  };
+
   return {
-    loading,
-    records: {
-      'time-attack': bestRecords['time-attack'],
-      survival: bestRecords['survival'],
-    },
+    loading: loading || !bestRecords,
+    records: bestRecords || recordsFallback,
   };
 }

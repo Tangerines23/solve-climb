@@ -247,4 +247,46 @@
   --overlay-white-alt: rgba(255, 255, 255, 0.2);
   --overlay-red-high: rgba(255, 61, 0, 0.4);
   --overlay-orange-high: rgba(255, 196, 0, 0.4);
+
+  /* --- Quiz & World Theme Tokens --- */
+  --color-world1-top: #0f172a;
+  --color-world1-mid: #1e293b;
+  --color-world1-bottom: #0f172a;
+
+  --color-world2-top: #92400e;
+  --color-world2-mid: #78350f;
+  --color-world2-bottom: #451a03;
+
+  --color-world3-top: #0e7490;
+  --color-world3-mid: #155e75;
+  --color-world3-bottom: #083344;
+
+  --color-world4-top: #581c87;
+  --color-world4-mid: #3b0764;
+  --color-world4-bottom: #000000;
+
+  --color-world-forest-top: #065f46;
+  --color-world-forest-mid: #064e3b;
+  --color-world-forest-bottom: #022c22;
+  --color-world-rock-top: #334155;
+  --color-world-rock-mid: #1e293b;
+  --color-world-rock-bottom: #0f172a;
+  --color-world-clouds-top: #0ea5e9;
+  --color-world-clouds-mid: #0284c7;
+  --color-world-clouds-bottom: #075985;
+  --color-world-space-top: #1e1b4b;
+  --color-world-space-mid: #0f172a;
+  --color-world-space-bottom: #000000;
+  --color-world-fever-top: #064e3b;
+  --color-world-fever-mid: #7f1d1d;
+  --color-world-fever-bottom: #450a0a;
+  --color-world-default-top: #0f172a;
+  --color-world-default-bottom: #1e293b;
+
+  /* UI & Animation Colors */
+  --color-confetti-green: #10b981;
+  --color-orange-400: #fb923c;
+  --color-amber-300: #fcd34d;
+  --color-amber-400: #fbbf24;
+  --color-amber-500: #f59e0b;
 }

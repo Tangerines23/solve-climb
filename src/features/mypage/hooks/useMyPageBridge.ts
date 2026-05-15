@@ -2,6 +2,7 @@ import {
   useProfileStore,
   useDataReset,
   useUserWithdraw,
+  useProfile,
   signInWithGoogle,
   handleTossLogin,
   isTossAppEnvironment,
@@ -29,10 +30,9 @@ export function useMyPageBridge() {
   // Stats & Sessions
   const statsResult = useMyPageStats();
 
-  // Stores
-  const profile = useProfileStore((state: ProfileState) => state.profile);
+  // Stores & Auth Hooks
+  const { profile, setProfile, updateProfile, validateNickname } = useProfile();
   const isProfileComplete = useProfileStore((state: ProfileState) => state.isProfileComplete);
-  const setProfile = useProfileStore((state: ProfileState) => state.setProfile);
   const clearProfile = useProfileStore((state: ProfileState) => state.clearProfile);
   const isAdmin = useProfileStore((state: ProfileState) => state.isAdmin);
 
@@ -69,6 +69,8 @@ export function useMyPageBridge() {
 
     // Actions
     setProfile,
+    updateProfile,
+    validateNickname,
     clearProfile,
     setHapticEnabled,
     setAnimationEnabled,

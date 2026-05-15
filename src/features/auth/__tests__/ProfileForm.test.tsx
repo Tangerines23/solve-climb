@@ -38,6 +38,12 @@ vi.mock('../../../utils/supabaseClient', () => ({
     auth: {
       getSession: vi.fn(() => Promise.resolve({ data: { session: null } })),
     },
+    rpc: vi.fn(() => Promise.resolve({ error: null })),
+    from: vi.fn(() => ({
+      update: vi.fn(() => ({
+        eq: vi.fn(() => Promise.resolve({ error: null })),
+      })),
+    })),
   },
 }));
 

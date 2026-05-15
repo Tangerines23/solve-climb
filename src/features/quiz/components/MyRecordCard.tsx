@@ -11,7 +11,7 @@ interface MyRecordCardProps {
 export function MyRecordCard({ world, category, categoryName }: MyRecordCardProps) {
   const { loading, records } = useMyRecordCardBridge({ world, category });
 
-  if (loading) {
+  if (loading || !records) {
     return (
       <div className="my-record-card">
         <div className="my-record-card-skeleton">
