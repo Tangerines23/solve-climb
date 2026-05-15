@@ -1,5 +1,5 @@
 import { useSearchParams } from 'react-router-dom';
-import { useEffect, useMemo } from 'react';
+import { useEffect, useMemo, useCallback } from 'react';
 import { storageService, STORAGE_KEYS } from '@/services';
 import { World, Category } from '@/features/quiz';
 import { APP_CONFIG } from '@/config/app';
@@ -41,39 +41,42 @@ export function useNavigationContext() {
    * 필수 파라미터가 누락되었을 때 저장된 기록으로부터 복구를 시도하고 리다이렉트합니다.
    * @param requiredParams 복구가 필요한 파라미터 목록 ('mountain' | 'world' | 'category')
    */
-  const tryRecover = (requiredParams: ('mountain' | 'world' | 'category')[]) => {
-    const missing = requiredParams.filter((p) => !searchParams.get(p));
+  const tryRecover = useCallback(
+    (requiredParams: ('mountain' | 'world' | 'category')[]) => {
+      const missing = requiredParams.filter((p) => !searchParams.get(p));
 
-    if (missing.length > 0) {
-      const recMountain =
-        searchParams.get('mountain') ||
-        storageService.get<string>(STORAGE_KEYS.LAST_VISITED_MOUNTAIN);
-      const recWorld =
-        searchParams.get('world') || storageService.get<string>(STORAGE_KEYS.LAST_VISITED_WORLD);
-      const recCategory =
-        searchParams.get('category') ||
-        storageService.get<string>(STORAGE_KEYS.LAST_VISITED_CATEGORY);
+      if (missing.length > 0) {
+        const recMountain =
+          searchParams.get('mountain') ||
+          storageService.get<string>(STORAGE_KEYS.LAST_VISITED_MOUNTAIN);
+        const recWorld =
+          searchParams.get('world') || storageService.get<string>(STORAGE_KEYS.LAST_VISITED_WORLD);
+        const recCategory =
+          searchParams.get('category') ||
+          storageService.get<string>(STORAGE_KEYS.LAST_VISITED_CATEGORY);
 
-      // 모든 필수 값이 존재하거나 복구 가능할 때만 리다이렉트
-      const canRecoverAll = requiredParams.every((p) => {
-        if (p === 'mountain') return !!recMountain;
-        if (p === 'world') return !!recWorld;
-        if (p === 'category') return !!recCategory;
-        return false;
-      });
+        // 모든 필수 값이 존재하거나 복구 가능할 때만 리다이렉트
+        const canRecoverAll = requiredParams.every((p) => {
+          if (p === 'mountain') return !!recMountain;
+          if (p === 'world') return !!recWorld;
+          if (p === 'category') return !!recCategory;
+          return false;
+        });
 
-      if (canRecoverAll) {
-        const params = new URLSearchParams();
-        if (recMountain) params.set('mountain', recMountain);
-        if (recWorld) params.set('world', recWorld);
-        if (recCategory) params.set('category', recCategory);
+        if (canRecoverAll) {
+          const params = new URLSearchParams();
+          if (recMountain) params.set('mountain', recMountain);
+          if (recWorld) params.set('world', recWorld);
+          if (recCategory) params.set('category', recCategory);
 
-        setSearchParams(params, { replace: true });
-        return true;
+          setSearchParams(params, { replace: true });
+          return true;
+        }
       }
-    }
-    return false;
-  };
+      return false;
+    },
+    [searchParams, setSearchParams]
+  );
 
   return {
     mountain,

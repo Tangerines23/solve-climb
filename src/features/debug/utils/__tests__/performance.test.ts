@@ -201,10 +201,11 @@ describe('performance', () => {
     it('should initialize and observe core metrics', () => {
       performanceMonitor.init();
 
-      expect(observeSpy).toHaveBeenCalledTimes(3);
+      expect(observeSpy).toHaveBeenCalledTimes(4);
       expect(observeSpy).toHaveBeenCalledWith({ type: 'largest-contentful-paint', buffered: true });
       expect(observeSpy).toHaveBeenCalledWith({ type: 'first-input', buffered: true });
       expect(observeSpy).toHaveBeenCalledWith({ type: 'layout-shift', buffered: true });
+      expect(observeSpy).toHaveBeenCalledWith({ type: 'event', buffered: true });
     });
 
     it('should report metrics correctly', () => {

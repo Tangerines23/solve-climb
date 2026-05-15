@@ -1,11 +1,21 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, fireEvent, act } from '@testing-library/react';
 import { QuizAnswerArea } from '../QuizAnswerArea';
-import { useQuiz } from '../../contexts/QuizContext';
+import {
+  useQuiz,
+  useQuizState,
+  useQuizInputState,
+  useQuizHandlers,
+  useQuizAnimations,
+} from '../../contexts/QuizContext';
 
-// Mock useQuiz
+// Mock useQuiz and its split hooks
 vi.mock('../../contexts/QuizContext', () => ({
   useQuiz: vi.fn(),
+  useQuizState: vi.fn(),
+  useQuizInputState: vi.fn(),
+  useQuizHandlers: vi.fn(),
+  useQuizAnimations: vi.fn(),
 }));
 
 describe('QuizAnswerArea', () => {
@@ -67,13 +77,28 @@ describe('QuizAnswerArea', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     vi.mocked(useQuiz).mockReturnValue(defaultMockValues);
+    vi.mocked(useQuizState).mockReturnValue({
+      quizState: defaultMockValues.quizState,
+    } as any);
+    vi.mocked(useQuizInputState).mockReturnValue({
+      userInput: defaultMockValues.quizState.answerInput,
+      displayValue: defaultMockValues.quizState.displayValue,
+    } as any);
+    vi.mocked(useQuizHandlers).mockReturnValue({
+      quizHandlers: defaultMockValues.quizHandlers,
+      inputRef: defaultMockValues.inputRef,
+      setAnswerInput: defaultMockValues.setAnswerInput,
+      setDisplayValue: defaultMockValues.setDisplayValue,
+    } as any);
+    vi.mocked(useQuizAnimations).mockReturnValue({
+      quizAnimations: defaultMockValues.quizAnimations,
+    } as any);
   });
 
   it('should render nothing if currentQuestion is missing', () => {
-    vi.mocked(useQuiz).mockReturnValue({
-      ...defaultMockValues,
+    vi.mocked(useQuizState).mockReturnValue({
       quizState: { ...defaultMockValues.quizState, currentQuestion: null },
-    });
+    } as any);
     const { container } = render(<QuizAnswerArea />);
     expect(container.firstChild).toBeNull();
   });
@@ -104,14 +129,13 @@ describe('QuizAnswerArea', () => {
   });
 
   it('should allow negative numbers in equation quiz', () => {
-    vi.mocked(useQuiz).mockReturnValue({
-      ...defaultMockValues,
+    vi.mocked(useQuizState).mockReturnValue({
       quizState: {
         ...defaultMockValues.quizState,
         categoryParam: 'math',
         subParam: 'equations',
       },
-    });
+    } as any);
     render(<QuizAnswerArea />);
     const input = screen.getByPlaceholderText('정답 입력');
 
@@ -120,14 +144,13 @@ describe('QuizAnswerArea', () => {
   });
 
   it('should handle Japanese quiz input (Romaji)', () => {
-    vi.mocked(useQuiz).mockReturnValue({
-      ...defaultMockValues,
+    vi.mocked(useQuizState).mockReturnValue({
       quizState: {
         ...defaultMockValues.quizState,
         categoryParam: 'language',
         subParam: 'japanese',
       },
-    });
+    } as any);
     render(<QuizAnswerArea />);
     const input = screen.getByPlaceholderText('로마지 입력 (예: a, ki)');
 
@@ -136,8 +159,7 @@ describe('QuizAnswerArea', () => {
   });
 
   it('should handle coordinate input mode', () => {
-    vi.mocked(useQuiz).mockReturnValue({
-      ...defaultMockValues,
+    vi.mocked(useQuizState).mockReturnValue({
       quizState: {
         ...defaultMockValues.quizState,
         currentQuestion: {
@@ -145,7 +167,7 @@ describe('QuizAnswerArea', () => {
           inputType: 'coordinate',
         },
       },
-    });
+    } as any);
 
     // Mock CoordinateGrid to avoid deep testing
     vi.mock('../CoordinateGrid', () => ({
@@ -180,28 +202,29 @@ describe('QuizAnswerArea', () => {
   });
 
   it('should render custom keyboard display when system keyboard is disabled', () => {
-    vi.mocked(useQuiz).mockReturnValue({
-      ...defaultMockValues,
+    vi.mocked(useQuizState).mockReturnValue({
       quizState: {
         ...defaultMockValues.quizState,
         useSystemKeyboard: false,
-        answerInput: '42',
       },
-    });
+    } as any);
+    vi.mocked(useQuizInputState).mockReturnValue({
+      userInput: '42',
+      displayValue: '42',
+    } as any);
     render(<QuizAnswerArea />);
     expect(screen.getByText('42')).toBeInTheDocument();
     expect(screen.queryByPlaceholderText('정답 입력')).not.toBeInTheDocument();
   });
 
   it('should handle input filtering for allowNegative with multiple signs', () => {
-    vi.mocked(useQuiz).mockReturnValue({
-      ...defaultMockValues,
+    vi.mocked(useQuizState).mockReturnValue({
       quizState: {
         ...defaultMockValues.quizState,
         categoryParam: 'math',
         subParam: 'equations',
       },
-    });
+    } as any);
     render(<QuizAnswerArea />);
     const input = screen.getByPlaceholderText('정답 입력');
 
@@ -222,14 +245,13 @@ describe('QuizAnswerArea', () => {
     expect(mockSetAnswerInput).toHaveBeenCalledWith('123456');
 
     // Japanese: max 20
-    vi.mocked(useQuiz).mockReturnValue({
-      ...defaultMockValues,
+    vi.mocked(useQuizState).mockReturnValue({
       quizState: {
         ...defaultMockValues.quizState,
         categoryParam: 'language',
         subParam: 'japanese',
       },
-    });
+    } as any);
     render(<QuizAnswerArea />);
     const jaInput = screen.getByPlaceholderText('로마지 입력 (예: a, ki)');
     fireEvent.change(jaInput, { target: { value: 'a'.repeat(21) } });

@@ -1,4 +1,5 @@
 import { useState, useCallback, useMemo } from 'react';
+import { useShallow } from 'zustand/react/shallow';
 import { useLevelProgressStore } from '../../stores/useLevelProgressStore';
 import { useProfileStore } from '@/features/auth';
 import type { Tier } from '../../types/quiz';
@@ -10,13 +11,15 @@ const UNDER_DEVELOPMENT_LEVELS = new Set<string>([
 
 export function useLevelList(world: string, category: string, tier: Tier = 'normal') {
   // 해당 월드/카테고리에 속하는 레벨 기록들만 선택적으로 구독
-  const relevantRecords = useLevelProgressStore((state) => {
-    const prefix = `${tier}:${world}:${category}:`;
-    return Object.entries(state.records)
-      .filter(([key]) => key.startsWith(prefix))
-      .map(([, record]) => record)
-      .sort((a, b) => a.level - b.level);
-  });
+  const relevantRecords = useLevelProgressStore(
+    useShallow((state) => {
+      const prefix = `${tier}:${world}:${category}:`;
+      return Object.entries(state.records)
+        .filter(([key]) => key.startsWith(prefix))
+        .map(([, record]) => record)
+        .sort((a, b) => a.level - b.level);
+    })
+  );
 
   const isLevelCleared = useLevelProgressStore((state) => state.isLevelCleared);
   const getNextLevel = useLevelProgressStore((state) => state.getNextLevel);

@@ -161,6 +161,7 @@ vi.mock('@/features/auth/utils/userWithdraw', () => ({
 }));
 vi.mock('@/features/debug', () => ({
   safeSupabaseQuery: vi.fn(async (p) => p),
+  useRenderTracker: vi.fn(),
 }));
 
 vi.mock('@/utils/supabaseClient', () => ({

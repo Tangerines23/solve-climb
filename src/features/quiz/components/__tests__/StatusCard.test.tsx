@@ -1,17 +1,8 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { render, screen, act, waitFor, fireEvent } from '@testing-library/react';
+import { render, waitFor, fireEvent } from '@testing-library/react';
 import { BrowserRouter } from 'react-router-dom';
 import { StatusCard } from '../StatusCard';
-import { useLevelProgressStore } from '../../stores/useLevelProgressStore';
-
-// Mock dependencies
-vi.mock('../../stores/useLevelProgressStore', () => ({
-  useLevelProgressStore: {
-    getState: vi.fn(() => ({
-      progress: {},
-    })),
-  },
-}));
+import { useStatusCard } from '../../hooks/bridge/useStatusCard';
 
 const mockNavigate = vi.fn();
 vi.mock('react-router-dom', async () => {
@@ -22,9 +13,17 @@ vi.mock('react-router-dom', async () => {
   };
 });
 
+vi.mock('../../hooks/bridge/useStatusCard', () => ({
+  useStatusCard: vi.fn(),
+}));
+
 describe('StatusCard', () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    vi.mocked(useStatusCard).mockReturnValue({
+      bestScore: 0,
+      navigateToMyPage: vi.fn(),
+    });
   });
 
   const renderStatusCard = () => {
@@ -35,109 +34,52 @@ describe('StatusCard', () => {
     );
   };
 
-  it('should render loading state initially', async () => {
-    await act(async () => {
-      renderStatusCard();
+  it('should render success state after mount', async () => {
+    vi.mocked(useStatusCard).mockReturnValue({
+      bestScore: 100,
+      navigateToMyPage: vi.fn(),
     });
 
-    // Skeleton should be rendered or success state
-    const skeleton = document.querySelector('.status-card-skeleton');
-    const success = document.querySelector('.status-card.success');
-    expect(skeleton || success).toBeTruthy();
-  });
-
-  it('should render success state after loading', async () => {
-    vi.mocked(useLevelProgressStore.getState).mockReturnValue({
-      progress: {
-        math: {
-          arithmetic: {
-            1: {
-              level: 1,
-              bestScore: {
-                'time-attack': 100,
-                survival: null,
-              },
-            },
-          },
-        },
-      },
-    } as unknown as ReturnType<typeof useLevelProgressStore.getState>);
-
-    await act(async () => {
-      renderStatusCard();
-    });
+    renderStatusCard();
 
     await waitFor(() => {
-      expect(screen.getByText('나의 랭킹')).toBeInTheDocument();
+      expect(document.querySelector('.status-card.success')).toBeTruthy();
+      expect(document.querySelector('.status-card-header')).toBeTruthy();
     });
   });
 
   it('should navigate to my page when detail button is clicked', async () => {
-    vi.mocked(useLevelProgressStore.getState).mockReturnValue({
-      progress: {},
-    } as unknown as ReturnType<typeof useLevelProgressStore.getState>);
-
-    await act(async () => {
-      renderStatusCard();
+    const mockNavigateToMyPage = vi.fn();
+    vi.mocked(useStatusCard).mockReturnValue({
+      bestScore: 0,
+      navigateToMyPage: mockNavigateToMyPage,
     });
 
+    renderStatusCard();
+
     await waitFor(() => {
-      const detailButton = screen.queryByText('자세히');
+      const detailButton = document.querySelector('.status-detail-link');
+      expect(detailButton).toBeTruthy();
       if (detailButton) {
         fireEvent.click(detailButton);
-        expect(mockNavigate).toHaveBeenCalled();
+        expect(mockNavigateToMyPage).toHaveBeenCalled();
       }
     });
   });
 
-  it('should display error state when fetchUserData fails', async () => {
-    vi.mocked(useLevelProgressStore.getState).mockImplementation(() => {
-      throw new Error('Failed to get state');
+  it('should display record progress when bestScore is 0', async () => {
+    vi.mocked(useStatusCard).mockReturnValue({
+      bestScore: 0,
+      navigateToMyPage: vi.fn(),
     });
 
-    await act(async () => {
-      renderStatusCard();
-    });
+    renderStatusCard();
 
     await waitFor(() => {
-      expect(screen.getByText('정보를 불러올 수 없습니다')).toBeInTheDocument();
-    });
-  });
-
-  it('should calculate bestScore from multiple categories', async () => {
-    vi.mocked(useLevelProgressStore.getState).mockReturnValue({
-      progress: {
-        math: {
-          arithmetic: {
-            1: {
-              level: 1,
-              bestScore: {
-                'time-attack': 100,
-                survival: 150,
-              },
-            },
-          },
-        },
-        science: {
-          physics: {
-            1: {
-              level: 1,
-              bestScore: {
-                'time-attack': 200,
-                survival: 250,
-              },
-            },
-          },
-        },
-      },
-    } as unknown as ReturnType<typeof useLevelProgressStore.getState>);
-
-    await act(async () => {
-      renderStatusCard();
-    });
-
-    await waitFor(() => {
-      expect(screen.getByText(/나의 랭킹/)).toBeInTheDocument();
+      const rankElement = document.querySelector('.status-rank');
+      expect(rankElement).toBeTruthy();
+      // Since totalRank is 0 in the component's internal state
+      expect(rankElement?.textContent).toContain('기록 측정 중');
     });
   });
 });
