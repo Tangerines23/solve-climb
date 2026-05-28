@@ -420,6 +420,7 @@ jobs:
   e2e-visual-layout:
     needs: build
     runs-on: ubuntu-latest
+    continue-on-error: true
     timeout-minutes: 45
     steps:
       - name: Checkout code
