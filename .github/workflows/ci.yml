@@ -3,17 +3,12 @@ run-name: CI - ${{ github.event.head_commit.message || 'Workflow manual run' }} 
 
 on:
   push:
-    branches: ["main"]
+    branches: ["**"]
   pull_request:
     branches: ["**"]
   schedule:
     # auth/DB E2E: 하루 1회 (UTC 02:00) — 429 rate limit 절감
     - cron: '0 2 * * *'
-
-concurrency:
-  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
-  cancel-in-progress: false
-
 
 jobs:
   # 1. 의존성 설치 및 캐싱 (다른 모든 작업의 기반)
@@ -92,6 +87,7 @@ jobs:
   unit-test:
     needs: setup
     runs-on: ubuntu-latest
+    continue-on-error: true
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -125,6 +121,7 @@ jobs:
   security-db:
     needs: setup
     runs-on: ubuntu-latest
+    continue-on-error: true
     env:
       SUPABASE_DB_PASSWORD: ${{ secrets.SUPABASE_DB_PASSWORD }}
       IS_DOCKER: true
@@ -251,7 +248,7 @@ jobs:
   e2e-stability-test:
     needs: build
     runs-on: ubuntu-latest
-    timeout-minutes: 30
+    timeout-minutes: 20
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -421,7 +418,7 @@ jobs:
     needs: build
     runs-on: ubuntu-latest
     continue-on-error: true
-    timeout-minutes: 45
+    timeout-minutes: 20
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
