@@ -4,6 +4,8 @@ import { supabase } from '../utils/supabaseClient';
 import { type LocalSession } from '../utils/safeJsonParse';
 import { storageService, STORAGE_KEYS } from '../services';
 import { safeSupabaseQuery } from '../utils/debugFetch';
+import { isValidUUID } from '../utils/validation';
+
 import type { Session, PostgrestError } from '@supabase/supabase-js';
 
 export interface MyPageStats {
@@ -69,7 +71,7 @@ export function useMyPageStats(): UseMyPageStatsResult {
     const checkLocalSession = () => {
       try {
         const localSession = storageService.get<LocalSession>(STORAGE_KEYS.LOCAL_SESSION);
-        if (localSession) {
+        if (localSession && isValidUUID(localSession.userId)) {
           // 로컬 세션이 있으면 가상 세션 객체 생성
           const virtualSession = {
             user: {
@@ -87,6 +89,9 @@ export function useMyPageStats(): UseMyPageStatsResult {
           } as unknown as Session;
           setSession(virtualSession);
           return;
+        } else if (localSession) {
+          // UUID가 아닌 레거시 ID가 있는 경우 무시 (authStore에서 이미 삭제했을 것이나 여기서도 가드)
+          console.warn('[useMyPageStats] Ignoring legacy non-UUID session:', localSession.userId);
         }
       } catch (e) {
         console.warn('Failed to read local session:', e);
@@ -124,7 +129,7 @@ export function useMyPageStats(): UseMyPageStatsResult {
 
       try {
         const localSession = storageService.get<LocalSession>(STORAGE_KEYS.LOCAL_SESSION);
-        if (localSession) {
+        if (localSession && isValidUUID(localSession.userId)) {
           userId = localSession.userId;
           // 로컬 세션이 있으면 가상 세션 객체 생성
           currentSession = {

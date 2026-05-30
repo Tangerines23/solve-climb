@@ -1,80 +1,45 @@
-import { ItemFeedbackOverlay, ItemFeedbackRef } from '../game/ItemFeedbackOverlay';
+import { ItemFeedbackOverlay } from '../game/ItemFeedbackOverlay';
 import { LastChanceModal } from '../LastChanceModal';
 import { CountdownOverlay } from '../CountdownOverlay';
 import { SafetyRopeOverlay } from '../game/SafetyRopeOverlay';
 import { GameTipModal } from '../GameTipModal';
 import { GameOverlay } from '../game/GameOverlay';
 import { GameAlertModal } from '../game/GameAlertModal';
-import { RefObject } from 'react';
-import { InventoryItem } from '../../types/user';
 import { PauseModal } from '../game/PauseModal';
-import { GameMode } from '../../types/quiz';
-
 import { ITEM_MAP, ItemMetadata } from '../../constants/items';
 import { safeAccess } from '../../utils/validation';
+import { useQuiz } from '@/contexts/QuizContext';
 
-interface QuizModalsProps {
-  feedbackRef: RefObject<ItemFeedbackRef>;
-  showLastChanceModal: boolean;
-  gameMode: GameMode;
-  inventory: InventoryItem[];
-  minerals: number;
-  handleRevive: (useItem: boolean) => void;
-  handlePurchaseAndRevive: () => void;
-  handleWatchAdAndRevive: () => void;
-  handleGiveUp: () => void;
-  showCountdown: boolean;
-  handleCountdownComplete: () => void;
-  showSafetyRope: boolean;
-  setShowSafetyRope: (show: boolean) => void;
-  categoryParam: string | null;
-  subParam: string | null;
-  levelParam: number | null;
-  showTipModal: boolean;
-  handleBack: () => void;
-  handleStartGame: (selectedItemIds: number[]) => void;
-  showStaminaModal: boolean;
-  setShowStaminaModal: (show: boolean) => void;
-  // Pause System
-  showPauseModal: boolean;
-  remainingPauses: number;
-  handlePauseClick: () => void;
-  handlePauseResume: () => void;
-  handlePauseExit: () => void;
-  // Alert Modal
-  isAnonymous: boolean;
-  onAlertAction: (action: 'login' | 'charge' | 'play') => void;
-}
+export function QuizModals() {
+  const { quizState, modalState, modalHandlers, feedbackRef, inventory, minerals, isAnonymous } =
+    useQuiz();
 
-export function QuizModals({
-  feedbackRef,
-  showLastChanceModal,
-  gameMode,
-  inventory,
-  minerals,
-  handleRevive,
-  handlePurchaseAndRevive,
-  handleWatchAdAndRevive,
-  handleGiveUp,
-  showCountdown,
-  handleCountdownComplete,
-  showSafetyRope,
-  setShowSafetyRope,
-  categoryParam,
-  subParam,
-  levelParam,
-  showTipModal,
-  handleBack,
-  handleStartGame,
-  showPauseModal,
-  remainingPauses,
-  handlePauseResume,
-  handlePauseExit,
-  showStaminaModal,
-  setShowStaminaModal,
-  isAnonymous,
-  onAlertAction,
-}: QuizModalsProps) {
+  const {
+    showLastChanceModal,
+    showCountdown,
+    showSafetyRope,
+    showTipModal,
+    showPauseModal,
+    showStaminaModal,
+  } = modalState;
+
+  const {
+    handleRevive,
+    handlePurchaseAndRevive,
+    handleWatchAdAndRevive,
+    handleGiveUp,
+    handleCountdownComplete,
+    setShowSafetyRope,
+    handleBack,
+    handleStartGame,
+    handlePauseResume,
+    handlePauseExit,
+    setShowStaminaModal,
+    onAlertAction,
+  } = modalHandlers;
+
+  const { gameMode, categoryParam, subParam, levelParam } = quizState;
+
   const reviveItemCode = gameMode === 'time-attack' ? 'last_spurt' : 'flare';
   const itemMeta = safeAccess(ITEM_MAP, reviveItemCode) as ItemMetadata | undefined;
   const basePrice = itemMeta?.price || 800;
@@ -105,7 +70,7 @@ export function QuizModals({
 
       <PauseModal
         isVisible={showPauseModal}
-        remainingPauses={remainingPauses}
+        remainingPauses={3}
         onResume={handlePauseResume}
         onExit={handlePauseExit}
       />

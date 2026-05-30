@@ -91,6 +91,7 @@
     "check:layout:with-server": "node scripts/run-layout-check-with-server.js",
     "check:layout:deep:with-server": "node scripts/run-layout-check-with-server.js --deep",
     "check:layout:analyze": "node scripts/analyze-layout-overflow.js",
+    "vg:check": "node scripts/vg-cli.js",
     "check:score": "node scripts/check-lighthouse-score.js",
     "prepare": "husky",
     "postinstall": "node scripts/ensure-env.js",
@@ -207,7 +208,7 @@
     "cross-spawn": "^7.0.5",
     "micromatch": "^4.0.8",
     "serialize-javascript": "^7.0.5",
-    "basic-ftp": "5.3.0",
+    "basic-ftp": "5.3.1",
     "@stryker-mutator/core": {
       "ajv": "^8.18.0"
     }

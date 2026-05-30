@@ -131,4 +131,86 @@ export const UI_MESSAGES = {
   TIME_UP: '시간 종료!',
   CHALLENGE_END: '도전 종료',
   GAME_OVER: '게임 오버',
+  GENERATING_QUESTIONS: '문제를 생성하는 중...',
+  WORLD_1_NAME: 'World 1: 수리봉',
+  WORLD_NAMES: {
+    World1: 'World 1: 수리봉',
+    World2: 'World 2: 만장굴',
+    World3: 'World 3: 한라산',
+    World4: 'World 4: 테크노파크',
+  },
+  PAUSE: '일시정지',
+  UNIT_METERS: 'm',
 };
+
+/**
+ * 퀴즈 레이아웃 관련 상수 (v2.6)
+ */
+export const QUIZ_LAYOUT_CONFIG = {
+  KEYPAD_MAX_WIDTH: '550px',
+  KEYPAD_MIN_HEIGHT: '240px',
+  KEYPAD_MAX_HEIGHT: '380px',
+  QUIZ_CARD_MAX_HEIGHT: '48vh',
+  KEYPAD_BOTTOM_MARGIN: 'clamp(8px, 2vh, 20px)',
+  KEYPAD_GAP: 'clamp(8px, 1.5vh, 14px)',
+} as const;
+
+/**
+ * 카테고리 식별자 상수 (v2.6)
+ */
+export const CATEGORY_IDS = {
+  MATH: 'math',
+  LANGUAGE: 'language',
+  LOGIC: 'logic',
+  GENERAL: 'general',
+} as const;
+
+/**
+ * 수학 서브 카테고리 식별자 (v2.6)
+ */
+export const MATH_SUB_IDS = {
+  EQUATIONS: 'equations',
+  CALCULUS: 'calculus',
+} as const;
+
+/**
+ * 서브 카테고리 식별자 (v2.6)
+ */
+export const SUB_CATEGORY_IDS = {
+  JAPANESE: 'japanese',
+} as const;
+
+/**
+ * 퀴즈 입력 타입 상수 (v2.6)
+ */
+export const QUIZ_INPUT_TYPES = {
+  DECIMAL: 'decimal',
+  FRACTION: 'fraction',
+  COORDINATE: 'coordinate',
+} as const;
+
+/**
+ * 키보드 타입 상수 (v2.6)
+ */
+export const KEYBOARD_TYPES = {
+  QWERTY: 'qwerty',
+  CUSTOM: 'custom',
+} as const;
+
+/**
+ * 게임 모드 상수 (v2.6)
+ */
+export const GAME_MODES = {
+  SURVIVAL: 'survival',
+} as const;
+
+/**
+ * 키패드 특수 기호 상수 (v2.6)
+ */
+export const KEYPAD_SYMBOLS = {
+  DECIMAL: '.',
+  FRACTION: '/',
+  NEGATIVE: '±',
+  BACKSPACE: '⌫',
+  SUBMIT: '✓',
+} as const;

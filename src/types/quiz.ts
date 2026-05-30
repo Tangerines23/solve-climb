@@ -33,6 +33,7 @@ export interface MathProblem {
 }
 
 export interface QuizQuestion {
+  id?: string;
   question: string;
   answer: number | string;
   options?: (number | string)[];

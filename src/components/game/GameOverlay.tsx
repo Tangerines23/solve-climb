@@ -155,19 +155,25 @@ export const GameOverlay: React.FC = () => {
         <div
           style={{
             position: 'fixed',
-            top: '10%',
+            top: '8%',
             left: '50%',
             transform: 'translateX(-50%)',
             color: feverLevel === 2 ? 'var(--color-yellow-400)' : 'var(--color-white)',
-            fontSize: '24px',
-            fontWeight: 'bold',
-            textShadow: '0 0 10px rgba(0,0,0,0.5)',
-            zIndex: 1001,
+            fontSize: '28px',
+            fontWeight: '900',
+            textShadow: '0 0 20px rgba(0,0,0,0.8)',
+            zIndex: 2000,
             pointerEvents: 'none',
             animation: 'pulse 1s infinite',
+            whiteSpace: 'nowrap',
+            display: 'flex',
+            alignItems: 'center',
+            gap: 'var(--spacing-md)',
           }}
         >
-          {feverLevel === 2 ? '🔥 SECOND WIND 🔥' : '⚡ MOMENTUM ⚡'}
+          <span style={{ fontSize: '32px' }}>{feverLevel === 2 ? '🔥' : '⚡'}</span>
+          <span>{feverLevel === 2 ? 'SECOND WIND' : 'MOMENTUM'}</span>
+          <span style={{ fontSize: '32px' }}>{feverLevel === 2 ? '🔥' : '⚡'}</span>
           <style>{`
             @keyframes pulse {
               0% { transform: translateX(-50%) scale(1); opacity: 0.8; }

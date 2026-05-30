@@ -2,6 +2,7 @@ import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/react';
 import { CustomKeypad } from '../CustomKeypad';
 import { useSettingsStore } from '../../stores/useSettingsStore';
+import { KEYPAD_SYMBOLS } from '../../constants/ui';
 
 // Mock haptic
 vi.mock('../../utils/haptic', () => ({
@@ -72,7 +73,7 @@ describe('CustomKeypad', () => {
       />
     );
 
-    const backspaceButton = screen.getByText('⌫');
+    const backspaceButton = screen.getByText(KEYPAD_SYMBOLS.BACKSPACE);
     fireEvent.click(backspaceButton);
 
     expect(mockOnBackspace).toHaveBeenCalled();
@@ -88,7 +89,7 @@ describe('CustomKeypad', () => {
       />
     );
 
-    const submitButton = screen.getByText('✓');
+    const submitButton = screen.getByText(KEYPAD_SYMBOLS.SUBMIT);
     fireEvent.click(submitButton);
 
     expect(mockOnSubmit).toHaveBeenCalled();
@@ -106,8 +107,8 @@ describe('CustomKeypad', () => {
     );
 
     fireEvent.click(screen.getByText('5'));
-    fireEvent.click(screen.getByText('⌫'));
-    const submitButton = screen.getByText('✓');
+    fireEvent.click(screen.getByText(KEYPAD_SYMBOLS.BACKSPACE));
+    const submitButton = screen.getByText(KEYPAD_SYMBOLS.SUBMIT);
     fireEvent.click(submitButton);
 
     expect(mockOnNumberClick).not.toHaveBeenCalled();
@@ -126,7 +127,7 @@ describe('CustomKeypad', () => {
       />
     );
 
-    expect(screen.getByText('±')).toBeInTheDocument();
+    expect(screen.getByText(KEYPAD_SYMBOLS.NEGATIVE)).toBeInTheDocument();
   });
 
   it('should not render negative button when showNegative is false', () => {
@@ -140,7 +141,7 @@ describe('CustomKeypad', () => {
       />
     );
 
-    expect(screen.queryByText('±')).not.toBeInTheDocument();
+    expect(screen.queryByText(KEYPAD_SYMBOLS.NEGATIVE)).not.toBeInTheDocument();
   });
 
   it('should call onNumberClick with "-" when negative button is clicked', () => {
@@ -154,7 +155,7 @@ describe('CustomKeypad', () => {
       />
     );
 
-    fireEvent.click(screen.getByText('±'));
+    fireEvent.click(screen.getByText(KEYPAD_SYMBOLS.NEGATIVE));
 
     expect(mockOnNumberClick).toHaveBeenCalledWith('-');
   });
@@ -171,7 +172,7 @@ describe('CustomKeypad', () => {
       />
     );
 
-    fireEvent.click(screen.getByText('±'));
+    fireEvent.click(screen.getByText(KEYPAD_SYMBOLS.NEGATIVE));
 
     expect(mockOnNumberClick).not.toHaveBeenCalled();
   });
@@ -204,12 +205,12 @@ describe('CustomKeypad', () => {
     );
 
     // Should not throw error when backspace is clicked without onBackspace prop
-    const backspaceButton = screen.getByText('⌫');
+    const backspaceButton = screen.getByText(KEYPAD_SYMBOLS.BACKSPACE);
     expect(() => fireEvent.click(backspaceButton)).not.toThrow();
   });
 
   it('should apply correct CSS class when showNegative is true', () => {
-    const { container } = render(
+    render(
       <CustomKeypad
         onNumberClick={mockOnNumberClick}
         onClear={mockOnClear}
@@ -219,12 +220,13 @@ describe('CustomKeypad', () => {
       />
     );
 
-    const lastRow = container.querySelector('.keypad-row-last');
-    expect(lastRow).toHaveClass('keypad-row-last-with-negative');
+    const negativeButton = screen.getByText(KEYPAD_SYMBOLS.NEGATIVE);
+    expect(negativeButton).toBeInTheDocument();
+    expect(negativeButton).toHaveClass('keypad-key-special');
   });
 
   it('should not apply negative class when showNegative is false', () => {
-    const { container } = render(
+    render(
       <CustomKeypad
         onNumberClick={mockOnNumberClick}
         onClear={mockOnClear}
@@ -234,7 +236,7 @@ describe('CustomKeypad', () => {
       />
     );
 
-    const lastRow = container.querySelector('.keypad-row-last');
-    expect(lastRow).not.toHaveClass('keypad-row-last-with-negative');
+    const negativeButton = screen.queryByText(KEYPAD_SYMBOLS.NEGATIVE);
+    expect(negativeButton).not.toBeInTheDocument();
   });
 });

@@ -27,6 +27,11 @@
   border-style: solid;
 }
 
+.mypage-admin-link-button:active {
+  background-color: rgba(255, 255, 255, 0.1);
+  transform: scale(0.98);
+}
+
 .my-page {
   position: fixed;
   top: 0;
@@ -317,12 +322,17 @@
   padding: var(--spacing-4xl) var(--spacing-2xl);
   text-align: center;
   max-width: var(--modal-width-portrait);
-  margin: var(--spacing-3xl) auto;
+  margin: var(--spacing-xl) auto; /* Adjusted margin for better centering with header/footer */
   border: var(--border-glass);
   -webkit-backdrop-filter: blur(var(--backdrop-blur));
   backdrop-filter: blur(var(--backdrop-blur));
   box-shadow: var(--shadow-glass);
   animation: slideUp 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: calc(100vh - var(--header-height-portrait) - 80px - var(--spacing-3xl) * 2);
 }
 
 .my-page-header {
@@ -499,7 +509,7 @@
 }
 
 .my-page-stat-card-clickable:active {
-  transform: translateY(0);
+  transform: translateY(0) scale(0.98);
 }
 
 .my-page-stat-card-loading {
@@ -527,7 +537,12 @@
   font-size: 20px;
   font-weight: 700;
   color: var(--color-text-primary);
-  line-height: 1.4;
+  line-height: 1.6;
+  height: 1.6em;
+  display: flex;
+  align-items: center;
+  overflow: hidden;
+  box-sizing: border-box;
 }
 
 /* Settings List */
@@ -570,9 +585,17 @@
   justify-content: space-between;
   padding: var(--spacing-lg) var(--spacing-xl);
   border-bottom: 1px solid rgba(255, 255, 255, 0.05);
-  /* Softer divider */
   background-color: transparent;
-  transition: background-color 0.2s;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  user-select: none;
+}
+
+.my-page-settings-item-clickable:hover {
+  background-color: rgba(255, 255, 255, 0.03);
+}
+
+.my-page-settings-item-clickable:active {
+  background-color: rgba(255, 255, 255, 0.08);
 }
 
 .my-page-settings-item:last-child {
@@ -588,11 +611,19 @@
 }
 
 .my-page-settings-item-button:hover {
-  background-color: var(--color-bg-tertiary);
+  background-color: rgba(255, 255, 255, 0.05);
 }
 
 .my-page-settings-item-button:active {
-  background-color: var(--color-gray-450);
+  background-color: rgba(255, 255, 255, 0.1);
+}
+
+.my-page-settings-item-logout-label {
+  color: var(--color-red-400);
+}
+
+.my-page-settings-item-logout:active {
+  background-color: rgba(255, 107, 107, 0.1);
 }
 
 .my-page-settings-item-button:disabled {
@@ -630,16 +661,20 @@
 .my-page-settings-toggle {
   position: relative;
   display: inline-block;
-  width: 48px;
-  height: var(--spacing-3xl);
-  cursor: pointer;
+  width: 44px;
+  height: 24px;
   flex-shrink: 0;
+  vertical-align: middle;
 }
 
 .my-page-settings-toggle input {
+  position: absolute;
   opacity: 0;
-  width: 0;
-  height: 0;
+  width: 100%;
+  height: 100%;
+  cursor: pointer;
+  z-index: 2;
+  margin: 0;
 }
 
 .my-page-settings-toggle-slider {
@@ -649,21 +684,24 @@
   right: 0;
   bottom: 0;
   background-color: var(--color-gray-toggle-bg);
-  border-radius: var(--rounded-toggle);
-  transition: all 0.3s;
+  border-radius: var(--rounded-pill);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  z-index: 1;
+  box-sizing: border-box;
 }
 
 .my-page-settings-toggle-slider:before {
   position: absolute;
   content: '';
-  height: 20px;
-  width: 20px;
-  left: 4px;
-  bottom: 4px;
+  height: 18px; /* Slightly smaller for better centered look (24-18 = 6px total gap, 3px top/bottom) */
+  width: 18px;
+  left: 3px;
+  top: 3px;
   background-color: var(--color-gray-100);
   border-radius: 50%;
-  transition: all 0.3s;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+  box-sizing: border-box;
 }
 
 .my-page-settings-toggle input:checked + .my-page-settings-toggle-slider {
@@ -671,11 +709,11 @@
 }
 
 .my-page-settings-toggle input:checked + .my-page-settings-toggle-slider:before {
-  transform: translateX(20px);
+  transform: translateX(20px); /* 44 - 18 - 3 - 3 = 20px */
 }
 
 .my-page-settings-toggle input:focus + .my-page-settings-toggle-slider {
-  box-shadow: 0 0 0 3px rgba(0, 191, 165, 0.2);
+  box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.1);
 }
 
 /* Keyboard Selector */
@@ -710,6 +748,7 @@
 }
 
 .my-page-settings-keyboard-option:active {
+  background-color: rgba(255, 255, 255, 0.1);
   transform: scale(0.95);
 }
 
@@ -732,16 +771,14 @@
   font-size: 14px;
 }
 
-/* Guest View (비로그인 상태) - 게임과 동일한 어두운 배경 */
-.my-page-guest-view {
+.my-page-guest-view-container {
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  min-height: calc(100vh - 136px);
-  padding: var(--spacing-4xl) var(--spacing-xl);
+  min-height: calc(100vh - var(--header-height-portrait) - 80px);
+  padding: var(--spacing-xl);
   text-align: center;
-  background-color: var(--color-gray-900);
 }
 
 .my-page-guest-icon {
@@ -971,7 +1008,6 @@
 
 .my-page-quick-access-button:active {
   background-color: var(--color-blue-700);
-  transform: scale(0.98);
 }
 
 /* Favorites List */

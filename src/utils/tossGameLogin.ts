@@ -49,7 +49,7 @@ export async function getGameLoginHash(): Promise<GameLoginHashResult> {
         success: false,
         error: isLocalDev
           ? '로컬 개발 환경에서는 게임 로그인을 테스트할 수 없습니다. 실제 토스 앱에서 테스트해주세요.'
-          : '토스 앱에서만 게임 로그인을 사용할 수 있습니다.',
+          : '현재 개발 중인 기능입니다. 곧 만나보실 수 있어요!',
         errorType: 'ERROR',
       };
     }

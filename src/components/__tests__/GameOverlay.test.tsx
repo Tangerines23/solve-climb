@@ -55,7 +55,7 @@ describe('GameOverlay', () => {
     } as never);
 
     render(<GameOverlay />);
-    expect(screen.getByText('⚡ MOMENTUM ⚡')).toBeInTheDocument();
+    expect(screen.getByText('MOMENTUM')).toBeInTheDocument();
   });
 
   it('should render second wind text when feverLevel is 2', () => {
@@ -66,7 +66,7 @@ describe('GameOverlay', () => {
     } as never);
 
     render(<GameOverlay />);
-    expect(screen.getByText('🔥 SECOND WIND 🔥')).toBeInTheDocument();
+    expect(screen.getByText('SECOND WIND')).toBeInTheDocument();
   });
 
   it('should not render fever text when feverLevel is 0', () => {

@@ -1,15 +1,14 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { renderHook, act } from '@testing-library/react';
 import { useQuizRevive } from '../useQuizRevive';
-import { useQuizStore, type QuizState } from '../../stores/useQuizStore';
 import type { InventoryItem } from '../../types/user';
+import { quizEventBus } from '@/lib/eventBus';
 
 // Mock dependencies
-vi.mock('../../stores/useQuizStore', () => ({
-  useQuizStore: {
-    getState: vi.fn(() => ({
-      setTimeLimit: vi.fn(),
-    })),
+vi.mock('@/lib/eventBus', () => ({
+  quizEventBus: {
+    emit: vi.fn(),
+    on: vi.fn(),
   },
 }));
 
@@ -18,15 +17,13 @@ describe('useQuizRevive', () => {
     gameMode: 'survival' as const,
     inventory: [{ id: 1, code: 'flare', count: 1 }] as unknown as InventoryItem[], // flare for survival
     minerals: 1000,
-    consumeItem: vi.fn(),
+    consumeItem: vi.fn().mockResolvedValue({ success: true }),
     setShowLastChanceModal: vi.fn(),
-    setTimerResetKey: vi.fn(),
     setShowCountdown: vi.fn(),
-    generateNewQuestion: vi.fn(),
     animations: { setIsError: vi.fn() } as unknown as any,
     setDisplayValue: vi.fn(),
-    handleGameOver: vi.fn(),
     setIsSubmitting: vi.fn(),
+    onWatchAd: vi.fn(),
     isPreview: false,
   };
 
@@ -41,8 +38,11 @@ describe('useQuizRevive', () => {
       result.current.stableHandleGameOver('wrong_answer');
     });
 
-    expect(mockProps.setShowLastChanceModal).toHaveBeenCalledWith(true);
-    expect(mockProps.handleGameOver).not.toHaveBeenCalled();
+    expect(quizEventBus.emit).toHaveBeenCalledWith('QUIZ:UI_MODAL_TOGGLE', {
+      modal: 'lastChance',
+      show: true,
+    });
+    expect(quizEventBus.emit).not.toHaveBeenCalledWith('QUIZ:GAME_OVER', expect.any(Object));
   });
 
   it('stableHandleGameOver should exit directly on manual exit', () => {
@@ -53,7 +53,7 @@ describe('useQuizRevive', () => {
     });
 
     expect(mockProps.setShowLastChanceModal).not.toHaveBeenCalled();
-    expect(mockProps.handleGameOver).toHaveBeenCalledWith('manual_exit');
+    expect(quizEventBus.emit).toHaveBeenCalledWith('QUIZ:GAME_OVER', { reason: 'manual_exit' });
   });
 
   it('stableHandleGameOver should exit directly if revive already used', async () => {
@@ -66,8 +66,9 @@ describe('useQuizRevive', () => {
 
     expect(result.current.hasUsedLastChance).toBe(true);
 
-    // Clear mock history from handleRevive (which calls setShowLastChanceModal(false))
+    // Clear mock history from handleRevive
     mockProps.setShowLastChanceModal.mockClear();
+    vi.mocked(quizEventBus.emit).mockClear();
 
     // Fail again
     act(() => {
@@ -75,7 +76,7 @@ describe('useQuizRevive', () => {
     });
 
     expect(mockProps.setShowLastChanceModal).toHaveBeenCalledTimes(0);
-    expect(mockProps.handleGameOver).toHaveBeenCalledWith('timeout');
+    expect(quizEventBus.emit).toHaveBeenCalledWith('QUIZ:GAME_OVER', { reason: 'timeout' });
   });
 
   it('handleRevive should consume item if useItem is true', async () => {
@@ -86,7 +87,7 @@ describe('useQuizRevive', () => {
     });
 
     expect(mockProps.consumeItem).toHaveBeenCalledWith(1); // flare id
-    expect(mockProps.generateNewQuestion).toHaveBeenCalled();
+    expect(quizEventBus.emit).toHaveBeenCalledWith('QUIZ:NEXT_QUESTION_REQUESTED');
   });
 
   it('handleRevive (Survival) should reset question state', async () => {
@@ -96,21 +97,20 @@ describe('useQuizRevive', () => {
       await result.current.handleRevive(false);
     });
 
-    expect(mockProps.generateNewQuestion).toHaveBeenCalled();
-    expect(mockProps.animations.setIsError).toHaveBeenCalledWith(false);
-    expect(mockProps.setDisplayValue).toHaveBeenCalledWith('');
+    expect(quizEventBus.emit).toHaveBeenCalledWith('QUIZ:NEXT_QUESTION_REQUESTED');
+    expect(quizEventBus.emit).toHaveBeenCalledWith('QUIZ:REVIVE_SUCCESS');
+    expect(quizEventBus.emit).toHaveBeenCalledWith('QUIZ:UI_MODAL_TOGGLE', {
+      modal: 'countdown',
+      show: true,
+    });
   });
 
-  it('handleRevive (Time Attack) should add time', async () => {
+  it('handleRevive (Time Attack) should emit LAST_SPURT event', async () => {
     const timeAttackProps = {
       ...mockProps,
       gameMode: 'time-attack' as const,
       inventory: [{ id: 2, code: 'last_spurt', count: 1 }] as unknown as InventoryItem[],
     };
-    const setTimeLimitMock = vi.fn();
-    vi.mocked(useQuizStore.getState).mockReturnValue({
-      setTimeLimit: setTimeLimitMock,
-    } as unknown as QuizState);
 
     const { result } = renderHook(() => useQuizRevive(timeAttackProps));
 
@@ -118,9 +118,11 @@ describe('useQuizRevive', () => {
       await result.current.handleRevive(false);
     });
 
-    expect(setTimeLimitMock).toHaveBeenCalledWith(15);
-    expect(mockProps.setTimerResetKey).toHaveBeenCalled();
-    expect(mockProps.setShowCountdown).toHaveBeenCalledWith(true);
+    expect(quizEventBus.emit).toHaveBeenCalledWith('QUIZ:LAST_SPURT');
+    expect(quizEventBus.emit).toHaveBeenCalledWith('QUIZ:UI_MODAL_TOGGLE', {
+      modal: 'countdown',
+      show: true,
+    });
   });
 
   it('handleGiveUp should close modal and end game', () => {
@@ -130,7 +132,10 @@ describe('useQuizRevive', () => {
       result.current.handleGiveUp();
     });
 
-    expect(mockProps.setShowLastChanceModal).toHaveBeenCalledWith(false);
-    expect(mockProps.handleGameOver).toHaveBeenCalled();
+    expect(quizEventBus.emit).toHaveBeenCalledWith('QUIZ:UI_MODAL_TOGGLE', {
+      modal: 'lastChance',
+      show: false,
+    });
+    expect(quizEventBus.emit).toHaveBeenCalledWith('QUIZ:GAME_OVER', { reason: 'manual_exit' });
   });
 });

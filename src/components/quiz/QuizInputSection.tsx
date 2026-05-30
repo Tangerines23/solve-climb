@@ -1,79 +1,84 @@
 import React from 'react';
 import { QwertyKeypad } from '../QwertyKeypad';
 import { CustomKeypad } from '../CustomKeypad';
-import { QuizDisplayState, QuizHandlers } from '../../types/quizProps';
+import { useQuiz } from '@/contexts/QuizContext';
+import {
+  CATEGORY_IDS,
+  SUB_CATEGORY_IDS,
+  QUIZ_INPUT_TYPES,
+  KEYBOARD_TYPES,
+  MATH_SUB_IDS,
+} from '../../constants/ui';
 
-interface QuizInputSectionProps {
-  quizState: QuizDisplayState;
-  quizHandlers: QuizHandlers;
-  effectiveInputPaused: boolean;
-  allowNegative: boolean;
-  handleSubmit: (e: React.FormEvent) => void;
-  isError: boolean;
-  isSubmitting: boolean;
-}
+export const QuizInputSection = React.memo(() => {
+  const { quizState, quizHandlers, quizAnimations } = useQuiz();
 
-export const QuizInputSection = React.memo(
-  ({
-    quizState,
-    quizHandlers,
-    effectiveInputPaused,
-    allowNegative,
+  const { currentQuestion, categoryParam, subParam, useSystemKeyboard, keyboardType } = quizState;
+  const { isSubmitting, isError, isPaused, isInputPaused } = quizAnimations;
+  const {
+    handleKeypadNumber,
+    handleQwertyKeyPress,
+    handleKeypadClear,
+    handleKeypadBackspace,
     handleSubmit,
-    isError,
-    isSubmitting,
-  }: QuizInputSectionProps) => {
-    const { currentQuestion, categoryParam, subParam, useSystemKeyboard, keyboardType } = quizState;
-    const { handleKeypadNumber, handleQwertyKeyPress, handleKeypadClear, handleKeypadBackspace } =
-      quizHandlers;
+  } = quizHandlers;
 
-    if (!currentQuestion) return null;
+  if (!currentQuestion) return null;
 
-    const isJapaneseQuiz = categoryParam === 'language' && subParam === 'japanese';
-    const forceSystemKeyboard =
-      categoryParam === 'general' && typeof currentQuestion?.answer === 'string';
-    const shouldUseSystemKeyboard = useSystemKeyboard || forceSystemKeyboard;
+  // Determine effective input pause state
+  const effectiveInputPaused = isInputPaused !== undefined ? isInputPaused : isPaused;
 
-    if (shouldUseSystemKeyboard || currentQuestion.inputType === 'coordinate') {
-      return null;
-    }
+  const isJapaneseQuiz =
+    categoryParam === CATEGORY_IDS.LANGUAGE && subParam === SUB_CATEGORY_IDS.JAPANESE;
+  const forceSystemKeyboard =
+    categoryParam === CATEGORY_IDS.GENERAL && typeof currentQuestion?.answer === 'string';
+  const shouldUseSystemKeyboard = useSystemKeyboard || forceSystemKeyboard;
 
-    return (
-      <div className="keyboard-container">
-        {isJapaneseQuiz ? (
-          <QwertyKeypad
-            onKeyPress={handleQwertyKeyPress}
-            onClear={handleKeypadClear}
-            onBackspace={handleKeypadBackspace}
-            onSubmit={handleSubmit}
-            disabled={isSubmitting || isError || effectiveInputPaused}
-            mode="text"
-          />
-        ) : keyboardType === 'qwerty' ? (
-          <QwertyKeypad
-            onKeyPress={handleQwertyKeyPress}
-            onClear={handleKeypadClear}
-            onBackspace={handleKeypadBackspace}
-            onSubmit={handleSubmit}
-            disabled={isSubmitting || isError || effectiveInputPaused}
-            mode="number"
-            allowNegative={allowNegative}
-          />
-        ) : (
-          <CustomKeypad
-            onNumberClick={handleKeypadNumber}
-            onClear={handleKeypadClear}
-            onBackspace={handleKeypadBackspace}
-            onSubmit={handleSubmit}
-            disabled={isSubmitting || isError || effectiveInputPaused}
-            showNegative={allowNegative}
-            showDecimal={currentQuestion?.inputType === 'decimal'}
-            showFraction={currentQuestion?.inputType === 'fraction'}
-          />
-        )}
-      </div>
-    );
+  const isEquationQuiz = categoryParam === CATEGORY_IDS.MATH && subParam === MATH_SUB_IDS.EQUATIONS;
+  const isCalculusQuiz = categoryParam === CATEGORY_IDS.MATH && subParam === MATH_SUB_IDS.CALCULUS;
+  const allowNegative = isEquationQuiz || isCalculusQuiz;
+
+  if (shouldUseSystemKeyboard || currentQuestion.inputType === QUIZ_INPUT_TYPES.COORDINATE) {
+    return null;
   }
-);
+
+  const isDisabled = isSubmitting || isError || effectiveInputPaused;
+
+  return (
+    <div className="keyboard-container">
+      {isJapaneseQuiz ? (
+        <QwertyKeypad
+          onKeyPress={handleQwertyKeyPress}
+          onClear={handleKeypadClear}
+          onBackspace={handleKeypadBackspace}
+          onSubmit={handleSubmit}
+          disabled={isDisabled}
+          mode="text"
+        />
+      ) : keyboardType === KEYBOARD_TYPES.QWERTY ? (
+        <QwertyKeypad
+          onKeyPress={handleQwertyKeyPress}
+          onClear={handleKeypadClear}
+          onBackspace={handleKeypadBackspace}
+          onSubmit={handleSubmit}
+          disabled={isDisabled}
+          mode="number"
+          allowNegative={allowNegative}
+        />
+      ) : (
+        <CustomKeypad
+          onNumberClick={handleKeypadNumber}
+          onClear={handleKeypadClear}
+          onBackspace={handleKeypadBackspace}
+          onSubmit={handleSubmit}
+          disabled={isDisabled}
+          showNegative={allowNegative}
+          showDecimal={currentQuestion?.inputType === QUIZ_INPUT_TYPES.DECIMAL}
+          showFraction={currentQuestion?.inputType === QUIZ_INPUT_TYPES.FRACTION}
+        />
+      )}
+    </div>
+  );
+});
 
 QuizInputSection.displayName = 'QuizInputSection';

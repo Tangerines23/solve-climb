@@ -489,7 +489,7 @@ describe('MyPage', () => {
     });
     const rankBtn = screen.getByText(/명예의 전당/i);
     fireEvent.click(rankBtn);
-    expect(tossUtils.openLeaderboard).toHaveBeenCalled();
+    expect(screen.getByText('현재 개발 중인 기능입니다. 곧 만나보실 수 있어요!')).toBeTruthy();
   });
 
   it('', async () => {
@@ -581,10 +581,6 @@ describe('MyPage', () => {
   });
 
   it('should open leaderboard with early failure', async () => {
-    (tossUtils.openLeaderboard as any).mockResolvedValueOnce({
-      success: false,
-      message: 'Custom Error',
-    });
     await act(async () => {
       render(
         <BrowserRouter>
@@ -593,13 +589,7 @@ describe('MyPage', () => {
       );
     });
     fireEvent.click(screen.getByText(/명예의 전당/i));
-
-    await waitFor(() => {
-      expect(screen.getByText('Custom Error')).toBeTruthy();
-    });
-
-    fireEvent.click(screen.getByTestId('alert-modal'));
-    expect(screen.queryByTestId('alert-modal')).toBeNull();
+    expect(screen.getByText('현재 개발 중인 기능입니다. 곧 만나보실 수 있어요!')).toBeTruthy();
   });
 
   it('should handle profile complete with direct redirect', async () => {
@@ -621,7 +611,7 @@ describe('MyPage', () => {
     expect(mockNavigate).toHaveBeenCalledWith('/', expect.any(Object));
   });
 
-  it('', async () => {
+  it('should show toast on history click', async () => {
     await act(async () => {
       render(
         <BrowserRouter>
@@ -630,7 +620,7 @@ describe('MyPage', () => {
       );
     });
     fireEvent.click(screen.getByText(/히스토리/i));
-    expect(mockNavigate).toHaveBeenCalled();
+    expect(screen.getByText('현재 개발 중인 기능입니다. 곧 만나보실 수 있어요!')).toBeTruthy();
   });
 
   it('', async () => {

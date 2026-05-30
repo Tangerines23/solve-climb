@@ -50,7 +50,7 @@ vi.mock('../../utils/safeJsonParse', () => ({
 }));
 
 describe('useMyPageStats', () => {
-  const mockUserId = 'test-user-id';
+  const mockUserId = '00000000-0000-0000-0000-000000000001';
 
   beforeEach(() => {
     vi.resetAllMocks();
@@ -210,7 +210,7 @@ describe('useMyPageStats', () => {
   });
 
   it('should handle local session correctly', async () => {
-    const mockLocalSession = { userId: 'local-user', isAdmin: true };
+    const mockLocalSession = { userId: '00000000-0000-0000-0000-000000000002', isAdmin: true };
     vi.mocked(storageService.get).mockReturnValue(mockLocalSession);
     vi.mocked(isLocalSession).mockReturnValue(true);
 
@@ -233,7 +233,7 @@ describe('useMyPageStats', () => {
 
     await waitFor(() => expect(result.current.loading).toBe(false));
 
-    expect(result.current.session?.user.id).toBe('local-user');
+    expect(result.current.session?.user.id).toBe('00000000-0000-0000-0000-000000000002');
     expect(result.current.stats?.totalMasteryScore).toBe(500);
   });
 

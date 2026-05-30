@@ -3,6 +3,8 @@ import { render, screen, fireEvent } from '@testing-library/react';
 import '@testing-library/jest-dom';
 import { QuizCard } from '../QuizCard';
 import type { QuizQuestion, Category, GameMode } from '../../types/quiz';
+import { QuizContext } from '@/contexts/QuizContext';
+
 // Mock dependencies
 vi.mock('../../utils/debugLogger', () => ({
   sendDebugLog: vi.fn(),
@@ -62,7 +64,7 @@ describe('QuizCard', () => {
     answer: 8,
   };
 
-  const defaultProps = {
+  const defaultMockValues: any = {
     quizState: {
       currentQuestion: mockQuestion,
       answerInput: '',
@@ -110,20 +112,33 @@ describe('QuizCard', () => {
       handleKeypadClear: vi.fn(),
       handleKeypadBackspace: vi.fn(),
     },
-    inputRef: { current: null } as unknown as React.RefObject<HTMLInputElement>,
-    exitConfirmTimeoutRef: {
-      current: null,
-    } as unknown as React.MutableRefObject<NodeJS.Timeout | null>,
-    setAnswerInput: vi.fn(),
-    setDisplayValue: vi.fn(),
-    setShowExitConfirm: vi.fn(),
-    setIsFadingOut: vi.fn(),
-    SURVIVAL_QUESTION_TIME: 30,
+    modalState: {
+      showPauseModal: false,
+      showStaminaModal: false,
+      showTutorial: false,
+    },
+    modalHandlers: {
+      handlePauseResume: vi.fn(),
+      handlePauseExit: vi.fn(),
+      handleRevive: vi.fn(),
+      handleGiveUp: vi.fn(),
+      handleStartGame: vi.fn(),
+      handlePromiseComplete: vi.fn(),
+      setShowTutorial: vi.fn(),
+      setShowStaminaModal: vi.fn(),
+    },
     activeItems: [],
     usedItems: [],
     score: 0,
-    isExhausted: false,
     handleTimeUp: vi.fn(),
+  };
+
+  const renderWithContext = (value = defaultMockValues) => {
+    return render(
+      <QuizContext.Provider value={value}>
+        <QuizCard />
+      </QuizContext.Provider>
+    );
   };
 
   beforeEach(() => {
@@ -131,116 +146,107 @@ describe('QuizCard', () => {
   });
 
   it('should render question text', () => {
-    render(<QuizCard {...defaultProps} />);
+    renderWithContext();
     expect(screen.getByText('5 + 3 = ?')).toBeInTheDocument();
   });
 
   it('should render answer input field when using system keyboard', () => {
-    render(
-      <QuizCard
-        {...defaultProps}
-        quizState={{
-          ...defaultProps.quizState,
-          useSystemKeyboard: true,
-          answerInput: '8',
-          displayValue: '8',
-        }}
-      />
-    );
+    renderWithContext({
+      ...defaultMockValues,
+      quizState: {
+        ...defaultMockValues.quizState,
+        useSystemKeyboard: true,
+        answerInput: '8',
+        displayValue: '8',
+      },
+    });
     const input = screen.getByDisplayValue('8');
     expect(input).toBeInTheDocument();
   });
 
   it('should render TimerCircle component', () => {
-    render(<QuizCard {...defaultProps} />);
+    renderWithContext();
     expect(screen.getByTestId('timer-circle')).toBeInTheDocument();
   });
 
   it('should render CustomKeypad when useSystemKeyboard is false', () => {
-    render(
-      <QuizCard
-        {...defaultProps}
-        quizState={{ ...defaultProps.quizState, useSystemKeyboard: false }}
-      />
-    );
+    renderWithContext({
+      ...defaultMockValues,
+      quizState: { ...defaultMockValues.quizState, useSystemKeyboard: false },
+    });
     expect(screen.getByTestId('custom-keypad')).toBeInTheDocument();
   });
 
   it('should call handleKeypadNumber when number is clicked', () => {
-    render(
-      <QuizCard
-        {...defaultProps}
-        quizState={{ ...defaultProps.quizState, useSystemKeyboard: false }}
-      />
-    );
+    const handleKeypadNumber = vi.fn();
+    renderWithContext({
+      ...defaultMockValues,
+      quizState: { ...defaultMockValues.quizState, useSystemKeyboard: false },
+      quizHandlers: { ...defaultMockValues.quizHandlers, handleKeypadNumber },
+    });
     fireEvent.click(screen.getByText('1'));
-    expect(defaultProps.quizHandlers.handleKeypadNumber).toHaveBeenCalledWith('1');
+    expect(handleKeypadNumber).toHaveBeenCalledWith('1');
   });
 
   it('should handle null currentQuestion', () => {
-    render(
-      <QuizCard
-        {...defaultProps}
-        quizState={{
-          ...defaultProps.quizState,
-          currentQuestion: null,
-          categoryParam: 'math',
-          subParam: 'addition',
-        }}
-      />
-    );
+    renderWithContext({
+      ...defaultMockValues,
+      quizState: {
+        ...defaultMockValues.quizState,
+        currentQuestion: null,
+        categoryParam: 'math',
+        subParam: 'addition',
+      },
+    });
     expect(screen.getByText('문제를 생성하는 중...')).toBeInTheDocument();
   });
 
   it('should display answer when showAnswer is true', () => {
-    render(
-      <QuizCard {...defaultProps} quizState={{ ...defaultProps.quizState, showAnswer: true }} />
-    );
+    renderWithContext({
+      ...defaultMockValues,
+      quizState: { ...defaultMockValues.quizState, showAnswer: true },
+    });
     expect(screen.getByText(/정답:/)).toBeInTheDocument();
     expect(screen.getByText('8')).toBeInTheDocument();
   });
 
   it('should display slide toast when showSlideToast is true', () => {
-    render(
-      <QuizCard
-        {...defaultProps}
-        quizAnimations={{ ...defaultProps.quizAnimations, showSlideToast: true, toastValue: '-3m' }}
-      />
-    );
+    renderWithContext({
+      ...defaultMockValues,
+      quizAnimations: {
+        ...defaultMockValues.quizAnimations,
+        showSlideToast: true,
+        toastValue: '-3m',
+      },
+    });
     expect(screen.getByText('-3m')).toBeInTheDocument();
   });
 
   it('should apply card animation class', () => {
-    const { container } = render(
-      <QuizCard
-        {...defaultProps}
-        quizAnimations={{ ...defaultProps.quizAnimations, cardAnimation: 'slide-in' }}
-      />
-    );
-    const quizCard = container.querySelector('.quiz-card');
+    renderWithContext({
+      ...defaultMockValues,
+      quizAnimations: { ...defaultMockValues.quizAnimations, cardAnimation: 'slide-in' },
+    });
+    const quizCard = document.querySelector('.quiz-card');
     expect(quizCard).toHaveClass('slide-in');
   });
 
   it('should disable input when isPaused is true (system keyboard)', () => {
-    render(
-      <QuizCard
-        {...defaultProps}
-        quizState={{ ...defaultProps.quizState, useSystemKeyboard: true }}
-        quizAnimations={{ ...defaultProps.quizAnimations, isPaused: true, isInputPaused: true }}
-      />
-    );
+    renderWithContext({
+      ...defaultMockValues,
+      quizState: { ...defaultMockValues.quizState, useSystemKeyboard: true },
+      quizAnimations: { ...defaultMockValues.quizAnimations, isPaused: true, isInputPaused: true },
+    });
     const input = screen.getByDisplayValue('');
     expect(input).toBeDisabled();
   });
 
   it('should disable keypad when isPaused is true (custom keypad)', () => {
-    render(
-      <QuizCard
-        {...defaultProps}
-        quizState={{ ...defaultProps.quizState, useSystemKeyboard: false }}
-        quizAnimations={{ ...defaultProps.quizAnimations, isPaused: true, isInputPaused: true }}
-      />
-    );
+    renderWithContext({
+      ...defaultMockValues,
+      quizState: { ...defaultMockValues.quizState, useSystemKeyboard: false },
+      quizAnimations: { ...defaultMockValues.quizAnimations, isPaused: true, isInputPaused: true },
+    });
     const keypad = screen.getByTestId('custom-keypad');
     expect(keypad).toHaveClass('disabled');
     const button = screen.getByText('1');
@@ -248,25 +254,25 @@ describe('QuizCard', () => {
   });
 
   it('should disable submit button when isPaused is true', () => {
-    render(
-      <QuizCard
-        {...defaultProps}
-        quizState={{ ...defaultProps.quizState, useSystemKeyboard: true, answerInput: '8' }}
-        quizAnimations={{ ...defaultProps.quizAnimations, isPaused: true, isInputPaused: true }}
-      />
-    );
+    renderWithContext({
+      ...defaultMockValues,
+      quizState: { ...defaultMockValues.quizState, useSystemKeyboard: true, answerInput: '8' },
+      quizAnimations: { ...defaultMockValues.quizAnimations, isPaused: true, isInputPaused: true },
+    });
     const submitButton = screen.getByText('제출');
     expect(submitButton).toBeDisabled();
   });
 
-  it('should display category and topic label', () => {
-    render(
-      <QuizCard
-        {...defaultProps}
-        quizState={{ ...defaultProps.quizState, category: '수학', topic: '덧셈' }}
-      />
-    );
-    expect(screen.getByText(/수학/)).toBeInTheDocument();
-    expect(screen.getByText(/덧셈/)).toBeInTheDocument();
+  it('should display category and world info label', () => {
+    renderWithContext({
+      ...defaultMockValues,
+      quizState: {
+        ...defaultMockValues.quizState,
+        category: '수학',
+        worldParam: 'World1',
+      },
+    });
+    // Renders as "{category} · {worldName}" in QuizCard.tsx
+    expect(screen.getByText(/수학 · World 1: 수리봉/)).toBeInTheDocument();
   });
 });

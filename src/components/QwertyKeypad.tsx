@@ -144,6 +144,7 @@ function QwertyKeypadComponent({
               onClick={(e) => {
                 e.preventDefault();
                 if (!disabled) {
+                  vibrateShort();
                   onSubmit(e);
                 }
               }}

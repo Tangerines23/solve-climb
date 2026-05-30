@@ -8,8 +8,9 @@ import { GameMode, Tier } from '../types/quiz';
 import { useDebugStore } from './useDebugStore';
 import { useToastStore } from './useToastStore';
 import { UI_MESSAGES } from '../constants/ui';
-import type { UserResponse, RealtimeChannel } from '@supabase/supabase-js';
+import type { RealtimeChannel } from '@supabase/supabase-js';
 import { safeAccess } from '../utils/validation';
+import { LevelSyncService } from '../services/LevelSyncService';
 
 export interface LevelRecord {
   level: number;
@@ -188,20 +189,11 @@ export const useLevelProgressStore = create<LevelProgressState>()(
           tier = 'normal'
         ) => {
           const worldKey = tier === 'hard' ? `${world}_hard` : world;
-          console.log('[useLevelProgressStore] clearLevel called:', {
-            world: worldKey,
-            category,
-            level,
-            mode,
-            score,
-            avgSolveTime,
-            hasSessionData: !!sessionData,
-          });
 
-          // 1. Save current state for potential rollback (Deep Clone to prevent contamination)
+          // 1. Save current state for potential rollback
           const previousProgress = JSON.parse(JSON.stringify(get().progress));
 
-          // 2. Optimistic Update (Local) - Immutable spread to ensure isolation
+          // 2. Optimistic Update (Local)
           set((state) => {
             const worldProgress = state.progress[worldKey] || {};
             const categoryProgress = worldProgress[category] || {};
@@ -234,49 +226,23 @@ export const useLevelProgressStore = create<LevelProgressState>()(
             };
           });
 
-          const authResult = (await safeSupabaseQuery(supabase.auth.getUser())) as UserResponse;
-          const user = authResult?.data?.user;
+          // 3. Call Service for Server Sync
+          const result = await LevelSyncService.submitGameResult({
+            category,
+            level,
+            mode,
+            score,
+            avgSolveTime,
+            sessionData,
+            tier,
+          });
 
-          if (!user) {
-            console.warn('[useLevelProgressStore] No user found, skipping Supabase sync');
-            return;
-          }
-
-          // 3. Call submit_game_result RPC
-          try {
-            const gameMode =
-              mode === 'time-attack' ? 'timeattack' : mode === 'survival' ? 'survival' : 'infinite';
-
-            const { data: rpcData, error: rpcError } = await safeSupabaseQuery(
-              supabase.rpc('submit_game_result', {
-                p_user_answers: sessionData?.answers ?? [],
-                p_question_ids: (sessionData?.questionIds ?? []).map(String),
-                p_game_mode: gameMode,
-                p_items_used: [],
-                p_session_id: sessionData?.sessionId ?? null,
-                p_category: category,
-                p_subject: 'add',
-                p_level: level,
-                p_avg_solve_time: avgSolveTime,
-              })
-            );
-
-            if (rpcError || !rpcData?.success) {
-              console.error('[clearLevel] RPC failed, rolling back:', rpcError || rpcData?.error);
-              // Rollback to previous state
-              set({ progress: previousProgress });
-              useToastStore
-                .getState()
-                .showToast(
-                  rpcData?.error || '게임 결과 저장에 실패했습니다. (보안 위반 또는 세션 만료)',
-                  'error'
-                );
-            } else {
-              console.log('[clearLevel] Sync successful');
-            }
-          } catch (error) {
-            console.error('[clearLevel] Unexpected error, rolling back:', error);
+          if (!result.success) {
+            console.error('[clearLevel] Sync failed, rolling back:', result.error);
             set({ progress: previousProgress });
+            if (result.error !== 'No user found') {
+              useToastStore.getState().showToast(result.error || '저장 실패', 'error');
+            }
           }
         },
 
@@ -292,7 +258,7 @@ export const useLevelProgressStore = create<LevelProgressState>()(
         ) => {
           const worldKey = tier === 'hard' ? `${world}_hard` : world;
           // 1. Save state for rollback
-          const previousProgress = { ...get().progress };
+          const previousProgress = JSON.parse(JSON.stringify(get().progress));
 
           // 2. Optimistic Update (Local)
           set((state) => {
@@ -315,33 +281,19 @@ export const useLevelProgressStore = create<LevelProgressState>()(
             return { progress: newProgress };
           });
 
-          // 3. Call submit_game_result RPC
-          try {
-            const gameMode =
-              mode === 'time-attack' ? 'timeattack' : mode === 'survival' ? 'survival' : 'infinite';
-            const { data: rpcData, error: rpcError } = await safeSupabaseQuery(
-              supabase.rpc('submit_game_result', {
-                p_user_answers: sessionData?.answers ?? [],
-                p_question_ids: (sessionData?.questionIds ?? []).map(String),
-                p_game_mode: gameMode,
-                p_items_used: [],
-                p_session_id: sessionData?.sessionId ?? null,
-                p_category: category,
-                p_subject: 'add',
-                p_level: level,
-                p_avg_solve_time: avgSolveTime,
-              })
-            );
+          // 3. Call Service for Server Sync
+          const result = await LevelSyncService.submitGameResult({
+            category,
+            level,
+            mode,
+            score,
+            avgSolveTime,
+            sessionData,
+            tier,
+          });
 
-            if (rpcError || !rpcData?.success) {
-              console.error(
-                '[updateBestScore] RPC failed, rolling back:',
-                rpcError || rpcData?.error
-              );
-              set({ progress: previousProgress });
-            }
-          } catch (error) {
-            console.error('[updateBestScore] Failed to call submit_game_result:', error);
+          if (!result.success) {
+            console.error('[updateBestScore] Sync failed, rolling back:', result.error);
             set({ progress: previousProgress });
           }
         },
@@ -468,24 +420,18 @@ export const useLevelProgressStore = create<LevelProgressState>()(
         },
 
         resetProgress: async () => {
-          // 1. Supabase 데이터 초기화 (Secure RPC 호출)
-          try {
-            const { data, error } = await safeSupabaseQuery(supabase.rpc('secure_reset_progress'));
+          const result = await LevelSyncService.resetProgress();
 
-            if (error || !data?.success) {
-              console.error('Failed to reset progress in Supabase:', error || data?.message);
-              useToastStore.getState().showToast(UI_MESSAGES.COMMON_ERROR, 'error');
-              return;
-            }
-
-            // 2. Local State 리셋 (성공 시에만)
-            set({ progress: {} });
-            console.log('[useLevelProgressStore] Progress reset completed via RPC');
-            useToastStore.getState().showToast('진행 상태가 초기화되었습니다.', 'success');
-          } catch (error) {
-            console.error('Unexpected error during progress reset:', error);
-            useToastStore.getState().showToast(UI_MESSAGES.COMMON_ERROR, 'error');
+          if (!result.success) {
+            console.error('Failed to reset progress:', result.error);
+            useToastStore.getState().showToast(result.error || UI_MESSAGES.COMMON_ERROR, 'error');
+            return;
           }
+
+          // Local State 리셋 (성공 시에만)
+          set({ progress: {} });
+          console.log('[useLevelProgressStore] Progress reset completed via Service');
+          useToastStore.getState().showToast('진행 상태가 초기화되었습니다.', 'success');
         },
 
         fetchRanking: async (world, category, period, type, limit = 50) => {

@@ -180,7 +180,7 @@ END;
 $$ LANGUAGE plpgsql SECURITY DEFINER SET search_path = '';
 
 -- 5. FIX LINT WARNINGS IN submit_game_result (Remove pg_catalog. from GREATEST/LEAST/NOW)
-CREATE OR REPLACE FUNCTION public.submit_game_result(p_user_answers jsonb, p_question_ids jsonb, p_game_mode text, p_items_used integer[], p_session_id uuid, p_category text, p_subject text, p_level integer, p_avg_solve_time double precision)
+CREATE OR REPLACE FUNCTION public.submit_game_result(p_user_answers jsonb, p_question_ids jsonb, p_game_mode text, p_items_used jsonb, p_session_id uuid, p_category text, p_subject text, p_level integer, p_avg_solve_time float8)
  RETURNS jsonb LANGUAGE plpgsql SECURITY DEFINER SET search_path = '' AS $function$
 DECLARE
   v_user_id UUID := auth.uid();

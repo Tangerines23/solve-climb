@@ -1,4 +1,4 @@
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion } from 'framer-motion';
 import { useGameStore } from '../../stores/useGameStore';
 import { useSettingsStore } from '../../stores/useSettingsStore';
 import './Effects.css';
@@ -18,34 +18,6 @@ export function FeverEffect() {
       <div className="fever-particles">
         {animationEnabled && feverLevel >= 2 && <FeverParticles />}
       </div>
-
-      {/* Combo Counter (Big) */}
-      <AnimatePresence>
-        {combo >= 2 && (
-          <motion.div
-            className="combo-display"
-            data-vg-ignore="true"
-            key={combo}
-            initial={{ scale: 1.5, opacity: 0 }}
-            animate={{ scale: 1, opacity: 1 }}
-            exit={{ scale: 0.8, opacity: 0 }}
-            transition={{ type: 'spring', stiffness: 400, damping: 20 }}
-          >
-            <div className="combo-count">{combo}</div>
-            <div className="combo-text">Combo</div>
-
-            {/* Fever Progress Bar */}
-            <div className="fever-progress-track">
-              <motion.div
-                className="fever-progress-bar"
-                initial={{ width: 0 }}
-                animate={{ width: `${Math.min(100, (combo / 20) * 100)}%` }}
-                transition={{ type: 'spring', stiffness: 100 }}
-              />
-            </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
     </>
   );
 }

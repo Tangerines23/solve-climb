@@ -1,19 +1,13 @@
 import React, { useEffect, useState } from 'react';
 import './TodaysPromise.css';
+import { useQuiz } from '@/contexts/QuizContext';
 
-interface TodaysPromiseProps {
-  isVisible: boolean;
-  rule: string;
-  example: string;
-  onComplete: () => void;
-}
+export const TodaysPromise: React.FC = () => {
+  const { modalState, modalHandlers, promiseData } = useQuiz();
+  const { showPromise: isVisible } = modalState;
+  const { handlePromiseComplete: onComplete } = modalHandlers;
+  const { rule, example } = promiseData;
 
-export const TodaysPromise: React.FC<TodaysPromiseProps> = ({
-  isVisible,
-  rule,
-  example,
-  onComplete,
-}) => {
   const [countdown, setCountdown] = useState(3);
 
   useEffect(() => {

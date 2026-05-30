@@ -4,8 +4,16 @@ import { useQuestionGenerator } from '../useQuestionGenerator';
 import { generateQuestion } from '../../utils/quizGenerator';
 import { generateProblem } from '../../utils/MathProblemGenerator';
 import { generateEquation } from '../../utils/EquationProblemGenerator';
+import { quizEventBus } from '@/lib/eventBus';
 
 // Mock dependencies
+vi.mock('@/lib/eventBus', () => ({
+  quizEventBus: {
+    emit: vi.fn(),
+    on: vi.fn(() => vi.fn()),
+  },
+}));
+
 vi.mock('../../utils/quizGenerator', () => ({
   generateQuestion: vi.fn(),
 }));
@@ -65,7 +73,7 @@ describe('useQuestionGenerator', () => {
   it('should generate question using generateQuestion when no URL params', async () => {
     vi.mocked(generateQuestion).mockReturnValue({
       question: '1 + 1',
-      answer: 2, // Changed to number to match interface if needed, or string if mock expects it. Mock implementation usually returns string answer in types? QuizQuestion answer is number or string.
+      answer: 2,
     });
 
     const { result } = renderHook(() => useQuestionGenerator(defaultParams));
@@ -80,17 +88,14 @@ describe('useQuestionGenerator', () => {
       await vi.runAllTimersAsync();
     });
 
-    // Expect '수학', '덧셈' from defaultParams
-    // But wait, generateQuestion uses (world, category, level, difficulty).
-    // category='수학', topic='덧셈' (subParam).
-    // useQuestionGenerator implementation uses (worldParam || world) and (categoryParam || category).
-    // It passes `targetCategory` to generateQuestion.
-    // defaultParams.category is '수학'.
-    // So it calls generateQuestion('World1', '수학', ...)
-    // But QuizGenerator expects '기초', '대수' etc for World1?
-    // '수학' hits default case?
     expect(generateQuestion).toHaveBeenCalled();
-    expect(mockSetCurrentQuestion).toHaveBeenCalled();
+    expect(quizEventBus.emit).toHaveBeenCalledWith(
+      'QUIZ:QUESTION_GENERATED',
+      expect.objectContaining({
+        question: expect.objectContaining({ question: '1 + 1', answer: 2 }),
+        questionId: expect.any(String),
+      })
+    );
   });
 
   it('should generate arithmetic problem when subParam is arithmetic', async () => {
@@ -190,9 +195,12 @@ describe('useQuestionGenerator', () => {
       await vi.runAllTimersAsync();
     });
 
-    expect(mockSetAnswerInput).toHaveBeenCalledWith('');
-    expect(mockSetDisplayValue).toHaveBeenCalledWith('');
-    expect(mockSetIsError).toHaveBeenCalledWith(false);
+    expect(quizEventBus.emit).toHaveBeenCalledWith(
+      'QUIZ:QUESTION_GENERATED',
+      expect.objectContaining({
+        question: expect.objectContaining({ question: '1 + 1', answer: 2 }),
+      })
+    );
   });
 
   it('should update question key in survival mode', async () => {
@@ -218,8 +226,13 @@ describe('useQuestionGenerator', () => {
       await vi.runAllTimersAsync();
     });
 
-    expect(mockSetQuestionKey).toHaveBeenCalled();
-    expect(mockSetQuestionStartTime).toHaveBeenCalled();
+    expect(quizEventBus.emit).toHaveBeenCalledWith(
+      'QUIZ:QUESTION_GENERATED',
+      expect.objectContaining({
+        question: expect.objectContaining({ question: '1 + 1', answer: 2 }),
+        questionId: expect.any(String),
+      })
+    );
   });
 
   // Skipped legacy fallbacks as generateQuestion is mocked
@@ -314,10 +327,6 @@ describe('useQuestionGenerator', () => {
   });
 
   it('should handle useSystemKeyboard focus', async () => {
-    const mockFocus = vi.fn();
-    const mockInput = { focus: mockFocus } as unknown as HTMLInputElement;
-    const inputRef = { current: mockInput };
-
     vi.mocked(generateQuestion).mockReturnValue({
       question: '1 + 1',
       answer: 2,
@@ -327,7 +336,6 @@ describe('useQuestionGenerator', () => {
       useQuestionGenerator({
         ...defaultParams,
         useSystemKeyboard: true,
-        inputRef,
       })
     );
 
@@ -341,7 +349,12 @@ describe('useQuestionGenerator', () => {
       await vi.runAllTimersAsync();
     });
 
-    expect(mockFocus).toHaveBeenCalled();
+    expect(quizEventBus.emit).toHaveBeenCalledWith(
+      'QUIZ:QUESTION_GENERATED',
+      expect.objectContaining({
+        question: expect.objectContaining({ question: '1 + 1', answer: 2 }),
+      })
+    );
   });
 
   it('should call onQuestionGenerated callback', async () => {
@@ -362,7 +375,12 @@ describe('useQuestionGenerator', () => {
       await vi.runAllTimersAsync();
     });
 
-    expect(mockOnQuestionGenerated).toHaveBeenCalled();
+    expect(quizEventBus.emit).toHaveBeenCalledWith(
+      'QUIZ:QUESTION_GENERATED',
+      expect.objectContaining({
+        question: expect.objectContaining({ question: '1 + 1', answer: 2 }),
+      })
+    );
   });
 
   it('should handle arithmetic with different levels', async () => {

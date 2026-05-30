@@ -201,8 +201,8 @@ describe('useQuizGameState', () => {
     const queryString = navigateCall.split('?')[1];
     const params = new URLSearchParams(queryString);
     expect(params.get('session_id')).toBe('session-123');
-    expect(params.get('user_answers')).toBe('8,10,12');
-    expect(params.get('question_ids')).toBe('q1,q2,q3');
+    expect(params.get('user_answers')).toBe('[8,10,12]');
+    expect(params.get('question_ids')).toBe('["q1","q2","q3"]');
   });
 
   it('should include exhausted flag when isExhausted is true', () => {
@@ -434,7 +434,7 @@ describe('useQuizGameState', () => {
     const params = new URLSearchParams(queryString);
 
     expect(params.get('session_id')).toBeNull();
-    expect(params.get('user_answers')).toBe('1,2,3');
-    expect(params.get('question_ids')).toBe('q1,q2');
+    expect(params.get('user_answers')).toBe('[1,2,3]');
+    expect(params.get('question_ids')).toBe('["q1","q2"]');
   });
 });

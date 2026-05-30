@@ -39,7 +39,7 @@ export function MyPageStats({
       </div>
       <div
         className={`my-page-stat-card my-page-stat-card-clickable ${isOpeningLeaderboard ? 'my-page-stat-card-loading' : ''}`}
-        onClick={isOpeningLeaderboard ? undefined : onOpenLeaderboard}
+        onClick={onOpenLeaderboard}
       >
         <div className="my-page-stat-label">내 랭킹</div>
         <div className="my-page-stat-value">

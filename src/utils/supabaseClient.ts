@@ -57,12 +57,34 @@ const createSupabaseClient = (): SupabaseClient => {
     },
     global: {
       // 네트워크 요청에 5초 타임아웃 적용 (CI 등 Supabase 접근 불가 환경에서 무한 대기 방지)
-      fetch: (url: RequestInfo | URL, init?: RequestInit) => {
+      fetch: async (url: RequestInfo | URL, init?: RequestInit) => {
         const controller = new AbortController();
         const timeoutId = setTimeout(() => controller.abort(), 5000);
-        return fetch(url, { ...init, signal: controller.signal }).finally(() =>
-          clearTimeout(timeoutId)
-        );
+
+        try {
+          const response = await fetch(url, { ...init, signal: controller.signal });
+
+          // Handle 403 Forbidden specifically for auth requests or dangling sessions
+          if (response.status === 403 && typeof window !== 'undefined') {
+            const urlStr = typeof url === 'string' ? url : url instanceof URL ? url.toString() : '';
+            if (urlStr.includes('/auth/v1/')) {
+              console.warn(
+                '[Supabase] 403 Forbidden detected on auth request. Clearing stale session...'
+              );
+              // Clear local storage and redirect to refresh the app state
+              localStorage.removeItem('sb-' + ENV.VITE_SUPABASE_URL + '-auth-token');
+              // We don't want to infinite loop, so only reload if we haven't just reloaded
+              if (!window.location.search.includes('retry=auth')) {
+                window.location.href =
+                  window.location.origin + window.location.pathname + '?retry=auth';
+              }
+            }
+          }
+
+          return response;
+        } finally {
+          clearTimeout(timeoutId);
+        }
       },
     },
   };

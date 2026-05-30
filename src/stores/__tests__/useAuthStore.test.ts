@@ -58,7 +58,7 @@ describe('useAuthStore', () => {
     vi.mocked(supabase.auth.getSession).mockResolvedValue({
       data: {
         session: {
-          user: { id: 'test-user' },
+          user: { id: '00000000-0000-0000-0000-000000000003' },
           access_token: 'token',
         },
       },
@@ -79,10 +79,10 @@ describe('useAuthStore', () => {
     vi.mocked(supabase.auth.signInAnonymously).mockResolvedValue({
       data: {
         session: {
-          user: { id: 'anon-user' },
+          user: { id: '00000000-0000-0000-0000-000000000004' },
           access_token: 'token',
         },
-        user: { id: 'anon-user' },
+        user: { id: '00000000-0000-0000-0000-000000000004' },
       },
       error: null,
     } as never);
@@ -96,10 +96,10 @@ describe('useAuthStore', () => {
     vi.mocked(supabase.auth.signInAnonymously).mockResolvedValue({
       data: {
         session: {
-          user: { id: 'anon-user' },
+          user: { id: '00000000-0000-0000-0000-000000000004' },
           access_token: 'token',
         },
-        user: { id: 'anon-user' },
+        user: { id: '00000000-0000-0000-0000-000000000004' },
       },
       error: null,
     } as never);
@@ -126,7 +126,7 @@ describe('useAuthStore', () => {
 
   it('should not sign in anonymously when session exists', async () => {
     const mockSession = {
-      user: { id: 'test-user' },
+      user: { id: '00000000-0000-0000-0000-000000000003' },
       access_token: 'token',
     };
 
@@ -183,10 +183,10 @@ describe('useAuthStore', () => {
     vi.mocked(supabase.auth.signInAnonymously).mockResolvedValue({
       data: {
         session: {
-          user: { id: 'anon-user' },
+          user: { id: '00000000-0000-0000-0000-000000000004' },
           access_token: 'token',
         },
-        user: { id: 'anon-user' },
+        user: { id: '00000000-0000-0000-0000-000000000004' },
       },
       error: null,
     } as never);
@@ -206,10 +206,10 @@ describe('useAuthStore', () => {
     vi.mocked(supabase.auth.signInAnonymously).mockResolvedValue({
       data: {
         session: {
-          user: { id: 'anon-user' },
+          user: { id: '00000000-0000-0000-0000-000000000004' },
           access_token: 'token',
         },
-        user: { id: 'anon-user' },
+        user: { id: '00000000-0000-0000-0000-000000000004' },
       },
       error: null,
     } as never);
@@ -228,7 +228,9 @@ describe('useAuthStore', () => {
   describe('Session Recovery & Auth Changes', () => {
     it('should recover session from local storage', async () => {
       const { storageService, STORAGE_KEYS } = await import('../../services');
-      vi.mocked(storageService.get).mockReturnValue({ userId: 'local-user' });
+      vi.mocked(storageService.get).mockReturnValue({
+        userId: '00000000-0000-0000-0000-000000000005',
+      });
 
       vi.mocked(supabase.auth.getSession).mockResolvedValue({
         data: { session: null },
@@ -238,7 +240,7 @@ describe('useAuthStore', () => {
       await useAuthStore.getState().initialize();
 
       const { user } = useAuthStore.getState();
-      expect(user?.id).toBe('local-user');
+      expect(user?.id).toBe('00000000-0000-0000-0000-000000000005');
       expect((user as any).is_anonymous).toBe(true);
     });
 
@@ -248,10 +250,10 @@ describe('useAuthStore', () => {
       expect(callback).toBeDefined();
 
       // Trigger signed in
-      const mockSession = { user: { id: 'new-user' } };
+      const mockSession = { user: { id: '00000000-0000-0000-0000-000000000006' } };
       callback('SIGNED_IN', mockSession);
 
-      expect(useAuthStore.getState().user?.id).toBe('new-user');
+      expect(useAuthStore.getState().user?.id).toBe('00000000-0000-0000-0000-000000000006');
 
       // Trigger signed out
       callback('SIGNED_OUT', null);
@@ -264,9 +266,10 @@ describe('useAuthStore', () => {
       vi.mocked(storageService.get).mockReturnValue(null);
 
       // Setup: existing anonymous session
+      const anonId = '00000000-0000-0000-0000-000000000007';
       useAuthStore.setState({
-        session: { user: { id: 'anon-id', is_anonymous: true } } as any,
-        user: { id: 'anon-id', is_anonymous: true } as any,
+        session: { user: { id: anonId, is_anonymous: true } } as any,
+        user: { id: anonId, is_anonymous: true } as any,
       });
 
       await useAuthStore.getState().initialize();
@@ -276,11 +279,11 @@ describe('useAuthStore', () => {
       callback('INITIAL_SESSION', null);
 
       // Should NOT clear session (stay as anon)
-      expect(useAuthStore.getState().user?.id).toBe('anon-id');
+      expect(useAuthStore.getState().user?.id).toBe(anonId);
 
       // Trigger MFA_CHALLENGE with null session
       callback('MFA_CHALLENGE', null);
-      expect(useAuthStore.getState().user?.id).toBe('anon-id');
+      expect(useAuthStore.getState().user?.id).toBe(anonId);
 
       // But SIGNED_OUT should clear it
       callback('SIGNED_OUT', null);
@@ -292,11 +295,15 @@ describe('useAuthStore', () => {
       await useAuthStore.getState().initialize();
       const callback = (global as any).authCallback;
 
-      const mockUser = { id: 'user-123', email: 'test@example.com', last_sign_in_at: '2023-01-01' };
+      const mockUser = {
+        id: '00000000-0000-0000-0000-000000000008',
+        email: 'test@example.com',
+        last_sign_in_at: '2023-01-01',
+      };
       callback('SIGNED_IN', { user: mockUser });
 
       // No longer needs complex vi.waitFor since the import is static and execution is immediate
-      expect(analytics.setUser).toHaveBeenCalledWith('user-123', {
+      expect(analytics.setUser).toHaveBeenCalledWith('00000000-0000-0000-0000-000000000008', {
         email: 'test@example.com',
         last_sign_in: '2023-01-01',
       });

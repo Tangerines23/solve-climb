@@ -1,9 +1,11 @@
 .timer-circle-container {
   display: flex;
   align-items: center;
+  justify-content: center;
   gap: var(--spacing-sm);
   z-index: 10;
   position: relative;
+  height: 44px;
 }
 
 .timer-label {
