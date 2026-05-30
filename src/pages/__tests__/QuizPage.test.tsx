@@ -3,6 +3,14 @@ import { render, screen, fireEvent } from '@testing-library/react';
 import { QuizPage } from '../QuizPage';
 import { BrowserRouter } from 'react-router-dom';
 import { useUserStore } from '@/stores/useUserStore';
+import { quizEventBus } from '@/lib/eventBus';
+
+vi.mock('@/lib/eventBus', () => ({
+  quizEventBus: {
+    emit: vi.fn(),
+    on: vi.fn(() => vi.fn()),
+  },
+}));
 
 // Use vi.hoisted to ensure these are initialized before vi.mock
 const { mockQuizStore, mockUserStoreState, mockGameStore } = vi.hoisted(() => {
@@ -120,7 +128,12 @@ vi.mock('@/hooks/useQuestionGenerator', () => ({
 }));
 
 vi.mock('@/hooks/useQuizInput', () => ({
-  useQuizInput: vi.fn(),
+  useQuizInput: vi.fn(() => ({
+    handleKeypadNumber: vi.fn(),
+    handleQwertyKeyPress: vi.fn(),
+    handleKeypadClear: vi.fn(),
+    handleKeypadBackspace: vi.fn(),
+  })),
 }));
 
 vi.mock('@/hooks/useQuizGameState', () => ({
@@ -485,7 +498,10 @@ describe('QuizPage', () => {
       );
 
       fireEvent.click(screen.getByTestId('pause-btn'));
-      expect(mockGameplayHandlers.handlePauseClick).toHaveBeenCalled();
+      expect(quizEventBus.emit).toHaveBeenCalledWith('QUIZ:UI_MODAL_TOGGLE', {
+        modal: 'pause',
+        show: true,
+      });
 
       fireEvent.click(screen.getByTestId('pause-resume-btn'));
       expect(screen.queryByTestId('pause-modal')).toBeNull();

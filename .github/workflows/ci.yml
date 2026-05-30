@@ -87,7 +87,6 @@ jobs:
   unit-test:
     needs: setup
     runs-on: ubuntu-latest
-    continue-on-error: true
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -121,7 +120,6 @@ jobs:
   security-db:
     needs: setup
     runs-on: ubuntu-latest
-    continue-on-error: true
     env:
       SUPABASE_DB_PASSWORD: ${{ secrets.SUPABASE_DB_PASSWORD }}
       IS_DOCKER: true
