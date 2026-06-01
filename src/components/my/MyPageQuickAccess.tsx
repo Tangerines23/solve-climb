@@ -48,7 +48,7 @@ export function MyPageQuickAccess({
 
       {/* 즐겨찾는 카테고리 */}
       {favorites.length > 0 && (
-        <div className="my-page-quick-access-card">
+        <div className="my-page-quick-access-card" style={{ display: 'none' }}>
           <div className="my-page-quick-access-header">
             <span className="my-page-quick-access-icon">⭐</span>
             <h3 className="my-page-quick-access-title">즐겨찾기</h3>

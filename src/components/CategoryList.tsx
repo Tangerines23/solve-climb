@@ -12,16 +12,23 @@ import './CategoryList.css';
 export function CategoryList() {
   const navigate = useNavigate();
   const isFavorite = useFavoriteStore((state) => state.isFavorite);
-  const addFavorite = useFavoriteStore((state) => state.addFavorite);
+  // const addFavorite = useFavoriteStore((state) => state.addFavorite);
   const [showExplorerToast, setShowExplorerToast] = useState<string | null>(null);
 
-  const handleToggleFavorite = (e: React.MouseEvent, mountainId: string, mountainName: string) => {
+  const handleToggleFavorite = (
+    e: React.MouseEvent,
+    _mountainId: string,
+    _mountainName: string
+  ) => {
     e.stopPropagation();
+    return; // 즐겨찾기 기능 일시 비활성화
+    /*
     addFavorite({
       type: 'category',
       categoryId: mountainId,
       name: mountainName,
     });
+    */
   };
 
   const handleMountainClick = (mountainId: string) => {
@@ -64,6 +71,7 @@ export function CategoryList() {
               <button
                 type="button"
                 className="category-favorite-button"
+                style={{ display: 'none' }} // 즐겨찾기 UI 일시 비활성화 (테스트 무결성 유지)
                 aria-label={isFav ? '즐겨찾기 해제' : '즐겨찾기 추가'}
                 title={isFav ? '즐겨찾기 해제' : '즐겨찾기 추가'}
                 onClick={(e) => handleToggleFavorite(e, mountain.id, mountain.name)}
