@@ -30,6 +30,7 @@ import { useQuizStartLogic } from '@/hooks/useQuizStartLogic';
 import { useQuizSession } from '@/hooks/useQuizSession';
 import { useQuizGameplay } from '@/hooks/useQuizGameplay';
 import { quizEventBus } from '@/lib/eventBus';
+import { useQuizFeedback } from '@/hooks/quiz/useQuizFeedback';
 import { useDeathNoteStore } from '@/stores/useDeathNoteStore';
 import { vibrateLong } from '@/utils/haptic';
 import {
@@ -137,6 +138,7 @@ export function QuizProvider({ children, params }: QuizProviderProps) {
 
   const { showToast: showGlobalToast } = useToastStore();
   const animations = useQuizAnimations();
+  const { triggerSuccessFeedback, triggerWrongFeedback } = useQuizFeedback();
 
   const [showLastChanceModal, setShowLastChanceModal] = useState(false);
   const [showCountdown, setShowCountdown] = useState(false);
@@ -400,6 +402,19 @@ export function QuizProvider({ children, params }: QuizProviderProps) {
 
         animations.setCardAnimation('correct-flash');
         animations.setShowFlash(true);
+
+        // 카드 내 플로팅 피드백 효과 연동 (무작위 위치 생성)
+        triggerSuccessFeedback(
+          earnedDistance,
+          {
+            setToastValue,
+            setDamagePosition: animations.setDamagePosition,
+            setShowSlideToast: animations.setShowSlideToast,
+            setShowFlash: animations.setShowFlash,
+          },
+          hapticEnabled
+        );
+
         feedbackRef.current?.show('SUCCESS', `+${earnedDistance}m`, 'success');
       } else {
         decreaseScore(earnedDistance);
@@ -407,16 +422,18 @@ export function QuizProvider({ children, params }: QuizProviderProps) {
 
         animations.setCardAnimation('wrong-shake');
         animations.setIsError(true);
-        if (hapticEnabled) vibrateLong();
 
-        // Damage effect
-        const rect = inputRef.current?.getBoundingClientRect();
-        if (rect) {
-          animations.setDamagePosition({
-            left: `${rect.left + rect.width / 2}px`,
-            top: `${rect.top}px`,
-          });
-        }
+        // 카드 내 플로팅 피드백 효과 연동 (오답 경고 플래시 및 무작위 위치 생성)
+        triggerWrongFeedback(
+          'Wrong Answer',
+          {
+            setToastValue,
+            setDamagePosition: animations.setDamagePosition,
+            setShowSlideToast: animations.setShowSlideToast,
+            setShowFlash: animations.setShowFlash,
+          },
+          hapticEnabled
+        );
 
         feedbackRef.current?.show('FAILURE', 'Wrong Answer', 'info'); // 'error' 대신 'info' 또는 'success'
 
