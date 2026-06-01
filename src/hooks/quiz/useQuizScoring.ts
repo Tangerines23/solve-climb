@@ -1,5 +1,12 @@
 import { useCallback } from 'react';
-import { THEME_MULTIPLIERS, BOSS_LEVEL, BOSS_BONUS, ThemeTier } from '../../constants/game';
+import {
+  THEME_MULTIPLIERS,
+  BOSS_LEVEL,
+  BOSS_BONUS,
+  ThemeTier,
+  BASE_CLIMB_DISTANCE,
+  DISTANCE_PER_LEVEL,
+} from '../../constants/game';
 import { APP_CONFIG } from '../../config/app';
 
 /**
@@ -15,8 +22,8 @@ export function useQuizScoring() {
       feverLevel: number,
       isExhausted: boolean
     ) => {
-      // 1. 기본 레벨 점수 (Base Score) - v2.2 공식: 레벨 * 10m
-      const baseLevelScore = currentLevel * 10;
+      // 1. 기본 레벨 점수 (Base Score) - v2.5 공식: BASE_CLIMB_DISTANCE + (level - 1) * DISTANCE_PER_LEVEL
+      const baseLevelScore = BASE_CLIMB_DISTANCE + (currentLevel - 1) * DISTANCE_PER_LEVEL;
 
       // 2. 테마 난이도 배율 (Theme Multiplier)
       const subTopics = APP_CONFIG.SUB_TOPICS as unknown as Record<
