@@ -415,7 +415,8 @@ export function QuizProvider({ children, params }: QuizProviderProps) {
           hapticEnabled
         );
 
-        feedbackRef.current?.show('SUCCESS', `+${earnedDistance}m`, 'success');
+        // 중복 피드백 제거: 플로팅 연출 집중을 위해 외곽의 투명한 성공 메시지 토스트를 비활성화합니다.
+        // feedbackRef.current?.show('SUCCESS', `+${earnedDistance}m`, 'success');
       } else {
         decreaseScore(earnedDistance);
         useGameStore.getState().resetCombo();
