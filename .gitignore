@@ -102,3 +102,6 @@ unit_test_logs.txt
 failed_suites.txt
 final-coverage/
 tmp/
+
+.vercel
+.env*

@@ -398,14 +398,14 @@ export function QuizProvider({ children, params }: QuizProviderProps) {
         increaseScore(earnedDistance);
         useGameStore.getState().incrementCombo();
 
-        animations.setCardAnimation('correct');
+        animations.setCardAnimation('correct-flash');
         animations.setShowFlash(true);
         feedbackRef.current?.show('SUCCESS', `+${earnedDistance}m`, 'success');
       } else {
         decreaseScore(earnedDistance);
         useGameStore.getState().resetCombo();
 
-        animations.setCardAnimation('incorrect');
+        animations.setCardAnimation('wrong-shake');
         animations.setIsError(true);
         if (hapticEnabled) vibrateLong();
 

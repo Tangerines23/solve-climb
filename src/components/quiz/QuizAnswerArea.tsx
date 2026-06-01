@@ -105,7 +105,7 @@ export const QuizAnswerArea = React.memo(() => {
                 }
               }}
               placeholder={isJapaneseQuiz ? '로마지 입력 (예: a, ki)' : '정답 입력'}
-              className={`input-base answer-input-field answer-input-system ${inputAnimation} ${isError ? 'error-state is-error' : ''} ${showFlash ? 'input-error-flash' : ''}`}
+              className={`input-base answer-input-field answer-input-system ${inputAnimation} ${isError ? 'error-state is-error' : ''} ${isError ? 'input-error-flash' : ''} ${showFlash ? 'correct-flash' : ''}`}
               disabled={(isSubmitting && !isError) || effectiveInputPaused}
               readOnly={isError}
               autoFocus={false}
@@ -128,7 +128,7 @@ export const QuizAnswerArea = React.memo(() => {
       ) : (
         <div className={`answer-input-wrapper ${isError ? 'is-error' : ''}`} data-vg-ignore="true">
           <div
-            className={`answer-display ${inputAnimation} ${isError ? 'is-error' : ''} ${showFlash ? 'input-error-flash' : ''}`}
+            className={`answer-display ${inputAnimation} ${isError ? 'is-error' : ''} ${isError ? 'input-error-flash' : ''} ${showFlash ? 'correct-flash' : ''}`}
           >
             <div className="answer-content-container">
               <span className="answer-text">
