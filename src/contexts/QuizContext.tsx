@@ -296,7 +296,7 @@ export function QuizProvider({ children, params }: QuizProviderProps) {
     }
   }, [activeItems, gameMode, lives, consumeActiveItem, consumeLife]);
 
-  const { handleSubmit } = useQuizSubmit({
+  const { handleSubmit: originalSubmit } = useQuizSubmit({
     answerInput,
     isSubmitting,
     currentQuestion,
@@ -306,6 +306,22 @@ export function QuizProvider({ children, params }: QuizProviderProps) {
     questionStartTime: gameState.questionStartTime,
     currentQuestionId,
   });
+
+  const handleSubmit = useCallback((e?: React.FormEvent) => {
+    e?.preventDefault();
+    const isAdmin = useDebugStore.getState().isAdminMode;
+    if (isAdmin && currentQuestion && (!answerInput || answerInput.trim() === '')) {
+      const correctAnswer = String(currentQuestion.answer);
+      setAnswerInput(correctAnswer);
+      setDisplayValue(correctAnswer);
+
+      setTimeout(() => {
+        originalSubmit();
+      }, 50);
+      return;
+    }
+    originalSubmit(e);
+  }, [originalSubmit, currentQuestion, answerInput, setAnswerInput, setDisplayValue]);
 
   const { handleRevive, handlePurchaseAndRevive, handleGiveUp, stableHandleGameOver } =
     useQuizRevive({
