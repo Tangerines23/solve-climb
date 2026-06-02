@@ -4,11 +4,13 @@ import { getItemEmoji } from '../../constants/items';
 import { useQuiz } from '@/contexts/QuizContext';
 import { GAME_MODES, UI_MESSAGES } from '../../constants/ui';
 import { useGameStore } from '../../stores/useGameStore';
+import { useDebugStore } from '../../stores/useDebugStore';
 
 export const QuizHeader = React.memo(() => {
   const { quizState, quizAnimations, quizHandlers, activeItems, usedItems, score, handleTimeUp } =
     useQuiz();
   const combo = useGameStore((state) => state.combo);
+  const { isAdminMode, toggleDebugPanel } = useDebugStore();
 
   const { gameMode, timeLimit, questionKey, timerResetKey, totalQuestions } = quizState;
   const { isSubmitting, isPaused } = quizAnimations;
@@ -36,6 +38,32 @@ export const QuizHeader = React.memo(() => {
             </svg>
             {gameMode === GAME_MODES.SURVIVAL && <span className="pause-count-badge">3</span>}
           </button>
+
+          {isAdminMode && (
+            <div
+              className="admin-badge clickable"
+              style={{
+                marginLeft: '8px',
+                padding: '2px 8px',
+                background: 'var(--color-primary, #00d2c4)',
+                color: '#fff',
+                borderRadius: '4px',
+                fontSize: '11px',
+                fontWeight: 'bold',
+                cursor: 'pointer',
+                display: 'inline-flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                height: '20px',
+              }}
+              onClick={(e) => {
+                e.stopPropagation();
+                toggleDebugPanel();
+              }}
+            >
+              DEV
+            </div>
+          )}
 
           <div className="vertical-item-stack">
             {activeItems.map((code, i) => (
