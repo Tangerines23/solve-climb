@@ -44,10 +44,9 @@ function QuizCardComponent() {
               <QuizAnswerArea />
             </div>
           </div>
-
-          <QuizFloatingFeedback />
         </div>
 
+        <QuizFloatingFeedback />
         <QuizInputSection />
       </div>
     </>
