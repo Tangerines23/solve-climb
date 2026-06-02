@@ -9,6 +9,7 @@ import React, {
 } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useQuizStore } from '@/stores/useQuizStore';
+import { useDebugStore } from '@/stores/useDebugStore';
 import { useQuestionGenerator } from '@/hooks/useQuestionGenerator';
 import { useQuizInput } from '@/hooks/useQuizInput';
 import { useQuizGameState } from '@/hooks/useQuizGameState';
@@ -638,6 +639,51 @@ export function QuizProvider({ children, params }: QuizProviderProps) {
       if (useUserStore.getState().stamina <= 0) setShowStaminaModal(true);
     });
   }, [isPreview, checkStamina, isStaminaConsumed, setShowStaminaModal]);
+
+  // 인게임 치트 단축키 (DEV 환경 & Admin Mode 전용)
+  useEffect(() => {
+    if (!import.meta.env.DEV) return;
+
+    const handleCheatKeyDown = (e: KeyboardEvent) => {
+      const isAdmin = useDebugStore.getState().isAdminMode;
+      if (!isAdmin || !currentQuestion) return;
+
+      const key = e.key.toLowerCase();
+
+      if (key === 'v') {
+        e.preventDefault();
+        e.stopPropagation();
+
+        const correctAnswer = String(currentQuestion.answer);
+        
+        setAnswerInput(correctAnswer);
+        setDisplayValue(correctAnswer);
+
+        // 실제 정답을 입력 후 50ms 후 제출 실행
+        setTimeout(() => {
+          const fakeEvent = { preventDefault: () => {} } as React.FormEvent;
+          handleSubmit(fakeEvent);
+        }, 50);
+      } else if (key === 'backspace') {
+        e.preventDefault();
+        e.stopPropagation();
+
+        const wrongAnswer = String(currentQuestion.answer) + '9'; // 오답 세팅
+        
+        setAnswerInput(wrongAnswer);
+        setDisplayValue(wrongAnswer);
+
+        // 틀린 오답을 입력 후 50ms 후 제출 실행
+        setTimeout(() => {
+          const fakeEvent = { preventDefault: () => {} } as React.FormEvent;
+          handleSubmit(fakeEvent);
+        }, 50);
+      }
+    };
+
+    window.addEventListener('keydown', handleCheatKeyDown, true); // 캡처링 리스너 적용
+    return () => window.removeEventListener('keydown', handleCheatKeyDown, true);
+  }, [currentQuestion, setAnswerInput, setDisplayValue, handleSubmit]);
 
   const quizState: QuizDisplayState = useMemo(
     () => ({
