@@ -4,10 +4,9 @@ import {
   BOSS_LEVEL,
   BOSS_BONUS,
   ThemeTier,
-  BASE_CLIMB_DISTANCE,
-  DISTANCE_PER_LEVEL,
 } from '../../constants/game';
 import { APP_CONFIG } from '../../config/app';
+import { getBaseLevelScore } from '../../utils/scoreCalculator';
 
 /**
  * 퀴즈 점수(거리) 계산을 담당하는 훅
@@ -22,8 +21,10 @@ export function useQuizScoring() {
       feverLevel: number,
       isExhausted: boolean
     ) => {
-      // 1. 기본 레벨 점수 (Base Score) - v2.5 공식: BASE_CLIMB_DISTANCE + (level - 1) * DISTANCE_PER_LEVEL
-      const baseLevelScore = BASE_CLIMB_DISTANCE + (currentLevel - 1) * DISTANCE_PER_LEVEL;
+      // 1. 기본 레벨 점수 (Base Score) - 1안(페이즈 단계별 고정 모델) 적용
+      // categoryParam이 '기초'이거나 subParam이 '기초'일 때의 경우를 모두 포괄합니다.
+      const categoryIdForScore = categoryParam === '기초' || subParam === '기초' ? '기초' : subParam;
+      const baseLevelScore = getBaseLevelScore(currentLevel, categoryIdForScore);
 
       // 2. 테마 난이도 배율 (Theme Multiplier)
       const subTopics = APP_CONFIG.SUB_TOPICS as unknown as Record<
