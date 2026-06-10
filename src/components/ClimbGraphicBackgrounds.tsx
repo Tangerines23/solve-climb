@@ -238,7 +238,8 @@ export function ArithmeticBackground({ totalLevels = 15 }: BackgroundProps) {
 export function EquationsBackground({ config, totalLevels = 15 }: BackgroundProps) {
   // 청록색 팔레트: Cyan-900 ~ Cyan-600
   const defaultConfig: StageBackgroundConfig = {
-    skyGradient: 'linear-gradient(to bottom, #0f172a, #1e293b, #0f172a)',
+    skyGradient:
+      'linear-gradient(180deg, #064E3B 0%, #065F46 20%, #047857 40%, #059669 60%, #10B981 80%, #5EEAD4 100%)',
     mainColor: 'var(--color-cyan-900)', // Cyan-900 (아주 어두운 청록)
     secondaryColor: 'var(--color-cyan-600)', // Cyan-600 (중간 청록)
     accentColor: 'var(--color-cyan-400)', // Cyan-400 (밝은 청록)

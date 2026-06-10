@@ -21,14 +21,14 @@
   --symbol-opacity-far: 0.5;
 }
 
-/* World 1 Theme (Dark Slate) - Dark Blue/Slate */
+/* World 1 Theme (Grassland) - Greenish */
 .level-map-container[data-world='World1'] {
-  --ground-color-near: #0f172a;
-  --ground-color-mid: #1e293b;
-  --ground-color-far: #334155;
-  --symbol-color-near: #3b82f6;
-  --symbol-color-mid: #60a5fa;
-  --symbol-color-far: #93c5fd;
+  --ground-color-near: #064e3b;
+  --ground-color-mid: #065f46;
+  --ground-color-far: #059669;
+  --symbol-color-near: #34d399;
+  --symbol-color-mid: #6ee7b7;
+  --symbol-color-far: #a7f3d0;
 }
 
 /* World 2 Theme (Desert) - Amber/Sand */

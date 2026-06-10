@@ -192,7 +192,7 @@ export function ClimbGraphic({
   const stageConfig = useMemo(() => {
     // 월드별 기본 스카이 그라데이션
     const worldSkyGradients: Record<World, string> = {
-      World1: 'linear-gradient(to bottom, #0f172a, #1e293b, #0f172a)',
+      World1: 'linear-gradient(180deg, #065f46 0%, #064e3b 100%)',
       World2: 'linear-gradient(180deg, #92400e 0%, #451a03 100%)',
       World3: 'linear-gradient(180deg, #0e7490 0%, #083344 100%)',
       World4: 'linear-gradient(180deg, #581c87 0%, #000000 100%)',
@@ -216,7 +216,7 @@ export function ClimbGraphic({
         skyGradient: Object.prototype.hasOwnProperty.call(worldSkyGradients, worldKey)
           ? // eslint-disable-next-line security/detect-object-injection -- key validated above
             worldSkyGradients[worldKey]
-          : 'linear-gradient(to bottom, #0f172a, #1e293b, #0f172a)',
+          : 'linear-gradient(180deg, #064E3B 0%, #065F46 15%, #0891B2 40%, #06B6D4 65%, #22D3EE 85%, #67E8F9 100%)',
         mainColor: 'var(--ground-color-near)',
         secondaryColor: 'var(--ground-color-mid)',
         accentColor: 'var(--symbol-color-near)',
