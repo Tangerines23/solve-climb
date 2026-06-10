@@ -289,7 +289,9 @@ export function LevelSelectPage() {
         <div className="sheet-header" onClick={() => setIsSheetExpanded(true)}>
           <div className="level-select-summary">
             <span className="level-select-summary-category">{categoryInfo.name}</span>
-            <h2 className="level-select-summary-title">{worldName}</h2>
+            <h2 className="level-select-summary-title" data-vg-ignore="true">
+              {worldName}
+            </h2>
             <p className="level-select-summary-desc">{worldInfo?.desc}</p>
           </div>
         </div>

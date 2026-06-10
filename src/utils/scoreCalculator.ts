@@ -23,9 +23,8 @@ const getBestScore = (record: LevelRecord): number => {
  */
 export function getBaseLevelScore(level: number, categoryId: string | null): number {
   if (categoryId === '기초') {
-    if (level <= 10) return 10;
-    if (level <= 20) return 20;
-    return 30;
+    const step = Math.floor((level - 1) / 5);
+    return 10 + step * 5;
   }
   return BASE_CLIMB_DISTANCE + (level - 1) * DISTANCE_PER_LEVEL;
 }

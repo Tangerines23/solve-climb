@@ -307,21 +307,24 @@ export function QuizProvider({ children, params }: QuizProviderProps) {
     currentQuestionId,
   });
 
-  const handleSubmit = useCallback((e?: React.FormEvent) => {
-    e?.preventDefault();
-    const isAdmin = useDebugStore.getState().isAdminMode;
-    if (isAdmin && currentQuestion && (!answerInput || answerInput.trim() === '')) {
-      const correctAnswer = String(currentQuestion.answer);
-      setAnswerInput(correctAnswer);
-      setDisplayValue(correctAnswer);
+  const handleSubmit = useCallback(
+    (e?: React.FormEvent) => {
+      e?.preventDefault();
+      const isAdmin = useDebugStore.getState().isAdminMode;
+      if (isAdmin && currentQuestion && (!answerInput || answerInput.trim() === '')) {
+        const correctAnswer = String(currentQuestion.answer);
+        setAnswerInput(correctAnswer);
+        setDisplayValue(correctAnswer);
 
-      setTimeout(() => {
-        originalSubmit();
-      }, 50);
-      return;
-    }
-    originalSubmit(e);
-  }, [originalSubmit, currentQuestion, answerInput, setAnswerInput, setDisplayValue]);
+        setTimeout(() => {
+          originalSubmit();
+        }, 50);
+        return;
+      }
+      originalSubmit(e);
+    },
+    [originalSubmit, currentQuestion, answerInput, setAnswerInput, setDisplayValue]
+  );
 
   const { handleRevive, handlePurchaseAndRevive, handleGiveUp, stableHandleGameOver } =
     useQuizRevive({
@@ -453,7 +456,8 @@ export function QuizProvider({ children, params }: QuizProviderProps) {
           hapticEnabled
         );
 
-        feedbackRef.current?.show('FAILURE', 'Wrong Answer', 'info'); // 'error' 대신 'info' 또는 'success'
+        // 중복 피드백 제거: 오답 시 외곽의 투명한 실패 메시지 토스트를 비활성화합니다.
+        // feedbackRef.current?.show('FAILURE', 'Wrong Answer', 'info'); // 'error' 대신 'info' 또는 'success'
 
         // DeathNote
         if (currentQuestion) {
@@ -671,7 +675,7 @@ export function QuizProvider({ children, params }: QuizProviderProps) {
         e.stopPropagation();
 
         const correctAnswer = String(currentQuestion.answer);
-        
+
         setAnswerInput(correctAnswer);
         setDisplayValue(correctAnswer);
 
@@ -685,7 +689,7 @@ export function QuizProvider({ children, params }: QuizProviderProps) {
         e.stopPropagation();
 
         const wrongAnswer = String(currentQuestion.answer) + '9'; // 오답 세팅
-        
+
         setAnswerInput(wrongAnswer);
         setDisplayValue(wrongAnswer);
 
@@ -708,6 +712,7 @@ export function QuizProvider({ children, params }: QuizProviderProps) {
       displayValue,
       category,
       topic: `${worldParam}-${categoryParam}`,
+      mountainParam,
       categoryParam,
       worldParam,
       subParam: worldParam,

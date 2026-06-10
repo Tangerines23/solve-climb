@@ -11,8 +11,7 @@
 
 /* World Themes */
 .level-select-page[data-world='World1'] {
-  background: linear-gradient(to bottom, #065f46, #064e3b, #022c22);
-  /* Green/Grass */
+  background: linear-gradient(to bottom, #0f172a, #1e293b, #0f172a);
 }
 
 .level-select-page[data-world='World2'] {
@@ -277,6 +276,7 @@
   color: var(--color-text-primary);
   margin: 0 0 var(--spacing-md) 0; /* 간격 확대: 4px -> 12px */
   line-height: 1.2;
+  overflow: hidden;
 }
 
 .level-select-summary-desc {

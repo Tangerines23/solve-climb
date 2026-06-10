@@ -1,5 +1,5 @@
 import { useState, useMemo, useEffect, useCallback, useRef } from 'react';
-import { NavigateFunction } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { APP_CONFIG } from '../../config/app';
 import { urls } from '../../utils/navigation';
 import { QuizDisplayState, QuizAnimationState, QuizHandlers } from '../../types/quizProps';
@@ -7,6 +7,7 @@ import { QuizQuestion, Category } from '../../types/quiz';
 import { ItemFeedbackRef } from '../game/ItemFeedbackOverlay';
 import { QuizCard } from '../QuizCard';
 import { QuizContext } from '../../contexts/QuizContext';
+import { useToastStore } from '../../stores/useToastStore';
 import './QuizPreview.css';
 
 interface QuizPreviewProps {
@@ -18,7 +19,6 @@ interface QuizPreviewProps {
   category: string | null;
   topic: string | null;
   keyboardType: 'custom' | 'qwerty';
-  navigate: NavigateFunction;
   useSystemKeyboard: boolean;
 }
 
@@ -36,6 +36,16 @@ const ARITHMETIC_TOPIC_MAP = new Map<number, string>([
   [10, '종합 연산'],
 ]);
 
+const CATEGORY_MAP: Record<string, string> = {
+  기초: 'basic',
+  논리: 'logic',
+  대수: 'algebra',
+  심화: 'expert',
+  히라가나: 'hiragana',
+  가타카나: 'katakana',
+  어휘: 'vocabulary',
+};
+
 export function QuizPreview({
   mountainParam,
   categoryParam,
@@ -45,20 +55,31 @@ export function QuizPreview({
   category,
   topic,
   keyboardType,
-  navigate,
   useSystemKeyboard,
 }: QuizPreviewProps) {
+  const navigate = useNavigate();
+  const showToast = useToastStore((state) => state.showToast);
   const [previewKeyboardType, setPreviewKeyboardType] = useState<'custom' | 'qwerty'>(
     () => keyboardType
   );
   const [answerInput, setAnswerInput] = useState('');
   const [displayValue, setDisplayValue] = useState('');
 
+  const categoryKey = categoryParam ? CATEGORY_MAP[categoryParam] || categoryParam : 'basic';
+
   const inputRef = useRef<HTMLInputElement>(null);
   const feedbackRef = useRef<ItemFeedbackRef>(null);
 
   // Preview 모드용 변수들
-  const isJapaneseQuizPreview = categoryParam === 'language' && subParam === 'japanese';
+  const isJapaneseQuizPreview =
+    categoryParam === '히라가나' ||
+    categoryParam === '가타카나' ||
+    categoryParam === '어휘' ||
+    categoryParam === 'hiragana' ||
+    categoryParam === 'katakana' ||
+    categoryParam === 'vocabulary' ||
+    subParam === 'LangWorld1' ||
+    mountainParam === 'language';
 
   // displayCategory와 displayTopic 계산
   const displayCategoryPreview = useMemo(() => {
@@ -106,15 +127,14 @@ export function QuizPreview({
     setPreviewKeyboardType(keyboardType);
   }, [keyboardType]);
 
-  const handlePrevKeyboard = useCallback(() => {
-    setPreviewKeyboardType((prev) => (prev === 'custom' ? 'qwerty' : 'custom'));
-  }, []);
+  const handleSwitchKeyboard = useCallback(() => {
+    setPreviewKeyboardType((prev) => {
+      const next = prev === 'custom' ? 'qwerty' : 'custom';
+      showToast(next === 'custom' ? '키패드' : '쿼티', '⌨️');
+      return next;
+    });
+  }, [showToast]);
 
-  const handleNextKeyboard = useCallback(() => {
-    setPreviewKeyboardType((prev) => (prev === 'custom' ? 'qwerty' : 'custom'));
-  }, []);
-
-  const canSwitchKeyboard = !isJapaneseQuizPreview;
   const currentPreviewType = isJapaneseQuizPreview ? 'qwerty' : previewKeyboardType;
 
   // Handlers for preview
@@ -145,6 +165,7 @@ export function QuizPreview({
     displayValue,
     category: displayCategoryPreview as Category,
     topic: displayTopicPreview,
+    mountainParam,
     categoryParam,
     worldParam,
     subParam,
@@ -160,6 +181,7 @@ export function QuizPreview({
     altitudePhase: 'ground',
     activeLandmark: null,
     remainingPauses: 3,
+    isPreview: true,
   };
 
   const quizAnimations: QuizAnimationState = {
@@ -192,6 +214,7 @@ export function QuizPreview({
     handleQwertyKeyPress: handlePreviewKeyPress,
     handleKeypadClear: handlePreviewClear,
     handleKeypadBackspace: handlePreviewBackspace,
+    handleSwitchKeyboard,
   };
 
   return (
@@ -248,25 +271,10 @@ export function QuizPreview({
     >
       <div
         className="quiz-page"
-        data-world={subParam || 'World1'}
-        data-category={categoryParam || ''}
+        data-world={subParam === 'LangWorld1' ? 'language' : subParam || 'World1'}
+        data-category={categoryKey}
       >
         <QuizCard />
-
-        {/* Keyboard Switcher Overlay (Only for Preview) */}
-        {canSwitchKeyboard && (
-          <div className="preview-keyboard-switcher">
-            <button onClick={handlePrevKeyboard} className="preview-nav-button">
-              ‹
-            </button>
-            <span className="preview-nav-label">
-              {currentPreviewType === 'custom' ? '커스텀 키패드' : '쿼티 키보드'}
-            </span>
-            <button onClick={handleNextKeyboard} className="preview-nav-button">
-              ›
-            </button>
-          </div>
-        )}
       </div>
     </QuizContext.Provider>
   );

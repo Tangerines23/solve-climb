@@ -2,13 +2,7 @@ import React from 'react';
 import { QwertyKeypad } from '../QwertyKeypad';
 import { CustomKeypad } from '../CustomKeypad';
 import { useQuiz } from '@/contexts/QuizContext';
-import {
-  CATEGORY_IDS,
-  SUB_CATEGORY_IDS,
-  QUIZ_INPUT_TYPES,
-  KEYBOARD_TYPES,
-  MATH_SUB_IDS,
-} from '../../constants/ui';
+import { CATEGORY_IDS, QUIZ_INPUT_TYPES, KEYBOARD_TYPES, MATH_SUB_IDS } from '../../constants/ui';
 
 export const QuizInputSection = React.memo(() => {
   const { quizState, quizHandlers, quizAnimations } = useQuiz();
@@ -29,7 +23,13 @@ export const QuizInputSection = React.memo(() => {
   const effectiveInputPaused = isInputPaused !== undefined ? isInputPaused : isPaused;
 
   const isJapaneseQuiz =
-    categoryParam === CATEGORY_IDS.LANGUAGE && subParam === SUB_CATEGORY_IDS.JAPANESE;
+    categoryParam === '히라가나' ||
+    categoryParam === '가타카나' ||
+    categoryParam === '어휘' ||
+    categoryParam === 'hiragana' ||
+    categoryParam === 'katakana' ||
+    categoryParam === 'vocabulary' ||
+    subParam === 'LangWorld1';
   const forceSystemKeyboard =
     categoryParam === CATEGORY_IDS.GENERAL && typeof currentQuestion?.answer === 'string';
   const shouldUseSystemKeyboard = useSystemKeyboard || forceSystemKeyboard;

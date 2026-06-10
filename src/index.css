@@ -478,9 +478,9 @@ strong {
   --quiz-keypad-max-width: 550px;
   --quiz-keypad-min-height: 240px;
   --quiz-keypad-max-height: 380px;
-  --quiz-card-max-height: 48vh;
-  --quiz-keypad-bottom-margin: clamp(8px, 2vh, 20px);
-  --quiz-keypad-gap: clamp(8px, 1.5vh, 14px);
+  --quiz-card-max-height: 35vh;
+  --quiz-keypad-bottom-margin: clamp(18px, 3.5vh, 28px);
+  --quiz-keypad-gap: clamp(4px, 1vh, 8px);
 }
 
 /* --- Global Scrollbar Styling --- */

@@ -1,10 +1,5 @@
 import { useCallback } from 'react';
-import {
-  THEME_MULTIPLIERS,
-  BOSS_LEVEL,
-  BOSS_BONUS,
-  ThemeTier,
-} from '../../constants/game';
+import { THEME_MULTIPLIERS, BOSS_LEVEL, BOSS_BONUS, ThemeTier } from '../../constants/game';
 import { APP_CONFIG } from '../../config/app';
 import { getBaseLevelScore } from '../../utils/scoreCalculator';
 
@@ -21,10 +16,18 @@ export function useQuizScoring() {
       feverLevel: number,
       isExhausted: boolean
     ) => {
-      // 1. 기본 레벨 점수 (Base Score) - 1안(페이즈 단계별 고정 모델) 적용
+      // 1. 기본 레벨 점수 (Base Score) - 5레벨 계단식 점수 공식 적용
       // categoryParam이 '기초'이거나 subParam이 '기초'일 때의 경우를 모두 포괄합니다.
-      const categoryIdForScore = categoryParam === '기초' || subParam === '기초' ? '기초' : subParam;
-      const baseLevelScore = getBaseLevelScore(currentLevel, categoryIdForScore);
+      const categoryIdForScore =
+        categoryParam === '기초' || subParam === '기초' ? '기초' : subParam;
+      let baseLevelScore = getBaseLevelScore(currentLevel, categoryIdForScore);
+
+      // '기초' 분야의 경우 +-n 랜덤 오프셋 (양수 편향: 평균 +0.75m) 적용
+      if (categoryIdForScore === '기초') {
+        const offsets = [-2, -1, 0, 1, 1, 2, 2, 3];
+        const randomOffset = offsets[Math.floor(Math.random() * offsets.length)];
+        baseLevelScore += randomOffset;
+      }
 
       // 2. 테마 난이도 배율 (Theme Multiplier)
       const subTopics = APP_CONFIG.SUB_TOPICS as unknown as Record<

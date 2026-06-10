@@ -156,15 +156,38 @@ function QwertyKeypadComponent({
           )}
         </div>
       ))}
-      {/* 숫자 모드일 때만 하단 줄에 음수 버튼 표시 */}
-      {mode === 'number' && allowNegative && (
+      {/* 숫자 모드일 때 지우기/제출 제어를 위한 하단 행 필수 노출 */}
+      {mode === 'number' && (
         <div className="qwerty-keypad-row qwerty-keypad-row-last">
+          {allowNegative && (
+            <button
+              className="qwerty-keypad-key qwerty-keypad-key-negative"
+              onClick={() => handleKeyClick('-')}
+              disabled={disabled}
+            >
+              ±
+            </button>
+          )}
           <button
-            className="qwerty-keypad-key qwerty-keypad-key-negative"
-            onClick={() => handleKeyClick('-')}
+            className="qwerty-keypad-key qwerty-keypad-key-backspace"
+            onClick={handleBackspace}
             disabled={disabled}
           >
-            ±
+            ⌫
+          </button>
+          <button
+            className="qwerty-keypad-key qwerty-keypad-key-submit"
+            onClick={(e) => {
+              e.preventDefault();
+              if (!disabled) {
+                vibrateShort();
+                onSubmit(e);
+              }
+            }}
+            disabled={disabled}
+            type="button"
+          >
+            ✓
           </button>
         </div>
       )}

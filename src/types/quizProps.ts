@@ -10,6 +10,7 @@ export interface QuizDisplayState {
   displayValue: string;
   category: Category | null;
   topic: string;
+  mountainParam: string | null;
   categoryParam: string | null;
   worldParam: string | null;
   subParam: string | null;
@@ -69,9 +70,6 @@ export interface QuizAnimationState {
   damagePosition: { left: string; top: string };
 }
 
-/**
- * 퀴즈 게임 핸들러 그룹
- */
 export interface QuizHandlers {
   handleGameOver: (reason?: string) => void;
   handleKeypadNumber: (key: string) => void;
@@ -83,4 +81,5 @@ export interface QuizHandlers {
   onSafetyRopeUsed: () => void;
   onLastSpurt: () => void;
   generateNewQuestion: () => void;
+  handleSwitchKeyboard?: () => void;
 }

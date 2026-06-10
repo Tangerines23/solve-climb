@@ -144,7 +144,12 @@ function TimerCircleComponent({
         width: '28px',
         height: '28px',
       },
-      timeLabel: `${Math.floor(timeLeft / 60)}:${(timeLeft % 60).toString().padStart(2, '0')}`,
+      timeLabel: (() => {
+        const displaySeconds = Math.ceil(timeLeft);
+        const displayMinutes = Math.floor(displaySeconds / 60);
+        const displayRemainingSeconds = displaySeconds % 60;
+        return `${displayMinutes}:${displayRemainingSeconds.toString().padStart(2, '0')}`;
+      })(),
     };
   }, [timeLeft, duration]);
 
@@ -168,7 +173,7 @@ function TimerCircleComponent({
       onClick={handleTimerClick}
       style={{
         ...eventHandlers.style,
-        opacity: (useDebugStore.getState().isAdminMode && isStoppedByClick) ? 0.5 : 1,
+        opacity: useDebugStore.getState().isAdminMode && isStoppedByClick ? 0.5 : 1,
         transition: 'opacity 0.2s ease',
       }}
     >
