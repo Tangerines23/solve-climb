@@ -195,7 +195,7 @@ export function ClimbGraphic({
       World1: 'linear-gradient(180deg, #065f46 0%, #064e3b 100%)',
       World2: 'linear-gradient(180deg, #92400e 0%, #451a03 100%)',
       World3: 'linear-gradient(180deg, #0e7490 0%, #083344 100%)',
-      World4: 'linear-gradient(180deg, #581c87 0%, #000000 100%)',
+      World4: 'linear-gradient(180deg, #09090b 0%, #000000 100%)',
       LangWorld1: 'linear-gradient(180deg, #f87171 0%, #7f1d1d 100%)',
     };
 

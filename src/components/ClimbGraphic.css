@@ -51,14 +51,14 @@
   --symbol-color-far: #a5f3fc;
 }
 
-/* World 4 Theme (Space) - Purple/Dark */
+/* World 4 Theme (Space Elevator / Cyber Black) - Metallic Steel & Neon Logic Gates */
 .level-map-container[data-world='World4'] {
-  --ground-color-near: #3b0764;
-  --ground-color-mid: #581c87;
-  --ground-color-far: #7e22ce;
-  --symbol-color-near: #c084fc;
-  --symbol-color-mid: #d8b4fe;
-  --symbol-color-far: #f3e8ff;
+  --ground-color-near: #18181b; /* Zinc-800 metallic dark gray */
+  --ground-color-mid: #27272a;  /* Zinc-700 metallic medium gray */
+  --ground-color-far: #3f3f46;  /* Zinc-600 metallic light gray */
+  --symbol-color-near: #a855f7; /* Neon Purple */
+  --symbol-color-mid: #ec4899;  /* Neon Pink */
+  --symbol-color-far: #06b6d4;  /* Neon Cyan */
 }
 
 /* 하늘 그라데이션 배경 */
