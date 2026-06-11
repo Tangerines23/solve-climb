@@ -134,30 +134,32 @@ function generateBasicShapes(rng?: {
 function generateTriangleProperties(rng?: {
   randomInt: (min: number, max: number) => number;
 }): GeometryProblem {
-  const types = [
-    { name: '정삼각형', angle: 60 },
-    { name: '직각삼각형', angle: 90 },
-  ];
-  const type = types[getRandomInt(0, types.length - 1, rng)];
-  if (type.name === '정삼각형') {
-    return { question: '정삼각형의 한 내각의 크기는? (도)', answer: 60 };
-  } else {
-    const a = getRandomInt(30, 60, rng);
-    const b = 90 - a;
-    return { question: `직각삼각형의 한 예각이 ${a}도일 때, 다른 예각은?`, answer: b };
-  }
+  const a = getRandomInt(20, 100, rng);
+  const b = getRandomInt(10, 160 - a, rng);
+  const c = 180 - a - b;
+  return {
+    question: `삼각형의 두 내각이 각각 ${a}도, ${b}도일 때, 나머지 한 각은? (도)`,
+    answer: c,
+  };
 }
 
 function generateQuadrilateralProperties(rng?: {
   randomInt: (min: number, max: number) => number;
 }): GeometryProblem {
-  const questions = [
-    { q: '사각형의 내각의 합은? (도)', a: 360 },
-    { q: '평행사변형에서 마주보는 두 각의 크기는 서로 같습니까? (1: 예, 2: 아니오)', a: 1 },
-    { q: '마름모의 네 변의 길이는 모두 같습니까? (1: 예, 2: 아니오)', a: 1 },
-  ];
-  const item = questions[getRandomInt(0, questions.length - 1, rng)];
-  return { question: item.q, answer: item.a };
+  const isAdjacent = getRandomInt(0, 1, rng) === 1;
+  const a = getRandomInt(30, 150, rng);
+  if (isAdjacent) {
+    const b = 180 - a;
+    return {
+      question: `평행사변형의 한 내각이 ${a}도일 때, 이웃한 다른 내각은? (도)`,
+      answer: b,
+    };
+  } else {
+    return {
+      question: `평행사변형의 한 내각이 ${a}도일 때, 마주보는 내각은? (도)`,
+      answer: a,
+    };
+  }
 }
 
 function generateAreaRect(rng?: {
@@ -211,28 +213,39 @@ function generateCircleAdvanced(rng?: {
 function generateSolidBasic(rng?: {
   randomInt: (min: number, max: number) => number;
 }): GeometryProblem {
-  const solids = [
-    { name: '정육면체', faces: 6 },
-    { name: '사각뿔', faces: 5 },
-    { name: '삼각기둥', faces: 5 },
-  ];
-  const solid = solids[getRandomInt(0, solids.length - 1, rng)];
-  return {
-    question: `${solid.name}의 면의 개수는?`,
-    answer: solid.faces,
-  };
+  const n = getRandomInt(3, 8, rng);
+  const isPrism = getRandomInt(0, 1, rng) === 1;
+  if (isPrism) {
+    return {
+      question: `${n}각기둥의 모서리의 개수는?`,
+      answer: n * 3,
+    };
+  } else {
+    return {
+      question: `${n}각뿔의 꼭짓점의 개수는?`,
+      answer: n + 1,
+    };
+  }
 }
 
 function generateSymmetry(rng?: {
   randomInt: (min: number, max: number) => number;
 }): GeometryProblem {
-  const questions = [
-    { q: '정사각형의 대칭축은 몇 개인가?', a: 4 },
-    { q: '원(Circle)의 대칭축은 몇 개인가? (999: 무수히 많음)', a: 999 },
-    { q: '정삼각형의 대칭축은 몇 개인가?', a: 3 },
-  ];
-  const item = questions[getRandomInt(0, questions.length - 1, rng)];
-  return { question: item.q, answer: item.a };
+  const n = getRandomInt(3, 10, rng);
+  const koreanNames: Record<number, string> = {
+    3: '정삼각형',
+    4: '정사각형',
+    5: '정오각형',
+    6: '정육각형',
+    7: '정칠각형',
+    8: '정팔각형',
+    9: '정구각형',
+    10: '정십각형',
+  };
+  return {
+    question: `${koreanNames[n]}의 선대칭축의 개수는?`,
+    answer: n,
+  };
 }
 
 function generatePythagorean(rng?: {

@@ -66,25 +66,24 @@ describe('CSProblemGenerator', () => {
     expect(pXor.question).toContain('XOR');
   });
 
-  it('should generate Level 8-9 Advanced Bitwise and Algorithm variety', () => {
-    // Level 8: Bitwise AND
-    const rngBitwise = mockRng([5, 3, 0]); // 5 & 3 = 1
-    const pBit = generateCSProblem(8, 'easy', rngBitwise);
-    expect(pBit.answer).toBe(1);
-
-    // Level 9: Algorithm Variety (LIFO/FIFO)
-    const rngAlgo = mockRng([1]); // Stack (LIFO)
-    const pAlgo = generateCSProblem(9, 'easy', rngAlgo);
-    expect(pAlgo.answer).toBe(1);
-    expect(pAlgo.question).toContain('LIFO');
-  });
-
-  it('should generate Level 10 Memory Unit Master', () => {
-    // Type 1: Byte to KB, kb value 2^3=8
+  it('should generate Level 8-10 Advanced Bitwise, Algorithm variety, and Memory Unit Master', () => {
+    // Level 8: Memory Unit Master (Byte to KB, kb value 2^3=8)
     const rngMem = mockRng([1, 3]);
-    const prob = generateCSProblem(10, 'easy', rngMem);
-    expect(prob.answer).toBe(8);
-    expect(prob.question).toContain('8192 바이트');
+    const probMem = generateCSProblem(8, 'easy', rngMem);
+    expect(probMem.answer).toBe(8);
+    expect(probMem.question).toContain('8192 바이트');
+
+    // Level 9: Algorithm Variety (Stack)
+    // isStack=1 (true), a=3, b=5, c=2 -> pop() removes 5 -> remain 3, 2 -> sum 5
+    const rngAlgo = mockRng([1, 3, 5, 2]);
+    const pAlgo = generateCSProblem(9, 'easy', rngAlgo);
+    expect(pAlgo.answer).toBe(5);
+    expect(pAlgo.question).toContain('스택');
+
+    // Level 10: Bitwise AND (5 & 3 = 1)
+    const rngBitwise = mockRng([5, 3, 0]); // n1=5, n2=3, op='&' (0)
+    const pBit = generateCSProblem(10, 'easy', rngBitwise);
+    expect(pBit.answer).toBe(1);
   });
 
   it('should generate level > 10 advanced problems', () => {

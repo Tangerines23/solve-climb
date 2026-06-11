@@ -26,24 +26,25 @@ describe('GeometryProblemGenerator', () => {
     expect(problem.answer).toBe(4);
   });
 
-  it('should generate Level 2 Triangle Properties (Equilateral)', () => {
-    const rng = mockRng([0]); // Index 0: 정삼각형
+  it('should generate Level 2 Triangle Properties', () => {
+    const rng = mockRng([50, 60]); // a=50, b=60 -> c=70
     const problem = generateGeometryProblem(2, 'easy', rng);
-    expect(problem.question).toContain('정삼각형');
-    expect(problem.answer).toBe(60);
-  });
-
-  it('should generate Level 2 Triangle Properties (Right Angle)', () => {
-    const rng = mockRng([1, 40]); // Index 1: 직각삼각형, a=40
-    const problem = generateGeometryProblem(2, 'easy', rng);
-    expect(problem.question).toContain('직각삼각형');
-    expect(problem.answer).toBe(50); // 90 - 40
+    expect(problem.question).toContain('두 내각이 각각 50도, 60도');
+    expect(problem.answer).toBe(70);
   });
 
   it('should generate Level 3 Quadrilateral Properties', () => {
-    const rng = mockRng([0]); // Sum of angles
-    const problem = generateGeometryProblem(3, 'easy', rng);
-    expect(problem.answer).toBe(360);
+    // Adjacent case
+    const rngAdj = mockRng([1, 120]); // isAdjacent=1, a=120
+    const problemAdj = generateGeometryProblem(3, 'easy', rngAdj);
+    expect(problemAdj.question).toContain('이웃한 다른 내각');
+    expect(problemAdj.answer).toBe(60);
+
+    // Opposite case
+    const rngOpp = mockRng([0, 120]); // isAdjacent=0, a=120
+    const problemOpp = generateGeometryProblem(3, 'easy', rngOpp);
+    expect(problemOpp.question).toContain('마주보는 내각');
+    expect(problemOpp.answer).toBe(120);
   });
 
   it('should generate Level 4 Rectangle Area', () => {
@@ -76,16 +77,25 @@ describe('GeometryProblemGenerator', () => {
     expect(problem.answer).toBe(48); // 3 * 4^2
   });
 
-  it('should generate Level 8 Solid faces', () => {
-    const rng = mockRng([0]); // 정육면체
-    const problem = generateGeometryProblem(8, 'easy', rng);
-    expect(problem.answer).toBe(6);
+  it('should generate Level 8 Solid properties', () => {
+    // Prism case
+    const rngPrism = mockRng([5, 1]); // n=5, isPrism=1
+    const probPrism = generateGeometryProblem(8, 'easy', rngPrism);
+    expect(probPrism.question).toContain('5각기둥의 모서리의 개수');
+    expect(probPrism.answer).toBe(15);
+
+    // Pyramid case
+    const rngPyramid = mockRng([6, 0]); // n=6, isPrism=0
+    const probPyramid = generateGeometryProblem(8, 'easy', rngPyramid);
+    expect(probPyramid.question).toContain('6각뿔의 꼭짓점의 개수');
+    expect(probPyramid.answer).toBe(7);
   });
 
   it('should generate Level 9 Symmetry', () => {
-    const rng = mockRng([1]); // Circle symmetry
+    const rng = mockRng([5]); // n=5 (오각형)
     const problem = generateGeometryProblem(9, 'easy', rng);
-    expect(problem.answer).toBe(999);
+    expect(problem.question).toContain('정오각형');
+    expect(problem.answer).toBe(5);
   });
 
   it('should generate Level 10 Pythagorean (Hypotenuse)', () => {

@@ -47,24 +47,18 @@ describe('StatsProblemGenerator', () => {
     expect(problem.answer).toBe(8);
   });
 
-  it('should generate Level 5 Dice problem (random path sum)', () => {
-    const rng = { ...mockRng([]), random: () => 0.6 };
+  it('should generate Level 5 Dice problem (sum of two dice)', () => {
+    const rng = mockRng([7]); // s=7 -> ans=6
     const problem = generateStatsProblem(5, 'easy', rng);
-    expect(problem.question).toContain('합이 7');
+    expect(problem.question).toContain('두 눈의 합이 7');
     expect(problem.answer).toBe(6);
   });
 
-  it('should generate Level 5 Dice problem (random path count)', () => {
-    const rng = { ...mockRng([]), random: () => 0.4 };
-    const problem = generateStatsProblem(5, 'easy', rng);
-    expect(problem.question).toContain('3의 배수');
-    expect(problem.answer).toBe(2);
-  });
-
   it('should generate Level 6 Marble problem', () => {
-    const rng = mockRng([3, 4]); // red=3, blue=4
+    const rng = mockRng([2, 1]); // index 2 of [2, 4, 5, 10] -> total=5, red=1
     const problem = generateStatsProblem(6, 'easy', rng);
-    expect(problem.answer).toBe(3);
+    expect(problem.question).toContain('빨간 공 1개, 파란 공 4개');
+    expect(problem.answer).toBe(20);
   });
 
   it('should generate Level 7 Range problem', () => {
@@ -79,10 +73,11 @@ describe('StatsProblemGenerator', () => {
     expect(problem.answer).toBe(6);
   });
 
-  it('should generate Level 9 Advanced Probability (Type 1)', () => {
-    const rng = mockRng([1, 20, 5]); // type=1, total=20, target=5 -> prob not (20-5)/20 = 75%
+  it('should generate Level 9 Advanced Probability', () => {
+    const rng = mockRng([3, 2]); // index 3 of [2, 4, 5, 10] -> total=10, red=2
     const problem = generateStatsProblem(9, 'easy', rng);
-    expect(problem.answer).toBe(75);
+    expect(problem.question).toContain('불량품이 2개');
+    expect(problem.answer).toBe(80);
   });
 
   it('should generate Level 10 Stats Master', () => {

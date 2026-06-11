@@ -51,11 +51,11 @@ export function generateCSProblem(
     case 7:
       return generateLogicXOR(rng);
     case 8:
-      return generateBitwiseAdvanced(rng);
+      return generateMemoryUnitMaster(rng);
     case 9:
       return generateAlgoVariety(rng);
     case 10:
-      return generateMemoryUnitMaster(rng);
+      return generateBitwiseAdvanced(rng);
     default:
       return generateBinaryToDec(rng);
   }
@@ -132,8 +132,8 @@ function generateLogicXOR(rng?: { random: () => number }): CSProblem {
 function generateBitwiseAdvanced(rng?: {
   randomInt: (min: number, max: number) => number;
 }): CSProblem {
-  const n1 = getRandomInt(1, 15, rng);
-  const n2 = getRandomInt(1, 15, rng);
+  const n1 = getRandomInt(1, 7, rng);
+  const n2 = getRandomInt(1, 7, rng);
   const ops = ['&', '|', '^'];
   const op = ops[getRandomInt(0, 2, rng)];
   let ans = 0;
@@ -148,21 +148,22 @@ function generateBitwiseAdvanced(rng?: {
 }
 
 function generateAlgoVariety(rng?: { randomInt: (min: number, max: number) => number }): CSProblem {
-  const type = getRandomInt(1, 3, rng);
-  if (type === 1) {
+  const isStack = getRandomInt(0, 1, rng) === 1;
+  if (isStack) {
+    const a = getRandomInt(2, 9, rng);
+    const b = getRandomInt(2, 9, rng);
+    const c = getRandomInt(2, 9, rng);
     return {
-      question: '데이터를 마지막에 넣고 마지막에서 빼는 구조(LIFO)는? (1: 스택, 2: 큐)',
-      answer: 1,
-    };
-  } else if (type === 2) {
-    return {
-      question: '데이터를 마지막에 넣고 처음에서 빼는 구조(FIFO)는? (1: 스택, 2: 큐)',
-      answer: 2,
+      question: `스택에 ${a}, ${b}를 순서대로 push한 후, pop을 1번 실행하고 ${c}를 push했을 때 스택에 남은 원소들의 합은?`,
+      answer: a + c,
     };
   } else {
+    const a = getRandomInt(2, 9, rng);
+    const b = getRandomInt(2, 9, rng);
+    const c = getRandomInt(2, 9, rng);
     return {
-      question: '정렬된 데이터에서 절반씩 나누어 찾는 탐색법은? (1: 선형탐색, 2: 이진탐색)',
-      answer: 2,
+      question: `큐에 ${a}, ${b}를 순서대로 enqueue한 후, dequeue를 1번 실행하고 ${c}를 enqueue했을 때 큐에 남은 원소들의 합은?`,
+      answer: b + c,
     };
   }
 }

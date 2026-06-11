@@ -113,27 +113,26 @@ function generateProbCoin(rng?: { randomInt: (min: number, max: number) => numbe
   };
 }
 
-function generateProbDice(rng?: {
-  random: () => number;
-  randomInt: (min: number, max: number) => number;
-}): StatsProblem {
-  const randomVal = rng ? rng.random() : Math.random();
-  const type = randomVal > 0.5 ? 'sum' : 'count';
-  if (type === 'sum') {
-    return { question: '주사위 2개를 던질 때, 합이 7이 되는 경우의 수는?', answer: 6 };
-  } else {
-    return { question: '주사위 1개를 던질 때, 3의 배수가 나올 경우의 수는?', answer: 2 };
-  }
+function generateProbDice(rng?: { randomInt: (min: number, max: number) => number }): StatsProblem {
+  const s = getRandomInt(2, 12, rng);
+  const ans = 6 - Math.abs(s - 7);
+  return {
+    question: `주사위 2개를 동시에 던질 때, 두 눈의 합이 ${s}가 되는 경우의 수는?`,
+    answer: ans,
+  };
 }
 
 function generateProbMarbles(rng?: {
   randomInt: (min: number, max: number) => number;
 }): StatsProblem {
-  const red = getRandomInt(2, 5, rng);
-  const blue = getRandomInt(2, 5, rng);
+  const totals = [2, 4, 5, 10];
+  const total = totals[getRandomInt(0, totals.length - 1, rng)];
+  const red = getRandomInt(1, total - 1, rng);
+  const blue = total - red;
+  const percentage = (red / total) * 100;
   return {
-    question: `빨간 공 ${red}개, 파란 공 ${blue}개가 든 주머니에서 공 1개를 뽑을 때, 빨간 공이 나올 경우의 수?`,
-    answer: red,
+    question: `빨간 공 ${red}개, 파란 공 ${blue}개가 든 주머니에서 공 1개를 무작위로 뽑을 때, 빨간 공이 나올 확률은? (%)`,
+    answer: percentage,
   };
 }
 
@@ -164,21 +163,14 @@ function generateCombinationsBasic(rng?: {
 function generateProbAdvanced(rng?: {
   randomInt: (min: number, max: number) => number;
 }): StatsProblem {
-  const type = getRandomInt(1, 2, rng);
-  if (type === 1) {
-    const total = getRandomInt(10, 20, rng);
-    const target = getRandomInt(1, total - 1, rng);
-    return {
-      question: `공이 ${total}개 들어있는 주머니에서 빨간 공이 ${target}개일 때, 공 1개를 뽑아 빨간 공이 아닐 확률(%)은?`,
-      answer: Math.round(((total - target) / total) * 100),
-    };
-  } else {
-    return {
-      question:
-        '주사위 1개를 던질 때, 2의 배수이면서 3의 배수인 눈이 나올 확률(%)은? (소수점 버림)',
-      answer: Math.floor((1 / 6) * 100),
-    };
-  }
+  const totals = [2, 4, 5, 10];
+  const total = totals[getRandomInt(0, totals.length - 1, rng)];
+  const red = getRandomInt(1, total - 1, rng);
+  const percentageOfNotRed = ((total - red) / total) * 100;
+  return {
+    question: `전체 제품 ${total}개 중 불량품이 ${red}개 있다. 이 중 임의로 1개를 고를 때, 정상 제품일 확률은? (%)`,
+    answer: percentageOfNotRed,
+  };
 }
 
 function generateStatsMaster(rng?: {
