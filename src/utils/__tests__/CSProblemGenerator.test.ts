@@ -66,24 +66,43 @@ describe('CSProblemGenerator', () => {
     expect(pXor.question).toContain('XOR');
   });
 
-  it('should generate Level 8-10 Advanced Bitwise, Algorithm variety, and Memory Unit Master', () => {
-    // Level 8: Memory Unit Master (Byte to KB, kb value 2^3=8)
-    const rngMem = mockRng([1, 3]);
-    const probMem = generateCSProblem(8, 'easy', rngMem);
-    expect(probMem.answer).toBe(8);
-    expect(probMem.question).toContain('8192 바이트');
+  it('should generate Level 8-14 CS basic curriculum', () => {
+    // Level 8: Memory Unit Basic (Byte to KB)
+    const rng8 = mockRng([3]); // kb=2^3=8
+    const prob8 = generateCSProblem(8, 'easy', rng8);
+    expect(prob8.answer).toBe(8);
+    expect(prob8.question).toContain('8192 바이트');
 
-    // Level 9: Algorithm Variety (Stack)
-    // isStack=1 (true), a=3, b=5, c=2 -> pop() removes 5 -> remain 3, 2 -> sum 5
-    const rngAlgo = mockRng([1, 3, 5, 2]);
-    const pAlgo = generateCSProblem(9, 'easy', rngAlgo);
-    expect(pAlgo.answer).toBe(5);
-    expect(pAlgo.question).toContain('스택');
+    // Level 9: Memory Unit Advanced (KB to MB)
+    const rng9 = mockRng([2]); // mb=2^2=4
+    const prob9 = generateCSProblem(9, 'easy', rng9);
+    expect(prob9.answer).toBe(4);
+    expect(prob9.question).toContain('4096 KB는 몇 MB');
 
-    // Level 10: Bitwise AND (5 & 3 = 1)
-    const rngBitwise = mockRng([5, 3, 0]); // n1=5, n2=3, op='&' (0)
-    const pBit = generateCSProblem(10, 'easy', rngBitwise);
-    expect(pBit.answer).toBe(1);
+    // Level 10: Stack
+    const rng10 = mockRng([3, 5, 2]);
+    const prob10 = generateCSProblem(10, 'easy', rng10);
+    expect(prob10.answer).toBe(5); // 3+2
+
+    // Level 11: Queue
+    const rng11 = mockRng([3, 5, 2]);
+    const prob11 = generateCSProblem(11, 'easy', rng11);
+    expect(prob11.answer).toBe(7); // 5+2
+
+    // Level 12: Ones Complement
+    const rng12 = mockRng([1]); // 0101 -> 1010
+    const prob12 = generateCSProblem(12, 'easy', rng12);
+    expect(prob12.answer).toBe('1010');
+
+    // Level 13: Twos Complement
+    const rng13 = mockRng([1]); // 0110 -> 1010
+    const prob13 = generateCSProblem(13, 'easy', rng13);
+    expect(prob13.answer).toBe('1010');
+
+    // Level 14: Binary Addition
+    const rng14 = mockRng([1]); // 011 + 010 -> 101
+    const prob14 = generateCSProblem(14, 'easy', rng14);
+    expect(prob14.answer).toBe('101');
   });
 
   it('should generate level > 10 advanced problems', () => {

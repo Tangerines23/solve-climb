@@ -19,7 +19,7 @@ export function generateGeometryProblem(
   _difficulty: Difficulty,
   rng?: { random: () => number; randomInt: (min: number, max: number) => number }
 ): GeometryProblem {
-  if (level > 10) {
+  if (level > 14) {
     const randomVal = rng ? rng.randomInt(1, 8) : Math.floor(Math.random() * 8) + 1;
     switch (randomVal) {
       case 1:
@@ -47,23 +47,31 @@ export function generateGeometryProblem(
     case 1:
       return generateBasicShapes(rng);
     case 2:
-      return generateTriangleProperties(rng);
+      return generateBasicShapesDiagonal(rng);
     case 3:
-      return generateQuadrilateralProperties(rng);
+      return generateTriangleProperties(rng);
     case 4:
-      return generateAreaRect(rng);
+      return generateQuadrilateralProperties(rng);
     case 5:
-      return generateAreaTriangle(rng);
+      return generateAreaRect(rng);
     case 6:
-      return generateCircleBasic(rng);
+      return generateAreaTriangle(rng);
     case 7:
-      return generateCircleAdvanced(rng);
+      return generateCircleBasic(rng);
     case 8:
-      return generateSolidBasic(rng);
+      return generateCircleAdvanced(rng);
     case 9:
       return generateSymmetry(rng);
     case 10:
       return generatePythagorean(rng);
+    case 11:
+      return generatePythagoreanAdvanced(rng);
+    case 12:
+      return generateSolidBasic(rng);
+    case 13:
+      return generateSolidVolume(rng);
+    case 14:
+      return generateSolidSurfaceArea(rng);
     default:
       return generateBasicShapes(rng);
   }
@@ -126,6 +134,23 @@ function generateBasicShapes(rng?: {
   return {
     question: `${shape.name}의 꼭짓점 개수는?`,
     answer: shape.vertices,
+  };
+}
+
+function generateBasicShapesDiagonal(rng?: {
+  randomInt: (min: number, max: number) => number;
+}): GeometryProblem {
+  const shapes = [
+    { name: '사각형', diagonals: 2 },
+    { name: '오각형', diagonals: 5 },
+    { name: '육각형', diagonals: 9 },
+    { name: '칠각형', diagonals: 14 },
+    { name: '팔각형', diagonals: 20 },
+  ];
+  const shape = shapes[getRandomInt(0, shapes.length - 1, rng)];
+  return {
+    question: `${shape.name}의 대각선의 총 개수는?`,
+    answer: shape.diagonals,
   };
 }
 
