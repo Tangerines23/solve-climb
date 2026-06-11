@@ -153,7 +153,7 @@ export const APP_CONFIG = {
   WORLDS: [
     {
       id: 'World1',
-      name: '수와 대수',
+      name: '수와 연산',
       desc: '사칙연산의 기초부터 방정식의 논리까지, 수학적 사고의 근육을 키워보세요.',
       mountainId: 'math',
     },
@@ -180,7 +180,7 @@ export const APP_CONFIG = {
 
   // 월드 ID -> 이름 매핑
   WORLD_MAP: {
-    World1: '수와 대수',
+    World1: '수와 연산',
     World2: '도형과 공간',
     World3: '확률과 통계',
     World4: '공학 및 응용',
