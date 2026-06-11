@@ -61,8 +61,28 @@ describe('MathProblemGenerator', () => {
       expect(problem.inputType).toBe('decimal');
     });
 
+    it('should generate a valid problem for stage 23 (decimal integer sum)', () => {
+      const problem = generateProblem(23, 'hard', 'normal', mockRng);
+      expect(problem.expression).toMatch(/\d\.\d/);
+      expect(Number.isInteger(problem.answer)).toBe(true);
+      expect(problem.inputType).toBe('number');
+    });
+
     it('should generate a valid problem for stage 24 (fraction)', () => {
       const problem = generateProblem(24, 'hard', 'normal', mockRng);
+      expect(problem.expression).toContain('/');
+      expect(problem.inputType).toBe('fraction');
+    });
+
+    it('should generate a valid problem for stage 25 (decimal-fraction-mix)', () => {
+      const problem = generateProblem(25, 'hard', 'normal', mockRng);
+      expect(problem.expression).toMatch(/(\d\.\d|\/)/);
+      expect(Number.isInteger(problem.answer)).toBe(true);
+      expect(problem.inputType).toBe('number');
+    });
+
+    it('should generate a valid problem for stage 27 (mixed-fraction)', () => {
+      const problem = generateProblem(27, 'hard', 'normal', mockRng);
       expect(problem.expression).toContain('/');
       expect(problem.inputType).toBe('fraction');
     });

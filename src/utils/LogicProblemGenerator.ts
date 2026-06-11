@@ -113,6 +113,11 @@ export function generateLogicProblem(
   difficulty: Difficulty,
   rng?: { random: () => number; randomInt: (min: number, max: number) => number }
 ): LogicProblem {
+  if (level > 15) {
+    const randomLevel = rng ? rng.randomInt(1, 14) : Math.floor(Math.random() * 14) + 1;
+    return generateLogicProblem(randomLevel, difficulty, rng);
+  }
+
   switch (level) {
     // [Phase 1: 판단 (Lv 1~5) - 양자택일]
     case 1:
@@ -120,70 +125,38 @@ export function generateLogicProblem(
     case 2:
       return generatePosNegProblem(difficulty, rng);
     case 3:
-      return generateMultipleProblem(difficulty, rng); // 3의 배수 판별 등
+      return generateSequenceProblem(difficulty, 'arithmetic', rng); // 등차수열 기초
     case 4:
-      return generatePrimeProblem(difficulty, rng);
+      return generateSequenceProblem(difficulty, 'geometric', rng); // 등비수열 기초
     case 5:
-      return generateComparisonProblem(difficulty, rng); // 두 수 중 소수 찾기 등
+      return generateSequenceProblem(difficulty, 'fibonacci', rng); // 피보나치 수열
 
     // [Phase 2: 추론 (Lv 6~10) - 빈칸 채우기]
     case 6:
-      return generateSequenceProblem(difficulty, 'arithmetic', rng);
+      return generatePrimeProblem(difficulty, rng); // 소수 판별
     case 7:
-      return generateSequenceProblem(difficulty, 'geometric', rng);
+      return generateModProblem(difficulty, rng); // 나머지 연산 기초
     case 8:
-      return generateSequenceProblem(difficulty, 'fibonacci', rng);
+      return generateFactorialProblem(difficulty, rng); // 기초 팩토리얼
     case 9:
-      return generateSequenceProblem(difficulty, 'alternating', rng); // 건너뛰기/교대
+      return generateClockProblem(rng); // 시계 규칙 (Modulo 12)
     case 10:
-      return generateSequenceProblem(difficulty, 'incrementing_diff', rng); // 계차
+      return generateLogicMix1(difficulty, rng); // 논리 퀴즈 종합 (1~9 믹스)
 
     // [Phase 3: 약속 (Lv 11~15) - 규칙 학습]
     case 11:
-      return generateAbsoluteProblem(difficulty, rng);
+      return generateAbsoluteProblem(difficulty, rng); // 절댓값
     case 12:
-      return generateModProblem(difficulty, rng);
+      return generateModAdvancedProblem(difficulty, rng); // 나머지 심화
     case 13:
-      return generateFactorialProblem(difficulty, rng);
+      return generateFactorialAdvancedProblem(difficulty, rng); // 팩토리얼 심화
     case 14:
-      return generateCustomOpProblem(difficulty, rng); // A * B = A + B + 1
+      return generateCustomOpProblem(difficulty, rng); // 사용자 연산
     case 15:
-      return generateSequenceProblem(difficulty, undefined, rng); // 보스: 랜덤 혼합
+      return generateLogicMix2(difficulty, rng); // 논리왕 (11~14 믹스)
     default:
-      return generateSequenceProblem(difficulty, undefined, rng);
+      return generateEvenOddProblem(difficulty, rng);
   }
-}
-
-function generateMultipleProblem(
-  _difficulty: Difficulty,
-  rng?: { random: () => number; randomInt: (min: number, max: number) => number }
-): LogicProblem {
-  const getInt = (min: number, max: number) =>
-    rng ? rng.randomInt(min, max + 1) : getRandomInt(min, max);
-  const base = [3, 4, 6, 7, 8, 9][rng ? rng.randomInt(0, 6) : Math.floor(Math.random() * 6)];
-  const isMultiple = rng ? rng.random() > 0.5 : Math.random() > 0.5;
-  const num = isMultiple ? base * getInt(2, 12) : base * getInt(2, 12) + 1;
-  const question = `${num}은(는) ${base}의 배수입니까? (1: 예, 2: 아니오)`;
-  return { question, answer: isMultiple ? 1 : 2 };
-}
-
-function generateComparisonProblem(
-  _difficulty: Difficulty,
-  rng?: { random: () => number; randomInt: (min: number, max: number) => number }
-): LogicProblem {
-  const primes = [13, 17, 19, 23, 29];
-  const nonPrimes = [15, 21, 25, 27, 33];
-  const pIdx = rng ? rng.randomInt(0, primes.length) : Math.floor(Math.random() * primes.length);
-  const npIdx = rng
-    ? rng.randomInt(0, nonPrimes.length)
-    : Math.floor(Math.random() * nonPrimes.length);
-  const p = primes[pIdx % primes.length] ?? primes[0];
-  const np = nonPrimes[npIdx % nonPrimes.length] ?? nonPrimes[0];
-  const isPrimeFirst = rng ? rng.random() > 0.5 : Math.random() > 0.5;
-  const question = isPrimeFirst
-    ? `[${p}] [${np}] 소수(Prime)인 것은? (1: 왼쪽, 2: 오른쪽)`
-    : `[${np}] [${p}] 소수(Prime)인 것은? (1: 왼쪽, 2: 오른쪽)`;
-  return { question, answer: isPrimeFirst ? 1 : 2 };
 }
 
 function generateAbsoluteProblem(
@@ -278,4 +251,75 @@ function generateFactorialProblem(
   for (let i = 1; i <= n; i++) answer *= i;
   const question = `${n}! (팩토리얼)의 값은?`;
   return { question, answer };
+}
+
+function generateClockProblem(rng?: {
+  randomInt: (min: number, max: number) => number;
+}): LogicProblem {
+  const getInt = (min: number, max: number) =>
+    rng ? rng.randomInt(min, max + 1) : getRandomInt(min, max);
+  const hour = getInt(13, 23); // 13시 ~ 23시
+  return {
+    question: `${hour}시는 12시간제에서 오후 몇 시입니까? (숫자만 입력)`,
+    answer: hour - 12,
+  };
+}
+
+function generateLogicMix1(
+  difficulty: Difficulty,
+  rng?: { random: () => number; randomInt: (min: number, max: number) => number }
+): LogicProblem {
+  const getInt = (min: number, max: number) =>
+    rng ? rng.randomInt(min, max + 1) : getRandomInt(min, max);
+  const randomLevel = getInt(1, 9);
+  return generateLogicProblem(randomLevel, difficulty, rng);
+}
+
+function generateModAdvancedProblem(
+  _difficulty: Difficulty,
+  rng?: { randomInt: (min: number, max: number) => number }
+): LogicProblem {
+  const getInt = (min: number, max: number) =>
+    rng ? rng.randomInt(min, max + 1) : getRandomInt(min, max);
+  const a = getInt(30, 80);
+  const b = getInt(4, 9);
+  return {
+    question: `${a}을(를) ${b}(으)로 나눈 나머지는?`,
+    answer: a % b,
+  };
+}
+
+function generateFactorialAdvancedProblem(
+  _difficulty: Difficulty,
+  rng?: { randomInt: (min: number, max: number) => number }
+): LogicProblem {
+  const getInt = (min: number, max: number) =>
+    rng ? rng.randomInt(min, max + 1) : getRandomInt(min, max);
+  const type = getInt(1, 2);
+  if (type === 1) {
+    const n = getInt(3, 6);
+    return {
+      question: `${n}! ÷ ${n - 1}! 의 값은?`,
+      answer: n,
+    };
+  } else {
+    const n = getInt(2, 4);
+    let fact = 1;
+    for (let i = 1; i <= n; i++) fact *= i;
+    const mult = getInt(2, 3);
+    return {
+      question: `${n}! × ${mult} 의 값은?`,
+      answer: fact * mult,
+    };
+  }
+}
+
+function generateLogicMix2(
+  difficulty: Difficulty,
+  rng?: { random: () => number; randomInt: (min: number, max: number) => number }
+): LogicProblem {
+  const getInt = (min: number, max: number) =>
+    rng ? rng.randomInt(min, max + 1) : getRandomInt(min, max);
+  const randomLevel = getInt(11, 14);
+  return generateLogicProblem(randomLevel, difficulty, rng);
 }
