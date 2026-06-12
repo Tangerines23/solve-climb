@@ -103,12 +103,18 @@ describe('CSProblemGenerator', () => {
     const rng14 = mockRng([1]); // 011 + 010 -> 101
     const prob14 = generateCSProblem(14, 'easy', rng14);
     expect(prob14.answer).toBe('101');
+
+    // Level 15: Binary Decimals
+    const rng15 = mockRng([0]); // Option 0: 0.1 -> 0.5
+    const prob15 = generateCSProblem(15, 'easy', rng15);
+    expect(prob15.question).toContain('2진수 소수 0.1');
+    expect(prob15.answer).toBe(0.5);
   });
 
-  it('should generate level > 10 advanced problems', () => {
+  it('should generate level > 15 advanced problems', () => {
     // Case 4: Memory unit MB to KB
     const rngMem = mockRng([4, 2, 2]); // val=4, type=2, mb=2^2=4
-    const prob = generateCSProblem(15, 'hard', rngMem);
+    const prob = generateCSProblem(16, 'hard', rngMem);
     expect(prob.answer).toBe(4);
     expect(prob.question).toContain('4096 KB는 몇 MB');
   });

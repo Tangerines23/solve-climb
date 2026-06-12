@@ -30,7 +30,7 @@ export const BASIC_LEVELS = [
   // Phase 3: 정상 공격 (Lv 21~30) - 수의 확장
   { level: 21, name: '쪼개진 돌', description: '소수 덧셈 (0.1 + 0.2)' },
   { level: 22, name: '소수의 뺄셈', description: '소수 뺄셈 (1.5 - 0.8)' },
-  { level: 23, name: '정수 만들기', description: '결과가 정수가 되는 연산' },
+  { level: 23, name: '소수의 덧셈 2', description: '다양한 소수 한 자릿수 덧셈' },
   { level: 24, name: '반 조각 (분수)', description: '분모가 같은 덧셈' },
   { level: 25, name: '소수/분수 믹스', description: '정수가 아닌 수 적응' },
   { level: 26, name: '피자 나누기', description: '자연수와 분수의 뺄셈' },

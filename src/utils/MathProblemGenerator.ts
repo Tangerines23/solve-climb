@@ -322,7 +322,7 @@ export const STAGES: StageConfig[] = [
   {
     id: 23,
     world: 1,
-    description: '정수 만들기 (소수 합)',
+    description: '소수의 덧셈 2 (소수 합)',
     type: 'decimal',
     operators: ['+'],
     operandCount: 2,
@@ -330,7 +330,7 @@ export const STAGES: StageConfig[] = [
       { min: 0.1, max: 0.9 },
       { min: 0.1, max: 0.9 },
     ],
-    constraints: { precision: 1 }, // Need internal logic to force integer result in generator if needed
+    constraints: { precision: 1 },
   },
   {
     id: 24,
@@ -739,22 +739,17 @@ function generateDecimalProblem(
   const range0 = stage.ranges[0];
   const range1 = stage.ranges[1] || stage.ranges[0];
 
-  let a = getRandomInt(range0.min * factor, range0.max * factor, rng) / factor;
-  let b = getRandomInt(range1.min * factor, range1.max * factor, rng) / factor;
-
-  if (stage.id === 23) {
-    // Force sum to a clean integer (1)
-    a = getRandomInt(1, 9, rng) / 10;
-    b = Math.round((1.0 - a) * 10) / 10;
-  }
+  const a = getRandomInt(range0.min * factor, range0.max * factor, rng) / factor;
+  const b = getRandomInt(range1.min * factor, range1.max * factor, rng) / factor;
 
   const result = calculate(a, b, op);
   const roundedResult = Math.round(result * factor) / factor;
+  const isIntegerResult = Number.isInteger(roundedResult);
 
   return {
     expression: `${a.toFixed(precision)} ${op} ${b.toFixed(precision)}`,
     answer: roundedResult,
-    inputType: stage.id === 23 ? 'number' : 'decimal',
+    inputType: isIntegerResult ? 'number' : 'decimal',
   };
 }
 

@@ -61,11 +61,12 @@ describe('MathProblemGenerator', () => {
       expect(problem.inputType).toBe('decimal');
     });
 
-    it('should generate a valid problem for stage 23 (decimal integer sum)', () => {
+    it('should generate a valid problem for stage 23 (decimal)', () => {
       const problem = generateProblem(23, 'hard', 'normal', mockRng);
       expect(problem.expression).toMatch(/\d\.\d/);
-      expect(Number.isInteger(problem.answer)).toBe(true);
-      expect(problem.inputType).toBe('number');
+      expect(typeof problem.answer).toBe('number');
+      const isInteger = Number.isInteger(problem.answer);
+      expect(problem.inputType).toBe(isInteger ? 'number' : 'decimal');
     });
 
     it('should generate a valid problem for stage 24 (fraction)', () => {

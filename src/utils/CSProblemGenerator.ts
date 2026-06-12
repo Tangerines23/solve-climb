@@ -19,8 +19,8 @@ export function generateCSProblem(
   _difficulty: Difficulty,
   rng?: { random: () => number; randomInt: (min: number, max: number) => number }
 ): CSProblem {
-  if (level > 14) {
-    const randomVal = rng ? rng.randomInt(1, 4) : Math.floor(Math.random() * 4) + 1;
+  if (level > 15) {
+    const randomVal = rng ? rng.randomInt(1, 5) : Math.floor(Math.random() * 5) + 1;
     switch (randomVal) {
       case 1:
         return generateBinaryToDec(rng);
@@ -30,6 +30,8 @@ export function generateCSProblem(
         return generateBitwiseAdvanced(rng);
       case 4:
         return generateMemoryUnitAdvanced(rng);
+      case 5:
+        return generateBinaryDecimalProblem(rng);
       default:
         return generateBinaryToDec(rng);
     }
@@ -64,6 +66,8 @@ export function generateCSProblem(
       return generateTwosComplement(rng);
     case 14:
       return generateBinaryAddition(rng);
+    case 15:
+      return generateBinaryDecimalProblem(rng);
     default:
       return generateBinaryToDec(rng);
   }
@@ -236,4 +240,25 @@ function generateBinaryAddition(rng?: {
   } else {
     return { question: '2진수 덧셈 010 + 001 의 결과는? (2진수)', answer: '011' };
   }
+}
+
+function generateBinaryDecimalProblem(rng?: {
+  randomInt: (min: number, max: number) => number;
+}): CSProblem {
+  const options = [
+    { question: '2진수 소수 0.1을 10진수로 바꾸면?', answer: 0.5 },
+    { question: '2진수 소수 0.01을 10진수로 바꾸면?', answer: 0.25 },
+    { question: '2진수 소수 0.11을 10진수로 바꾸면?', answer: 0.75 },
+    { question: '2진수 소수 1.1을 10진수로 바꾸면?', answer: 1.5 },
+    { question: '2진수 소수 덧셈 0.1 + 0.1 의 결과는? (2진수)', answer: '1' },
+    { question: '2진수 소수 덧셈 0.1 + 1.1 의 결과는? (2진수)', answer: '10' },
+    { question: '2진수 소수 덧셈 0.1 + 0.01 의 결과는? (2진수)', answer: '0.11' },
+    { question: '2진수 소수 덧셈 0.11 + 0.01 의 결과는? (2진수)', answer: '1' },
+  ];
+  const idx = getRandomInt(0, options.length - 1, rng);
+  const choice = options[idx] ?? options[0];
+  return {
+    question: choice.question,
+    answer: choice.answer,
+  };
 }

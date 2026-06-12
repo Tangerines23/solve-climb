@@ -267,6 +267,7 @@ export const APP_CONFIG = {
         { level: 12, name: '보수법 - 1의 보수', description: '비트 반전 연산' },
         { level: 13, name: '보수법 - 2의 보수', description: '실제 음수 비트 표현' },
         { level: 14, name: '2진수의 덧셈', description: '캐리 발생 기본 연산' },
+        { level: 15, name: '이진 소수의 연산', description: '0.1 + 1.1 이진 소수 연산' },
       ],
       논리: [],
       대수: [],
