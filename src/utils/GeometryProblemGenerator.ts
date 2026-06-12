@@ -227,7 +227,7 @@ function generateCircleAdvanced(rng?: {
   const randomVal = rng ? rng.random() : Math.random();
   const type = randomVal > 0.5 ? '둘레' : '넓이';
 
-  const r = getRandomInt(2, 9, rng);
+  const r = getRandomInt(1, 10, rng);
   if (type === '둘레') {
     const answer = Math.round(2 * 3.1 * r * 10) / 10;
     return {
@@ -317,7 +317,7 @@ function generateSolidVolume(rng?: {
   const isCylinder = rng ? rng.random() > 0.5 : Math.random() > 0.5;
   if (isCylinder) {
     const r = getRandomInt(2, 5, rng);
-    const h = getRandomInt(2, 8, rng);
+    const h = getRandomInt(3, 10, rng);
     const answer = Math.round(3.1 * r * r * h * 10) / 10;
     return {
       question: `반지름이 ${r}, 높이가 ${h}인 원기둥의 부피는? (원주율=3.1)`,
