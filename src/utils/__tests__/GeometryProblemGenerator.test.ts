@@ -73,15 +73,17 @@ describe('GeometryProblemGenerator', () => {
   });
 
   it('should generate Level 8 Circle Advanced (Circumference)', () => {
-    const rng = { ...mockRng([4]), random: () => 0.6 }; // r=4, type=둘레
+    const rng = { ...mockRng([0]), random: () => 0.6 }; // index 0: r=5, type=둘레
     const problem = generateGeometryProblem(8, 'easy', rng);
-    expect(problem.answer).toBe(24); // 2 * 3 * 4
+    expect(problem.question).toContain('원의 둘레');
+    expect(problem.answer).toBe(31); // 2 * 3.1 * 5
   });
 
   it('should generate Level 8 Circle Advanced (Area)', () => {
-    const rng = { ...mockRng([4]), random: () => 0.4 }; // r=4, type=넓이
+    const rng = { ...mockRng([1]), random: () => 0.4 }; // index 1: r=10, type=넓이
     const problem = generateGeometryProblem(8, 'easy', rng);
-    expect(problem.answer).toBe(48); // 3 * 4^2
+    expect(problem.question).toContain('원의 넓이');
+    expect(problem.answer).toBe(310); // 3.1 * 10^2
   });
 
   it('should generate Level 9 Symmetry', () => {
@@ -118,10 +120,11 @@ describe('GeometryProblemGenerator', () => {
     expect(probPyramid.answer).toBe(7);
   });
 
-  it('should generate Level 13 Solid Volume', () => {
-    const rng = { ...mockRng([2, 5]), random: () => 0.6 }; // Cylinder r=2, h=5
+  it('should generate Level 13 Solid Volume (Cylinder)', () => {
+    const rng = { ...mockRng([0]), random: () => 0.6 }; // cylinderPairs index 0: r=2, h=5
     const problem = generateGeometryProblem(13, 'easy', rng);
-    expect(problem.answer).toBe(60); // 3 * 2^2 * 5
+    expect(problem.question).toContain('원기둥');
+    expect(problem.answer).toBe(62); // 3.1 * 2^2 * 5
   });
 
   it('should generate Level 14 Solid Surface Area', () => {
@@ -131,11 +134,11 @@ describe('GeometryProblemGenerator', () => {
   });
 
   it('should generate Advanced Solid Volume (Cylinder)', () => {
-    // Level > 10, randomVal=1, type=Cylinder, r=2, h=5
-    const rng = { ...mockRng([1, 2, 5]), random: () => 0.6 };
+    // Level > 10, randomVal=1, type=Cylinder, cylinderPairs index 0: r=2, h=5
+    const rng = { ...mockRng([1, 0]), random: () => 0.6 };
     const problem = generateGeometryProblem(15, 'hard', rng);
     expect(problem.question).toContain('원기둥');
-    expect(problem.answer).toBe(60); // 3 * 2^2 * 5
+    expect(problem.answer).toBe(62); // 3.1 * 2^2 * 5
   });
 
   it('should generate Advanced Midpoint Coordinate', () => {

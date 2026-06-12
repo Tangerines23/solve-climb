@@ -3,6 +3,7 @@ import { Difficulty } from '../types/quiz';
 export interface GeometryProblem {
   question: string;
   answer: number | string;
+  inputType?: 'number' | 'decimal' | 'fraction' | 'coordinate';
 }
 
 function getRandomInt(
@@ -223,15 +224,28 @@ function generateCircleAdvanced(rng?: {
   random: () => number;
   randomInt: (min: number, max: number) => number;
 }): GeometryProblem {
-  const r = getRandomInt(1, 10, rng);
   const randomVal = rng ? rng.random() : Math.random();
   const type = randomVal > 0.5 ? '둘레' : '넓이';
 
-  // Use pi = 3 for World 1/2 mental math
   if (type === '둘레') {
-    return { question: `반지름이 ${r}인 원의 둘레는? (원주율=3)`, answer: 2 * 3 * r };
+    // For r = 5, 10, 15: Circumference is 31, 62, 93 (integers)
+    const rOptions = [5, 10, 15];
+    const r = rOptions[getRandomInt(0, rOptions.length - 1, rng)];
+    return {
+      question: `반지름이 ${r}인 원의 둘레는? (원주율=3.1)`,
+      answer: 2 * 3.1 * r, // 31, 62, 93
+      inputType: 'number',
+    };
   } else {
-    return { question: `반지름이 ${r}인 원의 넓이는? (원주율=3)`, answer: 3 * r * r };
+    // For r = 5, 10: Area is 77.5, 310
+    const rOptions = [5, 10];
+    const r = rOptions[getRandomInt(0, rOptions.length - 1, rng)];
+    const answer = 3.1 * r * r;
+    return {
+      question: `반지름이 ${r}인 원의 넓이는? (원주율=3.1)`,
+      answer: answer, // 77.5 or 310
+      inputType: Number.isInteger(answer) ? 'number' : 'decimal',
+    };
   }
 }
 
@@ -306,11 +320,19 @@ function generateSolidVolume(rng?: {
 }): GeometryProblem {
   const isCylinder = rng ? rng.random() > 0.5 : Math.random() > 0.5;
   if (isCylinder) {
-    const r = getRandomInt(2, 5, rng);
-    const h = getRandomInt(3, 10, rng);
+    // Pre-selected pairs (r, h) to guarantee integer result with pi=3.1
+    const cylinderPairs = [
+      { r: 2, h: 5, v: 62 },
+      { r: 2, h: 10, v: 124 },
+      { r: 5, h: 2, v: 155 },
+      { r: 5, h: 4, v: 310 },
+      { r: 10, h: 3, v: 930 },
+    ];
+    const pair = cylinderPairs[getRandomInt(0, cylinderPairs.length - 1, rng)];
     return {
-      question: `반지름이 ${r}, 높이가 ${h}인 원기둥의 부피는? (원주율=3)`,
-      answer: 3 * r * r * h,
+      question: `반지름이 ${pair.r}, 높이가 ${pair.h}인 원기둥의 부피는? (원주율=3.1)`,
+      answer: pair.v,
+      inputType: 'number',
     };
   } else {
     const w = getRandomInt(2, 8, rng);
@@ -319,6 +341,7 @@ function generateSolidVolume(rng?: {
     return {
       question: `가로 ${w}, 세로 ${d}, 높이 ${h}인 직육면체의 부피는?`,
       answer: w * d * h,
+      inputType: 'number',
     };
   }
 }

@@ -217,7 +217,7 @@ export const APP_CONFIG = {
         { level: 5, name: '직사각형 넓이', description: '가로 x 세로' },
         { level: 6, name: '삼각형 넓이', description: '밑변 x 높이 / 2' },
         { level: 7, name: '원의 기초', description: '반지름과 지름' },
-        { level: 8, name: '원의 둘레/넓이', description: '원주율 = 3 연산' },
+        { level: 8, name: '원의 둘레와 넓이', description: '원주율 = 3.1 연산' },
         { level: 9, name: '대칭축 기초', description: '정다각형의 선대칭' },
         { level: 10, name: '피타고라스 기초', description: '기본 직각삼각형' },
         { level: 11, name: '피타고라스 심화', description: '확장된 직각삼각형' },

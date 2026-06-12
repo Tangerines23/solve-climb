@@ -89,10 +89,10 @@ export function GameTipModal({ isOpen, category, subTopic, level, onStart, onClo
               strategy: '반지름에 2를 곱하면 지름이 됩니다.',
             },
             8: {
-              title: '8레벨: 원의 둘레/넓이',
-              tip: '원주율 = 3 연산',
-              example: '반지름 4 -> 넓이 3x4x4 = 48',
-              strategy: '실제 공학/역학에서는 pi를 3 또는 3.1로 계산한 후 5% 정도 보정하여 빠르게 근사치를 구합니다. 게임에서는 편의상 원주율 3으로 고정합니다.',
+              title: '8레벨: 원의 둘레와 넓이',
+              tip: '원주율 = 3.1 연산',
+              example: '반지름 5 -> 둘레 31 / 반지름 10 -> 넓이 310',
+              strategy: '원주율 3.1을 곱해 계산합니다. 반지름이 5나 10의 배수로 출제되어 간단히 계산할 수 있습니다.',
             },
             9: {
               title: '9레벨: 대칭축 기초',
@@ -120,9 +120,9 @@ export function GameTipModal({ isOpen, category, subTopic, level, onStart, onClo
             },
             13: {
               title: '13레벨: 입체도형 부피',
-              tip: '직육면체와 원기둥',
-              example: '가로 3, 세로 4, 높이 5 -> 부피 60',
-              strategy: '밑넓이에 높이를 곱합니다. 원기둥 계산 시에는 원주율 3을 사용합니다.',
+              tip: '직육면체와 원기둥의 부피',
+              example: '반지름 2, 높이 5 원기둥 -> 3.1 * 4 * 5 = 62',
+              strategy: '원기둥 부피 계산 시 원주율 3.1을 사용합니다. 반지름과 높이가 곱해져 정수로 떨어지도록 유도되므로 곱하기 3.1을 마지막에 적용하면 쉽습니다.',
             },
             14: {
               title: '14레벨: 입체도형 겉넓이',
