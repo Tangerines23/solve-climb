@@ -73,17 +73,17 @@ describe('GeometryProblemGenerator', () => {
   });
 
   it('should generate Level 8 Circle Advanced (Circumference)', () => {
-    const rng = { ...mockRng([0]), random: () => 0.6 }; // index 0: r=5, type=둘레
+    const rng = { ...mockRng([3]), random: () => 0.6 }; // r=3, type=둘레
     const problem = generateGeometryProblem(8, 'easy', rng);
     expect(problem.question).toContain('원의 둘레');
-    expect(problem.answer).toBe(31); // 2 * 3.1 * 5
+    expect(problem.answer).toBe(18.6); // 2 * 3.1 * 3
   });
 
   it('should generate Level 8 Circle Advanced (Area)', () => {
-    const rng = { ...mockRng([1]), random: () => 0.4 }; // index 1: r=10, type=넓이
+    const rng = { ...mockRng([3]), random: () => 0.4 }; // r=3, type=넓이
     const problem = generateGeometryProblem(8, 'easy', rng);
     expect(problem.question).toContain('원의 넓이');
-    expect(problem.answer).toBe(310); // 3.1 * 10^2
+    expect(problem.answer).toBe(27.9); // 3.1 * 3^2
   });
 
   it('should generate Level 9 Symmetry', () => {
@@ -121,10 +121,10 @@ describe('GeometryProblemGenerator', () => {
   });
 
   it('should generate Level 13 Solid Volume (Cylinder)', () => {
-    const rng = { ...mockRng([0]), random: () => 0.6 }; // cylinderPairs index 0: r=2, h=5
+    const rng = { ...mockRng([2, 3]), random: () => 0.6 }; // r=2, h=3
     const problem = generateGeometryProblem(13, 'easy', rng);
     expect(problem.question).toContain('원기둥');
-    expect(problem.answer).toBe(62); // 3.1 * 2^2 * 5
+    expect(problem.answer).toBe(37.2); // 3.1 * 2^2 * 3
   });
 
   it('should generate Level 14 Solid Surface Area', () => {
@@ -134,11 +134,11 @@ describe('GeometryProblemGenerator', () => {
   });
 
   it('should generate Advanced Solid Volume (Cylinder)', () => {
-    // Level > 10, randomVal=1, type=Cylinder, cylinderPairs index 0: r=2, h=5
-    const rng = { ...mockRng([1, 0]), random: () => 0.6 };
+    // Level > 10, randomVal=1, type=Cylinder, r=2, h=3
+    const rng = { ...mockRng([1, 2, 3]), random: () => 0.6 };
     const problem = generateGeometryProblem(15, 'hard', rng);
     expect(problem.question).toContain('원기둥');
-    expect(problem.answer).toBe(62); // 3.1 * 2^2 * 5
+    expect(problem.answer).toBe(37.2); // 3.1 * 2^2 * 3
   });
 
   it('should generate Advanced Midpoint Coordinate', () => {
