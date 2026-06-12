@@ -1,0 +1,309 @@
+.my-page-tip-preview-card {
+  background: var(--color-bg-card, #ffffff);
+  border-radius: 20px;
+  padding: 24px;
+  margin-bottom: 20px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.04);
+  border: 1px solid rgba(0, 0, 0, 0.04);
+  transition: all 0.3s ease;
+}
+
+/* 다크 모드 대응 */
+@media (prefers-color-scheme: dark) {
+  .my-page-tip-preview-card {
+    background: #1e1e24;
+    border-color: rgba(255, 255, 255, 0.05);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
+  }
+}
+
+.my-page-tip-preview-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 20px;
+}
+
+.my-page-tip-preview-icon {
+  font-size: 22px;
+}
+
+.my-page-tip-preview-title {
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--color-text-primary, #191f28);
+}
+
+@media (prefers-color-scheme: dark) {
+  .my-page-tip-preview-title {
+    color: #f9fafb;
+  }
+}
+
+/* 카테고리 탭 스타일링 */
+.my-page-tip-preview-tabs {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 6px;
+  background: var(--color-bg-body, #f2f4f6);
+  padding: 4px;
+  border-radius: 12px;
+  margin-bottom: 16px;
+}
+
+@media (prefers-color-scheme: dark) {
+  .my-page-tip-preview-tabs {
+    background: #121216;
+  }
+}
+
+.my-page-tip-preview-tab {
+  border: none;
+  background: transparent;
+  padding: 10px 0;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--color-text-secondary, #4e5968);
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  text-align: center;
+}
+
+@media (prefers-color-scheme: dark) {
+  .my-page-tip-preview-tab {
+    color: #8b95a1;
+  }
+}
+
+.my-page-tip-preview-tab:hover {
+  color: var(--color-text-primary, #191f28);
+}
+
+@media (prefers-color-scheme: dark) {
+  .my-page-tip-preview-tab:hover {
+    color: #ffffff;
+  }
+}
+
+.my-page-tip-preview-tab.active {
+  background: var(--color-bg-card, #ffffff);
+  color: var(--color-primary, #10b981);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+}
+
+@media (prefers-color-scheme: dark) {
+  .my-page-tip-preview-tab.active {
+    background: #2c2c35;
+    color: #10b981;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+  }
+}
+
+/* 조작 컨트롤러 레이아웃 */
+.my-page-tip-preview-selectors {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-bottom: 20px;
+}
+
+.my-page-tip-preview-selector {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: var(--color-bg-body, #f8f9fa);
+  border-radius: 14px;
+  padding: 6px;
+  border: 1px solid rgba(0, 0, 0, 0.02);
+  transition: opacity 0.2s ease;
+}
+
+@media (prefers-color-scheme: dark) {
+  .my-page-tip-preview-selector {
+    background: #18181c;
+    border-color: rgba(255, 255, 255, 0.02);
+  }
+}
+
+.my-page-tip-preview-selector.disabled {
+  opacity: 0.5;
+}
+
+.my-page-tip-preview-arrow-btn {
+  width: 38px;
+  height: 38px;
+  border: none;
+  background: var(--color-bg-card, #ffffff);
+  color: var(--color-text-primary, #191f28);
+  font-size: 16px;
+  font-weight: 700;
+  border-radius: 10px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.03);
+  transition: all 0.2s ease;
+}
+
+@media (prefers-color-scheme: dark) {
+  .my-page-tip-preview-arrow-btn {
+    background: #2a2a32;
+    color: #ffffff;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
+  }
+}
+
+.my-page-tip-preview-arrow-btn:hover:not(:disabled) {
+  background: var(--color-primary-light, #e6f7f0);
+  color: var(--color-primary, #10b981);
+  transform: scale(1.03);
+}
+
+@media (prefers-color-scheme: dark) {
+  .my-page-tip-preview-arrow-btn:hover:not(:disabled) {
+    background: #1c362b;
+    color: #10b981;
+  }
+}
+
+.my-page-tip-preview-arrow-btn:disabled {
+  cursor: not-allowed;
+  opacity: 0.4;
+}
+
+.my-page-tip-preview-selector-value {
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--color-text-primary, #191f28);
+}
+
+@media (prefers-color-scheme: dark) {
+  .my-page-tip-preview-selector-value {
+    color: #eceef0;
+  }
+}
+
+/* 팁 상세 영역 */
+.my-page-tip-content-box {
+  background: #fdfdfd;
+  border: 1.5px solid rgba(16, 185, 129, 0.08);
+  border-radius: 16px;
+  padding: 20px;
+  transition: all 0.3s ease;
+}
+
+@media (prefers-color-scheme: dark) {
+  .my-page-tip-content-box {
+    background: #24242c;
+    border-color: rgba(16, 185, 129, 0.15);
+  }
+}
+
+.my-page-tip-content-title {
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--color-primary, #10b981);
+  margin-bottom: 16px;
+  border-left: 4px solid var(--color-primary, #10b981);
+  padding-left: 8px;
+}
+
+.my-page-tip-content-body {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.my-page-tip-content-item {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.my-page-tip-label {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--color-text-secondary, #6b7280);
+}
+
+@media (prefers-color-scheme: dark) {
+  .my-page-tip-label {
+    color: #9ca3af;
+  }
+}
+
+.my-page-tip-text {
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 1.5;
+  color: var(--color-text-primary, #374151);
+  margin: 0;
+}
+
+@media (prefers-color-scheme: dark) {
+  .my-page-tip-text {
+    color: #d1d5db;
+  }
+}
+
+/* 예시 코드박스 */
+.my-page-tip-content-example-box {
+  background: #f3f4f6;
+  border-radius: 10px;
+  padding: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+@media (prefers-color-scheme: dark) {
+  .my-page-tip-content-example-box {
+    background: #18181c;
+  }
+}
+
+.my-page-tip-example-label {
+  font-size: 11px;
+  font-weight: 700;
+  color: #8b95a1;
+  text-transform: uppercase;
+}
+
+.my-page-tip-example-text {
+  font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace;
+  font-size: 13px;
+  font-weight: 600;
+  color: #ef4444;
+}
+
+@media (prefers-color-scheme: dark) {
+  .my-page-tip-example-text {
+    color: #f87171;
+  }
+}
+
+.my-page-tip-content-empty {
+  text-align: center;
+  color: var(--color-text-secondary, #8b95a1);
+  padding: 30px 0;
+  font-size: 14px;
+  font-weight: 500;
+}
+
+/* 페이드인 애니메이션 */
+.animate-fade-in {
+  animation: fadeIn 0.25s ease-out forwards;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}

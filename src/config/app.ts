@@ -201,6 +201,7 @@ export const APP_CONFIG = {
     MY_PAGE: '/my-page',
     NOTIFICATIONS: '/notifications',
     LOGIN: '/login',
+    REVIEW: '/review',
   },
 
   // 레벨 데이터 정의 (World -> Category -> Levels)
