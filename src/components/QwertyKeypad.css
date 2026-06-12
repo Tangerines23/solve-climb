@@ -203,7 +203,7 @@
     padding-right: 6px !important;
     padding-top: 4px !important;
     padding-bottom: max(24px, env(safe-area-inset-bottom)) !important;
-    gap: 4px !important;
+    gap: var(--spacing-xs) !important;
   }
 
   .qwerty-keypad-key {

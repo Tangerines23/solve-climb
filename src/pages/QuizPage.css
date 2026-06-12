@@ -1357,7 +1357,7 @@
     font-size: 1.4rem !important;
     min-width: 36px !important;
     min-height: 36px !important;
-    padding: 4px !important;
+    padding: var(--spacing-xs) !important;
   }
 
   .quiz-timer-container {
@@ -1369,8 +1369,8 @@
     max-height: calc(
       100dvh - 380px
     ) !important; /* Reserve at least 380px for header + restored/tall keypad */
-    padding: 8px 12px !important; /* Tight padding to clear up height */
-    gap: 4px !important;
+    padding: var(--spacing-sm) var(--spacing-md) !important; /* Tight padding to clear up height */
+    gap: var(--spacing-xs) !important;
     min-height: 90px !important;
     margin-top: 2px !important;
   }
@@ -1380,13 +1380,13 @@
   .question-answer-group,
   .contents-display,
   .answer-content-container {
-    gap: 2px !important;
+    gap: var(--spacing-micro) !important;
   }
 
   .world-info-header-floating {
     top: 4px;
     font-size: 10px;
-    padding: 1px 6px;
+    padding: 1px var(--spacing-tiny); /* 고정값 허용 */
   }
 
   /* 문제 텍스트 축소 - 세로 폭에 반응해 가림 방지 */
@@ -1414,7 +1414,7 @@
     padding-left: 12px !important; /* Tighten side borders to zero-out screen margins */
     padding-right: 12px !important;
     padding-bottom: 0 !important; /* Push keyboard to the absolute bottom edge */
-    gap: 10px !important; /* Reduced to 10px to prevent keyboard clipping */
+    gap: var(--spacing-small-alt) !important; /* Reduced to 10px to prevent keyboard clipping */
   }
   .quiz-header {
     height: 52px !important;
@@ -1425,7 +1425,7 @@
     font-size: 1.6rem !important;
     min-width: 40px !important;
     min-height: 40px !important;
-    padding: 6px !important;
+    padding: var(--spacing-tiny) !important;
   }
 
   .quiz-timer-container {
@@ -1455,13 +1455,13 @@
   .question-answer-group,
   .contents-display,
   .answer-content-container {
-    gap: 14px !important;
+    gap: var(--spacing-medium-alt) !important;
   }
 
   .world-info-header-floating {
     top: 6px;
     font-size: 11px;
-    padding: 2px 8px;
+    padding: var(--spacing-micro) var(--spacing-sm);
   }
 
   /* 문제 텍스트 크고 시원하게 복원 */

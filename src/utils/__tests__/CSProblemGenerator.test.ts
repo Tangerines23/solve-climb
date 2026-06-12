@@ -67,27 +67,27 @@ describe('CSProblemGenerator', () => {
   });
 
   it('should generate Level 8-14 CS basic curriculum', () => {
-    // Level 8: Memory Unit Basic (Byte to KB)
-    const rng8 = mockRng([3]); // kb=2^3=8
+    // Level 8: Stack
+    const rng8 = mockRng([3, 5, 2]);
     const prob8 = generateCSProblem(8, 'easy', rng8);
-    expect(prob8.answer).toBe(8);
-    expect(prob8.question).toContain('8192 바이트');
+    expect(prob8.answer).toBe(5); // 3+2
 
-    // Level 9: Memory Unit Advanced (KB to MB)
-    const rng9 = mockRng([2]); // mb=2^2=4
+    // Level 9: Queue
+    const rng9 = mockRng([3, 5, 2]);
     const prob9 = generateCSProblem(9, 'easy', rng9);
-    expect(prob9.answer).toBe(4);
-    expect(prob9.question).toContain('4096 KB는 몇 MB');
+    expect(prob9.answer).toBe(7); // 5+2
 
-    // Level 10: Stack
-    const rng10 = mockRng([3, 5, 2]);
+    // Level 10: Memory Unit Basic (Byte to KB)
+    const rng10 = mockRng([3]); // kb=2^3=8
     const prob10 = generateCSProblem(10, 'easy', rng10);
-    expect(prob10.answer).toBe(5); // 3+2
+    expect(prob10.answer).toBe(8);
+    expect(prob10.question).toContain('8192 바이트');
 
-    // Level 11: Queue
-    const rng11 = mockRng([3, 5, 2]);
+    // Level 11: Memory Unit Advanced (KB to MB)
+    const rng11 = mockRng([2]); // mb=2^2=4
     const prob11 = generateCSProblem(11, 'easy', rng11);
-    expect(prob11.answer).toBe(7); // 5+2
+    expect(prob11.answer).toBe(4);
+    expect(prob11.question).toContain('4096 KB는 몇 MB');
 
     // Level 12: Ones Complement
     const rng12 = mockRng([1]); // 0101 -> 1010

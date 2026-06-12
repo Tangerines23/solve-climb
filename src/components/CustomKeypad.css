@@ -127,9 +127,9 @@
 /* 세로 해상도가 좁은 기기 및 뷰포트 대응 (iPhone SE, Extreme-Short 등) */
 @media (max-height: 720px) and (orientation: portrait) {
   .custom-keypad {
-    padding: 10px 14px !important;
+    padding: var(--spacing-small-alt) var(--spacing-medium-alt) !important;
     padding-bottom: max(20px, env(safe-area-inset-bottom)) !important;
-    gap: 6px !important;
+    gap: var(--spacing-tiny) !important;
   }
 
   .keypad-key {
@@ -150,7 +150,7 @@
 /* 가로만 좁고 세로는 넉넉한 기기 (Galaxy S20 Ultra, Pixel 5 등 - 세로 721px 이상) */
 @media (max-width: 480px) and (min-height: 721px) and (orientation: portrait) {
   .custom-keypad {
-    padding: 10px 16px !important; /* Stable margin */
+    padding: var(--spacing-small-alt) var(--spacing-lg) !important; /* Stable margin */
     padding-bottom: max(
       10px,
       env(safe-area-inset-bottom)

@@ -45,23 +45,23 @@ export function generateStatsProblem(
     case 4:
       return generateModeBasic(rng);
     case 5:
-      return generateStatsRange(rng);
-    case 6:
       return generateProbCoin(rng);
-    case 7:
+    case 6:
       return generateProbRPS(rng);
-    case 8:
+    case 7:
       return generateProbDice(rng);
-    case 9:
+    case 8:
       return generateCombinationsBasic(rng);
-    case 10:
+    case 9:
       return generatePermutationsBasic(rng);
-    case 11:
+    case 10:
       return generateProbBasic(rng);
-    case 12:
+    case 11:
       return generateProbAdvanced(rng);
-    case 13:
+    case 12:
       return generateProbUnionIntersection(rng);
+    case 13:
+      return generateStatsRange(rng);
     case 14:
       return generateNoReplaceCount(rng);
     case 15:
@@ -132,7 +132,6 @@ function generateProbDice(rng?: { randomInt: (min: number, max: number) => numbe
   };
 }
 
-
 function generateStatsRange(rng?: {
   randomInt: (min: number, max: number) => number;
 }): StatsProblem {
@@ -169,7 +168,6 @@ function generateProbAdvanced(rng?: {
     answer: percentageOfNotRed,
   };
 }
-
 
 function generatePermutations(rng?: {
   randomInt: (min: number, max: number) => number;
@@ -233,9 +231,7 @@ function generateMeanExtended(rng?: {
   };
 }
 
-function generateProbRPS(rng?: {
-  randomInt: (min: number, max: number) => number;
-}): StatsProblem {
+function generateProbRPS(rng?: { randomInt: (min: number, max: number) => number }): StatsProblem {
   const people = getRandomInt(1, 3, rng);
   return {
     question: `${people}명이 가위바위보를 할 때, 나올 수 있는 모든 경우의 수는?`,

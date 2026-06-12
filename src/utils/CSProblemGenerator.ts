@@ -53,13 +53,13 @@ export function generateCSProblem(
     case 7:
       return generateLogicXOR(rng);
     case 8:
-      return generateMemoryUnitBasic(rng);
-    case 9:
-      return generateMemoryUnitAdvanced(rng);
-    case 10:
       return generateStackSimulation(rng);
-    case 11:
+    case 9:
       return generateQueueSimulation(rng);
+    case 10:
+      return generateMemoryUnitBasic(rng);
+    case 11:
+      return generateMemoryUnitAdvanced(rng);
     case 12:
       return generateOnesComplement(rng);
     case 13:

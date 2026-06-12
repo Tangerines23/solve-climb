@@ -44,11 +44,11 @@ export const QuizHeader = React.memo(() => {
               <div
                 className="admin-badge clickable"
                 style={{
-                  marginLeft: '8px',
-                  padding: '2px 8px',
+                  marginLeft: 'var(--spacing-sm)',
+                  padding: 'var(--spacing-micro) var(--spacing-sm)',
                   background: 'var(--color-primary, #00d2c4)',
-                  color: '#fff',
-                  borderRadius: '4px',
+                  color: 'var(--color-pure-white)',
+                  borderRadius: 'var(--rounded-2xs)',
                   fontSize: '11px',
                   fontWeight: 'bold',
                   cursor: 'pointer',
@@ -84,7 +84,12 @@ export const QuizHeader = React.memo(() => {
         <div className="header-center-timer">
           <div
             className="timer-wrapper"
-            style={{ display: 'flex', alignItems: 'center', gap: '12px', position: 'relative' }}
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: 'var(--spacing-md)',
+              position: 'relative',
+            }}
           >
             {quizState.isPreview &&
               quizState.categoryParam !== '히라가나' &&
@@ -105,7 +110,7 @@ export const QuizHeader = React.memo(() => {
                     color: 'rgba(255, 255, 255, 0.6)',
                     fontSize: '2rem',
                     cursor: 'pointer',
-                    padding: '8px',
+                    padding: 'var(--spacing-sm)',
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center',
@@ -113,7 +118,7 @@ export const QuizHeader = React.memo(() => {
                     transition: 'color 0.2s, transform 0.2s',
                   }}
                   onMouseOver={(e) => {
-                    (e.currentTarget as HTMLButtonElement).style.color = '#fff';
+                    (e.currentTarget as HTMLButtonElement).style.color = 'var(--color-pure-white)';
                     (e.currentTarget as HTMLButtonElement).style.transform = 'scale(1.2)';
                   }}
                   onMouseOut={(e) => {
@@ -161,7 +166,7 @@ export const QuizHeader = React.memo(() => {
                     color: 'rgba(255, 255, 255, 0.6)',
                     fontSize: '2rem',
                     cursor: 'pointer',
-                    padding: '8px',
+                    padding: 'var(--spacing-sm)',
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center',
@@ -169,7 +174,7 @@ export const QuizHeader = React.memo(() => {
                     transition: 'color 0.2s, transform 0.2s',
                   }}
                   onMouseOver={(e) => {
-                    (e.currentTarget as HTMLButtonElement).style.color = '#fff';
+                    (e.currentTarget as HTMLButtonElement).style.color = 'var(--color-pure-white)';
                     (e.currentTarget as HTMLButtonElement).style.transform = 'scale(1.2)';
                   }}
                   onMouseOut={(e) => {

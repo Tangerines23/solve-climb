@@ -1,5 +1,8 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { WORLD_TIPS, CATEGORY_TIPS, type TipItem } from '../../constants/tips';
+import { generateQuestion } from '../../utils/quizGenerator';
+import { getSolutionProcess } from '../../utils/solutionExplainer';
+import { type QuizQuestion, type Topic, type World } from '../../types/quiz';
 import './MyPageTipPreview.css';
 
 type CategoryType = '기초' | '논리' | '대수' | '심화';
@@ -10,6 +13,33 @@ export function MyPageTipPreview() {
   const [world, setWorld] = useState<WorldType>('World1');
   const [level, setLevel] = useState<number>(1);
   const [tip, setTip] = useState<TipItem | null>(null);
+  const [sampleQuestion, setSampleQuestion] = useState<QuizQuestion | null>(null);
+  const [solutionSteps, setSolutionSteps] = useState<string[]>([]);
+  const [refreshTrigger, setRefreshTrigger] = useState<number>(0);
+
+  const refreshSample = useCallback(() => {
+    setRefreshTrigger((prev) => prev + 1);
+  }, []);
+
+  // 실시간 예시 문제 및 풀이 과정 생성
+  useEffect(() => {
+    try {
+      const topicId = category === '기초' ? `${world}-${category}` : `World1-${category}`;
+      const targetWorld = category === '기초' ? world : 'World1';
+      const q = generateQuestion('math', targetWorld as World, topicId as Topic, level, 'medium');
+      setSampleQuestion(q);
+      if (q) {
+        const steps = getSolutionProcess(q.question, q.answer);
+        setSolutionSteps(steps);
+      } else {
+        setSolutionSteps([]);
+      }
+    } catch (err) {
+      console.error('Failed to generate sample question:', err);
+      setSampleQuestion(null);
+      setSolutionSteps([]);
+    }
+  }, [category, world, level, refreshTrigger]);
 
   // 각 조합별 최대 레벨 정의
   const getMaxLevel = (cat: CategoryType, wld: WorldType): number => {
@@ -194,9 +224,69 @@ export function MyPageTipPreview() {
               </div>
             )}
             <div className="my-page-tip-content-example-box">
-              <span className="my-page-tip-example-label">예시</span>
+              <span className="my-page-tip-example-label">기본 예시</span>
               <code className="my-page-tip-example-text">{tip.example}</code>
             </div>
+
+            {/* 실시간 예시 문제 & 풀이 과정 */}
+            {sampleQuestion && (
+              <div className="my-page-tip-live-sample-section">
+                <div className="my-page-tip-live-sample-header">
+                  <span className="my-page-tip-live-title">💡 실시간 예시 문제</span>
+                  <button
+                    className="my-page-tip-refresh-btn"
+                    onClick={refreshSample}
+                    title="새로운 문제 생성"
+                  >
+                    🔄 새 문제
+                  </button>
+                </div>
+
+                <div className="my-page-tip-live-question-card">
+                  <div className="live-question-row">
+                    <span className="q-badge">Q</span>
+                    <span className="question-text">{sampleQuestion.question}</span>
+                  </div>
+                  <div className="live-answer-row">
+                    <span className="a-badge">A</span>
+                    <span className="answer-text">정답: {sampleQuestion.answer}</span>
+                  </div>
+                </div>
+
+                {solutionSteps.length > 0 && (
+                  <div className="my-page-tip-solution-section">
+                    <span className="my-page-tip-solution-title">🔍 풀이 과정</span>
+                    <div className="my-page-tip-solution-timeline">
+                      {solutionSteps.map((step, index) => {
+                        const colonIndex = step.indexOf(':');
+                        let stepTitle = '';
+                        let stepBody = step;
+                        if (colonIndex !== -1) {
+                          stepTitle = step.slice(0, colonIndex).trim();
+                          stepBody = step.slice(colonIndex + 1).trim();
+                        }
+
+                        // 백틱(`)으로 감싸진 텍스트를 <code> 태그 요소로 포맷팅
+                        const parts = stepBody.split(/`([^`]+)`/g);
+                        const formattedBody = parts.map((part, pIdx) => {
+                          if (pIdx % 2 === 1) {
+                            return <code key={pIdx}>{part}</code>;
+                          }
+                          return part;
+                        });
+
+                        return (
+                          <div key={index} className="my-page-tip-solution-step-item">
+                            {stepTitle && <span className="step-step-badge">{stepTitle}</span>}
+                            <p className="step-step-content">{formattedBody}</p>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
           </div>
         </div>
       ) : (

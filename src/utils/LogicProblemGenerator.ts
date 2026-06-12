@@ -306,10 +306,10 @@ function generateFactorialAdvancedProblem(
     const n = getInt(2, 4);
     let fact = 1;
     for (let i = 1; i <= n; i++) fact *= i;
-    const mult = getInt(2, 3);
+    const multiplier = getInt(2, 3);
     return {
-      question: `${n}! × ${mult} 의 값은?`,
-      answer: fact * mult,
+      question: `${n}! × ${multiplier} 의 값은?`,
+      answer: fact * multiplier,
     };
   }
 }
