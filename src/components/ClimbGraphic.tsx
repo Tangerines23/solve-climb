@@ -178,23 +178,17 @@ export function ClimbGraphic({
   }, []);
 
   // 진입 시 현재 레벨로 자동 스크롤
-  const isFirstRender = useRef(true);
-
   useEffect(() => {
-    // 월드나 카테고리가 바뀌면 현재 레벨로 자동 스크롤
-    // 처음 마운트되었을 때만 auto로 바로 이동하고, 월드/카테고리 변경 시에는 smooth로 부드럽게 이동합니다.
-    const behavior = isFirstRender.current ? 'auto' : 'smooth';
+    // 월드나 카테고리가 바뀌면 현재 레벨로 즉시 정렬하여 화면 밀림(drift) 현상을 차단합니다.
     const timer = setTimeout(() => {
-      scrollToCurrentLevel(behavior);
-      isFirstRender.current = false;
-    }, 100);
+      scrollToCurrentLevel('auto');
+    }, 50);
 
     return () => clearTimeout(timer);
-  }, [world, category, scrollToCurrentLevel, levelData]);
+  }, [world, category, scrollToCurrentLevel]);
 
-  // 카테고리 및 월드별 배경 매핑
-  const stageConfig = useMemo(() => {
-    // 월드별 기본 스카이 그라데이션
+  // 헬퍼 함수: 특정 world/category에 대한 StageBackgroundConfig를 계산
+  const getStageConfigFor = useCallback((targetWorld: World, targetCategory: Category) => {
     const worldSkyGradients: Record<World, string> = {
       World1: 'linear-gradient(180deg, #065f46 0%, #064e3b 100%)',
       World2: 'linear-gradient(180deg, #92400e 0%, #451a03 100%)',
@@ -203,10 +197,9 @@ export function ClimbGraphic({
       LangWorld1: 'linear-gradient(180deg, #f87171 0%, #7f1d1d 100%)',
     };
 
-    const worldKey = world as keyof typeof worldSkyGradients;
+    const worldKey = targetWorld as keyof typeof worldSkyGradients;
     const worldSkyGradient = Object.prototype.hasOwnProperty.call(worldSkyGradients, worldKey)
-      ? // eslint-disable-next-line security/detect-object-injection -- key validated above
-        worldSkyGradients[worldKey]
+      ? worldSkyGradients[worldKey]
       : worldSkyGradients['World1'];
 
     const configs: Record<string, StageBackgroundConfig> = {
@@ -218,8 +211,7 @@ export function ClimbGraphic({
       },
       대수: {
         skyGradient: Object.prototype.hasOwnProperty.call(worldSkyGradients, worldKey)
-          ? // eslint-disable-next-line security/detect-object-injection -- key validated above
-            worldSkyGradients[worldKey]
+          ? worldSkyGradients[worldKey]
           : 'linear-gradient(180deg, #064E3B 0%, #065F46 15%, #0891B2 40%, #06B6D4 65%, #22D3EE 85%, #67E8F9 100%)',
         mainColor: 'var(--ground-color-near)',
         secondaryColor: 'var(--ground-color-mid)',
@@ -227,8 +219,7 @@ export function ClimbGraphic({
       },
       논리: {
         skyGradient: Object.prototype.hasOwnProperty.call(worldSkyGradients, worldKey)
-          ? // eslint-disable-next-line security/detect-object-injection -- key validated above
-            worldSkyGradients[worldKey]
+          ? worldSkyGradients[worldKey]
           : 'linear-gradient(180deg, #4B0082 0%, #6A5ACD 30%, #9370DB 60%, #BA55D3 100%)',
         mainColor: 'var(--ground-color-near)',
         secondaryColor: 'var(--ground-color-mid)',
@@ -236,41 +227,104 @@ export function ClimbGraphic({
       },
       심화: {
         skyGradient: Object.prototype.hasOwnProperty.call(worldSkyGradients, worldKey)
-          ? // eslint-disable-next-line security/detect-object-injection -- key validated above
-            worldSkyGradients[worldKey]
+          ? worldSkyGradients[worldKey]
           : 'linear-gradient(180deg, #000428 0%, #004e92 30%, #1a1a2e 60%, #16213e 100%)',
         mainColor: 'var(--ground-color-near)',
         secondaryColor: 'var(--ground-color-mid)',
         accentColor: 'var(--symbol-color-near)',
       },
     };
-    return Object.prototype.hasOwnProperty.call(configs, category)
-      ? // eslint-disable-next-line security/detect-object-injection -- key validated above
-        configs[category]
-      : configs['기초'];
-  }, [category, world]);
 
-  // 하늘 배경 크로스 페이드 상태
-  const [skyStates, setSkyStates] = React.useState({
-    activeSky: stageConfig.skyGradient,
-    prevSky: '',
+    return Object.prototype.hasOwnProperty.call(configs, targetCategory)
+      ? configs[targetCategory]
+      : configs['기초'];
+  }, []);
+
+  // 카테고리 및 월드별 배경 매핑
+  const stageConfig = useMemo(() => {
+    return getStageConfigFor(world, category);
+  }, [world, category, getStageConfigFor]);
+
+  // 배경 크로스 페이드 상태
+  const [bgStates, setBgStates] = React.useState({
+    activeWorld: world,
+    activeCategory: category,
+    prevWorld: '' as World | '',
+    prevCategory: '' as Category | '',
     isTransitioning: false,
   });
 
   useEffect(() => {
-    if (stageConfig.skyGradient !== skyStates.activeSky) {
-      setSkyStates({
-        prevSky: skyStates.activeSky,
-        activeSky: stageConfig.skyGradient,
+    if (world !== bgStates.activeWorld || category !== bgStates.activeCategory) {
+      setBgStates({
+        prevWorld: bgStates.activeWorld as World,
+        prevCategory: bgStates.activeCategory as Category,
+        activeWorld: world,
+        activeCategory: category,
         isTransitioning: true,
       });
 
       const timer = setTimeout(() => {
-        setSkyStates((prev) => ({ ...prev, isTransitioning: false }));
+        setBgStates((prev) => ({ ...prev, isTransitioning: false }));
       }, 600); // 600ms transition
       return () => clearTimeout(timer);
     }
-  }, [stageConfig.skyGradient, skyStates.activeSky]);
+  }, [world, category, bgStates.activeWorld, bgStates.activeCategory]);
+
+  // 배경 개별 렌더링 헬퍼
+  const renderBackground = useCallback(
+    (targetWorld: World, targetCategory: Category) => {
+      const config = getStageConfigFor(targetWorld, targetCategory);
+      return (
+        <div
+          className="level-map-bg-layer"
+          data-world={targetWorld}
+          data-stage={targetCategory}
+          style={{
+            position: 'absolute',
+            width: '100%',
+            height: '100%',
+            top: 0,
+            left: 0,
+            pointerEvents: 'none',
+          }}
+        >
+          {targetCategory === '기초' && (
+            <ArithmeticBackground
+              key={targetCategory}
+              world={targetWorld}
+              totalLevels={totalLevels}
+            />
+          )}
+          {targetCategory === '대수' && (
+            <EquationsBackground
+              key={targetCategory}
+              world={targetWorld}
+              totalLevels={totalLevels}
+              config={config}
+            />
+          )}
+          {targetCategory === '논리' && (
+            <SequenceBackground
+              key={targetCategory}
+              world={targetWorld}
+              totalLevels={totalLevels}
+              config={config}
+            />
+          )}
+          {targetCategory === '심화' && (
+            <CalculusBackground
+              key={targetCategory}
+              world={targetWorld}
+              totalLevels={totalLevels}
+              config={config}
+            />
+          )}
+        </div>
+      );
+    },
+    [totalLevels, getStageConfigFor]
+  );
 
   return (
     <div
@@ -285,53 +339,53 @@ export function ClimbGraphic({
         } as React.CSSProperties
       }
     >
-      {/* 듀얼 스카이 레이어: 부드러운 배경색 교차 페이드 */}
-      <div
-        className="level-map-sky prev"
-        style={{
-          background: skyStates.prevSky || stageConfig.skyGradient,
-          opacity: skyStates.isTransitioning ? 1 : 0,
-          transition: 'opacity 0.6s ease-in-out',
-          zIndex: 0,
-        }}
-      />
-      <div
-        className="level-map-sky active"
-        style={{
-          background: skyStates.activeSky,
-          opacity: skyStates.isTransitioning ? 0 : 1,
-          transition: skyStates.isTransitioning ? 'opacity 0.6s ease-in-out' : 'none',
-          zIndex: 1,
-        }}
-      />
+      {/* 이전 월드 배경 레이어 (페이드아웃) */}
+      {bgStates.prevWorld && bgStates.prevCategory && (
+        <div
+          className="level-map-background-wrapper prev"
+          style={{
+            position: 'absolute',
+            width: '100%',
+            height: '100%',
+            top: 0,
+            left: 0,
+            opacity: bgStates.isTransitioning ? 1 : 0,
+            transition: 'opacity 0.6s ease-in-out',
+            zIndex: 1,
+            pointerEvents: 'none',
+          }}
+        >
+          <div
+            className="level-map-sky"
+            style={{
+              background: getStageConfigFor(
+                bgStates.prevWorld as World,
+                bgStates.prevCategory as Category
+              ).skyGradient,
+            }}
+          />
+          {renderBackground(bgStates.prevWorld as World, bgStates.prevCategory as Category)}
+        </div>
+      )}
 
-      {category === '기초' && (
-        <ArithmeticBackground key={category} world={world} totalLevels={totalLevels} />
-      )}
-      {category === '대수' && (
-        <EquationsBackground
-          key={category}
-          world={world}
-          totalLevels={totalLevels}
-          config={stageConfig}
-        />
-      )}
-      {category === '논리' && (
-        <SequenceBackground
-          key={category}
-          world={world}
-          totalLevels={totalLevels}
-          config={stageConfig}
-        />
-      )}
-      {category === '심화' && (
-        <CalculusBackground
-          key={category}
-          world={world}
-          totalLevels={totalLevels}
-          config={stageConfig}
-        />
-      )}
+      {/* 활성 월드 배경 레이어 (페이드인) */}
+      <div
+        className="level-map-background-wrapper active"
+        style={{
+          position: 'absolute',
+          width: '100%',
+          height: '100%',
+          top: 0,
+          left: 0,
+          opacity: bgStates.isTransitioning ? 0 : 1,
+          transition: bgStates.isTransitioning ? 'opacity 0.6s ease-in-out' : 'none',
+          zIndex: 2,
+          pointerEvents: 'none',
+        }}
+      >
+        <div className="level-map-sky" style={{ background: stageConfig.skyGradient }} />
+        {renderBackground(bgStates.activeWorld as World, bgStates.activeCategory as Category)}
+      </div>
 
       <div
         className="level-map-path-container"
