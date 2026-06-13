@@ -265,15 +265,32 @@ export function ClimbGraphic({
     >
       <div className="level-map-sky" style={{ background: stageConfig.skyGradient }} />
 
-      {category === '기초' && <ArithmeticBackground key={world} totalLevels={totalLevels} />}
+      {category === '기초' && (
+        <ArithmeticBackground key={category} world={world} totalLevels={totalLevels} />
+      )}
       {category === '대수' && (
-        <EquationsBackground key={world} totalLevels={totalLevels} config={stageConfig} />
+        <EquationsBackground
+          key={category}
+          world={world}
+          totalLevels={totalLevels}
+          config={stageConfig}
+        />
       )}
       {category === '논리' && (
-        <SequenceBackground key={world} totalLevels={totalLevels} config={stageConfig} />
+        <SequenceBackground
+          key={category}
+          world={world}
+          totalLevels={totalLevels}
+          config={stageConfig}
+        />
       )}
       {category === '심화' && (
-        <CalculusBackground key={world} totalLevels={totalLevels} config={stageConfig} />
+        <CalculusBackground
+          key={category}
+          world={world}
+          totalLevels={totalLevels}
+          config={stageConfig}
+        />
       )}
 
       <div

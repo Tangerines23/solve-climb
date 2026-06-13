@@ -1,4 +1,5 @@
 import { useMemo } from 'react';
+import { World } from '../types/quiz';
 
 interface StageBackgroundConfig {
   skyGradient: string;
@@ -8,6 +9,7 @@ interface StageBackgroundConfig {
 }
 
 interface BackgroundProps {
+  world?: World;
   config?: StageBackgroundConfig;
   categoryColor?: string;
   totalLevels?: number;
@@ -99,7 +101,7 @@ const getMountainType = (yPercent: number): 'near' | 'mid' | 'far' => {
 // 3. 메인 배경 컴포넌트 (ArithmeticBackground)
 // ==========================================
 
-export function ArithmeticBackground({ totalLevels = 15 }: BackgroundProps) {
+export function ArithmeticBackground({ world, totalLevels = 15 }: BackgroundProps) {
   const items = useMemo(() => {
     // 사칙연산 기호 목록
     const symbols = ['+', '-', '×', '÷'];
@@ -179,7 +181,7 @@ export function ArithmeticBackground({ totalLevels = 15 }: BackgroundProps) {
 
     // Y축 정렬 (멀리 있는 것이 뒤로 가도록)
     return generatedItems.sort((a, b) => a.y - b.y);
-  }, [totalLevels]);
+  }, [totalLevels, world]);
 
   return (
     <div
@@ -219,7 +221,8 @@ export function ArithmeticBackground({ totalLevels = 15 }: BackgroundProps) {
                   : 1,
             filter: item.type === 'far' ? 'blur(2px)' : item.type === 'mid' ? 'blur(1px)' : 'none',
             opacity: item.type === 'far' ? 0.8 : 1,
-            transition: 'transform 0.5s ease-out',
+            transition:
+              'left 1s cubic-bezier(0.4, 0, 0.2, 1), top 1s cubic-bezier(0.4, 0, 0.2, 1), transform 1s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.5s ease',
           }}
         >
           {/* 아이템 타입에 따라 다른 컴포넌트 렌더링 */}
@@ -235,7 +238,7 @@ export function ArithmeticBackground({ totalLevels = 15 }: BackgroundProps) {
 }
 
 // 2단계: 방정식 - 쌍둥이 대칭 협곡 (Symmetrical Twin Canyon)
-export function EquationsBackground({ config, totalLevels = 15 }: BackgroundProps) {
+export function EquationsBackground({ world, config, totalLevels = 15 }: BackgroundProps) {
   // 청록색 팔레트: Cyan-900 ~ Cyan-600
   const defaultConfig: StageBackgroundConfig = {
     skyGradient:
@@ -288,7 +291,7 @@ export function EquationsBackground({ config, totalLevels = 15 }: BackgroundProp
       });
     }
     return vars;
-  }, []);
+  }, [world]);
 
   return (
     <div
@@ -527,6 +530,8 @@ export function EquationsBackground({ config, totalLevels = 15 }: BackgroundProp
             animationDelay: `${variable.delay}s`,
             textShadow: '0 2px 4px rgba(0, 0, 0, 0.3)',
             transform: 'translate(-50%, -50%)',
+            transition:
+              'left 1s cubic-bezier(0.4, 0, 0.2, 1), top 1s cubic-bezier(0.4, 0, 0.2, 1), color 0.5s ease',
           }}
         >
           {variable.symbol}
