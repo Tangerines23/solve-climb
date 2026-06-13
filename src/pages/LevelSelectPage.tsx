@@ -41,18 +41,27 @@ export function LevelSelectPage() {
   const [activeCategory, setActiveCategory] = useState<string>(categoryParam || '기초');
   const [isSheetTransitioning, setIsSheetTransitioning] = useState(false);
 
-  // Sync with URL params when not in transition animation
+  // URL 파라미터가 바뀔 때 로컬 상태 싱크 및 시트 트랜지션 해제 제어
   useEffect(() => {
-    if (worldParam && worldParam !== activeWorld && !isSheetTransitioning) {
+    if (worldParam && worldParam !== activeWorld) {
       setActiveWorld(worldParam);
+
+      // worldParam이 실제로 새 월드로 전환 완료된 것이 감지되면
+      // 시트를 다시 위로 올리는 트랜지션을 활성화(isSheetTransitioning 해제)
+      if (isSheetTransitioning) {
+        const timer = setTimeout(() => {
+          setIsSheetTransitioning(false);
+        }, 50); // DOM 렌더링 틱 확보 후 복귀
+        return () => clearTimeout(timer);
+      }
     }
   }, [worldParam, activeWorld, isSheetTransitioning]);
 
   useEffect(() => {
-    if (categoryParam && categoryParam !== activeCategory && !isSheetTransitioning) {
+    if (categoryParam && categoryParam !== activeCategory) {
       setActiveCategory(categoryParam);
     }
-  }, [categoryParam, activeCategory, isSheetTransitioning]);
+  }, [categoryParam, activeCategory]);
 
   const [tier] = useState<Tier>('normal'); // FIXME: 하드 티어 개발 완료 시 setTier 복구
 
@@ -190,6 +199,9 @@ export function LevelSelectPage() {
 
   // 월드 전환 핸들러
   const handleWorldChange = (direction: 'next' | 'prev') => {
+    // 애니메이션 진행 중이면 추가 전환 입력을 무시하여 핑퐁을 방지함
+    if (isSheetTransitioning) return;
+
     // 현재 산에 속한 월드만 필터링 (중요: 다른 산의 월드로 넘어가지 않도록 함)
     const validWorldIds = APP_CONFIG.WORLDS.filter((w) => w.mountainId === mountainParam).map(
       (w) => w.id
@@ -208,10 +220,9 @@ export function LevelSelectPage() {
     // 1. Trigger bottom sheet sink animation (300ms)
     setIsSheetTransitioning(true);
 
-    // 2. Perform actual data update & URL change after sheet sinks
+    // 2. Perform actual URL change after sheet sinks
     setTimeout(() => {
       storageService.set(STORAGE_KEYS.LAST_PLAYED_WORLD(mountainParam), nextWorld);
-      setActiveWorld(nextWorld);
 
       navigate(
         urls.levelSelect({
@@ -221,11 +232,6 @@ export function LevelSelectPage() {
         }),
         { replace: true }
       );
-
-      // 3. Briefly wait for DOM updates (50ms) and release bottom sheet to slide back up
-      setTimeout(() => {
-        setIsSheetTransitioning(false);
-      }, 50);
     }, 300);
   };
 

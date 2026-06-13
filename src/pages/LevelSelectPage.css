@@ -1,32 +1,12 @@
 .level-select-page {
   /* PageLayout handles positioning and overflow */
-  transition: background 0.5s ease;
+  background: var(--color-bg-primary, #09090b);
   position: relative;
   /* Maintain relative context for children */
   display: flex;
   flex-direction: column;
   height: 100vh;
   overflow: hidden;
-}
-
-/* World Themes */
-.level-select-page[data-world='World1'] {
-  background: linear-gradient(to bottom, #065f46, #064e3b, #022c22);
-}
-
-.level-select-page[data-world='World2'] {
-  background: linear-gradient(to bottom, #92400e, #78350f, #451a03);
-  /* Desert/Ancient */
-}
-
-.level-select-page[data-world='World3'] {
-  background: linear-gradient(to bottom, #0e7490, #155e75, #083344);
-  /* Sea/Ice */
-}
-
-.level-select-page[data-world='World4'] {
-  background: linear-gradient(to bottom, #09090b, #020205, #000000);
-  /* Cyber Black / Space Elevator */
 }
 
 /* 상단 헤더 */
