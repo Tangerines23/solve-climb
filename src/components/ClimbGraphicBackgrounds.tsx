@@ -542,7 +542,7 @@ export function EquationsBackground({ world, config, totalLevels = 15 }: Backgro
 }
 
 // 3단계: 수열 - 계단식/프랙탈 구조
-export function SequenceBackground({ config }: BackgroundProps) {
+export function SequenceBackground({ world, config }: BackgroundProps) {
   const defaultConfig: StageBackgroundConfig = {
     skyGradient: 'linear-gradient(180deg, #4B0082 0%, #6A5ACD 30%, #9370DB 60%, #BA55D3 100%)',
     mainColor: 'var(--color-purple-900)',
@@ -551,11 +551,28 @@ export function SequenceBackground({ config }: BackgroundProps) {
   };
   const finalConfig = config || defaultConfig;
 
+  // 월드 전환 시 랜덤 위치로 이동하는 떠있는 바위/구체들
+  const stones = useMemo(() => {
+    const list = [];
+    const count = 15;
+    for (let i = 0; i < count; i++) {
+      const x = Math.random() * 100;
+      const y = Math.random() * 100;
+      const size = 12 + Math.random() * 14; // 12px ~ 26px
+      list.push({
+        id: `seq-stone-${i}`,
+        x,
+        y,
+        size,
+        opacity: 0.35 + Math.random() * 0.2,
+      });
+    }
+    return list;
+  }, [world]);
+
   return (
-    <svg
-      viewBox="0 -300 800 1500"
-      className="mountain-background-svg"
-      preserveAspectRatio="xMidYMid meet"
+    <div
+      data-vg-ignore="true"
       style={{
         position: 'absolute',
         width: '100%',
@@ -564,103 +581,122 @@ export function SequenceBackground({ config }: BackgroundProps) {
         left: 0,
         zIndex: 1,
         pointerEvents: 'none',
+        overflow: 'hidden',
       }}
     >
-      {/* 프랙탈 구조: 큰 삼각형 안에 작은 삼각형들 */}
-      {/* 큰 삼각형 - 전체 배경의 70% (y: -300 ~ 750) */}
-      <polygon
-        points="100,1200 400,-250 700,1200"
-        fill={finalConfig.mainColor}
-        opacity="0.3"
-        className="mountain-bg-far"
-      />
-      <polygon
-        points="100,1200 400,0 700,1200"
-        fill={finalConfig.mainColor}
-        opacity="0.3"
-        className="mountain-bg-far"
-      />
-      <polygon
-        points="150,750 400,200 650,750"
-        fill={finalConfig.mainColor}
-        opacity="0.25"
-        className="mountain-bg-far"
-      />
+      <svg
+        viewBox="0 -300 800 1500"
+        className="mountain-background-svg"
+        preserveAspectRatio="xMidYMid meet"
+        style={{
+          position: 'absolute',
+          width: '100%',
+          height: '100%',
+          top: 0,
+          left: 0,
+          zIndex: 1,
+        }}
+      >
+        {/* 프랙탈 구조: 큰 삼각형 안에 작은 삼각형들 */}
+        {/* 큰 삼각형 - 전체 배경의 70% (y: -300 ~ 750) */}
+        <polygon
+          points="100,1200 400,-250 700,1200"
+          fill={finalConfig.mainColor}
+          opacity="0.3"
+          className="mountain-bg-far"
+        />
+        <polygon
+          points="100,1200 400,0 700,1200"
+          fill={finalConfig.mainColor}
+          opacity="0.3"
+          className="mountain-bg-far"
+        />
+        <polygon
+          points="150,750 400,200 650,750"
+          fill={finalConfig.mainColor}
+          opacity="0.25"
+          className="mountain-bg-far"
+        />
 
-      {/* 중간 삼각형들 - 전체 배경의 50% (y: 300 ~ 1050) */}
-      <polygon
-        points="200,1200 400,400 600,1200"
-        fill={finalConfig.secondaryColor}
-        opacity="0.4"
-        className="mountain-bg-mid"
-      />
-      <polygon
-        points="150,1200 275,550 400,1200"
-        fill={finalConfig.secondaryColor}
-        opacity="0.4"
-        className="mountain-bg-mid"
-      />
-      <polygon
-        points="400,1200 525,550 650,1200"
-        fill={finalConfig.secondaryColor}
-        opacity="0.4"
-        className="mountain-bg-mid"
-      />
-      <polygon
-        points="100,1050 300,650 500,1050"
-        fill={finalConfig.secondaryColor}
-        opacity="0.35"
-        className="mountain-bg-mid"
-      />
+        {/* 중간 삼각형들 - 전체 배경의 50% (y: 300 ~ 1050) */}
+        <polygon
+          points="200,1200 400,400 600,1200"
+          fill={finalConfig.secondaryColor}
+          opacity="0.4"
+          className="mountain-bg-mid"
+        />
+        <polygon
+          points="150,1200 275,550 400,1200"
+          fill={finalConfig.secondaryColor}
+          opacity="0.4"
+          className="mountain-bg-mid"
+        />
+        <polygon
+          points="400,1200 525,550 650,1200"
+          fill={finalConfig.secondaryColor}
+          opacity="0.4"
+          className="mountain-bg-mid"
+        />
+        <polygon
+          points="100,1050 300,650 500,1050"
+          fill={finalConfig.secondaryColor}
+          opacity="0.35"
+          className="mountain-bg-mid"
+        />
 
-      {/* 계단식 구조 - 전체 배경의 30% (y: 750 ~ 1200) */}
-      <polygon
-        points="0,1200 0,1100 60,1100 60,1050 120,1050 120,1000 180,1000 180,950 240,950 240,900 300,900 300,1200"
-        fill={finalConfig.mainColor}
-        opacity="0.6"
-        className="mountain-bg-near"
-      />
-      <polygon
-        points="0,1200 0,1150 80,1150 80,1100 160,1100 160,1050 240,1050 240,1020 320,1020 320,1000 400,1000 400,1200"
-        fill={finalConfig.mainColor}
-        opacity="0.7"
-        className="mountain-bg-near"
-      />
-      <polygon
-        points="400,1200 400,1000 480,1000 480,1020 560,1020 560,1050 640,1050 640,1100 720,1100 720,1150 800,1150 800,1200"
-        fill={finalConfig.mainColor}
-        opacity="0.7"
-        className="mountain-bg-near"
-      />
-      <polygon
-        points="500,1200 500,900 560,900 560,950 620,950 620,1000 680,1000 680,1050 740,1050 740,1100 800,1100 800,1200"
-        fill={finalConfig.mainColor}
-        opacity="0.6"
-        className="mountain-bg-near"
-      />
+        {/* 계단식 구조 - 전체 배경의 30% (y: 750 ~ 1200) */}
+        <polygon
+          points="0,1200 0,1100 60,1100 60,1050 120,1050 120,1000 180,1000 180,950 240,950 240,900 300,900 300,1200"
+          fill={finalConfig.mainColor}
+          opacity="0.6"
+          className="mountain-bg-near"
+        />
+        <polygon
+          points="0,1200 0,1150 80,1150 80,1100 160,1100 160,1050 240,1050 240,1020 320,1020 320,1000 400,1000 400,1200"
+          fill={finalConfig.mainColor}
+          opacity="0.7"
+          className="mountain-bg-near"
+        />
+        <polygon
+          points="400,1200 400,1000 480,1000 480,1020 560,1020 560,1050 640,1050 640,1100 720,1100 720,1150 800,1150 800,1200"
+          fill={finalConfig.mainColor}
+          opacity="0.7"
+          className="mountain-bg-near"
+        />
+        <polygon
+          points="500,1200 500,900 560,900 560,950 620,950 620,1000 680,1000 680,1050 740,1050 740,1100 800,1100 800,1200"
+          fill={finalConfig.mainColor}
+          opacity="0.6"
+          className="mountain-bg-near"
+        />
+      </svg>
 
-      {/* 규칙적으로 배치된 바위들 - 화면 전체에 분산 */}
-      <circle cx="100" cy="-150" r="10" fill={finalConfig.accentColor} opacity="0.4" />
-      <circle cx="300" cy="-130" r="12" fill={finalConfig.accentColor} opacity="0.4" />
-      <circle cx="500" cy="-140" r="10" fill={finalConfig.accentColor} opacity="0.4" />
-      <circle cx="700" cy="-120" r="12" fill={finalConfig.accentColor} opacity="0.4" />
-      <circle cx="150" cy="50" r="14" fill={finalConfig.accentColor} opacity="0.5" />
-      <circle cx="350" cy="40" r="16" fill={finalConfig.accentColor} opacity="0.5" />
-      <circle cx="550" cy="60" r="14" fill={finalConfig.accentColor} opacity="0.5" />
-      <circle cx="150" cy="680" r="15" fill={finalConfig.accentColor} opacity="0.5" />
-      <circle cx="250" cy="670" r="12" fill={finalConfig.accentColor} opacity="0.5" />
-      <circle cx="350" cy="660" r="18" fill={finalConfig.accentColor} opacity="0.5" />
-      <circle cx="450" cy="660" r="18" fill={finalConfig.accentColor} opacity="0.5" />
-      <circle cx="550" cy="670" r="12" fill={finalConfig.accentColor} opacity="0.5" />
-      <circle cx="650" cy="680" r="15" fill={finalConfig.accentColor} opacity="0.5" />
-      <circle cx="200" cy="1000" r="14" fill={finalConfig.accentColor} opacity="0.5" />
-      <circle cx="600" cy="1020" r="16" fill={finalConfig.accentColor} opacity="0.5" />
-    </svg>
+      {/* 동적 떠있는 구체들 */}
+      {stones.map((stone) => (
+        <div
+          key={stone.id}
+          style={{
+            position: 'absolute',
+            left: `${stone.x}%`,
+            top: `${stone.y}%`,
+            width: `${stone.size}px`,
+            height: `${stone.size}px`,
+            borderRadius: '50%',
+            backgroundColor: finalConfig.accentColor,
+            opacity: stone.opacity,
+            transform: 'translate(-50%, -50%)',
+            pointerEvents: 'none',
+            transition:
+              'left 1s cubic-bezier(0.4, 0, 0.2, 1), top 1s cubic-bezier(0.4, 0, 0.2, 1), background-color 0.5s ease',
+          }}
+        />
+      ))}
+    </div>
   );
 }
 
 // 4단계: 미적분 - 곡선형 부유섬
-export function CalculusBackground({ config }: BackgroundProps) {
+export function CalculusBackground({ world, config }: BackgroundProps) {
   const defaultConfig: StageBackgroundConfig = {
     skyGradient: 'linear-gradient(180deg, #000428 0%, #004e92 30%, #1a1a2e 60%, #16213e 100%)',
     mainColor: 'var(--color-slate-900)',
@@ -669,11 +705,45 @@ export function CalculusBackground({ config }: BackgroundProps) {
   };
   const finalConfig = config || defaultConfig;
 
+  // 월드 전환 시 랜덤 위치로 부드럽게 미끄러지는 수학 기호들과 별들
+  const items = useMemo(() => {
+    const list = [];
+    const mathSymbols = ['∫', '∞'];
+
+    // 1. 수학 기호 6개
+    for (let i = 0; i < 6; i++) {
+      list.push({
+        id: `calc-symbol-${i}`,
+        type: 'symbol',
+        symbol: mathSymbols[i % mathSymbols.length],
+        x: Math.random() * 100,
+        y: Math.random() * 100,
+        size: 28 + Math.random() * 16, // 28px ~ 44px
+        opacity: 0.45 + Math.random() * 0.25,
+        delay: Math.random() * 2,
+      });
+    }
+
+    // 2. 별들 15개
+    for (let i = 0; i < 15; i++) {
+      list.push({
+        id: `calc-star-${i}`,
+        type: 'star',
+        symbol: '',
+        x: Math.random() * 100,
+        y: Math.random() * 100,
+        size: 1.5 + Math.random() * 1.5, // 1.5px ~ 3px
+        opacity: 0.6 + Math.random() * 0.3,
+        delay: Math.random() * 2,
+      });
+    }
+
+    return list;
+  }, [world]);
+
   return (
-    <svg
-      viewBox="0 -300 800 1500"
-      className="mountain-background-svg"
-      preserveAspectRatio="xMidYMid meet"
+    <div
+      data-vg-ignore="true"
       style={{
         position: 'absolute',
         width: '100%',
@@ -682,260 +752,214 @@ export function CalculusBackground({ config }: BackgroundProps) {
         left: 0,
         zIndex: 1,
         pointerEvents: 'none',
+        overflow: 'hidden',
       }}
     >
-      {/* 배경 그리드 패턴 - viewBox 전체에 맞게 조정 */}
-      <defs>
-        <pattern
-          id="grid"
-          x="0"
-          y="0"
-          width="40"
-          height="40"
-          patternUnits="userSpaceOnUse"
-          opacity="0.2"
+      <svg
+        viewBox="0 -300 800 1500"
+        className="mountain-background-svg"
+        preserveAspectRatio="xMidYMid meet"
+        style={{
+          position: 'absolute',
+          width: '100%',
+          height: '100%',
+          top: 0,
+          left: 0,
+          zIndex: 1,
+        }}
+      >
+        {/* 배경 그리드 패턴 - viewBox 전체에 맞게 조정 */}
+        <defs>
+          <pattern
+            id="grid"
+            x="0"
+            y="0"
+            width="40"
+            height="40"
+            patternUnits="userSpaceOnUse"
+            opacity="0.2"
+          >
+            <path
+              d="M 40 0 L 0 0 0 40"
+              fill="none"
+              stroke={finalConfig.accentColor}
+              strokeWidth="1"
+            />
+          </pattern>
+        </defs>
+        <rect x="0" y="-300" width="800" height="1800" fill="url(#grid)" />
+
+        {/* 좌표축 - viewBox 내부에 맞게 조정 */}
+        <line
+          x1="0"
+          y1="600"
+          x2="800"
+          y2="600"
+          stroke={finalConfig.accentColor}
+          strokeWidth="2"
+          opacity="0.3"
+        />
+        <line
+          x1="400"
+          y1="-300"
+          x2="400"
+          y2="1200"
+          stroke={finalConfig.accentColor}
+          strokeWidth="2"
+          opacity="0.3"
+        />
+
+        {/* 부유섬 1 - 곡선형 (좌우로 분산) - 전체 배경의 70% (y: -300 ~ 750) */}
+        <path
+          d="M 50,-250 Q 200,-300 300,-250 T 500,-270 T 650,-250 Z"
+          fill={finalConfig.mainColor}
+          opacity="0.3"
+          className="mountain-bg-far"
+        />
+        <path
+          d="M 0,-150 Q 100,-200 200,-170 T 400,-180 T 600,-150 Z"
+          fill={finalConfig.mainColor}
+          opacity="0.35"
+          className="mountain-bg-far"
+        />
+        <path
+          d="M 150,0 Q 250,-50 350,-20 T 550,-30 T 700,0 Z"
+          fill={finalConfig.mainColor}
+          opacity="0.4"
+          className="mountain-bg-far"
+        />
+        <path
+          d="M 100,200 Q 200,50 300,100 T 500,80 T 600,200 Z"
+          fill={finalConfig.mainColor}
+          opacity="0.4"
+          className="mountain-bg-far"
+        />
+        <path
+          d="M 50,500 Q 200,350 350,400 T 550,380 T 700,500 Z"
+          fill={finalConfig.mainColor}
+          opacity="0.35"
+          className="mountain-bg-far"
+        />
+
+        {/* 부유섬 2 - 중간 높이 (좌우로 분산) - 전체 배경의 50% (y: 300 ~ 1050) */}
+        <path
+          d="M 0,100 Q 150,0 300,20 T 500,0 T 700,100 Z"
+          fill={finalConfig.secondaryColor}
+          opacity="0.4"
+          className="mountain-bg-mid"
+        />
+        <path
+          d="M 100,150 Q 250,50 400,70 T 600,60 T 750,150 Z"
+          fill={finalConfig.secondaryColor}
+          opacity="0.45"
+          className="mountain-bg-mid"
+        />
+        <path
+          d="M 0,300 Q 150,100 300,120 T 500,100 T 700,300 Z"
+          fill={finalConfig.secondaryColor}
+          opacity="0.5"
+          className="mountain-bg-mid"
+        />
+        <path
+          d="M 150,650 Q 300,550 450,570 T 650,560 T 800,650 Z"
+          fill={finalConfig.secondaryColor}
+          opacity="0.45"
+          className="mountain-bg-mid"
+        />
+
+        {/* 부유섬 3 - 적분 면적 형태 (좌우로 분산) - 전체 배경의 30% (y: 750 ~ 1200) */}
+        <path
+          d="M 50,1200 L 50,1000 Q 200,950 350,980 T 550,960 T 750,1200 Z"
+          fill={finalConfig.mainColor}
+          opacity="0.7"
+          className="mountain-bg-near"
+        />
+        <path
+          d="M 200,1180 L 200,1120 Q 350,1080 450,1100 T 600,1090 T 700,1180 Z"
+          fill={finalConfig.mainColor}
+          opacity="0.65"
+          className="mountain-bg-near"
+        />
+        <path
+          d="M 100,1200 L 100,1050 Q 250,1000 400,1030 T 600,1010 T 800,1200 Z"
+          fill={finalConfig.mainColor}
+          opacity="0.7"
+          className="mountain-bg-near"
+        />
+
+        {/* 접선 빛줄기 - 화면 전체에 분산 */}
+        <line
+          x1="0"
+          y1="-250"
+          x2="800"
+          y2="-200"
+          stroke={finalConfig.accentColor}
+          strokeWidth="2"
+          opacity="0.3"
+          strokeDasharray="5,5"
+        />
+        <line
+          x1="0"
+          y1="150"
+          x2="800"
+          y2="200"
+          stroke={finalConfig.accentColor}
+          strokeWidth="2"
+          opacity="0.4"
+          strokeDasharray="5,5"
+        />
+        <line
+          x1="100"
+          y1="100"
+          x2="700"
+          y2="250"
+          stroke={finalConfig.accentColor}
+          strokeWidth="2"
+          opacity="0.3"
+          strokeDasharray="5,5"
+        />
+        <line
+          x1="0"
+          y1="850"
+          x2="800"
+          y2="900"
+          stroke={finalConfig.accentColor}
+          strokeWidth="2"
+          opacity="0.3"
+          strokeDasharray="5,5"
+        />
+      </svg>
+
+      {/* 동적 떠있는 수학 기호 및 별들 */}
+      {items.map((item) => (
+        <div
+          key={item.id}
+          className={item.type === 'symbol' ? 'math-symbol' : ''}
+          style={{
+            position: 'absolute',
+            left: `${item.x}%`,
+            top: `${item.y}%`,
+            fontSize: item.type === 'symbol' ? `${item.size}px` : undefined,
+            width: item.type === 'star' ? `${item.size}px` : undefined,
+            height: item.type === 'star' ? `${item.size}px` : undefined,
+            borderRadius: item.type === 'star' ? '50%' : undefined,
+            backgroundColor: item.type === 'star' ? finalConfig.accentColor : undefined,
+            color: item.type === 'symbol' ? finalConfig.accentColor : undefined,
+            opacity: item.opacity,
+            transform: 'translate(-50%, -50%)',
+            pointerEvents: 'none',
+            animation:
+              item.type === 'symbol'
+                ? `symbolFloat 3s ease-in-out infinite, symbolGlow 2s ease-in-out infinite`
+                : undefined,
+            animationDelay: `${item.delay}s`,
+            transition:
+              'left 1s cubic-bezier(0.4, 0, 0.2, 1), top 1s cubic-bezier(0.4, 0, 0.2, 1), color 0.5s ease, background-color 0.5s ease',
+          }}
         >
-          <path
-            d="M 40 0 L 0 0 0 40"
-            fill="none"
-            stroke={finalConfig.accentColor}
-            strokeWidth="1"
-          />
-        </pattern>
-      </defs>
-      <rect x="0" y="-300" width="800" height="1800" fill="url(#grid)" />
-
-      {/* 좌표축 - viewBox 내부에 맞게 조정 */}
-      <line
-        x1="0"
-        y1="600"
-        x2="800"
-        y2="600"
-        stroke={finalConfig.accentColor}
-        strokeWidth="2"
-        opacity="0.3"
-      />
-      <line
-        x1="400"
-        y1="-300"
-        x2="400"
-        y2="1200"
-        stroke={finalConfig.accentColor}
-        strokeWidth="2"
-        opacity="0.3"
-      />
-
-      {/* 부유섬 1 - 곡선형 (좌우로 분산) - 전체 배경의 70% (y: -300 ~ 750) */}
-      <path
-        d="M 50,-250 Q 200,-300 300,-250 T 500,-270 T 650,-250 Z"
-        fill={finalConfig.mainColor}
-        opacity="0.3"
-        className="mountain-bg-far"
-      />
-      <path
-        d="M 0,-150 Q 100,-200 200,-170 T 400,-180 T 600,-150 Z"
-        fill={finalConfig.mainColor}
-        opacity="0.35"
-        className="mountain-bg-far"
-      />
-      <path
-        d="M 150,0 Q 250,-50 350,-20 T 550,-30 T 700,0 Z"
-        fill={finalConfig.mainColor}
-        opacity="0.4"
-        className="mountain-bg-far"
-      />
-      <path
-        d="M 100,200 Q 200,50 300,100 T 500,80 T 600,200 Z"
-        fill={finalConfig.mainColor}
-        opacity="0.4"
-        className="mountain-bg-far"
-      />
-      <path
-        d="M 50,500 Q 200,350 350,400 T 550,380 T 700,500 Z"
-        fill={finalConfig.mainColor}
-        opacity="0.35"
-        className="mountain-bg-far"
-      />
-
-      {/* 부유섬 2 - 중간 높이 (좌우로 분산) - 전체 배경의 50% (y: 300 ~ 1050) */}
-      <path
-        d="M 0,100 Q 150,0 300,20 T 500,0 T 700,100 Z"
-        fill={finalConfig.secondaryColor}
-        opacity="0.4"
-        className="mountain-bg-mid"
-      />
-      <path
-        d="M 100,150 Q 250,50 400,70 T 600,60 T 750,150 Z"
-        fill={finalConfig.secondaryColor}
-        opacity="0.45"
-        className="mountain-bg-mid"
-      />
-      <path
-        d="M 0,300 Q 150,100 300,120 T 500,100 T 700,300 Z"
-        fill={finalConfig.secondaryColor}
-        opacity="0.5"
-        className="mountain-bg-mid"
-      />
-      <path
-        d="M 150,650 Q 300,550 450,570 T 650,560 T 800,650 Z"
-        fill={finalConfig.secondaryColor}
-        opacity="0.45"
-        className="mountain-bg-mid"
-      />
-
-      {/* 부유섬 3 - 적분 면적 형태 (좌우로 분산) - 전체 배경의 30% (y: 750 ~ 1200) */}
-      <path
-        d="M 50,1200 L 50,1000 Q 200,950 350,980 T 550,960 T 750,1200 Z"
-        fill={finalConfig.mainColor}
-        opacity="0.7"
-        className="mountain-bg-near"
-      />
-      <path
-        d="M 200,1180 L 200,1120 Q 350,1080 450,1100 T 600,1090 T 700,1180 Z"
-        fill={finalConfig.mainColor}
-        opacity="0.65"
-        className="mountain-bg-near"
-      />
-      <path
-        d="M 100,1200 L 100,1050 Q 250,1000 400,1030 T 600,1010 T 800,1200 Z"
-        fill={finalConfig.mainColor}
-        opacity="0.7"
-        className="mountain-bg-near"
-      />
-
-      {/* 접선 빛줄기 - 화면 전체에 분산 */}
-      <line
-        x1="0"
-        y1="-250"
-        x2="800"
-        y2="-200"
-        stroke={finalConfig.accentColor}
-        strokeWidth="2"
-        opacity="0.3"
-        strokeDasharray="5,5"
-      />
-      <line
-        x1="0"
-        y1="150"
-        x2="800"
-        y2="200"
-        stroke={finalConfig.accentColor}
-        strokeWidth="2"
-        opacity="0.4"
-        strokeDasharray="5,5"
-      />
-      <line
-        x1="100"
-        y1="100"
-        x2="700"
-        y2="250"
-        stroke={finalConfig.accentColor}
-        strokeWidth="2"
-        opacity="0.3"
-        strokeDasharray="5,5"
-      />
-      <line
-        x1="0"
-        y1="850"
-        x2="800"
-        y2="900"
-        stroke={finalConfig.accentColor}
-        strokeWidth="2"
-        opacity="0.3"
-        strokeDasharray="5,5"
-      />
-
-      {/* 적분 기호 - 화면 전체에 분산 */}
-      <text
-        x="100"
-        y="-230"
-        fontSize="45"
-        fill={finalConfig.accentColor}
-        opacity="0.5"
-        className="math-symbol"
-        textAnchor="middle"
-        dominantBaseline="middle"
-      >
-        ∫
-      </text>
-      <text
-        x="700"
-        y="-220"
-        fontSize="38"
-        fill={finalConfig.accentColor}
-        opacity="0.4"
-        className="math-symbol"
-        textAnchor="middle"
-        dominantBaseline="middle"
-      >
-        ∞
-      </text>
-      <text
-        x="200"
-        y="250"
-        fontSize="50"
-        fill={finalConfig.accentColor}
-        opacity="0.6"
-        className="math-symbol"
-        textAnchor="middle"
-        dominantBaseline="middle"
-      >
-        ∫
-      </text>
-      <text
-        x="600"
-        y="220"
-        fontSize="40"
-        fill={finalConfig.accentColor}
-        opacity="0.5"
-        className="math-symbol"
-        textAnchor="middle"
-        dominantBaseline="middle"
-      >
-        ∞
-      </text>
-      <text
-        x="500"
-        y="980"
-        fontSize="42"
-        fill={finalConfig.accentColor}
-        opacity="0.5"
-        className="math-symbol"
-        textAnchor="middle"
-        dominantBaseline="middle"
-      >
-        ∫
-      </text>
-      <text
-        x="300"
-        y="1100"
-        fontSize="40"
-        fill={finalConfig.accentColor}
-        opacity="0.5"
-        className="math-symbol"
-        textAnchor="middle"
-        dominantBaseline="middle"
-      >
-        ∞
-      </text>
-
-      {/* 별들 - 화면 전체에 분산 */}
-      <circle cx="150" cy="-270" r="2" fill={finalConfig.accentColor} opacity="0.8" />
-      <circle cx="300" cy="-250" r="1.5" fill={finalConfig.accentColor} opacity="0.7" />
-      <circle cx="500" cy="-260" r="2" fill={finalConfig.accentColor} opacity="0.8" />
-      <circle cx="650" cy="-240" r="1.5" fill={finalConfig.accentColor} opacity="0.7" />
-      <circle cx="750" cy="-280" r="2" fill={finalConfig.accentColor} opacity="0.8" />
-      <circle cx="150" cy="50" r="2" fill={finalConfig.accentColor} opacity="0.8" />
-      <circle cx="300" cy="80" r="1.5" fill={finalConfig.accentColor} opacity="0.7" />
-      <circle cx="500" cy="60" r="2" fill={finalConfig.accentColor} opacity="0.8" />
-      <circle cx="650" cy="90" r="1.5" fill={finalConfig.accentColor} opacity="0.7" />
-      <circle cx="750" cy="40" r="2" fill={finalConfig.accentColor} opacity="0.8" />
-      <circle cx="200" cy="30" r="1.5" fill={finalConfig.accentColor} opacity="0.7" />
-      <circle cx="450" cy="45" r="2" fill={finalConfig.accentColor} opacity="0.8" />
-      <circle cx="680" cy="25" r="1.5" fill={finalConfig.accentColor} opacity="0.7" />
-      <circle cx="100" cy="1050" r="2" fill={finalConfig.accentColor} opacity="0.8" />
-      <circle cx="400" cy="1080" r="1.5" fill={finalConfig.accentColor} opacity="0.7" />
-      <circle cx="700" cy="1100" r="2" fill={finalConfig.accentColor} opacity="0.8" />
-    </svg>
+          {item.type === 'symbol' ? item.symbol : ''}
+        </div>
+      ))}
+    </div>
   );
 }

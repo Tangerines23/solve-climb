@@ -68,16 +68,8 @@
   left: 0;
   right: 0;
   bottom: 0;
-  background: linear-gradient(
-    180deg,
-    var(--color-blue-400) 0%,
-    var(--color-indigo-500) 30%,
-    var(--color-tier-mid) 60%,
-    var(--color-primary-light) 100%
-  );
-  z-index: 0;
   pointer-events: none;
-  transition: background 1s ease-in-out;
+  transition: none;
 }
 
 /* 배경 SVG 스타일 - 모든 배경 컴포넌트에 공통 적용 */

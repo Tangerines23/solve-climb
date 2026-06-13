@@ -39,21 +39,20 @@ export function LevelSelectPage() {
 
   const [activeWorld, setActiveWorld] = useState<string>(worldParam || 'World1');
   const [activeCategory, setActiveCategory] = useState<string>(categoryParam || '기초');
-  const [isTransitioning, setIsTransitioning] = useState(false);
-  const [transitionDirection, setTransitionDirection] = useState<'next' | 'prev' | null>(null);
+  const [isSheetTransitioning, setIsSheetTransitioning] = useState(false);
 
   // Sync with URL params when not in transition animation
   useEffect(() => {
-    if (worldParam && worldParam !== activeWorld && !isTransitioning) {
+    if (worldParam && worldParam !== activeWorld && !isSheetTransitioning) {
       setActiveWorld(worldParam);
     }
-  }, [worldParam, activeWorld, isTransitioning]);
+  }, [worldParam, activeWorld, isSheetTransitioning]);
 
   useEffect(() => {
-    if (categoryParam && categoryParam !== activeCategory && !isTransitioning) {
+    if (categoryParam && categoryParam !== activeCategory && !isSheetTransitioning) {
       setActiveCategory(categoryParam);
     }
-  }, [categoryParam, activeCategory, isTransitioning]);
+  }, [categoryParam, activeCategory, isSheetTransitioning]);
 
   const [tier] = useState<Tier>('normal'); // FIXME: 하드 티어 개발 완료 시 setTier 복구
 
@@ -206,11 +205,10 @@ export function LevelSelectPage() {
 
     const nextWorld = validWorldIds.at(nextIndex) ?? validWorldIds[0];
 
-    // 1. Trigger exit animation
-    setIsTransitioning(true);
-    setTransitionDirection(direction);
+    // 1. Trigger bottom sheet sink animation (300ms)
+    setIsSheetTransitioning(true);
 
-    // 2. Perform URL change after animation completes
+    // 2. Perform actual data update & URL change after sheet sinks
     setTimeout(() => {
       storageService.set(STORAGE_KEYS.LAST_PLAYED_WORLD(mountainParam), nextWorld);
       setActiveWorld(nextWorld);
@@ -224,18 +222,11 @@ export function LevelSelectPage() {
         { replace: true }
       );
 
-      // Swap direction for enter animation (if exiting next (to left), enter from next (right to center))
-      setTransitionDirection(direction === 'next' ? 'prev' : 'next');
-
-      // Release transition classes to let it slide in
+      // 3. Briefly wait for DOM updates (50ms) and release bottom sheet to slide back up
       setTimeout(() => {
-        setIsTransitioning(false);
-        // Clear direction after slide in finishes
-        setTimeout(() => {
-          setTransitionDirection(null);
-        }, 250);
+        setIsSheetTransitioning(false);
       }, 50);
-    }, 250);
+    }, 300);
   };
 
   return (
@@ -276,9 +267,7 @@ export function LevelSelectPage() {
 
       {/* 상단 맵 영역: 독립 스크롤 */}
       <div
-        className={`map-area ${isTransitioning ? 'world-transitioning' : ''} ${
-          transitionDirection ? `to-${transitionDirection}` : ''
-        }`}
+        className="map-area"
         ref={mapAreaRef}
         onScroll={() => {
           if (isSheetExpanded) setIsSheetExpanded(false);
@@ -307,7 +296,9 @@ export function LevelSelectPage() {
       </div>
 
       {/* 하단 시트: 레벨 리스트 및 상세 정보 */}
-      <div className={`bottom-sheet ${isSheetExpanded ? 'expanded' : ''}`}>
+      <div
+        className={`bottom-sheet ${isSheetExpanded ? 'expanded' : ''} ${isSheetTransitioning ? 'sheet-transitioning' : ''}`}
+      >
         <div className="sheet-handle-bar" onClick={() => setIsSheetExpanded(!isSheetExpanded)}>
           <div className="handle-indicator" />
         </div>

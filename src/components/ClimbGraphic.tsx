@@ -250,6 +250,28 @@ export function ClimbGraphic({
       : configs['기초'];
   }, [category, world]);
 
+  // 하늘 배경 크로스 페이드 상태
+  const [skyStates, setSkyStates] = React.useState({
+    activeSky: stageConfig.skyGradient,
+    prevSky: '',
+    isTransitioning: false,
+  });
+
+  useEffect(() => {
+    if (stageConfig.skyGradient !== skyStates.activeSky) {
+      setSkyStates({
+        prevSky: skyStates.activeSky,
+        activeSky: stageConfig.skyGradient,
+        isTransitioning: true,
+      });
+
+      const timer = setTimeout(() => {
+        setSkyStates((prev) => ({ ...prev, isTransitioning: false }));
+      }, 600); // 600ms transition
+      return () => clearTimeout(timer);
+    }
+  }, [stageConfig.skyGradient, skyStates.activeSky]);
+
   return (
     <div
       className="level-map-container"
@@ -263,7 +285,25 @@ export function ClimbGraphic({
         } as React.CSSProperties
       }
     >
-      <div className="level-map-sky" style={{ background: stageConfig.skyGradient }} />
+      {/* 듀얼 스카이 레이어: 부드러운 배경색 교차 페이드 */}
+      <div
+        className="level-map-sky prev"
+        style={{
+          background: skyStates.prevSky || stageConfig.skyGradient,
+          opacity: skyStates.isTransitioning ? 1 : 0,
+          transition: 'opacity 0.6s ease-in-out',
+          zIndex: 0,
+        }}
+      />
+      <div
+        className="level-map-sky active"
+        style={{
+          background: skyStates.activeSky,
+          opacity: skyStates.isTransitioning ? 0 : 1,
+          transition: skyStates.isTransitioning ? 'opacity 0.6s ease-in-out' : 'none',
+          zIndex: 1,
+        }}
+      />
 
       {category === '기초' && (
         <ArithmeticBackground key={category} world={world} totalLevels={totalLevels} />
