@@ -22,7 +22,8 @@
 }
 
 /* World 1 Theme (Grassland) - Greenish */
-.level-map-container[data-world='World1'] {
+.level-map-container[data-world='World1'],
+.level-map-background-wrapper[data-world='World1'] {
   --ground-color-near: #064e3b;
   --ground-color-mid: #065f46;
   --ground-color-far: #059669;
@@ -32,7 +33,8 @@
 }
 
 /* World 2 Theme (Desert) - Amber/Sand */
-.level-map-container[data-world='World2'] {
+.level-map-container[data-world='World2'],
+.level-map-background-wrapper[data-world='World2'] {
   --ground-color-near: #451a03;
   --ground-color-mid: #78350f;
   --ground-color-far: #92400e;
@@ -42,7 +44,8 @@
 }
 
 /* World 3 Theme (Ice/Sea) - Blue/Cyan */
-.level-map-container[data-world='World3'] {
+.level-map-container[data-world='World3'],
+.level-map-background-wrapper[data-world='World3'] {
   --ground-color-near: #083344;
   --ground-color-mid: #155e75;
   --ground-color-far: #0e7490;
@@ -52,7 +55,8 @@
 }
 
 /* World 4 Theme (Space Elevator / Cyber Black) - Metallic Steel & Neon Logic Gates */
-.level-map-container[data-world='World4'] {
+.level-map-container[data-world='World4'],
+.level-map-background-wrapper[data-world='World4'] {
   --ground-color-near: #18181b; /* Zinc-800 metallic dark gray */
   --ground-color-mid: #27272a; /* Zinc-700 metallic medium gray */
   --ground-color-far: #3f3f46; /* Zinc-600 metallic light gray */

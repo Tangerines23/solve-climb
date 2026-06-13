@@ -240,11 +240,6 @@ export function ClimbGraphic({
       : configs['기초'];
   }, []);
 
-  // 카테고리 및 월드별 배경 매핑
-  const stageConfig = useMemo(() => {
-    return getStageConfigFor(world, category);
-  }, [world, category, getStageConfigFor]);
-
   // 배경 크로스 페이드 상태
   const [bgStates, setBgStates] = React.useState({
     activeWorld: world,
@@ -343,15 +338,16 @@ export function ClimbGraphic({
       {bgStates.prevWorld && bgStates.prevCategory && (
         <div
           className="level-map-background-wrapper prev"
+          data-world={bgStates.prevWorld}
           style={{
             position: 'absolute',
             width: '100%',
             height: '100%',
             top: 0,
             left: 0,
-            opacity: bgStates.isTransitioning ? 1 : 0,
+            opacity: bgStates.isTransitioning ? 0 : 1, // 1 -> 0으로 페이드아웃
             transition: 'opacity 0.6s ease-in-out',
-            zIndex: 1,
+            zIndex: 2, // 위에 얹혀서 페이드아웃됨
             pointerEvents: 'none',
           }}
         >
@@ -368,22 +364,30 @@ export function ClimbGraphic({
         </div>
       )}
 
-      {/* 활성 월드 배경 레이어 (페이드인) */}
+      {/* 활성 월드 배경 레이어 (밑에서 대기) */}
       <div
         className="level-map-background-wrapper active"
+        data-world={bgStates.activeWorld}
         style={{
           position: 'absolute',
           width: '100%',
           height: '100%',
           top: 0,
           left: 0,
-          opacity: bgStates.isTransitioning ? 0 : 1,
-          transition: bgStates.isTransitioning ? 'opacity 0.6s ease-in-out' : 'none',
-          zIndex: 2,
+          opacity: 1, // 항상 1로 고정
+          zIndex: 1, // 아래에 깔려 있음
           pointerEvents: 'none',
         }}
       >
-        <div className="level-map-sky" style={{ background: stageConfig.skyGradient }} />
+        <div
+          className="level-map-sky"
+          style={{
+            background: getStageConfigFor(
+              bgStates.activeWorld as World,
+              bgStates.activeCategory as Category
+            ).skyGradient,
+          }}
+        />
         {renderBackground(bgStates.activeWorld as World, bgStates.activeCategory as Category)}
       </div>
 
