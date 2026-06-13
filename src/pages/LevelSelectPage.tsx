@@ -41,27 +41,18 @@ export function LevelSelectPage() {
   const [activeCategory, setActiveCategory] = useState<string>(categoryParam || '기초');
   const [isSheetTransitioning, setIsSheetTransitioning] = useState(false);
 
-  // URL 파라미터가 바뀔 때 로컬 상태 싱크 및 시트 트랜지션 해제 제어
+  // URL 파라미터가 바뀔 때 로컬 상태 싱크 (애니메이션 중이 아닐 때만 동기화)
   useEffect(() => {
-    if (worldParam && worldParam !== activeWorld) {
+    if (worldParam && worldParam !== activeWorld && !isSheetTransitioning) {
       setActiveWorld(worldParam);
-
-      // worldParam이 실제로 새 월드로 전환 완료된 것이 감지되면
-      // 시트를 다시 위로 올리는 트랜지션을 활성화(isSheetTransitioning 해제)
-      if (isSheetTransitioning) {
-        const timer = setTimeout(() => {
-          setIsSheetTransitioning(false);
-        }, 50); // DOM 렌더링 틱 확보 후 복귀
-        return () => clearTimeout(timer);
-      }
     }
   }, [worldParam, activeWorld, isSheetTransitioning]);
 
   useEffect(() => {
-    if (categoryParam && categoryParam !== activeCategory) {
+    if (categoryParam && categoryParam !== activeCategory && !isSheetTransitioning) {
       setActiveCategory(categoryParam);
     }
-  }, [categoryParam, activeCategory]);
+  }, [categoryParam, activeCategory, isSheetTransitioning]);
 
   const [tier] = useState<Tier>('normal'); // FIXME: 하드 티어 개발 완료 시 setTier 복구
 
@@ -220,9 +211,12 @@ export function LevelSelectPage() {
     // 1. Trigger bottom sheet sink animation (300ms)
     setIsSheetTransitioning(true);
 
-    // 2. Perform actual URL change after sheet sinks
+    // 2. Perform actual URL change & state update after sheet sinks
     setTimeout(() => {
       storageService.set(STORAGE_KEYS.LAST_PLAYED_WORLD(mountainParam), nextWorld);
+
+      // 로컬 상태 먼저 업데이트 (시트 숨었을 때 텍스트 교체)
+      setActiveWorld(nextWorld);
 
       navigate(
         urls.levelSelect({
@@ -232,6 +226,11 @@ export function LevelSelectPage() {
         }),
         { replace: true }
       );
+
+      // 3. 텍스트 렌더링 완료 시간을 감안해 100ms 후에 시트를 다시 올림
+      setTimeout(() => {
+        setIsSheetTransitioning(false);
+      }, 100);
     }, 300);
   };
 
