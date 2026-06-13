@@ -139,6 +139,25 @@
   /* 스크롤바 숨기기 (선택 사항) */
   scrollbar-width: none;
   -ms-overflow-style: none;
+
+  /* 부드러운 전환을 위한 transition 추가 */
+  transition:
+    opacity 0.25s ease-in-out,
+    transform 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  opacity: 1;
+  transform: translateX(0) scale(1);
+}
+
+.map-area.world-transitioning {
+  opacity: 0;
+}
+
+.map-area.world-transitioning.to-next {
+  transform: translateX(-40px) scale(0.98);
+}
+
+.map-area.world-transitioning.to-prev {
+  transform: translateX(40px) scale(0.98);
 }
 
 .map-area::-webkit-scrollbar {

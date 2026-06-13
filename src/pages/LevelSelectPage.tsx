@@ -7,7 +7,7 @@ import { LevelListCard } from '@/components/LevelListCard';
 import { FooterNav } from '@/components/FooterNav';
 import { Toast } from '@/components/Toast';
 // import { useFavoriteStore } from '@/stores/useFavoriteStore';
-import { World, Tier } from '@/types/quiz';
+import { World, Tier, Category } from '@/types/quiz';
 import { urls } from '@/utils/navigation';
 import { PageLayout } from '@/components/layout/PageLayout';
 import './LevelSelectPage.css';
@@ -36,6 +36,24 @@ export function LevelSelectPage() {
     category: categoryParam,
     tryRecover,
   } = useNavigationContext();
+
+  const [activeWorld, setActiveWorld] = useState<string>(worldParam || 'World1');
+  const [activeCategory, setActiveCategory] = useState<string>(categoryParam || '기초');
+  const [isTransitioning, setIsTransitioning] = useState(false);
+  const [transitionDirection, setTransitionDirection] = useState<'next' | 'prev' | null>(null);
+
+  // Sync with URL params when not in transition animation
+  useEffect(() => {
+    if (worldParam && worldParam !== activeWorld && !isTransitioning) {
+      setActiveWorld(worldParam);
+    }
+  }, [worldParam, activeWorld, isTransitioning]);
+
+  useEffect(() => {
+    if (categoryParam && categoryParam !== activeCategory && !isTransitioning) {
+      setActiveCategory(categoryParam);
+    }
+  }, [categoryParam, activeCategory, isTransitioning]);
 
   const [tier] = useState<Tier>('normal'); // FIXME: 하드 티어 개발 완료 시 setTier 복구
 
@@ -71,10 +89,10 @@ export function LevelSelectPage() {
   }
 
   // 월드와 카테고리 정보 가져오기
-  const worldInfo = APP_CONFIG.WORLDS.find((w) => w.id === worldParam);
+  const worldInfo = APP_CONFIG.WORLDS.find((w) => w.id === activeWorld);
   const worldName =
-    worldInfo?.name || APP_CONFIG.WORLD_MAP[worldParam as keyof typeof APP_CONFIG.WORLD_MAP];
-  const categoryInfo = APP_CONFIG.CATEGORIES.find((cat) => cat.id === categoryParam);
+    worldInfo?.name || APP_CONFIG.WORLD_MAP[activeWorld as keyof typeof APP_CONFIG.WORLD_MAP];
+  const categoryInfo = APP_CONFIG.CATEGORIES.find((cat) => cat.id === activeCategory);
 
   if (!worldName || !categoryInfo) {
     return (
@@ -95,9 +113,10 @@ export function LevelSelectPage() {
 
   // 레벨 데이터 가져오기
   const worldLevels = APP_CONFIG.LEVELS[
-    worldParam as keyof typeof APP_CONFIG.LEVELS
+    activeWorld as keyof typeof APP_CONFIG.LEVELS
   ] as unknown as Record<string, { level: number; name: string; description: string }[]>;
-  const levelsEntry = worldLevels && Object.entries(worldLevels).find(([k]) => k === categoryParam);
+  const levelsEntry =
+    worldLevels && Object.entries(worldLevels).find(([k]) => k === activeCategory);
   const levels = levelsEntry ? levelsEntry[1] : undefined;
 
   if (!levels || levels.length === 0) {
@@ -136,8 +155,8 @@ export function LevelSelectPage() {
     navigate(
       urls.quiz({
         mountain: mountainParam,
-        world: worldParam,
-        category: categoryParam,
+        world: activeWorld as World,
+        category: activeCategory,
         level,
         mode: 'time-attack',
         tier,
@@ -154,22 +173,6 @@ export function LevelSelectPage() {
   // 레벨 길게 누르기 → 현재 카테고리 즐겨찾기 토글 (기존 LevelListCard long-press와 연결)
   const handleLevelLongPress = (_level: number) => {
     return; // 즐겨찾기 기능 일시 비활성화
-    /*
-    const now = Date.now();
-    if (now - lastLongPressRef.current < 3000) return; // 2초/4초 두 번 호출 시 한 번만 반응
-    lastLongPressRef.current = now;
-
-    if (!categoryParam) return;
-
-    const alreadyFav = isFavorite(categoryParam);
-    addFavorite({
-      type: 'subcategory',
-      categoryId: categoryParam,
-      name: categoryInfo?.name ?? categoryParam,
-    });
-    setToastMessage(alreadyFav ? '즐겨찾기 해제됨' : '⭐ 즐겨찾기에 추가됨');
-    setShowToast(true);
-    */
   };
 
   // 서바이벌 모드 진입 핸들러
@@ -177,8 +180,8 @@ export function LevelSelectPage() {
     navigate(
       urls.quiz({
         mountain: mountainParam,
-        world: worldParam,
-        category: categoryParam,
+        world: activeWorld as World,
+        category: activeCategory,
         level: 1,
         mode: 'survival',
         tier,
@@ -195,7 +198,7 @@ export function LevelSelectPage() {
 
     if (validWorldIds.length <= 1) return; // 전활할 월드가 없으면 무시
 
-    const currentIndex = validWorldIds.indexOf(worldParam as World);
+    const currentIndex = validWorldIds.indexOf(activeWorld as World);
     let nextIndex = direction === 'next' ? currentIndex + 1 : currentIndex - 1;
 
     if (nextIndex >= validWorldIds.length) nextIndex = 0;
@@ -203,21 +206,42 @@ export function LevelSelectPage() {
 
     const nextWorld = validWorldIds.at(nextIndex) ?? validWorldIds[0];
 
-    // 산별로 마지막 플레이 월드 분리 저장
-    storageService.set(STORAGE_KEYS.LAST_PLAYED_WORLD(mountainParam), nextWorld);
-    navigate(
-      urls.levelSelect({
-        mountain: mountainParam,
-        world: nextWorld,
-        category: categoryParam,
-      })
-    );
+    // 1. Trigger exit animation
+    setIsTransitioning(true);
+    setTransitionDirection(direction);
+
+    // 2. Perform URL change after animation completes
+    setTimeout(() => {
+      storageService.set(STORAGE_KEYS.LAST_PLAYED_WORLD(mountainParam), nextWorld);
+      setActiveWorld(nextWorld);
+
+      navigate(
+        urls.levelSelect({
+          mountain: mountainParam,
+          world: nextWorld,
+          category: activeCategory,
+        }),
+        { replace: true }
+      );
+
+      // Swap direction for enter animation (if exiting next (to left), enter from next (right to center))
+      setTransitionDirection(direction === 'next' ? 'prev' : 'next');
+
+      // Release transition classes to let it slide in
+      setTimeout(() => {
+        setIsTransitioning(false);
+        // Clear direction after slide in finishes
+        setTimeout(() => {
+          setTransitionDirection(null);
+        }, 250);
+      }, 50);
+    }, 250);
   };
 
   return (
     <PageLayout
       className={`level-select-page ${isSheetExpanded ? 'sheet-expanded' : ''}`}
-      data-world={worldParam || 'World1'}
+      data-world={activeWorld || 'World1'}
       style={{
         opacity: isReady ? 1 : 0,
         transition: 'opacity 0.2s ease-out',
@@ -252,7 +276,9 @@ export function LevelSelectPage() {
 
       {/* 상단 맵 영역: 독립 스크롤 */}
       <div
-        className="map-area"
+        className={`map-area ${isTransitioning ? 'world-transitioning' : ''} ${
+          transitionDirection ? `to-${transitionDirection}` : ''
+        }`}
         ref={mapAreaRef}
         onScroll={() => {
           if (isSheetExpanded) setIsSheetExpanded(false);
@@ -263,8 +289,8 @@ export function LevelSelectPage() {
       >
         <div className="level-select-graphic-container">
           <ClimbGraphic
-            world={worldParam}
-            category={categoryParam}
+            world={activeWorld as World}
+            category={activeCategory as Category}
             levels={levels}
             categoryColor={categoryColor}
             onLevelClick={handleLevelClick}
@@ -311,14 +337,14 @@ export function LevelSelectPage() {
           </div>
 
           <MyRecordCard
-            world={worldParam}
-            category={categoryParam}
+            world={activeWorld as World}
+            category={activeCategory}
             categoryName={categoryInfo.name}
           />
 
           <LevelListCard
-            world={worldParam}
-            category={categoryParam}
+            world={activeWorld as World}
+            category={activeCategory}
             levels={levels}
             onLevelClick={handleLevelClick}
             onLevelLongPress={handleLevelLongPress}

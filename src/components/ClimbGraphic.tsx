@@ -178,11 +178,15 @@ export function ClimbGraphic({
   }, []);
 
   // 진입 시 현재 레벨로 자동 스크롤
+  const isFirstRender = useRef(true);
+
   useEffect(() => {
     // 월드나 카테고리가 바뀌면 현재 레벨로 자동 스크롤
-    // DOM이 완전히 업데이트된 후 스크롤하기 위해 약간의 지연을 둡니다.
+    // 처음 마운트되었을 때만 auto로 바로 이동하고, 월드/카테고리 변경 시에는 smooth로 부드럽게 이동합니다.
+    const behavior = isFirstRender.current ? 'auto' : 'smooth';
     const timer = setTimeout(() => {
-      scrollToCurrentLevel('auto');
+      scrollToCurrentLevel(behavior);
+      isFirstRender.current = false;
     }, 100);
 
     return () => clearTimeout(timer);

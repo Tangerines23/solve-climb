@@ -54,11 +54,11 @@
 /* World 4 Theme (Space Elevator / Cyber Black) - Metallic Steel & Neon Logic Gates */
 .level-map-container[data-world='World4'] {
   --ground-color-near: #18181b; /* Zinc-800 metallic dark gray */
-  --ground-color-mid: #27272a;  /* Zinc-700 metallic medium gray */
-  --ground-color-far: #3f3f46;  /* Zinc-600 metallic light gray */
+  --ground-color-mid: #27272a; /* Zinc-700 metallic medium gray */
+  --ground-color-far: #3f3f46; /* Zinc-600 metallic light gray */
   --symbol-color-near: #a855f7; /* Neon Purple */
-  --symbol-color-mid: #ec4899;  /* Neon Pink */
-  --symbol-color-far: #06b6d4;  /* Neon Cyan */
+  --symbol-color-mid: #ec4899; /* Neon Pink */
+  --symbol-color-far: #06b6d4; /* Neon Cyan */
 }
 
 /* 하늘 그라데이션 배경 */
@@ -317,6 +317,24 @@
   font-weight: bold;
   line-height: normal;
   /* Fix overflow (was 1) */
+}
+
+/* 배경 요소 및 맵 노드 색상 전환 부드럽게 */
+.level-map-container svg rect,
+.level-map-container svg text,
+.level-map-container svg path,
+.level-node,
+.level-node-content {
+  transition:
+    fill 0.5s ease,
+    stroke 0.5s ease,
+    fill-opacity 0.5s ease,
+    stroke-opacity 0.5s ease,
+    opacity 0.5s ease,
+    background-color 0.5s ease,
+    border-color 0.5s ease,
+    color 0.5s ease,
+    box-shadow 0.5s ease;
 }
 
 .level-node-current .level-node-number {
