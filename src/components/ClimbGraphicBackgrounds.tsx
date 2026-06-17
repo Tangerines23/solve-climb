@@ -72,6 +72,72 @@ const getWorldIndex = (world: World): number => {
 };
 
 export function ClimbBackground({ world, category }: BackgroundProps) {
+  const MAX_LEVELS = 30;
+  const NODE_SPACING = 160;
+  const LIST_DISTANCE = 100;
+  const lastNodeY = LIST_DISTANCE;
+  const firstNodeY = lastNodeY + (MAX_LEVELS - 1) * NODE_SPACING; // 4740px
+  const svgHeight = firstNodeY + 100; // 4840px
+
+  // 6개의 물결(산 실루엣) 레이어 생성 (5레벨 간격 = 800px 마다 존재)
+  const mountainLayers = useMemo(() => {
+    const layers = [];
+    // 뒤쪽(먼 산 i=5, Y=740px)부터 앞쪽(가까운 산 i=0, Y=4740px) 순서대로 겹쳐서 그림
+    for (let i = 5; i >= 0; i--) {
+      const baseY = firstNodeY - i * 5 * NODE_SPACING; // 4740, 3940, 3140, 2340, 1540, 740
+
+      const waveAmplitude = 30; // 물결 높이
+      const waveDir = i % 2 === 0 ? 1 : -1; // 홀수/짝수 굴곡 방향 교차
+
+      const d = `M 0,${svgHeight} 
+                 L 0,${baseY} 
+                 Q 100,${baseY - waveAmplitude * waveDir} 200,${baseY} 
+                 T 400,${baseY} 
+                 L 400,${svgHeight} 
+                 Z`;
+
+      let fillVar = 'var(--ground-color-near)';
+      let baseOpacity = 0.88;
+
+      if (i >= 4) {
+        fillVar = 'var(--ground-color-far)';
+        baseOpacity = 0.38 + (i - 4) * 0.1; // 0.38, 0.48
+      } else if (i >= 2) {
+        fillVar = 'var(--ground-color-mid)';
+        baseOpacity = 0.55 + (i - 2) * 0.1; // 0.55, 0.65
+      } else {
+        fillVar = 'var(--ground-color-near)';
+        baseOpacity = 0.78 + i * 0.1; // 0.78, 0.88
+      }
+
+      layers.push({
+        id: `mountain-layer-${i}`,
+        d,
+        fill: fillVar,
+        opacity: baseOpacity,
+      });
+    }
+    return layers;
+  }, [firstNodeY, svgHeight]);
+
+  // 대수 카테고리 등호 다리 Y좌표 계산 (높이에 맞춰 800px 단위로 분산)
+  const bridgeYCoords = useMemo(() => {
+    const coords = [];
+    for (let y = 800; y < svgHeight - 200; y += 800) {
+      coords.push(y);
+    }
+    return coords;
+  }, [svgHeight]);
+
+  // 심화 카테고리 기하학 접선 라인 Y좌표 계산 (높이에 맞춰 1200px 단위로 분산)
+  const tangentLines = useMemo(() => {
+    const lines = [];
+    for (let y = 800; y < svgHeight - 200; y += 1200) {
+      lines.push({ y1: y, y2: y + 150 });
+    }
+    return lines;
+  }, [svgHeight]);
+
   // 카테고리 및 월드별 수학적 대형(Layout) 좌표 계산
   const items = useMemo(() => {
     const worldIdx = getWorldIndex(world);
@@ -188,15 +254,15 @@ export function ClimbBackground({ world, category }: BackgroundProps) {
         overflow: 'hidden',
       }}
     >
-      {/* 3겹의 미려한 단일 산 실루엣 & 카테고리별 특수 효과 레이어 SVG */}
+      {/* 6단 5레벨 주기 산 실루엣 & 카테고리별 특수 효과 레이어 SVG */}
       <svg
-        viewBox="0 0 400 1200"
+        viewBox={`0 0 400 ${svgHeight}`}
         className="mountain-background-svg"
         preserveAspectRatio="xMidYMax meet"
         style={{
           position: 'absolute',
           width: '100%',
-          height: '100%',
+          height: `${svgHeight}px`,
           top: 0,
           left: 0,
         }}
@@ -217,7 +283,7 @@ export function ClimbBackground({ world, category }: BackgroundProps) {
         {/* 1. 모눈 그리드 배경 */}
         <rect
           width="400"
-          height="1200"
+          height={svgHeight}
           fill="url(#climb-grid)"
           style={{
             opacity: gridOpacity,
@@ -232,7 +298,7 @@ export function ClimbBackground({ world, category }: BackgroundProps) {
             transition: 'opacity 0.8s ease-in-out',
           }}
         >
-          {[200, 400, 600, 800, 1000].map((y, idx) => (
+          {bridgeYCoords.map((y, idx) => (
             <g key={`bridge-${idx}`}>
               <line
                 x1="60"
@@ -273,67 +339,33 @@ export function ClimbBackground({ world, category }: BackgroundProps) {
             transition: 'opacity 0.8s ease-in-out',
           }}
         >
-          <line
-            x1="0"
-            y1="150"
-            x2="400"
-            y2="280"
-            stroke="var(--symbol-color-near)"
-            strokeWidth="2"
-            strokeDasharray="6,6"
-          />
-          <line
-            x1="0"
-            y1="550"
-            x2="400"
-            y2="420"
-            stroke="var(--symbol-color-near)"
-            strokeWidth="2"
-            strokeDasharray="6,6"
-          />
-          <line
-            x1="0"
-            y1="950"
-            x2="400"
-            y2="880"
-            stroke="var(--symbol-color-near)"
-            strokeWidth="2"
-            strokeDasharray="6,6"
-          />
+          {tangentLines.map((line, idx) => (
+            <g key={`tangent-${idx}`}>
+              <line
+                x1="0"
+                y1={line.y1}
+                x2="400"
+                y2={line.y2}
+                stroke="var(--symbol-color-near)"
+                strokeWidth="2"
+                strokeDasharray="6,6"
+              />
+            </g>
+          ))}
         </g>
 
-        {/* 4. Far Mountain (먼 산) */}
-        <path
-          d="M 0,1200 L 0,420 Q 90,340 190,440 T 400,380 L 400,1200 Z"
-          fill="var(--ground-color-far)"
-          className="mountain-bg-far"
-          style={{
-            opacity: 0.38,
-            transition: 'fill 0.8s ease-in-out',
-          }}
-        />
-
-        {/* 5. Mid Mountain (중간 산) */}
-        <path
-          d="M 0,1200 L 0,640 Q 110,710 210,610 T 400,680 L 400,1200 Z"
-          fill="var(--ground-color-mid)"
-          className="mountain-bg-mid"
-          style={{
-            opacity: 0.65,
-            transition: 'fill 0.8s ease-in-out',
-          }}
-        />
-
-        {/* 6. Near Mountain (가까운 산) */}
-        <path
-          d="M 0,1200 L 0,860 Q 100,800 200,900 T 400,820 L 400,1200 Z"
-          fill="var(--ground-color-near)"
-          className="mountain-bg-near"
-          style={{
-            opacity: 0.88,
-            transition: 'fill 0.8s ease-in-out',
-          }}
-        />
+        {/* 4. 6단 5레벨 주기 산 실루엣 물결 레이어 */}
+        {mountainLayers.map((layer) => (
+          <path
+            key={layer.id}
+            d={layer.d}
+            fill={layer.fill}
+            style={{
+              opacity: layer.opacity,
+              transition: 'fill 0.8s ease-in-out',
+            }}
+          />
+        ))}
       </svg>
 
       {/* 심화 전용 빛나는 잔별들 */}
