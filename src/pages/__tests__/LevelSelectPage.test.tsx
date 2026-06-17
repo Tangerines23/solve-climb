@@ -215,7 +215,10 @@ describe('LevelSelectPage', () => {
     fireEvent.click(nextBtn);
 
     await waitFor(() => {
-      expect(mockNavigate).toHaveBeenCalledWith(expect.stringContaining('world=World2'));
+      expect(mockNavigate).toHaveBeenCalledWith(
+        expect.stringContaining('world=World2'),
+        expect.any(Object)
+      );
     });
   });
 

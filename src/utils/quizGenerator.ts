@@ -76,7 +76,11 @@ export function generateQuestion(
         // Geometry World
         const geoProb = generateGeometryProblem(level, difficulty, rng);
         const ansStr = String(geoProb.answer);
-        const autoInputType = ansStr.includes('/') ? 'fraction' : ansStr.includes('.') ? 'decimal' : 'number';
+        const autoInputType = ansStr.includes('/')
+          ? 'fraction'
+          : ansStr.includes('.')
+            ? 'decimal'
+            : 'number';
         return {
           question: geoProb.question,
           answer: geoProb.answer,
@@ -101,7 +105,11 @@ export function generateQuestion(
         // CS/Engineering World
         const csProb = generateCSProblem(level, difficulty, rng);
         const ansStr = String(csProb.answer);
-        const autoInputType = ansStr.includes('/') ? 'fraction' : ansStr.includes('.') ? 'decimal' : 'number';
+        const autoInputType = ansStr.includes('/')
+          ? 'fraction'
+          : ansStr.includes('.')
+            ? 'decimal'
+            : 'number';
         return {
           question: csProb.question,
           answer: csProb.answer,

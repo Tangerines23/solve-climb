@@ -17,6 +17,7 @@ import { useNavigationContext } from '@/hooks/useNavigationContext';
 export function LevelSelectPage() {
   const navigate = useNavigate();
   const mapAreaRef = useRef<HTMLDivElement>(null);
+  const worldScrollRegistryRef = useRef<Record<string, number>>({});
   const [isSheetExpanded, setIsSheetExpanded] = useState(false);
   const [toastMessage, setToastMessage] = useState('');
   const [showToast, setShowToast] = useState(false);
@@ -37,9 +38,12 @@ export function LevelSelectPage() {
     tryRecover,
   } = useNavigationContext();
 
+  const mountainParamSafe = mountainParam || 'math';
+
   const [activeWorld, setActiveWorld] = useState<string>(worldParam || 'World1');
   const [activeCategory, setActiveCategory] = useState<string>(categoryParam || '기초');
   const [isSheetTransitioning, setIsSheetTransitioning] = useState(false);
+  const [fromScrollTop, setFromScrollTop] = useState<number | undefined>(undefined);
 
   // URL 파라미터가 바뀔 때 로컬 상태 싱크 (애니메이션 중이 아닐 때만 동기화)
   useEffect(() => {
@@ -69,8 +73,8 @@ export function LevelSelectPage() {
     });
   }, []);
 
-  // URL 파라미터 검증 및 데이터 로드
-  if (!mountainParam || !worldParam || !categoryParam) {
+  // 최상단 산 정보마저 누락된 최악의 경우에만 홈으로 리다이렉트
+  if (!mountainParam && !storageService.get<string>(STORAGE_KEYS.LAST_VISITED_MOUNTAIN)) {
     return (
       <PageLayout className="level-select-page" fullScreen>
         <div className="level-select-error">
@@ -87,60 +91,19 @@ export function LevelSelectPage() {
     );
   }
 
-  // 월드와 카테고리 정보 가져오기
+  // 월드와 카테고리 정보 가져오기 (로컬 상태 및 기본값 기반으로 안전하게 복원하여 UI 깜빡임 방지)
   const worldInfo = APP_CONFIG.WORLDS.find((w) => w.id === activeWorld);
   const worldName =
-    worldInfo?.name || APP_CONFIG.WORLD_MAP[activeWorld as keyof typeof APP_CONFIG.WORLD_MAP];
-  const categoryInfo = APP_CONFIG.CATEGORIES.find((cat) => cat.id === activeCategory);
-
-  if (!worldName || !categoryInfo) {
-    return (
-      <PageLayout className="level-select-page" fullScreen>
-        <div className="level-select-error">
-          <h2>잘못된 접근입니다</h2>
-          <p>존재하지 않는 월드 또는 카테고리입니다.</p>
-          <button
-            onClick={() => navigate(urls.home(), { replace: true })}
-            className="error-back-button"
-          >
-            ←
-          </button>
-        </div>
-      </PageLayout>
-    );
-  }
+    worldInfo?.name ||
+    APP_CONFIG.WORLD_MAP[activeWorld as keyof typeof APP_CONFIG.WORLD_MAP] ||
+    '알 수 없는 월드';
+  const categoryInfo =
+    APP_CONFIG.CATEGORIES.find((cat) => cat.id === activeCategory) || APP_CONFIG.CATEGORIES[0];
 
   // 레벨 데이터 가져오기
-  const worldLevels = APP_CONFIG.LEVELS[
-    activeWorld as keyof typeof APP_CONFIG.LEVELS
-  ] as unknown as Record<string, { level: number; name: string; description: string }[]>;
-  const levelsEntry =
-    worldLevels && Object.entries(worldLevels).find(([k]) => k === activeCategory);
-  const levels = levelsEntry ? levelsEntry[1] : undefined;
-
-  if (!levels || levels.length === 0) {
-    return (
-      <PageLayout className="level-select-page" fullScreen>
-        <div className="level-select-error">
-          <h2>레벨 데이터가 없습니다</h2>
-          <p>이 카테고리에 대한 레벨이 아직 준비되지 않았습니다.</p>
-          <button
-            onClick={() => {
-              // 안전한 복귀: category-select 또는 홈으로 (히스토리에서 에러 페이지 제거를 위해 replace: true)
-              if (mountainParam) {
-                navigate(urls.categorySelect({ mountain: mountainParam }), { replace: true });
-              } else {
-                navigate(urls.home(), { replace: true });
-              }
-            }}
-            className="error-back-button"
-          >
-            ←
-          </button>
-        </div>
-      </PageLayout>
-    );
-  }
+  const worldLevels = (APP_CONFIG.LEVELS[activeWorld as keyof typeof APP_CONFIG.LEVELS] ||
+    {}) as unknown as Record<string, { level: number; name: string; description: string }[]>;
+  const levels = worldLevels[activeCategory] || [];
 
   const categoryColor = categoryInfo.color || 'var(--color-teal-500)';
 
@@ -153,7 +116,7 @@ export function LevelSelectPage() {
   const handleLevelClick = (level: number) => {
     navigate(
       urls.quiz({
-        mountain: mountainParam,
+        mountain: mountainParamSafe,
         world: activeWorld as World,
         category: activeCategory,
         level,
@@ -178,7 +141,7 @@ export function LevelSelectPage() {
   const handleSurvivalClick = () => {
     navigate(
       urls.quiz({
-        mountain: mountainParam,
+        mountain: mountainParamSafe,
         world: activeWorld as World,
         category: activeCategory,
         level: 1,
@@ -193,8 +156,16 @@ export function LevelSelectPage() {
     // 애니메이션 진행 중이면 추가 전환 입력을 무시하여 핑퐁을 방지함
     if (isSheetTransitioning) return;
 
+    // activeWorld가 교체되기 직전에 현재 스크롤 위치 저장
+    const container = mapAreaRef.current;
+    if (container) {
+      const currentScroll = container.scrollTop;
+      worldScrollRegistryRef.current[activeWorld] = currentScroll;
+      setFromScrollTop(currentScroll);
+    }
+
     // 현재 산에 속한 월드만 필터링 (중요: 다른 산의 월드로 넘어가지 않도록 함)
-    const validWorldIds = APP_CONFIG.WORLDS.filter((w) => w.mountainId === mountainParam).map(
+    const validWorldIds = APP_CONFIG.WORLDS.filter((w) => w.mountainId === mountainParamSafe).map(
       (w) => w.id
     );
 
@@ -213,14 +184,14 @@ export function LevelSelectPage() {
 
     // 2. Perform actual URL change & state update after sheet sinks
     setTimeout(() => {
-      storageService.set(STORAGE_KEYS.LAST_PLAYED_WORLD(mountainParam), nextWorld);
+      storageService.set(STORAGE_KEYS.LAST_PLAYED_WORLD(mountainParamSafe), nextWorld);
 
       // 로컬 상태 먼저 업데이트 (시트 숨었을 때 텍스트 교체)
       setActiveWorld(nextWorld);
 
       navigate(
         urls.levelSelect({
-          mountain: mountainParam,
+          mountain: mountainParamSafe,
           world: nextWorld,
           category: activeCategory,
         }),
@@ -234,14 +205,38 @@ export function LevelSelectPage() {
     }, 300);
   };
 
+  // World 2처럼 레벨 수가 적을 때, 최상단 빈 공간으로 스크롤이 넘어가지 않도록 한계를 계산합니다.
+  const getMinScrollTop = () => {
+    const container = mapAreaRef.current;
+    if (!container) return 0;
+
+    const MAX_LEVELS = 30;
+    const currentLevelsCount = levels.length;
+    if (currentLevelsCount >= MAX_LEVELS) return 0; // World 1처럼 30레벨 꽉 찬 경우 전체 스크롤 가능
+
+    const NODE_SPACING = 80;
+    const containerWidth = container.clientWidth || 400;
+    const scale = containerWidth / 400;
+
+    // 비어 있는 최상단 공간의 높이만큼 스크롤 불가능하도록 제한값 연산
+    const emptySpaceHeight = (MAX_LEVELS - currentLevelsCount) * NODE_SPACING * scale;
+    return emptySpaceHeight;
+  };
+
+  const handleScroll = (e: React.UIEvent<HTMLDivElement>) => {
+    if (isSheetExpanded) setIsSheetExpanded(false);
+
+    const container = e.currentTarget;
+    const minScroll = getMinScrollTop();
+    if (container.scrollTop < minScroll) {
+      container.scrollTop = minScroll; // 위쪽 빈 공간 스크롤 불가 강제 고정
+    }
+  };
+
   return (
     <PageLayout
       className={`level-select-page ${isSheetExpanded ? 'sheet-expanded' : ''}`}
       data-world={activeWorld || 'World1'}
-      style={{
-        opacity: isReady ? 1 : 0,
-        transition: 'opacity 0.2s ease-out',
-      }}
       fullScreen
     >
       {/* 상단 헤더 */}
@@ -249,7 +244,7 @@ export function LevelSelectPage() {
         <button
           className="level-select-back"
           onClick={() => {
-            navigate(urls.categorySelect({ mountain: mountainParam }));
+            navigate(urls.categorySelect({ mountain: mountainParamSafe }));
           }}
           aria-label="뒤로 가기"
         >
@@ -274,15 +269,14 @@ export function LevelSelectPage() {
       <div
         className="map-area"
         ref={mapAreaRef}
-        onScroll={() => {
-          if (isSheetExpanded) setIsSheetExpanded(false);
-        }}
+        onScroll={handleScroll}
         onTouchStart={() => {
           if (isSheetExpanded) setIsSheetExpanded(false);
         }}
       >
         <div className="level-select-graphic-container">
           <ClimbGraphic
+            mountain={mountainParamSafe}
             world={activeWorld as World}
             category={activeCategory as Category}
             levels={levels}
@@ -292,6 +286,10 @@ export function LevelSelectPage() {
               setToastMessage('아직 개발중입니다 :(');
               setShowToast(true);
             }}
+            isReady={isReady}
+            lastScrollTop={worldScrollRegistryRef.current[activeWorld]}
+            fromScrollTop={fromScrollTop}
+            onTransitionStart={() => setFromScrollTop(undefined)}
           />
         </div>
         {/* [Added] 빈 공간 클릭 시 시트 접기 위한 오버레이 */}

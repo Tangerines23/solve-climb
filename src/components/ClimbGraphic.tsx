@@ -1,13 +1,9 @@
+// cspell:ignore langworld langworld1
 import React, { useRef, useMemo, useCallback, useEffect } from 'react';
 import { useLevelProgressStore } from '../stores/useLevelProgressStore';
 import { useProfileStore } from '../stores/useProfileStore';
-import {
-  ArithmeticBackground,
-  EquationsBackground,
-  SequenceBackground,
-  CalculusBackground,
-} from './ClimbGraphicBackgrounds';
-import { STAGE_CONFIG, type StageConfig } from '../constants/stages';
+import { ClimbBackground } from './ClimbGraphicBackgrounds';
+import { getStagesForWorld, type StageConfig } from '../constants/stages';
 import { World, Category } from '../types/quiz';
 import './ClimbGraphic.css';
 
@@ -25,12 +21,17 @@ export const LevelButton = React.forwardRef<HTMLButtonElement, LevelButtonProps>
 LevelButton.displayName = 'LevelButton';
 
 interface ClimbGraphicProps {
+  mountain?: string;
   world: World;
   category: Category;
   levels: Array<{ level: number; name: string; description: string }>;
   categoryColor?: string;
   onLevelClick?: (level: number, levelName: string) => void;
   onUnderDevelopmentClick?: () => void;
+  isReady?: boolean;
+  lastScrollTop?: number;
+  fromScrollTop?: number;
+  onTransitionStart?: () => void;
 }
 
 interface LevelData {
@@ -39,20 +40,18 @@ interface LevelData {
   position: { x: number; y: number };
 }
 
-interface StageBackgroundConfig {
-  skyGradient: string;
-  mainColor: string;
-  secondaryColor: string;
-  accentColor: string;
-}
-
 export function ClimbGraphic({
+  mountain,
   world,
   category,
   levels,
   categoryColor = 'var(--color-teal-500)',
   onLevelClick,
   onUnderDevelopmentClick,
+  isReady,
+  lastScrollTop,
+  fromScrollTop,
+  onTransitionStart,
 }: ClimbGraphicProps) {
   const isLevelCleared = useLevelProgressStore((state) => state.isLevelCleared);
   const getNextLevel = useLevelProgressStore((state) => state.getNextLevel);
@@ -70,12 +69,16 @@ export function ClimbGraphic({
   };
 
   // ========== 스테이지 헬퍼 함수 ==========
-  const getStageInfo = useCallback((levelId: number): StageConfig => {
-    return (
-      STAGE_CONFIG.find((stage) => levelId >= stage.range[0] && levelId <= stage.range[1]) ||
-      STAGE_CONFIG[0]
-    );
-  }, []);
+  const getStageInfo = useCallback(
+    (levelId: number): StageConfig => {
+      const worldStages = getStagesForWorld(world);
+      return (
+        worldStages.find((stage) => levelId >= stage.range[0] && levelId <= stage.range[1]) ||
+        worldStages[0]
+      );
+    },
+    [world]
+  );
 
   // ========== 설정 상수 ==========
   const SVG_WIDTH = 400;
@@ -89,18 +92,15 @@ export function ClimbGraphic({
     const points: Array<{ x: number; y: number }> = [];
     let lastClearedIdx = -1;
 
+    const MAX_LEVELS = 30; // 최고 높이 레벨 기준 고정 (Clamping 방지)
     const lastNodeY = LIST_DISTANCE;
-    const firstNodeY = lastNodeY + (totalLevels - 1) * NODE_SPACING;
-    const calculatedSvgHeight = firstNodeY + 100; // 여유 공간 확보
+    const firstNodeY = lastNodeY + (MAX_LEVELS - 1) * NODE_SPACING; // 항상 2420px로 저점 고정
+    const calculatedSvgHeight = firstNodeY + 100; // 항상 2520px로 고정
 
     for (let i = 0; i < totalLevels; i++) {
-      const progress = i / (totalLevels - 1 || 1);
-      const y = firstNodeY - (firstNodeY - lastNodeY) * progress;
+      const y = firstNodeY - i * NODE_SPACING; // 모든 월드에서 레벨 1은 무조건 Y=2420px부터 배치
       const centerX = SVG_WIDTH * 0.5;
       const amplitude = SVG_WIDTH * 0.3;
-      // [수정] S자 굴곡을 레벨 개수와 상관없이 일정하게 유지
-      // 기존: Math.sin(progress * Math.PI * 2) -> 총 레벨 수에 따라 굴곡이 늘어짐
-      // 변경: Math.sin((i / 15) * Math.PI * 2) -> 15개 레벨마다 1회전하도록 고정 (인덱스 기반)
       const FREQUENCY_PER_LEVELS = 15; // 15레벨마다 S자 한 번
       const offsetX = Math.sin((i / FREQUENCY_PER_LEVELS) * Math.PI * 2) * amplitude;
       const x = centerX + offsetX;
@@ -138,6 +138,19 @@ export function ClimbGraphic({
     };
   }, [world, category, levels, totalLevels, nextLevel, isLevelCleared, isAdmin]);
 
+  // target level ID를 결정합니다. (current 노드가 없을 경우 cleared의 마지막 노드 또는 1번 노드를 타겟팅하여 스크롤 튕김 방지)
+  const targetLevelId = useMemo(() => {
+    const currentLevel = levelData.find((l) => l.status === 'current');
+    if (currentLevel) return currentLevel.id;
+
+    const hasCleared = levelData.some((l) => l.status === 'cleared');
+    if (hasCleared) {
+      return levelData[levelData.length - 1]?.id ?? 1;
+    }
+
+    return levelData[0]?.id ?? 1;
+  }, [levelData]);
+
   const createPath = (points: Array<{ x: number; y: number }>): string => {
     if (points.length === 0) return '';
     if (points.length === 1) return `M ${points[0].x} ${points[0].y}`;
@@ -168,158 +181,170 @@ export function ClimbGraphic({
     return createPath(clearedPoints);
   }, [pathPoints, lastClearedIndex]);
 
-  const scrollToCurrentLevel = useCallback((behavior: ScrollBehavior = 'smooth') => {
-    if (currentLevelRef.current) {
-      currentLevelRef.current.scrollIntoView({
-        behavior,
-        block: 'center',
-      });
-    }
-  }, []);
+  // 스크롤 Clamping 현상이 높이 고정화(MAX_LEVELS)로 원천 해결되어 높이 홀딩 로직 제거
 
-  // 진입 시 현재 레벨로 자동 스크롤
+  const scrollToCurrentLevel = useCallback(
+    (behavior: 'auto' | 'smooth' | 'transition' = 'smooth') => {
+      const node = currentLevelRef.current;
+      if (!node) return;
+
+      const scrollContainer = node.closest('.map-area') as HTMLElement;
+      if (!scrollContainer) {
+        if (typeof node.scrollIntoView === 'function') {
+          node.scrollIntoView({
+            behavior: behavior === 'auto' ? 'auto' : 'smooth',
+            block: 'center',
+          });
+        }
+        return;
+      }
+
+      // 화면 해상도나 크기에 따라 SVG가 비율 매칭되어 크기가 변하므로,
+      // scrollContainer의 실제 너비를 기준으로 스케일을 계산하여 정밀한 수학적 절대 좌표를 산출합니다.
+      // getBoundingClientRect는 레이아웃 완료 시점에 영향을 받아 튕김이나 0px 측정 오류를 유발하므로 수학적 계산을 1순위로 채택합니다.
+      const currentLevelNode = levelData.find((l) => l.id === targetLevelId) || levelData[0];
+      const SCROLL_OFFSET = 60;
+      const containerWidth = scrollContainer.clientWidth || 400;
+      const scale = containerWidth / 400;
+      const nodeRelativeY =
+        SCROLL_OFFSET + (currentLevelNode ? currentLevelNode.position.y : 0) * scale;
+
+      const containerHeight = scrollContainer.clientHeight || 600;
+      const nodeHeight = 56; // 레벨 노드 고정 높이
+
+      // 노드가 스크롤 영역의 정중앙에 위치하도록 목표 scrollTop 설정
+      const targetScrollTop = nodeRelativeY - containerHeight / 2 + nodeHeight / 2;
+
+      if (behavior === 'auto') {
+        scrollContainer.scrollTop = targetScrollTop;
+
+        // [자가 보정] 브라우저 레이아웃(scrollHeight)이 비동기적으로 확장되는 시점의 타이밍 지연으로 인해
+        // scrollTop 세팅이 무시되거나 중간에 클램핑되는 현상을 방지하기 위해 정교한 재시도 루프를 적용합니다.
+        let attempts = 0;
+        let lastScrollTop = -1;
+        const retryScroll = () => {
+          scrollContainer.scrollTop = targetScrollTop;
+          const currentScroll = scrollContainer.scrollTop;
+          const isClose = Math.abs(currentScroll - targetScrollTop) < 3;
+
+          // 목표에 충분히 도달했거나, 경계선 도달 등으로 스크롤 위치가 5프레임 이상 고정된 경우 중단
+          if (isClose || (currentScroll === lastScrollTop && attempts > 5) || attempts >= 30) {
+            return;
+          }
+
+          lastScrollTop = currentScroll;
+          attempts++;
+          requestAnimationFrame(retryScroll);
+        };
+        requestAnimationFrame(retryScroll);
+      } else if (behavior === 'transition') {
+        // 'transition' 모드: 이전 월드에서 보던 위치(start)에서 새 월드의 이전 위치 또는 현레벨 위치(target)로 스크롤
+        const startScrollTop =
+          fromScrollTop !== undefined ? fromScrollTop : scrollContainer.scrollTop;
+
+        // 트랜지션 시작 처리가 완료되어 시작점을 구했으므로 부모 상태를 소비 처리
+        if (onTransitionStart) {
+          onTransitionStart();
+        }
+
+        // 만약 prop으로 이전 마지막 스크롤 위치가 주어졌다면 그것을 목표값으로 삼고, 없다면 현재 레벨 기준 계산값을 사용합니다.
+        const finalTargetScrollTop = lastScrollTop !== undefined ? lastScrollTop : targetScrollTop;
+
+        // 스크롤 상단 리밋 범위 보정 (빈 공간 스크롤 방지 이중 안전장치)
+        const MAX_LEVELS = 30;
+        const NODE_SPACING = 80;
+        const containerWidth = scrollContainer.clientWidth || 400;
+        const scale = containerWidth / 400;
+        const currentLevelsCount = levels.length;
+        const emptySpaceHeight =
+          currentLevelsCount < MAX_LEVELS
+            ? (MAX_LEVELS - currentLevelsCount) * NODE_SPACING * scale
+            : 0;
+
+        const correctedTargetScrollTop = Math.max(emptySpaceHeight, finalTargetScrollTop);
+
+        let attempts = 0;
+        let lastScrollTopVal = -1;
+
+        const initializeAndAnimate = () => {
+          scrollContainer.scrollTop = startScrollTop;
+          const currentScroll = scrollContainer.scrollTop;
+          const isInitialized =
+            Math.abs(currentScroll - startScrollTop) < 3 ||
+            (currentScroll === lastScrollTopVal && attempts > 5);
+
+          if (isInitialized || attempts >= 25) {
+            const start = scrollContainer.scrollTop;
+            const change = correctedTargetScrollTop - start;
+            const startTime = performance.now();
+            const duration = 800; // 부드럽게 감속하는 Easing 모션 프레임 적용
+
+            const easeInOutQuart = (t: number) => {
+              return t < 0.5 ? 8 * t * t * t * t : 1 - Math.pow(-2 * t + 2, 4) / 2;
+            };
+
+            const animateScroll = (currentTime: number) => {
+              const timeElapsed = currentTime - startTime;
+              const progress = Math.min(timeElapsed / duration, 1);
+              const easedProgress = easeInOutQuart(progress);
+
+              scrollContainer.scrollTop = start + change * easedProgress;
+
+              if (progress < 1) {
+                requestAnimationFrame(animateScroll);
+              }
+            };
+
+            requestAnimationFrame(animateScroll);
+            return;
+          }
+
+          lastScrollTopVal = currentScroll;
+          attempts++;
+          requestAnimationFrame(initializeAndAnimate);
+        };
+
+        requestAnimationFrame(initializeAndAnimate);
+      } else {
+        // 'smooth' 모드 (내 위치 버튼 등): 현재의 실제 스크롤 위치에서부터 targetScrollTop까지 부드럽게 이동
+        const start = scrollContainer.scrollTop;
+        const change = targetScrollTop - start;
+        const startTime = performance.now();
+        const duration = 850; // 0.85초 동안 유려하게 가감속
+
+        const easeInOutQuart = (t: number) => {
+          return t < 0.5 ? 8 * t * t * t * t : 1 - Math.pow(-2 * t + 2, 4) / 2;
+        };
+
+        const animateScroll = (currentTime: number) => {
+          const timeElapsed = currentTime - startTime;
+          const progress = Math.min(timeElapsed / duration, 1);
+          const easedProgress = easeInOutQuart(progress);
+
+          scrollContainer.scrollTop = start + change * easedProgress;
+
+          if (progress < 1) {
+            requestAnimationFrame(animateScroll);
+          }
+        };
+
+        requestAnimationFrame(animateScroll);
+      }
+    },
+    [levelData, targetLevelId]
+  );
+
+  // 진입 및 변경 시 현재 레벨로 자동 스크롤
   useEffect(() => {
-    // 월드나 카테고리가 바뀌면 현재 레벨로 즉시 정렬하여 화면 밀림(drift) 현상을 차단합니다.
+    if (isReady !== undefined && !isReady) return;
+
+    // 브라우저 레이아웃 엔진이 새 콘텐츠 높이 및 스케일을 확실히 반영할 수 있도록 30ms 대기 후 실행
     const timer = setTimeout(() => {
-      scrollToCurrentLevel('auto');
-    }, 50);
+      scrollToCurrentLevel('transition');
+    }, 30);
 
     return () => clearTimeout(timer);
-  }, [world, category, scrollToCurrentLevel]);
-
-  // 헬퍼 함수: 특정 world/category에 대한 StageBackgroundConfig를 계산
-  const getStageConfigFor = useCallback((targetWorld: World, targetCategory: Category) => {
-    const worldSkyGradients: Record<World, string> = {
-      World1: 'linear-gradient(180deg, #065f46 0%, #064e3b 100%)',
-      World2: 'linear-gradient(180deg, #92400e 0%, #451a03 100%)',
-      World3: 'linear-gradient(180deg, #0e7490 0%, #083344 100%)',
-      World4: 'linear-gradient(180deg, #09090b 0%, #000000 100%)',
-      LangWorld1: 'linear-gradient(180deg, #f87171 0%, #7f1d1d 100%)',
-    };
-
-    const worldKey = targetWorld as keyof typeof worldSkyGradients;
-    const worldSkyGradient = Object.prototype.hasOwnProperty.call(worldSkyGradients, worldKey)
-      ? worldSkyGradients[worldKey]
-      : worldSkyGradients['World1'];
-
-    const configs: Record<string, StageBackgroundConfig> = {
-      기초: {
-        skyGradient: worldSkyGradient,
-        mainColor: 'var(--ground-color-near)',
-        secondaryColor: 'var(--ground-color-mid)',
-        accentColor: 'var(--symbol-color-near)',
-      },
-      대수: {
-        skyGradient: Object.prototype.hasOwnProperty.call(worldSkyGradients, worldKey)
-          ? worldSkyGradients[worldKey]
-          : 'linear-gradient(180deg, #064E3B 0%, #065F46 15%, #0891B2 40%, #06B6D4 65%, #22D3EE 85%, #67E8F9 100%)',
-        mainColor: 'var(--ground-color-near)',
-        secondaryColor: 'var(--ground-color-mid)',
-        accentColor: 'var(--symbol-color-near)',
-      },
-      논리: {
-        skyGradient: Object.prototype.hasOwnProperty.call(worldSkyGradients, worldKey)
-          ? worldSkyGradients[worldKey]
-          : 'linear-gradient(180deg, #4B0082 0%, #6A5ACD 30%, #9370DB 60%, #BA55D3 100%)',
-        mainColor: 'var(--ground-color-near)',
-        secondaryColor: 'var(--ground-color-mid)',
-        accentColor: 'var(--symbol-color-near)',
-      },
-      심화: {
-        skyGradient: Object.prototype.hasOwnProperty.call(worldSkyGradients, worldKey)
-          ? worldSkyGradients[worldKey]
-          : 'linear-gradient(180deg, #000428 0%, #004e92 30%, #1a1a2e 60%, #16213e 100%)',
-        mainColor: 'var(--ground-color-near)',
-        secondaryColor: 'var(--ground-color-mid)',
-        accentColor: 'var(--symbol-color-near)',
-      },
-    };
-
-    return Object.prototype.hasOwnProperty.call(configs, targetCategory)
-      ? configs[targetCategory]
-      : configs['기초'];
-  }, []);
-
-  // 배경 크로스 페이드 상태
-  const [bgStates, setBgStates] = React.useState({
-    activeWorld: world,
-    activeCategory: category,
-    prevWorld: '' as World | '',
-    prevCategory: '' as Category | '',
-    isTransitioning: false,
-  });
-
-  useEffect(() => {
-    if (world !== bgStates.activeWorld || category !== bgStates.activeCategory) {
-      setBgStates({
-        prevWorld: bgStates.activeWorld as World,
-        prevCategory: bgStates.activeCategory as Category,
-        activeWorld: world,
-        activeCategory: category,
-        isTransitioning: true,
-      });
-
-      const timer = setTimeout(() => {
-        setBgStates((prev) => ({ ...prev, isTransitioning: false }));
-      }, 600); // 600ms transition
-      return () => clearTimeout(timer);
-    }
-  }, [world, category, bgStates.activeWorld, bgStates.activeCategory]);
-
-  // 배경 개별 렌더링 헬퍼
-  const renderBackground = useCallback(
-    (targetWorld: World, targetCategory: Category) => {
-      const config = getStageConfigFor(targetWorld, targetCategory);
-      return (
-        <div
-          className="level-map-bg-layer"
-          data-world={targetWorld}
-          data-stage={targetCategory}
-          style={{
-            position: 'absolute',
-            width: '100%',
-            height: '100%',
-            top: 0,
-            left: 0,
-            pointerEvents: 'none',
-          }}
-        >
-          {targetCategory === '기초' && (
-            <ArithmeticBackground
-              key={targetCategory}
-              world={targetWorld}
-              totalLevels={totalLevels}
-            />
-          )}
-          {targetCategory === '대수' && (
-            <EquationsBackground
-              key={targetCategory}
-              world={targetWorld}
-              totalLevels={totalLevels}
-              config={config}
-            />
-          )}
-          {targetCategory === '논리' && (
-            <SequenceBackground
-              key={targetCategory}
-              world={targetWorld}
-              totalLevels={totalLevels}
-              config={config}
-            />
-          )}
-          {targetCategory === '심화' && (
-            <CalculusBackground
-              key={targetCategory}
-              world={targetWorld}
-              totalLevels={totalLevels}
-              config={config}
-            />
-          )}
-        </div>
-      );
-    },
-    [totalLevels, getStageConfigFor]
-  );
+  }, [mountain, world, category, isReady, scrollToCurrentLevel]);
 
   return (
     <div
@@ -334,61 +359,21 @@ export function ClimbGraphic({
         } as React.CSSProperties
       }
     >
-      {/* 이전 월드 배경 레이어 (페이드아웃) */}
-      {bgStates.prevWorld && bgStates.prevCategory && (
+      {/* 겹쳐진 하늘 그라데이션 레이어 */}
+      <div className="level-map-sky">
+        <div className="level-map-sky-glow" />
+        <div className={`level-map-sky-layer world1 ${world === 'World1' ? 'active' : ''}`} />
+        <div className={`level-map-sky-layer world2 ${world === 'World2' ? 'active' : ''}`} />
+        <div className={`level-map-sky-layer world3 ${world === 'World3' ? 'active' : ''}`} />
+        <div className={`level-map-sky-layer world4 ${world === 'World4' ? 'active' : ''}`} />
         <div
-          className="level-map-background-wrapper prev"
-          data-world={bgStates.prevWorld}
-          style={{
-            position: 'absolute',
-            width: '100%',
-            height: '100%',
-            top: 0,
-            left: 0,
-            opacity: bgStates.isTransitioning ? 0 : 1, // 1 -> 0으로 페이드아웃
-            transition: 'opacity 0.6s ease-in-out',
-            zIndex: 2, // 위에 얹혀서 페이드아웃됨
-            pointerEvents: 'none',
-          }}
-        >
-          <div
-            className="level-map-sky"
-            style={{
-              background: getStageConfigFor(
-                bgStates.prevWorld as World,
-                bgStates.prevCategory as Category
-              ).skyGradient,
-            }}
-          />
-          {renderBackground(bgStates.prevWorld as World, bgStates.prevCategory as Category)}
-        </div>
-      )}
-
-      {/* 활성 월드 배경 레이어 (밑에서 대기) */}
-      <div
-        className="level-map-background-wrapper active"
-        data-world={bgStates.activeWorld}
-        style={{
-          position: 'absolute',
-          width: '100%',
-          height: '100%',
-          top: 0,
-          left: 0,
-          opacity: 1, // 항상 1로 고정
-          zIndex: 1, // 아래에 깔려 있음
-          pointerEvents: 'none',
-        }}
-      >
-        <div
-          className="level-map-sky"
-          style={{
-            background: getStageConfigFor(
-              bgStates.activeWorld as World,
-              bgStates.activeCategory as Category
-            ).skyGradient,
-          }}
+          className={`level-map-sky-layer langworld1 ${world === 'LangWorld1' ? 'active' : ''}`}
         />
-        {renderBackground(bgStates.activeWorld as World, bgStates.activeCategory as Category)}
+      </div>
+
+      {/* 공통 단일 배경 컴포넌트 */}
+      <div className="level-map-background-wrapper" data-world={world}>
+        <ClimbBackground world={world} category={category} totalLevels={totalLevels} />
       </div>
 
       <div
@@ -449,7 +434,7 @@ export function ClimbGraphic({
                   style={{ overflow: 'visible' }}
                 >
                   <LevelButton
-                    ref={level.status === 'current' ? currentLevelRef : null}
+                    ref={level.id === targetLevelId ? currentLevelRef : null}
                     className={`level-node level-node-${level.status}`}
                     onClick={() => {
                       if (level.status === 'locked' && !isAdmin) return;
@@ -499,7 +484,7 @@ export function ClimbGraphic({
             );
           })}
 
-          {STAGE_CONFIG.map((stage) => {
+          {getStagesForWorld(world).map((stage) => {
             const startLevelIdx = stage.range[0] - 1;
             const levelNode = Object.prototype.hasOwnProperty.call(levelData, startLevelIdx)
               ? // eslint-disable-next-line security/detect-object-injection -- index validated above

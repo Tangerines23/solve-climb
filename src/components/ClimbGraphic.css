@@ -1,9 +1,18 @@
 /* 토스 만보기 스타일 레벨 선택 화면 */
 
+/* CSS Variables Definition */
+
 .level-map-container {
   position: relative;
   width: 100%;
   overflow: visible;
+
+  /* Default Sky Variables */
+  --sky-color-top: #065f46;
+  --sky-color-bottom: #022c22;
+  --sky-color-glow: rgba(52, 211, 153, 0.4);
+  --glow-x: 30%;
+  --glow-y: 30%;
 
   /* Default Variables (World 1 - Grass) */
   --ground-color-near: #334155;
@@ -24,6 +33,9 @@
 /* World 1 Theme (Grassland) - Greenish */
 .level-map-container[data-world='World1'],
 .level-map-background-wrapper[data-world='World1'] {
+  --sky-color-top: #065f46;
+  --sky-color-bottom: #022c22;
+  --sky-color-glow: rgba(52, 211, 153, 0.4);
   --ground-color-near: #064e3b;
   --ground-color-mid: #065f46;
   --ground-color-far: #059669;
@@ -35,6 +47,9 @@
 /* World 2 Theme (Desert) - Amber/Sand */
 .level-map-container[data-world='World2'],
 .level-map-background-wrapper[data-world='World2'] {
+  --sky-color-top: #92400e;
+  --sky-color-bottom: #451a03;
+  --sky-color-glow: rgba(245, 158, 11, 0.4);
   --ground-color-near: #451a03;
   --ground-color-mid: #78350f;
   --ground-color-far: #92400e;
@@ -46,6 +61,9 @@
 /* World 3 Theme (Ice/Sea) - Blue/Cyan */
 .level-map-container[data-world='World3'],
 .level-map-background-wrapper[data-world='World3'] {
+  --sky-color-top: #0e7490;
+  --sky-color-bottom: #083344;
+  --sky-color-glow: rgba(34, 211, 238, 0.4);
   --ground-color-near: #083344;
   --ground-color-mid: #155e75;
   --ground-color-far: #0e7490;
@@ -57,15 +75,32 @@
 /* World 4 Theme (Space Elevator / Cyber Black) - Metallic Steel & Neon Logic Gates */
 .level-map-container[data-world='World4'],
 .level-map-background-wrapper[data-world='World4'] {
-  --ground-color-near: #18181b; /* Zinc-800 metallic dark gray */
-  --ground-color-mid: #27272a; /* Zinc-700 metallic medium gray */
-  --ground-color-far: #3f3f46; /* Zinc-600 metallic light gray */
-  --symbol-color-near: #a855f7; /* Neon Purple */
-  --symbol-color-mid: #ec4899; /* Neon Pink */
-  --symbol-color-far: #06b6d4; /* Neon Cyan */
+  --sky-color-top: #09090b;
+  --sky-color-bottom: #000000;
+  --sky-color-glow: rgba(168, 85, 247, 0.4);
+  --ground-color-near: #18181b;
+  --ground-color-mid: #27272a;
+  --ground-color-far: #3f3f46;
+  --symbol-color-near: #a855f7;
+  --symbol-color-mid: #ec4899;
+  --symbol-color-far: #06b6d4;
 }
 
-/* 하늘 그라데이션 배경 */
+/* LangWorld1 Theme (Language) - Reddish */
+.level-map-container[data-world='LangWorld1'],
+.level-map-background-wrapper[data-world='LangWorld1'] {
+  --sky-color-top: #f87171;
+  --sky-color-bottom: #7f1d1d;
+  --sky-color-glow: rgba(248, 113, 113, 0.4);
+  --ground-color-near: #7f1d1d;
+  --ground-color-mid: #991b1b;
+  --ground-color-far: #b91c1c;
+  --symbol-color-near: #fca5a5;
+  --symbol-color-mid: #fecaca;
+  --symbol-color-far: #fee2e2;
+}
+
+/* 하늘 그라데이션 배경 (CSS @property에 의한 변수보간 및 오로라 모션 적용) */
 .level-map-sky {
   position: fixed;
   top: 0;
@@ -73,7 +108,77 @@
   right: 0;
   bottom: 0;
   pointer-events: none;
-  transition: none;
+  z-index: 0;
+}
+
+.level-map-sky-layer {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  opacity: 0;
+  transition: opacity 1s cubic-bezier(0.76, 0, 0.24, 1);
+  pointer-events: none;
+}
+
+.level-map-sky-layer.active {
+  opacity: 1;
+}
+
+/* 각 월드별 그라데이션 */
+.level-map-sky-layer.world1 {
+  background: linear-gradient(180deg, #065f46 0%, #022c22 100%);
+}
+.level-map-sky-layer.world2 {
+  background: linear-gradient(180deg, #92400e 0%, #451a03 100%);
+}
+.level-map-sky-layer.world3 {
+  background: linear-gradient(180deg, #0e7490 0%, #083344 100%);
+}
+.level-map-sky-layer.world4 {
+  background: linear-gradient(180deg, #09090b 0%, #000000 100%);
+}
+.level-map-sky-layer.langworld1 {
+  background: linear-gradient(180deg, #f87171 0%, #7f1d1d 100%);
+}
+
+/* 오로라 광채 효과 레이어 (물리적 모션 최적화) */
+.level-map-sky-glow {
+  position: absolute;
+  width: 150vw;
+  height: 150vh;
+  top: -25vh;
+  left: -25vw;
+  background: radial-gradient(circle, var(--sky-color-glow) 0%, transparent 60%);
+  animation: skyGlowRotate 25s linear infinite;
+  pointer-events: none;
+  mix-blend-mode: screen;
+  opacity: 0.45;
+  transition: background 1s cubic-bezier(0.76, 0, 0.24, 1);
+}
+
+@keyframes skyGlowRotate {
+  0% {
+    transform: rotate(0deg) translate(0, 0);
+  }
+  50% {
+    transform: rotate(180deg) translate(50px, 80px);
+  }
+  100% {
+    transform: rotate(360deg) translate(0, 0);
+  }
+}
+
+/* 단일 월드 배경 래퍼 */
+.level-map-background-wrapper {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  top: 0;
+  left: 0;
+  z-index: 1;
+  pointer-events: none;
 }
 
 /* 배경 SVG 스타일 - 모든 배경 컴포넌트에 공통 적용 */
@@ -85,9 +190,16 @@
   left: 0;
   display: block;
   z-index: 1;
-  /* 배경을 뒤로 보냄 (노드가 z-index: 10 이상이므로 앞에 표시됨) */
   pointer-events: none;
   object-fit: cover;
+}
+
+.mountain-bg-far,
+.mountain-bg-mid,
+.mountain-bg-near {
+  transition:
+    fill 1.1s cubic-bezier(0.76, 0, 0.24, 1),
+    opacity 1.1s cubic-bezier(0.76, 0, 0.24, 1);
 }
 
 /* [주석 처리] 절차적 생성 배경으로 교체됨 - React 컴포넌트가 산을 직접 그리므로 CSS는 더 이상 사용하지 않음 */
@@ -410,49 +522,7 @@
 }
 
 /* 스테이지별 특수 효과 */
-/* 1단계: 사칙연산 - 블록 그림자 강조 및 3D 효과 */
-.level-map-container[data-stage='arithmetic'] .mountain-bg-near {
-  filter: saturate(1.2) brightness(1.1) drop-shadow(-6px 6px 12px rgba(0, 0, 0, 0.6));
-}
-
-.level-map-container[data-stage='arithmetic'] .mountain-bg-near rect {
-  stroke: rgba(255, 255, 255, 0.3);
-  stroke-width: 2;
-}
-
-/* 2단계: 방정식 - 대칭 강조 */
-.level-map-container[data-stage='equations'] .mountain-bg-near {
-  filter: saturate(1.15) brightness(1.05) drop-shadow(-5px 5px 10px rgba(0, 206, 209, 0.4));
-}
-
-/* 3단계: 수열 - 프랙탈 깊이감 */
-.level-map-container[data-stage='sequence'] .mountain-bg-far {
-  filter: blur(8px) saturate(0.3) brightness(0.8);
-}
-
-/* 4단계: 미적분 - 우주 느낌 */
-.level-map-container[data-stage='calculus'] .mountain-bg-near {
-  filter: saturate(0.8) brightness(0.9) drop-shadow(0 0 20px rgba(0, 212, 255, 0.5));
-}
-
-.level-map-container[data-stage='calculus'] .math-symbol {
-  animation:
-    symbolFloat 3s ease-in-out infinite,
-    symbolGlow 2s ease-in-out infinite;
-}
-
-@keyframes symbolGlow {
-  0%,
-  100% {
-    opacity: 0.6;
-    filter: drop-shadow(0 0 5px rgba(0, 212, 255, 0.8));
-  }
-
-  50% {
-    opacity: 1;
-    filter: drop-shadow(0 0 15px rgba(0, 212, 255, 1));
-  }
-}
+/* 카테고리별 특수 효과 제거 (SVG 내부에서 opacity로 처리됨) */
 
 /* 스테이지 표지판 스타일 (Toss UI) */
 .stage-signpost {

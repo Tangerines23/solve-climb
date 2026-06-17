@@ -21,8 +21,10 @@ export function useDebugShortcuts() {
   const handleKeyDown = useCallback(
     (e: KeyboardEvent) => {
       const target = e.target as HTMLElement;
-      const isInputField = target.tagName === 'INPUT' || target.tagName === 'TEXTAREA' || target.isContentEditable;
-      const isDebugKey = e.key === '`' || (isAdminMode && (e.key.toLowerCase() === 'v' || e.key === 'Backspace'));
+      const isInputField =
+        target.tagName === 'INPUT' || target.tagName === 'TEXTAREA' || target.isContentEditable;
+      const isDebugKey =
+        e.key === '`' || (isAdminMode && (e.key.toLowerCase() === 'v' || e.key === 'Backspace'));
 
       if (isInputField && !isDebugKey) {
         return;

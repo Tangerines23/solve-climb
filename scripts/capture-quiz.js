@@ -4,7 +4,6 @@ import path from 'path';
 
 (async () => {
   const browser = await chromium.launch();
-  let port = 5173;
   let baseUrl = '';
 
   for (const p of [5173, 5174, 5175]) {
@@ -15,7 +14,7 @@ import path from 'path';
       baseUrl = `http://localhost:${p}`;
       console.log(`Detected server on port ${p}`);
       break;
-    } catch (e) {
+    } catch {
       // ignore
     }
   }
@@ -74,7 +73,7 @@ import path from 'path';
       await page.click('button[type="submit"]');
       await page.waitForURL((url) => url.pathname === '/', { timeout: 10000 });
       console.log('Successfully setup nickname, redirected to home.');
-    } catch (e) {
+    } catch {
       console.log('Profile setup form not visible or already set. Proceeding.');
     }
 
