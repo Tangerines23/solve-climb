@@ -27,12 +27,37 @@ const FLOATING_SEEDS = Array.from({ length: 25 }, (_, i) => {
   };
 });
 
-export function ClimbBackground({ category }: BackgroundProps) {
-  // 카테고리별 수학적 대형(Layout) 좌표 계산
+const getWorldIndex = (world: World): number => {
+  switch (world) {
+    case 'World1':
+      return 1;
+    case 'World2':
+      return 2;
+    case 'World3':
+      return 3;
+    case 'World4':
+      return 4;
+    case 'LangWorld1':
+      return 5;
+    default:
+      return 0;
+  }
+};
+
+export function ClimbBackground({ world, category }: BackgroundProps) {
+  // 카테고리 및 월드별 수학적 대형(Layout) 좌표 계산
   const items = useMemo(() => {
+    const worldIdx = getWorldIndex(world);
+
     return FLOATING_SEEDS.map((seed) => {
-      let x = seed.seedX * 100;
-      let y = seed.seedY * 100;
+      // 월드별 고정 난수 시드 유도 (결정론적 해싱)
+      const sinX = Math.sin(seed.index + worldIdx * 7.3) * 10000;
+      const worldSeedX = sinX - Math.floor(sinX);
+      const sinY = Math.sin(seed.index + worldIdx * 11.9) * 10000;
+      const worldSeedY = sinY - Math.floor(sinY);
+
+      let x = worldSeedX * 100;
+      let y = worldSeedY * 100;
       let scale = seed.scale;
       let rotate = 0;
       let opacity = seed.isSymbol ? 0.55 : 0.85;
@@ -41,38 +66,38 @@ export function ClimbBackground({ category }: BackgroundProps) {
       if (category === '기초') {
         const symbols = ['+', '-', '×', '÷', '='];
         symbol = symbols[seed.index % symbols.length];
-        x = seed.seedX * 90 + 5; // 골고루 분산
-        y = seed.seedY * 90 + 5;
+        x = worldSeedX * 90 + 5; // 골고루 분산
+        y = worldSeedY * 90 + 5;
         scale = seed.scale * 0.9;
       } else if (category === '대수') {
         const symbols = ['x', 'y', 'a', 'b', 'z'];
         symbol = symbols[seed.index % symbols.length];
         // 대칭 협곡 대형: 중앙(35% ~ 65%)을 비우고 양옆에 집중적으로 배치
-        if (seed.seedX < 0.5) {
-          x = seed.seedX * 60; // 0% ~ 30%
+        if (worldSeedX < 0.5) {
+          x = worldSeedX * 60; // 0% ~ 30%
         } else {
-          x = 70 + (seed.seedX - 0.5) * 60; // 70% ~ 100%
+          x = 70 + (worldSeedX - 0.5) * 60; // 70% ~ 100%
         }
-        y = seed.seedY * 95 + 2.5;
+        y = worldSeedY * 95 + 2.5;
         rotate = seed.index * 15;
         scale = seed.scale * 0.8;
       } else if (category === '논리') {
         const symbols = ['>', '<', '1', '2', '3', '5', '8'];
         symbol = symbols[seed.index % symbols.length];
-        // 피라미드 대형: 상단(y가 낮음)으로 갈수록 x가 중앙(50%)으로 좁아짐
-        const yPercent = seed.seedY * 100;
+        // 피라미드 대형: 상단으로 갈수록 x가 중앙으로 좁아짐
+        const yPercent = worldSeedY * 100;
         const spread = (yPercent / 100) * 80 + 10;
-        x = 50 + (seed.seedX - 0.5) * spread;
-        y = seed.seedY * 90 + 5;
+        x = 50 + (worldSeedX - 0.5) * spread;
+        y = worldSeedY * 90 + 5;
         rotate = seed.index * 30;
       } else if (category === '심화') {
         const symbols = ['∫', '∞', '∂', 'dx', 'dy'];
         symbol = symbols[seed.index % symbols.length];
         // 사인파 나선 대형: S자 곡선을 따라 궤도 주변에 배치
-        const yPercent = seed.seedY * 100;
+        const yPercent = worldSeedY * 100;
         const sOffset = Math.sin(yPercent * 0.1) * 35;
-        x = 50 + sOffset + (seed.seedX - 0.5) * 20;
-        y = seed.seedY * 90 + 5;
+        x = 50 + sOffset + (worldSeedX - 0.5) * 20;
+        y = worldSeedY * 90 + 5;
         rotate = seed.index * 45;
         scale = seed.scale * 1.1;
       }
@@ -87,7 +112,7 @@ export function ClimbBackground({ category }: BackgroundProps) {
         symbol,
       };
     });
-  }, [category]);
+  }, [world, category]);
 
   // 대수와 심화 카테고리에서 모눈종이 그리드 투명도 설정
   const gridOpacity = category === '대수' || category === '심화' ? 0.6 : 0;
