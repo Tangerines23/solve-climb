@@ -7,22 +7,49 @@ interface BackgroundProps {
   totalLevels?: number;
 }
 
-// 25개 부유 요소의 고유 seed 값 (컴포넌트 바깥에 배치하여 재생성 방지 및 DOM 유지)
-const FLOATING_SEEDS = Array.from({ length: 25 }, (_, i) => {
-  // 인덱스 기반으로 고정된 난수 값들을 결정론적으로 매핑
+// Seeded Random Helper (결정론적 난수 생성기)
+class SeededRandom {
+  private seed: number;
+  constructor(seed: number) {
+    this.seed = seed;
+  }
+  next() {
+    const x = Math.sin(this.seed++) * 10000;
+    return x - Math.floor(x);
+  }
+  nextInt(min: number, max: number) {
+    return Math.floor(this.next() * (max - min + 1)) + min;
+  }
+}
+
+const getCategoryIndex = (category: Category): number => {
+  switch (category) {
+    case '기초':
+      return 1;
+    case '대수':
+      return 2;
+    case '논리':
+      return 3;
+    case '심화':
+      return 4;
+    default:
+      return 0;
+  }
+};
+
+// 잔별(Star)들의 렌더링을 위한 고정 난수 값 리스트 (12개)
+const FLOATING_SEEDS = Array.from({ length: 12 }, (_, i) => {
   const sin1 = Math.sin(i + 1) * 10000;
   const seedX = sin1 - Math.floor(sin1);
   const sin2 = Math.sin(i + 2.5) * 10000;
   const seedY = sin2 - Math.floor(sin2);
-  const scale = 0.5 + (sin1 * 0.5 - Math.floor(sin1 * 0.5)); // 0.5 ~ 1.0
-  const isSymbol = i % 2 === 0;
+  const scale = 0.5 + (sin1 * 0.5 - Math.floor(sin1 * 0.5));
 
   return {
     id: `float-${i}`,
     seedX,
     seedY,
     scale,
-    isSymbol,
     index: i,
   };
 });
@@ -48,67 +75,91 @@ export function ClimbBackground({ world, category }: BackgroundProps) {
   // 카테고리 및 월드별 수학적 대형(Layout) 좌표 계산
   const items = useMemo(() => {
     const worldIdx = getWorldIndex(world);
+    const catIdx = getCategoryIndex(category);
+    const rng = new SeededRandom(worldIdx * 17 + catIdx * 31);
 
-    return FLOATING_SEEDS.map((seed) => {
-      // 월드별 고정 난수 시드 유도 (결정론적 해싱)
-      const sinX = Math.sin(seed.index + worldIdx * 7.3) * 10000;
-      const worldSeedX = sinX - Math.floor(sinX);
-      const sinY = Math.sin(seed.index + worldIdx * 11.9) * 10000;
-      const worldSeedY = sinY - Math.floor(sinY);
+    // 1. 총 24개의 슬롯에 대해 정적 구역(6개) 및 기준 좌표 매핑
+    const slots = Array.from({ length: 24 }, (_, i) => {
+      const zone = Math.floor(i / 4); // 6개 구역 (0 ~ 5)
+      const slotInZone = i % 4;
 
-      let x = worldSeedX * 100;
-      let y = worldSeedY * 100;
-      let scale = seed.scale;
-      let rotate = 0;
-      let opacity = seed.isSymbol ? 0.55 : 0.85;
+      const zoneHeight = 100 / 6; // 약 16.6%
+      const yStart = zone * zoneHeight;
+
+      // 정적 기준 위치
+      const baseX = 15 + slotInZone * 23; // 15%, 38%, 61%, 84% 부근에 분산
+      const baseY =
+        yStart + zoneHeight * 0.3 + (slotInZone % 2 === 0 ? zoneHeight * 0.1 : zoneHeight * 0.4);
+
+      return {
+        id: `float-node-${i}`,
+        index: i,
+        baseX,
+        baseY,
+      };
+    });
+
+    // 2. 활성/비활성 여부 결정 (총 개수를 15 ~ 21개 사이로 무작위 제한)
+    const activeCount = rng.nextInt(15, 21);
+    const activeIndices = new Set<number>();
+    while (activeIndices.size < activeCount) {
+      activeIndices.add(rng.nextInt(0, 23));
+    }
+
+    // 3. 기호와 원 비율 조율 (기호 비율 30% ~ 70% 범위 고정)
+    const symbolRatio = 0.3 + rng.next() * 0.4;
+    const symbolCount = Math.round(activeCount * symbolRatio);
+
+    // 활성 인덱스 리스트 셔플하여 기호/도형 분배
+    const activeArray = Array.from(activeIndices);
+    const shuffledActive = [...activeArray].sort(() => rng.next() - 0.5);
+    const symbolIndices = new Set(shuffledActive.slice(0, symbolCount));
+
+    // 4. 각 슬롯 좌표 및 타입 결정
+    return slots.map((slot) => {
+      const isActive = activeIndices.has(slot.index);
+      const isSymbol = symbolIndices.has(slot.index);
+
+      let x = slot.baseX;
+      let y = slot.baseY;
+      let opacity = isActive ? (isSymbol ? 0.55 : 0.85) : 0;
+      let scale = 0.6 + rng.next() * 0.45; // 0.6 ~ 1.05
+      let rotate = rng.nextInt(0, 360);
       let symbol = '';
 
-      if (category === '기초') {
-        const symbols = ['+', '-', '×', '÷', '='];
-        symbol = symbols[seed.index % symbols.length];
-        x = worldSeedX * 90 + 5; // 골고루 분산
-        y = worldSeedY * 90 + 5;
-        scale = seed.scale * 0.9;
-      } else if (category === '대수') {
-        const symbols = ['x', 'y', 'a', 'b', 'z'];
-        symbol = symbols[seed.index % symbols.length];
-        // 대칭 협곡 대형: 중앙(35% ~ 65%)을 비우고 양옆에 집중적으로 배치
-        if (worldSeedX < 0.5) {
-          x = worldSeedX * 60; // 0% ~ 30%
-        } else {
-          x = 70 + (worldSeedX - 0.5) * 60; // 70% ~ 100%
-        }
-        y = worldSeedY * 95 + 2.5;
-        rotate = seed.index * 15;
-        scale = seed.scale * 0.8;
-      } else if (category === '논리') {
-        const symbols = ['>', '<', '1', '2', '3', '5', '8'];
-        symbol = symbols[seed.index % symbols.length];
-        // 피라미드 대형: 상단으로 갈수록 x가 중앙으로 좁아짐
-        const yPercent = worldSeedY * 100;
-        const spread = (yPercent / 100) * 80 + 10;
-        x = 50 + (worldSeedX - 0.5) * spread;
-        y = worldSeedY * 90 + 5;
-        rotate = seed.index * 30;
-      } else if (category === '심화') {
-        const symbols = ['∫', '∞', '∂', 'dx', 'dy'];
-        symbol = symbols[seed.index % symbols.length];
-        // 사인파 나선 대형: S자 곡선을 따라 궤도 주변에 배치
-        const yPercent = worldSeedY * 100;
-        const sOffset = Math.sin(yPercent * 0.1) * 35;
-        x = 50 + sOffset + (worldSeedX - 0.5) * 20;
-        y = worldSeedY * 90 + 5;
-        rotate = seed.index * 45;
-        scale = seed.scale * 1.1;
+      if (isActive) {
+        // 최대 이동 거리 제약: 기준 좌표로부터 X는 +-12%, Y는 +-8% 내에서만 움직임
+        const offsetX = (rng.next() - 0.5) * 24; // 최대 12% 반경
+        const offsetY = (rng.next() - 0.5) * 16; // 최대 8% 반경
+
+        x = Math.max(5, Math.min(95, slot.baseX + offsetX));
+        y = Math.max(5, Math.min(95, slot.baseY + offsetY));
+      } else {
+        // 화면 밖으로 미끄러져 나감 (Slide Out) 및 투명화
+        x = slot.baseX < 50 ? -25 : 125; // 50% 기준 좌측/우측 화면 밖으로 튕김
+        y = slot.baseY + (rng.next() - 0.5) * 20;
+      }
+
+      // 카테고리별 수학 기호 텍입
+      if (isSymbol) {
+        let symbols: string[] = [];
+        if (category === '기초') symbols = ['+', '-', '×', '÷', '='];
+        else if (category === '대수') symbols = ['x', 'y', 'a', 'b', 'z'];
+        else if (category === '논리') symbols = ['>', '<', '1', '2', '3', '5', '8'];
+        else if (category === '심화') symbols = ['∫', '∞', '∂', 'dx', 'dy'];
+
+        symbol = symbols[slot.index % (symbols.length || 1)] || '';
       }
 
       return {
-        ...seed,
+        id: slot.id,
+        index: slot.index,
         x,
         y,
         scale,
         rotate,
         opacity,
+        isSymbol,
         symbol,
       };
     });
