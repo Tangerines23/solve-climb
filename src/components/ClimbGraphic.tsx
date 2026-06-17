@@ -82,7 +82,7 @@ export function ClimbGraphic({
 
   // ========== 설정 상수 ==========
   const SVG_WIDTH = 400;
-  const NODE_SPACING = 80;
+  const NODE_SPACING = 160;
   const LIST_DISTANCE = 100;
   const SCROLL_OFFSET = 60;
 
@@ -252,7 +252,7 @@ export function ClimbGraphic({
 
         // 스크롤 상단 리밋 범위 보정 (빈 공간 스크롤 방지 이중 안전장치)
         const MAX_LEVELS = 30;
-        const NODE_SPACING = 80;
+        const NODE_SPACING = 160;
         const containerWidth = scrollContainer.clientWidth || 400;
         const scale = containerWidth / 400;
         const currentLevelsCount = levels.length;

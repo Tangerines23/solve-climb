@@ -214,7 +214,7 @@ export function LevelSelectPage() {
     const currentLevelsCount = levels.length;
     if (currentLevelsCount >= MAX_LEVELS) return 0; // World 1처럼 30레벨 꽉 찬 경우 전체 스크롤 가능
 
-    const NODE_SPACING = 80;
+    const NODE_SPACING = 160;
     const containerWidth = container.clientWidth || 400;
     const scale = containerWidth / 400;
 
