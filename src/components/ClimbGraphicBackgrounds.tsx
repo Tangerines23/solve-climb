@@ -71,8 +71,8 @@ const getWorldIndex = (world: World): number => {
   }
 };
 
-export function ClimbBackground({ world, category }: BackgroundProps) {
-  const MAX_LEVELS = 30;
+export function ClimbBackground({ world, category, totalLevels = 30 }: BackgroundProps) {
+  const MAX_LEVELS = totalLevels;
   const NODE_SPACING = 160;
   const LIST_DISTANCE = 100;
   const lastNodeY = LIST_DISTANCE;

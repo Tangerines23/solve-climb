@@ -106,10 +106,10 @@ export function ClimbGraphic({
     const points: Array<{ x: number; y: number }> = [];
     let lastClearedIdx = -1;
 
-    const MAX_LEVELS = 30; // 최고 높이 레벨 기준 고정 (Clamping 방지)
+    const MAX_LEVELS = totalLevels;
     const lastNodeY = LIST_DISTANCE;
-    const firstNodeY = lastNodeY + (MAX_LEVELS - 1) * NODE_SPACING; // 항상 2420px로 저점 고정
-    const calculatedSvgHeight = firstNodeY + 100; // 항상 2520px로 고정
+    const firstNodeY = lastNodeY + (MAX_LEVELS - 1) * NODE_SPACING;
+    const calculatedSvgHeight = firstNodeY + 100;
 
     for (let i = 0; i < totalLevels; i++) {
       const y = firstNodeY - i * NODE_SPACING; // 모든 월드에서 레벨 1은 무조건 Y=2420px부터 배치
@@ -264,18 +264,7 @@ export function ClimbGraphic({
         // 만약 prop으로 이전 마지막 스크롤 위치가 주어졌다면 그것을 목표값으로 삼고, 없다면 현재 레벨 기준 계산값을 사용합니다.
         const finalTargetScrollTop = lastScrollTop !== undefined ? lastScrollTop : targetScrollTop;
 
-        // 스크롤 상단 리밋 범위 보정 (빈 공간 스크롤 방지 이중 안전장치)
-        const MAX_LEVELS = 30;
-        const NODE_SPACING = 160;
-        const containerWidth = scrollContainer.clientWidth || 400;
-        const scale = containerWidth / 400;
-        const currentLevelsCount = levels.length;
-        const emptySpaceHeight =
-          currentLevelsCount < MAX_LEVELS
-            ? (MAX_LEVELS - currentLevelsCount) * NODE_SPACING * scale
-            : 0;
-
-        const correctedTargetScrollTop = Math.max(emptySpaceHeight, finalTargetScrollTop);
+        const correctedTargetScrollTop = finalTargetScrollTop;
 
         let attempts = 0;
         let lastScrollTopVal = -1;
