@@ -6,7 +6,9 @@
   display: flex;
   flex-direction: column;
   height: 100vh;
+  height: 100dvh; /* 모바일 동적 뷰포트 높이 대응으로 툴바 변화 시 튕김 방지 */
   overflow: hidden;
+  overscroll-behavior: none; /* 페이지 루트 수준 오버스크롤 차단하여 주소창 흔들림 예방 */
   transition: background 0.8s ease-in-out;
 }
 
@@ -120,6 +122,8 @@
   /* 스크롤바 숨기기 (선택 사항) */
   scrollbar-width: none;
   -ms-overflow-style: none;
+  overscroll-behavior-y: contain; /* 하위 스크롤 경계 도달 시 상위로 스크롤 전파를 차단하여 떨림 방지 */
+  -webkit-overflow-scrolling: touch; /* iOS 환경에서 관성 스크롤 및 부드러운 고무줄 바운스 효과 적용 */
 }
 
 .map-area::-webkit-scrollbar {
