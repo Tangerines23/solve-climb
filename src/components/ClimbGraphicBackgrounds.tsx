@@ -258,11 +258,11 @@ export function ClimbBackground({ world, category }: BackgroundProps) {
       <svg
         viewBox={`0 0 400 ${svgHeight}`}
         className="mountain-background-svg"
-        preserveAspectRatio="xMidYMax meet"
+        preserveAspectRatio="none"
         style={{
           position: 'absolute',
           width: '100%',
-          height: `${svgHeight}px`,
+          height: '100%',
           top: 0,
           left: 0,
         }}
