@@ -20,6 +20,20 @@ export const LevelButton = React.forwardRef<HTMLButtonElement, LevelButtonProps>
 
 LevelButton.displayName = 'LevelButton';
 
+const getBadgeWidth = (title: string): number => {
+  if (!title) return 96;
+  let width = 0;
+  for (let i = 0; i < title.length; i++) {
+    const code = title.charCodeAt(i);
+    if (code >= 0xac00 && code <= 0xd7a3) {
+      width += 13.5;
+    } else {
+      width += 7.5;
+    }
+  }
+  return Math.ceil(width + 36);
+};
+
 interface ClimbGraphicProps {
   mountain?: string;
   world: World;
@@ -494,13 +508,33 @@ export function ClimbGraphic({
 
             if (!position) return null;
 
-            const isLeftSide = stage.id === 'basic' || stage.id === 'focus';
-            const badgeWidth = 96;
+            const badgeWidth = getBadgeWidth(stage.title);
             const badgeSpacing = 42;
 
-            const badgeX = isLeftSide
-              ? position.x - badgeWidth - badgeSpacing
-              : position.x + badgeSpacing;
+            const leftPlacementX = position.x - badgeWidth - badgeSpacing;
+            const rightPlacementX = position.x + badgeSpacing;
+
+            let isLeftSide = true;
+            let badgeX = leftPlacementX;
+
+            if (leftPlacementX < 10) {
+              isLeftSide = false;
+              badgeX = rightPlacementX;
+            } else if (rightPlacementX + badgeWidth > 390) {
+              isLeftSide = true;
+              badgeX = leftPlacementX;
+            } else {
+              const preferredLeft = stage.id === 'basic' || stage.id === 'focus';
+              isLeftSide = preferredLeft;
+              badgeX = preferredLeft ? leftPlacementX : rightPlacementX;
+            }
+
+            if (badgeX < 10) {
+              badgeX = 10;
+            } else if (badgeX + badgeWidth > 390) {
+              badgeX = 390 - badgeWidth;
+            }
+
             const badgeY = position.y - 15;
 
             return (
