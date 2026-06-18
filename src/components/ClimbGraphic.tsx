@@ -199,126 +199,142 @@ export function ClimbGraphic({
         return;
       }
 
-      // 화면 해상도나 크기에 따라 SVG가 비율 매칭되어 크기가 변하므로,
-      // scrollContainer의 실제 너비를 기준으로 스케일을 계산하여 정밀한 수학적 절대 좌표를 산출합니다.
-      // getBoundingClientRect는 레이아웃 완료 시점에 영향을 받아 튕김이나 0px 측정 오류를 유발하므로 수학적 계산을 1순위로 채택합니다.
-      const currentLevelNode = levelData.find((l) => l.id === targetLevelId) || levelData[0];
-      const SCROLL_OFFSET = 60;
-      const containerWidth = scrollContainer.clientWidth || 400;
-      const scale = containerWidth / 400;
-      const nodeRelativeY =
-        SCROLL_OFFSET + (currentLevelNode ? currentLevelNode.position.y : 0) * scale;
-
-      const containerHeight = scrollContainer.clientHeight || 600;
-      const nodeHeight = 56; // 레벨 노드 고정 높이
-
-      // 노드가 스크롤 영역의 정중앙에 위치하도록 목표 scrollTop 설정
-      const targetScrollTop = nodeRelativeY - containerHeight / 2 + nodeHeight / 2;
-
-      if (behavior === 'auto') {
-        scrollContainer.scrollTop = targetScrollTop;
-
-        // [자가 보정] 브라우저 레이아웃(scrollHeight)이 비동기적으로 확장되는 시점의 타이밍 지연으로 인해
-        // scrollTop 세팅이 무시되거나 중간에 클램핑되는 현상을 방지하기 위해 정교한 재시도 루프를 적용합니다.
-        let attempts = 0;
-        let lastScrollTop = -1;
-        const retryScroll = () => {
-          scrollContainer.scrollTop = targetScrollTop;
-          const currentScroll = scrollContainer.scrollTop;
-          const isClose = Math.abs(currentScroll - targetScrollTop) < 3;
-
-          // 목표에 충분히 도달했거나, 경계선 도달 등으로 스크롤 위치가 5프레임 이상 고정된 경우 중단
-          if (isClose || (currentScroll === lastScrollTop && attempts > 5) || attempts >= 30) {
-            return;
-          }
-
-          lastScrollTop = currentScroll;
-          attempts++;
-          requestAnimationFrame(retryScroll);
-        };
-        requestAnimationFrame(retryScroll);
-      } else if (behavior === 'transition') {
-        // 'transition' 모드: 이전 월드에서 보던 위치(start)에서 새 월드의 이전 위치 또는 현레벨 위치(target)로 스크롤
-        const startScrollTop =
-          fromScrollTop !== undefined ? fromScrollTop : scrollContainer.scrollTop;
-
-        // 트랜지션 시작 처리가 완료되어 시작점을 구했으므로 부모 상태를 소비 처리
-        if (onTransitionStart) {
-          onTransitionStart();
+      // [레이아웃 가드] 스크롤 컨테이너의 내부 영역(scrollHeight)이
+      // 실제 지도 높이(svgHeight)에 맞게 충분히 로드되어 확장되었는지 먼저 확인합니다.
+      // 렌더링 지연이 있는 경우 최대 15프레임까지 안전하게 대기하여 튕김 및 상단 고정 오작동을 해결합니다.
+      let layoutAttempts = 0;
+      const executeScroll = () => {
+        const currentScrollHeight = scrollContainer.scrollHeight;
+        if (currentScrollHeight < svgHeight - 50 && layoutAttempts < 15) {
+          layoutAttempts++;
+          requestAnimationFrame(executeScroll);
+          return;
         }
 
-        // 만약 prop으로 이전 마지막 스크롤 위치가 주어졌다면 그것을 목표값으로 삼고, 없다면 현재 레벨 기준 계산값을 사용합니다.
-        const finalTargetScrollTop = lastScrollTop !== undefined ? lastScrollTop : targetScrollTop;
+        // 화면 해상도나 크기에 따라 SVG가 비율 매칭되어 크기가 변하므로,
+        // scrollContainer의 실제 너비를 기준으로 스케일을 계산하여 정밀한 수학적 절대 좌표를 산출합니다.
+        // getBoundingClientRect는 레이아웃 완료 시점에 영향을 받아 튕김이나 0px 측정 오류를 유발하므로 수학적 계산을 1순위로 채택합니다.
+        const currentLevelNode = levelData.find((l) => l.id === targetLevelId) || levelData[0];
+        const SCROLL_OFFSET = 60;
+        const containerWidth = scrollContainer.clientWidth || 400;
+        const scale = containerWidth / 400;
+        const nodeRelativeY =
+          SCROLL_OFFSET + (currentLevelNode ? currentLevelNode.position.y : 0) * scale;
 
-        const correctedTargetScrollTop = finalTargetScrollTop;
+        const containerHeight = scrollContainer.clientHeight || 600;
+        const nodeHeight = 56; // 레벨 노드 고정 높이
 
-        let attempts = 0;
-        let lastScrollTopVal = -1;
+        // 노드가 스크롤 영역의 정중앙에 위치하도록 목표 scrollTop 설정
+        const targetScrollTop = nodeRelativeY - containerHeight / 2 + nodeHeight / 2;
 
-        const initializeAndAnimate = () => {
-          scrollContainer.scrollTop = startScrollTop;
-          const currentScroll = scrollContainer.scrollTop;
-          const isInitialized =
-            Math.abs(currentScroll - startScrollTop) < 3 ||
-            (currentScroll === lastScrollTopVal && attempts > 5);
+        if (behavior === 'auto') {
+          scrollContainer.scrollTop = targetScrollTop;
 
-          if (isInitialized || attempts >= 25) {
-            const start = scrollContainer.scrollTop;
-            const change = correctedTargetScrollTop - start;
-            const startTime = performance.now();
-            const duration = 800; // 부드럽게 감속하는 Easing 모션 프레임 적용
+          // [자가 보정] 브라우저 레이아웃(scrollHeight)이 비동기적으로 확장되는 시점의 타이밍 지연으로 인해
+          // scrollTop 세팅이 무시되거나 중간에 Clamping되는 현상을 방지하기 위해 정교한 재시도 루프를 적용합니다.
+          let attempts = 0;
+          let lastScrollTop = -1;
+          const retryScroll = () => {
+            scrollContainer.scrollTop = targetScrollTop;
+            const currentScroll = scrollContainer.scrollTop;
+            const isClose = Math.abs(currentScroll - targetScrollTop) < 3;
 
-            const easeInOutQuart = (t: number) => {
-              return t < 0.5 ? 8 * t * t * t * t : 1 - Math.pow(-2 * t + 2, 4) / 2;
-            };
+            // 목표에 충분히 도달했거나, 경계선 도달 등으로 스크롤 위치가 5프레임 이상 고정된 경우 중단
+            if (isClose || (currentScroll === lastScrollTop && attempts > 5) || attempts >= 30) {
+              return;
+            }
 
-            const animateScroll = (currentTime: number) => {
-              const timeElapsed = currentTime - startTime;
-              const progress = Math.min(timeElapsed / duration, 1);
-              const easedProgress = easeInOutQuart(progress);
+            lastScrollTop = currentScroll;
+            attempts++;
+            requestAnimationFrame(retryScroll);
+          };
+          requestAnimationFrame(retryScroll);
+        } else if (behavior === 'transition') {
+          // 'transition' 모드: 이전 월드에서 보던 위치(start)에서 새 월드의 이전 위치 또는 현레벨 위치(target)로 스크롤
+          const startScrollTop =
+            fromScrollTop !== undefined ? fromScrollTop : scrollContainer.scrollTop;
 
-              scrollContainer.scrollTop = start + change * easedProgress;
-
-              if (progress < 1) {
-                requestAnimationFrame(animateScroll);
-              }
-            };
-
-            requestAnimationFrame(animateScroll);
-            return;
+          // 트랜지션 시작 처리가 완료되어 시작점을 구했으므로 부모 상태를 소비 처리
+          if (onTransitionStart) {
+            onTransitionStart();
           }
 
-          lastScrollTopVal = currentScroll;
-          attempts++;
+          // 만약 prop으로 이전 마지막 스크롤 위치가 주어졌다면 그것을 목표값으로 삼고, 없다면 현재 레벨 기준 계산값을 사용합니다.
+          const finalTargetScrollTop =
+            lastScrollTop !== undefined ? lastScrollTop : targetScrollTop;
+
+          const correctedTargetScrollTop = finalTargetScrollTop;
+
+          let attempts = 0;
+          let lastScrollTopVal = -1;
+
+          const initializeAndAnimate = () => {
+            scrollContainer.scrollTop = startScrollTop;
+            const currentScroll = scrollContainer.scrollTop;
+            const isInitialized =
+              Math.abs(currentScroll - startScrollTop) < 3 ||
+              (currentScroll === lastScrollTopVal && attempts > 5);
+
+            if (isInitialized || attempts >= 25) {
+              const start = scrollContainer.scrollTop;
+              const change = correctedTargetScrollTop - start;
+              const startTime = performance.now();
+              const duration = 800; // 부드럽게 감속하는 Easing 모션 프레임 적용
+
+              const easeInOutQuart = (t: number) => {
+                return t < 0.5 ? 8 * t * t * t * t : 1 - Math.pow(-2 * t + 2, 4) / 2;
+              };
+
+              const animateScroll = (currentTime: number) => {
+                const timeElapsed = currentTime - startTime;
+                const progress = Math.min(timeElapsed / duration, 1);
+                const easedProgress = easeInOutQuart(progress);
+
+                scrollContainer.scrollTop = start + change * easedProgress;
+
+                if (progress < 1) {
+                  requestAnimationFrame(animateScroll);
+                }
+              };
+
+              requestAnimationFrame(animateScroll);
+              return;
+            }
+
+            lastScrollTopVal = currentScroll;
+            attempts++;
+            requestAnimationFrame(initializeAndAnimate);
+          };
+
           requestAnimationFrame(initializeAndAnimate);
-        };
+        } else {
+          // 'smooth' 모드 (내 위치 버튼 등): 현재의 실제 스크롤 위치에서부터 targetScrollTop까지 부드럽게 이동
+          const start = scrollContainer.scrollTop;
+          const change = targetScrollTop - start;
+          const startTime = performance.now();
+          const duration = 850; // 0.85초 동안 유려하게 가감속
 
-        requestAnimationFrame(initializeAndAnimate);
-      } else {
-        // 'smooth' 모드 (내 위치 버튼 등): 현재의 실제 스크롤 위치에서부터 targetScrollTop까지 부드럽게 이동
-        const start = scrollContainer.scrollTop;
-        const change = targetScrollTop - start;
-        const startTime = performance.now();
-        const duration = 850; // 0.85초 동안 유려하게 가감속
+          const easeInOutQuart = (t: number) => {
+            return t < 0.5 ? 8 * t * t * t * t : 1 - Math.pow(-2 * t + 2, 4) / 2;
+          };
 
-        const easeInOutQuart = (t: number) => {
-          return t < 0.5 ? 8 * t * t * t * t : 1 - Math.pow(-2 * t + 2, 4) / 2;
-        };
+          const animateScroll = (currentTime: number) => {
+            const timeElapsed = currentTime - startTime;
+            const progress = Math.min(timeElapsed / duration, 1);
+            const easedProgress = easeInOutQuart(progress);
 
-        const animateScroll = (currentTime: number) => {
-          const timeElapsed = currentTime - startTime;
-          const progress = Math.min(timeElapsed / duration, 1);
-          const easedProgress = easeInOutQuart(progress);
+            scrollContainer.scrollTop = start + change * easedProgress;
 
-          scrollContainer.scrollTop = start + change * easedProgress;
+            if (progress < 1) {
+              requestAnimationFrame(animateScroll);
+            }
+          };
 
-          if (progress < 1) {
-            requestAnimationFrame(animateScroll);
-          }
-        };
+          requestAnimationFrame(animateScroll);
+        }
+      };
 
-        requestAnimationFrame(animateScroll);
-      }
+      requestAnimationFrame(executeScroll);
     },
     [levelData, targetLevelId]
   );
