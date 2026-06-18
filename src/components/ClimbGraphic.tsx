@@ -201,11 +201,12 @@ export function ClimbGraphic({
 
       // [레이아웃 가드] 스크롤 컨테이너의 내부 영역(scrollHeight)이
       // 실제 지도 높이(svgHeight)에 맞게 충분히 로드되어 확장되었는지 먼저 확인합니다.
-      // 렌더링 지연이 있는 경우 최대 15프레임까지 안전하게 대기하여 튕김 및 상단 고정 오작동을 해결합니다.
+      // 월드 1(수의 연산)은 30개 레벨과 긴 SVG 경로 때문에 렌더링 시간이 다소 소요되므로,
+      // 렌더링 완료까지 최대 120프레임(약 2초) 동안 안전하게 대기하여 현위치 셋팅이 씹히는 오작동을 완전히 해결합니다.
       let layoutAttempts = 0;
       const executeScroll = () => {
         const currentScrollHeight = scrollContainer.scrollHeight;
-        if (currentScrollHeight < svgHeight - 50 && layoutAttempts < 15) {
+        if (currentScrollHeight < svgHeight - 50 && layoutAttempts < 120) {
           layoutAttempts++;
           requestAnimationFrame(executeScroll);
           return;
