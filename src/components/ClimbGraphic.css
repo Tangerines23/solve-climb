@@ -302,7 +302,7 @@
 }
 
 .path-cleared {
-  opacity: 0.6;
+  opacity: 0.9;
   /* Toss UI: 클리어된 경로도 연한 회색 (TSX에서 직접 스타일 적용) */
   filter: none;
   /* 그림자 제거 */

@@ -390,9 +390,9 @@ export function ClimbGraphic({
             <path
               d={pathData}
               fill="none"
-              stroke="var(--color-bg-tertiary-light)"
-              strokeWidth="2"
-              strokeDasharray="4,4"
+              stroke="rgba(255, 255, 255, 0.35)"
+              strokeWidth="3.5"
+              strokeDasharray="6,6"
               className="path-future"
             />
           )}
@@ -401,8 +401,8 @@ export function ClimbGraphic({
             <path
               d={clearedPathData}
               fill="none"
-              stroke="var(--color-text-tertiary)"
-              strokeWidth="2"
+              stroke="rgba(255, 255, 255, 0.85)"
+              strokeWidth="4"
               className="path-cleared"
             />
           )}
