@@ -327,13 +327,19 @@ export function ClimbGraphic({
   useEffect(() => {
     if (isReady !== undefined && !isReady) return;
 
+    // 최초 마운트(이전 스크롤이나 트랜지션 이전 상태 값이 모두 없는 최초 진입)일 때는
+    // 사용자 경험 상 애니메이션 없이 즉시 현위치를 보여주는 'auto' 모드로 동작하고,
+    // 월드 전환 등 이전 스크롤 컨텍스트가 존재할 때는 'transition' 모드로 스크롤합니다.
+    const isFirstMount = fromScrollTop === undefined && lastScrollTop === undefined;
+    const scrollMode = isFirstMount ? 'auto' : 'transition';
+
     // 브라우저 레이아웃 엔진이 새 콘텐츠 높이 및 스케일을 확실히 반영할 수 있도록 30ms 대기 후 실행
     const timer = setTimeout(() => {
-      scrollToCurrentLevel('transition');
+      scrollToCurrentLevel(scrollMode);
     }, 30);
 
     return () => clearTimeout(timer);
-  }, [mountain, world, category, isReady, scrollToCurrentLevel]);
+  }, [mountain, world, category, isReady, fromScrollTop, lastScrollTop, scrollToCurrentLevel]);
 
   return (
     <div
