@@ -20,20 +20,6 @@ export const LevelButton = React.forwardRef<HTMLButtonElement, LevelButtonProps>
 
 LevelButton.displayName = 'LevelButton';
 
-const getBadgeWidth = (title: string): number => {
-  if (!title) return 96;
-  let width = 0;
-  for (let i = 0; i < title.length; i++) {
-    const code = title.charCodeAt(i);
-    if (code >= 0xac00 && code <= 0xd7a3) {
-      width += 13.5;
-    } else {
-      width += 7.5;
-    }
-  }
-  return Math.ceil(width + 36);
-};
-
 interface ClimbGraphicProps {
   mountain?: string;
   world: World;
@@ -497,34 +483,27 @@ export function ClimbGraphic({
 
             if (!position) return null;
 
-            const badgeWidth = getBadgeWidth(stage.title);
+            // 화면 경계 이탈 방지를 위한 대략적인 예측 뱃지 너비 (110px)
+            const ESTIMATED_BADGE_WIDTH = 110;
             const badgeSpacing = 42;
 
-            const leftPlacementX = position.x - badgeWidth - badgeSpacing;
+            const leftPlacementX = position.x - ESTIMATED_BADGE_WIDTH - badgeSpacing;
             const rightPlacementX = position.x + badgeSpacing;
 
             let isLeftSide = true;
-            let badgeX = leftPlacementX;
 
             if (leftPlacementX < 10) {
               isLeftSide = false;
-              badgeX = rightPlacementX;
-            } else if (rightPlacementX + badgeWidth > 390) {
+            } else if (rightPlacementX + ESTIMATED_BADGE_WIDTH > 390) {
               isLeftSide = true;
-              badgeX = leftPlacementX;
             } else {
               const preferredLeft = stage.id === 'basic' || stage.id === 'focus';
               isLeftSide = preferredLeft;
-              badgeX = preferredLeft ? leftPlacementX : rightPlacementX;
             }
 
-            if (badgeX < 10) {
-              badgeX = 10;
-            } else if (badgeX + badgeWidth > 390) {
-              badgeX = 390 - badgeWidth;
-            }
-
-            const badgeY = position.y - 15;
+            const FO_WIDTH = 220;
+            const foX = isLeftSide ? position.x - 20 - FO_WIDTH : position.x + 20;
+            const foY = position.y - 15;
 
             return (
               <g
@@ -532,34 +511,33 @@ export function ClimbGraphic({
                 className="stage-signpost"
                 style={{ animation: 'fadeIn 0.6s ease-out' }}
               >
-                <line
-                  x1={isLeftSide ? position.x - 20 : position.x + 20}
-                  y1={position.y}
-                  x2={isLeftSide ? badgeX + badgeWidth - 2 : badgeX + 2}
-                  y2={position.y}
-                  stroke="var(--color-bg-tertiary-light)"
-                  strokeWidth="1.5"
-                />
-
-                <g
-                  transform={`translate(${badgeX}, ${badgeY})`}
-                  style={{ filter: 'url(#toss-shadow)' }}
+                <foreignObject
+                  x={foX}
+                  y={foY}
+                  width={FO_WIDTH}
+                  height="30"
+                  style={{ overflow: 'visible' }}
                 >
-                  <rect width={badgeWidth} height="30" rx="15" fill="var(--color-bg-primary)" />
-                  <circle cx={isLeftSide ? badgeWidth - 12 : 12} cy="15" r="4" fill={stage.color} />
-                  <text
-                    x={isLeftSide ? badgeWidth - 24 : 24}
-                    y="20"
-                    fill="var(--color-text-primary)"
-                    fontSize="13px"
-                    fontWeight="600"
-                    fontFamily="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif"
-                    style={{ letterSpacing: '-0.2px' }}
-                    textAnchor={isLeftSide ? 'end' : 'start'}
-                  >
-                    {stage.title}
-                  </text>
-                </g>
+                  <div className={`signpost-container ${isLeftSide ? 'left-side' : 'right-side'}`}>
+                    {isLeftSide ? (
+                      <>
+                        <div className="signpost-badge">
+                          <span className="signpost-text">{stage.title}</span>
+                          <span className="signpost-dot" style={{ backgroundColor: stage.color }} />
+                        </div>
+                        <div className="signpost-line" />
+                      </>
+                    ) : (
+                      <>
+                        <div className="signpost-line" />
+                        <div className="signpost-badge">
+                          <span className="signpost-dot" style={{ backgroundColor: stage.color }} />
+                          <span className="signpost-text">{stage.title}</span>
+                        </div>
+                      </>
+                    )}
+                  </div>
+                </foreignObject>
               </g>
             );
           })}
