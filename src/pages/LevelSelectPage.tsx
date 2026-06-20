@@ -199,37 +199,10 @@ export function LevelSelectPage() {
     }, 300);
   };
 
-  // World 2처럼 레벨 수가 적을 때, 최상단 빈 공간으로 스크롤이 넘어가지 않도록 한계를 계산합니다.
-  const getMinScrollTop = () => {
-    const container = mapAreaRef.current;
-    if (!container) return 0;
-
-    const MAX_LEVELS = 30;
-    const currentLevelsCount = levels.length;
-    if (currentLevelsCount >= MAX_LEVELS) return 0; // World 1처럼 30레벨 꽉 찬 경우 전체 스크롤 가능
-
-    const NODE_SPACING = 160;
-    const containerWidth = container.clientWidth || 400;
-    const scale = containerWidth / 400;
-
-    // 비어 있는 최상단 공간의 높이만큼 스크롤 불가능하도록 제한값 연산
-    const emptySpaceHeight = (MAX_LEVELS - currentLevelsCount) * NODE_SPACING * scale;
-
-    // [가로가 넓은 태블릿 뷰 스크롤 먹통 방지]
-    // minScroll이 전체 스크롤 가능한 범위를 넘어서면 스크롤이 아예 잠기므로,
-    // 최대 가능한 스크롤 탑(scrollHeight - clientHeight) 내로 제한해 줍니다.
-    const maxPossibleScroll = Math.max(0, container.scrollHeight - container.clientHeight);
-    return Math.min(emptySpaceHeight, maxPossibleScroll);
-  };
-
   const handleScroll = (e: React.UIEvent<HTMLDivElement>) => {
     if (isSheetExpanded) setIsSheetExpanded(false);
 
     const container = e.currentTarget;
-    const minScroll = getMinScrollTop();
-    if (container.scrollTop < minScroll) {
-      container.scrollTop = minScroll; // 위쪽 빈 공간 스크롤 불가 강제 고정
-    }
 
     // 스크롤 렉 방지 최적화 (Decoupled 블러 스위칭): 스크롤 동작이 활성화되는 즉시 data-scrolling 플래그 부여
     const pageEl = container.closest('.level-select-page');
