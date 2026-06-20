@@ -53,9 +53,6 @@ export function ClimbGraphic({
   const currentLevelRef = useRef<HTMLButtonElement>(null);
   const lastTargetRef = useRef<string>('');
   const isFirstMountRef = useRef<boolean>(true);
-  const activeAnimationRef = useRef<number | null>(null);
-  const isAutoScrollingRef = useRef<boolean>(false);
-  const containerRef = useRef<HTMLDivElement>(null);
 
   const nextLevel = getNextLevel(world, category);
   const totalLevels = levels.length;
@@ -235,66 +232,11 @@ export function ClimbGraphic({
 
         const clampedTargetScrollTop = Math.max(emptySpaceHeight, targetScrollTop);
 
-        if (behavior === 'auto') {
-          scrollContainer.scrollTop = clampedTargetScrollTop;
-
-          // [자가 보정] 브라우저 레이아웃(scrollHeight)이 비동기적으로 확장되는 시점의 타이밍 지연으로 인해
-          // scrollTop 세팅이 무시되거나 중간에 Clamping되는 현상을 방지하기 위해 정교한 재시도 루프를 적용합니다.
-          let attempts = 0;
-          let lastScrollTopVal = -1;
-          const retryScroll = () => {
-            scrollContainer.scrollTop = clampedTargetScrollTop;
-            const currentScroll = scrollContainer.scrollTop;
-            const isClose = Math.abs(currentScroll - clampedTargetScrollTop) < 3;
-
-            // 목표에 충분히 도달했거나, 경계선 도달 등으로 스크롤 위치가 5프레임 이상 고정된 경우 중단
-            if (isClose || (currentScroll === lastScrollTopVal && attempts > 5) || attempts >= 30) {
-              return;
-            }
-
-            lastScrollTopVal = currentScroll;
-            attempts++;
-            requestAnimationFrame(retryScroll);
-          };
-          requestAnimationFrame(retryScroll);
-        } else {
-          // 'smooth' 모드 (월드 전환 및 내 위치 버튼 등): 1450ms 동안 유려하고 완만하게 감속하며 targetScrollTop까지 이동
-          if (activeAnimationRef.current !== null) {
-            cancelAnimationFrame(activeAnimationRef.current);
-          }
-          isAutoScrollingRef.current = true;
-
-          const start = scrollContainer.scrollTop;
-          const change = clampedTargetScrollTop - start;
-          const startTime = performance.now();
-          const duration = 1450; // 사용자의 피드백을 반영하여 1450ms로 훨씬 완만하고 부드럽게 스크롤 조정
-
-          const easeOutCubic = (t: number) => {
-            return 1 - Math.pow(1 - t, 3);
-          };
-
-          const animateScroll = (currentTime: number) => {
-            if (!isAutoScrollingRef.current) {
-              activeAnimationRef.current = null;
-              return;
-            }
-
-            const timeElapsed = currentTime - startTime;
-            const progress = Math.min(timeElapsed / duration, 1);
-            const easedProgress = easeOutCubic(progress);
-
-            scrollContainer.scrollTop = start + change * easedProgress;
-
-            if (progress < 1) {
-              activeAnimationRef.current = requestAnimationFrame(animateScroll);
-            } else {
-              isAutoScrollingRef.current = false;
-              activeAnimationRef.current = null;
-            }
-          };
-
-          activeAnimationRef.current = requestAnimationFrame(animateScroll);
-        }
+        // 브라우저 네이티브 스크롤 API에 온전히 가감속 제어권 위임
+        scrollContainer.scrollTo({
+          top: clampedTargetScrollTop,
+          behavior: behavior === 'auto' ? 'auto' : 'smooth',
+        });
       };
 
       requestAnimationFrame(executeScroll);
@@ -327,41 +269,8 @@ export function ClimbGraphic({
     return () => clearTimeout(timer);
   }, [mountain, world, category, isReady, scrollToCurrentLevel]);
 
-  // 사용자의 스크롤 개입(터치, 휠, 마우스다운) 시 자동 스크롤 중지
-  useEffect(() => {
-    const container = containerRef.current;
-    if (!container) return;
-    const scrollContainer = container.closest('.map-area') as HTMLElement;
-    if (!scrollContainer) return;
-
-    const stopAutoScroll = () => {
-      if (isAutoScrollingRef.current) {
-        if (activeAnimationRef.current !== null) {
-          cancelAnimationFrame(activeAnimationRef.current);
-          activeAnimationRef.current = null;
-        }
-        isAutoScrollingRef.current = false;
-      }
-    };
-
-    // passive: true로 등록하여 스크롤 성능에 영향을 미치지 않음
-    scrollContainer.addEventListener('touchstart', stopAutoScroll, { passive: true });
-    scrollContainer.addEventListener('wheel', stopAutoScroll, { passive: true });
-    scrollContainer.addEventListener('mousedown', stopAutoScroll, { passive: true });
-
-    return () => {
-      scrollContainer.removeEventListener('touchstart', stopAutoScroll);
-      scrollContainer.removeEventListener('wheel', stopAutoScroll);
-      scrollContainer.removeEventListener('mousedown', stopAutoScroll);
-      if (activeAnimationRef.current !== null) {
-        cancelAnimationFrame(activeAnimationRef.current);
-      }
-    };
-  }, [world, category]);
-
   return (
     <div
-      ref={containerRef}
       className="level-map-container"
       data-stage={category}
       data-world={world}

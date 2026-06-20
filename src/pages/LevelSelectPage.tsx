@@ -49,13 +49,6 @@ export function LevelSelectPage() {
 
   const [isSheetTransitioning, setIsSheetTransitioning] = useState(false);
   const scrollTimerRef = useRef<NodeJS.Timeout | null>(null);
-  const graphicContainerRef = useRef<HTMLDivElement>(null);
-
-  // 오버스크롤 터치/휠 튕김 물리 인터랙션 제어 refs
-  const startYRef = useRef<number>(0);
-  const isPullingRef = useRef<boolean>(false);
-  const wheelOffsetRef = useRef<number>(0);
-  const wheelTimerRef = useRef<number | null>(null);
 
   // URL 파라미터가 바뀔 때 로컬 상태 싱크 (애니메이션 중이 아닐 때만 동기화)
   useEffect(() => {
@@ -76,180 +69,6 @@ export function LevelSelectPage() {
   useEffect(() => {
     tryRecover(['mountain', 'world', 'category']);
   }, [tryRecover]);
-
-  // 스크롤 상단 바운스 효과(Elastic pull-down)를 위한 non-passive 이벤트 리스너 수동 바인딩
-  useEffect(() => {
-    const container = mapAreaRef.current;
-    if (!container) return;
-
-    const handleTouchStart = (e: TouchEvent) => {
-      // [블러 최적화 개선] 터치하는 즉시 350ms 타이머를 클리어하고 블러를 3px로 낮춰 스크롤 렌더링 부하를 회피함
-      const pageEl = container.closest('.level-select-page');
-      if (pageEl) {
-        if (!pageEl.hasAttribute('data-scrolling')) {
-          pageEl.setAttribute('data-scrolling', 'true');
-        }
-        if (scrollTimerRef.current) clearTimeout(scrollTimerRef.current);
-      }
-
-      const minScroll = getMinScrollTop();
-      // scrollTop이 minScroll 근처일 때만 당기기 시작
-      if (container.scrollTop <= minScroll + 4) {
-        startYRef.current = e.touches[0].clientY;
-        isPullingRef.current = true;
-
-        const graphicContainer = graphicContainerRef.current;
-        if (graphicContainer) {
-          graphicContainer.style.transition = 'none';
-        }
-      }
-    };
-
-    const handleTouchMove = (e: TouchEvent) => {
-      if (!isPullingRef.current) return;
-
-      const currentY = e.touches[0].clientY;
-      const diffY = currentY - startYRef.current;
-
-      // 아래로 당기는 중일 때만 작동
-      if (diffY > 0) {
-        const minScroll = getMinScrollTop();
-
-        // 당길수록 무거워지는 저항력 계산 (최대 110px 제한)
-        const maxPull = 110;
-        const pullOffset = Math.min(maxPull, Math.pow(diffY, 0.7) * 2.0);
-
-        const graphicContainer = graphicContainerRef.current;
-        if (graphicContainer) {
-          graphicContainer.style.transform = `translate3d(0, ${pullOffset}px, 0)`;
-        }
-
-        // 스크롤 위치를 minScroll로 고정하여 실제 빈 공간 스크롤 업을 물리적으로 억제
-        container.scrollTop = minScroll;
-
-        // 브라우저의 기본 pull-to-refresh나 elastic bounce 동작 방지
-        if (e.cancelable) {
-          e.preventDefault();
-        }
-      } else {
-        // 위로 밀어올릴 때는 기본 스크롤을 허용하고 당김을 끔
-        isPullingRef.current = false;
-        const graphicContainer = graphicContainerRef.current;
-        if (graphicContainer) {
-          graphicContainer.style.transform = '';
-        }
-      }
-    };
-
-    const handleTouchEnd = () => {
-      // [블러 최적화 개선] 터치를 떼면 350ms 뒤에 블러 상태 복구 타이머 시동
-      const pageEl = container.closest('.level-select-page');
-      if (pageEl) {
-        if (scrollTimerRef.current) clearTimeout(scrollTimerRef.current);
-        scrollTimerRef.current = setTimeout(() => {
-          pageEl.removeAttribute('data-scrolling');
-        }, 350);
-      }
-
-      if (!isPullingRef.current) return;
-      isPullingRef.current = false;
-
-      const graphicContainer = graphicContainerRef.current;
-      if (graphicContainer) {
-        // 부드럽게 용수철처럼 복구되는 Easing 모션 프레임 (유려한 탄성 복원)
-        graphicContainer.style.transition = 'transform 0.4s cubic-bezier(0.25, 1, 0.5, 1.2)';
-        graphicContainer.style.transform = 'translate3d(0, 0, 0)';
-
-        setTimeout(() => {
-          if (!isPullingRef.current && graphicContainer) {
-            graphicContainer.style.transition = '';
-          }
-        }, 400);
-      }
-    };
-
-    // 휠(트랙패드 포함) 스크롤도 동일하게 스프링 바운스 처리
-    const handleWheel = (e: WheelEvent) => {
-      // [블러 최적화 개선] 휠 동작이 가해지는 즉시 data-scrolling="true" 세팅
-      const pageEl = container.closest('.level-select-page');
-      if (pageEl) {
-        if (!pageEl.hasAttribute('data-scrolling')) {
-          pageEl.setAttribute('data-scrolling', 'true');
-        }
-        if (scrollTimerRef.current) clearTimeout(scrollTimerRef.current);
-      }
-
-      const minScroll = getMinScrollTop();
-      if (container.scrollTop <= minScroll && e.deltaY < 0) {
-        // 휠 델타 누적 (저항값 적용)
-        wheelOffsetRef.current = Math.min(80, wheelOffsetRef.current + Math.abs(e.deltaY) * 0.2);
-
-        const graphicContainer = graphicContainerRef.current;
-        if (graphicContainer) {
-          graphicContainer.style.transition = 'none';
-          graphicContainer.style.transform = `translate3d(0, ${wheelOffsetRef.current}px, 0)`;
-        }
-
-        container.scrollTop = minScroll;
-
-        // 브라우저 스크롤 튕김 방지
-        if (e.cancelable) {
-          e.preventDefault();
-        }
-
-        // 복구 타이머
-        if (wheelTimerRef.current) {
-          window.cancelAnimationFrame(wheelTimerRef.current);
-        }
-
-        const springBack = () => {
-          wheelOffsetRef.current = wheelOffsetRef.current * 0.82; // 부드럽게 감속 복귀
-          if (wheelOffsetRef.current < 0.5) {
-            wheelOffsetRef.current = 0;
-            if (graphicContainer) {
-              graphicContainer.style.transform = '';
-              graphicContainer.style.transition = '';
-            }
-          } else {
-            if (graphicContainer) {
-              graphicContainer.style.transform = `translate3d(0, ${wheelOffsetRef.current}px, 0)`;
-            }
-            wheelTimerRef.current = window.requestAnimationFrame(springBack);
-          }
-        };
-
-        const debouncedSpringBack = () => {
-          wheelTimerRef.current = window.requestAnimationFrame(springBack);
-        };
-
-        const timer = setTimeout(debouncedSpringBack, 60);
-        // Clean up timer inside dynamic context if wheel updates
-        (e as any)._timer = timer;
-      }
-
-      // [블러 최적화 개선] 휠 회전이 멈춘 시점에서 350ms 후에 블러 복구
-      if (pageEl) {
-        scrollTimerRef.current = setTimeout(() => {
-          pageEl.removeAttribute('data-scrolling');
-        }, 350);
-      }
-    };
-
-    container.addEventListener('touchstart', handleTouchStart, { passive: true });
-    container.addEventListener('touchmove', handleTouchMove, { passive: false });
-    container.addEventListener('touchend', handleTouchEnd, { passive: true });
-    container.addEventListener('wheel', handleWheel, { passive: false });
-
-    return () => {
-      container.removeEventListener('touchstart', handleTouchStart);
-      container.removeEventListener('touchmove', handleTouchMove);
-      container.removeEventListener('touchend', handleTouchEnd);
-      container.removeEventListener('wheel', handleWheel);
-      if (wheelTimerRef.current) {
-        window.cancelAnimationFrame(wheelTimerRef.current);
-      }
-    };
-  }, [levels.length, activeWorld]);
 
   useLayoutEffect(() => {
     // 이제 스크롤 위치 제어는 ClimbGraphic 내부에서 더 정확하게(현재 레벨 기준) 처리하므로,
@@ -466,7 +285,7 @@ export function LevelSelectPage() {
           if (isSheetExpanded) setIsSheetExpanded(false);
         }}
       >
-        <div className="level-select-graphic-container" ref={graphicContainerRef}>
+        <div className="level-select-graphic-container">
           <ClimbGraphic
             mountain={mountainParamSafe}
             world={activeWorld as World}
