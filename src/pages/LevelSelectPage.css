@@ -14,7 +14,10 @@
 
 /* 상단 헤더 */
 .level-select-header {
-  position: relative;
+  position: absolute; /* 겹침 레이아웃 고정 */
+  top: 0;
+  left: 0;
+  right: 0;
   height: var(--header-height-portrait);
   display: flex;
   align-items: center;
@@ -22,9 +25,16 @@
   padding: 0 var(--spacing-lg);
   z-index: var(--z-header);
   border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  background-color: rgba(255, 255, 255, 0.1);
+
+  /* Decoupled 블러 스위칭 최적화 기본 속성 정의 */
   -webkit-backdrop-filter: blur(10px);
   backdrop-filter: blur(10px);
-  background-color: rgba(255, 255, 255, 0.1);
+  will-change: transform, backdrop-filter;
+  transform: translate3d(0, 0, 0);
+  transition:
+    backdrop-filter 0.6s cubic-bezier(0.16, 1, 0.3, 1),
+    background-color 0.6s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .level-select-back {
@@ -124,6 +134,15 @@
   -ms-overflow-style: none;
   overscroll-behavior-y: contain; /* 하위 스크롤 경계 도달 시 상위로 스크롤 전파를 차단하여 떨림 방지 */
   -webkit-overflow-scrolling: touch; /* iOS 환경에서 관성 스크롤 및 부드러운 고무줄 바운스 효과 적용 */
+
+  /* 겹침 헤더 공간 확보를 위한 탑 패딩 */
+  padding-top: var(--header-height-portrait);
+}
+
+@media (orientation: landscape) {
+  .map-area {
+    padding-top: var(--header-height-landscape);
+  }
 }
 
 .map-area::-webkit-scrollbar {
@@ -548,4 +567,46 @@
 
 .tier-toggle-btn:last-child.active {
   background: var(--color-red-500);
+}
+
+/* ==========================================
+   실시간 상단 헤더 공중 부양 구조 (Base Style)
+   ========================================== */
+
+.level-select-header {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: var(--z-header);
+  background-color: rgba(255, 255, 255, 0.1);
+  -webkit-backdrop-filter: blur(10px);
+  backdrop-filter: blur(10px);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  will-change: transform, backdrop-filter;
+  transform: translate3d(0, 0, 0);
+  transition:
+    backdrop-filter 0.6s cubic-bezier(0.16, 1, 0.3, 1),
+    background-color 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.map-area {
+  padding-top: var(--header-height-portrait);
+}
+
+@media (orientation: landscape) {
+  .map-area {
+    padding-top: var(--header-height-landscape);
+  }
+}
+
+/* 스크롤 중일 때의 렉 차단 저부하 블러(3px) 상태 정의 */
+.level-select-page[data-scrolling='true'] .level-select-header {
+  background-color: rgba(255, 255, 255, 0.05); /* 밝은 톤 유지 */
+  -webkit-backdrop-filter: blur(3px); /* 3px로 낮춰 스크롤 최적화 및 깜빡임 해결 */
+  backdrop-filter: blur(3px);
+  /* 진입 시 즉각 반응하도록 트랜지션 속도를 0.05초로 최소화 */
+  transition:
+    backdrop-filter 0.05s linear,
+    background-color 0.05s linear;
 }

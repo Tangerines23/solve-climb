@@ -71,8 +71,12 @@ const getWorldIndex = (world: World): number => {
   }
 };
 
-export function ClimbBackground({ world, category, totalLevels = 30 }: BackgroundProps) {
-  const MAX_LEVELS = totalLevels;
+export function ClimbBackground({
+  world,
+  category,
+  totalLevels: _totalLevels = 30,
+}: BackgroundProps) {
+  const MAX_LEVELS = 30; // 모든 월드에서 배경 높이를 30레벨(4840px)로 통일
   const NODE_SPACING = 160;
   const LIST_DISTANCE = 100;
   const lastNodeY = LIST_DISTANCE;

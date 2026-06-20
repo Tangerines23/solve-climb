@@ -153,49 +153,6 @@ describe('ClimbGraphic', () => {
     expect(container).toBeTruthy();
   });
 
-  it('should render scroll to current level button', () => {
-    const { container } = render(
-      <BrowserRouter>
-        <ClimbGraphic
-          category="math"
-          subTopic="arithmetic"
-          levels={[
-            { level: 1, name: 'Level 1', description: 'Test' },
-            { level: 2, name: 'Level 2', description: 'Test' },
-          ]}
-        />
-      </BrowserRouter>
-    );
-
-    const fabButton = container.querySelector('.fab-my-location');
-    expect(fabButton).toBeInTheDocument();
-  });
-
-  it('should handle scroll to current level button click', () => {
-    const scrollIntoViewMock = vi.fn();
-    Element.prototype.scrollIntoView = scrollIntoViewMock;
-
-    const { container } = render(
-      <BrowserRouter>
-        <ClimbGraphic
-          category="math"
-          subTopic="arithmetic"
-          levels={[
-            { level: 1, name: 'Level 1', description: 'Test' },
-            { level: 2, name: 'Level 2', description: 'Test' },
-          ]}
-        />
-      </BrowserRouter>
-    );
-
-    const fabButton = container.querySelector('.fab-my-location') as HTMLButtonElement;
-    if (fabButton) {
-      fireEvent.click(fabButton);
-      // Note: scrollIntoView may not be called if currentLevelRef is null
-      // This test verifies the button exists and can be clicked
-    }
-  });
-
   it('should fallback to the last level when all levels are cleared', () => {
     mockIsLevelCleared.mockImplementation(() => true);
     mockGetNextLevel.mockImplementation(() => 3); // 3 is out of range for 2 levels

@@ -100,6 +100,7 @@ export default defineConfig(({ mode }) => {
         '**/*.spec.{ts,tsx}',
         '**/*.ct.spec.tsx',
       ],
+      watchExclude: ['**/node_modules/**', '**/dist/**', '**/reports/**', '**/coverage/**'],
       fileParallelism: true,
       maxConcurrency: 3,
       testTimeout: 15000,

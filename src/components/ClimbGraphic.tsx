@@ -29,9 +29,6 @@ interface ClimbGraphicProps {
   onLevelClick?: (level: number, levelName: string) => void;
   onUnderDevelopmentClick?: () => void;
   isReady?: boolean;
-  lastScrollTop?: number;
-  fromScrollTop?: number;
-  onTransitionStart?: () => void;
 }
 
 interface LevelData {
@@ -49,14 +46,16 @@ export function ClimbGraphic({
   onLevelClick,
   onUnderDevelopmentClick,
   isReady,
-  lastScrollTop,
-  fromScrollTop,
-  onTransitionStart,
 }: ClimbGraphicProps) {
   const isLevelCleared = useLevelProgressStore((state) => state.isLevelCleared);
   const getNextLevel = useLevelProgressStore((state) => state.getNextLevel);
   const isAdmin = useProfileStore((state) => state.isAdmin);
   const currentLevelRef = useRef<HTMLButtonElement>(null);
+  const lastTargetRef = useRef<string>('');
+  const isFirstMountRef = useRef<boolean>(true);
+  const activeAnimationRef = useRef<number | null>(null);
+  const isAutoScrollingRef = useRef<boolean>(false);
+  const containerRef = useRef<HTMLDivElement>(null);
 
   const nextLevel = getNextLevel(world, category);
   const totalLevels = levels.length;
@@ -92,7 +91,7 @@ export function ClimbGraphic({
     const points: Array<{ x: number; y: number }> = [];
     let lastClearedIdx = -1;
 
-    const MAX_LEVELS = totalLevels;
+    const MAX_LEVELS = 30; // 모든 월드에서 지도 높이를 30레벨(4840px)로 통일
     const lastNodeY = LIST_DISTANCE;
     const firstNodeY = lastNodeY + (MAX_LEVELS - 1) * NODE_SPACING;
     const calculatedSvgHeight = firstNodeY + 100;
@@ -184,7 +183,7 @@ export function ClimbGraphic({
   // 스크롤 Clamping 현상이 높이 고정화(MAX_LEVELS)로 원천 해결되어 높이 홀딩 로직 제거
 
   const scrollToCurrentLevel = useCallback(
-    (behavior: 'auto' | 'smooth' | 'transition' = 'smooth') => {
+    (behavior: 'auto' | 'smooth' = 'smooth') => {
       const node = currentLevelRef.current;
       if (!node) return;
 
@@ -201,7 +200,6 @@ export function ClimbGraphic({
 
       // [레이아웃 가드] 스크롤 컨테이너의 내부 영역(scrollHeight)이
       // 실제 지도 높이(svgHeight)에 맞게 충분히 로드되어 확장되었는지 먼저 확인합니다.
-      // 월드 1(수의 연산)은 30개 레벨과 긴 SVG 경로 때문에 렌더링 시간이 다소 소요되므로,
       // 렌더링 완료까지 최대 120프레임(약 2초) 동안 안전하게 대기하여 현위치 셋팅이 씹히는 오작동을 완전히 해결합니다.
       let layoutAttempts = 0;
       const executeScroll = () => {
@@ -214,7 +212,6 @@ export function ClimbGraphic({
 
         // 화면 해상도나 크기에 따라 SVG가 비율 매칭되어 크기가 변하므로,
         // scrollContainer의 실제 너비를 기준으로 스케일을 계산하여 정밀한 수학적 절대 좌표를 산출합니다.
-        // getBoundingClientRect는 레이아웃 완료 시점에 영향을 받아 튕김이나 0px 측정 오류를 유발하므로 수학적 계산을 1순위로 채택합니다.
         const currentLevelNode = levelData.find((l) => l.id === targetLevelId) || levelData[0];
         const SCROLL_OFFSET = 60;
         const containerWidth = scrollContainer.clientWidth || 400;
@@ -228,127 +225,99 @@ export function ClimbGraphic({
         // 노드가 스크롤 영역의 정중앙에 위치하도록 목표 scrollTop 설정
         const targetScrollTop = nodeRelativeY - containerHeight / 2 + nodeHeight / 2;
 
+        // 스크롤 상단 리밋 범위 보정 (빈 공간 스크롤 방지 이중 안전장치)
+        const MAX_LEVELS = 30;
+        const currentLevelsCount = levels.length;
+        const emptySpaceHeight =
+          currentLevelsCount < MAX_LEVELS
+            ? (MAX_LEVELS - currentLevelsCount) * NODE_SPACING * scale
+            : 0;
+
+        const clampedTargetScrollTop = Math.max(emptySpaceHeight, targetScrollTop);
+
         if (behavior === 'auto') {
-          scrollContainer.scrollTop = targetScrollTop;
+          scrollContainer.scrollTop = clampedTargetScrollTop;
 
           // [자가 보정] 브라우저 레이아웃(scrollHeight)이 비동기적으로 확장되는 시점의 타이밍 지연으로 인해
           // scrollTop 세팅이 무시되거나 중간에 Clamping되는 현상을 방지하기 위해 정교한 재시도 루프를 적용합니다.
           let attempts = 0;
-          let lastScrollTop = -1;
+          let lastScrollTopVal = -1;
           const retryScroll = () => {
-            scrollContainer.scrollTop = targetScrollTop;
+            scrollContainer.scrollTop = clampedTargetScrollTop;
             const currentScroll = scrollContainer.scrollTop;
-            const isClose = Math.abs(currentScroll - targetScrollTop) < 3;
+            const isClose = Math.abs(currentScroll - clampedTargetScrollTop) < 3;
 
             // 목표에 충분히 도달했거나, 경계선 도달 등으로 스크롤 위치가 5프레임 이상 고정된 경우 중단
-            if (isClose || (currentScroll === lastScrollTop && attempts > 5) || attempts >= 30) {
-              return;
-            }
-
-            lastScrollTop = currentScroll;
-            attempts++;
-            requestAnimationFrame(retryScroll);
-          };
-          requestAnimationFrame(retryScroll);
-        } else if (behavior === 'transition') {
-          // 'transition' 모드: 이전 월드에서 보던 위치(start)에서 새 월드의 이전 위치 또는 현레벨 위치(target)로 스크롤
-          const startScrollTop =
-            fromScrollTop !== undefined ? fromScrollTop : scrollContainer.scrollTop;
-
-          // 트랜지션 시작 처리가 완료되어 시작점을 구했으므로 부모 상태를 소비 처리
-          if (onTransitionStart) {
-            onTransitionStart();
-          }
-
-          // 만약 prop으로 이전 마지막 스크롤 위치가 주어졌다면 그것을 목표값으로 삼고, 없다면 현재 레벨 기준 계산값을 사용합니다.
-          const finalTargetScrollTop =
-            lastScrollTop !== undefined ? lastScrollTop : targetScrollTop;
-
-          const correctedTargetScrollTop = finalTargetScrollTop;
-
-          let attempts = 0;
-          let lastScrollTopVal = -1;
-
-          const initializeAndAnimate = () => {
-            scrollContainer.scrollTop = startScrollTop;
-            const currentScroll = scrollContainer.scrollTop;
-            const isInitialized =
-              Math.abs(currentScroll - startScrollTop) < 3 ||
-              (currentScroll === lastScrollTopVal && attempts > 5);
-
-            if (isInitialized || attempts >= 25) {
-              const start = scrollContainer.scrollTop;
-              const change = correctedTargetScrollTop - start;
-              const startTime = performance.now();
-              const duration = 800; // 부드럽게 감속하는 Easing 모션 프레임 적용
-
-              const easeInOutQuart = (t: number) => {
-                return t < 0.5 ? 8 * t * t * t * t : 1 - Math.pow(-2 * t + 2, 4) / 2;
-              };
-
-              const animateScroll = (currentTime: number) => {
-                const timeElapsed = currentTime - startTime;
-                const progress = Math.min(timeElapsed / duration, 1);
-                const easedProgress = easeInOutQuart(progress);
-
-                scrollContainer.scrollTop = start + change * easedProgress;
-
-                if (progress < 1) {
-                  requestAnimationFrame(animateScroll);
-                }
-              };
-
-              requestAnimationFrame(animateScroll);
+            if (isClose || (currentScroll === lastScrollTopVal && attempts > 5) || attempts >= 30) {
               return;
             }
 
             lastScrollTopVal = currentScroll;
             attempts++;
-            requestAnimationFrame(initializeAndAnimate);
+            requestAnimationFrame(retryScroll);
           };
-
-          requestAnimationFrame(initializeAndAnimate);
+          requestAnimationFrame(retryScroll);
         } else {
-          // 'smooth' 모드 (내 위치 버튼 등): 현재의 실제 스크롤 위치에서부터 targetScrollTop까지 부드럽게 이동
-          const start = scrollContainer.scrollTop;
-          const change = targetScrollTop - start;
-          const startTime = performance.now();
-          const duration = 850; // 0.85초 동안 유려하게 가감속
+          // 'smooth' 모드 (월드 전환 및 내 위치 버튼 등): 1450ms 동안 유려하고 완만하게 감속하며 targetScrollTop까지 이동
+          if (activeAnimationRef.current !== null) {
+            cancelAnimationFrame(activeAnimationRef.current);
+          }
+          isAutoScrollingRef.current = true;
 
-          const easeInOutQuart = (t: number) => {
-            return t < 0.5 ? 8 * t * t * t * t : 1 - Math.pow(-2 * t + 2, 4) / 2;
+          const start = scrollContainer.scrollTop;
+          const change = clampedTargetScrollTop - start;
+          const startTime = performance.now();
+          const duration = 1450; // 사용자의 피드백을 반영하여 1450ms로 훨씬 완만하고 부드럽게 스크롤 조정
+
+          const easeOutCubic = (t: number) => {
+            return 1 - Math.pow(1 - t, 3);
           };
 
           const animateScroll = (currentTime: number) => {
+            if (!isAutoScrollingRef.current) {
+              activeAnimationRef.current = null;
+              return;
+            }
+
             const timeElapsed = currentTime - startTime;
             const progress = Math.min(timeElapsed / duration, 1);
-            const easedProgress = easeInOutQuart(progress);
+            const easedProgress = easeOutCubic(progress);
 
             scrollContainer.scrollTop = start + change * easedProgress;
 
             if (progress < 1) {
-              requestAnimationFrame(animateScroll);
+              activeAnimationRef.current = requestAnimationFrame(animateScroll);
+            } else {
+              isAutoScrollingRef.current = false;
+              activeAnimationRef.current = null;
             }
           };
 
-          requestAnimationFrame(animateScroll);
+          activeAnimationRef.current = requestAnimationFrame(animateScroll);
         }
       };
 
       requestAnimationFrame(executeScroll);
     },
-    [levelData, targetLevelId]
+    [levelData, targetLevelId, levels.length, svgHeight]
   );
 
   // 진입 및 변경 시 현재 레벨로 자동 스크롤
   useEffect(() => {
     if (isReady !== undefined && !isReady) return;
 
-    // 최초 마운트(이전 스크롤이나 트랜지션 이전 상태 값이 모두 없는 최초 진입)일 때는
-    // 사용자 경험 상 애니메이션 없이 즉시 현위치를 보여주는 'auto' 모드로 동작하고,
-    // 월드 전환 등 이전 스크롤 컨텍스트가 존재할 때는 'transition' 모드로 스크롤합니다.
-    const isFirstMount = fromScrollTop === undefined && lastScrollTop === undefined;
-    const scrollMode = isFirstMount ? 'auto' : 'transition';
+    // 월드, 카테고리, 산 정보가 실제로 변경되었을 때만 딱 1회 자동으로 스크롤 복구 위치로 보냄
+    const currentTargetKey = `${mountain || ''}_${world}_${category}`;
+    if (lastTargetRef.current === currentTargetKey) {
+      return;
+    }
+    lastTargetRef.current = currentTargetKey;
+
+    // 최초 마운트(이전 스크롤 정보가 없는 최초 진입)일 때는 애니메이션 없이 즉시 현위치를 보여주고,
+    // 월드 전환 등 이전 스크롤 컨텍스트가 존재할 때는 'smooth' 모드로 스크롤합니다.
+    const isFirstMount = isFirstMountRef.current;
+    const scrollMode = isFirstMount ? 'auto' : 'smooth';
+    isFirstMountRef.current = false;
 
     // 브라우저 레이아웃 엔진이 새 콘텐츠 높이 및 스케일을 확실히 반영할 수 있도록 30ms 대기 후 실행
     const timer = setTimeout(() => {
@@ -356,10 +325,43 @@ export function ClimbGraphic({
     }, 30);
 
     return () => clearTimeout(timer);
-  }, [mountain, world, category, isReady, fromScrollTop, lastScrollTop, scrollToCurrentLevel]);
+  }, [mountain, world, category, isReady, scrollToCurrentLevel]);
+
+  // 사용자의 스크롤 개입(터치, 휠, 마우스다운) 시 자동 스크롤 중지
+  useEffect(() => {
+    const container = containerRef.current;
+    if (!container) return;
+    const scrollContainer = container.closest('.map-area') as HTMLElement;
+    if (!scrollContainer) return;
+
+    const stopAutoScroll = () => {
+      if (isAutoScrollingRef.current) {
+        if (activeAnimationRef.current !== null) {
+          cancelAnimationFrame(activeAnimationRef.current);
+          activeAnimationRef.current = null;
+        }
+        isAutoScrollingRef.current = false;
+      }
+    };
+
+    // passive: true로 등록하여 스크롤 성능에 영향을 미치지 않음
+    scrollContainer.addEventListener('touchstart', stopAutoScroll, { passive: true });
+    scrollContainer.addEventListener('wheel', stopAutoScroll, { passive: true });
+    scrollContainer.addEventListener('mousedown', stopAutoScroll, { passive: true });
+
+    return () => {
+      scrollContainer.removeEventListener('touchstart', stopAutoScroll);
+      scrollContainer.removeEventListener('wheel', stopAutoScroll);
+      scrollContainer.removeEventListener('mousedown', stopAutoScroll);
+      if (activeAnimationRef.current !== null) {
+        cancelAnimationFrame(activeAnimationRef.current);
+      }
+    };
+  }, [world, category]);
 
   return (
     <div
+      ref={containerRef}
       className="level-map-container"
       data-stage={category}
       data-world={world}
@@ -566,15 +568,6 @@ export function ClimbGraphic({
           })}
         </svg>
       </div>
-
-      <button
-        className="fab-my-location"
-        onClick={() => scrollToCurrentLevel()}
-        aria-label="내 레벨로 이동"
-      >
-        <span style={{ fontSize: '18px', marginRight: 'var(--spacing-xs)' }}>📍</span>
-        <span style={{ fontSize: '14px', fontWeight: 'bold' }}>내 위치</span>
-      </button>
     </div>
   );
 }
