@@ -184,13 +184,13 @@ jobs:
           node scripts/check-services-health.js
           
           # Apply current PR migrations to the local instance
-          npx supabase db reset
+          npx supabase@v2.90.0 db reset
           
           # Run lint against the newly reset local database
           npm run check:db:lint
           
           # Extract local keys for validation script
-          LOCAL_JSON=$(npx supabase status -o json)
+          LOCAL_JSON=$(npx supabase@v2.90.0 status -o json)
           VITE_SUPABASE_URL=$(echo $LOCAL_JSON | jq -r '.API_URL' | sed 's/localhost/127.0.0.1/')
           # Using Service Role Key for validation to bypass RLS on test functions
           VITE_SUPABASE_ANON_KEY=$(echo $LOCAL_JSON | jq -r '.SERVICE_ROLE_KEY')
@@ -206,7 +206,7 @@ jobs:
           echo "==== Docker Container Status ===="
           docker ps -a
           echo -e "\n==== Supabase Status ===="
-          npx supabase status
+          npx supabase@v2.90.0 status
           echo -e "\n==== Recent Container Logs (Kong/PostgREST) ===="
           docker logs supabase_kong_solve-climb --tail 100 || true
           docker logs supabase_rest_solve-climb --tail 100 || true
@@ -373,9 +373,9 @@ jobs:
             exit 0
           fi
           export PROJECT_REF=$(echo "$VITE_SUPABASE_URL" | sed -E 's|https://([^.]+)\.supabase\.co.*|\1|')
-          npx supabase link --project-ref "$PROJECT_REF" --password "$SUPABASE_DB_PASSWORD"
+          npx supabase@v2.90.0 link --project-ref "$PROJECT_REF" --password "$SUPABASE_DB_PASSWORD"
           
-          OUTPUT=$(npx supabase db push --include-all --yes 2>&1) || EXIT_CODE=$?
+          OUTPUT=$(npx supabase@v2.90.0 db push --include-all --yes 2>&1) || EXIT_CODE=$?
           if [ -n "$OUTPUT" ]; then
             echo "$OUTPUT"
           fi
@@ -445,9 +445,9 @@ jobs:
             exit 0
           fi
           export PROJECT_REF=$(echo "$VITE_SUPABASE_URL" | sed -E 's|https://([^.]+)\.supabase\.co.*|\1|')
-          npx supabase link --project-ref "$PROJECT_REF" --password "$SUPABASE_DB_PASSWORD"
+          npx supabase@v2.90.0 link --project-ref "$PROJECT_REF" --password "$SUPABASE_DB_PASSWORD"
           
-          OUTPUT=$(npx supabase db push --include-all --yes 2>&1) || EXIT_CODE=$?
+          OUTPUT=$(npx supabase@v2.90.0 db push --include-all --yes 2>&1) || EXIT_CODE=$?
           if [ -n "$OUTPUT" ]; then
             echo "$OUTPUT"
           fi
