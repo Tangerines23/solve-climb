@@ -78,6 +78,77 @@ export function LevelSelectPage() {
     });
   }, []);
 
+  // [수동 스크롤 드드득거림 방지] 터치(touchmove) 및 마우스 휠(wheel) 이벤트 가로채기
+  useEffect(() => {
+    const container = mapAreaRef.current;
+    if (!container) return;
+
+    let startTouchY = 0;
+
+    const handleTouchStart = (e: TouchEvent) => {
+      if (e.touches.length > 0) {
+        startTouchY = e.touches[0].clientY;
+      }
+    };
+
+    const handleTouchMove = (e: TouchEvent) => {
+      // 자동 스크롤 중이면 제한하지 않음
+      if (container.getAttribute('data-auto-scrolling') === 'true') {
+        return;
+      }
+
+      const FIXED_MAX_LEVELS = 30;
+      const NODE_SPACING = 160;
+      const clipOffset = (FIXED_MAX_LEVELS - levels.length) * NODE_SPACING;
+
+      if (clipOffset > 0 && e.touches.length > 0) {
+        const containerWidth = container.clientWidth || 400;
+        const scale = containerWidth / 400;
+        const minScrollTop = clipOffset * scale;
+
+        const currentTouchY = e.touches[0].clientY;
+        const isScrollingUp = currentTouchY > startTouchY; // 드래그 다운 -> 스크롤 위로 (scrollTop 감소)
+
+        if (isScrollingUp && container.scrollTop <= minScrollTop + 1) {
+          e.preventDefault();
+        }
+      }
+    };
+
+    const handleWheel = (e: WheelEvent) => {
+      // 자동 스크롤 중이면 제한하지 않음
+      if (container.getAttribute('data-auto-scrolling') === 'true') {
+        return;
+      }
+
+      const FIXED_MAX_LEVELS = 30;
+      const NODE_SPACING = 160;
+      const clipOffset = (FIXED_MAX_LEVELS - levels.length) * NODE_SPACING;
+
+      if (clipOffset > 0) {
+        const containerWidth = container.clientWidth || 400;
+        const scale = containerWidth / 400;
+        const minScrollTop = clipOffset * scale;
+
+        const isScrollingUp = e.deltaY < 0; // 마우스 휠 위로 -> 스크롤 위로 (scrollTop 감소)
+
+        if (isScrollingUp && container.scrollTop <= minScrollTop + 1) {
+          e.preventDefault();
+        }
+      }
+    };
+
+    container.addEventListener('touchstart', handleTouchStart, { passive: true });
+    container.addEventListener('touchmove', handleTouchMove, { passive: false });
+    container.addEventListener('wheel', handleWheel, { passive: false });
+
+    return () => {
+      container.removeEventListener('touchstart', handleTouchStart);
+      container.removeEventListener('touchmove', handleTouchMove);
+      container.removeEventListener('wheel', handleWheel);
+    };
+  }, [levels.length]);
+
   // 최상단 산 정보마저 누락된 최악의 경우에만 홈으로 리다이렉트
   if (!mountainParam && !storageService.get<string>(STORAGE_KEYS.LAST_VISITED_MOUNTAIN)) {
     return (
@@ -203,6 +274,26 @@ export function LevelSelectPage() {
     if (isSheetExpanded) setIsSheetExpanded(false);
 
     const container = e.currentTarget;
+
+    // 자동 스크롤 중이면 스크롤 리밋 감시 바이패스 (수동 진입만 감지/차단)
+    if (container.getAttribute('data-auto-scrolling') === 'true') {
+      return;
+    }
+
+    // 월드별 스크롤 최소 탑 리밋 제어 (활성화된 레벨 초과 영역 스크롤 진입 차단)
+    const FIXED_MAX_LEVELS = 30;
+    const NODE_SPACING = 160;
+    const clipOffset = (FIXED_MAX_LEVELS - levels.length) * NODE_SPACING;
+
+    if (clipOffset > 0) {
+      const containerWidth = container.clientWidth || 400;
+      const scale = containerWidth / 400;
+      const minScrollTop = clipOffset * scale;
+
+      if (container.scrollTop < minScrollTop) {
+        container.scrollTop = minScrollTop;
+      }
+    }
 
     // 스크롤 렉 방지 최적화 (Decoupled 블러 스위칭): 스크롤 동작이 활성화되는 즉시 data-scrolling 플래그 부여
     const pageEl = container.closest('.level-select-page');

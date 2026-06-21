@@ -1,5 +1,5 @@
 // cspell:ignore langworld langworld1
-import React, { useRef, useMemo, useCallback, useEffect } from 'react';
+import React, { useState, useRef, useMemo, useCallback, useEffect } from 'react';
 import { useLevelProgressStore } from '../stores/useLevelProgressStore';
 import { useProfileStore } from '../stores/useProfileStore';
 import { ClimbBackground } from './ClimbGraphicBackgrounds';
@@ -52,7 +52,9 @@ export function ClimbGraphic({
   const isAdmin = useProfileStore((state) => state.isAdmin);
   const currentLevelRef = useRef<HTMLButtonElement>(null);
   const lastTargetRef = useRef<string>('');
-  const isFirstMountRef = useRef<boolean>(true);
+  const hasInitialScrolledRef = useRef<boolean>(false);
+  const scrollTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const [isScrollPositioned, setIsScrollPositioned] = useState(false);
 
   const nextLevel = getNextLevel(world, category);
   const totalLevels = levels.length;
@@ -81,6 +83,11 @@ export function ClimbGraphic({
   const NODE_SPACING = 160;
   const LIST_DISTANCE = 100;
   const SCROLL_OFFSET = 60;
+  const FIXED_MAX_LEVELS = 30; // 모든 월드의 지도 프레임 높이를 30레벨로 고정
+
+  const clipOffset = useMemo(() => {
+    return (FIXED_MAX_LEVELS - totalLevels) * NODE_SPACING;
+  }, [totalLevels]);
 
   // ========== 노드 위치 계산 ==========
   const { levelData, pathPoints, svgHeight, lastClearedIndex } = useMemo(() => {
@@ -88,13 +95,12 @@ export function ClimbGraphic({
     const points: Array<{ x: number; y: number }> = [];
     let lastClearedIdx = -1;
 
-    const MAX_LEVELS = 30; // 모든 월드에서 지도 높이를 30레벨(4840px)로 통일
     const lastNodeY = LIST_DISTANCE;
-    const firstNodeY = lastNodeY + (MAX_LEVELS - 1) * NODE_SPACING;
+    const firstNodeY = lastNodeY + (FIXED_MAX_LEVELS - 1) * NODE_SPACING;
     const calculatedSvgHeight = firstNodeY + 100;
 
     for (let i = 0; i < totalLevels; i++) {
-      const y = firstNodeY - i * NODE_SPACING; // 모든 월드에서 레벨 1은 무조건 Y=2420px부터 배치
+      const y = firstNodeY - i * NODE_SPACING; // 레벨 1은 가장 아래에 배치하고 위로 갈수록 Y가 감소(상단으로 이동)
       const centerX = SVG_WIDTH * 0.5;
       const amplitude = SVG_WIDTH * 0.3;
       const FREQUENCY_PER_LEVELS = 15; // 15레벨마다 S자 한 번
@@ -177,31 +183,50 @@ export function ClimbGraphic({
     return createPath(clearedPoints);
   }, [pathPoints, lastClearedIndex]);
 
-  // 스크롤 Clamping 현상이 높이 고정화(MAX_LEVELS)로 원천 해결되어 높이 홀딩 로직 제거
-
   const scrollToCurrentLevel = useCallback(
     (behavior: 'auto' | 'smooth' = 'smooth') => {
-      const node = currentLevelRef.current;
-      if (!node) return;
-
-      const scrollContainer = node.closest('.map-area') as HTMLElement;
-      if (!scrollContainer) {
-        if (typeof node.scrollIntoView === 'function') {
-          node.scrollIntoView({
-            behavior: behavior === 'auto' ? 'auto' : 'smooth',
-            block: 'center',
-          });
-        }
-        return;
-      }
-
-      // [레이아웃 가드] 스크롤 컨테이너의 내부 영역(scrollHeight)이
-      // 실제 지도 높이(svgHeight)에 맞게 충분히 로드되어 확장되었는지 먼저 확인합니다.
-      // 렌더링 완료까지 최대 120프레임(약 2초) 동안 안전하게 대기하여 현위치 셋팅이 씹히는 오작동을 완전히 해결합니다.
       let layoutAttempts = 0;
+      let nodeAttempts = 0;
+
       const executeScroll = () => {
+        const node = currentLevelRef.current;
+
+        // [노드 가드] 노드 엘리먼트 레프가 마운트될 때까지 최대 120프레임 동안 대기
+        if (!node) {
+          if (nodeAttempts < 120) {
+            nodeAttempts++;
+            requestAnimationFrame(executeScroll);
+          } else {
+            // 노드를 결국 찾지 못하더라도 화면은 보여주어야 하므로 opacity 1 설정
+            setIsScrollPositioned(true);
+          }
+          return;
+        }
+
+        const scrollContainer = node.closest('.map-area') as HTMLElement;
+        if (!scrollContainer) {
+          if (typeof node.scrollIntoView === 'function') {
+            node.scrollIntoView({
+              behavior: behavior === 'auto' ? 'auto' : 'smooth',
+              block: 'center',
+            });
+          }
+          setIsScrollPositioned(true);
+          return;
+        }
+
         const currentScrollHeight = scrollContainer.scrollHeight;
-        if (currentScrollHeight < svgHeight - 50 && layoutAttempts < 120) {
+        const currentClientWidth = scrollContainer.clientWidth;
+        const currentClientHeight = scrollContainer.clientHeight;
+
+        // [레이아웃 가드] 스크롤 영역의 유효 높이가 확보되었고,
+        // 스크롤 컨테이너의 실제 화면 너비(clientWidth)와 높이(clientHeight)가 로드되어 0보다 큰지 검증
+        const isLayoutReady =
+          currentScrollHeight >= svgHeight - clipOffset - 50 &&
+          currentClientWidth > 0 &&
+          currentClientHeight > 0;
+
+        if (!isLayoutReady && layoutAttempts < 120) {
           layoutAttempts++;
           requestAnimationFrame(executeScroll);
           return;
@@ -211,62 +236,79 @@ export function ClimbGraphic({
         // scrollContainer의 실제 너비를 기준으로 스케일을 계산하여 정밀한 수학적 절대 좌표를 산출합니다.
         const currentLevelNode = levelData.find((l) => l.id === targetLevelId) || levelData[0];
         const SCROLL_OFFSET = 60;
-        const containerWidth = scrollContainer.clientWidth || 400;
-        const scale = containerWidth / 400;
+        const scale = currentClientWidth / 400;
         const nodeRelativeY =
           SCROLL_OFFSET + (currentLevelNode ? currentLevelNode.position.y : 0) * scale;
 
-        const containerHeight = scrollContainer.clientHeight || 600;
         const nodeHeight = 56; // 레벨 노드 고정 높이
 
         // 노드가 스크롤 영역의 정중앙에 위치하도록 목표 scrollTop 설정
-        const targetScrollTop = nodeRelativeY - containerHeight / 2 + nodeHeight / 2;
+        const targetScrollTop = nodeRelativeY - currentClientHeight / 2 + nodeHeight / 2;
 
-        // 스크롤 상단 리밋 범위 보정 (빈 공간 스크롤 방지 이중 안전장치)
-        const MAX_LEVELS = 30;
-        const currentLevelsCount = levels.length;
-        const emptySpaceHeight =
-          currentLevelsCount < MAX_LEVELS
-            ? (MAX_LEVELS - currentLevelsCount) * NODE_SPACING * scale
-            : 0;
-
-        const clampedTargetScrollTop = Math.max(emptySpaceHeight, targetScrollTop);
+        // 스크롤 상단 리밋 범위 보정 (활성 레벨 외 공간 진입 차단)
+        const minScrollTop = clipOffset * scale;
+        const clampedTargetScrollTop = Math.max(minScrollTop, targetScrollTop);
 
         // 브라우저 네이티브 스크롤 API에 온전히 가감속 제어권 위임
+        // 자동 스크롤 진행 중임을 표시 (동작 진행 동안 handleScroll 리밋 차단 우회용)
+        scrollContainer.setAttribute('data-auto-scrolling', 'true');
+
         scrollContainer.scrollTo({
           top: clampedTargetScrollTop,
           behavior: behavior === 'auto' ? 'auto' : 'smooth',
         });
+
+        // 실제 스크롤 동작이 브라우저에 진입하였으므로 완료 플래그 기록
+        hasInitialScrolledRef.current = true;
+
+        // 위치 복원 완료 상태로 전환하여 페이드인 효과 트리거
+        setIsScrollPositioned(true);
+
+        if (scrollTimeoutRef.current) clearTimeout(scrollTimeoutRef.current);
+        const scrollDuration = behavior === 'auto' ? 50 : 800;
+        scrollTimeoutRef.current = setTimeout(() => {
+          scrollContainer.removeAttribute('data-auto-scrolling');
+          scrollTimeoutRef.current = null;
+        }, scrollDuration);
       };
 
       requestAnimationFrame(executeScroll);
     },
-    [levelData, targetLevelId, levels.length, svgHeight]
+    [levelData, targetLevelId, levels.length, svgHeight, clipOffset]
   );
 
   // 진입 및 변경 시 현재 레벨로 자동 스크롤
   useEffect(() => {
     if (isReady !== undefined && !isReady) return;
 
-    // 월드, 카테고리, 산 정보가 실제로 변경되었을 때만 딱 1회 자동으로 스크롤 복구 위치로 보냄
     const currentTargetKey = `${mountain || ''}_${world}_${category}`;
-    if (lastTargetRef.current === currentTargetKey) {
+
+    // 월드, 카테고리, 산 정보가 변경되지 않았고, 이미 최초 스크롤이 수행된 상태라면 리턴하여 중복 스크롤 방지
+    if (lastTargetRef.current === currentTargetKey && hasInitialScrolledRef.current) {
       return;
     }
     lastTargetRef.current = currentTargetKey;
 
-    // 최초 마운트(이전 스크롤 정보가 없는 최초 진입)일 때는 애니메이션 없이 즉시 현위치를 보여주고,
-    // 월드 전환 등 이전 스크롤 컨텍스트가 존재할 때는 'smooth' 모드로 스크롤합니다.
-    const isFirstMount = isFirstMountRef.current;
-    const scrollMode = isFirstMount ? 'auto' : 'smooth';
-    isFirstMountRef.current = false;
+    // 최초 마운트 후 첫 실제 스크롤 동작 전까지는 애니메이션 없이 즉시 현위치를 고정('auto'),
+    // 첫 스크롤이 성공한 상태에서 월드/카테고리 전환이 일어날 때는 'smooth' 모드로 스크롤
+    const isFirstScroll = !hasInitialScrolledRef.current;
+    const scrollMode = isFirstScroll ? 'auto' : 'smooth';
+
+    if (isFirstScroll) {
+      setIsScrollPositioned(false);
+    }
 
     // 브라우저 레이아웃 엔진이 새 콘텐츠 높이 및 스케일을 확실히 반영할 수 있도록 30ms 대기 후 실행
     const timer = setTimeout(() => {
       scrollToCurrentLevel(scrollMode);
     }, 30);
 
-    return () => clearTimeout(timer);
+    return () => {
+      clearTimeout(timer);
+      if (scrollTimeoutRef.current) {
+        clearTimeout(scrollTimeoutRef.current);
+      }
+    };
   }, [mountain, world, category, isReady, scrollToCurrentLevel]);
 
   return (
@@ -279,6 +321,8 @@ export function ClimbGraphic({
         {
           '--category-color': categoryColor,
           minHeight: `${svgHeight + 200}px`,
+          opacity: isScrollPositioned ? 1 : 0,
+          transition: 'opacity 0.2s ease-in-out',
         } as React.CSSProperties
       }
     >

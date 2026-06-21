@@ -76,19 +76,23 @@ export function ClimbBackground({
   category,
   totalLevels: _totalLevels = 30,
 }: BackgroundProps) {
-  const MAX_LEVELS = 30; // 모든 월드에서 배경 높이를 30레벨(4840px)로 통일
+  const FIXED_MAX_LEVELS = 30; // 모든 배경의 높이 틀도 30으로 고정
   const NODE_SPACING = 160;
   const LIST_DISTANCE = 100;
   const lastNodeY = LIST_DISTANCE;
-  const firstNodeY = lastNodeY + (MAX_LEVELS - 1) * NODE_SPACING; // 4740px
-  const svgHeight = firstNodeY + 100; // 4840px
+  const firstNodeY = lastNodeY + (FIXED_MAX_LEVELS - 1) * NODE_SPACING;
+  const svgHeight = firstNodeY + 100;
 
   // 6개의 물결(산 실루엣) 레이어 생성 (5레벨 간격 = 800px 마다 존재)
   const mountainLayers = useMemo(() => {
     const layers = [];
-    // 뒤쪽(먼 산 i=5, Y=740px)부터 앞쪽(가까운 산 i=0, Y=4740px) 순서대로 겹쳐서 그림
+    // 먼 산(i=5)부터 가까운 산(i=0) 순서대로 겹쳐서 그림
+    // 지도 높이에 비례하여 산의 baseY가 음수가 되거나 하늘을 완전히 덮지 않도록 자동 스케일링
+    const startY = Math.max(100, firstNodeY * 0.15);
+    const endY = firstNodeY;
+
     for (let i = 5; i >= 0; i--) {
-      const baseY = firstNodeY - i * 5 * NODE_SPACING; // 4740, 3940, 3140, 2340, 1540, 740
+      const baseY = startY + (endY - startY) * (1 - i / 5);
 
       const waveAmplitude = 30; // 물결 높이
       const waveDir = i % 2 === 0 ? 1 : -1; // 홀수/짝수 굴곡 방향 교차
