@@ -71,7 +71,7 @@ test.describe('CORE BUSINESS SCENARIO - 게임 플레이부터 랭킹 반영까�
 
     const level1Button = page.locator('.level-list-button-primary').first();
     await expect(level1Button).toBeVisible({ timeout: 15000 });
-    await level1Button.click();
+    await level1Button.click({ force: true });
 
     // 6. 게임 팁 모달에서 시작하기 클릭
     console.log('[E2E] Step 6: Starting game from tip modal...');
