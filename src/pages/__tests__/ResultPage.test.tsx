@@ -6,6 +6,7 @@ import { BrowserRouter } from 'react-router-dom';
 // Mock dependencies
 vi.mock('../stores/useQuizStore');
 vi.mock('../stores/useLevelProgressStore');
+vi.mock('../stores/useRankingStore');
 vi.mock('../stores/useUserStore');
 vi.mock('../components/TierUpgradeModal');
 vi.mock('../components/BadgeNotification');
@@ -24,10 +25,8 @@ vi.mock('@/stores/useQuizStore', () => {
 vi.mock('@/stores/useLevelProgressStore', () => {
   const mockState = {
     progress: {},
-    rankings: {},
     clearLevel: vi.fn().mockResolvedValue({ success: true }),
     updateBestScore: vi.fn().mockResolvedValue({ success: true }),
-    fetchRanking: vi.fn().mockResolvedValue([]),
   };
   const fn = vi.fn((selector) =>
     typeof selector === 'function' ? selector(mockState) : mockState
@@ -37,6 +36,21 @@ vi.mock('@/stores/useLevelProgressStore', () => {
       getState: () => mockState,
       clearLevel: mockState.clearLevel,
       updateBestScore: mockState.updateBestScore,
+    }),
+  };
+});
+
+vi.mock('@/stores/useRankingStore', () => {
+  const mockState = {
+    rankings: {},
+    fetchRanking: vi.fn().mockResolvedValue([]),
+  };
+  const fn = vi.fn((selector) =>
+    typeof selector === 'function' ? selector(mockState) : mockState
+  );
+  return {
+    useRankingStore: Object.assign(fn, {
+      getState: () => mockState,
       fetchRanking: mockState.fetchRanking,
     }),
   };

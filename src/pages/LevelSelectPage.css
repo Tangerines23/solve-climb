@@ -185,21 +185,7 @@
   display: flex;
   flex-direction: column;
 
-  /* 접힌 상태: 요약 부분만 보이도록 transform 이동 */
-  /* 헤더 높이가 약 160px 정도라고 가정 (기존 140px에서 추가 확대) */
-  transform: translateY(calc(80vh - 160px));
-  transition: transform 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
-
   box-shadow: 0 -10px 30px rgba(0, 0, 0, 0.5);
-}
-
-.bottom-sheet.expanded {
-  transform: translateY(0);
-}
-
-/* 월드 변경 시 하단 시트가 바닥으로 숨는 애니메이션 */
-.bottom-sheet.sheet-transitioning {
-  transform: translateY(100%) !important;
 }
 
 /* 핸들 바 영역 */

@@ -6,10 +6,12 @@ import { MyRecordCard } from '@/components/MyRecordCard';
 import { LevelListCard } from '@/components/LevelListCard';
 import { FooterNav } from '@/components/FooterNav';
 import { Toast } from '@/components/Toast';
-// import { useFavoriteStore } from '@/stores/useFavoriteStore';
 import { World, Tier, Category } from '@/types/quiz';
 import { urls } from '@/utils/navigation';
 import { PageLayout } from '@/components/layout/PageLayout';
+import { MAP_LAYOUT } from '@/constants/stages';
+import { useMapScroll } from '@/hooks/useMapScroll';
+import { motion } from 'framer-motion';
 import './LevelSelectPage.css';
 import { storageService, STORAGE_KEYS } from '@/services';
 import { useNavigationContext } from '@/hooks/useNavigationContext';
@@ -79,75 +81,7 @@ export function LevelSelectPage() {
   }, []);
 
   // [수동 스크롤 드드득거림 방지] 터치(touchmove) 및 마우스 휠(wheel) 이벤트 가로채기
-  useEffect(() => {
-    const container = mapAreaRef.current;
-    if (!container) return;
-
-    let startTouchY = 0;
-
-    const handleTouchStart = (e: TouchEvent) => {
-      if (e.touches.length > 0) {
-        startTouchY = e.touches[0].clientY;
-      }
-    };
-
-    const handleTouchMove = (e: TouchEvent) => {
-      // 자동 스크롤 중이면 제한하지 않음
-      if (container.getAttribute('data-auto-scrolling') === 'true') {
-        return;
-      }
-
-      const FIXED_MAX_LEVELS = 30;
-      const NODE_SPACING = 160;
-      const clipOffset = (FIXED_MAX_LEVELS - levels.length) * NODE_SPACING;
-
-      if (clipOffset > 0 && e.touches.length > 0) {
-        const containerWidth = container.clientWidth || 400;
-        const scale = containerWidth / 400;
-        const minScrollTop = clipOffset * scale;
-
-        const currentTouchY = e.touches[0].clientY;
-        const isScrollingUp = currentTouchY > startTouchY; // 드래그 다운 -> 스크롤 위로 (scrollTop 감소)
-
-        if (isScrollingUp && container.scrollTop <= minScrollTop + 1) {
-          e.preventDefault();
-        }
-      }
-    };
-
-    const handleWheel = (e: WheelEvent) => {
-      // 자동 스크롤 중이면 제한하지 않음
-      if (container.getAttribute('data-auto-scrolling') === 'true') {
-        return;
-      }
-
-      const FIXED_MAX_LEVELS = 30;
-      const NODE_SPACING = 160;
-      const clipOffset = (FIXED_MAX_LEVELS - levels.length) * NODE_SPACING;
-
-      if (clipOffset > 0) {
-        const containerWidth = container.clientWidth || 400;
-        const scale = containerWidth / 400;
-        const minScrollTop = clipOffset * scale;
-
-        const isScrollingUp = e.deltaY < 0; // 마우스 휠 위로 -> 스크롤 위로 (scrollTop 감소)
-
-        if (isScrollingUp && container.scrollTop <= minScrollTop + 1) {
-          e.preventDefault();
-        }
-      }
-    };
-
-    container.addEventListener('touchstart', handleTouchStart, { passive: true });
-    container.addEventListener('touchmove', handleTouchMove, { passive: false });
-    container.addEventListener('wheel', handleWheel, { passive: false });
-
-    return () => {
-      container.removeEventListener('touchstart', handleTouchStart);
-      container.removeEventListener('touchmove', handleTouchMove);
-      container.removeEventListener('wheel', handleWheel);
-    };
-  }, [levels.length]);
+  useMapScroll(mapAreaRef, levels.length);
 
   // 최상단 산 정보마저 누락된 최악의 경우에만 홈으로 리다이렉트
   if (!mountainParam && !storageService.get<string>(STORAGE_KEYS.LAST_VISITED_MOUNTAIN)) {
@@ -281,13 +215,12 @@ export function LevelSelectPage() {
     }
 
     // 월드별 스크롤 최소 탑 리밋 제어 (활성화된 레벨 초과 영역 스크롤 진입 차단)
-    const FIXED_MAX_LEVELS = 30;
-    const NODE_SPACING = 160;
+    const { FIXED_MAX_LEVELS, NODE_SPACING } = MAP_LAYOUT;
     const clipOffset = (FIXED_MAX_LEVELS - levels.length) * NODE_SPACING;
 
     if (clipOffset > 0) {
-      const containerWidth = container.clientWidth || 400;
-      const scale = containerWidth / 400;
+      const containerWidth = container.clientWidth || MAP_LAYOUT.SVG_WIDTH;
+      const scale = containerWidth / MAP_LAYOUT.SVG_WIDTH;
       const minScrollTop = clipOffset * scale;
 
       if (container.scrollTop < minScrollTop) {
@@ -371,8 +304,16 @@ export function LevelSelectPage() {
       </div>
 
       {/* 하단 시트: 레벨 리스트 및 상세 정보 */}
-      <div
-        className={`bottom-sheet ${isSheetExpanded ? 'expanded' : ''} ${isSheetTransitioning ? 'sheet-transitioning' : ''}`}
+      <motion.div
+        className="bottom-sheet"
+        initial="collapsed"
+        animate={isSheetTransitioning ? 'hidden' : isSheetExpanded ? 'expanded' : 'collapsed'}
+        variants={{
+          hidden: { y: '100%' },
+          collapsed: { y: 'calc(80vh - 160px)' },
+          expanded: { y: 0 },
+        }}
+        transition={{ type: 'spring', damping: 25, stiffness: 200 }}
       >
         <div className="sheet-handle-bar" onClick={() => setIsSheetExpanded(!isSheetExpanded)}>
           <div className="handle-indicator" />
@@ -418,62 +359,10 @@ export function LevelSelectPage() {
             tier={tier}
           />
         </div>
-      </div>
+      </motion.div>
 
       <FooterNav />
 
-      {/* GameTipModal and Toast are assumed to be defined elsewhere or need proper context/state */}
-      {/* Placeholder for GameTipModal and Toast, assuming their state and handlers are defined */}
-      {/* For example, if GameTipModal and Toast are part of the PageLayout or a global context,
-          they might not be rendered directly here. If they are local, their state (isGameTipOpen, currentGameTip)
-          and handlers (closeGameTip) need to be defined in this component.
-          The provided snippet includes them, so I'll add them assuming their state/props exist.
-      */}
-      {/* Assuming GameTipModal and Toast are defined and their state/props are available */}
-      {/* Note: isGameTipOpen and currentGameTip are not defined in the provided context,
-               so this might lead to errors if not handled. */}
-      {/* The instruction uses `isOpen={!!isGameTipOpen}` which implies `isGameTipOpen` might be nullable. */}
-      {/* The original code had `isGameTipOpen` and `currentGameTip` in the PageLayout,
-          but they are not defined in the `LevelSelectPage` component's state.
-          I will add them as comments to indicate they are missing from the component's state.
-      */}
-      {/*
-      <GameTipModal
-        isOpen={!!isGameTipOpen} // Ensure boolean
-        onClose={closeGameTip}
-        tip={currentGameTip}
-      />
-      */}
-      {/*
-      <Toast
-        message={toastMessage}
-        isOpen={showToast}
-        onClose={() => setShowToast(false)}
-        autoClose={true}
-        autoCloseDelay={2000}
-      />
-      */}
-      {/* Re-adding the Toast and GameTipModal as per the instruction, assuming their state/props are handled */}
-      {/* Note: `isGameTipOpen`, `closeGameTip`, `currentGameTip` are not defined in the provided component context. */}
-      {/* The instruction implies they should be present. I will add them as they are in the instruction. */}
-      {/* If these variables are not defined, the code will break. */}
-      {/* For a faithful edit, I'll include them as provided. */}
-      {/* Assuming `isGameTipOpen`, `closeGameTip`, `currentGameTip` are defined in the component's scope. */}
-      {/* The original code had `isGameTipOpen` and `currentGameTip` in the PageLayout,
-          but they are not defined in the `LevelSelectPage` component's state.
-          I will add them as comments to indicate they are missing from the component's state.
-      */}
-      {/*
-      <GameTipModal
-        isOpen={isGameTipOpen}
-        onClose={closeGameTip}
-        tip={currentGameTip}
-      />
-      */}
-      {/* The instruction provided a Toast component with `message`, `isOpen`, `onClose`, `autoClose`, `autoCloseDelay`.
-          The `toastMessage` and `showToast` states are already defined in the component.
-          So, the Toast component can be rendered.
-      */}
       <Toast
         message={toastMessage}
         isOpen={showToast}

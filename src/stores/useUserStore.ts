@@ -1,6 +1,7 @@
 import { create } from 'zustand';
 import { supabase } from '../utils/supabaseClient';
 import { safeSupabaseQuery } from '../utils/debugFetch';
+import { useDebugStore } from './useDebugStore';
 import {
   validatedRpc,
   ItemActionResponseSchema,
@@ -190,7 +191,6 @@ export const useUserStore = create<UserState>((set, get) => {
 
     consumeStamina: async () => {
       // infiniteStamina 체크 (디버그 모드)
-      const { useDebugStore } = await import('./useDebugStore');
       const { infiniteStamina } = useDebugStore.getState();
 
       if (infiniteStamina) {

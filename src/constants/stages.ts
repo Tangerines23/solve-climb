@@ -1,3 +1,11 @@
+export const MAP_LAYOUT = {
+  FIXED_MAX_LEVELS: 30,
+  NODE_SPACING: 160,
+  LIST_DISTANCE: 100,
+  SCROLL_OFFSET: 60,
+  SVG_WIDTH: 400,
+} as const;
+
 export interface StageConfig {
   id: string;
   range: [number, number]; // [시작 레벨, 끝 레벨]

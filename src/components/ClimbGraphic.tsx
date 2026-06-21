@@ -3,7 +3,7 @@ import React, { useState, useRef, useMemo, useCallback, useEffect } from 'react'
 import { useLevelProgressStore } from '../stores/useLevelProgressStore';
 import { useProfileStore } from '../stores/useProfileStore';
 import { ClimbBackground } from './ClimbGraphicBackgrounds';
-import { getStagesForWorld, type StageConfig } from '../constants/stages';
+import { getStagesForWorld, type StageConfig, MAP_LAYOUT } from '../constants/stages';
 import { World, Category } from '../types/quiz';
 import './ClimbGraphic.css';
 
@@ -79,11 +79,7 @@ export function ClimbGraphic({
   );
 
   // ========== 설정 상수 ==========
-  const SVG_WIDTH = 400;
-  const NODE_SPACING = 160;
-  const LIST_DISTANCE = 100;
-  const SCROLL_OFFSET = 60;
-  const FIXED_MAX_LEVELS = 30; // 모든 월드의 지도 프레임 높이를 30레벨로 고정
+  const { SVG_WIDTH, NODE_SPACING, LIST_DISTANCE, SCROLL_OFFSET, FIXED_MAX_LEVELS } = MAP_LAYOUT;
 
   const clipOffset = useMemo(() => {
     return (FIXED_MAX_LEVELS - totalLevels) * NODE_SPACING;
@@ -235,8 +231,7 @@ export function ClimbGraphic({
         // 화면 해상도나 크기에 따라 SVG가 비율 매칭되어 크기가 변하므로,
         // scrollContainer의 실제 너비를 기준으로 스케일을 계산하여 정밀한 수학적 절대 좌표를 산출합니다.
         const currentLevelNode = levelData.find((l) => l.id === targetLevelId) || levelData[0];
-        const SCROLL_OFFSET = 60;
-        const scale = currentClientWidth / 400;
+        const scale = currentClientWidth / SVG_WIDTH;
         const nodeRelativeY =
           SCROLL_OFFSET + (currentLevelNode ? currentLevelNode.position.y : 0) * scale;
 

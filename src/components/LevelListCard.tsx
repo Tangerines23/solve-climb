@@ -1,8 +1,9 @@
-import React, { useState, useRef } from 'react';
+import React, { useState } from 'react';
 import { useLevelProgressStore } from '../stores/useLevelProgressStore';
 import { useProfileStore } from '../stores/useProfileStore';
 import { BaseCard } from './BaseCard';
 import { UnderDevelopmentModal } from './UnderDevelopmentModal';
+import { useLongPress } from '../hooks/useLongPress';
 import type { Tier } from '../types/quiz';
 import './LevelListCard.css';
 
@@ -46,53 +47,17 @@ function LevelListItem({
   onLockedLevelClick,
   setShowUnderDevelopment,
 }: LevelListItemProps) {
-  // 길게 누르기 타이머 관리 (각 아이템마다 독립적)
-  const timersRef = useRef({
-    longPress: null as NodeJS.Timeout | null,
-    toast: null as NodeJS.Timeout | null,
-    count: 0,
+  const longPressHandlers = useLongPress({
+    onLongPress: () => {
+      if (onLevelLongPress) onLevelLongPress(levelData.level);
+    },
+    onMediumPress: () => {
+      if (onLevelLongPress) onLevelLongPress(levelData.level);
+    },
+    disabled: isDisabled || !onLevelLongPress,
+    mediumDelay: 2000,
+    longDelay: 4000,
   });
-
-  const handleLongPressStart = (e: React.MouseEvent | React.TouchEvent) => {
-    // 잠긴 레벨은 길게 누르기 비활성화
-    if (isDisabled || !onLevelLongPress) return;
-
-    e.stopPropagation();
-
-    timersRef.current.count = 0;
-
-    // 2초 후 토스트 표시
-    timersRef.current.toast = setTimeout(() => {
-      timersRef.current.count = 1;
-      if (onLevelLongPress) {
-        onLevelLongPress(levelData.level);
-      }
-    }, 2000);
-
-    // 4초 후 실제 해제
-    timersRef.current.longPress = setTimeout(() => {
-      timersRef.current.count = 2;
-      if (onLevelLongPress) {
-        onLevelLongPress(levelData.level);
-      }
-      if (timersRef.current.toast) {
-        clearTimeout(timersRef.current.toast);
-        timersRef.current.toast = null;
-      }
-    }, 4000);
-  };
-
-  const handleLongPressEnd = (_e: React.MouseEvent | React.TouchEvent) => {
-    if (timersRef.current.longPress) {
-      clearTimeout(timersRef.current.longPress);
-      timersRef.current.longPress = null;
-    }
-    if (timersRef.current.toast) {
-      clearTimeout(timersRef.current.toast);
-      timersRef.current.toast = null;
-    }
-    timersRef.current.count = 0;
-  };
 
   const handleLockedClick = (e: React.MouseEvent) => {
     if (isDisabled && onLockedLevelClick) {
@@ -104,12 +69,7 @@ function LevelListItem({
   return (
     <div
       className={`level-list-item ${status} ${isDisabled ? 'disabled' : ''} ${isDev ? 'under-development' : ''}`}
-      onMouseDown={!isDisabled ? handleLongPressStart : undefined}
-      onMouseUp={!isDisabled ? handleLongPressEnd : undefined}
-      onMouseLeave={!isDisabled ? handleLongPressEnd : undefined}
-      onTouchStart={!isDisabled ? handleLongPressStart : undefined}
-      onTouchEnd={!isDisabled ? handleLongPressEnd : undefined}
-      onTouchCancel={!isDisabled ? handleLongPressEnd : undefined}
+      {...(!isDisabled ? longPressHandlers : {})}
       onClick={isDisabled ? handleLockedClick : undefined}
     >
       <div className="level-list-item-left">

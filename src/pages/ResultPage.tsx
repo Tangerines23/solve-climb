@@ -3,6 +3,7 @@ import { useEffect, useState, useMemo } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useQuizStore } from '@/stores/useQuizStore';
 import { useLevelProgressStore } from '@/stores/useLevelProgressStore';
+import { useRankingStore } from '@/stores/useRankingStore';
 import { submitScoreToLeaderboard } from '@/utils/tossGameCenter';
 import { SCORE_PER_CORRECT } from '@/constants/game';
 import {
@@ -42,7 +43,8 @@ export function ResultPage() {
     score: storeScore, // score -> storeScore로 명칭 변경하여 finalScore 계산에 활용
   } = useQuizStore();
   const { animationEnabled } = useSettingsStore();
-  const { clearLevel, updateBestScore, fetchRanking } = useLevelProgressStore();
+  const { clearLevel, updateBestScore } = useLevelProgressStore();
+  const { fetchRanking } = useRankingStore();
   const { rewardMinerals } = useUserStore();
   const { showToast } = useToastStore();
   const navigate = useNavigate();
@@ -141,7 +143,7 @@ export function ResultPage() {
           mode === 'time-attack' ? 'time-attack' : 'survival'
         );
         const ranks =
-          useLevelProgressStore.getState().rankings[
+          useRankingStore.getState().rankings[
             `${worldParam}-${categoryParam}-weekly-${mode === 'time-attack' ? 'time-attack' : 'survival'}`
           ];
         const {

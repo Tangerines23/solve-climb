@@ -1,25 +1,12 @@
 import { useMemo } from 'react';
 import { World, Category } from '../types/quiz';
+import { MAP_LAYOUT } from '../constants/stages';
+import { SeededRandom } from '../utils/seededRandom';
 
 interface BackgroundProps {
   world: World;
   category: Category;
   totalLevels?: number;
-}
-
-// Seeded Random Helper (결정론적 난수 생성기)
-class SeededRandom {
-  private seed: number;
-  constructor(seed: number) {
-    this.seed = seed;
-  }
-  next() {
-    const x = Math.sin(this.seed++) * 10000;
-    return x - Math.floor(x);
-  }
-  nextInt(min: number, max: number) {
-    return Math.floor(this.next() * (max - min + 1)) + min;
-  }
 }
 
 const getCategoryIndex = (category: Category): number => {
@@ -76,9 +63,7 @@ export function ClimbBackground({
   category,
   totalLevels: _totalLevels = 30,
 }: BackgroundProps) {
-  const FIXED_MAX_LEVELS = 30; // 모든 배경의 높이 틀도 30으로 고정
-  const NODE_SPACING = 160;
-  const LIST_DISTANCE = 100;
+  const { FIXED_MAX_LEVELS, NODE_SPACING, LIST_DISTANCE } = MAP_LAYOUT;
   const lastNodeY = LIST_DISTANCE;
   const firstNodeY = lastNodeY + (FIXED_MAX_LEVELS - 1) * NODE_SPACING;
   const svgHeight = firstNodeY + 100;

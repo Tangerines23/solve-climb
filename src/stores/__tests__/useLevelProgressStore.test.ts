@@ -239,62 +239,6 @@ describe('useLevelProgressStore', () => {
       expect(progress.find((p) => p.level === 1)?.bestScore['time-attack']).toBe(300); // Local won
       expect(progress.find((p) => p.level === 2)?.bestScore['time-attack']).toBe(500); // Server added
     });
-  });
-
-  describe('Rankings and Realtime', () => {
-    it('should fetch Hall of Fame (all-time) rankings', async () => {
-      const { result } = renderHook(() => useLevelProgressStore());
-      const mockHof = [{ user_id: 'legend', nickname: 'The King', score: 9999, rank: 1 }];
-
-      vi.mocked(supabase.from).mockReturnValue({
-        select: vi.fn().mockReturnThis(),
-        eq: vi.fn().mockReturnThis(),
-        order: vi.fn().mockReturnThis(),
-        limit: vi.fn().mockReturnThis(),
-        then: vi.fn().mockImplementation((cb) => cb({ data: mockHof, error: null })),
-      } as any);
-
-      await act(async () => {
-        await result.current.fetchRanking(null, null, 'all-time', 'total');
-      });
-
-      expect(result.current.rankings['all-time-total']).toEqual(mockHof);
-    });
-
-    it('should handle realtime subscription lifecycle and events', () => {
-      let eventCallback: any;
-      const mockUnsubscribe = vi.fn();
-      const mockSubscribe = vi.fn().mockReturnValue({ unsubscribe: mockUnsubscribe });
-      const mockOn = vi.fn().mockImplementation((_type, _filter, callback) => {
-        eventCallback = callback;
-        return { subscribe: mockSubscribe };
-      });
-
-      vi.mocked(supabase.channel).mockReturnValue({
-        on: mockOn,
-        subscribe: mockSubscribe,
-      } as any);
-
-      const { result } = renderHook(() => useLevelProgressStore());
-
-      act(() => {
-        result.current.subscribeToRankingUpdates();
-      });
-
-      expect(supabase.channel).toHaveBeenCalledWith('ranking-updates');
-
-      // Simulate realtime update
-      act(() => {
-        eventCallback({ new: { id: 'test' } });
-      });
-      expect(result.current.rankingVersion).toBe(1);
-
-      act(() => {
-        result.current.unsubscribeFromRankingUpdates();
-      });
-
-      expect(mockUnsubscribe).toHaveBeenCalled();
-    });
 
     it('should handle syncProgress error', async () => {
       vi.mocked(supabase.from).mockImplementation(() => {
