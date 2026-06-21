@@ -46,7 +46,7 @@ async function run() {
 
   const runCommand = isFullMode 
     ? 'npm install && bash scripts/ci-local-all.sh' 
-    : 'npm install && npx playwright install chromium --with-deps && npm run ci:local:stage1';
+    : 'npm install && npx @playwright/test install chromium --with-deps && npm run ci:local:stage1';
 
   const dockerArgs = [
     'run',

@@ -22,11 +22,14 @@ function getAvailablePort() {
 const port = getAvailablePort();
 const env = { ...process.env, E2E_DEV_PORT: String(port) };
 
-const pw = spawn('npx', ['playwright', 'test', ...process.argv.slice(2)], {
-  cwd: ROOT,
-  env,
-  stdio: 'inherit',
-  shell: true,
-});
+const pw = spawn(
+  'node',
+  [join(ROOT, 'node_modules/@playwright/test/cli.js'), 'test', ...process.argv.slice(2)],
+  {
+    cwd: ROOT,
+    env,
+    stdio: 'inherit',
+  }
+);
 
 pw.on('exit', (code) => process.exit(code ?? 0));

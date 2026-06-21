@@ -11,7 +11,9 @@
     "src/utils/navigation.ts",
     "src/utils/tossGameLogin.ts",
     "src/utils/MathProblemGenerator.ts",
-    "src/utils/seededRandom.ts"
+    "src/utils/seededRandom.ts",
+    "playwright-ct.config.ts",
+    "src/components/__tests__/ConfirmModal.ct.spec.tsx"
   ],
   "ignoreExportsUsedInFile": true,
   "rules": {
@@ -23,7 +25,8 @@
     "@stryker-mutator/typescript-checker",
     "@storybook/react",
     "hoist-non-react-statics",
-    "react-is"
+    "react-is",
+    "playwright"
   ],
   "ignoreBinaries": ["powershell", "ait"]
 }
