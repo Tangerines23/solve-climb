@@ -15,7 +15,9 @@ export interface StageConfig {
     | 'decimal'
     | 'fraction'
     | 'time'
-    | 'modulo';
+    | 'modulo'
+    | 'decimal-fraction-mix'
+    | 'mixed-fraction';
   operators: Operator[];
   operandCount: number;
   // Array of ranges for each operand position.
@@ -320,7 +322,7 @@ export const STAGES: StageConfig[] = [
   {
     id: 23,
     world: 1,
-    description: '정수 만들기 (소수 합)',
+    description: '소수의 덧셈 2 (소수 합)',
     type: 'decimal',
     operators: ['+'],
     operandCount: 2,
@@ -328,7 +330,7 @@ export const STAGES: StageConfig[] = [
       { min: 0.1, max: 0.9 },
       { min: 0.1, max: 0.9 },
     ],
-    constraints: { precision: 1 }, // Need internal logic to force integer result in generator if needed
+    constraints: { precision: 1 },
   },
   {
     id: 24,
@@ -347,12 +349,12 @@ export const STAGES: StageConfig[] = [
     id: 25,
     world: 1,
     description: '[캠프] 소수/분수 믹스',
-    type: 'standard', // Fallback for now, will implement mixed types if needed
+    type: 'decimal-fraction-mix',
     operators: ['+'],
     operandCount: 2,
     ranges: [
-      { min: 1, max: 10 },
-      { min: 1, max: 10 },
+      { min: 1, max: 1 },
+      { min: 1, max: 1 },
     ],
   },
   {
@@ -372,14 +374,14 @@ export const STAGES: StageConfig[] = [
     id: 27,
     world: 1,
     description: '쉬운 통분 (배수 분모)',
-    type: 'fraction',
+    type: 'mixed-fraction',
     operators: ['+'],
     operandCount: 2,
     ranges: [
       { min: 1, max: 1 },
       { min: 1, max: 1 },
     ],
-    constraints: { denominator: 4 }, // Will need update to generator for mixed denominators
+    constraints: { denominator: 4 },
   },
   {
     id: 28,
@@ -553,6 +555,10 @@ export function generateProblem(
         problem = generateTimeProblem(stage, rng);
       } else if (stage.type === 'modulo') {
         problem = generateModuloProblem(stage, rng);
+      } else if (stage.type === 'decimal-fraction-mix') {
+        problem = generateDecimalFractionMixProblem(stage, rng);
+      } else if (stage.type === 'mixed-fraction') {
+        problem = generateMixedFractionProblem(stage, rng);
       } else {
         throw new Error(`Unknown stage type: ${stage.type}`);
       }
@@ -572,7 +578,8 @@ export function generateProblem(
   // Set inputType based on stage type if not already set
   if (!problem.inputType) {
     if (stage.type === 'decimal') problem.inputType = 'decimal';
-    else if (stage.type === 'fraction') problem.inputType = 'fraction';
+    else if (stage.type === 'fraction' || stage.type === 'mixed-fraction')
+      problem.inputType = 'fraction';
     else problem.inputType = 'number';
   }
 
@@ -737,11 +744,12 @@ function generateDecimalProblem(
 
   const result = calculate(a, b, op);
   const roundedResult = Math.round(result * factor) / factor;
+  const isIntegerResult = Number.isInteger(roundedResult);
 
   return {
     expression: `${a.toFixed(precision)} ${op} ${b.toFixed(precision)}`,
     answer: roundedResult,
-    inputType: 'decimal',
+    inputType: isIntegerResult ? 'number' : 'decimal',
   };
 }
 
@@ -794,5 +802,56 @@ function generateModuloProblem(
   return {
     expression: `${a} ÷ ${b} 의 나머지`,
     answer: remainder,
+  };
+}
+
+function generateDecimalFractionMixProblem(
+  _stage: StageConfig,
+  rng?: { randomInt: (min: number, max: number) => number }
+): MathProblem {
+  const options = [
+    { expr: '0.5 + 1/2', ans: 1 },
+    { expr: '1.5 - 1/2', ans: 1 },
+    { expr: '0.2 + 4/5', ans: 1 },
+    { expr: '1.2 - 1/5', ans: 1 },
+    { expr: '0.4 + 3/5', ans: 1 },
+    { expr: '1.4 - 2/5', ans: 1 },
+    { expr: '0.75 + 1/4', ans: 1 },
+    { expr: '1.75 - 3/4', ans: 1 },
+    { expr: '0.25 + 3/4', ans: 1 },
+  ];
+  const idx = rng
+    ? rng.randomInt(0, options.length - 1)
+    : Math.floor(Math.random() * options.length);
+  const choice = options[idx % options.length] ?? options[0];
+  return {
+    expression: choice.expr,
+    answer: choice.ans,
+    inputType: 'number',
+  };
+}
+
+function generateMixedFractionProblem(
+  _stage: StageConfig,
+  rng?: { randomInt: (min: number, max: number) => number }
+): MathProblem {
+  const options = [
+    { expr: '1/2 + 1/4', ans: '3/4' },
+    { expr: '1/2 - 1/4', ans: '1/4' },
+    { expr: '1/3 + 1/6', ans: '1/2' },
+    { expr: '1/2 - 1/6', ans: '1/3' },
+    { expr: '1/2 + 3/8', ans: '7/8' },
+    { expr: '1/2 - 1/8', ans: '3/8' },
+    { expr: '3/4 - 1/2', ans: '1/4' },
+    { expr: '1/2 + 1/6', ans: '2/3' },
+  ];
+  const idx = rng
+    ? rng.randomInt(0, options.length - 1)
+    : Math.floor(Math.random() * options.length);
+  const choice = options[idx % options.length] ?? options[0];
+  return {
+    expression: choice.expr,
+    answer: choice.ans,
+    inputType: 'fraction',
   };
 }

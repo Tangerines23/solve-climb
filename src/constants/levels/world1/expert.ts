@@ -1,22 +1,22 @@
 export const EXPERT_LEVELS = [
-  // Phase 1: 함수 (Lv 1~4)
-  { level: 1, name: '함숫값 계산', description: 'f(a) 대입하기' },
-  { level: 2, name: '지수 법칙', description: '2^n x 2^m' },
-  { level: 3, name: '다항함수 미분', description: 'x^n 미분 공식' },
-  { level: 4, name: '초월함수 미분', description: 'sin, cos 미분' },
+  // Phase 1: 함수 (Lv 1~5)
+  { level: 1, name: '1사분면 좌표 조준', description: '좌표 평면 조준 사격 (1사분면)' },
+  { level: 2, name: '사분면 좌표 조준', description: '전 사분면 좌표 조준 사격' },
+  { level: 3, name: '함숫값 - 덧셈', description: 'f(x) = x + a 값 구하기' },
+  { level: 4, name: '함숫값 - 제곱', description: 'f(x) = x² 값 구하기' },
+  { level: 5, name: '함숫값 믹스', description: '다양한 함숫값 대입 계산' },
 
-  // Phase 2: 극한 (Lv 5~7) / Phase 3: 미분 (Lv 8~12)
-  { level: 5, name: '직관적 극한', description: '무한대로 발산/수렴' },
-  { level: 6, name: '부정적분 기초', description: '미분의 역연산' },
-  { level: 7, name: '함수의 그래프', description: '기울기와 절편' },
-  { level: 8, name: '다항함수의 극점', description: '미분하여 0인 곳' },
-  { level: 9, name: '고급 응용', description: '함수와 기호 복합' },
-  { level: 10, name: '수학의 끝', description: '통합 공학적 개념' },
+  // Phase 2: 극한 (Lv 6~8) / Phase 3: 미분 (Lv 9~12)
+  { level: 6, name: '무한대 발산', description: 'x + 1 (x → ∞)의 극한값' },
+  { level: 7, name: '영(0)으로 수렴', description: '1 / x (x → ∞)의 극한값' },
+  { level: 8, name: '기울기의 극한', description: '2x / x (x → ∞)의 극한값' },
+  { level: 9, name: '다항함수 미분', description: 'd/dx(xⁿ) 미분 연산' },
+  { level: 10, name: '미분과 계수', description: 'd/dx(axⁿ) 미분 연산' },
 
-  // Phase 3 & 4 Extended (Lv 11~15) based on Design Document
-  { level: 11, name: '상수 미분', description: '상수 c의 미분은 0' },
-  { level: 12, name: '삼각함수 미분', description: 'sin(x) -> cos(x)' },
-  { level: 13, name: '차수 올리기', description: '3x^2 -> x^3 (적분)' },
-  { level: 14, name: '단순 적분', description: '2x -> x^2' },
-  { level: 15, name: '미적분 마스터', description: '미분/적분 랜덤 (보스)' },
+  // Phase 3 & 4 Extended (Lv 11~15)
+  { level: 11, name: '일차식 미분', description: 'd/dx(ax) 선형 미분' },
+  { level: 12, name: '상수 미분', description: 'd/dx(c) 상수의 미분' },
+  { level: 13, name: '차수 올리기 (적분)', description: '∫ (n+1)xⁿ dx 부정적분' },
+  { level: 14, name: '단순 적분', description: '∫ a dx 상수의 부정적분' },
+  { level: 15, name: '미적분 마스터', description: '기초 미분/적분 종합 평가' },
 ];

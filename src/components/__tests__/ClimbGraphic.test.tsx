@@ -3,24 +3,30 @@ import { render, screen, fireEvent } from '@testing-library/react';
 import { ClimbGraphic, LevelButton } from '../ClimbGraphic';
 import { BrowserRouter } from 'react-router-dom';
 
-// Mock dependencies
 const mockIsLevelCleared = vi.fn(() => false);
-const mockGetNextLevel = vi.fn(() => ({ level: 1, name: 'Level 1' }));
+const mockGetNextLevel = vi.fn(() => 1);
 
-vi.mock('../stores/useLevelProgressStore', () => ({
-  useLevelProgressStore: vi.fn((selector) => {
-    const state = {
-      isLevelCleared: mockIsLevelCleared,
-      getNextLevel: mockGetNextLevel,
-      getUnlockedLevels: vi.fn(() => [1, 2, 3]),
-      unlockLevel: vi.fn(),
-      getLevelProgress: vi.fn(() => ({ level: 1, unlocked: true })),
-    };
-    return typeof selector === 'function' ? selector(state) : state;
-  }),
+vi.mock('../../stores/useLevelProgressStore', () => ({
+  useLevelProgressStore: Object.assign(
+    vi.fn((selector) => {
+      const state = {
+        isLevelCleared: mockIsLevelCleared,
+        getNextLevel: mockGetNextLevel,
+        getUnlockedLevels: vi.fn(() => [1, 2, 3]),
+        unlockLevel: vi.fn(),
+        getLevelProgress: vi.fn(() => ({ level: 1, unlocked: true })),
+      };
+      return typeof selector === 'function' ? selector(state) : state;
+    }),
+    {
+      getState: () => ({
+        progress: {},
+      }),
+    }
+  ),
 }));
 
-vi.mock('../stores/useProfileStore', () => ({
+vi.mock('../../stores/useProfileStore', () => ({
   useProfileStore: vi.fn((selector) => {
     const state = {
       activeProfileId: 'profile1',
@@ -30,15 +36,16 @@ vi.mock('../stores/useProfileStore', () => ({
   }),
 }));
 
-vi.mock('../components/ClimbGraphicBackgrounds', () => ({
-  ArithmeticBackground: () => <div data-testid="arithmetic-background">Arithmetic Background</div>,
-  EquationsBackground: () => <div data-testid="equations-background">Equations Background</div>,
+vi.mock('../ClimbGraphicBackgrounds', () => ({
+  ClimbBackground: () => <div data-testid="climb-background">Climb Background</div>,
 }));
 
 describe('ClimbGraphic', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     vi.useFakeTimers();
+    mockIsLevelCleared.mockImplementation(() => false);
+    mockGetNextLevel.mockImplementation(() => 1);
   });
 
   afterEach(() => {
@@ -146,12 +153,15 @@ describe('ClimbGraphic', () => {
     expect(container).toBeTruthy();
   });
 
-  it('should render scroll to current level button', () => {
+  it('should fallback to the last level when all levels are cleared', () => {
+    mockIsLevelCleared.mockImplementation(() => true);
+    mockGetNextLevel.mockImplementation(() => 3); // 3 is out of range for 2 levels
+
     const { container } = render(
       <BrowserRouter>
         <ClimbGraphic
-          category="math"
-          subTopic="arithmetic"
+          world="World1"
+          category="기초"
           levels={[
             { level: 1, name: 'Level 1', description: 'Test' },
             { level: 2, name: 'Level 2', description: 'Test' },
@@ -160,33 +170,8 @@ describe('ClimbGraphic', () => {
       </BrowserRouter>
     );
 
-    const fabButton = container.querySelector('.fab-my-location');
-    expect(fabButton).toBeInTheDocument();
-  });
-
-  it('should handle scroll to current level button click', () => {
-    const scrollIntoViewMock = vi.fn();
-    Element.prototype.scrollIntoView = scrollIntoViewMock;
-
-    const { container } = render(
-      <BrowserRouter>
-        <ClimbGraphic
-          category="math"
-          subTopic="arithmetic"
-          levels={[
-            { level: 1, name: 'Level 1', description: 'Test' },
-            { level: 2, name: 'Level 2', description: 'Test' },
-          ]}
-        />
-      </BrowserRouter>
-    );
-
-    const fabButton = container.querySelector('.fab-my-location') as HTMLButtonElement;
-    if (fabButton) {
-      fireEvent.click(fabButton);
-      // Note: scrollIntoView may not be called if currentLevelRef is null
-      // This test verifies the button exists and can be clicked
-    }
+    // Verify component renders under cleared conditions
+    expect(container.querySelector('.level-node-cleared')).toBeTruthy();
   });
 });
 

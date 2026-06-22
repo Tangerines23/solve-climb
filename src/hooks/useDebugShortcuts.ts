@@ -20,9 +20,13 @@ export function useDebugShortcuts() {
 
   const handleKeyDown = useCallback(
     (e: KeyboardEvent) => {
-      // 입력 필드에서는 단축키 비활성화
       const target = e.target as HTMLElement;
-      if (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA' || target.isContentEditable) {
+      const isInputField =
+        target.tagName === 'INPUT' || target.tagName === 'TEXTAREA' || target.isContentEditable;
+      const isDebugKey =
+        e.key === '`' || (isAdminMode && (e.key.toLowerCase() === 'v' || e.key === 'Backspace'));
+
+      if (isInputField && !isDebugKey) {
         return;
       }
 

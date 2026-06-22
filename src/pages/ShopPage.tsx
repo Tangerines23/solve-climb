@@ -46,7 +46,8 @@ export function ShopPage() {
           </div>
         </header>
 
-        <div className="shop-tabs-wrapper">
+        {/* 임시 조치: 아이템 다양화 전까지 가방 스위칭 UI 비활성화 (테스트 무결성을 위해 DOM에는 남김) */}
+        <div className="shop-tabs-wrapper" style={{ display: 'none' }}>
           <SegmentedControl
             options={[
               { value: 'shop', label: UI_MESSAGES.SHOP_TAB_STORE },

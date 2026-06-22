@@ -88,7 +88,7 @@ export const UI_MESSAGES = {
 
   // Inventory
   MY_BAG: '나의 배낭',
-  OWNED_COUNT: (count: number) => `보유 ${count}`,
+  OWNED_COUNT: (count: number) => `x${count}`,
   EMPTY_BAG: '배낭이 비어있습니다.',
   PREPARE_CLIMB: '아이템을 구매하여 등반을 준비하세요!',
 

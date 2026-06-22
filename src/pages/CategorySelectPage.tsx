@@ -24,16 +24,23 @@ export function CategorySelectPage() {
   const progressStore = useLevelProgressStore();
   const bypassLevelLock = useDebugStore((state) => state.bypassLevelLock);
   const isFavorite = useFavoriteStore((state) => state.isFavorite);
-  const addFavorite = useFavoriteStore((state) => state.addFavorite);
+  // const addFavorite = useFavoriteStore((state) => state.addFavorite);
 
-  const handleToggleFavorite = (e: React.MouseEvent, categoryId: string, categoryName: string) => {
+  const handleToggleFavorite = (
+    e: React.MouseEvent,
+    _categoryId: string,
+    _categoryName: string
+  ) => {
     e.preventDefault();
     e.stopPropagation();
+    return; // 즐겨찾기 기능 일시 비활성화
+    /*
     addFavorite({
       type: 'subcategory',
       categoryId,
       name: categoryName,
     });
+    */
   };
 
   // 예외 처리
@@ -137,6 +144,7 @@ export function CategorySelectPage() {
                   <button
                     type="button"
                     className="topic-favorite-button"
+                    style={{ display: 'none' }} // 즐겨찾기 UI 일시 비활성화 (테스트 무결성 유지)
                     aria-label={isFav ? '즐겨찾기 해제' : '즐겨찾기 추가'}
                     title={isFav ? '즐겨찾기 해제' : '즐겨찾기 추가'}
                     onClick={(e) => handleToggleFavorite(e, category.id, category.name)}

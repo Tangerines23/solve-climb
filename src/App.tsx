@@ -42,6 +42,10 @@ const RoadmapPage = resilientLazy(
   () => import('@/pages/RoadmapPage').then((module) => ({ default: module.RoadmapPage })),
   'RoadmapPage'
 );
+const ReviewPage = resilientLazy(
+  () => import('@/pages/ReviewPage').then((module) => ({ default: module.ReviewPage })),
+  'ReviewPage'
+);
 const MyPage = resilientLazy(
   () => import('@/pages/MyPage').then((module) => ({ default: module.MyPage })),
   'MyPage'
@@ -224,6 +228,14 @@ function App() {
           element={
             <RequireAuth>
               <RoadmapPage />
+            </RequireAuth>
+          }
+        />
+        <Route
+          path="/review"
+          element={
+            <RequireAuth>
+              <ReviewPage />
             </RequireAuth>
           }
         />

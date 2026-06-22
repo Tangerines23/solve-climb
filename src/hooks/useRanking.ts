@@ -1,7 +1,7 @@
 import { useState, useEffect, useMemo, useCallback } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { supabase } from '@/utils/supabaseClient';
-import { useLevelProgressStore } from '@/stores/useLevelProgressStore';
+import { useRankingStore } from '@/stores/useRankingStore';
 
 export type RankingType = 'total' | 'time-attack' | 'survival';
 export type RankingPeriod = 'weekly' | 'all-time';
@@ -30,7 +30,7 @@ export function useRanking() {
     subscribeToRankingUpdates,
     unsubscribeFromRankingUpdates,
     rankingVersion,
-  } = useLevelProgressStore();
+  } = useRankingStore();
 
   const currentRankings = useMemo(() => {
     const key = `${activePeriod}-${activeType}`;

@@ -19,7 +19,7 @@ export function generateStatsProblem(
   _difficulty: Difficulty,
   rng?: { random: () => number; randomInt: (min: number, max: number) => number }
 ): StatsProblem {
-  if (level > 10) {
+  if (level > 15) {
     const randomVal = rng ? rng.randomInt(1, 4) : Math.floor(Math.random() * 4) + 1;
     switch (randomVal) {
       case 1:
@@ -39,23 +39,33 @@ export function generateStatsProblem(
     case 1:
       return generateMeanBasic(rng);
     case 2:
-      return generateMedianBasic(rng);
+      return generateMeanExtended(rng);
     case 3:
-      return generateModeBasic(rng);
+      return generateMedianBasic(rng);
     case 4:
-      return generateProbCoin(rng);
+      return generateModeBasic(rng);
     case 5:
-      return generateProbDice(rng);
+      return generateProbCoin(rng);
     case 6:
-      return generateProbMarbles(rng);
+      return generateProbRPS(rng);
     case 7:
-      return generateStatsRange(rng);
+      return generateProbDice(rng);
     case 8:
       return generateCombinationsBasic(rng);
     case 9:
-      return generateProbAdvanced(rng);
+      return generatePermutationsBasic(rng);
     case 10:
-      return generateStatsMaster(rng);
+      return generateProbBasic(rng);
+    case 11:
+      return generateProbAdvanced(rng);
+    case 12:
+      return generateProbUnionIntersection(rng);
+    case 13:
+      return generateStatsRange(rng);
+    case 14:
+      return generateNoReplaceCount(rng);
+    case 15:
+      return generateNoReplaceProb(rng);
     default:
       return generateMeanBasic(rng);
   }
@@ -113,27 +123,12 @@ function generateProbCoin(rng?: { randomInt: (min: number, max: number) => numbe
   };
 }
 
-function generateProbDice(rng?: {
-  random: () => number;
-  randomInt: (min: number, max: number) => number;
-}): StatsProblem {
-  const randomVal = rng ? rng.random() : Math.random();
-  const type = randomVal > 0.5 ? 'sum' : 'count';
-  if (type === 'sum') {
-    return { question: '주사위 2개를 던질 때, 합이 7이 되는 경우의 수는?', answer: 6 };
-  } else {
-    return { question: '주사위 1개를 던질 때, 3의 배수가 나올 경우의 수는?', answer: 2 };
-  }
-}
-
-function generateProbMarbles(rng?: {
-  randomInt: (min: number, max: number) => number;
-}): StatsProblem {
-  const red = getRandomInt(2, 5, rng);
-  const blue = getRandomInt(2, 5, rng);
+function generateProbDice(rng?: { randomInt: (min: number, max: number) => number }): StatsProblem {
+  const s = getRandomInt(2, 12, rng);
+  const ans = 6 - Math.abs(s - 7);
   return {
-    question: `빨간 공 ${red}개, 파란 공 ${blue}개가 든 주머니에서 공 1개를 뽑을 때, 빨간 공이 나올 경우의 수?`,
-    answer: red,
+    question: `주사위 2개를 동시에 던질 때, 두 눈의 합이 ${s}가 되는 경우의 수는?`,
+    answer: ans,
   };
 }
 
@@ -164,34 +159,13 @@ function generateCombinationsBasic(rng?: {
 function generateProbAdvanced(rng?: {
   randomInt: (min: number, max: number) => number;
 }): StatsProblem {
-  const type = getRandomInt(1, 2, rng);
-  if (type === 1) {
-    const total = getRandomInt(10, 20, rng);
-    const target = getRandomInt(1, total - 1, rng);
-    return {
-      question: `공이 ${total}개 들어있는 주머니에서 빨간 공이 ${target}개일 때, 공 1개를 뽑아 빨간 공이 아닐 확률(%)은?`,
-      answer: Math.round(((total - target) / total) * 100),
-    };
-  } else {
-    return {
-      question:
-        '주사위 1개를 던질 때, 2의 배수이면서 3의 배수인 눈이 나올 확률(%)은? (소수점 버림)',
-      answer: Math.floor((1 / 6) * 100),
-    };
-  }
-}
-
-function generateStatsMaster(rng?: {
-  randomInt: (min: number, max: number) => number;
-}): StatsProblem {
-  const base = getRandomInt(5, 15, rng);
-  const diff = getRandomInt(1, 4, rng);
-  const data = [base - 2 * diff, base - diff, base, base + diff, base + 2 * diff].sort(
-    (a, b) => a - b
-  );
+  const totals = [2, 4, 5, 10];
+  const total = totals[getRandomInt(0, totals.length - 1, rng)];
+  const red = getRandomInt(1, total - 1, rng);
+  const percentageOfNotRed = ((total - red) / total) * 100;
   return {
-    question: `데이터 [${data.join(', ')}]의 중앙값과 평균의 합은?`,
-    answer: base + base,
+    question: `전체 제품 ${total}개 중 불량품이 ${red}개 있다. 이 중 임의로 1개를 고를 때, 정상 제품일 확률은? (%)`,
+    answer: percentageOfNotRed,
   };
 }
 
@@ -240,4 +214,128 @@ function generateVariance(rng?: { randomInt: (min: number, max: number) => numbe
     question: `데이터 ${arr.join(', ')} 의 분산(Variance)은?`,
     answer: variance,
   };
+}
+
+function generateMeanExtended(rng?: {
+  randomInt: (min: number, max: number) => number;
+}): StatsProblem {
+  const n1 = getRandomInt(1, 20, rng);
+  const n2 = getRandomInt(1, 20, rng);
+  const n3 = getRandomInt(1, 20, rng);
+  const n4 = getRandomInt(1, 20, rng);
+  const avg = (n1 + n2 + n3 + n4) / 4;
+  if (!Number.isInteger(avg)) return generateMeanExtended(rng);
+  return {
+    question: `${n1}, ${n2}, ${n3}, ${n4}의 평균은?`,
+    answer: avg,
+  };
+}
+
+function generateProbRPS(rng?: { randomInt: (min: number, max: number) => number }): StatsProblem {
+  const people = getRandomInt(1, 3, rng);
+  return {
+    question: `${people}명이 가위바위보를 할 때, 나올 수 있는 모든 경우의 수는?`,
+    answer: Math.pow(3, people),
+  };
+}
+
+function generatePermutationsBasic(rng?: {
+  randomInt: (min: number, max: number) => number;
+}): StatsProblem {
+  const isFactorial = getRandomInt(0, 1, rng) === 1;
+  if (isFactorial) {
+    const n = getRandomInt(3, 4, rng);
+    let ans = 1;
+    for (let i = 1; i <= n; i++) ans *= i;
+    return {
+      question: `${n}명의 학생을 한 줄로 세우는 모든 경우의 수는?`,
+      answer: ans,
+    };
+  } else {
+    const n = getRandomInt(4, 6, rng);
+    const ans = n * (n - 1);
+    return {
+      question: `학생 ${n}명 중 반장 1명, 부반장 1명을 뽑아 세우는 경우의 수는?`,
+      answer: ans,
+    };
+  }
+}
+
+function generateProbBasic(rng?: {
+  randomInt: (min: number, max: number) => number;
+}): StatsProblem {
+  const totals = [2, 4, 5, 10];
+  const total = totals[getRandomInt(0, totals.length - 1, rng)];
+  const target = getRandomInt(1, total - 1, rng);
+  const percentage = (target / total) * 100;
+  return {
+    question: `바구니에 공이 총 ${total}개 들어있다. 이 중 당첨 공이 ${target}개일 때, 임의로 1개를 뽑아 당첨 공이 나올 확률은? (%)`,
+    answer: percentage,
+  };
+}
+
+function generateProbUnionIntersection(rng?: {
+  randomInt: (min: number, max: number) => number;
+}): StatsProblem {
+  const isAnd = getRandomInt(0, 1, rng) === 1;
+  if (isAnd) {
+    const select = getRandomInt(1, 2, rng);
+    if (select === 1) {
+      return {
+        question: `동전 1개와 주사위 1개를 동시에 던질 때, 동전은 앞면이 나오고 주사위는 홀수 눈이 나올 확률은? (%)`,
+        answer: 25,
+      };
+    } else {
+      return {
+        question: `동전 2개를 동시에 던질 때, 두 동전 모두 앞면이 나올 확률은? (%)`,
+        answer: 25,
+      };
+    }
+  } else {
+    const select = getRandomInt(1, 2, rng);
+    if (select === 1) {
+      return {
+        question: `1부터 10까지 적힌 카드 10장 중 임의로 1장을 뽑을 때, 2의 배수이거나 9가 적힌 카드를 뽑을 확률은? (%)`,
+        answer: 60,
+      };
+    } else {
+      return {
+        question: `1부터 10까지 적힌 카드 10장 중 임의로 1장을 뽑을 때, 3의 배수이거나 10이 적힌 카드를 뽑을 확률은? (%)`,
+        answer: 40,
+      };
+    }
+  }
+}
+
+function generateNoReplaceCount(rng?: {
+  randomInt: (min: number, max: number) => number;
+}): StatsProblem {
+  const n = getRandomInt(3, 6, rng);
+  const ans = n * (n - 1);
+  return {
+    question: `빨간 공 ${n}개가 들어있는 주머니에서 공을 꺼내고 다시 넣지 않는 방법으로 차례대로 공 2개를 꺼낼 때, 가능한 모든 경우의 수는?`,
+    answer: ans,
+  };
+}
+
+function generateNoReplaceProb(rng?: {
+  randomInt: (min: number, max: number) => number;
+}): StatsProblem {
+  const select = getRandomInt(1, 3, rng);
+  if (select === 1) {
+    return {
+      question: `주머니에 빨간 공 3개, 파란 공 2개가 들어있다. 꺼낸 공을 다시 넣지 않고 차례대로 공 2개를 꺼낼 때, 두 공 모두 빨간 공일 확률은? (%)`,
+      answer: 30,
+    };
+  } else if (select === 2) {
+    return {
+      question: `주머니에 빨간 공 3개, 파란 공 3개가 들어있다. 꺼낸 공을 다시 넣지 않고 차례대로 공 2개를 꺼낼 때, 두 공 모두 빨간 공일 확률은? (%)`,
+      answer: 20,
+    };
+  } else {
+    return {
+      question: `주머니에 빨간 공 4개, 파란 공 2개가 들어있다. 꺼낸 공을 다시 넣지 않고 차례대로 공 2개를 꺼낼 때, 두 공 모두 빨간 공일 확률은? (%)`,
+      answer: 40,
+    };
+  }
 }

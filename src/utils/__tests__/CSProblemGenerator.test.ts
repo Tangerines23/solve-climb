@@ -66,31 +66,55 @@ describe('CSProblemGenerator', () => {
     expect(pXor.question).toContain('XOR');
   });
 
-  it('should generate Level 8-9 Advanced Bitwise and Algorithm variety', () => {
-    // Level 8: Bitwise AND
-    const rngBitwise = mockRng([5, 3, 0]); // 5 & 3 = 1
-    const pBit = generateCSProblem(8, 'easy', rngBitwise);
-    expect(pBit.answer).toBe(1);
+  it('should generate Level 8-14 CS basic curriculum', () => {
+    // Level 8: Stack
+    const rng8 = mockRng([3, 5, 2]);
+    const prob8 = generateCSProblem(8, 'easy', rng8);
+    expect(prob8.answer).toBe(5); // 3+2
 
-    // Level 9: Algorithm Variety (LIFO/FIFO)
-    const rngAlgo = mockRng([1]); // Stack (LIFO)
-    const pAlgo = generateCSProblem(9, 'easy', rngAlgo);
-    expect(pAlgo.answer).toBe(1);
-    expect(pAlgo.question).toContain('LIFO');
+    // Level 9: Queue
+    const rng9 = mockRng([3, 5, 2]);
+    const prob9 = generateCSProblem(9, 'easy', rng9);
+    expect(prob9.answer).toBe(7); // 5+2
+
+    // Level 10: Memory Unit Basic (Byte to KB)
+    const rng10 = mockRng([3]); // kb=2^3=8
+    const prob10 = generateCSProblem(10, 'easy', rng10);
+    expect(prob10.answer).toBe(8);
+    expect(prob10.question).toContain('8192 바이트');
+
+    // Level 11: Memory Unit Advanced (KB to MB)
+    const rng11 = mockRng([2]); // mb=2^2=4
+    const prob11 = generateCSProblem(11, 'easy', rng11);
+    expect(prob11.answer).toBe(4);
+    expect(prob11.question).toContain('4096 KB는 몇 MB');
+
+    // Level 12: Ones Complement
+    const rng12 = mockRng([1]); // 0101 -> 1010
+    const prob12 = generateCSProblem(12, 'easy', rng12);
+    expect(prob12.answer).toBe('1010');
+
+    // Level 13: Twos Complement
+    const rng13 = mockRng([1]); // 0110 -> 1010
+    const prob13 = generateCSProblem(13, 'easy', rng13);
+    expect(prob13.answer).toBe('1010');
+
+    // Level 14: Binary Addition
+    const rng14 = mockRng([1]); // 011 + 010 -> 101
+    const prob14 = generateCSProblem(14, 'easy', rng14);
+    expect(prob14.answer).toBe('101');
+
+    // Level 15: Binary Decimals
+    const rng15 = mockRng([0]); // Option 0: 0.1 -> 0.5
+    const prob15 = generateCSProblem(15, 'easy', rng15);
+    expect(prob15.question).toContain('2진수 소수 0.1');
+    expect(prob15.answer).toBe(0.5);
   });
 
-  it('should generate Level 10 Memory Unit Master', () => {
-    // Type 1: Byte to KB, kb value 2^3=8
-    const rngMem = mockRng([1, 3]);
-    const prob = generateCSProblem(10, 'easy', rngMem);
-    expect(prob.answer).toBe(8);
-    expect(prob.question).toContain('8192 바이트');
-  });
-
-  it('should generate level > 10 advanced problems', () => {
+  it('should generate level > 15 advanced problems', () => {
     // Case 4: Memory unit MB to KB
     const rngMem = mockRng([4, 2, 2]); // val=4, type=2, mb=2^2=4
-    const prob = generateCSProblem(15, 'hard', rngMem);
+    const prob = generateCSProblem(16, 'hard', rngMem);
     expect(prob.answer).toBe(4);
     expect(prob.question).toContain('4096 KB는 몇 MB');
   });

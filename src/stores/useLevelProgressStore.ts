@@ -3,12 +3,10 @@ import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import { supabase } from '../utils/supabaseClient';
 import { safeSupabaseQuery } from '../utils/debugFetch';
-import { validatedRpc, RankingListSchema } from '../utils/rpcValidator';
 import { GameMode, Tier } from '../types/quiz';
 import { useDebugStore } from './useDebugStore';
 import { useToastStore } from './useToastStore';
 import { UI_MESSAGES } from '../constants/ui';
-import type { RealtimeChannel } from '@supabase/supabase-js';
 import { safeAccess } from '../utils/validation';
 import { LevelSyncService } from '../services/LevelSyncService';
 
@@ -33,21 +31,8 @@ export interface UserProgress {
   [world: string]: CategoryProgress;
 }
 
-export interface RankingRecord {
-  user_id: string;
-  nickname: string;
-  score: number;
-  rank: number;
-  week_start_date?: string; // 명예의 전당용 (시즌 시작일)
-  tier_level?: number; // 명예의 전당용 (박제된 티어 레벨)
-  tier_stars?: number; // 명예의 전당용 (박제된 티어 별)
-}
-
 interface LevelProgressState {
   progress: UserProgress;
-  rankings: { [key: string]: RankingRecord[] };
-  rankingVersion: number; // For triggering re-renders on realtime updates
-  _rankingSubscription: RealtimeChannel | null; // Internal subscription reference
 
   getLevelProgress: (world: string, category: string, tier?: Tier) => LevelRecord[];
   isLevelCleared: (world: string, category: string, level: number, tier?: Tier) => boolean;
@@ -90,16 +75,6 @@ interface LevelProgressState {
   };
   syncProgress: () => Promise<void>;
   resetProgress: () => Promise<void>;
-  // Global Ranking v2
-  fetchRanking: (
-    world: string | null,
-    category: string | null,
-    period: 'weekly' | 'all-time',
-    type: 'total' | 'time-attack' | 'survival' | 'infinite',
-    limit?: number
-  ) => Promise<void>;
-  subscribeToRankingUpdates: () => void;
-  unsubscribeFromRankingUpdates: () => void;
 }
 
 const getDefaultLevelRecord = (level: number): LevelRecord => ({
@@ -118,9 +93,6 @@ export const useLevelProgressStore = create<LevelProgressState>()(
       /* eslint-disable security/detect-object-injection -- progress/rankings keys (world, category, level, mode) are validated store params */
       return {
         progress: {},
-        rankings: {},
-        rankingVersion: 0,
-        _rankingSubscription: null,
 
         getLevelProgress: (world, category, tier = 'normal') => {
           const state = get();
@@ -433,95 +405,6 @@ export const useLevelProgressStore = create<LevelProgressState>()(
           console.log('[useLevelProgressStore] Progress reset completed via Service');
           useToastStore.getState().showToast('진행 상태가 초기화되었습니다.', 'success');
         },
-
-        fetchRanking: async (world, category, period, type, limit = 50) => {
-          try {
-            let data: RankingRecord[] | null = null;
-            let error: unknown = null;
-
-            if (period === 'all-time') {
-              // 명예의 전당 조회 (hall_of_fame 테이블)
-              const { data: hofData, error: hofError } = await safeSupabaseQuery(
-                supabase
-                  .from('hall_of_fame')
-                  .select('user_id, nickname, score, rank, week_start_date, tier_level, tier_stars')
-                  .eq('mode', type)
-                  .order('week_start_date', { ascending: false }) // 최신 시즌부터 표시
-                  .order('rank', { ascending: true }) // 각 시즌별 1등부터 표시
-                  .limit(limit)
-              );
-              data = hofData;
-              error = hofError;
-            } else {
-              // 주간 랭킹 조회 (V2 RPC 사용)
-              const { data: rankData, error: rankError } = await validatedRpc(
-                supabase.rpc('get_ranking_v2', {
-                  p_category: category || 'all',
-                  p_limit: limit,
-                  p_period: period,
-                  p_type: type,
-                }),
-                RankingListSchema,
-                'get_ranking_v2'
-              );
-              data = rankData;
-              error = rankError;
-            }
-
-            if (error) throw error;
-
-            if (data && Array.isArray(data)) {
-              const key =
-                world && category ? `${world}-${category}-${period}-${type}` : `${period}-${type}`;
-
-              set((state) => ({
-                rankings: {
-                  ...state.rankings,
-                  [key]: data,
-                },
-              }));
-            }
-          } catch (error) {
-            console.error('Failed to fetch ranking:', error);
-            useToastStore.getState().showToast(UI_MESSAGES.RANKING_FETCH_FAILED, 'error');
-          }
-        },
-
-        subscribeToRankingUpdates: () => {
-          const state = get();
-          if (state._rankingSubscription) return;
-
-          console.log('[useLevelProgressStore] Subscribing to Realtime Ranking updates...');
-
-          const channel = supabase
-            .channel('ranking-updates')
-            .on(
-              'postgres_changes',
-              {
-                event: 'UPDATE',
-                schema: 'public',
-                table: 'profiles',
-                filter: 'weekly_score_total=gt.0',
-              },
-              (payload) => {
-                console.log('[useLevelProgressStore] Realtime event received:', payload);
-                // Trigger re-render by incrementing version
-                set((state) => ({ rankingVersion: (state.rankingVersion || 0) + 1 }));
-              }
-            )
-            .subscribe();
-
-          set({ _rankingSubscription: channel });
-        },
-
-        unsubscribeFromRankingUpdates: () => {
-          const state = get();
-          if (state._rankingSubscription) {
-            console.log('[useLevelProgressStore] Unsubscribing from ranking updates...');
-            state._rankingSubscription.unsubscribe();
-            set({ _rankingSubscription: null });
-          }
-        },
       };
       /* eslint-enable security/detect-object-injection */
     },
@@ -529,8 +412,6 @@ export const useLevelProgressStore = create<LevelProgressState>()(
       name: 'solve-climb-level-progress',
       partialize: (state) => ({
         progress: state.progress,
-        rankings: state.rankings,
-        // Exclude _rankingSubscription and rankingVersion from persistence
       }),
     }
   )

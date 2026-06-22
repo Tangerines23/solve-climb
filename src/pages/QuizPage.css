@@ -112,10 +112,12 @@
   max-height: 100dvh;
   background-color: var(--color-gray-900);
   display: flex;
-  flex-direction: column;
+  flex-direction: column; /* 헤더 영역과 퀴즈 영역 분리 */
   padding: 0;
   box-sizing: border-box;
   overflow: hidden;
+  overscroll-behavior: none; /* 모바일 브라우저의 바운스 스크롤 방지 */
+  touch-action: none; /* 드래그 스크롤로 인한 키패드 가려짐 차단 */
   --world-bg-top: var(--color-world-forest-top);
   --world-bg-mid: var(--color-world-forest-mid);
   --world-bg-bottom: var(--color-world-forest-bottom);
@@ -225,13 +227,15 @@
   width: 100%;
   max-width: min(var(--modal-width-portrait), 100%);
   margin: 0 auto;
-  /* 안전 영역 고려: Dynamic Island, 노치 등 */
-  padding: max(clamp(var(--spacing-md), 2vh, var(--spacing-lg)), env(safe-area-inset-top, 0px))
-    clamp(var(--spacing-md), 2vw, var(--spacing-lg)) 0;
+  /* 안전 영역 고려: top 패딩 최소화로 카드 밀어올림, 하단 키패드 여백 보장 */
+  padding: max(8px, env(safe-area-inset-top, 0px)) clamp(var(--spacing-md), 2vw, var(--spacing-lg))
+    var(--quiz-keypad-bottom-margin);
   gap: var(--quiz-keypad-gap);
   flex: 1;
+  height: 100%;
+  max-height: 100%;
   min-height: 0;
-  justify-content: flex-end; /* Push keyboard to bottom */
+  justify-content: flex-start; /* Align elements from top, push keyboard with auto-margin */
   box-sizing: border-box;
   overflow: hidden;
   overflow-x: hidden; /* Double safety */
@@ -257,17 +261,18 @@
   flex-direction: column;
   justify-content: center; /* Center content within card */
   align-items: center;
-  gap: clamp(12px, 2vh, 32px);
-  padding: clamp(20px, 4vh, 40px) clamp(16px, 4vw, 32px);
+  gap: clamp(8px, 1.5vh, 20px); /* Reduced card inner gap */
+  padding: clamp(10px, 2.2vh, 20px) clamp(16px, 4vw, 32px); /* Further reduced card padding */
   background-color: var(--glass-bg);
   border: var(--glass-border);
   -webkit-backdrop-filter: blur(var(--glass-blur));
   backdrop-filter: blur(var(--glass-blur));
   border-radius: clamp(24px, 4vh, 32px);
   box-shadow: var(--glass-shadow);
-  flex: 1; /* Take remaining space */
-  min-height: 180px;
+  flex: 0 1 auto; /* Only take space needed by content, prevent pushing keyboard offscreen */
+  min-height: 140px;
   max-height: var(--quiz-card-max-height); /* Reduced to give keyboard more space */
+  margin-top: clamp(4px, 1vh, 8px); /* Further reduced top margin to pull card upward */
   margin-bottom: 0;
   overflow: hidden;
 }
@@ -289,7 +294,7 @@
   justify-content: center;
   width: 100%;
   flex: 1;
-  gap: clamp(24px, 5vh, 48px);
+  gap: clamp(12px, 3vh, 24px); /* Reduced gap between problem and underline */
 }
 
 .question-area-content {
@@ -865,24 +870,32 @@
 }
 
 .pause-button {
-  background: none;
-  border: none;
-  backdrop-filter: none;
-  -webkit-backdrop-filter: none;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
   color: var(--color-gray-100);
   display: flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  padding: 0;
-  width: auto;
-  height: auto;
-  transition: all 0.2s;
+  width: 44px;
+  height: 44px;
+  border-radius: 0.75rem;
+  transition: all 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+  position: relative;
+}
+
+.pause-button:hover {
+  background: rgba(255, 255, 255, 0.15);
+  border-color: rgba(255, 255, 255, 0.25);
+  box-shadow: 0 0 15px rgba(255, 255, 255, 0.2);
 }
 
 .pause-button:active {
   transform: scale(0.92);
-  background: var(--glass-bg-high);
+  background: rgba(255, 255, 255, 0.25);
 }
 
 .pause-icon-svg {
@@ -1011,12 +1024,13 @@
   }
 }
 
-/* [Fever Mode World Themes] */
+/* [Fever Mode World Themes - Disabled to keep background static]
 .fever-level-2.quiz-page[data-world='World1'] {
   --world-bg-top: var(--color-world-fever-top);
   --world-bg-mid: var(--color-world-fever-mid);
   --world-bg-bottom: var(--color-world-fever-bottom);
 }
+*/
 
 /* ==========================================================================
    World 1: 수리봉 (Blue Peak) Theme
@@ -1025,8 +1039,7 @@
 .quiz-page[data-world='World1'] {
   --world-primary: var(--color-blue-500);
   --world-secondary: var(--color-blue-600);
-  --world-bg-top: var(--color-world-default-top);
-  --world-bg-bottom: var(--color-world-default-bottom);
+  /* Use the World 1 custom gradient from line 134, do not override with default slate theme */
 }
 
 .quiz-page[data-world='World1'] .top-bar {
@@ -1034,64 +1047,48 @@
   padding-bottom: var(--spacing-sm);
 }
 
-/* Category Specific Background Decorations */
-.quiz-page[data-world='World1']::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  pointer-events: none;
-  z-index: 0;
-  opacity: 0.4; /* Increased from 0.2 for better visibility */
-}
-
-/* 기초 (Basic) - Numbers Pattern */
-.quiz-page[data-world='World1'][data-category='basic']::before {
-  background-image: radial-gradient(var(--color-blue-500) 2px, transparent 2px);
-  background-size: 24px 24px;
-}
-
-/* 논리 (Logic) - Magnifying Glass / Grid */
-.quiz-page[data-world='World1'][data-category='logic']::before {
-  background-image:
-    linear-gradient(rgba(59, 130, 246, 0.15) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(59, 130, 246, 0.15) 1px, transparent 1px);
-  background-size: 40px 40px;
-}
-
-/* 대수 (Algebra) - Formula Blueprint */
-.quiz-page[data-world='World1'][data-category='algebra']::before {
-  background:
-    linear-gradient(45deg, rgba(59, 130, 246, 0.1) 25%, transparent 25%),
-    linear-gradient(-45deg, rgba(59, 130, 246, 0.1) 25%, transparent 25%);
-  background-size: 60px 60px;
-}
-
-/* 심화 (Advanced/Calculus) - Wave/Curve */
-.quiz-page[data-world='World1'][data-category='expert']::before {
-  background: repeating-linear-gradient(
-    0deg,
-    transparent,
-    transparent 100px,
-    rgba(59, 130, 246, 0.1) 100px,
-    rgba(59, 130, 246, 0.1) 101px
-  );
-}
-
 /* ==========================================================================
-   Language World: 언어의 산 Theme
+   Aurora Glow Style (Universal Decorative Background)
    ========================================================================== */
 
-.quiz-page[data-world='language'] {
-  --world-primary: var(--adaptiveRed400);
-  --world-secondary: var(--adaptiveRed500);
-  --world-bg-top: hsl(0, 24%, 13%);
-  --world-bg-bottom: hsl(0, 30%, 8%);
+/* 기본 오로라 글로우 변수 정의 (World 1 기준) */
+.quiz-page {
+  --aurora-color-1: rgba(59, 130, 246, 0.22); /* Blue */
+  --aurora-color-2: rgba(6, 182, 212, 0.22); /* Cyan */
+  --aurora-color-3: rgba(139, 92, 246, 0.12); /* Purple */
+  overflow: hidden;
 }
 
-.quiz-page[data-world='language']::before {
+/* World 2 (도형과 공간 - 주황/황금색 테마) */
+.quiz-page[data-world='World2'] {
+  --aurora-color-1: rgba(245, 158, 11, 0.22); /* Orange */
+  --aurora-color-2: rgba(239, 68, 68, 0.2); /* Red */
+  --aurora-color-3: rgba(251, 191, 36, 0.12); /* Amber/Gold */
+}
+
+/* World 3 (확률과 통계 - 청록/에메랄드 테마) */
+.quiz-page[data-world='World3'] {
+  --aurora-color-1: rgba(16, 185, 129, 0.22); /* Emerald */
+  --aurora-color-2: rgba(6, 182, 212, 0.22); /* Cyan */
+  --aurora-color-3: rgba(59, 130, 246, 0.12); /* Blue */
+}
+
+/* World 4 (공학 및 응용 - 보라/검정 테마) */
+.quiz-page[data-world='World4'] {
+  --aurora-color-1: rgba(139, 92, 246, 0.25); /* Purple */
+  --aurora-color-2: rgba(236, 72, 153, 0.2); /* Pink */
+  --aurora-color-3: rgba(79, 70, 229, 0.15); /* Indigo */
+}
+
+/* Language World (언어의 산 - 붉은색 테마) */
+.quiz-page[data-world='language'] {
+  --aurora-color-1: rgba(239, 68, 68, 0.25); /* Red */
+  --aurora-color-2: rgba(244, 63, 94, 0.2); /* Rose */
+  --aurora-color-3: rgba(251, 146, 60, 0.12); /* Orange */
+}
+
+/* 몽환적인 오로라 블러 & 네온 글로우 가상 요소 */
+.quiz-page::before {
   content: '';
   position: absolute;
   top: 0;
@@ -1100,29 +1097,25 @@
   bottom: 0;
   pointer-events: none;
   z-index: 0;
-  opacity: 0.2;
-}
-
-/* 히라가나 (Hiragana) */
-.quiz-page[data-world='language'][data-category='hiragana']::before {
-  background-image: radial-gradient(#f87171 1.5px, transparent 1.5px);
-  background-size: 30px 30px;
-}
-
-/* 가타카나 (Katakana) */
-.quiz-page[data-world='language'][data-category='katakana']::before {
   background-image:
-    linear-gradient(45deg, rgba(248, 113, 113, 0.15) 1px, transparent 1px),
-    linear-gradient(-45deg, rgba(248, 113, 113, 0.15) 1px, transparent 1px);
-  background-size: 25px 25px;
+    radial-gradient(circle at 15% 20%, var(--aurora-color-1) 0%, transparent 45%),
+    radial-gradient(circle at 85% 80%, var(--aurora-color-2) 0%, transparent 45%),
+    radial-gradient(circle at 50% 50%, var(--aurora-color-3) 0%, transparent 55%);
+  filter: blur(50px);
+  animation: aurora-glow 15s ease infinite alternate;
+  opacity: 0.85;
 }
 
-/* 어휘 (Vocabulary) */
-.quiz-page[data-world='language'][data-category='vocabulary']::before {
-  background-image:
-    linear-gradient(rgba(248, 113, 113, 0.15) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(248, 113, 113, 0.15) 1px, transparent 1px);
-  background-size: 50px 50px;
+@keyframes aurora-glow {
+  0% {
+    opacity: 0.7;
+  }
+  50% {
+    opacity: 0.9;
+  }
+  100% {
+    opacity: 0.75;
+  }
 }
 
 .category-label {
@@ -1139,30 +1132,7 @@
   margin-bottom: 0;
 }
 
-/* Altitude Phases for Survival Mode */
-.quiz-page[data-altitude-phase='forest'] {
-  --world-bg-top: var(--color-world-forest-top);
-  --world-bg-mid: var(--color-world-forest-mid);
-  --world-bg-bottom: var(--color-world-forest-bottom);
-}
-
-.quiz-page[data-altitude-phase='rock'] {
-  --world-bg-top: var(--color-world-rock-top);
-  --world-bg-mid: var(--color-world-rock-mid);
-  --world-bg-bottom: var(--color-world-rock-bottom);
-}
-
-.quiz-page[data-altitude-phase='clouds'] {
-  --world-bg-top: var(--color-world-clouds-top);
-  --world-bg-mid: var(--color-world-clouds-mid);
-  --world-bg-bottom: var(--color-world-clouds-bottom);
-}
-
-.quiz-page[data-altitude-phase='space'] {
-  --world-bg-top: var(--color-world-space-top);
-  --world-bg-mid: var(--color-world-space-mid);
-  --world-bg-bottom: var(--color-world-space-bottom);
-}
+/* Altitude Phases for Survival Mode (Color overrides completely disabled to keep world-based backgrounds static) */
 
 /* Score Pill Card Style v2.2 */
 .pill-card {
@@ -1340,6 +1310,7 @@
   align-items: center;
   flex: 0 0 auto; /* Stable, sized by content */
   min-height: auto;
+  margin-top: auto; /* Push keyboard to the bottom under flex-start */
   margin-bottom: var(--quiz-keypad-bottom-margin); /* Lift slightly from the bottom edge */
   /* Allow horizontal scroll for staggered QWERTY rows if container is very narrow */
   overflow-x: auto;
@@ -1372,4 +1343,140 @@
   width: 100%;
   max-width: 420px;
   margin: 0 auto;
+}
+
+/* 세로 해상도가 좁은 기기 및 뷰포트 대응 (또는 가로가 좁은 모바일 포트레이트 기기) */
+/* 세로 해상도가 좁은 기기 및 뷰포트 대응 (iPhone SE, Extreme-Short 등) */
+@media (max-height: 720px) and (orientation: portrait) {
+  .quiz-header {
+    height: 44px !important;
+    padding: 0 12px !important;
+  }
+
+  .quiz-back-button {
+    font-size: 1.4rem !important;
+    min-width: 36px !important;
+    min-height: 36px !important;
+    padding: var(--spacing-xs) !important;
+  }
+
+  .quiz-timer-container {
+    transform: scale(0.85);
+  }
+
+  .quiz-card {
+    height: auto !important;
+    max-height: calc(
+      100dvh - 380px
+    ) !important; /* Reserve at least 380px for header + restored/tall keypad */
+    padding: var(--spacing-sm) var(--spacing-md) !important; /* Tight padding to clear up height */
+    gap: var(--spacing-xs) !important;
+    min-height: 90px !important;
+    margin-top: 2px !important;
+  }
+
+  /* 내부 플로우 레이아웃 gap 강제 축소 */
+  .quiz-content-inner,
+  .question-answer-group,
+  .contents-display,
+  .answer-content-container {
+    gap: var(--spacing-micro) !important;
+  }
+
+  .world-info-header-floating {
+    top: 4px;
+    font-size: 10px;
+    padding: 1px var(--spacing-tiny); /* 고정값 허용 */
+  }
+
+  /* 문제 텍스트 축소 - 세로 폭에 반응해 가림 방지 */
+  .problem-text {
+    font-size: clamp(1.2rem, 3.8vh, 1.6rem) !important;
+    margin: 0 !important;
+  }
+
+  .answer-caret {
+    height: 3px !important;
+    min-width: 100px !important;
+  }
+
+  /* 타이머 크기 축소 */
+  .timer-wrapper {
+    transform: scale(0.8);
+  }
+}
+
+/* 가로만 좁고 세로는 넉넉한 기기 (Galaxy S20 Ultra, Pixel 5 등 - 세로 721px 이상) */
+@media (max-width: 480px) and (min-height: 721px) and (orientation: portrait) {
+  .quiz-content {
+    justify-content: flex-start !important; /* Pull card to top, push keyboard to bottom naturally */
+    padding-top: max(8px, env(safe-area-inset-top, 0px)) !important;
+    padding-left: 12px !important; /* Tighten side borders to zero-out screen margins */
+    padding-right: 12px !important;
+    padding-bottom: 0 !important; /* Push keyboard to the absolute bottom edge */
+    gap: var(--spacing-small-alt) !important; /* Reduced to 10px to prevent keyboard clipping */
+  }
+  .quiz-header {
+    height: 52px !important;
+    padding: 0 16px !important;
+  }
+
+  .quiz-back-button {
+    font-size: 1.6rem !important;
+    min-width: 40px !important;
+    min-height: 40px !important;
+    padding: var(--spacing-tiny) !important;
+  }
+
+  .quiz-timer-container {
+    transform: scale(0.92);
+  }
+
+  .quiz-card {
+    height: auto !important;
+    max-height: calc(100dvh - 460px) !important; /* Safely allow larger card growth */
+    padding: clamp(16px, 3.5vh, 28px) clamp(16px, 4vw, 28px) !important; /* Slightly optimized padding to fit large content */
+    gap: clamp(14px, 3vh, 24px) !important;
+    min-height: clamp(
+      200px,
+      36vh,
+      340px
+    ) !important; /* 완벽한 반응형 36vh로 세로 오버플로우 전면 차단 */
+    margin-top: clamp(8px, 2vh, 16px) !important;
+    margin-bottom: 0 !important;
+  }
+
+  .keyboard-container {
+    margin-top: auto !important; /* Push keyboard tightly to bottom edge */
+    margin-bottom: 0 !important;
+  }
+
+  .quiz-content-inner,
+  .question-answer-group,
+  .contents-display,
+  .answer-content-container {
+    gap: var(--spacing-medium-alt) !important;
+  }
+
+  .world-info-header-floating {
+    top: 6px;
+    font-size: 11px;
+    padding: var(--spacing-micro) var(--spacing-sm);
+  }
+
+  /* 문제 텍스트 크고 시원하게 복원 */
+  .problem-text {
+    font-size: clamp(2.4rem, 8vh, 3.2rem) !important;
+    margin: 0 !important;
+  }
+
+  .answer-caret {
+    height: 4px !important;
+    min-width: 120px !important;
+  }
+
+  /* 타이머 크기 */
+  .timer-wrapper {
+    transform: scale(0.9);
+  }
 }

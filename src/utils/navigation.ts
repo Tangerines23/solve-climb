@@ -151,4 +151,9 @@ export const urls = {
    * Privacy Policy Page
    */
   privacyPolicy: () => '/privacy-policy',
+
+  /**
+   * Review Page (Game tips preview)
+   */
+  review: () => APP_CONFIG.ROUTES.REVIEW,
 };

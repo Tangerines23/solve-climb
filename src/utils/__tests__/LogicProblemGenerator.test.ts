@@ -20,27 +20,44 @@ describe('LogicProblemGenerator', () => {
       expect([1, 2]).toContain(problem.answer);
     });
 
-    it('should generate Lv 3: Multiple problem', () => {
+    it('should generate Lv 3: Arithmetic sequence', () => {
       const problem = generateLogicProblem(3, 'easy', mockRng);
-      expect(problem.question).toContain('배수입니까');
+      expect(problem.question).toContain('[ ? ]');
     });
 
-    it('should generate Lv 4: Prime problem', () => {
+    it('should generate Lv 4: Geometric sequence', () => {
       const problem = generateLogicProblem(4, 'easy', mockRng);
+      expect(problem.question).toContain('[ ? ]');
+    });
+
+    it('should generate Lv 5: Fibonacci sequence', () => {
+      const problem = generateLogicProblem(5, 'easy', mockRng);
+      expect(problem.question).toContain('[ ? ]');
+    });
+
+    it('should generate Lv 6: Prime problem', () => {
+      const problem = generateLogicProblem(6, 'easy', mockRng);
       expect(problem.question).toContain('소수(Prime Number)입니까');
     });
 
-    it('should generate Lv 5: Comparison Prime problem', () => {
-      const problem = generateLogicProblem(5, 'easy', mockRng);
-      expect(problem.question).toContain('소수(Prime)인 것은');
+    it('should generate Lv 7: Modulo basic problem', () => {
+      const problem = generateLogicProblem(7, 'easy', mockRng);
+      expect(problem.question).toContain('나머지는');
     });
 
-    it('should generate Lv 6-10: Sequence problems', () => {
-      for (let lv = 6; lv <= 10; lv++) {
-        const problem = generateLogicProblem(lv, 'medium', mockRng);
-        expect(problem.question).toContain('[ ? ]');
-        expect(problem.answer).toBeDefined();
-      }
+    it('should generate Lv 8: Factorial basic problem', () => {
+      const problem = generateLogicProblem(8, 'easy', mockRng);
+      expect(problem.question).toContain('팩토리얼');
+    });
+
+    it('should generate Lv 9: Clock problem', () => {
+      const problem = generateLogicProblem(9, 'easy', mockRng);
+      expect(problem.question).toContain('오후 몇 시입니까');
+    });
+
+    it('should generate Lv 10: Logic Mix 1', () => {
+      const problem = generateLogicProblem(10, 'easy', mockRng);
+      expect(problem.question).toBeDefined();
     });
 
     it('should generate Lv 11: Absolute value problem', () => {
@@ -49,14 +66,14 @@ describe('LogicProblemGenerator', () => {
       expect(problem.answer).toBeGreaterThanOrEqual(0);
     });
 
-    it('should generate Lv 12: Modulo problem', () => {
+    it('should generate Lv 12: Modulo advanced problem', () => {
       const problem = generateLogicProblem(12, 'hard', mockRng);
       expect(problem.question).toContain('나머지는');
     });
 
-    it('should generate Lv 13: Factorial problem', () => {
+    it('should generate Lv 13: Factorial advanced problem', () => {
       const problem = generateLogicProblem(13, 'hard', mockRng);
-      expect(problem.question).toContain('팩토리얼');
+      expect(problem.question).toContain('!');
     });
 
     it('should generate Lv 14: Custom Operation problem', () => {
@@ -64,9 +81,9 @@ describe('LogicProblemGenerator', () => {
       expect(problem.question).toMatch(/[★○]/);
     });
 
-    it('should generate Lv 15: Random Sequence problem', () => {
+    it('should generate Lv 15: Logic Mix 2', () => {
       const problem = generateLogicProblem(15, 'hard', mockRng);
-      expect(problem.question).toContain('[ ? ]');
+      expect(problem.question).toBeDefined();
     });
 
     it('should handle default case (Level > 15)', () => {

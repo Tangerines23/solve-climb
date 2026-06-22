@@ -19,7 +19,12 @@ export function useQuizFeedback() {
       }
 
       handlers.setToastValue(`+${earnedDistance}m`);
-      handlers.setDamagePosition({ left: '75%', top: '20%' });
+
+      // 랜덤 위치 생성 (X: 10-80%, Y: 55-70%) - 문제 텍스트를 가리지 않도록 하단으로 보정
+      const randomLeft = Math.floor(Math.random() * 70) + 10;
+      const randomTop = Math.floor(Math.random() * 15) + 55;
+      handlers.setDamagePosition({ left: `${randomLeft}%`, top: `${randomTop}%` });
+
       handlers.setShowSlideToast(true);
       setTimeout(() => handlers.setShowSlideToast(false), 700);
     },
@@ -34,9 +39,9 @@ export function useQuizFeedback() {
 
       handlers.setToastValue(penaltyText);
 
-      // 랜덤 위치 생성 (X: 10-80%, Y: 10-40%)
+      // 랜덤 위치 생성 (X: 10-80%, Y: 55-70%) - 문제 텍스트를 가리지 않도록 하단으로 보정
       const randomLeft = Math.floor(Math.random() * 70) + 10;
-      const randomTop = Math.floor(Math.random() * 30) + 10;
+      const randomTop = Math.floor(Math.random() * 15) + 55;
       handlers.setDamagePosition({ left: `${randomLeft}%`, top: `${randomTop}%` });
 
       handlers.setShowSlideToast(true);

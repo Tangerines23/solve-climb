@@ -122,3 +122,57 @@
     font-size: clamp(1.2rem, 3vw, 1.6rem);
   }
 }
+
+/* 세로 해상도가 좁은 기기 및 뷰포트 대응 (또는 가로가 좁은 모바일 포트레이트 기기) */
+/* 세로 해상도가 좁은 기기 및 뷰포트 대응 (iPhone SE, Extreme-Short 등) */
+@media (max-height: 720px) and (orientation: portrait) {
+  .custom-keypad {
+    padding: var(--spacing-small-alt) var(--spacing-medium-alt) !important;
+    padding-bottom: max(20px, env(safe-area-inset-bottom)) !important;
+    gap: var(--spacing-tiny) !important;
+  }
+
+  .keypad-key {
+    min-height: 54px !important; /* Touch safety height */
+    font-size: clamp(1.3rem, 4vw, 1.7rem) !important;
+    box-shadow: 0 2px 0 rgba(0, 0, 0, 0.3) !important;
+    border-radius: var(--rounded-sm) !important;
+  }
+
+  .keypad-key-submit {
+    margin-top: 6px !important;
+    min-height: 54px !important;
+    font-size: clamp(1.1rem, 3.5vw, 1.4rem) !important;
+    border-radius: var(--rounded-sm) !important;
+  }
+}
+
+/* 가로만 좁고 세로는 넉넉한 기기 (Galaxy S20 Ultra, Pixel 5 등 - 세로 721px 이상) */
+@media (max-width: 480px) and (min-height: 721px) and (orientation: portrait) {
+  .custom-keypad {
+    padding: var(--spacing-small-alt) var(--spacing-lg) !important; /* Stable margin */
+    padding-bottom: max(
+      10px,
+      env(safe-area-inset-bottom)
+    ) !important; /* Zero-out distance to bottom edge */
+    gap: clamp(6px, 1.2vh, 10px) !important; /* Responsive gap to save vertical space */
+  }
+
+  .keypad-key {
+    min-height: clamp(
+      54px,
+      8.2vh,
+      78px
+    ) !important; /* Dynamically adjusts button height based on device height (vh) */
+    font-size: clamp(1.5rem, 4.8vw, 2rem) !important; /* Adjusted font size */
+    box-shadow: 0 4px 0 rgba(0, 0, 0, 0.4) !important;
+    border-radius: var(--rounded-md) !important;
+  }
+
+  .keypad-key-submit {
+    margin-top: clamp(4px, 0.8vh, 6px) !important;
+    min-height: clamp(54px, 8.2vh, 78px) !important; /* Perfectly synced with standard keys */
+    font-size: clamp(1.2rem, 4vw, 1.6rem) !important;
+    border-radius: var(--rounded-md) !important;
+  }
+}

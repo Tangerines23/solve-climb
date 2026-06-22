@@ -3,7 +3,7 @@ import React from 'react';
 import { QuizHeader } from './quiz/QuizHeader';
 import { QuizQuestionArea } from './quiz/QuizQuestionArea';
 import { QuizAnswerArea } from './quiz/QuizAnswerArea';
-import { QuizFloatingFeedback } from './quiz/QuizFloatingFeedback';
+import { QuizFloatingFeedback, QuizExitConfirm } from './quiz/QuizFloatingFeedback';
 import { QuizInputSection } from './quiz/QuizInputSection';
 import { UI_MESSAGES } from '../constants/ui';
 import { useQuiz } from '@/contexts/QuizContext';
@@ -44,10 +44,12 @@ function QuizCardComponent() {
               <QuizAnswerArea />
             </div>
           </div>
-
+          {/* 퀴즈 피드백 토스트가 퀴즈카드 영역 내부에서만 나타나도록 카드 내부 배치 */}
           <QuizFloatingFeedback />
         </div>
 
+        {/* 중단 확인 토스트는 전체 화면(fixed)에 렌더링 */}
+        <QuizExitConfirm />
         <QuizInputSection />
       </div>
     </>

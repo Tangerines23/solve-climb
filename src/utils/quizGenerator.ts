@@ -75,9 +75,16 @@ export function generateQuestion(
       case 'World2': {
         // Geometry World
         const geoProb = generateGeometryProblem(level, difficulty, rng);
+        const ansStr = String(geoProb.answer);
+        const autoInputType = ansStr.includes('/')
+          ? 'fraction'
+          : ansStr.includes('.')
+            ? 'decimal'
+            : 'number';
         return {
           question: geoProb.question,
           answer: geoProb.answer,
+          inputType: (geoProb as any).inputType || autoInputType,
           level,
           category,
         };
@@ -97,9 +104,16 @@ export function generateQuestion(
       case 'World4': {
         // CS/Engineering World
         const csProb = generateCSProblem(level, difficulty, rng);
+        const ansStr = String(csProb.answer);
+        const autoInputType = ansStr.includes('/')
+          ? 'fraction'
+          : ansStr.includes('.')
+            ? 'decimal'
+            : 'number';
         return {
           question: csProb.question,
           answer: csProb.answer,
+          inputType: (csProb as any).inputType || autoInputType,
           level,
           category,
         };

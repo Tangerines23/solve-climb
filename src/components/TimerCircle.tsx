@@ -1,4 +1,5 @@
 import React, { useEffect, useState, useRef, useMemo, useCallback } from 'react';
+import { useDebugStore } from '../stores/useDebugStore';
 import './TimerCircle.css';
 
 interface TimerCircleProps {
@@ -20,6 +21,7 @@ function TimerCircleComponent({
 }: TimerCircleProps) {
   const [timeLeft, setTimeLeft] = useState(duration);
   const [isFastForward, setIsFastForward] = useState(false);
+  const [isStoppedByClick, setIsStoppedByClick] = useState(false);
   const pressTimerRef = useRef<NodeJS.Timeout | null>(null);
   const intervalRef = useRef<NodeJS.Timeout | null>(null);
   const onCompleteRef = useRef(onComplete);
@@ -29,13 +31,14 @@ function TimerCircleComponent({
     onCompleteRef.current = onComplete;
   }, [onComplete]);
 
-  // duration이 변경되면 timeLeft 리셋
+  // duration이 변경되면 timeLeft 리셋 및 정지 상태 초기화
   useEffect(() => {
     if (intervalRef.current) {
       clearInterval(intervalRef.current);
       intervalRef.current = null;
     }
     setTimeLeft(duration);
+    setIsStoppedByClick(false);
   }, [duration]);
 
   // 패널티 발생 시 시간 차감
@@ -51,10 +54,11 @@ function TimerCircleComponent({
     }
   }, [triggerPenalty, penaltyAmount]);
 
-  // 길게 누르기 핸들러 메모이제이션
+  // 길게 누르기 핸들러 메모이제이션 (dev 모드 전용)
   const handleMouseDown = useCallback(() => {
-    if (!enableFastForward || isPaused) return;
-    pressTimerRef.current = setTimeout(() => setIsFastForward(true), 3000);
+    const isAdmin = useDebugStore.getState().isAdminMode;
+    if (!isAdmin || !enableFastForward || isPaused) return;
+    pressTimerRef.current = setTimeout(() => setIsFastForward(true), 500);
   }, [enableFastForward, isPaused]);
 
   const handleMouseUp = useCallback(() => {
@@ -65,6 +69,12 @@ function TimerCircleComponent({
     setIsFastForward(false);
   }, []);
 
+  const handleTimerClick = useCallback(() => {
+    const isAdmin = useDebugStore.getState().isAdminMode;
+    if (!isAdmin) return;
+    setIsStoppedByClick((prev) => !prev);
+  }, []);
+
   // 타이머 로직
   useEffect(() => {
     if (intervalRef.current) {
@@ -72,14 +82,14 @@ function TimerCircleComponent({
       intervalRef.current = null;
     }
 
-    if (isPaused) return;
+    if (isPaused || (useDebugStore.getState().isAdminMode && isStoppedByClick)) return;
 
     if (timeLeft <= 0 && duration > 0) {
       onCompleteRef.current();
       return;
     }
 
-    const interval = isFastForward ? 100 : 1000;
+    const interval = isFastForward ? 50 : 1000;
     intervalRef.current = setInterval(() => {
       setTimeLeft((prev) => {
         const newTime = prev - 1;
@@ -102,7 +112,7 @@ function TimerCircleComponent({
         intervalRef.current = null;
       }
     };
-  }, [isPaused, isFastForward, duration, timeLeft]);
+  }, [isPaused, isStoppedByClick, isFastForward, duration, timeLeft]);
 
   // 컴포넌트 언마운트 시 정리
   useEffect(() => {
@@ -134,12 +144,18 @@ function TimerCircleComponent({
         width: '28px',
         height: '28px',
       },
-      timeLabel: `${Math.floor(timeLeft / 60)}:${(timeLeft % 60).toString().padStart(2, '0')}`,
+      timeLabel: (() => {
+        const displaySeconds = Math.ceil(timeLeft);
+        const displayMinutes = Math.floor(displaySeconds / 60);
+        const displayRemainingSeconds = displaySeconds % 60;
+        return `${displayMinutes}:${displayRemainingSeconds.toString().padStart(2, '0')}`;
+      })(),
     };
   }, [timeLeft, duration]);
 
   const eventHandlers = useMemo(() => {
-    if (!enableFastForward) return {};
+    const isAdmin = useDebugStore.getState().isAdminMode;
+    if (!isAdmin || !enableFastForward) return {};
     return {
       onMouseDown: handleMouseDown,
       onMouseUp: handleMouseUp,
@@ -151,7 +167,16 @@ function TimerCircleComponent({
   }, [enableFastForward, handleMouseDown, handleMouseUp]);
 
   return (
-    <div className="timer-circle-container" {...eventHandlers}>
+    <div
+      className="timer-circle-container"
+      {...eventHandlers}
+      onClick={handleTimerClick}
+      style={{
+        ...eventHandlers.style,
+        opacity: useDebugStore.getState().isAdminMode && isStoppedByClick ? 0.5 : 1,
+        transition: 'opacity 0.2s ease',
+      }}
+    >
       <div style={circleStyle}></div>
       <div className="timer-label">{timeLabel}</div>
     </div>

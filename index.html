@@ -1,17 +1,15 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="ko">
   <head>
     <meta charset="UTF-8" />
     <link rel="icon" type="image/webp" href="/SolveClimb.webp" />
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
       rel="preload"
       as="style"
-      href="https://fonts.googleapis.com/css2?family=Pretendard+Variable:wght@400;700&display=swap"
+      href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable.min.css"
     />
     <link
-      href="https://fonts.googleapis.com/css2?family=Pretendard+Variable:wght@400;700&display=swap"
+      href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable.min.css"
       rel="stylesheet"
     />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
@@ -65,11 +63,11 @@
         width: 90%;
         max-width: 320px;
         padding: 24px;
-        background: rgba(30,30,30,0.9);
+        background: rgba(30, 30, 30, 0.9);
         border: 1px solid rgba(0, 229, 193, 0.3);
         border-radius: 16px;
         backdrop-filter: blur(10px);
-        box-shadow: 0 10px 40px rgba(0,0,0,0.5);
+        box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
         z-index: 1001;
         text-align: center;
       }
@@ -90,7 +88,9 @@
         width: 100%;
         transition: transform 0.2s;
       }
-      .recovery-btn:active { transform: scale(0.95); }
+      .recovery-btn:active {
+        transform: scale(0.95);
+      }
     </style>
   </head>
   <body>
@@ -109,14 +109,15 @@
 
     <div id="recovery-ui">
       <div class="recovery-text">
-        접속이 지연되고 있습니다.<br/>네트워크 상태를 확인하거나 아래 버튼을 눌러 다시 시도해주세요.
+        접속이 지연되고 있습니다.<br />네트워크 상태를 확인하거나 아래 버튼을 눌러 다시
+        시도해주세요.
       </div>
       <button class="recovery-btn" onclick="window.location.reload()">새로고침</button>
     </div>
 
     <script>
       // Emergency Recovery Monitor
-      setTimeout(function() {
+      setTimeout(function () {
         var loader = document.getElementById('loading-check');
         if (loader && loader.style.display !== 'none') {
           var recovery = document.getElementById('recovery-ui');

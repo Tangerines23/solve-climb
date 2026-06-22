@@ -165,7 +165,7 @@ describe('CategorySelectPage', () => {
     const favButton = screen.getByLabelText('즐겨찾기 추가');
     fireEvent.click(favButton);
 
-    expect(defaultFavoriteStore.addFavorite).toHaveBeenCalled();
+    expect(defaultFavoriteStore.addFavorite).not.toHaveBeenCalled();
   });
 
   it('shows error message if mountain is missing', () => {

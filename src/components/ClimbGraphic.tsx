@@ -1,13 +1,9 @@
-import React, { useRef, useMemo, useCallback, useEffect } from 'react';
+// cspell:ignore langworld langworld1
+import React, { useState, useRef, useMemo, useCallback, useEffect } from 'react';
 import { useLevelProgressStore } from '../stores/useLevelProgressStore';
 import { useProfileStore } from '../stores/useProfileStore';
-import {
-  ArithmeticBackground,
-  EquationsBackground,
-  SequenceBackground,
-  CalculusBackground,
-} from './ClimbGraphicBackgrounds';
-import { STAGE_CONFIG, type StageConfig } from '../constants/stages';
+import { ClimbBackground } from './ClimbGraphicBackgrounds';
+import { getStagesForWorld, type StageConfig, MAP_LAYOUT } from '../constants/stages';
 import { World, Category } from '../types/quiz';
 import './ClimbGraphic.css';
 
@@ -25,12 +21,14 @@ export const LevelButton = React.forwardRef<HTMLButtonElement, LevelButtonProps>
 LevelButton.displayName = 'LevelButton';
 
 interface ClimbGraphicProps {
+  mountain?: string;
   world: World;
   category: Category;
   levels: Array<{ level: number; name: string; description: string }>;
   categoryColor?: string;
   onLevelClick?: (level: number, levelName: string) => void;
   onUnderDevelopmentClick?: () => void;
+  isReady?: boolean;
 }
 
 interface LevelData {
@@ -39,25 +37,24 @@ interface LevelData {
   position: { x: number; y: number };
 }
 
-interface StageBackgroundConfig {
-  skyGradient: string;
-  mainColor: string;
-  secondaryColor: string;
-  accentColor: string;
-}
-
 export function ClimbGraphic({
+  mountain,
   world,
   category,
   levels,
   categoryColor = 'var(--color-teal-500)',
   onLevelClick,
   onUnderDevelopmentClick,
+  isReady,
 }: ClimbGraphicProps) {
   const isLevelCleared = useLevelProgressStore((state) => state.isLevelCleared);
   const getNextLevel = useLevelProgressStore((state) => state.getNextLevel);
   const isAdmin = useProfileStore((state) => state.isAdmin);
   const currentLevelRef = useRef<HTMLButtonElement>(null);
+  const lastTargetRef = useRef<string>('');
+  const hasInitialScrolledRef = useRef<boolean>(false);
+  const scrollTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const [isScrollPositioned, setIsScrollPositioned] = useState(false);
 
   const nextLevel = getNextLevel(world, category);
   const totalLevels = levels.length;
@@ -70,18 +67,23 @@ export function ClimbGraphic({
   };
 
   // ========== 스테이지 헬퍼 함수 ==========
-  const getStageInfo = useCallback((levelId: number): StageConfig => {
-    return (
-      STAGE_CONFIG.find((stage) => levelId >= stage.range[0] && levelId <= stage.range[1]) ||
-      STAGE_CONFIG[0]
-    );
-  }, []);
+  const getStageInfo = useCallback(
+    (levelId: number): StageConfig => {
+      const worldStages = getStagesForWorld(world);
+      return (
+        worldStages.find((stage) => levelId >= stage.range[0] && levelId <= stage.range[1]) ||
+        worldStages[0]
+      );
+    },
+    [world]
+  );
 
   // ========== 설정 상수 ==========
-  const SVG_WIDTH = 400;
-  const NODE_SPACING = 80;
-  const LIST_DISTANCE = 100;
-  const SCROLL_OFFSET = 60;
+  const { SVG_WIDTH, NODE_SPACING, LIST_DISTANCE, SCROLL_OFFSET, FIXED_MAX_LEVELS } = MAP_LAYOUT;
+
+  const clipOffset = useMemo(() => {
+    return (FIXED_MAX_LEVELS - totalLevels) * NODE_SPACING;
+  }, [totalLevels]);
 
   // ========== 노드 위치 계산 ==========
   const { levelData, pathPoints, svgHeight, lastClearedIndex } = useMemo(() => {
@@ -90,17 +92,13 @@ export function ClimbGraphic({
     let lastClearedIdx = -1;
 
     const lastNodeY = LIST_DISTANCE;
-    const firstNodeY = lastNodeY + (totalLevels - 1) * NODE_SPACING;
-    const calculatedSvgHeight = firstNodeY + 100; // 여유 공간 확보
+    const firstNodeY = lastNodeY + (FIXED_MAX_LEVELS - 1) * NODE_SPACING;
+    const calculatedSvgHeight = firstNodeY + 100;
 
     for (let i = 0; i < totalLevels; i++) {
-      const progress = i / (totalLevels - 1 || 1);
-      const y = firstNodeY - (firstNodeY - lastNodeY) * progress;
+      const y = firstNodeY - i * NODE_SPACING; // 레벨 1은 가장 아래에 배치하고 위로 갈수록 Y가 감소(상단으로 이동)
       const centerX = SVG_WIDTH * 0.5;
       const amplitude = SVG_WIDTH * 0.3;
-      // [수정] S자 굴곡을 레벨 개수와 상관없이 일정하게 유지
-      // 기존: Math.sin(progress * Math.PI * 2) -> 총 레벨 수에 따라 굴곡이 늘어짐
-      // 변경: Math.sin((i / 15) * Math.PI * 2) -> 15개 레벨마다 1회전하도록 고정 (인덱스 기반)
       const FREQUENCY_PER_LEVELS = 15; // 15레벨마다 S자 한 번
       const offsetX = Math.sin((i / FREQUENCY_PER_LEVELS) * Math.PI * 2) * amplitude;
       const x = centerX + offsetX;
@@ -138,6 +136,19 @@ export function ClimbGraphic({
     };
   }, [world, category, levels, totalLevels, nextLevel, isLevelCleared, isAdmin]);
 
+  // target level ID를 결정합니다. (current 노드가 없을 경우 cleared의 마지막 노드 또는 1번 노드를 타겟팅하여 스크롤 튕김 방지)
+  const targetLevelId = useMemo(() => {
+    const currentLevel = levelData.find((l) => l.status === 'current');
+    if (currentLevel) return currentLevel.id;
+
+    const hasCleared = levelData.some((l) => l.status === 'cleared');
+    if (hasCleared) {
+      return levelData[levelData.length - 1]?.id ?? 1;
+    }
+
+    return levelData[0]?.id ?? 1;
+  }, [levelData]);
+
   const createPath = (points: Array<{ x: number; y: number }>): string => {
     if (points.length === 0) return '';
     if (points.length === 1) return `M ${points[0].x} ${points[0].y}`;
@@ -168,83 +179,132 @@ export function ClimbGraphic({
     return createPath(clearedPoints);
   }, [pathPoints, lastClearedIndex]);
 
-  const scrollToCurrentLevel = useCallback((behavior: ScrollBehavior = 'smooth') => {
-    if (currentLevelRef.current) {
-      currentLevelRef.current.scrollIntoView({
-        behavior,
-        block: 'center',
-      });
-    }
-  }, []);
+  const scrollToCurrentLevel = useCallback(
+    (behavior: 'auto' | 'smooth' = 'smooth') => {
+      let layoutAttempts = 0;
+      let nodeAttempts = 0;
 
-  // 진입 시 현재 레벨로 자동 스크롤
+      const executeScroll = () => {
+        const node = currentLevelRef.current;
+
+        // [노드 가드] 노드 엘리먼트 레프가 마운트될 때까지 최대 120프레임 동안 대기
+        if (!node) {
+          if (nodeAttempts < 120) {
+            nodeAttempts++;
+            requestAnimationFrame(executeScroll);
+          } else {
+            // 노드를 결국 찾지 못하더라도 화면은 보여주어야 하므로 opacity 1 설정
+            setIsScrollPositioned(true);
+          }
+          return;
+        }
+
+        const scrollContainer = node.closest('.map-area') as HTMLElement;
+        if (!scrollContainer) {
+          if (typeof node.scrollIntoView === 'function') {
+            node.scrollIntoView({
+              behavior: behavior === 'auto' ? 'auto' : 'smooth',
+              block: 'center',
+            });
+          }
+          setIsScrollPositioned(true);
+          return;
+        }
+
+        const currentScrollHeight = scrollContainer.scrollHeight;
+        const currentClientWidth = scrollContainer.clientWidth;
+        const currentClientHeight = scrollContainer.clientHeight;
+
+        // [레이아웃 가드] 스크롤 영역의 유효 높이가 확보되었고,
+        // 스크롤 컨테이너의 실제 화면 너비(clientWidth)와 높이(clientHeight)가 로드되어 0보다 큰지 검증
+        const isLayoutReady =
+          currentScrollHeight >= svgHeight - clipOffset - 50 &&
+          currentClientWidth > 0 &&
+          currentClientHeight > 0;
+
+        if (!isLayoutReady && layoutAttempts < 120) {
+          layoutAttempts++;
+          requestAnimationFrame(executeScroll);
+          return;
+        }
+
+        // 화면 해상도나 크기에 따라 SVG가 비율 매칭되어 크기가 변하므로,
+        // scrollContainer의 실제 너비를 기준으로 스케일을 계산하여 정밀한 수학적 절대 좌표를 산출합니다.
+        const currentLevelNode = levelData.find((l) => l.id === targetLevelId) || levelData[0];
+        const scale = currentClientWidth / SVG_WIDTH;
+        const nodeRelativeY =
+          SCROLL_OFFSET + (currentLevelNode ? currentLevelNode.position.y : 0) * scale;
+
+        const nodeHeight = 56; // 레벨 노드 고정 높이
+
+        // 노드가 스크롤 영역의 정중앙에 위치하도록 목표 scrollTop 설정
+        const targetScrollTop = nodeRelativeY - currentClientHeight / 2 + nodeHeight / 2;
+
+        // 스크롤 상단 리밋 범위 보정 (활성 레벨 외 공간 진입 차단)
+        const minScrollTop = clipOffset * scale;
+        const clampedTargetScrollTop = Math.max(minScrollTop, targetScrollTop);
+
+        // 브라우저 네이티브 스크롤 API에 온전히 가감속 제어권 위임
+        // 자동 스크롤 진행 중임을 표시 (동작 진행 동안 handleScroll 리밋 차단 우회용)
+        scrollContainer.setAttribute('data-auto-scrolling', 'true');
+
+        scrollContainer.scrollTo({
+          top: clampedTargetScrollTop,
+          behavior: behavior === 'auto' ? 'auto' : 'smooth',
+        });
+
+        // 실제 스크롤 동작이 브라우저에 진입하였으므로 완료 플래그 기록
+        hasInitialScrolledRef.current = true;
+
+        // 위치 복원 완료 상태로 전환하여 페이드인 효과 트리거
+        setIsScrollPositioned(true);
+
+        if (scrollTimeoutRef.current) clearTimeout(scrollTimeoutRef.current);
+        const scrollDuration = behavior === 'auto' ? 50 : 800;
+        scrollTimeoutRef.current = setTimeout(() => {
+          scrollContainer.removeAttribute('data-auto-scrolling');
+          scrollTimeoutRef.current = null;
+        }, scrollDuration);
+      };
+
+      requestAnimationFrame(executeScroll);
+    },
+    [levelData, targetLevelId, levels.length, svgHeight, clipOffset]
+  );
+
+  // 진입 및 변경 시 현재 레벨로 자동 스크롤
   useEffect(() => {
-    // 월드나 카테고리가 바뀌면 현재 레벨로 자동 스크롤
-    // DOM이 완전히 업데이트된 후 스크롤하기 위해 약간의 지연을 둡니다.
+    if (isReady !== undefined && !isReady) return;
+
+    const currentTargetKey = `${mountain || ''}_${world}_${category}`;
+
+    // 월드, 카테고리, 산 정보가 변경되지 않았고, 이미 최초 스크롤이 수행된 상태라면 리턴하여 중복 스크롤 방지
+    if (lastTargetRef.current === currentTargetKey && hasInitialScrolledRef.current) {
+      return;
+    }
+    lastTargetRef.current = currentTargetKey;
+
+    // 최초 마운트 후 첫 실제 스크롤 동작 전까지는 애니메이션 없이 즉시 현위치를 고정('auto'),
+    // 첫 스크롤이 성공한 상태에서 월드/카테고리 전환이 일어날 때는 'smooth' 모드로 스크롤
+    const isFirstScroll = !hasInitialScrolledRef.current;
+    const scrollMode = isFirstScroll ? 'auto' : 'smooth';
+
+    if (isFirstScroll) {
+      setIsScrollPositioned(false);
+    }
+
+    // 브라우저 레이아웃 엔진이 새 콘텐츠 높이 및 스케일을 확실히 반영할 수 있도록 30ms 대기 후 실행
     const timer = setTimeout(() => {
-      scrollToCurrentLevel('auto');
-    }, 100);
+      scrollToCurrentLevel(scrollMode);
+    }, 30);
 
-    return () => clearTimeout(timer);
-  }, [world, category, scrollToCurrentLevel, levelData]);
-
-  // 카테고리 및 월드별 배경 매핑
-  const stageConfig = useMemo(() => {
-    // 월드별 기본 스카이 그라데이션
-    const worldSkyGradients: Record<World, string> = {
-      World1: 'linear-gradient(180deg, #065f46 0%, #064e3b 100%)',
-      World2: 'linear-gradient(180deg, #92400e 0%, #451a03 100%)',
-      World3: 'linear-gradient(180deg, #0e7490 0%, #083344 100%)',
-      World4: 'linear-gradient(180deg, #581c87 0%, #000000 100%)',
-      LangWorld1: 'linear-gradient(180deg, #f87171 0%, #7f1d1d 100%)',
+    return () => {
+      clearTimeout(timer);
+      if (scrollTimeoutRef.current) {
+        clearTimeout(scrollTimeoutRef.current);
+      }
     };
-
-    const worldKey = world as keyof typeof worldSkyGradients;
-    const worldSkyGradient = Object.prototype.hasOwnProperty.call(worldSkyGradients, worldKey)
-      ? // eslint-disable-next-line security/detect-object-injection -- key validated above
-        worldSkyGradients[worldKey]
-      : worldSkyGradients['World1'];
-
-    const configs: Record<string, StageBackgroundConfig> = {
-      기초: {
-        skyGradient: worldSkyGradient,
-        mainColor: 'var(--ground-color-near)',
-        secondaryColor: 'var(--ground-color-mid)',
-        accentColor: 'var(--symbol-color-near)',
-      },
-      대수: {
-        skyGradient: Object.prototype.hasOwnProperty.call(worldSkyGradients, worldKey)
-          ? // eslint-disable-next-line security/detect-object-injection -- key validated above
-            worldSkyGradients[worldKey]
-          : 'linear-gradient(180deg, #064E3B 0%, #065F46 15%, #0891B2 40%, #06B6D4 65%, #22D3EE 85%, #67E8F9 100%)',
-        mainColor: 'var(--ground-color-near)',
-        secondaryColor: 'var(--ground-color-mid)',
-        accentColor: 'var(--symbol-color-near)',
-      },
-      논리: {
-        skyGradient: Object.prototype.hasOwnProperty.call(worldSkyGradients, worldKey)
-          ? // eslint-disable-next-line security/detect-object-injection -- key validated above
-            worldSkyGradients[worldKey]
-          : 'linear-gradient(180deg, #4B0082 0%, #6A5ACD 30%, #9370DB 60%, #BA55D3 100%)',
-        mainColor: 'var(--ground-color-near)',
-        secondaryColor: 'var(--ground-color-mid)',
-        accentColor: 'var(--symbol-color-near)',
-      },
-      심화: {
-        skyGradient: Object.prototype.hasOwnProperty.call(worldSkyGradients, worldKey)
-          ? // eslint-disable-next-line security/detect-object-injection -- key validated above
-            worldSkyGradients[worldKey]
-          : 'linear-gradient(180deg, #000428 0%, #004e92 30%, #1a1a2e 60%, #16213e 100%)',
-        mainColor: 'var(--ground-color-near)',
-        secondaryColor: 'var(--ground-color-mid)',
-        accentColor: 'var(--symbol-color-near)',
-      },
-    };
-    return Object.prototype.hasOwnProperty.call(configs, category)
-      ? // eslint-disable-next-line security/detect-object-injection -- key validated above
-        configs[category]
-      : configs['기초'];
-  }, [category, world]);
+  }, [mountain, world, category, isReady, scrollToCurrentLevel]);
 
   return (
     <div
@@ -256,21 +316,27 @@ export function ClimbGraphic({
         {
           '--category-color': categoryColor,
           minHeight: `${svgHeight + 200}px`,
+          opacity: isScrollPositioned ? 1 : 0,
+          transition: 'opacity 0.2s ease-in-out',
         } as React.CSSProperties
       }
     >
-      <div className="level-map-sky" style={{ background: stageConfig.skyGradient }} />
+      {/* 겹쳐진 하늘 그라데이션 레이어 */}
+      <div className="level-map-sky">
+        <div className="level-map-sky-glow" />
+        <div className={`level-map-sky-layer world1 ${world === 'World1' ? 'active' : ''}`} />
+        <div className={`level-map-sky-layer world2 ${world === 'World2' ? 'active' : ''}`} />
+        <div className={`level-map-sky-layer world3 ${world === 'World3' ? 'active' : ''}`} />
+        <div className={`level-map-sky-layer world4 ${world === 'World4' ? 'active' : ''}`} />
+        <div
+          className={`level-map-sky-layer langworld1 ${world === 'LangWorld1' ? 'active' : ''}`}
+        />
+      </div>
 
-      {category === '기초' && <ArithmeticBackground key={world} totalLevels={totalLevels} />}
-      {category === '대수' && (
-        <EquationsBackground key={world} totalLevels={totalLevels} config={stageConfig} />
-      )}
-      {category === '논리' && (
-        <SequenceBackground key={world} totalLevels={totalLevels} config={stageConfig} />
-      )}
-      {category === '심화' && (
-        <CalculusBackground key={world} totalLevels={totalLevels} config={stageConfig} />
-      )}
+      {/* 공통 단일 배경 컴포넌트 */}
+      <div className="level-map-background-wrapper" data-world={world}>
+        <ClimbBackground world={world} category={category} totalLevels={totalLevels} />
+      </div>
 
       <div
         className="level-map-path-container"
@@ -297,9 +363,9 @@ export function ClimbGraphic({
             <path
               d={pathData}
               fill="none"
-              stroke="var(--color-bg-tertiary-light)"
-              strokeWidth="2"
-              strokeDasharray="4,4"
+              stroke="rgba(255, 255, 255, 0.35)"
+              strokeWidth="3.5"
+              strokeDasharray="6,6"
               className="path-future"
             />
           )}
@@ -308,8 +374,8 @@ export function ClimbGraphic({
             <path
               d={clearedPathData}
               fill="none"
-              stroke="var(--color-text-tertiary)"
-              strokeWidth="2"
+              stroke="rgba(255, 255, 255, 0.85)"
+              strokeWidth="4"
               className="path-cleared"
             />
           )}
@@ -330,7 +396,7 @@ export function ClimbGraphic({
                   style={{ overflow: 'visible' }}
                 >
                   <LevelButton
-                    ref={level.status === 'current' ? currentLevelRef : null}
+                    ref={level.id === targetLevelId ? currentLevelRef : null}
                     className={`level-node level-node-${level.status}`}
                     onClick={() => {
                       if (level.status === 'locked' && !isAdmin) return;
@@ -380,7 +446,7 @@ export function ClimbGraphic({
             );
           })}
 
-          {STAGE_CONFIG.map((stage) => {
+          {getStagesForWorld(world).map((stage) => {
             const startLevelIdx = stage.range[0] - 1;
             const levelNode = Object.prototype.hasOwnProperty.call(levelData, startLevelIdx)
               ? // eslint-disable-next-line security/detect-object-injection -- index validated above
@@ -390,14 +456,27 @@ export function ClimbGraphic({
 
             if (!position) return null;
 
-            const isLeftSide = stage.id === 'basic' || stage.id === 'focus';
-            const badgeWidth = 96;
+            // 화면 경계 이탈 방지를 위한 대략적인 예측 뱃지 너비 (110px)
+            const ESTIMATED_BADGE_WIDTH = 110;
             const badgeSpacing = 42;
 
-            const badgeX = isLeftSide
-              ? position.x - badgeWidth - badgeSpacing
-              : position.x + badgeSpacing;
-            const badgeY = position.y - 15;
+            const leftPlacementX = position.x - ESTIMATED_BADGE_WIDTH - badgeSpacing;
+            const rightPlacementX = position.x + badgeSpacing;
+
+            let isLeftSide = true;
+
+            if (leftPlacementX < 10) {
+              isLeftSide = false;
+            } else if (rightPlacementX + ESTIMATED_BADGE_WIDTH > 390) {
+              isLeftSide = true;
+            } else {
+              const preferredLeft = stage.id === 'basic' || stage.id === 'focus';
+              isLeftSide = preferredLeft;
+            }
+
+            const FO_WIDTH = 220;
+            const foX = isLeftSide ? position.x - 20 - FO_WIDTH : position.x + 20;
+            const foY = position.y - 15;
 
             return (
               <g
@@ -405,48 +484,38 @@ export function ClimbGraphic({
                 className="stage-signpost"
                 style={{ animation: 'fadeIn 0.6s ease-out' }}
               >
-                <line
-                  x1={isLeftSide ? position.x - 20 : position.x + 20}
-                  y1={position.y}
-                  x2={isLeftSide ? badgeX + badgeWidth - 2 : badgeX + 2}
-                  y2={position.y}
-                  stroke="var(--color-bg-tertiary-light)"
-                  strokeWidth="1.5"
-                />
-
-                <g
-                  transform={`translate(${badgeX}, ${badgeY})`}
-                  style={{ filter: 'url(#toss-shadow)' }}
+                <foreignObject
+                  x={foX}
+                  y={foY}
+                  width={FO_WIDTH}
+                  height="30"
+                  style={{ overflow: 'visible' }}
                 >
-                  <rect width={badgeWidth} height="30" rx="15" fill="var(--color-bg-primary)" />
-                  <circle cx={isLeftSide ? badgeWidth - 12 : 12} cy="15" r="4" fill={stage.color} />
-                  <text
-                    x={isLeftSide ? badgeWidth - 24 : 24}
-                    y="20"
-                    fill="var(--color-text-primary)"
-                    fontSize="13px"
-                    fontWeight="600"
-                    fontFamily="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif"
-                    style={{ letterSpacing: '-0.2px' }}
-                    textAnchor={isLeftSide ? 'end' : 'start'}
-                  >
-                    {stage.title}
-                  </text>
-                </g>
+                  <div className={`signpost-container ${isLeftSide ? 'left-side' : 'right-side'}`}>
+                    {isLeftSide ? (
+                      <>
+                        <div className="signpost-badge">
+                          <span className="signpost-text">{stage.title}</span>
+                          <span className="signpost-dot" style={{ backgroundColor: stage.color }} />
+                        </div>
+                        <div className="signpost-line" />
+                      </>
+                    ) : (
+                      <>
+                        <div className="signpost-line" />
+                        <div className="signpost-badge">
+                          <span className="signpost-dot" style={{ backgroundColor: stage.color }} />
+                          <span className="signpost-text">{stage.title}</span>
+                        </div>
+                      </>
+                    )}
+                  </div>
+                </foreignObject>
               </g>
             );
           })}
         </svg>
       </div>
-
-      <button
-        className="fab-my-location"
-        onClick={() => scrollToCurrentLevel()}
-        aria-label="내 레벨로 이동"
-      >
-        <span style={{ fontSize: '18px', marginRight: 'var(--spacing-xs)' }}>📍</span>
-        <span style={{ fontSize: '14px', fontWeight: 'bold' }}>내 위치</span>
-      </button>
     </div>
   );
 }

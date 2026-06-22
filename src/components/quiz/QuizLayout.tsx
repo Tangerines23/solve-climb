@@ -8,7 +8,6 @@ import { useQuiz } from '@/contexts/QuizContext';
 import { TUTORIAL_STEPS } from '@/constants/ui';
 import { TutorialStep } from '@/components/tutorial/TutorialOverlay';
 import { QuizPreview } from '@/components/quiz/QuizPreview';
-import { useNavigate } from 'react-router-dom';
 
 const CATEGORY_MAP: Record<string, string> = {
   기초: 'basic',
@@ -22,7 +21,6 @@ const CATEGORY_MAP: Record<string, string> = {
 
 export function QuizLayout() {
   const { quizState, modalState, modalHandlers, feverLevel, altitudePhase } = useQuiz();
-  const navigate = useNavigate();
 
   const { showTutorial } = modalState;
   const { setShowTutorial } = modalHandlers;
@@ -43,7 +41,6 @@ export function QuizLayout() {
         category={quizState.category}
         topic={quizState.topic}
         keyboardType={quizState.keyboardType}
-        navigate={navigate}
         useSystemKeyboard={quizState.useSystemKeyboard}
       />
     );
@@ -52,7 +49,7 @@ export function QuizLayout() {
   return (
     <div
       className={`quiz-page fever-level-${feverLevel}`}
-      data-world={quizState.subParam || 'World1'}
+      data-world={quizState.subParam === 'LangWorld1' ? 'language' : quizState.subParam || 'World1'}
       data-category={categoryKey}
       data-altitude-phase={altitudePhase}
     >

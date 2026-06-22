@@ -18,6 +18,18 @@ const getBestScore = (record: LevelRecord): number => {
 };
 
 /**
+ * 레벨과 카테고리에 따른 기본 고도 점수를 계산합니다.
+ * 1안(페이즈 단계별 고정 모델)에 따라 '기초' 분야는 페이즈별 고정 점수를 부여합니다.
+ */
+export function getBaseLevelScore(level: number, categoryId: string | null): number {
+  if (categoryId === '기초') {
+    const step = Math.floor((level - 1) / 5);
+    return 10 + step * 5;
+  }
+  return BASE_CLIMB_DISTANCE + (level - 1) * DISTANCE_PER_LEVEL;
+}
+
+/**
  * 전체 누적 등반 고도 계산 (모든 카테고리의 bestScore 합산)
  * @returns 총 고도(m)와 총 문제 수
  */
@@ -79,7 +91,7 @@ export function calculateSubTopicTargetAltitude(category: string, subTopic: stri
 
   subTopicLevels.forEach((levelData) => {
     const { level } = levelData;
-    const baseLevelScore = BASE_CLIMB_DISTANCE + (level - 1) * DISTANCE_PER_LEVEL;
+    const baseLevelScore = getBaseLevelScore(level, subTopic);
     let levelTargetAltitude = baseLevelScore * themeMultiplier * GAME_CONFIG.PROBLEMS_PER_LEVEL;
 
     if (level === BOSS_LEVEL) {

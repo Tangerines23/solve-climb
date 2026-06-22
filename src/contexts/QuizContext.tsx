@@ -9,6 +9,7 @@ import React, {
 } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useQuizStore } from '@/stores/useQuizStore';
+import { useDebugStore } from '@/stores/useDebugStore';
 import { useQuestionGenerator } from '@/hooks/useQuestionGenerator';
 import { useQuizInput } from '@/hooks/useQuizInput';
 import { useQuizGameState } from '@/hooks/useQuizGameState';
@@ -30,6 +31,7 @@ import { useQuizStartLogic } from '@/hooks/useQuizStartLogic';
 import { useQuizSession } from '@/hooks/useQuizSession';
 import { useQuizGameplay } from '@/hooks/useQuizGameplay';
 import { quizEventBus } from '@/lib/eventBus';
+import { useQuizFeedback } from '@/hooks/quiz/useQuizFeedback';
 import { useDeathNoteStore } from '@/stores/useDeathNoteStore';
 import { vibrateLong } from '@/utils/haptic';
 import {
@@ -137,6 +139,7 @@ export function QuizProvider({ children, params }: QuizProviderProps) {
 
   const { showToast: showGlobalToast } = useToastStore();
   const animations = useQuizAnimations();
+  const { triggerSuccessFeedback, triggerWrongFeedback } = useQuizFeedback();
 
   const [showLastChanceModal, setShowLastChanceModal] = useState(false);
   const [showCountdown, setShowCountdown] = useState(false);
@@ -293,7 +296,7 @@ export function QuizProvider({ children, params }: QuizProviderProps) {
     }
   }, [activeItems, gameMode, lives, consumeActiveItem, consumeLife]);
 
-  const { handleSubmit } = useQuizSubmit({
+  const { handleSubmit: originalSubmit } = useQuizSubmit({
     answerInput,
     isSubmitting,
     currentQuestion,
@@ -303,6 +306,25 @@ export function QuizProvider({ children, params }: QuizProviderProps) {
     questionStartTime: gameState.questionStartTime,
     currentQuestionId,
   });
+
+  const handleSubmit = useCallback(
+    (e?: React.FormEvent) => {
+      e?.preventDefault();
+      const isAdmin = useDebugStore.getState().isAdminMode;
+      if (isAdmin && currentQuestion && (!answerInput || answerInput.trim() === '')) {
+        const correctAnswer = String(currentQuestion.answer);
+        setAnswerInput(correctAnswer);
+        setDisplayValue(correctAnswer);
+
+        setTimeout(() => {
+          originalSubmit();
+        }, 50);
+        return;
+      }
+      originalSubmit(e);
+    },
+    [originalSubmit, currentQuestion, answerInput, setAnswerInput, setDisplayValue]
+  );
 
   const { handleRevive, handlePurchaseAndRevive, handleGiveUp, stableHandleGameOver } =
     useQuizRevive({
@@ -398,27 +420,44 @@ export function QuizProvider({ children, params }: QuizProviderProps) {
         increaseScore(earnedDistance);
         useGameStore.getState().incrementCombo();
 
-        animations.setCardAnimation('correct');
+        animations.setCardAnimation('correct-flash');
         animations.setShowFlash(true);
-        feedbackRef.current?.show('SUCCESS', `+${earnedDistance}m`, 'success');
+
+        // 카드 내 플로팅 피드백 효과 연동 (무작위 위치 생성)
+        triggerSuccessFeedback(
+          earnedDistance,
+          {
+            setToastValue,
+            setDamagePosition: animations.setDamagePosition,
+            setShowSlideToast: animations.setShowSlideToast,
+            setShowFlash: animations.setShowFlash,
+          },
+          hapticEnabled
+        );
+
+        // 중복 피드백 제거: 플로팅 연출 집중을 위해 외곽의 투명한 성공 메시지 토스트를 비활성화합니다.
+        // feedbackRef.current?.show('SUCCESS', `+${earnedDistance}m`, 'success');
       } else {
         decreaseScore(earnedDistance);
         useGameStore.getState().resetCombo();
 
-        animations.setCardAnimation('incorrect');
+        animations.setCardAnimation('wrong-shake');
         animations.setIsError(true);
-        if (hapticEnabled) vibrateLong();
 
-        // Damage effect
-        const rect = inputRef.current?.getBoundingClientRect();
-        if (rect) {
-          animations.setDamagePosition({
-            left: `${rect.left + rect.width / 2}px`,
-            top: `${rect.top}px`,
-          });
-        }
+        // 카드 내 플로팅 피드백 효과 연동 (오답 경고 플래시 및 무작위 위치 생성)
+        triggerWrongFeedback(
+          'Wrong Answer',
+          {
+            setToastValue,
+            setDamagePosition: animations.setDamagePosition,
+            setShowSlideToast: animations.setShowSlideToast,
+            setShowFlash: animations.setShowFlash,
+          },
+          hapticEnabled
+        );
 
-        feedbackRef.current?.show('FAILURE', 'Wrong Answer', 'info'); // 'error' 대신 'info' 또는 'success'
+        // 중복 피드백 제거: 오답 시 외곽의 투명한 실패 메시지 토스트를 비활성화합니다.
+        // feedbackRef.current?.show('FAILURE', 'Wrong Answer', 'info'); // 'error' 대신 'info' 또는 'success'
 
         // DeathNote
         if (currentQuestion) {
@@ -621,6 +660,51 @@ export function QuizProvider({ children, params }: QuizProviderProps) {
     });
   }, [isPreview, checkStamina, isStaminaConsumed, setShowStaminaModal]);
 
+  // 인게임 치트 단축키 (DEV 환경 & Admin Mode 전용)
+  useEffect(() => {
+    if (!import.meta.env.DEV) return;
+
+    const handleCheatKeyDown = (e: KeyboardEvent) => {
+      const isAdmin = useDebugStore.getState().isAdminMode;
+      if (!isAdmin || !currentQuestion) return;
+
+      const key = e.key.toLowerCase();
+
+      if (key === 'v') {
+        e.preventDefault();
+        e.stopPropagation();
+
+        const correctAnswer = String(currentQuestion.answer);
+
+        setAnswerInput(correctAnswer);
+        setDisplayValue(correctAnswer);
+
+        // 실제 정답을 입력 후 50ms 후 제출 실행
+        setTimeout(() => {
+          const fakeEvent = { preventDefault: () => {} } as React.FormEvent;
+          handleSubmit(fakeEvent);
+        }, 50);
+      } else if (key === 'backspace') {
+        e.preventDefault();
+        e.stopPropagation();
+
+        const wrongAnswer = String(currentQuestion.answer) + '9'; // 오답 세팅
+
+        setAnswerInput(wrongAnswer);
+        setDisplayValue(wrongAnswer);
+
+        // 틀린 오답을 입력 후 50ms 후 제출 실행
+        setTimeout(() => {
+          const fakeEvent = { preventDefault: () => {} } as React.FormEvent;
+          handleSubmit(fakeEvent);
+        }, 50);
+      }
+    };
+
+    window.addEventListener('keydown', handleCheatKeyDown, true); // 캡처링 리스너 적용
+    return () => window.removeEventListener('keydown', handleCheatKeyDown, true);
+  }, [currentQuestion, setAnswerInput, setDisplayValue, handleSubmit]);
+
   const quizState: QuizDisplayState = useMemo(
     () => ({
       currentQuestion,
@@ -628,6 +712,7 @@ export function QuizProvider({ children, params }: QuizProviderProps) {
       displayValue,
       category,
       topic: `${worldParam}-${categoryParam}`,
+      mountainParam,
       categoryParam,
       worldParam,
       subParam: worldParam,

@@ -19,8 +19,8 @@ export function generateCSProblem(
   _difficulty: Difficulty,
   rng?: { random: () => number; randomInt: (min: number, max: number) => number }
 ): CSProblem {
-  if (level > 10) {
-    const randomVal = rng ? rng.randomInt(1, 4) : Math.floor(Math.random() * 4) + 1;
+  if (level > 15) {
+    const randomVal = rng ? rng.randomInt(1, 5) : Math.floor(Math.random() * 5) + 1;
     switch (randomVal) {
       case 1:
         return generateBinaryToDec(rng);
@@ -29,7 +29,9 @@ export function generateCSProblem(
       case 3:
         return generateBitwiseAdvanced(rng);
       case 4:
-        return generateMemoryUnitMaster(rng);
+        return generateMemoryUnitAdvanced(rng);
+      case 5:
+        return generateBinaryDecimalProblem(rng);
       default:
         return generateBinaryToDec(rng);
     }
@@ -51,11 +53,21 @@ export function generateCSProblem(
     case 7:
       return generateLogicXOR(rng);
     case 8:
-      return generateBitwiseAdvanced(rng);
+      return generateStackSimulation(rng);
     case 9:
-      return generateAlgoVariety(rng);
+      return generateQueueSimulation(rng);
     case 10:
-      return generateMemoryUnitMaster(rng);
+      return generateMemoryUnitBasic(rng);
+    case 11:
+      return generateMemoryUnitAdvanced(rng);
+    case 12:
+      return generateOnesComplement(rng);
+    case 13:
+      return generateTwosComplement(rng);
+    case 14:
+      return generateBinaryAddition(rng);
+    case 15:
+      return generateBinaryDecimalProblem(rng);
     default:
       return generateBinaryToDec(rng);
   }
@@ -132,8 +144,8 @@ function generateLogicXOR(rng?: { random: () => number }): CSProblem {
 function generateBitwiseAdvanced(rng?: {
   randomInt: (min: number, max: number) => number;
 }): CSProblem {
-  const n1 = getRandomInt(1, 15, rng);
-  const n2 = getRandomInt(1, 15, rng);
+  const n1 = getRandomInt(1, 7, rng);
+  const n2 = getRandomInt(1, 7, rng);
   const ops = ['&', '|', '^'];
   const op = ops[getRandomInt(0, 2, rng)];
   let ans = 0;
@@ -147,41 +159,106 @@ function generateBitwiseAdvanced(rng?: {
   };
 }
 
-function generateAlgoVariety(rng?: { randomInt: (min: number, max: number) => number }): CSProblem {
-  const type = getRandomInt(1, 3, rng);
-  if (type === 1) {
-    return {
-      question: '데이터를 마지막에 넣고 마지막에서 빼는 구조(LIFO)는? (1: 스택, 2: 큐)',
-      answer: 1,
-    };
-  } else if (type === 2) {
-    return {
-      question: '데이터를 마지막에 넣고 처음에서 빼는 구조(FIFO)는? (1: 스택, 2: 큐)',
-      answer: 2,
-    };
+function generateMemoryUnitBasic(rng?: {
+  randomInt: (min: number, max: number) => number;
+}): CSProblem {
+  const kb = Math.pow(2, getRandomInt(1, 4, rng));
+  return {
+    question: `${kb * 1024} 바이트(Byte)는 몇 KB입니까?`,
+    answer: kb,
+  };
+}
+
+function generateMemoryUnitAdvanced(rng?: {
+  randomInt: (min: number, max: number) => number;
+}): CSProblem {
+  const mb = Math.pow(2, getRandomInt(1, 3, rng));
+  return {
+    question: `${mb * 1024} KB는 몇 MB입니까?`,
+    answer: mb,
+  };
+}
+
+function generateStackSimulation(rng?: {
+  randomInt: (min: number, max: number) => number;
+}): CSProblem {
+  const a = getRandomInt(2, 9, rng);
+  const b = getRandomInt(2, 9, rng);
+  const c = getRandomInt(2, 9, rng);
+  return {
+    question: `스택에 ${a}, ${b}를 순서대로 push한 후, pop을 1번 실행하고 ${c}를 push했을 때 스택에 남은 원소들의 합은?`,
+    answer: a + c,
+  };
+}
+
+function generateQueueSimulation(rng?: {
+  randomInt: (min: number, max: number) => number;
+}): CSProblem {
+  const a = getRandomInt(2, 9, rng);
+  const b = getRandomInt(2, 9, rng);
+  const c = getRandomInt(2, 9, rng);
+  return {
+    question: `큐에 ${a}, ${b}를 순서대로 enqueue한 후, dequeue를 1번 실행하고 ${c}를 enqueue했을 때 큐에 남은 원소들의 합은?`,
+    answer: b + c,
+  };
+}
+
+function generateOnesComplement(rng?: {
+  randomInt: (min: number, max: number) => number;
+}): CSProblem {
+  const select = getRandomInt(1, 3, rng);
+  if (select === 1) {
+    return { question: '4비트 이진수 0101의 1의 보수(비트 반전)는? (2진수)', answer: '1010' };
+  } else if (select === 2) {
+    return { question: '4비트 이진수 0011의 1의 보수(비트 반전)는? (2진수)', answer: '1100' };
   } else {
-    return {
-      question: '정렬된 데이터에서 절반씩 나누어 찾는 탐색법은? (1: 선형탐색, 2: 이진탐색)',
-      answer: 2,
-    };
+    return { question: '4비트 이진수 0110의 1의 보수(비트 반전)는? (2진수)', answer: '1001' };
   }
 }
 
-function generateMemoryUnitMaster(rng?: {
+function generateTwosComplement(rng?: {
   randomInt: (min: number, max: number) => number;
 }): CSProblem {
-  const type = getRandomInt(1, 2, rng);
-  if (type === 1) {
-    const kb = Math.pow(2, getRandomInt(1, 4, rng));
-    return {
-      question: `${kb * 1024} 바이트(Byte)는 몇 KB입니까?`,
-      answer: kb,
-    };
+  const select = getRandomInt(1, 3, rng);
+  if (select === 1) {
+    return { question: '4비트 이진수 0110의 2의 보수는? (2진수)', answer: '1010' };
+  } else if (select === 2) {
+    return { question: '4비트 이진수 0101의 2의 보수는? (2진수)', answer: '1011' };
   } else {
-    const mb = Math.pow(2, getRandomInt(1, 2, rng));
-    return {
-      question: `${mb * 1024} KB는 몇 MB입니까?`,
-      answer: mb,
-    };
+    return { question: '4비트 이진수 0011의 2의 보수는? (2진수)', answer: '1101' };
   }
+}
+
+function generateBinaryAddition(rng?: {
+  randomInt: (min: number, max: number) => number;
+}): CSProblem {
+  const select = getRandomInt(1, 3, rng);
+  if (select === 1) {
+    return { question: '2진수 덧셈 011 + 010 의 결과는? (2진수)', answer: '101' };
+  } else if (select === 2) {
+    return { question: '2진수 덧셈 100 + 011 의 결과는? (2진수)', answer: '111' };
+  } else {
+    return { question: '2진수 덧셈 010 + 001 의 결과는? (2진수)', answer: '011' };
+  }
+}
+
+function generateBinaryDecimalProblem(rng?: {
+  randomInt: (min: number, max: number) => number;
+}): CSProblem {
+  const options = [
+    { question: '2진수 소수 0.1을 10진수로 바꾸면?', answer: 0.5 },
+    { question: '2진수 소수 0.01을 10진수로 바꾸면?', answer: 0.25 },
+    { question: '2진수 소수 0.11을 10진수로 바꾸면?', answer: 0.75 },
+    { question: '2진수 소수 1.1을 10진수로 바꾸면?', answer: 1.5 },
+    { question: '2진수 소수 덧셈 0.1 + 0.1 의 결과는? (2진수)', answer: '1' },
+    { question: '2진수 소수 덧셈 0.1 + 1.1 의 결과는? (2진수)', answer: '10' },
+    { question: '2진수 소수 덧셈 0.1 + 0.01 의 결과는? (2진수)', answer: '0.11' },
+    { question: '2진수 소수 덧셈 0.11 + 0.01 의 결과는? (2진수)', answer: '1' },
+  ];
+  const idx = getRandomInt(0, options.length - 1, rng);
+  const choice = options[idx] ?? options[0];
+  return {
+    question: choice.question,
+    answer: choice.answer,
+  };
 }

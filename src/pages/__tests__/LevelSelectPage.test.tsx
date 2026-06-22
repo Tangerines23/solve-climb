@@ -215,7 +215,10 @@ describe('LevelSelectPage', () => {
     fireEvent.click(nextBtn);
 
     await waitFor(() => {
-      expect(mockNavigate).toHaveBeenCalledWith(expect.stringContaining('world=World2'));
+      expect(mockNavigate).toHaveBeenCalledWith(
+        expect.stringContaining('world=World2'),
+        expect.any(Object)
+      );
     });
   });
 
@@ -229,7 +232,7 @@ describe('LevelSelectPage', () => {
     const longPressBtn = screen.getByText('Long Press Level 1');
     fireEvent.click(longPressBtn);
 
-    expect(defaultFavoriteStore.addFavorite).toHaveBeenCalled();
+    expect(defaultFavoriteStore.addFavorite).not.toHaveBeenCalled();
   });
 
   it('should toggle sheet expansion', async () => {

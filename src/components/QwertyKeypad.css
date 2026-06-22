@@ -194,3 +194,66 @@
     font-size: clamp(0.9rem, 2vw, 1.2rem);
   }
 }
+
+/* 세로 해상도가 좁은 기기 및 뷰포트 대응 (또는 가로가 좁은 모바일 포트레이트 기기) */
+@media (max-height: 700px) and (orientation: portrait),
+  (max-width: 480px) and (orientation: portrait) {
+  .keyboard-container .qwerty-keypad {
+    padding-left: 6px !important;
+    padding-right: 6px !important;
+    padding-top: 4px !important;
+    padding-bottom: max(24px, env(safe-area-inset-bottom)) !important;
+    gap: var(--spacing-xs) !important;
+  }
+
+  .qwerty-keypad-key {
+    min-height: 34px !important; /* Low min-height allows key to shrink to fit horizontally */
+    min-width: 0 !important; /* Allow natural flex-shrink */
+    aspect-ratio: 1 !important; /* Force square shape to prevent squishing/distortion */
+    font-size: clamp(0.95rem, 2.8vw, 1.25rem) !important;
+  }
+
+  .qwerty-keypad-key-submit {
+    min-height: 34px !important;
+  }
+
+  .qwerty-keypad-row-last {
+    margin-top: 4px !important;
+  }
+
+  /* 좁은 화면에서 가로 삐져나감 방지를 위한 정렬 오프셋 초기화 */
+  .qwerty-keypad-row:nth-child(2) {
+    transform: translateX(0) !important;
+  }
+
+  .qwerty-keypad-row:nth-child(3) {
+    transform: translateX(0) !important;
+  }
+
+  /* 숫자 모드 등 하단에 2~3개 키만 들어있는 행의 비정상적 비대화 방지 */
+  .qwerty-keypad-row-last .qwerty-keypad-key {
+    aspect-ratio: auto !important;
+    flex: 1 !important;
+    max-width: 80px !important;
+  }
+}
+
+/* 터치용 강제 높이 오버라이드 - 미디어 쿼리 플래싱으로 크로스브라우징 안정성 보장 */
+@media (max-height: 700px) and (orientation: portrait) and (hover: none) and (pointer: coarse),
+  (max-width: 480px) and (orientation: portrait) and (hover: none) and (pointer: coarse) {
+  .qwerty-keypad-key {
+    min-height: 34px !important;
+    min-width: 0 !important;
+    aspect-ratio: 1 !important;
+  }
+
+  .qwerty-keypad-key-submit {
+    min-height: 34px !important;
+  }
+
+  .qwerty-keypad-row-last .qwerty-keypad-key {
+    aspect-ratio: auto !important;
+    flex: 1 !important;
+    max-width: 80px !important;
+  }
+}

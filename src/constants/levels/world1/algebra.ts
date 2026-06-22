@@ -1,15 +1,15 @@
 export const ALGEBRA_LEVELS = [
   // Phase 1: x의 등장 (Lv 1~10)
-  { level: 1, name: '미지수 □ 채우기', description: '3 + □ = 10' },
-  { level: 2, name: '미지수 x로의 전환', description: 'x - 5 = 12' },
-  { level: 3, name: '일차방정식 (ax=b)', description: '계수 나누기' },
-  { level: 4, name: '이항 기초', description: 'x + b = c' },
-  { level: 5, name: '이항 심화', description: 'ax + b = c' },
-  { level: 6, name: '비례식 기초', description: 'a:b = c:x' },
-  { level: 7, name: '일차부등식', description: '범위 찾기' },
-  { level: 8, name: '구조의 변형', description: '식 정리하기' },
-  { level: 9, name: '연립방정식 기초', description: '두 미지수 찾기' },
-  { level: 10, name: '방정식 마스터', description: '심화 방정식 풀이' },
+  { level: 1, name: '미지수 □ 덧셈', description: '□ + a = b' },
+  { level: 2, name: '미지수 □ 뺄셈 1', description: '□ - a = b' },
+  { level: 3, name: '미지수 □ 뺄셈 2', description: 'a - □ = b' },
+  { level: 4, name: '미지수 □ 곱셈', description: '□ × a = b' },
+  { level: 5, name: '미지수 □ 나눗셈', description: '□ ÷ a = b' },
+  { level: 6, name: '일차방정식 기초', description: 'x + a = b' },
+  { level: 7, name: '일차방정식 곱셈', description: 'ax = b' },
+  { level: 8, name: '이항 기초', description: 'ax + b = c' },
+  { level: 9, name: '이항 기초 뺄셈', description: 'ax - b = c' },
+  { level: 10, name: '이항 심화', description: 'ax + b = c (심화)' },
 
   // Phase 2: 구조의 변형 (Lv 11~15) - 이항의 물리법칙
   { level: 11, name: '상수 이항', description: 'x + 5 = 12 (+5 -> -5)' },

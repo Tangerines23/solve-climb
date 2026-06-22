@@ -17,8 +17,8 @@ function RankingComingSoon() {
   }, []);
 
   return (
-    <div className="ranking-coming-soon">
-      <div className="fog-overlay">
+    <div className="ranking-coming-soon" data-vg-ignore="true">
+      <div className="fog-overlay" data-vg-ignore="true">
         {fogIcons.map((fog) => (
           <span
             key={fog.id}
