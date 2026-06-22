@@ -228,20 +228,31 @@ export function ClimbGraphic({
           return;
         }
 
-        // 화면 해상도나 크기에 따라 SVG가 비율 매칭되어 크기가 변하므로,
-        // scrollContainer의 실제 너비를 기준으로 스케일을 계산하여 정밀한 수학적 절대 좌표를 산출합니다.
-        const currentLevelNode = levelData.find((l) => l.id === targetLevelId) || levelData[0];
-        const scale = currentClientWidth / SVG_WIDTH;
-        const nodeRelativeY =
-          SCROLL_OFFSET + (currentLevelNode ? currentLevelNode.position.y : 0) * scale;
+        // 스크롤 컨테이너의 padding-top 값을 동적으로 측정
+        const computedStyle = window.getComputedStyle(scrollContainer);
+        const paddingTop = parseFloat(computedStyle.paddingTop) || 0;
 
-        const nodeHeight = 56; // 레벨 노드 고정 높이
+        // 화면 해상도나 크기에 따라 SVG가 비율 매칭되어 크기가 변하므로,
+        // svgElement의 실제 너비를 기준으로 스케일을 계산하여 정밀한 수학적 절대 좌표를 산출합니다.
+        const currentLevelNode = levelData.find((l) => l.id === targetLevelId) || levelData[0];
+        const svgElement = node.closest('.path-svg') || scrollContainer.querySelector('.path-svg');
+        const svgClientWidth = svgElement ? svgElement.clientWidth : currentClientWidth;
+        const scale = svgClientWidth / SVG_WIDTH;
+
+        // preserveAspectRatio="xMidYMax meet" 하단 정렬 비율 매칭에 따른 상단 오프셋 보정
+        const svgYOffset = svgHeight * (1 - scale);
+
+        const nodeRelativeY =
+          paddingTop +
+          SCROLL_OFFSET +
+          svgYOffset +
+          (currentLevelNode ? currentLevelNode.position.y : 0) * scale;
 
         // 노드가 스크롤 영역의 정중앙에 위치하도록 목표 scrollTop 설정
-        const targetScrollTop = nodeRelativeY - currentClientHeight / 2 + nodeHeight / 2;
+        const targetScrollTop = nodeRelativeY - currentClientHeight / 2;
 
         // 스크롤 상단 리밋 범위 보정 (활성 레벨 외 공간 진입 차단)
-        const minScrollTop = clipOffset * scale;
+        const minScrollTop = paddingTop + SCROLL_OFFSET + svgYOffset + clipOffset * scale;
         const clampedTargetScrollTop = Math.max(minScrollTop, targetScrollTop);
 
         // 브라우저 네이티브 스크롤 API에 온전히 가감속 제어권 위임
@@ -269,7 +280,7 @@ export function ClimbGraphic({
 
       requestAnimationFrame(executeScroll);
     },
-    [levelData, targetLevelId, levels.length, svgHeight, clipOffset]
+    [levelData, targetLevelId, svgHeight, clipOffset, SCROLL_OFFSET, SVG_WIDTH]
   );
 
   // 진입 및 변경 시 현재 레벨로 자동 스크롤

@@ -215,13 +215,22 @@ export function LevelSelectPage() {
     }
 
     // 월드별 스크롤 최소 탑 리밋 제어 (활성화된 레벨 초과 영역 스크롤 진입 차단)
-    const { FIXED_MAX_LEVELS, NODE_SPACING } = MAP_LAYOUT;
+    const { FIXED_MAX_LEVELS, NODE_SPACING, SCROLL_OFFSET, LIST_DISTANCE } = MAP_LAYOUT;
     const clipOffset = (FIXED_MAX_LEVELS - levels.length) * NODE_SPACING;
 
     if (clipOffset > 0) {
-      const containerWidth = container.clientWidth || MAP_LAYOUT.SVG_WIDTH;
-      const scale = containerWidth / MAP_LAYOUT.SVG_WIDTH;
-      const minScrollTop = clipOffset * scale;
+      const computedStyle = window.getComputedStyle(container);
+      const paddingTop = parseFloat(computedStyle.paddingTop) || 0;
+
+      const svgElement = container.querySelector('.path-svg');
+      const svgClientWidth = svgElement
+        ? svgElement.clientWidth
+        : container.clientWidth || MAP_LAYOUT.SVG_WIDTH;
+      const scale = svgClientWidth / MAP_LAYOUT.SVG_WIDTH;
+
+      const svgHeight = LIST_DISTANCE + (FIXED_MAX_LEVELS - 1) * NODE_SPACING + 100;
+      const svgYOffset = svgHeight * (1 - scale);
+      const minScrollTop = paddingTop + SCROLL_OFFSET + svgYOffset + clipOffset * scale;
 
       if (container.scrollTop < minScrollTop) {
         container.scrollTop = minScrollTop;
