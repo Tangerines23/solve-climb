@@ -418,7 +418,7 @@ export function QuizProvider({ children, params }: QuizProviderProps) {
       // 2. 결과에 따른 처리
       if (isCorrect) {
         increaseScore(earnedDistance);
-        useGameStore.getState().incrementCombo();
+        useGameStore.getState().incrementCombo(levelParam ?? undefined);
 
         animations.setCardAnimation('correct-flash');
         animations.setShowFlash(true);

@@ -15,7 +15,7 @@ interface GameState {
   lives: number; // Survival Mode Lives (Hearts)
 
   setScore: (score: number) => void;
-  incrementCombo: () => void;
+  incrementCombo: (currentLevel?: number) => void;
   resetCombo: () => void;
   setCombo: (combo: number) => void; // 콤보를 직접 설정 (피버 상태 자동 계산)
   setExhausted: (exhausted: boolean) => void;
@@ -49,17 +49,27 @@ export const useGameStore = create<GameState>()(
 
       setScore: (score) => set({ score }),
 
-      incrementCombo: () =>
+      incrementCombo: (currentLevel) =>
         set((state) => {
-          const newCombo = state.combo + 1;
+          let comboAdd = 1;
+          if (currentLevel !== undefined) {
+            if (currentLevel >= 21) {
+              comboAdd = 3;
+            } else if (currentLevel >= 11) {
+              comboAdd = 2;
+            } else {
+              comboAdd = 1;
+            }
+          }
+          const newCombo = state.combo + comboAdd;
           let newFeverLevel = state.feverLevel;
           let speedLines = state.showSpeedLines;
 
           if (!state.isExhausted) {
-            if (newCombo >= 20) {
+            if (newCombo >= 10) {
               newFeverLevel = 2;
               speedLines = true;
-            } else if (newCombo >= 5) {
+            } else if (newCombo >= 3) {
               newFeverLevel = 1;
               speedLines = true;
             }
@@ -75,7 +85,37 @@ export const useGameStore = create<GameState>()(
           };
         }),
 
-      resetCombo: () => set({ combo: 0, feverLevel: 0, showSpeedLines: false }),
+      resetCombo: () =>
+        set((state) => {
+          // 안전 로프(safety_rope)가 활성화되어 있는 경우 실드 발동 및 아이템 소모
+          if (state.activeItems.includes('safety_rope')) {
+            return {
+              activeItems: state.activeItems.filter((code) => code !== 'safety_rope'),
+              usedItems: [...state.usedItems, 'safety_rope'],
+            };
+          }
+
+          // 계단식 감쇄 처리
+          let newCombo = 0;
+          let newFeverLevel: 0 | 1 | 2 = 0;
+          let speedLines = false;
+
+          if (state.feverLevel === 2) {
+            newCombo = 3;
+            newFeverLevel = 1;
+            speedLines = true;
+          } else {
+            newCombo = 0;
+            newFeverLevel = 0;
+            speedLines = false;
+          }
+
+          return {
+            combo: newCombo,
+            feverLevel: newFeverLevel,
+            showSpeedLines: speedLines,
+          };
+        }),
 
       setCombo: (combo) =>
         set((state) => {
@@ -83,10 +123,10 @@ export const useGameStore = create<GameState>()(
           let speedLines = false;
 
           if (!state.isExhausted) {
-            if (combo >= 20) {
+            if (combo >= 10) {
               newFeverLevel = 2;
               speedLines = true;
-            } else if (combo >= 5) {
+            } else if (combo >= 3) {
               newFeverLevel = 1;
               speedLines = true;
             }

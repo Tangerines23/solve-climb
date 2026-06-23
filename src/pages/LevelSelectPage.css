@@ -152,7 +152,6 @@
 .level-select-graphic-container {
   position: relative;
   min-height: 120vh;
-  padding-bottom: 180px; /* 시트 가시 높이(160px) + 여유분 */
 }
 
 /* 시트가 펼쳐졌을 때 상단 빈 공간 클릭 방지 및 접기용 오버레이 */
