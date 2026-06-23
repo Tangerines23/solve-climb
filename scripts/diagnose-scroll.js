@@ -19,8 +19,63 @@ import fs from 'fs';
   const context = await browser.newContext(contextOptions);
   const page = await context.newPage();
 
+  // Mock Supabase auth API requests to avoid 429 Rate Limits and 403 Forbidden redirects
+  await page.route('**/auth/v1/**', async (route) => {
+    const url = route.request().url();
+    if (url.includes('/auth/v1/user')) {
+      await route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({
+          id: 'bbeac0c8-2d1b-458c-9eba-4126d8c8e926',
+          email: 'tester@example.com',
+          user_metadata: { nickname: 'DiagnosisTester' },
+          role: 'authenticated',
+          aud: 'authenticated',
+        }),
+      });
+    } else if (url.includes('/auth/v1/token')) {
+      await route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({
+          access_token: 'mock.jwt.token',
+          token_type: 'bearer',
+          expires_in: 3600,
+          refresh_token: 'mock_refresh_token',
+          user: {
+            id: 'bbeac0c8-2d1b-458c-9eba-4126d8c8e926',
+            email: 'tester@example.com',
+            user_metadata: { nickname: 'DiagnosisTester' },
+          },
+        }),
+      });
+    } else {
+      await route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: '{}',
+      });
+    }
+  });
+
   // Patch HTMLElement.prototype.scrollTo to log arguments and call stacks
   await page.addInitScript(() => {
+    // Inject Mock Supabase Session to bypass 429 rate limit redirect
+    localStorage.setItem(
+      'sb-aekcjzxxjczqibxkoakg-auth-token',
+      JSON.stringify({
+        access_token: 'mock.jwt.token',
+        refresh_token: 'mock_refresh_token',
+        user: {
+          id: 'bbeac0c8-2d1b-458c-9eba-4126d8c8e926',
+          email: 'tester@example.com',
+          user_metadata: { nickname: 'DiagnosisTester' },
+        },
+        expires_at: Math.floor(Date.now() / 1000) + 3600,
+      })
+    );
+
     const originalScrollTo = HTMLElement.prototype.scrollTo;
     HTMLElement.prototype.scrollTo = function (options, ...args) {
       const className = this.className || this.tagName;
@@ -49,7 +104,7 @@ import fs from 'fs';
   });
 
   const baseUrl = 'http://localhost:5173';
-  const targetUrl = `${baseUrl}/level-select?mountain=math&world=World1&category=%EA%B8%B0%EC%B5%88`;
+  const targetUrl = `${baseUrl}/level-select?mountain=math&world=World1&category=%EA%B8%B0%EC%B4%88`;
 
   try {
     console.log('Navigating to MyPage for profile setup check...');
@@ -72,16 +127,16 @@ import fs from 'fs';
     console.log(`Navigating directly to: ${targetUrl}`);
     await page.goto(targetUrl, { waitUntil: 'load' });
 
-    // Wait for ClimbGraphic to render
+    // Wait for ClimbGraphic to render in DOM
     const mapContainer = page.locator('.level-map-container');
     try {
-      await mapContainer.waitFor({ state: 'visible', timeout: 3000 });
-      console.log('ClimbGraphic is visible on page!');
+      await mapContainer.waitFor({ state: 'attached', timeout: 5000 });
+      console.log('ClimbGraphic is attached to DOM!');
     } catch {
-      console.log('ClimbGraphic is NOT visible on page!');
+      console.log('ClimbGraphic is NOT attached to DOM!');
     }
 
-    await page.waitForTimeout(3000);
+    await page.waitForTimeout(4000);
     console.log('Current URL at end:', page.url());
   } catch (e) {
     console.error('Diagnosis failed:', e);

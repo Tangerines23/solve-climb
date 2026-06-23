@@ -215,16 +215,31 @@ export function LevelSelectPage() {
     }
 
     // 월드별 스크롤 최소 탑 리밋 제어 (활성화된 레벨 초과 영역 스크롤 진입 차단)
-    const { FIXED_MAX_LEVELS, NODE_SPACING } = MAP_LAYOUT;
+    const { FIXED_MAX_LEVELS, NODE_SPACING, LIST_DISTANCE, SCROLL_OFFSET } = MAP_LAYOUT;
     const clipOffset = (FIXED_MAX_LEVELS - levels.length) * NODE_SPACING;
 
     if (clipOffset > 0) {
       const containerWidth = container.clientWidth || MAP_LAYOUT.SVG_WIDTH;
       const scale = containerWidth / MAP_LAYOUT.SVG_WIDTH;
-      const minScrollTop = clipOffset * scale;
+
+      const lastNodeY = LIST_DISTANCE;
+      const firstNodeY = lastNodeY + (FIXED_MAX_LEVELS - 1) * NODE_SPACING;
+      const svgHeight = firstNodeY + 100;
+
+      const svgYOffset = svgHeight * (1 - scale);
+      const minScrollTop = SCROLL_OFFSET + svgYOffset + clipOffset * scale;
 
       if (container.scrollTop < minScrollTop) {
         container.scrollTop = minScrollTop;
+
+        // 터치 중이 아닐 때(관성 스크롤 단계)만 overflow-y를 일시 hidden 처리하여 관성만 차단
+        if (container.getAttribute('data-is-touching') !== 'true') {
+          const originalOverflow = container.style.overflowY;
+          container.style.overflowY = 'hidden';
+          requestAnimationFrame(() => {
+            container.style.overflowY = originalOverflow;
+          });
+        }
       }
     }
 
@@ -278,8 +293,16 @@ export function LevelSelectPage() {
         className="map-area"
         ref={mapAreaRef}
         onScroll={handleScroll}
-        onTouchStart={() => {
+        data-vg-ignore="true"
+        onTouchStart={(e) => {
           if (isSheetExpanded) setIsSheetExpanded(false);
+          e.currentTarget.setAttribute('data-is-touching', 'true');
+        }}
+        onTouchEnd={(e) => {
+          e.currentTarget.removeAttribute('data-is-touching');
+        }}
+        onTouchCancel={(e) => {
+          e.currentTarget.removeAttribute('data-is-touching');
         }}
       >
         <div className="level-select-graphic-container">

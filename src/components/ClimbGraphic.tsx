@@ -51,8 +51,7 @@ export function ClimbGraphic({
   const getNextLevel = useLevelProgressStore((state) => state.getNextLevel);
   const isAdmin = useProfileStore((state) => state.isAdmin);
   const currentLevelRef = useRef<HTMLButtonElement>(null);
-  const lastTargetRef = useRef<string>('');
-  const hasInitialScrolledRef = useRef<boolean>(false);
+  const lastScrolledKeyRef = useRef<string>('');
   const scrollTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const [isScrollPositioned, setIsScrollPositioned] = useState(false);
 
@@ -83,7 +82,7 @@ export function ClimbGraphic({
 
   const clipOffset = useMemo(() => {
     return (FIXED_MAX_LEVELS - totalLevels) * NODE_SPACING;
-  }, [totalLevels]);
+  }, [totalLevels, FIXED_MAX_LEVELS, NODE_SPACING]);
 
   // ========== 노드 위치 계산 ==========
   const { levelData, pathPoints, svgHeight, lastClearedIndex } = useMemo(() => {
@@ -134,16 +133,28 @@ export function ClimbGraphic({
       svgHeight: calculatedSvgHeight,
       lastClearedIndex: lastClearedIdx,
     };
-  }, [world, category, levels, totalLevels, nextLevel, isLevelCleared, isAdmin]);
+  }, [
+    world,
+    category,
+    levels,
+    totalLevels,
+    nextLevel,
+    isLevelCleared,
+    isAdmin,
+    FIXED_MAX_LEVELS,
+    LIST_DISTANCE,
+    NODE_SPACING,
+    SVG_WIDTH,
+  ]);
 
   // target level ID를 결정합니다. (current 노드가 없을 경우 cleared의 마지막 노드 또는 1번 노드를 타겟팅하여 스크롤 튕김 방지)
   const targetLevelId = useMemo(() => {
     const currentLevel = levelData.find((l) => l.status === 'current');
     if (currentLevel) return currentLevel.id;
 
-    const hasCleared = levelData.some((l) => l.status === 'cleared');
-    if (hasCleared) {
-      return levelData[levelData.length - 1]?.id ?? 1;
+    const clearedLevels = levelData.filter((l) => l.status === 'cleared');
+    if (clearedLevels.length > 0) {
+      return clearedLevels[clearedLevels.length - 1].id;
     }
 
     return levelData[0]?.id ?? 1;
@@ -228,20 +239,40 @@ export function ClimbGraphic({
           return;
         }
 
-        // 화면 해상도나 크기에 따라 SVG가 비율 매칭되어 크기가 변하므로,
-        // scrollContainer의 실제 너비를 기준으로 스케일을 계산하여 정밀한 수학적 절대 좌표를 산출합니다.
-        const currentLevelNode = levelData.find((l) => l.id === targetLevelId) || levelData[0];
-        const scale = currentClientWidth / SVG_WIDTH;
-        const nodeRelativeY =
-          SCROLL_OFFSET + (currentLevelNode ? currentLevelNode.position.y : 0) * scale;
+        // 스크롤 컨테이너의 padding-top 값을 동적으로 측정
+        const computedStyle = window.getComputedStyle(scrollContainer);
+        const paddingTop = parseFloat(computedStyle.paddingTop) || 0;
 
-        const nodeHeight = 56; // 레벨 노드 고정 높이
+        // 화면 해상도나 크기에 따라 SVG가 비율 매칭되어 크기가 변하므로,
+        // svgElement의 실제 너비를 기준으로 스케일을 계산하여 정밀한 수학적 절대 좌표를 산출합니다.
+        const currentLevelNode = levelData.find((l) => l.id === targetLevelId) || levelData[0];
+        const svgElement = node.closest('.path-svg') || scrollContainer.querySelector('.path-svg');
+        const svgClientWidth = svgElement ? svgElement.clientWidth : currentClientWidth;
+        const scale = svgClientWidth / SVG_WIDTH;
+
+        // preserveAspectRatio="xMidYMax meet" 하단 정렬 비율 매칭에 따른 상단 오프셋 보정
+        const svgYOffset = svgHeight * (1 - scale);
+
+        const nodeRelativeY =
+          paddingTop +
+          SCROLL_OFFSET +
+          svgYOffset +
+          (currentLevelNode ? currentLevelNode.position.y : 0) * scale;
+
+        // 기기의 방향 및 가시 영역(헤더와 바텀시트 제외)의 세로 중앙에 노드가 위치하도록 보정
+        const isPortrait = window.innerHeight > window.innerWidth;
+        const bottomSheetVisibleHeight = isPortrait ? 160 : 140;
+        const visibleHeight = Math.max(
+          0,
+          currentClientHeight - paddingTop - bottomSheetVisibleHeight
+        );
+        const visualCenterY = paddingTop + visibleHeight / 2;
 
         // 노드가 스크롤 영역의 정중앙에 위치하도록 목표 scrollTop 설정
-        const targetScrollTop = nodeRelativeY - currentClientHeight / 2 + nodeHeight / 2;
+        const targetScrollTop = nodeRelativeY - visualCenterY;
 
         // 스크롤 상단 리밋 범위 보정 (활성 레벨 외 공간 진입 차단)
-        const minScrollTop = clipOffset * scale;
+        const minScrollTop = SCROLL_OFFSET + svgYOffset + clipOffset * scale;
         const clampedTargetScrollTop = Math.max(minScrollTop, targetScrollTop);
 
         // 브라우저 네이티브 스크롤 API에 온전히 가감속 제어권 위임
@@ -252,9 +283,6 @@ export function ClimbGraphic({
           top: clampedTargetScrollTop,
           behavior: behavior === 'auto' ? 'auto' : 'smooth',
         });
-
-        // 실제 스크롤 동작이 브라우저에 진입하였으므로 완료 플래그 기록
-        hasInitialScrolledRef.current = true;
 
         // 위치 복원 완료 상태로 전환하여 페이드인 효과 트리거
         setIsScrollPositioned(true);
@@ -269,25 +297,27 @@ export function ClimbGraphic({
 
       requestAnimationFrame(executeScroll);
     },
-    [levelData, targetLevelId, levels.length, svgHeight, clipOffset]
+    [levelData, targetLevelId, svgHeight, clipOffset, SCROLL_OFFSET, SVG_WIDTH]
   );
 
   // 진입 및 변경 시 현재 레벨로 자동 스크롤
   useEffect(() => {
     if (isReady !== undefined && !isReady) return;
+    if (!levels || levels.length === 0) return;
 
-    const currentTargetKey = `${mountain || ''}_${world}_${category}`;
+    const currentScrollKey = `${mountain || ''}_${world}_${category}_${targetLevelId}`;
 
-    // 월드, 카테고리, 산 정보가 변경되지 않았고, 이미 최초 스크롤이 수행된 상태라면 리턴하여 중복 스크롤 방지
-    if (lastTargetRef.current === currentTargetKey && hasInitialScrolledRef.current) {
+    // 이미 해당 목적지로 스크롤이 완료된 상태라면 리턴하여 중복 스크롤 방지
+    if (lastScrolledKeyRef.current === currentScrollKey) {
       return;
     }
-    lastTargetRef.current = currentTargetKey;
 
     // 최초 마운트 후 첫 실제 스크롤 동작 전까지는 애니메이션 없이 즉시 현위치를 고정('auto'),
-    // 첫 스크롤이 성공한 상태에서 월드/카테고리 전환이 일어날 때는 'smooth' 모드로 스크롤
-    const isFirstScroll = !hasInitialScrolledRef.current;
+    // 첫 스크롤이 성공한 상태에서 월드/카테고리/레벨 전환이 일어날 때는 'smooth' 모드로 스크롤
+    const isFirstScroll = !lastScrolledKeyRef.current;
     const scrollMode = isFirstScroll ? 'auto' : 'smooth';
+
+    lastScrolledKeyRef.current = currentScrollKey;
 
     if (isFirstScroll) {
       setIsScrollPositioned(false);
@@ -304,7 +334,8 @@ export function ClimbGraphic({
         clearTimeout(scrollTimeoutRef.current);
       }
     };
-  }, [mountain, world, category, isReady, scrollToCurrentLevel]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [mountain, world, category, targetLevelId, isReady, scrollToCurrentLevel]);
 
   return (
     <div
@@ -316,6 +347,7 @@ export function ClimbGraphic({
         {
           '--category-color': categoryColor,
           minHeight: `${svgHeight + 200}px`,
+          paddingBottom: 'calc(50vh + 120px)',
           opacity: isScrollPositioned ? 1 : 0,
           transition: 'opacity 0.2s ease-in-out',
         } as React.CSSProperties
