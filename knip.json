@@ -10,10 +10,15 @@
     "src/types/**",
     "src/utils/navigation.ts",
     "src/utils/tossGameLogin.ts",
-    "src/utils/MathProblemGenerator.ts",
     "src/utils/seededRandom.ts",
     "playwright-ct.config.ts",
-    "src/components/__tests__/ConfirmModal.ct.spec.tsx"
+    "src/components/__tests__/ConfirmModal.ct.spec.tsx",
+    "src/hooks/useGrowthJournal.ts",
+    "src/hooks/useRanking.ts",
+    "src/hooks/useRoadmapLayout.ts",
+    "src/components/roadmap/LinearLandmarkItem.tsx",
+    "src/components/roadmap/NonLinearTierItem.tsx",
+    "src/features/mypage/components/HistoryTab.tsx"
   ],
   "ignoreExportsUsedInFile": true,
   "rules": {

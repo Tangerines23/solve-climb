@@ -1,7 +1,6 @@
 import { useEffect } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
-import { QuizProvider } from '@/contexts/QuizContext';
-import { QuizLayout } from '@/components/quiz/QuizLayout';
+import { QuizProvider, QuizLayout } from '@/features/quiz';
 import { urls } from '@/utils/navigation';
 import './QuizPage.css';
 import {

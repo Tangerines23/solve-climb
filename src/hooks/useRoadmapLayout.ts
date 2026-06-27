@@ -1,5 +1,5 @@
 import { useMemo, useState, useEffect, useRef } from 'react';
-import { HistoryStats } from '@/hooks/useHistoryData';
+import { HistoryStats } from '@/features/mypage';
 import { ALTITUDE_MILESTONES, MilestoneItem } from '@/constants/history';
 import { ROADMAP_SCALE_CONFIG } from '@/types/roadmap';
 import { ANIMATION_CONFIG } from '@/constants/game';

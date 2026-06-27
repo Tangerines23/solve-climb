@@ -3,7 +3,7 @@ import { supabase } from '../utils/supabaseClient';
 import { safeSupabaseQuery } from '../utils/debugFetch';
 import { BADGE_DEFINITIONS } from '../constants/badges';
 import { useBadgeStore } from '../stores/useBadgeStore';
-import { HistoryStats } from '../hooks/useHistoryData';
+import { HistoryStats } from '@/features/mypage';
 import { validatedRpc, CheckAndAwardBadgesResponseSchema } from '../utils/rpcValidator';
 
 export function useBadgeChecker() {
@@ -76,7 +76,7 @@ export function useBadgeChecker() {
       // Subject Master
       if (badge.goalThemePart && badge.goalLevel) {
         const hasCleared = stats.categoryLevels.some(
-          (cat) => cat.themeId.includes(badge.goalThemePart) && cat.level >= badge.goalLevel
+          (cat: any) => cat.themeId.includes(badge.goalThemePart) && cat.level >= badge.goalLevel
         );
         if (hasCleared) qualified = true;
       }

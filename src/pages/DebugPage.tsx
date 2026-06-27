@@ -1,11 +1,13 @@
 import { useNavigate } from 'react-router-dom';
 import { Header } from '../components/Header';
-import { DummyPlayerManager } from '../components/debug/DummyPlayerManager';
-import { DailyRewardDebugSection } from '../components/debug/DailyRewardDebugSection';
-import { StaticUISection } from '../components/debug/StaticUISection';
-import { NotificationPlayground } from '../components/debug/NotificationPlayground';
-import { SitemapTree } from '../components/debug/SitemapTree';
-import { VisualSection } from '../components/debug/VisualSection';
+import {
+  DummyPlayerManager,
+  DailyRewardDebugSection,
+  StaticUISection,
+  NotificationPlayground,
+  SitemapTree,
+  VisualSection,
+} from '@/features/debug';
 import './DebugPage.css';
 
 export function DebugPage() {

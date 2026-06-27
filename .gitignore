@@ -105,3 +105,6 @@ tmp/
 
 .vercel
 .env*
+
+# Scratch files
+scratch/

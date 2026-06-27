@@ -249,8 +249,8 @@ vi.mock('@/hooks/useQuizRevive', () => ({
 }));
 
 // Mock components with access to handlers
-vi.mock('@/components/quiz/QuizLayout', async () => {
-  const { useQuiz } = await import('@/contexts/QuizContext');
+vi.mock('@/features/quiz/components/QuizLayout', async () => {
+  const { useQuiz } = await import('@/features/quiz');
   return {
     QuizLayout: vi.fn(() => {
       const { quizState, quizHandlers, modalHandlers, modalState } = useQuiz();
@@ -330,7 +330,7 @@ vi.mock('@/components/quiz/QuizLayout', async () => {
   };
 });
 
-vi.mock('@/components/quiz/QuizPreview', () => ({
+vi.mock('@/features/quiz/components/QuizPreview', () => ({
   QuizPreview: vi.fn(() => <div data-testid="quiz-preview">Quiz Preview</div>),
 }));
 

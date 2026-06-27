@@ -1,8 +1,8 @@
 import { useNavigate } from 'react-router-dom';
-import { Header } from '../components/Header';
-import { FooterNav } from '../components/FooterNav';
-import { MyPageTipPreview } from '../components/my/MyPageTipPreview';
-import { urls } from '../utils/navigation';
+import { Header } from '@/components/Header';
+import { FooterNav } from '@/components/FooterNav';
+import { MyPageTipPreview } from '@/features/mypage';
+import { urls } from '@/utils/navigation';
 import './ReviewPage.css';
 
 export function ReviewPage() {

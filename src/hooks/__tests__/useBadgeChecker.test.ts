@@ -1,8 +1,8 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { renderHook } from '@testing-library/react';
 import { useBadgeChecker } from '../useBadgeChecker';
-import { supabase } from '../../utils/supabaseClient';
-import { HistoryStats } from '../useHistoryData';
+import { supabase } from '@/utils/supabaseClient';
+import { HistoryStats } from '@/features/mypage';
 
 // Mock Badge Definitions
 vi.mock('../../constants/badges', () => ({
@@ -37,7 +37,7 @@ vi.mock('../../constants/badges', () => ({
 }));
 
 // Mock Supabase
-vi.mock('../../utils/supabaseClient', () => ({
+vi.mock('@/utils/supabaseClient', () => ({
   supabase: {
     from: vi.fn(() => ({
       select: vi.fn(),
@@ -50,7 +50,7 @@ vi.mock('../../utils/supabaseClient', () => ({
 
 const mockAddUserBadge = vi.fn();
 
-vi.mock('../../stores/useBadgeStore', () => ({
+vi.mock('@/stores/useBadgeStore', () => ({
   useBadgeStore: {
     getState: () => ({
       addUserBadge: mockAddUserBadge,
@@ -58,9 +58,8 @@ vi.mock('../../stores/useBadgeStore', () => ({
   },
 }));
 
-vi.mock('../useHistoryData', () => ({
-  // HistoryStats is a type, no need to mock if imported correctly,
-  // but if it's used as a value or for other things:
+vi.mock('@/features/mypage', () => ({
+  // HistoryStats is a type, no need to mock if imported correctly
 }));
 
 describe('useBadgeChecker', () => {

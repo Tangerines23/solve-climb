@@ -6,6 +6,7 @@ import reactRefresh from 'eslint-plugin-react-refresh';
 import security from 'eslint-plugin-security';
 import tseslint from '@typescript-eslint/eslint-plugin';
 import tsparser from '@typescript-eslint/parser';
+import boundaries from 'eslint-plugin-boundaries';
 
 export default [
   {
@@ -99,6 +100,67 @@ export default [
       'security/detect-child-process': 'off',
       'security/detect-non-literal-require': 'off',
       'security/detect-non-literal-regexp': 'off',
+    },
+  },
+  {
+    plugins: {
+      boundaries,
+    },
+    settings: {
+      'boundaries/elements': [
+        {
+          type: 'feature',
+          pattern: 'src/features/:featureName',
+        },
+        {
+          type: 'shared-component',
+          pattern: 'src/components',
+        },
+        {
+          type: 'hook',
+          pattern: 'src/hooks',
+        },
+        {
+          type: 'store',
+          pattern: 'src/stores',
+        },
+        {
+          type: 'util',
+          pattern: 'src/utils',
+        },
+        {
+          type: 'type',
+          pattern: 'src/types',
+        },
+        {
+          type: 'service',
+          pattern: 'src/services',
+        },
+        {
+          type: 'constant',
+          pattern: 'src/constants',
+        },
+        {
+          type: 'config',
+          pattern: 'src/config',
+        },
+      ],
+    },
+    rules: {
+      'boundaries/element-types': [
+        'error',
+        {
+          default: 'allow',
+          rules: [
+            {
+              from: 'feature',
+              disallow: [['feature', { featureName: '!${featureName}' }]],
+              message:
+                '서로 다른 피처 도메인은 직접 참조할 수 없습니다. 배럴 파일이나 외부 API를 통해서만 결합할 수 있습니다.',
+            },
+          ],
+        },
+      ],
     },
   },
 ];

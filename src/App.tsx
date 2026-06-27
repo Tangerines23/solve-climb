@@ -10,7 +10,7 @@ import { useDebugStore } from '@/stores/useDebugStore';
 import { useSettingsStore } from '@/stores/useSettingsStore';
 import { useConnectivity } from '@/hooks/useConnectivity';
 import { PwaUpdateNotification } from '@/components/PwaUpdateNotification';
-import { RequireAuth } from '@/components/auth/RequireAuth';
+import { RequireAuth } from '@/features/auth';
 
 const HomePage = resilientLazy(
   () => import('@/pages/HomePage').then((module) => ({ default: module.HomePage })),
@@ -47,7 +47,7 @@ const ReviewPage = resilientLazy(
   'ReviewPage'
 );
 const MyPage = resilientLazy(
-  () => import('@/pages/MyPage').then((module) => ({ default: module.MyPage })),
+  () => import('@/features/mypage').then((module) => ({ default: module.MyPage })),
   'MyPage'
 );
 const NotificationPage = resilientLazy(
@@ -65,7 +65,7 @@ const PrivacyPolicyPage = resilientLazy(
 );
 // AuthCallbackPage & AuthTestPage imports removed
 const ShopPage = resilientLazy(
-  () => import('@/pages/ShopPage').then((module) => ({ default: module.ShopPage })),
+  () => import('@/features/item').then((module) => ({ default: module.ShopPage })),
   'ShopPage'
 );
 
@@ -75,20 +75,20 @@ const shouldShowDebug = !import.meta.env.PROD && !isCI;
 
 const DebugPanel = !shouldShowDebug
   ? () => null
-  : resilientLazy(() => import('./components/DebugPanel'), 'DebugPanel');
+  : resilientLazy(
+      () => import('@/features/debug').then((m) => ({ default: m.DebugPanel })),
+      'DebugPanel'
+    );
 const DebugOverlay = !shouldShowDebug
   ? () => null
   : resilientLazy(
-      () => import('./components/debug/DebugOverlay').then((m) => ({ default: m.DebugOverlay })),
+      () => import('@/features/debug').then((m) => ({ default: m.DebugOverlay })),
       'DebugOverlay'
     );
 const DebugReturnFloater = !shouldShowDebug
   ? () => null
   : resilientLazy(
-      () =>
-        import('./components/debug/DebugReturnFloater').then((m) => ({
-          default: m.DebugReturnFloater,
-        })),
+      () => import('@/features/debug').then((m) => ({ default: m.DebugReturnFloater })),
       'DebugReturnFloater'
     );
 const VisualGuardian = !shouldShowDebug
@@ -100,7 +100,7 @@ const VisualGuardian = !shouldShowDebug
 const DebugShortcutsWrapper = !shouldShowDebug
   ? () => null
   : resilientLazy(
-      () => import('./components/debug/DebugShortcutsWrapper'),
+      () => import('@/features/debug').then((m) => ({ default: m.DebugShortcutsWrapper })),
       'DebugShortcutsWrapper'
     );
 

@@ -1,6 +1,6 @@
 import { memo } from 'react';
 import { MilestoneItem } from '@/types/roadmap';
-import { HistoryStats } from '@/hooks/useHistoryData';
+import { HistoryStats } from '@/features/mypage';
 import { vibrateShort } from '@/utils/haptic';
 
 interface NonLinearTierItemProps {

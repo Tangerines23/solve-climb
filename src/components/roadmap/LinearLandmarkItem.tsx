@@ -1,6 +1,6 @@
 import { memo } from 'react';
 import { MilestoneItem } from '@/types/roadmap';
-import { HistoryStats } from '@/hooks/useHistoryData';
+import { HistoryStats } from '@/features/mypage';
 
 interface LinearLandmarkItemProps {
   item: MilestoneItem;
