@@ -45,7 +45,7 @@ vi.mock('@/components/ProfileForm', () => ({
     </div>
   ),
 }));
-vi.mock('@/components/DataResetConfirmModal', () => ({
+vi.mock('@/features/debug', () => ({
   DataResetConfirmModal: ({ isOpen, onConfirm, onCancel }: any) =>
     isOpen ? (
       <div data-testid="reset-modal">
