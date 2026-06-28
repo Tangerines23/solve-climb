@@ -9,12 +9,11 @@ test.describe('Visual Regression Testing (VRT) - UI 일관성 검증', () => {
   test.use({ viewport: { width: 375, height: 812 } });
 
   test('홈 화면 (Home Page)', async ({ page }) => {
-    await page.goto('/');
-    // networkidle is unstable with Supabase realtime. Wait for main content stable state.
-    await page.waitForSelector('.home-page', { timeout: 15000 });
-    await page.waitForLoadState('domcontentloaded');
+    await page.goto('/', { waitUntil: 'domcontentloaded', timeout: 30000 });
+    // Increase timeout to 30s for slow database connection on CI environments
+    await page.waitForSelector('.home-page', { state: 'attached', timeout: 30000 });
     // 애니메이션 및 동적 데이터 로딩 대기
-    await page.waitForTimeout(2000);
+    await page.waitForTimeout(3000);
 
     await expect(page).toHaveScreenshot('vrt-home-page.png', {
       fullPage: true,
