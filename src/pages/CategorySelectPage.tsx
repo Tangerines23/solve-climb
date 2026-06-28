@@ -107,7 +107,7 @@ export function CategorySelectPage() {
       <main className="topic-select-main">
         <div className="topic-select-content">
           <div className="topic-select-header-section">
-            <h2 className="topic-select-category-title">{mountainName} - 분야 선택</h2>
+            <h2 className="topic-select-category-title">{mountainName} - 등반 방법 선택</h2>
           </div>
           <div id="topic-list-container" className="topic-list-container">
             {categories.map((category) => {
@@ -125,7 +125,11 @@ export function CategorySelectPage() {
                 const parentProgress = getCategoryProgress(lastWorld, unlockCondition.categoryId);
                 if (parentProgress < unlockCondition.progress) {
                   isLocked = true;
-                  unlockMessage = `${unlockCondition.categoryId} ${unlockCondition.progress}% 달성 시 해금`;
+                  const parentName =
+                    APP_CONFIG.CATEGORY_MAP[
+                      unlockCondition.categoryId as keyof typeof APP_CONFIG.CATEGORY_MAP
+                    ] || unlockCondition.categoryId;
+                  unlockMessage = `${parentName} ${unlockCondition.progress}% 달성 시 해금`;
                 }
               }
 

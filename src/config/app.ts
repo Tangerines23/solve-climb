@@ -67,16 +67,16 @@ export const APP_CONFIG = {
   CATEGORIES: [
     {
       id: '기초',
-      name: '기초 (Training)',
-      icon: '1️⃣',
+      name: '워킹 (Walking)',
+      icon: '🚶‍♂️',
       color: '#10b981',
       symbol: '1, 2, 3',
       mountainId: 'math',
     },
     {
       id: '논리',
-      name: '논리 (Brain)',
-      icon: '🧩',
+      name: '트레킹 (Trekking)',
+      icon: '🥾',
       color: '#3b82f6',
       symbol: '?, O/X',
       mountainId: 'math',
@@ -84,8 +84,8 @@ export const APP_CONFIG = {
     },
     {
       id: '대수',
-      name: '대수 (Equation)',
-      icon: 'χ',
+      name: '릿지 (Ridge)',
+      icon: '🧗‍♂️',
       color: '#8b5cf6',
       symbol: 'x, y',
       mountainId: 'math',
@@ -93,8 +93,8 @@ export const APP_CONFIG = {
     },
     {
       id: '심화',
-      name: '심화 (Expert)',
-      icon: '📈',
+      name: '암벽 (Climbing)',
+      icon: '🧗',
       color: '#f59e0b',
       symbol: 'f, ∫',
       mountainId: 'math',
@@ -129,10 +129,10 @@ export const APP_CONFIG = {
   // 호환성을 위한 하위 주제 매핑 (Mountain ID -> Categories)
   SUB_TOPICS: {
     math: [
-      { id: '기초', name: '기초 (Training)', icon: '1️⃣' },
-      { id: '논리', name: '논리 (Brain)', icon: '🧩' },
-      { id: '대수', name: '대수 (Equation)', icon: 'χ' },
-      { id: '심화', name: '심화 (Expert)', icon: '📈' },
+      { id: '기초', name: '워킹 (Walking)', icon: '🚶‍♂️' },
+      { id: '논리', name: '트레킹 (Trekking)', icon: '🥾' },
+      { id: '대수', name: '릿지 (Ridge)', icon: '🧗‍♂️' },
+      { id: '심화', name: '암벽 (Climbing)', icon: '🧗' },
     ],
     language: [
       { id: '히라가나', name: '히라가나 (Hiragana)', icon: 'あ' },
@@ -147,48 +147,53 @@ export const APP_CONFIG = {
   CATEGORY_MAP: {
     math: '수학의 산',
     language: '언어의 산',
-    기초: '기초 (Training)',
-    논리: '논리 (Brain)',
-    대수: '대수 (Equation)',
-    심화: '심화 (Expert)',
+    기초: '워킹 (Walking)',
+    논리: '트레킹 (Trekking)',
+    대수: '릿지 (Ridge)',
+    심화: '암벽 (Climbing)',
   },
 
   // 월드 설정
   WORLDS: [
     {
       id: 'World1',
-      name: '수와 연산',
+      name: '수와 연산 능선',
       desc: '사칙연산의 기초부터 방정식의 논리까지, 수학적 사고의 근육을 키워보세요.',
       mountainId: 'math',
     },
     {
       id: 'World2',
-      name: '도형과 공간',
+      name: '도형과 공간 능선',
       desc: '평면과 입체를 넘나들며 각도와 넓이, 피타고라스의 정리를 정복하세요.',
       mountainId: 'math',
     },
     {
       id: 'World3',
-      name: '확률과 통계',
+      name: '확률과 통계 능선',
       desc: '평균부터 조합까지, 데이터 속에서 확률의 법칙과 정보를 읽어내는 힘.',
       mountainId: 'math',
     },
     {
       id: 'World4',
-      name: '공학 및 응용',
+      name: '공학 및 응용 능선',
       desc: '이진수와 논리 게이트로 배우는 컴퓨터 과학, 공학적 문제 해결의 첫걸음.',
       mountainId: 'math',
     },
-    { id: 'LangWorld1', name: '일본어 시작', desc: '문자와 기본 표현', mountainId: 'language' },
+    {
+      id: 'LangWorld1',
+      name: '일본어 시작 능선',
+      desc: '문자와 기본 표현',
+      mountainId: 'language',
+    },
   ],
 
   // 월드 ID -> 이름 매핑
   WORLD_MAP: {
-    World1: '수와 연산',
-    World2: '도형과 공간',
-    World3: '확률과 통계',
-    World4: '공학 및 응용',
-    LangWorld1: '일본어 시작',
+    World1: '수와 연산 능선',
+    World2: '도형과 공간 능선',
+    World3: '확률과 통계 능선',
+    World4: '공학 및 응용 능선',
+    LangWorld1: '일본어 시작 능선',
   },
 
   // 라우팅 경로

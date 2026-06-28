@@ -154,19 +154,21 @@ export function MyPageTipPreview() {
       <div className="my-page-tip-preview-tabs">
         {(['기초', '논리', '대수', '심화'] as CategoryType[]).map((cat) => {
           const isLocked = cat !== '기초';
+          const displayName =
+            cat === '기초' ? '워킹' : cat === '논리' ? '트레킹' : cat === '대수' ? '릿지' : '암벽';
           return (
             <button
               key={cat}
               className={`my-page-tip-preview-tab ${category === cat ? 'active' : ''} ${isLocked ? 'locked' : ''}`}
               onClick={() => {
                 if (isLocked) {
-                  showToast(`${cat} 분야는 현재 잠겨 있습니다.`, '🔒');
+                  showToast(`${displayName} 코스는 현재 잠겨 있습니다.`, '🔒');
                   return;
                 }
                 handleCategoryChange(cat);
               }}
             >
-              {isLocked ? `🔒 ${cat}` : cat}
+              {isLocked ? `🔒 ${displayName}` : displayName}
             </button>
           );
         })}
@@ -174,24 +176,24 @@ export function MyPageTipPreview() {
 
       {/* 조작 화살표 영역 */}
       <div className="my-page-tip-preview-selectors">
-        {/* 월드 선택 화살표 */}
+        {/* 능선 선택 화살표 */}
         <div className={`my-page-tip-preview-selector ${category !== '기초' ? 'disabled' : ''}`}>
           <button
             className="my-page-tip-preview-arrow-btn"
             onClick={() => handleWorldMove('prev')}
             disabled={category !== '기초'}
-            aria-label="이전 월드"
+            aria-label="이전 능선"
           >
             &lt;
           </button>
           <span className="my-page-tip-preview-selector-value">
-            {category === '기초' ? getWorldName(world) : '월드 고정'}
+            {category === '기초' ? `${getWorldName(world)} 능선` : '능선 고정'}
           </span>
           <button
             className="my-page-tip-preview-arrow-btn"
             onClick={() => handleWorldMove('next')}
             disabled={category !== '기초'}
-            aria-label="다음 월드"
+            aria-label="다음 능선"
           >
             &gt;
           </button>

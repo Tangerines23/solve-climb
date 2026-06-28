@@ -125,7 +125,7 @@ describe('CategorySelectPage', () => {
       </BrowserRouter>
     );
 
-    expect(screen.getByText('Mathematics - 분야 선택')).toBeInTheDocument();
+    expect(screen.getByText('Mathematics - 등반 방법 선택')).toBeInTheDocument();
     expect(screen.getByText('Category 1')).toBeInTheDocument();
   });
 
