@@ -67,36 +67,36 @@ export const APP_CONFIG = {
   CATEGORIES: [
     {
       id: '기초',
-      name: '워킹 (Walking)',
-      icon: '🚶‍♂️',
+      name: '기초 (Training)',
+      icon: '1️⃣',
       color: '#10b981',
-      symbol: '1, 2, 3',
+      symbol: '장비 없이 가볍게 걷는 완만한 산책길 (워킹)',
       mountainId: 'math',
     },
     {
       id: '논리',
-      name: '트레킹 (Trekking)',
-      icon: '🥾',
+      name: '논리 (Brain)',
+      icon: '🧩',
       color: '#3b82f6',
-      symbol: '?, O/X',
+      symbol: '안전 장비가 필요한 험준한 산길 (트레킹)',
       mountainId: 'math',
       unlockCondition: { categoryId: '기초', progress: 30 },
     },
     {
       id: '대수',
-      name: '릿지 (Ridge)',
-      icon: '🧗‍♂️',
+      name: '대수 (Equation)',
+      icon: 'χ',
       color: '#8b5cf6',
-      symbol: 'x, y',
+      symbol: '손발을 다 써서 바위를 타고 오르는 길 (릿지)',
       mountainId: 'math',
       unlockCondition: { categoryId: '기초', progress: 60 },
     },
     {
       id: '심화',
-      name: '암벽 (Climbing)',
-      icon: '🧗',
+      name: '심화 (Expert)',
+      icon: '📈',
       color: '#f59e0b',
-      symbol: 'f, ∫',
+      symbol: '전문 클라이밍 장비로 정복하는 절벽 (암벽)',
       mountainId: 'math',
       unlockCondition: { categoryId: '대수', progress: 50 },
     },
@@ -129,10 +129,10 @@ export const APP_CONFIG = {
   // 호환성을 위한 하위 주제 매핑 (Mountain ID -> Categories)
   SUB_TOPICS: {
     math: [
-      { id: '기초', name: '워킹 (Walking)', icon: '🚶‍♂️' },
-      { id: '논리', name: '트레킹 (Trekking)', icon: '🥾' },
-      { id: '대수', name: '릿지 (Ridge)', icon: '🧗‍♂️' },
-      { id: '심화', name: '암벽 (Climbing)', icon: '🧗' },
+      { id: '기초', name: '기초 (Training)', icon: '1️⃣' },
+      { id: '논리', name: '논리 (Brain)', icon: '🧩' },
+      { id: '대수', name: '대수 (Equation)', icon: 'χ' },
+      { id: '심화', name: '심화 (Expert)', icon: '📈' },
     ],
     language: [
       { id: '히라가나', name: '히라가나 (Hiragana)', icon: 'あ' },
@@ -147,10 +147,10 @@ export const APP_CONFIG = {
   CATEGORY_MAP: {
     math: '수학의 산',
     language: '언어의 산',
-    기초: '워킹 (Walking)',
-    논리: '트레킹 (Trekking)',
-    대수: '릿지 (Ridge)',
-    심화: '암벽 (Climbing)',
+    기초: '기초 (Training)',
+    논리: '논리 (Brain)',
+    대수: '대수 (Equation)',
+    심화: '심화 (Expert)',
   },
 
   // 월드 설정

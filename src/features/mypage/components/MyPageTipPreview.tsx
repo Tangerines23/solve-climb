@@ -154,21 +154,19 @@ export function MyPageTipPreview() {
       <div className="my-page-tip-preview-tabs">
         {(['기초', '논리', '대수', '심화'] as CategoryType[]).map((cat) => {
           const isLocked = cat !== '기초';
-          const displayName =
-            cat === '기초' ? '워킹' : cat === '논리' ? '트레킹' : cat === '대수' ? '릿지' : '암벽';
           return (
             <button
               key={cat}
               className={`my-page-tip-preview-tab ${category === cat ? 'active' : ''} ${isLocked ? 'locked' : ''}`}
               onClick={() => {
                 if (isLocked) {
-                  showToast(`${displayName} 코스는 현재 잠겨 있습니다.`, '🔒');
+                  showToast(`${cat} 분야는 현재 잠겨 있습니다.`, '🔒');
                   return;
                 }
                 handleCategoryChange(cat);
               }}
             >
-              {isLocked ? `🔒 ${displayName}` : displayName}
+              {isLocked ? `🔒 ${cat}` : cat}
             </button>
           );
         })}
