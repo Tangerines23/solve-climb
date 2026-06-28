@@ -117,7 +117,10 @@ export function CategorySelectPage() {
               let isLocked = false;
               let unlockMessage = '';
 
-              if (unlockCondition && !bypassLevelLock) {
+              if (['논리', '대수', '심화'].includes(category.id)) {
+                isLocked = true;
+                unlockMessage = '개발 중';
+              } else if (unlockCondition && !bypassLevelLock) {
                 // Check bypass flag
                 const parentProgress = getCategoryProgress(lastWorld, unlockCondition.categoryId);
                 if (parentProgress < unlockCondition.progress) {
