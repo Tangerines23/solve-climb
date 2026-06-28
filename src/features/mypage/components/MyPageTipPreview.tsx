@@ -3,12 +3,14 @@ import { WORLD_TIPS, CATEGORY_TIPS, type TipItem } from '@/constants/tips';
 import { generateQuestion } from '@/utils/quizGenerator';
 import { getSolutionProcess } from '@/utils/solutionExplainer';
 import { type QuizQuestion, type Topic, type World } from '@/types/quiz';
+import { useToastStore } from '@/stores/useToastStore';
 import './MyPageTipPreview.css';
 
 type CategoryType = '기초' | '논리' | '대수' | '심화';
 type WorldType = 'World1' | 'World2' | 'World3' | 'World4';
 
 export function MyPageTipPreview() {
+  const showToast = useToastStore((state) => state.showToast);
   const [category, setCategory] = useState<CategoryType>('기초');
   const [world, setWorld] = useState<WorldType>('World1');
   const [level, setLevel] = useState<number>(1);
@@ -150,15 +152,24 @@ export function MyPageTipPreview() {
 
       {/* 카테고리(분야) 선택 탭 */}
       <div className="my-page-tip-preview-tabs">
-        {(['기초', '논리', '대수', '심화'] as CategoryType[]).map((cat) => (
-          <button
-            key={cat}
-            className={`my-page-tip-preview-tab ${category === cat ? 'active' : ''}`}
-            onClick={() => handleCategoryChange(cat)}
-          >
-            {cat}
-          </button>
-        ))}
+        {(['기초', '논리', '대수', '심화'] as CategoryType[]).map((cat) => {
+          const isLocked = cat !== '기초';
+          return (
+            <button
+              key={cat}
+              className={`my-page-tip-preview-tab ${category === cat ? 'active' : ''} ${isLocked ? 'locked' : ''}`}
+              onClick={() => {
+                if (isLocked) {
+                  showToast(`${cat} 분야는 현재 잠겨 있습니다.`, '🔒');
+                  return;
+                }
+                handleCategoryChange(cat);
+              }}
+            >
+              {isLocked ? `🔒 ${cat}` : cat}
+            </button>
+          );
+        })}
       </div>
 
       {/* 조작 화살표 영역 */}

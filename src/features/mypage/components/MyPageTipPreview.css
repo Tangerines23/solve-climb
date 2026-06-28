@@ -100,6 +100,17 @@
   }
 }
 
+.my-page-tip-preview-tab.locked {
+  opacity: 0.5;
+  cursor: not-allowed;
+  font-size: 13px;
+}
+
+.my-page-tip-preview-tab.locked:hover {
+  color: var(--color-toss-text-secondary) !important;
+  background: transparent !important;
+}
+
 /* 조작 컨트롤러 레이아웃 */
 .my-page-tip-preview-selectors {
   display: flex;
