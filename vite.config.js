@@ -18,11 +18,10 @@ export default defineConfig(({ mode }) => {
   const isVercel = process.env.VERCEL === '1';
   const isAnalyze = process.env.ANALYZE === 'true';
 
-  const getGitPRNumber = () => {
+  const getGitMergeCount = () => {
     try {
-      const branch = execSync('git rev-parse --abbrev-ref HEAD').toString().trim();
-      const prMatch = branch.match(/pr[-_/](\d+)/i);
-      return prMatch ? prMatch[1] : '0';
+      const log = execSync('git log --merges --oneline').toString().trim();
+      return log ? String(log.split('\n').filter(Boolean).length) : '0';
     } catch (e) {
       return '0';
     }
@@ -80,8 +79,8 @@ export default defineConfig(({ mode }) => {
     },
     define: {
       'import.meta.env.VITE_IS_VERCEL': JSON.stringify(isVercel),
-      'import.meta.env.VITE_PR_NUMBER': JSON.stringify(
-        process.env.VITE_PR_NUMBER || getGitPRNumber()
+      'import.meta.env.VITE_MERGE_COUNT': JSON.stringify(
+        process.env.VITE_MERGE_COUNT || getGitMergeCount()
       ),
       'import.meta.env.VITE_CI_RUN_NUMBER': JSON.stringify(
         process.env.VITE_CI_RUN_NUMBER || getGitCommitCount()

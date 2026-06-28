@@ -18,13 +18,13 @@ import { WORLD1_LEVELS } from '@/constants/levels';
  */
 
 const majorVersion = packageJson.version.split('.')[0] || '0';
-const prNumber = import.meta.env.VITE_PR_NUMBER || '0';
+const mergeCount = import.meta.env.VITE_MERGE_COUNT || '0';
 const runNumber = import.meta.env.VITE_CI_RUN_NUMBER || '0';
 
 // 앱 설정 상수 중앙 관리
 export const APP_CONFIG = {
   APP_NAME: 'Solve Climb',
-  APP_VERSION: `${majorVersion}.${prNumber}.${runNumber}`,
+  APP_VERSION: `${majorVersion}.${mergeCount}.${runNumber}`,
 
   // 기능 플래그 (Feature Flags) - 초기 백업 설정
   // 실제 제어는 useFeatureFlagStore를 사용하세요.
