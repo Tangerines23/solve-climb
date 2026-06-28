@@ -43,19 +43,23 @@ export function FooterNav() {
   };
 
   return (
-    <nav className="footer-nav">
-      {navItems.map((item) => (
-        <button
-          key={item.id}
-          className={`footer-nav-item ${isActive(item) ? 'active' : ''}`}
-          onClick={() => handleNavClick(item)}
-          aria-current={isActive(item) ? 'page' : undefined}
-          aria-label={item.label}
-        >
-          <span className="footer-nav-icon">{item.icon}</span>
-          <span className="footer-nav-label">{item.label}</span>
-        </button>
-      ))}
-    </nav>
+    <>
+      <nav className="footer-nav">
+        {navItems.map((item) => (
+          <button
+            key={item.id}
+            className={`footer-nav-item ${isActive(item) ? 'active' : ''}`}
+            onClick={() => handleNavClick(item)}
+            aria-current={isActive(item) ? 'page' : undefined}
+            aria-label={item.label}
+          >
+            <span className="footer-nav-icon">{item.icon}</span>
+            <span className="footer-nav-label">{item.label}</span>
+          </button>
+        ))}
+      </nav>
+      {/* 하단 틈새 방어용 연장 블록 (스크롤 바운스나 뷰포트 오차 대응) */}
+      <div className="footer-nav-bottom-guard" />
+    </>
   );
 }
