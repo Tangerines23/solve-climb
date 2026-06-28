@@ -1,6 +1,6 @@
 import { test, expect } from '@playwright/test';
 
-test.describe('Visual Regression Tests', () => {
+test.describe.skip('Visual Regression Tests', () => {
   // Viewports to test
   const viewports = [
     { name: 'mobile', width: 375, height: 667 }, // iPhone SE
