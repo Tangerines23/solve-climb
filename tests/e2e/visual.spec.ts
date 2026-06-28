@@ -1,6 +1,7 @@
 import { test, expect } from '@playwright/test';
 
 test('Dummy Visual Test for CI stability', async () => {
+  // Re-trigger CI deadlock resolution
   expect(true).toBe(true);
 });
 
