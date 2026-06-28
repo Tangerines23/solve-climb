@@ -291,3 +291,11 @@
     transform: translateX(-50%) translateY(20px);
   }
 }
+
+.topic-symbol {
+  font-size: 0.875rem;
+  color: var(--color-gray-400);
+  line-height: 1.5;
+  white-space: pre-line;
+  margin: 0;
+}

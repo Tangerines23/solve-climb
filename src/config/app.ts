@@ -63,14 +63,13 @@ export const APP_CONFIG = {
     language: '언어의 산',
   },
 
-  // 카테고리 설정 (산 내부의 4대 분야)
   CATEGORIES: [
     {
       id: '기초',
       name: '기초 (Training)',
       icon: '1️⃣',
       color: '#10b981',
-      symbol: '장비 없이 가볍게 걷는 완만한 산책길 (워킹)',
+      symbol: '워킹\n장비 없이 가볍게 걷는 완만한 산책길',
       mountainId: 'math',
     },
     {
@@ -78,7 +77,7 @@ export const APP_CONFIG = {
       name: '논리 (Brain)',
       icon: '🧩',
       color: '#3b82f6',
-      symbol: '안전 장비가 필요한 험준한 산길 (트레킹)',
+      symbol: '트레킹\n안전 장비가 필요한 험준한 산길',
       mountainId: 'math',
       unlockCondition: { categoryId: '기초', progress: 30 },
     },
@@ -87,7 +86,7 @@ export const APP_CONFIG = {
       name: '대수 (Equation)',
       icon: 'χ',
       color: '#8b5cf6',
-      symbol: '손발을 다 써서 바위를 타고 오르는 길 (릿지)',
+      symbol: '릿지\n손발을 다 써서 바위를 타고 오르는 길',
       mountainId: 'math',
       unlockCondition: { categoryId: '기초', progress: 60 },
     },
@@ -96,7 +95,7 @@ export const APP_CONFIG = {
       name: '심화 (Expert)',
       icon: '📈',
       color: '#f59e0b',
-      symbol: '전문 클라이밍 장비로 정복하는 절벽 (암벽)',
+      symbol: '암벽\n전문 클라이밍 장비로 정복하는 절벽',
       mountainId: 'math',
       unlockCondition: { categoryId: '대수', progress: 50 },
     },
