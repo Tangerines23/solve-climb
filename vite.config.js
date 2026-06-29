@@ -115,6 +115,7 @@ export default defineConfig(({ mode }) => {
       environment: 'jsdom',
       setupFiles: './src/setupTests.ts',
       css: true,
+      globalSetup: './scripts/vitest-global-setup.js',
       exclude: [
         'node_modules/**',
         'dist/**',
@@ -170,7 +171,7 @@ export default defineConfig(({ mode }) => {
         reportsDirectory: './coverage',
       },
       outputFile: './reports/test-results.xml',
-      reporters: ['default', 'junit'],
+      reporters: ['default', 'junit', './scripts/vitest-exit-reporter.js'],
     },
   };
 });

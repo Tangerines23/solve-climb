@@ -42,18 +42,20 @@ const createSupabaseClient = (): SupabaseClient => {
     return createClient('http://localhost', 'dummy-key');
   }
 
-  // Supabase 클라이언트 옵션 설정
   const redirectUrl = getRedirectUrl();
+  const isTest =
+    typeof process !== 'undefined' &&
+    (process.env.NODE_ENV === 'test' || process.env.VITEST === 'true');
   const options = {
     auth: {
       // 콜백 URL 설정
       redirectTo: redirectUrl,
       // 자동 새로고침 활성화
-      autoRefreshToken: true,
+      autoRefreshToken: !isTest,
       // 세션 지속 활성화
-      persistSession: true,
+      persistSession: !isTest,
       // URL에서 세션 감지 활성화 (콜백 처리용)
-      detectSessionInUrl: true,
+      detectSessionInUrl: !isTest,
     },
     global: {
       // 네트워크 요청에 5초 타임아웃 적용 (CI 등 Supabase 접근 불가 환경에서 무한 대기 방지)
@@ -97,8 +99,8 @@ const createSupabaseClient = (): SupabaseClient => {
   const client = createClient<Database>(supabaseUrl, supabaseKey, options);
 
   // 익명 사용자 인증 자동 수행 (RLS 정책을 통과하기 위해)
-  // 세션이 없을 때만 익명 로그인 시도 (비동기, 실패해도 무시)
-  if (typeof window !== 'undefined') {
+  // 세션이 없을 때만 익명 로그인 시도 (비동기, 실패해도 무시, 테스트 환경 제외)
+  if (typeof window !== 'undefined' && !isTest) {
     client.auth.getSession().then(({ data: { session } }) => {
       // 더미 URL이 아닐 때만 익명 로그인 시도
       if (!session && ENV.VITE_SUPABASE_URL) {

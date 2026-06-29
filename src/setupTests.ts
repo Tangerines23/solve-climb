@@ -18,7 +18,7 @@ afterEach(() => {
   cleanup();
 });
 
-// 테스트 완료 후 MSW 서버 종료
+// 테스트 완료 후 MSW 서버 종료 및 리소스 누수 진단
 afterAll(() => {
   try {
     if (typeof server !== 'undefined' && server && typeof server.close === 'function') {
@@ -28,6 +28,30 @@ afterAll(() => {
     // Silence Headers ReferenceError during teardown in limited environments
     if (!(error instanceof ReferenceError && error.message.includes('Headers'))) {
       throw error;
+    }
+  }
+
+  // Active handles diagnostic to find what hangs Vitest
+  if (typeof process !== 'undefined' && typeof (process as any)._getActiveHandles === 'function') {
+    const handles = (process as any)._getActiveHandles();
+    // Filter out standard handles like stdout/stderr/stdin (which have fd: 1/2/0)
+    const active = handles.filter((h: any) => {
+      if (!h) return false;
+      // standard streams
+      if (h.fd === 0 || h.fd === 1 || h.fd === 2) return false;
+      return true;
+    });
+    if (active.length > 0) {
+      console.log(`[Teardown Diagnostic] Active handles remaining: ${active.length}`);
+      active.forEach((h: any, i: number) => {
+        console.log(`  Handle ${i}: class=${h?.constructor?.name}, type=${h?.type || 'unknown'}`);
+        if (h?._idleTimeout) {
+          console.log(`    - Timer timeout: ${h._idleTimeout}ms`);
+        }
+        if (h?._onTimeout) {
+          console.log(`    - Timer handler exists`);
+        }
+      });
     }
   }
 });

@@ -12,12 +12,5 @@ export default mergeConfig(baseConfig, {
     include: ['src/**/*.test.{ts,tsx}'],
     exclude: [],
     testTimeout: 10000,
-    hookTimeout: 10000,
-    poolOptions: {
-      threads: {
-        minThreads: 1,
-        maxThreads: 4,
-      },
-    },
   },
 });
