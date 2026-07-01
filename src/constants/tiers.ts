@@ -1,5 +1,6 @@
-// src/constants/tiers.ts
 import { supabase } from '../utils/supabaseClient';
+import { safeSupabaseQuery } from '../utils/debugFetch';
+import { logError } from '../utils/errorHandler';
 
 export type TierLevel = 0 | 1 | 2 | 3 | 4 | 5 | 6;
 
@@ -47,7 +48,9 @@ export async function loadTierDefinitions(): Promise<TierInfo[]> {
   }
 
   try {
-    const { data, error } = await supabase.from('tier_definitions').select('*').order('level');
+    const { data, error } = await safeSupabaseQuery(
+      supabase.from('tier_definitions').select('*').order('level')
+    );
 
     if (error || !data || data.length === 0) {
       // 폴백: 하드코딩된 기본값
@@ -67,7 +70,7 @@ export async function loadTierDefinitions(): Promise<TierInfo[]> {
     cacheTimestamp = Date.now();
     return cachedTierLevels;
   } catch (error) {
-    console.error('Failed to load tier definitions:', error);
+    logError('tiers.ts#loadTierDefinitions', error);
     // 폴백 반환
     if (!cachedTierLevels) {
       cachedTierLevels = FALLBACK_TIER_DEFINITIONS;
@@ -86,11 +89,9 @@ export async function loadCycleCap(): Promise<number> {
   }
 
   try {
-    const { data, error } = await supabase
-      .from('game_config')
-      .select('value')
-      .eq('key', 'tier_cycle_cap')
-      .single();
+    const { data, error } = await safeSupabaseQuery(
+      supabase.from('game_config').select('value').eq('key', 'tier_cycle_cap').single()
+    );
 
     if (error || !data) {
       // 폴백: 기본값
@@ -103,7 +104,7 @@ export async function loadCycleCap(): Promise<number> {
     cacheTimestamp = Date.now();
     return cachedCycleCap;
   } catch (error) {
-    console.error('Failed to load cycle cap:', error);
+    logError('tiers.ts#loadCycleCap', error);
     // 폴백 반환
     if (cachedCycleCap === null) {
       cachedCycleCap = FALLBACK_CYCLE_CAP;

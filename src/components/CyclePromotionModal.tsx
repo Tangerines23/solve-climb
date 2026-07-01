@@ -2,6 +2,7 @@
 import React, { useState } from 'react';
 import { supabase } from '../utils/supabaseClient';
 import { BaseModal } from './BaseModal';
+import { logError } from '../utils/errorHandler';
 import './CyclePromotionModal.css';
 
 interface CyclePromotionModalProps {
@@ -39,7 +40,7 @@ export const CyclePromotionModal: React.FC<CyclePromotionModalProps> = ({
         setError(data?.error || '승급 처리에 실패했습니다.');
       }
     } catch (err) {
-      console.error('Failed to promote:', err);
+      logError('CyclePromotionModal', err);
       setError('승급 처리 중 오류가 발생했습니다.');
     } finally {
       setIsPromoting(false);

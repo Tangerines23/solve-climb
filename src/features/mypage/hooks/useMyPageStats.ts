@@ -5,6 +5,7 @@ import { type LocalSession } from '@/utils/safeJsonParse';
 import { storageService, STORAGE_KEYS } from '@/services';
 import { safeSupabaseQuery } from '@/utils/debugFetch';
 import { isValidUUID } from '@/utils/validation';
+import { logError } from '@/utils/errorHandler';
 
 import type { Session, PostgrestError, AuthChangeEvent } from '@supabase/supabase-js';
 
@@ -203,7 +204,7 @@ export function useMyPageStats(): UseMyPageStatsResult {
       const profileError = profileResult?.error;
 
       if (profileError) {
-        console.error('[useMyPageStats] 프로필 조회 실패:', profileError);
+        logError('useMyPageStats#fetchStats_profile', profileError);
         // 프로필 조회 실패 시에도 기본값으로 계속 진행
       }
 
@@ -332,7 +333,7 @@ export function useMyPageStats(): UseMyPageStatsResult {
         lastPlayedAt: null,
       });
     } catch (err) {
-      console.error('Failed to fetch user stats:', err);
+      logError('useMyPageStats#fetchStats', err);
       setError(err instanceof Error ? err.message : '통계를 불러오는 중 오류가 발생했습니다.');
       // 에러 발생 시 기본값 설정
       setStats({

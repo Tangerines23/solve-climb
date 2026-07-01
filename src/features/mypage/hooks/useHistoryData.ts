@@ -7,6 +7,7 @@ import { parseLocalSession } from '@/utils/safeJsonParse';
 import { storageService, STORAGE_KEYS } from '@/services';
 import { Session } from '@supabase/supabase-js';
 import { getTimeAgo } from '@/utils/date';
+import { logError } from '@/utils/errorHandler';
 import {
   getUserTitle,
   getSmartComment,
@@ -429,7 +430,7 @@ export function useHistoryData() {
 
       setStats(finalStats);
     } catch (err: unknown) {
-      console.error('History data error:', err);
+      logError('useHistoryData#fetchHistoryData', err);
       setError((err as Error).message || '알 수 없는 오류가 발생했습니다.');
     } finally {
       setLoading(false);
