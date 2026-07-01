@@ -1,6 +1,6 @@
 
 project: solve-climb
-generatedAt: "2026-07-01T13:45:21.286Z"
+generatedAt: "2026-07-01T13:55:37.447Z"
 files:
   src/App.tsx:
     imports: [@/utils/resilientLazy, @/stores/useLevelProgressStore, @/stores/useAuthStore, @/hooks/useCustomBackNavigation, @/components/GlobalLoadingIndicator, @/stores/useErrorLogStore, @/stores/useDebugStore, @/stores/useSettingsStore, @/hooks/useConnectivity, @/components/PwaUpdateNotification, @/features/auth, @/components/GlobalToastContainer]
@@ -1620,7 +1620,7 @@ files:
         description: 레벨 파라미터 검증
         calls: [validateNumberParam]
   src/utils/userWithdraw.ts:
-    imports: [./supabaseClient, ../stores/useProfileStore, ../stores/useLevelProgressStore, ./env, ../services]
+    imports: [./supabaseClient, ../stores/useProfileStore, ../stores/useLevelProgressStore, ./env, ../services, ./errorHandler]
     exports:
       - name: withdrawAccount
         returns: Promise<boolean>
@@ -1629,7 +1629,7 @@ files:
             - Supabase Edge Function을 호출하여 auth.users에서 삭제
             - 로컬 데이터 완전 삭제
             - 로그아웃 처리
-        calls: [console.log, supabase.auth.getSession, ENV.VITE_SUPABASE_URL?.replace, setTimeout, controller.abort, fetch, clearTimeout, response.json().catch, response.json, console.error, String, console.warn, storageService.clear, storageService.remove, useProfileStore.getState, profileStore.clearProfile, useLevelProgressStore.getState, "levelProgressStore .resetProgress() .catch", "levelProgressStore .resetProgress", supabase.auth.signOut, signOutResult.catch]
+        calls: [console.log, supabase.auth.getSession, ENV.VITE_SUPABASE_URL?.replace, setTimeout, controller.abort, fetch, clearTimeout, response.json().catch, response.json, logError, String, console.warn, storageService.clear, storageService.remove, useProfileStore.getState, profileStore.clearProfile, useLevelProgressStore.getState, "levelProgressStore .resetProgress() .catch", "levelProgressStore .resetProgress", supabase.auth.signOut, signOutResult.catch]
   src/utils/validation.ts:
     exports:
       - name: sanitizeNickname
@@ -2197,7 +2197,7 @@ files:
             RPC 함수를 사용하거나, 직접 쿼리로 집계합니다.
         calls: [storageService.get, isValidUUID, setSession, console.warn, safeSupabaseQuery(supabase.auth.getSession()).then, safeSupabaseQuery, supabase.auth.getSession, checkLocalSession, supabase.auth.onAuthStateChange, data?.subscription?.unsubscribe, setLoading, setError, setStats, "supabase .from('profiles') .select( 'total_mastery_score, current_tier_level, cycle_promotion_pending, pending_cycle_score, login_streak' ) .eq('id', user_id) .maybeSingle", "supabase .from('profiles') .select( 'total_mastery_score, current_tier_level, cycle_promotion_pending, pending_cycle_score, login_streak' ) .eq", "supabase .from('profiles') .select", "supabase .from", logError, supabase.rpc, "supabase .from('user_level_records') .select('world_id, category_id, subject_id, level, best_score') .eq", "supabase .from('user_level_records') .select", levelRecords.reduce, levelRecords.filter, Math.max, levelRecords.map, levelRecords.forEach, Object.entries(subjectScores).sort, Object.entries, fetchStats]
   src/features/mypage/pages/MyPage.tsx:
-    imports: [@/components/Header, @/components/FooterNav, @/utils/navigation, @/components/ProfileForm, @/features/debug, @/components/Toast, @/components/AlertModal, @/components/CyclePromotionModal, ../components/MyPageProfile, ../components/MyPageStats, ../components/MyPageQuickAccess, ../components/MyPageSettings, @/stores/useProfileStore, @/stores/useSettingsStore, ../hooks/useMyPageStats, @/stores/useFavoriteStore, @/utils/challenge, @/stores/useLevelProgressStore, @/stores/useQuizStore, @/utils/dataReset, @/utils/haptic, @/utils/supabaseClient, @/utils/debugFetch, @/config/app, @/utils/auth, @/utils/tossLogin, @/components/WithdrawConfirmModal, @/utils/userWithdraw, @/constants/tiers, @/services, ./MyPage.css]
+    imports: [@/components/Header, @/components/FooterNav, @/utils/navigation, @/components/ProfileForm, @/features/debug, @/components/Toast, @/components/AlertModal, @/components/CyclePromotionModal, ../components/MyPageProfile, ../components/MyPageStats, ../components/MyPageQuickAccess, ../components/MyPageSettings, @/stores/useProfileStore, @/stores/useSettingsStore, ../hooks/useMyPageStats, @/stores/useFavoriteStore, @/utils/challenge, @/stores/useLevelProgressStore, @/stores/useQuizStore, @/utils/dataReset, @/utils/haptic, @/utils/supabaseClient, @/utils/errorHandler, @/utils/debugFetch, @/config/app, @/utils/auth, @/utils/tossLogin, @/components/WithdrawConfirmModal, @/utils/userWithdraw, @/constants/tiers, @/services, ./MyPage.css]
     state: [todayChallenge, showProfileForm, showDataResetConfirm, showToast, toastMessage, showAlert, alertMessage, isResetting, _loginError, showPromotionModal, tierStars, showWithdrawConfirm, isWithdrawing]
     handlers:
       - name: handlePromote
@@ -2211,13 +2211,13 @@ files:
       - name: handleDataReset
         calls: [setShowDataResetConfirm]
       - name: handleConfirmDataReset
-        calls: [setIsResetting, resetAllData, setShowDataResetConfirm, setToastMessage, setShowToast, setShowProfileForm, refetch, console.error]
+        calls: [setIsResetting, resetAllData, setShowDataResetConfirm, setToastMessage, setShowToast, setShowProfileForm, refetch, logError]
       - name: handleCancelDataReset
         calls: [setShowDataResetConfirm]
       - name: handleWithdraw
         calls: [setShowWithdrawConfirm]
       - name: handleConfirmWithdraw
-        calls: [setIsWithdrawing, withdrawAccount, setShowWithdrawConfirm, setToastMessage, setShowToast, console.error]
+        calls: [setIsWithdrawing, withdrawAccount, setShowWithdrawConfirm, setToastMessage, setShowToast, logError]
       - name: handleSendFeedback
         calls: [encodeURIComponent]
       - name: handleOpenLeaderboard
@@ -2227,15 +2227,15 @@ files:
       - name: handleTossLoginClick
         calls: [handleTossLogin, setAlertMessage, setShowAlert]
       - name: handleAnonymousLogin
-        calls: [setLoginError, storageService.set, Date.now, Math.random().toString(36).substr, Math.random().toString, Math.random, "new Date().toISOString", setProfile, console.warn, refetch, performRedirect, setToastMessage, setShowToast, console.error]
+        calls: [setLoginError, storageService.set, Date.now, Math.random().toString(36).substr, Math.random().toString, Math.random, "new Date().toISOString", setProfile, console.warn, refetch, performRedirect, setToastMessage, setShowToast, logError]
       - name: handleGoogleLogin
         calls: [storageService.set, signInWithGoogle, setToastMessage, setShowToast, setLoginError]
       - name: handleLogout
-        calls: [console.log, safeSupabaseQuery, supabase.auth.getSession, supabase.auth.signOut, storageService.remove, console.warn, clearProfile, setToastMessage, setShowToast, refetch, console.error]
+        calls: [console.log, safeSupabaseQuery, supabase.auth.getSession, supabase.auth.signOut, storageService.remove, console.warn, clearProfile, setToastMessage, setShowToast, refetch, logError]
     exports:
       - name: MyPage
         returns: "import(\"C:/Users/ghkdd/gemini-projects/solve-climb/node_modules/@types/react/jsx-runtime\").JSX.Element"
-        calls: [useNavigate, useSearchParams, useProfileStore, useSettingsStore, useMyPageStats, useFavoriteStore, useQuizStore, useLevelProgressStore, searchParams.get, useLocation, React.useCallback, storageService.get, urls.myPage, navigate, storageService.remove, console.log, "getTodayChallenge(progressMap) .then((challengeData: any) => { setTodayChallenge(challengeData); }) .catch", "getTodayChallenge(progressMap) .then", getTodayChallenge, setTodayChallenge, console.error, calculateTier(stats.totalMasteryScore).then, calculateTier, setTierStars, setShowPromotionModal, refetch, setShowProfileForm, setHapticEnabled, vibrateShort, setToastMessage, setShowToast, setAnimationEnabled, setShowDataResetConfirm, setIsResetting, resetAllData, setShowWithdrawConfirm, setIsWithdrawing, withdrawAccount, encodeURIComponent, handleTossLogin, setAlertMessage, setShowAlert, setLoginError, storageService.set, Date.now, Math.random().toString(36).substr, Math.random().toString, Math.random, "new Date().toISOString", setProfile, console.warn, performRedirect, signInWithGoogle, "safeSupabaseQuery(supabase.rpc('update_profile_nickname', { p_nickname: nickname })).catch", safeSupabaseQuery, supabase.rpc, supabase.auth.getSession, supabase.auth.signOut, clearProfile, isTossAppEnvironment, formatBestSubject, useProfileStore.getState, urls.debug]
+        calls: [useNavigate, useSearchParams, useProfileStore, useSettingsStore, useMyPageStats, useFavoriteStore, useQuizStore, useLevelProgressStore, searchParams.get, useLocation, React.useCallback, storageService.get, urls.myPage, navigate, storageService.remove, console.log, "getTodayChallenge(progressMap) .then((challengeData: any) => { setTodayChallenge(challengeData); }) .catch", "getTodayChallenge(progressMap) .then", getTodayChallenge, setTodayChallenge, logError, calculateTier(stats.totalMasteryScore).then, calculateTier, setTierStars, setShowPromotionModal, refetch, setShowProfileForm, setHapticEnabled, vibrateShort, setToastMessage, setShowToast, setAnimationEnabled, setShowDataResetConfirm, setIsResetting, resetAllData, setShowWithdrawConfirm, setIsWithdrawing, withdrawAccount, encodeURIComponent, handleTossLogin, setAlertMessage, setShowAlert, setLoginError, storageService.set, Date.now, Math.random().toString(36).substr, Math.random().toString, Math.random, "new Date().toISOString", setProfile, console.warn, performRedirect, signInWithGoogle, "safeSupabaseQuery(supabase.rpc('update_profile_nickname', { p_nickname: nickname })).catch", safeSupabaseQuery, supabase.rpc, supabase.auth.getSession, supabase.auth.signOut, clearProfile, isTossAppEnvironment, formatBestSubject, useProfileStore.getState, urls.debug]
   src/features/quiz/components/CalculusVisualization.tsx:
     imports: [./CalculusVisualization.css]
     state: [progress]
@@ -2382,7 +2382,7 @@ files:
       - name: useQuizAnimations
         returns: "{ cardAnimation: string; inputAnimation: string; questionAnimation: string; showFlash: boolean; isError: boolean; showSlideToast: boolean; damagePosition: { left: string; top: string; }; setCardAnimation: React.Dispatch<React.SetStateAction<string>>; setInputAnimation: React.Dispatch<React.SetStateAction<string>>; setQuestionAnimation: React.Dispatch<React.SetStateAction<string>>; setShowFlash: React.Dispatch<React.SetStateAction<boolean>>; setIsError: React.Dispatch<React.SetStateAction<boolean>>; setShowSlideToast: React.Dispatch<React.SetStateAction<boolean>>; setDamagePosition: React.Dispatch<React.SetStateAction<{ left: string; top: string; }>>; }"
   src/features/quiz/hooks/useQuizBusinessLogic.ts:
-    imports: [@/utils/adService, @/constants/ui, @/constants/game]
+    imports: [@/utils/adService, @/constants/ui, @/constants/game, @/utils/errorHandler]
     exports:
       - name: useQuizBusinessLogic
         params:
@@ -2397,7 +2397,7 @@ files:
 }": UseQuizBusinessLogicParams
         returns: "{ handleWatchAdRevive: () => Promise<boolean>; smartHandleGameOver: (reason?: string | undefined) => Promise<void>; handleStaminaAdRecovery: (setShowStaminaModal: (s: boolean) => void) => Promise<void>; }"
         description: QuizPage의 핵심 비즈니스 로직(광고 시청, 게임 오버, 스테미너 회복)을 관리하는 커스텀 훅
-        calls: [setShowSlideToast, setToastValue, AdService.showRewardedAd, setTimeout, UI_MESSAGES.AD_WATCH_FAILED, refundStamina, showGlobalToast, console.error, handleGameOver, recoverStaminaAds, setShowStaminaModal, window.location.reload]
+        calls: [setShowSlideToast, setToastValue, AdService.showRewardedAd, setTimeout, UI_MESSAGES.AD_WATCH_FAILED, refundStamina, showGlobalToast, logError, handleGameOver, recoverStaminaAds, setShowStaminaModal, window.location.reload]
   src/features/quiz/hooks/useQuizFeedback.ts:
     imports: [@/utils/haptic]
     exports:
@@ -2547,7 +2547,7 @@ files:
         description: 퀴즈 정답 유효성 검사를 담당하는 훅
         calls: [normalizeRomaji, String, parseInt, isNaN, Number]
   src/features/quiz/services/LevelSyncService.ts:
-    imports: [@/utils/supabaseClient, @/utils/debugFetch, ../types/quiz]
+    imports: [@/utils/supabaseClient, @/utils/debugFetch, ../types/quiz, @/utils/errorHandler]
     exports:
       - name: LevelSyncService
         type: class
@@ -2556,7 +2556,7 @@ files:
             params:
               params: "{ category: string; level: number; mode: import(\"C:/Users/ghkdd/gemini-projects/solve-climb/src/features/quiz/types/quiz\").GameMode; score: number; avgSolveTime?: number | undefined; subject?: string | undefined; sessionData?: { answers: number[]; questionIds: string[]; sessionId: string; } | undefined; tier?: import(\"C:/Users/ghkdd/gemini-projects/solve-climb/src/features/quiz/types/quiz\").Tier | undefined; }"
             returns: "Promise<import(\"C:/Users/ghkdd/gemini-projects/solve-climb/src/features/quiz/services/LevelSyncService\").LevelSyncResult>"
-            calls: [safeSupabaseQuery, supabase.auth.getUser, supabase.rpc, "(sessionData?.questionIds ?? []).map", console.error]
+            calls: [safeSupabaseQuery, supabase.auth.getUser, supabase.rpc, "(sessionData?.questionIds ?? []).map", logError]
           - name: resetProgress
             returns: "Promise<import(\"C:/Users/ghkdd/gemini-projects/solve-climb/src/features/quiz/services/LevelSyncService\").LevelSyncResult>"
             calls: [safeSupabaseQuery, supabase.rpc]

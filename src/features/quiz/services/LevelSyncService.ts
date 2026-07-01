@@ -2,6 +2,7 @@ import { supabase } from '@/utils/supabaseClient';
 import { safeSupabaseQuery } from '@/utils/debugFetch';
 import { GameMode, Tier } from '../types/quiz';
 import { UserResponse } from '@supabase/supabase-js';
+import { logError } from '@/utils/errorHandler';
 
 export interface LevelSyncResult {
   success: boolean;
@@ -64,7 +65,7 @@ export class LevelSyncService {
 
       return { success: true };
     } catch (error) {
-      console.error('[LevelSyncService] Unexpected error:', error);
+      logError('LevelSyncService#submitGameResult', error);
       return { success: false, error: error instanceof Error ? error.message : 'Unknown error' };
     }
   }

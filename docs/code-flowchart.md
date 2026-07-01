@@ -256,8 +256,10 @@ graph TD
   src_features_mypage_pages_MyPage_tsx --> src_stores_useQuizStore_ts
   src_features_mypage_pages_MyPage_tsx --> src_utils_haptic_ts
   src_features_mypage_pages_MyPage_tsx --> src_utils_supabaseClient_ts
+  src_features_mypage_pages_MyPage_tsx --> src_utils_errorHandler_ts
   src_features_mypage_pages_MyPage_tsx --> src_services_index_ts
   src_features_quiz_services_LevelSyncService_ts --> src_utils_supabaseClient_ts
+  src_features_quiz_services_LevelSyncService_ts --> src_utils_errorHandler_ts
 ```
 
 

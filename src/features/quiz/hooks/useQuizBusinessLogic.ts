@@ -2,7 +2,7 @@ import { useCallback } from 'react';
 import { AdService } from '@/utils/adService';
 import { UI_MESSAGES } from '@/constants/ui';
 import { ANIMATION_CONFIG } from '@/constants/game';
-
+import { logError } from '@/utils/errorHandler';
 interface UseQuizBusinessLogicParams {
   setToastValue: (v: string) => void;
   setShowSlideToast: (v: boolean) => void;
@@ -53,7 +53,7 @@ export const useQuizBusinessLogic = ({
             showGlobalToast(UI_MESSAGES.STAMINA_REFUNDED, '🫧');
           }
         } catch (error) {
-          console.error('[useQuizBusinessLogic] Refund error:', error);
+          logError('useQuizBusinessLogic#refundStamina', error);
         }
       }
       handleGameOver(reason);

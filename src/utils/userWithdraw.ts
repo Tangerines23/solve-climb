@@ -3,6 +3,7 @@ import { useProfileStore } from '../stores/useProfileStore';
 import { useLevelProgressStore } from '../stores/useLevelProgressStore';
 import { ENV } from './env';
 import { storageService, STORAGE_KEYS } from '../services';
+import { logError } from './errorHandler';
 
 /**
  * 회원 탈퇴를 처리합니다.
@@ -48,19 +49,19 @@ export const withdrawAccount = async (): Promise<boolean> => {
         } else {
           const errData = await response.json().catch(() => ({}));
           serverErrorMessage = errData.error || `Error ${response.status}`;
-          console.error(`[탈퇴] 서버 요청 실패 (${response.status})`, errData);
+          logError(`userWithdraw#request_fail_${response.status}`, errData);
         }
       } catch (fetchError) {
         clearTimeout(timeoutId);
         serverErrorMessage = fetchError instanceof Error ? fetchError.message : String(fetchError);
-        console.error('[탈퇴] 서버 요청 중 예외 발생:', fetchError);
+        logError('userWithdraw#fetch_exception', fetchError);
       }
     } else {
       console.warn('[탈퇴] 활성 세션이 없습니다. 로컬 데이터만 삭제합니다.');
       serverDeleteSuccess = true; // 세션이 없으면 서버 삭제는 이미 된 것으로 간주하거나 무시
     }
   } catch (outerError) {
-    console.error('[탈퇴] 외부 예외 발생:', outerError);
+    logError('userWithdraw#outer_exception', outerError);
     serverErrorMessage = outerError instanceof Error ? outerError.message : String(outerError);
   } finally {
     // 2. 서버 성공 여부와 관계없이 로컬 데이터 삭제 (매우 중요)
@@ -77,17 +78,17 @@ export const withdrawAccount = async (): Promise<boolean> => {
       const levelProgressStore = useLevelProgressStore.getState();
       await levelProgressStore
         .resetProgress()
-        .catch((e) => console.error('[탈퇴] Progress reset failed', e));
+        .catch((e) => logError('userWithdraw#progress_reset_fail', e));
 
       // Supabase 로그아웃 (세션 무효화)
       const signOutResult = supabase.auth.signOut();
       if (signOutResult && typeof signOutResult.catch === 'function') {
-        await signOutResult.catch((e) => console.error('[탈퇴] Auth signOut failed', e));
+        await signOutResult.catch((e) => logError('userWithdraw#auth_signout_fail', e));
       }
 
       console.log('[탈퇴] 로컬 정리 완료');
     } catch (cleanupError) {
-      console.error('[탈퇴] 로컬 정리 중 오류:', cleanupError);
+      logError('userWithdraw#cleanup_exception', cleanupError);
     }
   }
 

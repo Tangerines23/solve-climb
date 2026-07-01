@@ -1,0 +1,70 @@
+name: Build & Release Android (AAB)
+
+on:
+  push:
+    branches:
+      - main  # 메인 브랜치에 푸시/머지될 때 실행
+  workflow_dispatch:  # GitHub 웹 UI에서 수동으로도 실행 가능하도록 설정
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    steps:
+      # 1. 소스코드 체크아웃
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      # 2. Node.js 환경 설정
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      # 3. Java JDK 21 환경 설정 (프로젝트 자바 호환성 21 필수)
+      - name: Setup Java JDK 21
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'zulu'
+          java-version: '21'
+
+      # 4. 의존성 설치
+      - name: Install dependencies
+        run: npm install --legacy-peer-deps
+
+      # 5. 프론트엔드 웹 소스 빌드
+      - name: Build Web Project
+        run: npm run build
+
+      # 6. Capacitor 동기화 (웹 자산을 안드로이드로 전송)
+      - name: Capacitor Sync
+        run: npx cap sync android
+
+      # 7. GitHub Secrets에서 Keystore 파일 복원
+      - name: Restore Keystore File
+        run: |
+          mkdir -p android/cert
+          echo "${{ secrets.ANDROID_KEYSTORE_BASE64 }}" | base64 --decode > android/cert/solve-climb-key
+
+      # 8. Gradle로 AAB 빌드 및 서명 진행
+      - name: Build and Sign AAB
+        run: |
+          cd android
+          ./gradlew :app:bundleRelease -PMY_STORE_PASS="${{ secrets.ANDROID_KEYSTORE_PASS }}" -PMY_KEY_ALIAS="${{ secrets.ANDROID_KEY_ALIAS }}" -PMY_KEY_PASS="${{ secrets.ANDROID_KEY_PASS }}"
+
+      # 9. 빌드된 AAB 파일을 GitHub Actions 실행 결과창(Artifact)에 업로드해 다운로드 가능하게 함
+      - name: Upload AAB Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: app-release-aab
+          path: android/app/build/outputs/bundle/release/app-release.aab
+          retention-days: 7
+
+      # 10. 구글 플레이 콘솔 내부 테스트(Internal testing) 트랙으로 자동 배포
+      - name: Upload to Google Play Store
+        uses: r0adkll/upload-google-play@v2
+        with:
+          serviceAccountJsonPlainText: ${{ secrets.PLAY_STORE_JSON_KEY }}
+          packageName: com.solveclimb.app
+          releaseFiles: android/app/build/outputs/bundle/release/app-release.aab
+          track: internal  # 내부 테스트 트랙으로 자동 업로드
