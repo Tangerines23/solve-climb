@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { logError } from './errorHandler';
 
 /**
  * RPC 응답 검증용 공통 스키마 정의
@@ -60,7 +61,7 @@ export async function validatedRpc<T>(
   const parseResult = schema.safeParse(result.data);
 
   if (!parseResult.success) {
-    console.error(`❌ [RPC Validation Error] ${rpcName}:`, parseResult.error.format());
+    logError(`rpcValidator#${rpcName}`, parseResult.error);
     // 개발 모드에서는 에러를 던지거나 상세히 알림, 운영에서는 로그만 남기고 원본 데이터 반환 시도 가능
     // 여기서는 실패 시 null을 반환하여 앱의 오작동을 방지합니다.
     return {

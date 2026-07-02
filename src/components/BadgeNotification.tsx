@@ -1,6 +1,8 @@
 // src/components/BadgeNotification.tsx
 import React, { useEffect, useState } from 'react';
 import { supabase } from '../utils/supabaseClient';
+import { safeSupabaseQuery } from '../utils/debugFetch';
+import { logError } from '../utils/errorHandler';
 import './BadgeNotification.css';
 
 interface BadgeDefinition {
@@ -27,15 +29,17 @@ export const BadgeNotification: React.FC<BadgeNotificationProps> = ({ badgeIds, 
       }
 
       try {
-        const { data, error } = await supabase
-          .from('badge_definitions')
-          .select('id, name, description, emoji')
-          .in('id', badgeIds);
+        const { data, error } = await safeSupabaseQuery(
+          supabase
+            .from('badge_definitions')
+            .select('id, name, description, emoji')
+            .in('id', badgeIds)
+        );
 
         if (error) throw error;
         setBadgeDefs(data || []);
       } catch (error) {
-        console.error('Failed to load badge definitions:', error);
+        logError('BadgeNotification', error);
       } finally {
         setLoading(false);
       }

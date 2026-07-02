@@ -6,6 +6,7 @@ import { useToastStore } from '@/stores/useToastStore';
 import { ITEM_LIST, ItemMetadata } from '@/constants/items';
 import { UI_MESSAGES, STATUS_TYPES } from '@/constants/ui';
 import { ANIMATION_CONFIG } from '@/constants/game';
+import { logError } from '@/utils/errorHandler';
 
 export function useShop() {
   const [items, setItems] = useState<ItemMetadata[]>([]);
@@ -36,7 +37,7 @@ export function useShop() {
           setItems(data);
         }
       } catch (err) {
-        console.error('[useShop] Fetch items crash:', err);
+        logError('useShop#fetchItems', err);
         showToast(UI_MESSAGES.FETCH_DATA_FAILED, 'error');
         if (isMounted) setItems(ITEM_LIST);
       } finally {
@@ -73,7 +74,7 @@ export function useShop() {
           setPurchaseStatus({ id: itemId, message: data?.message || UI_MESSAGES.PURCHASE_FAILED });
         }
       } catch (err: unknown) {
-        console.error('[useShop] Purchase failed:', err);
+        logError('useShop#purchase', err);
 
         const error = err as { message?: string; code?: string };
         // Simulation mode for offline/local development

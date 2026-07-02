@@ -23,6 +23,7 @@ import { useQuizStore } from '@/stores/useQuizStore';
 import { resetAllData } from '@/utils/dataReset';
 import { vibrateShort } from '@/utils/haptic';
 import { supabase } from '@/utils/supabaseClient';
+import { logError } from '@/utils/errorHandler';
 import { safeSupabaseQuery } from '@/utils/debugFetch';
 
 import { APP_CONFIG } from '@/config/app';
@@ -131,7 +132,7 @@ export function MyPage() {
         setTodayChallenge(challengeData);
       })
       .catch((error: any) => {
-        console.error('Failed to load today challenge:', error);
+        logError('MyPage#loadTodayChallenge', error);
       });
   }, [progressMap]);
 
@@ -216,7 +217,7 @@ export function MyPage() {
       setShowProfileForm(true);
       refetch(); // 데이터 초기화 후 통계 다시 불러오기
     } catch (error) {
-      console.error('Failed to reset data:', error);
+      logError('MyPage#resetAllData', error);
       setToastMessage('데이터 초기화 중 오류가 발생했습니다.');
       setShowToast(true);
     } finally {
@@ -242,7 +243,7 @@ export function MyPage() {
 
       /* Removed automatic redirect to home that caused a loop */
     } catch (error: unknown) {
-      console.error('Withdrawal failed:', error);
+      logError('MyPage#withdrawAccount', error);
       setToastMessage(error instanceof Error ? error.message : '회원 탈퇴 중 오류가 발생했습니다.');
       setShowToast(true);
     } finally {
@@ -325,7 +326,7 @@ export function MyPage() {
       setToastMessage('익명으로 로그인되었습니다.');
       setShowToast(true);
     } catch (error) {
-      console.error('Anonymous login error:', error);
+      logError('MyPage#handleAnonymousLogin', error);
       setToastMessage('익명 로그인 중 오류가 발생했습니다.');
       setShowToast(true);
       setLoginError(true);
@@ -425,7 +426,7 @@ export function MyPage() {
 
       console.log('[로그아웃] 전체 과정 완료');
     } catch (error) {
-      console.error('[로그아웃] 오류 발생:', error);
+      logError('MyPage#handleLogout', error);
       setToastMessage('로그아웃 중 오류가 발생했습니다.');
       setShowToast(true);
     }

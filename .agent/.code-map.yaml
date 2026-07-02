@@ -1,0 +1,2660 @@
+
+project: solve-climb
+generatedAt: "2026-07-02T02:18:30.184Z"
+files:
+  src/App.tsx:
+    imports: [@/utils/resilientLazy, @/stores/useLevelProgressStore, @/stores/useAuthStore, @/hooks/useCustomBackNavigation, @/components/GlobalLoadingIndicator, @/stores/useErrorLogStore, @/stores/useDebugStore, @/stores/useSettingsStore, @/hooks/useConnectivity, @/components/PwaUpdateNotification, @/features/auth, @/components/GlobalToastContainer]
+    exports:
+      - name: App
+        returns: "import(\"C:/Users/ghkdd/gemini-projects/solve-climb/node_modules/@types/react/jsx-runtime\").JSX.Element"
+        calls: [useConnectivity, useLevelProgressStore, useAuthStore, useCustomBackNavigation, useDebugStore, useSettingsStore, document.body.classList.add, document.body.classList.remove, Promise.all, initializeAuth, syncProgress, "useErrorLogStore .getState() .addLog", "useErrorLogStore .getState", String, window.addEventListener, window.removeEventListener]
+  src/AppContainer.tsx:
+    imports: [@/utils/resilientLazy, @/components/ErrorBoundary]
+    exports:
+      - name: AppContainer
+        returns: "import(\"C:/Users/ghkdd/gemini-projects/solve-climb/node_modules/@types/react/jsx-runtime\").JSX.Element"
+        calls: [diagnosis]
+  src/main.tsx:
+    imports: [@/index.css, @/utils/tossAuth, @/AppContainer, @/utils/logger, @/utils/env, @/utils/performance]
+  src/setupTests.ts:
+    imports: [./mocks/server]
+  src/components/AlertModal.tsx:
+    imports: [./BaseModal, ./AlertModal.css]
+    exports:
+      - name: AlertModal
+        params:
+          "{
+  isOpen,
+  title,
+  message,
+  buttonText = '확인',
+  onClose,
+}": AlertModalProps
+        returns: "import(\"C:/Users/ghkdd/gemini-projects/solve-climb/node_modules/@types/react/jsx-runtime\").JSX.Element"
+  src/components/BadgeNotification.tsx:
+    imports: [../utils/supabaseClient, ../utils/debugFetch, ../utils/errorHandler, ./BadgeNotification.css]
+    state: [badgeDefs, loading]
+    exports:
+      - name: BadgeNotification
+        params:
+          "{ badgeIds, onClose }": BadgeNotificationProps
+        returns: "import(\"C:/Users/ghkdd/gemini-projects/solve-climb/node_modules/@types/react/jsx-runtime\").JSX.Element | null"
+        calls: [setLoading, safeSupabaseQuery, "supabase .from('badge_definitions') .select('id, name, description, emoji') .in", "supabase .from('badge_definitions') .select", "supabase .from", setBadgeDefs, logError, loadBadgeDefinitions, setTimeout, onClose, clearTimeout, e.stopPropagation, badgeDefs.map]
+  src/components/BadgeSlot.tsx:
+    imports: [../stores/useBadgeStore, ./BadgeSlot.css]
+    exports:
+      - name: BadgeSlot
+        params:
+          "{ isEarned, badgeDef, earnedAt }": BadgeSlotProps
+        returns: "import(\"C:/Users/ghkdd/gemini-projects/solve-climb/node_modules/@types/react/jsx-runtime\").JSX.Element"
+        calls: ["new Date(earnedAt).toLocaleDateString"]
+      - name: BadgeCollection
+        params:
+          "{ userId, mode = 'full' }": BadgeCollectionProps
+        returns: "import(\"C:/Users/ghkdd/gemini-projects/solve-climb/node_modules/@types/react/jsx-runtime\").JSX.Element"
+        calls: [useBadgeStore, fetchBadgeDefinitions, fetchUserBadges, badgeDefinitions.map, userBadges.map, "allBadgeIds .filter((id) => !earnedBadgeIds.has(id)) .slice(0, 5 - earned.length) .map", "allBadgeIds .filter((id) => !earnedBadgeIds.has(id)) .slice", "allBadgeIds .filter", earnedBadgeIds.has, setDisplayBadges, "[...earned, ...locked].slice", allBadgeIds.filter, lockedBadges.map, badgeDefinitions?.forEach, displayBadges.map]
+  src/components/BaseCard.tsx:
+    imports: [./BaseCard.css]
+    exports:
+      - name: BaseCard
+        params:
+          "{
+  children,
+  className = '',
+  interactive = false,
+  padding = 'md',
+  ...props
+}": BaseCardProps
+        returns: "import(\"C:/Users/ghkdd/gemini-projects/solve-climb/node_modules/@types/react/jsx-runtime\").JSX.Element"
+        calls: ["[ 'base-card', interactive ? 'card-interactive' : '', `padding-${padding}`, className, ] .filter(Boolean) .join", "[ 'base-card', interactive ? 'card-interactive' : '', `padding-${padding}`, className, ] .filter"]
+  src/components/BaseModal.tsx:
+    imports: [./BaseModal.css]
+    exports:
+      - name: BaseModal
+        params:
+          "{
+  isOpen,
+  onClose,
+  title,
+  children,
+  actions,
+  showOverlay = true,
+  closeOnOverlayClick = true,
+  className = '',
+}": "import(\"C:/Users/ghkdd/gemini-projects/solve-climb/src/components/BaseModal\").BaseModalProps"
+        returns: "import(\"C:/Users/ghkdd/gemini-projects/solve-climb/node_modules/@types/react/jsx-runtime\").JSX.Element | null"
+        calls: [e.stopPropagation]
+  src/components/CategoryList.tsx:
+    imports: [../config/app, ../utils/navigation, ../stores/useFavoriteStore, ../stores/useFeatureFlagStore, ./UnknownMountainCard, ./Toast, ../utils/scoreCalculator, ./CategoryList.css]
+    state: [showExplorerToast]
+    handlers:
+      - name: handleToggleFavorite
+        calls: [e.stopPropagation]
+      - name: handleMountainClick
+        calls: [navigate, urls.categorySelect]
+    exports:
+      - name: CategoryList
+        returns: "import(\"C:/Users/ghkdd/gemini-projects/solve-climb/node_modules/@types/react/jsx-runtime\").JSX.Element"
+        calls: [useNavigate, useFavoriteStore, e.stopPropagation, navigate, urls.categorySelect, useFeatureFlagStore, "( APP_CONFIG.MOUNTAINS as readonly { id: string; name: string; icon: string; disabled: boolean; color: string; }[] ).filter", mountains.map, isFavorite, calculateCategoryAltitude, handleToggleFavorite, totalAltitude.toLocaleString, totalProblems.toLocaleString, setShowExplorerToast, handleMountainClick]
+  src/components/ChallengeCard.tsx:
+    imports: [../stores/useQuizStore, ../stores/useLevelProgressStore, ../utils/challenge, ../utils/navigation, ../types/quiz, ./BaseCard, ../utils/errorHandler, ./ChallengeCard.css]
+    state: [challenge, loading]
+    handlers:
+      - name: handleChallengeClick
+        calls: [setCategoryTopic, setTimeLimit, navigate, urls.quiz]
+    exports:
+      - name: ChallengeCard
+        returns: "import(\"C:/Users/ghkdd/gemini-projects/solve-climb/node_modules/@types/react/jsx-runtime\").JSX.Element"
+        calls: [useNavigate, useQuizStore, useLevelProgressStore, "getTodayChallenge(progressMap) .then((challengeData) => { setChallenge(challengeData); setLoading(false); }) .catch", "getTodayChallenge(progressMap) .then", getTodayChallenge, setChallenge, setLoading, logError, setCategoryTopic, setTimeLimit, navigate, urls.quiz, e.stopPropagation, handleChallengeClick]
+  src/components/ClimbGraphic.tsx:
+    imports: [../stores/useLevelProgressStore, ../stores/useProfileStore, ./ClimbGraphicBackgrounds, ../constants/stages, ../types/quiz, ./ClimbGraphic.css]
+    state: [isScrollPositioned]
+    exports:
+      - name: ClimbGraphic
+        params:
+          "{
+  mountain,
+  world,
+  category,
+  levels,
+  categoryColor = 'var(--color-teal-500)',
+  onLevelClick,
+  onUnderDevelopmentClick,
+  isReady,
+}": ClimbGraphicProps
+        returns: "import(\"C:/Users/ghkdd/gemini-projects/solve-climb/node_modules/@types/react/jsx-runtime\").JSX.Element"
+        calls: [useLevelProgressStore, useProfileStore, getNextLevel, UNDER_DEVELOPMENT_LEVELS.has, getStagesForWorld, worldStages.find, Math.sin, points.push, Object.prototype.hasOwnProperty.call, isLevelCleared, data.push, levelData.find, levelData.filter, createPath, pathPoints.slice, requestAnimationFrame, setIsScrollPositioned, node.closest, node.scrollIntoView, window.getComputedStyle, parseFloat, scrollContainer.querySelector, Math.max, scrollContainer.setAttribute, scrollContainer.scrollTo, clearTimeout, setTimeout, scrollContainer.removeAttribute, scrollToCurrentLevel, levelData.map, levels.find, getStageInfo, isUnderDevelopment, onUnderDevelopmentClick, onLevelClick, getStagesForWorld(world).map]
+  src/components/ClimbGraphicBackgrounds.tsx:
+    imports: [../types/quiz, ../constants/stages, ../utils/seededRandom]
+    exports:
+      - name: ClimbBackground
+        params:
+          "{
+  world,
+  category,
+  totalLevels: _totalLevels = 30,
+}": BackgroundProps
+        returns: "import(\"C:/Users/ghkdd/gemini-projects/solve-climb/node_modules/@types/react/jsx-runtime\").JSX.Element"
+        calls: [Math.max, layers.push, coords.push, lines.push, getWorldIndex, getCategoryIndex, Array.from, Math.floor, rng.nextInt, activeIndices.add, rng.next, Math.round, "[...activeArray].sort", shuffledActive.slice, slots.map, activeIndices.has, symbolIndices.has, Math.min, bridgeYCoords.map, tangentLines.map, mountainLayers.map, "FLOATING_SEEDS.slice(0, 12).map", FLOATING_SEEDS.slice, items.map]
+  src/components/ConfirmModal.tsx:
+    imports: [./BaseModal, ./ConfirmModal.css]
+    exports:
+      - name: ConfirmModal
+        params:
+          "{
+  isOpen,
+  title,
+  message,
+  confirmText = '확인',
+  cancelText = '취소',
+  onConfirm,
+  onCancel,
+  variant = 'primary',
+}": ConfirmModalProps
+        returns: "import(\"C:/Users/ghkdd/gemini-projects/solve-climb/node_modules/@types/react/jsx-runtime\").JSX.Element"
+  src/components/CountdownOverlay.tsx:
+    imports: [./CountdownOverlay.css, @/lib/eventBus]
+    state: [count]
+    exports:
+      - name: CountdownOverlay
+        params:
+          "{ isVisible, onComplete }": CountdownOverlayProps
+        returns: "import(\"C:/Users/ghkdd/gemini-projects/solve-climb/node_modules/@types/react/jsx-runtime\").JSX.Element | null"
+        calls: [setCount, setInterval, clearInterval, setTimeout, quizEventBus.emit]
+  src/components/CustomKeypad.tsx:
+    imports: [../utils/haptic, ../constants/ui, ./CustomKeypad.css]
+    handlers:
+      - name: handleAction
+        calls: [vibrateShort, action]
+      - name: handleNumberClick
+        calls: [handleAction, onNumberClick]
+      - name: handleBackspace
+        calls: [handleAction]
+      - name: handleSubmit
+        calls: [handleAction, onSubmit]
+  src/components/CyclePromotionModal.tsx:
+    imports: [../utils/supabaseClient, ./BaseModal, ../utils/errorHandler, ./CyclePromotionModal.css]
+    state: [isPromoting, error]
+    handlers:
+      - name: handlePromote
+        calls: [setIsPromoting, setError, supabase.rpc, onPromote, logError]
+    exports:
+      - name: CyclePromotionModal
+        params:
+          "{
+  isOpen,
+  stars,
+  pendingScore,
+  onPromote,
+  onClose,
+}": CyclePromotionModalProps
+        returns: "import(\"C:/Users/ghkdd/gemini-projects/solve-climb/node_modules/@types/react/jsx-runtime\").JSX.Element"
+        calls: [setIsPromoting, setError, supabase.rpc, onPromote, logError, '★'.repeat, pendingScore.toLocaleString]
+  src/components/DailyRewardModal.tsx:
+    imports: [../stores/useDailyRewardStore, ./BaseModal, ./DailyRewardModal.css]
+    exports:
+      - name: DailyRewardModal
+        returns: "import(\"C:/Users/ghkdd/gemini-projects/solve-climb/node_modules/@types/react/jsx-runtime\").JSX.Element | null"
+        calls: [useDailyRewardStore]
+  src/components/ErrorBoundary.tsx:
+    imports: [./ErrorFallback, ../utils/errorHandler, ../stores/useErrorLogStore]
+    exports:
+      - name: ErrorBoundary
+        type: class
+        methods:
+          - name: getDerivedStateFromError
+            params:
+              error: Error
+            returns: State
+          - name: componentDidCatch
+            params:
+              error: Error
+              errorInfo: React.ErrorInfo
+            calls: [logError, "useErrorLogStore .getState() .addLog", "useErrorLogStore .getState", errorInfo.componentStack?.split, console.error, this.props.onError]
+          - name: render
+            returns: "string | number | boolean | import(\"C:/Users/ghkdd/gemini-projects/solve-climb/node_modules/@types/react/jsx-runtime\").JSX.Element | Iterable<React.ReactNode> | null | undefined"
+  src/components/ErrorFallback.tsx:
+    imports: [../hooks/useConnectivity, ../stores/useToastStore, ./ErrorFallback.css]
+    handlers:
+      - name: handleCopyError
+        calls: ["new Date().toLocaleString", "navigator.clipboard .writeText(errorText) .then(() => { showToast('에러 로그가 복사되었습니다!', '📋'); }) .catch", "navigator.clipboard .writeText(errorText) .then", "navigator.clipboard .writeText", showToast, console.error, prompt]
+    exports:
+      - name: ErrorFallback
+        params:
+          "{ error, resetError }": ErrorFallbackProps
+        returns: "import(\"C:/Users/ghkdd/gemini-projects/solve-climb/node_modules/@types/react/jsx-runtime\").JSX.Element"
+        calls: [useToastStore, useConnectivity, Boolean, error.message.includes, "new Date().toLocaleString", "navigator.clipboard .writeText(errorText) .then(() => { showToast('에러 로그가 복사되었습니다!', '📋'); }) .catch", "navigator.clipboard .writeText(errorText) .then", "navigator.clipboard .writeText", showToast, console.error, prompt, "new Date().toLocaleTimeString", window.location.reload]
+  src/components/FooterNav.tsx:
+    imports: [../config/app, ./FooterNav.css]
+    handlers:
+      - name: handleNavClick
+        calls: [window.scrollTo, navigate]
+    exports:
+      - name: FooterNav
+        returns: "import(\"C:/Users/ghkdd/gemini-projects/solve-climb/node_modules/@types/react/jsx-runtime\").JSX.Element"
+        calls: [useNavigate, useLocation, window.scrollTo, navigate, navItems.map, isActive, handleNavClick]
+  src/components/GameTipModal.tsx:
+    imports: [./game/BackpackBottomSheet, ./BaseModal, ../constants/tips, ./GameTipModal.css]
+    state: [isBackpackOpen, selectedItemIds]
+    exports:
+      - name: GameTipModal
+        params:
+          "{
+  isOpen,
+  category,
+  subTopic,
+  level,
+  onStart,
+  onClose,
+}": GameTipModalProps
+        returns: "import(\"C:/Users/ghkdd/gemini-projects/solve-climb/node_modules/@types/react/jsx-runtime\").JSX.Element | null"
+        calls: [setSelectedItemIds, prev.includes, prev.filter, getTipData, onStart, setIsBackpackOpen]
+  src/components/GlobalLoadingIndicator.tsx:
+    imports: [../stores/useLoadingStore, ./GlobalLoadingIndicator.css]
+    exports:
+      - name: GlobalLoadingIndicator
+        returns: "import(\"C:/Users/ghkdd/gemini-projects/solve-climb/node_modules/@types/react/jsx-runtime\").JSX.Element | null"
+        calls: [useLoadingStore, state.isAnyLoading]
+  src/components/GlobalToastContainer.tsx:
+    imports: [../stores/useToastStore, ./Toast]
+    exports:
+      - name: GlobalToastContainer
+        returns: "import(\"C:/Users/ghkdd/gemini-projects/solve-climb/node_modules/@types/react/jsx-runtime\").JSX.Element"
+        calls: [useToastStore]
+  src/components/Header.tsx:
+    imports: [../config/app, ../utils/navigation, ../stores/useProfileStore, ../stores/useUserStore, ../stores/useDebugStore, ../stores/useToastStore, ../services, ./Header.css]
+    state: [isMineralsLoading]
+    handlers:
+      - name: handleNotificationClick
+        calls: [navigate]
+      - name: handleLogoDoubleClick
+        calls: [navigate, urls.myPage]
+      - name: handleLogoClick
+        calls: [Date.now, handleLogoDoubleClick, clearTimeout, setTimeout]
+      - name: handleStaminaClick
+        calls: [e.stopPropagation, setSelectedResource]
+      - name: handleMineralsClick
+        calls: [e.stopPropagation, setSelectedResource]
+      - name: handleMineralsAdRecharge
+        calls: [e.stopPropagation, setIsMineralsLoading, showToast, recoverMineralsAds]
+      - name: handleItemsClick
+        calls: [e.stopPropagation, setSelectedResource]
+    exports:
+      - name: Header
+        params:
+          "{ title, showBack, onBack }": HeaderProps
+        returns: "import(\"C:/Users/ghkdd/gemini-projects/solve-climb/node_modules/@types/react/jsx-runtime\").JSX.Element"
+        calls: [useNavigate, useLocation, useProfileStore, useUserStore, useToastStore, useDebugStore, fetchUserData, checkStamina, urlParams.get, toggleDebugPanel, storageService.get, navigate, urls.myPage, Date.now, handleLogoDoubleClick, clearTimeout, setTimeout, e.stopPropagation, setSelectedResource, setIsMineralsLoading, showToast, recoverMineralsAds, minerals.toLocaleString]
+  src/components/KeyboardInfoModal.tsx:
+    imports: [../config/app, ../stores/useSettingsStore, ./CustomKeypad, ./QwertyKeypad, ../pages/QuizPage.css, ./KeyboardInfoModal.css]
+    state: [, selectedKeyboardType, selectedCategoryIndex]
+    handlers:
+      - name: handleKeyPress
+      - name: handleClear
+      - name: handleBackspace
+      - name: handleSubmit
+        calls: [e.preventDefault]
+      - name: handlePrevKeyboard
+        calls: [availableKeyboardTypes.indexOf, setSelectedKeyboardType, Object.prototype.hasOwnProperty.call, setSelectedCategoryIndex]
+      - name: handleNextKeyboard
+        calls: [availableKeyboardTypes.indexOf, setSelectedKeyboardType, Object.prototype.hasOwnProperty.call, setSelectedCategoryIndex]
+    exports:
+      - name: KeyboardInfoModal
+        params:
+          "{ isOpen, onClose }": KeyboardInfoModalProps
+        returns: React.ReactPortal | null
+        calls: [useSettingsStore, Object.entries(APP_CONFIG.SUB_TOPICS).forEach, Object.entries, subTopics.forEach, Object.prototype.hasOwnProperty.call, categories.push, levels.map, getKeyboardTypeInfo, types.push, availableKeyboardTypes.includes, setSelectedKeyboardType, setSelectedCategoryIndex, screen.orientation.type.includes, window.matchMedia, setIsLandscape, checkOrientation, setTimeout, window.addEventListener, screen.orientation.addEventListener, mediaQuery.addEventListener, window.removeEventListener, screen.orientation.removeEventListener, mediaQuery.removeEventListener, e.preventDefault, availableKeyboardTypes.indexOf, "(() => { if ( !selectedKeyboardType || availableKeyboardTypes.length === 0 || currentCategories.length === 0 || !currentCategory ) { return ( <div className=\"modal-overlay animate-fade-in\" onClick={onClose}> <div className=\"modal-base keyboard-info-modal quiz-page animate-scale-in\" onClick={(e) => e.stopPropagation()} > <div className=\"keyboard-info-modal-header\"> <h2 className=\"keyboard-info-modal-title\">키보드 미리보기</h2> <p className=\"keyboard-info-modal-subtitle\"> {availableKeyboardTypes.length === 0 ? '사용 가능한 키보드가 없습니다.' : !selectedKeyboardType ? '로딩 중...' : '사용 가능한 카테고리가 없습니다.'} </p> </div> <button className=\"keyboard-info-modal-close\" onClick={onClose}> 닫기 </button> </div> </div> ); } return ( <div className=\"modal-overlay animate-fade-in\" onClick={onClose}> <div className=\"modal-base keyboard-info-modal quiz-page animate-scale-in\" onClick={(e) => e.stopPropagation()} > {/* 퀴즈 페이지와 동일한 헤더 구조 */} <header className=\"quiz-header\"> <button className=\"quiz-back-button\" onClick={onClose} aria-label=\"뒤로 가기\"> ← </button> <div className=\"quiz-timer-container\"> <h2 className=\"keyboard-info-modal-title\"> {getKeyboardTypeName(selectedKeyboardType)} </h2> </div> <div className=\"quiz-header-spacer\"></div> </header> {/* 퀴즈 페이지와 동일한 컨텐츠 영역 구조 */} <div className=\"quiz-content keyboard-info-content-wrapper\"> {/* 카테고리 선택 탭 (좌우 스크롤) - 키보드 위에 오버레이로 배치 */} <div className=\"keyboard-info-category-tabs\"> <div className=\"keyboard-info-category-tabs-scroll\"> {currentCategories.map((info, index) => ( <button key={`${info.category}-${info.subTopic}`} className={`keyboard-info-category-tab ${selectedCategoryIndex === index ? 'active' : ''}`} onClick={() => setSelectedCategoryIndex(index)} > <span className=\"keyboard-info-tab-icon\">{info.icon}</span> <span className=\"keyboard-info-tab-name\">{info.subTopicName}</span> </button> ))} </div> </div> {/* 키보드 네비게이션 버튼 (키보드 위에 오버레이) */} <div className=\"keyboard-info-nav-wrapper\"> <button className=\"keyboard-info-nav-button keyboard-info-nav-prev\" onClick={handlePrevKeyboard} aria-label=\"이전 키보드 타입\" > ‹ </button> <span className=\"keyboard-info-nav-label\"> {getKeyboardTypeName(selectedKeyboardType)} </span> <button className=\"keyboard-info-nav-button keyboard-info-nav-next\" onClick={handleNextKeyboard} aria-label=\"다음 키보드 타입\" > › </button> </div> {/* 키보드 - 퀴즈 페이지와 완전히 동일한 위치에 배치 (quiz-content의 직접 자식) */} {selectedKeyboardType === 'custom' && ( <CustomKeypad onNumberClick={handleKeyPress} onClear={handleClear} onBackspace={handleBackspace} onSubmit={handleSubmit} disabled={false} showNegative={currentCategory.allowNegative} /> )} {selectedKeyboardType === 'qwerty-text' && ( <QwertyKeypad onKeyPress={handleKeyPress} onClear={handleClear} onBackspace={handleBackspace} onSubmit={handleSubmit} disabled={false} mode=\"text\" /> )} {selectedKeyboardType === 'qwerty-number' && ( <QwertyKeypad onKeyPress={handleKeyPress} onClear={handleClear} onBackspace={handleBackspace} onSubmit={handleSubmit} disabled={false} mode=\"number\" allowNegative={currentCategory.allowNegative} /> )} <div className=\"keyboard-info-preview-indicator\"> 레벨{' '} {currentCategory.levels.length > 0 ? `1-${currentCategory.levels.length}` : '없음'} ( {currentCategory.levels.length}개) </div> </div> </div> </div> ); })", e.stopPropagation, getKeyboardTypeName, currentCategories.map, createPortal]
+  src/components/LastChanceModal.tsx:
+    imports: [./BaseModal, ./LastChanceModal.css]
+    state: [timeLeft, isAdLoading]
+    handlers:
+      - name: handleWatchAdClick
+        calls: [setIsAdLoading, onWatchAd]
+    exports:
+      - name: LastChanceModal
+        params:
+          "{
+  isVisible,
+  gameMode,
+  inventoryCount,
+  userMinerals,
+  onUseItem,
+  onPurchaseAndUse,
+  onWatchAd,
+  onGiveUp,
+  basePrice,
+}": LastChanceModalProps
+        returns: "import(\"C:/Users/ghkdd/gemini-projects/solve-climb/node_modules/@types/react/jsx-runtime\").JSX.Element"
+        calls: [setTimeLeft, setInterval, clearInterval, setTimeout, onGiveUp, setIsAdLoading, onWatchAd]
+  src/components/LevelListCard.tsx:
+    imports: [../stores/useLevelProgressStore, ../stores/useProfileStore, ./BaseCard, ./UnderDevelopmentModal, ../hooks/useLongPress, ../types/quiz, ./LevelListCard.css]
+    handlers:
+      - name: handleLockedClick
+        calls: [e.stopPropagation, onLockedLevelClick]
+  src/components/ModeSelectModal.tsx:
+    imports: [../constants/stages, ./BaseModal, ./ModeSelectModal.css]
+    handlers:
+      - name: handleModeSelect
+        calls: [onSelectMode, onClose]
+    exports:
+      - name: ModeSelectModal
+        params:
+          "{
+  isOpen,
+  level,
+  levelName,
+  onClose,
+  onSelectMode,
+}": ModeSelectModalProps
+        returns: "import(\"C:/Users/ghkdd/gemini-projects/solve-climb/node_modules/@types/react/jsx-runtime\").JSX.Element"
+        calls: [STAGE_CONFIG.find, onSelectMode, onClose, handleModeSelect]
+  src/components/MyRecordCard.tsx:
+    imports: [../stores/useLevelProgressStore, ./BaseCard, ./MyRecordCard.css]
+    state: [loading, records]
+    exports:
+      - name: MyRecordCard
+        params:
+          "{ world, category, categoryName }": MyRecordCardProps
+        returns: "import(\"C:/Users/ghkdd/gemini-projects/solve-climb/node_modules/@types/react/jsx-runtime\").JSX.Element"
+        calls: [useLevelProgressStore, setLoading, setTimeout, getBestRecords, setRecords, "records['time-attack'].toLocaleString", "records['survival'].toLocaleString"]
+  src/components/ProfileForm.tsx:
+    imports: [../stores/useProfileStore, ../utils/validation, ../utils/errorHandler, ./ProfileForm.css]
+    state: [nickname, error]
+    handlers:
+      - name: handleSubmit
+        calls: [e.preventDefault, sanitizeNickname, validateNickname, setError, "new Date().toISOString", setProfile, import('../utils/supabaseClient').then, import, supabase.auth.getSession().then, supabase.auth.getSession, "supabase .rpc('update_profile_nickname', { p_nickname: sanitizedNickname }) .then", "supabase .rpc", logError, console.log, onComplete]
+    exports:
+      - name: ProfileForm
+        params:
+          "{ onComplete, showBackButton = false, onCancel }": ProfileFormProps
+        returns: "import(\"C:/Users/ghkdd/gemini-projects/solve-climb/node_modules/@types/react/jsx-runtime\").JSX.Element"
+        calls: [useNavigate, useProfileStore, e.preventDefault, sanitizeNickname, validateNickname, setError, "new Date().toISOString", setProfile, import('../utils/supabaseClient').then, import, supabase.auth.getSession().then, supabase.auth.getSession, "supabase .rpc('update_profile_nickname', { p_nickname: sanitizedNickname }) .then", "supabase .rpc", logError, console.log, onComplete, onCancel, navigate, setNickname]
+  src/components/PwaUpdateNotification.tsx:
+    imports: [./Toast, ../utils/errorHandler]
+    state: [show, message]
+    handlers:
+      - name: handleClose
+        calls: [setShow, setOfflineReady, setNeedUpdate]
+      - name: handleConfirm
+        calls: [updateServiceWorker, setShow]
+    exports:
+      - name: PwaUpdateNotification
+        returns: "import(\"C:/Users/ghkdd/gemini-projects/solve-climb/node_modules/@types/react/jsx-runtime\").JSX.Element | null"
+        calls: [useRegisterSW, console.log, logError, setMessage, setShow, setTimeout, clearTimeout, setOfflineReady, setNeedUpdate, updateServiceWorker]
+  src/components/QwertyKeypad.tsx:
+    imports: [../utils/haptic, ./QwertyKeypad.css]
+    handlers:
+      - name: handleKeyClick
+        calls: [vibrateShort, onKeyPress]
+      - name: handleBackspace
+        calls: [vibrateShort, onBackspace]
+  src/components/SegmentedControl.tsx:
+    imports: [./SegmentedControl.css]
+    state: [activeIndex, indicatorStyle]
+    exports:
+      - name: SegmentedControl
+        params:
+          "{
+  options,
+  value,
+  onChange,
+  className = '',
+  name = 'segmented-control',
+}": SegmentedControlProps<T>
+        returns: "import(\"C:/Users/ghkdd/gemini-projects/solve-climb/node_modules/@types/react/jsx-runtime\").JSX.Element"
+        calls: [options.findIndex, setActiveIndex, itemsRef.current.at, container.getBoundingClientRect, activeItem.getBoundingClientRect, setIndicatorStyle, window.addEventListener, window.removeEventListener, options.map, onChange]
+  src/components/StaminaGauge.tsx:
+    imports: [../stores/useUserStore, ./StaminaGauge.css]
+    exports:
+      - name: StaminaGauge
+        returns: "import(\"C:/Users/ghkdd/gemini-projects/solve-climb/node_modules/@types/react/jsx-runtime\").JSX.Element"
+        calls: [useUserStore, Math.min, "[1, 2, 3, 4].map"]
+  src/components/StatusCard.tsx:
+    imports: [../config/app, ../stores/useLevelProgressStore, ./BaseCard, ../utils/errorHandler, ./StatusCard.css]
+    state: [state, status]
+    handlers:
+      - name: handleDetailClick
+        calls: [navigate]
+    exports:
+      - name: StatusCard
+        returns: "import(\"C:/Users/ghkdd/gemini-projects/solve-climb/node_modules/@types/react/jsx-runtime\").JSX.Element"
+        calls: [useNavigate, fetchUserData, setState, useLevelProgressStore.getState, Object.values(progress).forEach, Object.values, Object.values(categoryData).forEach, Object.values(subTopicData).forEach, Math.max, setStatus, logError, navigate, rank.toLocaleString, formatRank]
+  src/components/TierBadge.tsx:
+    imports: [../constants/tiers, ../utils/errorHandler, ./TierBadge.css]
+    state: [tierInfo, tierResult, loading]
+    exports:
+      - name: TierBadge
+        params:
+          "{
+  totalScore,
+  size = 'medium',
+  showLabel = true,
+  showStars = true,
+  currentTierLevel,
+  fixedTierLevel,
+  fixedTierStars,
+}": TierBadgeProps
+        returns: "import(\"C:/Users/ghkdd/gemini-projects/solve-climb/node_modules/@types/react/jsx-runtime\").JSX.Element"
+        calls: [setTierResult, getTierInfo, setTierInfo, calculateTier, logError, setLoading, loadTier, '★'.repeat, getBorderStyle]
+  src/components/TierProgressBar.tsx:
+    imports: [../constants/tiers, ../utils/errorHandler, ./TierProgressBar.css]
+    state: [tierResult, nextTierInfo, progress, loading]
+    exports:
+      - name: TierProgressBar
+        params:
+          "{
+  totalScore,
+  size = 'medium',
+}": TierProgressBarProps
+        returns: "import(\"C:/Users/ghkdd/gemini-projects/solve-climb/node_modules/@types/react/jsx-runtime\").JSX.Element | null"
+        calls: [calculateTier, setTierResult, getNextTierInfo, setNextTierInfo, setProgress, Math.min, Math.max, logError, setLoading, loadTierInfo, '★'.repeat, nextTierInfo.remaining.toLocaleString]
+  src/components/TierUpgradeModal.tsx:
+    imports: [../constants/tiers, ./BaseModal, ./TierUpgradeModal.css]
+    state: [previousTier, currentTier, loading, showStarsAnimation, previousTierInfo, currentTierInfo]
+    exports:
+      - name: TierUpgradeModal
+        params:
+          "{
+  isOpen,
+  previousScore,
+  currentScore,
+  onClose,
+}": TierUpgradeModalProps
+        returns: "import(\"C:/Users/ghkdd/gemini-projects/solve-climb/node_modules/@types/react/jsx-runtime\").JSX.Element | null"
+        calls: [setLoading, calculateTier, setPreviousTier, setCurrentTier, setShowStarsAnimation, setTimeout, loadTiers, getTierInfo(previousTier.level).then, getTierInfo, setPreviousTierInfo, getTierInfo(currentTier.level).then, setCurrentTierInfo, '★'.repeat]
+  src/components/TimerCircle.tsx:
+    imports: [../stores/useDebugStore, ./TimerCircle.css]
+    state: [timeLeft, isFastForward, isStoppedByClick]
+  src/components/TimeSelector.tsx:
+    imports: [../stores/useQuizStore, ./TimeSelector.css]
+    exports:
+      - name: TimeSelector
+        params:
+          "{ onSelect }": TimeSelectorProps
+        returns: "import(\"C:/Users/ghkdd/gemini-projects/solve-climb/node_modules/@types/react/jsx-runtime\").JSX.Element"
+        calls: [TIME_OPTIONS.map, onSelect]
+  src/components/Toast.tsx:
+    imports: [./Toast.css]
+    state: [isClosing]
+    exports:
+      - name: Toast
+        params:
+          "{
+  message,
+  isOpen,
+  onClose,
+  autoClose = true,
+  autoCloseDelay = 2000,
+  icon,
+  children,
+}": ToastProps
+        returns: React.ReactPortal | null
+        calls: [clearTimeout, setIsClosing, setTimeout, onClose, createPortal]
+  src/components/TopicHeader.tsx:
+    imports: [./TopicHeader.css]
+    handlers:
+      - name: handleBack
+        calls: [onBack, navigate]
+    exports:
+      - name: TopicHeader
+        params:
+          "{ title, onBack }": TopicHeaderProps
+        returns: "import(\"C:/Users/ghkdd/gemini-projects/solve-climb/node_modules/@types/react/jsx-runtime\").JSX.Element"
+        calls: [useNavigate, onBack, navigate]
+  src/components/UnderDevelopmentModal.tsx:
+    imports: [./BaseModal, ./UnderDevelopmentModal.css]
+    exports:
+      - name: UnderDevelopmentModal
+        params:
+          "{
+  isOpen,
+  onClose,
+  autoClose = true,
+  autoCloseDelay = 2000,
+}": UnderDevelopmentModalProps
+        returns: "import(\"C:/Users/ghkdd/gemini-projects/solve-climb/node_modules/@types/react/jsx-runtime\").JSX.Element"
+        calls: [setTimeout, onClose, clearTimeout]
+  src/components/UnknownMountainCard.tsx:
+    imports: [./BaseCard, ./UnknownMountainCard.css]
+    state: [isPressed]
+    handlers:
+      - name: handleClick
+        calls: [Date.now, Math.floor, Math.random, onToast]
+    exports:
+      - name: UnknownMountainCard
+        params:
+          "{ onToast }": UnknownMountainCardProps
+        returns: "import(\"C:/Users/ghkdd/gemini-projects/solve-climb/node_modules/@types/react/jsx-runtime\").JSX.Element"
+        calls: [Date.now, Math.floor, Math.random, onToast, setIsPressed]
+  src/components/WithdrawConfirmModal.tsx:
+    imports: [./BaseModal, ./WithdrawConfirmModal.css]
+    exports:
+      - name: WithdrawConfirmModal
+        params:
+          "{
+  isOpen,
+  onConfirm,
+  onCancel,
+  isLoading = false,
+}": WithdrawConfirmModalProps
+        returns: "import(\"C:/Users/ghkdd/gemini-projects/solve-climb/node_modules/@types/react/jsx-runtime\").JSX.Element"
+  src/config/app.ts:
+    imports: [../../package.json, @/constants/levels]
+  src/constants/game.ts:
+    imports: [../types/quiz]
+  src/constants/history.ts:
+    imports: [../types/roadmap]
+    exports:
+      - name: getTierInfo
+        params:
+          altitude: number
+        returns: "{ stars: number; name: string; nextTierName: string; icon: string; colorVar: string; nextGoal: number; currentCycleScore: number; }"
+        description: 고도와 별 개수를 분석하여 현재 티어 정보를 반환합니다.
+        calls: [Math.floor, Math.max, "[...ALTITUDE_TIERS].reverse", reversedTiers.findIndex, reversedTiers.at, ALTITUDE_TIERS.findIndex, ALTITUDE_TIERS.at]
+      - name: getUserTitle
+        params:
+          altitude: number
+        returns: string
+        description: 고도에 따른 유저 칭호 생성 로직
+      - name: getSmartComment
+        params:
+          "{
+  streakCount,
+  averageAccuracy,
+  maxCombo,
+  totalAltitude,
+}": "{ streakCount: number; averageAccuracy: number; maxCombo: number; totalAltitude: number; }"
+        returns: string
+        description: 스마트 코멘트 생성을 위한 조건부 메시지
+  src/constants/items.ts:
+    exports:
+      - name: getItemEmoji
+        params:
+          code: string
+        returns: string
+        description: "기존 호환용: code → emoji"
+        calls: [Object.prototype.hasOwnProperty.call]
+      - name: getItemShortEffect
+        params:
+          code: string
+        returns: string
+        description: code → 짧은 효과 설명
+        calls: [Object.prototype.hasOwnProperty.call]
+  src/constants/stages.ts:
+    exports:
+      - name: getStagesForWorld
+        params:
+          world: string | undefined
+        returns: "import(\"C:/Users/ghkdd/gemini-projects/solve-climb/src/constants/stages\").StageConfig[]"
+  src/constants/tiers.ts:
+    imports: [../utils/supabaseClient, ../utils/debugFetch, ../utils/errorHandler]
+    exports:
+      - name: loadTierDefinitions
+        returns: "Promise<import(\"C:/Users/ghkdd/gemini-projects/solve-climb/src/constants/tiers\").TierInfo[]>"
+        description: DB에서 티어 정의 로드
+        calls: [Date.now, safeSupabaseQuery, supabase.from('tier_definitions').select('*').order, supabase.from('tier_definitions').select, supabase.from, data.map, logError]
+      - name: loadCycleCap
+        returns: Promise<number>
+        description: DB에서 사이클 기준점 로드
+        calls: [Date.now, safeSupabaseQuery, "supabase.from('game_config').select('value').eq('key', 'tier_cycle_cap').single", supabase.from('game_config').select('value').eq, supabase.from('game_config').select, supabase.from, parseInt, logError]
+      - name: calculateTier
+        params:
+          totalScore: number
+        returns: "Promise<import(\"C:/Users/ghkdd/gemini-projects/solve-climb/src/constants/tiers\").TierCalculationResult>"
+        description: 무한 등반(순환제) 계산 로직
+        calls: [Promise.all, loadTierDefinitions, loadCycleCap, calculateLevel, Math.floor]
+      - name: calculateTierSync
+        params:
+          totalScore: number
+          tierLevels: "import(\"C:/Users/ghkdd/gemini-projects/solve-climb/src/constants/tiers\").TierInfo[]"
+          cycleCap: number
+        returns: "import(\"C:/Users/ghkdd/gemini-projects/solve-climb/src/constants/tiers\").TierCalculationResult"
+        description: 동기 버전 (캐시된 값 사용)
+        calls: [calculateLevel, Math.floor]
+      - name: getNextTierInfo
+        params:
+          currentScore: number
+        returns: "Promise<{ name: string; minScore: number; remaining: number; } | null>"
+        description: 다음 티어까지 필요한 점수
+        calls: [Promise.all, loadTierDefinitions, loadCycleCap, calculateTier, tierLevels.find]
+      - name: getTierInfo
+        params:
+          level: "import(\"C:/Users/ghkdd/gemini-projects/solve-climb/src/constants/tiers\").TierLevel"
+        returns: "Promise<import(\"C:/Users/ghkdd/gemini-projects/solve-climb/src/constants/tiers\").TierInfo | null>"
+        description: 티어 정보 가져오기 (레벨로)
+        calls: [loadTierDefinitions, tierLevels.find]
+  src/constants/ui.ts:
+    imports: [./items]
+  src/hooks/useAsync.ts:
+    imports: [../utils/errorHandler]
+    exports:
+      - name: useAsync
+        params:
+          asyncFn: () => Promise<T>
+          options: "import(\"C:/Users/ghkdd/gemini-projects/solve-climb/src/hooks/useAsync\").UseAsyncOptions<T>"
+        returns: "import(\"C:/Users/ghkdd/gemini-projects/solve-climb/src/hooks/useAsync\").UseAsyncResult<T>"
+        description: 비동기 작업을 관리하는 Hook
+        calls: [setLoading, setError, asyncFn, setData, onSuccess, logError, getUserErrorMessage, onError, execute]
+  src/hooks/useBadgeChecker.ts:
+    imports: [../utils/supabaseClient, ../utils/debugFetch, ../constants/badges, ../stores/useBadgeStore, @/features/mypage, ../utils/rpcValidator, ../utils/errorHandler]
+    exports:
+      - name: useBadgeChecker
+        returns: "{ checkAndAwardBadges: (userId: string, stats: import(\"C:/Users/ghkdd/gemini-projects/solve-climb/src/features/mypage/hooks/useHistoryData\").HistoryStats) => Promise<string[]>; }"
+        calls: [uuidPattern.test, validatedRpc, supabase.rpc, logError, useBadgeStore.getState, addUserBadge, safeSupabaseQuery, supabase.from('user_badges').select('badge_id').eq, supabase.from('user_badges').select, supabase.from, userBadges?.map, earnedBadgeIds.has, stats.categoryLevels.some, cat.themeId.includes, newBadges.push]
+  src/hooks/useConnectivity.ts:
+    imports: [@/stores/useToastStore]
+    exports:
+      - name: useConnectivity
+        returns: boolean
+        description: |
+            네트워크 연결 상태를 감시하는 훅
+            오프라인 상태가 되면 사용자에게 알림을 표시합니다.
+        calls: [useToastStore, setIsOnline, showToast, window.addEventListener, window.removeEventListener]
+  src/hooks/useCountUp.ts:
+    exports:
+      - name: useCountUp
+        params:
+          targetValue: number
+          duration: number
+        returns: number
+        description: Hook to animate a count from 0 to targetValue with easing.
+        calls: [setCount, Date.now, Math.min, Math.pow, Math.floor, requestAnimationFrame, cancelAnimationFrame]
+  src/hooks/useCustomBackNavigation.ts:
+    imports: [../config/app, ../stores/useProfileStore]
+    exports:
+      - name: useCustomBackNavigation
+        description: |
+            브라우저 뒤로가기 버튼 동작을 커스터마이징하는 훅
+            
+            규칙:
+            1. 메인 페이지(홈, 랭킹, 챌린지, 마이)에서 뒤로가기 → 홈으로 이동
+            2. 홈에서 뒤로가기 → 마이 페이지로 이동
+            3. 그 외 페이지에서 뒤로가기 → 상위 페이지로 이동
+        calls: [useNavigate, useLocation, mainPages.includes, navigate, setTimeout, window.dispatchEvent, useProfileStore.getState, paramsToCheck.get, newSearchParams.set, newSearchParams.toString, window.addEventListener, window.removeEventListener]
+  src/hooks/useGrowthJournal.ts:
+    imports: [../utils/supabaseClient, ../utils/errorHandler]
+    exports:
+      - name: useGrowthJournal
+        returns: "{ logs: import(\"C:/Users/ghkdd/gemini-projects/solve-climb/src/hooks/useGrowthJournal\").GameLog[]; loading: boolean; error: string | null; refetch: () => Promise<void>; }"
+        calls: [setLoading, supabase.rpc, setLogs, setError, logError, String, fetchLogs]
+  src/hooks/useInterval.ts:
+    exports:
+      - name: useInterval
+        params:
+          callback: () => void
+          delay: number | null
+        description: useInterval Hook
+        calls: [setInterval, callbackRef.current, clearInterval]
+  src/hooks/useLoading.ts:
+    imports: [../stores/useLoadingStore]
+    exports:
+      - name: useLoading
+        params:
+          options: "import(\"C:/Users/ghkdd/gemini-projects/solve-climb/src/hooks/useLoading\").UseLoadingOptions"
+        returns: "{ isLoading: boolean; start: (customId?: string | undefined) => void; stop: (customId?: string | undefined) => void; execute: <T>(asyncFn: () => Promise<T>) => Promise<T>; }"
+        description: 로딩 상태 관리 Hook
+        calls: [useLoadingStore, Date.now, Math.random().toString(36).substr, Math.random().toString, Math.random, startLoading, stopLoading, asyncFn, isLoading, isAnyLoading]
+  src/hooks/useLongPress.ts:
+    exports:
+      - name: useLongPress
+        params:
+          "{
+  onLongPress,
+  onMediumPress,
+  mediumDelay = 2000,
+  longDelay = 4000,
+  disabled = false,
+}": UseLongPressOptions
+        returns: "{ onMouseDown: (e: React.MouseEvent<Element, MouseEvent> | React.TouchEvent<Element>) => void; onMouseUp: () => void; onMouseLeave: () => void; onTouchStart: (e: React.MouseEvent<Element, MouseEvent> | React.TouchEvent<Element>) => void; onTouchEnd: () => void; onTouchCancel: () => void; }"
+        calls: [e.stopPropagation, stop, setTimeout, onMediumPress, onLongPress, clearTimeout]
+  src/hooks/useMapScroll.ts:
+    imports: [@/constants/stages]
+    exports:
+      - name: useMapScroll
+        params:
+          containerRef: React.RefObject<HTMLElement | null>
+          levelsCount: number
+        calls: [container.getAttribute, e.preventDefault, container.addEventListener, container.removeEventListener]
+  src/hooks/useNavigationContext.ts:
+    imports: [@/services, @/types/quiz, @/config/app]
+    exports:
+      - name: useNavigationContext
+        returns: "{ mountain: string | null; world: import(\"C:/Users/ghkdd/gemini-projects/solve-climb/src/features/quiz/types/quiz\").World | null; category: import(\"C:/Users/ghkdd/gemini-projects/solve-climb/src/features/quiz/types/quiz\").Category | null; mountainName: \"수학의 산\" | \"언어의 산\" | null; isValid: boolean; tryRecover: (requiredParams: (\"mountain\" | \"world\" | \"category\")[]) => boolean; }"
+        description: |
+            페이지 간 공통으로 사용되는 내비게이션 컨텍스트(파라미터)를 관리하는 훅
+            - URL 파라미터 추출 및 유효성 검증
+            - 최신 방문 정보 자동 저장
+            - 결손 파라미터 복구 로직 제공
+        calls: [useSearchParams, searchParams.get, storageService.set, requiredParams.filter, storageService.get, requiredParams.every, params.set, setSearchParams]
+  src/hooks/useRanking.ts:
+    imports: [@/utils/supabaseClient, @/stores/useRankingStore]
+    exports:
+      - name: useRanking
+        returns: "{ activePeriod: import(\"C:/Users/ghkdd/gemini-projects/solve-climb/src/hooks/useRanking\").RankingPeriod; setActivePeriod: React.Dispatch<React.SetStateAction<import(\"C:/Users/ghkdd/gemini-projects/solve-climb/src/hooks/useRanking\").RankingPeriod>>; activeType: import(\"C:/Users/ghkdd/gemini-projects/solve-climb/src/hooks/useRanking\").RankingType; setActiveType: React.Dispatch<React.SetStateAction<import(\"C:/Users/ghkdd/gemini-projects/solve-climb/src/hooks/useRanking\").RankingType>>; loading: boolean; currentUserId: string | null; currentRankings: import(\"C:/Users/ghkdd/gemini-projects/solve-climb/src/stores/useRankingStore\").RankingRecord[]; myRank: import(\"C:/Users/ghkdd/gemini-projects/solve-climb/src/stores/useRankingStore\").RankingRecord | null | undefined; rankingVersion: number; }"
+        calls: [useSearchParams, validateModeParam, searchParams.get, useRankingStore, Object.entries(rankings).find, Object.entries, supabase.auth.getSession().then, supabase.auth.getSession, setCurrentUserId, setLoading, fetchRanking, loadRanking, subscribeToRankingUpdates, unsubscribeFromRankingUpdates, currentRankings.find]
+  src/hooks/useRoadmapLayout.ts:
+    imports: [@/features/mypage, @/constants/history, @/types/roadmap, @/constants/game]
+    exports:
+      - name: useRoadmapLayout
+        params:
+          stats: "import(\"C:/Users/ghkdd/gemini-projects/solve-climb/src/features/mypage/hooks/useHistoryData\").HistoryStats | null"
+          isLinearScale: boolean
+          isRoadmapActive: boolean
+        returns: "{ displayRatio: number; isScaling: boolean; showZoomIndicator: boolean; visibleAltRange: { min: number; max: number; }; gaugeHeight: string; setGaugeHeight: React.Dispatch<React.SetStateAction<string>>; roadmapData: { currentIdx: number; cardIndices: number[]; }; layoutData: { gaugeHeight: number; nodes: { bottom: number; isTier: boolean; id: string; altitude: number; label: string; type: \"tier\" | \"landmark\"; icon: string; description?: string | undefined; parentTierId?: string | undefined; subLandmarks?: import(\"C:/Users/ghkdd/gemini-projects/solve-climb/src/types/roadmap\").MilestoneItem[] | undefined; stars?: number | undefined; overlapLandmark?: import(\"C:/Users/ghkdd/gemini-projects/solve-climb/src/types/roadmap\").MilestoneItem | undefined; representativeLandmark?: import(\"C:/Users/ghkdd/gemini-projects/solve-climb/src/types/roadmap\").MilestoneItem | undefined; }[]; absoluteZeroY: number; totalLogicalAltitude: number; BOTTOM_SAFETY_MARGIN: number; } | null; cameraRef: React.RefObject<HTMLDivElement>; roadmapScrollRef: React.RefObject<HTMLDivElement>; VIRTUAL_RAIL_HEIGHT: number; getAltitudeY: (alt: number, ratio: number) => number; }"
+        calls: [ALTITUDE_MILESTONES.findIndex, "ALTITUDE_MILESTONES.map((mil, i) => ({ type: mil.type, altitude: mil.altitude, originalIdx: i, })) .filter((mil) => mil.type === 'tier' || mil.altitude === 0) .sort", "ALTITUDE_MILESTONES.map((mil, i) => ({ type: mil.type, altitude: mil.altitude, originalIdx: i, })) .filter", ALTITUDE_MILESTONES.map, tierIndices.find, "tierIndices .slice() .reverse() .find", "tierIndices .slice() .reverse", "tierIndices .slice", "[nextTier?.originalIdx, prevTier?.originalIdx] .filter((val): val is number => val !== undefined && val !== -1) .filter", "[nextTier?.originalIdx, prevTier?.originalIdx] .filter", arr.indexOf, getAltitudeY, Math.round, Math.max, "ALTITUDE_MILESTONES.flatMap((m) => { const items = []; if (m.type === 'tier') { items.push({ ...m, isTier: true }); m.subLandmarks?.forEach((sub: MilestoneItem) => { items.push({ ...sub, isTier: false, parentTierId: m.id }); }); } return items; }) .map((item) => { const absoluteY = getAltitudeY(item.altitude, displayRatio); const bottom = Math.round(absoluteY - absoluteZeroY); return { ...item, bottom }; }) .sort", "ALTITUDE_MILESTONES.flatMap((m) => { const items = []; if (m.type === 'tier') { items.push({ ...m, isTier: true }); m.subLandmarks?.forEach((sub: MilestoneItem) => { items.push({ ...sub, isTier: false, parentTierId: m.id }); }); } return items; }) .map", ALTITUDE_MILESTONES.flatMap, items.push, m.subLandmarks?.forEach, nodes.map, Math.abs, setViewportHeight, Math.min, cameraRef.current.style.setProperty, setVisibleAltRange, ROADMAP_SCALE_CONFIG.find, "[...ROADMAP_SCALE_CONFIG] .reverse() .find", "[...ROADMAP_SCALE_CONFIG] .reverse", setIsScaling, setDisplayRatio, setShowZoomIndicator, clearTimeout, setTimeout, scrollContainer.addEventListener, handleScroll, scrollContainer.removeEventListener]
+  src/hooks/useTimeout.ts:
+    exports:
+      - name: useTimeout
+        params:
+          callback: () => void
+          delay: number | null
+        description: useTimeout Hook
+        calls: [setTimeout, callbackRef.current, clearTimeout]
+  src/lib/eventBus.ts:
+    imports: [@/types/quiz]
+  src/lib/utils.ts:
+    exports:
+      - name: cn
+        params:
+          inputs: "import(\"C:/Users/ghkdd/gemini-projects/solve-climb/node_modules/clsx/clsx\").ClassValue[]"
+        returns: string
+        calls: [twMerge, clsx]
+  src/mocks/server.ts:
+    imports: [./handlers]
+  src/pages/CategorySelectPage.tsx:
+    imports: [@/config/app, @/components/TopicHeader, @/components/FooterNav, @/stores/useLevelProgressStore, @/stores/useFavoriteStore, @/utils/navigation, ./CategorySelectPage.css, @/stores/useDebugStore, @/services, @/hooks/useNavigationContext]
+    handlers:
+      - name: handleToggleFavorite
+        calls: [e.preventDefault, e.stopPropagation]
+      - name: handleCategoryClick
+        calls: [navigate, urls.levelSelect]
+    exports:
+      - name: CategorySelectPage
+        returns: "import(\"C:/Users/ghkdd/gemini-projects/solve-climb/node_modules/@types/react/jsx-runtime\").JSX.Element"
+        calls: [useNavigate, useNavigationContext, tryRecover, useLevelProgressStore, useDebugStore, useFavoriteStore, e.preventDefault, e.stopPropagation, navigate, urls.home, APP_CONFIG.CATEGORIES.filter, storageService.get, STORAGE_KEYS.LAST_PLAYED_WORLD, Object.entries(levels).find, Object.entries, "progressStore .getLevelProgress(world, categoryId) .filter", "progressStore .getLevelProgress", Math.round, urls.levelSelect, categories.map, "['논리', '대수', '심화'].includes", getCategoryProgress, isFavorite, handleCategoryClick, handleToggleFavorite]
+  src/pages/DebugPage.tsx:
+    imports: [../components/Header, @/features/debug, ./DebugPage.css]
+    exports:
+      - name: DebugPage
+        returns: "import(\"C:/Users/ghkdd/gemini-projects/solve-climb/node_modules/@types/react/jsx-runtime\").JSX.Element"
+        calls: [useNavigate, navigate]
+  src/pages/HomePage.tsx:
+    imports: [@/components/Header, @/components/StatusCard, @/components/ChallengeCard, @/components/CategoryList, @/components/FooterNav, @/components/Toast, @/components/StaminaGauge, @/components/DailyRewardModal, @/stores/useDailyRewardStore, @/config/app, ./HomePage.css]
+    state: [showExitToast, showAgeRating]
+    exports:
+      - name: HomePage
+        returns: "import(\"C:/Users/ghkdd/gemini-projects/solve-climb/node_modules/@types/react/jsx-runtime\").JSX.Element"
+        calls: [useNavigate, useDailyRewardStore, setShowAgeRating, setTimeout, clearTimeout, checkDailyLogin, setShowExitToast, navigate, window.addEventListener, window.removeEventListener]
+  src/pages/LevelSelectPage.tsx:
+    imports: [@/config/app, @/components/ClimbGraphic, @/components/MyRecordCard, @/components/LevelListCard, @/components/FooterNav, @/components/Toast, @/types/quiz, @/utils/navigation, @/components/layout/PageLayout, @/constants/stages, @/hooks/useMapScroll, ./LevelSelectPage.css, @/services, @/hooks/useNavigationContext]
+    state: [isSheetExpanded, toastMessage, showToast, isReady, activeWorld, activeCategory, isSheetTransitioning, tier]
+    handlers:
+      - name: handleLevelClick
+        calls: [navigate, urls.quiz]
+      - name: handleLockedLevelClick
+        calls: [setToastMessage, setShowToast]
+      - name: handleLevelLongPress
+      - name: handleSurvivalClick
+        calls: [navigate, urls.quiz]
+      - name: handleWorldChange
+        calls: ["APP_CONFIG.WORLDS.filter((w) => w.mountainId === mountainParamSafe).map", APP_CONFIG.WORLDS.filter, validWorldIds.indexOf, validWorldIds.at, setIsSheetTransitioning, setTimeout, storageService.set, STORAGE_KEYS.LAST_PLAYED_WORLD, setActiveWorld, navigate, urls.levelSelect]
+      - name: handleScroll
+        calls: [setIsSheetExpanded, container.getAttribute, requestAnimationFrame, container.closest, pageEl.hasAttribute, pageEl.setAttribute, clearTimeout, setTimeout, pageEl.removeAttribute]
+    exports:
+      - name: LevelSelectPage
+        returns: "import(\"C:/Users/ghkdd/gemini-projects/solve-climb/node_modules/@types/react/jsx-runtime\").JSX.Element"
+        calls: [useNavigate, useNavigationContext, setActiveWorld, setActiveCategory, tryRecover, useLayoutEffect, requestAnimationFrame, setIsReady, useMapScroll, storageService.get, navigate, urls.home, APP_CONFIG.WORLDS.find, APP_CONFIG.CATEGORIES.find, urls.quiz, setToastMessage, setShowToast, "APP_CONFIG.WORLDS.filter((w) => w.mountainId === mountainParamSafe).map", APP_CONFIG.WORLDS.filter, validWorldIds.indexOf, validWorldIds.at, setIsSheetTransitioning, setTimeout, storageService.set, STORAGE_KEYS.LAST_PLAYED_WORLD, urls.levelSelect, setIsSheetExpanded, container.getAttribute, container.closest, pageEl.hasAttribute, pageEl.setAttribute, clearTimeout, pageEl.removeAttribute, urls.categorySelect, handleWorldChange, e.currentTarget.setAttribute, e.currentTarget.removeAttribute]
+  src/pages/NotificationPage.tsx:
+    imports: [../components/Header, ../components/FooterNav, ../components/UnderDevelopmentModal, ../components/Toast, ../utils/navigation, ../stores/useNotificationStore, ./NotificationPage.css]
+    state: [showUnderDevelopment, showToast, toastMessage]
+    handlers:
+      - name: handleNotificationClick
+        calls: [markAsRead, navigate, urls.challenge, urls.levelSelect]
+    exports:
+      - name: NotificationPage
+        returns: "import(\"C:/Users/ghkdd/gemini-projects/solve-climb/node_modules/@types/react/jsx-runtime\").JSX.Element"
+        calls: [useNavigate, useNotificationStore, Date.now, useNotificationStore.getState().setNotifications, useNotificationStore.getState, setLoading, markAsRead, navigate, urls.challenge, urls.levelSelect, now.getTime, date.getTime, Math.floor, date.toLocaleDateString, setShowUnderDevelopment, notifications.map, handleNotificationClick, getNotificationIcon, formatTimeAgo, setShowToast]
+  src/pages/PrivacyPolicyPage.tsx:
+    imports: [@/components/Header, @/components/FooterNav, ./PrivacyPolicyPage.css]
+    exports:
+      - name: PrivacyPolicyPage
+        returns: "import(\"C:/Users/ghkdd/gemini-projects/solve-climb/node_modules/@types/react/jsx-runtime\").JSX.Element"
+        calls: [useNavigate, navigate]
+  src/pages/QuizPage.tsx:
+    imports: [@/features/quiz, @/utils/navigation, ./QuizPage.css, @/utils/urlParams]
+    exports:
+      - name: QuizPage
+        returns: "import(\"C:/Users/ghkdd/gemini-projects/solve-climb/node_modules/@types/react/jsx-runtime\").JSX.Element"
+        description: |
+            QuizPage - 퀴즈 페이지의 메인 쉘 컴포넌트
+            - URL 파라미터 유효성 검사 및 초기화 담당
+            - QuizProvider를 통해 하위 컴포넌트에 상태 제공
+        calls: [useSearchParams, useNavigate, validateWorldParam, searchParams.get, validateCategoryInWorldParam, validateLevelParam, validateModeParam, console.warn, navigate, urls.home]
+  src/pages/RankingPage.tsx:
+    imports: [@/components/Header, @/components/FooterNav, ./RankingPage.css]
+    exports:
+      - name: RankingPage
+        returns: "import(\"C:/Users/ghkdd/gemini-projects/solve-climb/node_modules/@types/react/jsx-runtime\").JSX.Element"
+  src/pages/ResultPage.tsx:
+    imports: [@/stores/useQuizStore, @/stores/useLevelProgressStore, @/stores/useRankingStore, @/utils/tossGameCenter, @/constants/game, @/utils/urlParams, @/stores/useUserStore, @/stores/useToastStore, @/utils/supabaseClient, @/utils/errorHandler, @/components/TierUpgradeModal, @/components/BadgeNotification, @/utils/navigation, @/types/quiz, @/utils/adService, @/services/analytics, @/constants/ui, @/constants/game, ./ResultPage.css, @/stores/useSettingsStore, @/hooks/useCountUp, @/services/historyService, @/services]
+    state: [scoreSubmitted, isNewRecord, showConfetti, currentRank, showTierUpgrade, previousMasteryScore, currentMasteryScore, awardedBadges, _showBadgeNotification, hasDoubled, isAdLoading]
+    handlers:
+      - name: handleDoubleReward
+        calls: [setIsAdLoading, showToast, AdService.showRewardedAd, rewardMinerals, setHasDoubled]
+      - name: handleRetry
+        calls: [console.log, logWarning, showToast, urls.quiz, navigate]
+      - name: handleLevelSelect
+        calls: [console.warn, navigate, urls.categorySelect, urls.levelSelect]
+    exports:
+      - name: ResultPage
+        returns: "import(\"C:/Users/ghkdd/gemini-projects/solve-climb/node_modules/@types/react/jsx-runtime\").JSX.Element"
+        calls: [useQuizStore, useSettingsStore, useLevelProgressStore, useRankingStore, useUserStore, useToastStore, useNavigate, useSearchParams, searchParams.get, validateWorldParam, validateCategoryInWorldParam, validateLevelParam, validateModeParam, validateNumberParam, useCountUp, Math.floor, validateFloatParam, createSafeStorageKey, parseInt, storageService.get, storageService.set, finalScore.toString, setIsNewRecord, setShowConfetti, setTimeout, JSON.parse, logError, Math.round, clearLevel, updateBestScore, fetchRanking, useRankingStore.getState, supabase.auth.getUser, Array.isArray, ranks.find, setCurrentRank, Number, sync, analytics.trackQuizEnd, analytics.trackEvent, historyService.saveRecord, console.log, submitScoreToLeaderboard(finalScore).then, submitScoreToLeaderboard, setIsAdLoading, showToast, AdService.showRewardedAd, rewardMinerals, setHasDoubled, logWarning, urls.quiz, navigate, console.warn, urls.categorySelect, urls.levelSelect, s.push, averageTime.toFixed, Object.entries(courseMap).find, Object.entries, urls.home, "Array.from({ length: 50 }).map", Array.from, Math.random, animatedScore.toLocaleString, statsList.map, params.set, params.toString, urls.ranking, setShowTierUpgrade, setShowBadgeNotification, setAwardedBadges]
+  src/pages/ReviewPage.tsx:
+    imports: [@/components/Header, @/components/FooterNav, @/features/mypage, @/utils/navigation, ./ReviewPage.css]
+    exports:
+      - name: ReviewPage
+        returns: "import(\"C:/Users/ghkdd/gemini-projects/solve-climb/node_modules/@types/react/jsx-runtime\").JSX.Element"
+        calls: [useNavigate, navigate, urls.myPage]
+  src/pages/RoadmapPage.tsx:
+    imports: [./RoadmapPage.css, ../components/Header, ../components/FooterNav]
+    exports:
+      - name: RoadmapPage
+        returns: "import(\"C:/Users/ghkdd/gemini-projects/solve-climb/node_modules/@types/react/jsx-runtime\").JSX.Element"
+  src/services/analytics.ts:
+    imports: [@/utils/logger]
+  src/services/historyService.ts:
+    imports: [@/types/quiz, ./index]
+  src/services/index.ts:
+    imports: [./LocalStorageService]
+  src/services/LocalStorageService.ts:
+    imports: [./IStorageService]
+    exports:
+      - name: LocalStorageService
+        type: class
+        methods:
+          - name: get
+            params:
+              key: string
+            returns: T | null
+            calls: [this.storage.getItem, JSON.parse, console.error]
+          - name: set
+            params:
+              key: string
+              value: T
+            calls: [JSON.stringify, this.storage.setItem, console.error]
+          - name: remove
+            params:
+              key: string
+            calls: [this.storage.removeItem, console.error]
+          - name: clear
+            calls: [this.storage.clear, console.error]
+          - name: keys
+            returns: "string[]"
+            calls: [this.storage.key, keys.push]
+          - name: hasItem
+            params:
+              key: string
+            returns: boolean
+            calls: [this.storage.getItem]
+  src/services/MockStorageService.ts:
+    imports: [./IStorageService]
+    exports:
+      - name: MockStorageService
+        type: class
+        methods:
+          - name: get
+            params:
+              key: string
+            returns: T | null
+            calls: [this.store.get]
+          - name: set
+            params:
+              key: string
+              value: T
+            calls: [this.store.set]
+          - name: remove
+            params:
+              key: string
+            calls: [this.store.delete]
+          - name: clear
+            calls: [this.store.clear]
+          - name: keys
+            returns: "string[]"
+            calls: [Array.from, this.store.keys]
+          - name: hasItem
+            params:
+              key: string
+            returns: boolean
+            calls: [this.store.has]
+          - name: getAll
+            returns: Record<string, unknown>
+            calls: [Object.fromEntries]
+  src/stores/useAuthStore.ts:
+    imports: [../utils/supabaseClient, ../utils/debugFetch, ../services, ../utils/validation, @/services/analytics]
+  src/stores/useBadgeStore.ts:
+    imports: [../utils/supabaseClient, ../utils/debugFetch, ../services]
+  src/stores/useBaseCampStore.ts:
+    imports: [../utils/quizGenerator, ../types/quiz]
+  src/stores/useDailyRewardStore.ts:
+    imports: [../utils/supabaseClient, ../utils/debugFetch]
+  src/stores/useDeathNoteStore.ts:
+    imports: [../types/quiz]
+  src/stores/useFeatureFlagStore.ts:
+    imports: [../services]
+  src/stores/useGameStore.ts:
+    imports: [../constants/game, ../services]
+  src/stores/useLevelProgressStore.ts:
+    imports: [../utils/supabaseClient, ../utils/debugFetch, ../types/quiz, ./useDebugStore, ./useToastStore, ../constants/ui, ../utils/validation, ../services/LevelSyncService]
+  src/stores/useProfileStore.ts:
+    imports: [./useLevelProgressStore, ../services, ./useLevelProgressStore]
+  src/stores/useQuizStore.ts:
+    imports: [../types/quiz]
+  src/stores/useRankingStore.ts:
+    imports: [../utils/supabaseClient, ../utils/debugFetch, ../utils/rpcValidator, ./useToastStore, ../constants/ui]
+  src/stores/useUserStore.ts:
+    imports: [../utils/supabaseClient, ../utils/debugFetch, ./useDebugStore, ../utils/rpcValidator, ../utils/adService, ../constants/ui, ../types/user]
+  src/types/storage.ts:
+    imports: [./quiz, @/features/mypage]
+  src/types/user.ts:
+    imports: [./database.types]
+  src/utils/adService.ts:
+    imports: [./env]
+  src/utils/algebra.ts:
+    imports: [@/components/algebra/EquationTerm]
+    exports:
+      - name: parseEquation
+        params:
+          equation: string
+        returns: "{ left: import(\"C:/Users/ghkdd/gemini-projects/solve-climb/src/components/algebra/EquationTerm\").Term[]; right: import(\"C:/Users/ghkdd/gemini-projects/solve-climb/src/components/algebra/EquationTerm\").Term[]; }"
+        description: |
+            Parses an equation string into left and right structured terms.
+            Example: "2x + 5 = 15" -> { left: [2x, 5], right: [15] }
+        calls: ["equation.replace(/\s+/g, '').split", equation.replace, console.warn, processingStr.match, matches.map, match.slice, "/[a-zA-Z]/.test", Math.random().toString(36).substr, Math.random().toString, Math.random, parseSide(leftStr).map, parseSide, parseSide(rightStr).map]
+  src/utils/AlgebraAdvancedGenerator.ts:
+    imports: [../types/quiz]
+    exports:
+      - name: generateHardAlgebraProblem
+        params:
+          level: number
+          _difficulty: "import(\"C:/Users/ghkdd/gemini-projects/solve-climb/src/features/quiz/types/quiz\").Difficulty"
+          rng: "{ randomInt: (min: number, max: number) => number; } | undefined"
+        returns: "import(\"C:/Users/ghkdd/gemini-projects/solve-climb/src/features/quiz/types/quiz\").MathProblem"
+        calls: [getRandomInt, generateQuadratic, generateExponential, generateLogarithm]
+  src/utils/auth.ts:
+    imports: [./supabaseClient]
+    exports:
+      - name: signInWithGoogle
+        returns: "Promise<{ error: import(\"C:/Users/ghkdd/gemini-projects/solve-climb/node_modules/@supabase/auth-js/dist/module/lib/errors\").AuthError | null; }>"
+        description: |
+            구글 로그인: 한 번 클릭 후 구글 페이지로 이동 → 로그인 완료 시 redirectTo로 돌아옴.
+            사전 설정: Supabase 대시보드 → Authentication → Providers → Google 활성화 (Client ID/Secret),
+            Redirect URLs에 https://yourdomain.com/my-page 및 로컬 http://localhost:5173/my-page 추가.
+            
+            참고: 구글 계정 선택/동의 화면(accounts.google.com) 테마는 Google이 제어합니다.
+            공식 OAuth 파라미터로 다크 테마를 지정할 수 없으며, 기기/브라우저가 다크 모드일 때
+            구글 로그인 화면이 어둡게 나올 수 있습니다. 앱 내 로그인 버튼·배경은 MyPage.css에서 다크 테마로 맞춤.
+        calls: [supabase.auth.signInWithOAuth]
+  src/utils/CalculusProblemGenerator.ts:
+    imports: [../types/quiz]
+    exports:
+      - name: generateCalculusProblem
+        params:
+          level: number
+          _difficulty: "import(\"C:/Users/ghkdd/gemini-projects/solve-climb/src/features/quiz/types/quiz\").Difficulty"
+          rng: "{ random: () => number; randomInt: (min: number, max: number) => number; } | undefined"
+        returns: "import(\"C:/Users/ghkdd/gemini-projects/solve-climb/src/utils/CalculusProblemGenerator\").CalculusProblem"
+        calls: [rng.randomInt, Math.floor, Math.random, generateDefiniteIntegral, generateAdvancedDerivative, generateFactorizationLimit, generateCoordinateProblem, generateFunctionProblem, generateDerivativeProblem, generateIntegralProblem, rng.random]
+  src/utils/CSProblemGenerator.ts:
+    imports: [../types/quiz]
+    exports:
+      - name: generateCSProblem
+        params:
+          level: number
+          _difficulty: "import(\"C:/Users/ghkdd/gemini-projects/solve-climb/src/features/quiz/types/quiz\").Difficulty"
+          rng: "{ random: () => number; randomInt: (min: number, max: number) => number; } | undefined"
+        returns: "import(\"C:/Users/ghkdd/gemini-projects/solve-climb/src/utils/CSProblemGenerator\").CSProblem"
+        calls: [rng.randomInt, Math.floor, Math.random, generateBinaryToDec, generateDecToBinary, generateBitwiseAdvanced, generateMemoryUnitAdvanced, generateBinaryDecimalProblem, generateHexToDec, generateLogicAND, generateLogicOR, generateLogicNOT, generateLogicXOR, generateStackSimulation, generateQueueSimulation, generateMemoryUnitBasic, generateOnesComplement, generateTwosComplement, generateBinaryAddition]
+  src/utils/dataReset.ts:
+    imports: [../stores/useProfileStore, ../stores/useLevelProgressStore, ../services, ./errorHandler]
+    exports:
+      - name: resetAllData
+        returns: Promise<void>
+        description: |
+            모든 데이터를 초기화합니다.
+            - Supabase의 game_records 삭제
+            - localStorage의 모든 앱 관련 데이터 삭제
+            - 프로필 및 진행도 초기화
+        calls: [storageService.clear, useProfileStore.getState, profileStore.clearProfile, useLevelProgressStore.getState, levelProgressStore.resetProgress, logError]
+  src/utils/date.ts:
+    exports:
+      - name: getTimeAgo
+        params:
+          date: string | Date
+        returns: string
+        description: 날짜 객체 또는 ISO 문자열을 받아 '몇 분 전', '몇 일 전' 등의 문자열로 변환합니다.
+        calls: [isNaN, past.getTime, now.getTime, Math.floor, past.toLocaleDateString]
+  src/utils/debug.ts:
+    imports: [./logger, ../services]
+    exports:
+      - name: dumpState
+        params:
+          name: string
+          state: T
+        description: |
+            상태 덤프 유틸리티
+            객체의 상태를 안전하게 로깅합니다.
+        calls: [logger.group, logger.table, logger.error]
+      - name: logNetworkRequest
+        params:
+          method: string
+          url: string
+          options: RequestInit | undefined
+        description: 네트워크 요청 로깅
+        calls: [logger.debug]
+      - name: logNetworkResponse
+        params:
+          method: string
+          url: string
+          response: Response
+          duration: number | undefined
+        description: 네트워크 응답 로깅
+        calls: [Object.fromEntries, response.headers.entries, duration.toFixed, logger.debug]
+      - name: dumpLocalStorage
+        description: 로컬 스토리지 내용 덤프
+        calls: [storageService.keys, storageDump.set, storageService.get, logger.group, logger.table, Object.fromEntries, logger.error]
+      - name: dumpSessionStorage
+        description: 세션 스토리지 내용 덤프
+        calls: [sessionStorage.key, storage.set, sessionStorage.getItem, logger.group, logger.table, Object.fromEntries, logger.error]
+  src/utils/debugFetch.ts:
+    imports: [../stores/useDebugStore, ./errorHandler]
+    exports:
+      - name: debugFetch
+        params:
+          fn: () => Promise<T>
+        returns: Promise<T>
+        description: 네트워크 시뮬레이션을 적용하는 래퍼 함수
+        calls: [fn, useDebugStore.getState, delay]
+      - name: safeSupabaseQuery
+        params:
+          query: PromiseLike<T>
+          options: "{ retries?: number | undefined; context?: string | undefined; }"
+        returns: Promise<T>
+        description: Supabase 쿼리에 리질리언스(재시도 및 로깅) 적용
+        calls: [debugFetch, Promise.resolve, console.warn, delay, Math.pow, logError]
+  src/utils/debugLogger.ts:
+    exports:
+      - name: sendDebugLog
+        params:
+          location: string
+          message: string
+          data: Record<string, unknown> | undefined
+        description: 디버깅 로그 전송 (개발 환경에서만)
+        calls: ["fetch(debugUrl, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ location, message, data, timestamp: Date.now(), sessionId: 'debug-session', runId: 'run1', hypothesisId: 'A', }), }).catch", fetch, JSON.stringify, Date.now]
+  src/utils/debugMacros.ts:
+    exports:
+      - name: executeMacro
+        params:
+          macro: "import(\"C:/Users/ghkdd/gemini-projects/solve-climb/src/utils/debugMacros\").DebugMacro"
+          navigate: "(path: string) => void"
+          setStamina: "(value: number) => Promise<void>"
+          setMinerals: "(value: number) => Promise<void>"
+          onProgress: "((step: number, total: number) => void) | undefined"
+        returns: "Promise<import(\"C:/Users/ghkdd/gemini-projects/solve-climb/src/utils/debugMacros\").MacroExecutionResult>"
+        description: 매크로 실행 함수
+        calls: [macro.steps.at, onProgress, navigate, setStamina, setMinerals, setTimeout, console.log]
+  src/utils/debugPresets.ts:
+    imports: [./supabaseClient, ../stores/useUserStore, ../stores/useQuizStore, ./tierUtils, ../services]
+    exports:
+      - name: executeDebugAction
+        params:
+          action: "import(\"C:/Users/ghkdd/gemini-projects/solve-climb/src/utils/debugPresets\").DebugAction"
+          userId: string
+        returns: Promise<void>
+        description: 개별 디버그 액션 실행
+        calls: [supabase.rpc, useUserStore.getState, debugSetMinerals, debugSetStamina, supabase.from('items').select, supabase.from, "supabase .from('badge_definitions') .select", "supabase .from", "(badges || []).map", "supabase .rpc('debug_grant_badge', { p_user_id: userId, p_badge_id: badge.id, }) .then", "supabase .rpc", Promise.allSettled, "results .map((result, index) => { if (result.status === 'rejected') { const badgeId = badges?.at(index)?.id; return { badgeId: badgeId ?? 'unknown', error: result.reason }; } if (result.status === 'fulfilled' && !result.value.success) { return { badgeId: result.value.badgeId, error: (result.value as { error?: unknown }).error, }; } return null; }) .filter", "results .map", badges?.at, "failures.map((f) => f.badgeId).join", failures.map, console.warn, "supabase .from('game_sessions') .select('id') .eq('user_id', userId) .eq('status', 'playing') .order('created_at', { ascending: false }) .limit(1) .maybeSingle", "supabase .from('game_sessions') .select('id') .eq('user_id', userId) .eq('status', 'playing') .order('created_at', { ascending: false }) .limit", "supabase .from('game_sessions') .select('id') .eq('user_id', userId) .eq('status', 'playing') .order", "supabase .from('game_sessions') .select('id') .eq('user_id', userId) .eq", "supabase .from('game_sessions') .select('id') .eq", "supabase .from('game_sessions') .select", useQuizStore.getState, setTimeLimit]
+      - name: savePresetHistory
+        params:
+          history: "import(\"C:/Users/ghkdd/gemini-projects/solve-climb/src/utils/debugPresets\").PresetHistory"
+        calls: [getPresetHistories, histories.unshift, histories.slice, storageService.set, console.error]
+      - name: getPresetHistories
+        returns: "import(\"C:/Users/ghkdd/gemini-projects/solve-climb/src/utils/debugPresets\").PresetHistory[]"
+        calls: [storageService.get, histories.map, console.error]
+      - name: clearPresetHistory
+        calls: [storageService.remove, console.error]
+      - name: applyPreset
+        params:
+          presetId: string
+          userId: string
+          refetch: (() => Promise<void>) | undefined
+        returns: Promise<void>
+        description: 프리셋 전체 적용
+        calls: [debugPresets.find, getCustomPresets().find, getCustomPresets, Date.now, Math.random().toString(36).substr, Math.random().toString, Math.random, preset.actions.at, calculateScoreForTier, executeDebugAction, executedActions.push, JSON.stringify, String, console.error, useUserStore.getState, fetchUserData, refetch, savePresetHistory]
+      - name: getCustomPresets
+        returns: "import(\"C:/Users/ghkdd/gemini-projects/solve-climb/src/utils/debugPresets\").CustomPreset[]"
+        description: 커스텀 프리셋 관리
+        calls: [storageService.get, presets.map, console.error]
+      - name: saveCustomPreset
+        params:
+          preset: "import(\"C:/Users/ghkdd/gemini-projects/solve-climb/src/utils/debugPresets\").CustomPreset"
+        calls: [getCustomPresets, presets.findIndex, presets.splice, presets.push, storageService.set, console.error]
+      - name: deleteCustomPreset
+        params:
+          presetId: string
+        calls: [getCustomPresets, presets.filter, storageService.set, console.error]
+      - name: exportCustomPresets
+        returns: string
+        calls: [getCustomPresets, JSON.stringify, console.error]
+      - name: importCustomPresets
+        params:
+          json: string
+        calls: [JSON.parse, Array.isArray, getCustomPresets, existing.map, existingIds.has, merged.push, storageService.set, console.error]
+  src/utils/debugSync.ts:
+    imports: [./supabaseClient, ../constants/tiers]
+    exports:
+      - name: verifySync
+        params:
+          userId: string
+        returns: "Promise<import(\"C:/Users/ghkdd/gemini-projects/solve-climb/src/utils/debugSync\").SyncResult>"
+        description: 전체 동기화 검증
+        calls: [Promise.all, verifyProfileSync, verifyTierSync, verifyBadgesSync, verifyInventorySync]
+  src/utils/env.ts:
+    imports: [./logger]
+    exports:
+      - name: logEnvInfo
+        description: 앱 구동 시 환경 변수 상태를 로깅합니다 (개발 환경 전용)
+        calls: [logger.group, logger.info]
+  src/utils/EquationProblemGenerator.ts:
+    imports: [../types/quiz]
+    exports:
+      - name: generateEquation
+        params:
+          level: number
+          _difficulty: "import(\"C:/Users/ghkdd/gemini-projects/solve-climb/src/features/quiz/types/quiz\").Difficulty"
+          rng: "{ random: () => number; randomInt: (min: number, max: number) => number; } | undefined"
+        returns: "import(\"C:/Users/ghkdd/gemini-projects/solve-climb/src/utils/EquationProblemGenerator\").EquationProblem"
+        description: 주어진 stageLevel에 해당하는 방정식 문제 생성
+        calls: [EQUATION_STAGES.find, generateFillPlus, generateFillMinus, generateFillSubtract, generateFillMultiply, generateFillDivide, generateXPlus, generateXMinus, generateCoefficientMultiply, generateCoefficientDivide, generateTwoStepPlus, generateTwoStepMinus, generateTwoStepLarge, generateBothSidesSimple, generateParentheses, generateBothSidesComplex, generateRatio, generateSubstitution, generateInequalityBasic, generateInequalitySolve]
+      - name: EquationProblemGenerator
+        type: class
+        methods:
+          - name: generate
+            params:
+              stageLevel: number
+            returns: "import(\"C:/Users/ghkdd/gemini-projects/solve-climb/src/utils/EquationProblemGenerator\").EquationProblem"
+            calls: [generateEquation]
+          - name: getStages
+            returns: "import(\"C:/Users/ghkdd/gemini-projects/solve-climb/src/utils/EquationProblemGenerator\").EquationStageConfig[]"
+          - name: getStage
+            params:
+              stageLevel: number
+            returns: "import(\"C:/Users/ghkdd/gemini-projects/solve-climb/src/utils/EquationProblemGenerator\").EquationStageConfig | undefined"
+            calls: [EQUATION_STAGES.find]
+  src/utils/errorHandler.ts:
+    imports: [./logger, ../stores/useErrorLogStore, @/services/analytics]
+    exports:
+      - name: getUserErrorMessage
+        params:
+          error: unknown
+        returns: string
+        description: |
+            사용자에게 표시할 에러 메시지 생성
+            프로덕션에서는 일반적인 메시지만, 개발 환경에서는 상세 정보 포함
+        calls: [detectErrorType, Object.getOwnPropertyDescriptor]
+      - name: getErrorCode
+        params:
+          error: unknown
+        returns: string
+        description: |
+            에러 메시지 기반의 짧은 고유 코드 생성
+            디버깅 시 참조용으로 사용
+        calls: [str.charCodeAt, detectErrorType, Math.abs(hash).toString(16).toUpperCase, Math.abs(hash).toString, Math.abs]
+      - name: logError
+        params:
+          context: string
+          error: unknown
+        description: |
+            개발자용 에러 로깅
+            프로덕션에서는 로깅하지 않음
+        calls: [String, detectErrorType, logger.error, analytics.trackEvent, useErrorLogStore.getState().addLog, useErrorLogStore.getState]
+      - name: logWarning
+        params:
+          context: string
+          message: string
+        description: |
+            경고 로깅
+            프로덕션에서는 로깅하지 않음
+        calls: [logger.warn, useErrorLogStore.getState().addLog, useErrorLogStore.getState]
+  src/utils/GeometryProblemGenerator.ts:
+    imports: [../types/quiz]
+    exports:
+      - name: generateGeometryProblem
+        params:
+          level: number
+          _difficulty: "import(\"C:/Users/ghkdd/gemini-projects/solve-climb/src/features/quiz/types/quiz\").Difficulty"
+          rng: "{ random: () => number; randomInt: (min: number, max: number) => number; } | undefined"
+        returns: "import(\"C:/Users/ghkdd/gemini-projects/solve-climb/src/utils/GeometryProblemGenerator\").GeometryProblem"
+        calls: [rng.randomInt, Math.floor, Math.random, generateSolidVolume, generateSolidSurfaceArea, generateCoordinateDistance, generateTrigonometry, generatePythagoreanAdvanced, generateCoordinateMidpoint, generateLineSlope, generateCircleEqBasic, generateBasicShapes, generateBasicShapesDiagonal, generateTriangleProperties, generateQuadrilateralProperties, generateAreaRect, generateAreaTriangle, generateCircleBasic, generateCircleAdvanced, generateSymmetry, generatePythagorean, generateSolidBasic]
+  src/utils/haptic.ts:
+    imports: [../stores/useSettingsStore]
+    exports:
+      - name: vibrateShort
+        description: 짧은 진동 (버튼 클릭 등) — 10ms
+        calls: [vibrateBrowser]
+      - name: vibrateMedium
+        description: 중간 진동 (정답 맞췄을 때 등) — 50ms
+        calls: [vibrateBrowser]
+      - name: vibrateLong
+        description: 긴 진동 (에러나 중요한 이벤트) — 100ms
+        calls: [vibrateBrowser]
+  src/utils/japanese.ts:
+    imports: [../types/quiz]
+    exports:
+      - name: generateJapaneseQuestion
+        params:
+          difficulty: "import(\"C:/Users/ghkdd/gemini-projects/solve-climb/src/features/quiz/types/quiz\").Difficulty"
+          type: string
+        returns: "{ question: string; answer: string; }"
+        calls: [Math.floor, Math.random, HIRAGANA_MAPPINGS.slice]
+      - name: normalizeRomaji
+        params:
+          input: string
+        returns: string
+        calls: [input.toLowerCase().trim, input.toLowerCase]
+  src/utils/logger.ts:
+    imports: [../stores/useErrorLogStore]
+  src/utils/LogicProblemGenerator.ts:
+    imports: [../types/quiz]
+    exports:
+      - name: generateSequenceProblem
+        params:
+          difficulty: "import(\"C:/Users/ghkdd/gemini-projects/solve-climb/src/features/quiz/types/quiz\").Difficulty"
+          specificType: SequenceType | undefined
+          rng: "{ random: () => number; randomInt: (min: number, max: number) => number; } | undefined"
+        returns: "import(\"C:/Users/ghkdd/gemini-projects/solve-climb/src/utils/LogicProblemGenerator\").LogicProblem"
+        calls: [types.push, rng.randomInt, Math.floor, Math.random, types.at, getRandomInt, getInt, sequence.push, sequence.pop, Math.pow, sequence.join]
+      - name: generateLogicProblem
+        params:
+          level: number
+          difficulty: "import(\"C:/Users/ghkdd/gemini-projects/solve-climb/src/features/quiz/types/quiz\").Difficulty"
+          rng: "{ random: () => number; randomInt: (min: number, max: number) => number; } | undefined"
+        returns: "import(\"C:/Users/ghkdd/gemini-projects/solve-climb/src/utils/LogicProblemGenerator\").LogicProblem"
+        calls: [rng.randomInt, Math.floor, Math.random, generateLogicProblem, generateEvenOddProblem, generatePosNegProblem, generateSequenceProblem, generatePrimeProblem, generateModProblem, generateFactorialProblem, generateClockProblem, generateLogicMix1, generateAbsoluteProblem, generateModAdvancedProblem, generateFactorialAdvancedProblem, generateCustomOpProblem, generateLogicMix2]
+  src/utils/math.ts:
+    imports: [../types/quiz, ../constants/game]
+    exports:
+      - name: generateRandomNumber
+        params:
+          difficulty: "import(\"C:/Users/ghkdd/gemini-projects/solve-climb/src/features/quiz/types/quiz\").Difficulty"
+        returns: number
+        description: |
+            난이도에 맞는 범위의 랜덤 정수를 생성합니다.
+            (지시서 6항 - 견고성 1): 예기치 않은 난이도 값(undefined)이 들어올 경우
+            'easy' 레벨을 기준으로 숫자를 생성합니다. (Fallback 로직)
+        calls: [Object.getOwnPropertyDescriptor, Math.floor, Math.random]
+  src/utils/MathProblemGenerator.ts:
+    imports: [../types/quiz, ./AlgebraAdvancedGenerator]
+    exports:
+      - name: generateProblem
+        params:
+          stageId: number
+          _difficulty: "import(\"C:/Users/ghkdd/gemini-projects/solve-climb/src/features/quiz/types/quiz\").Difficulty"
+          tier: "import(\"C:/Users/ghkdd/gemini-projects/solve-climb/src/features/quiz/types/quiz\").Tier"
+          rng: "{ random: () => number; randomInt: (min: number, max: number) => number; } | undefined"
+        returns: "import(\"C:/Users/ghkdd/gemini-projects/solve-climb/src/features/quiz/types/quiz\").MathProblem"
+        calls: [generateHardAlgebraProblem, stageCache.get, STAGES.find, stageCache.set, generateStandardProblem, generateSequentialProblem, generateParenthesesProblem, generateDecimalProblem, generateFractionProblem, generateTimeProblem, generateModuloProblem, generateDecimalFractionMixProblem, generateMixedFractionProblem, console.warn]
+  src/utils/navigation.ts:
+    imports: [@/config/app, ../types/quiz]
+  src/utils/performance.ts:
+    imports: [@/types/performance, @/services/analytics, ./logger]
+    exports:
+      - name: measurePerformance
+        params:
+          name: string
+        returns: () => void
+        description: 성능 측정 시작 함수
+        calls: [performance.now, metricsStore.push, console.warn, duration.toFixed]
+      - name: measureApiCall
+        params:
+          name: string
+          apiCall: () => Promise<T>
+        returns: Promise<T>
+        description: API 호출 성능 측정 래퍼
+        calls: [measurePerformance, apiCall, endMeasure]
+      - name: getPerformanceMetrics
+        returns: "PerformanceMetric[]"
+        description: 저장된 성능 메트릭 조회
+      - name: clearPerformanceMetrics
+        description: 성능 메트릭 초기화
+      - name: logPerformanceSummary
+        description: 성능 요약 로그 출력
+        calls: [console.group, metricsStore.forEach, console.log, m.duration.toFixed, console.groupEnd]
+  src/utils/quizGenerator.ts:
+    imports: [../types/quiz, ./MathProblemGenerator, ./EquationProblemGenerator, ./GeometryProblemGenerator, ./StatsProblemGenerator, ./LogicProblemGenerator, ./CSProblemGenerator, ./CalculusProblemGenerator]
+    exports:
+      - name: generateQuestion
+        params:
+          mountainId: "import(\"C:/Users/ghkdd/gemini-projects/solve-climb/src/features/quiz/types/quiz\").Mountain"
+          worldId: "import(\"C:/Users/ghkdd/gemini-projects/solve-climb/src/features/quiz/types/quiz\").World"
+          topicId: "\"World1-기초\" | \"World1-논리\" | \"World1-대수\" | \"World1-심화\" | \"World1-히라가나\" | \"World1-가타카나\" | \"World1-어휘\" | \"World2-기초\" | \"World2-논리\" | \"World2-대수\" | \"World2-심화\" | \"World2-히라가나\" | \"World2-가타카나\" | \"World2-어휘\" | \"World3-기초\" | \"World3-논리\" | \"World3-대수\" | \"World3-심화\" | \"World3-히라가나\" | \"World3-가타카나\" | \"World3-어휘\" | \"World4-기초\" | \"World4-논리\" | \"World4-대수\" | \"World4-심화\" | \"World4-히라가나\" | \"World4-가타카나\" | \"World4-어휘\" | \"LangWorld1-기초\" | \"LangWorld1-논리\" | \"LangWorld1-대수\" | \"LangWorld1-심화\" | \"LangWorld1-히라가나\" | \"LangWorld1-가타카나\" | \"LangWorld1-어휘\""
+          level: number
+          difficulty: "import(\"C:/Users/ghkdd/gemini-projects/solve-climb/src/features/quiz/types/quiz\").Difficulty"
+          tier: "import(\"C:/Users/ghkdd/gemini-projects/solve-climb/src/features/quiz/types/quiz\").Tier"
+          rng: "{ random: () => number; randomInt: (min: number, max: number) => number; } | undefined"
+        returns: "import(\"C:/Users/ghkdd/gemini-projects/solve-climb/src/features/quiz/types/quiz\").QuizQuestion"
+        description: 카테고리와 월드, 레벨에 따라 문제를 생성합니다.
+        calls: [topicId.includes, topicId.split, generateLogicProblem, generateEquation, generateCalculusProblem, generateProblem, generateGeometryProblem, String, ansStr.includes, generateStatsProblem, generateCSProblem]
+  src/utils/resilientLazy.ts:
+    imports: [./logger]
+    exports:
+      - name: resilientLazy
+        params:
+          importFn: "() => Promise<{ default: T; }>"
+          componentName: string
+        returns: React.LazyExoticComponent<T>
+        description: |
+            React.lazy를 래핑하여 네트워크 에러(ChunkLoadError) 발생 시
+            회복 탄력성을 제공하는 유틸리티입니다.
+        calls: [lazy, importFn, sessionStorage.removeItem, error.message.includes, sessionStorage.setItem, retryCount.toString, logger.warn, setTimeout, logger.error, Object.assign]
+  src/utils/rpcValidator.ts:
+    imports: [./errorHandler]
+    exports:
+      - name: validatedRpc
+        params:
+          rpcPromise: "PromiseLike<{ data: unknown; error: unknown; }>"
+          schema: "import(\"C:/Users/ghkdd/gemini-projects/solve-climb/node_modules/zod/v4/classic/schemas\").ZodType<T, unknown, import(\"C:/Users/ghkdd/gemini-projects/solve-climb/node_modules/zod/v4/core/schemas\").$ZodTypeInternals<T, unknown>>"
+          rpcName: string
+        returns: "Promise<{ data: T | null; error: unknown; }>"
+        description: RPC 응답을 Zod 스키마로 검증하는 유틸리티
+        calls: [schema.safeParse, logError, parseResult.error.format]
+  src/utils/safeJsonParse.ts:
+    exports:
+      - name: isLocalSession
+        params:
+          data: unknown
+        returns: boolean
+        description: 로컬 세션 타입 가드
+      - name: safeJsonParse
+        params:
+          jsonString: string | null
+          defaultValue: T
+          validator: "((data: unknown) => data is T) | undefined"
+        returns: T
+        description: 안전한 JSON 파싱 함수
+        calls: [JSON.parse, validator, console.warn]
+      - name: parseLocalSession
+        params:
+          jsonString: string | null
+        returns: "import(\"C:/Users/ghkdd/gemini-projects/solve-climb/src/utils/safeJsonParse\").LocalSession | null"
+        description: 로컬 세션을 안전하게 파싱하는 함수
+        calls: [safeJsonParse]
+  src/utils/solutionExplainer.ts:
+    exports:
+      - name: getSolutionProcess
+        params:
+          question: string
+          answer: string | number
+        returns: "string[]"
+        description: 문제와 정답을 기반으로 상세한 풀이 과정(Step-by-step Solution)을 한국어로 생성합니다.
+        calls: [question.toString, answer.toString, qStr.includes, qStr.match, evaluateSimpleExpr, qStr.replace, String, "(qStr.match(/\d+(\.\d+)?/g) || []).map", "(qStr.match(/\d+/g) || []).map", numbers.reduce, numbers.join, "[...numbers].sort", sorted.join, numbers.forEach, "Object.entries(counts) .map(([num, count]) => `숫자 ${num}: ${count}회`) .join", "Object.entries(counts) .map", Object.entries, Math.max, Math.min, parseInt, isNaN, angles.reduce, Math.pow, additionParts.push, additionParts.join, decomposition.push, decomposition.join, char.charCodeAt, 'A'.charCodeAt, "binary .split('') .map((b) => (b === '0' ? '1' : '0')) .join", "binary .split('') .map", "binary .split"]
+  src/utils/StatsProblemGenerator.ts:
+    imports: [../types/quiz]
+    exports:
+      - name: generateStatsProblem
+        params:
+          level: number
+          _difficulty: "import(\"C:/Users/ghkdd/gemini-projects/solve-climb/src/features/quiz/types/quiz\").Difficulty"
+          rng: "{ random: () => number; randomInt: (min: number, max: number) => number; } | undefined"
+        returns: "import(\"C:/Users/ghkdd/gemini-projects/solve-climb/src/utils/StatsProblemGenerator\").StatsProblem"
+        calls: [rng.randomInt, Math.floor, Math.random, generatePermutations, generateConditionalProbability, generateVariance, generateCombinationsAdvanced, generateMeanBasic, generateMeanExtended, generateMedianBasic, generateModeBasic, generateProbCoin, generateProbRPS, generateProbDice, generateCombinationsBasic, generatePermutationsBasic, generateProbBasic, generateProbAdvanced, generateProbUnionIntersection, generateStatsRange, generateNoReplaceCount, generateNoReplaceProb]
+  src/utils/storage.ts:
+    imports: [./logger, ../services]
+    exports:
+      - name: StorageUtil
+        type: class
+        methods:
+          - name: get
+            params:
+              key: string
+              defaultValue: T
+              validator: "((data: unknown) => data is T) | undefined"
+            returns: T
+            calls: [this.storageService.keys, keys.includes, this.storageService.get, validator, logger.warn]
+          - name: set
+            params:
+              key: string
+              value: T
+            calls: [this.storageService.set, logger.error]
+          - name: remove
+            params:
+              key: string
+            calls: [this.storageService.remove, logger.error]
+          - name: setString
+            params:
+              key: string
+              value: string
+            calls: [this.storageService.set, logger.error]
+          - name: getString
+            params:
+              key: string
+              defaultValue: string | null
+            returns: string | null
+            calls: [this.storageService.get, logger.warn]
+          - name: getKeysByPrefix
+            params:
+              prefix: string
+            returns: "string[]"
+            calls: [this.storageService.keys().filter, this.storageService.keys, key.startsWith, logger.warn]
+          - name: removeByPrefix
+            params:
+              prefix: string
+            calls: [this.getKeysByPrefix, keys.forEach, this.remove]
+          - name: clearAppData
+            calls: [STORAGE_PREFIXES.forEach, this.removeByPrefix]
+  src/utils/storageKey.ts:
+    exports:
+      - name: createSafeStorageKey
+        params:
+          parts: "(string | number | null | undefined)[]"
+        returns: string
+        description: |
+            안전한 localStorage 키 생성 유틸리티
+            URL 파라미터를 localStorage 키에 사용할 때 안전하게 처리
+        calls: ["parts .filter((part): part is string | number => part != null) .map((part) => { const str = String(part); // 특수문자 제거 (영문, 숫자, 언더스코어, 하이픈만 허용) // XSS 공격 방지를 위해 HTML 태그 및 스크립트 문자 제거 return str .replace(/<[^>]*>/g, '') // HTML 태그 제거 .replace(/[^\p{L}\p{N}_-]/gu, '') // 유니코드 문자(한글 포함), 숫자, 언더스코어, 하이픈만 허용 .substring(0, 100); // 길이 제한 (100자) }) .filter((part) => part.length > 0) .join", "parts .filter((part): part is string | number => part != null) .map((part) => { const str = String(part); // 특수문자 제거 (영문, 숫자, 언더스코어, 하이픈만 허용) // XSS 공격 방지를 위해 HTML 태그 및 스크립트 문자 제거 return str .replace(/<[^>]*>/g, '') // HTML 태그 제거 .replace(/[^\p{L}\p{N}_-]/gu, '') // 유니코드 문자(한글 포함), 숫자, 언더스코어, 하이픈만 허용 .substring(0, 100); // 길이 제한 (100자) }) .filter", "parts .filter((part): part is string | number => part != null) .map", "parts .filter", String, "str .replace(/<[^>]*>/g, '') // HTML 태그 제거 .replace(/[^\p{L}\p{N}_-]/gu, '') // 유니코드 문자(한글 포함), 숫자, 언더스코어, 하이픈만 허용 .substring", "str .replace(/<[^>]*>/g, '') // HTML 태그 제거 .replace", "str .replace"]
+  src/utils/supabaseClient.ts:
+    imports: [@/utils/env, @/types/database.types]
+  src/utils/tierUtils.ts:
+    imports: [../constants/tiers]
+    exports:
+      - name: calculateScoreForTier
+        params:
+          level: number
+          stars: number
+          bonusScore: number
+        returns: Promise<number>
+        description: 티어 레벨과 별 개수로부터 필요한 마스터리 점수를 계산
+        calls: [loadCycleCap, loadTierDefinitions, tierLevels.find]
+  src/utils/tossAuth.ts:
+    imports: [./supabaseClient, ./env, ./errorHandler]
+    exports:
+      - name: getTossUserInfo
+        params:
+          accessToken: string
+        returns: "Promise<import(\"C:/Users/ghkdd/gemini-projects/solve-climb/src/utils/tossAuth\").TossUserInfo | null>"
+        description: 토스 API로 사용자 정보 조회
+        calls: [fetch, response.json().catch, response.json, JSON.stringify, logError]
+      - name: createOrUpdateSupabaseUser
+        params:
+          accessToken: string
+        returns: "Promise<{ user: import(\"C:/Users/ghkdd/gemini-projects/solve-climb/node_modules/@supabase/auth-js/dist/module/lib/types\").User | null; loginInfo: { email: string; password: string; }; }>"
+        description: Edge Function을 통해 Supabase에 토스 사용자 생성 또는 업데이트
+        calls: [missing.push, missing.join, ENV.VITE_SUPABASE_URL.replace, fetch, JSON.stringify, String, errorMessage.includes, response.json, response.text().catch, response.text, response.json().catch, logError]
+      - name: handleTossLoginFlow
+        params:
+          authorizationCode: string
+          referrer: string
+        returns: "Promise<{ user: import(\"C:/Users/ghkdd/gemini-projects/solve-climb/node_modules/@supabase/auth-js/dist/module/lib/types\").User | null; session: { access_token: string; refresh_token: string; } | null; }>"
+        description: 토스 로그인 전체 플로우
+        calls: [missing.push, missing.join, ENV.VITE_SUPABASE_URL.replace, fetch, JSON.stringify, String, errorMessage.includes, accessTokenResponse.clone, accessTokenResponse.json, clonedResponse.text().catch, clonedResponse.text, authorizationCode.startsWith, accessTokenResponse.json().catch, createOrUpdateSupabaseUser, supabase.auth.signInWithPassword, logError]
+  src/utils/tossGameCenter.ts:
+    imports: [./errorHandler]
+    exports:
+      - name: submitScoreToLeaderboard
+        params:
+          _score: number
+        returns: Promise<boolean>
+        description: 게임 종료 시 점수를 리더보드에 제출
+        calls: [isLocalDevelopment, isTossAppEnvironment, console.warn, logError]
+      - name: getErrorMessage
+        params:
+          error: unknown
+        returns: string
+        description: 에러 타입 감지 및 사용자 친화적 메시지 생성
+        calls: [error.message.toLowerCase, error.name.toLowerCase, errorMessage.includes, errorName.includes, getUserErrorMessage]
+      - name: openLeaderboard
+        params:
+          onError: "((message: string) => void) | undefined"
+          _onRetry: "((_attempt: number, _maxRetries: number) => void) | undefined"
+        returns: "Promise<import(\"C:/Users/ghkdd/gemini-projects/solve-climb/src/utils/tossGameCenter\").LeaderboardResult>"
+        description: 토스 게임 센터 리더보드 열기
+        calls: [collectDebugInfo, isLocalDevelopment, isTossAppEnvironment, onError, console.warn, logError, console.error, String, getErrorMessage]
+  src/utils/tossGameLogin.ts:
+    imports: [./errorHandler, ./env]
+    exports:
+      - name: getGameLoginHash
+        returns: "Promise<import(\"C:/Users/ghkdd/gemini-projects/solve-climb/src/utils/tossGameLogin\").GameLoginHashResult>"
+        description: 게임 로그인 hash 발급
+        calls: [isTossAppEnvironment, window.location.hostname.includes, logError]
+      - name: checkTossLoginIntegration
+        returns: "Promise<import(\"C:/Users/ghkdd/gemini-projects/solve-climb/src/utils/tossGameLogin\").TossLoginIntegrationStatus>"
+        description: 토스 로그인 연동 여부 확인
+      - name: getMigrationStatus
+        params:
+          hash: string
+        returns: "Promise<import(\"C:/Users/ghkdd/gemini-projects/solve-climb/src/utils/tossGameLogin\").MigrationStatusResult>"
+        description: 마이그레이션 상태 조회
+        calls: [ENV.VITE_SUPABASE_URL.replace, fetch, JSON.stringify, response.json, response.text().catch, response.text, logError]
+      - name: createMigrationLink
+        params:
+          hash: string
+          authorizationCode: string
+          referrer: string | undefined
+        returns: "Promise<import(\"C:/Users/ghkdd/gemini-projects/solve-climb/src/utils/tossGameLogin\").MigrationLinkResult>"
+        description: 마이그레이션 링크 생성
+        calls: [ENV.VITE_SUPABASE_URL.replace, fetch, JSON.stringify, response.json, response.text().catch, response.text, logError]
+      - name: migrateToGameLogin
+        returns: "Promise<{ success: boolean; hash?: string | undefined; error?: string | undefined; }>"
+        description: 게임 로그인 마이그레이션 전체 플로우
+        calls: [getGameLoginHash, checkTossLoginIntegration, getMigrationStatus, logError]
+  src/utils/tossLogin.ts:
+    imports: [./errorHandler]
+    exports:
+      - name: isTossAppEnvironment
+        returns: boolean
+        description: 토스 앱 환경인지 확인
+      - name: handleTossLogin
+        returns: "Promise<import(\"C:/Users/ghkdd/gemini-projects/solve-climb/src/utils/tossLogin\").TossLoginResult>"
+        description: 토스 로그인 실행
+        calls: [isTossAppEnvironment, logError]
+  src/utils/urlParams.ts:
+    imports: [../config/app, ./storageKey]
+    exports:
+      - name: validateNumberParam
+        params:
+          value: string | null
+          min: number
+          max: number
+        returns: number | null
+        description: 숫자 파라미터 검증
+        calls: [z.coerce.number().min(min).max(max).nullable().catch, z.coerce.number().min(min).max(max).nullable, z.coerce.number().min(min).max, z.coerce.number().min, z.coerce.number, schema.safeParse]
+      - name: validateFloatParam
+        params:
+          value: string | null
+          min: number
+          max: number
+        returns: number | null
+        description: 부동소수점 파라미터 검증 (validateNumberParam과 동일한 로직 사용)
+        calls: [validateNumberParam]
+      - name: validateStringParam
+        params:
+          value: string | null
+          allowedValues: "readonly string[]"
+        returns: string | null
+        description: 문자열 파라미터 검증 (허용 목록 기반)
+        calls: [z.string().refine, z.string, allowedValues.includes, schema.safeParse]
+      - name: validateWorldParam
+        params:
+          value: string | null
+        returns: string | null
+        description: 월드 파라미터 검증
+        calls: [APP_CONFIG.WORLDS.map, validateStringParam]
+      - name: validateCategoryParam
+        params:
+          value: string | null
+        returns: string | null
+        description: 카테고리 파라미터 검증
+        calls: [APP_CONFIG.CATEGORIES.map, validateStringParam]
+      - name: validateCategoryInWorldParam
+        params:
+          world: string | null
+          category: string | null
+        returns: string | null
+        description: 특정 월드 내의 카테고리 파라미터 검증
+        calls: [validateWorldParam, validateCategoryParam]
+      - name: validateSubTopicParam
+        params:
+          category: string | null
+          subTopic: string | null
+        returns: string | null
+        description: 서브토픽 파라미터 검증
+        calls: [validateCategoryParam, Array.isArray, subTopics.map, validateStringParam]
+      - name: validateModeParam
+        params:
+          value: string | null
+        returns: "\"time-attack\" | \"survival\" | \"infinite\" | \"base-camp\" | \"base-camp-result\" | \"smart-retry\" | null"
+        description: 게임 모드 파라미터 검증
+        calls: [z.enum, ModeSchema.safeParse]
+      - name: validateLevelParam
+        params:
+          value: string | null
+          maxLevel: number
+        returns: number | null
+        description: 레벨 파라미터 검증
+        calls: [validateNumberParam]
+  src/utils/userWithdraw.ts:
+    imports: [./supabaseClient, ../stores/useProfileStore, ../stores/useLevelProgressStore, ./env, ../services, ./errorHandler]
+    exports:
+      - name: withdrawAccount
+        returns: Promise<boolean>
+        description: |
+            회원 탈퇴를 처리합니다.
+            - Supabase Edge Function을 호출하여 auth.users에서 삭제
+            - 로컬 데이터 완전 삭제
+            - 로그아웃 처리
+        calls: [console.log, supabase.auth.getSession, ENV.VITE_SUPABASE_URL?.replace, setTimeout, controller.abort, fetch, clearTimeout, response.json().catch, response.json, logError, String, console.warn, storageService.clear, storageService.remove, useProfileStore.getState, profileStore.clearProfile, useLevelProgressStore.getState, "levelProgressStore .resetProgress() .catch", "levelProgressStore .resetProgress", supabase.auth.signOut, signOutResult.catch]
+  src/utils/validation.ts:
+    exports:
+      - name: sanitizeNickname
+        params:
+          nickname: string
+        returns: string
+        description: |
+            닉네임 정제 함수
+            - HTML 태그 제거
+            - 공백 정규화
+            - 앞뒤 공백 제거
+        calls: [removeHtmlTags, normalizeWhitespace]
+      - name: validateNickname
+        params:
+          nickname: string
+        returns: "{ valid: boolean; error?: string | undefined; }"
+        description: 닉네임 검증 함수
+        calls: [nickname.trim, NICKNAME_PATTERN.test]
+      - name: safeAccess
+        params:
+          obj: T | null | undefined
+          key: string | number | null | undefined
+        returns: unknown
+        description: |
+            객체 속성에 안전하게 접근하기 위한 유틸리티
+            - 키가 객체의 직접적인 속성인지 확인하여 Prototype Pollution 및 Object Injection 방지
+        calls: [String, Object.prototype.hasOwnProperty.call]
+      - name: isValidUUID
+        params:
+          uuid: string | null | undefined
+        returns: boolean
+        description: UUID 형식 검증 함수 (PostgreSQL UUID 타입과 호환)
+        calls: [uuidPattern.test]
+  src/components/algebra/EquationTerm.tsx:
+    imports: [./Algebra.css]
+    state: [isHovered]
+    exports:
+      - name: EquationTerm
+        params:
+          "{ term, onTranspose }": EquationTermProps
+        returns: "import(\"C:/Users/ghkdd/gemini-projects/solve-climb/node_modules/@types/react/jsx-runtime\").JSX.Element"
+        calls: [onTranspose, setIsHovered]
+  src/components/algebra/EquationVisualizer.tsx:
+    imports: [./EquationTerm, ./Algebra.css, @/utils/haptic]
+    state: [leftSide, rightSide, isAnimating]
+    exports:
+      - name: EquationVisualizer
+        params:
+          "{
+  initialLeft,
+  initialRight,
+  onSolved: _onSolved,
+}": EquationVisualizerProps
+        returns: "import(\"C:/Users/ghkdd/gemini-projects/solve-climb/node_modules/@types/react/jsx-runtime\").JSX.Element"
+        calls: [setIsAnimating, vibrateMedium, leftSide.some, sourceSide.findIndex, Object.prototype.hasOwnProperty.call, newSource.splice, setSource, setTarget, setTimeout, leftSide.map, rightSide.map]
+  src/components/common/GlassCard.tsx:
+    imports: [./GlassCard.css]
+    exports:
+      - name: GlassCard
+        params:
+          "{
+  children,
+  className = '',
+  interactive = false,
+  onClick,
+  style,
+}": GlassCardProps
+        returns: "import(\"C:/Users/ghkdd/gemini-projects/solve-climb/node_modules/@types/react/jsx-runtime\").JSX.Element"
+        description: |
+            전역 Glassmorphism 스타일이 적용된 카드 컴포넌트
+            - index.css의 .glass-effect 클래스를 기반으로 동작합니다.
+        calls: ["`glass-card glass-effect ${interactive ? 'interactive' : ''} ${className}`.trim"]
+  src/components/dev/VisualGuardian.tsx:
+    exports:
+      - name: VisualGuardian
+        returns: null
+        description: |
+            🛡️ Visual Guardian (시각적 감시자)
+            
+            개발 모드에서 UI 레이아웃 깨짐(Overflow)을 실시간으로 감지하여 시각화합니다.
+            - 텍스트가 박스를 뚫고 나가는 경우 (scrollHeight > clientHeight)
+            - 가로 스크롤이 의도치 않게 생기는 경우 (scrollWidth > clientWidth)
+            
+            감지된 요소에는 빨간색 점선 테두리가 표시됩니다.
+            
+            ## 의도적 무시(제외) 구분
+            - **자동 제외**: overflow:auto/scroll, text-overflow:ellipsis, .debug-panel-overlay
+            - **명시적 제외**: 요소 또는 조상에 `data-vg-ignore="true"`를 붙이면 해당 영역은
+              overflow 검사에서 제외됩니다.
+            
+            ## 실수/오류 vs 고쳐야 할 것 vs 의도적
+            VG는 이걸 자동 구분하지 않습니다. "실수/오류"면 CSS로 수정, "의도적 허용"이면
+            data-vg-ignore 사용. 의도한 것 중에도 오류가 있을 수 있으므로 data-vg-ignore는
+            "VG 알림만 끄기"일 뿐 "오류 아님" 보장이 아닙니다.
+        calls: [window.navigator.userAgent.includes, console.log, setInterval, document.querySelectorAll, allElements.forEach, "[ 'SCRIPT', 'STYLE', 'SVG', 'PATH', 'HEAD', 'META', 'TITLE', 'LINK', 'HTML', 'BODY', 'PRE', ].includes", el.closest, el.getAttribute, window.getComputedStyle, val.includes, isScrollable, el.classList.contains, "(window as WindowWithGuardian).__LAYOUT_IGNORED__?.push", el.tagName.toLowerCase, "(window as WindowWithGuardian).__LAYOUT_ERRORS__?.push", "classStr.split(' ').join", classStr.split, console.warn, el.addEventListener, e.stopPropagation, clearInterval]
+  src/components/effects/FeverEffect.tsx:
+    imports: [../../stores/useGameStore, ../../stores/useSettingsStore, ./Effects.css]
+    exports:
+      - name: FeverEffect
+        returns: "import(\"C:/Users/ghkdd/gemini-projects/solve-climb/node_modules/@types/react/jsx-runtime\").JSX.Element | null"
+        calls: [useGameStore, useSettingsStore]
+  src/components/effects/ReasoningOverlay.tsx:
+    imports: [./Effects.css]
+    state: [isUnlocked]
+    exports:
+      - name: ReasoningOverlay
+        params:
+          "{ isVisible, isCorrect }": ReasoningOverlayProps
+        returns: "import(\"C:/Users/ghkdd/gemini-projects/solve-climb/node_modules/@types/react/jsx-runtime\").JSX.Element | null"
+        calls: [setIsUnlocked, setTimeout, clearTimeout]
+  src/components/expert/FunctionMachine.tsx:
+    imports: [./Expert.css]
+    state: [phase]
+    exports:
+      - name: FunctionMachine
+        params:
+          "{ type, value, input }": FunctionMachineProps
+        returns: "import(\"C:/Users/ghkdd/gemini-projects/solve-climb/node_modules/@types/react/jsx-runtime\").JSX.Element"
+        calls: [setPhase, setTimeout, sequence]
+  src/components/expert/IntegralVisualizer.tsx:
+    imports: [./Expert.css]
+    exports:
+      - name: IntegralVisualizer
+        params:
+          "{ hintData }": IntegralVisualizerProps
+        returns: "import(\"C:/Users/ghkdd/gemini-projects/solve-climb/node_modules/@types/react/jsx-runtime\").JSX.Element"
+        calls: [Math.pow, Math.max, functionFn, scaleX, scaleY, generatePath, generateAreaPath]
+  src/components/game/BackpackBottomSheet.tsx:
+    imports: [../../stores/useUserStore, @/constants/items, ./BackpackBottomSheet.css]
+    state: [isAnimating]
+    exports:
+      - name: BackpackBottomSheet
+        params:
+          "{
+  isOpen,
+  onClose,
+  selectedItemIds,
+  onToggleItem,
+}": BackpackBottomSheetProps
+        returns: "import(\"C:/Users/ghkdd/gemini-projects/solve-climb/node_modules/@types/react/jsx-runtime\").JSX.Element | null"
+        calls: [useUserStore, setIsAnimating, setTimeout, clearTimeout, e.stopPropagation, inventory.map, selectedItemIds.includes, onToggleItem, getItemEmoji]
+  src/components/game/GameAlertModal.tsx:
+    imports: [./GameAlertModal.css]
+    exports:
+      - name: GameAlertModal
+        params:
+          "{
+  isOpen,
+  onClose,
+  onAction,
+  type,
+}": GameAlertModalProps
+        returns: "import(\"C:/Users/ghkdd/gemini-projects/solve-climb/node_modules/@types/react/jsx-runtime\").JSX.Element | null"
+        calls: [e.stopPropagation, renderContent, onAction]
+  src/components/game/GameOverlay.tsx:
+    imports: [../../stores/useGameStore]
+    exports:
+      - name: GameOverlay
+        returns: "import(\"C:/Users/ghkdd/gemini-projects/solve-climb/node_modules/@types/react/jsx-runtime\").JSX.Element"
+        calls: [useGameStore]
+  src/components/game/ItemFeedbackOverlay.tsx:
+    imports: [./ItemFeedbackOverlay.css]
+  src/components/game/PauseModal.tsx:
+    imports: [../BaseModal, ./PauseModal.css]
+    exports:
+      - name: PauseModal
+        params:
+          "{
+  isVisible,
+  remainingPauses,
+  onResume,
+  onExit,
+}": PauseModalProps
+        returns: "import(\"C:/Users/ghkdd/gemini-projects/solve-climb/node_modules/@types/react/jsx-runtime\").JSX.Element"
+  src/components/game/PreGameLobby.tsx:
+    imports: [../../stores/useUserStore, @/constants/items, ./PreGameLobby.css]
+    exports:
+      - name: PreGameLobby
+        params:
+          "{ onStart, onBack, category, topic }": PreGameLobbyProps
+        returns: "import(\"C:/Users/ghkdd/gemini-projects/solve-climb/node_modules/@types/react/jsx-runtime\").JSX.Element"
+        calls: [useUserStore, React.useState, setSelectedItemIds, prev.includes, prev.filter, inventory.map, selectedItemIds.includes, toggleItem, getItemEmoji, getItemShortEffect, onStart]
+  src/components/game/SafetyRopeOverlay.tsx:
+    imports: [./SafetyRopeOverlay.css]
+    exports:
+      - name: SafetyRopeOverlay
+        params:
+          "{ isVisible, onAnimationComplete }": SafetyRopeOverlayProps
+        returns: "import(\"C:/Users/ghkdd/gemini-projects/solve-climb/node_modules/@types/react/jsx-runtime\").JSX.Element | null"
+        calls: [setTimeout, onAnimationComplete, clearTimeout]
+  src/components/game/StaminaWarningModal.tsx:
+    imports: [./StaminaWarningModal.css]
+    exports:
+      - name: StaminaWarningModal
+        params:
+          "{
+  isOpen,
+  onClose,
+  onPlayAnyway,
+  onWatchAd,
+}": StaminaWarningModalProps
+        returns: "import(\"C:/Users/ghkdd/gemini-projects/solve-climb/node_modules/@types/react/jsx-runtime\").JSX.Element | null"
+        calls: [e.stopPropagation]
+  src/components/layout/PageLayout.tsx:
+    imports: [./PageLayout.css]
+  src/components/roadmap/LinearLandmarkItem.tsx:
+    imports: [@/types/roadmap, @/features/mypage]
+  src/components/roadmap/NonLinearTierItem.tsx:
+    imports: [@/types/roadmap, @/features/mypage, @/utils/haptic]
+  src/components/tutorial/TutorialOverlay.tsx:
+    imports: [./TutorialOverlay.css]
+    state: [currentStepIndex]
+    handlers:
+      - name: handleNext
+        calls: [setCurrentStepIndex, onComplete]
+    exports:
+      - name: TutorialOverlay
+        params:
+          "{ steps, isVisible, onComplete }": TutorialOverlayProps
+        returns: "import(\"C:/Users/ghkdd/gemini-projects/solve-climb/node_modules/@types/react/jsx-runtime\").JSX.Element | null"
+        calls: [setCurrentStepIndex, onComplete, Object.prototype.hasOwnProperty.call]
+  src/components/ui/button.tsx:
+    imports: [@/lib/utils]
+  src/constants/levels/world1/index.ts:
+    imports: [./basic, ./logic, ./algebra, ./expert]
+  src/features/auth/components/RequireAuth.tsx:
+    imports: [@/stores/useProfileStore, @/stores/useAuthStore, @/utils/navigation]
+    exports:
+      - name: RequireAuth
+        params:
+          "{ children }": RequireAuthProps
+        returns: "import(\"C:/Users/ghkdd/gemini-projects/solve-climb/node_modules/@types/react/jsx-runtime\").JSX.Element"
+        description: 세션 및 프로필 정보가 없는 경우 마이페이지(로그인)로 리다이렉트하는 가드 컴포넌트
+        calls: [useAuthStore, useProfileStore, useLocation, urls.myPage]
+  src/features/auth/hooks/useSession.ts:
+    imports: [@/utils/supabaseClient, @/services, @/utils/safeJsonParse]
+    exports:
+      - name: useSession
+        returns: "import(\"C:/Users/ghkdd/gemini-projects/solve-climb/src/features/auth/hooks/useSession\").UseSessionResult"
+        description: |
+            세션 관리 Hook
+            로컬 세션과 Supabase 세션을 자동으로 확인하고 통합 관리합니다.
+        calls: [storageService.get, parseLocalSession, createVirtualSession, setIsLoading, checkLocalSession, setSession, supabase.auth.getSession, checkSession, supabase.auth.onAuthStateChange, subscription.unsubscribe]
+  src/features/debug/components/AuthModeSection.tsx:
+    imports: [@/utils/supabaseClient, @/stores/useDebugStore, ./AuthModeSection.css]
+    state: [currentMode, testResults, loading, user, actualMode]
+    handlers:
+      - name: handleModeChange
+        calls: [setCurrentMode, setAdminMode, supabase.auth.signOut, console.error, setActualMode, setUser, supabase.auth.getUser, setTestResults, testDataAccess]
+    exports:
+      - name: AuthModeSection
+        returns: "import(\"C:/Users/ghkdd/gemini-projects/solve-climb/node_modules/@types/react/jsx-runtime\").JSX.Element"
+        calls: [useDebugStore, setLoading, "supabase .from('ranking_view') .select('*') .limit", "supabase .from('ranking_view') .select", "supabase .from", "supabase .from('profiles') .select('*') .limit", "supabase .from('profiles') .select", supabase.auth.getUser, "supabase .from('profiles') .select('*') .eq('id', user.id) .single", "supabase .from('profiles') .select('*') .eq", Object.keys, "supabase .from('game_config') .select('*') .limit", "supabase .from('game_config') .select", supabase.rpc, String, setTestResults, setCurrentMode, setAdminMode, supabase.auth.signOut, console.error, setActualMode, setUser, testDataAccess, checkUser, user.id.slice, handleModeChange]
+  src/features/debug/components/BadgeSystemSection.tsx:
+    imports: [@/utils/supabaseClient, @/utils/debugSync, @/components/Toast, ./BadgeSystemSection.css]
+    state: [badgeDefinitions, userBadges, isLoading, isUpdating, message, isVerifyingSync, syncResult, selectedBadgeId, toastMessage, isToastOpen]
+    handlers:
+      - name: handleBadgeToggle
+        calls: [setIsUpdating, setMessage, supabase.auth.getSession, userBadges.has, supabase.rpc, setUserBadges, next.delete]
+      - name: handleResetAllBadges
+        calls: [confirm, setIsUpdating, setMessage, supabase.auth.getSession, supabase.from('user_badges').delete().eq, supabase.from('user_badges').delete, supabase.from, setUserBadges]
+      - name: handleSeedBadges
+        calls: [confirm, setIsUpdating, setMessage, import, "supabase .from('theme_mapping') .select('theme_id') // 여기선 id가 아니라 mapping의 Primary Key 혹은 theme_id 자체가 필요 .limit", "supabase .from('theme_mapping') .select", "supabase .from", supabase.rpc, BADGE_DEFINITIONS.map, loadBadges, console.error]
+      - name: handleShowBadgeNotification
+        calls: [badgeDefinitions.find, setToastMessage, setIsToastOpen]
+      - name: handleVerifySync
+        calls: [setIsVerifyingSync, setSyncResult, supabase.auth.getSession, setMessage, verifySync]
+    exports:
+      - name: BadgeSystemSection
+        returns: "import(\"C:/Users/ghkdd/gemini-projects/solve-climb/node_modules/@types/react/jsx-runtime\").JSX.Element"
+        calls: [loadBadges, setIsLoading, supabase.auth.getSession, setMessage, "supabase .from('badge_definitions') .select('id, name, description, emoji') .order", "supabase .from('badge_definitions') .select", "supabase .from", setBadgeDefinitions, "supabase .from('user_badges') .select('badge_id') .eq", "supabase .from('user_badges') .select", setUserBadges, badges?.map, setIsUpdating, userBadges.has, supabase.rpc, next.delete, confirm, supabase.from('user_badges').delete().eq, supabase.from('user_badges').delete, supabase.from, import, "supabase .from('theme_mapping') .select('theme_id') // 여기선 id가 아니라 mapping의 Primary Key 혹은 theme_id 자체가 필요 .limit", "supabase .from('theme_mapping') .select", BADGE_DEFINITIONS.map, console.error, badgeDefinitions.filter, badgeDefinitions.find, setToastMessage, setIsToastOpen, setIsVerifyingSync, setSyncResult, verifySync, setSelectedBadgeId, earnedBadges.map, badgeDefinitions.map, handleBadgeToggle, syncResult.profile.issues.map, syncResult.tier.issues.map, syncResult.badges.issues.map, syncResult.inventory.issues.map]
+  src/features/debug/components/BoundaryTestSection.tsx:
+    imports: [@/utils/supabaseClient, @/stores/useUserStore, @/features/mypage, ./BoundaryTestSection.css]
+  src/features/debug/components/CustomPresetModal.tsx:
+    imports: [@/utils/debugPresets, ./CustomPresetModal.css]
+    state: [name, description, actions, editingActionIndex, editingAction, errorMessage]
+    handlers:
+      - name: handleAddAction
+        calls: [setEditingAction, setEditingActionIndex]
+      - name: handleEditAction
+        calls: [Object.prototype.hasOwnProperty.call, setEditingAction, setEditingActionIndex]
+      - name: handleDeleteAction
+        calls: [setActions, prev.filter]
+      - name: handleSaveAction
+        calls: [setActions, prev.map, setEditingAction, setEditingActionIndex]
+      - name: handleCancelAction
+        calls: [setEditingAction, setEditingActionIndex]
+      - name: handleSave
+        calls: [setErrorMessage, name.trim, Date.now, description.trim, onSave, onClose]
+    exports:
+      - name: CustomPresetModal
+        params:
+          "{
+  isOpen,
+  editingPreset,
+  onClose,
+  onSave,
+}": CustomPresetModalProps
+        returns: "import(\"C:/Users/ghkdd/gemini-projects/solve-climb/node_modules/@types/react/jsx-runtime\").JSX.Element | null"
+        calls: [setName, setDescription, setActions, setEditingActionIndex, setEditingAction, setErrorMessage, Object.prototype.hasOwnProperty.call, prev.filter, prev.map, name.trim, Date.now, description.trim, onSave, onClose, e.stopPropagation, actions.map, getActionTypeLabel, handleEditAction, handleDeleteAction, parseInt]
+  src/features/debug/components/DailyRewardDebugSection.tsx:
+    imports: [@/stores/useDailyRewardStore]
+    handlers:
+      - name: handleManualTrigger
+        calls: [useDailyRewardStore.setState]
+    exports:
+      - name: DailyRewardDebugSection
+        returns: "import(\"C:/Users/ghkdd/gemini-projects/solve-climb/node_modules/@types/react/jsx-runtime\").JSX.Element"
+        calls: [useDailyRewardStore, useDailyRewardStore.setState, checkDailyLogin]
+  src/features/debug/components/DataResetConfirmModal.tsx:
+    imports: [@/components/BaseModal, ./DataResetConfirmModal.css]
+    exports:
+      - name: DataResetConfirmModal
+        params:
+          "{ isOpen, onConfirm, onCancel }": DataResetConfirmModalProps
+        returns: "import(\"C:/Users/ghkdd/gemini-projects/solve-climb/node_modules/@types/react/jsx-runtime\").JSX.Element"
+  src/features/debug/components/DataResetSection.tsx:
+    imports: [@/utils/supabaseClient, @/features/mypage, @/stores/useUserStore, @/config/app, @/components/ConfirmModal, @/services, @/types/storage, @/constants/ui, ./DataResetSection.css]
+  src/features/debug/components/DebugOverlay.tsx:
+    imports: [@/stores/useDebugStore, ./DebugOverlay.css]
+    exports:
+      - name: DebugOverlay
+        returns: "import(\"C:/Users/ghkdd/gemini-projects/solve-climb/node_modules/@types/react/jsx-runtime\").JSX.Element | null"
+        description: |
+            시각적 디버그 오버레이
+            - SafeArea 가이드: 상단/하단 안전 영역 표시
+            - 컴포넌트 경계선: 모든 요소에 아웃라인 적용
+        calls: [useDebugStore]
+  src/features/debug/components/DebugPanel.tsx:
+    imports: [@/stores/useDebugStore, ./QuickActionsSection, ./NotificationPlayground, ./TierSystemSection, ./BadgeSystemSection, ./GameFlowSection, ./ItemSystemSection, ./DataResetSection, ./ErrorLogSection, ./BoundaryTestSection, ./NetworkSection, ./VisualSection, ./MacroSection, ./ProgressionSection, ./AuthModeSection, ./DummyRecordSection, ./DummyPlayerManager, ./DebugPanel.css]
+    exports:
+      - name: DebugPanel
+        returns: "import(\"C:/Users/ghkdd/gemini-projects/solve-climb/node_modules/@types/react/jsx-runtime\").JSX.Element | null"
+        calls: [useDebugStore, toggleDebugPanel, e.stopPropagation, tabs.map, setActiveTab, renderTabContent]
+  src/features/debug/components/DebugReturnFloater.tsx:
+    imports: [@/utils/navigation, @/stores/useDebugStore]
+    state: [position]
+    handlers:
+      - name: handlePointerDown
+        calls: [e.currentTarget.setPointerCapture]
+      - name: handlePointerMove
+        calls: [setPosition]
+      - name: handlePointerUp
+        calls: [e.currentTarget.releasePointerCapture]
+      - name: handleClose
+        calls: [e.stopPropagation, setShowReturnFloater]
+      - name: handleClick
+        calls: [Math.hypot, navigate, urls.debug]
+    exports:
+      - name: DebugReturnFloater
+        returns: "import(\"C:/Users/ghkdd/gemini-projects/solve-climb/node_modules/@types/react/jsx-runtime\").JSX.Element | null"
+        calls: [useNavigate, useLocation, useDebugStore, urls.debug, e.currentTarget.setPointerCapture, setPosition, e.currentTarget.releasePointerCapture, e.stopPropagation, setShowReturnFloater, Math.hypot, navigate]
+  src/features/debug/components/DebugShortcutsWrapper.tsx:
+    imports: [../hooks/useDebugShortcuts]
+    exports:
+      - name: DebugShortcutsWrapper
+        returns: null
+        description: |
+            DebugShortcutsWrapper
+            
+            This component wraps the useDebugShortcuts hook so it can be lazy-loaded.
+            This prevents debug logic and stores from being included in the main production bundle.
+        calls: [useDebugShortcuts]
+  src/features/debug/components/DummyPlayerManager.tsx:
+    imports: [@/utils/supabaseClient, @/components/ConfirmModal, ./DummyPlayerManager.css]
+    state: [dummyPlayers, isLoading, message, confirmConfig]
+    handlers:
+      - name: handleCreateDummy
+        calls: [setIsLoading, setMessage, Date.now().toString().slice, Date.now().toString, Date.now, supabase.rpc, fetchDummyPlayers, JSON.stringify, String]
+      - name: handleDeleteDummy
+        calls: [setConfirmConfig, setIsLoading, supabase.rpc, setMessage, fetchDummyPlayers, JSON.stringify, String]
+      - name: handleDeleteAll
+        calls: [setConfirmConfig, setIsLoading, supabase.rpc, setMessage, fetchDummyPlayers, JSON.stringify, String]
+    exports:
+      - name: DummyPlayerManager
+        returns: "import(\"C:/Users/ghkdd/gemini-projects/solve-climb/node_modules/@types/react/jsx-runtime\").JSX.Element"
+        calls: ["supabase .from('profiles') .select('id, nickname, persona_type, total_mastery_score, current_tier_level, created_at') .eq('is_dummy', true) .order", "supabase .from('profiles') .select('id, nickname, persona_type, total_mastery_score, current_tier_level, created_at') .eq", "supabase .from('profiles') .select", "supabase .from", console.error, setDummyPlayers, fetchDummyPlayers, setIsLoading, setMessage, Date.now().toString().slice, Date.now().toString, Date.now, supabase.rpc, JSON.stringify, String, setConfirmConfig, handleCreateDummy, dummyPlayers.map, handleDeleteDummy]
+  src/features/debug/components/DummyRecordSection.tsx:
+    imports: [@/utils/supabaseClient, @/stores/useUserStore, ./DummyRecordSection.css]
+    state: [targetUserId, selectedWorldId, selectedCategoryId, selectedSubjectId, selectedMode, level, correctCount, avgCombo, iterations, isSubmitting, message]
+    handlers:
+      - name: handleSubmit
+        calls: [e.preventDefault, setIsSubmitting, setMessage, supabase.auth.getSession, supabase.rpc, fetchUserData]
+    exports:
+      - name: DummyRecordSection
+        returns: "import(\"C:/Users/ghkdd/gemini-projects/solve-climb/node_modules/@types/react/jsx-runtime\").JSX.Element"
+        calls: [useUserStore, supabase.auth.getSession().then, supabase.auth.getSession, setTargetUserId, Object.prototype.hasOwnProperty.call, Array.isArray, setSelectedSubjectId, e.preventDefault, setIsSubmitting, setMessage, supabase.rpc, fetchUserData, setSelectedWorldId, WORLDS.map, setSelectedCategoryId, CATEGORIES.map, "(Object.prototype.hasOwnProperty.call(SUBJECTS, selectedCategoryId) ? // eslint-disable-next-line security/detect-object-injection -- key validated above SUBJECTS[selectedCategoryId] : [] ).map", setLevel, parseInt, setCorrectCount, setAvgCombo, setIterations]
+  src/features/debug/components/ErrorLogSection.tsx:
+    imports: [@/stores/useErrorLogStore, ./ErrorLogSection.css]
+  src/features/debug/components/GameFlowSection.tsx:
+    imports: [@/utils/supabaseClient, @/utils/quizGenerator, @/types/quiz, @/stores/useQuizStore, ./GameFlowSection.css]
+  src/features/debug/components/ItemSystemSection.tsx:
+    imports: [@/utils/supabaseClient, @/stores/useUserStore, @/constants/items, ./ItemSystemSection.css]
+    state: [itemDefinitions, itemQuantities, isLoading, isUpdating, message, usingItemId]
+    handlers:
+      - name: handleQuantityChange
+        calls: [Object.prototype.hasOwnProperty.call, parseInt, Math.max, setItemQuantities, newValue.toString]
+      - name: handleQuantityInputChange
+        calls: [setItemQuantities]
+      - name: handleQuantityInputBlur
+        calls: [Object.prototype.hasOwnProperty.call, parseInt, isNaN, inventory.find, setItemQuantities, "(currentItem?.quantity || 0).toString"]
+      - name: handleSetQuantity
+        calls: [Object.prototype.hasOwnProperty.call, parseInt, isNaN, setMessage, setIsUpdating, supabase.auth.getSession, inventory.find, supabase.rpc, fetchUserData]
+      - name: handleResetInventory
+        calls: [confirm, setIsUpdating, setMessage, supabase.auth.getSession, supabase.rpc, fetchUserData]
+      - name: handleRestoreShopItems
+        calls: [confirm, setIsUpdating, setMessage, supabase.rpc, loadItems]
+      - name: handleUseItem
+        calls: [inventory.find, setMessage, setUsingItemId, consumeItem, fetchUserData]
+    exports:
+      - name: ItemSystemSection
+        returns: "import(\"C:/Users/ghkdd/gemini-projects/solve-climb/node_modules/@types/react/jsx-runtime\").JSX.Element"
+        calls: [useUserStore, loadItems, inventory.forEach, item.quantity.toString, setItemQuantities, setIsLoading, "supabase .from('items') .select('id, code, name, description') .order", "supabase .from('items') .select", "supabase .from", setItemDefinitions, setMessage, Object.prototype.hasOwnProperty.call, parseInt, Math.max, newValue.toString, isNaN, inventory.find, "(currentItem?.quantity || 0).toString", setIsUpdating, supabase.auth.getSession, supabase.rpc, fetchUserData, confirm, setUsingItemId, consumeItem, itemDefinitions.map, currentQuantity.toString, handleQuantityChange, handleQuantityInputChange, handleQuantityInputBlur, handleSetQuantity, handleUseItem]
+  src/features/debug/components/MacroSection.tsx:
+    imports: [@/stores/useUserStore, @/utils/debugMacros, ./MacroSection.css]
+  src/features/debug/components/NetworkSection.tsx:
+    imports: [@/stores/useDebugStore, ./NetworkSection.css]
+  src/features/debug/components/NotificationPlayground.tsx:
+    imports: [@/utils/navigation, @/stores/useGameStore, @/components/AlertModal, @/components/ConfirmModal, @/components/CyclePromotionModal, ./DataResetConfirmModal, ./CustomPresetModal, @/components/Toast, @/components/LevelListCard, @/components/game/PauseModal, @/components/LastChanceModal, @/components/ModeSelectModal, @/components/GameTipModal, @/components/game/GameAlertModal, @/components/game/ItemFeedbackOverlay, @/components/CountdownOverlay, @/components/game/SafetyRopeOverlay, @/components/game/GameOverlay, @/components/ChallengeCard, @/components/MyRecordCard, @/components/UnknownMountainCard, @/components/StatusCard, @/components/TierUpgradeModal, @/components/KeyboardInfoModal, @/components/game/BackpackBottomSheet, @/components/BadgeNotification, @/components/UnderDevelopmentModal, ./NotificationPlayground.css]
+    state: [activeModal, toastMessage, showToast, badgeIds, showCountdown, showSafetyRope]
+    handlers:
+      - name: handleAlertAction
+        calls: [triggerToast, closeModals]
+    exports:
+      - name: NotificationPlayground
+        returns: "import(\"C:/Users/ghkdd/gemini-projects/solve-climb/node_modules/@types/react/jsx-runtime\").JSX.Element"
+        calls: [useNavigate, useGameStore, triggerToast, closeModals, setExhausted, resetCombo, setCombo, setActiveModal, setBadgeIds, setShowCountdown, setShowSafetyRope, setToastMessage, setShowToast, itemFeedbackRef.current?.show, triggerItemFeedback, toggleSpeedLines, navigate, urls.shop, urls.result, e.stopPropagation]
+  src/features/debug/components/ProgressionSection.tsx:
+    imports: [@/stores/useDebugStore, @/config/app, @/utils/navigation, ./ProgressionSection.css]
+  src/features/debug/components/QuickActionsSection.tsx:
+    imports: [@/utils/supabaseClient, @/stores/useUserStore, @/stores/useDebugStore, @/features/mypage, @/utils/debugPresets, @/utils/debugSync, ./CustomPresetModal, @/components/ConfirmModal, ./QuickActionsSection.css]
+  src/features/debug/components/SitemapTree.tsx:
+    imports: [@/stores/useDebugStore, @/config/app]
+    exports:
+      - name: SitemapTree
+        returns: "import(\"C:/Users/ghkdd/gemini-projects/solve-climb/node_modules/@types/react/jsx-runtime\").JSX.Element"
+  src/features/debug/components/StaticUISection.tsx:
+    imports: [@/stores/useSettingsStore, ./StaticUISection.css]
+  src/features/debug/components/TierSystemSection.tsx:
+    imports: [@/utils/supabaseClient, @/features/mypage, @/constants/tiers, @/utils/tierUtils, @/components/TierUpgradeModal, ./TierSystemSection.css]
+  src/features/debug/components/VisualSection.tsx:
+    imports: [@/stores/useDebugStore, @/stores/useGameStore, ./VisualSection.css]
+  src/features/debug/hooks/useDebugShortcuts.ts:
+    imports: [@/stores/useDebugStore, @/stores/useUserStore]
+    exports:
+      - name: useDebugShortcuts
+        description: |
+            전역 디버그 단축키 훅
+            모든 페이지에서 작동하며, 개발 환경에서만 활성화됩니다.
+            
+            단축키:
+            - ` (백틱): Simple Dev (스태미너/미네랄 즉시 획득)
+            - Ctrl+` / Cmd+`: Debug Panel 토글
+            - +/=: 선택된 리소스 증가 (디버그 패널 활성 시)
+            - -/_: 선택된 리소스 감소 (디버그 패널 활성 시)
+        calls: [useDebugStore, useUserStore, e.key.toLowerCase, e.preventDefault, debugSetStamina, debugSetMinerals, toggleAdminMode, console.log, toggleDebugPanel, useUserStore.getState, debugAddItems, Math.max, console.warn, debugRemoveItems, setSelectedResource, window.addEventListener, window.removeEventListener]
+  src/features/item/hooks/useShop.ts:
+    imports: [@/utils/supabaseClient, @/utils/debugFetch, @/stores/useUserStore, @/stores/useToastStore, @/constants/items, @/constants/ui, @/constants/game, @/utils/errorHandler]
+    exports:
+      - name: useShop
+        returns: "{ items: import(\"C:/Users/ghkdd/gemini-projects/solve-climb/src/constants/items\").ItemMetadata[]; isLoading: boolean; purchaseStatus: { id: number; message: string; } | null; isAdLoading: boolean; minerals: number; inventory: import(\"C:/Users/ghkdd/gemini-projects/solve-climb/src/types/user\").InventoryItem[]; handlePurchase: (itemId: number, price: number) => Promise<void>; handleMineralsAdRecharge: () => Promise<void>; getOwnedCount: (code: string) => number; }"
+        calls: [useUserStore, useToastStore, setIsLoading, safeSupabaseQuery, supabase.from('items').select('*').order, supabase.from('items').select, supabase.from, setItems, logError, showToast, fetchItems, setPurchaseStatus, setTimeout, supabase.rpc, fetchUserData, error?.message?.includes, useUserStore.getState, setMinerals, setIsAdLoading, recoverMineralsAds, inventory.find]
+  src/features/item/pages/ShopPage.tsx:
+    imports: [@/components/Header, @/components/FooterNav, @/components/SegmentedControl, @/components/common/GlassCard, ../hooks/useShop, @/constants/ui, @/constants/items, ./ShopPage.css]
+    state: [activeTab]
+    exports:
+      - name: ShopPage
+        returns: "import(\"C:/Users/ghkdd/gemini-projects/solve-climb/node_modules/@types/react/jsx-runtime\").JSX.Element"
+        calls: [useNavigate, useShop, navigate, minerals.toLocaleString, setActiveTab, inventory.map, getItemEmoji, items.map, getOwnedCount, UI_MESSAGES.OWNED_COUNT, handlePurchase]
+  src/features/mypage/components/HistoryTab.tsx:
+    imports: [../hooks/useMyPageStats, @/hooks/useGrowthJournal]
+    state: [expandedLogId]
+    exports:
+      - name: HistoryTab
+        returns: "import(\"C:/Users/ghkdd/gemini-projects/solve-climb/node_modules/@types/react/jsx-runtime\").JSX.Element"
+        calls: [useMyPageStats, useGrowthJournal, "Array.from({ length: 7 }, (_, i) => { const d = new Date(); d.setDate(d.getDate() - i); return d.toISOString().split('T')[0]; }).reverse", Array.from, d.setDate, d.getDate, d.toISOString().split, d.toISOString, last7Days.map, logs.filter, log.created_at.startsWith, date.slice, "logs.flatMap((log) => log.wrong_answers || []).slice", logs.flatMap, Math.round, seconds.toFixed, Math.floor, formatTime, weeklyTrend.map, Math.min, logs.map, setExpandedLogId, "new Date(log.created_at).toLocaleDateString", log.score.toLocaleString, log.avg_solve_time.toFixed, log.wrong_answers.map, recentWrongAnswers.map]
+  src/features/mypage/components/MyPageProfile.tsx:
+    exports:
+      - name: MyPageProfile
+        params:
+          "{
+  nickname,
+  totalMasteryScore,
+  loginStreak = 0,
+  loading,
+  onEditProfile,
+}": MyPageProfileProps
+        returns: "import(\"C:/Users/ghkdd/gemini-projects/solve-climb/node_modules/@types/react/jsx-runtime\").JSX.Element"
+        calls: ["(totalMasteryScore || 0).toLocaleString"]
+  src/features/mypage/components/MyPageQuickAccess.tsx:
+    imports: [@/config/app, @/utils/navigation, @/types/quiz, @/utils/challenge, @/services]
+    exports:
+      - name: MyPageQuickAccess
+        params:
+          "{
+  todayChallenge,
+  favorites,
+  setCategoryTopic,
+}": MyPageQuickAccessProps
+        returns: "import(\"C:/Users/ghkdd/gemini-projects/solve-climb/node_modules/@types/react/jsx-runtime\").JSX.Element"
+        calls: [useNavigate, setCategoryTopic, navigate, urls.categorySelect, "favorites.slice(0, 3).map", favorites.slice, APP_CONFIG.CATEGORIES.find, subTopics.find, APP_CONFIG.CATEGORIES.some, storageService.get, STORAGE_KEYS.LAST_PLAYED_WORLD, urls.levelSelect, urls.home]
+  src/features/mypage/components/MyPageSettings.tsx:
+    imports: [@/config/app, @/utils/navigation]
+    exports:
+      - name: MyPageSettings
+        params:
+          "{
+  hapticEnabled,
+  animationEnabled,
+  onToggleHaptic,
+  onToggleAnimation,
+  onShowProfileForm,
+  onDataReset,
+  isResetting,
+  onSendFeedback,
+  onLogout,
+  onWithdraw,
+}": MyPageSettingsProps
+        returns: "import(\"C:/Users/ghkdd/gemini-projects/solve-climb/node_modules/@types/react/jsx-runtime\").JSX.Element"
+        calls: [useNavigate, e.preventDefault, onToggleHaptic, onToggleAnimation, navigate, urls.quiz, urls.review, urls.privacyPolicy]
+  src/features/mypage/components/MyPageStats.tsx:
+    exports:
+      - name: MyPageStats
+        params:
+          "{
+  loading,
+  totalSolved,
+  maxLevel,
+  bestSubject,
+  isOpeningLeaderboard,
+  retryCount,
+  onNavigateHistory,
+  onOpenLeaderboard,
+}": MyPageStatsProps
+        returns: "import(\"C:/Users/ghkdd/gemini-projects/solve-climb/node_modules/@types/react/jsx-runtime\").JSX.Element"
+        calls: ["(totalSolved || 0).toLocaleString"]
+  src/features/mypage/components/MyPageTipPreview.tsx:
+    imports: [@/constants/tips, @/utils/quizGenerator, @/utils/solutionExplainer, @/types/quiz, @/stores/useToastStore, ./MyPageTipPreview.css]
+    state: [category, world, level, tip, sampleQuestion, solutionSteps, refreshTrigger]
+    handlers:
+      - name: handleCategoryChange
+        calls: [setCategory, setWorld, setLevel]
+      - name: handleWorldMove
+        calls: [worlds.indexOf, setWorld, setLevel]
+      - name: handleLevelMove
+        calls: [getMaxLevel, setLevel]
+    exports:
+      - name: MyPageTipPreview
+        returns: "import(\"C:/Users/ghkdd/gemini-projects/solve-climb/node_modules/@types/react/jsx-runtime\").JSX.Element"
+        calls: [useToastStore, setRefreshTrigger, generateQuestion, setSampleQuestion, getSolutionProcess, setSolutionSteps, console.error, setCategory, setWorld, setLevel, worlds.indexOf, getMaxLevel, setTip, "(['기초', '논리', '대수', '심화'] as CategoryType[]).map", showToast, handleCategoryChange, handleWorldMove, getWorldName, handleLevelMove, solutionSteps.map, step.indexOf, "step.slice(0, colonIndex).trim", step.slice, "step.slice(colonIndex + 1).trim", stepBody.split, parts.map]
+  src/features/mypage/hooks/useHistoryData.ts:
+    imports: [@/utils/supabaseClient, @/utils/debugFetch, @/config/app, @/utils/safeJsonParse, @/services, @/utils/date, @/utils/errorHandler, @/constants/history]
+    exports:
+      - name: useHistoryData
+        returns: "{ stats: import(\"C:/Users/ghkdd/gemini-projects/solve-climb/src/features/mypage/hooks/useHistoryData\").HistoryStats | null; loading: boolean; error: string | null; refetch: () => Promise<void>; }"
+        calls: [setLoading, setError, storageService.get, parseLocalSession, console.warn, safeSupabaseQuery, supabase.auth.getSession, Array.isArray, calculateLocalStats, setStats, getEmptyStats, todayStart.setHours, now.getDay, weekStart.setDate, now.getDate, weekStart.setHours, lastWeekStart.setDate, weekStart.getDate, Promise.all, "supabase .from('user_level_records') .select('world_id, category_id, subject_id, level, mode_code, best_score, updated_at') .eq('user_id', currentUserId) .order", "supabase .from('user_level_records') .select('world_id, category_id, subject_id, level, mode_code, best_score, updated_at') .eq", "supabase .from('user_level_records') .select", "supabase .from", "supabase .from('game_sessions') .select('category, subject, level, game_mode, score, created_at') .eq('user_id', currentUserId) .eq('status', 'completed') .order('created_at', { ascending: false }) .limit", "supabase .from('game_sessions') .select('category, subject, level, game_mode, score, created_at') .eq('user_id', currentUserId) .eq('status', 'completed') .order", "supabase .from('game_sessions') .select('category, subject, level, game_mode, score, created_at') .eq('user_id', currentUserId) .eq", "supabase .from('game_sessions') .select('category, subject, level, game_mode, score, created_at') .eq", "supabase .from('game_sessions') .select", "supabase .from('profiles') .select('total_mastery_score, login_streak') .eq('id', currentUserId) .maybeSingle", "supabase .from('profiles') .select('total_mastery_score, login_streak') .eq", "supabase .from('profiles') .select", "(recordsData || []).map", "(sessionsData || []).map", "new Date().toISOString", "[...sessionsAsRecords, ...records] .filter((r) => r.updated_at) // updated_at이 있는 것만 필터링 .sort", "[...sessionsAsRecords, ...records] .filter", "new Date(b.updated_at).getTime", "new Date(a.updated_at).getTime", records.reduce, Math.max, records.filter, records.forEach, r.themeId.includes, Math.min, Math.round, "allActivities .slice(0, 15) // 더 넉넉하게 추출 후 정제 .map((r) => { const modeName = r.mode_code === 1 ? '타임어택' : '서바이벌'; const [cat, sub] = r.themeId.split('_'); const categoryName = APP_CONFIG.CATEGORY_MAP[cat as keyof typeof APP_CONFIG.CATEGORY_MAP] || cat; return { themeId: r.themeId, categoryName, subCategoryName: sub, level: r.level, modeCode: r.mode_code, modeName, bestScore: r.best_score, count: 1, // 개별 세션 단위이므로 1 timeAgo: getTimeAgo(r.updated_at || ''), }; }) .slice", "allActivities .slice(0, 15) // 더 넉넉하게 추출 후 정제 .map", "allActivities .slice", r.themeId.split, getTimeAgo, "allActivities .filter((r) => r.updated_at) // updated_at이 있는 것만 필터링 .map", "allActivities .filter", "new Date(profileData.last_login_at).toDateString", "new Date().toDateString", formattedActivities.unshift, allActivities.forEach, "new Date(r.updated_at).toDateString", activityMap.set, activityMap.get, d.setDate, todayStart.getDate, d.toDateString, heatmapData.push, activityMap.has, getTierInfo, map.get, map.set, "Array.from(recordMap.values()) .map((r) => { const [cat, sub] = r.themeId.split('_'); const categoryName = APP_CONFIG.CATEGORY_MAP[cat as keyof typeof APP_CONFIG.CATEGORY_MAP] || cat; return { themeId: r.themeId, categoryName, subCategoryName: sub, level: r.level, levelName: r.level >= 10 ? 'Expert' : r.level >= 5 ? 'Intermediate' : 'Beginner', progress: Math.min(Math.round((r.level / 15) * 100), 100), }; }) .sort", "Array.from(recordMap.values()) .map", Array.from, recordMap.values, getUserTitle, getSmartComment, logError, fetchHistoryData]
+  src/features/mypage/hooks/useMyPageStats.ts:
+    imports: [@/utils/supabaseClient, @/utils/safeJsonParse, @/services, @/utils/debugFetch, @/utils/validation, @/utils/errorHandler]
+    exports:
+      - name: useMyPageStats
+        returns: "import(\"C:/Users/ghkdd/gemini-projects/solve-climb/src/features/mypage/hooks/useMyPageStats\").UseMyPageStatsResult"
+        description: |
+            Supabase에서 사용자 게임 통계를 가져오는 Hook
+            
+            RPC 함수를 사용하거나, 직접 쿼리로 집계합니다.
+        calls: [storageService.get, isValidUUID, setSession, console.warn, safeSupabaseQuery(supabase.auth.getSession()).then, safeSupabaseQuery, supabase.auth.getSession, checkLocalSession, supabase.auth.onAuthStateChange, data?.subscription?.unsubscribe, setLoading, setError, setStats, "supabase .from('profiles') .select( 'total_mastery_score, current_tier_level, cycle_promotion_pending, pending_cycle_score, login_streak' ) .eq('id', user_id) .maybeSingle", "supabase .from('profiles') .select( 'total_mastery_score, current_tier_level, cycle_promotion_pending, pending_cycle_score, login_streak' ) .eq", "supabase .from('profiles') .select", "supabase .from", logError, supabase.rpc, "supabase .from('user_level_records') .select('world_id, category_id, subject_id, level, best_score') .eq", "supabase .from('user_level_records') .select", levelRecords.reduce, levelRecords.filter, Math.max, levelRecords.map, levelRecords.forEach, Object.entries(subjectScores).sort, Object.entries, fetchStats]
+  src/features/mypage/pages/MyPage.tsx:
+    imports: [@/components/Header, @/components/FooterNav, @/utils/navigation, @/components/ProfileForm, @/features/debug, @/components/Toast, @/components/AlertModal, @/components/CyclePromotionModal, ../components/MyPageProfile, ../components/MyPageStats, ../components/MyPageQuickAccess, ../components/MyPageSettings, @/stores/useProfileStore, @/stores/useSettingsStore, ../hooks/useMyPageStats, @/stores/useFavoriteStore, @/utils/challenge, @/stores/useLevelProgressStore, @/stores/useQuizStore, @/utils/dataReset, @/utils/haptic, @/utils/supabaseClient, @/utils/errorHandler, @/utils/debugFetch, @/config/app, @/utils/auth, @/utils/tossLogin, @/components/WithdrawConfirmModal, @/utils/userWithdraw, @/constants/tiers, @/services, ./MyPage.css]
+    state: [todayChallenge, showProfileForm, showDataResetConfirm, showToast, toastMessage, showAlert, alertMessage, isResetting, _loginError, showPromotionModal, tierStars, showWithdrawConfirm, isWithdrawing]
+    handlers:
+      - name: handlePromote
+        calls: [setShowPromotionModal, refetch]
+      - name: handleProfileComplete
+        calls: [setShowProfileForm, navigate, urls.myPage, refetch, storageService.get, storageService.remove]
+      - name: handleToggleHaptic
+        calls: [setHapticEnabled, vibrateShort, setToastMessage, setShowToast]
+      - name: handleToggleAnimation
+        calls: [setAnimationEnabled, setToastMessage, setShowToast]
+      - name: handleDataReset
+        calls: [setShowDataResetConfirm]
+      - name: handleConfirmDataReset
+        calls: [setIsResetting, resetAllData, setShowDataResetConfirm, setToastMessage, setShowToast, setShowProfileForm, refetch, logError]
+      - name: handleCancelDataReset
+        calls: [setShowDataResetConfirm]
+      - name: handleWithdraw
+        calls: [setShowWithdrawConfirm]
+      - name: handleConfirmWithdraw
+        calls: [setIsWithdrawing, withdrawAccount, setShowWithdrawConfirm, setToastMessage, setShowToast, logError]
+      - name: handleSendFeedback
+        calls: [encodeURIComponent]
+      - name: handleOpenLeaderboard
+        calls: [setToastMessage, setShowToast]
+      - name: handleNavigateHistory
+        calls: [setToastMessage, setShowToast]
+      - name: handleTossLoginClick
+        calls: [handleTossLogin, setAlertMessage, setShowAlert]
+      - name: handleAnonymousLogin
+        calls: [setLoginError, storageService.set, Date.now, Math.random().toString(36).substr, Math.random().toString, Math.random, "new Date().toISOString", setProfile, console.warn, refetch, performRedirect, setToastMessage, setShowToast, logError]
+      - name: handleGoogleLogin
+        calls: [storageService.set, signInWithGoogle, setToastMessage, setShowToast, setLoginError]
+      - name: handleLogout
+        calls: [console.log, safeSupabaseQuery, supabase.auth.getSession, supabase.auth.signOut, storageService.remove, console.warn, clearProfile, setToastMessage, setShowToast, refetch, logError]
+    exports:
+      - name: MyPage
+        returns: "import(\"C:/Users/ghkdd/gemini-projects/solve-climb/node_modules/@types/react/jsx-runtime\").JSX.Element"
+        calls: [useNavigate, useSearchParams, useProfileStore, useSettingsStore, useMyPageStats, useFavoriteStore, useQuizStore, useLevelProgressStore, searchParams.get, useLocation, React.useCallback, storageService.get, urls.myPage, navigate, storageService.remove, console.log, "getTodayChallenge(progressMap) .then((challengeData: any) => { setTodayChallenge(challengeData); }) .catch", "getTodayChallenge(progressMap) .then", getTodayChallenge, setTodayChallenge, logError, calculateTier(stats.totalMasteryScore).then, calculateTier, setTierStars, setShowPromotionModal, refetch, setShowProfileForm, setHapticEnabled, vibrateShort, setToastMessage, setShowToast, setAnimationEnabled, setShowDataResetConfirm, setIsResetting, resetAllData, setShowWithdrawConfirm, setIsWithdrawing, withdrawAccount, encodeURIComponent, handleTossLogin, setAlertMessage, setShowAlert, setLoginError, storageService.set, Date.now, Math.random().toString(36).substr, Math.random().toString, Math.random, "new Date().toISOString", setProfile, console.warn, performRedirect, signInWithGoogle, "safeSupabaseQuery(supabase.rpc('update_profile_nickname', { p_nickname: nickname })).catch", safeSupabaseQuery, supabase.rpc, supabase.auth.getSession, supabase.auth.signOut, clearProfile, isTossAppEnvironment, formatBestSubject, useProfileStore.getState, urls.debug]
+  src/features/quiz/components/CalculusVisualization.tsx:
+    imports: [./CalculusVisualization.css]
+    state: [progress]
+    exports:
+      - name: CalculusVisualization
+        params:
+          "{ type }": CalculusVisualizationProps
+        returns: "import(\"C:/Users/ghkdd/gemini-projects/solve-climb/node_modules/@types/react/jsx-runtime\").JSX.Element"
+        calls: [setInterval, setProgress, clearInterval, points.push, points.join, type.toUpperCase, renderLimit, renderDerivative]
+  src/features/quiz/components/CoordinateGrid.tsx:
+    imports: [./CoordinateGrid.css]
+    state: [selected]
+    handlers:
+      - name: handleClick
+        calls: [setSelected, onShoot]
+    exports:
+      - name: CoordinateGrid
+        params:
+          "{
+  onShoot,
+  range = 5,
+  isFirstQuadrantOnly = false,
+  disabled = false,
+}": CoordinateGridProps
+        returns: "import(\"C:/Users/ghkdd/gemini-projects/solve-climb/node_modules/@types/react/jsx-runtime\").JSX.Element"
+        calls: [setSelected, onShoot, row.push, handleClick, cells.push, renderGrid]
+  src/features/quiz/components/LandmarkPopup.tsx:
+    imports: [../contexts/QuizContext]
+    exports:
+      - name: LandmarkPopup
+        returns: "import(\"C:/Users/ghkdd/gemini-projects/solve-climb/node_modules/@types/react/jsx-runtime\").JSX.Element | null"
+        description: 특정 고도(Landmark)에 도달했을 때 표시되는 팝업 컴포넌트
+        calls: [useQuiz]
+  src/features/quiz/components/QuizAnswerArea.tsx:
+    imports: [./CoordinateGrid, ../contexts/QuizContext]
+  src/features/quiz/components/QuizCard.tsx:
+    imports: [./QuizHeader, ./QuizQuestionArea, ./QuizAnswerArea, ./QuizFloatingFeedback, ./QuizInputSection, @/constants/ui, ../contexts/QuizContext]
+  src/features/quiz/components/QuizFloatingFeedback.tsx:
+    imports: [../contexts/QuizContext]
+  src/features/quiz/components/QuizHeader.tsx:
+    imports: [@/components/TimerCircle, @/constants/items, ../contexts/QuizContext, @/constants/ui, @/stores/useGameStore, @/stores/useDebugStore]
+  src/features/quiz/components/QuizInputSection.tsx:
+    imports: [@/components/QwertyKeypad, @/components/CustomKeypad, ../contexts/QuizContext, @/constants/ui]
+  src/features/quiz/components/QuizLayout.tsx:
+    imports: [./QuizCard, ./QuizModals, ./TodaysPromise, @/components/effects/FeverEffect, @/components/tutorial/TutorialOverlay, ./LandmarkPopup, ../contexts/QuizContext, @/constants/ui, @/components/tutorial/TutorialOverlay, ./QuizPreview]
+    exports:
+      - name: QuizLayout
+        returns: "import(\"C:/Users/ghkdd/gemini-projects/solve-climb/node_modules/@types/react/jsx-runtime\").JSX.Element"
+        calls: [useQuiz, setShowTutorial]
+  src/features/quiz/components/QuizModals.tsx:
+    imports: [@/components/game/ItemFeedbackOverlay, @/components/LastChanceModal, @/components/CountdownOverlay, @/components/game/SafetyRopeOverlay, @/components/GameTipModal, @/components/game/GameOverlay, @/components/game/GameAlertModal, @/components/game/PauseModal, @/constants/items, @/utils/validation, ../contexts/QuizContext]
+    exports:
+      - name: QuizModals
+        returns: "import(\"C:/Users/ghkdd/gemini-projects/solve-climb/node_modules/@types/react/jsx-runtime\").JSX.Element"
+        calls: [useQuiz, safeAccess, inventory.find, handleRevive, setShowSafetyRope, setShowStaminaModal]
+  src/features/quiz/components/QuizPreview.tsx:
+    imports: [@/config/app, @/utils/navigation, ../types/quizProps, ../types/quiz, @/components/game/ItemFeedbackOverlay, ./QuizCard, ../contexts/QuizContext, @/stores/useToastStore, ./QuizPreview.css]
+    state: [previewKeyboardType, answerInput, displayValue]
+    exports:
+      - name: QuizPreview
+        params:
+          "{
+  mountainParam,
+  categoryParam,
+  worldParam,
+  subParam,
+  levelParam,
+  category,
+  topic,
+  keyboardType,
+  useSystemKeyboard,
+}": QuizPreviewProps
+        returns: "import(\"C:/Users/ghkdd/gemini-projects/solve-climb/node_modules/@types/react/jsx-runtime\").JSX.Element"
+        calls: [useNavigate, useToastStore, Object.prototype.hasOwnProperty.call, subParam.startsWith, ARITHMETIC_TOPIC_MAP.get, setPreviewKeyboardType, showToast, setAnswerInput, "(prev + key).slice", setDisplayValue, prev.slice, navigate, urls.myPage, e?.preventDefault, console.log]
+  src/features/quiz/components/QuizQuestionArea.tsx:
+    imports: [../types/quiz, @/components/algebra/EquationVisualizer, @/components/expert/FunctionMachine, @/components/expert/IntegralVisualizer, ./CalculusVisualization, @/components/effects/ReasoningOverlay, @/utils/algebra, ../contexts/QuizContext]
+  src/features/quiz/components/TodaysPromise.tsx:
+    imports: [./TodaysPromise.css, ../contexts/QuizContext]
+    state: [countdown]
+    exports:
+      - name: TodaysPromise
+        returns: "import(\"C:/Users/ghkdd/gemini-projects/solve-climb/node_modules/@types/react/jsx-runtime\").JSX.Element | null"
+        calls: [useQuiz, setCountdown, setInterval, clearInterval, setTimeout]
+  src/features/quiz/contexts/QuizContext.tsx:
+    imports: [@/stores/useQuizStore, @/stores/useDebugStore, ../hooks/useQuestionGenerator, ../hooks/useQuizInput, ../hooks/useQuizGameState, ../hooks/useQuizAnimations, ../hooks/useQuizSubmit, @/stores/useSettingsStore, @/constants/game, ../hooks/useQuizRevive, @/stores/useUserStore, @/stores/useGameStore, @/stores/useToastStore, ../types/quiz, @/components/game/ItemFeedbackOverlay, @/stores/useBaseCampStore, @/utils/validation, ../hooks/useQuizBusinessLogic, ../hooks/useQuizNavigation, ../hooks/useQuizStartLogic, ../hooks/useQuizSession, ../hooks/useQuizGameplay, @/lib/eventBus, ../hooks/useQuizFeedback, @/stores/useDeathNoteStore, @/utils/haptic, ../types/quizProps]
+    state: [currentQuestion, answerInput, displayValue, toastValue, useSystemKeyboard, infiniteTimeLimit, , isSubmitting, currentQuestionId, showLastChanceModal, showCountdown, showSafetyRope, showPauseModal, showTutorial, showPromise, showStaminaModal, isFlarePaused, questionKey, showTipModal]
+    exports:
+      - name: QuizProvider
+        params:
+          "{ children, params }": QuizProviderProps
+        returns: "import(\"C:/Users/ghkdd/gemini-projects/solve-climb/node_modules/@types/react/jsx-runtime\").JSX.Element"
+        calls: [useQuizStore, useSettingsStore, useNavigate, useUserStore, useToastStore, useQuizAnimations, useQuizFeedback, useGameStore, useQuizGameState, useGameStore.getState, useQuizSession, useQuestionGenerator, useQuizBusinessLogic, useQuizStartLogic, handleStaminaAdRecovery, useQuizNavigation, useQuizGameplay, activeItems.includes, consumeActiveItem, quizEventBus.emit, consumeLife, useQuizSubmit, e?.preventDefault, useDebugStore.getState, answerInput.trim, String, setAnswerInput, setDisplayValue, setTimeout, originalSubmit, useQuizRevive, handleWatchAdRevive, handleRevive, useQuizInput, setIsFlarePaused, setQuizContext, resetQuiz, resetGame, checkStamina().then, checkStamina, setExhausted, useBaseCampStore.getState().startDiagnostic, useBaseCampStore.getState, setShowTipModal, setShowTutorial, generateNewQuestionRef.current, setGameMode, quizEventBus.on, gameState.setUserAnswers, parseInt, gameState.setSolveTimes, gameState.setTotalQuestions, gameState.setQuestionIds, setTotalInfiniteSolved, increaseScore, useGameStore.getState().incrementCombo, animations.setCardAnimation, animations.setShowFlash, triggerSuccessFeedback, decreaseScore, useGameStore.getState().resetCombo, animations.setIsError, triggerWrongFeedback, "useDeathNoteStore .getState() .addMissedQuestion", "useDeathNoteStore .getState", gameState.setWrongAnswers, useBaseCampStore.getState().submitAnswer, setIsSubmitting, animations.setQuestionAnimation, setCurrentQuestion, setCurrentQuestionId, setQuestionKey, gameState.setQuestionStartTime, Date.now, safeAccess, Math.max, Math.ceil, Object.entries(LEVEL_BASE_TIME).find, Object.entries, Number, setInfiniteTimeLimit, inputRef.current?.focus, setShowLastChanceModal, setShowCountdown, setShowSafetyRope, setShowPauseModal, setShowStaminaModal, setShowPromise, vibrateLong, smartHandleGameOver, handleTimeUp, useQuizStore.getState().decreaseScore, useQuizStore.getState, unsubscribeAnswer, unsubscribeNext, unsubscribeQuestion, unsubscribeSubmissionStarted, unsubscribeReviveSuccess, unsubscribeModalToggle, unsubscribeInvalid, unsubscribeGameOver, unsubscribeTimerUp, unsubscribePenalty, useUserStore.getState, e.key.toLowerCase, e.preventDefault, e.stopPropagation, handleSubmit, window.addEventListener, window.removeEventListener, handleGiveUp, handleStartGame, handleTutorialClick]
+      - name: useQuiz
+        returns: QuizContextType
+  src/features/quiz/domain/Altitude.ts:
+    exports:
+      - name: Altitude
+        type: class
+        methods:
+          - name: create
+            params:
+              meters: number
+            returns: "import(\"C:/Users/ghkdd/gemini-projects/solve-climb/src/features/quiz/domain/Altitude\").Result<import(\"C:/Users/ghkdd/gemini-projects/solve-climb/src/features/quiz/domain/Altitude\").Altitude, string>"
+            calls: [Number.isNaN, Math.round]
+          - name: equals
+            params:
+              other: "import(\"C:/Users/ghkdd/gemini-projects/solve-climb/src/features/quiz/domain/Altitude\").Altitude"
+            returns: boolean
+          - name: add
+            params:
+              other: "import(\"C:/Users/ghkdd/gemini-projects/solve-climb/src/features/quiz/domain/Altitude\").Altitude"
+            returns: "import(\"C:/Users/ghkdd/gemini-projects/solve-climb/src/features/quiz/domain/Altitude\").Altitude"
+            calls: [Math.round]
+          - name: subtract
+            params:
+              other: "import(\"C:/Users/ghkdd/gemini-projects/solve-climb/src/features/quiz/domain/Altitude\").Altitude"
+            returns: "import(\"C:/Users/ghkdd/gemini-projects/solve-climb/src/features/quiz/domain/Altitude\").Altitude"
+            calls: [Math.max, Math.round]
+          - name: toString
+            returns: string
+            calls: [this._meters.toLocaleString]
+  src/features/quiz/hooks/useQuestionGenerator.ts:
+    imports: [../types/quiz, @/utils/quizGenerator, @/stores/useBaseCampStore, @/stores/useDeathNoteStore, @/constants/game, @/lib/eventBus]
+    exports:
+      - name: useQuestionGenerator
+        params:
+          "{
+  category,
+  world,
+  difficulty,
+  gameMode,
+  worldParam,
+  categoryParam,
+  levelParam,
+  tierParam,
+  mountainParam,
+  totalQuestions,
+  preGeneratedQuestions,
+}": UseQuestionGeneratorParams
+        returns: "{ generateNewQuestion: () => void; }"
+        calls: ["new URLSearchParams(window.location.search).get", useBaseCampStore.getState, setCompleted, questions.at, quizEventBus.emit, crypto.randomUUID, useDeathNoteStore.getState, getQuestionsByCategory, Math.floor, Math.random, missedQuestions.at, console.log, Object.prototype.hasOwnProperty.call, Math.min, Math.ceil, Math.max, console.warn, generateQuestion, quizEventBus.on, unsubscribe]
+  src/features/quiz/hooks/useQuizAnimations.ts:
+    exports:
+      - name: useQuizAnimations
+        returns: "{ cardAnimation: string; inputAnimation: string; questionAnimation: string; showFlash: boolean; isError: boolean; showSlideToast: boolean; damagePosition: { left: string; top: string; }; setCardAnimation: React.Dispatch<React.SetStateAction<string>>; setInputAnimation: React.Dispatch<React.SetStateAction<string>>; setQuestionAnimation: React.Dispatch<React.SetStateAction<string>>; setShowFlash: React.Dispatch<React.SetStateAction<boolean>>; setIsError: React.Dispatch<React.SetStateAction<boolean>>; setShowSlideToast: React.Dispatch<React.SetStateAction<boolean>>; setDamagePosition: React.Dispatch<React.SetStateAction<{ left: string; top: string; }>>; }"
+  src/features/quiz/hooks/useQuizBusinessLogic.ts:
+    imports: [@/utils/adService, @/constants/ui, @/constants/game, @/utils/errorHandler]
+    exports:
+      - name: useQuizBusinessLogic
+        params:
+          "{
+  setToastValue,
+  setShowSlideToast,
+  showGlobalToast,
+  refundStamina,
+  recoverStaminaAds,
+  handleGameOver,
+  totalQuestions,
+}": UseQuizBusinessLogicParams
+        returns: "{ handleWatchAdRevive: () => Promise<boolean>; smartHandleGameOver: (reason?: string | undefined) => Promise<void>; handleStaminaAdRecovery: (setShowStaminaModal: (s: boolean) => void) => Promise<void>; }"
+        description: QuizPage의 핵심 비즈니스 로직(광고 시청, 게임 오버, 스테미너 회복)을 관리하는 커스텀 훅
+        calls: [setShowSlideToast, setToastValue, AdService.showRewardedAd, setTimeout, UI_MESSAGES.AD_WATCH_FAILED, refundStamina, showGlobalToast, logError, handleGameOver, recoverStaminaAds, setShowStaminaModal, window.location.reload]
+  src/features/quiz/hooks/useQuizFeedback.ts:
+    imports: [@/utils/haptic]
+    exports:
+      - name: useQuizFeedback
+        returns: "{ triggerSuccessFeedback: (earnedDistance: number, handlers: FeedbackHandlers, hapticEnabled?: boolean) => void; triggerWrongFeedback: (penaltyText: string, handlers: FeedbackHandlers, hapticEnabled?: boolean) => void; }"
+        description: 퀴즈 시각적/진동 피드백을 담당하는 훅
+        calls: [vibrateMedium, handlers.setToastValue, Math.floor, Math.random, handlers.setDamagePosition, handlers.setShowSlideToast, setTimeout, vibrateLong, handlers.setShowFlash]
+  src/features/quiz/hooks/useQuizGameplay.ts:
+    imports: [@/stores/useQuizStore, @/stores/useGameStore, @/lib/eventBus]
+    exports:
+      - name: useQuizGameplay
+        params:
+          "{ setToastValue }": UseQuizGameplayProps
+        returns: "{ remainingPauses: number; timerResetKey: number; handlePauseClick: () => void; handleTutorialClick: () => void; handlePauseResume: () => void; handlePauseExit: () => void; handleCountdownComplete: () => void; handleLastSpurt: () => void; handleSafetyRopeUsed: () => void; setTimerResetKey: React.Dispatch<React.SetStateAction<number>>; }"
+        calls: [useGameStore, quizEventBus.emit, setRemainingPauses, useQuizStore.getState().setTimeLimit, useQuizStore.getState, incrementCombo, setToastValue, setTimerResetKey, quizEventBus.on, unsubscribeCountdown, unsubscribeSafetyRope, unsubscribeLastSpurt]
+  src/features/quiz/hooks/useQuizGameState.ts:
+    imports: [@/utils/navigation, ../types/quiz]
+    exports:
+      - name: useQuizGameState
+        params:
+          "{
+  score,
+  gameMode,
+  mountainParam,
+  worldParam,
+  categoryParam,
+  subParam,
+  levelParam,
+  modeParam,
+  isExhausted,
+  navigate,
+}": UseQuizGameStateParams
+        returns: "{ totalQuestions: number; wrongAnswers: { question: string; wrongAnswer: string; correctAnswer: string; }[]; questionStartTime: number | null; solveTimes: number[]; gameSessionId: string | null; userAnswers: number[]; questionIds: string[]; setTotalQuestions: React.Dispatch<React.SetStateAction<number>>; setWrongAnswers: React.Dispatch<React.SetStateAction<{ question: string; wrongAnswer: string; correctAnswer: string; }[]>>; setQuestionStartTime: React.Dispatch<React.SetStateAction<number | null>>; setSolveTimes: React.Dispatch<React.SetStateAction<number[]>>; setGameSessionId: React.Dispatch<React.SetStateAction<string | null>>; setUserAnswers: React.Dispatch<React.SetStateAction<number[]>>; setQuestionIds: React.Dispatch<React.SetStateAction<string[]>>; handleGameOver: (reason?: string | undefined) => void; }"
+        calls: [params.set, levelParam.toString, score.toString, totalQuestionsState.toString, "wrongAnswersState.map((w) => w.question).join", wrongAnswersState.map, "wrongAnswersState.map((w) => w.wrongAnswer).join", "wrongAnswersState.map((w) => w.correctAnswer).join", solveTimesState.reduce, averageTime.toFixed, JSON.stringify, navigate, urls.result]
+  src/features/quiz/hooks/useQuizInput.ts:
+    imports: [@/utils/haptic]
+    exports:
+      - name: useQuizInput
+        params:
+          "{
+  isSubmitting,
+  isError,
+  isPaused = false,
+  categoryParam,
+  subParam,
+  setAnswerInput,
+  setDisplayValue,
+  onInputStart,
+}": UseQuizInputParams
+        returns: "{ handleKeypadNumber: (num: string) => void; handleQwertyKeyPress: (key: string) => void; handleKeypadClear: () => void; handleKeypadBackspace: () => void; }"
+        calls: [onInputStart, setAnswerInput, prev.startsWith, prev.substring, setDisplayValue, vibrateShort, "/[a-z]/.test", "/[0-9]/.test", prev.slice]
+  src/features/quiz/hooks/useQuizNavigation.ts:
+    imports: [@/utils/navigation, ../types/quiz, @/constants/ui, @/lib/eventBus]
+    exports:
+      - name: useQuizNavigation
+        params:
+          "{
+  totalQuestions,
+  showTipModal,
+  refundStamina,
+  navigate,
+  mountainParam,
+  worldParam,
+  categoryParam,
+  searchParams,
+}": UseQuizNavigationProps
+        returns: "{ showExitConfirm: boolean; setShowExitConfirm: React.Dispatch<React.SetStateAction<boolean>>; isFadingOut: boolean; setIsFadingOut: React.Dispatch<React.SetStateAction<boolean>>; toastValue: string; setToastValue: React.Dispatch<React.SetStateAction<string>>; handleBack: () => void; cancelExitConfirm: () => void; }"
+        calls: [clearTimeout, refundStamina().catch, refundStamina, searchParams.get, navigate, urls.home, urls.levelSelect, quizEventBus.emit, setToastValue, setShowExitConfirm, setTimeout, setIsFadingOut, window.history.pushState, handleBack, window.addEventListener, window.removeEventListener]
+  src/features/quiz/hooks/useQuizRevive.ts:
+    imports: [@/types/user, ../types/quiz, @/lib/eventBus, @/constants/items, @/utils/validation]
+    exports:
+      - name: useQuizRevive
+        params:
+          "{
+  gameMode,
+  inventory,
+  minerals,
+  consumeItem,
+  onWatchAd,
+  isPreview,
+}": UseQuizReviveParams
+        returns: "{ hasUsedLastChance: boolean; handleRevive: (useItem: boolean) => Promise<void>; handlePurchaseAndRevive: () => Promise<void>; handleWatchAdAndRevive: () => Promise<void>; handleGiveUp: () => void; stableHandleGameOver: (reason?: string | undefined) => void; }"
+        calls: [inventory.find, consumeItem, quizEventBus.emit, setHasUsedLastChance, safeAccess, console.log, handleRevive, onWatchAd]
+  src/features/quiz/hooks/useQuizScoring.ts:
+    imports: [@/constants/game, @/config/app, @/utils/scoreCalculator]
+    exports:
+      - name: useQuizScoring
+        returns: "{ calculateScore: (currentLevel: number, categoryParam: string | null, subParam: string | null, gameMode: string, feverLevel: number, isExhausted: boolean) => number; }"
+        description: 퀴즈 점수(거리) 계산을 담당하는 훅
+        calls: [getBaseLevelScore, Math.floor, Math.random, Object.prototype.hasOwnProperty.call, Object.getOwnPropertyDescriptor, categoryTopics.find]
+  src/features/quiz/hooks/useQuizSession.ts:
+    imports: [@/utils/supabaseClient, @/utils/debugFetch, @/stores/useDebugStore, @/utils/quizGenerator, ../types/quiz]
+    exports:
+      - name: useQuizSession
+        params:
+          "{
+  showTipModal,
+  worldParam,
+  categoryParam,
+  levelParam,
+  modeParam,
+  mountainParam,
+  setGameSessionId,
+}": UseQuizSessionProps
+        returns: "{ sessionCreated: boolean; setSessionCreated: React.Dispatch<React.SetStateAction<boolean>>; preGeneratedQuestions: import(\"C:/Users/ghkdd/gemini-projects/solve-climb/src/features/quiz/types/quiz\").QuizQuestion[]; }"
+        calls: ["(async () => { try { const mode = modeParam.includes('time') ? 'timeattack' : 'survival'; const { infiniteStamina } = useDebugStore.getState(); // Pre-generate questions to satisfy server-side validation const preGenerated = []; const numToGen = mode === 'timeattack' ? 10 : 20; for (let i = 0; i < numToGen; i++) { const q = generateQuestion( (mountainParam as Mountain) || 'math', (worldParam as World) || 'World1', (categoryParam as Topic) || '기초', levelParam || 1, 'medium' ); q.id = crypto.randomUUID(); preGenerated.push(q); } const { data } = await safeSupabaseQuery( supabase.rpc('create_game_session', { p_questions: preGenerated, p_category: categoryParam, p_subject: worldParam, p_level: levelParam, p_game_mode: mode, p_is_debug_session: infiniteStamina, }) ); if (data?.session_id) { setGameSessionId(data.session_id); setPreGeneratedQuestions(preGenerated); setSessionCreated(true); } } finally { isCreatingSessionRef.current = false; } })", modeParam.includes, useDebugStore.getState, generateQuestion, crypto.randomUUID, preGenerated.push, safeSupabaseQuery, supabase.rpc, setGameSessionId, setPreGeneratedQuestions, setSessionCreated]
+  src/features/quiz/hooks/useQuizStartLogic.ts:
+    imports: [@/stores/useGameStore, @/services/analytics, @/utils/navigation, @/constants/game, @/utils/validation, @/types/user, @/lib/eventBus]
+    exports:
+      - name: useQuizStartLogic
+        params:
+          "{
+  stamina,
+  inventory,
+  consumeItem,
+  consumeStamina,
+  worldParam,
+  categoryParam,
+  gameMode,
+  totalQuestions,
+  handleStaminaAdRecovery,
+}": UseQuizStartLogicProps
+        returns: "{ promiseData: { rule: string; example: string; }; activeLandmark: { icon: string; text: string; } | null; altitudePhase: string; handleStartGame: (selectedItems: number[]) => Promise<void>; handlePromiseComplete: () => void; onAlertAction: (action: string) => void; }"
+        calls: [useNavigate, useGameStore, safeAccess, setActiveLandmark, setTimeout, analytics.trackQuizStart, quizEventBus.emit, consumeStamina, setStaminaConsumed, setExhausted, inventory.find, consumeItem, handleStaminaAdRecovery, navigate, urls.shop]
+  src/features/quiz/hooks/useQuizSubmit.ts:
+    imports: [../types/quiz, @/stores/useGameStore, ./useQuizValidator, ./useQuizScoring, @/lib/eventBus]
+    exports:
+      - name: useQuizSubmit
+        params:
+          "{
+  answerInput,
+  isSubmitting,
+  currentQuestion,
+  categoryParam,
+  subParam,
+  gameMode,
+  questionStartTime,
+  currentQuestionId,
+}": UseQuizSubmitParams
+        returns: "{ handleSubmit: (e?: React.FormEvent<Element> | undefined) => void; }"
+        calls: [useGameStore, useQuizValidator, useQuizScoring, e?.preventDefault, answerInput.trim, quizEventBus.emit, validateAnswer, parseInt, "new URLSearchParams(window.location.search).get", calculateScore, Date.now]
+  src/features/quiz/hooks/useQuizValidator.ts:
+    imports: [../types/quiz, @/utils/japanese, @/constants/game, @/constants/ui]
+    exports:
+      - name: useQuizValidator
+        returns: "{ validateAnswer: (answerInput: string, currentQuestion: import(\"C:/Users/ghkdd/gemini-projects/solve-climb/src/features/quiz/types/quiz\").QuizQuestion, categoryParam: string | null, subParam: string | null) => boolean | null; }"
+        description: 퀴즈 정답 유효성 검사를 담당하는 훅
+        calls: [normalizeRomaji, String, parseInt, isNaN, Number]
+  src/features/quiz/services/LevelSyncService.ts:
+    imports: [@/utils/supabaseClient, @/utils/debugFetch, ../types/quiz, @/utils/errorHandler]
+    exports:
+      - name: LevelSyncService
+        type: class
+        methods:
+          - name: submitGameResult
+            params:
+              params: "{ category: string; level: number; mode: import(\"C:/Users/ghkdd/gemini-projects/solve-climb/src/features/quiz/types/quiz\").GameMode; score: number; avgSolveTime?: number | undefined; subject?: string | undefined; sessionData?: { answers: number[]; questionIds: string[]; sessionId: string; } | undefined; tier?: import(\"C:/Users/ghkdd/gemini-projects/solve-climb/src/features/quiz/types/quiz\").Tier | undefined; }"
+            returns: "Promise<import(\"C:/Users/ghkdd/gemini-projects/solve-climb/src/features/quiz/services/LevelSyncService\").LevelSyncResult>"
+            calls: [safeSupabaseQuery, supabase.auth.getUser, supabase.rpc, "(sessionData?.questionIds ?? []).map", logError]
+          - name: resetProgress
+            returns: "Promise<import(\"C:/Users/ghkdd/gemini-projects/solve-climb/src/features/quiz/services/LevelSyncService\").LevelSyncResult>"
+            calls: [safeSupabaseQuery, supabase.rpc]
+  src/features/quiz/types/quizProps.ts:
+    imports: [./quiz]
+  src/features/quiz/utils/challenge.ts:
+    imports: [@/config/app, @/services, @/stores/useFeatureFlagStore]
+    exports:
+      - name: generateTodayChallenge
+        params:
+          progressMap: "import(\"C:/Users/ghkdd/gemini-projects/solve-climb/src/features/quiz/utils/challenge\").ProgressMap"
+        returns: "import(\"C:/Users/ghkdd/gemini-projects/solve-climb/src/features/quiz/utils/challenge\").TodayChallenge"
+        description: 오늘의 챌린지를 생성합니다 (Categorized League System)
+        calls: [getTodayDateString, dateToSeed, useFeatureFlagStore.getState, APP_CONFIG.MOUNTAINS.filter, "[...availableMountains].sort", a.id.localeCompare, rng.randomInt, APP_CONFIG.WORLDS.filter, subTopics.filter, Object.values, topicLevels.forEach, Math.floor, allLevels.filter]
+      - name: getTodayChallenge
+        params:
+          progressMap: "Record<string, Record<string, Record<string, { cleared: boolean; level: number; }>>>"
+        returns: "Promise<import(\"C:/Users/ghkdd/gemini-projects/solve-climb/src/features/quiz/utils/challenge\").TodayChallenge>"
+        description: 오늘의 챌린지를 가져옵니다
+        calls: [getTodayDateString, storageService.get, generateTodayChallenge, storageService.set]
+      - name: SeededRandom
+        type: class
+        methods:
+          - name: random
+            returns: number
+          - name: randomInt
+            params:
+              min: number
+              max: number
+            returns: number
+            calls: [Math.floor, this.random]
+  src/features/quiz/utils/scoreCalculator.ts:
+    imports: [@/stores/useLevelProgressStore, @/config/app, ../domain/Altitude, @/constants/game]
+    exports:
+      - name: getBaseLevelScore
+        params:
+          level: number
+          categoryId: string | null
+        returns: number
+        description: |
+            레벨과 카테고리에 따른 기본 고도 점수를 계산합니다.
+            1안(페이즈 단계별 고정 모델)에 따라 '기초' 분야는 페이즈별 고정 점수를 부여합니다.
+        calls: [Math.floor]
+      - name: calculateTotalAltitude
+        returns: "{ totalAltitude: number; totalProblems: number; }"
+        description: 전체 누적 등반 고도 계산 (모든 카테고리의 bestScore 합산)
+        calls: [useLevelProgressStore.getState, Altitude.create, Object.values(progress).forEach, Object.values, Object.values(categoryData).forEach, Object.values(subTopicData).forEach, getBestScore, total.add, Math.floor]
+      - name: calculateSubTopicAltitude
+        params:
+          category: string
+          subTopic: string
+        returns: number
+        description: 특정 서브토픽의 현재 고도 계산
+        calls: [useLevelProgressStore.getState, getLevelProgress, levelProgress.reduce, getBestScore, Altitude.create, sum.add]
+      - name: calculateSubTopicTargetAltitude
+        params:
+          category: string
+          subTopic: string
+        returns: number
+        description: 특정 서브토픽의 목표 고도 계산
+        calls: [Object.prototype.hasOwnProperty.call, Array.isArray, subTopicLevels.forEach, getBaseLevelScore, Math.floor]
+      - name: calculateSubTopicProgress
+        params:
+          category: string
+          subTopic: string
+        returns: "{ progressPercent: number; currentAltitude: number; targetAltitude: number; }"
+        description: 특정 서브토픽의 진행률 계산
+        calls: [calculateSubTopicAltitude, calculateSubTopicTargetAltitude, Math.round]
+      - name: calculateCategoryAltitude
+        params:
+          category: string
+        returns: "{ totalAltitude: number; totalProblems: number; }"
+        description: 특정 카테고리의 총 누적 고도 계산
+        calls: [useLevelProgressStore.getState, Object.prototype.hasOwnProperty.call, Object.values(worldProgress).forEach, Object.values, Object.values(subTopicData).forEach, getBestScore, Math.floor, Object.values(progress).forEach, Object.values(categoryData).forEach]
+      - name: calculateCategoryTargetAltitude
+        params:
+          category: string
+        returns: number
+        description: 특정 카테고리의 목표 고도 계산
+        calls: [calculateSubTopicTargetAltitude]
+      - name: calculateCategoryProgress
+        params:
+          category: string
+        returns: "{ progressPercent: number; currentAltitude: number; targetAltitude: number; }"
+        description: 특정 카테고리의 진행률 계산
+        calls: [calculateCategoryAltitude, calculateCategoryTargetAltitude, Math.round]
+  src/features/quiz/utils/seededRandom.ts:
+    exports:
+      - name: SeededRandom
+        type: class
+        methods:
+          - name: next
+            returns: number
+            calls: [Math.sin, Math.floor]
+          - name: nextInt
+            params:
+              min: number
+              max: number
+            returns: number
+            calls: [Math.floor, this.next]

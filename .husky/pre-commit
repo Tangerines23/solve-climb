@@ -4,6 +4,12 @@ set -e
 
 echo "🔍 검증 시작..."
 
+# 0.5. 코드 맵 및 흐름도 자동 갱신 및 스테이징
+echo "🗺️ 코드 맵 및 흐름도 갱신..."
+npm run build:map
+npm run build:flowchart
+git add -f docs/.code-map.yaml .agent/.code-map.yaml docs/code-flowchart.md docs/game-flowchart.md
+
 # 0. 의존성 무결성 체크 (신규: 로컬 환경 누락 방지)
 echo "📦 의존성 무결성 체크..."
 if ! node scripts/check-dependency-integrity.js; then

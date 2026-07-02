@@ -18,6 +18,7 @@ import {
 import { useUserStore } from '@/stores/useUserStore';
 import { useToastStore } from '@/stores/useToastStore';
 import { supabase } from '@/utils/supabaseClient';
+import { logError, logWarning } from '@/utils/errorHandler';
 import { TierUpgradeModal } from '@/components/TierUpgradeModal';
 import { BadgeNotification } from '@/components/BadgeNotification';
 import { urls } from '@/utils/navigation';
@@ -105,7 +106,7 @@ export function ResultPage() {
             questionIds: JSON.parse(questionIdsRaw),
           };
         } catch (e) {
-          console.error('[ResultPage] Failed to parse session data:', e);
+          logError('ResultPage#parseSession', e);
         }
       }
 
@@ -263,16 +264,10 @@ export function ResultPage() {
     });
 
     if (!finalWorld || !finalCategory || !finalMode || finalLevel === null) {
-      console.error('[ResultPage] handleRetry failed: Still missing critical params', {
-        worldParam,
-        storeWorld,
-        categoryParam,
-        storeCategory,
-        level,
-        storeLevel,
-        mode,
-        storeMode,
-      });
+      logWarning(
+        'ResultPage#handleRetry_params_missing',
+        `Still missing critical params: world=${worldParam || storeWorld}, category=${categoryParam || storeCategory}, mode=${mode || storeMode}, level=${level !== null ? level : storeLevel}`
+      );
       showToast('상태 정보를 불러올 수 없어 재시도에 실패했습니다.', 'error');
       return;
     }

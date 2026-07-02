@@ -74,6 +74,13 @@ try {
           lowerFile.includes('status') ||
           lowerFile.includes('job') ||
           lowerFile.includes('diff') ||
+          lowerFile.includes('run') ||
+          lowerFile.includes('commit') ||
+          lowerFile.includes('check') ||
+          lowerFile.includes('boundary') ||
+          lowerFile.includes('diagnostic') ||
+          lowerFile.includes('violation') ||
+          lowerFile.includes('report') ||
           file === '.txt'; // 루트의 이상한 .txt 파일 포함
 
         if (isLogPattern) {

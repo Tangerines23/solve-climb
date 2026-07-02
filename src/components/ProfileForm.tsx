@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { UserProfile, useProfileStore } from '../stores/useProfileStore';
 import { sanitizeNickname, validateNickname } from '../utils/validation';
+import { logError } from '../utils/errorHandler';
 import './ProfileForm.css';
 
 interface ProfileFormProps {
@@ -104,7 +105,7 @@ export function ProfileForm({ onComplete, showBackButton = false, onCancel }: Pr
           supabase
             .rpc('update_profile_nickname', { p_nickname: sanitizedNickname })
             .then(({ error }) => {
-              if (error) console.error('Failed to sync nickname to Supabase:', error);
+              if (error) logError('ProfileForm#syncNickname', error);
               else console.log('Nickname synced to Supabase');
             });
         }

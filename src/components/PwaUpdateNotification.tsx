@@ -1,6 +1,7 @@
 import { useRegisterSW } from 'virtual:pwa-register/react';
 import { Toast } from './Toast';
 import { useEffect, useState } from 'react';
+import { logError } from '../utils/errorHandler';
 
 export function PwaUpdateNotification() {
   const swRegistration = useRegisterSW({
@@ -8,7 +9,7 @@ export function PwaUpdateNotification() {
       console.log('SW Registered:', r);
     },
     onRegisterError(error: unknown) {
-      console.error('SW registration error:', error);
+      logError('PwaUpdateNotification#onRegisterError', error);
     },
   });
 
