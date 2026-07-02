@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '../utils/supabaseClient';
+import { logError } from '../utils/errorHandler';
 
 export interface GameLog {
   id: string;
@@ -34,7 +35,7 @@ export function useGrowthJournal() {
       setLogs(data || []);
       setError(null);
     } catch (err: unknown) {
-      console.error('[useGrowthJournal] Failed to fetch logs:', err);
+      logError('useGrowthJournal#fetchLogs', err);
       setError(err instanceof Error ? err.message : String(err));
     } finally {
       setLoading(false);

@@ -1,6 +1,7 @@
 // src/components/TierBadge.tsx
 import React, { useEffect, useState } from 'react';
 import { TierLevel, calculateTier, getTierInfo, type TierInfo } from '../constants/tiers';
+import { logError } from '../utils/errorHandler';
 import './TierBadge.css';
 
 interface TierBadgeProps {
@@ -45,7 +46,7 @@ export function TierBadge({
           setTierInfo(info);
         }
       } catch (error) {
-        console.error('Failed to load tier:', error);
+        logError('TierBadge', error);
       } finally {
         setLoading(false);
       }

@@ -1,6 +1,7 @@
 // src/components/TierProgressBar.tsx
 import React, { useEffect, useState } from 'react';
 import { calculateTier, getNextTierInfo, type TierCalculationResult } from '../constants/tiers';
+import { logError } from '../utils/errorHandler';
 import './TierProgressBar.css';
 
 interface TierProgressBarProps {
@@ -37,7 +38,7 @@ export const TierProgressBar: React.FC<TierProgressBarProps> = ({
           setProgress(Math.min(100, Math.max(0, progressPercent)));
         }
       } catch (error) {
-        console.error('Failed to load tier info:', error);
+        logError('TierProgressBar', error);
       } finally {
         setLoading(false);
       }

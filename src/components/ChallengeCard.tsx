@@ -6,6 +6,7 @@ import { getTodayChallenge, TodayChallenge } from '../utils/challenge';
 import { urls } from '../utils/navigation';
 import { Category, World, GameMode } from '../types/quiz';
 import { BaseCard } from './BaseCard';
+import { logError } from '../utils/errorHandler';
 import './ChallengeCard.css';
 
 export function ChallengeCard() {
@@ -24,7 +25,7 @@ export function ChallengeCard() {
         setLoading(false);
       })
       .catch((error) => {
-        console.error('Failed to load today challenge:', error);
+        logError('ChallengeCard#loadTodayChallenge', error);
         setLoading(false);
       });
   }, [progressMap]);

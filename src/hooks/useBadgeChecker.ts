@@ -5,6 +5,7 @@ import { BADGE_DEFINITIONS } from '../constants/badges';
 import { useBadgeStore } from '../stores/useBadgeStore';
 import { HistoryStats } from '@/features/mypage';
 import { validatedRpc, CheckAndAwardBadgesResponseSchema } from '../utils/rpcValidator';
+import { logError } from '../utils/errorHandler';
 
 export function useBadgeChecker() {
   const checkAndAwardBadges = useCallback(async (userId: string, stats: HistoryStats) => {
@@ -27,7 +28,7 @@ export function useBadgeChecker() {
       );
 
       if (error || !data?.success) {
-        console.error('Failed to check badges via RPC:', error);
+        logError('useBadgeChecker#checkAndAwardBadges_rpc', error);
         return [];
       }
 
@@ -47,7 +48,7 @@ export function useBadgeChecker() {
     );
 
     if (fetchError) {
-      console.error('Failed to fetch user badges for check:', fetchError);
+      logError('useBadgeChecker#checkAndAwardBadges_fetch', fetchError);
       return [];
     }
 

@@ -1,6 +1,6 @@
 
 project: solve-climb
-generatedAt: "2026-07-01T13:55:37.447Z"
+generatedAt: "2026-07-02T02:18:30.184Z"
 files:
   src/App.tsx:
     imports: [@/utils/resilientLazy, @/stores/useLevelProgressStore, @/stores/useAuthStore, @/hooks/useCustomBackNavigation, @/components/GlobalLoadingIndicator, @/stores/useErrorLogStore, @/stores/useDebugStore, @/stores/useSettingsStore, @/hooks/useConnectivity, @/components/PwaUpdateNotification, @/features/auth, @/components/GlobalToastContainer]
@@ -97,7 +97,7 @@ files:
         returns: "import(\"C:/Users/ghkdd/gemini-projects/solve-climb/node_modules/@types/react/jsx-runtime\").JSX.Element"
         calls: [useNavigate, useFavoriteStore, e.stopPropagation, navigate, urls.categorySelect, useFeatureFlagStore, "( APP_CONFIG.MOUNTAINS as readonly { id: string; name: string; icon: string; disabled: boolean; color: string; }[] ).filter", mountains.map, isFavorite, calculateCategoryAltitude, handleToggleFavorite, totalAltitude.toLocaleString, totalProblems.toLocaleString, setShowExplorerToast, handleMountainClick]
   src/components/ChallengeCard.tsx:
-    imports: [../stores/useQuizStore, ../stores/useLevelProgressStore, ../utils/challenge, ../utils/navigation, ../types/quiz, ./BaseCard, ./ChallengeCard.css]
+    imports: [../stores/useQuizStore, ../stores/useLevelProgressStore, ../utils/challenge, ../utils/navigation, ../types/quiz, ./BaseCard, ../utils/errorHandler, ./ChallengeCard.css]
     state: [challenge, loading]
     handlers:
       - name: handleChallengeClick
@@ -105,7 +105,7 @@ files:
     exports:
       - name: ChallengeCard
         returns: "import(\"C:/Users/ghkdd/gemini-projects/solve-climb/node_modules/@types/react/jsx-runtime\").JSX.Element"
-        calls: [useNavigate, useQuizStore, useLevelProgressStore, "getTodayChallenge(progressMap) .then((challengeData) => { setChallenge(challengeData); setLoading(false); }) .catch", "getTodayChallenge(progressMap) .then", getTodayChallenge, setChallenge, setLoading, console.error, setCategoryTopic, setTimeLimit, navigate, urls.quiz, e.stopPropagation, handleChallengeClick]
+        calls: [useNavigate, useQuizStore, useLevelProgressStore, "getTodayChallenge(progressMap) .then((challengeData) => { setChallenge(challengeData); setLoading(false); }) .catch", "getTodayChallenge(progressMap) .then", getTodayChallenge, setChallenge, setLoading, logError, setCategoryTopic, setTimeLimit, navigate, urls.quiz, e.stopPropagation, handleChallengeClick]
   src/components/ClimbGraphic.tsx:
     imports: [../stores/useLevelProgressStore, ../stores/useProfileStore, ./ClimbGraphicBackgrounds, ../constants/stages, ../types/quiz, ./ClimbGraphic.css]
     state: [isScrollPositioned]
@@ -410,7 +410,7 @@ files:
         returns: "import(\"C:/Users/ghkdd/gemini-projects/solve-climb/node_modules/@types/react/jsx-runtime\").JSX.Element"
         calls: [useUserStore, Math.min, "[1, 2, 3, 4].map"]
   src/components/StatusCard.tsx:
-    imports: [../config/app, ../stores/useLevelProgressStore, ./BaseCard, ./StatusCard.css]
+    imports: [../config/app, ../stores/useLevelProgressStore, ./BaseCard, ../utils/errorHandler, ./StatusCard.css]
     state: [state, status]
     handlers:
       - name: handleDetailClick
@@ -418,9 +418,9 @@ files:
     exports:
       - name: StatusCard
         returns: "import(\"C:/Users/ghkdd/gemini-projects/solve-climb/node_modules/@types/react/jsx-runtime\").JSX.Element"
-        calls: [useNavigate, fetchUserData, setState, useLevelProgressStore.getState, Object.values(progress).forEach, Object.values, Object.values(categoryData).forEach, Object.values(subTopicData).forEach, Math.max, setStatus, console.error, navigate, rank.toLocaleString, formatRank]
+        calls: [useNavigate, fetchUserData, setState, useLevelProgressStore.getState, Object.values(progress).forEach, Object.values, Object.values(categoryData).forEach, Object.values(subTopicData).forEach, Math.max, setStatus, logError, navigate, rank.toLocaleString, formatRank]
   src/components/TierBadge.tsx:
-    imports: [../constants/tiers, ./TierBadge.css]
+    imports: [../constants/tiers, ../utils/errorHandler, ./TierBadge.css]
     state: [tierInfo, tierResult, loading]
     exports:
       - name: TierBadge
@@ -435,9 +435,9 @@ files:
   fixedTierStars,
 }": TierBadgeProps
         returns: "import(\"C:/Users/ghkdd/gemini-projects/solve-climb/node_modules/@types/react/jsx-runtime\").JSX.Element"
-        calls: [setTierResult, getTierInfo, setTierInfo, calculateTier, console.error, setLoading, loadTier, '★'.repeat, getBorderStyle]
+        calls: [setTierResult, getTierInfo, setTierInfo, calculateTier, logError, setLoading, loadTier, '★'.repeat, getBorderStyle]
   src/components/TierProgressBar.tsx:
-    imports: [../constants/tiers, ./TierProgressBar.css]
+    imports: [../constants/tiers, ../utils/errorHandler, ./TierProgressBar.css]
     state: [tierResult, nextTierInfo, progress, loading]
     exports:
       - name: TierProgressBar
@@ -447,7 +447,7 @@ files:
   size = 'medium',
 }": TierProgressBarProps
         returns: "import(\"C:/Users/ghkdd/gemini-projects/solve-climb/node_modules/@types/react/jsx-runtime\").JSX.Element | null"
-        calls: [calculateTier, setTierResult, getNextTierInfo, setNextTierInfo, setProgress, Math.min, Math.max, console.error, setLoading, loadTierInfo, '★'.repeat, nextTierInfo.remaining.toLocaleString]
+        calls: [calculateTier, setTierResult, getNextTierInfo, setNextTierInfo, setProgress, Math.min, Math.max, logError, setLoading, loadTierInfo, '★'.repeat, nextTierInfo.remaining.toLocaleString]
   src/components/TierUpgradeModal.tsx:
     imports: [../constants/tiers, ./BaseModal, ./TierUpgradeModal.css]
     state: [previousTier, currentTier, loading, showStarsAnimation, previousTierInfo, currentTierInfo]
@@ -636,11 +636,11 @@ files:
         description: 비동기 작업을 관리하는 Hook
         calls: [setLoading, setError, asyncFn, setData, onSuccess, logError, getUserErrorMessage, onError, execute]
   src/hooks/useBadgeChecker.ts:
-    imports: [../utils/supabaseClient, ../utils/debugFetch, ../constants/badges, ../stores/useBadgeStore, @/features/mypage, ../utils/rpcValidator]
+    imports: [../utils/supabaseClient, ../utils/debugFetch, ../constants/badges, ../stores/useBadgeStore, @/features/mypage, ../utils/rpcValidator, ../utils/errorHandler]
     exports:
       - name: useBadgeChecker
         returns: "{ checkAndAwardBadges: (userId: string, stats: import(\"C:/Users/ghkdd/gemini-projects/solve-climb/src/features/mypage/hooks/useHistoryData\").HistoryStats) => Promise<string[]>; }"
-        calls: [uuidPattern.test, validatedRpc, supabase.rpc, console.error, useBadgeStore.getState, addUserBadge, safeSupabaseQuery, supabase.from('user_badges').select('badge_id').eq, supabase.from('user_badges').select, supabase.from, userBadges?.map, earnedBadgeIds.has, stats.categoryLevels.some, cat.themeId.includes, newBadges.push]
+        calls: [uuidPattern.test, validatedRpc, supabase.rpc, logError, useBadgeStore.getState, addUserBadge, safeSupabaseQuery, supabase.from('user_badges').select('badge_id').eq, supabase.from('user_badges').select, supabase.from, userBadges?.map, earnedBadgeIds.has, stats.categoryLevels.some, cat.themeId.includes, newBadges.push]
   src/hooks/useConnectivity.ts:
     imports: [@/stores/useToastStore]
     exports:
@@ -672,11 +672,11 @@ files:
             3. 그 외 페이지에서 뒤로가기 → 상위 페이지로 이동
         calls: [useNavigate, useLocation, mainPages.includes, navigate, setTimeout, window.dispatchEvent, useProfileStore.getState, paramsToCheck.get, newSearchParams.set, newSearchParams.toString, window.addEventListener, window.removeEventListener]
   src/hooks/useGrowthJournal.ts:
-    imports: [../utils/supabaseClient]
+    imports: [../utils/supabaseClient, ../utils/errorHandler]
     exports:
       - name: useGrowthJournal
         returns: "{ logs: import(\"C:/Users/ghkdd/gemini-projects/solve-climb/src/hooks/useGrowthJournal\").GameLog[]; loading: boolean; error: string | null; refetch: () => Promise<void>; }"
-        calls: [setLoading, supabase.rpc, setLogs, setError, console.error, String, fetchLogs]
+        calls: [setLoading, supabase.rpc, setLogs, setError, logError, String, fetchLogs]
   src/hooks/useInterval.ts:
     exports:
       - name: useInterval
@@ -1356,6 +1356,7 @@ files:
             회복 탄력성을 제공하는 유틸리티입니다.
         calls: [lazy, importFn, sessionStorage.removeItem, error.message.includes, sessionStorage.setItem, retryCount.toString, logger.warn, setTimeout, logger.error, Object.assign]
   src/utils/rpcValidator.ts:
+    imports: [./errorHandler]
     exports:
       - name: validatedRpc
         params:
@@ -1364,7 +1365,7 @@ files:
           rpcName: string
         returns: "Promise<{ data: T | null; error: unknown; }>"
         description: RPC 응답을 Zod 스키마로 검증하는 유틸리티
-        calls: [schema.safeParse, console.error, parseResult.error.format]
+        calls: [schema.safeParse, logError, parseResult.error.format]
   src/utils/safeJsonParse.ts:
     exports:
       - name: isLocalSession

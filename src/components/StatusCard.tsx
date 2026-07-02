@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { APP_CONFIG } from '../config/app';
 import { useLevelProgressStore } from '../stores/useLevelProgressStore';
 import { BaseCard } from './BaseCard';
+import { logError } from '../utils/errorHandler';
 import './StatusCard.css';
 
 interface UserStatus {
@@ -55,7 +56,7 @@ export function StatusCard() {
       setStatus(userStatus);
       setState('success');
     } catch (error) {
-      console.error('Failed to calculate user data:', error);
+      logError('StatusCard#fetchUserData', error);
       setState('error');
     }
   };
