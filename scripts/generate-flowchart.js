@@ -239,7 +239,7 @@ ${coreMermaid}
 * **📄 Pages**: 프로젝트의 메인 화면 단위 페이지들입니다.
 * **📦 Zustand Stores**: 사용자 인증, 배지, 설정 등의 상태를 중앙 관리하는 전역 스토어입니다.
 * **🔌 Services / Utilities**: API 클라이언트(Supabase) 및 진동/시간 계산 유틸리티들입니다.
-* **📁 features/\***: 로그인, 퀴즈, 마이페이지 등 도메인별 기능 컴포넌트 및 비즈니스 로직 진입점 영역입니다.
+* **📁 features/***: 로그인, 퀴즈, 마이페이지 등 도메인별 기능 컴포넌트 및 비즈니스 로직 진입점 영역입니다.
 `;
 
   fs.writeFileSync(docPath, outputContent, 'utf-8');
