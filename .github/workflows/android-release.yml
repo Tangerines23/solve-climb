@@ -62,7 +62,7 @@ jobs:
 
       # 10. 구글 플레이 콘솔 내부 테스트(Internal testing) 트랙으로 자동 배포
       - name: Upload to Google Play Store
-        uses: r0adkll/upload-google-play@v2
+        uses: r0adkll/upload-google-play@v1
         with:
           serviceAccountJsonPlainText: ${{ secrets.PLAY_STORE_JSON_KEY }}
           packageName: com.solveclimb.app
