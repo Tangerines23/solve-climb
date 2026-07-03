@@ -43,8 +43,8 @@ jobs:
       # 7. GitHub Secrets에서 Keystore 파일 복원
       - name: Restore Keystore File
         run: |
-          mkdir -p android/cert
-          echo "${{ secrets.ANDROID_KEYSTORE_BASE64 }}" | base64 --decode > android/cert/solve-climb-key
+          mkdir -p cert
+          echo "${{ secrets.ANDROID_KEYSTORE_BASE64 }}" | base64 --decode > cert/solve-climb-key
 
       # 8. Gradle로 AAB 빌드 및 서명 진행
       - name: Build and Sign AAB
