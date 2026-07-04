@@ -303,36 +303,34 @@ export const GameOverlay: React.FC = () => {
             {feverLevel === 1 && speedLineStyle === 'rope' && (
               <g className="rope-effects">
                 <style>{`
-                  @keyframes ropeVibeLeft {
+                  @keyframes ropeSwayLeft {
                     0%, 100% { transform: translateX(0); }
-                    25% { transform: translateX(2px) skewX(0.5deg); }
-                    75% { transform: translateX(-2px) skewX(-0.5deg); }
+                    50% { transform: translateX(1px); }
                   }
-                  @keyframes ropeVibeRight {
+                  @keyframes ropeSwayRight {
                     0%, 100% { transform: translateX(0); }
-                    25% { transform: translateX(-2px) skewX(-0.5deg); }
-                    75% { transform: translateX(2px) skewX(0.5deg); }
+                    50% { transform: translateX(-1px); }
                   }
                   @keyframes ropeGlow {
-                    0%, 100% { opacity: 0.5; }
-                    50% { opacity: 0.8; }
+                    0%, 100% { opacity: 0.3; }
+                    50% { opacity: 0.55; }
                   }
                   .rope-line {
-                    stroke: rgba(255, 255, 255, 0.4);
-                    stroke-width: 4;
-                    stroke-dasharray: 6 4;
+                    stroke: rgba(255, 255, 255, 0.25);
+                    stroke-width: 2.5;
+                    stroke-dasharray: 4 3;
                   }
                   .rope-glow {
-                    stroke: rgba(255, 255, 255, 0.15);
-                    stroke-width: 8;
-                    animation: ropeGlow 2s infinite ease-in-out;
+                    stroke: rgba(255, 255, 255, 0.08);
+                    stroke-width: 5;
+                    animation: ropeGlow 3s infinite ease-in-out;
                   }
                   .rope-group-left {
-                    animation: ropeVibeLeft 0.15s infinite linear;
+                    animation: ropeSwayLeft 3s infinite ease-in-out;
                     transform-origin: top left;
                   }
                   .rope-group-right {
-                    animation: ropeVibeRight 0.15s infinite linear;
+                    animation: ropeSwayRight 3s infinite ease-in-out;
                     transform-origin: top right;
                   }
                 `}</style>
@@ -363,8 +361,8 @@ export const GameOverlay: React.FC = () => {
               <g className="fog-effects">
                 <style>{`
                   @keyframes fogPulse {
-                    0%, 100% { opacity: 0.35; filter: blur(8px); }
-                    50% { opacity: 0.65; filter: blur(12px); }
+                    0%, 100% { opacity: 0.55; }
+                    50% { opacity: 0.9; }
                   }
                   .fog-vignette {
                     position: absolute;
@@ -372,7 +370,7 @@ export const GameOverlay: React.FC = () => {
                     left: 0;
                     right: 0;
                     bottom: 0;
-                    box-shadow: inset 0 0 40px rgba(255, 255, 255, 0.25);
+                    box-shadow: inset 0 0 120px rgba(255, 255, 255, 0.55), inset 0 0 50px rgba(255, 255, 255, 0.35);
                     animation: fogPulse 2.5s infinite ease-in-out;
                     pointer-events: none;
                   }
