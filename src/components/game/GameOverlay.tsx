@@ -133,32 +133,32 @@ export const GameOverlay: React.FC = () => {
                 <line
                   x1="5%"
                   y1="5%"
-                  x2="45%"
-                  y2="45%"
+                  x2="25%"
+                  y2="25%"
                   className="speed-line"
                   style={{ animationDelay: '0s' }}
                 />
                 <line
                   x1="95%"
                   y1="5%"
-                  x2="55%"
-                  y2="45%"
+                  x2="75%"
+                  y2="25%"
                   className="speed-line"
                   style={{ animationDelay: '0.1s' }}
                 />
                 <line
                   x1="5%"
                   y1="95%"
-                  x2="45%"
-                  y2="55%"
+                  x2="25%"
+                  y2="75%"
                   className="speed-line"
                   style={{ animationDelay: '0.2s' }}
                 />
                 <line
                   x1="95%"
                   y1="95%"
-                  x2="55%"
-                  y2="55%"
+                  x2="75%"
+                  y2="75%"
                   className="speed-line"
                   style={{ animationDelay: '0.3s' }}
                 />
@@ -166,7 +166,7 @@ export const GameOverlay: React.FC = () => {
                   x1="50%"
                   y1="0%"
                   x2="50%"
-                  y2="40%"
+                  y2="20%"
                   className="speed-line"
                   style={{ animationDelay: '0.15s' }}
                 />
@@ -174,14 +174,14 @@ export const GameOverlay: React.FC = () => {
                   x1="50%"
                   y1="100%"
                   x2="50%"
-                  y2="60%"
+                  y2="80%"
                   className="speed-line"
                   style={{ animationDelay: '0.35s' }}
                 />
                 <line
                   x1="0%"
                   y1="50%"
-                  x2="40%"
+                  x2="20%"
                   y2="50%"
                   className="speed-line"
                   style={{ animationDelay: '0.05s' }}
@@ -189,7 +189,7 @@ export const GameOverlay: React.FC = () => {
                 <line
                   x1="100%"
                   y1="50%"
-                  x2="60%"
+                  x2="80%"
                   y2="50%"
                   className="speed-line"
                   style={{ animationDelay: '0.25s' }}
