@@ -87,17 +87,21 @@ describe('MyPageSettings', () => {
     fireEvent.click(updateCheckBtn);
 
     await waitFor(() => {
-      expect(screen.getByText('새로운 버전 출시')).toBeInTheDocument();
+      expect(screen.getByText(/준비되었습니다/)).toBeInTheDocument();
     });
 
     expect(screen.getByText(/v9\.9\.9/)).toBeInTheDocument();
-    expect(screen.getByText(/준비되었습니다/)).toBeInTheDocument();
 
-    // Test clicking close/later button
-    const laterBtn = screen.getByText('나중에');
-    fireEvent.click(laterBtn);
+    const updateBtn = screen.getByText('업데이트');
+    expect(updateBtn).toBeInTheDocument();
 
-    expect(screen.queryByText('새로운 버전 출시')).toBeNull();
+    const mockOpen = vi.spyOn(window, 'open').mockImplementation(() => null as any);
+    fireEvent.click(updateBtn);
+    expect(mockOpen).toHaveBeenCalledWith(
+      'https://play.google.com/store/apps/details?id=com.solveclimb.app',
+      '_blank'
+    );
+    mockOpen.mockRestore();
   });
 
   it('should show error toast if fetch fails', async () => {

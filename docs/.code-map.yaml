@@ -1,6 +1,6 @@
 
 project: solve-climb
-generatedAt: "2026-07-04T12:44:30.896Z"
+generatedAt: "2026-07-04T13:20:03.433Z"
 files:
   src/App.tsx:
     imports: [@/utils/resilientLazy, @/stores/useLevelProgressStore, @/stores/useAuthStore, @/hooks/useCustomBackNavigation, @/components/GlobalLoadingIndicator, @/stores/useErrorLogStore, @/stores/useDebugStore, @/stores/useSettingsStore, @/hooks/useConnectivity, @/components/PwaUpdateNotification, @/features/auth, @/components/GlobalToastContainer]
@@ -2133,13 +2133,13 @@ files:
         returns: "import(\"C:/Users/ghkdd/gemini-projects/solve-climb/node_modules/@types/react/jsx-runtime\").JSX.Element"
         calls: [useNavigate, setCategoryTopic, navigate, urls.categorySelect, "favorites.slice(0, 3).map", favorites.slice, APP_CONFIG.CATEGORIES.find, subTopics.find, APP_CONFIG.CATEGORIES.some, storageService.get, STORAGE_KEYS.LAST_PLAYED_WORLD, urls.levelSelect, urls.home]
   src/features/mypage/components/MyPageSettings.tsx:
-    imports: [@/config/app, @/utils/navigation, @/stores/useToastStore, @/components/BaseModal, @/utils/env]
-    state: [isChecking, latestVersion, showUpdateModal]
+    imports: [@/config/app, @/utils/navigation, @/stores/useToastStore, @/components/Toast, @/utils/env]
+    state: [isChecking, showLocalToast, localToastMsg, hasNewVersion]
     handlers:
       - name: handleCheckUpdate
-        calls: [e.stopPropagation, setIsChecking, showToast, setTimeout, controller.abort, siteUrl.replace, fetch, clearTimeout, response.json, setLatestVersion, setShowUpdateModal, console.error]
+        calls: [e.stopPropagation, setIsChecking, showToast, setTimeout, controller.abort, siteUrl.replace, fetch, clearTimeout, response.json, setLocalToastMsg, setHasNewVersion, setShowLocalToast, console.error]
       - name: handleGoToUpdate
-        calls: [setShowUpdateModal, window.open]
+        calls: [e.stopPropagation, setShowLocalToast, window.open]
     exports:
       - name: MyPageSettings
         params:
@@ -2156,7 +2156,7 @@ files:
   onWithdraw,
 }": MyPageSettingsProps
         returns: "import(\"C:/Users/ghkdd/gemini-projects/solve-climb/node_modules/@types/react/jsx-runtime\").JSX.Element"
-        calls: [useNavigate, useToastStore, e.stopPropagation, setIsChecking, showToast, setTimeout, controller.abort, siteUrl.replace, fetch, clearTimeout, response.json, setLatestVersion, setShowUpdateModal, console.error, window.open, e.preventDefault, onToggleHaptic, onToggleAnimation, navigate, urls.quiz, urls.review, urls.privacyPolicy]
+        calls: [useNavigate, useToastStore, e.stopPropagation, setIsChecking, showToast, setTimeout, controller.abort, siteUrl.replace, fetch, clearTimeout, response.json, setLocalToastMsg, setHasNewVersion, setShowLocalToast, console.error, window.open, e.preventDefault, onToggleHaptic, onToggleAnimation, navigate, urls.quiz, urls.review, urls.privacyPolicy]
   src/features/mypage/components/MyPageStats.tsx:
     exports:
       - name: MyPageStats

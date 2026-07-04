@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { APP_CONFIG } from '@/config/app';
 import { urls } from '@/utils/navigation';
 import { useToastStore } from '@/stores/useToastStore';
-import { BaseModal } from '@/components/BaseModal';
+import { Toast } from '@/components/Toast';
 import { ENV } from '@/utils/env';
 
 interface MyPageSettingsProps {
@@ -33,8 +33,9 @@ export function MyPageSettings({
 }: MyPageSettingsProps) {
   const navigate = useNavigate();
   const [isChecking, setIsChecking] = useState(false);
-  const [latestVersion, setLatestVersion] = useState<string | null>(null);
-  const [showUpdateModal, setShowUpdateModal] = useState(false);
+  const [showLocalToast, setShowLocalToast] = useState(false);
+  const [localToastMsg, setLocalToastMsg] = useState('');
+  const [hasNewVersion, setHasNewVersion] = useState(false);
   const showToast = useToastStore((state) => state.showToast);
 
   const handleCheckUpdate = async (e?: React.MouseEvent) => {
@@ -69,8 +70,9 @@ export function MyPageSettings({
         if (serverVersion === APP_CONFIG.APP_VERSION) {
           showToast(`현재 최신 버전을 사용 중입니다. (${APP_CONFIG.APP_VERSION})`, '✅', 2500);
         } else {
-          setLatestVersion(serverVersion);
-          setShowUpdateModal(true);
+          setLocalToastMsg(`새로운 버전 v${serverVersion}이 준비되었습니다.`);
+          setHasNewVersion(true);
+          setShowLocalToast(true);
         }
       } else {
         throw new Error('Invalid version format');
@@ -83,8 +85,9 @@ export function MyPageSettings({
     }
   };
 
-  const handleGoToUpdate = () => {
-    setShowUpdateModal(false);
+  const handleGoToUpdate = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    setShowLocalToast(false);
     const playStoreUrl = 'https://play.google.com/store/apps/details?id=com.solveclimb.app';
     window.open(playStoreUrl, '_blank');
   };
@@ -412,71 +415,34 @@ export function MyPageSettings({
           </button>
         </div>
       </div>
-      {showUpdateModal && latestVersion && (
-        <BaseModal
-          isOpen={showUpdateModal}
-          onClose={() => setShowUpdateModal(false)}
-          title="새로운 버전 출시"
-          actions={
-            <div
-              style={{
-                display: 'flex',
-                gap: 'var(--spacing-sm)',
-                justifyContent: 'flex-end',
-                width: '100%',
-              }}
-            >
-              <button
-                className="btn-base btn-secondary"
-                onClick={() => setShowUpdateModal(false)}
-                style={{
-                  padding: 'var(--spacing-sm) var(--spacing-lg)',
-                  borderRadius: 'var(--rounded-xs)',
-                  fontSize: '14px',
-                }}
-              >
-                나중에
-              </button>
-              <button
-                className="btn-base btn-primary"
-                onClick={handleGoToUpdate}
-                style={{
-                  padding: 'var(--spacing-sm) var(--spacing-lg)',
-                  borderRadius: 'var(--rounded-xs)',
-                  fontSize: '14px',
-                  backgroundColor: 'var(--color-teal-500)',
-                  color: 'white',
-                  border: 'none',
-                }}
-              >
-                업데이트
-              </button>
-            </div>
-          }
+      {showLocalToast && (
+        <Toast
+          message={localToastMsg}
+          isOpen={showLocalToast}
+          onClose={() => setShowLocalToast(false)}
+          autoClose={!hasNewVersion}
+          autoCloseDelay={4000}
+          icon={hasNewVersion ? '🎁' : undefined}
         >
-          <div
-            style={{
-              padding: 'var(--spacing-xs) 0',
-              color: 'var(--color-gray-700)',
-              fontSize: '15px',
-              lineHeight: '1.6',
-            }}
-          >
-            <p>
-              새로운 버전 <strong>v{latestVersion}</strong>이 준비되었습니다.
-            </p>
-            <p
+          {hasNewVersion && (
+            <button
+              onClick={handleGoToUpdate}
               style={{
-                marginTop: 'var(--spacing-tiny)',
-                fontSize: '13px',
-                color: 'var(--color-gray-500)',
+                marginLeft: 'var(--spacing-md)',
+                backgroundColor: 'var(--color-teal-500)',
+                color: 'white',
+                border: 'none',
+                padding: 'var(--spacing-xs) var(--spacing-md)',
+                borderRadius: 'var(--rounded-2xs)',
+                fontSize: '12px',
+                cursor: 'pointer',
+                fontWeight: 'bold',
               }}
             >
-              현재 버전: v{APP_CONFIG.APP_VERSION}
-            </p>
-            <p style={{ marginTop: 'var(--spacing-md)' }}>지금 업데이트를 진행하시겠습니까?</p>
-          </div>
-        </BaseModal>
+              업데이트
+            </button>
+          )}
+        </Toast>
       )}
     </div>
   );
