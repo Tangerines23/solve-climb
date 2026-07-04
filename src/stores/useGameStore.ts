@@ -13,6 +13,8 @@ interface GameState {
   showSpeedLines: boolean;
   showVignette: boolean;
   lives: number; // Survival Mode Lives (Hearts)
+  speedLineStyle: 'original' | 'wind' | 'rope' | 'fog';
+  setSpeedLineStyle: (style: 'original' | 'wind' | 'rope' | 'fog') => void;
 
   setScore: (score: number) => void;
   incrementCombo: (currentLevel?: number) => void;
@@ -41,6 +43,7 @@ export const useGameStore = create<GameState>()(
       isExhausted: false,
       showSpeedLines: false,
       showVignette: false,
+      speedLineStyle: 'original',
       activeItems: [],
       isStaminaConsumed: false,
       lives: SURVIVAL_CONFIG.INITIAL_LIVES,
@@ -48,6 +51,7 @@ export const useGameStore = create<GameState>()(
       startTime: Date.now(),
 
       setScore: (score) => set({ score }),
+      setSpeedLineStyle: (speedLineStyle) => set({ speedLineStyle }),
 
       incrementCombo: (currentLevel) =>
         set((state) => {

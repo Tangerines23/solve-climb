@@ -1,6 +1,6 @@
 
 project: solve-climb
-generatedAt: "2026-07-04T15:28:33.894Z"
+generatedAt: "2026-07-04T15:36:09.023Z"
 files:
   src/App.tsx:
     imports: [@/utils/resilientLazy, @/stores/useLevelProgressStore, @/stores/useAuthStore, @/hooks/useCustomBackNavigation, @/components/GlobalLoadingIndicator, @/stores/useErrorLogStore, @/stores/useDebugStore, @/stores/useSettingsStore, @/hooks/useConnectivity, @/components/PwaUpdateNotification, @/features/auth, @/components/GlobalToastContainer]
@@ -1787,10 +1787,11 @@ files:
         calls: [e.stopPropagation, renderContent, onAction]
   src/components/game/GameOverlay.tsx:
     imports: [../../stores/useGameStore]
+    state: [activeStyleMsg]
     exports:
       - name: GameOverlay
         returns: "import(\"C:/Users/ghkdd/gemini-projects/solve-climb/node_modules/@types/react/jsx-runtime\").JSX.Element"
-        calls: [useGameStore]
+        calls: [useGameStore, styles.indexOf, setSpeedLineStyle, setActiveStyleMsg, window.addEventListener, window.removeEventListener, setTimeout, clearTimeout]
   src/components/game/ItemFeedbackOverlay.tsx:
     imports: [./ItemFeedbackOverlay.css]
   src/components/game/PauseModal.tsx:
@@ -2057,7 +2058,7 @@ files:
     exports:
       - name: NotificationPlayground
         returns: "import(\"C:/Users/ghkdd/gemini-projects/solve-climb/node_modules/@types/react/jsx-runtime\").JSX.Element"
-        calls: [useNavigate, useGameStore, triggerToast, closeModals, setExhausted, setCombo, setActiveModal, setBadgeIds, setShowCountdown, setShowSafetyRope, resetCombo, setToastMessage, setShowToast, itemFeedbackRef.current?.show, triggerItemFeedback, toggleSpeedLines, navigate, urls.shop, urls.result, e.stopPropagation]
+        calls: [useNavigate, useGameStore, triggerToast, closeModals, setExhausted, setCombo, setActiveModal, setBadgeIds, setShowCountdown, setShowSafetyRope, resetCombo, setToastMessage, setShowToast, itemFeedbackRef.current?.show, triggerItemFeedback, toggleSpeedLines, setSpeedLineStyle, navigate, urls.shop, urls.result, e.stopPropagation]
   src/features/debug/components/ProgressionSection.tsx:
     imports: [@/stores/useDebugStore, @/config/app, @/utils/navigation, ./ProgressionSection.css]
   src/features/debug/components/QuickActionsSection.tsx:

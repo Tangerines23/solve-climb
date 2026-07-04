@@ -40,7 +40,15 @@ export function NotificationPlayground() {
   const [showSafetyRope, setShowSafetyRope] = useState(false);
 
   // Store access for GameOverlay effects
-  const { setExhausted, setCombo, resetCombo, isExhausted, feverLevel } = useGameStore();
+  const {
+    setExhausted,
+    setCombo,
+    resetCombo,
+    isExhausted,
+    feverLevel,
+    speedLineStyle,
+    setSpeedLineStyle,
+  } = useGameStore();
 
   const handleAlertAction = (action: 'login' | 'charge' | 'play') => {
     triggerToast(`Action: ${action}`);
@@ -128,6 +136,48 @@ export function NotificationPlayground() {
           <button onClick={() => toggleSpeedLines(2)}>
             FX: Speed Lvl 2 {feverLevel === 2 ? '(ON)' : '(OFF)'}
           </button>
+          <div
+            style={{
+              display: 'flex',
+              flexDirection: 'column',
+              gap: 'var(--spacing-xs)',
+              gridColumn: 'span 2',
+              marginTop: 'var(--spacing-xs)',
+            }}
+          >
+            <span
+              style={{ fontSize: '10px', color: 'rgba(255, 255, 255, 0.4)', fontWeight: 'bold' }}
+            >
+              Level 1 Style (Press Left/Right Arrow to cycle):
+            </span>
+            <select
+              value={speedLineStyle}
+              onChange={(e) => setSpeedLineStyle(e.target.value as any)}
+              style={{
+                backgroundColor: 'rgba(255, 255, 255, 0.05)',
+                color: 'var(--color-pure-white)',
+                border: '1px solid rgba(255, 255, 255, 0.1)',
+                padding: 'var(--spacing-xs) var(--spacing-sm)',
+                borderRadius: 'var(--rounded-sm)',
+                fontSize: '12px',
+                outline: 'none',
+                cursor: 'pointer',
+              }}
+            >
+              <option value="original" style={{ backgroundColor: 'var(--color-grey-800)' }}>
+                Original Speedline
+              </option>
+              <option value="wind" style={{ backgroundColor: 'var(--color-grey-800)' }}>
+                Cliff Wind & Dust
+              </option>
+              <option value="rope" style={{ backgroundColor: 'var(--color-grey-800)' }}>
+                Rope & Vibration
+              </option>
+              <option value="fog" style={{ backgroundColor: 'var(--color-grey-800)' }}>
+                Focus Edge Fog
+              </option>
+            </select>
+          </div>
         </div>
 
         {/* Group 4: Events & Progression */}
