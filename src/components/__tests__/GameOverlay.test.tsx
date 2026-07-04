@@ -14,6 +14,8 @@ describe('GameOverlay', () => {
       showVignette: false,
       showSpeedLines: false,
       feverLevel: 0,
+      speedLineStyle: 'original',
+      setSpeedLineStyle: vi.fn(),
     } as never);
   });
 
@@ -40,6 +42,8 @@ describe('GameOverlay', () => {
       showVignette: false,
       showSpeedLines: true,
       feverLevel: 1,
+      speedLineStyle: 'original',
+      setSpeedLineStyle: vi.fn(),
     } as never);
 
     const { container } = render(<GameOverlay />);
@@ -86,6 +90,8 @@ describe('GameOverlay', () => {
       showVignette: false,
       showSpeedLines: true,
       feverLevel: 2,
+      speedLineStyle: 'original',
+      setSpeedLineStyle: vi.fn(),
     } as never);
 
     const { container } = render(<GameOverlay />);
