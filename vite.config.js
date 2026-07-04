@@ -2,9 +2,11 @@ import { defineConfig, loadEnv } from 'vite';
 import { execSync } from 'child_process';
 import react from '@vitejs/plugin-react';
 import path from 'path';
+import fs from 'fs';
 import { visualizer } from 'rollup-plugin-visualizer';
 import { sentryVitePlugin } from '@sentry/vite-plugin';
 import { VitePWA } from 'vite-plugin-pwa';
+import packageJson from './package.json';
 
 /// <reference types="vitest" />
 
@@ -39,6 +41,24 @@ export default defineConfig(({ mode }) => {
     base: './',
     plugins: [
       react(),
+      {
+        name: 'write-version-json',
+        closeBundle() {
+          const major = packageJson.version.split('.')[0] || '0';
+          const merge = process.env.VITE_MERGE_COUNT || getGitMergeCount();
+          const run = process.env.VITE_CI_RUN_NUMBER || getGitCommitCount();
+          const versionStr = `${major}.${merge}.${run}`;
+          const distDir = path.resolve(__dirname, 'dist');
+          if (!fs.existsSync(distDir)) {
+            fs.mkdirSync(distDir, { recursive: true });
+          }
+          fs.writeFileSync(
+            path.resolve(distDir, 'version.json'),
+            JSON.stringify({ version: versionStr }, null, 2)
+          );
+          console.log(`[Plugin] Wrote version.json: ${versionStr}`);
+        },
+      },
       // Sentry Source Map Upload (Analysis 모드에서는 제외하여 경고 방지 및 속도 향상)
       !isAnalyze &&
         sentryVitePlugin({
