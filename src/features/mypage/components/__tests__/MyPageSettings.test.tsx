@@ -73,6 +73,32 @@ describe('MyPageSettings', () => {
     });
   });
 
+  it('should show success toast if server version is older than local version', async () => {
+    const originalVersion = APP_CONFIG.APP_VERSION;
+    (APP_CONFIG as any).APP_VERSION = '0.19.456';
+
+    const mockResponse = {
+      ok: true,
+      json: () => Promise.resolve({ version: '0.19.454' }),
+    };
+    (global.fetch as Mock).mockResolvedValue(mockResponse);
+
+    render(<MyPageSettings {...defaultProps} />);
+
+    const updateCheckBtn = screen.getByLabelText('업데이트 확인');
+    fireEvent.click(updateCheckBtn);
+
+    await waitFor(() => {
+      expect(mockShowToast).toHaveBeenCalledWith(
+        `현재 최신 버전을 사용 중입니다. (0.19.456)`,
+        '✅',
+        2500
+      );
+    });
+
+    (APP_CONFIG as any).APP_VERSION = originalVersion;
+  });
+
   it('should open update confirm modal if version is outdated', async () => {
     const newerVersion = '9.9.9';
     const mockResponse = {

@@ -18,7 +18,18 @@ interface MyPageSettingsProps {
   onLogout: () => void;
   onWithdraw: () => void;
 }
+const isVersionOlder = (current: string, server: string): boolean => {
+  const cParts = current.split('.').map(Number);
+  const sParts = server.split('.').map(Number);
 
+  for (let i = 0; i < Math.max(cParts.length, sParts.length); i++) {
+    const cVal = cParts[i] || 0;
+    const sVal = sParts[i] || 0;
+    if (cVal < sVal) return true;
+    if (cVal > sVal) return false;
+  }
+  return false;
+};
 export function MyPageSettings({
   hapticEnabled,
   animationEnabled,
@@ -67,12 +78,12 @@ export function MyPageSettings({
       const serverVersion = data.version;
 
       if (serverVersion) {
-        if (serverVersion === APP_CONFIG.APP_VERSION) {
-          showToast(`현재 최신 버전을 사용 중입니다. (${APP_CONFIG.APP_VERSION})`, '✅', 2500);
-        } else {
-          setLocalToastMsg(`새로운 버전 v${serverVersion}이 준비되었습니다.`);
+        if (isVersionOlder(APP_CONFIG.APP_VERSION, serverVersion)) {
+          setLocalToastMsg(`새로운 버전\nv${serverVersion}이\n준비되었습니다.`);
           setHasNewVersion(true);
           setShowLocalToast(true);
+        } else {
+          showToast(`현재 최신 버전을 사용 중입니다. (${APP_CONFIG.APP_VERSION})`, '✅', 2500);
         }
       } else {
         throw new Error('Invalid version format');
@@ -429,14 +440,15 @@ export function MyPageSettings({
               onClick={handleGoToUpdate}
               style={{
                 marginLeft: 'var(--spacing-md)',
-                backgroundColor: 'var(--color-teal-500)',
-                color: 'white',
+                backgroundColor: 'transparent',
+                color: 'var(--color-pure-white)',
                 border: 'none',
-                padding: 'var(--spacing-xs) var(--spacing-md)',
-                borderRadius: 'var(--rounded-2xs)',
-                fontSize: '12px',
+                padding: 'var(--spacing-xs) 0',
+                fontSize: '14px',
                 cursor: 'pointer',
                 fontWeight: 'bold',
+                whiteSpace: 'nowrap',
+                flexShrink: 0,
               }}
             >
               업데이트

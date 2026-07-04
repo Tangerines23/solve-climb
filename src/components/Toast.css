@@ -16,14 +16,15 @@
   background-color: rgba(28, 28, 30, 0.95);
   backdrop-filter: blur(10px);
   border-radius: var(--rounded-card);
-  padding: var(--spacing-md) var(--spacing-xl);
+  padding: var(--spacing-md) var(--spacing-lg);
   display: flex;
   align-items: center;
-  gap: var(--spacing-sm);
+  justify-content: space-between;
+  gap: var(--spacing-md);
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
-  /* 화면 기준: 홈페이지 콘텐츠 영역(400px) 또는 화면 전체 중 작은 값, 양쪽 여백 8px */
-  max-width: min(400px, calc(100vw - var(--spacing-lg)));
-  width: fit-content;
+  /* 화면 너비를 최대한 넓게 사용하여 불필요한 줄바꿈 방지 */
+  width: calc(100vw - var(--spacing-xl));
+  max-width: 360px;
   pointer-events: auto;
 }
 
@@ -39,11 +40,12 @@
   font-weight: 500;
   color: var(--color-text-primary);
   line-height: 1.4;
-  text-align: center;
+  text-align: left;
   word-break: keep-all;
   overflow-wrap: break-word;
-  /* 자동 줄바꿈 허용으로 오버플로우 방지 */
-  white-space: normal;
+  /* 자동 줄바꿈 허용 및 \n 줄바꿈 반영 */
+  white-space: pre-line;
+  flex: 1;
 }
 
 /* 텍스트가 화면을 뚫을 때만 줄바꿈 허용 */
