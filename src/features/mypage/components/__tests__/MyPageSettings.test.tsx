@@ -121,6 +121,8 @@ describe('MyPageSettings', () => {
     const updateBtn = screen.getByText('업데이트');
     expect(updateBtn).toBeInTheDocument();
 
+    // @ts-expect-error: Mock Capacitor for mobile environment
+    window.Capacitor = {};
     const mockOpen = vi.spyOn(window, 'open').mockImplementation(() => null as any);
     fireEvent.click(updateBtn);
     expect(mockOpen).toHaveBeenCalledWith(
@@ -128,6 +130,38 @@ describe('MyPageSettings', () => {
       '_blank'
     );
     mockOpen.mockRestore();
+    // @ts-expect-error: Clean up mocked Capacitor
+    delete window.Capacitor;
+  });
+
+  it('should reload the page on update click in web environment (no Capacitor)', async () => {
+    const newerVersion = '9.9.9';
+    const mockResponse = {
+      ok: true,
+      json: () => Promise.resolve({ version: newerVersion }),
+    };
+    (global.fetch as Mock).mockResolvedValue(mockResponse);
+
+    render(<MyPageSettings {...defaultProps} />);
+
+    const updateCheckBtn = screen.getByLabelText('업데이트 확인');
+    fireEvent.click(updateCheckBtn);
+
+    await waitFor(() => {
+      expect(screen.getByText(/준비되었습니다/)).toBeInTheDocument();
+    });
+
+    const updateBtn = screen.getByText('업데이트');
+
+    const mockReload = vi.fn();
+    vi.stubGlobal('location', {
+      reload: mockReload,
+    });
+
+    fireEvent.click(updateBtn);
+    expect(mockReload).toHaveBeenCalled();
+
+    vi.unstubAllGlobals();
   });
 
   it('should show error toast if fetch fails', async () => {

@@ -99,8 +99,13 @@ export function MyPageSettings({
   const handleGoToUpdate = (e: React.MouseEvent) => {
     e.stopPropagation();
     setShowLocalToast(false);
-    const playStoreUrl = 'https://play.google.com/store/apps/details?id=com.solveclimb.app';
-    window.open(playStoreUrl, '_blank');
+    // @ts-expect-error: Capacitor global check
+    if (window.Capacitor) {
+      const playStoreUrl = 'https://play.google.com/store/apps/details?id=com.solveclimb.app';
+      window.open(playStoreUrl, '_blank');
+    } else {
+      location.reload();
+    }
   };
 
   return (
@@ -431,8 +436,8 @@ export function MyPageSettings({
           message={localToastMsg}
           isOpen={showLocalToast}
           onClose={() => setShowLocalToast(false)}
-          autoClose={!hasNewVersion}
-          autoCloseDelay={4000}
+          autoClose={true}
+          autoCloseDelay={hasNewVersion ? 8000 : 3000}
           icon={hasNewVersion ? '🎁' : undefined}
         >
           {hasNewVersion && (
