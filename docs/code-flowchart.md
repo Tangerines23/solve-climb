@@ -91,9 +91,9 @@ graph TD
   features_mypage --> utils
   features_mypage --> types
   features_mypage --> services
-  features_mypage --> constants
   features_mypage --> stores
   features_mypage --> components
+  features_mypage --> constants
   features_mypage --> features_debug
   features_quiz --> constants
   features_quiz --> components
