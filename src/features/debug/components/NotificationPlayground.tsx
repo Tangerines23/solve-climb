@@ -52,17 +52,18 @@ export function NotificationPlayground() {
   };
 
   const toggleSpeedLines = (level: 1 | 2) => {
-    // If already showing speed lines at this level (or higher for level 1 check), toggle off
-    // Logic:
-    // Lvl 1 button: if feverLevel >= 1, turn off. Else turn on lvl 1 (combo 5)
-    // Lvl 2 button: if feverLevel == 2, turn off. Else turn on lvl 2 (combo 20)
-
     if (level === 1) {
-      if (feverLevel >= 1) resetCombo();
-      else setCombo(5);
+      if (feverLevel === 1) {
+        setCombo(0);
+      } else {
+        setCombo(3);
+      }
     } else {
-      if (feverLevel === 2) resetCombo();
-      else setCombo(20);
+      if (feverLevel === 2) {
+        setCombo(0);
+      } else {
+        setCombo(10);
+      }
     }
   };
 
@@ -121,8 +122,11 @@ export function NotificationPlayground() {
           <button onClick={() => setShowSafetyRope(true)}>Safety Rope</button>
           <button onClick={() => triggerItemFeedback('Item Used', '+10s')}>Item Feedback</button>
           <button onClick={toggleVignette}>FX: Vignette {isExhausted ? '(ON)' : '(OFF)'}</button>
+          <button onClick={() => toggleSpeedLines(1)}>
+            FX: Speed Lvl 1 {feverLevel === 1 ? '(ON)' : '(OFF)'}
+          </button>
           <button onClick={() => toggleSpeedLines(2)}>
-            FX: Speed Lines {feverLevel === 2 ? '(ON)' : '(OFF)'}
+            FX: Speed Lvl 2 {feverLevel === 2 ? '(ON)' : '(OFF)'}
           </button>
         </div>
 

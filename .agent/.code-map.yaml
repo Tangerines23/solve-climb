@@ -1,6 +1,6 @@
 
 project: solve-climb
-generatedAt: "2026-07-04T13:58:40.974Z"
+generatedAt: "2026-07-04T15:28:33.894Z"
 files:
   src/App.tsx:
     imports: [@/utils/resilientLazy, @/stores/useLevelProgressStore, @/stores/useAuthStore, @/hooks/useCustomBackNavigation, @/components/GlobalLoadingIndicator, @/stores/useErrorLogStore, @/stores/useDebugStore, @/stores/useSettingsStore, @/hooks/useConnectivity, @/components/PwaUpdateNotification, @/features/auth, @/components/GlobalToastContainer]
@@ -2057,7 +2057,7 @@ files:
     exports:
       - name: NotificationPlayground
         returns: "import(\"C:/Users/ghkdd/gemini-projects/solve-climb/node_modules/@types/react/jsx-runtime\").JSX.Element"
-        calls: [useNavigate, useGameStore, triggerToast, closeModals, setExhausted, resetCombo, setCombo, setActiveModal, setBadgeIds, setShowCountdown, setShowSafetyRope, setToastMessage, setShowToast, itemFeedbackRef.current?.show, triggerItemFeedback, toggleSpeedLines, navigate, urls.shop, urls.result, e.stopPropagation]
+        calls: [useNavigate, useGameStore, triggerToast, closeModals, setExhausted, setCombo, setActiveModal, setBadgeIds, setShowCountdown, setShowSafetyRope, resetCombo, setToastMessage, setShowToast, itemFeedbackRef.current?.show, triggerItemFeedback, toggleSpeedLines, navigate, urls.shop, urls.result, e.stopPropagation]
   src/features/debug/components/ProgressionSection.tsx:
     imports: [@/stores/useDebugStore, @/config/app, @/utils/navigation, ./ProgressionSection.css]
   src/features/debug/components/QuickActionsSection.tsx:
