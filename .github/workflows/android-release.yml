@@ -34,6 +34,10 @@ jobs:
 
       # 5. 프론트엔드 웹 소스 빌드
       - name: Build Web Project
+        env:
+          VITE_SUPABASE_URL: "https://aekcjzxxjczqibxkoakg.supabase.co"
+          VITE_SUPABASE_ANON_KEY: "sb_publishable_Q43-3IDGF7tYxe-Z8sVIQw_3wx_7SdN"
+          VITE_SENTRY_DSN: "https://26b6c9715da4db48d743361e2b6b8e83@o4510759456669696.ingest.us.sentry.io/4510759486029824"
         run: npm run build
 
       # 6. Capacitor 동기화 (웹 자산을 안드로이드로 전송)
