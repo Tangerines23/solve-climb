@@ -410,32 +410,39 @@ export const GameOverlay: React.FC = () => {
 
             {feverLevel === 1 && speedLineStyle === 'liquid' && (
               <g className="liquid-effects">
+                <defs>
+                  <linearGradient id="liquid-gradient" x1="0%" y1="0%" x2="100%" y2="0%">
+                    <stop offset="0%" stopColor="#3b82f6" />
+                    <stop offset="50%" stopColor="#ec4899" />
+                    <stop offset="100%" stopColor="#f97316" />
+                  </linearGradient>
+                </defs>
                 <style>{`
                   @keyframes liquidFlow {
-                    0% { background-position: 0% 50%; }
-                    50% { background-position: 100% 50%; }
-                    100% { background-position: 0% 50%; }
+                    0% { stroke-dashoffset: 1500; }
+                    100% { stroke-dashoffset: 0; }
                   }
-                  .liquid-border {
-                    position: absolute;
-                    top: 6px;
-                    left: 6px;
-                    right: 6px;
-                    bottom: 6px;
-                    border: 3px solid transparent;
-                    border-radius: var(--rounded-md);
-                    background-image: linear-gradient(transparent, transparent),
-                                      linear-gradient(90deg, #3b82f6, #f97316, #ec4899, #3b82f6);
-                    background-origin: border-box;
-                    background-clip: content-box, border-box;
-                    background-size: 300% 300%;
-                    animation: liquidFlow 4s infinite linear;
-                    pointer-events: none;
+                  @keyframes liquidPulse {
+                    0%, 100% { filter: drop-shadow(0 0 3px rgba(236, 72, 153, 0.7)); opacity: 0.85; }
+                    50% { filter: drop-shadow(0 0 10px rgba(249, 115, 22, 0.9)); opacity: 1; }
+                  }
+                  .liquid-rect {
+                    stroke-dasharray: 250 850;
+                    animation: liquidFlow 7s infinite linear, liquidPulse 3.5s infinite ease-in-out;
                   }
                 `}</style>
-                <foreignObject x="0" y="0" width="100%" height="100%">
-                  <div className="liquid-border" />
-                </foreignObject>
+                <rect
+                  x="1%"
+                  y="1%"
+                  width="98%"
+                  height="98%"
+                  rx="12"
+                  ry="12"
+                  fill="none"
+                  stroke="url(#liquid-gradient)"
+                  strokeWidth="4"
+                  className="liquid-rect"
+                />
               </g>
             )}
 
@@ -471,29 +478,28 @@ export const GameOverlay: React.FC = () => {
             {feverLevel === 1 && speedLineStyle === 'sweep' && (
               <g className="sweep-effects">
                 <style>{`
-                  @keyframes sweepMove {
-                    0% { clip-path: inset(0 100% 100% 0); }
-                    25% { clip-path: inset(0 0 100% 0); }
-                    50% { clip-path: inset(0 0 0 0); }
-                    75% { clip-path: inset(100% 0 0 0); }
-                    100% { clip-path: inset(100% 0 0 100%); }
+                  @keyframes sweepFlow {
+                    0% { stroke-dashoffset: 2000; }
+                    100% { stroke-dashoffset: 0; }
                   }
-                  .sweep-border {
-                    position: absolute;
-                    top: 4px;
-                    left: 4px;
-                    right: 4px;
-                    bottom: 4px;
-                    border: 2px solid rgba(255, 255, 255, 0.85);
-                    border-radius: var(--rounded-md);
-                    box-shadow: 0 0 15px rgba(255, 255, 255, 0.6);
-                    animation: sweepMove 3s infinite linear;
-                    pointer-events: none;
+                  .sweep-rect {
+                    stroke-dasharray: 180 1200;
+                    filter: drop-shadow(0 0 8px rgba(255, 255, 255, 0.9));
+                    animation: sweepFlow 3.5s infinite linear;
                   }
                 `}</style>
-                <foreignObject x="0" y="0" width="100%" height="100%">
-                  <div className="sweep-border" />
-                </foreignObject>
+                <rect
+                  x="1%"
+                  y="1%"
+                  width="98%"
+                  height="98%"
+                  rx="12"
+                  ry="12"
+                  fill="none"
+                  stroke="rgba(255, 255, 255, 0.95)"
+                  strokeWidth="3"
+                  className="sweep-rect"
+                />
               </g>
             )}
 
