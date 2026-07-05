@@ -38,6 +38,8 @@ jobs:
           VITE_SUPABASE_URL: "https://aekcjzxxjczqibxkoakg.supabase.co"
           VITE_SUPABASE_ANON_KEY: "sb_publishable_Q43-3IDGF7tYxe-Z8sVIQw_3wx_7SdN"
           VITE_SENTRY_DSN: "https://26b6c9715da4db48d743361e2b6b8e83@o4510759456669696.ingest.us.sentry.io/4510759486029824"
+          VITE_MERGE_COUNT: "4"
+          VITE_CI_RUN_NUMBER: "1"
         run: npm run build
 
       # 6. Capacitor 동기화 (웹 자산을 안드로이드로 전송)
@@ -71,4 +73,4 @@ jobs:
           serviceAccountJsonPlainText: ${{ secrets.PLAY_STORE_JSON_KEY }}
           packageName: com.solveclimb.app
           releaseFiles: android/app/build/outputs/bundle/release/app-release.aab
-          track: internal  # 내부 테스트 트랙으로 자동 업로드
+          track: alpha  # 비공개 테스트(Alpha) 트랙으로 자동 업로드
