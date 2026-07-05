@@ -1,9 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { useGameStore } from '../../stores/useGameStore';
-import { useToastStore } from '../../stores/useToastStore';
 
 export const GameOverlay: React.FC = () => {
-  const { showVignette, showSpeedLines: storeShowSpeedLines, feverLevel: storeFeverLevel, speedLineStyle, setSpeedLineStyle } =
+  const { showVignette, showSpeedLines: storeShowSpeedLines, feverLevel: storeFeverLevel, speedLineStyle } =
     useGameStore();
 
   const showSpeedLines = storeShowSpeedLines;

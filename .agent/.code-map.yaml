@@ -1,6 +1,6 @@
 
 project: solve-climb
-generatedAt: "2026-07-05T09:18:37.796Z"
+generatedAt: "2026-07-05T09:20:27.647Z"
 files:
   src/App.tsx:
     imports: [@/utils/resilientLazy, @/stores/useLevelProgressStore, @/stores/useAuthStore, @/hooks/useCustomBackNavigation, @/components/GlobalLoadingIndicator, @/stores/useErrorLogStore, @/stores/useDebugStore, @/stores/useSettingsStore, @/hooks/useConnectivity, @/components/PwaUpdateNotification, @/features/auth, @/components/GlobalToastContainer]
@@ -1786,7 +1786,7 @@ files:
         returns: "import(\"C:/Users/ghkdd/gemini-projects/solve-climb/node_modules/@types/react/jsx-runtime\").JSX.Element | null"
         calls: [e.stopPropagation, renderContent, onAction]
   src/components/game/GameOverlay.tsx:
-    imports: [../../stores/useGameStore, ../../stores/useToastStore]
+    imports: [../../stores/useGameStore]
     state: [prevFever, splashText, splashKey]
     exports:
       - name: GameOverlay
