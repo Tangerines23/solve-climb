@@ -2,6 +2,7 @@ import { useState, FormEvent, useEffect, useMemo } from 'react';
 import { createPortal } from 'react-dom';
 import { APP_CONFIG } from '../config/app';
 import { useSettingsStore } from '../stores/useSettingsStore';
+import { useGameStore } from '../stores/useGameStore';
 import { CustomKeypad } from './CustomKeypad';
 import { QwertyKeypad } from './QwertyKeypad';
 import '../pages/QuizPage.css';
@@ -166,6 +167,13 @@ export function KeyboardInfoModal({ isOpen, onClose }: KeyboardInfoModalProps) {
       setSelectedCategoryIndex(0);
     }
   }, [keyboardType, availableKeyboardTypes, selectedKeyboardType]);
+
+  // 키보드 미리보기 진입 시 이전 인게임 콤보 및 피버 상태 초기화
+  useEffect(() => {
+    if (isOpen) {
+      useGameStore.setState({ showSpeedLines: false, feverLevel: 0, combo: 0 });
+    }
+  }, [isOpen]);
 
   // 현재 선택된 키보드 타입의 카테고리 정보
   const currentCategories = useMemo(() => {
