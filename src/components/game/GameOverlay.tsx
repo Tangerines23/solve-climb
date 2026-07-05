@@ -28,7 +28,7 @@ export const GameOverlay: React.FC = () => {
   }, [feverLevel, prevFever]);
 
   // 80% 어두운 배경(dimming) 및 마스크가 필요한 고전 스타일
-  const needsDimmingAndMask = speedLineStyle === 'original' || speedLineStyle === 'wind' || speedLineStyle === 'fog';
+  const needsDimmingAndMask = speedLineStyle === 'original' || speedLineStyle === 'wind' || speedLineStyle === 'fog' || speedLineStyle === 'liquid';
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -415,25 +415,35 @@ export const GameOverlay: React.FC = () => {
                 <defs>
                   <linearGradient id="liquid-gradient" x1="0%" y1="0%" x2="100%" y2="100%">
                     <stop offset="0%" stopColor="#3b82f6">
-                      <animate attributeName="stop-color" values="#3b82f6; #ec4899; #f97316; #3b82f6" dur="6s" repeatCount="indefinite" />
+                      <animate attributeName="stop-color" values="#3b82f6; #ec4899; #f97316; #3b82f6" dur="8s" repeatCount="indefinite" />
                     </stop>
                     <stop offset="50%" stopColor="#ec4899">
-                      <animate attributeName="stop-color" values="#ec4899; #f97316; #3b82f6; #ec4899" dur="6s" repeatCount="indefinite" />
+                      <animate attributeName="stop-color" values="#ec4899; #f97316; #3b82f6; #ec4899" dur="8s" repeatCount="indefinite" />
                     </stop>
                     <stop offset="100%" stopColor="#f97316">
-                      <animate attributeName="stop-color" values="#f97316; #3b82f6; #ec4899; #f97316" dur="6s" repeatCount="indefinite" />
+                      <animate attributeName="stop-color" values="#f97316; #3b82f6; #ec4899; #f97316" dur="8s" repeatCount="indefinite" />
                     </stop>
                   </linearGradient>
                 </defs>
                 <style>{`
                   @keyframes liquidPulse {
-                    0%, 100% { filter: drop-shadow(0 0 3px rgba(59, 130, 246, 0.6)) drop-shadow(0 0 8px rgba(236, 72, 153, 0.4)); opacity: 0.9; }
+                    0%, 100% { filter: drop-shadow(0 0 3px rgba(59, 130, 246, 0.6)) drop-shadow(0 0 8px rgba(236, 72, 153, 0.4)); opacity: 0.85; }
                     50% { filter: drop-shadow(0 0 8px rgba(236, 72, 153, 0.8)) drop-shadow(0 0 18px rgba(249, 115, 22, 0.6)); opacity: 1; }
                   }
                   .liquid-rect {
                     animation: liquidPulse 4s infinite ease-in-out;
                   }
                 `}</style>
+                {/* Full Screen Shifting Rainbow Gradient Background (Masked in center) */}
+                <rect
+                  x="0"
+                  y="0"
+                  width="100%"
+                  height="100%"
+                  fill="url(#liquid-gradient)"
+                  opacity="0.25"
+                />
+                {/* Outer Glowing Neon Shifting Rainbow Border */}
                 <rect
                   x="1%"
                   y="1%"
@@ -445,6 +455,7 @@ export const GameOverlay: React.FC = () => {
                   stroke="url(#liquid-gradient)"
                   strokeWidth="4.5"
                   className="liquid-rect"
+                  opacity="0.8"
                 />
               </g>
             )}
