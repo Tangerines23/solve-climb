@@ -170,11 +170,11 @@ export function NotificationPlayground() {
               <option value="wind" style={{ backgroundColor: 'var(--color-grey-800)' }}>
                 Cliff Wind & Dust
               </option>
-              <option value="rope" style={{ backgroundColor: 'var(--color-grey-800)' }}>
-                Rope & Vibration
-              </option>
               <option value="fog" style={{ backgroundColor: 'var(--color-grey-800)' }}>
                 Focus Edge Fog
+              </option>
+              <option value="glow" style={{ backgroundColor: 'var(--color-grey-800)' }}>
+                Subtle Edge Glow
               </option>
             </select>
           </div>

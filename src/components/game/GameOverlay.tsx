@@ -10,11 +10,11 @@ export const GameOverlay: React.FC = () => {
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === 'ArrowLeft' || e.key === 'ArrowRight') {
-        const styles: ('original' | 'wind' | 'rope' | 'fog')[] = [
+        const styles: ('original' | 'wind' | 'fog' | 'glow')[] = [
           'original',
           'wind',
-          'rope',
           'fog',
+          'glow',
         ];
         const currentIndex = styles.indexOf(speedLineStyle);
         let newIndex = currentIndex;
@@ -31,8 +31,8 @@ export const GameOverlay: React.FC = () => {
         const styleNames: Record<string, string> = {
           original: 'Original Speedline',
           wind: 'Cliff Wind & Dust',
-          rope: 'Rope & Vibration',
           fog: 'Focus Edge Fog',
+          glow: 'Subtle Edge Glow',
         };
         setActiveStyleMsg(`Style: ${styleNames[newStyle]}`);
       }
@@ -300,63 +300,6 @@ export const GameOverlay: React.FC = () => {
               </g>
             )}
 
-            {feverLevel === 1 && speedLineStyle === 'rope' && (
-              <g className="rope-effects">
-                <style>{`
-                  @keyframes ropeSwayLeft {
-                    0%, 100% { transform: translateX(0); }
-                    50% { transform: translateX(1px); }
-                  }
-                  @keyframes ropeSwayRight {
-                    0%, 100% { transform: translateX(0); }
-                    50% { transform: translateX(-1px); }
-                  }
-                  @keyframes ropeGlow {
-                    0%, 100% { opacity: 0.3; }
-                    50% { opacity: 0.55; }
-                  }
-                  .rope-line {
-                    stroke: rgba(255, 255, 255, 0.25);
-                    stroke-width: 2.5;
-                    stroke-dasharray: 4 3;
-                  }
-                  .rope-glow {
-                    stroke: rgba(255, 255, 255, 0.08);
-                    stroke-width: 5;
-                    animation: ropeGlow 3s infinite ease-in-out;
-                  }
-                  .rope-group-left {
-                    animation: ropeSwayLeft 3s infinite ease-in-out;
-                    transform-origin: top left;
-                  }
-                  .rope-group-right {
-                    animation: ropeSwayRight 3s infinite ease-in-out;
-                    transform-origin: top right;
-                  }
-                `}</style>
-                <g className="rope-group-left">
-                  <line x1="16" y1="0" x2="16" y2="100%" className="rope-glow" />
-                  <line x1="16" y1="0" x2="16" y2="100%" className="rope-line" />
-                </g>
-                <g className="rope-group-right">
-                  <line
-                    x1="calc(100% - 16px)"
-                    y1="0"
-                    x2="calc(100% - 16px)"
-                    y2="100%"
-                    className="rope-glow"
-                  />
-                  <line
-                    x1="calc(100% - 16px)"
-                    y1="0"
-                    x2="calc(100% - 16px)"
-                    y2="100%"
-                    className="rope-line"
-                  />
-                </g>
-              </g>
-            )}
-
             {feverLevel === 1 && speedLineStyle === 'fog' && (
               <g className="fog-effects">
                 <style>{`
@@ -377,6 +320,37 @@ export const GameOverlay: React.FC = () => {
                 `}</style>
                 <foreignObject x="0" y="0" width="100%" height="100%">
                   <div className="fog-vignette" />
+                </foreignObject>
+              </g>
+            )}
+
+            {feverLevel === 1 && speedLineStyle === 'glow' && (
+              <g className="glow-effects">
+                <style>{`
+                  @keyframes glowPulse {
+                    0%, 100% {
+                      opacity: 0.25;
+                      box-shadow: inset 0 0 15px rgba(255, 255, 255, 0.15), 0 0 8px rgba(255, 255, 255, 0.1);
+                    }
+                    50% {
+                      opacity: 0.65;
+                      box-shadow: inset 0 0 30px rgba(255, 255, 255, 0.35), 0 0 15px rgba(255, 255, 255, 0.25);
+                    }
+                  }
+                  .glow-container {
+                    position: absolute;
+                    top: 8px;
+                    left: 8px;
+                    right: 8px;
+                    bottom: 8px;
+                    border: 1px solid rgba(255, 255, 255, 0.2);
+                    border-radius: var(--rounded-md);
+                    animation: glowPulse 2.5s infinite ease-in-out;
+                    pointer-events: none;
+                  }
+                `}</style>
+                <foreignObject x="0" y="0" width="100%" height="100%">
+                  <div className="glow-container" />
                 </foreignObject>
               </g>
             )}
