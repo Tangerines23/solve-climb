@@ -51,13 +51,14 @@ export const GameOverlay: React.FC = () => {
       }
 
       if (e.key === 'ArrowLeft' || e.key === 'ArrowRight') {
-        const styles: ('original' | 'fog' | 'glow' | 'float' | 'liquid' | 'sweep')[] = [
+        const styles: ('original' | 'fog' | 'glow' | 'float' | 'liquid' | 'sweep' | 'zen')[] = [
           'original',
           'fog',
           'glow',
           'float',
           'liquid',
           'sweep',
+          'zen',
         ];
         const currentIndex = styles.indexOf(speedLineStyle as any);
         let newIndex = currentIndex;
@@ -80,6 +81,7 @@ export const GameOverlay: React.FC = () => {
           float: { num: 4, desc: '카드 입체 플로팅' },
           liquid: { num: 5, desc: '테두리 액체 충전 바' },
           sweep: { num: 6, desc: '테두리 라이트 스윕' },
+          zen: { num: 7, desc: '젠 포커스 아웃 비네트' },
         };
         const { num, desc } = styleNames[newStyle];
         useToastStore.getState().showToast(`${num}번 효과: ${desc}`);
