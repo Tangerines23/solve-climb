@@ -119,11 +119,7 @@ export const GameOverlay: React.FC = () => {
             pointerEvents: 'none',
             zIndex: 999,
             overflow: 'hidden',
-            background: needsDimmingAndMask
-              ? (feverLevel === 2
-                ? 'radial-gradient(circle, rgba(0, 0, 0, 0.8) 40%, rgba(255, 215, 0, 0.25) 100%)'
-                : 'rgba(0, 0, 0, 0.8)')
-              : 'transparent',
+            background: 'transparent',
             maskImage: needsDimmingAndMask ? 'radial-gradient(circle, transparent 35%, black 75%)' : undefined,
             WebkitMaskImage: needsDimmingAndMask ? 'radial-gradient(circle, transparent 35%, black 75%)' : undefined,
           }}
