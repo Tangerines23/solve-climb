@@ -1,9 +1,13 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useContext } from 'react';
 import { useGameStore } from '../../stores/useGameStore';
+import { QuizContext } from '../../features/quiz/contexts/QuizContext';
 
 export const GameOverlay: React.FC = () => {
   const { showVignette, showSpeedLines: storeShowSpeedLines, feverLevel: storeFeverLevel, speedLineStyle } =
     useGameStore();
+
+  const quizContext = useContext(QuizContext);
+  const isTipModalOpen = quizContext ? quizContext.modalState?.showTipModal : false;
 
   const showSpeedLines = storeShowSpeedLines;
   const feverLevel = storeFeverLevel;
@@ -13,6 +17,12 @@ export const GameOverlay: React.FC = () => {
   const [splashKey, setSplashKey] = useState(0);
 
   useEffect(() => {
+    if (isTipModalOpen) {
+      setSplashText(null);
+      setPrevFever(feverLevel);
+      return;
+    }
+
     if (feverLevel > prevFever && feverLevel > 0) {
       const text = feverLevel === 2 ? 'SECOND WIND' : 'MOMENTUM';
       setSplashText(text);
@@ -24,7 +34,7 @@ export const GameOverlay: React.FC = () => {
       return () => clearTimeout(timer);
     }
     setPrevFever(feverLevel);
-  }, [feverLevel, prevFever]);
+  }, [feverLevel, prevFever, isTipModalOpen]);
 
   // 80% 어두운 배경(dimming) 및 마스크가 필요한 고전 스타일
   const needsDimmingAndMask = speedLineStyle === 'original' || speedLineStyle === 'wind' || speedLineStyle === 'fog' || speedLineStyle === 'liquid';

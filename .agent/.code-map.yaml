@@ -1,6 +1,6 @@
 
 project: solve-climb
-generatedAt: "2026-07-05T09:34:13.254Z"
+generatedAt: "2026-07-05T09:38:14.431Z"
 files:
   src/App.tsx:
     imports: [@/utils/resilientLazy, @/stores/useLevelProgressStore, @/stores/useAuthStore, @/hooks/useCustomBackNavigation, @/components/GlobalLoadingIndicator, @/stores/useErrorLogStore, @/stores/useDebugStore, @/stores/useSettingsStore, @/hooks/useConnectivity, @/components/PwaUpdateNotification, @/features/auth, @/components/GlobalToastContainer]
@@ -1786,12 +1786,12 @@ files:
         returns: "import(\"C:/Users/ghkdd/gemini-projects/solve-climb/node_modules/@types/react/jsx-runtime\").JSX.Element | null"
         calls: [e.stopPropagation, renderContent, onAction]
   src/components/game/GameOverlay.tsx:
-    imports: [../../stores/useGameStore]
+    imports: [../../stores/useGameStore, ../../features/quiz/contexts/QuizContext]
     state: [prevFever, splashText, splashKey]
     exports:
       - name: GameOverlay
         returns: "import(\"C:/Users/ghkdd/gemini-projects/solve-climb/node_modules/@types/react/jsx-runtime\").JSX.Element"
-        calls: [useGameStore, setSplashText, setSplashKey, setTimeout, clearTimeout, setPrevFever]
+        calls: [useGameStore, setSplashText, setPrevFever, setSplashKey, setTimeout, clearTimeout]
   src/components/game/ItemFeedbackOverlay.tsx:
     imports: [./ItemFeedbackOverlay.css]
   src/components/game/PauseModal.tsx:
