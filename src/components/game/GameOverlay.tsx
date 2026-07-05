@@ -155,7 +155,7 @@ export const GameOverlay: React.FC = () => {
                 <stop offset="100%" stopColor="transparent" />
               </linearGradient>
             </defs>
-            {(feverLevel === 2 || speedLineStyle === 'original') && (
+            {feverLevel > 0 && speedLineStyle === 'original' && (
               <g className="speed-lines">
                 <style>{`
                   @keyframes speedMove {
@@ -340,12 +340,12 @@ export const GameOverlay: React.FC = () => {
               </g>
             )}
 
-            {feverLevel === 1 && speedLineStyle === 'fog' && (
+            {feverLevel > 0 && speedLineStyle === 'fog' && (
               <g className="fog-effects">
                 <style>{`
                   @keyframes fogPulse {
-                    0%, 100% { opacity: 0.15; }
-                    50% { opacity: 0.3; }
+                    0%, 100% { opacity: ${feverLevel === 2 ? 0.22 : 0.15}; }
+                    50% { opacity: ${feverLevel === 2 ? 0.45 : 0.3}; }
                   }
                   .fog-vignette {
                     position: absolute;
@@ -353,7 +353,8 @@ export const GameOverlay: React.FC = () => {
                     left: 0;
                     right: 0;
                     bottom: 0;
-                    box-shadow: inset 0 0 60px rgba(255, 255, 255, 0.25), inset 0 0 25px rgba(255, 255, 255, 0.15);
+                    box-shadow: inset 0 0 60px ${feverLevel === 2 ? 'rgba(255, 215, 0, 0.35)' : 'rgba(255, 255, 255, 0.25)'}, 
+                                inset 0 0 25px ${feverLevel === 2 ? 'rgba(255, 140, 0, 0.18)' : 'rgba(255, 255, 255, 0.15)'};
                     animation: fogPulse 2.5s infinite ease-in-out;
                     pointer-events: none;
                   }
@@ -364,17 +365,19 @@ export const GameOverlay: React.FC = () => {
               </g>
             )}
 
-            {feverLevel === 1 && speedLineStyle === 'glow' && (
+            {feverLevel > 0 && speedLineStyle === 'glow' && (
               <g className="glow-effects">
                 <style>{`
                   @keyframes glowPulse {
                     0%, 100% {
-                      opacity: 0.25;
-                      box-shadow: inset 0 0 15px rgba(255, 255, 255, 0.15), 0 0 8px rgba(255, 255, 255, 0.1);
+                      opacity: ${feverLevel === 2 ? 0.4 : 0.25};
+                      box-shadow: inset 0 0 15px ${feverLevel === 2 ? 'rgba(255, 215, 0, 0.35)' : 'rgba(255, 255, 255, 0.15)'}, 
+                                  0 0 8px ${feverLevel === 2 ? 'rgba(255, 215, 0, 0.25)' : 'rgba(255, 255, 255, 0.1)'};
                     }
                     50% {
-                      opacity: 0.65;
-                      box-shadow: inset 0 0 30px rgba(255, 255, 255, 0.35), 0 0 15px rgba(255, 255, 255, 0.25);
+                      opacity: ${feverLevel === 2 ? 0.8 : 0.65};
+                      box-shadow: inset 0 0 30px ${feverLevel === 2 ? 'rgba(255, 215, 0, 0.6)' : 'rgba(255, 255, 255, 0.35)'}, 
+                                  0 0 15px ${feverLevel === 2 ? 'rgba(255, 215, 0, 0.5)' : 'rgba(255, 255, 255, 0.25)'};
                     }
                   }
                   .glow-container {
@@ -383,7 +386,7 @@ export const GameOverlay: React.FC = () => {
                     left: 8px;
                     right: 8px;
                     bottom: 8px;
-                    border: 1px solid rgba(255, 255, 255, 0.2);
+                    border: 1px solid ${feverLevel === 2 ? 'rgba(255, 215, 0, 0.4)' : 'rgba(255, 255, 255, 0.2)'};
                     border-radius: var(--rounded-md);
                     animation: glowPulse 2.5s infinite ease-in-out;
                     pointer-events: none;
@@ -395,55 +398,72 @@ export const GameOverlay: React.FC = () => {
               </g>
             )}
 
-            {feverLevel === 1 && speedLineStyle === 'float' && (
+            {feverLevel > 0 && speedLineStyle === 'float' && (
               <g className="float-effects">
                 <style>{`
                   .quiz-card, .keyboard-info-modal, .keypad-container {
-                    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.75), 0 0 40px rgba(255, 255, 255, 0.15) !important;
-                    animation: floatBreath 4s infinite ease-in-out !important;
+                    box-shadow: ${feverLevel === 2
+                      ? '0 25px 60px -10px rgba(255, 215, 0, 0.25), 0 0 35px rgba(255, 215, 0, 0.4) !important'
+                      : '0 25px 50px -12px rgba(0, 0, 0, 0.75), 0 0 40px rgba(255, 255, 255, 0.15) !important'};
+                    animation: ${feverLevel === 2 ? 'floatBreathGold' : 'floatBreath'} 4s infinite ease-in-out !important;
+                    ${feverLevel === 2 ? 'border: 2.5px solid rgba(255, 215, 0, 0.85) !important;' : ''}
                   }
                   @keyframes floatBreath {
                     0%, 100% { transform: translateY(0) scale(1); }
                     50% { transform: translateY(-8px) scale(1.006); }
                   }
+                  @keyframes floatBreathGold {
+                    0%, 100% { transform: translateY(0) scale(1); }
+                    50% { transform: translateY(-11px) scale(1.012); }
+                  }
                 `}</style>
               </g>
             )}
 
-            {feverLevel === 1 && speedLineStyle === 'liquid' && (
+            {feverLevel > 0 && speedLineStyle === 'liquid' && (
               <g className="liquid-effects">
                 <defs>
                   <linearGradient id="liquid-gradient" x1="0%" y1="0%" x2="100%" y2="100%">
-                    <stop offset="0%" stopColor="#3b82f6">
-                      <animate attributeName="stop-color" values="#3b82f6; #ec4899; #f97316; #3b82f6" dur="8s" repeatCount="indefinite" />
+                    <stop offset="0%" stopColor={feverLevel === 2 ? '#fbbf24' : '#3b82f6'}>
+                      <animate attributeName="stop-color" values={feverLevel === 2 ? '#fbbf24; #f59e0b; #ef4444; #fbbf24' : '#3b82f6; #ec4899; #f97316; #3b82f6'} dur="8s" repeatCount="indefinite" />
                     </stop>
-                    <stop offset="50%" stopColor="#ec4899">
-                      <animate attributeName="stop-color" values="#ec4899; #f97316; #3b82f6; #ec4899" dur="8s" repeatCount="indefinite" />
+                    <stop offset="50%" stopColor={feverLevel === 2 ? '#f59e0b' : '#ec4899'}>
+                      <animate attributeName="stop-color" values={feverLevel === 2 ? '#f59e0b; #ef4444; #fbbf24; #f59e0b' : '#ec4899; #f97316; #3b82f6; #ec4899'} dur="8s" repeatCount="indefinite" />
                     </stop>
-                    <stop offset="100%" stopColor="#f97316">
-                      <animate attributeName="stop-color" values="#f97316; #3b82f6; #ec4899; #f97316" dur="8s" repeatCount="indefinite" />
+                    <stop offset="100%" stopColor={feverLevel === 2 ? '#ef4444' : '#f97316'}>
+                      <animate attributeName="stop-color" values={feverLevel === 2 ? '#ef4444; #fbbf24; #f59e0b; #ef4444' : '#f97316; #3b82f6; #ec4899; #f97316'} dur="8s" repeatCount="indefinite" />
                     </stop>
                   </linearGradient>
                 </defs>
                 <style>{`
                   @keyframes liquidPulse {
-                    0%, 100% { filter: drop-shadow(0 0 3px rgba(59, 130, 246, 0.6)) drop-shadow(0 0 8px rgba(236, 72, 153, 0.4)); opacity: 0.85; }
-                    50% { filter: drop-shadow(0 0 8px rgba(236, 72, 153, 0.8)) drop-shadow(0 0 18px rgba(249, 115, 22, 0.6)); opacity: 1; }
+                    0%, 100% { 
+                      filter: ${feverLevel === 2 
+                        ? 'drop-shadow(0 0 3px rgba(251, 191, 36, 0.7)) drop-shadow(0 0 10px rgba(245, 158, 11, 0.5))' 
+                        : 'drop-shadow(0 0 3px rgba(59, 130, 246, 0.6)) drop-shadow(0 0 8px rgba(236, 72, 153, 0.4))'}; 
+                      opacity: 0.85; 
+                    }
+                    50% { 
+                      filter: ${feverLevel === 2 
+                        ? 'drop-shadow(0 0 10px rgba(245, 158, 11, 0.9)) drop-shadow(0 0 22px rgba(239, 68, 68, 0.7))' 
+                        : 'drop-shadow(0 0 8px rgba(236, 72, 153, 0.8)) drop-shadow(0 0 18px rgba(249, 115, 22, 0.6))'}; 
+                      opacity: 1; 
+                    }
                   }
                   .liquid-rect {
                     animation: liquidPulse 4s infinite ease-in-out;
                   }
                 `}</style>
-                {/* Full Screen Shifting Rainbow Gradient Background (Masked in center) */}
+                {/* Full Screen Shifting Rainbow/Gold Gradient Background (Masked in center) */}
                 <rect
                   x="0"
                   y="0"
                   width="100%"
                   height="100%"
                   fill="url(#liquid-gradient)"
-                  opacity="0.25"
+                  opacity={feverLevel === 2 ? 0.32 : 0.25}
                 />
-                {/* Outer Glowing Neon Shifting Rainbow Border */}
+                {/* Outer Glowing Neon Shifting Rainbow/Gold Border */}
                 <rect
                   x="1%"
                   y="1%"
@@ -489,7 +509,7 @@ export const GameOverlay: React.FC = () => {
               </g>
             )}
 
-            {feverLevel === 1 && speedLineStyle === 'sweep' && (
+            {feverLevel > 0 && speedLineStyle === 'sweep' && (
               <g className="sweep-effects">
                 <style>{`
                   @keyframes sweepFlow {
@@ -498,7 +518,7 @@ export const GameOverlay: React.FC = () => {
                   }
                   .sweep-rect {
                     stroke-dasharray: 180 1200;
-                    filter: drop-shadow(0 0 8px rgba(255, 255, 255, 0.9));
+                    filter: ${feverLevel === 2 ? 'drop-shadow(0 0 10px rgba(255, 215, 0, 0.95))' : 'drop-shadow(0 0 8px rgba(255, 255, 255, 0.9))'};
                     animation: sweepFlow 3.5s infinite linear;
                   }
                 `}</style>
@@ -510,14 +530,14 @@ export const GameOverlay: React.FC = () => {
                   rx="12"
                   ry="12"
                   fill="none"
-                  stroke="rgba(255, 255, 255, 0.95)"
-                  strokeWidth="3"
+                  stroke={feverLevel === 2 ? 'var(--color-yellow-400)' : 'rgba(255, 255, 255, 0.95)'}
+                  strokeWidth="3.5"
                   className="sweep-rect"
                 />
               </g>
             )}
 
-            {feverLevel === 1 && speedLineStyle === 'zen' && (
+            {feverLevel > 0 && speedLineStyle === 'zen' && (
               <g className="zen-effects">
                 <style>{`
                   .zen-overlay {
@@ -530,6 +550,9 @@ export const GameOverlay: React.FC = () => {
                     -webkit-backdrop-filter: blur(8px);
                     mask-image: radial-gradient(circle, transparent 35%, black 75%);
                     -webkit-mask-image: radial-gradient(circle, transparent 35%, black 75%);
+                    background: ${feverLevel === 2 
+                      ? 'radial-gradient(circle, transparent 40%, rgba(255, 215, 0, 0.18) 100%)' 
+                      : 'transparent'};
                     pointer-events: none;
                   }
                 `}</style>
