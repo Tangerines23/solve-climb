@@ -2,10 +2,21 @@ import React, { useState, useEffect } from 'react';
 import { useGameStore } from '../../stores/useGameStore';
 
 export const GameOverlay: React.FC = () => {
-  const { showVignette, showSpeedLines, feverLevel, speedLineStyle, setSpeedLineStyle } =
+  const { showVignette, showSpeedLines: storeShowSpeedLines, feverLevel: storeFeverLevel, speedLineStyle, setSpeedLineStyle } =
     useGameStore();
 
   const [activeStyleMsg, setActiveStyleMsg] = useState<string | null>(null);
+
+  // 프리뷰 모드(테스트용) 여부 확인: URL 파라미터 혹은 미리보기 모달 감지
+  const isPreviewEnvironment = 
+    typeof window !== 'undefined' && 
+    (window.location.search.includes('preview=true') || !!document.querySelector('.keyboard-info-modal'));
+
+  const showSpeedLines = storeShowSpeedLines || isPreviewEnvironment;
+  const feverLevel = storeFeverLevel || (isPreviewEnvironment ? 1 : 0);
+
+  // 80% 어두운 배경(dimming) 및 마스크가 필요한 고전 스타일
+  const needsDimmingAndMask = speedLineStyle === 'original' || speedLineStyle === 'wind' || speedLineStyle === 'fog';
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -108,12 +119,13 @@ export const GameOverlay: React.FC = () => {
             pointerEvents: 'none',
             zIndex: 999,
             overflow: 'hidden',
-            background:
-              feverLevel === 2
+            background: needsDimmingAndMask
+              ? (feverLevel === 2
                 ? 'radial-gradient(circle, rgba(0, 0, 0, 0.8) 40%, rgba(255, 215, 0, 0.25) 100%)'
-                : 'rgba(0, 0, 0, 0.8)',
-            maskImage: 'radial-gradient(circle, transparent 35%, black 75%)',
-            WebkitMaskImage: 'radial-gradient(circle, transparent 35%, black 75%)',
+                : 'rgba(0, 0, 0, 0.8)')
+              : 'transparent',
+            maskImage: needsDimmingAndMask ? 'radial-gradient(circle, transparent 35%, black 75%)' : undefined,
+            WebkitMaskImage: needsDimmingAndMask ? 'radial-gradient(circle, transparent 35%, black 75%)' : undefined,
           }}
         >
           <svg width="100%" height="100%">
@@ -482,6 +494,8 @@ export const GameOverlay: React.FC = () => {
                     bottom: 0;
                     backdrop-filter: blur(8px);
                     -webkit-backdrop-filter: blur(8px);
+                    mask-image: radial-gradient(circle, transparent 35%, black 75%);
+                    -webkit-mask-image: radial-gradient(circle, transparent 35%, black 75%);
                     pointer-events: none;
                   }
                 `}</style>
