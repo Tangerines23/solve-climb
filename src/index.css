@@ -96,6 +96,12 @@
   /* 색상 - 토스 표준 + 커스텀 */
   --color-success: #4cd964;
   --color-warning: #ffcc00; /* 경고 (타이머 등) */
+  --color-yellow-400: #fbbf24;
+  --color-yellow-500: #f59e0b;
+  --color-blue-500: #3b82f6;
+  --color-pink-500: #ec4899;
+  --color-red-500: #ef4444;
+  --color-orange-500: #f97316;
   /* 성공/완료 */
   --color-primary-light: #4facfe;
   /* Primary Light */
@@ -301,6 +307,8 @@ strong {
   /* 중간 간격 */
   --spacing-micro: 2px;
   /* 2px 간격 */
+  --spacing-nano: 1px;
+  /* 1px 간격 */
 
   /* 반응형 레이아웃 값 (더 작게 최적화) */
   --header-height-portrait: 48px;

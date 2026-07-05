@@ -1524,10 +1524,19 @@
 }
 
 @keyframes pulse-loading {
-  0%, 100% { opacity: 0.75; transform: scale(0.98); }
-  50% { opacity: 1; transform: scale(1); }
+  0%,
+  100% {
+    opacity: 0.75;
+    transform: scale(0.98);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1);
+  }
 }
 
 @keyframes spin-loading {
-  to { transform: rotate(360deg); }
+  to {
+    transform: rotate(360deg);
+  }
 }

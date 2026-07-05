@@ -166,7 +166,7 @@ export function NotificationPlayground() {
                 cursor: 'pointer',
               }}
             >
-               <option value="original" style={{ backgroundColor: 'var(--color-grey-800)' }}>
+              <option value="original" style={{ backgroundColor: 'var(--color-grey-800)' }}>
                 1. Original Speedline
               </option>
               <option value="fog" style={{ backgroundColor: 'var(--color-grey-800)' }}>

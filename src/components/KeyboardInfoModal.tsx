@@ -252,7 +252,6 @@ export function KeyboardInfoModal({ isOpen, onClose }: KeyboardInfoModalProps) {
     };
   }, []);
 
-
   // 실제 키보드 핸들러 (인게임과 동일하게 동작)
   const handleKeyPress = (_key: string) => {
     // 실제 키보드 동작 (필요시 추가 가능)
