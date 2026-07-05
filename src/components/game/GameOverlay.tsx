@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useGameStore } from '../../stores/useGameStore';
+import { useToastStore } from '../../stores/useToastStore';
 
 export const GameOverlay: React.FC = () => {
   const { showVignette, showSpeedLines: storeShowSpeedLines, feverLevel: storeFeverLevel, speedLineStyle, setSpeedLineStyle } =
@@ -39,7 +40,13 @@ export const GameOverlay: React.FC = () => {
         setPrevFever(0);
         useGameStore.setState({ showSpeedLines: nextFever > 0, feverLevel: nextFever });
         
-        if (nextFever === 0) {
+        const { showToast } = useToastStore.getState();
+        if (nextFever === 1) {
+          showToast('1단계 효과');
+        } else if (nextFever === 2) {
+          showToast('2단계 효과');
+        } else {
+          showToast('효과 비활성화');
           setSplashText(null);
         }
       }
@@ -534,34 +541,32 @@ export const GameOverlay: React.FC = () => {
           key={splashKey}
           style={{
             position: 'fixed',
-            top: '40%',
+            top: '8%',
             left: '50%',
-            transform: 'translate(-50%, -50%)',
+            transform: 'translate(-50%, 0)',
             color: splashText === 'SECOND WIND' ? 'var(--color-yellow-400)' : 'var(--color-white)',
-            fontSize: '36px',
+            fontSize: '26px',
             fontWeight: '900',
-            textShadow: splashText === 'SECOND WIND' 
-              ? '0 0 20px rgba(255, 215, 0, 0.6), 0 0 40px rgba(0, 0, 0, 0.9)' 
-              : '0 0 20px rgba(255, 255, 255, 0.6), 0 0 40px rgba(0, 0, 0, 0.9)',
+            textShadow: '0 0 15px rgba(0, 0, 0, 0.9), 0 0 5px rgba(0, 0, 0, 0.9)',
             zIndex: 3000,
             pointerEvents: 'none',
             animation: 'splashAnim 1.5s forwards ease-out',
             whiteSpace: 'nowrap',
-            letterSpacing: '2px',
+            letterSpacing: '1px',
           }}
         >
-          <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--spacing-sm)' }}>
-            <span style={{ fontSize: '36px' }}>{splashText === 'SECOND WIND' ? '🔥' : '⚡'}</span>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--spacing-xs)' }}>
+            <span style={{ fontSize: '28px' }}>{splashText === 'SECOND WIND' ? '🔥' : '⚡'}</span>
             <span>{splashText}</span>
-            <span style={{ fontSize: '36px' }}>{splashText === 'SECOND WIND' ? '🔥' : '⚡'}</span>
+            <span style={{ fontSize: '28px' }}>{splashText === 'SECOND WIND' ? '🔥' : '⚡'}</span>
           </div>
           <style>{`
             @keyframes splashAnim {
-              0% { transform: translate(-50%, -30%) scale(0.6); opacity: 0; filter: blur(4px); }
-              15% { transform: translate(-50%, -50%) scale(1.1); opacity: 1; filter: blur(0); }
-              30% { transform: translate(-50%, -50%) scale(1); opacity: 1; }
-              80% { transform: translate(-50%, -50%) scale(1); opacity: 1; }
-              100% { transform: translate(-50%, -70%) scale(0.95); opacity: 0; filter: blur(2px); }
+              0% { transform: translate(-50%, -10px) scale(0.8); opacity: 0; filter: blur(3px); }
+              15% { transform: translate(-50%, 0) scale(1.05); opacity: 1; filter: blur(0); }
+              30% { transform: translate(-50%, 0) scale(1); opacity: 1; }
+              80% { transform: translate(-50%, 0) scale(1); opacity: 1; }
+              100% { transform: translate(-50%, -15px) scale(0.95); opacity: 0; filter: blur(2px); }
             }
           `}</style>
         </div>
