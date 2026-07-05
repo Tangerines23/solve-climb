@@ -9,7 +9,6 @@ export const GameOverlay: React.FC = () => {
   const showSpeedLines = storeShowSpeedLines;
   const feverLevel = storeFeverLevel;
 
-  const [activeStyleMsg, setActiveStyleMsg] = useState<string | null>(null);
   const [prevFever, setPrevFever] = useState(0);
   const [splashText, setSplashText] = useState<string | null>(null);
   const [splashKey, setSplashKey] = useState(0);
@@ -75,18 +74,19 @@ export const GameOverlay: React.FC = () => {
         const newStyle = styles[newIndex];
         setSpeedLineStyle(newStyle);
 
-        const styleNames: Record<string, string> = {
-          original: 'Original Speedline',
-          wind: 'Cliff Wind & Dust',
-          fog: 'Focus Edge Fog',
-          glow: 'Subtle Edge Glow',
-          float: 'Card Float & Depth',
-          liquid: 'Liquid Border Gauge',
-          chalk: 'Chalk Powder Dust',
-          sweep: 'Light Sweep Scan',
-          zen: 'Zen Focus Blur',
+        const styleNames: Record<string, { num: number; desc: string }> = {
+          original: { num: 1, desc: '오리지널 스피드라인' },
+          wind: { num: 2, desc: '절벽 바람과 먼지' },
+          fog: { num: 3, desc: '은은한 화면 외곽 안개' },
+          glow: { num: 4, desc: '얇은 테두리 네온 펄스' },
+          float: { num: 5, desc: '카드 입체 플로팅' },
+          liquid: { num: 6, desc: '테두리 액체 충전 바' },
+          chalk: { num: 7, desc: '초크 가루 중력 낙하' },
+          sweep: { num: 8, desc: '테두리 라이트 스윕' },
+          zen: { num: 9, desc: '젠 포커스 아웃 비네트' },
         };
-        setActiveStyleMsg(`Style: ${styleNames[newStyle]}`);
+        const { num, desc } = styleNames[newStyle];
+        useToastStore.getState().showToast(`${num}번 효과: ${desc}`);
       }
     };
 
@@ -95,15 +95,6 @@ export const GameOverlay: React.FC = () => {
       window.removeEventListener('keydown', handleKeyDown);
     };
   }, [speedLineStyle, setSpeedLineStyle, prevFever]);
-
-  useEffect(() => {
-    if (activeStyleMsg) {
-      const timer = setTimeout(() => {
-        setActiveStyleMsg(null);
-      }, 1500);
-      return () => clearTimeout(timer);
-    }
-  }, [activeStyleMsg]);
 
   return (
     <>
@@ -567,38 +558,6 @@ export const GameOverlay: React.FC = () => {
               30% { transform: translate(-50%, 0) scale(1); opacity: 1; }
               80% { transform: translate(-50%, 0) scale(1); opacity: 1; }
               100% { transform: translate(-50%, -15px) scale(0.95); opacity: 0; filter: blur(2px); }
-            }
-          `}</style>
-        </div>
-      )}
-      {/* Speedline style change feedback badge */}
-      {activeStyleMsg && (
-        <div
-          style={{
-            position: 'fixed',
-            bottom: '15%',
-            left: '50%',
-            transform: 'translateX(-50%)',
-            backgroundColor: 'rgba(0, 0, 0, 0.85)',
-            color: 'var(--color-pure-white)',
-            padding: 'var(--spacing-xs) var(--spacing-lg)',
-            borderRadius: 'var(--rounded-full)',
-            fontSize: '14px',
-            fontWeight: 'bold',
-            zIndex: 3000,
-            pointerEvents: 'none',
-            border: '1px solid rgba(255, 255, 255, 0.15)',
-            boxShadow: '0 4px 12px rgba(0, 0, 0, 0.5)',
-            animation: 'fadeInOut 1.5s forwards',
-          }}
-        >
-          {activeStyleMsg}
-          <style>{`
-            @keyframes fadeInOut {
-              0% { opacity: 0; transform: translate(-50%, 10px); }
-              15% { opacity: 1; transform: translate(-50%, 0); }
-              85% { opacity: 1; transform: translate(-50%, 0); }
-              100% { opacity: 0; transform: translate(-50%, -10px); }
             }
           `}</style>
         </div>
