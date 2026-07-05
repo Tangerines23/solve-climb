@@ -43,7 +43,7 @@ export const useGameStore = create<GameState>()(
       isExhausted: false,
       showSpeedLines: false,
       showVignette: false,
-      speedLineStyle: 'original',
+      speedLineStyle: 'float',
       activeItems: [],
       isStaminaConsumed: false,
       lives: SURVIVAL_CONFIG.INITIAL_LIVES,

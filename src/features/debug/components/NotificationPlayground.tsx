@@ -166,17 +166,11 @@ export function NotificationPlayground() {
                 cursor: 'pointer',
               }}
             >
-              <option value="original" style={{ backgroundColor: 'var(--color-grey-800)' }}>
-                Original Speedline
+              <option value="float" style={{ backgroundColor: 'var(--color-grey-800)' }}>
+                A. 카드 정적 입체 효과 (Static Depth)
               </option>
-              <option value="wind" style={{ backgroundColor: 'var(--color-grey-800)' }}>
-                Cliff Wind & Dust
-              </option>
-              <option value="fog" style={{ backgroundColor: 'var(--color-grey-800)' }}>
-                Focus Edge Fog
-              </option>
-              <option value="glow" style={{ backgroundColor: 'var(--color-grey-800)' }}>
-                Subtle Edge Glow
+              <option value="sweep" style={{ backgroundColor: 'var(--color-grey-800)' }}>
+                B. 테두리 라이트 스윕 (Light Sweep Scan)
               </option>
             </select>
           </div>

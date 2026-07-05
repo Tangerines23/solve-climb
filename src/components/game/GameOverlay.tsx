@@ -28,7 +28,7 @@ export const GameOverlay: React.FC = () => {
   }, [feverLevel, prevFever]);
 
   // 80% 어두운 배경(dimming) 및 마스크가 필요한 고전 스타일
-  const needsDimmingAndMask = speedLineStyle === 'original' || speedLineStyle === 'wind' || speedLineStyle === 'fog' || speedLineStyle === 'liquid';
+  const needsDimmingAndMask = speedLineStyle === 'original';
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -51,14 +51,9 @@ export const GameOverlay: React.FC = () => {
       }
 
       if (e.key === 'ArrowLeft' || e.key === 'ArrowRight') {
-        const styles: ('original' | 'fog' | 'glow' | 'float' | 'liquid' | 'sweep' | 'zen')[] = [
-          'original',
-          'fog',
-          'glow',
+        const styles: ('float' | 'sweep')[] = [
           'float',
-          'liquid',
           'sweep',
-          'zen',
         ];
         const currentIndex = styles.indexOf(speedLineStyle as any);
         let newIndex = currentIndex;
@@ -75,16 +70,11 @@ export const GameOverlay: React.FC = () => {
         setSpeedLineStyle(newStyle);
 
         const styleNames: Record<string, { num: number; desc: string }> = {
-          original: { num: 1, desc: '오리지널 스피드라인' },
-          fog: { num: 2, desc: '은은한 화면 외곽 안개' },
-          glow: { num: 3, desc: '얇은 테두리 네온 펄스' },
-          float: { num: 4, desc: '카드 입체 플로팅' },
-          liquid: { num: 5, desc: '테두리 액체 충전 바' },
-          sweep: { num: 6, desc: '테두리 라이트 스윕' },
-          zen: { num: 7, desc: '젠 포커스 아웃 비네트' },
+          float: { num: 1, desc: 'A. 카드 정적 입체 효과 (Static Depth)' },
+          sweep: { num: 2, desc: 'B. 테두리 라이트 스윕 (Light Sweep Scan)' },
         };
-        const { num, desc } = styleNames[newStyle];
-        useToastStore.getState().showToast(`${num}번 효과: ${desc}`);
+        const { desc } = styleNames[newStyle];
+        useToastStore.getState().showToast(`${desc}`);
       }
     };
 
@@ -403,18 +393,10 @@ export const GameOverlay: React.FC = () => {
                 <style>{`
                   .quiz-card, .keyboard-info-modal, .keypad-container {
                     box-shadow: ${feverLevel === 2
-                      ? '0 25px 60px -10px rgba(255, 215, 0, 0.25), 0 0 35px rgba(255, 215, 0, 0.4) !important'
-                      : '0 25px 50px -12px rgba(0, 0, 0, 0.75), 0 0 40px rgba(255, 255, 255, 0.15) !important'};
-                    animation: ${feverLevel === 2 ? 'floatBreathGold' : 'floatBreath'} 4s infinite ease-in-out !important;
+                      ? '0 30px 70px -10px rgba(255, 215, 0, 0.28), 0 0 45px rgba(255, 215, 0, 0.42) !important'
+                      : '0 25px 60px -10px rgba(0, 0, 0, 0.82), 0 0 35px rgba(255, 255, 255, 0.1) !important'};
                     ${feverLevel === 2 ? 'border: 2.5px solid rgba(255, 215, 0, 0.85) !important;' : ''}
-                  }
-                  @keyframes floatBreath {
-                    0%, 100% { transform: translateY(0) scale(1); }
-                    50% { transform: translateY(-8px) scale(1.006); }
-                  }
-                  @keyframes floatBreathGold {
-                    0%, 100% { transform: translateY(0) scale(1); }
-                    50% { transform: translateY(-11px) scale(1.012); }
+                    transition: box-shadow 0.3s ease, border 0.3s ease !important;
                   }
                 `}</style>
               </g>
