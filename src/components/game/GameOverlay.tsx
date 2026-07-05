@@ -5,13 +5,8 @@ export const GameOverlay: React.FC = () => {
   const { showVignette, showSpeedLines: storeShowSpeedLines, feverLevel: storeFeverLevel, speedLineStyle, setSpeedLineStyle } =
     useGameStore();
 
-  // 프리뷰 모드(테스트용) 여부 확인: URL 파라미터 혹은 미리보기 모달 감지
-  const isPreviewEnvironment = 
-    typeof window !== 'undefined' && 
-    (window.location.search.includes('preview=true') || !!document.querySelector('.keyboard-info-modal'));
-
-  const showSpeedLines = storeShowSpeedLines || isPreviewEnvironment;
-  const feverLevel = storeFeverLevel || (isPreviewEnvironment ? 1 : 0);
+  const showSpeedLines = storeShowSpeedLines;
+  const feverLevel = storeFeverLevel;
 
   const [activeStyleMsg, setActiveStyleMsg] = useState<string | null>(null);
   const [prevFever, setPrevFever] = useState(0);
@@ -37,6 +32,18 @@ export const GameOverlay: React.FC = () => {
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === '`') {
+        const currentFever = useGameStore.getState().feverLevel;
+        const nextFever = currentFever === 0 ? 1 : currentFever === 1 ? 2 : 0;
+        
+        setPrevFever(0);
+        useGameStore.setState({ showSpeedLines: nextFever > 0, feverLevel: nextFever });
+        
+        if (nextFever === 0) {
+          setSplashText(null);
+        }
+      }
+
       if (e.key === 'ArrowLeft' || e.key === 'ArrowRight') {
         const styles: ('original' | 'wind' | 'fog' | 'glow' | 'float' | 'liquid' | 'chalk' | 'sweep' | 'zen')[] = [
           'original',
@@ -80,7 +87,7 @@ export const GameOverlay: React.FC = () => {
     return () => {
       window.removeEventListener('keydown', handleKeyDown);
     };
-  }, [speedLineStyle, setSpeedLineStyle]);
+  }, [speedLineStyle, setSpeedLineStyle, prevFever]);
 
   useEffect(() => {
     if (activeStyleMsg) {

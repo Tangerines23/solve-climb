@@ -250,9 +250,6 @@ export function KeyboardInfoModal({ isOpen, onClose }: KeyboardInfoModalProps) {
 
   // 마이페이지 -> 키보드 미리보기에서 방향키로 효과를 바로 보기 위한 임시 임베드 로직
   useEffect(() => {
-    if (isOpen) {
-      useGameStore.setState({ showSpeedLines: true, feverLevel: 1 });
-    }
     return () => {
       if (isOpen) {
         useGameStore.setState({ showSpeedLines: false, feverLevel: 0 });

@@ -74,7 +74,6 @@ export function QuizPreview({
 
   // 프리뷰 페이지에서 방향키로 효과를 바로 보기 위한 임시 임베드 로직
   useEffect(() => {
-    useGameStore.setState({ showSpeedLines: true, feverLevel: 1 });
     return () => {
       useGameStore.setState({ showSpeedLines: false, feverLevel: 0 });
     };
