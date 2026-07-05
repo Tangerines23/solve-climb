@@ -11,13 +11,13 @@
 }
 
 /* Fever Level 1: Momentum (Subtle Glow) */
-.fever-level-1 {
+.fever-overlay.fever-level-1 {
   box-shadow: inset 0 0 50px rgba(255, 165, 0, 0.3);
   animation: pulse-glow 2s infinite ease-in-out;
 }
 
 /* Fever Level 2: Second Wind (Intense Flame) */
-.fever-level-2 {
+.fever-overlay.fever-level-2 {
   box-shadow: inset 0 0 100px rgba(255, 69, 0, 0.6);
   animation: intense-glow 1s infinite alternate;
 }
