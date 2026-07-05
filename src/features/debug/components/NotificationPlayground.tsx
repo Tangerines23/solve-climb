@@ -166,11 +166,26 @@ export function NotificationPlayground() {
                 cursor: 'pointer',
               }}
             >
+               <option value="original" style={{ backgroundColor: 'var(--color-grey-800)' }}>
+                1. Original Speedline
+              </option>
+              <option value="fog" style={{ backgroundColor: 'var(--color-grey-800)' }}>
+                2. Focus Edge Fog
+              </option>
+              <option value="glow" style={{ backgroundColor: 'var(--color-grey-800)' }}>
+                3. Subtle Edge Glow
+              </option>
               <option value="float" style={{ backgroundColor: 'var(--color-grey-800)' }}>
-                A. 카드 정적 입체 효과 (Static Depth)
+                4. Card Float & Depth
+              </option>
+              <option value="liquid" style={{ backgroundColor: 'var(--color-grey-800)' }}>
+                5. Liquid Border Gauge
               </option>
               <option value="sweep" style={{ backgroundColor: 'var(--color-grey-800)' }}>
-                B. 테두리 라이트 스윕 (Light Sweep Scan)
+                6. Light Sweep Scan
+              </option>
+              <option value="zen" style={{ backgroundColor: 'var(--color-grey-800)' }}>
+                7. Zen Focus Blur
               </option>
             </select>
           </div>
