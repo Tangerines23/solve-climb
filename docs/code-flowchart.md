@@ -70,6 +70,7 @@ graph TD
   utils --> services
   utils --> constants
   utils --> config
+  components --> features_quiz
   components --> features_mypage
   features_auth --> stores
   features_auth --> utils
