@@ -17,7 +17,10 @@ function QuizCardComponent() {
     if (quizState.categoryParam && quizState.subParam) {
       return (
         <div className="quiz-page">
-          <div className="quiz-loading">{UI_MESSAGES.GENERATING_QUESTIONS}</div>
+          <div className="quiz-loading">
+            <div className="loading-spinner" />
+            <span>{UI_MESSAGES.GENERATING_QUESTIONS}</span>
+          </div>
         </div>
       );
     }
