@@ -51,21 +51,20 @@ export const GameOverlay: React.FC = () => {
       }
 
       if (e.key === 'ArrowLeft' || e.key === 'ArrowRight') {
-        const styles: ('original' | 'wind' | 'fog' | 'glow' | 'float' | 'liquid' | 'chalk' | 'sweep' | 'zen')[] = [
+        const styles: ('original' | 'fog' | 'glow' | 'float' | 'liquid' | 'sweep')[] = [
           'original',
-          'wind',
           'fog',
           'glow',
           'float',
           'liquid',
-          'chalk',
           'sweep',
-          'zen',
         ];
-        const currentIndex = styles.indexOf(speedLineStyle);
+        const currentIndex = styles.indexOf(speedLineStyle as any);
         let newIndex = currentIndex;
 
-        if (e.key === 'ArrowLeft') {
+        if (currentIndex === -1) {
+          newIndex = 0;
+        } else if (e.key === 'ArrowLeft') {
           newIndex = (currentIndex - 1 + styles.length) % styles.length;
         } else if (e.key === 'ArrowRight') {
           newIndex = (currentIndex + 1) % styles.length;
@@ -76,14 +75,11 @@ export const GameOverlay: React.FC = () => {
 
         const styleNames: Record<string, { num: number; desc: string }> = {
           original: { num: 1, desc: '오리지널 스피드라인' },
-          wind: { num: 2, desc: '절벽 바람과 먼지' },
-          fog: { num: 3, desc: '은은한 화면 외곽 안개' },
-          glow: { num: 4, desc: '얇은 테두리 네온 펄스' },
-          float: { num: 5, desc: '카드 입체 플로팅' },
-          liquid: { num: 6, desc: '테두리 액체 충전 바' },
-          chalk: { num: 7, desc: '초크 가루 중력 낙하' },
-          sweep: { num: 8, desc: '테두리 라이트 스윕' },
-          zen: { num: 9, desc: '젠 포커스 아웃 비네트' },
+          fog: { num: 2, desc: '은은한 화면 외곽 안개' },
+          glow: { num: 3, desc: '얇은 테두리 네온 펄스' },
+          float: { num: 4, desc: '카드 입체 플로팅' },
+          liquid: { num: 5, desc: '테두리 액체 충전 바' },
+          sweep: { num: 6, desc: '테두리 라이트 스윕' },
         };
         const { num, desc } = styleNames[newStyle];
         useToastStore.getState().showToast(`${num}번 효과: ${desc}`);
@@ -346,8 +342,8 @@ export const GameOverlay: React.FC = () => {
               <g className="fog-effects">
                 <style>{`
                   @keyframes fogPulse {
-                    0%, 100% { opacity: 0.55; }
-                    50% { opacity: 0.9; }
+                    0%, 100% { opacity: 0.15; }
+                    50% { opacity: 0.3; }
                   }
                   .fog-vignette {
                     position: absolute;
@@ -355,7 +351,7 @@ export const GameOverlay: React.FC = () => {
                     left: 0;
                     right: 0;
                     bottom: 0;
-                    box-shadow: inset 0 0 120px rgba(255, 255, 255, 0.55), inset 0 0 50px rgba(255, 255, 255, 0.35);
+                    box-shadow: inset 0 0 60px rgba(255, 255, 255, 0.25), inset 0 0 25px rgba(255, 255, 255, 0.15);
                     animation: fogPulse 2.5s infinite ease-in-out;
                     pointer-events: none;
                   }
@@ -428,7 +424,7 @@ export const GameOverlay: React.FC = () => {
                     bottom: 6px;
                     border: 3px solid transparent;
                     border-radius: var(--rounded-md);
-                    background-image: linear-gradient(rgba(0, 0, 0, 0.8), rgba(0, 0, 0, 0.8)),
+                    background-image: linear-gradient(transparent, transparent),
                                       linear-gradient(90deg, #3b82f6, #f97316, #ec4899, #3b82f6);
                     background-origin: border-box;
                     background-clip: content-box, border-box;
