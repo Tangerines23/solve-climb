@@ -406,7 +406,7 @@ export const GameOverlay: React.FC = () => {
                   }
                   .quiz-card, .keyboard-info-modal, .keypad-container {
                     box-shadow: ${feverLevel === 2
-                      ? '0 20px 50px -10px rgba(0, 0, 0, 0.5), 0 0 30px rgba(255, 215, 0, 0.25) !important'
+                      ? '0 20px 45px rgba(0, 0, 0, 0.6), 0 0 25px rgba(255, 215, 0, 0.85), 0 0 50px rgba(255, 215, 0, 0.5) !important'
                       : '0 20px 45px -12px rgba(0, 0, 0, 0.6), 0 0 25px rgba(255, 255, 255, 0.1) !important'};
                     animation: ${feverLevel === 2 ? 'floatBreathGold' : 'floatBreath'} 5s infinite ease-in-out !important;
                     ${feverLevel === 2 ? 'border: 2px solid rgba(255, 215, 0, 0.85) !important;' : ''}
