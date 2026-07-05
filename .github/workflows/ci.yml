@@ -10,6 +10,10 @@ on:
     # auth/DB E2E: 하루 1회 (UTC 02:00) — 429 rate limit 절감
     - cron: '0 2 * * *'
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   # 1. 의존성 설치 및 캐싱 (다른 모든 작업의 기반)
   setup:
