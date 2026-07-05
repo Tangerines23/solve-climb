@@ -411,24 +411,25 @@ export const GameOverlay: React.FC = () => {
             {feverLevel === 1 && speedLineStyle === 'liquid' && (
               <g className="liquid-effects">
                 <defs>
-                  <linearGradient id="liquid-gradient" x1="0%" y1="0%" x2="100%" y2="0%">
-                    <stop offset="0%" stopColor="#3b82f6" />
-                    <stop offset="50%" stopColor="#ec4899" />
-                    <stop offset="100%" stopColor="#f97316" />
+                  <linearGradient id="liquid-gradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                    <stop offset="0%" stopColor="#3b82f6">
+                      <animate attributeName="stop-color" values="#3b82f6; #ec4899; #f97316; #3b82f6" dur="6s" repeatCount="indefinite" />
+                    </stop>
+                    <stop offset="50%" stopColor="#ec4899">
+                      <animate attributeName="stop-color" values="#ec4899; #f97316; #3b82f6; #ec4899" dur="6s" repeatCount="indefinite" />
+                    </stop>
+                    <stop offset="100%" stopColor="#f97316">
+                      <animate attributeName="stop-color" values="#f97316; #3b82f6; #ec4899; #f97316" dur="6s" repeatCount="indefinite" />
+                    </stop>
                   </linearGradient>
                 </defs>
                 <style>{`
-                  @keyframes liquidFlow {
-                    0% { stroke-dashoffset: 1500; }
-                    100% { stroke-dashoffset: 0; }
-                  }
                   @keyframes liquidPulse {
-                    0%, 100% { filter: drop-shadow(0 0 3px rgba(236, 72, 153, 0.7)); opacity: 0.85; }
-                    50% { filter: drop-shadow(0 0 10px rgba(249, 115, 22, 0.9)); opacity: 1; }
+                    0%, 100% { filter: drop-shadow(0 0 3px rgba(59, 130, 246, 0.6)) drop-shadow(0 0 8px rgba(236, 72, 153, 0.4)); opacity: 0.9; }
+                    50% { filter: drop-shadow(0 0 8px rgba(236, 72, 153, 0.8)) drop-shadow(0 0 18px rgba(249, 115, 22, 0.6)); opacity: 1; }
                   }
                   .liquid-rect {
-                    stroke-dasharray: 250 850;
-                    animation: liquidFlow 7s infinite linear, liquidPulse 3.5s infinite ease-in-out;
+                    animation: liquidPulse 4s infinite ease-in-out;
                   }
                 `}</style>
                 <rect
@@ -440,7 +441,7 @@ export const GameOverlay: React.FC = () => {
                   ry="12"
                   fill="none"
                   stroke="url(#liquid-gradient)"
-                  strokeWidth="4"
+                  strokeWidth="4.5"
                   className="liquid-rect"
                 />
               </g>
