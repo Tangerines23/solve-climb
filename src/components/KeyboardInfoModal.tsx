@@ -6,9 +6,6 @@ import { CustomKeypad } from './CustomKeypad';
 import { QwertyKeypad } from './QwertyKeypad';
 import '../pages/QuizPage.css';
 import './KeyboardInfoModal.css';
-import { GameOverlay } from './game/GameOverlay';
-
-import { useGameStore } from '../stores/useGameStore';
 
 interface KeyboardInfoModalProps {
   isOpen: boolean;
@@ -31,7 +28,6 @@ type KeyboardDisplayType = 'qwerty-text' | 'qwerty-number' | 'custom';
 export function KeyboardInfoModal({ isOpen, onClose }: KeyboardInfoModalProps) {
   // Zustand Selector 패턴 적용
   const keyboardType = useSettingsStore((state) => state.keyboardType);
-  const { feverLevel, showSpeedLines, setCombo } = useGameStore();
   const [, setIsLandscape] = useState(false);
 
   // 키보드 타입별로 사용되는 카테고리 정보 수집 함수
@@ -248,14 +244,6 @@ export function KeyboardInfoModal({ isOpen, onClose }: KeyboardInfoModalProps) {
     };
   }, []);
 
-  // 마이페이지 -> 키보드 미리보기에서 방향키로 효과를 바로 보기 위한 임시 임베드 로직
-  useEffect(() => {
-    return () => {
-      if (isOpen) {
-        useGameStore.setState({ showSpeedLines: false, feverLevel: 0 });
-      }
-    };
-  }, [isOpen]);
 
   // 실제 키보드 핸들러 (인게임과 동일하게 동작)
   const handleKeyPress = (_key: string) => {
@@ -362,50 +350,6 @@ export function KeyboardInfoModal({ isOpen, onClose }: KeyboardInfoModalProps) {
                 {getKeyboardTypeName(selectedKeyboardType)}
               </h2>
             </div>
-            <div style={{ display: 'flex', gap: 'var(--spacing-xs)', alignItems: 'center' }}>
-              <button
-                onClick={() => {
-                  if (feverLevel === 1 && showSpeedLines) {
-                    setCombo(0);
-                  } else {
-                    setCombo(5);
-                  }
-                }}
-                style={{
-                  padding: 'var(--spacing-xs) var(--spacing-sm)',
-                  backgroundColor: feverLevel === 1 && showSpeedLines ? 'var(--color-orange-500)' : 'var(--color-bg-tertiary)',
-                  color: 'var(--color-text-primary)',
-                  border: 'none',
-                  borderRadius: 'var(--rounded-sm)',
-                  fontSize: '11px',
-                  fontWeight: 'bold',
-                  cursor: 'pointer'
-                }}
-              >
-                FX 1 {feverLevel === 1 && showSpeedLines ? 'ON' : 'OFF'}
-              </button>
-              <button
-                onClick={() => {
-                  if (feverLevel === 2 && showSpeedLines) {
-                    setCombo(0);
-                  } else {
-                    setCombo(25);
-                  }
-                }}
-                style={{
-                  padding: 'var(--spacing-xs) var(--spacing-sm)',
-                  backgroundColor: feverLevel === 2 && showSpeedLines ? 'var(--color-yellow-500)' : 'var(--color-bg-tertiary)',
-                  color: 'var(--color-text-primary)',
-                  border: 'none',
-                  borderRadius: 'var(--rounded-sm)',
-                  fontSize: '11px',
-                  fontWeight: 'bold',
-                  cursor: 'pointer'
-                }}
-              >
-                FX 2 {feverLevel === 2 && showSpeedLines ? 'ON' : 'OFF'}
-              </button>
-            </div>
           </header>
 
           {/* 퀴즈 페이지와 동일한 컨텐츠 영역 구조 */}
@@ -486,7 +430,6 @@ export function KeyboardInfoModal({ isOpen, onClose }: KeyboardInfoModalProps) {
               {currentCategory.levels.length}개)
             </div>
           </div>
-          <GameOverlay />
         </div>
       </div>
     );
