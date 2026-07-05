@@ -247,6 +247,18 @@ export function KeyboardInfoModal({ isOpen, onClose }: KeyboardInfoModalProps) {
     };
   }, []);
 
+  // 마이페이지 -> 키보드 미리보기에서 방향키로 효과를 바로 보기 위한 임시 임베드 로직
+  useEffect(() => {
+    if (isOpen) {
+      useGameStore.setState({ showSpeedLines: true, feverLevel: 1 });
+    }
+    return () => {
+      if (isOpen) {
+        useGameStore.setState({ showSpeedLines: false, feverLevel: 0 });
+      }
+    };
+  }, [isOpen]);
+
   // 실제 키보드 핸들러 (인게임과 동일하게 동작)
   const handleKeyPress = (_key: string) => {
     // 실제 키보드 동작 (필요시 추가 가능)
