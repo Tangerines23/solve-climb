@@ -5,8 +5,6 @@ export const GameOverlay: React.FC = () => {
   const { showVignette, showSpeedLines: storeShowSpeedLines, feverLevel: storeFeverLevel, speedLineStyle, setSpeedLineStyle } =
     useGameStore();
 
-  const [activeStyleMsg, setActiveStyleMsg] = useState<string | null>(null);
-
   // 프리뷰 모드(테스트용) 여부 확인: URL 파라미터 혹은 미리보기 모달 감지
   const isPreviewEnvironment = 
     typeof window !== 'undefined' && 
@@ -14,6 +12,25 @@ export const GameOverlay: React.FC = () => {
 
   const showSpeedLines = storeShowSpeedLines || isPreviewEnvironment;
   const feverLevel = storeFeverLevel || (isPreviewEnvironment ? 1 : 0);
+
+  const [activeStyleMsg, setActiveStyleMsg] = useState<string | null>(null);
+  const [prevFever, setPrevFever] = useState(0);
+  const [splashText, setSplashText] = useState<string | null>(null);
+  const [splashKey, setSplashKey] = useState(0);
+
+  useEffect(() => {
+    if (feverLevel > prevFever && feverLevel > 0) {
+      const text = feverLevel === 2 ? 'SECOND WIND' : 'MOMENTUM';
+      setSplashText(text);
+      setSplashKey((prev) => prev + 1);
+
+      const timer = setTimeout(() => {
+        setSplashText(null);
+      }, 1500);
+      return () => clearTimeout(timer);
+    }
+    setPrevFever(feverLevel);
+  }, [feverLevel, prevFever]);
 
   // 80% 어두운 배경(dimming) 및 마스크가 필요한 고전 스타일
   const needsDimmingAndMask = speedLineStyle === 'original' || speedLineStyle === 'wind' || speedLineStyle === 'fog';
@@ -504,35 +521,40 @@ export const GameOverlay: React.FC = () => {
         </div>
       )}
 
-      {/* Fever Text/Effect */}
-      {feverLevel > 0 && (
+      {/* Fever Entrance Splash Banner (Fades out after 1.5s to prevent distraction) */}
+      {splashText && (
         <div
+          key={splashKey}
           style={{
             position: 'fixed',
-            top: '8%',
+            top: '40%',
             left: '50%',
-            transform: 'translateX(-50%)',
-            color: feverLevel === 2 ? 'var(--color-yellow-400)' : 'var(--color-white)',
-            fontSize: '28px',
+            transform: 'translate(-50%, -50%)',
+            color: splashText === 'SECOND WIND' ? 'var(--color-yellow-400)' : 'var(--color-white)',
+            fontSize: '36px',
             fontWeight: '900',
-            textShadow: '0 0 20px rgba(0,0,0,0.8)',
-            zIndex: 2000,
+            textShadow: splashText === 'SECOND WIND' 
+              ? '0 0 20px rgba(255, 215, 0, 0.6), 0 0 40px rgba(0, 0, 0, 0.9)' 
+              : '0 0 20px rgba(255, 255, 255, 0.6), 0 0 40px rgba(0, 0, 0, 0.9)',
+            zIndex: 3000,
             pointerEvents: 'none',
-            animation: 'pulse 1s infinite',
+            animation: 'splashAnim 1.5s forwards ease-out',
             whiteSpace: 'nowrap',
-            display: 'flex',
-            alignItems: 'center',
-            gap: 'var(--spacing-md)',
+            letterSpacing: '2px',
           }}
         >
-          <span style={{ fontSize: '32px' }}>{feverLevel === 2 ? '🔥' : '⚡'}</span>
-          <span>{feverLevel === 2 ? 'SECOND WIND' : 'MOMENTUM'}</span>
-          <span style={{ fontSize: '32px' }}>{feverLevel === 2 ? '🔥' : '⚡'}</span>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--spacing-sm)' }}>
+            <span style={{ fontSize: '36px' }}>{splashText === 'SECOND WIND' ? '🔥' : '⚡'}</span>
+            <span>{splashText}</span>
+            <span style={{ fontSize: '36px' }}>{splashText === 'SECOND WIND' ? '🔥' : '⚡'}</span>
+          </div>
           <style>{`
-            @keyframes pulse {
-              0% { transform: translateX(-50%) scale(1); opacity: 0.8; }
-              50% { transform: translateX(-50%) scale(1.05); opacity: 1; }
-              100% { transform: translateX(-50%) scale(1); opacity: 0.8; }
+            @keyframes splashAnim {
+              0% { transform: translate(-50%, -30%) scale(0.6); opacity: 0; filter: blur(4px); }
+              15% { transform: translate(-50%, -50%) scale(1.1); opacity: 1; filter: blur(0); }
+              30% { transform: translate(-50%, -50%) scale(1); opacity: 1; }
+              80% { transform: translate(-50%, -50%) scale(1); opacity: 1; }
+              100% { transform: translate(-50%, -70%) scale(0.95); opacity: 0; filter: blur(2px); }
             }
           `}</style>
         </div>
