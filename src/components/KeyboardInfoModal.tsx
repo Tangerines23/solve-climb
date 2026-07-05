@@ -6,6 +6,7 @@ import { CustomKeypad } from './CustomKeypad';
 import { QwertyKeypad } from './QwertyKeypad';
 import '../pages/QuizPage.css';
 import './KeyboardInfoModal.css';
+import { GameOverlay } from './game/GameOverlay';
 
 import { useGameStore } from '../stores/useGameStore';
 
@@ -488,6 +489,7 @@ export function KeyboardInfoModal({ isOpen, onClose }: KeyboardInfoModalProps) {
               {currentCategory.levels.length}개)
             </div>
           </div>
+          <GameOverlay />
         </div>
       </div>
     );
