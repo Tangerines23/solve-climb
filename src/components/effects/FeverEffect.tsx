@@ -4,10 +4,11 @@ import { useSettingsStore } from '../../stores/useSettingsStore';
 import './Effects.css';
 
 export function FeverEffect() {
-  const { feverLevel, combo } = useGameStore();
+  const { feverLevel, combo, speedLineStyle } = useGameStore();
   const animationEnabled = useSettingsStore((state) => state.animationEnabled);
 
   if (feverLevel === 0 && combo < 2) return null;
+  if (speedLineStyle !== 'original') return null;
 
   return (
     <>

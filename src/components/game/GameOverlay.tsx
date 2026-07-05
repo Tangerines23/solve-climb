@@ -32,6 +32,30 @@ export const GameOverlay: React.FC = () => {
 
   return (
     <>
+      {/* 1단계: 플로팅 단독 / 2단계: 플로팅 + 황금 발광 및 테두리 효과 */}
+      {feverLevel > 0 && speedLineStyle === 'float' && (
+        <style>{`
+          .quiz-content {
+            overflow: visible !important;
+          }
+          .quiz-card, .keyboard-info-modal, .keypad-container {
+            box-shadow: ${feverLevel === 2
+              ? '0 20px 45px rgba(0, 0, 0, 0.6), 0 0 20px rgba(255, 215, 0, 0.45), 0 0 40px rgba(255, 215, 0, 0.25) !important'
+              : '0 25px 50px -12px rgba(0, 0, 0, 0.75) !important'};
+            animation: ${feverLevel === 2 ? 'floatBreathGold' : 'floatBreath'} 5s infinite ease-in-out !important;
+            ${feverLevel === 2 ? 'border: 2px solid rgba(255, 215, 0, 0.85) !important;' : ''}
+            transition: border 0.3s ease, box-shadow 0.3s ease !important;
+          }
+          @keyframes floatBreath {
+            0%, 100% { transform: translateY(0) scale(1); }
+            50% { transform: translateY(-4px) scale(1.003); }
+          }
+          @keyframes floatBreathGold {
+            0%, 100% { transform: translateY(0) scale(1); }
+            50% { transform: translateY(-5px) scale(1.004); }
+          }
+        `}</style>
+      )}
       {/* Exhausted Vignette & Desaturation Effect */}
       {showVignette && (
         <>
@@ -334,31 +358,7 @@ export const GameOverlay: React.FC = () => {
               </g>
             )}
 
-            {feverLevel > 0 && speedLineStyle === 'float' && (
-              <g className="float-effects">
-                <style>{`
-                  .quiz-content {
-                    overflow: visible !important;
-                  }
-                  .quiz-card, .keyboard-info-modal, .keypad-container {
-                    box-shadow: ${feverLevel === 2
-                      ? '0 20px 45px rgba(0, 0, 0, 0.6), 0 0 20px rgba(255, 215, 0, 0.45), 0 0 40px rgba(255, 215, 0, 0.25) !important'
-                      : '0 20px 45px -12px rgba(0, 0, 0, 0.6), 0 0 25px rgba(255, 255, 255, 0.1) !important'};
-                    animation: ${feverLevel === 2 ? 'floatBreathGold' : 'floatBreath'} 5s infinite ease-in-out !important;
-                    ${feverLevel === 2 ? 'border: 2px solid rgba(255, 215, 0, 0.85) !important;' : ''}
-                    transition: border 0.3s ease, box-shadow 0.3s ease !important;
-                  }
-                  @keyframes floatBreath {
-                    0%, 100% { transform: translateY(0) scale(1); }
-                    50% { transform: translateY(-4px) scale(1.003); }
-                  }
-                  @keyframes floatBreathGold {
-                    0%, 100% { transform: translateY(0) scale(1); }
-                    50% { transform: translateY(-5px) scale(1.004); }
-                  }
-                `}</style>
-              </g>
-            )}
+
 
             {feverLevel > 0 && speedLineStyle === 'liquid' && (
               <g className="liquid-effects">
