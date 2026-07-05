@@ -102,6 +102,8 @@ export const GameOverlay: React.FC = () => {
               feverLevel === 2
                 ? 'radial-gradient(circle, rgba(0, 0, 0, 0.8) 40%, rgba(255, 215, 0, 0.25) 100%)'
                 : 'rgba(0, 0, 0, 0.8)',
+            maskImage: 'radial-gradient(circle, transparent 35%, black 75%)',
+            WebkitMaskImage: 'radial-gradient(circle, transparent 35%, black 75%)',
           }}
         >
           <svg width="100%" height="100%">
