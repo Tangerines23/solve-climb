@@ -8,6 +8,8 @@ import { ItemFeedbackRef } from '@/components/game/ItemFeedbackOverlay';
 import { QuizCard } from './QuizCard';
 import { QuizContext } from '../contexts/QuizContext';
 import { useToastStore } from '@/stores/useToastStore';
+import { GameOverlay } from '@/components/game/GameOverlay';
+import { useGameStore } from '@/stores/useGameStore';
 import './QuizPreview.css';
 
 interface QuizPreviewProps {
@@ -69,6 +71,14 @@ export function QuizPreview({
 
   const inputRef = useRef<HTMLInputElement>(null);
   const feedbackRef = useRef<ItemFeedbackRef>(null);
+
+  // 프리뷰 페이지에서 방향키로 효과를 바로 보기 위한 임시 임베드 로직
+  useEffect(() => {
+    useGameStore.setState({ showSpeedLines: true, feverLevel: 1 });
+    return () => {
+      useGameStore.setState({ showSpeedLines: false, feverLevel: 0 });
+    };
+  }, []);
 
   // Preview 모드용 변수들
   const isJapaneseQuizPreview =
@@ -275,6 +285,7 @@ export function QuizPreview({
         data-category={categoryKey}
       >
         <QuizCard />
+        <GameOverlay />
       </div>
     </QuizContext.Provider>
   );
