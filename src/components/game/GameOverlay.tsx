@@ -30,69 +30,6 @@ export const GameOverlay: React.FC = () => {
   // 80% 어두운 배경(dimming) 및 마스크가 필요한 고전 스타일
   const needsDimmingAndMask = speedLineStyle === 'original' || speedLineStyle === 'wind' || speedLineStyle === 'fog' || speedLineStyle === 'liquid';
 
-  useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === '`') {
-        const currentFever = useGameStore.getState().feverLevel;
-        const nextFever = currentFever === 0 ? 1 : currentFever === 1 ? 2 : 0;
-        
-        setPrevFever(0);
-        useGameStore.setState({ showSpeedLines: nextFever > 0, feverLevel: nextFever });
-        
-        const { showToast } = useToastStore.getState();
-        if (nextFever === 1) {
-          showToast('1단계 효과');
-        } else if (nextFever === 2) {
-          showToast('2단계 효과');
-        } else {
-          showToast('효과 비활성화');
-          setSplashText(null);
-        }
-      }
-
-      if (e.key === 'ArrowLeft' || e.key === 'ArrowRight') {
-        const styles: ('original' | 'fog' | 'glow' | 'float' | 'liquid' | 'sweep' | 'zen')[] = [
-          'original',
-          'fog',
-          'glow',
-          'float',
-          'liquid',
-          'sweep',
-          'zen',
-        ];
-        const currentIndex = styles.indexOf(speedLineStyle as any);
-        let newIndex = currentIndex;
-
-        if (currentIndex === -1) {
-          newIndex = 0;
-        } else if (e.key === 'ArrowLeft') {
-          newIndex = (currentIndex - 1 + styles.length) % styles.length;
-        } else if (e.key === 'ArrowRight') {
-          newIndex = (currentIndex + 1) % styles.length;
-        }
-
-        const newStyle = styles[newIndex];
-        setSpeedLineStyle(newStyle);
-
-        const styleNames: Record<string, { num: number; desc: string }> = {
-          original: { num: 1, desc: '오리지널 스피드라인' },
-          fog: { num: 2, desc: '은은한 화면 외곽 안개' },
-          glow: { num: 3, desc: '얇은 테두리 네온 펄스' },
-          float: { num: 4, desc: '카드 입체 플로팅' },
-          liquid: { num: 5, desc: '테두리 액체 충전 바' },
-          sweep: { num: 6, desc: '테두리 라이트 스윕' },
-          zen: { num: 7, desc: '젠 포커스 아웃 비네트' },
-        };
-        const { num, desc } = styleNames[newStyle];
-        useToastStore.getState().showToast(`${num}번 효과: ${desc}`);
-      }
-    };
-
-    window.addEventListener('keydown', handleKeyDown);
-    return () => {
-      window.removeEventListener('keydown', handleKeyDown);
-    };
-  }, [speedLineStyle, setSpeedLineStyle, prevFever]);
 
   return (
     <>
