@@ -10,11 +10,16 @@ export const GameOverlay: React.FC = () => {
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === 'ArrowLeft' || e.key === 'ArrowRight') {
-        const styles: ('original' | 'wind' | 'fog' | 'glow')[] = [
+        const styles: ('original' | 'wind' | 'fog' | 'glow' | 'float' | 'liquid' | 'chalk' | 'sweep' | 'zen')[] = [
           'original',
           'wind',
           'fog',
           'glow',
+          'float',
+          'liquid',
+          'chalk',
+          'sweep',
+          'zen',
         ];
         const currentIndex = styles.indexOf(speedLineStyle);
         let newIndex = currentIndex;
@@ -33,6 +38,11 @@ export const GameOverlay: React.FC = () => {
           wind: 'Cliff Wind & Dust',
           fog: 'Focus Edge Fog',
           glow: 'Subtle Edge Glow',
+          float: 'Card Float & Depth',
+          liquid: 'Liquid Border Gauge',
+          chalk: 'Chalk Powder Dust',
+          sweep: 'Light Sweep Scan',
+          zen: 'Zen Focus Blur',
         };
         setActiveStyleMsg(`Style: ${styleNames[newStyle]}`);
       }
@@ -353,6 +363,130 @@ export const GameOverlay: React.FC = () => {
                 `}</style>
                 <foreignObject x="0" y="0" width="100%" height="100%">
                   <div className="glow-container" />
+                </foreignObject>
+              </g>
+            )}
+
+            {feverLevel === 1 && speedLineStyle === 'float' && (
+              <g className="float-effects">
+                <style>{`
+                  .quiz-card, .keyboard-info-modal, .keypad-container {
+                    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.75), 0 0 40px rgba(255, 255, 255, 0.15) !important;
+                    animation: floatBreath 4s infinite ease-in-out !important;
+                  }
+                  @keyframes floatBreath {
+                    0%, 100% { transform: translateY(0) scale(1); }
+                    50% { transform: translateY(-8px) scale(1.006); }
+                  }
+                `}</style>
+              </g>
+            )}
+
+            {feverLevel === 1 && speedLineStyle === 'liquid' && (
+              <g className="liquid-effects">
+                <style>{`
+                  @keyframes liquidFlow {
+                    0% { background-position: 0% 50%; }
+                    50% { background-position: 100% 50%; }
+                    100% { background-position: 0% 50%; }
+                  }
+                  .liquid-border {
+                    position: absolute;
+                    top: 6px;
+                    left: 6px;
+                    right: 6px;
+                    bottom: 6px;
+                    border: 3px solid transparent;
+                    border-radius: var(--rounded-md);
+                    background-image: linear-gradient(rgba(0, 0, 0, 0.8), rgba(0, 0, 0, 0.8)),
+                                      linear-gradient(90deg, #3b82f6, #f97316, #ec4899, #3b82f6);
+                    background-origin: border-box;
+                    background-clip: content-box, border-box;
+                    background-size: 300% 300%;
+                    animation: liquidFlow 4s infinite linear;
+                    pointer-events: none;
+                  }
+                `}</style>
+                <foreignObject x="0" y="0" width="100%" height="100%">
+                  <div className="liquid-border" />
+                </foreignObject>
+              </g>
+            )}
+
+            {feverLevel === 1 && speedLineStyle === 'chalk' && (
+              <g className="chalk-effects">
+                <style>{`
+                  @keyframes chalkDrift {
+                    0% { transform: translateY(-10px) translateX(0) scale(0.8); opacity: 0; }
+                    10% { opacity: 0.5; }
+                    90% { opacity: 0.5; }
+                    100% { transform: translateY(100vh) translateX(30px) scale(1.2); opacity: 0; }
+                  }
+                  .chalk-particle {
+                    animation: chalkDrift 3.5s infinite ease-in-out;
+                    fill: rgba(255, 255, 255, 0.45);
+                  }
+                `}</style>
+                <circle cx="10%" cy="-20" r="2.5" className="chalk-particle" style={{ animationDelay: '0s', animationDuration: '3s' }} />
+                <circle cx="25%" cy="-20" r="1.5" className="chalk-particle" style={{ animationDelay: '0.5s', animationDuration: '4s' }} />
+                <circle cx="40%" cy="-20" r="2.0" className="chalk-particle" style={{ animationDelay: '1.2s', animationDuration: '3.5s' }} />
+                <circle cx="55%" cy="-20" r="1.8" className="chalk-particle" style={{ animationDelay: '0.2s', animationDuration: '2.8s' }} />
+                <circle cx="70%" cy="-20" r="2.2" className="chalk-particle" style={{ animationDelay: '1.8s', animationDuration: '4.2s' }} />
+                <circle cx="85%" cy="-20" r="1.2" className="chalk-particle" style={{ animationDelay: '0.8s', animationDuration: '3.2s' }} />
+                <circle cx="95%" cy="-20" r="2.0" className="chalk-particle" style={{ animationDelay: '2.2s', animationDuration: '3.7s' }} />
+                <circle cx="18%" cy="-20" r="2.5" className="chalk-particle" style={{ animationDelay: '2.8s', animationDuration: '3.1s' }} />
+                <circle cx="33%" cy="-20" r="1.5" className="chalk-particle" style={{ animationDelay: '1.5s', animationDuration: '4.5s' }} />
+                <circle cx="48%" cy="-20" r="2.0" className="chalk-particle" style={{ animationDelay: '3.2s', animationDuration: '3.3s' }} />
+                <circle cx="63%" cy="-20" r="1.8" className="chalk-particle" style={{ animationDelay: '0.9s', animationDuration: '3.8s' }} />
+                <circle cx="78%" cy="-20" r="2.2" className="chalk-particle" style={{ animationDelay: '2.5s', animationDuration: '3.6s' }} />
+              </g>
+            )}
+
+            {feverLevel === 1 && speedLineStyle === 'sweep' && (
+              <g className="sweep-effects">
+                <style>{`
+                  @keyframes sweepMove {
+                    0% { clip-path: inset(0 100% 100% 0); }
+                    25% { clip-path: inset(0 0 100% 0); }
+                    50% { clip-path: inset(0 0 0 0); }
+                    75% { clip-path: inset(100% 0 0 0); }
+                    100% { clip-path: inset(100% 0 0 100%); }
+                  }
+                  .sweep-border {
+                    position: absolute;
+                    top: 4px;
+                    left: 4px;
+                    right: 4px;
+                    bottom: 4px;
+                    border: 2px solid rgba(255, 255, 255, 0.85);
+                    border-radius: var(--rounded-md);
+                    box-shadow: 0 0 15px rgba(255, 255, 255, 0.6);
+                    animation: sweepMove 3s infinite linear;
+                    pointer-events: none;
+                  }
+                `}</style>
+                <foreignObject x="0" y="0" width="100%" height="100%">
+                  <div className="sweep-border" />
+                </foreignObject>
+              </g>
+            )}
+
+            {feverLevel === 1 && speedLineStyle === 'zen' && (
+              <g className="zen-effects">
+                <style>{`
+                  .zen-overlay {
+                    position: absolute;
+                    top: 0;
+                    left: 0;
+                    right: 0;
+                    bottom: 0;
+                    backdrop-filter: blur(8px);
+                    -webkit-backdrop-filter: blur(8px);
+                    pointer-events: none;
+                  }
+                `}</style>
+                <foreignObject x="0" y="0" width="100%" height="100%">
+                  <div className="zen-overlay" />
                 </foreignObject>
               </g>
             )}

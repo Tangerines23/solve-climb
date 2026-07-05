@@ -64,13 +64,15 @@ export function NotificationPlayground() {
       if (feverLevel === 1) {
         setCombo(0);
       } else {
-        setCombo(3);
+        setCombo(5);
+        setActiveModal('keyboard');
       }
     } else {
       if (feverLevel === 2) {
         setCombo(0);
       } else {
-        setCombo(10);
+        setCombo(25);
+        setActiveModal('keyboard');
       }
     }
   };

@@ -7,6 +7,8 @@ import { QwertyKeypad } from './QwertyKeypad';
 import '../pages/QuizPage.css';
 import './KeyboardInfoModal.css';
 
+import { useGameStore } from '../stores/useGameStore';
+
 interface KeyboardInfoModalProps {
   isOpen: boolean;
   onClose: () => void;
@@ -28,6 +30,7 @@ type KeyboardDisplayType = 'qwerty-text' | 'qwerty-number' | 'custom';
 export function KeyboardInfoModal({ isOpen, onClose }: KeyboardInfoModalProps) {
   // Zustand Selector 패턴 적용
   const keyboardType = useSettingsStore((state) => state.keyboardType);
+  const { feverLevel, showSpeedLines, setCombo } = useGameStore();
   const [, setIsLandscape] = useState(false);
 
   // 키보드 타입별로 사용되는 카테고리 정보 수집 함수
@@ -349,7 +352,50 @@ export function KeyboardInfoModal({ isOpen, onClose }: KeyboardInfoModalProps) {
                 {getKeyboardTypeName(selectedKeyboardType)}
               </h2>
             </div>
-            <div className="quiz-header-spacer"></div>
+            <div style={{ display: 'flex', gap: 'var(--spacing-xs)', alignItems: 'center' }}>
+              <button
+                onClick={() => {
+                  if (feverLevel === 1 && showSpeedLines) {
+                    setCombo(0);
+                  } else {
+                    setCombo(5);
+                  }
+                }}
+                style={{
+                  padding: 'var(--spacing-xs) var(--spacing-sm)',
+                  backgroundColor: feverLevel === 1 && showSpeedLines ? 'var(--color-orange-500)' : 'var(--color-bg-tertiary)',
+                  color: 'var(--color-text-primary)',
+                  border: 'none',
+                  borderRadius: 'var(--rounded-sm)',
+                  fontSize: '11px',
+                  fontWeight: 'bold',
+                  cursor: 'pointer'
+                }}
+              >
+                FX 1 {feverLevel === 1 && showSpeedLines ? 'ON' : 'OFF'}
+              </button>
+              <button
+                onClick={() => {
+                  if (feverLevel === 2 && showSpeedLines) {
+                    setCombo(0);
+                  } else {
+                    setCombo(25);
+                  }
+                }}
+                style={{
+                  padding: 'var(--spacing-xs) var(--spacing-sm)',
+                  backgroundColor: feverLevel === 2 && showSpeedLines ? 'var(--color-yellow-500)' : 'var(--color-bg-tertiary)',
+                  color: 'var(--color-text-primary)',
+                  border: 'none',
+                  borderRadius: 'var(--rounded-sm)',
+                  fontSize: '11px',
+                  fontWeight: 'bold',
+                  cursor: 'pointer'
+                }}
+              >
+                FX 2 {feverLevel === 2 && showSpeedLines ? 'ON' : 'OFF'}
+              </button>
+            </div>
           </header>
 
           {/* 퀴즈 페이지와 동일한 컨텐츠 영역 구조 */}

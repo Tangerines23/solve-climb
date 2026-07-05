@@ -13,8 +13,8 @@ interface GameState {
   showSpeedLines: boolean;
   showVignette: boolean;
   lives: number; // Survival Mode Lives (Hearts)
-  speedLineStyle: 'original' | 'wind' | 'fog' | 'glow';
-  setSpeedLineStyle: (style: 'original' | 'wind' | 'fog' | 'glow') => void;
+  speedLineStyle: 'original' | 'wind' | 'fog' | 'glow' | 'float' | 'liquid' | 'chalk' | 'sweep' | 'zen';
+  setSpeedLineStyle: (style: 'original' | 'wind' | 'fog' | 'glow' | 'float' | 'liquid' | 'chalk' | 'sweep' | 'zen') => void;
 
   setScore: (score: number) => void;
   incrementCombo: (currentLevel?: number) => void;
