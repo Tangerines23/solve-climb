@@ -278,7 +278,9 @@ export function LevelSelectPage() {
             ‹
           </button>
           <div className="world-info">
-            <span className="world-label">CURRENT RIDGE</span>
+            <span className="world-label">
+              {mountainParamSafe === 'language' ? 'LANG RIDGE' : 'MATH RIDGE'}
+            </span>
             <h1 className="world-name">{worldName}</h1>
           </div>
           <button className="world-switch-btn next" onClick={() => handleWorldChange('next')}>
