@@ -1,8 +1,6 @@
 // 레벨 진행 상태 관리 스토어
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
-import { supabase } from '../utils/supabaseClient';
-import { safeSupabaseQuery } from '../utils/debugFetch';
 import { GameMode, Tier } from '../types/quiz';
 import { useDebugStore } from './useDebugStore';
 import { useToastStore } from './useToastStore';
@@ -314,20 +312,13 @@ export const useLevelProgressStore = create<LevelProgressState>()(
 
         syncProgress: async () => {
           try {
-            const authResult = await safeSupabaseQuery(supabase.auth.getUser());
-            const user = authResult?.data?.user;
-            if (!user) return;
+            const result = await LevelSyncService.fetchUserProgress();
+            if (!result.success) {
+              if (result.error) throw new Error(result.error);
+              return;
+            }
 
-            const { data: records, error } = await safeSupabaseQuery(
-              supabase
-                .from('user_level_records')
-                .select(
-                  'world_id, category_id, subject_id, level, mode_code, best_score, updated_at'
-                )
-                .eq('user_id', user.id)
-            );
-
-            if (error) throw error;
+            const records = result.data;
 
             if (records) {
               set((state) => {

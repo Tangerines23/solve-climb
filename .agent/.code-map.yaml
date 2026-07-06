@@ -1,6 +1,6 @@
 
 project: solve-climb
-generatedAt: "2026-07-06T02:46:18.552Z"
+generatedAt: "2026-07-06T06:30:07.016Z"
 files:
   src/App.tsx:
     imports: [@/utils/resilientLazy, @/stores/useLevelProgressStore, @/stores/useAuthStore, @/hooks/useCustomBackNavigation, @/components/GlobalLoadingIndicator, @/stores/useErrorLogStore, @/stores/useDebugStore, @/stores/useSettingsStore, @/hooks/useConnectivity, @/components/PwaUpdateNotification, @/features/auth, @/components/GlobalToastContainer]
@@ -944,7 +944,7 @@ files:
   src/stores/useGameStore.ts:
     imports: [../constants/game, ../services]
   src/stores/useLevelProgressStore.ts:
-    imports: [../utils/supabaseClient, ../utils/debugFetch, ../types/quiz, ./useDebugStore, ./useToastStore, ../constants/ui, ../utils/validation, ../services/LevelSyncService]
+    imports: [../types/quiz, ./useDebugStore, ./useToastStore, ../constants/ui, ../utils/validation, ../services/LevelSyncService]
   src/stores/useProfileStore.ts:
     imports: [./useLevelProgressStore, ../services, ./useLevelProgressStore]
   src/stores/useQuizStore.ts:
@@ -2568,10 +2568,13 @@ files:
           - name: resetProgress
             returns: "Promise<import(\"C:/Users/ghkdd/gemini-projects/solve-climb/src/features/quiz/services/LevelSyncService\").LevelSyncResult>"
             calls: [safeSupabaseQuery, supabase.rpc]
+          - name: fetchUserProgress
+            returns: "Promise<{ success: boolean; data?: any[] | undefined; error?: string | undefined; }>"
+            calls: [safeSupabaseQuery, supabase.auth.getUser, "supabase .from('user_level_records') .select( 'world_id, category_id, subject_id, level, mode_code, best_score, updated_at' ) .eq", "supabase .from('user_level_records') .select", "supabase .from", logError]
   src/features/quiz/types/quizProps.ts:
     imports: [./quiz]
   src/features/quiz/utils/challenge.ts:
-    imports: [@/config/app, @/services, @/stores/useFeatureFlagStore]
+    imports: [@/config/app, @/services, @/stores/useFeatureFlagStore, ./seededRandom]
     exports:
       - name: generateTodayChallenge
         params:
@@ -2585,17 +2588,6 @@ files:
         returns: "Promise<import(\"C:/Users/ghkdd/gemini-projects/solve-climb/src/features/quiz/utils/challenge\").TodayChallenge>"
         description: 오늘의 챌린지를 가져옵니다
         calls: [getTodayDateString, storageService.get, generateTodayChallenge, storageService.set]
-      - name: SeededRandom
-        type: class
-        methods:
-          - name: random
-            returns: number
-          - name: randomInt
-            params:
-              min: number
-              max: number
-            returns: number
-            calls: [Math.floor, this.random]
   src/features/quiz/utils/scoreCalculator.ts:
     imports: [@/stores/useLevelProgressStore, @/config/app, ../domain/Altitude, @/constants/game]
     exports:
@@ -2665,3 +2657,11 @@ files:
               max: number
             returns: number
             calls: [Math.floor, this.next]
+          - name: random
+            returns: number
+          - name: randomInt
+            params:
+              min: number
+              max: number
+            returns: number
+            calls: [Math.floor, this.random]

@@ -84,4 +84,36 @@ export class LevelSyncService {
       return { success: false, error: '서버 연결 실패' };
     }
   }
+
+  /**
+   * 서버로부터 사용자의 레벨 진행 상황 레코드를 가져옴
+   */
+  static async fetchUserProgress(): Promise<{
+    success: boolean;
+    data?: any[];
+    error?: string;
+  }> {
+    try {
+      const authResult = (await safeSupabaseQuery(supabase.auth.getUser())) as UserResponse;
+      const user = authResult?.data?.user;
+
+      if (!user) {
+        return { success: false, error: 'No user found' };
+      }
+
+      const { data: records, error } = await safeSupabaseQuery(
+        supabase
+          .from('user_level_records')
+          .select('world_id, category_id, subject_id, level, mode_code, best_score, updated_at')
+          .eq('user_id', user.id)
+      );
+
+      if (error) throw error;
+
+      return { success: true, data: records ?? [] };
+    } catch (error) {
+      logError('LevelSyncService#fetchUserProgress', error);
+      return { success: false, error: error instanceof Error ? error.message : 'Unknown error' };
+    }
+  }
 }

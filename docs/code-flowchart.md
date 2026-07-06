@@ -236,7 +236,6 @@ graph TD
   src_stores_useDailyRewardStore_ts --> src_utils_supabaseClient_ts
   src_stores_useFeatureFlagStore_ts --> src_services_index_ts
   src_stores_useGameStore_ts --> src_services_index_ts
-  src_stores_useLevelProgressStore_ts --> src_utils_supabaseClient_ts
   src_stores_useLevelProgressStore_ts --> src_stores_useDebugStore_ts
   src_stores_useLevelProgressStore_ts --> src_stores_useToastStore_ts
   src_stores_useLevelProgressStore_ts --> src_services_LevelSyncService_ts

@@ -16,4 +16,14 @@ export class SeededRandom {
   nextInt(min: number, max: number): number {
     return Math.floor(this.next() * (max - min + 1)) + min;
   }
+
+  // LCG (Linear Congruential Generator) 기반 (challenge.ts 에서 사용)
+  random(): number {
+    this.seed = (this.seed * 9301 + 49297) % 233280;
+    return this.seed / 233280;
+  }
+
+  randomInt(min: number, max: number): number {
+    return Math.floor(this.random() * (max - min)) + min;
+  }
 }

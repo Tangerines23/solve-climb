@@ -1,6 +1,7 @@
 import { APP_CONFIG } from '@/config/app';
 import { storageService, STORAGE_KEYS } from '@/services';
 import { useFeatureFlagStore } from '@/stores/useFeatureFlagStore';
+import { SeededRandom } from './seededRandom';
 
 export interface TodayChallenge {
   id: string;
@@ -31,26 +32,6 @@ function getTodayDateString(): string {
 function dateToSeed(dateString: string): number {
   const numeric = parseInt(dateString.replace(/-/g, ''), 10);
   return numeric;
-}
-
-/**
- * 시드 기반 랜덤 숫자 생성기
- */
-export class SeededRandom {
-  private seed: number;
-
-  constructor(seed: number) {
-    this.seed = seed;
-  }
-
-  random(): number {
-    this.seed = (this.seed * 9301 + 49297) % 233280;
-    return this.seed / 233280;
-  }
-
-  randomInt(min: number, max: number): number {
-    return Math.floor(this.random() * (max - min)) + min;
-  }
 }
 
 /**

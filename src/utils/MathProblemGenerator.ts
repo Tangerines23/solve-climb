@@ -600,7 +600,13 @@ function generateStandardProblem(
     if (!divisorRange) throw new Error('Stage has no ranges');
     const quotientRange = { min: 2, max: 9 }; // Reasonable quotient range for mental math
 
-    b = getRandomInt(divisorRange.min, divisorRange.max, rng);
+    let loopCount = 0;
+    do {
+      b = getRandomInt(divisorRange.min, divisorRange.max, rng);
+      loopCount++;
+    } while (b === 0 && loopCount < 100);
+    if (b === 0) b = 1; // Fallback to 1 if range consists only of 0
+
     const answer = getRandomInt(quotientRange.min, quotientRange.max, rng);
     a = b * answer;
 
@@ -744,12 +750,11 @@ function generateDecimalProblem(
 
   const result = calculate(a, b, op);
   const roundedResult = Math.round(result * factor) / factor;
-  const isIntegerResult = Number.isInteger(roundedResult);
 
   return {
     expression: `${a.toFixed(precision)} ${op} ${b.toFixed(precision)}`,
     answer: roundedResult,
-    inputType: isIntegerResult ? 'number' : 'decimal',
+    inputType: 'decimal',
   };
 }
 
