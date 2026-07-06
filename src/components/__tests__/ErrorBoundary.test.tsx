@@ -1,7 +1,7 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/react';
 import { ErrorBoundary } from '../ErrorBoundary';
-import { ErrorFallback } from '../ErrorFallback';
+
 import { logError } from '../../utils/errorHandler';
 
 // Mock ErrorFallback
@@ -40,7 +40,6 @@ const ThrowError = ({ shouldThrow }: { shouldThrow: boolean }) => {
 describe('ErrorBoundary', () => {
   const originalEnv = (import.meta as unknown as { env: { DEV: boolean; [key: string]: unknown } })
     .env;
-  const _originalConsoleError = console.error;
 
   beforeEach(() => {
     vi.clearAllMocks();
@@ -124,11 +123,6 @@ describe('ErrorBoundary', () => {
       value: { ...originalEnv, DEV: true },
       writable: true,
     });
-
-    const _error = new Error('Test error');
-    const _errorInfo = {
-      componentStack: 'TestComponent\n  at ErrorBoundary',
-    } as React.ErrorInfo;
 
     render(
       <ErrorBoundary>

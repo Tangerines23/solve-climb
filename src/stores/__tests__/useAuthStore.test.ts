@@ -227,7 +227,7 @@ describe('useAuthStore', () => {
 
   describe('Session Recovery & Auth Changes', () => {
     it('should recover session from local storage', async () => {
-      const { storageService, STORAGE_KEYS } = await import('../../services');
+      const { storageService } = await import('../../services');
       vi.mocked(storageService.get).mockReturnValue({
         userId: '00000000-0000-0000-0000-000000000005',
       });

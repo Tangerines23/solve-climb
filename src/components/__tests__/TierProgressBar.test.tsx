@@ -34,7 +34,7 @@ describe('TierProgressBar', () => {
       remaining: 500,
     };
 
-    vi.mocked(calculateTier).mockResolvedValue(mockTier);
+    vi.mocked(calculateTier).mockResolvedValue(mockTier as any);
     vi.mocked(getNextTierInfo).mockResolvedValue(mockNextTier);
 
     render(<TierProgressBar totalScore={1000} />);
@@ -60,7 +60,7 @@ describe('TierProgressBar', () => {
       remaining: 500,
     };
 
-    vi.mocked(calculateTier).mockResolvedValue(mockTier);
+    vi.mocked(calculateTier).mockResolvedValue(mockTier as any);
     vi.mocked(getNextTierInfo).mockResolvedValue(mockNextTier);
 
     const { rerender } = render(<TierProgressBar totalScore={1000} size="small" />);
@@ -86,7 +86,7 @@ describe('TierProgressBar', () => {
       remaining: 500,
     };
 
-    vi.mocked(calculateTier).mockResolvedValue(mockTier);
+    vi.mocked(calculateTier).mockResolvedValue(mockTier as any);
     vi.mocked(getNextTierInfo).mockResolvedValue(mockNextTier);
 
     render(<TierProgressBar totalScore={1000} />);
@@ -109,7 +109,7 @@ describe('TierProgressBar', () => {
       remaining: 500,
     };
 
-    vi.mocked(calculateTier).mockResolvedValue(mockTier);
+    vi.mocked(calculateTier).mockResolvedValue(mockTier as any);
     vi.mocked(getNextTierInfo).mockResolvedValue(mockNextTier);
 
     render(<TierProgressBar totalScore={1000} />);
@@ -132,7 +132,7 @@ describe('TierProgressBar', () => {
       remaining: 500,
     };
 
-    vi.mocked(calculateTier).mockResolvedValue(mockTier);
+    vi.mocked(calculateTier).mockResolvedValue(mockTier as any);
     vi.mocked(getNextTierInfo).mockResolvedValue(mockNextTier);
 
     render(<TierProgressBar totalScore={1000} />);
@@ -155,7 +155,7 @@ describe('TierProgressBar', () => {
       remaining: 500,
     };
 
-    vi.mocked(calculateTier).mockResolvedValue(mockTier);
+    vi.mocked(calculateTier).mockResolvedValue(mockTier as any);
     vi.mocked(getNextTierInfo).mockResolvedValue(mockNextTier);
 
     render(<TierProgressBar totalScore={1000} />);
@@ -178,7 +178,7 @@ describe('TierProgressBar', () => {
       remaining: 500,
     };
 
-    vi.mocked(calculateTier).mockResolvedValue(mockTier);
+    vi.mocked(calculateTier).mockResolvedValue(mockTier as any);
     vi.mocked(getNextTierInfo).mockResolvedValue(mockNextTier);
 
     const { container } = render(<TierProgressBar totalScore={500} />);
@@ -197,7 +197,7 @@ describe('TierProgressBar', () => {
       currentCycleScore: 500,
     };
 
-    vi.mocked(calculateTier).mockResolvedValue(mockTier);
+    vi.mocked(calculateTier).mockResolvedValue(mockTier as any);
     vi.mocked(getNextTierInfo).mockResolvedValue(null);
 
     const { container } = render(<TierProgressBar totalScore={1000} />);

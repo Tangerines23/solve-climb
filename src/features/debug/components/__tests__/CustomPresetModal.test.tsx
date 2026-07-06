@@ -11,7 +11,14 @@ describe('CustomPresetModal', () => {
   });
 
   it('should not render when isOpen is false', () => {
-    render(<CustomPresetModal isOpen={false} onClose={mockOnClose} onSave={mockOnSave} />);
+    render(
+      <CustomPresetModal
+        isOpen={false}
+        onClose={mockOnClose}
+        onSave={mockOnSave}
+        editingPreset={null}
+      />
+    );
 
     expect(screen.queryByText(/커스텀 프리셋/)).not.toBeInTheDocument();
   });
@@ -52,6 +59,7 @@ describe('CustomPresetModal', () => {
       name: 'Test Preset',
       description: 'Test Description',
       actions: [],
+      isCustom: true as const,
     };
     const { container } = render(
       <CustomPresetModal

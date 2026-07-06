@@ -1,12 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { generateQuestion } from '../quizGenerator';
-import * as MathProblemGenerator from '../MathProblemGenerator';
-import * as EquationProblemGenerator from '../EquationProblemGenerator';
-import * as LogicProblemGenerator from '../LogicProblemGenerator';
-import * as GeometryProblemGenerator from '../GeometryProblemGenerator';
-import * as StatsProblemGenerator from '../StatsProblemGenerator';
-import * as CSProblemGenerator from '../CSProblemGenerator';
-import * as CalculusProblemGenerator from '../CalculusProblemGenerator';
 
 describe('quizGenerator Unit Tests', () => {
   beforeEach(() => {

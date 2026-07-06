@@ -2,7 +2,7 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, waitFor } from '@testing-library/react';
 import { BadgeSystemSection } from '../BadgeSystemSection';
 import { supabase } from '@/utils/supabaseClient';
-import type { SupabaseClient, Session, AuthError } from '@supabase/supabase-js';
+import type { SupabaseClient, Session } from '@supabase/supabase-js';
 
 // Mock dependencies
 vi.mock('@/stores/useLevelProgressStore', () => ({

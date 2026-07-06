@@ -516,7 +516,7 @@ const stageCache = new Map<number, StageConfig>();
 
 export function generateProblem(
   stageId: number,
-  _difficulty: Difficulty,
+  _difficulty: Difficulty = 'medium',
   tier: Tier = 'normal',
   rng?: { random: () => number; randomInt: (min: number, max: number) => number }
 ): MathProblem {

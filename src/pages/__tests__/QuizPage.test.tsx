@@ -308,7 +308,7 @@ vi.mock('@/features/quiz/components/QuizLayout', async () => {
           </button>
           <button
             data-testid="alert-action-btn"
-            onClick={() => modalHandlers.onAlertAction && modalHandlers.onAlertAction()}
+            onClick={() => modalHandlers.onAlertAction && modalHandlers.onAlertAction(true as any)}
           >
             Alert Action
           </button>
@@ -337,7 +337,7 @@ vi.mock('@/features/quiz/components/QuizPreview', () => ({
 // Mock URL params validation
 vi.mock('@/utils/urlParams', () => ({
   validateWorldParam: vi.fn((v) => v || 'World1'),
-  validateCategoryInWorldParam: vi.fn((w, c) => c || '기초'),
+  validateCategoryInWorldParam: vi.fn((_w, c) => c || '기초'),
   validateLevelParam: vi.fn((l) => (l ? parseInt(l) : 1)),
   validateModeParam: vi.fn((m) => m || 'practice'),
 }));

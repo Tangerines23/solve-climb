@@ -16,7 +16,7 @@ vi.mock('../../stores/useLevelProgressStore', () => ({
 describe('MyRecordCard', () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    mockGetBestRecords.mockReturnValue({ 'time-attack': null, survival: null });
+    mockGetBestRecords.mockReturnValue({ 'time-attack': null, survival: null } as any);
   });
 
   it('should render loading state initially', async () => {
@@ -30,7 +30,7 @@ describe('MyRecordCard', () => {
     mockGetBestRecords.mockReturnValue({
       'time-attack': 1000,
       survival: 2000,
-    });
+    } as any);
 
     await act(async () => {
       render(<MyRecordCard world="math" category="arithmetic" categoryName="사칙연산" />);
@@ -53,7 +53,7 @@ describe('MyRecordCard', () => {
     mockGetBestRecords.mockReturnValue({
       'time-attack': null,
       survival: null,
-    });
+    } as any);
 
     await act(async () => {
       render(<MyRecordCard world="math" category="arithmetic" categoryName="사칙연산" />);
@@ -74,7 +74,7 @@ describe('MyRecordCard', () => {
     mockGetBestRecords.mockReturnValue({
       'time-attack': 1500,
       survival: null,
-    });
+    } as any);
 
     await act(async () => {
       render(<MyRecordCard world="math" category="arithmetic" categoryName="사칙연산" />);
@@ -95,7 +95,7 @@ describe('MyRecordCard', () => {
     mockGetBestRecords.mockReturnValue({
       'time-attack': null,
       survival: 3000,
-    });
+    } as any);
 
     await act(async () => {
       render(<MyRecordCard world="math" category="arithmetic" categoryName="사칙연산" />);
@@ -116,7 +116,7 @@ describe('MyRecordCard', () => {
     mockGetBestRecords.mockReturnValue({
       'time-attack': 1234567,
       survival: 9876543,
-    });
+    } as any);
 
     await act(async () => {
       render(<MyRecordCard world="math" category="arithmetic" categoryName="사칙연산" />);

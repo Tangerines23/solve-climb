@@ -103,7 +103,6 @@ describe('AdService', () => {
 
   describe('showMobileAppAd', () => {
     it('should call AdMob prepare and show', async () => {
-      // @ts-expect-error: Mocking AdMob result
       vi.mocked(AdMob.showRewardVideoAd).mockResolvedValue({ type: 'rewarded', amount: 1 });
 
       const result = await AdService.showMobileAppAd('mineral_recharge');

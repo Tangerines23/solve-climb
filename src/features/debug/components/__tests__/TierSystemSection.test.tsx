@@ -4,7 +4,7 @@ import { TierSystemSection } from '../TierSystemSection';
 import { supabase } from '@/utils/supabaseClient';
 import { useMyPageStats, type UseMyPageStatsResult } from '@/features/mypage';
 import { loadTierDefinitions, type TierInfo } from '@/constants/tiers';
-import type { Session, AuthError } from '@supabase/supabase-js';
+import type { Session } from '@supabase/supabase-js';
 
 // Mock dependencies
 vi.mock('@/stores/useLevelProgressStore', () => ({

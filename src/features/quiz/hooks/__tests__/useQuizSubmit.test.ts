@@ -3,7 +3,7 @@ import { renderHook, act } from '@testing-library/react';
 import { useQuizSubmit } from '../useQuizSubmit';
 import type { QuizQuestion, GameMode } from '../../types/quiz';
 import { useGameStore } from '@/stores/useGameStore';
-import { CLIMB_PER_CORRECT, MAX_POSSIBLE_ANSWER } from '@/constants/game';
+
 import { quizEventBus } from '@/lib/eventBus';
 
 // Mock dependencies
@@ -558,7 +558,7 @@ describe('useQuizSubmit', () => {
         ...defaultParams,
         onAnswerSubmitted,
         currentQuestionId: null,
-      })
+      } as any)
     );
 
     const mockEvent = createMockEvent();
@@ -598,7 +598,7 @@ describe('useQuizSubmit', () => {
         ...defaultParams,
         useSystemKeyboard: false,
         inputRef,
-      })
+      } as any)
     );
 
     const mockEvent = createMockEvent();
@@ -615,7 +615,7 @@ describe('useQuizSubmit', () => {
       useQuizSubmit({
         ...defaultParams,
         hapticEnabled: true,
-      })
+      } as any)
     );
 
     const mockEvent = createMockEvent();

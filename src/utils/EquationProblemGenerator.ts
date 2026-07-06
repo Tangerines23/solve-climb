@@ -321,7 +321,7 @@ function generateInequalitySolve(rng?: {
  */
 export function generateEquation(
   level: number,
-  _difficulty: Difficulty,
+  _difficulty: Difficulty = 'medium',
   rng?: { random: () => number; randomInt: (min: number, max: number) => number }
 ): EquationProblem {
   const stage = EQUATION_STAGES.find((s) => s.id === level);

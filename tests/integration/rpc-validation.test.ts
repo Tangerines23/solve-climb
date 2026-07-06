@@ -5,11 +5,7 @@
 
 import { describe, test, expect, beforeAll } from 'vitest';
 import { supabase as realSupabase } from '../../src/utils/supabaseClient';
-import {
-  RankingListSchema,
-  ItemActionResponseSchema,
-  CommonResponseSchema,
-} from '../../src/utils/rpcValidator';
+import { RankingListSchema, ItemActionResponseSchema } from '../../src/utils/rpcValidator';
 
 const hasCredentials = process.env.VITE_SUPABASE_URL && process.env.VITE_SUPABASE_ANON_KEY;
 const supabase = hasCredentials ? realSupabase : null;

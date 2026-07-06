@@ -30,7 +30,7 @@ describe('useCustomBackNavigation', () => {
     vi.clearAllMocks();
     vi.mocked(useNavigate).mockReturnValue(mockNavigate);
     vi.mocked(useLocation).mockReturnValue(mockLocation);
-    vi.mocked(useProfileStore.getState).mockReturnValue({ isProfileComplete: true });
+    vi.mocked(useProfileStore.getState).mockReturnValue({ isProfileComplete: true } as any);
 
     // Mock window.history
     Object.defineProperty(window, 'history', {
@@ -282,7 +282,7 @@ describe('useCustomBackNavigation', () => {
       ...mockLocation,
       pathname: APP_CONFIG.ROUTES.MY_PAGE,
     });
-    vi.mocked(useProfileStore.getState).mockReturnValue({ isProfileComplete: false });
+    vi.mocked(useProfileStore.getState).mockReturnValue({ isProfileComplete: false } as any);
 
     renderHook(() => useCustomBackNavigation());
 

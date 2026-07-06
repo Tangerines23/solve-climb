@@ -18,7 +18,7 @@ describe('GlobalLoadingIndicator', () => {
       const state = {
         isAnyLoading: () => false,
       };
-      return selector(state);
+      return selector(state as any);
     });
 
     const { container } = render(<GlobalLoadingIndicator />);
@@ -30,7 +30,7 @@ describe('GlobalLoadingIndicator', () => {
       const state = {
         isAnyLoading: () => true,
       };
-      return selector(state);
+      return selector(state as any);
     });
 
     render(<GlobalLoadingIndicator />);
@@ -42,7 +42,7 @@ describe('GlobalLoadingIndicator', () => {
       const state = {
         isAnyLoading: () => true,
       };
-      return selector(state);
+      return selector(state as any);
     });
 
     const { container } = render(<GlobalLoadingIndicator />);
@@ -55,7 +55,7 @@ describe('GlobalLoadingIndicator', () => {
       const state = {
         isAnyLoading: () => true,
       };
-      return selector(state);
+      return selector(state as any);
     });
 
     const { container } = render(<GlobalLoadingIndicator />);
@@ -75,7 +75,7 @@ describe('GlobalLoadingIndicator', () => {
       const state = {
         isAnyLoading: () => loadingState,
       };
-      return selector(state);
+      return selector(state as any);
     });
 
     const { rerender } = render(<GlobalLoadingIndicator />);

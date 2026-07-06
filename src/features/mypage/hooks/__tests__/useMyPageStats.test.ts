@@ -2,8 +2,8 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { renderHook, waitFor, act } from '@testing-library/react';
 import { useMyPageStats } from '../useMyPageStats';
 import { supabase } from '@/utils/supabaseClient';
-import { storageService, STORAGE_KEYS } from '@/services';
-import type { Subscription, PostgrestError } from '@supabase/supabase-js';
+import { storageService } from '@/services';
+import type { PostgrestError } from '@supabase/supabase-js';
 import { isLocalSession } from '@/utils/safeJsonParse';
 
 // Helper for Supabase chain mocking

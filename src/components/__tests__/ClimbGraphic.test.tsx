@@ -56,12 +56,14 @@ describe('ClimbGraphic', () => {
     const { container } = render(
       <BrowserRouter>
         <ClimbGraphic
-          category="math"
-          subTopic="arithmetic"
-          levels={[
-            { level: 1, name: 'Level 1', description: 'Test' },
-            { level: 2, name: 'Level 2', description: 'Test' },
-          ]}
+          {...({
+            category: 'math',
+            subTopic: 'arithmetic',
+            levels: [
+              { level: 1, name: 'Level 1', description: 'Test' },
+              { level: 2, name: 'Level 2', description: 'Test' },
+            ],
+          } as any)}
         />
       </BrowserRouter>
     );
@@ -73,12 +75,14 @@ describe('ClimbGraphic', () => {
     const { container } = render(
       <BrowserRouter>
         <ClimbGraphic
-          category="math"
-          subTopic="arithmetic"
-          levels={[
-            { level: 1, name: 'Level 1', description: 'Test' },
-            { level: 2, name: 'Level 2', description: 'Test' },
-          ]}
+          {...({
+            category: 'math',
+            subTopic: 'arithmetic',
+            levels: [
+              { level: 1, name: 'Level 1', description: 'Test' },
+              { level: 2, name: 'Level 2', description: 'Test' },
+            ],
+          } as any)}
         />
       </BrowserRouter>
     );
@@ -92,13 +96,15 @@ describe('ClimbGraphic', () => {
     const { container } = render(
       <BrowserRouter>
         <ClimbGraphic
-          category="math"
-          subTopic="arithmetic"
-          levels={[
-            { level: 1, name: 'Level 1', description: 'Test' },
-            { level: 2, name: 'Level 2', description: 'Test' },
-          ]}
-          onLevelClick={onLevelClick}
+          {...({
+            category: 'math',
+            subTopic: 'arithmetic',
+            levels: [
+              { level: 1, name: 'Level 1', description: 'Test' },
+              { level: 2, name: 'Level 2', description: 'Test' },
+            ],
+            onLevelClick: onLevelClick,
+          } as any)}
         />
       </BrowserRouter>
     );
@@ -120,13 +126,15 @@ describe('ClimbGraphic', () => {
     const { container } = render(
       <BrowserRouter>
         <ClimbGraphic
-          category="math"
-          subTopic="arithmetic"
-          levels={[
-            { level: 1, name: 'Level 1', description: 'Test' },
-            { level: 2, name: 'Level 2', description: 'Test' },
-          ]}
-          onUnderDevelopmentClick={onUnderDevelopmentClick}
+          {...({
+            category: 'math',
+            subTopic: 'arithmetic',
+            levels: [
+              { level: 1, name: 'Level 1', description: 'Test' },
+              { level: 2, name: 'Level 2', description: 'Test' },
+            ],
+            onUnderDevelopmentClick: onUnderDevelopmentClick,
+          } as any)}
         />
       </BrowserRouter>
     );
@@ -140,12 +148,14 @@ describe('ClimbGraphic', () => {
     const { container } = render(
       <BrowserRouter>
         <ClimbGraphic
-          category="math"
-          subTopic="equations"
-          levels={[
-            { level: 1, name: 'Level 1', description: 'Test' },
-            { level: 2, name: 'Level 2', description: 'Test' },
-          ]}
+          {...({
+            category: 'math',
+            subTopic: 'equations',
+            levels: [
+              { level: 1, name: 'Level 1', description: 'Test' },
+              { level: 2, name: 'Level 2', description: 'Test' },
+            ],
+          } as any)}
         />
       </BrowserRouter>
     );
@@ -161,7 +171,7 @@ describe('ClimbGraphic', () => {
       <BrowserRouter>
         <ClimbGraphic
           world="World1"
-          category="기초"
+          category={'기초' as any}
           levels={[
             { level: 1, name: 'Level 1', description: 'Test' },
             { level: 2, name: 'Level 2', description: 'Test' },

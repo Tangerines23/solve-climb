@@ -35,8 +35,8 @@ describe('supabaseClient', () => {
 
   it('should handle missing environment variables', async () => {
     // Mock ENV with missing values
-    vi.mocked(ENV).SUPABASE_URL = '';
-    vi.mocked(ENV).SUPABASE_ANON_KEY = '';
+    (vi.mocked(ENV) as any).VITE_SUPABASE_URL = '';
+    (vi.mocked(ENV) as any).VITE_SUPABASE_ANON_KEY = '';
 
     // Re-import to test fallback behavior
     const { supabase } = await import('../supabaseClient');

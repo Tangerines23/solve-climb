@@ -401,7 +401,10 @@ describe('useUserStore', () => {
     });
 
     it('fetchUserData should return early if user is not found', async () => {
-      vi.mocked(supabase.auth.getUser).mockResolvedValue({ data: { user: null }, error: null });
+      vi.mocked(supabase.auth.getUser).mockResolvedValue({
+        data: { user: null },
+        error: null,
+      } as any);
       await useUserStore.getState().fetchUserData();
       expect(useUserStore.getState().isLoading).toBe(false);
     });
@@ -458,7 +461,10 @@ describe('useUserStore', () => {
         p_user_id: 'anonymous-debug-user',
       });
 
-      vi.mocked(supabase.auth.getUser).mockResolvedValue({ data: { user: null }, error: null });
+      vi.mocked(supabase.auth.getUser).mockResolvedValue({
+        data: { user: null },
+        error: null,
+      } as any);
       vi.mocked(supabase.from).mockReturnValue({
         select: vi.fn().mockReturnThis(),
         eq: vi.fn().mockResolvedValue({ data: [], error: null }),

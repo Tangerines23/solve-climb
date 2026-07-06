@@ -1,7 +1,7 @@
 {
   "$schema": "https://unpkg.com/knip@5/schema.json",
-  "vitest": false,
-  "playwright": false,
+  "vitest": true,
+  "playwright": true,
   "entry": ["src/main.tsx", "src/utils/tossAuth.ts"],
   "project": ["src/**/*.{ts,tsx}"],
   "ignore": [

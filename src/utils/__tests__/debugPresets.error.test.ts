@@ -7,7 +7,6 @@ import {
   importCustomPresets,
   type CustomPreset,
 } from '../debugPresets';
-import * as debugPresetsModule from '../debugPresets';
 
 // supabase와 store 의존성 모킹
 vi.mock('../supabaseClient', () => ({
@@ -68,13 +67,9 @@ describe('debugPresets - Error Handling', () => {
     });
 
     it('should save failure history when preset application fails', async () => {
-      const { getPresetHistories } = await import('../debugPresets');
-      const _savePresetHistorySpy = vi.spyOn(debugPresetsModule, 'savePresetHistory');
-
       // 기본 프리셋을 찾을 수 없는 경우
       await expect(applyPreset('non-existent', 'user-123')).rejects.toThrow();
 
-      const _histories = getPresetHistories();
       // 에러가 발생했지만 히스토리는 저장되지 않을 수 있음 (applyPreset 내부에서 preset을 찾지 못하면 바로 throw)
       // 이 테스트는 preset을 찾은 후 실행 중 에러가 발생하는 경우를 테스트해야 함
     });

@@ -268,7 +268,7 @@ describe('BadgeNotification', () => {
 
     vi.mocked(supabase.from).mockReturnValue({
       select: mockSelect,
-    } as unknown);
+    } as any);
 
     render(<BadgeNotification badgeIds={['badge1']} onClose={vi.fn()} />);
 

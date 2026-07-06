@@ -100,7 +100,6 @@ describe('ProfileForm', () => {
     const user = userEvent.setup();
     renderProfileForm();
 
-    const _input = screen.getByPlaceholderText('닉네임을 입력하세요');
     const submitButton = screen.getByText('시작하기');
 
     // Try to submit empty nickname

@@ -98,14 +98,14 @@ describe('parseLocalSession', () => {
   });
 
   it('should handle validator returning false', () => {
-    const validator = vi.fn(() => false);
+    const validator = vi.fn(() => false) as any;
     const result = safeJsonParse('{"key":"value"}', null, validator);
     expect(result).toBeNull();
     expect(validator).toHaveBeenCalled();
   });
 
   it('should handle validator returning true', () => {
-    const validator = vi.fn(() => true);
+    const validator = vi.fn(() => true) as any;
     const result = safeJsonParse('{"key":"value"}', null, validator);
     expect(result).toEqual({ key: 'value' });
     expect(validator).toHaveBeenCalled();

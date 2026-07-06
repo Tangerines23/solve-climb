@@ -1,10 +1,6 @@
 import { describe, it, expect, beforeEach, vi, afterEach } from 'vitest';
-import {
-  getTodayChallenge,
-  generateTodayChallenge,
-  SeededRandom,
-  type TodayChallenge,
-} from '../challenge';
+import { getTodayChallenge, generateTodayChallenge, type TodayChallenge } from '../challenge';
+import { SeededRandom } from '../seededRandom';
 import { storageService, STORAGE_KEYS } from '@/services';
 import { APP_CONFIG } from '@/config/app';
 

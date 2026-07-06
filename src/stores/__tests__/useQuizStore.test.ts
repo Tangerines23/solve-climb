@@ -1,7 +1,7 @@
 import { describe, it, expect, beforeEach } from 'vitest';
 import { renderHook, act } from '@testing-library/react';
 import { useQuizStore } from '../useQuizStore';
-import type { Category, Topic, GameMode, Difficulty, World } from '../../types/quiz';
+import type { Category, World } from '../../types/quiz';
 
 type TimeLimit = 10 | 15 | 60 | 120 | 180;
 

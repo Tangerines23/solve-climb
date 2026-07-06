@@ -2,8 +2,8 @@ import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { renderHook, waitFor, act } from '@testing-library/react';
 import { useSession } from '../useSession';
 import { supabase } from '@/utils/supabaseClient';
-import { storageService, STORAGE_KEYS } from '@/services';
-import type { Session, AuthError } from '@supabase/supabase-js';
+import { storageService } from '@/services';
+import type { Session } from '@supabase/supabase-js';
 
 // Mock dependencies
 vi.mock('@/utils/supabaseClient', () => ({

@@ -1,5 +1,5 @@
 import { describe, it, expect, vi } from 'vitest';
-import { render, screen } from '@testing-library/react';
+import { render, screen, fireEvent } from '@testing-library/react';
 import { ModeSelectModal } from '../ModeSelectModal';
 
 describe('ModeSelectModal', () => {
@@ -104,7 +104,7 @@ describe('ModeSelectModal', () => {
 
     const overlay = screen.getByText(/Level 1/).closest('.mode-select-modal-overlay');
     if (overlay) {
-      overlay.click();
+      fireEvent.click(overlay);
       expect(onClose).toHaveBeenCalled();
     }
   });
@@ -123,7 +123,7 @@ describe('ModeSelectModal', () => {
 
     const modal = screen.getByText(/Level 1/).closest('.mode-select-modal');
     if (modal) {
-      modal.click();
+      fireEvent.click(modal);
       // stopPropagation should prevent onClose from being called
       expect(onClose).not.toHaveBeenCalled();
     }

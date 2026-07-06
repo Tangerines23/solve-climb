@@ -335,7 +335,6 @@ describe('useQuestionGenerator', () => {
     const { result } = renderHook(() =>
       useQuestionGenerator({
         ...defaultParams,
-        useSystemKeyboard: true,
       })
     );
 

@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { render, screen, waitFor } from '@testing-library/react';
+import { render, screen, waitFor, fireEvent } from '@testing-library/react';
 import { BrowserRouter } from 'react-router-dom';
 import { ChallengeCard } from '../ChallengeCard';
 import { getTodayChallenge } from '../../utils/challenge';
@@ -67,7 +67,7 @@ describe('ChallengeCard', () => {
       mode: 'time_attack',
     };
 
-    vi.mocked(getTodayChallenge).mockResolvedValue(mockChallenge);
+    vi.mocked(getTodayChallenge).mockResolvedValue(mockChallenge as any);
 
     renderChallengeCard();
 
@@ -100,7 +100,7 @@ describe('ChallengeCard', () => {
       mode: 'time_attack',
     };
 
-    vi.mocked(getTodayChallenge).mockResolvedValue(mockChallenge);
+    vi.mocked(getTodayChallenge).mockResolvedValue(mockChallenge as any);
 
     renderChallengeCard();
 
@@ -109,7 +109,7 @@ describe('ChallengeCard', () => {
     });
 
     const challengeButton = screen.getByText('도전하기');
-    challengeButton.click();
+    fireEvent.click(challengeButton);
 
     expect(mockNavigate).toHaveBeenCalled();
   });
@@ -148,7 +148,7 @@ describe('ChallengeCard', () => {
       mode: 'time_attack',
     };
 
-    vi.mocked(getTodayChallenge).mockResolvedValue(mockChallenge);
+    vi.mocked(getTodayChallenge).mockResolvedValue(mockChallenge as any);
 
     renderChallengeCard();
 
@@ -172,7 +172,7 @@ describe('ChallengeCard', () => {
       mode: 'time_attack',
     };
 
-    vi.mocked(getTodayChallenge).mockResolvedValue(mockChallenge);
+    vi.mocked(getTodayChallenge).mockResolvedValue(mockChallenge as any);
 
     renderChallengeCard();
 
@@ -181,7 +181,7 @@ describe('ChallengeCard', () => {
     });
 
     const challengeButton = screen.getByText('도전하기');
-    challengeButton.click();
+    fireEvent.click(challengeButton);
 
     expect(mockSetCategoryTopic).toHaveBeenCalledWith('math', 'World1');
     expect(mockSetTimeLimit).toHaveBeenCalledWith(60);

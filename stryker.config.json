@@ -3,7 +3,8 @@
   "packageManager": "npm",
   "reporters": ["html", "clear-text", "progress"],
   "testRunner": "vitest",
-  "checkers": [],
+  "checkers": ["typescript"],
+
   "vitest": {
     "configFile": "vite.config.js"
   },
