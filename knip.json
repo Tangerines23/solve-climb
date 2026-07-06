@@ -18,13 +18,16 @@
     "src/hooks/useRoadmapLayout.ts",
     "src/components/roadmap/LinearLandmarkItem.tsx",
     "src/components/roadmap/NonLinearTierItem.tsx",
-    "src/features/mypage/components/HistoryTab.tsx"
+    "src/features/mypage/components/HistoryTab.tsx",
+    "src/components/BadgeSlot.tsx",
+    "src/features/quiz/services/LevelSyncService.ts",
+    "src/constants/history.ts"
   ],
   "ignoreExportsUsedInFile": true,
   "rules": {
-    "exports": "warn",
-    "types": "warn",
-    "files": "warn"
+    "exports": "error",
+    "types": "error",
+    "files": "error"
   },
   "ignoreDependencies": [
     "@stryker-mutator/typescript-checker",

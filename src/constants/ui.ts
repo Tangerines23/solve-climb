@@ -144,18 +144,6 @@ export const UI_MESSAGES = {
 };
 
 /**
- * 퀴즈 레이아웃 관련 상수 (v2.6)
- */
-export const QUIZ_LAYOUT_CONFIG = {
-  KEYPAD_MAX_WIDTH: '550px',
-  KEYPAD_MIN_HEIGHT: '240px',
-  KEYPAD_MAX_HEIGHT: '380px',
-  QUIZ_CARD_MAX_HEIGHT: '48vh',
-  KEYPAD_BOTTOM_MARGIN: 'clamp(8px, 2vh, 20px)',
-  KEYPAD_GAP: 'clamp(8px, 1.5vh, 14px)',
-} as const;
-
-/**
  * 카테고리 식별자 상수 (v2.6)
  */
 export const CATEGORY_IDS = {

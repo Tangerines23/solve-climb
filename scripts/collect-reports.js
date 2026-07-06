@@ -31,6 +31,9 @@ const IGNORE_JSON = [
   '.e2e-result.json', // E2E 결과 파일은 별도 관리되기도 함
   'cspell.json',
   'components.json',
+  'tsconfig.test.json',
+  'knip.json',
+  'stryker.config.json',
 ];
 
 console.log('🔍 로그 수집 장치 가동 중...');
