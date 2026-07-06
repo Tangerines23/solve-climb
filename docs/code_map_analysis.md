@@ -182,6 +182,25 @@
 *   **계층 설계 문제**: UI와 관계없는 낮은 수준(Low-level)의 유틸리티가 화면에 뿌려줄 레이아웃 텍스트 포맷을 주도하여 단일 책임 원칙(SRP)과 관심사 분리(SoC)를 위배하며, 다국어 지원(i18n) 확장을 매우 까다롭게 만듭니다.
 *   **개선안**: 유틸리티 레이어에서는 로우 에러(Raw Error)나 정의된 오류 코드(예: `TOSS_AUTH_FAILED`)만을 던지고, 이 에러를 잡아서 UI 팝업/토스트 메시지로 변환하는 매핑 책임은 최상위 뷰(Page)나 global error handler 레이어로 이관해야 합니다.
 
+---
+
+## 10. 퀴즈 비즈니스 훅 및 유틸리티 중복 결함 (Hooks & Utils Redundancy)
+
+퀴즈 도메인의 세부 훅들과 챌린지 생성 규칙 분석 시 코드 중복 및 부작용 제어 우려가 확인되었습니다.
+
+### 🧬 `SeededRandom` 클래스의 파편화 및 중복 구현
+*   **코드 현황**: 
+    1.  [challenge.ts](file:///c:/Users/ghkdd/gemini-projects/solve-climb/src/features/quiz/utils/challenge.ts) 내부 L588에서 로컬 클래스로 `SeededRandom`이 정의되어 사용됩니다.
+    2.  동시에 [seededRandom.ts](file:///c:/Users/ghkdd/gemini-projects/solve-climb/src/features/quiz/utils/seededRandom.ts) 파일이 존재하여 독립된 `SeededRandom` 클래스를 한 번 더 제공합니다.
+*   **문제점**: 시드 기반의 난수 재현성을 보장하는 동일 기능의 유틸리티가 여러 곳에 파편화되어 있어 유지보수 시 공통 변경 사항 누수 및 로직 불일치(예: 서로 다른 난수 점화식 사용)의 리스크가 존재합니다.
+*   **개선안**: [seededRandom.ts](file:///c:/Users/ghkdd/gemini-projects/solve-climb/src/features/quiz/utils/seededRandom.ts)로 의존성을 일원화하고, `challenge.ts`를 비롯한 모든 모듈에서 해당 모듈을 가져와 사용(Single Source of Truth)하도록 정리하십시오.
+
+### 🔌 `useQuizSession` Hook의 무거운 사이드 이펙트
+*   **코드 현황**: [useQuizSession.ts](file:///c:/Users/ghkdd/gemini-projects/solve-climb/src/features/quiz/hooks/useQuizSession.ts) 내에서 퀴즈 세션 생성(`create_game_session` RPC 호출)을 위한 질문 사전 생성 루프(`for (let i = 0; i < numToGen; i++)`)와 비동기 네트워킹 로직이 직접 실행되고 있습니다.
+*   **문제점**: 컴포넌트 마운트 생명주기와 비동기 세션 생성이 얽혀 있어, React의 렌더링 무한 루프나 Concurrent Mode에서 불필요한 세션이 중복 생성되는 Race Condition 위험이 있습니다. 내부적으로 `isCreatingSessionRef.current`와 같은 참조(Ref) 락을 수동 관리하고 있어 코드가 불안정합니다.
+*   **개선안**: 게임 세션 초기화 비즈니스 플로우를 React 컴포넌트 생명주기 훅 밖으로 격리하여 Zustand Action 이나 별도의 컨트롤러/서비스 객체에 완전히 위임하고, 훅은 해당 세션의 로딩/완료 상태만을 선언적으로 관찰하도록 역할을 분할해야 합니다.
+
+
 
 
 
