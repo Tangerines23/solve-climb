@@ -158,6 +158,12 @@ export default [
               message:
                 '서로 다른 피처 도메인은 직접 참조할 수 없습니다. 배럴 파일이나 외부 API를 통해서만 결합할 수 있습니다.',
             },
+            {
+              from: 'store',
+              disallow: [['util', { pattern: '**/supabaseClient*' }]],
+              message:
+                'Zustand 스토어에서는 Supabase를 직접 조회할 수 없습니다. 서비스 레이어(services)로 쿼리를 격리하십시오.',
+            },
           ],
         },
       ],

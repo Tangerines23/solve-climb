@@ -1,6 +1,6 @@
 
 project: solve-climb
-generatedAt: "2026-07-06T06:30:07.016Z"
+generatedAt: "2026-07-06T09:14:22.263Z"
 files:
   src/App.tsx:
     imports: [@/utils/resilientLazy, @/stores/useLevelProgressStore, @/stores/useAuthStore, @/hooks/useCustomBackNavigation, @/components/GlobalLoadingIndicator, @/stores/useErrorLogStore, @/stores/useDebugStore, @/stores/useSettingsStore, @/hooks/useConnectivity, @/components/PwaUpdateNotification, @/features/auth, @/components/GlobalToastContainer]
@@ -2570,7 +2570,7 @@ files:
             calls: [safeSupabaseQuery, supabase.rpc]
           - name: fetchUserProgress
             returns: "Promise<{ success: boolean; data?: any[] | undefined; error?: string | undefined; }>"
-            calls: [safeSupabaseQuery, supabase.auth.getUser, "supabase .from('user_level_records') .select( 'world_id, category_id, subject_id, level, mode_code, best_score, updated_at' ) .eq", "supabase .from('user_level_records') .select", "supabase .from", logError]
+            calls: [safeSupabaseQuery, supabase.auth.getUser, "supabase .from('user_level_records') .select('world_id, category_id, subject_id, level, mode_code, best_score, updated_at') .eq", "supabase .from('user_level_records') .select", "supabase .from", logError]
   src/features/quiz/types/quizProps.ts:
     imports: [./quiz]
   src/features/quiz/utils/challenge.ts:
