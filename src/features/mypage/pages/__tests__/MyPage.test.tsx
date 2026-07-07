@@ -555,7 +555,7 @@ describe('MyPage', () => {
       );
     });
     fireEvent.click(screen.getByText(/의견 보내기/i));
-    expect(window.location.href).toContain('mailto:support@solveclimb.com');
+    expect(window.location.href).toContain('mailto:tangerines32@gmail.com');
 
     // Restore
     Object.defineProperty(window, 'location', { value: originalLocation });

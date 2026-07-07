@@ -119,7 +119,7 @@ export function PrivacyPolicyPage() {
               <ul>
                 <li>
                   <strong>개발자 연락처:</strong>{' '}
-                  <a href="mailto:support@solveclimb.com">support@solveclimb.com</a>
+                  <a href="mailto:tangerines32@gmail.com">tangerines32@gmail.com</a>
                 </li>
               </ul>
             </section>

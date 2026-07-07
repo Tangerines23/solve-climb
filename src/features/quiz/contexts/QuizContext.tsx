@@ -238,6 +238,7 @@ export function QuizProvider({ children, params }: QuizProviderProps) {
     gameMode,
     totalQuestions: gameState.totalQuestions,
     handleStaminaAdRecovery: () => handleStaminaAdRecovery(setShowStaminaModal),
+    setShowStaminaModal,
   });
 
   const {
