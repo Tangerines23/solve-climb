@@ -254,7 +254,7 @@ export function MyPage() {
   const handleSendFeedback = () => {
     const subject = encodeURIComponent('[Solve Climb] 의견 보내기');
     const body = encodeURIComponent('안녕하세요,\n\n의견을 남겨주세요:\n\n');
-    window.location.href = `mailto:support@solveclimb.com?subject=${subject}&body=${body}`;
+    window.location.href = `mailto:tangerines32@gmail.com?subject=${subject}&body=${body}`;
   };
 
   /*
