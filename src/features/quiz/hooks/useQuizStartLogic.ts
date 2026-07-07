@@ -1,4 +1,4 @@
-import { useState, useCallback, useMemo, useEffect } from 'react';
+import { useState, useCallback, useMemo, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useGameStore } from '@/stores/useGameStore';
 import { analytics } from '@/services/analytics';
@@ -18,6 +18,7 @@ interface UseQuizStartLogicProps {
   gameMode: string;
   totalQuestions: number;
   handleStaminaAdRecovery: () => Promise<void>;
+  setShowStaminaModal: (v: boolean) => void;
 }
 
 export function useQuizStartLogic({
@@ -30,10 +31,13 @@ export function useQuizStartLogic({
   gameMode,
   totalQuestions,
   handleStaminaAdRecovery,
+  setShowStaminaModal,
 }: UseQuizStartLogicProps) {
   const navigate = useNavigate();
   const [promiseData] = useState({ rule: '', example: '' });
   const [activeLandmark, setActiveLandmark] = useState<{ icon: string; text: string } | null>(null);
+  // 광고 중복 호출 방지: 광고가 이미 실행 중일 때 추가 클릭 무시
+  const isAdRecovering = useRef(false);
 
   const { setExhausted, setStaminaConsumed } = useGameStore();
 
@@ -107,11 +111,27 @@ export function useQuizStartLogic({
 
   const onAlertAction = useCallback(
     (action: string) => {
-      if (action === 'charge') handleStaminaAdRecovery();
-      else if (action === 'shop') navigate(urls.shop());
-      else if (action === 'back') navigate(-1);
+      if (action === 'login') {
+        // 로그인하고 기록 보호하기 → 마이페이지(로그인 화면)로 이동
+        setShowStaminaModal(false);
+        navigate(urls.myPage());
+      } else if (action === 'charge') {
+        // 광고 보고 충전하기 → 중복 클릭 방지 후 광고 실행
+        if (isAdRecovering.current) return;
+        isAdRecovering.current = true;
+        handleStaminaAdRecovery().finally(() => {
+          isAdRecovering.current = false;
+        });
+      } else if (action === 'play') {
+        // 지친 상태로 진행 → 모달 닫고 그냥 시작
+        setShowStaminaModal(false);
+      } else if (action === 'shop') {
+        navigate(urls.shop());
+      } else if (action === 'back') {
+        navigate(-1);
+      }
     },
-    [handleStaminaAdRecovery, navigate]
+    [handleStaminaAdRecovery, navigate, setShowStaminaModal]
   );
 
   return {
