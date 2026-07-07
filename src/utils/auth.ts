@@ -3,6 +3,7 @@
  */
 import type { AuthError } from '@supabase/supabase-js';
 import { supabase } from './supabaseClient';
+import { ENV } from './env';
 
 /**
  * 구글 로그인: 한 번 클릭 후 구글 페이지로 이동 → 로그인 완료 시 redirectTo로 돌아옴.
@@ -14,7 +15,14 @@ import { supabase } from './supabaseClient';
  * 구글 로그인 화면이 어둡게 나올 수 있습니다. 앱 내 로그인 버튼·배경은 MyPage.css에서 다크 테마로 맞춤.
  */
 export async function signInWithGoogle(): Promise<{ error: AuthError | null }> {
-  const redirectTo = `${window.location.origin}/my-page`;
+  // 네이티브 앱(Capacitor) 환경에서는 capacitor://localhost 같은 스킴이
+  // Google OAuth redirectTo에서 작동하지 않으므로, 고정 프로덕션 URL을 사용.
+  // 웹 환경에서는 VITE_SITE_URL 우선, 없으면 현재 도메인 사용.
+  // @ts-expect-error: Capacitor global check
+  const isNativeApp = typeof window !== 'undefined' && !!window.Capacitor;
+  const redirectTo = isNativeApp
+    ? `${ENV.VITE_SITE_URL ?? 'https://solve-climb.vercel.app'}/my-page`
+    : `${window.location.origin}/my-page`;
   const { error } = await supabase.auth.signInWithOAuth({
     provider: 'google',
     options: {

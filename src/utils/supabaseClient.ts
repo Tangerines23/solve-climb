@@ -14,8 +14,16 @@ const getRedirectUrl = (): string => {
     return '';
   }
 
-  // VITE_SITE_URL 환경 변수가 있으면 우선적으로 사용 (프로덕션 배포 시 권장)
-  // 없으면 현재 window.location.origin 사용 (로컬 개발 시 유용)
+  // 네이티브 앱(Capacitor) 환경에서는 capacitor://localhost 같은 스킴이
+  // Supabase OAuth 콜백 URL로 작동하지 않으므로 고정 프로덕션 URL 사용.
+  // @ts-expect-error: Capacitor global check
+  const isNativeApp = !!window.Capacitor;
+  if (isNativeApp) {
+    const siteUrl = ENV.VITE_SITE_URL ?? 'https://solve-climb.vercel.app';
+    return `${siteUrl}/auth/callback`;
+  }
+
+  // 웹 환경: VITE_SITE_URL 우선, 없으면 현재 도메인 사용 (로컬 개발 호환)
   const origin = ENV.VITE_SITE_URL || window.location.origin;
   const callbackPath = '/auth/callback';
 
