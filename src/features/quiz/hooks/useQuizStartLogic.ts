@@ -112,8 +112,9 @@ export function useQuizStartLogic({
   const onAlertAction = useCallback(
     (action: string) => {
       if (action === 'login') {
-        // 로그인하고 기록 보호하기 → 마이페이지(로그인 화면)로 이동
+        // 로그인하고 기록 보호하기 → 모달 닫고 마이페이지(로그인 화면)로 이동
         setShowStaminaModal(false);
+        quizEventBus.emit('QUIZ:UI_MODAL_TOGGLE', { modal: 'tip', show: false });
         navigate(urls.myPage());
       } else if (action === 'charge') {
         // 광고 보고 충전하기 → 중복 클릭 방지 후 광고 실행
@@ -123,15 +124,19 @@ export function useQuizStartLogic({
           isAdRecovering.current = false;
         });
       } else if (action === 'play') {
-        // 지친 상태로 진행 → 모달 닫고 그냥 시작
+        // 지친 상태로 진행 → 지친 상태 플래그 설정하고 게임 시작
         setShowStaminaModal(false);
+        setExhausted(true);
+        setStaminaConsumed(true);
+        analytics.trackQuizStart(worldParam || '', categoryParam || '');
+        quizEventBus.emit('QUIZ:UI_MODAL_TOGGLE', { modal: 'tip', show: false });
       } else if (action === 'shop') {
         navigate(urls.shop());
       } else if (action === 'back') {
         navigate(-1);
       }
     },
-    [handleStaminaAdRecovery, navigate, setShowStaminaModal]
+    [handleStaminaAdRecovery, navigate, setShowStaminaModal, setExhausted, setStaminaConsumed, worldParam, categoryParam]
   );
 
   return {
