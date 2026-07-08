@@ -7,8 +7,8 @@
   background-color: transparent;
   width: 100%;
   max-width: min(600px, 94vw);
-  margin: 0 auto;
-  flex-shrink: 0;
+  margin: auto auto 0; /* 위쪽 auto, 아래 0 → 바닥 고정 */
+  flex: 0 1 auto; /* 축소 가능 */
   box-sizing: border-box;
 }
 

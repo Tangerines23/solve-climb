@@ -233,18 +233,16 @@
   width: 100%;
   max-width: min(var(--modal-width-portrait), 100%);
   margin: 0 auto;
-  /* 안전 영역 고려: top 패딩 최소화로 카드 밀어올림, 하단 키패드 여백 보장 */
+  /* 안전 영역 고려: top 최소화, 하단은 safe-area + 여유 마진 */
   padding: max(8px, env(safe-area-inset-top, 0px)) clamp(var(--spacing-md), 2vw, var(--spacing-lg))
-    var(--quiz-keypad-bottom-margin);
+    max(var(--quiz-keypad-bottom-margin), env(safe-area-inset-bottom, 0px));
   gap: var(--quiz-keypad-gap);
   flex: 1;
-  height: 100%;
-  max-height: 100%;
-  min-height: 0;
-  justify-content: flex-start; /* Align elements from top, push keyboard with auto-margin */
+  min-height: 0; /* flex 축소 허용 */
+  justify-content: flex-start;
   box-sizing: border-box;
   overflow: hidden;
-  overflow-x: hidden; /* Double safety */
+  overflow-x: hidden;
 }
 
 /* 가로모드 레이아웃 개선 */
@@ -265,20 +263,21 @@
   max-width: min(480px, 94vw);
   display: flex;
   flex-direction: column;
-  justify-content: center; /* Center content within card */
+  justify-content: center;
   align-items: center;
-  gap: clamp(8px, 1.5vh, 20px); /* Reduced card inner gap */
-  padding: clamp(10px, 2.2vh, 20px) clamp(16px, 4vw, 32px); /* Further reduced card padding */
+  gap: clamp(8px, 1.5vh, 20px);
+  padding: clamp(10px, 2.2vh, 20px) clamp(16px, 4vw, 32px);
   background-color: var(--glass-bg);
   border: var(--glass-border);
   -webkit-backdrop-filter: blur(var(--glass-blur));
   backdrop-filter: blur(var(--glass-blur));
   border-radius: clamp(24px, 4vh, 32px);
   box-shadow: var(--glass-shadow);
-  flex: 0 1 auto; /* Only take space needed by content, prevent pushing keyboard offscreen */
-  min-height: 140px;
-  max-height: var(--quiz-card-max-height); /* Reduced to give keyboard more space */
-  margin-top: clamp(4px, 1vh, 8px); /* Further reduced top margin to pull card upward */
+  /* 핵심: 카드가 축소 가능하도록 flex-shrink: 1, 키패드 공간을 침범하지 않음 */
+  flex: 0 1 auto;
+  min-height: 100px; /* 최소 높이를 줄여 작은 기기에서도 키패드 공간 확보 */
+  max-height: var(--quiz-card-max-height);
+  margin-top: clamp(4px, 1vh, 8px);
   margin-bottom: 0;
   overflow: hidden;
 }
