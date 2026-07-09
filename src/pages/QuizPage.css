@@ -250,10 +250,11 @@
   .quiz-content {
     flex-direction: row;
     max-width: var(--modal-width-landscape-large);
-    align-items: flex-start;
+    align-items: center; /* 가로모드에서 카드와 키패드를 세로 중앙 정렬 */
     justify-content: center;
     gap: clamp(16px, 3vw, 32px);
-    padding: clamp(12px, 2vh, 20px) clamp(16px, 3vw, 24px) 0;
+    padding: clamp(12px, 2vh, 20px) clamp(16px, 3vw, 24px)
+      max(clamp(8px, 1vh, 12px), env(safe-area-inset-bottom, 0px));
   }
 }
 
@@ -313,10 +314,10 @@
 /* 가로모드에서 퀴즈 카드 크기 조정 */
 @media (orientation: landscape) {
   .quiz-card {
-    flex: 1.2;
+    flex: 1;
     max-width: var(--modal-width-portrait);
-    margin-bottom: 0;
-    max-height: calc(100vh - 120px);
+    margin: 0; /* 가로모드에서 margin-top:auto 리셋 */
+    max-height: calc(100vh - 100px);
   }
 }
 

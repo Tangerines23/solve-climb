@@ -98,6 +98,8 @@
     max-width: 500px;
     padding: clamp(8px, 1.5vh, 12px);
     gap: clamp(6px, 1vh, 10px);
+    margin: 0 auto; /* 가로모드에서 margin-top:auto 리셋 */
+    flex: 1; /* 가로모드에서 카드와 동일 비율로 공간 나누기 */
   }
 
   .keypad-row {
