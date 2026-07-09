@@ -248,13 +248,13 @@
 /* 가로모드 레이아웃 개선 */
 @media (orientation: landscape) {
   .quiz-content {
-    flex-direction: row;
-    max-width: var(--modal-width-landscape-large);
-    align-items: center; /* 가로모드에서 카드와 키패드를 세로 중앙 정렬 */
-    justify-content: center;
-    gap: clamp(16px, 3vw, 32px);
-    padding: clamp(12px, 2vh, 20px) clamp(16px, 3vw, 24px)
-      max(clamp(8px, 1vh, 12px), env(safe-area-inset-bottom, 0px));
+    flex-direction: column; /* 세로 배치로 변경하여 좌우 밀림 현상 원천 차단 */
+    max-width: var(--modal-width-portrait); /* 가로 폭 제한 */
+    align-items: center;
+    justify-content: flex-start;
+    gap: var(--quiz-keypad-gap);
+    padding: max(4px, env(safe-area-inset-top, 0px)) clamp(var(--spacing-md), 2vw, var(--spacing-lg))
+      max(var(--quiz-keypad-bottom-margin), env(safe-area-inset-bottom, 0px));
   }
 }
 
@@ -314,10 +314,13 @@
 /* 가로모드에서 퀴즈 카드 크기 조정 */
 @media (orientation: landscape) {
   .quiz-card {
-    flex: 1;
-    max-width: var(--modal-width-portrait);
-    margin: 0; /* 가로모드에서 margin-top:auto 리셋 */
-    max-height: calc(100vh - 100px);
+    flex: 0 1 auto;
+    width: 100%;
+    max-width: min(480px, 94vw);
+    margin: 4px auto 0;
+    max-height: 25vh; /* 가로모드에 맞게 카드 최대 높이 축소 */
+    min-height: 80px;
+    padding: clamp(6px, 1.5vh, 12px) clamp(12px, 3vw, 24px);
   }
 }
 
