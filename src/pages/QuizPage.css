@@ -317,7 +317,7 @@
     flex: 0 1 auto;
     width: 100%;
     max-width: min(480px, 94vw);
-    margin: 4px auto 0;
+    margin: var(--spacing-xs) auto 0;
     max-height: 25vh; /* 가로모드에 맞게 카드 최대 높이 축소 */
     min-height: 80px;
     padding: clamp(6px, 1.5vh, 12px) clamp(12px, 3vw, 24px);
