@@ -48,6 +48,8 @@
 }
 
 .correct-flash {
+  will-change: transform;
+  transform: translate3d(0, 0, 0);
   animation: correct-flash-animation 0.35s cubic-bezier(0.25, 0.46, 0.45, 0.94);
 }
 
@@ -55,19 +57,21 @@
 @keyframes wrong-shake-animation {
   0%,
   100% {
-    transform: translateX(0);
+    transform: translate3d(0, 0, 0);
   }
 
   25% {
-    transform: translateX(-8px);
+    transform: translate3d(-8px, 0, 0);
   }
 
   75% {
-    transform: translateX(8px);
+    transform: translate3d(8px, 0, 0);
   }
 }
 
 .wrong-shake {
+  will-change: transform;
+  transform: translate3d(0, 0, 0);
   animation: wrong-shake-animation 0.15s ease-in-out;
 }
 
