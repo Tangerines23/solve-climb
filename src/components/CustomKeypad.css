@@ -2,19 +2,19 @@
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   gap: var(--quiz-keypad-gap);
-  padding: clamp(10px, 2vh, 20px);
-  padding-bottom: max(clamp(10px, 2vh, 20px), env(safe-area-inset-bottom));
+  padding: clamp(6px, 1.5vh, 20px);
+  padding-bottom: max(clamp(6px, 1.5vh, 20px), env(safe-area-inset-bottom));
   background-color: transparent;
   width: 100%;
   max-width: min(var(--quiz-keypad-max-width), 100vw);
-  margin: 0 auto;
-  flex: 0 0 auto;
+  margin: auto auto 0; /* 위쪽 auto로 남은 공간을 카드와 키패드 사이에 배분, 아래쪽 0으로 바닥에 고정 */
+  flex: 0 1 auto; /* 축소 가능하도록 flex-shrink: 1 */
   box-sizing: border-box;
 }
 
 .keypad-key {
   width: 100%;
-  min-height: 54px;
+  min-height: clamp(44px, 7vh, 64px); /* 뷰포트 높이에 비례해 자동 조절 */
   background-color: var(--color-gray-900);
   border: 1px solid rgba(255, 255, 255, 0.1);
   border-radius: var(--rounded-sm);
