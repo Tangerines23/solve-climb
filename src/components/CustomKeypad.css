@@ -95,31 +95,36 @@
 /* 가로모드에서 키보드 크기 조정 */
 @media (orientation: landscape) {
   .custom-keypad {
-    max-width: 500px;
-    padding: clamp(8px, 1.5vh, 12px);
-    gap: clamp(6px, 1vh, 10px);
+    max-width: 420px;
+    padding: clamp(4px, 1vh, 8px);
+    gap: clamp(4px, 0.8vh, 8px);
   }
 
   .keypad-row {
-    gap: clamp(6px, 1vh, 10px);
+    gap: clamp(4px, 0.8vh, 8px);
   }
 
   .keypad-key {
-    font-size: clamp(1.2rem, 3vw, 1.6rem);
-    border-radius: clamp(8px, 1.5vh, 12px);
-  }
-
-  .keypad-row-last .keypad-key-submit {
-    /* Flex handles height */
+    min-height: clamp(
+      34px,
+      6.5vh,
+      48px
+    ) !important; /* 가로모드에서 잘림 방지를 위해 버튼 세로 크기 대폭 축소 */
+    font-size: clamp(1.1rem, 2.5vw, 1.4rem) !important;
+    border-radius: var(--rounded-sm) !important;
+    box-shadow: 0 2px 0 rgba(0, 0, 0, 0.3) !important;
   }
 
   .keypad-key-submit {
-    font-size: clamp(1.2rem, 3vw, 1.6rem);
+    min-height: clamp(34px, 6.5vh, 48px) !important;
+    font-size: clamp(1.1rem, 2.5vw, 1.4rem) !important;
+    border-radius: var(--rounded-sm) !important;
+    margin-top: 4px !important;
   }
 
   .keypad-key-backspace,
   .keypad-key-negative {
-    font-size: clamp(1.2rem, 3vw, 1.6rem);
+    font-size: clamp(1.1rem, 2.5vw, 1.4rem) !important;
   }
 }
 

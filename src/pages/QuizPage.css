@@ -48,6 +48,8 @@
 }
 
 .correct-flash {
+  will-change: transform;
+  transform: translate3d(0, 0, 0);
   animation: correct-flash-animation 0.35s cubic-bezier(0.25, 0.46, 0.45, 0.94);
 }
 
@@ -55,19 +57,21 @@
 @keyframes wrong-shake-animation {
   0%,
   100% {
-    transform: translateX(0);
+    transform: translate3d(0, 0, 0);
   }
 
   25% {
-    transform: translateX(-8px);
+    transform: translate3d(-8px, 0, 0);
   }
 
   75% {
-    transform: translateX(8px);
+    transform: translate3d(8px, 0, 0);
   }
 }
 
 .wrong-shake {
+  will-change: transform;
+  transform: translate3d(0, 0, 0);
   animation: wrong-shake-animation 0.15s ease-in-out;
 }
 
@@ -248,12 +252,12 @@
 /* 가로모드 레이아웃 개선 */
 @media (orientation: landscape) {
   .quiz-content {
-    flex-direction: row;
-    max-width: var(--modal-width-landscape-large);
-    align-items: flex-start;
-    justify-content: center;
-    gap: clamp(16px, 3vw, 32px);
-    padding: clamp(12px, 2vh, 20px) clamp(16px, 3vw, 24px) 0;
+    flex-direction: column; /* 세로 배치로 변경하여 좌우 밀림 현상 원천 차단 */
+    max-width: var(--modal-width-portrait); /* 가로 폭 제한 */
+    align-items: center;
+    justify-content: flex-start;
+    gap: var(--spacing-xs) !important; /* 가로모드 전용 간격 대폭 축소 */
+    padding: var(--spacing-micro) clamp(var(--spacing-md), 2vw, var(--spacing-lg)) var(--spacing-xs) !important; /* 상하 패딩 압축 */
   }
 }
 
@@ -313,10 +317,28 @@
 /* 가로모드에서 퀴즈 카드 크기 조정 */
 @media (orientation: landscape) {
   .quiz-card {
-    flex: 1.2;
-    max-width: var(--modal-width-portrait);
-    margin-bottom: 0;
-    max-height: calc(100vh - 120px);
+    flex: 0 1 auto;
+    width: 100%;
+    max-width: min(480px, 94vw);
+    margin: var(--spacing-micro) auto 0 !important; /* 마진 밀착 */
+    max-height: 22vh !important; /* 가로모드 카드 최대 세로 폭 극단 압축 */
+    min-height: 60px !important;
+    padding: var(--spacing-xs) clamp(12px, 3vw, 24px) !important; /* 패딩 최소화 */
+    gap: var(--spacing-xs) !important;
+  }
+
+  .quiz-card .problem-text {
+    font-size: clamp(1.2rem, 5vh, 1.8rem) !important; /* 가로모드 시 문제 글꼴 압축 */
+  }
+
+  .quiz-card .answer-text {
+    font-size: clamp(1.1rem, 4vh, 1.5rem) !important; /* 입력값 글꼴 압축 */
+    min-height: 1.1em !important;
+  }
+
+  .quiz-card .answer-caret {
+    height: 2px !important;
+    min-width: 80px !important;
   }
 }
 

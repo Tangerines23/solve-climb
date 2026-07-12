@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { render, screen, fireEvent, waitFor } from '@testing-library/react';
+import { render, screen, fireEvent, act } from '@testing-library/react';
 import { LevelSelectPage } from '../LevelSelectPage';
 import { BrowserRouter, useSearchParams } from 'react-router-dom';
 import { useLevelProgressStore } from '../../stores/useLevelProgressStore';
@@ -205,6 +205,7 @@ describe('LevelSelectPage', () => {
   });
 
   it('should handle world switching', async () => {
+    vi.useFakeTimers();
     render(
       <BrowserRouter>
         <LevelSelectPage />
@@ -214,12 +215,20 @@ describe('LevelSelectPage', () => {
     const nextBtn = screen.getByText('›');
     fireEvent.click(nextBtn);
 
-    await waitFor(() => {
-      expect(mockNavigate).toHaveBeenCalledWith(
-        expect.stringContaining('world=World2'),
-        expect.any(Object)
-      );
+    // setTimeout 동기화
+    await act(async () => {
+      vi.advanceTimersByTime(310);
     });
+
+    expect(mockNavigate).toHaveBeenCalledWith(
+      expect.stringContaining('world=World2'),
+      expect.any(Object)
+    );
+
+    await act(async () => {
+      vi.advanceTimersByTime(110);
+    });
+    vi.useRealTimers();
   });
 
   it('should toggle favorite on long press', () => {
@@ -246,8 +255,6 @@ describe('LevelSelectPage', () => {
     fireEvent.click(handleBar!);
 
     const page = container.querySelector('.level-select-page');
-    await waitFor(() => {
-      expect(page).toHaveClass('sheet-expanded');
-    });
+    expect(page).toHaveClass('sheet-expanded');
   });
 });

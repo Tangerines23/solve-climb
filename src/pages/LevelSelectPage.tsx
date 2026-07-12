@@ -258,7 +258,9 @@ export function LevelSelectPage() {
 
   return (
     <PageLayout
-      className={`level-select-page ${isSheetExpanded ? 'sheet-expanded' : ''}`}
+      className={`level-select-page ${isSheetExpanded ? 'sheet-expanded' : ''} ${
+        isSheetTransitioning ? 'is-transitioning' : ''
+      }`}
       data-world={activeWorld || 'World1'}
       fullScreen
     >

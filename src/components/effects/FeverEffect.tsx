@@ -7,6 +7,9 @@ export function FeverEffect() {
   const { feverLevel, combo, speedLineStyle } = useGameStore();
   const animationEnabled = useSettingsStore((state) => state.animationEnabled);
 
+  // 1. 애니메이션이 전면 비활성화된 경우 연산 부하 최소화를 위해 즉시 반환
+  if (!animationEnabled) return null;
+
   if (feverLevel === 0 && combo < 2) return null;
   if (speedLineStyle !== 'original') return null;
 
@@ -15,10 +18,8 @@ export function FeverEffect() {
       {/* Edge Glow Overlay */}
       {feverLevel > 0 && <div className={`fever-overlay fever-level-${feverLevel}`} />}
 
-      {/* Floating Particles (Simplified for performance) */}
-      <div className="fever-particles">
-        {animationEnabled && feverLevel >= 2 && <FeverParticles />}
-      </div>
+      {/* Floating Particles */}
+      <div className="fever-particles">{feverLevel >= 2 && <FeverParticles />}</div>
     </>
   );
 }
