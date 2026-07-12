@@ -126,15 +126,15 @@ describe('MyPageSettings', () => {
     const mockOpen = vi.spyOn(window, 'open').mockImplementation(() => null as any);
     fireEvent.click(updateBtn);
     expect(mockOpen).toHaveBeenCalledWith(
-      'https://play.google.com/store/apps/details?id=com.solveclimb.app',
-      '_blank'
+      'market://details?id=com.solveclimb.app',
+      '_system'
     );
     mockOpen.mockRestore();
     // @ts-expect-error: Clean up mocked Capacitor
     delete window.Capacitor;
   });
 
-  it('should reload the page on update click in web environment (no Capacitor)', async () => {
+  it('should redirect to Play Store on update click in web environment (no Capacitor)', async () => {
     const newerVersion = '9.9.9';
     const mockResponse = {
       ok: true,
@@ -153,15 +153,14 @@ describe('MyPageSettings', () => {
 
     const updateBtn = screen.getByText('업데이트');
 
-    const mockReload = vi.fn();
-    vi.stubGlobal('location', {
-      reload: mockReload,
-    });
-
+    const mockOpen = vi.spyOn(window, 'open').mockImplementation(() => null as any);
     fireEvent.click(updateBtn);
-    expect(mockReload).toHaveBeenCalled();
+    expect(mockOpen).toHaveBeenCalledWith(
+      'https://play.google.com/store/apps/details?id=com.solveclimb.app',
+      '_blank'
+    );
 
-    vi.unstubAllGlobals();
+    mockOpen.mockRestore();
   });
 
   it('should show error toast if fetch fails', async () => {
