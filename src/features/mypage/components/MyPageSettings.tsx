@@ -99,7 +99,7 @@ export function MyPageSettings({
   const handleGoToUpdate = (e: React.MouseEvent) => {
     e.stopPropagation();
     setShowLocalToast(false);
-    
+
     // Play Store 앱 상세 페이지 주소
     const playStoreUrl = 'https://play.google.com/store/apps/details?id=com.solveclimb.app';
     const playStoreMarketUrl = 'market://details?id=com.solveclimb.app';
@@ -109,7 +109,7 @@ export function MyPageSettings({
       try {
         // market:// 스키마를 통해 플레이스토어 앱이 직접 켜지도록 유도, 불가능할 경우 웹 브라우저로 백업
         window.open(playStoreMarketUrl, '_system');
-      } catch (err) {
+      } catch (_err) {
         window.open(playStoreUrl, '_system');
       }
     } else {

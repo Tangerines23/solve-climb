@@ -19,9 +19,7 @@ export function FeverEffect() {
       {feverLevel > 0 && <div className={`fever-overlay fever-level-${feverLevel}`} />}
 
       {/* Floating Particles */}
-      <div className="fever-particles">
-        {feverLevel >= 2 && <FeverParticles />}
-      </div>
+      <div className="fever-particles">{feverLevel >= 2 && <FeverParticles />}</div>
     </>
   );
 }

@@ -125,10 +125,7 @@ describe('MyPageSettings', () => {
     window.Capacitor = {};
     const mockOpen = vi.spyOn(window, 'open').mockImplementation(() => null as any);
     fireEvent.click(updateBtn);
-    expect(mockOpen).toHaveBeenCalledWith(
-      'market://details?id=com.solveclimb.app',
-      '_system'
-    );
+    expect(mockOpen).toHaveBeenCalledWith('market://details?id=com.solveclimb.app', '_system');
     mockOpen.mockRestore();
     // @ts-expect-error: Clean up mocked Capacitor
     delete window.Capacitor;

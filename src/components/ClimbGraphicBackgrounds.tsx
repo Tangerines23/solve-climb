@@ -135,7 +135,7 @@ export function ClimbBackground({
   const items = useMemo(() => {
     // 1. 일일 날짜 시드값 키 생성 (매일 단위의 레이아웃 변경용)
     const todayStr = new Date().toISOString().slice(0, 10); // YYYY-MM-DD
-    
+
     // 단순한 문자열 해시 함수
     let dateHash = 0;
     for (let charIdx = 0; charIdx < todayStr.length; charIdx++) {
@@ -175,10 +175,10 @@ export function ClimbBackground({
     // 3. 템플릿 패턴 선택 (Seed * Pattern)
     // 4가지 대표 오프셋 배치 패턴
     const PATTERNS = [
-      { dx: 5, dy: 3 },    // 지그재그 분산
-      { dx: -7, dy: 5 },   // 좌하단 치우침
-      { dx: 6, dy: -4 },   // 우상단 치우침
-      { dx: -4, dy: -6 }   // 중앙 밀집형
+      { dx: 5, dy: 3 }, // 지그재그 분산
+      { dx: -7, dy: 5 }, // 좌하단 치우침
+      { dx: 6, dy: -4 }, // 우상단 치우침
+      { dx: -4, dy: -6 }, // 중앙 밀집형
     ];
     // Seed 기반으로 패턴 무작위 픽
     const selectedPattern = PATTERNS[combinedSeed % PATTERNS.length];

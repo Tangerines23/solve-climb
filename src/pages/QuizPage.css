@@ -257,8 +257,7 @@
     align-items: center;
     justify-content: flex-start;
     gap: var(--spacing-xs) !important; /* 가로모드 전용 간격 대폭 축소 */
-    padding: var(--spacing-micro) clamp(var(--spacing-md), 2vw, var(--spacing-lg))
-      var(--spacing-xs) !important; /* 상하 패딩 압축 */
+    padding: var(--spacing-micro) clamp(var(--spacing-md), 2vw, var(--spacing-lg)) var(--spacing-xs) !important; /* 상하 패딩 압축 */
   }
 }
 
