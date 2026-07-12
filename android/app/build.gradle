@@ -19,14 +19,20 @@ android {
     signingConfigs {
         release {
             storeFile file("../../cert/solve-climb-key")
-            storePassword System.getenv("ANDROID_KEYSTORE_PASS") ?: project.findProperty("MY_STORE_PASS")
-            keyAlias System.getenv("ANDROID_KEY_ALIAS") ?: project.findProperty("MY_KEY_ALIAS")
-            keyPassword System.getenv("ANDROID_KEY_PASS") ?: project.findProperty("MY_KEY_PASS")
+            storePassword System.getenv("ANDROID_KEYSTORE_PASS") ?: (project.findProperty("MY_STORE_PASS") ?: "")
+            keyAlias System.getenv("ANDROID_KEY_ALIAS") ?: (project.findProperty("MY_KEY_ALIAS") ?: "")
+            keyPassword System.getenv("ANDROID_KEY_PASS") ?: (project.findProperty("MY_KEY_PASS") ?: "")
         }
     }
     buildTypes {
         release {
-            signingConfig signingConfigs.release
+            // ANDROID_KEYSTORE_PASS 혹은 MY_STORE_PASS가 설정되어 있을 때만 서명을 적용
+            if ((System.getenv("ANDROID_KEYSTORE_PASS") != null && !System.getenv("ANDROID_KEYSTORE_PASS").isEmpty()) || 
+                (project.hasProperty("MY_STORE_PASS") && !project.property("MY_STORE_PASS").toString().isEmpty())) {
+                signingConfig signingConfigs.release
+            } else {
+                signingConfig null
+            }
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         }
