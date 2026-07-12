@@ -252,9 +252,9 @@
     max-width: var(--modal-width-portrait); /* 가로 폭 제한 */
     align-items: center;
     justify-content: flex-start;
-    gap: var(--quiz-keypad-gap);
-    padding: max(4px, env(safe-area-inset-top, 0px)) clamp(var(--spacing-md), 2vw, var(--spacing-lg))
-      max(var(--quiz-keypad-bottom-margin), env(safe-area-inset-bottom, 0px));
+    gap: 4px !important; /* 가로모드 전용 간격 대폭 축소 */
+    padding: max(2px, env(safe-area-inset-top, 0px)) clamp(var(--spacing-md), 2vw, var(--spacing-lg))
+      max(4px, env(safe-area-inset-bottom, 0px)) !important; /* 상하 패딩 압축 */
   }
 }
 
@@ -317,10 +317,25 @@
     flex: 0 1 auto;
     width: 100%;
     max-width: min(480px, 94vw);
-    margin: var(--spacing-xs) auto 0;
-    max-height: 25vh; /* 가로모드에 맞게 카드 최대 높이 축소 */
-    min-height: 80px;
-    padding: clamp(6px, 1.5vh, 12px) clamp(12px, 3vw, 24px);
+    margin: 2px auto 0 !important; /* 마진 밀착 */
+    max-height: 22vh !important; /* 가로모드 카드 최대 세로 폭 극단 압축 */
+    min-height: 60px !important;
+    padding: 4px clamp(12px, 3vw, 24px) !important; /* 패딩 최소화 */
+    gap: 4px !important;
+  }
+
+  .quiz-card .problem-text {
+    font-size: clamp(1.2rem, 5vh, 1.8rem) !important; /* 가로모드 시 문제 글꼴 압축 */
+  }
+
+  .quiz-card .answer-text {
+    font-size: clamp(1.1rem, 4vh, 1.5rem) !important; /* 입력값 글꼴 압축 */
+    min-height: 1.1em !important;
+  }
+
+  .quiz-card .answer-caret {
+    height: 2px !important;
+    min-width: 80px !important;
   }
 }
 
