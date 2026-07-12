@@ -131,13 +131,27 @@ export function ClimbBackground({
     return lines;
   }, [svgHeight]);
 
-  // 카테고리 및 월드별 수학적 대형(Layout) 좌표 계산
+  // 카테고리 및 월드별 수학적 대형(Layout) 좌표 계산 (일일 날짜 시드 캐싱 동시 적용)
   const items = useMemo(() => {
+    // 1. 일일 날짜 시드값 키 생성 (매일 단위의 레이아웃 변경용)
+    const todayStr = new Date().toISOString().slice(0, 10); // YYYY-MM-DD
+    
+    // 단순한 문자열 해시 함수
+    let dateHash = 0;
+    for (let charIdx = 0; charIdx < todayStr.length; charIdx++) {
+      dateHash = (dateHash << 5) - dateHash + todayStr.charCodeAt(charIdx);
+      dateHash |= 0; // Convert to 32bit integer
+    }
+    const dailySeed = Math.abs(dateHash);
+
     const worldIdx = getWorldIndex(world);
     const catIdx = getCategoryIndex(category);
-    const rng = new SeededRandom(worldIdx * 17 + catIdx * 31);
 
-    // 1. 총 24개의 슬롯에 대해 정적 구역(6개) 및 기준 좌표 매핑
+    // 날짜 시드 + 카테고리 + 월드 팩터를 활용해 고유 Seed 생성
+    const combinedSeed = dailySeed + worldIdx * 123 + catIdx * 456;
+    const rng = new SeededRandom(combinedSeed);
+
+    // 2. 총 24개의 슬롯에 대해 정적 구역(6개) 및 기준 좌표 매핑
     const slots = Array.from({ length: 24 }, (_, i) => {
       const zone = Math.floor(i / 4); // 6개 구역 (0 ~ 5)
       const slotInZone = i % 4;
@@ -158,14 +172,26 @@ export function ClimbBackground({
       };
     });
 
-    // 2. 활성/비활성 여부 결정 (총 개수를 15 ~ 21개 사이로 무작위 제한)
+    // 3. 템플릿 패턴 선택 (Seed * Pattern)
+    // 4가지 대표 오프셋 배치 패턴
+    const PATTERNS = [
+      { dx: 5, dy: 3 },    // 지그재그 분산
+      { dx: -7, dy: 5 },   // 좌하단 치우침
+      { dx: 6, dy: -4 },   // 우상단 치우침
+      { dx: -4, dy: -6 }   // 중앙 밀집형
+    ];
+    // Seed 기반으로 패턴 무작위 픽
+    const selectedPattern = PATTERNS[combinedSeed % PATTERNS.length];
+
+    // 4. 활성화 번호 조합 선택 (Combination Pick)
+    // 24개 인덱스 중 15개 ~ 21개를 시드에 맞추어 랜덤하게 선택
     const activeCount = rng.nextInt(15, 21);
     const activeIndices = new Set<number>();
     while (activeIndices.size < activeCount) {
       activeIndices.add(rng.nextInt(0, 23));
     }
 
-    // 3. 기호와 원 비율 조율 (기호 비율 30% ~ 70% 범위 고정)
+    // 5. 기호와 원 비율 조율 (기호 비율 30% ~ 70% 범위 고정)
     const symbolRatio = 0.3 + rng.next() * 0.4;
     const symbolCount = Math.round(activeCount * symbolRatio);
 
@@ -174,32 +200,35 @@ export function ClimbBackground({
     const shuffledActive = [...activeArray].sort(() => rng.next() - 0.5);
     const symbolIndices = new Set(shuffledActive.slice(0, symbolCount));
 
-    // 4. 각 슬롯 좌표 및 타입 결정
+    // 6. 각 슬롯 좌표 및 타입 결정
     return slots.map((slot) => {
       const isActive = activeIndices.has(slot.index);
       const isSymbol = symbolIndices.has(slot.index);
 
       let x = slot.baseX;
       let y = slot.baseY;
-      let opacity = isActive ? (isSymbol ? 0.55 : 0.85) : 0;
-      let scale = 0.6 + rng.next() * 0.45; // 0.6 ~ 1.05
-      let rotate = rng.nextInt(0, 360);
+      const opacity = isActive ? (isSymbol ? 0.55 : 0.85) : 0;
+      const scale = 0.6 + rng.next() * 0.45; // 0.6 ~ 1.05
+      const rotate = rng.nextInt(0, 360);
       let symbol = '';
 
       if (isActive) {
-        // 최대 이동 거리 제약: 기준 좌표로부터 X는 +-12%, Y는 +-8% 내에서만 움직임
-        const offsetX = (rng.next() - 0.5) * 24; // 최대 12% 반경
-        const offsetY = (rng.next() - 0.5) * 16; // 최대 8% 반경
+        // [시드*패턴] 알고리즘을 이용해 기준 좌표에 고유 패턴 편차 dx, dy를 결합
+        const patternX = selectedPattern.dx * (slot.index % 2 === 0 ? 1 : -1);
+        const patternY = selectedPattern.dy * (slot.index % 3 === 0 ? 1 : -1);
 
-        x = Math.max(5, Math.min(95, slot.baseX + offsetX));
-        y = Math.max(5, Math.min(95, slot.baseY + offsetY));
+        // 부드러운 위치 배치를 위해 시드기반 미세 진동 오프셋 추가
+        const microOffsetX = (rng.next() - 0.5) * 6; // +-3%
+
+        x = Math.max(5, Math.min(95, slot.baseX + patternX + microOffsetX));
+        y = Math.max(5, Math.min(95, slot.baseY + patternY));
       } else {
         // 화면 밖으로 미끄러져 나감 (Slide Out) 및 투명화
-        x = slot.baseX < 50 ? -25 : 125; // 50% 기준 좌측/우측 화면 밖으로 튕김
+        x = slot.baseX < 50 ? -25 : 125;
         y = slot.baseY + (rng.next() - 0.5) * 20;
       }
 
-      // 카테고리별 수학 기호 텍입
+      // 카테고리별 수학 기호 대입
       if (isSymbol) {
         let symbols: string[] = [];
         if (category === '기초') symbols = ['+', '-', '×', '÷', '='];
