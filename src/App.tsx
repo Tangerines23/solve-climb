@@ -138,7 +138,7 @@ function App() {
     if (isNativeApp) {
       import('@capacitor/app').then(({ App }) => {
         App.addListener('appUrlOpen', async (data: { url: string }) => {
-          // 데이터 형식: com.solveclimb.app://google-callback#access_token=... 또는 com.solveclimb.app://my-page#access_token=...
+          // 데이터 형식: com.solveclimb.app://google-callback?token=... 또는 com.solveclimb.app://my-page?token=...
           const urlStr = data.url;
           if (urlStr.includes('access_token=') || urlStr.includes('refresh_token=')) {
             // URL 해시 파싱
