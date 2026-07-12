@@ -252,9 +252,9 @@
     max-width: var(--modal-width-portrait); /* 가로 폭 제한 */
     align-items: center;
     justify-content: flex-start;
-    gap: 4px !important; /* 가로모드 전용 간격 대폭 축소 */
-    padding: max(2px, env(safe-area-inset-top, 0px)) clamp(var(--spacing-md), 2vw, var(--spacing-lg))
-      max(4px, env(safe-area-inset-bottom, 0px)) !important; /* 상하 패딩 압축 */
+    gap: var(--spacing-xs) !important; /* 가로모드 전용 간격 대폭 축소 */
+    padding: var(--spacing-micro) clamp(var(--spacing-md), 2vw, var(--spacing-lg))
+      var(--spacing-xs) !important; /* 상하 패딩 압축 */
   }
 }
 
@@ -317,11 +317,11 @@
     flex: 0 1 auto;
     width: 100%;
     max-width: min(480px, 94vw);
-    margin: 2px auto 0 !important; /* 마진 밀착 */
+    margin: var(--spacing-micro) auto 0 !important; /* 마진 밀착 */
     max-height: 22vh !important; /* 가로모드 카드 최대 세로 폭 극단 압축 */
     min-height: 60px !important;
-    padding: 4px clamp(12px, 3vw, 24px) !important; /* 패딩 최소화 */
-    gap: 4px !important;
+    padding: var(--spacing-xs) clamp(12px, 3vw, 24px) !important; /* 패딩 최소화 */
+    gap: var(--spacing-xs) !important;
   }
 
   .quiz-card .problem-text {
