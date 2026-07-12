@@ -11,6 +11,7 @@ import { useSettingsStore } from '@/stores/useSettingsStore';
 import { useConnectivity } from '@/hooks/useConnectivity';
 import { PwaUpdateNotification } from '@/components/PwaUpdateNotification';
 import { RequireAuth } from '@/features/auth';
+import { supabase } from '@/utils/supabaseClient';
 
 const HomePage = resilientLazy(
   () => import('@/pages/HomePage').then((module) => ({ default: module.HomePage })),
@@ -130,6 +131,45 @@ function App() {
     // Parallelize initialization to avoid waterfalls
     // syncProgress internally checks for user session, so it can run concurrently
     Promise.all([initializeAuth(), syncProgress()]);
+
+    // Capacitor 네이티브 앱 환경에서 Deep Link (Supabase OAuth 세션 복귀) 수신 리스너 등록
+    // @ts-expect-error: Capacitor check
+    const isNativeApp = typeof window !== 'undefined' && !!window.Capacitor;
+    if (isNativeApp) {
+      import('@capacitor/app').then(({ App }) => {
+        App.addListener('appUrlOpen', async (data: { url: string }) => {
+          // 데이터 형식: com.solveclimb.app://google-callback#access_token=... 또는 com.solveclimb.app://my-page#access_token=...
+          const urlStr = data.url;
+          if (urlStr.includes('access_token=') || urlStr.includes('refresh_token=')) {
+            // URL 해시 파싱
+            const hash = urlStr.split('#')[1];
+            if (hash) {
+              const params = new URLSearchParams(hash);
+              const accessToken = params.get('access_token');
+              const refreshToken = params.get('refresh_token');
+
+              if (accessToken && refreshToken) {
+                // Supabase 클라이언트에 세션 세팅
+                const { error } = await supabase.auth.setSession({
+                  access_token: accessToken,
+                  refresh_token: refreshToken,
+                });
+                if (!error) {
+                  console.log('[Auth] Deep Link OAuth Session initialized successfully');
+                  // 세션 초기화 상태 동기화 및 갱신
+                  await initializeAuth();
+                  await syncProgress();
+                } else {
+                  console.error('[Auth] Failed to set session from deep link:', error.message);
+                }
+              }
+            }
+          }
+        });
+      }).catch((err) => {
+        console.error('[Capacitor] Failed to load App plugin:', err);
+      });
+    }
   }, [initializeAuth, syncProgress]);
 
   // 전역 에러 핸들러 설정 (개발 환경에서만)
