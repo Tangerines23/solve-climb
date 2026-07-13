@@ -13,6 +13,9 @@ jobs:
       # 1. 소스코드 체크아웃
       - name: Checkout code
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
 
       # 2. Node.js 환경 설정
       - name: Setup Node.js

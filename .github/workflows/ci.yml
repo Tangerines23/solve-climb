@@ -51,6 +51,9 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
@@ -86,6 +89,12 @@ jobs:
 
       - name: 📊 Benchmark Tests
         run: npm run test:bench
+
+      - name: 📱 Check Play Store Version Code (Collision Prevention)
+        env:
+          PLAY_STORE_JSON_KEY: ${{ secrets.PLAY_STORE_JSON_KEY }}
+        run: node scripts/check-playstore-version.js
+
 
   # 3. 비즈니스 로직 및 컴포넌트 단위 테스트
   unit-test:
