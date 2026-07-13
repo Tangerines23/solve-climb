@@ -1,5 +1,18 @@
 apply plugin: 'com.android.application'
 
+def getGitVersionCode = { ->
+    try {
+        def code = new ByteArrayOutputStream()
+        exec {
+            commandLine 'git', 'rev-list', '--count', 'HEAD'
+            standardOutput = code
+        }
+        return Integer.parseInt(code.toString().trim())
+    } catch (exception) {
+        return 10 // Fallback if git is not available
+    }
+}
+
 android {
     namespace = "com.solveclimb.app"
     compileSdk = rootProject.ext.compileSdkVersion
@@ -7,7 +20,7 @@ android {
         applicationId "com.solveclimb.app"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
-        versionCode 10
+        versionCode getGitVersionCode()
         versionName "0.27.528"
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         aaptOptions {
