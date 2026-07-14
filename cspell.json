@@ -68,7 +68,8 @@
     "TTFB",
     "Glassmorphism",
     "unstub",
-    "speedline"
+    "speedline",
+    "capawesome"
   ],
   "ignorePaths": [
     "node_modules",

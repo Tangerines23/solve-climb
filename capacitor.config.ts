@@ -4,8 +4,12 @@ const config: CapacitorConfig = {
   appId: 'com.solveclimb.app',
   appName: 'solve-climb',
   webDir: 'dist',
-  // AdMob App ID: ca-app-pub-6410061165772335~9825031776
-  // iOS/Android 네이티브 설정(Info.plist, strings.xml)에도 반영이 필요합니다.
+  plugins: {
+    GoogleSignIn: {
+      clientId: '422673840720-etmtujb3lrt4966pv2j212sqf39votil.apps.googleusercontent.com',
+      serverClientId: '422673840720-etmtujb3lrt4966pv2j212sqf39votil.apps.googleusercontent.com',
+    },
+  },
 };
 
 export default config;

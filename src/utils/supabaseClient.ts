@@ -1,6 +1,21 @@
 import { createClient, SupabaseClient } from '@supabase/supabase-js';
 import { ENV, logEnvInfo } from '@/utils/env';
 import { Database } from '@/types/database.types';
+import { Preferences } from '@capacitor/preferences';
+
+// Capacitor 네이티브 영구 저장소 어댑터 정의
+const capacitorStorage = {
+  getItem: async (key: string): Promise<string | null> => {
+    const { value } = await Preferences.get({ key });
+    return value;
+  },
+  setItem: async (key: string, value: string): Promise<void> => {
+    await Preferences.set({ key, value });
+  },
+  removeItem: async (key: string): Promise<void> => {
+    await Preferences.remove({ key });
+  },
+};
 
 // 개발 환경에서 환경 변수 정보 출력
 logEnvInfo();
@@ -54,8 +69,13 @@ const createSupabaseClient = (): SupabaseClient => {
   const isTest =
     typeof process !== 'undefined' &&
     (process.env.NODE_ENV === 'test' || process.env.VITEST === 'true');
+  // @ts-expect-error: Capacitor global check
+  const isNativeApp = typeof window !== 'undefined' && !!window.Capacitor;
+
   const options = {
     auth: {
+      // 네이티브 앱 환경에서는 OS에 의해 청소되기 쉬운 localStorage 대신 Preferences 사용
+      storage: isNativeApp ? capacitorStorage : localStorage,
       // 콜백 URL 설정
       redirectTo: redirectUrl,
       // 자동 새로고침 활성화
