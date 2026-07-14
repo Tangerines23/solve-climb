@@ -1,13 +1,13 @@
 
 project: solve-climb
-generatedAt: "2026-07-06T11:49:54.420Z"
+generatedAt: "2026-07-14T16:21:41.920Z"
 files:
   src/App.tsx:
-    imports: [@/utils/resilientLazy, @/stores/useLevelProgressStore, @/stores/useAuthStore, @/hooks/useCustomBackNavigation, @/components/GlobalLoadingIndicator, @/stores/useErrorLogStore, @/stores/useDebugStore, @/stores/useSettingsStore, @/hooks/useConnectivity, @/components/PwaUpdateNotification, @/features/auth, @/components/GlobalToastContainer]
+    imports: [@/utils/resilientLazy, @/stores/useLevelProgressStore, @/stores/useAuthStore, @/hooks/useCustomBackNavigation, @/components/GlobalLoadingIndicator, @/stores/useErrorLogStore, @/stores/useDebugStore, @/stores/useSettingsStore, @/hooks/useConnectivity, @/components/PwaUpdateNotification, @/features/auth, @/utils/supabaseClient, @/components/GlobalToastContainer]
     exports:
       - name: App
         returns: "import(\"C:/Users/ghkdd/gemini-projects/solve-climb/node_modules/@types/react/jsx-runtime\").JSX.Element"
-        calls: [useConnectivity, useLevelProgressStore, useAuthStore, useCustomBackNavigation, useDebugStore, useSettingsStore, document.body.classList.add, document.body.classList.remove, Promise.all, initializeAuth, syncProgress, "useErrorLogStore .getState() .addLog", "useErrorLogStore .getState", String, window.addEventListener, window.removeEventListener]
+        calls: [useConnectivity, useLevelProgressStore, useAuthStore, useCustomBackNavigation, useDebugStore, useSettingsStore, document.body.classList.add, document.body.classList.remove, Promise.all, initializeAuth, syncProgress, "import('@capacitor/app') .then(({ App }) => { App.addListener('appUrlOpen', async (data: { url: string }) => { // 데이터 형식: com.solveclimb.app://google-callback?token=... 또는 com.solveclimb.app://my-page?token=... const urlStr = data.url; if (urlStr.includes('access_token=') || urlStr.includes('refresh_token=')) { // URL 해시 파싱 const hash = urlStr.split('#')[1]; if (hash) { const params = new URLSearchParams(hash); const accessToken = params.get('access_token'); const refreshToken = params.get('refresh_token'); if (accessToken && refreshToken) { // Supabase 클라이언트에 세션 세팅 const { error } = await supabase.auth.setSession({ access_token: accessToken, refresh_token: refreshToken, }); if (!error) { console.log('[Auth] Deep Link OAuth Session initialized successfully'); // 세션 초기화 상태 동기화 및 갱신 await initializeAuth(); await syncProgress(); } else { console.error('[Auth] Failed to set session from deep link:', error.message); } } } } }); }) .catch", "import('@capacitor/app') .then", import, App.addListener, urlStr.includes, urlStr.split, params.get, supabase.auth.setSession, console.log, console.error, "useErrorLogStore .getState() .addLog", "useErrorLogStore .getState", String, window.addEventListener, window.removeEventListener]
   src/AppContainer.tsx:
     imports: [@/utils/resilientLazy, @/components/ErrorBoundary]
     exports:
@@ -135,7 +135,7 @@ files:
   totalLevels: _totalLevels = 30,
 }": BackgroundProps
         returns: "import(\"C:/Users/ghkdd/gemini-projects/solve-climb/node_modules/@types/react/jsx-runtime\").JSX.Element"
-        calls: [Math.max, layers.push, coords.push, lines.push, getWorldIndex, getCategoryIndex, Array.from, Math.floor, rng.nextInt, activeIndices.add, rng.next, Math.round, "[...activeArray].sort", shuffledActive.slice, slots.map, activeIndices.has, symbolIndices.has, Math.min, bridgeYCoords.map, tangentLines.map, mountainLayers.map, "FLOATING_SEEDS.slice(0, 12).map", FLOATING_SEEDS.slice, items.map]
+        calls: [Math.max, layers.push, coords.push, lines.push, "new Date().toISOString().slice", "new Date().toISOString", todayStr.charCodeAt, Math.abs, getWorldIndex, getCategoryIndex, Array.from, Math.floor, rng.nextInt, activeIndices.add, rng.next, Math.round, "[...activeArray].sort", shuffledActive.slice, slots.map, activeIndices.has, symbolIndices.has, Math.min, bridgeYCoords.map, tangentLines.map, mountainLayers.map, "FLOATING_SEEDS.slice(0, 12).map", FLOATING_SEEDS.slice, items.map]
   src/components/ConfirmModal.tsx:
     imports: [./BaseModal, ./ConfirmModal.css]
     exports:
@@ -831,10 +831,11 @@ files:
             - QuizProvider를 통해 하위 컴포넌트에 상태 제공
         calls: [useSearchParams, useNavigate, validateWorldParam, searchParams.get, validateCategoryInWorldParam, validateLevelParam, validateModeParam, console.warn, navigate, urls.home]
   src/pages/RankingPage.tsx:
-    imports: [@/components/Header, @/components/FooterNav, ./RankingPage.css]
+    imports: [@/components/Header, @/components/FooterNav, @/components/TierBadge, @/components/SegmentedControl, @/components/common/GlassCard, @/hooks/useRanking, ./RankingPage.css]
     exports:
       - name: RankingPage
         returns: "import(\"C:/Users/ghkdd/gemini-projects/solve-climb/node_modules/@types/react/jsx-runtime\").JSX.Element"
+        calls: [useRanking, setActiveType, setActivePeriod, currentRankings.map, Number, getMedalIcon, "(() => { try { const date = new Date(item.week_start_date); const month = date.getMonth() + 1; const firstDay = new Date(date.getFullYear(), date.getMonth(), 1); const week = Math.ceil((date.getDate() + firstDay.getDay()) / 7); return `${month}월 ${week}주차 시즌`; } catch { return '시즌 정보 없음'; } })", date.getMonth, date.getFullYear, Math.ceil, date.getDate, firstDay.getDay, Number(item.score).toLocaleString, Number(myRank.score).toLocaleString]
   src/pages/ResultPage.tsx:
     imports: [@/stores/useQuizStore, @/stores/useLevelProgressStore, @/stores/useRankingStore, @/utils/tossGameCenter, @/constants/game, @/utils/urlParams, @/stores/useUserStore, @/stores/useToastStore, @/utils/supabaseClient, @/utils/errorHandler, @/components/TierUpgradeModal, @/components/BadgeNotification, @/utils/navigation, @/types/quiz, @/utils/adService, @/services/analytics, @/constants/ui, @/constants/game, ./ResultPage.css, @/stores/useSettingsStore, @/hooks/useCountUp, @/services/historyService, @/services]
     state: [scoreSubmitted, isNewRecord, showConfetti, currentRank, showTierUpgrade, previousMasteryScore, currentMasteryScore, awardedBadges, _showBadgeNotification, hasDoubled, isAdLoading]
@@ -987,13 +988,8 @@ files:
         returns: "Promise<{ error: import(\"C:/Users/ghkdd/gemini-projects/solve-climb/node_modules/@supabase/auth-js/dist/module/lib/errors\").AuthError | null; }>"
         description: |
             구글 로그인: 한 번 클릭 후 구글 페이지로 이동 → 로그인 완료 시 redirectTo로 돌아옴.
-            사전 설정: Supabase 대시보드 → Authentication → Providers → Google 활성화 (Client ID/Secret),
-            Redirect URLs에 https://yourdomain.com/my-page 및 로컬 http://localhost:5173/my-page 추가.
-            
-            참고: 구글 계정 선택/동의 화면(accounts.google.com) 테마는 Google이 제어합니다.
-            공식 OAuth 파라미터로 다크 테마를 지정할 수 없으며, 기기/브라우저가 다크 모드일 때
-            구글 로그인 화면이 어둡게 나올 수 있습니다. 앱 내 로그인 버튼·배경은 MyPage.css에서 다크 테마로 맞춤.
-        calls: [supabase.auth.signInWithOAuth]
+            네이티브 환경(Capacitor)에서는
+        calls: [console.log, GoogleSignIn.signIn, supabase.auth.signInWithIdToken, console.error, supabase.auth.signInWithOAuth]
   src/utils/CalculusProblemGenerator.ts:
     imports: [../types/quiz]
     exports:
@@ -2140,7 +2136,7 @@ files:
       - name: handleCheckUpdate
         calls: [e.stopPropagation, setIsChecking, showToast, setTimeout, controller.abort, siteUrl.replace, fetch, clearTimeout, response.json, isVersionOlder, setLocalToastMsg, setHasNewVersion, setShowLocalToast, console.error]
       - name: handleGoToUpdate
-        calls: [e.stopPropagation, setShowLocalToast, window.open, location.reload]
+        calls: [e.stopPropagation, setShowLocalToast, window.open]
     exports:
       - name: MyPageSettings
         params:
@@ -2157,7 +2153,7 @@ files:
   onWithdraw,
 }": MyPageSettingsProps
         returns: "import(\"C:/Users/ghkdd/gemini-projects/solve-climb/node_modules/@types/react/jsx-runtime\").JSX.Element"
-        calls: [useNavigate, useToastStore, e.stopPropagation, setIsChecking, showToast, setTimeout, controller.abort, siteUrl.replace, fetch, clearTimeout, response.json, isVersionOlder, setLocalToastMsg, setHasNewVersion, setShowLocalToast, console.error, window.open, location.reload, e.preventDefault, onToggleHaptic, onToggleAnimation, navigate, urls.quiz, urls.review, urls.privacyPolicy]
+        calls: [useNavigate, useToastStore, e.stopPropagation, setIsChecking, showToast, setTimeout, controller.abort, siteUrl.replace, fetch, clearTimeout, response.json, isVersionOlder, setLocalToastMsg, setHasNewVersion, setShowLocalToast, console.error, window.open, e.preventDefault, onToggleHaptic, onToggleAnimation, navigate, urls.quiz, urls.review, urls.privacyPolicy]
   src/features/mypage/components/MyPageStats.tsx:
     exports:
       - name: MyPageStats
@@ -2527,9 +2523,10 @@ files:
   gameMode,
   totalQuestions,
   handleStaminaAdRecovery,
+  setShowStaminaModal,
 }": UseQuizStartLogicProps
         returns: "{ promiseData: { rule: string; example: string; }; activeLandmark: { icon: string; text: string; } | null; altitudePhase: string; handleStartGame: (selectedItems: number[]) => Promise<void>; handlePromiseComplete: () => void; onAlertAction: (action: string) => void; }"
-        calls: [useNavigate, useGameStore, safeAccess, setActiveLandmark, setTimeout, analytics.trackQuizStart, quizEventBus.emit, consumeStamina, setStaminaConsumed, setExhausted, inventory.find, consumeItem, handleStaminaAdRecovery, navigate, urls.shop]
+        calls: [useNavigate, useGameStore, safeAccess, setActiveLandmark, setTimeout, analytics.trackQuizStart, quizEventBus.emit, consumeStamina, setStaminaConsumed, setExhausted, inventory.find, consumeItem, setShowStaminaModal, navigate, urls.myPage, handleStaminaAdRecovery().finally, handleStaminaAdRecovery, urls.shop]
   src/features/quiz/hooks/useQuizSubmit.ts:
     imports: [../types/quiz, @/stores/useGameStore, ./useQuizValidator, ./useQuizScoring, @/lib/eventBus]
     exports:

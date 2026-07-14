@@ -77,6 +77,22 @@ interface LevelProgressState {
   resetProgress: () => Promise<void>;
 }
 
+const isNetworkError = (errorMsg?: string): boolean => {
+  if (typeof window !== 'undefined' && navigator.onLine === false) {
+    return true;
+  }
+  if (!errorMsg) return false;
+  const msg = errorMsg.toLowerCase();
+  return (
+    msg.includes('fetch') ||
+    msg.includes('network') ||
+    msg.includes('timeout') ||
+    msg.includes('연결 실패') ||
+    msg.includes('abort') ||
+    msg.includes('connection')
+  );
+};
+
 const getDefaultLevelRecord = (level: number): LevelRecord => ({
   level,
   cleared: false,
@@ -210,10 +226,18 @@ export const useLevelProgressStore = create<LevelProgressState>()(
           });
 
           if (!result.success) {
-            console.error('[clearLevel] Sync failed, rolling back:', result.error);
-            set({ progress: previousProgress });
-            if (result.error !== 'No user found') {
-              useToastStore.getState().showToast(result.error || '저장 실패', 'error');
+            console.error('[clearLevel] Sync failed:', result.error);
+            if (isNetworkError(result.error)) {
+              // 네트워크 에러/오프라인인 경우 기록 롤백 생략 (기기에 로컬 세이브 보존)
+              useToastStore
+                .getState()
+                .showToast('오프라인 상태입니다. 기록은 기기에 임시 저장됩니다.', 'warning');
+            } else {
+              // 사용자 정보 없음 또는 보안/DB 위반은 기존과 동일하게 롤백
+              set({ progress: previousProgress });
+              if (result.error !== 'No user found') {
+                useToastStore.getState().showToast(result.error || '저장 실패', 'error');
+              }
             }
           }
         },
@@ -265,8 +289,15 @@ export const useLevelProgressStore = create<LevelProgressState>()(
           });
 
           if (!result.success) {
-            console.error('[updateBestScore] Sync failed, rolling back:', result.error);
-            set({ progress: previousProgress });
+            console.error('[updateBestScore] Sync failed:', result.error);
+            if (isNetworkError(result.error)) {
+              // 오프라인 상태이면 베스트 스코어 로컬 보존
+              useToastStore
+                .getState()
+                .showToast('오프라인 상태입니다. 기록은 기기에 임시 저장됩니다.', 'warning');
+            } else {
+              set({ progress: previousProgress });
+            }
           }
         },
 

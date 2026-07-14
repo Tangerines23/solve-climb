@@ -203,6 +203,7 @@ graph TD
   src_App_tsx --> src_stores_useDebugStore_ts
   src_App_tsx --> src_stores_useSettingsStore_ts
   src_App_tsx --> src_features_auth_index_ts
+  src_App_tsx --> src_utils_supabaseClient_ts
   src_pages_CategorySelectPage_tsx --> src_stores_useLevelProgressStore_ts
   src_pages_CategorySelectPage_tsx --> src_stores_useFavoriteStore_ts
   src_pages_CategorySelectPage_tsx --> src_stores_useDebugStore_ts

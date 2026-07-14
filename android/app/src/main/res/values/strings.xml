@@ -4,4 +4,5 @@
     <string name="title_activity_main">solve-climb</string>
     <string name="package_name">com.solveclimb.app</string>
     <string name="custom_url_scheme">com.solveclimb.app</string>
+    <string name="server_client_id">422673840720-etmtujb3lrt4966pv2j212sqf39votil.apps.googleusercontent.com</string>
 </resources>
