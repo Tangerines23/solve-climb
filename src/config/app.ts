@@ -17,14 +17,10 @@ import { WORLD1_LEVELS } from '@/constants/levels';
  *    - FEATURE_FLAGS에서 ENABLE_***_MOUNTAIN 값을 true/false로 변경하여 UI 표시 여부 결정.
  */
 
-const majorVersion = packageJson.version.split('.')[0] || '0';
-const mergeCount = import.meta.env.VITE_MERGE_COUNT || '0';
-const runNumber = import.meta.env.VITE_CI_RUN_NUMBER || '0';
-
 // 앱 설정 상수 중앙 관리
 export const APP_CONFIG = {
   APP_NAME: 'Solve Climb',
-  APP_VERSION: `${majorVersion}.${mergeCount}.${runNumber}`,
+  APP_VERSION: packageJson.version,
 
   // 기능 플래그 (Feature Flags) - 초기 백업 설정
   // 실제 제어는 useFeatureFlagStore를 사용하세요.
