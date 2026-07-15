@@ -99,7 +99,10 @@ describe('MyPageSettings', () => {
     (APP_CONFIG as any).APP_VERSION = originalVersion;
   });
 
-  it('should open update confirm modal if version is outdated', async () => {
+  it('should open update confirm modal if version is outdated in mobile environment (with Capacitor)', async () => {
+    // @ts-expect-error: Mock Capacitor for mobile environment
+    window.Capacitor = {};
+
     const newerVersion = '9.9.9';
     const mockResponse = {
       ok: true,
@@ -121,8 +124,6 @@ describe('MyPageSettings', () => {
     const updateBtn = screen.getByText('업데이트');
     expect(updateBtn).toBeInTheDocument();
 
-    // @ts-expect-error: Mock Capacitor for mobile environment
-    window.Capacitor = {};
     const mockOpen = vi.spyOn(window, 'open').mockImplementation(() => null as any);
     fireEvent.click(updateBtn);
     expect(mockOpen).toHaveBeenCalledWith('market://details?id=com.solveclimb.app', '_system');
@@ -131,7 +132,7 @@ describe('MyPageSettings', () => {
     delete window.Capacitor;
   });
 
-  it('should redirect to Play Store on update click in web environment (no Capacitor)', async () => {
+  it('should reload page on update click in web environment (no Capacitor)', async () => {
     const newerVersion = '9.9.9';
     const mockResponse = {
       ok: true,
@@ -139,25 +140,40 @@ describe('MyPageSettings', () => {
     };
     (global.fetch as Mock).mockResolvedValue(mockResponse);
 
+    // Mock window.location.reload
+    const originalReload = window.location.reload;
+    const mockReload = vi.fn();
+    Object.defineProperty(window, 'location', {
+      writable: true,
+      value: { ...window.location, reload: mockReload },
+    });
+
     render(<MyPageSettings {...defaultProps} />);
 
     const updateCheckBtn = screen.getByLabelText('업데이트 확인');
     fireEvent.click(updateCheckBtn);
 
     await waitFor(() => {
-      expect(screen.getByText(/준비되었습니다/)).toBeInTheDocument();
+      expect(mockShowToast).toHaveBeenCalledWith(
+        expect.stringContaining('새로운 웹 빌드'),
+        '🔄',
+        2000
+      );
     });
 
-    const updateBtn = screen.getByText('업데이트');
-
-    const mockOpen = vi.spyOn(window, 'open').mockImplementation(() => null as any);
-    fireEvent.click(updateBtn);
-    expect(mockOpen).toHaveBeenCalledWith(
-      'https://play.google.com/store/apps/details?id=com.solveclimb.app',
-      '_blank'
+    // Expect reload to be called after 1000ms delay
+    await waitFor(
+      () => {
+        expect(mockReload).toHaveBeenCalled();
+      },
+      { timeout: 1500 }
     );
 
-    mockOpen.mockRestore();
+    // Restore
+    Object.defineProperty(window, 'location', {
+      writable: true,
+      value: originalReload,
+    });
   });
 
   it('should show error toast if fetch fails', async () => {

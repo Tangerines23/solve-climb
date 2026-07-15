@@ -50,7 +50,10 @@ export function PwaUpdateNotification() {
     setShow(false);
   };
 
-  // E2E/테스트에서 vite-plugin-pwa 미로드 시 null 렌더 (optional chaining으로 destructuring은 안전)
+  // Capacitor 환경(모바일 앱)에서는 PWA 서비스 워커 알림을 띄우지 않고 블록 처리합니다.
+  const isCapacitor =
+    typeof window !== 'undefined' && !!(window as unknown as { Capacitor?: unknown }).Capacitor;
+  if (isCapacitor) return null;
   if (!swRegistration) return null;
   if (!show) return null;
 

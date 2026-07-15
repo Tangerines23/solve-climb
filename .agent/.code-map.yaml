@@ -1,6 +1,6 @@
 
 project: solve-climb
-generatedAt: "2026-07-15T05:52:10.347Z"
+generatedAt: "2026-07-15T09:51:00.142Z"
 files:
   src/App.tsx:
     imports: [@/utils/resilientLazy, @/stores/useLevelProgressStore, @/stores/useAuthStore, @/hooks/useCustomBackNavigation, @/components/GlobalLoadingIndicator, @/stores/useErrorLogStore, @/stores/useDebugStore, @/stores/useSettingsStore, @/hooks/useConnectivity, @/components/PwaUpdateNotification, @/features/auth, @/utils/supabaseClient, @/components/GlobalToastContainer]
@@ -2134,7 +2134,7 @@ files:
     state: [isChecking, showLocalToast, localToastMsg, hasNewVersion]
     handlers:
       - name: handleCheckUpdate
-        calls: [e.stopPropagation, setIsChecking, showToast, setTimeout, controller.abort, siteUrl.replace, fetch, clearTimeout, response.json, isVersionOlder, setLocalToastMsg, setHasNewVersion, setShowLocalToast, console.error]
+        calls: [e.stopPropagation, setIsChecking, showToast, setTimeout, controller.abort, siteUrl.replace, fetch, clearTimeout, response.json, isVersionOlder, setLocalToastMsg, setHasNewVersion, setShowLocalToast, window.location.reload, console.error]
       - name: handleGoToUpdate
         calls: [e.stopPropagation, setShowLocalToast, window.open]
     exports:
@@ -2153,7 +2153,7 @@ files:
   onWithdraw,
 }": MyPageSettingsProps
         returns: "import(\"C:/Users/ghkdd/gemini-projects/solve-climb/node_modules/@types/react/jsx-runtime\").JSX.Element"
-        calls: [useNavigate, useToastStore, e.stopPropagation, setIsChecking, showToast, setTimeout, controller.abort, siteUrl.replace, fetch, clearTimeout, response.json, isVersionOlder, setLocalToastMsg, setHasNewVersion, setShowLocalToast, console.error, window.open, e.preventDefault, onToggleHaptic, onToggleAnimation, navigate, urls.quiz, urls.review, urls.privacyPolicy]
+        calls: [useNavigate, useToastStore, e.stopPropagation, setIsChecking, showToast, setTimeout, controller.abort, siteUrl.replace, fetch, clearTimeout, response.json, isVersionOlder, setLocalToastMsg, setHasNewVersion, setShowLocalToast, window.location.reload, console.error, window.open, e.preventDefault, onToggleHaptic, onToggleAnimation, navigate, urls.quiz, urls.review, urls.privacyPolicy]
   src/features/mypage/components/MyPageStats.tsx:
     exports:
       - name: MyPageStats
