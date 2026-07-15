@@ -44,10 +44,7 @@ export default defineConfig(({ mode }) => {
       {
         name: 'write-version-json',
         closeBundle() {
-          const major = packageJson.version.split('.')[0] || '0';
-          const merge = process.env.VITE_MERGE_COUNT || getGitMergeCount();
-          const run = process.env.VITE_CI_RUN_NUMBER || getGitCommitCount();
-          const versionStr = `${major}.${merge}.${run}`;
+          const versionStr = packageJson.version;
           const distDir = path.resolve(__dirname, 'dist');
           if (!fs.existsSync(distDir)) {
             fs.mkdirSync(distDir, { recursive: true });
