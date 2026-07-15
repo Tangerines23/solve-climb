@@ -50,6 +50,7 @@ export function PwaUpdateNotification() {
     setShow(false);
   };
 
+  // Capacitor 환경(모바일 앱)에서는 PWA 서비스 워커 알림을 띄우지 않고 블록 처리합니다.
   const isCapacitor =
     typeof window !== 'undefined' && !!(window as unknown as { Capacitor?: unknown }).Capacitor;
   if (isCapacitor) return null;
