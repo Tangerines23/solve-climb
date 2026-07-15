@@ -1,5 +1,7 @@
 apply plugin: 'com.android.application'
 
+import groovy.json.JsonSlurper
+
 def getGitVersionCode = { ->
     try {
         def code = new ByteArrayOutputStream()
@@ -13,6 +15,16 @@ def getGitVersionCode = { ->
     }
 }
 
+def getPackageJsonVersion = { ->
+    try {
+        def packageJsonFile = file('../../package.json')
+        def json = new JsonSlurper().parseText(packageJsonFile.text)
+        return json.version
+    } catch (exception) {
+        return "0.1.0" // Fallback
+    }
+}
+
 android {
     namespace = "com.solveclimb.app"
     compileSdk = rootProject.ext.compileSdkVersion
@@ -21,7 +33,7 @@ android {
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
         versionCode getGitVersionCode()
-        versionName "0.27.528"
+        versionName getPackageJsonVersion()
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         aaptOptions {
              // Files and dirs to omit from the packaged assets dir, modified to accommodate modern web apps.
