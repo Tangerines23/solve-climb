@@ -50,7 +50,8 @@ export function PwaUpdateNotification() {
     setShow(false);
   };
 
-  // E2E/테스트에서 vite-plugin-pwa 미로드 시 null 렌더 (optional chaining으로 destructuring은 안전)
+  const isCapacitor = typeof window !== 'undefined' && !!(window as any).Capacitor;
+  if (isCapacitor) return null;
   if (!swRegistration) return null;
   if (!show) return null;
 

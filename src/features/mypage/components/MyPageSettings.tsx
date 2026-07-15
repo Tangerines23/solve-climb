@@ -79,9 +79,18 @@ export function MyPageSettings({
 
       if (serverVersion) {
         if (isVersionOlder(APP_CONFIG.APP_VERSION, serverVersion)) {
-          setLocalToastMsg(`새로운 버전\nv${serverVersion}이\n준비되었습니다.`);
-          setHasNewVersion(true);
-          setShowLocalToast(true);
+          // @ts-expect-error: Capacitor global check
+          const isCapacitor = typeof window !== 'undefined' && !!window.Capacitor;
+          if (isCapacitor) {
+            setLocalToastMsg(`새로운 버전\nv${serverVersion}이\n준비되었습니다.`);
+            setHasNewVersion(true);
+            setShowLocalToast(true);
+          } else {
+            showToast(`새로운 웹 빌드 v${serverVersion}가 있습니다. 새로고침합니다.`, '🔄', 2000);
+            setTimeout(() => {
+              window.location.reload();
+            }, 1000);
+          }
         } else {
           showToast(`현재 최신 버전을 사용 중입니다. (${APP_CONFIG.APP_VERSION})`, '✅', 2500);
         }
