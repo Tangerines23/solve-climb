@@ -50,7 +50,8 @@ export function PwaUpdateNotification() {
     setShow(false);
   };
 
-  const isCapacitor = typeof window !== 'undefined' && !!(window as any).Capacitor;
+  const isCapacitor =
+    typeof window !== 'undefined' && !!(window as unknown as { Capacitor?: unknown }).Capacitor;
   if (isCapacitor) return null;
   if (!swRegistration) return null;
   if (!show) return null;
