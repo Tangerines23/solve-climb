@@ -505,16 +505,6 @@ export function ResultPage() {
         <button className="result-button-primary" onClick={handleRetry}>
           {UI_MESSAGES.RESULT_RETRY}
         </button>
-        <button
-          className="result-button-secondary mt-sm"
-          onClick={() => {
-            const params = new URLSearchParams(window.location.search);
-            params.set('mode', 'smart-retry');
-            window.location.href = `/quiz?${params.toString()}`;
-          }}
-        >
-          {UI_MESSAGES.REVENGE_DEATHNOTE}
-        </button>
         <div className="result-button-group">
           <button
             onClick={() =>
