@@ -846,8 +846,8 @@ export function QuizProvider({ children, params }: QuizProviderProps) {
       handleCountdownComplete,
       setShowSafetyRope,
       handleBack,
-      handleStartGame: async (selectedItems: number[]) => {
-        await handleStartGame(selectedItems);
+      handleStartGame: async (selectedItems: number[], forceExhausted?: boolean) => {
+        await handleStartGame(selectedItems, forceExhausted);
       },
       handlePauseResume,
       handlePauseExit,

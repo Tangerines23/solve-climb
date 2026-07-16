@@ -4,7 +4,7 @@ import './GameAlertModal.css';
 interface GameAlertModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onAction: (action: 'login' | 'charge' | 'play') => void;
+  onAction: (action: 'login' | 'charge' | 'play' | 'shop') => void;
   type: 'stamina' | 'anonymous' | 'both';
 }
 
@@ -94,6 +94,11 @@ export const GameAlertModal: React.FC<GameAlertModalProps> = ({
           {type !== 'anonymous' && (
             <button className="secondary-button" onClick={() => onAction('charge')}>
               광고 보고 충전하기
+            </button>
+          )}
+          {(type === 'stamina' || type === 'both') && (
+            <button className="shop-button" onClick={() => onAction('shop')}>
+              🛒 상점(스토어)에서 충전하기
             </button>
           )}
           <button className="play-button" onClick={() => onAction('play')}>

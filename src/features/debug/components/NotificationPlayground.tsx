@@ -50,7 +50,7 @@ export function NotificationPlayground() {
     setSpeedLineStyle,
   } = useGameStore();
 
-  const handleAlertAction = (action: 'login' | 'charge' | 'play') => {
+  const handleAlertAction = (action: 'login' | 'charge' | 'play' | 'shop') => {
     triggerToast(`Action: ${action}`);
     closeModals();
   };

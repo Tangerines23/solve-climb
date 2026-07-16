@@ -3,6 +3,8 @@ import { AdService } from '@/utils/adService';
 import { UI_MESSAGES } from '@/constants/ui';
 import { ANIMATION_CONFIG } from '@/constants/game';
 import { logError } from '@/utils/errorHandler';
+import { useUserStore } from '@/stores/useUserStore';
+
 interface UseQuizBusinessLogicParams {
   setToastValue: (v: string) => void;
   setShowSlideToast: (v: boolean) => void;
@@ -75,7 +77,13 @@ export const useQuizBusinessLogic = ({
           setShowStaminaModal(false);
           setShowSlideToast(true);
           setToastValue(UI_MESSAGES.STAMINA_RECHARGED_FULL);
-          setTimeout(() => window.location.reload(), ANIMATION_CONFIG.RELOAD_DELAY);
+
+          const isCapacitor = typeof window !== 'undefined' && !!(window as any).Capacitor;
+          if (isCapacitor) {
+            await useUserStore.getState().fetchUserData();
+          } else {
+            setTimeout(() => window.location.reload(), ANIMATION_CONFIG.RELOAD_DELAY);
+          }
         } else {
           setToastValue('충전 실패: ' + result.message);
         }
