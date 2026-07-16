@@ -1,6 +1,6 @@
 
 project: solve-climb
-generatedAt: "2026-07-15T12:52:11.738Z"
+generatedAt: "2026-07-16T00:30:07.505Z"
 files:
   src/App.tsx:
     imports: [@/utils/resilientLazy, @/stores/useLevelProgressStore, @/stores/useAuthStore, @/hooks/useCustomBackNavigation, @/components/GlobalLoadingIndicator, @/stores/useErrorLogStore, @/stores/useDebugStore, @/stores/useSettingsStore, @/hooks/useConnectivity, @/components/PwaUpdateNotification, @/features/auth, @/utils/supabaseClient, @/components/GlobalToastContainer]
@@ -849,7 +849,7 @@ files:
     exports:
       - name: ResultPage
         returns: "import(\"C:/Users/ghkdd/gemini-projects/solve-climb/node_modules/@types/react/jsx-runtime\").JSX.Element"
-        calls: [useQuizStore, useSettingsStore, useLevelProgressStore, useRankingStore, useUserStore, useToastStore, useNavigate, useSearchParams, searchParams.get, validateWorldParam, validateCategoryInWorldParam, validateLevelParam, validateModeParam, validateNumberParam, useCountUp, Math.floor, validateFloatParam, createSafeStorageKey, parseInt, storageService.get, storageService.set, finalScore.toString, setIsNewRecord, setShowConfetti, setTimeout, JSON.parse, logError, Math.round, clearLevel, updateBestScore, fetchRanking, useRankingStore.getState, supabase.auth.getUser, Array.isArray, ranks.find, setCurrentRank, Number, sync, analytics.trackQuizEnd, analytics.trackEvent, historyService.saveRecord, console.log, submitScoreToLeaderboard(finalScore).then, submitScoreToLeaderboard, setIsAdLoading, showToast, AdService.showRewardedAd, rewardMinerals, setHasDoubled, logWarning, urls.quiz, navigate, console.warn, urls.categorySelect, urls.levelSelect, s.push, averageTime.toFixed, Object.entries(courseMap).find, Object.entries, urls.home, "Array.from({ length: 50 }).map", Array.from, Math.random, animatedScore.toLocaleString, statsList.map, params.set, params.toString, urls.ranking, setShowTierUpgrade, setShowBadgeNotification, setAwardedBadges]
+        calls: [useQuizStore, useSettingsStore, useLevelProgressStore, useRankingStore, useUserStore, useToastStore, useNavigate, useSearchParams, searchParams.get, validateWorldParam, validateCategoryInWorldParam, validateLevelParam, validateModeParam, validateNumberParam, useCountUp, Math.floor, validateFloatParam, createSafeStorageKey, parseInt, storageService.get, storageService.set, finalScore.toString, setIsNewRecord, setShowConfetti, setTimeout, JSON.parse, logError, Math.round, clearLevel, updateBestScore, fetchRanking, useRankingStore.getState, supabase.auth.getUser, Array.isArray, ranks.find, setCurrentRank, Number, sync, analytics.trackQuizEnd, analytics.trackEvent, historyService.saveRecord, console.log, submitScoreToLeaderboard(finalScore).then, submitScoreToLeaderboard, setIsAdLoading, showToast, AdService.showRewardedAd, rewardMinerals, setHasDoubled, logWarning, urls.quiz, navigate, console.warn, urls.categorySelect, urls.levelSelect, s.push, averageTime.toFixed, Object.entries(courseMap).find, Object.entries, urls.home, "Array.from({ length: 50 }).map", Array.from, Math.random, animatedScore.toLocaleString, statsList.map, urls.ranking, setShowTierUpgrade, setShowBadgeNotification, setAwardedBadges]
   src/pages/ReviewPage.tsx:
     imports: [@/components/Header, @/components/FooterNav, @/features/mypage, @/utils/navigation, ./ReviewPage.css]
     exports:
