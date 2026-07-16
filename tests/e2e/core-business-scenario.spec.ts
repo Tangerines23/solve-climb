@@ -71,6 +71,7 @@ test.describe('CORE BUSINESS SCENARIO - 게임 플레이부터 랭킹 반영까�
 
     const level1Button = page.locator('.level-list-button-primary').first();
     await expect(level1Button).toBeVisible({ timeout: 15000 });
+    await level1Button.scrollIntoViewIfNeeded();
     await level1Button.click({ force: true });
 
     // 6. 게임 팁 모달에서 시작하기 클릭
