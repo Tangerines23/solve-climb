@@ -1,6 +1,6 @@
 
 project: solve-climb
-generatedAt: "2026-07-16T00:59:43.498Z"
+generatedAt: "2026-07-16T03:32:22.330Z"
 files:
   src/App.tsx:
     imports: [@/utils/resilientLazy, @/stores/useLevelProgressStore, @/stores/useAuthStore, @/hooks/useCustomBackNavigation, @/components/GlobalLoadingIndicator, @/stores/useErrorLogStore, @/stores/useDebugStore, @/stores/useSettingsStore, @/hooks/useConnectivity, @/components/PwaUpdateNotification, @/features/auth, @/utils/supabaseClient, @/components/GlobalToastContainer]
@@ -2386,7 +2386,7 @@ files:
       - name: useQuizAnimations
         returns: "{ cardAnimation: string; inputAnimation: string; questionAnimation: string; showFlash: boolean; isError: boolean; showSlideToast: boolean; damagePosition: { left: string; top: string; }; setCardAnimation: React.Dispatch<React.SetStateAction<string>>; setInputAnimation: React.Dispatch<React.SetStateAction<string>>; setQuestionAnimation: React.Dispatch<React.SetStateAction<string>>; setShowFlash: React.Dispatch<React.SetStateAction<boolean>>; setIsError: React.Dispatch<React.SetStateAction<boolean>>; setShowSlideToast: React.Dispatch<React.SetStateAction<boolean>>; setDamagePosition: React.Dispatch<React.SetStateAction<{ left: string; top: string; }>>; }"
   src/features/quiz/hooks/useQuizBusinessLogic.ts:
-    imports: [@/utils/adService, @/constants/ui, @/constants/game, @/utils/errorHandler]
+    imports: [@/utils/adService, @/constants/ui, @/constants/game, @/utils/errorHandler, @/stores/useUserStore]
     exports:
       - name: useQuizBusinessLogic
         params:
@@ -2401,7 +2401,7 @@ files:
 }": UseQuizBusinessLogicParams
         returns: "{ handleWatchAdRevive: () => Promise<boolean>; smartHandleGameOver: (reason?: string | undefined) => Promise<void>; handleStaminaAdRecovery: (setShowStaminaModal: (s: boolean) => void) => Promise<void>; }"
         description: QuizPage의 핵심 비즈니스 로직(광고 시청, 게임 오버, 스테미너 회복)을 관리하는 커스텀 훅
-        calls: [setShowSlideToast, setToastValue, AdService.showRewardedAd, setTimeout, UI_MESSAGES.AD_WATCH_FAILED, refundStamina, showGlobalToast, logError, handleGameOver, recoverStaminaAds, setShowStaminaModal, window.location.reload]
+        calls: [setShowSlideToast, setToastValue, AdService.showRewardedAd, setTimeout, UI_MESSAGES.AD_WATCH_FAILED, refundStamina, showGlobalToast, logError, handleGameOver, recoverStaminaAds, setShowStaminaModal, useUserStore.getState().fetchUserData, useUserStore.getState, window.location.reload]
   src/features/quiz/hooks/useQuizFeedback.ts:
     imports: [@/utils/haptic]
     exports:
@@ -2525,8 +2525,8 @@ files:
   handleStaminaAdRecovery,
   setShowStaminaModal,
 }": UseQuizStartLogicProps
-        returns: "{ promiseData: { rule: string; example: string; }; activeLandmark: { icon: string; text: string; } | null; altitudePhase: string; handleStartGame: (selectedItems: number[]) => Promise<void>; handlePromiseComplete: () => void; onAlertAction: (action: string) => void; }"
-        calls: [useNavigate, useGameStore, safeAccess, setActiveLandmark, setTimeout, analytics.trackQuizStart, quizEventBus.emit, consumeStamina, setStaminaConsumed, setExhausted, inventory.find, consumeItem, setShowStaminaModal, navigate, urls.myPage, handleStaminaAdRecovery().finally, handleStaminaAdRecovery, urls.shop]
+        returns: "{ promiseData: { rule: string; example: string; }; activeLandmark: { icon: string; text: string; } | null; altitudePhase: string; handleStartGame: (selectedItems: number[], forceExhausted?: boolean) => Promise<void>; handlePromiseComplete: () => void; onAlertAction: (action: string) => void; }"
+        calls: [useNavigate, useGameStore, safeAccess, setActiveLandmark, setTimeout, analytics.trackQuizStart, quizEventBus.emit, setStaminaConsumed, setExhausted, inventory.find, consumeItem, consumeStamina, setShowStaminaModal, navigate, urls.myPage, handleStaminaAdRecovery().finally, handleStaminaAdRecovery, handleStartGame, urls.shop]
   src/features/quiz/hooks/useQuizSubmit.ts:
     imports: [../types/quiz, @/stores/useGameStore, ./useQuizValidator, ./useQuizScoring, @/lib/eventBus]
     exports:

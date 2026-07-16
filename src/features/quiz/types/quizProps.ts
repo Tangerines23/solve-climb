@@ -42,7 +42,7 @@ export interface QuizModalHandlers {
   handleCountdownComplete: () => void;
   setShowSafetyRope: (val: boolean) => void;
   handleBack: () => void;
-  handleStartGame: (selectedItems: number[]) => Promise<void>;
+  handleStartGame: (selectedItems: number[], forceExhausted?: boolean) => Promise<void>;
   handlePauseResume: () => void;
   handlePauseExit: () => void;
   setShowStaminaModal: (val: boolean) => void;

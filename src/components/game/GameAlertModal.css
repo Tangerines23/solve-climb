@@ -68,6 +68,12 @@
   border: 1px solid var(--color-border-primary) !important;
 }
 
+.shop-button {
+  background-color: var(--color-surface-elevated);
+  color: var(--color-text-primary);
+  border: 1px solid var(--color-border-primary) !important;
+}
+
 .play-button {
   background-color: transparent;
   color: var(--color-text-secondary);

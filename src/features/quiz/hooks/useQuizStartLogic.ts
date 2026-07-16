@@ -38,6 +38,7 @@ export function useQuizStartLogic({
   const [activeLandmark, setActiveLandmark] = useState<{ icon: string; text: string } | null>(null);
   // 광고 중복 호출 방지: 광고가 이미 실행 중일 때 추가 클릭 무시
   const isAdRecovering = useRef(false);
+  const selectedItemsRef = useRef<number[]>([]);
 
   const { setExhausted, setStaminaConsumed } = useGameStore();
 
@@ -59,15 +60,34 @@ export function useQuizStartLogic({
   }, [totalQuestions]);
 
   const handleStartGame = useCallback(
-    async (selectedItems: number[]) => {
+    async (selectedItems: number[], forceExhausted = false) => {
+      selectedItemsRef.current = selectedItems;
       if (gameMode === 'base-camp') {
         analytics.trackQuizStart(worldParam || '', categoryParam || '');
         quizEventBus.emit('QUIZ:UI_MODAL_TOGGLE', { modal: 'tip', show: false });
         return;
       }
 
-      if (stamina <= 0) {
+      if (stamina <= 0 && !forceExhausted) {
         quizEventBus.emit('QUIZ:UI_MODAL_TOGGLE', { modal: 'stamina', show: true });
+        return;
+      }
+
+      if (forceExhausted) {
+        setStaminaConsumed(false);
+        setExhausted(true);
+
+        if (selectedItems.length > 0) {
+          for (const itemId of selectedItems) {
+            const item = inventory.find((it) => it.id === itemId);
+            if (item && item.quantity > 0) {
+              await consumeItem(itemId);
+            }
+          }
+        }
+
+        analytics.trackQuizStart(worldParam || '', categoryParam || '');
+        quizEventBus.emit('QUIZ:UI_MODAL_TOGGLE', { modal: 'tip', show: false });
         return;
       }
 
@@ -123,15 +143,17 @@ export function useQuizStartLogic({
           isAdRecovering.current = false;
         });
       } else if (action === 'play') {
-        // 지친 상태로 진행 → 모달 닫고 그냥 시작
+        // 지친 상태로 진행 → 모달 닫고 지침 상태로 강제 시작
         setShowStaminaModal(false);
+        handleStartGame(selectedItemsRef.current, true);
       } else if (action === 'shop') {
+        setShowStaminaModal(false);
         navigate(urls.shop());
       } else if (action === 'back') {
         navigate(-1);
       }
     },
-    [handleStaminaAdRecovery, navigate, setShowStaminaModal]
+    [handleStaminaAdRecovery, navigate, setShowStaminaModal, handleStartGame]
   );
 
   return {
