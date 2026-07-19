@@ -103,6 +103,7 @@ export const useAuthStore = create<AuthState>((set) => ({
 
   signOut: async () => {
     await safeSupabaseQuery(supabase.auth.signOut());
+    storageService.remove(STORAGE_KEYS.LOCAL_SESSION);
     set({ session: null, user: null });
   },
 }));

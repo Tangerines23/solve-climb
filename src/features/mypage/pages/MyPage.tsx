@@ -25,6 +25,8 @@ import { vibrateShort } from '@/utils/haptic';
 import { supabase } from '@/utils/supabaseClient';
 import { logError } from '@/utils/errorHandler';
 import { safeSupabaseQuery } from '@/utils/debugFetch';
+import { generateUUID } from '@/utils/validation';
+import { useAuthStore } from '@/stores/useAuthStore';
 
 import { APP_CONFIG } from '@/config/app';
 import { signInWithGoogle } from '@/utils/auth';
@@ -297,7 +299,7 @@ export function MyPage() {
 
       // 로컬 세션만 사용 (Supabase 인증 없이)
       const userProfile = {
-        profileId: `user_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+        profileId: generateUUID(),
         nickname: '',
         createdAt: new Date().toISOString(),
         isAdmin: false,
@@ -320,10 +322,10 @@ export function MyPage() {
       // 로그인 성공 후 통계 다시 불러오기
       await refetch();
 
-      // 리다이렉트 시도
-      performRedirect();
+      // 닉네임 설정을 위해 프로필 설정 폼 띄우기
+      setShowProfileForm(true);
 
-      setToastMessage('익명으로 로그인되었습니다.');
+      setToastMessage('익명으로 로그인되었습니다. 프로필을 생성해 주세요.');
       setShowToast(true);
     } catch (error) {
       logError('MyPage#handleAnonymousLogin', error);
@@ -397,11 +399,9 @@ export function MyPage() {
       } = await safeSupabaseQuery(supabase.auth.getSession());
       console.log('[로그아웃] 현재 세션 확인:', { hasSession: !!currentSession });
 
-      if (currentSession) {
-        console.log('[로그아웃] Supabase signOut 호출 전');
-        await safeSupabaseQuery(supabase.auth.signOut());
-        console.log('[로그아웃] Supabase signOut 완료');
-      }
+      console.log('[로그아웃] useAuthStore.signOut 호출 전');
+      await useAuthStore.getState().signOut();
+      console.log('[로그아웃] useAuthStore.signOut 완료');
 
       // 로컬 세션 삭제
       try {
