@@ -349,7 +349,12 @@ export function QuizProvider({ children, params }: QuizProviderProps) {
       isSubmitting,
       isError: animations.isError,
       isPaused:
-        showTipModal || showLastChanceModal || showCountdown || isFlarePaused || showPauseModal,
+        showTipModal ||
+        showLastChanceModal ||
+        showCountdown ||
+        isFlarePaused ||
+        showPauseModal ||
+        showStaminaModal,
       categoryParam: categoryParam || '',
       subParam: '',
       setAnswerInput,
@@ -366,7 +371,12 @@ export function QuizProvider({ children, params }: QuizProviderProps) {
     resetQuiz();
     resetGame();
     checkStamina().then(() => {
-      if (stamina <= 0) setExhausted(true);
+      const currentStamina = useUserStore.getState().stamina;
+      if (currentStamina <= 0) {
+        setExhausted(true);
+      } else {
+        setExhausted(false);
+      }
     });
     if (modeParam === 'base-camp') {
       useBaseCampStore.getState().startDiagnostic();
@@ -382,7 +392,6 @@ export function QuizProvider({ children, params }: QuizProviderProps) {
     resetGame,
     checkStamina,
     setExhausted,
-    stamina,
     setShowTipModal,
     setShowTutorial,
   ]);
@@ -760,8 +769,14 @@ export function QuizProvider({ children, params }: QuizProviderProps) {
       isSubmitting,
       isError: animations.isError,
       isPaused:
-        showTipModal || showLastChanceModal || showCountdown || isFlarePaused || showPauseModal,
-      isInputPaused: showTipModal || showLastChanceModal || showCountdown || showPauseModal,
+        showTipModal ||
+        showLastChanceModal ||
+        showCountdown ||
+        isFlarePaused ||
+        showPauseModal ||
+        showStaminaModal,
+      isInputPaused:
+        showTipModal || showLastChanceModal || showCountdown || showPauseModal || showStaminaModal,
       showExitConfirm,
       isFadingOut,
       cardAnimation: animations.cardAnimation,
@@ -780,6 +795,7 @@ export function QuizProvider({ children, params }: QuizProviderProps) {
       showCountdown,
       isFlarePaused,
       showPauseModal,
+      showStaminaModal,
       showExitConfirm,
       isFadingOut,
       toastValue,
