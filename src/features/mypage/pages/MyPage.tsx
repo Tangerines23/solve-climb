@@ -297,9 +297,13 @@ export function MyPage() {
         storageService.set(STORAGE_KEYS.LOGIN_REDIRECT, redirectPath);
       }
 
-      // 로컬 세션만 사용 (Supabase 인증 없이)
+      // Supabase 백엔드 익명 세션 획득 (서버 DB 랭킹 연동)
+      await useAuthStore.getState().signInAnonymously();
+      const sbUser = useAuthStore.getState().user;
+      const assignedProfileId = sbUser?.id || generateUUID();
+
       const userProfile = {
-        profileId: generateUUID(),
+        profileId: assignedProfileId,
         nickname: '',
         createdAt: new Date().toISOString(),
         isAdmin: false,
@@ -318,6 +322,9 @@ export function MyPage() {
       } catch (e) {
         console.warn('Failed to save local session:', e);
       }
+
+      // 기존 로컬 클리어 및 점수 기록을 Supabase DB 서버로 동기화
+      await useLevelProgressStore.getState().syncProgress();
 
       // 로그인 성공 후 통계 다시 불러오기
       await refetch();

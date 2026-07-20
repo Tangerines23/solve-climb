@@ -26,6 +26,11 @@ export const mockStoreState = {
   setHapticEnabled: vi.fn(),
   setAnimationEnabled: vi.fn(),
   setCategoryTopic: vi.fn(),
+  signInAnonymously: vi.fn(() => Promise.resolve()),
+  syncProgress: vi.fn(() => Promise.resolve()),
+  signOut: vi.fn(() => Promise.resolve()),
+  user: { id: 'anon-user-uuid-1234' },
+  session: { user: { id: 'anon-user-uuid-1234' } },
   getState: () => mockStoreState,
   subscribe: vi.fn(),
 };
@@ -213,6 +218,12 @@ vi.mock('@/stores/useQuizStore', () => ({
 }));
 vi.mock('@/stores/useLevelProgressStore', () => ({
   useLevelProgressStore: Object.assign((selector: any) => selector(mockStoreState), {
+    getState: () => mockStoreState,
+    subscribe: vi.fn(),
+  }),
+}));
+vi.mock('@/stores/useAuthStore', () => ({
+  useAuthStore: Object.assign((selector: any) => selector(mockStoreState), {
     getState: () => mockStoreState,
     subscribe: vi.fn(),
   }),

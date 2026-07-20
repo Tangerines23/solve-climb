@@ -1,6 +1,6 @@
 
 project: solve-climb
-generatedAt: "2026-07-19T12:54:52.827Z"
+generatedAt: "2026-07-20T12:00:56.451Z"
 files:
   src/App.tsx:
     imports: [@/utils/resilientLazy, @/stores/useLevelProgressStore, @/stores/useAuthStore, @/hooks/useCustomBackNavigation, @/components/GlobalLoadingIndicator, @/stores/useErrorLogStore, @/stores/useDebugStore, @/stores/useSettingsStore, @/hooks/useConnectivity, @/components/PwaUpdateNotification, @/features/auth, @/utils/supabaseClient, @/utils/env, @/components/GlobalToastContainer]
@@ -2235,7 +2235,7 @@ files:
       - name: handleTossLoginClick
         calls: [handleTossLogin, setAlertMessage, setShowAlert]
       - name: handleAnonymousLogin
-        calls: [setLoginError, storageService.set, generateUUID, "new Date().toISOString", setProfile, console.warn, refetch, setShowProfileForm, setToastMessage, setShowToast, logError]
+        calls: [setLoginError, storageService.set, useAuthStore.getState().signInAnonymously, useAuthStore.getState, generateUUID, "new Date().toISOString", setProfile, console.warn, useLevelProgressStore.getState().syncProgress, useLevelProgressStore.getState, refetch, setShowProfileForm, setToastMessage, setShowToast, logError]
       - name: handleGoogleLogin
         calls: [storageService.set, signInWithGoogle, setToastMessage, setShowToast, setLoginError]
       - name: handleLogout
@@ -2243,7 +2243,7 @@ files:
     exports:
       - name: MyPage
         returns: "import(\"C:/Users/ghkdd/gemini-projects/solve-climb/node_modules/@types/react/jsx-runtime\").JSX.Element"
-        calls: [useNavigate, useSearchParams, useProfileStore, useSettingsStore, useMyPageStats, useFavoriteStore, useQuizStore, useLevelProgressStore, searchParams.get, useLocation, React.useCallback, storageService.get, urls.myPage, navigate, storageService.remove, console.log, "getTodayChallenge(progressMap) .then((challengeData: any) => { setTodayChallenge(challengeData); }) .catch", "getTodayChallenge(progressMap) .then", getTodayChallenge, setTodayChallenge, logError, calculateTier(stats.totalMasteryScore).then, calculateTier, setTierStars, setShowPromotionModal, refetch, setShowProfileForm, setHapticEnabled, vibrateShort, setToastMessage, setShowToast, setAnimationEnabled, setShowDataResetConfirm, setIsResetting, resetAllData, setShowWithdrawConfirm, setIsWithdrawing, withdrawAccount, encodeURIComponent, handleTossLogin, setAlertMessage, setShowAlert, setLoginError, storageService.set, generateUUID, "new Date().toISOString", setProfile, console.warn, signInWithGoogle, performRedirect, "safeSupabaseQuery(supabase.rpc('update_profile_nickname', { p_nickname: nickname })).catch", safeSupabaseQuery, supabase.rpc, supabase.auth.getSession, useAuthStore.getState().signOut, useAuthStore.getState, clearProfile, isTossAppEnvironment, formatBestSubject, useProfileStore.getState, urls.debug]
+        calls: [useNavigate, useSearchParams, useProfileStore, useSettingsStore, useMyPageStats, useFavoriteStore, useQuizStore, useLevelProgressStore, searchParams.get, useLocation, React.useCallback, storageService.get, urls.myPage, navigate, storageService.remove, console.log, "getTodayChallenge(progressMap) .then((challengeData: any) => { setTodayChallenge(challengeData); }) .catch", "getTodayChallenge(progressMap) .then", getTodayChallenge, setTodayChallenge, logError, calculateTier(stats.totalMasteryScore).then, calculateTier, setTierStars, setShowPromotionModal, refetch, setShowProfileForm, setHapticEnabled, vibrateShort, setToastMessage, setShowToast, setAnimationEnabled, setShowDataResetConfirm, setIsResetting, resetAllData, setShowWithdrawConfirm, setIsWithdrawing, withdrawAccount, encodeURIComponent, handleTossLogin, setAlertMessage, setShowAlert, setLoginError, storageService.set, useAuthStore.getState().signInAnonymously, useAuthStore.getState, generateUUID, "new Date().toISOString", setProfile, console.warn, useLevelProgressStore.getState().syncProgress, useLevelProgressStore.getState, signInWithGoogle, performRedirect, "safeSupabaseQuery(supabase.rpc('update_profile_nickname', { p_nickname: nickname })).catch", safeSupabaseQuery, supabase.rpc, supabase.auth.getSession, useAuthStore.getState().signOut, clearProfile, isTossAppEnvironment, formatBestSubject, useProfileStore.getState, urls.debug]
   src/features/quiz/components/CalculusVisualization.tsx:
     imports: [./CalculusVisualization.css]
     state: [progress]
