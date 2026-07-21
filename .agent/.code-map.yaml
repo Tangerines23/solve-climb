@@ -1,6 +1,6 @@
 
 project: solve-climb
-generatedAt: "2026-07-20T16:25:12.558Z"
+generatedAt: "2026-07-21T10:12:12.515Z"
 files:
   src/App.tsx:
     imports: [@/utils/resilientLazy, @/stores/useLevelProgressStore, @/stores/useAuthStore, @/hooks/useCustomBackNavigation, @/components/GlobalLoadingIndicator, @/stores/useErrorLogStore, @/stores/useDebugStore, @/stores/useSettingsStore, @/hooks/useConnectivity, @/components/PwaUpdateNotification, @/features/auth, @/utils/supabaseClient, @/utils/env, @/components/GlobalToastContainer]
@@ -2565,7 +2565,7 @@ files:
             params:
               params: "{ category: string; level: number; mode: import(\"C:/Users/ghkdd/gemini-projects/solve-climb/src/features/quiz/types/quiz\").GameMode; score: number; avgSolveTime?: number | undefined; subject?: string | undefined; sessionData?: { answers: number[]; questionIds: string[]; sessionId: string; } | undefined; tier?: import(\"C:/Users/ghkdd/gemini-projects/solve-climb/src/features/quiz/types/quiz\").Tier | undefined; }"
             returns: "Promise<import(\"C:/Users/ghkdd/gemini-projects/solve-climb/src/features/quiz/services/LevelSyncService\").LevelSyncResult>"
-            calls: [safeSupabaseQuery, supabase.auth.getUser, supabase.rpc, "(sessionData?.questionIds ?? []).map", logError]
+            calls: [safeSupabaseQuery, supabase.auth.getUser, import, useAuthStore.getState().signInAnonymously, useAuthStore.getState, logError, supabase.rpc, "(sessionData?.questionIds ?? []).map"]
           - name: resetProgress
             returns: "Promise<import(\"C:/Users/ghkdd/gemini-projects/solve-climb/src/features/quiz/services/LevelSyncService\").LevelSyncResult>"
             calls: [safeSupabaseQuery, supabase.rpc]

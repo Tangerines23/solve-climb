@@ -34,7 +34,18 @@ export class LevelSyncService {
 
     try {
       const authResult = (await safeSupabaseQuery(supabase.auth.getUser())) as UserResponse;
-      const user = authResult?.data?.user;
+      let user = authResult?.data?.user;
+
+      if (!user) {
+        try {
+          const { useAuthStore } = await import('@/stores/useAuthStore');
+          await useAuthStore.getState().signInAnonymously();
+          const retryAuth = (await safeSupabaseQuery(supabase.auth.getUser())) as UserResponse;
+          user = retryAuth?.data?.user;
+        } catch (authErr) {
+          logError('LevelSyncService#autoSignIn', authErr);
+        }
+      }
 
       if (!user) {
         return { success: false, error: 'No user found' };
