@@ -1,6 +1,6 @@
 
 project: solve-climb
-generatedAt: "2026-07-21T10:12:12.515Z"
+generatedAt: "2026-07-21T21:10:38.220Z"
 files:
   src/App.tsx:
     imports: [@/utils/resilientLazy, @/stores/useLevelProgressStore, @/stores/useAuthStore, @/hooks/useCustomBackNavigation, @/components/GlobalLoadingIndicator, @/stores/useErrorLogStore, @/stores/useDebugStore, @/stores/useSettingsStore, @/hooks/useConnectivity, @/components/PwaUpdateNotification, @/features/auth, @/utils/supabaseClient, @/utils/env, @/components/GlobalToastContainer]
@@ -2511,7 +2511,7 @@ files:
   setGameSessionId,
 }": UseQuizSessionProps
         returns: "{ sessionCreated: boolean; setSessionCreated: React.Dispatch<React.SetStateAction<boolean>>; preGeneratedQuestions: import(\"C:/Users/ghkdd/gemini-projects/solve-climb/src/features/quiz/types/quiz\").QuizQuestion[]; }"
-        calls: ["(async () => { try { const mode = modeParam.includes('time') ? 'timeattack' : 'survival'; const { infiniteStamina } = useDebugStore.getState(); // Pre-generate questions to satisfy server-side validation const preGenerated = []; const numToGen = mode === 'timeattack' ? 10 : 20; for (let i = 0; i < numToGen; i++) { const q = generateQuestion( (mountainParam as Mountain) || 'math', (worldParam as World) || 'World1', (categoryParam as Topic) || '기초', levelParam || 1, 'medium' ); q.id = crypto.randomUUID(); preGenerated.push(q); } const { data } = await safeSupabaseQuery( supabase.rpc('create_game_session', { p_questions: preGenerated, p_category: categoryParam, p_subject: worldParam, p_level: levelParam, p_game_mode: mode, p_is_debug_session: infiniteStamina, }) ); if (data?.session_id) { setGameSessionId(data.session_id); setPreGeneratedQuestions(preGenerated); setSessionCreated(true); } } finally { isCreatingSessionRef.current = false; } })", modeParam.includes, useDebugStore.getState, generateQuestion, crypto.randomUUID, preGenerated.push, safeSupabaseQuery, supabase.rpc, setGameSessionId, setPreGeneratedQuestions, setSessionCreated]
+        calls: ["(async () => { try { const mode = modeParam.includes('time') ? 'timeattack' : 'survival'; const { infiniteStamina } = useDebugStore.getState(); // Pre-generate questions to satisfy server-side validation const preGenerated = []; const numToGen = mode === 'timeattack' ? 10 : 20; for (let i = 0; i < numToGen; i++) { const q = generateQuestion( (mountainParam as Mountain) || 'math', (worldParam as World) || 'World1', (categoryParam as Topic) || '기초', levelParam || 1, 'medium' ); q.id = crypto.randomUUID(); preGenerated.push(q); } const { data, error } = await safeSupabaseQuery( supabase.rpc('create_game_session', { p_questions: preGenerated, p_category: categoryParam, p_subject: worldParam, p_level: levelParam, p_game_mode: mode, p_is_debug_session: infiniteStamina, }) ); if (error || !data?.session_id) { console.error('[useQuizSession] create_game_session 실패 상세 정보:', { error, data }); } if (data?.session_id) { setGameSessionId(data.session_id); setPreGeneratedQuestions(preGenerated); setSessionCreated(true); } } finally { isCreatingSessionRef.current = false; } })", modeParam.includes, useDebugStore.getState, generateQuestion, crypto.randomUUID, preGenerated.push, safeSupabaseQuery, supabase.rpc, console.error, setGameSessionId, setPreGeneratedQuestions, setSessionCreated]
   src/features/quiz/hooks/useQuizStartLogic.ts:
     imports: [@/stores/useGameStore, @/services/analytics, @/utils/navigation, @/constants/game, @/utils/validation, @/types/user, @/lib/eventBus]
     exports:
@@ -2565,7 +2565,7 @@ files:
             params:
               params: "{ category: string; level: number; mode: import(\"C:/Users/ghkdd/gemini-projects/solve-climb/src/features/quiz/types/quiz\").GameMode; score: number; avgSolveTime?: number | undefined; subject?: string | undefined; sessionData?: { answers: number[]; questionIds: string[]; sessionId: string; } | undefined; tier?: import(\"C:/Users/ghkdd/gemini-projects/solve-climb/src/features/quiz/types/quiz\").Tier | undefined; }"
             returns: "Promise<import(\"C:/Users/ghkdd/gemini-projects/solve-climb/src/features/quiz/services/LevelSyncService\").LevelSyncResult>"
-            calls: [safeSupabaseQuery, supabase.auth.getUser, import, useAuthStore.getState().signInAnonymously, useAuthStore.getState, logError, supabase.rpc, "(sessionData?.questionIds ?? []).map"]
+            calls: [safeSupabaseQuery, supabase.auth.getUser, import, useAuthStore.getState().signInAnonymously, useAuthStore.getState, logError, supabase.rpc, "(sessionData?.questionIds ?? []).map", console.error]
           - name: resetProgress
             returns: "Promise<import(\"C:/Users/ghkdd/gemini-projects/solve-climb/src/features/quiz/services/LevelSyncService\").LevelSyncResult>"
             calls: [safeSupabaseQuery, supabase.rpc]
