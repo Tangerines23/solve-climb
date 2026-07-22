@@ -24,7 +24,7 @@ async function waitForAuth(page: Page, timeout = AUTH_WAIT_TIMEOUT_MS): Promise<
       for (let i = 0; i < localStorage.length; i++) {
         const key = localStorage.key(i);
         if (key?.startsWith('sb-') && key?.includes('auth')) return true;
-        if (key === 'solve-climb-local-session') return true;
+        if (key === 'solve-climb-local-session' || key === 'guest_temp_id') return true;
       }
       return false;
     });

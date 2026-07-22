@@ -15,6 +15,26 @@ interface AuthState {
   signOut: () => Promise<void>;
 }
 
+const getOrCreateGuestUser = (): User => {
+  let guestId = storageService.get<string>('guest_temp_id');
+  if (!guestId) {
+    guestId =
+      'guest-' +
+      (typeof crypto !== 'undefined' && crypto.randomUUID
+        ? crypto.randomUUID()
+        : Math.random().toString(36).substring(2, 11));
+    storageService.set('guest_temp_id', guestId);
+  }
+  return {
+    id: guestId,
+    app_metadata: { provider: 'anonymous' },
+    user_metadata: { nickname: '익명 등반가' },
+    aud: 'authenticated',
+    created_at: new Date().toISOString(),
+    is_anonymous: true,
+  } as unknown as User;
+};
+
 export const useAuthStore = create<AuthState>((set) => ({
   session: null,
   user: null,
@@ -31,17 +51,26 @@ export const useAuthStore = create<AuthState>((set) => ({
     if (sbSession) {
       set({ session: sbSession, user: sbSession.user });
     } else {
-      // 2. 세션이 없으면 게스트 상태 유지 (게임 결과를 최초 제출하는 시점에 지연 생성됨)
-      console.log('[AuthStore] No active session. Deferred anonymous authentication enabled.');
+      // 2. 세션이 없으면 DB 생성 없이 로컬 게스트 유저 상태 설정 (최초 제출 시 DB 지연 생성됨)
+      console.log(
+        '[AuthStore] No active session. Local guest user initialized (DB lazy creation enabled).'
+      );
+      const guestUser = getOrCreateGuestUser();
+      storageService.set(STORAGE_KEYS.LOCAL_SESSION, {
+        userId: guestUser.id,
+        nickname: '익명 등반가',
+        isAnonymous: true,
+      });
+      set({ session: null, user: guestUser });
     }
 
     // Listen for auth changes
-    supabase.auth.onAuthStateChange((_event, session) => {
-      const user = session?.user ?? null;
+    supabase.auth.onAuthStateChange((event, session) => {
+      const user = session?.user ?? (event === 'SIGNED_OUT' ? null : getOrCreateGuestUser());
 
       set({ session, user, isLoading: false });
 
-      if (user?.id) {
+      if (user?.id && !String(user.id).startsWith('guest-')) {
         import('./useProfileStore')
           .then(({ useProfileStore }) => {
             useProfileStore.getState().syncProfileWithAuthUser(user.id);

@@ -72,7 +72,10 @@ export function useMyPageStats(): UseMyPageStatsResult {
     const checkLocalSession = () => {
       try {
         const localSession = storageService.get<LocalSession>(STORAGE_KEYS.LOCAL_SESSION);
-        if (localSession && isValidUUID(localSession.userId)) {
+        const isGuestOrUUID =
+          localSession?.userId &&
+          (isValidUUID(localSession.userId) || String(localSession.userId).startsWith('guest-'));
+        if (localSession && isGuestOrUUID) {
           // 로컬 세션이 있으면 가상 세션 객체 생성
           const virtualSession = {
             user: {
@@ -132,7 +135,10 @@ export function useMyPageStats(): UseMyPageStatsResult {
 
       try {
         const localSession = storageService.get<LocalSession>(STORAGE_KEYS.LOCAL_SESSION);
-        if (localSession && isValidUUID(localSession.userId)) {
+        const isGuestOrUUID =
+          localSession?.userId &&
+          (isValidUUID(localSession.userId) || String(localSession.userId).startsWith('guest-'));
+        if (localSession && isGuestOrUUID) {
           userId = localSession.userId;
           // 로컬 세션이 있으면 가상 세션 객체 생성
           currentSession = {
