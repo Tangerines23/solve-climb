@@ -2,6 +2,8 @@
 import { create } from 'zustand';
 import { useLevelProgressStore } from './useLevelProgressStore';
 import { storageService, STORAGE_KEYS } from '../services';
+import { supabase } from '../utils/supabaseClient';
+import { safeSupabaseQuery } from '../utils/debugFetch';
 import type { UserProgress } from './useLevelProgressStore';
 
 export interface UserProfile {
