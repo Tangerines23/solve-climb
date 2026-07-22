@@ -21,10 +21,32 @@ async function waitForAuth(page: Page, timeout = AUTH_WAIT_TIMEOUT_MS): Promise<
   while (Date.now() - start < timeout) {
     const hasAuth = await page.evaluate(() => {
       // Supabase auth token 또는 Local Session 존재 여부 확인
+      let hasSession = false;
       for (let i = 0; i < localStorage.length; i++) {
         const key = localStorage.key(i);
-        if (key?.startsWith('sb-') && key?.includes('auth')) return true;
-        if (key === 'solve-climb-local-session' || key === 'guest_temp_id') return true;
+        if (key?.startsWith('sb-') && key?.includes('auth')) hasSession = true;
+        if (key === 'solve-climb-local-session' || key === 'guest_temp_id') hasSession = true;
+      }
+      if (!hasSession) return false;
+
+      // 프로필 닉네임 완성 여부 확인
+      let activeId = localStorage.getItem('solve-climb-active-profile-id');
+      if (!activeId) return false;
+      activeId = activeId.replace(/^"|"$/g, '');
+
+      for (let i = 0; i < localStorage.length; i++) {
+        const key = localStorage.key(i);
+        if (key?.startsWith('solve-climb-profiles-')) {
+          try {
+            const profiles = JSON.parse(localStorage.getItem(key) || '[]');
+            const activeProfile = profiles.find(
+              (p: { profileId: string; nickname?: string }) => p.profileId === activeId
+            );
+            if (activeProfile?.nickname) return true;
+          } catch (_e) {
+            /* ignore */
+          }
+        }
       }
       return false;
     });
