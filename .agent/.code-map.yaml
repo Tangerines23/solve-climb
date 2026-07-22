@@ -1,6 +1,6 @@
 
 project: solve-climb
-generatedAt: "2026-07-22T15:14:07.436Z"
+generatedAt: "2026-07-22T16:18:05.914Z"
 files:
   src/App.tsx:
     imports: [@/utils/resilientLazy, @/stores/useLevelProgressStore, @/stores/useAuthStore, @/hooks/useCustomBackNavigation, @/components/GlobalLoadingIndicator, @/stores/useErrorLogStore, @/stores/useDebugStore, @/stores/useSettingsStore, @/hooks/useConnectivity, @/components/PwaUpdateNotification, @/features/auth, @/utils/supabaseClient, @/utils/env, @/components/GlobalToastContainer]
