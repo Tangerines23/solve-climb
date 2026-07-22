@@ -30,15 +30,9 @@ export const useAuthStore = create<AuthState>((set) => ({
 
     if (sbSession) {
       set({ session: sbSession, user: sbSession.user });
-    } else if (import.meta.env.VITE_SUPABASE_URL) {
-      // 2. 세션이 없으면 Supabase 실제 익명 세션 생성 (JWT 토큰 보장)
-      console.log('[AuthStore] Establishing real Supabase anonymous session...');
-      const { data, error } = await safeSupabaseQuery(supabase.auth.signInAnonymously());
-      if (error) {
-        console.error('[AuthStore] Supabase anonymous sign-in failed:', error.message);
-      } else if (data?.session) {
-        set({ session: data.session, user: data.user });
-      }
+    } else {
+      // 2. 세션이 없으면 게스트 상태 유지 (게임 결과를 최초 제출하는 시점에 지연 생성됨)
+      console.log('[AuthStore] No active session. Deferred anonymous authentication enabled.');
     }
 
     // Listen for auth changes

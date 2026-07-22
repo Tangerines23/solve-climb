@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 /**
  * 랭킹 등록 풀 사이클 E2E verification 스크립트/매크로
- * 
+ *
  * 수행 단계:
  * 1. 익명 플레이어 접속 세션 생성 & 닉네임 설정
  * 2. 1-1 (기초 덧셈 Level 1) 퀴즈 1회 플레이 데이터 생성 및 제출
@@ -24,7 +24,10 @@ if (fs.existsSync(envPath)) {
   envContent.split('\n').forEach((line) => {
     const [key, ...valueParts] = line.split('=');
     if (key && valueParts.length > 0) {
-      const value = valueParts.join('=').trim().replace(/^["']|["']$/g, '');
+      const value = valueParts
+        .join('=')
+        .trim()
+        .replace(/^["']|["']$/g, '');
       process.env[key.trim()] = value;
     }
   });
@@ -73,7 +76,9 @@ async function runE2ERankingVerificationMacro() {
   });
 
   if (rpcErr) {
-    console.log(`  ℹ️ RPC 캐시 대기 중 — Auth 메타데이터 닉네임('${testNickname}')으로 1-1 플레이를 진행합니다.`);
+    console.log(
+      `  ℹ️ RPC 캐시 대기 중 — Auth 메타데이터 닉네임('${testNickname}')으로 1-1 플레이를 진행합니다.`
+    );
   } else {
     console.log(`  ✅ DB 닉네임 RPC 적용 완료!`);
   }
@@ -122,7 +127,10 @@ async function runE2ERankingVerificationMacro() {
   });
 
   if (sessionErr || !sessionRes?.success) {
-    console.error('❌ create_game_session RPC 생성 실패:', sessionErr?.message || sessionRes?.message);
+    console.error(
+      '❌ create_game_session RPC 생성 실패:',
+      sessionErr?.message || sessionRes?.message
+    );
     process.exit(1);
   }
 
@@ -213,6 +221,19 @@ async function runE2ERankingVerificationMacro() {
   console.log(`  ⭐ 획득 점수 (Score) : ${finalScore}점`);
   console.log(`  🆔 유저 ID           : ${userId}`);
   console.log('====================================================\n');
+
+  // STEP 5: 테스트 후 Cleanup (테스트 계정 및 0점 노이즈 정리)
+  console.log(`[Step 5/5] 테스트 완료 후 DB 0점 노이즈 및 테스트 계정 Cleanup 실행 중...`);
+  try {
+    const { error: delErr } = await supabase.from('profiles').delete().eq('id', userId);
+    if (!delErr) {
+      console.log(`  🧹 테스트 생성 계정(${userId}) 삭제 완료!`);
+    }
+    const { data: cleanRes } = await supabase.rpc('clean_zero_score_anonymous_users');
+    console.log(`  🧹 DB 0점 익명 노이즈 정돈 완료!`, cleanRes);
+  } catch (cleanError) {
+    console.log(`  ⚠️ Cleanup 중 경고 (진행에는 영향 없음):`, cleanError?.message);
+  }
 }
 
 runE2ERankingVerificationMacro()
