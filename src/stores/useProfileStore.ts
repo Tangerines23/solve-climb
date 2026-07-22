@@ -140,7 +140,10 @@ export const useProfileStore = create<ProfileState>((set, get) => ({
         ).catch(() => {
           supabase.auth.getUser().then(({ data: { user } }) => {
             if (user?.id) {
-              supabase.from('profiles').update({ nickname: profile.nickname, updated_at: new Date().toISOString() }).eq('id', user.id);
+              supabase
+                .from('profiles')
+                .update({ nickname: profile.nickname, updated_at: new Date().toISOString() })
+                .eq('id', user.id);
             }
           });
         });
@@ -253,7 +256,10 @@ export const useProfileStore = create<ProfileState>((set, get) => ({
         await safeSupabaseQuery(
           supabase.rpc('update_profile_nickname', { p_nickname: activeNick })
         ).catch(() => {
-          supabase.from('profiles').update({ nickname: activeNick, updated_at: new Date().toISOString() }).eq('id', userId);
+          supabase
+            .from('profiles')
+            .update({ nickname: activeNick, updated_at: new Date().toISOString() })
+            .eq('id', userId);
         });
       } catch {
         // ignore

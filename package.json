@@ -71,7 +71,7 @@
     "check:db": "npm run check:migrations && npm run check:db:migrations && npm run check:db:lint && npm run check:db:validation",
     "audit": "npm audit",
     "audit:fix": "npm audit fix",
-    "audit:auto-fix": "npm audit fix --audit-level=high || true",
+    "audit:auto-fix": "npm audit fix --audit-level=high || exit 0",
     "check:nav": "node scripts/check-navigation.cjs",
     "check:circular": "madge --circular --extensions ts,tsx src/",
     "check:logic": "vitest src/utils/__tests__/logic_latency.test.ts --run",

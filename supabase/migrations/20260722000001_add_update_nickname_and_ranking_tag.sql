@@ -14,7 +14,7 @@ BEGIN
         RETURN pg_catalog.jsonb_build_object('success', false, 'error', 'Authentication required');
     END IF;
 
-    v_clean_nickname := pg_catalog.trim(p_nickname);
+    v_clean_nickname := pg_catalog.btrim(p_nickname);
     IF pg_catalog.length(v_clean_nickname) < 2 OR pg_catalog.length(v_clean_nickname) > 12 THEN
         RETURN pg_catalog.jsonb_build_object('success', false, 'error', '닉네임은 2자 이상 12자 이하이어야 합니다.');
     END IF;
@@ -45,10 +45,10 @@ CREATE OR REPLACE FUNCTION public.get_ranking_v2(
     p_limit pg_catalog.int4 DEFAULT 50
 )
 RETURNS TABLE (
-    user_id pg_catalog.uuid,
-    nickname pg_catalog.text,
-    score pg_catalog.int8,
-    rank pg_catalog.int8
+    out_user_id pg_catalog.uuid,
+    out_nickname pg_catalog.text,
+    out_score pg_catalog.int8,
+    out_rank pg_catalog.int8
 ) 
 LANGUAGE plpgsql
 SECURITY DEFINER
@@ -68,16 +68,16 @@ BEGIN
             FROM public.profiles p
         )
         SELECT 
-            pd.id as user_id,
+            pd.id as out_user_id,
             CASE 
                 WHEN pd.nick_count > 1 THEN pd.raw_nick || ' #' || pg_catalog.right(pg_catalog.replace(pd.id::pg_catalog.text, '-'::pg_catalog.text, ''::pg_catalog.text), 4)
                 ELSE pd.raw_nick
-            END as nickname,
+            END as out_nickname,
             CASE 
                 WHEN p_type = 'time-attack' THEN pd.weekly_score_timeattack::pg_catalog.int8
                 WHEN p_type = 'survival' THEN pd.weekly_score_survival::pg_catalog.int8
                 ELSE pd.weekly_score_total::pg_catalog.int8
-            END as score,
+            END as out_score,
             pg_catalog.rank() OVER (
                 ORDER BY (
                     CASE 
@@ -86,7 +86,7 @@ BEGIN
                         ELSE pd.weekly_score_total
                     END
                 ) DESC
-            )::pg_catalog.int8 as rank
+            )::pg_catalog.int8 as out_rank
         FROM profile_display pd
         WHERE (
             CASE 
@@ -115,13 +115,13 @@ BEGIN
                 FROM public.profiles p
             )
             SELECT 
-                um.mastery_user_id as user_id,
+                um.mastery_user_id as out_user_id,
                 CASE 
                     WHEN pd.nick_count > 1 THEN pd.raw_nick || ' #' || pg_catalog.right(pg_catalog.replace(pd.id::pg_catalog.text, '-'::pg_catalog.text, ''::pg_catalog.text), 4)
                     ELSE pd.raw_nick
-                END as nickname,
-                um.total_mastery::pg_catalog.int8 as score,
-                pg_catalog.rank() OVER (ORDER BY um.total_mastery DESC)::pg_catalog.int8 as rank
+                END as out_nickname,
+                um.total_mastery::pg_catalog.int8 as out_score,
+                pg_catalog.rank() OVER (ORDER BY um.total_mastery DESC)::pg_catalog.int8 as out_rank
             FROM user_mastery um
             LEFT JOIN profile_display pd ON um.mastery_user_id = pd.id
             ORDER BY 3 DESC
@@ -139,15 +139,15 @@ BEGIN
                 FROM public.profiles p
             )
             SELECT 
-                pd.id as user_id,
+                pd.id as out_user_id,
                 CASE 
                     WHEN pd.nick_count > 1 THEN pd.raw_nick || ' #' || pg_catalog.right(pg_catalog.replace(pd.id::pg_catalog.text, '-'::pg_catalog.text, ''::pg_catalog.text), 4)
                     ELSE pd.raw_nick
-                END as nickname,
+                END as out_nickname,
                 CASE 
                     WHEN p_type = 'time-attack' THEN pd.best_score_timeattack::pg_catalog.int8
                     ELSE pd.best_score_survival::pg_catalog.int8
-                END as score,
+                END as out_score,
                 pg_catalog.rank() OVER (
                     ORDER BY (
                         CASE 
@@ -155,7 +155,7 @@ BEGIN
                             ELSE pd.best_score_survival
                         END
                     ) DESC
-                )::pg_catalog.int8 as rank
+                )::pg_catalog.int8 as out_rank
             FROM profile_display pd
             WHERE (
                 CASE 
