@@ -1,6 +1,6 @@
 
 project: solve-climb
-generatedAt: "2026-07-22T10:50:36.969Z"
+generatedAt: "2026-07-22T12:18:48.396Z"
 files:
   src/App.tsx:
     imports: [@/utils/resilientLazy, @/stores/useLevelProgressStore, @/stores/useAuthStore, @/hooks/useCustomBackNavigation, @/components/GlobalLoadingIndicator, @/stores/useErrorLogStore, @/stores/useDebugStore, @/stores/useSettingsStore, @/hooks/useConnectivity, @/components/PwaUpdateNotification, @/features/auth, @/utils/supabaseClient, @/utils/env, @/components/GlobalToastContainer]
@@ -362,13 +362,13 @@ files:
     state: [nickname, error]
     handlers:
       - name: handleSubmit
-        calls: [e.preventDefault, sanitizeNickname, validateNickname, setError, "new Date().toISOString", setProfile, import('../utils/supabaseClient').then, import, supabase.auth.getSession().then, supabase.auth.getSession, "supabase .rpc('update_profile_nickname', { p_nickname: sanitizedNickname }) .then", "supabase .rpc", logError, console.log, onComplete]
+        calls: [e.preventDefault, sanitizeNickname, validateNickname, setError, "new Date().toISOString", setProfile, import('../utils/supabaseClient').then, import, supabase.auth.getSession().then, supabase.auth.getSession, "supabase .rpc('update_profile_nickname', { p_nickname: sanitizedNickname }) .then", "supabase .rpc", "supabase .from('profiles') .update({ nickname: sanitizedNickname, updated_at: new Date().toISOString() }) .eq('id', session.user.id) .then(() => console.log('Nickname updated via direct table fallback')) .catch", "supabase .from('profiles') .update({ nickname: sanitizedNickname, updated_at: new Date().toISOString() }) .eq('id', session.user.id) .then", "supabase .from('profiles') .update({ nickname: sanitizedNickname, updated_at: new Date().toISOString() }) .eq", "supabase .from('profiles') .update", "supabase .from", console.log, logError, onComplete]
     exports:
       - name: ProfileForm
         params:
           "{ onComplete, showBackButton = false, onCancel }": ProfileFormProps
         returns: "import(\"C:/Users/ghkdd/gemini-projects/solve-climb/node_modules/@types/react/jsx-runtime\").JSX.Element"
-        calls: [useNavigate, useProfileStore, e.preventDefault, sanitizeNickname, validateNickname, setError, "new Date().toISOString", setProfile, import('../utils/supabaseClient').then, import, supabase.auth.getSession().then, supabase.auth.getSession, "supabase .rpc('update_profile_nickname', { p_nickname: sanitizedNickname }) .then", "supabase .rpc", logError, console.log, onComplete, onCancel, navigate, setNickname]
+        calls: [useNavigate, useProfileStore, e.preventDefault, sanitizeNickname, validateNickname, setError, "new Date().toISOString", setProfile, import('../utils/supabaseClient').then, import, supabase.auth.getSession().then, supabase.auth.getSession, "supabase .rpc('update_profile_nickname', { p_nickname: sanitizedNickname }) .then", "supabase .rpc", "supabase .from('profiles') .update({ nickname: sanitizedNickname, updated_at: new Date().toISOString() }) .eq('id', session.user.id) .then(() => console.log('Nickname updated via direct table fallback')) .catch", "supabase .from('profiles') .update({ nickname: sanitizedNickname, updated_at: new Date().toISOString() }) .eq('id', session.user.id) .then", "supabase .from('profiles') .update({ nickname: sanitizedNickname, updated_at: new Date().toISOString() }) .eq", "supabase .from('profiles') .update", "supabase .from", console.log, logError, onComplete, onCancel, navigate, setNickname]
   src/components/PwaUpdateNotification.tsx:
     imports: [./Toast, ../utils/errorHandler]
     state: [show, message]
@@ -931,7 +931,7 @@ files:
             returns: Record<string, unknown>
             calls: [Object.fromEntries]
   src/stores/useAuthStore.ts:
-    imports: [../utils/supabaseClient, ../utils/debugFetch, ../services, ../utils/validation, @/services/analytics]
+    imports: [../utils/supabaseClient, ../utils/debugFetch, ../services, @/services/analytics]
   src/stores/useBadgeStore.ts:
     imports: [../utils/supabaseClient, ../utils/debugFetch, ../services]
   src/stores/useBaseCampStore.ts:
@@ -947,7 +947,7 @@ files:
   src/stores/useLevelProgressStore.ts:
     imports: [../utils/supabaseClient, ../utils/debugFetch, ../types/quiz, ./useDebugStore, ./useToastStore, ../constants/ui, ../utils/validation, ../services/LevelSyncService]
   src/stores/useProfileStore.ts:
-    imports: [./useLevelProgressStore, ../services, ./useLevelProgressStore]
+    imports: [./useLevelProgressStore, ../services, ../utils/supabaseClient, ../utils/debugFetch, ./useLevelProgressStore]
   src/stores/useQuizStore.ts:
     imports: [../types/quiz]
   src/stores/useRankingStore.ts:
@@ -2243,7 +2243,7 @@ files:
     exports:
       - name: MyPage
         returns: "import(\"C:/Users/ghkdd/gemini-projects/solve-climb/node_modules/@types/react/jsx-runtime\").JSX.Element"
-        calls: [useNavigate, useSearchParams, useProfileStore, useSettingsStore, useMyPageStats, useFavoriteStore, useQuizStore, useLevelProgressStore, searchParams.get, useLocation, React.useCallback, storageService.get, urls.myPage, navigate, storageService.remove, console.log, "getTodayChallenge(progressMap) .then((challengeData: any) => { setTodayChallenge(challengeData); }) .catch", "getTodayChallenge(progressMap) .then", getTodayChallenge, setTodayChallenge, logError, calculateTier(stats.totalMasteryScore).then, calculateTier, setTierStars, setShowPromotionModal, refetch, setShowProfileForm, setHapticEnabled, vibrateShort, setToastMessage, setShowToast, setAnimationEnabled, setShowDataResetConfirm, setIsResetting, resetAllData, setShowWithdrawConfirm, setIsWithdrawing, withdrawAccount, encodeURIComponent, handleTossLogin, setAlertMessage, setShowAlert, setLoginError, storageService.set, useAuthStore.getState().signInAnonymously, useAuthStore.getState, generateUUID, "new Date().toISOString", setProfile, console.warn, useLevelProgressStore.getState().syncProgress, useLevelProgressStore.getState, signInWithGoogle, performRedirect, "safeSupabaseQuery(supabase.rpc('update_profile_nickname', { p_nickname: nickname })).catch", safeSupabaseQuery, supabase.rpc, supabase.auth.getSession, useAuthStore.getState().signOut, clearProfile, isTossAppEnvironment, formatBestSubject, useProfileStore.getState, urls.debug]
+        calls: [useNavigate, useSearchParams, useProfileStore, useSettingsStore, useMyPageStats, useFavoriteStore, useQuizStore, useLevelProgressStore, searchParams.get, useLocation, React.useCallback, storageService.get, urls.myPage, navigate, storageService.remove, console.log, "getTodayChallenge(progressMap) .then((challengeData: any) => { setTodayChallenge(challengeData); }) .catch", "getTodayChallenge(progressMap) .then", getTodayChallenge, setTodayChallenge, logError, calculateTier(stats.totalMasteryScore).then, calculateTier, setTierStars, setShowPromotionModal, refetch, setShowProfileForm, setHapticEnabled, vibrateShort, setToastMessage, setShowToast, setAnimationEnabled, setShowDataResetConfirm, setIsResetting, resetAllData, setShowWithdrawConfirm, setIsWithdrawing, withdrawAccount, encodeURIComponent, handleTossLogin, setAlertMessage, setShowAlert, setLoginError, storageService.set, useAuthStore.getState().signInAnonymously, useAuthStore.getState, generateUUID, "new Date().toISOString", setProfile, console.warn, useLevelProgressStore.getState().syncProgress, useLevelProgressStore.getState, signInWithGoogle, performRedirect, "safeSupabaseQuery(supabase.rpc('update_profile_nickname', { p_nickname: nickname })).catch", safeSupabaseQuery, supabase.rpc, "supabase.from('profiles').update({ nickname, updated_at: new Date().toISOString() }).eq", supabase.from('profiles').update, supabase.from, supabase.auth.getSession, useAuthStore.getState().signOut, clearProfile, isTossAppEnvironment, formatBestSubject, useProfileStore.getState, urls.debug]
   src/features/quiz/components/CalculusVisualization.tsx:
     imports: [./CalculusVisualization.css]
     state: [progress]

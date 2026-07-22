@@ -388,7 +388,11 @@ export function MyPage() {
 
     try {
       safeSupabaseQuery(supabase.rpc('update_profile_nickname', { p_nickname: nickname })).catch(
-        () => {}
+        () => {
+          if (session?.user?.id) {
+            supabase.from('profiles').update({ nickname, updated_at: new Date().toISOString() }).eq('id', session.user.id);
+          }
+        }
       );
     } catch {
       // 무시

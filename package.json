@@ -17,6 +17,7 @@
     "format": "prettier --write \"src/**/*.{ts,tsx,js,jsx,json,css}\"",
     "format:check": "prettier --check \"src/**/*.{ts,tsx,js,jsx,json,css}\"",
     "type-check": "tsc --noEmit",
+    "verify:ranking:e2e": "node scripts/verify-e2e-ranking-flow.js",
     "check:playstore:version": "node scripts/check-playstore-version.js",
     "check": "npm run type-check && npm run lint && npm run format:check && npm run check:css && npm run check:nav",
     "validate": "npm run type-check && npm run lint && npm run format:check && npm run check:css && npm run check:nav && npm run check:secrets && npm run check:circular && npm run check:integrity && npm run check:logic && npm run check:playstore:version",

@@ -5,7 +5,6 @@ CREATE OR REPLACE FUNCTION public.update_profile_nickname(p_nickname pg_catalog.
 RETURNS pg_catalog.jsonb
 LANGUAGE plpgsql
 SECURITY DEFINER
-SET search_path = ''
 AS $$
 DECLARE
     v_user_id pg_catalog.uuid := auth.uid();

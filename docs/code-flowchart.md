@@ -243,6 +243,7 @@ graph TD
   src_stores_useLevelProgressStore_ts --> src_services_LevelSyncService_ts
   src_stores_useProfileStore_ts --> src_stores_useLevelProgressStore_ts
   src_stores_useProfileStore_ts --> src_services_index_ts
+  src_stores_useProfileStore_ts --> src_utils_supabaseClient_ts
   src_stores_useRankingStore_ts --> src_utils_supabaseClient_ts
   src_stores_useRankingStore_ts --> src_stores_useToastStore_ts
   src_stores_useUserStore_ts --> src_utils_supabaseClient_ts
