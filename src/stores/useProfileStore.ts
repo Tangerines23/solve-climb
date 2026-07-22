@@ -26,6 +26,7 @@ interface ProfileState {
   setIsAdmin: (isAdmin: boolean) => void;
   switchProfile: (profileId: string) => void;
   deleteProfile: (profileId: string) => void;
+  syncProfileWithAuthUser: (userId: string) => Promise<void>;
 }
 
 // 고유 ID 생성
@@ -221,6 +222,33 @@ export const useProfileStore = create<ProfileState>((set, get) => ({
       }
     } else {
       set({ profiles: updatedProfiles });
+    }
+  },
+
+  syncProfileWithAuthUser: async (userId: string) => {
+    if (!userId) return;
+    const state = get();
+    let currentProfile = state.profile;
+
+    if (!currentProfile) {
+      currentProfile = {
+        profileId: generateProfileId(),
+        nickname: '익명 등반가',
+        userId,
+        createdAt: new Date().toISOString(),
+      };
+      get().setProfile(currentProfile);
+    } else if (currentProfile.userId !== userId) {
+      const updated = { ...currentProfile, userId };
+      get().setProfile(updated);
+    } else if (currentProfile.nickname) {
+      try {
+        await safeSupabaseQuery(
+          supabase.rpc('update_profile_nickname', { p_nickname: currentProfile.nickname })
+        );
+      } catch {
+        // ignore
+      }
     }
   },
 }));
