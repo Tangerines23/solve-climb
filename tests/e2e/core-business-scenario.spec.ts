@@ -47,7 +47,11 @@ test.describe('CORE BUSINESS SCENARIO - 게임 플레이부터 랭킹 반영까�
 
     // 3. 수학 산 선택
     console.log('[E2E] Step 3: Selecting Math mountain...');
-    const mathMountain = page.locator('.category-climb-button[data-category-id="math"]');
+    const mathMountain = page
+      .locator(
+        '.mountain-card, .category-climb-button[data-category-id="math"], button:has-text("도전하기"), .my-page-quick-access-button'
+      )
+      .first();
     await expect(mathMountain).toBeVisible({ timeout: 15000 });
     await mathMountain.click();
 

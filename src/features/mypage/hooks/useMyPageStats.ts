@@ -193,9 +193,27 @@ export function useMyPageStats(): UseMyPageStatsResult {
       const user = currentSession.user;
       const user_id = userId || user.id;
 
-      // 로컬 세션 가드 제거 (DB 데이터가 있다면 조회 진행)
-
-      // 프로필 정보 가져오기 (티어 정보 포함)
+      // 게스트 유저(UUID가 아닌 ID)인 경우 DB 직쿼리 생략하고 기본값 세팅 후 리턴
+      if (!isValidUUID(user_id)) {
+        setStats({
+          totalSolved: 0,
+          maxLevel: 0,
+          bestSubject: null,
+          totalMasteryScore: 0,
+          currentTierLevel: null,
+          cyclePromotionPending: false,
+          pendingCycleScore: 0,
+          loginStreak: 0,
+          totalGames: 0,
+          totalCorrect: 0,
+          totalQuestions: 0,
+          bestStreak: 0,
+          avgSolveTime: 0,
+          lastPlayedAt: null,
+        });
+        setLoading(false);
+        return;
+      }
       const profileResult = (await safeSupabaseQuery(
         supabase
           .from('profiles')

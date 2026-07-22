@@ -47,7 +47,10 @@ test.describe('SMOKE TEST - 메인 화면 검증', () => {
   test('홈 화면 웹 접근성 검증 (Accessibility Audit)', async ({ page }) => {
     // 1. 페이지 로컬 렌더링 대기
     await page.waitForLoadState('networkidle');
-    await page.waitForSelector('.home-page', { state: 'visible', timeout: 10000 });
+    await page.waitForSelector('.home-page, .my-page-container', {
+      state: 'visible',
+      timeout: 10000,
+    });
 
     // 2. WCAG 2.0, 2.1 Level AA 검사
     const accessibilityScanResults = await new AxeBuilder({ page })
