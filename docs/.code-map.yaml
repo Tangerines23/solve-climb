@@ -1,6 +1,6 @@
 
 project: solve-climb
-generatedAt: "2026-07-21T21:10:38.220Z"
+generatedAt: "2026-07-22T10:50:36.969Z"
 files:
   src/App.tsx:
     imports: [@/utils/resilientLazy, @/stores/useLevelProgressStore, @/stores/useAuthStore, @/hooks/useCustomBackNavigation, @/components/GlobalLoadingIndicator, @/stores/useErrorLogStore, @/stores/useDebugStore, @/stores/useSettingsStore, @/hooks/useConnectivity, @/components/PwaUpdateNotification, @/features/auth, @/utils/supabaseClient, @/utils/env, @/components/GlobalToastContainer]
@@ -727,11 +727,11 @@ files:
             - 결손 파라미터 복구 로직 제공
         calls: [useSearchParams, searchParams.get, storageService.set, requiredParams.filter, storageService.get, requiredParams.every, params.set, setSearchParams]
   src/hooks/useRanking.ts:
-    imports: [@/utils/supabaseClient, @/stores/useRankingStore]
+    imports: [@/utils/supabaseClient, @/stores/useAuthStore, @/stores/useRankingStore]
     exports:
       - name: useRanking
         returns: "{ activePeriod: import(\"C:/Users/ghkdd/gemini-projects/solve-climb/src/hooks/useRanking\").RankingPeriod; setActivePeriod: React.Dispatch<React.SetStateAction<import(\"C:/Users/ghkdd/gemini-projects/solve-climb/src/hooks/useRanking\").RankingPeriod>>; activeType: import(\"C:/Users/ghkdd/gemini-projects/solve-climb/src/hooks/useRanking\").RankingType; setActiveType: React.Dispatch<React.SetStateAction<import(\"C:/Users/ghkdd/gemini-projects/solve-climb/src/hooks/useRanking\").RankingType>>; loading: boolean; currentUserId: string | null; currentRankings: import(\"C:/Users/ghkdd/gemini-projects/solve-climb/src/stores/useRankingStore\").RankingRecord[]; myRank: import(\"C:/Users/ghkdd/gemini-projects/solve-climb/src/stores/useRankingStore\").RankingRecord | null | undefined; rankingVersion: number; }"
-        calls: [useSearchParams, validateModeParam, searchParams.get, useRankingStore, Object.entries(rankings).find, Object.entries, supabase.auth.getSession().then, supabase.auth.getSession, setCurrentUserId, setLoading, fetchRanking, loadRanking, subscribeToRankingUpdates, unsubscribeFromRankingUpdates, currentRankings.find]
+        calls: [useSearchParams, validateModeParam, searchParams.get, useAuthStore, useRankingStore, Object.entries(rankings).find, Object.entries, setCurrentUserId, supabase.auth.getSession().then, supabase.auth.getSession, setLoading, fetchRanking, loadRanking, subscribeToRankingUpdates, unsubscribeFromRankingUpdates, currentRankings.find]
   src/hooks/useRoadmapLayout.ts:
     imports: [@/features/mypage, @/constants/history, @/types/roadmap, @/constants/game]
     exports:

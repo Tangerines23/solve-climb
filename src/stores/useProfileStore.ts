@@ -126,9 +126,19 @@ export const useProfileStore = create<ProfileState>((set, get) => ({
       updatedProfiles.push(profile);
     }
 
-    // 프로필 목록 저장
     saveProfiles(updatedProfiles);
     saveActiveProfileId(profile.profileId);
+
+    // Auto-sync nickname to Supabase DB if nickname is set
+    if (profile.nickname) {
+      try {
+        safeSupabaseQuery(
+          supabase.rpc('update_profile_nickname', { p_nickname: profile.nickname })
+        ).catch(() => {});
+      } catch {
+        // ignore
+      }
+    }
 
     // 프로필이 변경되면 기록도 함께 변경
     const levelProgressStore = useLevelProgressStore.getState();

@@ -1,6 +1,7 @@
 import { useState, useEffect, useMemo, useCallback } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { supabase } from '@/utils/supabaseClient';
+import { useAuthStore } from '@/stores/useAuthStore';
 import { useRankingStore } from '@/stores/useRankingStore';
 
 export type RankingType = 'total' | 'time-attack' | 'survival';
@@ -22,7 +23,8 @@ export function useRanking() {
     modeParam === 'time-attack' ? 'time-attack' : modeParam === 'survival' ? 'survival' : 'total'
   );
   const [loading, setLoading] = useState(false);
-  const [currentUserId, setCurrentUserId] = useState<string | null>(null);
+  const authUser = useAuthStore((state) => state.user);
+  const [currentUserId, setCurrentUserId] = useState<string | null>(authUser?.id || null);
 
   const {
     fetchRanking,
@@ -39,12 +41,16 @@ export function useRanking() {
   }, [rankings, activePeriod, activeType]);
 
   useEffect(() => {
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      if (session?.user) {
-        setCurrentUserId(session.user.id);
-      }
-    });
-  }, []);
+    if (authUser?.id) {
+      setCurrentUserId(authUser.id);
+    } else {
+      supabase.auth.getSession().then(({ data: { session } }) => {
+        if (session?.user) {
+          setCurrentUserId(session.user.id);
+        }
+      });
+    }
+  }, [authUser?.id]);
 
   const loadRanking = useCallback(async () => {
     if (rankingVersion === 0) setLoading(true);
