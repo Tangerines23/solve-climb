@@ -39,6 +39,11 @@ export const ENV = createEnv({
 
     // 4. 사이트 URL 설정 (프로덕션 리다이렉션 용)
     VITE_SITE_URL: z.string().url('Invalid Site URL').optional(),
+
+    // 5. 구글 로그인용 클라이언트 ID
+    VITE_GOOGLE_CLIENT_ID: z
+      .string()
+      .default('422673840720-etmtujb3lrt4966pv2j212sqf39votil.apps.googleusercontent.com'),
   },
 
   // Vite 환경에서는 import.meta.env를 runtimeEnv로 전달
@@ -92,4 +97,5 @@ export const config = {
   ADMOB_REWARDED_ID: ENV.VITE_ADMOB_REWARDED_ID,
   SENTRY_DSN: ENV.VITE_SENTRY_DSN || '',
   SITE_URL: ENV.VITE_SITE_URL,
+  GOOGLE_CLIENT_ID: ENV.VITE_GOOGLE_CLIENT_ID,
 } as const;

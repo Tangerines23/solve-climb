@@ -21,10 +21,32 @@ async function waitForAuth(page: Page, timeout = AUTH_WAIT_TIMEOUT_MS): Promise<
   while (Date.now() - start < timeout) {
     const hasAuth = await page.evaluate(() => {
       // Supabase auth token 또는 Local Session 존재 여부 확인
+      let hasSession = false;
       for (let i = 0; i < localStorage.length; i++) {
         const key = localStorage.key(i);
-        if (key?.startsWith('sb-') && key?.includes('auth')) return true;
-        if (key === 'solve-climb-local-session') return true;
+        if (key?.startsWith('sb-') && key?.includes('auth')) hasSession = true;
+        if (key === 'solve-climb-local-session' || key === 'guest_temp_id') hasSession = true;
+      }
+      if (!hasSession) return false;
+
+      // 프로필 닉네임 완성 여부 확인
+      let activeId = localStorage.getItem('solve-climb-active-profile-id');
+      if (!activeId) return false;
+      activeId = activeId.replace(/^"|"$/g, '');
+
+      for (let i = 0; i < localStorage.length; i++) {
+        const key = localStorage.key(i);
+        if (key?.startsWith('solve-climb-profiles-')) {
+          try {
+            const profiles = JSON.parse(localStorage.getItem(key) || '[]');
+            const activeProfile = profiles.find(
+              (p: { profileId: string; nickname?: string }) => p.profileId === activeId
+            );
+            if (activeProfile?.nickname) return true;
+          } catch (_e) {
+            /* ignore */
+          }
+        }
       }
       return false;
     });
@@ -81,27 +103,13 @@ setup('authenticate once (anonymous)', async ({ page }) => {
     console.log(`[auth.setup] Initial auth check: ${authOk}, URL: ${page.url()}`);
 
     if (!authOk) {
-      console.log('[auth.setup] Not authenticated. Navigating to MyPage Guest View...');
+      console.log('[auth.setup] Profile not complete. Navigating to MyPage...');
       if (!page.url().includes('/my-page')) {
         await page.goto('/my-page', { waitUntil: 'networkidle' });
-      }
-
-      // Guest View의 익명 로그인 버튼 대기 (MyPage.tsx:462)
-      const anonymousBtn = page.locator('.my-page-guest-anonymous-link');
-      try {
-        await anonymousBtn.waitFor({ state: 'visible', timeout: 10000 });
-        console.log('[auth.setup] Anonymous login link visible, clicking...');
-        await anonymousBtn.click();
-
-        // 클릭 후 세션이 생길 때까지 잠시 대기
-        await sleep(2000);
-      } catch (_e) {
-        console.log('[auth.setup] Anonymous login link not found. URL:', page.url());
       }
     }
 
     // 2. 프로필 정보 입력 (닉네임 설정) 대기
-    // MyPage.tsx 에서는 session은 있지만 profile.nickname이 없으면 ProfileForm을 보여줌
     console.log('[auth.setup] Checking for Profile Form...');
     const nicknameInput = page.locator('#nickname');
     try {

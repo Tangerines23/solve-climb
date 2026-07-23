@@ -105,8 +105,18 @@ export function ProfileForm({ onComplete, showBackButton = false, onCancel }: Pr
           supabase
             .rpc('update_profile_nickname', { p_nickname: sanitizedNickname })
             .then(({ error }) => {
-              if (error) logError('ProfileForm#syncNickname', error);
-              else console.log('Nickname synced to Supabase');
+              if (error) {
+                Promise.resolve(
+                  supabase
+                    .from('profiles')
+                    .update({ nickname: sanitizedNickname, updated_at: new Date().toISOString() })
+                    .eq('id', session.user.id)
+                )
+                  .then(() => console.log('Nickname updated via direct table fallback'))
+                  .catch((err: unknown) => logError('ProfileForm#syncNicknameFallback', err));
+              } else {
+                console.log('Nickname synced to Supabase');
+              }
             });
         }
       });

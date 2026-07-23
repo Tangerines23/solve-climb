@@ -2,6 +2,8 @@
 import { create } from 'zustand';
 import { useLevelProgressStore } from './useLevelProgressStore';
 import { storageService, STORAGE_KEYS } from '../services';
+import { supabase } from '../utils/supabaseClient';
+import { safeSupabaseQuery } from '../utils/debugFetch';
 import type { UserProgress } from './useLevelProgressStore';
 
 export interface UserProfile {
@@ -24,6 +26,7 @@ interface ProfileState {
   setIsAdmin: (isAdmin: boolean) => void;
   switchProfile: (profileId: string) => void;
   deleteProfile: (profileId: string) => void;
+  syncProfileWithAuthUser: (userId: string) => Promise<void>;
 }
 
 // 고유 ID 생성
@@ -126,9 +129,28 @@ export const useProfileStore = create<ProfileState>((set, get) => ({
       updatedProfiles.push(profile);
     }
 
-    // 프로필 목록 저장
     saveProfiles(updatedProfiles);
     saveActiveProfileId(profile.profileId);
+
+    // Auto-sync nickname to Supabase DB if nickname is set
+    if (profile.nickname) {
+      try {
+        safeSupabaseQuery(
+          supabase.rpc('update_profile_nickname', { p_nickname: profile.nickname })
+        ).catch(() => {
+          supabase.auth.getUser().then(({ data: { user } }) => {
+            if (user?.id) {
+              supabase
+                .from('profiles')
+                .update({ nickname: profile.nickname, updated_at: new Date().toISOString() })
+                .eq('id', user.id);
+            }
+          });
+        });
+      } catch {
+        // ignore
+      }
+    }
 
     // 프로필이 변경되면 기록도 함께 변경
     const levelProgressStore = useLevelProgressStore.getState();
@@ -209,6 +231,39 @@ export const useProfileStore = create<ProfileState>((set, get) => ({
       }
     } else {
       set({ profiles: updatedProfiles });
+    }
+  },
+
+  syncProfileWithAuthUser: async (userId: string) => {
+    if (!userId) return;
+    const state = get();
+    let currentProfile = state.profile;
+
+    if (!currentProfile) {
+      currentProfile = {
+        profileId: generateProfileId(),
+        nickname: '익명 등반가',
+        userId,
+        createdAt: new Date().toISOString(),
+      };
+      get().setProfile(currentProfile);
+    } else if (currentProfile.userId !== userId) {
+      const updated = { ...currentProfile, userId };
+      get().setProfile(updated);
+    } else if (currentProfile && currentProfile.nickname) {
+      const activeNick = currentProfile.nickname;
+      try {
+        await safeSupabaseQuery(
+          supabase.rpc('update_profile_nickname', { p_nickname: activeNick })
+        ).catch(() => {
+          supabase
+            .from('profiles')
+            .update({ nickname: activeNick, updated_at: new Date().toISOString() })
+            .eq('id', userId);
+        });
+      } catch {
+        // ignore
+      }
     }
   },
 }));

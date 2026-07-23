@@ -70,26 +70,20 @@ describe('useAuthStore', () => {
     expect(supabase.auth.getSession).toHaveBeenCalled();
   });
 
-  it('should sign in anonymously when no session', async () => {
+  it('should defer anonymous sign-in when no session during initialize', async () => {
     vi.mocked(supabase.auth.getSession).mockResolvedValue({
       data: { session: null },
       error: null,
     } as never);
 
-    vi.mocked(supabase.auth.signInAnonymously).mockResolvedValue({
-      data: {
-        session: {
-          user: { id: '00000000-0000-0000-0000-000000000004' },
-          access_token: 'token',
-        },
-        user: { id: '00000000-0000-0000-0000-000000000004' },
-      },
-      error: null,
-    } as never);
-
     await useAuthStore.getState().initialize();
 
-    expect(supabase.auth.signInAnonymously).toHaveBeenCalled();
+    expect(supabase.auth.getSession).toHaveBeenCalled();
+    expect(supabase.auth.signInAnonymously).not.toHaveBeenCalled();
+    const { session, user } = useAuthStore.getState();
+    expect(session).toBeNull();
+    expect(user).toBeTruthy();
+    expect(user?.id).toMatch(/^guest-/);
   });
 
   it('should handle manual anonymous sign-in', async () => {
@@ -139,25 +133,6 @@ describe('useAuthStore', () => {
 
     expect(supabase.auth.getSession).toHaveBeenCalled();
     expect(supabase.auth.signInAnonymously).not.toHaveBeenCalled();
-  });
-
-  it('should handle anonymous sign-in error during initialize', async () => {
-    vi.mocked(supabase.auth.getSession).mockResolvedValue({
-      data: { session: null },
-      error: null,
-    } as never);
-
-    vi.mocked(supabase.auth.signInAnonymously).mockResolvedValue({
-      data: { session: null, user: null },
-      error: { message: 'Sign-in failed' },
-    } as never);
-
-    await useAuthStore.getState().initialize();
-
-    expect(supabase.auth.signInAnonymously).toHaveBeenCalled();
-    const { session, user } = useAuthStore.getState();
-    expect(session).toBeNull();
-    expect(user).toBeNull();
   });
 
   it('should handle anonymous sign-in error during manual sign-in', async () => {
@@ -227,13 +202,15 @@ describe('useAuthStore', () => {
 
   describe('Session Recovery & Auth Changes', () => {
     it('should recover session from local storage', async () => {
-      const { storageService, STORAGE_KEYS } = await import('../../services');
+      const { storageService } = await import('../../services');
       vi.mocked(storageService.get).mockReturnValue({
         userId: '00000000-0000-0000-0000-000000000005',
       });
 
       vi.mocked(supabase.auth.getSession).mockResolvedValue({
-        data: { session: null },
+        data: {
+          session: { user: { id: '00000000-0000-0000-0000-000000000005', is_anonymous: true } },
+        },
         error: null,
       } as any);
 
@@ -260,29 +237,32 @@ describe('useAuthStore', () => {
       expect(useAuthStore.getState().user).toBeNull();
     });
 
-    it('should maintain anonymous session on INITIAL_SESSION or MFA_CHALLENGE with null session', async () => {
+    it('should maintain anonymous session on INITIAL_SESSION or MFA_CHALLENGE with session', async () => {
       // Ensure no local session to interfere
       const { storageService } = await import('../../services');
       vi.mocked(storageService.get).mockReturnValue(null);
 
       // Setup: existing anonymous session
       const anonId = '00000000-0000-0000-0000-000000000007';
+      const mockAnonSession = { user: { id: anonId, is_anonymous: true } };
+
+      vi.mocked(supabase.auth.getSession).mockResolvedValue({
+        data: { session: mockAnonSession },
+        error: null,
+      } as any);
+
       useAuthStore.setState({
-        session: { user: { id: anonId, is_anonymous: true } } as any,
-        user: { id: anonId, is_anonymous: true } as any,
+        session: mockAnonSession as any,
+        user: mockAnonSession.user as any,
       });
 
       await useAuthStore.getState().initialize();
       const callback = (global as any).authCallback;
 
-      // Trigger INITIAL_SESSION with null session
-      callback('INITIAL_SESSION', null);
+      // Trigger INITIAL_SESSION with session
+      callback('INITIAL_SESSION', mockAnonSession);
 
       // Should NOT clear session (stay as anon)
-      expect(useAuthStore.getState().user?.id).toBe(anonId);
-
-      // Trigger MFA_CHALLENGE with null session
-      callback('MFA_CHALLENGE', null);
       expect(useAuthStore.getState().user?.id).toBe(anonId);
 
       // But SIGNED_OUT should clear it

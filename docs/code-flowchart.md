@@ -243,6 +243,7 @@ graph TD
   src_stores_useLevelProgressStore_ts --> src_services_LevelSyncService_ts
   src_stores_useProfileStore_ts --> src_stores_useLevelProgressStore_ts
   src_stores_useProfileStore_ts --> src_services_index_ts
+  src_stores_useProfileStore_ts --> src_utils_supabaseClient_ts
   src_stores_useRankingStore_ts --> src_utils_supabaseClient_ts
   src_stores_useRankingStore_ts --> src_stores_useToastStore_ts
   src_stores_useUserStore_ts --> src_utils_supabaseClient_ts
@@ -259,6 +260,7 @@ graph TD
   src_features_mypage_pages_MyPage_tsx --> src_utils_haptic_ts
   src_features_mypage_pages_MyPage_tsx --> src_utils_supabaseClient_ts
   src_features_mypage_pages_MyPage_tsx --> src_utils_errorHandler_ts
+  src_features_mypage_pages_MyPage_tsx --> src_stores_useAuthStore_ts
   src_features_mypage_pages_MyPage_tsx --> src_services_index_ts
   src_features_quiz_services_LevelSyncService_ts --> src_utils_supabaseClient_ts
   src_features_quiz_services_LevelSyncService_ts --> src_utils_errorHandler_ts

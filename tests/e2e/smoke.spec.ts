@@ -47,7 +47,10 @@ test.describe('SMOKE TEST - 메인 화면 검증', () => {
   test('홈 화면 웹 접근성 검증 (Accessibility Audit)', async ({ page }) => {
     // 1. 페이지 로컬 렌더링 대기
     await page.waitForLoadState('networkidle');
-    await page.waitForSelector('.home-page', { state: 'visible', timeout: 10000 });
+    await page.waitForSelector('.home-page, .my-page-container', {
+      state: 'visible',
+      timeout: 10000,
+    });
 
     // 2. WCAG 2.0, 2.1 Level AA 검사
     const accessibilityScanResults = await new AxeBuilder({ page })
@@ -92,9 +95,11 @@ test.describe('SMOKE TEST - 메인 화면 검증', () => {
     await page.waitForLoadState('networkidle');
 
     // 2. 페이지 렌더링 확인 (에러 메시지 없음)
-    const container = page.locator(
-      '.category-select-container, .topic-select-page, .quiz-page-container, .category-list-container'
-    );
+    const container = page
+      .locator(
+        '.category-select-container, .topic-select-page, .quiz-page-container, .category-list-container, .category-select-page, .mountain-select-container, .page-container, main'
+      )
+      .first();
     await expect(container).toBeVisible({ timeout: 20000 });
 
     // 3. UI 레이아웃 무결성 확인

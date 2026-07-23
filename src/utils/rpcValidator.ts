@@ -28,15 +28,32 @@ export const ItemActionResponseSchema = CommonResponseSchema.extend({
 });
 
 // 4. 랭킹 데이터 응답 (get_ranking_v2)
-export const RankingRecordSchema = z.object({
-  user_id: z.string(),
-  nickname: z.string(),
-  score: z.number(),
-  rank: z.number(),
-  week_start_date: z.string().optional(),
-  tier_level: z.number().optional(),
-  tier_stars: z.number().optional(),
-});
+export const RankingRecordSchema = z.preprocess(
+  (val: unknown) => {
+    if (val && typeof val === 'object') {
+      const obj = val as Record<string, unknown>;
+      return {
+        user_id: obj.user_id ?? obj.out_user_id,
+        nickname: obj.nickname ?? obj.out_nickname ?? '익명 등반가',
+        score: Number(obj.score ?? obj.out_score ?? 0),
+        rank: Number(obj.rank ?? obj.out_rank ?? 0),
+        week_start_date: obj.week_start_date ?? obj.out_week_start_date,
+        tier_level: obj.tier_level,
+        tier_stars: obj.tier_stars,
+      };
+    }
+    return val;
+  },
+  z.object({
+    user_id: z.string(),
+    nickname: z.string(),
+    score: z.number(),
+    rank: z.number(),
+    week_start_date: z.string().optional(),
+    tier_level: z.number().optional(),
+    tier_stars: z.number().optional(),
+  })
+);
 export const RankingListSchema = z.array(RankingRecordSchema);
 
 // 5. 게임 결과 제출 응답 (submit_game_result)

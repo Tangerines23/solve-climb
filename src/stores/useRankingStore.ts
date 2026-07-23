@@ -59,12 +59,14 @@ export const useRankingStore = create<RankingState>((set, get) => {
         } else {
           // 주간 랭킹 조회 (V2 RPC 사용)
           const { data: rankData, error: rankError } = await validatedRpc(
-            supabase.rpc('get_ranking_v2', {
-              p_category: category || 'all',
-              p_limit: limit,
-              p_period: period,
-              p_type: type,
-            }),
+            safeSupabaseQuery(
+              supabase.rpc('get_ranking_v2', {
+                p_category: category || 'all',
+                p_limit: limit,
+                p_period: period,
+                p_type: type,
+              })
+            ),
             RankingListSchema,
             'get_ranking_v2'
           );

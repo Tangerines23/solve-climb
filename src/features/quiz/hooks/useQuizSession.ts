@@ -61,7 +61,7 @@ export function useQuizSession({
             preGenerated.push(q);
           }
 
-          const { data } = await safeSupabaseQuery(
+          const { data, error } = await safeSupabaseQuery(
             supabase.rpc('create_game_session', {
               p_questions: preGenerated,
               p_category: categoryParam,
@@ -71,6 +71,9 @@ export function useQuizSession({
               p_is_debug_session: infiniteStamina,
             })
           );
+          if (error || !data?.session_id) {
+            console.error('[useQuizSession] create_game_session 실패 상세 정보:', { error, data });
+          }
           if (data?.session_id) {
             setGameSessionId(data.session_id);
             setPreGeneratedQuestions(preGenerated);

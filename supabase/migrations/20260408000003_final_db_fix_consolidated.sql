@@ -52,7 +52,7 @@ BEGIN
                 ) DESC
             )::pg_catalog.int8 as out_rank
         FROM public.profiles p
-        WHERE p_category = p_category AND (
+        WHERE (
             CASE 
                 WHEN p_type = 'time-attack' THEN p.weekly_score_timeattack
                 WHEN p_type = 'survival' THEN p.weekly_score_survival
@@ -99,7 +99,7 @@ BEGIN
                     ) DESC
                 )::pg_catalog.int8 as out_rank
             FROM public.profiles p
-            WHERE p_category = p_category AND (
+            WHERE (
                 CASE 
                     WHEN p_type = 'time-attack' THEN p.best_score_timeattack
                     ELSE p.best_score_survival

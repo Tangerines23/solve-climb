@@ -34,7 +34,18 @@ export class LevelSyncService {
 
     try {
       const authResult = (await safeSupabaseQuery(supabase.auth.getUser())) as UserResponse;
-      const user = authResult?.data?.user;
+      let user = authResult?.data?.user;
+
+      if (!user) {
+        try {
+          const { useAuthStore } = await import('@/stores/useAuthStore');
+          await useAuthStore.getState().signInAnonymously();
+          const retryAuth = (await safeSupabaseQuery(supabase.auth.getUser())) as UserResponse;
+          user = retryAuth?.data?.user;
+        } catch (authErr) {
+          logError('LevelSyncService#autoSignIn', authErr);
+        }
+      }
 
       if (!user) {
         return { success: false, error: 'No user found' };
@@ -58,8 +69,25 @@ export class LevelSyncService {
       );
 
       if (rpcError || !rpcData?.success) {
+        console.error('[LevelSyncService] submit_game_result 실패 상세 정보:', {
+          rpcError,
+          rpcData,
+          params: {
+            p_user_answers: sessionData?.answers ?? [],
+            p_question_ids: (sessionData?.questionIds ?? []).map(String),
+            p_game_mode: gameMode,
+            p_items_used: [],
+            p_session_id: sessionData?.sessionId ?? null,
+            p_category: category,
+            p_subject: subject,
+            p_level: level,
+            p_avg_solve_time: avgSolveTime,
+          },
+        });
         const errorMsg =
-          rpcData?.error || '게임 결과 저장에 실패했습니다. (보안 위반 또는 세션 만료)';
+          rpcData?.error ||
+          rpcError?.message ||
+          '게임 결과 저장에 실패했습니다. (보안 위반 또는 세션 만료)';
         return { success: false, error: errorMsg };
       }
 

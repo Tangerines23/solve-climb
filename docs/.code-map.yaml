@@ -1,13 +1,13 @@
 
 project: solve-climb
-generatedAt: "2026-07-19T12:31:46.310Z"
+generatedAt: "2026-07-23T03:49:20.299Z"
 files:
   src/App.tsx:
-    imports: [@/utils/resilientLazy, @/stores/useLevelProgressStore, @/stores/useAuthStore, @/hooks/useCustomBackNavigation, @/components/GlobalLoadingIndicator, @/stores/useErrorLogStore, @/stores/useDebugStore, @/stores/useSettingsStore, @/hooks/useConnectivity, @/components/PwaUpdateNotification, @/features/auth, @/utils/supabaseClient, @/components/GlobalToastContainer]
+    imports: [@/utils/resilientLazy, @/stores/useLevelProgressStore, @/stores/useAuthStore, @/hooks/useCustomBackNavigation, @/components/GlobalLoadingIndicator, @/stores/useErrorLogStore, @/stores/useDebugStore, @/stores/useSettingsStore, @/hooks/useConnectivity, @/components/PwaUpdateNotification, @/features/auth, @/utils/supabaseClient, @/utils/env, @/components/GlobalToastContainer]
     exports:
       - name: App
         returns: "import(\"C:/Users/ghkdd/gemini-projects/solve-climb/node_modules/@types/react/jsx-runtime\").JSX.Element"
-        calls: [useConnectivity, useLevelProgressStore, useAuthStore, useCustomBackNavigation, useDebugStore, useSettingsStore, document.body.classList.add, document.body.classList.remove, Promise.all, initializeAuth, syncProgress, "import('@capacitor/app') .then(({ App }) => { App.addListener('appUrlOpen', async (data: { url: string }) => { // 데이터 형식: com.solveclimb.app://google-callback?token=... 또는 com.solveclimb.app://my-page?token=... const urlStr = data.url; if (urlStr.includes('access_token=') || urlStr.includes('refresh_token=')) { // URL 해시 파싱 const hash = urlStr.split('#')[1]; if (hash) { const params = new URLSearchParams(hash); const accessToken = params.get('access_token'); const refreshToken = params.get('refresh_token'); if (accessToken && refreshToken) { // Supabase 클라이언트에 세션 세팅 const { error } = await supabase.auth.setSession({ access_token: accessToken, refresh_token: refreshToken, }); if (!error) { console.log('[Auth] Deep Link OAuth Session initialized successfully'); // 세션 초기화 상태 동기화 및 갱신 await initializeAuth(); await syncProgress(); } else { console.error('[Auth] Failed to set session from deep link:', error.message); } } } } }); }) .catch", "import('@capacitor/app') .then", import, App.addListener, urlStr.includes, urlStr.split, params.get, supabase.auth.setSession, console.log, console.error, "useErrorLogStore .getState() .addLog", "useErrorLogStore .getState", String, window.addEventListener, window.removeEventListener]
+        calls: [useConnectivity, useLevelProgressStore, useAuthStore, useCustomBackNavigation, useDebugStore, useSettingsStore, document.body.classList.add, document.body.classList.remove, Promise.all, initializeAuth, syncProgress, "import('@capawesome/capacitor-google-sign-in') .then(({ GoogleSignIn }) => { GoogleSignIn.initialize({ clientId: config.GOOGLE_CLIENT_ID, }).catch((err) => { console.error('[GoogleSignIn] Initialization failed:', err); }); }) .catch", "import('@capawesome/capacitor-google-sign-in') .then", import, "GoogleSignIn.initialize({ clientId: config.GOOGLE_CLIENT_ID, }).catch", GoogleSignIn.initialize, console.error, "import('@capacitor/app') .then(({ App }) => { App.addListener('appUrlOpen', async (data: { url: string }) => { // 데이터 형식: com.solveclimb.app://google-callback?token=... 또는 com.solveclimb.app://my-page?token=... const urlStr = data.url; if (urlStr.includes('access_token=') || urlStr.includes('refresh_token=')) { // URL 해시 파싱 const hash = urlStr.split('#')[1]; if (hash) { const params = new URLSearchParams(hash); const accessToken = params.get('access_token'); const refreshToken = params.get('refresh_token'); if (accessToken && refreshToken) { // Supabase 클라이언트에 세션 세팅 const { error } = await supabase.auth.setSession({ access_token: accessToken, refresh_token: refreshToken, }); if (!error) { console.log('[Auth] Deep Link OAuth Session initialized successfully'); // 세션 초기화 상태 동기화 및 갱신 await initializeAuth(); await syncProgress(); } else { console.error('[Auth] Failed to set session from deep link:', error.message); } } } } }); }) .catch", "import('@capacitor/app') .then", App.addListener, urlStr.includes, urlStr.split, params.get, supabase.auth.setSession, console.log, "useErrorLogStore .getState() .addLog", "useErrorLogStore .getState", String, window.addEventListener, window.removeEventListener]
   src/AppContainer.tsx:
     imports: [@/utils/resilientLazy, @/components/ErrorBoundary]
     exports:
@@ -362,13 +362,13 @@ files:
     state: [nickname, error]
     handlers:
       - name: handleSubmit
-        calls: [e.preventDefault, sanitizeNickname, validateNickname, setError, "new Date().toISOString", setProfile, import('../utils/supabaseClient').then, import, supabase.auth.getSession().then, supabase.auth.getSession, "supabase .rpc('update_profile_nickname', { p_nickname: sanitizedNickname }) .then", "supabase .rpc", logError, console.log, onComplete]
+        calls: [e.preventDefault, sanitizeNickname, validateNickname, setError, "new Date().toISOString", setProfile, import('../utils/supabaseClient').then, import, supabase.auth.getSession().then, supabase.auth.getSession, "supabase .rpc('update_profile_nickname', { p_nickname: sanitizedNickname }) .then", "supabase .rpc", "Promise.resolve( supabase .from('profiles') .update({ nickname: sanitizedNickname, updated_at: new Date().toISOString() }) .eq('id', session.user.id) ) .then(() => console.log('Nickname updated via direct table fallback')) .catch", "Promise.resolve( supabase .from('profiles') .update({ nickname: sanitizedNickname, updated_at: new Date().toISOString() }) .eq('id', session.user.id) ) .then", Promise.resolve, "supabase .from('profiles') .update({ nickname: sanitizedNickname, updated_at: new Date().toISOString() }) .eq", "supabase .from('profiles') .update", "supabase .from", console.log, logError, onComplete]
     exports:
       - name: ProfileForm
         params:
           "{ onComplete, showBackButton = false, onCancel }": ProfileFormProps
         returns: "import(\"C:/Users/ghkdd/gemini-projects/solve-climb/node_modules/@types/react/jsx-runtime\").JSX.Element"
-        calls: [useNavigate, useProfileStore, e.preventDefault, sanitizeNickname, validateNickname, setError, "new Date().toISOString", setProfile, import('../utils/supabaseClient').then, import, supabase.auth.getSession().then, supabase.auth.getSession, "supabase .rpc('update_profile_nickname', { p_nickname: sanitizedNickname }) .then", "supabase .rpc", logError, console.log, onComplete, onCancel, navigate, setNickname]
+        calls: [useNavigate, useProfileStore, e.preventDefault, sanitizeNickname, validateNickname, setError, "new Date().toISOString", setProfile, import('../utils/supabaseClient').then, import, supabase.auth.getSession().then, supabase.auth.getSession, "supabase .rpc('update_profile_nickname', { p_nickname: sanitizedNickname }) .then", "supabase .rpc", "Promise.resolve( supabase .from('profiles') .update({ nickname: sanitizedNickname, updated_at: new Date().toISOString() }) .eq('id', session.user.id) ) .then(() => console.log('Nickname updated via direct table fallback')) .catch", "Promise.resolve( supabase .from('profiles') .update({ nickname: sanitizedNickname, updated_at: new Date().toISOString() }) .eq('id', session.user.id) ) .then", Promise.resolve, "supabase .from('profiles') .update({ nickname: sanitizedNickname, updated_at: new Date().toISOString() }) .eq", "supabase .from('profiles') .update", "supabase .from", console.log, logError, onComplete, onCancel, navigate, setNickname]
   src/components/PwaUpdateNotification.tsx:
     imports: [./Toast, ../utils/errorHandler]
     state: [show, message]
@@ -727,11 +727,11 @@ files:
             - 결손 파라미터 복구 로직 제공
         calls: [useSearchParams, searchParams.get, storageService.set, requiredParams.filter, storageService.get, requiredParams.every, params.set, setSearchParams]
   src/hooks/useRanking.ts:
-    imports: [@/utils/supabaseClient, @/stores/useRankingStore]
+    imports: [@/utils/supabaseClient, @/stores/useAuthStore, @/stores/useRankingStore]
     exports:
       - name: useRanking
         returns: "{ activePeriod: import(\"C:/Users/ghkdd/gemini-projects/solve-climb/src/hooks/useRanking\").RankingPeriod; setActivePeriod: React.Dispatch<React.SetStateAction<import(\"C:/Users/ghkdd/gemini-projects/solve-climb/src/hooks/useRanking\").RankingPeriod>>; activeType: import(\"C:/Users/ghkdd/gemini-projects/solve-climb/src/hooks/useRanking\").RankingType; setActiveType: React.Dispatch<React.SetStateAction<import(\"C:/Users/ghkdd/gemini-projects/solve-climb/src/hooks/useRanking\").RankingType>>; loading: boolean; currentUserId: string | null; currentRankings: import(\"C:/Users/ghkdd/gemini-projects/solve-climb/src/stores/useRankingStore\").RankingRecord[]; myRank: import(\"C:/Users/ghkdd/gemini-projects/solve-climb/src/stores/useRankingStore\").RankingRecord | null | undefined; rankingVersion: number; }"
-        calls: [useSearchParams, validateModeParam, searchParams.get, useRankingStore, Object.entries(rankings).find, Object.entries, supabase.auth.getSession().then, supabase.auth.getSession, setCurrentUserId, setLoading, fetchRanking, loadRanking, subscribeToRankingUpdates, unsubscribeFromRankingUpdates, currentRankings.find]
+        calls: [useSearchParams, validateModeParam, searchParams.get, useAuthStore, useRankingStore, Object.entries(rankings).find, Object.entries, setCurrentUserId, supabase.auth.getSession().then, supabase.auth.getSession, setLoading, fetchRanking, loadRanking, subscribeToRankingUpdates, unsubscribeFromRankingUpdates, currentRankings.find]
   src/hooks/useRoadmapLayout.ts:
     imports: [@/features/mypage, @/constants/history, @/types/roadmap, @/constants/game]
     exports:
@@ -931,7 +931,7 @@ files:
             returns: Record<string, unknown>
             calls: [Object.fromEntries]
   src/stores/useAuthStore.ts:
-    imports: [../utils/supabaseClient, ../utils/debugFetch, ../services, ../utils/validation, @/services/analytics]
+    imports: [../utils/supabaseClient, ../utils/debugFetch, ../services, @/services/analytics]
   src/stores/useBadgeStore.ts:
     imports: [../utils/supabaseClient, ../utils/debugFetch, ../services]
   src/stores/useBaseCampStore.ts:
@@ -947,7 +947,7 @@ files:
   src/stores/useLevelProgressStore.ts:
     imports: [../utils/supabaseClient, ../utils/debugFetch, ../types/quiz, ./useDebugStore, ./useToastStore, ../constants/ui, ../utils/validation, ../services/LevelSyncService]
   src/stores/useProfileStore.ts:
-    imports: [./useLevelProgressStore, ../services, ./useLevelProgressStore]
+    imports: [./useLevelProgressStore, ../services, ../utils/supabaseClient, ../utils/debugFetch, ./useLevelProgressStore]
   src/stores/useQuizStore.ts:
     imports: [../types/quiz]
   src/stores/useRankingStore.ts:
@@ -1660,6 +1660,10 @@ files:
         returns: boolean
         description: UUID 형식 검증 함수 (PostgreSQL UUID 타입과 호환)
         calls: [uuidPattern.test]
+      - name: generateUUID
+        returns: string
+        description: 표준 UUID v4 생성 함수
+        calls: [crypto.randomUUID, 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace, Math.random, v.toString]
   src/components/algebra/EquationTerm.tsx:
     imports: [./Algebra.css]
     state: [isHovered]
@@ -1861,7 +1865,7 @@ files:
           "{ children }": RequireAuthProps
         returns: "import(\"C:/Users/ghkdd/gemini-projects/solve-climb/node_modules/@types/react/jsx-runtime\").JSX.Element"
         description: 세션 및 프로필 정보가 없는 경우 마이페이지(로그인)로 리다이렉트하는 가드 컴포넌트
-        calls: [useAuthStore, useProfileStore, useLocation, urls.myPage]
+        calls: [useAuthStore, useProfileStore, useLocation, Boolean, urls.myPage]
   src/features/auth/hooks/useSession.ts:
     imports: [@/utils/supabaseClient, @/services, @/utils/safeJsonParse]
     exports:
@@ -2199,9 +2203,9 @@ files:
             Supabase에서 사용자 게임 통계를 가져오는 Hook
             
             RPC 함수를 사용하거나, 직접 쿼리로 집계합니다.
-        calls: [storageService.get, isValidUUID, setSession, console.warn, safeSupabaseQuery(supabase.auth.getSession()).then, safeSupabaseQuery, supabase.auth.getSession, checkLocalSession, supabase.auth.onAuthStateChange, data?.subscription?.unsubscribe, setLoading, setError, setStats, "supabase .from('profiles') .select( 'total_mastery_score, current_tier_level, cycle_promotion_pending, pending_cycle_score, login_streak' ) .eq('id', user_id) .maybeSingle", "supabase .from('profiles') .select( 'total_mastery_score, current_tier_level, cycle_promotion_pending, pending_cycle_score, login_streak' ) .eq", "supabase .from('profiles') .select", "supabase .from", logError, supabase.rpc, "supabase .from('user_level_records') .select('world_id, category_id, subject_id, level, best_score') .eq", "supabase .from('user_level_records') .select", levelRecords.reduce, levelRecords.filter, Math.max, levelRecords.map, levelRecords.forEach, Object.entries(subjectScores).sort, Object.entries, fetchStats]
+        calls: [storageService.get, isValidUUID, String(localSession.userId).startsWith, String, setSession, console.warn, safeSupabaseQuery(supabase.auth.getSession()).then, safeSupabaseQuery, supabase.auth.getSession, checkLocalSession, supabase.auth.onAuthStateChange, data?.subscription?.unsubscribe, setLoading, setError, setStats, "supabase .from('profiles') .select( 'total_mastery_score, current_tier_level, cycle_promotion_pending, pending_cycle_score, login_streak' ) .eq('id', user_id) .maybeSingle", "supabase .from('profiles') .select( 'total_mastery_score, current_tier_level, cycle_promotion_pending, pending_cycle_score, login_streak' ) .eq", "supabase .from('profiles') .select", "supabase .from", logError, supabase.rpc, "supabase .from('user_level_records') .select('world_id, category_id, subject_id, level, best_score') .eq", "supabase .from('user_level_records') .select", levelRecords.reduce, levelRecords.filter, Math.max, levelRecords.map, levelRecords.forEach, Object.entries(subjectScores).sort, Object.entries, fetchStats]
   src/features/mypage/pages/MyPage.tsx:
-    imports: [@/components/Header, @/components/FooterNav, @/utils/navigation, @/components/ProfileForm, @/features/debug, @/components/Toast, @/components/AlertModal, @/components/CyclePromotionModal, ../components/MyPageProfile, ../components/MyPageStats, ../components/MyPageQuickAccess, ../components/MyPageSettings, @/stores/useProfileStore, @/stores/useSettingsStore, ../hooks/useMyPageStats, @/stores/useFavoriteStore, @/utils/challenge, @/stores/useLevelProgressStore, @/stores/useQuizStore, @/utils/dataReset, @/utils/haptic, @/utils/supabaseClient, @/utils/errorHandler, @/utils/debugFetch, @/config/app, @/utils/auth, @/utils/tossLogin, @/components/WithdrawConfirmModal, @/utils/userWithdraw, @/constants/tiers, @/services, ./MyPage.css]
+    imports: [@/components/Header, @/components/FooterNav, @/utils/navigation, @/components/ProfileForm, @/features/debug, @/components/Toast, @/components/AlertModal, @/components/CyclePromotionModal, ../components/MyPageProfile, ../components/MyPageStats, ../components/MyPageQuickAccess, ../components/MyPageSettings, @/stores/useProfileStore, @/stores/useSettingsStore, ../hooks/useMyPageStats, @/stores/useFavoriteStore, @/utils/challenge, @/stores/useLevelProgressStore, @/stores/useQuizStore, @/utils/dataReset, @/utils/haptic, @/utils/supabaseClient, @/utils/errorHandler, @/utils/debugFetch, @/utils/validation, @/stores/useAuthStore, @/config/app, @/utils/auth, @/utils/tossLogin, @/components/WithdrawConfirmModal, @/utils/userWithdraw, @/constants/tiers, @/services, ./MyPage.css]
     state: [todayChallenge, showProfileForm, showDataResetConfirm, showToast, toastMessage, showAlert, alertMessage, isResetting, _loginError, showPromotionModal, tierStars, showWithdrawConfirm, isWithdrawing]
     handlers:
       - name: handlePromote
@@ -2231,15 +2235,15 @@ files:
       - name: handleTossLoginClick
         calls: [handleTossLogin, setAlertMessage, setShowAlert]
       - name: handleAnonymousLogin
-        calls: [setLoginError, storageService.set, Date.now, Math.random().toString(36).substr, Math.random().toString, Math.random, "new Date().toISOString", setProfile, console.warn, refetch, performRedirect, setToastMessage, setShowToast, logError]
+        calls: [setLoginError, storageService.set, useAuthStore.getState().signInAnonymously, useAuthStore.getState, generateUUID, "new Date().toISOString", setProfile, console.warn, useLevelProgressStore.getState().syncProgress, useLevelProgressStore.getState, refetch, setShowProfileForm, setToastMessage, setShowToast, logError]
       - name: handleGoogleLogin
         calls: [storageService.set, signInWithGoogle, setToastMessage, setShowToast, setLoginError]
       - name: handleLogout
-        calls: [console.log, safeSupabaseQuery, supabase.auth.getSession, supabase.auth.signOut, storageService.remove, console.warn, clearProfile, setToastMessage, setShowToast, refetch, logError]
+        calls: [console.log, safeSupabaseQuery, supabase.auth.getSession, useAuthStore.getState().signOut, useAuthStore.getState, storageService.remove, console.warn, clearProfile, setToastMessage, setShowToast, refetch, logError]
     exports:
       - name: MyPage
         returns: "import(\"C:/Users/ghkdd/gemini-projects/solve-climb/node_modules/@types/react/jsx-runtime\").JSX.Element"
-        calls: [useNavigate, useSearchParams, useProfileStore, useSettingsStore, useMyPageStats, useFavoriteStore, useQuizStore, useLevelProgressStore, searchParams.get, useLocation, React.useCallback, storageService.get, urls.myPage, navigate, storageService.remove, console.log, "getTodayChallenge(progressMap) .then((challengeData: any) => { setTodayChallenge(challengeData); }) .catch", "getTodayChallenge(progressMap) .then", getTodayChallenge, setTodayChallenge, logError, calculateTier(stats.totalMasteryScore).then, calculateTier, setTierStars, setShowPromotionModal, refetch, setShowProfileForm, setHapticEnabled, vibrateShort, setToastMessage, setShowToast, setAnimationEnabled, setShowDataResetConfirm, setIsResetting, resetAllData, setShowWithdrawConfirm, setIsWithdrawing, withdrawAccount, encodeURIComponent, handleTossLogin, setAlertMessage, setShowAlert, setLoginError, storageService.set, Date.now, Math.random().toString(36).substr, Math.random().toString, Math.random, "new Date().toISOString", setProfile, console.warn, performRedirect, signInWithGoogle, "safeSupabaseQuery(supabase.rpc('update_profile_nickname', { p_nickname: nickname })).catch", safeSupabaseQuery, supabase.rpc, supabase.auth.getSession, supabase.auth.signOut, clearProfile, isTossAppEnvironment, formatBestSubject, useProfileStore.getState, urls.debug]
+        calls: [useNavigate, useSearchParams, useProfileStore, useSettingsStore, useMyPageStats, useFavoriteStore, useQuizStore, useLevelProgressStore, searchParams.get, useLocation, React.useCallback, storageService.get, urls.myPage, navigate, storageService.remove, console.log, "getTodayChallenge(progressMap) .then((challengeData: any) => { setTodayChallenge(challengeData); }) .catch", "getTodayChallenge(progressMap) .then", getTodayChallenge, setTodayChallenge, logError, calculateTier(stats.totalMasteryScore).then, calculateTier, setTierStars, setShowPromotionModal, refetch, setShowProfileForm, setHapticEnabled, vibrateShort, setToastMessage, setShowToast, setAnimationEnabled, setShowDataResetConfirm, setIsResetting, resetAllData, setShowWithdrawConfirm, setIsWithdrawing, withdrawAccount, encodeURIComponent, handleTossLogin, setAlertMessage, setShowAlert, setLoginError, storageService.set, useAuthStore.getState().signInAnonymously, useAuthStore.getState, generateUUID, "new Date().toISOString", setProfile, console.warn, useLevelProgressStore.getState().syncProgress, useLevelProgressStore.getState, signInWithGoogle, performRedirect, "safeSupabaseQuery(supabase.rpc('update_profile_nickname', { p_nickname: nickname })).catch", safeSupabaseQuery, supabase.rpc, "supabase .from('profiles') .update({ nickname, updated_at: new Date().toISOString() }) .eq", "supabase .from('profiles') .update", "supabase .from", supabase.auth.getSession, useAuthStore.getState().signOut, clearProfile, isTossAppEnvironment, formatBestSubject, useProfileStore.getState, urls.debug]
   src/features/quiz/components/CalculusVisualization.tsx:
     imports: [./CalculusVisualization.css]
     state: [progress]
@@ -2507,7 +2511,7 @@ files:
   setGameSessionId,
 }": UseQuizSessionProps
         returns: "{ sessionCreated: boolean; setSessionCreated: React.Dispatch<React.SetStateAction<boolean>>; preGeneratedQuestions: import(\"C:/Users/ghkdd/gemini-projects/solve-climb/src/features/quiz/types/quiz\").QuizQuestion[]; }"
-        calls: ["(async () => { try { const mode = modeParam.includes('time') ? 'timeattack' : 'survival'; const { infiniteStamina } = useDebugStore.getState(); // Pre-generate questions to satisfy server-side validation const preGenerated = []; const numToGen = mode === 'timeattack' ? 10 : 20; for (let i = 0; i < numToGen; i++) { const q = generateQuestion( (mountainParam as Mountain) || 'math', (worldParam as World) || 'World1', (categoryParam as Topic) || '기초', levelParam || 1, 'medium' ); q.id = crypto.randomUUID(); preGenerated.push(q); } const { data } = await safeSupabaseQuery( supabase.rpc('create_game_session', { p_questions: preGenerated, p_category: categoryParam, p_subject: worldParam, p_level: levelParam, p_game_mode: mode, p_is_debug_session: infiniteStamina, }) ); if (data?.session_id) { setGameSessionId(data.session_id); setPreGeneratedQuestions(preGenerated); setSessionCreated(true); } } finally { isCreatingSessionRef.current = false; } })", modeParam.includes, useDebugStore.getState, generateQuestion, crypto.randomUUID, preGenerated.push, safeSupabaseQuery, supabase.rpc, setGameSessionId, setPreGeneratedQuestions, setSessionCreated]
+        calls: ["(async () => { try { const mode = modeParam.includes('time') ? 'timeattack' : 'survival'; const { infiniteStamina } = useDebugStore.getState(); // Pre-generate questions to satisfy server-side validation const preGenerated = []; const numToGen = mode === 'timeattack' ? 10 : 20; for (let i = 0; i < numToGen; i++) { const q = generateQuestion( (mountainParam as Mountain) || 'math', (worldParam as World) || 'World1', (categoryParam as Topic) || '기초', levelParam || 1, 'medium' ); q.id = crypto.randomUUID(); preGenerated.push(q); } const { data, error } = await safeSupabaseQuery( supabase.rpc('create_game_session', { p_questions: preGenerated, p_category: categoryParam, p_subject: worldParam, p_level: levelParam, p_game_mode: mode, p_is_debug_session: infiniteStamina, }) ); if (error || !data?.session_id) { console.error('[useQuizSession] create_game_session 실패 상세 정보:', { error, data }); } if (data?.session_id) { setGameSessionId(data.session_id); setPreGeneratedQuestions(preGenerated); setSessionCreated(true); } } finally { isCreatingSessionRef.current = false; } })", modeParam.includes, useDebugStore.getState, generateQuestion, crypto.randomUUID, preGenerated.push, safeSupabaseQuery, supabase.rpc, console.error, setGameSessionId, setPreGeneratedQuestions, setSessionCreated]
   src/features/quiz/hooks/useQuizStartLogic.ts:
     imports: [@/stores/useGameStore, @/services/analytics, @/utils/navigation, @/constants/game, @/utils/validation, @/types/user, @/lib/eventBus]
     exports:
@@ -2561,7 +2565,7 @@ files:
             params:
               params: "{ category: string; level: number; mode: import(\"C:/Users/ghkdd/gemini-projects/solve-climb/src/features/quiz/types/quiz\").GameMode; score: number; avgSolveTime?: number | undefined; subject?: string | undefined; sessionData?: { answers: number[]; questionIds: string[]; sessionId: string; } | undefined; tier?: import(\"C:/Users/ghkdd/gemini-projects/solve-climb/src/features/quiz/types/quiz\").Tier | undefined; }"
             returns: "Promise<import(\"C:/Users/ghkdd/gemini-projects/solve-climb/src/features/quiz/services/LevelSyncService\").LevelSyncResult>"
-            calls: [safeSupabaseQuery, supabase.auth.getUser, supabase.rpc, "(sessionData?.questionIds ?? []).map", logError]
+            calls: [safeSupabaseQuery, supabase.auth.getUser, import, useAuthStore.getState().signInAnonymously, useAuthStore.getState, logError, supabase.rpc, "(sessionData?.questionIds ?? []).map", console.error]
           - name: resetProgress
             returns: "Promise<import(\"C:/Users/ghkdd/gemini-projects/solve-climb/src/features/quiz/services/LevelSyncService\").LevelSyncResult>"
             calls: [safeSupabaseQuery, supabase.rpc]

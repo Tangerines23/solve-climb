@@ -25,6 +25,8 @@ import { vibrateShort } from '@/utils/haptic';
 import { supabase } from '@/utils/supabaseClient';
 import { logError } from '@/utils/errorHandler';
 import { safeSupabaseQuery } from '@/utils/debugFetch';
+import { generateUUID } from '@/utils/validation';
+import { useAuthStore } from '@/stores/useAuthStore';
 
 import { APP_CONFIG } from '@/config/app';
 import { signInWithGoogle } from '@/utils/auth';
@@ -295,9 +297,13 @@ export function MyPage() {
         storageService.set(STORAGE_KEYS.LOGIN_REDIRECT, redirectPath);
       }
 
-      // 로컬 세션만 사용 (Supabase 인증 없이)
+      // Supabase 백엔드 익명 세션 획득 (서버 DB 랭킹 연동)
+      await useAuthStore.getState().signInAnonymously();
+      const sbUser = useAuthStore.getState().user;
+      const assignedProfileId = sbUser?.id || generateUUID();
+
       const userProfile = {
-        profileId: `user_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+        profileId: assignedProfileId,
         nickname: '',
         createdAt: new Date().toISOString(),
         isAdmin: false,
@@ -317,13 +323,16 @@ export function MyPage() {
         console.warn('Failed to save local session:', e);
       }
 
+      // 기존 로컬 클리어 및 점수 기록을 Supabase DB 서버로 동기화
+      await useLevelProgressStore.getState().syncProgress();
+
       // 로그인 성공 후 통계 다시 불러오기
       await refetch();
 
-      // 리다이렉트 시도
-      performRedirect();
+      // 닉네임 설정을 위해 프로필 설정 폼 띄우기
+      setShowProfileForm(true);
 
-      setToastMessage('익명으로 로그인되었습니다.');
+      setToastMessage('익명으로 로그인되었습니다. 프로필을 생성해 주세요.');
       setShowToast(true);
     } catch (error) {
       logError('MyPage#handleAnonymousLogin', error);
@@ -379,7 +388,14 @@ export function MyPage() {
 
     try {
       safeSupabaseQuery(supabase.rpc('update_profile_nickname', { p_nickname: nickname })).catch(
-        () => {}
+        () => {
+          if (session?.user?.id) {
+            supabase
+              .from('profiles')
+              .update({ nickname, updated_at: new Date().toISOString() })
+              .eq('id', session.user.id);
+          }
+        }
       );
     } catch {
       // 무시
@@ -397,11 +413,9 @@ export function MyPage() {
       } = await safeSupabaseQuery(supabase.auth.getSession());
       console.log('[로그아웃] 현재 세션 확인:', { hasSession: !!currentSession });
 
-      if (currentSession) {
-        console.log('[로그아웃] Supabase signOut 호출 전');
-        await safeSupabaseQuery(supabase.auth.signOut());
-        console.log('[로그아웃] Supabase signOut 완료');
-      }
+      console.log('[로그아웃] useAuthStore.signOut 호출 전');
+      await useAuthStore.getState().signOut();
+      console.log('[로그아웃] useAuthStore.signOut 완료');
 
       // 로컬 세션 삭제
       try {

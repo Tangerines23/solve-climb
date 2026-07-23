@@ -137,16 +137,15 @@ export function ResultPage() {
           );
         }
         // Correct signature: fetchRanking(world, category, period, type, limit?)
-        await fetchRanking(
-          worldParam!,
-          categoryParam!,
-          'weekly',
-          mode === 'time-attack' ? 'time-attack' : 'survival'
-        );
+        const rankingType = mode === 'time-attack' ? 'time-attack' : 'survival';
+        await fetchRanking(worldParam!, categoryParam!, 'weekly', rankingType);
+        await fetchRanking(null, null, 'weekly', 'total');
+        await fetchRanking(null, null, 'weekly', rankingType);
+
         const ranks =
           useRankingStore.getState().rankings[
-            `${worldParam}-${categoryParam}-weekly-${mode === 'time-attack' ? 'time-attack' : 'survival'}`
-          ];
+            `${worldParam}-${categoryParam}-weekly-${rankingType}`
+          ] || useRankingStore.getState().rankings[`weekly-${rankingType}`];
         const {
           data: { user },
         } = await supabase.auth.getUser();
