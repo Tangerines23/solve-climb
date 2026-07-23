@@ -35,8 +35,9 @@ $$;
 GRANT EXECUTE ON FUNCTION public.update_profile_nickname(pg_catalog.text) TO anon, authenticated;
 
 -- 2. Update get_ranking_v2 with duplicate nickname tag logic
-DROP FUNCTION IF EXISTS public.get_ranking_v2(pg_catalog.text, pg_catalog.text, pg_catalog.text, pg_catalog.int4);
-DROP FUNCTION IF EXISTS public.get_ranking_v2(text, text, text, integer);
+DROP FUNCTION IF EXISTS public.get_ranking_v2(pg_catalog.text, pg_catalog.text, pg_catalog.text, pg_catalog.int4) CASCADE;
+DROP FUNCTION IF EXISTS public.get_ranking_v2(text, text, text, integer) CASCADE;
+DROP FUNCTION IF EXISTS public.get_ranking_v2 CASCADE;
 
 CREATE OR REPLACE FUNCTION public.get_ranking_v2(
     p_category pg_catalog.text,
