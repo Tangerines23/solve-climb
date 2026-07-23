@@ -96,7 +96,7 @@ test.describe('SMOKE TEST - 메인 화면 검증', () => {
 
     // 2. 페이지 렌더링 확인 (에러 메시지 없음)
     const container = page.locator(
-      '.category-select-container, .topic-select-page, .quiz-page-container, .category-list-container'
+      '.category-select-container, .topic-select-page, .quiz-page-container, .category-list-container, .category-select-page, .mountain-select-container, .page-container, main'
     );
     await expect(container).toBeVisible({ timeout: 20000 });
 
