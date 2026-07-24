@@ -242,7 +242,7 @@ export const useProfileStore = create<ProfileState>((set, get) => ({
     if (!currentProfile) {
       currentProfile = {
         profileId: generateProfileId(),
-        nickname: '익명 등반가',
+        nickname: '',
         userId,
         createdAt: new Date().toISOString(),
       };

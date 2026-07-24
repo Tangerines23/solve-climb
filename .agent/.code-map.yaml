@@ -1,13 +1,13 @@
 
 project: solve-climb
-generatedAt: "2026-07-23T05:47:03.500Z"
+generatedAt: "2026-07-24T13:25:20.477Z"
 files:
   src/App.tsx:
-    imports: [@/utils/resilientLazy, @/stores/useLevelProgressStore, @/stores/useAuthStore, @/hooks/useCustomBackNavigation, @/components/GlobalLoadingIndicator, @/stores/useErrorLogStore, @/stores/useDebugStore, @/stores/useSettingsStore, @/hooks/useConnectivity, @/components/PwaUpdateNotification, @/features/auth, @/utils/supabaseClient, @/utils/env, @/components/GlobalToastContainer]
+    imports: [@/utils/resilientLazy, @/stores/useLevelProgressStore, @/stores/useAuthStore, @/hooks/useCustomBackNavigation, @/components/GlobalLoadingIndicator, @/stores/useErrorLogStore, @/stores/useDebugStore, @/stores/useSettingsStore, @/hooks/useConnectivity, @/components/PwaUpdateNotification, @/features/auth, @/utils/supabaseClient, @/utils/auth, @/components/GlobalToastContainer]
     exports:
       - name: App
         returns: "import(\"C:/Users/ghkdd/gemini-projects/solve-climb/node_modules/@types/react/jsx-runtime\").JSX.Element"
-        calls: [useConnectivity, useLevelProgressStore, useAuthStore, useCustomBackNavigation, useDebugStore, useSettingsStore, document.body.classList.add, document.body.classList.remove, Promise.all, initializeAuth, syncProgress, "import('@capawesome/capacitor-google-sign-in') .then(({ GoogleSignIn }) => { GoogleSignIn.initialize({ clientId: config.GOOGLE_CLIENT_ID, }).catch((err) => { console.error('[GoogleSignIn] Initialization failed:', err); }); }) .catch", "import('@capawesome/capacitor-google-sign-in') .then", import, "GoogleSignIn.initialize({ clientId: config.GOOGLE_CLIENT_ID, }).catch", GoogleSignIn.initialize, console.error, "import('@capacitor/app') .then(({ App }) => { App.addListener('appUrlOpen', async (data: { url: string }) => { // 데이터 형식: com.solveclimb.app://google-callback?token=... 또는 com.solveclimb.app://my-page?token=... const urlStr = data.url; if (urlStr.includes('access_token=') || urlStr.includes('refresh_token=')) { // URL 해시 파싱 const hash = urlStr.split('#')[1]; if (hash) { const params = new URLSearchParams(hash); const accessToken = params.get('access_token'); const refreshToken = params.get('refresh_token'); if (accessToken && refreshToken) { // Supabase 클라이언트에 세션 세팅 const { error } = await supabase.auth.setSession({ access_token: accessToken, refresh_token: refreshToken, }); if (!error) { console.log('[Auth] Deep Link OAuth Session initialized successfully'); // 세션 초기화 상태 동기화 및 갱신 await initializeAuth(); await syncProgress(); } else { console.error('[Auth] Failed to set session from deep link:', error.message); } } } } }); }) .catch", "import('@capacitor/app') .then", App.addListener, urlStr.includes, urlStr.split, params.get, supabase.auth.setSession, console.log, "useErrorLogStore .getState() .addLog", "useErrorLogStore .getState", String, window.addEventListener, window.removeEventListener]
+        calls: [useConnectivity, useLevelProgressStore, useAuthStore, useCustomBackNavigation, useDebugStore, useSettingsStore, document.body.classList.add, document.body.classList.remove, Promise.all, initializeAuth, syncProgress, win?.Capacitor?.isNativePlatform, initializeGoogleSignIn().catch, initializeGoogleSignIn, console.error, "import('@capacitor/app') .then(({ App }) => { App.addListener('appUrlOpen', async (data: { url: string }) => { // 데이터 형식: com.solveclimb.app://google-callback?token=... 또는 com.solveclimb.app://my-page?token=... const urlStr = data.url; if (urlStr.includes('access_token=') || urlStr.includes('refresh_token=')) { // URL 해시 파싱 const hash = urlStr.split('#')[1]; if (hash) { const params = new URLSearchParams(hash); const accessToken = params.get('access_token'); const refreshToken = params.get('refresh_token'); if (accessToken && refreshToken) { // Supabase 클라이언트에 세션 세팅 const { error } = await supabase.auth.setSession({ access_token: accessToken, refresh_token: refreshToken, }); if (!error) { console.log('[Auth] Deep Link OAuth Session initialized successfully'); // 세션 초기화 상태 동기화 및 갱신 await initializeAuth(); await syncProgress(); } else { console.error('[Auth] Failed to set session from deep link:', error.message); } } } } }); }) .catch", "import('@capacitor/app') .then", import, App.addListener, urlStr.includes, urlStr.split, params.get, supabase.auth.setSession, console.log, "useErrorLogStore .getState() .addLog", "useErrorLogStore .getState", String, window.addEventListener, window.removeEventListener]
   src/AppContainer.tsx:
     imports: [@/utils/resilientLazy, @/components/ErrorBoundary]
     exports:
@@ -982,14 +982,22 @@ files:
         returns: "import(\"C:/Users/ghkdd/gemini-projects/solve-climb/src/features/quiz/types/quiz\").MathProblem"
         calls: [getRandomInt, generateQuadratic, generateExponential, generateLogarithm]
   src/utils/auth.ts:
-    imports: [./supabaseClient]
+    imports: [./supabaseClient, ./env]
     exports:
+      - name: initializeGoogleSignIn
+        returns: Promise<void>
+        description: |
+            네이티브 환경(Capacitor)에서 Google Sign-In 플러그인을 1회 초기화합니다.
+            싱글톤 프로미스를 사용하여 중복 호출 시에도 안전하게 단 한 번만 초기화하거나 완료를 기다립니다.
+        calls: [win?.Capacitor?.isNativePlatform, "(async () => { try { const clientId = getValidClientId(); console.log('[GoogleSignIn] Native Google Sign-In 초기화 중... (clientId:', clientId, ')'); await GoogleSignIn.initialize({ clientId, scopes: ['profile', 'email'], }); console.log('[GoogleSignIn] Native Google Sign-In 초기화 성공'); } catch (err) { console.error('[GoogleSignIn] Initialization failed:', err); googleSignInInitPromise = null; throw err; } })", getValidClientId, console.log, GoogleSignIn.initialize, console.error]
+      - name: _resetGoogleSignInInitForTest
+        description: 테스트 환경용 초기화 상태 리셋 함수
       - name: signInWithGoogle
         returns: "Promise<{ error: import(\"C:/Users/ghkdd/gemini-projects/solve-climb/node_modules/@supabase/auth-js/dist/module/lib/errors\").AuthError | null; }>"
         description: |
             구글 로그인: 한 번 클릭 후 구글 페이지로 이동 → 로그인 완료 시 redirectTo로 돌아옴.
             네이티브 환경(Capacitor)에서는
-        calls: [console.log, GoogleSignIn.signIn, supabase.auth.signInWithIdToken, console.error, supabase.auth.signInWithOAuth]
+        calls: [win?.Capacitor?.isNativePlatform, console.log, initializeGoogleSignIn, getValidClientId, GoogleSignIn.signIn, supabase.auth.signInWithIdToken, console.error, supabase.auth.signInWithOAuth]
   src/utils/CalculusProblemGenerator.ts:
     imports: [../types/quiz]
     exports:
@@ -2211,7 +2219,7 @@ files:
       - name: handlePromote
         calls: [setShowPromotionModal, refetch]
       - name: handleProfileComplete
-        calls: [setShowProfileForm, navigate, urls.myPage, refetch, storageService.get, storageService.remove]
+        calls: [setShowProfileForm, storageService.get, urls.myPage, navigate, storageService.remove, refetch]
       - name: handleToggleHaptic
         calls: [setHapticEnabled, vibrateShort, setToastMessage, setShowToast]
       - name: handleToggleAnimation

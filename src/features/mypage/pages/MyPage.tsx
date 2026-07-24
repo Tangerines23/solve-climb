@@ -157,16 +157,6 @@ export function MyPage() {
   const handleProfileComplete = () => {
     setShowProfileForm(false);
 
-    // 이미 프로필이 있는 상태에서 수정한 경우 -> 마이페이지 유지
-    if (isProfileComplete) {
-      navigate(urls.myPage(), { replace: true, state: {} });
-      refetch(); // 프로필 완성 후 통계 다시 불러오기
-      return;
-    }
-
-    // 최초 프로필 생성인 경우 -> 이전 경로 또는 홈으로 이동
-    navigate(urls.myPage(), { replace: true, state: {} });
-
     const savedRedirect = storageService.get<string>(STORAGE_KEYS.LOGIN_REDIRECT);
     if (redirectPath && redirectPath !== urls.myPage()) {
       navigate(redirectPath, { replace: true });
@@ -174,7 +164,7 @@ export function MyPage() {
       storageService.remove(STORAGE_KEYS.LOGIN_REDIRECT);
       navigate(savedRedirect, { replace: true });
     } else {
-      // 명시적 리다이렉트가 없으면 홈으로 보냄 (사용자 요청 사항)
+      // 명시적 리다이렉트가 없으면 홈으로 보냄
       navigate('/', { replace: true });
     }
 
@@ -479,7 +469,6 @@ export function MyPage() {
             </div>
           </div>
         </main>
-        <FooterNav />
         <Toast
           message={toastMessage}
           isOpen={showToast}
@@ -509,14 +498,25 @@ export function MyPage() {
         <Header />
         <main className="my-page-main">
           <div className="my-page-content">
-            <ProfileForm
-              onComplete={handleProfileComplete}
-              showBackButton={isProfileComplete}
-              onCancel={() => setShowProfileForm(false)}
-            />
+            <div className="my-page-guest-view-container">
+              <div className="my-page-guest-view">
+                <div className="my-page-guest-icon">🔒</div>
+                <h1 className="my-page-guest-title">
+                  로그인하고
+                  <br />
+                  <strong className="my-page-guest-highlight">내 기록을 평생 간직하세요.</strong>
+                </h1>
+              </div>
+            </div>
           </div>
         </main>
-        <FooterNav />
+        <div className="profile-form-modal-overlay">
+          <ProfileForm
+            onComplete={handleProfileComplete}
+            showBackButton={true}
+            onCancel={() => setShowProfileForm(false)}
+          />
+        </div>
       </div>
     );
   }

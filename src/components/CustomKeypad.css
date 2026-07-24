@@ -7,7 +7,7 @@
   background-color: transparent;
   width: 100%;
   max-width: min(var(--quiz-keypad-max-width), 100vw);
-  margin: auto auto 0; /* 위쪽 auto로 남은 공간을 카드와 키패드 사이에 배분, 아래쪽 0으로 바닥에 고정 */
+  margin: clamp(8px, 2vh, 32px) auto 0; /* 세로가 매우 큰 기기에서도 카드와 과도하게 벌어지지 않도록 상한선 조율 */
   flex: 0 1 auto; /* 축소 가능하도록 flex-shrink: 1 */
   box-sizing: border-box;
 }
@@ -128,25 +128,28 @@
   }
 }
 
-/* 세로 해상도가 좁은 기기 및 뷰포트 대응 (또는 가로가 좁은 모바일 포트레이트 기기) */
 /* 세로 해상도가 좁은 기기 및 뷰포트 대응 (iPhone SE, Extreme-Short 등) */
 @media (max-height: 720px) and (orientation: portrait) {
   .custom-keypad {
-    padding: var(--spacing-small-alt) var(--spacing-medium-alt) !important;
-    padding-bottom: max(20px, env(safe-area-inset-bottom)) !important;
+    padding: var(--spacing-tiny) var(--spacing-md) !important;
+    padding-bottom: max(var(--spacing-xs), env(safe-area-inset-bottom)) !important;
     gap: var(--spacing-tiny) !important;
   }
 
   .keypad-key {
-    min-height: 54px !important; /* Touch safety height */
-    font-size: clamp(1.3rem, 4vw, 1.7rem) !important;
+    min-height: clamp(
+      38px,
+      5.8vh,
+      48px
+    ) !important; /* Touch safety height scaled for short viewports */
+    font-size: clamp(1.2rem, 3.8vw, 1.5rem) !important;
     box-shadow: 0 2px 0 rgba(0, 0, 0, 0.3) !important;
     border-radius: var(--rounded-sm) !important;
   }
 
   .keypad-key-submit {
-    margin-top: 6px !important;
-    min-height: 54px !important;
+    margin-top: 4px !important;
+    min-height: clamp(38px, 5.8vh, 48px) !important;
     font-size: clamp(1.1rem, 3.5vw, 1.4rem) !important;
     border-radius: var(--rounded-sm) !important;
   }
@@ -155,29 +158,29 @@
 /* 가로만 좁고 세로는 넉넉한 기기 (Galaxy S20 Ultra, Pixel 5 등 - 세로 721px 이상) */
 @media (max-width: 480px) and (min-height: 721px) and (orientation: portrait) {
   .custom-keypad {
-    padding: var(--spacing-small-alt) var(--spacing-lg) !important; /* Stable margin */
+    padding: 6px var(--spacing-lg) !important; /* Stable margin */
     padding-bottom: max(
-      10px,
+      8px,
       env(safe-area-inset-bottom)
     ) !important; /* Zero-out distance to bottom edge */
-    gap: clamp(6px, 1.2vh, 10px) !important; /* Responsive gap to save vertical space */
+    gap: clamp(4px, 1vh, 8px) !important; /* Responsive gap to save vertical space */
   }
 
   .keypad-key {
     min-height: clamp(
-      54px,
-      8.2vh,
-      78px
+      42px,
+      6.5vh,
+      66px
     ) !important; /* Dynamically adjusts button height based on device height (vh) */
-    font-size: clamp(1.5rem, 4.8vw, 2rem) !important; /* Adjusted font size */
-    box-shadow: 0 4px 0 rgba(0, 0, 0, 0.4) !important;
+    font-size: clamp(1.4rem, 4.5vw, 1.9rem) !important; /* Adjusted font size */
+    box-shadow: 0 3px 0 rgba(0, 0, 0, 0.4) !important;
     border-radius: var(--rounded-md) !important;
   }
 
   .keypad-key-submit {
-    margin-top: clamp(4px, 0.8vh, 6px) !important;
-    min-height: clamp(54px, 8.2vh, 78px) !important; /* Perfectly synced with standard keys */
-    font-size: clamp(1.2rem, 4vw, 1.6rem) !important;
+    margin-top: clamp(4px, 0.6vh, 6px) !important;
+    min-height: clamp(42px, 6.5vh, 66px) !important; /* Perfectly synced with standard keys */
+    font-size: clamp(1.2rem, 4vw, 1.5rem) !important;
     border-radius: var(--rounded-md) !important;
   }
 }

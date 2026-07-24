@@ -12,7 +12,7 @@ import { useConnectivity } from '@/hooks/useConnectivity';
 import { PwaUpdateNotification } from '@/components/PwaUpdateNotification';
 import { RequireAuth } from '@/features/auth';
 import { supabase } from '@/utils/supabaseClient';
-import { config } from '@/utils/env';
+import { initializeGoogleSignIn } from '@/utils/auth';
 
 const HomePage = resilientLazy(
   () => import('@/pages/HomePage').then((module) => ({ default: module.HomePage })),
@@ -134,21 +134,16 @@ function App() {
     Promise.all([initializeAuth(), syncProgress()]);
 
     // Capacitor 네이티브 앱 환경에서 Deep Link (Supabase OAuth 세션 복귀) 수신 리스너 등록
-    // @ts-expect-error: Capacitor check
-    const isNativeApp = typeof window !== 'undefined' && !!window.Capacitor;
+    const win =
+      typeof window !== 'undefined'
+        ? (window as unknown as { Capacitor?: { isNativePlatform?: () => boolean } })
+        : undefined;
+    const isNativeApp = !!(win?.Capacitor?.isNativePlatform?.() || win?.Capacitor);
     if (isNativeApp) {
       // Capacitor Google Auth 초기화
-      import('@capawesome/capacitor-google-sign-in')
-        .then(({ GoogleSignIn }) => {
-          GoogleSignIn.initialize({
-            clientId: config.GOOGLE_CLIENT_ID,
-          }).catch((err) => {
-            console.error('[GoogleSignIn] Initialization failed:', err);
-          });
-        })
-        .catch((err) => {
-          console.error('[GoogleSignIn] Dynamic import failed:', err);
-        });
+      initializeGoogleSignIn().catch((err) => {
+        console.error('[GoogleSignIn] Initialization failed:', err);
+      });
 
       import('@capacitor/app')
         .then(({ App }) => {
