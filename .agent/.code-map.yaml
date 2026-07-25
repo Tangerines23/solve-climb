@@ -1,6 +1,6 @@
 
 project: solve-climb
-generatedAt: "2026-07-24T13:25:20.477Z"
+generatedAt: "2026-07-25T09:35:00.466Z"
 files:
   src/App.tsx:
     imports: [@/utils/resilientLazy, @/stores/useLevelProgressStore, @/stores/useAuthStore, @/hooks/useCustomBackNavigation, @/components/GlobalLoadingIndicator, @/stores/useErrorLogStore, @/stores/useDebugStore, @/stores/useSettingsStore, @/hooks/useConnectivity, @/components/PwaUpdateNotification, @/features/auth, @/utils/supabaseClient, @/utils/auth, @/components/GlobalToastContainer]
@@ -625,6 +625,13 @@ files:
         calls: [loadTierDefinitions, tierLevels.find]
   src/constants/ui.ts:
     imports: [./items]
+  src/hooks/useAdManager.ts:
+    imports: [@/utils/adService]
+    exports:
+      - name: useAdManager
+        returns: "import(\"C:/Users/ghkdd/gemini-projects/solve-climb/src/hooks/useAdManager\").UseAdManagerReturn"
+        description: "useAdManager: 광고 호출 및 로딩 UI 상태 관리를 캡슐화하는 커스텀 훅"
+        calls: [AdService.preloadRewardedAd, setIsAdLoading, AdService.showRewardedAd]
   src/hooks/useAsync.ts:
     imports: [../utils/errorHandler]
     exports:
@@ -837,11 +844,11 @@ files:
         returns: "import(\"C:/Users/ghkdd/gemini-projects/solve-climb/node_modules/@types/react/jsx-runtime\").JSX.Element"
         calls: [useRanking, setActiveType, setActivePeriod, currentRankings.map, Number, getMedalIcon, "(() => { try { const date = new Date(item.week_start_date); const month = date.getMonth() + 1; const firstDay = new Date(date.getFullYear(), date.getMonth(), 1); const week = Math.ceil((date.getDate() + firstDay.getDay()) / 7); return `${month}월 ${week}주차 시즌`; } catch { return '시즌 정보 없음'; } })", date.getMonth, date.getFullYear, Math.ceil, date.getDate, firstDay.getDay, Number(item.score).toLocaleString, Number(myRank.score).toLocaleString]
   src/pages/ResultPage.tsx:
-    imports: [@/stores/useQuizStore, @/stores/useLevelProgressStore, @/stores/useRankingStore, @/utils/tossGameCenter, @/constants/game, @/utils/urlParams, @/stores/useUserStore, @/stores/useToastStore, @/utils/supabaseClient, @/utils/errorHandler, @/components/TierUpgradeModal, @/components/BadgeNotification, @/utils/navigation, @/types/quiz, @/utils/adService, @/services/analytics, @/constants/ui, @/constants/game, ./ResultPage.css, @/stores/useSettingsStore, @/hooks/useCountUp, @/services/historyService, @/services]
-    state: [scoreSubmitted, isNewRecord, showConfetti, currentRank, showTierUpgrade, previousMasteryScore, currentMasteryScore, awardedBadges, _showBadgeNotification, hasDoubled, isAdLoading]
+    imports: [@/stores/useQuizStore, @/stores/useLevelProgressStore, @/stores/useRankingStore, @/utils/tossGameCenter, @/constants/game, @/utils/urlParams, @/stores/useUserStore, @/stores/useToastStore, @/utils/supabaseClient, @/utils/errorHandler, @/components/TierUpgradeModal, @/components/BadgeNotification, @/utils/navigation, @/types/quiz, @/hooks/useAdManager, @/features/quiz/components/result/ResultRewardActions, @/services/analytics, @/constants/ui, @/constants/game, ./ResultPage.css, @/stores/useSettingsStore, @/hooks/useCountUp, @/services/historyService, @/services]
+    state: [scoreSubmitted, isNewRecord, showConfetti, currentRank, showTierUpgrade, previousMasteryScore, currentMasteryScore, awardedBadges, _showBadgeNotification, hasDoubled]
     handlers:
       - name: handleDoubleReward
-        calls: [setIsAdLoading, showToast, AdService.showRewardedAd, rewardMinerals, setHasDoubled]
+        calls: [showToast, showAd, rewardMinerals, setHasDoubled]
       - name: handleRetry
         calls: [console.log, logWarning, showToast, urls.quiz, navigate]
       - name: handleLevelSelect
@@ -849,7 +856,7 @@ files:
     exports:
       - name: ResultPage
         returns: "import(\"C:/Users/ghkdd/gemini-projects/solve-climb/node_modules/@types/react/jsx-runtime\").JSX.Element"
-        calls: [useQuizStore, useSettingsStore, useLevelProgressStore, useRankingStore, useUserStore, useToastStore, useNavigate, useSearchParams, searchParams.get, validateWorldParam, validateCategoryInWorldParam, validateLevelParam, validateModeParam, validateNumberParam, useCountUp, Math.floor, validateFloatParam, createSafeStorageKey, parseInt, storageService.get, storageService.set, finalScore.toString, setIsNewRecord, setShowConfetti, setTimeout, JSON.parse, logError, Math.round, clearLevel, updateBestScore, fetchRanking, useRankingStore.getState, supabase.auth.getUser, Array.isArray, ranks.find, setCurrentRank, Number, sync, analytics.trackQuizEnd, analytics.trackEvent, historyService.saveRecord, console.log, submitScoreToLeaderboard(finalScore).then, submitScoreToLeaderboard, setIsAdLoading, showToast, AdService.showRewardedAd, rewardMinerals, setHasDoubled, logWarning, urls.quiz, navigate, console.warn, urls.categorySelect, urls.levelSelect, s.push, averageTime.toFixed, Object.entries(courseMap).find, Object.entries, urls.home, "Array.from({ length: 50 }).map", Array.from, Math.random, animatedScore.toLocaleString, statsList.map, urls.ranking, setShowTierUpgrade, setShowBadgeNotification, setAwardedBadges]
+        calls: [useQuizStore, useSettingsStore, useLevelProgressStore, useRankingStore, useUserStore, useToastStore, useNavigate, useSearchParams, searchParams.get, validateWorldParam, validateCategoryInWorldParam, validateLevelParam, validateModeParam, validateNumberParam, useCountUp, Math.floor, validateFloatParam, createSafeStorageKey, parseInt, storageService.get, storageService.set, finalScore.toString, setIsNewRecord, setShowConfetti, setTimeout, JSON.parse, logError, Math.round, clearLevel, updateBestScore, fetchRanking, useRankingStore.getState, supabase.auth.getUser, Array.isArray, ranks.find, setCurrentRank, Number, sync, analytics.trackQuizEnd, analytics.trackEvent, historyService.saveRecord, console.log, submitScoreToLeaderboard(finalScore).then, submitScoreToLeaderboard, useAdManager, showToast, showAd, rewardMinerals, setHasDoubled, logWarning, urls.quiz, navigate, console.warn, urls.categorySelect, urls.levelSelect, s.push, averageTime.toFixed, Object.entries(courseMap).find, Object.entries, urls.home, "Array.from({ length: 50 }).map", Array.from, Math.random, animatedScore.toLocaleString, statsList.map, urls.ranking, setShowTierUpgrade, setShowBadgeNotification, setAwardedBadges]
   src/pages/ReviewPage.tsx:
     imports: [@/components/Header, @/components/FooterNav, @/features/mypage, @/utils/navigation, ./ReviewPage.css]
     exports:
@@ -960,6 +967,8 @@ files:
     imports: [./database.types]
   src/utils/adService.ts:
     imports: [./env]
+    exports:
+      - name: _resetAdPreparedForTest
   src/utils/algebra.ts:
     imports: [@/components/algebra/EquationTerm]
     exports:
@@ -1781,7 +1790,7 @@ files:
         returns: "import(\"C:/Users/ghkdd/gemini-projects/solve-climb/node_modules/@types/react/jsx-runtime\").JSX.Element | null"
         calls: [useUserStore, setIsAnimating, setTimeout, clearTimeout, e.stopPropagation, inventory.map, selectedItemIds.includes, onToggleItem, getItemEmoji]
   src/components/game/GameAlertModal.tsx:
-    imports: [./GameAlertModal.css]
+    imports: [@/utils/adService, ./GameAlertModal.css]
     exports:
       - name: GameAlertModal
         params:
@@ -1792,7 +1801,7 @@ files:
   type,
 }": GameAlertModalProps
         returns: "import(\"C:/Users/ghkdd/gemini-projects/solve-climb/node_modules/@types/react/jsx-runtime\").JSX.Element | null"
-        calls: [e.stopPropagation, renderContent, onAction]
+        calls: [AdService.preloadRewardedAd().catch, AdService.preloadRewardedAd, e.stopPropagation, renderContent, onAction]
   src/components/game/GameOverlay.tsx:
     imports: [../../stores/useGameStore, ../../features/quiz/contexts/QuizContext]
     state: [prevFever, splashText, splashKey]
@@ -2465,6 +2474,11 @@ files:
 }": UseQuizInputParams
         returns: "{ handleKeypadNumber: (num: string) => void; handleQwertyKeyPress: (key: string) => void; handleKeypadClear: () => void; handleKeypadBackspace: () => void; }"
         calls: [onInputStart, setAnswerInput, prev.startsWith, prev.substring, setDisplayValue, vibrateShort, "/[a-z]/.test", "/[0-9]/.test", prev.slice]
+  src/features/quiz/hooks/useQuizModalState.ts:
+    exports:
+      - name: useQuizModalState
+        returns: "import(\"C:/Users/ghkdd/gemini-projects/solve-climb/src/features/quiz/hooks/useQuizModalState\").QuizModalState"
+        calls: [setShowPauseModal, setShowStaminaModal, setShowCountdown, setShowLastChanceModal, setShowTipModal, setShowRankPromoteModal, setShowLevelUpModal, setShowStaminaWarningModal, setShowUnderDevModal]
   src/features/quiz/hooks/useQuizNavigation.ts:
     imports: [@/utils/navigation, ../types/quiz, @/constants/ui, @/lib/eventBus]
     exports:
@@ -2674,3 +2688,26 @@ files:
               max: number
             returns: number
             calls: [Math.floor, this.next]
+  src/features/quiz/components/result/ResultRewardActions.tsx:
+    imports: [@/constants/ui]
+    exports:
+      - name: ResultRewardActions
+        params:
+          "{
+  baseMinerals,
+  hasDoubled,
+  isAdLoading,
+  onDoubleReward,
+}": ResultRewardActionsProps
+        returns: "import(\"C:/Users/ghkdd/gemini-projects/solve-climb/node_modules/@types/react/jsx-runtime\").JSX.Element | null"
+  src/features/quiz/components/result/ResultScoreCard.tsx:
+    exports:
+      - name: ResultScoreCard
+        params:
+          "{
+  finalScore,
+  isNewRecord,
+  statsList,
+}": ResultScoreCardProps
+        returns: "import(\"C:/Users/ghkdd/gemini-projects/solve-climb/node_modules/@types/react/jsx-runtime\").JSX.Element"
+        calls: [finalScore.toLocaleString, statsList.map]

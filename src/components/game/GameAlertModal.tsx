@@ -1,4 +1,5 @@
-import React from 'react';
+import React, { useEffect } from 'react';
+import { AdService } from '@/utils/adService';
 import './GameAlertModal.css';
 
 interface GameAlertModalProps {
@@ -14,6 +15,12 @@ export const GameAlertModal: React.FC<GameAlertModalProps> = ({
   onAction,
   type,
 }) => {
+  useEffect(() => {
+    if (isOpen && (type === 'stamina' || type === 'both')) {
+      AdService.preloadRewardedAd().catch(() => {});
+    }
+  }, [isOpen, type]);
+
   if (!isOpen) return null;
 
   const renderContent = () => {

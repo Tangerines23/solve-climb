@@ -38,6 +38,7 @@
     "test:coverage:components": "vitest src/components src/pages --coverage --run",
     "test:coverage:utils": "vitest src/utils src/stores --coverage --run",
     "test:rpc": "vitest tests/integration/rpc-validation.test.ts --run",
+    "test:ad": "vitest tests/verify_ad_flow.test.ts --run",
     "test:bench": "vitest bench --run",
     "analyze": "cross-env ANALYZE=true vite build",
     "preview": "vite preview",

@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { AdService } from '../adService';
+import { AdService, _resetAdPreparedForTest } from '../adService';
 import { AdMob } from '@capacitor-community/admob';
 
 // Mock AdMob
@@ -16,6 +16,7 @@ describe('AdService', () => {
 
   beforeEach(() => {
     vi.clearAllMocks();
+    _resetAdPreparedForTest();
     // @ts-expect-error: Resetting window for tests
     delete window.Capacitor;
     // @ts-expect-error: Resetting window for tests

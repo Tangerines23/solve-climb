@@ -69,26 +69,22 @@ export const useQuizBusinessLogic = ({
       setShowSlideToast(true);
       setToastValue(UI_MESSAGES.AD_WATCH_START);
 
-      const adResult = await AdService.showRewardedAd('stamina_recharge');
+      // recoverStaminaAds 단일 파이프라인 호출 (광고 시청 -> DB RPC 보상 지급)
+      const result = await recoverStaminaAds();
 
-      if (adResult.success) {
-        const result = await recoverStaminaAds();
-        if (result.success) {
-          setShowStaminaModal(false);
-          setShowSlideToast(true);
-          setToastValue(UI_MESSAGES.STAMINA_RECHARGED_FULL);
+      if (result.success) {
+        setShowStaminaModal(false);
+        setShowSlideToast(true);
+        setToastValue(UI_MESSAGES.STAMINA_RECHARGED_FULL);
 
-          const isCapacitor = typeof window !== 'undefined' && !!(window as any).Capacitor;
-          if (isCapacitor) {
-            await useUserStore.getState().fetchUserData();
-          } else {
-            setTimeout(() => window.location.reload(), ANIMATION_CONFIG.RELOAD_DELAY);
-          }
+        const isCapacitor = typeof window !== 'undefined' && !!(window as any).Capacitor;
+        if (isCapacitor) {
+          await useUserStore.getState().fetchUserData();
         } else {
-          setToastValue('충전 실패: ' + result.message);
+          setTimeout(() => window.location.reload(), ANIMATION_CONFIG.RELOAD_DELAY);
         }
       } else {
-        setToastValue(UI_MESSAGES.AD_WATCH_FAILED(adResult.error));
+        setToastValue(UI_MESSAGES.AD_WATCH_FAILED(result.message));
       }
     },
     [setShowSlideToast, setToastValue, recoverStaminaAds]
