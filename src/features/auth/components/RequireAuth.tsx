@@ -17,7 +17,11 @@ export function RequireAuth({ children }: RequireAuthProps) {
   const isProfileComplete = useProfileStore((state) => state.isProfileComplete);
   const location = useLocation();
 
-  if (isLoadingAuth) {
+  const isAuthenticatedOrGuest = Boolean(session || user);
+
+  // 이미 세션이나 유저 정보가 존재하는 경우, 라우트 이동 중 백그라운드 isLoadingAuth가 발생해도
+  // 화면 깜빡임(Flash of Loading Component) 없이 자식 컴포넌트를 부드럽게 유지합니다.
+  if (isLoadingAuth && !isAuthenticatedOrGuest) {
     return (
       <div className="loading-fallback" role="alert" aria-busy="true">
         <div className="loading-text">인증 확인 중...</div>
@@ -26,7 +30,6 @@ export function RequireAuth({ children }: RequireAuthProps) {
   }
 
   // 세션(또는 게스트 유저)과 프로필 완료 상태 확인 (지연 익명 인증 지원)
-  const isAuthenticatedOrGuest = Boolean(session || user);
   if (!isAuthenticatedOrGuest || !isProfileComplete) {
     return <Navigate to={urls.myPage()} state={{ from: location }} replace />;
   }

@@ -367,6 +367,7 @@ export function MyPageSettings({
                   animation: isChecking ? 'spin 1s linear infinite' : 'none',
                 }}
                 aria-label="업데이트 확인"
+                title="업데이트 확인"
               >
                 <svg
                   width="16"
@@ -381,6 +382,45 @@ export function MyPageSettings({
                   <path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67" />
                 </svg>
               </button>
+
+              {/* @ts-expect-error: Capacitor global check */}
+              {typeof window !== 'undefined' && !!window.Capacitor && (
+                <button
+                  onClick={handleGoToUpdate}
+                  style={{
+                    background: 'rgba(255, 255, 255, 0.08)',
+                    border: '1px solid rgba(255, 255, 255, 0.15)',
+                    padding: 'var(--spacing-micro) var(--spacing-xs)',
+                    cursor: 'pointer',
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: 'var(--spacing-micro)',
+                    color: 'var(--color-text-secondary)',
+                    borderRadius: 'var(--rounded-2xs)',
+                    fontSize: '0.75rem',
+                    marginLeft: 'var(--spacing-micro)',
+                    transition: 'all 0.2s ease',
+                  }}
+                  aria-label="플레이스토어 이동"
+                  title="플레이스토어 앱 이동"
+                >
+                  <svg
+                    width="12"
+                    height="12"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  >
+                    <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6" />
+                    <polyline points="15 3 21 3 21 9" />
+                    <line x1="10" y1="14" x2="21" y2="3" />
+                  </svg>
+                  스토어 이동
+                </button>
+              )}
             </span>
           </div>
           <button

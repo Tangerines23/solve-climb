@@ -168,18 +168,18 @@
 /* 상단 헤더 (뒤로가기 + 타이머) */
 .quiz-header {
   position: relative;
-  top: 0;
-  left: 0;
-  right: 0;
+  width: 100%;
+  max-width: min(var(--modal-width-portrait), 100%);
+  margin: 0 auto;
   height: clamp(56px, 8vh, var(--header-height-portrait));
   background-color: transparent;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  justify-content: space-between;
   padding: 0 clamp(var(--spacing-md), 2vw, var(--spacing-lg));
   z-index: var(--z-header);
   flex-shrink: 0;
+  box-sizing: border-box;
 }
 
 /* 가로모드에서 헤더 높이 축소 */
@@ -238,9 +238,9 @@
   max-width: min(var(--modal-width-portrait), 100%);
   margin: 0 auto;
   /* 안전 영역 고려: top 최소화, 하단은 safe-area + 여유 마진 */
-  padding: max(8px, env(safe-area-inset-top, 0px)) clamp(var(--spacing-md), 2vw, var(--spacing-lg))
-    max(var(--quiz-keypad-bottom-margin), env(safe-area-inset-bottom, 0px));
-  gap: var(--quiz-keypad-gap);
+  padding: max(4px, env(safe-area-inset-top, 0px)) clamp(var(--spacing-md), 2vw, var(--spacing-lg))
+    max(4px, env(safe-area-inset-bottom, 0px));
+  gap: clamp(4px, 1vh, 12px);
   flex: 1;
   min-height: 0; /* flex 축소 허용 */
   justify-content: flex-start;
@@ -269,19 +269,19 @@
   flex-direction: column;
   justify-content: center;
   align-items: center;
-  gap: clamp(8px, 1.5vh, 20px);
-  padding: clamp(10px, 2.2vh, 20px) clamp(16px, 4vw, 32px);
+  gap: clamp(6px, 1.2vh, 16px);
+  padding: clamp(8px, 1.8vh, 18px) clamp(16px, 4vw, 32px);
   background-color: var(--glass-bg);
   border: var(--glass-border);
   -webkit-backdrop-filter: blur(var(--glass-blur));
   backdrop-filter: blur(var(--glass-blur));
-  border-radius: clamp(24px, 4vh, 32px);
+  border-radius: clamp(20px, 3.5vh, 28px);
   box-shadow: var(--glass-shadow);
   /* 핵심: 카드가 축소 가능하도록 flex-shrink: 1, 키패드 공간을 침범하지 않음 */
   flex: 0 1 auto;
-  min-height: 100px; /* 최소 높이를 줄여 작은 기기에서도 키패드 공간 확보 */
+  min-height: 80px; /* 최소 높이를 줄여 작은 기기에서도 키패드 공간 확보 */
   max-height: var(--quiz-card-max-height);
-  margin-top: clamp(4px, 1vh, 8px);
+  margin-top: clamp(2px, 0.8vh, 6px);
   margin-bottom: 0;
   overflow: hidden;
 }
@@ -876,6 +876,8 @@
 .quiz-header-rework {
   position: relative;
   width: 100%;
+  max-width: min(var(--modal-width-portrait), 100%);
+  margin: 0 auto;
   display: grid;
   grid-template-columns: 1fr auto 1fr;
   /* Left, Center, Right */
@@ -883,6 +885,7 @@
   padding: var(--spacing-lg);
   z-index: 100;
   pointer-events: none;
+  box-sizing: border-box;
   /* Allow clicks to pass through spacer areas */
 }
 

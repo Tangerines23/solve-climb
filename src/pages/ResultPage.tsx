@@ -23,7 +23,8 @@ import { TierUpgradeModal } from '@/components/TierUpgradeModal';
 import { BadgeNotification } from '@/components/BadgeNotification';
 import { urls } from '@/utils/navigation';
 import { Category } from '@/types/quiz';
-import { AdService } from '@/utils/adService';
+import { useAdManager } from '@/hooks/useAdManager';
+import { ResultRewardActions } from '@/features/quiz/components/result/ResultRewardActions';
 import { analytics } from '@/services/analytics';
 import { UI_MESSAGES } from '@/constants/ui';
 import { ANIMATION_CONFIG } from '@/constants/game';
@@ -215,20 +216,18 @@ export function ResultPage() {
   ]);
 
   const [hasDoubled, setHasDoubled] = useState(false);
-  const [isAdLoading, setIsAdLoading] = useState(false);
+  const { isAdLoading, showAd } = useAdManager();
   const baseMinerals = useMemo(() => Math.floor(finalScore / 10), [finalScore]);
 
   const handleDoubleReward = async () => {
     if (hasDoubled || isAdLoading || baseMinerals <= 0) return;
 
-    setIsAdLoading(true);
     showToast(UI_MESSAGES.AD_LOADING, 'info');
 
-    // 광고 시청 호출
-    const adResult = await AdService.showRewardedAd('double_reward');
+    // 광고 시청 호출 (useAdManager)
+    const adResult = await showAd('double_reward');
     if (!adResult.success) {
       showToast(adResult.error || UI_MESSAGES.AD_LOAD_FAILED, 'error');
-      setIsAdLoading(false);
       return;
     }
 
@@ -237,7 +236,6 @@ export function ResultPage() {
       showToast(result.message, '💎');
       setHasDoubled(true);
     }
-    setIsAdLoading(false);
   };
 
   // 디버그 로그 추가
@@ -484,20 +482,12 @@ export function ResultPage() {
           ))}
         </ul>
 
-        {finalScore > 0 && !hasDoubled && (
-          <div className="double-reward-section">
-            <button
-              className="double-reward-btn"
-              onClick={handleDoubleReward}
-              disabled={isAdLoading}
-            >
-              <span>{isAdLoading ? '⌛' : '📺'}</span>{' '}
-              {isAdLoading
-                ? UI_MESSAGES.REWARD_GIVING
-                : `${UI_MESSAGES.DOUBLE_REWARD} (+${baseMinerals}💎)`}
-            </button>
-          </div>
-        )}
+        <ResultRewardActions
+          baseMinerals={baseMinerals}
+          hasDoubled={hasDoubled}
+          isAdLoading={isAdLoading}
+          onDoubleReward={handleDoubleReward}
+        />
       </div>
 
       <div className="result-footer-actions">

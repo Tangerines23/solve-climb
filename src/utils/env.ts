@@ -43,6 +43,11 @@ export const ENV = createEnv({
     // 5. 구글 로그인용 클라이언트 ID
     VITE_GOOGLE_CLIENT_ID: z
       .string()
+      .transform((val) =>
+        val && val.trim() !== ''
+          ? val
+          : '422673840720-etmtujb3lrt4966pv2j212sqf39votil.apps.googleusercontent.com'
+      )
       .default('422673840720-etmtujb3lrt4966pv2j212sqf39votil.apps.googleusercontent.com'),
   },
 

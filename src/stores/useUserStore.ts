@@ -255,10 +255,17 @@ export const useUserStore = create<UserState>((set, get) => {
       );
     },
 
-    rewardMinerals: async (amount: number) => {
+    rewardMinerals: async (amount: number, isBonus?: boolean) => {
       if (amount <= 0) return { success: false, message: 'Invalid amount' };
-      // [Security Warning] Generic mineral rewards are now discouraged.
-      // Use specific RPCs like secure_reward_ad_view or game result submission.
+
+      if (isBonus) {
+        return callRpcAndRefresh<{ success: boolean; minerals: number }>(
+          supabase.rpc('secure_reward_ad_view', { p_ad_type: 'double_reward' }),
+          { refreshData: true }
+        );
+      }
+
+      // [Security Warning] Generic mineral rewards without ads or game clear are discouraged.
       return { success: false, message: '보안 정책에 따라 직접적인 미네랄 지급이 제한됩니다.' };
     },
 

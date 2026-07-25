@@ -1,5 +1,7 @@
 -- Fix get_ranking_v2 function: Remove invalid NULL self-comparison in WHERE clause and grant EXECUTE permissions to anon & authenticated roles
 
+DROP FUNCTION IF EXISTS public.get_ranking_v2(pg_catalog.text, pg_catalog.text, pg_catalog.text, pg_catalog.int4);
+
 CREATE OR REPLACE FUNCTION public.get_ranking_v2(
     p_category pg_catalog.text,
     p_period pg_catalog.text,
