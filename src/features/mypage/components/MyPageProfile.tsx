@@ -1,5 +1,7 @@
 interface MyPageProfileProps {
   nickname: string;
+  email?: string | null;
+  isAnonymous?: boolean;
   totalMasteryScore: number;
   loginStreak?: number;
   currentTierLevel?: number;
@@ -9,11 +11,15 @@ interface MyPageProfileProps {
 
 export function MyPageProfile({
   nickname,
+  email,
+  isAnonymous,
   totalMasteryScore,
   loginStreak = 0,
   loading,
   onEditProfile,
 }: MyPageProfileProps) {
+  const accountLabel = isAnonymous ? '익명 계정' : email || '구글 계정';
+
   return (
     <div className="my-page-header">
       <div className="my-page-profile-section">
@@ -27,6 +33,10 @@ export function MyPageProfile({
                 <span className="streak-count">{loginStreak}일째</span>
               </div>
             )}
+          </div>
+          <div className="my-page-account-badge">
+            <span className="account-icon">{isAnonymous ? '👤' : '📧'}</span>
+            <span className="account-email">{accountLabel}</span>
           </div>
           <button className="my-page-profile-edit-button" onClick={onEditProfile}>
             프로필 수정

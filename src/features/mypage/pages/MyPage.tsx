@@ -86,10 +86,9 @@ export function MyPage() {
   // URL 파라미터에서 showProfileForm 확인
   const shouldShowProfileForm = searchParams.get('showProfileForm') === 'true';
 
-  // 프로필이 미완성이거나(닉네임 없음 포함) 명시적으로 요청된 경우 폼 표시
-  // [Fix] isProfileComplete 상태와 동기화되도록 하여 E2E/CI 환경에서의 레이스 컨디션 방지
+  // 프로필이 미완성이거나(닉네임 없음 포함, 로그인된 세션이 있는 경우) 명시적으로 요청된 경우 폼 표시
   const [showProfileForm, setShowProfileForm] = useState(shouldShowProfileForm);
-  const isFormVisible = !isProfileComplete || showProfileForm;
+  const isFormVisible = (!!session && !isProfileComplete) || showProfileForm;
 
   const [showDataResetConfirm, setShowDataResetConfirm] = useState(false);
   const [showToast, setShowToast] = useState(false);
@@ -529,6 +528,8 @@ export function MyPage() {
           {/* Header: Profile & Summary */}
           <MyPageProfile
             nickname={nickname}
+            email={session?.user?.email || profile?.email}
+            isAnonymous={session?.user?.is_anonymous ?? !session?.user?.email}
             totalMasteryScore={stats?.totalMasteryScore || 0}
             loginStreak={stats?.loginStreak || 0}
             loading={statsLoading}

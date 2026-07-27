@@ -35,8 +35,19 @@ export const useDailyRewardStore = create<DailyRewardState>((set) => ({
         return;
       }
 
-      // 2. RPC 호출
-      const { data, error } = await safeSupabaseQuery(supabase.rpc('handle_daily_login'));
+      // 2. RPC 호출 (p_user_id 1차 호출 -> PGRST202 시 하위호환 fallback)
+      let { data, error } = await safeSupabaseQuery(
+        supabase.rpc('handle_daily_login', { p_user_id: session.user.id })
+      );
+
+      if (error && (error as any).code === 'PGRST202') {
+        console.warn(
+          '[useDailyRewardStore] PGRST202 fallback: calling handle_daily_login() without args'
+        );
+        const fallbackRes = await safeSupabaseQuery(supabase.rpc('handle_daily_login'));
+        data = fallbackRes.data;
+        error = fallbackRes.error;
+      }
 
       if (error) {
         console.error('[useDailyRewardStore] RPC Error:', error);
@@ -48,6 +59,10 @@ export const useDailyRewardStore = create<DailyRewardState>((set) => ({
 
       // 3. 성공한 경우에만 모달 표시 (오늘 이미 받았으면 success: false)
       if (result && result.success) {
+        // 출석 보상 지급에 따른 미네랄 동기화
+        const { useUserStore } = await import('./useUserStore');
+        useUserStore.getState().fetchUserData();
+
         set({
           rewardResult: result,
           showModal: true,

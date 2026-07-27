@@ -1,6 +1,8 @@
 import { useEffect } from 'react';
 import { resilientLazy } from '@/utils/resilientLazy';
-import { Routes, Route, Navigate } from 'react-router-dom';
+import { Routes, Route, Navigate, useLocation } from 'react-router-dom';
+import { AnimatePresence } from 'framer-motion';
+import { PageTransition } from '@/components/PageTransition';
 import { useLevelProgressStore } from '@/stores/useLevelProgressStore';
 import { useAuthStore } from '@/stores/useAuthStore';
 import { useCustomBackNavigation } from '@/hooks/useCustomBackNavigation';
@@ -13,6 +15,7 @@ import { PwaUpdateNotification } from '@/components/PwaUpdateNotification';
 import { RequireAuth } from '@/features/auth';
 import { supabase } from '@/utils/supabaseClient';
 import { initializeGoogleSignIn } from '@/utils/auth';
+import { Capacitor } from '@capacitor/core';
 
 const HomePage = resilientLazy(
   () => import('@/pages/HomePage').then((module) => ({ default: module.HomePage })),
@@ -107,11 +110,12 @@ const DebugShortcutsWrapper = !shouldShowDebug
     );
 
 function App() {
+  const location = useLocation();
+  const { initialize: initializeAuth } = useAuthStore();
+  const { syncProgress } = useLevelProgressStore();
+
   // 네트워크 연결 상태 감시
   useConnectivity();
-
-  const { syncProgress } = useLevelProgressStore();
-  const { initialize: initializeAuth } = useAuthStore();
 
   // 커스텀 뒤로가기 네비게이션 적용
   useCustomBackNavigation();
@@ -134,11 +138,11 @@ function App() {
     Promise.all([initializeAuth(), syncProgress()]);
 
     // Capacitor 네이티브 앱 환경에서 Deep Link (Supabase OAuth 세션 복귀) 수신 리스너 등록
-    const win =
-      typeof window !== 'undefined'
-        ? (window as unknown as { Capacitor?: { isNativePlatform?: () => boolean } })
-        : undefined;
-    const isNativeApp = !!(win?.Capacitor?.isNativePlatform?.() || win?.Capacitor);
+    const isNativeApp =
+      typeof window !== 'undefined' &&
+      (typeof (window as any).Capacitor?.isNativePlatform === 'function'
+        ? (window as any).Capacitor.isNativePlatform()
+        : Capacitor.isNativePlatform());
     if (isNativeApp) {
       // Capacitor Google Auth 초기화
       initializeGoogleSignIn().catch((err) => {
@@ -225,106 +229,139 @@ function App() {
       <GlobalLoadingIndicator />
       <GlobalToastContainer />
       {import.meta.env.VITE_CI !== 'true' && <PwaUpdateNotification />}
-      <Routes>
-        <Route
-          path="/"
-          element={
-            <RequireAuth>
-              <HomePage />
-            </RequireAuth>
-          }
-        />
-        <Route
-          path="/category-select"
-          element={
-            <RequireAuth>
-              <CategorySelectPage />
-            </RequireAuth>
-          }
-        />
-        <Route
-          path="/level-select"
-          element={
-            <RequireAuth>
-              <LevelSelectPage />
-            </RequireAuth>
-          }
-        />
-        <Route
-          path="/quiz"
-          element={
-            <RequireAuth>
-              <QuizPage />
-            </RequireAuth>
-          }
-        />
-        <Route
-          path="/result"
-          element={
-            <RequireAuth>
-              <ResultPage />
-            </RequireAuth>
-          }
-        />
-        <Route
-          path="/ranking"
-          element={
-            <RequireAuth>
-              <RankingPage />
-            </RequireAuth>
-          }
-        />
-        <Route
-          path="/roadmap"
-          element={
-            <RequireAuth>
-              <RoadmapPage />
-            </RequireAuth>
-          }
-        />
-        <Route
-          path="/review"
-          element={
-            <RequireAuth>
-              <ReviewPage />
-            </RequireAuth>
-          }
-        />
-        <Route path="/my-page" element={<MyPage />} />
-        <Route
-          path="/notifications"
-          element={
-            <RequireAuth>
-              <NotificationPage />
-            </RequireAuth>
-          }
-        />
-        <Route
-          path="/debug"
-          element={
-            <RequireAuth>
-              <DebugPage />
-            </RequireAuth>
-          }
-        />
-        <Route
-          path="/privacy-policy"
-          element={
-            <RequireAuth>
-              <PrivacyPolicyPage />
-            </RequireAuth>
-          }
-        />
-        <Route
-          path="/shop"
-          element={
-            <RequireAuth>
-              <ShopPage />
-            </RequireAuth>
-          }
-        />
-        <Route path="*" element={<Navigate to="/" replace />} />
-      </Routes>
+      <AnimatePresence mode="wait">
+        <Routes location={location} key={location.pathname}>
+          <Route
+            path="/"
+            element={
+              <RequireAuth>
+                <PageTransition>
+                  <HomePage />
+                </PageTransition>
+              </RequireAuth>
+            }
+          />
+          <Route
+            path="/category-select"
+            element={
+              <RequireAuth>
+                <PageTransition>
+                  <CategorySelectPage />
+                </PageTransition>
+              </RequireAuth>
+            }
+          />
+          <Route
+            path="/level-select"
+            element={
+              <RequireAuth>
+                <PageTransition>
+                  <LevelSelectPage />
+                </PageTransition>
+              </RequireAuth>
+            }
+          />
+          <Route
+            path="/quiz"
+            element={
+              <RequireAuth>
+                <PageTransition>
+                  <QuizPage />
+                </PageTransition>
+              </RequireAuth>
+            }
+          />
+          <Route
+            path="/result"
+            element={
+              <RequireAuth>
+                <PageTransition>
+                  <ResultPage />
+                </PageTransition>
+              </RequireAuth>
+            }
+          />
+          <Route
+            path="/ranking"
+            element={
+              <RequireAuth>
+                <PageTransition>
+                  <RankingPage />
+                </PageTransition>
+              </RequireAuth>
+            }
+          />
+          <Route
+            path="/roadmap"
+            element={
+              <RequireAuth>
+                <PageTransition>
+                  <RoadmapPage />
+                </PageTransition>
+              </RequireAuth>
+            }
+          />
+          <Route
+            path="/review"
+            element={
+              <RequireAuth>
+                <PageTransition>
+                  <ReviewPage />
+                </PageTransition>
+              </RequireAuth>
+            }
+          />
+          <Route
+            path="/my-page"
+            element={
+              <PageTransition>
+                <MyPage />
+              </PageTransition>
+            }
+          />
+          <Route
+            path="/notifications"
+            element={
+              <RequireAuth>
+                <PageTransition>
+                  <NotificationPage />
+                </PageTransition>
+              </RequireAuth>
+            }
+          />
+          <Route
+            path="/debug"
+            element={
+              <RequireAuth>
+                <PageTransition>
+                  <DebugPage />
+                </PageTransition>
+              </RequireAuth>
+            }
+          />
+          <Route
+            path="/privacy-policy"
+            element={
+              <RequireAuth>
+                <PageTransition>
+                  <PrivacyPolicyPage />
+                </PageTransition>
+              </RequireAuth>
+            }
+          />
+          <Route
+            path="/shop"
+            element={
+              <RequireAuth>
+                <PageTransition>
+                  <ShopPage />
+                </PageTransition>
+              </RequireAuth>
+            }
+          />
+          <Route path="*" element={<Navigate to="/" replace />} />
+        </Routes>
+      </AnimatePresence>
 
       {/* Global Debug Panel (Outside Routes, High Z-Index) */}
       {import.meta.env.DEV && isDebugPanelOpen && DebugPanel && <DebugPanel />}

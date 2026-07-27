@@ -1,5 +1,19 @@
 /* 토스 디자인 시스템 스타일 - MyPage */
 
+.my-page-account-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--spacing-2xs, 4px);
+  font-size: 0.8rem;
+  color: var(--color-text-secondary, #94a3b8);
+  margin-top: 2px;
+  margin-bottom: 6px;
+}
+
+.my-page-account-badge .account-icon {
+  font-size: 0.75rem;
+}
+
 .mypage-admin-link-container {
   margin-top: var(--spacing-3xl);
   padding-bottom: var(--spacing-4xl);
