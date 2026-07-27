@@ -24,7 +24,7 @@ export default defineConfig(({ mode }) => {
     try {
       const log = execSync('git log --merges --oneline').toString().trim();
       return log ? String(log.split('\n').filter(Boolean).length) : '0';
-    } catch (e) {
+    } catch (_e) {
       return '0';
     }
   };
@@ -32,7 +32,7 @@ export default defineConfig(({ mode }) => {
   const getGitCommitCount = () => {
     try {
       return execSync('git rev-list --count HEAD').toString().trim();
-    } catch (e) {
+    } catch (_e) {
       return '0';
     }
   };
