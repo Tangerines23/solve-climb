@@ -21,6 +21,7 @@ export interface UserState {
   stamina: number;
   inventory: InventoryItem[];
   isLoading: boolean;
+  isAdLoading?: boolean;
   isAnonymous: boolean;
   lastAdRechargeTime: string | null;
 

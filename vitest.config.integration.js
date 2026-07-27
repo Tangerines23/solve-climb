@@ -1,4 +1,4 @@
-import { defineConfig, mergeConfig } from 'vitest/config';
+import { mergeConfig } from 'vitest/config';
 import baseConfigCallback from './vite.config.js';
 
 const baseConfig =

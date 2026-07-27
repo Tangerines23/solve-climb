@@ -30,7 +30,36 @@ export class LevelSyncService {
     };
     tier?: Tier;
   }): Promise<LevelSyncResult> {
-    const { category, level, mode, avgSolveTime = 0, sessionData, subject = 'add' } = params;
+    const {
+      category: rawCategory,
+      level,
+      mode,
+      avgSolveTime = 0,
+      sessionData,
+      subject: rawSubject,
+    } = params;
+
+    let rpcCategory = rawCategory;
+    let rpcSubject = rawSubject || 'add';
+
+    if (rawCategory.includes('_')) {
+      const parts = rawCategory.split('_');
+      if (parts[0] === 'arithmetic') {
+        rpcCategory = 'math';
+        const subMap: Record<string, string> = {
+          addition: 'add',
+          subtraction: 'sub',
+          multiplication: 'mul',
+          division: 'div',
+        };
+        rpcSubject = subMap[parts[1]] || parts[1];
+      } else {
+        rpcCategory = parts[0];
+        rpcSubject = parts.slice(1).join('_');
+      }
+    } else if (rawSubject) {
+      rpcSubject = rawSubject;
+    }
 
     try {
       const authResult = (await safeSupabaseQuery(supabase.auth.getUser())) as UserResponse;
@@ -61,8 +90,8 @@ export class LevelSyncService {
           p_game_mode: gameMode,
           p_items_used: [],
           p_session_id: sessionData?.sessionId ?? null,
-          p_category: category,
-          p_subject: subject,
+          p_category: rpcCategory,
+          p_subject: rpcSubject,
           p_level: level,
           p_avg_solve_time: avgSolveTime,
         })
@@ -78,8 +107,8 @@ export class LevelSyncService {
             p_game_mode: gameMode,
             p_items_used: [],
             p_session_id: sessionData?.sessionId ?? null,
-            p_category: category,
-            p_subject: subject,
+            p_category: rpcCategory,
+            p_subject: rpcSubject,
             p_level: level,
             p_avg_solve_time: avgSolveTime,
           },

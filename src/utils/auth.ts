@@ -1,6 +1,7 @@
 /**
  * Supabase Auth 기반 로그인 유틸 (구글 OAuth 등)
  */
+import { Capacitor } from '@capacitor/core';
 import type { AuthError } from '@supabase/supabase-js';
 import { supabase } from './supabaseClient';
 import { GoogleSignIn } from '@capawesome/capacitor-google-sign-in';
@@ -16,17 +17,21 @@ function getValidClientId(): string {
   return envId && envId.trim() !== '' ? envId : DEFAULT_GOOGLE_CLIENT_ID;
 }
 
+export function isNativeAppPlatform(): boolean {
+  if (typeof window === 'undefined') return false;
+  const win = window as unknown as { Capacitor?: { isNativePlatform?: () => boolean } };
+  if (typeof win.Capacitor?.isNativePlatform === 'function') {
+    return win.Capacitor.isNativePlatform();
+  }
+  return Capacitor.isNativePlatform();
+}
+
 /**
  * 네이티브 환경(Capacitor)에서 Google Sign-In 플러그인을 1회 초기화합니다.
  * 싱글톤 프로미스를 사용하여 중복 호출 시에도 안전하게 단 한 번만 초기화하거나 완료를 기다립니다.
  */
 export async function initializeGoogleSignIn(): Promise<void> {
-  const win =
-    typeof window !== 'undefined'
-      ? (window as unknown as { Capacitor?: { isNativePlatform?: () => boolean } })
-      : undefined;
-  const isNativeApp = !!(win?.Capacitor?.isNativePlatform?.() || win?.Capacitor);
-  if (!isNativeApp) return;
+  if (!isNativeAppPlatform()) return;
 
   if (!googleSignInInitPromise) {
     googleSignInInitPromise = (async () => {
@@ -62,11 +67,7 @@ export function _resetGoogleSignInInitForTest(): void {
  * 디바이스 계정 선택 팝업으로 idToken을 획득한 후 supabase.auth.signInWithIdToken으로 세션을 설정합니다.
  */
 export async function signInWithGoogle(): Promise<{ error: AuthError | null }> {
-  const win =
-    typeof window !== 'undefined'
-      ? (window as unknown as { Capacitor?: { isNativePlatform?: () => boolean } })
-      : undefined;
-  const isNativeApp = !!(win?.Capacitor?.isNativePlatform?.() || win?.Capacitor);
+  const isNativeApp = isNativeAppPlatform();
 
   if (isNativeApp) {
     try {

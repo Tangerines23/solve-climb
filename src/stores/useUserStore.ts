@@ -38,8 +38,9 @@ export const useUserStore = create<UserState>((set, get) => {
         console.error(`[UserStore RPC Error]`, error);
         return {
           success: false,
+          errorCode: (error as any)?.code,
           message: options.errorMessage || UI_MESSAGES.COMMON_ERROR,
-        } as { success: false; message: string } & Partial<T>;
+        } as { success: false; message: string; errorCode?: string } & Partial<T>;
       }
 
       if (!data || !data.success) {
@@ -97,6 +98,7 @@ export const useUserStore = create<UserState>((set, get) => {
     stamina: 5,
     inventory: [],
     isLoading: false,
+    isAdLoading: false,
     isAnonymous: false,
     lastAdRechargeTime: null,
     lastStaminaConsumeTime: 0,
@@ -148,6 +150,11 @@ export const useUserStore = create<UserState>((set, get) => {
           lastAdRechargeTime: profileRes.data?.last_ad_stamina_recharge || null,
           inventory: formatInventory(inventoryRes.data as unknown as RawInventoryItem[]),
         });
+
+        // 스태미나 갱신 및 회복 체크
+        if (profileRes.data?.stamina !== undefined && profileRes.data.stamina < 5) {
+          get().checkStamina();
+        }
       } catch (error) {
         console.error('Error fetching user data:', error);
       } finally {
@@ -172,7 +179,16 @@ export const useUserStore = create<UserState>((set, get) => {
       } = await safeSupabaseQuery(supabase.auth.getSession());
       if (!session?.user) return;
 
-      const { data, error } = await safeSupabaseQuery(supabase.rpc('check_and_recover_stamina'));
+      let { data, error } = await safeSupabaseQuery(
+        supabase.rpc('check_and_recover_stamina', { p_user_id: session.user.id })
+      );
+
+      if (error && (error as any).code === 'PGRST202') {
+        const fallbackRes = await safeSupabaseQuery(supabase.rpc('check_and_recover_stamina'));
+        data = fallbackRes.data;
+        error = fallbackRes.error;
+      }
+
       if (!error && data && typeof data?.stamina === 'number') {
         set({ stamina: data.stamina });
       }
@@ -229,40 +245,116 @@ export const useUserStore = create<UserState>((set, get) => {
     },
 
     recoverStaminaAds: async () => {
-      const adResult = await AdService.showRewardedAd('stamina_recharge');
-      if (!adResult.success) {
-        return { success: false, message: adResult.error || '광고 시청에 실패했습니다.' };
+      if (get().isAdLoading) {
+        console.warn('[useUserStore] recoverStaminaAds ignored: Ad is already loading');
+        return { success: false, message: '이미 광고를 호출 중입니다.' };
       }
+      set({ isAdLoading: true });
 
-      const res = await callRpcAndRefresh<{
-        success: boolean;
-        stamina: number;
-        last_ad_stamina_recharge: string;
-      }>(supabase.rpc('secure_reward_ad_view', { p_ad_type: 'stamina_recharge' }), {
-        refreshData: true,
-      });
+      try {
+        const adResult = await AdService.showRewardedAd('stamina_recharge');
+        if (!adResult.success) {
+          return { success: false, message: adResult.error || '광고 시청에 실패했습니다.' };
+        }
 
-      return res as { success: boolean; message: string };
+        const { data: authData } = await safeSupabaseQuery(supabase.auth.getUser());
+        const userId = authData?.user?.id;
+
+        let res = await callRpcAndRefresh<{
+          success: boolean;
+          stamina: number;
+          last_ad_stamina_recharge: string;
+        }>(
+          supabase.rpc('secure_reward_ad_view', {
+            p_ad_type: 'stamina_recharge',
+            p_user_id: userId,
+          }),
+          {
+            refreshData: true,
+          }
+        );
+
+        // PGRST202 (함수 시그니처 미존재 404) 발생 시 p_user_id 제외하고 2차 시도
+        if (!res.success && (res as any).errorCode === 'PGRST202') {
+          console.warn(
+            '[useUserStore] PGRST202 fallback: calling secure_reward_ad_view without p_user_id'
+          );
+          res = await callRpcAndRefresh<{
+            success: boolean;
+            stamina: number;
+            last_ad_stamina_recharge: string;
+          }>(supabase.rpc('secure_reward_ad_view', { p_ad_type: 'stamina_recharge' }), {
+            refreshData: true,
+          });
+        }
+
+        return res as { success: boolean; message: string };
+      } finally {
+        set({ isAdLoading: false });
+      }
     },
 
     recoverMineralsAds: async () => {
-      const adResult = await AdService.showRewardedAd('mineral_recharge');
-      if (!adResult.success) return { success: false, message: UI_MESSAGES.AD_WATCH_FAILED() };
+      if (get().isAdLoading) {
+        console.warn('[useUserStore] recoverMineralsAds ignored: Ad is already loading');
+        return { success: false, message: '이미 광고를 호출 중입니다.' };
+      }
+      set({ isAdLoading: true });
 
-      return callRpcAndRefresh<{ success: boolean; minerals: number }>(
-        supabase.rpc('secure_reward_ad_view', { p_ad_type: 'mineral_recharge' }),
-        { refreshData: true }
-      );
+      try {
+        const adResult = await AdService.showRewardedAd('mineral_recharge');
+        if (!adResult.success) return { success: false, message: UI_MESSAGES.AD_WATCH_FAILED() };
+
+        const { data: authData } = await safeSupabaseQuery(supabase.auth.getUser());
+        const userId = authData?.user?.id;
+
+        let res = await callRpcAndRefresh<{ success: boolean; minerals: number }>(
+          supabase.rpc('secure_reward_ad_view', {
+            p_ad_type: 'mineral_recharge',
+            p_user_id: userId,
+          }),
+          { refreshData: true }
+        );
+
+        if (!res.success && (res as any).errorCode === 'PGRST202') {
+          console.warn(
+            '[useUserStore] PGRST202 fallback: calling secure_reward_ad_view without p_user_id'
+          );
+          res = await callRpcAndRefresh<{ success: boolean; minerals: number }>(
+            supabase.rpc('secure_reward_ad_view', { p_ad_type: 'mineral_recharge' }),
+            { refreshData: true }
+          );
+        }
+
+        return res;
+      } finally {
+        set({ isAdLoading: false });
+      }
     },
 
     rewardMinerals: async (amount: number, isBonus?: boolean) => {
       if (amount <= 0) return { success: false, message: 'Invalid amount' };
 
       if (isBonus) {
-        return callRpcAndRefresh<{ success: boolean; minerals: number }>(
-          supabase.rpc('secure_reward_ad_view', { p_ad_type: 'double_reward' }),
+        const { data: authData } = await safeSupabaseQuery(supabase.auth.getUser());
+        const userId = authData?.user?.id;
+
+        let res = await callRpcAndRefresh<{ success: boolean; minerals: number }>(
+          supabase.rpc('secure_reward_ad_view', { p_ad_type: 'double_reward', p_user_id: userId }),
           { refreshData: true }
         );
+
+        if (!res.success && (res as any).errorCode === 'PGRST202') {
+          console.warn(
+            '[useUserStore] PGRST202 fallback: calling secure_reward_ad_view without p_user_id'
+          );
+          res = await callRpcAndRefresh<{ success: boolean; minerals: number }>(
+            supabase.rpc('secure_reward_ad_view', { p_ad_type: 'double_reward' }),
+            { refreshData: true }
+          );
+        }
+
+        return res;
       }
 
       // [Security Warning] Generic mineral rewards without ads or game clear are discouraged.
