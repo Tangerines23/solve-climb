@@ -155,10 +155,14 @@ function App() {
             // 데이터 형식: com.solveclimb.app://google-callback?token=... 또는 com.solveclimb.app://my-page?token=...
             const urlStr = data.url;
             if (urlStr.includes('access_token=') || urlStr.includes('refresh_token=')) {
-              // URL 해시 파싱
-              const hash = urlStr.split('#')[1];
-              if (hash) {
-                const params = new URLSearchParams(hash);
+              // URL 해시(#) 또는 쿼리(?) 파라미터 파싱
+              const rawParams = urlStr.includes('#')
+                ? urlStr.split('#')[1]
+                : urlStr.includes('?')
+                  ? urlStr.split('?')[1]
+                  : '';
+              if (rawParams) {
+                const params = new URLSearchParams(rawParams);
                 const accessToken = params.get('access_token');
                 const refreshToken = params.get('refresh_token');
 

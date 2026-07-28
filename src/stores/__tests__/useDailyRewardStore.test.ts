@@ -7,6 +7,7 @@ import { supabase } from '../../utils/supabaseClient';
 vi.mock('../../utils/supabaseClient', () => ({
   supabase: {
     auth: {
+      getUser: vi.fn(),
       getSession: vi.fn(),
     },
     rpc: vi.fn(),
@@ -28,7 +29,7 @@ describe('useDailyRewardStore', () => {
   });
 
   it('should start loading when checking daily login', async () => {
-    vi.mocked(supabase.auth.getSession).mockReturnValue(new Promise(() => {}) as any); // Hang to check loading state
+    vi.mocked(supabase.auth.getUser).mockReturnValue(new Promise(() => {}) as any); // Hang to check loading state
 
     const { result } = renderHook(() => useDailyRewardStore());
     act(() => {
@@ -39,8 +40,8 @@ describe('useDailyRewardStore', () => {
   });
 
   it('should not show modal if no session exists', async () => {
-    vi.mocked(supabase.auth.getSession).mockResolvedValue({
-      data: { session: null },
+    vi.mocked(supabase.auth.getUser).mockResolvedValue({
+      data: { user: null },
       error: null,
     } as any);
 
@@ -54,11 +55,11 @@ describe('useDailyRewardStore', () => {
   });
 
   it('should show modal and set reward results on successful daily login RPC', async () => {
-    const mockSession = { user: { id: 'test-user' } };
+    const mockUser = { id: 'test-user' };
     const mockReward = { success: true, reward_minerals: 100, streak: 5, message: 'Success' };
 
-    vi.mocked(supabase.auth.getSession).mockResolvedValue({
-      data: { session: mockSession },
+    vi.mocked(supabase.auth.getUser).mockResolvedValue({
+      data: { user: mockUser },
       error: null,
     } as any);
     vi.mocked(supabase.rpc).mockResolvedValue({ data: mockReward, error: null } as any);
@@ -74,11 +75,11 @@ describe('useDailyRewardStore', () => {
   });
 
   it('should not show modal if daily login already processed for today (success: false)', async () => {
-    const mockSession = { user: { id: 'test-user' } };
+    const mockUser = { id: 'test-user' };
     const mockResult = { success: false, message: 'Already received' };
 
-    vi.mocked(supabase.auth.getSession).mockResolvedValue({
-      data: { session: mockSession },
+    vi.mocked(supabase.auth.getUser).mockResolvedValue({
+      data: { user: mockUser },
       error: null,
     } as any);
     vi.mocked(supabase.rpc).mockResolvedValue({ data: mockResult, error: null } as any);
@@ -93,9 +94,9 @@ describe('useDailyRewardStore', () => {
   });
 
   it('should handle Supabase RPC errors gracefully without crashing', async () => {
-    const mockSession = { user: { id: 'test-user' } };
-    vi.mocked(supabase.auth.getSession).mockResolvedValue({
-      data: { session: mockSession },
+    const mockUser = { id: 'test-user' };
+    vi.mocked(supabase.auth.getUser).mockResolvedValue({
+      data: { user: mockUser },
       error: null,
     } as any);
     vi.mocked(supabase.rpc).mockResolvedValue({

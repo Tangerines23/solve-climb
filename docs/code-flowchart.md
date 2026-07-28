@@ -222,6 +222,7 @@ graph TD
   src_pages_ResultPage_tsx --> src_utils_errorHandler_ts
   src_pages_ResultPage_tsx --> src_services_analytics_ts
   src_pages_ResultPage_tsx --> src_stores_useSettingsStore_ts
+  src_pages_ResultPage_tsx --> src_stores_useGameStore_ts
   src_pages_ResultPage_tsx --> src_services_historyService_ts
   src_pages_ResultPage_tsx --> src_services_index_ts
   src_pages_ReviewPage_tsx --> src_features_mypage_index_ts

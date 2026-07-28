@@ -26,18 +26,17 @@ export const useDailyRewardStore = create<DailyRewardState>((set) => ({
   checkDailyLogin: async () => {
     set({ isLoading: true });
     try {
-      // 1. 세션 확인
-      const {
-        data: { session },
-      } = await safeSupabaseQuery(supabase.auth.getSession());
-      if (!session) {
+      // 1. 유저 정보 확인
+      const authRes = await safeSupabaseQuery(supabase.auth.getUser());
+      const user = authRes?.data?.user;
+      if (!user) {
         set({ isLoading: false });
         return;
       }
 
       // 2. RPC 호출 (p_user_id 1차 호출 -> PGRST202 시 하위호환 fallback)
       let { data, error } = await safeSupabaseQuery(
-        supabase.rpc('handle_daily_login', { p_user_id: session.user.id })
+        supabase.rpc('handle_daily_login', { p_user_id: user.id })
       );
 
       if (error && (error as any).code === 'PGRST202') {

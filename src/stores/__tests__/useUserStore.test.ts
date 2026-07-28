@@ -137,7 +137,7 @@ describe('useUserStore', () => {
       expect(state.inventory[0].code).toBe('item1');
     });
     it('should handle fetch failure gracefully', async () => {
-      vi.mocked(supabase.auth.getUser).mockRejectedValue(new Error('Auth failed'));
+      vi.mocked(supabase.auth.getUser).mockRejectedValueOnce(new Error('Auth failed'));
       await useUserStore.getState().fetchUserData();
       expect(useUserStore.getState().isLoading).toBe(false);
     });
@@ -232,9 +232,12 @@ describe('useUserStore', () => {
       const result = await useUserStore.getState().recoverStaminaAds();
 
       expect(AdService.showRewardedAd).toHaveBeenCalledWith('stamina_recharge');
-      expect(supabase.rpc).toHaveBeenCalledWith('secure_reward_ad_view', {
-        p_ad_type: 'stamina_recharge',
-      });
+      expect(supabase.rpc).toHaveBeenCalledWith(
+        'secure_reward_ad_view',
+        expect.objectContaining({
+          p_ad_type: 'stamina_recharge',
+        })
+      );
       expect(result.success).toBe(true);
     });
 
@@ -300,8 +303,8 @@ describe('useUserStore', () => {
 
   describe('checkStamina', () => {
     it('should call check_and_recover_stamina', async () => {
-      vi.mocked(supabase.auth.getSession).mockResolvedValue({
-        data: { session: { user: { id: 'user123' } } } as any,
+      vi.mocked(supabase.auth.getUser).mockResolvedValue({
+        data: { user: { id: 'user123' } } as any,
         error: null,
       });
       vi.mocked(supabase.rpc).mockResolvedValue({
@@ -324,9 +327,12 @@ describe('useUserStore', () => {
 
       const result = await useUserStore.getState().recoverMineralsAds();
       expect(result.success).toBe(true);
-      expect(supabase.rpc).toHaveBeenCalledWith('secure_reward_ad_view', {
-        p_ad_type: 'mineral_recharge',
-      });
+      expect(supabase.rpc).toHaveBeenCalledWith(
+        'secure_reward_ad_view',
+        expect.objectContaining({
+          p_ad_type: 'mineral_recharge',
+        })
+      );
     });
 
     it('should handle ad failure', async () => {

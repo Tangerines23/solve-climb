@@ -1,4 +1,5 @@
 import { supabase } from './supabaseClient';
+import { safeSupabaseQuery } from './debugFetch';
 import { useProfileStore } from '../stores/useProfileStore';
 import { useLevelProgressStore } from '../stores/useLevelProgressStore';
 import { ENV } from './env';
@@ -18,47 +19,63 @@ export const withdrawAccount = async (): Promise<boolean> => {
   try {
     console.log('[탈퇴] 시작');
 
-    const {
-      data: { session },
-    } = await supabase.auth.getSession();
+    const authRes = await safeSupabaseQuery(supabase.auth.getUser());
+    const user = authRes?.data?.user;
 
-    if (session) {
-      // 1. 서버 측 데이터 삭제 요청 (Edge Function)
-      const baseUrl = ENV.VITE_SUPABASE_URL?.replace(/\/$/, '');
-      const withdrawUrl = `${baseUrl}/functions/v1/withdraw-account`;
+    if (user) {
+      // 1. 서버 측 데이터 및 계정 삭제 (1차: RPC withdraw_user_account)
+      const rpcRes = await safeSupabaseQuery(supabase.rpc('withdraw_user_account'));
 
-      const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 10000);
+      if (rpcRes?.data && rpcRes.data.success) {
+        serverDeleteSuccess = true;
+        console.log('[탈퇴] 서버 계정 삭제 성공 (RPC)');
+      } else {
+        // 2차: Edge Function fallback
+        const baseUrl = ENV.VITE_SUPABASE_URL?.replace(/\/$/, '');
+        const withdrawUrl = `${baseUrl}/functions/v1/withdraw-account`;
 
-      try {
-        const response = await fetch(withdrawUrl, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            Authorization: `Bearer ${session.access_token}`,
-            apikey: ENV.VITE_SUPABASE_ANON_KEY!,
-          },
-          signal: controller.signal,
-        });
+        const {
+          data: { session },
+        } = await supabase.auth.getSession();
 
-        clearTimeout(timeoutId);
+        if (session) {
+          const controller = new AbortController();
+          const timeoutId = setTimeout(() => controller.abort(), 10000);
 
-        if (response.ok) {
-          serverDeleteSuccess = true;
-          console.log('[탈퇴] 서버 계정 삭제 성공');
+          try {
+            const response = await fetch(withdrawUrl, {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+                Authorization: `Bearer ${session.access_token}`,
+                apikey: ENV.VITE_SUPABASE_ANON_KEY!,
+              },
+              signal: controller.signal,
+            });
+
+            clearTimeout(timeoutId);
+
+            if (response.ok) {
+              serverDeleteSuccess = true;
+              console.log('[탈퇴] 서버 계정 삭제 성공 (Edge Function)');
+            } else {
+              const errData = await response.json().catch(() => ({}));
+              serverErrorMessage = errData.error || `Error ${response.status}`;
+              logError(`userWithdraw#request_fail_${response.status}`, errData);
+            }
+          } catch (fetchError) {
+            clearTimeout(timeoutId);
+            serverErrorMessage =
+              fetchError instanceof Error ? fetchError.message : String(fetchError);
+            logError('userWithdraw#fetch_exception', fetchError);
+          }
         } else {
-          const errData = await response.json().catch(() => ({}));
-          serverErrorMessage = errData.error || `Error ${response.status}`;
-          logError(`userWithdraw#request_fail_${response.status}`, errData);
+          serverDeleteSuccess = true;
         }
-      } catch (fetchError) {
-        clearTimeout(timeoutId);
-        serverErrorMessage = fetchError instanceof Error ? fetchError.message : String(fetchError);
-        logError('userWithdraw#fetch_exception', fetchError);
       }
     } else {
       console.warn('[탈퇴] 활성 세션이 없습니다. 로컬 데이터만 삭제합니다.');
-      serverDeleteSuccess = true; // 세션이 없으면 서버 삭제는 이미 된 것으로 간주하거나 무시
+      serverDeleteSuccess = true;
     }
   } catch (outerError) {
     logError('userWithdraw#outer_exception', outerError);

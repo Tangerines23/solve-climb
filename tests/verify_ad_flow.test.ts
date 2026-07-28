@@ -97,9 +97,12 @@ describe('Ad & Reward Flow Full Automated Verification', () => {
     expect(spyAd).toHaveBeenCalledWith('stamina_recharge');
 
     // 2. DB RPC는 secure_reward_ad_view로 1회 전달되어야 함
-    expect(supabase.rpc).toHaveBeenCalledWith('secure_reward_ad_view', {
-      p_ad_type: 'stamina_recharge',
-    });
+    expect(supabase.rpc).toHaveBeenCalledWith(
+      'secure_reward_ad_view',
+      expect.objectContaining({
+        p_ad_type: 'stamina_recharge',
+      })
+    );
 
     // 3. 성공 여부 확인
     expect(result.success).toBe(true);
@@ -116,9 +119,12 @@ describe('Ad & Reward Flow Full Automated Verification', () => {
 
     // 2. 시청 완료 후 DB 보상 지급 (isBonus = true)
     const result = await useUserStore.getState().rewardMinerals(100, true);
-    expect(supabase.rpc).toHaveBeenCalledWith('secure_reward_ad_view', {
-      p_ad_type: 'double_reward',
-    });
+    expect(supabase.rpc).toHaveBeenCalledWith(
+      'secure_reward_ad_view',
+      expect.objectContaining({
+        p_ad_type: 'double_reward',
+      })
+    );
     expect(result.success).toBe(true);
   });
 

@@ -995,7 +995,9 @@
   font-size: 1.2rem;
   /* Reduced size */
   color: var(--color-gray-100);
-  line-height: 1;
+  line-height: 1.2;
+  display: inline-flex;
+  align-items: center;
   font-variant-numeric: tabular-nums;
 }
 

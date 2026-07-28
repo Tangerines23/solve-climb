@@ -31,6 +31,7 @@ import { ANIMATION_CONFIG } from '@/constants/game';
 import './ResultPage.css';
 
 import { useSettingsStore } from '@/stores/useSettingsStore';
+import { useGameStore } from '@/stores/useGameStore';
 import { useCountUp } from '@/hooks/useCountUp';
 import { historyService } from '@/services/historyService';
 
@@ -74,6 +75,31 @@ export function ResultPage() {
   const total = validateNumberParam(searchParams.get('total'), 0, 10000) ?? 0;
   const correctCount = Math.floor(finalScore / SCORE_PER_CORRECT);
   const averageTime = validateFloatParam(searchParams.get('avg_time'), 0, 3600);
+
+  // 결과 창 진입 시 인게임 피버 및 오버레이 상태(feverLevel, showSpeedLines, showVignette) 초기화
+  useEffect(() => {
+    useGameStore.setState({
+      feverLevel: 0,
+      showSpeedLines: false,
+      showVignette: false,
+    });
+  }, []);
+
+  const confettiItems = useMemo(() => {
+    const colors = [
+      'var(--color-teal-500)',
+      'var(--color-green-500)',
+      'var(--color-yellow-500)',
+      'var(--color-red-500)',
+      'var(--color-purple-500)',
+    ];
+    return Array.from({ length: 50 }).map((_, i) => ({
+      id: i,
+      left: `${Math.random() * 100}%`,
+      delay: `${Math.random() * 0.5}s`,
+      color: colors[Math.floor(Math.random() * colors.length)],
+    }));
+  }, []);
 
   useEffect(() => {
     if (!worldParam || !categoryParam || !level || !mode) return;
@@ -408,21 +434,15 @@ export function ResultPage() {
     <div className={`page-container result-page ${mode}`}>
       {showConfetti && (
         <div className="confetti-container">
-          {Array.from({ length: 50 }).map((_, i) => (
+          {confettiItems.map((item) => (
             <div
-              key={i}
+              key={item.id}
               className="confetti"
               style={
                 {
-                  '--left': `${Math.random() * 100}%`,
-                  '--delay': `${Math.random() * 0.5}s`,
-                  '--color': [
-                    'var(--color-teal-500)',
-                    'var(--color-green-500)',
-                    'var(--color-yellow-500)',
-                    'var(--color-red-500)',
-                    'var(--color-purple-500)',
-                  ][Math.floor(Math.random() * 5)],
+                  '--left': item.left,
+                  '--delay': item.delay,
+                  '--color': item.color,
                 } as React.CSSProperties
               }
             />

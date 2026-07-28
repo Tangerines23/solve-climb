@@ -72,7 +72,13 @@ export function useQuizSession({
             })
           );
           if (error || !data?.session_id) {
-            console.error('[useQuizSession] create_game_session 실패 상세 정보:', { error, data });
+            if (data?.message === 'Not authenticated') {
+              console.log(
+                '[useQuizSession] Local guest session mode active (unauthenticated user).'
+              );
+            } else {
+              console.warn('[useQuizSession] create_game_session response:', { error, data });
+            }
           }
           if (data?.session_id) {
             setGameSessionId(data.session_id);
