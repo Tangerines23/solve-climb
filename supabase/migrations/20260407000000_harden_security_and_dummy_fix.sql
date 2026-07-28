@@ -192,8 +192,8 @@ CREATE OR REPLACE FUNCTION public.check_profile_update_security()
  SET search_path = ''
 AS $function$
 BEGIN
-    IF (pg_catalog.current_setting('app.bypass_profile_security', true) = '1') THEN RETURN NEW; END IF;
-    RAISE EXCEPTION 'Profiles can only be updated via secure RPC functions';
+    IF (pg_catalog.current_setting('app.bypass_profile_security', true) IN ('1', 'true')) THEN RETURN NEW; END IF;
+    RAISE EXCEPTION 'Direct profile modification restricted for security.';
 END;
 $function$;
 

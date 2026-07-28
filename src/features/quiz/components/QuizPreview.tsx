@@ -10,6 +10,7 @@ import { QuizContext } from '../contexts/QuizContext';
 import { useToastStore } from '@/stores/useToastStore';
 import { GameOverlay } from '@/components/game/GameOverlay';
 import { useGameStore } from '@/stores/useGameStore';
+import { safeAccess } from '@/utils/validation';
 import './QuizPreview.css';
 
 interface QuizPreviewProps {
@@ -67,7 +68,10 @@ export function QuizPreview({
   const [answerInput, setAnswerInput] = useState('');
   const [displayValue, setDisplayValue] = useState('');
 
-  const categoryKey = categoryParam ? CATEGORY_MAP[categoryParam] || categoryParam : 'basic';
+  const categoryKey =
+    (categoryParam ? (safeAccess(CATEGORY_MAP, categoryParam) as string) : undefined) ||
+    categoryParam ||
+    'basic';
 
   const inputRef = useRef<HTMLInputElement>(null);
   const feedbackRef = useRef<ItemFeedbackRef>(null);

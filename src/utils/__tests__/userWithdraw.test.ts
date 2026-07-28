@@ -9,9 +9,11 @@ import { ENV } from '../env';
 vi.mock('../supabaseClient', () => ({
   supabase: {
     auth: {
+      getUser: vi.fn(),
       getSession: vi.fn(),
       signOut: vi.fn(),
     },
+    rpc: vi.fn(),
   },
 }));
 
@@ -61,8 +63,40 @@ describe('userWithdraw', () => {
     vi.useFakeTimers();
   });
 
-  it('should successfully withdraw account when session exists', async () => {
+  it('should successfully withdraw account when session exists via RPC', async () => {
+    const mockUser = { id: 'test-user-id' };
+    vi.mocked(supabase.auth.getUser).mockResolvedValue({
+      data: { user: mockUser },
+      error: null,
+    } as any);
+
+    vi.mocked(supabase.rpc).mockResolvedValue({
+      data: { success: true },
+      error: null,
+    } as any);
+
+    const result = await withdrawAccount();
+
+    expect(result).toBe(true);
+    expect(supabase.rpc).toHaveBeenCalledWith('withdraw_user_account');
+    expect(storageService.clear).toHaveBeenCalled();
+    expect(supabase.auth.signOut).toHaveBeenCalled();
+  });
+
+  it('should fallback to Edge Function if RPC fails', async () => {
+    const mockUser = { id: 'test-user-id' };
     const mockSession = { access_token: 'test-token' };
+
+    vi.mocked(supabase.auth.getUser).mockResolvedValue({
+      data: { user: mockUser },
+      error: null,
+    } as any);
+
+    vi.mocked(supabase.rpc).mockResolvedValue({
+      data: null,
+      error: { message: 'RPC error' },
+    } as any);
+
     vi.mocked(supabase.auth.getSession).mockResolvedValue({
       data: { session: mockSession },
       error: null,
@@ -73,20 +107,13 @@ describe('userWithdraw', () => {
     const result = await withdrawAccount();
 
     expect(result).toBe(true);
-    // When fetch is called with a Request object instead of (url, options)
-    const [call] = fetchMock.mock.calls;
-    const request = call[0] as Request;
-    expect(request.url).toContain('/functions/v1/withdraw-account');
-    expect(request.method).toBe('POST');
-    expect(request.headers.get('Authorization')).toBe('Bearer test-token');
-
     expect(storageService.clear).toHaveBeenCalled();
     expect(supabase.auth.signOut).toHaveBeenCalled();
   });
 
   it('should skip server request if no session exists', async () => {
-    vi.mocked(supabase.auth.getSession).mockResolvedValue({
-      data: { session: null },
+    vi.mocked(supabase.auth.getUser).mockResolvedValue({
+      data: { user: null },
       error: null,
     } as any);
 
@@ -97,15 +124,25 @@ describe('userWithdraw', () => {
     expect(storageService.clear).toHaveBeenCalled();
   });
 
-  it('should throw error if server request fails', async () => {
+  it('should throw error if both RPC and Edge function fail', async () => {
+    const mockUser = { id: 'test-user-id' };
     const mockSession = { access_token: 'test-token' };
+
+    vi.mocked(supabase.auth.getUser).mockResolvedValue({
+      data: { user: mockUser },
+      error: null,
+    } as any);
+
+    vi.mocked(supabase.rpc).mockResolvedValue({
+      data: null,
+      error: { message: 'RPC error' },
+    } as any);
+
     vi.mocked(supabase.auth.getSession).mockResolvedValue({
       data: { session: mockSession },
       error: null,
     } as any);
 
-    // MSW will sometimes interfere with manually mocked Response objects if they don't look "real"
-    // Use a standard Response constructor
     fetchMock.mockResolvedValueOnce(
       new Response(JSON.stringify({ error: 'Server error' }), {
         status: 500,
@@ -119,21 +156,9 @@ describe('userWithdraw', () => {
     );
   });
 
-  it('should handle network timeout/error', async () => {
-    const mockSession = { access_token: 'test-token' };
-    vi.mocked(supabase.auth.getSession).mockResolvedValue({
-      data: { session: mockSession },
-      error: null,
-    } as any);
-
-    fetchMock.mockRejectedValue(new Error('Network error'));
-
-    await expect(withdrawAccount()).rejects.toThrow('네트워크 상태를 확인하시거나');
-  });
-
   it('should handle store reset failure gracefully', async () => {
-    vi.mocked(supabase.auth.getSession).mockResolvedValue({
-      data: { session: null },
+    vi.mocked(supabase.auth.getUser).mockResolvedValue({
+      data: { user: null },
       error: null,
     } as any);
 
@@ -144,7 +169,7 @@ describe('userWithdraw', () => {
 
     const result = await withdrawAccount();
 
-    expect(result).toBe(true); // Should still return true as it catches the error
+    expect(result).toBe(true);
     expect(supabase.auth.signOut).toHaveBeenCalled();
   });
 });

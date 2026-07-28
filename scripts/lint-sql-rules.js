@@ -65,6 +65,28 @@ files.forEach((file) => {
       hasError = true;
       totalIssues++;
     }
+
+    // 3. 존재하지 않는 profiles.avatar_url 컬럼 참조 감지
+    if (line.includes('profiles') && line.includes('avatar_url')) {
+      console.error(
+        `❌ [${file}:${lineNum}] 미존재 컬럼 참조 발견: profiles 테이블에는 avatar_url 컬럼이 존재하지 않습니다.`
+      );
+      hasError = true;
+      totalIssues++;
+    }
+
+    // 4. app.bypass_profile_security 가 'true' 전용으로 단독 설정된 단일 비교 감지
+    if (
+      line.includes("current_setting('app.bypass_profile_security'") &&
+      line.includes("= 'true'") &&
+      !line.includes('IN')
+    ) {
+      console.error(
+        `❌ [${file}:${lineNum}] 취약한 보안 플래그 단일 비교 발견: app.bypass_profile_security는 IN ('1', 'true') 형태로 검사해야 함.`
+      );
+      hasError = true;
+      totalIssues++;
+    }
   });
 });
 

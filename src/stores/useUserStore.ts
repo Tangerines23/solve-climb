@@ -174,13 +174,12 @@ export const useUserStore = create<UserState>((set, get) => {
     },
 
     checkStamina: async () => {
-      const {
-        data: { session },
-      } = await safeSupabaseQuery(supabase.auth.getSession());
-      if (!session?.user) return;
+      const authRes = await safeSupabaseQuery(supabase.auth.getUser());
+      const user = authRes?.data?.user;
+      if (!user) return;
 
       let { data, error } = await safeSupabaseQuery(
-        supabase.rpc('check_and_recover_stamina', { p_user_id: session.user.id })
+        supabase.rpc('check_and_recover_stamina', { p_user_id: user.id })
       );
 
       if (error && (error as any).code === 'PGRST202') {
@@ -265,10 +264,12 @@ export const useUserStore = create<UserState>((set, get) => {
           stamina: number;
           last_ad_stamina_recharge: string;
         }>(
-          supabase.rpc('secure_reward_ad_view', {
-            p_ad_type: 'stamina_recharge',
-            p_user_id: userId,
-          }),
+          supabase.rpc(
+            'secure_reward_ad_view',
+            userId
+              ? { p_ad_type: 'stamina_recharge', p_user_id: userId }
+              : { p_ad_type: 'stamina_recharge' }
+          ),
           {
             refreshData: true,
           }
@@ -309,10 +310,12 @@ export const useUserStore = create<UserState>((set, get) => {
         const userId = authData?.user?.id;
 
         let res = await callRpcAndRefresh<{ success: boolean; minerals: number }>(
-          supabase.rpc('secure_reward_ad_view', {
-            p_ad_type: 'mineral_recharge',
-            p_user_id: userId,
-          }),
+          supabase.rpc(
+            'secure_reward_ad_view',
+            userId
+              ? { p_ad_type: 'mineral_recharge', p_user_id: userId }
+              : { p_ad_type: 'mineral_recharge' }
+          ),
           { refreshData: true }
         );
 
@@ -340,7 +343,12 @@ export const useUserStore = create<UserState>((set, get) => {
         const userId = authData?.user?.id;
 
         let res = await callRpcAndRefresh<{ success: boolean; minerals: number }>(
-          supabase.rpc('secure_reward_ad_view', { p_ad_type: 'double_reward', p_user_id: userId }),
+          supabase.rpc(
+            'secure_reward_ad_view',
+            userId
+              ? { p_ad_type: 'double_reward', p_user_id: userId }
+              : { p_ad_type: 'double_reward' }
+          ),
           { refreshData: true }
         );
 
@@ -413,6 +421,9 @@ export const useUserStore = create<UserState>((set, get) => {
     },
 
     debugSetStamina: async (amount: number) => {
+      const newStamina = Math.max(0, amount);
+      set({ stamina: newStamina });
+
       const res = await callRpcAndRefresh(
         validatedRpc(
           supabase.rpc('debug_set_stamina', { p_stamina: amount }),
@@ -421,10 +432,13 @@ export const useUserStore = create<UserState>((set, get) => {
         ),
         { refreshData: true }
       );
-      if (res.success) set({ stamina: Math.max(0, amount) });
+      if (res.success) set({ stamina: newStamina });
     },
 
     debugSetMinerals: async (amount: number) => {
+      const newMinerals = Math.max(0, amount);
+      set({ minerals: newMinerals });
+
       const res = await callRpcAndRefresh(
         validatedRpc(
           supabase.rpc('debug_set_minerals', { p_minerals: amount }),
@@ -433,7 +447,7 @@ export const useUserStore = create<UserState>((set, get) => {
         ),
         { refreshData: true }
       );
-      if (res.success) set({ minerals: Math.max(0, amount) });
+      if (res.success) set({ minerals: newMinerals });
     },
 
     refundStamina: async () => {

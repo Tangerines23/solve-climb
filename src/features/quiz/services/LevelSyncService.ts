@@ -132,7 +132,12 @@ export class LevelSyncService {
    */
   static async resetProgress(): Promise<LevelSyncResult> {
     try {
-      const { data, error } = await safeSupabaseQuery(supabase.rpc('reset_user_progress'));
+      let { data, error } = await safeSupabaseQuery(supabase.rpc('secure_reset_progress'));
+      if (error && (error as any).code === 'PGRST202') {
+        const fallback = await safeSupabaseQuery(supabase.rpc('reset_user_progress'));
+        data = fallback.data;
+        error = fallback.error;
+      }
       if (error || !data?.success) {
         return { success: false, error: error?.message || '초기화 실패' };
       }
