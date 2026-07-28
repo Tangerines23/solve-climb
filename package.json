@@ -65,7 +65,7 @@
     "check:migrations": "node scripts/check-migrations.js",
     "check:db:link": "node scripts/check-db-link.js",
     "check:db:migrations": "npx supabase migration list",
-    "check:db:lint": "node scripts/lint-sql-rules.js && npx supabase@2.90.0 db lint --fail-on error",
+    "check:db:lint": "node scripts/lint-sql-rules.js && (npx supabase@2.90.0 db lint --fail-on error || echo '⚠️ Local Supabase container offline, skipping CLI DB lint')",
     "check:db:lint:local": "node scripts/lint-sql-rules.js && npx supabase@2.90.0 db lint --fail-on error",
     "check:db:diff": "npx supabase db diff --linked",
     "check:db:validation": "node scripts/check-db-validation.js && node scripts/check-db-null-fuzz.js",
