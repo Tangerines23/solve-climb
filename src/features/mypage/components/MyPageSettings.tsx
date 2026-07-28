@@ -5,6 +5,7 @@ import { urls } from '@/utils/navigation';
 import { useToastStore } from '@/stores/useToastStore';
 import { Toast } from '@/components/Toast';
 import { ENV } from '@/utils/env';
+import { isNativeAppPlatform } from '@/utils/auth';
 
 interface MyPageSettingsProps {
   hapticEnabled: boolean;
@@ -79,9 +80,7 @@ export function MyPageSettings({
 
       if (serverVersion) {
         if (isVersionOlder(APP_CONFIG.APP_VERSION, serverVersion)) {
-          // @ts-expect-error: Capacitor global check
-          const isCapacitor = typeof window !== 'undefined' && !!window.Capacitor;
-          if (isCapacitor) {
+          if (isNativeAppPlatform()) {
             setLocalToastMsg(`새로운 버전\nv${serverVersion}이\n준비되었습니다.`);
             setHasNewVersion(true);
             setShowLocalToast(true);
@@ -113,8 +112,7 @@ export function MyPageSettings({
     const playStoreUrl = 'https://play.google.com/store/apps/details?id=com.solveclimb.app';
     const playStoreMarketUrl = 'market://details?id=com.solveclimb.app';
 
-    // @ts-expect-error: Capacitor global check
-    if (window.Capacitor) {
+    if (isNativeAppPlatform()) {
       try {
         // market:// 스키마를 통해 플레이스토어 앱이 직접 켜지도록 유도, 불가능할 경우 웹 브라우저로 백업
         window.open(playStoreMarketUrl, '_system');
@@ -383,8 +381,7 @@ export function MyPageSettings({
                 </svg>
               </button>
 
-              {/* @ts-expect-error: Capacitor global check */}
-              {typeof window !== 'undefined' && !!window.Capacitor && (
+              {isNativeAppPlatform() && (
                 <button
                   onClick={handleGoToUpdate}
                   style={{

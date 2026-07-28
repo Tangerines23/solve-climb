@@ -101,7 +101,7 @@ describe('MyPageSettings', () => {
 
   it('should open update confirm modal if version is outdated in mobile environment (with Capacitor)', async () => {
     // @ts-expect-error: Mock Capacitor for mobile environment
-    window.Capacitor = {};
+    window.Capacitor = { isNativePlatform: () => true };
 
     const newerVersion = '9.9.9';
     const mockResponse = {
