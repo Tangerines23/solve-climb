@@ -6,6 +6,10 @@ on:
       - main  # 메인 브랜치에 푸시/머지될 때 실행
   workflow_dispatch:  # GitHub 웹 UI에서 수동으로도 실행 가능하도록 설정
 
+concurrency:
+  group: android-release-${{ github.ref_name }}
+  cancel-in-progress: true
+
 jobs:
   build-and-deploy:
     runs-on: ubuntu-latest
