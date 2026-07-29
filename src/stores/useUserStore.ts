@@ -10,16 +10,17 @@ import {
 import { AdService } from '../utils/adService';
 import { UI_MESSAGES } from '../constants/ui';
 import { UserState, InventoryItem } from '../types/user';
+import { UserRepository, RawInventoryItem } from '../services/UserRepository';
 
 /**
  * 전역 유저 스토어 (Zustand)
  * - 미네랄, 스태미나, 인벤토리 등 유저 상태 관리
- * - 서버 RPC와 연동하여 상태 동기화
+ * - 서버 RPC 및 UserRepository 연동
  */
 export const useUserStore = create<UserState>((set, get) => {
   /**
    * 공통 RPC 처리기
-   * - RPC 호출 -> 에러 핸들링 -> (선택적) 데이터 리프레시 -> 표준 응답 반환
+   * - UserRepository.callRpc -> (선택적) 데이터 리프레시 -> 표준 응답 반환
    */
   const callRpcAndRefresh = async <T extends { success: boolean; message?: string }>(
     rpcCall: PromiseLike<{ data: T | null; error: unknown }>,
@@ -28,69 +29,18 @@ export const useUserStore = create<UserState>((set, get) => {
       errorMessage?: string;
     } = {}
   ): Promise<{ success: boolean; message: string } & Partial<T>> => {
-    try {
-      // Use safeSupabaseQuery to handle debug latency and forced errors
-      const { data, error } = await safeSupabaseQuery(rpcCall, {
-        context: 'UserStoreRPC',
-      });
-
-      if (error) {
-        console.error(`[UserStore RPC Error]`, error);
-        return {
-          success: false,
-          errorCode: (error as any)?.code,
-          message: options.errorMessage || UI_MESSAGES.COMMON_ERROR,
-        } as { success: false; message: string; errorCode?: string } & Partial<T>;
-      }
-
-      if (!data || !data.success) {
-        return {
-          success: false,
-          message: data?.message || options.errorMessage || '요청 처리에 실패했습니다.',
-        } as { success: false; message: string } & Partial<T>;
-      }
-
-      if (options.refreshData) {
-        await get().fetchUserData();
-      }
-
-      return {
-        ...(data as T),
-        success: true,
-        message: data.message || '성공',
-      };
-    } catch (err) {
-      console.error(`[UserStore Unexpected Error]`, err);
-      return {
-        success: false,
-        message: UI_MESSAGES.COMMON_ERROR,
-      } as { success: false; message: string } & Partial<T>;
+    const res = await UserRepository.callRpc<T>(rpcCall, options);
+    if (res.success && options.refreshData) {
+      await get().fetchUserData();
     }
+    return res;
   };
-
-  interface RawInventoryItem {
-    quantity: number;
-    items: {
-      id: number;
-      code: string;
-      name: string;
-      description: string;
-    } | null;
-  }
 
   /**
    * 원시 인벤토리 데이터를 포맷팅
    */
   const formatInventory = (raw: RawInventoryItem[] | null): InventoryItem[] => {
-    return (
-      raw?.map((item) => ({
-        id: item?.items?.id || 0,
-        code: item?.items?.code || '',
-        name: item?.items?.name || '',
-        description: item?.items?.description || '',
-        quantity: item?.quantity || 0,
-      })) || []
-    );
+    return UserRepository.formatInventory(raw);
   };
 
   return {
@@ -128,31 +78,17 @@ export const useUserStore = create<UserState>((set, get) => {
 
         set({ isAnonymous: !!user.is_anonymous });
 
-        const [profileRes, inventoryRes] = await Promise.all([
-          safeSupabaseQuery(
-            supabase
-              .from('profiles')
-              .select('minerals, stamina, last_ad_stamina_recharge')
-              .eq('id', user.id)
-              .maybeSingle()
-          ),
-          safeSupabaseQuery(
-            supabase
-              .from('inventory')
-              .select('quantity, items (id, code, name, description)')
-              .eq('user_id', user.id)
-          ),
-        ]);
+        const { profile, inventory: rawInventory } = await UserRepository.fetchUserData(user.id);
 
         set({
-          minerals: profileRes.data?.minerals || 0,
-          stamina: profileRes.data?.stamina || 0,
-          lastAdRechargeTime: profileRes.data?.last_ad_stamina_recharge || null,
-          inventory: formatInventory(inventoryRes.data as unknown as RawInventoryItem[]),
+          minerals: profile?.minerals || 0,
+          stamina: profile?.stamina || 0,
+          lastAdRechargeTime: profile?.last_ad_stamina_recharge || null,
+          inventory: formatInventory(rawInventory),
         });
 
         // 스태미나 갱신 및 회복 체크
-        if (profileRes.data?.stamina !== undefined && profileRes.data.stamina < 5) {
+        if (profile?.stamina !== undefined && profile.stamina < 5) {
           get().checkStamina();
         }
       } catch (error) {
