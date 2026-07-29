@@ -9,6 +9,7 @@ import { useToastStore } from './useToastStore';
 import { UI_MESSAGES } from '../constants/ui';
 import { safeAccess } from '../utils/validation';
 import { LevelSyncService } from '../services/LevelSyncService';
+import { ProgressRepository } from '../services/ProgressRepository';
 
 export interface LevelRecord {
   level: number;
@@ -349,14 +350,7 @@ export const useLevelProgressStore = create<LevelProgressState>()(
             const user = authResult?.data?.user;
             if (!user) return;
 
-            const { data: records, error } = await safeSupabaseQuery(
-              supabase
-                .from('user_level_records')
-                .select(
-                  'world_id, category_id, subject_id, level, mode_code, best_score, updated_at'
-                )
-                .eq('user_id', user.id)
-            );
+            const { data: records, error } = await ProgressRepository.fetchServerProgress(user.id);
 
             if (error) throw error;
 
@@ -365,18 +359,14 @@ export const useLevelProgressStore = create<LevelProgressState>()(
                 const newProgress = { ...state.progress };
 
                 records.forEach((serverRecord) => {
-                  const {
-                    world_id: world,
-                    category_id,
-                    subject_id,
-                    level,
-                    mode_code,
-                    best_score: score,
-                    updated_at,
-                  } = serverRecord;
+                  const world = serverRecord.world_id || 'world1';
+                  const category_id = serverRecord.category_id || '';
+                  const subject_id = serverRecord.subject_id || '';
+                  const level = serverRecord.level;
+                  const mode_code = serverRecord.mode_code ?? 1;
+                  const score = serverRecord.best_score ?? 0;
+                  const updated_at = serverRecord.updated_at;
 
-                  // local store key: category is `${category_id}_${subject_id}` or just one of them?
-                  // Based on previous code: subject was used as category key.
                   const category = `${category_id}_${subject_id}`;
 
                   if (!newProgress[world]) newProgress[world] = {};
