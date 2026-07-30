@@ -39,7 +39,7 @@ vi.mock('../useDebugStore', () => {
 });
 
 const mockShowToast = vi.fn();
-(useToastStore.getState as any).mockReturnValue({ showToast: mockShowToast });
+vi.mocked(useToastStore.getState).mockReturnValue({ showToast: mockShowToast } as any);
 
 const createMockRpcBuilder = (data: any, error: any = null) => {
   const promise = Promise.resolve({ data, error });

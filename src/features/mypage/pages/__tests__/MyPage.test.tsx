@@ -277,7 +277,7 @@ describe('MyPage', () => {
     mockRefetch.mockReturnValue(Promise.resolve());
 
     // Reset default hook behavior
-    (useMyPageStats as any).mockReturnValue({
+    vi.mocked(useMyPageStats).mockReturnValue({
       stats: {
         totalSolved: 10,
         totalMasteryScore: 1000,
@@ -371,7 +371,7 @@ describe('MyPage', () => {
   });
 
   it('', async () => {
-    (useMyPageStats as any).mockReturnValue({
+    vi.mocked(useMyPageStats).mockReturnValue({
       stats: null,
       session: null,
       loading: false,
@@ -390,7 +390,7 @@ describe('MyPage', () => {
   });
 
   it('should handle anonymous login', async () => {
-    (useMyPageStats as any).mockReturnValue({
+    vi.mocked(useMyPageStats).mockReturnValue({
       stats: null,
       session: null,
       loading: false,
@@ -416,7 +416,7 @@ describe('MyPage', () => {
   });
 
   it('should handle google login', async () => {
-    (useMyPageStats as any).mockReturnValue({
+    vi.mocked(useMyPageStats).mockReturnValue({
       stats: null,
       session: null,
       loading: false,
@@ -442,7 +442,7 @@ describe('MyPage', () => {
   });
 
   it('should handle promotion flow', async () => {
-    (useMyPageStats as any).mockReturnValue({
+    vi.mocked(useMyPageStats).mockReturnValue({
       stats: {
         totalSolved: 10,
         totalMasteryScore: 1000,
@@ -516,7 +516,7 @@ describe('MyPage', () => {
   });
 
   it('should handle data reset error', async () => {
-    (dataResetUtils.resetAllData as any).mockRejectedValueOnce(new Error('Reset failed'));
+    vi.mocked(dataResetUtils.resetAllData).mockRejectedValueOnce(new Error('Reset failed'));
     await act(async () => {
       render(
         <BrowserRouter>
@@ -533,7 +533,7 @@ describe('MyPage', () => {
   });
 
   it('should handle withdrawal error', async () => {
-    (withdrawUtils.withdrawAccount as any).mockRejectedValueOnce(new Error('Withdraw failed'));
+    vi.mocked(withdrawUtils.withdrawAccount).mockRejectedValueOnce(new Error('Withdraw failed'));
     await act(async () => {
       render(
         <BrowserRouter>
@@ -573,7 +573,7 @@ describe('MyPage', () => {
   });
 
   it('', async () => {
-    (useMyPageStats as any).mockReturnValue({
+    vi.mocked(useMyPageStats).mockReturnValue({
       stats: null,
       session: { user: { id: 'test' } },
       loading: false,
@@ -650,7 +650,7 @@ describe('MyPage', () => {
   });
 
   it('should close Promotion Modal', async () => {
-    (useMyPageStats as any).mockReturnValue({
+    vi.mocked(useMyPageStats).mockReturnValue({
       stats: {
         totalSolved: 10,
         totalMasteryScore: 1000,
@@ -691,7 +691,7 @@ describe('MyPage', () => {
   });
 
   it('should handle anonymous login error', async () => {
-    (useMyPageStats as any).mockReturnValue({
+    vi.mocked(useMyPageStats).mockReturnValue({
       stats: null,
       session: null,
       loading: false,
@@ -752,7 +752,7 @@ describe('MyPage', () => {
   });
 
   it('should handle Promotion Modal actions', async () => {
-    (useMyPageStats as any).mockReturnValue({
+    vi.mocked(useMyPageStats).mockReturnValue({
       stats: {
         totalSolved: 10,
         totalMasteryScore: 1000,
@@ -786,7 +786,7 @@ describe('MyPage', () => {
     unmount();
 
     // Test close vs promote branch coverage
-    (useMyPageStats as any).mockReturnValue({
+    vi.mocked(useMyPageStats).mockReturnValue({
       stats: {
         totalSolved: 10,
         totalMasteryScore: 1000,
@@ -864,7 +864,7 @@ describe('MyPage', () => {
     expect(screen.queryByTestId('toast')).toBeNull();
 
     // Trigger alert modal (via leaderboard failure)
-    (tossUtils.openLeaderboard as any).mockResolvedValueOnce({
+    vi.mocked(tossUtils.openLeaderboard).mockResolvedValueOnce({
       success: false,
       message: 'Alert Message',
     });

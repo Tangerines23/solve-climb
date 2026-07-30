@@ -2,13 +2,14 @@ import React, { useState } from 'react';
 import { supabase } from '@/utils/supabaseClient';
 import { useUserStore } from '@/stores/useUserStore';
 import { useMyPageStats } from '@/features/mypage';
+import { STATUS_TYPES } from '@/constants/ui';
 import './BoundaryTestSection.css';
 
 export const BoundaryTestSection = React.memo(function BoundaryTestSection() {
   const { debugSetMinerals, debugSetStamina } = useUserStore();
   const { refetch } = useMyPageStats();
   const [isUpdating, setIsUpdating] = useState(false);
-  const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
+  const [message, setMessage] = useState<{ type: string; text: string } | null>(null);
 
   const handleStaminaSet = async (value: number) => {
     if (isUpdating) return;
@@ -17,10 +18,10 @@ export const BoundaryTestSection = React.memo(function BoundaryTestSection() {
       setIsUpdating(true);
       setMessage(null);
       await debugSetStamina(value);
-      setMessage({ type: 'success', text: `스태미나가 ${value}로 설정되었습니다.` });
+      setMessage({ type: STATUS_TYPES.SUCCESS, text: `스태미나가 ${value}로 설정되었습니다.` });
     } catch (err) {
       setMessage({
-        type: 'error',
+        type: STATUS_TYPES.ERROR,
         text: `설정 실패: ${err instanceof Error ? err.message : '알 수 없는 오류'}`,
       });
     } finally {
@@ -35,10 +36,10 @@ export const BoundaryTestSection = React.memo(function BoundaryTestSection() {
       setIsUpdating(true);
       setMessage(null);
       await debugSetMinerals(value);
-      setMessage({ type: 'success', text: `미네랄이 ${value.toLocaleString()}로 설정되었습니다.` });
+      setMessage({ type: STATUS_TYPES.SUCCESS, text: `미네랄이 ${value.toLocaleString()}로 설정되었습니다.` });
     } catch (err) {
       setMessage({
-        type: 'error',
+        type: STATUS_TYPES.ERROR,
         text: `설정 실패: ${err instanceof Error ? err.message : '알 수 없는 오류'}`,
       });
     } finally {
@@ -57,23 +58,22 @@ export const BoundaryTestSection = React.memo(function BoundaryTestSection() {
         data: { session },
       } = await supabase.auth.getSession();
       if (!session?.user) {
-        setMessage({ type: 'error', text: '로그인이 필요합니다.' });
+        setMessage({ type: STATUS_TYPES.ERROR, text: '로그인이 필요합니다.' });
         return;
       }
-      const user = session.user;
 
       const { error } = await supabase.rpc('debug_set_tier', {
-        p_user_id: user.id,
+        p_user_id: session.user.id,
         p_level: level,
       });
 
       if (error) throw error;
 
-      setMessage({ type: 'success', text: `티어가 레벨 ${level}로 설정되었습니다.` });
+      setMessage({ type: STATUS_TYPES.SUCCESS, text: `티어가 레벨 ${level}로 설정되었습니다.` });
       await refetch();
     } catch (err) {
       setMessage({
-        type: 'error',
+        type: STATUS_TYPES.ERROR,
         text: `설정 실패: ${err instanceof Error ? err.message : '알 수 없는 오류'}`,
       });
     } finally {
@@ -92,26 +92,25 @@ export const BoundaryTestSection = React.memo(function BoundaryTestSection() {
         data: { session },
       } = await supabase.auth.getSession();
       if (!session?.user) {
-        setMessage({ type: 'error', text: '로그인이 필요합니다.' });
+        setMessage({ type: STATUS_TYPES.ERROR, text: '로그인이 필요합니다.' });
         return;
       }
-      const user = session.user;
 
       const { error } = await supabase.rpc('debug_set_mastery_score', {
-        p_user_id: user.id,
+        p_user_id: session.user.id,
         p_score: score,
       });
 
       if (error) throw error;
 
       setMessage({
-        type: 'success',
-        text: `마스터리 점수가 ${score.toLocaleString()}로 설정되었습니다.`,
+        type: STATUS_TYPES.SUCCESS,
+        text: `마스터리 점수가 ${score.toLocaleString()}점으로 설정되었습니다.`,
       });
       await refetch();
     } catch (err) {
       setMessage({
-        type: 'error',
+        type: STATUS_TYPES.ERROR,
         text: `설정 실패: ${err instanceof Error ? err.message : '알 수 없는 오류'}`,
       });
     } finally {
