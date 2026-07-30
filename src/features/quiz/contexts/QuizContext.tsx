@@ -31,6 +31,7 @@ import { useQuizStartLogic } from '../hooks/useQuizStartLogic';
 import { useQuizSession } from '../hooks/useQuizSession';
 import { useQuizGameplay } from '../hooks/useQuizGameplay';
 import { quizEventBus } from '@/lib/eventBus';
+import { setupQuizEventListeners } from '../services/quizEventListener';
 import { useQuizFeedback } from '../hooks/useQuizFeedback';
 import { useDeathNoteStore } from '@/stores/useDeathNoteStore';
 import { vibrateLong } from '@/utils/haptic';
@@ -167,6 +168,11 @@ export function QuizProvider({ children, params }: QuizProviderProps) {
   const [showTipModal, setShowTipModal] = useState(true);
   const inputRef = useRef<HTMLInputElement>(null);
   const feedbackRef = useRef<ItemFeedbackRef>(null);
+
+  useEffect(() => {
+    const cleanupListeners = setupQuizEventListeners();
+    return cleanupListeners;
+  }, []);
 
   const gameState = useQuizGameState({
     score,

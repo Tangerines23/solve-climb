@@ -113,6 +113,10 @@ export default [
           pattern: 'src/features/:featureName',
         },
         {
+          type: 'page',
+          pattern: 'src/pages',
+        },
+        {
           type: 'shared-component',
           pattern: 'src/components',
         },
@@ -125,16 +129,16 @@ export default [
           pattern: 'src/stores',
         },
         {
+          type: 'service',
+          pattern: 'src/services',
+        },
+        {
           type: 'util',
           pattern: 'src/utils',
         },
         {
           type: 'type',
           pattern: 'src/types',
-        },
-        {
-          type: 'service',
-          pattern: 'src/services',
         },
         {
           type: 'constant',
@@ -156,7 +160,7 @@ export default [
               from: 'feature',
               disallow: [['feature', { featureName: '!${featureName}' }]],
               message:
-                '서로 다른 피처 도메인은 직접 참조할 수 없습니다. 배럴 파일이나 외부 API를 통해서만 결합할 수 있습니다.',
+                '🛡️ [도메인 방어] 서로 다른 피처 도메인 간의 무단 내부 파일 참조는 금지됩니다. (배럴 파일 index.ts 또는 공용 레이어를 통해서만 결합 가능)',
             },
           ],
         },

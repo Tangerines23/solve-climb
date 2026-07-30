@@ -2,13 +2,13 @@ export const BASIC_LEVELS = [
   // Phase 1: 산 입구 (Lv 1~10) - 반사신경
   { level: 1, name: '한 자릿수 덧셈', description: '10 이하의 합' },
   { level: 2, name: '한 자릿수 뺄셈', description: '0 이상의 차' },
-  { level: 3, name: '받아올림 덧셈', description: '2자리 합 기초 (10 만들기)' },
-  { level: 4, name: '받아내림 뺄셈', description: '2자리 차 기초' },
+  { level: 3, name: '받아올림 덧셈', description: '10 만들어 더하기 (10 이상의 합)' },
+  { level: 4, name: '받아내림 뺄셈', description: '십몇에서 한 자릿수 빼기' },
   { level: 5, name: '3항 연산 타임어택', description: '세 수의 덧셈과 뺄셈' },
   { level: 6, name: '기초 구구단', description: '2~5단' },
   { level: 7, name: '나눗셈 기초', description: '딱 떨어지는 나눗셈' },
   { level: 8, name: '심화 구구단', description: '6~9단' },
-  { level: 9, name: '0과 1의 성질', description: '0의 곱셈과 덧셈' },
+  { level: 9, name: '0과 1의 성질', description: '0과 1의 곱셈·덧셈 성질' },
   { level: 10, name: '사칙연산 믹스', description: '사칙연산 혼합 계산' },
 
   // Phase 2: 중턱 (Lv 11~20) - 연산력 & 수직선

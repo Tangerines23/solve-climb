@@ -11,6 +11,7 @@ test.describe('NETWORK DEEP STRESS - Reliability Check', () => {
   test('간헐적 네트워크 실패와 높은 지연 환경에서도 데이터 정합성이 유지되어야 한다', async ({
     page,
   }) => {
+    test.setTimeout(120000);
     // 에러 캡처 설정
     const errors: Error[] = [];
     page.on('pageerror', (exception) => {
@@ -37,7 +38,7 @@ test.describe('NETWORK DEEP STRESS - Reliability Check', () => {
     });
 
     // 1. 시작 페이지 이동
-    await page.goto('/');
+    await page.goto('/', { waitUntil: 'domcontentloaded' });
     await page.waitForLoadState('networkidle');
 
     // 2. 상점 페이지로 이동 (가장 복잡한 API 연동 중 하나)

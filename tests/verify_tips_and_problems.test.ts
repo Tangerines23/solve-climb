@@ -351,43 +351,20 @@ test('Audit Basic category tips and problems with difficulty scores', () => {
     }
   }
 
-  // 결과를 JSON 파일로 저장
-  const resultJsonPath =
-    'C:\\Users\\ghkdd\\.gemini\\antigravity\\brain\\36e29b47-6f8e-40ad-ba50-21f57b88493f\\scratch\\verification_result.json';
-  fs.writeFileSync(resultJsonPath, JSON.stringify(reportData, null, 2), 'utf-8');
-
-  // 결과를 마크다운 보고서로 작성
-  let md = `# 기초 카테고리 문제-게임팁 정합성 및 난이도 분석 결과 보고서\n\n`;
-  md += `> **분석 요약**: 기초 카테고리(World 1 ~ 4)의 총 ${reportData.length}개 레벨에 대하여 각 100문제씩 총 ${reportData.length * 100}문제를 무작위 생성해 게임팁과의 매칭 정합성, 정답 데이터의 통계치 및 **개선된 인지적 암산 난이도 점수(CLS)**를 분석하였습니다.\n\n`;
-
-  for (const worldId of worlds) {
-    md += `## 🌍 ${worldId} (${getWorldName(worldId)})\n\n`;
-    md += `| 레벨 | 게임팁 타이틀 | 정합성 일치율 | **평균 난이도 (CLS)** | 난이도 범위 | 정수 비율 | 소수 비율 | 분수 비율 | 평균 정답 | 정답 범위 |\n`;
-    md += `| :--- | :--- | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: |\n`;
-
-    const worldRows = reportData.filter((d) => d.worldId === worldId);
-    for (const row of worldRows) {
-      md += `| Lvl ${row.level} | ${row.tipTitle.replace(/Level \d+[:\s]*/i, '')} | **${row.matchRate}%** | **${row.avgDiff}** | ${row.minDiff} ~ ${row.maxDiff} | ${row.stats.integerRate}% | ${row.stats.decimalRate}% | ${row.stats.fractionRate}% | ${row.stats.avg} | ${row.stats.min} ~ ${row.stats.max} |\n`;
+  // 결과를 환경변수 요청 시에만 파일로 저장 (테스트 사이드이펙트 방지)
+  if (process.env.WRITE_VERIFICATION_REPORT === 'true') {
+    const resultJsonPath =
+      'C:\\Users\\ghkdd\\.gemini\\antigravity\\brain\\36e29b47-6f8e-40ad-ba50-21f57b88493f\\scratch\\verification_result.json';
+    if (fs.existsSync('C:\\Users\\ghkdd\\.gemini\\antigravity\\brain\\36e29b47-6f8e-40ad-ba50-21f57b88493f\\scratch')) {
+      fs.writeFileSync(resultJsonPath, JSON.stringify(reportData, null, 2), 'utf-8');
     }
-    md += `\n`;
-  }
 
-  md += `\n## 📝 대표 문제 샘플 (일부 추출)\n\n`;
-  for (const worldId of worlds) {
-    md += `### 📍 ${worldId} 샘플\n`;
-    const samples = reportData.filter((d) => d.worldId === worldId).slice(0, 3);
-    for (const s of samples) {
-      md += `- **[${s.tipTitle}]**\n`;
-      s.sampleQuestions.forEach((sq: any, idx: number) => {
-        md += `  ${idx + 1}) Q: \`${sq.q}\` | A: \`${sq.a}\`\n`;
-      });
+    const resultMdPath =
+      'C:\\Users\\ghkdd\\.gemini\\antigravity\\brain\\36e29b47-6f8e-40ad-ba50-21f57b88493f\\analysis_results.md';
+    if (fs.existsSync('C:\\Users\\ghkdd\\.gemini\\antigravity\\brain\\36e29b47-6f8e-40ad-ba50-21f57b88493f')) {
+      fs.writeFileSync(resultMdPath, md, 'utf-8');
     }
-    md += `\n`;
   }
-
-  const resultMdPath =
-    'C:\\Users\\ghkdd\\.gemini\\antigravity\\brain\\36e29b47-6f8e-40ad-ba50-21f57b88493f\\analysis_results.md';
-  fs.writeFileSync(resultMdPath, md, 'utf-8');
 });
 
 function getWorldName(worldId: string): string {

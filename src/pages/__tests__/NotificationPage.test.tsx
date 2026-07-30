@@ -61,11 +61,11 @@ describe('NotificationPage', () => {
 
   beforeEach(() => {
     vi.clearAllMocks();
-    (useNotificationStore as any).mockImplementation((selector?: any) => {
+    vi.mocked(useNotificationStore).mockImplementation((selector?: any) => {
       if (selector) return selector(defaultStore);
       return defaultStore;
     });
-    (useNotificationStore as any).getState = () => defaultStore;
+    vi.mocked(useNotificationStore).getState = () => defaultStore;
   });
 
   it('should render empty state when no notifications', () => {
@@ -80,11 +80,11 @@ describe('NotificationPage', () => {
 
   it('should render list of notifications', () => {
     const storeWithData = { ...defaultStore, notifications: mockNotifications, unreadCount: 1 };
-    (useNotificationStore as any).mockImplementation((selector?: any) => {
+    vi.mocked(useNotificationStore).mockImplementation((selector?: any) => {
       if (selector) return selector(storeWithData);
       return storeWithData;
     });
-    (useNotificationStore as any).getState = () => storeWithData;
+    vi.mocked(useNotificationStore).getState = () => storeWithData;
 
     render(
       <BrowserRouter>
@@ -99,11 +99,11 @@ describe('NotificationPage', () => {
 
   it('should handle notification click (record_broken)', () => {
     const storeWithData = { ...defaultStore, notifications: mockNotifications, unreadCount: 1 };
-    (useNotificationStore as any).mockImplementation((selector?: any) => {
+    vi.mocked(useNotificationStore).mockImplementation((selector?: any) => {
       if (selector) return selector(storeWithData);
       return storeWithData;
     });
-    (useNotificationStore as any).getState = () => storeWithData;
+    vi.mocked(useNotificationStore).getState = () => storeWithData;
 
     render(
       <BrowserRouter>
@@ -120,11 +120,11 @@ describe('NotificationPage', () => {
 
   it('should handle notification click (challenge)', () => {
     const storeWithData = { ...defaultStore, notifications: mockNotifications, unreadCount: 1 };
-    (useNotificationStore as any).mockImplementation((selector?: any) => {
+    vi.mocked(useNotificationStore).mockImplementation((selector?: any) => {
       if (selector) return selector(storeWithData);
       return storeWithData;
     });
-    (useNotificationStore as any).getState = () => storeWithData;
+    vi.mocked(useNotificationStore).getState = () => storeWithData;
 
     render(
       <BrowserRouter>
@@ -142,11 +142,11 @@ describe('NotificationPage', () => {
 
   it('should mark all as read when button is clicked', () => {
     const storeWithData = { ...defaultStore, notifications: mockNotifications, unreadCount: 1 };
-    (useNotificationStore as any).mockImplementation((selector?: any) => {
+    vi.mocked(useNotificationStore).mockImplementation((selector?: any) => {
       if (selector) return selector(storeWithData);
       return storeWithData;
     });
-    (useNotificationStore as any).getState = () => storeWithData;
+    vi.mocked(useNotificationStore).getState = () => storeWithData;
 
     render(
       <BrowserRouter>
@@ -162,11 +162,11 @@ describe('NotificationPage', () => {
 
   it('should show loading state', () => {
     const storeLoading = { ...defaultStore, loading: true };
-    (useNotificationStore as any).mockImplementation((selector?: any) => {
+    vi.mocked(useNotificationStore).mockImplementation((selector?: any) => {
       if (selector) return selector(storeLoading);
       return storeLoading;
     });
-    (useNotificationStore as any).getState = () => storeLoading;
+    vi.mocked(useNotificationStore).getState = () => storeLoading;
 
     render(
       <BrowserRouter>
@@ -197,11 +197,11 @@ describe('NotificationPage', () => {
         id: `test-${date.getTime()}`,
       };
       const storeWithData = { ...defaultStore, notifications: [notification] };
-      (useNotificationStore as any).mockImplementation((selector?: any) => {
+      vi.mocked(useNotificationStore).mockImplementation((selector?: any) => {
         if (selector) return selector(storeWithData);
         return storeWithData;
       });
-      (useNotificationStore as any).getState = () => storeWithData;
+      vi.mocked(useNotificationStore).getState = () => storeWithData;
 
       const { unmount } = render(
         <BrowserRouter>
@@ -216,11 +216,11 @@ describe('NotificationPage', () => {
   it('should not call markAsRead if notification is already read', () => {
     const readNotification = { ...mockNotifications[1], read: true };
     const storeWithData = { ...defaultStore, notifications: [readNotification] };
-    (useNotificationStore as any).mockImplementation((selector?: any) => {
+    vi.mocked(useNotificationStore).mockImplementation((selector?: any) => {
       if (selector) return selector(storeWithData);
       return storeWithData;
     });
-    (useNotificationStore as any).getState = () => storeWithData;
+    vi.mocked(useNotificationStore).getState = () => storeWithData;
 
     render(
       <BrowserRouter>

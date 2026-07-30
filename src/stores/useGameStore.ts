@@ -45,6 +45,41 @@ interface GameState {
   resetGame: () => void;
 }
 
+/**
+ * [객체 체조 원칙 적용] 레벨에 따른 콤보 추가 가중치 산출 (Depth 1, else 0개)
+ */
+function calculateComboAdd(currentLevel?: number): number {
+  if (currentLevel === undefined) return 1;
+  if (currentLevel >= 21) return 3;
+  if (currentLevel >= 11) return 2;
+  return 1;
+}
+
+/**
+ * [객체 체조 원칙 적용] 콤보 및 탈진 상태에 따른 피버 상태 산출 (Depth 1, else 0개)
+ */
+function calculateFeverState(
+  combo: number,
+  isExhausted: boolean
+): { feverLevel: 0 | 1 | 2; showSpeedLines: boolean } {
+  if (isExhausted) return { feverLevel: 0, showSpeedLines: false };
+  if (combo >= 10) return { feverLevel: 2, showSpeedLines: true };
+  if (combo >= 3) return { feverLevel: 1, showSpeedLines: true };
+  return { feverLevel: 0, showSpeedLines: false };
+}
+
+/**
+ * [객체 체조 원칙 적용] 콤보 리셋 시 피버 레벨 감쇄 상태 산출 (Depth 1, else 0개)
+ */
+function calculateDecayedComboState(feverLevel: 0 | 1 | 2): {
+  combo: number;
+  feverLevel: 0 | 1 | 2;
+  showSpeedLines: boolean;
+} {
+  if (feverLevel === 2) return { combo: 3, feverLevel: 1, showSpeedLines: true };
+  return { combo: 0, feverLevel: 0, showSpeedLines: false };
+}
+
 export const useGameStore = create<GameState>()(
   persist(
     (set) => ({
@@ -66,43 +101,18 @@ export const useGameStore = create<GameState>()(
 
       incrementCombo: (currentLevel) =>
         set((state) => {
-          let comboAdd = 1;
-          if (currentLevel !== undefined) {
-            if (currentLevel >= 21) {
-              comboAdd = 3;
-            } else if (currentLevel >= 11) {
-              comboAdd = 2;
-            } else {
-              comboAdd = 1;
-            }
-          }
+          const comboAdd = calculateComboAdd(currentLevel);
           const newCombo = state.combo + comboAdd;
-          let newFeverLevel = state.feverLevel;
-          let speedLines = state.showSpeedLines;
-
-          if (!state.isExhausted) {
-            if (newCombo >= 10) {
-              newFeverLevel = 2;
-              speedLines = true;
-            } else if (newCombo >= 3) {
-              newFeverLevel = 1;
-              speedLines = true;
-            }
-          } else {
-            newFeverLevel = 0;
-            speedLines = false;
-          }
+          const feverState = calculateFeverState(newCombo, state.isExhausted);
 
           return {
             combo: newCombo,
-            feverLevel: newFeverLevel as 0 | 1 | 2,
-            showSpeedLines: speedLines,
+            ...feverState,
           };
         }),
 
       resetCombo: () =>
         set((state) => {
-          // 안전 로프(safety_rope)가 활성화되어 있는 경우 실드 발동 및 아이템 소모
           if (state.activeItems.includes('safety_rope')) {
             return {
               activeItems: state.activeItems.filter((code) => code !== 'safety_rope'),
@@ -110,47 +120,15 @@ export const useGameStore = create<GameState>()(
             };
           }
 
-          // 계단식 감쇄 처리
-          let newCombo = 0;
-          let newFeverLevel: 0 | 1 | 2 = 0;
-          let speedLines = false;
-
-          if (state.feverLevel === 2) {
-            newCombo = 3;
-            newFeverLevel = 1;
-            speedLines = true;
-          } else {
-            newCombo = 0;
-            newFeverLevel = 0;
-            speedLines = false;
-          }
-
-          return {
-            combo: newCombo,
-            feverLevel: newFeverLevel,
-            showSpeedLines: speedLines,
-          };
+          return calculateDecayedComboState(state.feverLevel);
         }),
 
       setCombo: (combo) =>
         set((state) => {
-          let newFeverLevel = 0;
-          let speedLines = false;
-
-          if (!state.isExhausted) {
-            if (combo >= 10) {
-              newFeverLevel = 2;
-              speedLines = true;
-            } else if (combo >= 3) {
-              newFeverLevel = 1;
-              speedLines = true;
-            }
-          }
-
+          const feverState = calculateFeverState(combo, state.isExhausted);
           return {
             combo,
-            feverLevel: newFeverLevel as 0 | 1 | 2,
-            showSpeedLines: speedLines,
+            ...feverState,
           };
         }),
 

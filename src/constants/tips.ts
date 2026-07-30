@@ -307,16 +307,16 @@ export const WORLD_TIPS: Record<string, Record<number, TipItem>> = {
       strategy: '5에 무엇을 더해야 9가 될지 생각해보세요.',
     },
     3: {
-      title: '3레벨: 10 만들기 (Make 10)',
-      tip: '두 숫자를 합쳐 10을 먼저 만세요.',
+      title: '3레벨: 10 만들어 더하기',
+      tip: '10을 먼저 채우고, 남은 숫자를 더하세요!',
       example: '8+5=?',
-      strategy: '8에게 2를 빌려줘서 10을 만들고, 남은 3을 더하세요. (13)',
+      strategy: '8에 2를 빌려 10을 먼저 만든 뒤, 남은 3을 더하면 13이 돼요.',
     },
     4: {
       title: '4레벨: 받아내림 뺄셈',
-      tip: '10을 빌려와서 뻬세요.',
+      tip: '10을 빌려와서 빼세요.',
       example: '15-7=?',
-      strategy: '10에서 7을 먼저 빼면 3, 거기에 5를 더하세요.',
+      strategy: '10에서 7을 먼저 빼서 3을 만들고, 남은 5와 더하세요.',
     },
     5: {
       title: '5레벨: 3항 연산 타임어택',
@@ -344,10 +344,9 @@ export const WORLD_TIPS: Record<string, Record<number, TipItem>> = {
     },
     9: {
       title: '9레벨: 0과 1의 성질',
-      tip: '0의 곱셈과 덧셈',
+      tip: '0과 1의 곱셈과 덧셈',
       example: '7 x 0 = 0 / 5 x 1 = 5',
-      strategy:
-        '어떤 수에 0을 곱하면 0이 되고, 1을 곱하면 자기 자신이 됩니다. 덧셈과 곱셈이 혼합되어 나오니 기호를 잘 보세요!',
+      strategy: '어떤 수에 0을 곱하면 0, 1을 곱하면 자기 자신! 0을 더해도 값이 바뀌지 않아요.',
     },
     10: {
       title: '10레벨: 사칙연산 믹스',
@@ -358,8 +357,8 @@ export const WORLD_TIPS: Record<string, Record<number, TipItem>> = {
     11: {
       title: '11레벨: 두 걸음씩',
       tip: '두 자릿수 덧셈, 받아올림이 없어요.',
-      example: '12 + 15 = ?',
-      strategy: '십의 자리끼리, 일의 자리끼리 더하세요.',
+      example: '23 + 5 = ?',
+      strategy: '받아올림이 없는 덧셈입니다. 일의 자리끼리 먼저 더해보세요.',
     },
     12: {
       title: '12레벨: 무거운 배낭',
@@ -382,7 +381,7 @@ export const WORLD_TIPS: Record<string, Record<number, TipItem>> = {
     15: {
       title: '15레벨: 암산왕',
       tip: '중간 계산 값을 기억하세요.',
-      example: '복합 연산',
+      example: '12 + 8 - 5 = ?',
       strategy: '암산력을 테스트하는 구간입니다. 집중!',
     },
     16: {
@@ -400,8 +399,8 @@ export const WORLD_TIPS: Record<string, Record<number, TipItem>> = {
     18: {
       title: '18레벨: 나머지 길',
       tip: '몫이 아닌 남는 수를 쓰세요.',
-      example: '14 ÷ 3의 나머지',
-      strategy: '3, 6, 9, 12... 14에서 12를 빼면 남는 건 2!',
+      example: '14 ÷ 3 = 4 ... [?]',
+      strategy: '3x4=12이므로, 14에서 12를 뺀 남은 수(나머지 2)를 답으로 쓰세요.',
     },
     19: {
       title: '19레벨: 빈칸 맛보기',
@@ -412,7 +411,7 @@ export const WORLD_TIPS: Record<string, Record<number, TipItem>> = {
     20: {
       title: '20레벨: 정수 마스터',
       tip: '모든 정수 연산의 총정리',
-      example: '종합 사칙연산',
+      example: '15 + 10 ÷ 2 - 4 = ?',
       strategy: '실수 없이 정확하게 푸는 것이 중요합니다.',
     },
     21: {
@@ -423,27 +422,27 @@ export const WORLD_TIPS: Record<string, Record<number, TipItem>> = {
     },
     22: {
       title: '22레벨: 소수의 뺄셈',
-      tip: '내림은 똑같습니다.',
+      tip: '소수의 받아내림도 정수와 같아요.',
       example: '1.5 - 0.8 = ?',
       strategy: '15-8=7, 소수점을 찍어 0.7!',
     },
     23: {
       title: '23레벨: 소수의 덧셈 2',
-      tip: '더 다양한 소수 덧셈',
-      example: '0.3 + 0.4 = 0.7',
-      strategy: '소수점 자리수를 그대로 유지하며 덧셈하세요.',
+      tip: '받아올림이 있는 소수 덧셈',
+      example: '0.7 + 0.8 = ?',
+      strategy: '7+8=15처럼 계산한 뒤, 소수점을 찍어 1.5로 만드세요.',
     },
     24: {
       title: '24레벨: 반 조각 (분수)',
       tip: '분모가 같으면 분자만 더해요.',
-      example: '1/3 + 1/3 = ?',
+      example: '1/4 + 2/4 = ?',
       strategy: '분모는 그대로 두고 위의 숫자만 더하세요.',
     },
     25: {
       title: '25레벨: 캠프 (소수/분수)',
-      tip: '소수와 분수의 혼합 적응',
+      tip: '소수 형태로 바꾸어 계산해보세요.',
       example: '0.5 + 1/2 = ?',
-      strategy: '둘 중 하나로 통일해서 생각하면 쉬워요.',
+      strategy: '분수 1/2을 소수 0.5로 변환한 뒤, 0.5 + 0.5 = 1 형태로 풀면 쉬워요.',
     },
     26: {
       title: '26레벨: 피자 나누기',
@@ -472,7 +471,7 @@ export const WORLD_TIPS: Record<string, Record<number, TipItem>> = {
     30: {
       title: '30레벨: 계산의 신',
       tip: '수리봉 정상에 오를 자격 증명',
-      example: '최종 타임어택',
+      example: '2.5 + 1/2 x 4 = ?',
       strategy: '망설임 없는 연산이 승리의 열쇠입니다.',
     },
   },

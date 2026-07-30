@@ -1,20 +1,35 @@
 import { Database } from './database.types';
 
+// Supabase Database Row Types (Single Source of Truth)
 type DbProfile = Database['public']['Tables']['profiles']['Row'];
 type DbItem = Database['public']['Tables']['items']['Row'];
+type DbInventory = Database['public']['Tables']['inventory']['Row'];
+type DbTodayChallenge = Database['public']['Tables']['today_challenges']['Row'];
 
+/**
+ * DB items 테이블 및 inventory 테이블과 연동된 인벤토리 아이템 타입 (Single Source of Truth 상속)
+ */
 export type InventoryItem = Pick<DbItem, 'code' | 'name'> & {
   id: number;
   description: string;
   quantity: number;
 };
 
+/**
+ * DB profiles 테이블과 연동된 유저 프로필 타입 (Single Source of Truth 상속)
+ */
 export type UserProfile = Omit<DbProfile, 'nickname' | 'avatar_url'> & {
   email: string;
   nickname?: string;
   avatar_url?: string;
   last_stamina_update?: string;
 };
+
+/**
+ * DB today_challenges 테이블과 연동된 챌린지 데이터 타입 (Single Source of Truth 상속)
+ */
+export type TodayChallengeRecord = DbTodayChallenge;
+export type InventoryRecord = DbInventory;
 
 export interface UserState {
   minerals: number;

@@ -37,7 +37,7 @@ describe('scoreCalculator', () => {
         },
       };
 
-      (useLevelProgressStore.getState as any).mockReturnValue({
+      vi.mocked(useLevelProgressStore.getState).mockReturnValue({
         progress: mockProgress,
       });
 
@@ -53,7 +53,7 @@ describe('scoreCalculator', () => {
         .fn()
         .mockReturnValue([{ bestScore: { 'time-attack': 100 } }, { bestScore: { survival: 50 } }]);
 
-      (useLevelProgressStore.getState as any).mockReturnValue({
+      vi.mocked(useLevelProgressStore.getState).mockReturnValue({
         getLevelProgress: mockGetLevelProgress,
       });
 
@@ -71,7 +71,7 @@ describe('scoreCalculator', () => {
 
   describe('calculateSubTopicProgress', () => {
     it('should calculate progress percentage', () => {
-      (useLevelProgressStore.getState as any).mockReturnValue({
+      vi.mocked(useLevelProgressStore.getState).mockReturnValue({
         getLevelProgress: () => [{ bestScore: { 'time-attack': 100 } }],
       });
 
@@ -88,7 +88,7 @@ describe('scoreCalculator', () => {
         World2: { 기초: { L1: { bestScore: { survival: 200 } } } },
       };
 
-      (useLevelProgressStore.getState as any).mockReturnValue({
+      vi.mocked(useLevelProgressStore.getState).mockReturnValue({
         progress: mockProgress,
       });
       const result = calculateCategoryAltitude('기초');
@@ -98,7 +98,7 @@ describe('scoreCalculator', () => {
 
   describe('calculateCategoryProgress', () => {
     it('should calculate category progress', () => {
-      (useLevelProgressStore.getState as any).mockReturnValue({
+      vi.mocked(useLevelProgressStore.getState).mockReturnValue({
         progress: { World1: { 기초: { L1: { bestScore: { 'time-attack': 10 } } } } },
       });
       const result = calculateCategoryProgress('기초');
