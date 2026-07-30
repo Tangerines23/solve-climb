@@ -15,6 +15,7 @@ export { setupQuizEventListeners } from './services/quizEventListener';
 export * from './types/quiz';
 export * from './types/quizProps';
 export { Altitude, type Result } from './domain/Altitude';
+export { Combo } from './domain/Combo';
 
 // Generators Engine (Public Facade)
 export { generateQuestion } from './generators/quizGenerator';
