@@ -8,7 +8,7 @@ import { vibrateLong } from '@/utils/haptic';
  *   이벤트 수신 방식으로 분리하여 구독합니다.
  */
 export function setupQuizEventListeners(): () => void {
-  const unsubscribers: Array<() => void> = [];
+  const cleanupFns: Array<() => void> = [];
 
   // 1. 정답 제출 이벤트 수신 (사이드 이펙트: 햅틱 진동)
   const unsubscribeSubmitted = quizEventBus.on('QUIZ:ANSWER_SUBMITTED', ({ isCorrect }) => {
@@ -21,7 +21,7 @@ export function setupQuizEventListeners(): () => void {
       }
     }
   });
-  unsubscribers.push(unsubscribeSubmitted);
+  cleanupFns.push(unsubscribeSubmitted);
 
   // 2. 잘못된 입력 이벤트 수신 (사이드 이펙트: Toast 표출)
   const unsubscribeInvalidInput = quizEventBus.on('QUIZ:INVALID_INPUT', ({ reason }) => {
@@ -29,7 +29,7 @@ export function setupQuizEventListeners(): () => void {
       useToastStore.getState().showToast(reason);
     }
   });
-  unsubscribers.push(unsubscribeInvalidInput);
+  cleanupFns.push(unsubscribeInvalidInput);
 
   // 3. 게임 오버 이벤트 수신
   const unsubscribeGameOver = quizEventBus.on('QUIZ:GAME_OVER', ({ reason }) => {
@@ -37,10 +37,10 @@ export function setupQuizEventListeners(): () => void {
       useToastStore.getState().showToast(reason);
     }
   });
-  unsubscribers.push(unsubscribeGameOver);
+  cleanupFns.push(unsubscribeGameOver);
 
   // cleanup 함수 반환
   return () => {
-    unsubscribers.forEach((unsubscribe) => unsubscribe());
+    cleanupFns.forEach((unsubscribe) => unsubscribe());
   };
 }
