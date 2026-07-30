@@ -175,7 +175,10 @@ export const DataResetSection = React.memo(function DataResetSection() {
             const errorMessages = errors
               .map((e) => (e.status === 'rejected' ? e.reason?.message || '알 수 없는 오류' : ''))
               .join(', ');
-            setMessage({ type: STATUS_TYPES.ERROR, text: `일부 데이터 적용 실패: ${errorMessages}` });
+            setMessage({
+              type: STATUS_TYPES.ERROR,
+              text: `일부 데이터 적용 실패: ${errorMessages}`,
+            });
           } else {
             setMessage({ type: STATUS_TYPES.SUCCESS, text: '데이터가 가져와져 적용되었습니다.' });
             await Promise.all([refetch(), fetchUserData()]);
@@ -327,7 +330,10 @@ export const DataResetSection = React.memo(function DataResetSection() {
       if (error) throw error;
 
       const deletedCount = (data as { deleted_sessions?: number })?.deleted_sessions || 0;
-      setMessage({ type: STATUS_TYPES.SUCCESS, text: `${deletedCount}개의 게임 기록이 삭제되었습니다.` });
+      setMessage({
+        type: STATUS_TYPES.SUCCESS,
+        text: `${deletedCount}개의 게임 기록이 삭제되었습니다.`,
+      });
       await Promise.all([refetch(), fetchUserData()]);
     } catch (err) {
       setMessage({
@@ -408,7 +414,10 @@ export const DataResetSection = React.memo(function DataResetSection() {
 
       if (error) throw error;
 
-      setMessage({ type: STATUS_TYPES.SUCCESS, text: `레벨 ${selectedLevel}의 게임 기록이 삭제되었습니다.` });
+      setMessage({
+        type: STATUS_TYPES.SUCCESS,
+        text: `레벨 ${selectedLevel}의 게임 기록이 삭제되었습니다.`,
+      });
       await Promise.all([refetch(), fetchUserData()]);
     } catch (err) {
       setMessage({

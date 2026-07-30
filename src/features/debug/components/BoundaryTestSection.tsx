@@ -36,7 +36,10 @@ export const BoundaryTestSection = React.memo(function BoundaryTestSection() {
       setIsUpdating(true);
       setMessage(null);
       await debugSetMinerals(value);
-      setMessage({ type: STATUS_TYPES.SUCCESS, text: `미네랄이 ${value.toLocaleString()}로 설정되었습니다.` });
+      setMessage({
+        type: STATUS_TYPES.SUCCESS,
+        text: `미네랄이 ${value.toLocaleString()}로 설정되었습니다.`,
+      });
     } catch (err) {
       setMessage({
         type: STATUS_TYPES.ERROR,

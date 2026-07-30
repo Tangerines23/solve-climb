@@ -70,18 +70,22 @@ export class UserRepository {
       .select('minerals, stamina, is_anonymous, last_ad_stamina_recharge, updated_at')
       .eq('id', userId);
 
-    const profileQuery = typeof (profileQueryBuilder as any).maybeSingle === 'function'
-      ? (profileQueryBuilder as any).maybeSingle()
-      : typeof (profileQueryBuilder as any).single === 'function'
-      ? (profileQueryBuilder as any).single()
-      : profileQueryBuilder;
+    const profileQuery =
+      typeof (profileQueryBuilder as any).maybeSingle === 'function'
+        ? (profileQueryBuilder as any).maybeSingle()
+        : typeof (profileQueryBuilder as any).single === 'function'
+          ? (profileQueryBuilder as any).single()
+          : profileQueryBuilder;
 
     const [profileRes, inventoryRes] = await Promise.all([
-      safeSupabaseQuery(profileQuery, { context: 'UserRepository.fetchUserData.profile' }) as Promise<{ data: any; error: any }>,
+      safeSupabaseQuery(profileQuery, {
+        context: 'UserRepository.fetchUserData.profile',
+      }) as Promise<{ data: any; error: any }>,
       safeSupabaseQuery(
         supabase
           .from('inventory')
-          .select(`
+          .select(
+            `
             quantity,
             items (
               id,
@@ -89,7 +93,8 @@ export class UserRepository {
               name,
               description
             )
-          `)
+          `
+          )
           .eq('user_id', userId),
         { context: 'UserRepository.fetchUserData.inventory' }
       ) as Promise<{ data: any; error: any }>,

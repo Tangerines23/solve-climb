@@ -23,4 +23,3 @@ export { getSolutionProcess } from './generators/solutionExplainer';
 
 // Pure Calculation Utils
 export { calculateTotalAltitude, calculateSubTopicProgress } from './utils/scoreCalculator';
-

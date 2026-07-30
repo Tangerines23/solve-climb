@@ -11,30 +11,24 @@ export function setupQuizEventListeners(): () => void {
   const unsubscribers: Array<() => void> = [];
 
   // 1. 정답 제출 이벤트 수신 (사이드 이펙트: 햅틱 진동)
-  const unsubscribeSubmitted = quizEventBus.on(
-    'QUIZ:ANSWER_SUBMITTED',
-    ({ isCorrect }) => {
-      if (!isCorrect) {
-        // Haptic feedback (오답 진동)
-        try {
-          vibrateLong();
-        } catch {
-          // Ignore haptic errors on non-supported environments
-        }
+  const unsubscribeSubmitted = quizEventBus.on('QUIZ:ANSWER_SUBMITTED', ({ isCorrect }) => {
+    if (!isCorrect) {
+      // Haptic feedback (오답 진동)
+      try {
+        vibrateLong();
+      } catch {
+        // Ignore haptic errors on non-supported environments
       }
     }
-  );
+  });
   unsubscribers.push(unsubscribeSubmitted);
 
   // 2. 잘못된 입력 이벤트 수신 (사이드 이펙트: Toast 표출)
-  const unsubscribeInvalidInput = quizEventBus.on(
-    'QUIZ:INVALID_INPUT',
-    ({ reason }) => {
-      if (reason) {
-        useToastStore.getState().showToast(reason);
-      }
+  const unsubscribeInvalidInput = quizEventBus.on('QUIZ:INVALID_INPUT', ({ reason }) => {
+    if (reason) {
+      useToastStore.getState().showToast(reason);
     }
-  );
+  });
   unsubscribers.push(unsubscribeInvalidInput);
 
   // 3. 게임 오버 이벤트 수신

@@ -346,8 +346,7 @@ export const WORLD_TIPS: Record<string, Record<number, TipItem>> = {
       title: '9레벨: 0과 1의 성질',
       tip: '0과 1의 곱셈과 덧셈',
       example: '7 x 0 = 0 / 5 x 1 = 5',
-      strategy:
-        '어떤 수에 0을 곱하면 0, 1을 곱하면 자기 자신! 0을 더해도 값이 바뀌지 않아요.',
+      strategy: '어떤 수에 0을 곱하면 0, 1을 곱하면 자기 자신! 0을 더해도 값이 바뀌지 않아요.',
     },
     10: {
       title: '10레벨: 사칙연산 믹스',

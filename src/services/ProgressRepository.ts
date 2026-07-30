@@ -43,10 +43,7 @@ export class ProgressRepository {
    */
   static async resetServerProgress(userId: string): Promise<{ success: boolean; error?: any }> {
     const { error } = await safeSupabaseQuery(
-      supabase
-        .from('user_level_records')
-        .delete()
-        .eq('user_id', userId),
+      supabase.from('user_level_records').delete().eq('user_id', userId),
       { context: 'ProgressRepository.resetServerProgress' }
     );
 
