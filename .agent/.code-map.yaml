@@ -1,6 +1,6 @@
 
 project: solve-climb
-generatedAt: "2026-07-29T14:45:33.626Z"
+generatedAt: "2026-07-30T07:09:55.897Z"
 files:
   src/App.tsx:
     imports: [@/utils/resilientLazy, @/components/PageTransition, @/stores/useLevelProgressStore, @/stores/useAuthStore, @/hooks/useCustomBackNavigation, @/components/GlobalLoadingIndicator, @/stores/useErrorLogStore, @/stores/useDebugStore, @/stores/useSettingsStore, @/hooks/useConnectivity, @/components/PwaUpdateNotification, @/features/auth, @/utils/supabaseClient, @/utils/auth, @/components/GlobalToastContainer]
@@ -945,6 +945,44 @@ files:
           - name: getAll
             returns: Record<string, unknown>
             calls: [Object.fromEntries]
+  src/services/ProgressRepository.ts:
+    imports: [@/utils/supabaseClient, @/utils/debugFetch]
+    exports:
+      - name: ProgressRepository
+        type: class
+        methods:
+          - name: fetchServerProgress
+            params:
+              userId: string
+            returns: "Promise<{ data: import(\"C:/Users/ghkdd/gemini-projects/solve-climb/src/services/ProgressRepository\").DBProgressRecord[] | null; error: any; }>"
+            calls: [safeSupabaseQuery, "supabase .from('user_level_records') .select('world_id, category_id, subject_id, level, mode_code, best_score, updated_at') .eq", "supabase .from('user_level_records') .select", "supabase .from"]
+          - name: resetServerProgress
+            params:
+              userId: string
+            returns: "Promise<{ success: boolean; error?: any; }>"
+            calls: [safeSupabaseQuery, "supabase .from('user_level_records') .delete() .eq", "supabase .from('user_level_records') .delete", "supabase .from"]
+  src/services/UserRepository.ts:
+    imports: [@/utils/supabaseClient, @/utils/debugFetch, @/constants/ui, @/types/user]
+    exports:
+      - name: UserRepository
+        type: class
+        methods:
+          - name: callRpc
+            params:
+              rpcCall: "PromiseLike<{ data: T | null; error: unknown; }>"
+              options: "{ errorMessage?: string | undefined; }"
+            returns: "Promise<{ success: boolean; message: string; } & Partial<T>>"
+            calls: [safeSupabaseQuery, console.error]
+          - name: fetchUserData
+            params:
+              userId: string
+            returns: "Promise<{ profile: { minerals?: number | undefined; stamina?: number | undefined; is_anonymous?: boolean | undefined; last_ad_stamina_recharge?: string | null | undefined; updated_at?: string | undefined; } | null; profileError: any; inventory: import(\"C:/Users/ghkdd/gemini-projects/solve-climb/src/services/UserRepository\").RawInventoryItem[] | null; inventoryError: any; }>"
+            calls: ["supabase .from('profiles') .select('minerals, stamina, is_anonymous, last_ad_stamina_recharge, updated_at') .eq", "supabase .from('profiles') .select", "supabase .from", "(profileQueryBuilder as any).maybeSingle", "(profileQueryBuilder as any).single", Promise.all, safeSupabaseQuery, "supabase .from('inventory') .select(` quantity, items ( id, code, name, description ) `) .eq", "supabase .from('inventory') .select"]
+          - name: formatInventory
+            params:
+              raw: "import(\"C:/Users/ghkdd/gemini-projects/solve-climb/src/services/UserRepository\").RawInventoryItem[] | null"
+            returns: "import(\"C:/Users/ghkdd/gemini-projects/solve-climb/src/types/user\").InventoryItem[]"
+            calls: [raw?.map]
   src/stores/useAuthStore.ts:
     imports: [../utils/supabaseClient, ../utils/debugFetch, ../services, @/services/analytics]
   src/stores/useBadgeStore.ts:
@@ -960,7 +998,7 @@ files:
   src/stores/useGameStore.ts:
     imports: [../constants/game, ../services]
   src/stores/useLevelProgressStore.ts:
-    imports: [../utils/supabaseClient, ../utils/debugFetch, ../types/quiz, ./useDebugStore, ./useToastStore, ../constants/ui, ../utils/validation, ../services/LevelSyncService]
+    imports: [../utils/supabaseClient, ../utils/debugFetch, ../types/quiz, ./useDebugStore, ./useToastStore, ../constants/ui, ../utils/validation, ../services/LevelSyncService, ../services/ProgressRepository]
   src/stores/useProfileStore.ts:
     imports: [./useLevelProgressStore, ../services, ../utils/supabaseClient, ../utils/debugFetch, ./useLevelProgressStore]
   src/stores/useQuizStore.ts:
@@ -968,7 +1006,7 @@ files:
   src/stores/useRankingStore.ts:
     imports: [../utils/supabaseClient, ../utils/debugFetch, ../utils/rpcValidator, ./useToastStore, ../constants/ui]
   src/stores/useUserStore.ts:
-    imports: [../utils/supabaseClient, ../utils/debugFetch, ./useDebugStore, ../utils/rpcValidator, ../utils/adService, ../constants/ui, ../types/user]
+    imports: [../utils/supabaseClient, ../utils/debugFetch, ./useDebugStore, ../utils/rpcValidator, ../utils/adService, ../constants/ui, ../types/user, ../services/UserRepository]
   src/types/storage.ts:
     imports: [./quiz, @/features/mypage]
   src/types/user.ts:
@@ -988,16 +1026,6 @@ files:
             Parses an equation string into left and right structured terms.
             Example: "2x + 5 = 15" -> { left: [2x, 5], right: [15] }
         calls: ["equation.replace(/\s+/g, '').split", equation.replace, console.warn, processingStr.match, matches.map, match.slice, "/[a-zA-Z]/.test", Math.random().toString(36).substr, Math.random().toString, Math.random, parseSide(leftStr).map, parseSide, parseSide(rightStr).map]
-  src/utils/AlgebraAdvancedGenerator.ts:
-    imports: [../types/quiz]
-    exports:
-      - name: generateHardAlgebraProblem
-        params:
-          level: number
-          _difficulty: "import(\"C:/Users/ghkdd/gemini-projects/solve-climb/src/features/quiz/types/quiz\").Difficulty"
-          rng: "{ randomInt: (min: number, max: number) => number; } | undefined"
-        returns: "import(\"C:/Users/ghkdd/gemini-projects/solve-climb/src/features/quiz/types/quiz\").MathProblem"
-        calls: [getRandomInt, generateQuadratic, generateExponential, generateLogarithm]
   src/utils/auth.ts:
     imports: [./supabaseClient, ./env]
     exports:
@@ -1018,26 +1046,6 @@ files:
             구글 로그인: 한 번 클릭 후 구글 페이지로 이동 → 로그인 완료 시 redirectTo로 돌아옴.
             네이티브 환경(Capacitor)에서는
         calls: [isNativeAppPlatform, console.log, initializeGoogleSignIn, getValidClientId, GoogleSignIn.signIn, supabase.auth.signInWithIdToken, console.error, supabase.auth.signInWithOAuth]
-  src/utils/CalculusProblemGenerator.ts:
-    imports: [../types/quiz]
-    exports:
-      - name: generateCalculusProblem
-        params:
-          level: number
-          _difficulty: "import(\"C:/Users/ghkdd/gemini-projects/solve-climb/src/features/quiz/types/quiz\").Difficulty"
-          rng: "{ random: () => number; randomInt: (min: number, max: number) => number; } | undefined"
-        returns: "import(\"C:/Users/ghkdd/gemini-projects/solve-climb/src/utils/CalculusProblemGenerator\").CalculusProblem"
-        calls: [rng.randomInt, Math.floor, Math.random, generateDefiniteIntegral, generateAdvancedDerivative, generateFactorizationLimit, generateCoordinateProblem, generateFunctionProblem, generateDerivativeProblem, generateIntegralProblem, rng.random]
-  src/utils/CSProblemGenerator.ts:
-    imports: [../types/quiz]
-    exports:
-      - name: generateCSProblem
-        params:
-          level: number
-          _difficulty: "import(\"C:/Users/ghkdd/gemini-projects/solve-climb/src/features/quiz/types/quiz\").Difficulty"
-          rng: "{ random: () => number; randomInt: (min: number, max: number) => number; } | undefined"
-        returns: "import(\"C:/Users/ghkdd/gemini-projects/solve-climb/src/utils/CSProblemGenerator\").CSProblem"
-        calls: [rng.randomInt, Math.floor, Math.random, generateBinaryToDec, generateDecToBinary, generateBitwiseAdvanced, generateMemoryUnitAdvanced, generateBinaryDecimalProblem, generateHexToDec, generateLogicAND, generateLogicOR, generateLogicNOT, generateLogicXOR, generateStackSimulation, generateQueueSimulation, generateMemoryUnitBasic, generateOnesComplement, generateTwosComplement, generateBinaryAddition]
   src/utils/dataReset.ts:
     imports: [../stores/useProfileStore, ../stores/useLevelProgressStore, ../services, ./errorHandler]
     exports:
@@ -1187,32 +1195,6 @@ files:
       - name: logEnvInfo
         description: 앱 구동 시 환경 변수 상태를 로깅합니다 (개발 환경 전용)
         calls: [logger.group, logger.info]
-  src/utils/EquationProblemGenerator.ts:
-    imports: [../types/quiz]
-    exports:
-      - name: generateEquation
-        params:
-          level: number
-          _difficulty: "import(\"C:/Users/ghkdd/gemini-projects/solve-climb/src/features/quiz/types/quiz\").Difficulty"
-          rng: "{ random: () => number; randomInt: (min: number, max: number) => number; } | undefined"
-        returns: "import(\"C:/Users/ghkdd/gemini-projects/solve-climb/src/utils/EquationProblemGenerator\").EquationProblem"
-        description: 주어진 stageLevel에 해당하는 방정식 문제 생성
-        calls: [EQUATION_STAGES.find, generateFillPlus, generateFillMinus, generateFillSubtract, generateFillMultiply, generateFillDivide, generateXPlus, generateXMinus, generateCoefficientMultiply, generateCoefficientDivide, generateTwoStepPlus, generateTwoStepMinus, generateTwoStepLarge, generateBothSidesSimple, generateParentheses, generateBothSidesComplex, generateRatio, generateSubstitution, generateInequalityBasic, generateInequalitySolve]
-      - name: EquationProblemGenerator
-        type: class
-        methods:
-          - name: generate
-            params:
-              stageLevel: number
-            returns: "import(\"C:/Users/ghkdd/gemini-projects/solve-climb/src/utils/EquationProblemGenerator\").EquationProblem"
-            calls: [generateEquation]
-          - name: getStages
-            returns: "import(\"C:/Users/ghkdd/gemini-projects/solve-climb/src/utils/EquationProblemGenerator\").EquationStageConfig[]"
-          - name: getStage
-            params:
-              stageLevel: number
-            returns: "import(\"C:/Users/ghkdd/gemini-projects/solve-climb/src/utils/EquationProblemGenerator\").EquationStageConfig | undefined"
-            calls: [EQUATION_STAGES.find]
   src/utils/errorHandler.ts:
     imports: [./logger, ../stores/useErrorLogStore, @/services/analytics]
     exports:
@@ -1248,16 +1230,6 @@ files:
             경고 로깅
             프로덕션에서는 로깅하지 않음
         calls: [logger.warn, useErrorLogStore.getState().addLog, useErrorLogStore.getState]
-  src/utils/GeometryProblemGenerator.ts:
-    imports: [../types/quiz]
-    exports:
-      - name: generateGeometryProblem
-        params:
-          level: number
-          _difficulty: "import(\"C:/Users/ghkdd/gemini-projects/solve-climb/src/features/quiz/types/quiz\").Difficulty"
-          rng: "{ random: () => number; randomInt: (min: number, max: number) => number; } | undefined"
-        returns: "import(\"C:/Users/ghkdd/gemini-projects/solve-climb/src/utils/GeometryProblemGenerator\").GeometryProblem"
-        calls: [rng.randomInt, Math.floor, Math.random, generateSolidVolume, generateSolidSurfaceArea, generateCoordinateDistance, generateTrigonometry, generatePythagoreanAdvanced, generateCoordinateMidpoint, generateLineSlope, generateCircleEqBasic, generateBasicShapes, generateBasicShapesDiagonal, generateTriangleProperties, generateQuadrilateralProperties, generateAreaRect, generateAreaTriangle, generateCircleBasic, generateCircleAdvanced, generateSymmetry, generatePythagorean, generateSolidBasic]
   src/utils/haptic.ts:
     imports: [../stores/useSettingsStore]
     exports:
@@ -1286,23 +1258,6 @@ files:
         calls: [input.toLowerCase().trim, input.toLowerCase]
   src/utils/logger.ts:
     imports: [../stores/useErrorLogStore]
-  src/utils/LogicProblemGenerator.ts:
-    imports: [../types/quiz]
-    exports:
-      - name: generateSequenceProblem
-        params:
-          difficulty: "import(\"C:/Users/ghkdd/gemini-projects/solve-climb/src/features/quiz/types/quiz\").Difficulty"
-          specificType: SequenceType | undefined
-          rng: "{ random: () => number; randomInt: (min: number, max: number) => number; } | undefined"
-        returns: "import(\"C:/Users/ghkdd/gemini-projects/solve-climb/src/utils/LogicProblemGenerator\").LogicProblem"
-        calls: [types.push, rng.randomInt, Math.floor, Math.random, types.at, getRandomInt, getInt, sequence.push, sequence.pop, Math.pow, sequence.join]
-      - name: generateLogicProblem
-        params:
-          level: number
-          difficulty: "import(\"C:/Users/ghkdd/gemini-projects/solve-climb/src/features/quiz/types/quiz\").Difficulty"
-          rng: "{ random: () => number; randomInt: (min: number, max: number) => number; } | undefined"
-        returns: "import(\"C:/Users/ghkdd/gemini-projects/solve-climb/src/utils/LogicProblemGenerator\").LogicProblem"
-        calls: [rng.randomInt, Math.floor, Math.random, generateLogicProblem, generateEvenOddProblem, generatePosNegProblem, generateSequenceProblem, generatePrimeProblem, generateModProblem, generateFactorialProblem, generateClockProblem, generateLogicMix1, generateAbsoluteProblem, generateModAdvancedProblem, generateFactorialAdvancedProblem, generateCustomOpProblem, generateLogicMix2]
   src/utils/math.ts:
     imports: [../types/quiz, ../constants/game]
     exports:
@@ -1315,17 +1270,6 @@ files:
             (지시서 6항 - 견고성 1): 예기치 않은 난이도 값(undefined)이 들어올 경우
             'easy' 레벨을 기준으로 숫자를 생성합니다. (Fallback 로직)
         calls: [Object.getOwnPropertyDescriptor, Math.floor, Math.random]
-  src/utils/MathProblemGenerator.ts:
-    imports: [../types/quiz, ./AlgebraAdvancedGenerator]
-    exports:
-      - name: generateProblem
-        params:
-          stageId: number
-          _difficulty: "import(\"C:/Users/ghkdd/gemini-projects/solve-climb/src/features/quiz/types/quiz\").Difficulty"
-          tier: "import(\"C:/Users/ghkdd/gemini-projects/solve-climb/src/features/quiz/types/quiz\").Tier"
-          rng: "{ random: () => number; randomInt: (min: number, max: number) => number; } | undefined"
-        returns: "import(\"C:/Users/ghkdd/gemini-projects/solve-climb/src/features/quiz/types/quiz\").MathProblem"
-        calls: [generateHardAlgebraProblem, stageCache.get, STAGES.find, stageCache.set, generateStandardProblem, generateSequentialProblem, generateParenthesesProblem, generateDecimalProblem, generateFractionProblem, generateTimeProblem, generateModuloProblem, generateDecimalFractionMixProblem, generateMixedFractionProblem, console.warn]
   src/utils/navigation.ts:
     imports: [@/config/app, ../types/quiz]
   src/utils/performance.ts:
@@ -1352,21 +1296,6 @@ files:
       - name: logPerformanceSummary
         description: 성능 요약 로그 출력
         calls: [console.group, metricsStore.forEach, console.log, m.duration.toFixed, console.groupEnd]
-  src/utils/quizGenerator.ts:
-    imports: [../types/quiz, ./MathProblemGenerator, ./EquationProblemGenerator, ./GeometryProblemGenerator, ./StatsProblemGenerator, ./LogicProblemGenerator, ./CSProblemGenerator, ./CalculusProblemGenerator]
-    exports:
-      - name: generateQuestion
-        params:
-          mountainId: "import(\"C:/Users/ghkdd/gemini-projects/solve-climb/src/features/quiz/types/quiz\").Mountain"
-          worldId: "import(\"C:/Users/ghkdd/gemini-projects/solve-climb/src/features/quiz/types/quiz\").World"
-          topicId: "\"World1-기초\" | \"World1-논리\" | \"World1-대수\" | \"World1-심화\" | \"World1-히라가나\" | \"World1-가타카나\" | \"World1-어휘\" | \"World2-기초\" | \"World2-논리\" | \"World2-대수\" | \"World2-심화\" | \"World2-히라가나\" | \"World2-가타카나\" | \"World2-어휘\" | \"World3-기초\" | \"World3-논리\" | \"World3-대수\" | \"World3-심화\" | \"World3-히라가나\" | \"World3-가타카나\" | \"World3-어휘\" | \"World4-기초\" | \"World4-논리\" | \"World4-대수\" | \"World4-심화\" | \"World4-히라가나\" | \"World4-가타카나\" | \"World4-어휘\" | \"LangWorld1-기초\" | \"LangWorld1-논리\" | \"LangWorld1-대수\" | \"LangWorld1-심화\" | \"LangWorld1-히라가나\" | \"LangWorld1-가타카나\" | \"LangWorld1-어휘\""
-          level: number
-          difficulty: "import(\"C:/Users/ghkdd/gemini-projects/solve-climb/src/features/quiz/types/quiz\").Difficulty"
-          tier: "import(\"C:/Users/ghkdd/gemini-projects/solve-climb/src/features/quiz/types/quiz\").Tier"
-          rng: "{ random: () => number; randomInt: (min: number, max: number) => number; } | undefined"
-        returns: "import(\"C:/Users/ghkdd/gemini-projects/solve-climb/src/features/quiz/types/quiz\").QuizQuestion"
-        description: 카테고리와 월드, 레벨에 따라 문제를 생성합니다.
-        calls: [topicId.includes, topicId.split, generateLogicProblem, generateEquation, generateCalculusProblem, generateProblem, generateGeometryProblem, String, ansStr.includes, generateStatsProblem, generateCSProblem]
   src/utils/resilientLazy.ts:
     imports: [./logger]
     exports:
@@ -1411,25 +1340,6 @@ files:
         returns: "import(\"C:/Users/ghkdd/gemini-projects/solve-climb/src/utils/safeJsonParse\").LocalSession | null"
         description: 로컬 세션을 안전하게 파싱하는 함수
         calls: [safeJsonParse]
-  src/utils/solutionExplainer.ts:
-    exports:
-      - name: getSolutionProcess
-        params:
-          question: string
-          answer: string | number
-        returns: "string[]"
-        description: 문제와 정답을 기반으로 상세한 풀이 과정(Step-by-step Solution)을 한국어로 생성합니다.
-        calls: [question.toString, answer.toString, qStr.includes, qStr.match, evaluateSimpleExpr, qStr.replace, String, "(qStr.match(/\d+(\.\d+)?/g) || []).map", "(qStr.match(/\d+/g) || []).map", numbers.reduce, numbers.join, "[...numbers].sort", sorted.join, numbers.forEach, "Object.entries(counts) .map(([num, count]) => `숫자 ${num}: ${count}회`) .join", "Object.entries(counts) .map", Object.entries, Math.max, Math.min, parseInt, isNaN, angles.reduce, Math.pow, additionParts.push, additionParts.join, decomposition.push, decomposition.join, char.charCodeAt, 'A'.charCodeAt, "binary .split('') .map((b) => (b === '0' ? '1' : '0')) .join", "binary .split('') .map", "binary .split"]
-  src/utils/StatsProblemGenerator.ts:
-    imports: [../types/quiz]
-    exports:
-      - name: generateStatsProblem
-        params:
-          level: number
-          _difficulty: "import(\"C:/Users/ghkdd/gemini-projects/solve-climb/src/features/quiz/types/quiz\").Difficulty"
-          rng: "{ random: () => number; randomInt: (min: number, max: number) => number; } | undefined"
-        returns: "import(\"C:/Users/ghkdd/gemini-projects/solve-climb/src/utils/StatsProblemGenerator\").StatsProblem"
-        calls: [rng.randomInt, Math.floor, Math.random, generatePermutations, generateConditionalProbability, generateVariance, generateCombinationsAdvanced, generateMeanBasic, generateMeanExtended, generateMedianBasic, generateModeBasic, generateProbCoin, generateProbRPS, generateProbDice, generateCombinationsBasic, generatePermutationsBasic, generateProbBasic, generateProbAdvanced, generateProbUnionIntersection, generateStatsRange, generateNoReplaceCount, generateNoReplaceProb]
   src/utils/storage.ts:
     imports: [./logger, ../services]
     exports:
@@ -2395,6 +2305,134 @@ files:
           - name: toString
             returns: string
             calls: [this._meters.toLocaleString]
+  src/features/quiz/generators/AlgebraAdvancedGenerator.ts:
+    imports: [../types/quiz]
+    exports:
+      - name: generateHardAlgebraProblem
+        params:
+          level: number
+          _difficulty: "import(\"C:/Users/ghkdd/gemini-projects/solve-climb/src/features/quiz/types/quiz\").Difficulty"
+          rng: "{ randomInt: (min: number, max: number) => number; } | undefined"
+        returns: "import(\"C:/Users/ghkdd/gemini-projects/solve-climb/src/features/quiz/types/quiz\").MathProblem"
+        calls: [getRandomInt, generateQuadratic, generateExponential, generateLogarithm]
+  src/features/quiz/generators/CalculusProblemGenerator.ts:
+    imports: [../types/quiz]
+    exports:
+      - name: generateCalculusProblem
+        params:
+          level: number
+          _difficulty: "import(\"C:/Users/ghkdd/gemini-projects/solve-climb/src/features/quiz/types/quiz\").Difficulty"
+          rng: "{ random: () => number; randomInt: (min: number, max: number) => number; } | undefined"
+        returns: "import(\"C:/Users/ghkdd/gemini-projects/solve-climb/src/features/quiz/generators/CalculusProblemGenerator\").CalculusProblem"
+        calls: [rng.randomInt, Math.floor, Math.random, generateDefiniteIntegral, generateAdvancedDerivative, generateFactorizationLimit, generateCoordinateProblem, generateFunctionProblem, generateDerivativeProblem, generateIntegralProblem, rng.random]
+  src/features/quiz/generators/CSProblemGenerator.ts:
+    imports: [../types/quiz]
+    exports:
+      - name: generateCSProblem
+        params:
+          level: number
+          _difficulty: "import(\"C:/Users/ghkdd/gemini-projects/solve-climb/src/features/quiz/types/quiz\").Difficulty"
+          rng: "{ random: () => number; randomInt: (min: number, max: number) => number; } | undefined"
+        returns: "import(\"C:/Users/ghkdd/gemini-projects/solve-climb/src/features/quiz/generators/CSProblemGenerator\").CSProblem"
+        calls: [rng.randomInt, Math.floor, Math.random, generateBinaryToDec, generateDecToBinary, generateBitwiseAdvanced, generateMemoryUnitAdvanced, generateBinaryDecimalProblem, generateHexToDec, generateLogicAND, generateLogicOR, generateLogicNOT, generateLogicXOR, generateStackSimulation, generateQueueSimulation, generateMemoryUnitBasic, generateOnesComplement, generateTwosComplement, generateBinaryAddition]
+  src/features/quiz/generators/EquationProblemGenerator.ts:
+    imports: [../types/quiz]
+    exports:
+      - name: generateEquation
+        params:
+          level: number
+          _difficulty: "import(\"C:/Users/ghkdd/gemini-projects/solve-climb/src/features/quiz/types/quiz\").Difficulty"
+          rng: "{ random: () => number; randomInt: (min: number, max: number) => number; } | undefined"
+        returns: "import(\"C:/Users/ghkdd/gemini-projects/solve-climb/src/features/quiz/generators/EquationProblemGenerator\").EquationProblem"
+        description: 주어진 stageLevel에 해당하는 방정식 문제 생성
+        calls: [EQUATION_STAGES.find, generateFillPlus, generateFillMinus, generateFillSubtract, generateFillMultiply, generateFillDivide, generateXPlus, generateXMinus, generateCoefficientMultiply, generateCoefficientDivide, generateTwoStepPlus, generateTwoStepMinus, generateTwoStepLarge, generateBothSidesSimple, generateParentheses, generateBothSidesComplex, generateRatio, generateSubstitution, generateInequalityBasic, generateInequalitySolve]
+      - name: EquationProblemGenerator
+        type: class
+        methods:
+          - name: generate
+            params:
+              stageLevel: number
+            returns: "import(\"C:/Users/ghkdd/gemini-projects/solve-climb/src/features/quiz/generators/EquationProblemGenerator\").EquationProblem"
+            calls: [generateEquation]
+          - name: getStages
+            returns: "import(\"C:/Users/ghkdd/gemini-projects/solve-climb/src/features/quiz/generators/EquationProblemGenerator\").EquationStageConfig[]"
+          - name: getStage
+            params:
+              stageLevel: number
+            returns: "import(\"C:/Users/ghkdd/gemini-projects/solve-climb/src/features/quiz/generators/EquationProblemGenerator\").EquationStageConfig | undefined"
+            calls: [EQUATION_STAGES.find]
+  src/features/quiz/generators/GeometryProblemGenerator.ts:
+    imports: [../types/quiz]
+    exports:
+      - name: generateGeometryProblem
+        params:
+          level: number
+          _difficulty: "import(\"C:/Users/ghkdd/gemini-projects/solve-climb/src/features/quiz/types/quiz\").Difficulty"
+          rng: "{ random: () => number; randomInt: (min: number, max: number) => number; } | undefined"
+        returns: "import(\"C:/Users/ghkdd/gemini-projects/solve-climb/src/features/quiz/generators/GeometryProblemGenerator\").GeometryProblem"
+        calls: [rng.randomInt, Math.floor, Math.random, generateSolidVolume, generateSolidSurfaceArea, generateCoordinateDistance, generateTrigonometry, generatePythagoreanAdvanced, generateCoordinateMidpoint, generateLineSlope, generateCircleEqBasic, generateBasicShapes, generateBasicShapesDiagonal, generateTriangleProperties, generateQuadrilateralProperties, generateAreaRect, generateAreaTriangle, generateCircleBasic, generateCircleAdvanced, generateSymmetry, generatePythagorean, generateSolidBasic]
+  src/features/quiz/generators/LogicProblemGenerator.ts:
+    imports: [../types/quiz]
+    exports:
+      - name: generateSequenceProblem
+        params:
+          difficulty: "import(\"C:/Users/ghkdd/gemini-projects/solve-climb/src/features/quiz/types/quiz\").Difficulty"
+          specificType: SequenceType | undefined
+          rng: "{ random: () => number; randomInt: (min: number, max: number) => number; } | undefined"
+        returns: "import(\"C:/Users/ghkdd/gemini-projects/solve-climb/src/features/quiz/generators/LogicProblemGenerator\").LogicProblem"
+        calls: [types.push, rng.randomInt, Math.floor, Math.random, types.at, getRandomInt, getInt, sequence.push, sequence.pop, Math.pow, sequence.join]
+      - name: generateLogicProblem
+        params:
+          level: number
+          difficulty: "import(\"C:/Users/ghkdd/gemini-projects/solve-climb/src/features/quiz/types/quiz\").Difficulty"
+          rng: "{ random: () => number; randomInt: (min: number, max: number) => number; } | undefined"
+        returns: "import(\"C:/Users/ghkdd/gemini-projects/solve-climb/src/features/quiz/generators/LogicProblemGenerator\").LogicProblem"
+        calls: [rng.randomInt, Math.floor, Math.random, generateLogicProblem, generateEvenOddProblem, generatePosNegProblem, generateSequenceProblem, generatePrimeProblem, generateModProblem, generateFactorialProblem, generateClockProblem, generateLogicMix1, generateAbsoluteProblem, generateModAdvancedProblem, generateFactorialAdvancedProblem, generateCustomOpProblem, generateLogicMix2]
+  src/features/quiz/generators/MathProblemGenerator.ts:
+    imports: [../types/quiz, ./AlgebraAdvancedGenerator]
+    exports:
+      - name: generateProblem
+        params:
+          stageId: number
+          _difficulty: "import(\"C:/Users/ghkdd/gemini-projects/solve-climb/src/features/quiz/types/quiz\").Difficulty"
+          tier: "import(\"C:/Users/ghkdd/gemini-projects/solve-climb/src/features/quiz/types/quiz\").Tier"
+          rng: "{ random: () => number; randomInt: (min: number, max: number) => number; } | undefined"
+        returns: "import(\"C:/Users/ghkdd/gemini-projects/solve-climb/src/features/quiz/types/quiz\").MathProblem"
+        calls: [generateHardAlgebraProblem, stageCache.get, STAGES.find, stageCache.set, generateStandardProblem, generateSequentialProblem, generateParenthesesProblem, generateDecimalProblem, generateFractionProblem, generateTimeProblem, generateModuloProblem, generateDecimalFractionMixProblem, generateMixedFractionProblem, console.warn]
+  src/features/quiz/generators/quizGenerator.ts:
+    imports: [../types/quiz, ./MathProblemGenerator, ./EquationProblemGenerator, ./GeometryProblemGenerator, ./StatsProblemGenerator, ./LogicProblemGenerator, ./CSProblemGenerator, ./CalculusProblemGenerator]
+    exports:
+      - name: generateQuestion
+        params:
+          mountainId: "import(\"C:/Users/ghkdd/gemini-projects/solve-climb/src/features/quiz/types/quiz\").Mountain"
+          worldId: "import(\"C:/Users/ghkdd/gemini-projects/solve-climb/src/features/quiz/types/quiz\").World"
+          topicId: "\"World1-기초\" | \"World1-논리\" | \"World1-대수\" | \"World1-심화\" | \"World1-히라가나\" | \"World1-가타카나\" | \"World1-어휘\" | \"World2-기초\" | \"World2-논리\" | \"World2-대수\" | \"World2-심화\" | \"World2-히라가나\" | \"World2-가타카나\" | \"World2-어휘\" | \"World3-기초\" | \"World3-논리\" | \"World3-대수\" | \"World3-심화\" | \"World3-히라가나\" | \"World3-가타카나\" | \"World3-어휘\" | \"World4-기초\" | \"World4-논리\" | \"World4-대수\" | \"World4-심화\" | \"World4-히라가나\" | \"World4-가타카나\" | \"World4-어휘\" | \"LangWorld1-기초\" | \"LangWorld1-논리\" | \"LangWorld1-대수\" | \"LangWorld1-심화\" | \"LangWorld1-히라가나\" | \"LangWorld1-가타카나\" | \"LangWorld1-어휘\""
+          level: number
+          difficulty: "import(\"C:/Users/ghkdd/gemini-projects/solve-climb/src/features/quiz/types/quiz\").Difficulty"
+          tier: "import(\"C:/Users/ghkdd/gemini-projects/solve-climb/src/features/quiz/types/quiz\").Tier"
+          rng: "{ random: () => number; randomInt: (min: number, max: number) => number; } | undefined"
+        returns: "import(\"C:/Users/ghkdd/gemini-projects/solve-climb/src/features/quiz/types/quiz\").QuizQuestion"
+        description: 카테고리와 월드, 레벨에 따라 문제를 생성합니다.
+        calls: [topicId.includes, topicId.split, generateLogicProblem, generateEquation, generateCalculusProblem, generateProblem, generateGeometryProblem, String, ansStr.includes, generateStatsProblem, generateCSProblem]
+  src/features/quiz/generators/solutionExplainer.ts:
+    exports:
+      - name: getSolutionProcess
+        params:
+          question: string
+          answer: string | number
+        returns: "string[]"
+        description: 문제와 정답을 기반으로 상세한 풀이 과정(Step-by-step Solution)을 한국어로 생성합니다.
+        calls: [question.toString, answer.toString, qStr.includes, qStr.match, evaluateSimpleExpr, qStr.replace, String, "(qStr.match(/\d+(\.\d+)?/g) || []).map", "(qStr.match(/\d+/g) || []).map", numbers.reduce, numbers.join, "[...numbers].sort", sorted.join, numbers.forEach, "Object.entries(counts) .map(([num, count]) => `숫자 ${num}: ${count}회`) .join", "Object.entries(counts) .map", Object.entries, Math.max, Math.min, parseInt, isNaN, angles.reduce, Math.pow, additionParts.push, additionParts.join, decomposition.push, decomposition.join, char.charCodeAt, 'A'.charCodeAt, "binary .split('') .map((b) => (b === '0' ? '1' : '0')) .join", "binary .split('') .map", "binary .split"]
+  src/features/quiz/generators/StatsProblemGenerator.ts:
+    imports: [../types/quiz]
+    exports:
+      - name: generateStatsProblem
+        params:
+          level: number
+          _difficulty: "import(\"C:/Users/ghkdd/gemini-projects/solve-climb/src/features/quiz/types/quiz\").Difficulty"
+          rng: "{ random: () => number; randomInt: (min: number, max: number) => number; } | undefined"
+        returns: "import(\"C:/Users/ghkdd/gemini-projects/solve-climb/src/features/quiz/generators/StatsProblemGenerator\").StatsProblem"
+        calls: [rng.randomInt, Math.floor, Math.random, generatePermutations, generateConditionalProbability, generateVariance, generateCombinationsAdvanced, generateMeanBasic, generateMeanExtended, generateMedianBasic, generateModeBasic, generateProbCoin, generateProbRPS, generateProbDice, generateCombinationsBasic, generatePermutationsBasic, generateProbBasic, generateProbAdvanced, generateProbUnionIntersection, generateStatsRange, generateNoReplaceCount, generateNoReplaceProb]
   src/features/quiz/hooks/useQuestionGenerator.ts:
     imports: [../types/quiz, @/utils/quizGenerator, @/stores/useBaseCampStore, @/stores/useDeathNoteStore, @/constants/game, @/lib/eventBus]
     exports:
