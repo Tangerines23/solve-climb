@@ -1,8 +1,7 @@
 import { useState } from 'react';
-// import { createSafeStorageKey } from '../utils/storageKey'; // Removed
-// import { storage } from '../utils/storage'; // Removed
 import { BackpackBottomSheet } from './game/BackpackBottomSheet';
 import { BaseModal } from './BaseModal';
+import { GeometryTipVisualizer } from './geometry/GeometryTipVisualizer';
 import { WORLD_TIPS, CATEGORY_TIPS, type TipItem } from '../constants/tips';
 import './GameTipModal.css';
 
@@ -94,6 +93,7 @@ export function GameTipModal({
       const section = (
         <div className="level-tip-card" data-vg-ignore="true">
           <h4 className="level-tip-title">{levelTip.title}</h4>
+          {subTopic === 'World2' && <GeometryTipVisualizer level={level || 1} />}
           <p className="level-tip-text" data-vg-ignore="true">
             <strong>팁:</strong> {levelTip.tip}
           </p>

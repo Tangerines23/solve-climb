@@ -31,6 +31,8 @@ const ALLOWED_PATTERNS = [
   /#131314|#8[eE]918[fF]|#e3e3e3|#1f1f1f|#a8abaa|#2c2c2e|#34A853|#FBBC05|#EA4335/,
   /rgba\(var\(/, // rgba(var(...)) 형태
   /rgb\(var\(/, // rgb(var(...)) 형태
+  /GeometryTipVisualizer/, // 기하학 그래픽 시각화 파일
+  /ShapeVisualizer/, // 기하학 도형 시각화 파일
 ];
 
 // 검사할 파일 확장자

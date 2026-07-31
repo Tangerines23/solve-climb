@@ -22,7 +22,8 @@ describe('GeometryProblemGenerator', () => {
   it('should generate Level 1 Basic Shapes vertices', () => {
     const rng = mockRng([1]); // Index 1: 사각형
     const problem = generateGeometryProblem(1, 'easy', rng);
-    expect(problem.question).toContain('사각형');
+    expect(problem.question).toBe('이 도형의 꼭짓점 수 = ?');
+    expect((problem as any).hintType).toBe('shape-visualizer');
     expect(problem.answer).toBe(4);
   });
 
@@ -36,7 +37,7 @@ describe('GeometryProblemGenerator', () => {
   it('should generate Level 3 Triangle Properties', () => {
     const rng = mockRng([50, 60]); // a=50, b=60 -> c=70
     const problem = generateGeometryProblem(3, 'easy', rng);
-    expect(problem.question).toContain('두 내각이 각각 50도, 60도');
+    expect(problem.question).toContain('50°, 60°');
     expect(problem.answer).toBe(70);
   });
 
@@ -44,13 +45,13 @@ describe('GeometryProblemGenerator', () => {
     // Adjacent case
     const rngAdj = mockRng([1, 120]); // isAdjacent=1, a=120
     const problemAdj = generateGeometryProblem(4, 'easy', rngAdj);
-    expect(problemAdj.question).toContain('이웃한 다른 내각');
+    expect(problemAdj.question).toContain('이웃한 각');
     expect(problemAdj.answer).toBe(60);
 
     // Opposite case
     const rngOpp = mockRng([0, 120]); // isAdjacent=0, a=120
     const problemOpp = generateGeometryProblem(4, 'easy', rngOpp);
-    expect(problemOpp.question).toContain('마주보는 내각');
+    expect(problemOpp.question).toContain('마주보는 각');
     expect(problemOpp.answer).toBe(120);
   });
 
@@ -75,14 +76,14 @@ describe('GeometryProblemGenerator', () => {
   it('should generate Level 8 Circle Advanced (Circumference)', () => {
     const rng = { ...mockRng([3]), random: () => 0.6 }; // r=3, type=둘레
     const problem = generateGeometryProblem(8, 'easy', rng);
-    expect(problem.question).toContain('원의 둘레');
+    expect(problem.question).toContain('둘레');
     expect(problem.answer).toBe(18.6); // 2 * 3.1 * 3
   });
 
   it('should generate Level 8 Circle Advanced (Area)', () => {
     const rng = { ...mockRng([3]), random: () => 0.4 }; // r=3, type=넓이
     const problem = generateGeometryProblem(8, 'easy', rng);
-    expect(problem.question).toContain('원의 넓이');
+    expect(problem.question).toContain('넓이');
     expect(problem.answer).toBe(27.9); // 3.1 * 3^2
   });
 
@@ -110,13 +111,13 @@ describe('GeometryProblemGenerator', () => {
     // Prism case
     const rngPrism = mockRng([5, 1]); // n=5, isPrism=1
     const probPrism = generateGeometryProblem(12, 'easy', rngPrism);
-    expect(probPrism.question).toContain('5각기둥의 모서리의 개수');
+    expect(probPrism.question).toContain('5각기둥 모서리');
     expect(probPrism.answer).toBe(15);
 
     // Pyramid case
     const rngPyramid = mockRng([6, 0]); // n=6, isPrism=0
     const probPyramid = generateGeometryProblem(12, 'easy', rngPyramid);
-    expect(probPyramid.question).toContain('6각뿔의 꼭짓점의 개수');
+    expect(probPyramid.question).toContain('6각뿔 꼭짓점');
     expect(probPyramid.answer).toBe(7);
   });
 
