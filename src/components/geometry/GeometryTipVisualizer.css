@@ -373,6 +373,16 @@
   padding: 2px 8px;
   background: linear-gradient(135deg, #6366f1, #8b5cf6);
   border-radius: 12px;
+  white-space: nowrap;
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.geo-shape-badge span {
+  white-space: nowrap;
+  display: inline-block;
 }
 
 .geo-stat-highlights {
