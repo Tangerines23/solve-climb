@@ -43,11 +43,14 @@ export const ManimLevel1Visualizer: React.FC = React.memo(() => {
   const [currSides, setCurrSides] = useState(3);
   const [progress, setProgress] = useState(1);
   const [highlightIdx, setHighlightIdx] = useState<number | null>(null);
+  const [isPaused, setIsPaused] = useState(false);
 
-  // Single Master rAF Timeline Loop: Deterministic zero-drift animation engine
+  // Single Master rAF Timeline Loop: Deterministic zero-drift animation engine with pause support
   useEffect(() => {
     let animId: number;
     let startTime: number | null = null;
+    let accumulatedPauseTime = 0;
+    let pauseStart: number | null = null;
 
     const MORPH_DURATION = 1200; // 1.2s shape split/merge morphing
     const HIGHLIGHT_STEP_DURATION = 650; // 0.65s per dot highlight
@@ -57,8 +60,19 @@ export const ManimLevel1Visualizer: React.FC = React.memo(() => {
     const totalCycleDuration = MORPH_DURATION + highlightTotalDuration + REST_PAUSE_DURATION;
 
     const tick = (now: number) => {
+      if (isPaused) {
+        if (!pauseStart) pauseStart = now;
+        animId = requestAnimationFrame(tick);
+        return;
+      }
+
+      if (pauseStart) {
+        accumulatedPauseTime += now - pauseStart;
+        pauseStart = null;
+      }
+
       if (!startTime) startTime = now;
-      const elapsed = now - startTime;
+      const elapsed = now - startTime - accumulatedPauseTime;
 
       if (elapsed < MORPH_DURATION) {
         // Phase 1: Morphing (0s ~ 1.2s) in pure ALL-OFF state
@@ -95,7 +109,7 @@ export const ManimLevel1Visualizer: React.FC = React.memo(() => {
 
     animId = requestAnimationFrame(tick);
     return () => cancelAnimationFrame(animId);
-  }, [shapeIdx, currSides, prevSides]);
+  }, [shapeIdx, currSides, prevSides, isPaused]);
 
   // Memoized Morph Points computation (Zero unnecessary object allocations)
   const morphPts = useMemo(() => {
@@ -164,7 +178,17 @@ export const ManimLevel1Visualizer: React.FC = React.memo(() => {
   );
 
   return (
-    <div className="geo-level1-wrapper">
+    <div
+      className="geo-level1-wrapper"
+      onClick={() => setIsPaused((p) => !p)}
+      style={{ cursor: 'pointer', position: 'relative' }}
+      title={isPaused ? '클릭/터치하여 애니메이션 재개' : '클릭/터치하여 애니메이션 일시정지'}
+    >
+      {isPaused && (
+        <div className="geo-pause-overlay">
+          <span>⏸ 일시정지됨 (터치하여 계속)</span>
+        </div>
+      )}
       <svg width={SIZE} height={165} viewBox={`0 0 ${SIZE} 165`} className="geo-tip-svg">
         {/* Main Morphing Polygon */}
         <polygon points={ptsStr} className="geo-shape-poly-morph" />

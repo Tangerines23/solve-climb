@@ -38,20 +38,23 @@ export const ManimLevel2Visualizer: React.FC = React.memo(() => {
   const [currSides, setCurrSides] = useState(5);
 
   const [phase, setPhase] = useState<'morph' | 'single' | 'all' | 'dedup' | 'restore' | 'retract' | 'rest'>('morph');
-  const [morphProgress, setMorphProgress] = useState(1);
+  const [morphProgress, setMorphProgress] = useState(0);
   const [drawProgress, setDrawProgress] = useState(0);
   const [retractProgress, setRetractProgress] = useState(0);
+  const [isPaused, setIsPaused] = useState(false);
 
-  // Single Deterministic Master Timeline Engine
+  // Single Master rAF Timeline Loop: Deterministic zero-drift animation engine with pause support
   useEffect(() => {
     let animId: number;
     let startTime: number | null = null;
+    let accumulatedPauseTime = 0;
+    let pauseStart: number | null = null;
 
     const MORPH_DURATION = 1200; // 1.2s vertex-split morphing
-    const SINGLE_DURATION = 2000; // 2.0s single vertex (n-3) diagonals
-    const ALL_DURATION = 3000; // 3.0s all vertices diagonals
-    const DEDUP_DURATION = 1800; // 1.8s dedup /2 highlight (Gold)
-    const RESTORE_DURATION = 800; // 0.8s restore from Gold back to Red
+    const SINGLE_DURATION = 2000; // 2.0s single vertex (n-3) laser diagonals
+    const ALL_DURATION = 3000; // 3.0s all vertices n*(n-3) diagonals
+    const DEDUP_DURATION = 1800; // 1.8s dedup highlight (Gold)
+    const RESTORE_DURATION = 800; // 0.8s color restore Gold -> Red
     const RETRACT_DURATION = 1000; // 1.0s center-split retraction motion
     const REST_DURATION = 500; // 0.5s rest pause
 
@@ -65,8 +68,19 @@ export const ManimLevel2Visualizer: React.FC = React.memo(() => {
       REST_DURATION;
 
     const tick = (now: number) => {
+      if (isPaused) {
+        if (!pauseStart) pauseStart = now;
+        animId = requestAnimationFrame(tick);
+        return;
+      }
+
+      if (pauseStart) {
+        accumulatedPauseTime += now - pauseStart;
+        pauseStart = null;
+      }
+
       if (!startTime) startTime = now;
-      const elapsed = now - startTime;
+      const elapsed = now - startTime - accumulatedPauseTime;
 
       if (elapsed < MORPH_DURATION) {
         // Phase 0: Vertex-split Morphing (0s ~ 1.2s)
@@ -125,16 +139,12 @@ export const ManimLevel2Visualizer: React.FC = React.memo(() => {
         const rawU = Math.min(retractElapsed / RETRACT_DURATION, 1);
         const easedU = rawU * rawU * (3 - 2 * rawU); // Smoothstep curve
         setRetractProgress(easedU);
-      } else {
+      } else if (elapsed < TOTAL_CYCLE) {
         // Phase 5: Rest Pause (9.8s ~ 10.3s)
         setPhase('rest');
         setMorphProgress(1);
         setDrawProgress(1);
         setRetractProgress(1);
-      }
-
-      if (elapsed < TOTAL_CYCLE) {
-        animId = requestAnimationFrame(tick);
       } else {
         // Synchronously advance to next shape (5 -> 6 -> 5)
         const nextSides = currSides === 5 ? 6 : 5;
@@ -145,12 +155,16 @@ export const ManimLevel2Visualizer: React.FC = React.memo(() => {
         setMorphProgress(0);
         setDrawProgress(0);
         setRetractProgress(0);
+        startTime = now;
+        accumulatedPauseTime = 0;
       }
+
+      animId = requestAnimationFrame(tick);
     };
 
     animId = requestAnimationFrame(tick);
     return () => cancelAnimationFrame(animId);
-  }, [currSides, prevSides]);
+  }, [currSides, prevSides, isPaused]);
 
   // Memoized Morph Points (Corner Overlap Splitting 5 <-> 6)
   const morphPts = useMemo(() => {
@@ -243,7 +257,6 @@ export const ManimLevel2Visualizer: React.FC = React.memo(() => {
     [morphPts]
   );
 
-  // Determine unique text key so animation ONLY triggers when text content actually changes!
   const textKey = useMemo(() => {
     if (phase === 'single') return `single-${currSides}`;
     if (phase === 'all') return `all-${currSides}`;
@@ -251,25 +264,19 @@ export const ManimLevel2Visualizer: React.FC = React.memo(() => {
     return `base-${currSides}`;
   }, [phase, currSides]);
 
-  const [animMode, setAnimMode] = useState<1 | 2 | 3>(1);
-
-  // Keyboard shortcut listener: Left Arrow (<-) toggles text mode 1 -> 2 -> 3
-  useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === 'ArrowLeft') {
-        setAnimMode((m) => ((m % 3) + 1) as 1 | 2 | 3);
-      } else if (e.key === 'ArrowRight') {
-        setAnimMode((m) => (m === 1 ? 3 : ((m - 2) as 1 | 2 | 3)));
-      }
-    };
-    window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
-  }, []);
-
   return (
-    <div className="geo-level1-wrapper">
+    <div
+      className="geo-level1-wrapper"
+      onClick={() => setIsPaused((p) => !p)}
+      style={{ cursor: 'pointer', position: 'relative' }}
+      title={isPaused ? '클릭/터치하여 애니메이션 재개' : '클릭/터치하여 애니메이션 일시정지'}
+    >
+      {isPaused && (
+        <div className="geo-pause-overlay">
+          <span>⏸ 일시정지됨 (터치하여 계속)</span>
+        </div>
+      )}
       <svg width={SIZE} height={165} viewBox={`0 0 ${SIZE} 165`} className="geo-tip-svg">
-        {/* Main Base Morphing Polygon */}
         <polygon points={ptsStr} className="geo-shape-poly-morph" />
 
         {/* Outer Morphing Edges */}
@@ -445,16 +452,16 @@ export const ManimLevel2Visualizer: React.FC = React.memo(() => {
       {/* Dynamic 3B1B Mathematical Caption Box */}
       <div className="geo-level1-caption-box">
         <span className="geo-shape-badge">
-          <span key={currSides} className={`geo-text-mode-${animMode}`}>
+          <span key={currSides} className="geo-text-mode-1">
             {currSides}각형
           </span>
         </span>
-        <div key={textKey} className={`geo-stat-highlights geo-text-mode-${animMode}`}>
+        <div key={textKey} className="geo-stat-highlights geo-text-mode-1">
           {(phase === 'morph' || phase === 'restore' || phase === 'retract' || phase === 'rest') && (
             <>
               <span className="geo-stat-item vertex-highlight">
                 꼭짓점{' '}
-                <strong key={`v-${currSides}`} className={`highlight-num geo-text-mode-${animMode}`}>
+                <strong key={`v-${currSides}`} className="highlight-num geo-text-mode-1">
                   {currSides}
                 </strong>
                 개
@@ -462,7 +469,7 @@ export const ManimLevel2Visualizer: React.FC = React.memo(() => {
               <span className="geo-divider">/</span>
               <span className="geo-stat-item edge-highlight">
                 변{' '}
-                <strong key={`e-${currSides}`} className={`highlight-num geo-text-mode-${animMode}`}>
+                <strong key={`e-${currSides}`} className="highlight-num geo-text-mode-1">
                   {currSides}
                 </strong>
                 개
@@ -472,7 +479,7 @@ export const ManimLevel2Visualizer: React.FC = React.memo(() => {
           {phase === 'single' && (
             <span className="geo-stat-item vertex-highlight active-glow">
               1개 꼭짓점 ➔{' '}
-              <strong key={`s-${currSides}`} className={`highlight-num geo-text-mode-${animMode}`}>
+              <strong key={`s-${currSides}`} className="highlight-num geo-text-mode-1">
                 ({currSides} - 3) = {singleCount}개
               </strong>{' '}
               대각선
@@ -481,7 +488,7 @@ export const ManimLevel2Visualizer: React.FC = React.memo(() => {
           {phase === 'all' && (
             <span className="geo-stat-item edge-highlight">
               전체 {currSides}개 꼭짓점 ➔{' '}
-              <strong key={`a-${currSides}`} className={`highlight-num geo-text-mode-${animMode}`}>
+              <strong key={`a-${currSides}`} className="highlight-num geo-text-mode-1">
                 {currSides} × {singleCount} = {currSides * singleCount}개
               </strong>
             </span>
@@ -489,23 +496,13 @@ export const ManimLevel2Visualizer: React.FC = React.memo(() => {
           {phase === 'dedup' && (
             <span className="geo-stat-item vertex-highlight active-glow" style={{ color: '#fbbf24' }}>
               2번씩 중복(÷2) ➔ 총{' '}
-              <strong key={`d-${currSides}`} className={`highlight-num geo-text-mode-${animMode}`}>
+              <strong key={`d-${currSides}`} className="highlight-num geo-text-mode-1">
                 {totalDiagonals}개
               </strong>{' '}
               대각선
             </span>
           )}
         </div>
-      </div>
-
-      {/* Interactive Mode Switcher Chip */}
-      <div
-        className="geo-mode-switcher-chip"
-        onClick={() => setAnimMode((m) => ((m % 3) + 1) as 1 | 2 | 3)}
-        title="방향키 ← → 를 누르거나 클릭하여 텍스트 애니메이션 모드를 스위칭하세요"
-      >
-        <span>🎬 텍스트 모드 {animMode}/3: {animMode === 1 ? '🍃 Soft Pure Fade' : animMode === 2 ? '🌌 Glow Fade' : '📜 Slot Roll'}</span>
-        <span style={{ fontSize: '10px', color: '#64748b' }}>(방향키 ← →)</span>
       </div>
     </div>
   );

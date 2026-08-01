@@ -494,26 +494,20 @@
   }
 }
 
-/* Mode Switcher Toggle Chip UI */
-.geo-mode-switcher-chip {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  margin-top: 6px;
+/* Pause Overlay Badge Style */
+.geo-pause-overlay {
+  position: absolute;
+  top: 8px;
+  right: 12px;
   padding: 4px 10px;
-  background: rgba(15, 23, 42, 0.8);
-  border: 1px dashed rgba(129, 140, 248, 0.5);
-  border-radius: 14px;
+  background: rgba(15, 23, 42, 0.85);
+  border: 1px solid rgba(244, 63, 94, 0.5);
+  border-radius: 12px;
   font-size: 11px;
   font-weight: 700;
-  color: #94a3b8;
-  cursor: pointer;
-  user-select: none;
-  transition: all 0.2s ease;
-}
-
-.geo-mode-switcher-chip:hover {
-  background: rgba(30, 41, 59, 0.95);
-  border-color: #818cf8;
-  color: #f8fafc;
+  color: #fb7185;
+  pointer-events: none;
+  animation: textPureFadeIn 0.3s ease forwards;
+  z-index: 10;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
 }
