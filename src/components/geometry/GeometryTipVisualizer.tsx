@@ -88,22 +88,33 @@ const ManimLevel1Visualizer: React.FC = () => {
 
     if (currSides > prevSides) {
       // EXPAND / SPREAD (3 -> 4, 4 -> 5, 5 -> 6)
-      // Map initial points continuously along the perimeter edges of prevSides polygon.
-      // This guarantees 100% clockwise vertex ordering with zero line criss-crossing!
+      // Exact Single Edge Midpoint Split: At t=0, exact shape of prevSides polygon is preserved with 0% distortion!
+      // Only ONE new vertex starts at the midpoint of an edge, while all other vertices sit exactly on prevSides vertices.
       const startBase = getRegularVertices(prevSides);
       const initialPoints: { x: number; y: number }[] = [];
 
-      for (let i = 0; i < currSides; i++) {
-        const mapT = (i * prevSides) / currSides;
-        const idx1 = Math.floor(mapT);
-        const frac = mapT - idx1;
-        const p1 = startBase[idx1 % prevSides]!;
-        const p2 = startBase[(idx1 + 1) % prevSides]!;
+      // Determine which edge to insert the new split point into:
+      // 3->4: Insert on bottom edge (between V1 and V2)
+      // 4->5: Insert on bottom edge (between V2 and V3)
+      // 5->6: Insert on bottom edge (between V2 and V3)
+      let splitEdgeIdx = 1;
+      if (prevSides === 3) splitEdgeIdx = 1;
+      if (prevSides === 4) splitEdgeIdx = 2;
+      if (prevSides === 5) splitEdgeIdx = 2;
 
-        initialPoints.push({
-          x: p1.x + (p2.x - p1.x) * frac,
-          y: p1.y + (p2.y - p1.y) * frac,
-        });
+      const p1 = startBase[splitEdgeIdx % prevSides]!;
+      const p2 = startBase[(splitEdgeIdx + 1) % prevSides]!;
+      const midpoint = { x: (p1.x + p2.x) / 2, y: (p1.y + p2.y) / 2 };
+
+      for (let i = 0; i < currSides; i++) {
+        if (i <= splitEdgeIdx) {
+          initialPoints.push({ ...startBase[i]! });
+        } else if (i === splitEdgeIdx + 1) {
+          // The single new split vertex starting on edge midpoint!
+          initialPoints.push(midpoint);
+        } else {
+          initialPoints.push({ ...startBase[i - 1]! });
+        }
       }
 
       return targetBase.map((target, i) => {
