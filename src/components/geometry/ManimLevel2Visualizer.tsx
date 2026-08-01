@@ -37,7 +37,7 @@ export const ManimLevel2Visualizer: React.FC = React.memo(() => {
   const [prevSides, setPrevSides] = useState(5);
   const [currSides, setCurrSides] = useState(5);
 
-  const [phase, setPhase] = useState<'morph' | 'single' | 'all' | 'dedup' | 'retract' | 'rest'>('morph');
+  const [phase, setPhase] = useState<'morph' | 'single' | 'all' | 'dedup' | 'restore' | 'retract' | 'rest'>('morph');
   const [morphProgress, setMorphProgress] = useState(1);
   const [drawProgress, setDrawProgress] = useState(0);
   const [retractProgress, setRetractProgress] = useState(0);
@@ -50,7 +50,8 @@ export const ManimLevel2Visualizer: React.FC = React.memo(() => {
     const MORPH_DURATION = 1200; // 1.2s vertex-split morphing
     const SINGLE_DURATION = 2000; // 2.0s single vertex (n-3) diagonals
     const ALL_DURATION = 3000; // 3.0s all vertices diagonals
-    const DEDUP_DURATION = 1800; // 1.8s dedup /2 highlight
+    const DEDUP_DURATION = 1800; // 1.8s dedup /2 highlight (Gold)
+    const RESTORE_DURATION = 800; // 0.8s restore from Gold back to Red
     const RETRACT_DURATION = 1000; // 1.0s center-split retraction motion
     const REST_DURATION = 500; // 0.5s rest pause
 
@@ -59,6 +60,7 @@ export const ManimLevel2Visualizer: React.FC = React.memo(() => {
       SINGLE_DURATION +
       ALL_DURATION +
       DEDUP_DURATION +
+      RESTORE_DURATION +
       RETRACT_DURATION +
       REST_DURATION;
 
@@ -90,26 +92,41 @@ export const ManimLevel2Visualizer: React.FC = React.memo(() => {
         );
         setRetractProgress(0);
       } else if (elapsed < MORPH_DURATION + SINGLE_DURATION + ALL_DURATION + DEDUP_DURATION) {
-        // Phase 3: Deduplication highlight (6.2s ~ 8.0s)
+        // Phase 3: Deduplication highlight (Gold) (6.2s ~ 8.0s)
         setPhase('dedup');
         setMorphProgress(1);
         setDrawProgress(1);
         setRetractProgress(0);
       } else if (
         elapsed <
-        MORPH_DURATION + SINGLE_DURATION + ALL_DURATION + DEDUP_DURATION + RETRACT_DURATION
+        MORPH_DURATION + SINGLE_DURATION + ALL_DURATION + DEDUP_DURATION + RESTORE_DURATION
       ) {
-        // Phase 4: Center-Split Retraction Motion (8.0s ~ 9.0s)
+        // Phase 3.5: Restore from Gold back to original Red (8.0s ~ 8.8s)
+        setPhase('restore');
+        setMorphProgress(1);
+        setDrawProgress(1);
+        setRetractProgress(0);
+      } else if (
+        elapsed <
+        MORPH_DURATION +
+          SINGLE_DURATION +
+          ALL_DURATION +
+          DEDUP_DURATION +
+          RESTORE_DURATION +
+          RETRACT_DURATION
+      ) {
+        // Phase 4: Center-Split Retraction Motion (8.8s ~ 9.8s)
         setPhase('retract');
         setMorphProgress(1);
         setDrawProgress(1);
         const retractElapsed =
-          elapsed - (MORPH_DURATION + SINGLE_DURATION + ALL_DURATION + DEDUP_DURATION);
+          elapsed -
+          (MORPH_DURATION + SINGLE_DURATION + ALL_DURATION + DEDUP_DURATION + RESTORE_DURATION);
         const rawU = Math.min(retractElapsed / RETRACT_DURATION, 1);
         const easedU = rawU * rawU * (3 - 2 * rawU); // Smoothstep curve
         setRetractProgress(easedU);
       } else {
-        // Phase 5: Rest Pause (9.0s ~ 9.5s)
+        // Phase 5: Rest Pause (9.8s ~ 10.3s)
         setPhase('rest');
         setMorphProgress(1);
         setDrawProgress(1);
@@ -275,9 +292,9 @@ export const ManimLevel2Visualizer: React.FC = React.memo(() => {
             );
           })}
 
-        {/* Phase 2, 3 & Retract: All Unique Diagonals */}
+        {/* Phase 2, 3, 3.5 & Retract: All Unique Diagonals */}
         {morphProgress >= 1 &&
-          (phase === 'all' || phase === 'dedup' || phase === 'retract') &&
+          (phase === 'all' || phase === 'dedup' || phase === 'restore' || phase === 'retract') &&
           uniqueDiagonals.map((d, idx) => {
             if (phase === 'retract') {
               // Center-Split Retraction Motion: Split at midpoint and shrink back to respective endpoints
@@ -300,11 +317,11 @@ export const ManimLevel2Visualizer: React.FC = React.memo(() => {
                     y1={seg1StartY}
                     x2={d.x1}
                     y2={d.y1}
-                    stroke="#fb7185"
-                    strokeWidth={3}
+                    stroke="#f43f5e"
+                    strokeWidth={2.5}
                     strokeLinecap="round"
-                    opacity={1 - retractProgress * 0.8}
-                    style={{ filter: 'drop-shadow(0 0 4px rgba(251, 113, 133, 0.8))' }}
+                    opacity={1 - retractProgress * 0.85}
+                    style={{ filter: 'drop-shadow(0 0 4px rgba(244, 63, 94, 0.6))' }}
                   />
                   {/* Half 2: Midpoint to Point 2 */}
                   <line
@@ -312,17 +329,17 @@ export const ManimLevel2Visualizer: React.FC = React.memo(() => {
                     y1={seg2StartY}
                     x2={d.x2}
                     y2={d.y2}
-                    stroke="#fb7185"
-                    strokeWidth={3}
+                    stroke="#f43f5e"
+                    strokeWidth={2.5}
                     strokeLinecap="round"
-                    opacity={1 - retractProgress * 0.8}
-                    style={{ filter: 'drop-shadow(0 0 4px rgba(251, 113, 133, 0.8))' }}
+                    opacity={1 - retractProgress * 0.85}
+                    style={{ filter: 'drop-shadow(0 0 4px rgba(244, 63, 94, 0.6))' }}
                   />
                 </g>
               );
             }
 
-            // Normal drawing phase
+            // Normal drawing / dedup / restore phases
             const staggerProgress =
               phase === 'all'
                 ? Math.max(0, Math.min(1, drawProgress * uniqueDiagonals.length - idx * 0.5))
@@ -347,7 +364,7 @@ export const ManimLevel2Visualizer: React.FC = React.memo(() => {
                 strokeLinecap="round"
                 opacity={isDedupHighlight ? 0.95 : 0.85}
                 style={{
-                  transition: 'stroke 0.4s ease, stroke-width 0.4s ease',
+                  transition: 'stroke 0.4s ease, stroke-width 0.4s ease, filter 0.4s ease',
                   filter: isDedupHighlight
                     ? 'drop-shadow(0 0 8px rgba(251, 191, 36, 0.9))'
                     : 'drop-shadow(0 0 4px rgba(244, 63, 94, 0.5))',
@@ -406,7 +423,7 @@ export const ManimLevel2Visualizer: React.FC = React.memo(() => {
       <div className="geo-level1-caption-box">
         <span className="geo-shape-badge">{currSides}각형</span>
         <div className="geo-stat-highlights">
-          {(phase === 'morph' || phase === 'retract' || phase === 'rest') && (
+          {(phase === 'morph' || phase === 'restore' || phase === 'retract' || phase === 'rest') && (
             <>
               <span className="geo-stat-item vertex-highlight">
                 꼭짓점 <strong className="highlight-num">{currSides}개</strong>
