@@ -88,34 +88,22 @@ const ManimLevel1Visualizer: React.FC = () => {
 
     if (currSides > prevSides) {
       // EXPAND / SPREAD (3 -> 4, 4 -> 5, 5 -> 6)
-      // The new split vertex starts at the ABSOLUTE BOTTOM-MOST point of the previous shape (lowest Y center),
-      // then smoothly expands outward to targetBase!
+      // Map initial points continuously along the perimeter edges of prevSides polygon.
+      // This guarantees 100% clockwise vertex ordering with zero line criss-crossing!
       const startBase = getRegularVertices(prevSides);
-      
-      // Find the lowest vertex or bottom edge midpoint as the absolute bottom-most split origin
-      let bottomMostPt = startBase[0]!;
-      for (const p of startBase) {
-        if (p.y > bottomMostPt.y) {
-          bottomMostPt = p;
-        }
-      }
-      
-      // For odd-sided shapes like triangle (3), bottom is the midpoint between bottom-right and bottom-left vertices
-      if (prevSides === 3) {
-        bottomMostPt = {
-          x: (startBase[1]!.x + startBase[2]!.x) / 2,
-          y: (startBase[1]!.y + startBase[2]!.y) / 2,
-        };
-      }
-
       const initialPoints: { x: number; y: number }[] = [];
+
       for (let i = 0; i < currSides; i++) {
-        if (i < prevSides) {
-          initialPoints.push(startBase[i]!);
-        } else {
-          // Overlap extra points at the ABSOLUTE BOTTOM-MOST center point
-          initialPoints.push({ ...bottomMostPt });
-        }
+        const mapT = (i * prevSides) / currSides;
+        const idx1 = Math.floor(mapT);
+        const frac = mapT - idx1;
+        const p1 = startBase[idx1 % prevSides]!;
+        const p2 = startBase[(idx1 + 1) % prevSides]!;
+
+        initialPoints.push({
+          x: p1.x + (p2.x - p1.x) * frac,
+          y: p1.y + (p2.y - p1.y) * frac,
+        });
       }
 
       return targetBase.map((target, i) => {
