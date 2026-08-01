@@ -36,6 +36,52 @@ function computeRegularVertices(n: number): { x: number; y: number }[] {
   return pts;
 }
 
+// Sample targetCount points strictly along the boundary perimeter of poly to eliminate internal diagonal artifacts!
+function samplePointsOnPolygonBoundary(
+  poly: { x: number; y: number }[],
+  targetCount: number
+): { x: number; y: number }[] {
+  const n = poly.length;
+  if (n === targetCount) return poly;
+
+  const edgeLengths: number[] = [];
+  let totalPerimeter = 0;
+  for (let i = 0; i < n; i++) {
+    const p1 = poly[i]!;
+    const p2 = poly[(i + 1) % n]!;
+    const len = Math.hypot(p2.x - p1.x, p2.y - p1.y);
+    edgeLengths.push(len);
+    totalPerimeter += len;
+  }
+
+  const sampled: { x: number; y: number }[] = [];
+  const step = totalPerimeter / targetCount;
+
+  for (let k = 0; k < targetCount; k++) {
+    const dist = k * step;
+    let accumulated = 0;
+    let found = false;
+    for (let i = 0; i < n; i++) {
+      const len = edgeLengths[i]!;
+      if (accumulated + len >= dist || i === n - 1) {
+        const segT = len > 0 ? (dist - accumulated) / len : 0;
+        const p1 = poly[i]!;
+        const p2 = poly[(i + 1) % n]!;
+        sampled.push({
+          x: p1.x + (p2.x - p1.x) * segT,
+          y: p1.y + (p2.y - p1.y) * segT,
+        });
+        found = true;
+        break;
+      }
+      accumulated += len;
+    }
+    if (!found) sampled.push(poly[0]!);
+  }
+
+  return sampled;
+}
+
 export const ManimLevel2Visualizer: React.FC = React.memo(() => {
   const isAdminMode = useDebugStore((state) => state.isAdminMode);
 
@@ -217,7 +263,7 @@ export const ManimLevel2Visualizer: React.FC = React.memo(() => {
     return () => cancelAnimationFrame(animId);
   }, [currSides]);
 
-  // Swipe / Skip Transition Engine (Continuous Seamless Morphing)
+  // Swipe / Skip Transition Engine
   const triggerStepChange = (direction: 'next' | 'prev') => {
     let nextSides = currSides;
     if (direction === 'next') {
@@ -250,10 +296,8 @@ export const ManimLevel2Visualizer: React.FC = React.memo(() => {
 
     if (Math.abs(dx) > 30) {
       if (dx < 0) {
-        // Left Swipe -> Next Shape (Right Direction Split)
         triggerStepChange('next');
       } else {
-        // Right Swipe -> Prev Shape (Reverse Shrink Merge)
         triggerStepChange('prev');
       }
     } else {
@@ -270,22 +314,8 @@ export const ManimLevel2Visualizer: React.FC = React.memo(() => {
     const startBase = PRECOMPUTED_VERTICES[prevSides] || computeRegularVertices(prevSides);
 
     if (currSides > prevSides) {
-      // EXPAND / SPREAD (N -> N+1)
-      const initialPoints: { x: number; y: number }[] = [];
-      const splitVertexIdx = Math.floor(prevSides / 2);
-      const cornerPt = startBase[splitVertexIdx % startBase.length] || startBase[0]!;
-
-      for (let i = 0; i < currSides; i++) {
-        if (i <= splitVertexIdx) {
-          initialPoints.push(startBase[i] || startBase[startBase.length - 1]!);
-        } else if (i === splitVertexIdx + 1) {
-          initialPoints.push(cornerPt);
-        } else {
-          const srcIdx = (i - 1) % startBase.length;
-          initialPoints.push(startBase[srcIdx] || startBase[0]!);
-        }
-      }
-
+      // EXPAND / SPREAD (N -> N+1 or 4 -> 8): Sample startBase points strictly on boundary!
+      const initialPoints = samplePointsOnPolygonBoundary(startBase, currSides);
       return targetBase.map((tPt, i) => {
         const sPt = initialPoints[i] || startBase[0] || tPt;
         return {
@@ -294,34 +324,12 @@ export const ManimLevel2Visualizer: React.FC = React.memo(() => {
         };
       });
     } else {
-      // REVERSE PLAYBACK (Reverse Morphing from prevSides -> currSides: e.g. 5 -> 4)
-      // Exactly reverses the N -> N+1 expansion path so 1 vertex cleanly retracts back!
-      const startSides = currSides; // Target smaller shape (e.g. 4)
-      const targetSides = prevSides; // Starting larger shape (e.g. 5)
-
-      const startBase = PRECOMPUTED_VERTICES[startSides] || computeRegularVertices(startSides);
-      const targetBase = PRECOMPUTED_VERTICES[targetSides] || computeRegularVertices(targetSides);
-
-      const initialPoints: { x: number; y: number }[] = [];
-      const splitVertexIdx = Math.floor(startSides / 2);
-      const cornerPt = startBase[splitVertexIdx % startBase.length] || startBase[0]!;
-
-      for (let i = 0; i < targetSides; i++) {
-        if (i <= splitVertexIdx) {
-          initialPoints.push(startBase[i] || startBase[startBase.length - 1]!);
-        } else if (i === splitVertexIdx + 1) {
-          initialPoints.push(cornerPt);
-        } else {
-          const srcIdx = (i - 1) % startBase.length;
-          initialPoints.push(startBase[srcIdx] || startBase[0]!);
-        }
-      }
-
-      // Reverse time interpolation: revU = 1 - morphProgress
+      // REVERSE PLAYBACK (8 -> 4 or N -> N-1): Sample targetBase points strictly on boundary!
+      const initialPoints = samplePointsOnPolygonBoundary(targetBase, prevSides);
       const revU = 1 - morphProgress;
 
-      return targetBase.map((target, i) => {
-        const start = initialPoints[i] || startBase[0] || target;
+      return startBase.map((start, i) => {
+        const target = initialPoints[i] || targetBase[0] || start;
         return {
           x: start.x + (target.x - start.x) * revU,
           y: start.y + (target.y - start.y) * revU,
@@ -334,14 +342,8 @@ export const ManimLevel2Visualizer: React.FC = React.memo(() => {
 
   // Vertex 0 diagonals
   const vertex0Diagonals = useMemo(() => {
-    const res: {
-      x1: number;
-      y1: number;
-      x2: number;
-      y2: number;
-      fromIdx: number;
-      toIdx: number;
-    }[] = [];
+    const res: { x1: number; y1: number; x2: number; y2: number; fromIdx: number; toIdx: number }[] =
+      [];
     const pts = morphPts;
     const n = pts.length;
     for (let j = 2; j < n - 1; j++) {
@@ -359,14 +361,8 @@ export const ManimLevel2Visualizer: React.FC = React.memo(() => {
 
   // All unique diagonals
   const uniqueDiagonals = useMemo(() => {
-    const res: {
-      x1: number;
-      y1: number;
-      x2: number;
-      y2: number;
-      fromIdx: number;
-      toIdx: number;
-    }[] = [];
+    const res: { x1: number; y1: number; x2: number; y2: number; fromIdx: number; toIdx: number }[] =
+      [];
     const pts = morphPts;
     const n = pts.length;
     for (let i = 0; i < n; i++) {
