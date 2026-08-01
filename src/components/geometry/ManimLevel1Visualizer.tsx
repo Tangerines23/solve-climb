@@ -45,11 +45,11 @@ export const ManimLevel1Visualizer: React.FC = () => {
   const [highlightIdx, setHighlightIdx] = useState<number | null>(null);
 
   // 1. Smooth rAF Eased Progress Animation (1.2s cubic easeInOut)
-  // Step 1: Vertex 0 (Top) stays ON during shape split/merge morphing!
+  // Morphing (shape split/merge) ALWAYS runs in default ALL-OFF state (highlightIdx = null)!
   useEffect(() => {
     if (prevSides === currSides) return;
     setProgress(0);
-    setHighlightIdx(0); // Vertex 0 is ON during morphing!
+    setHighlightIdx(null); // Pure default ALL-OFF state during morphing!
 
     let start: number | null = null;
     let animId: number;
@@ -75,27 +75,25 @@ export const ManimLevel1Visualizer: React.FC = () => {
     return () => cancelAnimationFrame(animId);
   }, [currSides, prevSides]);
 
-  // 2. Seamless Sequential Highlight & Shape Transition Controller
-  // Morphing completes with Vertex 0 ON -> Smoothly transition to Vertex 1 -> 2 -> ... -> N-1 -> Off -> 0.5s Pause -> Next Shape!
+  // 2. Pure Standard Sequence Controller:
+  // Morph complete in ALL-OFF -> Clockwise Highlight (1 -> 2 -> ... -> N) -> ALL-OFF -> 0.5s Pause -> Next Shape Split/Merge (in ALL-OFF)
   useEffect(() => {
     if (progress < 1) return;
 
-    // Morphing just completed with Vertex 0 ON!
-    // Smoothly continue to Vertex 1 without double-striking Vertex 0!
-    let step = 1;
-    setHighlightIdx(1);
+    let step = 0;
+    // Start highlighting from vertex 0
+    setHighlightIdx(0);
 
     const highlightTimer = setInterval(() => {
+      step++;
       if (step < currSides) {
         setHighlightIdx(step);
-        step++;
       } else {
-        // Step 3: All vertices highlighted -> All OFF!
+        // Highlight complete for all vertices -> ALL-OFF!
         setHighlightIdx(null);
         clearInterval(highlightTimer);
 
-        // Step 4: Wait EXACTLY 0.5s after all vertices turn OFF!
-        // Step 5: Trigger Next Shape Split/Merge (Vertex 0 turns ON automatically)!
+        // Wait EXACTLY 0.5s in ALL-OFF state, then trigger next shape split/merge!
         setTimeout(() => {
           setShapeIdx((idx) => {
             const nextIdx = (idx + 1) % SHAPE_CONFIGS.length;
