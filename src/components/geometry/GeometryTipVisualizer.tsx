@@ -182,10 +182,9 @@ const ManimLevel1Visualizer: React.FC = () => {
         {/* Main Morphing Polygon (100% synced with morphPts) */}
         <polygon points={ptsStr} className="geo-shape-poly-morph" />
 
-        {/* Edge Lines (100% synced with morphPts) */}
+        {/* Edge Lines (Clean constant style) */}
         {morphPts.map((p, idx) => {
           const nextP = morphPts[(idx + 1) % morphPts.length]!;
-          const isEdgeHighlighted = highlightIdx === idx;
           return (
             <line
               key={`edge-${idx}`}
@@ -193,29 +192,22 @@ const ManimLevel1Visualizer: React.FC = () => {
               y1={p.y}
               x2={nextP.x}
               y2={nextP.y}
-              className={`geo-edge-animated-line ${isEdgeHighlighted ? 'highlighted' : ''}`}
+              className="geo-edge-animated-line"
             />
           );
         })}
 
-        {/* Vertex Dots (100% synced with morphPts - NO separate dots!) */}
+        {/* Vertex Dots (Simple: dot radius slightly enlarges on highlight) */}
         {morphPts.map((p, idx) => {
-          const isVertexHighlighted = highlightIdx === idx;
+          const isHighlighted = highlightIdx === idx;
           return (
-            <g key={`vertex-${idx}`}>
-              <circle
-                cx={p.x}
-                cy={p.y}
-                r={isVertexHighlighted ? '12' : '9'}
-                className={`geo-vertex-pulse ${isVertexHighlighted ? 'highlighted' : ''}`}
-              />
-              <circle
-                cx={p.x}
-                cy={p.y}
-                r={isVertexHighlighted ? '7' : '5'}
-                className={`geo-vertex-dot ${isVertexHighlighted ? 'highlighted' : ''}`}
-              />
-            </g>
+            <circle
+              key={`dot-${idx}`}
+              cx={p.x}
+              cy={p.y}
+              r={isHighlighted ? '8.5' : '5'}
+              className={`geo-simple-dot ${isHighlighted ? 'active-dot' : ''}`}
+            />
           );
         })}
 
