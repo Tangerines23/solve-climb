@@ -218,20 +218,28 @@ export const ManimLevel1Visualizer: React.FC = React.memo(() => {
         )}
       </svg>
 
-      {/* Bottom Static Caption Box */}
+      {/* Bottom Static Caption Box with Option 2 Number Rolling */}
       <div className="geo-level1-caption-box">
-        <span className="geo-shape-badge">{currentConfig.name}</span>
+        <span key={`badge-${currSides}`} className="geo-shape-badge geo-num-rolling">
+          {currentConfig.name}
+        </span>
         <div className="geo-stat-highlights">
           <span
             className={`geo-stat-item vertex-highlight ${
               progress >= 1 && highlightIdx !== null ? 'active-glow' : ''
             }`}
           >
-            꼭짓점 <strong className="highlight-num">{morphPts.length}개</strong>
+            꼭짓점{' '}
+            <strong key={`v-num-${currSides}`} className="highlight-num geo-num-rolling">
+              {morphPts.length}개
+            </strong>
           </span>
           <span className="geo-divider">/</span>
           <span className="geo-stat-item edge-highlight">
-            변 <strong className="highlight-num">{morphPts.length}개</strong>
+            변{' '}
+            <strong key={`e-num-${currSides}`} className="highlight-num geo-num-rolling">
+              {morphPts.length}개
+            </strong>
           </span>
         </div>
       </div>
