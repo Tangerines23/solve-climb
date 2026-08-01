@@ -390,6 +390,13 @@
 
 .vertex-highlight {
   color: #fb7185;
+  transition: all 0.2s ease;
+}
+
+.vertex-highlight.active-glow {
+  color: #ff4757;
+  text-shadow: 0 0 10px rgba(255, 71, 87, 0.9);
+  transform: scale(1.08);
 }
 
 .edge-highlight {
@@ -405,4 +412,25 @@
 
 .geo-divider {
   color: #64748b;
+}
+
+/* Clockwise Highlight Animation Styles */
+.geo-vertex-dot.highlighted {
+  fill: #ffffff;
+  stroke: #f43f5e;
+  stroke-width: 3px;
+  filter: drop-shadow(0 0 8px #f43f5e);
+}
+
+.geo-vertex-pulse.highlighted {
+  stroke: #fb7185;
+  stroke-width: 3px;
+  opacity: 0.95;
+  filter: drop-shadow(0 0 12px #f43f5e);
+}
+
+.geo-edge-animated-line.highlighted {
+  stroke: #38bdf8;
+  stroke-width: 4px;
+  filter: drop-shadow(0 0 10px #0284c7);
 }

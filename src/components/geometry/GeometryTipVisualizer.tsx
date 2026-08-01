@@ -24,6 +24,7 @@ const ManimLevel1Visualizer: React.FC = () => {
   const [prevSides, setPrevSides] = useState(3);
   const [currSides, setCurrSides] = useState(3);
   const [progress, setProgress] = useState(1);
+  const [highlightIdx, setHighlightIdx] = useState<number | null>(null);
 
   // Cycle shapes: 3 -> 4 -> 5 -> 6 -> 3
   useEffect(() => {
@@ -34,7 +35,7 @@ const ManimLevel1Visualizer: React.FC = () => {
         setCurrSides(shapeConfigs[nextIdx]!.sides);
         return nextIdx;
       });
-    }, 3200);
+    }, 3500);
     return () => clearInterval(timer);
   }, []);
 
@@ -42,6 +43,7 @@ const ManimLevel1Visualizer: React.FC = () => {
   useEffect(() => {
     if (prevSides === currSides) return;
     setProgress(0);
+    setHighlightIdx(null);
     let start: number | null = null;
     let animId: number;
     const duration = 1200;
@@ -65,6 +67,29 @@ const ManimLevel1Visualizer: React.FC = () => {
     animId = requestAnimationFrame(animate);
     return () => cancelAnimationFrame(animId);
   }, [currSides, prevSides]);
+
+  // Sequential Clockwise Highlight effect starting from Top Vertex (index 0)
+  useEffect(() => {
+    if (progress < 1) {
+      setHighlightIdx(null);
+      return;
+    }
+
+    let step = 0;
+    setHighlightIdx(0);
+
+    const timer = setInterval(() => {
+      step++;
+      if (step < currSides) {
+        setHighlightIdx(step);
+      } else {
+        setHighlightIdx(null);
+        clearInterval(timer);
+      }
+    }, 320);
+
+    return () => clearInterval(timer);
+  }, [progress, currSides]);
 
   // Helper: Compute regular N-gon vertices centered at (center, center)
   const getRegularVertices = (n: number) => {
@@ -160,6 +185,7 @@ const ManimLevel1Visualizer: React.FC = () => {
         {/* Edge Lines (100% synced with morphPts) */}
         {morphPts.map((p, idx) => {
           const nextP = morphPts[(idx + 1) % morphPts.length]!;
+          const isEdgeHighlighted = highlightIdx === idx;
           return (
             <line
               key={`edge-${idx}`}
@@ -167,18 +193,31 @@ const ManimLevel1Visualizer: React.FC = () => {
               y1={p.y}
               x2={nextP.x}
               y2={nextP.y}
-              className="geo-edge-animated-line"
+              className={`geo-edge-animated-line ${isEdgeHighlighted ? 'highlighted' : ''}`}
             />
           );
         })}
 
         {/* Vertex Dots (100% synced with morphPts - NO separate dots!) */}
-        {morphPts.map((p, idx) => (
-          <g key={`vertex-${idx}`}>
-            <circle cx={p.x} cy={p.y} r="9" className="geo-vertex-pulse" />
-            <circle cx={p.x} cy={p.y} r="5" className="geo-vertex-dot" />
-          </g>
-        ))}
+        {morphPts.map((p, idx) => {
+          const isVertexHighlighted = highlightIdx === idx;
+          return (
+            <g key={`vertex-${idx}`}>
+              <circle
+                cx={p.x}
+                cy={p.y}
+                r={isVertexHighlighted ? '12' : '9'}
+                className={`geo-vertex-pulse ${isVertexHighlighted ? 'highlighted' : ''}`}
+              />
+              <circle
+                cx={p.x}
+                cy={p.y}
+                r={isVertexHighlighted ? '7' : '5'}
+                className={`geo-vertex-dot ${isVertexHighlighted ? 'highlighted' : ''}`}
+              />
+            </g>
+          );
+        })}
 
         {/* Labels pointing to Top Vertex and Right Edge */}
         {morphPts.length > 0 && (
@@ -203,7 +242,7 @@ const ManimLevel1Visualizer: React.FC = () => {
       <div className="geo-level1-caption-box">
         <span className="geo-shape-badge">{currentConfig.name}</span>
         <div className="geo-stat-highlights">
-          <span className="geo-stat-item vertex-highlight">
+          <span className={`geo-stat-item vertex-highlight ${highlightIdx !== null ? 'active-glow' : ''}`}>
             꼭짓점 <strong className="highlight-num">{morphPts.length}개</strong>
           </span>
           <span className="geo-divider">/</span>
