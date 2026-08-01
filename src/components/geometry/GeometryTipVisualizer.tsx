@@ -1,6 +1,7 @@
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import './GeometryTipVisualizer.css';
 import { ManimLevel1Visualizer } from './ManimLevel1Visualizer';
+import { ManimLevel2Visualizer } from './ManimLevel2Visualizer';
 
 interface GeometryTipVisualizerProps {
   level: number;
@@ -15,52 +16,8 @@ export const GeometryTipVisualizer: React.FC<GeometryTipVisualizerProps> = ({ le
       case 1:
         return <ManimLevel1Visualizer />;
 
-      case 2: {
-        // 2-2: 다각형 대각선 - 오각형 대각선 순차 애니메이션
-        const sides = 5;
-        const radius = 60;
-        const pts: { x: number; y: number }[] = [];
-        for (let i = 0; i < sides; i++) {
-          const angle = -Math.PI / 2 + (i * 2 * Math.PI) / sides;
-          pts.push({
-            x: center + radius * Math.cos(angle),
-            y: center + radius * Math.sin(angle),
-          });
-        }
-        const ptsStr = pts.map((p) => `${p.x},${p.y}`).join(' ');
-
-        // Diagonals (non-adjacent vertices)
-        const diagonals: { x1: number; y1: number; x2: number; y2: number }[] = [];
-        for (let i = 0; i < sides; i++) {
-          for (let j = i + 2; j < sides; j++) {
-            if (i === 0 && j === sides - 1) continue;
-            diagonals.push({ x1: pts[i]!.x, y1: pts[i]!.y, x2: pts[j]!.x, y2: pts[j]!.y });
-          }
-        }
-
-        return (
-          <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`} className="geo-tip-svg">
-            <polygon points={ptsStr} className="geo-shape-poly-light" />
-            {diagonals.map((d, idx) => (
-              <line
-                key={idx}
-                x1={d.x1}
-                y1={d.y1}
-                x2={d.x2}
-                y2={d.y2}
-                className="geo-diagonal-line"
-                style={{ animationDelay: `${idx * 0.25}s` }}
-              />
-            ))}
-            {pts.map((p, idx) => (
-              <circle key={idx} cx={p.x} cy={p.y} r="4" className="geo-vertex-dot" />
-            ))}
-            <text x={center} y={size - 10} className="geo-tip-subtext">
-              대각선 총 5개: n(n-3)/2
-            </text>
-          </svg>
-        );
-      }
+      case 2:
+        return <ManimLevel2Visualizer />;
 
       case 3: {
         // 2-3: 삼각형의 성질 (내각의 합 180도)
