@@ -44,20 +44,7 @@ export const ManimLevel1Visualizer: React.FC = () => {
   const [progress, setProgress] = useState(1);
   const [highlightIdx, setHighlightIdx] = useState<number | null>(null);
 
-  // 1. Cycle shapes every 4.8 seconds
-  useEffect(() => {
-    const timer = setInterval(() => {
-      setShapeIdx((idx) => {
-        const nextIdx = (idx + 1) % SHAPE_CONFIGS.length;
-        setPrevSides(SHAPE_CONFIGS[idx]!.sides);
-        setCurrSides(SHAPE_CONFIGS[nextIdx]!.sides);
-        return nextIdx;
-      });
-    }, 4800);
-    return () => clearInterval(timer);
-  }, []);
-
-  // 2. Smooth rAF Eased Progress Animation (1.2s cubic easeInOut)
+  // 1. Smooth rAF Eased Progress Animation (1.2s cubic easeInOut)
   useEffect(() => {
     if (prevSides === currSides) return;
     setProgress(0);
@@ -87,27 +74,36 @@ export const ManimLevel1Visualizer: React.FC = () => {
     return () => cancelAnimationFrame(animId);
   }, [currSides, prevSides]);
 
-  // 3. Clockwise Sequential Highlight effect (650ms per vertex)
+  // 2. Dynamic Shape Cycle Controller: Wait exactly 0.5s after highlight ends before next shape transition
   useEffect(() => {
-    if (progress < 1) {
-      setHighlightIdx(null);
-      return;
-    }
+    if (progress < 1) return;
 
     let step = 0;
     setHighlightIdx(0);
 
-    const timer = setInterval(() => {
+    // Step-by-step clockwise dot highlight (650ms per dot)
+    const highlightTimer = setInterval(() => {
       step++;
       if (step < currSides) {
         setHighlightIdx(step);
       } else {
+        // Highlight complete for all dots! Turn off highlight.
         setHighlightIdx(null);
-        clearInterval(timer);
+        clearInterval(highlightTimer);
+
+        // Wait EXACTLY 0.5s after highlight is turned off, then trigger next shape!
+        setTimeout(() => {
+          setShapeIdx((idx) => {
+            const nextIdx = (idx + 1) % SHAPE_CONFIGS.length;
+            setPrevSides(SHAPE_CONFIGS[idx]!.sides);
+            setCurrSides(SHAPE_CONFIGS[nextIdx]!.sides);
+            return nextIdx;
+          });
+        }, 500);
       }
     }, 650);
 
-    return () => clearInterval(timer);
+    return () => clearInterval(highlightTimer);
   }, [progress, currSides]);
 
   // Memoized Morph Points computation (Zero unnecessary object allocations)
