@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useMemo } from 'react';
+import { useDebugStore } from '../../stores/useDebugStore';
 import './GeometryTipVisualizer.css';
 
 const SIZE = 200;
@@ -43,6 +44,7 @@ const TOTAL_CYCLE = TRIANGLE_KEYFRAMES.length * STEP_DURATION; // 15.0s total cy
 export const ManimLevel3Visualizer: React.FC = React.memo(() => {
   const [t, setT] = useState(0);
   const [isPaused, setIsPaused] = useState(false);
+  const isAdminMode = useDebugStore((state) => state.isAdminMode);
 
   // Single Master rAF loop for keyframe hold & transition sequence
   useEffect(() => {
@@ -212,8 +214,8 @@ export const ManimLevel3Visualizer: React.FC = React.memo(() => {
         <circle cx={v1.x} cy={v1.y} r={5.5} className="geo-simple-dot" style={{ fill: '#38bdf8' }} />
         <circle cx={v2.x} cy={v2.y} r={5.5} className="geo-simple-dot" style={{ fill: '#fbbf24' }} />
 
-        {/* Render 3 Medians and Centroid Delta (δ) ONLY in DEV environment! */}
-        {import.meta.env.DEV && (
+        {/* Render 3 Medians and Centroid Delta (δ) ONLY when DEV Admin Mode toggle is ON! */}
+        {isAdminMode && (
           <>
             <line
               x1={v0.x}
