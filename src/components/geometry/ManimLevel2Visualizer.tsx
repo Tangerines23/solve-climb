@@ -274,20 +274,21 @@ export const ManimLevel2Visualizer: React.FC = React.memo(() => {
       // EXPAND / SPREAD (N -> N+1)
       const initialPoints: { x: number; y: number }[] = [];
       const splitVertexIdx = Math.floor(prevSides / 2);
-      const cornerPt = startBase[splitVertexIdx % prevSides]!;
+      const cornerPt = startBase[splitVertexIdx % startBase.length] || startBase[0]!;
 
       for (let i = 0; i < currSides; i++) {
         if (i <= splitVertexIdx) {
-          initialPoints.push(startBase[i]!);
+          initialPoints.push(startBase[i] || startBase[startBase.length - 1]!);
         } else if (i === splitVertexIdx + 1) {
           initialPoints.push(cornerPt);
         } else {
-          initialPoints.push(startBase[i - 1]!);
+          const srcIdx = (i - 1) % startBase.length;
+          initialPoints.push(startBase[srcIdx] || startBase[0]!);
         }
       }
 
       return targetBase.map((tPt, i) => {
-        const sPt = initialPoints[i]!;
+        const sPt = initialPoints[i] || startBase[0] || tPt;
         return {
           x: sPt.x + (tPt.x - sPt.x) * morphProgress,
           y: sPt.y + (tPt.y - sPt.y) * morphProgress,

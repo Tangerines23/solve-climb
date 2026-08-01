@@ -180,20 +180,21 @@ export const ManimLevel1Visualizer: React.FC = React.memo(() => {
       const initialPoints: { x: number; y: number }[] = [];
 
       const splitVertexIdx = Math.floor(prevSides / 2);
-      const cornerPt = startBase[splitVertexIdx % prevSides]!;
+      const cornerPt = startBase[splitVertexIdx % startBase.length] || startBase[0]!;
 
       for (let i = 0; i < currSides; i++) {
         if (i <= splitVertexIdx) {
-          initialPoints.push(startBase[i]!);
+          initialPoints.push(startBase[i] || startBase[startBase.length - 1]!);
         } else if (i === splitVertexIdx + 1) {
           initialPoints.push(cornerPt);
         } else {
-          initialPoints.push(startBase[i - 1]!);
+          const srcIdx = (i - 1) % startBase.length;
+          initialPoints.push(startBase[srcIdx] || startBase[0]!);
         }
       }
 
       return targetBase.map((target, i) => {
-        const start = initialPoints[i]!;
+        const start = initialPoints[i] || startBase[0] || target;
         return {
           x: start.x + (target.x - start.x) * progress,
           y: start.y + (target.y - start.y) * progress,
