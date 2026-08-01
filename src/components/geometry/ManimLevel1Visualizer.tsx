@@ -164,10 +164,12 @@ export const ManimLevel1Visualizer: React.FC = React.memo(() => {
         };
       });
     } else {
-      // TEST: Clockwise shrink merge to top vertex (excluding 2 right-side vertices)
+      // Clockwise Arc / Curved path shrink merge to top vertex
       const startBase = PRECOMPUTED_VERTICES[prevSides]!;
       const targetBase = PRECOMPUTED_VERTICES[currSides]!;
       const topVertex = targetBase[0]!;
+      const centerX = SIZE / 2;
+      const centerY = SIZE / 2;
 
       return startBase.map((start, i) => {
         let target = topVertex;
@@ -175,6 +177,26 @@ export const ManimLevel1Visualizer: React.FC = React.memo(() => {
           target = targetBase[1];
         } else if (i === 2 && targetBase[2]) {
           target = targetBase[2];
+        }
+
+        // For vertices rotating to top vertex (0, 3, 4, 5, 6, 7), rotate CLOCKWISE in an arc path!
+        if (i !== 1 && i !== 2) {
+          const startAngle = Math.atan2(start.y - centerY, start.x - centerX);
+          const targetAngle = Math.atan2(target.y - centerY, target.x - centerX);
+
+          let deltaAngle = targetAngle - startAngle;
+          while (deltaAngle < 0) deltaAngle += Math.PI * 2; // Enforce Clockwise Circular Arc
+
+          const startRadius = Math.hypot(start.x - centerX, start.y - centerY);
+          const targetRadius = Math.hypot(target.x - centerX, target.y - centerY);
+
+          const currentAngle = startAngle + deltaAngle * progress;
+          const currentRadius = startRadius + (targetRadius - startRadius) * progress;
+
+          return {
+            x: centerX + currentRadius * Math.cos(currentAngle),
+            y: centerY + currentRadius * Math.sin(currentAngle),
+          };
         }
 
         return {
