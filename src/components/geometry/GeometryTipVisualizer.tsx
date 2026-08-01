@@ -88,30 +88,25 @@ const ManimLevel1Visualizer: React.FC = () => {
 
     if (currSides > prevSides) {
       // EXPAND / SPREAD (3 -> 4, 4 -> 5, 5 -> 6)
-      // Exact Single Edge Midpoint Split: At t=0, exact shape of prevSides polygon is preserved with 0% distortion!
-      // Only ONE new vertex starts at the midpoint of an edge, while all other vertices sit exactly on prevSides vertices.
+      // Vertex-Origin Split: The new split point starts 100% OVERLAPPED at an existing corner vertex!
+      // This eliminates any weird dots appearing on edge midpoints.
       const startBase = getRegularVertices(prevSides);
       const initialPoints: { x: number; y: number }[] = [];
 
-      // Determine which edge to insert the new split point into:
-      // 3->4: Insert on bottom edge (between V1 and V2)
-      // 4->5: Insert on bottom edge (between V2 and V3)
-      // 5->6: Insert on bottom edge (between V2 and V3)
-      let splitEdgeIdx = 1;
-      if (prevSides === 3) splitEdgeIdx = 1;
-      if (prevSides === 4) splitEdgeIdx = 2;
-      if (prevSides === 5) splitEdgeIdx = 2;
+      // Split origin index: overlap on bottom-right/bottom corner vertex of previous shape
+      let splitVertexIdx = 1;
+      if (prevSides === 3) splitVertexIdx = 1; // bottom-right corner of triangle
+      if (prevSides === 4) splitVertexIdx = 2; // bottom corner of square
+      if (prevSides === 5) splitVertexIdx = 2; // bottom-right corner of pentagon
 
-      const p1 = startBase[splitEdgeIdx % prevSides]!;
-      const p2 = startBase[(splitEdgeIdx + 1) % prevSides]!;
-      const midpoint = { x: (p1.x + p2.x) / 2, y: (p1.y + p2.y) / 2 };
+      const cornerPt = startBase[splitVertexIdx % prevSides]!;
 
       for (let i = 0; i < currSides; i++) {
-        if (i <= splitEdgeIdx) {
+        if (i <= splitVertexIdx) {
           initialPoints.push({ ...startBase[i]! });
-        } else if (i === splitEdgeIdx + 1) {
-          // The single new split vertex starting on edge midpoint!
-          initialPoints.push(midpoint);
+        } else if (i === splitVertexIdx + 1) {
+          // The new split vertex starting 100% overlapped at the corner vertex!
+          initialPoints.push({ ...cornerPt });
         } else {
           initialPoints.push({ ...startBase[i - 1]! });
         }
