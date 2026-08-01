@@ -201,35 +201,37 @@ export const ManimLevel1Visualizer: React.FC = React.memo(() => {
         };
       });
     } else {
-      // REVERSE SHRINK / MERGE (N -> N-1) using Universal Clockwise Polar Arc Path
-      const startBase = PRECOMPUTED_VERTICES[prevSides] || PRECOMPUTED_VERTICES[4]!;
-      const topVertex = targetBase[0]!;
-      const centerX = SIZE / 2;
-      const centerY = SIZE / 2;
+      // REVERSE PLAYBACK (Reverse Morphing from prevSides -> currSides: e.g. 5 -> 4)
+      // Exactly reverses the N -> N+1 expansion path so 1 vertex cleanly retracts back!
+      const startSides = currSides; // Target smaller shape (e.g. 4)
+      const targetSides = prevSides; // Starting larger shape (e.g. 5)
 
-      return startBase.map((start, i) => {
-        let target = topVertex;
-        if (i === 1 && targetBase[1]) {
-          target = targetBase[1];
-        } else if (i === 2 && targetBase[2]) {
-          target = targetBase[2];
+      const startBase = PRECOMPUTED_VERTICES[startSides] || PRECOMPUTED_VERTICES[3]!;
+      const targetBase = PRECOMPUTED_VERTICES[targetSides] || PRECOMPUTED_VERTICES[4]!;
+
+      const initialPoints: { x: number; y: number }[] = [];
+      const splitVertexIdx = Math.floor(startSides / 2);
+      const cornerPt = startBase[splitVertexIdx % startBase.length] || startBase[0]!;
+
+      for (let i = 0; i < targetSides; i++) {
+        if (i <= splitVertexIdx) {
+          initialPoints.push(startBase[i] || startBase[startBase.length - 1]!);
+        } else if (i === splitVertexIdx + 1) {
+          initialPoints.push(cornerPt);
+        } else {
+          const srcIdx = (i - 1) % startBase.length;
+          initialPoints.push(startBase[srcIdx] || startBase[0]!);
         }
+      }
 
-        const startAngle = Math.atan2(start.y - centerY, start.x - centerX);
-        const targetAngle = Math.atan2(target.y - centerY, target.x - centerX);
+      // Reverse time interpolation: revU = 1 - progress
+      const revU = 1 - progress;
 
-        let deltaAngle = targetAngle - startAngle;
-        while (deltaAngle < 0) deltaAngle += Math.PI * 2;
-
-        const startRadius = Math.hypot(start.x - centerX, start.y - centerY);
-        const targetRadius = Math.hypot(target.x - centerX, target.y - centerY);
-
-        const currentAngle = startAngle + deltaAngle * progress;
-        const currentRadius = startRadius + (targetRadius - startRadius) * progress;
-
+      return targetBase.map((target, i) => {
+        const start = initialPoints[i] || startBase[0] || target;
         return {
-          x: centerX + currentRadius * Math.cos(currentAngle),
-          y: centerY + currentRadius * Math.sin(currentAngle),
+          x: start.x + (target.x - start.x) * revU,
+          y: start.y + (target.y - start.y) * revU,
         };
       });
     }
