@@ -444,32 +444,53 @@ export const ManimLevel2Visualizer: React.FC = React.memo(() => {
 
       {/* Dynamic 3B1B Mathematical Caption Box */}
       <div className="geo-level1-caption-box">
-        <span className="geo-shape-badge">{currSides}각형</span>
+        <span key={currSides} className={`geo-shape-badge geo-text-mode-${animMode}`}>
+          {currSides}각형
+        </span>
         <div key={textKey} className={`geo-stat-highlights geo-text-mode-${animMode}`}>
           {(phase === 'morph' || phase === 'restore' || phase === 'retract' || phase === 'rest') && (
             <>
               <span className="geo-stat-item vertex-highlight">
-                꼭짓점 <strong className="highlight-num">{currSides}개</strong>
+                꼭짓점{' '}
+                <strong key={`v-${currSides}`} className={`highlight-num geo-text-mode-${animMode}`}>
+                  {currSides}
+                </strong>
+                개
               </span>
               <span className="geo-divider">/</span>
               <span className="geo-stat-item edge-highlight">
-                변 <strong className="highlight-num">{currSides}개</strong>
+                변{' '}
+                <strong key={`e-${currSides}`} className={`highlight-num geo-text-mode-${animMode}`}>
+                  {currSides}
+                </strong>
+                개
               </span>
             </>
           )}
           {phase === 'single' && (
             <span className="geo-stat-item vertex-highlight active-glow">
-              1개 꼭짓점 ➔ <strong className="highlight-num">({currSides} - 3) = {singleCount}개</strong> 대각선
+              1개 꼭짓점 ➔{' '}
+              <strong key={`s-${currSides}`} className={`highlight-num geo-text-mode-${animMode}`}>
+                ({currSides} - 3) = {singleCount}개
+              </strong>{' '}
+              대각선
             </span>
           )}
           {phase === 'all' && (
             <span className="geo-stat-item edge-highlight">
-              전체 {currSides}개 꼭짓점 ➔ <strong className="highlight-num">{currSides} × {singleCount} = {currSides * singleCount}개</strong>
+              전체 {currSides}개 꼭짓점 ➔{' '}
+              <strong key={`a-${currSides}`} className={`highlight-num geo-text-mode-${animMode}`}>
+                {currSides} × {singleCount} = {currSides * singleCount}개
+              </strong>
             </span>
           )}
           {phase === 'dedup' && (
             <span className="geo-stat-item vertex-highlight active-glow" style={{ color: '#fbbf24' }}>
-              2번씩 중복(÷2) ➔ 총 <strong className="highlight-num">{totalDiagonals}개</strong> 대각선
+              2번씩 중복(÷2) ➔ 총{' '}
+              <strong key={`d-${currSides}`} className={`highlight-num geo-text-mode-${animMode}`}>
+                {totalDiagonals}개
+              </strong>{' '}
+              대각선
             </span>
           )}
         </div>
