@@ -251,6 +251,21 @@ export const ManimLevel2Visualizer: React.FC = React.memo(() => {
     return `base-${currSides}`;
   }, [phase, currSides]);
 
+  const [animMode, setAnimMode] = useState<1 | 2 | 3>(1);
+
+  // Keyboard shortcut listener: Left Arrow (<-) toggles text mode 1 -> 2 -> 3
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'ArrowLeft') {
+        setAnimMode((m) => ((m % 3) + 1) as 1 | 2 | 3);
+      } else if (e.key === 'ArrowRight') {
+        setAnimMode((m) => (m === 1 ? 3 : ((m - 2) as 1 | 2 | 3)));
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, []);
+
   return (
     <div className="geo-level1-wrapper">
       <svg width={SIZE} height={165} viewBox={`0 0 ${SIZE} 165`} className="geo-tip-svg">
@@ -430,7 +445,7 @@ export const ManimLevel2Visualizer: React.FC = React.memo(() => {
       {/* Dynamic 3B1B Mathematical Caption Box */}
       <div className="geo-level1-caption-box">
         <span className="geo-shape-badge">{currSides}각형</span>
-        <div key={textKey} className="geo-stat-highlights geo-text-smooth-transition">
+        <div key={textKey} className={`geo-stat-highlights geo-text-mode-${animMode}`}>
           {(phase === 'morph' || phase === 'restore' || phase === 'retract' || phase === 'rest') && (
             <>
               <span className="geo-stat-item vertex-highlight">
@@ -458,6 +473,16 @@ export const ManimLevel2Visualizer: React.FC = React.memo(() => {
             </span>
           )}
         </div>
+      </div>
+
+      {/* Interactive Mode Switcher Chip */}
+      <div
+        className="geo-mode-switcher-chip"
+        onClick={() => setAnimMode((m) => ((m % 3) + 1) as 1 | 2 | 3)}
+        title="방향키 ← → 를 누르거나 클릭하여 텍스트 애니메이션 모드를 스위칭하세요"
+      >
+        <span>🎬 텍스트 모드 {animMode}/3: {animMode === 1 ? '🍃 Soft Pure Fade' : animMode === 2 ? '🌌 Glow Fade' : '📜 Slot Roll'}</span>
+        <span style={{ fontSize: '10px', color: '#64748b' }}>(방향키 ← →)</span>
       </div>
     </div>
   );
