@@ -79,7 +79,7 @@ export const ManimLevel2Visualizer: React.FC = React.memo(() => {
   useEffect(() => {
     let animId: number;
     const MORPH_ANIM_DURATION = 1000; // 1.0s Morphing Motion
-    const MORPH_HOLD_DURATION = 500; // 0.5s Rest Hold Pause after Morphing (Phase 0 total = 1.5s)
+    const MORPH_HOLD_DURATION = 2000; // 2.0s Rest Hold Pause after Morphing (Phase 0 total = 3.0s!)
     const MORPH_TOTAL_DURATION = MORPH_ANIM_DURATION + MORPH_HOLD_DURATION;
 
     const SINGLE_DRAW_DURATION = 1500; // 1.5s Single Vertex Diagonals Motion
