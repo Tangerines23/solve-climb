@@ -78,24 +78,24 @@ export const ManimLevel2Visualizer: React.FC = React.memo(() => {
   // Master rAF Loop for 5-phase timeline
   useEffect(() => {
     let animId: number;
-    const MORPH_DURATION = 1200; // 1.2s vertex-split morphing
-    const SINGLE_DURATION = 2000; // 2.0s single vertex (n-3) laser diagonals
-    const SINGLE_PAUSE_DURATION = 500; // 0.5s rest hold pause after single vertex diagonals complete
-    const ALL_DURATION = 3000; // 3.0s all vertices n*(n-3) diagonals
-    const DEDUP_DURATION = 1800; // 1.8s dedup highlight (Gold)
-    const RESTORE_DURATION = 800; // 0.8s color restore Gold -> Red
-    const RETRACT_DURATION = 1000; // 1.0s center-split retraction motion
-    const REST_DURATION = 500; // 0.5s rest pause
+    const MORPH_DURATION = 1500; // Phase 0: 1.5s Polygon Morphing
+    const SINGLE_DRAW_DURATION = 1500; // Phase 1-a: 1.5s Laser line draw from V0
+    const SINGLE_HOLD_DURATION = 1500; // Phase 1-b: 1.5s Hold rest pause (Phase 1 Text total = 3.0s)
+    const ALL_DURATION = 3000; // Phase 2: 3.0s All diagonals draw (Phase 2 Text total = 3.0s)
+    const DEDUP_HIGHLIGHT_DURATION = 2000; // Phase 3-a: 2.0s Gold dedup highlight
+    const DEDUP_RESTORE_DURATION = 1000; // Phase 3-b: 1.0s Color restore to Red (Phase 3 Text total = 3.0s)
+    const RETRACT_DURATION = 1500; // Phase 4-a: 1.5s Center-split retraction
+    const REST_PAUSE_DURATION = 1500; // Phase 4-b: 1.5s Final rest pause (Phase 4 Text total = 3.0s)
 
     const TOTAL_CYCLE =
       MORPH_DURATION +
-      SINGLE_DURATION +
-      SINGLE_PAUSE_DURATION +
+      SINGLE_DRAW_DURATION +
+      SINGLE_HOLD_DURATION +
       ALL_DURATION +
-      DEDUP_DURATION +
-      RESTORE_DURATION +
+      DEDUP_HIGHLIGHT_DURATION +
+      DEDUP_RESTORE_DURATION +
       RETRACT_DURATION +
-      REST_DURATION;
+      REST_PAUSE_DURATION;
 
     const tick = (now: number) => {
       const state = animStateRef.current;
@@ -115,7 +115,7 @@ export const ManimLevel2Visualizer: React.FC = React.memo(() => {
       const elapsed = now - state.startTime - state.accumulatedPauseTime;
 
       if (elapsed < MORPH_DURATION) {
-        // Phase 0: Vertex-split Morphing (0s ~ 1.2s)
+        // Phase 0: Vertex-split Morphing (0s ~ 1.5s)
         setPhase('morph');
         const rawT = elapsed / MORPH_DURATION;
         const eased =
@@ -123,37 +123,42 @@ export const ManimLevel2Visualizer: React.FC = React.memo(() => {
         setMorphProgress(eased);
         setDrawProgress(0);
         setRetractProgress(0);
-      } else if (elapsed < MORPH_DURATION + SINGLE_DURATION) {
-        // Phase 1: Draw (n-3) diagonals from V0 (1.2s ~ 3.2s)
+      } else if (elapsed < MORPH_DURATION + SINGLE_DRAW_DURATION) {
+        // Phase 1-a: Draw (n-3) diagonals from V0 (1.5s ~ 3.0s)
         setPhase('single');
         setMorphProgress(1);
-        setDrawProgress(Math.min((elapsed - MORPH_DURATION) / SINGLE_DURATION, 1));
+        setDrawProgress(Math.min((elapsed - MORPH_DURATION) / SINGLE_DRAW_DURATION, 1));
         setRetractProgress(0);
-      } else if (elapsed < MORPH_DURATION + SINGLE_DURATION + SINGLE_PAUSE_DURATION) {
-        // Phase 1.5: 0.5s Rest Hold Pause after single-vertex diagonals complete
+      } else if (elapsed < MORPH_DURATION + SINGLE_DRAW_DURATION + SINGLE_HOLD_DURATION) {
+        // Phase 1-b: 1.5s Rest Hold Pause after single-vertex diagonals complete (3.0s ~ 4.5s total Phase 1 text = 3.0s)
         setPhase('single');
         setMorphProgress(1);
         setDrawProgress(1);
         setRetractProgress(0);
       } else if (
         elapsed <
-        MORPH_DURATION + SINGLE_DURATION + SINGLE_PAUSE_DURATION + ALL_DURATION
+        MORPH_DURATION + SINGLE_DRAW_DURATION + SINGLE_HOLD_DURATION + ALL_DURATION
       ) {
-        // Phase 2: Draw all diagonals (3.7s ~ 6.7s)
+        // Phase 2: Draw all diagonals (4.5s ~ 7.5s total Phase 2 text = 3.0s)
         setPhase('all');
         setMorphProgress(1);
         setDrawProgress(
           Math.min(
-            (elapsed - MORPH_DURATION - SINGLE_DURATION - SINGLE_PAUSE_DURATION) / ALL_DURATION,
+            (elapsed - MORPH_DURATION - SINGLE_DRAW_DURATION - SINGLE_HOLD_DURATION) /
+              ALL_DURATION,
             1
           )
         );
         setRetractProgress(0);
       } else if (
         elapsed <
-        MORPH_DURATION + SINGLE_DURATION + SINGLE_PAUSE_DURATION + ALL_DURATION + DEDUP_DURATION
+        MORPH_DURATION +
+          SINGLE_DRAW_DURATION +
+          SINGLE_HOLD_DURATION +
+          ALL_DURATION +
+          DEDUP_HIGHLIGHT_DURATION
       ) {
-        // Phase 3: Deduplication highlight (Gold) (6.7s ~ 8.5s)
+        // Phase 3-a: Deduplication highlight (Gold) (7.5s ~ 9.5s)
         setPhase('dedup');
         setMorphProgress(1);
         setDrawProgress(1);
@@ -161,13 +166,13 @@ export const ManimLevel2Visualizer: React.FC = React.memo(() => {
       } else if (
         elapsed <
         MORPH_DURATION +
-          SINGLE_DURATION +
-          SINGLE_PAUSE_DURATION +
+          SINGLE_DRAW_DURATION +
+          SINGLE_HOLD_DURATION +
           ALL_DURATION +
-          DEDUP_DURATION +
-          RESTORE_DURATION
+          DEDUP_HIGHLIGHT_DURATION +
+          DEDUP_RESTORE_DURATION
       ) {
-        // Phase 3.5: Restore from Gold back to original Red (8.5s ~ 9.3s)
+        // Phase 3-b: Restore from Gold back to original Red (9.5s ~ 10.5s total Phase 3 text = 3.0s)
         setPhase('restore');
         setMorphProgress(1);
         setDrawProgress(1);
@@ -175,30 +180,30 @@ export const ManimLevel2Visualizer: React.FC = React.memo(() => {
       } else if (
         elapsed <
         MORPH_DURATION +
-          SINGLE_DURATION +
-          SINGLE_PAUSE_DURATION +
+          SINGLE_DRAW_DURATION +
+          SINGLE_HOLD_DURATION +
           ALL_DURATION +
-          DEDUP_DURATION +
-          RESTORE_DURATION +
+          DEDUP_HIGHLIGHT_DURATION +
+          DEDUP_RESTORE_DURATION +
           RETRACT_DURATION
       ) {
-        // Phase 4: Center-Split Retraction Motion (9.3s ~ 10.3s)
+        // Phase 4-a: Center-Split Retraction Motion (10.5s ~ 12.0s)
         setPhase('retract');
         setMorphProgress(1);
         setDrawProgress(1);
         const retractElapsed =
           elapsed -
           (MORPH_DURATION +
-            SINGLE_DURATION +
-            SINGLE_PAUSE_DURATION +
+            SINGLE_DRAW_DURATION +
+            SINGLE_HOLD_DURATION +
             ALL_DURATION +
-            DEDUP_DURATION +
-            RESTORE_DURATION);
+            DEDUP_HIGHLIGHT_DURATION +
+            DEDUP_RESTORE_DURATION);
         const rawU = Math.min(retractElapsed / RETRACT_DURATION, 1);
         const easedU = rawU * rawU * (3 - 2 * rawU); // Smoothstep curve
         setRetractProgress(easedU);
       } else if (elapsed < TOTAL_CYCLE) {
-        // Phase 5: Rest Pause (10.3s ~ 10.8s)
+        // Phase 4-b: Final Rest Pause (12.0s ~ 13.5s total Phase 4 text = 3.0s)
         setPhase('rest');
         setMorphProgress(1);
         setDrawProgress(1);
