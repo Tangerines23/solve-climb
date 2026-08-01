@@ -26,7 +26,7 @@ const ManimLevel1Visualizer: React.FC = () => {
   const [progress, setProgress] = useState(1);
   const [highlightIdx, setHighlightIdx] = useState<number | null>(null);
 
-  // Cycle shapes: 3 -> 4 -> 5 -> 6 -> 3
+  // Cycle shapes: 3 -> 4 -> 5 -> 6 -> 3 (4.8s per shape for relaxed presentation)
   useEffect(() => {
     const timer = setInterval(() => {
       setShapeIdx((idx) => {
@@ -35,7 +35,7 @@ const ManimLevel1Visualizer: React.FC = () => {
         setCurrSides(shapeConfigs[nextIdx]!.sides);
         return nextIdx;
       });
-    }, 3500);
+    }, 4800);
     return () => clearInterval(timer);
   }, []);
 
@@ -68,7 +68,7 @@ const ManimLevel1Visualizer: React.FC = () => {
     return () => cancelAnimationFrame(animId);
   }, [currSides, prevSides]);
 
-  // Sequential Clockwise Highlight effect starting from Top Vertex (index 0)
+  // Gentle Clockwise Highlight effect (650ms per vertex, smooth scale pulse)
   useEffect(() => {
     if (progress < 1) {
       setHighlightIdx(null);
@@ -86,7 +86,7 @@ const ManimLevel1Visualizer: React.FC = () => {
         setHighlightIdx(null);
         clearInterval(timer);
       }
-    }, 320);
+    }, 650);
 
     return () => clearInterval(timer);
   }, [progress, currSides]);
