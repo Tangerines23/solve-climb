@@ -198,6 +198,34 @@ export const ManimLevel3Visualizer: React.FC = React.memo(() => {
         <circle cx={v1.x} cy={v1.y} r={5.5} className="geo-simple-dot" style={{ fill: '#38bdf8' }} />
         <circle cx={v2.x} cy={v2.y} r={5.5} className="geo-simple-dot" style={{ fill: '#fbbf24' }} />
 
+        {/* Median Line from V0 to Midpoint Delta (δ) */}
+        <line
+          x1={v0.x}
+          y1={v0.y}
+          x2={100}
+          y2={145}
+          stroke="#c084fc"
+          strokeWidth={1.5}
+          strokeDasharray="4 3"
+          opacity={0.85}
+        />
+
+        {/* Midpoint Delta (δ) Intersection Dot */}
+        <circle cx={100} cy={145} r={4.5} fill="#c084fc" stroke="#ffffff" strokeWidth={1} />
+
+        {/* Delta Label */}
+        <text
+          x={100}
+          y={158}
+          fontSize={10}
+          fontWeight={800}
+          fill="#c084fc"
+          textAnchor="middle"
+          style={{ filter: 'drop-shadow(0 0 3px rgba(0,0,0,0.8))' }}
+        >
+          δ (중점)
+        </text>
+
         {/* Dynamic Angle Labels near Vertices */}
         <text
           x={v0.x}
@@ -211,25 +239,27 @@ export const ManimLevel3Visualizer: React.FC = React.memo(() => {
           α {alphaDeg}°
         </text>
 
+        {/* Beta Label: Positioned Below Left Vertex V1 */}
         <text
-          x={v1.x + 14}
-          y={v1.y - 8}
+          x={v1.x - 6}
+          y={v1.y + 14}
           fontSize={11}
           fontWeight={800}
           fill="#38bdf8"
-          textAnchor="start"
+          textAnchor="end"
           style={{ filter: 'drop-shadow(0 0 3px rgba(0,0,0,0.8))' }}
         >
           β {betaDeg}°
         </text>
 
+        {/* Gamma Label: Positioned Below Right Vertex V2 */}
         <text
-          x={v2.x - 14}
-          y={v2.y - 8}
+          x={v2.x + 6}
+          y={v2.y + 14}
           fontSize={11}
           fontWeight={800}
           fill="#fbbf24"
-          textAnchor="end"
+          textAnchor="start"
           style={{ filter: 'drop-shadow(0 0 3px rgba(0,0,0,0.8))' }}
         >
           γ {gammaDeg}°
