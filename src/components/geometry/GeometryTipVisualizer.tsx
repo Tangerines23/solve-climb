@@ -2,6 +2,7 @@ import React from 'react';
 import './GeometryTipVisualizer.css';
 import { ManimLevel1Visualizer } from './ManimLevel1Visualizer';
 import { ManimLevel2Visualizer } from './ManimLevel2Visualizer';
+import { ManimLevel3Visualizer } from './ManimLevel3Visualizer';
 
 interface GeometryTipVisualizerProps {
   level: number;
@@ -19,30 +20,8 @@ export const GeometryTipVisualizer: React.FC<GeometryTipVisualizerProps> = ({ le
       case 2:
         return <ManimLevel2Visualizer />;
 
-      case 3: {
-        // 2-3: 삼각형의 성질 (내각의 합 180도)
-        return (
-          <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`} className="geo-tip-svg">
-            <polygon points="100,30 35,145 165,145" className="geo-shape-poly" />
-            {/* Inner Angle Arcs */}
-            <path d="M 100,30 L 90,50 A 25 25 0 0 0 110,50 Z" className="geo-angle-arc arc-1" />
-            <path d="M 35,145 L 60,145 A 25 25 0 0 0 47,123 Z" className="geo-angle-arc arc-2" />
-            <path d="M 165,145 L 153,123 A 25 25 0 0 0 140,145 Z" className="geo-angle-arc arc-3" />
-            <text x={100} y={75} className="geo-angle-label">
-              α
-            </text>
-            <text x={65} y={135} className="geo-angle-label">
-              β
-            </text>
-            <text x={135} y={135} className="geo-angle-label">
-              γ
-            </text>
-            <text x={center} y={size - 10} className="geo-tip-subtext-highlight">
-              α + β + γ = 180°
-            </text>
-          </svg>
-        );
-      }
+      case 3:
+        return <ManimLevel3Visualizer />;
 
       case 4: {
         // 2-4: 사각형의 성질 (평행사변형 각도)
