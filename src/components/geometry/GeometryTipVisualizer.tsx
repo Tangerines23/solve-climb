@@ -87,21 +87,19 @@ const ManimLevel1Visualizer: React.FC = () => {
     }
 
     if (currSides > prevSides) {
-      // EXPAND (3 -> 4, 4 -> 5, 5 -> 6):
-      // Clockwise ordered sub-division along prevSides perimeter to prevent any polygon twisting!
+      // EXPAND / SPREAD (3 -> 4, 4 -> 5, 5 -> 6)
+      // At t=0, the extra vertex is overlapped (doubled) at the bottom-left vertex of prevSides polygon.
+      // As progress t goes 0 -> 1, it splits into 2 and spreads out to targetBase!
       const startBase = getRegularVertices(prevSides);
       const initialPoints: { x: number; y: number }[] = [];
 
       for (let i = 0; i < currSides; i++) {
-        const t = (i * prevSides) / currSides;
-        const idx = Math.floor(t);
-        const frac = t - idx;
-        const p1 = startBase[idx % prevSides]!;
-        const p2 = startBase[(idx + 1) % prevSides]!;
-        initialPoints.push({
-          x: p1.x + (p2.x - p1.x) * frac,
-          y: p1.y + (p2.y - p1.y) * frac,
-        });
+        if (i < prevSides) {
+          initialPoints.push(startBase[i]!);
+        } else {
+          // Overlap extra points on the bottom-left vertex (index prevSides - 1)
+          initialPoints.push({ ...startBase[prevSides - 1]! });
+        }
       }
 
       return targetBase.map((target, i) => {
@@ -189,7 +187,7 @@ const ManimLevel1Visualizer: React.FC = () => {
       </svg>
 
       {/* Bottom Highlighted Dynamic Text */}
-      <div className="geo-level1-caption-box" key={currentConfig.name}>
+      <div className="geo-level1-caption-box">
         <span className="geo-shape-badge">{currentConfig.name}</span>
         <div className="geo-stat-highlights">
           <span className="geo-stat-item vertex-highlight">
