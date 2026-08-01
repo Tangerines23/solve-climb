@@ -233,10 +233,19 @@ export const ManimLevel2Visualizer: React.FC = React.memo(() => {
     const startBase = PRECOMPUTED_VERTICES[prevSides] || computeRegularVertices(prevSides);
 
     if (currSides > prevSides) {
+      // EXPAND / SPREAD (4 -> 5, 5 -> 6, 6 -> 7, 7 -> 8)
       const initialPoints: { x: number; y: number }[] = [];
+      const splitVertexIdx = Math.floor(prevSides / 2);
+      const cornerPt = startBase[splitVertexIdx % prevSides]!;
+
       for (let i = 0; i < currSides; i++) {
-        const srcIdx = Math.min(i, startBase.length - 1);
-        initialPoints.push(startBase[srcIdx]!);
+        if (i <= splitVertexIdx) {
+          initialPoints.push(startBase[i]!);
+        } else if (i === splitVertexIdx + 1) {
+          initialPoints.push(cornerPt);
+        } else {
+          initialPoints.push(startBase[i - 1]!);
+        }
       }
 
       return targetBase.map((tPt, i) => {
@@ -247,11 +256,26 @@ export const ManimLevel2Visualizer: React.FC = React.memo(() => {
         };
       });
     } else {
-      return targetBase.map((tPt, i) => {
-        const sPt = startBase[i % startBase.length]!;
+      // SHRINK / MERGE (8 -> 4)
+      // Perfectly symmetric contract merge based on minimum euclidean distance!
+      const nearestTargetMap = startBase.map((sPt) => {
+        let minDist = Infinity;
+        let bestTarget = targetBase[0]!;
+        for (const tPt of targetBase) {
+          const d = Math.hypot(sPt.x - tPt.x, sPt.y - tPt.y);
+          if (d < minDist) {
+            minDist = d;
+            bestTarget = tPt;
+          }
+        }
+        return bestTarget;
+      });
+
+      return startBase.map((start, i) => {
+        const target = nearestTargetMap[i]!;
         return {
-          x: sPt.x + (tPt.x - sPt.x) * morphProgress,
-          y: sPt.y + (tPt.y - sPt.y) * morphProgress,
+          x: start.x + (target.x - start.x) * morphProgress,
+          y: start.y + (target.y - start.y) * morphProgress,
         };
       });
     }

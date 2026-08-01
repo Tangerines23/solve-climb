@@ -138,14 +138,12 @@ export const ManimLevel1Visualizer: React.FC = React.memo(() => {
     }
 
     if (currSides > prevSides) {
+      // EXPAND / SPREAD (3 -> 4, 4 -> 5, 5 -> 6, 6 -> 7, 7 -> 8)
+      // Fixed symmetric split at lower-right corner vertex: Math.floor(prevSides / 2)
       const startBase = PRECOMPUTED_VERTICES[prevSides]!;
       const initialPoints: { x: number; y: number }[] = [];
 
-      let splitVertexIdx = 1;
-      if (prevSides === 3) splitVertexIdx = 1;
-      if (prevSides === 4) splitVertexIdx = 2;
-      if (prevSides === 5) splitVertexIdx = 2;
-
+      const splitVertexIdx = Math.floor(prevSides / 2);
       const cornerPt = startBase[splitVertexIdx % prevSides]!;
 
       for (let i = 0; i < currSides; i++) {
@@ -166,20 +164,26 @@ export const ManimLevel1Visualizer: React.FC = React.memo(() => {
         };
       });
     } else {
+      // SHRINK / MERGE (8 -> 3)
+      // Perfectly symmetric contract merge based on minimum euclidean distance!
       const startBase = PRECOMPUTED_VERTICES[prevSides]!;
-      const targetTriangle = PRECOMPUTED_VERTICES[currSides]!;
+      const targetBase = PRECOMPUTED_VERTICES[currSides]!;
 
-      const targetMap = [
-        targetTriangle[0]!,
-        targetTriangle[1]!,
-        targetTriangle[1]!,
-        targetTriangle[2]!,
-        targetTriangle[2]!,
-        targetTriangle[2]!,
-      ];
+      const nearestTargetMap = startBase.map((sPt) => {
+        let minDist = Infinity;
+        let bestTarget = targetBase[0]!;
+        for (const tPt of targetBase) {
+          const d = Math.hypot(sPt.x - tPt.x, sPt.y - tPt.y);
+          if (d < minDist) {
+            minDist = d;
+            bestTarget = tPt;
+          }
+        }
+        return bestTarget;
+      });
 
       return startBase.map((start, i) => {
-        const target = targetMap[i] || targetTriangle[2]!;
+        const target = nearestTargetMap[i]!;
         return {
           x: start.x + (target.x - start.x) * progress,
           y: start.y + (target.y - start.y) * progress,
