@@ -8,18 +8,29 @@ interface Point {
   y: number;
 }
 
+// Define 3 iconic keyframe target positions for V0(x, y)
+const KEYFRAME_TARGETS: Point[] = [
+  { x: 100, y: 40 }, // State 0: Acute / Regular Triangle (~60°, 60°, 60°)
+  { x: 60, y: 65 }, // State 1: Left Obtuse Triangle (~110°, 25°, 45°)
+  { x: 140, y: 65 }, // State 2: Right Obtuse Triangle (~35°, 35°, 110°)
+];
+
+// Timeline parameters: 1.5s Hold at target, 1.0s Transition to next target
+const HOLD_DURATION = 1500;
+const MOVE_DURATION = 1000;
+const STEP_DURATION = HOLD_DURATION + MOVE_DURATION; // 2.5s per keyframe
+const TOTAL_CYCLE = KEYFRAME_TARGETS.length * STEP_DURATION; // 7.5s total cycle
+
 export const ManimLevel3Visualizer: React.FC = React.memo(() => {
   const [t, setT] = useState(0);
   const [isPaused, setIsPaused] = useState(false);
 
-  // Single Master rAF loop for smooth oscillating triangle animation
+  // Single Master rAF loop for keyframe hold & transition sequence
   useEffect(() => {
     let animId: number;
     let startTime: number | null = null;
     let accumulatedPauseTime = 0;
     let pauseStart: number | null = null;
-
-    const DURATION = 6000; // 6 seconds for a full smooth cycle
 
     const tick = (now: number) => {
       if (isPaused) {
@@ -34,8 +45,8 @@ export const ManimLevel3Visualizer: React.FC = React.memo(() => {
       }
 
       if (!startTime) startTime = now;
-      const elapsed = (now - startTime - accumulatedPauseTime) % DURATION;
-      setT(elapsed / DURATION);
+      const elapsed = (now - startTime - accumulatedPauseTime) % TOTAL_CYCLE;
+      setT(elapsed / TOTAL_CYCLE);
 
       animId = requestAnimationFrame(tick);
     };
@@ -44,13 +55,29 @@ export const ManimLevel3Visualizer: React.FC = React.memo(() => {
     return () => cancelAnimationFrame(animId);
   }, [isPaused]);
 
-  // Compute smooth moving top vertex V0(x, y)
+  // Compute V0(x, y) with 1.5s Hold Pause and 1.0s Eased Move
   const v0: Point = useMemo(() => {
-    // Oscillate x between 55 and 145 using smooth sine wave
-    const x = 100 + 45 * Math.sin(t * 2 * Math.PI);
-    // Oscillate y between 30 and 65
-    const y = 47.5 - 17.5 * Math.cos(t * 2 * Math.PI);
-    return { x, y };
+    const elapsedMs = t * TOTAL_CYCLE;
+    const stepIndex = Math.floor(elapsedMs / STEP_DURATION) % KEYFRAME_TARGETS.length;
+    const stepElapsed = elapsedMs % STEP_DURATION;
+
+    const currentTarget = KEYFRAME_TARGETS[stepIndex]!;
+    const nextTarget = KEYFRAME_TARGETS[(stepIndex + 1) % KEYFRAME_TARGETS.length]!;
+
+    if (stepElapsed < HOLD_DURATION) {
+      // Phase 1: Hold Pause (1.5s) at current target position - NUMBERS ARE STABLE & STILL!
+      return currentTarget;
+    } else {
+      // Phase 2: Smooth Transition (1.0s) to next target position using smoothstep curve
+      const moveProgress = (stepElapsed - HOLD_DURATION) / MOVE_DURATION;
+      const rawT = Math.min(1, Math.max(0, moveProgress));
+      const eased = rawT * rawT * (3 - 2 * rawT);
+
+      return {
+        x: currentTarget.x + (nextTarget.x - currentTarget.x) * eased,
+        y: currentTarget.y + (nextTarget.y - currentTarget.y) * eased,
+      };
+    }
   }, [t]);
 
   // Fixed bottom left (V1) and bottom right (V2)
