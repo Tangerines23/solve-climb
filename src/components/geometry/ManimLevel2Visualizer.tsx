@@ -14,7 +14,13 @@ interface DiagonalLine {
   y2: number;
 }
 
-function computeVertices(n: number) {
+// Pre-calculate fixed regular polygon vertices for 5 and 6 sides
+const PRECOMPUTED_VERTICES: Record<number, { x: number; y: number }[]> = {
+  5: computeRegularVertices(5),
+  6: computeRegularVertices(6),
+};
+
+function computeRegularVertices(n: number): { x: number; y: number }[] {
   const pts: { x: number; y: number }[] = [];
   for (let i = 0; i < n; i++) {
     const angle = -Math.PI / 2 + (i * 2 * Math.PI) / n;
@@ -27,20 +33,151 @@ function computeVertices(n: number) {
 }
 
 export const ManimLevel2Visualizer: React.FC = React.memo(() => {
-  const [sides, setSides] = useState(5); // Alternates between 5 (pentagon) & 6 (hexagon)
-  const [phase, setPhase] = useState<'single' | 'all' | 'dedup' | 'rest'>('single');
+  const [shapeIdx, setShapeIdx] = useState(0); // 0: 5-gon, 1: 6-gon
+  const [prevSides, setPrevSides] = useState(5);
+  const [currSides, setCurrSides] = useState(5);
+
+  const [phase, setPhase] = useState<'morph' | 'single' | 'all' | 'dedup' | 'rest'>('morph');
+  const [morphProgress, setMorphProgress] = useState(1);
   const [drawProgress, setDrawProgress] = useState(0);
 
-  const vertices = useMemo(() => computeVertices(sides), [sides]);
+  // Single Deterministic Timeline Engine
+  useEffect(() => {
+    let animId: number;
+    let startTime: number | null = null;
 
-  // Compute all valid diagonals (i < j and not adjacent)
+    const MORPH_DURATION = 1200; // 1.2s vertex-split morphing
+    const SINGLE_DURATION = 2000; // 2.0s single vertex (n-3) diagonals
+    const ALL_DURATION = 3000; // 3.0s all vertices diagonals
+    const DEDUP_DURATION = 2000; // 2.0s dedup /2 highlight
+    const REST_DURATION = 800; // 0.8s rest pause
+
+    const TOTAL_CYCLE =
+      MORPH_DURATION + SINGLE_DURATION + ALL_DURATION + DEDUP_DURATION + REST_DURATION;
+
+    const tick = (now: number) => {
+      if (!startTime) startTime = now;
+      const elapsed = now - startTime;
+
+      if (elapsed < MORPH_DURATION) {
+        // Phase 0: Vertex-split Morphing (0s ~ 1.2s)
+        setPhase('morph');
+        const rawT = elapsed / MORPH_DURATION;
+        const eased =
+          rawT < 0.5 ? 4 * rawT * rawT * rawT : 1 - Math.pow(-2 * rawT + 2, 3) / 2;
+        setMorphProgress(eased);
+        setDrawProgress(0);
+      } else if (elapsed < MORPH_DURATION + SINGLE_DURATION) {
+        // Phase 1: Draw (n-3) diagonals from V0 (1.2s ~ 3.2s)
+        setPhase('single');
+        setMorphProgress(1);
+        setDrawProgress(Math.min((elapsed - MORPH_DURATION) / SINGLE_DURATION, 1));
+      } else if (elapsed < MORPH_DURATION + SINGLE_DURATION + ALL_DURATION) {
+        // Phase 2: Draw all diagonals (3.2s ~ 6.2s)
+        setPhase('all');
+        setMorphProgress(1);
+        setDrawProgress(
+          Math.min((elapsed - MORPH_DURATION - SINGLE_DURATION) / ALL_DURATION, 1)
+        );
+      } else if (elapsed < MORPH_DURATION + SINGLE_DURATION + ALL_DURATION + DEDUP_DURATION) {
+        // Phase 3: Deduplication highlight (6.2s ~ 8.2s)
+        setPhase('dedup');
+        setMorphProgress(1);
+        setDrawProgress(
+          Math.min(
+            (elapsed - MORPH_DURATION - SINGLE_DURATION - ALL_DURATION) / DEDUP_DURATION,
+            1
+          )
+        );
+      } else {
+        // Phase 4: Rest Pause (8.2s ~ 9.0s)
+        setPhase('rest');
+        setMorphProgress(1);
+        setDrawProgress(1);
+      }
+
+      if (elapsed < TOTAL_CYCLE) {
+        animId = requestAnimationFrame(tick);
+      } else {
+        // Synchronously advance to next shape (5 -> 6 -> 5)
+        const nextSides = currSides === 5 ? 6 : 5;
+        setPrevSides(currSides);
+        setCurrSides(nextSides);
+        setShapeIdx(nextSides === 5 ? 0 : 1);
+        setMorphProgress(0);
+      }
+    };
+
+    animId = requestAnimationFrame(tick);
+    return () => cancelAnimationFrame(animId);
+  }, [currSides, prevSides]);
+
+  // Memoized Morph Points (Corner Overlap Splitting 5 <-> 6)
+  const morphPts = useMemo(() => {
+    const targetBase = PRECOMPUTED_VERTICES[currSides] || PRECOMPUTED_VERTICES[5]!;
+    if (morphProgress >= 1 || prevSides === currSides) {
+      return targetBase;
+    }
+
+    if (currSides > prevSides) {
+      // EXPAND / SPREAD (5 -> 6)
+      const startBase = PRECOMPUTED_VERTICES[prevSides]!;
+      const initialPoints: { x: number; y: number }[] = [];
+      const splitVertexIdx = 2;
+      const cornerPt = startBase[splitVertexIdx]!;
+
+      for (let i = 0; i < currSides; i++) {
+        if (i <= splitVertexIdx) {
+          initialPoints.push(startBase[i]!);
+        } else if (i === splitVertexIdx + 1) {
+          initialPoints.push(cornerPt);
+        } else {
+          initialPoints.push(startBase[i - 1]!);
+        }
+      }
+
+      return targetBase.map((target, i) => {
+        const start = initialPoints[i]!;
+        return {
+          x: start.x + (target.x - start.x) * morphProgress,
+          y: start.y + (target.y - start.y) * morphProgress,
+        };
+      });
+    } else {
+      // SHRINK / MERGE (6 -> 5)
+      const startBase = PRECOMPUTED_VERTICES[prevSides]!;
+      const target5 = PRECOMPUTED_VERTICES[currSides]!;
+
+      const targetMap = [
+        target5[0]!,
+        target5[1]!,
+        target5[2]!,
+        target5[2]!,
+        target5[3]!,
+        target5[4]!,
+      ];
+
+      return startBase.map((start, i) => {
+        const target = targetMap[i] || target5[4]!;
+        return {
+          x: start.x + (target.x - start.x) * morphProgress,
+          y: start.y + (target.y - start.y) * morphProgress,
+        };
+      });
+    }
+  }, [currSides, prevSides, morphProgress]);
+
+  // Unique Diagonals based on target morphed vertices
   const uniqueDiagonals = useMemo(() => {
+    if (phase === 'morph') return [];
+
     const lines: DiagonalLine[] = [];
-    for (let i = 0; i < sides; i++) {
-      for (let j = i + 2; j < sides; j++) {
-        if (i === 0 && j === sides - 1) continue; // Skip adjacent wrap-around edge
-        const p1 = vertices[i]!;
-        const p2 = vertices[j]!;
+    const pts = PRECOMPUTED_VERTICES[currSides]!;
+    for (let i = 0; i < currSides; i++) {
+      for (let j = i + 2; j < currSides; j++) {
+        if (i === 0 && j === currSides - 1) continue;
+        const p1 = pts[i]!;
+        const p2 = pts[j]!;
         lines.push({
           fromIdx: i,
           toIdx: j,
@@ -52,70 +189,29 @@ export const ManimLevel2Visualizer: React.FC = React.memo(() => {
       }
     }
     return lines;
-  }, [vertices, sides]);
+  }, [currSides, phase]);
 
-  // Diagonals originating from vertex 0 (First phase: n - 3 diagonals)
   const vertex0Diagonals = useMemo(() => {
     return uniqueDiagonals.filter((d) => d.fromIdx === 0 || d.toIdx === 0);
   }, [uniqueDiagonals]);
 
-  // Master Deterministic Timeline for Level 2-2
-  useEffect(() => {
-    let animId: number;
-    let startTime: number | null = null;
+  const ptsStr = useMemo(
+    () => morphPts.map((p) => `${p.x.toFixed(1)},${p.y.toFixed(1)}`).join(' '),
+    [morphPts]
+  );
 
-    const SINGLE_DURATION = 2000; // Phase 1: Draw (n-3) diagonals from V0 (2s)
-    const ALL_DURATION = 3000; // Phase 2: Draw all n*(n-3) directed diagonals (3s)
-    const DEDUP_DURATION = 2000; // Phase 3: Highlight overlap & deduplicate /2 (2s)
-    const REST_DURATION = 800; // Phase 4: Rest pause (0.8s)
-
-    const TOTAL_CYCLE = SINGLE_DURATION + ALL_DURATION + DEDUP_DURATION + REST_DURATION;
-
-    const tick = (now: number) => {
-      if (!startTime) startTime = now;
-      const elapsed = now - startTime;
-
-      if (elapsed < SINGLE_DURATION) {
-        setPhase('single');
-        setDrawProgress(Math.min(elapsed / SINGLE_DURATION, 1));
-      } else if (elapsed < SINGLE_DURATION + ALL_DURATION) {
-        setPhase('all');
-        setDrawProgress(Math.min((elapsed - SINGLE_DURATION) / ALL_DURATION, 1));
-      } else if (elapsed < SINGLE_DURATION + ALL_DURATION + DEDUP_DURATION) {
-        setPhase('dedup');
-        setDrawProgress(Math.min((elapsed - SINGLE_DURATION - ALL_DURATION) / DEDUP_DURATION, 1));
-      } else {
-        setPhase('rest');
-        setDrawProgress(1);
-      }
-
-      if (elapsed < TOTAL_CYCLE) {
-        animId = requestAnimationFrame(tick);
-      } else {
-        // Toggle polygon between 5-gon and 6-gon
-        setSides((s) => (s === 5 ? 6 : 5));
-      }
-    };
-
-    animId = requestAnimationFrame(tick);
-    return () => cancelAnimationFrame(animId);
-  }, [sides]);
-
-  const totalDiagonals = (sides * (sides - 3)) / 2;
-  const singleCount = sides - 3;
+  const totalDiagonals = (currSides * (currSides - 3)) / 2;
+  const singleCount = currSides - 3;
 
   return (
     <div className="geo-level1-wrapper">
       <svg width={SIZE} height={165} viewBox={`0 0 ${SIZE} 165`} className="geo-tip-svg">
-        {/* Main Base Polygon */}
-        <polygon
-          points={vertices.map((v) => `${v.x.toFixed(1)},${v.y.toFixed(1)}`).join(' ')}
-          className="geo-shape-poly-morph"
-        />
+        {/* Main Base Morphing Polygon */}
+        <polygon points={ptsStr} className="geo-shape-poly-morph" />
 
-        {/* Outer Edges */}
-        {vertices.map((v, idx) => {
-          const nextV = vertices[(idx + 1) % vertices.length]!;
+        {/* Outer Morphing Edges */}
+        {morphPts.map((v, idx) => {
+          const nextV = morphPts[(idx + 1) % morphPts.length]!;
           return (
             <line
               key={`base-edge-${idx}`}
@@ -158,10 +254,9 @@ export const ManimLevel2Visualizer: React.FC = React.memo(() => {
         {/* Phase 2, 3 & Rest: All Unique Diagonals */}
         {(phase === 'all' || phase === 'dedup' || phase === 'rest') &&
           uniqueDiagonals.map((d, idx) => {
-            // Stagger drawing for Phase 'all'
             const staggerProgress =
               phase === 'all'
-                ? Math.max(0, Math.min(1, (drawProgress * uniqueDiagonals.length - idx * 0.5)))
+                ? Math.max(0, Math.min(1, drawProgress * uniqueDiagonals.length - idx * 0.5))
                 : 1;
 
             if (staggerProgress <= 0) return null;
@@ -193,19 +288,21 @@ export const ManimLevel2Visualizer: React.FC = React.memo(() => {
           })}
 
         {/* Vertex Dots */}
-        {vertices.map((v, idx) => {
+        {morphPts.map((v, idx) => {
           const isV0 = idx === 0;
-          const isExcludedNeighbor = phase === 'single' && (idx === 1 || idx === sides - 1);
+          const isExcludedNeighbor = phase === 'single' && (idx === 1 || idx === currSides - 1);
           const isTargetVertex =
             phase === 'single' && !isV0 && !isExcludedNeighbor;
+
+          const isHighlighted = phase === 'single' && isV0;
 
           return (
             <g key={`vertex-group-${idx}`}>
               <circle
                 cx={v.x}
                 cy={v.y}
-                r={isV0 && phase === 'single' ? 8.5 : isTargetVertex ? 7 : 5}
-                className={`geo-simple-dot ${isV0 && phase === 'single' ? 'active-dot' : ''}`}
+                r={isHighlighted ? 8.5 : isTargetVertex ? 6.5 : 5}
+                className={`geo-simple-dot ${isHighlighted ? 'active-dot' : ''}`}
                 style={{
                   fill: isV0 ? '#fb7185' : isTargetVertex ? '#38bdf8' : '#818cf8',
                   transition: 'r 0.3s ease, fill 0.3s ease',
@@ -229,8 +326,8 @@ export const ManimLevel2Visualizer: React.FC = React.memo(() => {
         })}
 
         {/* Pointer Tag for Top Vertex */}
-        {vertices[0] && (
-          <text x={vertices[0].x} y={vertices[0].y - 14} className="geo-pointer-tag vertex-tag">
+        {morphPts[0] && (
+          <text x={morphPts[0].x} y={morphPts[0].y - 14} className="geo-pointer-tag vertex-tag">
             ● 꼭짓점
           </text>
         )}
@@ -238,16 +335,21 @@ export const ManimLevel2Visualizer: React.FC = React.memo(() => {
 
       {/* Dynamic 3B1B Mathematical Caption Box */}
       <div className="geo-level1-caption-box">
-        <span className="geo-shape-badge">{sides}각형</span>
+        <span className="geo-shape-badge">{currSides}각형</span>
         <div className="geo-stat-highlights">
+          {phase === 'morph' && (
+            <span className="geo-stat-item edge-highlight">
+              점 분할 변환 중... (<strong className="highlight-num">{currSides}각형</strong>)
+            </span>
+          )}
           {phase === 'single' && (
             <span className="geo-stat-item vertex-highlight active-glow">
-              1개 꼭짓점 ➔ <strong className="highlight-num">({sides} - 3) = {singleCount}개</strong> 대각선
+              1개 꼭짓점 ➔ <strong className="highlight-num">({currSides} - 3) = {singleCount}개</strong> 대각선
             </span>
           )}
           {phase === 'all' && (
             <span className="geo-stat-item edge-highlight">
-              전체 {sides}개 꼭짓점 ➔ <strong className="highlight-num">{sides} × {singleCount} = {sides * singleCount}개</strong>
+              전체 {currSides}개 꼭짓점 ➔ <strong className="highlight-num">{currSides} × {singleCount} = {currSides * singleCount}개</strong>
             </span>
           )}
           {(phase === 'dedup' || phase === 'rest') && (
