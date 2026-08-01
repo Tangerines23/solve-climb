@@ -88,17 +88,26 @@ const ManimLevel1Visualizer: React.FC = () => {
 
     if (currSides > prevSides) {
       // EXPAND / SPREAD (3 -> 4, 4 -> 5, 5 -> 6)
-      // At t=0, the extra vertex is overlapped (doubled) at the bottom-left vertex of prevSides polygon.
-      // As progress t goes 0 -> 1, it splits into 2 and spreads out to targetBase!
+      // Extra vertex splits from the bottom-most vertex of prevSides shape,
+      // and spreads out towards the bottom-left regular polygon target!
       const startBase = getRegularVertices(prevSides);
+
+      // Find bottom-most vertex in startBase
+      let bottomIdx = 0;
+      for (let k = 1; k < startBase.length; k++) {
+        if (startBase[k]!.y > startBase[bottomIdx]!.y) {
+          bottomIdx = k;
+        }
+      }
+
       const initialPoints: { x: number; y: number }[] = [];
 
       for (let i = 0; i < currSides; i++) {
         if (i < prevSides) {
           initialPoints.push(startBase[i]!);
         } else {
-          // Overlap extra points on the bottom-left vertex (index prevSides - 1)
-          initialPoints.push({ ...startBase[prevSides - 1]! });
+          // Overlap extra split points on the bottom-most vertex
+          initialPoints.push({ ...startBase[bottomIdx]! });
         }
       }
 
