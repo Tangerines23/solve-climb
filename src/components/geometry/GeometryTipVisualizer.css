@@ -409,44 +409,6 @@
   color: #64748b;
 }
 
-/* Option 1: CSS Text Crossfade (for 2-2) */
-@keyframes geoTextCrossfade {
-  0% {
-    opacity: 0;
-    transform: translateY(6px);
-    filter: blur(2px);
-  }
-  100% {
-    opacity: 1;
-    transform: translateY(0);
-    filter: blur(0);
-  }
-}
-
-.geo-text-crossfade {
-  animation: geoTextCrossfade 0.28s cubic-bezier(0.16, 1, 0.3, 1) forwards;
-}
-
-/* Option 2: Number Rolling Animation (for 2-1) */
-@keyframes geoNumRolling {
-  0% {
-    opacity: 0.2;
-    transform: translateY(-8px) scale(0.85);
-  }
-  60% {
-    transform: translateY(2px) scale(1.18);
-  }
-  100% {
-    opacity: 1;
-    transform: translateY(0) scale(1);
-  }
-}
-
-.geo-num-rolling {
-  display: inline-block;
-  animation: geoNumRolling 0.35s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
-}
-
 /* Simple Dot Highlight Style: Dot slightly enlarges and shrinks smoothly */
 .geo-simple-dot {
   fill: #818cf8;
@@ -465,4 +427,25 @@
 .vertex-highlight.active-glow {
   color: #fb7185;
   transition: color 0.3s ease;
+}
+
+/* 3B1B Smooth Text Crossfade & Slide Transition */
+.geo-text-smooth-transition {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  animation: textFadeSlideIn 0.32s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+@keyframes textFadeSlideIn {
+  0% {
+    opacity: 0;
+    transform: translateY(6px);
+    filter: blur(2px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+    filter: blur(0);
+  }
 }

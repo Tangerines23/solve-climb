@@ -419,12 +419,10 @@ export const ManimLevel2Visualizer: React.FC = React.memo(() => {
         )}
       </svg>
 
-      {/* Dynamic 3B1B Mathematical Caption Box with Option 1 Crossfade */}
+      {/* Dynamic 3B1B Mathematical Caption Box */}
       <div className="geo-level1-caption-box">
-        <span key={`badge-${currSides}`} className="geo-shape-badge geo-text-crossfade">
-          {currSides}각형
-        </span>
-        <div key={`caption-${phase}-${currSides}`} className="geo-stat-highlights geo-text-crossfade">
+        <span className="geo-shape-badge">{currSides}각형</span>
+        <div key={phase} className="geo-stat-highlights geo-text-smooth-transition">
           {(phase === 'morph' || phase === 'restore' || phase === 'retract' || phase === 'rest') && (
             <>
               <span className="geo-stat-item vertex-highlight">
