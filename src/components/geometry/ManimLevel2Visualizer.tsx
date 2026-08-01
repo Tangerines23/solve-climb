@@ -99,12 +99,14 @@ export const ManimLevel2Visualizer: React.FC = React.memo(() => {
       if (elapsed < TOTAL_CYCLE) {
         animId = requestAnimationFrame(tick);
       } else {
-        // Synchronously advance to next shape (5 -> 6 -> 5)
+        // Synchronously reset shape, phase, morphProgress, and drawProgress to eliminate 1-frame next-shape diagonal glitch!
         const nextSides = currSides === 5 ? 6 : 5;
         setPrevSides(currSides);
         setCurrSides(nextSides);
         setShapeIdx(nextSides === 5 ? 0 : 1);
+        setPhase('morph');
         setMorphProgress(0);
+        setDrawProgress(0);
       }
     };
 
@@ -225,7 +227,8 @@ export const ManimLevel2Visualizer: React.FC = React.memo(() => {
         })}
 
         {/* Phase 1: Diagonals from Vertex 0 (n - 3) */}
-        {(phase === 'single' || phase === 'all') &&
+        {morphProgress >= 1 &&
+          (phase === 'single' || phase === 'all') &&
           vertex0Diagonals.map((d, idx) => {
             const currentProgress = phase === 'single' ? drawProgress : 1;
             const targetX = d.fromIdx === 0 ? d.x2 : d.x1;
@@ -252,7 +255,8 @@ export const ManimLevel2Visualizer: React.FC = React.memo(() => {
           })}
 
         {/* Phase 2, 3 & Rest: All Unique Diagonals */}
-        {(phase === 'all' || phase === 'dedup' || phase === 'rest') &&
+        {morphProgress >= 1 &&
+          (phase === 'all' || phase === 'dedup' || phase === 'rest') &&
           uniqueDiagonals.map((d, idx) => {
             const staggerProgress =
               phase === 'all'
