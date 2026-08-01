@@ -37,76 +37,65 @@ function computeRegularVertices(n: number): { x: number; y: number }[] {
   return pts;
 }
 
-export const ManimLevel1Visualizer: React.FC = () => {
+export const ManimLevel1Visualizer: React.FC = React.memo(() => {
   const [shapeIdx, setShapeIdx] = useState(0);
   const [prevSides, setPrevSides] = useState(3);
   const [currSides, setCurrSides] = useState(3);
   const [progress, setProgress] = useState(1);
   const [highlightIdx, setHighlightIdx] = useState<number | null>(null);
 
-  // 1. Smooth rAF Eased Progress Animation (1.2s cubic easeInOut)
-  // Morphing (shape split/merge) ALWAYS runs in default ALL-OFF state (highlightIdx = null)!
+  // Single Master rAF Timeline Loop: Deterministic zero-drift animation engine
   useEffect(() => {
-    if (prevSides === currSides) return;
-    setProgress(0);
-    setHighlightIdx(null); // Pure default ALL-OFF state during morphing!
-
-    let start: number | null = null;
     let animId: number;
-    const duration = 1200;
+    let startTime: number | null = null;
 
-    const animate = (timestamp: number) => {
-      if (!start) start = timestamp;
-      const elapsed = timestamp - start;
-      const rawT = Math.min(elapsed / duration, 1);
+    const MORPH_DURATION = 1200; // 1.2s shape split/merge morphing
+    const HIGHLIGHT_STEP_DURATION = 650; // 0.65s per dot highlight
+    const REST_PAUSE_DURATION = 500; // 0.5s rest pause after highlight ends
 
-      // easeInOutCubic curve
-      const eased =
-        rawT < 0.5 ? 4 * rawT * rawT * rawT : 1 - Math.pow(-2 * rawT + 2, 3) / 2;
+    const highlightTotalDuration = currSides * HIGHLIGHT_STEP_DURATION;
+    const totalCycleDuration = MORPH_DURATION + highlightTotalDuration + REST_PAUSE_DURATION;
 
-      setProgress(eased);
+    const tick = (now: number) => {
+      if (!startTime) startTime = now;
+      const elapsed = now - startTime;
 
-      if (rawT < 1) {
-        animId = requestAnimationFrame(animate);
+      if (elapsed < MORPH_DURATION) {
+        // Phase 1: Morphing (0s ~ 1.2s) in pure ALL-OFF state
+        const rawT = elapsed / MORPH_DURATION;
+        const eased =
+          rawT < 0.5 ? 4 * rawT * rawT * rawT : 1 - Math.pow(-2 * rawT + 2, 3) / 2;
+
+        setProgress(eased);
+        setHighlightIdx(null);
+      } else if (elapsed < MORPH_DURATION + highlightTotalDuration) {
+        // Phase 2: Clockwise Highlight (1.2s ~ 1.2s + N*0.65s)
+        setProgress(1);
+        const highlightElapsed = elapsed - MORPH_DURATION;
+        const currentStep = Math.floor(highlightElapsed / HIGHLIGHT_STEP_DURATION);
+        setHighlightIdx(Math.min(currentStep, currSides - 1));
+      } else {
+        // Phase 3: Rest Pause (0.5s) in pure ALL-OFF state
+        setProgress(1);
+        setHighlightIdx(null);
+      }
+
+      if (elapsed < totalCycleDuration) {
+        animId = requestAnimationFrame(tick);
+      } else {
+        // Cycle complete! Advance to next shape!
+        setShapeIdx((idx) => {
+          const nextIdx = (idx + 1) % SHAPE_CONFIGS.length;
+          setPrevSides(SHAPE_CONFIGS[idx]!.sides);
+          setCurrSides(SHAPE_CONFIGS[nextIdx]!.sides);
+          return nextIdx;
+        });
       }
     };
 
-    animId = requestAnimationFrame(animate);
+    animId = requestAnimationFrame(tick);
     return () => cancelAnimationFrame(animId);
   }, [currSides, prevSides]);
-
-  // 2. Pure Standard Sequence Controller:
-  // Morph complete in ALL-OFF -> Clockwise Highlight (1 -> 2 -> ... -> N) -> ALL-OFF -> 0.5s Pause -> Next Shape Split/Merge (in ALL-OFF)
-  useEffect(() => {
-    if (progress < 1) return;
-
-    let step = 0;
-    // Start highlighting from vertex 0
-    setHighlightIdx(0);
-
-    const highlightTimer = setInterval(() => {
-      step++;
-      if (step < currSides) {
-        setHighlightIdx(step);
-      } else {
-        // Highlight complete for all vertices -> ALL-OFF!
-        setHighlightIdx(null);
-        clearInterval(highlightTimer);
-
-        // Wait EXACTLY 0.5s in ALL-OFF state, then trigger next shape split/merge!
-        setTimeout(() => {
-          setShapeIdx((idx) => {
-            const nextIdx = (idx + 1) % SHAPE_CONFIGS.length;
-            setPrevSides(SHAPE_CONFIGS[idx]!.sides);
-            setCurrSides(SHAPE_CONFIGS[nextIdx]!.sides);
-            return nextIdx;
-          });
-        }, 500);
-      }
-    }, 650);
-
-    return () => clearInterval(highlightTimer);
-  }, [progress, currSides]);
 
   // Memoized Morph Points computation (Zero unnecessary object allocations)
   const morphPts = useMemo(() => {
@@ -248,4 +237,4 @@ export const ManimLevel1Visualizer: React.FC = () => {
       </div>
     </div>
   );
-};
+});
