@@ -9,34 +9,34 @@ interface Point {
   y: number;
 }
 
-iinterface TriangleKeyframe {
+interface TriangleKeyframe {
   v0: Point;
+  v1: Point;
+  v2: Point;
   name: string;
 }
 
-// Fixed bottom left (V1) and bottom right (V2) for maximum visual grounding & stability
-const V1: Point = { x: 40, y: 145 };
-const V2: Point = { x: 160, y: 145 };
-
-// 6 Representative Triangle Keyframes (Fixed V1=(40,145), V2=(160,145) with Safe V0 coordinates)
+// 6 Mathematically Significant Triangle Keyframes with Dynamic Base Expansion
 const TRIANGLE_KEYFRAMES: TriangleKeyframe[] = [
   // 1. Equilateral Triangle (정삼각형: 60°, 60°, 60°)
-  { v0: { x: 100, y: 41.1 }, name: '정삼각형' },
+  { v0: { x: 100, y: 38.0 }, v1: { x: 42, y: 142 }, v2: { x: 158, y: 142 }, name: '정삼각형' },
 
   // 2. Right Isosceles Triangle (직각이등변삼각형: 90°, 45°, 45°)
-  { v0: { x: 100, y: 85.0 }, name: '직각이등변삼각형' },
+  { v0: { x: 100, y: 75.0 }, v1: { x: 35, y: 140 }, v2: { x: 165, y: 140 }, name: '직각이등변삼각형' },
 
-  // 3. Right Scalene Triangle (직각삼각형: 90°, 53°, 37° - V0 is safely below top-left badge)
-  { v0: { x: 40, y: 55.0 }, name: '직각삼각형' },
+  // 3. Right Scalene Triangle (직각삼각형: 90°, 53°, 37°)
+  { v0: { x: 40, y: 50.0 }, v1: { x: 40, y: 142 }, v2: { x: 160, y: 142 }, name: '직각삼각형' },
 
   // 4. Obtuse Isosceles Triangle (둔각이등변삼각형: 120°, 30°, 30°)
-  { v0: { x: 100, y: 110.4 }, name: '둔각이등변삼각형' },
+  // Base expands wide to (20, 135) & (180, 135) to give magnificent 3B1B visual impact without squishing!
+  { v0: { x: 100, y: 88.9 }, v1: { x: 20, y: 135 }, v2: { x: 180, y: 135 }, name: '둔각이등변삼각형' },
 
-  // 5. Obtuse Scalene Triangle (둔각부등변삼각형: 110°, 25°, 45° - V0 is safely below top-left badge)
-  { v0: { x: 65, y: 65.0 }, name: '둔각부등변삼각형' },
+  // 5. Obtuse Scalene Triangle (둔각부등변삼각형: 110°, 25°, 45°)
+  // Base expands wide asymmetrically to give elegant asymmetric obtuse look!
+  { v0: { x: 65, y: 72.0 }, v1: { x: 18, y: 138 }, v2: { x: 178, y: 138 }, name: '둔각부등변삼각형' },
 
-  // 6. Acute Isosceles Triangle (예각이등변삼각형: 40°, 70°, 70° - V0 leaves comfortable top margin)
-  { v0: { x: 100, y: 32.0 }, name: '예각이등변삼각형' },
+  // 6. Acute Isosceles Triangle (예각이등변삼각형: 40°, 70°, 70°)
+  { v0: { x: 100, y: 22.0 }, v1: { x: 52, y: 145 }, v2: { x: 148, y: 145 }, name: '예각이등변삼각형' },
 ];
 
 // Timeline parameters: 1.5s Hold at target, 1.0s Transition to next target
@@ -92,32 +92,40 @@ export const ManimLevel3Visualizer: React.FC = React.memo(() => {
     return () => cancelAnimationFrame(animId);
   }, []);
 
-  // Fixed bottom vertices V1 and V2 for maximum visual stability
-  const v1 = V1;
-  const v2 = V2;
-
-  // Compute V0(x, y) with 1.5s Hold Pause and 1.0s Eased Move
-  const v0: Point = useMemo(() => {
+  // Compute V0, V1, V2 with 1.5s Hold Pause and 1.0s Eased Move
+  const currentVertices = useMemo(() => {
     const elapsedMs = t * TOTAL_CYCLE;
     const stepIndex = Math.floor(elapsedMs / STEP_DURATION) % TRIANGLE_KEYFRAMES.length;
     const stepElapsed = elapsedMs % STEP_DURATION;
 
-    const currentTarget = TRIANGLE_KEYFRAMES[stepIndex]!.v0;
-    const nextTarget = TRIANGLE_KEYFRAMES[(stepIndex + 1) % TRIANGLE_KEYFRAMES.length]!.v0;
+    const currFrame = TRIANGLE_KEYFRAMES[stepIndex]!;
+    const nextFrame = TRIANGLE_KEYFRAMES[(stepIndex + 1) % TRIANGLE_KEYFRAMES.length]!;
 
     if (stepElapsed < HOLD_DURATION) {
-      return currentTarget;
+      return { v0: currFrame.v0, v1: currFrame.v1, v2: currFrame.v2 };
     } else {
       const moveProgress = (stepElapsed - HOLD_DURATION) / MOVE_DURATION;
       const rawT = Math.min(1, Math.max(0, moveProgress));
       const eased = rawT * rawT * (3 - 2 * rawT);
 
       return {
-        x: currentTarget.x + (nextTarget.x - currentTarget.x) * eased,
-        y: currentTarget.y + (nextTarget.y - currentTarget.y) * eased,
+        v0: {
+          x: currFrame.v0.x + (nextFrame.v0.x - currFrame.v0.x) * eased,
+          y: currFrame.v0.y + (nextFrame.v0.y - currFrame.v0.y) * eased,
+        },
+        v1: {
+          x: currFrame.v1.x + (nextFrame.v1.x - currFrame.v1.x) * eased,
+          y: currFrame.v1.y + (nextFrame.v1.y - currFrame.v1.y) * eased,
+        },
+        v2: {
+          x: currFrame.v2.x + (nextFrame.v2.x - currFrame.v2.x) * eased,
+          y: currFrame.v2.y + (nextFrame.v2.y - currFrame.v2.y) * eased,
+        },
       };
     }
   }, [t]);
+
+  const { v0, v1, v2 } = currentVertices;
 
   const currentName = useMemo(() => {
     const elapsedMs = t * TOTAL_CYCLE;
@@ -125,12 +133,12 @@ export const ManimLevel3Visualizer: React.FC = React.memo(() => {
     return TRIANGLE_KEYFRAMES[stepIndex]!.name;
   }, [t]);
 
-  // Dynamic Midpoints of opposing sides for 3 medians
-  const m0: Point = useMemo(() => ({ x: (v1.x + v2.x) / 2, y: (v1.y + v2.y) / 2 }), [v1, v2]); // V1-V2 midpoint
-  const m1: Point = useMemo(() => ({ x: (v0.x + v2.x) / 2, y: (v0.y + v2.y) / 2 }), [v0, v2]); // V0-V2 midpoint
-  const m2: Point = useMemo(() => ({ x: (v0.x + v1.x) / 2, y: (v0.y + v1.y) / 2 }), [v0, v1]); // V0-V1 midpoint
+  // Midpoints of opposing sides for 3 medians
+  const m0: Point = useMemo(() => ({ x: (v1.x + v2.x) / 2, y: (v1.y + v2.y) / 2 }), [v1, v2]);
+  const m1: Point = useMemo(() => ({ x: (v0.x + v2.x) / 2, y: (v0.y + v2.y) / 2 }), [v0, v2]);
+  const m2: Point = useMemo(() => ({ x: (v0.x + v1.x) / 2, y: (v0.y + v1.y) / 2 }), [v0, v1]);
 
-  // Centroid Delta (δ): Exact intersection of all 3 medians, perfectly centered at (100, 85)
+  // Centroid Delta (δ): Exact intersection of all 3 medians ((x1+x2+x3)/3, (y1+y2+y3)/3)
   const deltaCentroid: Point = useMemo(
     () => ({
       x: (v0.x + v1.x + v2.x) / 3,
