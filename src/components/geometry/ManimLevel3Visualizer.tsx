@@ -16,8 +16,8 @@ interface TriangleVerticesKeyframe {
   name: string;
 }
 
-// Center target for Centroid Delta (δ): Exactly at (100, 85) inside 200x165 SVG canvas
-const CENTER_DELTA: Point = { x: 100, y: 85 };
+// Center target for Centroid Delta (δ): Positioned at (100, 96) to leave ample top margin for badge
+const CENTER_DELTA: Point = { x: 100, y: 96 };
 
 // Helper function to shift triangle vertices so its centroid aligns EXACTLY at CENTER_DELTA (100, 85)
 function centerTriangleAtDelta(v0: Point, v1: Point, v2: Point): { v0: Point; v1: Point; v2: Point } {
