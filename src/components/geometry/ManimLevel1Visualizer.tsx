@@ -220,8 +220,10 @@ export const ManimLevel1Visualizer: React.FC = React.memo(() => {
 
       {/* Bottom Static Caption Box */}
       <div className="geo-level1-caption-box">
-        <span key={currentConfig.name} className="geo-shape-badge geo-text-mode-1">
-          {currentConfig.name}
+        <span className="geo-shape-badge">
+          <span key={currentConfig.name} className="geo-text-mode-1">
+            {currentConfig.name}
+          </span>
         </span>
         <div className="geo-stat-highlights">
           <span

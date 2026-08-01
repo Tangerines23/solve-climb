@@ -444,8 +444,10 @@ export const ManimLevel2Visualizer: React.FC = React.memo(() => {
 
       {/* Dynamic 3B1B Mathematical Caption Box */}
       <div className="geo-level1-caption-box">
-        <span key={currSides} className={`geo-shape-badge geo-text-mode-${animMode}`}>
-          {currSides}각형
+        <span className="geo-shape-badge">
+          <span key={currSides} className={`geo-text-mode-${animMode}`}>
+            {currSides}각형
+          </span>
         </span>
         <div key={textKey} className={`geo-stat-highlights geo-text-mode-${animMode}`}>
           {(phase === 'morph' || phase === 'restore' || phase === 'retract' || phase === 'rest') && (
