@@ -161,15 +161,18 @@ export const ManimLevel5Visualizer: React.FC = React.memo(() => {
       </div>
 
       <svg width={SIZE} height={165} viewBox={`0 0 ${SIZE} 165`} className="geo-tip-svg">
-        {/* Fill Rectangle */}
+        {/* Integrated Fill & Stroke Rectangle with Instant 60fps Sync */}
         <rect
           x={rectX}
           y={rectY}
           width={widthPx}
           height={heightPx}
-          className="geo-shape-poly-morph"
+          fill="rgba(99, 102, 241, 0.22)"
+          stroke="#6366f1"
+          strokeWidth={2.5}
           rx={4}
           ry={4}
+          style={{ transition: 'none' }}
         />
 
         {/* 3B1B Unit Grid Overlay Lines */}
@@ -198,19 +201,6 @@ export const ManimLevel5Visualizer: React.FC = React.memo(() => {
             strokeDasharray="2 2"
           />
         ))}
-
-        {/* Outer Boundary Highlight */}
-        <rect
-          x={rectX}
-          y={rectY}
-          width={widthPx}
-          height={heightPx}
-          fill="none"
-          stroke="#6366f1"
-          strokeWidth={2.5}
-          rx={4}
-          ry={4}
-        />
 
         {/* Dimension Indicators: Width (Top) */}
         <line
