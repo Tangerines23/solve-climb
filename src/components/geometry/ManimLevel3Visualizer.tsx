@@ -212,61 +212,65 @@ export const ManimLevel3Visualizer: React.FC = React.memo(() => {
         <circle cx={v1.x} cy={v1.y} r={5.5} className="geo-simple-dot" style={{ fill: '#38bdf8' }} />
         <circle cx={v2.x} cy={v2.y} r={5.5} className="geo-simple-dot" style={{ fill: '#fbbf24' }} />
 
-        {/* 3 Medians from Vertices (Alpha, Beta, Gamma) to Opposing Side Midpoints */}
-        <line
-          x1={v0.x}
-          y1={v0.y}
-          x2={m0.x}
-          y2={m0.y}
-          stroke="#c084fc"
-          strokeWidth={1.2}
-          strokeDasharray="4 3"
-          opacity={0.7}
-        />
-        <line
-          x1={v1.x}
-          y1={v1.y}
-          x2={m1.x}
-          y2={m1.y}
-          stroke="#c084fc"
-          strokeWidth={1.2}
-          strokeDasharray="4 3"
-          opacity={0.7}
-        />
-        <line
-          x1={v2.x}
-          y1={v2.y}
-          x2={m2.x}
-          y2={m2.y}
-          stroke="#c084fc"
-          strokeWidth={1.2}
-          strokeDasharray="4 3"
-          opacity={0.7}
-        />
+        {/* Render 3 Medians and Centroid Delta (δ) ONLY in DEV environment! */}
+        {import.meta.env.DEV && (
+          <>
+            <line
+              x1={v0.x}
+              y1={v0.y}
+              x2={m0.x}
+              y2={m0.y}
+              stroke="#c084fc"
+              strokeWidth={1.2}
+              strokeDasharray="4 3"
+              opacity={0.7}
+            />
+            <line
+              x1={v1.x}
+              y1={v1.y}
+              x2={m1.x}
+              y2={m1.y}
+              stroke="#c084fc"
+              strokeWidth={1.2}
+              strokeDasharray="4 3"
+              opacity={0.7}
+            />
+            <line
+              x1={v2.x}
+              y1={v2.y}
+              x2={m2.x}
+              y2={m2.y}
+              stroke="#c084fc"
+              strokeWidth={1.2}
+              strokeDasharray="4 3"
+              opacity={0.7}
+            />
 
-        {/* Centroid Delta (δ) Intersection Dot */}
-        <circle
-          cx={deltaCentroid.x}
-          cy={deltaCentroid.y}
-          r={4.5}
-          fill="#c084fc"
-          stroke="#ffffff"
-          strokeWidth={1.2}
-          style={{ filter: 'drop-shadow(0 0 4px rgba(192, 132, 252, 0.8))' }}
-        />
+            {/* Centroid Delta (δ) Intersection Dot */}
+            <circle
+              cx={deltaCentroid.x}
+              cy={deltaCentroid.y}
+              r={4.5}
+              fill="#c084fc"
+              stroke="#ffffff"
+              strokeWidth={1.2}
+              style={{ filter: 'drop-shadow(0 0 4px rgba(192, 132, 252, 0.8))' }}
+            />
 
-        {/* Delta (δ) Centroid Label */}
-        <text
-          x={deltaCentroid.x + 8}
-          y={deltaCentroid.y + 4}
-          fontSize={10}
-          fontWeight={900}
-          fill="#c084fc"
-          textAnchor="start"
-          style={{ filter: 'drop-shadow(0 0 3px rgba(0,0,0,0.8))' }}
-        >
-          δ (무게중심)
-        </text>
+            {/* Delta (δ) Centroid Label */}
+            <text
+              x={deltaCentroid.x + 8}
+              y={deltaCentroid.y + 4}
+              fontSize={10}
+              fontWeight={900}
+              fill="#c084fc"
+              textAnchor="start"
+              style={{ filter: 'drop-shadow(0 0 3px rgba(0,0,0,0.8))' }}
+            >
+              δ (무게중심)
+            </text>
+          </>
+        )}
 
         {/* Dynamic Angle Labels near Vertices */}
         <text
