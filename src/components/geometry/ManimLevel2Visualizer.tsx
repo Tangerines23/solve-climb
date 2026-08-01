@@ -338,9 +338,15 @@ export const ManimLevel2Visualizer: React.FC = React.memo(() => {
         <span className="geo-shape-badge">{currSides}각형</span>
         <div className="geo-stat-highlights">
           {phase === 'morph' && (
-            <span className="geo-stat-item edge-highlight">
-              점 분할 변환 중... (<strong className="highlight-num">{currSides}각형</strong>)
-            </span>
+            <>
+              <span className="geo-stat-item vertex-highlight">
+                꼭짓점 <strong className="highlight-num">{currSides}개</strong>
+              </span>
+              <span className="geo-divider">/</span>
+              <span className="geo-stat-item edge-highlight">
+                변 <strong className="highlight-num">{currSides}개</strong>
+              </span>
+            </>
           )}
           {phase === 'single' && (
             <span className="geo-stat-item vertex-highlight active-glow">
