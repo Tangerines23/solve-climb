@@ -45,10 +45,11 @@ export const ManimLevel1Visualizer: React.FC = () => {
   const [highlightIdx, setHighlightIdx] = useState<number | null>(null);
 
   // 1. Smooth rAF Eased Progress Animation (1.2s cubic easeInOut)
+  // Step 1: Keep top vertex (index 0) highlighted while shape splits/merges!
   useEffect(() => {
     if (prevSides === currSides) return;
     setProgress(0);
-    setHighlightIdx(null);
+    setHighlightIdx(0); // Top vertex stays highlighted during morphing!
 
     let start: number | null = null;
     let animId: number;
@@ -67,6 +68,9 @@ export const ManimLevel1Visualizer: React.FC = () => {
 
       if (rawT < 1) {
         animId = requestAnimationFrame(animate);
+      } else {
+        // Step 2: Morphing completes -> All Off!
+        setHighlightIdx(null);
       }
     };
 
@@ -74,36 +78,43 @@ export const ManimLevel1Visualizer: React.FC = () => {
     return () => cancelAnimationFrame(animId);
   }, [currSides, prevSides]);
 
-  // 2. Dynamic Shape Cycle Controller: Wait exactly 0.5s after highlight ends before next shape transition
+  // 2. Exact User-Defined Sequence Controller
+  // Morph complete (Top highlight) -> All Off -> Highlight Start -> Highlight End -> 0.5s Pause -> Next Shape Split/Merge
   useEffect(() => {
     if (progress < 1) return;
 
-    let step = 0;
-    setHighlightIdx(0);
+    // Step 3: Brief pause after morphing completes, then Highlight Starts!
+    const startTimeout = setTimeout(() => {
+      let step = 0;
+      setHighlightIdx(0);
 
-    // Step-by-step clockwise dot highlight (650ms per dot)
-    const highlightTimer = setInterval(() => {
-      step++;
-      if (step < currSides) {
-        setHighlightIdx(step);
-      } else {
-        // Highlight complete for all dots! Turn off highlight.
-        setHighlightIdx(null);
-        clearInterval(highlightTimer);
+      // Step-by-step clockwise dot highlight (650ms per dot)
+      const highlightTimer = setInterval(() => {
+        step++;
+        if (step < currSides) {
+          setHighlightIdx(step);
+        } else {
+          // Step 4: Highlight End -> All Off!
+          setHighlightIdx(null);
+          clearInterval(highlightTimer);
 
-        // Wait EXACTLY 0.5s after highlight is turned off, then trigger next shape!
-        setTimeout(() => {
-          setShapeIdx((idx) => {
-            const nextIdx = (idx + 1) % SHAPE_CONFIGS.length;
-            setPrevSides(SHAPE_CONFIGS[idx]!.sides);
-            setCurrSides(SHAPE_CONFIGS[nextIdx]!.sides);
-            return nextIdx;
-          });
-        }, 500);
-      }
-    }, 650);
+          // Step 5: Wait EXACTLY 0.5s after highlight ends!
+          // Step 6: Trigger Next Shape Split/Merge!
+          setTimeout(() => {
+            setShapeIdx((idx) => {
+              const nextIdx = (idx + 1) % SHAPE_CONFIGS.length;
+              setPrevSides(SHAPE_CONFIGS[idx]!.sides);
+              setCurrSides(SHAPE_CONFIGS[nextIdx]!.sides);
+              return nextIdx;
+            });
+          }, 500);
+        }
+      }, 650);
 
-    return () => clearInterval(highlightTimer);
+      return () => clearInterval(highlightTimer);
+    }, 200);
+
+    return () => clearTimeout(startTimeout);
   }, [progress, currSides]);
 
   // Memoized Morph Points computation (Zero unnecessary object allocations)
