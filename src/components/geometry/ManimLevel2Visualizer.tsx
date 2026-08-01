@@ -37,11 +37,12 @@ export const ManimLevel2Visualizer: React.FC = React.memo(() => {
   const [prevSides, setPrevSides] = useState(5);
   const [currSides, setCurrSides] = useState(5);
 
-  const [phase, setPhase] = useState<'morph' | 'single' | 'all' | 'dedup' | 'rest'>('morph');
+  const [phase, setPhase] = useState<'morph' | 'single' | 'all' | 'dedup' | 'retract' | 'rest'>('morph');
   const [morphProgress, setMorphProgress] = useState(1);
   const [drawProgress, setDrawProgress] = useState(0);
+  const [retractProgress, setRetractProgress] = useState(0);
 
-  // Single Deterministic Timeline Engine
+  // Single Deterministic Master Timeline Engine
   useEffect(() => {
     let animId: number;
     let startTime: number | null = null;
@@ -49,11 +50,17 @@ export const ManimLevel2Visualizer: React.FC = React.memo(() => {
     const MORPH_DURATION = 1200; // 1.2s vertex-split morphing
     const SINGLE_DURATION = 2000; // 2.0s single vertex (n-3) diagonals
     const ALL_DURATION = 3000; // 3.0s all vertices diagonals
-    const DEDUP_DURATION = 2000; // 2.0s dedup /2 highlight
-    const REST_DURATION = 800; // 0.8s rest pause
+    const DEDUP_DURATION = 1800; // 1.8s dedup /2 highlight
+    const RETRACT_DURATION = 1000; // 1.0s center-split retraction motion
+    const REST_DURATION = 500; // 0.5s rest pause
 
     const TOTAL_CYCLE =
-      MORPH_DURATION + SINGLE_DURATION + ALL_DURATION + DEDUP_DURATION + REST_DURATION;
+      MORPH_DURATION +
+      SINGLE_DURATION +
+      ALL_DURATION +
+      DEDUP_DURATION +
+      RETRACT_DURATION +
+      REST_DURATION;
 
     const tick = (now: number) => {
       if (!startTime) startTime = now;
@@ -67,11 +74,13 @@ export const ManimLevel2Visualizer: React.FC = React.memo(() => {
           rawT < 0.5 ? 4 * rawT * rawT * rawT : 1 - Math.pow(-2 * rawT + 2, 3) / 2;
         setMorphProgress(eased);
         setDrawProgress(0);
+        setRetractProgress(0);
       } else if (elapsed < MORPH_DURATION + SINGLE_DURATION) {
         // Phase 1: Draw (n-3) diagonals from V0 (1.2s ~ 3.2s)
         setPhase('single');
         setMorphProgress(1);
         setDrawProgress(Math.min((elapsed - MORPH_DURATION) / SINGLE_DURATION, 1));
+        setRetractProgress(0);
       } else if (elapsed < MORPH_DURATION + SINGLE_DURATION + ALL_DURATION) {
         // Phase 2: Draw all diagonals (3.2s ~ 6.2s)
         setPhase('all');
@@ -79,27 +88,38 @@ export const ManimLevel2Visualizer: React.FC = React.memo(() => {
         setDrawProgress(
           Math.min((elapsed - MORPH_DURATION - SINGLE_DURATION) / ALL_DURATION, 1)
         );
+        setRetractProgress(0);
       } else if (elapsed < MORPH_DURATION + SINGLE_DURATION + ALL_DURATION + DEDUP_DURATION) {
-        // Phase 3: Deduplication highlight (6.2s ~ 8.2s)
+        // Phase 3: Deduplication highlight (6.2s ~ 8.0s)
         setPhase('dedup');
         setMorphProgress(1);
-        setDrawProgress(
-          Math.min(
-            (elapsed - MORPH_DURATION - SINGLE_DURATION - ALL_DURATION) / DEDUP_DURATION,
-            1
-          )
-        );
+        setDrawProgress(1);
+        setRetractProgress(0);
+      } else if (
+        elapsed <
+        MORPH_DURATION + SINGLE_DURATION + ALL_DURATION + DEDUP_DURATION + RETRACT_DURATION
+      ) {
+        // Phase 4: Center-Split Retraction Motion (8.0s ~ 9.0s)
+        setPhase('retract');
+        setMorphProgress(1);
+        setDrawProgress(1);
+        const retractElapsed =
+          elapsed - (MORPH_DURATION + SINGLE_DURATION + ALL_DURATION + DEDUP_DURATION);
+        const rawU = Math.min(retractElapsed / RETRACT_DURATION, 1);
+        const easedU = rawU * rawU * (3 - 2 * rawU); // Smoothstep curve
+        setRetractProgress(easedU);
       } else {
-        // Phase 4: Rest Pause (8.2s ~ 9.0s)
+        // Phase 5: Rest Pause (9.0s ~ 9.5s)
         setPhase('rest');
         setMorphProgress(1);
         setDrawProgress(1);
+        setRetractProgress(1);
       }
 
       if (elapsed < TOTAL_CYCLE) {
         animId = requestAnimationFrame(tick);
       } else {
-        // Synchronously reset shape, phase, morphProgress, and drawProgress to eliminate 1-frame next-shape diagonal glitch!
+        // Synchronously advance to next shape (5 -> 6 -> 5)
         const nextSides = currSides === 5 ? 6 : 5;
         setPrevSides(currSides);
         setCurrSides(nextSides);
@@ -107,6 +127,7 @@ export const ManimLevel2Visualizer: React.FC = React.memo(() => {
         setPhase('morph');
         setMorphProgress(0);
         setDrawProgress(0);
+        setRetractProgress(0);
       }
     };
 
@@ -254,10 +275,54 @@ export const ManimLevel2Visualizer: React.FC = React.memo(() => {
             );
           })}
 
-        {/* Phase 2, 3 & Rest: All Unique Diagonals */}
+        {/* Phase 2, 3 & Retract: All Unique Diagonals */}
         {morphProgress >= 1 &&
-          (phase === 'all' || phase === 'dedup' || phase === 'rest') &&
+          (phase === 'all' || phase === 'dedup' || phase === 'retract') &&
           uniqueDiagonals.map((d, idx) => {
+            if (phase === 'retract') {
+              // Center-Split Retraction Motion: Split at midpoint and shrink back to respective endpoints
+              const midX = (d.x1 + d.x2) / 2;
+              const midY = (d.y1 + d.y2) / 2;
+
+              // Retracting segment 1: Shrinks from Midpoint -> Endpoint 1 (d.x1, d.y1)
+              const seg1StartX = midX + (d.x1 - midX) * retractProgress;
+              const seg1StartY = midY + (d.y1 - midY) * retractProgress;
+
+              // Retracting segment 2: Shrinks from Midpoint -> Endpoint 2 (d.x2, d.y2)
+              const seg2StartX = midX + (d.x2 - midX) * retractProgress;
+              const seg2StartY = midY + (d.y2 - midY) * retractProgress;
+
+              return (
+                <g key={`retract-diag-${idx}`}>
+                  {/* Half 1: Midpoint to Point 1 */}
+                  <line
+                    x1={seg1StartX}
+                    y1={seg1StartY}
+                    x2={d.x1}
+                    y2={d.y1}
+                    stroke="#fb7185"
+                    strokeWidth={3}
+                    strokeLinecap="round"
+                    opacity={1 - retractProgress * 0.8}
+                    style={{ filter: 'drop-shadow(0 0 4px rgba(251, 113, 133, 0.8))' }}
+                  />
+                  {/* Half 2: Midpoint to Point 2 */}
+                  <line
+                    x1={seg2StartX}
+                    y1={seg2StartY}
+                    x2={d.x2}
+                    y2={d.y2}
+                    stroke="#fb7185"
+                    strokeWidth={3}
+                    strokeLinecap="round"
+                    opacity={1 - retractProgress * 0.8}
+                    style={{ filter: 'drop-shadow(0 0 4px rgba(251, 113, 133, 0.8))' }}
+                  />
+                </g>
+              );
+            }
+
+            // Normal drawing phase
             const staggerProgress =
               phase === 'all'
                 ? Math.max(0, Math.min(1, drawProgress * uniqueDiagonals.length - idx * 0.5))
@@ -341,7 +406,7 @@ export const ManimLevel2Visualizer: React.FC = React.memo(() => {
       <div className="geo-level1-caption-box">
         <span className="geo-shape-badge">{currSides}각형</span>
         <div className="geo-stat-highlights">
-          {phase === 'morph' && (
+          {(phase === 'morph' || phase === 'retract' || phase === 'rest') && (
             <>
               <span className="geo-stat-item vertex-highlight">
                 꼭짓점 <strong className="highlight-num">{currSides}개</strong>
@@ -362,7 +427,7 @@ export const ManimLevel2Visualizer: React.FC = React.memo(() => {
               전체 {currSides}개 꼭짓점 ➔ <strong className="highlight-num">{currSides} × {singleCount} = {currSides * singleCount}개</strong>
             </span>
           )}
-          {(phase === 'dedup' || phase === 'rest') && (
+          {phase === 'dedup' && (
             <span className="geo-stat-item vertex-highlight active-glow" style={{ color: '#fbbf24' }}>
               2번씩 중복(÷2) ➔ 총 <strong className="highlight-num">{totalDiagonals}개</strong> 대각선
             </span>
