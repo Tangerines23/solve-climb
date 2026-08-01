@@ -10,29 +10,30 @@ interface Point {
 }
 
 interface TriangleKeyframe {
-  v0: Point;
+  v0: Point; // Alpha vertex
+  v1: Point; // Beta vertex
   name: string;
 }
 
-// 6 Mathematically Significant Triangle Keyframes (Fixed V1=(40,145), V2=(160,145))
+// Option B Keyframes: Fixed V2=(160,145) Gamma Anchor, V0 Alpha & V1 Beta Rotate & Move!
 const TRIANGLE_KEYFRAMES: TriangleKeyframe[] = [
   // 1. Equilateral Triangle (정삼각형: 60°, 60°, 60°)
-  { v0: { x: 100, y: 41.1 }, name: '정삼각형' },
+  { v0: { x: 100, y: 41.1 }, v1: { x: 40, y: 145 }, name: '정삼각형' },
 
-  // 2. Right Isosceles Triangle (직각이등변삼각형: 90°, 45°, 45°)
-  { v0: { x: 100, y: 85.0 }, name: '직각이등변삼각형' },
+  // 2. Right Isosceles Triangle (직각이등변삼각형: 90°, 45°, 45° - Rotated 30° about Gamma)
+  { v0: { x: 140, y: 35.0 }, v1: { x: 50, y: 130 }, name: '직각이등변삼각형' },
 
-  // 3. Right Scalene Triangle (직각삼각형: 90°, 53°, 37°)
-  { v0: { x: 40, y: 55.0 }, name: '직각삼각형' },
+  // 3. Right Scalene Triangle (직각삼각형: 90°, 53°, 37° - Rotated about Gamma)
+  { v0: { x: 70, y: 40.0 }, v1: { x: 30, y: 120 }, name: '직각삼각형' },
 
-  // 4. Obtuse Isosceles Triangle (둔각이등변삼각형: 120°, 30°, 30°)
-  { v0: { x: 100, y: 110.4 }, name: '둔각이등변삼각형' },
+  // 4. Obtuse Isosceles Triangle (둔각이등변삼각형: 120°, 30°, 30° - Rotated about Gamma)
+  { v0: { x: 110, y: 65.0 }, v1: { x: 45, y: 140 }, name: '둔각이등변삼각형' },
 
-  // 5. Obtuse Scalene Triangle (둔각부등변삼각형: 110°, 25°, 45°)
-  { v0: { x: 60, y: 65.0 }, name: '둔각부등변삼각형' },
+  // 5. Obtuse Scalene Triangle (둔각부등변삼각형: 110°, 25°, 45° - Rotated about Gamma)
+  { v0: { x: 115, y: 35.0 }, v1: { x: 35, y: 110 }, name: '둔각부등변삼각형' },
 
-  // 6. Acute Isosceles Triangle (예각이등변삼각형: 40°, 70°, 70°)
-  { v0: { x: 100, y: 20.0 }, name: '예각이등변삼각형' },
+  // 6. Acute Isosceles Triangle (예각이등변삼각형: 40°, 70°, 70° - Rotated about Gamma)
+  { v0: { x: 105, y: 25.0 }, v1: { x: 60, y: 150 }, name: '예각이등변삼각형' },
 ];
 
 // Timeline parameters: 1.5s Hold at target, 1.0s Transition to next target
@@ -88,27 +89,31 @@ export const ManimLevel3Visualizer: React.FC = React.memo(() => {
     return () => cancelAnimationFrame(animId);
   }, []);
 
-  // Compute V0(x, y) with 1.5s Hold Pause and 1.0s Eased Move
-  const v0: Point = useMemo(() => {
+  // Compute current V0(alpha) and V1(beta) positions (V2(gamma) is fixed anchor at (160, 145))
+  const { v0, v1 } = useMemo(() => {
     const elapsedMs = t * TOTAL_CYCLE;
     const stepIndex = Math.floor(elapsedMs / STEP_DURATION) % TRIANGLE_KEYFRAMES.length;
     const stepElapsed = elapsedMs % STEP_DURATION;
 
-    const currentTarget = TRIANGLE_KEYFRAMES[stepIndex]!.v0;
-    const nextTarget = TRIANGLE_KEYFRAMES[(stepIndex + 1) % TRIANGLE_KEYFRAMES.length]!.v0;
+    const curr = TRIANGLE_KEYFRAMES[stepIndex]!;
+    const next = TRIANGLE_KEYFRAMES[(stepIndex + 1) % TRIANGLE_KEYFRAMES.length]!;
 
     if (stepElapsed < HOLD_DURATION) {
-      // Phase 1: Hold Pause (1.5s) at current target position - NUMBERS ARE STABLE & STILL!
-      return currentTarget;
+      return { v0: curr.v0, v1: curr.v1 };
     } else {
-      // Phase 2: Smooth Transition (1.0s) to next target position using smoothstep curve
       const moveProgress = (stepElapsed - HOLD_DURATION) / MOVE_DURATION;
       const rawT = Math.min(1, Math.max(0, moveProgress));
       const eased = rawT * rawT * (3 - 2 * rawT);
 
       return {
-        x: currentTarget.x + (nextTarget.x - currentTarget.x) * eased,
-        y: currentTarget.y + (nextTarget.y - currentTarget.y) * eased,
+        v0: {
+          x: curr.v0.x + (next.v0.x - curr.v0.x) * eased,
+          y: curr.v0.y + (next.v0.y - curr.v0.y) * eased,
+        },
+        v1: {
+          x: curr.v1.x + (next.v1.x - curr.v1.x) * eased,
+          y: curr.v1.y + (next.v1.y - curr.v1.y) * eased,
+        },
       };
     }
   }, [t]);
@@ -119,14 +124,13 @@ export const ManimLevel3Visualizer: React.FC = React.memo(() => {
     return TRIANGLE_KEYFRAMES[stepIndex]!.name;
   }, [t]);
 
-  // Fixed bottom left (V1) and bottom right (V2)
-  const v1: Point = useMemo(() => ({ x: 40, y: 145 }), []);
+  // Fixed bottom right (V2 - Gamma Anchor)
   const v2: Point = useMemo(() => ({ x: 160, y: 145 }), []);
 
-  // Midpoints of opposing sides for 3 medians
-  const m0: Point = useMemo(() => ({ x: 100, y: 145 }), []); // V1-V2 midpoint
-  const m1: Point = useMemo(() => ({ x: (v0.x + 160) / 2, y: (v0.y + 145) / 2 }), [v0]); // V0-V2 midpoint
-  const m2: Point = useMemo(() => ({ x: (v0.x + 40) / 2, y: (v0.y + 145) / 2 }), [v0]); // V0-V1 midpoint
+  // Midpoints of opposing sides for 3 medians (V2 is fixed at (160, 145), V0 and V1 move dynamically)
+  const m0: Point = useMemo(() => ({ x: (v1.x + v2.x) / 2, y: (v1.y + v2.y) / 2 }), [v1, v2]); // V1-V2 midpoint
+  const m1: Point = useMemo(() => ({ x: (v0.x + v2.x) / 2, y: (v0.y + v2.y) / 2 }), [v0, v2]); // V0-V2 midpoint
+  const m2: Point = useMemo(() => ({ x: (v0.x + v1.x) / 2, y: (v0.y + v1.y) / 2 }), [v0, v1]); // V0-V1 midpoint
 
   // Centroid Delta (δ): Exact intersection of all 3 medians ((x1+x2+x3)/3, (y1+y2+y3)/3)
   const deltaCentroid: Point = useMemo(
