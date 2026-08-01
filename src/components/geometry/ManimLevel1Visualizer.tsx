@@ -173,57 +173,63 @@ export const ManimLevel1Visualizer: React.FC = React.memo(() => {
     }
 
     if (currSides > prevSides) {
-      // EXPAND / SPREAD (N -> N_large) using Sequential Edge Perimeter Mapping
+      // EXPAND / SPREAD (N -> N+1)
       const startBase = PRECOMPUTED_VERTICES[prevSides] || PRECOMPUTED_VERTICES[3]!;
-      const nSmall = startBase.length;
+      const initialPoints: { x: number; y: number }[] = [];
 
-      const initialPoints = targetBase.map((_, i) => {
-        const ratio = (i / currSides) * nSmall;
-        const idx1 = Math.floor(ratio) % nSmall;
-        const idx2 = (idx1 + 1) % nSmall;
-        const t = ratio - Math.floor(ratio);
+      // Align split vertex along perimeter (top-right side) to prevent central diagonal lines
+      const splitVertexIdx = prevSides === 4 ? 1 : Math.floor(prevSides / 2);
+      const cornerPt = startBase[splitVertexIdx % startBase.length] || startBase[0]!;
 
-        const p1 = startBase[idx1]!;
-        const p2 = startBase[idx2]!;
-
-        return {
-          x: p1.x + (p2.x - p1.x) * t,
-          y: p1.y + (p2.y - p1.y) * t,
-        };
-      });
+      for (let i = 0; i < currSides; i++) {
+        if (i <= splitVertexIdx) {
+          initialPoints.push(startBase[i] || startBase[startBase.length - 1]!);
+        } else if (i === splitVertexIdx + 1) {
+          initialPoints.push(cornerPt);
+        } else {
+          const srcIdx = (i - 1) % startBase.length;
+          initialPoints.push(startBase[srcIdx] || startBase[0]!);
+        }
+      }
 
       return targetBase.map((target, i) => {
-        const start = initialPoints[i] || target;
+        const start = initialPoints[i] || startBase[0] || target;
         return {
           x: start.x + (target.x - start.x) * progress,
           y: start.y + (target.y - start.y) * progress,
         };
       });
     } else {
-      // REVERSE SHRINK / MERGE (N_large -> N_small) using Sequential Edge Perimeter Mapping
-      const startBase = PRECOMPUTED_VERTICES[prevSides] || PRECOMPUTED_VERTICES[8]!;
-      const nSmall = targetBase.length;
+      // REVERSE PLAYBACK (Reverse Morphing from prevSides -> currSides: e.g. 5 -> 4, 8 -> 4)
+      const startSides = currSides; // Target smaller shape (e.g. 4)
+      const targetSides = prevSides; // Starting larger shape (e.g. 5 or 8)
 
-      const finalPoints = startBase.map((_, i) => {
-        const ratio = (i / prevSides) * nSmall;
-        const idx1 = Math.floor(ratio) % nSmall;
-        const idx2 = (idx1 + 1) % nSmall;
-        const t = ratio - Math.floor(ratio);
+      const startBase = PRECOMPUTED_VERTICES[startSides] || PRECOMPUTED_VERTICES[3]!;
+      const targetBase = PRECOMPUTED_VERTICES[targetSides] || PRECOMPUTED_VERTICES[4]!;
 
-        const p1 = targetBase[idx1]!;
-        const p2 = targetBase[idx2]!;
+      const initialPoints: { x: number; y: number }[] = [];
+      const splitVertexIdx = startSides === 4 ? 1 : Math.floor(startSides / 2);
+      const cornerPt = startBase[splitVertexIdx % startBase.length] || startBase[0]!;
 
+      for (let i = 0; i < targetSides; i++) {
+        if (i <= splitVertexIdx) {
+          initialPoints.push(startBase[i] || startBase[startBase.length - 1]!);
+        } else if (i === splitVertexIdx + 1) {
+          initialPoints.push(cornerPt);
+        } else {
+          const srcIdx = (i - 1) % startBase.length;
+          initialPoints.push(startBase[srcIdx] || startBase[0]!);
+        }
+      }
+
+      // Reverse time interpolation: revU = 1 - progress
+      const revU = 1 - progress;
+
+      return targetBase.map((target, i) => {
+        const start = initialPoints[i] || startBase[0] || target;
         return {
-          x: p1.x + (p2.x - p1.x) * t,
-          y: p1.y + (p2.y - p1.y) * t,
-        };
-      });
-
-      return startBase.map((start, i) => {
-        const target = finalPoints[i] || start;
-        return {
-          x: start.x + (target.x - start.x) * progress,
-          y: start.y + (target.y - start.y) * progress,
+          x: start.x + (target.x - start.x) * revU,
+          y: start.y + (target.y - start.y) * revU,
         };
       });
     }

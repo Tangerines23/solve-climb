@@ -270,57 +270,60 @@ export const ManimLevel2Visualizer: React.FC = React.memo(() => {
     const startBase = PRECOMPUTED_VERTICES[prevSides] || computeRegularVertices(prevSides);
 
     if (currSides > prevSides) {
-      // EXPAND / SPREAD (N -> N_large) using Sequential Edge Perimeter Mapping
-      const startBase = PRECOMPUTED_VERTICES[prevSides] || computeRegularVertices(prevSides);
-      const nSmall = startBase.length;
+      // EXPAND / SPREAD (N -> N+1)
+      const initialPoints: { x: number; y: number }[] = [];
+      const splitVertexIdx = prevSides === 4 ? 1 : Math.floor(prevSides / 2);
+      const cornerPt = startBase[splitVertexIdx % startBase.length] || startBase[0]!;
 
-      const initialPoints = targetBase.map((_, i) => {
-        const ratio = (i / currSides) * nSmall;
-        const idx1 = Math.floor(ratio) % nSmall;
-        const idx2 = (idx1 + 1) % nSmall;
-        const t = ratio - Math.floor(ratio);
+      for (let i = 0; i < currSides; i++) {
+        if (i <= splitVertexIdx) {
+          initialPoints.push(startBase[i] || startBase[startBase.length - 1]!);
+        } else if (i === splitVertexIdx + 1) {
+          initialPoints.push(cornerPt);
+        } else {
+          const srcIdx = (i - 1) % startBase.length;
+          initialPoints.push(startBase[srcIdx] || startBase[0]!);
+        }
+      }
 
-        const p1 = startBase[idx1]!;
-        const p2 = startBase[idx2]!;
-
+      return targetBase.map((tPt, i) => {
+        const sPt = initialPoints[i] || startBase[0] || tPt;
         return {
-          x: p1.x + (p2.x - p1.x) * t,
-          y: p1.y + (p2.y - p1.y) * t,
-        };
-      });
-
-      return targetBase.map((target, i) => {
-        const start = initialPoints[i] || target;
-        return {
-          x: start.x + (target.x - start.x) * morphProgress,
-          y: start.y + (target.y - start.y) * morphProgress,
+          x: sPt.x + (tPt.x - sPt.x) * morphProgress,
+          y: sPt.y + (tPt.y - sPt.y) * morphProgress,
         };
       });
     } else {
-      // REVERSE SHRINK / MERGE (N_large -> N_small) using Sequential Edge Perimeter Mapping
-      const startBase = PRECOMPUTED_VERTICES[prevSides] || computeRegularVertices(prevSides);
-      const nSmall = targetBase.length;
+      // REVERSE PLAYBACK (Reverse Morphing from prevSides -> currSides: e.g. 5 -> 4, 8 -> 4)
+      const startSides = currSides; // Target smaller shape (e.g. 4)
+      const targetSides = prevSides; // Starting larger shape (e.g. 5 or 8)
 
-      const finalPoints = startBase.map((_, i) => {
-        const ratio = (i / prevSides) * nSmall;
-        const idx1 = Math.floor(ratio) % nSmall;
-        const idx2 = (idx1 + 1) % nSmall;
-        const t = ratio - Math.floor(ratio);
+      const startBase = PRECOMPUTED_VERTICES[startSides] || computeRegularVertices(startSides);
+      const targetBase = PRECOMPUTED_VERTICES[targetSides] || computeRegularVertices(targetSides);
 
-        const p1 = targetBase[idx1]!;
-        const p2 = targetBase[idx2]!;
+      const initialPoints: { x: number; y: number }[] = [];
+      const splitVertexIdx = startSides === 4 ? 1 : Math.floor(startSides / 2);
+      const cornerPt = startBase[splitVertexIdx % startBase.length] || startBase[0]!;
 
+      for (let i = 0; i < targetSides; i++) {
+        if (i <= splitVertexIdx) {
+          initialPoints.push(startBase[i] || startBase[startBase.length - 1]!);
+        } else if (i === splitVertexIdx + 1) {
+          initialPoints.push(cornerPt);
+        } else {
+          const srcIdx = (i - 1) % startBase.length;
+          initialPoints.push(startBase[srcIdx] || startBase[0]!);
+        }
+      }
+
+      // Reverse time interpolation: revU = 1 - morphProgress
+      const revU = 1 - morphProgress;
+
+      return targetBase.map((target, i) => {
+        const start = initialPoints[i] || startBase[0] || target;
         return {
-          x: p1.x + (p2.x - p1.x) * t,
-          y: p1.y + (p2.y - p1.y) * t,
-        };
-      });
-
-      return startBase.map((start, i) => {
-        const target = finalPoints[i] || start;
-        return {
-          x: start.x + (target.x - start.x) * morphProgress,
-          y: start.y + (target.y - start.y) * morphProgress,
+          x: start.x + (target.x - start.x) * revU,
+          y: start.y + (target.y - start.y) * revU,
         };
       });
     }
