@@ -189,6 +189,16 @@ export const ManimLevel1Visualizer: React.FC = React.memo(() => {
           <span>⏸ 일시정지됨 (터치하여 계속)</span>
         </div>
       )}
+
+      {/* Top Left Badge: Shape Name (Purple Pill Badge) */}
+      <div style={{ position: 'absolute', top: 8, left: 12, zIndex: 5 }}>
+        <span className="geo-shape-badge">
+          <span key={currentConfig.name} className="geo-text-mode-1">
+            {currentConfig.name}
+          </span>
+        </span>
+      </div>
+
       <svg width={SIZE} height={165} viewBox={`0 0 ${SIZE} 165`} className="geo-tip-svg">
         {/* Main Morphing Polygon */}
         <polygon points={ptsStr} className="geo-shape-poly-morph" />
@@ -243,12 +253,7 @@ export const ManimLevel1Visualizer: React.FC = React.memo(() => {
       </svg>
 
       {/* Bottom Static Caption Box */}
-      <div className="geo-level1-caption-box">
-        <span className="geo-shape-badge">
-          <span key={currentConfig.name} className="geo-text-mode-1">
-            {currentConfig.name}
-          </span>
-        </span>
+      <div className="geo-level1-caption-box" style={{ justifyContent: 'center' }}>
         <div className="geo-stat-highlights">
           <span
             className={`geo-stat-item vertex-highlight ${
