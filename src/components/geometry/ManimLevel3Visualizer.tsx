@@ -42,14 +42,14 @@ const RAW_KEYFRAMES = [
   // 2. Right Isosceles Triangle (직각이등변삼각형: 90°, 45°, 45°)
   { v0: { x: 100, y: 85.0 }, v1: { x: 40, y: 145 }, v2: { x: 160, y: 145 }, name: '직각이등변삼각형' },
 
-  // 3. Right Scalene Triangle (직각삼각형: 90°, 53°, 37°)
-  { v0: { x: 40, y: 55.0 }, v1: { x: 40, y: 145 }, v2: { x: 160, y: 145 }, name: '직각삼각형' },
+  // 3. Right Scalene Triangle (직각삼각형: 90°, 37°, 53° - Right biased to avoid top-left badge)
+  { v0: { x: 160, y: 55.0 }, v1: { x: 40, y: 145 }, v2: { x: 160, y: 145 }, name: '직각삼각형' },
 
   // 4. Obtuse Isosceles Triangle (둔각이등변삼각형: 120°, 30°, 30°)
   { v0: { x: 100, y: 110.4 }, v1: { x: 40, y: 145 }, v2: { x: 160, y: 145 }, name: '둔각이등변삼각형' },
 
-  // 5. Obtuse Scalene Triangle (둔각부등변삼각형: 110°, 25°, 45°)
-  { v0: { x: 60, y: 65.0 }, v1: { x: 40, y: 145 }, v2: { x: 160, y: 145 }, name: '둔각부등변삼각형' },
+  // 5. Obtuse Scalene Triangle (둔각부등변삼각형: 110°, 45°, 25° - Right biased to avoid top-left badge)
+  { v0: { x: 140, y: 65.0 }, v1: { x: 40, y: 145 }, v2: { x: 160, y: 145 }, name: '둔각부등변삼각형' },
 
   // 6. Acute Isosceles Triangle (예각이등변삼각형: 40°, 70°, 70°)
   { v0: { x: 100, y: 20.0 }, v1: { x: 40, y: 145 }, v2: { x: 160, y: 145 }, name: '예각이등변삼각형' },
