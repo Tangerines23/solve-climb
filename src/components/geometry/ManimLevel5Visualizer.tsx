@@ -13,13 +13,13 @@ interface RectKeyframe {
 // 4 Representative Grid Dimensions in 3B1B Sequence
 const RECT_KEYFRAMES: RectKeyframe[] = [
   // 1. 6 x 4 Rectangle (Area = 24)
-  { cols: 6, rows: 4, name: '직사각형 (6 × 4)' },
+  { cols: 6, rows: 4, name: '직사각형' },
   // 2. 5 x 5 Square (Area = 25)
-  { cols: 5, rows: 5, name: '정사각형 (5 × 5)' },
+  { cols: 5, rows: 5, name: '정사각형' },
   // 3. 8 x 3 Wide Rectangle (Area = 24)
-  { cols: 8, rows: 3, name: '와이드 직사각형 (8 × 3)' },
+  { cols: 8, rows: 3, name: '직사각형' },
   // 4. 4 x 6 Tall Rectangle (Area = 24)
-  { cols: 4, rows: 6, name: '세로형 직사각형 (4 × 6)' },
+  { cols: 4, rows: 6, name: '직사각형' },
 ];
 
 // Timeline parameters: 2.0s Hold at target, 1.0s Transition to next target
