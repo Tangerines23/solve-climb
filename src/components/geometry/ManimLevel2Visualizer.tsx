@@ -238,6 +238,11 @@ export const ManimLevel2Visualizer: React.FC = React.memo(() => {
   const totalDiagonals = (currSides * (currSides - 3)) / 2;
   const singleCount = currSides - 3;
 
+  const ptsStr = useMemo(
+    () => morphPts.map((p) => `${p.x.toFixed(1)},${p.y.toFixed(1)}`).join(' '),
+    [morphPts]
+  );
+
   // Determine unique text key so animation ONLY triggers when text content actually changes!
   const textKey = useMemo(() => {
     if (phase === 'single') return `single-${currSides}`;
