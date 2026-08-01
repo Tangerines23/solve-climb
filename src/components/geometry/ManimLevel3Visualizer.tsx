@@ -205,26 +205,17 @@ export const ManimLevel3Visualizer: React.FC = React.memo(() => {
       {/* Dynamic 3B1B Mathematical Caption Box */}
       <div className="geo-level1-caption-box">
         <span className="geo-shape-badge">삼각형 내각의 합</span>
-        <div className="geo-stat-highlights geo-text-mode-1">
+        <div className="geo-stat-highlights">
           <span className="geo-stat-item" style={{ color: '#fb7185' }}>
-            α{' '}
-            <strong key={`alpha-${alphaDeg}`} className="highlight-num geo-text-mode-1">
-              {alphaDeg}°
-            </strong>
+            α <strong className="highlight-num">{alphaDeg}°</strong>
           </span>
           <span className="geo-divider">+</span>
           <span className="geo-stat-item" style={{ color: '#38bdf8' }}>
-            β{' '}
-            <strong key={`beta-${betaDeg}`} className="highlight-num geo-text-mode-1">
-              {betaDeg}°
-            </strong>
+            β <strong className="highlight-num">{betaDeg}°</strong>
           </span>
           <span className="geo-divider">+</span>
           <span className="geo-stat-item" style={{ color: '#fbbf24' }}>
-            γ{' '}
-            <strong key={`gamma-${gammaDeg}`} className="highlight-num geo-text-mode-1">
-              {gammaDeg}°
-            </strong>
+            γ <strong className="highlight-num">{gammaDeg}°</strong>
           </span>
           <span className="geo-divider">=</span>
           <span className="geo-stat-item" style={{ color: '#4ade80', fontWeight: 900 }}>
