@@ -256,23 +256,17 @@ export const ManimLevel2Visualizer: React.FC = React.memo(() => {
         };
       });
     } else {
-      // SHRINK / MERGE (8 -> 4)
-      // Perfectly symmetric contract merge based on minimum euclidean distance!
-      const nearestTargetMap = startBase.map((sPt) => {
-        let minDist = Infinity;
-        let bestTarget = targetBase[0]!;
-        for (const tPt of targetBase) {
-          const d = Math.hypot(sPt.x - tPt.x, sPt.y - tPt.y);
-          if (d < minDist) {
-            minDist = d;
-            bestTarget = tPt;
-          }
-        }
-        return bestTarget;
-      });
+      // TEST: Clockwise shrink merge to top vertex (excluding 2 right-side vertices)
+      const topVertex = targetBase[0]!;
 
       return startBase.map((start, i) => {
-        const target = nearestTargetMap[i]!;
+        let target = topVertex;
+        if (i === 1 && targetBase[1]) {
+          target = targetBase[1];
+        } else if (i === 2 && targetBase[2]) {
+          target = targetBase[2];
+        }
+
         return {
           x: start.x + (target.x - start.x) * morphProgress,
           y: start.y + (target.y - start.y) * morphProgress,
