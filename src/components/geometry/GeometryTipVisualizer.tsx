@@ -5,7 +5,10 @@ interface GeometryTipVisualizerProps {
   level: number;
 }
 
-export const GeometryTipVisualizer: React.FC<GeometryTipVisualizerProps> = ({ level }) => {
+// ----------------------------------------------------------------------
+// 3Blue1Brown (Manim) Style Dedicated Level 1 Morphing Visualizer
+// ----------------------------------------------------------------------
+const ManimLevel1Visualizer: React.FC = () => {
   const size = 200;
   const center = size / 2;
   const radius = 52;
@@ -17,57 +20,57 @@ export const GeometryTipVisualizer: React.FC<GeometryTipVisualizerProps> = ({ le
     { sides: 6, name: '육각형' },
   ];
 
-  const [sides, setSides] = useState(3);
+  const [shapeIdx, setShapeIdx] = useState(0);
   const [prevSides, setPrevSides] = useState(3);
-  const [animProgress, setAnimProgress] = useState(1);
+  const [currSides, setCurrSides] = useState(3);
+  const [progress, setProgress] = useState(1);
 
-  // Cycle shapes (3 -> 4 -> 5 -> 6 -> 3)
+  // Cycle shapes: 3 -> 4 -> 5 -> 6 -> 3
   useEffect(() => {
-    if (level !== 1) return;
     const timer = setInterval(() => {
-      setSides((prev) => {
-        setPrevSides(prev);
-        return prev >= 6 ? 3 : prev + 1;
+      setShapeIdx((idx) => {
+        const nextIdx = (idx + 1) % shapeConfigs.length;
+        setPrevSides(shapeConfigs[idx]!.sides);
+        setCurrSides(shapeConfigs[nextIdx]!.sides);
+        return nextIdx;
       });
     }, 3200);
     return () => clearInterval(timer);
-  }, [level]);
+  }, []);
 
-  // Eased Animation Loop (0 to 1 over 1.1s)
+  // Smooth rAF Eased Progress Animation (0 to 1 over 1.2s)
   useEffect(() => {
-    if (level !== 1 || sides === prevSides) return;
-    setAnimProgress(0);
-    let startTime: number | null = null;
+    if (prevSides === currSides) return;
+    setProgress(0);
+    let start: number | null = null;
     let animId: number;
-    const duration = 1100;
+    const duration = 1200;
 
-    const step = (timestamp: number) => {
-      if (!startTime) startTime = timestamp;
-      const elapsed = timestamp - startTime;
-      const progress = Math.min(elapsed / duration, 1);
+    const animate = (timestamp: number) => {
+      if (!start) start = timestamp;
+      const elapsed = timestamp - start;
+      const rawT = Math.min(elapsed / duration, 1);
 
-      // easeInOutCubic curve for silky smooth 3B1B style movement
+      // 3B1B Manim easeInOutCubic curve
       const eased =
-        progress < 0.5
-          ? 4 * progress * progress * progress
-          : 1 - Math.pow(-2 * progress + 2, 3) / 2;
+        rawT < 0.5 ? 4 * rawT * rawT * rawT : 1 - Math.pow(-2 * rawT + 2, 3) / 2;
 
-      setAnimProgress(eased);
+      setProgress(eased);
 
-      if (progress < 1) {
-        animId = requestAnimationFrame(step);
+      if (rawT < 1) {
+        animId = requestAnimationFrame(animate);
       }
     };
 
-    animId = requestAnimationFrame(step);
+    animId = requestAnimationFrame(animate);
     return () => cancelAnimationFrame(animId);
-  }, [sides, prevSides, level]);
+  }, [currSides, prevSides]);
 
-  // Helper to compute regular n-gon vertices
-  const getPolygonVertices = (count: number) => {
+  // Helper: Compute regular N-gon vertices centered at (center, center)
+  const getRegularVertices = (n: number) => {
     const pts: { x: number; y: number }[] = [];
-    for (let i = 0; i < count; i++) {
-      const angle = -Math.PI / 2 + (i * 2 * Math.PI) / count;
+    for (let i = 0; i < n; i++) {
+      const angle = -Math.PI / 2 + (i * 2 * Math.PI) / n;
       pts.push({
         x: center + radius * Math.cos(angle),
         y: center + radius * Math.sin(angle),
@@ -76,137 +79,145 @@ export const GeometryTipVisualizer: React.FC<GeometryTipVisualizerProps> = ({ le
     return pts;
   };
 
-  // 3B1B Manim Parametric Morphing: Split & Merge Point Interpolation
-  const getInterpolatedPoints = () => {
-    const targetPts = getPolygonVertices(sides);
-    if (animProgress >= 1 || prevSides === sides) {
-      return targetPts;
+  // Compute exact 3B1B Morphing Points for current progress
+  const getMorphPoints = () => {
+    const targetBase = getRegularVertices(currSides);
+    if (progress >= 1 || prevSides === currSides) {
+      return targetBase;
     }
 
-    if (sides > prevSides) {
-      // Growing (3 -> 4 -> 5 -> 6): New vertex splits out from edge and moves outward
-      const startBase = getPolygonVertices(prevSides);
-      const startPts: { x: number; y: number }[] = [];
-      for (let i = 0; i < sides; i++) {
-        const t = (i * prevSides) / sides;
+    if (currSides > prevSides) {
+      // EXPAND / SPLIT (3 -> 4, 4 -> 5, 5 -> 6)
+      // New vertex starts at the midpoint of an edge in the prevSides shape,
+      // then smoothly expands out to targetBase!
+      const startBase = getRegularVertices(prevSides);
+      const initialPoints: { x: number; y: number }[] = [];
+
+      for (let i = 0; i < currSides; i++) {
+        const t = (i * prevSides) / currSides;
         const idx = Math.floor(t);
         const frac = t - idx;
         const p1 = startBase[idx % prevSides]!;
         const p2 = startBase[(idx + 1) % prevSides]!;
-        startPts.push({
+        initialPoints.push({
           x: p1.x + (p2.x - p1.x) * frac,
           y: p1.y + (p2.y - p1.y) * frac,
         });
       }
 
-      return targetPts.map((target, i) => {
-        const start = startPts[i]!;
+      return targetBase.map((target, i) => {
+        const start = initialPoints[i]!;
         return {
-          x: start.x + (target.x - start.x) * animProgress,
-          y: start.y + (target.y - start.y) * animProgress,
+          x: start.x + (target.x - start.x) * progress,
+          y: start.y + (target.y - start.y) * progress,
         };
       });
     } else {
-      // Shrinking (6 -> 3): Vertices collapse and merge back to triangle
-      const startPts = getPolygonVertices(prevSides);
-      const targetBase = getPolygonVertices(sides);
-      const endPts: { x: number; y: number }[] = [];
+      // SHRINK / MERGE (6 -> 3)
+      // Vertices smoothly collapse back from 6-gon to 3-gon vertices
+      const startBase = getRegularVertices(prevSides);
+      const targetBase3 = getRegularVertices(currSides);
+      const finalPoints: { x: number; y: number }[] = [];
+
       for (let i = 0; i < prevSides; i++) {
-        const t = (i * sides) / prevSides;
+        const t = (i * currSides) / prevSides;
         const idx = Math.floor(t);
         const frac = t - idx;
-        const p1 = targetBase[idx % sides]!;
-        const p2 = targetBase[(idx + 1) % sides]!;
-        endPts.push({
+        const p1 = targetBase3[idx % currSides]!;
+        const p2 = targetBase3[(idx + 1) % currSides]!;
+        finalPoints.push({
           x: p1.x + (p2.x - p1.x) * frac,
           y: p1.y + (p2.y - p1.y) * frac,
         });
       }
 
-      return startPts.map((start, i) => {
-        const target = endPts[i]!;
+      return startBase.map((start, i) => {
+        const target = finalPoints[i]!;
         return {
-          x: start.x + (target.x - start.x) * animProgress,
-          y: start.y + (target.y - start.y) * animProgress,
+          x: start.x + (target.x - start.x) * progress,
+          y: start.y + (target.y - start.y) * progress,
         };
       });
     }
   };
 
+  const morphPts = getMorphPoints();
+  const currentConfig = shapeConfigs[shapeIdx] || shapeConfigs[0]!;
+  const ptsStr = morphPts.map((p) => `${p.x.toFixed(1)},${p.y.toFixed(1)}`).join(' ');
+
+  return (
+    <div className="geo-level1-wrapper">
+      <svg width={size} height={165} viewBox={`0 0 ${size} 165`} className="geo-tip-svg">
+        {/* Main Morphing Polygon (100% synced with morphPts) */}
+        <polygon points={ptsStr} className="geo-shape-poly-morph" />
+
+        {/* Edge Lines (100% synced with morphPts) */}
+        {morphPts.map((p, idx) => {
+          const nextP = morphPts[(idx + 1) % morphPts.length]!;
+          return (
+            <line
+              key={`edge-${idx}`}
+              x1={p.x}
+              y1={p.y}
+              x2={nextP.x}
+              y2={nextP.y}
+              className="geo-edge-animated-line"
+            />
+          );
+        })}
+
+        {/* Vertex Dots (100% synced with morphPts - NO separate dots!) */}
+        {morphPts.map((p, idx) => (
+          <g key={`vertex-${idx}`}>
+            <circle cx={p.x} cy={p.y} r="9" className="geo-vertex-pulse" />
+            <circle cx={p.x} cy={p.y} r="5" className="geo-vertex-dot" />
+          </g>
+        ))}
+
+        {/* Labels pointing to Top Vertex and Right Edge */}
+        {morphPts.length > 0 && (
+          <g className="geo-label-pointer">
+            <text x={morphPts[0]!.x} y={morphPts[0]!.y - 14} className="geo-pointer-tag vertex-tag">
+              ● 꼭짓점(점)
+            </text>
+            {morphPts.length >= 2 && (
+              <text
+                x={(morphPts[0]!.x + morphPts[1]!.x) / 2 + 18}
+                y={(morphPts[0]!.y + morphPts[1]!.y) / 2}
+                className="geo-pointer-tag edge-tag"
+              >
+                ━ 변(선)
+              </text>
+            )}
+          </g>
+        )}
+      </svg>
+
+      {/* Bottom Highlighted Dynamic Text */}
+      <div className="geo-level1-caption-box" key={currentConfig.name}>
+        <span className="geo-shape-badge">{currentConfig.name}</span>
+        <div className="geo-stat-highlights">
+          <span className="geo-stat-item vertex-highlight">
+            꼭짓점 <strong className="highlight-num">{morphPts.length}개</strong>
+          </span>
+          <span className="geo-divider">/</span>
+          <span className="geo-stat-item edge-highlight">
+            변 <strong className="highlight-num">{morphPts.length}개</strong>
+          </span>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export const GeometryTipVisualizer: React.FC<GeometryTipVisualizerProps> = ({ level }) => {
+  const size = 200;
+  const center = size / 2;
+
   const renderVisualizer = () => {
     switch (level) {
-      case 1: {
-        // 2-1: 3B1B Manim exact vertex splitting and morphing
-        const currentConfig = shapeConfigs.find((c) => c.sides === sides) || shapeConfigs[0]!;
-        const pts = getInterpolatedPoints();
-        const ptsStr = pts.map((p) => `${p.x.toFixed(1)},${p.y.toFixed(1)}`).join(' ');
-
-        return (
-          <div className="geo-level1-wrapper">
-            <svg width={size} height={165} viewBox={`0 0 ${size} 165`} className="geo-tip-svg">
-              {/* Main Polygon (Synchronized 100% with vertices) */}
-              <polygon points={ptsStr} className="geo-shape-poly-morph" />
-
-              {/* Edge Lines (Synchronized 100% with vertices) */}
-              {pts.map((p, idx) => {
-                const nextP = pts[(idx + 1) % pts.length]!;
-                return (
-                  <line
-                    key={`edge-${pts.length}-${idx}`}
-                    x1={p.x}
-                    y1={p.y}
-                    x2={nextP.x}
-                    y2={nextP.y}
-                    className="geo-edge-animated-line"
-                  />
-                );
-              })}
-
-              {/* Vertices Dots (Synchronized 100% with polygon vertices) */}
-              {pts.map((p, idx) => (
-                <g key={`vertex-${pts.length}-${idx}`}>
-                  <circle cx={p.x} cy={p.y} r="9" className="geo-vertex-pulse" />
-                  <circle cx={p.x} cy={p.y} r="5" className="geo-vertex-dot" />
-                </g>
-              ))}
-
-              {/* Visual Labels pointing to Point and Line */}
-              {pts.length > 0 && (
-                <g className="geo-label-pointer">
-                  {/* Point Label at Top Vertex */}
-                  <text x={pts[0]!.x} y={pts[0]!.y - 14} className="geo-pointer-tag vertex-tag">
-                    ● 꼭짓점(점)
-                  </text>
-                  {/* Line Label on Right Edge */}
-                  {pts.length >= 2 && (
-                    <text
-                      x={(pts[0]!.x + pts[1]!.x) / 2 + 18}
-                      y={(pts[0]!.y + pts[1]!.y) / 2}
-                      className="geo-pointer-tag edge-tag"
-                    >
-                      ━ 변(선)
-                    </text>
-                  )}
-                </g>
-              )}
-            </svg>
-
-            {/* Bottom Highlighted Dynamic Text */}
-            <div className="geo-level1-caption-box" key={currentConfig.name}>
-              <span className="geo-shape-badge">{currentConfig.name}</span>
-              <div className="geo-stat-highlights">
-                <span className="geo-stat-item vertex-highlight">
-                  꼭짓점 <strong className="highlight-num">{pts.length}개</strong>
-                </span>
-                <span className="geo-divider">/</span>
-                <span className="geo-stat-item edge-highlight">
-                  변 <strong className="highlight-num">{pts.length}개</strong>
-                </span>
-              </div>
-            </div>
-          </div>
-        );
-      }
+      case 1:
+        return <ManimLevel1Visualizer />;
 
       case 2: {
         // 2-2: 다각형 대각선 - 오각형 대각선 순차 애니메이션
