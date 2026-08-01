@@ -79,7 +79,7 @@ const ManimLevel1Visualizer: React.FC = () => {
     return pts;
   };
 
-  // Compute exact 3B1B Morphing Points for current progress
+  // Compute exact User-Requested Vertex Splitting & Spreading Points
   const getMorphPoints = () => {
     const targetBase = getRegularVertices(currSides);
     if (progress >= 1 || prevSides === currSides) {
@@ -87,22 +87,19 @@ const ManimLevel1Visualizer: React.FC = () => {
     }
 
     if (currSides > prevSides) {
-      // EXPAND / SPLIT (3 -> 4, 4 -> 5, 5 -> 6)
-      // New vertex starts at the midpoint of an edge in the prevSides shape,
-      // then smoothly expands out to targetBase!
+      // EXPAND / SPREAD (3 -> 4, 4 -> 5, 5 -> 6)
+      // At t=0, the extra vertex is overlapped (doubled) at the bottom-left vertex of prevSides polygon.
+      // As progress t goes 0 -> 1, it splits into 2 and spreads out to targetBase!
       const startBase = getRegularVertices(prevSides);
       const initialPoints: { x: number; y: number }[] = [];
 
       for (let i = 0; i < currSides; i++) {
-        const t = (i * prevSides) / currSides;
-        const idx = Math.floor(t);
-        const frac = t - idx;
-        const p1 = startBase[idx % prevSides]!;
-        const p2 = startBase[(idx + 1) % prevSides]!;
-        initialPoints.push({
-          x: p1.x + (p2.x - p1.x) * frac,
-          y: p1.y + (p2.y - p1.y) * frac,
-        });
+        if (i < prevSides) {
+          initialPoints.push(startBase[i]!);
+        } else {
+          // Overlap extra points on the bottom-left vertex (index prevSides - 1)
+          initialPoints.push({ ...startBase[prevSides - 1]! });
+        }
       }
 
       return targetBase.map((target, i) => {
@@ -114,25 +111,22 @@ const ManimLevel1Visualizer: React.FC = () => {
       });
     } else {
       // SHRINK / MERGE (6 -> 3)
-      // Vertices smoothly collapse back from 6-gon to 3-gon vertices
-      const startBase = getRegularVertices(prevSides);
-      const targetBase3 = getRegularVertices(currSides);
-      const finalPoints: { x: number; y: number }[] = [];
+      // Vertices collapse and merge back to the 3-gon vertices
+      const startBase = getRegularVertices(prevSides); // 6 pts
+      const targetBase = getRegularVertices(currSides); // 3 pts
+      const endPoints: { x: number; y: number }[] = [];
 
       for (let i = 0; i < prevSides; i++) {
-        const t = (i * currSides) / prevSides;
-        const idx = Math.floor(t);
-        const frac = t - idx;
-        const p1 = targetBase3[idx % currSides]!;
-        const p2 = targetBase3[(idx + 1) % currSides]!;
-        finalPoints.push({
-          x: p1.x + (p2.x - p1.x) * frac,
-          y: p1.y + (p2.y - p1.y) * frac,
-        });
+        if (i < currSides) {
+          endPoints.push(targetBase[i]!);
+        } else {
+          // Merge extra points back to the bottom-left vertex of the triangle
+          endPoints.push({ ...targetBase[currSides - 1]! });
+        }
       }
 
       return startBase.map((start, i) => {
-        const target = finalPoints[i]!;
+        const target = endPoints[i]!;
         return {
           x: start.x + (target.x - start.x) * progress,
           y: start.y + (target.y - start.y) * progress,
