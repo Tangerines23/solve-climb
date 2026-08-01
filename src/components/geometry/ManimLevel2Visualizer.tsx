@@ -14,6 +14,16 @@ interface DiagonalLine {
   y2: number;
 }
 
+// Korean polygon names dictionary for pure text badge
+const KOREAN_POLYGON_NAMES: Record<number, string> = {
+  3: '삼각형',
+  4: '사각형',
+  5: '오각형',
+  6: '육각형',
+  7: '칠각형',
+  8: '팔각형',
+};
+
 // Pre-calculate fixed regular polygon vertices for 5 and 6 sides
 const PRECOMPUTED_VERTICES: Record<number, { x: number; y: number }[]> = {
   5: computeRegularVertices(5),
@@ -281,7 +291,7 @@ export const ManimLevel2Visualizer: React.FC = React.memo(() => {
       <div style={{ position: 'absolute', top: 8, left: 12, zIndex: 5 }}>
         <span className="geo-shape-badge">
           <span key={currSides} className="geo-text-mode-1">
-            {currSides}각형
+            {KOREAN_POLYGON_NAMES[currSides] || `${currSides}각형`}
           </span>
         </span>
       </div>
