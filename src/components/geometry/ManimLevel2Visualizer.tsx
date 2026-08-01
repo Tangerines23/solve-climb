@@ -240,8 +240,13 @@ export const ManimLevel2Visualizer: React.FC = React.memo(() => {
     [morphPts]
   );
 
-  const totalDiagonals = (currSides * (currSides - 3)) / 2;
-  const singleCount = currSides - 3;
+  // Determine unique text key so animation ONLY triggers when text content actually changes!
+  const textKey = useMemo(() => {
+    if (phase === 'single') return `single-${currSides}`;
+    if (phase === 'all') return `all-${currSides}`;
+    if (phase === 'dedup') return `dedup-${currSides}`;
+    return `base-${currSides}`;
+  }, [phase, currSides]);
 
   return (
     <div className="geo-level1-wrapper">
@@ -422,7 +427,7 @@ export const ManimLevel2Visualizer: React.FC = React.memo(() => {
       {/* Dynamic 3B1B Mathematical Caption Box */}
       <div className="geo-level1-caption-box">
         <span className="geo-shape-badge">{currSides}각형</span>
-        <div key={phase} className="geo-stat-highlights geo-text-smooth-transition">
+        <div key={textKey} className="geo-stat-highlights geo-text-smooth-transition">
           {(phase === 'morph' || phase === 'restore' || phase === 'retract' || phase === 'rest') && (
             <>
               <span className="geo-stat-item vertex-highlight">

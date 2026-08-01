@@ -222,7 +222,7 @@ export const ManimLevel1Visualizer: React.FC = React.memo(() => {
       <div className="geo-level1-caption-box">
         <span className="geo-shape-badge">{currentConfig.name}</span>
         <div
-          key={progress >= 1 && highlightIdx !== null ? 'highlight' : 'default'}
+          key={currSides}
           className="geo-stat-highlights geo-text-smooth-transition"
         >
           <span
