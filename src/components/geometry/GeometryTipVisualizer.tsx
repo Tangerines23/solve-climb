@@ -110,19 +110,18 @@ const ManimLevel1Visualizer: React.FC = () => {
         };
       });
     } else {
-      // SHRINK / MERGE (6 -> 3)
-      // Vertices collapse and merge back to the 3-gon vertices
+      // SHRINK / MERGE (6 -> 3): Pairwise nearest neighbor merge
+      // 6 vertices (V0..V5) collapse 2-by-2 into the 3 triangle vertices (T0, T1, T2)
+      // V0, V1 -> T0 (top)
+      // V2, V3 -> T1 (bottom-right)
+      // V4, V5 -> T2 (bottom-left)
       const startBase = getRegularVertices(prevSides); // 6 pts
-      const targetBase = getRegularVertices(currSides); // 3 pts
+      const targetTriangle = getRegularVertices(currSides); // 3 pts (T0, T1, T2)
       const endPoints: { x: number; y: number }[] = [];
 
       for (let i = 0; i < prevSides; i++) {
-        if (i < currSides) {
-          endPoints.push(targetBase[i]!);
-        } else {
-          // Merge extra points back to the bottom-left vertex of the triangle
-          endPoints.push({ ...targetBase[currSides - 1]! });
-        }
+        const targetIdx = Math.floor(i / 2) % currSides;
+        endPoints.push({ ...targetTriangle[targetIdx]! });
       }
 
       return startBase.map((start, i) => {
