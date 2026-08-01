@@ -3,6 +3,7 @@ import './GeometryTipVisualizer.css';
 import { ManimLevel1Visualizer } from './ManimLevel1Visualizer';
 import { ManimLevel2Visualizer } from './ManimLevel2Visualizer';
 import { ManimLevel3Visualizer } from './ManimLevel3Visualizer';
+import { ManimLevel4Visualizer } from './ManimLevel4Visualizer';
 
 interface GeometryTipVisualizerProps {
   level: number;
@@ -23,22 +24,8 @@ export const GeometryTipVisualizer: React.FC<GeometryTipVisualizerProps> = ({ le
       case 3:
         return <ManimLevel3Visualizer />;
 
-      case 4: {
-        // 2-4: 사각형의 성질 (평행사변형 각도)
-        return (
-          <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`} className="geo-tip-svg">
-            <polygon points="65,40 165,40 135,140 35,140" className="geo-shape-poly" />
-            {/* Opposite angles (A & C) equal, Adjacent angles (A & B) sum 180 */}
-            <circle cx="65" cy="40" r="7" className="geo-angle-highlight-1" />
-            <circle cx="135" cy="140" r="7" className="geo-angle-highlight-1" />
-            <circle cx="165" cy="40" r="7" className="geo-angle-highlight-2" />
-            <circle cx="35" cy="140" r="7" className="geo-angle-highlight-2" />
-            <text x={center} y={size - 10} className="geo-tip-subtext">
-              마주보는 각 동일 / 이웃한 각 합 = 180°
-            </text>
-          </svg>
-        );
-      }
+      case 4:
+        return <ManimLevel4Visualizer />;
 
       case 5: {
         // 2-5: 직사각형 넓이 (가로 x 세로)
