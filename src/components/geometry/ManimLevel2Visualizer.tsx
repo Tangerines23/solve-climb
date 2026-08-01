@@ -49,7 +49,6 @@ export const ManimLevel2Visualizer: React.FC = React.memo(() => {
   const [drawProgress, setDrawProgress] = useState(0);
   const [retractProgress, setRetractProgress] = useState(0);
   const [isPaused, setIsPaused] = useState(false);
-  const [isFading, setIsFading] = useState(false);
 
   const isPausedRef = useRef(isPaused);
   isPausedRef.current = isPaused;
@@ -335,8 +334,14 @@ export const ManimLevel2Visualizer: React.FC = React.memo(() => {
 
   // Vertex 0 diagonals
   const vertex0Diagonals = useMemo(() => {
-    const res: { x1: number; y1: number; x2: number; y2: number; fromIdx: number; toIdx: number }[] =
-      [];
+    const res: {
+      x1: number;
+      y1: number;
+      x2: number;
+      y2: number;
+      fromIdx: number;
+      toIdx: number;
+    }[] = [];
     const pts = morphPts;
     const n = pts.length;
     for (let j = 2; j < n - 1; j++) {
@@ -354,8 +359,14 @@ export const ManimLevel2Visualizer: React.FC = React.memo(() => {
 
   // All unique diagonals
   const uniqueDiagonals = useMemo(() => {
-    const res: { x1: number; y1: number; x2: number; y2: number; fromIdx: number; toIdx: number }[] =
-      [];
+    const res: {
+      x1: number;
+      y1: number;
+      x2: number;
+      y2: number;
+      fromIdx: number;
+      toIdx: number;
+    }[] = [];
     const pts = morphPts;
     const n = pts.length;
     for (let i = 0; i < n; i++) {
@@ -452,171 +463,171 @@ export const ManimLevel2Visualizer: React.FC = React.memo(() => {
         captionContent={caption}
       >
         <svg width={SIZE} height={165} viewBox={`0 0 ${SIZE} 165`} className="geo-tip-svg">
-            <polygon points={ptsStr} className="geo-shape-poly-morph" />
+          <polygon points={ptsStr} className="geo-shape-poly-morph" />
 
-            {/* Outer Edges */}
-            {morphPts.map((p, idx) => {
-              const nextV = morphPts[(idx + 1) % morphPts.length]!;
+          {/* Outer Edges */}
+          {morphPts.map((p, idx) => {
+            const nextV = morphPts[(idx + 1) % morphPts.length]!;
+            return (
+              <line
+                key={`edge-${idx}`}
+                x1={p.x}
+                y1={p.y}
+                x2={nextV.x}
+                y2={nextV.y}
+                className="geo-edge-animated-line"
+              />
+            );
+          })}
+
+          {/* Phase 1: Diagonals from Vertex 0 */}
+          {morphProgress >= 1 &&
+            (phase === 'single' || phase === 'all') &&
+            vertex0Diagonals.map((d, idx) => {
+              const currentProgress = phase === 'single' ? drawProgress : 1;
+              const targetX = d.fromIdx === 0 ? d.x2 : d.x1;
+              const targetY = d.fromIdx === 0 ? d.y2 : d.y1;
+              const sourceX = d.fromIdx === 0 ? d.x1 : d.x2;
+              const sourceY = d.fromIdx === 0 ? d.y1 : d.y2;
+
+              const drawX = sourceX + (targetX - sourceX) * currentProgress;
+              const drawY = sourceY + (targetY - sourceY) * currentProgress;
+
               return (
                 <line
-                  key={`edge-${idx}`}
-                  x1={p.x}
-                  y1={p.y}
-                  x2={nextV.x}
-                  y2={nextV.y}
-                  className="geo-edge-animated-line"
+                  key={`v0-diag-${idx}`}
+                  x1={sourceX}
+                  y1={sourceY}
+                  x2={drawX}
+                  y2={drawY}
+                  stroke="#f43f5e"
+                  strokeWidth={3.5}
+                  strokeLinecap="round"
+                  style={{ filter: 'drop-shadow(0 0 6px rgba(244, 63, 94, 0.8))' }}
                 />
               );
             })}
 
-            {/* Phase 1: Diagonals from Vertex 0 */}
-            {morphProgress >= 1 &&
-              (phase === 'single' || phase === 'all') &&
-              vertex0Diagonals.map((d, idx) => {
-                const currentProgress = phase === 'single' ? drawProgress : 1;
-                const targetX = d.fromIdx === 0 ? d.x2 : d.x1;
-                const targetY = d.fromIdx === 0 ? d.y2 : d.y1;
-                const sourceX = d.fromIdx === 0 ? d.x1 : d.x2;
-                const sourceY = d.fromIdx === 0 ? d.y1 : d.y2;
+          {/* Phase 2, 3, 3.5 & Retract: All Unique Diagonals */}
+          {morphProgress >= 1 &&
+            (phase === 'all' || phase === 'dedup' || phase === 'restore' || phase === 'retract') &&
+            uniqueDiagonals.map((d, idx) => {
+              if (phase === 'retract') {
+                const midX = (d.x1 + d.x2) / 2;
+                const midY = (d.y1 + d.y2) / 2;
 
-                const drawX = sourceX + (targetX - sourceX) * currentProgress;
-                const drawY = sourceY + (targetY - sourceY) * currentProgress;
+                const seg1StartX = midX + (d.x1 - midX) * retractProgress;
+                const seg1StartY = midY + (d.y1 - midY) * retractProgress;
 
-                return (
-                  <line
-                    key={`v0-diag-${idx}`}
-                    x1={sourceX}
-                    y1={sourceY}
-                    x2={drawX}
-                    y2={drawY}
-                    stroke="#f43f5e"
-                    strokeWidth={3.5}
-                    strokeLinecap="round"
-                    style={{ filter: 'drop-shadow(0 0 6px rgba(244, 63, 94, 0.8))' }}
-                  />
-                );
-              })}
-
-            {/* Phase 2, 3, 3.5 & Retract: All Unique Diagonals */}
-            {morphProgress >= 1 &&
-              (phase === 'all' || phase === 'dedup' || phase === 'restore' || phase === 'retract') &&
-              uniqueDiagonals.map((d, idx) => {
-                if (phase === 'retract') {
-                  const midX = (d.x1 + d.x2) / 2;
-                  const midY = (d.y1 + d.y2) / 2;
-
-                  const seg1StartX = midX + (d.x1 - midX) * retractProgress;
-                  const seg1StartY = midY + (d.y1 - midY) * retractProgress;
-
-                  const seg2StartX = midX + (d.x2 - midX) * retractProgress;
-                  const seg2StartY = midY + (d.y2 - midY) * retractProgress;
-
-                  return (
-                    <g key={`retract-diag-${idx}`}>
-                      <line
-                        x1={seg1StartX}
-                        y1={seg1StartY}
-                        x2={d.x1}
-                        y2={d.y1}
-                        stroke="#f43f5e"
-                        strokeWidth={2.5}
-                        strokeLinecap="round"
-                        opacity={1 - retractProgress * 0.85}
-                        style={{ filter: 'drop-shadow(0 0 4px rgba(244, 63, 94, 0.6))' }}
-                      />
-                      <line
-                        x1={seg2StartX}
-                        y1={seg2StartY}
-                        x2={d.x2}
-                        y2={d.y2}
-                        stroke="#f43f5e"
-                        strokeWidth={2.5}
-                        strokeLinecap="round"
-                        opacity={1 - retractProgress * 0.85}
-                        style={{ filter: 'drop-shadow(0 0 4px rgba(244, 63, 94, 0.6))' }}
-                      />
-                    </g>
-                  );
-                }
-
-                const staggerProgress =
-                  phase === 'all'
-                    ? Math.max(0, Math.min(1, drawProgress * uniqueDiagonals.length - idx * 0.5))
-                    : 1;
-
-                if (staggerProgress <= 0) return null;
-
-                const drawX2 = d.x1 + (d.x2 - d.x1) * staggerProgress;
-                const drawY2 = d.y1 + (d.y2 - d.y1) * staggerProgress;
-
-                const isDedupHighlight = phase === 'dedup';
+                const seg2StartX = midX + (d.x2 - midX) * retractProgress;
+                const seg2StartY = midY + (d.y2 - midY) * retractProgress;
 
                 return (
-                  <line
-                    key={`all-diag-${idx}`}
-                    x1={d.x1}
-                    y1={d.y1}
-                    x2={drawX2}
-                    y2={drawY2}
-                    stroke={isDedupHighlight ? '#fbbf24' : '#f43f5e'}
-                    strokeWidth={isDedupHighlight ? 3.5 : 2.5}
-                    strokeLinecap="round"
-                    opacity={isDedupHighlight ? 0.95 : 0.85}
-                    style={{
-                      transition: 'stroke 0.4s ease, stroke-width 0.4s ease, filter 0.4s ease',
-                      filter: isDedupHighlight
-                        ? 'drop-shadow(0 0 8px rgba(251, 191, 36, 0.9))'
-                        : 'drop-shadow(0 0 4px rgba(244, 63, 94, 0.5))',
-                    }}
-                  />
+                  <g key={`retract-diag-${idx}`}>
+                    <line
+                      x1={seg1StartX}
+                      y1={seg1StartY}
+                      x2={d.x1}
+                      y2={d.y1}
+                      stroke="#f43f5e"
+                      strokeWidth={2.5}
+                      strokeLinecap="round"
+                      opacity={1 - retractProgress * 0.85}
+                      style={{ filter: 'drop-shadow(0 0 4px rgba(244, 63, 94, 0.6))' }}
+                    />
+                    <line
+                      x1={seg2StartX}
+                      y1={seg2StartY}
+                      x2={d.x2}
+                      y2={d.y2}
+                      stroke="#f43f5e"
+                      strokeWidth={2.5}
+                      strokeLinecap="round"
+                      opacity={1 - retractProgress * 0.85}
+                      style={{ filter: 'drop-shadow(0 0 4px rgba(244, 63, 94, 0.6))' }}
+                    />
+                  </g>
                 );
-              })}
+              }
 
-            {/* Vertex Dots */}
-            {morphPts.map((v, idx) => {
-              const isV0 = idx === 0;
-              const isExcludedNeighbor = phase === 'single' && (idx === 1 || idx === currSides - 1);
-              const isTargetVertex = phase === 'single' && !isV0 && !isExcludedNeighbor;
+              const staggerProgress =
+                phase === 'all'
+                  ? Math.max(0, Math.min(1, drawProgress * uniqueDiagonals.length - idx * 0.5))
+                  : 1;
 
-              const isHighlighted = phase === 'single' && isV0;
+              if (staggerProgress <= 0) return null;
+
+              const drawX2 = d.x1 + (d.x2 - d.x1) * staggerProgress;
+              const drawY2 = d.y1 + (d.y2 - d.y1) * staggerProgress;
+
+              const isDedupHighlight = phase === 'dedup';
 
               return (
-                <g key={`vertex-group-${idx}`}>
-                  <circle
-                    cx={v.x}
-                    cy={v.y}
-                    r={isHighlighted ? 8.5 : isTargetVertex ? 6.5 : 5}
-                    className={`geo-simple-dot ${isHighlighted ? 'active-dot' : ''}`}
-                    style={{
-                      fill: isV0 ? '#fb7185' : isTargetVertex ? '#38bdf8' : '#818cf8',
-                      transition: 'r 0.3s ease, fill 0.3s ease',
-                    }}
-                  />
-                  {isExcludedNeighbor && (
-                    <text
-                      x={v.x}
-                      y={v.y + 4}
-                      fontSize={10}
-                      fontWeight={900}
-                      fill="#ef4444"
-                      textAnchor="middle"
-                    >
-                      ×
-                    </text>
-                  )}
-                </g>
+                <line
+                  key={`all-diag-${idx}`}
+                  x1={d.x1}
+                  y1={d.y1}
+                  x2={drawX2}
+                  y2={drawY2}
+                  stroke={isDedupHighlight ? '#fbbf24' : '#f43f5e'}
+                  strokeWidth={isDedupHighlight ? 3.5 : 2.5}
+                  strokeLinecap="round"
+                  opacity={isDedupHighlight ? 0.95 : 0.85}
+                  style={{
+                    transition: 'stroke 0.4s ease, stroke-width 0.4s ease, filter 0.4s ease',
+                    filter: isDedupHighlight
+                      ? 'drop-shadow(0 0 8px rgba(251, 191, 36, 0.9))'
+                      : 'drop-shadow(0 0 4px rgba(244, 63, 94, 0.5))',
+                  }}
+                />
               );
             })}
 
-            {/* Pointer Tag for Top Vertex */}
-            {morphPts[0] && (
-              <text x={morphPts[0].x} y={morphPts[0].y - 14} className="geo-pointer-tag vertex-tag">
-                ● 꼭짓점
-              </text>
-            )}
+          {/* Vertex Dots */}
+          {morphPts.map((v, idx) => {
+            const isV0 = idx === 0;
+            const isExcludedNeighbor = phase === 'single' && (idx === 1 || idx === currSides - 1);
+            const isTargetVertex = phase === 'single' && !isV0 && !isExcludedNeighbor;
 
-            {isAdminMode && <circle cx={SIZE / 2} cy={SIZE / 2} r={3} fill="#c084fc" />}
-          </svg>
+            const isHighlighted = phase === 'single' && isV0;
+
+            return (
+              <g key={`vertex-group-${idx}`}>
+                <circle
+                  cx={v.x}
+                  cy={v.y}
+                  r={isHighlighted ? 8.5 : isTargetVertex ? 6.5 : 5}
+                  className={`geo-simple-dot ${isHighlighted ? 'active-dot' : ''}`}
+                  style={{
+                    fill: isV0 ? '#fb7185' : isTargetVertex ? '#38bdf8' : '#818cf8',
+                    transition: 'r 0.3s ease, fill 0.3s ease',
+                  }}
+                />
+                {isExcludedNeighbor && (
+                  <text
+                    x={v.x}
+                    y={v.y + 4}
+                    fontSize={10}
+                    fontWeight={900}
+                    fill="#ef4444"
+                    textAnchor="middle"
+                  >
+                    ×
+                  </text>
+                )}
+              </g>
+            );
+          })}
+
+          {/* Pointer Tag for Top Vertex */}
+          {morphPts[0] && (
+            <text x={morphPts[0].x} y={morphPts[0].y - 14} className="geo-pointer-tag vertex-tag">
+              ● 꼭짓점
+            </text>
+          )}
+
+          {isAdminMode && <circle cx={SIZE / 2} cy={SIZE / 2} r={3} fill="#c084fc" />}
+        </svg>
       </ManimCardLayout>
     </div>
   );

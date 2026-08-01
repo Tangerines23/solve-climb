@@ -227,7 +227,7 @@ function generateCircleBasic(rng?: {
   };
 }
 
-function generateCircleAdvanced(rng?: {
+export function generateCircleAdvanced(rng?: {
   random: () => number;
   randomInt: (min: number, max: number) => number;
 }): GeometryProblem {
@@ -290,7 +290,7 @@ function generateSymmetry(rng?: {
   };
 }
 
-function generatePythagorean(rng?: {
+export function generatePythagorean(rng?: {
   random: () => number;
   randomInt: (min: number, max: number) => number;
 }): GeometryProblem {
@@ -397,7 +397,8 @@ function generatePythagoreanAdvanced(rng?: {
     { a: 9, b: 40, c: 41 },
     { a: 11, b: 60, c: 61 },
   ];
-  const t = triples[Math.abs(getRandomInt(0, triples.length - 1, rng)) % triples.length] || triples[0]!;
+  const t =
+    triples[Math.abs(getRandomInt(0, triples.length - 1, rng)) % triples.length] || triples[0]!;
   return {
     question: `직각삼각형 [밑변 ${t.a}, 높이 ${t.b}] ➔ 빗변 = ?`,
     answer: t.c,
@@ -456,7 +457,7 @@ function generateSolidVolumeRect(rng?: {
   };
 }
 
-function generatePythagoreanBasic(rng?: {
+function generatePythagoreanBasic(_rng?: {
   randomInt: (min: number, max: number) => number;
 }): GeometryProblem {
   return {

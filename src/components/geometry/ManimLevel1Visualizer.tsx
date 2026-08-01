@@ -51,7 +51,6 @@ export const ManimLevel1Visualizer: React.FC = React.memo(() => {
   const [progress, setProgress] = useState(0);
   const [highlightIdx, setHighlightIdx] = useState<number | null>(null);
   const [isPaused, setIsPaused] = useState(false);
-  const [isFading, setIsFading] = useState(false);
 
   const isPausedRef = useRef(isPaused);
   isPausedRef.current = isPaused;
@@ -104,8 +103,7 @@ export const ManimLevel1Visualizer: React.FC = React.memo(() => {
 
       if (elapsed < MORPH_DURATION) {
         const rawT = elapsed / MORPH_DURATION;
-        const eased =
-          rawT < 0.5 ? 4 * rawT * rawT * rawT : 1 - Math.pow(-2 * rawT + 2, 3) / 2;
+        const eased = rawT < 0.5 ? 4 * rawT * rawT * rawT : 1 - Math.pow(-2 * rawT + 2, 3) / 2;
         setProgress(eased);
         setHighlightIdx(null);
       } else if (elapsed < MORPH_DURATION + highlightTotalDuration) {
@@ -280,54 +278,58 @@ export const ManimLevel1Visualizer: React.FC = React.memo(() => {
         captionContent={caption}
       >
         <svg width={SIZE} height={165} viewBox={`0 0 ${SIZE} 165`} className="geo-tip-svg">
-            <polygon points={ptsStr} className="geo-shape-poly-morph" />
+          <polygon points={ptsStr} className="geo-shape-poly-morph" />
 
-            {morphPts.map((p, idx) => {
-              const nextP = morphPts[(idx + 1) % morphPts.length]!;
-              return (
-                <line
-                  key={`edge-${idx}`}
-                  x1={p.x}
-                  y1={p.y}
-                  x2={nextP.x}
-                  y2={nextP.y}
-                  className="geo-edge-animated-line"
-                />
-              );
-            })}
+          {morphPts.map((p, idx) => {
+            const nextP = morphPts[(idx + 1) % morphPts.length]!;
+            return (
+              <line
+                key={`edge-${idx}`}
+                x1={p.x}
+                y1={p.y}
+                x2={nextP.x}
+                y2={nextP.y}
+                className="geo-edge-animated-line"
+              />
+            );
+          })}
 
-            {morphPts.map((p, idx) => {
-              const isHighlighted = progress >= 1 && highlightIdx === idx;
-              return (
-                <circle
-                  key={`dot-${idx}`}
-                  cx={p.x}
-                  cy={p.y}
-                  r={isHighlighted ? '8.5' : '5'}
-                  className={`geo-simple-dot ${isHighlighted ? 'active-dot' : ''}`}
-                />
-              );
-            })}
+          {morphPts.map((p, idx) => {
+            const isHighlighted = progress >= 1 && highlightIdx === idx;
+            return (
+              <circle
+                key={`dot-${idx}`}
+                cx={p.x}
+                cy={p.y}
+                r={isHighlighted ? '8.5' : '5'}
+                className={`geo-simple-dot ${isHighlighted ? 'active-dot' : ''}`}
+              />
+            );
+          })}
 
-            {morphPts.length > 0 && (
-              <g className="geo-label-pointer">
-                <text x={morphPts[0]!.x} y={morphPts[0]!.y - 14} className="geo-pointer-tag vertex-tag">
-                  ● 꼭짓점(점)
+          {morphPts.length > 0 && (
+            <g className="geo-label-pointer">
+              <text
+                x={morphPts[0]!.x}
+                y={morphPts[0]!.y - 14}
+                className="geo-pointer-tag vertex-tag"
+              >
+                ● 꼭짓점(점)
+              </text>
+              {morphPts.length >= 2 && (
+                <text
+                  x={(morphPts[0]!.x + morphPts[1]!.x) / 2 + 18}
+                  y={(morphPts[0]!.y + morphPts[1]!.y) / 2}
+                  className="geo-pointer-tag edge-tag"
+                >
+                  ━ 변(선)
                 </text>
-                {morphPts.length >= 2 && (
-                  <text
-                    x={(morphPts[0]!.x + morphPts[1]!.x) / 2 + 18}
-                    y={(morphPts[0]!.y + morphPts[1]!.y) / 2}
-                    className="geo-pointer-tag edge-tag"
-                  >
-                    ━ 변(선)
-                  </text>
-                )}
-              </g>
-            )}
+              )}
+            </g>
+          )}
 
-            {isAdminMode && <circle cx={SIZE / 2} cy={SIZE / 2} r={3} fill="#c084fc" />}
-          </svg>
+          {isAdminMode && <circle cx={SIZE / 2} cy={SIZE / 2} r={3} fill="#c084fc" />}
+        </svg>
       </ManimCardLayout>
     </div>
   );

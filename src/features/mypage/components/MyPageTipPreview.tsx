@@ -51,7 +51,7 @@ export function MyPageTipPreview() {
         case 'World1':
           return 30;
         case 'World2':
-          return 14;
+          return 15;
         case 'World3':
           return 15;
         case 'World4':

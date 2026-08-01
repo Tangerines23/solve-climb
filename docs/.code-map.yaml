@@ -1,6 +1,6 @@
 
 project: solve-climb
-generatedAt: "2026-08-01T01:48:55.114Z"
+generatedAt: "2026-08-01T18:52:46.695Z"
 files:
   src/App.tsx:
     imports: [@/utils/resilientLazy, @/components/PageTransition, @/stores/useLevelProgressStore, @/stores/useAuthStore, @/hooks/useCustomBackNavigation, @/components/GlobalLoadingIndicator, @/stores/useErrorLogStore, @/stores/useDebugStore, @/stores/useSettingsStore, @/hooks/useConnectivity, @/components/PwaUpdateNotification, @/features/auth, @/utils/supabaseClient, @/utils/auth, @/components/GlobalToastContainer]
@@ -1774,14 +1774,25 @@ files:
         returns: "import(\"C:/Users/ghkdd/gemini-projects/solve-climb/node_modules/@types/react/jsx-runtime\").JSX.Element | null"
         calls: [e.stopPropagation]
   src/components/geometry/GeometryTipVisualizer.tsx:
-    imports: [./GeometryTipVisualizer.css]
-    state: [shapeIndex, currentPts]
+    imports: [./GeometryTipVisualizer.css, ./ManimLevel1Visualizer, ./ManimLevel2Visualizer, ./ManimLevel3Visualizer, ./ManimLevel4Visualizer, ./ManimLevel5Visualizer]
     exports:
       - name: GeometryTipVisualizer
         params:
           "{ level }": GeometryTipVisualizerProps
         returns: "import(\"C:/Users/ghkdd/gemini-projects/solve-climb/node_modules/@types/react/jsx-runtime\").JSX.Element"
-        calls: [rawPts.push, Math.cos, Math.sin, getTargetPoints, setInterval, setShapeIndex, clearInterval, setCurrentPts, targetPts.map, Math.abs, requestAnimationFrame, cancelAnimationFrame, "pts.map((p) => `${p.x.toFixed(1)},${p.y.toFixed(1)}`).join", pts.map, p.x.toFixed, p.y.toFixed, pts.push, "pts.map((p) => `${p.x},${p.y}`).join", diagonals.push, diagonals.map, renderVisualizer]
+        calls: [pts.push, Math.cos, Math.sin, "pts.map((p) => `${p.x},${p.y}`).join", pts.map, renderVisualizer]
+  src/components/geometry/ManimCardLayout.tsx:
+    imports: [./GeometryTipVisualizer.css]
+  src/components/geometry/ManimLevel1Visualizer.tsx:
+    imports: [../../stores/useDebugStore, ./ManimCardLayout, ./GeometryTipVisualizer.css]
+  src/components/geometry/ManimLevel2Visualizer.tsx:
+    imports: [../../stores/useDebugStore, ./ManimCardLayout, ./GeometryTipVisualizer.css]
+  src/components/geometry/ManimLevel3Visualizer.tsx:
+    imports: [../../stores/useDebugStore, ./useManimEngine, ./ManimCardLayout, ./GeometryTipVisualizer.css]
+  src/components/geometry/ManimLevel4Visualizer.tsx:
+    imports: [../../stores/useDebugStore, ./useManimEngine, ./ManimCardLayout, ./GeometryTipVisualizer.css]
+  src/components/geometry/ManimLevel5Visualizer.tsx:
+    imports: [../../stores/useDebugStore, ./useManimEngine, ./ManimCardLayout, ./GeometryTipVisualizer.css]
   src/components/geometry/ShapeVisualizer.tsx:
     exports:
       - name: ShapeVisualizer
@@ -1789,6 +1800,17 @@ files:
           "{ sides }": ShapeVisualizerProps
         returns: "import(\"C:/Users/ghkdd/gemini-projects/solve-climb/node_modules/@types/react/jsx-runtime\").JSX.Element"
         calls: [Math.cos, Math.sin, points.push, "points.map((p) => `${p.x.toFixed(1)},${p.y.toFixed(1)}`).join", points.map, p.x.toFixed, p.y.toFixed]
+  src/components/geometry/useManimEngine.ts:
+    exports:
+      - name: useManimEngine
+        params:
+          "{
+  totalSteps,
+  holdDuration = 2000,
+  moveDuration = 1000,
+}": UseManimEngineOptions
+        returns: "{ t: number; stepIndex: number; stepElapsed: number; isPaused: boolean; togglePause: () => void; getEasedProgress: () => number; totalCycle: number; stepDuration: number; }"
+        calls: [requestAnimationFrame, setT, cancelAnimationFrame, setIsPaused, Math.floor, Math.min, Math.max]
   src/components/layout/PageLayout.tsx:
     imports: [./PageLayout.css]
   src/components/roadmap/LinearLandmarkItem.tsx:
@@ -2414,7 +2436,17 @@ files:
           _difficulty: "import(\"C:/Users/ghkdd/gemini-projects/solve-climb/src/features/quiz/types/quiz\").Difficulty"
           rng: "{ random: () => number; randomInt: (min: number, max: number) => number; } | undefined"
         returns: "import(\"C:/Users/ghkdd/gemini-projects/solve-climb/src/features/quiz/generators/GeometryProblemGenerator\").GeometryProblem"
-        calls: [rng.randomInt, Math.floor, Math.random, generateSolidVolume, generateSolidSurfaceArea, generateCoordinateDistance, generateTrigonometry, generatePythagoreanAdvanced, generateCoordinateMidpoint, generateLineSlope, generateCircleEqBasic, generateBasicShapes, generateBasicShapesDiagonal, generateTriangleProperties, generateQuadrilateralProperties, generateAreaRect, generateAreaTriangle, generateCircleBasic, generateCircleAdvanced, generateSymmetry, generatePythagorean, generateSolidBasic]
+        calls: [rng.randomInt, Math.floor, Math.random, generateSolidVolume, generateSolidSurfaceArea, generateCoordinateDistance, generateTrigonometry, generatePythagoreanAdvanced, generateCoordinateMidpoint, generateLineSlope, generateCircleEqBasic, generateBasicShapes, generateSymmetry, generateTriangleProperties, generateQuadrilateralProperties, generateAreaRect, generateAreaTriangle, generateAreaTrapezoid, generateCircleBasic, generateCircleCircumference, generateCircleArea, generateBasicShapesDiagonal, generateSolidBasic, generateSolidVolumeRect, generatePythagoreanBasic, generateTrigonometryBasic]
+      - name: generateCircleAdvanced
+        params:
+          rng: "{ random: () => number; randomInt: (min: number, max: number) => number; } | undefined"
+        returns: "import(\"C:/Users/ghkdd/gemini-projects/solve-climb/src/features/quiz/generators/GeometryProblemGenerator\").GeometryProblem"
+        calls: [rng.random, Math.random, getRandomInt, Math.round, Number.isInteger]
+      - name: generatePythagorean
+        params:
+          rng: "{ random: () => number; randomInt: (min: number, max: number) => number; } | undefined"
+        returns: "import(\"C:/Users/ghkdd/gemini-projects/solve-climb/src/features/quiz/generators/GeometryProblemGenerator\").GeometryProblem"
+        calls: [getRandomInt, rng.random, Math.random]
   src/features/quiz/generators/LogicProblemGenerator.ts:
     imports: [../types/quiz]
     exports:
