@@ -51,9 +51,12 @@ export const ManimLevel1Visualizer: React.FC = React.memo(() => {
   const [progress, setProgress] = useState(0);
   const [highlightIdx, setHighlightIdx] = useState<number | null>(null);
   const [isPaused, setIsPaused] = useState(false);
+  const [isFading, setIsFading] = useState(false);
 
   const isPausedRef = useRef(isPaused);
   isPausedRef.current = isPaused;
+
+  const dragStartXRef = useRef<number | null>(null);
 
   const animStateRef = useRef<{
     startTime: number | null;
@@ -118,18 +121,56 @@ export const ManimLevel1Visualizer: React.FC = React.memo(() => {
       if (elapsed < totalCycleDuration) {
         animId = requestAnimationFrame(tick);
       } else {
-        const nextIdx = (shapeIdx + 1) % SHAPE_CONFIGS.length;
-        setPrevSides(SHAPE_CONFIGS[shapeIdx]!.sides);
-        setCurrSides(SHAPE_CONFIGS[nextIdx]!.sides);
-        setShapeIdx(nextIdx);
-        setProgress(0);
-        setHighlightIdx(null);
+        triggerStepChange('next');
       }
     };
 
     animId = requestAnimationFrame(tick);
     return () => cancelAnimationFrame(animId);
   }, [shapeIdx, currSides, prevSides]);
+
+  // Swipe / Skip & Fade Transition Engine
+  const triggerStepChange = (direction: 'next' | 'prev') => {
+    setIsFading(true);
+    setTimeout(() => {
+      let nextIdx = shapeIdx;
+      if (direction === 'next') {
+        nextIdx = (shapeIdx + 1) % SHAPE_CONFIGS.length;
+      } else {
+        nextIdx = (shapeIdx - 1 + SHAPE_CONFIGS.length) % SHAPE_CONFIGS.length;
+      }
+
+      setPrevSides(SHAPE_CONFIGS[shapeIdx]!.sides);
+      setCurrSides(SHAPE_CONFIGS[nextIdx]!.sides);
+      setShapeIdx(nextIdx);
+      setProgress(0);
+      setHighlightIdx(null);
+      setIsFading(false);
+    }, 150);
+  };
+
+  // Drag Gesture Handlers
+  const handlePointerDown = (e: React.PointerEvent) => {
+    dragStartXRef.current = e.clientX;
+  };
+
+  const handlePointerUp = (e: React.PointerEvent) => {
+    if (dragStartXRef.current === null) return;
+    const dx = e.clientX - dragStartXRef.current;
+    dragStartXRef.current = null;
+
+    if (Math.abs(dx) > 30) {
+      if (dx < 0) {
+        // Left Swipe -> Next Shape (Right Direction Split)
+        triggerStepChange('next');
+      } else {
+        // Right Swipe -> Prev Shape (Reverse Shrink Merge)
+        triggerStepChange('prev');
+      }
+    } else {
+      setIsPaused((p) => !p);
+    }
+  };
 
   const morphPts = useMemo(() => {
     const targetBase = PRECOMPUTED_VERTICES[currSides] || PRECOMPUTED_VERTICES[3]!;
@@ -138,9 +179,8 @@ export const ManimLevel1Visualizer: React.FC = React.memo(() => {
     }
 
     if (currSides > prevSides) {
-      // EXPAND / SPREAD (3 -> 4, 4 -> 5, 5 -> 6, 6 -> 7, 7 -> 8)
-      // Fixed symmetric split at lower-right corner vertex: Math.floor(prevSides / 2)
-      const startBase = PRECOMPUTED_VERTICES[prevSides]!;
+      // EXPAND / SPREAD (N -> N+1)
+      const startBase = PRECOMPUTED_VERTICES[prevSides] || PRECOMPUTED_VERTICES[3]!;
       const initialPoints: { x: number; y: number }[] = [];
 
       const splitVertexIdx = Math.floor(prevSides / 2);
@@ -164,9 +204,8 @@ export const ManimLevel1Visualizer: React.FC = React.memo(() => {
         };
       });
     } else {
-      // Clockwise Arc / Curved path shrink merge to top vertex
-      const startBase = PRECOMPUTED_VERTICES[prevSides]!;
-      const targetBase = PRECOMPUTED_VERTICES[currSides]!;
+      // REVERSE SHRINK / MERGE (N -> N-1) using Universal Clockwise Polar Arc Path
+      const startBase = PRECOMPUTED_VERTICES[prevSides] || PRECOMPUTED_VERTICES[4]!;
       const topVertex = targetBase[0]!;
       const centerX = SIZE / 2;
       const centerY = SIZE / 2;
@@ -179,12 +218,11 @@ export const ManimLevel1Visualizer: React.FC = React.memo(() => {
           target = targetBase[2];
         }
 
-        // ALL vertices (including 1 and 2) rotate CLOCKWISE in a circular arc path around center!
         const startAngle = Math.atan2(start.y - centerY, start.x - centerX);
         const targetAngle = Math.atan2(target.y - centerY, target.x - centerX);
 
         let deltaAngle = targetAngle - startAngle;
-        while (deltaAngle < 0) deltaAngle += Math.PI * 2; // Enforce Clockwise Circular Arc
+        while (deltaAngle < 0) deltaAngle += Math.PI * 2;
 
         const startRadius = Math.hypot(start.x - centerX, start.y - centerY);
         const targetRadius = Math.hypot(target.x - centerX, target.y - centerY);
@@ -231,61 +269,69 @@ export const ManimLevel1Visualizer: React.FC = React.memo(() => {
   );
 
   return (
-    <ManimCardLayout
-      badgeName={currentConfig.name}
-      isPaused={isPaused}
-      onTogglePause={() => setIsPaused((p) => !p)}
-      captionContent={caption}
+    <div
+      onPointerDown={handlePointerDown}
+      onPointerUp={handlePointerUp}
+      style={{ touchAction: 'pan-y', userSelect: 'none' }}
     >
-      <svg width={SIZE} height={165} viewBox={`0 0 ${SIZE} 165`} className="geo-tip-svg">
-        <polygon points={ptsStr} className="geo-shape-poly-morph" />
+      <ManimCardLayout
+        badgeName={currentConfig.name}
+        isPaused={isPaused}
+        onTogglePause={() => {}}
+        captionContent={caption}
+      >
+        <div style={{ opacity: isFading ? 0 : 1, transition: 'opacity 0.15s ease' }}>
+          <svg width={SIZE} height={165} viewBox={`0 0 ${SIZE} 165`} className="geo-tip-svg">
+            <polygon points={ptsStr} className="geo-shape-poly-morph" />
 
-        {morphPts.map((p, idx) => {
-          const nextP = morphPts[(idx + 1) % morphPts.length]!;
-          return (
-            <line
-              key={`edge-${idx}`}
-              x1={p.x}
-              y1={p.y}
-              x2={nextP.x}
-              y2={nextP.y}
-              className="geo-edge-animated-line"
-            />
-          );
-        })}
+            {morphPts.map((p, idx) => {
+              const nextP = morphPts[(idx + 1) % morphPts.length]!;
+              return (
+                <line
+                  key={`edge-${idx}`}
+                  x1={p.x}
+                  y1={p.y}
+                  x2={nextP.x}
+                  y2={nextP.y}
+                  className="geo-edge-animated-line"
+                />
+              );
+            })}
 
-        {morphPts.map((p, idx) => {
-          const isHighlighted = progress >= 1 && highlightIdx === idx;
-          return (
-            <circle
-              key={`dot-${idx}`}
-              cx={p.x}
-              cy={p.y}
-              r={isHighlighted ? '8.5' : '5'}
-              className={`geo-simple-dot ${isHighlighted ? 'active-dot' : ''}`}
-            />
-          );
-        })}
+            {morphPts.map((p, idx) => {
+              const isHighlighted = progress >= 1 && highlightIdx === idx;
+              return (
+                <circle
+                  key={`dot-${idx}`}
+                  cx={p.x}
+                  cy={p.y}
+                  r={isHighlighted ? '8.5' : '5'}
+                  className={`geo-simple-dot ${isHighlighted ? 'active-dot' : ''}`}
+                />
+              );
+            })}
 
-        {morphPts.length > 0 && (
-          <g className="geo-label-pointer">
-            <text x={morphPts[0]!.x} y={morphPts[0]!.y - 14} className="geo-pointer-tag vertex-tag">
-              ● 꼭짓점(점)
-            </text>
-            {morphPts.length >= 2 && (
-              <text
-                x={(morphPts[0]!.x + morphPts[1]!.x) / 2 + 18}
-                y={(morphPts[0]!.y + morphPts[1]!.y) / 2}
-                className="geo-pointer-tag edge-tag"
-              >
-                ━ 변(선)
-              </text>
+            {morphPts.length > 0 && (
+              <g className="geo-label-pointer">
+                <text x={morphPts[0]!.x} y={morphPts[0]!.y - 14} className="geo-pointer-tag vertex-tag">
+                  ● 꼭짓점(점)
+                </text>
+                {morphPts.length >= 2 && (
+                  <text
+                    x={(morphPts[0]!.x + morphPts[1]!.x) / 2 + 18}
+                    y={(morphPts[0]!.y + morphPts[1]!.y) / 2}
+                    className="geo-pointer-tag edge-tag"
+                  >
+                    ━ 변(선)
+                  </text>
+                )}
+              </g>
             )}
-          </g>
-        )}
 
-        {isAdminMode && <circle cx={SIZE / 2} cy={SIZE / 2} r={3} fill="#c084fc" />}
-      </svg>
-    </ManimCardLayout>
+            {isAdminMode && <circle cx={SIZE / 2} cy={SIZE / 2} r={3} fill="#c084fc" />}
+          </svg>
+        </div>
+      </ManimCardLayout>
+    </div>
   );
 });
