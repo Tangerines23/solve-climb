@@ -4,6 +4,7 @@ import { ManimLevel1Visualizer } from './ManimLevel1Visualizer';
 import { ManimLevel2Visualizer } from './ManimLevel2Visualizer';
 import { ManimLevel3Visualizer } from './ManimLevel3Visualizer';
 import { ManimLevel4Visualizer } from './ManimLevel4Visualizer';
+import { ManimLevel5Visualizer } from './ManimLevel5Visualizer';
 
 interface GeometryTipVisualizerProps {
   level: number;
@@ -27,26 +28,8 @@ export const GeometryTipVisualizer: React.FC<GeometryTipVisualizerProps> = ({ le
       case 4:
         return <ManimLevel4Visualizer />;
 
-      case 5: {
-        // 2-5: 직사각형 넓이 (가로 x 세로)
-        return (
-          <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`} className="geo-tip-svg">
-            <rect x="35" y="45" width="130" height="90" className="geo-rect-animated" />
-            {/* Width and Height Labels */}
-            <line x1="35" y1="35" x2="165" y2="35" className="geo-dim-line" />
-            <text x="100" y="28" className="geo-dim-text">
-              가로 (Width)
-            </text>
-            <line x1="175" y1="45" x2="175" y2="135" className="geo-dim-line" />
-            <text x="180" y="94" className="geo-dim-text-vert">
-              세로
-            </text>
-            <text x={center} y={size - 10} className="geo-tip-subtext-highlight">
-              넓이 = 가로 × 세로
-            </text>
-          </svg>
-        );
-      }
+      case 5:
+        return <ManimLevel5Visualizer />;
 
       case 6: {
         // 2-6: 삼각형 넓이 (밑변 x 높이 / 2)
