@@ -179,29 +179,22 @@ export const ManimLevel1Visualizer: React.FC = React.memo(() => {
           target = targetBase[2];
         }
 
-        // For vertices rotating to top vertex (0, 3, 4, 5, 6, 7), rotate CLOCKWISE in an arc path!
-        if (i !== 1 && i !== 2) {
-          const startAngle = Math.atan2(start.y - centerY, start.x - centerX);
-          const targetAngle = Math.atan2(target.y - centerY, target.x - centerX);
+        // ALL vertices (including 1 and 2) rotate CLOCKWISE in a circular arc path around center!
+        const startAngle = Math.atan2(start.y - centerY, start.x - centerX);
+        const targetAngle = Math.atan2(target.y - centerY, target.x - centerX);
 
-          let deltaAngle = targetAngle - startAngle;
-          while (deltaAngle < 0) deltaAngle += Math.PI * 2; // Enforce Clockwise Circular Arc
+        let deltaAngle = targetAngle - startAngle;
+        while (deltaAngle < 0) deltaAngle += Math.PI * 2; // Enforce Clockwise Circular Arc
 
-          const startRadius = Math.hypot(start.x - centerX, start.y - centerY);
-          const targetRadius = Math.hypot(target.x - centerX, target.y - centerY);
+        const startRadius = Math.hypot(start.x - centerX, start.y - centerY);
+        const targetRadius = Math.hypot(target.x - centerX, target.y - centerY);
 
-          const currentAngle = startAngle + deltaAngle * progress;
-          const currentRadius = startRadius + (targetRadius - startRadius) * progress;
-
-          return {
-            x: centerX + currentRadius * Math.cos(currentAngle),
-            y: centerY + currentRadius * Math.sin(currentAngle),
-          };
-        }
+        const currentAngle = startAngle + deltaAngle * progress;
+        const currentRadius = startRadius + (targetRadius - startRadius) * progress;
 
         return {
-          x: start.x + (target.x - start.x) * progress,
-          y: start.y + (target.y - start.y) * progress,
+          x: centerX + currentRadius * Math.cos(currentAngle),
+          y: centerY + currentRadius * Math.sin(currentAngle),
         };
       });
     }
