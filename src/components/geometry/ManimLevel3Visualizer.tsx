@@ -8,18 +8,37 @@ interface Point {
   y: number;
 }
 
-// Define 3 iconic keyframe target positions for V0(x, y)
-const KEYFRAME_TARGETS: Point[] = [
-  { x: 100, y: 40 }, // State 0: Acute / Regular Triangle (~60°, 60°, 60°)
-  { x: 60, y: 65 }, // State 1: Left Obtuse Triangle (~110°, 25°, 45°)
-  { x: 140, y: 65 }, // State 2: Right Obtuse Triangle (~35°, 35°, 110°)
+interface TriangleKeyframe {
+  v0: Point;
+  name: string;
+}
+
+// 6 Mathematically Significant Triangle Keyframes (Fixed V1=(40,145), V2=(160,145))
+const TRIANGLE_KEYFRAMES: TriangleKeyframe[] = [
+  // 1. Equilateral Triangle (정삼각형: 60°, 60°, 60°)
+  { v0: { x: 100, y: 41.1 }, name: '정삼각형' },
+
+  // 2. Right Isosceles Triangle (직각이등변삼각형: 90°, 45°, 45°)
+  { v0: { x: 100, y: 85.0 }, name: '직각이등변삼각형' },
+
+  // 3. Right Scalene Triangle (직각삼각형: 90°, 53°, 37°)
+  { v0: { x: 40, y: 55.0 }, name: '직각삼각형' },
+
+  // 4. Obtuse Isosceles Triangle (둔각이등변삼각형: 120°, 30°, 30°)
+  { v0: { x: 100, y: 110.4 }, name: '둔각이등변삼각형' },
+
+  // 5. Obtuse Scalene Triangle (둔각부등변삼각형: 110°, 25°, 45°)
+  { v0: { x: 60, y: 65.0 }, name: '둔각부등변삼각형' },
+
+  // 6. Acute Isosceles Triangle (예각이등변삼각형: 40°, 70°, 70°)
+  { v0: { x: 100, y: 20.0 }, name: '예각이등변삼각형' },
 ];
 
 // Timeline parameters: 1.5s Hold at target, 1.0s Transition to next target
 const HOLD_DURATION = 1500;
 const MOVE_DURATION = 1000;
 const STEP_DURATION = HOLD_DURATION + MOVE_DURATION; // 2.5s per keyframe
-const TOTAL_CYCLE = KEYFRAME_TARGETS.length * STEP_DURATION; // 7.5s total cycle
+const TOTAL_CYCLE = TRIANGLE_KEYFRAMES.length * STEP_DURATION; // 15.0s total cycle
 
 export const ManimLevel3Visualizer: React.FC = React.memo(() => {
   const [t, setT] = useState(0);
@@ -58,11 +77,11 @@ export const ManimLevel3Visualizer: React.FC = React.memo(() => {
   // Compute V0(x, y) with 1.5s Hold Pause and 1.0s Eased Move
   const v0: Point = useMemo(() => {
     const elapsedMs = t * TOTAL_CYCLE;
-    const stepIndex = Math.floor(elapsedMs / STEP_DURATION) % KEYFRAME_TARGETS.length;
+    const stepIndex = Math.floor(elapsedMs / STEP_DURATION) % TRIANGLE_KEYFRAMES.length;
     const stepElapsed = elapsedMs % STEP_DURATION;
 
-    const currentTarget = KEYFRAME_TARGETS[stepIndex]!;
-    const nextTarget = KEYFRAME_TARGETS[(stepIndex + 1) % KEYFRAME_TARGETS.length]!;
+    const currentTarget = TRIANGLE_KEYFRAMES[stepIndex]!.v0;
+    const nextTarget = TRIANGLE_KEYFRAMES[(stepIndex + 1) % TRIANGLE_KEYFRAMES.length]!.v0;
 
     if (stepElapsed < HOLD_DURATION) {
       // Phase 1: Hold Pause (1.5s) at current target position - NUMBERS ARE STABLE & STILL!
@@ -78,6 +97,12 @@ export const ManimLevel3Visualizer: React.FC = React.memo(() => {
         y: currentTarget.y + (nextTarget.y - currentTarget.y) * eased,
       };
     }
+  }, [t]);
+
+  const currentName = useMemo(() => {
+    const elapsedMs = t * TOTAL_CYCLE;
+    const stepIndex = Math.floor(elapsedMs / STEP_DURATION) % TRIANGLE_KEYFRAMES.length;
+    return TRIANGLE_KEYFRAMES[stepIndex]!.name;
   }, [t]);
 
   // Fixed bottom left (V1) and bottom right (V2)
@@ -204,7 +229,11 @@ export const ManimLevel3Visualizer: React.FC = React.memo(() => {
 
       {/* Dynamic 3B1B Mathematical Caption Box */}
       <div className="geo-level1-caption-box">
-        <span className="geo-shape-badge">삼각형 내각의 합</span>
+        <span className="geo-shape-badge">
+          <span key={currentName} className="geo-text-mode-1">
+            {currentName}
+          </span>
+        </span>
         <div className="geo-stat-highlights">
           <span className="geo-stat-item" style={{ color: '#fb7185' }}>
             α <strong className="highlight-num">{alphaDeg}°</strong>
