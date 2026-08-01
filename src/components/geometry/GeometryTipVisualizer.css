@@ -333,15 +333,10 @@
 
 .geo-edge-animated-line {
   stroke: #38bdf8;
-  stroke-width: 3.5;
+  stroke-width: 3px;
   stroke-linecap: round;
-  filter: drop-shadow(0 0 6px rgba(56, 189, 248, 0.6));
-  animation: edgePulse 2s ease-in-out infinite alternate;
-}
-
-@keyframes edgePulse {
-  0% { stroke-opacity: 0.6; stroke-width: 3; }
-  100% { stroke-opacity: 1; stroke-width: 4; }
+  stroke-opacity: 0.9;
+  filter: drop-shadow(0 0 4px rgba(56, 189, 248, 0.4));
 }
 
 .geo-pointer-tag {
