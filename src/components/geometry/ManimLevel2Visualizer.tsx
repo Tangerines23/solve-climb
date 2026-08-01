@@ -24,10 +24,13 @@ const KOREAN_POLYGON_NAMES: Record<number, string> = {
   8: '팔각형',
 };
 
-// Pre-calculate fixed regular polygon vertices for 5 and 6 sides
+// Pre-calculate fixed regular polygon vertices for 4, 5, 6, 7, 8 sides
 const PRECOMPUTED_VERTICES: Record<number, { x: number; y: number }[]> = {
+  4: computeRegularVertices(4),
   5: computeRegularVertices(5),
   6: computeRegularVertices(6),
+  7: computeRegularVertices(7),
+  8: computeRegularVertices(8),
 };
 
 function computeRegularVertices(n: number): { x: number; y: number }[] {
@@ -43,9 +46,8 @@ function computeRegularVertices(n: number): { x: number; y: number }[] {
 }
 
 export const ManimLevel2Visualizer: React.FC = React.memo(() => {
-  const [shapeIdx, setShapeIdx] = useState(0); // 0: 5-gon, 1: 6-gon
-  const [prevSides, setPrevSides] = useState(5);
-  const [currSides, setCurrSides] = useState(5);
+  const [prevSides, setPrevSides] = useState(4);
+  const [currSides, setCurrSides] = useState(4);
 
   const [phase, setPhase] = useState<'morph' | 'single' | 'all' | 'dedup' | 'restore' | 'retract' | 'rest'>('morph');
   const [morphProgress, setMorphProgress] = useState(0);
@@ -234,11 +236,10 @@ export const ManimLevel2Visualizer: React.FC = React.memo(() => {
         setDrawProgress(1);
         setRetractProgress(1);
       } else {
-        // Synchronously advance to next shape (5 -> 6 -> 5)
-        const nextSides = currSides === 5 ? 6 : 5;
+        // Synchronously advance to next shape in 4 -> 5 -> 6 -> 7 -> 8 -> 4 sequence
+        const nextSides = currSides === 8 ? 4 : currSides + 1;
         setPrevSides(currSides);
         setCurrSides(nextSides);
-        setShapeIdx(nextSides === 5 ? 0 : 1);
         setPhase('morph');
         setMorphProgress(0);
         setDrawProgress(0);
@@ -254,56 +255,37 @@ export const ManimLevel2Visualizer: React.FC = React.memo(() => {
     return () => cancelAnimationFrame(animId);
   }, [currSides]);
 
-  // Memoized Morph Points (Corner Overlap Splitting 5 <-> 6)
+  // Memoized Morph Points (Smooth Interpolation for 4 -> 5 -> 6 -> 7 -> 8 -> 4)
   const morphPts = useMemo(() => {
-    const targetBase = PRECOMPUTED_VERTICES[currSides] || PRECOMPUTED_VERTICES[5]!;
+    const targetBase = PRECOMPUTED_VERTICES[currSides] || computeRegularVertices(currSides);
     if (morphProgress >= 1 || prevSides === currSides) {
       return targetBase;
     }
 
-    if (currSides > prevSides) {
-      // EXPAND / SPREAD (5 -> 6)
-      const startBase = PRECOMPUTED_VERTICES[prevSides]!;
-      const initialPoints: { x: number; y: number }[] = [];
-      const splitVertexIdx = 2;
-      const cornerPt = startBase[splitVertexIdx]!;
+    const startBase = PRECOMPUTED_VERTICES[prevSides] || computeRegularVertices(prevSides);
 
+    if (currSides > prevSides) {
+      // SPREAD / EXPAND MORPH (e.g. 4 -> 5, 5 -> 6, 6 -> 7, 7 -> 8)
+      const initialPoints: { x: number; y: number }[] = [];
       for (let i = 0; i < currSides; i++) {
-        if (i <= splitVertexIdx) {
-          initialPoints.push(startBase[i]!);
-        } else if (i === splitVertexIdx + 1) {
-          initialPoints.push(cornerPt);
-        } else {
-          initialPoints.push(startBase[i - 1]!);
-        }
+        const srcIdx = Math.min(i, startBase.length - 1);
+        initialPoints.push(startBase[srcIdx]!);
       }
 
-      return targetBase.map((target, i) => {
-        const start = initialPoints[i]!;
+      return targetBase.map((tPt, i) => {
+        const sPt = initialPoints[i]!;
         return {
-          x: start.x + (target.x - start.x) * morphProgress,
-          y: start.y + (target.y - start.y) * morphProgress,
+          x: sPt.x + (tPt.x - sPt.x) * morphProgress,
+          y: sPt.y + (tPt.y - sPt.y) * morphProgress,
         };
       });
     } else {
-      // SHRINK / MERGE (6 -> 5)
-      const startBase = PRECOMPUTED_VERTICES[prevSides]!;
-      const target5 = PRECOMPUTED_VERTICES[currSides]!;
-
-      const targetMap = [
-        target5[0]!,
-        target5[1]!,
-        target5[2]!,
-        target5[2]!,
-        target5[3]!,
-        target5[4]!,
-      ];
-
-      return startBase.map((start, i) => {
-        const target = targetMap[i] || target5[4]!;
+      // CONTRACT MORPH (e.g. 8 -> 4)
+      return targetBase.map((tPt, i) => {
+        const sPt = startBase[i % startBase.length]!;
         return {
-          x: start.x + (target.x - start.x) * morphProgress,
-          y: start.y + (target.y - start.y) * morphProgress,
+          x: sPt.x + (tPt.x - sPt.x) * morphProgress,
+          y: sPt.y + (tPt.y - sPt.y) * morphProgress,
         };
       });
     }
