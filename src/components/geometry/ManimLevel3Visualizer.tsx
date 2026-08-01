@@ -167,12 +167,16 @@ export const ManimLevel3Visualizer: React.FC = React.memo(() => {
           <span>⏸ 일시정지됨 (터치하여 계속)</span>
         </div>
       )}
-      <svg width={SIZE} height={165} viewBox={`0 0 ${SIZE} 165`} className="geo-tip-svg">
-        {/* Top-Left Triangle Type Pointer Tag */}
-        <text key={currentName} x={16} y={22} className="geo-pointer-tag vertex-tag geo-text-mode-1">
-          ● {currentName}
-        </text>
+      {/* Top Left Badge: Triangle Type (Purple Pill Badge) */}
+      <div style={{ position: 'absolute', top: 8, left: 12, zIndex: 5 }}>
+        <span className="geo-shape-badge">
+          <span key={currentName} className="geo-text-mode-1">
+            {currentName}
+          </span>
+        </span>
+      </div>
 
+      <svg width={SIZE} height={165} viewBox={`0 0 ${SIZE} 165`} className="geo-tip-svg">
         {/* Main Triangle Polygon */}
         <polygon
           points={`${v0.x.toFixed(1)},${v0.y.toFixed(1)} ${v1.x},${v1.y} ${v2.x},${v2.y}`}
@@ -232,9 +236,8 @@ export const ManimLevel3Visualizer: React.FC = React.memo(() => {
         </text>
       </svg>
 
-      {/* Dynamic 3B1B Mathematical Caption Box */}
-      <div className="geo-level1-caption-box">
-        <span className="geo-shape-badge">삼각형 내각의 합</span>
+      {/* Dynamic Pure Formula Caption Box */}
+      <div className="geo-level1-caption-box" style={{ justifyContent: 'center' }}>
         <div className="geo-stat-highlights">
           <span className="geo-stat-item" style={{ color: '#fb7185' }}>
             α <strong className="highlight-num">{alphaDeg}°</strong>
