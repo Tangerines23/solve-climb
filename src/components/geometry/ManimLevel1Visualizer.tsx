@@ -129,24 +129,20 @@ export const ManimLevel1Visualizer: React.FC = React.memo(() => {
     return () => cancelAnimationFrame(animId);
   }, [shapeIdx, currSides, prevSides]);
 
-  // Swipe / Skip & Fade Transition Engine
+  // Swipe / Skip Transition Engine (Continuous Seamless Morphing)
   const triggerStepChange = (direction: 'next' | 'prev') => {
-    setIsFading(true);
-    setTimeout(() => {
-      let nextIdx = shapeIdx;
-      if (direction === 'next') {
-        nextIdx = (shapeIdx + 1) % SHAPE_CONFIGS.length;
-      } else {
-        nextIdx = (shapeIdx - 1 + SHAPE_CONFIGS.length) % SHAPE_CONFIGS.length;
-      }
+    let nextIdx = shapeIdx;
+    if (direction === 'next') {
+      nextIdx = (shapeIdx + 1) % SHAPE_CONFIGS.length;
+    } else {
+      nextIdx = (shapeIdx - 1 + SHAPE_CONFIGS.length) % SHAPE_CONFIGS.length;
+    }
 
-      setPrevSides(SHAPE_CONFIGS[shapeIdx]!.sides);
-      setCurrSides(SHAPE_CONFIGS[nextIdx]!.sides);
-      setShapeIdx(nextIdx);
-      setProgress(0);
-      setHighlightIdx(null);
-      setIsFading(false);
-    }, 150);
+    setPrevSides(SHAPE_CONFIGS[shapeIdx]!.sides);
+    setCurrSides(SHAPE_CONFIGS[nextIdx]!.sides);
+    setShapeIdx(nextIdx);
+    setProgress(0);
+    setHighlightIdx(null);
   };
 
   // Drag Gesture Handlers
@@ -280,8 +276,7 @@ export const ManimLevel1Visualizer: React.FC = React.memo(() => {
         onTogglePause={() => {}}
         captionContent={caption}
       >
-        <div style={{ opacity: isFading ? 0 : 1, transition: 'opacity 0.15s ease' }}>
-          <svg width={SIZE} height={165} viewBox={`0 0 ${SIZE} 165`} className="geo-tip-svg">
+        <svg width={SIZE} height={165} viewBox={`0 0 ${SIZE} 165`} className="geo-tip-svg">
             <polygon points={ptsStr} className="geo-shape-poly-morph" />
 
             {morphPts.map((p, idx) => {
@@ -330,7 +325,6 @@ export const ManimLevel1Visualizer: React.FC = React.memo(() => {
 
             {isAdminMode && <circle cx={SIZE / 2} cy={SIZE / 2} r={3} fill="#c084fc" />}
           </svg>
-        </div>
       </ManimCardLayout>
     </div>
   );
