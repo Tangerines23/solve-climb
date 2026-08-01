@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import './GeometryTipVisualizer.css';
 
 interface GeometryTipVisualizerProps {
@@ -9,12 +9,31 @@ export const GeometryTipVisualizer: React.FC<GeometryTipVisualizerProps> = ({ le
   const size = 200;
   const center = size / 2;
 
+  // Level 1 dynamic shape cycling (3: triangle, 4: quad, 5: pentagon, 6: hexagon)
+  const [shapeIndex, setShapeIndex] = useState(0);
+  const shapeConfigs = [
+    { sides: 3, name: '삼각형' },
+    { sides: 4, name: '사각형' },
+    { sides: 5, name: '오각형' },
+    { sides: 6, name: '육각형' },
+  ];
+
+  useEffect(() => {
+    if (level !== 1) return;
+    const timer = setInterval(() => {
+      setShapeIndex((prev) => (prev + 1) % shapeConfigs.length);
+    }, 2400);
+    return () => clearInterval(timer);
+  }, [level]);
+
+  const currentShape = shapeConfigs[shapeIndex] || shapeConfigs[0]!;
+
   const renderVisualizer = () => {
     switch (level) {
       case 1: {
-        // 2-1: 기초 도형 (꼭짓점과 변) - 오각형 꼭짓점 펄스
-        const sides = 5;
-        const radius = 60;
+        // 2-1: 기초 도형 (꼭짓점과 변) - 다각형 전환 애니메이션 및 꼭짓점/변 하이라이트
+        const sides = currentShape.sides;
+        const radius = 55;
         const pts: { x: number; y: number }[] = [];
         for (let i = 0; i < sides; i++) {
           const angle = -Math.PI / 2 + (i * 2 * Math.PI) / sides;
@@ -23,20 +42,70 @@ export const GeometryTipVisualizer: React.FC<GeometryTipVisualizerProps> = ({ le
             y: center + radius * Math.sin(angle),
           });
         }
-        const ptsStr = pts.map((p) => `${p.x},${p.y}`).join(' ');
+        const ptsStr = pts.map((p) => `${p.x.toFixed(1)},${p.y.toFixed(1)}`).join(' ');
+
         return (
-          <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`} className="geo-tip-svg">
-            <polygon points={ptsStr} className="geo-shape-poly" />
-            {pts.map((p, idx) => (
-              <g key={idx}>
-                <circle cx={p.x} cy={p.y} r="8" className="geo-vertex-pulse" />
-                <circle cx={p.x} cy={p.y} r="5" className="geo-vertex-dot" />
+          <div className="geo-level1-wrapper">
+            <svg width={size} height={165} viewBox={`0 0 ${size} 165`} className="geo-tip-svg">
+              {/* Main Polygon Shape */}
+              <polygon points={ptsStr} className="geo-shape-poly-morph" />
+
+              {/* Edge (변) Glowing Lines */}
+              {pts.map((p, idx) => {
+                const nextP = pts[(idx + 1) % sides]!;
+                return (
+                  <line
+                    key={`edge-${sides}-${idx}`}
+                    x1={p.x}
+                    y1={p.y}
+                    x2={nextP.x}
+                    y2={nextP.y}
+                    className="geo-edge-animated-line"
+                  />
+                );
+              })}
+
+              {/* Vertices (꼭짓점) Dots & Pulses */}
+              {pts.map((p, idx) => (
+                <g key={`vertex-${sides}-${idx}`}>
+                  <circle cx={p.x} cy={p.y} r="9" className="geo-vertex-pulse" />
+                  <circle cx={p.x} cy={p.y} r="5" className="geo-vertex-dot" />
+                </g>
+              ))}
+
+              {/* Visual Labels pointing to Point and Line */}
+              <g className="geo-label-pointer">
+                {/* Point Label at Top Vertex */}
+                <text x={pts[0]!.x} y={pts[0]!.y - 14} className="geo-pointer-tag vertex-tag">
+                  ● 꼭짓점(점)
+                </text>
+                {/* Line Label on Right Edge */}
+                {sides >= 3 && (
+                  <text
+                    x={(pts[0]!.x + pts[1]!.x) / 2 + 16}
+                    y={(pts[0]!.y + pts[1]!.y) / 2}
+                    className="geo-pointer-tag edge-tag"
+                  >
+                    ━ 변(선)
+                  </text>
+                )}
               </g>
-            ))}
-            <text x={center} y={size - 10} className="geo-tip-subtext">
-              꼭짓점 5개 / 변 5개
-            </text>
-          </svg>
+            </svg>
+
+            {/* Bottom Highlighted Dynamic Text */}
+            <div className="geo-level1-caption-box" key={currentShape.name}>
+              <span className="geo-shape-badge">{currentShape.name}</span>
+              <div className="geo-stat-highlights">
+                <span className="geo-stat-item vertex-highlight">
+                  꼭짓점 <strong className="highlight-num">{sides}개</strong>
+                </span>
+                <span className="geo-divider">/</span>
+                <span className="geo-stat-item edge-highlight">
+                  변 <strong className="highlight-num">{sides}개</strong>
+                </span>
+              </div>
+            </div>
+          </div>
         );
       }
 
