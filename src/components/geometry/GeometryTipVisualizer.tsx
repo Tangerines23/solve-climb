@@ -88,17 +88,33 @@ const ManimLevel1Visualizer: React.FC = () => {
 
     if (currSides > prevSides) {
       // EXPAND / SPREAD (3 -> 4, 4 -> 5, 5 -> 6)
-      // At t=0, the extra vertex is overlapped (doubled) at the bottom-left vertex of prevSides polygon.
-      // As progress t goes 0 -> 1, it splits into 2 and spreads out to targetBase!
+      // The new split vertex starts at the ABSOLUTE BOTTOM-MOST point of the previous shape (lowest Y center),
+      // then smoothly expands outward to targetBase!
       const startBase = getRegularVertices(prevSides);
-      const initialPoints: { x: number; y: number }[] = [];
+      
+      // Find the lowest vertex or bottom edge midpoint as the absolute bottom-most split origin
+      let bottomMostPt = startBase[0]!;
+      for (const p of startBase) {
+        if (p.y > bottomMostPt.y) {
+          bottomMostPt = p;
+        }
+      }
+      
+      // For odd-sided shapes like triangle (3), bottom is the midpoint between bottom-right and bottom-left vertices
+      if (prevSides === 3) {
+        bottomMostPt = {
+          x: (startBase[1]!.x + startBase[2]!.x) / 2,
+          y: (startBase[1]!.y + startBase[2]!.y) / 2,
+        };
+      }
 
+      const initialPoints: { x: number; y: number }[] = [];
       for (let i = 0; i < currSides; i++) {
         if (i < prevSides) {
           initialPoints.push(startBase[i]!);
         } else {
-          // Overlap extra points on the bottom-left vertex (index prevSides - 1)
-          initialPoints.push({ ...startBase[prevSides - 1]! });
+          // Overlap extra points at the ABSOLUTE BOTTOM-MOST center point
+          initialPoints.push({ ...bottomMostPt });
         }
       }
 
