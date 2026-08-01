@@ -45,34 +45,50 @@ export const ManimLevel1Visualizer: React.FC = React.memo(() => {
   const [highlightIdx, setHighlightIdx] = useState<number | null>(null);
   const [isPaused, setIsPaused] = useState(false);
 
+  const isPausedRef = React.useRef(isPaused);
+  isPausedRef.current = isPaused;
+
+  const animStateRef = React.useRef<{
+    startTime: number | null;
+    accumulatedPauseTime: number;
+    pauseStart: number | null;
+  }>({
+    startTime: null,
+    accumulatedPauseTime: 0,
+    pauseStart: null,
+  });
+
+  // Reset anim state on shape index change
+  useEffect(() => {
+    animStateRef.current = {
+      startTime: null,
+      accumulatedPauseTime: 0,
+      pauseStart: null,
+    };
+  }, [shapeIdx]);
+
   // Single Master rAF Timeline Loop: Deterministic zero-drift animation engine with pause support
   useEffect(() => {
     let animId: number;
-    let startTime: number | null = null;
-    let accumulatedPauseTime = 0;
-    let pauseStart: number | null = null;
-
-    const MORPH_DURATION = 1200; // 1.2s shape split/merge morphing
-    const HIGHLIGHT_STEP_DURATION = 650; // 0.65s per dot highlight
-    const REST_PAUSE_DURATION = 500; // 0.5s rest pause after highlight ends
-
     const highlightTotalDuration = currSides * HIGHLIGHT_STEP_DURATION;
     const totalCycleDuration = MORPH_DURATION + highlightTotalDuration + REST_PAUSE_DURATION;
 
     const tick = (now: number) => {
-      if (isPaused) {
-        if (!pauseStart) pauseStart = now;
+      const state = animStateRef.current;
+
+      if (isPausedRef.current) {
+        if (!state.pauseStart) state.pauseStart = now;
         animId = requestAnimationFrame(tick);
         return;
       }
 
-      if (pauseStart) {
-        accumulatedPauseTime += now - pauseStart;
-        pauseStart = null;
+      if (state.pauseStart) {
+        state.accumulatedPauseTime += now - state.pauseStart;
+        state.pauseStart = null;
       }
 
-      if (!startTime) startTime = now;
-      const elapsed = now - startTime - accumulatedPauseTime;
+      if (state.startTime === null) state.startTime = now;
+      const elapsed = now - state.startTime - state.accumulatedPauseTime;
 
       if (elapsed < MORPH_DURATION) {
         // Phase 1: Morphing (0s ~ 1.2s) in pure ALL-OFF state
@@ -109,7 +125,7 @@ export const ManimLevel1Visualizer: React.FC = React.memo(() => {
 
     animId = requestAnimationFrame(tick);
     return () => cancelAnimationFrame(animId);
-  }, [shapeIdx, currSides, prevSides, isPaused]);
+  }, [shapeIdx, currSides, prevSides]);
 
   // Memoized Morph Points computation (Zero unnecessary object allocations)
   const morphPts = useMemo(() => {

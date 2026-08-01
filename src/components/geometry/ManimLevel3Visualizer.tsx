@@ -46,27 +46,39 @@ export const ManimLevel3Visualizer: React.FC = React.memo(() => {
   const [isPaused, setIsPaused] = useState(false);
   const isAdminMode = useDebugStore((state) => state.isAdminMode);
 
+  const isPausedRef = React.useRef(isPaused);
+  isPausedRef.current = isPaused;
+
+  const animStateRef = React.useRef<{
+    startTime: number | null;
+    accumulatedPauseTime: number;
+    pauseStart: number | null;
+  }>({
+    startTime: null,
+    accumulatedPauseTime: 0,
+    pauseStart: null,
+  });
+
   // Single Master rAF loop for keyframe hold & transition sequence
   useEffect(() => {
     let animId: number;
-    let startTime: number | null = null;
-    let accumulatedPauseTime = 0;
-    let pauseStart: number | null = null;
 
     const tick = (now: number) => {
-      if (isPaused) {
-        if (!pauseStart) pauseStart = now;
+      const state = animStateRef.current;
+
+      if (isPausedRef.current) {
+        if (!state.pauseStart) state.pauseStart = now;
         animId = requestAnimationFrame(tick);
         return;
       }
 
-      if (pauseStart) {
-        accumulatedPauseTime += now - pauseStart;
-        pauseStart = null;
+      if (state.pauseStart) {
+        state.accumulatedPauseTime += now - state.pauseStart;
+        state.pauseStart = null;
       }
 
-      if (!startTime) startTime = now;
-      const elapsed = (now - startTime - accumulatedPauseTime) % TOTAL_CYCLE;
+      if (state.startTime === null) state.startTime = now;
+      const elapsed = (now - state.startTime - state.accumulatedPauseTime) % TOTAL_CYCLE;
       setT(elapsed / TOTAL_CYCLE);
 
       animId = requestAnimationFrame(tick);
@@ -74,7 +86,7 @@ export const ManimLevel3Visualizer: React.FC = React.memo(() => {
 
     animId = requestAnimationFrame(tick);
     return () => cancelAnimationFrame(animId);
-  }, [isPaused]);
+  }, []);
 
   // Compute V0(x, y) with 1.5s Hold Pause and 1.0s Eased Move
   const v0: Point = useMemo(() => {

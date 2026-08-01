@@ -53,13 +53,31 @@ export const ManimLevel2Visualizer: React.FC = React.memo(() => {
   const [retractProgress, setRetractProgress] = useState(0);
   const [isPaused, setIsPaused] = useState(false);
 
-  // Single Master rAF Timeline Loop: Deterministic zero-drift animation engine with pause support
+  const isPausedRef = React.useRef(isPaused);
+  isPausedRef.current = isPaused;
+
+  const animStateRef = React.useRef<{
+    startTime: number | null;
+    accumulatedPauseTime: number;
+    pauseStart: number | null;
+  }>({
+    startTime: null,
+    accumulatedPauseTime: 0,
+    pauseStart: null,
+  });
+
+  // Reset anim state on shape index change
+  useEffect(() => {
+    animStateRef.current = {
+      startTime: null,
+      accumulatedPauseTime: 0,
+      pauseStart: null,
+    };
+  }, [currSides]);
+
+  // Master rAF Loop for 5-phase timeline
   useEffect(() => {
     let animId: number;
-    let startTime: number | null = null;
-    let accumulatedPauseTime = 0;
-    let pauseStart: number | null = null;
-
     const MORPH_DURATION = 1200; // 1.2s vertex-split morphing
     const SINGLE_DURATION = 2000; // 2.0s single vertex (n-3) laser diagonals
     const ALL_DURATION = 3000; // 3.0s all vertices n*(n-3) diagonals
@@ -78,19 +96,21 @@ export const ManimLevel2Visualizer: React.FC = React.memo(() => {
       REST_DURATION;
 
     const tick = (now: number) => {
-      if (isPaused) {
-        if (!pauseStart) pauseStart = now;
+      const state = animStateRef.current;
+
+      if (isPausedRef.current) {
+        if (!state.pauseStart) state.pauseStart = now;
         animId = requestAnimationFrame(tick);
         return;
       }
 
-      if (pauseStart) {
-        accumulatedPauseTime += now - pauseStart;
-        pauseStart = null;
+      if (state.pauseStart) {
+        state.accumulatedPauseTime += now - state.pauseStart;
+        state.pauseStart = null;
       }
 
-      if (!startTime) startTime = now;
-      const elapsed = now - startTime - accumulatedPauseTime;
+      if (state.startTime === null) state.startTime = now;
+      const elapsed = now - state.startTime - state.accumulatedPauseTime;
 
       if (elapsed < MORPH_DURATION) {
         // Phase 0: Vertex-split Morphing (0s ~ 1.2s)
@@ -165,8 +185,8 @@ export const ManimLevel2Visualizer: React.FC = React.memo(() => {
         setMorphProgress(0);
         setDrawProgress(0);
         setRetractProgress(0);
-        startTime = now;
-        accumulatedPauseTime = 0;
+        state.startTime = now;
+        state.accumulatedPauseTime = 0;
       }
 
       animId = requestAnimationFrame(tick);
@@ -174,7 +194,7 @@ export const ManimLevel2Visualizer: React.FC = React.memo(() => {
 
     animId = requestAnimationFrame(tick);
     return () => cancelAnimationFrame(animId);
-  }, [currSides, prevSides, isPaused]);
+  }, [currSides]);
 
   // Memoized Morph Points (Corner Overlap Splitting 5 <-> 6)
   const morphPts = useMemo(() => {
