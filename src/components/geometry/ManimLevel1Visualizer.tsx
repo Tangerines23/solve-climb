@@ -211,7 +211,7 @@ export const ManimLevel1Visualizer: React.FC = React.memo(() => {
       )}
 
       {/* Top Left Badge: Shape Name (Purple Pill Badge) */}
-      <div style={{ position: 'absolute', top: 8, left: 12, zIndex: 5 }}>
+      <div style={{ position: 'absolute', top: 3, left: 4, zIndex: 5 }}>
         <span className="geo-shape-badge">
           <span key={currentConfig.name} className="geo-text-mode-1">
             {currentConfig.name}

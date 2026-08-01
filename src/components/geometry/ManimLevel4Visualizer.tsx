@@ -206,7 +206,7 @@ export const ManimLevel4Visualizer: React.FC = React.memo(() => {
       )}
 
       {/* Top Left Badge: Polygon Name (Purple Pill Badge) */}
-      <div style={{ position: 'absolute', top: 8, left: 12, zIndex: 5 }}>
+      <div style={{ position: 'absolute', top: 3, left: 4, zIndex: 5 }}>
         <span className="geo-shape-badge">
           <span key={currentName} className="geo-text-mode-1">
             {currentName}

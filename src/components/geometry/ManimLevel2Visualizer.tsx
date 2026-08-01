@@ -348,7 +348,7 @@ export const ManimLevel2Visualizer: React.FC = React.memo(() => {
       )}
 
       {/* Top Left Badge: Polygon Sides (Purple Pill Badge) */}
-      <div style={{ position: 'absolute', top: 8, left: 12, zIndex: 5 }}>
+      <div style={{ position: 'absolute', top: 3, left: 4, zIndex: 5 }}>
         <span className="geo-shape-badge">
           <span key={currSides} className="geo-text-mode-1">
             {KOREAN_POLYGON_NAMES[currSides] || `${currSides}각형`}
