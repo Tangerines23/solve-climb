@@ -42,52 +42,6 @@ function computeRegularVertices(n: number): { x: number; y: number }[] {
   return pts;
 }
 
-// Sample targetCount points strictly along the boundary perimeter of poly to eliminate internal diagonal artifacts!
-function samplePointsOnPolygonBoundary(
-  poly: { x: number; y: number }[],
-  targetCount: number
-): { x: number; y: number }[] {
-  const n = poly.length;
-  if (n === targetCount) return poly;
-
-  const edgeLengths: number[] = [];
-  let totalPerimeter = 0;
-  for (let i = 0; i < n; i++) {
-    const p1 = poly[i]!;
-    const p2 = poly[(i + 1) % n]!;
-    const len = Math.hypot(p2.x - p1.x, p2.y - p1.y);
-    edgeLengths.push(len);
-    totalPerimeter += len;
-  }
-
-  const sampled: { x: number; y: number }[] = [];
-  const step = totalPerimeter / targetCount;
-
-  for (let k = 0; k < targetCount; k++) {
-    const dist = k * step;
-    let accumulated = 0;
-    let found = false;
-    for (let i = 0; i < n; i++) {
-      const len = edgeLengths[i]!;
-      if (accumulated + len >= dist || i === n - 1) {
-        const segT = len > 0 ? (dist - accumulated) / len : 0;
-        const p1 = poly[i]!;
-        const p2 = poly[(i + 1) % n]!;
-        sampled.push({
-          x: p1.x + (p2.x - p1.x) * segT,
-          y: p1.y + (p2.y - p1.y) * segT,
-        });
-        found = true;
-        break;
-      }
-      accumulated += len;
-    }
-    if (!found) sampled.push(poly[0]!);
-  }
-
-  return sampled;
-}
-
 export const ManimLevel1Visualizer: React.FC = React.memo(() => {
   const isAdminMode = useDebugStore((state) => state.isAdminMode);
 
@@ -149,8 +103,7 @@ export const ManimLevel1Visualizer: React.FC = React.memo(() => {
 
       if (elapsed < MORPH_DURATION) {
         const rawT = elapsed / MORPH_DURATION;
-        const eased =
-          rawT < 0.5 ? 4 * rawT * rawT * rawT : 1 - Math.pow(-2 * rawT + 2, 3) / 2;
+        const eased = rawT < 0.5 ? 4 * rawT * rawT * rawT : 1 - Math.pow(-2 * rawT + 2, 3) / 2;
         setProgress(eased);
         setHighlightIdx(null);
       } else if (elapsed < MORPH_DURATION + highlightTotalDuration) {
@@ -174,7 +127,7 @@ export const ManimLevel1Visualizer: React.FC = React.memo(() => {
     return () => cancelAnimationFrame(animId);
   }, [shapeIdx, currSides, prevSides]);
 
-  // Swipe / Skip Transition Engine
+  // Swipe / Skip Transition Engine (Continuous Seamless Morphing)
   const triggerStepChange = (direction: 'next' | 'prev') => {
     let nextIdx = shapeIdx;
     if (direction === 'next') {
@@ -202,8 +155,10 @@ export const ManimLevel1Visualizer: React.FC = React.memo(() => {
 
     if (Math.abs(dx) > 30) {
       if (dx < 0) {
+        // Left Swipe -> Next Shape (Right Direction Split)
         triggerStepChange('next');
       } else {
+        // Right Swipe -> Prev Shape (Reverse Shrink Merge)
         triggerStepChange('prev');
       }
     } else {
@@ -217,28 +172,58 @@ export const ManimLevel1Visualizer: React.FC = React.memo(() => {
       return targetBase;
     }
 
-    const startBase = PRECOMPUTED_VERTICES[prevSides] || PRECOMPUTED_VERTICES[3]!;
-
     if (currSides > prevSides) {
-      // EXPAND / SPREAD (N -> N+1 or 4 -> 8): Sample startBase points strictly on boundary!
-      const initialPoints = samplePointsOnPolygonBoundary(startBase, currSides);
+      // EXPAND / SPREAD (N -> N_large) using Sequential Edge Perimeter Mapping
+      const startBase = PRECOMPUTED_VERTICES[prevSides] || PRECOMPUTED_VERTICES[3]!;
+      const nSmall = startBase.length;
+
+      const initialPoints = targetBase.map((_, i) => {
+        const ratio = (i / currSides) * nSmall;
+        const idx1 = Math.floor(ratio) % nSmall;
+        const idx2 = (idx1 + 1) % nSmall;
+        const t = ratio - Math.floor(ratio);
+
+        const p1 = startBase[idx1]!;
+        const p2 = startBase[idx2]!;
+
+        return {
+          x: p1.x + (p2.x - p1.x) * t,
+          y: p1.y + (p2.y - p1.y) * t,
+        };
+      });
+
       return targetBase.map((target, i) => {
-        const start = initialPoints[i] || startBase[0] || target;
+        const start = initialPoints[i] || target;
         return {
           x: start.x + (target.x - start.x) * progress,
           y: start.y + (target.y - start.y) * progress,
         };
       });
     } else {
-      // REVERSE PLAYBACK (8 -> 4 or N -> N-1): Sample targetBase points strictly on boundary!
-      const initialPoints = samplePointsOnPolygonBoundary(targetBase, prevSides);
-      const revU = 1 - progress;
+      // REVERSE SHRINK / MERGE (N_large -> N_small) using Sequential Edge Perimeter Mapping
+      const startBase = PRECOMPUTED_VERTICES[prevSides] || PRECOMPUTED_VERTICES[8]!;
+      const nSmall = targetBase.length;
+
+      const finalPoints = startBase.map((_, i) => {
+        const ratio = (i / prevSides) * nSmall;
+        const idx1 = Math.floor(ratio) % nSmall;
+        const idx2 = (idx1 + 1) % nSmall;
+        const t = ratio - Math.floor(ratio);
+
+        const p1 = targetBase[idx1]!;
+        const p2 = targetBase[idx2]!;
+
+        return {
+          x: p1.x + (p2.x - p1.x) * t,
+          y: p1.y + (p2.y - p1.y) * t,
+        };
+      });
 
       return startBase.map((start, i) => {
-        const target = initialPoints[i] || targetBase[0] || start;
+        const target = finalPoints[i] || start;
         return {
-          x: start.x + (target.x - start.x) * revU,
-          y: start.y + (target.y - start.y) * revU,
+          x: start.x + (target.x - start.x) * progress,
+          y: start.y + (target.y - start.y) * progress,
         };
       });
     }
@@ -318,7 +303,11 @@ export const ManimLevel1Visualizer: React.FC = React.memo(() => {
 
           {morphPts.length > 0 && (
             <g className="geo-label-pointer">
-              <text x={morphPts[0]!.x} y={morphPts[0]!.y - 14} className="geo-pointer-tag vertex-tag">
+              <text
+                x={morphPts[0]!.x}
+                y={morphPts[0]!.y - 14}
+                className="geo-pointer-tag vertex-tag"
+              >
                 ● 꼭짓점(점)
               </text>
               {morphPts.length >= 2 && (
