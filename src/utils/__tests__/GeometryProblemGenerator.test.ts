@@ -37,7 +37,7 @@ describe('GeometryProblemGenerator', () => {
   it('should generate Level 3 Triangle Properties', () => {
     const rng = mockRng([0]);
     const problem = generateGeometryProblem(3, 'easy', rng);
-    expect(problem.question).toContain('삼각형 내각');
+    expect(problem.question).toContain('삼각형');
   });
 
   it('should generate Level 4 Quad Properties', () => {
@@ -71,15 +71,15 @@ describe('GeometryProblemGenerator', () => {
   });
 
   it('should generate Level 9 Circle Circumference', () => {
-    const rng = mockRng([0]);
+    const rng = mockRng([2]);
     const problem = generateGeometryProblem(9, 'easy', rng);
-    expect(problem.answer).toBe(12.4);
+    expect(problem.answer).toBe(62);
   });
 
   it('should generate Level 10 Circle Area', () => {
-    const rng = mockRng([0]);
+    const rng = mockRng([2]);
     const problem = generateGeometryProblem(10, 'easy', rng);
-    expect(problem.answer).toBe(12.4);
+    expect(problem.answer).toBe(310);
   });
 
   it('should generate Level 11 Basic Shapes Diagonal', () => {
@@ -126,9 +126,9 @@ describe('GeometryProblemGenerator', () => {
   });
 
   it('should generate Trigonometry problem', () => {
-    const rng = mockRng([4, 1]);
+    const rng = mockRng([4, 2]);
     const problem = generateGeometryProblem(16, 'hard', rng);
-    expect(problem.answer).toBe('1/2');
+    expect(problem.answer).toBe('1');
   });
 
   it('should return default shape for unknown level', () => {

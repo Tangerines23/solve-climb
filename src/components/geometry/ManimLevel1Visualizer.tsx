@@ -1,6 +1,5 @@
-import React, { useMemo } from 'react';
+import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { useDebugStore } from '../../stores/useDebugStore';
-import { useManimEngine } from './useManimEngine';
 import { ManimCardLayout } from './ManimCardLayout';
 import './GeometryTipVisualizer.css';
 
@@ -46,58 +45,150 @@ function computeRegularVertices(n: number): { x: number; y: number }[] {
 export const ManimLevel1Visualizer: React.FC = React.memo(() => {
   const isAdminMode = useDebugStore((state) => state.isAdminMode);
 
-  const { stepIndex, isPaused, togglePause, getEasedProgress } = useManimEngine({
-    totalSteps: SHAPE_CONFIGS.length,
-    holdDuration: 2000, // 2.0s Hold for clear reading
-    moveDuration: 1000, // 1.0s Morph move
+  const [shapeIdx, setShapeIdx] = useState(0);
+  const [prevSides, setPrevSides] = useState(3);
+  const [currSides, setCurrSides] = useState(3);
+  const [progress, setProgress] = useState(0);
+  const [highlightIdx, setHighlightIdx] = useState<number | null>(null);
+  const [isPaused, setIsPaused] = useState(false);
+
+  const isPausedRef = useRef(isPaused);
+  isPausedRef.current = isPaused;
+
+  const animStateRef = useRef<{
+    startTime: number | null;
+    accumulatedPauseTime: number;
+    pauseStart: number | null;
+  }>({
+    startTime: null,
+    accumulatedPauseTime: 0,
+    pauseStart: null,
   });
 
-  const currentConfig = SHAPE_CONFIGS[stepIndex]!;
-  const nextConfig = SHAPE_CONFIGS[(stepIndex + 1) % SHAPE_CONFIGS.length]!;
+  useEffect(() => {
+    animStateRef.current = {
+      startTime: null,
+      accumulatedPauseTime: 0,
+      pauseStart: null,
+    };
+  }, [shapeIdx]);
 
-  const currSides = currentConfig.sides;
-  const nextSides = nextConfig.sides;
+  useEffect(() => {
+    let animId: number;
+    const MORPH_DURATION = 1200;
+    const HIGHLIGHT_STEP_DURATION = 650;
+    const REST_PAUSE_DURATION = 500;
 
-  const progress = getEasedProgress();
+    const highlightTotalDuration = currSides * HIGHLIGHT_STEP_DURATION;
+    const totalCycleDuration = MORPH_DURATION + highlightTotalDuration + REST_PAUSE_DURATION;
+
+    const tick = (now: number) => {
+      const state = animStateRef.current;
+
+      if (isPausedRef.current) {
+        if (!state.pauseStart) state.pauseStart = now;
+        animId = requestAnimationFrame(tick);
+        return;
+      }
+
+      if (state.pauseStart) {
+        state.accumulatedPauseTime += now - state.pauseStart;
+        state.pauseStart = null;
+      }
+
+      if (state.startTime === null) state.startTime = now;
+      const elapsed = now - state.startTime - state.accumulatedPauseTime;
+
+      if (elapsed < MORPH_DURATION) {
+        const rawT = elapsed / MORPH_DURATION;
+        const eased =
+          rawT < 0.5 ? 4 * rawT * rawT * rawT : 1 - Math.pow(-2 * rawT + 2, 3) / 2;
+        setProgress(eased);
+        setHighlightIdx(null);
+      } else if (elapsed < MORPH_DURATION + highlightTotalDuration) {
+        setProgress(1);
+        const highlightElapsed = elapsed - MORPH_DURATION;
+        const currentStep = Math.floor(highlightElapsed / HIGHLIGHT_STEP_DURATION);
+        setHighlightIdx(Math.min(currentStep, currSides - 1));
+      } else {
+        setProgress(1);
+        setHighlightIdx(null);
+      }
+
+      if (elapsed < totalCycleDuration) {
+        animId = requestAnimationFrame(tick);
+      } else {
+        const nextIdx = (shapeIdx + 1) % SHAPE_CONFIGS.length;
+        setPrevSides(SHAPE_CONFIGS[shapeIdx]!.sides);
+        setCurrSides(SHAPE_CONFIGS[nextIdx]!.sides);
+        setShapeIdx(nextIdx);
+        setProgress(0);
+        setHighlightIdx(null);
+      }
+    };
+
+    animId = requestAnimationFrame(tick);
+    return () => cancelAnimationFrame(animId);
+  }, [shapeIdx, currSides, prevSides]);
 
   const morphPts = useMemo(() => {
-    const targetBase = PRECOMPUTED_VERTICES[nextSides] || computeRegularVertices(nextSides);
-    if (progress <= 0) {
-      return PRECOMPUTED_VERTICES[currSides] || computeRegularVertices(currSides);
-    }
-    if (progress >= 1) {
+    const targetBase = PRECOMPUTED_VERTICES[currSides] || PRECOMPUTED_VERTICES[3]!;
+    if (progress >= 1 || prevSides === currSides) {
       return targetBase;
     }
 
-    const startBase = PRECOMPUTED_VERTICES[currSides] || computeRegularVertices(currSides);
-
-    if (nextSides > currSides) {
+    if (currSides > prevSides) {
+      const startBase = PRECOMPUTED_VERTICES[prevSides]!;
       const initialPoints: { x: number; y: number }[] = [];
-      for (let i = 0; i < nextSides; i++) {
-        const srcIdx = Math.min(i, startBase.length - 1);
-        initialPoints.push(startBase[srcIdx]!);
+
+      let splitVertexIdx = 1;
+      if (prevSides === 3) splitVertexIdx = 1;
+      if (prevSides === 4) splitVertexIdx = 2;
+      if (prevSides === 5) splitVertexIdx = 2;
+
+      const cornerPt = startBase[splitVertexIdx % prevSides]!;
+
+      for (let i = 0; i < currSides; i++) {
+        if (i <= splitVertexIdx) {
+          initialPoints.push(startBase[i]!);
+        } else if (i === splitVertexIdx + 1) {
+          initialPoints.push(cornerPt);
+        } else {
+          initialPoints.push(startBase[i - 1]!);
+        }
       }
-      return targetBase.map((tPt, i) => {
-        const sPt = initialPoints[i]!;
+
+      return targetBase.map((target, i) => {
+        const start = initialPoints[i]!;
         return {
-          x: sPt.x + (tPt.x - sPt.x) * progress,
-          y: sPt.y + (tPt.y - sPt.y) * progress,
+          x: start.x + (target.x - start.x) * progress,
+          y: start.y + (target.y - start.y) * progress,
         };
       });
     } else {
-      return targetBase.map((tPt, i) => {
-        const sPt = startBase[i % startBase.length]!;
+      const startBase = PRECOMPUTED_VERTICES[prevSides]!;
+      const targetTriangle = PRECOMPUTED_VERTICES[currSides]!;
+
+      const targetMap = [
+        targetTriangle[0]!,
+        targetTriangle[1]!,
+        targetTriangle[1]!,
+        targetTriangle[2]!,
+        targetTriangle[2]!,
+        targetTriangle[2]!,
+      ];
+
+      return startBase.map((start, i) => {
+        const target = targetMap[i] || targetTriangle[2]!;
         return {
-          x: sPt.x + (tPt.x - sPt.x) * progress,
-          y: sPt.y + (tPt.y - sPt.y) * progress,
+          x: start.x + (target.x - start.x) * progress,
+          y: start.y + (target.y - start.y) * progress,
         };
       });
     }
-  }, [currSides, nextSides, progress]);
+  }, [currSides, prevSides, progress]);
 
-  const activeSides = progress > 0.5 ? nextSides : currSides;
-  const activeName = progress > 0.5 ? nextConfig.name : currentConfig.name;
-
+  const currentConfig = SHAPE_CONFIGS[shapeIdx] || SHAPE_CONFIGS[0]!;
   const ptsStr = useMemo(
     () => morphPts.map((p) => `${p.x.toFixed(1)},${p.y.toFixed(1)}`).join(' '),
     [morphPts]
@@ -105,40 +196,81 @@ export const ManimLevel1Visualizer: React.FC = React.memo(() => {
 
   const caption = (
     <div className="geo-stat-highlights">
-      <span className="geo-stat-item">
-        꼭짓점 <strong className="highlight-num">{activeSides}</strong>개
+      <span
+        className={`geo-stat-item vertex-highlight ${
+          progress >= 1 && highlightIdx !== null ? 'active-glow' : ''
+        }`}
+      >
+        꼭짓점{' '}
+        <strong key={`v-${morphPts.length}`} className="highlight-num geo-text-mode-1">
+          {morphPts.length}
+        </strong>
+        개
       </span>
       <span className="geo-divider">/</span>
-      <span className="geo-stat-item">
-        변 <strong className="highlight-num">{activeSides}</strong>개
+      <span className="geo-stat-item edge-highlight">
+        변{' '}
+        <strong key={`e-${morphPts.length}`} className="highlight-num geo-text-mode-1">
+          {morphPts.length}
+        </strong>
+        개
       </span>
     </div>
   );
 
   return (
     <ManimCardLayout
-      badgeName={activeName}
+      badgeName={currentConfig.name}
       isPaused={isPaused}
-      onTogglePause={togglePause}
+      onTogglePause={() => setIsPaused((p) => !p)}
       captionContent={caption}
     >
       <svg width={SIZE} height={165} viewBox={`0 0 ${SIZE} 165`} className="geo-tip-svg">
         <polygon points={ptsStr} className="geo-shape-poly-morph" />
 
-        {morphPts.map((p, i) => (
-          <line
-            key={`edge-${i}`}
-            x1={p.x}
-            y1={p.y}
-            x2={morphPts[(i + 1) % morphPts.length]!.x}
-            y2={morphPts[(i + 1) % morphPts.length]!.y}
-            className="geo-edge-animated-line"
-          />
-        ))}
+        {morphPts.map((p, idx) => {
+          const nextP = morphPts[(idx + 1) % morphPts.length]!;
+          return (
+            <line
+              key={`edge-${idx}`}
+              x1={p.x}
+              y1={p.y}
+              x2={nextP.x}
+              y2={nextP.y}
+              className="geo-edge-animated-line"
+            />
+          );
+        })}
 
-        {morphPts.map((p, i) => (
-          <circle key={`dot-${i}`} cx={p.x} cy={p.y} r={5.5} className="geo-simple-dot" />
-        ))}
+        {morphPts.map((p, idx) => {
+          const isHighlighted = progress >= 1 && highlightIdx === idx;
+          return (
+            <circle
+              key={`dot-${idx}`}
+              cx={p.x}
+              cy={p.y}
+              r={isHighlighted ? '8.5' : '5'}
+              className={`geo-simple-dot ${isHighlighted ? 'active-dot' : ''}`}
+            />
+          );
+        })}
+
+        {morphPts.length > 0 && (
+          <g className="geo-label-pointer">
+            <text x={morphPts[0]!.x} y={morphPts[0]!.y - 14} className="geo-pointer-tag vertex-tag">
+              ● 꼭짓점(점)
+            </text>
+            {morphPts.length >= 2 && (
+              <text
+                x={(morphPts[0]!.x + morphPts[1]!.x) / 2 + 18}
+                y={(morphPts[0]!.y + morphPts[1]!.y) / 2}
+                className="geo-pointer-tag edge-tag"
+              >
+                ━ 변(선)
+              </text>
+            )}
+          </g>
+        )}
 
         {isAdminMode && <circle cx={SIZE / 2} cy={SIZE / 2} r={3} fill="#c084fc" />}
       </svg>
