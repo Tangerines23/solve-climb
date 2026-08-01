@@ -70,6 +70,10 @@ export const ManimLevel1Visualizer: React.FC = React.memo(() => {
   // Single Master rAF Timeline Loop: Deterministic zero-drift animation engine with pause support
   useEffect(() => {
     let animId: number;
+    const MORPH_DURATION = 1200; // 1.2s shape split/merge morphing
+    const HIGHLIGHT_STEP_DURATION = 650; // 0.65s per dot highlight
+    const REST_PAUSE_DURATION = 500; // 0.5s rest pause after highlight ends
+
     const highlightTotalDuration = currSides * HIGHLIGHT_STEP_DURATION;
     const totalCycleDuration = MORPH_DURATION + highlightTotalDuration + REST_PAUSE_DURATION;
 
