@@ -24,8 +24,8 @@ const TRIANGLE_KEYFRAMES: TriangleKeyframe[] = [
   // 2. Right Isosceles Triangle (직각이등변삼각형: 90°, 45°, 45° EXACT)
   { v0: { x: 100, y: 75.0 }, v1: { x: 35, y: 140 }, v2: { x: 165, y: 140 }, name: '직각이등변삼각형' },
 
-  // 3. Right Scalene Triangle (직각삼각형: 90°, 53°, 37° EXACT)
-  { v0: { x: 40, y: 50.0 }, v1: { x: 40, y: 142 }, v2: { x: 162.247, y: 142 }, name: '직각삼각형' },
+  // 3. Right Scalene Triangle (직각삼각형: 90°, 50°, 40° EXACT)
+  { v0: { x: 40, y: 42.0 }, v1: { x: 40, y: 142 }, v2: { x: 159.17536, y: 142 }, name: '직각삼각형' },
 
   // 4. Obtuse Isosceles Triangle (둔각이등변삼각형: 120°, 30°, 30° EXACT)
   { v0: { x: 100, y: 88.81198 }, v1: { x: 20, y: 135 }, v2: { x: 180, y: 135 }, name: '둔각이등변삼각형' },
