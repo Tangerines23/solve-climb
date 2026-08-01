@@ -197,7 +197,8 @@ export const ManimLevel1Visualizer: React.FC = () => {
 
         {/* Simple Vertex Dots with radius scaling */}
         {morphPts.map((p, idx) => {
-          const isHighlighted = highlightIdx === idx;
+          // STRICT GUARD: Highlights are ONLY active after morphing completes (progress >= 1)!
+          const isHighlighted = progress >= 1 && highlightIdx === idx;
           return (
             <circle
               key={`dot-${idx}`}
@@ -232,7 +233,11 @@ export const ManimLevel1Visualizer: React.FC = () => {
       <div className="geo-level1-caption-box">
         <span className="geo-shape-badge">{currentConfig.name}</span>
         <div className="geo-stat-highlights">
-          <span className={`geo-stat-item vertex-highlight ${highlightIdx !== null ? 'active-glow' : ''}`}>
+          <span
+            className={`geo-stat-item vertex-highlight ${
+              progress >= 1 && highlightIdx !== null ? 'active-glow' : ''
+            }`}
+          >
             꼭짓점 <strong className="highlight-num">{morphPts.length}개</strong>
           </span>
           <span className="geo-divider">/</span>
