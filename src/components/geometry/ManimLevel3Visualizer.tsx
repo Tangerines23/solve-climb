@@ -109,6 +109,20 @@ export const ManimLevel3Visualizer: React.FC = React.memo(() => {
   const v1: Point = useMemo(() => ({ x: 40, y: 145 }), []);
   const v2: Point = useMemo(() => ({ x: 160, y: 145 }), []);
 
+  // Midpoints of opposing sides for 3 medians
+  const m0: Point = useMemo(() => ({ x: 100, y: 145 }), []); // V1-V2 midpoint
+  const m1: Point = useMemo(() => ({ x: (v0.x + 160) / 2, y: (v0.y + 145) / 2 }), [v0]); // V0-V2 midpoint
+  const m2: Point = useMemo(() => ({ x: (v0.x + 40) / 2, y: (v0.y + 145) / 2 }), [v0]); // V0-V1 midpoint
+
+  // Centroid Delta (δ): Exact intersection of all 3 medians ((x1+x2+x3)/3, (y1+y2+y3)/3)
+  const deltaCentroid: Point = useMemo(
+    () => ({
+      x: (v0.x + v1.x + v2.x) / 3,
+      y: (v0.y + v1.y + v2.y) / 3,
+    }),
+    [v0, v1, v2]
+  );
+
   // Calculate side lengths
   const a = useMemo(() => Math.hypot(v2.x - v1.x, v2.y - v1.y), [v1, v2]); // side opposite to V0 (bottom)
   const b = useMemo(() => Math.hypot(v2.x - v0.x, v2.y - v0.y), [v0, v2]); // side opposite to V1
@@ -198,32 +212,60 @@ export const ManimLevel3Visualizer: React.FC = React.memo(() => {
         <circle cx={v1.x} cy={v1.y} r={5.5} className="geo-simple-dot" style={{ fill: '#38bdf8' }} />
         <circle cx={v2.x} cy={v2.y} r={5.5} className="geo-simple-dot" style={{ fill: '#fbbf24' }} />
 
-        {/* Median Line from V0 to Midpoint Delta (δ) */}
+        {/* 3 Medians from Vertices (Alpha, Beta, Gamma) to Opposing Side Midpoints */}
         <line
           x1={v0.x}
           y1={v0.y}
-          x2={100}
-          y2={145}
+          x2={m0.x}
+          y2={m0.y}
           stroke="#c084fc"
-          strokeWidth={1.5}
+          strokeWidth={1.2}
           strokeDasharray="4 3"
-          opacity={0.85}
+          opacity={0.7}
+        />
+        <line
+          x1={v1.x}
+          y1={v1.y}
+          x2={m1.x}
+          y2={m1.y}
+          stroke="#c084fc"
+          strokeWidth={1.2}
+          strokeDasharray="4 3"
+          opacity={0.7}
+        />
+        <line
+          x1={v2.x}
+          y1={v2.y}
+          x2={m2.x}
+          y2={m2.y}
+          stroke="#c084fc"
+          strokeWidth={1.2}
+          strokeDasharray="4 3"
+          opacity={0.7}
         />
 
-        {/* Midpoint Delta (δ) Intersection Dot */}
-        <circle cx={100} cy={145} r={4.5} fill="#c084fc" stroke="#ffffff" strokeWidth={1} />
-
-        {/* Delta Label */}
-        <text
-          x={100}
-          y={158}
-          fontSize={10}
-          fontWeight={800}
+        {/* Centroid Delta (δ) Intersection Dot */}
+        <circle
+          cx={deltaCentroid.x}
+          cy={deltaCentroid.y}
+          r={4.5}
           fill="#c084fc"
-          textAnchor="middle"
+          stroke="#ffffff"
+          strokeWidth={1.2}
+          style={{ filter: 'drop-shadow(0 0 4px rgba(192, 132, 252, 0.8))' }}
+        />
+
+        {/* Delta (δ) Centroid Label */}
+        <text
+          x={deltaCentroid.x + 8}
+          y={deltaCentroid.y + 4}
+          fontSize={10}
+          fontWeight={900}
+          fill="#c084fc"
+          textAnchor="start"
           style={{ filter: 'drop-shadow(0 0 3px rgba(0,0,0,0.8))' }}
         >
-          δ (중점)
+          δ (무게중심)
         </text>
 
         {/* Dynamic Angle Labels near Vertices */}
