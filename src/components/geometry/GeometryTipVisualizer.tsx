@@ -120,22 +120,25 @@ const ManimLevel1Visualizer: React.FC = () => {
         };
       });
     } else {
-      // SHRINK / MERGE (6 -> 3): Pairwise nearest neighbor merge
-      // 6 vertices (V0..V5) collapse 2-by-2 into the 3 triangle vertices (T0, T1, T2)
-      // V0, V1 -> T0 (top)
-      // V2, V3 -> T1 (bottom-right)
-      // V4, V5 -> T2 (bottom-left)
+      // SHRINK / MERGE (6 -> 3): Exact Reverse of Expansion Path
+      // 6 vertices fold smoothly back into 3 triangle corners in exact reverse sequence:
+      // V0 -> T0 (top corner)
+      // V1, V2 -> T1 (bottom-right corner)
+      // V3, V4, V5 -> T2 (bottom-left corner)
       const startBase = getRegularVertices(prevSides); // 6 pts
       const targetTriangle = getRegularVertices(currSides); // 3 pts (T0, T1, T2)
-      const endPoints: { x: number; y: number }[] = [];
-
-      for (let i = 0; i < prevSides; i++) {
-        const targetIdx = Math.floor(i / 2) % currSides;
-        endPoints.push({ ...targetTriangle[targetIdx]! });
-      }
+      
+      const targetMap = [
+        targetTriangle[0]!, // V0 -> T0
+        targetTriangle[1]!, // V1 -> T1
+        targetTriangle[1]!, // V2 -> T1
+        targetTriangle[2]!, // V3 -> T2
+        targetTriangle[2]!, // V4 -> T2
+        targetTriangle[2]!, // V5 -> T2
+      ];
 
       return startBase.map((start, i) => {
-        const target = endPoints[i]!;
+        const target = targetMap[i] || targetTriangle[2]!;
         return {
           x: start.x + (target.x - start.x) * progress,
           y: start.y + (target.y - start.y) * progress,
