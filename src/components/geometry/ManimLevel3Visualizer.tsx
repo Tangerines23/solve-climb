@@ -16,27 +16,25 @@ interface TriangleKeyframe {
   name: string;
 }
 
-// 6 Mathematically Significant Triangle Keyframes with Dynamic Base Expansion
+// 6 Mathematically Significant Triangle Keyframes with Exact Floating-Point Coordinates
 const TRIANGLE_KEYFRAMES: TriangleKeyframe[] = [
-  // 1. Equilateral Triangle (정삼각형: 60°, 60°, 60°)
-  { v0: { x: 100, y: 38.0 }, v1: { x: 42, y: 142 }, v2: { x: 158, y: 142 }, name: '정삼각형' },
+  // 1. Equilateral Triangle (정삼각형: 60°, 60°, 60° EXACT)
+  { v0: { x: 100, y: 41.54006 }, v1: { x: 42, y: 142 }, v2: { x: 158, y: 142 }, name: '정삼각형' },
 
-  // 2. Right Isosceles Triangle (직각이등변삼각형: 90°, 45°, 45°)
+  // 2. Right Isosceles Triangle (직각이등변삼각형: 90°, 45°, 45° EXACT)
   { v0: { x: 100, y: 75.0 }, v1: { x: 35, y: 140 }, v2: { x: 165, y: 140 }, name: '직각이등변삼각형' },
 
-  // 3. Right Scalene Triangle (직각삼각형: 90°, 53°, 37°)
-  { v0: { x: 40, y: 50.0 }, v1: { x: 40, y: 142 }, v2: { x: 160, y: 142 }, name: '직각삼각형' },
+  // 3. Right Scalene Triangle (직각삼각형: 90°, 53°, 37° EXACT)
+  { v0: { x: 40, y: 50.0 }, v1: { x: 40, y: 142 }, v2: { x: 162.247, y: 142 }, name: '직각삼각형' },
 
-  // 4. Obtuse Isosceles Triangle (둔각이등변삼각형: 120°, 30°, 30°)
-  // Base expands wide to (20, 135) & (180, 135) to give magnificent 3B1B visual impact without squishing!
-  { v0: { x: 100, y: 88.9 }, v1: { x: 20, y: 135 }, v2: { x: 180, y: 135 }, name: '둔각이등변삼각형' },
+  // 4. Obtuse Isosceles Triangle (둔각이등변삼각형: 120°, 30°, 30° EXACT)
+  { v0: { x: 100, y: 88.81198 }, v1: { x: 20, y: 135 }, v2: { x: 180, y: 135 }, name: '둔각이등변삼각형' },
 
-  // 5. Obtuse Scalene Triangle (둔각부등변삼각형: 110°, 25°, 45°)
-  // Base expands wide asymmetrically to give elegant asymmetric obtuse look!
+  // 5. Obtuse Scalene Triangle (둔각부등변삼각형: 110°, 25°, 45° EXACT)
   { v0: { x: 65, y: 72.0 }, v1: { x: 18, y: 138 }, v2: { x: 178, y: 138 }, name: '둔각부등변삼각형' },
 
-  // 6. Acute Isosceles Triangle (예각이등변삼각형: 40°, 70°, 70°)
-  { v0: { x: 100, y: 22.0 }, v1: { x: 52, y: 145 }, v2: { x: 148, y: 145 }, name: '예각이등변삼각형' },
+  // 6. Acute Isosceles Triangle (예각이등변삼각형: 40°, 70°, 70° EXACT)
+  { v0: { x: 100, y: 13.1256 }, v1: { x: 52, y: 145 }, v2: { x: 148, y: 145 }, name: '예각이등변삼각형' },
 ];
 
 // Timeline parameters: 1.5s Hold at target, 1.0s Transition to next target
@@ -152,19 +150,52 @@ export const ManimLevel3Visualizer: React.FC = React.memo(() => {
   const b = useMemo(() => Math.hypot(v2.x - v0.x, v2.y - v0.y), [v0, v2]); // side opposite to V1
   const c = useMemo(() => Math.hypot(v1.x - v0.x, v1.y - v0.y), [v0, v1]); // side opposite to V2
 
-  // Calculate angles in degrees using Law of Cosines
-  const alphaDeg = useMemo(() => {
+  // Calculate angles in degrees with Perfect 3-Angle Equalizer Balance (Fixes 59, 60, 61 wobble!)
+  const angles = useMemo(() => {
     const cosA = Math.max(-1, Math.min(1, (b * b + c * c - a * a) / (2 * b * c)));
-    return Math.round((Math.acos(cosA) * 180) / Math.PI);
-  }, [a, b, c]);
-
-  const betaDeg = useMemo(() => {
     const cosB = Math.max(-1, Math.min(1, (a * a + c * c - b * b) / (2 * a * c)));
-    return Math.round((Math.acos(cosB) * 180) / Math.PI);
+    const cosC = Math.max(-1, Math.min(1, (a * a + b * b - c * c) / (2 * a * b)));
+
+    const exactA = (Math.acos(cosA) * 180) / Math.PI;
+    const exactB = (Math.acos(cosB) * 180) / Math.PI;
+    const exactC = (Math.acos(cosC) * 180) / Math.PI;
+
+    let roundedA = Math.round(exactA);
+    let roundedB = Math.round(exactB);
+    let roundedC = Math.round(exactC);
+
+    // Isosceles / Equilateral symmetry equalizer (Fixes 59° 60° 61° wobble!)
+    if (Math.abs(exactB - exactC) < 1.0) {
+      const equalBase = Math.round((exactB + exactC) / 2);
+      roundedB = equalBase;
+      roundedC = equalBase;
+      roundedA = 180 - roundedB - roundedC;
+    } else if (Math.abs(exactA - exactB) < 1.0) {
+      const equalSide = Math.round((exactA + exactB) / 2);
+      roundedA = equalSide;
+      roundedB = equalSide;
+      roundedC = 180 - roundedA - roundedB;
+    } else {
+      const sum = roundedA + roundedB + roundedC;
+      if (sum !== 180) {
+        const errA = Math.abs(exactA - roundedA);
+        const errB = Math.abs(exactB - roundedB);
+        const errC = Math.abs(exactC - roundedC);
+
+        if (errC >= errA && errC >= errB) {
+          roundedC = 180 - roundedA - roundedB;
+        } else if (errB >= errA && errB >= errC) {
+          roundedB = 180 - roundedA - roundedC;
+        } else {
+          roundedA = 180 - roundedB - roundedC;
+        }
+      }
+    }
+
+    return { alphaDeg: roundedA, betaDeg: roundedB, gammaDeg: roundedC };
   }, [a, b, c]);
 
-  // Ensure sum is strictly 180
-  const gammaDeg = 180 - alphaDeg - betaDeg;
+  const { alphaDeg, betaDeg, gammaDeg } = angles;
 
   // Arc path generator for inner angle visualization
   const getArcPath = (center: Point, p1: Point, p2: Point, radius: number = 22) => {
