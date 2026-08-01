@@ -83,19 +83,19 @@ export const ManimLevel1Visualizer: React.FC = React.memo(() => {
       if (elapsed < totalCycleDuration) {
         animId = requestAnimationFrame(tick);
       } else {
-        // Cycle complete! Advance to next shape!
-        setShapeIdx((idx) => {
-          const nextIdx = (idx + 1) % SHAPE_CONFIGS.length;
-          setPrevSides(SHAPE_CONFIGS[idx]!.sides);
-          setCurrSides(SHAPE_CONFIGS[nextIdx]!.sides);
-          return nextIdx;
-        });
+        // Cycle complete! Synchronously reset progress = 0 in single batch to prevent 1-frame completed shape flickering glitch!
+        const nextIdx = (shapeIdx + 1) % SHAPE_CONFIGS.length;
+        setPrevSides(SHAPE_CONFIGS[shapeIdx]!.sides);
+        setCurrSides(SHAPE_CONFIGS[nextIdx]!.sides);
+        setShapeIdx(nextIdx);
+        setProgress(0); // Synchronous reset prevents 1-frame completed shape glitch!
+        setHighlightIdx(null);
       }
     };
 
     animId = requestAnimationFrame(tick);
     return () => cancelAnimationFrame(animId);
-  }, [currSides, prevSides]);
+  }, [shapeIdx, currSides, prevSides]);
 
   // Memoized Morph Points computation (Zero unnecessary object allocations)
   const morphPts = useMemo(() => {
