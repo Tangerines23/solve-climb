@@ -89,8 +89,8 @@ export const ManimLevel2Visualizer: React.FC = React.memo(() => {
     const ALL_HOLD_DURATION = 500; // 0.5s Rest Hold Pause after All Diagonals (Phase 2 total = 3.0s)
     const ALL_TOTAL_DURATION = ALL_DRAW_DURATION + ALL_HOLD_DURATION;
 
-    const DEDUP_HIGHLIGHT_DURATION = 2000; // 2.0s Gold Dedup Highlight
-    const DEDUP_RESTORE_DURATION = 1000; // 1.0s Color Restore to Red (Phase 3 total = 3.0s)
+    const DEDUP_HIGHLIGHT_DURATION = 3000; // 3.0s Gold Dedup Highlight (Full 3.0s Gold Glow)
+    const DEDUP_RESTORE_DURATION = 1000; // 1.0s Color Restore to Red (Total 4.0s Phase 3)
 
     const RETRACT_DURATION = 1500; // 1.5s Center-Split Retraction Motion
     const REST_PAUSE_DURATION = 1500; // 1.5s Final Rest Pause (Phase 4 total = 3.0s)
