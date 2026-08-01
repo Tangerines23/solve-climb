@@ -168,6 +168,11 @@ export const ManimLevel3Visualizer: React.FC = React.memo(() => {
         </div>
       )}
       <svg width={SIZE} height={165} viewBox={`0 0 ${SIZE} 165`} className="geo-tip-svg">
+        {/* Top-Left Triangle Type Pointer Tag */}
+        <text key={currentName} x={16} y={22} className="geo-pointer-tag vertex-tag geo-text-mode-1">
+          ● {currentName}
+        </text>
+
         {/* Main Triangle Polygon */}
         <polygon
           points={`${v0.x.toFixed(1)},${v0.y.toFixed(1)} ${v1.x},${v1.y} ${v2.x},${v2.y}`}
@@ -229,11 +234,7 @@ export const ManimLevel3Visualizer: React.FC = React.memo(() => {
 
       {/* Dynamic 3B1B Mathematical Caption Box */}
       <div className="geo-level1-caption-box">
-        <span className="geo-shape-badge">
-          <span key={currentName} className="geo-text-mode-1">
-            {currentName}
-          </span>
-        </span>
+        <span className="geo-shape-badge">삼각형 내각의 합</span>
         <div className="geo-stat-highlights">
           <span className="geo-stat-item" style={{ color: '#fb7185' }}>
             α <strong className="highlight-num">{alphaDeg}°</strong>
