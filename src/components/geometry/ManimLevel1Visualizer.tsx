@@ -1,9 +1,10 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useMemo } from 'react';
+import { useDebugStore } from '../../stores/useDebugStore';
+import { useManimEngine } from './useManimEngine';
+import { ManimCardLayout } from './ManimCardLayout';
 import './GeometryTipVisualizer.css';
 
 const SIZE = 200;
-const CENTER = SIZE / 2;
-const RADIUS = 52;
 
 interface ShapeConfig {
   sides: number;
@@ -15,287 +16,134 @@ const SHAPE_CONFIGS: ShapeConfig[] = [
   { sides: 4, name: '사각형' },
   { sides: 5, name: '오각형' },
   { sides: 6, name: '육각형' },
+  { sides: 7, name: '칠각형' },
+  { sides: 8, name: '팔각형' },
 ];
 
-// Pre-calculate fixed regular polygon vertices for 3, 4, 5, 6 sides (Zero GC overhead)
 const PRECOMPUTED_VERTICES: Record<number, { x: number; y: number }[]> = {
   3: computeRegularVertices(3),
   4: computeRegularVertices(4),
   5: computeRegularVertices(5),
   6: computeRegularVertices(6),
+  7: computeRegularVertices(7),
+  8: computeRegularVertices(8),
 };
 
 function computeRegularVertices(n: number): { x: number; y: number }[] {
   const pts: { x: number; y: number }[] = [];
+  const radius = 56;
+  const center = SIZE / 2;
   for (let i = 0; i < n; i++) {
     const angle = -Math.PI / 2 + (i * 2 * Math.PI) / n;
     pts.push({
-      x: CENTER + RADIUS * Math.cos(angle),
-      y: CENTER + RADIUS * Math.sin(angle),
+      x: center + radius * Math.cos(angle),
+      y: center + radius * Math.sin(angle),
     });
   }
   return pts;
 }
 
 export const ManimLevel1Visualizer: React.FC = React.memo(() => {
-  const [shapeIdx, setShapeIdx] = useState(0);
-  const [prevSides, setPrevSides] = useState(3);
-  const [currSides, setCurrSides] = useState(3);
-  const [progress, setProgress] = useState(1);
-  const [highlightIdx, setHighlightIdx] = useState<number | null>(null);
-  const [isPaused, setIsPaused] = useState(false);
+  const isAdminMode = useDebugStore((state) => state.isAdminMode);
 
-  const isPausedRef = React.useRef(isPaused);
-  isPausedRef.current = isPaused;
-
-  const animStateRef = React.useRef<{
-    startTime: number | null;
-    accumulatedPauseTime: number;
-    pauseStart: number | null;
-  }>({
-    startTime: null,
-    accumulatedPauseTime: 0,
-    pauseStart: null,
+  const { stepIndex, isPaused, togglePause, getEasedProgress } = useManimEngine({
+    totalSteps: SHAPE_CONFIGS.length,
+    holdDuration: 2000,
+    moveDuration: 1000,
   });
 
-  // Reset anim state on shape index change
-  useEffect(() => {
-    animStateRef.current = {
-      startTime: null,
-      accumulatedPauseTime: 0,
-      pauseStart: null,
-    };
-  }, [shapeIdx]);
+  const currentConfig = SHAPE_CONFIGS[stepIndex]!;
+  const nextConfig = SHAPE_CONFIGS[(stepIndex + 1) % SHAPE_CONFIGS.length]!;
 
-  // Single Master rAF Timeline Loop: Deterministic zero-drift animation engine with pause support
-  useEffect(() => {
-    let animId: number;
-    const MORPH_DURATION = 1200; // 1.2s shape split/merge morphing
-    const HIGHLIGHT_STEP_DURATION = 650; // 0.65s per dot highlight
-    const REST_PAUSE_DURATION = 500; // 0.5s rest pause after highlight ends
+  const currSides = currentConfig.sides;
+  const nextSides = nextConfig.sides;
 
-    const highlightTotalDuration = currSides * HIGHLIGHT_STEP_DURATION;
-    const totalCycleDuration = MORPH_DURATION + highlightTotalDuration + REST_PAUSE_DURATION;
+  const progress = getEasedProgress();
 
-    const tick = (now: number) => {
-      const state = animStateRef.current;
-
-      if (isPausedRef.current) {
-        if (!state.pauseStart) state.pauseStart = now;
-        animId = requestAnimationFrame(tick);
-        return;
-      }
-
-      if (state.pauseStart) {
-        state.accumulatedPauseTime += now - state.pauseStart;
-        state.pauseStart = null;
-      }
-
-      if (state.startTime === null) state.startTime = now;
-      const elapsed = now - state.startTime - state.accumulatedPauseTime;
-
-      if (elapsed < MORPH_DURATION) {
-        // Phase 1: Morphing (0s ~ 1.2s) in pure ALL-OFF state
-        const rawT = elapsed / MORPH_DURATION;
-        const eased =
-          rawT < 0.5 ? 4 * rawT * rawT * rawT : 1 - Math.pow(-2 * rawT + 2, 3) / 2;
-
-        setProgress(eased);
-        setHighlightIdx(null);
-      } else if (elapsed < MORPH_DURATION + highlightTotalDuration) {
-        // Phase 2: Clockwise Highlight (1.2s ~ 1.2s + N*0.65s)
-        setProgress(1);
-        const highlightElapsed = elapsed - MORPH_DURATION;
-        const currentStep = Math.floor(highlightElapsed / HIGHLIGHT_STEP_DURATION);
-        setHighlightIdx(Math.min(currentStep, currSides - 1));
-      } else {
-        // Phase 3: Rest Pause (0.5s) in pure ALL-OFF state
-        setProgress(1);
-        setHighlightIdx(null);
-      }
-
-      if (elapsed < totalCycleDuration) {
-        animId = requestAnimationFrame(tick);
-      } else {
-        // Cycle complete! Synchronously reset progress = 0 in single batch to prevent 1-frame completed shape flickering glitch!
-        const nextIdx = (shapeIdx + 1) % SHAPE_CONFIGS.length;
-        setPrevSides(SHAPE_CONFIGS[shapeIdx]!.sides);
-        setCurrSides(SHAPE_CONFIGS[nextIdx]!.sides);
-        setShapeIdx(nextIdx);
-        setProgress(0); // Synchronous reset prevents 1-frame completed shape glitch!
-        setHighlightIdx(null);
-      }
-    };
-
-    animId = requestAnimationFrame(tick);
-    return () => cancelAnimationFrame(animId);
-  }, [shapeIdx, currSides, prevSides]);
-
-  // Memoized Morph Points computation (Zero unnecessary object allocations)
   const morphPts = useMemo(() => {
-    const targetBase = PRECOMPUTED_VERTICES[currSides] || PRECOMPUTED_VERTICES[3]!;
-    if (progress >= 1 || prevSides === currSides) {
+    const targetBase = PRECOMPUTED_VERTICES[nextSides] || computeRegularVertices(nextSides);
+    if (progress <= 0) {
+      return PRECOMPUTED_VERTICES[currSides] || computeRegularVertices(currSides);
+    }
+    if (progress >= 1) {
       return targetBase;
     }
 
-    if (currSides > prevSides) {
-      // EXPAND / SPREAD (3 -> 4, 4 -> 5, 5 -> 6)
-      const startBase = PRECOMPUTED_VERTICES[prevSides]!;
+    const startBase = PRECOMPUTED_VERTICES[currSides] || computeRegularVertices(currSides);
+
+    if (nextSides > currSides) {
       const initialPoints: { x: number; y: number }[] = [];
-
-      let splitVertexIdx = 1;
-      if (prevSides === 3) splitVertexIdx = 1;
-      if (prevSides === 4) splitVertexIdx = 2;
-      if (prevSides === 5) splitVertexIdx = 2;
-
-      const cornerPt = startBase[splitVertexIdx % prevSides]!;
-
-      for (let i = 0; i < currSides; i++) {
-        if (i <= splitVertexIdx) {
-          initialPoints.push(startBase[i]!);
-        } else if (i === splitVertexIdx + 1) {
-          initialPoints.push(cornerPt);
-        } else {
-          initialPoints.push(startBase[i - 1]!);
-        }
+      for (let i = 0; i < nextSides; i++) {
+        const srcIdx = Math.min(i, startBase.length - 1);
+        initialPoints.push(startBase[srcIdx]!);
       }
-
-      return targetBase.map((target, i) => {
-        const start = initialPoints[i]!;
+      return targetBase.map((tPt, i) => {
+        const sPt = initialPoints[i]!;
         return {
-          x: start.x + (target.x - start.x) * progress,
-          y: start.y + (target.y - start.y) * progress,
+          x: sPt.x + (tPt.x - sPt.x) * progress,
+          y: sPt.y + (tPt.y - sPt.y) * progress,
         };
       });
     } else {
-      // SHRINK / MERGE (6 -> 3)
-      const startBase = PRECOMPUTED_VERTICES[prevSides]!;
-      const targetTriangle = PRECOMPUTED_VERTICES[currSides]!;
-
-      const targetMap = [
-        targetTriangle[0]!,
-        targetTriangle[1]!,
-        targetTriangle[1]!,
-        targetTriangle[2]!,
-        targetTriangle[2]!,
-        targetTriangle[2]!,
-      ];
-
-      return startBase.map((start, i) => {
-        const target = targetMap[i] || targetTriangle[2]!;
+      return targetBase.map((tPt, i) => {
+        const sPt = startBase[i % startBase.length]!;
         return {
-          x: start.x + (target.x - start.x) * progress,
-          y: start.y + (target.y - start.y) * progress,
+          x: sPt.x + (tPt.x - sPt.x) * progress,
+          y: sPt.y + (tPt.y - sPt.y) * progress,
         };
       });
     }
-  }, [currSides, prevSides, progress]);
+  }, [currSides, nextSides, progress]);
 
-  const currentConfig = SHAPE_CONFIGS[shapeIdx] || SHAPE_CONFIGS[0]!;
+  const activeSides = progress > 0.5 ? nextSides : currSides;
+  const activeName = progress > 0.5 ? nextConfig.name : currentConfig.name;
+
   const ptsStr = useMemo(
     () => morphPts.map((p) => `${p.x.toFixed(1)},${p.y.toFixed(1)}`).join(' '),
     [morphPts]
   );
 
+  const caption = (
+    <div className="geo-stat-highlights">
+      <span className="geo-stat-item">
+        꼭짓점 <strong className="highlight-num">{activeSides}</strong>개
+      </span>
+      <span className="geo-divider">/</span>
+      <span className="geo-stat-item">
+        변 <strong className="highlight-num">{activeSides}</strong>개
+      </span>
+    </div>
+  );
+
   return (
-    <div
-      className="geo-level1-wrapper"
-      onClick={() => setIsPaused((p) => !p)}
-      style={{ cursor: 'pointer', position: 'relative' }}
-      title={isPaused ? '클릭/터치하여 애니메이션 재개' : '클릭/터치하여 애니메이션 일시정지'}
+    <ManimCardLayout
+      badgeName={activeName}
+      isPaused={isPaused}
+      onTogglePause={togglePause}
+      captionContent={caption}
     >
-      {isPaused && (
-        <div className="geo-pause-overlay">
-          <span>⏸ 일시정지됨 (터치하여 계속)</span>
-        </div>
-      )}
-
-      {/* Top Left Badge: Shape Name (Purple Pill Badge) */}
-      <div style={{ position: 'absolute', top: 3, left: 4, zIndex: 5 }}>
-        <span className="geo-shape-badge">
-          <span key={currentConfig.name} className="geo-text-mode-1">
-            {currentConfig.name}
-          </span>
-        </span>
-      </div>
-
       <svg width={SIZE} height={165} viewBox={`0 0 ${SIZE} 165`} className="geo-tip-svg">
-        {/* Main Morphing Polygon */}
         <polygon points={ptsStr} className="geo-shape-poly-morph" />
 
-        {/* Edge Lines */}
-        {morphPts.map((p, idx) => {
-          const nextP = morphPts[(idx + 1) % morphPts.length]!;
-          return (
-            <line
-              key={`edge-${idx}`}
-              x1={p.x}
-              y1={p.y}
-              x2={nextP.x}
-              y2={nextP.y}
-              className="geo-edge-animated-line"
-            />
-          );
-        })}
+        {morphPts.map((p, i) => (
+          <line
+            key={`edge-${i}`}
+            x1={p.x}
+            y1={p.y}
+            x2={morphPts[(i + 1) % morphPts.length]!.x}
+            y2={morphPts[(i + 1) % morphPts.length]!.y}
+            className="geo-edge-animated-line"
+          />
+        ))}
 
-        {/* Simple Vertex Dots with radius scaling */}
-        {morphPts.map((p, idx) => {
-          // STRICT GUARD: Highlights are ONLY active after morphing completes (progress >= 1)!
-          const isHighlighted = progress >= 1 && highlightIdx === idx;
-          return (
-            <circle
-              key={`dot-${idx}`}
-              cx={p.x}
-              cy={p.y}
-              r={isHighlighted ? '8.5' : '5'}
-              className={`geo-simple-dot ${isHighlighted ? 'active-dot' : ''}`}
-            />
-          );
-        })}
+        {morphPts.map((p, i) => (
+          <circle key={`dot-${i}`} cx={p.x} cy={p.y} r={5.5} className="geo-simple-dot" />
+        ))}
 
-        {/* Static Labels */}
-        {morphPts.length > 0 && (
-          <g className="geo-label-pointer">
-            <text x={morphPts[0]!.x} y={morphPts[0]!.y - 14} className="geo-pointer-tag vertex-tag">
-              ● 꼭짓점(점)
-            </text>
-            {morphPts.length >= 2 && (
-              <text
-                x={(morphPts[0]!.x + morphPts[1]!.x) / 2 + 18}
-                y={(morphPts[0]!.y + morphPts[1]!.y) / 2}
-                className="geo-pointer-tag edge-tag"
-              >
-                ━ 변(선)
-              </text>
-            )}
-          </g>
+        {isAdminMode && (
+          <circle cx={SIZE / 2} cy={SIZE / 2} r={3} fill="#c084fc" />
         )}
       </svg>
-
-      {/* Bottom Static Caption Box */}
-      <div className="geo-level1-caption-box" style={{ justifyContent: 'center' }}>
-        <div className="geo-stat-highlights">
-          <span
-            className={`geo-stat-item vertex-highlight ${
-              progress >= 1 && highlightIdx !== null ? 'active-glow' : ''
-            }`}
-          >
-            꼭짓점{' '}
-            <strong key={`v-${morphPts.length}`} className="highlight-num geo-text-mode-1">
-              {morphPts.length}
-            </strong>
-            개
-          </span>
-          <span className="geo-divider">/</span>
-          <span className="geo-stat-item edge-highlight">
-            변{' '}
-            <strong key={`e-${morphPts.length}`} className="highlight-num geo-text-mode-1">
-              {morphPts.length}
-            </strong>
-            개
-          </span>
-        </div>
-      </div>
-    </div>
+    </ManimCardLayout>
   );
 });
