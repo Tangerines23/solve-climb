@@ -1,6 +1,6 @@
 
 project: solve-climb
-generatedAt: "2026-07-31T12:18:29.176Z"
+generatedAt: "2026-08-01T01:48:55.114Z"
 files:
   src/App.tsx:
     imports: [@/utils/resilientLazy, @/components/PageTransition, @/stores/useLevelProgressStore, @/stores/useAuthStore, @/hooks/useCustomBackNavigation, @/components/GlobalLoadingIndicator, @/stores/useErrorLogStore, @/stores/useDebugStore, @/stores/useSettingsStore, @/hooks/useConnectivity, @/components/PwaUpdateNotification, @/features/auth, @/utils/supabaseClient, @/utils/auth, @/components/GlobalToastContainer]
@@ -977,7 +977,7 @@ files:
             params:
               userId: string
             returns: "Promise<{ profile: { minerals?: number | undefined; stamina?: number | undefined; is_anonymous?: boolean | undefined; last_ad_stamina_recharge?: string | null | undefined; updated_at?: string | undefined; } | null; profileError: any; inventory: import(\"C:/Users/ghkdd/gemini-projects/solve-climb/src/services/UserRepository\").RawInventoryItem[] | null; inventoryError: any; }>"
-            calls: ["supabase .from('profiles') .select('minerals, stamina, is_anonymous, last_ad_stamina_recharge, updated_at') .eq", "supabase .from('profiles') .select", "supabase .from", "(profileQueryBuilder as any).maybeSingle", "(profileQueryBuilder as any).single", Promise.all, safeSupabaseQuery, "supabase .from('inventory') .select( ` quantity, items ( id, code, name, description ) ` ) .eq", "supabase .from('inventory') .select"]
+            calls: ["supabase .from('profiles') .select('minerals, stamina, updated_at') .eq", "supabase .from('profiles') .select", "supabase .from", "(profileQueryBuilder as any).maybeSingle", "(profileQueryBuilder as any).single", Promise.all, safeSupabaseQuery, "supabase .from('inventory') .select( ` quantity, items ( id, code, name, description ) ` ) .eq", "supabase .from('inventory') .select"]
           - name: formatInventory
             params:
               raw: "import(\"C:/Users/ghkdd/gemini-projects/solve-climb/src/services/UserRepository\").RawInventoryItem[] | null"
@@ -1775,12 +1775,13 @@ files:
         calls: [e.stopPropagation]
   src/components/geometry/GeometryTipVisualizer.tsx:
     imports: [./GeometryTipVisualizer.css]
+    state: [shapeIndex, currentPts]
     exports:
       - name: GeometryTipVisualizer
         params:
           "{ level }": GeometryTipVisualizerProps
         returns: "import(\"C:/Users/ghkdd/gemini-projects/solve-climb/node_modules/@types/react/jsx-runtime\").JSX.Element"
-        calls: [pts.push, Math.cos, Math.sin, "pts.map((p) => `${p.x},${p.y}`).join", pts.map, diagonals.push, diagonals.map, renderVisualizer]
+        calls: [rawPts.push, Math.cos, Math.sin, getTargetPoints, setInterval, setShapeIndex, clearInterval, setCurrentPts, targetPts.map, Math.abs, requestAnimationFrame, cancelAnimationFrame, "pts.map((p) => `${p.x.toFixed(1)},${p.y.toFixed(1)}`).join", pts.map, p.x.toFixed, p.y.toFixed, pts.push, "pts.map((p) => `${p.x},${p.y}`).join", diagonals.push, diagonals.map, renderVisualizer]
   src/components/geometry/ShapeVisualizer.tsx:
     exports:
       - name: ShapeVisualizer

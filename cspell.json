@@ -73,7 +73,9 @@
     "etmtujb",
     "votil",
     "googleusercontent",
-    "yxxx"
+    "yxxx",
+    "Manim",
+    "lerp"
   ],
   "ignorePaths": [
     "node_modules",

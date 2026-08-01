@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect } from 'react';
 import './GeometryTipVisualizer.css';
 
 interface GeometryTipVisualizerProps {
@@ -8,7 +8,7 @@ interface GeometryTipVisualizerProps {
 export const GeometryTipVisualizer: React.FC<GeometryTipVisualizerProps> = ({ level }) => {
   const size = 200;
   const center = size / 2;
-  const radius = 55;
+  const radius = 52;
 
   // Level 1 dynamic shape cycling (3: triangle, 4: quad, 5: pentagon, 6: hexagon)
   const [shapeIndex, setShapeIndex] = useState(0);
@@ -20,22 +20,36 @@ export const GeometryTipVisualizer: React.FC<GeometryTipVisualizerProps> = ({ le
   ];
 
   const currentShape = shapeConfigs[shapeIndex] || shapeConfigs[0]!;
+  const maxVertices = 6;
 
-  // Helper to compute target vertices
-  const getTargetPoints = (sidesCount: number) => {
-    const rawPts: { x: number; y: number }[] = [];
+  // 3Blue1Brown Manim Style: Compute 6 symmetric perimeter points
+  const getSymmetricPoints = (sidesCount: number) => {
+    const basePts: { x: number; y: number }[] = [];
     for (let i = 0; i < sidesCount; i++) {
       const angle = -Math.PI / 2 + (i * 2 * Math.PI) / sidesCount;
-      rawPts.push({
+      basePts.push({
         x: center + radius * Math.cos(angle),
         y: center + radius * Math.sin(angle),
       });
     }
-    return rawPts;
+
+    const pts: { x: number; y: number }[] = [];
+    for (let i = 0; i < maxVertices; i++) {
+      const t = (i * sidesCount) / maxVertices;
+      const index = Math.floor(t);
+      const frac = t - index;
+      const p1 = basePts[index % sidesCount]!;
+      const p2 = basePts[(index + 1) % sidesCount]!;
+      pts.push({
+        x: p1.x + (p2.x - p1.x) * frac,
+        y: p1.y + (p2.y - p1.y) * frac,
+      });
+    }
+    return pts;
   };
 
   const [currentPts, setCurrentPts] = useState<{ x: number; y: number }[]>(() =>
-    getTargetPoints(3)
+    getSymmetricPoints(3)
   );
 
   // Cycle shapes every 2.8 seconds
@@ -50,18 +64,17 @@ export const GeometryTipVisualizer: React.FC<GeometryTipVisualizerProps> = ({ le
   // Smooth lerp animation when shapeIndex changes
   useEffect(() => {
     if (level !== 1) return;
-    const targetPts = getTargetPoints(currentShape.sides);
+    const targetPts = getSymmetricPoints(currentShape.sides);
     let animId: number;
 
     const animate = () => {
       let isDone = true;
       setCurrentPts((prevPts) => {
-        // If length differs, initialize or interpolate
         const nextPts = targetPts.map((target, idx) => {
-          const prev = prevPts[idx] || prevPts[prevPts.length - 1] || target;
+          const prev = prevPts[idx] || target;
           const dx = target.x - prev.x;
           const dy = target.y - prev.y;
-          const speed = 0.14; // Lerp speed for smooth stretching
+          const speed = 0.12; // Smooth cubic-like lerp speed
           if (Math.abs(dx) > 0.05 || Math.abs(dy) > 0.05) {
             isDone = false;
             return {
@@ -86,20 +99,29 @@ export const GeometryTipVisualizer: React.FC<GeometryTipVisualizerProps> = ({ le
   const renderVisualizer = () => {
     switch (level) {
       case 1: {
-        // 2-1: 기초 도형 (꼭짓점과 변) - 자연스럽게 늘어나는 다각형 변환 및 하이라이트
+        // 2-1: 3B1B Manim 대칭 몰핑 다각형 & 꼭짓점/변 하이라이트
         const sides = currentShape.sides;
-        const pts = currentPts;
-        const ptsStr = pts.map((p) => `${p.x.toFixed(1)},${p.y.toFixed(1)}`).join(' ');
+        // Extract key vertices for rendering active dots
+        const activeBasePts: { x: number; y: number }[] = [];
+        for (let i = 0; i < sides; i++) {
+          const angle = -Math.PI / 2 + (i * 2 * Math.PI) / sides;
+          activeBasePts.push({
+            x: center + radius * Math.cos(angle),
+            y: center + radius * Math.sin(angle),
+          });
+        }
+
+        const ptsStr = currentPts.map((p) => `${p.x.toFixed(1)},${p.y.toFixed(1)}`).join(' ');
 
         return (
           <div className="geo-level1-wrapper">
             <svg width={size} height={165} viewBox={`0 0 ${size} 165`} className="geo-tip-svg">
-              {/* Main Polygon Shape (Stretching & Expanding) */}
+              {/* Main Polygon Shape (3B1B Manim Symmetric Morphing) */}
               <polygon points={ptsStr} className="geo-shape-poly-morph" />
 
               {/* Edge (변) Glowing Lines */}
-              {pts.map((p, idx) => {
-                const nextP = pts[(idx + 1) % pts.length]!;
+              {currentPts.map((p, idx) => {
+                const nextP = currentPts[(idx + 1) % maxVertices]!;
                 return (
                   <line
                     key={`edge-${idx}`}
@@ -112,26 +134,26 @@ export const GeometryTipVisualizer: React.FC<GeometryTipVisualizerProps> = ({ le
                 );
               })}
 
-              {/* Vertices (꼭짓점) Dots & Pulses */}
-              {pts.map((p, idx) => (
-                <g key={`vertex-${idx}`}>
+              {/* Vertices (꼭짓점) Dots & Pulses (Centered symmetrically) */}
+              {activeBasePts.map((p, idx) => (
+                <g key={`vertex-${sides}-${idx}`}>
                   <circle cx={p.x} cy={p.y} r="9" className="geo-vertex-pulse" />
                   <circle cx={p.x} cy={p.y} r="5" className="geo-vertex-dot" />
                 </g>
               ))}
 
               {/* Visual Labels pointing to Point and Line */}
-              {pts.length > 0 && (
+              {activeBasePts.length > 0 && (
                 <g className="geo-label-pointer">
                   {/* Point Label at Top Vertex */}
-                  <text x={pts[0]!.x} y={pts[0]!.y - 14} className="geo-pointer-tag vertex-tag">
+                  <text x={activeBasePts[0]!.x} y={activeBasePts[0]!.y - 14} className="geo-pointer-tag vertex-tag">
                     ● 꼭짓점(점)
                   </text>
                   {/* Line Label on Right Edge */}
-                  {pts.length >= 2 && (
+                  {activeBasePts.length >= 2 && (
                     <text
-                      x={(pts[0]!.x + pts[1]!.x) / 2 + 16}
-                      y={(pts[0]!.y + pts[1]!.y) / 2}
+                      x={(activeBasePts[0]!.x + activeBasePts[1]!.x) / 2 + 18}
+                      y={(activeBasePts[0]!.y + activeBasePts[1]!.y) / 2}
                       className="geo-pointer-tag edge-tag"
                     >
                       ━ 변(선)
