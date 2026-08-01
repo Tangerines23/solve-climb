@@ -87,28 +87,21 @@ const ManimLevel1Visualizer: React.FC = () => {
     }
 
     if (currSides > prevSides) {
-      // EXPAND / SPREAD (3 -> 4, 4 -> 5, 5 -> 6)
-      // Extra vertex splits from the bottom-most vertex of prevSides shape,
-      // and spreads out towards the bottom-left regular polygon target!
+      // EXPAND (3 -> 4, 4 -> 5, 5 -> 6):
+      // Clockwise ordered sub-division along prevSides perimeter to prevent any polygon twisting!
       const startBase = getRegularVertices(prevSides);
-
-      // Find bottom-most vertex in startBase
-      let bottomIdx = 0;
-      for (let k = 1; k < startBase.length; k++) {
-        if (startBase[k]!.y > startBase[bottomIdx]!.y) {
-          bottomIdx = k;
-        }
-      }
-
       const initialPoints: { x: number; y: number }[] = [];
 
       for (let i = 0; i < currSides; i++) {
-        if (i < prevSides) {
-          initialPoints.push(startBase[i]!);
-        } else {
-          // Overlap extra split points on the bottom-most vertex
-          initialPoints.push({ ...startBase[bottomIdx]! });
-        }
+        const t = (i * prevSides) / currSides;
+        const idx = Math.floor(t);
+        const frac = t - idx;
+        const p1 = startBase[idx % prevSides]!;
+        const p2 = startBase[(idx + 1) % prevSides]!;
+        initialPoints.push({
+          x: p1.x + (p2.x - p1.x) * frac,
+          y: p1.y + (p2.y - p1.y) * frac,
+        });
       }
 
       return targetBase.map((target, i) => {
