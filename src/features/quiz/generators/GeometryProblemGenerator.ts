@@ -20,7 +20,7 @@ export function generateGeometryProblem(
   _difficulty: Difficulty,
   rng?: { random: () => number; randomInt: (min: number, max: number) => number }
 ): GeometryProblem {
-  if (level > 14) {
+  if (level > 15) {
     const randomVal = rng ? rng.randomInt(1, 8) : Math.floor(Math.random() * 8) + 1;
     switch (randomVal) {
       case 1:
@@ -48,7 +48,7 @@ export function generateGeometryProblem(
     case 1:
       return generateBasicShapes(rng);
     case 2:
-      return generateBasicShapesDiagonal(rng);
+      return generateSymmetry(rng);
     case 3:
       return generateTriangleProperties(rng);
     case 4:
@@ -58,21 +58,23 @@ export function generateGeometryProblem(
     case 6:
       return generateAreaTriangle(rng);
     case 7:
-      return generateCircleBasic(rng);
+      return generateAreaTrapezoid(rng);
     case 8:
-      return generateCircleAdvanced(rng);
+      return generateCircleBasic(rng);
     case 9:
-      return generateSymmetry(rng);
+      return generateCircleCircumference(rng);
     case 10:
-      return generatePythagorean(rng);
+      return generateCircleArea(rng);
     case 11:
-      return generatePythagoreanAdvanced(rng);
+      return generateBasicShapesDiagonal(rng);
     case 12:
       return generateSolidBasic(rng);
     case 13:
-      return generateSolidVolume(rng);
+      return generateSolidVolumeRect(rng);
     case 14:
-      return generateSolidSurfaceArea(rng);
+      return generatePythagoreanBasic(rng);
+    case 15:
+      return generateTrigonometryBasic(rng);
     default:
       return generateBasicShapes(rng);
   }
@@ -152,8 +154,10 @@ function generateBasicShapesDiagonal(rng?: {
     { name: '육각형', diagonals: 9 },
     { name: '칠각형', diagonals: 14 },
     { name: '팔각형', diagonals: 20 },
+    { name: '구각형', diagonals: 27 },
   ];
-  const shape = shapes[getRandomInt(0, shapes.length - 1, rng)];
+  const idx = Math.abs(getRandomInt(0, shapes.length - 1, rng)) % shapes.length;
+  const shape = shapes[idx] || shapes[0]!;
   return {
     question: `${shape.name} 대각선 = ?`,
     answer: shape.diagonals,
@@ -377,7 +381,8 @@ function generateTrigonometry(rng?: {
     { q: 'cos(60°)', a: '1/2' },
     { q: 'tan(45°)', a: '1' },
   ];
-  const item = questions[getRandomInt(0, questions.length - 1, rng)];
+  const idx = Math.abs(getRandomInt(0, questions.length - 1, rng)) % questions.length;
+  const item = questions[idx] || questions[0]!;
   return {
     question: `${item.q} 값 = ?`,
     answer: item.a,
@@ -392,9 +397,87 @@ function generatePythagoreanAdvanced(rng?: {
     { a: 9, b: 40, c: 41 },
     { a: 11, b: 60, c: 61 },
   ];
-  const t = triples[getRandomInt(0, triples.length - 1, rng)];
+  const t = triples[Math.abs(getRandomInt(0, triples.length - 1, rng)) % triples.length] || triples[0]!;
   return {
     question: `직각삼각형 [밑변 ${t.a}, 높이 ${t.b}] ➔ 빗변 = ?`,
     answer: t.c,
+  };
+}
+
+function generateAreaTrapezoid(rng?: {
+  randomInt: (min: number, max: number) => number;
+}): GeometryProblem {
+  const top = getRandomInt(1, 5, rng);
+  const bottom = top + getRandomInt(1, 5, rng) * 2;
+  const height = getRandomInt(2, 6, rng);
+  const area = ((top + bottom) * height) / 2;
+  return {
+    question: `사다리꼴 [윗변 ${top}, 아랫변 ${bottom}, 높이 ${height}] 넓이 = ?`,
+    answer: area,
+  };
+}
+
+function generateCircleCircumference(rng?: {
+  randomInt: (min: number, max: number) => number;
+}): GeometryProblem {
+  const radii = [2, 5, 10, 20];
+  const r = radii[Math.abs(getRandomInt(0, radii.length - 1, rng)) % radii.length] || 10;
+  const answer = Math.round(2 * 3.1 * r * 10) / 10;
+  return {
+    question: `원 [반지름 ${r}, π=3.1] 둘레 = ?`,
+    answer: answer,
+    inputType: Number.isInteger(answer) ? 'number' : 'decimal',
+  };
+}
+
+function generateCircleArea(rng?: {
+  randomInt: (min: number, max: number) => number;
+}): GeometryProblem {
+  const radii = [2, 5, 10];
+  const r = radii[Math.abs(getRandomInt(0, radii.length - 1, rng)) % radii.length] || 10;
+  const answer = Math.round(3.1 * r * r * 10) / 10;
+  return {
+    question: `원 [반지름 ${r}, π=3.1] 넓이 = ?`,
+    answer: answer,
+    inputType: Number.isInteger(answer) ? 'number' : 'decimal',
+  };
+}
+
+function generateSolidVolumeRect(rng?: {
+  randomInt: (min: number, max: number) => number;
+}): GeometryProblem {
+  const w = getRandomInt(2, 5, rng);
+  const d = getRandomInt(2, 4, rng);
+  const h = getRandomInt(2, 5, rng);
+  return {
+    question: `직육면체 [${w} × ${d} × ${h}] 부피 = ?`,
+    answer: w * d * h,
+    inputType: 'number',
+  };
+}
+
+function generatePythagoreanBasic(rng?: {
+  randomInt: (min: number, max: number) => number;
+}): GeometryProblem {
+  return {
+    question: `직각삼각형 [밑변 3, 높이 4] ➔ 빗변 = ?`,
+    answer: 5,
+  };
+}
+
+function generateTrigonometryBasic(rng?: {
+  randomInt: (min: number, max: number) => number;
+}): GeometryProblem {
+  const questions = [
+    { q: 'tan(45°)', a: 1 },
+    { q: 'sin(30°)', a: '1/2' },
+    { q: 'cos(60°)', a: '1/2' },
+  ];
+  const idx = Math.abs(getRandomInt(0, questions.length - 1, rng)) % questions.length;
+  const item = questions[idx] || questions[0]!;
+  return {
+    question: `${item.q} 값 = ?`,
+    answer: item.a,
+    inputType: typeof item.a === 'number' ? 'number' : 'fraction',
   };
 }

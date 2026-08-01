@@ -48,8 +48,8 @@ export const ManimLevel1Visualizer: React.FC = React.memo(() => {
 
   const { stepIndex, isPaused, togglePause, getEasedProgress } = useManimEngine({
     totalSteps: SHAPE_CONFIGS.length,
-    holdDuration: 2000,
-    moveDuration: 1000,
+    holdDuration: 2000, // 2.0s Hold for clear reading
+    moveDuration: 1000, // 1.0s Morph move
   });
 
   const currentConfig = SHAPE_CONFIGS[stepIndex]!;
@@ -140,9 +140,7 @@ export const ManimLevel1Visualizer: React.FC = React.memo(() => {
           <circle key={`dot-${i}`} cx={p.x} cy={p.y} r={5.5} className="geo-simple-dot" />
         ))}
 
-        {isAdminMode && (
-          <circle cx={SIZE / 2} cy={SIZE / 2} r={3} fill="#c084fc" />
-        )}
+        {isAdminMode && <circle cx={SIZE / 2} cy={SIZE / 2} r={3} fill="#c084fc" />}
       </svg>
     </ManimCardLayout>
   );

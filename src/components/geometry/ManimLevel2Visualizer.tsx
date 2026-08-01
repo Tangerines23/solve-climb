@@ -39,30 +39,57 @@ function computeRegularVertices(n: number): { x: number; y: number }[] {
   return pts;
 }
 
+// 5 Sub-Phases per Polygon:
+// 0: Morph Base (3.0s) -> "꼭짓점 N개 / 변 N개"
+// 1: Single Vertex Diagonals (3.0s) -> "1개 꼭짓점 ➔ (n-3)개 대각선"
+// 2: All Vertices Diagonals (3.0s) -> "n개 꼭짓점 × (n-3)개"
+// 3: Gold Dedup Highlight (4.0s) -> "중복 2번씩 겹침! ➔ ÷ 2"
+// 4: Final Formula (3.0s) -> "n × (n - 3) ÷ 2 = 대각선 개수"
+
+const PHASE_DURATIONS = [3000, 3000, 3000, 4000, 3000];
+const SINGLE_SHAPE_DURATION = PHASE_DURATIONS.reduce((a, b) => a + b, 0); // 16,000ms (16s per polygon)
+
 export const ManimLevel2Visualizer: React.FC = React.memo(() => {
   const isAdminMode = useDebugStore((state) => state.isAdminMode);
 
-  const { stepIndex, isPaused, togglePause, getEasedProgress } = useManimEngine({
+  const { isPaused, togglePause, t } = useManimEngine({
     totalSteps: POLYGON_SEQUENCE.length,
-    holdDuration: 2500,
+    holdDuration: SINGLE_SHAPE_DURATION - 1000,
     moveDuration: 1000,
   });
 
-  const currSides = POLYGON_SEQUENCE[stepIndex]!;
-  const nextSides = POLYGON_SEQUENCE[(stepIndex + 1) % POLYGON_SEQUENCE.length]!;
+  const totalCycle = POLYGON_SEQUENCE.length * SINGLE_SHAPE_DURATION;
+  const elapsedMs = t * totalCycle;
 
-  const progress = getEasedProgress();
+  const shapeIdx = Math.floor(elapsedMs / SINGLE_SHAPE_DURATION) % POLYGON_SEQUENCE.length;
+  const shapeElapsed = elapsedMs % SINGLE_SHAPE_DURATION;
+
+  const currSides = POLYGON_SEQUENCE[shapeIdx]!;
+  const nextSides = POLYGON_SEQUENCE[(shapeIdx + 1) % POLYGON_SEQUENCE.length]!;
+
+  // Determine current sub-phase within the polygon narrative
+  let currentPhase = 0;
+  let phaseElapsed = shapeElapsed;
+  let accum = 0;
+  for (let p = 0; p < PHASE_DURATIONS.length; p++) {
+    if (shapeElapsed < accum + PHASE_DURATIONS[p]!) {
+      currentPhase = p;
+      phaseElapsed = shapeElapsed - accum;
+      break;
+    }
+    accum += PHASE_DURATIONS[p]!;
+  }
+
+  // Morph progress (only during transition to next shape at the end of phase 4)
+  const isMorphing = shapeElapsed >= SINGLE_SHAPE_DURATION - 1000;
+  const morphProgress = isMorphing ? (shapeElapsed - (SINGLE_SHAPE_DURATION - 1000)) / 1000 : 0;
 
   const morphPts = useMemo(() => {
-    const targetBase = PRECOMPUTED_VERTICES[nextSides] || computeRegularVertices(nextSides);
-    if (progress <= 0) {
-      return PRECOMPUTED_VERTICES[currSides] || computeRegularVertices(currSides);
-    }
-    if (progress >= 1) {
-      return targetBase;
-    }
-
     const startBase = PRECOMPUTED_VERTICES[currSides] || computeRegularVertices(currSides);
+    if (!isMorphing || morphProgress <= 0) return startBase;
+
+    const targetBase = PRECOMPUTED_VERTICES[nextSides] || computeRegularVertices(nextSides);
+    const eased = morphProgress * morphProgress * (3 - 2 * morphProgress);
 
     if (nextSides > currSides) {
       const initialPoints: { x: number; y: number }[] = [];
@@ -73,60 +100,127 @@ export const ManimLevel2Visualizer: React.FC = React.memo(() => {
       return targetBase.map((tPt, i) => {
         const sPt = initialPoints[i]!;
         return {
-          x: sPt.x + (tPt.x - sPt.x) * progress,
-          y: sPt.y + (tPt.y - sPt.y) * progress,
+          x: sPt.x + (tPt.x - sPt.x) * eased,
+          y: sPt.y + (tPt.y - sPt.y) * eased,
         };
       });
     } else {
       return targetBase.map((tPt, i) => {
         const sPt = startBase[i % startBase.length]!;
         return {
-          x: sPt.x + (tPt.x - sPt.x) * progress,
-          y: sPt.y + (tPt.y - sPt.y) * progress,
+          x: sPt.x + (tPt.x - sPt.x) * eased,
+          y: sPt.y + (tPt.y - sPt.y) * eased,
         };
       });
     }
-  }, [currSides, nextSides, progress]);
+  }, [currSides, nextSides, isMorphing, morphProgress]);
 
-  const activeSides = progress > 0.5 ? nextSides : currSides;
-  const activeName = KOREAN_POLYGON_NAMES[activeSides] || `${activeSides}각형`;
+  const activeName = KOREAN_POLYGON_NAMES[currSides] || `${currSides}각형`;
+  const totalDiagonals = (currSides * (currSides - 3)) / 2;
+  const singleCount = currSides - 3;
 
-  const totalDiagonals = (activeSides * (activeSides - 3)) / 2;
+  // Single vertex (v0) diagonals
+  const v0Diagonals = useMemo(() => {
+    const res: { x1: number; y1: number; x2: number; y2: number }[] = [];
+    const pts = morphPts;
+    const n = pts.length;
+    const v0 = pts[0]!;
+    for (let j = 2; j < n - 1; j++) {
+      res.push({ x1: v0.x, y1: v0.y, x2: pts[j]!.x, y2: pts[j]!.y });
+    }
+    return res;
+  }, [morphPts]);
 
-  // Compute all diagonals for active polygon
-  const diagonals = useMemo(() => {
+  // All diagonals
+  const allDiagonals = useMemo(() => {
     const res: { x1: number; y1: number; x2: number; y2: number }[] = [];
     const pts = morphPts;
     const n = pts.length;
     for (let i = 0; i < n; i++) {
       for (let j = i + 2; j < n; j++) {
         if (i === 0 && j === n - 1) continue;
-        res.push({
-          x1: pts[i]!.x,
-          y1: pts[i]!.y,
-          x2: pts[j]!.x,
-          y2: pts[j]!.y,
-        });
+        res.push({ x1: pts[i]!.x, y1: pts[i]!.y, x2: pts[j]!.x, y2: pts[j]!.y });
       }
     }
     return res;
   }, [morphPts]);
 
+  // Render narrative subtext caption
+  const caption = useMemo(() => {
+    switch (currentPhase) {
+      case 0:
+        return (
+          <div className="geo-stat-highlights" key="phase-0">
+            <span className="geo-stat-item">
+              꼭짓점 <strong className="highlight-num">{currSides}</strong>개
+            </span>
+            <span className="geo-divider">/</span>
+            <span className="geo-stat-item">
+              변 <strong className="highlight-num">{currSides}</strong>개
+            </span>
+          </div>
+        );
+
+      case 1:
+        return (
+          <div className="geo-stat-highlights" key="phase-1">
+            <span className="geo-stat-item" style={{ color: '#c084fc' }}>
+              1개 꼭짓점 ➔ (<strong className="highlight-num">{currSides} - 3</strong>) ={' '}
+              <strong className="highlight-num">{singleCount}</strong>개 대각선
+            </span>
+          </div>
+        );
+
+      case 2:
+        return (
+          <div className="geo-stat-highlights" key="phase-2">
+            <span className="geo-stat-item" style={{ color: '#fb7185' }}>
+              <strong className="highlight-num">{currSides}</strong>개 꼭짓점 ×{' '}
+              <strong className="highlight-num">{singleCount}</strong>개 ={' '}
+              <strong className="highlight-num">{currSides * singleCount}</strong>선분
+            </span>
+          </div>
+        );
+
+      case 3:
+        return (
+          <div className="geo-stat-highlights" key="phase-3">
+            <span className="geo-stat-item" style={{ color: '#facc15' }}>
+              중복 2번씩 겹침! ➔ <strong className="highlight-num" style={{ color: '#facc15' }}>÷ 2</strong>
+            </span>
+          </div>
+        );
+
+      case 4:
+      default:
+        return (
+          <div className="geo-stat-highlights" key="phase-4">
+            <span className="geo-stat-item">
+              대각선 = <strong className="highlight-num">{currSides}</strong> × (
+              <strong className="highlight-num">{singleCount}</strong>) ÷ 2 ={' '}
+              <strong className="highlight-num" style={{ color: '#4ade80' }}>
+                {totalDiagonals}개
+              </strong>
+            </span>
+          </div>
+        );
+    }
+  }, [currentPhase, currSides, singleCount, totalDiagonals]);
+
+  // Phase 1 drawing progress (0 ~ 1.5s draw, 1.5s ~ 3.0s hold)
+  const phase1Progress = currentPhase === 1 ? Math.min(1, phaseElapsed / 1500) : 1;
+  const phase1Eased = phase1Progress * phase1Progress * (3 - 2 * phase1Progress);
+
+  // Phase 2 drawing progress (0 ~ 2.5s draw, 2.5s ~ 3.0s hold)
+  const phase2Progress = currentPhase === 2 ? Math.min(1, phaseElapsed / 2500) : 1;
+  const phase2Eased = phase2Progress * phase2Progress * (3 - 2 * phase2Progress);
+
+  // Phase 3 gold highlight
+  const isGoldGlow = currentPhase === 3 && phaseElapsed < 3000;
+
   const ptsStr = useMemo(
     () => morphPts.map((p) => `${p.x.toFixed(1)},${p.y.toFixed(1)}`).join(' '),
     [morphPts]
-  );
-
-  const caption = (
-    <div className="geo-stat-highlights">
-      <span className="geo-stat-item">
-        대각선 개수 = <strong className="highlight-num">{activeSides}</strong> × (
-        <strong className="highlight-num">{activeSides} - 3</strong>) ÷ 2 ={' '}
-        <strong className="highlight-num" style={{ color: '#4ade80' }}>
-          {totalDiagonals}개
-        </strong>
-      </span>
-    </div>
   );
 
   return (
@@ -139,19 +233,48 @@ export const ManimLevel2Visualizer: React.FC = React.memo(() => {
       <svg width={SIZE} height={165} viewBox={`0 0 ${SIZE} 165`} className="geo-tip-svg">
         <polygon points={ptsStr} className="geo-shape-poly-morph" />
 
-        {/* Diagonals */}
-        {diagonals.map((d, idx) => (
-          <line
-            key={`diag-${idx}`}
-            x1={d.x1}
-            y1={d.y1}
-            x2={d.x2}
-            y2={d.y2}
-            stroke="#fb7185"
-            strokeWidth={1.5}
-            opacity={0.85}
-          />
-        ))}
+        {/* Phase 1: Diagonals from Vertex 0 */}
+        {currentPhase === 1 &&
+          v0Diagonals.map((d, idx) => {
+            const drawX = d.x1 + (d.x2 - d.x1) * phase1Eased;
+            const drawY = d.y1 + (d.y2 - d.y1) * phase1Eased;
+            return (
+              <line
+                key={`v0-diag-${idx}`}
+                x1={d.x1}
+                y1={d.y1}
+                x2={drawX}
+                y2={drawY}
+                stroke="#c084fc"
+                strokeWidth={2.2}
+              />
+            );
+          })}
+
+        {/* Phase 2, 3, 4: All Diagonals */}
+        {currentPhase >= 2 &&
+          allDiagonals.map((d, idx) => {
+            const drawX = currentPhase === 2 ? d.x1 + (d.x2 - d.x1) * phase2Eased : d.x2;
+            const drawY = currentPhase === 2 ? d.y1 + (d.y2 - d.y1) * phase2Eased : d.y2;
+            const strokeColor = isGoldGlow ? '#facc15' : '#fb7185';
+            const strokeW = isGoldGlow ? 2.5 : 1.5;
+
+            return (
+              <line
+                key={`all-diag-${idx}`}
+                x1={d.x1}
+                y1={d.y1}
+                x2={drawX}
+                y2={drawY}
+                stroke={strokeColor}
+                strokeWidth={strokeW}
+                style={{
+                  filter: isGoldGlow ? 'drop-shadow(0 0 4px #facc15)' : 'none',
+                  transition: 'stroke 0.3s ease',
+                }}
+              />
+            );
+          })}
 
         {/* Outer Edges */}
         {morphPts.map((p, i) => (
@@ -167,12 +290,18 @@ export const ManimLevel2Visualizer: React.FC = React.memo(() => {
 
         {/* Vertices */}
         {morphPts.map((p, i) => (
-          <circle key={`dot-${i}`} cx={p.x} cy={p.y} r={5.5} className="geo-simple-dot" />
+          <circle
+            key={`dot-${i}`}
+            cx={p.x}
+            cy={p.y}
+            r={i === 0 && currentPhase === 1 ? 7 : 5.5}
+            fill={i === 0 && currentPhase === 1 ? '#c084fc' : '#a5b4fc'}
+            stroke="#ffffff"
+            strokeWidth={2}
+          />
         ))}
 
-        {isAdminMode && (
-          <circle cx={SIZE / 2} cy={SIZE / 2} r={3} fill="#c084fc" />
-        )}
+        {isAdminMode && <circle cx={SIZE / 2} cy={SIZE / 2} r={3} fill="#c084fc" />}
       </svg>
     </ManimCardLayout>
   );
