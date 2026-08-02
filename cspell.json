@@ -75,7 +75,9 @@
     "googleusercontent",
     "yxxx",
     "Manim",
-    "lerp"
+    "lerp",
+    "dedup",
+    "Dedup"
   ],
   "ignorePaths": [
     "node_modules",
