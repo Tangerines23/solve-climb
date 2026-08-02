@@ -33,6 +33,7 @@ const ALLOWED_PATTERNS = [
   /rgb\(var\(/, // rgb(var(...)) 형태
   /GeometryTipVisualizer/, // 기하학 그래픽 시각화 파일
   /ShapeVisualizer/, // 기하학 도형 시각화 파일
+  /ManimLevel/, // 3B1B 기하학 도형 시각화 컴포넌트
 ];
 
 // 검사할 파일 확장자
