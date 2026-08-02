@@ -20,11 +20,31 @@ interface TriangleKeyframe {
 
 const TRIANGLE_KEYFRAMES: TriangleKeyframe[] = [
   { v0: { x: 100, y: 41.54006 }, v1: { x: 42, y: 142 }, v2: { x: 158, y: 142 }, name: '정삼각형' },
-  { v0: { x: 100, y: 75.0 }, v1: { x: 35, y: 140 }, v2: { x: 165, y: 140 }, name: '직각이등변삼각형' },
+  {
+    v0: { x: 100, y: 75.0 },
+    v1: { x: 35, y: 140 },
+    v2: { x: 165, y: 140 },
+    name: '직각이등변삼각형',
+  },
   { v0: { x: 40, y: 50.0 }, v1: { x: 40, y: 142 }, v2: { x: 162.247, y: 142 }, name: '직각삼각형' },
-  { v0: { x: 100, y: 88.81198 }, v1: { x: 20, y: 135 }, v2: { x: 180, y: 135 }, name: '둔각이등변삼각형' },
-  { v0: { x: 65, y: 72.0 }, v1: { x: 18, y: 138 }, v2: { x: 178, y: 138 }, name: '둔각부등변삼각형' },
-  { v0: { x: 100, y: 13.1256 }, v1: { x: 52, y: 145 }, v2: { x: 148, y: 145 }, name: '예각이등변삼각형' },
+  {
+    v0: { x: 100, y: 88.81198 },
+    v1: { x: 20, y: 135 },
+    v2: { x: 180, y: 135 },
+    name: '둔각이등변삼각형',
+  },
+  {
+    v0: { x: 65, y: 72.0 },
+    v1: { x: 18, y: 138 },
+    v2: { x: 178, y: 138 },
+    name: '둔각부등변삼각형',
+  },
+  {
+    v0: { x: 100, y: 13.1256 },
+    v1: { x: 52, y: 145 },
+    v2: { x: 148, y: 145 },
+    name: '예각이등변삼각형',
+  },
 ];
 
 export const ManimLevel3Visualizer: React.FC = React.memo(() => {
@@ -186,32 +206,111 @@ export const ManimLevel3Visualizer: React.FC = React.memo(() => {
 
         {isAdminMode && (
           <>
-            <line x1={v0.x} y1={v0.y} x2={m0.x} y2={m0.y} stroke="#e2e8f0" strokeWidth={1.2} strokeDasharray="3 3" opacity={0.65} />
-            <line x1={v1.x} y1={v1.y} x2={m1.x} y2={m1.y} stroke="#e2e8f0" strokeWidth={1.2} strokeDasharray="3 3" opacity={0.65} />
-            <line x1={v2.x} y1={v2.y} x2={m2.x} y2={m2.y} stroke="#e2e8f0" strokeWidth={1.2} strokeDasharray="3 3" opacity={0.65} />
+            <line
+              x1={v0.x}
+              y1={v0.y}
+              x2={m0.x}
+              y2={m0.y}
+              stroke="#e2e8f0"
+              strokeWidth={1.2}
+              strokeDasharray="3 3"
+              opacity={0.65}
+            />
+            <line
+              x1={v1.x}
+              y1={v1.y}
+              x2={m1.x}
+              y2={m1.y}
+              stroke="#e2e8f0"
+              strokeWidth={1.2}
+              strokeDasharray="3 3"
+              opacity={0.65}
+            />
+            <line
+              x1={v2.x}
+              y1={v2.y}
+              x2={m2.x}
+              y2={m2.y}
+              stroke="#e2e8f0"
+              strokeWidth={1.2}
+              strokeDasharray="3 3"
+              opacity={0.65}
+            />
 
             <circle cx={m0.x} cy={m0.y} r={2.5} fill="#a5b4fc" />
             <circle cx={m1.x} cy={m1.y} r={2.5} fill="#a5b4fc" />
             <circle cx={m2.x} cy={m2.y} r={2.5} fill="#a5b4fc" />
 
-            <circle cx={deltaCentroid.x} cy={deltaCentroid.y} r={4.5} fill="#facc15" stroke="#ffffff" strokeWidth={1.5} />
-            <text x={deltaCentroid.x + 7} y={deltaCentroid.y - 5} fontSize={10} fontWeight={800} fill="#facc15">
+            <circle
+              cx={deltaCentroid.x}
+              cy={deltaCentroid.y}
+              r={4.5}
+              fill="#facc15"
+              stroke="#ffffff"
+              strokeWidth={1.5}
+            />
+            <text
+              x={deltaCentroid.x + 7}
+              y={deltaCentroid.y - 5}
+              fontSize={10}
+              fontWeight={800}
+              fill="#facc15"
+            >
               δ
             </text>
           </>
         )}
 
-        <circle cx={v0.x} cy={v0.y} r={5.5} className="geo-simple-dot" style={{ fill: '#c084fc' }} />
-        <circle cx={v1.x} cy={v1.y} r={5.5} className="geo-simple-dot" style={{ fill: '#fb7185' }} />
-        <circle cx={v2.x} cy={v2.y} r={5.5} className="geo-simple-dot" style={{ fill: '#38bdf8' }} />
+        <circle
+          cx={v0.x}
+          cy={v0.y}
+          r={5.5}
+          className="geo-simple-dot"
+          style={{ fill: '#c084fc' }}
+        />
+        <circle
+          cx={v1.x}
+          cy={v1.y}
+          r={5.5}
+          className="geo-simple-dot"
+          style={{ fill: '#fb7185' }}
+        />
+        <circle
+          cx={v2.x}
+          cy={v2.y}
+          r={5.5}
+          className="geo-simple-dot"
+          style={{ fill: '#38bdf8' }}
+        />
 
-        <text x={v0.x} y={v0.y - 10} fontSize={12} fontWeight={800} fill="#c084fc" textAnchor="middle">
+        <text
+          x={v0.x}
+          y={v0.y - 10}
+          fontSize={12}
+          fontWeight={800}
+          fill="#c084fc"
+          textAnchor="middle"
+        >
           α {alphaDeg}°
         </text>
-        <text x={v1.x - 8} y={v1.y + 20} fontSize={11} fontWeight={800} fill="#fb7185" textAnchor="middle">
+        <text
+          x={v1.x - 8}
+          y={v1.y + 20}
+          fontSize={11}
+          fontWeight={800}
+          fill="#fb7185"
+          textAnchor="middle"
+        >
           β {betaDeg}°
         </text>
-        <text x={v2.x + 8} y={v2.y + 20} fontSize={11} fontWeight={800} fill="#38bdf8" textAnchor="middle">
+        <text
+          x={v2.x + 8}
+          y={v2.y + 20}
+          fontSize={11}
+          fontWeight={800}
+          fill="#38bdf8"
+          textAnchor="middle"
+        >
           γ {gammaDeg}°
         </text>
       </svg>

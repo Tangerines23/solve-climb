@@ -77,7 +77,10 @@ export const ManimLevel5Visualizer: React.FC = React.memo(() => {
       </span>
       <span className="geo-divider">=</span>
       <span className="geo-stat-item" style={{ color: '#4ade80', fontWeight: 900 }}>
-        넓이 <strong className="highlight-num" style={{ color: '#4ade80' }}>{area}</strong>
+        넓이{' '}
+        <strong className="highlight-num" style={{ color: '#4ade80' }}>
+          {area}
+        </strong>
       </span>
     </div>
   );
@@ -137,7 +140,14 @@ export const ManimLevel5Visualizer: React.FC = React.memo(() => {
           stroke="#38bdf8"
           strokeWidth={2}
         />
-        <line x1={rectX} y1={rectY - 16} x2={rectX} y2={rectY - 8} stroke="#38bdf8" strokeWidth={1.5} />
+        <line
+          x1={rectX}
+          y1={rectY - 16}
+          x2={rectX}
+          y2={rectY - 8}
+          stroke="#38bdf8"
+          strokeWidth={1.5}
+        />
         <line
           x1={rectX + widthPx}
           y1={rectY - 16}

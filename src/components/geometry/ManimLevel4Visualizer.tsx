@@ -166,28 +166,98 @@ export const ManimLevel4Visualizer: React.FC = React.memo(() => {
         <line x1={v2.x} y1={v2.y} x2={v3.x} y2={v3.y} className="geo-edge-animated-line" />
         <line x1={v3.x} y1={v3.y} x2={v0.x} y2={v0.y} className="geo-edge-animated-line" />
 
-        <circle cx={v0.x} cy={v0.y} r={5.5} className="geo-simple-dot" style={{ fill: '#fb7185' }} />
-        <circle cx={v1.x} cy={v1.y} r={5.5} className="geo-simple-dot" style={{ fill: '#38bdf8' }} />
-        <circle cx={v2.x} cy={v2.y} r={5.5} className="geo-simple-dot" style={{ fill: '#fb7185' }} />
-        <circle cx={v3.x} cy={v3.y} r={5.5} className="geo-simple-dot" style={{ fill: '#38bdf8' }} />
+        <circle
+          cx={v0.x}
+          cy={v0.y}
+          r={5.5}
+          className="geo-simple-dot"
+          style={{ fill: '#fb7185' }}
+        />
+        <circle
+          cx={v1.x}
+          cy={v1.y}
+          r={5.5}
+          className="geo-simple-dot"
+          style={{ fill: '#38bdf8' }}
+        />
+        <circle
+          cx={v2.x}
+          cy={v2.y}
+          r={5.5}
+          className="geo-simple-dot"
+          style={{ fill: '#fb7185' }}
+        />
+        <circle
+          cx={v3.x}
+          cy={v3.y}
+          r={5.5}
+          className="geo-simple-dot"
+          style={{ fill: '#38bdf8' }}
+        />
 
         {isAdminMode && (
           <>
-            <line x1={v0.x} y1={v0.y} x2={v2.x} y2={v2.y} stroke="#c084fc" strokeWidth={1.2} strokeDasharray="4 3" opacity={0.7} />
-            <line x1={v1.x} y1={v1.y} x2={v3.x} y2={v3.y} stroke="#c084fc" strokeWidth={1.2} strokeDasharray="4 3" opacity={0.7} />
+            <line
+              x1={v0.x}
+              y1={v0.y}
+              x2={v2.x}
+              y2={v2.y}
+              stroke="#c084fc"
+              strokeWidth={1.2}
+              strokeDasharray="4 3"
+              opacity={0.7}
+            />
+            <line
+              x1={v1.x}
+              y1={v1.y}
+              x2={v3.x}
+              y2={v3.y}
+              stroke="#c084fc"
+              strokeWidth={1.2}
+              strokeDasharray="4 3"
+              opacity={0.7}
+            />
           </>
         )}
 
-        <text x={v0.x - 10} y={v0.y - 8} fontSize={11} fontWeight={800} fill="#fb7185" textAnchor="end">
+        <text
+          x={v0.x - 10}
+          y={v0.y - 8}
+          fontSize={11}
+          fontWeight={800}
+          fill="#fb7185"
+          textAnchor="end"
+        >
           α {alphaDeg}°
         </text>
-        <text x={v1.x + 10} y={v1.y - 8} fontSize={11} fontWeight={800} fill="#38bdf8" textAnchor="start">
+        <text
+          x={v1.x + 10}
+          y={v1.y - 8}
+          fontSize={11}
+          fontWeight={800}
+          fill="#38bdf8"
+          textAnchor="start"
+        >
           β {betaDeg}°
         </text>
-        <text x={v2.x + 10} y={v2.y + 16} fontSize={11} fontWeight={800} fill="#fb7185" textAnchor="start">
+        <text
+          x={v2.x + 10}
+          y={v2.y + 16}
+          fontSize={11}
+          fontWeight={800}
+          fill="#fb7185"
+          textAnchor="start"
+        >
           γ {alphaDeg}°
         </text>
-        <text x={v3.x - 10} y={v3.y + 16} fontSize={11} fontWeight={800} fill="#38bdf8" textAnchor="end">
+        <text
+          x={v3.x - 10}
+          y={v3.y + 16}
+          fontSize={11}
+          fontWeight={800}
+          fill="#38bdf8"
+          textAnchor="end"
+        >
           δ {betaDeg}°
         </text>
       </svg>
