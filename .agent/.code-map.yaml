@@ -1,6 +1,6 @@
 
 project: solve-climb
-generatedAt: "2026-07-30T07:09:55.897Z"
+generatedAt: "2026-08-01T18:52:46.695Z"
 files:
   src/App.tsx:
     imports: [@/utils/resilientLazy, @/components/PageTransition, @/stores/useLevelProgressStore, @/stores/useAuthStore, @/hooks/useCustomBackNavigation, @/components/GlobalLoadingIndicator, @/stores/useErrorLogStore, @/stores/useDebugStore, @/stores/useSettingsStore, @/hooks/useConnectivity, @/components/PwaUpdateNotification, @/features/auth, @/utils/supabaseClient, @/utils/auth, @/components/GlobalToastContainer]
@@ -234,7 +234,7 @@ files:
         returns: "import(\"C:/Users/ghkdd/gemini-projects/solve-climb/node_modules/@types/react/jsx-runtime\").JSX.Element"
         calls: [useNavigate, useLocation, window.scrollTo, navigate, navItems.map, isActive, handleNavClick]
   src/components/GameTipModal.tsx:
-    imports: [./game/BackpackBottomSheet, ./BaseModal, ../constants/tips, ./GameTipModal.css]
+    imports: [./game/BackpackBottomSheet, ./BaseModal, ./geometry/GeometryTipVisualizer, ../constants/tips, ./GameTipModal.css]
     state: [isBackpackOpen, selectedItemIds]
     exports:
       - name: GameTipModal
@@ -960,7 +960,7 @@ files:
             params:
               userId: string
             returns: "Promise<{ success: boolean; error?: any; }>"
-            calls: [safeSupabaseQuery, "supabase .from('user_level_records') .delete() .eq", "supabase .from('user_level_records') .delete", "supabase .from"]
+            calls: [safeSupabaseQuery, supabase.from('user_level_records').delete().eq, supabase.from('user_level_records').delete, supabase.from]
   src/services/UserRepository.ts:
     imports: [@/utils/supabaseClient, @/utils/debugFetch, @/constants/ui, @/types/user]
     exports:
@@ -977,7 +977,7 @@ files:
             params:
               userId: string
             returns: "Promise<{ profile: { minerals?: number | undefined; stamina?: number | undefined; is_anonymous?: boolean | undefined; last_ad_stamina_recharge?: string | null | undefined; updated_at?: string | undefined; } | null; profileError: any; inventory: import(\"C:/Users/ghkdd/gemini-projects/solve-climb/src/services/UserRepository\").RawInventoryItem[] | null; inventoryError: any; }>"
-            calls: ["supabase .from('profiles') .select('minerals, stamina, is_anonymous, last_ad_stamina_recharge, updated_at') .eq", "supabase .from('profiles') .select", "supabase .from", "(profileQueryBuilder as any).maybeSingle", "(profileQueryBuilder as any).single", Promise.all, safeSupabaseQuery, "supabase .from('inventory') .select(` quantity, items ( id, code, name, description ) `) .eq", "supabase .from('inventory') .select"]
+            calls: ["supabase .from('profiles') .select('minerals, stamina, updated_at') .eq", "supabase .from('profiles') .select", "supabase .from", "(profileQueryBuilder as any).maybeSingle", "(profileQueryBuilder as any).single", Promise.all, safeSupabaseQuery, "supabase .from('inventory') .select( ` quantity, items ( id, code, name, description ) ` ) .eq", "supabase .from('inventory') .select"]
           - name: formatInventory
             params:
               raw: "import(\"C:/Users/ghkdd/gemini-projects/solve-climb/src/services/UserRepository\").RawInventoryItem[] | null"
@@ -1773,6 +1773,44 @@ files:
 }": StaminaWarningModalProps
         returns: "import(\"C:/Users/ghkdd/gemini-projects/solve-climb/node_modules/@types/react/jsx-runtime\").JSX.Element | null"
         calls: [e.stopPropagation]
+  src/components/geometry/GeometryTipVisualizer.tsx:
+    imports: [./GeometryTipVisualizer.css, ./ManimLevel1Visualizer, ./ManimLevel2Visualizer, ./ManimLevel3Visualizer, ./ManimLevel4Visualizer, ./ManimLevel5Visualizer]
+    exports:
+      - name: GeometryTipVisualizer
+        params:
+          "{ level }": GeometryTipVisualizerProps
+        returns: "import(\"C:/Users/ghkdd/gemini-projects/solve-climb/node_modules/@types/react/jsx-runtime\").JSX.Element"
+        calls: [pts.push, Math.cos, Math.sin, "pts.map((p) => `${p.x},${p.y}`).join", pts.map, renderVisualizer]
+  src/components/geometry/ManimCardLayout.tsx:
+    imports: [./GeometryTipVisualizer.css]
+  src/components/geometry/ManimLevel1Visualizer.tsx:
+    imports: [../../stores/useDebugStore, ./ManimCardLayout, ./GeometryTipVisualizer.css]
+  src/components/geometry/ManimLevel2Visualizer.tsx:
+    imports: [../../stores/useDebugStore, ./ManimCardLayout, ./GeometryTipVisualizer.css]
+  src/components/geometry/ManimLevel3Visualizer.tsx:
+    imports: [../../stores/useDebugStore, ./useManimEngine, ./ManimCardLayout, ./GeometryTipVisualizer.css]
+  src/components/geometry/ManimLevel4Visualizer.tsx:
+    imports: [../../stores/useDebugStore, ./useManimEngine, ./ManimCardLayout, ./GeometryTipVisualizer.css]
+  src/components/geometry/ManimLevel5Visualizer.tsx:
+    imports: [../../stores/useDebugStore, ./useManimEngine, ./ManimCardLayout, ./GeometryTipVisualizer.css]
+  src/components/geometry/ShapeVisualizer.tsx:
+    exports:
+      - name: ShapeVisualizer
+        params:
+          "{ sides }": ShapeVisualizerProps
+        returns: "import(\"C:/Users/ghkdd/gemini-projects/solve-climb/node_modules/@types/react/jsx-runtime\").JSX.Element"
+        calls: [Math.cos, Math.sin, points.push, "points.map((p) => `${p.x.toFixed(1)},${p.y.toFixed(1)}`).join", points.map, p.x.toFixed, p.y.toFixed]
+  src/components/geometry/useManimEngine.ts:
+    exports:
+      - name: useManimEngine
+        params:
+          "{
+  totalSteps,
+  holdDuration = 2000,
+  moveDuration = 1000,
+}": UseManimEngineOptions
+        returns: "{ t: number; stepIndex: number; stepElapsed: number; isPaused: boolean; togglePause: () => void; getEasedProgress: () => number; totalCycle: number; stepDuration: number; }"
+        calls: [requestAnimationFrame, setT, cancelAnimationFrame, setIsPaused, Math.floor, Math.min, Math.max]
   src/components/layout/PageLayout.tsx:
     imports: [./PageLayout.css]
   src/components/roadmap/LinearLandmarkItem.tsx:
@@ -1842,7 +1880,7 @@ files:
         returns: "import(\"C:/Users/ghkdd/gemini-projects/solve-climb/node_modules/@types/react/jsx-runtime\").JSX.Element"
         calls: [loadBadges, setIsLoading, supabase.auth.getSession, setMessage, "supabase .from('badge_definitions') .select('id, name, description, emoji') .order", "supabase .from('badge_definitions') .select", "supabase .from", setBadgeDefinitions, "supabase .from('user_badges') .select('badge_id') .eq", "supabase .from('user_badges') .select", setUserBadges, badges?.map, setIsUpdating, userBadges.has, supabase.rpc, next.delete, confirm, supabase.from('user_badges').delete().eq, supabase.from('user_badges').delete, supabase.from, import, "supabase .from('theme_mapping') .select('theme_id') // 여기선 id가 아니라 mapping의 Primary Key 혹은 theme_id 자체가 필요 .limit", "supabase .from('theme_mapping') .select", BADGE_DEFINITIONS.map, console.error, badgeDefinitions.filter, badgeDefinitions.find, setToastMessage, setIsToastOpen, setIsVerifyingSync, setSyncResult, verifySync, setSelectedBadgeId, earnedBadges.map, badgeDefinitions.map, handleBadgeToggle, syncResult.profile.issues.map, syncResult.tier.issues.map, syncResult.badges.issues.map, syncResult.inventory.issues.map]
   src/features/debug/components/BoundaryTestSection.tsx:
-    imports: [@/utils/supabaseClient, @/stores/useUserStore, @/features/mypage, ./BoundaryTestSection.css]
+    imports: [@/utils/supabaseClient, @/stores/useUserStore, @/features/mypage, @/constants/ui, ./BoundaryTestSection.css]
   src/features/debug/components/CustomPresetModal.tsx:
     imports: [@/utils/debugPresets, ./CustomPresetModal.css]
     state: [name, description, actions, editingActionIndex, editingAction, errorMessage]
@@ -2115,7 +2153,7 @@ files:
         returns: "import(\"C:/Users/ghkdd/gemini-projects/solve-climb/node_modules/@types/react/jsx-runtime\").JSX.Element"
         calls: ["(totalSolved || 0).toLocaleString"]
   src/features/mypage/components/MyPageTipPreview.tsx:
-    imports: [@/constants/tips, @/utils/quizGenerator, @/utils/solutionExplainer, @/types/quiz, @/stores/useToastStore, ./MyPageTipPreview.css]
+    imports: [@/components/geometry/GeometryTipVisualizer, @/constants/tips, @/utils/quizGenerator, @/utils/solutionExplainer, @/types/quiz, @/stores/useToastStore, ./MyPageTipPreview.css]
     state: [category, world, level, tip, sampleQuestion, solutionSteps, refreshTrigger]
     handlers:
       - name: handleCategoryChange
@@ -2259,7 +2297,7 @@ files:
         returns: "import(\"C:/Users/ghkdd/gemini-projects/solve-climb/node_modules/@types/react/jsx-runtime\").JSX.Element"
         calls: [useNavigate, useToastStore, safeAccess, useGameStore.setState, Object.prototype.hasOwnProperty.call, subParam.startsWith, ARITHMETIC_TOPIC_MAP.get, setPreviewKeyboardType, showToast, setAnswerInput, "(prev + key).slice", setDisplayValue, prev.slice, navigate, urls.myPage, e?.preventDefault, console.log]
   src/features/quiz/components/QuizQuestionArea.tsx:
-    imports: [../types/quiz, @/components/algebra/EquationVisualizer, @/components/expert/FunctionMachine, @/components/expert/IntegralVisualizer, ./CalculusVisualization, @/components/effects/ReasoningOverlay, @/utils/algebra, ../contexts/QuizContext]
+    imports: [../types/quiz, @/components/algebra/EquationVisualizer, @/components/expert/FunctionMachine, @/components/expert/IntegralVisualizer, ./CalculusVisualization, @/components/geometry/ShapeVisualizer, @/components/effects/ReasoningOverlay, @/utils/algebra, ../contexts/QuizContext]
   src/features/quiz/components/TodaysPromise.tsx:
     imports: [./TodaysPromise.css, ../contexts/QuizContext]
     state: [countdown]
@@ -2305,6 +2343,34 @@ files:
           - name: toString
             returns: string
             calls: [this._meters.toLocaleString]
+  src/features/quiz/domain/Combo.ts:
+    imports: [./Altitude]
+    exports:
+      - name: Combo
+        type: class
+        methods:
+          - name: create
+            params:
+              value: number
+              feverLevel: number | undefined
+            returns: "import(\"C:/Users/ghkdd/gemini-projects/solve-climb/src/features/quiz/domain/Altitude\").Result<import(\"C:/Users/ghkdd/gemini-projects/solve-climb/src/features/quiz/domain/Combo\").Combo, string>"
+            calls: [Number.isNaN, Math.floor, Math.min]
+          - name: increment
+            returns: "import(\"C:/Users/ghkdd/gemini-projects/solve-climb/src/features/quiz/domain/Combo\").Combo"
+            calls: [Math.min, Math.floor]
+          - name: reset
+            returns: "import(\"C:/Users/ghkdd/gemini-projects/solve-climb/src/features/quiz/domain/Combo\").Combo"
+          - name: decay
+            params:
+              decayFactor: number
+            returns: "import(\"C:/Users/ghkdd/gemini-projects/solve-climb/src/features/quiz/domain/Combo\").Combo"
+            calls: [Math.max, Math.floor, Math.min]
+          - name: equals
+            params:
+              other: "import(\"C:/Users/ghkdd/gemini-projects/solve-climb/src/features/quiz/domain/Combo\").Combo"
+            returns: boolean
+          - name: toString
+            returns: string
   src/features/quiz/generators/AlgebraAdvancedGenerator.ts:
     imports: [../types/quiz]
     exports:
@@ -2370,7 +2436,17 @@ files:
           _difficulty: "import(\"C:/Users/ghkdd/gemini-projects/solve-climb/src/features/quiz/types/quiz\").Difficulty"
           rng: "{ random: () => number; randomInt: (min: number, max: number) => number; } | undefined"
         returns: "import(\"C:/Users/ghkdd/gemini-projects/solve-climb/src/features/quiz/generators/GeometryProblemGenerator\").GeometryProblem"
-        calls: [rng.randomInt, Math.floor, Math.random, generateSolidVolume, generateSolidSurfaceArea, generateCoordinateDistance, generateTrigonometry, generatePythagoreanAdvanced, generateCoordinateMidpoint, generateLineSlope, generateCircleEqBasic, generateBasicShapes, generateBasicShapesDiagonal, generateTriangleProperties, generateQuadrilateralProperties, generateAreaRect, generateAreaTriangle, generateCircleBasic, generateCircleAdvanced, generateSymmetry, generatePythagorean, generateSolidBasic]
+        calls: [rng.randomInt, Math.floor, Math.random, generateSolidVolume, generateSolidSurfaceArea, generateCoordinateDistance, generateTrigonometry, generatePythagoreanAdvanced, generateCoordinateMidpoint, generateLineSlope, generateCircleEqBasic, generateBasicShapes, generateSymmetry, generateTriangleProperties, generateQuadrilateralProperties, generateAreaRect, generateAreaTriangle, generateAreaTrapezoid, generateCircleBasic, generateCircleCircumference, generateCircleArea, generateBasicShapesDiagonal, generateSolidBasic, generateSolidVolumeRect, generatePythagoreanBasic, generateTrigonometryBasic]
+      - name: generateCircleAdvanced
+        params:
+          rng: "{ random: () => number; randomInt: (min: number, max: number) => number; } | undefined"
+        returns: "import(\"C:/Users/ghkdd/gemini-projects/solve-climb/src/features/quiz/generators/GeometryProblemGenerator\").GeometryProblem"
+        calls: [rng.random, Math.random, getRandomInt, Math.round, Number.isInteger]
+      - name: generatePythagorean
+        params:
+          rng: "{ random: () => number; randomInt: (min: number, max: number) => number; } | undefined"
+        returns: "import(\"C:/Users/ghkdd/gemini-projects/solve-climb/src/features/quiz/generators/GeometryProblemGenerator\").GeometryProblem"
+        calls: [getRandomInt, rng.random, Math.random]
   src/features/quiz/generators/LogicProblemGenerator.ts:
     imports: [../types/quiz]
     exports:
@@ -2651,7 +2727,7 @@ files:
             퀴즈 이벤트 리스너 등록 서비스
             - QuizContext나 useQuizSubmit에 강결합되어 있던 사이드 이펙트(진동, Toast, 오답노트 저장)를
               이벤트 수신 방식으로 분리하여 구독합니다.
-        calls: [quizEventBus.on, vibrateLong, unsubscribers.push, useToastStore.getState().showToast, useToastStore.getState, unsubscribers.forEach, unsubscribe]
+        calls: [quizEventBus.on, vibrateLong, cleanupFns.push, useToastStore.getState().showToast, useToastStore.getState, cleanupFns.forEach, unsubscribe]
   src/features/quiz/types/quizProps.ts:
     imports: [./quiz]
   src/features/quiz/utils/challenge.ts:

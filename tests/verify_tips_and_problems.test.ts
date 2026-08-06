@@ -131,7 +131,7 @@ test('Audit Basic category tips and problems with difficulty scores', () => {
   const worlds = ['World1', 'World2', 'World3', 'World4'] as const;
   const maxLevels: Record<string, number> = {
     World1: 30,
-    World2: 14,
+    World2: 15,
     World3: 15,
     World4: 15,
   };
@@ -174,25 +174,19 @@ test('Audit Basic category tips and problems with difficulty scores', () => {
     if (worldId === 'World2') {
       if (level === 1)
         return qStr.includes('꼭짓점') || qStr.includes('변') || qStr.includes('각형');
-      if (level === 2) return qStr.includes('대각선');
+      if (level === 2) return qStr.includes('대칭축') || qStr.includes('대칭');
       if (level === 3)
         return qStr.includes('삼각형') || qStr.includes('각') || qStr.includes('내각');
       if (level === 4)
         return qStr.includes('사각형') || qStr.includes('평행사변형') || qStr.includes('각');
       if (level === 5) return qStr.includes('직사각형') && qStr.includes('넓이');
       if (level === 6) return qStr.includes('삼각형') && qStr.includes('넓이');
-      if (level === 7)
-        return qStr.includes('반지름') || qStr.includes('지름') || qStr.includes('원');
+      if (level === 7) return qStr.includes('사다리꼴') && qStr.includes('넓이');
       if (level === 8)
-        return qStr.includes('원') && (qStr.includes('둘레') || qStr.includes('넓이'));
-      if (level === 9) return qStr.includes('대칭축') || qStr.includes('대칭');
-      if (level === 10 || level === 11)
-        return (
-          qStr.includes('빗변') ||
-          qStr.includes('직각삼각형') ||
-          qStr.includes('길이') ||
-          qStr.includes('피타고라스')
-        );
+        return qStr.includes('반지름') || qStr.includes('지름') || qStr.includes('원');
+      if (level === 9) return qStr.includes('원') && qStr.includes('둘레');
+      if (level === 10) return qStr.includes('원') && qStr.includes('넓이');
+      if (level === 11) return qStr.includes('대각선');
       if (level === 12)
         return (
           qStr.includes('기둥') ||
@@ -201,9 +195,15 @@ test('Audit Basic category tips and problems with difficulty scores', () => {
           qStr.includes('꼭짓점') ||
           qStr.includes('면')
         );
-      if (level === 13)
-        return qStr.includes('부피') || qStr.includes('원기둥') || qStr.includes('직육면체');
-      if (level === 14) return qStr.includes('겉넓이') || qStr.includes('정육면체');
+      if (level === 13) return qStr.includes('부피') || qStr.includes('직육면체');
+      if (level === 14)
+        return (
+          qStr.includes('빗변') ||
+          qStr.includes('직각삼각형') ||
+          qStr.includes('길이') ||
+          qStr.includes('피타고라스')
+        );
+      if (level === 15) return qStr.includes('sin') || qStr.includes('cos') || qStr.includes('tan') || qStr.includes('값');
     }
 
     if (worldId === 'World3') {

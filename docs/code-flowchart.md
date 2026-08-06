@@ -59,16 +59,17 @@ graph TD
   pages --> features_mypage
   services --> utils
   services --> types
+  services --> constants
   stores --> utils
   stores --> services
   stores --> types
   stores --> constants
   types --> features_mypage
   utils --> components
-  utils --> types
   utils --> stores
   utils --> services
   utils --> constants
+  utils --> types
   utils --> config
   components --> features_quiz
   components --> features_mypage
@@ -79,10 +80,10 @@ graph TD
   features_debug --> stores
   features_debug --> components
   features_debug --> features_mypage
+  features_debug --> constants
   features_debug --> config
   features_debug --> services
   features_debug --> types
-  features_debug --> constants
   features_item --> utils
   features_item --> stores
   features_item --> constants
@@ -141,7 +142,9 @@ graph TD
     src_services_LevelSyncService_ts["LevelSyncService"]
     src_services_LocalStorageService_ts["LocalStorageService"]
     src_services_MockStorageService_ts["MockStorageService"]
+    src_services_ProgressRepository_ts["ProgressRepository"]
     src_services_storageKeys_ts["storageKeys"]
+    src_services_UserRepository_ts["UserRepository"]
   end
 
   subgraph stores ["📦 Zustand Stores"]
@@ -230,6 +233,8 @@ graph TD
   src_services_index_ts --> src_services_LocalStorageService_ts
   src_services_LocalStorageService_ts --> src_services_IStorageService_ts
   src_services_MockStorageService_ts --> src_services_IStorageService_ts
+  src_services_ProgressRepository_ts --> src_utils_supabaseClient_ts
+  src_services_UserRepository_ts --> src_utils_supabaseClient_ts
   src_stores_useAuthStore_ts --> src_utils_supabaseClient_ts
   src_stores_useAuthStore_ts --> src_services_index_ts
   src_stores_useAuthStore_ts --> src_services_analytics_ts
@@ -242,6 +247,7 @@ graph TD
   src_stores_useLevelProgressStore_ts --> src_stores_useDebugStore_ts
   src_stores_useLevelProgressStore_ts --> src_stores_useToastStore_ts
   src_stores_useLevelProgressStore_ts --> src_services_LevelSyncService_ts
+  src_stores_useLevelProgressStore_ts --> src_services_ProgressRepository_ts
   src_stores_useProfileStore_ts --> src_stores_useLevelProgressStore_ts
   src_stores_useProfileStore_ts --> src_services_index_ts
   src_stores_useProfileStore_ts --> src_utils_supabaseClient_ts
@@ -249,6 +255,7 @@ graph TD
   src_stores_useRankingStore_ts --> src_stores_useToastStore_ts
   src_stores_useUserStore_ts --> src_utils_supabaseClient_ts
   src_stores_useUserStore_ts --> src_stores_useDebugStore_ts
+  src_stores_useUserStore_ts --> src_services_UserRepository_ts
   src_utils_errorHandler_ts --> src_stores_useErrorLogStore_ts
   src_utils_errorHandler_ts --> src_services_analytics_ts
   src_utils_haptic_ts --> src_stores_useSettingsStore_ts

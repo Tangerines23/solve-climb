@@ -52,25 +52,25 @@ export const WORLD_STAGE_CONFIG: Record<string, StageConfig[]> = {
       id: 'warmup',
       range: [1, 6], // Lv 1 ~ 6
       title: '평면의 기초',
-      desc: '기초 도형의 변, 꼭짓점, 각도와 넓이',
+      desc: '도형의 꼭짓점, 대칭축, 내각과 넓이 기초',
       color: '#4ADE80',
       icon: '📐',
       bgTheme: 'sky-light',
     },
     {
       id: 'basic',
-      range: [7, 11], // Lv 7 ~ 11
-      title: '기하의 확장',
-      desc: '원과 대칭축, 피타고라스 정리의 기초',
+      range: [7, 10], // Lv 7 ~ 10
+      title: '측정과 넓이',
+      desc: '사다리꼴 넓이부터 원의 반지름, 둘레, 넓이 마스터',
       color: '#F59E0B',
       icon: '🧩',
       bgTheme: 'sunset',
     },
     {
       id: 'focus',
-      range: [12, 14], // Lv 12 ~ 14
-      title: '공간 마스터',
-      desc: '입체도형의 부피와 겉넓이 완벽 정복',
+      range: [11, 15], // Lv 11 ~ 15
+      title: '기하와 응용',
+      desc: '대각선, 입체도형 부피부터 피타고라스와 삼각비 맛보기',
       color: '#EF4444',
       icon: '🛸',
       bgTheme: 'dark-storm',

@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
+import { GeometryTipVisualizer } from '@/components/geometry/GeometryTipVisualizer';
 import { WORLD_TIPS, CATEGORY_TIPS, type TipItem } from '@/constants/tips';
 import { generateQuestion } from '@/utils/quizGenerator';
 import { getSolutionProcess } from '@/utils/solutionExplainer';
@@ -50,7 +51,7 @@ export function MyPageTipPreview() {
         case 'World1':
           return 30;
         case 'World2':
-          return 14;
+          return 15;
         case 'World3':
           return 15;
         case 'World4':
@@ -223,6 +224,7 @@ export function MyPageTipPreview() {
       {tip ? (
         <div className="my-page-tip-content-box animate-fade-in">
           <h4 className="my-page-tip-content-title">{tip.title}</h4>
+          {category === '기초' && world === 'World2' && <GeometryTipVisualizer level={level} />}
           <div className="my-page-tip-content-body">
             <div className="my-page-tip-content-item">
               <span className="my-page-tip-label">💡 팁</span>
