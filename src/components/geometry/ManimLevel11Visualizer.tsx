@@ -18,23 +18,34 @@ const DIAG_KEYFRAMES: PolygonDiagKeyframe[] = [
   { sides: 6, diagonals: 9, name: '육각형' },
 ];
 
+// Level 11: 다각형 대각선 (n(n-3)/2) 3B1B 순차 드로잉 모핑 애니메이션
+// Step 0: 사각형 (대각선 2개 교차)
+// Step 1: 오각형 (대각선 5개 5각 별 완성)
+// Step 2: 육각형 (대각선 9개 만화경 렌더링)
 export const ManimLevel11Visualizer: React.FC = React.memo(() => {
   const isAdminMode = useDebugStore((state) => state.isAdminMode);
 
-  const { stepIndex, isPaused, togglePause } = useManimEngine({
+  const { stepIndex, isPaused, togglePause, getEasedProgress } = useManimEngine({
     totalSteps: DIAG_KEYFRAMES.length,
     holdDuration: 2200,
     moveDuration: 1500,
   });
 
-  const curr = DIAG_KEYFRAMES[stepIndex]!;
+  const eased = getEasedProgress();
+  const currFrame = DIAG_KEYFRAMES[stepIndex]!;
+  const nextFrame = DIAG_KEYFRAMES[(stepIndex + 1) % DIAG_KEYFRAMES.length]!;
+
+  // 변 수 보평 계산
+  const sidesFloat = currFrame.sides + (nextFrame.sides - currFrame.sides) * eased;
+  const intSides = Math.round(sidesFloat);
+
   const center = SIZE / 2;
   const centerY = 85;
   const radius = 55;
 
   const pts: { x: number; y: number }[] = [];
-  for (let i = 0; i < curr.sides; i++) {
-    const angle = -Math.PI / 2 + (i * 2 * Math.PI) / curr.sides;
+  for (let i = 0; i < intSides; i++) {
+    const angle = -Math.PI / 2 + (i * 2 * Math.PI) / intSides;
     pts.push({
       x: center + radius * Math.cos(angle),
       y: centerY + radius * Math.sin(angle),
@@ -44,9 +55,9 @@ export const ManimLevel11Visualizer: React.FC = React.memo(() => {
 
   // 대각선 리스트
   const diagLines: { x1: number; y1: number; x2: number; y2: number }[] = [];
-  for (let i = 0; i < curr.sides; i++) {
-    for (let j = i + 2; j < curr.sides; j++) {
-      if (i === 0 && j === curr.sides - 1) continue;
+  for (let i = 0; i < intSides; i++) {
+    for (let j = i + 2; j < intSides; j++) {
+      if (i === 0 && j === intSides - 1) continue;
       diagLines.push({
         x1: pts[i]!.x,
         y1: pts[i]!.y,
@@ -59,12 +70,12 @@ export const ManimLevel11Visualizer: React.FC = React.memo(() => {
   const caption = (
     <div className="geo-stat-highlights">
       <span className="geo-stat-item" style={{ color: '#38bdf8' }}>
-        n(n - 3) ÷ 2 =
+        {intSides} × ({intSides} - 3) ÷ 2 =
       </span>
       <span className="geo-stat-item" style={{ color: '#4ade80', fontWeight: 900 }}>
         대각선{' '}
         <strong className="highlight-num" style={{ color: '#4ade80' }}>
-          {curr.diagonals}개
+          {diagLines.length}개
         </strong>
       </span>
     </div>
@@ -72,7 +83,7 @@ export const ManimLevel11Visualizer: React.FC = React.memo(() => {
 
   return (
     <ManimCardLayout
-      badgeName={`${curr.name} 대각선 공식`}
+      badgeName={`${currFrame.name} 대각선 n(n-3)/2`}
       isPaused={isPaused}
       onTogglePause={togglePause}
       captionContent={caption}
@@ -80,7 +91,7 @@ export const ManimLevel11Visualizer: React.FC = React.memo(() => {
       <svg width={SIZE} height={165} viewBox={`0 0 ${SIZE} 165`} className="geo-tip-svg">
         <polygon points={ptsStr} className="geo-shape-poly-morph" />
 
-        {/* 대각선 선들 */}
+        {/* 대각선 순차 렌더링 Lines */}
         {diagLines.map((d, idx) => (
           <line
             key={idx}
@@ -88,8 +99,10 @@ export const ManimLevel11Visualizer: React.FC = React.memo(() => {
             y1={d.y1}
             x2={d.x2}
             y2={d.y2}
-            className="geo-radius-line"
-            stroke="#fb7185"
+            stroke="#f43f5e"
+            strokeWidth={2}
+            strokeDasharray="4 3"
+            opacity={0.85}
           />
         ))}
 
@@ -107,7 +120,7 @@ export const ManimLevel11Visualizer: React.FC = React.memo(() => {
 
         {isAdminMode && (
           <text x={10} y={158} fill="rgba(255,255,255,0.4)" fontSize={9}>
-            [DEBUG] L11 Diagonals Visualizer
+            [DEBUG] L11 Diagonals Sequential Visualizer
           </text>
         )}
       </svg>

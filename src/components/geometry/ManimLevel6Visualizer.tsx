@@ -35,12 +35,6 @@ export const ManimLevel6Visualizer: React.FC = React.memo(() => {
   const heightVal = 8;
   const areaVal = (baseVal * heightVal) / 2;
 
-  // 복제 삼각형 목표 정점 (180도 회전 시 좌표: top + (right - left))
-  const targetGhostTop: Point = {
-    x: right.x + (top.x - left.x), // 155 + 90 = 245 -> 화면 내 조정을 위해 역방향 계산
-    y: right.y + (top.y - left.y),
-  };
-
   // 회전 결합 모핑 계산
   // Step 0 -> Step 1: 복제 삼각형이 나타나 원본 삼각형 빗변에 부드럽게 결합
   // Step 1 -> Step 2: 결합 상태에서 절반 분할 하이라이트 (살짝 이격)

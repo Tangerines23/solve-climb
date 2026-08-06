@@ -312,7 +312,7 @@ function generateSolidBasic(rng?: {
   }
 }
 
-function generateSymmetry(rng?: {
+export function generateSymmetry(rng?: {
   randomInt: (min: number, max: number) => number;
 }): GeometryProblem {
   const n = getRandomInt(3, 10, rng);
