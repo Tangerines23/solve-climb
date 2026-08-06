@@ -52,8 +52,8 @@ export const ManimLevel3Visualizer: React.FC = React.memo(() => {
 
   const { stepIndex, isPaused, togglePause, getEasedProgress } = useManimEngine({
     totalSteps: TRIANGLE_KEYFRAMES.length,
-    holdDuration: 2000,
-    moveDuration: 3000,
+    holdDuration: 1500,
+    moveDuration: 1000,
   });
 
   const currFrame = TRIANGLE_KEYFRAMES[stepIndex]!;

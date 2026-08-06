@@ -5,6 +5,7 @@ import { ManimLevel2Visualizer } from './ManimLevel2Visualizer';
 import { ManimLevel3Visualizer } from './ManimLevel3Visualizer';
 import { ManimLevel4Visualizer } from './ManimLevel4Visualizer';
 import { ManimLevel5Visualizer } from './ManimLevel5Visualizer';
+import { ManimLevel6Visualizer } from './ManimLevel6Visualizer';
 
 interface GeometryTipVisualizerProps {
   level: number;
@@ -31,27 +32,8 @@ export const GeometryTipVisualizer: React.FC<GeometryTipVisualizerProps> = ({ le
       case 5:
         return <ManimLevel5Visualizer />;
 
-      case 6: {
-        // 2-6: 삼각형 넓이 (밑변 x 높이 / 2)
-        return (
-          <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`} className="geo-tip-svg">
-            <polygon points="110,40 30,140 170,140" className="geo-shape-poly" />
-            {/* Height Line (dashed) */}
-            <line x1="110" y1="40" x2="110" y2="140" className="geo-height-line" />
-            <rect x="110" y="130" width="10" height="10" className="geo-right-angle-box" />
-            <text x="122" y="90" className="geo-dim-text">
-              높이(h)
-            </text>
-            <line x1="30" y1="152" x2="170" y2="152" className="geo-dim-line" />
-            <text x="100" y="165" className="geo-dim-text">
-              밑변(b)
-            </text>
-            <text x={center} y={size - 8} className="geo-tip-subtext-highlight">
-              넓이 = (밑변 × 높이) ÷ 2
-            </text>
-          </svg>
-        );
-      }
+      case 6:
+        return <ManimLevel6Visualizer />;
 
       case 7: {
         // 2-7: 원의 기초 (반지름과 지름)
