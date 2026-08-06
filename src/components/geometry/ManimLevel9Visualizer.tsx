@@ -81,7 +81,13 @@ export const ManimLevel9Visualizer: React.FC = React.memo(() => {
               strokeWidth={3}
               strokeDasharray={stepIndex === 0 ? `${(1 - eased) * 282} 282` : 'none'}
             />
-            <line x1={center} y1={centerY} x2={center + radius} y2={centerY} className="geo-radius-line" />
+            <line
+              x1={center}
+              y1={centerY}
+              x2={center + radius}
+              y2={centerY}
+              className="geo-radius-line"
+            />
             <text x={center + 20} y={centerY - 8} fill="#38bdf8" fontSize={11} fontWeight={800}>
               r = {rVal}
             </text>
@@ -103,13 +109,26 @@ export const ManimLevel9Visualizer: React.FC = React.memo(() => {
             />
             {/* 끝 꼭짓점 Dots */}
             <circle cx={lineStart} cy={centerY} r={4.5} fill="#4ade80" />
-            {unrollEased > 0.8 && (
-              <circle cx={lineEnd} cy={centerY} r={4.5} fill="#4ade80" />
-            )}
+            {unrollEased > 0.8 && <circle cx={lineEnd} cy={centerY} r={4.5} fill="#4ade80" />}
 
             {/* 지름(2r) 3.1배 구분 가이드 점선 */}
-            <line x1={lineStart} y1={centerY + 18} x2={lineEnd} y2={centerY + 18} stroke="#38bdf8" strokeWidth={1.5} strokeDasharray="3 3" />
-            <text x={(lineStart + lineEnd) / 2} y={centerY + 34} fill="#4ade80" fontSize={11} fontWeight={900} textAnchor="middle">
+            <line
+              x1={lineStart}
+              y1={centerY + 18}
+              x2={lineEnd}
+              y2={centerY + 18}
+              stroke="#38bdf8"
+              strokeWidth={1.5}
+              strokeDasharray="3 3"
+            />
+            <text
+              x={(lineStart + lineEnd) / 2}
+              y={centerY + 34}
+              fill="#4ade80"
+              fontSize={11}
+              fontWeight={900}
+              textAnchor="middle"
+            >
               지름(20) × 3.1 = 둘레 62
             </text>
           </g>
