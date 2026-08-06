@@ -192,9 +192,10 @@ function generateTriangleProperties(rng?: {
 function generateQuadrilateralProperties(rng?: {
   randomInt: (min: number, max: number) => number;
 }): GeometryProblem {
-  const isAdjacent = getRandomInt(0, 1, rng) === 1;
-  const a = getRandomInt(30, 150, rng);
-  if (isAdjacent) {
+  const type = getRandomInt(1, 10, rng);
+  if (type <= 7) {
+    // 유형 1: 평행사변형 이웃한 각 (180 - a)
+    const a = getRandomInt(3, 15, rng) * 10; // 10단위로 깔끔한 수치 (30° ~ 150°)
     const b = 180 - a;
     return {
       question: `평행사변형 [한 각 ${a}°] ➔ 이웃한 각 = ?°`,
@@ -206,13 +207,20 @@ function generateQuadrilateralProperties(rng?: {
       },
     } as any;
   } else {
+    // 유형 2: 사각형 내각의 합 (360 - a - b - c)
+    const a = getRandomInt(6, 12, rng) * 10;
+    const b = getRandomInt(6, 12, rng) * 10;
+    const c = getRandomInt(6, 12, rng) * 10;
+    const d = 360 - a - b - c;
     return {
-      question: `평행사변형 [한 각 ${a}°] ➔ 마주보는 각 = ?°`,
-      answer: a,
+      question: `사각형 내각: ${a}°, ${b}°, ${c}°, [ ? ]°`,
+      answer: d,
       hintType: 'shape-visualizer',
       hintData: {
-        shapeType: 'parallelogram',
+        shapeType: 'quadrilateral',
         angleA: a,
+        angleB: b,
+        angleC: c,
       },
     } as any;
   }
