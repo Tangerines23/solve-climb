@@ -1,4 +1,4 @@
-import React, { useMemo } from 'react';
+import React from 'react';
 import { useDebugStore } from '../../stores/useDebugStore';
 import { useManimEngine } from './useManimEngine';
 import { ManimCardLayout } from './ManimCardLayout';
@@ -74,9 +74,7 @@ export const ManimLevel6Visualizer: React.FC = React.memo(() => {
     y: currFrame.right.y + (nextFrame.right.y - currFrame.right.y) * eased,
   };
 
-  const baseLen = Math.round(
-    currFrame.baseLen + (nextFrame.baseLen - currFrame.baseLen) * eased
-  );
+  const baseLen = Math.round(currFrame.baseLen + (nextFrame.baseLen - currFrame.baseLen) * eased);
   const heightLen = Math.round(
     currFrame.heightLen + (nextFrame.heightLen - currFrame.heightLen) * eased
   );
@@ -155,19 +153,57 @@ export const ManimLevel6Visualizer: React.FC = React.memo(() => {
 
         {/* 외곽선 강조 애니메이션 Line */}
         <line x1={top.x} y1={top.y} x2={left.x} y2={left.y} className="geo-edge-animated-line" />
-        <line x1={left.x} y1={left.y} x2={right.x} y2={right.y} className="geo-edge-animated-line" />
+        <line
+          x1={left.x}
+          y1={left.y}
+          x2={right.x}
+          y2={right.y}
+          className="geo-edge-animated-line"
+        />
         <line x1={right.x} y1={right.y} x2={top.x} y2={top.y} className="geo-edge-animated-line" />
 
         {/* 꼭짓점 정점 (Vertices) */}
-        <circle cx={top.x} cy={top.y} r={5.5} className="geo-simple-dot" style={{ fill: '#c084fc' }} />
-        <circle cx={left.x} cy={left.y} r={5.5} className="geo-simple-dot" style={{ fill: '#38bdf8' }} />
-        <circle cx={right.x} cy={right.y} r={5.5} className="geo-simple-dot" style={{ fill: '#38bdf8' }} />
+        <circle
+          cx={top.x}
+          cy={top.y}
+          r={5.5}
+          className="geo-simple-dot"
+          style={{ fill: '#c084fc' }}
+        />
+        <circle
+          cx={left.x}
+          cy={left.y}
+          r={5.5}
+          className="geo-simple-dot"
+          style={{ fill: '#38bdf8' }}
+        />
+        <circle
+          cx={right.x}
+          cy={right.y}
+          r={5.5}
+          className="geo-simple-dot"
+          style={{ fill: '#38bdf8' }}
+        />
 
         {/* 텍스트 래블 (밑변 b, 높이 h) */}
-        <text x={(left.x + right.x) / 2} y={left.y + 18} fill="#38bdf8" fontSize={11} fontWeight={800} textAnchor="middle">
+        <text
+          x={(left.x + right.x) / 2}
+          y={left.y + 18}
+          fill="#38bdf8"
+          fontSize={11}
+          fontWeight={800}
+          textAnchor="middle"
+        >
           밑변
         </text>
-        <text x={top.x + (top.x > 100 ? -16 : 16)} y={(top.y + left.y) / 2} fill="#fb7185" fontSize={11} fontWeight={800} textAnchor="middle">
+        <text
+          x={top.x + (top.x > 100 ? -16 : 16)}
+          y={(top.y + left.y) / 2}
+          fill="#fb7185"
+          fontSize={11}
+          fontWeight={800}
+          textAnchor="middle"
+        >
           높이
         </text>
 
