@@ -43,7 +43,15 @@ export interface QuizQuestion {
 }
 
 export interface ShapeVisualizerHint {
-  sides: number;
+  sides?: number;
+  showDiagonals?: boolean;
+  shapeType?: 'n-gon' | 'triangle' | 'parallelogram' | 'rect' | 'circle';
+  width?: number;
+  height?: number;
+  base?: number;
+  radius?: number;
+  angleA?: number;
+  angleB?: number;
   shapeName?: string;
 }
 

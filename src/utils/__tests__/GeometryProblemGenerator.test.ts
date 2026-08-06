@@ -27,11 +27,11 @@ describe('GeometryProblemGenerator', () => {
     expect(problem.answer).toBe(4);
   });
 
-  it('should generate Level 2 Symmetry', () => {
-    const rng = mockRng([5]); // n=5 (오각형)
+  it('should generate Level 2 Basic Shapes Diagonal', () => {
+    const rng = mockRng([0]);
     const problem = generateGeometryProblem(2, 'easy', rng);
-    expect(problem.question).toContain('정오각형');
-    expect(problem.answer).toBe(5);
+    expect(problem.question).toBe('이 도형의 대각선 수 = ?');
+    expect((problem as any).hintType).toBe('shape-visualizer');
   });
 
   it('should generate Level 3 Triangle Properties', () => {

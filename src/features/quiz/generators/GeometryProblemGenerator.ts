@@ -48,7 +48,7 @@ export function generateGeometryProblem(
     case 1:
       return generateBasicShapes(rng);
     case 2:
-      return generateSymmetry(rng);
+      return generateBasicShapesDiagonal(rng);
     case 3:
       return generateTriangleProperties(rng);
     case 4:
@@ -149,19 +149,26 @@ function generateBasicShapesDiagonal(rng?: {
   randomInt: (min: number, max: number) => number;
 }): GeometryProblem {
   const shapes = [
-    { name: '사각형', diagonals: 2 },
-    { name: '오각형', diagonals: 5 },
-    { name: '육각형', diagonals: 9 },
-    { name: '칠각형', diagonals: 14 },
-    { name: '팔각형', diagonals: 20 },
-    { name: '구각형', diagonals: 27 },
+    { name: '사각형', sides: 4, diagonals: 2 },
+    { name: '오각형', sides: 5, diagonals: 5 },
+    { name: '육각형', sides: 6, diagonals: 9 },
+    { name: '칠각형', sides: 7, diagonals: 14 },
+    { name: '팔각형', sides: 8, diagonals: 20 },
+    { name: '구각형', sides: 9, diagonals: 27 },
   ];
   const idx = Math.abs(getRandomInt(0, shapes.length - 1, rng)) % shapes.length;
   const shape = shapes[idx] || shapes[0]!;
   return {
-    question: `${shape.name} 대각선 = ?`,
+    question: `이 도형의 대각선 수 = ?`,
     answer: shape.diagonals,
-  };
+    hintType: 'shape-visualizer',
+    hintData: {
+      sides: shape.sides,
+      showDiagonals: true,
+      shapeType: 'n-gon',
+      shapeName: shape.name,
+    },
+  } as any;
 }
 
 function generateTriangleProperties(rng?: {
@@ -173,7 +180,13 @@ function generateTriangleProperties(rng?: {
   return {
     question: `삼각형 내각: ${a}°, ${b}°, [ ? ]°`,
     answer: c,
-  };
+    hintType: 'shape-visualizer',
+    hintData: {
+      shapeType: 'triangle',
+      angleA: a,
+      angleB: b,
+    },
+  } as any;
 }
 
 function generateQuadrilateralProperties(rng?: {
@@ -186,12 +199,22 @@ function generateQuadrilateralProperties(rng?: {
     return {
       question: `평행사변형 [한 각 ${a}°] ➔ 이웃한 각 = ?°`,
       answer: b,
-    };
+      hintType: 'shape-visualizer',
+      hintData: {
+        shapeType: 'parallelogram',
+        angleA: a,
+      },
+    } as any;
   } else {
     return {
       question: `평행사변형 [한 각 ${a}°] ➔ 마주보는 각 = ?°`,
       answer: a,
-    };
+      hintType: 'shape-visualizer',
+      hintData: {
+        shapeType: 'parallelogram',
+        angleA: a,
+      },
+    } as any;
   }
 }
 
@@ -203,7 +226,13 @@ function generateAreaRect(rng?: {
   return {
     question: `직사각형 [가로 ${w} × 세로 ${h}] 넓이 = ?`,
     answer: w * h,
-  };
+    hintType: 'shape-visualizer',
+    hintData: {
+      shapeType: 'rect',
+      width: w,
+      height: h,
+    },
+  } as any;
 }
 
 function generateAreaTriangle(rng?: {
@@ -214,7 +243,13 @@ function generateAreaTriangle(rng?: {
   return {
     question: `삼각형 [밑변 ${b} × 높이 ${h}] 넓이 = ?`,
     answer: (b * h) / 2,
-  };
+    hintType: 'shape-visualizer',
+    hintData: {
+      shapeType: 'triangle',
+      base: b,
+      height: h,
+    },
+  } as any;
 }
 
 function generateCircleBasic(rng?: {

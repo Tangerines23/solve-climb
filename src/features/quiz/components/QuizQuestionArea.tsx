@@ -42,7 +42,7 @@ export const QuizQuestionArea = React.memo(() => {
             {currentQuestion.question}
           </h2>
           {currentQuestion.hintType === 'shape-visualizer' && currentQuestion.hintData && (
-            <ShapeVisualizer sides={(currentQuestion.hintData as ShapeVisualizerHint).sides} />
+            <ShapeVisualizer {...(currentQuestion.hintData as ShapeVisualizerHint)} />
           )}
           {currentQuestion.hintType === 'transposition' && (
             <div className="visualizer-container">
