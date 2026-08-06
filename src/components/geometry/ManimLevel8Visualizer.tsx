@@ -122,7 +122,14 @@ export const ManimLevel8Visualizer: React.FC = React.memo(() => {
           </text>
         )}
         {stepIndex === 1 && (
-          <text x={center} y={centerY - 10} fill="#fb7185" fontSize={12} fontWeight={900} textAnchor="middle">
+          <text
+            x={center}
+            y={centerY - 10}
+            fill="#fb7185"
+            fontSize={12}
+            fontWeight={900}
+            textAnchor="middle"
+          >
             지름 (d = 2r)
           </text>
         )}
