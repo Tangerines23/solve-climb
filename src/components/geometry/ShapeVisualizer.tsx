@@ -101,10 +101,23 @@ export const ShapeVisualizer: React.FC<ShapeVisualizerProps> = ({
                 strokeWidth="1.5"
                 strokeDasharray="3 2"
               />
-              <text x={top.x - 14} y={(top.y + left.y) / 2 + 2} fill="#FB7185" fontSize={9} fontWeight={800}>
+              <text
+                x={top.x - 14}
+                y={(top.y + left.y) / 2 + 2}
+                fill="#FB7185"
+                fontSize={9}
+                fontWeight={800}
+              >
                 h={height}
               </text>
-              <text x={(left.x + right.x) / 2} y={left.y + 14} fill="#38BDF8" fontSize={9} fontWeight={800} textAnchor="middle">
+              <text
+                x={(left.x + right.x) / 2}
+                y={left.y + 14}
+                fill="#38BDF8"
+                fontSize={9}
+                fontWeight={800}
+                textAnchor="middle"
+              >
                 b={base}
               </text>
             </>
@@ -129,7 +142,14 @@ export const ShapeVisualizer: React.FC<ShapeVisualizerProps> = ({
 
           <circle cx={top.x} cy={top.y} r="2.5" fill="#818CF8" stroke="#FFFFFF" strokeWidth="1" />
           <circle cx={left.x} cy={left.y} r="2.5" fill="#818CF8" stroke="#FFFFFF" strokeWidth="1" />
-          <circle cx={right.x} cy={right.y} r="2.5" fill="#818CF8" stroke="#FFFFFF" strokeWidth="1" />
+          <circle
+            cx={right.x}
+            cy={right.y}
+            r="2.5"
+            fill="#818CF8"
+            stroke="#FFFFFF"
+            strokeWidth="1"
+          />
         </svg>
       </div>
     );
@@ -234,12 +254,26 @@ export const ShapeVisualizer: React.FC<ShapeVisualizerProps> = ({
             rx="3"
           />
           {width !== undefined && (
-            <text x={rectX + rectW / 2} y={rectY - 6} fill="#38BDF8" fontSize={9} fontWeight={800} textAnchor="middle">
+            <text
+              x={rectX + rectW / 2}
+              y={rectY - 6}
+              fill="#38BDF8"
+              fontSize={9}
+              fontWeight={800}
+              textAnchor="middle"
+            >
               가로 {width}
             </text>
           )}
           {height !== undefined && (
-            <text x={rectX + rectW + 12} y={rectY + rectH / 2 + 3} fill="#FB7185" fontSize={9} fontWeight={800} textAnchor="middle">
+            <text
+              x={rectX + rectW + 12}
+              y={rectY + rectH / 2 + 3}
+              fill="#FB7185"
+              fontSize={9}
+              fontWeight={800}
+              textAnchor="middle"
+            >
               세로 {height}
             </text>
           )}
@@ -257,8 +291,15 @@ const containerStyle: React.CSSProperties = {
   alignItems: 'center',
   justifyContent: 'center',
   margin: '2px 0',
+  flexShrink: 1,
+  maxHeight: '22vh',
+  minHeight: 0,
 };
 
 const svgShadowStyle: React.CSSProperties = {
   filter: 'drop-shadow(0px 3px 8px rgba(99, 102, 241, 0.35))',
+  maxWidth: '100%',
+  maxHeight: '100%',
+  height: 'auto',
+  flexShrink: 1,
 };
