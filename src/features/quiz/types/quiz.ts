@@ -45,13 +45,14 @@ export interface QuizQuestion {
 export interface ShapeVisualizerHint {
   sides?: number;
   showDiagonals?: boolean;
-  shapeType?: 'n-gon' | 'triangle' | 'parallelogram' | 'rect' | 'circle';
+  shapeType?: 'n-gon' | 'triangle' | 'parallelogram' | 'quadrilateral' | 'rect' | 'circle';
   width?: number;
   height?: number;
   base?: number;
   radius?: number;
   angleA?: number;
   angleB?: number;
+  angleC?: number;
   shapeName?: string;
 }
 

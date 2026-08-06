@@ -164,7 +164,6 @@ function generateBasicShapesDiagonal(rng?: {
     hintType: 'shape-visualizer',
     hintData: {
       sides: shape.sides,
-      showDiagonals: true,
       shapeType: 'n-gon',
       shapeName: shape.name,
     },
