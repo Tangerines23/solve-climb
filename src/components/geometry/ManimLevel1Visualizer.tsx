@@ -77,9 +77,9 @@ export const ManimLevel1Visualizer: React.FC = React.memo(() => {
 
   useEffect(() => {
     let animId: number;
-    const MORPH_DURATION = 1200;
+    const MORPH_DURATION = 3000;
     const HIGHLIGHT_STEP_DURATION = 650;
-    const REST_PAUSE_DURATION = 500;
+    const REST_PAUSE_DURATION = 2000;
 
     const highlightTotalDuration = currSides * HIGHLIGHT_STEP_DURATION;
     const totalCycleDuration = MORPH_DURATION + highlightTotalDuration + REST_PAUSE_DURATION;

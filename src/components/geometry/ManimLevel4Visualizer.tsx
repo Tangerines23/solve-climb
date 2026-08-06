@@ -56,7 +56,7 @@ export const ManimLevel4Visualizer: React.FC = React.memo(() => {
   const { stepIndex, isPaused, togglePause, getEasedProgress } = useManimEngine({
     totalSteps: QUAD_KEYFRAMES.length,
     holdDuration: 2000, // 형태 완성 후 2.0초 대기
-    moveDuration: 1500, // 부드러운 1.5초 변형 애니메이션
+    moveDuration: 3000, // 부드러운 3.0초 변형 애니메이션
   });
 
   const currFrame = QUAD_KEYFRAMES[stepIndex]!;

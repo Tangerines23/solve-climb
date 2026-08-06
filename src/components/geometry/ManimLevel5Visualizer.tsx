@@ -25,7 +25,7 @@ export const ManimLevel5Visualizer: React.FC = React.memo(() => {
   const { stepIndex, isPaused, togglePause, getEasedProgress } = useManimEngine({
     totalSteps: RECT_KEYFRAMES.length,
     holdDuration: 2000,
-    moveDuration: 1000,
+    moveDuration: 3000,
   });
 
   const currentFrame = RECT_KEYFRAMES[stepIndex]!;
