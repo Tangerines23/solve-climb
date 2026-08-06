@@ -94,8 +94,22 @@ export const ManimLevel13Visualizer: React.FC = React.memo(() => {
           {/* 높이(H) 점선 가이드 */}
           {stepIndex === 1 && (
             <g>
-              <line x1="168" y1="110" x2="168" y2={110 - stackHeightPx} stroke="#fb7185" strokeWidth={2} strokeDasharray="3 3" />
-              <text x="178" y={110 - stackHeightPx / 2 + 4} fill="#fb7185" fontSize={11} fontWeight={900}>
+              <line
+                x1="168"
+                y1="110"
+                x2="168"
+                y2={110 - stackHeightPx}
+                stroke="#fb7185"
+                strokeWidth={2}
+                strokeDasharray="3 3"
+              />
+              <text
+                x="178"
+                y={110 - stackHeightPx / 2 + 4}
+                fill="#fb7185"
+                fontSize={11}
+                fontWeight={900}
+              >
                 h=5
               </text>
             </g>
