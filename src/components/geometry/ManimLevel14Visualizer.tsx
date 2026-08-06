@@ -71,18 +71,39 @@ export const ManimLevel14Visualizer: React.FC = React.memo(() => {
       <svg width={SIZE} height={165} viewBox={`0 0 ${SIZE} 165`} className="geo-tip-svg">
         <g transform="translate(15, 10)">
           {/* 중앙 직각삼각형 */}
-          <polygon points="40,110 100,110 40,40" fill="rgba(255, 255, 255, 0.08)" stroke="#ffffff" strokeWidth={2} />
+          <polygon
+            points="40,110 100,110 40,40"
+            fill="rgba(255, 255, 255, 0.08)"
+            stroke="#ffffff"
+            strokeWidth={2}
+          />
           {/* 직각 표시 */}
           <path d="M 40 100 L 50 100 L 50 110" fill="none" stroke="#ffffff" strokeWidth={1.5} />
 
           {/* a^2 = 9 정사각형 (밑변) */}
-          <rect x="40" y="110" width="60" height="35" fill="rgba(56, 189, 248, 0.25)" stroke="#38bdf8" strokeWidth={1.5} />
+          <rect
+            x="40"
+            y="110"
+            width="60"
+            height="35"
+            fill="rgba(56, 189, 248, 0.25)"
+            stroke="#38bdf8"
+            strokeWidth={1.5}
+          />
           <text x="70" y="132" fill="#38bdf8" fontSize={11} fontWeight={900} textAnchor="middle">
             a²=9
           </text>
 
           {/* b^2 = 16 정사각형 (높이) */}
-          <rect x="5" y="40" width="35" height="70" fill="rgba(192, 132, 252, 0.25)" stroke="#c084fc" strokeWidth={1.5} />
+          <rect
+            x="5"
+            y="40"
+            width="35"
+            height="70"
+            fill="rgba(192, 132, 252, 0.25)"
+            stroke="#c084fc"
+            strokeWidth={1.5}
+          />
           <text x="22" y="80" fill="#c084fc" fontSize={11} fontWeight={900} textAnchor="middle">
             b²=16
           </text>
