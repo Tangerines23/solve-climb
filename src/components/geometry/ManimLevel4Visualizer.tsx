@@ -35,18 +35,18 @@ const QUAD_KEYFRAMES: QuadKeyframe[] = [
     name: '직사각형',
   },
   {
-    v0: { x: 100, y: 45 },
-    v1: { x: 170, y: 90 },
-    v2: { x: 100, y: 135 },
-    v3: { x: 30, y: 90 },
-    name: '마름모',
-  },
-  {
     v0: { x: 55, y: 45 },
     v1: { x: 145, y: 45 },
     v2: { x: 145, y: 135 },
     v3: { x: 55, y: 135 },
     name: '정사각형',
+  },
+  {
+    v0: { x: 100, y: 45 },
+    v1: { x: 170, y: 90 },
+    v2: { x: 100, y: 135 },
+    v3: { x: 30, y: 90 },
+    name: '마름모',
   },
 ];
 
@@ -55,8 +55,8 @@ export const ManimLevel4Visualizer: React.FC = React.memo(() => {
 
   const { stepIndex, isPaused, togglePause, getEasedProgress } = useManimEngine({
     totalSteps: QUAD_KEYFRAMES.length,
-    holdDuration: 2000,
-    moveDuration: 1000,
+    holdDuration: 2000, // 형태 완성 후 2.0초 대기
+    moveDuration: 1500, // 부드러운 1.5초 변형 애니메이션
   });
 
   const currFrame = QUAD_KEYFRAMES[stepIndex]!;
