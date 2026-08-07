@@ -11,97 +11,107 @@ interface Point {
   y: number;
 }
 
-// 스텝 정의
-// Step 0: 원본 삼각형 단독 (밑변 b, 높이 h 강조)
-// Step 1: 180도 회전한 동일 삼각형 결합 (평행사변형 완성)
-// Step 2: 절반 분할 하이라이트 ((b * h) / 2 공식 도출)
+// Level 6: 삼각형 넓이 ((B * H) / 2) 3B1B 수학적 기하 회전 애니메이션
+// 꼭짓점 규격: V1(상단=점1), V2(우하단=점2), V3(좌하단=점3)
+// 제시1 피벗 회전: 복제 삼각형이 밖에서 날아오지 않고, 원본 위치에서 V2(점2) 피벗 중심으로 180도 회전하여 변1-2에 결합 ➔ 평행사변형 완성!
 export const ManimLevel6Visualizer: React.FC = React.memo(() => {
   const isAdminMode = useDebugStore((state) => state.isAdminMode);
 
   const { stepIndex, isPaused, togglePause, getEasedProgress } = useManimEngine({
     totalSteps: 3,
-    holdDuration: 2200, // 각 단계 완성 후 2.2초 정지 대기
-    moveDuration: 1500, // 부드러운 1.5초 변형 애니메이션
+    holdDuration: 2200,
+    moveDuration: 1600,
   });
 
   const eased = getEasedProgress();
 
-  // 원본 삼각형 좌표 (밑변 120px, 높이 80px)
-  const top: Point = { x: 125, y: 50 };
-  const left: Point = { x: 35, y: 130 };
-  const right: Point = { x: 155, y: 130 };
+  // 원본 삼각형 꼭짓점
+  // V1 (점1: 상단), V2 (점2: 우하단), V3 (점3: 좌하단)
+  const v1: Point = { x: 120, y: 50 };
+  const v2: Point = { x: 160, y: 125 };
+  const v3: Point = { x: 40, y: 125 };
 
   const baseVal = 12;
-  const heightVal = 8;
-  const areaVal = (baseVal * heightVal) / 2;
+  const heightVal = 7.5;
+  const areaVal = (baseVal * heightVal) / 2; // 45
 
-  // 회전 결합 모핑 계산
-  // Step 0 -> Step 1: 복제 삼각형이 나타나 원본 삼각형 빗변에 부드럽게 결합
-  // Step 1 -> Step 2: 결합 상태에서 절반 분할 하이라이트 (살짝 이격)
+  // 피벗 점 (V2 = 점2) 중심으로 180도 회전 계산
+  // 회전 중심: V2(160, 125)
+  // 회전 각도: stepIndex 0 (0도), stepIndex 1 (180도 회전), stepIndex 2 (180도 회전 후 분할 이격)
+  let rotAngleRad = 0;
   let ghostOpacity = 0;
-  let ghostOffsetX = 0;
-  let ghostOffsetY = 0;
+  let gapOffsetX = 0;
+  let gapOffsetY = 0;
 
   if (stepIndex === 0) {
-    // Step 0 -> 1 로 갈 때 복제 삼각형 서서히 나타남
-    ghostOpacity = eased * 0.9;
-    ghostOffsetX = (1 - eased) * 20;
-    ghostOffsetY = (1 - eased) * -20;
+    rotAngleRad = 0;
+    ghostOpacity = 0;
   } else if (stepIndex === 1) {
-    // Step 1: 완전 결합 상태 (평행사변형)
-    ghostOpacity = 0.9 + (1 - eased) * 0.0;
-    // Step 1 -> 2 로 갈 때 살짝 이격 분할 애니메이션
-    ghostOffsetX = eased * 6;
-    ghostOffsetY = eased * -6;
+    // V2 피벗 중심으로 0도 -> 180도 회전하며 결합!
+    rotAngleRad = eased * Math.PI;
+    ghostOpacity = eased * 0.9;
   } else {
-    // Step 2: 이격된 반 분할 강조 상태
+    // Step 2: 180도 회전 완료 후 절반 분할 사선 이격
+    rotAngleRad = Math.PI;
     ghostOpacity = 0.85;
-    ghostOffsetX = 6;
-    ghostOffsetY = -6;
+    gapOffsetX = eased * 10;
+    gapOffsetY = eased * -8;
   }
 
-  // 복제 삼각형 (180도 뒤집어진 삼각형) 좌표
-  // V1_ghost = right, V2_ghost = top, V3_ghost = top + right - left
-  const gV1: Point = { x: right.x + ghostOffsetX, y: right.y + ghostOffsetY };
-  const gV2: Point = { x: top.x + ghostOffsetX, y: top.y + ghostOffsetY };
-  const gV3: Point = {
-    x: right.x + (top.x - left.x) + ghostOffsetX,
-    y: top.y + ghostOffsetY,
+  // V2 피벗 기준 2D 회전 함수
+  const rotateAroundV2 = (p: Point, rad: number): Point => {
+    const cos = Math.cos(rad);
+    const sin = Math.sin(rad);
+    const dx = p.x - v2.x;
+    const dy = p.y - v2.y;
+    return {
+      x: v2.x + (dx * cos - dy * sin),
+      y: v2.y + (dx * sin + dy * cos),
+    };
   };
 
-  // 단계별 뱃지 및 캡션 명세
-  let badgeName = '1. 원본 삼각형';
+  // 복제 삼각형 회전 후 꼭짓점
+  const gV1 = rotateAroundV2(v1, rotAngleRad);
+  const gV2 = rotateAroundV2(v2, rotAngleRad);
+  const gV3 = rotateAroundV2(v3, rotAngleRad);
+
+  // 이격 오프셋 적용
+  const gP1: Point = { x: gV1.x + gapOffsetX, y: gV1.y + gapOffsetY };
+  const gP2: Point = { x: gV2.x + gapOffsetX, y: gV2.y + gapOffsetY };
+  const gP3: Point = { x: gV3.x + gapOffsetX, y: gV3.y + gapOffsetY };
+
+  let badgeName = '1. 삼각형 (밑변 b=12, 높이 h=7.5)';
   let caption = (
     <div className="geo-stat-highlights">
       <span className="geo-stat-item" style={{ color: '#38bdf8' }}>
-        밑변 <strong className="highlight-num">{baseVal}</strong>
+        밑변 <strong>b={baseVal}</strong>
       </span>
       <span className="geo-divider">,</span>
       <span className="geo-stat-item" style={{ color: '#fb7185' }}>
-        높이 <strong className="highlight-num">{heightVal}</strong>
+        높이 <strong>h={heightVal}</strong>
       </span>
     </div>
   );
 
   if (stepIndex === 1) {
-    badgeName = '2. 똑같은 삼각형 2개 합체!';
+    badgeName = '2. V2 피벗 180° 회전 ➔ 평행사변형';
     caption = (
       <div className="geo-stat-highlights">
         <span className="geo-stat-item" style={{ color: '#c084fc', fontWeight: 800 }}>
-          평행사변형 넓이 = {baseVal} × {heightVal} = {baseVal * heightVal}
+          똑같은 삼각형 180° 회전 합체! (평행사변형 b × h = 90)
         </span>
       </div>
     );
   } else if (stepIndex === 2) {
-    badgeName = '3. 반(÷ 2)으로 분할!';
+    badgeName = '3. 절반(÷ 2) 넓이 계산';
     caption = (
       <div className="geo-stat-highlights">
         <span className="geo-stat-item" style={{ color: '#38bdf8' }}>
-          ({baseVal} × {heightVal})
+          {baseVal} × {heightVal}
         </span>
         <span className="geo-divider">÷ 2 =</span>
         <span className="geo-stat-item" style={{ color: '#4ade80', fontWeight: 900 }}>
-          넓이{' '}
+          삼각형 넓이{' '}
           <strong className="highlight-num" style={{ color: '#4ade80' }}>
             {areaVal}
           </strong>
@@ -118,118 +128,103 @@ export const ManimLevel6Visualizer: React.FC = React.memo(() => {
       captionContent={caption}
     >
       <svg width={SIZE} height={165} viewBox={`0 0 ${SIZE} 165`} className="geo-tip-svg">
-        {/* Step 1 & 2: 180도 회전 결합된 복제 삼각형 (평행사변형 완성) */}
+        {/* Step 1~2: 피벗 회전하는 복제 삼각형 */}
         {ghostOpacity > 0.01 && (
-          <polygon
-            points={`${gV1.x.toFixed(1)},${gV1.y.toFixed(1)} ${gV2.x.toFixed(1)},${gV2.y.toFixed(1)} ${gV3.x.toFixed(1)},${gV3.y.toFixed(1)}`}
-            fill={`rgba(244, 63, 94, ${0.35 * ghostOpacity})`}
-            stroke="#f43f5e"
-            strokeWidth={2}
-            strokeDasharray={stepIndex === 2 ? '4 3' : 'none'}
-          />
+          <g style={{ opacity: ghostOpacity }}>
+            <polygon
+              points={`${gP1.x.toFixed(1)},${gP1.y.toFixed(1)} ${gP2.x.toFixed(1)},${gP2.y.toFixed(1)} ${gP3.x.toFixed(1)},${gP3.y.toFixed(1)}`}
+              fill="rgba(244, 63, 94, 0.3)"
+              stroke="#f43f5e"
+              strokeWidth={2}
+              strokeDasharray={stepIndex === 2 ? '4 3' : 'none'}
+            />
+          </g>
         )}
 
-        {/* 메인 원본 삼각형 */}
+        {/* 원본 삼각형 */}
         <polygon
-          points={`${top.x.toFixed(1)},${top.y.toFixed(1)} ${left.x.toFixed(1)},${left.y.toFixed(1)} ${right.x.toFixed(1)},${right.y.toFixed(1)}`}
+          points={`${v1.x},${v1.y} ${v2.x},${v2.y} ${v3.x},${v3.y}`}
           className="geo-shape-poly-morph"
         />
 
         {/* 높이(h) 수직 점선 */}
         <line
-          x1={top.x}
-          y1={top.y}
-          x2={top.x}
-          y2={left.y}
+          x1={v1.x}
+          y1={v1.y}
+          x2={v1.x}
+          y2={v3.y}
           stroke="#fb7185"
           strokeWidth={2}
           strokeDasharray="4 3"
         />
-        {/* 직각 표시 */}
         <path
-          d={`M ${top.x} ${left.y - 8} L ${top.x - 8} ${left.y - 8} L ${top.x - 8} ${left.y}`}
+          d={`M ${v1.x} ${v3.y - 8} L ${v1.x + 8} ${v3.y - 8} L ${v1.x + 8} ${v3.y}`}
           fill="none"
           stroke="#fb7185"
           strokeWidth={1.5}
         />
 
-        {/* 원본 삼각형 외곽 테두리 Line */}
-        <line x1={top.x} y1={top.y} x2={left.x} y2={left.y} className="geo-edge-animated-line" />
-        <line
-          x1={left.x}
-          y1={left.y}
-          x2={right.x}
-          y2={right.y}
-          className="geo-edge-animated-line"
-        />
-        <line x1={right.x} y1={right.y} x2={top.x} y2={top.y} className="geo-edge-animated-line" />
+        {/* 테두리 Line */}
+        <line x1={v1.x} y1={v1.y} x2={v2.x} y2={v2.y} className="geo-edge-animated-line" />
+        <line x1={v2.x} y1={v2.y} x2={v3.x} y2={v3.y} className="geo-edge-animated-line" />
+        <line x1={v3.x} y1={v3.y} x2={v1.x} y2={v1.y} className="geo-edge-animated-line" />
 
-        {/* 꼭짓점 정점 (Vertices) */}
-        <circle
-          cx={top.x}
-          cy={top.y}
-          r={5.5}
-          className="geo-simple-dot"
-          style={{ fill: '#c084fc' }}
-        />
-        <circle
-          cx={left.x}
-          cy={left.y}
-          r={5.5}
-          className="geo-simple-dot"
-          style={{ fill: '#38bdf8' }}
-        />
-        <circle
-          cx={right.x}
-          cy={right.y}
-          r={5.5}
-          className="geo-simple-dot"
-          style={{ fill: '#38bdf8' }}
-        />
-
-        {/* 복제 삼각형 정점 */}
-        {ghostOpacity > 0.5 && (
-          <circle
-            cx={gV3.x}
-            cy={gV3.y}
-            r={5.5}
-            className="geo-simple-dot"
-            style={{ fill: '#f43f5e' }}
-          />
-        )}
-
-        {/* 라벨 (밑변 b, 높이 h) */}
+        {/* 꼭짓점 Dots 및 명명 */}
+        <circle cx={v1.x} cy={v1.y} r={4.5} fill="#c084fc" />
         <text
-          x={(left.x + right.x) / 2}
-          y={left.y + 18}
+          x={v1.x}
+          y={v1.y - 8}
+          fill="#c084fc"
+          fontSize={10}
+          fontWeight={900}
+          textAnchor="middle"
+        >
+          점1
+        </text>
+
+        {/* 피벗 회전 중심 점2 강조 */}
+        <circle cx={v2.x} cy={v2.y} r={6} fill="#fb7185" stroke="#ffffff" strokeWidth={2} />
+        <text x={v2.x + 14} y={v2.y + 4} fill="#fb7185" fontSize={10} fontWeight={900}>
+          점2 (피벗)
+        </text>
+
+        <circle cx={v3.x} cy={v3.y} r={4.5} fill="#38bdf8" />
+        <text x={v3.x - 14} y={v3.y + 4} fill="#38bdf8" fontSize={10} fontWeight={900}>
+          점3
+        </text>
+
+        {/* 치수 라벨 */}
+        <text
+          x={(v3.x + v2.x) / 2}
+          y={v3.y + 18}
           fill="#38bdf8"
           fontSize={11}
           fontWeight={800}
           textAnchor="middle"
         >
-          밑변 (b)
+          밑변 (b=12)
         </text>
         <text
-          x={top.x - 18}
-          y={(top.y + left.y) / 2}
+          x={v1.x - 16}
+          y={(v1.y + v3.y) / 2}
           fill="#fb7185"
           fontSize={11}
           fontWeight={800}
           textAnchor="middle"
         >
-          높이 (h)
+          h=7.5
         </text>
 
-        {/* Step 2 분할 안내 표시 */}
+        {/* Step 2 분할 표시 */}
         {stepIndex === 2 && (
-          <text x={100} y={35} fill="#4ade80" fontSize={12} fontWeight={900} textAnchor="middle">
+          <text x={100} y={28} fill="#4ade80" fontSize={12} fontWeight={900} textAnchor="middle">
             ÷ 2 (절반)
           </text>
         )}
 
         {isAdminMode && (
           <text x={10} y={158} fill="rgba(255,255,255,0.4)" fontSize={9}>
-            [DEBUG] L6 Parallelogram Doubling Visualizer
+            [DEBUG] L6 Triangle Pivot Rotation Visualizer
           </text>
         )}
       </svg>
