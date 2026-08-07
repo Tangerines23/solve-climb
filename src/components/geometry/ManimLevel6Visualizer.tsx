@@ -11,15 +11,14 @@ interface Point {
   y: number;
 }
 
-type ProposalType = 0 | 1; // 0: 제시 1 (점2' 빗변 이동 회전), 1: 제시 2 (점4 직선 이동)
+type ProposalType = 0 | 1; // 0: 제시 1 (점2' 빗변 이동 회전), 1: 제시 2 (점4 위로 호를 그리며 이동)
 
 const PROPOSAL_NAMES = [
   "제시 1: 점2' 빗변 이동 회전 (b=12, h=8)",
-  '제시 2: 점4 직선 종이 펼치기 (b=12, h=8)',
+  '제시 2: 점4 위로 호를 그리며 펼침 (b=12, h=8)',
 ];
 
-// Level 6: 삼각형 넓이 (3B1B 평행사변형 합성 - 사용자 정의 점2' 빗변 이동 회전 수학 정밀 구현)
-// 방향키 (←, →) 누르면 1.5초 토스트 메시지로 제시 1 / 제시 2 변경 안내
+// Level 6: 삼각형 넓이 (3B1B 평행사변형 합성 - 제시 2 위로 호를 그리는 곡선 이동 적용)
 export const ManimLevel6Visualizer: React.FC = React.memo(() => {
   const isAdminMode = useDebugStore((state) => state.isAdminMode);
   const [proposal, setProposal] = useState<ProposalType>(0);
@@ -85,7 +84,7 @@ export const ManimLevel6Visualizer: React.FC = React.memo(() => {
   const targetP4: Point = { x: 167, y: 50 };
 
   // -------------------------------------------------------------
-  // 사용자 지시 정확한 기하 수학 공식 적용
+  // 복제 삼각형 좌표 계산 (제시 1: 피봇 이동 회전 vs 제시 2: 위로 호를 그리며 이동)
   // -------------------------------------------------------------
   let ghostP1: Point = { ...p1 };
   let ghostP2: Point = { ...p2 };
@@ -101,17 +100,14 @@ export const ManimLevel6Visualizer: React.FC = React.memo(() => {
       // ---------------------------------------------------------
       // [제시 1: 피봇 점2' 빗변 이동 회전]
       // 점2' = 복제 회전 중심축. 점2'는 빗변 변1-2 (점2 -> 점1)를 따라 이동.
-      // 회전 각도 θ = 180도 * eased
       // ---------------------------------------------------------
-      const angleRad = eased * Math.PI; // 0 -> 180도 (시계 방향 회전)
+      const angleRad = eased * Math.PI;
 
-      // 1. 점2' 의 현재 위치 (변1-2 선분 상의 보간 좌표)
       const center2Prime: Point = {
         x: p2.x + (p1.x - p2.x) * eased,
         y: p2.y + (p1.y - p2.y) * eased,
       };
 
-      // 2. 점2' 중심 기준 상대 꼭짓점 회전
       const rotateRel = (origPt: Point): Point => {
         const relX = origPt.x - p2.x;
         const relY = origPt.y - p2.y;
@@ -128,26 +124,34 @@ export const ManimLevel6Visualizer: React.FC = React.memo(() => {
       ghostP4 = rotateRel(p3); // 점3' (t=1 시 targetP4 (167, 50) 과 완벽 일치!)
     } else if (proposal === 1) {
       // ---------------------------------------------------------
-      // [제시 2: 점4(3') 직선 이동 종이 펼치기]
-      // 점1, 점2 고정 상태에서 점4 하나만 점3(10, 130)에서 목표 점4(167, 50)로 직선 이동
+      // [제시 2: 점4 위로 호를 그리며 펼침 (Quadratic Bezier Arc)]
+      // 점1, 점2 고정 상태에서 점4가 점3(10, 130)에서 목표 점4(167, 50)로 위로 부풀어 오르는 호(Arc)를 그리며 이동!
       // ---------------------------------------------------------
       ghostP1 = { ...p1 };
       ghostP2 = { ...p2 };
+
+      // 2차 베지어 곡선 제어점 (위쪽으로 부풀어오르는 궤적)
+      const ctrlX = (p3.x + targetP4.x) / 2; // 88.5
+      const ctrlY = (p3.y + targetP4.y) / 2 - 45; // 90 - 45 = 45 (위로 호를 그림)
+
+      const t = eased;
+      const oneMinusT = 1 - t;
+
       ghostP4 = {
-        x: p3.x + (targetP4.x - p3.x) * eased,
-        y: p3.y + (targetP4.y - p3.y) * eased,
+        x: oneMinusT * oneMinusT * p3.x + 2 * oneMinusT * t * ctrlX + t * t * targetP4.x,
+        y: oneMinusT * oneMinusT * p3.y + 2 * oneMinusT * t * ctrlY + t * t * targetP4.y,
       };
     }
   } else {
     // Step 2: 절반(÷ 2) 분할 이격 (오른쪽 위로 슬라이드 오프셋)
     ghostOpacity = 0.85;
     const offset = eased * 8;
-    ghostP1 = { x: p2.x + offset, y: p2.y - offset }; // 점1' (점2 위치)
-    ghostP2 = { x: p1.x + offset, y: p1.y - offset }; // 점2' (점1 위치)
-    ghostP4 = { x: targetP4.x + offset, y: targetP4.y - offset }; // 점3' (점4 위치)
+    ghostP1 = { x: p2.x + offset, y: p2.y - offset };
+    ghostP2 = { x: p1.x + offset, y: p1.y - offset };
+    ghostP4 = { x: targetP4.x + offset, y: targetP4.y - offset };
   }
 
-  // 깨끗한 뱃지 타이틀
+  // 타이틀 & 캡션
   let badgeName = '1. 삼각형 (b=12, h=8)';
   let caption = (
     <div className="geo-stat-highlights">
@@ -231,10 +235,10 @@ export const ManimLevel6Visualizer: React.FC = React.memo(() => {
                 strokeWidth={2}
                 strokeDasharray={stepIndex === 2 ? '4 3' : 'none'}
               />
-              {/* 복제 꼭짓점 점4(3') 표기 (출발 시 점3과 겹침 방지: eased > 0.15 일 때 노출) */}
+              {/* 점4 라벨 (출발 시 점3과의 글자 겹침 방지: eased > 0.15 일 때 노출) */}
               {(stepIndex === 2 ||
                 (proposal === 0 && eased > 0.1) ||
-                (proposal === 1 && eased > 0.2)) && (
+                (proposal === 1 && eased > 0.15)) && (
                 <>
                   <circle cx={ghostP4.x} cy={ghostP4.y} r={4.5} fill="#f43f5e" />
                   <text
