@@ -12,16 +12,16 @@ interface Point {
 }
 
 // Level 7: 사다리꼴 넓이 ((a + b) * h / 2) 3B1B 수학적 기하 애니메이션
-// Step 0: 원본 사다리꼴 (윗변 a, 아랫변 b, 높이 h 강조)
-// Step 1: 똑같은 2번째 사다리꼴 180도 회전 결합 (평행사변형 완성)
-// Step 2: 절반(÷ 2) 분할 이격 강조 ((a + b) * h / 2 공식 도출)
+// Step 0: 원본 사다리꼴 (윗변 a=6, 아랫변 b=10, 높이 h=6 강조)
+// Step 1: 똑같은 2번째 사다리꼴 180도 회전 결합 (평행사변형 완벽 완성)
+// Step 2: 절반(÷ 2) 분할 이격 하이라이트 ((a + b) * h / 2 공식 도출)
 export const ManimLevel7Visualizer: React.FC = React.memo(() => {
   const isAdminMode = useDebugStore((state) => state.isAdminMode);
 
   const { stepIndex, isPaused, togglePause, getEasedProgress } = useManimEngine({
     totalSteps: 3,
-    holdDuration: 2200, // 형태 완성 후 2.2초 대기
-    moveDuration: 1500, // 부드러운 1.5초 변형 애니메이션
+    holdDuration: 2200,
+    moveDuration: 1500,
   });
 
   const eased = getEasedProgress();
@@ -32,46 +32,46 @@ export const ManimLevel7Visualizer: React.FC = React.memo(() => {
   const heightH = 6;
   const areaVal = ((topA + bottomB) * heightH) / 2; // 48
 
-  // 좌표 세팅 (원점 기준 중앙 정렬)
-  const topW = 60;
-  const bottomW = 100;
-  const hPx = 60;
+  // SVG 뷰포트(200x165) 중앙에 들어오도록 스케일링 된 좌표 세팅
+  const topW = 45; // a = 6 비율
+  const bottomW = 75; // b = 10 비율
+  const hPx = 50; // h = 6 비율
   const centerY = 90;
 
   // 원본 사다리꼴 4개 꼭짓점
   // p1: 윗변 좌, p2: 윗변 우, p3: 아랫변 우, p4: 아랫변 좌
-  const p1: Point = { x: 100 - topW / 2, y: centerY - hPx / 2 };
-  const p2: Point = { x: 100 + topW / 2, y: centerY - hPx / 2 };
-  const p3: Point = { x: 100 + bottomW / 2, y: centerY + hPx / 2 };
-  const p4: Point = { x: 100 - bottomW / 2, y: centerY + hPx / 2 };
+  const p1: Point = { x: 65, y: centerY - hPx / 2 }; // (65, 65)
+  const p2: Point = { x: 65 + topW, y: centerY - hPx / 2 }; // (110, 65)
+  const p3: Point = { x: 50 + bottomW, y: centerY + hPx / 2 }; // (125, 115)
+  const p4: Point = { x: 50, y: centerY + hPx / 2 }; // (50, 115)
 
-  // 복제 사다리꼴 (180도 회전 결합) 계산
+  // Step 1/2 복제 사다리꼴 (180도 회전 결합 및 이격) 애니메이션 오프셋
   let ghostOpacity = 0;
-  let ghostOffsetX = 0;
-  let ghostOffsetY = 0;
+  let shiftX = 0;
+  let shiftY = 0;
 
   if (stepIndex === 0) {
-    ghostOpacity = eased * 0.9;
-    ghostOffsetX = (1 - eased) * 15;
-    ghostOffsetY = (1 - eased) * -15;
+    ghostOpacity = 0;
+    shiftX = 20;
+    shiftY = -15;
   } else if (stepIndex === 1) {
-    ghostOpacity = 0.9;
-    ghostOffsetX = eased * 6;
-    ghostOffsetY = eased * -6;
+    // 180도 회전하여 빗변 p2-p3에 착 붙음
+    ghostOpacity = eased * 0.9;
+    shiftX = (1 - eased) * 15;
+    shiftY = (1 - eased) * -10;
   } else {
+    // Step 2: 절반(÷ 2) 분할 이격 강조 (사선으로 살짝 떨어짐)
     ghostOpacity = 0.85;
-    ghostOffsetX = 6;
-    ghostOffsetY = -6;
+    shiftX = eased * 12;
+    shiftY = eased * -8;
   }
 
   // 180도 회전 복제 사다리꼴 정점 (오른쪽 변 p2-p3에 결합)
-  // g1 = p3, g2 = p2, g3 = p2 + (p4 - p1), g4 = p3 + (p4 - p1)
-  const shiftVec = { x: p4.x - p1.x, y: p4.y - p1.y };
-
-  const gP1: Point = { x: p3.x + ghostOffsetX, y: p3.y + ghostOffsetY };
-  const gP2: Point = { x: p2.x + ghostOffsetX, y: p2.y + ghostOffsetY };
-  const gP3: Point = { x: p2.x + shiftVec.x + ghostOffsetX, y: p2.y + shiftVec.y + ghostOffsetY };
-  const gP4: Point = { x: p3.x + shiftVec.x + ghostOffsetX, y: p3.y + shiftVec.y + ghostOffsetY };
+  // g1 = p3, g2 = p2, g3 = p2 + (p3 - p4), g4 = p3 + (p2 - p1)
+  const gP1: Point = { x: p3.x + shiftX, y: p3.y + shiftY };
+  const gP2: Point = { x: p2.x + shiftX, y: p2.y + shiftY };
+  const gP3: Point = { x: p2.x + bottomW + shiftX, y: p2.y + shiftY }; // 윗변 연장 (b=75px)
+  const gP4: Point = { x: p3.x + topW + shiftX, y: p3.y + shiftY }; // 아랫변 연장 (a=45px)
 
   let badgeName = '1. 사다리꼴 (a=6, b=10, h=6)';
   let caption = (
@@ -127,13 +127,26 @@ export const ManimLevel7Visualizer: React.FC = React.memo(() => {
       <svg width={SIZE} height={165} viewBox={`0 0 ${SIZE} 165`} className="geo-tip-svg">
         {/* 복제 사다리꼴 (180도 회전 결합 평행사변형) */}
         {ghostOpacity > 0.01 && (
-          <polygon
-            points={`${gP1.x.toFixed(1)},${gP1.y.toFixed(1)} ${gP2.x.toFixed(1)},${gP2.y.toFixed(1)} ${gP3.x.toFixed(1)},${gP3.y.toFixed(1)} ${gP4.x.toFixed(1)},${gP4.y.toFixed(1)}`}
-            fill={`rgba(244, 63, 94, ${0.35 * ghostOpacity})`}
-            stroke="#f43f5e"
-            strokeWidth={2}
-            strokeDasharray={stepIndex === 2 ? '4 3' : 'none'}
-          />
+          <g style={{ opacity: ghostOpacity }}>
+            <polygon
+              points={`${gP1.x.toFixed(1)},${gP1.y.toFixed(1)} ${gP2.x.toFixed(1)},${gP2.y.toFixed(1)} ${gP3.x.toFixed(1)},${gP3.y.toFixed(1)} ${gP4.x.toFixed(1)},${gP4.y.toFixed(1)}`}
+              fill="rgba(244, 63, 94, 0.3)"
+              stroke="#f43f5e"
+              strokeWidth={2}
+              strokeDasharray={stepIndex === 2 ? '4 3' : 'none'}
+            />
+            {/* 복제 사다리꼴 치수 표시 */}
+            {stepIndex === 1 && (
+              <>
+                <text x={(gP2.x + gP3.x) / 2} y={gP2.y - 6} fill="#f43f5e" fontSize={10} fontWeight={800} textAnchor="middle">
+                  b (아랫변)
+                </text>
+                <text x={(gP1.x + gP4.x) / 2} y={gP1.y + 16} fill="#f43f5e" fontSize={10} fontWeight={800} textAnchor="middle">
+                  a (윗변)
+                </text>
+              </>
+            )}
+          </g>
         )}
 
         {/* 원본 사다리꼴 */}
@@ -166,71 +179,26 @@ export const ManimLevel7Visualizer: React.FC = React.memo(() => {
         <line x1={p4.x} y1={p4.y} x2={p1.x} y2={p1.y} className="geo-edge-animated-line" />
 
         {/* 꼭짓점 Dots */}
-        <circle
-          cx={p1.x}
-          cy={p1.y}
-          r={4.5}
-          className="geo-simple-dot"
-          style={{ fill: '#c084fc' }}
-        />
-        <circle
-          cx={p2.x}
-          cy={p2.y}
-          r={4.5}
-          className="geo-simple-dot"
-          style={{ fill: '#c084fc' }}
-        />
-        <circle
-          cx={p3.x}
-          cy={p3.y}
-          r={4.5}
-          className="geo-simple-dot"
-          style={{ fill: '#38bdf8' }}
-        />
-        <circle
-          cx={p4.x}
-          cy={p4.y}
-          r={4.5}
-          className="geo-simple-dot"
-          style={{ fill: '#38bdf8' }}
-        />
+        <circle cx={p1.x} cy={p1.y} r={4.5} className="geo-simple-dot" style={{ fill: '#c084fc' }} />
+        <circle cx={p2.x} cy={p2.y} r={4.5} className="geo-simple-dot" style={{ fill: '#c084fc' }} />
+        <circle cx={p3.x} cy={p3.y} r={4.5} className="geo-simple-dot" style={{ fill: '#38bdf8' }} />
+        <circle cx={p4.x} cy={p4.y} r={4.5} className="geo-simple-dot" style={{ fill: '#38bdf8' }} />
 
-        {/* 치수 라벨 */}
-        <text
-          x={(p1.x + p2.x) / 2}
-          y={p1.y - 8}
-          fill="#38bdf8"
-          fontSize={11}
-          fontWeight={800}
-          textAnchor="middle"
-        >
+        {/* 원본 치수 라벨 */}
+        <text x={(p1.x + p2.x) / 2} y={p1.y - 8} fill="#38bdf8" fontSize={11} fontWeight={800} textAnchor="middle">
           윗변 (a=6)
         </text>
-        <text
-          x={(p4.x + p3.x) / 2}
-          y={p4.y + 18}
-          fill="#38bdf8"
-          fontSize={11}
-          fontWeight={800}
-          textAnchor="middle"
-        >
+        <text x={(p4.x + p3.x) / 2} y={p4.y + 18} fill="#38bdf8" fontSize={11} fontWeight={800} textAnchor="middle">
           아랫변 (b=10)
         </text>
-        <text
-          x={p1.x - 18}
-          y={centerY + 4}
-          fill="#fb7185"
-          fontSize={11}
-          fontWeight={800}
-          textAnchor="middle"
-        >
+        <text x={p1.x - 16} y={centerY + 4} fill="#fb7185" fontSize={11} fontWeight={800} textAnchor="middle">
           높이(h)
         </text>
 
         {/* Step 2 분할 안내 표시 */}
         {stepIndex === 2 && (
-          <text x={100} y={35} fill="#4ade80" fontSize={12} fontWeight={900} textAnchor="middle">
-            ÷ 2 (절반)
+          <text x={100} y={30} fill="#4ade80" fontSize={12} fontWeight={900} textAnchor="middle">
+            ÷ 2 (절반 분할)
           </text>
         )}
 
