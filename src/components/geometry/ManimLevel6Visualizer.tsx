@@ -19,7 +19,7 @@ const PROPOSAL_NAMES = [
   '제시 3: 빗변 축 경첩 반사',
 ];
 
-// Level 6: 삼각형 넓이 (3B1B 평행사변형 합성 애니메이션 - 제시 1, 2, 3 정밀 구현)
+// Level 6: 삼각형 넓이 (3B1B 평행사변형 합성 - 오른쪽 빗변 변1-2 결합 정밀 좌표)
 // 방향키 (←, →) 누르면 1.5초 토스트 메시지로 제시안 변경 안내
 export const ManimLevel6Visualizer: React.FC = React.memo(() => {
   const isAdminMode = useDebugStore((state) => state.isAdminMode);
@@ -70,27 +70,27 @@ export const ManimLevel6Visualizer: React.FC = React.memo(() => {
     };
   }, [handleKeyDown]);
 
-  // 삼각형 정점 고정 좌표
-  // 점1: 최상단 (125, 50)
-  // 점2: 우하단 (155, 130)
-  // 점3: 좌하단 (35, 130)
-  const p1: Point = { x: 125, y: 50 };
-  const p2: Point = { x: 155, y: 130 };
-  const p3: Point = { x: 35, y: 130 };
+  // 오른쪽 빗변 변1-2 결합 시 SVG 뷰포트(200px) 내에 정중앙 100% 들어오도록 좌표 재정립
+  // 점1: 상단 (77, 50)
+  // 점2: 우하단 (100, 130)
+  // 점3: 좌하단 (10, 130)  -> 밑변 90px, 높이 80px
+  const p1: Point = { x: 77, y: 50 };
+  const p2: Point = { x: 100, y: 130 };
+  const p3: Point = { x: 10, y: 130 };
 
   const baseVal = 12;
   const heightVal = 8;
   const areaVal = (baseVal * heightVal) / 2; // 48
 
-  // 올바른 평행사변형 3-2-1-4 의 4번째 꼭짓점 점4 좌표: (5, 50)
-  // 점4 = 점1 + (점3 - 점2) = (125 - 120, 50) = (5, 50)
-  const targetP4: Point = { x: 5, y: 50 };
+  // 오른쪽 빗변 변1-2에 복제 삼각형 결합 시 완성되는 평행사변형 꼭짓점 점4: (167, 50)
+  // 점4 = 점2 + (점1 - 점3) = (100 + 67, 50) = (167, 50) -> x=167 로 화면에 완벽 쏙 들어옴!
+  const targetP4: Point = { x: 167, y: 50 };
 
   // -------------------------------------------------------------
-  // 복제 삼각형 (1-3-4) 꼭짓점 좌표 계산
+  // 복제 삼각형 (2-1-4) 꼭짓점 좌표 계산 (오른쪽 빗변 변1-2 결합)
   // -------------------------------------------------------------
   let ghostP1: Point = { ...p1 };
-  let ghostP3: Point = { ...p3 };
+  let ghostP2: Point = { ...p2 };
   let ghostP4: Point = { ...targetP4 };
   let ghostOpacity = 0;
 
@@ -102,7 +102,7 @@ export const ManimLevel6Visualizer: React.FC = React.memo(() => {
     if (proposal === 0) {
       // ---------------------------------------------------------
       // [제시 1: 이동하는 피봇 회전]
-      // 점2에서 시작하여 점1로 피봇 이동하면서 180도 회전
+      // 점2에서 회전을 시작하며, 회전하는 동안 피봇점이 점1로 이동
       // ---------------------------------------------------------
       const angleRad = eased * Math.PI; // 0 -> 180도
       const pivot: Point = {
@@ -119,44 +119,43 @@ export const ManimLevel6Visualizer: React.FC = React.memo(() => {
       };
 
       ghostP1 = rotatePt(p1);
-      ghostP3 = rotatePt(p3);
-      ghostP4 = rotatePt(p2);
+      ghostP2 = rotatePt(p2);
+      ghostP4 = rotatePt(p3);
     } else if (proposal === 1) {
       // ---------------------------------------------------------
       // [제시 2: 점4 직선 이동 (Paper Unfolding)]
-      // 점4를 원본 점2(155, 130) 위치에 겹쳐 생성 후, 목표 점4(5, 50)로 직선 이동
-      // 복제 삼각형 = (점1, 점3, 점4)
+      // 점4를 원본 점3(10, 130) 위치에 겹쳐 생성 후, 목표 점4(167, 50)로 직선 이동
       // ---------------------------------------------------------
       ghostP1 = { ...p1 };
-      ghostP3 = { ...p3 };
+      ghostP2 = { ...p2 };
       ghostP4 = {
-        x: p2.x + (targetP4.x - p2.x) * eased,
-        y: p2.y + (targetP4.y - p2.y) * eased,
+        x: p3.x + (targetP4.x - p3.x) * eased,
+        y: p3.y + (targetP4.y - p3.y) * eased,
       };
     } else if (proposal === 2) {
       // ---------------------------------------------------------
-      // [제시 3: 빗변 축(변1-3) 경첩 반사]
-      // 빗변 변1-3을 경첩 축으로 삼아 대칭 반사 폅침
+      // [제시 3: 빗변 축(변1-2) 경첩 반사]
+      // 빗변 변1-2를 경첩 축으로 삼아 대칭 반사 폅침
       // ---------------------------------------------------------
       ghostP1 = { ...p1 };
-      ghostP3 = { ...p3 };
+      ghostP2 = { ...p2 };
 
       const flipAngle = (1 - eased) * Math.PI;
       ghostP4 = {
-        x: p2.x + (targetP4.x - p2.x) * eased + Math.sin(flipAngle) * 15,
-        y: p2.y + (targetP4.y - p2.y) * eased - Math.sin(flipAngle) * 20,
+        x: p3.x + (targetP4.x - p3.x) * eased + Math.sin(flipAngle) * 15,
+        y: p3.y + (targetP4.y - p3.y) * eased - Math.sin(flipAngle) * 20,
       };
     }
   } else {
     // Step 2: 절반(÷ 2) 분할 이격 (사선으로 오프셋)
     ghostOpacity = 0.85;
     const offset = eased * 8;
-    ghostP1 = { x: p1.x - offset, y: p1.y - offset };
-    ghostP3 = { x: p3.x - offset, y: p3.y - offset };
-    ghostP4 = { x: targetP4.x - offset, y: targetP4.y - offset };
+    ghostP1 = { x: p1.x + offset, y: p1.y - offset };
+    ghostP2 = { x: p2.x + offset, y: p2.y - offset };
+    ghostP4 = { x: targetP4.x + offset, y: targetP4.y - offset };
   }
 
-  // 보라색 뱃지 타이틀에서 제시 문구 제거 -> 깨끗한 원래 텍스트로 복원
+  // 깨끗한 뱃지 타이틀
   let badgeName = '1. 삼각형 (b=12, h=8)';
   let caption = (
     <div className="geo-stat-highlights">
@@ -204,9 +203,7 @@ export const ManimLevel6Visualizer: React.FC = React.memo(() => {
       onTogglePause={togglePause}
       captionContent={caption}
     >
-      <div
-        style={{ position: 'relative', width: '100%', display: 'flex', justifyContent: 'center' }}
-      >
+      <div style={{ position: 'relative', width: '100%', display: 'flex', justifyContent: 'center' }}>
         {/* 방향키 이동 시 1.5초간 나타나는 토스트 메시지 */}
         {toastText && (
           <div
@@ -231,27 +228,25 @@ export const ManimLevel6Visualizer: React.FC = React.memo(() => {
         )}
 
         <svg width={SIZE} height={165} viewBox={`0 0 ${SIZE} 165`} className="geo-tip-svg">
-          {/* 올바른 복제 삼각형 (점1, 점3, 점4) */}
+          {/* 복제 삼각형 (2-1-4) - 오른쪽 빗변 변1-2 결합 */}
           {ghostOpacity > 0.01 && (
             <g style={{ opacity: ghostOpacity }}>
               <polygon
-                points={`${ghostP1.x.toFixed(1)},${ghostP1.y.toFixed(1)} ${ghostP3.x.toFixed(1)},${ghostP3.y.toFixed(1)} ${ghostP4.x.toFixed(1)},${ghostP4.y.toFixed(1)}`}
+                points={`${ghostP1.x.toFixed(1)},${ghostP1.y.toFixed(1)} ${ghostP2.x.toFixed(1)},${ghostP2.y.toFixed(1)} ${ghostP4.x.toFixed(1)},${ghostP4.y.toFixed(1)}`}
                 fill="rgba(244, 63, 94, 0.3)"
                 stroke="#f43f5e"
                 strokeWidth={2}
                 strokeDasharray={stepIndex === 2 ? '4 3' : 'none'}
               />
-              {/* 복제 꼭짓점 점4 위치 표기 */}
-              <circle cx={ghostP4.x} cy={ghostP4.y} r={4.5} fill="#f43f5e" />
-              <text
-                x={ghostP4.x - 8}
-                y={ghostP4.y - 6}
-                fill="#f43f5e"
-                fontSize={10}
-                fontWeight={900}
-              >
-                점4
-              </text>
+              {/* 복제 꼭짓점 점4 (직선 이동 시 점3/점2와 글자 겹침 방지) */}
+              {(stepIndex === 2 || (proposal !== 1 && eased > 0.1) || (proposal === 1 && eased > 0.2)) && (
+                <>
+                  <circle cx={ghostP4.x} cy={ghostP4.y} r={4.5} fill="#f43f5e" />
+                  <text x={ghostP4.x + 8} y={ghostP4.y - 6} fill="#f43f5e" fontSize={10} fontWeight={900}>
+                    점4
+                  </text>
+                </>
+              )}
             </g>
           )}
 
@@ -262,64 +257,30 @@ export const ManimLevel6Visualizer: React.FC = React.memo(() => {
           />
 
           {/* 높이 점선 */}
-          <line
-            x1={p1.x}
-            y1={p1.y}
-            x2={p1.x}
-            y2={p3.y}
-            stroke="#fb7185"
-            strokeWidth={2}
-            strokeDasharray="4 3"
-          />
-          <path
-            d={`M ${p1.x} ${p3.y - 8} L ${p1.x + 8} ${p3.y - 8} L ${p1.x + 8} ${p3.y}`}
-            fill="none"
-            stroke="#fb7185"
-            strokeWidth={1.5}
-          />
+          <line x1={p1.x} y1={p1.y} x2={p1.x} y2={p3.y} stroke="#fb7185" strokeWidth={2} strokeDasharray="4 3" />
+          <path d={`M ${p1.x} ${p3.y - 8} L ${p1.x + 8} ${p3.y - 8} L ${p1.x + 8} ${p3.y}`} fill="none" stroke="#fb7185" strokeWidth={1.5} />
 
           {/* 원본 꼭짓점 라벨 (점1, 점2, 점3) */}
           <circle cx={p1.x} cy={p1.y} r={4.5} fill="#c084fc" />
-          <text
-            x={p1.x}
-            y={p1.y - 8}
-            fill="#c084fc"
-            fontSize={10}
-            fontWeight={900}
-            textAnchor="middle"
-          >
+          <text x={p1.x} y={p1.y - 8} fill="#c084fc" fontSize={10} fontWeight={900} textAnchor="middle">
             점1
           </text>
 
           <circle cx={p2.x} cy={p2.y} r={4.5} fill="#38bdf8" />
-          <text x={p2.x + 10} y={p2.y + 4} fill="#38bdf8" fontSize={10} fontWeight={900}>
+          <text x={p2.x + 10} y={p2.y + 12} fill="#38bdf8" fontSize={10} fontWeight={900}>
             점2
           </text>
 
           <circle cx={p3.x} cy={p3.y} r={4.5} fill="#38bdf8" />
-          <text x={p3.x - 12} y={p3.y + 4} fill="#38bdf8" fontSize={10} fontWeight={900}>
+          <text x={p3.x - 6} y={p3.y + 12} fill="#38bdf8" fontSize={10} fontWeight={900}>
             점3
           </text>
 
           {/* 치수 라벨 */}
-          <text
-            x={(p3.x + p2.x) / 2}
-            y={p3.y + 18}
-            fill="#38bdf8"
-            fontSize={11}
-            fontWeight={800}
-            textAnchor="middle"
-          >
+          <text x={(p3.x + p2.x) / 2} y={p3.y + 18} fill="#38bdf8" fontSize={11} fontWeight={800} textAnchor="middle">
             밑변 (b={baseVal})
           </text>
-          <text
-            x={p1.x - 16}
-            y={(p1.y + p3.y) / 2}
-            fill="#fb7185"
-            fontSize={11}
-            fontWeight={800}
-            textAnchor="middle"
-          >
+          <text x={p1.x - 16} y={(p1.y + p3.y) / 2} fill="#fb7185" fontSize={11} fontWeight={800} textAnchor="middle">
             높이 (h={heightVal})
           </text>
 
