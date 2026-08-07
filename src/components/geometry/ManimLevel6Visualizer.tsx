@@ -11,15 +11,15 @@ interface Point {
   y: number;
 }
 
-type ProposalType = 0 | 1 | 2; // 0: 제시 1, 1: 제시 2, 2: 제시 3
+type ProposalType = 0 | 1; // 0: 제시 1 (점2' 빗변 이동 회전), 1: 제시 2 (점4 직선 이동)
 
 const PROPOSAL_NAMES = [
-  '제시 1: 피봇 이동 180° 회전',
-  '제시 2: 점4 직선 종이 펼치기',
-  '제시 3: 빗변 축 3D 경첩 Flip',
+  "제시 1: 점2' 빗변 이동 회전 (b=12, h=8)",
+  '제시 2: 점4 직선 종이 펼치기 (b=12, h=8)',
 ];
 
-// Level 6: 삼각형 넓이 (3B1B 평행사변형 합성 - 제시 1, 2, 3 차별화 시각 모션)
+// Level 6: 삼각형 넓이 (3B1B 평행사변형 합성 - 사용자 정의 점2' 빗변 이동 회전 수학 정밀 구현)
+// 방향키 (←, →) 누르면 1.5초 토스트 메시지로 제시 1 / 제시 2 변경 안내
 export const ManimLevel6Visualizer: React.FC = React.memo(() => {
   const isAdminMode = useDebugStore((state) => state.isAdminMode);
   const [proposal, setProposal] = useState<ProposalType>(0);
@@ -48,13 +48,13 @@ export const ManimLevel6Visualizer: React.FC = React.memo(() => {
   const handleKeyDown = useCallback((e: KeyboardEvent) => {
     if (e.key === 'ArrowLeft') {
       setProposal((prev) => {
-        const next = ((prev - 1 + 3) % 3) as ProposalType;
+        const next = ((prev - 1 + 2) % 2) as ProposalType;
         triggerToast(PROPOSAL_NAMES[next]);
         return next;
       });
     } else if (e.key === 'ArrowRight') {
       setProposal((prev) => {
-        const next = ((prev + 1) % 3) as ProposalType;
+        const next = ((prev + 1) % 2) as ProposalType;
         triggerToast(PROPOSAL_NAMES[next]);
         return next;
       });
@@ -69,10 +69,10 @@ export const ManimLevel6Visualizer: React.FC = React.memo(() => {
     };
   }, [handleKeyDown]);
 
-  // 원본 삼각형 좌표
+  // 원본 삼각형 꼭짓점 좌표 (SVG 200x165 상자 내 정중앙 배치)
   // 점1: 상단 (77, 50)
   // 점2: 우하단 (100, 130)
-  // 점3: 좌하단 (10, 130)
+  // 점3: 좌하단 (10, 130)  -> 밑변 90px (b=12), 높이 80px (h=8)
   const p1: Point = { x: 77, y: 50 };
   const p2: Point = { x: 100, y: 130 };
   const p3: Point = { x: 10, y: 130 };
@@ -81,18 +81,16 @@ export const ManimLevel6Visualizer: React.FC = React.memo(() => {
   const heightVal = 8;
   const areaVal = (baseVal * heightVal) / 2; // 48
 
-  // 오른쪽 빗변 변1-2 결합 시 완성되는 평행사변형 꼭짓점 점4: (167, 50)
+  // 오른쪽 빗변 변1-2에 복제 삼각형 결합 시 완성되는 평행사변형 꼭짓점 점4: (167, 50)
   const targetP4: Point = { x: 167, y: 50 };
 
   // -------------------------------------------------------------
-  // 제시 1, 2, 3 별 차별화된 복제 삼각형 변형 계산
+  // 사용자 지시 정확한 기하 수학 공식 적용
   // -------------------------------------------------------------
-  let ghostPolyPoints = '';
+  let ghostP1: Point = { ...p1 };
+  let ghostP2: Point = { ...p2 };
   let ghostP4: Point = { ...targetP4 };
   let ghostOpacity = 0;
-
-  // 제시 3 3D Flip 용 Transform Style
-  let flipTransformStyle: React.CSSProperties = {};
 
   if (stepIndex === 0) {
     ghostOpacity = 0;
@@ -101,66 +99,55 @@ export const ManimLevel6Visualizer: React.FC = React.memo(() => {
 
     if (proposal === 0) {
       // ---------------------------------------------------------
-      // [제시 1: 피봇 이동 180도 회전]
-      // 원본 삼각형 위치에서 출발하여 점2 -> 점1 로 피봇이동 + 180도 회전
+      // [제시 1: 피봇 점2' 빗변 이동 회전]
+      // 점2' = 복제 회전 중심축. 점2'는 빗변 변1-2 (점2 -> 점1)를 따라 이동.
+      // 회전 각도 θ = 180도 * eased
       // ---------------------------------------------------------
-      const angleRad = eased * Math.PI; // 0 -> 180도
-      const pivot: Point = {
+      const angleRad = eased * Math.PI; // 0 -> 180도 (시계 방향 회전)
+
+      // 1. 점2' 의 현재 위치 (변1-2 선분 상의 보간 좌표)
+      const center2Prime: Point = {
         x: p2.x + (p1.x - p2.x) * eased,
         y: p2.y + (p1.y - p2.y) * eased,
       };
 
-      const rotatePt = (pt: Point): Point => {
-        const dx = pt.x - pivot.x;
-        const dy = pt.y - pivot.y;
-        const rx = dx * Math.cos(angleRad) - dy * Math.sin(angleRad);
-        const ry = dx * Math.sin(angleRad) + dy * Math.cos(angleRad);
-        return { x: pivot.x + rx, y: pivot.y + ry };
+      // 2. 점2' 중심 기준 상대 꼭짓점 회전
+      const rotateRel = (origPt: Point): Point => {
+        const relX = origPt.x - p2.x;
+        const relY = origPt.y - p2.y;
+        const rx = relX * Math.cos(angleRad) - relY * Math.sin(angleRad);
+        const ry = relX * Math.sin(angleRad) + relY * Math.cos(angleRad);
+        return {
+          x: center2Prime.x + rx,
+          y: center2Prime.y + ry,
+        };
       };
 
-      const g1 = rotatePt(p1);
-      const g2 = rotatePt(p2);
-      const g3 = rotatePt(p3);
-
-      ghostPolyPoints = `${g1.x.toFixed(1)},${g1.y.toFixed(1)} ${g2.x.toFixed(1)},${g2.y.toFixed(1)} ${g3.x.toFixed(1)},${g3.y.toFixed(1)}`;
-      ghostP4 = g3; // 180도 회전 시 원본 점3이 목표 점4 위치로 착륙!
+      ghostP2 = center2Prime; // 점2'
+      ghostP1 = rotateRel(p1); // 점1' (t=1 시 점2와 일치)
+      ghostP4 = rotateRel(p3); // 점3' (t=1 시 targetP4 (167, 50) 과 완벽 일치!)
     } else if (proposal === 1) {
       // ---------------------------------------------------------
-      // [제시 2: 점4 직선 종이 펼치기]
-      // 점1, 점2 고정 상태에서 점4 하나만 점3(10,130)에서 목표 점4(167,50)로 직선 이동
+      // [제시 2: 점4(3') 직선 이동 종이 펼치기]
+      // 점1, 점2 고정 상태에서 점4 하나만 점3(10, 130)에서 목표 점4(167, 50)로 직선 이동
       // ---------------------------------------------------------
+      ghostP1 = { ...p1 };
+      ghostP2 = { ...p2 };
       ghostP4 = {
         x: p3.x + (targetP4.x - p3.x) * eased,
         y: p3.y + (targetP4.y - p3.y) * eased,
       };
-      ghostPolyPoints = `${p1.x},${p1.y} ${p2.x},${p2.y} ${ghostP4.x.toFixed(1)},${ghostP4.y.toFixed(1)}`;
-    } else if (proposal === 2) {
-      // ---------------------------------------------------------
-      // [제시 3: 빗변 축 3D 경첩 Flip (3D 입체 뒤집기)]
-      // 빗변 변1-2 축을 기준으로 3D 대칭 뒤집힘 시각화
-      // ---------------------------------------------------------
-      const rotateDeg = (1 - eased) * 180;
-      flipTransformStyle = {
-        transformOrigin: `${(p1.x + p2.x) / 2}px ${(p1.y + p2.y) / 2}px`,
-        transform: `rotate3d(1, 1, 0, ${rotateDeg}deg)`,
-        transition: 'transform 0.05s linear',
-      };
-
-      // 마감 위치 (1-2-4)
-      ghostPolyPoints = `${p1.x},${p1.y} ${p2.x},${p2.y} ${targetP4.x},${targetP4.y}`;
-      ghostP4 = { ...targetP4 };
     }
   } else {
     // Step 2: 절반(÷ 2) 분할 이격 (오른쪽 위로 슬라이드 오프셋)
     ghostOpacity = 0.85;
     const offset = eased * 8;
-    const g1 = { x: p1.x + offset, y: p1.y - offset };
-    const g2 = { x: p2.x + offset, y: p2.y - offset };
-    ghostP4 = { x: targetP4.x + offset, y: targetP4.y - offset };
-    ghostPolyPoints = `${g1.x.toFixed(1)},${g1.y.toFixed(1)} ${g2.x.toFixed(1)},${g2.y.toFixed(1)} ${ghostP4.x.toFixed(1)},${ghostP4.y.toFixed(1)}`;
+    ghostP1 = { x: p2.x + offset, y: p2.y - offset }; // 점1' (점2 위치)
+    ghostP2 = { x: p1.x + offset, y: p1.y - offset }; // 점2' (점1 위치)
+    ghostP4 = { x: targetP4.x + offset, y: targetP4.y - offset }; // 점3' (점4 위치)
   }
 
-  // 타이틀 & 캡션
+  // 깨끗한 뱃지 타이틀
   let badgeName = '1. 삼각형 (b=12, h=8)';
   let caption = (
     <div className="geo-stat-highlights">
@@ -221,11 +208,11 @@ export const ManimLevel6Visualizer: React.FC = React.memo(() => {
               backgroundColor: 'rgba(15, 23, 42, 0.95)',
               border: '1px solid #38bdf8',
               color: '#38bdf8',
-              padding: '3px 12px',
+              padding: '4px 14px',
               borderRadius: '12px',
               fontSize: '11px',
               fontWeight: 800,
-              boxShadow: '0 4px 12px rgba(56, 189, 248, 0.3)',
+              boxShadow: '0 4px 14px rgba(56, 189, 248, 0.35)',
               pointerEvents: 'none',
             }}
           >
@@ -234,18 +221,20 @@ export const ManimLevel6Visualizer: React.FC = React.memo(() => {
         )}
 
         <svg width={SIZE} height={165} viewBox={`0 0 ${SIZE} 165`} className="geo-tip-svg">
-          {/* 복제 삼각형 (제시 1, 2, 3 별 차별화된 모션 렌더링) */}
+          {/* 복제 삼각형 (2'-1'-3') */}
           {ghostOpacity > 0.01 && (
-            <g style={{ opacity: ghostOpacity, ...flipTransformStyle }}>
+            <g style={{ opacity: ghostOpacity }}>
               <polygon
-                points={ghostPolyPoints}
+                points={`${ghostP2.x.toFixed(1)},${ghostP2.y.toFixed(1)} ${ghostP1.x.toFixed(1)},${ghostP1.y.toFixed(1)} ${ghostP4.x.toFixed(1)},${ghostP4.y.toFixed(1)}`}
                 fill="rgba(244, 63, 94, 0.35)"
                 stroke="#f43f5e"
                 strokeWidth={2}
                 strokeDasharray={stepIndex === 2 ? '4 3' : 'none'}
               />
-              {/* 점4 라벨 (출발 시 점3/점2와의 글자 겹침 방지: eased > 0.15 일 때 노출) */}
-              {(stepIndex === 2 || eased > 0.15) && (
+              {/* 복제 꼭짓점 점4(3') 표기 (출발 시 점3과 겹침 방지: eased > 0.15 일 때 노출) */}
+              {(stepIndex === 2 ||
+                (proposal === 0 && eased > 0.1) ||
+                (proposal === 1 && eased > 0.2)) && (
                 <>
                   <circle cx={ghostP4.x} cy={ghostP4.y} r={4.5} fill="#f43f5e" />
                   <text
