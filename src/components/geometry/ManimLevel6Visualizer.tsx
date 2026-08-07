@@ -11,14 +11,14 @@ interface Point {
   y: number;
 }
 
-type ProposalType = 0 | 1; // 0: 제시 1 (점2' 빗변 이동 회전), 1: 제시 2 (점4 위로 호를 그리며 이동)
+type ProposalType = 0 | 1; // 0: 제시 1 (점2' 빗변 이동 회전), 1: 제시 2 (점4 위로 더 큰 호를 그리며 이동)
 
 const PROPOSAL_NAMES = [
-  "제시 1: 점2' 빗변 이동 회전 (b=12, h=8)",
-  '제시 2: 점4 위로 호를 그리며 펼침 (b=12, h=8)',
+  '제시 1: 점2\' 빗변 이동 회전 (b=12, h=8)',
+  '제시 2: 점4 큰 호를 그리며 펼침 (b=12, h=8)',
 ];
 
-// Level 6: 삼각형 넓이 (3B1B 평행사변형 합성 - 제시 2 위로 호를 그리는 곡선 이동 적용)
+// Level 6: 삼각형 넓이 (3B1B 평행사변형 합성 - 제시 2 크게 부풀어오르는 호 궤적)
 export const ManimLevel6Visualizer: React.FC = React.memo(() => {
   const isAdminMode = useDebugStore((state) => state.isAdminMode);
   const [proposal, setProposal] = useState<ProposalType>(0);
@@ -84,7 +84,7 @@ export const ManimLevel6Visualizer: React.FC = React.memo(() => {
   const targetP4: Point = { x: 167, y: 50 };
 
   // -------------------------------------------------------------
-  // 복제 삼각형 좌표 계산 (제시 1: 피봇 이동 회전 vs 제시 2: 위로 호를 그리며 이동)
+  // 복제 삼각형 좌표 계산
   // -------------------------------------------------------------
   let ghostP1: Point = { ...p1 };
   let ghostP2: Point = { ...p2 };
@@ -124,15 +124,14 @@ export const ManimLevel6Visualizer: React.FC = React.memo(() => {
       ghostP4 = rotateRel(p3); // 점3' (t=1 시 targetP4 (167, 50) 과 완벽 일치!)
     } else if (proposal === 1) {
       // ---------------------------------------------------------
-      // [제시 2: 점4 위로 호를 그리며 펼침 (Quadratic Bezier Arc)]
-      // 점1, 점2 고정 상태에서 점4가 점3(10, 130)에서 목표 점4(167, 50)로 위로 부풀어 오르는 호(Arc)를 그리며 이동!
+      // [제시 2: 점4 크게 부풀어오르는 호(Arc) 펼침]
+      // 제어점 ctrlY = 10 로 대폭 높여 훨씬 크고 다이나믹한 호 궤적 생성!
       // ---------------------------------------------------------
       ghostP1 = { ...p1 };
       ghostP2 = { ...p2 };
 
-      // 2차 베지어 곡선 제어점 (위쪽으로 부풀어오르는 궤적)
       const ctrlX = (p3.x + targetP4.x) / 2; // 88.5
-      const ctrlY = (p3.y + targetP4.y) / 2 - 45; // 90 - 45 = 45 (위로 호를 그림)
+      const ctrlY = 10; // 기존 45 -> 10으로 호의 높이를 크게 확대!
 
       const t = eased;
       const oneMinusT = 1 - t;
@@ -199,9 +198,7 @@ export const ManimLevel6Visualizer: React.FC = React.memo(() => {
       onTogglePause={togglePause}
       captionContent={caption}
     >
-      <div
-        style={{ position: 'relative', width: '100%', display: 'flex', justifyContent: 'center' }}
-      >
+      <div style={{ position: 'relative', width: '100%', display: 'flex', justifyContent: 'center' }}>
         {/* 방향키 이동 시 1.5초간 나타나는 토스트 메시지 */}
         {toastText && (
           <div
@@ -236,18 +233,10 @@ export const ManimLevel6Visualizer: React.FC = React.memo(() => {
                 strokeDasharray={stepIndex === 2 ? '4 3' : 'none'}
               />
               {/* 점4 라벨 (출발 시 점3과의 글자 겹침 방지: eased > 0.15 일 때 노출) */}
-              {(stepIndex === 2 ||
-                (proposal === 0 && eased > 0.1) ||
-                (proposal === 1 && eased > 0.15)) && (
+              {(stepIndex === 2 || (proposal === 0 && eased > 0.1) || (proposal === 1 && eased > 0.15)) && (
                 <>
                   <circle cx={ghostP4.x} cy={ghostP4.y} r={4.5} fill="#f43f5e" />
-                  <text
-                    x={ghostP4.x + 8}
-                    y={ghostP4.y - 6}
-                    fill="#f43f5e"
-                    fontSize={10}
-                    fontWeight={900}
-                  >
+                  <text x={ghostP4.x + 8} y={ghostP4.y - 6} fill="#f43f5e" fontSize={10} fontWeight={900}>
                     점4
                   </text>
                 </>
@@ -262,32 +251,12 @@ export const ManimLevel6Visualizer: React.FC = React.memo(() => {
           />
 
           {/* 높이 점선 */}
-          <line
-            x1={p1.x}
-            y1={p1.y}
-            x2={p1.x}
-            y2={p3.y}
-            stroke="#fb7185"
-            strokeWidth={2}
-            strokeDasharray="4 3"
-          />
-          <path
-            d={`M ${p1.x} ${p3.y - 8} L ${p1.x + 8} ${p3.y - 8} L ${p1.x + 8} ${p3.y}`}
-            fill="none"
-            stroke="#fb7185"
-            strokeWidth={1.5}
-          />
+          <line x1={p1.x} y1={p1.y} x2={p1.x} y2={p3.y} stroke="#fb7185" strokeWidth={2} strokeDasharray="4 3" />
+          <path d={`M ${p1.x} ${p3.y - 8} L ${p1.x + 8} ${p3.y - 8} L ${p1.x + 8} ${p3.y}`} fill="none" stroke="#fb7185" strokeWidth={1.5} />
 
           {/* 원본 꼭짓점 라벨 (점1, 점2, 점3) */}
           <circle cx={p1.x} cy={p1.y} r={4.5} fill="#c084fc" />
-          <text
-            x={p1.x}
-            y={p1.y - 8}
-            fill="#c084fc"
-            fontSize={10}
-            fontWeight={900}
-            textAnchor="middle"
-          >
+          <text x={p1.x} y={p1.y - 8} fill="#c084fc" fontSize={10} fontWeight={900} textAnchor="middle">
             점1
           </text>
 
@@ -302,24 +271,10 @@ export const ManimLevel6Visualizer: React.FC = React.memo(() => {
           </text>
 
           {/* 치수 라벨 */}
-          <text
-            x={(p3.x + p2.x) / 2}
-            y={p3.y + 18}
-            fill="#38bdf8"
-            fontSize={11}
-            fontWeight={800}
-            textAnchor="middle"
-          >
+          <text x={(p3.x + p2.x) / 2} y={p3.y + 18} fill="#38bdf8" fontSize={11} fontWeight={800} textAnchor="middle">
             밑변 (b={baseVal})
           </text>
-          <text
-            x={p1.x - 16}
-            y={(p1.y + p3.y) / 2}
-            fill="#fb7185"
-            fontSize={11}
-            fontWeight={800}
-            textAnchor="middle"
-          >
+          <text x={p1.x - 16} y={(p1.y + p3.y) / 2} fill="#fb7185" fontSize={11} fontWeight={800} textAnchor="middle">
             높이 (h={heightVal})
           </text>
 
