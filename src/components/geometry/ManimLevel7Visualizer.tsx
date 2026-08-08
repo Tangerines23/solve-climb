@@ -11,7 +11,7 @@ interface Point {
   y: number;
 }
 
-// Level 7: 사다리꼴 넓이 ((a + b) * h / 2) 3B1B 기하 시각화 - L1~L4 디자인 시스템 통합 & 깔끔한 정돈
+// Level 7: 사다리꼴 넓이 (꼭짓점 도트 완전 제거 & L4 동일 보라 반투명 면색 + Cyan 테두리)
 export const ManimLevel7Visualizer: React.FC = React.memo(() => {
   const isAdminMode = useDebugStore((state) => state.isAdminMode);
 
@@ -160,50 +160,28 @@ export const ManimLevel7Visualizer: React.FC = React.memo(() => {
         style={{ position: 'relative', width: '100%', display: 'flex', justifyContent: 'center' }}
       >
         <svg width={SIZE} height={165} viewBox={`0 0 ${SIZE} 165`} className="geo-tip-svg">
-          {/* Step 1~3 복제 사다리꼴 (디자인 시스템 통합: 퍼플 Purple 계열 #c084fc / rgba(168, 85, 247, 0.25)) */}
+          {/* Step 1~3 복제 사다리꼴 (보랏빛/핑크 계열 반투명 fill + 퍼플 stroke) */}
           {ghostOpacity > 0.01 && (
-            <g style={{ opacity: ghostOpacity }}>
-              <polygon
-                points={`${gP1.x.toFixed(1)},${gP1.y.toFixed(1)} ${gP2.x.toFixed(1)},${gP2.y.toFixed(1)} ${gP3.x.toFixed(1)},${gP3.y.toFixed(1)} ${gP4.x.toFixed(1)},${gP4.y.toFixed(1)}`}
-                fill="rgba(168, 85, 247, 0.25)"
-                stroke="#c084fc"
-                strokeWidth={2}
-                strokeDasharray={stepIndex === 3 ? '4 3' : 'none'}
-              />
-              {(stepIndex === 2 || stepIndex === 3) && (
-                <>
-                  <text
-                    x={(gP1.x + gP2.x) / 2}
-                    y={gP1.y - 6}
-                    fill="#c084fc"
-                    fontSize={10}
-                    fontWeight={800}
-                    textAnchor="middle"
-                  >
-                    b={bottomB} (아랫변)
-                  </text>
-                  <text
-                    x={(gP4.x + gP3.x) / 2}
-                    y={gP4.y + 16}
-                    fill="#c084fc"
-                    fontSize={10}
-                    fontWeight={800}
-                    textAnchor="middle"
-                  >
-                    a={topA} (윗변)
-                  </text>
-                </>
-              )}
-            </g>
+            <polygon
+              points={`${gP1.x.toFixed(1)},${gP1.y.toFixed(1)} ${gP2.x.toFixed(1)},${gP2.y.toFixed(1)} ${gP3.x.toFixed(1)},${gP3.y.toFixed(1)} ${gP4.x.toFixed(1)},${gP4.y.toFixed(1)}`}
+              fill="rgba(192, 132, 252, 0.28)"
+              stroke="#c084fc"
+              strokeWidth={2}
+              strokeDasharray={stepIndex === 3 ? '4 3' : 'none'}
+              style={{ opacity: ghostOpacity }}
+            />
           )}
 
-          {/* 원본 사다리꼴 (Cyan #38bdf8) */}
+          {/* 원본 사다리꼴 (L4 이전과 동일한 은은한 보라 반투명 fill + Cyan 하늘색 stroke) */}
           <polygon
             points={`${p1.x.toFixed(1)},${p1.y.toFixed(1)} ${p2.x.toFixed(1)},${p2.y.toFixed(1)} ${p3.x.toFixed(1)},${p3.y.toFixed(1)} ${p4.x.toFixed(1)},${p4.y.toFixed(1)}`}
-            className="geo-shape-poly-morph"
+            fill="rgba(168, 85, 247, 0.22)"
+            stroke="#38bdf8"
+            strokeWidth={2.5}
+            strokeLinejoin="round"
           />
 
-          {/* 높이(h) 수직 점선 (보라/청록과 조화로운 Accent 수직선) */}
+          {/* 높이(h) 수직 점선 */}
           <line
             x1={p1.x}
             y1={p1.y}
@@ -219,12 +197,6 @@ export const ManimLevel7Visualizer: React.FC = React.memo(() => {
             stroke="#c084fc"
             strokeWidth={1.5}
           />
-
-          {/* 꼭짓점 Dots (Cyan #38bdf8) */}
-          <circle cx={p1.x} cy={p1.y} r={4.5} fill="#38bdf8" />
-          <circle cx={p2.x} cy={p2.y} r={4.5} fill="#38bdf8" />
-          <circle cx={p3.x} cy={p3.y} r={4.5} fill="#38bdf8" />
-          <circle cx={p4.x} cy={p4.y} r={4.5} fill="#38bdf8" />
 
           {/* 원본 치수 라벨 */}
           <text

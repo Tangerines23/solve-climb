@@ -19,7 +19,7 @@ const RECT_KEYFRAMES: RectKeyframe[] = [
   { cols: 4, rows: 6, name: '직사각형' },
 ];
 
-// Level 5: 직사각형 넓이 (L1~L4 디자인 시스템 통합 Cyan/Purple 톤앤매너)
+// Level 5: 직사각형 넓이 (L4 이전과 100% 동일한 은은한 보랏빛 반투명 면색 + Cyan 테두리)
 export const ManimLevel5Visualizer: React.FC = React.memo(() => {
   const isAdminMode = useDebugStore((state) => state.isAdminMode);
 
@@ -94,13 +94,13 @@ export const ManimLevel5Visualizer: React.FC = React.memo(() => {
       captionContent={caption}
     >
       <svg width={SIZE} height={165} viewBox={`0 0 ${SIZE} 165`} className="geo-tip-svg">
-        {/* 원본 메인 직사각형 (L1~L4 표준 Cyan #38bdf8 / rgba(56, 189, 248, 0.15)) */}
+        {/* 직사각형 면색: L4 이전과 100% 동일한 은은한 보랏빛 반투명 (rgba(168, 85, 247, 0.22)) + Cyan 테두리 (#38bdf8) */}
         <rect
           x={rectX}
           y={rectY}
           width={widthPx}
           height={heightPx}
-          fill="rgba(56, 189, 248, 0.15)"
+          fill="rgba(168, 85, 247, 0.22)"
           stroke="#38bdf8"
           strokeWidth={2.5}
           rx={4}
@@ -108,7 +108,7 @@ export const ManimLevel5Visualizer: React.FC = React.memo(() => {
           style={{ transition: 'none' }}
         />
 
-        {/* 그리드 눈금선 (Cyan/Purple 조화 서브 그리드) */}
+        {/* 그리드 눈금선 */}
         {vertGridLines.map((x, idx) => (
           <line
             key={`v-grid-${idx}`}
@@ -116,7 +116,7 @@ export const ManimLevel5Visualizer: React.FC = React.memo(() => {
             y1={rectY}
             x2={x}
             y2={rectY + heightPx}
-            stroke="rgba(56, 189, 248, 0.35)"
+            stroke="rgba(56, 189, 248, 0.4)"
             strokeWidth={1}
             strokeDasharray="2 2"
           />
@@ -129,7 +129,7 @@ export const ManimLevel5Visualizer: React.FC = React.memo(() => {
             y1={y}
             x2={rectX + widthPx}
             y2={y}
-            stroke="rgba(56, 189, 248, 0.35)"
+            stroke="rgba(56, 189, 248, 0.4)"
             strokeWidth={1}
             strokeDasharray="2 2"
           />
@@ -171,7 +171,7 @@ export const ManimLevel5Visualizer: React.FC = React.memo(() => {
           가로 {roundedCols}
         </text>
 
-        {/* 세로 치수 라인 (Purple #c084fc 통일) */}
+        {/* 세로 치수 라인 (Purple #c084fc) */}
         <line
           x1={rectX + widthPx + 12}
           y1={rectY}
