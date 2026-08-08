@@ -11,7 +11,7 @@ interface Point {
   y: number;
 }
 
-// Level 7: 사다리꼴 넓이 (꼭짓점 도트 완전 제거 & L4 동일 보라 반투명 면색 + Cyan 테두리)
+// Level 7: 사다리꼴 넓이 (L4와 100% 동일한 은은한 다크 보라 투명 fill rgba(147, 51, 234, 0.09))
 export const ManimLevel7Visualizer: React.FC = React.memo(() => {
   const isAdminMode = useDebugStore((state) => state.isAdminMode);
 
@@ -23,26 +23,22 @@ export const ManimLevel7Visualizer: React.FC = React.memo(() => {
 
   const eased = getEasedProgress();
 
-  // 사다리꼴 수치
   const topA = 6;
   const bottomB = 10;
   const heightH = 6;
   const paralBase = topA + bottomB; // 16
   const areaVal = (paralBase * heightH) / 2; // 48
 
-  // SVG 뷰포트 (200 x 165) 내 중앙 정렬 좌표
-  const topW = 45; // a = 6 비율
-  const bottomW = 75; // b = 10 비율
-  const hPx = 50; // h = 6 비율
+  const topW = 45;
+  const bottomW = 75;
+  const hPx = 50;
   const centerY = 90;
 
-  // 원본 사다리꼴 꼭짓점
   const p1: Point = { x: 50, y: centerY - hPx / 2 };
   const p2: Point = { x: 50 + topW, y: centerY - hPx / 2 };
   const p3: Point = { x: 40 + bottomW, y: centerY + hPx / 2 };
   const p4: Point = { x: 40, y: centerY + hPx / 2 };
 
-  // 복제 사다리꼴 꼭짓점 (p1', p2', p3', p4')
   let gP1: Point = { ...p1 };
   let gP2: Point = { ...p2 };
   let gP3: Point = { ...p3 };
@@ -160,11 +156,11 @@ export const ManimLevel7Visualizer: React.FC = React.memo(() => {
         style={{ position: 'relative', width: '100%', display: 'flex', justifyContent: 'center' }}
       >
         <svg width={SIZE} height={165} viewBox={`0 0 ${SIZE} 165`} className="geo-tip-svg">
-          {/* Step 1~3 복제 사다리꼴 (보랏빛/핑크 계열 반투명 fill + 퍼플 stroke) */}
+          {/* 복제 사다리꼴 (은은하고 부드러운 보라 반투명 fill) */}
           {ghostOpacity > 0.01 && (
             <polygon
               points={`${gP1.x.toFixed(1)},${gP1.y.toFixed(1)} ${gP2.x.toFixed(1)},${gP2.y.toFixed(1)} ${gP3.x.toFixed(1)},${gP3.y.toFixed(1)} ${gP4.x.toFixed(1)},${gP4.y.toFixed(1)}`}
-              fill="rgba(192, 132, 252, 0.28)"
+              fill="rgba(192, 132, 252, 0.16)"
               stroke="#c084fc"
               strokeWidth={2}
               strokeDasharray={stepIndex === 3 ? '4 3' : 'none'}
@@ -172,10 +168,10 @@ export const ManimLevel7Visualizer: React.FC = React.memo(() => {
             />
           )}
 
-          {/* 원본 사다리꼴 (L4 이전과 동일한 은은한 보라 반투명 fill + Cyan 하늘색 stroke) */}
+          {/* 원본 사다리꼴 (L4와 100% 동일하게 옅고 은은한 다크 보라 투명 rgba(147, 51, 234, 0.09) + Cyan stroke) */}
           <polygon
             points={`${p1.x.toFixed(1)},${p1.y.toFixed(1)} ${p2.x.toFixed(1)},${p2.y.toFixed(1)} ${p3.x.toFixed(1)},${p3.y.toFixed(1)} ${p4.x.toFixed(1)},${p4.y.toFixed(1)}`}
-            fill="rgba(168, 85, 247, 0.22)"
+            fill="rgba(147, 51, 234, 0.09)"
             stroke="#38bdf8"
             strokeWidth={2.5}
             strokeLinejoin="round"

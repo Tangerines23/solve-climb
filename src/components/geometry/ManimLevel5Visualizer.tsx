@@ -19,7 +19,7 @@ const RECT_KEYFRAMES: RectKeyframe[] = [
   { cols: 4, rows: 6, name: '직사각형' },
 ];
 
-// Level 5: 직사각형 넓이 (L4 이전과 100% 동일한 은은한 보랏빛 반투명 면색 + Cyan 테두리)
+// Level 5: 직사각형 넓이 (L4와 100% 동일한 은은한 다크 보라 투명 fill rgba(147, 51, 234, 0.09))
 export const ManimLevel5Visualizer: React.FC = React.memo(() => {
   const isAdminMode = useDebugStore((state) => state.isAdminMode);
 
@@ -94,13 +94,13 @@ export const ManimLevel5Visualizer: React.FC = React.memo(() => {
       captionContent={caption}
     >
       <svg width={SIZE} height={165} viewBox={`0 0 ${SIZE} 165`} className="geo-tip-svg">
-        {/* 직사각형 면색: L4 이전과 100% 동일한 은은한 보랏빛 반투명 (rgba(168, 85, 247, 0.22)) + Cyan 테두리 (#38bdf8) */}
+        {/* 직사각형 면색: L4와 100% 동일하게 옅고 은은한 다크 보라 투명 (rgba(147, 51, 234, 0.09)) */}
         <rect
           x={rectX}
           y={rectY}
           width={widthPx}
           height={heightPx}
-          fill="rgba(168, 85, 247, 0.22)"
+          fill="rgba(147, 51, 234, 0.09)"
           stroke="#38bdf8"
           strokeWidth={2.5}
           rx={4}
@@ -116,7 +116,7 @@ export const ManimLevel5Visualizer: React.FC = React.memo(() => {
             y1={rectY}
             x2={x}
             y2={rectY + heightPx}
-            stroke="rgba(56, 189, 248, 0.4)"
+            stroke="rgba(56, 189, 248, 0.3)"
             strokeWidth={1}
             strokeDasharray="2 2"
           />
@@ -129,7 +129,7 @@ export const ManimLevel5Visualizer: React.FC = React.memo(() => {
             y1={y}
             x2={rectX + widthPx}
             y2={y}
-            stroke="rgba(56, 189, 248, 0.4)"
+            stroke="rgba(56, 189, 248, 0.3)"
             strokeWidth={1}
             strokeDasharray="2 2"
           />
