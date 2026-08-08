@@ -11,28 +11,23 @@ interface Point {
   y: number;
 }
 
-// Level 6: 삼각형 넓이 (사용자 요청 5단계 명확 시퀀스)
-// Step 0: 1. 삼각형 (중앙 배치)
-// Step 1: 2. 이동/분할 평행사변형 완성 (회전 및 교집합 투명 마스킹)
-// Step 2: 3. 12 * 8 평행사변형 넓이 (96)
-// Step 3: 4. 분할 12 * 8 / 2 삼각형 분리되며 투명해짐
-// Step 4: 5. 삼각형 다시 중앙으로
+// Level 6: 삼각형 넓이 (사용자 요청 5단계 명확 시퀀스 & 12*8=96 아래 ÷2=48 2줄 수식 배치)
 export const ManimLevel6Visualizer: React.FC = React.memo(() => {
   const isAdminMode = useDebugStore((state) => state.isAdminMode);
 
   const { stepIndex, isPaused, togglePause, getEasedProgress } = useManimEngine({
     totalSteps: 5,
-    holdDuration: 2000, // 각 단계 완료 후 2초 관찰
-    moveDuration: 1500, // 부드러운 1.5초 전환
+    holdDuration: 2000,
+    moveDuration: 1500,
   });
 
   const eased = getEasedProgress();
 
   // 원본 삼각형 기준 좌표 (b=12 -> 90px, h=8 -> 80px)
-  const baseP1: Point = { x: 67, y: 45 };
-  const baseP2: Point = { x: 90, y: 125 };
-  const baseP3: Point = { x: 0, y: 125 };
-  const baseTargetP4: Point = { x: 157, y: 45 };
+  const baseP1: Point = { x: 67, y: 48 };
+  const baseP2: Point = { x: 90, y: 128 };
+  const baseP3: Point = { x: 0, y: 128 };
+  const baseTargetP4: Point = { x: 157, y: 48 };
 
   const baseVal = 12;
   const heightVal = 8;
@@ -40,12 +35,7 @@ export const ManimLevel6Visualizer: React.FC = React.memo(() => {
   const paralAreaVal = baseVal * heightVal; // 96
 
   // -------------------------------------------------------------
-  // X축 중앙 배치 Shift 오프셋 계산 (5단계 시퀀스)
-  // Step 0: 55px (단독 중앙)
-  // Step 1: 55 -> 21.5px (평행사변형 중앙 이동)
-  // Step 2: 21.5px (평행사변형 중앙)
-  // Step 3: 21.5px (분리 이격)
-  // Step 4: 21.5 -> 55px (단독 원점 중앙 복귀)
+  // X축 중앙 배치 Shift 오프셋 계산
   // -------------------------------------------------------------
   let currentOffsetX = 55;
 
@@ -59,14 +49,14 @@ export const ManimLevel6Visualizer: React.FC = React.memo(() => {
     currentOffsetX = 21.5 + (55 - 21.5) * eased;
   }
 
-  // Shift 적용된 꼭짓점
+  // Shift 적용 꼭짓점
   const p1: Point = { x: baseP1.x + currentOffsetX, y: baseP1.y };
   const p2: Point = { x: baseP2.x + currentOffsetX, y: baseP2.y };
   const p3: Point = { x: baseP3.x + currentOffsetX, y: baseP3.y };
   const targetP4: Point = { x: baseTargetP4.x + currentOffsetX, y: baseTargetP4.y };
 
   // -------------------------------------------------------------
-  // 복제 삼각형 좌표 및 투명도 (5단계)
+  // 복제 삼각형 좌표 및 투명도
   // -------------------------------------------------------------
   let ghostP1: Point = { ...p1 };
   let ghostP2: Point = { ...p2 };
@@ -76,7 +66,6 @@ export const ManimLevel6Visualizer: React.FC = React.memo(() => {
   if (stepIndex === 0) {
     ghostOpacity = 0;
   } else if (stepIndex === 1) {
-    // Step 1: 복제 삼각형 회전 결합 (Opacity 0 -> 0.9)
     ghostOpacity = eased * 0.9;
     const angleRad = eased * Math.PI;
 
@@ -100,20 +89,17 @@ export const ManimLevel6Visualizer: React.FC = React.memo(() => {
     ghostP1 = rotateRel(p1);
     ghostP4 = rotateRel(p3);
   } else if (stepIndex === 2) {
-    // Step 2: 12 * 8 평행사변형 넓이 (96) - 밀착 유지
     ghostOpacity = 0.9;
     ghostP1 = { ...p2 };
     ghostP2 = { ...p1 };
     ghostP4 = { ...targetP4 };
   } else if (stepIndex === 3) {
-    // Step 3: 분할 12 * 8 / 2 삼각형 분리되며 투명해짐 (Opacity 0.9 -> 0.15, 이격 오프셋)
     ghostOpacity = 0.9 - eased * 0.75;
     const offset = eased * 12;
     ghostP1 = { x: p2.x + offset, y: p2.y - offset };
     ghostP2 = { x: p1.x + offset, y: p1.y - offset };
     ghostP4 = { x: targetP4.x + offset, y: targetP4.y - offset };
   } else if (stepIndex === 4) {
-    // Step 4: 원점 복귀 (복제본 완전히 소멸)
     ghostOpacity = 0;
   }
 
@@ -170,7 +156,7 @@ export const ManimLevel6Visualizer: React.FC = React.memo(() => {
       </div>
     );
   } else if (stepIndex === 4) {
-    badgeName = '5. 삼각형 완성';
+    badgeName = '5. 삼각형 넓이 완성';
     caption = (
       <div className="geo-stat-highlights">
         <span className="geo-stat-item" style={{ color: '#4ade80', fontWeight: 900 }}>
@@ -201,6 +187,39 @@ export const ManimLevel6Visualizer: React.FC = React.memo(() => {
               <polygon points={`${p1.x},${p1.y} ${p2.x},${p2.y} ${p3.x},${p3.y}`} fill="black" />
             </mask>
           </defs>
+
+          {/* 수식 표시 영역 (12 * 8 = 96 아래에 ÷ 2 = 48 2줄 구조 배치) */}
+          {stepIndex >= 2 && (
+            <g className="formula-group">
+              {/* Line 1: 평행사변형 넓이 (12 × 8 = 96) */}
+              <text
+                x={100}
+                y={22}
+                fill="#c084fc"
+                fontSize={11}
+                fontWeight={900}
+                textAnchor="middle"
+                style={{ filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.8))' }}
+              >
+                12 × 8 = 96
+              </text>
+
+              {/* Line 2: ÷ 2 = 48 (Step 3 이상에서 바로 1줄 수식 아래에 등장!) */}
+              {stepIndex >= 3 && (
+                <text
+                  x={100}
+                  y={37}
+                  fill="#4ade80"
+                  fontSize={12}
+                  fontWeight={900}
+                  textAnchor="middle"
+                  style={{ filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.8))' }}
+                >
+                  ÷ 2 = 48
+                </text>
+              )}
+            </g>
+          )}
 
           {/* 복제 삼각형 */}
           {ghostOpacity > 0.01 && (
@@ -267,20 +286,6 @@ export const ManimLevel6Visualizer: React.FC = React.memo(() => {
           >
             높이 (h={heightVal})
           </text>
-
-          {/* Step 2 평행사변형 넓이 (96) 수식 */}
-          {stepIndex === 2 && (
-            <text x={100} y={28} fill="#c084fc" fontSize={12} fontWeight={900} textAnchor="middle">
-              12 × 8 = 96
-            </text>
-          )}
-
-          {/* Step 3 & 4 절반 분할 및 최종 넓이 (48) 수식 */}
-          {(stepIndex === 3 || stepIndex === 4) && (
-            <text x={100} y={28} fill="#4ade80" fontSize={12} fontWeight={900} textAnchor="middle">
-              ÷ 2 = 48
-            </text>
-          )}
 
           {isAdminMode && (
             <text x={10} y={158} fill="rgba(255,255,255,0.4)" fontSize={9}>
