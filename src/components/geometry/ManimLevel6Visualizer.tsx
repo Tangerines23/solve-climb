@@ -11,7 +11,7 @@ interface Point {
   y: number;
 }
 
-// Level 6: 삼각형 넓이 (L4와 100% 동일한 은은한 다크 보라 투명 fill rgba(147, 51, 234, 0.09))
+// Level 6: 삼각형 넓이 (L4 이전 CSS 표준과 100% 일치하는 rgba(99, 102, 241, 0.15) 면색 적용)
 export const ManimLevel6Visualizer: React.FC = React.memo(() => {
   const isAdminMode = useDebugStore((state) => state.isAdminMode);
 
@@ -122,11 +122,11 @@ export const ManimLevel6Visualizer: React.FC = React.memo(() => {
         style={{ position: 'relative', width: '100%', display: 'flex', justifyContent: 'center' }}
       >
         <svg width={SIZE} height={165} viewBox={`0 0 ${SIZE} 165`} className="geo-tip-svg">
-          {/* 복제 삼각형 (은은하고 부드러운 보라 반투명 fill) */}
+          {/* 복제 삼각형 */}
           {ghostOpacity > 0.01 && (
             <polygon
               points={`${ghostP2.x.toFixed(1)},${ghostP2.y.toFixed(1)} ${ghostP1.x.toFixed(1)},${ghostP1.y.toFixed(1)} ${ghostP4.x.toFixed(1)},${ghostP4.y.toFixed(1)}`}
-              fill="rgba(192, 132, 252, 0.16)"
+              fill="rgba(192, 132, 252, 0.18)"
               stroke="#c084fc"
               strokeWidth={2}
               strokeDasharray={stepIndex === 2 ? '4 3' : 'none'}
@@ -134,10 +134,10 @@ export const ManimLevel6Visualizer: React.FC = React.memo(() => {
             />
           )}
 
-          {/* 원본 삼각형 (L4와 100% 동일하게 옅고 은은한 다크 보라 투명 rgba(147, 51, 234, 0.09) + Cyan stroke) */}
+          {/* 원본 삼각형 (L4 이전 CSS 표준과 100% 동일한 rgba(99, 102, 241, 0.15) 면색 적용) */}
           <polygon
             points={`${p1.x},${p1.y} ${p2.x},${p2.y} ${p3.x},${p3.y}`}
-            fill="rgba(147, 51, 234, 0.09)"
+            fill="rgba(99, 102, 241, 0.15)"
             stroke="#38bdf8"
             strokeWidth={2.5}
             strokeLinejoin="round"

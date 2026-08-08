@@ -19,7 +19,7 @@ const RECT_KEYFRAMES: RectKeyframe[] = [
   { cols: 4, rows: 6, name: '직사각형' },
 ];
 
-// Level 5: 직사각형 넓이 (L4와 100% 동일한 은은한 다크 보라 투명 fill rgba(147, 51, 234, 0.09))
+// Level 5: 직사각형 넓이 (L4 이전 CSS 표준과 100% 일치하는 rgba(99, 102, 241, 0.15) 면색 적용)
 export const ManimLevel5Visualizer: React.FC = React.memo(() => {
   const isAdminMode = useDebugStore((state) => state.isAdminMode);
 
@@ -94,13 +94,13 @@ export const ManimLevel5Visualizer: React.FC = React.memo(() => {
       captionContent={caption}
     >
       <svg width={SIZE} height={165} viewBox={`0 0 ${SIZE} 165`} className="geo-tip-svg">
-        {/* 직사각형 면색: L4와 100% 동일하게 옅고 은은한 다크 보라 투명 (rgba(147, 51, 234, 0.09)) */}
+        {/* L4 이전 CSS 표준과 100% 동일한 rgba(99, 102, 241, 0.15) 면색 적용 */}
         <rect
           x={rectX}
           y={rectY}
           width={widthPx}
           height={heightPx}
-          fill="rgba(147, 51, 234, 0.09)"
+          fill="rgba(99, 102, 241, 0.15)"
           stroke="#38bdf8"
           strokeWidth={2.5}
           rx={4}
