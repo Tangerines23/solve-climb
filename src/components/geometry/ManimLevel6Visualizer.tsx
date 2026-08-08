@@ -1,17 +1,39 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { useDebugStore } from '../../stores/useDebugStore';
 import { useManimEngine } from './useManimEngine';
 import { ManimCardLayout } from './ManimCardLayout';
+import { Point, rotatePointAroundPivot, pointsToSvgString, lerp } from './utils/geometryMath';
 import './GeometryTipVisualizer.css';
 
 const SIZE = 200;
+const BASE_VAL = 12;
+const HEIGHT_VAL = 8;
+const AREA_VAL = (BASE_VAL * HEIGHT_VAL) / 2; // 48
+const PARAL_AREA_VAL = BASE_VAL * HEIGHT_VAL; // 96
 
-interface Point {
-  x: number;
-  y: number;
+// 원본 삼각형 기준 좌표
+const BASE_P1: Point = { x: 67, y: 48 };
+const BASE_P2: Point = { x: 90, y: 128 };
+const BASE_P3: Point = { x: 0, y: 128 };
+const BASE_TARGET_P4: Point = { x: 157, y: 48 };
+
+// StepIndex 별 X축 정중앙 Shift 오프셋 계산 (Step0: 55px -> Step1~3: 21.5px -> Step4: 55px)
+function getStepOffsetX(stepIndex: number, eased: number): number {
+  switch (stepIndex) {
+    case 0:
+      return 55;
+    case 1:
+      return lerp(55, 21.5, eased);
+    case 2:
+    case 3:
+      return 21.5;
+    case 4:
+      return lerp(21.5, 55, eased);
+    default:
+      return 55;
+  }
 }
 
-// Level 6: 삼각형 넓이 (사용자 요청 5단계 명확 시퀀스 & 12*8=96 아래 ÷2=48 2줄 수식 배치)
 export const ManimLevel6Visualizer: React.FC = React.memo(() => {
   const isAdminMode = useDebugStore((state) => state.isAdminMode);
 
@@ -22,159 +44,152 @@ export const ManimLevel6Visualizer: React.FC = React.memo(() => {
   });
 
   const eased = getEasedProgress();
+  const currentOffsetX = getStepOffsetX(stepIndex, eased);
 
-  // 원본 삼각형 기준 좌표 (b=12 -> 90px, h=8 -> 80px)
-  const baseP1: Point = { x: 67, y: 48 };
-  const baseP2: Point = { x: 90, y: 128 };
-  const baseP3: Point = { x: 0, y: 128 };
-  const baseTargetP4: Point = { x: 157, y: 48 };
-
-  const baseVal = 12;
-  const heightVal = 8;
-  const areaVal = (baseVal * heightVal) / 2; // 48
-  const paralAreaVal = baseVal * heightVal; // 96
-
-  // -------------------------------------------------------------
-  // X축 중앙 배치 Shift 오프셋 계산
-  // -------------------------------------------------------------
-  let currentOffsetX = 55;
-
-  if (stepIndex === 0) {
-    currentOffsetX = 55;
-  } else if (stepIndex === 1) {
-    currentOffsetX = 55 + (21.5 - 55) * eased;
-  } else if (stepIndex === 2 || stepIndex === 3) {
-    currentOffsetX = 21.5;
-  } else if (stepIndex === 4) {
-    currentOffsetX = 21.5 + (55 - 21.5) * eased;
-  }
-
-  // Shift 적용 꼭짓점
-  const p1: Point = { x: baseP1.x + currentOffsetX, y: baseP1.y };
-  const p2: Point = { x: baseP2.x + currentOffsetX, y: baseP2.y };
-  const p3: Point = { x: baseP3.x + currentOffsetX, y: baseP3.y };
-  const targetP4: Point = { x: baseTargetP4.x + currentOffsetX, y: baseTargetP4.y };
-
-  // -------------------------------------------------------------
-  // 복제 삼각형 좌표 및 투명도
-  // -------------------------------------------------------------
-  let ghostP1: Point = { ...p1 };
-  let ghostP2: Point = { ...p2 };
-  let ghostP4: Point = { ...targetP4 };
-  let ghostOpacity = 0;
-
-  if (stepIndex === 0) {
-    ghostOpacity = 0;
-  } else if (stepIndex === 1) {
-    ghostOpacity = eased * 0.9;
-    const angleRad = eased * Math.PI;
-
-    const center2Prime: Point = {
-      x: p2.x + (p1.x - p2.x) * eased,
-      y: p2.y + (p1.y - p2.y) * eased,
-    };
-
-    const rotateRel = (origPt: Point): Point => {
-      const relX = origPt.x - p2.x;
-      const relY = origPt.y - p2.y;
-      const rx = relX * Math.cos(angleRad) - relY * Math.sin(angleRad);
-      const ry = relX * Math.sin(angleRad) + relY * Math.cos(angleRad);
-      return {
-        x: center2Prime.x + rx,
-        y: center2Prime.y + ry,
-      };
-    };
-
-    ghostP2 = center2Prime;
-    ghostP1 = rotateRel(p1);
-    ghostP4 = rotateRel(p3);
-  } else if (stepIndex === 2) {
-    ghostOpacity = 0.9;
-    ghostP1 = { ...p2 };
-    ghostP2 = { ...p1 };
-    ghostP4 = { ...targetP4 };
-  } else if (stepIndex === 3) {
-    ghostOpacity = 0.9 - eased * 0.75;
-    const offset = eased * 12;
-    ghostP1 = { x: p2.x + offset, y: p2.y - offset };
-    ghostP2 = { x: p1.x + offset, y: p1.y - offset };
-    ghostP4 = { x: targetP4.x + offset, y: targetP4.y - offset };
-  } else if (stepIndex === 4) {
-    ghostOpacity = 0;
-  }
-
-  // 카드 타이틀 & 캡션 5단계 구성
-  let badgeName = '1. 삼각형';
-  let caption = (
-    <div className="geo-stat-highlights">
-      <span className="geo-stat-item" style={{ color: '#38bdf8' }}>
-        밑변 <strong>b={baseVal}</strong>
-      </span>
-      <span className="geo-divider">,</span>
-      <span className="geo-stat-item" style={{ color: '#c084fc' }}>
-        높이 <strong>h={heightVal}</strong>
-      </span>
-    </div>
+  // Shift 적용 꼭짓점 좌표
+  const p1: Point = useMemo(
+    () => ({ x: BASE_P1.x + currentOffsetX, y: BASE_P1.y }),
+    [currentOffsetX]
   );
+  const p2: Point = useMemo(
+    () => ({ x: BASE_P2.x + currentOffsetX, y: BASE_P2.y }),
+    [currentOffsetX]
+  );
+  const p3: Point = { x: BASE_P3.x + currentOffsetX, y: BASE_P3.y };
+  const targetP4: Point = { x: BASE_TARGET_P4.x + currentOffsetX, y: BASE_TARGET_P4.y };
 
-  if (stepIndex === 1) {
-    badgeName = '2. 이동/분할 평행사변형 완성';
-    caption = (
-      <div className="geo-stat-highlights">
-        <span className="geo-stat-item" style={{ color: '#c084fc', fontWeight: 800 }}>
-          동일 삼각형 2개 합체! ➔ 평행사변형 완성
-        </span>
-      </div>
-    );
-  } else if (stepIndex === 2) {
-    badgeName = '3. 평행사변형 넓이';
-    caption = (
-      <div className="geo-stat-highlights">
-        <span className="geo-stat-item" style={{ color: '#38bdf8' }}>
-          {baseVal} × {heightVal}
-        </span>
-        <span className="geo-divider">=</span>
-        <span className="geo-stat-item" style={{ color: '#c084fc', fontWeight: 900 }}>
-          평행사변형 넓이 <strong>{paralAreaVal}</strong>
-        </span>
-      </div>
-    );
-  } else if (stepIndex === 3) {
-    badgeName = '4. 절반(÷ 2) 분할 넓이';
-    caption = (
-      <div className="geo-stat-highlights">
-        <span className="geo-stat-item" style={{ color: '#38bdf8' }}>
-          {baseVal} × {heightVal} ÷ 2
-        </span>
-        <span className="geo-divider">=</span>
-        <span className="geo-stat-item" style={{ color: '#4ade80', fontWeight: 900 }}>
-          넓이{' '}
-          <strong className="highlight-num" style={{ color: '#4ade80' }}>
-            {areaVal}
-          </strong>
-        </span>
-      </div>
-    );
-  } else if (stepIndex === 4) {
-    badgeName = '5. 삼각형 넓이 완성';
-    caption = (
-      <div className="geo-stat-highlights">
-        <span className="geo-stat-item" style={{ color: '#4ade80', fontWeight: 900 }}>
-          삼각형 넓이{' '}
-          <strong className="highlight-num" style={{ color: '#4ade80' }}>
-            {areaVal}
-          </strong>
-        </span>
-      </div>
-    );
-  }
+  // 복제 삼각형 렌더링 상태 계산
+  const ghostState = useMemo(() => {
+    if (stepIndex === 0 || stepIndex === 4) {
+      return { opacity: 0, points: [] as Point[] };
+    }
+
+    if (stepIndex === 1) {
+      const angleRad = eased * Math.PI;
+      const center2Prime: Point = {
+        x: lerp(p2.x, p1.x, eased),
+        y: lerp(p2.y, p1.y, eased),
+      };
+
+      const g1 = rotatePointAroundPivot(p1, p2, center2Prime, angleRad);
+      const g4 = rotatePointAroundPivot(p3, p2, center2Prime, angleRad);
+
+      return {
+        opacity: eased * 0.9,
+        points: [center2Prime, g1, g4],
+      };
+    }
+
+    if (stepIndex === 2) {
+      return {
+        opacity: 0.9,
+        points: [p1, p2, targetP4],
+      };
+    }
+
+    // stepIndex === 3 (분리 및 투명화)
+    const offset = eased * 12;
+    return {
+      opacity: 0.9 - eased * 0.75,
+      points: [
+        { x: p1.x + offset, y: p1.y - offset },
+        { x: p2.x + offset, y: p2.y - offset },
+        { x: targetP4.x + offset, y: targetP4.y - offset },
+      ],
+    };
+  }, [stepIndex, eased, p1, p2, p3, targetP4]);
+
+  // 카드 타이틀 & 캡션 메타데이터
+  const stepMeta = useMemo(() => {
+    switch (stepIndex) {
+      case 1:
+        return {
+          badgeName: '2. 이동/분할 평행사변형 완성',
+          caption: (
+            <div className="geo-stat-highlights">
+              <span className="geo-stat-item" style={{ color: '#c084fc', fontWeight: 800 }}>
+                동일 삼각형 2개 합체! ➔ 평행사변형 완성
+              </span>
+            </div>
+          ),
+        };
+      case 2:
+        return {
+          badgeName: '3. 평행사변형 넓이',
+          caption: (
+            <div className="geo-stat-highlights">
+              <span className="geo-stat-item" style={{ color: '#38bdf8' }}>
+                {BASE_VAL} × {HEIGHT_VAL}
+              </span>
+              <span className="geo-divider">=</span>
+              <span className="geo-stat-item" style={{ color: '#c084fc', fontWeight: 900 }}>
+                평행사변형 넓이 <strong>{PARAL_AREA_VAL}</strong>
+              </span>
+            </div>
+          ),
+        };
+      case 3:
+        return {
+          badgeName: '4. 절반(÷ 2) 분할 넓이',
+          caption: (
+            <div className="geo-stat-highlights">
+              <span className="geo-stat-item" style={{ color: '#38bdf8' }}>
+                {BASE_VAL} × {HEIGHT_VAL} ÷ 2
+              </span>
+              <span className="geo-divider">=</span>
+              <span className="geo-stat-item" style={{ color: '#4ade80', fontWeight: 900 }}>
+                넓이{' '}
+                <strong className="highlight-num" style={{ color: '#4ade80' }}>
+                  {AREA_VAL}
+                </strong>
+              </span>
+            </div>
+          ),
+        };
+      case 4:
+        return {
+          badgeName: '5. 삼각형 넓이 완성',
+          caption: (
+            <div className="geo-stat-highlights">
+              <span className="geo-stat-item" style={{ color: '#4ade80', fontWeight: 900 }}>
+                삼각형 넓이{' '}
+                <strong className="highlight-num" style={{ color: '#4ade80' }}>
+                  {AREA_VAL}
+                </strong>
+              </span>
+            </div>
+          ),
+        };
+      default:
+        return {
+          badgeName: '1. 삼각형',
+          caption: (
+            <div className="geo-stat-highlights">
+              <span className="geo-stat-item" style={{ color: '#38bdf8' }}>
+                밑변 <strong>b={BASE_VAL}</strong>
+              </span>
+              <span className="geo-divider">,</span>
+              <span className="geo-stat-item" style={{ color: '#c084fc' }}>
+                높이 <strong>h={HEIGHT_VAL}</strong>
+              </span>
+            </div>
+          ),
+        };
+    }
+  }, [stepIndex]);
+
+  const origPointsStr = useMemo(
+    () => `${p1.x},${p1.y} ${p2.x},${p2.y} ${p3.x},${p3.y}`,
+    [p1, p2, p3]
+  );
+  const ghostPointsStr = useMemo(() => pointsToSvgString(ghostState.points), [ghostState.points]);
 
   return (
     <ManimCardLayout
-      badgeName={badgeName}
+      badgeName={stepMeta.badgeName}
       isPaused={isPaused}
       onTogglePause={togglePause}
-      captionContent={caption}
+      captionContent={stepMeta.caption}
     >
       <div
         style={{ position: 'relative', width: '100%', display: 'flex', justifyContent: 'center' }}
@@ -184,14 +199,13 @@ export const ManimLevel6Visualizer: React.FC = React.memo(() => {
             {/* 복제 삼각형 교집합 배경색 투명 제거 마스크 */}
             <mask id="l6-ghost-diff-mask">
               <rect x="0" y="0" width={SIZE} height="165" fill="white" />
-              <polygon points={`${p1.x},${p1.y} ${p2.x},${p2.y} ${p3.x},${p3.y}`} fill="black" />
+              <polygon points={origPointsStr} fill="black" />
             </mask>
           </defs>
 
           {/* 수식 표시 영역 (12 * 8 = 96 아래에 ÷ 2 = 48 2줄 구조 배치) */}
           {stepIndex >= 2 && (
             <g className="formula-group">
-              {/* Line 1: 평행사변형 넓이 (12 × 8 = 96) */}
               <text
                 x={100}
                 y={22}
@@ -204,7 +218,6 @@ export const ManimLevel6Visualizer: React.FC = React.memo(() => {
                 12 × 8 = 96
               </text>
 
-              {/* Line 2: ÷ 2 = 48 (Step 3 이상에서 바로 1줄 수식 아래에 등장!) */}
               {stepIndex >= 3 && (
                 <text
                   x={100}
@@ -222,15 +235,15 @@ export const ManimLevel6Visualizer: React.FC = React.memo(() => {
           )}
 
           {/* 복제 삼각형 */}
-          {ghostOpacity > 0.01 && (
-            <g style={{ opacity: ghostOpacity }}>
+          {ghostState.opacity > 0.01 && (
+            <g style={{ opacity: ghostState.opacity }}>
               <polygon
-                points={`${ghostP2.x.toFixed(1)},${ghostP2.y.toFixed(1)} ${ghostP1.x.toFixed(1)},${ghostP1.y.toFixed(1)} ${ghostP4.x.toFixed(1)},${ghostP4.y.toFixed(1)}`}
+                points={ghostPointsStr}
                 fill="rgba(192, 132, 252, 0.35)"
                 mask="url(#l6-ghost-diff-mask)"
               />
               <polygon
-                points={`${ghostP2.x.toFixed(1)},${ghostP2.y.toFixed(1)} ${ghostP1.x.toFixed(1)},${ghostP1.y.toFixed(1)} ${ghostP4.x.toFixed(1)},${ghostP4.y.toFixed(1)}`}
+                points={ghostPointsStr}
                 fill="none"
                 stroke="#c084fc"
                 strokeWidth={2}
@@ -239,16 +252,16 @@ export const ManimLevel6Visualizer: React.FC = React.memo(() => {
             </g>
           )}
 
-          {/* 원본 삼각형 */}
+          {/* 원본 삼각형 (L4 동일 은은한 보라 투명 fill + Cyan stroke) */}
           <polygon
-            points={`${p1.x},${p1.y} ${p2.x},${p2.y} ${p3.x},${p3.y}`}
+            points={origPointsStr}
             fill="rgba(99, 102, 241, 0.15)"
             stroke="#38bdf8"
             strokeWidth={2.5}
             strokeLinejoin="round"
           />
 
-          {/* 높이 점선 */}
+          {/* 높이 수직 점선 & 직각 표시 */}
           <line
             x1={p1.x}
             y1={p1.y}
@@ -274,7 +287,7 @@ export const ManimLevel6Visualizer: React.FC = React.memo(() => {
             fontWeight={800}
             textAnchor="middle"
           >
-            밑변 (b={baseVal})
+            밑변 (b={BASE_VAL})
           </text>
           <text
             x={p1.x - 16}
@@ -284,7 +297,7 @@ export const ManimLevel6Visualizer: React.FC = React.memo(() => {
             fontWeight={800}
             textAnchor="middle"
           >
-            높이 (h={heightVal})
+            높이 (h={HEIGHT_VAL})
           </text>
 
           {isAdminMode && (
