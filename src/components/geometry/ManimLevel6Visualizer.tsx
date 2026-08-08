@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback, useRef } from 'react';
+import React from 'react';
 import { useDebugStore } from '../../stores/useDebugStore';
 import { useManimEngine } from './useManimEngine';
 import { ManimCardLayout } from './ManimCardLayout';
@@ -11,29 +11,9 @@ interface Point {
   y: number;
 }
 
-type ProposalType = 0 | 1; // 0: 제시 1 (점2' 빗변 이동 회전), 1: 제시 2 (점4 위로 더 큰 호를 그리며 이동)
-
-const PROPOSAL_NAMES = [
-  '제시 1: 점2\' 빗변 이동 회전 (b=12, h=8)',
-  '제시 2: 점4 큰 호를 그리며 펼침 (b=12, h=8)',
-];
-
-// Level 6: 삼각형 넓이 (3B1B 평행사변형 합성 - 제시 2 크게 부풀어오르는 호 궤적)
+// Level 6: 삼각형 넓이 (3B1B 제시 1: 회전 중심축 점2' 빗변 이동 180° 회전 확정 적용)
 export const ManimLevel6Visualizer: React.FC = React.memo(() => {
   const isAdminMode = useDebugStore((state) => state.isAdminMode);
-  const [proposal, setProposal] = useState<ProposalType>(0);
-
-  // 방향키 이동 시 1.5초 토스트 메시지 노출
-  const [toastText, setToastText] = useState<string | null>(null);
-  const toastTimerRef = useRef<NodeJS.Timeout | null>(null);
-
-  const triggerToast = (text: string) => {
-    setToastText(text);
-    if (toastTimerRef.current) clearTimeout(toastTimerRef.current);
-    toastTimerRef.current = setTimeout(() => {
-      setToastText(null);
-    }, 1500);
-  };
 
   const { stepIndex, isPaused, togglePause, getEasedProgress } = useManimEngine({
     totalSteps: 3,
@@ -42,31 +22,6 @@ export const ManimLevel6Visualizer: React.FC = React.memo(() => {
   });
 
   const eased = getEasedProgress();
-
-  // 방향키 (←, →) 전환 이벤트 처리 & 토스트 트리거
-  const handleKeyDown = useCallback((e: KeyboardEvent) => {
-    if (e.key === 'ArrowLeft') {
-      setProposal((prev) => {
-        const next = ((prev - 1 + 2) % 2) as ProposalType;
-        triggerToast(PROPOSAL_NAMES[next]);
-        return next;
-      });
-    } else if (e.key === 'ArrowRight') {
-      setProposal((prev) => {
-        const next = ((prev + 1) % 2) as ProposalType;
-        triggerToast(PROPOSAL_NAMES[next]);
-        return next;
-      });
-    }
-  }, []);
-
-  useEffect(() => {
-    window.addEventListener('keydown', handleKeyDown);
-    return () => {
-      window.removeEventListener('keydown', handleKeyDown);
-      if (toastTimerRef.current) clearTimeout(toastTimerRef.current);
-    };
-  }, [handleKeyDown]);
 
   // 원본 삼각형 꼭짓점 좌표 (SVG 200x165 상자 내 정중앙 배치)
   // 점1: 상단 (77, 50)
@@ -84,7 +39,7 @@ export const ManimLevel6Visualizer: React.FC = React.memo(() => {
   const targetP4: Point = { x: 167, y: 50 };
 
   // -------------------------------------------------------------
-  // 복제 삼각형 좌표 계산
+  // 확정안 [제시 1: 피봇 점2' 빗변 이동 180도 회전]
   // -------------------------------------------------------------
   let ghostP1: Point = { ...p1 };
   let ghostP2: Point = { ...p2 };
@@ -95,52 +50,28 @@ export const ManimLevel6Visualizer: React.FC = React.memo(() => {
     ghostOpacity = 0;
   } else if (stepIndex === 1) {
     ghostOpacity = 0.9;
+    const angleRad = eased * Math.PI;
 
-    if (proposal === 0) {
-      // ---------------------------------------------------------
-      // [제시 1: 피봇 점2' 빗변 이동 회전]
-      // 점2' = 복제 회전 중심축. 점2'는 빗변 변1-2 (점2 -> 점1)를 따라 이동.
-      // ---------------------------------------------------------
-      const angleRad = eased * Math.PI;
+    // 점2' 의 현재 위치 (변1-2 선분 상의 보간 좌표: 점2 -> 점1)
+    const center2Prime: Point = {
+      x: p2.x + (p1.x - p2.x) * eased,
+      y: p2.y + (p1.y - p2.y) * eased,
+    };
 
-      const center2Prime: Point = {
-        x: p2.x + (p1.x - p2.x) * eased,
-        y: p2.y + (p1.y - p2.y) * eased,
+    const rotateRel = (origPt: Point): Point => {
+      const relX = origPt.x - p2.x;
+      const relY = origPt.y - p2.y;
+      const rx = relX * Math.cos(angleRad) - relY * Math.sin(angleRad);
+      const ry = relX * Math.sin(angleRad) + relY * Math.cos(angleRad);
+      return {
+        x: center2Prime.x + rx,
+        y: center2Prime.y + ry,
       };
+    };
 
-      const rotateRel = (origPt: Point): Point => {
-        const relX = origPt.x - p2.x;
-        const relY = origPt.y - p2.y;
-        const rx = relX * Math.cos(angleRad) - relY * Math.sin(angleRad);
-        const ry = relX * Math.sin(angleRad) + relY * Math.cos(angleRad);
-        return {
-          x: center2Prime.x + rx,
-          y: center2Prime.y + ry,
-        };
-      };
-
-      ghostP2 = center2Prime; // 점2'
-      ghostP1 = rotateRel(p1); // 점1' (t=1 시 점2와 일치)
-      ghostP4 = rotateRel(p3); // 점3' (t=1 시 targetP4 (167, 50) 과 완벽 일치!)
-    } else if (proposal === 1) {
-      // ---------------------------------------------------------
-      // [제시 2: 점4 크게 부풀어오르는 호(Arc) 펼침]
-      // 제어점 ctrlY = 10 로 대폭 높여 훨씬 크고 다이나믹한 호 궤적 생성!
-      // ---------------------------------------------------------
-      ghostP1 = { ...p1 };
-      ghostP2 = { ...p2 };
-
-      const ctrlX = (p3.x + targetP4.x) / 2; // 88.5
-      const ctrlY = 10; // 기존 45 -> 10으로 호의 높이를 크게 확대!
-
-      const t = eased;
-      const oneMinusT = 1 - t;
-
-      ghostP4 = {
-        x: oneMinusT * oneMinusT * p3.x + 2 * oneMinusT * t * ctrlX + t * t * targetP4.x,
-        y: oneMinusT * oneMinusT * p3.y + 2 * oneMinusT * t * ctrlY + t * t * targetP4.y,
-      };
-    }
+    ghostP2 = center2Prime; // 점2'
+    ghostP1 = rotateRel(p1); // 점1' (t=1 시 점2와 일치)
+    ghostP4 = rotateRel(p3); // 점3' (t=1 시 targetP4 (167, 50) 과 완벽 일치!)
   } else {
     // Step 2: 절반(÷ 2) 분할 이격 (오른쪽 위로 슬라이드 오프셋)
     ghostOpacity = 0.85;
@@ -165,7 +96,7 @@ export const ManimLevel6Visualizer: React.FC = React.memo(() => {
   );
 
   if (stepIndex === 1) {
-    badgeName = '2. 평행사변형 완성!';
+    badgeName = '2. 180° 회전 결합 ➔ 평행사변형';
     caption = (
       <div className="geo-stat-highlights">
         <span className="geo-stat-item" style={{ color: '#c084fc', fontWeight: 800 }}>
@@ -198,29 +129,9 @@ export const ManimLevel6Visualizer: React.FC = React.memo(() => {
       onTogglePause={togglePause}
       captionContent={caption}
     >
-      <div style={{ position: 'relative', width: '100%', display: 'flex', justifyContent: 'center' }}>
-        {/* 방향키 이동 시 1.5초간 나타나는 토스트 메시지 */}
-        {toastText && (
-          <div
-            style={{
-              position: 'absolute',
-              top: 2,
-              zIndex: 30,
-              backgroundColor: 'rgba(15, 23, 42, 0.95)',
-              border: '1px solid #38bdf8',
-              color: '#38bdf8',
-              padding: '4px 14px',
-              borderRadius: '12px',
-              fontSize: '11px',
-              fontWeight: 800,
-              boxShadow: '0 4px 14px rgba(56, 189, 248, 0.35)',
-              pointerEvents: 'none',
-            }}
-          >
-            {toastText}
-          </div>
-        )}
-
+      <div
+        style={{ position: 'relative', width: '100%', display: 'flex', justifyContent: 'center' }}
+      >
         <svg width={SIZE} height={165} viewBox={`0 0 ${SIZE} 165`} className="geo-tip-svg">
           {/* 복제 삼각형 (2'-1'-3') */}
           {ghostOpacity > 0.01 && (
@@ -232,11 +143,17 @@ export const ManimLevel6Visualizer: React.FC = React.memo(() => {
                 strokeWidth={2}
                 strokeDasharray={stepIndex === 2 ? '4 3' : 'none'}
               />
-              {/* 점4 라벨 (출발 시 점3과의 글자 겹침 방지: eased > 0.15 일 때 노출) */}
-              {(stepIndex === 2 || (proposal === 0 && eased > 0.1) || (proposal === 1 && eased > 0.15)) && (
+              {/* 점4 라벨 (출발 시 점3과의 글자 겹침 방지: eased > 0.1 일 때 노출) */}
+              {(stepIndex === 2 || eased > 0.1) && (
                 <>
                   <circle cx={ghostP4.x} cy={ghostP4.y} r={4.5} fill="#f43f5e" />
-                  <text x={ghostP4.x + 8} y={ghostP4.y - 6} fill="#f43f5e" fontSize={10} fontWeight={900}>
+                  <text
+                    x={ghostP4.x + 8}
+                    y={ghostP4.y - 6}
+                    fill="#f43f5e"
+                    fontSize={10}
+                    fontWeight={900}
+                  >
                     점4
                   </text>
                 </>
@@ -251,12 +168,32 @@ export const ManimLevel6Visualizer: React.FC = React.memo(() => {
           />
 
           {/* 높이 점선 */}
-          <line x1={p1.x} y1={p1.y} x2={p1.x} y2={p3.y} stroke="#fb7185" strokeWidth={2} strokeDasharray="4 3" />
-          <path d={`M ${p1.x} ${p3.y - 8} L ${p1.x + 8} ${p3.y - 8} L ${p1.x + 8} ${p3.y}`} fill="none" stroke="#fb7185" strokeWidth={1.5} />
+          <line
+            x1={p1.x}
+            y1={p1.y}
+            x2={p1.x}
+            y2={p3.y}
+            stroke="#fb7185"
+            strokeWidth={2}
+            strokeDasharray="4 3"
+          />
+          <path
+            d={`M ${p1.x} ${p3.y - 8} L ${p1.x + 8} ${p3.y - 8} L ${p1.x + 8} ${p3.y}`}
+            fill="none"
+            stroke="#fb7185"
+            strokeWidth={1.5}
+          />
 
           {/* 원본 꼭짓점 라벨 (점1, 점2, 점3) */}
           <circle cx={p1.x} cy={p1.y} r={4.5} fill="#c084fc" />
-          <text x={p1.x} y={p1.y - 8} fill="#c084fc" fontSize={10} fontWeight={900} textAnchor="middle">
+          <text
+            x={p1.x}
+            y={p1.y - 8}
+            fill="#c084fc"
+            fontSize={10}
+            fontWeight={900}
+            textAnchor="middle"
+          >
             점1
           </text>
 
@@ -271,10 +208,24 @@ export const ManimLevel6Visualizer: React.FC = React.memo(() => {
           </text>
 
           {/* 치수 라벨 */}
-          <text x={(p3.x + p2.x) / 2} y={p3.y + 18} fill="#38bdf8" fontSize={11} fontWeight={800} textAnchor="middle">
+          <text
+            x={(p3.x + p2.x) / 2}
+            y={p3.y + 18}
+            fill="#38bdf8"
+            fontSize={11}
+            fontWeight={800}
+            textAnchor="middle"
+          >
             밑변 (b={baseVal})
           </text>
-          <text x={p1.x - 16} y={(p1.y + p3.y) / 2} fill="#fb7185" fontSize={11} fontWeight={800} textAnchor="middle">
+          <text
+            x={p1.x - 16}
+            y={(p1.y + p3.y) / 2}
+            fill="#fb7185"
+            fontSize={11}
+            fontWeight={800}
+            textAnchor="middle"
+          >
             높이 (h={heightVal})
           </text>
 
@@ -287,7 +238,7 @@ export const ManimLevel6Visualizer: React.FC = React.memo(() => {
 
           {isAdminMode && (
             <text x={10} y={158} fill="rgba(255,255,255,0.4)" fontSize={9}>
-              [DEBUG] L6 Triangle Proposal {proposal + 1} Visualizer
+              [DEBUG] L6 Triangle 3B1B Visualizer
             </text>
           )}
         </svg>
