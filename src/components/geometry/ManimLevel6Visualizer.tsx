@@ -11,7 +11,7 @@ interface Point {
   y: number;
 }
 
-// Level 6: 삼각형 넓이 (3B1B 기하 시각화 - 전체 디자인 시스템 통합 보라/청록 컬러 통일)
+// Level 6: 삼각형 넓이 (3B1B 기하 시각화 - L1~L4 디자인 시스템 통합 & 정점 이름 디버그 모드 한정)
 export const ManimLevel6Visualizer: React.FC = React.memo(() => {
   const isAdminMode = useDebugStore((state) => state.isAdminMode);
 
@@ -86,10 +86,10 @@ export const ManimLevel6Visualizer: React.FC = React.memo(() => {
   let caption = (
     <div className="geo-stat-highlights">
       <span className="geo-stat-item" style={{ color: '#38bdf8' }}>
-        밑변(변3-2) <strong>b={baseVal}</strong>
+        밑변 <strong>b={baseVal}</strong>
       </span>
       <span className="geo-divider">,</span>
-      <span className="geo-stat-item" style={{ color: '#fb7185' }}>
+      <span className="geo-stat-item" style={{ color: '#c084fc' }}>
         높이 <strong>h={heightVal}</strong>
       </span>
     </div>
@@ -143,8 +143,8 @@ export const ManimLevel6Visualizer: React.FC = React.memo(() => {
                 strokeWidth={2}
                 strokeDasharray={stepIndex === 2 ? '4 3' : 'none'}
               />
-              {/* 복제 꼭짓점 점4 라벨 (Purple 통일) */}
-              {(stepIndex === 2 || eased > 0.1) && (
+              {/* 꼭짓점 이름은 isAdminMode (개발자 모드) 에서만 깔끔 노출 */}
+              {isAdminMode && (stepIndex === 2 || eased > 0.1) && (
                 <>
                   <circle cx={ghostP4.x} cy={ghostP4.y} r={4.5} fill="#c084fc" />
                   <text
@@ -167,47 +167,50 @@ export const ManimLevel6Visualizer: React.FC = React.memo(() => {
             className="geo-shape-poly-morph"
           />
 
-          {/* 높이 점선 */}
+          {/* 높이 점선 (보라/청록과 조화로운 톤다운 Accent 수직선) */}
           <line
             x1={p1.x}
             y1={p1.y}
             x2={p1.x}
             y2={p3.y}
-            stroke="#fb7185"
+            stroke="#c084fc"
             strokeWidth={2}
             strokeDasharray="4 3"
           />
           <path
             d={`M ${p1.x} ${p3.y - 8} L ${p1.x + 8} ${p3.y - 8} L ${p1.x + 8} ${p3.y}`}
             fill="none"
-            stroke="#fb7185"
+            stroke="#c084fc"
             strokeWidth={1.5}
           />
 
-          {/* 원본 꼭짓점 라벨 (Cyan #38bdf8 통일) */}
+          {/* 원본 꼭짓점 라벨 (Cyan #38bdf8 통일 & 점 이름은 isAdminMode 에서만 노출) */}
           <circle cx={p1.x} cy={p1.y} r={4.5} fill="#38bdf8" />
-          <text
-            x={p1.x}
-            y={p1.y - 8}
-            fill="#38bdf8"
-            fontSize={10}
-            fontWeight={900}
-            textAnchor="middle"
-          >
-            점1
-          </text>
-
           <circle cx={p2.x} cy={p2.y} r={4.5} fill="#38bdf8" />
-          <text x={p2.x + 10} y={p2.y + 12} fill="#38bdf8" fontSize={10} fontWeight={900}>
-            점2
-          </text>
-
           <circle cx={p3.x} cy={p3.y} r={4.5} fill="#38bdf8" />
-          <text x={p3.x - 6} y={p3.y + 12} fill="#38bdf8" fontSize={10} fontWeight={900}>
-            점3
-          </text>
 
-          {/* 치수 라벨 */}
+          {isAdminMode && (
+            <>
+              <text
+                x={p1.x}
+                y={p1.y - 8}
+                fill="#38bdf8"
+                fontSize={10}
+                fontWeight={900}
+                textAnchor="middle"
+              >
+                점1
+              </text>
+              <text x={p2.x + 10} y={p2.y + 12} fill="#38bdf8" fontSize={10} fontWeight={900}>
+                점2
+              </text>
+              <text x={p3.x - 6} y={p3.y + 12} fill="#38bdf8" fontSize={10} fontWeight={900}>
+                점3
+              </text>
+            </>
+          )}
+
+          {/* 치수 라벨 (Cyan / Purple 통일) */}
           <text
             x={(p3.x + p2.x) / 2}
             y={p3.y + 18}
@@ -221,7 +224,7 @@ export const ManimLevel6Visualizer: React.FC = React.memo(() => {
           <text
             x={p1.x - 16}
             y={(p1.y + p3.y) / 2}
-            fill="#fb7185"
+            fill="#c084fc"
             fontSize={11}
             fontWeight={800}
             textAnchor="middle"

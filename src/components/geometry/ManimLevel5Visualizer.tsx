@@ -19,13 +19,14 @@ const RECT_KEYFRAMES: RectKeyframe[] = [
   { cols: 4, rows: 6, name: '직사각형' },
 ];
 
+// Level 5: 직사각형 넓이 (L1~L4 디자인 시스템 통합 Cyan/Purple 톤앤매너)
 export const ManimLevel5Visualizer: React.FC = React.memo(() => {
   const isAdminMode = useDebugStore((state) => state.isAdminMode);
 
   const { stepIndex, isPaused, togglePause, getEasedProgress } = useManimEngine({
     totalSteps: RECT_KEYFRAMES.length,
-    holdDuration: 2000, // 형태 완성 후 2.0초 대기
-    moveDuration: 1500, // 부드러운 1.5초 변형 애니메이션
+    holdDuration: 2000,
+    moveDuration: 1500,
   });
 
   const currentFrame = RECT_KEYFRAMES[stepIndex]!;
@@ -72,7 +73,7 @@ export const ManimLevel5Visualizer: React.FC = React.memo(() => {
         가로 <strong className="highlight-num">{roundedCols}</strong>
       </span>
       <span className="geo-divider">×</span>
-      <span className="geo-stat-item" style={{ color: '#fb7185' }}>
+      <span className="geo-stat-item" style={{ color: '#c084fc' }}>
         세로 <strong className="highlight-num">{roundedRows}</strong>
       </span>
       <span className="geo-divider">=</span>
@@ -93,19 +94,21 @@ export const ManimLevel5Visualizer: React.FC = React.memo(() => {
       captionContent={caption}
     >
       <svg width={SIZE} height={165} viewBox={`0 0 ${SIZE} 165`} className="geo-tip-svg">
+        {/* 원본 메인 직사각형 (L1~L4 표준 Cyan #38bdf8 / rgba(56, 189, 248, 0.15)) */}
         <rect
           x={rectX}
           y={rectY}
           width={widthPx}
           height={heightPx}
-          fill="rgba(99, 102, 241, 0.22)"
-          stroke="#6366f1"
+          fill="rgba(56, 189, 248, 0.15)"
+          stroke="#38bdf8"
           strokeWidth={2.5}
           rx={4}
           ry={4}
           style={{ transition: 'none' }}
         />
 
+        {/* 그리드 눈금선 (Cyan/Purple 조화 서브 그리드) */}
         {vertGridLines.map((x, idx) => (
           <line
             key={`v-grid-${idx}`}
@@ -113,7 +116,7 @@ export const ManimLevel5Visualizer: React.FC = React.memo(() => {
             y1={rectY}
             x2={x}
             y2={rectY + heightPx}
-            stroke="rgba(165, 180, 252, 0.4)"
+            stroke="rgba(56, 189, 248, 0.35)"
             strokeWidth={1}
             strokeDasharray="2 2"
           />
@@ -126,12 +129,13 @@ export const ManimLevel5Visualizer: React.FC = React.memo(() => {
             y1={y}
             x2={rectX + widthPx}
             y2={y}
-            stroke="rgba(165, 180, 252, 0.4)"
+            stroke="rgba(56, 189, 248, 0.35)"
             strokeWidth={1}
             strokeDasharray="2 2"
           />
         ))}
 
+        {/* 가로 치수 라인 (Cyan #38bdf8) */}
         <line
           x1={rectX}
           y1={rectY - 12}
@@ -167,12 +171,13 @@ export const ManimLevel5Visualizer: React.FC = React.memo(() => {
           가로 {roundedCols}
         </text>
 
+        {/* 세로 치수 라인 (Purple #c084fc 통일) */}
         <line
           x1={rectX + widthPx + 12}
           y1={rectY}
           x2={rectX + widthPx + 12}
           y2={rectY + heightPx}
-          stroke="#fb7185"
+          stroke="#c084fc"
           strokeWidth={2}
         />
         <line
@@ -180,7 +185,7 @@ export const ManimLevel5Visualizer: React.FC = React.memo(() => {
           y1={rectY}
           x2={rectX + widthPx + 16}
           y2={rectY}
-          stroke="#fb7185"
+          stroke="#c084fc"
           strokeWidth={1.5}
         />
         <line
@@ -188,7 +193,7 @@ export const ManimLevel5Visualizer: React.FC = React.memo(() => {
           y1={rectY + heightPx}
           x2={rectX + widthPx + 16}
           y2={rectY + heightPx}
-          stroke="#fb7185"
+          stroke="#c084fc"
           strokeWidth={1.5}
         />
         <text
@@ -196,12 +201,13 @@ export const ManimLevel5Visualizer: React.FC = React.memo(() => {
           y={rectY + heightPx / 2 + 4}
           fontSize={11}
           fontWeight={800}
-          fill="#fb7185"
+          fill="#c084fc"
           textAnchor="start"
         >
           세로 {roundedRows}
         </text>
 
+        {/* 중앙 넓이 칸 수 표시 */}
         <text
           x={rectX + widthPx / 2}
           y={rectY + heightPx / 2 + 4}
@@ -221,3 +227,5 @@ export const ManimLevel5Visualizer: React.FC = React.memo(() => {
     </ManimCardLayout>
   );
 });
+
+ManimLevel5Visualizer.displayName = 'ManimLevel5Visualizer';

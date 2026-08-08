@@ -11,7 +11,7 @@ interface Point {
   y: number;
 }
 
-// Level 7: 사다리꼴 넓이 ((a + b) * h / 2) 3B1B 기하 시각화 - 디자인 시스템 통합 보라/청록 컬러 통일
+// Level 7: 사다리꼴 넓이 ((a + b) * h / 2) 3B1B 기하 시각화 - L1~L4 디자인 시스템 통합 & 깔끔한 정돈
 export const ManimLevel7Visualizer: React.FC = React.memo(() => {
   const isAdminMode = useDebugStore((state) => state.isAdminMode);
 
@@ -103,7 +103,7 @@ export const ManimLevel7Visualizer: React.FC = React.memo(() => {
         아랫변 <strong>b={bottomB}</strong>
       </span>
       <span className="geo-divider">,</span>
-      <span className="geo-stat-item" style={{ color: '#fb7185' }}>
+      <span className="geo-stat-item" style={{ color: '#c084fc' }}>
         높이 <strong>h={heightH}</strong>
       </span>
     </div>
@@ -203,20 +203,20 @@ export const ManimLevel7Visualizer: React.FC = React.memo(() => {
             className="geo-shape-poly-morph"
           />
 
-          {/* 높이(h) 수직 점선 */}
+          {/* 높이(h) 수직 점선 (보라/청록과 조화로운 Accent 수직선) */}
           <line
             x1={p1.x}
             y1={p1.y}
             x2={p1.x}
             y2={p4.y}
-            stroke="#fb7185"
+            stroke="#c084fc"
             strokeWidth={2}
             strokeDasharray="4 3"
           />
           <path
             d={`M ${p1.x} ${p4.y - 8} L ${p1.x + 8} ${p4.y - 8} L ${p1.x + 8} ${p4.y}`}
             fill="none"
-            stroke="#fb7185"
+            stroke="#c084fc"
             strokeWidth={1.5}
           />
 
@@ -250,7 +250,7 @@ export const ManimLevel7Visualizer: React.FC = React.memo(() => {
           <text
             x={p1.x - 16}
             y={centerY + 4}
-            fill="#fb7185"
+            fill="#c084fc"
             fontSize={11}
             fontWeight={800}
             textAnchor="middle"
