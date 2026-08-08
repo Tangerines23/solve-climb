@@ -22,7 +22,7 @@ const P2: Point = { x: 50 + TOP_W, y: CENTER_Y - H_PX / 2 };
 const P3: Point = { x: 40 + BOTTOM_W, y: CENTER_Y + H_PX / 2 };
 const P4: Point = { x: 40, y: CENTER_Y + H_PX / 2 };
 
-// Level 7: 사다리꼴 넓이 (모듈화 리팩토링 버전)
+// Level 7: 사다리꼴 넓이 (높이 Rose/Red #f43f5e 100% 통일)
 export const ManimLevel7Visualizer: React.FC = React.memo(() => {
   const isAdminMode = useDebugStore((state) => state.isAdminMode);
 
@@ -84,7 +84,7 @@ export const ManimLevel7Visualizer: React.FC = React.memo(() => {
     };
   }, [stepIndex, eased]);
 
-  // 메타데이터 정보
+  // 메타데이터 정보 (높이 #f43f5e Rose/Red 100% 통일)
   const stepMeta = useMemo(() => {
     switch (stepIndex) {
       case 1:
@@ -144,7 +144,7 @@ export const ManimLevel7Visualizer: React.FC = React.memo(() => {
                 아랫변 <strong>b={BOTTOM_B}</strong>
               </span>
               <span className="geo-divider">,</span>
-              <span className="geo-stat-item" style={{ color: '#c084fc' }}>
+              <span className="geo-stat-item" style={{ color: '#f43f5e' }}>
                 높이 <strong>h={HEIGHT_H}</strong>
               </span>
             </div>
@@ -182,7 +182,7 @@ export const ManimLevel7Visualizer: React.FC = React.memo(() => {
             />
           )}
 
-          {/* 원본 사다리꼴 (L4 동일 은은한 보라 투명 fill + Cyan stroke) */}
+          {/* 원본 사다리꼴 */}
           <polygon
             points={origPointsStr}
             fill="rgba(99, 102, 241, 0.15)"
@@ -191,20 +191,20 @@ export const ManimLevel7Visualizer: React.FC = React.memo(() => {
             strokeLinejoin="round"
           />
 
-          {/* 높이(h) 수직 점선 & 직각 표시 */}
+          {/* 높이(h) 수직 점선 & 직각 표시 (L1~L4와 100% 통일된 Rose/Red #f43f5e) */}
           <line
             x1={P1.x}
             y1={P1.y}
             x2={P1.x}
             y2={P4.y}
-            stroke="#c084fc"
+            stroke="#f43f5e"
             strokeWidth={2}
             strokeDasharray="4 3"
           />
           <path
             d={`M ${P1.x} ${P4.y - 8} L ${P1.x + 8} ${P4.y - 8} L ${P1.x + 8} ${P4.y}`}
             fill="none"
-            stroke="#c084fc"
+            stroke="#f43f5e"
             strokeWidth={1.5}
           />
 
@@ -232,7 +232,7 @@ export const ManimLevel7Visualizer: React.FC = React.memo(() => {
           <text
             x={P1.x - 16}
             y={CENTER_Y + 4}
-            fill="#c084fc"
+            fill="#f43f5e"
             fontSize={11}
             fontWeight={800}
             textAnchor="middle"

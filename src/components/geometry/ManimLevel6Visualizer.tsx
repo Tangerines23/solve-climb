@@ -99,7 +99,7 @@ export const ManimLevel6Visualizer: React.FC = React.memo(() => {
     };
   }, [stepIndex, eased, p1, p2, p3, targetP4]);
 
-  // 카드 타이틀 & 캡션 메타데이터
+  // 카드 타이틀 & 캡션 메타데이터 (높이 #f43f5e Rose/Red 100% 통일)
   const stepMeta = useMemo(() => {
     switch (stepIndex) {
       case 1:
@@ -169,7 +169,7 @@ export const ManimLevel6Visualizer: React.FC = React.memo(() => {
                 밑변 <strong>b={BASE_VAL}</strong>
               </span>
               <span className="geo-divider">,</span>
-              <span className="geo-stat-item" style={{ color: '#c084fc' }}>
+              <span className="geo-stat-item" style={{ color: '#f43f5e' }}>
                 높이 <strong>h={HEIGHT_VAL}</strong>
               </span>
             </div>
@@ -203,7 +203,7 @@ export const ManimLevel6Visualizer: React.FC = React.memo(() => {
             </mask>
           </defs>
 
-          {/* 수식 표시 영역 (12 * 8 = 96 아래에 ÷ 2 = 48 2줄 구조 배치) */}
+          {/* 수식 표시 영역 */}
           {stepIndex >= 2 && (
             <g className="formula-group">
               <text
@@ -252,7 +252,7 @@ export const ManimLevel6Visualizer: React.FC = React.memo(() => {
             </g>
           )}
 
-          {/* 원본 삼각형 (L4 동일 은은한 보라 투명 fill + Cyan stroke) */}
+          {/* 원본 삼각형 */}
           <polygon
             points={origPointsStr}
             fill="rgba(99, 102, 241, 0.15)"
@@ -261,20 +261,20 @@ export const ManimLevel6Visualizer: React.FC = React.memo(() => {
             strokeLinejoin="round"
           />
 
-          {/* 높이 수직 점선 & 직각 표시 */}
+          {/* 높이 수직 점선 & 직각 표시 (L1~L4와 100% 통일된 Rose/Red #f43f5e) */}
           <line
             x1={p1.x}
             y1={p1.y}
             x2={p1.x}
             y2={p3.y}
-            stroke="#c084fc"
+            stroke="#f43f5e"
             strokeWidth={2}
             strokeDasharray="4 3"
           />
           <path
             d={`M ${p1.x} ${p3.y - 8} L ${p1.x + 8} ${p3.y - 8} L ${p1.x + 8} ${p3.y}`}
             fill="none"
-            stroke="#c084fc"
+            stroke="#f43f5e"
             strokeWidth={1.5}
           />
 
@@ -292,7 +292,7 @@ export const ManimLevel6Visualizer: React.FC = React.memo(() => {
           <text
             x={p1.x - 16}
             y={(p1.y + p3.y) / 2}
-            fill="#c084fc"
+            fill="#f43f5e"
             fontSize={11}
             fontWeight={800}
             textAnchor="middle"

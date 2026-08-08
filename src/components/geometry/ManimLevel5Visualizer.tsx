@@ -19,7 +19,7 @@ const RECT_KEYFRAMES: RectKeyframe[] = [
   { cols: 4, rows: 6, name: '직사각형' },
 ];
 
-// Level 5: 직사각형 넓이 (L4 이전 CSS 표준과 100% 일치하는 rgba(99, 102, 241, 0.15) 면색 적용)
+// Level 5: 직사각형 넓이 (세로/높이 Rose/Red #f43f5e 100% 통일)
 export const ManimLevel5Visualizer: React.FC = React.memo(() => {
   const isAdminMode = useDebugStore((state) => state.isAdminMode);
 
@@ -73,7 +73,7 @@ export const ManimLevel5Visualizer: React.FC = React.memo(() => {
         가로 <strong className="highlight-num">{roundedCols}</strong>
       </span>
       <span className="geo-divider">×</span>
-      <span className="geo-stat-item" style={{ color: '#c084fc' }}>
+      <span className="geo-stat-item" style={{ color: '#f43f5e' }}>
         세로 <strong className="highlight-num">{roundedRows}</strong>
       </span>
       <span className="geo-divider">=</span>
@@ -171,13 +171,13 @@ export const ManimLevel5Visualizer: React.FC = React.memo(() => {
           가로 {roundedCols}
         </text>
 
-        {/* 세로 치수 라인 (Purple #c084fc) */}
+        {/* 세로 치수 라인 (L1~L4와 100% 통일된 Rose/Red #f43f5e) */}
         <line
           x1={rectX + widthPx + 12}
           y1={rectY}
           x2={rectX + widthPx + 12}
           y2={rectY + heightPx}
-          stroke="#c084fc"
+          stroke="#f43f5e"
           strokeWidth={2}
         />
         <line
@@ -185,7 +185,7 @@ export const ManimLevel5Visualizer: React.FC = React.memo(() => {
           y1={rectY}
           x2={rectX + widthPx + 16}
           y2={rectY}
-          stroke="#c084fc"
+          stroke="#f43f5e"
           strokeWidth={1.5}
         />
         <line
@@ -193,7 +193,7 @@ export const ManimLevel5Visualizer: React.FC = React.memo(() => {
           y1={rectY + heightPx}
           x2={rectX + widthPx + 16}
           y2={rectY + heightPx}
-          stroke="#c084fc"
+          stroke="#f43f5e"
           strokeWidth={1.5}
         />
         <text
@@ -201,7 +201,7 @@ export const ManimLevel5Visualizer: React.FC = React.memo(() => {
           y={rectY + heightPx / 2 + 4}
           fontSize={11}
           fontWeight={800}
-          fill="#c084fc"
+          fill="#f43f5e"
           textAnchor="start"
         >
           세로 {roundedRows}
@@ -221,7 +221,7 @@ export const ManimLevel5Visualizer: React.FC = React.memo(() => {
         </text>
 
         {isAdminMode && (
-          <circle cx={rectX + widthPx / 2} cy={rectY + heightPx / 2} r={3} fill="#c084fc" />
+          <circle cx={rectX + widthPx / 2} cy={rectY + heightPx / 2} r={3} fill="#f43f5e" />
         )}
       </svg>
     </ManimCardLayout>
