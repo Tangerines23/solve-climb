@@ -11,7 +11,7 @@ interface Point {
   y: number;
 }
 
-// Level 6: 삼각형 넓이 (3B1B 제시 1: 회전 중심축 점2' 빗변 이동 180° 회전 확정 적용)
+// Level 6: 삼각형 넓이 (3B1B 기하 시각화 - 전체 디자인 시스템 통합 보라/청록 컬러 통일)
 export const ManimLevel6Visualizer: React.FC = React.memo(() => {
   const isAdminMode = useDebugStore((state) => state.isAdminMode);
 
@@ -39,7 +39,7 @@ export const ManimLevel6Visualizer: React.FC = React.memo(() => {
   const targetP4: Point = { x: 167, y: 50 };
 
   // -------------------------------------------------------------
-  // 확정안 [제시 1: 피봇 점2' 빗변 이동 180도 회전]
+  // 복제 삼각형 (2'-1'-3') 피봇 이동 회전
   // -------------------------------------------------------------
   let ghostP1: Point = { ...p1 };
   let ghostP2: Point = { ...p2 };
@@ -71,9 +71,9 @@ export const ManimLevel6Visualizer: React.FC = React.memo(() => {
 
     ghostP2 = center2Prime; // 점2'
     ghostP1 = rotateRel(p1); // 점1' (t=1 시 점2와 일치)
-    ghostP4 = rotateRel(p3); // 점3' (t=1 시 targetP4 (167, 50) 과 완벽 일치!)
+    ghostP4 = rotateRel(p3); // 점3' (t=1 시 targetP4 과 일치)
   } else {
-    // Step 2: 절반(÷ 2) 분할 이격 (오른쪽 위로 슬라이드 오프셋)
+    // Step 2: 절반(÷ 2) 분할 이격
     ghostOpacity = 0.85;
     const offset = eased * 8;
     ghostP1 = { x: p2.x + offset, y: p2.y - offset };
@@ -81,7 +81,7 @@ export const ManimLevel6Visualizer: React.FC = React.memo(() => {
     ghostP4 = { x: targetP4.x + offset, y: targetP4.y - offset };
   }
 
-  // 타이틀 & 캡션
+  // 통일된 카드 타이틀 & 캡션 구성
   let badgeName = '1. 삼각형 (b=12, h=8)';
   let caption = (
     <div className="geo-stat-highlights">
@@ -133,24 +133,24 @@ export const ManimLevel6Visualizer: React.FC = React.memo(() => {
         style={{ position: 'relative', width: '100%', display: 'flex', justifyContent: 'center' }}
       >
         <svg width={SIZE} height={165} viewBox={`0 0 ${SIZE} 165`} className="geo-tip-svg">
-          {/* 복제 삼각형 (2'-1'-3') */}
+          {/* 복제 삼각형 (디자인 시스템 통합: 퍼플 Purple 계열 #c084fc / rgba(168, 85, 247, 0.25)) */}
           {ghostOpacity > 0.01 && (
             <g style={{ opacity: ghostOpacity }}>
               <polygon
                 points={`${ghostP2.x.toFixed(1)},${ghostP2.y.toFixed(1)} ${ghostP1.x.toFixed(1)},${ghostP1.y.toFixed(1)} ${ghostP4.x.toFixed(1)},${ghostP4.y.toFixed(1)}`}
-                fill="rgba(244, 63, 94, 0.35)"
-                stroke="#f43f5e"
+                fill="rgba(168, 85, 247, 0.25)"
+                stroke="#c084fc"
                 strokeWidth={2}
                 strokeDasharray={stepIndex === 2 ? '4 3' : 'none'}
               />
-              {/* 점4 라벨 (출발 시 점3과의 글자 겹침 방지: eased > 0.1 일 때 노출) */}
+              {/* 복제 꼭짓점 점4 라벨 (Purple 통일) */}
               {(stepIndex === 2 || eased > 0.1) && (
                 <>
-                  <circle cx={ghostP4.x} cy={ghostP4.y} r={4.5} fill="#f43f5e" />
+                  <circle cx={ghostP4.x} cy={ghostP4.y} r={4.5} fill="#c084fc" />
                   <text
                     x={ghostP4.x + 8}
                     y={ghostP4.y - 6}
-                    fill="#f43f5e"
+                    fill="#c084fc"
                     fontSize={10}
                     fontWeight={900}
                   >
@@ -161,7 +161,7 @@ export const ManimLevel6Visualizer: React.FC = React.memo(() => {
             </g>
           )}
 
-          {/* 원본 삼각형 (점1, 점2, 점3) */}
+          {/* 원본 삼각형 (디자인 시스템 통합: 청록 Cyan 계열 #38bdf8 / rgba(56, 189, 248, 0.15)) */}
           <polygon
             points={`${p1.x},${p1.y} ${p2.x},${p2.y} ${p3.x},${p3.y}`}
             className="geo-shape-poly-morph"
@@ -184,12 +184,12 @@ export const ManimLevel6Visualizer: React.FC = React.memo(() => {
             strokeWidth={1.5}
           />
 
-          {/* 원본 꼭짓점 라벨 (점1, 점2, 점3) */}
-          <circle cx={p1.x} cy={p1.y} r={4.5} fill="#c084fc" />
+          {/* 원본 꼭짓점 라벨 (Cyan #38bdf8 통일) */}
+          <circle cx={p1.x} cy={p1.y} r={4.5} fill="#38bdf8" />
           <text
             x={p1.x}
             y={p1.y - 8}
-            fill="#c084fc"
+            fill="#38bdf8"
             fontSize={10}
             fontWeight={900}
             textAnchor="middle"

@@ -11,12 +11,10 @@ interface Point {
   y: number;
 }
 
-// Level 7: 사다리꼴 넓이 ((a + b) * h / 2) 3B1B 수학적 기하 애니메이션
-// 제시 1 방식 동일 적용: 사다리꼴 우측 빗변 변2-3을 따라 피봇 점3'가 슬라이딩 이동하면서 180도 회전 결합!
+// Level 7: 사다리꼴 넓이 ((a + b) * h / 2) 3B1B 기하 시각화 - 디자인 시스템 통합 보라/청록 컬러 통일
 export const ManimLevel7Visualizer: React.FC = React.memo(() => {
   const isAdminMode = useDebugStore((state) => state.isAdminMode);
 
-  // 애니메이션 각 단계마다 완료 후 충분한 딜레이(holdDuration: 2200ms) 적용
   const { stepIndex, isPaused, togglePause, getEasedProgress } = useManimEngine({
     totalSteps: 4,
     holdDuration: 2200,
@@ -33,16 +31,12 @@ export const ManimLevel7Visualizer: React.FC = React.memo(() => {
   const areaVal = (paralBase * heightH) / 2; // 48
 
   // SVG 뷰포트 (200 x 165) 내 중앙 정렬 좌표
-  const topW = 45; // a = 6 비율 (45px)
-  const bottomW = 75; // b = 10 비율 (75px)
-  const hPx = 50; // h = 6 비율 (50px)
+  const topW = 45; // a = 6 비율
+  const bottomW = 75; // b = 10 비율
+  const hPx = 50; // h = 6 비율
   const centerY = 90;
 
   // 원본 사다리꼴 꼭짓점
-  // p1: 윗변 좌 (50, 65)
-  // p2: 윗변 우 (95, 65)
-  // p3: 아랫변 우 (115, 115) -> 빗변 변2-3: (95,65) <-> (115,115)
-  // p4: 아랫변 좌 (40, 115)
   const p1: Point = { x: 50, y: centerY - hPx / 2 };
   const p2: Point = { x: 50 + topW, y: centerY - hPx / 2 };
   const p3: Point = { x: 40 + bottomW, y: centerY + hPx / 2 };
@@ -58,7 +52,6 @@ export const ManimLevel7Visualizer: React.FC = React.memo(() => {
   if (stepIndex === 0) {
     ghostOpacity = 0;
   } else if (stepIndex === 1) {
-    // Step 1: 복제 사다리꼴 등장 (우측 상단에 연하게 복제됨)
     ghostOpacity = eased * 0.85;
     const shiftX = (1 - eased) * 15;
     const shiftY = (1 - eased) * -15;
@@ -67,12 +60,9 @@ export const ManimLevel7Visualizer: React.FC = React.memo(() => {
     gP3 = { x: p3.x + shiftX, y: p3.y + shiftY };
     gP4 = { x: p4.x + shiftX, y: p4.y + shiftY };
   } else if (stepIndex === 2) {
-    // Step 2: [제시 1 방식 동일 적용]
-    // 피봇 점3'가 원본 빗변 변2-3 (p3 -> p2)을 따라 슬라이딩 이동하며 180도 회전 결합!
     ghostOpacity = 0.9;
     const angleRad = eased * Math.PI;
 
-    // 회전 중심축 p3'의 이동 궤적 (p3 -> p2)
     const pivot3Prime: Point = {
       x: p3.x + (p2.x - p3.x) * eased,
       y: p3.y + (p2.y - p3.y) * eased,
@@ -89,12 +79,11 @@ export const ManimLevel7Visualizer: React.FC = React.memo(() => {
       };
     };
 
-    gP3 = pivot3Prime; // 점3' (t=1 시 p2 위치)
-    gP2 = rotateRel(p2); // 점2' (t=1 시 p3 위치)
-    gP1 = rotateRel(p1); // 점1' (t=1 시 우상단 p2 + bottomW 위치)
-    gP4 = rotateRel(p4); // 점4' (t=1 시 우하단 p3 + topW 위치)
+    gP3 = pivot3Prime;
+    gP2 = rotateRel(p2);
+    gP1 = rotateRel(p1);
+    gP4 = rotateRel(p4);
   } else {
-    // Step 3: 절반(÷ 2) 분할 이격 (우상단으로 슬라이드 이격)
     ghostOpacity = 0.85;
     const offset = eased * 8;
     gP3 = { x: p2.x + offset, y: p2.y - offset };
@@ -103,7 +92,6 @@ export const ManimLevel7Visualizer: React.FC = React.memo(() => {
     gP4 = { x: p3.x + topW + offset, y: p3.y - offset };
   }
 
-  // 단계별 카드 타이틀 & 캡션 구성
   let badgeName = '1. 사다리꼴 (a=6, b=10, h=6)';
   let caption = (
     <div className="geo-stat-highlights">
@@ -125,7 +113,7 @@ export const ManimLevel7Visualizer: React.FC = React.memo(() => {
     badgeName = '2. 똑같은 사다리꼴 복제';
     caption = (
       <div className="geo-stat-highlights">
-        <span className="geo-stat-item" style={{ color: '#f43f5e', fontWeight: 800 }}>
+        <span className="geo-stat-item" style={{ color: '#c084fc', fontWeight: 800 }}>
           똑같은 사다리꼴 1개 더 생성!
         </span>
       </div>
@@ -172,23 +160,22 @@ export const ManimLevel7Visualizer: React.FC = React.memo(() => {
         style={{ position: 'relative', width: '100%', display: 'flex', justifyContent: 'center' }}
       >
         <svg width={SIZE} height={165} viewBox={`0 0 ${SIZE} 165`} className="geo-tip-svg">
-          {/* Step 1~3 복제 사다리꼴 */}
+          {/* Step 1~3 복제 사다리꼴 (디자인 시스템 통합: 퍼플 Purple 계열 #c084fc / rgba(168, 85, 247, 0.25)) */}
           {ghostOpacity > 0.01 && (
             <g style={{ opacity: ghostOpacity }}>
               <polygon
                 points={`${gP1.x.toFixed(1)},${gP1.y.toFixed(1)} ${gP2.x.toFixed(1)},${gP2.y.toFixed(1)} ${gP3.x.toFixed(1)},${gP3.y.toFixed(1)} ${gP4.x.toFixed(1)},${gP4.y.toFixed(1)}`}
-                fill="rgba(244, 63, 94, 0.35)"
-                stroke="#f43f5e"
+                fill="rgba(168, 85, 247, 0.25)"
+                stroke="#c084fc"
                 strokeWidth={2}
                 strokeDasharray={stepIndex === 3 ? '4 3' : 'none'}
               />
-              {/* 복제 사다리꼴 치수 라벨 (Step 2/3 완숙 단계 시) */}
               {(stepIndex === 2 || stepIndex === 3) && (
                 <>
                   <text
                     x={(gP1.x + gP2.x) / 2}
                     y={gP1.y - 6}
-                    fill="#f43f5e"
+                    fill="#c084fc"
                     fontSize={10}
                     fontWeight={800}
                     textAnchor="middle"
@@ -198,7 +185,7 @@ export const ManimLevel7Visualizer: React.FC = React.memo(() => {
                   <text
                     x={(gP4.x + gP3.x) / 2}
                     y={gP4.y + 16}
-                    fill="#f43f5e"
+                    fill="#c084fc"
                     fontSize={10}
                     fontWeight={800}
                     textAnchor="middle"
@@ -210,7 +197,7 @@ export const ManimLevel7Visualizer: React.FC = React.memo(() => {
             </g>
           )}
 
-          {/* 원본 사다리꼴 */}
+          {/* 원본 사다리꼴 (Cyan #38bdf8) */}
           <polygon
             points={`${p1.x.toFixed(1)},${p1.y.toFixed(1)} ${p2.x.toFixed(1)},${p2.y.toFixed(1)} ${p3.x.toFixed(1)},${p3.y.toFixed(1)} ${p4.x.toFixed(1)},${p4.y.toFixed(1)}`}
             className="geo-shape-poly-morph"
@@ -233,9 +220,9 @@ export const ManimLevel7Visualizer: React.FC = React.memo(() => {
             strokeWidth={1.5}
           />
 
-          {/* 꼭짓점 Dots */}
-          <circle cx={p1.x} cy={p1.y} r={4.5} fill="#c084fc" />
-          <circle cx={p2.x} cy={p2.y} r={4.5} fill="#c084fc" />
+          {/* 꼭짓점 Dots (Cyan #38bdf8) */}
+          <circle cx={p1.x} cy={p1.y} r={4.5} fill="#38bdf8" />
+          <circle cx={p2.x} cy={p2.y} r={4.5} fill="#38bdf8" />
           <circle cx={p3.x} cy={p3.y} r={4.5} fill="#38bdf8" />
           <circle cx={p4.x} cy={p4.y} r={4.5} fill="#38bdf8" />
 
@@ -280,7 +267,7 @@ export const ManimLevel7Visualizer: React.FC = React.memo(() => {
 
           {isAdminMode && (
             <text x={10} y={158} fill="rgba(255,255,255,0.4)" fontSize={9}>
-              [DEBUG] L7 Trapezoid Proposal 1 Pivot Rotation Visualizer
+              [DEBUG] L7 Trapezoid Visualizer
             </text>
           )}
         </svg>
