@@ -18,8 +18,7 @@ const BOTTOM_W = 75;
 const H_PX = 50;
 const CENTER_Y = 95;
 
-// 사다리꼴 기준 좌표 (Bounding Box x: 0 ~ 75, width = 75px, center = 37.5px)
-// 평행사변형 완성 시 Bounding Box x: 0 ~ 120 (width = 120px, center = 60px)
+// 사다리꼴 기준 좌표 (Bounding Box x: 0 ~ 75, width = 75px)
 const BASE_P1: Point = { x: 10, y: CENTER_Y - H_PX / 2 };
 const BASE_P2: Point = { x: 10 + TOP_W, y: CENTER_Y - H_PX / 2 };
 const BASE_P3: Point = { x: 0 + BOTTOM_W, y: CENTER_Y + H_PX / 2 };
@@ -42,7 +41,7 @@ function getStepOffsetX(stepIndex: number, eased: number): number {
   }
 }
 
-// Level 7: 사다리꼴 넓이 (L6 동일 5단계 시퀀스 & SVG 투명 마스킹 & 2줄 수식 완전 정밀화)
+// Level 7: 사다리꼴 넓이 (오른쪽 빗변 중점 M 기준 180도 정밀 회전 -> 뒤집힘/삼각형 찌그러짐 완벽 방지)
 export const ManimLevel7Visualizer: React.FC = React.memo(() => {
   const isAdminMode = useDebugStore((state) => state.isAdminMode);
 
@@ -73,7 +72,16 @@ export const ManimLevel7Visualizer: React.FC = React.memo(() => {
     [currentOffsetX]
   );
 
-  // 복제 사다리꼴 좌표 및 투명도 계산
+  // 오른쪽 빗변(p2-p3)의 중점 M (Midpoint)
+  const midPoint: Point = useMemo(
+    () => ({
+      x: (p2.x + p3.x) / 2,
+      y: (p2.y + p3.y) / 2,
+    }),
+    [p2, p3]
+  );
+
+  // 복제 사다리꼴 좌표 및 투명도 계산 (중점 M 중심 180도 회전)
   const ghostState = useMemo(() => {
     if (stepIndex === 0 || stepIndex === 4) {
       return { opacity: 0, points: [] as Point[] };
@@ -81,48 +89,51 @@ export const ManimLevel7Visualizer: React.FC = React.memo(() => {
 
     if (stepIndex === 1) {
       const angleRad = eased * Math.PI;
-      const pivot3Prime: Point = {
-        x: lerp(p3.x, p2.x, eased),
-        y: lerp(p3.y, p2.y, eased),
-      };
 
-      const g2 = rotatePointAroundPivot(p2, p3, pivot3Prime, angleRad);
-      const g1 = rotatePointAroundPivot(p1, p3, pivot3Prime, angleRad);
-      const g4 = rotatePointAroundPivot(p4, p3, pivot3Prime, angleRad);
+      // 빗변 중점 M을 피봇으로 180도 회전
+      const g1 = rotatePointAroundPivot(p1, midPoint, midPoint, angleRad);
+      const g2 = rotatePointAroundPivot(p2, midPoint, midPoint, angleRad);
+      const g3 = rotatePointAroundPivot(p3, midPoint, midPoint, angleRad);
+      const g4 = rotatePointAroundPivot(p4, midPoint, midPoint, angleRad);
 
       return {
         opacity: eased * 0.9,
-        points: [g1, g2, pivot3Prime, g4],
+        points: [g1, g2, g3, g4],
       };
     }
 
     if (stepIndex === 2) {
-      const g2 = { x: p2.x + BOTTOM_W, y: p2.y };
-      const g1 = { x: p3.x, y: p3.y };
-      const g4 = { x: p2.x + BOTTOM_W - TOP_W, y: p2.y };
+      // 180도 회전 완료 상태 (평행사변형 밀착)
+      const g1 = rotatePointAroundPivot(p1, midPoint, midPoint, Math.PI);
+      const g2 = rotatePointAroundPivot(p2, midPoint, midPoint, Math.PI);
+      const g3 = rotatePointAroundPivot(p3, midPoint, midPoint, Math.PI);
+      const g4 = rotatePointAroundPivot(p4, midPoint, midPoint, Math.PI);
+
       return {
         opacity: 0.9,
-        points: [g1, p3, p2, g4],
+        points: [g1, g2, g3, g4],
       };
     }
 
-    // stepIndex === 3 (분리 및 투명화)
+    // stepIndex === 3 (분리 및 투명화 이격)
     const offset = eased * 12;
-    const g2 = { x: p2.x + BOTTOM_W + offset, y: p2.y - offset };
-    const g1 = { x: p3.x + offset, y: p3.y - offset };
-    const g4 = { x: p2.x + BOTTOM_W - TOP_W + offset, y: p2.y - offset };
+    const g1 = rotatePointAroundPivot(p1, midPoint, midPoint, Math.PI);
+    const g2 = rotatePointAroundPivot(p2, midPoint, midPoint, Math.PI);
+    const g3 = rotatePointAroundPivot(p3, midPoint, midPoint, Math.PI);
+    const g4 = rotatePointAroundPivot(p4, midPoint, midPoint, Math.PI);
+
     return {
       opacity: 0.9 - eased * 0.75,
       points: [
-        g1,
-        { x: p3.x + offset, y: p3.y - offset },
-        { x: p2.x + offset, y: p2.y - offset },
-        g4,
+        { x: g1.x + offset, y: g1.y - offset },
+        { x: g2.x + offset, y: g2.y - offset },
+        { x: g3.x + offset, y: g3.y - offset },
+        { x: g4.x + offset, y: g4.y - offset },
       ],
     };
-  }, [stepIndex, eased, p1, p2, p3, p4]);
+  }, [stepIndex, eased, p1, p2, p3, p4, midPoint]);
 
-  // 메타데이터 정보 (5단계 시퀀스 및 높이 #f43f5e Rose/Red 100% 통일)
+  // 메타데이터 정보 (5단계 시퀀스 & 높이 #f43f5e Rose/Red 100% 통일)
   const stepMeta = useMemo(() => {
     switch (stepIndex) {
       case 1:

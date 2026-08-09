@@ -5,7 +5,8 @@
   "type": "module",
   "scripts": {
     "setup": "node scripts/setup-new-env.js",
-    "build:map": "node scripts/generate-code-map.js",
+    "build:map": "node scripts/generate-code-map.js && node scripts/check-code-map.js",
+    "check:code-map": "node scripts/check-code-map.js",
     "build:flowchart": "node scripts/generate-flowchart.js",
     "dev": "vite --host",
     "generate": "plop",

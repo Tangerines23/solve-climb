@@ -20,11 +20,7 @@ export const ManimLevel14Visualizer: React.FC = React.memo(() => {
 
   const eased = getEasedProgress();
 
-  const aVal = 3;
-  const bVal = 4;
   const cVal = 5;
-  const aSquare = aVal * aVal; // 9
-  const bSquare = bVal * bVal; // 16
   const cSquare = cVal * cVal; // 25
 
   let badgeName = '1. 두 변의 정사각형 (a²=9, b²=16)';

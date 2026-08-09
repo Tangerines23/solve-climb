@@ -1,84 +1,7 @@
 import { Project, SyntaxKind } from 'ts-morph';
 import fs from 'fs';
 import path from 'path';
-
-// Custom YAML formatter to avoid extra dependency
-function toYaml(val, indent = 0) {
-  const spaces = ' '.repeat(indent);
-  if (val === null || val === undefined) return 'null';
-  if (typeof val === 'string') {
-    if (val.includes('\n')) {
-      return (
-        '|\n' +
-        val
-          .split('\n')
-          .map((line) => spaces + '  ' + line)
-          .join('\n')
-      );
-    }
-    if (
-      val.includes('"') ||
-      val.includes(':') ||
-      val.includes('#') ||
-      val.includes('[') ||
-      val.includes(']')
-    ) {
-      return `"${val.replace(/"/g, '\\"')}"`;
-    }
-    return val;
-  }
-  if (typeof val === 'number' || typeof val === 'boolean') {
-    return String(val);
-  }
-  if (Array.isArray(val)) {
-    if (val.length === 0) return '[]';
-    if (val.every((item) => typeof item === 'string' || typeof item === 'number')) {
-      return (
-        '[' +
-        val
-          .map((item) => {
-            if (typeof item === 'string') {
-              if (
-                item.includes(':') ||
-                item.includes('#') ||
-                item.includes(' ') ||
-                item.includes('[') ||
-                item.includes(']')
-              ) {
-                return `"${item.replace(/"/g, '\\"')}"`;
-              }
-              return item;
-            }
-            return String(item);
-          })
-          .join(', ') +
-        ']'
-      );
-    }
-    return (
-      '\n' + val.map((item) => `${spaces}- ${toYaml(item, indent + 2).trimStart()}`).join('\n')
-    );
-  }
-  if (typeof val === 'object') {
-    const keys = Object.keys(val);
-    if (keys.length === 0) return '{}';
-    return (
-      '\n' +
-      keys
-        .map((key) => {
-          const formattedKey = key.includes(':') || key.includes(' ') ? `"${key}"` : key;
-          const valueStr = toYaml(val[key], indent + 2);
-          if (valueStr.startsWith('\n')) {
-            return `${spaces}${formattedKey}:${valueStr}`;
-          } else {
-            return `${spaces}${formattedKey}: ${valueStr}`;
-          }
-        })
-        .join('\n')
-    );
-  }
-  return String(val);
-}
+import yaml from 'js-yaml';
 
 function getFileSummary(sourceFile) {
   const leadingCommentRanges = sourceFile.getLeadingCommentRanges();
@@ -112,25 +35,57 @@ function getInnerCalls(node) {
   node.forEachDescendant((descendant) => {
     if (descendant.getKind() === SyntaxKind.CallExpression) {
       const expression = descendant.getExpression();
-      const text = expression.getText().replace(/\s+/g, ' ').trim();
-      // Filter out utility names and standard hook calls
+      let text = expression.getText().replace(/\s+/g, ' ').trim();
+
+      // Skip overly long or complex expressions (e.g. inline callbacks/code snippets)
       if (
-        !text.startsWith('.') &&
-        ![
-          'map',
-          'filter',
-          'forEach',
-          'reduce',
-          'find',
-          'push',
-          'useState',
-          'useEffect',
-          'useCallback',
-          'useMemo',
-          'useRef',
-          'useContext',
-        ].includes(text)
+        text.length > 60 ||
+        text.includes('=>') ||
+        text.includes('{') ||
+        text.includes('}') ||
+        text.includes('function')
       ) {
+        if (expression.getKind() === SyntaxKind.PropertyAccessExpression) {
+          text = expression.getName();
+        } else {
+          return;
+        }
+      }
+
+      // Filter out basic array/object methods and React built-in hooks
+      const ignoredCalls = new Set([
+        'map',
+        'filter',
+        'forEach',
+        'reduce',
+        'find',
+        'push',
+        'slice',
+        'concat',
+        'indexOf',
+        'includes',
+        'join',
+        'split',
+        'replace',
+        'trim',
+        'toLowerCase',
+        'toUpperCase',
+        'toString',
+        'useState',
+        'useEffect',
+        'useCallback',
+        'useMemo',
+        'useRef',
+        'useContext',
+        'useImperativeHandle',
+        'useLayoutEffect',
+        'console.log',
+        'console.error',
+        'console.warn',
+        'console.info',
+      ]);
+
+      if (!text.startsWith('.') && !ignoredCalls.has(text) && text.length > 0) {
         calls.add(text);
       }
     }
@@ -405,6 +360,11 @@ function getExports(sourceFile) {
           initializer.getKind() === SyntaxKind.FunctionExpression)
       ) {
         exports.push(parseVariableFunction(varDecl, initializer));
+      } else {
+        exports.push({
+          name: varDecl.getName(),
+          kind: 'const',
+        });
       }
     }
   }
@@ -412,6 +372,33 @@ function getExports(sourceFile) {
   for (const cls of sourceFile.getClasses()) {
     if (cls.isExported()) {
       exports.push(parseClass(cls));
+    }
+  }
+
+  for (const iface of sourceFile.getInterfaces()) {
+    if (iface.isExported()) {
+      exports.push({
+        name: iface.getName(),
+        kind: 'interface',
+      });
+    }
+  }
+
+  for (const typeAlias of sourceFile.getTypeAliases()) {
+    if (typeAlias.isExported()) {
+      exports.push({
+        name: typeAlias.getName(),
+        kind: 'type',
+      });
+    }
+  }
+
+  for (const en of sourceFile.getEnums()) {
+    if (en.isExported()) {
+      exports.push({
+        name: en.getName(),
+        kind: 'enum',
+      });
     }
   }
 
@@ -477,7 +464,7 @@ function main() {
     }
   }
 
-  const yamlOutput = toYaml(mapData);
+  const yamlOutput = yaml.dump(mapData, { indent: 2, lineWidth: -1, noRefs: true });
 
   const destPaths = [
     path.resolve('docs', '.code-map.yaml'),
@@ -495,3 +482,4 @@ function main() {
 }
 
 main();
+
