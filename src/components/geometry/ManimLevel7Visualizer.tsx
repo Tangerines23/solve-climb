@@ -11,115 +11,153 @@ const BOTTOM_B = 10;
 const HEIGHT_H = 6;
 const PARAL_BASE = TOP_A + BOTTOM_B; // 16
 const AREA_VAL = (PARAL_BASE * HEIGHT_H) / 2; // 48
+const PARAL_AREA_VAL = PARAL_BASE * HEIGHT_H; // 96
 
 const TOP_W = 45;
 const BOTTOM_W = 75;
 const H_PX = 50;
-const CENTER_Y = 90;
+const CENTER_Y = 95;
 
-const P1: Point = { x: 50, y: CENTER_Y - H_PX / 2 };
-const P2: Point = { x: 50 + TOP_W, y: CENTER_Y - H_PX / 2 };
-const P3: Point = { x: 40 + BOTTOM_W, y: CENTER_Y + H_PX / 2 };
-const P4: Point = { x: 40, y: CENTER_Y + H_PX / 2 };
+// 사다리꼴 기준 좌표 (Bounding Box x: 0 ~ 75, width = 75px, center = 37.5px)
+// 평행사변형 완성 시 Bounding Box x: 0 ~ 120 (width = 120px, center = 60px)
+const BASE_P1: Point = { x: 10, y: CENTER_Y - H_PX / 2 };
+const BASE_P2: Point = { x: 10 + TOP_W, y: CENTER_Y - H_PX / 2 };
+const BASE_P3: Point = { x: 0 + BOTTOM_W, y: CENTER_Y + H_PX / 2 };
+const BASE_P4: Point = { x: 0, y: CENTER_Y + H_PX / 2 };
 
-// Level 7: 사다리꼴 넓이 (높이 라벨 겹침 방지 정밀 배치)
+// X축 정중앙 오프셋 계산 (Step 0: 62.5px -> Step 1~3: 40px -> Step 4: 62.5px)
+function getStepOffsetX(stepIndex: number, eased: number): number {
+  switch (stepIndex) {
+    case 0:
+      return 62.5;
+    case 1:
+      return lerp(62.5, 40, eased);
+    case 2:
+    case 3:
+      return 40;
+    case 4:
+      return lerp(40, 62.5, eased);
+    default:
+      return 62.5;
+  }
+}
+
+// Level 7: 사다리꼴 넓이 (L6 동일 5단계 시퀀스 & SVG 투명 마스킹 & 2줄 수식 완전 정밀화)
 export const ManimLevel7Visualizer: React.FC = React.memo(() => {
   const isAdminMode = useDebugStore((state) => state.isAdminMode);
 
   const { stepIndex, isPaused, togglePause, getEasedProgress } = useManimEngine({
-    totalSteps: 4,
-    holdDuration: 2200,
-    moveDuration: 1600,
+    totalSteps: 5,
+    holdDuration: 2000,
+    moveDuration: 1500,
   });
 
   const eased = getEasedProgress();
+  const currentOffsetX = getStepOffsetX(stepIndex, eased);
+
+  // Shift 적용 꼭짓점 좌표
+  const p1: Point = useMemo(
+    () => ({ x: BASE_P1.x + currentOffsetX, y: BASE_P1.y }),
+    [currentOffsetX]
+  );
+  const p2: Point = useMemo(
+    () => ({ x: BASE_P2.x + currentOffsetX, y: BASE_P2.y }),
+    [currentOffsetX]
+  );
+  const p3: Point = useMemo(
+    () => ({ x: BASE_P3.x + currentOffsetX, y: BASE_P3.y }),
+    [currentOffsetX]
+  );
+  const p4: Point = useMemo(
+    () => ({ x: BASE_P4.x + currentOffsetX, y: BASE_P4.y }),
+    [currentOffsetX]
+  );
 
   // 복제 사다리꼴 좌표 및 투명도 계산
   const ghostState = useMemo(() => {
-    if (stepIndex === 0) {
+    if (stepIndex === 0 || stepIndex === 4) {
       return { opacity: 0, points: [] as Point[] };
     }
 
     if (stepIndex === 1) {
-      const shiftX = (1 - eased) * 15;
-      const shiftY = (1 - eased) * -15;
-      return {
-        opacity: eased * 0.85,
-        points: [
-          { x: P1.x + shiftX, y: P1.y + shiftY },
-          { x: P2.x + shiftX, y: P2.y + shiftY },
-          { x: P3.x + shiftX, y: P3.y + shiftY },
-          { x: P4.x + shiftX, y: P4.y + shiftY },
-        ],
-      };
-    }
-
-    if (stepIndex === 2) {
       const angleRad = eased * Math.PI;
       const pivot3Prime: Point = {
-        x: lerp(P3.x, P2.x, eased),
-        y: lerp(P3.y, P2.y, eased),
+        x: lerp(p3.x, p2.x, eased),
+        y: lerp(p3.y, p2.y, eased),
       };
 
-      const g2 = rotatePointAroundPivot(P2, P3, pivot3Prime, angleRad);
-      const g1 = rotatePointAroundPivot(P1, P3, pivot3Prime, angleRad);
-      const g4 = rotatePointAroundPivot(P4, P3, pivot3Prime, angleRad);
+      const g2 = rotatePointAroundPivot(p2, p3, pivot3Prime, angleRad);
+      const g1 = rotatePointAroundPivot(p1, p3, pivot3Prime, angleRad);
+      const g4 = rotatePointAroundPivot(p4, p3, pivot3Prime, angleRad);
 
       return {
-        opacity: 0.9,
+        opacity: eased * 0.9,
         points: [g1, g2, pivot3Prime, g4],
       };
     }
 
-    // stepIndex === 3 (분리 이격)
-    const offset = eased * 8;
+    if (stepIndex === 2) {
+      const g2 = { x: p2.x + BOTTOM_W, y: p2.y };
+      const g1 = { x: p3.x, y: p3.y };
+      const g4 = { x: p2.x + BOTTOM_W - TOP_W, y: p2.y };
+      return {
+        opacity: 0.9,
+        points: [g1, p3, p2, g4],
+      };
+    }
+
+    // stepIndex === 3 (분리 및 투명화)
+    const offset = eased * 12;
+    const g2 = { x: p2.x + BOTTOM_W + offset, y: p2.y - offset };
+    const g1 = { x: p3.x + offset, y: p3.y - offset };
+    const g4 = { x: p2.x + BOTTOM_W - TOP_W + offset, y: p2.y - offset };
     return {
-      opacity: 0.85,
+      opacity: 0.9 - eased * 0.75,
       points: [
-        { x: P2.x + BOTTOM_W + offset, y: P2.y - offset },
-        { x: P3.x + offset, y: P3.y - offset },
-        { x: P2.x + offset, y: P2.y - offset },
-        { x: P3.x + TOP_W + offset, y: P3.y - offset },
+        g1,
+        { x: p3.x + offset, y: p3.y - offset },
+        { x: p2.x + offset, y: p2.y - offset },
+        g4,
       ],
     };
-  }, [stepIndex, eased]);
+  }, [stepIndex, eased, p1, p2, p3, p4]);
 
-  // 메타데이터 정보
+  // 메타데이터 정보 (5단계 시퀀스 및 높이 #f43f5e Rose/Red 100% 통일)
   const stepMeta = useMemo(() => {
     switch (stepIndex) {
       case 1:
         return {
-          badgeName: '2. 똑같은 사다리꼴 복제',
+          badgeName: '2. 이동/분할 평행사변형 완성',
           caption: (
             <div className="geo-stat-highlights">
               <span className="geo-stat-item" style={{ color: '#c084fc', fontWeight: 800 }}>
-                똑같은 사다리꼴 1개 더 생성!
+                동일 사다리꼴 2개 합체! ➔ 평행사변형 완성
               </span>
             </div>
           ),
         };
       case 2:
         return {
-          badgeName: '3. 180° 회전 결합 ➔ 평행사변형',
+          badgeName: '3. 평행사변형 넓이',
           caption: (
             <div className="geo-stat-highlights">
-              <span className="geo-stat-item" style={{ color: '#c084fc', fontWeight: 800 }}>
-                평행사변형 완성! (밑변 = a + b = {TOP_A} + {BOTTOM_B} = {PARAL_BASE})
+              <span className="geo-stat-item" style={{ color: '#38bdf8' }}>
+                ({TOP_A} + {BOTTOM_B}) × {HEIGHT_H}
+              </span>
+              <span className="geo-divider">=</span>
+              <span className="geo-stat-item" style={{ color: '#c084fc', fontWeight: 900 }}>
+                평행사변형 넓이 <strong>{PARAL_AREA_VAL}</strong>
               </span>
             </div>
           ),
         };
       case 3:
         return {
-          badgeName: '4. 절반(÷ 2) 넓이 계산',
+          badgeName: '4. 절반(÷ 2) 분할 넓이',
           caption: (
             <div className="geo-stat-highlights">
               <span className="geo-stat-item" style={{ color: '#38bdf8' }}>
                 ({TOP_A} + {BOTTOM_B}) × {HEIGHT_H} ÷ 2
-              </span>
-              <span className="geo-divider">=</span>
-              <span className="geo-stat-item" style={{ color: '#38bdf8' }}>
-                {PARAL_BASE} × {HEIGHT_H} ÷ 2
               </span>
               <span className="geo-divider">=</span>
               <span className="geo-stat-item" style={{ color: '#4ade80', fontWeight: 900 }}>
@@ -131,9 +169,23 @@ export const ManimLevel7Visualizer: React.FC = React.memo(() => {
             </div>
           ),
         };
+      case 4:
+        return {
+          badgeName: '5. 사다리꼴 넓이 완성',
+          caption: (
+            <div className="geo-stat-highlights">
+              <span className="geo-stat-item" style={{ color: '#4ade80', fontWeight: 900 }}>
+                사다리꼴 넓이{' '}
+                <strong className="highlight-num" style={{ color: '#4ade80' }}>
+                  {AREA_VAL}
+                </strong>
+              </span>
+            </div>
+          ),
+        };
       default:
         return {
-          badgeName: '1. 사다리꼴 (a=6, b=10, h=6)',
+          badgeName: '1. 사다리꼴',
           caption: (
             <div className="geo-stat-highlights">
               <span className="geo-stat-item" style={{ color: '#38bdf8' }}>
@@ -154,8 +206,8 @@ export const ManimLevel7Visualizer: React.FC = React.memo(() => {
   }, [stepIndex]);
 
   const origPointsStr = useMemo(
-    () => `${P1.x},${P1.y} ${P2.x},${P2.y} ${P3.x},${P3.y} ${P4.x},${P4.y}`,
-    []
+    () => `${p1.x},${p1.y} ${p2.x},${p2.y} ${p3.x},${p3.y} ${p4.x},${p4.y}`,
+    [p1, p2, p3, p4]
   );
   const ghostPointsStr = useMemo(() => pointsToSvgString(ghostState.points), [ghostState.points]);
 
@@ -170,16 +222,61 @@ export const ManimLevel7Visualizer: React.FC = React.memo(() => {
         style={{ position: 'relative', width: '100%', display: 'flex', justifyContent: 'center' }}
       >
         <svg width={SIZE} height={165} viewBox={`0 0 ${SIZE} 165`} className="geo-tip-svg">
-          {/* 복제 사다리꼴 */}
+          <defs>
+            {/* 복제 사다리꼴 교집합 배경색 투명 제거 마스크 */}
+            <mask id="l7-ghost-diff-mask">
+              <rect x="0" y="0" width={SIZE} height="165" fill="white" />
+              <polygon points={origPointsStr} fill="black" />
+            </mask>
+          </defs>
+
+          {/* 수식 표시 영역 (16 * 6 = 96 아래에 ÷ 2 = 48 2줄 구조 배치) */}
+          {stepIndex >= 2 && (
+            <g className="formula-group">
+              <text
+                x={100}
+                y={22}
+                fill="#c084fc"
+                fontSize={11}
+                fontWeight={900}
+                textAnchor="middle"
+                style={{ filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.8))' }}
+              >
+                (6 + 10) × 6 = 96
+              </text>
+
+              {stepIndex >= 3 && (
+                <text
+                  x={100}
+                  y={37}
+                  fill="#4ade80"
+                  fontSize={12}
+                  fontWeight={900}
+                  textAnchor="middle"
+                  style={{ filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.8))' }}
+                >
+                  ÷ 2 = 48
+                </text>
+              )}
+            </g>
+          )}
+
+          {/* 복제 사다리꼴 (교집합 투명 마스킹 적용) */}
           {ghostState.opacity > 0.01 && (
-            <polygon
-              points={ghostPointsStr}
-              fill="rgba(192, 132, 252, 0.16)"
-              stroke="#c084fc"
-              strokeWidth={2}
-              strokeDasharray={stepIndex === 3 ? '4 3' : 'none'}
-              style={{ opacity: ghostState.opacity }}
-            />
+            <g style={{ opacity: ghostState.opacity }}>
+              <polygon
+                points={ghostPointsStr}
+                fill="rgba(192, 132, 252, 0.35)"
+                mask="url(#l7-ghost-diff-mask)"
+              />
+              <polygon
+                points={ghostPointsStr}
+                fill="none"
+                stroke="#c084fc"
+                strokeWidth={2}
+                strokeDasharray={stepIndex >= 3 ? '4 3' : 'none'}
+              />
+            </g>
           )}
 
           {/* 원본 사다리꼴 */}
@@ -191,27 +288,27 @@ export const ManimLevel7Visualizer: React.FC = React.memo(() => {
             strokeLinejoin="round"
           />
 
-          {/* 높이(h) 수직 점선 & 직각 표시 */}
+          {/* 높이(h) 수직 점선 & 직각 표시 (Rose/Red #f43f5e 100% 통일) */}
           <line
-            x1={P1.x}
-            y1={P1.y}
-            x2={P1.x}
-            y2={P4.y}
+            x1={p1.x}
+            y1={p1.y}
+            x2={p1.x}
+            y2={p4.y}
             stroke="#f43f5e"
             strokeWidth={2}
             strokeDasharray="4 3"
           />
           <path
-            d={`M ${P1.x} ${P4.y - 8} L ${P1.x + 8} ${P4.y - 8} L ${P1.x + 8} ${P4.y}`}
+            d={`M ${p1.x} ${p4.y - 8} L ${p1.x + 8} ${p4.y - 8} L ${p1.x + 8} ${p4.y}`}
             fill="none"
             stroke="#f43f5e"
             strokeWidth={1.5}
           />
 
-          {/* 치수 라벨 (textAnchor="end" 및 x={P1.x - 6} 으로 수직 점선 기준 오른쪽 끝점 정밀 배치하여 선과 완전히 겹침 방지!) */}
+          {/* 치수 라벨 (textAnchor="end" 및 x={p1.x - 6} 으로 수직 점선 기준 오른쪽 끝점 정밀 배치하여 선과 완전히 겹침 방지!) */}
           <text
-            x={(P1.x + P2.x) / 2}
-            y={P1.y - 8}
+            x={(p1.x + p2.x) / 2}
+            y={p1.y - 8}
             fill="#38bdf8"
             fontSize={11}
             fontWeight={800}
@@ -220,8 +317,8 @@ export const ManimLevel7Visualizer: React.FC = React.memo(() => {
             a={TOP_A}
           </text>
           <text
-            x={(P4.x + P3.x) / 2}
-            y={P4.y + 18}
+            x={(p4.x + p3.x) / 2}
+            y={p4.y + 18}
             fill="#38bdf8"
             fontSize={11}
             fontWeight={800}
@@ -230,7 +327,7 @@ export const ManimLevel7Visualizer: React.FC = React.memo(() => {
             b={BOTTOM_B}
           </text>
           <text
-            x={P1.x - 6}
+            x={p1.x - 6}
             y={CENTER_Y + 4}
             fill="#f43f5e"
             fontSize={11}
@@ -241,16 +338,9 @@ export const ManimLevel7Visualizer: React.FC = React.memo(() => {
             h={HEIGHT_H}
           </text>
 
-          {/* Step 3 절반 분할 표시 */}
-          {stepIndex === 3 && (
-            <text x={100} y={30} fill="#4ade80" fontSize={12} fontWeight={900} textAnchor="middle">
-              ÷ 2 (절반)
-            </text>
-          )}
-
           {isAdminMode && (
             <text x={10} y={158} fill="rgba(255,255,255,0.4)" fontSize={9}>
-              [DEBUG] L7 Trapezoid Visualizer
+              [DEBUG] L7 Trapezoid 5-Step Visualizer
             </text>
           )}
         </svg>
