@@ -99,7 +99,7 @@ export const ManimLevel6Visualizer: React.FC = React.memo(() => {
     };
   }, [stepIndex, eased, p1, p2, p3, targetP4]);
 
-  // 카드 타이틀 & 캡션 메타데이터 (높이 #f43f5e Rose/Red 100% 통일)
+  // 카드 타이틀 & 캡션 메타데이터
   const stepMeta = useMemo(() => {
     switch (stepIndex) {
       case 1:
@@ -261,7 +261,7 @@ export const ManimLevel6Visualizer: React.FC = React.memo(() => {
             strokeLinejoin="round"
           />
 
-          {/* 높이 수직 점선 & 직각 표시 (L1~L4와 100% 통일된 Rose/Red #f43f5e) */}
+          {/* 높이 수직 점선 & 직각 표시 */}
           <line
             x1={p1.x}
             y1={p1.y}
@@ -278,7 +278,7 @@ export const ManimLevel6Visualizer: React.FC = React.memo(() => {
             strokeWidth={1.5}
           />
 
-          {/* 치수 라벨 */}
+          {/* 치수 라벨 (textAnchor="end" 및 x={p1.x - 6} 으로 수직 점선 기준 오른쪽 끝점 정밀 배치하여 선과 완전히 겹침 방지!) */}
           <text
             x={(p3.x + p2.x) / 2}
             y={p3.y + 18}
@@ -290,12 +290,13 @@ export const ManimLevel6Visualizer: React.FC = React.memo(() => {
             밑변 (b={BASE_VAL})
           </text>
           <text
-            x={p1.x - 16}
+            x={p1.x - 6}
             y={(p1.y + p3.y) / 2}
             fill="#f43f5e"
             fontSize={11}
             fontWeight={800}
-            textAnchor="middle"
+            textAnchor="end"
+            style={{ filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.9))' }}
           >
             높이 (h={HEIGHT_VAL})
           </text>

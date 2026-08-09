@@ -22,7 +22,7 @@ const P2: Point = { x: 50 + TOP_W, y: CENTER_Y - H_PX / 2 };
 const P3: Point = { x: 40 + BOTTOM_W, y: CENTER_Y + H_PX / 2 };
 const P4: Point = { x: 40, y: CENTER_Y + H_PX / 2 };
 
-// Level 7: 사다리꼴 넓이 (높이 Rose/Red #f43f5e 100% 통일)
+// Level 7: 사다리꼴 넓이 (높이 라벨 겹침 방지 정밀 배치)
 export const ManimLevel7Visualizer: React.FC = React.memo(() => {
   const isAdminMode = useDebugStore((state) => state.isAdminMode);
 
@@ -84,7 +84,7 @@ export const ManimLevel7Visualizer: React.FC = React.memo(() => {
     };
   }, [stepIndex, eased]);
 
-  // 메타데이터 정보 (높이 #f43f5e Rose/Red 100% 통일)
+  // 메타데이터 정보
   const stepMeta = useMemo(() => {
     switch (stepIndex) {
       case 1:
@@ -191,7 +191,7 @@ export const ManimLevel7Visualizer: React.FC = React.memo(() => {
             strokeLinejoin="round"
           />
 
-          {/* 높이(h) 수직 점선 & 직각 표시 (L1~L4와 100% 통일된 Rose/Red #f43f5e) */}
+          {/* 높이(h) 수직 점선 & 직각 표시 */}
           <line
             x1={P1.x}
             y1={P1.y}
@@ -208,7 +208,7 @@ export const ManimLevel7Visualizer: React.FC = React.memo(() => {
             strokeWidth={1.5}
           />
 
-          {/* 치수 라벨 */}
+          {/* 치수 라벨 (textAnchor="end" 및 x={P1.x - 6} 으로 수직 점선 기준 오른쪽 끝점 정밀 배치하여 선과 완전히 겹침 방지!) */}
           <text
             x={(P1.x + P2.x) / 2}
             y={P1.y - 8}
@@ -230,12 +230,13 @@ export const ManimLevel7Visualizer: React.FC = React.memo(() => {
             b={BOTTOM_B}
           </text>
           <text
-            x={P1.x - 16}
+            x={P1.x - 6}
             y={CENTER_Y + 4}
             fill="#f43f5e"
             fontSize={11}
             fontWeight={800}
-            textAnchor="middle"
+            textAnchor="end"
+            style={{ filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.9))' }}
           >
             h={HEIGHT_H}
           </text>
