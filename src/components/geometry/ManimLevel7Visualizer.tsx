@@ -41,7 +41,7 @@ function getStepOffsetX(stepIndex: number, eased: number): number {
   }
 }
 
-// Level 7: 사다리꼴 넓이 (상단 배지 및 빗변과의 글자 겹침 완전 방지)
+// Level 7: 사다리꼴 넓이 (수직 높이 라벨을 점선 우측에 배치하여 빗변 겹침 100% 완전 차단)
 export const ManimLevel7Visualizer: React.FC = React.memo(() => {
   const isAdminMode = useDebugStore((state) => state.isAdminMode);
 
@@ -72,7 +72,7 @@ export const ManimLevel7Visualizer: React.FC = React.memo(() => {
     [currentOffsetX]
   );
 
-  // 복제 사다리꼴 좌표 및 투명도 계산 (L6처럼 피봇 p3가 빗변 p3 -> p2 로 이동하며 180도 회전)
+  // 복제 사다리꼴 좌표 및 투명도 계산
   const ghostState = useMemo(() => {
     if (stepIndex === 0 || stepIndex === 4) {
       return { opacity: 0, points: [] as Point[] };
@@ -81,7 +81,6 @@ export const ManimLevel7Visualizer: React.FC = React.memo(() => {
     if (stepIndex === 1) {
       const angleRad = eased * Math.PI;
 
-      // 피봇 슬라이딩: p3에서 출발하여 빗변을 타고 p2 꼭짓점으로 이동!
       const pivot3Prime: Point = {
         x: lerp(p3.x, p2.x, eased),
         y: lerp(p3.y, p2.y, eased),
@@ -235,7 +234,7 @@ export const ManimLevel7Visualizer: React.FC = React.memo(() => {
             </mask>
           </defs>
 
-          {/* 수식 표시 영역 (상단 배지 태그와의 수평/수직 겹림 방지를 위해 x=125, y=34 로 우측 배치!) */}
+          {/* 수식 표시 영역 */}
           {stepIndex >= 2 && (
             <g className="formula-group">
               <text
@@ -310,7 +309,7 @@ export const ManimLevel7Visualizer: React.FC = React.memo(() => {
             strokeWidth={1.5}
           />
 
-          {/* 치수 라벨 (높이 글자가 왼쪽 빗변 선분과 겹치지 않도록 x={p1.x - 10} 오프셋 확대!) */}
+          {/* 치수 라벨 (수직 점선의 우측 공간 x={p1.x + 6}, textAnchor="start" 에 배치하여 빗변과 100% 절대 겹침 방지!) */}
           <text
             x={(p1.x + p2.x) / 2}
             y={p1.y - 7}
@@ -332,12 +331,12 @@ export const ManimLevel7Visualizer: React.FC = React.memo(() => {
             b={BOTTOM_B}
           </text>
           <text
-            x={p1.x - 10}
+            x={p1.x + 6}
             y={CENTER_Y + 4}
             fill="#f43f5e"
             fontSize={11}
             fontWeight={800}
-            textAnchor="end"
+            textAnchor="start"
             style={{ filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.9))' }}
           >
             h={HEIGHT_H}

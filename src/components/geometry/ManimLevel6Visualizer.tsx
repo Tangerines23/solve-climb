@@ -34,7 +34,7 @@ function getStepOffsetX(stepIndex: number, eased: number): number {
   }
 }
 
-// Level 6: 삼각형 넓이 (상단 배지 및 빗변과의 글자 겹침 완전 방지)
+// Level 6: 삼각형 넓이 (수직 높이 라벨을 점선 우측에 배치하여 빗변 겹침 100% 완전 차단)
 export const ManimLevel6Visualizer: React.FC = React.memo(() => {
   const isAdminMode = useDebugStore((state) => state.isAdminMode);
 
@@ -204,7 +204,7 @@ export const ManimLevel6Visualizer: React.FC = React.memo(() => {
             </mask>
           </defs>
 
-          {/* 수식 표시 영역 (상단 배지 태그와의 수평/수직 겹림 방지를 위해 x=125, y=34 로 우측 배치!) */}
+          {/* 수식 표시 영역 */}
           {stepIndex >= 2 && (
             <g className="formula-group">
               <text
@@ -279,7 +279,7 @@ export const ManimLevel6Visualizer: React.FC = React.memo(() => {
             strokeWidth={1.5}
           />
 
-          {/* 치수 라벨 (높이 글자가 왼쪽 빗변 선분과 겹치지 않도록 x={p1.x - 12} 오프셋 확대!) */}
+          {/* 치수 라벨 (수직 점선의 우측 공간 x={p1.x + 6}, textAnchor="start" 에 배치하여 빗변과 100% 절대 겹침 방지!) */}
           <text
             x={(p3.x + p2.x) / 2}
             y={p3.y + 16}
@@ -291,12 +291,12 @@ export const ManimLevel6Visualizer: React.FC = React.memo(() => {
             밑변 (b={BASE_VAL})
           </text>
           <text
-            x={p1.x - 12}
-            y={(p1.y + p3.y) / 2}
+            x={p1.x + 6}
+            y={(p1.y + p3.y) / 2 + 4}
             fill="#f43f5e"
             fontSize={11}
             fontWeight={800}
-            textAnchor="end"
+            textAnchor="start"
             style={{ filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.9))' }}
           >
             높이 (h={HEIGHT_VAL})
