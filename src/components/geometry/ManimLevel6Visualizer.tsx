@@ -11,13 +11,13 @@ const HEIGHT_VAL = 8;
 const AREA_VAL = (BASE_VAL * HEIGHT_VAL) / 2; // 48
 const PARAL_AREA_VAL = BASE_VAL * HEIGHT_VAL; // 96
 
-// 원본 삼각형 기준 좌표
-const BASE_P1: Point = { x: 67, y: 48 };
-const BASE_P2: Point = { x: 90, y: 128 };
-const BASE_P3: Point = { x: 0, y: 128 };
-const BASE_TARGET_P4: Point = { x: 157, y: 48 };
+// 원본 삼각형 기준 좌표 (상단 배지 겹침 방지를 위해 Y축 58 -> 138로 여유있게 배치)
+const BASE_P1: Point = { x: 67, y: 58 };
+const BASE_P2: Point = { x: 90, y: 138 };
+const BASE_P3: Point = { x: 0, y: 138 };
+const BASE_TARGET_P4: Point = { x: 157, y: 58 };
 
-// StepIndex 별 X축 정중앙 Shift 오프셋 계산 (Step0: 55px -> Step1~3: 21.5px -> Step4: 55px)
+// StepIndex 별 X축 정중앙 Shift 오프셋 계산
 function getStepOffsetX(stepIndex: number, eased: number): number {
   switch (stepIndex) {
     case 0:
@@ -34,6 +34,7 @@ function getStepOffsetX(stepIndex: number, eased: number): number {
   }
 }
 
+// Level 6: 삼각형 넓이 (상단 배지 태그와 수식 텍스트 겹침 완벽 방지)
 export const ManimLevel6Visualizer: React.FC = React.memo(() => {
   const isAdminMode = useDebugStore((state) => state.isAdminMode);
 
@@ -203,17 +204,17 @@ export const ManimLevel6Visualizer: React.FC = React.memo(() => {
             </mask>
           </defs>
 
-          {/* 수식 표시 영역 */}
+          {/* 수식 표시 영역 (상단 배지 태그와 절대 겹치지 않도록 y=30, y=45 에 안전 배치) */}
           {stepIndex >= 2 && (
             <g className="formula-group">
               <text
                 x={100}
-                y={22}
+                y={30}
                 fill="#c084fc"
                 fontSize={11}
                 fontWeight={900}
                 textAnchor="middle"
-                style={{ filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.8))' }}
+                style={{ filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.9))' }}
               >
                 12 × 8 = 96
               </text>
@@ -221,12 +222,12 @@ export const ManimLevel6Visualizer: React.FC = React.memo(() => {
               {stepIndex >= 3 && (
                 <text
                   x={100}
-                  y={37}
+                  y={45}
                   fill="#4ade80"
                   fontSize={12}
                   fontWeight={900}
                   textAnchor="middle"
-                  style={{ filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.8))' }}
+                  style={{ filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.9))' }}
                 >
                   ÷ 2 = 48
                 </text>
@@ -278,10 +279,10 @@ export const ManimLevel6Visualizer: React.FC = React.memo(() => {
             strokeWidth={1.5}
           />
 
-          {/* 치수 라벨 (textAnchor="end" 및 x={p1.x - 6} 으로 수직 점선 기준 오른쪽 끝점 정밀 배치하여 선과 완전히 겹침 방지!) */}
+          {/* 치수 라벨 */}
           <text
             x={(p3.x + p2.x) / 2}
-            y={p3.y + 18}
+            y={p3.y + 16}
             fill="#38bdf8"
             fontSize={11}
             fontWeight={800}

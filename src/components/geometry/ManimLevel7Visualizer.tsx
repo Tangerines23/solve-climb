@@ -15,16 +15,16 @@ const PARAL_AREA_VAL = PARAL_BASE * HEIGHT_H; // 96
 
 const TOP_W = 45;
 const BOTTOM_W = 75;
-const H_PX = 50;
-const CENTER_Y = 95;
+const H_PX = 48;
+const CENTER_Y = 104; // 상단 배지 태그와의 겹침 방지를 위해 도형 및 치수를 Y축 하단으로 살짝 이동
 
-// 사다리꼴 기준 좌표 (Bounding Box x: 0 ~ 75, width = 75px)
+// 사다리꼴 기준 좌표
 const BASE_P1: Point = { x: 10, y: CENTER_Y - H_PX / 2 };
 const BASE_P2: Point = { x: 10 + TOP_W, y: CENTER_Y - H_PX / 2 };
 const BASE_P3: Point = { x: 0 + BOTTOM_W, y: CENTER_Y + H_PX / 2 };
 const BASE_P4: Point = { x: 0, y: CENTER_Y + H_PX / 2 };
 
-// X축 정중앙 오프셋 계산 (Step 0: 62.5px -> Step 1~3: 40px -> Step 4: 62.5px)
+// X축 정중앙 오프셋 계산
 function getStepOffsetX(stepIndex: number, eased: number): number {
   switch (stepIndex) {
     case 0:
@@ -41,7 +41,7 @@ function getStepOffsetX(stepIndex: number, eased: number): number {
   }
 }
 
-// Level 7: 사다리꼴 넓이 (오른쪽 빗변 중점 M 기준 180도 정밀 회전 -> 뒤집힘/삼각형 찌그러짐 완벽 방지)
+// Level 7: 사다리꼴 넓이 (상단 배지 태그와 수식 텍스트 겹침 완벽 방지)
 export const ManimLevel7Visualizer: React.FC = React.memo(() => {
   const isAdminMode = useDebugStore((state) => state.isAdminMode);
 
@@ -81,7 +81,7 @@ export const ManimLevel7Visualizer: React.FC = React.memo(() => {
     [p2, p3]
   );
 
-  // 복제 사다리꼴 좌표 및 투명도 계산 (중점 M 중심 180도 회전)
+  // 복제 사다리꼴 좌표 및 투명도 계산
   const ghostState = useMemo(() => {
     if (stepIndex === 0 || stepIndex === 4) {
       return { opacity: 0, points: [] as Point[] };
@@ -90,7 +90,6 @@ export const ManimLevel7Visualizer: React.FC = React.memo(() => {
     if (stepIndex === 1) {
       const angleRad = eased * Math.PI;
 
-      // 빗변 중점 M을 피봇으로 180도 회전
       const g1 = rotatePointAroundPivot(p1, midPoint, midPoint, angleRad);
       const g2 = rotatePointAroundPivot(p2, midPoint, midPoint, angleRad);
       const g3 = rotatePointAroundPivot(p3, midPoint, midPoint, angleRad);
@@ -103,7 +102,6 @@ export const ManimLevel7Visualizer: React.FC = React.memo(() => {
     }
 
     if (stepIndex === 2) {
-      // 180도 회전 완료 상태 (평행사변형 밀착)
       const g1 = rotatePointAroundPivot(p1, midPoint, midPoint, Math.PI);
       const g2 = rotatePointAroundPivot(p2, midPoint, midPoint, Math.PI);
       const g3 = rotatePointAroundPivot(p3, midPoint, midPoint, Math.PI);
@@ -133,7 +131,7 @@ export const ManimLevel7Visualizer: React.FC = React.memo(() => {
     };
   }, [stepIndex, eased, p1, p2, p3, p4, midPoint]);
 
-  // 메타데이터 정보 (5단계 시퀀스 & 높이 #f43f5e Rose/Red 100% 통일)
+  // 메타데이터 정보
   const stepMeta = useMemo(() => {
     switch (stepIndex) {
       case 1:
@@ -241,17 +239,17 @@ export const ManimLevel7Visualizer: React.FC = React.memo(() => {
             </mask>
           </defs>
 
-          {/* 수식 표시 영역 (16 * 6 = 96 아래에 ÷ 2 = 48 2줄 구조 배치) */}
+          {/* 수식 표시 영역 (상단 배지 태그와 절대 겹치지 않도록 y=30, y=45 에 안전 배치) */}
           {stepIndex >= 2 && (
             <g className="formula-group">
               <text
                 x={100}
-                y={22}
+                y={30}
                 fill="#c084fc"
                 fontSize={11}
                 fontWeight={900}
                 textAnchor="middle"
-                style={{ filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.8))' }}
+                style={{ filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.9))' }}
               >
                 (6 + 10) × 6 = 96
               </text>
@@ -259,12 +257,12 @@ export const ManimLevel7Visualizer: React.FC = React.memo(() => {
               {stepIndex >= 3 && (
                 <text
                   x={100}
-                  y={37}
+                  y={45}
                   fill="#4ade80"
                   fontSize={12}
                   fontWeight={900}
                   textAnchor="middle"
-                  style={{ filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.8))' }}
+                  style={{ filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.9))' }}
                 >
                   ÷ 2 = 48
                 </text>
@@ -272,7 +270,7 @@ export const ManimLevel7Visualizer: React.FC = React.memo(() => {
             </g>
           )}
 
-          {/* 복제 사다리꼴 (교집합 투명 마스킹 적용) */}
+          {/* 복제 사다리꼴 */}
           {ghostState.opacity > 0.01 && (
             <g style={{ opacity: ghostState.opacity }}>
               <polygon
@@ -299,7 +297,7 @@ export const ManimLevel7Visualizer: React.FC = React.memo(() => {
             strokeLinejoin="round"
           />
 
-          {/* 높이(h) 수직 점선 & 직각 표시 (Rose/Red #f43f5e 100% 통일) */}
+          {/* 높이(h) 수직 점선 & 직각 표시 */}
           <line
             x1={p1.x}
             y1={p1.y}
@@ -316,10 +314,10 @@ export const ManimLevel7Visualizer: React.FC = React.memo(() => {
             strokeWidth={1.5}
           />
 
-          {/* 치수 라벨 (textAnchor="end" 및 x={p1.x - 6} 으로 수직 점선 기준 오른쪽 끝점 정밀 배치하여 선과 완전히 겹침 방지!) */}
+          {/* 치수 라벨 */}
           <text
             x={(p1.x + p2.x) / 2}
-            y={p1.y - 8}
+            y={p1.y - 7}
             fill="#38bdf8"
             fontSize={11}
             fontWeight={800}
@@ -329,7 +327,7 @@ export const ManimLevel7Visualizer: React.FC = React.memo(() => {
           </text>
           <text
             x={(p4.x + p3.x) / 2}
-            y={p4.y + 18}
+            y={p4.y + 16}
             fill="#38bdf8"
             fontSize={11}
             fontWeight={800}
