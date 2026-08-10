@@ -34,7 +34,7 @@ function getStepOffsetX(stepIndex: number, eased: number): number {
   }
 }
 
-// Level 6: 삼각형 넓이 (회전 시 페이드인 없이 원본과 겹치지 않는 차집합 영역만 선명하게 칠해지도록 구현)
+// Level 6: 삼각형 넓이 (상단 배지 및 빗변과의 글자 겹침 완전 방지)
 export const ManimLevel6Visualizer: React.FC = React.memo(() => {
   const isAdminMode = useDebugStore((state) => state.isAdminMode);
 
@@ -59,7 +59,7 @@ export const ManimLevel6Visualizer: React.FC = React.memo(() => {
   const p3: Point = { x: BASE_P3.x + currentOffsetX, y: BASE_P3.y };
   const targetP4: Point = { x: BASE_TARGET_P4.x + currentOffsetX, y: BASE_TARGET_P4.y };
 
-  // 복제 삼각형 렌더링 상태 계산 (페이드인 제거 및 마스크를 통한 실시간 차집합 채색)
+  // 복제 삼각형 렌더링 상태 계산
   const ghostState = useMemo(() => {
     if (stepIndex === 0 || stepIndex === 4) {
       return { opacity: 0, points: [] as Point[] };
@@ -76,7 +76,6 @@ export const ManimLevel6Visualizer: React.FC = React.memo(() => {
       const g4 = rotatePointAroundPivot(p3, p2, center2Prime, angleRad);
 
       return {
-        // 흐릿한 페이드인(eased * 0.9) 대신 바로 선명한 0.9 불투명도 적용 (마스크가 겹치지 않는 부분만 깨끗이 채색!)
         opacity: 0.9,
         points: [center2Prime, g1, g4],
       };
@@ -198,19 +197,19 @@ export const ManimLevel6Visualizer: React.FC = React.memo(() => {
       >
         <svg width={SIZE} height={165} viewBox={`0 0 ${SIZE} 165`} className="geo-tip-svg">
           <defs>
-            {/* 복제 삼각형 교집합 배경색 투명 제거 마스크 (원본 삼각형 내부를 검은색으로 차단!) */}
+            {/* 복제 삼각형 교집합 배경색 투명 제거 마스크 */}
             <mask id="l6-ghost-diff-mask">
               <rect x="0" y="0" width={SIZE} height="165" fill="white" />
               <polygon points={origPointsStr} fill="black" />
             </mask>
           </defs>
 
-          {/* 수식 표시 영역 */}
+          {/* 수식 표시 영역 (상단 배지 태그와의 수평/수직 겹림 방지를 위해 x=125, y=34 로 우측 배치!) */}
           {stepIndex >= 2 && (
             <g className="formula-group">
               <text
-                x={100}
-                y={30}
+                x={125}
+                y={34}
                 fill="#c084fc"
                 fontSize={11}
                 fontWeight={900}
@@ -222,8 +221,8 @@ export const ManimLevel6Visualizer: React.FC = React.memo(() => {
 
               {stepIndex >= 3 && (
                 <text
-                  x={100}
-                  y={45}
+                  x={125}
+                  y={49}
                   fill="#4ade80"
                   fontSize={12}
                   fontWeight={900}
@@ -236,7 +235,7 @@ export const ManimLevel6Visualizer: React.FC = React.memo(() => {
             </g>
           )}
 
-          {/* 복제 삼각형 (마스킹에 의해 원본과 겹치지 않는 외부 영역만 즉시 선명하게 채색!) */}
+          {/* 복제 삼각형 */}
           {ghostState.opacity > 0.01 && (
             <g style={{ opacity: ghostState.opacity }}>
               <polygon
@@ -280,7 +279,7 @@ export const ManimLevel6Visualizer: React.FC = React.memo(() => {
             strokeWidth={1.5}
           />
 
-          {/* 치수 라벨 */}
+          {/* 치수 라벨 (높이 글자가 왼쪽 빗변 선분과 겹치지 않도록 x={p1.x - 12} 오프셋 확대!) */}
           <text
             x={(p3.x + p2.x) / 2}
             y={p3.y + 16}
@@ -292,7 +291,7 @@ export const ManimLevel6Visualizer: React.FC = React.memo(() => {
             밑변 (b={BASE_VAL})
           </text>
           <text
-            x={p1.x - 6}
+            x={p1.x - 12}
             y={(p1.y + p3.y) / 2}
             fill="#f43f5e"
             fontSize={11}
