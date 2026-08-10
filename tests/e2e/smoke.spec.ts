@@ -45,7 +45,7 @@ test.describe('SMOKE TEST - 메인 화면 검증', () => {
   });
 
   test('홈 화면 웹 접근성 검증 (Accessibility Audit)', async ({ page }) => {
-    // 1. 페이지 로컬 렌더링 대기
+    // 1. 페이지 로컬 렌더링 및 메인 콘테이너 대기 (CI 네트워크 지연 고려)
     await page.waitForLoadState('networkidle');
     await page.waitForSelector('.home-page, .my-page-container, .my-page, #root', {
       state: 'attached',
