@@ -19,7 +19,10 @@ const RECT_KEYFRAMES: RectKeyframe[] = [
   { cols: 4, rows: 6, name: '직사각형' },
 ];
 
-// Level 5: 직사각형 넓이 (세로/높이 Rose/Red #f43f5e 100% 통일)
+// 최대 8x8 그리드선 사전 생성 배열
+const MAX_GRID_INDEXES = [1, 2, 3, 4, 5, 6, 7];
+
+// Level 5: 직사각형 넓이 (그리드를 미리 생성하여 생겼다 사라지는 현상 완벽 방지)
 export const ManimLevel5Visualizer: React.FC = React.memo(() => {
   const isAdminMode = useDebugStore((state) => state.isAdminMode);
 
@@ -48,24 +51,6 @@ export const ManimLevel5Visualizer: React.FC = React.memo(() => {
   const roundedCols = Math.round(cols);
   const roundedRows = Math.round(rows);
   const area = roundedCols * roundedRows;
-
-  const vertGridLines = useMemo(() => {
-    const lines: number[] = [];
-    const intCols = Math.floor(cols);
-    for (let i = 1; i < intCols; i++) {
-      lines.push(rectX + i * cellPixel);
-    }
-    return lines;
-  }, [cols, rectX]);
-
-  const horizGridLines = useMemo(() => {
-    const lines: number[] = [];
-    const intRows = Math.floor(rows);
-    for (let j = 1; j < intRows; j++) {
-      lines.push(rectY + j * cellPixel);
-    }
-    return lines;
-  }, [rows, rectY]);
 
   const caption = (
     <div className="geo-stat-highlights">
@@ -108,32 +93,48 @@ export const ManimLevel5Visualizer: React.FC = React.memo(() => {
           style={{ transition: 'none' }}
         />
 
-        {/* 그리드 눈금선 */}
-        {vertGridLines.map((x, idx) => (
-          <line
-            key={`v-grid-${idx}`}
-            x1={x}
-            y1={rectY}
-            x2={x}
-            y2={rectY + heightPx}
-            stroke="rgba(56, 189, 248, 0.3)"
-            strokeWidth={1}
-            strokeDasharray="2 2"
-          />
-        ))}
+        {/* 사전 미리 생성된 그리드 점선 (부드러운 opacity 모핑으로 깜빡임 100% 완전 방지!) */}
+        {MAX_GRID_INDEXES.map((idx) => {
+          const posX = rectX + idx * cellPixel;
+          // 가로 프레임 범위 안쪽인지 계산
+          const isVisible = idx < cols - 0.05;
+          const opacity = isVisible ? Math.min(1, (cols - idx) * 2) * 0.35 : 0;
+          if (opacity <= 0) return null;
+          return (
+            <line
+              key={`v-grid-${idx}`}
+              x1={posX}
+              y1={rectY}
+              x2={posX}
+              y2={rectY + heightPx}
+              stroke="#38bdf8"
+              strokeWidth={1}
+              strokeDasharray="2 2"
+              opacity={opacity}
+            />
+          );
+        })}
 
-        {horizGridLines.map((y, idx) => (
-          <line
-            key={`h-grid-${idx}`}
-            x1={rectX}
-            y1={y}
-            x2={rectX + widthPx}
-            y2={y}
-            stroke="rgba(56, 189, 248, 0.3)"
-            strokeWidth={1}
-            strokeDasharray="2 2"
-          />
-        ))}
+        {MAX_GRID_INDEXES.map((idx) => {
+          const posY = rectY + idx * cellPixel;
+          // 세로 프레임 범위 안쪽인지 계산
+          const isVisible = idx < rows - 0.05;
+          const opacity = isVisible ? Math.min(1, (rows - idx) * 2) * 0.35 : 0;
+          if (opacity <= 0) return null;
+          return (
+            <line
+              key={`h-grid-${idx}`}
+              x1={rectX}
+              y1={posY}
+              x2={rectX + widthPx}
+              y2={posY}
+              stroke="#38bdf8"
+              strokeWidth={1}
+              strokeDasharray="2 2"
+              opacity={opacity}
+            />
+          );
+        })}
 
         {/* 가로 치수 라인 (Cyan #38bdf8) */}
         <line
