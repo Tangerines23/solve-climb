@@ -16,7 +16,7 @@ const PARAL_AREA_VAL = PARAL_BASE * HEIGHT_H; // 96
 const TOP_W = 45;
 const BOTTOM_W = 75;
 const H_PX = 48;
-const CENTER_Y = 104; // 상단 배지 태그와의 겹침 방지를 위해 도형 및 치수를 Y축 하단으로 살짝 이동
+const CENTER_Y = 104;
 
 // 사다리꼴 기준 좌표
 const BASE_P1: Point = { x: 10, y: CENTER_Y - H_PX / 2 };
@@ -41,7 +41,7 @@ function getStepOffsetX(stepIndex: number, eased: number): number {
   }
 }
 
-// Level 7: 사다리꼴 넓이 (상단 배지 태그와 수식 텍스트 겹침 완벽 방지)
+// Level 7: 사다리꼴 넓이 (회전 시 페이드인 없이 원본과 겹치지 않는 차집합 영역만 선명하게 칠해지도록 구현)
 export const ManimLevel7Visualizer: React.FC = React.memo(() => {
   const isAdminMode = useDebugStore((state) => state.isAdminMode);
 
@@ -81,7 +81,7 @@ export const ManimLevel7Visualizer: React.FC = React.memo(() => {
     [p2, p3]
   );
 
-  // 복제 사다리꼴 좌표 및 투명도 계산
+  // 복제 사다리꼴 좌표 및 투명도 계산 (페이드인 제거 및 마스크를 통한 실시간 차집합 채색)
   const ghostState = useMemo(() => {
     if (stepIndex === 0 || stepIndex === 4) {
       return { opacity: 0, points: [] as Point[] };
@@ -96,7 +96,8 @@ export const ManimLevel7Visualizer: React.FC = React.memo(() => {
       const g4 = rotatePointAroundPivot(p4, midPoint, midPoint, angleRad);
 
       return {
-        opacity: eased * 0.9,
+        // 흐릿한 페이드인(eased * 0.9) 대신 바로 선명한 0.9 불투명도 적용 (마스크가 겹치지 않는 부분만 깨끗이 채색!)
+        opacity: 0.9,
         points: [g1, g2, g3, g4],
       };
     }
@@ -239,7 +240,7 @@ export const ManimLevel7Visualizer: React.FC = React.memo(() => {
             </mask>
           </defs>
 
-          {/* 수식 표시 영역 (상단 배지 태그와 절대 겹치지 않도록 y=30, y=45 에 안전 배치) */}
+          {/* 수식 표시 영역 */}
           {stepIndex >= 2 && (
             <g className="formula-group">
               <text

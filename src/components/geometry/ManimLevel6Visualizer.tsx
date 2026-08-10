@@ -11,7 +11,7 @@ const HEIGHT_VAL = 8;
 const AREA_VAL = (BASE_VAL * HEIGHT_VAL) / 2; // 48
 const PARAL_AREA_VAL = BASE_VAL * HEIGHT_VAL; // 96
 
-// 원본 삼각형 기준 좌표 (상단 배지 겹침 방지를 위해 Y축 58 -> 138로 여유있게 배치)
+// 원본 삼각형 기준 좌표
 const BASE_P1: Point = { x: 67, y: 58 };
 const BASE_P2: Point = { x: 90, y: 138 };
 const BASE_P3: Point = { x: 0, y: 138 };
@@ -34,7 +34,7 @@ function getStepOffsetX(stepIndex: number, eased: number): number {
   }
 }
 
-// Level 6: 삼각형 넓이 (상단 배지 태그와 수식 텍스트 겹침 완벽 방지)
+// Level 6: 삼각형 넓이 (회전 시 페이드인 없이 원본과 겹치지 않는 차집합 영역만 선명하게 칠해지도록 구현)
 export const ManimLevel6Visualizer: React.FC = React.memo(() => {
   const isAdminMode = useDebugStore((state) => state.isAdminMode);
 
@@ -59,7 +59,7 @@ export const ManimLevel6Visualizer: React.FC = React.memo(() => {
   const p3: Point = { x: BASE_P3.x + currentOffsetX, y: BASE_P3.y };
   const targetP4: Point = { x: BASE_TARGET_P4.x + currentOffsetX, y: BASE_TARGET_P4.y };
 
-  // 복제 삼각형 렌더링 상태 계산
+  // 복제 삼각형 렌더링 상태 계산 (페이드인 제거 및 마스크를 통한 실시간 차집합 채색)
   const ghostState = useMemo(() => {
     if (stepIndex === 0 || stepIndex === 4) {
       return { opacity: 0, points: [] as Point[] };
@@ -76,7 +76,8 @@ export const ManimLevel6Visualizer: React.FC = React.memo(() => {
       const g4 = rotatePointAroundPivot(p3, p2, center2Prime, angleRad);
 
       return {
-        opacity: eased * 0.9,
+        // 흐릿한 페이드인(eased * 0.9) 대신 바로 선명한 0.9 불투명도 적용 (마스크가 겹치지 않는 부분만 깨끗이 채색!)
+        opacity: 0.9,
         points: [center2Prime, g1, g4],
       };
     }
@@ -197,14 +198,14 @@ export const ManimLevel6Visualizer: React.FC = React.memo(() => {
       >
         <svg width={SIZE} height={165} viewBox={`0 0 ${SIZE} 165`} className="geo-tip-svg">
           <defs>
-            {/* 복제 삼각형 교집합 배경색 투명 제거 마스크 */}
+            {/* 복제 삼각형 교집합 배경색 투명 제거 마스크 (원본 삼각형 내부를 검은색으로 차단!) */}
             <mask id="l6-ghost-diff-mask">
               <rect x="0" y="0" width={SIZE} height="165" fill="white" />
               <polygon points={origPointsStr} fill="black" />
             </mask>
           </defs>
 
-          {/* 수식 표시 영역 (상단 배지 태그와 절대 겹치지 않도록 y=30, y=45 에 안전 배치) */}
+          {/* 수식 표시 영역 */}
           {stepIndex >= 2 && (
             <g className="formula-group">
               <text
@@ -235,7 +236,7 @@ export const ManimLevel6Visualizer: React.FC = React.memo(() => {
             </g>
           )}
 
-          {/* 복제 삼각형 */}
+          {/* 복제 삼각형 (마스킹에 의해 원본과 겹치지 않는 외부 영역만 즉시 선명하게 채색!) */}
           {ghostState.opacity > 0.01 && (
             <g style={{ opacity: ghostState.opacity }}>
               <polygon
