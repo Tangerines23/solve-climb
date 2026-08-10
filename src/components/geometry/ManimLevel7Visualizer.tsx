@@ -41,7 +41,7 @@ function getStepOffsetX(stepIndex: number, eased: number): number {
   }
 }
 
-// Level 7: 사다리꼴 넓이 (회전 시 페이드인 없이 원본과 겹치지 않는 차집합 영역만 선명하게 칠해지도록 구현)
+// Level 7: 사다리꼴 넓이 (L6와 동일하게 꼭짓점이 빗변을 타고 미끄러지듯 슬라이딩 회전)
 export const ManimLevel7Visualizer: React.FC = React.memo(() => {
   const isAdminMode = useDebugStore((state) => state.isAdminMode);
 
@@ -72,16 +72,7 @@ export const ManimLevel7Visualizer: React.FC = React.memo(() => {
     [currentOffsetX]
   );
 
-  // 오른쪽 빗변(p2-p3)의 중점 M (Midpoint)
-  const midPoint: Point = useMemo(
-    () => ({
-      x: (p2.x + p3.x) / 2,
-      y: (p2.y + p3.y) / 2,
-    }),
-    [p2, p3]
-  );
-
-  // 복제 사다리꼴 좌표 및 투명도 계산 (페이드인 제거 및 마스크를 통한 실시간 차집합 채색)
+  // 복제 사다리꼴 좌표 및 투명도 계산 (L6처럼 피봇 p3가 빗변 p3 -> p2 로 이동하며 180도 회전)
   const ghostState = useMemo(() => {
     if (stepIndex === 0 || stepIndex === 4) {
       return { opacity: 0, points: [] as Point[] };
@@ -90,47 +81,52 @@ export const ManimLevel7Visualizer: React.FC = React.memo(() => {
     if (stepIndex === 1) {
       const angleRad = eased * Math.PI;
 
-      const g1 = rotatePointAroundPivot(p1, midPoint, midPoint, angleRad);
-      const g2 = rotatePointAroundPivot(p2, midPoint, midPoint, angleRad);
-      const g3 = rotatePointAroundPivot(p3, midPoint, midPoint, angleRad);
-      const g4 = rotatePointAroundPivot(p4, midPoint, midPoint, angleRad);
+      // 피봇 슬라이딩: p3에서 출발하여 빗변을 타고 p2 꼭짓점으로 이동!
+      const pivot3Prime: Point = {
+        x: lerp(p3.x, p2.x, eased),
+        y: lerp(p3.y, p2.y, eased),
+      };
+
+      const g1 = rotatePointAroundPivot(p1, p3, pivot3Prime, angleRad);
+      const g2 = rotatePointAroundPivot(p2, p3, pivot3Prime, angleRad);
+      const g4 = rotatePointAroundPivot(p4, p3, pivot3Prime, angleRad);
 
       return {
-        // 흐릿한 페이드인(eased * 0.9) 대신 바로 선명한 0.9 불투명도 적용 (마스크가 겹치지 않는 부분만 깨끗이 채색!)
         opacity: 0.9,
-        points: [g1, g2, g3, g4],
+        points: [g1, g2, pivot3Prime, g4],
       };
     }
 
     if (stepIndex === 2) {
-      const g1 = rotatePointAroundPivot(p1, midPoint, midPoint, Math.PI);
-      const g2 = rotatePointAroundPivot(p2, midPoint, midPoint, Math.PI);
-      const g3 = rotatePointAroundPivot(p3, midPoint, midPoint, Math.PI);
-      const g4 = rotatePointAroundPivot(p4, midPoint, midPoint, Math.PI);
+      // 180도 회전 완료 상태 (평행사변형 완성)
+      const pivot3Prime = p2;
+      const g1 = rotatePointAroundPivot(p1, p3, pivot3Prime, Math.PI);
+      const g2 = rotatePointAroundPivot(p2, p3, pivot3Prime, Math.PI);
+      const g4 = rotatePointAroundPivot(p4, p3, pivot3Prime, Math.PI);
 
       return {
         opacity: 0.9,
-        points: [g1, g2, g3, g4],
+        points: [g1, g2, pivot3Prime, g4],
       };
     }
 
     // stepIndex === 3 (분리 및 투명화 이격)
     const offset = eased * 12;
-    const g1 = rotatePointAroundPivot(p1, midPoint, midPoint, Math.PI);
-    const g2 = rotatePointAroundPivot(p2, midPoint, midPoint, Math.PI);
-    const g3 = rotatePointAroundPivot(p3, midPoint, midPoint, Math.PI);
-    const g4 = rotatePointAroundPivot(p4, midPoint, midPoint, Math.PI);
+    const pivot3Prime = p2;
+    const g1 = rotatePointAroundPivot(p1, p3, pivot3Prime, Math.PI);
+    const g2 = rotatePointAroundPivot(p2, p3, pivot3Prime, Math.PI);
+    const g4 = rotatePointAroundPivot(p4, p3, pivot3Prime, Math.PI);
 
     return {
       opacity: 0.9 - eased * 0.75,
       points: [
         { x: g1.x + offset, y: g1.y - offset },
         { x: g2.x + offset, y: g2.y - offset },
-        { x: g3.x + offset, y: g3.y - offset },
+        { x: pivot3Prime.x + offset, y: pivot3Prime.y - offset },
         { x: g4.x + offset, y: g4.y - offset },
       ],
     };
-  }, [stepIndex, eased, p1, p2, p3, p4, midPoint]);
+  }, [stepIndex, eased, p1, p2, p3, p4]);
 
   // 메타데이터 정보
   const stepMeta = useMemo(() => {
