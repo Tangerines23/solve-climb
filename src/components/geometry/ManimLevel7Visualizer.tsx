@@ -41,7 +41,7 @@ function getStepOffsetX(stepIndex: number, eased: number): number {
   }
 }
 
-// Level 7: 사다리꼴 넓이 (수직 높이 라벨을 점선 우측에 배치하여 빗변 겹침 100% 완전 차단)
+// Level 7: 사다리꼴 넓이 (높이 라벨을 왼쪽 위 빗변 바깥쪽 공간에 명확히 배치)
 export const ManimLevel7Visualizer: React.FC = React.memo(() => {
   const isAdminMode = useDebugStore((state) => state.isAdminMode);
 
@@ -309,7 +309,7 @@ export const ManimLevel7Visualizer: React.FC = React.memo(() => {
             strokeWidth={1.5}
           />
 
-          {/* 치수 라벨 (수직 점선의 우측 공간 x={p1.x + 6}, textAnchor="start" 에 배치하여 빗변과 100% 절대 겹침 방지!) */}
+          {/* 치수 라벨 (왼쪽 위 빗변 바깥쪽 공간 x={p1.x - 14}, y={CENTER_Y - 6} 에 배치!) */}
           <text
             x={(p1.x + p2.x) / 2}
             y={p1.y - 7}
@@ -331,12 +331,12 @@ export const ManimLevel7Visualizer: React.FC = React.memo(() => {
             b={BOTTOM_B}
           </text>
           <text
-            x={p1.x + 6}
-            y={CENTER_Y + 4}
+            x={p1.x - 14}
+            y={CENTER_Y - 6}
             fill="#f43f5e"
             fontSize={11}
             fontWeight={800}
-            textAnchor="start"
+            textAnchor="end"
             style={{ filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.9))' }}
           >
             h={HEIGHT_H}

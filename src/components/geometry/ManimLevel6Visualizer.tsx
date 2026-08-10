@@ -34,7 +34,7 @@ function getStepOffsetX(stepIndex: number, eased: number): number {
   }
 }
 
-// Level 6: 삼각형 넓이 (수직 높이 라벨을 점선 우측에 배치하여 빗변 겹침 100% 완전 차단)
+// Level 6: 삼각형 넓이 (높이 라벨을 왼쪽 위 빗변 바깥쪽 공간에 명확히 배치)
 export const ManimLevel6Visualizer: React.FC = React.memo(() => {
   const isAdminMode = useDebugStore((state) => state.isAdminMode);
 
@@ -279,7 +279,7 @@ export const ManimLevel6Visualizer: React.FC = React.memo(() => {
             strokeWidth={1.5}
           />
 
-          {/* 치수 라벨 (수직 점선의 우측 공간 x={p1.x + 6}, textAnchor="start" 에 배치하여 빗변과 100% 절대 겹침 방지!) */}
+          {/* 치수 라벨 (왼쪽 위 빗변 바깥쪽 탁 트인 빈 공간 x={(p1.x+p3.x)/2 - 14}, y={(p1.y+p3.y)/2 - 10} 에 배치!) */}
           <text
             x={(p3.x + p2.x) / 2}
             y={p3.y + 16}
@@ -291,12 +291,12 @@ export const ManimLevel6Visualizer: React.FC = React.memo(() => {
             밑변 (b={BASE_VAL})
           </text>
           <text
-            x={p1.x + 6}
-            y={(p1.y + p3.y) / 2 + 4}
+            x={(p1.x + p3.x) / 2 - 14}
+            y={(p1.y + p3.y) / 2 - 10}
             fill="#f43f5e"
             fontSize={11}
             fontWeight={800}
-            textAnchor="start"
+            textAnchor="end"
             style={{ filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.9))' }}
           >
             높이 (h={HEIGHT_VAL})
