@@ -67,7 +67,7 @@ export class UserRepository {
   static async fetchUserData(userId: string) {
     const profileQueryBuilder = supabase
       .from('profiles')
-      .select('minerals, stamina, is_anonymous, last_ad_stamina_recharge, updated_at')
+      .select('minerals, stamina, updated_at')
       .eq('id', userId);
 
     const profileQuery =

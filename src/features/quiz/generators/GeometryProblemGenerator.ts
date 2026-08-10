@@ -20,7 +20,7 @@ export function generateGeometryProblem(
   _difficulty: Difficulty,
   rng?: { random: () => number; randomInt: (min: number, max: number) => number }
 ): GeometryProblem {
-  if (level > 14) {
+  if (level > 15) {
     const randomVal = rng ? rng.randomInt(1, 8) : Math.floor(Math.random() * 8) + 1;
     switch (randomVal) {
       case 1:
@@ -58,21 +58,23 @@ export function generateGeometryProblem(
     case 6:
       return generateAreaTriangle(rng);
     case 7:
-      return generateCircleBasic(rng);
+      return generateAreaTrapezoid(rng);
     case 8:
-      return generateCircleAdvanced(rng);
+      return generateCircleBasic(rng);
     case 9:
-      return generateSymmetry(rng);
+      return generateCircleCircumference(rng);
     case 10:
-      return generatePythagorean(rng);
+      return generateCircleArea(rng);
     case 11:
-      return generatePythagoreanAdvanced(rng);
+      return generateBasicShapesDiagonal(rng);
     case 12:
       return generateSolidBasic(rng);
     case 13:
-      return generateSolidVolume(rng);
+      return generateSolidVolumeRect(rng);
     case 14:
-      return generateSolidSurfaceArea(rng);
+      return generatePythagoreanBasic(rng);
+    case 15:
+      return generateTrigonometryBasic(rng);
     default:
       return generateBasicShapes(rng);
   }
@@ -115,7 +117,7 @@ function generateCircleEqBasic(rng?: {
   const r = getRandomInt(2, 10, rng);
   const rSquared = r * r;
   return {
-    question: `중심이 (0,0)이고 반지름이 ${r}인 원의 방정식 x² + y² = k 에서 k의 값은?`,
+    question: `원 x² + y² = k [반지름 ${r}] ➔ k = ?`,
     answer: rSquared,
   };
 }
@@ -133,29 +135,40 @@ function generateBasicShapes(rng?: {
   ];
   const shape = shapes[getRandomInt(0, shapes.length - 1, rng)];
   return {
-    question: `${shape.name}의 꼭짓점 개수는?`,
+    question: '이 도형의 꼭짓점 수 = ?',
     answer: shape.vertices,
-  };
+    hintType: 'shape-visualizer',
+    hintData: {
+      sides: shape.vertices,
+      shapeName: shape.name,
+    },
+  } as any;
 }
 
 function generateBasicShapesDiagonal(rng?: {
   randomInt: (min: number, max: number) => number;
 }): GeometryProblem {
   const shapes = [
-    { name: '사각형', diagonals: 2 },
-    { name: '오각형', diagonals: 5 },
-    { name: '육각형', diagonals: 9 },
-    { name: '칠각형', diagonals: 14 },
-    { name: '팔각형', diagonals: 20 },
+    { name: '사각형', sides: 4, diagonals: 2 },
+    { name: '오각형', sides: 5, diagonals: 5 },
+    { name: '육각형', sides: 6, diagonals: 9 },
+    { name: '칠각형', sides: 7, diagonals: 14 },
+    { name: '팔각형', sides: 8, diagonals: 20 },
+    { name: '구각형', sides: 9, diagonals: 27 },
   ];
-  const shape = shapes[getRandomInt(0, shapes.length - 1, rng)];
+  const idx = Math.abs(getRandomInt(0, shapes.length - 1, rng)) % shapes.length;
+  const shape = shapes[idx] || shapes[0]!;
   return {
-    question: `${shape.name}의 대각선의 총 개수는?`,
+    question: `이 도형의 대각선 수 = ?`,
     answer: shape.diagonals,
-  };
+    hintType: 'shape-visualizer',
+    hintData: {
+      sides: shape.sides,
+      shapeType: 'n-gon',
+      shapeName: shape.name,
+    },
+  } as any;
 }
-
-// REST OF THE FILE UNCHANGED (I will use multi_replace to be safer)
 
 function generateTriangleProperties(rng?: {
   randomInt: (min: number, max: number) => number;
@@ -164,27 +177,51 @@ function generateTriangleProperties(rng?: {
   const b = getRandomInt(10, 160 - a, rng);
   const c = 180 - a - b;
   return {
-    question: `삼각형의 두 내각이 각각 ${a}도, ${b}도일 때, 나머지 한 각은? (도)`,
+    question: `삼각형 내각: ${a}°, ${b}°, [ ? ]°`,
     answer: c,
-  };
+    hintType: 'shape-visualizer',
+    hintData: {
+      shapeType: 'triangle',
+      angleA: a,
+      angleB: b,
+    },
+  } as any;
 }
 
 function generateQuadrilateralProperties(rng?: {
   randomInt: (min: number, max: number) => number;
 }): GeometryProblem {
-  const isAdjacent = getRandomInt(0, 1, rng) === 1;
-  const a = getRandomInt(30, 150, rng);
-  if (isAdjacent) {
+  const type = getRandomInt(1, 10, rng);
+  if (type <= 7) {
+    // 유형 1: 평행사변형 이웃한 각 (180 - a)
+    const a = getRandomInt(3, 15, rng) * 10; // 10단위로 깔끔한 수치 (30° ~ 150°)
     const b = 180 - a;
     return {
-      question: `평행사변형의 한 내각이 ${a}도일 때, 이웃한 다른 내각은? (도)`,
+      question: `평행사변형 [한 각 ${a}°] ➔ 이웃한 각 = ?°`,
       answer: b,
-    };
+      hintType: 'shape-visualizer',
+      hintData: {
+        shapeType: 'parallelogram',
+        angleA: a,
+      },
+    } as any;
   } else {
+    // 유형 2: 사각형 내각의 합 (360 - a - b - c)
+    const a = getRandomInt(6, 12, rng) * 10;
+    const b = getRandomInt(6, 12, rng) * 10;
+    const c = getRandomInt(6, 12, rng) * 10;
+    const d = 360 - a - b - c;
     return {
-      question: `평행사변형의 한 내각이 ${a}도일 때, 마주보는 내각은? (도)`,
-      answer: a,
-    };
+      question: `사각형 내각: ${a}°, ${b}°, ${c}°, [ ? ]°`,
+      answer: d,
+      hintType: 'shape-visualizer',
+      hintData: {
+        shapeType: 'quadrilateral',
+        angleA: a,
+        angleB: b,
+        angleC: c,
+      },
+    } as any;
   }
 }
 
@@ -194,20 +231,32 @@ function generateAreaRect(rng?: {
   const w = getRandomInt(2, 12, rng);
   const h = getRandomInt(2, 12, rng);
   return {
-    question: `가로 ${w}, 세로 ${h}인 직사각형의 넓이는?`,
+    question: `직사각형 [가로 ${w} × 세로 ${h}] 넓이 = ?`,
     answer: w * h,
-  };
+    hintType: 'shape-visualizer',
+    hintData: {
+      shapeType: 'rect',
+      width: w,
+      height: h,
+    },
+  } as any;
 }
 
 function generateAreaTriangle(rng?: {
   randomInt: (min: number, max: number) => number;
 }): GeometryProblem {
-  const b = getRandomInt(2, 10, rng) * 2; // Ensure even for integer result
+  const b = getRandomInt(2, 10, rng) * 2;
   const h = getRandomInt(2, 10, rng);
   return {
-    question: `밑변 ${b}, 높이 ${h}인 삼각형의 넓이는?`,
+    question: `삼각형 [밑변 ${b} × 높이 ${h}] 넓이 = ?`,
     answer: (b * h) / 2,
-  };
+    hintType: 'shape-visualizer',
+    hintData: {
+      shapeType: 'triangle',
+      base: b,
+      height: h,
+    },
+  } as any;
 }
 
 function generateCircleBasic(rng?: {
@@ -215,12 +264,12 @@ function generateCircleBasic(rng?: {
 }): GeometryProblem {
   const r = getRandomInt(2, 15, rng);
   return {
-    question: `반지름이 ${r}인 원의 지름은?`,
+    question: `원 [반지름 ${r}] ➔ 지름 = ?`,
     answer: r * 2,
   };
 }
 
-function generateCircleAdvanced(rng?: {
+export function generateCircleAdvanced(rng?: {
   random: () => number;
   randomInt: (min: number, max: number) => number;
 }): GeometryProblem {
@@ -231,14 +280,14 @@ function generateCircleAdvanced(rng?: {
   if (type === '둘레') {
     const answer = Math.round(2 * 3.1 * r * 10) / 10;
     return {
-      question: `반지름이 ${r}인 원의 둘레는? (원주율=3.1)`,
+      question: `원 [반지름 ${r}, π=3.1] 둘레 = ?`,
       answer: answer,
       inputType: Number.isInteger(answer) ? 'number' : 'decimal',
     };
   } else {
     const answer = Math.round(3.1 * r * r * 10) / 10;
     return {
-      question: `반지름이 ${r}인 원의 넓이는? (원주율=3.1)`,
+      question: `원 [반지름 ${r}, π=3.1] 넓이 = ?`,
       answer: answer,
       inputType: Number.isInteger(answer) ? 'number' : 'decimal',
     };
@@ -252,18 +301,18 @@ function generateSolidBasic(rng?: {
   const isPrism = getRandomInt(0, 1, rng) === 1;
   if (isPrism) {
     return {
-      question: `${n}각기둥의 모서리의 개수는?`,
+      question: `${n}각기둥 모서리 = ?`,
       answer: n * 3,
     };
   } else {
     return {
-      question: `${n}각뿔의 꼭짓점의 개수는?`,
+      question: `${n}각뿔 꼭짓점 = ?`,
       answer: n + 1,
     };
   }
 }
 
-function generateSymmetry(rng?: {
+export function generateSymmetry(rng?: {
   randomInt: (min: number, max: number) => number;
 }): GeometryProblem {
   const n = getRandomInt(3, 10, rng);
@@ -278,12 +327,12 @@ function generateSymmetry(rng?: {
     10: '정십각형',
   };
   return {
-    question: `${koreanNames[n]}의 선대칭축의 개수는?`,
+    question: `${koreanNames[n]} 선대칭축 = ?`,
     answer: n,
   };
 }
 
-function generatePythagorean(rng?: {
+export function generatePythagorean(rng?: {
   random: () => number;
   randomInt: (min: number, max: number) => number;
 }): GeometryProblem {
@@ -299,12 +348,12 @@ function generatePythagorean(rng?: {
 
   if (hide === 'c') {
     return {
-      question: `직각삼각형의 두 변이 ${triple.a}, ${triple.b}일 때 빗변의 길이는?`,
+      question: `직각삼각형 [밑변 ${triple.a}, 높이 ${triple.b}] ➔ 빗변 = ?`,
       answer: triple.c,
     };
   } else {
     return {
-      question: `직각삼각형의 빗변이 ${triple.c}, 한 변이 ${triple.a}일 때 다른 변의 길이는?`,
+      question: `직각삼각형 [빗변 ${triple.c}, 한 변 ${triple.a}] ➔ 다른 변 = ?`,
       answer: triple.b,
     };
   }
@@ -320,7 +369,7 @@ function generateSolidVolume(rng?: {
     const h = getRandomInt(3, 10, rng);
     const answer = Math.round(3.1 * r * r * h * 10) / 10;
     return {
-      question: `반지름이 ${r}, 높이가 ${h}인 원기둥의 부피는? (원주율=3.1)`,
+      question: `원기둥 [반지름 ${r}, 높이 ${h}, π=3.1] 부피 = ?`,
       answer: answer,
       inputType: Number.isInteger(answer) ? 'number' : 'decimal',
     };
@@ -329,7 +378,7 @@ function generateSolidVolume(rng?: {
     const d = getRandomInt(2, 8, rng);
     const h = getRandomInt(3, 10, rng);
     return {
-      question: `가로 ${w}, 세로 ${d}, 높이 ${h}인 직육면체의 부피는?`,
+      question: `직육면체 [${w} × ${d} × ${h}] 부피 = ?`,
       answer: w * d * h,
       inputType: 'number',
     };
@@ -341,7 +390,7 @@ function generateSolidSurfaceArea(rng?: {
 }): GeometryProblem {
   const s = getRandomInt(2, 10, rng);
   return {
-    question: `모서리의 길이가 ${s}인 정육면체의 겉넓이는?`,
+    question: `정육면체 [한 변 ${s}] 겉넓이 = ?`,
     answer: 6 * s * s,
   };
 }
@@ -361,7 +410,7 @@ function generateCoordinateDistance(rng?: {
   const x2 = x1 + triple.a;
   const y2 = y1 + triple.b;
   return {
-    question: `점 (${x1}, ${y1})과 (${x2}, ${y2}) 사이의 거리는?`,
+    question: `두 점 (${x1}, ${y1}), (${x2}, ${y2}) 거리 = ?`,
     answer: triple.c,
   };
 }
@@ -374,9 +423,10 @@ function generateTrigonometry(rng?: {
     { q: 'cos(60°)', a: '1/2' },
     { q: 'tan(45°)', a: '1' },
   ];
-  const item = questions[getRandomInt(0, questions.length - 1, rng)];
+  const idx = Math.abs(getRandomInt(0, questions.length - 1, rng)) % questions.length;
+  const item = questions[idx] || questions[0]!;
   return {
-    question: `${item.q} 의 값은?`,
+    question: `${item.q} 값 = ?`,
     answer: item.a,
   };
 }
@@ -389,9 +439,88 @@ function generatePythagoreanAdvanced(rng?: {
     { a: 9, b: 40, c: 41 },
     { a: 11, b: 60, c: 61 },
   ];
-  const t = triples[getRandomInt(0, triples.length - 1, rng)];
+  const t =
+    triples[Math.abs(getRandomInt(0, triples.length - 1, rng)) % triples.length] || triples[0]!;
   return {
-    question: `직각삼각형의 두 변이 ${t.a}, ${t.b}일 때, 빗변의 길이는?`,
+    question: `직각삼각형 [밑변 ${t.a}, 높이 ${t.b}] ➔ 빗변 = ?`,
     answer: t.c,
+  };
+}
+
+function generateAreaTrapezoid(rng?: {
+  randomInt: (min: number, max: number) => number;
+}): GeometryProblem {
+  const top = getRandomInt(1, 5, rng);
+  const bottom = top + getRandomInt(1, 5, rng) * 2;
+  const height = getRandomInt(2, 6, rng);
+  const area = ((top + bottom) * height) / 2;
+  return {
+    question: `사다리꼴 [윗변 ${top}, 아랫변 ${bottom}, 높이 ${height}] 넓이 = ?`,
+    answer: area,
+  };
+}
+
+function generateCircleCircumference(rng?: {
+  randomInt: (min: number, max: number) => number;
+}): GeometryProblem {
+  const radii = [2, 5, 10, 20];
+  const r = radii[Math.abs(getRandomInt(0, radii.length - 1, rng)) % radii.length] || 10;
+  const answer = Math.round(2 * 3.1 * r * 10) / 10;
+  return {
+    question: `원 [반지름 ${r}, π=3.1] 둘레 = ?`,
+    answer: answer,
+    inputType: Number.isInteger(answer) ? 'number' : 'decimal',
+  };
+}
+
+function generateCircleArea(rng?: {
+  randomInt: (min: number, max: number) => number;
+}): GeometryProblem {
+  const radii = [2, 5, 10];
+  const r = radii[Math.abs(getRandomInt(0, radii.length - 1, rng)) % radii.length] || 10;
+  const answer = Math.round(3.1 * r * r * 10) / 10;
+  return {
+    question: `원 [반지름 ${r}, π=3.1] 넓이 = ?`,
+    answer: answer,
+    inputType: Number.isInteger(answer) ? 'number' : 'decimal',
+  };
+}
+
+function generateSolidVolumeRect(rng?: {
+  randomInt: (min: number, max: number) => number;
+}): GeometryProblem {
+  const w = getRandomInt(2, 5, rng);
+  const d = getRandomInt(2, 4, rng);
+  const h = getRandomInt(2, 5, rng);
+  return {
+    question: `직육면체 [${w} × ${d} × ${h}] 부피 = ?`,
+    answer: w * d * h,
+    inputType: 'number',
+  };
+}
+
+function generatePythagoreanBasic(_rng?: {
+  randomInt: (min: number, max: number) => number;
+}): GeometryProblem {
+  return {
+    question: `직각삼각형 [밑변 3, 높이 4] ➔ 빗변 = ?`,
+    answer: 5,
+  };
+}
+
+function generateTrigonometryBasic(rng?: {
+  randomInt: (min: number, max: number) => number;
+}): GeometryProblem {
+  const questions = [
+    { q: 'tan(45°)', a: 1 },
+    { q: 'sin(30°)', a: '1/2' },
+    { q: 'cos(60°)', a: '1/2' },
+  ];
+  const idx = Math.abs(getRandomInt(0, questions.length - 1, rng)) % questions.length;
+  const item = questions[idx] || questions[0]!;
+  return {
+    question: `${item.q} 값 = ?`,
+    answer: item.a,
+    inputType: typeof item.a === 'number' ? 'number' : 'fraction',
   };
 }

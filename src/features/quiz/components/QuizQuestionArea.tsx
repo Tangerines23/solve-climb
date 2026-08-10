@@ -1,9 +1,15 @@
 import React from 'react';
-import { FunctionMachineHint, IntegralTankHint, CalculusHint } from '../types/quiz';
+import {
+  FunctionMachineHint,
+  IntegralTankHint,
+  CalculusHint,
+  ShapeVisualizerHint,
+} from '../types/quiz';
 import { EquationVisualizer } from '@/components/algebra/EquationVisualizer';
 import { FunctionMachine } from '@/components/expert/FunctionMachine';
 import { IntegralVisualizer } from '@/components/expert/IntegralVisualizer';
 import { CalculusVisualization } from './CalculusVisualization';
+import { ShapeVisualizer } from '@/components/geometry/ShapeVisualizer';
 import { ReasoningOverlay } from '@/components/effects/ReasoningOverlay';
 import { parseEquation } from '@/utils/algebra';
 import { useQuiz } from '../contexts/QuizContext';
@@ -35,6 +41,9 @@ export const QuizQuestionArea = React.memo(() => {
           >
             {currentQuestion.question}
           </h2>
+          {currentQuestion.hintType === 'shape-visualizer' && currentQuestion.hintData && (
+            <ShapeVisualizer {...(currentQuestion.hintData as ShapeVisualizerHint)} />
+          )}
           {currentQuestion.hintType === 'transposition' && (
             <div className="visualizer-container">
               <EquationVisualizer

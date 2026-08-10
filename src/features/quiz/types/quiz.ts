@@ -27,8 +27,33 @@ export interface QuizQuestion {
   level?: number;
   category?: Category;
   inputType?: 'number' | 'decimal' | 'fraction' | 'coordinate';
-  hintType?: 'transposition' | 'coordinate' | 'calculus' | 'function-machine' | 'integral-tank';
-  hintData?: FunctionMachineHint | IntegralTankHint | CalculusHint | Record<string, unknown>;
+  hintType?:
+    | 'transposition'
+    | 'coordinate'
+    | 'calculus'
+    | 'function-machine'
+    | 'integral-tank'
+    | 'shape-visualizer';
+  hintData?:
+    | FunctionMachineHint
+    | IntegralTankHint
+    | CalculusHint
+    | ShapeVisualizerHint
+    | Record<string, unknown>;
+}
+
+export interface ShapeVisualizerHint {
+  sides?: number;
+  showDiagonals?: boolean;
+  shapeType?: 'n-gon' | 'triangle' | 'parallelogram' | 'quadrilateral' | 'rect' | 'circle';
+  width?: number;
+  height?: number;
+  base?: number;
+  radius?: number;
+  angleA?: number;
+  angleB?: number;
+  angleC?: number;
+  shapeName?: string;
 }
 
 export interface FunctionMachineHint {

@@ -85,6 +85,8 @@ export function generateQuestion(
           question: geoProb.question,
           answer: geoProb.answer,
           inputType: (geoProb as any).inputType || autoInputType,
+          hintType: (geoProb as any).hintType,
+          hintData: (geoProb as any).hintData,
           level,
           category,
         };

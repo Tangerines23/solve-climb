@@ -1,11 +1,12 @@
 {
   "name": "react-vite-app",
   "private": true,
-  "version": "0.27.528",
+  "version": "0.27.529",
   "type": "module",
   "scripts": {
     "setup": "node scripts/setup-new-env.js",
-    "build:map": "node scripts/generate-code-map.js",
+    "build:map": "node scripts/generate-code-map.js && node scripts/check-code-map.js",
+    "check:code-map": "node scripts/check-code-map.js",
     "build:flowchart": "node scripts/generate-flowchart.js",
     "dev": "vite --host",
     "generate": "plop",
@@ -155,6 +156,8 @@
     "@types/node": "^25.0.10",
     "@types/react": "^18.3.27",
     "@types/react-dom": "^18.3.7",
+    "@types/js-yaml": "^4.0.9",
+    "js-yaml": "^4.1.0",
     "@typescript-eslint/eslint-plugin": "^8.24.0",
     "@typescript-eslint/parser": "^8.24.0",
     "@vitejs/plugin-react": "^5.1.4",
