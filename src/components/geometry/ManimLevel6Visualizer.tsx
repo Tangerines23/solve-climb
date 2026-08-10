@@ -9,7 +9,7 @@ const SIZE = 200;
 const BASE_VAL = 12;
 const HEIGHT_VAL = 8;
 const AREA_VAL = (BASE_VAL * HEIGHT_VAL) / 2; // 48
-const PARAL_AREA_VAL = BASE_VAL * HEIGHT_VAL; // 96
+const PARALLELOGRAM_AREA_VAL = BASE_VAL * HEIGHT_VAL; // 96
 
 // 원본 삼각형 기준 좌표
 const BASE_P1: Point = { x: 67, y: 58 };
@@ -124,7 +124,7 @@ export const ManimLevel6Visualizer: React.FC = React.memo(() => {
               </span>
               <span className="geo-divider">=</span>
               <span className="geo-stat-item" style={{ color: '#c084fc', fontWeight: 900 }}>
-                평행사변형 넓이 <strong>{PARAL_AREA_VAL}</strong>
+                평행사변형 넓이 <strong>{PARALLELOGRAM_AREA_VAL}</strong>
               </span>
             </div>
           ),
@@ -279,7 +279,7 @@ export const ManimLevel6Visualizer: React.FC = React.memo(() => {
             strokeWidth={1.5}
           />
 
-          {/* 치수 라벨 (왼쪽 위 빗변 바깥쪽 탁 트인 빈 공간 x={(p1.x+p3.x)/2 - 14}, y={(p1.y+p3.y)/2 - 10} 에 배치!) */}
+          {/* 치수 라벨 (왼쪽 위 빗변 바깥쪽 공간 x={(p1.x+p3.x)/2 - 14}, y={(p1.y+p3.y)/2 - 10} 에 배치!) */}
           <text
             x={(p3.x + p2.x) / 2}
             y={p3.y + 16}

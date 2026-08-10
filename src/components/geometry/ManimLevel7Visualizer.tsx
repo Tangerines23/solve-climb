@@ -9,9 +9,9 @@ const SIZE = 200;
 const TOP_A = 6;
 const BOTTOM_B = 10;
 const HEIGHT_H = 6;
-const PARAL_BASE = TOP_A + BOTTOM_B; // 16
-const AREA_VAL = (PARAL_BASE * HEIGHT_H) / 2; // 48
-const PARAL_AREA_VAL = PARAL_BASE * HEIGHT_H; // 96
+const PARALLELOGRAM_BASE = TOP_A + BOTTOM_B; // 16
+const AREA_VAL = (PARALLELOGRAM_BASE * HEIGHT_H) / 2; // 48
+const PARALLELOGRAM_AREA_VAL = PARALLELOGRAM_BASE * HEIGHT_H; // 96
 
 const TOP_W = 45;
 const BOTTOM_W = 75;
@@ -150,7 +150,7 @@ export const ManimLevel7Visualizer: React.FC = React.memo(() => {
               </span>
               <span className="geo-divider">=</span>
               <span className="geo-stat-item" style={{ color: '#c084fc', fontWeight: 900 }}>
-                평행사변형 넓이 <strong>{PARAL_AREA_VAL}</strong>
+                평행사변형 넓이 <strong>{PARALLELOGRAM_AREA_VAL}</strong>
               </span>
             </div>
           ),
