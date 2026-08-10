@@ -1,4 +1,4 @@
-import React, { useMemo } from 'react';
+import React from 'react';
 import { useDebugStore } from '../../stores/useDebugStore';
 import { useManimEngine } from './useManimEngine';
 import { ManimCardLayout } from './ManimCardLayout';
