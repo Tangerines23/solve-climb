@@ -1,5 +1,7 @@
 import { useCallback } from 'react';
 import { vibrateMedium, vibrateLong } from '@/utils/haptic';
+import { sound } from '@/utils/sound';
+import { useGameStore } from '@/stores/useGameStore';
 
 interface FeedbackHandlers {
   setToastValue: (val: string) => void;
@@ -9,13 +11,20 @@ interface FeedbackHandlers {
 }
 
 /**
- * 퀴즈 시각적/진동 피드백을 담당하는 훅
+ * 퀴즈 시각적/진동/효과음 피드백을 담당하는 훅
  */
 export function useQuizFeedback() {
   const triggerSuccessFeedback = useCallback(
     (earnedDistance: number, handlers: FeedbackHandlers, hapticEnabled: boolean = true) => {
       if (hapticEnabled) {
         vibrateMedium();
+      }
+
+      const currentCombo = useGameStore.getState().combo;
+      if (currentCombo > 1) {
+        sound.playCombo(currentCombo);
+      } else {
+        sound.playCorrect();
       }
 
       handlers.setToastValue(`+${earnedDistance}m`);
@@ -36,6 +45,8 @@ export function useQuizFeedback() {
       if (hapticEnabled) {
         vibrateLong();
       }
+
+      sound.playWrong();
 
       handlers.setToastValue(penaltyText);
 

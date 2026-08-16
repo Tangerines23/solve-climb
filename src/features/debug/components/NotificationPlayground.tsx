@@ -2,6 +2,8 @@ import { useState, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { urls } from '@/utils/navigation';
 import { useGameStore } from '@/stores/useGameStore';
+import { useSettingsStore } from '@/stores/useSettingsStore';
+import { sound } from '@/utils/sound';
 import { AlertModal } from '@/components/AlertModal';
 import { ConfirmModal } from '@/components/ConfirmModal';
 import { CyclePromotionModal } from '@/components/CyclePromotionModal';
@@ -38,6 +40,8 @@ export function NotificationPlayground() {
   const itemFeedbackRef = useRef<ItemFeedbackRef>(null);
   const [showCountdown, setShowCountdown] = useState(false);
   const [showSafetyRope, setShowSafetyRope] = useState(false);
+
+  const { soundEnabled, setSoundEnabled } = useSettingsStore();
 
   // Store access for GameOverlay effects
   const {
@@ -225,6 +229,44 @@ export function NotificationPlayground() {
           <button onClick={() => triggerToast('Mineral +500 (Simulated)')}>
             Simulate Ad Success
           </button>
+        </div>
+
+        {/* Group 6: Sound Effects (SFX) */}
+        <div className="playground-section">
+          <h4>6. Sound Effects (SFX) 🔊</h4>
+          <button
+            style={{
+              backgroundColor: soundEnabled ? 'rgba(0, 200, 83, 0.2)' : 'rgba(255, 61, 0, 0.2)',
+              borderColor: soundEnabled ? 'var(--color-success)' : 'var(--color-error)',
+              fontWeight: 'bold',
+            }}
+            onClick={() => {
+              const next = !soundEnabled;
+              setSoundEnabled(next);
+              if (next) sound.playTap();
+              triggerToast(`효과음 설정: ${next ? 'ON' : 'OFF'}`);
+            }}
+          >
+            🔊 효과음 마스터 {soundEnabled ? '(ON)' : '(OFF)'}
+          </button>
+          <button onClick={() => sound.playKeypad(false)}>⌨️ Keypad: Tap</button>
+          <button onClick={() => sound.playKeypad(true)}>⌫ Keypad: Backspace</button>
+          <button onClick={() => sound.playTap()}>👆 UI: Tap</button>
+          <button onClick={() => sound.playBack()}>🔙 뒤로가기: Back Tap</button>
+          <button onClick={() => sound.playEmptyTap()}>💨 빈 공간: Chalk Tap</button>
+          <button onClick={() => sound.playCorrect()}>✅ 정답: 3-Chime (C-E-G)</button>
+          <button onClick={() => sound.playCombo(3)}>🔥 콤보: 3 Combo</button>
+          <button onClick={() => sound.playCombo(7)}>🔥 콤보: 7 Combo</button>
+          <button onClick={() => sound.playCombo(10)}>🔥 콤보: 10 Combo (High)</button>
+          <button onClick={() => sound.playWrong()}>❌ 오답: Buzzer</button>
+          <button onClick={() => sound.playCountdown(3)}>⏳ 카운트다운: 3, 2, 1</button>
+          <button onClick={() => sound.playCountdown(0)}>🚀 카운트다운: GO! (Chord)</button>
+          <button onClick={() => sound.playFever()}>⚡ 피버 / 모멘텀 (Shimmer)</button>
+          <button onClick={() => sound.playStageClear()}>🏆 스테이지 클리어 (Fanfare)</button>
+          <button onClick={() => sound.playGameOver()}>💀 게임 오버 (Jingle)</button>
+          <button onClick={() => sound.playScoreCount()}>🪙 점수 롤링 (Count-up)</button>
+          <button onClick={() => sound.playRevive()}>💖 부활 (Revive Charge)</button>
+          <button onClick={() => sound.playStaminaWarning()}>💓 스태미나 위기 (Heartbeat)</button>
         </div>
       </div>
 

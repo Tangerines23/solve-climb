@@ -17,8 +17,10 @@ vi.mock('@/stores/useToastStore', () => ({
 
 describe('MyPageSettings', () => {
   const defaultProps = {
+    soundEnabled: true,
     hapticEnabled: true,
     animationEnabled: true,
+    onToggleSound: vi.fn(),
     onToggleHaptic: vi.fn(),
     onToggleAnimation: vi.fn(),
     onShowProfileForm: vi.fn(),
@@ -48,6 +50,13 @@ describe('MyPageSettings', () => {
   it('should render version number correctly', () => {
     render(<MyPageSettings {...defaultProps} />);
     expect(screen.getByText(APP_CONFIG.APP_VERSION)).toBeInTheDocument();
+  });
+
+  it('should call onToggleSound when sound setting is clicked', () => {
+    render(<MyPageSettings {...defaultProps} />);
+    const soundItem = screen.getByText('효과음');
+    fireEvent.click(soundItem);
+    expect(defaultProps.onToggleSound).toHaveBeenCalled();
   });
 
   it('should show success toast if version is up to date', async () => {

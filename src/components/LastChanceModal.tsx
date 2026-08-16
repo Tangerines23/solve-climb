@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { BaseModal } from './BaseModal';
+import { sound } from '@/utils/sound';
 import './LastChanceModal.css';
 
 interface LastChanceModalProps {
@@ -30,6 +31,7 @@ export function LastChanceModal({
 
   useEffect(() => {
     if (isVisible) {
+      sound.playStaminaWarning();
       setTimeLeft(10);
       const timer = setInterval(() => {
         setTimeLeft((prev) => {

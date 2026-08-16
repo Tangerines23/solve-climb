@@ -34,6 +34,7 @@ import { useSettingsStore } from '@/stores/useSettingsStore';
 import { useGameStore } from '@/stores/useGameStore';
 import { useCountUp } from '@/hooks/useCountUp';
 import { historyService } from '@/services/historyService';
+import { sound } from '@/utils/sound';
 
 import { storageService, STORAGE_KEYS } from '@/services';
 
@@ -76,14 +77,27 @@ export function ResultPage() {
   const correctCount = Math.floor(finalScore / SCORE_PER_CORRECT);
   const averageTime = validateFloatParam(searchParams.get('avg_time'), 0, 3600);
 
-  // 결과 창 진입 시 인게임 피버 및 오버레이 상태(feverLevel, showSpeedLines, showVignette) 초기화
+  // 결과 창 진입 시 인게임 피버 및 오버레이 상태 초기화 & 결과 사운드 재생
   useEffect(() => {
     useGameStore.setState({
       feverLevel: 0,
       showSpeedLines: false,
       showVignette: false,
     });
-  }, []);
+
+    if (finalScore > 0) {
+      sound.playStageClear();
+    } else {
+      sound.playGameOver();
+    }
+  }, [finalScore]);
+
+  // 점수 카운트업 진행 중 사운드 효과
+  useEffect(() => {
+    if (animatedScore > 0 && animatedScore < finalScore) {
+      sound.playScoreCount();
+    }
+  }, [animatedScore, finalScore]);
 
   const confettiItems = useMemo(() => {
     const colors = [

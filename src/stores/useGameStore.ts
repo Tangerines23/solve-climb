@@ -2,6 +2,7 @@ import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
 import { SURVIVAL_CONFIG } from '../constants/game';
 import { zustandStorage } from '../services';
+import { sound } from '../utils/sound';
 
 interface GameState {
   score: number;
@@ -132,14 +133,23 @@ export const useGameStore = create<GameState>()(
           };
         }),
 
-      setExhausted: (exhausted) => set({ isExhausted: exhausted, showVignette: exhausted }),
+      setExhausted: (exhausted) => {
+        if (exhausted) {
+          sound.playStaminaWarning();
+        }
+        set({ isExhausted: exhausted, showVignette: exhausted });
+      },
 
       setStaminaConsumed: (consumed) => set({ isStaminaConsumed: consumed }),
 
       consumeLife: () =>
-        set((state) => ({
-          lives: Math.max(0, state.lives - 1),
-        })),
+        set((state) => {
+          const nextLives = Math.max(0, state.lives - 1);
+          if (nextLives === 1) {
+            sound.playStaminaWarning();
+          }
+          return { lives: nextLives };
+        }),
 
       resetGame: () =>
         set({

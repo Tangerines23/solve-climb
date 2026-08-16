@@ -2,6 +2,7 @@ import { useState, useCallback } from 'react';
 import { InventoryItem } from '@/types/user';
 import { GameMode } from '../types/quiz';
 import { quizEventBus } from '@/lib/eventBus';
+import { sound } from '@/utils/sound';
 
 interface UseQuizReviveParams {
   gameMode: GameMode;
@@ -40,7 +41,8 @@ export function useQuizRevive({
       quizEventBus.emit('QUIZ:UI_MODAL_TOGGLE', { modal: 'lastChance', show: false });
       setHasUsedLastChance(true);
 
-      // Notify success
+      // Sound & notify success
+      sound.playRevive();
       quizEventBus.emit('QUIZ:REVIVE_SUCCESS');
 
       // v2.2: Countdown before resuming correctly for BOTH modes

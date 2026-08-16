@@ -2,6 +2,7 @@ import { useEffect, useRef } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { APP_CONFIG } from '../config/app';
 import { useProfileStore } from '../stores/useProfileStore';
+import { sound } from '@/utils/sound';
 
 /**
  * 브라우저 뒤로가기 버튼 동작을 커스터마이징하는 훅
@@ -30,6 +31,8 @@ export function useCustomBackNavigation() {
       if (isHandlingPopStateRef.current) {
         return;
       }
+
+      sound.playBack();
 
       // 이전 위치 (popstate 발생 전)
       const previousPath = previousPathRef.current;

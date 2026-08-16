@@ -8,6 +8,7 @@ describe('useSettingsStore', () => {
     // Reset store to initial state before each test
     const { result } = renderHook(() => useSettingsStore());
     act(() => {
+      result.current.setSoundEnabled(true);
       result.current.setHapticEnabled(true);
       result.current.setKeyboardType('custom');
     });
@@ -16,8 +17,25 @@ describe('useSettingsStore', () => {
   it('should initialize with default values', () => {
     const { result } = renderHook(() => useSettingsStore());
 
+    expect(result.current.soundEnabled).toBe(true);
     expect(result.current.hapticEnabled).toBe(true);
     expect(result.current.keyboardType).toBe('custom');
+  });
+
+  it('should set sound enabled', () => {
+    const { result } = renderHook(() => useSettingsStore());
+
+    act(() => {
+      result.current.setSoundEnabled(false);
+    });
+
+    expect(result.current.soundEnabled).toBe(false);
+
+    act(() => {
+      result.current.setSoundEnabled(true);
+    });
+
+    expect(result.current.soundEnabled).toBe(true);
   });
 
   it('should set haptic enabled', () => {
