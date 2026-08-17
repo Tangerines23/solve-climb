@@ -121,9 +121,16 @@ test.describe('CORE BUSINESS SCENARIO - 게임 플레이부터 랭킹 반영까�
       for (const vp of testViewports) {
         await page.setViewportSize({ width: vp.width, height: vp.height });
         await page.waitForTimeout(1000); // 뷰포트 적응 및 리플로우 대기
-        const screenshotPath = `C:\\Users\\ghkdd\\.gemini\\antigravity\\brain\\36e29b47-6f8e-40ad-ba50-21f57b88493f\\scratch\\screenshot-real-${vp.name}.png`;
-        await page.screenshot({ path: screenshotPath });
-        console.log(`[E2E] Real Screenshot saved to: ${screenshotPath} (${vp.width}x${vp.height})`);
+        try {
+          const outputDir = 'reports/test-results';
+          const screenshotPath = `${outputDir}/screenshot-real-${vp.name}.png`;
+          await page.screenshot({ path: screenshotPath });
+          console.log(
+            `[E2E] Real Screenshot saved to: ${screenshotPath} (${vp.width}x${vp.height})`
+          );
+        } catch {
+          // Ignore screenshot saving errors in CI environments
+        }
       }
 
       // 원래 크기로 복구

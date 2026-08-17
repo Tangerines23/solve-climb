@@ -5,7 +5,7 @@ test('capture world transition screenshots', async ({ page }) => {
   // 모바일 뷰포트 크기로 설정
   await page.setViewportSize({ width: 393, height: 851 });
 
-  const outputDir = `C:\\Users\\ghkdd\\.gemini\\antigravity\\brain\\36e29b47-6f8e-40ad-ba50-21f57b88493f`;
+  const outputDir = 'reports/test-results';
 
   // 1. 레벨 선택 페이지로 진입 (World 1)
   const initialUrl = '/level-select?mountain=math&world=World1&category=%EA%B8%B0%EC%B5%88';
