@@ -1,5 +1,5 @@
 name: CI
-run-name: CI - ${{ github.event.head_commit.message || 'Workflow manual run' }} by @${{ github.actor }}
+run-name: ${{ github.actor == 'dependabot[bot]' && '🤖 [Dependabot]' || '👤 [Dev]' }} CI - ${{ github.event.head_commit.message || 'Workflow manual run' }} by @${{ github.actor }}
 
 on:
   workflow_dispatch:
@@ -47,8 +47,8 @@ jobs:
     needs: setup
     runs-on: ubuntu-latest
     env:
-      VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
-      VITE_SUPABASE_ANON_KEY: ${{ secrets.VITE_SUPABASE_ANON_KEY }}
+      VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL || 'https://dummy-test.supabase.co' }}
+      VITE_SUPABASE_ANON_KEY: ${{ secrets.VITE_SUPABASE_ANON_KEY || 'dummy-anon-key' }}
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -118,8 +118,8 @@ jobs:
 
       - name: Run Unit Tests
         env:
-          VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
-          VITE_SUPABASE_ANON_KEY: ${{ secrets.VITE_SUPABASE_ANON_KEY }}
+          VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL || 'https://dummy-test.supabase.co' }}
+          VITE_SUPABASE_ANON_KEY: ${{ secrets.VITE_SUPABASE_ANON_KEY || 'dummy-anon-key' }}
         run: npm run test:all -- --reporter=default --reporter=github-actions --reporter=junit --outputFile=reports/test-results.xml
 
       - name: 📦 Upload Test Reports
@@ -132,6 +132,7 @@ jobs:
 
   # 4. 데이터베이스 및 보안 검증
   security-db:
+    if: github.actor != 'dependabot[bot]'
     needs: setup
     runs-on: ubuntu-latest
     env:
@@ -258,6 +259,7 @@ jobs:
 
   # 6. E2E 안정성 및 가혹 테스트 (Stability)
   e2e-stability-test:
+    if: github.actor != 'dependabot[bot]'
     needs: build
     runs-on: ubuntu-latest
     timeout-minutes: 20
@@ -303,6 +305,7 @@ jobs:
 
   # 7a. E2E 핵심 경로 (스모크·인증·비즈니스·검증) — 빠른 피드백
   e2e-critical:
+    if: github.actor != 'dependabot[bot]'
     needs: build
     runs-on: ubuntu-latest
     timeout-minutes: 15
@@ -427,6 +430,7 @@ jobs:
   # 7b. 시각적 회귀·a11y·레이아웃 정밀 감사 (Visual & Layout)
   # Linux VRT 스냅샷 없음/미달 시 실패 → continue-on-error로 워크플로는 통과, 나중에 Update VRT 워크플로로 스냅샷 보강
   e2e-visual-layout:
+    if: github.actor != 'dependabot[bot]'
     needs: build
     runs-on: ubuntu-latest
     continue-on-error: true
@@ -517,6 +521,7 @@ jobs:
 
   # 8. 성능 및 웹 표준 감사 (Lighthouse 미달 시에도 워크플로 통과, 나중에 성능 개선 후 제거)
   performance-audit:
+    if: github.actor != 'dependabot[bot]'
     needs: build
     runs-on: ubuntu-latest
     continue-on-error: true
