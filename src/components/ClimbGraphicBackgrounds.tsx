@@ -89,8 +89,8 @@ export function ClimbBackground({
                  L 400,${svgHeight} 
                  Z`;
 
-      let fillVar = 'var(--ground-color-near)';
-      let baseOpacity = 0.88;
+      let fillVar: string;
+      let baseOpacity: number;
 
       if (i >= 4) {
         fillVar = 'var(--ground-color-far)';
@@ -205,8 +205,8 @@ export function ClimbBackground({
       const isActive = activeIndices.has(slot.index);
       const isSymbol = symbolIndices.has(slot.index);
 
-      let x = slot.baseX;
-      let y = slot.baseY;
+      let x: number;
+      let y: number;
       const opacity = isActive ? (isSymbol ? 0.55 : 0.85) : 0;
       const scale = 0.6 + rng.next() * 0.45; // 0.6 ~ 1.05
       const rotate = rng.nextInt(0, 360);

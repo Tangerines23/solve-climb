@@ -1,5 +1,5 @@
 project: solve-climb
-generatedAt: '2026-08-17T16:40:14.569Z'
+generatedAt: '2026-08-17T21:38:08.398Z'
 files:
   src/App.tsx:
     imports:
@@ -35,7 +35,6 @@ files:
           - Promise.all
           - initializeAuth
           - syncProgress
-          - (window as any).Capacitor.isNativePlatform
           - Capacitor.isNativePlatform
           - initializeGoogleSignIn().catch
           - initializeGoogleSignIn
@@ -689,8 +688,8 @@ files:
           - types.push
           - availableKeyboardTypes.includes
           - setSelectedKeyboardType
-          - setSelectedCategoryIndex
           - useGameStore.setState
+          - setSelectedCategoryIndex
           - screen.orientation.type.includes
           - window.matchMedia
           - setIsLandscape
@@ -966,7 +965,6 @@ files:
         returns: import("C:/Users/ghkdd/gemini-projects/solve-climb/node_modules/@types/react/jsx-runtime").JSX.Element
         calls:
           - useNavigate
-          - fetchUserData
           - setState
           - useLevelProgressStore.getState
           - Object.values(progress).forEach
@@ -974,8 +972,11 @@ files:
           - Object.values(categoryData).forEach
           - Object.values(subTopicData).forEach
           - Math.max
+          - Math.floor
+          - Math.round
           - setStatus
           - logError
+          - fetchUserData
           - navigate
           - rank.toLocaleString
           - formatRank
@@ -1817,8 +1818,8 @@ files:
         calls:
           - useNavigate
           - useDailyRewardStore
-          - setShowAgeRating
           - setTimeout
+          - setShowAgeRating
           - clearTimeout
           - checkDailyLogin
           - setShowExitToast
@@ -1849,6 +1850,8 @@ files:
       - activeWorld
       - activeCategory
       - isSheetTransitioning
+      - prevWorldParam
+      - prevCategoryParam
       - tier
     handlers:
       - name: handleLevelClick
@@ -1893,7 +1896,9 @@ files:
         calls:
           - useNavigate
           - useNavigationContext
+          - setPrevWorldParam
           - setActiveWorld
+          - setPrevCategoryParam
           - setActiveCategory
           - tryRecover
           - requestAnimationFrame
@@ -2068,6 +2073,7 @@ files:
       - currentMasteryScore
       - awardedBadges
       - _showBadgeNotification
+      - confettiItems
       - hasDoubled
     handlers:
       - name: handleDoubleReward
@@ -2121,6 +2127,7 @@ files:
           - storageService.get
           - storageService.set
           - finalScore.toString
+          - queueMicrotask
           - setIsNewRecord
           - setShowConfetti
           - setTimeout
@@ -5214,7 +5221,6 @@ files:
       - name: BadgeSystemSection
         returns: import("C:/Users/ghkdd/gemini-projects/solve-climb/node_modules/@types/react/jsx-runtime").JSX.Element
         calls:
-          - loadBadges
           - setIsLoading
           - supabase.auth.getSession
           - setMessage
@@ -5222,10 +5228,12 @@ files:
           - supabase .from('badge_definitions') .select
           - supabase .from
           - setBadgeDefinitions
+          - setSelectedBadgeId
           - supabase .from('user_badges') .select('badge_id') .eq
           - supabase .from('user_badges') .select
           - setUserBadges
           - badges?.map
+          - loadBadges
           - setIsUpdating
           - userBadges.has
           - supabase.rpc
@@ -5245,7 +5253,6 @@ files:
           - setIsVerifyingSync
           - setSyncResult
           - verifySync
-          - setSelectedBadgeId
           - earnedBadges.map
           - badgeDefinitions.map
           - handleBadgeToggle
@@ -5666,16 +5673,16 @@ files:
         returns: import("C:/Users/ghkdd/gemini-projects/solve-climb/node_modules/@types/react/jsx-runtime").JSX.Element
         calls:
           - useUserStore
-          - loadItems
-          - inventory.forEach
-          - item.quantity.toString
-          - setItemQuantities
           - setIsLoading
           - order
           - supabase .from('items') .select
           - supabase .from
           - setItemDefinitions
           - setMessage
+          - loadItems
+          - inventory.forEach
+          - item.quantity.toString
+          - setItemQuantities
           - Object.prototype.hasOwnProperty.call
           - parseInt
           - Math.max

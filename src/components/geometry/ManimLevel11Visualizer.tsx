@@ -32,8 +32,8 @@ export const ManimLevel11Visualizer: React.FC = React.memo(() => {
   });
 
   const eased = getEasedProgress();
-  const currFrame = DIAG_KEYFRAMES[stepIndex]!;
-  const nextFrame = DIAG_KEYFRAMES[(stepIndex + 1) % DIAG_KEYFRAMES.length]!;
+  const currFrame = DIAG_KEYFRAMES[stepIndex] ?? DIAG_KEYFRAMES[0]!;
+  const nextFrame = DIAG_KEYFRAMES[(stepIndex + 1) % DIAG_KEYFRAMES.length] ?? DIAG_KEYFRAMES[0]!;
 
   // 변 수 보평 계산
   const sidesFloat = currFrame.sides + (nextFrame.sides - currFrame.sides) * eased;
@@ -58,12 +58,16 @@ export const ManimLevel11Visualizer: React.FC = React.memo(() => {
   for (let i = 0; i < intSides; i++) {
     for (let j = i + 2; j < intSides; j++) {
       if (i === 0 && j === intSides - 1) continue;
-      diagLines.push({
-        x1: pts[i]!.x,
-        y1: pts[i]!.y,
-        x2: pts[j]!.x,
-        y2: pts[j]!.y,
-      });
+      const p1 = pts[i];
+      const p2 = pts[j];
+      if (p1 && p2) {
+        diagLines.push({
+          x1: p1.x,
+          y1: p1.y,
+          x2: p2.x,
+          y2: p2.y,
+        });
+      }
     }
   }
 

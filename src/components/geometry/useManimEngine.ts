@@ -15,7 +15,9 @@ export function useManimEngine({
   const [isPaused, setIsPaused] = useState(false);
 
   const isPausedRef = useRef(isPaused);
-  isPausedRef.current = isPaused;
+  useEffect(() => {
+    isPausedRef.current = isPaused;
+  }, [isPaused]);
 
   const stepDuration = holdDuration + moveDuration;
   const totalCycle = totalSteps * stepDuration;

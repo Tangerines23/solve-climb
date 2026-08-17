@@ -89,7 +89,7 @@ export function MyPageTipPreview() {
 
     const worlds: WorldType[] = ['World1', 'World2', 'World3', 'World4'];
     const currentIndex = worlds.indexOf(world);
-    let newIndex = currentIndex;
+    let newIndex: number;
 
     if (direction === 'prev') {
       newIndex = currentIndex === 0 ? worlds.length - 1 : currentIndex - 1;

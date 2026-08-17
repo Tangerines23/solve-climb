@@ -495,7 +495,7 @@ export function ClimbGraphic({
             const leftPlacementX = position.x - ESTIMATED_BADGE_WIDTH - badgeSpacing;
             const rightPlacementX = position.x + badgeSpacing;
 
-            let isLeftSide = true;
+            let isLeftSide: boolean;
 
             if (leftPlacementX < 10) {
               isLeftSide = false;

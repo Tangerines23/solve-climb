@@ -149,22 +149,16 @@ export function KeyboardInfoModal({ isOpen, onClose }: KeyboardInfoModalProps) {
   // 설정값 변경 시 키보드 타입 업데이트
   useEffect(() => {
     if (availableKeyboardTypes.length > 0) {
-      let initialType: KeyboardDisplayType | null = null;
-      if (keyboardType === 'qwerty' && availableKeyboardTypes.includes('qwerty-number')) {
-        initialType = 'qwerty-number';
-      } else if (keyboardType === 'custom' && availableKeyboardTypes.includes('custom')) {
-        initialType = 'custom';
-      } else {
-        initialType = availableKeyboardTypes[0];
-      }
+      const initialType: KeyboardDisplayType =
+        keyboardType === 'qwerty' && availableKeyboardTypes.includes('qwerty-number')
+          ? 'qwerty-number'
+          : keyboardType === 'custom' && availableKeyboardTypes.includes('custom')
+            ? 'custom'
+            : availableKeyboardTypes[0]!;
 
-      if (
-        initialType &&
-        (!selectedKeyboardType || !availableKeyboardTypes.includes(selectedKeyboardType))
-      ) {
+      if (!selectedKeyboardType || !availableKeyboardTypes.includes(selectedKeyboardType)) {
         setSelectedKeyboardType(initialType);
       }
-      setSelectedCategoryIndex(0);
     }
   }, [keyboardType, availableKeyboardTypes, selectedKeyboardType]);
 
@@ -203,7 +197,7 @@ export function KeyboardInfoModal({ isOpen, onClose }: KeyboardInfoModalProps) {
   // 화면 방향 감지
   useEffect(() => {
     const checkOrientation = () => {
-      let landscape = false;
+      let landscape: boolean;
 
       // 1순위: screen.orientation API
       if (screen.orientation) {

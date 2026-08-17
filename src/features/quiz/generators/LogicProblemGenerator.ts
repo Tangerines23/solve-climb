@@ -177,8 +177,8 @@ function generateCustomOpProblem(
   const a = getInt(1, 10);
   const b = getInt(1, 10);
   const type = rng ? rng.randomInt(1, 3) : getRandomInt(1, 2);
-  let question = '';
-  let answer = 0;
+  let question: string;
+  let answer: number;
   if (type === 1) {
     question = `A ★ B = A + B + 1 일 때, ${a} ★ ${b} = ?`;
     answer = a + b + 1;

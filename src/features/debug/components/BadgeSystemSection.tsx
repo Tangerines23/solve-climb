@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/utils/supabaseClient';
 import { verifySync, type SyncResult } from '@/utils/debugSync';
 import { Toast } from '@/components/Toast';
@@ -25,11 +25,7 @@ export function BadgeSystemSection() {
   const [toastMessage, setToastMessage] = useState('');
   const [isToastOpen, setIsToastOpen] = useState(false);
 
-  useEffect(() => {
-    loadBadges();
-  }, []);
-
-  const loadBadges = async () => {
+  const loadBadges = useCallback(async () => {
     try {
       setIsLoading(true);
 
@@ -49,7 +45,13 @@ export function BadgeSystemSection() {
         .order('id');
 
       if (defError) throw defError;
-      setBadgeDefinitions(definitions || []);
+      const defsList = definitions || [];
+      setBadgeDefinitions(defsList);
+
+      if (defsList.length > 0 && !selectedBadgeId) {
+        const firstId = defsList[0]?.id;
+        if (firstId) setSelectedBadgeId(firstId);
+      }
 
       // 사용자 뱃지 조회
       const { data: badges, error: badgesError } = await supabase
@@ -67,7 +69,11 @@ export function BadgeSystemSection() {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [selectedBadgeId]);
+
+  useEffect(() => {
+    loadBadges();
+  }, [loadBadges]);
 
   const handleBadgeToggle = async (badgeId: string) => {
     if (isUpdating) return;

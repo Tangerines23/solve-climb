@@ -219,12 +219,14 @@ export const ManimLevel2Visualizer: React.FC = React.memo(() => {
 
   // Swipe / Skip Transition Engine (Continuous Seamless Morphing)
   const triggerStepChange = (direction: 'next' | 'prev') => {
-    let nextSides = currSides;
-    if (direction === 'next') {
-      nextSides = currSides === 8 ? 4 : currSides + 1;
-    } else {
-      nextSides = currSides === 4 ? 8 : currSides - 1;
-    }
+    const nextSides =
+      direction === 'next'
+        ? currSides === 8
+          ? 4
+          : currSides + 1
+        : currSides === 4
+          ? 8
+          : currSides - 1;
 
     setPrevSides(currSides);
     setCurrSides(nextSides);

@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { motion } from 'framer-motion';
 import { useGameStore } from '../../stores/useGameStore';
 import { useSettingsStore } from '../../stores/useSettingsStore';
@@ -39,20 +40,22 @@ function FeverParticles() {
 }
 
 function Particle({ index: _index }: { index: number }) {
-  const randomX = Math.random() * 100; // %
-  const duration = 1 + Math.random() * 2; // 1-3s
-  const delay = Math.random() * 2;
+  const [params] = useState(() => ({
+    randomX: Math.random() * 100,
+    duration: 1 + Math.random() * 2,
+    delay: Math.random() * 2,
+  }));
 
   return (
     <motion.div
       className="fever-particle"
-      style={{ left: `${randomX}%` }}
+      style={{ left: `${params.randomX}%` }}
       initial={{ y: '100vh', opacity: 0, scale: 0 }}
       animate={{ y: '-10vh', opacity: [0, 1, 0], scale: [0.5, 1.5, 0.5] }}
       transition={{
-        duration: duration,
+        duration: params.duration,
         repeat: Infinity,
-        delay: delay,
+        delay: params.delay,
         ease: 'linear',
       }}
     />

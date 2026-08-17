@@ -15,15 +15,7 @@ interface GameState {
   showVignette: boolean;
   lives: number; // Survival Mode Lives (Hearts)
   speedLineStyle:
-    | 'original'
-    | 'wind'
-    | 'fog'
-    | 'glow'
-    | 'float'
-    | 'liquid'
-    | 'chalk'
-    | 'sweep'
-    | 'zen';
+    'original' | 'wind' | 'fog' | 'glow' | 'float' | 'liquid' | 'chalk' | 'sweep' | 'zen';
   setSpeedLineStyle: (
     style: 'original' | 'wind' | 'fog' | 'glow' | 'float' | 'liquid' | 'chalk' | 'sweep' | 'zen'
   ) => void;

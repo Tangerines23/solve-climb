@@ -7,7 +7,7 @@ interface PageTransitionProps {
 }
 
 export function PageTransition({ children }: PageTransitionProps) {
-  const animationEnabled = useSettingsStore((state: any) => state.animationEnabled);
+  const animationEnabled = useSettingsStore((state) => state.animationEnabled);
 
   if (!animationEnabled) {
     return <>{children}</>;

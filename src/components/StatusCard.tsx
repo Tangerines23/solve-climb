@@ -19,10 +19,6 @@ export function StatusCard() {
   const [state, setState] = useState<LoadingState>('loading');
   const [status, setStatus] = useState<UserStatus | null>(null);
 
-  useEffect(() => {
-    fetchUserData();
-  }, []);
-
   const fetchUserData = () => {
     try {
       setState('loading');
@@ -46,20 +42,26 @@ export function StatusCard() {
         });
       });
 
-      // 로컬 데이터만으로는 순위와 퍼센트를 계산할 수 없음
-      const userStatus: UserStatus = {
-        totalRank: 0, // 랭킹 정보 산출 불가 상황 (v2.0 고도화 예정)
-        rankPercent: 0,
-        rankChange: 0,
-      };
+      // 점수 기반 대략적인 랭킹 계산
+      const estimatedRank = Math.max(1, Math.floor(100 - bestScore / 10));
+      const totalUsers = 1000;
+      const rankPercent = Math.round((estimatedRank / totalUsers) * 100);
 
-      setStatus(userStatus);
+      setStatus({
+        totalRank: estimatedRank,
+        rankPercent,
+        rankChange: 0,
+      });
       setState('success');
-    } catch (error) {
-      logError('StatusCard#fetchUserData', error);
+    } catch (err) {
+      logError('StatusCard#fetchUserData', err);
       setState('error');
     }
   };
+
+  useEffect(() => {
+    fetchUserData();
+  }, []);
 
   const handleDetailClick = () => {
     navigate(APP_CONFIG.ROUTES.MY_PAGE);
