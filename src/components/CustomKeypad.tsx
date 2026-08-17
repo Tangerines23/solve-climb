@@ -1,5 +1,6 @@
 import React, { FormEvent } from 'react';
 import { vibrateShort } from '../utils/haptic';
+import { sound } from '../utils/sound';
 import { KEYPAD_SYMBOLS } from '../constants/ui';
 import './CustomKeypad.css';
 
@@ -25,15 +26,16 @@ function CustomKeypadComponent({
   showFraction = false,
 }: CustomKeypadProps) {
   // Zustand Selector 패턴 적용
-  const handleAction = (action: () => void) => {
+  const handleAction = (action: () => void, isBackspace: boolean = false) => {
     if (!disabled) {
       vibrateShort();
+      sound.playKeypad(isBackspace);
       action();
     }
   };
 
   const handleNumberClick = (num: string) => handleAction(() => onNumberClick(num));
-  const handleBackspace = () => onBackspace && handleAction(onBackspace);
+  const handleBackspace = () => onBackspace && handleAction(onBackspace, true);
   const handleSubmit = (e: FormEvent) => handleAction(() => onSubmit(e));
 
   const renderSpecialKey = () => {

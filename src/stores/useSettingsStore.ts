@@ -5,11 +5,15 @@ import { persist } from 'zustand/middleware';
 export type KeyboardType = 'custom' | 'qwerty';
 
 interface SettingsState {
+  soundEnabled: boolean; // 효과음 활성화 여부
+  bgmEnabled: boolean; // 배경음악(BGM) 활성화 여부
   hapticEnabled: boolean; // 진동 활성화 여부
   keyboardType: KeyboardType; // 키보드 타입
   animationEnabled: boolean; // 애니메이션 활성화 여부
   staticMode: boolean; // 정적 모드 여부
   _hasHydrated: boolean; // 하이드레이션 완료 여부
+  setSoundEnabled: (enabled: boolean) => void;
+  setBgmEnabled: (enabled: boolean) => void;
   setHapticEnabled: (enabled: boolean) => void;
   setKeyboardType: (type: KeyboardType) => void;
   setAnimationEnabled: (enabled: boolean) => void;
@@ -20,11 +24,19 @@ interface SettingsState {
 export const useSettingsStore = create<SettingsState>()(
   persist(
     (set) => ({
+      soundEnabled: true, // 기본값: 활성화
+      bgmEnabled: true, // 기본값: 활성화
       hapticEnabled: true, // 기본값: 활성화
       keyboardType: 'custom', // 기본값: 커스텀 키패드
       animationEnabled: true, // 기본값: 활성화
       staticMode: false, // 기본값: 비활성화
       _hasHydrated: false, // 기본값: 비활성화
+      setSoundEnabled: (enabled) => {
+        set({ soundEnabled: enabled });
+      },
+      setBgmEnabled: (enabled) => {
+        set({ bgmEnabled: enabled });
+      },
       setHapticEnabled: (enabled) => {
         set({ hapticEnabled: enabled });
       },

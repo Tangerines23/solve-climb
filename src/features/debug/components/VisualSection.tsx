@@ -1,6 +1,7 @@
 import React from 'react';
 import { useDebugStore } from '@/stores/useDebugStore';
 import { useGameStore } from '@/stores/useGameStore';
+import { sound } from '@/utils/sound';
 import './VisualSection.css';
 
 export const VisualSection = React.memo(function VisualSection() {
@@ -54,13 +55,19 @@ export const VisualSection = React.memo(function VisualSection() {
         >
           <button
             className="debug-action-button"
-            onClick={() => useGameStore.setState({ feverLevel: 1 })}
+            onClick={() => {
+              useGameStore.setState({ feverLevel: 1 });
+              sound.playFever();
+            }}
           >
             피버 1단계 (ON)
           </button>
           <button
             className="debug-action-button"
-            onClick={() => useGameStore.setState({ feverLevel: 2 })}
+            onClick={() => {
+              useGameStore.setState({ feverLevel: 2 });
+              sound.playFever();
+            }}
           >
             피버 2단계 (ON)
           </button>
@@ -74,7 +81,9 @@ export const VisualSection = React.memo(function VisualSection() {
             className="debug-action-button"
             onClick={() => {
               const currentCombo = useGameStore.getState().combo;
-              useGameStore.getState().setCombo(currentCombo + 1);
+              const nextCombo = currentCombo + 1;
+              useGameStore.getState().setCombo(nextCombo);
+              sound.playCombo(nextCombo);
             }}
           >
             콤보 +1
@@ -83,6 +92,7 @@ export const VisualSection = React.memo(function VisualSection() {
             className="debug-action-button"
             onClick={() => {
               useGameStore.getState().setCombo(10);
+              sound.playCombo(10);
             }}
           >
             콤보 10 설정
@@ -91,6 +101,7 @@ export const VisualSection = React.memo(function VisualSection() {
             className="debug-action-button"
             onClick={() => {
               useGameStore.getState().setCombo(50);
+              sound.playCombo(11);
             }}
           >
             콤보 50 (슈퍼)

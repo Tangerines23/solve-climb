@@ -27,6 +27,7 @@ import { logError } from '@/utils/errorHandler';
 import { safeSupabaseQuery } from '@/utils/debugFetch';
 import { generateUUID } from '@/utils/validation';
 import { useAuthStore } from '@/stores/useAuthStore';
+import { sound, bgm } from '@/utils/sound';
 
 import { APP_CONFIG } from '@/config/app';
 import { signInWithGoogle } from '@/utils/auth';
@@ -71,6 +72,10 @@ export function MyPage() {
   const setProfile = useProfileStore((state: any) => state.setProfile);
   const profile = useProfileStore((state: any) => state.profile);
   const nickname = profile?.nickname || '게이머';
+  const soundEnabled = useSettingsStore((state: any) => state.soundEnabled);
+  const setSoundEnabled = useSettingsStore((state: any) => state.setSoundEnabled);
+  const bgmEnabled = useSettingsStore((state: any) => state.bgmEnabled);
+  const setBgmEnabled = useSettingsStore((state: any) => state.setBgmEnabled);
   const hapticEnabled = useSettingsStore((state: any) => state.hapticEnabled);
   const setHapticEnabled = useSettingsStore((state: any) => state.setHapticEnabled);
   const animationEnabled = useSettingsStore((state: any) => state.animationEnabled);
@@ -176,6 +181,29 @@ export function MyPage() {
       setShowProfileForm(true);
     }
   }, [shouldShowProfileForm]);
+
+  const handleToggleSound = () => {
+    const newValue = !soundEnabled;
+    setSoundEnabled(newValue);
+    if (newValue) {
+      sound.playTap();
+    }
+    setToastMessage(newValue ? '효과음이 켜졌습니다' : '효과음이 꺼졌습니다');
+    setShowToast(true);
+  };
+
+  const handleToggleBgm = () => {
+    const newValue = !bgmEnabled;
+    setBgmEnabled(newValue);
+    if (newValue) {
+      sound.playTap();
+      bgm.play('brain_age');
+    } else {
+      bgm.stop(0.2);
+    }
+    setToastMessage(newValue ? '배경음악이 켜졌습니다' : '배경음악이 꺼졌습니다');
+    setShowToast(true);
+  };
 
   const handleToggleHaptic = () => {
     const newValue = !hapticEnabled;
@@ -557,8 +585,12 @@ export function MyPage() {
 
           {/* Settings List */}
           <MyPageSettings
+            soundEnabled={soundEnabled}
+            bgmEnabled={bgmEnabled}
             hapticEnabled={hapticEnabled}
             animationEnabled={animationEnabled}
+            onToggleSound={handleToggleSound}
+            onToggleBgm={handleToggleBgm}
             onToggleHaptic={handleToggleHaptic}
             onToggleAnimation={handleToggleAnimation}
             onShowProfileForm={() => setShowProfileForm(true)}

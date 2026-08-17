@@ -8,8 +8,12 @@ import { ENV } from '@/utils/env';
 import { isNativeAppPlatform } from '@/utils/auth';
 
 interface MyPageSettingsProps {
+  soundEnabled: boolean;
+  bgmEnabled: boolean;
   hapticEnabled: boolean;
   animationEnabled: boolean;
+  onToggleSound: () => void;
+  onToggleBgm: () => void;
   onToggleHaptic: () => void;
   onToggleAnimation: () => void;
   onShowProfileForm: () => void;
@@ -32,8 +36,12 @@ const isVersionOlder = (current: string, server: string): boolean => {
   return false;
 };
 export function MyPageSettings({
+  soundEnabled,
+  bgmEnabled,
   hapticEnabled,
   animationEnabled,
+  onToggleSound,
+  onToggleBgm,
   onToggleHaptic,
   onToggleAnimation,
   onShowProfileForm,
@@ -154,6 +162,66 @@ export function MyPageSettings({
               />
             </svg>
           </button>
+          <div
+            className="my-page-settings-item my-page-settings-item-clickable"
+            onClick={onToggleSound}
+            data-vg-ignore="true"
+            role="button"
+            aria-pressed={soundEnabled}
+            tabIndex={0}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter' || e.key === ' ') {
+                e.preventDefault();
+                onToggleSound();
+              }
+            }}
+          >
+            <div className="my-page-settings-item-content">
+              <span className="my-page-settings-item-label">효과음</span>
+            </div>
+            <div className="my-page-settings-toggle-wrapper">
+              <div className="my-page-settings-toggle">
+                <input
+                  type="checkbox"
+                  checked={soundEnabled}
+                  readOnly
+                  aria-label="효과음 설정 제어"
+                  tabIndex={-1}
+                />
+                <span className="my-page-settings-toggle-slider"></span>
+              </div>
+            </div>
+          </div>
+          <div
+            className="my-page-settings-item my-page-settings-item-clickable"
+            onClick={onToggleBgm}
+            data-vg-ignore="true"
+            role="button"
+            aria-pressed={bgmEnabled}
+            tabIndex={0}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter' || e.key === ' ') {
+                e.preventDefault();
+                onToggleBgm();
+              }
+            }}
+          >
+            <div className="my-page-settings-item-content">
+              <span className="my-page-settings-item-label">배경음악 (BGM)</span>
+            </div>
+            <div className="my-page-settings-toggle-wrapper">
+              <div className="my-page-settings-toggle">
+                <input
+                  type="checkbox"
+                  checked={bgmEnabled}
+                  readOnly
+                  aria-label="배경음악 설정 제어"
+                  tabIndex={-1}
+                />
+                <span className="my-page-settings-toggle-slider"></span>
+              </div>
+            </div>
+          </div>
           <div
             className="my-page-settings-item my-page-settings-item-clickable"
             onClick={onToggleHaptic}

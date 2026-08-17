@@ -1,6 +1,7 @@
 // 범용 쿼티 키보드 (수학 및 일본어 퀴즈 모두 지원)
 import React, { FormEvent, useEffect, useRef } from 'react';
 import { vibrateShort } from '../utils/haptic';
+import { sound } from '../utils/sound';
 import './QwertyKeypad.css';
 
 interface QwertyKeypadProps {
@@ -20,8 +21,13 @@ const QWERTY_LAYOUT = [
   ['z', 'x', 'c', 'v', 'b', 'n', 'm'],
 ];
 
-// 숫자 키보드 레이아웃 (쿼티 스타일 - 가로로 배치)
-const NUMBER_LAYOUT = [['1', '2', '3', '4', '5', '6', '7', '8', '9', '0']];
+// 숫자 키패드 레이아웃 (3x4 그리드: 1~9, -, 0, backspace)
+const NUMBER_LAYOUT = [
+  ['1', '2', '3'],
+  ['4', '5', '6'],
+  ['7', '8', '9'],
+  ['-', '0', 'backspace'],
+];
 
 function QwertyKeypadComponent({
   onKeyPress,
@@ -49,6 +55,7 @@ function QwertyKeypadComponent({
       // Enter 키: 제출
       if (key === 'enter') {
         e.preventDefault();
+        sound.playKeypad(false);
         const fakeEvent = { preventDefault: () => {} } as FormEvent;
         onSubmit(fakeEvent);
         return;
@@ -57,6 +64,7 @@ function QwertyKeypadComponent({
       // Backspace 키: 백스페이스
       if (key === 'backspace') {
         e.preventDefault();
+        sound.playKeypad(true);
         onBackspace();
         return;
       }
@@ -64,6 +72,7 @@ function QwertyKeypadComponent({
       // Escape 또는 Delete 키: 지우기
       if (key === 'escape' || key === 'delete') {
         e.preventDefault();
+        sound.playKeypad(true);
         onClear();
         return;
       }
@@ -72,15 +81,18 @@ function QwertyKeypadComponent({
         // 숫자 모드: 숫자와 음수 기호만 허용
         if (key >= '0' && key <= '9') {
           e.preventDefault();
+          sound.playKeypad(false);
           onKeyPress(key);
         } else if (allowNegative && key === '-') {
           e.preventDefault();
+          sound.playKeypad(false);
           onKeyPress('-');
         }
       } else {
         // 텍스트 모드: 영문자만 허용
         if (key.length === 1 && /[a-z]/.test(key)) {
           e.preventDefault();
+          sound.playKeypad(false);
           onKeyPress(key);
         }
       }
@@ -95,6 +107,7 @@ function QwertyKeypadComponent({
   const handleKeyClick = (key: string) => {
     if (!disabled) {
       vibrateShort();
+      sound.playKeypad(false);
       onKeyPress(key);
     }
   };
@@ -102,6 +115,7 @@ function QwertyKeypadComponent({
   const handleBackspace = () => {
     if (!disabled) {
       vibrateShort();
+      sound.playKeypad(true);
       onBackspace();
     }
   };

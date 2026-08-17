@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { BaseModal } from './BaseModal';
 import './LastChanceModal.css';
 
@@ -25,18 +25,21 @@ export function LastChanceModal({
   onGiveUp,
   basePrice,
 }: LastChanceModalProps) {
-  const [timeLeft, setTimeLeft] = useState(10); // 자동 포기 카운트다운 (선택 사항)
+  const [timeLeft, setTimeLeft] = useState(10); // 자동 포기 카운트다운
   const [isAdLoading, setIsAdLoading] = useState(false);
+  const onGiveUpRef = useRef(onGiveUp);
+  onGiveUpRef.current = onGiveUp;
 
   useEffect(() => {
     if (isVisible) {
       setTimeLeft(10);
+      setIsAdLoading(false);
       const timer = setInterval(() => {
         setTimeLeft((prev) => {
           if (prev <= 1) {
             clearInterval(timer);
             // onGiveUp 호출은 렌더링 도중이 아닌, 비동기로 처리
-            setTimeout(() => onGiveUp(), 0);
+            setTimeout(() => onGiveUpRef.current(), 0);
             return 0;
           }
           return prev - 1;
@@ -44,7 +47,7 @@ export function LastChanceModal({
       }, 1000);
       return () => clearInterval(timer);
     }
-  }, [isVisible, onGiveUp]);
+  }, [isVisible]);
 
   const handleWatchAdClick = () => {
     if (isAdLoading) return;
@@ -62,6 +65,7 @@ export function LastChanceModal({
     <BaseModal
       isOpen={isVisible}
       onClose={onGiveUp}
+      closeOnOverlayClick={false}
       title={
         <div className="last-chance-header-content">
           <span className="last-chance-title-text">LAST CHANCE!</span>

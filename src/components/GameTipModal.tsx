@@ -153,13 +153,24 @@ export function GameTipModal({
           </div>
 
           <div className="gt-controls-area" data-vg-ignore="true">
-            <div
-              className="gt-checkbox-label"
+            <button
+              className="gt-checkbox-label back-button"
               onClick={onClose}
-              style={{ cursor: 'pointer', display: 'inline-flex' }}
+              aria-label="뒤로 가기"
+              data-action="back"
+              type="button"
+              style={{
+                cursor: 'pointer',
+                display: 'inline-flex',
+                background: 'none',
+                border: 'none',
+                font: 'inherit',
+                color: 'inherit',
+                padding: 0,
+              }}
             >
               <span>← 뒤로</span>
-            </div>
+            </button>
 
             <div className="gt-button-group" data-vg-ignore="true">
               <button

@@ -2,6 +2,8 @@ import { useState, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { urls } from '@/utils/navigation';
 import { useGameStore } from '@/stores/useGameStore';
+import { useSettingsStore } from '@/stores/useSettingsStore';
+import { sound, bgm, type BgmTheme } from '@/utils/sound';
 import { AlertModal } from '@/components/AlertModal';
 import { ConfirmModal } from '@/components/ConfirmModal';
 import { CyclePromotionModal } from '@/components/CyclePromotionModal';
@@ -38,6 +40,9 @@ export function NotificationPlayground() {
   const itemFeedbackRef = useRef<ItemFeedbackRef>(null);
   const [showCountdown, setShowCountdown] = useState(false);
   const [showSafetyRope, setShowSafetyRope] = useState(false);
+  const [activeBgm, setActiveBgm] = useState<BgmTheme | null>(null);
+
+  const { soundEnabled, setSoundEnabled } = useSettingsStore();
 
   // Store access for GameOverlay effects
   const {
@@ -224,6 +229,275 @@ export function NotificationPlayground() {
           </button>
           <button onClick={() => triggerToast('Mineral +500 (Simulated)')}>
             Simulate Ad Success
+          </button>
+        </div>
+
+        {/* Group 6: Sound Effects (SFX) */}
+        <div className="playground-section">
+          <h4>6. Sound Effects (SFX) 🔊</h4>
+          <button
+            style={{
+              backgroundColor: soundEnabled ? 'rgba(0, 200, 83, 0.2)' : 'rgba(255, 61, 0, 0.2)',
+              borderColor: soundEnabled ? 'var(--color-success)' : 'var(--color-error)',
+              fontWeight: 'bold',
+            }}
+            onClick={() => {
+              const next = !soundEnabled;
+              setSoundEnabled(next);
+              if (next) sound.playTap();
+              triggerToast(`효과음 설정: ${next ? 'ON' : 'OFF'}`);
+            }}
+          >
+            🔊 효과음 마스터 {soundEnabled ? '(ON)' : '(OFF)'}
+          </button>
+          <button onClick={() => sound.playKeypad(false)}>⌨️ Keypad: Tap</button>
+          <button onClick={() => sound.playKeypad(true)}>⌫ Keypad: Backspace</button>
+          <button onClick={() => sound.playTap()}>👆 UI: Tap</button>
+          <button onClick={() => sound.playBack()}>🔙 뒤로가기: Back Tap</button>
+          <button onClick={() => sound.playEmptyTap()}>💨 빈 공간: Chalk Tap</button>
+          <button onClick={() => sound.playCorrect()}>✅ 정답: 3-Chime (C-E-G)</button>
+          <button onClick={() => sound.playCombo(3)}>🔥 콤보: 3 Combo</button>
+          <button onClick={() => sound.playCombo(7)}>🔥 콤보: 7 Combo</button>
+          <button onClick={() => sound.playCombo(10)}>🔥 콤보: 10 Combo (High)</button>
+          <button onClick={() => sound.playWrong()}>❌ 오답: Buzzer</button>
+          <button onClick={() => sound.playCountdown(3)}>⏳ 카운트다운: 3, 2, 1</button>
+          <button onClick={() => sound.playCountdown(0)}>🚀 카운트다운: GO! (Chord)</button>
+          <button onClick={() => sound.playFever()}>⚡ 피버 / 모멘텀 (Shimmer)</button>
+          <button onClick={() => sound.playStageClear()}>🏆 스테이지 클리어 (Fanfare)</button>
+          <button onClick={() => sound.playGameOver()}>💀 게임 오버 (Jingle)</button>
+          <button onClick={() => sound.playScoreCount()}>🪙 점수 롤링 (Count-up)</button>
+          <button onClick={() => sound.playRevive()}>💖 부활 (Revive Charge)</button>
+          <button onClick={() => sound.playStaminaWarning()}>💓 스태미나 위기 (Heartbeat)</button>
+        </div>
+
+        {/* Group 7: Procedural BGM (0Byte 배경음악) */}
+        <div className="playground-section">
+          <h4>7. Procedural BGM (0Byte) 🎵</h4>
+          <button
+            style={{
+              backgroundColor:
+                activeBgm === 'brain_age' ? 'rgba(0, 200, 83, 0.3)' : 'var(--color-bg-secondary)',
+              borderColor:
+                activeBgm === 'brain_age' ? 'var(--color-success)' : 'var(--color-border)',
+              fontWeight: 'bold',
+            }}
+            onClick={() => {
+              if (activeBgm === 'brain_age') {
+                bgm.stop();
+                setActiveBgm(null);
+                triggerToast('BGM 정지');
+              } else {
+                bgm.play('brain_age');
+                setActiveBgm('brain_age');
+                triggerToast('🧠 두뇌 트레이닝 (Brain Age Jazz) 재생 중');
+              }
+            }}
+          >
+            🧠{' '}
+            {activeBgm === 'brain_age'
+              ? '두뇌 트레이닝 (재생 중 ⏸)'
+              : '두뇌 트레이닝 (Brain Age Jazz 104 BPM)'}
+          </button>
+          <button
+            style={{
+              backgroundColor:
+                activeBgm === 'celeste' ? 'rgba(0, 200, 83, 0.3)' : 'var(--color-bg-secondary)',
+              borderColor: activeBgm === 'celeste' ? 'var(--color-success)' : 'var(--color-border)',
+              fontWeight: 'bold',
+            }}
+            onClick={() => {
+              if (activeBgm === 'celeste') {
+                bgm.stop();
+                setActiveBgm(null);
+                triggerToast('BGM 정지');
+              } else {
+                bgm.play('celeste');
+                setActiveBgm('celeste');
+                triggerToast('🧗‍♀️ 셀레스트 등반 (Celeste First Steps) 재생 중');
+              }
+            }}
+          >
+            🧗‍♀️{' '}
+            {activeBgm === 'celeste'
+              ? '셀레스트 등반 (재생 중 ⏸)'
+              : "셀레스트 등반 ('First Steps' 118 BPM)"}
+          </button>
+          <button
+            style={{
+              backgroundColor:
+                activeBgm === 'climb' ? 'rgba(0, 200, 83, 0.3)' : 'var(--color-bg-secondary)',
+              borderColor: activeBgm === 'climb' ? 'var(--color-success)' : 'var(--color-border)',
+              fontWeight: 'bold',
+            }}
+            onClick={() => {
+              if (activeBgm === 'climb') {
+                bgm.stop();
+                setActiveBgm(null);
+                triggerToast('BGM 정지');
+              } else {
+                bgm.play('climb');
+                setActiveBgm('climb');
+                triggerToast('🧗‍♂️ 인게임 등반: 클라이머 펄스 (Climber Pulse) 재생 중');
+              }
+            }}
+          >
+            🧗‍♂️{' '}
+            {activeBgm === 'climb'
+              ? '클라이머 펄스 (재생 중 ⏸)'
+              : '클라이머 펄스 (Climber Pulse 112 BPM)'}
+          </button>
+          <button
+            style={{
+              backgroundColor:
+                activeBgm === 'shop' ? 'rgba(0, 200, 83, 0.3)' : 'var(--color-bg-secondary)',
+              borderColor: activeBgm === 'shop' ? 'var(--color-success)' : 'var(--color-border)',
+              fontWeight: 'bold',
+            }}
+            onClick={() => {
+              if (activeBgm === 'shop') {
+                bgm.stop();
+                setActiveBgm(null);
+                triggerToast('BGM 정지');
+              } else {
+                bgm.play('shop');
+                setActiveBgm('shop');
+                triggerToast('🏪 산악 만물상 (Cozy Outfitter Shop) 재생 중');
+              }
+            }}
+          >
+            🏪{' '}
+            {activeBgm === 'shop'
+              ? '산악 만물상 (재생 중 ⏸)'
+              : '산악 만물상 (Cozy Outfitter Shop 100 BPM ⭐)'}
+          </button>
+          <button
+            style={{
+              backgroundColor:
+                activeBgm === 'victory' ? 'rgba(255, 193, 7, 0.3)' : 'var(--color-bg-secondary)',
+              borderColor: activeBgm === 'victory' ? 'var(--color-warning)' : 'var(--color-border)',
+              fontWeight: 'bold',
+            }}
+            onClick={() => {
+              if (activeBgm === 'victory') {
+                bgm.stop();
+                setActiveBgm(null);
+                triggerToast('BGM 정지');
+              } else {
+                bgm.play('victory');
+                setActiveBgm('victory');
+                triggerToast('🏆 정상 정복 & 결과 (Summit Victory) 재생 중');
+              }
+            }}
+          >
+            🏆{' '}
+            {activeBgm === 'victory'
+              ? '정상 정복 결과 (재생 중 ⏸)'
+              : '정상 정복 결과 (Summit Victory 100 BPM ⭐)'}
+          </button>
+          <button
+            style={{
+              backgroundColor:
+                activeBgm === 'crisis' ? 'rgba(255, 61, 0, 0.3)' : 'var(--color-bg-secondary)',
+              borderColor: activeBgm === 'crisis' ? 'var(--color-error)' : 'var(--color-border)',
+              fontWeight: 'bold',
+            }}
+            onClick={() => {
+              if (activeBgm === 'crisis') {
+                bgm.stop();
+                setActiveBgm(null);
+                triggerToast('BGM 정지');
+              } else {
+                bgm.play('crisis');
+                setActiveBgm('crisis');
+                triggerToast('💓 스태미나 위기 (Crisis Heartbeat) 재생 중');
+              }
+            }}
+          >
+            💓{' '}
+            {activeBgm === 'crisis'
+              ? '스태미나 위기 (재생 중 ⏸)'
+              : '스태미나 위기 (Crisis Heartbeat 126 BPM ⭐)'}
+          </button>
+          <button
+            style={{
+              backgroundColor:
+                activeBgm === 'chill' ? 'rgba(0, 200, 83, 0.25)' : 'var(--color-bg-secondary)',
+              borderColor: activeBgm === 'chill' ? 'var(--color-success)' : 'var(--color-border)',
+              fontWeight: activeBgm === 'chill' ? 'bold' : 'normal',
+            }}
+            onClick={() => {
+              if (activeBgm === 'chill') {
+                bgm.stop();
+                setActiveBgm(null);
+                triggerToast('BGM 정지');
+              } else {
+                bgm.play('chill');
+                setActiveBgm('chill');
+                triggerToast('🏔️ 산악 앰비언트 (Chill) 재생 중');
+              }
+            }}
+          >
+            🏔️{' '}
+            {activeBgm === 'chill' ? '산악 앰비언트 (재생 중 ⏸)' : '산악 앰비언트 (Mountain Chill)'}
+          </button>
+          <button
+            style={{
+              backgroundColor:
+                activeBgm === 'arcade' ? 'rgba(0, 200, 83, 0.25)' : 'var(--color-bg-secondary)',
+              borderColor: activeBgm === 'arcade' ? 'var(--color-success)' : 'var(--color-border)',
+              fontWeight: activeBgm === 'arcade' ? 'bold' : 'normal',
+            }}
+            onClick={() => {
+              if (activeBgm === 'arcade') {
+                bgm.stop();
+                setActiveBgm(null);
+                triggerToast('BGM 정지');
+              } else {
+                bgm.play('arcade');
+                setActiveBgm('arcade');
+                triggerToast('👾 레트로 아케이드 (Chiptune) 재생 중');
+              }
+            }}
+          >
+            👾{' '}
+            {activeBgm === 'arcade'
+              ? '레트로 아케이드 (재생 중 ⏸)'
+              : '레트로 아케이드 (Retro Chiptune)'}
+          </button>
+          <button
+            style={{
+              backgroundColor:
+                activeBgm === 'puzzle' ? 'rgba(0, 200, 83, 0.25)' : 'var(--color-bg-secondary)',
+              borderColor: activeBgm === 'puzzle' ? 'var(--color-success)' : 'var(--color-border)',
+              fontWeight: activeBgm === 'puzzle' ? 'bold' : 'normal',
+            }}
+            onClick={() => {
+              if (activeBgm === 'puzzle') {
+                bgm.stop();
+                setActiveBgm(null);
+                triggerToast('BGM 정지');
+              } else {
+                bgm.play('puzzle');
+                setActiveBgm('puzzle');
+                triggerToast('🧩 퀴즈 포커스 (Quiz Brain Focus) 재생 중');
+              }
+            }}
+          >
+            🧩{' '}
+            {activeBgm === 'puzzle' ? '퀴즈 포커스 (재생 중 ⏸)' : '퀴즈 포커스 (Quiz Brain Focus)'}
+          </button>
+          <button
+            style={{
+              backgroundColor: 'rgba(255, 61, 0, 0.15)',
+              borderColor: 'var(--color-error)',
+            }}
+            onClick={() => {
+              bgm.stop();
+              setActiveBgm(null);
+              triggerToast('⏹️ BGM 정지');
+            }}
+          >
+            ⏹️ BGM 전체 끄기 (Stop)
           </button>
         </div>
       </div>

@@ -1,13 +1,21 @@
 import { useState, useCallback, useEffect } from 'react';
 import { useQuizStore } from '@/stores/useQuizStore';
 import { useGameStore } from '@/stores/useGameStore';
-
 import { quizEventBus } from '@/lib/eventBus';
 
 interface UseQuizGameplayProps {
   setToastValue: (val: string) => void;
 }
 
+/**
+ * 인게임 특수 액션 및 생명주기 제어 훅 (일시정지, 라스트 스퍼트, 안전로프, 카운트다운)
+ * @listens QUIZ:LAST_SPURT
+ * @listens QUIZ:SAFETY_ROPE_USED
+ * @listens QUIZ:COUNTDOWN_COMPLETE
+ * @emits QUIZ:UI_MODAL_TOGGLE
+ * @emits QUIZ:NEXT_QUESTION_REQUESTED
+ * @emits QUIZ:GAME_OVER
+ */
 export function useQuizGameplay({ setToastValue }: UseQuizGameplayProps) {
   const [remainingPauses, setRemainingPauses] = useState(3);
   const [timerResetKey, setTimerResetKey] = useState(0);
@@ -36,13 +44,14 @@ export function useQuizGameplay({ setToastValue }: UseQuizGameplayProps) {
     quizEventBus.emit('QUIZ:GAME_OVER', { reason: 'manual_exit' });
   }, []);
 
+  /**
+   * 라스트 스퍼트 발동 핸들러: 시간 15초 리셋, 콤보 +5(피버 모드 즉시 돌입), 슬라이드 토스트
+   */
   const handleLastSpurt = useCallback(() => {
     useQuizStore.getState().setTimeLimit(15);
     for (let i = 0; i < 5; i++) incrementCombo();
 
     setToastValue('🔥 LAST SPURT! +15s 🔥');
-    // NOTE: Slide toast animation is still handled via direct hook/prop for now
-    // as it's a complex animation state.
     setTimerResetKey((prev) => prev + 1);
   }, [incrementCombo, setToastValue]);
 

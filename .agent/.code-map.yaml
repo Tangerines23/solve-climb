@@ -1,5 +1,5 @@
 project: solve-climb
-generatedAt: '2026-08-12T10:19:01.955Z'
+generatedAt: '2026-08-17T09:34:02.370Z'
 files:
   src/App.tsx:
     imports:
@@ -18,6 +18,7 @@ files:
       - '@/utils/supabaseClient'
       - '@/utils/auth'
       - '@/components/GlobalToastContainer'
+      - '@/components/GlobalBgmManager'
     exports:
       - name: App
         returns: import("C:/Users/ghkdd/gemini-projects/solve-climb/node_modules/@types/react/jsx-runtime").JSX.Element
@@ -340,6 +341,7 @@ files:
     imports:
       - ./CountdownOverlay.css
       - '@/lib/eventBus'
+      - '@/utils/sound'
     state:
       - count
     exports:
@@ -349,19 +351,24 @@ files:
         returns: import("C:/Users/ghkdd/gemini-projects/solve-climb/node_modules/@types/react/jsx-runtime").JSX.Element | null
         calls:
           - setCount
+          - bgm.stop
+          - sound.playCountdown
           - setInterval
           - clearInterval
+          - bgm.play
           - setTimeout
           - quizEventBus.emit
   src/components/CustomKeypad.tsx:
     imports:
       - ../utils/haptic
+      - ../utils/sound
       - ../constants/ui
       - ./CustomKeypad.css
     handlers:
       - name: handleAction
         calls:
           - vibrateShort
+          - sound.playKeypad
           - action
       - name: handleNumberClick
         calls:
@@ -516,6 +523,23 @@ files:
           - getTipData
           - onStart
           - setIsBackpackOpen
+  src/components/GlobalBgmManager.tsx:
+    imports:
+      - '@/stores/useSettingsStore'
+      - '@/utils/sound'
+    exports:
+      - name: GlobalBgmManager
+        returns: 'null'
+        description: |-
+          전역 BGM 라우트 관리자 컴포넌트
+          - 페이지 경로 및 설정 변경을 감지하여 적절한 BGM을 자동 전환
+          - 로비 탭 간 이동 시에는 끊김 없이 연속 재생 유지
+        calls:
+          - useLocation
+          - useSettingsStore
+          - bgm.stop
+          - path.startsWith
+          - bgm.play
   src/components/GlobalLoadingIndicator.tsx:
     imports:
       - ../stores/useLoadingStore
@@ -695,11 +719,11 @@ files:
         returns: import("C:/Users/ghkdd/gemini-projects/solve-climb/node_modules/@types/react/jsx-runtime").JSX.Element
         calls:
           - setTimeLeft
+          - setIsAdLoading
           - setInterval
           - clearInterval
           - setTimeout
-          - onGiveUp
-          - setIsAdLoading
+          - onGiveUpRef.current
           - onWatchAd
   src/components/LevelListCard.tsx:
     imports:
@@ -863,15 +887,18 @@ files:
   src/components/QwertyKeypad.tsx:
     imports:
       - ../utils/haptic
+      - ../utils/sound
       - ./QwertyKeypad.css
     handlers:
       - name: handleKeyClick
         calls:
           - vibrateShort
+          - sound.playKeypad
           - onKeyPress
       - name: handleBackspace
         calls:
           - vibrateShort
+          - sound.playKeypad
           - onBackspace
     exports:
       - name: QwertyKeypad
@@ -1453,6 +1480,7 @@ files:
     imports:
       - ../config/app
       - ../stores/useProfileStore
+      - '@/utils/sound'
     exports:
       - name: useCustomBackNavigation
         description: |-
@@ -1465,6 +1493,7 @@ files:
         calls:
           - useNavigate
           - useLocation
+          - sound.playBack
           - mainPages.includes
           - navigate
           - setTimeout
@@ -2008,6 +2037,7 @@ files:
       - '@/stores/useGameStore'
       - '@/hooks/useCountUp'
       - '@/services/historyService'
+      - '@/utils/sound'
       - '@/services'
     state:
       - scoreSubmitted
@@ -2060,6 +2090,11 @@ files:
           - Math.floor
           - validateFloatParam
           - useGameStore.setState
+          - sound.playStageClear
+          - bgm.play
+          - sound.playGameOver
+          - bgm.stop
+          - sound.playScoreCount
           - Array.from
           - Math.random
           - createSafeStorageKey
@@ -2390,6 +2425,7 @@ files:
     imports:
       - ../constants/game
       - ../services
+      - ../utils/sound
     exports:
       - name: useGameStore
         kind: const
@@ -3821,6 +3857,7 @@ files:
     imports:
       - ../../stores/useGameStore
       - ../../features/quiz/contexts/QuizContext
+      - ../../utils/sound
     state:
       - prevFever
       - splashText
@@ -3832,6 +3869,7 @@ files:
           - useGameStore
           - setSplashText
           - setPrevFever
+          - sound.playFever
           - setSplashKey
           - setTimeout
           - clearTimeout
@@ -4142,6 +4180,728 @@ files:
         kind: const
       - name: ButtonProps
         kind: interface
+  src/utils/sound/audioContext.ts:
+    imports:
+      - '@/stores/useSettingsStore'
+    exports:
+      - name: audioContextManager
+        kind: const
+  src/utils/sound/bgmEngine.ts:
+    imports:
+      - ./audioContext
+    exports:
+      - name: bgm
+        kind: const
+      - name: BgmEngine
+        type: class
+        methods:
+          - name: getGraph
+            returns: '{ ctx: AudioContext; destination: AudioNode; } | null'
+            calls:
+              - audioContextManager.isEnabled
+              - audioContextManager.getContext
+              - ctx.createBiquadFilter
+              - ctx.createGain
+              - this.masterFilter.connect
+              - this.masterGain.connect
+          - name: play
+            params:
+              theme: import("C:/Users/ghkdd/gemini-projects/solve-climb/src/utils/sound/bgmEngine").BgmTheme
+              muffled: boolean
+            calls:
+              - this.getGraph
+              - this.setMuffled
+              - this.stop
+              - this.masterGain.gain.cancelScheduledValues
+              - this.masterGain.gain.setValueAtTime
+              - this.masterGain.gain.linearRampToValueAtTime
+              - this.masterFilter.frequency.cancelScheduledValues
+              - this.masterFilter.frequency.setValueAtTime
+              - this.startScheduler
+          - name: stop
+            params:
+              fadeDuration: number
+            calls:
+              - window.clearInterval
+              - this.getGraph
+              - this.masterGain.gain.cancelScheduledValues
+              - this.masterGain.gain.setValueAtTime
+              - this.masterGain.gain.linearRampToValueAtTime
+              - setTimeout
+              - this.activeNodes.forEach
+              - osc.stop
+              - osc.disconnect
+              - gain.disconnect
+          - name: setVolume
+            params:
+              volume: number
+            calls:
+              - Math.max
+              - Math.min
+              - this.getGraph
+              - this.masterGain.gain.setValueAtTime
+              - this.masterGain.gain.linearRampToValueAtTime
+          - name: setMuffled
+            params:
+              muffled: boolean
+              duration: number
+            calls:
+              - this.getGraph
+              - this.masterFilter.frequency.cancelScheduledValues
+              - this.masterFilter.frequency.setValueAtTime
+              - this.masterFilter.frequency.exponentialRampToValueAtTime
+              - this.masterGain.gain.cancelScheduledValues
+              - this.masterGain.gain.setValueAtTime
+              - this.masterGain.gain.linearRampToValueAtTime
+          - name: getIsMuffled
+            returns: boolean
+          - name: getVolume
+            returns: number
+          - name: getCurrentTheme
+            returns: import("C:/Users/ghkdd/gemini-projects/solve-climb/src/utils/sound/bgmEngine").BgmTheme | null
+          - name: isPlaying
+            returns: boolean
+          - name: startScheduler
+            calls:
+              - window.clearInterval
+              - window.setInterval
+              - this.scheduleLoop
+          - name: scheduleLoop
+            calls:
+              - this.getGraph
+              - this.scheduleBrainAgeStep
+              - this.scheduleCelesteStep
+              - this.scheduleClimbStep
+              - this.scheduleShopStep
+              - this.scheduleVictoryStep
+              - this.scheduleCrisisStep
+              - this.scheduleChillStep
+              - this.scheduleArcadeStep
+              - this.schedulePuzzleStep
+          - name: scheduleBrainAgeStep
+            params:
+              ctx: AudioContext
+              destination: AudioNode
+              time: number
+              step: number
+            calls:
+              - Math.floor
+              - ctx.createOscillator
+              - ctx.createGain
+              - ctx.createBiquadFilter
+              - bOsc.frequency.setValueAtTime
+              - bFilter.frequency.setValueAtTime
+              - bGain.gain.setValueAtTime
+              - bGain.gain.linearRampToValueAtTime
+              - bGain.gain.exponentialRampToValueAtTime
+              - bOsc.connect
+              - bFilter.connect
+              - bGain.connect
+              - bOsc.start
+              - bOsc.stop
+              - this.trackActiveNode
+              - chordNotes.forEach
+              - pOsc.frequency.setValueAtTime
+              - pFilter.frequency.setValueAtTime
+              - pGain.gain.setValueAtTime
+              - pGain.gain.linearRampToValueAtTime
+              - pGain.gain.exponentialRampToValueAtTime
+              - pOsc.connect
+              - pFilter.connect
+              - pGain.connect
+              - pOsc.start
+              - pOsc.stop
+              - hOsc.frequency.setValueAtTime
+              - hFilter.frequency.setValueAtTime
+              - hGain.gain.setValueAtTime
+              - hGain.gain.linearRampToValueAtTime
+              - hGain.gain.exponentialRampToValueAtTime
+              - hOsc.connect
+              - hFilter.connect
+              - hGain.connect
+              - hOsc.start
+              - hOsc.stop
+          - name: scheduleCelesteStep
+            params:
+              ctx: AudioContext
+              destination: AudioNode
+              time: number
+              step: number
+            calls:
+              - Math.floor
+              - ctx.createOscillator
+              - ctx.createGain
+              - kickOsc.frequency.setValueAtTime
+              - kickOsc.frequency.exponentialRampToValueAtTime
+              - kickGain.gain.setValueAtTime
+              - kickGain.gain.linearRampToValueAtTime
+              - kickGain.gain.exponentialRampToValueAtTime
+              - kickOsc.connect
+              - kickGain.connect
+              - kickOsc.start
+              - kickOsc.stop
+              - this.trackActiveNode
+              - ctx.createBiquadFilter
+              - pOsc.frequency.setValueAtTime
+              - pFilter.frequency.setValueAtTime
+              - pGain.gain.setValueAtTime
+              - pGain.gain.linearRampToValueAtTime
+              - pGain.gain.exponentialRampToValueAtTime
+              - pOsc.connect
+              - pFilter.connect
+              - pGain.connect
+              - pOsc.start
+              - pOsc.stop
+              - sOsc.frequency.setValueAtTime
+              - sFilter.frequency.setValueAtTime
+              - sGain.gain.setValueAtTime
+              - sGain.gain.linearRampToValueAtTime
+              - sGain.gain.exponentialRampToValueAtTime
+              - sOsc.connect
+              - sFilter.connect
+              - sGain.connect
+              - sOsc.start
+              - sOsc.stop
+              - lOsc.frequency.setValueAtTime
+              - lFilter.frequency.setValueAtTime
+              - lFilter.frequency.linearRampToValueAtTime
+              - lGain.gain.setValueAtTime
+              - lGain.gain.linearRampToValueAtTime
+              - lGain.gain.exponentialRampToValueAtTime
+              - lOsc.connect
+              - lFilter.connect
+              - lGain.connect
+              - lOsc.start
+              - lOsc.stop
+          - name: scheduleClimbStep
+            params:
+              ctx: AudioContext
+              destination: AudioNode
+              time: number
+              step: number
+            calls:
+              - Math.floor
+              - ctx.createOscillator
+              - ctx.createGain
+              - kickOsc.frequency.setValueAtTime
+              - kickOsc.frequency.exponentialRampToValueAtTime
+              - kickGain.gain.setValueAtTime
+              - kickGain.gain.linearRampToValueAtTime
+              - kickGain.gain.exponentialRampToValueAtTime
+              - kickOsc.connect
+              - kickGain.connect
+              - kickOsc.start
+              - kickOsc.stop
+              - this.trackActiveNode
+              - ctx.createBiquadFilter
+              - bOsc.frequency.setValueAtTime
+              - bFilter.frequency.setValueAtTime
+              - bGain.gain.setValueAtTime
+              - bGain.gain.linearRampToValueAtTime
+              - bGain.gain.exponentialRampToValueAtTime
+              - bOsc.connect
+              - bFilter.connect
+              - bGain.connect
+              - bOsc.start
+              - bOsc.stop
+              - aOsc.frequency.setValueAtTime
+              - aFilter.frequency.setValueAtTime
+              - aFilter.frequency.linearRampToValueAtTime
+              - aGain.gain.setValueAtTime
+              - aGain.gain.linearRampToValueAtTime
+              - aGain.gain.exponentialRampToValueAtTime
+              - aOsc.connect
+              - aFilter.connect
+              - aGain.connect
+              - aOsc.start
+              - aOsc.stop
+              - chordNotes.forEach
+              - sOsc.frequency.setValueAtTime
+              - sFilter.frequency.setValueAtTime
+              - sGain.gain.setValueAtTime
+              - sGain.gain.linearRampToValueAtTime
+              - sGain.gain.exponentialRampToValueAtTime
+              - sOsc.connect
+              - sFilter.connect
+              - sGain.connect
+              - sOsc.start
+              - sOsc.stop
+          - name: scheduleShopStep
+            params:
+              ctx: AudioContext
+              destination: AudioNode
+              time: number
+              step: number
+            calls:
+              - Math.floor
+              - currentBassEvents.find
+              - ctx.createOscillator
+              - ctx.createGain
+              - ctx.createBiquadFilter
+              - bOsc.frequency.setValueAtTime
+              - bFilter.frequency.setValueAtTime
+              - bGain.gain.setValueAtTime
+              - bGain.gain.linearRampToValueAtTime
+              - bGain.gain.exponentialRampToValueAtTime
+              - bOsc.connect
+              - bFilter.connect
+              - bGain.connect
+              - bOsc.start
+              - bOsc.stop
+              - this.trackActiveNode
+              - chordNotes.forEach
+              - uOsc.frequency.setValueAtTime
+              - uFilter.frequency.setValueAtTime
+              - uGain.gain.setValueAtTime
+              - uGain.gain.linearRampToValueAtTime
+              - uGain.gain.exponentialRampToValueAtTime
+              - uOsc.connect
+              - uFilter.connect
+              - uGain.connect
+              - uOsc.start
+              - uOsc.stop
+              - mOsc.frequency.setValueAtTime
+              - mFilter.frequency.setValueAtTime
+              - mGain.gain.setValueAtTime
+              - mGain.gain.linearRampToValueAtTime
+              - mGain.gain.exponentialRampToValueAtTime
+              - mOsc.connect
+              - mFilter.connect
+              - mGain.connect
+              - mOsc.start
+              - mOsc.stop
+              - wOsc.frequency.setValueAtTime
+              - wFilter.frequency.setValueAtTime
+              - wGain.gain.setValueAtTime
+              - wGain.gain.linearRampToValueAtTime
+              - wGain.gain.exponentialRampToValueAtTime
+              - wOsc.connect
+              - wFilter.connect
+              - wGain.connect
+              - wOsc.start
+              - wOsc.stop
+          - name: scheduleVictoryStep
+            params:
+              ctx: AudioContext
+              destination: AudioNode
+              time: number
+              step: number
+            calls:
+              - Math.floor
+              - chord.forEach
+              - ctx.createOscillator
+              - ctx.createGain
+              - ctx.createBiquadFilter
+              - osc.frequency.setValueAtTime
+              - filter.frequency.setValueAtTime
+              - filter.frequency.linearRampToValueAtTime
+              - gain.gain.setValueAtTime
+              - gain.gain.linearRampToValueAtTime
+              - gain.gain.exponentialRampToValueAtTime
+              - osc.connect
+              - filter.connect
+              - gain.connect
+              - osc.start
+              - osc.stop
+              - this.trackActiveNode
+              - hOsc.frequency.setValueAtTime
+              - hGain.gain.setValueAtTime
+              - hGain.gain.linearRampToValueAtTime
+              - hGain.gain.exponentialRampToValueAtTime
+              - hOsc.connect
+              - hGain.connect
+              - hOsc.start
+              - hOsc.stop
+          - name: scheduleCrisisStep
+            params:
+              ctx: AudioContext
+              destination: AudioNode
+              time: number
+              step: number
+            calls:
+              - ctx.createOscillator
+              - ctx.createGain
+              - ctx.createBiquadFilter
+              - hOsc.frequency.setValueAtTime
+              - hOsc.frequency.exponentialRampToValueAtTime
+              - hFilter.frequency.setValueAtTime
+              - hGain.gain.setValueAtTime
+              - hGain.gain.linearRampToValueAtTime
+              - hGain.gain.exponentialRampToValueAtTime
+              - hOsc.connect
+              - hFilter.connect
+              - hGain.connect
+              - hOsc.start
+              - hOsc.stop
+              - this.trackActiveNode
+              - subOsc.frequency.setValueAtTime
+              - subOsc.frequency.exponentialRampToValueAtTime
+              - subGain.gain.setValueAtTime
+              - subGain.gain.linearRampToValueAtTime
+              - subGain.gain.exponentialRampToValueAtTime
+              - subOsc.connect
+              - subGain.connect
+              - subOsc.start
+              - subOsc.stop
+              - tensionChord.forEach
+              - osc.frequency.setValueAtTime
+              - filter.frequency.setValueAtTime
+              - filter.frequency.linearRampToValueAtTime
+              - gain.gain.setValueAtTime
+              - gain.gain.linearRampToValueAtTime
+              - gain.gain.exponentialRampToValueAtTime
+              - osc.connect
+              - filter.connect
+              - gain.connect
+              - osc.start
+              - osc.stop
+              - tOsc.frequency.setValueAtTime
+              - tFilter.frequency.setValueAtTime
+              - tGain.gain.setValueAtTime
+              - tGain.gain.linearRampToValueAtTime
+              - tGain.gain.exponentialRampToValueAtTime
+              - tOsc.connect
+              - tFilter.connect
+              - tGain.connect
+              - tOsc.start
+              - tOsc.stop
+          - name: scheduleChillStep
+            params:
+              ctx: AudioContext
+              destination: AudioNode
+              time: number
+              chordIndex: number
+            calls:
+              - chord.forEach
+              - ctx.createOscillator
+              - ctx.createGain
+              - ctx.createBiquadFilter
+              - osc.frequency.setValueAtTime
+              - filter.frequency.setValueAtTime
+              - filter.frequency.linearRampToValueAtTime
+              - gain.gain.setValueAtTime
+              - gain.gain.linearRampToValueAtTime
+              - gain.gain.exponentialRampToValueAtTime
+              - osc.connect
+              - filter.connect
+              - gain.connect
+              - osc.start
+              - osc.stop
+              - this.trackActiveNode
+              - melodyPair.forEach
+              - mOsc.frequency.setValueAtTime
+              - mFilter.frequency.setValueAtTime
+              - mGain.gain.setValueAtTime
+              - mGain.gain.linearRampToValueAtTime
+              - mGain.gain.exponentialRampToValueAtTime
+              - mOsc.connect
+              - mFilter.connect
+              - mGain.connect
+              - mOsc.start
+              - mOsc.stop
+              - spOsc.frequency.setValueAtTime
+              - spGain.gain.setValueAtTime
+              - spGain.gain.linearRampToValueAtTime
+              - spGain.gain.exponentialRampToValueAtTime
+              - spOsc.connect
+              - spGain.connect
+              - spOsc.start
+              - spOsc.stop
+          - name: scheduleArcadeStep
+            params:
+              ctx: AudioContext
+              destination: AudioNode
+              time: number
+              step: number
+            calls:
+              - ctx.createOscillator
+              - ctx.createGain
+              - osc.frequency.setValueAtTime
+              - gain.gain.setValueAtTime
+              - gain.gain.linearRampToValueAtTime
+              - gain.gain.exponentialRampToValueAtTime
+              - osc.connect
+              - gain.connect
+              - osc.start
+              - osc.stop
+              - this.trackActiveNode
+          - name: schedulePuzzleStep
+            params:
+              ctx: AudioContext
+              destination: AudioNode
+              time: number
+              step: number
+            calls:
+              - Math.floor
+              - chord.forEach
+              - ctx.createOscillator
+              - ctx.createGain
+              - ctx.createBiquadFilter
+              - osc.frequency.setValueAtTime
+              - filter.frequency.setValueAtTime
+              - gain.gain.setValueAtTime
+              - gain.gain.linearRampToValueAtTime
+              - gain.gain.exponentialRampToValueAtTime
+              - osc.connect
+              - filter.connect
+              - gain.connect
+              - osc.start
+              - osc.stop
+              - this.trackActiveNode
+              - filter.frequency.linearRampToValueAtTime
+          - name: trackActiveNode
+            params:
+              osc: OscillatorNode
+              gain: GainNode
+            calls:
+              - this.activeNodes.push
+              - this.activeNodes.shift
+          - name: dispose
+            calls:
+              - this.stop
+      - name: BgmTheme
+        kind: type
+  src/utils/sound/globalTapListener.ts:
+    exports:
+      - name: setupGlobalTapListener
+        params:
+          playTapCallback: () => void
+          playEmptyTapCallback: (() => void) | undefined
+          playBackCallback: (() => void) | undefined
+        returns: () => void
+        calls:
+          - pathname.startsWith
+          - hash.includes
+          - search.includes
+          - target.closest
+          - Date.now
+          - (target.textContent || '').trim
+          - textContent.includes
+          - Boolean
+          - playBackCallback
+          - playTapCallback
+          - playEmptyTapCallback
+          - document.addEventListener
+          - document.removeEventListener
+  src/utils/sound/soundEngine.ts:
+    imports:
+      - ./audioContext
+      - ./globalTapListener
+      - ./synthesizers
+    exports:
+      - name: sound
+        kind: const
+      - name: SoundEngine
+        type: class
+        methods:
+          - name: getGraph
+            returns: '{ ctx: AudioContext; destination: AudioNode; } | null'
+            calls:
+              - audioContextManager.isEnabled
+              - audioContextManager.getContext
+              - audioContextManager.getMasterGain
+          - name: playKeypad
+            params:
+              isBackspace: boolean
+            calls:
+              - this.getGraph
+              - playSweep
+          - name: playCorrect
+            calls:
+              - this.getGraph
+              - playChord
+          - name: playCombo
+            params:
+              combo: number
+            calls:
+              - this.getGraph
+              - Math.min
+              - Math.max
+              - scale.at
+              - playChord
+          - name: playWrong
+            calls:
+              - this.getGraph
+              - playFilteredTone
+          - name: playCountdown
+            params:
+              count: number
+            calls:
+              - this.getGraph
+              - playTone
+              - playChord
+          - name: playFever
+            calls:
+              - this.getGraph
+              - playSweep
+          - name: playStageClear
+            calls:
+              - this.getGraph
+              - playChord
+          - name: playGameOver
+            calls:
+              - this.getGraph
+              - notes.forEach
+              - playFilteredTone
+          - name: playScoreCount
+            calls:
+              - this.getGraph
+              - playSweep
+          - name: playRevive
+            calls:
+              - this.getGraph
+              - playSweep
+          - name: playStaminaWarning
+            calls:
+              - this.getGraph
+              - playMultiPulse
+          - name: playTap
+            calls:
+              - this.getGraph
+              - Date.now
+              - playSweep
+          - name: playBack
+            calls:
+              - this.getGraph
+              - Date.now
+              - playSweep
+          - name: playEmptyTap
+            calls:
+              - this.getGraph
+              - Date.now
+              - playFilteredTone
+          - name: dispose
+            calls:
+              - this.removeTapListener
+  src/utils/sound/synthesizers.ts:
+    imports:
+      - ./types
+    exports:
+      - name: playTone
+        params:
+          ctx: AudioContext
+          destination: AudioNode
+          options: import("C:/Users/ghkdd/gemini-projects/solve-climb/src/utils/sound/types").ToneOptions
+        description: 1. 단일 주파수 톤(Tone) 재생
+        calls:
+          - ctx.createOscillator
+          - ctx.createGain
+          - osc.frequency.setValueAtTime
+          - gain.gain.setValueAtTime
+          - gain.gain.linearRampToValueAtTime
+          - gain.gain.exponentialRampToValueAtTime
+          - osc.connect
+          - gain.connect
+          - osc.start
+          - osc.stop
+      - name: playSweep
+        params:
+          ctx: AudioContext
+          destination: AudioNode
+          options: import("C:/Users/ghkdd/gemini-projects/solve-climb/src/utils/sound/types").SweepOptions
+        description: 2. 주파수 스윕(Sweep / Pitch Bend) 재생
+        calls:
+          - ctx.createOscillator
+          - ctx.createGain
+          - osc.frequency.setValueAtTime
+          - osc.frequency.exponentialRampToValueAtTime
+          - Math.max
+          - osc.frequency.linearRampToValueAtTime
+          - gain.gain.setValueAtTime
+          - gain.gain.linearRampToValueAtTime
+          - gain.gain.exponentialRampToValueAtTime
+          - osc.connect
+          - gain.connect
+          - osc.start
+          - osc.stop
+      - name: playChord
+        params:
+          ctx: AudioContext
+          destination: AudioNode
+          options: import("C:/Users/ghkdd/gemini-projects/solve-climb/src/utils/sound/types").ChordOptions
+        description: 3. 화음 및 아르페지오(Chord / Arpeggio) 재생
+        calls:
+          - options.notes.forEach
+          - ctx.createOscillator
+          - ctx.createGain
+          - osc.frequency.setValueAtTime
+          - gain.gain.setValueAtTime
+          - gain.gain.linearRampToValueAtTime
+          - gain.gain.exponentialRampToValueAtTime
+          - osc.connect
+          - gain.connect
+          - osc.start
+          - osc.stop
+      - name: playFilteredTone
+        params:
+          ctx: AudioContext
+          destination: AudioNode
+          options: import("C:/Users/ghkdd/gemini-projects/solve-climb/src/utils/sound/types").FilteredToneOptions
+        description: 4. 바이쿼드 필터 적용 톤(Filtered Tone - 버저/징글 등) 재생
+        calls:
+          - ctx.createOscillator
+          - ctx.createGain
+          - ctx.createBiquadFilter
+          - filter.frequency.setValueAtTime
+          - filter.Q.setValueAtTime
+          - osc.frequency.setValueAtTime
+          - osc.frequency.linearRampToValueAtTime
+          - gain.gain.setValueAtTime
+          - gain.gain.linearRampToValueAtTime
+          - gain.gain.exponentialRampToValueAtTime
+          - osc.connect
+          - filter.connect
+          - gain.connect
+          - osc.start
+          - osc.stop
+      - name: playMultiPulse
+        params:
+          ctx: AudioContext
+          destination: AudioNode
+          beats: import("C:/Users/ghkdd/gemini-projects/solve-climb/src/utils/sound/types").PulseBeat[]
+        description: 5. 듀얼 레이어 펄스(MultiPulse - 스태미나 위기 심장박동 등) 재생
+        calls:
+          - beats.forEach
+          - ctx.createOscillator
+          - ctx.createGain
+          - bodyOsc.frequency.setValueAtTime
+          - bodyOsc.frequency.exponentialRampToValueAtTime
+          - bodyGain.gain.setValueAtTime
+          - bodyGain.gain.linearRampToValueAtTime
+          - bodyGain.gain.exponentialRampToValueAtTime
+          - bodyOsc.connect
+          - bodyGain.connect
+          - bodyOsc.start
+          - bodyOsc.stop
+          - punchOsc.frequency.setValueAtTime
+          - punchOsc.frequency.exponentialRampToValueAtTime
+          - punchGain.gain.setValueAtTime
+          - punchGain.gain.linearRampToValueAtTime
+          - punchGain.gain.exponentialRampToValueAtTime
+          - punchOsc.connect
+          - punchGain.connect
+          - punchOsc.start
+          - punchOsc.stop
+  src/utils/sound/types.ts:
+    exports:
+      - name: EnvelopeOptions
+        kind: interface
+      - name: ToneOptions
+        kind: interface
+      - name: SweepOptions
+        kind: interface
+      - name: ChordNote
+        kind: interface
+      - name: ChordOptions
+        kind: interface
+      - name: FilterOptions
+        kind: interface
+      - name: FilteredToneOptions
+        kind: interface
+      - name: PulseBeat
+        kind: interface
+      - name: WaveformType
+        kind: type
   src/components/geometry/utils/geometryMath.ts:
     exports:
       - name: rotatePointAroundPivot
@@ -4857,6 +5617,8 @@ files:
     imports:
       - '@/utils/navigation'
       - '@/stores/useGameStore'
+      - '@/stores/useSettingsStore'
+      - '@/utils/sound'
       - '@/components/AlertModal'
       - '@/components/ConfirmModal'
       - '@/components/CyclePromotionModal'
@@ -4890,6 +5652,7 @@ files:
       - badgeIds
       - showCountdown
       - showSafetyRope
+      - activeBgm
     handlers:
       - name: handleAlertAction
         calls:
@@ -4900,6 +5663,7 @@ files:
         returns: import("C:/Users/ghkdd/gemini-projects/solve-climb/node_modules/@types/react/jsx-runtime").JSX.Element
         calls:
           - useNavigate
+          - useSettingsStore
           - useGameStore
           - triggerToast
           - closeModals
@@ -4919,6 +5683,24 @@ files:
           - navigate
           - urls.shop
           - urls.result
+          - setSoundEnabled
+          - sound.playTap
+          - sound.playKeypad
+          - sound.playBack
+          - sound.playEmptyTap
+          - sound.playCorrect
+          - sound.playCombo
+          - sound.playWrong
+          - sound.playCountdown
+          - sound.playFever
+          - sound.playStageClear
+          - sound.playGameOver
+          - sound.playScoreCount
+          - sound.playRevive
+          - sound.playStaminaWarning
+          - bgm.stop
+          - setActiveBgm
+          - bgm.play
           - e.stopPropagation
   src/features/debug/components/ProgressionSection.tsx:
     imports:
@@ -4972,6 +5754,7 @@ files:
     imports:
       - '@/stores/useDebugStore'
       - '@/stores/useGameStore'
+      - '@/utils/sound'
       - ./VisualSection.css
     exports:
       - name: VisualSection
@@ -5179,7 +5962,7 @@ files:
     exports:
       - name: MyPageSettings
         params:
-          "{\n  hapticEnabled,\n  animationEnabled,\n  onToggleHaptic,\n  onToggleAnimation,\n  onShowProfileForm,\n  onDataReset,\n  isResetting,\n  onSendFeedback,\n  onLogout,\n  onWithdraw,\n}": MyPageSettingsProps
+          "{\n  soundEnabled,\n  bgmEnabled,\n  hapticEnabled,\n  animationEnabled,\n  onToggleSound,\n  onToggleBgm,\n  onToggleHaptic,\n  onToggleAnimation,\n  onShowProfileForm,\n  onDataReset,\n  isResetting,\n  onSendFeedback,\n  onLogout,\n  onWithdraw,\n}": MyPageSettingsProps
         returns: import("C:/Users/ghkdd/gemini-projects/solve-climb/node_modules/@types/react/jsx-runtime").JSX.Element
         calls:
           - useNavigate
@@ -5201,6 +5984,8 @@ files:
           - window.location.reload
           - window.open
           - e.preventDefault
+          - onToggleSound
+          - onToggleBgm
           - onToggleHaptic
           - onToggleAnimation
           - navigate
@@ -5436,6 +6221,7 @@ files:
       - '@/utils/debugFetch'
       - '@/utils/validation'
       - '@/stores/useAuthStore'
+      - '@/utils/sound'
       - '@/config/app'
       - '@/utils/auth'
       - '@/utils/tossLogin'
@@ -5471,6 +6257,20 @@ files:
           - navigate
           - storageService.remove
           - refetch
+      - name: handleToggleSound
+        calls:
+          - setSoundEnabled
+          - sound.playTap
+          - setToastMessage
+          - setShowToast
+      - name: handleToggleBgm
+        calls:
+          - setBgmEnabled
+          - sound.playTap
+          - bgm.play
+          - bgm.stop
+          - setToastMessage
+          - setShowToast
       - name: handleToggleHaptic
         calls:
           - setHapticEnabled
@@ -5590,10 +6390,15 @@ files:
           - setShowPromotionModal
           - refetch
           - setShowProfileForm
-          - setHapticEnabled
-          - vibrateShort
+          - setSoundEnabled
+          - sound.playTap
           - setToastMessage
           - setShowToast
+          - setBgmEnabled
+          - bgm.play
+          - bgm.stop
+          - setHapticEnabled
+          - vibrateShort
           - setAnimationEnabled
           - setShowDataResetConfirm
           - setIsResetting
@@ -5862,6 +6667,7 @@ files:
       - '@/lib/eventBus'
       - ../services/quizEventListener
       - ../hooks/useQuizFeedback
+      - ../hooks/useQuizBgm
       - '@/stores/useDeathNoteStore'
       - '@/utils/haptic'
       - ../types/quizProps
@@ -5909,10 +6715,15 @@ files:
           - handleStaminaAdRecovery
           - useQuizNavigation
           - useQuizGameplay
+          - useQuizRevive
+          - handleWatchAdRevive
+          - handleRevive
+          - useQuizBgm
           - activeItems.includes
           - consumeActiveItem
           - quizEventBus.emit
           - consumeLife
+          - stableHandleGameOver
           - useQuizSubmit
           - e?.preventDefault
           - useDebugStore.getState
@@ -5922,9 +6733,6 @@ files:
           - setDisplayValue
           - setTimeout
           - originalSubmit
-          - useQuizRevive
-          - handleWatchAdRevive
-          - handleRevive
           - useQuizInput
           - setIsFlarePaused
           - setQuizContext
@@ -5952,6 +6760,8 @@ files:
           - animations.setCardAnimation
           - animations.setShowFlash
           - triggerSuccessFeedback
+          - useGameStore.getState().activeItems.includes
+          - setToastValue
           - decreaseScore
           - useGameStore.getState().resetCombo
           - animations.setIsError
@@ -6493,6 +7303,27 @@ files:
     exports:
       - name: useQuizAnimations
         returns: '{ cardAnimation: string; inputAnimation: string; questionAnimation: string; showFlash: boolean; isError: boolean; showSlideToast: boolean; damagePosition: { left: string; top: string; }; setCardAnimation: React.Dispatch<React.SetStateAction<string>>; setInputAnimation: React.Dispatch<React.SetStateAction<string>>; setQuestionAnimation: React.Dispatch<React.SetStateAction<string>>; setShowFlash: React.Dispatch<React.SetStateAction<boolean>>; setIsError: React.Dispatch<React.SetStateAction<boolean>>; setShowSlideToast: React.Dispatch<React.SetStateAction<boolean>>; setDamagePosition: React.Dispatch<React.SetStateAction<{ left: string; top: string; }>>; }'
+  src/features/quiz/hooks/useQuizBgm.ts:
+    imports:
+      - '@/utils/sound'
+      - '@/stores/useSettingsStore'
+    exports:
+      - name: useQuizBgm
+        params:
+          "{\n  categoryParam,\n  modeParam,\n  showTipModal,\n  showLastChanceModal,\n  showCountdown,\n  showPauseModal = false,\n  isLastSpurtActive = false,\n}": UseQuizBgmProps
+        description: |-
+          인게임 퀴즈 생명주기 및 모달 상태에 따른 BGM 전환 훅
+          - 일반 레벨 등반: 🧗‍♀️ 셀레스트 등반 (Celeste 118 BPM - 경쾌한 멜로디)
+          - 라스트 스퍼트(부활 15초 질주) & 서바이벌 무한 모드: 🧗‍♂️ 클라이머 펄스 (Climber Pulse 112 BPM - 박진감 넘치는 질주 비트)
+          - 대수 / 심화 / 논리 수학 모드: 🧩 퀴즈 포커스 (Quiz Focus 92 BPM)
+          - 라스트 찬스 (탈락 직전 부활 모달): 💓 위기 펄스 (Crisis Heartbeat 126 BPM - 쿵쿵 심장박동)
+          - 게임팁 모달: 🧠 두뇌 트레이닝 (Brain Age 104 BPM) 유지
+          - 일시정지 & 카운트다운(3.. 2.. 1..): 완전 무음(Silence)
+        calls:
+          - useSettingsStore
+          - bgm.stop
+          - bgm.play
+          - bgm.getCurrentTheme
   src/features/quiz/hooks/useQuizBusinessLogic.ts:
     imports:
       - '@/utils/adService'
@@ -6524,12 +7355,17 @@ files:
   src/features/quiz/hooks/useQuizFeedback.ts:
     imports:
       - '@/utils/haptic'
+      - '@/utils/sound'
+      - '@/stores/useGameStore'
     exports:
       - name: useQuizFeedback
         returns: '{ triggerSuccessFeedback: (earnedDistance: number, handlers: FeedbackHandlers, hapticEnabled?: boolean) => void; triggerWrongFeedback: (penaltyText: string, handlers: FeedbackHandlers, hapticEnabled?: boolean) => void; }'
-        description: 퀴즈 시각적/진동 피드백을 담당하는 훅
+        description: 퀴즈 시각적/진동/효과음 피드백을 담당하는 훅
         calls:
           - vibrateMedium
+          - useGameStore.getState
+          - sound.playCombo
+          - sound.playCorrect
           - handlers.setToastValue
           - Math.floor
           - Math.random
@@ -6537,6 +7373,7 @@ files:
           - handlers.setShowSlideToast
           - setTimeout
           - vibrateLong
+          - sound.playWrong
           - handlers.setShowFlash
   src/features/quiz/hooks/useQuizGameplay.ts:
     imports:
@@ -6548,6 +7385,7 @@ files:
         params:
           '{ setToastValue }': UseQuizGameplayProps
         returns: '{ remainingPauses: number; timerResetKey: number; handlePauseClick: () => void; handleTutorialClick: () => void; handlePauseResume: () => void; handlePauseExit: () => void; handleCountdownComplete: () => void; handleLastSpurt: () => void; handleSafetyRopeUsed: () => void; setTimerResetKey: React.Dispatch<React.SetStateAction<number>>; }'
+        description: 인게임 특수 액션 및 생명주기 제어 훅 (일시정지, 라스트 스퍼트, 안전로프, 카운트다운)
         calls:
           - useGameStore
           - quizEventBus.emit
@@ -6561,6 +7399,14 @@ files:
           - unsubscribeCountdown
           - unsubscribeSafetyRope
           - unsubscribeLastSpurt
+        listens:
+          - QUIZ:LAST_SPURT
+          - QUIZ:SAFETY_ROPE_USED
+          - QUIZ:COUNTDOWN_COMPLETE
+        emits:
+          - QUIZ:UI_MODAL_TOGGLE
+          - QUIZ:NEXT_QUESTION_REQUESTED
+          - QUIZ:GAME_OVER
   src/features/quiz/hooks/useQuizGameState.ts:
     imports:
       - '@/utils/navigation'
@@ -6648,21 +7494,35 @@ files:
       - '@/types/user'
       - ../types/quiz
       - '@/lib/eventBus'
+      - '@/utils/sound'
       - '@/constants/items'
       - '@/utils/validation'
+      - '@/stores/useUserStore'
     exports:
       - name: useQuizRevive
         params:
           "{\n  gameMode,\n  inventory,\n  minerals,\n  consumeItem,\n  onWatchAd,\n  isPreview,\n}": UseQuizReviveParams
         returns: '{ hasUsedLastChance: boolean; handleRevive: (useItem: boolean) => Promise<void>; handlePurchaseAndRevive: () => Promise<void>; handleWatchAdAndRevive: () => Promise<void>; handleGiveUp: () => void; stableHandleGameOver: (reason?: string | undefined) => void; }'
+        description: 라스트 찬스 & 부활 생명주기 관리 훅
         calls:
           - inventory.find
           - consumeItem
           - quizEventBus.emit
           - setHasUsedLastChance
+          - sound.playRevive
           - safeAccess
+          - useUserStore.getState().purchaseItem
+          - useUserStore.getState
           - handleRevive
           - onWatchAd
+          - src/stores/useUserStore.ts#purchaseItem
+          - src/utils/sound/index.ts#sound.playRevive
+        emits:
+          - QUIZ:UI_MODAL_TOGGLE
+          - QUIZ:REVIVE_SUCCESS
+          - QUIZ:LAST_SPURT
+          - QUIZ:NEXT_QUESTION_REQUESTED
+          - QUIZ:GAME_OVER
   src/features/quiz/hooks/useQuizScoring.ts:
     imports:
       - '@/constants/game'
@@ -6705,6 +7565,7 @@ files:
   src/features/quiz/hooks/useQuizStartLogic.ts:
     imports:
       - '@/stores/useGameStore'
+      - '@/stores/useQuizStore'
       - '@/services/analytics'
       - '@/utils/navigation'
       - '@/constants/game'
@@ -6724,10 +7585,18 @@ files:
           - setTimeout
           - analytics.trackQuizStart
           - quizEventBus.emit
-          - setStaminaConsumed
-          - setExhausted
           - inventory.find
           - consumeItem
+          - equippedCodes.push
+          - useGameStore.getState().setActiveItems
+          - useGameStore.getState
+          - equippedCodes.includes
+          - useQuizStore.getState().setTimeLimit
+          - useQuizStore.getState
+          - useGameStore.getState().setCombo
+          - setStaminaConsumed
+          - setExhausted
+          - applyEquippedItems
           - consumeStamina
           - setShowStaminaModal
           - navigate

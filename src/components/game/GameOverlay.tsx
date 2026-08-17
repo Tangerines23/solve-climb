@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useContext } from 'react';
 import { useGameStore } from '../../stores/useGameStore';
 import { QuizContext } from '../../features/quiz/contexts/QuizContext';
+import { sound } from '../../utils/sound';
 
 export const GameOverlay: React.FC = () => {
   const {
@@ -28,6 +29,7 @@ export const GameOverlay: React.FC = () => {
     }
 
     if (feverLevel > prevFever && feverLevel > 0) {
+      sound.playFever();
       const text = feverLevel === 2 ? 'SECOND WIND' : 'MOMENTUM';
       setSplashText(text);
       setSplashKey((prev) => prev + 1);
