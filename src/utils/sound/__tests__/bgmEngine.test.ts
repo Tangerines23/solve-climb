@@ -53,12 +53,40 @@ describe('BgmEngine (bgmEngine.ts)', () => {
       disconnect: vi.fn(),
     };
 
+    const mockBufferSource = {
+      buffer: null,
+      connect: vi.fn(),
+      disconnect: vi.fn(),
+      start: vi.fn(),
+      stop: vi.fn(),
+    };
+
+    const mockConvolver = {
+      buffer: null,
+      connect: vi.fn(),
+      disconnect: vi.fn(),
+    };
+
+    const mockPanner = {
+      pan: { value: 0 },
+      connect: vi.fn(),
+      disconnect: vi.fn(),
+    };
+
     mockAudioContext = {
       currentTime: 10,
+      sampleRate: 44100,
       state: 'running',
       createOscillator: vi.fn(() => ({ ...mockOscillatorNode })),
       createGain: vi.fn(() => ({ ...mockGainNode })),
       createBiquadFilter: vi.fn(() => ({ ...mockFilterNode })),
+      createBuffer: vi.fn(() => ({
+        getChannelData: vi.fn(() => new Float32Array(100)),
+        sampleRate: 44100,
+      })),
+      createBufferSource: vi.fn(() => ({ ...mockBufferSource })),
+      createConvolver: vi.fn(() => ({ ...mockConvolver })),
+      createStereoPanner: vi.fn(() => ({ ...mockPanner })),
       destination: {},
       resume: vi.fn().mockResolvedValue(undefined),
     };

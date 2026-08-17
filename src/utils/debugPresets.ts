@@ -347,7 +347,8 @@ export async function applyPreset(
           `\nError: ${errorMessage}`
         );
         throw new Error(
-          `프리셋 적용 실패: 액션 "${action.type}" (${i + 1}/${preset.actions.length}) 실행 중 오류 발생: ${errorMessage}`
+          `프리셋 적용 실패: 액션 "${action.type}" (${i + 1}/${preset.actions.length}) 실행 중 오류 발생: ${errorMessage}`,
+          { cause: error }
         );
       }
     }

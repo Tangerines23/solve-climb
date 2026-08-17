@@ -1,3 +1,4 @@
+import { useState } from 'react';
 // knip-ignore-next-line
 import type { Meta, StoryObj } from '@storybook/react'; // eslint-disable-line storybook/no-renderer-packages
 import { motion, AnimatePresence } from 'framer-motion';
@@ -137,10 +138,12 @@ function FeverParticles() {
 }
 
 function Particle({ index }: { index: number }) {
-  const randomX = Math.random() * 100;
-  const duration = 1 + Math.random() * 2;
-  const delay = Math.random() * 2 + index * 0.05;
-  const size = 5 + Math.random() * 10;
+  const [{ randomX, duration, delay, size }] = useState(() => ({
+    randomX: Math.random() * 100,
+    duration: 1 + Math.random() * 2,
+    delay: Math.random() * 2 + index * 0.05,
+    size: 5 + Math.random() * 10,
+  }));
 
   return (
     <motion.div

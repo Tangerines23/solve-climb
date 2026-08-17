@@ -1,5 +1,5 @@
 project: solve-climb
-generatedAt: '2026-08-17T13:44:03.005Z'
+generatedAt: '2026-08-17T16:40:14.569Z'
 files:
   src/App.tsx:
     imports:
@@ -4223,14 +4223,45 @@ files:
         type: class
         methods:
           - name: getGraph
-            returns: '{ ctx: AudioContext; destination: AudioNode; } | null'
+            returns: '{ ctx: AudioContext; destination: AudioNode; reverbSend: AudioNode; } | null'
             calls:
               - audioContextManager.isEnabled
               - audioContextManager.getContext
               - ctx.createBiquadFilter
               - ctx.createGain
+              - this.createSyntheticReverb
+              - this.reverbNode.connect
+              - this.reverbGain.connect
               - this.masterFilter.connect
               - this.masterGain.connect
+          - name: createSyntheticReverb
+            params:
+              ctx: AudioContext
+            returns: ConvolverNode | null
+            calls:
+              - Math.floor
+              - ctx.createBuffer
+              - impulse.getChannelData
+              - Math.exp
+              - Math.random
+              - ctx.createConvolver
+          - name: getNoiseBuffer
+            params:
+              ctx: AudioContext
+            returns: AudioBuffer | null
+            calls:
+              - ctx.createBuffer
+              - buffer.getChannelData
+              - Math.random
+          - name: createPanner
+            params:
+              ctx: AudioContext
+              pan: number
+            returns: StereoPannerNode | null
+            calls:
+              - ctx.createStereoPanner
+              - Math.max
+              - Math.min
           - name: play
             params:
               theme: import("C:/Users/ghkdd/gemini-projects/solve-climb/src/utils/sound/bgmEngine").BgmTheme
@@ -4258,6 +4289,8 @@ files:
               - this.activeNodes.forEach
               - osc.stop
               - osc.disconnect
+              - source.stop
+              - source.disconnect
               - gain.disconnect
           - name: setVolume
             params:
@@ -4309,15 +4342,18 @@ files:
             params:
               ctx: AudioContext
               destination: AudioNode
+              reverbSend: AudioNode
               time: number
               step: number
             calls:
               - Math.floor
+              - safeGet
               - ctx.createOscillator
               - ctx.createGain
               - ctx.createBiquadFilter
               - bOsc.frequency.setValueAtTime
               - bFilter.frequency.setValueAtTime
+              - bFilter.frequency.exponentialRampToValueAtTime
               - bGain.gain.setValueAtTime
               - bGain.gain.linearRampToValueAtTime
               - bGain.gain.exponentialRampToValueAtTime
@@ -4327,27 +4363,70 @@ files:
               - bOsc.start
               - bOsc.stop
               - this.trackActiveNode
+              - subOsc.frequency.setValueAtTime
+              - subGain.gain.setValueAtTime
+              - subGain.gain.linearRampToValueAtTime
+              - subGain.gain.exponentialRampToValueAtTime
+              - subOsc.connect
+              - subGain.connect
+              - subOsc.start
+              - subOsc.stop
+              - this.createPanner
               - chordNotes.forEach
               - pOsc.frequency.setValueAtTime
               - pFilter.frequency.setValueAtTime
+              - pFilter.frequency.linearRampToValueAtTime
               - pGain.gain.setValueAtTime
               - pGain.gain.linearRampToValueAtTime
               - pGain.gain.exponentialRampToValueAtTime
               - pOsc.connect
               - pFilter.connect
               - pGain.connect
+              - panner.connect
               - pOsc.start
               - pOsc.stop
-              - hOsc.frequency.setValueAtTime
-              - hFilter.frequency.setValueAtTime
-              - hGain.gain.setValueAtTime
-              - hGain.gain.linearRampToValueAtTime
-              - hGain.gain.exponentialRampToValueAtTime
-              - hOsc.connect
-              - hFilter.connect
-              - hGain.connect
-              - hOsc.start
-              - hOsc.stop
+              - kOsc.frequency.setValueAtTime
+              - kOsc.frequency.exponentialRampToValueAtTime
+              - kGain.gain.setValueAtTime
+              - kGain.gain.linearRampToValueAtTime
+              - kGain.gain.exponentialRampToValueAtTime
+              - kOsc.connect
+              - kGain.connect
+              - kOsc.start
+              - kOsc.stop
+              - this.getNoiseBuffer
+              - ctx.createBufferSource
+              - nFilter.frequency.setValueAtTime
+              - nGain.gain.setValueAtTime
+              - nGain.gain.linearRampToValueAtTime
+              - nGain.gain.exponentialRampToValueAtTime
+              - nSource.connect
+              - nFilter.connect
+              - nGain.connect
+              - nSource.start
+              - nSource.stop
+              - rFilter.frequency.setValueAtTime
+              - rGain.gain.setValueAtTime
+              - rGain.gain.linearRampToValueAtTime
+              - rGain.gain.exponentialRampToValueAtTime
+              - rSource.connect
+              - rFilter.connect
+              - rGain.connect
+              - rPanner.connect
+              - rSource.start
+              - rSource.stop
+              - mOsc.frequency.setValueAtTime
+              - mFilter.frequency.setValueAtTime
+              - mFilter.frequency.exponentialRampToValueAtTime
+              - mGain.gain.setValueAtTime
+              - mGain.gain.linearRampToValueAtTime
+              - mGain.gain.exponentialRampToValueAtTime
+              - mOsc.connect
+              - mFilter.connect
+              - mGain.connect
+              - mPanner.connect
+              - mOsc.start
+              - mOsc.stop
           - name: scheduleCelesteStep
             params:
               ctx: AudioContext
@@ -4368,6 +4447,7 @@ files:
               - kickOsc.start
               - kickOsc.stop
               - this.trackActiveNode
+              - safeGet
               - ctx.createBiquadFilter
               - pOsc.frequency.setValueAtTime
               - pFilter.frequency.setValueAtTime
@@ -4400,6 +4480,16 @@ files:
               - lGain.connect
               - lOsc.start
               - lOsc.stop
+              - hOsc.frequency.setValueAtTime
+              - hFilter.frequency.setValueAtTime
+              - hGain.gain.setValueAtTime
+              - hGain.gain.linearRampToValueAtTime
+              - hGain.gain.exponentialRampToValueAtTime
+              - hOsc.connect
+              - hFilter.connect
+              - hGain.connect
+              - hOsc.start
+              - hOsc.stop
           - name: scheduleClimbStep
             params:
               ctx: AudioContext
@@ -4420,6 +4510,7 @@ files:
               - kickOsc.start
               - kickOsc.stop
               - this.trackActiveNode
+              - safeGet
               - ctx.createBiquadFilter
               - bOsc.frequency.setValueAtTime
               - bFilter.frequency.setValueAtTime
@@ -4442,17 +4533,6 @@ files:
               - aGain.connect
               - aOsc.start
               - aOsc.stop
-              - chordNotes.forEach
-              - sOsc.frequency.setValueAtTime
-              - sFilter.frequency.setValueAtTime
-              - sGain.gain.setValueAtTime
-              - sGain.gain.linearRampToValueAtTime
-              - sGain.gain.exponentialRampToValueAtTime
-              - sOsc.connect
-              - sFilter.connect
-              - sGain.connect
-              - sOsc.start
-              - sOsc.stop
           - name: scheduleShopStep
             params:
               ctx: AudioContext
@@ -4497,16 +4577,6 @@ files:
               - mGain.connect
               - mOsc.start
               - mOsc.stop
-              - wOsc.frequency.setValueAtTime
-              - wFilter.frequency.setValueAtTime
-              - wGain.gain.setValueAtTime
-              - wGain.gain.linearRampToValueAtTime
-              - wGain.gain.exponentialRampToValueAtTime
-              - wOsc.connect
-              - wFilter.connect
-              - wGain.connect
-              - wOsc.start
-              - wOsc.stop
           - name: scheduleVictoryStep
             params:
               ctx: AudioContext
@@ -4678,8 +4748,9 @@ files:
               - filter.frequency.linearRampToValueAtTime
           - name: trackActiveNode
             params:
-              osc: OscillatorNode
-              gain: GainNode
+              osc: OscillatorNode | undefined
+              source: AudioBufferSourceNode | undefined
+              gain: GainNode | undefined
             calls:
               - this.activeNodes.push
               - this.activeNodes.shift
@@ -7484,22 +7555,6 @@ files:
           - /[a-z]/.test
           - /[0-9]/.test
           - prev.slice
-  src/features/quiz/hooks/useQuizModalState.ts:
-    exports:
-      - name: useQuizModalState
-        returns: import("C:/Users/ghkdd/gemini-projects/solve-climb/src/features/quiz/hooks/useQuizModalState").QuizModalState
-        calls:
-          - setShowPauseModal
-          - setShowStaminaModal
-          - setShowCountdown
-          - setShowLastChanceModal
-          - setShowTipModal
-          - setShowRankPromoteModal
-          - setShowLevelUpModal
-          - setShowStaminaWarningModal
-          - setShowUnderDevModal
-      - name: QuizModalState
-        kind: interface
   src/features/quiz/hooks/useQuizNavigation.ts:
     imports:
       - '@/utils/navigation'
@@ -7960,15 +8015,3 @@ files:
           ? "{\n  baseMinerals,\n  hasDoubled,\n  isAdLoading,\n  onDoubleReward,\n}"
           : ResultRewardActionsProps
         returns: import("C:/Users/ghkdd/gemini-projects/solve-climb/node_modules/@types/react/jsx-runtime").JSX.Element | null
-  src/features/quiz/components/result/ResultScoreCard.tsx:
-    exports:
-      - name: ResultScoreCard
-        params:
-          ? "{\n  finalScore,\n  isNewRecord,\n  statsList,\n}"
-          : ResultScoreCardProps
-        returns: import("C:/Users/ghkdd/gemini-projects/solve-climb/node_modules/@types/react/jsx-runtime").JSX.Element
-        calls:
-          - finalScore.toLocaleString
-          - statsList.map
-      - name: ResultStatItem
-        kind: interface

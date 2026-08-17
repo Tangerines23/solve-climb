@@ -81,7 +81,7 @@
     "check:secrets": "node scripts/check-secrets.js",
     "check:supabase:connection": "node scripts/check-supabase-connection.js",
     "check:env": "node scripts/check-env.js",
-    "check:spell": "npx cspell \"src/**/*.{ts,tsx}\"",
+    "check:spell": "npx cspell@8.15.0 \"src/**/*.{ts,tsx}\"",
     "check:magic": "node scripts/check-magic-strings.js",
     "check:integrity": "npm run check:css && npm run check:nav && npm run check:spell && npm run check:magic && npm run check:vercel && npm run check:db:lint",
     "check:assets": "node scripts/find-unused-assets.js",

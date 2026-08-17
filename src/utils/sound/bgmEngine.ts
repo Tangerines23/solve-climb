@@ -1,34 +1,44 @@
-// Web Audio API 기반 0Byte 프로시저럴 배경음악(BGM) 엔진
+// Web Audio API 기반 0Byte 프로시저럴 배경음악(BGM) 엔진 (고품질 사운드 디자인 & 공간계 리마스터링)
 
 import { audioContextManager } from './audioContext';
 
 export type BgmTheme =
-  | 'brain_age'
-  | 'celeste'
-  | 'climb'
-  | 'shop'
-  | 'victory'
-  | 'crisis'
-  | 'puzzle'
-  | 'chill'
-  | 'arcade';
+  'brain_age' | 'celeste' | 'climb' | 'shop' | 'victory' | 'crisis' | 'puzzle' | 'chill' | 'arcade';
+
+function safeGet<T>(obj: Record<number | string, T> | T[], key: number | string, fallback: T): T {
+  if (Array.isArray(obj)) {
+    const idx = typeof key === 'number' ? key : parseInt(String(key), 10);
+    return !isNaN(idx) && idx >= 0 && idx < obj.length && obj[idx] !== undefined
+      ? obj[idx]!
+      : fallback;
+  }
+  if (obj && Object.prototype.hasOwnProperty.call(obj, key)) {
+    const val = (obj as Record<number | string, T>)[key];
+    return val !== undefined ? val : fallback;
+  }
+  return fallback;
+}
 
 export class BgmEngine {
   private currentTheme: BgmTheme | null = null;
   private isRunning: boolean = false;
   private masterGain: GainNode | null = null;
   private masterFilter: BiquadFilterNode | null = null;
+  private reverbNode: ConvolverNode | null = null;
+  private reverbGain: GainNode | null = null;
+  private noiseBuffer: AudioBuffer | null = null;
   private isMuffled: boolean = false;
   private schedulerTimer: number | null = null;
   private nextStepTime: number = 0;
   private currentStep: number = 0;
   private volume: number = 0.35;
-  private activeNodes: { osc: OscillatorNode; gain: GainNode }[] = [];
+  private activeNodes: { osc?: OscillatorNode; source?: AudioBufferSourceNode; gain: GainNode }[] =
+    [];
 
   /**
-   * BGM 전용 게인 및 마스터 로우패스 필터 노드 초기화
+   * BGM 전용 게인, 마스터 로우패스 필터, 알고리즈믹 룸 리버브 노드 초기화
    */
-  private getGraph(): { ctx: AudioContext; destination: AudioNode } | null {
+  private getGraph(): { ctx: AudioContext; destination: AudioNode; reverbSend: AudioNode } | null {
     if (!audioContextManager.isEnabled()) return null;
     const ctx = audioContextManager.getContext();
     if (!ctx) return null;
@@ -41,17 +51,91 @@ export class BgmEngine {
       this.masterGain = ctx.createGain();
       this.masterGain.gain.value = this.volume;
 
+      // 1. 알고리즈믹 룸/홀 리버브 합성 버퍼 생성
+      this.reverbNode = this.createSyntheticReverb(ctx);
+      this.reverbGain = ctx.createGain();
+      this.reverbGain.gain.value = 0.28; // 어쿠스틱 잔향 게인
+
+      if (this.reverbNode) {
+        this.reverbNode.connect(this.reverbGain);
+        this.reverbGain.connect(this.masterGain);
+      }
+
       this.masterFilter.connect(this.masterGain);
       this.masterGain.connect(ctx.destination);
     }
 
-    return { ctx, destination: this.masterFilter };
+    return {
+      ctx,
+      destination: this.masterFilter,
+      reverbSend: this.reverbNode ? this.reverbNode : this.masterFilter,
+    };
+  }
+
+  /**
+   * 0Byte 합성 임펄스 리스폰스 (1.6초 룸/클럽 어쿠스틱 잔향)
+   */
+  private createSyntheticReverb(ctx: AudioContext): ConvolverNode | null {
+    try {
+      const sampleRate = ctx.sampleRate || 44100;
+      const length = Math.floor(sampleRate * 1.6);
+      const impulse = ctx.createBuffer(2, length, sampleRate);
+      const left = impulse.getChannelData(0);
+      const right = impulse.getChannelData(1);
+
+      for (let i = 0; i < length; i++) {
+        const decay = Math.exp(-i / (sampleRate * 0.38));
+        left[i] = (Math.random() * 2 - 1) * decay;
+        right[i] = (Math.random() * 2 - 1) * decay;
+      }
+
+      const convolver = ctx.createConvolver();
+      convolver.buffer = impulse;
+      return convolver;
+    } catch {
+      return null;
+    }
+  }
+
+  /**
+   * 고품질 드럼/퍼커션용 노이즈 버퍼 (1초 캐시)
+   */
+  private getNoiseBuffer(ctx: AudioContext): AudioBuffer | null {
+    if (typeof ctx.createBuffer !== 'function') return null;
+    if (!this.noiseBuffer || this.noiseBuffer.sampleRate !== ctx.sampleRate) {
+      try {
+        const sampleRate = ctx.sampleRate || 44100;
+        const buffer = ctx.createBuffer(1, sampleRate, sampleRate);
+        const data = buffer.getChannelData(0);
+        for (let i = 0; i < sampleRate; i++) {
+          data[i] = Math.random() * 2 - 1;
+        }
+        this.noiseBuffer = buffer;
+      } catch {
+        return null;
+      }
+    }
+    return this.noiseBuffer;
+  }
+
+  /**
+   * 스테레오 패닝 헬퍼 (악기별 좌/우 입체 정위)
+   */
+  private createPanner(ctx: AudioContext, pan: number): StereoPannerNode | null {
+    try {
+      if (typeof ctx.createStereoPanner === 'function') {
+        const panner = ctx.createStereoPanner();
+        panner.pan.value = Math.max(-1, Math.min(1, pan));
+        return panner;
+      }
+    } catch {
+      // fallback if not supported
+    }
+    return null;
   }
 
   /**
    * BGM 재생 시작 (또는 테마 전환)
-   * @param theme 재생할 테마
-   * @param muffled 시작 시 먹먹한 저음 필터 적용 여부
    */
   play(theme: BgmTheme, muffled: boolean = false): void {
     this.isMuffled = muffled;
@@ -59,12 +143,10 @@ export class BgmEngine {
     if (!graph) return;
 
     if (this.currentTheme === theme && this.isRunning) {
-      // 이미 같은 테마가 재생 중이면 먹먹함 필터만 즉시 업데이트
       this.setMuffled(muffled, 0.35);
       return;
     }
 
-    // 기존 재생 중인 루프 부드럽게 정지 후 전환
     this.stop(0.2);
 
     this.currentTheme = theme;
@@ -112,13 +194,18 @@ export class BgmEngine {
       this.masterGain.gain.linearRampToValueAtTime(0.0001, now + fadeDuration);
     }
 
-    // 활성 노드 정리
     setTimeout(
       () => {
-        this.activeNodes.forEach(({ osc, gain }) => {
+        this.activeNodes.forEach(({ osc, source, gain }) => {
           try {
-            osc.stop();
-            osc.disconnect();
+            if (osc) {
+              osc.stop();
+              osc.disconnect();
+            }
+            if (source) {
+              source.stop();
+              source.disconnect();
+            }
             gain.disconnect();
           } catch {
             // ignore
@@ -146,9 +233,7 @@ export class BgmEngine {
   }
 
   /**
-   * BGM 저음 필터링 (먹먹한 로우패스 효과 - 게임팁 모달 / 일시정지 연출)
-   * @param muffled true: 280Hz 로우패스 (먹먹한 딥 베이스), false: 20000Hz (전체 대역 개방)
-   * @param duration 필터 전환 시간 (초)
+   * BGM 저음 필터링 (먹먹한 로우패스 효과 - 모달 / 일시정지 연출)
    */
   setMuffled(muffled: boolean, duration: number = 0.35): void {
     this.isMuffled = muffled;
@@ -186,7 +271,7 @@ export class BgmEngine {
   }
 
   // ==========================================
-  // 스케줄러 & 음악 생성 엔진
+  // 스케줄러 & 음악 생성 루프
   // ==========================================
   private startScheduler(): void {
     if (this.schedulerTimer !== null) {
@@ -206,75 +291,121 @@ export class BgmEngine {
 
     while (this.nextStepTime < graph.ctx.currentTime + scheduleAheadTime) {
       if (this.currentTheme === 'brain_age') {
+        // [1번 트랙 심층 고도화] 106 BPM 재즈 스윙 그루브 (60/40 Shuffle)
+        const isSwingSecond16th = this.currentStep % 2 === 1;
+        const swingOffset = isSwingSecond16th ? 0.022 : 0;
+
         this.scheduleBrainAgeStep(
           graph.ctx,
           graph.destination,
-          this.nextStepTime,
+          graph.reverbSend,
+          this.nextStepTime + swingOffset,
           this.currentStep
         );
-        this.nextStepTime += 0.1442; // 104 BPM 16분음표 (스마트한 스윙 재즈)
-        this.currentStep = (this.currentStep + 1) % 64; // 4마디 루프
+        this.nextStepTime += 0.1415; // 106 BPM
+        this.currentStep = (this.currentStep + 1) % 384; // 24마디 완성형 라운지 재즈 (~54.3초)
       } else if (this.currentTheme === 'celeste') {
         this.scheduleCelesteStep(graph.ctx, graph.destination, this.nextStepTime, this.currentStep);
-        this.nextStepTime += 0.1271; // 118 BPM 16분음표 (First Steps 등반 모멘텀)
-        this.currentStep = (this.currentStep + 1) % 128; // 8마디 대형 발전 루프
+        this.nextStepTime += 0.1271; // 118 BPM
+        this.currentStep = (this.currentStep + 1) % 512; // 32마디 대형 4부작 서사 (~65.1초)
       } else if (this.currentTheme === 'climb') {
         this.scheduleClimbStep(graph.ctx, graph.destination, this.nextStepTime, this.currentStep);
-        this.nextStepTime += 0.1339; // 112 BPM 16분음표
-        this.currentStep = (this.currentStep + 1) % 64;
+        this.nextStepTime += 0.1339; // 112 BPM
+        this.currentStep = (this.currentStep + 1) % 384; // 24마디 사이버펑크 질주 (~51.4초)
       } else if (this.currentTheme === 'shop') {
         this.scheduleShopStep(graph.ctx, graph.destination, this.nextStepTime, this.currentStep);
-        this.nextStepTime += 0.15; // 100 BPM 16분음표 (아기자기한 산악 만물상 보사노바)
-        this.currentStep = (this.currentStep + 1) % 64; // 4마디 루프
+        this.nextStepTime += 0.15; // 100 BPM
+        this.currentStep = (this.currentStep + 1) % 384; // 24마디 산악 만물상 보사노바 (~57.6초)
       } else if (this.currentTheme === 'victory') {
         this.scheduleVictoryStep(graph.ctx, graph.destination, this.nextStepTime, this.currentStep);
-        this.nextStepTime += 0.15; // 100 BPM 16분음표 (웅장한 완등 승리 피날레)
-        this.currentStep = (this.currentStep + 1) % 64; // 4마디 루프
+        this.nextStepTime += 0.15; // 100 BPM
+        this.currentStep = (this.currentStep + 1) % 384; // 24마디 승리 피날레 (~57.6초)
       } else if (this.currentTheme === 'crisis') {
         this.scheduleCrisisStep(graph.ctx, graph.destination, this.nextStepTime, this.currentStep);
-        this.nextStepTime += 0.119; // 126 BPM 16분음표 (긴박한 심장박동 위기)
-        this.currentStep = (this.currentStep + 1) % 32; // 2마디 루프
+        this.nextStepTime += 0.119; // 126 BPM
+        this.currentStep = (this.currentStep + 1) % 448; // 28마디 심장박동 서스펜스 (~53.3초)
       } else if (this.currentTheme === 'chill') {
         this.scheduleChillStep(graph.ctx, graph.destination, this.nextStepTime, this.currentStep);
-        this.nextStepTime += 2.2;
-        this.currentStep = (this.currentStep + 1) % 8;
+        this.nextStepTime += 2.0;
+        this.currentStep = (this.currentStep + 1) % 32; // 32주기 싱잉볼 힐링 (~64.0초)
       } else if (this.currentTheme === 'arcade') {
         this.scheduleArcadeStep(graph.ctx, graph.destination, this.nextStepTime, this.currentStep);
-        this.nextStepTime += 0.136;
-        this.currentStep = (this.currentStep + 1) % 32;
+        this.nextStepTime += 0.1136; // 132 BPM
+        this.currentStep = (this.currentStep + 1) % 512; // 32마디 패미컴 칩튠 (~58.2초)
       } else if (this.currentTheme === 'puzzle') {
         this.schedulePuzzleStep(graph.ctx, graph.destination, this.nextStepTime, this.currentStep);
-        this.nextStepTime += 0.163;
-        this.currentStep = (this.currentStep + 1) % 32;
+        this.nextStepTime += 0.163; // 92 BPM
+        this.currentStep = (this.currentStep + 1) % 384; // 24마디 Lo-Fi Rhodes (~62.6초)
       } else {
         break;
       }
     }
   }
 
-  /**
-   * 테마 1: 🧠 두뇌 트레이닝 (Brain Age Style - 104 BPM 라운지 재즈 ⭐)
-   */
+  // =========================================================================
+  // ⭐ [트랙 1번 심층 마스터] 🧠 두뇌 트레이닝 (Brain Age / Shibuya Lounge Jazz)
+  // 장르: 시부야계 라운지 재즈 (워킹 콘트라베이스, 리얼 스윙 브러쉬 드럼, 웜 로즈 피아노, 비브라폰)
+  // =========================================================================
   private scheduleBrainAgeStep(
     ctx: AudioContext,
     destination: AudioNode,
+    reverbSend: AudioNode,
     time: number,
     step: number
   ): void {
-    const chordIndex = Math.floor(step / 16);
+    const part = Math.floor(step / 96); // 0: Intro Lounge, 1: Vibraphone Motif, 2: Bebop Solo, 3: Turnaround
+    const localStep = step % 96;
+    const bar = Math.floor(localStep / 16); // 0~5 마디
 
-    const walkingBass: Record<number, number[]> = {
-      0: [65.41, 82.41, 98.0, 116.54],
-      1: [110.0, 138.59, 164.81, 155.56],
-      2: [73.42, 87.31, 110.0, 103.83],
-      3: [98.0, 123.47, 146.83, 138.59],
+    // -------------------------------------------------------------
+    // 1. 어쿠스틱 워킹 콘트라베이스 (Dual-Oscillator Warm Double Bass)
+    // -------------------------------------------------------------
+    const walkingBassLines: Record<number, number[][]> = {
+      // Part 1: Cmaj9 -> A7(b13) -> Dm9 -> G13 -> C6 -> G7alt
+      0: [
+        [65.41, 82.41, 98.0, 116.54], // C -> E -> G -> Bb
+        [110.0, 138.59, 164.81, 155.56], // A -> C# -> E -> Eb
+        [73.42, 87.31, 110.0, 103.83], // D -> F -> A -> Ab
+        [98.0, 123.47, 146.83, 138.59], // G -> B -> D -> Db
+        [65.41, 82.41, 98.0, 116.54], // C -> E -> G -> Bb
+        [98.0, 123.47, 146.83, 164.81], // G -> B -> D -> E
+      ],
+      // Part 2: Fmaj9 -> F#dim7 -> C/G -> A7(#9) -> Dm9 -> G13(b9)
+      1: [
+        [87.31, 110.0, 130.81, 146.83], // F -> A -> C -> D
+        [92.5, 116.54, 138.59, 155.56], // F# -> A -> C -> Eb
+        [65.41, 98.0, 130.81, 110.0], // C/G -> G -> C -> A
+        [110.0, 138.59, 164.81, 146.83], // A7
+        [73.42, 110.0, 146.83, 138.59], // Dm7 -> G7
+        [65.41, 98.0, 130.81, 123.47], // Cmaj7
+      ],
+      // Part 3: Bebop Fast Walking with Chromatic Passing Notes
+      2: [
+        [65.41, 82.41, 98.0, 123.47], // C -> E -> G -> B
+        [110.0, 130.81, 146.83, 155.56], // A -> C -> D -> Eb
+        [73.42, 87.31, 98.0, 103.83], // D -> F -> G -> Ab
+        [98.0, 123.47, 138.59, 146.83], // G -> B -> Db -> D
+        [65.41, 98.0, 123.47, 130.81], // C -> G -> B -> C
+        [98.0, 116.54, 138.59, 155.56], // G -> Bb -> Db -> Eb (G7alt)
+      ],
+      // Part 4: Tritone Substitution & Chromatic Turnaround
+      3: [
+        [73.42, 87.31, 110.0, 130.81], // Dm9
+        [69.3, 87.31, 103.83, 123.47], // Db9 (Tritone sub of G7)
+        [65.41, 82.41, 98.0, 123.47], // Cmaj9
+        [61.74, 77.78, 92.5, 116.54], // B7alt
+        [58.27, 73.42, 87.31, 110.0], // Bbmaj7 -> A7alt
+        [65.41, 98.0, 130.81, 196.0], // Cmaj9 Final Resolution
+      ],
     };
-    const currentBass = walkingBass[chordIndex] || walkingBass[0];
-    const beatIndex = Math.floor((step % 16) / 4);
+    const currentPartBass = safeGet(walkingBassLines, part, walkingBassLines[0]);
+    const currentBarBass = safeGet(currentPartBass, bar, currentPartBass[0]);
+    const beatIndex = Math.floor((localStep % 16) / 4);
 
-    if (step % 4 === 0 && currentBass) {
-      const bFreq = currentBass[beatIndex];
+    if (step % 4 === 0 && currentBarBass) {
+      const bFreq = safeGet(currentBarBass, beatIndex, 0);
       if (bFreq) {
+        // Main Body Osc (Triangle)
         const bOsc = ctx.createOscillator();
         const bGain = ctx.createGain();
         const bFilter = ctx.createBiquadFilter();
@@ -283,12 +414,14 @@ export class BgmEngine {
         bOsc.type = 'triangle';
         bOsc.frequency.setValueAtTime(bFreq, time);
 
+        // Woody lowpass filter envelope with acoustic pluck transient
         bFilter.type = 'lowpass';
-        bFilter.frequency.setValueAtTime(380, time);
+        bFilter.frequency.setValueAtTime(460, time);
+        bFilter.frequency.exponentialRampToValueAtTime(160, time + 0.32);
 
         bGain.gain.setValueAtTime(0.0001, time);
-        bGain.gain.linearRampToValueAtTime(0.13, time + 0.015);
-        bGain.gain.exponentialRampToValueAtTime(0.0001, time + 0.35);
+        bGain.gain.linearRampToValueAtTime(0.14, time + 0.012);
+        bGain.gain.exponentialRampToValueAtTime(0.0001, time + 0.36);
 
         bOsc.connect(bFilter);
         bFilter.connect(bGain);
@@ -296,19 +429,43 @@ export class BgmEngine {
 
         bOsc.start(time);
         bOsc.stop(time + 0.38);
-        this.trackActiveNode(bOsc, bGain);
+        this.trackActiveNode(bOsc, undefined, bGain);
+
+        // Sub Sub-bass fundamental (Sine)
+        const subOsc = ctx.createOscillator();
+        const subGain = ctx.createGain();
+        subGain.gain.value = 0;
+        subOsc.type = 'sine';
+        subOsc.frequency.setValueAtTime(bFreq, time);
+
+        subGain.gain.setValueAtTime(0.0001, time);
+        subGain.gain.linearRampToValueAtTime(0.1, time + 0.015);
+        subGain.gain.exponentialRampToValueAtTime(0.0001, time + 0.32);
+
+        subOsc.connect(subGain);
+        subGain.connect(destination);
+
+        subOsc.start(time);
+        subOsc.stop(time + 0.35);
+        this.trackActiveNode(subOsc, undefined, subGain);
       }
     }
 
-    const isPianoComp = step % 16 === 0 || step % 16 === 6 || step % 16 === 10;
+    // -------------------------------------------------------------
+    // 2. 웜 일렉트릭 로즈 피아노 콤핑 (Warm Stereo Rhodes Piano with Room Reverb)
+    // -------------------------------------------------------------
+    const isPianoComp = localStep % 16 === 0 || localStep % 16 === 6 || localStep % 16 === 10;
     if (isPianoComp) {
       const jazzChords: Record<number, number[]> = {
-        0: [261.63, 329.63, 392.0, 493.88, 587.33],
-        1: [220.0, 277.18, 329.63, 415.3, 523.25],
-        2: [293.66, 349.23, 440.0, 523.25, 659.25],
-        3: [246.94, 329.63, 392.0, 440.0, 587.33],
+        0: [261.63, 329.63, 392.0, 493.88, 587.33], // Cmaj9 (C, E, G, B, D)
+        1: [220.0, 277.18, 329.63, 415.3, 523.25], // A7(b13) (A, C#, E, G#, C)
+        2: [293.66, 349.23, 440.0, 523.25, 659.25], // Dm9 (D, F, A, C, E)
+        3: [246.94, 329.63, 392.0, 440.0, 587.33], // G13 (B, E, G, A, D)
+        4: [261.63, 329.63, 392.0, 493.88, 659.25], // Cmaj7(9) (C, E, G, B, E)
+        5: [246.94, 293.66, 392.0, 440.0, 587.33], // G7sus4 (B, D, G, A, D)
       };
-      const chordNotes = jazzChords[chordIndex] || jazzChords[0];
+      const chordNotes = safeGet(jazzChords, bar, jazzChords[0]);
+      const panner = this.createPanner(ctx, -0.25); // 좌측 25% 스테레오 정위
 
       chordNotes.forEach((cFreq, cIdx) => {
         const pOsc = ctx.createOscillator();
@@ -319,82 +476,225 @@ export class BgmEngine {
         pOsc.type = 'sine';
         pOsc.frequency.setValueAtTime(cFreq, time);
 
+        // Rhodes warmth filter
         pFilter.type = 'lowpass';
-        pFilter.frequency.setValueAtTime(950, time);
+        pFilter.frequency.setValueAtTime(1100, time);
+        pFilter.frequency.linearRampToValueAtTime(750, time + 0.25);
 
-        const pVol = cIdx === 0 ? 0.05 : 0.038;
+        const pVol = cIdx === 0 ? 0.055 : 0.038;
         pGain.gain.setValueAtTime(0.0001, time);
-        pGain.gain.linearRampToValueAtTime(pVol, time + 0.012);
-        pGain.gain.exponentialRampToValueAtTime(0.0001, time + 0.26);
+        pGain.gain.linearRampToValueAtTime(pVol, time + 0.015);
+        pGain.gain.exponentialRampToValueAtTime(0.0001, time + 0.3);
 
         pOsc.connect(pFilter);
         pFilter.connect(pGain);
-        pGain.connect(destination);
+
+        if (panner) {
+          pGain.connect(panner);
+          panner.connect(destination);
+          panner.connect(reverbSend);
+        } else {
+          pGain.connect(destination);
+          pGain.connect(reverbSend);
+        }
 
         pOsc.start(time);
-        pOsc.stop(time + 0.28);
-        this.trackActiveNode(pOsc, pGain);
+        pOsc.stop(time + 0.32);
+        this.trackActiveNode(pOsc, undefined, pGain);
       });
     }
 
+    // -------------------------------------------------------------
+    // 3. 재즈 스윙 브러쉬 드럼 & 라이드 심벌 (Real Brushed Jazz Drum Kit)
+    // -------------------------------------------------------------
+    // (1) 부드러운 펠트 재즈 킥 (Feather Kick on 1 & 3)
+    if (step % 8 === 0) {
+      const kOsc = ctx.createOscillator();
+      const kGain = ctx.createGain();
+      kGain.gain.value = 0;
+      kOsc.type = 'sine';
+      kOsc.frequency.setValueAtTime(95, time);
+      kOsc.frequency.exponentialRampToValueAtTime(45, time + 0.06);
+
+      kGain.gain.setValueAtTime(0.0001, time);
+      kGain.gain.linearRampToValueAtTime(0.12, time + 0.005);
+      kGain.gain.exponentialRampToValueAtTime(0.0001, time + 0.07);
+
+      kOsc.connect(kGain);
+      kGain.connect(destination);
+
+      kOsc.start(time);
+      kOsc.stop(time + 0.075);
+      this.trackActiveNode(kOsc, undefined, kGain);
+    }
+
+    // (2) 노이즈 버퍼 기반 재즈 브러쉬 스네어 탭 (Brush Snare on 2 & 4)
     if (step % 8 === 4) {
-      const hOsc = ctx.createOscillator();
-      const hGain = ctx.createGain();
-      const hFilter = ctx.createBiquadFilter();
+      const noiseBuf = this.getNoiseBuffer(ctx);
+      if (noiseBuf && typeof ctx.createBufferSource === 'function') {
+        const nSource = ctx.createBufferSource();
+        const nGain = ctx.createGain();
+        const nFilter = ctx.createBiquadFilter();
 
-      hGain.gain.value = 0;
-      hOsc.type = 'triangle';
-      hOsc.frequency.setValueAtTime(1600, time);
+        nSource.buffer = noiseBuf;
+        nFilter.type = 'bandpass';
+        nFilter.frequency.setValueAtTime(2400, time);
+        nFilter.Q.value = 1.2;
 
-      hFilter.type = 'highpass';
-      hFilter.frequency.setValueAtTime(2200, time);
+        nGain.gain.setValueAtTime(0.0001, time);
+        nGain.gain.linearRampToValueAtTime(0.045, time + 0.008);
+        nGain.gain.exponentialRampToValueAtTime(0.0001, time + 0.08);
 
-      hGain.gain.setValueAtTime(0.0001, time);
-      hGain.gain.linearRampToValueAtTime(0.035, time + 0.005);
-      hGain.gain.exponentialRampToValueAtTime(0.0001, time + 0.04);
+        nSource.connect(nFilter);
+        nFilter.connect(nGain);
+        nGain.connect(destination);
+        nGain.connect(reverbSend);
 
-      hOsc.connect(hFilter);
-      hFilter.connect(hGain);
-      hGain.connect(destination);
+        nSource.start(time);
+        nSource.stop(time + 0.09);
+        this.trackActiveNode(undefined, nSource, nGain);
+      }
+    }
 
-      hOsc.start(time);
-      hOsc.stop(time + 0.045);
-      this.trackActiveNode(hOsc, hGain);
+    // (3) 스윙 라이드 심벌 (Swing Ride Cymbal on 2 & 4 upbeat, 우측 패닝)
+    if (step % 4 === 0 || step % 4 === 3) {
+      const isAccent = step % 8 === 4;
+      const noiseBuf = this.getNoiseBuffer(ctx);
+      if (noiseBuf && typeof ctx.createBufferSource === 'function') {
+        const rSource = ctx.createBufferSource();
+        const rGain = ctx.createGain();
+        const rFilter = ctx.createBiquadFilter();
+        const rPanner = this.createPanner(ctx, 0.35); // 우측 35% 정위
+
+        rSource.buffer = noiseBuf;
+        rFilter.type = 'highpass';
+        rFilter.frequency.setValueAtTime(6500, time);
+
+        const rVol = isAccent ? 0.035 : 0.02;
+        rGain.gain.setValueAtTime(0.0001, time);
+        rGain.gain.linearRampToValueAtTime(rVol, time + 0.003);
+        rGain.gain.exponentialRampToValueAtTime(0.0001, time + (isAccent ? 0.12 : 0.05));
+
+        rSource.connect(rFilter);
+        rFilter.connect(rGain);
+
+        if (rPanner) {
+          rGain.connect(rPanner);
+          rPanner.connect(destination);
+          rPanner.connect(reverbSend);
+        } else {
+          rGain.connect(destination);
+          rGain.connect(reverbSend);
+        }
+
+        rSource.start(time);
+        rSource.stop(time + 0.13);
+        this.trackActiveNode(undefined, rSource, rGain);
+      }
+    }
+
+    // -------------------------------------------------------------
+    // 4. 비브라폰 & 솔로 멜로디 (Part 2 & Part 3 공간계 솔로 선율)
+    // -------------------------------------------------------------
+    if (part === 1 || part === 2) {
+      const melodyMap: Record<number, number> = {
+        0: 659.25,
+        4: 783.99,
+        8: 880.0,
+        12: 987.77,
+        16: 1046.5,
+        20: 880.0,
+        24: 783.99,
+        28: 659.25,
+        32: 587.33,
+        36: 659.25,
+        40: 783.99,
+        44: 880.0,
+        48: 987.77,
+        52: 1174.66,
+        56: 1046.5,
+        60: 987.77,
+        64: 880.0,
+        68: 783.99,
+        72: 659.25,
+        76: 587.33,
+        80: 523.25,
+        84: 659.25,
+        88: 783.99,
+        92: 1046.5,
+      };
+      const mFreq = melodyMap[localStep];
+      if (mFreq) {
+        const mOsc = ctx.createOscillator();
+        const mGain = ctx.createGain();
+        const mFilter = ctx.createBiquadFilter();
+        const mPanner = this.createPanner(ctx, 0.15); // 약간 우측 솔로 정위
+
+        mGain.gain.value = 0;
+        mOsc.type = 'triangle';
+        mOsc.frequency.setValueAtTime(mFreq, time);
+
+        // Vibraphone warm bell filter
+        mFilter.type = 'lowpass';
+        mFilter.frequency.setValueAtTime(1600, time);
+        mFilter.frequency.exponentialRampToValueAtTime(800, time + 0.35);
+
+        mGain.gain.setValueAtTime(0.0001, time);
+        mGain.gain.linearRampToValueAtTime(0.065, time + 0.012);
+        mGain.gain.exponentialRampToValueAtTime(0.0001, time + 0.38);
+
+        mOsc.connect(mFilter);
+        mFilter.connect(mGain);
+
+        if (mPanner) {
+          mGain.connect(mPanner);
+          mPanner.connect(destination);
+          mPanner.connect(reverbSend);
+        } else {
+          mGain.connect(destination);
+          mGain.connect(reverbSend);
+        }
+
+        mOsc.start(time);
+        mOsc.stop(time + 0.4);
+        this.trackActiveNode(mOsc, undefined, mGain);
+      }
     }
   }
 
-  /**
-   * 테마 2: 🧗‍♀️ 셀레스트 등반 (Celeste 'First Steps' Style - 118 BPM ⭐⭐⭐)
-   */
+  // =========================================================================
+  // 테마 2: 🧗‍♀️ 셀레스트 등반 (Celeste 'First Steps' - 118 BPM 512 Steps)
+  // =========================================================================
   private scheduleCelesteStep(
     ctx: AudioContext,
     destination: AudioNode,
     time: number,
     step: number
   ): void {
-    const isPartTwo = step >= 64;
-    const localStep = step % 64;
-    const chordIndex = Math.floor(localStep / 16);
+    const part = Math.floor(step / 128);
+    const localStep = step % 128;
+    const chordIndex = Math.floor(localStep / 16) % 4;
 
-    if (isPartTwo && step % 4 === 0) {
+    if (part >= 1 && step % 4 === 0) {
+      const isClimax = part === 2;
       const kickOsc = ctx.createOscillator();
       const kickGain = ctx.createGain();
 
       kickGain.gain.value = 0;
       kickOsc.type = 'sine';
-      kickOsc.frequency.setValueAtTime(120, time);
-      kickOsc.frequency.exponentialRampToValueAtTime(45, time + 0.05);
+      kickOsc.frequency.setValueAtTime(isClimax ? 130 : 115, time);
+      kickOsc.frequency.exponentialRampToValueAtTime(42, time + 0.05);
 
       kickGain.gain.setValueAtTime(0.0001, time);
-      kickGain.gain.linearRampToValueAtTime(0.14, time + 0.004);
-      kickGain.gain.exponentialRampToValueAtTime(0.0001, time + 0.06);
+      kickGain.gain.linearRampToValueAtTime(isClimax ? 0.16 : 0.13, time + 0.004);
+      kickGain.gain.exponentialRampToValueAtTime(0.0001, time + 0.065);
 
       kickOsc.connect(kickGain);
       kickGain.connect(destination);
 
       kickOsc.start(time);
-      kickOsc.stop(time + 0.065);
-      this.trackActiveNode(kickOsc, kickGain);
+      kickOsc.stop(time + 0.07);
+      this.trackActiveNode(kickOsc, undefined, kickGain);
     }
 
     const pianoPatterns: Record<number, number[]> = {
@@ -415,8 +715,8 @@ export class BgmEngine {
         523.25, 659.25, 523.25, 440.0,
       ],
     };
-    const currentPianoArp = pianoPatterns[chordIndex] || pianoPatterns[0];
-    const pianoFreq = currentPianoArp[localStep % 16];
+    const currentPianoArp = safeGet(pianoPatterns, chordIndex, pianoPatterns[0]);
+    const pianoFreq = safeGet(currentPianoArp, localStep % 16, 0);
 
     if (pianoFreq) {
       const pOsc = ctx.createOscillator();
@@ -428,30 +728,30 @@ export class BgmEngine {
       pOsc.frequency.setValueAtTime(pianoFreq, time);
 
       pFilter.type = 'lowpass';
-      pFilter.frequency.setValueAtTime(isPartTwo ? 1400 : 900, time);
+      pFilter.frequency.setValueAtTime(part >= 2 ? 1500 : 950, time);
 
-      const pVol = isPartTwo ? 0.055 : 0.075;
+      const pVol = part === 0 ? 0.08 : part === 2 ? 0.055 : 0.07;
       pGain.gain.setValueAtTime(0.0001, time);
       pGain.gain.linearRampToValueAtTime(pVol, time + 0.008);
-      pGain.gain.exponentialRampToValueAtTime(0.0001, time + 0.18);
+      pGain.gain.exponentialRampToValueAtTime(0.0001, time + 0.19);
 
       pOsc.connect(pFilter);
       pFilter.connect(pGain);
       pGain.connect(destination);
 
       pOsc.start(time);
-      pOsc.stop(time + 0.2);
-      this.trackActiveNode(pOsc, pGain);
+      pOsc.stop(time + 0.21);
+      this.trackActiveNode(pOsc, undefined, pGain);
     }
 
-    if (isPartTwo && step % 2 === 0) {
+    if (part >= 1 && step % 2 === 0) {
       const synthBassMap: Record<number, number> = {
         0: 65.41,
-        1: 87.31,
+        1: 82.41,
         2: 55.0,
-        3: 49.0,
+        3: 43.65,
       };
-      const sbFreq = synthBassMap[chordIndex] || 65.41;
+      const sbFreq = safeGet(synthBassMap, chordIndex, 65.41);
 
       const sOsc = ctx.createOscillator();
       const sGain = ctx.createGain();
@@ -462,7 +762,7 @@ export class BgmEngine {
       sOsc.frequency.setValueAtTime(sbFreq, time);
 
       sFilter.type = 'lowpass';
-      sFilter.frequency.setValueAtTime(450, time);
+      sFilter.frequency.setValueAtTime(420, time);
 
       sGain.gain.setValueAtTime(0.0001, time);
       sGain.gain.linearRampToValueAtTime(0.12, time + 0.012);
@@ -474,10 +774,10 @@ export class BgmEngine {
 
       sOsc.start(time);
       sOsc.stop(time + 0.18);
-      this.trackActiveNode(sOsc, sGain);
+      this.trackActiveNode(sOsc, undefined, sGain);
     }
 
-    if (isPartTwo) {
+    if (part === 1 || part === 2) {
       const leadMelody: Record<number, number> = {
         0: 523.25,
         4: 659.25,
@@ -495,8 +795,24 @@ export class BgmEngine {
         52: 880.0,
         56: 783.99,
         60: 659.25,
+        64: 783.99,
+        68: 880.0,
+        72: 1046.5,
+        76: 1174.66,
+        80: 1318.51,
+        84: 1174.66,
+        88: 1046.5,
+        92: 880.0,
+        96: 987.77,
+        100: 880.0,
+        104: 783.99,
+        108: 659.25,
+        112: 523.25,
+        116: 659.25,
+        120: 783.99,
+        124: 1046.5,
       };
-      const lFreq = leadMelody[localStep];
+      const lFreq = safeGet(leadMelody, localStep, 0);
       if (lFreq) {
         const lOsc = ctx.createOscillator();
         const lGain = ctx.createGain();
@@ -508,7 +824,7 @@ export class BgmEngine {
 
         lFilter.type = 'lowpass';
         lFilter.frequency.setValueAtTime(800, time);
-        lFilter.frequency.linearRampToValueAtTime(1400, time + 0.2);
+        lFilter.frequency.linearRampToValueAtTime(1500, time + 0.2);
         lFilter.frequency.linearRampToValueAtTime(600, time + 0.45);
 
         lGain.gain.setValueAtTime(0.0001, time);
@@ -521,34 +837,61 @@ export class BgmEngine {
 
         lOsc.start(time);
         lOsc.stop(time + 0.5);
-        this.trackActiveNode(lOsc, lGain);
+        this.trackActiveNode(lOsc, undefined, lGain);
       }
+    }
+
+    if (part === 2 && step % 2 === 0) {
+      const hOsc = ctx.createOscillator();
+      const hGain = ctx.createGain();
+      const hFilter = ctx.createBiquadFilter();
+
+      hGain.gain.value = 0;
+      hOsc.type = 'triangle';
+      hOsc.frequency.setValueAtTime(3200, time);
+
+      hFilter.type = 'highpass';
+      hFilter.frequency.setValueAtTime(2800, time);
+
+      hGain.gain.setValueAtTime(0.0001, time);
+      hGain.gain.linearRampToValueAtTime(0.035, time + 0.004);
+      hGain.gain.exponentialRampToValueAtTime(0.0001, time + 0.035);
+
+      hOsc.connect(hFilter);
+      hFilter.connect(hGain);
+      hGain.connect(destination);
+
+      hOsc.start(time);
+      hOsc.stop(time + 0.04);
+      this.trackActiveNode(hOsc, undefined, hGain);
     }
   }
 
-  /**
-   * 테마 3: 🧗‍♂️ 클라이머 펄스 (Climber Pulse - 112 BPM)
-   */
+  // =========================================================================
+  // 테마 3: 🧗‍♂️ 클라이머 펄스 (Climber Pulse - 112 BPM 384 Steps)
+  // =========================================================================
   private scheduleClimbStep(
     ctx: AudioContext,
     destination: AudioNode,
     time: number,
     step: number
   ): void {
-    const chordIndex = Math.floor(step / 16);
+    const part = Math.floor(step / 96);
+    const localStep = step % 96;
+    const chordIndex = Math.floor(localStep / 16) % 4;
 
-    const isKick = step % 4 === 0 || (step === 62 && chordIndex === 3);
+    const isKick = step % 4 === 0 || (part >= 2 && step % 2 === 0 && localStep > 80);
     if (isKick) {
       const kickOsc = ctx.createOscillator();
       const kickGain = ctx.createGain();
 
       kickGain.gain.value = 0;
       kickOsc.type = 'sine';
-      kickOsc.frequency.setValueAtTime(115, time);
-      kickOsc.frequency.exponentialRampToValueAtTime(42, time + 0.05);
+      kickOsc.frequency.setValueAtTime(125, time);
+      kickOsc.frequency.exponentialRampToValueAtTime(40, time + 0.05);
 
       kickGain.gain.setValueAtTime(0.0001, time);
-      kickGain.gain.linearRampToValueAtTime(0.14, time + 0.004);
+      kickGain.gain.linearRampToValueAtTime(0.15, time + 0.004);
       kickGain.gain.exponentialRampToValueAtTime(0.0001, time + 0.055);
 
       kickOsc.connect(kickGain);
@@ -556,7 +899,7 @@ export class BgmEngine {
 
       kickOsc.start(time);
       kickOsc.stop(time + 0.06);
-      this.trackActiveNode(kickOsc, kickGain);
+      this.trackActiveNode(kickOsc, undefined, kickGain);
     }
 
     const bassMap: Record<number, number[]> = {
@@ -565,8 +908,8 @@ export class BgmEngine {
       2: [65.41, 130.81, 65.41, 130.81, 98.0, 130.81, 65.41, 130.81],
       3: [49.0, 98.0, 49.0, 98.0, 73.42, 98.0, 49.0, 98.0],
     };
-    const currentBassNotes = bassMap[chordIndex] || bassMap[0];
-    const bassNote = currentBassNotes[Math.floor((step % 16) / 2)];
+    const currentBassNotes = safeGet(bassMap, chordIndex, bassMap[0]);
+    const bassNote = safeGet(currentBassNotes, Math.floor((localStep % 16) / 2), 0);
 
     if (step % 2 === 0 && bassNote) {
       const bOsc = ctx.createOscillator();
@@ -578,7 +921,7 @@ export class BgmEngine {
       bOsc.frequency.setValueAtTime(bassNote, time);
 
       bFilter.type = 'lowpass';
-      bFilter.frequency.setValueAtTime(320, time);
+      bFilter.frequency.setValueAtTime(part >= 2 ? 480 : 320, time);
 
       bGain.gain.setValueAtTime(0.0001, time);
       bGain.gain.linearRampToValueAtTime(0.12, time + 0.01);
@@ -590,7 +933,7 @@ export class BgmEngine {
 
       bOsc.start(time);
       bOsc.stop(time + 0.18);
-      this.trackActiveNode(bOsc, bGain);
+      this.trackActiveNode(bOsc, undefined, bGain);
     }
 
     const arpPatterns: Record<number, number[]> = {
@@ -611,8 +954,8 @@ export class BgmEngine {
         493.88, 392, 293.66,
       ],
     };
-    const currentArpPattern = arpPatterns[chordIndex] || arpPatterns[0];
-    const arpFreq = currentArpPattern[step % 16];
+    const currentArpPattern = safeGet(arpPatterns, chordIndex, arpPatterns[0]);
+    const arpFreq = safeGet(currentArpPattern, localStep % 16, 0);
 
     if (arpFreq) {
       const aOsc = ctx.createOscillator();
@@ -637,87 +980,50 @@ export class BgmEngine {
 
       aOsc.start(time);
       aOsc.stop(time + 0.12);
-      this.trackActiveNode(aOsc, aGain);
-    }
-
-    const isStab = step % 16 === 6 || step % 16 === 12;
-    if (isStab) {
-      const stabChords: Record<number, number[]> = {
-        0: [261.63, 329.63, 440],
-        1: [261.63, 349.23, 440],
-        2: [261.63, 329.63, 392],
-        3: [293.66, 392, 493.88],
-      };
-      const chordNotes = stabChords[chordIndex] || stabChords[0];
-
-      chordNotes.forEach((cFreq) => {
-        const sOsc = ctx.createOscillator();
-        const sGain = ctx.createGain();
-        const sFilter = ctx.createBiquadFilter();
-
-        sGain.gain.value = 0;
-        sOsc.type = 'triangle';
-        sOsc.frequency.setValueAtTime(cFreq, time);
-
-        sFilter.type = 'lowpass';
-        sFilter.frequency.setValueAtTime(900, time);
-
-        sGain.gain.setValueAtTime(0.0001, time);
-        sGain.gain.linearRampToValueAtTime(0.05, time + 0.015);
-        sGain.gain.exponentialRampToValueAtTime(0.0001, time + 0.16);
-
-        sOsc.connect(sFilter);
-        sFilter.connect(sGain);
-        sGain.connect(destination);
-
-        sOsc.start(time);
-        sOsc.stop(time + 0.18);
-        this.trackActiveNode(sOsc, sGain);
-      });
+      this.trackActiveNode(aOsc, undefined, aGain);
     }
   }
 
-  /**
-   * 테마 4: 🏪 산악 만물상 (Cozy Outfitter Shop - 100 BPM ⭐⭐⭐)
-   * 아늑한 우쿨렐레 보사노바 리듬 + 아기자기한 실로폰 & 우드블록 쇼핑 테마
-   */
+  // =========================================================================
+  // 테마 4: 🏪 산악 만물상 (Cozy Outfitter Shop - 100 BPM 보사노바 384 Steps)
+  // =========================================================================
   private scheduleShopStep(
     ctx: AudioContext,
     destination: AudioNode,
     time: number,
     step: number
   ): void {
-    const chordIndex = Math.floor(step / 16); // 0: Cmaj7, 1: A7(b9), 2: Dm7, 3: G7(13)
+    const localStep = step % 96;
+    const chordIndex = Math.floor(localStep / 16) % 4;
 
-    // 1. 보사노바 베이스 (Bossa Nova Acoustic Bass)
     const bossaBass: Record<number, { step: number; freq: number }[]> = {
       0: [
         { step: 0, freq: 65.41 },
         { step: 6, freq: 98.0 },
         { step: 10, freq: 65.41 },
         { step: 14, freq: 98.0 },
-      ], // C -> G -> C -> G
+      ],
       1: [
         { step: 0, freq: 110.0 },
         { step: 6, freq: 164.81 },
         { step: 10, freq: 110.0 },
         { step: 14, freq: 155.56 },
-      ], // A -> E -> A -> Eb
+      ],
       2: [
         { step: 0, freq: 73.42 },
         { step: 6, freq: 110.0 },
         { step: 10, freq: 73.42 },
         { step: 14, freq: 110.0 },
-      ], // D -> A -> D -> A
+      ],
       3: [
         { step: 0, freq: 98.0 },
         { step: 6, freq: 146.83 },
         { step: 10, freq: 98.0 },
         { step: 14, freq: 123.47 },
-      ], // G -> D -> G -> B
+      ],
     };
     const currentBassEvents = bossaBass[chordIndex] || bossaBass[0];
-    const bassEvent = currentBassEvents.find((e) => e.step === step % 16);
+    const bassEvent = currentBassEvents.find((e) => e.step === localStep % 16);
 
     if (bassEvent) {
       const bOsc = ctx.createOscillator();
@@ -741,17 +1047,20 @@ export class BgmEngine {
 
       bOsc.start(time);
       bOsc.stop(time + 0.3);
-      this.trackActiveNode(bOsc, bGain);
+      this.trackActiveNode(bOsc, undefined, bGain);
     }
 
-    // 2. 우쿨렐레/기타 보사노바 스트럼 컴핑 (Ukulele Strum)
-    const isStrum = step % 16 === 0 || step % 16 === 6 || step % 16 === 10 || step % 16 === 14;
+    const isStrum =
+      localStep % 16 === 0 ||
+      localStep % 16 === 6 ||
+      localStep % 16 === 10 ||
+      localStep % 16 === 14;
     if (isStrum) {
       const shopChords: Record<number, number[]> = {
-        0: [261.63, 329.63, 392.0, 493.88], // Cmaj7 (C4, E4, G4, B4)
-        1: [277.18, 329.63, 392.0, 466.16], // A7(b9) (C#4, E4, G4, Bb4)
-        2: [293.66, 349.23, 440.0, 523.25], // Dm7 (D4, F4, A4, C5)
-        3: [246.94, 329.63, 349.23, 440.0], // G7(13) (B3, E4, F4, A4)
+        0: [261.63, 329.63, 392.0, 493.88],
+        1: [277.18, 329.63, 392.0, 466.16],
+        2: [293.66, 349.23, 440.0, 523.25],
+        3: [246.94, 329.63, 349.23, 440.0],
       };
       const chordNotes = shopChords[chordIndex] || shopChords[0];
 
@@ -778,19 +1087,18 @@ export class BgmEngine {
 
         uOsc.start(time);
         uOsc.stop(time + 0.24);
-        this.trackActiveNode(uOsc, uGain);
+        this.trackActiveNode(uOsc, undefined, uGain);
       });
     }
 
-    // 3. 귀여운 실로폰 & 휘파람 멜로디 (Playful Xylophone Lead)
     const melodyMap: Record<number, number[]> = {
-      0: [659.25, 0, 783.99, 0, 880.0, 0, 987.77, 0, 783.99, 0, 659.25, 0, 587.33, 0, 523.25, 0], // E5 -> G5 -> A5 -> B5 -> G5 -> E5 -> D5 -> C5
-      1: [554.37, 0, 659.25, 0, 783.99, 0, 932.33, 0, 783.99, 0, 659.25, 0, 698.46, 0, 0, 0], // C#5 -> E5 -> G5 -> Bb5 -> G5 -> E5 -> F5
-      2: [698.46, 0, 880.0, 0, 1046.5, 0, 880.0, 0, 698.46, 0, 587.33, 0, 659.25, 0, 0, 0], // F5 -> A5 -> C6 -> A5 -> F5 -> D5 -> E5
-      3: [587.33, 0, 783.99, 0, 987.77, 0, 1174.66, 0, 987.77, 0, 783.99, 0, 523.25, 0, 0, 0], // D5 -> G5 -> B5 -> D6 -> B5 -> G5 -> C5 (해결)
+      0: [659.25, 0, 783.99, 0, 880.0, 0, 987.77, 0, 783.99, 0, 659.25, 0, 587.33, 0, 523.25, 0],
+      1: [554.37, 0, 659.25, 0, 783.99, 0, 932.33, 0, 783.99, 0, 659.25, 0, 698.46, 0, 0, 0],
+      2: [698.46, 0, 880.0, 0, 1046.5, 0, 880.0, 0, 698.46, 0, 587.33, 0, 659.25, 0, 0, 0],
+      3: [587.33, 0, 783.99, 0, 987.77, 0, 1174.66, 0, 987.77, 0, 783.99, 0, 523.25, 0, 0, 0],
     };
     const currentMelody = melodyMap[chordIndex] || melodyMap[0];
-    const mFreq = currentMelody[step % 16];
+    const mFreq = currentMelody[localStep % 16];
 
     if (mFreq && mFreq > 0) {
       const mOsc = ctx.createOscillator();
@@ -814,48 +1122,23 @@ export class BgmEngine {
 
       mOsc.start(time);
       mOsc.stop(time + 0.24);
-      this.trackActiveNode(mOsc, mGain);
-    }
-
-    // 4. 가벼운 우드블록 탭 (Woodblock Tap - 2, 4박)
-    if (step % 8 === 4) {
-      const wOsc = ctx.createOscillator();
-      const wGain = ctx.createGain();
-      const wFilter = ctx.createBiquadFilter();
-
-      wGain.gain.value = 0;
-      wOsc.type = 'triangle';
-      wOsc.frequency.setValueAtTime(1400, time);
-
-      wFilter.type = 'bandpass';
-      wFilter.frequency.setValueAtTime(1400, time);
-
-      wGain.gain.setValueAtTime(0.0001, time);
-      wGain.gain.linearRampToValueAtTime(0.04, time + 0.004);
-      wGain.gain.exponentialRampToValueAtTime(0.0001, time + 0.035);
-
-      wOsc.connect(wFilter);
-      wFilter.connect(wGain);
-      wGain.connect(destination);
-
-      wOsc.start(time);
-      wOsc.stop(time + 0.04);
-      this.trackActiveNode(wOsc, wGain);
+      this.trackActiveNode(mOsc, undefined, mGain);
     }
   }
 
-  /**
-   * 테마 5: 🏆 정상 정복 & 결과 화면 (Summit Victory - 100 BPM ⭐⭐⭐)
-   */
+  // =========================================================================
+  // 테마 5: 🏆 정상 정복 & 승리 찬가 (Summit Victory - 100 BPM 384 Steps)
+  // =========================================================================
   private scheduleVictoryStep(
     ctx: AudioContext,
     destination: AudioNode,
     time: number,
     step: number
   ): void {
-    const chordIndex = Math.floor(step / 16);
+    const localStep = step % 96;
+    const chordIndex = Math.floor(localStep / 16) % 4;
 
-    if (step % 16 === 0) {
+    if (localStep % 16 === 0) {
       const victoryChords: Record<number, number[]> = {
         0: [174.61, 220.0, 261.63, 329.63, 440.0],
         1: [196.0, 246.94, 293.66, 349.23, 392.0],
@@ -889,7 +1172,7 @@ export class BgmEngine {
 
         osc.start(time);
         osc.stop(time + 2.4);
-        this.trackActiveNode(osc, gain);
+        this.trackActiveNode(osc, undefined, gain);
       });
     }
 
@@ -897,7 +1180,7 @@ export class BgmEngine {
       523.25, 659.25, 783.99, 1046.5, 587.33, 783.99, 880.0, 1174.66, 659.25, 783.99, 987.77,
       1318.51, 783.99, 1046.5, 1318.51, 1567.98,
     ];
-    const harpFreq = arpSeq[step % 16];
+    const harpFreq = arpSeq[localStep % 16];
     if (harpFreq) {
       const hOsc = ctx.createOscillator();
       const hGain = ctx.createGain();
@@ -914,25 +1197,23 @@ export class BgmEngine {
 
       hOsc.start(time);
       hOsc.stop(time + 0.38);
-      this.trackActiveNode(hOsc, hGain);
+      this.trackActiveNode(hOsc, undefined, hGain);
     }
   }
 
-  /**
-   * 테마 6: 💓 스태미나 위기 / 라스트 찬스 (Crisis Heartbeat - 126 BPM ⭐⭐)
-   */
+  // =========================================================================
+  // 테마 6: 💓 스태미나 위기 / 라스트 찬스 (Crisis Heartbeat - 126 BPM 448 Steps)
+  // =========================================================================
   private scheduleCrisisStep(
     ctx: AudioContext,
     destination: AudioNode,
     time: number,
     step: number
   ): void {
-    // 1. 심장박동 더블 쿵-쿵 (Lub-Dub Heartbeat)
     const isFirstBeat = step % 8 === 0;
     const isSecondBeat = step % 8 === 2;
 
     if (isFirstBeat || isSecondBeat) {
-      // Body Osc (묵직한 펀치감)
       const hOsc = ctx.createOscillator();
       const hGain = ctx.createGain();
       const hFilter = ctx.createBiquadFilter();
@@ -958,9 +1239,8 @@ export class BgmEngine {
 
       hOsc.start(time);
       hOsc.stop(time + 0.16);
-      this.trackActiveNode(hOsc, hGain);
+      this.trackActiveNode(hOsc, undefined, hGain);
 
-      // Sub Sine (서브 저음 둥-)
       const subOsc = ctx.createOscillator();
       const subGain = ctx.createGain();
       subGain.gain.value = 0;
@@ -977,15 +1257,14 @@ export class BgmEngine {
 
       subOsc.start(time);
       subOsc.stop(time + 0.2);
-      this.trackActiveNode(subOsc, subGain);
+      this.trackActiveNode(subOsc, undefined, subGain);
     }
 
-    // 2. 어둡고 긴박한 텐션 신스 패드 (Dark Tension Chords)
     if (step % 16 === 0) {
       const tensionChord =
-        step < 16
-          ? [110.0, 164.81, 220.0, 261.63, 311.13] // Am(dim)
-          : [82.41, 123.47, 164.81, 207.65, 246.94]; // E(dim)
+        step % 32 < 16
+          ? [110.0, 164.81, 220.0, 261.63, 311.13]
+          : [82.41, 123.47, 164.81, 207.65, 246.94];
 
       tensionChord.forEach((freq, i) => {
         const osc = ctx.createOscillator();
@@ -1010,11 +1289,10 @@ export class BgmEngine {
 
         osc.start(time);
         osc.stop(time + 1.85);
-        this.trackActiveNode(osc, gain);
+        this.trackActiveNode(osc, undefined, gain);
       });
     }
 
-    // 3. 째깍거리는 시한폭탄 펄스 (Clock Ticking Hi-hat)
     if (step % 2 === 0) {
       const tOsc = ctx.createOscillator();
       const tGain = ctx.createGain();
@@ -1037,13 +1315,13 @@ export class BgmEngine {
 
       tOsc.start(time);
       tOsc.stop(time + 0.035);
-      this.trackActiveNode(tOsc, tGain);
+      this.trackActiveNode(tOsc, undefined, tGain);
     }
   }
 
-  /**
-   * 테마 7: 🏔️ 산악 앰비언트 (Mountain Chill Ambient - 8단계 발전형)
-   */
+  // =========================================================================
+  // 테마 7: 🏔️ 산악 앰비언트 (Mountain Chill - 64초 32주기 힐링 싱잉볼 앰비언트)
+  // =========================================================================
   private scheduleChillStep(
     ctx: AudioContext,
     destination: AudioNode,
@@ -1061,7 +1339,8 @@ export class BgmEngine {
       [98.0, 146.83, 246.94, 349.23],
     ];
 
-    const chord = chords[chordIndex] || chords[0];
+    const currentChordIndex = chordIndex % 8;
+    const chord = chords[currentChordIndex] || chords[0];
     const duration = 2.4;
     const attack = 0.6;
 
@@ -1091,7 +1370,7 @@ export class BgmEngine {
       osc.start(time);
       osc.stop(time + duration + 0.05);
 
-      this.trackActiveNode(osc, gain);
+      this.trackActiveNode(osc, undefined, gain);
     });
 
     if (chordIndex >= 4) {
@@ -1101,7 +1380,7 @@ export class BgmEngine {
         [392.0, 349.23],
         [293.66, 261.63],
       ];
-      const melodyPair = melodyNotes[chordIndex - 4] || [329.63, 392.0];
+      const melodyPair = melodyNotes[chordIndex % 4] || [329.63, 392.0];
 
       melodyPair.forEach((mFreq, mIdx) => {
         const mTime = time + 0.3 + mIdx * 0.9;
@@ -1126,12 +1405,12 @@ export class BgmEngine {
 
         mOsc.start(mTime);
         mOsc.stop(mTime + 0.9);
-        this.trackActiveNode(mOsc, mGain);
+        this.trackActiveNode(mOsc, undefined, mGain);
       });
     }
 
     const sparkles = [659.25, 523.25, 783.99, 587.33, 659.25, 880.0, 783.99, 1046.5];
-    const sparkleFreq = sparkles[chordIndex] || 659.25;
+    const sparkleFreq = sparkles[chordIndex % 8] || 659.25;
     const sparkleTime = time + 0.8;
 
     const spOsc = ctx.createOscillator();
@@ -1150,24 +1429,25 @@ export class BgmEngine {
     spOsc.start(sparkleTime);
     spOsc.stop(sparkleTime + 1.25);
 
-    this.trackActiveNode(spOsc, spGain);
+    this.trackActiveNode(spOsc, undefined, spGain);
   }
 
-  /**
-   * 테마 8: 👾 레트로 아케이드 (Retro Arcade - 110 BPM)
-   */
+  // =========================================================================
+  // 테마 8: 👾 레트로 아케이드 (8-Bit Chiptune Adventure - 132 BPM 512 Steps)
+  // =========================================================================
   private scheduleArcadeStep(
     ctx: AudioContext,
     destination: AudioNode,
     time: number,
     step: number
   ): void {
+    const localStep = step % 64;
     const bassPattern = [
       130.81, 0, 130.81, 0, 196.0, 0, 164.81, 0, 110.0, 0, 110.0, 0, 164.81, 0, 130.81, 0, 87.31, 0,
       87.31, 0, 130.81, 0, 110.0, 0, 98.0, 0, 146.83, 0, 196.0, 0, 246.94, 0,
     ];
 
-    const bassFreq = bassPattern[step];
+    const bassFreq = bassPattern[localStep % 32];
     if (bassFreq && bassFreq > 0) {
       const osc = ctx.createOscillator();
       const gain = ctx.createGain();
@@ -1184,7 +1464,7 @@ export class BgmEngine {
 
       osc.start(time);
       osc.stop(time + 0.24);
-      this.trackActiveNode(osc, gain);
+      this.trackActiveNode(osc, undefined, gain);
     }
 
     const leadNotes = [
@@ -1192,12 +1472,12 @@ export class BgmEngine {
       0, 523.25, 0, 659.25, 0, 523.25, 0, 587.33, 0, 659.25, 0, 783.99, 0, 987.77, 0,
     ];
 
-    const leadFreq = leadNotes[step];
+    const leadFreq = leadNotes[localStep % 32];
     if (leadFreq && leadFreq > 0) {
       const osc = ctx.createOscillator();
       const gain = ctx.createGain();
       gain.gain.value = 0;
-      osc.type = 'sine';
+      osc.type = 'square';
       osc.frequency.setValueAtTime(leadFreq, time);
 
       gain.gain.setValueAtTime(0.0001, time);
@@ -1209,27 +1489,29 @@ export class BgmEngine {
 
       osc.start(time);
       osc.stop(time + 0.2);
-      this.trackActiveNode(osc, gain);
+      this.trackActiveNode(osc, undefined, gain);
     }
   }
 
-  /**
-   * 테마 9: 🧩 퀴즈 & 브레인 포커스 (Quiz Brain Focus - 92 BPM)
-   */
+  // =========================================================================
+  // 테마 9: 🧩 퀴즈 & 브레인 포커스 (Quiz Lo-Fi Focus - 92 BPM 384 Steps)
+  // =========================================================================
   private schedulePuzzleStep(
     ctx: AudioContext,
     destination: AudioNode,
     time: number,
     step: number
   ): void {
-    if (step % 8 === 0) {
+    const localStep = step % 96;
+
+    if (localStep % 8 === 0) {
       const jazzChords = [
         [174.61, 220.0, 261.63, 329.63],
         [164.81, 196.0, 246.94, 293.66],
         [146.83, 174.61, 220.0, 261.63],
         [130.81, 164.81, 196.0, 246.94],
       ];
-      const chord = jazzChords[Math.floor(step / 8)] || jazzChords[0];
+      const chord = jazzChords[Math.floor(localStep / 8) % 4] || jazzChords[0];
 
       chord.forEach((freq, i) => {
         const osc = ctx.createOscillator();
@@ -1253,7 +1535,7 @@ export class BgmEngine {
 
         osc.start(time);
         osc.stop(time + 1.3);
-        this.trackActiveNode(osc, gain);
+        this.trackActiveNode(osc, undefined, gain);
       });
     }
 
@@ -1262,7 +1544,7 @@ export class BgmEngine {
       0, 523.25, 0, 0, 659.25, 0, 523.25, 392.0, 0, 493.88, 0, 523.25, 0, 659.25, 0,
     ];
 
-    const mFreq = marimbaPattern[step];
+    const mFreq = marimbaPattern[localStep % 32];
     if (mFreq && mFreq > 0) {
       const osc = ctx.createOscillator();
       const gain = ctx.createGain();
@@ -1286,13 +1568,18 @@ export class BgmEngine {
 
       osc.start(time);
       osc.stop(time + 0.3);
-      this.trackActiveNode(osc, gain);
+      this.trackActiveNode(osc, undefined, gain);
     }
   }
 
-  private trackActiveNode(osc: OscillatorNode, gain: GainNode): void {
-    this.activeNodes.push({ osc, gain });
-    if (this.activeNodes.length > 60) {
+  private trackActiveNode(
+    osc?: OscillatorNode,
+    source?: AudioBufferSourceNode,
+    gain?: GainNode
+  ): void {
+    if (!gain) return;
+    this.activeNodes.push({ osc, source, gain });
+    if (this.activeNodes.length > 80) {
       this.activeNodes.shift();
     }
   }

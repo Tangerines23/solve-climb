@@ -85,7 +85,9 @@
     "Fmaj",
     "Dmin",
     "Emin",
-    "Bdim"
+    "Bdim",
+    "Bbmaj",
+    "Shibuya"
   ],
   "ignorePaths": [
     "node_modules",
