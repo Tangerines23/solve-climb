@@ -1,5 +1,5 @@
 project: solve-climb
-generatedAt: '2026-08-17T21:38:08.398Z'
+generatedAt: '2026-08-17T21:43:13.967Z'
 files:
   src/App.tsx:
     imports:
@@ -688,8 +688,8 @@ files:
           - types.push
           - availableKeyboardTypes.includes
           - setSelectedKeyboardType
-          - useGameStore.setState
           - setSelectedCategoryIndex
+          - useGameStore.setState
           - screen.orientation.type.includes
           - window.matchMedia
           - setIsLandscape

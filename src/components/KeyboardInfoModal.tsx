@@ -146,7 +146,7 @@ export function KeyboardInfoModal({ isOpen, onClose }: KeyboardInfoModalProps) {
   );
   const [selectedCategoryIndex, setSelectedCategoryIndex] = useState(0);
 
-  // 설정값 변경 시 키보드 타입 업데이트
+  // 설정값 변경 시 키보드 타입 및 카테고리 인덱스 업데이트
   useEffect(() => {
     if (availableKeyboardTypes.length > 0) {
       const initialType: KeyboardDisplayType =
@@ -156,11 +156,10 @@ export function KeyboardInfoModal({ isOpen, onClose }: KeyboardInfoModalProps) {
             ? 'custom'
             : availableKeyboardTypes[0]!;
 
-      if (!selectedKeyboardType || !availableKeyboardTypes.includes(selectedKeyboardType)) {
-        setSelectedKeyboardType(initialType);
-      }
+      setSelectedKeyboardType(initialType);
+      setSelectedCategoryIndex(0);
     }
-  }, [keyboardType, availableKeyboardTypes, selectedKeyboardType]);
+  }, [keyboardType, availableKeyboardTypes]);
 
   // 키보드 미리보기 진입 시 이전 인게임 콤보 및 피버 상태 초기화
   useEffect(() => {
