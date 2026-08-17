@@ -1,5 +1,5 @@
 project: solve-climb
-generatedAt: '2026-08-17T13:17:28.638Z'
+generatedAt: '2026-08-17T13:44:03.005Z'
 files:
   src/App.tsx:
     imports:
@@ -79,7 +79,8 @@ files:
     exports:
       - name: AlertModal
         params:
-          "{\n  isOpen,\n  title,\n  message,\n  buttonText = '확인',\n  onClose,\n}": AlertModalProps
+          ? "{\n  isOpen,\n  title,\n  message,\n  buttonText = '확인',\n  onClose,\n}"
+          : AlertModalProps
         returns: import("C:/Users/ghkdd/gemini-projects/solve-climb/node_modules/@types/react/jsx-runtime").JSX.Element
   src/components/BadgeNotification.tsx:
     imports:
@@ -144,7 +145,8 @@ files:
     exports:
       - name: BaseCard
         params:
-          "{\n  children,\n  className = '',\n  interactive = false,\n  padding = 'md',\n  ...props\n}": BaseCardProps
+          ? "{\n  children,\n  className = '',\n  interactive = false,\n  padding = 'md',\n  ...props\n}"
+          : BaseCardProps
         returns: import("C:/Users/ghkdd/gemini-projects/solve-climb/node_modules/@types/react/jsx-runtime").JSX.Element
   src/components/BaseModal.tsx:
     imports:
@@ -152,7 +154,8 @@ files:
     exports:
       - name: BaseModal
         params:
-          "{\n  isOpen,\n  onClose,\n  title,\n  children,\n  actions,\n  showOverlay = true,\n  closeOnOverlayClick = true,\n  className = '',\n}": import("C:/Users/ghkdd/gemini-projects/solve-climb/src/components/BaseModal").BaseModalProps
+          ? "{\n  isOpen,\n  onClose,\n  title,\n  children,\n  actions,\n  showOverlay = true,\n  closeOnOverlayClick = true,\n  className = '',\n}"
+          : import("C:/Users/ghkdd/gemini-projects/solve-climb/src/components/BaseModal").BaseModalProps
         returns: import("C:/Users/ghkdd/gemini-projects/solve-climb/node_modules/@types/react/jsx-runtime").JSX.Element | null
         calls:
           - e.stopPropagation
@@ -248,7 +251,8 @@ files:
     exports:
       - name: ClimbGraphic
         params:
-          "{\n  mountain,\n  world,\n  category,\n  levels,\n  categoryColor = 'var(--color-teal-500)',\n  onLevelClick,\n  onUnderDevelopmentClick,\n  isReady,\n}": ClimbGraphicProps
+          ? "{\n  mountain,\n  world,\n  category,\n  levels,\n  categoryColor = 'var(--color-teal-500)',\n  onLevelClick,\n  onUnderDevelopmentClick,\n  isReady,\n}"
+          : ClimbGraphicProps
         returns: import("C:/Users/ghkdd/gemini-projects/solve-climb/node_modules/@types/react/jsx-runtime").JSX.Element
         calls:
           - useLevelProgressStore
@@ -297,7 +301,8 @@ files:
     exports:
       - name: ClimbBackground
         params:
-          "{\n  world,\n  category,\n  totalLevels: _totalLevels = 30,\n}": BackgroundProps
+          ? "{\n  world,\n  category,\n  totalLevels: _totalLevels = 30,\n}"
+          : BackgroundProps
         returns: import("C:/Users/ghkdd/gemini-projects/solve-climb/node_modules/@types/react/jsx-runtime").JSX.Element
         calls:
           - Math.max
@@ -335,7 +340,8 @@ files:
     exports:
       - name: ConfirmModal
         params:
-          "{\n  isOpen,\n  title,\n  message,\n  confirmText = '확인',\n  cancelText = '취소',\n  onConfirm,\n  onCancel,\n  variant = 'primary',\n}": ConfirmModalProps
+          ? "{\n  isOpen,\n  title,\n  message,\n  confirmText = '확인',\n  cancelText = '취소',\n  onConfirm,\n  onCancel,\n  variant = 'primary',\n}"
+          : ConfirmModalProps
         returns: import("C:/Users/ghkdd/gemini-projects/solve-climb/node_modules/@types/react/jsx-runtime").JSX.Element
   src/components/CountdownOverlay.tsx:
     imports:
@@ -404,7 +410,8 @@ files:
     exports:
       - name: CyclePromotionModal
         params:
-          "{\n  isOpen,\n  stars,\n  pendingScore,\n  onPromote,\n  onClose,\n}": CyclePromotionModalProps
+          ? "{\n  isOpen,\n  stars,\n  pendingScore,\n  onPromote,\n  onClose,\n}"
+          : CyclePromotionModalProps
         returns: import("C:/Users/ghkdd/gemini-projects/solve-climb/node_modules/@types/react/jsx-runtime").JSX.Element
         calls:
           - setIsPromoting
@@ -514,7 +521,8 @@ files:
     exports:
       - name: GameTipModal
         params:
-          "{\n  isOpen,\n  category,\n  subTopic,\n  level,\n  onStart,\n  onClose,\n}": GameTipModalProps
+          ? "{\n  isOpen,\n  category,\n  subTopic,\n  level,\n  onStart,\n  onClose,\n}"
+          : GameTipModalProps
         returns: import("C:/Users/ghkdd/gemini-projects/solve-climb/node_modules/@types/react/jsx-runtime").JSX.Element | null
         calls:
           - setSelectedItemIds
@@ -715,7 +723,8 @@ files:
     exports:
       - name: LastChanceModal
         params:
-          "{\n  isVisible,\n  gameMode,\n  inventoryCount,\n  userMinerals,\n  onUseItem,\n  onPurchaseAndUse,\n  onWatchAd,\n  onGiveUp,\n  basePrice,\n}": LastChanceModalProps
+          ? "{\n  isVisible,\n  gameMode,\n  inventoryCount,\n  userMinerals,\n  onUseItem,\n  onPurchaseAndUse,\n  onWatchAd,\n  onGiveUp,\n  basePrice,\n}"
+          : LastChanceModalProps
         returns: import("C:/Users/ghkdd/gemini-projects/solve-climb/node_modules/@types/react/jsx-runtime").JSX.Element
         calls:
           - setTimeLeft
@@ -755,7 +764,8 @@ files:
     exports:
       - name: ModeSelectModal
         params:
-          "{\n  isOpen,\n  level,\n  levelName,\n  onClose,\n  onSelectMode,\n}": ModeSelectModalProps
+          ? "{\n  isOpen,\n  level,\n  levelName,\n  onClose,\n  onSelectMode,\n}"
+          : ModeSelectModalProps
         returns: import("C:/Users/ghkdd/gemini-projects/solve-climb/node_modules/@types/react/jsx-runtime").JSX.Element
         calls:
           - STAGE_CONFIG.find
@@ -912,7 +922,8 @@ files:
     exports:
       - name: SegmentedControl
         params:
-          "{\n  options,\n  value,\n  onChange,\n  className = '',\n  name = 'segmented-control',\n}": SegmentedControlProps<T>
+          ? "{\n  options,\n  value,\n  onChange,\n  className = '',\n  name = 'segmented-control',\n}"
+          : SegmentedControlProps<T>
         returns: import("C:/Users/ghkdd/gemini-projects/solve-climb/node_modules/@types/react/jsx-runtime").JSX.Element
         calls:
           - options.findIndex
@@ -980,7 +991,8 @@ files:
     exports:
       - name: TierBadge
         params:
-          "{\n  totalScore,\n  size = 'medium',\n  showLabel = true,\n  showStars = true,\n  currentTierLevel,\n  fixedTierLevel,\n  fixedTierStars,\n}": TierBadgeProps
+          ? "{\n  totalScore,\n  size = 'medium',\n  showLabel = true,\n  showStars = true,\n  currentTierLevel,\n  fixedTierLevel,\n  fixedTierStars,\n}"
+          : TierBadgeProps
         returns: import("C:/Users/ghkdd/gemini-projects/solve-climb/node_modules/@types/react/jsx-runtime").JSX.Element
         calls:
           - setTierResult
@@ -1005,7 +1017,8 @@ files:
     exports:
       - name: TierProgressBar
         params:
-          "{\n  totalScore,\n  size = 'medium',\n}": TierProgressBarProps
+          ? "{\n  totalScore,\n  size = 'medium',\n}"
+          : TierProgressBarProps
         returns: import("C:/Users/ghkdd/gemini-projects/solve-climb/node_modules/@types/react/jsx-runtime").JSX.Element | null
         calls:
           - calculateTier
@@ -1035,7 +1048,8 @@ files:
     exports:
       - name: TierUpgradeModal
         params:
-          "{\n  isOpen,\n  previousScore,\n  currentScore,\n  onClose,\n}": TierUpgradeModalProps
+          ? "{\n  isOpen,\n  previousScore,\n  currentScore,\n  onClose,\n}"
+          : TierUpgradeModalProps
         returns: import("C:/Users/ghkdd/gemini-projects/solve-climb/node_modules/@types/react/jsx-runtime").JSX.Element | null
         calls:
           - setLoading
@@ -1082,7 +1096,8 @@ files:
     exports:
       - name: Toast
         params:
-          "{\n  message,\n  isOpen,\n  onClose,\n  autoClose = true,\n  autoCloseDelay = 2000,\n  icon,\n  children,\n}": ToastProps
+          ? "{\n  message,\n  isOpen,\n  onClose,\n  autoClose = true,\n  autoCloseDelay = 2000,\n  icon,\n  children,\n}"
+          : ToastProps
         returns: React.ReactPortal | null
         calls:
           - clearTimeout
@@ -1114,7 +1129,8 @@ files:
     exports:
       - name: UnderDevelopmentModal
         params:
-          "{\n  isOpen,\n  onClose,\n  autoClose = true,\n  autoCloseDelay = 2000,\n}": UnderDevelopmentModalProps
+          ? "{\n  isOpen,\n  onClose,\n  autoClose = true,\n  autoCloseDelay = 2000,\n}"
+          : UnderDevelopmentModalProps
         returns: import("C:/Users/ghkdd/gemini-projects/solve-climb/node_modules/@types/react/jsx-runtime").JSX.Element
         calls:
           - setTimeout
@@ -1151,7 +1167,8 @@ files:
     exports:
       - name: WithdrawConfirmModal
         params:
-          "{\n  isOpen,\n  onConfirm,\n  onCancel,\n  isLoading = false,\n}": WithdrawConfirmModalProps
+          ? "{\n  isOpen,\n  onConfirm,\n  onCancel,\n  isLoading = false,\n}"
+          : WithdrawConfirmModalProps
         returns: import("C:/Users/ghkdd/gemini-projects/solve-climb/node_modules/@types/react/jsx-runtime").JSX.Element
   src/config/app.ts:
     imports:
@@ -1230,7 +1247,8 @@ files:
         description: 고도에 따른 유저 칭호 생성 로직
       - name: getSmartComment
         params:
-          "{\n  streakCount,\n  averageAccuracy,\n  maxCombo,\n  totalAltitude,\n}": '{ streakCount: number; averageAccuracy: number; maxCombo: number; totalAltitude: number; }'
+          ? "{\n  streakCount,\n  averageAccuracy,\n  maxCombo,\n  totalAltitude,\n}"
+          : '{ streakCount: number; averageAccuracy: number; maxCombo: number; totalAltitude: number; }'
         returns: string
         description: 스마트 코멘트 생성을 위한 조건부 메시지
   src/constants/items.ts:
@@ -1558,7 +1576,8 @@ files:
     exports:
       - name: useLongPress
         params:
-          "{\n  onLongPress,\n  onMediumPress,\n  mediumDelay = 2000,\n  longDelay = 4000,\n  disabled = false,\n}": UseLongPressOptions
+          ? "{\n  onLongPress,\n  onMediumPress,\n  mediumDelay = 2000,\n  longDelay = 4000,\n  disabled = false,\n}"
+          : UseLongPressOptions
         returns: '{ onMouseDown: (e: React.MouseEvent<Element, MouseEvent> | React.TouchEvent<Element>) => void; onMouseUp: () => void; onMouseLeave: () => void; onTouchStart: (e: React.MouseEvent<Element, MouseEvent> | React.TouchEvent<Element>) => void; onTouchEnd: () => void; onTouchCancel: () => void; }'
         calls:
           - e.stopPropagation
@@ -3696,7 +3715,8 @@ files:
     exports:
       - name: EquationVisualizer
         params:
-          "{\n  initialLeft,\n  initialRight,\n  onSolved: _onSolved,\n}": EquationVisualizerProps
+          ? "{\n  initialLeft,\n  initialRight,\n  onSolved: _onSolved,\n}"
+          : EquationVisualizerProps
         returns: import("C:/Users/ghkdd/gemini-projects/solve-climb/node_modules/@types/react/jsx-runtime").JSX.Element
         calls:
           - setIsAnimating
@@ -3716,7 +3736,8 @@ files:
     exports:
       - name: GlassCard
         params:
-          "{\n  children,\n  className = '',\n  interactive = false,\n  onClick,\n  style,\n}": GlassCardProps
+          ? "{\n  children,\n  className = '',\n  interactive = false,\n  onClick,\n  style,\n}"
+          : GlassCardProps
         returns: import("C:/Users/ghkdd/gemini-projects/solve-climb/node_modules/@types/react/jsx-runtime").JSX.Element
         description: |-
           전역 Glassmorphism 스타일이 적용된 카드 컴포넌트
@@ -3826,7 +3847,8 @@ files:
     exports:
       - name: BackpackBottomSheet
         params:
-          "{\n  isOpen,\n  onClose,\n  selectedItemIds,\n  onToggleItem,\n}": BackpackBottomSheetProps
+          ? "{\n  isOpen,\n  onClose,\n  selectedItemIds,\n  onToggleItem,\n}"
+          : BackpackBottomSheetProps
         returns: import("C:/Users/ghkdd/gemini-projects/solve-climb/node_modules/@types/react/jsx-runtime").JSX.Element | null
         calls:
           - useUserStore
@@ -3845,7 +3867,8 @@ files:
     exports:
       - name: GameAlertModal
         params:
-          "{\n  isOpen,\n  onClose,\n  onAction,\n  type,\n}": GameAlertModalProps
+          ? "{\n  isOpen,\n  onClose,\n  onAction,\n  type,\n}"
+          : GameAlertModalProps
         returns: import("C:/Users/ghkdd/gemini-projects/solve-climb/node_modules/@types/react/jsx-runtime").JSX.Element | null
         calls:
           - AdService.preloadRewardedAd().catch
@@ -3888,7 +3911,8 @@ files:
     exports:
       - name: PauseModal
         params:
-          "{\n  isVisible,\n  remainingPauses,\n  onResume,\n  onExit,\n}": PauseModalProps
+          ? "{\n  isVisible,\n  remainingPauses,\n  onResume,\n  onExit,\n}"
+          : PauseModalProps
         returns: import("C:/Users/ghkdd/gemini-projects/solve-climb/node_modules/@types/react/jsx-runtime").JSX.Element
   src/components/game/PreGameLobby.tsx:
     imports:
@@ -3930,7 +3954,8 @@ files:
     exports:
       - name: StaminaWarningModal
         params:
-          "{\n  isOpen,\n  onClose,\n  onPlayAnyway,\n  onWatchAd,\n}": StaminaWarningModalProps
+          ? "{\n  isOpen,\n  onClose,\n  onPlayAnyway,\n  onWatchAd,\n}"
+          : StaminaWarningModalProps
         returns: import("C:/Users/ghkdd/gemini-projects/solve-climb/node_modules/@types/react/jsx-runtime").JSX.Element | null
         calls:
           - e.stopPropagation
@@ -4102,7 +4127,8 @@ files:
     exports:
       - name: ShapeVisualizer
         params:
-          "{\n  sides = 5,\n  shapeType = 'n-gon',\n  width,\n  height,\n  base,\n  angleA,\n  angleB,\n  angleC,\n}": import("C:/Users/ghkdd/gemini-projects/solve-climb/src/components/geometry/ShapeVisualizer").ShapeVisualizerProps
+          ? "{\n  sides = 5,\n  shapeType = 'n-gon',\n  width,\n  height,\n  base,\n  angleA,\n  angleB,\n  angleC,\n}"
+          : import("C:/Users/ghkdd/gemini-projects/solve-climb/src/components/geometry/ShapeVisualizer").ShapeVisualizerProps
         returns: import("C:/Users/ghkdd/gemini-projects/solve-climb/node_modules/@types/react/jsx-runtime").JSX.Element | null
         calls:
           - Math.max
@@ -4118,7 +4144,8 @@ files:
     exports:
       - name: useManimEngine
         params:
-          "{\n  totalSteps,\n  holdDuration = 2000,\n  moveDuration = 1000,\n}": UseManimEngineOptions
+          ? "{\n  totalSteps,\n  holdDuration = 2000,\n  moveDuration = 1000,\n}"
+          : UseManimEngineOptions
         returns: '{ t: number; stepIndex: number; stepElapsed: number; isPaused: boolean; togglePause: () => void; getEasedProgress: () => number; totalCycle: number; stepDuration: number; }'
         calls:
           - requestAnimationFrame
@@ -5211,7 +5238,8 @@ files:
     exports:
       - name: CustomPresetModal
         params:
-          "{\n  isOpen,\n  editingPreset,\n  onClose,\n  onSave,\n}": CustomPresetModalProps
+          ? "{\n  isOpen,\n  editingPreset,\n  onClose,\n  onSave,\n}"
+          : CustomPresetModalProps
         returns: import("C:/Users/ghkdd/gemini-projects/solve-climb/node_modules/@types/react/jsx-runtime").JSX.Element | null
         calls:
           - setName
@@ -5892,7 +5920,8 @@ files:
     exports:
       - name: MyPageProfile
         params:
-          "{\n  nickname,\n  email,\n  isAnonymous,\n  totalMasteryScore,\n  loginStreak = 0,\n  loading,\n  onEditProfile,\n}": MyPageProfileProps
+          ? "{\n  nickname,\n  email,\n  isAnonymous,\n  totalMasteryScore,\n  loginStreak = 0,\n  loading,\n  onEditProfile,\n}"
+          : MyPageProfileProps
         returns: import("C:/Users/ghkdd/gemini-projects/solve-climb/node_modules/@types/react/jsx-runtime").JSX.Element
         calls:
           - (totalMasteryScore || 0).toLocaleString
@@ -5906,7 +5935,8 @@ files:
     exports:
       - name: MyPageQuickAccess
         params:
-          "{\n  todayChallenge,\n  favorites,\n  setCategoryTopic,\n}": MyPageQuickAccessProps
+          ? "{\n  todayChallenge,\n  favorites,\n  setCategoryTopic,\n}"
+          : MyPageQuickAccessProps
         returns: import("C:/Users/ghkdd/gemini-projects/solve-climb/node_modules/@types/react/jsx-runtime").JSX.Element
         calls:
           - useNavigate
@@ -5962,7 +5992,8 @@ files:
     exports:
       - name: MyPageSettings
         params:
-          "{\n  soundEnabled,\n  bgmEnabled,\n  hapticEnabled,\n  animationEnabled,\n  onToggleSound,\n  onToggleBgm,\n  onToggleHaptic,\n  onToggleAnimation,\n  onShowProfileForm,\n  onDataReset,\n  isResetting,\n  onSendFeedback,\n  onLogout,\n  onWithdraw,\n}": MyPageSettingsProps
+          ? "{\n  soundEnabled,\n  bgmEnabled,\n  hapticEnabled,\n  animationEnabled,\n  onToggleSound,\n  onToggleBgm,\n  onToggleHaptic,\n  onToggleAnimation,\n  onShowProfileForm,\n  onDataReset,\n  isResetting,\n  onSendFeedback,\n  onLogout,\n  onWithdraw,\n}"
+          : MyPageSettingsProps
         returns: import("C:/Users/ghkdd/gemini-projects/solve-climb/node_modules/@types/react/jsx-runtime").JSX.Element
         calls:
           - useNavigate
@@ -5996,7 +6027,8 @@ files:
     exports:
       - name: MyPageStats
         params:
-          "{\n  loading,\n  totalSolved,\n  maxLevel,\n  bestSubject,\n  isOpeningLeaderboard,\n  retryCount,\n  onNavigateHistory,\n  onOpenLeaderboard,\n}": MyPageStatsProps
+          ? "{\n  loading,\n  totalSolved,\n  maxLevel,\n  bestSubject,\n  isOpeningLeaderboard,\n  retryCount,\n  onNavigateHistory,\n  onOpenLeaderboard,\n}"
+          : MyPageStatsProps
         returns: import("C:/Users/ghkdd/gemini-projects/solve-climb/node_modules/@types/react/jsx-runtime").JSX.Element
         calls:
           - (totalSolved || 0).toLocaleString
@@ -6465,7 +6497,8 @@ files:
     exports:
       - name: CoordinateGrid
         params:
-          "{\n  onShoot,\n  range = 5,\n  isFirstQuadrantOnly = false,\n  disabled = false,\n}": CoordinateGridProps
+          ? "{\n  onShoot,\n  range = 5,\n  isFirstQuadrantOnly = false,\n  disabled = false,\n}"
+          : CoordinateGridProps
         returns: import("C:/Users/ghkdd/gemini-projects/solve-climb/node_modules/@types/react/jsx-runtime").JSX.Element
         calls:
           - setSelected
@@ -6592,7 +6625,8 @@ files:
     exports:
       - name: QuizPreview
         params:
-          "{\n  mountainParam,\n  categoryParam,\n  worldParam,\n  subParam,\n  levelParam,\n  category,\n  topic,\n  keyboardType,\n  useSystemKeyboard,\n}": QuizPreviewProps
+          ? "{\n  mountainParam,\n  categoryParam,\n  worldParam,\n  subParam,\n  levelParam,\n  category,\n  topic,\n  keyboardType,\n  useSystemKeyboard,\n}"
+          : QuizPreviewProps
         returns: import("C:/Users/ghkdd/gemini-projects/solve-climb/node_modules/@types/react/jsx-runtime").JSX.Element
         calls:
           - useNavigate
@@ -7278,7 +7312,8 @@ files:
     exports:
       - name: useQuestionGenerator
         params:
-          "{\n  category,\n  world,\n  difficulty,\n  gameMode,\n  worldParam,\n  categoryParam,\n  levelParam,\n  tierParam,\n  mountainParam,\n  totalQuestions,\n  preGeneratedQuestions,\n}": UseQuestionGeneratorParams
+          ? "{\n  category,\n  world,\n  difficulty,\n  gameMode,\n  worldParam,\n  categoryParam,\n  levelParam,\n  tierParam,\n  mountainParam,\n  totalQuestions,\n  preGeneratedQuestions,\n}"
+          : UseQuestionGeneratorParams
         returns: '{ generateNewQuestion: () => void; }'
         calls:
           - new URLSearchParams(window.location.search).get
@@ -7310,7 +7345,8 @@ files:
     exports:
       - name: useQuizBgm
         params:
-          "{\n  categoryParam,\n  modeParam,\n  showTipModal,\n  showLastChanceModal,\n  showCountdown,\n  showPauseModal = false,\n  isLastSpurtActive = false,\n}": UseQuizBgmProps
+          ? "{\n  categoryParam,\n  modeParam,\n  showTipModal,\n  showLastChanceModal,\n  showCountdown,\n  showPauseModal = false,\n  isLastSpurtActive = false,\n}"
+          : UseQuizBgmProps
         description: |-
           인게임 퀴즈 생명주기 및 모달 상태에 따른 BGM 전환 훅
           - 일반 레벨 등반: 🧗‍♀️ 셀레스트 등반 (Celeste 118 BPM - 경쾌한 멜로디)
@@ -7334,7 +7370,8 @@ files:
     exports:
       - name: useQuizBusinessLogic
         params:
-          "{\n  setToastValue,\n  setShowSlideToast,\n  showGlobalToast,\n  refundStamina,\n  recoverStaminaAds,\n  handleGameOver,\n  totalQuestions,\n}": UseQuizBusinessLogicParams
+          ? "{\n  setToastValue,\n  setShowSlideToast,\n  showGlobalToast,\n  refundStamina,\n  recoverStaminaAds,\n  handleGameOver,\n  totalQuestions,\n}"
+          : UseQuizBusinessLogicParams
         returns: '{ handleWatchAdRevive: () => Promise<boolean>; smartHandleGameOver: (reason?: string | undefined) => Promise<void>; handleStaminaAdRecovery: (setShowStaminaModal: (s: boolean) => void) => Promise<void>; }'
         description: QuizPage의 핵심 비즈니스 로직(광고 시청, 게임 오버, 스테미너 회복)을 관리하는 커스텀 훅
         calls:
@@ -7414,7 +7451,8 @@ files:
     exports:
       - name: useQuizGameState
         params:
-          "{\n  score,\n  gameMode,\n  mountainParam,\n  worldParam,\n  categoryParam,\n  subParam,\n  levelParam,\n  modeParam,\n  isExhausted,\n  navigate,\n}": UseQuizGameStateParams
+          ? "{\n  score,\n  gameMode,\n  mountainParam,\n  worldParam,\n  categoryParam,\n  subParam,\n  levelParam,\n  modeParam,\n  isExhausted,\n  navigate,\n}"
+          : UseQuizGameStateParams
         returns: '{ totalQuestions: number; wrongAnswers: { question: string; wrongAnswer: string; correctAnswer: string; }[]; questionStartTime: number | null; solveTimes: number[]; gameSessionId: string | null; userAnswers: number[]; questionIds: string[]; setTotalQuestions: React.Dispatch<React.SetStateAction<number>>; setWrongAnswers: React.Dispatch<React.SetStateAction<{ question: string; wrongAnswer: string; correctAnswer: string; }[]>>; setQuestionStartTime: React.Dispatch<React.SetStateAction<number | null>>; setSolveTimes: React.Dispatch<React.SetStateAction<number[]>>; setGameSessionId: React.Dispatch<React.SetStateAction<string | null>>; setUserAnswers: React.Dispatch<React.SetStateAction<number[]>>; setQuestionIds: React.Dispatch<React.SetStateAction<string[]>>; handleGameOver: (reason?: string | undefined) => void; }'
         calls:
           - params.set
@@ -7433,7 +7471,8 @@ files:
     exports:
       - name: useQuizInput
         params:
-          "{\n  isSubmitting,\n  isError,\n  isPaused = false,\n  categoryParam,\n  subParam,\n  setAnswerInput,\n  setDisplayValue,\n  onInputStart,\n}": UseQuizInputParams
+          ? "{\n  isSubmitting,\n  isError,\n  isPaused = false,\n  categoryParam,\n  subParam,\n  setAnswerInput,\n  setDisplayValue,\n  onInputStart,\n}"
+          : UseQuizInputParams
         returns: '{ handleKeypadNumber: (num: string) => void; handleQwertyKeyPress: (key: string) => void; handleKeypadClear: () => void; handleKeypadBackspace: () => void; }'
         calls:
           - onInputStart
@@ -7470,7 +7509,8 @@ files:
     exports:
       - name: useQuizNavigation
         params:
-          "{\n  totalQuestions,\n  showTipModal,\n  refundStamina,\n  navigate,\n  mountainParam,\n  worldParam,\n  categoryParam,\n  searchParams,\n}": UseQuizNavigationProps
+          ? "{\n  totalQuestions,\n  showTipModal,\n  refundStamina,\n  navigate,\n  mountainParam,\n  worldParam,\n  categoryParam,\n  searchParams,\n}"
+          : UseQuizNavigationProps
         returns: '{ showExitConfirm: boolean; setShowExitConfirm: React.Dispatch<React.SetStateAction<boolean>>; isFadingOut: boolean; setIsFadingOut: React.Dispatch<React.SetStateAction<boolean>>; toastValue: string; setToastValue: React.Dispatch<React.SetStateAction<string>>; handleBack: () => void; cancelExitConfirm: () => void; }'
         calls:
           - clearTimeout
@@ -7501,7 +7541,8 @@ files:
     exports:
       - name: useQuizRevive
         params:
-          "{\n  gameMode,\n  inventory,\n  minerals,\n  consumeItem,\n  onWatchAd,\n  isPreview,\n}": UseQuizReviveParams
+          ? "{\n  gameMode,\n  inventory,\n  minerals,\n  consumeItem,\n  onWatchAd,\n  isPreview,\n}"
+          : UseQuizReviveParams
         returns: '{ hasUsedLastChance: boolean; handleRevive: (useItem: boolean) => Promise<void>; handlePurchaseAndRevive: () => Promise<void>; handleWatchAdAndRevive: () => Promise<void>; handleGiveUp: () => void; stableHandleGameOver: (reason?: string | undefined) => void; }'
         description: 라스트 찬스 & 부활 생명주기 관리 훅
         calls:
@@ -7549,7 +7590,8 @@ files:
     exports:
       - name: useQuizSession
         params:
-          "{\n  showTipModal,\n  worldParam,\n  categoryParam,\n  levelParam,\n  modeParam,\n  mountainParam,\n  setGameSessionId,\n}": UseQuizSessionProps
+          ? "{\n  showTipModal,\n  worldParam,\n  categoryParam,\n  levelParam,\n  modeParam,\n  mountainParam,\n  setGameSessionId,\n}"
+          : UseQuizSessionProps
         returns: '{ sessionCreated: boolean; setSessionCreated: React.Dispatch<React.SetStateAction<boolean>>; preGeneratedQuestions: import("C:/Users/ghkdd/gemini-projects/solve-climb/src/features/quiz/types/quiz").QuizQuestion[]; }'
         calls:
           - modeParam.includes
@@ -7575,7 +7617,8 @@ files:
     exports:
       - name: useQuizStartLogic
         params:
-          "{\n  stamina,\n  inventory,\n  consumeItem,\n  consumeStamina,\n  worldParam,\n  categoryParam,\n  gameMode,\n  totalQuestions,\n  handleStaminaAdRecovery,\n  setShowStaminaModal,\n}": UseQuizStartLogicProps
+          ? "{\n  stamina,\n  inventory,\n  consumeItem,\n  consumeStamina,\n  worldParam,\n  categoryParam,\n  gameMode,\n  totalQuestions,\n  handleStaminaAdRecovery,\n  setShowStaminaModal,\n}"
+          : UseQuizStartLogicProps
         returns: '{ promiseData: { rule: string; example: string; }; activeLandmark: { icon: string; text: string; } | null; altitudePhase: string; handleStartGame: (selectedItems: number[], forceExhausted?: boolean) => Promise<void>; handlePromiseComplete: () => void; onAlertAction: (action: string) => void; }'
         calls:
           - useNavigate
@@ -7615,7 +7658,8 @@ files:
     exports:
       - name: useQuizSubmit
         params:
-          "{\n  answerInput,\n  isSubmitting,\n  currentQuestion,\n  categoryParam,\n  subParam,\n  gameMode,\n  questionStartTime,\n  currentQuestionId,\n}": UseQuizSubmitParams
+          ? "{\n  answerInput,\n  isSubmitting,\n  currentQuestion,\n  categoryParam,\n  subParam,\n  gameMode,\n  questionStartTime,\n  currentQuestionId,\n}"
+          : UseQuizSubmitParams
         returns: '{ handleSubmit: (e?: React.FormEvent<Element> | undefined) => void; }'
         calls:
           - useGameStore
@@ -7913,13 +7957,15 @@ files:
     exports:
       - name: ResultRewardActions
         params:
-          "{\n  baseMinerals,\n  hasDoubled,\n  isAdLoading,\n  onDoubleReward,\n}": ResultRewardActionsProps
+          ? "{\n  baseMinerals,\n  hasDoubled,\n  isAdLoading,\n  onDoubleReward,\n}"
+          : ResultRewardActionsProps
         returns: import("C:/Users/ghkdd/gemini-projects/solve-climb/node_modules/@types/react/jsx-runtime").JSX.Element | null
   src/features/quiz/components/result/ResultScoreCard.tsx:
     exports:
       - name: ResultScoreCard
         params:
-          "{\n  finalScore,\n  isNewRecord,\n  statsList,\n}": ResultScoreCardProps
+          ? "{\n  finalScore,\n  isNewRecord,\n  statsList,\n}"
+          : ResultScoreCardProps
         returns: import("C:/Users/ghkdd/gemini-projects/solve-climb/node_modules/@types/react/jsx-runtime").JSX.Element
         calls:
           - finalScore.toLocaleString
