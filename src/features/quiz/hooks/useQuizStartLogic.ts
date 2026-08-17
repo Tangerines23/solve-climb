@@ -1,6 +1,7 @@
 import { useState, useCallback, useMemo, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useGameStore } from '@/stores/useGameStore';
+import { useQuizStore } from '@/stores/useQuizStore';
 import { analytics } from '@/services/analytics';
 import { urls } from '@/utils/navigation';
 import { LANDMARK_MAPPING } from '@/constants/game';
@@ -73,18 +74,39 @@ export function useQuizStartLogic({
         return;
       }
 
+      const applyEquippedItems = async (itemsToEquip: number[]) => {
+        const equippedCodes: string[] = [];
+        if (itemsToEquip && itemsToEquip.length > 0) {
+          for (const itemId of itemsToEquip) {
+            const item = inventory.find((it) => it.id === itemId);
+            if (item && item.quantity > 0) {
+              await consumeItem(itemId);
+              equippedCodes.push(item.code);
+            }
+          }
+        }
+
+        // 인게임 세션에 장착된 아이템 등록
+        useGameStore.getState().setActiveItems(equippedCodes);
+
+        // 1. 산소통 (oxygen_tank): 제한 시간 10초 -> 20초 확장
+        if (equippedCodes.includes('oxygen_tank')) {
+          useQuizStore.getState().setTimeLimit(20);
+        } else {
+          useQuizStore.getState().setTimeLimit(10);
+        }
+
+        // 2. 파워젤 (power_gel): 시작 시 콤보 1단계 즉시 부여
+        if (equippedCodes.includes('power_gel')) {
+          useGameStore.getState().setCombo(1);
+        }
+      };
+
       if (forceExhausted) {
         setStaminaConsumed(false);
         setExhausted(true);
 
-        if (selectedItems.length > 0) {
-          for (const itemId of selectedItems) {
-            const item = inventory.find((it) => it.id === itemId);
-            if (item && item.quantity > 0) {
-              await consumeItem(itemId);
-            }
-          }
-        }
+        await applyEquippedItems(selectedItems);
 
         analytics.trackQuizStart(worldParam || '', categoryParam || '');
         quizEventBus.emit('QUIZ:UI_MODAL_TOGGLE', { modal: 'tip', show: false });
@@ -97,14 +119,7 @@ export function useQuizStartLogic({
         setStaminaConsumed(true);
         setExhausted(false);
 
-        if (selectedItems.length > 0) {
-          for (const itemId of selectedItems) {
-            const item = inventory.find((it) => it.id === itemId);
-            if (item && item.quantity > 0) {
-              await consumeItem(itemId);
-            }
-          }
-        }
+        await applyEquippedItems(selectedItems);
 
         analytics.trackQuizStart(worldParam || '', categoryParam || '');
         quizEventBus.emit('QUIZ:UI_MODAL_TOGGLE', { modal: 'tip', show: false });

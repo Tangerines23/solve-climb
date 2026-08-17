@@ -22,6 +22,7 @@ const HomePage = resilientLazy(
   'HomePage'
 );
 import { GlobalToastContainer } from '@/components/GlobalToastContainer';
+import { GlobalBgmManager } from '@/components/GlobalBgmManager';
 const CategorySelectPage = resilientLazy(
   () =>
     import('@/pages/CategorySelectPage').then((module) => ({ default: module.CategorySelectPage })),
@@ -230,6 +231,7 @@ function App() {
 
   return (
     <>
+      <GlobalBgmManager />
       <GlobalLoadingIndicator />
       <GlobalToastContainer />
       {import.meta.env.VITE_CI !== 'true' && <PwaUpdateNotification />}

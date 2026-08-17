@@ -18,9 +18,11 @@ vi.mock('@/stores/useToastStore', () => ({
 describe('MyPageSettings', () => {
   const defaultProps = {
     soundEnabled: true,
+    bgmEnabled: true,
     hapticEnabled: true,
     animationEnabled: true,
     onToggleSound: vi.fn(),
+    onToggleBgm: vi.fn(),
     onToggleHaptic: vi.fn(),
     onToggleAnimation: vi.fn(),
     onShowProfileForm: vi.fn(),
@@ -57,6 +59,13 @@ describe('MyPageSettings', () => {
     const soundItem = screen.getByText('효과음');
     fireEvent.click(soundItem);
     expect(defaultProps.onToggleSound).toHaveBeenCalled();
+  });
+
+  it('should call onToggleBgm when BGM setting is clicked', () => {
+    render(<MyPageSettings {...defaultProps} />);
+    const bgmItem = screen.getByText('배경음악 (BGM)');
+    fireEvent.click(bgmItem);
+    expect(defaultProps.onToggleBgm).toHaveBeenCalled();
   });
 
   it('should show success toast if version is up to date', async () => {

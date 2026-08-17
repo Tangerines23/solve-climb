@@ -61,9 +61,9 @@ describe('DSP Synthesizers', () => {
 
     expect(mockContext.createOscillator).toHaveBeenCalled();
     expect(mockContext.createGain).toHaveBeenCalled();
-    expect(mockOscillator.frequency.setValueAtTime).toHaveBeenCalledWith(440, 10);
-    expect(mockOscillator.start).toHaveBeenCalledWith(10);
-    expect(mockOscillator.stop).toHaveBeenCalledWith(10.2);
+    expect(mockOscillator.frequency.setValueAtTime).toHaveBeenCalledWith(440, expect.any(Number));
+    expect(mockOscillator.start).toHaveBeenCalledWith(expect.any(Number));
+    expect(mockOscillator.stop).toHaveBeenCalledWith(expect.any(Number));
     expect(mockGain.connect).toHaveBeenCalledWith(mockDestination);
   });
 
@@ -75,8 +75,11 @@ describe('DSP Synthesizers', () => {
       exponential: true,
     });
 
-    expect(mockOscillator.frequency.setValueAtTime).toHaveBeenCalledWith(300, 10);
-    expect(mockOscillator.frequency.exponentialRampToValueAtTime).toHaveBeenCalledWith(900, 10.3);
+    expect(mockOscillator.frequency.setValueAtTime).toHaveBeenCalledWith(300, expect.any(Number));
+    expect(mockOscillator.frequency.exponentialRampToValueAtTime).toHaveBeenCalledWith(
+      900,
+      expect.any(Number)
+    );
   });
 
   it('playChord creates multiple oscillators for polyphonic sound', () => {

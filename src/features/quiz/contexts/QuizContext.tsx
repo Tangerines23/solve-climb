@@ -33,6 +33,7 @@ import { useQuizGameplay } from '../hooks/useQuizGameplay';
 import { quizEventBus } from '@/lib/eventBus';
 import { setupQuizEventListeners } from '../services/quizEventListener';
 import { useQuizFeedback } from '../hooks/useQuizFeedback';
+import { useQuizBgm } from '../hooks/useQuizBgm';
 import { useDeathNoteStore } from '@/stores/useDeathNoteStore';
 import { vibrateLong } from '@/utils/haptic';
 import {
@@ -165,7 +166,7 @@ export function QuizProvider({ children, params }: QuizProviderProps) {
   } = useGameStore();
 
   const [questionKey, setQuestionKey] = useState(0);
-  const [showTipModal, setShowTipModal] = useState(true);
+  const [showTipModal, setShowTipModal] = useState(!isPreview);
   const inputRef = useRef<HTMLInputElement>(null);
   const feedbackRef = useRef<ItemFeedbackRef>(null);
 
@@ -276,6 +277,38 @@ export function QuizProvider({ children, params }: QuizProviderProps) {
     setToastValue,
   });
 
+  const {
+    handleRevive,
+    handlePurchaseAndRevive,
+    handleGiveUp,
+    stableHandleGameOver,
+    hasUsedLastChance,
+  } = useQuizRevive({
+    gameMode: gameMode as 'time-attack' | 'survival',
+    inventory,
+    minerals,
+    consumeItem,
+    onWatchAd: handleWatchAdRevive,
+    isPreview,
+  });
+
+  const handleWatchAdAndRevive = useCallback(async () => {
+    const success = await handleWatchAdRevive();
+    if (success) {
+      await handleRevive(false);
+    }
+  }, [handleWatchAdRevive, handleRevive]);
+
+  useQuizBgm({
+    categoryParam,
+    modeParam,
+    showTipModal,
+    showLastChanceModal,
+    showCountdown,
+    showPauseModal,
+    isLastSpurtActive: hasUsedLastChance,
+  });
+
   const handleTimeUp = useCallback(() => {
     const hasSafetyRope = activeItems.includes('safety_rope');
     const hasLastSpurt = gameMode === 'time-attack' && activeItems.includes('last_spurt');
@@ -296,12 +329,12 @@ export function QuizProvider({ children, params }: QuizProviderProps) {
         quizEventBus.emit('QUIZ:NEXT_QUESTION_REQUESTED');
       } else {
         consumeLife();
-        quizEventBus.emit('QUIZ:GAME_OVER', { reason: 'timeout' });
+        stableHandleGameOver('timeout');
       }
     } else {
-      quizEventBus.emit('QUIZ:GAME_OVER', { reason: 'timeout' });
+      stableHandleGameOver('timeout');
     }
-  }, [activeItems, gameMode, lives, consumeActiveItem, consumeLife]);
+  }, [activeItems, gameMode, lives, consumeActiveItem, consumeLife, stableHandleGameOver]);
 
   const { handleSubmit: originalSubmit } = useQuizSubmit({
     answerInput,
@@ -332,23 +365,6 @@ export function QuizProvider({ children, params }: QuizProviderProps) {
     },
     [originalSubmit, currentQuestion, answerInput, setAnswerInput, setDisplayValue]
   );
-
-  const { handleRevive, handlePurchaseAndRevive, handleGiveUp, stableHandleGameOver } =
-    useQuizRevive({
-      gameMode: gameMode as 'time-attack' | 'survival',
-      inventory,
-      minerals,
-      consumeItem,
-      onWatchAd: handleWatchAdRevive,
-      isPreview,
-    });
-
-  const handleWatchAdAndRevive = useCallback(async () => {
-    const success = await handleWatchAdRevive();
-    if (success) {
-      await handleRevive(false);
-    }
-  }, [handleWatchAdRevive, handleRevive]);
 
   const { handleKeypadNumber, handleQwertyKeyPress, handleKeypadClear, handleKeypadBackspace } =
     useQuizInput({
@@ -454,7 +470,13 @@ export function QuizProvider({ children, params }: QuizProviderProps) {
         // 중복 피드백 제거: 플로팅 연출 집중을 위해 외곽의 투명한 성공 메시지 토스트를 비활성화합니다.
         // feedbackRef.current?.show('SUCCESS', `+${earnedDistance}m`, 'success');
       } else {
-        decreaseScore(earnedDistance);
+        const hadSafetyRope = useGameStore.getState().activeItems.includes('safety_rope');
+        if (hadSafetyRope) {
+          quizEventBus.emit('QUIZ:SAFETY_ROPE_USED');
+          setToastValue('🔗 안전 로프 발동! 콤보 보호');
+        } else {
+          decreaseScore(earnedDistance);
+        }
         useGameStore.getState().resetCombo();
 
         animations.setCardAnimation('wrong-shake');
@@ -493,7 +515,7 @@ export function QuizProvider({ children, params }: QuizProviderProps) {
             consumeLife();
           } else {
             consumeLife();
-            quizEventBus.emit('QUIZ:GAME_OVER', { reason: 'death' });
+            stableHandleGameOver('death');
             return; // Don't proceed to next question
           }
         }

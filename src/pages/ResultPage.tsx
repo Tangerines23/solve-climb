@@ -34,7 +34,7 @@ import { useSettingsStore } from '@/stores/useSettingsStore';
 import { useGameStore } from '@/stores/useGameStore';
 import { useCountUp } from '@/hooks/useCountUp';
 import { historyService } from '@/services/historyService';
-import { sound } from '@/utils/sound';
+import { sound, bgm } from '@/utils/sound';
 
 import { storageService, STORAGE_KEYS } from '@/services';
 
@@ -87,8 +87,10 @@ export function ResultPage() {
 
     if (finalScore > 0) {
       sound.playStageClear();
+      bgm.play('victory');
     } else {
       sound.playGameOver();
+      bgm.stop(0.2);
     }
   }, [finalScore]);
 

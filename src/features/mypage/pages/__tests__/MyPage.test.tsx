@@ -124,6 +124,7 @@ vi.mock('@/features/mypage/components/MyPageQuickAccess', () => ({
 vi.mock('@/features/mypage/components/MyPageSettings', () => ({
   MyPageSettings: ({
     onToggleSound,
+    onToggleBgm,
     onToggleHaptic,
     onToggleAnimation,
     onDataReset,
@@ -134,6 +135,7 @@ vi.mock('@/features/mypage/components/MyPageSettings', () => ({
   }: any) => (
     <div data-testid="settings">
       <button onClick={() => onToggleSound && onToggleSound()}>효과음</button>
+      <button onClick={() => onToggleBgm && onToggleBgm()}>배경음악</button>
       <button onClick={() => onToggleHaptic()}>진동 효과</button>
       <button onClick={() => onToggleAnimation()}>애니메이션</button>
       <button onClick={() => onDataReset()}>데이터 초기화</button>

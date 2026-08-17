@@ -77,7 +77,15 @@
     "Manim",
     "lerp",
     "dedup",
-    "Dedup"
+    "Dedup",
+    "chiptune",
+    "Cmaj",
+    "Amin",
+    "Gmaj",
+    "Fmaj",
+    "Dmin",
+    "Emin",
+    "Bdim"
   ],
   "ignorePaths": [
     "node_modules",

@@ -179,6 +179,19 @@ describe('SoundEngine (sound.ts)', () => {
       document.body.removeChild(backButton);
     });
 
+    it('plays back sound when clicking game tip back button', async () => {
+      await new Promise((r) => setTimeout(r, 90));
+      const tipBackButton = document.createElement('button');
+      tipBackButton.className = 'gt-checkbox-label back-button';
+      tipBackButton.textContent = '← 뒤로';
+      document.body.appendChild(tipBackButton);
+
+      tipBackButton.click();
+
+      expect(mockAudioContext.createOscillator).toHaveBeenCalled();
+      document.body.removeChild(tipBackButton);
+    });
+
     it('plays empty tap when clicking on empty background', async () => {
       await new Promise((r) => setTimeout(r, 90));
       const div = document.createElement('div');

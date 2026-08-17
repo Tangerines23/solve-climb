@@ -3,7 +3,7 @@ import { create } from 'zustand';
 import { Category, World, GameMode, Difficulty } from '../types/quiz';
 
 // 시간 설정 (초 단위)
-export type TimeLimit = 10 | 15 | 60 | 120 | 180; // 10s/15s(Revive), 1min, 2min, 3min
+export type TimeLimit = 10 | 15 | 20 | 60 | 120 | 180 | number; // 10s/15s(Revive)/20s(Oxygen), 1min, 2min, 3min
 
 export interface QuizState {
   score: number;

@@ -260,10 +260,10 @@ export class SoundEngine {
     this.lastTapAudioTime = now;
 
     playSweep(graph.ctx, graph.destination, {
-      startFreq: 680,
-      endFreq: 340,
-      duration: 0.025,
-      volume: 0.08,
+      startFreq: 700,
+      endFreq: 350,
+      duration: 0.03,
+      volume: 0.14,
       type: 'sine',
     });
   }
@@ -282,8 +282,8 @@ export class SoundEngine {
     playSweep(graph.ctx, graph.destination, {
       startFreq: 520,
       endFreq: 260,
-      duration: 0.03,
-      volume: 0.07,
+      duration: 0.035,
+      volume: 0.12,
       type: 'sine',
     });
   }
@@ -302,12 +302,12 @@ export class SoundEngine {
     playFilteredTone(graph.ctx, graph.destination, {
       freq: 260,
       endFreq: 110,
-      duration: 0.02,
-      volume: 0.04,
+      duration: 0.025,
+      volume: 0.08,
       type: 'triangle',
       filter: {
         type: 'lowpass',
-        frequency: 350,
+        frequency: 380,
       },
     });
   }

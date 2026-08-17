@@ -56,6 +56,7 @@ class AudioContextManager {
       if (AudioCtx) {
         this.ctx = new AudioCtx();
         this.masterGain = this.ctx.createGain();
+        this.masterGain.gain.value = 1.0;
         this.masterGain.connect(this.ctx.destination);
       }
     }

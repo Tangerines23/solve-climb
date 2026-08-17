@@ -51,10 +51,19 @@ export function setupGlobalTapListener(
     if (now - lastTapTime <= 80) return;
     lastTapTime = now;
 
-    // 2. 뒤로가기, 취소, 닫기 버튼 감지
-    const isBackOrCancel = target.closest(
-      '.header-back-button, .topic-back-button, .back-button, .btn-back, [aria-label*="뒤로"], [aria-label*="취소"], [aria-label*="닫기"], [data-action="back"], [data-action="cancel"], [data-action="close"], .cancel-button, .modal-close-button, .close-button, .btn-cancel, .btn-close'
+    // 2. 뒤로가기, 취소, 닫기 버튼 및 모달 오버레이 감지
+    const matchedBackSelector = target.closest(
+      '.header-back-button, .topic-back-button, .back-button, .btn-back, [aria-label*="뒤로"], [aria-label*="취소"], [aria-label*="닫기"], [data-action="back"], [data-action="cancel"], [data-action="close"], .cancel-button, .modal-close-button, .close-button, .btn-cancel, .btn-close, .modal-overlay, .bottom-sheet-overlay, .gt-checkbox-label'
     );
+
+    const textContent = (target.textContent || '').trim();
+    const hasBackText =
+      (textContent.includes('뒤로') ||
+        textContent.includes('취소') ||
+        textContent.includes('닫기')) &&
+      textContent.length <= 15;
+
+    const isBackOrCancel = Boolean(matchedBackSelector || hasBackText);
 
     if (isBackOrCancel) {
       if (playBackCallback) {
