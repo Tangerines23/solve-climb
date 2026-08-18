@@ -16,6 +16,19 @@
           "value": "Content-Type, Cache-Control"
         }
       ]
+    },
+    {
+      "source": "/privacy-policy.html",
+      "headers": [
+        {
+          "key": "Content-Type",
+          "value": "text/html; charset=utf-8"
+        },
+        {
+          "key": "Access-Control-Allow-Origin",
+          "value": "*"
+        }
+      ]
     }
   ],
   "rewrites": [

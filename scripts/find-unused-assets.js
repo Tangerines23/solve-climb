@@ -10,6 +10,7 @@ const IGNORE_FILES = [
   'favicon.ico',
   'mockServiceWorker.js',
   'sw.js',
+  'privacy-policy.html',
 ];
 
 // 재귀적으로 디렉토리 내 모든 파일 찾기

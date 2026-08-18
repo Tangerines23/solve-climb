@@ -1,5 +1,5 @@
 project: solve-climb
-generatedAt: '2026-08-17T21:43:13.967Z'
+generatedAt: '2026-08-18T22:24:06.972Z'
 files:
   src/App.tsx:
     imports:
@@ -4438,6 +4438,7 @@ files:
             params:
               ctx: AudioContext
               destination: AudioNode
+              reverbSend: AudioNode
               time: number
               step: number
             calls:
@@ -4454,8 +4455,30 @@ files:
               - kickOsc.start
               - kickOsc.stop
               - this.trackActiveNode
-              - safeGet
+              - this.getNoiseBuffer
+              - ctx.createBufferSource
               - ctx.createBiquadFilter
+              - snFilter.frequency.setValueAtTime
+              - snGain.gain.setValueAtTime
+              - snGain.gain.linearRampToValueAtTime
+              - snGain.gain.exponentialRampToValueAtTime
+              - snSource.connect
+              - snFilter.connect
+              - snGain.connect
+              - snSource.start
+              - snSource.stop
+              - this.createPanner
+              - hFilter.frequency.setValueAtTime
+              - hGain.gain.setValueAtTime
+              - hGain.gain.linearRampToValueAtTime
+              - hGain.gain.exponentialRampToValueAtTime
+              - hSource.connect
+              - hFilter.connect
+              - hGain.connect
+              - hPanner.connect
+              - hSource.start
+              - hSource.stop
+              - safeGet
               - pOsc.frequency.setValueAtTime
               - pFilter.frequency.setValueAtTime
               - pGain.gain.setValueAtTime
@@ -4464,6 +4487,7 @@ files:
               - pOsc.connect
               - pFilter.connect
               - pGain.connect
+              - panner.connect
               - pOsc.start
               - pOsc.stop
               - sOsc.frequency.setValueAtTime
@@ -4476,6 +4500,18 @@ files:
               - sGain.connect
               - sOsc.start
               - sOsc.stop
+              - padNotes.forEach
+              - padOsc.frequency.setValueAtTime
+              - padFilter.frequency.setValueAtTime
+              - padFilter.frequency.linearRampToValueAtTime
+              - padGain.gain.setValueAtTime
+              - padGain.gain.linearRampToValueAtTime
+              - padGain.gain.exponentialRampToValueAtTime
+              - padOsc.connect
+              - padFilter.connect
+              - padGain.connect
+              - padOsc.start
+              - padOsc.stop
               - lOsc.frequency.setValueAtTime
               - lFilter.frequency.setValueAtTime
               - lFilter.frequency.linearRampToValueAtTime
@@ -4485,22 +4521,14 @@ files:
               - lOsc.connect
               - lFilter.connect
               - lGain.connect
+              - lPanner.connect
               - lOsc.start
               - lOsc.stop
-              - hOsc.frequency.setValueAtTime
-              - hFilter.frequency.setValueAtTime
-              - hGain.gain.setValueAtTime
-              - hGain.gain.linearRampToValueAtTime
-              - hGain.gain.exponentialRampToValueAtTime
-              - hOsc.connect
-              - hFilter.connect
-              - hGain.connect
-              - hOsc.start
-              - hOsc.stop
           - name: scheduleClimbStep
             params:
               ctx: AudioContext
               destination: AudioNode
+              reverbSend: AudioNode
               time: number
               step: number
             calls:
@@ -4517,9 +4545,32 @@ files:
               - kickOsc.start
               - kickOsc.stop
               - this.trackActiveNode
-              - safeGet
+              - this.getNoiseBuffer
+              - ctx.createBufferSource
               - ctx.createBiquadFilter
+              - sFilter.frequency.setValueAtTime
+              - sGain.gain.setValueAtTime
+              - sGain.gain.linearRampToValueAtTime
+              - sGain.gain.exponentialRampToValueAtTime
+              - sSource.connect
+              - sFilter.connect
+              - sGain.connect
+              - sSource.start
+              - sSource.stop
+              - this.createPanner
+              - hFilter.frequency.setValueAtTime
+              - hGain.gain.setValueAtTime
+              - hGain.gain.linearRampToValueAtTime
+              - hGain.gain.exponentialRampToValueAtTime
+              - hSource.connect
+              - hFilter.connect
+              - hGain.connect
+              - hPanner.connect
+              - hSource.start
+              - hSource.stop
+              - safeGet
               - bOsc.frequency.setValueAtTime
+              - Math.max
               - bFilter.frequency.setValueAtTime
               - bGain.gain.setValueAtTime
               - bGain.gain.linearRampToValueAtTime
@@ -4529,6 +4580,13 @@ files:
               - bGain.connect
               - bOsc.start
               - bOsc.stop
+              - chordNotes.forEach
+              - sOsc.frequency.setValueAtTime
+              - sFilter.frequency.exponentialRampToValueAtTime
+              - sOsc.connect
+              - sPanner.connect
+              - sOsc.start
+              - sOsc.stop
               - aOsc.frequency.setValueAtTime
               - aFilter.frequency.setValueAtTime
               - aFilter.frequency.linearRampToValueAtTime
@@ -4538,20 +4596,66 @@ files:
               - aOsc.connect
               - aFilter.connect
               - aGain.connect
+              - aPanner.connect
               - aOsc.start
               - aOsc.stop
           - name: scheduleShopStep
             params:
               ctx: AudioContext
               destination: AudioNode
+              reverbSend: AudioNode
               time: number
               step: number
             calls:
               - Math.floor
-              - currentBassEvents.find
               - ctx.createOscillator
               - ctx.createGain
+              - kickOsc.frequency.setValueAtTime
+              - kickOsc.frequency.exponentialRampToValueAtTime
+              - kickGain.gain.setValueAtTime
+              - kickGain.gain.linearRampToValueAtTime
+              - kickGain.gain.exponentialRampToValueAtTime
+              - kickOsc.connect
+              - kickGain.connect
+              - kickOsc.start
+              - kickOsc.stop
+              - this.trackActiveNode
+              - this.getNoiseBuffer
+              - ctx.createBufferSource
               - ctx.createBiquadFilter
+              - this.createPanner
+              - shFilter.frequency.setValueAtTime
+              - shGain.gain.setValueAtTime
+              - shGain.gain.linearRampToValueAtTime
+              - shGain.gain.exponentialRampToValueAtTime
+              - shSource.connect
+              - shFilter.connect
+              - shGain.connect
+              - shPanner.connect
+              - shSource.start
+              - shSource.stop
+              - wbOsc.frequency.setValueAtTime
+              - wbFilter.frequency.setValueAtTime
+              - wbGain.gain.setValueAtTime
+              - wbGain.gain.linearRampToValueAtTime
+              - wbGain.gain.exponentialRampToValueAtTime
+              - wbOsc.connect
+              - wbFilter.connect
+              - wbGain.connect
+              - wbPanner.connect
+              - wbOsc.start
+              - wbOsc.stop
+              - bellOsc.frequency.setValueAtTime
+              - bellFilter.frequency.setValueAtTime
+              - bellGain.gain.setValueAtTime
+              - bellGain.gain.linearRampToValueAtTime
+              - bellGain.gain.exponentialRampToValueAtTime
+              - bellOsc.connect
+              - bellFilter.connect
+              - bellGain.connect
+              - bellOsc.start
+              - bellOsc.stop
+              - safeGet
               - bOsc.frequency.setValueAtTime
               - bFilter.frequency.setValueAtTime
               - bGain.gain.setValueAtTime
@@ -4562,40 +4666,77 @@ files:
               - bGain.connect
               - bOsc.start
               - bOsc.stop
-              - this.trackActiveNode
               - chordNotes.forEach
-              - uOsc.frequency.setValueAtTime
-              - uFilter.frequency.setValueAtTime
-              - uGain.gain.setValueAtTime
-              - uGain.gain.linearRampToValueAtTime
-              - uGain.gain.exponentialRampToValueAtTime
-              - uOsc.connect
-              - uFilter.connect
-              - uGain.connect
-              - uOsc.start
-              - uOsc.stop
+              - gOsc.frequency.setValueAtTime
+              - gFilter.frequency.setValueAtTime
+              - gFilter.frequency.exponentialRampToValueAtTime
+              - gGain.gain.setValueAtTime
+              - gGain.gain.linearRampToValueAtTime
+              - gGain.gain.exponentialRampToValueAtTime
+              - gOsc.connect
+              - gFilter.connect
+              - gGain.connect
+              - gPanner.connect
+              - gOsc.start
+              - gOsc.stop
               - mOsc.frequency.setValueAtTime
               - mFilter.frequency.setValueAtTime
+              - mFilter.frequency.exponentialRampToValueAtTime
               - mGain.gain.setValueAtTime
               - mGain.gain.linearRampToValueAtTime
               - mGain.gain.exponentialRampToValueAtTime
               - mOsc.connect
               - mFilter.connect
               - mGain.connect
+              - mPanner.connect
               - mOsc.start
               - mOsc.stop
           - name: scheduleVictoryStep
             params:
               ctx: AudioContext
               destination: AudioNode
+              reverbSend: AudioNode
               time: number
               step: number
             calls:
               - Math.floor
-              - chord.forEach
               - ctx.createOscillator
               - ctx.createGain
+              - kickOsc.frequency.setValueAtTime
+              - kickOsc.frequency.exponentialRampToValueAtTime
+              - kickGain.gain.setValueAtTime
+              - kickGain.gain.linearRampToValueAtTime
+              - kickGain.gain.exponentialRampToValueAtTime
+              - kickOsc.connect
+              - kickGain.connect
+              - kickOsc.start
+              - kickOsc.stop
+              - this.trackActiveNode
+              - this.getNoiseBuffer
+              - ctx.createBufferSource
               - ctx.createBiquadFilter
+              - sFilter.frequency.setValueAtTime
+              - sGain.gain.setValueAtTime
+              - sGain.gain.linearRampToValueAtTime
+              - sGain.gain.exponentialRampToValueAtTime
+              - sSource.connect
+              - sFilter.connect
+              - sGain.connect
+              - sSource.start
+              - sSource.stop
+              - this.createPanner
+              - cFilter.frequency.setValueAtTime
+              - cGain.gain.setValueAtTime
+              - cGain.gain.linearRampToValueAtTime
+              - cGain.gain.exponentialRampToValueAtTime
+              - cSource.connect
+              - cFilter.connect
+              - cGain.connect
+              - cPanner.connect
+              - cSource.start
+              - cSource.stop
+              - safeGet
+              - chord.forEach
               - osc.frequency.setValueAtTime
               - filter.frequency.setValueAtTime
               - filter.frequency.linearRampToValueAtTime
@@ -4605,24 +4746,41 @@ files:
               - osc.connect
               - filter.connect
               - gain.connect
+              - panner.connect
               - osc.start
               - osc.stop
-              - this.trackActiveNode
               - hOsc.frequency.setValueAtTime
+              - hFilter.frequency.setValueAtTime
               - hGain.gain.setValueAtTime
               - hGain.gain.linearRampToValueAtTime
               - hGain.gain.exponentialRampToValueAtTime
               - hOsc.connect
+              - hFilter.connect
               - hGain.connect
+              - hPanner.connect
               - hOsc.start
               - hOsc.stop
+              - tOsc.frequency.setValueAtTime
+              - tFilter.frequency.setValueAtTime
+              - tFilter.frequency.linearRampToValueAtTime
+              - tGain.gain.setValueAtTime
+              - tGain.gain.linearRampToValueAtTime
+              - tGain.gain.exponentialRampToValueAtTime
+              - tOsc.connect
+              - tFilter.connect
+              - tGain.connect
+              - tPanner.connect
+              - tOsc.start
+              - tOsc.stop
           - name: scheduleCrisisStep
             params:
               ctx: AudioContext
               destination: AudioNode
+              reverbSend: AudioNode
               time: number
               step: number
             calls:
+              - Math.floor
               - ctx.createOscillator
               - ctx.createGain
               - ctx.createBiquadFilter
@@ -4647,39 +4805,21 @@ files:
               - subGain.connect
               - subOsc.start
               - subOsc.stop
-              - tensionChord.forEach
-              - osc.frequency.setValueAtTime
-              - filter.frequency.setValueAtTime
-              - filter.frequency.linearRampToValueAtTime
-              - gain.gain.setValueAtTime
-              - gain.gain.linearRampToValueAtTime
-              - gain.gain.exponentialRampToValueAtTime
-              - osc.connect
-              - filter.connect
-              - gain.connect
-              - osc.start
-              - osc.stop
-              - tOsc.frequency.setValueAtTime
+              - this.getNoiseBuffer
+              - ctx.createBufferSource
+              - this.createPanner
               - tFilter.frequency.setValueAtTime
               - tGain.gain.setValueAtTime
               - tGain.gain.linearRampToValueAtTime
               - tGain.gain.exponentialRampToValueAtTime
-              - tOsc.connect
+              - tSource.connect
               - tFilter.connect
               - tGain.connect
-              - tOsc.start
-              - tOsc.stop
-          - name: scheduleChillStep
-            params:
-              ctx: AudioContext
-              destination: AudioNode
-              time: number
-              chordIndex: number
-            calls:
-              - chord.forEach
-              - ctx.createOscillator
-              - ctx.createGain
-              - ctx.createBiquadFilter
+              - tPanner.connect
+              - tSource.start
+              - tSource.stop
+              - safeGet
+              - currentChord.forEach
               - osc.frequency.setValueAtTime
               - filter.frequency.setValueAtTime
               - filter.frequency.linearRampToValueAtTime
@@ -4691,7 +4831,69 @@ files:
               - gain.connect
               - osc.start
               - osc.stop
+              - sOsc.frequency.setValueAtTime
+              - sOsc.frequency.linearRampToValueAtTime
+              - sFilter.frequency.setValueAtTime
+              - sGain.gain.setValueAtTime
+              - sGain.gain.linearRampToValueAtTime
+              - sGain.gain.exponentialRampToValueAtTime
+              - sOsc.connect
+              - sFilter.connect
+              - sGain.connect
+              - sPanner.connect
+              - sOsc.start
+              - sOsc.stop
+          - name: scheduleChillStep
+            params:
+              ctx: AudioContext
+              destination: AudioNode
+              reverbSend: AudioNode
+              time: number
+              chordIndex: number
+            calls:
+              - safeGet
+              - this.getNoiseBuffer
+              - ctx.createBufferSource
+              - ctx.createGain
+              - ctx.createBiquadFilter
+              - wFilter.frequency.setValueAtTime
+              - wFilter.frequency.linearRampToValueAtTime
+              - wGain.gain.setValueAtTime
+              - wGain.gain.linearRampToValueAtTime
+              - wGain.gain.exponentialRampToValueAtTime
+              - wSource.connect
+              - wFilter.connect
+              - wGain.connect
+              - wSource.start
+              - wSource.stop
               - this.trackActiveNode
+              - chord.forEach
+              - ctx.createOscillator
+              - this.createPanner
+              - osc.frequency.setValueAtTime
+              - filter.frequency.setValueAtTime
+              - filter.frequency.linearRampToValueAtTime
+              - gain.gain.setValueAtTime
+              - gain.gain.linearRampToValueAtTime
+              - gain.gain.exponentialRampToValueAtTime
+              - osc.connect
+              - filter.connect
+              - gain.connect
+              - panner.connect
+              - osc.start
+              - osc.stop
+              - harmonics.forEach
+              - bowlOsc.frequency.setValueAtTime
+              - bowlFilter.frequency.setValueAtTime
+              - bowlGain.gain.setValueAtTime
+              - bowlGain.gain.linearRampToValueAtTime
+              - bowlGain.gain.exponentialRampToValueAtTime
+              - bowlOsc.connect
+              - bowlFilter.connect
+              - bowlGain.connect
+              - bPanner.connect
+              - bowlOsc.start
+              - bowlOsc.stop
               - melodyPair.forEach
               - mOsc.frequency.setValueAtTime
               - mFilter.frequency.setValueAtTime
@@ -4701,6 +4903,7 @@ files:
               - mOsc.connect
               - mFilter.connect
               - mGain.connect
+              - mPanner.connect
               - mOsc.start
               - mOsc.stop
               - spOsc.frequency.setValueAtTime
@@ -4709,50 +4912,166 @@ files:
               - spGain.gain.exponentialRampToValueAtTime
               - spOsc.connect
               - spGain.connect
+              - spPanner.connect
               - spOsc.start
               - spOsc.stop
           - name: scheduleArcadeStep
             params:
               ctx: AudioContext
               destination: AudioNode
-              time: number
-              step: number
-            calls:
-              - ctx.createOscillator
-              - ctx.createGain
-              - osc.frequency.setValueAtTime
-              - gain.gain.setValueAtTime
-              - gain.gain.linearRampToValueAtTime
-              - gain.gain.exponentialRampToValueAtTime
-              - osc.connect
-              - gain.connect
-              - osc.start
-              - osc.stop
-              - this.trackActiveNode
-          - name: schedulePuzzleStep
-            params:
-              ctx: AudioContext
-              destination: AudioNode
+              reverbSend: AudioNode
               time: number
               step: number
             calls:
               - Math.floor
-              - chord.forEach
               - ctx.createOscillator
               - ctx.createGain
-              - ctx.createBiquadFilter
-              - osc.frequency.setValueAtTime
-              - filter.frequency.setValueAtTime
-              - gain.gain.setValueAtTime
-              - gain.gain.linearRampToValueAtTime
-              - gain.gain.exponentialRampToValueAtTime
-              - osc.connect
-              - filter.connect
-              - gain.connect
-              - osc.start
-              - osc.stop
+              - kickOsc.frequency.setValueAtTime
+              - kickOsc.frequency.exponentialRampToValueAtTime
+              - kickGain.gain.setValueAtTime
+              - kickGain.gain.linearRampToValueAtTime
+              - kickGain.gain.exponentialRampToValueAtTime
+              - kickOsc.connect
+              - kickGain.connect
+              - kickOsc.start
+              - kickOsc.stop
               - this.trackActiveNode
-              - filter.frequency.linearRampToValueAtTime
+              - this.getNoiseBuffer
+              - ctx.createBufferSource
+              - ctx.createBiquadFilter
+              - sFilter.frequency.setValueAtTime
+              - sGain.gain.setValueAtTime
+              - sGain.gain.linearRampToValueAtTime
+              - sGain.gain.exponentialRampToValueAtTime
+              - sSource.connect
+              - sFilter.connect
+              - sGain.connect
+              - sSource.start
+              - sSource.stop
+              - this.createPanner
+              - hFilter.frequency.setValueAtTime
+              - hGain.gain.setValueAtTime
+              - hGain.gain.linearRampToValueAtTime
+              - hGain.gain.exponentialRampToValueAtTime
+              - hSource.connect
+              - hFilter.connect
+              - hGain.connect
+              - hPanner.connect
+              - hSource.start
+              - hSource.stop
+              - safeGet
+              - bOsc.frequency.setValueAtTime
+              - bFilter.frequency.setValueAtTime
+              - bGain.gain.setValueAtTime
+              - bGain.gain.linearRampToValueAtTime
+              - bGain.gain.exponentialRampToValueAtTime
+              - bOsc.connect
+              - bFilter.connect
+              - bGain.connect
+              - bOsc.start
+              - bOsc.stop
+              - lOsc.frequency.setValueAtTime
+              - lFilter.frequency.setValueAtTime
+              - lGain.gain.setValueAtTime
+              - lGain.gain.linearRampToValueAtTime
+              - lGain.gain.exponentialRampToValueAtTime
+              - lOsc.connect
+              - lFilter.connect
+              - lGain.connect
+              - lPanner.connect
+              - lOsc.start
+              - lOsc.stop
+              - aOsc.frequency.setValueAtTime
+              - aFilter.frequency.setValueAtTime
+              - aGain.gain.setValueAtTime
+              - aGain.gain.linearRampToValueAtTime
+              - aGain.gain.exponentialRampToValueAtTime
+              - aOsc.connect
+              - aFilter.connect
+              - aGain.connect
+              - aPanner.connect
+              - aOsc.start
+              - aOsc.stop
+          - name: schedulePuzzleStep
+            params:
+              ctx: AudioContext
+              destination: AudioNode
+              reverbSend: AudioNode
+              time: number
+              step: number
+            calls:
+              - Math.floor
+              - ctx.createOscillator
+              - ctx.createGain
+              - kickOsc.frequency.setValueAtTime
+              - kickOsc.frequency.exponentialRampToValueAtTime
+              - kickGain.gain.setValueAtTime
+              - kickGain.gain.linearRampToValueAtTime
+              - kickGain.gain.exponentialRampToValueAtTime
+              - kickOsc.connect
+              - kickGain.connect
+              - kickOsc.start
+              - kickOsc.stop
+              - this.trackActiveNode
+              - this.getNoiseBuffer
+              - ctx.createBufferSource
+              - ctx.createBiquadFilter
+              - sFilter.frequency.setValueAtTime
+              - sGain.gain.setValueAtTime
+              - sGain.gain.linearRampToValueAtTime
+              - sGain.gain.exponentialRampToValueAtTime
+              - sSource.connect
+              - sFilter.connect
+              - sGain.connect
+              - sSource.start
+              - sSource.stop
+              - this.createPanner
+              - hFilter.frequency.setValueAtTime
+              - hGain.gain.setValueAtTime
+              - hGain.gain.linearRampToValueAtTime
+              - hGain.gain.exponentialRampToValueAtTime
+              - hSource.connect
+              - hFilter.connect
+              - hGain.connect
+              - hPanner.connect
+              - hSource.start
+              - hSource.stop
+              - safeGet
+              - bOsc.frequency.setValueAtTime
+              - bFilter.frequency.setValueAtTime
+              - bGain.gain.setValueAtTime
+              - bGain.gain.linearRampToValueAtTime
+              - bGain.gain.exponentialRampToValueAtTime
+              - bOsc.connect
+              - bFilter.connect
+              - bGain.connect
+              - bOsc.start
+              - bOsc.stop
+              - chordNotes.forEach
+              - rOsc.frequency.setValueAtTime
+              - rFilter.frequency.setValueAtTime
+              - rFilter.frequency.exponentialRampToValueAtTime
+              - rGain.gain.setValueAtTime
+              - rGain.gain.linearRampToValueAtTime
+              - rGain.gain.exponentialRampToValueAtTime
+              - rOsc.connect
+              - rFilter.connect
+              - rGain.connect
+              - rPanner.connect
+              - rOsc.start
+              - rOsc.stop
+              - lOsc.frequency.setValueAtTime
+              - lFilter.frequency.setValueAtTime
+              - lFilter.frequency.exponentialRampToValueAtTime
+              - lGain.gain.setValueAtTime
+              - lGain.gain.linearRampToValueAtTime
+              - lGain.gain.exponentialRampToValueAtTime
+              - lOsc.connect
+              - lFilter.connect
+              - lGain.connect
+              - lPanner.connect
+              - lOsc.start
+              - lOsc.stop
           - name: trackActiveNode
             params:
               osc: OscillatorNode | undefined
