@@ -73,7 +73,18 @@ jobs:
           path: android/app/build/outputs/bundle/release/app-release.aab
           retention-days: 7
 
-      # 10. 구글 플레이 콘솔 내부 테스트(Internal testing) 트랙으로 자동 배포
+      # 10. 최신 커밋 메시지로 구글 플레이 출시 노트(패치노트) 자동 생성
+      - name: Generate Release Notes
+        run: |
+          mkdir -p android/app/src/main/play/release-notes/ko-KR
+          RELEASE_NOTE=$(git log -1 --pretty=format:"%s%n%b" | head -c 500)
+          if [ -z "$RELEASE_NOTE" ]; then
+            RELEASE_NOTE="solve-climb 성능 개선 및 버그 수정"
+          fi
+          echo "$RELEASE_NOTE" > android/app/src/main/play/release-notes/ko-KR/alpha.txt
+          echo "$RELEASE_NOTE" > android/app/src/main/play/release-notes/ko-KR/default.txt
+
+      # 11. 구글 플레이 콘솔 트랙으로 자동 배포 및 패치노트 동시 반영
       - name: Upload to Google Play Store
         uses: r0adkll/upload-google-play@v1
         with:
@@ -81,3 +92,5 @@ jobs:
           packageName: com.solveclimb.app
           releaseFiles: android/app/build/outputs/bundle/release/app-release.aab
           track: alpha  # 비공개 테스트(Alpha) 트랙으로 자동 업로드
+          whatsNewDirectory: android/app/src/main/play/release-notes
+

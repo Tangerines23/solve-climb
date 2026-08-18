@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/utils/supabaseClient';
 import { useUserStore } from '@/stores/useUserStore';
 import { ITEM_MAP } from '@/constants/items';
@@ -23,20 +23,7 @@ export function ItemSystemSection() {
   } | null>(null);
   const [usingItemId, setUsingItemId] = useState<number | null>(null);
 
-  useEffect(() => {
-    loadItems();
-  }, []);
-
-  useEffect(() => {
-    // 인벤토리 변경 시 입력 필드 업데이트
-    const quantities: Record<number, string> = {};
-    inventory.forEach((item) => {
-      quantities[item.id] = item.quantity.toString();
-    });
-    setItemQuantities(quantities);
-  }, [inventory]);
-
-  const loadItems = async () => {
+  const loadItems = useCallback(async () => {
     try {
       setIsLoading(true);
 
@@ -55,7 +42,20 @@ export function ItemSystemSection() {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, []);
+
+  useEffect(() => {
+    loadItems();
+  }, [loadItems]);
+
+  useEffect(() => {
+    // 인벤토리 변경 시 입력 필드 업데이트
+    const quantities: Record<number, string> = {};
+    inventory.forEach((item) => {
+      quantities[item.id] = item.quantity.toString();
+    });
+    setItemQuantities(quantities);
+  }, [inventory]);
 
   const handleQuantityChange = (itemId: number, delta: number) => {
     const raw = Object.prototype.hasOwnProperty.call(itemQuantities, itemId)

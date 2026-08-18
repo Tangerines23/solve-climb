@@ -127,11 +127,9 @@ export const useLevelProgressStore = create<LevelProgressState>()(
           const worldKey = tier === 'hard' ? `${world}_hard` : world;
 
           const worldProgress = safeAccess(state.progress, worldKey) as
-            | Record<string, unknown>
-            | undefined;
+            Record<string, unknown> | undefined;
           const categoryProgress = safeAccess(worldProgress, category) as
-            | Record<number, LevelRecord>
-            | undefined;
+            Record<number, LevelRecord> | undefined;
           const levelRecord = safeAccess(categoryProgress, level) as LevelRecord | undefined;
 
           return levelRecord?.cleared ?? false;
@@ -141,16 +139,14 @@ export const useLevelProgressStore = create<LevelProgressState>()(
           const state = get();
           const worldKey = tier === 'hard' ? `${world}_hard` : world;
           const worldProgress = safeAccess(state.progress, worldKey) as
-            | Record<string, unknown>
-            | undefined;
+            Record<string, unknown> | undefined;
 
           if (import.meta.env.DEV && useDebugStore.getState().bypassLevelLock) {
             return 999; // bypass 시에는 어떤 레벨이든 통과 가능하도록 큰 값 반환
           }
 
           const categoryProgress = safeAccess(worldProgress, category) as
-            | Record<number, LevelRecord>
-            | undefined;
+            Record<number, LevelRecord> | undefined;
           if (!worldProgress || !categoryProgress) {
             return 1; // 첫 레벨부터 시작
           }

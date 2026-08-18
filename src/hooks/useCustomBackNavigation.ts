@@ -102,7 +102,7 @@ export function useCustomBackNavigation() {
       }
 
       // 케이스 2: 그 외 페이지에서 뒤로가기 → 상위 페이지로 이동
-      let targetPath = '';
+      let targetPath: string;
       const newSearchParams = new URLSearchParams();
 
       switch (pathToCheck) {

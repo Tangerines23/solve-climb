@@ -223,6 +223,27 @@ export function ProfileForm({ onComplete, showBackButton = false, onCancel }: Pr
         <button type="submit" className="btn-base btn-primary profile-form-submit">
           {profile?.nickname ? '저장하기' : '시작하기'}
         </button>
+
+        <p
+          className="profile-form-privacy-notice"
+          style={{
+            marginTop: 'var(--spacing-md)',
+            textAlign: 'center',
+            fontSize: 'var(--font-size-xs, 12px)',
+            color: 'var(--color-gray-400)',
+          }}
+        >
+          계속 진행 시{' '}
+          <a
+            href="/privacy-policy"
+            target="_blank"
+            rel="noopener noreferrer"
+            style={{ color: 'var(--color-teal-400)', textDecoration: 'underline' }}
+          >
+            개인정보처리방침(Privacy Policy)
+          </a>
+          에 동의하게 됩니다.
+        </p>
       </form>
     </div>
   );

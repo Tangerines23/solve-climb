@@ -25,9 +25,6 @@ export function HomePage() {
 
   // 연령 등급 표기 (3초 후 자동 숨김)
   useEffect(() => {
-    // 컴포넌트가 마운트될 때마다 표시
-    setShowAgeRating(true);
-
     const timer = setTimeout(() => {
       setShowAgeRating(false);
     }, 3000);

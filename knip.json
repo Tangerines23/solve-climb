@@ -5,33 +5,23 @@
   "entry": ["src/main.tsx", "src/utils/tossAuth.ts"],
   "project": ["src/**/*.{ts,tsx}"],
   "ignore": [
-    "src/vite-env.d.ts",
-    "vitest.workspace.js",
     "src/types/**",
-    "src/utils/navigation.ts",
-    "src/utils/tossGameLogin.ts",
-    "src/utils/seededRandom.ts",
-    "playwright-ct.config.ts",
-    "src/components/__tests__/ConfirmModal.ct.spec.tsx",
-    "src/hooks/useGrowthJournal.ts",
-    "src/hooks/useRanking.ts",
     "src/hooks/useRoadmapLayout.ts",
     "src/components/roadmap/LinearLandmarkItem.tsx",
-    "src/components/roadmap/NonLinearTierItem.tsx",
-    "src/features/mypage/components/HistoryTab.tsx"
+    "src/components/roadmap/NonLinearTierItem.tsx"
   ],
   "ignoreExportsUsedInFile": true,
   "rules": {
     "exports": "warn",
     "types": "warn",
-    "files": "warn"
+    "files": "warn",
+    "devDependencies": "warn"
   },
   "ignoreDependencies": [
     "@stryker-mutator/typescript-checker",
     "@storybook/react",
-    "hoist-non-react-statics",
-    "react-is",
+    "@types/js-yaml",
     "playwright"
   ],
-  "ignoreBinaries": ["powershell", "ait"]
+  "ignoreBinaries": ["ait"]
 }

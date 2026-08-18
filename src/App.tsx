@@ -139,11 +139,7 @@ function App() {
     Promise.all([initializeAuth(), syncProgress()]);
 
     // Capacitor 네이티브 앱 환경에서 Deep Link (Supabase OAuth 세션 복귀) 수신 리스너 등록
-    const isNativeApp =
-      typeof window !== 'undefined' &&
-      (typeof (window as any).Capacitor?.isNativePlatform === 'function'
-        ? (window as any).Capacitor.isNativePlatform()
-        : Capacitor.isNativePlatform());
+    const isNativeApp = Capacitor.isNativePlatform();
     if (isNativeApp) {
       // Capacitor Google Auth 초기화
       initializeGoogleSignIn().catch((err) => {

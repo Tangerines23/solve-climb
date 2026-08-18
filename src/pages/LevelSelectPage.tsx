@@ -52,18 +52,18 @@ export function LevelSelectPage() {
   const [isSheetTransitioning, setIsSheetTransitioning] = useState(false);
   const scrollTimerRef = useRef<NodeJS.Timeout | null>(null);
 
-  // URL 파라미터가 바뀔 때 로컬 상태 싱크 (애니메이션 중이 아닐 때만 동기화)
-  useEffect(() => {
-    if (worldParam && worldParam !== activeWorld && !isSheetTransitioning) {
-      setActiveWorld(worldParam);
-    }
-  }, [worldParam, activeWorld, isSheetTransitioning]);
+  const [prevWorldParam, setPrevWorldParam] = useState(worldParam);
+  const [prevCategoryParam, setPrevCategoryParam] = useState(categoryParam);
 
-  useEffect(() => {
-    if (categoryParam && categoryParam !== activeCategory && !isSheetTransitioning) {
-      setActiveCategory(categoryParam);
-    }
-  }, [categoryParam, activeCategory, isSheetTransitioning]);
+  if (worldParam && worldParam !== prevWorldParam && !isSheetTransitioning) {
+    setPrevWorldParam(worldParam);
+    setActiveWorld(worldParam);
+  }
+
+  if (categoryParam && categoryParam !== prevCategoryParam && !isSheetTransitioning) {
+    setPrevCategoryParam(categoryParam);
+    setActiveCategory(categoryParam);
+  }
 
   const [tier] = useState<Tier>('normal'); // FIXME: 하드 티어 개발 완료 시 setTier 복구
 

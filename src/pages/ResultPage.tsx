@@ -101,7 +101,7 @@ export function ResultPage() {
     }
   }, [animatedScore, finalScore]);
 
-  const confettiItems = useMemo(() => {
+  const [confettiItems] = useState(() => {
     const colors = [
       'var(--color-teal-500)',
       'var(--color-green-500)',
@@ -115,7 +115,7 @@ export function ResultPage() {
       delay: `${Math.random() * 0.5}s`,
       color: colors[Math.floor(Math.random() * colors.length)],
     }));
-  }, []);
+  });
 
   useEffect(() => {
     if (!worldParam || !categoryParam || !level || !mode) return;
@@ -129,7 +129,7 @@ export function ResultPage() {
     const existing = parseInt(storageService.get<string>(key) || '0', 10);
     if (finalScore > existing) {
       storageService.set(key, finalScore.toString());
-      setIsNewRecord(true);
+      queueMicrotask(() => setIsNewRecord(true));
       if (animationEnabled) {
         setShowConfetti(true);
         setTimeout(() => setShowConfetti(false), ANIMATION_CONFIG.CONFETTI_DURATION);

@@ -1,9 +1,13 @@
-import React, { useState, useEffect, useRef, useMemo } from 'react';
+import React, { useState, useEffect, useRef, useMemo, useCallback } from 'react';
 import { useDebugStore } from '../../stores/useDebugStore';
 import { ManimCardLayout } from './ManimCardLayout';
 import './GeometryTipVisualizer.css';
 
 const SIZE = 200;
+
+function easeOutCubic(x: number): number {
+  return 1 - Math.pow(1 - x, 3);
+}
 
 interface ShapeConfig {
   sides: number;
@@ -75,6 +79,24 @@ export const ManimLevel1Visualizer: React.FC = React.memo(() => {
     };
   }, [shapeIdx]);
 
+  const triggerStepChange = useCallback((direction: 'next' | 'prev') => {
+    setShapeIdx((idx) => {
+      const nextIdx =
+        direction === 'next'
+          ? (idx + 1) % SHAPE_CONFIGS.length
+          : (idx - 1 + SHAPE_CONFIGS.length) % SHAPE_CONFIGS.length;
+      const currentConfig = SHAPE_CONFIGS[idx];
+      const nextConfig = SHAPE_CONFIGS[nextIdx];
+      if (currentConfig && nextConfig) {
+        setPrevSides(currentConfig.sides);
+        setCurrSides(nextConfig.sides);
+      }
+      return nextIdx;
+    });
+    setProgress(0);
+    setHighlightIdx(null);
+  }, []);
+
   useEffect(() => {
     let animId: number;
     const MORPH_DURATION = 1200;
@@ -84,29 +106,21 @@ export const ManimLevel1Visualizer: React.FC = React.memo(() => {
     const highlightTotalDuration = currSides * HIGHLIGHT_STEP_DURATION;
     const totalCycleDuration = MORPH_DURATION + highlightTotalDuration + REST_PAUSE_DURATION;
 
-    const tick = (now: number) => {
-      const state = animStateRef.current;
-
+    const tick = (timestamp: number) => {
       if (isPausedRef.current) {
-        if (!state.pauseStart) state.pauseStart = now;
         animId = requestAnimationFrame(tick);
         return;
       }
 
-      if (state.pauseStart) {
-        state.accumulatedPauseTime += now - state.pauseStart;
-        state.pauseStart = null;
-      }
+      const state = animStateRef.current;
+      if (state.startTime === null) state.startTime = timestamp;
+      const elapsed = timestamp - state.startTime - state.accumulatedPauseTime;
 
-      if (state.startTime === null) state.startTime = now;
-      const elapsed = now - state.startTime - state.accumulatedPauseTime;
-
-      if (elapsed < MORPH_DURATION) {
-        const rawT = elapsed / MORPH_DURATION;
-        const eased = rawT < 0.5 ? 4 * rawT * rawT * rawT : 1 - Math.pow(-2 * rawT + 2, 3) / 2;
-        setProgress(eased);
+      if (elapsed <= MORPH_DURATION) {
+        const p = elapsed / MORPH_DURATION;
+        setProgress(easeOutCubic(p));
         setHighlightIdx(null);
-      } else if (elapsed < MORPH_DURATION + highlightTotalDuration) {
+      } else if (elapsed <= MORPH_DURATION + currSides * HIGHLIGHT_STEP_DURATION) {
         setProgress(1);
         const highlightElapsed = elapsed - MORPH_DURATION;
         const currentStep = Math.floor(highlightElapsed / HIGHLIGHT_STEP_DURATION);
@@ -125,23 +139,7 @@ export const ManimLevel1Visualizer: React.FC = React.memo(() => {
 
     animId = requestAnimationFrame(tick);
     return () => cancelAnimationFrame(animId);
-  }, [shapeIdx, currSides, prevSides]);
-
-  // Swipe / Skip Transition Engine (Continuous Seamless Morphing)
-  const triggerStepChange = (direction: 'next' | 'prev') => {
-    let nextIdx = shapeIdx;
-    if (direction === 'next') {
-      nextIdx = (shapeIdx + 1) % SHAPE_CONFIGS.length;
-    } else {
-      nextIdx = (shapeIdx - 1 + SHAPE_CONFIGS.length) % SHAPE_CONFIGS.length;
-    }
-
-    setPrevSides(SHAPE_CONFIGS[shapeIdx]!.sides);
-    setCurrSides(SHAPE_CONFIGS[nextIdx]!.sides);
-    setShapeIdx(nextIdx);
-    setProgress(0);
-    setHighlightIdx(null);
-  };
+  }, [shapeIdx, currSides, prevSides, triggerStepChange]);
 
   // Drag Gesture Handlers
   const handlePointerDown = (e: React.PointerEvent) => {

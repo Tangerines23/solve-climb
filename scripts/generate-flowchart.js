@@ -64,7 +64,7 @@ function main() {
         moduleSpecifier.startsWith('src/') ||
         moduleSpecifier.startsWith('@/')
       ) {
-        let resolved = null;
+        let resolved;
         if (moduleSpecifier.startsWith('@/')) {
           resolved = path.resolve('src', moduleSpecifier.slice(2));
         } else if (moduleSpecifier.startsWith('src/')) {

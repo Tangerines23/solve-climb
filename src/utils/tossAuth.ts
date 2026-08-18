@@ -110,7 +110,8 @@ export async function createOrUpdateSupabaseUser(
             `1. Edge Function이 배포되지 않았습니다 (supabase functions deploy toss-auth)\n` +
             `2. Supabase URL이 잘못되었습니다: ${ENV.VITE_SUPABASE_URL}\n` +
             `3. 네트워크 연결 문제 또는 CORS 설정 문제\n\n` +
-            `원본 오류: ${errorMessage}`
+            `원본 오류: ${errorMessage}`,
+          { cause: fetchError }
         );
       }
       throw fetchError;
@@ -212,7 +213,8 @@ export async function handleTossLoginFlow(
             `1. Edge Function이 배포되지 않았습니다 (supabase functions deploy toss-oauth)\n` +
             `2. Supabase URL이 잘못되었습니다: ${ENV.VITE_SUPABASE_URL}\n` +
             `3. 네트워크 연결 문제 또는 CORS 설정 문제\n\n` +
-            `원본 오류: ${errorMessage}`
+            `원본 오류: ${errorMessage}`,
+          { cause: fetchError }
         );
       }
       throw fetchError;

@@ -52,8 +52,7 @@ export function useQuizStartLogic({
 
   useEffect(() => {
     const landmark = safeAccess(LANDMARK_MAPPING, totalQuestions) as
-      | { icon: string; text: string }
-      | undefined;
+      { icon: string; text: string } | undefined;
     if (landmark) {
       setActiveLandmark(landmark);
       setTimeout(() => setActiveLandmark(null), 3000);

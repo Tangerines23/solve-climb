@@ -69,7 +69,7 @@ export const useBaseCampStore = create<BaseCampState>()(
         const accuracy = (correctCount / results.length) * 100;
         const avgTime = totalTime / results.length;
 
-        let recommendation: Category = '기초';
+        let recommendation: Category;
         if (accuracy >= 90 && avgTime < 3000) {
           recommendation = '심화'; // Rock Climbing
         } else if (accuracy >= 80) {

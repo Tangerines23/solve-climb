@@ -28,10 +28,14 @@ export function LastChanceModal({
   const [timeLeft, setTimeLeft] = useState(10); // 자동 포기 카운트다운
   const [isAdLoading, setIsAdLoading] = useState(false);
   const onGiveUpRef = useRef(onGiveUp);
-  onGiveUpRef.current = onGiveUp;
+
+  useEffect(() => {
+    onGiveUpRef.current = onGiveUp;
+  }, [onGiveUp]);
 
   useEffect(() => {
     if (isVisible) {
+      setTimeLeft(10);
       setTimeLeft(10);
       setIsAdLoading(false);
       const timer = setInterval(() => {

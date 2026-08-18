@@ -139,13 +139,11 @@ export const getTierInfo = (altitude: number) => {
   let nextTierIndex = ALTITUDE_TIERS.findIndex((t) => currentCycleScore < t.goal);
   let nextTier;
   let nextGoalAltitude;
-  let nextStars = stars;
 
   if (nextTierIndex === -1) {
     // 현재 사이클의 모든 티어를 달성한 경우 다음 사이클의 첫 티어로
     nextTier = ALTITUDE_TIERS[0];
-    nextStars = stars + 1;
-    nextGoalAltitude = nextStars * TIER_CYCLE_LIMIT + nextTier.goal;
+    nextGoalAltitude = (stars + 1) * TIER_CYCLE_LIMIT + nextTier.goal;
   } else {
     nextTier = ALTITUDE_TIERS.at(nextTierIndex) ?? ALTITUDE_TIERS[0];
     nextGoalAltitude = stars * TIER_CYCLE_LIMIT + nextTier.goal;

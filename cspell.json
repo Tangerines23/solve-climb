@@ -2,6 +2,15 @@
   "version": "0.2",
   "language": "en",
   "words": [
+    "Supersaw",
+    "Melodica",
+    "Rimshot",
+    "Fingerstyle",
+    "melodica",
+    "Gsus",
+    "DPCM",
+    "Ebmaj",
+    "lofi",
     "Supabase",
     "Vercel",
     "zustand",
@@ -85,7 +94,9 @@
     "Fmaj",
     "Dmin",
     "Emin",
-    "Bdim"
+    "Bdim",
+    "Bbmaj",
+    "Shibuya"
   ],
   "ignorePaths": [
     "node_modules",

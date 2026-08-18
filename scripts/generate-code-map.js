@@ -1,7 +1,7 @@
 import { Project, SyntaxKind } from 'ts-morph';
 import fs from 'fs';
 import path from 'path';
-import yaml from 'js-yaml';
+import * as yaml from 'js-yaml';
 
 function getFileSummary(sourceFile) {
   const leadingCommentRanges = sourceFile.getLeadingCommentRanges();
