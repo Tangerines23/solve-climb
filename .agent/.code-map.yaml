@@ -1,5 +1,5 @@
 project: solve-climb
-generatedAt: '2026-08-19T10:14:56.597Z'
+generatedAt: '2026-08-19T10:18:39.066Z'
 files:
   src/App.tsx:
     imports:
@@ -21,7 +21,7 @@ files:
       - '@/components/GlobalBgmManager'
     exports:
       - name: App
-        returns: import("C:/Users/ghkdd/gemini-projects/solve-climb/node_modules/@types/react/jsx-runtime").JSX.Element
+        returns: React.JSX.Element
         calls:
           - useLocation
           - useAuthStore
@@ -57,7 +57,7 @@ files:
       - '@/components/ErrorBoundary'
     exports:
       - name: AppContainer
-        returns: import("C:/Users/ghkdd/gemini-projects/solve-climb/node_modules/@types/react/jsx-runtime").JSX.Element
+        returns: React.JSX.Element
         calls:
           - diagnosis
   src/main.tsx:
@@ -80,7 +80,7 @@ files:
         params:
           ? "{\n  isOpen,\n  title,\n  message,\n  buttonText = '확인',\n  onClose,\n}"
           : AlertModalProps
-        returns: import("C:/Users/ghkdd/gemini-projects/solve-climb/node_modules/@types/react/jsx-runtime").JSX.Element
+        returns: React.JSX.Element
   src/components/BadgeNotification.tsx:
     imports:
       - ../utils/supabaseClient
@@ -94,7 +94,7 @@ files:
       - name: BadgeNotification
         params:
           '{ badgeIds, onClose }': BadgeNotificationProps
-        returns: import("C:/Users/ghkdd/gemini-projects/solve-climb/node_modules/@types/react/jsx-runtime").JSX.Element | null
+        returns: React.JSX.Element | null
         calls:
           - setLoading
           - safeSupabaseQuery
@@ -117,13 +117,13 @@ files:
       - name: BadgeSlot
         params:
           '{ isEarned, badgeDef, earnedAt }': BadgeSlotProps
-        returns: import("C:/Users/ghkdd/gemini-projects/solve-climb/node_modules/@types/react/jsx-runtime").JSX.Element
+        returns: React.JSX.Element
         calls:
           - new Date(earnedAt).toLocaleDateString
       - name: BadgeCollection
         params:
           '{ userId, mode = ''full'' }': BadgeCollectionProps
-        returns: import("C:/Users/ghkdd/gemini-projects/solve-climb/node_modules/@types/react/jsx-runtime").JSX.Element
+        returns: React.JSX.Element
         calls:
           - useBadgeStore
           - fetchBadgeDefinitions
@@ -146,7 +146,7 @@ files:
         params:
           ? "{\n  children,\n  className = '',\n  interactive = false,\n  padding = 'md',\n  ...props\n}"
           : BaseCardProps
-        returns: import("C:/Users/ghkdd/gemini-projects/solve-climb/node_modules/@types/react/jsx-runtime").JSX.Element
+        returns: React.JSX.Element
   src/components/BaseModal.tsx:
     imports:
       - ./BaseModal.css
@@ -155,7 +155,7 @@ files:
         params:
           ? "{\n  isOpen,\n  onClose,\n  title,\n  children,\n  actions,\n  showOverlay = true,\n  closeOnOverlayClick = true,\n  className = '',\n}"
           : import("C:/Users/ghkdd/gemini-projects/solve-climb/src/components/BaseModal").BaseModalProps
-        returns: import("C:/Users/ghkdd/gemini-projects/solve-climb/node_modules/@types/react/jsx-runtime").JSX.Element | null
+        returns: React.JSX.Element | null
         calls:
           - e.stopPropagation
       - name: BaseModalProps
@@ -182,7 +182,7 @@ files:
           - urls.categorySelect
     exports:
       - name: CategoryList
-        returns: import("C:/Users/ghkdd/gemini-projects/solve-climb/node_modules/@types/react/jsx-runtime").JSX.Element
+        returns: React.JSX.Element
         calls:
           - useNavigate
           - useFavoriteStore
@@ -220,7 +220,7 @@ files:
           - urls.quiz
     exports:
       - name: ChallengeCard
-        returns: import("C:/Users/ghkdd/gemini-projects/solve-climb/node_modules/@types/react/jsx-runtime").JSX.Element
+        returns: React.JSX.Element
         calls:
           - useNavigate
           - useQuizStore
@@ -252,7 +252,7 @@ files:
         params:
           ? "{\n  mountain,\n  world,\n  category,\n  levels,\n  categoryColor = 'var(--color-teal-500)',\n  onLevelClick,\n  onUnderDevelopmentClick,\n  isReady,\n}"
           : ClimbGraphicProps
-        returns: import("C:/Users/ghkdd/gemini-projects/solve-climb/node_modules/@types/react/jsx-runtime").JSX.Element
+        returns: React.JSX.Element
         calls:
           - useLevelProgressStore
           - useProfileStore
@@ -302,7 +302,7 @@ files:
         params:
           ? "{\n  world,\n  category,\n  totalLevels: _totalLevels = 30,\n}"
           : BackgroundProps
-        returns: import("C:/Users/ghkdd/gemini-projects/solve-climb/node_modules/@types/react/jsx-runtime").JSX.Element
+        returns: React.JSX.Element
         calls:
           - Math.max
           - layers.push
@@ -341,7 +341,7 @@ files:
         params:
           ? "{\n  isOpen,\n  title,\n  message,\n  confirmText = '확인',\n  cancelText = '취소',\n  onConfirm,\n  onCancel,\n  variant = 'primary',\n}"
           : ConfirmModalProps
-        returns: import("C:/Users/ghkdd/gemini-projects/solve-climb/node_modules/@types/react/jsx-runtime").JSX.Element
+        returns: React.JSX.Element
   src/components/CountdownOverlay.tsx:
     imports:
       - ./CountdownOverlay.css
@@ -353,7 +353,7 @@ files:
       - name: CountdownOverlay
         params:
           '{ isVisible, onComplete }': CountdownOverlayProps
-        returns: import("C:/Users/ghkdd/gemini-projects/solve-climb/node_modules/@types/react/jsx-runtime").JSX.Element | null
+        returns: React.JSX.Element | null
         calls:
           - setCount
           - bgm.stop
@@ -411,7 +411,7 @@ files:
         params:
           ? "{\n  isOpen,\n  stars,\n  pendingScore,\n  onPromote,\n  onClose,\n}"
           : CyclePromotionModalProps
-        returns: import("C:/Users/ghkdd/gemini-projects/solve-climb/node_modules/@types/react/jsx-runtime").JSX.Element
+        returns: React.JSX.Element
         calls:
           - setIsPromoting
           - setError
@@ -427,7 +427,7 @@ files:
       - ./DailyRewardModal.css
     exports:
       - name: DailyRewardModal
-        returns: import("C:/Users/ghkdd/gemini-projects/solve-climb/node_modules/@types/react/jsx-runtime").JSX.Element | null
+        returns: React.JSX.Element | null
         calls:
           - useDailyRewardStore
   src/components/ErrorBoundary.tsx:
@@ -454,7 +454,7 @@ files:
               - errorInfo.componentStack?.split
               - this.props.onError
           - name: render
-            returns: string | number | boolean | import("C:/Users/ghkdd/gemini-projects/solve-climb/node_modules/@types/react/jsx-runtime").JSX.Element | Iterable<React.ReactNode> | null | undefined
+            returns: string | number | bigint | boolean | React.JSX.Element | Iterable<React.ReactNode> | Promise<AwaitedReactNode> | null | undefined
   src/components/ErrorFallback.tsx:
     imports:
       - ../hooks/useConnectivity
@@ -473,7 +473,7 @@ files:
       - name: ErrorFallback
         params:
           '{ error, resetError }': ErrorFallbackProps
-        returns: import("C:/Users/ghkdd/gemini-projects/solve-climb/node_modules/@types/react/jsx-runtime").JSX.Element
+        returns: React.JSX.Element
         calls:
           - useToastStore
           - useConnectivity
@@ -498,7 +498,7 @@ files:
           - navigate
     exports:
       - name: FooterNav
-        returns: import("C:/Users/ghkdd/gemini-projects/solve-climb/node_modules/@types/react/jsx-runtime").JSX.Element
+        returns: React.JSX.Element
         calls:
           - useNavigate
           - useLocation
@@ -522,7 +522,7 @@ files:
         params:
           ? "{\n  isOpen,\n  category,\n  subTopic,\n  level,\n  onStart,\n  onClose,\n}"
           : GameTipModalProps
-        returns: import("C:/Users/ghkdd/gemini-projects/solve-climb/node_modules/@types/react/jsx-runtime").JSX.Element | null
+        returns: React.JSX.Element | null
         calls:
           - setSelectedItemIds
           - prev.includes
@@ -553,7 +553,7 @@ files:
       - ./GlobalLoadingIndicator.css
     exports:
       - name: GlobalLoadingIndicator
-        returns: import("C:/Users/ghkdd/gemini-projects/solve-climb/node_modules/@types/react/jsx-runtime").JSX.Element | null
+        returns: React.JSX.Element | null
         calls:
           - useLoadingStore
           - state.isAnyLoading
@@ -563,7 +563,7 @@ files:
       - ./Toast
     exports:
       - name: GlobalToastContainer
-        returns: import("C:/Users/ghkdd/gemini-projects/solve-climb/node_modules/@types/react/jsx-runtime").JSX.Element
+        returns: React.JSX.Element
         calls:
           - useToastStore
   src/components/Header.tsx:
@@ -614,7 +614,7 @@ files:
       - name: Header
         params:
           '{ title, showBack, onBack }': HeaderProps
-        returns: import("C:/Users/ghkdd/gemini-projects/solve-climb/node_modules/@types/react/jsx-runtime").JSX.Element
+        returns: React.JSX.Element
         calls:
           - useNavigate
           - useLocation
@@ -724,7 +724,7 @@ files:
         params:
           ? "{\n  isVisible,\n  gameMode,\n  inventoryCount,\n  userMinerals,\n  onUseItem,\n  onPurchaseAndUse,\n  onWatchAd,\n  onGiveUp,\n  basePrice,\n}"
           : LastChanceModalProps
-        returns: import("C:/Users/ghkdd/gemini-projects/solve-climb/node_modules/@types/react/jsx-runtime").JSX.Element
+        returns: React.JSX.Element
         calls:
           - setTimeLeft
           - setIsAdLoading
@@ -765,7 +765,7 @@ files:
         params:
           ? "{\n  isOpen,\n  level,\n  levelName,\n  onClose,\n  onSelectMode,\n}"
           : ModeSelectModalProps
-        returns: import("C:/Users/ghkdd/gemini-projects/solve-climb/node_modules/@types/react/jsx-runtime").JSX.Element
+        returns: React.JSX.Element
         calls:
           - STAGE_CONFIG.find
           - onSelectMode
@@ -783,7 +783,7 @@ files:
       - name: MyRecordCard
         params:
           '{ world, category, categoryName }': MyRecordCardProps
-        returns: import("C:/Users/ghkdd/gemini-projects/solve-climb/node_modules/@types/react/jsx-runtime").JSX.Element
+        returns: React.JSX.Element
         calls:
           - useLevelProgressStore
           - setLoading
@@ -799,7 +799,7 @@ files:
       - name: PageTransition
         params:
           '{ children }': PageTransitionProps
-        returns: import("C:/Users/ghkdd/gemini-projects/solve-climb/node_modules/@types/react/jsx-runtime").JSX.Element
+        returns: React.JSX.Element
         calls:
           - useSettingsStore
   src/components/ProfileForm.tsx:
@@ -837,7 +837,7 @@ files:
       - name: ProfileForm
         params:
           '{ onComplete, showBackButton = false, onCancel }': ProfileFormProps
-        returns: import("C:/Users/ghkdd/gemini-projects/solve-climb/node_modules/@types/react/jsx-runtime").JSX.Element
+        returns: React.JSX.Element
         calls:
           - useNavigate
           - useProfileStore
@@ -882,7 +882,7 @@ files:
           - setShow
     exports:
       - name: PwaUpdateNotification
-        returns: import("C:/Users/ghkdd/gemini-projects/solve-climb/node_modules/@types/react/jsx-runtime").JSX.Element | null
+        returns: React.JSX.Element | null
         calls:
           - useRegisterSW
           - logError
@@ -923,7 +923,7 @@ files:
         params:
           ? "{\n  options,\n  value,\n  onChange,\n  className = '',\n  name = 'segmented-control',\n}"
           : SegmentedControlProps<T>
-        returns: import("C:/Users/ghkdd/gemini-projects/solve-climb/node_modules/@types/react/jsx-runtime").JSX.Element
+        returns: React.JSX.Element
         calls:
           - options.findIndex
           - setActiveIndex
@@ -941,7 +941,7 @@ files:
       - ./StaminaGauge.css
     exports:
       - name: StaminaGauge
-        returns: import("C:/Users/ghkdd/gemini-projects/solve-climb/node_modules/@types/react/jsx-runtime").JSX.Element
+        returns: React.JSX.Element
         calls:
           - useUserStore
           - Math.min
@@ -962,7 +962,7 @@ files:
           - navigate
     exports:
       - name: StatusCard
-        returns: import("C:/Users/ghkdd/gemini-projects/solve-climb/node_modules/@types/react/jsx-runtime").JSX.Element
+        returns: React.JSX.Element
         calls:
           - useNavigate
           - setState
@@ -994,7 +994,7 @@ files:
         params:
           ? "{\n  totalScore,\n  size = 'medium',\n  showLabel = true,\n  showStars = true,\n  currentTierLevel,\n  fixedTierLevel,\n  fixedTierStars,\n}"
           : TierBadgeProps
-        returns: import("C:/Users/ghkdd/gemini-projects/solve-climb/node_modules/@types/react/jsx-runtime").JSX.Element
+        returns: React.JSX.Element
         calls:
           - setTierResult
           - getTierInfo
@@ -1020,7 +1020,7 @@ files:
         params:
           ? "{\n  totalScore,\n  size = 'medium',\n}"
           : TierProgressBarProps
-        returns: import("C:/Users/ghkdd/gemini-projects/solve-climb/node_modules/@types/react/jsx-runtime").JSX.Element | null
+        returns: React.JSX.Element | null
         calls:
           - calculateTier
           - setTierResult
@@ -1051,7 +1051,7 @@ files:
         params:
           ? "{\n  isOpen,\n  previousScore,\n  currentScore,\n  onClose,\n}"
           : TierUpgradeModalProps
-        returns: import("C:/Users/ghkdd/gemini-projects/solve-climb/node_modules/@types/react/jsx-runtime").JSX.Element | null
+        returns: React.JSX.Element | null
         calls:
           - setLoading
           - calculateTier
@@ -1085,7 +1085,7 @@ files:
       - name: TimeSelector
         params:
           '{ onSelect }': TimeSelectorProps
-        returns: import("C:/Users/ghkdd/gemini-projects/solve-climb/node_modules/@types/react/jsx-runtime").JSX.Element
+        returns: React.JSX.Element
         calls:
           - TIME_OPTIONS.map
           - onSelect
@@ -1118,7 +1118,7 @@ files:
       - name: TopicHeader
         params:
           '{ title, onBack }': TopicHeaderProps
-        returns: import("C:/Users/ghkdd/gemini-projects/solve-climb/node_modules/@types/react/jsx-runtime").JSX.Element
+        returns: React.JSX.Element
         calls:
           - useNavigate
           - onBack
@@ -1132,7 +1132,7 @@ files:
         params:
           ? "{\n  isOpen,\n  onClose,\n  autoClose = true,\n  autoCloseDelay = 2000,\n}"
           : UnderDevelopmentModalProps
-        returns: import("C:/Users/ghkdd/gemini-projects/solve-climb/node_modules/@types/react/jsx-runtime").JSX.Element
+        returns: React.JSX.Element
         calls:
           - setTimeout
           - onClose
@@ -1154,7 +1154,7 @@ files:
       - name: UnknownMountainCard
         params:
           '{ onToast }': UnknownMountainCardProps
-        returns: import("C:/Users/ghkdd/gemini-projects/solve-climb/node_modules/@types/react/jsx-runtime").JSX.Element
+        returns: React.JSX.Element
         calls:
           - Date.now
           - Math.floor
@@ -1170,7 +1170,7 @@ files:
         params:
           ? "{\n  isOpen,\n  onConfirm,\n  onCancel,\n  isLoading = false,\n}"
           : WithdrawConfirmModalProps
-        returns: import("C:/Users/ghkdd/gemini-projects/solve-climb/node_modules/@types/react/jsx-runtime").JSX.Element
+        returns: React.JSX.Element
   src/config/app.ts:
     imports:
       - ../../package.json
@@ -1663,7 +1663,7 @@ files:
           stats: import("C:/Users/ghkdd/gemini-projects/solve-climb/src/features/mypage/hooks/useHistoryData").HistoryStats | null
           isLinearScale: boolean
           isRoadmapActive: boolean
-        returns: '{ displayRatio: number; isScaling: boolean; showZoomIndicator: boolean; visibleAltRange: { min: number; max: number; }; gaugeHeight: string; setGaugeHeight: React.Dispatch<React.SetStateAction<string>>; roadmapData: { currentIdx: number; cardIndices: number[]; }; layoutData: { gaugeHeight: number; nodes: { bottom: number; isTier: boolean; id: string; altitude: number; label: string; type: "tier" | "landmark"; icon: string; description?: string | undefined; parentTierId?: string | undefined; subLandmarks?: import("C:/Users/ghkdd/gemini-projects/solve-climb/src/types/roadmap").MilestoneItem[] | undefined; stars?: number | undefined; overlapLandmark?: import("C:/Users/ghkdd/gemini-projects/solve-climb/src/types/roadmap").MilestoneItem | undefined; representativeLandmark?: import("C:/Users/ghkdd/gemini-projects/solve-climb/src/types/roadmap").MilestoneItem | undefined; }[]; absoluteZeroY: number; totalLogicalAltitude: number; BOTTOM_SAFETY_MARGIN: number; } | null; cameraRef: React.RefObject<HTMLDivElement>; roadmapScrollRef: React.RefObject<HTMLDivElement>; VIRTUAL_RAIL_HEIGHT: number; getAltitudeY: (alt: number, ratio: number) => number; }'
+        returns: '{ displayRatio: number; isScaling: boolean; showZoomIndicator: boolean; visibleAltRange: { min: number; max: number; }; gaugeHeight: string; setGaugeHeight: React.Dispatch<React.SetStateAction<string>>; roadmapData: { currentIdx: number; cardIndices: number[]; }; layoutData: { gaugeHeight: number; nodes: { bottom: number; isTier: boolean; id: string; altitude: number; label: string; type: "tier" | "landmark"; icon: string; description?: string | undefined; parentTierId?: string | undefined; subLandmarks?: import("C:/Users/ghkdd/gemini-projects/solve-climb/src/types/roadmap").MilestoneItem[] | undefined; stars?: number | undefined; overlapLandmark?: import("C:/Users/ghkdd/gemini-projects/solve-climb/src/types/roadmap").MilestoneItem | undefined; representativeLandmark?: import("C:/Users/ghkdd/gemini-projects/solve-climb/src/types/roadmap").MilestoneItem | undefined; }[]; absoluteZeroY: number; totalLogicalAltitude: number; BOTTOM_SAFETY_MARGIN: number; } | null; cameraRef: React.RefObject<HTMLDivElement | null>; roadmapScrollRef: React.RefObject<HTMLDivElement | null>; VIRTUAL_RAIL_HEIGHT: number; getAltitudeY: (alt: number, ratio: number) => number; }'
         calls:
           - ALTITUDE_MILESTONES.findIndex
           - sort
@@ -1758,7 +1758,7 @@ files:
           - urls.levelSelect
     exports:
       - name: CategorySelectPage
-        returns: import("C:/Users/ghkdd/gemini-projects/solve-climb/node_modules/@types/react/jsx-runtime").JSX.Element
+        returns: React.JSX.Element
         calls:
           - useNavigate
           - useNavigationContext
@@ -1792,7 +1792,7 @@ files:
       - ./DebugPage.css
     exports:
       - name: DebugPage
-        returns: import("C:/Users/ghkdd/gemini-projects/solve-climb/node_modules/@types/react/jsx-runtime").JSX.Element
+        returns: React.JSX.Element
         calls:
           - useNavigate
           - navigate
@@ -1814,7 +1814,7 @@ files:
       - showAgeRating
     exports:
       - name: HomePage
-        returns: import("C:/Users/ghkdd/gemini-projects/solve-climb/node_modules/@types/react/jsx-runtime").JSX.Element
+        returns: React.JSX.Element
         calls:
           - useNavigate
           - useDailyRewardStore
@@ -1892,7 +1892,7 @@ files:
           - pageEl.removeAttribute
     exports:
       - name: LevelSelectPage
-        returns: import("C:/Users/ghkdd/gemini-projects/solve-climb/node_modules/@types/react/jsx-runtime").JSX.Element
+        returns: React.JSX.Element
         calls:
           - useNavigate
           - useNavigationContext
@@ -1953,7 +1953,7 @@ files:
           - urls.levelSelect
     exports:
       - name: NotificationPage
-        returns: import("C:/Users/ghkdd/gemini-projects/solve-climb/node_modules/@types/react/jsx-runtime").JSX.Element
+        returns: React.JSX.Element
         calls:
           - useNavigate
           - useNotificationStore
@@ -1982,7 +1982,7 @@ files:
       - ./PrivacyPolicyPage.css
     exports:
       - name: PrivacyPolicyPage
-        returns: import("C:/Users/ghkdd/gemini-projects/solve-climb/node_modules/@types/react/jsx-runtime").JSX.Element
+        returns: React.JSX.Element
         calls:
           - useNavigate
           - navigate
@@ -1994,7 +1994,7 @@ files:
       - '@/utils/urlParams'
     exports:
       - name: QuizPage
-        returns: import("C:/Users/ghkdd/gemini-projects/solve-climb/node_modules/@types/react/jsx-runtime").JSX.Element
+        returns: React.JSX.Element
         description: |-
           QuizPage - 퀴즈 페이지의 메인 쉘 컴포넌트
           - URL 파라미터 유효성 검사 및 초기화 담당
@@ -2020,7 +2020,7 @@ files:
       - ./RankingPage.css
     exports:
       - name: RankingPage
-        returns: import("C:/Users/ghkdd/gemini-projects/solve-climb/node_modules/@types/react/jsx-runtime").JSX.Element
+        returns: React.JSX.Element
         calls:
           - useRanking
           - setActiveType
@@ -2095,7 +2095,7 @@ files:
           - urls.levelSelect
     exports:
       - name: ResultPage
-        returns: import("C:/Users/ghkdd/gemini-projects/solve-climb/node_modules/@types/react/jsx-runtime").JSX.Element
+        returns: React.JSX.Element
         calls:
           - useQuizStore
           - useSettingsStore
@@ -2180,7 +2180,7 @@ files:
       - ./ReviewPage.css
     exports:
       - name: ReviewPage
-        returns: import("C:/Users/ghkdd/gemini-projects/solve-climb/node_modules/@types/react/jsx-runtime").JSX.Element
+        returns: React.JSX.Element
         calls:
           - useNavigate
           - navigate
@@ -2194,7 +2194,7 @@ files:
       - ../features/mypage/pages/MyPage.css
     exports:
       - name: RoadmapPage
-        returns: import("C:/Users/ghkdd/gemini-projects/solve-climb/node_modules/@types/react/jsx-runtime").JSX.Element
+        returns: React.JSX.Element
   src/services/analytics.ts:
     imports:
       - '@/utils/logger'
@@ -3704,7 +3704,7 @@ files:
       - name: EquationTerm
         params:
           '{ term, onTranspose }': EquationTermProps
-        returns: import("C:/Users/ghkdd/gemini-projects/solve-climb/node_modules/@types/react/jsx-runtime").JSX.Element
+        returns: React.JSX.Element
         calls:
           - onTranspose
           - setIsHovered
@@ -3724,7 +3724,7 @@ files:
         params:
           ? "{\n  initialLeft,\n  initialRight,\n  onSolved: _onSolved,\n}"
           : EquationVisualizerProps
-        returns: import("C:/Users/ghkdd/gemini-projects/solve-climb/node_modules/@types/react/jsx-runtime").JSX.Element
+        returns: React.JSX.Element
         calls:
           - setIsAnimating
           - vibrateMedium
@@ -3745,7 +3745,7 @@ files:
         params:
           ? "{\n  children,\n  className = '',\n  interactive = false,\n  onClick,\n  style,\n}"
           : GlassCardProps
-        returns: import("C:/Users/ghkdd/gemini-projects/solve-climb/node_modules/@types/react/jsx-runtime").JSX.Element
+        returns: React.JSX.Element
         description: |-
           전역 Glassmorphism 스타일이 적용된 카드 컴포넌트
           - index.css의 .glass-effect 클래스를 기반으로 동작합니다.
@@ -3797,7 +3797,7 @@ files:
       - ./Effects.css
     exports:
       - name: FeverEffect
-        returns: import("C:/Users/ghkdd/gemini-projects/solve-climb/node_modules/@types/react/jsx-runtime").JSX.Element | null
+        returns: React.JSX.Element | null
         calls:
           - useGameStore
           - useSettingsStore
@@ -3810,7 +3810,7 @@ files:
       - name: ReasoningOverlay
         params:
           '{ isVisible, isCorrect }': ReasoningOverlayProps
-        returns: import("C:/Users/ghkdd/gemini-projects/solve-climb/node_modules/@types/react/jsx-runtime").JSX.Element | null
+        returns: React.JSX.Element | null
         calls:
           - setIsUnlocked
           - setTimeout
@@ -3824,7 +3824,7 @@ files:
       - name: FunctionMachine
         params:
           '{ type, value, input }': FunctionMachineProps
-        returns: import("C:/Users/ghkdd/gemini-projects/solve-climb/node_modules/@types/react/jsx-runtime").JSX.Element
+        returns: React.JSX.Element
         calls:
           - setPhase
           - setTimeout
@@ -3836,7 +3836,7 @@ files:
       - name: IntegralVisualizer
         params:
           '{ hintData }': IntegralVisualizerProps
-        returns: import("C:/Users/ghkdd/gemini-projects/solve-climb/node_modules/@types/react/jsx-runtime").JSX.Element
+        returns: React.JSX.Element
         calls:
           - Math.pow
           - Math.max
@@ -3856,7 +3856,7 @@ files:
         params:
           ? "{\n  isOpen,\n  onClose,\n  selectedItemIds,\n  onToggleItem,\n}"
           : BackpackBottomSheetProps
-        returns: import("C:/Users/ghkdd/gemini-projects/solve-climb/node_modules/@types/react/jsx-runtime").JSX.Element | null
+        returns: React.JSX.Element | null
         calls:
           - useUserStore
           - setIsAnimating
@@ -3876,7 +3876,7 @@ files:
         params:
           ? "{\n  isOpen,\n  onClose,\n  onAction,\n  type,\n}"
           : GameAlertModalProps
-        returns: import("C:/Users/ghkdd/gemini-projects/solve-climb/node_modules/@types/react/jsx-runtime").JSX.Element | null
+        returns: React.JSX.Element | null
         calls:
           - AdService.preloadRewardedAd().catch
           - AdService.preloadRewardedAd
@@ -3894,7 +3894,7 @@ files:
       - splashKey
     exports:
       - name: GameOverlay
-        returns: import("C:/Users/ghkdd/gemini-projects/solve-climb/node_modules/@types/react/jsx-runtime").JSX.Element
+        returns: React.JSX.Element
         calls:
           - useGameStore
           - setSplashText
@@ -3920,7 +3920,7 @@ files:
         params:
           ? "{\n  isVisible,\n  remainingPauses,\n  onResume,\n  onExit,\n}"
           : PauseModalProps
-        returns: import("C:/Users/ghkdd/gemini-projects/solve-climb/node_modules/@types/react/jsx-runtime").JSX.Element
+        returns: React.JSX.Element
   src/components/game/PreGameLobby.tsx:
     imports:
       - ../../stores/useUserStore
@@ -3930,7 +3930,7 @@ files:
       - name: PreGameLobby
         params:
           '{ onStart, onBack, category, topic }': PreGameLobbyProps
-        returns: import("C:/Users/ghkdd/gemini-projects/solve-climb/node_modules/@types/react/jsx-runtime").JSX.Element
+        returns: React.JSX.Element
         calls:
           - useUserStore
           - React.useState
@@ -3950,7 +3950,7 @@ files:
       - name: SafetyRopeOverlay
         params:
           '{ isVisible, onAnimationComplete }': SafetyRopeOverlayProps
-        returns: import("C:/Users/ghkdd/gemini-projects/solve-climb/node_modules/@types/react/jsx-runtime").JSX.Element | null
+        returns: React.JSX.Element | null
         calls:
           - setTimeout
           - onAnimationComplete
@@ -3963,7 +3963,7 @@ files:
         params:
           ? "{\n  isOpen,\n  onClose,\n  onPlayAnyway,\n  onWatchAd,\n}"
           : StaminaWarningModalProps
-        returns: import("C:/Users/ghkdd/gemini-projects/solve-climb/node_modules/@types/react/jsx-runtime").JSX.Element | null
+        returns: React.JSX.Element | null
         calls:
           - e.stopPropagation
   src/components/geometry/GeometryTipVisualizer.tsx:
@@ -3988,7 +3988,7 @@ files:
       - name: GeometryTipVisualizer
         params:
           '{ level }': GeometryTipVisualizerProps
-        returns: import("C:/Users/ghkdd/gemini-projects/solve-climb/node_modules/@types/react/jsx-runtime").JSX.Element
+        returns: React.JSX.Element
   src/components/geometry/ManimCardLayout.tsx:
     imports:
       - ./GeometryTipVisualizer.css
@@ -4136,7 +4136,7 @@ files:
         params:
           ? "{\n  sides = 5,\n  shapeType = 'n-gon',\n  width,\n  height,\n  base,\n  angleA,\n  angleB,\n  angleC,\n}"
           : import("C:/Users/ghkdd/gemini-projects/solve-climb/src/components/geometry/ShapeVisualizer").ShapeVisualizerProps
-        returns: import("C:/Users/ghkdd/gemini-projects/solve-climb/node_modules/@types/react/jsx-runtime").JSX.Element | null
+        returns: React.JSX.Element | null
         calls:
           - Math.max
           - Math.cos
@@ -4197,7 +4197,7 @@ files:
       - name: TutorialOverlay
         params:
           '{ steps, isVisible, onComplete }': TutorialOverlayProps
-        returns: import("C:/Users/ghkdd/gemini-projects/solve-climb/node_modules/@types/react/jsx-runtime").JSX.Element | null
+        returns: React.JSX.Element | null
         calls:
           - setCurrentStepIndex
           - onComplete
@@ -5392,7 +5392,7 @@ files:
       - name: RequireAuth
         params:
           '{ children }': RequireAuthProps
-        returns: import("C:/Users/ghkdd/gemini-projects/solve-climb/node_modules/@types/react/jsx-runtime").JSX.Element
+        returns: string | number | bigint | boolean | React.JSX.Element | Iterable<React.ReactNode> | Promise<AwaitedReactNode> | null | undefined
         description: 세션 및 프로필 정보가 없는 경우 마이페이지(로그인)로 리다이렉트하는 가드 컴포넌트
         calls:
           - useAuthStore
@@ -5448,7 +5448,7 @@ files:
           - testDataAccess
     exports:
       - name: AuthModeSection
-        returns: import("C:/Users/ghkdd/gemini-projects/solve-climb/node_modules/@types/react/jsx-runtime").JSX.Element
+        returns: React.JSX.Element
         calls:
           - useDebugStore
           - setLoading
@@ -5538,7 +5538,7 @@ files:
           - verifySync
     exports:
       - name: BadgeSystemSection
-        returns: import("C:/Users/ghkdd/gemini-projects/solve-climb/node_modules/@types/react/jsx-runtime").JSX.Element
+        returns: React.JSX.Element
         calls:
           - setIsLoading
           - supabase.auth.getSession
@@ -5637,7 +5637,7 @@ files:
         params:
           ? "{\n  isOpen,\n  editingPreset,\n  onClose,\n  onSave,\n}"
           : CustomPresetModalProps
-        returns: import("C:/Users/ghkdd/gemini-projects/solve-climb/node_modules/@types/react/jsx-runtime").JSX.Element | null
+        returns: React.JSX.Element | null
         calls:
           - setName
           - setDescription
@@ -5668,7 +5668,7 @@ files:
           - useDailyRewardStore.setState
     exports:
       - name: DailyRewardDebugSection
-        returns: import("C:/Users/ghkdd/gemini-projects/solve-climb/node_modules/@types/react/jsx-runtime").JSX.Element
+        returns: React.JSX.Element
         calls:
           - useDailyRewardStore
           - useDailyRewardStore.setState
@@ -5681,7 +5681,7 @@ files:
       - name: DataResetConfirmModal
         params:
           '{ isOpen, onConfirm, onCancel }': DataResetConfirmModalProps
-        returns: import("C:/Users/ghkdd/gemini-projects/solve-climb/node_modules/@types/react/jsx-runtime").JSX.Element
+        returns: React.JSX.Element
   src/features/debug/components/DataResetSection.tsx:
     imports:
       - '@/utils/supabaseClient'
@@ -5702,7 +5702,7 @@ files:
       - ./DebugOverlay.css
     exports:
       - name: DebugOverlay
-        returns: import("C:/Users/ghkdd/gemini-projects/solve-climb/node_modules/@types/react/jsx-runtime").JSX.Element | null
+        returns: React.JSX.Element | null
         description: |-
           시각적 디버그 오버레이
           - SafeArea 가이드: 상단/하단 안전 영역 표시
@@ -5731,7 +5731,7 @@ files:
       - ./DebugPanel.css
     exports:
       - name: DebugPanel
-        returns: import("C:/Users/ghkdd/gemini-projects/solve-climb/node_modules/@types/react/jsx-runtime").JSX.Element | null
+        returns: React.JSX.Element | null
         calls:
           - useDebugStore
           - toggleDebugPanel
@@ -5766,7 +5766,7 @@ files:
           - urls.debug
     exports:
       - name: DebugReturnFloater
-        returns: import("C:/Users/ghkdd/gemini-projects/solve-climb/node_modules/@types/react/jsx-runtime").JSX.Element | null
+        returns: React.JSX.Element | null
         calls:
           - useNavigate
           - useLocation
@@ -5834,7 +5834,7 @@ files:
           - String
     exports:
       - name: DummyPlayerManager
-        returns: import("C:/Users/ghkdd/gemini-projects/solve-climb/node_modules/@types/react/jsx-runtime").JSX.Element
+        returns: React.JSX.Element
         calls:
           - order
           - eq
@@ -5882,7 +5882,7 @@ files:
           - fetchUserData
     exports:
       - name: DummyRecordSection
-        returns: import("C:/Users/ghkdd/gemini-projects/solve-climb/node_modules/@types/react/jsx-runtime").JSX.Element
+        returns: React.JSX.Element
         calls:
           - useUserStore
           - supabase.auth.getSession().then
@@ -5989,7 +5989,7 @@ files:
           - fetchUserData
     exports:
       - name: ItemSystemSection
-        returns: import("C:/Users/ghkdd/gemini-projects/solve-climb/node_modules/@types/react/jsx-runtime").JSX.Element
+        returns: React.JSX.Element
         calls:
           - useUserStore
           - setIsLoading
@@ -6085,7 +6085,7 @@ files:
           - closeModals
     exports:
       - name: NotificationPlayground
-        returns: import("C:/Users/ghkdd/gemini-projects/solve-climb/node_modules/@types/react/jsx-runtime").JSX.Element
+        returns: React.JSX.Element
         calls:
           - useNavigate
           - useSettingsStore
@@ -6156,7 +6156,7 @@ files:
       - '@/config/app'
     exports:
       - name: SitemapTree
-        returns: import("C:/Users/ghkdd/gemini-projects/solve-climb/node_modules/@types/react/jsx-runtime").JSX.Element
+        returns: React.JSX.Element
   src/features/debug/components/StaticUISection.tsx:
     imports:
       - '@/stores/useSettingsStore'
@@ -6264,7 +6264,7 @@ files:
       - activeTab
     exports:
       - name: ShopPage
-        returns: import("C:/Users/ghkdd/gemini-projects/solve-climb/node_modules/@types/react/jsx-runtime").JSX.Element
+        returns: React.JSX.Element
         calls:
           - useNavigate
           - useShop
@@ -6285,7 +6285,7 @@ files:
       - expandedLogId
     exports:
       - name: HistoryTab
-        returns: import("C:/Users/ghkdd/gemini-projects/solve-climb/node_modules/@types/react/jsx-runtime").JSX.Element
+        returns: React.JSX.Element
         calls:
           - useMyPageStats
           - useGrowthJournal
@@ -6319,7 +6319,7 @@ files:
         params:
           ? "{\n  nickname,\n  email,\n  isAnonymous,\n  totalMasteryScore,\n  loginStreak = 0,\n  loading,\n  onEditProfile,\n}"
           : MyPageProfileProps
-        returns: import("C:/Users/ghkdd/gemini-projects/solve-climb/node_modules/@types/react/jsx-runtime").JSX.Element
+        returns: React.JSX.Element
         calls:
           - (totalMasteryScore || 0).toLocaleString
   src/features/mypage/components/MyPageQuickAccess.tsx:
@@ -6334,7 +6334,7 @@ files:
         params:
           ? "{\n  todayChallenge,\n  favorites,\n  setCategoryTopic,\n}"
           : MyPageQuickAccessProps
-        returns: import("C:/Users/ghkdd/gemini-projects/solve-climb/node_modules/@types/react/jsx-runtime").JSX.Element
+        returns: React.JSX.Element
         calls:
           - useNavigate
           - setCategoryTopic
@@ -6391,7 +6391,7 @@ files:
         params:
           ? "{\n  soundEnabled,\n  bgmEnabled,\n  hapticEnabled,\n  animationEnabled,\n  onToggleSound,\n  onToggleBgm,\n  onToggleHaptic,\n  onToggleAnimation,\n  onShowProfileForm,\n  onDataReset,\n  isResetting,\n  onSendFeedback,\n  onLogout,\n  onWithdraw,\n}"
           : MyPageSettingsProps
-        returns: import("C:/Users/ghkdd/gemini-projects/solve-climb/node_modules/@types/react/jsx-runtime").JSX.Element
+        returns: React.JSX.Element
         calls:
           - useNavigate
           - useToastStore
@@ -6426,7 +6426,7 @@ files:
         params:
           ? "{\n  loading,\n  totalSolved,\n  maxLevel,\n  bestSubject,\n  isOpeningLeaderboard,\n  retryCount,\n  onNavigateHistory,\n  onOpenLeaderboard,\n}"
           : MyPageStatsProps
-        returns: import("C:/Users/ghkdd/gemini-projects/solve-climb/node_modules/@types/react/jsx-runtime").JSX.Element
+        returns: React.JSX.Element
         calls:
           - (totalSolved || 0).toLocaleString
   src/features/mypage/components/MyPageTipPreview.tsx:
@@ -6463,7 +6463,7 @@ files:
           - setLevel
     exports:
       - name: MyPageTipPreview
-        returns: import("C:/Users/ghkdd/gemini-projects/solve-climb/node_modules/@types/react/jsx-runtime").JSX.Element
+        returns: React.JSX.Element
         calls:
           - useToastStore
           - setRefreshTrigger
@@ -6791,7 +6791,7 @@ files:
           - logError
     exports:
       - name: MyPage
-        returns: import("C:/Users/ghkdd/gemini-projects/solve-climb/node_modules/@types/react/jsx-runtime").JSX.Element
+        returns: React.JSX.Element
         calls:
           - useNavigate
           - useSearchParams
@@ -6871,7 +6871,7 @@ files:
       - name: CalculusVisualization
         params:
           '{ type }': CalculusVisualizationProps
-        returns: import("C:/Users/ghkdd/gemini-projects/solve-climb/node_modules/@types/react/jsx-runtime").JSX.Element
+        returns: React.JSX.Element
         calls:
           - setInterval
           - setProgress
@@ -6896,7 +6896,7 @@ files:
         params:
           ? "{\n  onShoot,\n  range = 5,\n  isFirstQuadrantOnly = false,\n  disabled = false,\n}"
           : CoordinateGridProps
-        returns: import("C:/Users/ghkdd/gemini-projects/solve-climb/node_modules/@types/react/jsx-runtime").JSX.Element
+        returns: React.JSX.Element
         calls:
           - setSelected
           - onShoot
@@ -6909,7 +6909,7 @@ files:
       - ../contexts/QuizContext
     exports:
       - name: LandmarkPopup
-        returns: import("C:/Users/ghkdd/gemini-projects/solve-climb/node_modules/@types/react/jsx-runtime").JSX.Element | null
+        returns: React.JSX.Element | null
         description: 특정 고도(Landmark)에 도달했을 때 표시되는 팝업 컴포넌트
         calls:
           - useQuiz
@@ -6974,7 +6974,7 @@ files:
       - ./QuizPreview
     exports:
       - name: QuizLayout
-        returns: import("C:/Users/ghkdd/gemini-projects/solve-climb/node_modules/@types/react/jsx-runtime").JSX.Element
+        returns: React.JSX.Element
         calls:
           - useQuiz
           - setShowTutorial
@@ -6993,7 +6993,7 @@ files:
       - ../contexts/QuizContext
     exports:
       - name: QuizModals
-        returns: import("C:/Users/ghkdd/gemini-projects/solve-climb/node_modules/@types/react/jsx-runtime").JSX.Element
+        returns: React.JSX.Element
         calls:
           - useQuiz
           - safeAccess
@@ -7024,7 +7024,7 @@ files:
         params:
           ? "{\n  mountainParam,\n  categoryParam,\n  worldParam,\n  subParam,\n  levelParam,\n  category,\n  topic,\n  keyboardType,\n  useSystemKeyboard,\n}"
           : QuizPreviewProps
-        returns: import("C:/Users/ghkdd/gemini-projects/solve-climb/node_modules/@types/react/jsx-runtime").JSX.Element
+        returns: React.JSX.Element
         calls:
           - useNavigate
           - useToastStore
@@ -7064,7 +7064,7 @@ files:
       - countdown
     exports:
       - name: TodaysPromise
-        returns: import("C:/Users/ghkdd/gemini-projects/solve-climb/node_modules/@types/react/jsx-runtime").JSX.Element | null
+        returns: React.JSX.Element | null
         calls:
           - useQuiz
           - setCountdown
@@ -7126,7 +7126,7 @@ files:
       - name: QuizProvider
         params:
           '{ children, params }': QuizProviderProps
-        returns: import("C:/Users/ghkdd/gemini-projects/solve-climb/node_modules/@types/react/jsx-runtime").JSX.Element
+        returns: React.JSX.Element
         calls:
           - useQuizStore
           - useSettingsStore
@@ -8340,4 +8340,4 @@ files:
         params:
           ? "{\n  baseMinerals,\n  hasDoubled,\n  isAdLoading,\n  onDoubleReward,\n}"
           : ResultRewardActionsProps
-        returns: import("C:/Users/ghkdd/gemini-projects/solve-climb/node_modules/@types/react/jsx-runtime").JSX.Element | null
+        returns: React.JSX.Element | null

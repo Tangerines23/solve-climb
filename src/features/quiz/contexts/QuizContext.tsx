@@ -49,8 +49,8 @@ interface QuizContextType {
   quizHandlers: QuizHandlers;
   modalState: any;
   modalHandlers: QuizModalHandlers;
-  inputRef: React.RefObject<HTMLInputElement>;
-  feedbackRef: React.RefObject<ItemFeedbackRef>;
+  inputRef: React.RefObject<HTMLInputElement | null>;
+  feedbackRef: React.RefObject<ItemFeedbackRef | null>;
   // Additional states needed by Layout
   inventory: any[];
   minerals: number;
