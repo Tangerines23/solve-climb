@@ -1,10 +1,11 @@
+import type React from 'react';
 import { Navigate, useLocation } from 'react-router-dom';
 import { useProfileStore } from '@/stores/useProfileStore';
 import { useAuthStore } from '@/stores/useAuthStore';
 import { urls } from '@/utils/navigation';
 
 interface RequireAuthProps {
-  children: JSX.Element;
+  children: React.ReactNode;
 }
 
 /**
