@@ -1,5 +1,5 @@
 project: solve-climb
-generatedAt: '2026-08-19T10:18:39.066Z'
+generatedAt: '2026-08-19T16:27:25.892Z'
 files:
   src/App.tsx:
     imports:
@@ -6379,6 +6379,15 @@ files:
           - setLocalToastMsg
           - setHasNewVersion
           - setShowLocalToast
+          - navigator.serviceWorker.getRegistrations
+          - reg.update().catch
+          - reg.update
+          - reg.unregister().catch
+          - reg.unregister
+          - caches.keys
+          - Promise.all
+          - keys.map
+          - caches.delete
           - window.location.reload
       - name: handleGoToUpdate
         calls:
@@ -6409,6 +6418,15 @@ files:
           - setLocalToastMsg
           - setHasNewVersion
           - setShowLocalToast
+          - navigator.serviceWorker.getRegistrations
+          - reg.update().catch
+          - reg.update
+          - reg.unregister().catch
+          - reg.unregister
+          - caches.keys
+          - Promise.all
+          - keys.map
+          - caches.delete
           - window.location.reload
           - window.open
           - e.preventDefault
