@@ -5,6 +5,16 @@ on:
     branches:
       - main  # 메인 브랜치에 푸시/머지될 때 실행
   workflow_dispatch:  # GitHub 웹 UI에서 수동으로도 실행 가능하도록 설정
+    inputs:
+      track:
+        description: '배포 대상 트랙 (production, alpha, internal)'
+        required: true
+        default: 'production'
+        type: choice
+        options:
+          - production
+          - alpha
+          - internal
 
 concurrency:
   group: android-release-${{ github.ref_name == 'main' && github.run_id || github.ref_name }}
@@ -79,9 +89,11 @@ jobs:
           mkdir -p android/app/src/main/play/release-notes/ko-KR
           RELEASE_NOTE=$(git log -1 --pretty=format:"%s%n%b" | head -c 500)
           if [ -z "$RELEASE_NOTE" ]; then
-            RELEASE_NOTE="solve-climb 성능 개선 및 버그 수정"
+            RELEASE_NOTE="솔브클라임 성능 개선 및 안정성 향상"
           fi
+          echo "$RELEASE_NOTE" > android/app/src/main/play/release-notes/ko-KR/production.txt
           echo "$RELEASE_NOTE" > android/app/src/main/play/release-notes/ko-KR/alpha.txt
+          echo "$RELEASE_NOTE" > android/app/src/main/play/release-notes/ko-KR/internal.txt
           echo "$RELEASE_NOTE" > android/app/src/main/play/release-notes/ko-KR/default.txt
 
       # 11. 구글 플레이 콘솔 트랙으로 자동 배포 및 패치노트 동시 반영
@@ -91,6 +103,7 @@ jobs:
           serviceAccountJsonPlainText: ${{ secrets.PLAY_STORE_JSON_KEY }}
           packageName: com.solveclimb.app
           releaseFiles: android/app/build/outputs/bundle/release/app-release.aab
-          track: alpha  # 비공개 테스트(Alpha) 트랙으로 자동 업로드
+          track: ${{ inputs.track || 'production' }}
+          changesNotSentForReview: true
           whatsNewDirectory: android/app/src/main/play/release-notes
 
