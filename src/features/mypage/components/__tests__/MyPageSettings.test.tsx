@@ -54,18 +54,60 @@ describe('MyPageSettings', () => {
     expect(screen.getByText(APP_CONFIG.APP_VERSION)).toBeInTheDocument();
   });
 
-  it('should call onToggleSound when sound setting is clicked', () => {
+  it('should call onToggleSound when sound setting is clicked (fallback without onOpenSoundPlayer)', () => {
     render(<MyPageSettings {...defaultProps} />);
     const soundItem = screen.getByText('효과음');
     fireEvent.click(soundItem);
     expect(defaultProps.onToggleSound).toHaveBeenCalled();
   });
 
-  it('should call onToggleBgm when BGM setting is clicked', () => {
+  it('should call onToggleBgm when BGM setting is clicked (fallback without onOpenSoundPlayer)', () => {
     render(<MyPageSettings {...defaultProps} />);
     const bgmItem = screen.getByText('배경음악 (BGM)');
     fireEvent.click(bgmItem);
     expect(defaultProps.onToggleBgm).toHaveBeenCalled();
+  });
+
+  it('should call onOpenSoundPlayer when onOpenSoundPlayer prop is provided', () => {
+    const onOpenSoundPlayer = vi.fn();
+    render(<MyPageSettings {...defaultProps} onOpenSoundPlayer={onOpenSoundPlayer} />);
+
+    fireEvent.click(screen.getByText('효과음'));
+    expect(onOpenSoundPlayer).toHaveBeenCalledWith('sfx');
+
+    fireEvent.click(screen.getByText('배경음악 (BGM)'));
+    expect(onOpenSoundPlayer).toHaveBeenCalledWith('bgm');
+  });
+
+  it('should toggle switch when clicking toggle switch specifically', () => {
+    const onOpenSoundPlayer = vi.fn();
+    const onToggleSound = vi.fn();
+    const onToggleBgm = vi.fn();
+    render(
+      <MyPageSettings
+        {...defaultProps}
+        onOpenSoundPlayer={onOpenSoundPlayer}
+        onToggleSound={onToggleSound}
+        onToggleBgm={onToggleBgm}
+      />
+    );
+
+    const soundToggle = screen
+      .getByLabelText('효과음 설정 제어')
+      .closest('.my-page-settings-toggle-wrapper');
+    if (soundToggle) {
+      fireEvent.click(soundToggle);
+      expect(onToggleSound).toHaveBeenCalled();
+      expect(onOpenSoundPlayer).not.toHaveBeenCalled();
+    }
+
+    const bgmToggle = screen
+      .getByLabelText('배경음악 설정 제어')
+      .closest('.my-page-settings-toggle-wrapper');
+    if (bgmToggle) {
+      fireEvent.click(bgmToggle);
+      expect(onToggleBgm).toHaveBeenCalled();
+    }
   });
 
   it('should show success toast if version is up to date', async () => {
