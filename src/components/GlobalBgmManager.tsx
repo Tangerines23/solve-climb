@@ -41,7 +41,13 @@ export function GlobalBgmManager() {
       return;
     }
 
-    // 5. 로비 구역 전역 (홈, 카테고리, 레벨, 랭킹, 로드맵, 복습, 마이페이지, 알림 등)
+    // 5. 개발중인 일지 페이지 (/roadmap): 8번 미완의 산장 (chill) BGM
+    if (path.startsWith('/roadmap')) {
+      bgm.play('chill');
+      return;
+    }
+
+    // 6. 로비 구역 전역 (홈, 카테고리, 레벨, 랭킹, 복습, 마이페이지, 알림 등)
     // 이미 'brain_age'가 재생 중이면 중단 없이 매끄럽게 지속
     bgm.play('brain_age');
   }, [location.pathname, bgmEnabled]);

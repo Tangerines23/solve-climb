@@ -5,6 +5,732 @@ import { audioContextManager } from './audioContext';
 export type BgmTheme =
   'brain_age' | 'celeste' | 'climb' | 'shop' | 'victory' | 'crisis' | 'puzzle' | 'chill' | 'arcade';
 
+export type BgmVersion = 'v1' | 'v2'; // 'v1': 원형 기초 샘플 (Dry Simple Loop), 'v2': 완성본 리마스터 (Rich Multi-part Master)
+
+export interface BgmPartInfo {
+  partNum: number;
+  name: string;
+  startStep: number;
+  endStep: number;
+  instruments: string[];
+  description: string;
+}
+
+export interface BgmTrackArrangement {
+  totalSteps: number;
+  bpm: number;
+  stepDuration: number;
+  parts: BgmPartInfo[];
+}
+
+export const BGM_ARRANGEMENTS_V2: Record<BgmTheme, BgmTrackArrangement> = {
+  brain_age: {
+    totalSteps: 384,
+    bpm: 106,
+    stepDuration: 0.1415,
+    parts: [
+      {
+        partNum: 1,
+        name: 'Part 1: 라운지 인트로',
+        startStep: 0,
+        endStep: 95,
+        instruments: ['🎻 워킹 콘트라베이스', '🎹 웜 로즈 피아노'],
+        description: '시부야계 재즈 라운지 베이스와 텐션 코드 컴핑',
+      },
+      {
+        partNum: 2,
+        name: 'Part 2: 스윙 브러쉬 드럼',
+        startStep: 96,
+        endStep: 191,
+        instruments: ['🎻 워킹 베이스', '🎹 로즈 피아노', '🥁 브러쉬 스네어 & 하이햇'],
+        description: '60/40 셔플 스윙 리듬과 하이햇 칙-칙 스윙 드라이브',
+      },
+      {
+        partNum: 3,
+        name: 'Part 3: 비브라폰 듀엣 솔로',
+        startStep: 192,
+        endStep: 287,
+        instruments: ['🎻 워킹 베이스', '🎹 로즈 피아노', '🥁 브러쉬 드럼', '🔔 비브라폰 솔로'],
+        description: '청량한 비브라폰 멜로디와 입체적 아르페지오 전개',
+      },
+      {
+        partNum: 4,
+        name: 'Part 4: 풀 앙상블 턴어라운드',
+        startStep: 288,
+        endStep: 383,
+        instruments: ['🎻 풀 베이스', '🎹 풀 로즈', '🥁 풀 스윙 드럼', '🔔 비브라폰 잼'],
+        description: '모든 악기가 어우러지는 피날레 잼 세션',
+      },
+    ],
+  },
+  celeste: {
+    totalSteps: 512,
+    bpm: 118,
+    stepDuration: 0.1271,
+    parts: [
+      {
+        partNum: 1,
+        name: 'Part 1: 고요한 산기슭',
+        startStep: 0,
+        endStep: 127,
+        instruments: ['🎹 First Steps 피아노 아르페지오'],
+        description: '서정적이고 맑은 피아노 단독 등반 모티프',
+      },
+      {
+        partNum: 2,
+        name: 'Part 2: 등반의 심장박동',
+        startStep: 128,
+        endStep: 255,
+        instruments: ['🎹 피아노', '🥁 4-on-Floor 킥 드럼', '⚡ 신스베이스'],
+        description: '심장박동 같은 4박 킥과 묵직한 베이스 추가',
+      },
+      {
+        partNum: 3,
+        name: 'Part 3: 본격적인 절벽 등반',
+        startStep: 256,
+        endStep: 383,
+        instruments: ['🎹 피아노', '🥁 킥 드럼', '⚡ 베이스', '🧗‍♀️ 슈퍼쏘우 리드 멜로디'],
+        description: '감정선이 고조되는 메인 등반 멜로디 라인 등장',
+      },
+      {
+        partNum: 4,
+        name: 'Part 4: 정상 정복 클라이맥스',
+        startStep: 384,
+        endStep: 511,
+        instruments: ['🎹 피아노', '🥁 파워 드럼', '⚡ 베이스', '🧗‍♀️ 풀 신스 오케스트라'],
+        description: '모든 레이어가 만개하는 벅찬 정상 정복 피날레',
+      },
+    ],
+  },
+  climb: {
+    totalSteps: 384,
+    bpm: 124,
+    stepDuration: 0.121,
+    parts: [
+      {
+        partNum: 1,
+        name: 'Part 1: 사이버펑크 시동',
+        startStep: 0,
+        endStep: 95,
+        instruments: ['⚡ 16비트 모듈러 베이스', '🥁 124BPM 킥'],
+        description: '질주하는 16비트 아날로그 모듈러 베이스라인',
+      },
+      {
+        partNum: 2,
+        name: 'Part 2: 네온 아르페지오',
+        startStep: 96,
+        endStep: 191,
+        instruments: ['⚡ 모듈러 베이스', '🥁 킥', '✨ 16분 신스 아르페지오'],
+        description: '화려한 네온 사인을 가르는 아르페지오 드라이브',
+      },
+      {
+        partNum: 3,
+        name: 'Part 3: 슈퍼쏘우 피버',
+        startStep: 192,
+        endStep: 287,
+        instruments: ['⚡ 베이스', '🥁 킥', '✨ 아르페지오', '🔥 슈퍼쏘우 스탭 & 리드'],
+        description: '폭발적인 쏘우투스 코드 스탭과 질주 멜로디',
+      },
+      {
+        partNum: 4,
+        name: 'Part 4: 하이퍼 드라이브',
+        startStep: 288,
+        endStep: 383,
+        instruments: ['⚡ 풀 베이스', '🥁 풀 드럼', '✨ 아르페지오', '🔥 풀 신스 피버'],
+        description: '한계 속도로 돌파하는 최고 출력 사이버 질주',
+      },
+    ],
+  },
+  shop: {
+    totalSteps: 384,
+    bpm: 102,
+    stepDuration: 0.147,
+    parts: [
+      {
+        partNum: 1,
+        name: 'Part 1: 아늑한 보사노바 베이스',
+        startStep: 0,
+        endStep: 95,
+        instruments: ['🎸 보사노바 베이스', '🪕 기타 스트럼'],
+        description: '포근하고 따뜻한 산악 만물상 베이스와 기타 반주',
+      },
+      {
+        partNum: 2,
+        name: 'Part 2: 16비트 퍼커션',
+        startStep: 96,
+        endStep: 191,
+        instruments: ['🎸 베이스 & 기타', '🪇 16비트 셰이커', '🪵 우드블록 림샷'],
+        description: '사각거리는 셰이커와 경쾌한 우드블록 퍼커션 추가',
+      },
+      {
+        partNum: 3,
+        name: 'Part 3: 멜로디카 & 실로폰',
+        startStep: 192,
+        endStep: 287,
+        instruments: ['🎸 베이스 & 기타', '🪇 셰이커', '🎹 빈티지 멜로디카', '🔔 실로폰'],
+        description: '아기자기하고 귀여운 멜로디카 듀엣 선율',
+      },
+      {
+        partNum: 4,
+        name: 'Part 4: 포근한 만물상 앙상블',
+        startStep: 288,
+        endStep: 383,
+        instruments: ['🎸 풀 기타 & 베이스', '🪇 풀 퍼커션', '🎹 멜로디카 하모니'],
+        description: '모든 악기가 어우러지는 따뜻한 휴식처의 완성',
+      },
+    ],
+  },
+  victory: {
+    totalSteps: 384,
+    bpm: 108,
+    stepDuration: 0.1389,
+    parts: [
+      {
+        partNum: 1,
+        name: 'Part 1: 승리의 팡파르 화음',
+        startStep: 0,
+        endStep: 95,
+        instruments: ['🎺 브라스 섹션', '✨ 천상의 하프 글리산도'],
+        description: '찬란한 승리를 알리는 팡파르와 하프 아르페지오',
+      },
+      {
+        partNum: 2,
+        name: 'Part 2: 마칭 스네어 & 팀파니',
+        startStep: 96,
+        endStep: 191,
+        instruments: ['🎺 브라스 & 하프', '🥁 마칭 스네어 롤', '💥 오케스트라 팀파니'],
+        description: '웅장한 행진 리듬과 심장을 울리는 팀파니 타격',
+      },
+      {
+        partNum: 3,
+        name: 'Part 3: 트럼펫 개선 행진곡',
+        startStep: 192,
+        endStep: 287,
+        instruments: ['🎺 트럼펫 리드 솔로', '🥁 마칭 퍼커션', '✨ 하프 글리산도'],
+        description: '정상에 우뚝 선 등반가를 위한 개선가 멜로디',
+      },
+      {
+        partNum: 4,
+        name: 'Part 4: 대형 오케스트라 튜티',
+        startStep: 288,
+        endStep: 383,
+        instruments: ['🎺 풀 브라스', '🥁 풀 마칭 드럼 & 팀파니', '✨ 풀 하프 앙상블'],
+        description: '모든 악기가 최대 음량으로 울려 퍼지는 영광의 순간',
+      },
+    ],
+  },
+  crisis: {
+    totalSteps: 448,
+    bpm: 132,
+    stepDuration: 0.1136,
+    parts: [
+      {
+        partNum: 1,
+        name: 'Part 1: 심장박동 & 초침 째깍',
+        startStep: 0,
+        endStep: 111,
+        instruments: ['💓 쿵-쾅 더블 심장박동', '⏱️ 16비트 시계 초침 째깍'],
+        description: '스태미나 고갈 직전의 미니멀 심장박동 서스펜스',
+      },
+      {
+        partNum: 2,
+        name: 'Part 2: 서브 펄스 & 텐션 패드',
+        startStep: 112,
+        endStep: 223,
+        instruments: ['💓 심장박동', '⏱️ 초침', '⚡ 서브 베이스 펄스', '🌫️ 텐션 디미니쉬 패드'],
+        description: '어두운 텐션 코드와 묵직한 서브 펄스의 압박감',
+      },
+      {
+        partNum: 3,
+        name: 'Part 3: 비상 사이렌 & 크로매틱 하강',
+        startStep: 224,
+        endStep: 335,
+        instruments: ['💓 심장박동', '🚨 비상 경보 사이렌', '⚡ 크로매틱 하강 베이스'],
+        description: '추락 위기를 알리는 날카로운 경보음과 하강 베이스',
+      },
+      {
+        partNum: 4,
+        name: 'Part 4: 긴급 카운트다운 서스펜스',
+        startStep: 336,
+        endStep: 447,
+        instruments: ['💓 최대 맥박', '🚨 풀 사이렌', '⚡ 풀 서스펜스 신스'],
+        description: '마지막 1초를 다투는 극한의 라스트 찬스 긴장감',
+      },
+    ],
+  },
+  puzzle: {
+    totalSteps: 384,
+    bpm: 84,
+    stepDuration: 0.1785,
+    parts: [
+      {
+        partNum: 1,
+        name: 'Part 1: 빈티지 테이프 로즈',
+        startStep: 0,
+        endStep: 95,
+        instruments: ['🎹 Lo-Fi 테이프 새츄레이션 로즈 건반'],
+        description: '따뜻하고 아늑한 스터디 비트 재즈 코드 진행',
+      },
+      {
+        partNum: 2,
+        name: 'Part 2: 95Hz 더스티 붐뱁 드럼',
+        startStep: 96,
+        endStep: 191,
+        instruments: ['🎹 로즈 피아노', '🥁 95Hz 로우패스 킥 & 1800Hz 림샷'],
+        description: '고개를 끄덕이게 만드는 Lo-Fi 붐뱁 힙합 드럼 그루브',
+      },
+      {
+        partNum: 3,
+        name: 'Part 3: 딥 서브 베이스 & 마림바',
+        startStep: 192,
+        endStep: 287,
+        instruments: ['🎹 로즈 건반', '🥁 붐뱁 드럼', '🎻 딥 서브 베이스', '🔔 마림바 테마'],
+        description: '묵직한 서브 저음과 은은한 마림바 선율 조화',
+      },
+      {
+        partNum: 4,
+        name: 'Part 4: 풀 Lo-Fi 칠홉 그루브',
+        startStep: 288,
+        endStep: 383,
+        instruments: ['🎹 풀 로즈', '🥁 풀 붐뱁 비트', '🎻 서브 베이스', '🔔 칠홉 앙상블'],
+        description: '뇌파를 안정시키고 깊은 몰입감을 선사하는 풀 비트',
+      },
+    ],
+  },
+  chill: {
+    totalSteps: 256,
+    bpm: 76,
+    stepDuration: 0.1974,
+    parts: [
+      {
+        partNum: 1,
+        name: 'Part 1: 고요한 오스티나토',
+        startStep: 0,
+        endStep: 63,
+        instruments: ['🪵 엇박 아날로그 오스티나토'],
+        description: '3+3+2 당김음 리듬으로 굴러가는 맑고 따뜻한 F Lydian 건반',
+      },
+      {
+        partNum: 2,
+        name: 'Part 2: 부유하는 웜 서브',
+        startStep: 64,
+        endStep: 127,
+        instruments: ['🪵 아날로그 오스티나토', '⚡ 웜 서브 펄스'],
+        description: '공중에 붕 뜨듯 기분 좋게 받쳐주는 아날로그 서브 베이스',
+      },
+      {
+        partNum: 3,
+        name: 'Part 3: 아날로그 스트링 패드',
+        startStep: 128,
+        endStep: 191,
+        instruments: ['🪵 오스티나토', '⚡ 서브 펄스', '🌫️ 필터드 아날로그 패드'],
+        description: '저역에서 서서히 열리는 따뜻한 공기감의 아날로그 패드',
+      },
+      {
+        partNum: 4,
+        name: 'Part 4: 카운터 하모닉스 블룸',
+        startStep: 192,
+        endStep: 255,
+        instruments: ['🪵 풀 오스티나토', '⚡ 풀 서브', '🌫️ 풀 패드', '✨ 카운터 하모닉스'],
+        description: '오스티나토 틈새로 부드럽게 번지는 배음과 감동의 피날레',
+      },
+    ],
+  },
+  arcade: {
+    totalSteps: 512,
+    bpm: 136,
+    stepDuration: 0.1103,
+    parts: [
+      {
+        partNum: 1,
+        name: 'Part 1: NES 펄스 1 단독 리드',
+        startStep: 0,
+        endStep: 127,
+        instruments: ['👾 NES 2A03 Pulse 1 메인 리드'],
+        description: '정통 8비트 패미컴 1채널 레트로 멜로디',
+      },
+      {
+        partNum: 2,
+        name: 'Part 2: 트라이앵글 롤링 베이스 & 노이즈 드럼',
+        startStep: 128,
+        endStep: 255,
+        instruments: ['👾 Pulse 1 리드', '📐 NES Triangle 롤링 베이스', '🥁 Noise 버퍼 드럼'],
+        description: '계단식 롤링 베이스와 바삭한 화이트노이즈 스네어 추가',
+      },
+      {
+        partNum: 3,
+        name: 'Part 3: 펄스 2 고속 아르페지오',
+        startStep: 256,
+        endStep: 383,
+        instruments: ['👾 Pulse 1&2 듀얼 신스', '📐 Triangle 베이스', '🥁 Noise 드럼'],
+        description: '2채널 펄스파의 현란한 고속 아르페지오 속도감',
+      },
+      {
+        partNum: 4,
+        name: 'Part 4: 4채널 풀 칩튠 앤섬',
+        startStep: 384,
+        endStep: 511,
+        instruments: ['👾 Dual Pulse Lead', '📐 Triangle Rolling Bass', '🥁 Noise Drum Beat'],
+        description: '패미컴 사운드칩의 한계를 끌어낸 8비트 보스전 앤섬',
+      },
+    ],
+  },
+};
+
+export const BGM_ARRANGEMENTS_V1: Record<BgmTheme, BgmTrackArrangement> = {
+  brain_age: {
+    totalSteps: 64,
+    bpm: 104,
+    stepDuration: 0.1442,
+    parts: [
+      {
+        partNum: 1,
+        name: 'Part 1: Cmaj9 워킹베이스',
+        startStep: 0,
+        endStep: 15,
+        instruments: ['🎻 워킹 베이스', '🎹 재즈 컴핑'],
+        description: 'Cmaj9 코드 워킹베이스와 재즈 컴핑',
+      },
+      {
+        partNum: 2,
+        name: 'Part 2: A7(b13) 전개',
+        startStep: 16,
+        endStep: 31,
+        instruments: ['🎻 워킹 베이스', '🎹 재즈 컴핑', '🥁 하이햇'],
+        description: 'A7(b13) 코드 진행과 스윙 하이햇',
+      },
+      {
+        partNum: 3,
+        name: 'Part 3: Dm9 투파이브',
+        startStep: 32,
+        endStep: 47,
+        instruments: ['🎻 워킹 베이스', '🎹 재즈 컴핑'],
+        description: 'Dm9 2-5 코드 진행',
+      },
+      {
+        partNum: 4,
+        name: 'Part 4: G13 턴어라운드',
+        startStep: 48,
+        endStep: 63,
+        instruments: ['🎻 워킹 베이스', '🎹 재즈 컴핑', '🥁 하이햇'],
+        description: 'G13 도미넌트 턴어라운드 순환',
+      },
+    ],
+  },
+  celeste: {
+    totalSteps: 128,
+    bpm: 118,
+    stepDuration: 0.1271,
+    parts: [
+      {
+        partNum: 1,
+        name: 'Part 1: First Steps C-G',
+        startStep: 0,
+        endStep: 31,
+        instruments: ['🎹 피아노 아르페지오'],
+        description: '서정적 C-G 아르페지오',
+      },
+      {
+        partNum: 2,
+        name: 'Part 2: Am-F 아르페지오',
+        startStep: 32,
+        endStep: 63,
+        instruments: ['🎹 피아노 아르페지오'],
+        description: '감성적인 Am-F 아르페지오',
+      },
+      {
+        partNum: 3,
+        name: 'Part 3: 킥 & 신스베이스',
+        startStep: 64,
+        endStep: 95,
+        instruments: ['🎹 피아노', '🥁 4박 킥', '⚡ 신스베이스', '🧗‍♀️ 쏘우 리드'],
+        description: '비트와 쏘우투스 리드 선율 추가',
+      },
+      {
+        partNum: 4,
+        name: 'Part 4: 등반 리드 피날레',
+        startStep: 96,
+        endStep: 127,
+        instruments: ['🎹 피아노', '🥁 킥', '⚡ 신스베이스', '🧗‍♀️ 풀 리드'],
+        description: '128스텝 완성형 등반 루프',
+      },
+    ],
+  },
+  climb: {
+    totalSteps: 64,
+    bpm: 112,
+    stepDuration: 0.1339,
+    parts: [
+      {
+        partNum: 1,
+        name: 'Part 1: 112BPM 킥 & 펄스',
+        startStep: 0,
+        endStep: 15,
+        instruments: ['⚡ 트라이앵글 베이스', '🥁 킥 드럼'],
+        description: '112BPM 기본 펄스',
+      },
+      {
+        partNum: 2,
+        name: 'Part 2: 16분음표 아르페지오',
+        startStep: 16,
+        endStep: 31,
+        instruments: ['⚡ 베이스', '🥁 킥', '✨ 아르페지오'],
+        description: '16분음표 아르페지오 러닝',
+      },
+      {
+        partNum: 3,
+        name: 'Part 3: 코드 스탭',
+        startStep: 32,
+        endStep: 47,
+        instruments: ['⚡ 베이스', '✨ 아르페지오', '🔥 스탭 코드'],
+        description: '에너지 넘치는 코드 스탭',
+      },
+      {
+        partNum: 4,
+        name: 'Part 4: 풀 펄스 순환',
+        startStep: 48,
+        endStep: 63,
+        instruments: ['⚡ 베이스', '🥁 킥', '✨ 아르페지오', '🔥 풀 스탭'],
+        description: '64스텝 순환 루프',
+      },
+    ],
+  },
+  shop: {
+    totalSteps: 64,
+    bpm: 100,
+    stepDuration: 0.15,
+    parts: [
+      {
+        partNum: 1,
+        name: 'Part 1: 보사노바 베이스',
+        startStep: 0,
+        endStep: 15,
+        instruments: ['🎸 어쿠스틱 베이스', '🪕 우쿨렐레 스트럼'],
+        description: '보사노바 리듬 베이스와 기타',
+      },
+      {
+        partNum: 2,
+        name: 'Part 2: 실로폰 멜로디',
+        startStep: 16,
+        endStep: 31,
+        instruments: ['🎸 베이스', '🪕 스트럼', '🔔 실로폰 멜로디'],
+        description: '통통 튀는 실로폰 선율',
+      },
+      {
+        partNum: 3,
+        name: 'Part 3: 우드블록 퍼커션',
+        startStep: 32,
+        endStep: 47,
+        instruments: ['🎸 베이스', '🪕 스트럼', '🔔 실로폰', '🪵 우드블록'],
+        description: '우드블록 탭 리듬 추가',
+      },
+      {
+        partNum: 4,
+        name: 'Part 4: 아늑한 휴식처',
+        startStep: 48,
+        endStep: 63,
+        instruments: ['🎸 풀 베이스', '🪕 풀 스트럼', '🔔 실로폰'],
+        description: '따뜻한 만물상 루프',
+      },
+    ],
+  },
+  victory: {
+    totalSteps: 64,
+    bpm: 100,
+    stepDuration: 0.15,
+    parts: [
+      {
+        partNum: 1,
+        name: 'Part 1: 승리의 브라스',
+        startStep: 0,
+        endStep: 15,
+        instruments: ['🎺 브라스 화음'],
+        description: '100BPM 브라스 팡파르',
+      },
+      {
+        partNum: 2,
+        name: 'Part 2: 하프 아르페지오',
+        startStep: 16,
+        endStep: 31,
+        instruments: ['🎺 브라스', '✨ 하프 아르페지오'],
+        description: '상승 하프 아르페지오',
+      },
+      {
+        partNum: 3,
+        name: 'Part 3: 팡파르 화음 전개',
+        startStep: 32,
+        endStep: 47,
+        instruments: ['🎺 풀 브라스', '✨ 하프'],
+        description: '화려한 승리 화음',
+      },
+      {
+        partNum: 4,
+        name: 'Part 4: 완등 피날레',
+        startStep: 48,
+        endStep: 63,
+        instruments: ['🎺 풀 브라스', '✨ 풀 하프'],
+        description: '정상 완등 승리 루프',
+      },
+    ],
+  },
+  crisis: {
+    totalSteps: 32,
+    bpm: 126,
+    stepDuration: 0.119,
+    parts: [
+      {
+        partNum: 1,
+        name: 'Part 1: 더블 심장박동',
+        startStep: 0,
+        endStep: 7,
+        instruments: ['💓 심장박동 (쿵-쾅)'],
+        description: '160Hz->55Hz 심장박동',
+      },
+      {
+        partNum: 2,
+        name: 'Part 2: 째깍 초침',
+        startStep: 8,
+        endStep: 15,
+        instruments: ['💓 심장박동', '⏱️ 째깍 하이햇'],
+        description: '시계 초침 소리 추가',
+      },
+      {
+        partNum: 3,
+        name: 'Part 3: 텐션 패드',
+        startStep: 16,
+        endStep: 23,
+        instruments: ['💓 심장박동', '🌫️ 텐션 코드'],
+        description: '디미니쉬 텐션 화음',
+      },
+      {
+        partNum: 4,
+        name: 'Part 4: 긴급 위기 서스펜스',
+        startStep: 24,
+        endStep: 31,
+        instruments: ['💓 심장박동', '⏱️ 초침', '🌫️ 텐션'],
+        description: '스태미나 위기 루프',
+      },
+    ],
+  },
+  puzzle: {
+    totalSteps: 32,
+    bpm: 92,
+    stepDuration: 0.163,
+    parts: [
+      {
+        partNum: 1,
+        name: 'Part 1: 재즈 코드 인트로',
+        startStep: 0,
+        endStep: 7,
+        instruments: ['🎹 재즈 코드'],
+        description: '부드러운 재즈 코드',
+      },
+      {
+        partNum: 2,
+        name: 'Part 2: 마림바 패턴 A',
+        startStep: 8,
+        endStep: 15,
+        instruments: ['🎹 코드', '🔔 마림바 멜로디'],
+        description: '통통 튀는 마림바 선율',
+      },
+      {
+        partNum: 3,
+        name: 'Part 3: 마림바 패턴 B',
+        startStep: 16,
+        endStep: 23,
+        instruments: ['🎹 코드', '🔔 마림바 변주'],
+        description: '마림바 변주 프레이즈',
+      },
+      {
+        partNum: 4,
+        name: 'Part 4: 포커스 순환',
+        startStep: 24,
+        endStep: 31,
+        instruments: ['🎹 풀 코드', '🔔 마림바'],
+        description: '집중 퀴즈 루프',
+      },
+    ],
+  },
+  chill: {
+    totalSteps: 8,
+    bpm: 27,
+    stepDuration: 2.2,
+    parts: [
+      {
+        partNum: 1,
+        name: 'Part 1: 4화음 앰비언트 패드',
+        startStep: 0,
+        endStep: 1,
+        instruments: ['🏔️ 4화음 웜 패드'],
+        description: '포근한 앰비언트 코드',
+      },
+      {
+        partNum: 2,
+        name: 'Part 2: 힐링 화음 전개',
+        startStep: 2,
+        endStep: 3,
+        instruments: ['🏔️ 앰비언트 패드'],
+        description: '서정적 화음 전개',
+      },
+      {
+        partNum: 3,
+        name: 'Part 3: 듀엣 멜로디 & 스파클',
+        startStep: 4,
+        endStep: 5,
+        instruments: ['🏔️ 패드', '✨ 멜로디', '🔔 스파클'],
+        description: '반짝이는 스파클과 선율',
+      },
+      {
+        partNum: 4,
+        name: 'Part 4: 젠 하모닉스',
+        startStep: 6,
+        endStep: 7,
+        instruments: ['🏔️ 풀 패드', '✨ 풀 멜로디'],
+        description: '깊은 힐링 루프',
+      },
+    ],
+  },
+  arcade: {
+    totalSteps: 32,
+    bpm: 110,
+    stepDuration: 0.136,
+    parts: [
+      {
+        partNum: 1,
+        name: 'Part 1: 트라이앵글 칩 베이스',
+        startStep: 0,
+        endStep: 7,
+        instruments: ['📐 트라이앵글 베이스'],
+        description: '8비트 칩튠 베이스라인',
+      },
+      {
+        partNum: 2,
+        name: 'Part 2: 8비트 사인 리드',
+        startStep: 8,
+        endStep: 15,
+        instruments: ['📐 베이스', '👾 사인파 리드'],
+        description: '레트로 게임 선율',
+      },
+      {
+        partNum: 3,
+        name: 'Part 3: 리드 변주',
+        startStep: 16,
+        endStep: 23,
+        instruments: ['📐 베이스', '👾 리드 선율'],
+        description: '아케이드 멜로디 전개',
+      },
+      {
+        partNum: 4,
+        name: 'Part 4: 레트로 순환',
+        startStep: 24,
+        endStep: 31,
+        instruments: ['📐 풀 베이스', '👾 풀 리드'],
+        description: '클래식 아케이드 루프',
+      },
+    ],
+  },
+};
+
 function safeGet<T>(obj: Record<number | string, T> | T[], key: number | string, fallback: T): T {
   if (Array.isArray(obj)) {
     const idx = typeof key === 'number' ? key : parseInt(String(key), 10);
@@ -20,6 +746,7 @@ function safeGet<T>(obj: Record<number | string, T> | T[], key: number | string,
 }
 
 export class BgmEngine {
+  private soundVersion: BgmVersion = 'v2';
   private currentTheme: BgmTheme | null = null;
   private isRunning: boolean = false;
   private masterGain: GainNode | null = null;
@@ -36,10 +763,91 @@ export class BgmEngine {
     [];
 
   /**
+   * BGM 엔진 사운드 버전 설정 ('v1': 원형 기초 샘플, 'v2': 완성본 리마스터)
+   */
+  setVersion(version: BgmVersion): void {
+    this.soundVersion = version;
+    if (this.currentTheme && this.isRunning) {
+      const theme = this.currentTheme;
+      const muffled = this.isMuffled;
+      this.play(theme, muffled);
+    }
+  }
+
+  /**
+   * 현재 BGM 사운드 버전 조회
+   */
+  getVersion(): BgmVersion {
+    return this.soundVersion;
+  }
+
+  /**
+   * 현재 진행 스텝 조회
+   */
+  getCurrentStep(): number {
+    return this.currentStep;
+  }
+
+  /**
+   * 현재 재생 중인 곡의 전체 스텝 수 조회
+   */
+  getTotalSteps(): number {
+    if (!this.currentTheme) return 384;
+    const arrangementMap = this.soundVersion === 'v1' ? BGM_ARRANGEMENTS_V1 : BGM_ARRANGEMENTS_V2;
+    const arr = arrangementMap[this.currentTheme];
+    return arr ? arr.totalSteps : 384;
+  }
+
+  /**
+   * 특정 스텝으로 즉시 이동 (Seek)
+   */
+  seekToStep(targetStep: number): void {
+    if (!this.isRunning || !this.currentTheme) return;
+    const graph = this.getGraph();
+    if (!graph) return;
+
+    const total = this.getTotalSteps();
+    this.currentStep = Math.max(0, Math.min(targetStep, total - 1));
+    this.nextStepTime = Math.max(graph.ctx.currentTime, 0) + 0.02;
+
+    // 기존 재생 중인 노드 즉각 정리
+    this.activeNodes.forEach(({ osc, source, gain }) => {
+      try {
+        if (osc) {
+          osc.stop();
+          osc.disconnect();
+        }
+        if (source) {
+          source.stop();
+          source.disconnect();
+        }
+        gain.disconnect();
+      } catch {
+        // ignore
+      }
+    });
+    this.activeNodes = [];
+  }
+
+  /**
+   * 1, 2, 3, 4 파트로 즉시 점프
+   */
+  jumpToPart(partNum: number): void {
+    if (!this.currentTheme) return;
+    const arrangementMap = this.soundVersion === 'v1' ? BGM_ARRANGEMENTS_V1 : BGM_ARRANGEMENTS_V2;
+    const arrangement = arrangementMap[this.currentTheme];
+    if (!arrangement) return;
+
+    const target = arrangement.parts.find((p) => p.partNum === partNum);
+    if (target) {
+      this.seekToStep(target.startStep);
+    }
+  }
+
+  /**
    * BGM 전용 게인, 마스터 로우패스 필터, 알고리즈믹 룸 리버브 노드 초기화
    */
   private getGraph(): { ctx: AudioContext; destination: AudioNode; reverbSend: AudioNode } | null {
-    if (!audioContextManager.isEnabled()) return null;
     const ctx = audioContextManager.getContext();
     if (!ctx) return null;
 
@@ -138,6 +946,7 @@ export class BgmEngine {
    * BGM 재생 시작 (또는 테마 전환)
    */
   play(theme: BgmTheme, muffled: boolean = false): void {
+    audioContextManager.ensureRunning();
     this.isMuffled = muffled;
     const graph = this.getGraph();
     if (!graph) return;
@@ -152,7 +961,7 @@ export class BgmEngine {
     this.currentTheme = theme;
     this.isRunning = true;
     this.currentStep = 0;
-    this.nextStepTime = graph.ctx.currentTime + 0.05;
+    this.nextStepTime = Math.max(graph.ctx.currentTime, 0) + 0.05;
 
     const targetGain = this.isMuffled ? this.volume * 0.6 : this.volume;
     if (this.masterGain) {
@@ -287,9 +1096,19 @@ export class BgmEngine {
     const graph = this.getGraph();
     if (!graph || !this.isRunning) return;
 
+    // AudioContext가 뒤늦게 resume되었거나 탭 비활성화 후 복귀 시 과거 시간 루프 폭주 방지
+    if (this.nextStepTime < graph.ctx.currentTime) {
+      this.nextStepTime = graph.ctx.currentTime + 0.05;
+    }
+
     const scheduleAheadTime = 0.25;
 
     while (this.nextStepTime < graph.ctx.currentTime + scheduleAheadTime) {
+      if (this.soundVersion === 'v1') {
+        this.schedulePrototypeLoop(graph);
+        continue;
+      }
+
       if (this.currentTheme === 'brain_age') {
         // [1번 트랙 심층 고도화] 106 BPM 재즈 스윙 그루브 (60/40 Shuffle)
         const isSwingSecond16th = this.currentStep % 2 === 1;
@@ -362,8 +1181,8 @@ export class BgmEngine {
           this.nextStepTime,
           this.currentStep
         );
-        this.nextStepTime += 2.0; // 2.0초 주기 (총 64.0초 대형 싱잉볼 앰비언트)
-        this.currentStep = (this.currentStep + 1) % 32; // 32주기 산림욕 힐링 (~64.0초)
+        this.nextStepTime += 0.1974; // 76 BPM 16비트 (미완의 산장 - C418 구조 기반 앰비언트)
+        this.currentStep = (this.currentStep + 1) % 256; // 16마디 루프 (~50.5초)
       } else if (this.currentTheme === 'arcade') {
         this.scheduleArcadeStep(
           graph.ctx,
@@ -387,6 +1206,1090 @@ export class BgmEngine {
       } else {
         break;
       }
+    }
+  }
+
+  // =========================================================================
+  // 📻 [원형 기초 샘플 (v1 Prototype)] cc0b4b4 원본 사운드 루프
+  // =========================================================================
+  private schedulePrototypeLoop(graph: { ctx: AudioContext; destination: AudioNode }): void {
+    if (this.currentTheme === 'brain_age') {
+      this.schedulePrototypeBrainAge(
+        graph.ctx,
+        graph.destination,
+        this.nextStepTime,
+        this.currentStep
+      );
+      this.nextStepTime += 0.1442; // 104 BPM 16분음표 (스마트한 스윙 재즈)
+      this.currentStep = (this.currentStep + 1) % 64; // 4마디 루프
+    } else if (this.currentTheme === 'celeste') {
+      this.schedulePrototypeCeleste(
+        graph.ctx,
+        graph.destination,
+        this.nextStepTime,
+        this.currentStep
+      );
+      this.nextStepTime += 0.1271; // 118 BPM 16분음표 (First Steps 등반 모멘텀)
+      this.currentStep = (this.currentStep + 1) % 128; // 8마디 대형 발전 루프
+    } else if (this.currentTheme === 'climb') {
+      this.schedulePrototypeClimb(
+        graph.ctx,
+        graph.destination,
+        this.nextStepTime,
+        this.currentStep
+      );
+      this.nextStepTime += 0.1339; // 112 BPM 16분음표
+      this.currentStep = (this.currentStep + 1) % 64;
+    } else if (this.currentTheme === 'shop') {
+      this.schedulePrototypeShop(graph.ctx, graph.destination, this.nextStepTime, this.currentStep);
+      this.nextStepTime += 0.15; // 100 BPM 16분음표 (아기자기한 산악 만물상 보사노바)
+      this.currentStep = (this.currentStep + 1) % 64; // 4마디 루프
+    } else if (this.currentTheme === 'victory') {
+      this.schedulePrototypeVictory(
+        graph.ctx,
+        graph.destination,
+        this.nextStepTime,
+        this.currentStep
+      );
+      this.nextStepTime += 0.15; // 100 BPM 16분음표 (웅장한 완등 승리 피날레)
+      this.currentStep = (this.currentStep + 1) % 64; // 4마디 루프
+    } else if (this.currentTheme === 'crisis') {
+      this.schedulePrototypeCrisis(
+        graph.ctx,
+        graph.destination,
+        this.nextStepTime,
+        this.currentStep
+      );
+      this.nextStepTime += 0.119; // 126 BPM 16분음표 (긴박한 심장박동 위기)
+      this.currentStep = (this.currentStep + 1) % 32; // 2마디 루프
+    } else if (this.currentTheme === 'chill') {
+      this.schedulePrototypeChill(
+        graph.ctx,
+        graph.destination,
+        this.nextStepTime,
+        this.currentStep
+      );
+      this.nextStepTime += 2.2;
+      this.currentStep = (this.currentStep + 1) % 8;
+    } else if (this.currentTheme === 'arcade') {
+      this.schedulePrototypeArcade(
+        graph.ctx,
+        graph.destination,
+        this.nextStepTime,
+        this.currentStep
+      );
+      this.nextStepTime += 0.136;
+      this.currentStep = (this.currentStep + 1) % 32;
+    } else if (this.currentTheme === 'puzzle') {
+      this.schedulePrototypePuzzle(
+        graph.ctx,
+        graph.destination,
+        this.nextStepTime,
+        this.currentStep
+      );
+      this.nextStepTime += 0.163;
+      this.currentStep = (this.currentStep + 1) % 32;
+    }
+  }
+
+  private schedulePrototypeBrainAge(
+    ctx: AudioContext,
+    destination: AudioNode,
+    time: number,
+    step: number
+  ): void {
+    const chordIndex = Math.floor(step / 16);
+
+    const walkingBass: Record<number, number[]> = {
+      0: [65.41, 82.41, 98.0, 116.54],
+      1: [110.0, 138.59, 164.81, 155.56],
+      2: [73.42, 87.31, 110.0, 103.83],
+      3: [98.0, 123.47, 146.83, 138.59],
+    };
+    const currentBass = safeGet(walkingBass, chordIndex, walkingBass[0]);
+    const beatIndex = Math.floor((step % 16) / 4);
+
+    if (step % 4 === 0 && currentBass) {
+      const bFreq = safeGet(currentBass, beatIndex, 0);
+      if (bFreq) {
+        const bOsc = ctx.createOscillator();
+        const bGain = ctx.createGain();
+        const bFilter = ctx.createBiquadFilter();
+
+        bGain.gain.value = 0;
+        bOsc.type = 'triangle';
+        bOsc.frequency.setValueAtTime(bFreq, time);
+
+        bFilter.type = 'lowpass';
+        bFilter.frequency.setValueAtTime(380, time);
+
+        bGain.gain.setValueAtTime(0.0001, time);
+        bGain.gain.linearRampToValueAtTime(0.13, time + 0.015);
+        bGain.gain.exponentialRampToValueAtTime(0.0001, time + 0.35);
+
+        bOsc.connect(bFilter);
+        bFilter.connect(bGain);
+        bGain.connect(destination);
+
+        bOsc.start(time);
+        bOsc.stop(time + 0.38);
+        this.trackActiveNode(bOsc, undefined, bGain);
+      }
+    }
+
+    const isPianoComp = step % 16 === 0 || step % 16 === 6 || step % 16 === 10;
+    if (isPianoComp) {
+      const jazzChords: Record<number, number[]> = {
+        0: [261.63, 329.63, 392.0, 493.88, 587.33],
+        1: [220.0, 277.18, 329.63, 415.3, 523.25],
+        2: [293.66, 349.23, 440.0, 523.25, 659.25],
+        3: [246.94, 329.63, 392.0, 440.0, 587.33],
+      };
+      const chordNotes = safeGet(jazzChords, chordIndex, jazzChords[0]);
+
+      chordNotes.forEach((cFreq, cIdx) => {
+        const pOsc = ctx.createOscillator();
+        const pGain = ctx.createGain();
+        const pFilter = ctx.createBiquadFilter();
+
+        pGain.gain.value = 0;
+        pOsc.type = 'sine';
+        pOsc.frequency.setValueAtTime(cFreq, time);
+
+        pFilter.type = 'lowpass';
+        pFilter.frequency.setValueAtTime(950, time);
+
+        const pVol = cIdx === 0 ? 0.05 : 0.038;
+        pGain.gain.setValueAtTime(0.0001, time);
+        pGain.gain.linearRampToValueAtTime(pVol, time + 0.012);
+        pGain.gain.exponentialRampToValueAtTime(0.0001, time + 0.26);
+
+        pOsc.connect(pFilter);
+        pFilter.connect(pGain);
+        pGain.connect(destination);
+
+        pOsc.start(time);
+        pOsc.stop(time + 0.28);
+        this.trackActiveNode(pOsc, undefined, pGain);
+      });
+    }
+
+    if (step % 8 === 4) {
+      const hOsc = ctx.createOscillator();
+      const hGain = ctx.createGain();
+      const hFilter = ctx.createBiquadFilter();
+
+      hGain.gain.value = 0;
+      hOsc.type = 'triangle';
+      hOsc.frequency.setValueAtTime(1600, time);
+
+      hFilter.type = 'highpass';
+      hFilter.frequency.setValueAtTime(2200, time);
+
+      hGain.gain.setValueAtTime(0.0001, time);
+      hGain.gain.linearRampToValueAtTime(0.035, time + 0.005);
+      hGain.gain.exponentialRampToValueAtTime(0.0001, time + 0.04);
+
+      hOsc.connect(hFilter);
+      hFilter.connect(hGain);
+      hGain.connect(destination);
+
+      hOsc.start(time);
+      hOsc.stop(time + 0.045);
+      this.trackActiveNode(hOsc, undefined, hGain);
+    }
+  }
+
+  private schedulePrototypeCeleste(
+    ctx: AudioContext,
+    destination: AudioNode,
+    time: number,
+    step: number
+  ): void {
+    const isPartTwo = step >= 64;
+    const localStep = step % 64;
+    const chordIndex = Math.floor(localStep / 16);
+
+    if (isPartTwo && step % 4 === 0) {
+      const kickOsc = ctx.createOscillator();
+      const kickGain = ctx.createGain();
+
+      kickGain.gain.value = 0;
+      kickOsc.type = 'sine';
+      kickOsc.frequency.setValueAtTime(120, time);
+      kickOsc.frequency.exponentialRampToValueAtTime(45, time + 0.05);
+
+      kickGain.gain.setValueAtTime(0.0001, time);
+      kickGain.gain.linearRampToValueAtTime(0.14, time + 0.004);
+      kickGain.gain.exponentialRampToValueAtTime(0.0001, time + 0.06);
+
+      kickOsc.connect(kickGain);
+      kickGain.connect(destination);
+
+      kickOsc.start(time);
+      kickOsc.stop(time + 0.065);
+      this.trackActiveNode(kickOsc, undefined, kickGain);
+    }
+
+    const pianoPatterns: Record<number, number[]> = {
+      0: [
+        261.63, 329.63, 392.0, 493.88, 523.25, 493.88, 392.0, 329.63, 261.63, 329.63, 392.0, 493.88,
+        523.25, 659.25, 523.25, 392.0,
+      ],
+      1: [
+        246.94, 329.63, 392.0, 493.88, 587.33, 493.88, 392.0, 329.63, 246.94, 329.63, 392.0, 493.88,
+        587.33, 783.99, 587.33, 493.88,
+      ],
+      2: [
+        220.0, 261.63, 329.63, 440.0, 523.25, 440.0, 329.63, 261.63, 220.0, 261.63, 329.63, 440.0,
+        523.25, 659.25, 523.25, 329.63,
+      ],
+      3: [
+        174.61, 220.0, 261.63, 349.23, 440.0, 349.23, 261.63, 220.0, 174.61, 220.0, 261.63, 349.23,
+        523.25, 659.25, 523.25, 440.0,
+      ],
+    };
+    const currentPianoArp = safeGet(pianoPatterns, chordIndex, pianoPatterns[0]);
+    const pianoFreq = safeGet(currentPianoArp, localStep % 16, 0);
+
+    if (pianoFreq) {
+      const pOsc = ctx.createOscillator();
+      const pGain = ctx.createGain();
+      const pFilter = ctx.createBiquadFilter();
+
+      pGain.gain.value = 0;
+      pOsc.type = 'sine';
+      pOsc.frequency.setValueAtTime(pianoFreq, time);
+
+      pFilter.type = 'lowpass';
+      pFilter.frequency.setValueAtTime(isPartTwo ? 1400 : 900, time);
+
+      const pVol = isPartTwo ? 0.055 : 0.075;
+      pGain.gain.setValueAtTime(0.0001, time);
+      pGain.gain.linearRampToValueAtTime(pVol, time + 0.008);
+      pGain.gain.exponentialRampToValueAtTime(0.0001, time + 0.18);
+
+      pOsc.connect(pFilter);
+      pFilter.connect(pGain);
+      pGain.connect(destination);
+
+      pOsc.start(time);
+      pOsc.stop(time + 0.2);
+      this.trackActiveNode(pOsc, undefined, pGain);
+    }
+
+    if (isPartTwo && step % 2 === 0) {
+      const synthBassMap: Record<number, number> = {
+        0: 65.41,
+        1: 87.31,
+        2: 55.0,
+        3: 49.0,
+      };
+      const sbFreq = safeGet(synthBassMap, chordIndex, 65.41);
+
+      const sOsc = ctx.createOscillator();
+      const sGain = ctx.createGain();
+      const sFilter = ctx.createBiquadFilter();
+
+      sGain.gain.value = 0;
+      sOsc.type = 'triangle';
+      sOsc.frequency.setValueAtTime(sbFreq, time);
+
+      sFilter.type = 'lowpass';
+      sFilter.frequency.setValueAtTime(450, time);
+
+      sGain.gain.setValueAtTime(0.0001, time);
+      sGain.gain.linearRampToValueAtTime(0.12, time + 0.012);
+      sGain.gain.exponentialRampToValueAtTime(0.0001, time + 0.16);
+
+      sOsc.connect(sFilter);
+      sFilter.connect(sGain);
+      sGain.connect(destination);
+
+      sOsc.start(time);
+      sOsc.stop(time + 0.18);
+      this.trackActiveNode(sOsc, undefined, sGain);
+    }
+
+    if (isPartTwo) {
+      const leadMelody: Record<number, number> = {
+        0: 523.25,
+        4: 659.25,
+        8: 783.99,
+        12: 659.25,
+        16: 880.0,
+        20: 783.99,
+        24: 659.25,
+        28: 523.25,
+        32: 659.25,
+        36: 783.99,
+        40: 880.0,
+        44: 1046.5,
+        48: 987.77,
+        52: 880.0,
+        56: 783.99,
+        60: 659.25,
+      };
+      const lFreq = safeGet(leadMelody, localStep, 0);
+      if (lFreq) {
+        const lOsc = ctx.createOscillator();
+        const lGain = ctx.createGain();
+        const lFilter = ctx.createBiquadFilter();
+
+        lGain.gain.value = 0;
+        lOsc.type = 'sawtooth';
+        lOsc.frequency.setValueAtTime(lFreq, time);
+
+        lFilter.type = 'lowpass';
+        lFilter.frequency.setValueAtTime(800, time);
+        lFilter.frequency.linearRampToValueAtTime(1400, time + 0.2);
+        lFilter.frequency.linearRampToValueAtTime(600, time + 0.45);
+
+        lGain.gain.setValueAtTime(0.0001, time);
+        lGain.gain.linearRampToValueAtTime(0.055, time + 0.04);
+        lGain.gain.exponentialRampToValueAtTime(0.0001, time + 0.48);
+
+        lOsc.connect(lFilter);
+        lFilter.connect(lGain);
+        lGain.connect(destination);
+
+        lOsc.start(time);
+        lOsc.stop(time + 0.5);
+        this.trackActiveNode(lOsc, undefined, lGain);
+      }
+    }
+  }
+
+  private schedulePrototypeClimb(
+    ctx: AudioContext,
+    destination: AudioNode,
+    time: number,
+    step: number
+  ): void {
+    const chordIndex = Math.floor(step / 16);
+
+    const isKick = step % 4 === 0 || (step === 62 && chordIndex === 3);
+    if (isKick) {
+      const kickOsc = ctx.createOscillator();
+      const kickGain = ctx.createGain();
+
+      kickGain.gain.value = 0;
+      kickOsc.type = 'sine';
+      kickOsc.frequency.setValueAtTime(115, time);
+      kickOsc.frequency.exponentialRampToValueAtTime(42, time + 0.05);
+
+      kickGain.gain.setValueAtTime(0.0001, time);
+      kickGain.gain.linearRampToValueAtTime(0.14, time + 0.004);
+      kickGain.gain.exponentialRampToValueAtTime(0.0001, time + 0.055);
+
+      kickOsc.connect(kickGain);
+      kickGain.connect(destination);
+
+      kickOsc.start(time);
+      kickOsc.stop(time + 0.06);
+      this.trackActiveNode(kickOsc, undefined, kickGain);
+    }
+
+    const bassMap: Record<number, number[]> = {
+      0: [55.0, 110.0, 55.0, 110.0, 82.41, 110.0, 55.0, 110.0],
+      1: [43.65, 87.31, 43.65, 87.31, 65.41, 87.31, 43.65, 87.31],
+      2: [65.41, 130.81, 65.41, 130.81, 98.0, 130.81, 65.41, 130.81],
+      3: [49.0, 98.0, 49.0, 98.0, 73.42, 98.0, 49.0, 98.0],
+    };
+    const currentBassNotes = safeGet(bassMap, chordIndex, bassMap[0]);
+    const bassNote = safeGet(currentBassNotes, Math.floor((step % 16) / 2), 55.0);
+
+    if (step % 2 === 0 && bassNote) {
+      const bOsc = ctx.createOscillator();
+      const bGain = ctx.createGain();
+      const bFilter = ctx.createBiquadFilter();
+
+      bGain.gain.value = 0;
+      bOsc.type = 'triangle';
+      bOsc.frequency.setValueAtTime(bassNote, time);
+
+      bFilter.type = 'lowpass';
+      bFilter.frequency.setValueAtTime(320, time);
+
+      bGain.gain.setValueAtTime(0.0001, time);
+      bGain.gain.linearRampToValueAtTime(0.12, time + 0.01);
+      bGain.gain.exponentialRampToValueAtTime(0.0001, time + 0.16);
+
+      bOsc.connect(bFilter);
+      bFilter.connect(bGain);
+      bGain.connect(destination);
+
+      bOsc.start(time);
+      bOsc.stop(time + 0.18);
+      this.trackActiveNode(bOsc, undefined, bGain);
+    }
+
+    const arpPatterns: Record<number, number[]> = {
+      0: [
+        220, 261.63, 329.63, 440, 523.25, 440, 329.63, 261.63, 220, 261.63, 329.63, 440, 659.25,
+        523.25, 440, 329.63,
+      ],
+      1: [
+        174.61, 220, 261.63, 349.23, 440, 349.23, 261.63, 220, 174.61, 220, 261.63, 349.23, 523.25,
+        440, 349.23, 261.63,
+      ],
+      2: [
+        130.81, 196, 261.63, 329.63, 392, 329.63, 261.63, 196, 130.81, 196, 261.63, 329.63, 523.25,
+        392, 329.63, 261.63,
+      ],
+      3: [
+        196, 246.94, 293.66, 392, 493.88, 392, 293.66, 246.94, 196, 246.94, 293.66, 392, 587.33,
+        493.88, 392, 293.66,
+      ],
+    };
+    const currentArpPattern = safeGet(arpPatterns, chordIndex, arpPatterns[0]);
+    const arpFreq = safeGet(currentArpPattern, step % 16, 0);
+
+    if (arpFreq) {
+      const aOsc = ctx.createOscillator();
+      const aGain = ctx.createGain();
+      const aFilter = ctx.createBiquadFilter();
+
+      aGain.gain.value = 0;
+      aOsc.type = step % 4 === 0 ? 'triangle' : 'sine';
+      aOsc.frequency.setValueAtTime(arpFreq, time);
+
+      aFilter.type = 'lowpass';
+      aFilter.frequency.setValueAtTime(1400, time);
+      aFilter.frequency.linearRampToValueAtTime(500, time + 0.1);
+
+      aGain.gain.setValueAtTime(0.0001, time);
+      aGain.gain.linearRampToValueAtTime(0.065, time + 0.008);
+      aGain.gain.exponentialRampToValueAtTime(0.0001, time + 0.11);
+
+      aOsc.connect(aFilter);
+      aFilter.connect(aGain);
+      aGain.connect(destination);
+
+      aOsc.start(time);
+      aOsc.stop(time + 0.12);
+      this.trackActiveNode(aOsc, undefined, aGain);
+    }
+
+    const isStab = step % 16 === 6 || step % 16 === 12;
+    if (isStab) {
+      const stabChords: Record<number, number[]> = {
+        0: [261.63, 329.63, 440],
+        1: [261.63, 349.23, 440],
+        2: [261.63, 329.63, 392],
+        3: [293.66, 392, 493.88],
+      };
+      const chordNotes = safeGet(stabChords, chordIndex, stabChords[0]);
+
+      chordNotes.forEach((cFreq) => {
+        const sOsc = ctx.createOscillator();
+        const sGain = ctx.createGain();
+        const sFilter = ctx.createBiquadFilter();
+
+        sGain.gain.value = 0;
+        sOsc.type = 'triangle';
+        sOsc.frequency.setValueAtTime(cFreq, time);
+
+        sFilter.type = 'lowpass';
+        sFilter.frequency.setValueAtTime(900, time);
+
+        sGain.gain.setValueAtTime(0.0001, time);
+        sGain.gain.linearRampToValueAtTime(0.05, time + 0.015);
+        sGain.gain.exponentialRampToValueAtTime(0.0001, time + 0.16);
+
+        sOsc.connect(sFilter);
+        sFilter.connect(sGain);
+        sGain.connect(destination);
+
+        sOsc.start(time);
+        sOsc.stop(time + 0.18);
+        this.trackActiveNode(sOsc, undefined, sGain);
+      });
+    }
+  }
+
+  private schedulePrototypeShop(
+    ctx: AudioContext,
+    destination: AudioNode,
+    time: number,
+    step: number
+  ): void {
+    const chordIndex = Math.floor(step / 16);
+
+    const bossaBass: Record<number, { step: number; freq: number }[]> = {
+      0: [
+        { step: 0, freq: 65.41 },
+        { step: 6, freq: 98.0 },
+        { step: 10, freq: 65.41 },
+        { step: 14, freq: 98.0 },
+      ],
+      1: [
+        { step: 0, freq: 110.0 },
+        { step: 6, freq: 164.81 },
+        { step: 10, freq: 110.0 },
+        { step: 14, freq: 155.56 },
+      ],
+      2: [
+        { step: 0, freq: 73.42 },
+        { step: 6, freq: 110.0 },
+        { step: 10, freq: 73.42 },
+        { step: 14, freq: 110.0 },
+      ],
+      3: [
+        { step: 0, freq: 98.0 },
+        { step: 6, freq: 146.83 },
+        { step: 10, freq: 98.0 },
+        { step: 14, freq: 123.47 },
+      ],
+    };
+    const currentBassEvents = safeGet(bossaBass, chordIndex, bossaBass[0]);
+    const bassEvent = currentBassEvents.find((e) => e.step === step % 16);
+
+    if (bassEvent) {
+      const bOsc = ctx.createOscillator();
+      const bGain = ctx.createGain();
+      const bFilter = ctx.createBiquadFilter();
+
+      bGain.gain.value = 0;
+      bOsc.type = 'triangle';
+      bOsc.frequency.setValueAtTime(bassEvent.freq, time);
+
+      bFilter.type = 'lowpass';
+      bFilter.frequency.setValueAtTime(280, time);
+
+      bGain.gain.setValueAtTime(0.0001, time);
+      bGain.gain.linearRampToValueAtTime(0.12, time + 0.015);
+      bGain.gain.exponentialRampToValueAtTime(0.0001, time + 0.28);
+
+      bOsc.connect(bFilter);
+      bFilter.connect(bGain);
+      bGain.connect(destination);
+
+      bOsc.start(time);
+      bOsc.stop(time + 0.3);
+      this.trackActiveNode(bOsc, undefined, bGain);
+    }
+
+    const isStrum = step % 16 === 0 || step % 16 === 6 || step % 16 === 10 || step % 16 === 14;
+    if (isStrum) {
+      const shopChords: Record<number, number[]> = {
+        0: [261.63, 329.63, 392.0, 493.88],
+        1: [277.18, 329.63, 392.0, 466.16],
+        2: [293.66, 349.23, 440.0, 523.25],
+        3: [246.94, 329.63, 349.23, 440.0],
+      };
+      const chordNotes = safeGet(shopChords, chordIndex, shopChords[0]);
+
+      chordNotes.forEach((cFreq, cIdx) => {
+        const uOsc = ctx.createOscillator();
+        const uGain = ctx.createGain();
+        const uFilter = ctx.createBiquadFilter();
+
+        uGain.gain.value = 0;
+        uOsc.type = 'triangle';
+        uOsc.frequency.setValueAtTime(cFreq, time);
+
+        uFilter.type = 'lowpass';
+        uFilter.frequency.setValueAtTime(1100, time);
+
+        const uVol = cIdx === 0 ? 0.045 : 0.032;
+        uGain.gain.setValueAtTime(0.0001, time);
+        uGain.gain.linearRampToValueAtTime(uVol, time + 0.01);
+        uGain.gain.exponentialRampToValueAtTime(0.0001, time + 0.22);
+
+        uOsc.connect(uFilter);
+        uFilter.connect(uGain);
+        uGain.connect(destination);
+
+        uOsc.start(time);
+        uOsc.stop(time + 0.24);
+        this.trackActiveNode(uOsc, undefined, uGain);
+      });
+    }
+
+    const melodyMap: Record<number, number[]> = {
+      0: [659.25, 0, 783.99, 0, 880.0, 0, 987.77, 0, 783.99, 0, 659.25, 0, 587.33, 0, 523.25, 0],
+      1: [554.37, 0, 659.25, 0, 783.99, 0, 932.33, 0, 783.99, 0, 659.25, 0, 698.46, 0, 0, 0],
+      2: [698.46, 0, 880.0, 0, 1046.5, 0, 880.0, 0, 698.46, 0, 587.33, 0, 659.25, 0, 0, 0],
+      3: [587.33, 0, 783.99, 0, 987.77, 0, 1174.66, 0, 987.77, 0, 783.99, 0, 523.25, 0, 0, 0],
+    };
+    const currentMelody = safeGet(melodyMap, chordIndex, melodyMap[0]);
+    const mFreq = safeGet(currentMelody, step % 16, 0);
+
+    if (mFreq && mFreq > 0) {
+      const mOsc = ctx.createOscillator();
+      const mGain = ctx.createGain();
+      const mFilter = ctx.createBiquadFilter();
+
+      mGain.gain.value = 0;
+      mOsc.type = 'sine';
+      mOsc.frequency.setValueAtTime(mFreq, time);
+
+      mFilter.type = 'lowpass';
+      mFilter.frequency.setValueAtTime(1600, time);
+
+      mGain.gain.setValueAtTime(0.0001, time);
+      mGain.gain.linearRampToValueAtTime(0.07, time + 0.008);
+      mGain.gain.exponentialRampToValueAtTime(0.0001, time + 0.22);
+
+      mOsc.connect(mFilter);
+      mFilter.connect(mGain);
+      mGain.connect(destination);
+
+      mOsc.start(time);
+      mOsc.stop(time + 0.24);
+      this.trackActiveNode(mOsc, undefined, mGain);
+    }
+
+    if (step % 8 === 4) {
+      const wOsc = ctx.createOscillator();
+      const wGain = ctx.createGain();
+      const wFilter = ctx.createBiquadFilter();
+
+      wGain.gain.value = 0;
+      wOsc.type = 'triangle';
+      wOsc.frequency.setValueAtTime(1400, time);
+
+      wFilter.type = 'bandpass';
+      wFilter.frequency.setValueAtTime(1400, time);
+
+      wGain.gain.setValueAtTime(0.0001, time);
+      wGain.gain.linearRampToValueAtTime(0.04, time + 0.004);
+      wGain.gain.exponentialRampToValueAtTime(0.0001, time + 0.035);
+
+      wOsc.connect(wFilter);
+      wFilter.connect(wGain);
+      wGain.connect(destination);
+
+      wOsc.start(time);
+      wOsc.stop(time + 0.04);
+      this.trackActiveNode(wOsc, undefined, wGain);
+    }
+  }
+
+  private schedulePrototypeVictory(
+    ctx: AudioContext,
+    destination: AudioNode,
+    time: number,
+    step: number
+  ): void {
+    const chordIndex = Math.floor(step / 16);
+
+    if (step % 16 === 0) {
+      const victoryChords: Record<number, number[]> = {
+        0: [174.61, 220.0, 261.63, 329.63, 440.0],
+        1: [196.0, 246.94, 293.66, 349.23, 392.0],
+        2: [164.81, 196.0, 246.94, 329.63, 392.0],
+        3: [130.81, 196.0, 261.63, 329.63, 523.25],
+      };
+      const chord = safeGet(victoryChords, chordIndex, victoryChords[0]);
+
+      chord.forEach((freq, i) => {
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        const filter = ctx.createBiquadFilter();
+
+        gain.gain.value = 0;
+        osc.type = i === 0 ? 'triangle' : 'sawtooth';
+        osc.frequency.setValueAtTime(freq, time);
+
+        filter.type = 'lowpass';
+        filter.frequency.setValueAtTime(650, time);
+        filter.frequency.linearRampToValueAtTime(1400, time + 0.5);
+        filter.frequency.linearRampToValueAtTime(600, time + 2.1);
+
+        const vol = i === 0 ? 0.11 : 0.045;
+        gain.gain.setValueAtTime(0.0001, time);
+        gain.gain.linearRampToValueAtTime(vol, time + 0.25);
+        gain.gain.exponentialRampToValueAtTime(0.0001, time + 2.3);
+
+        osc.connect(filter);
+        filter.connect(gain);
+        gain.connect(destination);
+
+        osc.start(time);
+        osc.stop(time + 2.4);
+        this.trackActiveNode(osc, undefined, gain);
+      });
+    }
+
+    const arpSeq = [
+      523.25, 659.25, 783.99, 1046.5, 587.33, 783.99, 880.0, 1174.66, 659.25, 783.99, 987.77,
+      1318.51, 783.99, 1046.5, 1318.51, 1567.98,
+    ];
+    const harpFreq = safeGet(arpSeq, step % 16, 523.25);
+    if (harpFreq) {
+      const hOsc = ctx.createOscillator();
+      const hGain = ctx.createGain();
+      hGain.gain.value = 0;
+      hOsc.type = 'sine';
+      hOsc.frequency.setValueAtTime(harpFreq, time);
+
+      hGain.gain.setValueAtTime(0.0001, time);
+      hGain.gain.linearRampToValueAtTime(0.045, time + 0.01);
+      hGain.gain.exponentialRampToValueAtTime(0.0001, time + 0.35);
+
+      hOsc.connect(hGain);
+      hGain.connect(destination);
+
+      hOsc.start(time);
+      hOsc.stop(time + 0.38);
+      this.trackActiveNode(hOsc, undefined, hGain);
+    }
+  }
+
+  private schedulePrototypeCrisis(
+    ctx: AudioContext,
+    destination: AudioNode,
+    time: number,
+    step: number
+  ): void {
+    const isFirstBeat = step % 8 === 0;
+    const isSecondBeat = step % 8 === 2;
+
+    if (isFirstBeat || isSecondBeat) {
+      const hOsc = ctx.createOscillator();
+      const hGain = ctx.createGain();
+      const hFilter = ctx.createBiquadFilter();
+
+      hGain.gain.value = 0;
+      hOsc.type = 'triangle';
+      const startFreq = isFirstBeat ? 160 : 130;
+      const endFreq = isFirstBeat ? 55 : 45;
+      hOsc.frequency.setValueAtTime(startFreq, time);
+      hOsc.frequency.exponentialRampToValueAtTime(endFreq, time + 0.12);
+
+      hFilter.type = 'lowpass';
+      hFilter.frequency.setValueAtTime(450, time);
+
+      const hVol = isFirstBeat ? 0.32 : 0.22;
+      hGain.gain.setValueAtTime(0.0001, time);
+      hGain.gain.linearRampToValueAtTime(hVol, time + 0.01);
+      hGain.gain.exponentialRampToValueAtTime(0.0001, time + 0.14);
+
+      hOsc.connect(hFilter);
+      hFilter.connect(hGain);
+      hGain.connect(destination);
+
+      hOsc.start(time);
+      hOsc.stop(time + 0.16);
+      this.trackActiveNode(hOsc, undefined, hGain);
+
+      const subOsc = ctx.createOscillator();
+      const subGain = ctx.createGain();
+      subGain.gain.value = 0;
+      subOsc.type = 'sine';
+      subOsc.frequency.setValueAtTime(isFirstBeat ? 80 : 65, time);
+      subOsc.frequency.exponentialRampToValueAtTime(38, time + 0.15);
+
+      subGain.gain.setValueAtTime(0.0001, time);
+      subGain.gain.linearRampToValueAtTime(isFirstBeat ? 0.25 : 0.16, time + 0.015);
+      subGain.gain.exponentialRampToValueAtTime(0.0001, time + 0.18);
+
+      subOsc.connect(subGain);
+      subGain.connect(destination);
+
+      subOsc.start(time);
+      subOsc.stop(time + 0.2);
+      this.trackActiveNode(subOsc, undefined, subGain);
+    }
+
+    if (step % 16 === 0) {
+      const tensionChord =
+        step < 16
+          ? [110.0, 164.81, 220.0, 261.63, 311.13]
+          : [82.41, 123.47, 164.81, 207.65, 246.94];
+
+      tensionChord.forEach((freq, i) => {
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        const filter = ctx.createBiquadFilter();
+
+        gain.gain.value = 0;
+        osc.type = 'sawtooth';
+        osc.frequency.setValueAtTime(freq, time);
+
+        filter.type = 'lowpass';
+        filter.frequency.setValueAtTime(600, time);
+        filter.frequency.linearRampToValueAtTime(350, time + 1.8);
+
+        gain.gain.setValueAtTime(0.0001, time);
+        gain.gain.linearRampToValueAtTime(i === 0 ? 0.1 : 0.055, time + 0.12);
+        gain.gain.exponentialRampToValueAtTime(0.0001, time + 1.8);
+
+        osc.connect(filter);
+        filter.connect(gain);
+        gain.connect(destination);
+
+        osc.start(time);
+        osc.stop(time + 1.85);
+        this.trackActiveNode(osc, undefined, gain);
+      });
+    }
+
+    if (step % 2 === 0) {
+      const tOsc = ctx.createOscillator();
+      const tGain = ctx.createGain();
+      const tFilter = ctx.createBiquadFilter();
+
+      tGain.gain.value = 0;
+      tOsc.type = 'triangle';
+      tOsc.frequency.setValueAtTime(2800, time);
+
+      tFilter.type = 'highpass';
+      tFilter.frequency.setValueAtTime(2500, time);
+
+      tGain.gain.setValueAtTime(0.0001, time);
+      tGain.gain.linearRampToValueAtTime(0.05, time + 0.003);
+      tGain.gain.exponentialRampToValueAtTime(0.0001, time + 0.03);
+
+      tOsc.connect(tFilter);
+      tFilter.connect(tGain);
+      tGain.connect(destination);
+
+      tOsc.start(time);
+      tOsc.stop(time + 0.035);
+      this.trackActiveNode(tOsc, undefined, tGain);
+    }
+  }
+
+  private schedulePrototypeChill(
+    ctx: AudioContext,
+    destination: AudioNode,
+    time: number,
+    chordIndex: number
+  ): void {
+    const chords = [
+      [130.81, 196.0, 246.94, 329.63],
+      [110.0, 164.81, 196.0, 261.63],
+      [87.31, 130.81, 174.61, 220.0],
+      [98.0, 146.83, 196.0, 293.66],
+      [82.41, 123.47, 196.0, 246.94],
+      [87.31, 130.81, 220.0, 329.63],
+      [73.42, 110.0, 174.61, 261.63],
+      [98.0, 146.83, 246.94, 349.23],
+    ];
+
+    const chord = safeGet(chords, chordIndex, chords[0]);
+    const duration = 2.4;
+    const attack = 0.6;
+
+    chord.forEach((freq, i) => {
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      const filter = ctx.createBiquadFilter();
+
+      gain.gain.value = 0;
+      osc.type = i === 0 ? 'sine' : 'triangle';
+      osc.frequency.setValueAtTime(freq, time);
+
+      filter.type = 'lowpass';
+      filter.frequency.setValueAtTime(450, time);
+      filter.frequency.linearRampToValueAtTime(620, time + attack);
+      filter.frequency.linearRampToValueAtTime(420, time + duration);
+
+      const noteVol = i === 0 ? 0.12 : 0.07;
+      gain.gain.setValueAtTime(0.0001, time);
+      gain.gain.linearRampToValueAtTime(noteVol, time + attack);
+      gain.gain.exponentialRampToValueAtTime(0.0001, time + duration);
+
+      osc.connect(filter);
+      filter.connect(gain);
+      gain.connect(destination);
+
+      osc.start(time);
+      osc.stop(time + duration + 0.05);
+
+      this.trackActiveNode(osc, undefined, gain);
+    });
+
+    if (chordIndex >= 4) {
+      const melodyNotes = [
+        [329.63, 392.0],
+        [440.0, 523.25],
+        [392.0, 349.23],
+        [293.66, 261.63],
+      ];
+      const melodyPair = safeGet(melodyNotes, chordIndex - 4, [329.63, 392.0]);
+
+      melodyPair.forEach((mFreq, mIdx) => {
+        const mTime = time + 0.3 + mIdx * 0.9;
+        const mOsc = ctx.createOscillator();
+        const mGain = ctx.createGain();
+        const mFilter = ctx.createBiquadFilter();
+
+        mGain.gain.value = 0;
+        mOsc.type = 'sine';
+        mOsc.frequency.setValueAtTime(mFreq, mTime);
+
+        mFilter.type = 'lowpass';
+        mFilter.frequency.setValueAtTime(800, mTime);
+
+        mGain.gain.setValueAtTime(0.0001, mTime);
+        mGain.gain.linearRampToValueAtTime(0.065, mTime + 0.25);
+        mGain.gain.exponentialRampToValueAtTime(0.0001, mTime + 0.85);
+
+        mOsc.connect(mFilter);
+        mFilter.connect(mGain);
+        mGain.connect(destination);
+
+        mOsc.start(mTime);
+        mOsc.stop(mTime + 0.9);
+        this.trackActiveNode(mOsc, undefined, mGain);
+      });
+    }
+
+    const sparkles = [659.25, 523.25, 783.99, 587.33, 659.25, 880.0, 783.99, 1046.5];
+    const sparkleFreq = safeGet(sparkles, chordIndex, 659.25);
+    const sparkleTime = time + 0.8;
+
+    const spOsc = ctx.createOscillator();
+    const spGain = ctx.createGain();
+    spGain.gain.value = 0;
+    spOsc.type = 'sine';
+    spOsc.frequency.setValueAtTime(sparkleFreq, sparkleTime);
+
+    spGain.gain.setValueAtTime(0.0001, sparkleTime);
+    spGain.gain.linearRampToValueAtTime(0.035, sparkleTime + 0.3);
+    spGain.gain.exponentialRampToValueAtTime(0.0001, sparkleTime + 1.2);
+
+    spOsc.connect(spGain);
+    spGain.connect(destination);
+
+    spOsc.start(sparkleTime);
+    spOsc.stop(sparkleTime + 1.25);
+
+    this.trackActiveNode(spOsc, undefined, spGain);
+  }
+
+  private schedulePrototypeArcade(
+    ctx: AudioContext,
+    destination: AudioNode,
+    time: number,
+    step: number
+  ): void {
+    const bassPattern = [
+      130.81, 0, 130.81, 0, 196.0, 0, 164.81, 0, 110.0, 0, 110.0, 0, 164.81, 0, 130.81, 0, 87.31, 0,
+      87.31, 0, 130.81, 0, 110.0, 0, 98.0, 0, 146.83, 0, 196.0, 0, 246.94, 0,
+    ];
+
+    const bassFreq = safeGet(bassPattern, step, 0);
+    if (bassFreq && bassFreq > 0) {
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      gain.gain.value = 0;
+      osc.type = 'triangle';
+      osc.frequency.setValueAtTime(bassFreq, time);
+
+      gain.gain.setValueAtTime(0.0001, time);
+      gain.gain.linearRampToValueAtTime(0.13, time + 0.015);
+      gain.gain.exponentialRampToValueAtTime(0.0001, time + 0.22);
+
+      osc.connect(gain);
+      gain.connect(destination);
+
+      osc.start(time);
+      osc.stop(time + 0.24);
+      this.trackActiveNode(osc, undefined, gain);
+    }
+
+    const leadNotes = [
+      523.25, 0, 659.25, 0, 783.99, 0, 659.25, 0, 880.0, 0, 783.99, 0, 659.25, 0, 523.25, 0, 440.0,
+      0, 523.25, 0, 659.25, 0, 523.25, 0, 587.33, 0, 659.25, 0, 783.99, 0, 987.77, 0,
+    ];
+
+    const leadFreq = safeGet(leadNotes, step, 0);
+    if (leadFreq && leadFreq > 0) {
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      gain.gain.value = 0;
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(leadFreq, time);
+
+      gain.gain.setValueAtTime(0.0001, time);
+      gain.gain.linearRampToValueAtTime(0.065, time + 0.01);
+      gain.gain.exponentialRampToValueAtTime(0.0001, time + 0.18);
+
+      osc.connect(gain);
+      gain.connect(destination);
+
+      osc.start(time);
+      osc.stop(time + 0.2);
+      this.trackActiveNode(osc, undefined, gain);
+    }
+  }
+
+  private schedulePrototypePuzzle(
+    ctx: AudioContext,
+    destination: AudioNode,
+    time: number,
+    step: number
+  ): void {
+    if (step % 8 === 0) {
+      const jazzChords = [
+        [174.61, 220.0, 261.63, 329.63],
+        [164.81, 196.0, 246.94, 293.66],
+        [146.83, 174.61, 220.0, 261.63],
+        [130.81, 164.81, 196.0, 246.94],
+      ];
+      const chord = safeGet(jazzChords, Math.floor(step / 8), jazzChords[0]);
+
+      chord.forEach((freq, i) => {
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        const filter = ctx.createBiquadFilter();
+
+        gain.gain.value = 0;
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(freq, time);
+
+        filter.type = 'lowpass';
+        filter.frequency.setValueAtTime(500, time);
+
+        gain.gain.setValueAtTime(0.0001, time);
+        gain.gain.linearRampToValueAtTime(i === 0 ? 0.09 : 0.05, time + 0.4);
+        gain.gain.exponentialRampToValueAtTime(0.0001, time + 1.25);
+
+        osc.connect(filter);
+        filter.connect(gain);
+        gain.connect(destination);
+
+        osc.start(time);
+        osc.stop(time + 1.3);
+        this.trackActiveNode(osc, undefined, gain);
+      });
+    }
+
+    const marimbaPattern = [
+      523.25, 0, 659.25, 0, 0, 783.99, 0, 659.25, 493.88, 0, 587.33, 0, 0, 659.25, 0, 493.88, 440.0,
+      0, 523.25, 0, 0, 659.25, 0, 523.25, 392.0, 0, 493.88, 0, 523.25, 0, 659.25, 0,
+    ];
+
+    const mFreq = safeGet(marimbaPattern, step, 0);
+    if (mFreq && mFreq > 0) {
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      const filter = ctx.createBiquadFilter();
+
+      gain.gain.value = 0;
+      osc.type = 'triangle';
+      osc.frequency.setValueAtTime(mFreq, time);
+
+      filter.type = 'lowpass';
+      filter.frequency.setValueAtTime(1200, time);
+      filter.frequency.linearRampToValueAtTime(400, time + 0.25);
+
+      gain.gain.setValueAtTime(0.0001, time);
+      gain.gain.linearRampToValueAtTime(0.09, time + 0.006);
+      gain.gain.exponentialRampToValueAtTime(0.0001, time + 0.28);
+
+      osc.connect(filter);
+      filter.connect(gain);
+      gain.connect(destination);
+
+      osc.start(time);
+      osc.stop(time + 0.3);
+      this.trackActiveNode(osc, undefined, gain);
     }
   }
 
@@ -2086,229 +3989,223 @@ export class BgmEngine {
   }
 
   // =========================================================================
-  // ⭐ [트랙 8번 심층 마스터] 🏔️ 산악 앰비언트 (Mountain Chill - 64초 32주기 힐링 싱잉볼 앰비언트)
-  // 장르: 티베탄 싱잉볼 공명 + 산림욕 산들바람 + 크리스탈 윈드차임 + 오가닉 드론
+  // ⭐ [트랙 8번 심층 마스터] 🏔️ 산악 앰비언트 - 미완의 산장 (Uncharted Lodge - 76 BPM 256 Steps / ~50.5초)
+  // 장르: C418 구조 기반 시네마틱 앰비언트 (3+3+2 엇박 오스티나토 + 웜 서브 펄스 + 아날로그 스트링 패드 + 배음 블룸)
   // =========================================================================
   private scheduleChillStep(
     ctx: AudioContext,
     destination: AudioNode,
     reverbSend: AudioNode,
     time: number,
-    chordIndex: number
+    stepIndex: number
   ): void {
-    const chords = [
-      [130.81, 196.0, 246.94, 329.63], // Cmaj7(#11)
-      [110.0, 164.81, 196.0, 261.63], // Em9
-      [87.31, 130.81, 174.61, 220.0], // Fmaj7
-      [98.0, 146.83, 196.0, 293.66], // Gsus4
-      [82.41, 123.47, 196.0, 246.94], // Em7
-      [87.31, 130.81, 220.0, 329.63], // Am9
-      [73.42, 110.0, 174.61, 261.63], // Dm9
-      [98.0, 146.83, 246.94, 349.23], // G13sus4 -> Cmaj9
+    const sTime = Math.max(time, ctx.currentTime);
+    const localStep = stepIndex % 256; // 16마디 루프 (~50.5초)
+    const barIndex = Math.floor(localStep / 16); // 0~15 마디
+    const subStep = localStep % 16; // 0~15 (16분음표)
+    const progBar = barIndex % 8; // 8마디 코드 순환
+
+    // F Lydian / C Major 부유하는 모달 하모니 진행 (Fmaj7#11 ➔ Cmaj9 ➔ Am9 ➔ Gsus4)
+    const modalChords = [
+      // 0~1: Fmaj7(#11) (F2 베이스, C4-E4-B4-E5-A4 오스티나토)
+      {
+        name: 'Fmaj7#11',
+        root: 87.31,
+        bass: 43.65,
+        notes: [261.63, 329.63, 493.88, 659.25, 440.0],
+      },
+      {
+        name: 'Fmaj7#11',
+        root: 87.31,
+        bass: 43.65,
+        notes: [261.63, 329.63, 493.88, 659.25, 440.0],
+      },
+      // 2~3: Cmaj9/E (E2 베이스, G3-D4-E4-G4-D5)
+      { name: 'Cmaj9/E', root: 82.41, bass: 41.2, notes: [196.0, 293.66, 329.63, 392.0, 587.33] },
+      { name: 'Cmaj9/E', root: 82.41, bass: 41.2, notes: [196.0, 293.66, 329.63, 392.0, 587.33] },
+      // 4~5: Am9 (A1 베이스, C4-E4-G4-B4-E5)
+      { name: 'Am9', root: 110.0, bass: 55.0, notes: [261.63, 329.63, 392.0, 493.88, 659.25] },
+      { name: 'Am9', root: 110.0, bass: 55.0, notes: [261.63, 329.63, 392.0, 493.88, 659.25] },
+      // 6~7: Gsus4(add9) ➔ G (G1 베이스, D4-G4-A4-B4-D5)
+      { name: 'Gsus4', root: 98.0, bass: 49.0, notes: [293.66, 392.0, 440.0, 493.88, 587.33] },
+      { name: 'Gsus4', root: 98.0, bass: 49.0, notes: [293.66, 392.0, 440.0, 493.88, 587.33] },
     ];
 
-    const currentChordIndex = chordIndex % 8;
-    const chord = safeGet(chords, currentChordIndex, chords[0]);
-    const duration = 2.8;
-    const attack = 0.7;
+    const chord = safeGet(modalChords, progBar, modalChords[0]);
 
     // -------------------------------------------------------------
-    // 1. 산림욕 산들바람 노이즈 텍스처 (Gentle Forest Breeze)
+    // 1. 🪵 C418 스타일 엇박 아날로그 오스티나토 (Warm Analog Ostinato - 전 파트)
+    // 3+3+2+3+3 폴리리듬 당김음 패턴 (ticks: 0, 3, 6, 8, 11, 14)
     // -------------------------------------------------------------
-    const noiseBuf = this.getNoiseBuffer(ctx);
-    if (noiseBuf && typeof ctx.createBufferSource === 'function') {
-      const wSource = ctx.createBufferSource();
-      const wGain = ctx.createGain();
-      const wFilter = ctx.createBiquadFilter();
+    const ostinatoTicks = [0, 3, 6, 8, 11, 14];
+    const tickIdx = ostinatoTicks.indexOf(subStep);
 
-      wSource.buffer = noiseBuf;
-      wFilter.type = 'bandpass';
-      wFilter.frequency.setValueAtTime(220, time);
-      wFilter.frequency.linearRampToValueAtTime(320, time + 1.2);
-      wFilter.frequency.linearRampToValueAtTime(180, time + duration);
-      wFilter.Q.value = 0.8;
+    if (tickIdx !== -1) {
+      const oFreq = safeGet(chord.notes, tickIdx % chord.notes.length, chord.notes[0]);
 
-      wGain.gain.setValueAtTime(0.0001, time);
-      wGain.gain.linearRampToValueAtTime(0.022, time + attack);
-      wGain.gain.exponentialRampToValueAtTime(0.0001, time + duration);
+      try {
+        const oOsc = ctx.createOscillator();
+        const oGain = ctx.createGain();
+        const oFilter = ctx.createBiquadFilter();
+        const oPanner = this.createPanner(ctx, (tickIdx % 2 === 0 ? -1 : 1) * 0.16);
 
-      wSource.connect(wFilter);
-      wFilter.connect(wGain);
-      wGain.connect(destination);
-      wGain.connect(reverbSend);
+        oGain.gain.value = 0;
+        // 빈티지 웜 아날로그 톤 (삼각파와 사인의 부드러운 하모니)
+        oOsc.type = tickIdx === 0 || tickIdx === 3 ? 'triangle' : 'sine';
+        oOsc.frequency.setValueAtTime(oFreq, sTime);
 
-      wSource.start(time);
-      wSource.stop(time + duration + 0.05);
-      this.trackActiveNode(undefined, wSource, wGain);
-    }
+        oFilter.type = 'lowpass';
+        oFilter.frequency.setValueAtTime(680, sTime);
 
-    // -------------------------------------------------------------
-    // 2. 오가닉 웜 앰비언트 화음 패드 (Warm Healing Pad with Reverb)
-    // -------------------------------------------------------------
-    chord.forEach((freq, i) => {
-      const osc = ctx.createOscillator();
-      const gain = ctx.createGain();
-      const filter = ctx.createBiquadFilter();
-      const panner = this.createPanner(ctx, i % 2 === 0 ? -0.25 : 0.25);
+        // 둥글고 몽환적인 엔벨로프 (짧은 어택 + 맑은 감쇠)
+        const oVol = tickIdx === 0 ? 0.055 : 0.042;
+        oGain.gain.setValueAtTime(0.0001, sTime);
+        oGain.gain.linearRampToValueAtTime(oVol, sTime + 0.015);
+        oGain.gain.exponentialRampToValueAtTime(0.0001, sTime + 0.55);
 
-      gain.gain.value = 0;
-      osc.type = i === 0 ? 'sine' : 'triangle';
-      osc.frequency.setValueAtTime(freq, time);
+        oOsc.connect(oFilter);
+        oFilter.connect(oGain);
 
-      filter.type = 'lowpass';
-      filter.frequency.setValueAtTime(380, time);
-      filter.frequency.linearRampToValueAtTime(580, time + attack);
-      filter.frequency.linearRampToValueAtTime(360, time + duration);
+        if (oPanner) {
+          oGain.connect(oPanner);
+          oPanner.connect(destination);
+          oPanner.connect(reverbSend);
+        } else {
+          oGain.connect(destination);
+          oGain.connect(reverbSend);
+        }
 
-      const noteVol = i === 0 ? 0.11 : 0.065;
-      gain.gain.setValueAtTime(0.0001, time);
-      gain.gain.linearRampToValueAtTime(noteVol, time + attack);
-      gain.gain.exponentialRampToValueAtTime(0.0001, time + duration);
-
-      osc.connect(filter);
-      filter.connect(gain);
-
-      if (panner) {
-        gain.connect(panner);
-        panner.connect(destination);
-        panner.connect(reverbSend);
-      } else {
-        gain.connect(destination);
-        gain.connect(reverbSend);
+        oOsc.start(sTime);
+        oOsc.stop(sTime + 0.6);
+        this.trackActiveNode(oOsc, undefined, oGain);
+      } catch {
+        // audio safe
       }
-
-      osc.start(time);
-      osc.stop(time + duration + 0.05);
-      this.trackActiveNode(osc, undefined, gain);
-    });
+    }
 
     // -------------------------------------------------------------
-    // 3. 티베탄 싱잉볼 공명 (Tibetan Singing Bowl Resonance with Harmonics)
+    // 2. ⚡ 부유하는 웜 서브 펄스 (Buoyant Warm Sub Pulse - Part 2, 3, 4: stepIndex >= 64)
+    // 엇박으로 둥- 둥- 받쳐주는 따뜻한 아날로그 서브 베이스
     // -------------------------------------------------------------
-    // 4스텝(8초)마다 맑은 싱잉볼 타격 발생
-    if (chordIndex % 4 === 0) {
-      const baseFreq = chord[0] * 2; // 옥타브 업 싱잉볼
-      // 실제 싱잉볼 배음 구조: 근음(f0), 1차 배음(2.76*f0), 2차 배음(5.4*f0)
-      const harmonics = [baseFreq, baseFreq * 2.76, baseFreq * 5.4];
+    if (stepIndex >= 64 && (subStep === 0 || subStep === 6)) {
+      try {
+        const bOsc = ctx.createOscillator();
+        const bGain = ctx.createGain();
+        const bFilter = ctx.createBiquadFilter();
 
-      harmonics.forEach((hFreq, hIdx) => {
-        const bowlOsc = ctx.createOscillator();
-        const bowlGain = ctx.createGain();
-        const bowlFilter = ctx.createBiquadFilter();
-        // 배음별 좌/우 바이노럴 패닝
-        const panVal = hIdx === 0 ? 0 : hIdx === 1 ? -0.32 : 0.32;
-        const bPanner = this.createPanner(ctx, panVal);
+        bGain.gain.value = 0;
+        bOsc.type = 'sine';
+        bOsc.frequency.setValueAtTime(subStep === 0 ? chord.bass : chord.root * 0.5, sTime);
 
-        bowlGain.gain.value = 0;
-        bowlOsc.type = 'sine';
-        bowlOsc.frequency.setValueAtTime(hFreq, time);
+        bFilter.type = 'lowpass';
+        bFilter.frequency.setValueAtTime(140, sTime);
 
-        bowlFilter.type = 'lowpass';
-        bowlFilter.frequency.setValueAtTime(1800, time);
+        const bVol = subStep === 0 ? 0.08 : 0.095;
+        bGain.gain.setValueAtTime(0.0001, sTime);
+        bGain.gain.linearRampToValueAtTime(bVol, sTime + 0.08);
+        bGain.gain.exponentialRampToValueAtTime(0.0001, sTime + 1.2);
 
-        const bVol = hIdx === 0 ? 0.075 : hIdx === 1 ? 0.035 : 0.018;
-        bowlGain.gain.setValueAtTime(0.0001, time);
-        bowlGain.gain.linearRampToValueAtTime(bVol, time + 0.08);
-        bowlGain.gain.exponentialRampToValueAtTime(0.0001, time + 3.6);
+        bOsc.connect(bFilter);
+        bFilter.connect(bGain);
+        bGain.connect(destination);
 
-        bowlOsc.connect(bowlFilter);
-        bowlFilter.connect(bowlGain);
+        bOsc.start(sTime);
+        bOsc.stop(sTime + 1.25);
+        this.trackActiveNode(bOsc, undefined, bGain);
+      } catch {
+        // audio safe
+      }
+    }
 
-        if (bPanner) {
-          bowlGain.connect(bPanner);
-          bPanner.connect(destination);
-          bPanner.connect(reverbSend);
-        } else {
-          bowlGain.connect(destination);
-          bowlGain.connect(reverbSend);
+    // -------------------------------------------------------------
+    // 3. 🌫️ 필터드 아날로그 스트링 패드 (Airy Analog Strings - Part 3, 4: stepIndex >= 128)
+    // 저역에서 서서히 열리는 맑은 공기감의 아날로그 패드
+    // -------------------------------------------------------------
+    if (stepIndex >= 128 && subStep === 0) {
+      chord.notes.slice(0, 3).forEach((freq, pIdx) => {
+        try {
+          const pOsc = ctx.createOscillator();
+          const pGain = ctx.createGain();
+          const pFilter = ctx.createBiquadFilter();
+          const pPanner = this.createPanner(ctx, (pIdx - 1) * 0.22);
+
+          pGain.gain.value = 0;
+          pOsc.type = 'sine';
+          pOsc.frequency.setValueAtTime(freq * 0.5, sTime);
+
+          pFilter.type = 'lowpass';
+          pFilter.frequency.setValueAtTime(200, sTime);
+          pFilter.frequency.linearRampToValueAtTime(460, sTime + 0.8);
+          pFilter.frequency.linearRampToValueAtTime(220, sTime + 2.8);
+
+          pGain.gain.setValueAtTime(0.0001, sTime);
+          pGain.gain.linearRampToValueAtTime(0.038, sTime + 0.4);
+          pGain.gain.exponentialRampToValueAtTime(0.0001, sTime + 2.9);
+
+          pOsc.connect(pFilter);
+          pFilter.connect(pGain);
+
+          if (pPanner) {
+            pGain.connect(pPanner);
+            pPanner.connect(destination);
+            pPanner.connect(reverbSend);
+          } else {
+            pGain.connect(destination);
+            pGain.connect(reverbSend);
+          }
+
+          pOsc.start(sTime);
+          pOsc.stop(sTime + 2.95);
+          this.trackActiveNode(pOsc, undefined, pGain);
+        } catch {
+          // audio safe
         }
-
-        bowlOsc.start(time);
-        bowlOsc.stop(time + 3.8);
-        this.trackActiveNode(bowlOsc, undefined, bowlGain);
       });
     }
 
     // -------------------------------------------------------------
-    // 4. 서정적인 명상 멜로디 (Serene Meditation Bell Chimes)
+    // 4. ✨ 카운터 하모닉 글리머 (Counter Harmonic Glimmer - Part 4: stepIndex >= 192)
+    // 오스티나토의 틈새로 부드럽게 반짝이는 배음 에코
     // -------------------------------------------------------------
-    if (chordIndex >= 4) {
-      const melodyNotes = [
-        [329.63, 392.0],
-        [440.0, 523.25],
-        [392.0, 349.23],
-        [293.66, 261.63],
-      ];
-      const melodyPair = safeGet(melodyNotes, chordIndex % 4, [329.63, 392.0]);
+    if (stepIndex >= 192 && (subStep === 4 || subStep === 12)) {
+      const glimmers = [783.99, 987.77, 1174.66, 1318.51]; // G5, B5, D6, E6
+      const gFreq = safeGet(
+        glimmers,
+        (progBar + Math.floor(subStep / 4)) % glimmers.length,
+        987.77
+      );
 
-      melodyPair.forEach((mFreq, mIdx) => {
-        const mTime = time + 0.3 + mIdx * 0.9;
-        const mOsc = ctx.createOscillator();
-        const mGain = ctx.createGain();
-        const mFilter = ctx.createBiquadFilter();
-        const mPanner = this.createPanner(ctx, 0.18);
+      try {
+        const gOsc = ctx.createOscillator();
+        const gGain = ctx.createGain();
+        const gPanner = this.createPanner(ctx, Math.sin(subStep) * 0.3);
 
-        mGain.gain.value = 0;
-        mOsc.type = 'sine';
-        mOsc.frequency.setValueAtTime(mFreq, mTime);
+        gGain.gain.value = 0;
+        gOsc.type = 'sine';
+        gOsc.frequency.setValueAtTime(gFreq, sTime);
 
-        mFilter.type = 'lowpass';
-        mFilter.frequency.setValueAtTime(800, mTime);
+        gGain.gain.setValueAtTime(0.0001, sTime);
+        gGain.gain.linearRampToValueAtTime(0.024, sTime + 0.03);
+        gGain.gain.exponentialRampToValueAtTime(0.0001, sTime + 0.75);
 
-        mGain.gain.setValueAtTime(0.0001, mTime);
-        mGain.gain.linearRampToValueAtTime(0.065, mTime + 0.25);
-        mGain.gain.exponentialRampToValueAtTime(0.0001, mTime + 0.85);
-
-        mOsc.connect(mFilter);
-        mFilter.connect(mGain);
-
-        if (mPanner) {
-          mGain.connect(mPanner);
-          mPanner.connect(destination);
-          mPanner.connect(reverbSend);
+        if (gPanner) {
+          gOsc.connect(gGain);
+          gGain.connect(gPanner);
+          gPanner.connect(destination);
+          gPanner.connect(reverbSend);
         } else {
-          mGain.connect(destination);
-          mGain.connect(reverbSend);
+          gOsc.connect(gGain);
+          gGain.connect(destination);
+          gGain.connect(reverbSend);
         }
 
-        mOsc.start(mTime);
-        mOsc.stop(mTime + 0.9);
-        this.trackActiveNode(mOsc, undefined, mGain);
-      });
+        gOsc.start(sTime);
+        gOsc.stop(sTime + 0.8);
+        this.trackActiveNode(gOsc, undefined, gGain);
+      } catch {
+        // audio safe
+      }
     }
-
-    // -------------------------------------------------------------
-    // 5. 크리스탈 윈드차임 스파클 (Crystal Wind Chimes)
-    // -------------------------------------------------------------
-    const sparkles = [659.25, 523.25, 783.99, 587.33, 659.25, 880.0, 783.99, 1046.5];
-    const sparkleFreq = safeGet(sparkles, chordIndex % 8, 659.25);
-    const sparkleTime = time + 0.8;
-
-    const spOsc = ctx.createOscillator();
-    const spGain = ctx.createGain();
-    const spPanner = this.createPanner(ctx, -0.22);
-    spGain.gain.value = 0;
-    spOsc.type = 'sine';
-    spOsc.frequency.setValueAtTime(sparkleFreq, sparkleTime);
-
-    spGain.gain.setValueAtTime(0.0001, sparkleTime);
-    spGain.gain.linearRampToValueAtTime(0.038, sparkleTime + 0.3);
-    spGain.gain.exponentialRampToValueAtTime(0.0001, sparkleTime + 1.2);
-
-    if (spPanner) {
-      spOsc.connect(spGain);
-      spGain.connect(spPanner);
-      spPanner.connect(destination);
-      spPanner.connect(reverbSend);
-    } else {
-      spOsc.connect(spGain);
-      spGain.connect(destination);
-      spGain.connect(reverbSend);
-    }
-
-    spOsc.start(sparkleTime);
-    spOsc.stop(sparkleTime + 1.25);
-    this.trackActiveNode(spOsc, undefined, spGain);
   }
 
   // =========================================================================

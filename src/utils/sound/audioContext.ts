@@ -18,29 +18,24 @@ class AudioContextManager {
     if (typeof window === 'undefined') return;
 
     const unlock = () => {
-      if (!this.isUnlocked) {
-        const ctx = this.getContext();
-        if (ctx && ctx.state === 'suspended') {
-          ctx
-            .resume()
-            .then(() => {
-              this.isUnlocked = true;
-            })
-            .catch(() => {});
-        } else if (ctx && ctx.state === 'running') {
-          this.isUnlocked = true;
-        }
+      const ctx = this.getContext();
+      if (!this.isUnlocked && ctx && ctx.state === 'suspended') {
+        ctx
+          .resume()
+          .then(() => {
+            this.isUnlocked = true;
+          })
+          .catch(() => {});
+      } else if (ctx && ctx.state === 'running') {
+        this.isUnlocked = true;
       }
-      window.removeEventListener('touchstart', unlock);
-      window.removeEventListener('touchend', unlock);
-      window.removeEventListener('click', unlock);
-      window.removeEventListener('keydown', unlock);
     };
 
-    window.addEventListener('touchstart', unlock, { passive: true });
-    window.addEventListener('touchend', unlock, { passive: true });
-    window.addEventListener('click', unlock, { passive: true });
-    window.addEventListener('keydown', unlock, { passive: true });
+    // 사용자의 모든 제스처(터치, 클릭, 키입력)에 대해 상시 안전 언락
+    window.addEventListener('touchstart', unlock, { passive: true, capture: true });
+    window.addEventListener('touchend', unlock, { passive: true, capture: true });
+    window.addEventListener('click', unlock, { passive: true, capture: true });
+    window.addEventListener('keydown', unlock, { passive: true, capture: true });
   }
 
   /**
@@ -69,6 +64,15 @@ class AudioContextManager {
   }
 
   /**
+   * AudioContext 실행 상태 보장
+   */
+  ensureRunning(): void {
+    if (this.ctx && this.ctx.state === 'suspended') {
+      this.ctx.resume().catch(() => {});
+    }
+  }
+
+  /**
    * 마스터 게인 노드 반환
    */
   getMasterGain(): GainNode | null {
@@ -79,15 +83,38 @@ class AudioContextManager {
   }
 
   /**
-   * 전역 효과음 활성화 여부 확인
+   * 전역 효과음(SFX) 활성화 여부 확인
    */
   isEnabled(): boolean {
+    return this.isSoundEnabled();
+  }
+
+  isSoundEnabled(): boolean {
     if (typeof window === 'undefined') return false;
     try {
       return useSettingsStore.getState().soundEnabled ?? true;
     } catch {
       return true;
     }
+  }
+
+  /**
+   * 전역 배경음악(BGM) 활성화 여부 확인
+   */
+  isBgmEnabled(): boolean {
+    if (typeof window === 'undefined') return false;
+    try {
+      return useSettingsStore.getState().bgmEnabled ?? true;
+    } catch {
+      return true;
+    }
+  }
+
+  /**
+   * 브라우저 오디오 언락 여부 확인
+   */
+  isAudioUnlocked(): boolean {
+    return this.isUnlocked;
   }
 }
 
