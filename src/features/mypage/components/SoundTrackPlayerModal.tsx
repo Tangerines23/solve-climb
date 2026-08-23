@@ -279,45 +279,99 @@ export function SoundTrackPlayerModal({
                             <span className="sound-player-track-title">
                               {track.num}. {track.title}
                             </span>
-                            <span className="sound-player-track-tempo">{track.tempo}</span>
+                            <span className="sound-player-track-tempo">
+                              {track.genre} • {track.tempo}
+                            </span>
                           </div>
                         </div>
                         <span className="sound-player-play-icon">{isActive ? '⏸' : '▶'}</span>
                       </button>
 
-                      {/* 실시간 진행 상태 패널 (재생 중일 때만 표시) */}
+                      {/* 실시간 진행 상태 패널 (재생 중일 때 확장) */}
                       {isActive && arrangement && currentPart && (
                         <div className="sound-player-progress-panel">
+                          {/* 1. 파트 이름 & 실시간 시간 헤더 */}
                           <div className="sound-player-progress-header">
                             <span className="sound-player-part-name">🎵 {currentPart.name}</span>
                             <span className="sound-player-part-time">
                               ⏱️ {currentSec}s / {totalSec}s ({currentStep} /{' '}
-                              {arrangement.totalSteps})
+                              {arrangement.totalSteps} Step)
                             </span>
                           </div>
 
-                          <div className="sound-player-progress-bar-bg">
+                          {/* 2. 클릭/탐색 가능한 실시간 진행 바 */}
+                          <div
+                            className="sound-player-progress-bar-bg sound-player-progress-bar-interactive"
+                            title="클릭하여 원하는 위치로 즉시 이동"
+                            onClick={(e) => {
+                              const rect = e.currentTarget.getBoundingClientRect();
+                              const ratio = Math.max(
+                                0,
+                                Math.min(1, (e.clientX - rect.left) / rect.width)
+                              );
+                              const target = Math.floor(ratio * arrangement.totalSteps);
+                              bgm.seekToStep(target);
+                              setCurrentStep(target);
+                            }}
+                          >
                             <div
                               className="sound-player-progress-bar-fill"
                               style={{ width: `${progressPct}%` }}
                             />
                           </div>
 
-                          {/* 파트 바로가기 버튼 */}
+                          {/* 3. [1][2][3][4] 파트별 바로가기 점프 버튼 */}
                           <div className="sound-player-part-buttons">
-                            {arrangement.parts.map((part) => (
-                              <button
-                                key={part.partNum}
-                                type="button"
-                                className="sound-player-part-btn"
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  bgm.jumpToPart(part.partNum);
-                                }}
-                              >
-                                {part.partNum}부
-                              </button>
-                            ))}
+                            {arrangement.parts.map((part) => {
+                              const isSelected = currentPart.partNum === part.partNum;
+                              const partBadge =
+                                part.partNum === 1
+                                  ? '기초'
+                                  : part.partNum === 2
+                                    ? '드럼'
+                                    : part.partNum === 3
+                                      ? '리드'
+                                      : '클라이맥스';
+
+                              return (
+                                <button
+                                  key={part.partNum}
+                                  type="button"
+                                  className={`sound-player-part-btn ${isSelected ? 'active' : ''}`}
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    bgm.jumpToPart(part.partNum);
+                                    setCurrentStep(part.startStep);
+                                  }}
+                                >
+                                  <div className="sound-player-part-btn-title">
+                                    [{part.partNum}] {partBadge}
+                                  </div>
+                                  <div className="sound-player-part-btn-range">
+                                    {part.startStep}~{part.endStep}
+                                  </div>
+                                </button>
+                              );
+                            })}
+                          </div>
+
+                          {/* 4. 활성 악기 목록 태그 및 파트 설명 */}
+                          <div className="sound-player-instruments-panel">
+                            <div className="sound-player-instruments-title">
+                              🎼 현재 추가된 악기 ({currentPart.instruments.length}개):
+                            </div>
+                            <div className="sound-player-instruments-tags">
+                              {currentPart.instruments.map((inst) => (
+                                <span key={inst} className="sound-player-instrument-tag">
+                                  {inst}
+                                </span>
+                              ))}
+                            </div>
+                            {currentPart.description && (
+                              <div className="sound-player-part-desc">
+                                💬 {currentPart.description}
+                              </div>
+                            )}
                           </div>
                         </div>
                       )}

@@ -1,5 +1,5 @@
 project: solve-climb
-generatedAt: '2026-08-23T18:05:54.890Z'
+generatedAt: '2026-08-23T18:17:38.123Z'
 files:
   src/App.tsx:
     imports:
@@ -6991,9 +6991,13 @@ files:
           - (currentStep * arrangement.stepDuration).toFixed
           - (arrangement.totalSteps * arrangement.stepDuration).toFixed
           - bgm.play
+          - e.currentTarget.getBoundingClientRect
+          - Math.floor
+          - bgm.seekToStep
           - arrangement.parts.map
           - e.stopPropagation
           - bgm.jumpToPart
+          - currentPart.instruments.map
           - setSoundEnabled
           - SFX_ITEMS.map
           - item.action
