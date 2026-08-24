@@ -45,12 +45,12 @@ function checkDockerStatus() {
   try {
     let output;
     try {
-      output = execSync('supabase status --json', {
+      output = execSync('supabase status -o json', {
         stdio: ['ignore', 'pipe', 'ignore'],
         timeout: 10000,
       }).toString();
     } catch {
-      output = execSync('npx supabase status --json', {
+      output = execSync('npx supabase status -o json', {
         stdio: ['ignore', 'pipe', 'ignore'],
         timeout: 20000,
       }).toString();
