@@ -160,7 +160,8 @@ export class BgmEngine {
       if (this.masterCompressor) {
         this.masterCompressor.connect(this.masterGain);
       }
-      this.masterGain.connect(ctx.destination);
+      const masterOut = audioContextManager.getMasterGain() || ctx.destination;
+      this.masterGain.connect(masterOut);
     }
 
     return {

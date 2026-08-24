@@ -1,5 +1,5 @@
 project: solve-climb
-generatedAt: '2026-08-24T07:20:42.241Z'
+generatedAt: '2026-08-24T08:08:37.489Z'
 files:
   src/App.tsx:
     imports:
@@ -4277,6 +4277,7 @@ files:
               - this.reverbGain.connect
               - this.masterFilter.connect
               - this.masterCompressor.connect
+              - audioContextManager.getMasterGain
               - this.masterGain.connect
           - name: createSyntheticReverb
             params:

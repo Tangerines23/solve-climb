@@ -5,6 +5,7 @@ import { useSettingsStore } from '@/stores/useSettingsStore';
 class AudioContextManager {
   private ctx: AudioContext | null = null;
   private masterGain: GainNode | null = null;
+  private masterLimiter: DynamicsCompressorNode | null = null;
   private isUnlocked: boolean = false;
 
   constructor() {
@@ -52,7 +53,26 @@ class AudioContextManager {
         this.ctx = new AudioCtx();
         this.masterGain = this.ctx.createGain();
         this.masterGain.gain.value = 1.0;
-        this.masterGain.connect(this.ctx.destination);
+
+        // 🛡️ 최종 출력단 마스터 브릭월 리미터 (True-Peak Limiter)
+        // BGM + 효과음 다중 중첩 및 고속 연타 시에도 0dBFS 초과를 원천 방어하여 스피커 찢어짐(Clipping) 방지
+        if (typeof this.ctx.createDynamicsCompressor === 'function') {
+          try {
+            this.masterLimiter = this.ctx.createDynamicsCompressor();
+            this.masterLimiter.threshold.setValueAtTime(-1.0, this.ctx.currentTime); // -1.0 dBFS 천장 설정
+            this.masterLimiter.knee.setValueAtTime(0, this.ctx.currentTime); // Hard Knee
+            this.masterLimiter.ratio.setValueAtTime(20, this.ctx.currentTime); // 20:1 Peak Limiting
+            this.masterLimiter.attack.setValueAtTime(0.001, this.ctx.currentTime); // 1ms 초고속 반응
+            this.masterLimiter.release.setValueAtTime(0.1, this.ctx.currentTime); // 100ms 빠른 회복
+
+            this.masterGain.connect(this.masterLimiter);
+            this.masterLimiter.connect(this.ctx.destination);
+          } catch {
+            this.masterGain.connect(this.ctx.destination);
+          }
+        } else {
+          this.masterGain.connect(this.ctx.destination);
+        }
       }
     }
 
@@ -99,7 +119,7 @@ class AudioContextManager {
   }
 
   /**
-   * 전역 배경음악(BGM) 활성화 여부 확인
+   * 전역 BGM 활성화 여부 확인
    */
   isBgmEnabled(): boolean {
     if (typeof window === 'undefined') return false;
@@ -111,10 +131,16 @@ class AudioContextManager {
   }
 
   /**
-   * 브라우저 오디오 언락 여부 확인
+   * 테스트 및 초기화용 리셋
    */
-  isAudioUnlocked(): boolean {
-    return this.isUnlocked;
+  reset(): void {
+    if (this.ctx && this.ctx.state !== 'closed') {
+      this.ctx.close().catch(() => {});
+    }
+    this.ctx = null;
+    this.masterGain = null;
+    this.masterLimiter = null;
+    this.isUnlocked = false;
   }
 }
 
