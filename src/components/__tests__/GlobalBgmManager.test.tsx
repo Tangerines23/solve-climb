@@ -39,6 +39,16 @@ describe('GlobalBgmManager', () => {
     expect(bgm.play).toHaveBeenCalledWith('shop');
   });
 
+  it('plays chill theme on /roadmap path', () => {
+    render(
+      <MemoryRouter initialEntries={['/roadmap']}>
+        <GlobalBgmManager />
+      </MemoryRouter>
+    );
+
+    expect(bgm.play).toHaveBeenCalledWith('chill');
+  });
+
   it('stops bgm if bgmEnabled is false', () => {
     useSettingsStore.setState({ bgmEnabled: false });
 

@@ -26,6 +26,10 @@ export function Toast({
   const timerRef = useRef<NodeJS.Timeout | null>(null);
   const textRef = useRef<HTMLSpanElement>(null);
   const contentRef = useRef<HTMLDivElement>(null);
+  const onCloseRef = useRef(onClose);
+  useEffect(() => {
+    onCloseRef.current = onClose;
+  }, [onClose]);
 
   useEffect(() => {
     // 타이머 정리
@@ -38,11 +42,11 @@ export function Toast({
       setIsClosing(false);
 
       // 자동 닫기
-      if (autoClose && onClose) {
+      if (autoClose) {
         timerRef.current = setTimeout(() => {
           setIsClosing(true);
           timerRef.current = setTimeout(() => {
-            onClose();
+            onCloseRef.current?.();
             setIsClosing(false);
           }, 300);
         }, autoCloseDelay);
@@ -60,7 +64,7 @@ export function Toast({
         timerRef.current = null;
       }
     };
-  }, [isOpen, message, autoClose, autoCloseDelay, onClose]);
+  }, [isOpen, message, autoClose, autoCloseDelay]);
 
   if (!isOpen || !message) return null;
 

@@ -1,9 +1,16 @@
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { urls } from '@/utils/navigation';
 import { useGameStore } from '@/stores/useGameStore';
 import { useSettingsStore } from '@/stores/useSettingsStore';
-import { sound, bgm, type BgmTheme } from '@/utils/sound';
+import {
+  sound,
+  bgm,
+  type BgmTheme,
+  type BgmVersion,
+  BGM_ARRANGEMENTS_V1,
+  BGM_ARRANGEMENTS_V2,
+} from '@/utils/sound';
 import { AlertModal } from '@/components/AlertModal';
 import { ConfirmModal } from '@/components/ConfirmModal';
 import { CyclePromotionModal } from '@/components/CyclePromotionModal';
@@ -41,8 +48,19 @@ export function NotificationPlayground() {
   const [showCountdown, setShowCountdown] = useState(false);
   const [showSafetyRope, setShowSafetyRope] = useState(false);
   const [activeBgm, setActiveBgm] = useState<BgmTheme | null>(null);
+  const [bgmVersion, setBgmVersion] = useState<BgmVersion>(bgm.getVersion());
+  const [currentStep, setCurrentStep] = useState<number>(0);
 
-  const { soundEnabled, setSoundEnabled } = useSettingsStore();
+  const { soundEnabled, setSoundEnabled, bgmEnabled, setBgmEnabled } = useSettingsStore();
+
+  // BGM 재생 중일 때 실시간 스텝 트래킹
+  useEffect(() => {
+    if (!activeBgm) return;
+    const timer = setInterval(() => {
+      setCurrentStep(bgm.getCurrentStep());
+    }, 60);
+    return () => clearInterval(timer);
+  }, [activeBgm]);
 
   // Store access for GameOverlay effects
   const {
@@ -245,247 +263,521 @@ export function NotificationPlayground() {
               const next = !soundEnabled;
               setSoundEnabled(next);
               if (next) sound.playTap();
-              triggerToast(`효과음 설정: ${next ? 'ON' : 'OFF'}`);
+              triggerToast(`효과음 설정: ${next ? 'ON (켜짐)' : 'OFF (음소거)'}`);
             }}
           >
-            🔊 효과음 마스터 {soundEnabled ? '(ON)' : '(OFF)'}
+            🔊 효과음 마스터 {soundEnabled ? '(ON - 활성화)' : '(OFF - 음소거됨 ⚠️)'}
           </button>
-          <button onClick={() => sound.playKeypad(false)}>⌨️ Keypad: Tap</button>
-          <button onClick={() => sound.playKeypad(true)}>⌫ Keypad: Backspace</button>
-          <button onClick={() => sound.playTap()}>👆 UI: Tap</button>
-          <button onClick={() => sound.playBack()}>🔙 뒤로가기: Back Tap</button>
-          <button onClick={() => sound.playEmptyTap()}>💨 빈 공간: Chalk Tap</button>
-          <button onClick={() => sound.playCorrect()}>✅ 정답: 3-Chime (C-E-G)</button>
-          <button onClick={() => sound.playCombo(3)}>🔥 콤보: 3 Combo</button>
-          <button onClick={() => sound.playCombo(7)}>🔥 콤보: 7 Combo</button>
-          <button onClick={() => sound.playCombo(10)}>🔥 콤보: 10 Combo (High)</button>
-          <button onClick={() => sound.playWrong()}>❌ 오답: Buzzer</button>
-          <button onClick={() => sound.playCountdown(3)}>⏳ 카운트다운: 3, 2, 1</button>
-          <button onClick={() => sound.playCountdown(0)}>🚀 카운트다운: GO! (Chord)</button>
-          <button onClick={() => sound.playFever()}>⚡ 피버 / 모멘텀 (Shimmer)</button>
-          <button onClick={() => sound.playStageClear()}>🏆 스테이지 클리어 (Fanfare)</button>
-          <button onClick={() => sound.playGameOver()}>💀 게임 오버 (Jingle)</button>
-          <button onClick={() => sound.playScoreCount()}>🪙 점수 롤링 (Count-up)</button>
-          <button onClick={() => sound.playRevive()}>💖 부활 (Revive Charge)</button>
-          <button onClick={() => sound.playStaminaWarning()}>💓 스태미나 위기 (Heartbeat)</button>
+          {!soundEnabled && (
+            <div
+              style={{
+                padding: '6px 10px',
+                borderRadius: '6px',
+                backgroundColor: 'rgba(255, 61, 0, 0.15)',
+                border: '1px solid var(--color-error)',
+                color: 'var(--color-error)',
+                fontSize: '12px',
+                fontWeight: 'bold',
+                textAlign: 'center',
+              }}
+            >
+              ⚠️ 현재 효과음이 OFF 상태입니다. 아래 버튼 클릭 시 자동 ON으로 켜집니다.
+            </div>
+          )}
+          {[
+            { label: '⌨️ Keypad: Tap', fn: () => sound.playKeypad(false) },
+            { label: '⌫ Keypad: Backspace', fn: () => sound.playKeypad(true) },
+            { label: '👆 UI: Tap', fn: () => sound.playTap() },
+            { label: '🔙 뒤로가기: Back Tap', fn: () => sound.playBack() },
+            { label: '💨 빈 공간: Chalk Tap', fn: () => sound.playEmptyTap() },
+            { label: '✅ 정답: 3-Chime (C-E-G)', fn: () => sound.playCorrect() },
+            { label: '🔥 콤보: 3 Combo', fn: () => sound.playCombo(3) },
+            { label: '🔥 콤보: 7 Combo', fn: () => sound.playCombo(7) },
+            { label: '🔥 콤보: 10 Combo (High)', fn: () => sound.playCombo(10) },
+            { label: '❌ 오답: Buzzer', fn: () => sound.playWrong() },
+            { label: '⏳ 카운트다운: 3, 2, 1', fn: () => sound.playCountdown(3) },
+            { label: '🚀 카운트다운: GO! (Chord)', fn: () => sound.playCountdown(0) },
+            { label: '⚡ 피버 / 모멘텀 (Shimmer)', fn: () => sound.playFever() },
+            { label: '🏆 스테이지 클리어 (Fanfare)', fn: () => sound.playStageClear() },
+            { label: '💀 게임 오버 (Jingle)', fn: () => sound.playGameOver() },
+            { label: '🪙 점수 롤링 (Count-up)', fn: () => sound.playScoreCount() },
+            { label: '💖 부활 (Revive Charge)', fn: () => sound.playRevive() },
+            { label: '💓 스태미나 위기 (Heartbeat)', fn: () => sound.playStaminaWarning() },
+          ].map((item) => (
+            <button
+              key={item.label}
+              onClick={() => {
+                if (!soundEnabled) {
+                  setSoundEnabled(true);
+                  triggerToast('🔊 효과음이 자동으로 ON으로 켜졌습니다');
+                }
+                item.fn();
+              }}
+            >
+              {item.label}
+            </button>
+          ))}
         </div>
 
         {/* Group 7: Procedural BGM (0Byte 배경음악) */}
         <div className="playground-section">
           <h4>7. Procedural BGM (0Byte) 🎵</h4>
+
+          {/* BGM 마스터 온/오프 버튼 */}
           <button
             style={{
-              backgroundColor:
-                activeBgm === 'brain_age' ? 'rgba(0, 200, 83, 0.3)' : 'var(--color-bg-secondary)',
-              borderColor:
-                activeBgm === 'brain_age' ? 'var(--color-success)' : 'var(--color-border)',
+              backgroundColor: bgmEnabled ? 'rgba(0, 200, 83, 0.2)' : 'rgba(255, 61, 0, 0.2)',
+              borderColor: bgmEnabled ? 'var(--color-success)' : 'var(--color-error)',
               fontWeight: 'bold',
             }}
             onClick={() => {
-              if (activeBgm === 'brain_age') {
+              const next = !bgmEnabled;
+              setBgmEnabled(next);
+              if (!next) {
                 bgm.stop();
                 setActiveBgm(null);
-                triggerToast('BGM 정지');
-              } else {
-                bgm.play('brain_age');
-                setActiveBgm('brain_age');
-                triggerToast('🧠 두뇌 트레이닝 (Brain Age Jazz) 재생 중');
               }
+              triggerToast(`BGM 설정: ${next ? 'ON (켜짐)' : 'OFF (음소거)'}`);
             }}
           >
-            🧠{' '}
-            {activeBgm === 'brain_age'
-              ? '두뇌 트레이닝 (재생 중 ⏸)'
-              : '두뇌 트레이닝 (Brain Age Jazz 104 BPM)'}
+            🎵 BGM 마스터 {bgmEnabled ? '(ON - 활성화)' : '(OFF - 음소거됨 ⚠️)'}
           </button>
-          <button
+          {!bgmEnabled && (
+            <div
+              style={{
+                padding: '6px 10px',
+                borderRadius: '6px',
+                backgroundColor: 'rgba(255, 61, 0, 0.15)',
+                border: '1px solid var(--color-error)',
+                color: 'var(--color-error)',
+                fontSize: '12px',
+                fontWeight: 'bold',
+                textAlign: 'center',
+              }}
+            >
+              ⚠️ 현재 BGM이 OFF 상태입니다. 아래 트랙 클릭 시 자동 ON으로 켜집니다.
+            </div>
+          )}
+
+          {/* 사운드 엔진 버전 비교 스위처 탭 */}
+          <div
             style={{
-              backgroundColor:
-                activeBgm === 'celeste' ? 'rgba(0, 200, 83, 0.3)' : 'var(--color-bg-secondary)',
-              borderColor: activeBgm === 'celeste' ? 'var(--color-success)' : 'var(--color-border)',
-              fontWeight: 'bold',
-            }}
-            onClick={() => {
-              if (activeBgm === 'celeste') {
-                bgm.stop();
-                setActiveBgm(null);
-                triggerToast('BGM 정지');
-              } else {
-                bgm.play('celeste');
-                setActiveBgm('celeste');
-                triggerToast('🧗‍♀️ 셀레스트 등반 (Celeste First Steps) 재생 중');
-              }
+              display: 'flex',
+              gap: '8px',
+              margin: '10px 0 14px 0',
+              padding: '4px',
+              background: 'var(--color-bg-secondary, rgba(0,0,0,0.15))',
+              borderRadius: '8px',
+              border: '1px solid var(--color-border)',
             }}
           >
-            🧗‍♀️{' '}
-            {activeBgm === 'celeste'
-              ? '셀레스트 등반 (재생 중 ⏸)'
-              : "셀레스트 등반 ('First Steps' 118 BPM)"}
-          </button>
-          <button
-            style={{
-              backgroundColor:
-                activeBgm === 'climb' ? 'rgba(0, 200, 83, 0.3)' : 'var(--color-bg-secondary)',
-              borderColor: activeBgm === 'climb' ? 'var(--color-success)' : 'var(--color-border)',
-              fontWeight: 'bold',
-            }}
-            onClick={() => {
-              if (activeBgm === 'climb') {
-                bgm.stop();
-                setActiveBgm(null);
-                triggerToast('BGM 정지');
-              } else {
-                bgm.play('climb');
-                setActiveBgm('climb');
-                triggerToast('🧗‍♂️ 인게임 등반: 클라이머 펄스 (Climber Pulse) 재생 중');
-              }
-            }}
-          >
-            🧗‍♂️{' '}
-            {activeBgm === 'climb'
-              ? '클라이머 펄스 (재생 중 ⏸)'
-              : '클라이머 펄스 (Climber Pulse 112 BPM)'}
-          </button>
-          <button
-            style={{
-              backgroundColor:
-                activeBgm === 'shop' ? 'rgba(0, 200, 83, 0.3)' : 'var(--color-bg-secondary)',
-              borderColor: activeBgm === 'shop' ? 'var(--color-success)' : 'var(--color-border)',
-              fontWeight: 'bold',
-            }}
-            onClick={() => {
-              if (activeBgm === 'shop') {
-                bgm.stop();
-                setActiveBgm(null);
-                triggerToast('BGM 정지');
-              } else {
-                bgm.play('shop');
-                setActiveBgm('shop');
-                triggerToast('🏪 산악 만물상 (Cozy Outfitter Shop) 재생 중');
-              }
-            }}
-          >
-            🏪{' '}
-            {activeBgm === 'shop'
-              ? '산악 만물상 (재생 중 ⏸)'
-              : '산악 만물상 (Cozy Outfitter Shop 100 BPM ⭐)'}
-          </button>
-          <button
-            style={{
-              backgroundColor:
-                activeBgm === 'victory' ? 'rgba(255, 193, 7, 0.3)' : 'var(--color-bg-secondary)',
-              borderColor: activeBgm === 'victory' ? 'var(--color-warning)' : 'var(--color-border)',
-              fontWeight: 'bold',
-            }}
-            onClick={() => {
-              if (activeBgm === 'victory') {
-                bgm.stop();
-                setActiveBgm(null);
-                triggerToast('BGM 정지');
-              } else {
-                bgm.play('victory');
-                setActiveBgm('victory');
-                triggerToast('🏆 정상 정복 & 결과 (Summit Victory) 재생 중');
-              }
-            }}
-          >
-            🏆{' '}
-            {activeBgm === 'victory'
-              ? '정상 정복 결과 (재생 중 ⏸)'
-              : '정상 정복 결과 (Summit Victory 100 BPM ⭐)'}
-          </button>
-          <button
-            style={{
-              backgroundColor:
-                activeBgm === 'crisis' ? 'rgba(255, 61, 0, 0.3)' : 'var(--color-bg-secondary)',
-              borderColor: activeBgm === 'crisis' ? 'var(--color-error)' : 'var(--color-border)',
-              fontWeight: 'bold',
-            }}
-            onClick={() => {
-              if (activeBgm === 'crisis') {
-                bgm.stop();
-                setActiveBgm(null);
-                triggerToast('BGM 정지');
-              } else {
-                bgm.play('crisis');
-                setActiveBgm('crisis');
-                triggerToast('💓 스태미나 위기 (Crisis Heartbeat) 재생 중');
-              }
-            }}
-          >
-            💓{' '}
-            {activeBgm === 'crisis'
-              ? '스태미나 위기 (재생 중 ⏸)'
-              : '스태미나 위기 (Crisis Heartbeat 126 BPM ⭐)'}
-          </button>
-          <button
-            style={{
-              backgroundColor:
-                activeBgm === 'chill' ? 'rgba(0, 200, 83, 0.25)' : 'var(--color-bg-secondary)',
-              borderColor: activeBgm === 'chill' ? 'var(--color-success)' : 'var(--color-border)',
-              fontWeight: activeBgm === 'chill' ? 'bold' : 'normal',
-            }}
-            onClick={() => {
-              if (activeBgm === 'chill') {
-                bgm.stop();
-                setActiveBgm(null);
-                triggerToast('BGM 정지');
-              } else {
-                bgm.play('chill');
-                setActiveBgm('chill');
-                triggerToast('🏔️ 산악 앰비언트 (Chill) 재생 중');
-              }
-            }}
-          >
-            🏔️{' '}
-            {activeBgm === 'chill' ? '산악 앰비언트 (재생 중 ⏸)' : '산악 앰비언트 (Mountain Chill)'}
-          </button>
-          <button
-            style={{
-              backgroundColor:
-                activeBgm === 'arcade' ? 'rgba(0, 200, 83, 0.25)' : 'var(--color-bg-secondary)',
-              borderColor: activeBgm === 'arcade' ? 'var(--color-success)' : 'var(--color-border)',
-              fontWeight: activeBgm === 'arcade' ? 'bold' : 'normal',
-            }}
-            onClick={() => {
-              if (activeBgm === 'arcade') {
-                bgm.stop();
-                setActiveBgm(null);
-                triggerToast('BGM 정지');
-              } else {
-                bgm.play('arcade');
-                setActiveBgm('arcade');
-                triggerToast('👾 레트로 아케이드 (Chiptune) 재생 중');
-              }
-            }}
-          >
-            👾{' '}
-            {activeBgm === 'arcade'
-              ? '레트로 아케이드 (재생 중 ⏸)'
-              : '레트로 아케이드 (Retro Chiptune)'}
-          </button>
-          <button
-            style={{
-              backgroundColor:
-                activeBgm === 'puzzle' ? 'rgba(0, 200, 83, 0.25)' : 'var(--color-bg-secondary)',
-              borderColor: activeBgm === 'puzzle' ? 'var(--color-success)' : 'var(--color-border)',
-              fontWeight: activeBgm === 'puzzle' ? 'bold' : 'normal',
-            }}
-            onClick={() => {
-              if (activeBgm === 'puzzle') {
-                bgm.stop();
-                setActiveBgm(null);
-                triggerToast('BGM 정지');
-              } else {
-                bgm.play('puzzle');
-                setActiveBgm('puzzle');
-                triggerToast('🧩 퀴즈 포커스 (Quiz Brain Focus) 재생 중');
-              }
-            }}
-          >
-            🧩{' '}
-            {activeBgm === 'puzzle' ? '퀴즈 포커스 (재생 중 ⏸)' : '퀴즈 포커스 (Quiz Brain Focus)'}
-          </button>
+            <button
+              style={{
+                flex: 1,
+                padding: '8px 10px',
+                fontSize: '13px',
+                fontWeight: 'bold',
+                borderRadius: '6px',
+                border:
+                  bgmVersion === 'v1' ? '2px solid var(--color-warning)' : '1px solid transparent',
+                backgroundColor: bgmVersion === 'v1' ? 'rgba(255, 193, 7, 0.25)' : 'transparent',
+                color: bgmVersion === 'v1' ? 'var(--color-warning)' : 'var(--color-text-secondary)',
+                cursor: 'pointer',
+                transition: 'all 0.2s ease',
+              }}
+              onClick={() => {
+                setBgmVersion('v1');
+                bgm.setVersion('v1');
+                triggerToast('📻 [원형] 초기 베이스 샘플 (v1 Simple Loop) 모드로 전환');
+              }}
+            >
+              📻 [원형] 베이스 샘플 (v1)
+            </button>
+            <button
+              style={{
+                flex: 1,
+                padding: '8px 10px',
+                fontSize: '13px',
+                fontWeight: 'bold',
+                borderRadius: '6px',
+                border:
+                  bgmVersion === 'v2' ? '2px solid var(--color-success)' : '1px solid transparent',
+                backgroundColor: bgmVersion === 'v2' ? 'rgba(0, 200, 83, 0.25)' : 'transparent',
+                color: bgmVersion === 'v2' ? 'var(--color-success)' : 'var(--color-text-secondary)',
+                cursor: 'pointer',
+                transition: 'all 0.2s ease',
+              }}
+              onClick={() => {
+                setBgmVersion('v2');
+                bgm.setVersion('v2');
+                triggerToast('✨ [완성본] 고품질 마스터링 (v2 Full Master) 모드로 전환');
+              }}
+            >
+              ✨ [완성본] 리마스터 (v2)
+            </button>
+          </div>
+
+          {[
+            {
+              id: 'brain_age' as BgmTheme,
+              num: 1,
+              emoji: '🧠',
+              title: '두뇌 트레이닝',
+              genre: 'Brain Age Jazz',
+              tempo: bgmVersion === 'v1' ? '104 BPM' : '106 BPM',
+            },
+            {
+              id: 'celeste' as BgmTheme,
+              num: 2,
+              emoji: '🧗‍♀️',
+              title: '셀레스트 등반',
+              genre: 'Celeste First Steps',
+              tempo: '118 BPM',
+            },
+            {
+              id: 'climb' as BgmTheme,
+              num: 3,
+              emoji: '⚡',
+              title: '신스웨이브 피버',
+              genre: 'Climber Synthwave',
+              tempo: bgmVersion === 'v1' ? '112 BPM' : '124 BPM',
+            },
+            {
+              id: 'shop' as BgmTheme,
+              num: 4,
+              emoji: '🏪',
+              title: '산악 만물상',
+              genre: 'Cozy Outfitter Bossa',
+              tempo: bgmVersion === 'v1' ? '100 BPM' : '102 BPM',
+            },
+            {
+              id: 'victory' as BgmTheme,
+              num: 5,
+              emoji: '🏆',
+              title: '정상 정복 팡파르',
+              genre: 'Summit Victory',
+              tempo: bgmVersion === 'v1' ? '100 BPM' : '108 BPM',
+              activeColor: 'rgba(255, 193, 7, 0.3)',
+              activeBorder: 'var(--color-warning)',
+            },
+            {
+              id: 'crisis' as BgmTheme,
+              num: 6,
+              emoji: '💓',
+              title: '스태미나 위기',
+              genre: 'Crisis Heartbeat',
+              tempo: bgmVersion === 'v1' ? '126 BPM' : '132 BPM',
+              activeColor: 'rgba(255, 61, 0, 0.3)',
+              activeBorder: 'var(--color-error)',
+            },
+            {
+              id: 'puzzle' as BgmTheme,
+              num: 7,
+              emoji: '🧩',
+              title: '퀴즈 포커스',
+              genre: 'Lo-Fi Study Beats',
+              tempo: bgmVersion === 'v1' ? '92 BPM' : '84 BPM',
+            },
+            {
+              id: 'chill' as BgmTheme,
+              num: 8,
+              emoji: '🏔️',
+              title: '산악 앰비언트 (미완의 산장)',
+              genre: 'Uncharted Lodge Chill',
+              tempo: bgmVersion === 'v1' ? '2.2s Step' : '76 BPM',
+            },
+            {
+              id: 'arcade' as BgmTheme,
+              num: 9,
+              emoji: '👾',
+              title: '레트로 아케이드',
+              genre: '8-Bit NES Chiptune',
+              tempo: bgmVersion === 'v1' ? '110 BPM' : '136 BPM',
+            },
+          ].map((track) => {
+            const isActive = activeBgm === track.id;
+            const versionBadge = bgmVersion === 'v1' ? ' [원형]' : ' [완성본]';
+
+            const arrangement = (bgmVersion === 'v1' ? BGM_ARRANGEMENTS_V1 : BGM_ARRANGEMENTS_V2)[
+              track.id
+            ];
+
+            const currentPart =
+              arrangement?.parts.find(
+                (p) => currentStep >= p.startStep && currentStep <= p.endStep
+              ) || arrangement?.parts[0];
+
+            const progressPct = arrangement
+              ? Math.min(100, Math.max(0, (currentStep / arrangement.totalSteps) * 100))
+              : 0;
+            const currentSec = arrangement
+              ? (currentStep * arrangement.stepDuration).toFixed(1)
+              : '0';
+            const totalSec = arrangement
+              ? (arrangement.totalSteps * arrangement.stepDuration).toFixed(1)
+              : '0';
+
+            return (
+              <div
+                key={track.id}
+                style={{
+                  display: 'flex',
+                  flexDirection: 'column',
+                  gap: '4px',
+                  marginBottom: '8px',
+                }}
+              >
+                <button
+                  style={{
+                    backgroundColor: isActive
+                      ? track.activeColor || 'rgba(0, 200, 83, 0.3)'
+                      : 'var(--color-bg-secondary)',
+                    borderColor: isActive
+                      ? track.activeBorder || 'var(--color-success)'
+                      : 'var(--color-border)',
+                    fontWeight: 'bold',
+                    textAlign: 'left',
+                    padding: '10px 14px',
+                  }}
+                  onClick={() => {
+                    if (isActive) {
+                      bgm.stop();
+                      setActiveBgm(null);
+                      triggerToast('⏹️ BGM 정지');
+                    } else {
+                      if (!bgmEnabled) {
+                        setBgmEnabled(true);
+                      }
+                      bgm.play(track.id);
+                      setActiveBgm(track.id);
+                      triggerToast(
+                        `${track.emoji} ${track.num}. ${track.title} (${track.genre})${versionBadge} 재생 중`
+                      );
+                    }
+                  }}
+                >
+                  {track.emoji}{' '}
+                  {isActive
+                    ? `${track.num}. ${track.title}${versionBadge} (재생 중 ⏸)`
+                    : `${track.num}. ${track.title} (${track.genre} - ${track.tempo})${versionBadge}`}
+                </button>
+
+                {/* 해당 곡 재생 시 버튼 바로 아래로 아코디언처럼 확장되는 실시간 진행바 패널 */}
+                {isActive && arrangement && currentPart && (
+                  <div
+                    style={{
+                      padding: '12px 14px',
+                      borderRadius: '8px',
+                      backgroundColor: 'var(--color-bg-secondary, rgba(0, 0, 0, 0.25))',
+                      border: '1.5px solid var(--color-success)',
+                      boxShadow: '0 4px 14px rgba(0, 200, 83, 0.15)',
+                      marginBottom: '6px',
+                    }}
+                  >
+                    {/* 1. 진행 상태 헤더 */}
+                    <div
+                      style={{
+                        display: 'flex',
+                        justifyContent: 'space-between',
+                        alignItems: 'center',
+                        marginBottom: '8px',
+                      }}
+                    >
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                        <span
+                          style={{
+                            display: 'inline-block',
+                            width: '8px',
+                            height: '8px',
+                            borderRadius: '50%',
+                            backgroundColor: 'var(--color-success)',
+                            boxShadow: '0 0 8px var(--color-success)',
+                          }}
+                        />
+                        <span
+                          style={{
+                            fontWeight: 'bold',
+                            fontSize: '13px',
+                            color: 'var(--color-text-primary)',
+                          }}
+                        >
+                          🎵 {currentPart.name}
+                        </span>
+                      </div>
+                      <span style={{ fontSize: '11px', color: 'var(--color-text-secondary)' }}>
+                        ⏱️ {currentSec}s / {totalSec}s ({currentStep} / {arrangement.totalSteps}{' '}
+                        Step)
+                      </span>
+                    </div>
+
+                    {/* 2. 클릭 가능한 실시간 진행바 */}
+                    <div
+                      style={{
+                        position: 'relative',
+                        height: '14px',
+                        borderRadius: '7px',
+                        backgroundColor: 'rgba(255, 255, 255, 0.12)',
+                        cursor: 'pointer',
+                        overflow: 'hidden',
+                      }}
+                      title="클릭하여 원하는 위치로 즉시 이동"
+                      onClick={(e) => {
+                        const rect = e.currentTarget.getBoundingClientRect();
+                        const ratio = Math.max(
+                          0,
+                          Math.min(1, (e.clientX - rect.left) / rect.width)
+                        );
+                        const target = Math.floor(ratio * arrangement.totalSteps);
+                        bgm.seekToStep(target);
+                        setCurrentStep(target);
+                      }}
+                    >
+                      <div
+                        style={{
+                          width: `${progressPct}%`,
+                          height: '100%',
+                          backgroundColor: 'var(--color-success)',
+                          borderRadius: '7px',
+                          transition: 'width 0.08s linear',
+                        }}
+                      />
+                      {[25, 50, 75].map((pct) => (
+                        <div
+                          key={pct}
+                          style={{
+                            position: 'absolute',
+                            top: 0,
+                            bottom: 0,
+                            left: `${pct}%`,
+                            width: '2px',
+                            backgroundColor: 'rgba(0, 0, 0, 0.5)',
+                            pointerEvents: 'none',
+                          }}
+                        />
+                      ))}
+                    </div>
+
+                    {/* 3. [1][2][3][4] 파트별 바로가기 점프 버튼 */}
+                    <div
+                      style={{
+                        display: 'grid',
+                        gridTemplateColumns: 'repeat(4, 1fr)',
+                        gap: '6px',
+                        marginTop: '10px',
+                      }}
+                    >
+                      {arrangement.parts.map((part) => {
+                        const isSelected = currentPart.partNum === part.partNum;
+                        const partBadge =
+                          part.partNum === 1
+                            ? '기초'
+                            : part.partNum === 2
+                              ? '드럼'
+                              : part.partNum === 3
+                                ? '리드'
+                                : '클라이맥스';
+
+                        return (
+                          <button
+                            key={part.partNum}
+                            style={{
+                              padding: '8px 4px',
+                              borderRadius: '6px',
+                              border: isSelected
+                                ? '2px solid var(--color-success)'
+                                : '1px solid var(--color-border)',
+                              backgroundColor: isSelected
+                                ? 'rgba(0, 200, 83, 0.25)'
+                                : 'var(--color-bg-primary, rgba(255,255,255,0.05))',
+                              fontWeight: 'bold',
+                              cursor: 'pointer',
+                              textAlign: 'center',
+                              transition: 'all 0.15s ease',
+                            }}
+                            onClick={() => {
+                              bgm.jumpToPart(part.partNum);
+                              setCurrentStep(part.startStep);
+                              triggerToast(
+                                `⏩ [Part ${part.partNum}] ${part.name} 구간으로 즉시 이동`
+                              );
+                            }}
+                          >
+                            <div
+                              style={{
+                                fontSize: '12px',
+                                color: isSelected ? 'var(--color-success)' : 'inherit',
+                              }}
+                            >
+                              [{part.partNum}] {partBadge}
+                            </div>
+                            <div
+                              style={{
+                                fontSize: '9px',
+                                color: 'var(--color-text-secondary)',
+                                marginTop: '2px',
+                              }}
+                            >
+                              {part.startStep}~{part.endStep}
+                            </div>
+                          </button>
+                        );
+                      })}
+                    </div>
+
+                    {/* 4. 활성 악기 목록 태그 & 설명 */}
+                    <div
+                      style={{
+                        marginTop: '10px',
+                        padding: '8px 10px',
+                        borderRadius: '6px',
+                        backgroundColor: 'var(--color-bg-primary, rgba(0,0,0,0.2))',
+                        fontSize: '11px',
+                      }}
+                    >
+                      <div
+                        style={{
+                          fontWeight: 'bold',
+                          color: 'var(--color-text-primary)',
+                          marginBottom: '4px',
+                        }}
+                      >
+                        🎼 현재 추가된 악기 ({currentPart.instruments.length}개):
+                      </div>
+                      <div
+                        style={{
+                          display: 'flex',
+                          flexWrap: 'wrap',
+                          gap: '4px',
+                          marginBottom: '6px',
+                        }}
+                      >
+                        {currentPart.instruments.map((inst) => (
+                          <span
+                            key={inst}
+                            style={{
+                              padding: '2px 6px',
+                              borderRadius: '4px',
+                              backgroundColor: 'rgba(0, 200, 83, 0.15)',
+                              border: '1px solid rgba(0, 200, 83, 0.3)',
+                              color: 'var(--color-success)',
+                              fontSize: '10px',
+                              fontWeight: 'bold',
+                            }}
+                          >
+                            {inst}
+                          </span>
+                        ))}
+                      </div>
+                      <div style={{ fontSize: '10px', color: 'var(--color-text-secondary)' }}>
+                        💬 {currentPart.description}
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </div>
+            );
+          })}
+
           <button
             style={{
               backgroundColor: 'rgba(255, 61, 0, 0.15)',

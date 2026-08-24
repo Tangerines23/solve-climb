@@ -13,6 +13,7 @@ import { MyPageProfile } from '../components/MyPageProfile';
 import { MyPageStats } from '../components/MyPageStats';
 import { MyPageQuickAccess } from '../components/MyPageQuickAccess';
 import { MyPageSettings } from '../components/MyPageSettings';
+import { SoundTrackPlayerModal } from '../components/SoundTrackPlayerModal';
 import { useProfileStore } from '@/stores/useProfileStore';
 import { useSettingsStore } from '@/stores/useSettingsStore';
 import { useMyPageStats } from '../hooks/useMyPageStats';
@@ -107,6 +108,8 @@ export function MyPage() {
   const [tierStars, setTierStars] = useState(0);
   const [showWithdrawConfirm, setShowWithdrawConfirm] = useState(false);
   const [isWithdrawing, setIsWithdrawing] = useState(false);
+  const [showSoundPlayer, setShowSoundPlayer] = useState(false);
+  const [soundPlayerTab, setSoundPlayerTab] = useState<'bgm' | 'sfx'>('bgm');
 
   const routerLocation = useLocation();
   const locationState = routerLocation.state as { from?: { pathname: string } } | null;
@@ -593,6 +596,10 @@ export function MyPage() {
             onToggleBgm={handleToggleBgm}
             onToggleHaptic={handleToggleHaptic}
             onToggleAnimation={handleToggleAnimation}
+            onOpenSoundPlayer={(tab) => {
+              setSoundPlayerTab(tab);
+              setShowSoundPlayer(true);
+            }}
             onShowProfileForm={() => setShowProfileForm(true)}
             onDataReset={handleDataReset}
             isResetting={isResetting}
@@ -619,6 +626,11 @@ export function MyPage() {
         </div>
       </main>
       <FooterNav />
+      <SoundTrackPlayerModal
+        isOpen={showSoundPlayer}
+        onClose={() => setShowSoundPlayer(false)}
+        initialTab={soundPlayerTab}
+      />
       <DataResetConfirmModal
         isOpen={showDataResetConfirm}
         onConfirm={handleConfirmDataReset}

@@ -73,6 +73,16 @@ describe('BgmEngine (bgmEngine.ts)', () => {
       disconnect: vi.fn(),
     };
 
+    const mockCompressor = {
+      threshold: { setValueAtTime: vi.fn() },
+      knee: { setValueAtTime: vi.fn() },
+      ratio: { setValueAtTime: vi.fn() },
+      attack: { setValueAtTime: vi.fn() },
+      release: { setValueAtTime: vi.fn() },
+      connect: vi.fn(),
+      disconnect: vi.fn(),
+    };
+
     mockAudioContext = {
       currentTime: 10,
       sampleRate: 44100,
@@ -80,6 +90,7 @@ describe('BgmEngine (bgmEngine.ts)', () => {
       createOscillator: vi.fn(() => ({ ...mockOscillatorNode })),
       createGain: vi.fn(() => ({ ...mockGainNode })),
       createBiquadFilter: vi.fn(() => ({ ...mockFilterNode })),
+      createDynamicsCompressor: vi.fn(() => ({ ...mockCompressor })),
       createBuffer: vi.fn(() => ({
         getChannelData: vi.fn(() => new Float32Array(100)),
         sampleRate: 44100,
