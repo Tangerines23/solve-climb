@@ -73,7 +73,12 @@ export default defineConfig(({ mode }) => {
         }),
       // PWA support
       VitePWA({
-        registerType: 'prompt',
+        registerType: 'autoUpdate',
+        workbox: {
+          cleanupOutdatedCaches: true,
+          navigateFallback: 'index.html',
+          navigateFallbackDenylist: [/^\/version\.json/],
+        },
         manifest: {
           name: 'Solve Climb',
           short_name: 'Climb',

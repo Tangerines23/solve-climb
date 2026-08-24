@@ -104,6 +104,5 @@ jobs:
           packageName: com.solveclimb.app
           releaseFiles: android/app/build/outputs/bundle/release/app-release.aab
           track: ${{ inputs.track || 'production' }}
-          changesNotSentForReview: true
           whatsNewDirectory: android/app/src/main/play/release-notes
 
