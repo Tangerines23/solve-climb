@@ -21,6 +21,7 @@ export class BgmEngine {
   private isRunning: boolean = false;
   private masterGain: GainNode | null = null;
   private masterFilter: BiquadFilterNode | null = null;
+  private masterCompressor: DynamicsCompressorNode | null = null;
   private reverbNode: ConvolverNode | null = null;
   private reverbGain: GainNode | null = null;
   private noiseBuffer: AudioBuffer | null = null;
@@ -28,7 +29,7 @@ export class BgmEngine {
   private schedulerTimer: number | null = null;
   private nextStepTime: number = 0;
   private currentStep: number = 0;
-  private volume: number = 0.35;
+  private volume: number = 0.48; // 모바일 스피커 음압 보정을 위해 기본 0.48로 최적화
   private activeNodes: { osc?: OscillatorNode; source?: AudioBufferSourceNode; gain: GainNode }[] =
     [];
 
@@ -115,7 +116,7 @@ export class BgmEngine {
   }
 
   /**
-   * BGM 전용 게인, 마스터 로우패스 필터, 알고리즈믹 룸 리버브 노드 초기화
+   * BGM 전용 게인, 마스터 로우패스 필터, 마스터 컴프레서, 알고리즈믹 룸 리버브 노드 초기화
    */
   private getGraph(): { ctx: AudioContext; destination: AudioNode; reverbSend: AudioNode } | null {
     const ctx = audioContextManager.getContext();
@@ -126,20 +127,39 @@ export class BgmEngine {
       this.masterFilter.type = 'lowpass';
       this.masterFilter.frequency.value = this.isMuffled ? 500 : 20000;
 
+      // 🎧 마스터 다이내믹스 컴프레서 (스마트폰 스피커 음압 & 선명도 마스터링)
+      if (typeof ctx.createDynamicsCompressor === 'function') {
+        try {
+          this.masterCompressor = ctx.createDynamicsCompressor();
+          this.masterCompressor.threshold.setValueAtTime(-22, ctx.currentTime);
+          this.masterCompressor.knee.setValueAtTime(12, ctx.currentTime);
+          this.masterCompressor.ratio.setValueAtTime(3.5, ctx.currentTime);
+          this.masterCompressor.attack.setValueAtTime(0.003, ctx.currentTime);
+          this.masterCompressor.release.setValueAtTime(0.25, ctx.currentTime);
+        } catch {
+          this.masterCompressor = null;
+        }
+      }
+
       this.masterGain = ctx.createGain();
       this.masterGain.gain.value = this.volume;
 
-      // 1. 알고리즈믹 룸/홀 리버브 합성 버퍼 생성
+      // 알고리즈믹 룸/홀 리버브 합성 버퍼 생성
       this.reverbNode = this.createSyntheticReverb(ctx);
       this.reverbGain = ctx.createGain();
-      this.reverbGain.gain.value = 0.28; // 어쿠스틱 잔향 게인
+      this.reverbGain.gain.value = 0.26; // 어쿠스틱 잔향 게인
+
+      const postMasterNode: AudioNode = this.masterCompressor || this.masterGain;
 
       if (this.reverbNode) {
         this.reverbNode.connect(this.reverbGain);
-        this.reverbGain.connect(this.masterGain);
+        this.reverbGain.connect(postMasterNode);
       }
 
-      this.masterFilter.connect(this.masterGain);
+      this.masterFilter.connect(postMasterNode);
+      if (this.masterCompressor) {
+        this.masterCompressor.connect(this.masterGain);
+      }
       this.masterGain.connect(ctx.destination);
     }
 
@@ -233,7 +253,7 @@ export class BgmEngine {
     this.currentStep = 0;
     this.nextStepTime = Math.max(graph.ctx.currentTime, 0) + 0.05;
 
-    const targetGain = this.isMuffled ? this.volume * 0.6 : this.volume;
+    const targetGain = this.isMuffled ? this.volume * 0.55 : this.volume;
     if (this.masterGain) {
       const now = graph.ctx.currentTime;
       this.masterGain.gain.cancelScheduledValues(now);
@@ -326,7 +346,7 @@ export class BgmEngine {
     this.masterFilter.frequency.exponentialRampToValueAtTime(targetFreq, now + duration);
 
     if (this.masterGain) {
-      const targetGain = muffled ? this.volume * 0.6 : this.volume;
+      const targetGain = muffled ? this.volume * 0.55 : this.volume;
       this.masterGain.gain.cancelScheduledValues(now);
       this.masterGain.gain.setValueAtTime(this.masterGain.gain.value, now);
       this.masterGain.gain.linearRampToValueAtTime(targetGain, now + duration);

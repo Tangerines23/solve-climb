@@ -1,5 +1,5 @@
 project: solve-climb
-generatedAt: '2026-08-23T21:29:06.111Z'
+generatedAt: '2026-08-24T07:20:42.241Z'
 files:
   src/App.tsx:
     imports:
@@ -4265,11 +4265,18 @@ files:
             calls:
               - audioContextManager.getContext
               - ctx.createBiquadFilter
+              - ctx.createDynamicsCompressor
+              - this.masterCompressor.threshold.setValueAtTime
+              - this.masterCompressor.knee.setValueAtTime
+              - this.masterCompressor.ratio.setValueAtTime
+              - this.masterCompressor.attack.setValueAtTime
+              - this.masterCompressor.release.setValueAtTime
               - ctx.createGain
               - this.createSyntheticReverb
               - this.reverbNode.connect
               - this.reverbGain.connect
               - this.masterFilter.connect
+              - this.masterCompressor.connect
               - this.masterGain.connect
           - name: createSyntheticReverb
             params:
