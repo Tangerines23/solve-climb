@@ -16,6 +16,7 @@ interface MyPageSettingsProps {
   onToggleBgm: () => void;
   onToggleHaptic: () => void;
   onToggleAnimation: () => void;
+  onOpenSoundPlayer?: (tab: 'bgm' | 'sfx') => void;
   onShowProfileForm: () => void;
   onDataReset: () => void;
   isResetting: boolean;
@@ -44,6 +45,7 @@ export function MyPageSettings({
   onToggleBgm,
   onToggleHaptic,
   onToggleAnimation,
+  onOpenSoundPlayer,
   onShowProfileForm,
   onDataReset,
   isResetting,
@@ -164,7 +166,13 @@ export function MyPageSettings({
           </button>
           <div
             className="my-page-settings-item my-page-settings-item-clickable"
-            onClick={onToggleSound}
+            onClick={() => {
+              if (onOpenSoundPlayer) {
+                onOpenSoundPlayer('sfx');
+              } else {
+                onToggleSound();
+              }
+            }}
             data-vg-ignore="true"
             role="button"
             aria-pressed={soundEnabled}
@@ -172,29 +180,63 @@ export function MyPageSettings({
             onKeyDown={(e) => {
               if (e.key === 'Enter' || e.key === ' ') {
                 e.preventDefault();
-                onToggleSound();
+                if (onOpenSoundPlayer) {
+                  onOpenSoundPlayer('sfx');
+                } else {
+                  onToggleSound();
+                }
               }
             }}
           >
             <div className="my-page-settings-item-content">
               <span className="my-page-settings-item-label">효과음</span>
             </div>
-            <div className="my-page-settings-toggle-wrapper">
-              <div className="my-page-settings-toggle">
-                <input
-                  type="checkbox"
-                  checked={soundEnabled}
-                  readOnly
-                  aria-label="효과음 설정 제어"
-                  tabIndex={-1}
-                />
-                <span className="my-page-settings-toggle-slider"></span>
+            <div className="my-page-settings-item-actions">
+              <div
+                className="my-page-settings-toggle-wrapper"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onToggleSound();
+                }}
+              >
+                <div className="my-page-settings-toggle">
+                  <input
+                    type="checkbox"
+                    checked={soundEnabled}
+                    readOnly
+                    aria-label="효과음 설정 제어"
+                    tabIndex={-1}
+                  />
+                  <span className="my-page-settings-toggle-slider"></span>
+                </div>
               </div>
+              <svg
+                className="my-page-settings-item-arrow"
+                width="20"
+                height="20"
+                viewBox="0 0 20 20"
+                fill="none"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <path
+                  d="M7.5 15L12.5 10L7.5 5"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                />
+              </svg>
             </div>
           </div>
           <div
             className="my-page-settings-item my-page-settings-item-clickable"
-            onClick={onToggleBgm}
+            onClick={() => {
+              if (onOpenSoundPlayer) {
+                onOpenSoundPlayer('bgm');
+              } else {
+                onToggleBgm();
+              }
+            }}
             data-vg-ignore="true"
             role="button"
             aria-pressed={bgmEnabled}
@@ -202,24 +244,52 @@ export function MyPageSettings({
             onKeyDown={(e) => {
               if (e.key === 'Enter' || e.key === ' ') {
                 e.preventDefault();
-                onToggleBgm();
+                if (onOpenSoundPlayer) {
+                  onOpenSoundPlayer('bgm');
+                } else {
+                  onToggleBgm();
+                }
               }
             }}
           >
             <div className="my-page-settings-item-content">
               <span className="my-page-settings-item-label">배경음악 (BGM)</span>
             </div>
-            <div className="my-page-settings-toggle-wrapper">
-              <div className="my-page-settings-toggle">
-                <input
-                  type="checkbox"
-                  checked={bgmEnabled}
-                  readOnly
-                  aria-label="배경음악 설정 제어"
-                  tabIndex={-1}
-                />
-                <span className="my-page-settings-toggle-slider"></span>
+            <div className="my-page-settings-item-actions">
+              <div
+                className="my-page-settings-toggle-wrapper"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onToggleBgm();
+                }}
+              >
+                <div className="my-page-settings-toggle">
+                  <input
+                    type="checkbox"
+                    checked={bgmEnabled}
+                    readOnly
+                    aria-label="배경음악 설정 제어"
+                    tabIndex={-1}
+                  />
+                  <span className="my-page-settings-toggle-slider"></span>
+                </div>
               </div>
+              <svg
+                className="my-page-settings-item-arrow"
+                width="20"
+                height="20"
+                viewBox="0 0 20 20"
+                fill="none"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <path
+                  d="M7.5 15L12.5 10L7.5 5"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                />
+              </svg>
             </div>
           </div>
           <div

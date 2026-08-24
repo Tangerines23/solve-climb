@@ -5,6 +5,7 @@ import { useSettingsStore } from '@/stores/useSettingsStore';
 class AudioContextManager {
   private ctx: AudioContext | null = null;
   private masterGain: GainNode | null = null;
+  private masterLimiter: DynamicsCompressorNode | null = null;
   private isUnlocked: boolean = false;
 
   constructor() {
@@ -18,29 +19,24 @@ class AudioContextManager {
     if (typeof window === 'undefined') return;
 
     const unlock = () => {
-      if (!this.isUnlocked) {
-        const ctx = this.getContext();
-        if (ctx && ctx.state === 'suspended') {
-          ctx
-            .resume()
-            .then(() => {
-              this.isUnlocked = true;
-            })
-            .catch(() => {});
-        } else if (ctx && ctx.state === 'running') {
-          this.isUnlocked = true;
-        }
+      const ctx = this.getContext();
+      if (!this.isUnlocked && ctx && ctx.state === 'suspended') {
+        ctx
+          .resume()
+          .then(() => {
+            this.isUnlocked = true;
+          })
+          .catch(() => {});
+      } else if (ctx && ctx.state === 'running') {
+        this.isUnlocked = true;
       }
-      window.removeEventListener('touchstart', unlock);
-      window.removeEventListener('touchend', unlock);
-      window.removeEventListener('click', unlock);
-      window.removeEventListener('keydown', unlock);
     };
 
-    window.addEventListener('touchstart', unlock, { passive: true });
-    window.addEventListener('touchend', unlock, { passive: true });
-    window.addEventListener('click', unlock, { passive: true });
-    window.addEventListener('keydown', unlock, { passive: true });
+    // 사용자의 모든 제스처(터치, 클릭, 키입력)에 대해 상시 안전 언락
+    window.addEventListener('touchstart', unlock, { passive: true, capture: true });
+    window.addEventListener('touchend', unlock, { passive: true, capture: true });
+    window.addEventListener('click', unlock, { passive: true, capture: true });
+    window.addEventListener('keydown', unlock, { passive: true, capture: true });
   }
 
   /**
@@ -57,7 +53,26 @@ class AudioContextManager {
         this.ctx = new AudioCtx();
         this.masterGain = this.ctx.createGain();
         this.masterGain.gain.value = 1.0;
-        this.masterGain.connect(this.ctx.destination);
+
+        // 🛡️ 최종 출력단 마스터 브릭월 리미터 (True-Peak Limiter)
+        // BGM + 효과음 다중 중첩 및 고속 연타 시에도 0dBFS 초과를 원천 방어하여 스피커 찢어짐(Clipping) 방지
+        if (typeof this.ctx.createDynamicsCompressor === 'function') {
+          try {
+            this.masterLimiter = this.ctx.createDynamicsCompressor();
+            this.masterLimiter.threshold.setValueAtTime(-1.0, this.ctx.currentTime); // -1.0 dBFS 천장 설정
+            this.masterLimiter.knee.setValueAtTime(0, this.ctx.currentTime); // Hard Knee
+            this.masterLimiter.ratio.setValueAtTime(20, this.ctx.currentTime); // 20:1 Peak Limiting
+            this.masterLimiter.attack.setValueAtTime(0.001, this.ctx.currentTime); // 1ms 초고속 반응
+            this.masterLimiter.release.setValueAtTime(0.1, this.ctx.currentTime); // 100ms 빠른 회복
+
+            this.masterGain.connect(this.masterLimiter);
+            this.masterLimiter.connect(this.ctx.destination);
+          } catch {
+            this.masterGain.connect(this.ctx.destination);
+          }
+        } else {
+          this.masterGain.connect(this.ctx.destination);
+        }
       }
     }
 
@@ -66,6 +81,15 @@ class AudioContextManager {
     }
 
     return this.ctx;
+  }
+
+  /**
+   * AudioContext 실행 상태 보장
+   */
+  ensureRunning(): void {
+    if (this.ctx && this.ctx.state === 'suspended') {
+      this.ctx.resume().catch(() => {});
+    }
   }
 
   /**
@@ -79,15 +103,44 @@ class AudioContextManager {
   }
 
   /**
-   * 전역 효과음 활성화 여부 확인
+   * 전역 효과음(SFX) 활성화 여부 확인
    */
   isEnabled(): boolean {
+    return this.isSoundEnabled();
+  }
+
+  isSoundEnabled(): boolean {
     if (typeof window === 'undefined') return false;
     try {
       return useSettingsStore.getState().soundEnabled ?? true;
     } catch {
       return true;
     }
+  }
+
+  /**
+   * 전역 BGM 활성화 여부 확인
+   */
+  isBgmEnabled(): boolean {
+    if (typeof window === 'undefined') return false;
+    try {
+      return useSettingsStore.getState().bgmEnabled ?? true;
+    } catch {
+      return true;
+    }
+  }
+
+  /**
+   * 테스트 및 초기화용 리셋
+   */
+  reset(): void {
+    if (this.ctx && this.ctx.state !== 'closed') {
+      this.ctx.close().catch(() => {});
+    }
+    this.ctx = null;
+    this.masterGain = null;
+    this.masterLimiter = null;
+    this.isUnlocked = false;
   }
 }
 

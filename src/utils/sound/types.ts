@@ -2,6 +2,9 @@
 
 export type WaveformType = 'sine' | 'square' | 'sawtooth' | 'triangle';
 
+export type BgmTheme =
+  'brain_age' | 'celeste' | 'climb' | 'shop' | 'victory' | 'crisis' | 'puzzle' | 'chill' | 'arcade';
+
 export interface EnvelopeOptions {
   attack?: number; // 초 단위 (기본값: 0.01)
   decay?: number; // 초 단위 (기본값: 0.05)

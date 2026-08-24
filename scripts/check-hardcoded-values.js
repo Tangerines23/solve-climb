@@ -34,6 +34,8 @@ const ALLOWED_PATTERNS = [
   /GeometryTipVisualizer/, // 기하학 그래픽 시각화 파일
   /ShapeVisualizer/, // 기하학 도형 시각화 파일
   /ManimLevel/, // 3B1B 기하학 도형 시각화 컴포넌트
+  /NotificationPlayground/, // 디버그 사운드/알림 실험실 컴포넌트
+  /features\/debug/, // 디버그 컴포넌트 전체
 ];
 
 // 검사할 파일 확장자

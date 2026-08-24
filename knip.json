@@ -8,7 +8,9 @@
     "src/types/**",
     "src/hooks/useRoadmapLayout.ts",
     "src/components/roadmap/LinearLandmarkItem.tsx",
-    "src/components/roadmap/NonLinearTierItem.tsx"
+    "src/components/roadmap/NonLinearTierItem.tsx",
+    "src/features/mypage/components/HistoryTab.tsx",
+    "src/hooks/useGrowthJournal.ts"
   ],
   "ignoreExportsUsedInFile": true,
   "rules": {

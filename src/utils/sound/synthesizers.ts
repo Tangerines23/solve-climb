@@ -11,6 +11,16 @@ const SCHEDULE_LOOKAHEAD = 0.005;
  * 1. 단일 주파수 톤(Tone) 재생
  */
 export function playTone(ctx: AudioContext, destination: AudioNode, options: ToneOptions): void {
+  if (ctx.state === 'suspended') {
+    ctx
+      .resume()
+      .then(() => {
+        playTone(ctx, destination, options);
+      })
+      .catch(() => {});
+    return;
+  }
+
   const now = ctx.currentTime + SCHEDULE_LOOKAHEAD + (options.startTimeOffset ?? 0);
   const osc = ctx.createOscillator();
   const gain = ctx.createGain();
@@ -41,6 +51,16 @@ export function playTone(ctx: AudioContext, destination: AudioNode, options: Ton
  * 2. 주파수 스윕(Sweep / Pitch Bend) 재생
  */
 export function playSweep(ctx: AudioContext, destination: AudioNode, options: SweepOptions): void {
+  if (ctx.state === 'suspended') {
+    ctx
+      .resume()
+      .then(() => {
+        playSweep(ctx, destination, options);
+      })
+      .catch(() => {});
+    return;
+  }
+
   const now = ctx.currentTime + SCHEDULE_LOOKAHEAD + (options.startTimeOffset ?? 0);
   const osc = ctx.createOscillator();
   const gain = ctx.createGain();
@@ -78,6 +98,16 @@ export function playSweep(ctx: AudioContext, destination: AudioNode, options: Sw
  * 3. 화음 및 아르페지오(Chord / Arpeggio) 재생
  */
 export function playChord(ctx: AudioContext, destination: AudioNode, options: ChordOptions): void {
+  if (ctx.state === 'suspended') {
+    ctx
+      .resume()
+      .then(() => {
+        playChord(ctx, destination, options);
+      })
+      .catch(() => {});
+    return;
+  }
+
   const now = ctx.currentTime + SCHEDULE_LOOKAHEAD;
   const type = options.type ?? 'triangle';
   const defaultDuration = options.defaultDuration ?? 0.35;
@@ -117,6 +147,16 @@ export function playFilteredTone(
   destination: AudioNode,
   options: FilteredToneOptions
 ): void {
+  if (ctx.state === 'suspended') {
+    ctx
+      .resume()
+      .then(() => {
+        playFilteredTone(ctx, destination, options);
+      })
+      .catch(() => {});
+    return;
+  }
+
   const now = ctx.currentTime + SCHEDULE_LOOKAHEAD + (options.startTimeOffset ?? 0);
   const osc = ctx.createOscillator();
   const gain = ctx.createGain();
@@ -159,6 +199,16 @@ export function playMultiPulse(
   destination: AudioNode,
   beats: PulseBeat[]
 ): void {
+  if (ctx.state === 'suspended') {
+    ctx
+      .resume()
+      .then(() => {
+        playMultiPulse(ctx, destination, beats);
+      })
+      .catch(() => {});
+    return;
+  }
+
   const now = ctx.currentTime + SCHEDULE_LOOKAHEAD;
 
   beats.forEach(({ offset, startFreq, endFreq, punchFreq, dur, vol }) => {

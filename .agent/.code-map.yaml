@@ -1,5 +1,5 @@
 project: solve-climb
-generatedAt: '2026-08-19T10:18:39.066Z'
+generatedAt: '2026-08-24T09:25:45.220Z'
 files:
   src/App.tsx:
     imports:
@@ -1104,7 +1104,7 @@ files:
           - clearTimeout
           - setIsClosing
           - setTimeout
-          - onClose
+          - onCloseRef.current
           - createPortal
   src/components/TopicHeader.tsx:
     imports:
@@ -2190,8 +2190,6 @@ files:
       - ./RoadmapPage.css
       - ../components/Header
       - ../components/FooterNav
-      - ../features/mypage/components/HistoryTab
-      - ../features/mypage/pages/MyPage.css
     exports:
       - name: RoadmapPage
         returns: React.JSX.Element
@@ -4223,23 +4221,63 @@ files:
   src/utils/sound/bgmEngine.ts:
     imports:
       - ./audioContext
+      - ./types
+      - ./tracks
     exports:
       - name: bgm
         kind: const
       - name: BgmEngine
         type: class
         methods:
+          - name: setVersion
+            params:
+              version: import("C:/Users/ghkdd/gemini-projects/solve-climb/src/utils/sound/tracks/types").BgmVersion
+            calls:
+              - this.play
+          - name: getVersion
+            returns: import("C:/Users/ghkdd/gemini-projects/solve-climb/src/utils/sound/tracks/types").BgmVersion
+          - name: getCurrentStep
+            returns: number
+          - name: getTotalSteps
+            returns: number
+          - name: seekToStep
+            params:
+              targetStep: number
+            calls:
+              - this.getGraph
+              - this.getTotalSteps
+              - Math.max
+              - Math.min
+              - this.activeNodes.forEach
+              - osc.stop
+              - osc.disconnect
+              - source.stop
+              - source.disconnect
+              - gain.disconnect
+          - name: jumpToPart
+            params:
+              partNum: number
+            calls:
+              - arrangement.parts.find
+              - this.seekToStep
           - name: getGraph
             returns: '{ ctx: AudioContext; destination: AudioNode; reverbSend: AudioNode; } | null'
             calls:
-              - audioContextManager.isEnabled
               - audioContextManager.getContext
               - ctx.createBiquadFilter
+              - ctx.createDynamicsCompressor
+              - this.masterCompressor.threshold.setValueAtTime
+              - this.masterCompressor.knee.setValueAtTime
+              - this.masterCompressor.ratio.setValueAtTime
+              - this.masterCompressor.attack.setValueAtTime
+              - this.masterCompressor.release.setValueAtTime
               - ctx.createGain
               - this.createSyntheticReverb
               - this.reverbNode.connect
               - this.reverbGain.connect
               - this.masterFilter.connect
+              - this.masterCompressor.connect
+              - audioContextManager.getMasterGain
               - this.masterGain.connect
           - name: createSyntheticReverb
             params:
@@ -4271,12 +4309,14 @@ files:
               - Math.min
           - name: play
             params:
-              theme: import("C:/Users/ghkdd/gemini-projects/solve-climb/src/utils/sound/bgmEngine").BgmTheme
+              theme: import("C:/Users/ghkdd/gemini-projects/solve-climb/src/utils/sound/types").BgmTheme
               muffled: boolean
             calls:
+              - audioContextManager.ensureRunning
               - this.getGraph
               - this.setMuffled
               - this.stop
+              - Math.max
               - this.masterGain.gain.cancelScheduledValues
               - this.masterGain.gain.setValueAtTime
               - this.masterGain.gain.linearRampToValueAtTime
@@ -4325,7 +4365,7 @@ files:
           - name: getVolume
             returns: number
           - name: getCurrentTheme
-            returns: import("C:/Users/ghkdd/gemini-projects/solve-climb/src/utils/sound/bgmEngine").BgmTheme | null
+            returns: import("C:/Users/ghkdd/gemini-projects/solve-climb/src/utils/sound/types").BgmTheme | null
           - name: isPlaying
             returns: boolean
           - name: startScheduler
@@ -4336,742 +4376,11 @@ files:
           - name: scheduleLoop
             calls:
               - this.getGraph
-              - this.scheduleBrainAgeStep
-              - this.scheduleCelesteStep
-              - this.scheduleClimbStep
-              - this.scheduleShopStep
-              - this.scheduleVictoryStep
-              - this.scheduleCrisisStep
-              - this.scheduleChillStep
-              - this.scheduleArcadeStep
-              - this.schedulePuzzleStep
-          - name: scheduleBrainAgeStep
-            params:
-              ctx: AudioContext
-              destination: AudioNode
-              reverbSend: AudioNode
-              time: number
-              step: number
-            calls:
-              - Math.floor
-              - safeGet
-              - ctx.createOscillator
-              - ctx.createGain
-              - ctx.createBiquadFilter
-              - bOsc.frequency.setValueAtTime
-              - bFilter.frequency.setValueAtTime
-              - bFilter.frequency.exponentialRampToValueAtTime
-              - bGain.gain.setValueAtTime
-              - bGain.gain.linearRampToValueAtTime
-              - bGain.gain.exponentialRampToValueAtTime
-              - bOsc.connect
-              - bFilter.connect
-              - bGain.connect
-              - bOsc.start
-              - bOsc.stop
+              - track.schedulePrototypeStep
               - this.trackActiveNode
-              - subOsc.frequency.setValueAtTime
-              - subGain.gain.setValueAtTime
-              - subGain.gain.linearRampToValueAtTime
-              - subGain.gain.exponentialRampToValueAtTime
-              - subOsc.connect
-              - subGain.connect
-              - subOsc.start
-              - subOsc.stop
+              - track.scheduleStep
               - this.createPanner
-              - chordNotes.forEach
-              - pOsc.frequency.setValueAtTime
-              - pFilter.frequency.setValueAtTime
-              - pFilter.frequency.linearRampToValueAtTime
-              - pGain.gain.setValueAtTime
-              - pGain.gain.linearRampToValueAtTime
-              - pGain.gain.exponentialRampToValueAtTime
-              - pOsc.connect
-              - pFilter.connect
-              - pGain.connect
-              - panner.connect
-              - pOsc.start
-              - pOsc.stop
-              - kOsc.frequency.setValueAtTime
-              - kOsc.frequency.exponentialRampToValueAtTime
-              - kGain.gain.setValueAtTime
-              - kGain.gain.linearRampToValueAtTime
-              - kGain.gain.exponentialRampToValueAtTime
-              - kOsc.connect
-              - kGain.connect
-              - kOsc.start
-              - kOsc.stop
               - this.getNoiseBuffer
-              - ctx.createBufferSource
-              - nFilter.frequency.setValueAtTime
-              - nGain.gain.setValueAtTime
-              - nGain.gain.linearRampToValueAtTime
-              - nGain.gain.exponentialRampToValueAtTime
-              - nSource.connect
-              - nFilter.connect
-              - nGain.connect
-              - nSource.start
-              - nSource.stop
-              - rFilter.frequency.setValueAtTime
-              - rGain.gain.setValueAtTime
-              - rGain.gain.linearRampToValueAtTime
-              - rGain.gain.exponentialRampToValueAtTime
-              - rSource.connect
-              - rFilter.connect
-              - rGain.connect
-              - rPanner.connect
-              - rSource.start
-              - rSource.stop
-              - mOsc.frequency.setValueAtTime
-              - mFilter.frequency.setValueAtTime
-              - mFilter.frequency.exponentialRampToValueAtTime
-              - mGain.gain.setValueAtTime
-              - mGain.gain.linearRampToValueAtTime
-              - mGain.gain.exponentialRampToValueAtTime
-              - mOsc.connect
-              - mFilter.connect
-              - mGain.connect
-              - mPanner.connect
-              - mOsc.start
-              - mOsc.stop
-          - name: scheduleCelesteStep
-            params:
-              ctx: AudioContext
-              destination: AudioNode
-              reverbSend: AudioNode
-              time: number
-              step: number
-            calls:
-              - Math.floor
-              - ctx.createOscillator
-              - ctx.createGain
-              - kickOsc.frequency.setValueAtTime
-              - kickOsc.frequency.exponentialRampToValueAtTime
-              - kickGain.gain.setValueAtTime
-              - kickGain.gain.linearRampToValueAtTime
-              - kickGain.gain.exponentialRampToValueAtTime
-              - kickOsc.connect
-              - kickGain.connect
-              - kickOsc.start
-              - kickOsc.stop
-              - this.trackActiveNode
-              - this.getNoiseBuffer
-              - ctx.createBufferSource
-              - ctx.createBiquadFilter
-              - snFilter.frequency.setValueAtTime
-              - snGain.gain.setValueAtTime
-              - snGain.gain.linearRampToValueAtTime
-              - snGain.gain.exponentialRampToValueAtTime
-              - snSource.connect
-              - snFilter.connect
-              - snGain.connect
-              - snSource.start
-              - snSource.stop
-              - this.createPanner
-              - hFilter.frequency.setValueAtTime
-              - hGain.gain.setValueAtTime
-              - hGain.gain.linearRampToValueAtTime
-              - hGain.gain.exponentialRampToValueAtTime
-              - hSource.connect
-              - hFilter.connect
-              - hGain.connect
-              - hPanner.connect
-              - hSource.start
-              - hSource.stop
-              - safeGet
-              - pOsc.frequency.setValueAtTime
-              - pFilter.frequency.setValueAtTime
-              - pGain.gain.setValueAtTime
-              - pGain.gain.linearRampToValueAtTime
-              - pGain.gain.exponentialRampToValueAtTime
-              - pOsc.connect
-              - pFilter.connect
-              - pGain.connect
-              - panner.connect
-              - pOsc.start
-              - pOsc.stop
-              - sOsc.frequency.setValueAtTime
-              - sFilter.frequency.setValueAtTime
-              - sGain.gain.setValueAtTime
-              - sGain.gain.linearRampToValueAtTime
-              - sGain.gain.exponentialRampToValueAtTime
-              - sOsc.connect
-              - sFilter.connect
-              - sGain.connect
-              - sOsc.start
-              - sOsc.stop
-              - padNotes.forEach
-              - padOsc.frequency.setValueAtTime
-              - padFilter.frequency.setValueAtTime
-              - padFilter.frequency.linearRampToValueAtTime
-              - padGain.gain.setValueAtTime
-              - padGain.gain.linearRampToValueAtTime
-              - padGain.gain.exponentialRampToValueAtTime
-              - padOsc.connect
-              - padFilter.connect
-              - padGain.connect
-              - padOsc.start
-              - padOsc.stop
-              - lOsc.frequency.setValueAtTime
-              - lFilter.frequency.setValueAtTime
-              - lFilter.frequency.linearRampToValueAtTime
-              - lGain.gain.setValueAtTime
-              - lGain.gain.linearRampToValueAtTime
-              - lGain.gain.exponentialRampToValueAtTime
-              - lOsc.connect
-              - lFilter.connect
-              - lGain.connect
-              - lPanner.connect
-              - lOsc.start
-              - lOsc.stop
-          - name: scheduleClimbStep
-            params:
-              ctx: AudioContext
-              destination: AudioNode
-              reverbSend: AudioNode
-              time: number
-              step: number
-            calls:
-              - Math.floor
-              - ctx.createOscillator
-              - ctx.createGain
-              - kickOsc.frequency.setValueAtTime
-              - kickOsc.frequency.exponentialRampToValueAtTime
-              - kickGain.gain.setValueAtTime
-              - kickGain.gain.linearRampToValueAtTime
-              - kickGain.gain.exponentialRampToValueAtTime
-              - kickOsc.connect
-              - kickGain.connect
-              - kickOsc.start
-              - kickOsc.stop
-              - this.trackActiveNode
-              - this.getNoiseBuffer
-              - ctx.createBufferSource
-              - ctx.createBiquadFilter
-              - sFilter.frequency.setValueAtTime
-              - sGain.gain.setValueAtTime
-              - sGain.gain.linearRampToValueAtTime
-              - sGain.gain.exponentialRampToValueAtTime
-              - sSource.connect
-              - sFilter.connect
-              - sGain.connect
-              - sSource.start
-              - sSource.stop
-              - this.createPanner
-              - hFilter.frequency.setValueAtTime
-              - hGain.gain.setValueAtTime
-              - hGain.gain.linearRampToValueAtTime
-              - hGain.gain.exponentialRampToValueAtTime
-              - hSource.connect
-              - hFilter.connect
-              - hGain.connect
-              - hPanner.connect
-              - hSource.start
-              - hSource.stop
-              - safeGet
-              - bOsc.frequency.setValueAtTime
-              - Math.max
-              - bFilter.frequency.setValueAtTime
-              - bGain.gain.setValueAtTime
-              - bGain.gain.linearRampToValueAtTime
-              - bGain.gain.exponentialRampToValueAtTime
-              - bOsc.connect
-              - bFilter.connect
-              - bGain.connect
-              - bOsc.start
-              - bOsc.stop
-              - chordNotes.forEach
-              - sOsc.frequency.setValueAtTime
-              - sFilter.frequency.exponentialRampToValueAtTime
-              - sOsc.connect
-              - sPanner.connect
-              - sOsc.start
-              - sOsc.stop
-              - aOsc.frequency.setValueAtTime
-              - aFilter.frequency.setValueAtTime
-              - aFilter.frequency.linearRampToValueAtTime
-              - aGain.gain.setValueAtTime
-              - aGain.gain.linearRampToValueAtTime
-              - aGain.gain.exponentialRampToValueAtTime
-              - aOsc.connect
-              - aFilter.connect
-              - aGain.connect
-              - aPanner.connect
-              - aOsc.start
-              - aOsc.stop
-          - name: scheduleShopStep
-            params:
-              ctx: AudioContext
-              destination: AudioNode
-              reverbSend: AudioNode
-              time: number
-              step: number
-            calls:
-              - Math.floor
-              - ctx.createOscillator
-              - ctx.createGain
-              - kickOsc.frequency.setValueAtTime
-              - kickOsc.frequency.exponentialRampToValueAtTime
-              - kickGain.gain.setValueAtTime
-              - kickGain.gain.linearRampToValueAtTime
-              - kickGain.gain.exponentialRampToValueAtTime
-              - kickOsc.connect
-              - kickGain.connect
-              - kickOsc.start
-              - kickOsc.stop
-              - this.trackActiveNode
-              - this.getNoiseBuffer
-              - ctx.createBufferSource
-              - ctx.createBiquadFilter
-              - this.createPanner
-              - shFilter.frequency.setValueAtTime
-              - shGain.gain.setValueAtTime
-              - shGain.gain.linearRampToValueAtTime
-              - shGain.gain.exponentialRampToValueAtTime
-              - shSource.connect
-              - shFilter.connect
-              - shGain.connect
-              - shPanner.connect
-              - shSource.start
-              - shSource.stop
-              - wbOsc.frequency.setValueAtTime
-              - wbFilter.frequency.setValueAtTime
-              - wbGain.gain.setValueAtTime
-              - wbGain.gain.linearRampToValueAtTime
-              - wbGain.gain.exponentialRampToValueAtTime
-              - wbOsc.connect
-              - wbFilter.connect
-              - wbGain.connect
-              - wbPanner.connect
-              - wbOsc.start
-              - wbOsc.stop
-              - bellOsc.frequency.setValueAtTime
-              - bellFilter.frequency.setValueAtTime
-              - bellGain.gain.setValueAtTime
-              - bellGain.gain.linearRampToValueAtTime
-              - bellGain.gain.exponentialRampToValueAtTime
-              - bellOsc.connect
-              - bellFilter.connect
-              - bellGain.connect
-              - bellOsc.start
-              - bellOsc.stop
-              - safeGet
-              - bOsc.frequency.setValueAtTime
-              - bFilter.frequency.setValueAtTime
-              - bGain.gain.setValueAtTime
-              - bGain.gain.linearRampToValueAtTime
-              - bGain.gain.exponentialRampToValueAtTime
-              - bOsc.connect
-              - bFilter.connect
-              - bGain.connect
-              - bOsc.start
-              - bOsc.stop
-              - chordNotes.forEach
-              - gOsc.frequency.setValueAtTime
-              - gFilter.frequency.setValueAtTime
-              - gFilter.frequency.exponentialRampToValueAtTime
-              - gGain.gain.setValueAtTime
-              - gGain.gain.linearRampToValueAtTime
-              - gGain.gain.exponentialRampToValueAtTime
-              - gOsc.connect
-              - gFilter.connect
-              - gGain.connect
-              - gPanner.connect
-              - gOsc.start
-              - gOsc.stop
-              - mOsc.frequency.setValueAtTime
-              - mFilter.frequency.setValueAtTime
-              - mFilter.frequency.exponentialRampToValueAtTime
-              - mGain.gain.setValueAtTime
-              - mGain.gain.linearRampToValueAtTime
-              - mGain.gain.exponentialRampToValueAtTime
-              - mOsc.connect
-              - mFilter.connect
-              - mGain.connect
-              - mPanner.connect
-              - mOsc.start
-              - mOsc.stop
-          - name: scheduleVictoryStep
-            params:
-              ctx: AudioContext
-              destination: AudioNode
-              reverbSend: AudioNode
-              time: number
-              step: number
-            calls:
-              - Math.floor
-              - ctx.createOscillator
-              - ctx.createGain
-              - kickOsc.frequency.setValueAtTime
-              - kickOsc.frequency.exponentialRampToValueAtTime
-              - kickGain.gain.setValueAtTime
-              - kickGain.gain.linearRampToValueAtTime
-              - kickGain.gain.exponentialRampToValueAtTime
-              - kickOsc.connect
-              - kickGain.connect
-              - kickOsc.start
-              - kickOsc.stop
-              - this.trackActiveNode
-              - this.getNoiseBuffer
-              - ctx.createBufferSource
-              - ctx.createBiquadFilter
-              - sFilter.frequency.setValueAtTime
-              - sGain.gain.setValueAtTime
-              - sGain.gain.linearRampToValueAtTime
-              - sGain.gain.exponentialRampToValueAtTime
-              - sSource.connect
-              - sFilter.connect
-              - sGain.connect
-              - sSource.start
-              - sSource.stop
-              - this.createPanner
-              - cFilter.frequency.setValueAtTime
-              - cGain.gain.setValueAtTime
-              - cGain.gain.linearRampToValueAtTime
-              - cGain.gain.exponentialRampToValueAtTime
-              - cSource.connect
-              - cFilter.connect
-              - cGain.connect
-              - cPanner.connect
-              - cSource.start
-              - cSource.stop
-              - safeGet
-              - chord.forEach
-              - osc.frequency.setValueAtTime
-              - filter.frequency.setValueAtTime
-              - filter.frequency.linearRampToValueAtTime
-              - gain.gain.setValueAtTime
-              - gain.gain.linearRampToValueAtTime
-              - gain.gain.exponentialRampToValueAtTime
-              - osc.connect
-              - filter.connect
-              - gain.connect
-              - panner.connect
-              - osc.start
-              - osc.stop
-              - hOsc.frequency.setValueAtTime
-              - hFilter.frequency.setValueAtTime
-              - hGain.gain.setValueAtTime
-              - hGain.gain.linearRampToValueAtTime
-              - hGain.gain.exponentialRampToValueAtTime
-              - hOsc.connect
-              - hFilter.connect
-              - hGain.connect
-              - hPanner.connect
-              - hOsc.start
-              - hOsc.stop
-              - tOsc.frequency.setValueAtTime
-              - tFilter.frequency.setValueAtTime
-              - tFilter.frequency.linearRampToValueAtTime
-              - tGain.gain.setValueAtTime
-              - tGain.gain.linearRampToValueAtTime
-              - tGain.gain.exponentialRampToValueAtTime
-              - tOsc.connect
-              - tFilter.connect
-              - tGain.connect
-              - tPanner.connect
-              - tOsc.start
-              - tOsc.stop
-          - name: scheduleCrisisStep
-            params:
-              ctx: AudioContext
-              destination: AudioNode
-              reverbSend: AudioNode
-              time: number
-              step: number
-            calls:
-              - Math.floor
-              - ctx.createOscillator
-              - ctx.createGain
-              - ctx.createBiquadFilter
-              - hOsc.frequency.setValueAtTime
-              - hOsc.frequency.exponentialRampToValueAtTime
-              - hFilter.frequency.setValueAtTime
-              - hGain.gain.setValueAtTime
-              - hGain.gain.linearRampToValueAtTime
-              - hGain.gain.exponentialRampToValueAtTime
-              - hOsc.connect
-              - hFilter.connect
-              - hGain.connect
-              - hOsc.start
-              - hOsc.stop
-              - this.trackActiveNode
-              - subOsc.frequency.setValueAtTime
-              - subOsc.frequency.exponentialRampToValueAtTime
-              - subGain.gain.setValueAtTime
-              - subGain.gain.linearRampToValueAtTime
-              - subGain.gain.exponentialRampToValueAtTime
-              - subOsc.connect
-              - subGain.connect
-              - subOsc.start
-              - subOsc.stop
-              - this.getNoiseBuffer
-              - ctx.createBufferSource
-              - this.createPanner
-              - tFilter.frequency.setValueAtTime
-              - tGain.gain.setValueAtTime
-              - tGain.gain.linearRampToValueAtTime
-              - tGain.gain.exponentialRampToValueAtTime
-              - tSource.connect
-              - tFilter.connect
-              - tGain.connect
-              - tPanner.connect
-              - tSource.start
-              - tSource.stop
-              - safeGet
-              - currentChord.forEach
-              - osc.frequency.setValueAtTime
-              - filter.frequency.setValueAtTime
-              - filter.frequency.linearRampToValueAtTime
-              - gain.gain.setValueAtTime
-              - gain.gain.linearRampToValueAtTime
-              - gain.gain.exponentialRampToValueAtTime
-              - osc.connect
-              - filter.connect
-              - gain.connect
-              - osc.start
-              - osc.stop
-              - sOsc.frequency.setValueAtTime
-              - sOsc.frequency.linearRampToValueAtTime
-              - sFilter.frequency.setValueAtTime
-              - sGain.gain.setValueAtTime
-              - sGain.gain.linearRampToValueAtTime
-              - sGain.gain.exponentialRampToValueAtTime
-              - sOsc.connect
-              - sFilter.connect
-              - sGain.connect
-              - sPanner.connect
-              - sOsc.start
-              - sOsc.stop
-          - name: scheduleChillStep
-            params:
-              ctx: AudioContext
-              destination: AudioNode
-              reverbSend: AudioNode
-              time: number
-              chordIndex: number
-            calls:
-              - safeGet
-              - this.getNoiseBuffer
-              - ctx.createBufferSource
-              - ctx.createGain
-              - ctx.createBiquadFilter
-              - wFilter.frequency.setValueAtTime
-              - wFilter.frequency.linearRampToValueAtTime
-              - wGain.gain.setValueAtTime
-              - wGain.gain.linearRampToValueAtTime
-              - wGain.gain.exponentialRampToValueAtTime
-              - wSource.connect
-              - wFilter.connect
-              - wGain.connect
-              - wSource.start
-              - wSource.stop
-              - this.trackActiveNode
-              - chord.forEach
-              - ctx.createOscillator
-              - this.createPanner
-              - osc.frequency.setValueAtTime
-              - filter.frequency.setValueAtTime
-              - filter.frequency.linearRampToValueAtTime
-              - gain.gain.setValueAtTime
-              - gain.gain.linearRampToValueAtTime
-              - gain.gain.exponentialRampToValueAtTime
-              - osc.connect
-              - filter.connect
-              - gain.connect
-              - panner.connect
-              - osc.start
-              - osc.stop
-              - harmonics.forEach
-              - bowlOsc.frequency.setValueAtTime
-              - bowlFilter.frequency.setValueAtTime
-              - bowlGain.gain.setValueAtTime
-              - bowlGain.gain.linearRampToValueAtTime
-              - bowlGain.gain.exponentialRampToValueAtTime
-              - bowlOsc.connect
-              - bowlFilter.connect
-              - bowlGain.connect
-              - bPanner.connect
-              - bowlOsc.start
-              - bowlOsc.stop
-              - melodyPair.forEach
-              - mOsc.frequency.setValueAtTime
-              - mFilter.frequency.setValueAtTime
-              - mGain.gain.setValueAtTime
-              - mGain.gain.linearRampToValueAtTime
-              - mGain.gain.exponentialRampToValueAtTime
-              - mOsc.connect
-              - mFilter.connect
-              - mGain.connect
-              - mPanner.connect
-              - mOsc.start
-              - mOsc.stop
-              - spOsc.frequency.setValueAtTime
-              - spGain.gain.setValueAtTime
-              - spGain.gain.linearRampToValueAtTime
-              - spGain.gain.exponentialRampToValueAtTime
-              - spOsc.connect
-              - spGain.connect
-              - spPanner.connect
-              - spOsc.start
-              - spOsc.stop
-          - name: scheduleArcadeStep
-            params:
-              ctx: AudioContext
-              destination: AudioNode
-              reverbSend: AudioNode
-              time: number
-              step: number
-            calls:
-              - Math.floor
-              - ctx.createOscillator
-              - ctx.createGain
-              - kickOsc.frequency.setValueAtTime
-              - kickOsc.frequency.exponentialRampToValueAtTime
-              - kickGain.gain.setValueAtTime
-              - kickGain.gain.linearRampToValueAtTime
-              - kickGain.gain.exponentialRampToValueAtTime
-              - kickOsc.connect
-              - kickGain.connect
-              - kickOsc.start
-              - kickOsc.stop
-              - this.trackActiveNode
-              - this.getNoiseBuffer
-              - ctx.createBufferSource
-              - ctx.createBiquadFilter
-              - sFilter.frequency.setValueAtTime
-              - sGain.gain.setValueAtTime
-              - sGain.gain.linearRampToValueAtTime
-              - sGain.gain.exponentialRampToValueAtTime
-              - sSource.connect
-              - sFilter.connect
-              - sGain.connect
-              - sSource.start
-              - sSource.stop
-              - this.createPanner
-              - hFilter.frequency.setValueAtTime
-              - hGain.gain.setValueAtTime
-              - hGain.gain.linearRampToValueAtTime
-              - hGain.gain.exponentialRampToValueAtTime
-              - hSource.connect
-              - hFilter.connect
-              - hGain.connect
-              - hPanner.connect
-              - hSource.start
-              - hSource.stop
-              - safeGet
-              - bOsc.frequency.setValueAtTime
-              - bFilter.frequency.setValueAtTime
-              - bGain.gain.setValueAtTime
-              - bGain.gain.linearRampToValueAtTime
-              - bGain.gain.exponentialRampToValueAtTime
-              - bOsc.connect
-              - bFilter.connect
-              - bGain.connect
-              - bOsc.start
-              - bOsc.stop
-              - lOsc.frequency.setValueAtTime
-              - lFilter.frequency.setValueAtTime
-              - lGain.gain.setValueAtTime
-              - lGain.gain.linearRampToValueAtTime
-              - lGain.gain.exponentialRampToValueAtTime
-              - lOsc.connect
-              - lFilter.connect
-              - lGain.connect
-              - lPanner.connect
-              - lOsc.start
-              - lOsc.stop
-              - aOsc.frequency.setValueAtTime
-              - aFilter.frequency.setValueAtTime
-              - aGain.gain.setValueAtTime
-              - aGain.gain.linearRampToValueAtTime
-              - aGain.gain.exponentialRampToValueAtTime
-              - aOsc.connect
-              - aFilter.connect
-              - aGain.connect
-              - aPanner.connect
-              - aOsc.start
-              - aOsc.stop
-          - name: schedulePuzzleStep
-            params:
-              ctx: AudioContext
-              destination: AudioNode
-              reverbSend: AudioNode
-              time: number
-              step: number
-            calls:
-              - Math.floor
-              - ctx.createOscillator
-              - ctx.createGain
-              - kickOsc.frequency.setValueAtTime
-              - kickOsc.frequency.exponentialRampToValueAtTime
-              - kickGain.gain.setValueAtTime
-              - kickGain.gain.linearRampToValueAtTime
-              - kickGain.gain.exponentialRampToValueAtTime
-              - kickOsc.connect
-              - kickGain.connect
-              - kickOsc.start
-              - kickOsc.stop
-              - this.trackActiveNode
-              - this.getNoiseBuffer
-              - ctx.createBufferSource
-              - ctx.createBiquadFilter
-              - sFilter.frequency.setValueAtTime
-              - sGain.gain.setValueAtTime
-              - sGain.gain.linearRampToValueAtTime
-              - sGain.gain.exponentialRampToValueAtTime
-              - sSource.connect
-              - sFilter.connect
-              - sGain.connect
-              - sSource.start
-              - sSource.stop
-              - this.createPanner
-              - hFilter.frequency.setValueAtTime
-              - hGain.gain.setValueAtTime
-              - hGain.gain.linearRampToValueAtTime
-              - hGain.gain.exponentialRampToValueAtTime
-              - hSource.connect
-              - hFilter.connect
-              - hGain.connect
-              - hPanner.connect
-              - hSource.start
-              - hSource.stop
-              - safeGet
-              - bOsc.frequency.setValueAtTime
-              - bFilter.frequency.setValueAtTime
-              - bGain.gain.setValueAtTime
-              - bGain.gain.linearRampToValueAtTime
-              - bGain.gain.exponentialRampToValueAtTime
-              - bOsc.connect
-              - bFilter.connect
-              - bGain.connect
-              - bOsc.start
-              - bOsc.stop
-              - chordNotes.forEach
-              - rOsc.frequency.setValueAtTime
-              - rFilter.frequency.setValueAtTime
-              - rFilter.frequency.exponentialRampToValueAtTime
-              - rGain.gain.setValueAtTime
-              - rGain.gain.linearRampToValueAtTime
-              - rGain.gain.exponentialRampToValueAtTime
-              - rOsc.connect
-              - rFilter.connect
-              - rGain.connect
-              - rPanner.connect
-              - rOsc.start
-              - rOsc.stop
-              - lOsc.frequency.setValueAtTime
-              - lFilter.frequency.setValueAtTime
-              - lFilter.frequency.exponentialRampToValueAtTime
-              - lGain.gain.setValueAtTime
-              - lGain.gain.linearRampToValueAtTime
-              - lGain.gain.exponentialRampToValueAtTime
-              - lOsc.connect
-              - lFilter.connect
-              - lGain.connect
-              - lPanner.connect
-              - lOsc.start
-              - lOsc.stop
           - name: trackActiveNode
             params:
               osc: OscillatorNode | undefined
@@ -5083,8 +4392,6 @@ files:
           - name: dispose
             calls:
               - this.stop
-      - name: BgmTheme
-        kind: type
   src/utils/sound/globalTapListener.ts:
     exports:
       - name: setupGlobalTapListener
@@ -5121,9 +4428,10 @@ files:
           - name: getGraph
             returns: '{ ctx: AudioContext; destination: AudioNode; } | null'
             calls:
-              - audioContextManager.isEnabled
+              - audioContextManager.isSoundEnabled
               - audioContextManager.getContext
               - audioContextManager.getMasterGain
+              - audioContextManager.ensureRunning
           - name: playKeypad
             params:
               isBackspace: boolean
@@ -5208,6 +4516,10 @@ files:
           options: import("C:/Users/ghkdd/gemini-projects/solve-climb/src/utils/sound/types").ToneOptions
         description: 1. 단일 주파수 톤(Tone) 재생
         calls:
+          - catch
+          - ctx .resume() .then
+          - ctx .resume
+          - playTone
           - ctx.createOscillator
           - ctx.createGain
           - osc.frequency.setValueAtTime
@@ -5225,6 +4537,10 @@ files:
           options: import("C:/Users/ghkdd/gemini-projects/solve-climb/src/utils/sound/types").SweepOptions
         description: 2. 주파수 스윕(Sweep / Pitch Bend) 재생
         calls:
+          - catch
+          - ctx .resume() .then
+          - ctx .resume
+          - playSweep
           - ctx.createOscillator
           - ctx.createGain
           - osc.frequency.setValueAtTime
@@ -5245,6 +4561,10 @@ files:
           options: import("C:/Users/ghkdd/gemini-projects/solve-climb/src/utils/sound/types").ChordOptions
         description: 3. 화음 및 아르페지오(Chord / Arpeggio) 재생
         calls:
+          - catch
+          - ctx .resume() .then
+          - ctx .resume
+          - playChord
           - options.notes.forEach
           - ctx.createOscillator
           - ctx.createGain
@@ -5263,6 +4583,10 @@ files:
           options: import("C:/Users/ghkdd/gemini-projects/solve-climb/src/utils/sound/types").FilteredToneOptions
         description: 4. 바이쿼드 필터 적용 톤(Filtered Tone - 버저/징글 등) 재생
         calls:
+          - catch
+          - ctx .resume() .then
+          - ctx .resume
+          - playFilteredTone
           - ctx.createOscillator
           - ctx.createGain
           - ctx.createBiquadFilter
@@ -5285,6 +4609,10 @@ files:
           beats: import("C:/Users/ghkdd/gemini-projects/solve-climb/src/utils/sound/types").PulseBeat[]
         description: 5. 듀얼 레이어 펄스(MultiPulse - 스태미나 위기 심장박동 등) 재생
         calls:
+          - catch
+          - ctx .resume() .then
+          - ctx .resume
+          - playMultiPulse
           - beats.forEach
           - ctx.createOscillator
           - ctx.createGain
@@ -5325,6 +4653,8 @@ files:
       - name: PulseBeat
         kind: interface
       - name: WaveformType
+        kind: type
+      - name: BgmTheme
         kind: type
   src/components/geometry/utils/geometryMath.ts:
     exports:
@@ -6078,6 +5408,8 @@ files:
       - showCountdown
       - showSafetyRope
       - activeBgm
+      - bgmVersion
+      - currentStep
     handlers:
       - name: handleAlertAction
         calls:
@@ -6088,7 +5420,12 @@ files:
         returns: React.JSX.Element
         calls:
           - useNavigate
+          - bgm.getVersion
           - useSettingsStore
+          - setInterval
+          - setCurrentStep
+          - bgm.getCurrentStep
+          - clearInterval
           - useGameStore
           - triggerToast
           - closeModals
@@ -6123,9 +5460,25 @@ files:
           - sound.playScoreCount
           - sound.playRevive
           - sound.playStaminaWarning
+          - item.fn
+          - setBgmEnabled
           - bgm.stop
           - setActiveBgm
+          - setBgmVersion
+          - bgm.setVersion
+          - arrangement?.parts.find
+          - Math.min
+          - Math.max
+          - (currentStep * arrangement.stepDuration).toFixed
+          - (arrangement.totalSteps * arrangement.stepDuration).toFixed
           - bgm.play
+          - e.currentTarget.getBoundingClientRect
+          - Math.floor
+          - bgm.seekToStep
+          - '[25, 50, 75].map'
+          - arrangement.parts.map
+          - bgm.jumpToPart
+          - currentPart.instruments.map
           - e.stopPropagation
   src/features/debug/components/ProgressionSection.tsx:
     imports:
@@ -6389,7 +5742,7 @@ files:
     exports:
       - name: MyPageSettings
         params:
-          ? "{\n  soundEnabled,\n  bgmEnabled,\n  hapticEnabled,\n  animationEnabled,\n  onToggleSound,\n  onToggleBgm,\n  onToggleHaptic,\n  onToggleAnimation,\n  onShowProfileForm,\n  onDataReset,\n  isResetting,\n  onSendFeedback,\n  onLogout,\n  onWithdraw,\n}"
+          ? "{\n  soundEnabled,\n  bgmEnabled,\n  hapticEnabled,\n  animationEnabled,\n  onToggleSound,\n  onToggleBgm,\n  onToggleHaptic,\n  onToggleAnimation,\n  onOpenSoundPlayer,\n  onShowProfileForm,\n  onDataReset,\n  isResetting,\n  onSendFeedback,\n  onLogout,\n  onWithdraw,\n}"
           : MyPageSettingsProps
         returns: React.JSX.Element
         calls:
@@ -6411,8 +5764,9 @@ files:
           - setShowLocalToast
           - window.location.reload
           - window.open
-          - e.preventDefault
+          - onOpenSoundPlayer
           - onToggleSound
+          - e.preventDefault
           - onToggleBgm
           - onToggleHaptic
           - onToggleAnimation
@@ -6490,6 +5844,49 @@ files:
           - step.slice(colonIndex + 1).trim
           - stepBody.split
           - parts.map
+  src/features/mypage/components/SoundTrackPlayerModal.tsx:
+    imports:
+      - '@/utils/sound'
+      - '@/stores/useSettingsStore'
+    state:
+      - activeTab
+      - activeBgm
+      - currentStep
+    exports:
+      - name: SoundTrackPlayerModal
+        params:
+          ? "{\n  isOpen,\n  onClose,\n  initialTab = 'bgm',\n}"
+          : SoundTrackPlayerModalProps
+        returns: React.JSX.Element | null
+        calls:
+          - bgm.getCurrentTheme
+          - useSettingsStore
+          - setActiveTab
+          - setActiveBgm
+          - setInterval
+          - setCurrentStep
+          - bgm.getCurrentStep
+          - clearInterval
+          - BGM_TRACKS.find
+          - setBgmEnabled
+          - bgm.stop
+          - BGM_TRACKS.map
+          - arrangement?.parts.find
+          - Math.min
+          - Math.max
+          - (currentStep * arrangement.stepDuration).toFixed
+          - (arrangement.totalSteps * arrangement.stepDuration).toFixed
+          - bgm.play
+          - e.currentTarget.getBoundingClientRect
+          - Math.floor
+          - bgm.seekToStep
+          - arrangement.parts.map
+          - e.stopPropagation
+          - bgm.jumpToPart
+          - currentPart.instruments.map
+          - setSoundEnabled
+          - SFX_ITEMS.map
+          - item.action
   src/features/mypage/hooks/useHistoryData.ts:
     imports:
       - '@/utils/supabaseClient'
@@ -6636,6 +6033,7 @@ files:
       - ../components/MyPageStats
       - ../components/MyPageQuickAccess
       - ../components/MyPageSettings
+      - ../components/SoundTrackPlayerModal
       - '@/stores/useProfileStore'
       - '@/stores/useSettingsStore'
       - ../hooks/useMyPageStats
@@ -6673,6 +6071,8 @@ files:
       - tierStars
       - showWithdrawConfirm
       - isWithdrawing
+      - showSoundPlayer
+      - soundPlayerTab
     handlers:
       - name: handlePromote
         calls:
@@ -6860,6 +6260,8 @@ files:
           - clearProfile
           - isTossAppEnvironment
           - formatBestSubject
+          - setSoundPlayerTab
+          - setShowSoundPlayer
           - useProfileStore.getState
           - urls.debug
   src/features/quiz/components/CalculusVisualization.tsx:
@@ -8332,6 +7734,1171 @@ files:
             calls:
               - Math.floor
               - this.next
+  src/utils/sound/tracks/arcade.ts:
+    imports:
+      - ./types
+      - ./helpers
+    exports:
+      - name: scheduleArcadeStep
+        params:
+          ? "{\n  ctx,\n  destination,\n  reverbSend,\n  time,\n  step,\n  trackActiveNode,\n  createPanner,\n  getNoiseBuffer,\n}"
+          : import("C:/Users/ghkdd/gemini-projects/solve-climb/src/utils/sound/tracks/types").TrackContext
+        calls:
+          - Math.floor
+          - ctx.createOscillator
+          - ctx.createGain
+          - kickOsc.frequency.setValueAtTime
+          - kickOsc.frequency.exponentialRampToValueAtTime
+          - kickGain.gain.setValueAtTime
+          - kickGain.gain.linearRampToValueAtTime
+          - kickGain.gain.exponentialRampToValueAtTime
+          - kickOsc.connect
+          - kickGain.connect
+          - kickOsc.start
+          - kickOsc.stop
+          - trackActiveNode
+          - getNoiseBuffer
+          - ctx.createBufferSource
+          - ctx.createBiquadFilter
+          - sFilter.frequency.setValueAtTime
+          - sGain.gain.setValueAtTime
+          - sGain.gain.linearRampToValueAtTime
+          - sGain.gain.exponentialRampToValueAtTime
+          - sSource.connect
+          - sFilter.connect
+          - sGain.connect
+          - sSource.start
+          - sSource.stop
+          - createPanner
+          - hFilter.frequency.setValueAtTime
+          - hGain.gain.setValueAtTime
+          - hGain.gain.linearRampToValueAtTime
+          - hGain.gain.exponentialRampToValueAtTime
+          - hSource.connect
+          - hFilter.connect
+          - hGain.connect
+          - hPanner.connect
+          - hSource.start
+          - hSource.stop
+          - safeGet
+          - bOsc.frequency.setValueAtTime
+          - bFilter.frequency.setValueAtTime
+          - bGain.gain.setValueAtTime
+          - bGain.gain.linearRampToValueAtTime
+          - bGain.gain.exponentialRampToValueAtTime
+          - bOsc.connect
+          - bFilter.connect
+          - bGain.connect
+          - bOsc.start
+          - bOsc.stop
+          - lOsc.frequency.setValueAtTime
+          - lFilter.frequency.setValueAtTime
+          - lGain.gain.setValueAtTime
+          - lGain.gain.linearRampToValueAtTime
+          - lGain.gain.exponentialRampToValueAtTime
+          - lOsc.connect
+          - lFilter.connect
+          - lGain.connect
+          - lPanner.connect
+          - lOsc.start
+          - lOsc.stop
+          - aOsc.frequency.setValueAtTime
+          - aFilter.frequency.setValueAtTime
+          - aGain.gain.setValueAtTime
+          - aGain.gain.linearRampToValueAtTime
+          - aGain.gain.exponentialRampToValueAtTime
+          - aOsc.connect
+          - aFilter.connect
+          - aGain.connect
+          - aPanner.connect
+          - aOsc.start
+          - aOsc.stop
+      - name: schedulePrototypeArcade
+        params:
+          ? "{\n  ctx,\n  destination,\n  time,\n  step,\n  trackActiveNode,\n}"
+          : import("C:/Users/ghkdd/gemini-projects/solve-climb/src/utils/sound/tracks/types").PrototypeTrackContext
+        calls:
+          - safeGet
+          - ctx.createOscillator
+          - ctx.createGain
+          - osc.frequency.setValueAtTime
+          - gain.gain.setValueAtTime
+          - gain.gain.linearRampToValueAtTime
+          - gain.gain.exponentialRampToValueAtTime
+          - osc.connect
+          - gain.connect
+          - osc.start
+          - osc.stop
+          - trackActiveNode
+      - name: arcadeTrack
+        kind: const
+  src/utils/sound/tracks/brainAge.ts:
+    imports:
+      - ./types
+      - ./helpers
+    exports:
+      - name: scheduleBrainAgeStep
+        params:
+          ? "{\n  ctx,\n  destination,\n  reverbSend,\n  time,\n  step,\n  trackActiveNode,\n  createPanner,\n  getNoiseBuffer,\n}"
+          : import("C:/Users/ghkdd/gemini-projects/solve-climb/src/utils/sound/tracks/types").TrackContext
+        calls:
+          - Math.floor
+          - safeGet
+          - ctx.createOscillator
+          - ctx.createGain
+          - ctx.createBiquadFilter
+          - bOsc.frequency.setValueAtTime
+          - bFilter.frequency.setValueAtTime
+          - bFilter.frequency.exponentialRampToValueAtTime
+          - bGain.gain.setValueAtTime
+          - bGain.gain.linearRampToValueAtTime
+          - bGain.gain.exponentialRampToValueAtTime
+          - bOsc.connect
+          - bFilter.connect
+          - bGain.connect
+          - bOsc.start
+          - bOsc.stop
+          - trackActiveNode
+          - subOsc.frequency.setValueAtTime
+          - subGain.gain.setValueAtTime
+          - subGain.gain.linearRampToValueAtTime
+          - subGain.gain.exponentialRampToValueAtTime
+          - subOsc.connect
+          - subGain.connect
+          - subOsc.start
+          - subOsc.stop
+          - createPanner
+          - chordNotes.forEach
+          - pOsc.frequency.setValueAtTime
+          - pFilter.frequency.setValueAtTime
+          - pFilter.frequency.linearRampToValueAtTime
+          - pGain.gain.setValueAtTime
+          - pGain.gain.linearRampToValueAtTime
+          - pGain.gain.exponentialRampToValueAtTime
+          - pOsc.connect
+          - pFilter.connect
+          - pGain.connect
+          - panner.connect
+          - pOsc.start
+          - pOsc.stop
+          - kOsc.frequency.setValueAtTime
+          - kOsc.frequency.exponentialRampToValueAtTime
+          - kGain.gain.setValueAtTime
+          - kGain.gain.linearRampToValueAtTime
+          - kGain.gain.exponentialRampToValueAtTime
+          - kOsc.connect
+          - kGain.connect
+          - kOsc.start
+          - kOsc.stop
+          - getNoiseBuffer
+          - ctx.createBufferSource
+          - nFilter.frequency.setValueAtTime
+          - nGain.gain.setValueAtTime
+          - nGain.gain.linearRampToValueAtTime
+          - nGain.gain.exponentialRampToValueAtTime
+          - nSource.connect
+          - nFilter.connect
+          - nGain.connect
+          - nSource.start
+          - nSource.stop
+          - rFilter.frequency.setValueAtTime
+          - rGain.gain.setValueAtTime
+          - rGain.gain.linearRampToValueAtTime
+          - rGain.gain.exponentialRampToValueAtTime
+          - rSource.connect
+          - rFilter.connect
+          - rGain.connect
+          - rPanner.connect
+          - rSource.start
+          - rSource.stop
+          - mOsc.frequency.setValueAtTime
+          - mFilter.frequency.setValueAtTime
+          - mFilter.frequency.exponentialRampToValueAtTime
+          - mGain.gain.setValueAtTime
+          - mGain.gain.linearRampToValueAtTime
+          - mGain.gain.exponentialRampToValueAtTime
+          - mOsc.connect
+          - mFilter.connect
+          - mGain.connect
+          - mPanner.connect
+          - mOsc.start
+          - mOsc.stop
+      - name: schedulePrototypeBrainAge
+        params:
+          ? "{\n  ctx,\n  destination,\n  time,\n  step,\n  trackActiveNode,\n}"
+          : import("C:/Users/ghkdd/gemini-projects/solve-climb/src/utils/sound/tracks/types").PrototypeTrackContext
+        calls:
+          - Math.floor
+          - safeGet
+          - ctx.createOscillator
+          - ctx.createGain
+          - ctx.createBiquadFilter
+          - bOsc.frequency.setValueAtTime
+          - bFilter.frequency.setValueAtTime
+          - bGain.gain.setValueAtTime
+          - bGain.gain.linearRampToValueAtTime
+          - bGain.gain.exponentialRampToValueAtTime
+          - bOsc.connect
+          - bFilter.connect
+          - bGain.connect
+          - bOsc.start
+          - bOsc.stop
+          - trackActiveNode
+          - chordNotes.forEach
+          - pOsc.frequency.setValueAtTime
+          - pFilter.frequency.setValueAtTime
+          - pGain.gain.setValueAtTime
+          - pGain.gain.linearRampToValueAtTime
+          - pGain.gain.exponentialRampToValueAtTime
+          - pOsc.connect
+          - pFilter.connect
+          - pGain.connect
+          - pOsc.start
+          - pOsc.stop
+          - hOsc.frequency.setValueAtTime
+          - hFilter.frequency.setValueAtTime
+          - hGain.gain.setValueAtTime
+          - hGain.gain.linearRampToValueAtTime
+          - hGain.gain.exponentialRampToValueAtTime
+          - hOsc.connect
+          - hFilter.connect
+          - hGain.connect
+          - hOsc.start
+          - hOsc.stop
+      - name: brainAgeTrack
+        kind: const
+  src/utils/sound/tracks/celeste.ts:
+    imports:
+      - ./types
+      - ./helpers
+    exports:
+      - name: scheduleCelesteStep
+        params:
+          ? "{\n  ctx,\n  destination,\n  reverbSend,\n  time,\n  step,\n  trackActiveNode,\n  createPanner,\n  getNoiseBuffer,\n}"
+          : import("C:/Users/ghkdd/gemini-projects/solve-climb/src/utils/sound/tracks/types").TrackContext
+        calls:
+          - Math.floor
+          - ctx.createOscillator
+          - ctx.createGain
+          - kickOsc.frequency.setValueAtTime
+          - kickOsc.frequency.exponentialRampToValueAtTime
+          - kickGain.gain.setValueAtTime
+          - kickGain.gain.linearRampToValueAtTime
+          - kickGain.gain.exponentialRampToValueAtTime
+          - kickOsc.connect
+          - kickGain.connect
+          - kickOsc.start
+          - kickOsc.stop
+          - trackActiveNode
+          - getNoiseBuffer
+          - ctx.createBufferSource
+          - ctx.createBiquadFilter
+          - snFilter.frequency.setValueAtTime
+          - snGain.gain.setValueAtTime
+          - snGain.gain.linearRampToValueAtTime
+          - snGain.gain.exponentialRampToValueAtTime
+          - snSource.connect
+          - snFilter.connect
+          - snGain.connect
+          - snSource.start
+          - snSource.stop
+          - createPanner
+          - hFilter.frequency.setValueAtTime
+          - hGain.gain.setValueAtTime
+          - hGain.gain.linearRampToValueAtTime
+          - hGain.gain.exponentialRampToValueAtTime
+          - hSource.connect
+          - hFilter.connect
+          - hGain.connect
+          - hPanner.connect
+          - hSource.start
+          - hSource.stop
+          - safeGet
+          - pOsc.frequency.setValueAtTime
+          - pFilter.frequency.setValueAtTime
+          - pGain.gain.setValueAtTime
+          - pGain.gain.linearRampToValueAtTime
+          - pGain.gain.exponentialRampToValueAtTime
+          - pOsc.connect
+          - pFilter.connect
+          - pGain.connect
+          - panner.connect
+          - pOsc.start
+          - pOsc.stop
+          - sOsc.frequency.setValueAtTime
+          - sFilter.frequency.setValueAtTime
+          - sGain.gain.setValueAtTime
+          - sGain.gain.linearRampToValueAtTime
+          - sGain.gain.exponentialRampToValueAtTime
+          - sOsc.connect
+          - sFilter.connect
+          - sGain.connect
+          - sOsc.start
+          - sOsc.stop
+          - padNotes.forEach
+          - padOsc.frequency.setValueAtTime
+          - padFilter.frequency.setValueAtTime
+          - padFilter.frequency.linearRampToValueAtTime
+          - padGain.gain.setValueAtTime
+          - padGain.gain.linearRampToValueAtTime
+          - padGain.gain.exponentialRampToValueAtTime
+          - padOsc.connect
+          - padFilter.connect
+          - padGain.connect
+          - padOsc.start
+          - padOsc.stop
+          - lOsc.frequency.setValueAtTime
+          - lFilter.frequency.setValueAtTime
+          - lFilter.frequency.linearRampToValueAtTime
+          - lGain.gain.setValueAtTime
+          - lGain.gain.linearRampToValueAtTime
+          - lGain.gain.exponentialRampToValueAtTime
+          - lOsc.connect
+          - lFilter.connect
+          - lGain.connect
+          - lPanner.connect
+          - lOsc.start
+          - lOsc.stop
+      - name: schedulePrototypeCeleste
+        params:
+          ? "{\n  ctx,\n  destination,\n  time,\n  step,\n  trackActiveNode,\n}"
+          : import("C:/Users/ghkdd/gemini-projects/solve-climb/src/utils/sound/tracks/types").PrototypeTrackContext
+        calls:
+          - Math.floor
+          - ctx.createOscillator
+          - ctx.createGain
+          - kickOsc.frequency.setValueAtTime
+          - kickOsc.frequency.exponentialRampToValueAtTime
+          - kickGain.gain.setValueAtTime
+          - kickGain.gain.linearRampToValueAtTime
+          - kickGain.gain.exponentialRampToValueAtTime
+          - kickOsc.connect
+          - kickGain.connect
+          - kickOsc.start
+          - kickOsc.stop
+          - trackActiveNode
+          - safeGet
+          - ctx.createBiquadFilter
+          - pOsc.frequency.setValueAtTime
+          - pFilter.frequency.setValueAtTime
+          - pGain.gain.setValueAtTime
+          - pGain.gain.linearRampToValueAtTime
+          - pGain.gain.exponentialRampToValueAtTime
+          - pOsc.connect
+          - pFilter.connect
+          - pGain.connect
+          - pOsc.start
+          - pOsc.stop
+          - sOsc.frequency.setValueAtTime
+          - sFilter.frequency.setValueAtTime
+          - sGain.gain.setValueAtTime
+          - sGain.gain.linearRampToValueAtTime
+          - sGain.gain.exponentialRampToValueAtTime
+          - sOsc.connect
+          - sFilter.connect
+          - sGain.connect
+          - sOsc.start
+          - sOsc.stop
+          - lOsc.frequency.setValueAtTime
+          - lFilter.frequency.setValueAtTime
+          - lFilter.frequency.linearRampToValueAtTime
+          - lGain.gain.setValueAtTime
+          - lGain.gain.linearRampToValueAtTime
+          - lGain.gain.exponentialRampToValueAtTime
+          - lOsc.connect
+          - lFilter.connect
+          - lGain.connect
+          - lOsc.start
+          - lOsc.stop
+      - name: celesteTrack
+        kind: const
+  src/utils/sound/tracks/chill.ts:
+    imports:
+      - ./types
+      - ./helpers
+    exports:
+      - name: scheduleChillStep
+        params:
+          ? "{\n  ctx,\n  destination,\n  reverbSend,\n  time,\n  step: stepIndex,\n  trackActiveNode,\n  createPanner,\n}"
+          : import("C:/Users/ghkdd/gemini-projects/solve-climb/src/utils/sound/tracks/types").TrackContext
+        calls:
+          - Math.max
+          - Math.floor
+          - safeGet
+          - ostinatoTicks.indexOf
+          - ctx.createOscillator
+          - ctx.createGain
+          - ctx.createBiquadFilter
+          - createPanner
+          - oOsc.frequency.setValueAtTime
+          - oFilter.frequency.setValueAtTime
+          - oGain.gain.setValueAtTime
+          - oGain.gain.linearRampToValueAtTime
+          - oGain.gain.exponentialRampToValueAtTime
+          - oOsc.connect
+          - oFilter.connect
+          - oGain.connect
+          - oPanner.connect
+          - oOsc.start
+          - oOsc.stop
+          - trackActiveNode
+          - bOsc.frequency.setValueAtTime
+          - bFilter.frequency.setValueAtTime
+          - bGain.gain.setValueAtTime
+          - bGain.gain.linearRampToValueAtTime
+          - bGain.gain.exponentialRampToValueAtTime
+          - bOsc.connect
+          - bFilter.connect
+          - bGain.connect
+          - bOsc.start
+          - bOsc.stop
+          - chord.notes.slice(0, 3).forEach
+          - chord.notes.slice
+          - pOsc.frequency.setValueAtTime
+          - pFilter.frequency.setValueAtTime
+          - pFilter.frequency.linearRampToValueAtTime
+          - pGain.gain.setValueAtTime
+          - pGain.gain.linearRampToValueAtTime
+          - pGain.gain.exponentialRampToValueAtTime
+          - pOsc.connect
+          - pFilter.connect
+          - pGain.connect
+          - pPanner.connect
+          - pOsc.start
+          - pOsc.stop
+          - Math.sin
+          - gOsc.frequency.setValueAtTime
+          - gGain.gain.setValueAtTime
+          - gGain.gain.linearRampToValueAtTime
+          - gGain.gain.exponentialRampToValueAtTime
+          - gOsc.connect
+          - gGain.connect
+          - gPanner.connect
+          - gOsc.start
+          - gOsc.stop
+      - name: schedulePrototypeChill
+        params:
+          ? "{\n  ctx,\n  destination,\n  time,\n  step: chordIndex,\n  trackActiveNode,\n}"
+          : import("C:/Users/ghkdd/gemini-projects/solve-climb/src/utils/sound/tracks/types").PrototypeTrackContext
+        calls:
+          - safeGet
+          - chord.forEach
+          - ctx.createOscillator
+          - ctx.createGain
+          - ctx.createBiquadFilter
+          - osc.frequency.setValueAtTime
+          - filter.frequency.setValueAtTime
+          - filter.frequency.linearRampToValueAtTime
+          - gain.gain.setValueAtTime
+          - gain.gain.linearRampToValueAtTime
+          - gain.gain.exponentialRampToValueAtTime
+          - osc.connect
+          - filter.connect
+          - gain.connect
+          - osc.start
+          - osc.stop
+          - trackActiveNode
+          - melodyPair.forEach
+          - mOsc.frequency.setValueAtTime
+          - mFilter.frequency.setValueAtTime
+          - mGain.gain.setValueAtTime
+          - mGain.gain.linearRampToValueAtTime
+          - mGain.gain.exponentialRampToValueAtTime
+          - mOsc.connect
+          - mFilter.connect
+          - mGain.connect
+          - mOsc.start
+          - mOsc.stop
+          - spOsc.frequency.setValueAtTime
+          - spGain.gain.setValueAtTime
+          - spGain.gain.linearRampToValueAtTime
+          - spGain.gain.exponentialRampToValueAtTime
+          - spOsc.connect
+          - spGain.connect
+          - spOsc.start
+          - spOsc.stop
+      - name: chillTrack
+        kind: const
+  src/utils/sound/tracks/climb.ts:
+    imports:
+      - ./types
+      - ./helpers
+    exports:
+      - name: scheduleClimbStep
+        params:
+          ? "{\n  ctx,\n  destination,\n  reverbSend,\n  time,\n  step,\n  trackActiveNode,\n  createPanner,\n  getNoiseBuffer,\n}"
+          : import("C:/Users/ghkdd/gemini-projects/solve-climb/src/utils/sound/tracks/types").TrackContext
+        calls:
+          - Math.floor
+          - ctx.createOscillator
+          - ctx.createGain
+          - kickOsc.frequency.setValueAtTime
+          - kickOsc.frequency.exponentialRampToValueAtTime
+          - kickGain.gain.setValueAtTime
+          - kickGain.gain.linearRampToValueAtTime
+          - kickGain.gain.exponentialRampToValueAtTime
+          - kickOsc.connect
+          - kickGain.connect
+          - kickOsc.start
+          - kickOsc.stop
+          - trackActiveNode
+          - getNoiseBuffer
+          - ctx.createBufferSource
+          - ctx.createBiquadFilter
+          - sFilter.frequency.setValueAtTime
+          - sGain.gain.setValueAtTime
+          - sGain.gain.linearRampToValueAtTime
+          - sGain.gain.exponentialRampToValueAtTime
+          - sSource.connect
+          - sFilter.connect
+          - sGain.connect
+          - sSource.start
+          - sSource.stop
+          - createPanner
+          - hFilter.frequency.setValueAtTime
+          - hGain.gain.setValueAtTime
+          - hGain.gain.linearRampToValueAtTime
+          - hGain.gain.exponentialRampToValueAtTime
+          - hSource.connect
+          - hFilter.connect
+          - hGain.connect
+          - hPanner.connect
+          - hSource.start
+          - hSource.stop
+          - safeGet
+          - bOsc.frequency.setValueAtTime
+          - Math.max
+          - bFilter.frequency.setValueAtTime
+          - bGain.gain.setValueAtTime
+          - bGain.gain.linearRampToValueAtTime
+          - bGain.gain.exponentialRampToValueAtTime
+          - bOsc.connect
+          - bFilter.connect
+          - bGain.connect
+          - bOsc.start
+          - bOsc.stop
+          - chordNotes.forEach
+          - sOsc.frequency.setValueAtTime
+          - sFilter.frequency.exponentialRampToValueAtTime
+          - sOsc.connect
+          - sPanner.connect
+          - sOsc.start
+          - sOsc.stop
+          - aOsc.frequency.setValueAtTime
+          - aFilter.frequency.setValueAtTime
+          - aFilter.frequency.linearRampToValueAtTime
+          - aGain.gain.setValueAtTime
+          - aGain.gain.linearRampToValueAtTime
+          - aGain.gain.exponentialRampToValueAtTime
+          - aOsc.connect
+          - aFilter.connect
+          - aGain.connect
+          - aPanner.connect
+          - aOsc.start
+          - aOsc.stop
+      - name: schedulePrototypeClimb
+        params:
+          ? "{\n  ctx,\n  destination,\n  time,\n  step,\n  trackActiveNode,\n}"
+          : import("C:/Users/ghkdd/gemini-projects/solve-climb/src/utils/sound/tracks/types").PrototypeTrackContext
+        calls:
+          - Math.floor
+          - ctx.createOscillator
+          - ctx.createGain
+          - kickOsc.frequency.setValueAtTime
+          - kickOsc.frequency.exponentialRampToValueAtTime
+          - kickGain.gain.setValueAtTime
+          - kickGain.gain.linearRampToValueAtTime
+          - kickGain.gain.exponentialRampToValueAtTime
+          - kickOsc.connect
+          - kickGain.connect
+          - kickOsc.start
+          - kickOsc.stop
+          - trackActiveNode
+          - safeGet
+          - ctx.createBiquadFilter
+          - bOsc.frequency.setValueAtTime
+          - bFilter.frequency.setValueAtTime
+          - bGain.gain.setValueAtTime
+          - bGain.gain.linearRampToValueAtTime
+          - bGain.gain.exponentialRampToValueAtTime
+          - bOsc.connect
+          - bFilter.connect
+          - bGain.connect
+          - bOsc.start
+          - bOsc.stop
+          - aOsc.frequency.setValueAtTime
+          - aFilter.frequency.setValueAtTime
+          - aFilter.frequency.linearRampToValueAtTime
+          - aGain.gain.setValueAtTime
+          - aGain.gain.linearRampToValueAtTime
+          - aGain.gain.exponentialRampToValueAtTime
+          - aOsc.connect
+          - aFilter.connect
+          - aGain.connect
+          - aOsc.start
+          - aOsc.stop
+          - chordNotes.forEach
+          - sOsc.frequency.setValueAtTime
+          - sFilter.frequency.setValueAtTime
+          - sGain.gain.setValueAtTime
+          - sGain.gain.linearRampToValueAtTime
+          - sGain.gain.exponentialRampToValueAtTime
+          - sOsc.connect
+          - sFilter.connect
+          - sGain.connect
+          - sOsc.start
+          - sOsc.stop
+      - name: climbTrack
+        kind: const
+  src/utils/sound/tracks/crisis.ts:
+    imports:
+      - ./types
+      - ./helpers
+    exports:
+      - name: scheduleCrisisStep
+        params:
+          ? "{\n  ctx,\n  destination,\n  reverbSend,\n  time,\n  step,\n  trackActiveNode,\n  createPanner,\n  getNoiseBuffer,\n}"
+          : import("C:/Users/ghkdd/gemini-projects/solve-climb/src/utils/sound/tracks/types").TrackContext
+        calls:
+          - Math.floor
+          - ctx.createOscillator
+          - ctx.createGain
+          - ctx.createBiquadFilter
+          - hOsc.frequency.setValueAtTime
+          - hOsc.frequency.exponentialRampToValueAtTime
+          - hFilter.frequency.setValueAtTime
+          - hGain.gain.setValueAtTime
+          - hGain.gain.linearRampToValueAtTime
+          - hGain.gain.exponentialRampToValueAtTime
+          - hOsc.connect
+          - hFilter.connect
+          - hGain.connect
+          - hOsc.start
+          - hOsc.stop
+          - trackActiveNode
+          - subOsc.frequency.setValueAtTime
+          - subOsc.frequency.exponentialRampToValueAtTime
+          - subGain.gain.setValueAtTime
+          - subGain.gain.linearRampToValueAtTime
+          - subGain.gain.exponentialRampToValueAtTime
+          - subOsc.connect
+          - subGain.connect
+          - subOsc.start
+          - subOsc.stop
+          - getNoiseBuffer
+          - ctx.createBufferSource
+          - createPanner
+          - tFilter.frequency.setValueAtTime
+          - tGain.gain.setValueAtTime
+          - tGain.gain.linearRampToValueAtTime
+          - tGain.gain.exponentialRampToValueAtTime
+          - tSource.connect
+          - tFilter.connect
+          - tGain.connect
+          - tPanner.connect
+          - tSource.start
+          - tSource.stop
+          - safeGet
+          - currentChord.forEach
+          - osc.frequency.setValueAtTime
+          - filter.frequency.setValueAtTime
+          - filter.frequency.linearRampToValueAtTime
+          - gain.gain.setValueAtTime
+          - gain.gain.linearRampToValueAtTime
+          - gain.gain.exponentialRampToValueAtTime
+          - osc.connect
+          - filter.connect
+          - gain.connect
+          - osc.start
+          - osc.stop
+          - sOsc.frequency.setValueAtTime
+          - sOsc.frequency.linearRampToValueAtTime
+          - sFilter.frequency.setValueAtTime
+          - sGain.gain.setValueAtTime
+          - sGain.gain.linearRampToValueAtTime
+          - sGain.gain.exponentialRampToValueAtTime
+          - sOsc.connect
+          - sFilter.connect
+          - sGain.connect
+          - sPanner.connect
+          - sOsc.start
+          - sOsc.stop
+      - name: schedulePrototypeCrisis
+        params:
+          ? "{\n  ctx,\n  destination,\n  time,\n  step,\n  trackActiveNode,\n}"
+          : import("C:/Users/ghkdd/gemini-projects/solve-climb/src/utils/sound/tracks/types").PrototypeTrackContext
+        calls:
+          - ctx.createOscillator
+          - ctx.createGain
+          - ctx.createBiquadFilter
+          - hOsc.frequency.setValueAtTime
+          - hOsc.frequency.exponentialRampToValueAtTime
+          - hFilter.frequency.setValueAtTime
+          - hGain.gain.setValueAtTime
+          - hGain.gain.linearRampToValueAtTime
+          - hGain.gain.exponentialRampToValueAtTime
+          - hOsc.connect
+          - hFilter.connect
+          - hGain.connect
+          - hOsc.start
+          - hOsc.stop
+          - trackActiveNode
+          - subOsc.frequency.setValueAtTime
+          - subOsc.frequency.exponentialRampToValueAtTime
+          - subGain.gain.setValueAtTime
+          - subGain.gain.linearRampToValueAtTime
+          - subGain.gain.exponentialRampToValueAtTime
+          - subOsc.connect
+          - subGain.connect
+          - subOsc.start
+          - subOsc.stop
+          - tensionChord.forEach
+          - osc.frequency.setValueAtTime
+          - filter.frequency.setValueAtTime
+          - filter.frequency.linearRampToValueAtTime
+          - gain.gain.setValueAtTime
+          - gain.gain.linearRampToValueAtTime
+          - gain.gain.exponentialRampToValueAtTime
+          - osc.connect
+          - filter.connect
+          - gain.connect
+          - osc.start
+          - osc.stop
+          - tOsc.frequency.setValueAtTime
+          - tFilter.frequency.setValueAtTime
+          - tGain.gain.setValueAtTime
+          - tGain.gain.linearRampToValueAtTime
+          - tGain.gain.exponentialRampToValueAtTime
+          - tOsc.connect
+          - tFilter.connect
+          - tGain.connect
+          - tOsc.start
+          - tOsc.stop
+      - name: crisisTrack
+        kind: const
+  src/utils/sound/tracks/helpers.ts:
+    exports:
+      - name: safeGet
+        params:
+          arr: Record<number, T> | T[] | undefined
+          index: number
+          fallback: T
+        returns: T
+        calls:
+          - Array.isArray
+  src/utils/sound/tracks/index.ts:
+    imports:
+      - ../types
+      - ./types
+      - ./brainAge
+      - ./celeste
+      - ./climb
+      - ./shop
+      - ./victory
+      - ./crisis
+      - ./chill
+      - ./arcade
+      - ./puzzle
+    exports:
+      - name: TRACK_REGISTRY
+        kind: const
+  src/utils/sound/tracks/metadata.ts:
+    imports:
+      - ../types
+      - ./types
+    exports:
+      - name: BGM_ARRANGEMENTS_V2
+        kind: const
+      - name: BGM_ARRANGEMENTS_V1
+        kind: const
+  src/utils/sound/tracks/puzzle.ts:
+    imports:
+      - ./types
+      - ./helpers
+    exports:
+      - name: schedulePuzzleStep
+        params:
+          ? "{\n  ctx,\n  destination,\n  reverbSend,\n  time,\n  step,\n  trackActiveNode,\n  createPanner,\n  getNoiseBuffer,\n}"
+          : import("C:/Users/ghkdd/gemini-projects/solve-climb/src/utils/sound/tracks/types").TrackContext
+        calls:
+          - Math.floor
+          - ctx.createOscillator
+          - ctx.createGain
+          - kickOsc.frequency.setValueAtTime
+          - kickOsc.frequency.exponentialRampToValueAtTime
+          - kickGain.gain.setValueAtTime
+          - kickGain.gain.linearRampToValueAtTime
+          - kickGain.gain.exponentialRampToValueAtTime
+          - kickOsc.connect
+          - kickGain.connect
+          - kickOsc.start
+          - kickOsc.stop
+          - trackActiveNode
+          - getNoiseBuffer
+          - ctx.createBufferSource
+          - ctx.createBiquadFilter
+          - sFilter.frequency.setValueAtTime
+          - sGain.gain.setValueAtTime
+          - sGain.gain.linearRampToValueAtTime
+          - sGain.gain.exponentialRampToValueAtTime
+          - sSource.connect
+          - sFilter.connect
+          - sGain.connect
+          - sSource.start
+          - sSource.stop
+          - createPanner
+          - hFilter.frequency.setValueAtTime
+          - hGain.gain.setValueAtTime
+          - hGain.gain.linearRampToValueAtTime
+          - hGain.gain.exponentialRampToValueAtTime
+          - hSource.connect
+          - hFilter.connect
+          - hGain.connect
+          - hPanner.connect
+          - hSource.start
+          - hSource.stop
+          - safeGet
+          - bOsc.frequency.setValueAtTime
+          - bFilter.frequency.setValueAtTime
+          - bGain.gain.setValueAtTime
+          - bGain.gain.linearRampToValueAtTime
+          - bGain.gain.exponentialRampToValueAtTime
+          - bOsc.connect
+          - bFilter.connect
+          - bGain.connect
+          - bOsc.start
+          - bOsc.stop
+          - chordNotes.forEach
+          - rOsc.frequency.setValueAtTime
+          - rFilter.frequency.setValueAtTime
+          - rFilter.frequency.exponentialRampToValueAtTime
+          - rGain.gain.setValueAtTime
+          - rGain.gain.linearRampToValueAtTime
+          - rGain.gain.exponentialRampToValueAtTime
+          - rOsc.connect
+          - rFilter.connect
+          - rGain.connect
+          - rPanner.connect
+          - rOsc.start
+          - rOsc.stop
+          - lOsc.frequency.setValueAtTime
+          - lFilter.frequency.setValueAtTime
+          - lFilter.frequency.exponentialRampToValueAtTime
+          - lGain.gain.setValueAtTime
+          - lGain.gain.linearRampToValueAtTime
+          - lGain.gain.exponentialRampToValueAtTime
+          - lOsc.connect
+          - lFilter.connect
+          - lGain.connect
+          - lPanner.connect
+          - lOsc.start
+          - lOsc.stop
+      - name: schedulePrototypePuzzle
+        params:
+          ? "{\n  ctx,\n  destination,\n  time,\n  step,\n  trackActiveNode,\n}"
+          : import("C:/Users/ghkdd/gemini-projects/solve-climb/src/utils/sound/tracks/types").PrototypeTrackContext
+        calls:
+          - safeGet
+          - Math.floor
+          - chord.forEach
+          - ctx.createOscillator
+          - ctx.createGain
+          - ctx.createBiquadFilter
+          - osc.frequency.setValueAtTime
+          - filter.frequency.setValueAtTime
+          - gain.gain.setValueAtTime
+          - gain.gain.linearRampToValueAtTime
+          - gain.gain.exponentialRampToValueAtTime
+          - osc.connect
+          - filter.connect
+          - gain.connect
+          - osc.start
+          - osc.stop
+          - trackActiveNode
+          - filter.frequency.linearRampToValueAtTime
+      - name: puzzleTrack
+        kind: const
+  src/utils/sound/tracks/shop.ts:
+    imports:
+      - ./types
+      - ./helpers
+    exports:
+      - name: scheduleShopStep
+        params:
+          ? "{\n  ctx,\n  destination,\n  reverbSend,\n  time,\n  step,\n  trackActiveNode,\n  createPanner,\n  getNoiseBuffer,\n}"
+          : import("C:/Users/ghkdd/gemini-projects/solve-climb/src/utils/sound/tracks/types").TrackContext
+        calls:
+          - Math.floor
+          - ctx.createOscillator
+          - ctx.createGain
+          - kickOsc.frequency.setValueAtTime
+          - kickOsc.frequency.exponentialRampToValueAtTime
+          - kickGain.gain.setValueAtTime
+          - kickGain.gain.linearRampToValueAtTime
+          - kickGain.gain.exponentialRampToValueAtTime
+          - kickOsc.connect
+          - kickGain.connect
+          - kickOsc.start
+          - kickOsc.stop
+          - trackActiveNode
+          - getNoiseBuffer
+          - ctx.createBufferSource
+          - ctx.createBiquadFilter
+          - createPanner
+          - shFilter.frequency.setValueAtTime
+          - shGain.gain.setValueAtTime
+          - shGain.gain.linearRampToValueAtTime
+          - shGain.gain.exponentialRampToValueAtTime
+          - shSource.connect
+          - shFilter.connect
+          - shGain.connect
+          - shPanner.connect
+          - shSource.start
+          - shSource.stop
+          - wbOsc.frequency.setValueAtTime
+          - wbFilter.frequency.setValueAtTime
+          - wbGain.gain.setValueAtTime
+          - wbGain.gain.linearRampToValueAtTime
+          - wbGain.gain.exponentialRampToValueAtTime
+          - wbOsc.connect
+          - wbFilter.connect
+          - wbGain.connect
+          - wbPanner.connect
+          - wbOsc.start
+          - wbOsc.stop
+          - bellOsc.frequency.setValueAtTime
+          - bellFilter.frequency.setValueAtTime
+          - bellGain.gain.setValueAtTime
+          - bellGain.gain.linearRampToValueAtTime
+          - bellGain.gain.exponentialRampToValueAtTime
+          - bellOsc.connect
+          - bellFilter.connect
+          - bellGain.connect
+          - bellOsc.start
+          - bellOsc.stop
+          - safeGet
+          - bOsc.frequency.setValueAtTime
+          - bFilter.frequency.setValueAtTime
+          - bGain.gain.setValueAtTime
+          - bGain.gain.linearRampToValueAtTime
+          - bGain.gain.exponentialRampToValueAtTime
+          - bOsc.connect
+          - bFilter.connect
+          - bGain.connect
+          - bOsc.start
+          - bOsc.stop
+          - chordNotes.forEach
+          - gOsc.frequency.setValueAtTime
+          - gFilter.frequency.setValueAtTime
+          - gFilter.frequency.exponentialRampToValueAtTime
+          - gGain.gain.setValueAtTime
+          - gGain.gain.linearRampToValueAtTime
+          - gGain.gain.exponentialRampToValueAtTime
+          - gOsc.connect
+          - gFilter.connect
+          - gGain.connect
+          - gPanner.connect
+          - gOsc.start
+          - gOsc.stop
+          - mOsc.frequency.setValueAtTime
+          - mFilter.frequency.setValueAtTime
+          - mFilter.frequency.exponentialRampToValueAtTime
+          - mGain.gain.setValueAtTime
+          - mGain.gain.linearRampToValueAtTime
+          - mGain.gain.exponentialRampToValueAtTime
+          - mOsc.connect
+          - mFilter.connect
+          - mGain.connect
+          - mPanner.connect
+          - mOsc.start
+          - mOsc.stop
+      - name: schedulePrototypeShop
+        params:
+          ? "{\n  ctx,\n  destination,\n  time,\n  step,\n  trackActiveNode,\n}"
+          : import("C:/Users/ghkdd/gemini-projects/solve-climb/src/utils/sound/tracks/types").PrototypeTrackContext
+        calls:
+          - Math.floor
+          - safeGet
+          - currentBassEvents.find
+          - ctx.createOscillator
+          - ctx.createGain
+          - ctx.createBiquadFilter
+          - bOsc.frequency.setValueAtTime
+          - bFilter.frequency.setValueAtTime
+          - bGain.gain.setValueAtTime
+          - bGain.gain.linearRampToValueAtTime
+          - bGain.gain.exponentialRampToValueAtTime
+          - bOsc.connect
+          - bFilter.connect
+          - bGain.connect
+          - bOsc.start
+          - bOsc.stop
+          - trackActiveNode
+          - chordNotes.forEach
+          - uOsc.frequency.setValueAtTime
+          - uFilter.frequency.setValueAtTime
+          - uGain.gain.setValueAtTime
+          - uGain.gain.linearRampToValueAtTime
+          - uGain.gain.exponentialRampToValueAtTime
+          - uOsc.connect
+          - uFilter.connect
+          - uGain.connect
+          - uOsc.start
+          - uOsc.stop
+          - mOsc.frequency.setValueAtTime
+          - mFilter.frequency.setValueAtTime
+          - mGain.gain.setValueAtTime
+          - mGain.gain.linearRampToValueAtTime
+          - mGain.gain.exponentialRampToValueAtTime
+          - mOsc.connect
+          - mFilter.connect
+          - mGain.connect
+          - mOsc.start
+          - mOsc.stop
+          - wOsc.frequency.setValueAtTime
+          - wFilter.frequency.setValueAtTime
+          - wGain.gain.setValueAtTime
+          - wGain.gain.linearRampToValueAtTime
+          - wGain.gain.exponentialRampToValueAtTime
+          - wOsc.connect
+          - wFilter.connect
+          - wGain.connect
+          - wOsc.start
+          - wOsc.stop
+      - name: shopTrack
+        kind: const
+  src/utils/sound/tracks/types.ts:
+    imports:
+      - ../types
+    exports:
+      - name: BgmPartInfo
+        kind: interface
+      - name: BgmTrackArrangement
+        kind: interface
+      - name: TrackContext
+        kind: interface
+      - name: PrototypeTrackContext
+        kind: interface
+      - name: TrackModule
+        kind: interface
+      - name: BgmVersion
+        kind: type
+  src/utils/sound/tracks/victory.ts:
+    imports:
+      - ./types
+      - ./helpers
+    exports:
+      - name: scheduleVictoryStep
+        params:
+          ? "{\n  ctx,\n  destination,\n  reverbSend,\n  time,\n  step,\n  trackActiveNode,\n  createPanner,\n  getNoiseBuffer,\n}"
+          : import("C:/Users/ghkdd/gemini-projects/solve-climb/src/utils/sound/tracks/types").TrackContext
+        calls:
+          - Math.floor
+          - ctx.createOscillator
+          - ctx.createGain
+          - kickOsc.frequency.setValueAtTime
+          - kickOsc.frequency.exponentialRampToValueAtTime
+          - kickGain.gain.setValueAtTime
+          - kickGain.gain.linearRampToValueAtTime
+          - kickGain.gain.exponentialRampToValueAtTime
+          - kickOsc.connect
+          - kickGain.connect
+          - kickOsc.start
+          - kickOsc.stop
+          - trackActiveNode
+          - getNoiseBuffer
+          - ctx.createBufferSource
+          - ctx.createBiquadFilter
+          - sFilter.frequency.setValueAtTime
+          - sGain.gain.setValueAtTime
+          - sGain.gain.linearRampToValueAtTime
+          - sGain.gain.exponentialRampToValueAtTime
+          - sSource.connect
+          - sFilter.connect
+          - sGain.connect
+          - sSource.start
+          - sSource.stop
+          - createPanner
+          - cFilter.frequency.setValueAtTime
+          - cGain.gain.setValueAtTime
+          - cGain.gain.linearRampToValueAtTime
+          - cGain.gain.exponentialRampToValueAtTime
+          - cSource.connect
+          - cFilter.connect
+          - cGain.connect
+          - cPanner.connect
+          - cSource.start
+          - cSource.stop
+          - safeGet
+          - chord.forEach
+          - osc.frequency.setValueAtTime
+          - filter.frequency.setValueAtTime
+          - filter.frequency.linearRampToValueAtTime
+          - gain.gain.setValueAtTime
+          - gain.gain.linearRampToValueAtTime
+          - gain.gain.exponentialRampToValueAtTime
+          - osc.connect
+          - filter.connect
+          - gain.connect
+          - panner.connect
+          - osc.start
+          - osc.stop
+          - hOsc.frequency.setValueAtTime
+          - hFilter.frequency.setValueAtTime
+          - hGain.gain.setValueAtTime
+          - hGain.gain.linearRampToValueAtTime
+          - hGain.gain.exponentialRampToValueAtTime
+          - hOsc.connect
+          - hFilter.connect
+          - hGain.connect
+          - hPanner.connect
+          - hOsc.start
+          - hOsc.stop
+          - tOsc.frequency.setValueAtTime
+          - tFilter.frequency.setValueAtTime
+          - tFilter.frequency.linearRampToValueAtTime
+          - tGain.gain.setValueAtTime
+          - tGain.gain.linearRampToValueAtTime
+          - tGain.gain.exponentialRampToValueAtTime
+          - tOsc.connect
+          - tFilter.connect
+          - tGain.connect
+          - tPanner.connect
+          - tOsc.start
+          - tOsc.stop
+      - name: schedulePrototypeVictory
+        params:
+          ? "{\n  ctx,\n  destination,\n  time,\n  step,\n  trackActiveNode,\n}"
+          : import("C:/Users/ghkdd/gemini-projects/solve-climb/src/utils/sound/tracks/types").PrototypeTrackContext
+        calls:
+          - Math.floor
+          - safeGet
+          - chord.forEach
+          - ctx.createOscillator
+          - ctx.createGain
+          - ctx.createBiquadFilter
+          - osc.frequency.setValueAtTime
+          - filter.frequency.setValueAtTime
+          - filter.frequency.linearRampToValueAtTime
+          - gain.gain.setValueAtTime
+          - gain.gain.linearRampToValueAtTime
+          - gain.gain.exponentialRampToValueAtTime
+          - osc.connect
+          - filter.connect
+          - gain.connect
+          - osc.start
+          - osc.stop
+          - trackActiveNode
+          - hOsc.frequency.setValueAtTime
+          - hGain.gain.setValueAtTime
+          - hGain.gain.linearRampToValueAtTime
+          - hGain.gain.exponentialRampToValueAtTime
+          - hOsc.connect
+          - hGain.connect
+          - hOsc.start
+          - hOsc.stop
+      - name: victoryTrack
+        kind: const
   src/features/quiz/components/result/ResultRewardActions.tsx:
     imports:
       - '@/constants/ui'

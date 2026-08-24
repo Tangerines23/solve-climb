@@ -18,10 +18,11 @@ export class SoundEngine {
   }
 
   private getGraph(): { ctx: AudioContext; destination: AudioNode } | null {
-    if (!audioContextManager.isEnabled()) return null;
+    if (!audioContextManager.isSoundEnabled()) return null;
     const ctx = audioContextManager.getContext();
     const destination = audioContextManager.getMasterGain();
     if (!ctx || !destination) return null;
+    audioContextManager.ensureRunning();
     return { ctx, destination };
   }
 
