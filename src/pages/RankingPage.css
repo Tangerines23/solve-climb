@@ -8,7 +8,7 @@
 
 .ranking-main {
   flex: 1;
-  padding-bottom: calc(var(--spacing-4xl) * 2);
+  padding-bottom: calc(var(--footer-height-portrait) + 90px);
   display: flex;
   flex-direction: column;
 }
@@ -340,14 +340,15 @@
 /* My Rank Sticky */
 .my-rank-sticky {
   position: fixed;
-  bottom: calc(var(--spacing-4xl) * 2);
+  bottom: calc(var(--footer-height-portrait) + env(safe-area-inset-bottom, 0px));
   left: 0;
   right: 0;
-  padding: var(--spacing-lg) 0;
+  padding: var(--spacing-sm) 0;
   background: var(--bg-glass-overlay);
   -webkit-backdrop-filter: blur(var(--glass-blur));
   backdrop-filter: blur(var(--glass-blur));
   z-index: 100;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
 }
 
 .my-rank-sticky-content {
@@ -358,6 +359,10 @@
 }
 
 @media (orientation: landscape) {
+  .my-rank-sticky {
+    bottom: calc(var(--footer-height-landscape) + env(safe-area-inset-bottom, 0px));
+  }
+
   .my-rank-sticky-content {
     max-width: var(--modal-width-landscape-small);
   }

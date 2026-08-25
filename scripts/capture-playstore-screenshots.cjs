@@ -60,7 +60,8 @@ async function captureScreenshots() {
       name: '2_climbing_game.png', 
       url: 'http://localhost:4173/quiz?mountain=math&world=World1&category=%EA%B8%B0%EC%B4%88&level=1&mode=time-attack' 
     },
-    { name: '3_my_profile.png', url: 'http://localhost:4173/my-page' }
+    { name: '3_ranking.png', url: 'http://localhost:4173/ranking' },
+    { name: '4_my_profile.png', url: 'http://localhost:4173/my-page' }
   ];
 
   for (const r of routes) {
