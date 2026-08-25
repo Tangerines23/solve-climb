@@ -1,3 +1,4 @@
+import '@/utils/polyfills';
 import ReactDOM from 'react-dom/client';
 import React from 'react';
 import * as Sentry from '@sentry/react';
