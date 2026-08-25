@@ -1,7 +1,7 @@
 {
   "name": "react-vite-app",
   "private": true,
-  "version": "0.27.530",
+  "version": "0.27.531",
   "type": "module",
   "scripts": {
     "setup": "node scripts/setup-new-env.js",

@@ -96,8 +96,25 @@ export function MyPageSettings({
             setShowLocalToast(true);
           } else {
             showToast(`새로운 웹 빌드 v${serverVersion}가 있습니다. 새로고침합니다.`, '🔄', 2000);
-            setTimeout(() => {
-              window.location.reload();
+            setTimeout(async () => {
+              if (typeof window !== 'undefined') {
+                try {
+                  if ('serviceWorker' in navigator) {
+                    const registrations = await navigator.serviceWorker.getRegistrations();
+                    for (const reg of registrations) {
+                      await reg.update().catch(() => {});
+                      await reg.unregister().catch(() => {});
+                    }
+                  }
+                  if ('caches' in window) {
+                    const keys = await caches.keys();
+                    await Promise.all(keys.map((k) => caches.delete(k)));
+                  }
+                } catch (_e) {
+                  // ignore
+                }
+                window.location.reload();
+              }
             }, 1000);
           }
         } else {
