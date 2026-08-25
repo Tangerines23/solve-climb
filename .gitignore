@@ -88,6 +88,8 @@ tests/e2e/screenshots/
 # Periodic Reports
 reports/*
 !reports/.gitkeep
+!reports/playstore-screenshots/
+!reports/playstore-screenshots/**
 
 # Temporary Logs
 build_error.txt

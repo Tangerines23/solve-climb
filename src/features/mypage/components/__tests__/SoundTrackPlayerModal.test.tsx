@@ -1,9 +1,10 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/react';
 import { SoundTrackPlayerModal } from '../SoundTrackPlayerModal';
-import { bgm, sound } from '@/utils/sound';
+import { bgm, sound, isInstrumentPlaying } from '@/utils/sound';
 
 vi.mock('@/utils/sound', () => ({
+  isInstrumentPlaying: vi.fn(() => false),
   bgm: {
     play: vi.fn(),
     stop: vi.fn(),
@@ -214,6 +215,22 @@ describe('SoundTrackPlayerModal', () => {
 
     fireEvent.click(screen.getByText('버저 / 쿵 (오답)'));
     expect(sound.playWrong).toHaveBeenCalled();
+  });
+
+  it('highlights instrument tag with is-playing class when active note is emitted', () => {
+    vi.mocked(bgm.getCurrentTheme).mockReturnValue('brain_age');
+    vi.mocked(isInstrumentPlaying).mockImplementation((_track, inst) =>
+      inst.includes('Upright Bass')
+    );
+
+    render(<SoundTrackPlayerModal isOpen={true} onClose={onClose} initialTab="bgm" />);
+
+    const bassTag = screen.getByText('Upright Bass').closest('.sound-player-instrument-tag');
+    expect(bassTag).toHaveClass('is-playing');
+    expect(bassTag).toHaveAttribute('data-playing', 'true');
+
+    const epTag = screen.getByText('EP(Rhodes 피아노)').closest('.sound-player-instrument-tag');
+    expect(epTag).not.toHaveClass('is-playing');
   });
 
   it('calls onClose when clicking back button', () => {

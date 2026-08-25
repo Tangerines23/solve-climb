@@ -10,6 +10,7 @@ import {
   type BgmVersion,
   BGM_ARRANGEMENTS_V1,
   BGM_ARRANGEMENTS_V2,
+  isInstrumentPlaying,
 } from '@/utils/sound';
 import { AlertModal } from '@/components/AlertModal';
 import { ConfirmModal } from '@/components/ConfirmModal';
@@ -751,22 +752,36 @@ export function NotificationPlayground() {
                           marginBottom: '6px',
                         }}
                       >
-                        {currentPart.instruments.map((inst) => (
-                          <span
-                            key={inst}
-                            style={{
-                              padding: '2px 6px',
-                              borderRadius: '4px',
-                              backgroundColor: 'rgba(0, 200, 83, 0.15)',
-                              border: '1px solid rgba(0, 200, 83, 0.3)',
-                              color: 'var(--color-success)',
-                              fontSize: '10px',
-                              fontWeight: 'bold',
-                            }}
-                          >
-                            {inst}
-                          </span>
-                        ))}
+                        {currentPart.instruments.map((inst) => {
+                          const isPlaying =
+                            isActive && isInstrumentPlaying(track.id, inst, currentStep);
+
+                          return (
+                            <span
+                              key={inst}
+                              style={{
+                                padding: '2px 7px',
+                                borderRadius: '12px',
+                                backgroundColor: isPlaying
+                                  ? 'rgba(255, 214, 0, 0.32)'
+                                  : 'rgba(0, 200, 83, 0.12)',
+                                border: isPlaying
+                                  ? '1px solid #ffd600'
+                                  : '1px solid rgba(0, 200, 83, 0.28)',
+                                color: isPlaying ? '#fff9a6' : 'var(--color-success)',
+                                fontSize: '10px',
+                                fontWeight: isPlaying ? '800' : 'bold',
+                                transform: isPlaying
+                                  ? 'scale(1.08) translateY(-1px)'
+                                  : 'scale(1) translateY(0)',
+                                boxShadow: isPlaying ? '0 0 10px rgba(255, 214, 0, 0.6)' : 'none',
+                                transition: 'all 0.1s ease-out',
+                              }}
+                            >
+                              {inst}
+                            </span>
+                          );
+                        })}
                       </div>
                       <div style={{ fontSize: '10px', color: 'var(--color-text-secondary)' }}>
                         💬 {currentPart.description}

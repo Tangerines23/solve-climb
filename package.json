@@ -20,6 +20,7 @@
     "type-check": "tsc --noEmit",
     "verify:ranking:e2e": "node scripts/verify-e2e-ranking-flow.js",
     "check:playstore:version": "node scripts/check-playstore-version.js",
+    "capture:playstore:screenshots": "node scripts/capture-playstore-screenshots.cjs",
     "check:vercel": "node scripts/check-vercel-config.js",
     "check": "npm run type-check && npm run lint && npm run format:check && npm run check:css && npm run check:nav && npm run check:vercel && npm run check:db:lint",
     "validate": "npm run type-check && npm run lint && npm run format:check && npm run check:css && npm run check:nav && npm run check:vercel && npm run check:db:lint && npm run check:secrets && npm run check:circular && npm run check:integrity && npm run check:logic && npm run check:playstore:version",

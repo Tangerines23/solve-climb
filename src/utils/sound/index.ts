@@ -13,5 +13,6 @@ export {
 } from './bgmEngine';
 export { audioContextManager } from './audioContext';
 export { setupGlobalTapListener } from './globalTapListener';
+export { isInstrumentPlaying } from './tracks/helpers';
 export * from './synthesizers';
 export * from './types';

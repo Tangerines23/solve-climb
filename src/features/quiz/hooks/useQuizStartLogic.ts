@@ -88,11 +88,17 @@ export function useQuizStartLogic({
         // 인게임 세션에 장착된 아이템 등록
         useGameStore.getState().setActiveItems(equippedCodes);
 
-        // 1. 산소통 (oxygen_tank): 제한 시간 10초 -> 20초 확장
-        if (equippedCodes.includes('oxygen_tank')) {
-          useQuizStore.getState().setTimeLimit(20);
+        // 1. 산소통 (oxygen_tank): 서바이벌은 기본 10초(산소통 20초), 타임어택/일반게임은 기본 60초(산소통 70초)
+        if (gameMode === 'survival') {
+          if (equippedCodes.includes('oxygen_tank')) {
+            useQuizStore.getState().setTimeLimit(20);
+          } else {
+            useQuizStore.getState().setTimeLimit(10);
+          }
         } else {
-          useQuizStore.getState().setTimeLimit(10);
+          const baseTime = 60;
+          const extraTime = equippedCodes.includes('oxygen_tank') ? 10 : 0;
+          useQuizStore.getState().setTimeLimit(baseTime + extraTime);
         }
 
         // 2. 파워젤 (power_gel): 시작 시 콤보 1단계 즉시 부여
