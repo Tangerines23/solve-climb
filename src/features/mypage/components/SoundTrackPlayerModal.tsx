@@ -1,11 +1,25 @@
 import { useState, useEffect } from 'react';
-import { bgm, sound, type BgmTheme, BGM_ARRANGEMENTS_V2 } from '@/utils/sound';
+import { bgm, sound, type BgmTheme, BGM_ARRANGEMENTS_V2, isInstrumentPlaying } from '@/utils/sound';
 import { useSettingsStore } from '@/stores/useSettingsStore';
 
 interface SoundTrackPlayerModalProps {
   isOpen: boolean;
   onClose: () => void;
   initialTab?: 'bgm' | 'sfx';
+}
+
+function parseInstrumentTag(inst: string): { icon: string; name: string } {
+  // 이모지나 특수 심볼로 시작하는 경우 (예: "🎻 워킹 콘트라베이스", "⚡ 16비트 모듈러")
+  const emojiMatch = inst.match(
+    /^(\p{Extended_Pictographic}|\p{Emoji}|[\u2600-\u27BF]|⚡|✨|🔥|💓|⏱️|🚨|📐|🪵|🪕|🪇|🔔|💥)\s*(.*)$/u
+  );
+  if (emojiMatch) {
+    return {
+      icon: emojiMatch[1],
+      name: emojiMatch[2] || inst,
+    };
+  }
+  return { icon: '🎵', name: inst };
 }
 
 const BGM_TRACKS: Array<{
@@ -136,7 +150,7 @@ export function SoundTrackPlayerModal({
     if (!activeBgm) return;
     const timer = setInterval(() => {
       setCurrentStep(bgm.getCurrentStep());
-    }, 60);
+    }, 40);
     return () => clearInterval(timer);
   }, [activeBgm]);
 
@@ -361,11 +375,24 @@ export function SoundTrackPlayerModal({
                               🎼 현재 추가된 악기 ({currentPart.instruments.length}개):
                             </div>
                             <div className="sound-player-instruments-tags">
-                              {currentPart.instruments.map((inst) => (
-                                <span key={inst} className="sound-player-instrument-tag">
-                                  {inst}
-                                </span>
-                              ))}
+                              {currentPart.instruments.map((inst) => {
+                                const isPlaying =
+                                  isActive && isInstrumentPlaying(track.id, inst, currentStep);
+                                const { icon, name } = parseInstrumentTag(inst);
+
+                                return (
+                                  <span
+                                    key={inst}
+                                    className={`sound-player-instrument-tag ${isPlaying ? 'is-playing' : ''}`}
+                                    data-playing={isPlaying}
+                                    title={isPlaying ? `${name} 연주 중 🎵` : name}
+                                  >
+                                    <span className="instrument-icon">{icon}</span>
+                                    <span className="instrument-name">{name}</span>
+                                    <span className="instrument-wave" />
+                                  </span>
+                                );
+                              })}
                             </div>
                             {currentPart.description && (
                               <div className="sound-player-part-desc">

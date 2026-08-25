@@ -53,10 +53,25 @@ export class BgmEngine {
   }
 
   /**
-   * 현재 진행 스텝 조회
+   * 실제 스피커에서 지금 소리가 흘러나오고 있는 실시간 청취 스텝(Audible Step) 조회
+   * (Lookahead 선행 스케줄링 오차 보정으로 귀에 들리는 소리와 시각화 1ms 일치)
    */
   getCurrentStep(): number {
-    return this.currentStep;
+    if (!this.isRunning || !this.currentTheme) return this.currentStep;
+    const graph = this.getGraph();
+    if (!graph) return this.currentStep;
+
+    const arrangementMap = this.soundVersion === 'v1' ? BGM_ARRANGEMENTS_V1 : BGM_ARRANGEMENTS_V2;
+    const arrangement = arrangementMap[this.currentTheme];
+    if (!arrangement) return this.currentStep;
+
+    // 현재 예약된 미래 시점(this.nextStepTime)과 실제 스피커 출력 시점(graph.ctx.currentTime) 간의 스텝 차이 계산
+    const timeUntilNext = this.nextStepTime - graph.ctx.currentTime;
+    const stepsAhead = Math.max(0, Math.floor(timeUntilNext / arrangement.stepDuration));
+
+    const audibleStep =
+      (this.currentStep - stepsAhead + arrangement.totalSteps) % arrangement.totalSteps;
+    return audibleStep;
   }
 
   /**

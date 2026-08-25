@@ -1,5 +1,5 @@
 project: solve-climb
-generatedAt: '2026-08-24T09:25:45.220Z'
+generatedAt: '2026-08-25T06:01:12.537Z'
 files:
   src/App.tsx:
     imports:
@@ -4238,6 +4238,10 @@ files:
             returns: import("C:/Users/ghkdd/gemini-projects/solve-climb/src/utils/sound/tracks/types").BgmVersion
           - name: getCurrentStep
             returns: number
+            calls:
+              - this.getGraph
+              - Math.max
+              - Math.floor
           - name: getTotalSteps
             returns: number
           - name: seekToStep
@@ -5479,6 +5483,7 @@ files:
           - arrangement.parts.map
           - bgm.jumpToPart
           - currentPart.instruments.map
+          - isInstrumentPlaying
           - e.stopPropagation
   src/features/debug/components/ProgressionSection.tsx:
     imports:
@@ -5884,6 +5889,8 @@ files:
           - e.stopPropagation
           - bgm.jumpToPart
           - currentPart.instruments.map
+          - isInstrumentPlaying
+          - parseInstrumentTag
           - setSoundEnabled
           - SFX_ITEMS.map
           - item.action
@@ -8477,7 +8484,21 @@ files:
       - name: crisisTrack
         kind: const
   src/utils/sound/tracks/helpers.ts:
+    imports:
+      - ../types
     exports:
+      - name: isInstrumentPlaying
+        params:
+          trackId: import("C:/Users/ghkdd/gemini-projects/solve-climb/src/utils/sound/types").BgmTheme
+          instrumentName: string
+          step: number
+        returns: boolean
+        description: |-
+          특정 BGM 트랙 및 스텝(step)에서 해당 악기가 실제 음을 발산(발음) 중인지 판정하는 순수 함수
+          리듬 게임 / 사운드트랙 비주얼라이저의 다이내믹 하이라이트에 사용됨
+        calls:
+          - instrumentName.toLowerCase
+          - norm.includes
       - name: safeGet
         params:
           arr: Record<number, T> | T[] | undefined
