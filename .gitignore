@@ -67,6 +67,7 @@ supabase/supabase/
 *.bat
 *.ait
 docs/
+.agent/
 
 # 임시 SQL 파일 및 실패한 마이그레이션
 *.manual
