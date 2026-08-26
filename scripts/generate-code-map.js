@@ -566,6 +566,90 @@ function getExports(sourceFile) {
   return exports;
 }
 
+function generateMacroArchitectureMap() {
+  const domainSummaries = {
+    'features/quiz': {
+      name: '퀴즈 게임 플레이 엔진 (Quiz Engine)',
+      summary: '일반 모드(60s)/서바이벌(10s) 퀴즈 출제, 타이머, 콤보, 점수 및 보상 판정',
+      entryPoints: ['src/features/quiz/QuizContainer.tsx'],
+      stores: ['useQuizStore', 'useLevelProgressStore'],
+      dbTables: ['game_records', 'user_profiles'],
+    },
+    'features/auth': {
+      name: '사용자 인증 및 세션 (Authentication)',
+      summary: 'Google OAuth, Toss App-in-Toss, 게스트 로그인 및 세션 동기화',
+      entryPoints: ['src/features/auth/AuthModal.tsx'],
+      stores: ['useAuthStore', 'useUserStore'],
+      externalIntegrations: ['Supabase Auth', 'GoogleSignIn', 'TossAuth'],
+    },
+    'features/ranking': {
+      name: '랭킹 및 티어 시스템 (Ranking & Tiers)',
+      summary: '전체/티어별 리더보드 조회, 시즌 레이팅 점수 산정 및 레이팅 검증',
+      entryPoints: ['src/features/ranking/RankingPage.tsx'],
+      stores: ['useRankingStore', 'useUserStore'],
+      dbTables: ['user_profiles', 'game_records'],
+    },
+    'features/shop': {
+      name: '상점 및 아이템 관리 (Shop & Inventory)',
+      summary: '산소통 및 시간연장 아이템 구매, 인벤토리 관리, 보상형 광고 연동',
+      entryPoints: ['src/features/shop/ShopPage.tsx'],
+      stores: ['useShopStore', 'useInventoryStore'],
+      dbTables: ['user_inventory', 'user_profiles'],
+      externalIntegrations: ['AdMob'],
+    },
+    'features/debug': {
+      name: '개발 및 디버그 도구 (Debug Tools)',
+      summary: '테스트 데이터 리셋, 더미 기록 생성, 에러 로그 뷰어 및 바운더리 테스트 패널',
+      entryPoints: ['src/features/debug/components/DebugPanel.tsx'],
+      stores: ['useDebugStore', 'useErrorLogStore'],
+    },
+    'utils/sound': {
+      name: 'Web Audio 사운드 엔진 (Audio Synthesis)',
+      summary: 'Web Audio API 기반 절차적 SFX 합성, 상황별 다이나믹 BGM 트랙 및 주파수 시각화',
+      entryPoints: ['src/utils/sound/index.ts', 'src/components/GlobalBgmManager.tsx'],
+      stores: ['useSettingsStore'],
+    },
+    'components/geometry': {
+      name: 'Manim 기하 시각화 (Geometry Visualizer)',
+      summary: '수학 기하학 및 대수학 문제용 인터랙티브 도형/차트 렌더러',
+      entryPoints: ['src/components/geometry/ShapeVisualizer.tsx'],
+    },
+  };
+
+  const globalStores = {
+    useAuthStore: '로그인 유저 정보 및 인증 세션 토큰 관리',
+    useQuizStore: '현재 문제, 선택지, 남은 시간, 점수, 콤보 및 진행 상태',
+    useLevelProgressStore: '월드별 클리어 레벨, 등반 고도 및 별점 진척도',
+    useSettingsStore: 'BGM/SFX 볼륨, 햅틱 피드백, 테마 설정',
+    useToastStore: '전역 토스트 알림 메시지 큐',
+    useBadgeStore: '업적 뱃지 획득 내역 및 팝업',
+    useErrorLogStore: '런타임 에러 캡처 및 Sentry 연동 버퍼',
+    useDebugStore: '치트 모드 및 로컬 테스트 오버라이드',
+  };
+
+  const database = {
+    tables: {
+      user_profiles: '유저 닉네임, 아바타, 티어 점수, 총 등반 고도, 산소 잔여량',
+      game_records: '게임 플레이 결과(모드, 정답수, 소요시간, 콤보, 획득점수)',
+      badge_definitions: '뱃지 메타데이터(이름, 설명, 아이콘, 획득조건)',
+      user_badges: '유저별 획득 뱃지 목록 및 획득일시',
+      user_inventory: '유저 보유 아이템(산소통 등) 및 사용 내역',
+      daily_reward_history: '일일 출석 및 보상 수령 이력',
+    },
+  };
+
+  return {
+    project: 'solve-climb',
+    version: '0.27.532',
+    generatedAt: new Date().toISOString(),
+    architecture: 'React 19 + TypeScript + Vite + Zustand + Supabase + Capacitor',
+    summary: '웹 및 모바일(안드로이드/Toss) 기반 실시간 클라이밍 수학/CS 퀴즈 게임',
+    domains: domainSummaries,
+    globalStores,
+    database,
+  };
+}
+
 function main() {
   console.log('Starting Optimized Code Map generation...');
   const tsConfigPath = path.resolve('tsconfig.json');
@@ -624,20 +708,35 @@ function main() {
     }
   }
 
-  const yamlOutput = yaml.dump(mapData, { indent: 2, lineWidth: -1, noRefs: true });
-
-  const destPaths = [
+  // 1. Write Detailed Code Map (.code-map.yaml)
+  const detailedYaml = yaml.dump(mapData, { indent: 2, lineWidth: -1, noRefs: true });
+  const detailedDestPaths = [
     path.resolve('docs', '.code-map.yaml'),
     path.resolve('.agent', '.code-map.yaml'),
   ];
-
-  for (const destPath of destPaths) {
+  for (const destPath of detailedDestPaths) {
     const parentDir = path.dirname(destPath);
     if (!fs.existsSync(parentDir)) {
       fs.mkdirSync(parentDir, { recursive: true });
     }
-    fs.writeFileSync(destPath, yamlOutput, 'utf-8');
-    console.log(`Success! Code Map written to: ${destPath}`);
+    fs.writeFileSync(destPath, detailedYaml, 'utf-8');
+    console.log(`Success! Detailed Code Map written to: ${destPath}`);
+  }
+
+  // 2. Write Macroscopic Architecture Map (architecture-map.yaml)
+  const macroData = generateMacroArchitectureMap();
+  const macroYaml = yaml.dump(macroData, { indent: 2, lineWidth: -1, noRefs: true });
+  const macroDestPaths = [
+    path.resolve('docs', 'architecture-map.yaml'),
+    path.resolve('.agent', 'architecture-map.yaml'),
+  ];
+  for (const destPath of macroDestPaths) {
+    const parentDir = path.dirname(destPath);
+    if (!fs.existsSync(parentDir)) {
+      fs.mkdirSync(parentDir, { recursive: true });
+    }
+    fs.writeFileSync(destPath, macroYaml, 'utf-8');
+    console.log(`Success! Macroscopic Architecture Map written to: ${destPath}`);
   }
 }
 
