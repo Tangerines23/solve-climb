@@ -1,4 +1,4 @@
-const CACHE_NAME = 'solve-climb-v0.27.531';
+const CACHE_NAME = 'solve-climb-v0.27.532';
 const ASSETS_TO_CACHE = ['/manifest.json', '/SolveClimb.png', '/SolveClimb.webp'];
 
 /**
