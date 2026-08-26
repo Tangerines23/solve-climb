@@ -1,5 +1,5 @@
 project: solve-climb
-generatedAt: '2026-08-25T14:59:04.015Z'
+generatedAt: '2026-08-26T05:11:43.106Z'
 files:
   src/App.tsx:
     imports:
@@ -62,6 +62,7 @@ files:
           - diagnosis
   src/main.tsx:
     imports:
+      - '@/utils/polyfills'
       - '@/index.css'
       - '@/utils/tossAuth'
       - '@/AppContainer'
@@ -2414,6 +2415,7 @@ files:
   src/stores/useDeathNoteStore.ts:
     imports:
       - ../types/quiz
+      - '@/utils/validation'
     exports:
       - name: useDeathNoteStore
         kind: const
@@ -7132,6 +7134,7 @@ files:
       - '@/stores/useBaseCampStore'
       - '@/stores/useDeathNoteStore'
       - '@/constants/game'
+      - '@/utils/validation'
       - '@/lib/eventBus'
     exports:
       - name: useQuestionGenerator
@@ -7145,7 +7148,7 @@ files:
           - setCompleted
           - questions.at
           - quizEventBus.emit
-          - crypto.randomUUID
+          - generateUUID
           - useDeathNoteStore.getState
           - getQuestionsByCategory
           - Math.floor

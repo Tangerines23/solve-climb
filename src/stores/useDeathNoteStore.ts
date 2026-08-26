@@ -1,6 +1,7 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import { QuizQuestion, Category, World } from '../types/quiz';
+import { generateUUID } from '@/utils/validation';
 
 export interface MissedQuestion extends QuizQuestion {
   id: string;
@@ -22,7 +23,7 @@ export const useDeathNoteStore = create<DeathNoteState>()(
     (set, get) => ({
       missedQuestions: [],
       addMissedQuestion: (question, world, category) => {
-        const id = crypto.randomUUID();
+        const id = generateUUID();
         const newMissed: MissedQuestion = {
           ...question,
           id,

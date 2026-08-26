@@ -14,6 +14,7 @@ import { generateQuestion } from '@/utils/quizGenerator';
 import { useBaseCampStore } from '@/stores/useBaseCampStore';
 import { useDeathNoteStore } from '@/stores/useDeathNoteStore';
 import { SURVIVAL_CONFIG, CATEGORY_CONFIG } from '@/constants/game';
+import { generateUUID } from '@/utils/validation';
 import { quizEventBus } from '@/lib/eventBus';
 
 interface UseQuestionGeneratorParams {
@@ -68,7 +69,7 @@ export function useQuestionGenerator({
       if (q) {
         quizEventBus.emit('QUIZ:QUESTION_GENERATED', {
           question: q,
-          questionId: q.id || crypto.randomUUID(),
+          questionId: q.id || generateUUID(),
         });
         return;
       }
@@ -90,7 +91,7 @@ export function useQuestionGenerator({
 
         quizEventBus.emit('QUIZ:QUESTION_GENERATED', {
           question: q ?? null,
-          questionId: q?.id || crypto.randomUUID(),
+          questionId: q?.id || generateUUID(),
         });
         return;
       }
@@ -104,7 +105,7 @@ export function useQuestionGenerator({
       if (q) {
         quizEventBus.emit('QUIZ:QUESTION_GENERATED', {
           question: q,
-          questionId: q.id || crypto.randomUUID(),
+          questionId: q.id || generateUUID(),
         });
         return;
       }
@@ -169,7 +170,7 @@ export function useQuestionGenerator({
           (tierParam as Tier) || 'normal',
           undefined
         ) || generateQuestion('math', 'World1', 'World1-기초', 1, difficulty),
-      questionId: crypto.randomUUID(),
+      questionId: generateUUID(),
     });
   }, [
     category,
