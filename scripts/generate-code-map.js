@@ -3,6 +3,201 @@ import fs from 'fs';
 import path from 'path';
 import * as yaml from 'js-yaml';
 
+// Standard JavaScript, DOM, React built-in functions to exclude from architectural calls
+const IGNORED_EXACT_CALLS = new Set([
+  // React Hooks
+  'useState',
+  'useEffect',
+  'useCallback',
+  'useMemo',
+  'useRef',
+  'useContext',
+  'useReducer',
+  'useId',
+  'useDeferredValue',
+  'useTransition',
+  'useLayoutEffect',
+  'useImperativeHandle',
+  'useInsertionEffect',
+  'useSyncExternalStore',
+
+  // Console
+  'console.log',
+  'console.error',
+  'console.warn',
+  'console.info',
+  'console.debug',
+  'console.table',
+
+  // Array / Object / String prototype methods
+  'map',
+  'filter',
+  'forEach',
+  'reduce',
+  'reduceRight',
+  'find',
+  'findIndex',
+  'findLast',
+  'findLastIndex',
+  'some',
+  'every',
+  'push',
+  'pop',
+  'shift',
+  'unshift',
+  'slice',
+  'splice',
+  'concat',
+  'indexOf',
+  'lastIndexOf',
+  'includes',
+  'join',
+  'split',
+  'replace',
+  'replaceAll',
+  'trim',
+  'trimStart',
+  'trimEnd',
+  'toLowerCase',
+  'toUpperCase',
+  'toString',
+  'toLocaleDateString',
+  'toLocaleTimeString',
+  'toLocaleString',
+  'valueOf',
+  'padStart',
+  'padEnd',
+  'startsWith',
+  'endsWith',
+  'repeat',
+  'match',
+  'matchAll',
+  'search',
+  'parseInt',
+  'parseFloat',
+  'isNaN',
+  'isFinite',
+  'entries',
+  'keys',
+  'values',
+  'has',
+  'get',
+  'set',
+  'delete',
+  'add',
+  'clear',
+  'size',
+  'length',
+
+  // Event & DOM
+  'stopPropagation',
+  'preventDefault',
+  'e.stopPropagation',
+  'e.preventDefault',
+  'event.stopPropagation',
+  'event.preventDefault',
+  'addEventListener',
+  'removeEventListener',
+  'requestAnimationFrame',
+  'cancelAnimationFrame',
+  'setTimeout',
+  'clearTimeout',
+  'setInterval',
+  'clearInterval',
+  'scrollIntoView',
+  'scrollTo',
+  'scrollBy',
+  'querySelector',
+  'querySelectorAll',
+  'getElementById',
+  'getAttribute',
+  'setAttribute',
+  'removeAttribute',
+  'closest',
+  'matches',
+  'contains',
+  'appendChild',
+  'removeChild',
+  'replaceChild',
+  'focus',
+  'blur',
+
+  // Web Audio Low-level Automations
+  'setValueAtTime',
+  'linearRampToValueAtTime',
+  'exponentialRampToValueAtTime',
+  'setTargetAtTime',
+  'setValueCurveAtTime',
+  'cancelScheduledValues',
+  'cancelAndHoldAtTime',
+  'connect',
+  'disconnect',
+  'start',
+  'stop',
+
+  // Type Casts
+  'String',
+  'Number',
+  'Boolean',
+  'Symbol',
+  'BigInt',
+  'Array',
+
+  // Promise
+  'then',
+  'catch',
+  'finally',
+  'resolve',
+  'reject',
+  'all',
+  'allSettled',
+  'race',
+  'any',
+]);
+
+const IGNORED_PREFIXES = [
+  'Math.',
+  'JSON.',
+  'Object.',
+  'Promise.',
+  'String.',
+  'Number.',
+  'Boolean.',
+  'Array.',
+  'Date.',
+  'Intl.',
+  'RegExp.',
+  'window.',
+  'document.',
+  'navigator.',
+  'screen.',
+  'node.',
+  'element.',
+  'container.',
+  'scrollContainer.',
+  'classList.',
+  'style.',
+  'dataset.',
+];
+
+function isIgnoredCall(callText) {
+  if (!callText || callText.length === 0 || callText.startsWith('.')) return true;
+  if (IGNORED_EXACT_CALLS.has(callText)) return true;
+  for (const prefix of IGNORED_PREFIXES) {
+    if (callText.startsWith(prefix)) return true;
+  }
+  return false;
+}
+
+function cleanTypeString(typeStr) {
+  if (!typeStr) return '';
+  return typeStr
+    .replace(/import\("[^"]+"\)\./g, '')
+    .replace(/import\('[^']+'\)\./g, '')
+    .replace(/\s+/g, ' ')
+    .trim();
+}
+
 function getFileSummary(sourceFile) {
   const leadingCommentRanges = sourceFile.getLeadingCommentRanges();
   if (leadingCommentRanges.length > 0) {
@@ -35,11 +230,20 @@ function getInnerCalls(node) {
   node.forEachDescendant((descendant) => {
     if (descendant.getKind() === SyntaxKind.CallExpression) {
       const expression = descendant.getExpression();
+
+      // Filter out standard prototype method calls (e.g. items.map, str.trim)
+      if (expression.getKind() === SyntaxKind.PropertyAccessExpression) {
+        const methodName = expression.getName();
+        if (IGNORED_EXACT_CALLS.has(methodName)) {
+          return;
+        }
+      }
+
       let text = expression.getText().replace(/\s+/g, ' ').trim();
 
-      // Skip overly long or complex expressions (e.g. inline callbacks/code snippets)
+      // Normalize complex expressions (e.g. member access or chaining)
       if (
-        text.length > 60 ||
+        text.length > 50 ||
         text.includes('=>') ||
         text.includes('{') ||
         text.includes('}') ||
@@ -52,40 +256,8 @@ function getInnerCalls(node) {
         }
       }
 
-      // Filter out basic array/object methods and React built-in hooks
-      const ignoredCalls = new Set([
-        'map',
-        'filter',
-        'forEach',
-        'reduce',
-        'find',
-        'push',
-        'slice',
-        'concat',
-        'indexOf',
-        'includes',
-        'join',
-        'split',
-        'replace',
-        'trim',
-        'toLowerCase',
-        'toUpperCase',
-        'toString',
-        'useState',
-        'useEffect',
-        'useCallback',
-        'useMemo',
-        'useRef',
-        'useContext',
-        'useImperativeHandle',
-        'useLayoutEffect',
-        'console.log',
-        'console.error',
-        'console.warn',
-        'console.info',
-      ]);
-
-      if (!text.startsWith('.') && !ignoredCalls.has(text) && text.length > 0) {
+      // Filter out low-level built-in noise
+      if (!isIgnoredCall(text)) {
         calls.add(text);
       }
     }
@@ -125,9 +297,13 @@ function parseFunction(func) {
   const name = func.getName() || 'anonymous';
   const params = {};
   for (const param of func.getParameters()) {
-    params[param.getName()] = param.getType().getText();
+    let pName = param.getName().replace(/\s+/g, ' ').trim();
+    if (pName.startsWith('{') && pName.endsWith('}')) {
+      pName = 'props';
+    }
+    params[pName] = cleanTypeString(param.getType().getText());
   }
-  const returns = func.getReturnType().getText();
+  const returns = cleanTypeString(func.getReturnType().getText());
 
   const jsdocs = func.getJsDocs();
   let description = '';
@@ -165,9 +341,13 @@ function parseVariableFunction(varDecl, initializer) {
   const name = varDecl.getName();
   const params = {};
   for (const param of initializer.getParameters()) {
-    params[param.getName()] = param.getType().getText();
+    let pName = param.getName().replace(/\s+/g, ' ').trim();
+    if (pName.startsWith('{') && pName.endsWith('}')) {
+      pName = 'props';
+    }
+    params[pName] = cleanTypeString(param.getType().getText());
   }
-  const returns = initializer.getReturnType().getText();
+  const returns = cleanTypeString(initializer.getReturnType().getText());
 
   const varStatement = varDecl.getVariableStatement();
   let description = '';
@@ -212,9 +392,13 @@ function parseClass(cls) {
     const mName = method.getName();
     const params = {};
     for (const param of method.getParameters()) {
-      params[param.getName()] = param.getType().getText();
+      let pName = param.getName().replace(/\s+/g, ' ').trim();
+      if (pName.startsWith('{') && pName.endsWith('}')) {
+        pName = 'props';
+      }
+      params[pName] = cleanTypeString(param.getType().getText());
     }
-    const returns = method.getReturnType().getText();
+    const returns = cleanTypeString(method.getReturnType().getText());
     const calls = getInnerCalls(method);
 
     const mData = { name: mName };
@@ -226,32 +410,6 @@ function parseClass(cls) {
 
   const data = { name, type: 'class' };
   if (methods.length > 0) data.methods = methods;
-  return data;
-}
-
-function parseInternalHandler(node, name = '') {
-  const hName = name || node.getName() || 'anonymous';
-  const calls = getInnerCalls(node);
-
-  let description = '';
-  let fullCommentText = '';
-  const comments = node.getLeadingCommentRanges();
-  if (comments.length > 0) {
-    fullCommentText = comments.map((c) => c.getText()).join('\n');
-    description = comments[0]
-      .getText()
-      .replace(/\/\*\*|\*\/|\/\*|\*|\/\/+/g, '')
-      .trim();
-  }
-
-  const annotations = extractAnnotations(fullCommentText);
-  const allCalls = Array.from(new Set([...calls, ...annotations.calls]));
-
-  const data = { name: hName };
-  if (description) data.description = description;
-  if (allCalls.length > 0) data.calls = allCalls;
-  if (annotations.listens.length > 0) data.listens = annotations.listens;
-  if (annotations.emits.length > 0) data.emits = annotations.emits;
   return data;
 }
 
@@ -279,7 +437,7 @@ function getReactInfo(sourceFile) {
 
   const componentNode = mainComponent.node;
   const state = [];
-  const handlers = [];
+  const handlerNames = new Set();
 
   componentNode.forEachDescendant((descendant) => {
     if (descendant.getKind() === SyntaxKind.CallExpression) {
@@ -312,7 +470,7 @@ function getReactInfo(sourceFile) {
             name.includes('Submit') ||
             name.includes('Change'))
         ) {
-          handlers.push(parseInternalHandler(child));
+          handlerNames.add(name);
         }
       } else if (child.getKind() === SyntaxKind.VariableStatement) {
         for (const varDecl of child.getDeclarations()) {
@@ -331,7 +489,7 @@ function getReactInfo(sourceFile) {
                 name.includes('Submit') ||
                 name.includes('Change'))
             ) {
-              handlers.push(parseInternalHandler(init, name));
+              handlerNames.add(name);
             }
           }
         }
@@ -339,7 +497,10 @@ function getReactInfo(sourceFile) {
     });
   }
 
-  return { state, handlers };
+  const result = {};
+  if (state.length > 0) result.state = state;
+  if (handlerNames.size > 0) result.handlers = Array.from(handlerNames);
+  return Object.keys(result).length > 0 ? result : null;
 }
 
 function getExports(sourceFile) {
@@ -406,7 +567,7 @@ function getExports(sourceFile) {
 }
 
 function main() {
-  console.log('Starting Code Map generation...');
+  console.log('Starting Optimized Code Map generation...');
   const tsConfigPath = path.resolve('tsconfig.json');
   console.log(`Using TSConfig: ${tsConfigPath}`);
 
@@ -448,9 +609,8 @@ function main() {
       if (fileSummary) fileData.summary = fileSummary;
       if (imports.length > 0) fileData.imports = imports;
       if (reactInfo) {
-        if (reactInfo.state && reactInfo.state.length > 0) fileData.state = reactInfo.state;
-        if (reactInfo.handlers && reactInfo.handlers.length > 0)
-          fileData.handlers = reactInfo.handlers;
+        if (reactInfo.state) fileData.state = reactInfo.state;
+        if (reactInfo.handlers) fileData.handlers = reactInfo.handlers;
       }
       if (exports.length > 0) {
         fileData.exports = exports;
@@ -482,4 +642,3 @@ function main() {
 }
 
 main();
-
