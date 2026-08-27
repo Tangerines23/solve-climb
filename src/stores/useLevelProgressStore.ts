@@ -217,6 +217,7 @@ export const useLevelProgressStore = create<LevelProgressState>()(
             level,
             mode,
             score,
+            world,
             avgSolveTime,
             sessionData,
             tier,
@@ -280,6 +281,7 @@ export const useLevelProgressStore = create<LevelProgressState>()(
             level,
             mode,
             score,
+            world,
             avgSolveTime,
             sessionData,
             tier,
@@ -392,10 +394,22 @@ export const useLevelProgressStore = create<LevelProgressState>()(
                       `[Reconciliation] Restored higher server score for ${category} L${level}`
                     );
                   } else if (localRecord.bestScore[modeKey]! > score) {
-                    // Local is higher (e.g., played offline) -> We should eventually sync this back to server
+                    // Local is higher (e.g., played offline) -> Background delayed sync to server
                     console.log(
-                      `[Reconciliation] Local score higher for ${category} L${level}. Needs delayed sync.`
+                      `[Reconciliation] Local score higher for ${category} L${level}. Syncing back to server.`
                     );
+                    LevelSyncService.submitGameResult({
+                      category,
+                      level,
+                      mode: modeKey,
+                      score: localRecord.bestScore[modeKey]!,
+                      world,
+                    }).catch((err) => {
+                      console.warn(
+                        `[Reconciliation] Delayed sync failed for ${category} L${level}:`,
+                        err
+                      );
+                    });
                   }
                 });
 

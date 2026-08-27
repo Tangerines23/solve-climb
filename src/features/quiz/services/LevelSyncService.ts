@@ -21,10 +21,11 @@ export class LevelSyncService {
     level: number;
     mode: GameMode;
     score: number;
+    world?: string;
     avgSolveTime?: number;
     subject?: string;
     sessionData?: {
-      answers: number[];
+      answers: Array<number | string>;
       questionIds: string[];
       sessionId: string;
     };
@@ -34,6 +35,7 @@ export class LevelSyncService {
       category: rawCategory,
       level,
       mode,
+      world = 'World1',
       avgSolveTime = 0,
       sessionData,
       subject: rawSubject,
@@ -102,6 +104,7 @@ export class LevelSyncService {
           rpcError,
           rpcData,
           params: {
+            world,
             p_user_answers: sessionData?.answers ?? [],
             p_question_ids: (sessionData?.questionIds ?? []).map(String),
             p_game_mode: gameMode,

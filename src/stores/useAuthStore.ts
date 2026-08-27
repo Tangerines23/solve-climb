@@ -76,6 +76,12 @@ export const useAuthStore = create<AuthState>((set) => ({
             useProfileStore.getState().syncProfileWithAuthUser(user.id);
           })
           .catch(() => {});
+
+        import('./useLevelProgressStore')
+          .then(({ useLevelProgressStore }) => {
+            useLevelProgressStore.getState().syncProgress();
+          })
+          .catch(() => {});
       }
 
       // Analytics 유저 컨텍스트 동기화 (Static import 사용)

@@ -49,10 +49,10 @@ export function generateCalculusProblem(
     // [Phase 2: 극한 (Lv 6~8)]
     case 6:
       return {
-        question: 'x + 1 (x → ∞) 의 값은?',
+        question: '1 / x (x → 0+) 의 값은?',
         answer: '∞',
         hintType: 'calculus',
-        hintData: { type: 'limit', func: 'x+1' },
+        hintData: { type: 'limit', func: '1/x' },
       };
     case 7:
       return {

@@ -1,11 +1,11 @@
 import { useCallback } from 'react';
 import { supabase } from '../utils/supabaseClient';
-import { safeSupabaseQuery } from '../utils/debugFetch';
 import { BADGE_DEFINITIONS } from '../constants/badges';
-import { useBadgeStore } from '../stores/useBadgeStore';
+import { useBadgeStore, type UserBadge } from '../stores/useBadgeStore';
 import { HistoryStats } from '@/features/mypage';
 import { validatedRpc, CheckAndAwardBadgesResponseSchema } from '../utils/rpcValidator';
 import { logError } from '../utils/errorHandler';
+import { storageService, STORAGE_KEYS } from '../services';
 
 export function useBadgeChecker() {
   const checkAndAwardBadges = useCallback(async (userId: string, stats: HistoryStats) => {
@@ -43,16 +43,8 @@ export function useBadgeChecker() {
     }
 
     // --- 2. 익명 사용자 (Local Logic Fallback) ---
-    const { data: userBadges, error: fetchError } = await safeSupabaseQuery(
-      supabase.from('user_badges').select('badge_id').eq('user_id', userId)
-    );
-
-    if (fetchError) {
-      logError('useBadgeChecker#checkAndAwardBadges_fetch', fetchError);
-      return [];
-    }
-
-    const earnedBadgeIds = new Set(userBadges?.map((b) => b.badge_id) || []);
+    const localBadges = storageService.get<UserBadge[]>(STORAGE_KEYS.LOCAL_BADGES) || [];
+    const earnedBadgeIds = new Set(localBadges.map((b) => b.badge_id));
     const newBadges: string[] = [];
 
     type BadgeDef = (typeof BADGE_DEFINITIONS)[number];

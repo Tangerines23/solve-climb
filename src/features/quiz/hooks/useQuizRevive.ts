@@ -84,13 +84,15 @@ export function useQuizRevive({
       if (itemMeta?.id) {
         try {
           await useUserStore.getState().purchaseItem(itemMeta.id);
+          // 즉시 사용(소모) 처리하여 인벤토리에 공짜로 남지 않도록 보장
+          await consumeItem(itemMeta.id);
         } catch {
           // 백엔드 RPC 실패 시에도 클라이언트 상태 진행 보장
         }
       }
       await handleRevive(false);
     }
-  }, [minerals, gameMode, handleRevive]);
+  }, [minerals, gameMode, handleRevive, consumeItem]);
 
   /**
    * 광고 시청 후 무료 부활

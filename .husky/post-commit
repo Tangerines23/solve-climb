@@ -1,0 +1,7 @@
+#!/bin/sh
+
+# 커밋 완료 후 백그라운드 독립 시행 (커밋 대기 0초)
+(
+  node scripts/generate-code-map.js >/dev/null 2>&1
+  node scripts/generate-flowchart.js >/dev/null 2>&1
+) &

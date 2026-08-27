@@ -428,6 +428,7 @@ function generateTrigonometry(rng?: {
   return {
     question: `${item.q} 값 = ?`,
     answer: item.a,
+    inputType: item.a.includes('/') ? 'fraction' : 'number',
   };
 }
 

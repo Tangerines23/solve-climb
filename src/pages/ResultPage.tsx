@@ -154,11 +154,12 @@ export function ResultPage() {
       }
 
       if (finalScore > 0) {
-        if (
+        const isCleared =
           mode === 'time-attack'
-            ? Math.round((correctCount / total) * 100) >= 50 || correctCount >= 1
-            : correctCount >= 1
-        ) {
+            ? total > 0 && Math.round((correctCount / total) * 100) >= 50 && correctCount >= 1
+            : correctCount >= 1;
+
+        if (isCleared) {
           await clearLevel(
             worldParam!,
             categoryParam!,
