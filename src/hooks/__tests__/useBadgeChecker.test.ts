@@ -58,6 +58,18 @@ vi.mock('@/stores/useBadgeStore', () => ({
   },
 }));
 
+vi.mock('@/services', () => ({
+  storageService: {
+    get: vi.fn().mockReturnValue([]),
+    set: vi.fn(),
+  },
+  STORAGE_KEYS: {
+    LOCAL_BADGES: 'local_badges',
+  },
+}));
+
+import { storageService } from '@/services';
+
 vi.mock('@/features/mypage', () => ({
   // HistoryStats is a type, no need to mock if imported correctly
 }));
@@ -71,6 +83,7 @@ describe('useBadgeChecker', () => {
 
   beforeEach(() => {
     vi.clearAllMocks();
+    vi.mocked(storageService.get).mockReturnValue([]);
 
     // Setup Supabase chain mocks
     vi.mocked(supabase.from).mockImplementation((table: string) => {
@@ -209,17 +222,10 @@ describe('useBadgeChecker', () => {
   });
 
   it('should NOT award already owned badges', async () => {
-    // Mock existing badges
-    const chain = {
-      select: vi.fn().mockReturnThis(),
-      eq: vi.fn().mockResolvedValue({
-        data: [{ badge_id: 'test_altitude' }],
-        error: null,
-      }),
-      insert: mockInsert,
-    };
-
-    vi.mocked(supabase.from).mockReturnValue(chain as any);
+    // Mock existing local badges for anonymous user
+    vi.mocked(storageService.get).mockReturnValue([
+      { badge_id: 'test_altitude', earned_at: '2026-01-01' },
+    ]);
 
     const { result } = renderHook(() => useBadgeChecker());
     const stats = { ...baseStats, totalAltitude: 200 }; // Qualified for altitude

@@ -53,10 +53,10 @@ export function useRanking() {
   }, [authUser?.id]);
 
   const loadRanking = useCallback(async () => {
-    if (rankingVersion === 0) setLoading(true);
+    setLoading(true);
     await fetchRanking(null, null, activePeriod, activeType);
-    if (rankingVersion === 0) setLoading(false);
-  }, [activeType, activePeriod, fetchRanking, rankingVersion]);
+    setLoading(false);
+  }, [activeType, activePeriod, fetchRanking]);
 
   useEffect(() => {
     loadRanking();

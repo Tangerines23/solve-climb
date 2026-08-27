@@ -10,6 +10,26 @@ class AudioContextManager {
 
   constructor() {
     this.setupUnlockListeners();
+    this.setupVisibilityListener();
+  }
+
+  /**
+   * 모바일/웹 브라우저 백그라운드 전환 시 AudioContext 일시정지 및 복귀 시 자동 재개
+   */
+  private setupVisibilityListener(): void {
+    if (typeof document === 'undefined') return;
+
+    document.addEventListener('visibilitychange', () => {
+      if (document.hidden) {
+        if (this.ctx && this.ctx.state === 'running') {
+          this.ctx.suspend().catch(() => {});
+        }
+      } else {
+        if (this.ctx && this.ctx.state === 'suspended' && this.isUnlocked) {
+          this.ctx.resume().catch(() => {});
+        }
+      }
+    });
   }
 
   /**
