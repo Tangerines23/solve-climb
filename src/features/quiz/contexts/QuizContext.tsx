@@ -435,7 +435,9 @@ export function QuizProvider({ children, params }: QuizProviderProps) {
       const { isCorrect, score: earnedDistance, solveTime, answer } = data;
 
       // 1. 공통 데이터 업데이트
-      gameState.setUserAnswers((prev) => [...prev, parseInt(answer, 10)]);
+      const formattedAnswer =
+        !isNaN(Number(answer)) && answer.trim() !== '' ? Number(answer) : answer;
+      gameState.setUserAnswers((prev) => [...prev, formattedAnswer]);
       gameState.setSolveTimes((p) => [...p, solveTime]);
       gameState.setTotalQuestions((p) => p + 1);
 

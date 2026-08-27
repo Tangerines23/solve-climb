@@ -51,7 +51,7 @@ describe('CalculusProblemGenerator', () => {
   });
 
   it('should return static Limit problems for Level 6-8', () => {
-    expect(generateCalculusProblem(6, 'easy').answer).toBe('∞');
+    expect(generateCalculusProblem(6, 'easy').answer).toBe(3);
     expect(generateCalculusProblem(7, 'easy').answer).toBe(0);
     expect(generateCalculusProblem(8, 'easy').answer).toBe(2);
   });

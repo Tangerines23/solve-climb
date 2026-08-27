@@ -103,15 +103,21 @@ function generateModeBasic(rng?: {
   randomInt: (min: number, max: number) => number;
 }): StatsProblem {
   const base = getRandomInt(1, 10, rng);
-  const nums = [base, base, getRandomInt(1, 10, rng), getRandomInt(1, 10, rng)].sort();
-  // Ensure mode is unique
-  const counts = new Map<number, number>();
-  nums.forEach((n) => counts.set(n, (counts.get(n) ?? 0) + 1));
-  const mode = Array.from(counts.entries()).reduce((a, b) => (b[1] > a[1] ? b : a));
+  let other1 = getRandomInt(1, 10, rng);
+  while (other1 === base) {
+    other1 = getRandomInt(1, 10, rng);
+  }
+  let other2 = getRandomInt(1, 10, rng);
+  while (other2 === base || other2 === other1) {
+    other2 = getRandomInt(1, 10, rng);
+  }
+
+  // base가 2번, other1과 other2가 각 1번씩 포함되어 base가 유일한 최빈값이 됨
+  const nums = [base, base, other1, other2].sort((a, b) => a - b);
 
   return {
     question: `${nums.join(', ')} 중 최빈값(Mode)은?`,
-    answer: Number(mode[0]),
+    answer: base,
   };
 }
 

@@ -35,7 +35,7 @@ export function useQuizGameState({
   const [questionStartTime, setQuestionStartTime] = useState<number | null>(null);
   const [solveTimesState, setSolveTimesState] = useState<number[]>([]);
   const [gameSessionId, setGameSessionId] = useState<string | null>(null);
-  const [userAnswers, setUserAnswers] = useState<number[]>([]);
+  const [userAnswers, setUserAnswers] = useState<Array<number | string>>([]);
   const [questionIds, setQuestionIds] = useState<string[]>([]);
 
   const handleGameOver = useCallback(

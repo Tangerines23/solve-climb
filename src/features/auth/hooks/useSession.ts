@@ -70,25 +70,32 @@ export function useSession(): UseSessionResult {
   const checkSession = useCallback(async () => {
     setIsLoading(true);
 
-    // 1. 로컬 세션 확인
-    const localSession = checkLocalSession();
-    if (localSession) {
-      setSession(localSession);
-      setIsLoading(false);
-      return;
-    }
-
-    // 2. Supabase 세션 확인
+    // 1. Supabase 실제 세션 우선 확인
     try {
       const {
         data: { session: supabaseSession },
       } = await supabase.auth.getSession();
-      setSession(supabaseSession);
+      if (supabaseSession) {
+        setSession(supabaseSession);
+        setIsLoading(false);
+        return;
+      }
     } catch {
-      setSession(null);
-    } finally {
-      setIsLoading(false);
+      // Supabase 세션 확인 실패 시 로컬 세션으로 폴백
     }
+
+    // 2. 로컬 세션 폴백 확인 (게스트 모드 등)
+    const localSession = checkLocalSession();
+    if (localSession) {
+      // 프로덕션 환경에서는 로컬 스토리지 조작을 통한 관리자 권한 위조를 방어
+      if (!import.meta.env.DEV && localSession.user?.user_metadata?.isAdmin) {
+        localSession.user.user_metadata.isAdmin = false;
+      }
+      setSession(localSession);
+    } else {
+      setSession(null);
+    }
+    setIsLoading(false);
   }, []);
 
   useEffect(() => {
