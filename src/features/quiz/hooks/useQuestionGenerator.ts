@@ -10,7 +10,7 @@ import {
   Tier,
   Mountain,
 } from '../types/quiz';
-import { generateQuestion } from '@/utils/quizGenerator';
+import { generateQuestion } from '../generators/quizGenerator';
 import { useBaseCampStore } from '@/stores/useBaseCampStore';
 import { useDeathNoteStore } from '@/stores/useDeathNoteStore';
 import { SURVIVAL_CONFIG, CATEGORY_CONFIG } from '@/constants/game';

@@ -102,7 +102,19 @@ export const useBadgeStore = create<BadgeState>((set, get) => ({
     // 상태 업데이트 (UI 즉시 반영)
     set((state) => ({ userBadges: [newBadge, ...state.userBadges] }));
 
-    if (!isUuid) {
+    if (isUuid) {
+      try {
+        await safeSupabaseQuery(
+          supabase.from('user_badges').insert({
+            user_id: userId,
+            badge_id: badgeId,
+            earned_at: newBadge.earned_at,
+          })
+        );
+      } catch (err) {
+        console.warn('Failed to save user badge to server:', err);
+      }
+    } else {
       // 익명 사용자: 로컬 스토리지에 저장
       try {
         const currentBadges = get().userBadges;

@@ -109,5 +109,34 @@ export const useAuthStore = create<AuthState>((set) => ({
     await safeSupabaseQuery(supabase.auth.signOut());
     storageService.remove(STORAGE_KEYS.LOCAL_SESSION);
     set({ session: null, user: null });
+
+    // Reset other stores to prevent cross-account state leakage
+    try {
+      const { useProfileStore } = await import('./useProfileStore');
+      useProfileStore.getState().clearProfile();
+    } catch {
+      // ignore
+    }
+
+    try {
+      const { useLevelProgressStore } = await import('./useLevelProgressStore');
+      useLevelProgressStore.setState({ progress: {} });
+    } catch {
+      // ignore
+    }
+
+    try {
+      const { useUserStore } = await import('./useUserStore');
+      useUserStore.setState({ minerals: 0, stamina: 5, inventory: [] });
+    } catch {
+      // ignore
+    }
+
+    try {
+      const { useBadgeStore } = await import('./useBadgeStore');
+      useBadgeStore.setState({ userBadges: [] });
+    } catch {
+      // ignore
+    }
   },
 }));

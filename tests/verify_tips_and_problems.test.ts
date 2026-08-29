@@ -1,5 +1,5 @@
 import { test } from 'vitest';
-import { generateQuestion } from '@/utils/quizGenerator';
+import { generateQuestion } from '@/features/quiz';
 import { WORLD_TIPS } from '@/constants/tips';
 import * as fs from 'fs';
 
@@ -203,7 +203,13 @@ test('Audit Basic category tips and problems with difficulty scores', () => {
           qStr.includes('길이') ||
           qStr.includes('피타고라스')
         );
-      if (level === 15) return qStr.includes('sin') || qStr.includes('cos') || qStr.includes('tan') || qStr.includes('값');
+      if (level === 15)
+        return (
+          qStr.includes('sin') ||
+          qStr.includes('cos') ||
+          qStr.includes('tan') ||
+          qStr.includes('값')
+        );
     }
 
     if (worldId === 'World3') {
@@ -355,19 +361,27 @@ test('Audit Basic category tips and problems with difficulty scores', () => {
   if (process.env.WRITE_VERIFICATION_REPORT === 'true') {
     const resultJsonPath =
       'C:\\Users\\ghkdd\\.gemini\\antigravity\\brain\\36e29b47-6f8e-40ad-ba50-21f57b88493f\\scratch\\verification_result.json';
-    if (fs.existsSync('C:\\Users\\ghkdd\\.gemini\\antigravity\\brain\\36e29b47-6f8e-40ad-ba50-21f57b88493f\\scratch')) {
+    if (
+      fs.existsSync(
+        'C:\\Users\\ghkdd\\.gemini\\antigravity\\brain\\36e29b47-6f8e-40ad-ba50-21f57b88493f\\scratch'
+      )
+    ) {
       fs.writeFileSync(resultJsonPath, JSON.stringify(reportData, null, 2), 'utf-8');
     }
 
     const resultMdPath =
       'C:\\Users\\ghkdd\\.gemini\\antigravity\\brain\\36e29b47-6f8e-40ad-ba50-21f57b88493f\\analysis_results.md';
-    if (fs.existsSync('C:\\Users\\ghkdd\\.gemini\\antigravity\\brain\\36e29b47-6f8e-40ad-ba50-21f57b88493f')) {
+    if (
+      fs.existsSync(
+        'C:\\Users\\ghkdd\\.gemini\\antigravity\\brain\\36e29b47-6f8e-40ad-ba50-21f57b88493f'
+      )
+    ) {
       fs.writeFileSync(resultMdPath, md, 'utf-8');
     }
   }
 });
 
-function getWorldName(worldId: string): string {
+function _getWorldName(worldId: string): string {
   switch (worldId) {
     case 'World1':
       return '수와 연산';

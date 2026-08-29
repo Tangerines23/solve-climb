@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
-import { generateQuestion } from '../utils/quizGenerator';
+import { generateQuestion } from '@/features/quiz';
 import { QuizQuestion, Category } from '../types/quiz';
 
 interface DiagnosticResult {

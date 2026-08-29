@@ -15,7 +15,7 @@ export interface RawInventoryItem {
 
 /**
  * 유저 재화 및 프로필 데이터베이스 저장소 (UserRepository)
- * - Supabase user_profiles 및 user_inventory 쿼리와 RPC 통신을 전담합니다.
+ * - Supabase profiles 및 inventory 쿼리와 RPC 통신을 전담합니다.
  * - useUserStore 스토어에서 직접 DB 조회를 제거하고 로직을 캡슐화합니다.
  */
 export class UserRepository {

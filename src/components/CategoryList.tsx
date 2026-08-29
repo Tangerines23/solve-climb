@@ -6,7 +6,7 @@ import { useFavoriteStore } from '../stores/useFavoriteStore';
 import { useFeatureFlagStore } from '../stores/useFeatureFlagStore';
 import { UnknownMountainCard } from './UnknownMountainCard';
 import { Toast } from './Toast';
-import { calculateCategoryAltitude } from '../utils/scoreCalculator';
+import { calculateCategoryAltitude } from '@/features/quiz';
 import './CategoryList.css';
 
 export function CategoryList() {

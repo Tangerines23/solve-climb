@@ -430,7 +430,7 @@ function getRandomInt(
   max: number,
   rng?: { randomInt: (min: number, max: number) => number }
 ): number {
-  if (rng) return rng.randomInt(min, max + 1);
+  if (rng) return rng.randomInt(min, max);
   return Math.floor(Math.random() * (max - min + 1)) + min;
 }
 

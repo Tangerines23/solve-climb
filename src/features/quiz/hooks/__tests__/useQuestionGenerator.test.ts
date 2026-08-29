@@ -1,7 +1,7 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { renderHook, act } from '@testing-library/react';
 import { useQuestionGenerator } from '../useQuestionGenerator';
-import { generateQuestion } from '@/utils/quizGenerator';
+import { generateQuestion } from '../../generators/quizGenerator';
 import { generateProblem } from '@/utils/MathProblemGenerator';
 import { generateEquation } from '@/utils/EquationProblemGenerator';
 import { quizEventBus } from '@/lib/eventBus';
@@ -14,7 +14,7 @@ vi.mock('@/lib/eventBus', () => ({
   },
 }));
 
-vi.mock('@/utils/quizGenerator', () => ({
+vi.mock('../../generators/quizGenerator', () => ({
   generateQuestion: vi.fn(),
 }));
 

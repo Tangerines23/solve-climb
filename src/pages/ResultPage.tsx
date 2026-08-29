@@ -74,7 +74,24 @@ export function ResultPage() {
     (searchParams.get('exhausted') === 'true' ? 0.8 : 1);
   const animatedScore = useCountUp(finalScore, animationEnabled ? 1500 : 0);
   const total = validateNumberParam(searchParams.get('total'), 0, 10000) ?? 0;
-  const correctCount = Math.floor(finalScore / SCORE_PER_CORRECT);
+  const paramCorrect = validateNumberParam(searchParams.get('correct_count'), 0, 10000);
+  const rawAnswers = searchParams.get('user_answers');
+  const parsedAnswersCount = rawAnswers
+    ? (() => {
+        try {
+          const arr = JSON.parse(rawAnswers);
+          return Array.isArray(arr)
+            ? arr.filter((a: unknown) => a !== null && a !== undefined && a !== '').length
+            : null;
+        } catch {
+          return null;
+        }
+      })()
+    : null;
+  const rawCorrect =
+    paramCorrect ?? parsedAnswersCount ?? Math.floor(finalScore / SCORE_PER_CORRECT);
+  const correctCount =
+    total > 0 ? Math.min(total, Math.max(0, rawCorrect)) : Math.max(0, rawCorrect);
   const averageTime = validateFloatParam(searchParams.get('avg_time'), 0, 3600);
 
   // 결과 창 진입 시 인게임 피버 및 오버레이 상태 초기화 & 결과 사운드 재생

@@ -8,7 +8,7 @@ import { useDebugStore } from './useDebugStore';
 import { useToastStore } from './useToastStore';
 import { UI_MESSAGES } from '../constants/ui';
 import { safeAccess } from '../utils/validation';
-import { LevelSyncService } from '../services/LevelSyncService';
+import { LevelSyncService } from '@/features/quiz';
 import { ProgressRepository } from '../services/ProgressRepository';
 
 export interface LevelRecord {
@@ -355,6 +355,7 @@ export const useLevelProgressStore = create<LevelProgressState>()(
             if (records) {
               set((state) => {
                 const newProgress = { ...state.progress };
+                const serverKeySet = new Set<string>();
 
                 records.forEach((serverRecord) => {
                   const world = serverRecord.world_id || 'world1';
@@ -366,6 +367,7 @@ export const useLevelProgressStore = create<LevelProgressState>()(
                   const updated_at = serverRecord.updated_at;
 
                   const category = `${category_id}_${subject_id}`;
+                  serverKeySet.add(`${world}#${category}#${level}#${mode_code}`);
 
                   if (!newProgress[world]) newProgress[world] = {};
                   if (!newProgress[world][category]) newProgress[world][category] = {};
@@ -411,6 +413,55 @@ export const useLevelProgressStore = create<LevelProgressState>()(
                       );
                     });
                   }
+                });
+
+                // [Reverse Reconciliation for Offline-Created Records]
+                // Scan local records that do not exist on the server yet
+                Object.entries(newProgress).forEach(([worldKey, worldData]) => {
+                  if (!worldData || typeof worldData !== 'object') return;
+                  Object.entries(worldData).forEach(([categoryKey, catData]) => {
+                    if (!catData || typeof catData !== 'object') return;
+                    Object.entries(catData).forEach(([levelKey, localRecord]) => {
+                      if (!localRecord || !localRecord.cleared) return;
+                      const levelNum = Number(levelKey);
+
+                      if (localRecord.bestScore['time-attack'] !== null) {
+                        const key = `${worldKey}#${categoryKey}#${levelNum}#1`;
+                        if (!serverKeySet.has(key)) {
+                          console.log(
+                            `[Reconciliation] Syncing local-only offline clear for ${categoryKey} L${levelNum} (time-attack)`
+                          );
+                          LevelSyncService.submitGameResult({
+                            category: categoryKey,
+                            level: levelNum,
+                            mode: 'time-attack',
+                            score: localRecord.bestScore['time-attack']!,
+                            world: worldKey,
+                          }).catch((err) => {
+                            console.warn(`[Reconciliation] Delayed sync failed:`, err);
+                          });
+                        }
+                      }
+
+                      if (localRecord.bestScore.survival !== null) {
+                        const key = `${worldKey}#${categoryKey}#${levelNum}#2`;
+                        if (!serverKeySet.has(key)) {
+                          console.log(
+                            `[Reconciliation] Syncing local-only offline clear for ${categoryKey} L${levelNum} (survival)`
+                          );
+                          LevelSyncService.submitGameResult({
+                            category: categoryKey,
+                            level: levelNum,
+                            mode: 'survival',
+                            score: localRecord.bestScore.survival!,
+                            world: worldKey,
+                          }).catch((err) => {
+                            console.warn(`[Reconciliation] Delayed sync failed:`, err);
+                          });
+                        }
+                      }
+                    });
+                  });
                 });
 
                 return { progress: newProgress };

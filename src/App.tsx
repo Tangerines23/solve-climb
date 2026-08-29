@@ -41,7 +41,7 @@ const ResultPage = resilientLazy(
   'ResultPage'
 );
 const RankingPage = resilientLazy(
-  () => import('@/pages/RankingPage').then((module) => ({ default: module.RankingPage })),
+  () => import('@/features/ranking').then((module) => ({ default: module.RankingPage })),
   'RankingPage'
 );
 const RoadmapPage = resilientLazy(
@@ -316,9 +316,11 @@ function App() {
           <Route
             path="/my-page"
             element={
-              <PageTransition>
-                <MyPage />
-              </PageTransition>
+              <RequireAuth>
+                <PageTransition>
+                  <MyPage />
+                </PageTransition>
+              </RequireAuth>
             }
           />
           <Route
@@ -344,11 +346,9 @@ function App() {
           <Route
             path="/privacy-policy"
             element={
-              <RequireAuth>
-                <PageTransition>
-                  <PrivacyPolicyPage />
-                </PageTransition>
-              </RequireAuth>
+              <PageTransition>
+                <PrivacyPolicyPage />
+              </PageTransition>
             }
           />
           <Route

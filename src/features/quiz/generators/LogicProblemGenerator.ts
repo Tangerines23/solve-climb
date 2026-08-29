@@ -27,13 +27,15 @@ export function generateSequenceProblem(
     types.push('fibonacci', 'incrementing_diff', 'alternating');
   }
 
-  const randomIdx = rng ? rng.randomInt(0, types.length) : Math.floor(Math.random() * types.length);
+  const randomIdx = rng
+    ? rng.randomInt(0, types.length - 1)
+    : Math.floor(Math.random() * types.length);
   const type = specificType || types.at(randomIdx) || types[0];
   let sequence: number[] = [];
   let answer = 0;
 
   const getInt = (min: number, max: number) =>
-    rng ? rng.randomInt(min, max + 1) : getRandomInt(min, max);
+    rng ? rng.randomInt(min, max) : getRandomInt(min, max);
 
   switch (type) {
     case 'arithmetic': {
@@ -163,7 +165,7 @@ function generateAbsoluteProblem(
   _difficulty: Difficulty,
   rng?: { random: () => number; randomInt: (min: number, max: number) => number }
 ): LogicProblem {
-  const num = rng ? rng.randomInt(-50, 0) : getRandomInt(-50, -1);
+  const num = rng ? rng.randomInt(-50, -1) : getRandomInt(-50, -1);
   const question = `|${num}| (절댓값)의 값은?`;
   return { question, answer: Math.abs(num) };
 }
@@ -173,10 +175,10 @@ function generateCustomOpProblem(
   rng?: { random: () => number; randomInt: (min: number, max: number) => number }
 ): LogicProblem {
   const getInt = (min: number, max: number) =>
-    rng ? rng.randomInt(min, max + 1) : getRandomInt(min, max);
+    rng ? rng.randomInt(min, max) : getRandomInt(min, max);
   const a = getInt(1, 10);
   const b = getInt(1, 10);
-  const type = rng ? rng.randomInt(1, 3) : getRandomInt(1, 2);
+  const type = rng ? rng.randomInt(1, 2) : getRandomInt(1, 2);
   let question: string;
   let answer: number;
   if (type === 1) {
@@ -193,7 +195,7 @@ function generateEvenOddProblem(
   _difficulty: Difficulty,
   rng?: { random: () => number; randomInt: (min: number, max: number) => number }
 ): LogicProblem {
-  const num = rng ? rng.randomInt(1, 101) : getRandomInt(1, 100);
+  const num = rng ? rng.randomInt(1, 100) : getRandomInt(1, 100);
   const question = `${num}은(는) 홀수입니까 짝수입니까? (1: 홀수, 2: 짝수)`;
   const answer = num % 2 === 0 ? 2 : 1;
   return { question, answer };
@@ -203,7 +205,7 @@ function generatePosNegProblem(
   _difficulty: Difficulty,
   rng?: { random: () => number; randomInt: (min: number, max: number) => number }
 ): LogicProblem {
-  const num = rng ? rng.randomInt(-50, 51) : getRandomInt(-50, 50);
+  const num = rng ? rng.randomInt(-50, 50) : getRandomInt(-50, 50);
   if (num === 0) return generatePosNegProblem(_difficulty, rng);
   const question = `${num}은(는) 양수입니까 음수입니까? (1: 양수, 2: 음수)`;
   const answer = num > 0 ? 1 : 2;
@@ -219,9 +221,9 @@ function generatePrimeProblem(
 
   const isPrimeTarget = rng ? rng.random() > 0.5 : Math.random() > 0.5;
   const num = isPrimeTarget
-    ? primes[rng ? rng.randomInt(0, primes.length) : Math.floor(Math.random() * primes.length)]
+    ? primes[rng ? rng.randomInt(0, primes.length - 1) : Math.floor(Math.random() * primes.length)]
     : nonPrimes[
-        rng ? rng.randomInt(0, nonPrimes.length) : Math.floor(Math.random() * nonPrimes.length)
+        rng ? rng.randomInt(0, nonPrimes.length - 1) : Math.floor(Math.random() * nonPrimes.length)
       ];
 
   const question = `${num}은(는) 소수(Prime Number)입니까? (1: 예, 2: 아니오)`;
@@ -234,7 +236,7 @@ function generateModProblem(
   rng?: { random: () => number; randomInt: (min: number, max: number) => number }
 ): LogicProblem {
   const getInt = (min: number, max: number) =>
-    rng ? rng.randomInt(min, max + 1) : getRandomInt(min, max);
+    rng ? rng.randomInt(min, max) : getRandomInt(min, max);
   const a = getInt(10, 50);
   const b = getInt(2, 9);
   const question = `${a}을(를) ${b}(으)로 나눈 나머지는?`;
@@ -246,7 +248,7 @@ function generateFactorialProblem(
   _difficulty: Difficulty,
   rng?: { random: () => number; randomInt: (min: number, max: number) => number }
 ): LogicProblem {
-  const n = rng ? rng.randomInt(1, 6) : getRandomInt(1, 5); // Keep small
+  const n = rng ? rng.randomInt(1, 5) : getRandomInt(1, 5); // Keep small
   let answer = 1;
   for (let i = 1; i <= n; i++) answer *= i;
   const question = `${n}! (팩토리얼)의 값은?`;
@@ -257,7 +259,7 @@ function generateClockProblem(rng?: {
   randomInt: (min: number, max: number) => number;
 }): LogicProblem {
   const getInt = (min: number, max: number) =>
-    rng ? rng.randomInt(min, max + 1) : getRandomInt(min, max);
+    rng ? rng.randomInt(min, max) : getRandomInt(min, max);
   const hour = getInt(13, 23); // 13시 ~ 23시
   return {
     question: `${hour}시는 12시간제에서 오후 몇 시입니까? (숫자만 입력)`,
@@ -270,7 +272,7 @@ function generateLogicMix1(
   rng?: { random: () => number; randomInt: (min: number, max: number) => number }
 ): LogicProblem {
   const getInt = (min: number, max: number) =>
-    rng ? rng.randomInt(min, max + 1) : getRandomInt(min, max);
+    rng ? rng.randomInt(min, max) : getRandomInt(min, max);
   const randomLevel = getInt(1, 9);
   return generateLogicProblem(randomLevel, difficulty, rng);
 }
@@ -280,7 +282,7 @@ function generateModAdvancedProblem(
   rng?: { randomInt: (min: number, max: number) => number }
 ): LogicProblem {
   const getInt = (min: number, max: number) =>
-    rng ? rng.randomInt(min, max + 1) : getRandomInt(min, max);
+    rng ? rng.randomInt(min, max) : getRandomInt(min, max);
   const a = getInt(30, 80);
   const b = getInt(4, 9);
   return {
@@ -294,7 +296,7 @@ function generateFactorialAdvancedProblem(
   rng?: { randomInt: (min: number, max: number) => number }
 ): LogicProblem {
   const getInt = (min: number, max: number) =>
-    rng ? rng.randomInt(min, max + 1) : getRandomInt(min, max);
+    rng ? rng.randomInt(min, max) : getRandomInt(min, max);
   const type = getInt(1, 2);
   if (type === 1) {
     const n = getInt(3, 6);
@@ -319,7 +321,7 @@ function generateLogicMix2(
   rng?: { random: () => number; randomInt: (min: number, max: number) => number }
 ): LogicProblem {
   const getInt = (min: number, max: number) =>
-    rng ? rng.randomInt(min, max + 1) : getRandomInt(min, max);
+    rng ? rng.randomInt(min, max) : getRandomInt(min, max);
   const randomLevel = getInt(11, 14);
   return generateLogicProblem(randomLevel, difficulty, rng);
 }

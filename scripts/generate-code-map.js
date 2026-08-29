@@ -566,87 +566,319 @@ function getExports(sourceFile) {
   return exports;
 }
 
-function generateMacroArchitectureMap() {
-  const domainSummaries = {
-    'features/quiz': {
-      name: '퀴즈 게임 플레이 엔진 (Quiz Engine)',
-      summary: '일반 모드(60s)/서바이벌(10s) 퀴즈 출제, 타이머, 콤보, 점수 및 보상 판정',
-      entryPoints: ['src/features/quiz/QuizContainer.tsx'],
-      stores: ['useQuizStore', 'useLevelProgressStore'],
-      dbTables: ['game_records', 'user_profiles'],
-    },
-    'features/auth': {
-      name: '사용자 인증 및 세션 (Authentication)',
-      summary: 'Google OAuth, Toss App-in-Toss, 게스트 로그인 및 세션 동기화',
-      entryPoints: ['src/features/auth/AuthModal.tsx'],
-      stores: ['useAuthStore', 'useUserStore'],
-      externalIntegrations: ['Supabase Auth', 'GoogleSignIn', 'TossAuth'],
-    },
-    'features/ranking': {
-      name: '랭킹 및 티어 시스템 (Ranking & Tiers)',
-      summary: '전체/티어별 리더보드 조회, 시즌 레이팅 점수 산정 및 레이팅 검증',
-      entryPoints: ['src/features/ranking/RankingPage.tsx'],
-      stores: ['useRankingStore', 'useUserStore'],
-      dbTables: ['user_profiles', 'game_records'],
-    },
-    'features/shop': {
-      name: '상점 및 아이템 관리 (Shop & Inventory)',
-      summary: '산소통 및 시간연장 아이템 구매, 인벤토리 관리, 보상형 광고 연동',
-      entryPoints: ['src/features/shop/ShopPage.tsx'],
-      stores: ['useShopStore', 'useInventoryStore'],
-      dbTables: ['user_inventory', 'user_profiles'],
-      externalIntegrations: ['AdMob'],
-    },
-    'features/debug': {
-      name: '개발 및 디버그 도구 (Debug Tools)',
-      summary: '테스트 데이터 리셋, 더미 기록 생성, 에러 로그 뷰어 및 바운더리 테스트 패널',
-      entryPoints: ['src/features/debug/components/DebugPanel.tsx'],
-      stores: ['useDebugStore', 'useErrorLogStore'],
-    },
-    'utils/sound': {
-      name: 'Web Audio 사운드 엔진 (Audio Synthesis)',
-      summary: 'Web Audio API 기반 절차적 SFX 합성, 상황별 다이나믹 BGM 트랙 및 주파수 시각화',
-      entryPoints: ['src/utils/sound/index.ts', 'src/components/GlobalBgmManager.tsx'],
-      stores: ['useSettingsStore'],
-    },
-    'components/geometry': {
-      name: 'Manim 기하 시각화 (Geometry Visualizer)',
-      summary: '수학 기하학 및 대수학 문제용 인터랙티브 도형/차트 렌더러',
-      entryPoints: ['src/components/geometry/ShapeVisualizer.tsx'],
-    },
-  };
+/**
+ * Dynamically extract domain name and summary from JSDoc tags (@domain, @summary) in index.ts
+ */
+function getDomainMetadata(domainKey, dirPath) {
+  let name = '';
+  let summary = '';
 
-  const globalStores = {
-    useAuthStore: '로그인 유저 정보 및 인증 세션 토큰 관리',
-    useQuizStore: '현재 문제, 선택지, 남은 시간, 점수, 콤보 및 진행 상태',
-    useLevelProgressStore: '월드별 클리어 레벨, 등반 고도 및 별점 진척도',
-    useSettingsStore: 'BGM/SFX 볼륨, 햅틱 피드백, 테마 설정',
-    useToastStore: '전역 토스트 알림 메시지 큐',
-    useBadgeStore: '업적 뱃지 획득 내역 및 팝업',
-    useErrorLogStore: '런타임 에러 캡처 및 Sentry 연동 버퍼',
-    useDebugStore: '치트 모드 및 로컬 테스트 오버라이드',
-  };
+  if (dirPath && fs.existsSync(dirPath)) {
+    const indexFiles = ['index.ts', 'index.tsx', 'README.md'];
+    for (const idx of indexFiles) {
+      const fullPath = path.join(dirPath, idx);
+      if (fs.existsSync(fullPath)) {
+        try {
+          const content = fs.readFileSync(fullPath, 'utf8');
+          const domainMatch = content.match(/@domain\s+([^\n\r*]+)/);
+          const summaryMatch = content.match(/@summary\s+([^\n\r*]+)/);
+          if (domainMatch) name = domainMatch[1].trim();
+          if (summaryMatch) summary = summaryMatch[1].trim();
+          if (name && summary) break;
+        } catch (_e) {
+          // ignore
+        }
+      }
+    }
+  }
 
-  const database = {
-    tables: {
-      user_profiles: '유저 닉네임, 아바타, 티어 점수, 총 등반 고도, 산소 잔여량',
-      game_records: '게임 플레이 결과(모드, 정답수, 소요시간, 콤보, 획득점수)',
-      badge_definitions: '뱃지 메타데이터(이름, 설명, 아이콘, 획득조건)',
-      user_badges: '유저별 획득 뱃지 목록 및 획득일시',
-      user_inventory: '유저 보유 아이템(산소통 등) 및 사용 내역',
-      daily_reward_history: '일일 출석 및 보상 수령 이력',
-    },
+  if (!name) {
+    const cleanKey = domainKey
+      .replace(/^features\//, '')
+      .replace(/^components\//, '')
+      .replace(/^utils\//, '');
+    name = cleanKey.charAt(0).toUpperCase() + cleanKey.slice(1) + ' Domain';
+  }
+  if (!summary) {
+    summary = `${domainKey} 도메인 기능 모듈`;
+  }
+
+  return { name, summary };
+}
+
+/**
+ * Table description dictionary for actual schema tables
+ */
+function getTableDescription(tableName) {
+  const tableDescriptions = {
+    profiles: '유저 닉네임, 아바타, 티어 점수, 총 등반 고도, 산소 잔여량',
+    game_records: '게임 플레이 결과(모드, 정답수, 소요시간, 콤보, 획득점수)',
+    game_sessions: '실시간 퀴즈 게임 세션 진행 상태 및 검증 토큰',
+    badge_definitions: '뱃지 메타데이터(이름, 설명, 아이콘, 획득조건)',
+    user_badges: '유저별 획득 뱃지 목록 및 획득일시',
+    inventory: '유저 보유 아이템(산소통 등) 및 인벤토리 내역',
+    items: '상점 판매 아이템 메타데이터 및 가격 정보',
+    daily_reward_history: '일일 출석 및 보상 수령 이력',
+    app_settings: '애플리케이션 전역 설정 및 메타데이터',
+    game_config: '인게임 월드/레벨 설정 및 파라미터',
+    hall_of_fame: '명예의 전당 역대 시즌 랭킹 기록',
+    ranking_view: '전체/티어별 리더보드 뷰',
+    theme_mapping: '테마 및 카테고리 매핑 설정',
+    tier_definitions: '티어 등급 및 별점 승급 기준 정의',
+    user_level_records: '유저별 레벨 클리어 상태 및 최고 점수 기록',
   };
+  return tableDescriptions[tableName] || `${tableName} 데이터 테이블`;
+}
+
+function generateMacroArchitectureMap(sourceFiles = []) {
+  // 1. Read package.json dynamically
+  const pkgPath = path.resolve('package.json');
+  let pkg = { name: 'solve-climb', version: '0.1.0', dependencies: {} };
+  if (fs.existsSync(pkgPath)) {
+    try {
+      pkg = JSON.parse(fs.readFileSync(pkgPath, 'utf8'));
+    } catch (_e) {
+      console.warn('Failed to parse package.json:', _e.message);
+    }
+  }
+
+  // Determine architecture stack dynamically
+  const deps = { ...pkg.dependencies, ...pkg.devDependencies };
+  const archParts = [];
+  if (deps['react']) archParts.push(`React ${deps['react'].replace(/[\^~]/, '')}`);
+  if (deps['typescript']) archParts.push('TypeScript');
+  if (deps['vite']) archParts.push('Vite');
+  if (deps['zustand']) archParts.push('Zustand');
+  if (deps['@supabase/supabase-js']) archParts.push('Supabase');
+  if (deps['@capacitor/core']) archParts.push('Capacitor');
+
+  // 2. Discover global stores dynamically from src/stores/
+  const globalStores = {};
+  const storesDir = path.resolve('src', 'stores');
+  if (fs.existsSync(storesDir)) {
+    const storeFiles = fs.readdirSync(storesDir);
+    for (const file of storeFiles) {
+      if (file.endsWith('.ts') && !file.includes('.test.') && !file.includes('__tests__')) {
+        const storeName = path.basename(file, '.ts');
+        const fullStorePath = path.join(storesDir, file);
+        let summary = '';
+        try {
+          const content = fs.readFileSync(fullStorePath, 'utf8');
+          const commentMatch = content.match(/\/\*\*([\s\S]*?)\*\//);
+          if (commentMatch) {
+            summary = commentMatch[1].replace(/^\s*\*\s?/gm, '').trim();
+          }
+        } catch (_e) {
+          // ignore
+        }
+        globalStores[storeName] = summary || `${storeName} 상태 관리 스토어`;
+      }
+    }
+  }
+
+  // 3. Collect domain candidates dynamically from physical directories
+  const domainSummaries = {};
+  const candidateDomainDirs = [];
+
+  // Check src/features/*
+  const featuresDir = path.resolve('src', 'features');
+  if (fs.existsSync(featuresDir)) {
+    for (const dirName of fs.readdirSync(featuresDir)) {
+      const fullDir = path.join(featuresDir, dirName);
+      if (fs.statSync(fullDir).isDirectory()) {
+        candidateDomainDirs.push({
+          key: `features/${dirName}`,
+          dirPath: fullDir,
+          relativePrefix: `src/features/${dirName}`,
+        });
+      }
+    }
+  }
+
+  // Check other key architectural modules
+  const otherModules = [
+    { key: 'utils/sound', dir: path.resolve('src', 'utils', 'sound'), prefix: 'src/utils/sound' },
+    {
+      key: 'components/geometry',
+      dir: path.resolve('src', 'components', 'geometry'),
+      prefix: 'src/components/geometry',
+    },
+  ];
+  for (const mod of otherModules) {
+    if (fs.existsSync(mod.dir)) {
+      candidateDomainDirs.push({
+        key: mod.key,
+        dirPath: mod.dir,
+        relativePrefix: mod.prefix,
+      });
+    }
+  }
+
+  const allDbTables = new Set();
+
+  for (const domain of candidateDomainDirs) {
+    const meta = getDomainMetadata(domain.key, domain.dirPath);
+    const domainObj = {
+      name: meta.name,
+      summary: meta.summary,
+      entryPoints: [],
+    };
+
+    // Find actual entryPoints
+    const entryCandidates = [];
+    const indexFiles = ['index.ts', 'index.tsx'];
+    for (const idx of indexFiles) {
+      const full = path.join(domain.dirPath, idx);
+      if (fs.existsSync(full)) {
+        entryCandidates.push(path.relative(process.cwd(), full).replace(/\\/g, '/'));
+      }
+    }
+    // Look into pages/
+    const pagesDir = path.join(domain.dirPath, 'pages');
+    if (fs.existsSync(pagesDir)) {
+      for (const f of fs.readdirSync(pagesDir)) {
+        if (f.endsWith('.tsx') && !f.includes('.test.') && !f.includes('__tests__')) {
+          entryCandidates.push(
+            path.relative(process.cwd(), path.join(pagesDir, f)).replace(/\\/g, '/')
+          );
+        }
+      }
+    }
+    // Look into components/
+    const compDir = path.join(domain.dirPath, 'components');
+    if (fs.existsSync(compDir)) {
+      for (const f of fs.readdirSync(compDir)) {
+        if (
+          (f.endsWith('Layout.tsx') ||
+            f.endsWith('Container.tsx') ||
+            f.endsWith('Panel.tsx') ||
+            f.endsWith('Modal.tsx') ||
+            f.endsWith('Section.tsx') ||
+            f.endsWith('.tsx')) &&
+          !f.includes('.test.') &&
+          !f.includes('__tests__')
+        ) {
+          entryCandidates.push(
+            path.relative(process.cwd(), path.join(compDir, f)).replace(/\\/g, '/')
+          );
+        }
+      }
+    }
+    // Root level components/files in domain dir
+    for (const f of fs.readdirSync(domain.dirPath)) {
+      const full = path.join(domain.dirPath, f);
+      if (
+        fs.statSync(full).isFile() &&
+        (f.endsWith('.tsx') || f.endsWith('.ts')) &&
+        !f.includes('.test.') &&
+        !f.includes('__tests__')
+      ) {
+        entryCandidates.push(path.relative(process.cwd(), full).replace(/\\/g, '/'));
+      }
+    }
+
+    // Filter to existing files only and keep top unique entry points
+    const validEntryPoints = Array.from(new Set(entryCandidates)).filter((p) =>
+      fs.existsSync(path.resolve(p))
+    );
+    if (validEntryPoints.length > 0) {
+      domainObj.entryPoints = validEntryPoints.slice(0, 5);
+    }
+
+    // Dynamic AST scan for stores, dbTables, externalIntegrations
+    const storesUsed = new Set();
+    const tablesUsed = new Set();
+    const integrationsUsed = new Set();
+
+    for (const sourceFile of sourceFiles) {
+      const rel = path.relative(process.cwd(), sourceFile.getFilePath()).replace(/\\/g, '/');
+      const isFileInDomain = rel.startsWith(domain.relativePrefix);
+
+      if (!isFileInDomain) continue;
+
+      const fileText = sourceFile.getFullText();
+
+      // Scan for store imports
+      for (const storeName of Object.keys(globalStores)) {
+        if (fileText.includes(storeName)) {
+          storesUsed.add(storeName);
+        }
+      }
+
+      // Scan for db table usages .from('table_name') or supabase.from('table_name')
+      const fromMatches = fileText.matchAll(
+        /\.from\s*(?:<[^>]+>)?\s*\(\s*['"`]([a-zA-Z0-9_]+)['"`]\s*\)/g
+      );
+      for (const match of fromMatches) {
+        const tbl = match[1];
+        tablesUsed.add(tbl);
+        allDbTables.add(tbl);
+      }
+
+      // Scan for external integrations
+      if (fileText.includes('@supabase') || fileText.includes('supabaseClient'))
+        integrationsUsed.add('Supabase Auth');
+      if (fileText.includes('google') || fileText.includes('GoogleSignIn'))
+        integrationsUsed.add('GoogleSignIn');
+      if (
+        fileText.includes('toss') ||
+        fileText.includes('TossAuth') ||
+        fileText.includes('tossGameLogin')
+      )
+        integrationsUsed.add('TossAuth');
+      if (
+        fileText.includes('admob') ||
+        fileText.includes('adService') ||
+        fileText.includes('AdMob')
+      )
+        integrationsUsed.add('AdMob');
+      if (fileText.includes('sentry') || fileText.includes('Sentry'))
+        integrationsUsed.add('Sentry');
+      if (fileText.includes('@capacitor')) integrationsUsed.add('Capacitor');
+    }
+
+    if (storesUsed.size > 0) {
+      domainObj.stores = Array.from(storesUsed).sort();
+    }
+    if (tablesUsed.size > 0) {
+      domainObj.dbTables = Array.from(tablesUsed).sort();
+    }
+    if (integrationsUsed.size > 0) {
+      domainObj.externalIntegrations = Array.from(integrationsUsed).sort();
+    }
+
+    domainSummaries[domain.key] = domainObj;
+  }
+
+  // 4. Scan all sourceFiles once to populate any missed DB tables purely from code
+  for (const sourceFile of sourceFiles) {
+    const fileText = sourceFile.getFullText();
+    const fromMatches = fileText.matchAll(
+      /\.from\s*(?:<[^>]+>)?\s*\(\s*['"`]([a-zA-Z0-9_]+)['"`]\s*\)/g
+    );
+    for (const match of fromMatches) {
+      allDbTables.add(match[1]);
+    }
+  }
+
+  const dbTablesMap = {};
+  for (const tbl of Array.from(allDbTables).sort()) {
+    dbTablesMap[tbl] = getTableDescription(tbl);
+  }
 
   return {
-    project: 'solve-climb',
-    version: '0.27.532',
+    project: pkg.name || 'solve-climb',
+    version: pkg.version || '0.1.0',
     generatedAt: new Date().toISOString(),
-    architecture: 'React 19 + TypeScript + Vite + Zustand + Supabase + Capacitor',
-    summary: '웹 및 모바일(안드로이드/Toss) 기반 실시간 클라이밍 수학/CS 퀴즈 게임',
+    architecture:
+      archParts.join(' + ') || 'React 19 + TypeScript + Vite + Zustand + Supabase + Capacitor',
+    summary:
+      pkg.description || '웹 및 모바일(안드로이드/Toss) 기반 실시간 클라이밍 수학/CS 퀴즈 게임',
     domains: domainSummaries,
     globalStores,
-    database,
+    database: {
+      tables: dbTablesMap,
+    },
   };
 }
 
@@ -724,7 +956,7 @@ function main() {
   }
 
   // 2. Write Macroscopic Architecture Map (architecture-map.yaml)
-  const macroData = generateMacroArchitectureMap();
+  const macroData = generateMacroArchitectureMap(sourceFiles);
   const macroYaml = yaml.dump(macroData, { indent: 2, lineWidth: -1, noRefs: true });
   const macroDestPaths = [
     path.resolve('docs', 'architecture-map.yaml'),

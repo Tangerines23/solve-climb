@@ -3,7 +3,7 @@ import { FooterNav } from '@/components/FooterNav';
 import { TierBadge } from '@/components/TierBadge';
 import { SegmentedControl } from '@/components/SegmentedControl';
 import { GlassCard } from '@/components/common/GlassCard';
-import { useRanking } from '@/hooks/useRanking';
+import { useRanking, type RankingType } from '../hooks/useRanking';
 import './RankingPage.css';
 
 export function RankingPage() {
@@ -45,7 +45,7 @@ export function RankingPage() {
                   { value: 'survival', label: '서바이벌' },
                 ]}
                 value={activeType}
-                onChange={(val) => setActiveType(val as import('@/hooks/useRanking').RankingType)}
+                onChange={(val) => setActiveType(val as RankingType)}
                 aria-label="랭킹 분야 선택"
               />
             </div>

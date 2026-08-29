@@ -1,8 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { GeometryTipVisualizer } from '@/components/geometry/GeometryTipVisualizer';
 import { WORLD_TIPS, CATEGORY_TIPS, type TipItem } from '@/constants/tips';
-import { generateQuestion } from '@/utils/quizGenerator';
-import { getSolutionProcess } from '@/utils/solutionExplainer';
+import { generateQuestion, getSolutionProcess } from '@/features/quiz';
 import { type QuizQuestion, type Topic, type World } from '@/types/quiz';
 import { useToastStore } from '@/stores/useToastStore';
 import './MyPageTipPreview.css';

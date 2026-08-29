@@ -82,6 +82,27 @@ export function useShop() {
           setPurchaseStatus({ id: itemId, message: UI_MESSAGES.PURCHASE_SUCCESS_SIMULATION });
           const { setMinerals } = useUserStore.getState();
           await setMinerals(minerals - price);
+          const targetItem = items.find((i) => i.id === itemId);
+          if (targetItem) {
+            useUserStore.setState((state) => {
+              const existing = state.inventory.find((i) => i.code === targetItem.code);
+              const updatedInventory = existing
+                ? state.inventory.map((i) =>
+                    i.code === targetItem.code ? { ...i, quantity: i.quantity + 1 } : i
+                  )
+                : [
+                    ...state.inventory,
+                    {
+                      id: itemId,
+                      code: targetItem.code,
+                      name: targetItem.name,
+                      quantity: 1,
+                      description: targetItem.description || '',
+                    },
+                  ];
+              return { inventory: updatedInventory };
+            });
+          }
           showToast(UI_MESSAGES.LOCAL_PURCHASE_INFO, STATUS_TYPES.INFO);
           setTimeout(() => fetchUserData(), 500);
         } else {
@@ -92,7 +113,7 @@ export function useShop() {
         setTimeout(() => setPurchaseStatus(null), ANIMATION_CONFIG.TOAST_DURATION);
       }
     },
-    [minerals, showToast, fetchUserData]
+    [minerals, items, showToast, fetchUserData]
   );
 
   const handleMineralsAdRecharge = useCallback(async () => {
