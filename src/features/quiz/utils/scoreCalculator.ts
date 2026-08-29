@@ -30,6 +30,10 @@ export function getBaseLevelScore(level: number, categoryId: string | null): num
   return BASE_CLIMB_DISTANCE + (level - 1) * DISTANCE_PER_LEVEL;
 }
 
+type LevelRecordMap = Record<string, LevelRecord>;
+type SubTopicMap = Record<string, LevelRecordMap>;
+type WorldMap = Record<string, SubTopicMap>;
+
 /**
  * 전체 누적 등반 고도 계산 (모든 카테고리의 bestScore 합산)
  * @returns 총 고도(m)와 총 문제 수
@@ -40,9 +44,12 @@ export function calculateTotalAltitude(): { totalAltitude: number; totalProblems
   let total = (Altitude.create(0) as { ok: true; value: Altitude }).value;
 
   // 모든 카테고리 순회
-  Object.values(progress).forEach((categoryData: any) => {
-    Object.values(categoryData).forEach((subTopicData: any) => {
-      Object.values(subTopicData).forEach((levelRecord: any) => {
+  const typedProgress = progress as unknown as WorldMap;
+  Object.values(typedProgress).forEach((categoryData) => {
+    if (!categoryData || typeof categoryData !== 'object') return;
+    Object.values(categoryData).forEach((subTopicData) => {
+      if (!subTopicData || typeof subTopicData !== 'object') return;
+      Object.values(subTopicData).forEach((levelRecord) => {
         const score = getBestScore(levelRecord);
         const scoreAlt = Altitude.create(score);
         if (scoreAlt.ok) {
@@ -144,12 +151,14 @@ export function calculateCategoryAltitude(category: string): {
   const { progress } = useLevelProgressStore.getState();
 
   // 1. 호환성 유지: 만약 category가 progress의 최상위 키(World)라면 해당 World 전체 고도 반환
-  if (Object.prototype.hasOwnProperty.call(progress, category)) {
+  const typedProgress = progress as unknown as WorldMap;
+  if (Object.prototype.hasOwnProperty.call(typedProgress, category)) {
     let totalAltitude = 0;
-    const worldProgress = progress[category as keyof typeof progress];
-    if (worldProgress) {
-      Object.values(worldProgress).forEach((subTopicData: any) => {
-        Object.values(subTopicData).forEach((record: any) => {
+    const worldProgress = typedProgress[category];
+    if (worldProgress && typeof worldProgress === 'object') {
+      Object.values(worldProgress).forEach((subTopicData) => {
+        if (!subTopicData || typeof subTopicData !== 'object') return;
+        Object.values(subTopicData).forEach((record) => {
           totalAltitude += getBestScore(record);
         });
       });
@@ -159,11 +168,15 @@ export function calculateCategoryAltitude(category: string): {
 
   // 2. 일반 케이스: 모든 월드에서 해당 category ID를 찾아 합산
   let totalAltitude = 0;
-  Object.values(progress).forEach((worldProgress: any) => {
-    if (Object.prototype.hasOwnProperty.call(worldProgress, category)) {
-      const categoryData = worldProgress[category as keyof typeof worldProgress];
-      if (categoryData) {
-        Object.values(categoryData).forEach((record: any) => {
+  Object.values(typedProgress).forEach((worldProgress) => {
+    if (
+      worldProgress &&
+      typeof worldProgress === 'object' &&
+      Object.prototype.hasOwnProperty.call(worldProgress, category)
+    ) {
+      const categoryData = worldProgress[category];
+      if (categoryData && typeof categoryData === 'object') {
+        Object.values(categoryData).forEach((record) => {
           totalAltitude += getBestScore(record);
         });
       }

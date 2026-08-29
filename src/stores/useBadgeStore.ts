@@ -27,6 +27,10 @@ interface BadgeState {
   addUserBadge: (badgeId: string, userId: string) => Promise<void>;
 }
 
+/**
+ * [Badge Store]
+ * 유저 획득 뱃지 목록 및 뱃지 메타데이터(정의) 동기화 상태를 관리합니다.
+ */
 export const useBadgeStore = create<BadgeState>((set, get) => ({
   badgeDefinitions: [],
   userBadges: [],

@@ -77,7 +77,11 @@ export const useQuizBusinessLogic = ({
         setShowSlideToast(true);
         setToastValue(UI_MESSAGES.STAMINA_RECHARGED_FULL);
 
-        const isCapacitor = typeof window !== 'undefined' && !!(window as any).Capacitor;
+        const win =
+          typeof window !== 'undefined'
+            ? (window as unknown as { Capacitor?: unknown })
+            : undefined;
+        const isCapacitor = !!win?.Capacitor;
         if (isCapacitor) {
           await useUserStore.getState().fetchUserData();
         } else {

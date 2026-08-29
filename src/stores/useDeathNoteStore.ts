@@ -18,6 +18,10 @@ interface DeathNoteState {
   getQuestionsByCategory: (world: World, category: Category) => MissedQuestion[];
 }
 
+/**
+ * [Death Note Store]
+ * 오답 노트 및 취약 문제 복습 데이터를 관리합니다.
+ */
 export const useDeathNoteStore = create<DeathNoteState>()(
   persist(
     (set, get) => ({

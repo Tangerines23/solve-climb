@@ -97,7 +97,7 @@ export const QuickActionsSection = React.memo(function QuickActionsSection() {
     // 인증 상태 변화 감지 리스너 추가
     const {
       data: { subscription },
-    } = supabase.auth.onAuthStateChange((_event: any, session: any) => {
+    } = supabase.auth.onAuthStateChange((_event, session) => {
       if (session) {
         checkUser();
         // 로그인 시 유저 데이터 리프레시
@@ -350,16 +350,16 @@ export const QuickActionsSection = React.memo(function QuickActionsSection() {
             <div className="debug-sync-issues">
               <h5 className="debug-sync-issues-title">발견된 문제:</h5>
               <ul className="debug-sync-issues-list">
-                {syncResult.profile.issues.map((issue: any, idx: any) => (
+                {syncResult.profile.issues.map((issue, idx) => (
                   <li key={`profile-${idx}`}>{issue}</li>
                 ))}
-                {syncResult.tier.issues.map((issue: any, idx: any) => (
+                {syncResult.tier.issues.map((issue, idx) => (
                   <li key={`tier-${idx}`}>{issue}</li>
                 ))}
-                {syncResult.badges.issues.map((issue: any, idx: any) => (
+                {syncResult.badges.issues.map((issue, idx) => (
                   <li key={`badges-${idx}`}>{issue}</li>
                 ))}
-                {syncResult.inventory.issues.map((issue: any, idx: any) => (
+                {syncResult.inventory.issues.map((issue, idx) => (
                   <li key={`inventory-${idx}`}>{issue}</li>
                 ))}
               </ul>
@@ -582,7 +582,7 @@ export const QuickActionsSection = React.memo(function QuickActionsSection() {
         )}
 
         <div className="debug-preset-list">
-          {debugPresets.map((preset: any) => (
+          {debugPresets.map((preset) => (
             <div key={preset.id} className="debug-preset-item">
               <button
                 className="debug-preset-button"

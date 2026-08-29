@@ -25,7 +25,7 @@ export class ProgressRepository {
    */
   static async fetchServerProgress(userId: string): Promise<{
     data: DBProgressRecord[] | null;
-    error: any;
+    error: unknown;
   }> {
     const { data, error } = await safeSupabaseQuery(
       supabase
@@ -41,7 +41,7 @@ export class ProgressRepository {
   /**
    * 서버에 유저 진행도를 초기화(삭제)합니다.
    */
-  static async resetServerProgress(userId: string): Promise<{ success: boolean; error?: any }> {
+  static async resetServerProgress(userId: string): Promise<{ success: boolean; error?: unknown }> {
     const { error } = await safeSupabaseQuery(
       supabase.from('user_level_records').delete().eq('user_id', userId),
       { context: 'ProgressRepository.resetServerProgress' }

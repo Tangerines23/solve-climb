@@ -70,7 +70,7 @@ export function generateTodayChallenge(progressMap: ProgressMap): TodayChallenge
   const { flags } = useFeatureFlagStore.getState();
 
   // 1. 산 선택 (활성화된 것 중)
-  const availableMountains = APP_CONFIG.MOUNTAINS.filter((mtn: any) => {
+  const availableMountains = APP_CONFIG.MOUNTAINS.filter((mtn) => {
     const mountainId = mtn.id as 'math' | 'language' | 'logic' | 'general';
     if (mountainId === 'math') return flags.ENABLE_MATH_MOUNTAIN;
     if (mountainId === 'language') return flags.ENABLE_LANGUAGE_MOUNTAIN;
@@ -80,16 +80,14 @@ export function generateTodayChallenge(progressMap: ProgressMap): TodayChallenge
   const selectedMountain = mountains[rng.randomInt(0, mountains.length)];
 
   // 2. 월드 선택 (해당 산의 월드 중)
-  const availableWorlds = APP_CONFIG.WORLDS.filter(
-    (w: any) => w.mountainId === selectedMountain.id
-  );
+  const availableWorlds = APP_CONFIG.WORLDS.filter((w) => w.mountainId === selectedMountain.id);
   const selectedWorld = availableWorlds[rng.randomInt(0, availableWorlds.length)];
 
   // 3. 카테고리/분야 선택
   const subTopics = APP_CONFIG.SUB_TOPICS[selectedMountain.id as 'math' | 'language'];
   const filteredSubTopics =
     selectedMountain.id === 'math'
-      ? subTopics.filter((t: any) => (t.id as string) !== 'sequence')
+      ? subTopics.filter((t) => (t.id as string) !== 'sequence')
       : subTopics;
 
   const fallbackTopic = { id: 'default', name: '기본 챌린지' };

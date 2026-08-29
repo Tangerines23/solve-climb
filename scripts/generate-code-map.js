@@ -201,7 +201,10 @@ function cleanTypeString(typeStr) {
 function getFileSummary(sourceFile) {
   const leadingCommentRanges = sourceFile.getLeadingCommentRanges();
   if (leadingCommentRanges.length > 0) {
-    return leadingCommentRanges[0]
+    // Prioritize JSDoc style block comments (/** ... */)
+    const jsDocComment = leadingCommentRanges.find((c) => c.getText().startsWith('/**'));
+    const targetComment = jsDocComment || leadingCommentRanges[0];
+    return targetComment
       .getText()
       .replace(/\/\*\*|\*\/|\/\*|\*\//g, '')
       .replace(/^\s*\*\s?/gm, '')
@@ -413,26 +416,58 @@ function parseClass(cls) {
   return data;
 }
 
+function unwrapHoc(init) {
+  if (!init) return null;
+  const kind = init.getKind();
+  if (kind === SyntaxKind.ArrowFunction || kind === SyntaxKind.FunctionExpression) {
+    return init;
+  }
+  if (kind === SyntaxKind.CallExpression) {
+    const exprText = init.getExpression().getText();
+    if (
+      exprText === 'memo' ||
+      exprText === 'React.memo' ||
+      exprText === 'forwardRef' ||
+      exprText === 'React.forwardRef' ||
+      exprText.endsWith('.memo') ||
+      exprText.endsWith('.forwardRef')
+    ) {
+      const args = init.getArguments();
+      if (args.length > 0) {
+        return unwrapHoc(args[0]);
+      }
+    }
+  }
+  return null;
+}
+
 function getReactInfo(sourceFile) {
   const isTsx = sourceFile.getFilePath().endsWith('.tsx');
   if (!isTsx) return null;
 
   const allFunctions = [];
   for (const func of sourceFile.getFunctions()) {
-    allFunctions.push({ node: func, name: func.getName() });
+    allFunctions.push({ node: func, name: func.getName() || '', isExported: func.isExported() });
   }
   for (const varDecl of sourceFile.getVariableDeclarations()) {
     const init = varDecl.getInitializer();
-    if (
-      init &&
-      (init.getKind() === SyntaxKind.ArrowFunction ||
-        init.getKind() === SyntaxKind.FunctionExpression)
-    ) {
-      allFunctions.push({ node: init, name: varDecl.getName() });
+    const unwrapped = unwrapHoc(init);
+    if (unwrapped) {
+      allFunctions.push({
+        node: unwrapped,
+        name: varDecl.getName(),
+        isExported: varDecl.isExported(),
+      });
     }
   }
 
-  const mainComponent = allFunctions.find((f) => f.name && f.name[0] === f.name[0].toUpperCase());
+  // Find main component: Prefer exported PascalCase functions, then any PascalCase function
+  const componentCandidates = allFunctions.filter(
+    (f) => f.name && f.name[0] === f.name[0].toUpperCase() && /^[A-Z]/.test(f.name)
+  );
+
+  const mainComponent =
+    componentCandidates.find((f) => f.isExported) || componentCandidates[0] || null;
   if (!mainComponent) return null;
 
   const componentNode = mainComponent.node;
@@ -457,7 +492,7 @@ function getReactInfo(sourceFile) {
     }
   });
 
-  const body = componentNode.getBody();
+  const body = componentNode.getBody ? componentNode.getBody() : null;
   if (body) {
     body.forEachChild((child) => {
       if (child.getKind() === SyntaxKind.FunctionDeclaration) {
@@ -475,11 +510,8 @@ function getReactInfo(sourceFile) {
       } else if (child.getKind() === SyntaxKind.VariableStatement) {
         for (const varDecl of child.getDeclarations()) {
           const init = varDecl.getInitializer();
-          if (
-            init &&
-            (init.getKind() === SyntaxKind.ArrowFunction ||
-              init.getKind() === SyntaxKind.FunctionExpression)
-          ) {
+          const unwrapped = unwrapHoc(init);
+          if (unwrapped) {
             const name = varDecl.getName();
             if (
               name &&
@@ -607,27 +639,236 @@ function getDomainMetadata(domainKey, dirPath) {
 }
 
 /**
- * Table description dictionary for actual schema tables
+ * Dynamically extract table and RPC comments from Supabase migrations & Source files
+ */
+function extractDynamicDbComments() {
+  const tableComments = {};
+  const rpcComments = {};
+
+  function cleanComment(raw) {
+    if (!raw || typeof raw !== 'string') return '';
+    // Filter out separator lines like === or ---
+    if (/^[=\-*#\s]+$/.test(raw)) return '';
+    // Filter out garbled/corrupted encoding characters (e.g. ?)
+    if (/[\uFFFD]|\?{2,}|(?:\?[\uAC00-\uD7AF])|(?:[\uAC00-\uD7AF]\?)/.test(raw)) return '';
+    let cleaned = raw
+      .replace(/^[-/*#\s]+/, '')
+      .replace(/^\d+\.\s*/, '')
+      .replace(/^\[\d+\]\s*/, '')
+      .trim();
+    return cleaned;
+  }
+
+  // 1. Scan supabase/migrations/*.sql
+  const migrationsDir = path.resolve('supabase', 'migrations');
+  if (fs.existsSync(migrationsDir)) {
+    try {
+      const sqlFiles = fs.readdirSync(migrationsDir).filter((f) => f.endsWith('.sql'));
+      for (const sqlFile of sqlFiles) {
+        const content = fs.readFileSync(path.join(migrationsDir, sqlFile), 'utf8');
+
+        // Match COMMENT ON TABLE [schema.]table_name IS 'comment'
+        const tableMatches = content.matchAll(
+          /COMMENT\s+ON\s+TABLE\s+(?:public\.)?([a-zA-Z0-9_]+)\s+IS\s+'([^']+)'/gi
+        );
+        for (const m of tableMatches) {
+          const c = cleanComment(m[2]);
+          if (c) tableComments[m[1]] = c;
+        }
+
+        // Match COMMENT ON FUNCTION [schema.]function_name(...) IS 'comment'
+        const funcMatches = content.matchAll(
+          /COMMENT\s+ON\s+FUNCTION\s+(?:public\.)?([a-zA-Z0-9_]+)(?:\([^)]*\))?\s+IS\s+'([^']+)'/gi
+        );
+        for (const m of funcMatches) {
+          const c = cleanComment(m[2]);
+          if (c) rpcComments[m[1]] = c;
+        }
+
+        // Match SQL header comments before CREATE [OR REPLACE] FUNCTION
+        const funcHeaderMatches = content.matchAll(
+          /(?:--\s*([^\n\r]+)|\/\*([\s\S]*?)\*\/)\s*CREATE\s+(?:OR\s+REPLACE\s+)?FUNCTION\s+(?:public\.)?([a-zA-Z0-9_]+)/gi
+        );
+        for (const m of funcHeaderMatches) {
+          const comment = (m[1] || m[2] || '').replace(/^\s*\*\s?/gm, '').trim();
+          const funcName = m[3];
+          if (
+            comment &&
+            funcName &&
+            !rpcComments[funcName] &&
+            !comment.startsWith('Description:')
+          ) {
+            const firstLine = comment.split('\n').find((l) => cleanComment(l));
+            const c = cleanComment(firstLine);
+            if (c) rpcComments[funcName] = c;
+          }
+        }
+      }
+    } catch (_e) {
+      // ignore
+    }
+  }
+
+  // 2. Scan src/services, src/stores, src/utils, src/features for JSDoc @rpc / @table annotations
+  const scanBaseDirs = [
+    path.resolve('src', 'services'),
+    path.resolve('src', 'stores'),
+    path.resolve('src', 'utils'),
+    path.resolve('src', 'features'),
+  ];
+  for (const bDir of scanBaseDirs) {
+    if (fs.existsSync(bDir)) {
+      try {
+        const scanRecursive = (dir) => {
+          for (const item of fs.readdirSync(dir)) {
+            const fullPath = path.join(dir, item);
+            if (fs.statSync(fullPath).isDirectory()) {
+              if (!item.includes('__tests__')) scanRecursive(fullPath);
+            } else if (item.endsWith('.ts') || item.endsWith('.tsx')) {
+              const content = fs.readFileSync(fullPath, 'utf8');
+              const rpcDocMatches = content.matchAll(/@rpc\s+([a-zA-Z0-9_]+)\s+([^\n\r*]+)/g);
+              for (const m of rpcDocMatches) {
+                const c = cleanComment(m[2]);
+                if (c) rpcComments[m[1]] = c;
+              }
+              const tableDocMatches = content.matchAll(/@table\s+([a-zA-Z0-9_]+)\s+([^\n\r*]+)/g);
+              for (const m of tableDocMatches) {
+                const c = cleanComment(m[2]);
+                if (c) tableComments[m[1]] = c;
+              }
+            }
+          }
+        };
+        scanRecursive(bDir);
+      } catch (_e) {
+        // ignore
+      }
+    }
+  }
+
+  return { tableComments, rpcComments };
+}
+
+const dynamicDbComments = extractDynamicDbComments();
+
+/**
+ * Domain semantic vocabulary dictionary for dynamic description synthesis (No hardcoded static table list)
+ */
+const DOMAIN_TERMS = {
+  profile: '사용자 프로필 및 계정 정보',
+  profiles: '사용자 프로필, 닉네임 및 계정 정보',
+  record: '플레이 기록 및 결과',
+  records: '플레이 기록 및 결과 목록',
+  session: '실시간 게임 세션 및 토큰 검증',
+  sessions: '실시간 게임 세션 및 진행 상태',
+  badge: '뱃지 메타데이터 및 획득 정보',
+  badges: '사용자 획득 뱃지 목록',
+  definition: '정의 및 기준 메타데이터',
+  definitions: '정의 및 메타데이터 목록',
+  inventory: '인벤토리 및 아이템 보유 현황',
+  item: '아이템 정보',
+  items: '상점 판매 아이템 카탈로그 및 메타데이터',
+  reward: '보상 수령 이력',
+  history: '수령 및 변경 이력',
+  config: '인게임 환경 및 레벨 설정 파라미터',
+  hall_of_fame: '명예의 전당 시즌 랭킹 기록',
+  ranking: '실시간 랭킹 및 리더보드',
+  view: '통합 뷰',
+  theme: '테마 및 카테고리 매핑 설정',
+  tier: '티어 등급 및 승급 기준 정의',
+  level: '레벨 클리어 및 최고 점수',
+  stat: '누적 플레이 통계 및 전적',
+  statistics: '누적 플레이 통계, 승률 및 전적',
+  log: '감사 및 상세 로그',
+  logs: '상세 플레이 로그 및 이력',
+  setting: '애플리케이션 설정',
+  settings: '애플리케이션 설정 및 파라미터',
+};
+
+const RPC_VERBS = {
+  debug_set: '강제 설정 (디버그)',
+  debug_grant: '강제 지급 (디버그)',
+  debug_reset: '초기화 (디버그)',
+  debug_clear: '기록 삭제 (디버그)',
+  debug_delete: '데이터 삭제 (디버그)',
+  debug_create: '생성 (디버그)',
+  debug_run: '시나리오 실행 (디버그)',
+  debug_seed: '시드 데이터 주입 (디버그)',
+  debug: '디버그 전용 처리',
+  get: '조회',
+  set: '설정',
+  update: '수정 및 동기화',
+  create: '생성 및 발급',
+  submit: '제출 및 점수 반영',
+  check_and_recover: '쿨다운 확인 및 회복',
+  check_and_award: '조건 달성 검증 및 지급',
+  check: '확인 및 검증',
+  handle: '처리 및 보상 지급',
+  consume: '소비 및 차감',
+  purchase: '구매 및 재화 차감',
+  restore: '복원',
+  reset: '초기화',
+  secure_reward: '보안 검증 기반 보상 지급',
+  secure_reset: '보안 검증 기반 안전 초기화',
+  secure: '보안 검증 처리',
+  validate: '유효성 검증',
+  claim: '수령 처리',
+  promote: '승급 및 보상 처리',
+  withdraw: '회원 탈퇴 및 데이터 영구 삭제',
+};
+
+/**
+ * Pure dynamic semantic table description generator
  */
 function getTableDescription(tableName) {
-  const tableDescriptions = {
-    profiles: '유저 닉네임, 아바타, 티어 점수, 총 등반 고도, 산소 잔여량',
-    game_records: '게임 플레이 결과(모드, 정답수, 소요시간, 콤보, 획득점수)',
-    game_sessions: '실시간 퀴즈 게임 세션 진행 상태 및 검증 토큰',
-    badge_definitions: '뱃지 메타데이터(이름, 설명, 아이콘, 획득조건)',
-    user_badges: '유저별 획득 뱃지 목록 및 획득일시',
-    inventory: '유저 보유 아이템(산소통 등) 및 인벤토리 내역',
-    items: '상점 판매 아이템 메타데이터 및 가격 정보',
-    daily_reward_history: '일일 출석 및 보상 수령 이력',
-    app_settings: '애플리케이션 전역 설정 및 메타데이터',
-    game_config: '인게임 월드/레벨 설정 및 파라미터',
-    hall_of_fame: '명예의 전당 역대 시즌 랭킹 기록',
-    ranking_view: '전체/티어별 리더보드 뷰',
-    theme_mapping: '테마 및 카테고리 매핑 설정',
-    tier_definitions: '티어 등급 및 별점 승급 기준 정의',
-    user_level_records: '유저별 레벨 클리어 상태 및 최고 점수 기록',
-  };
-  return tableDescriptions[tableName] || `${tableName} 데이터 테이블`;
+  if (dynamicDbComments.tableComments[tableName]) {
+    return dynamicDbComments.tableComments[tableName];
+  }
+
+  // Synthesize description dynamically from domain terms
+  if (DOMAIN_TERMS[tableName]) {
+    return `${DOMAIN_TERMS[tableName]} 테이블`;
+  }
+
+  const parts = tableName.split('_');
+  const matchedTerms = parts.map((p) => DOMAIN_TERMS[p] || p);
+  return `${matchedTerms.join(' ')} 데이터 테이블`;
+}
+
+/**
+ * Pure dynamic semantic RPC description generator
+ */
+function getRpcDescription(rpcName) {
+  if (dynamicDbComments.rpcComments[rpcName]) {
+    return dynamicDbComments.rpcComments[rpcName];
+  }
+
+  // Find longest matching verb prefix
+  let matchedVerb = '';
+  let remainder = rpcName;
+  const sortedVerbs = Object.keys(RPC_VERBS).sort((a, b) => b.length - a.length);
+  for (const verb of sortedVerbs) {
+    if (rpcName.startsWith(verb)) {
+      matchedVerb = RPC_VERBS[verb];
+      remainder = rpcName.slice(verb.length).replace(/^_+/, '');
+      break;
+    }
+  }
+
+  // Parse remainder nouns
+  const remainderWords = remainder
+    .split('_')
+    .filter(Boolean)
+    .map((w) => DOMAIN_TERMS[w] || w);
+
+  if (matchedVerb && remainderWords.length > 0) {
+    return `${remainderWords.join(' ')} ${matchedVerb} RPC`;
+  }
+  if (matchedVerb) {
+    return `${matchedVerb} RPC`;
+  }
+
+  return `${rpcName} 원격 프로시저 (RPC)`;
 }
 
 function generateMacroArchitectureMap(sourceFiles = []) {
@@ -652,7 +893,7 @@ function generateMacroArchitectureMap(sourceFiles = []) {
   if (deps['@supabase/supabase-js']) archParts.push('Supabase');
   if (deps['@capacitor/core']) archParts.push('Capacitor');
 
-  // 2. Discover global stores dynamically from src/stores/
+  // 2. Discover global stores dynamically from src/stores/ with precise JSDoc matching
   const globalStores = {};
   const storesDir = path.resolve('src', 'stores');
   if (fs.existsSync(storesDir)) {
@@ -664,9 +905,33 @@ function generateMacroArchitectureMap(sourceFiles = []) {
         let summary = '';
         try {
           const content = fs.readFileSync(fullStorePath, 'utf8');
-          const commentMatch = content.match(/\/\*\*([\s\S]*?)\*\//);
-          if (commentMatch) {
-            summary = commentMatch[1].replace(/^\s*\*\s?/gm, '').trim();
+          // Find text immediately before export const ${storeName}
+          const exportRegex = new RegExp(`(?:export\\s+const|const)\\s+${storeName}`);
+          const parts = content.split(exportRegex);
+          if (parts.length > 1) {
+            const beforeExport = parts[0];
+            const lastJsDocIdx = beforeExport.lastIndexOf('/**');
+            if (lastJsDocIdx !== -1) {
+              const jsDocPart = beforeExport.slice(lastJsDocIdx);
+              const endJsDocIdx = jsDocPart.indexOf('*/');
+              if (endJsDocIdx !== -1) {
+                const remainder = jsDocPart.slice(endJsDocIdx + 2).trim();
+                // Ensure nothing other than whitespace exists between */ and export const ${storeName}
+                if (remainder.length === 0) {
+                  summary = jsDocPart
+                    .slice(3, endJsDocIdx)
+                    .replace(/^\s*\*\s?/gm, '')
+                    .trim();
+                }
+              }
+            }
+          }
+          if (!summary) {
+            // Fallback: top of file JSDoc before first import
+            const topMatch = content.match(/^\s*\/\*\*([\s\S]*?)\*\//);
+            if (topMatch) {
+              summary = topMatch[1].replace(/^\s*\*\s?/gm, '').trim();
+            }
           }
         } catch (_e) {
           // ignore
@@ -676,11 +941,44 @@ function generateMacroArchitectureMap(sourceFiles = []) {
     }
   }
 
-  // 3. Collect domain candidates dynamically from physical directories
+  // 3. Pre-scan stores and services for DB tables and RPC calls (Indirect dependencies)
+  const sharedModuleDbResources = {};
+  const allDbTables = new Set();
+  const allDbRpcs = new Set();
+
+  for (const sourceFile of sourceFiles) {
+    const rel = path.relative(process.cwd(), sourceFile.getFilePath()).replace(/\\/g, '/');
+    const fileText = sourceFile.getFullText();
+
+    const fromMatches = fileText.matchAll(
+      /\.from\s*(?:<[^>]+>)?\s*\(\s*['"`]([a-zA-Z0-9_]+)['"`]\s*\)/g
+    );
+    for (const m of fromMatches) allDbTables.add(m[1]);
+
+    const rpcMatches = fileText.matchAll(/\.rpc\s*(?:<[^>]+>)?\s*\(\s*['"`]([a-zA-Z0-9_]+)['"`]/g);
+    for (const m of rpcMatches) allDbRpcs.add(m[1]);
+
+    if (rel.startsWith('src/stores/') || rel.startsWith('src/services/')) {
+      const moduleName = path.basename(rel, path.extname(rel));
+      const tables = new Set();
+      const rpcs = new Set();
+      for (const m of fileText.matchAll(
+        /\.from\s*(?:<[^>]+>)?\s*\(\s*['"`]([a-zA-Z0-9_]+)['"`]\s*\)/g
+      )) {
+        tables.add(m[1]);
+      }
+      for (const m of fileText.matchAll(/\.rpc\s*(?:<[^>]+>)?\s*\(\s*['"`]([a-zA-Z0-9_]+)['"`]/g)) {
+        rpcs.add(m[1]);
+      }
+      sharedModuleDbResources[moduleName] = { tables, rpcs };
+    }
+  }
+
+  // 4. Dynamic Auto-Discovery of Domains (Zero Hardcoding)
   const domainSummaries = {};
   const candidateDomainDirs = [];
 
-  // Check src/features/*
+  // 4.1 Auto-discover src/features/*
   const featuresDir = path.resolve('src', 'features');
   if (fs.existsSync(featuresDir)) {
     for (const dirName of fs.readdirSync(featuresDir)) {
@@ -690,41 +988,93 @@ function generateMacroArchitectureMap(sourceFiles = []) {
           key: `features/${dirName}`,
           dirPath: fullDir,
           relativePrefix: `src/features/${dirName}`,
+          type: 'feature',
         });
       }
     }
   }
 
-  // Check other key architectural modules
-  const otherModules = [
-    { key: 'utils/sound', dir: path.resolve('src', 'utils', 'sound'), prefix: 'src/utils/sound' },
-    {
-      key: 'components/geometry',
-      dir: path.resolve('src', 'components', 'geometry'),
-      prefix: 'src/components/geometry',
-    },
-  ];
-  for (const mod of otherModules) {
-    if (fs.existsSync(mod.dir)) {
-      candidateDomainDirs.push({
-        key: mod.key,
-        dirPath: mod.dir,
-        relativePrefix: mod.prefix,
-      });
+  // 4.2 Auto-discover all other src/ directories (pages, services, components/*, utils/*, etc.)
+  const scanParents = ['pages', 'services', 'components', 'utils', 'lib'];
+  for (const parent of scanParents) {
+    const parentPath = path.resolve('src', parent);
+    if (fs.existsSync(parentPath) && fs.statSync(parentPath).isDirectory()) {
+      // Check parent directory itself for index.ts/tsx with @domain
+      const pIdxTs = path.join(parentPath, 'index.ts');
+      const pIdxTsx = path.join(parentPath, 'index.tsx');
+      const pCheck = fs.existsSync(pIdxTs) ? pIdxTs : fs.existsSync(pIdxTsx) ? pIdxTsx : null;
+      if (pCheck) {
+        try {
+          const content = fs.readFileSync(pCheck, 'utf8');
+          if (content.includes('@domain')) {
+            const typeMatch = content.match(/@type\s+([^\n\r*]+)/);
+            candidateDomainDirs.push({
+              key: parent,
+              dirPath: parentPath,
+              relativePrefix: `src/${parent}`,
+              type: typeMatch
+                ? typeMatch[1].trim()
+                : parent === 'pages'
+                  ? 'page'
+                  : parent === 'services'
+                    ? 'service'
+                    : 'module',
+            });
+          }
+        } catch (_e) {
+          // ignore
+        }
+      }
+
+      // Check subdirectories under parent
+      for (const sub of fs.readdirSync(parentPath)) {
+        const subPath = path.join(parentPath, sub);
+        if (
+          fs.statSync(subPath).isDirectory() &&
+          !candidateDomainDirs.some((c) => c.dirPath === subPath)
+        ) {
+          const idxTs = path.join(subPath, 'index.ts');
+          const idxTsx = path.join(subPath, 'index.tsx');
+          const checkFile = fs.existsSync(idxTs) ? idxTs : fs.existsSync(idxTsx) ? idxTsx : null;
+          if (checkFile) {
+            try {
+              const fileContent = fs.readFileSync(checkFile, 'utf8');
+              if (fileContent.includes('@domain')) {
+                const typeMatch = fileContent.match(/@type\s+([^\n\r*]+)/);
+                candidateDomainDirs.push({
+                  key: `${parent}/${sub}`,
+                  dirPath: subPath,
+                  relativePrefix: `src/${parent}/${sub}`,
+                  type: typeMatch
+                    ? typeMatch[1].trim()
+                    : parent === 'services'
+                      ? 'service'
+                      : parent === 'utils'
+                        ? 'engine'
+                        : parent === 'components'
+                          ? 'ui-module'
+                          : 'module',
+                });
+              }
+            } catch (_e) {
+              // ignore
+            }
+          }
+        }
+      }
     }
   }
-
-  const allDbTables = new Set();
 
   for (const domain of candidateDomainDirs) {
     const meta = getDomainMetadata(domain.key, domain.dirPath);
     const domainObj = {
       name: meta.name,
+      type: domain.type,
       summary: meta.summary,
       entryPoints: [],
     };
 
-    // Find actual entryPoints
+    // Find actual entryPoints (index.ts first, then pages, then components)
     const entryCandidates = [];
     const indexFiles = ['index.ts', 'index.tsx'];
     for (const idx of indexFiles) {
@@ -733,7 +1083,6 @@ function generateMacroArchitectureMap(sourceFiles = []) {
         entryCandidates.push(path.relative(process.cwd(), full).replace(/\\/g, '/'));
       }
     }
-    // Look into pages/
     const pagesDir = path.join(domain.dirPath, 'pages');
     if (fs.existsSync(pagesDir)) {
       for (const f of fs.readdirSync(pagesDir)) {
@@ -744,7 +1093,6 @@ function generateMacroArchitectureMap(sourceFiles = []) {
         }
       }
     }
-    // Look into components/
     const compDir = path.join(domain.dirPath, 'components');
     if (fs.existsSync(compDir)) {
       for (const f of fs.readdirSync(compDir)) {
@@ -764,7 +1112,6 @@ function generateMacroArchitectureMap(sourceFiles = []) {
         }
       }
     }
-    // Root level components/files in domain dir
     for (const f of fs.readdirSync(domain.dirPath)) {
       const full = path.join(domain.dirPath, f);
       if (
@@ -777,17 +1124,17 @@ function generateMacroArchitectureMap(sourceFiles = []) {
       }
     }
 
-    // Filter to existing files only and keep top unique entry points
     const validEntryPoints = Array.from(new Set(entryCandidates)).filter((p) =>
       fs.existsSync(path.resolve(p))
     );
     if (validEntryPoints.length > 0) {
-      domainObj.entryPoints = validEntryPoints.slice(0, 5);
+      domainObj.entryPoints = validEntryPoints.slice(0, 10);
     }
 
-    // Dynamic AST scan for stores, dbTables, externalIntegrations
+    // Dynamic AST scan for stores, direct & indirect dbTables, RPCs, externalIntegrations
     const storesUsed = new Set();
     const tablesUsed = new Set();
+    const rpcsUsed = new Set();
     const integrationsUsed = new Set();
 
     for (const sourceFile of sourceFiles) {
@@ -798,43 +1145,58 @@ function generateMacroArchitectureMap(sourceFiles = []) {
 
       const fileText = sourceFile.getFullText();
 
-      // Scan for store imports
+      // Scan for store usages
       for (const storeName of Object.keys(globalStores)) {
         if (fileText.includes(storeName)) {
           storesUsed.add(storeName);
         }
       }
 
-      // Scan for db table usages .from('table_name') or supabase.from('table_name')
+      // Scan for shared module usages (both stores & services) to inherit indirect DB resources
+      for (const [moduleName, res] of Object.entries(sharedModuleDbResources)) {
+        if (fileText.includes(moduleName)) {
+          for (const tbl of res.tables) tablesUsed.add(tbl);
+          for (const rpc of res.rpcs) rpcsUsed.add(rpc);
+        }
+      }
+
+      // Direct DB table usages
       const fromMatches = fileText.matchAll(
         /\.from\s*(?:<[^>]+>)?\s*\(\s*['"`]([a-zA-Z0-9_]+)['"`]\s*\)/g
       );
       for (const match of fromMatches) {
-        const tbl = match[1];
-        tablesUsed.add(tbl);
-        allDbTables.add(tbl);
+        tablesUsed.add(match[1]);
       }
 
-      // Scan for external integrations
-      if (fileText.includes('@supabase') || fileText.includes('supabaseClient'))
-        integrationsUsed.add('Supabase Auth');
-      if (fileText.includes('google') || fileText.includes('GoogleSignIn'))
-        integrationsUsed.add('GoogleSignIn');
-      if (
-        fileText.includes('toss') ||
-        fileText.includes('TossAuth') ||
-        fileText.includes('tossGameLogin')
-      )
-        integrationsUsed.add('TossAuth');
-      if (
-        fileText.includes('admob') ||
-        fileText.includes('adService') ||
-        fileText.includes('AdMob')
-      )
-        integrationsUsed.add('AdMob');
-      if (fileText.includes('sentry') || fileText.includes('Sentry'))
-        integrationsUsed.add('Sentry');
-      if (fileText.includes('@capacitor')) integrationsUsed.add('Capacitor');
+      // Direct RPC usages
+      const rpcMatches = fileText.matchAll(
+        /\.rpc\s*(?:<[^>]+>)?\s*\(\s*['"`]([a-zA-Z0-9_]+)['"`]/g
+      );
+      for (const match of rpcMatches) {
+        rpcsUsed.add(match[1]);
+      }
+
+      // Dynamic / Tagged external integrations (@integration <Name>)
+      const integrationTags = fileText.matchAll(/@integration\s+([^\n\r*]+)/g);
+      for (const m of integrationTags) {
+        integrationsUsed.add(m[1].trim());
+      }
+
+      // SDK package patterns
+      const SDK_PATTERNS = [
+        { name: 'Supabase Auth', match: ['@supabase', 'supabaseClient'] },
+        { name: 'GoogleSignIn', match: ['GoogleSignIn', '@capawesome/capacitor-google-sign-in'] },
+        { name: 'TossAuth', match: ['tossGameLogin', 'tossGameCenter', 'tossAuth'] },
+        { name: 'AdMob', match: ['@capacitor-community/admob', 'AdService', 'adService'] },
+        { name: 'Sentry', match: ['@sentry'] },
+        { name: 'Capacitor', match: ['@capacitor/core', '@capacitor/app'] },
+      ];
+
+      for (const sdk of SDK_PATTERNS) {
+        if (sdk.match.some((keyword) => fileText.includes(keyword))) {
+          integrationsUsed.add(sdk.name);
+        }
+      }
     }
 
     if (storesUsed.size > 0) {
@@ -843,6 +1205,9 @@ function generateMacroArchitectureMap(sourceFiles = []) {
     if (tablesUsed.size > 0) {
       domainObj.dbTables = Array.from(tablesUsed).sort();
     }
+    if (rpcsUsed.size > 0) {
+      domainObj.dbRpcs = Array.from(rpcsUsed).sort();
+    }
     if (integrationsUsed.size > 0) {
       domainObj.externalIntegrations = Array.from(integrationsUsed).sort();
     }
@@ -850,20 +1215,14 @@ function generateMacroArchitectureMap(sourceFiles = []) {
     domainSummaries[domain.key] = domainObj;
   }
 
-  // 4. Scan all sourceFiles once to populate any missed DB tables purely from code
-  for (const sourceFile of sourceFiles) {
-    const fileText = sourceFile.getFullText();
-    const fromMatches = fileText.matchAll(
-      /\.from\s*(?:<[^>]+>)?\s*\(\s*['"`]([a-zA-Z0-9_]+)['"`]\s*\)/g
-    );
-    for (const match of fromMatches) {
-      allDbTables.add(match[1]);
-    }
-  }
-
   const dbTablesMap = {};
   for (const tbl of Array.from(allDbTables).sort()) {
     dbTablesMap[tbl] = getTableDescription(tbl);
+  }
+
+  const dbRpcsMap = {};
+  for (const rpc of Array.from(allDbRpcs).sort()) {
+    dbRpcsMap[rpc] = getRpcDescription(rpc);
   }
 
   return {
@@ -878,6 +1237,7 @@ function generateMacroArchitectureMap(sourceFiles = []) {
     globalStores,
     database: {
       tables: dbTablesMap,
+      rpcs: dbRpcsMap,
     },
   };
 }

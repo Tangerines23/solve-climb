@@ -28,6 +28,10 @@ function generateFavoriteId(categoryId: string, subCategoryId?: string): string 
   return `fav-${categoryId}-${subCategoryId ?? 'cat'}-${Date.now()}`;
 }
 
+/**
+ * [Favorite Store]
+ * 관심 카테고리 및 월드 즐겨찾기 목록 저장/토글 상태를 관리합니다.
+ */
 export const useFavoriteStore = create<FavoriteState>()(
   persist(
     (set, get) => ({

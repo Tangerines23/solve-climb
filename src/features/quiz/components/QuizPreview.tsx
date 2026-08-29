@@ -61,7 +61,7 @@ export function QuizPreview({
   useSystemKeyboard,
 }: QuizPreviewProps) {
   const navigate = useNavigate();
-  const showToast = useToastStore((state: any) => state.showToast);
+  const showToast = useToastStore((state) => state.showToast);
   const [previewKeyboardType, setPreviewKeyboardType] = useState<'custom' | 'qwerty'>(
     () => keyboardType
   );

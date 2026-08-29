@@ -4,6 +4,14 @@ export interface GeometryProblem {
   question: string;
   answer: number | string;
   inputType?: 'number' | 'decimal' | 'fraction' | 'coordinate';
+  hintType?:
+    | 'transposition'
+    | 'coordinate'
+    | 'calculus'
+    | 'function-machine'
+    | 'integral-tank'
+    | 'shape-visualizer';
+  hintData?: Record<string, unknown>;
 }
 
 function getRandomInt(
@@ -133,7 +141,8 @@ function generateBasicShapes(rng?: {
     { name: '칠각형', vertices: 7 },
     { name: '팔각형', vertices: 8 },
   ];
-  const shape = shapes[getRandomInt(0, shapes.length - 1, rng)];
+  const idx = Math.abs(getRandomInt(0, shapes.length - 1, rng)) % shapes.length;
+  const shape = shapes[idx]!;
   return {
     question: '이 도형의 꼭짓점 수 = ?',
     answer: shape.vertices,
@@ -142,7 +151,7 @@ function generateBasicShapes(rng?: {
       sides: shape.vertices,
       shapeName: shape.name,
     },
-  } as any;
+  };
 }
 
 function generateBasicShapesDiagonal(rng?: {
@@ -157,7 +166,7 @@ function generateBasicShapesDiagonal(rng?: {
     { name: '구각형', sides: 9, diagonals: 27 },
   ];
   const idx = Math.abs(getRandomInt(0, shapes.length - 1, rng)) % shapes.length;
-  const shape = shapes.at(idx) ?? shapes[0]!;
+  const shape = shapes[idx]!;
   return {
     question: `이 도형의 대각선 수 = ?`,
     answer: shape.diagonals,
@@ -167,7 +176,7 @@ function generateBasicShapesDiagonal(rng?: {
       shapeType: 'n-gon',
       shapeName: shape.name,
     },
-  } as any;
+  };
 }
 
 function generateTriangleProperties(rng?: {
@@ -185,7 +194,7 @@ function generateTriangleProperties(rng?: {
       angleA: a,
       angleB: b,
     },
-  } as any;
+  };
 }
 
 function generateQuadrilateralProperties(rng?: {
@@ -193,8 +202,7 @@ function generateQuadrilateralProperties(rng?: {
 }): GeometryProblem {
   const type = getRandomInt(1, 10, rng);
   if (type <= 7) {
-    // 유형 1: 평행사변형 이웃한 각 (180 - a)
-    const a = getRandomInt(3, 15, rng) * 10; // 10단위로 깔끔한 수치 (30° ~ 150°)
+    const a = getRandomInt(3, 15, rng) * 10;
     const b = 180 - a;
     return {
       question: `평행사변형 [한 각 ${a}°] ➔ 이웃한 각 = ?°`,
@@ -204,9 +212,8 @@ function generateQuadrilateralProperties(rng?: {
         shapeType: 'parallelogram',
         angleA: a,
       },
-    } as any;
+    };
   } else {
-    // 유형 2: 사각형 내각의 합 (360 - a - b - c)
     const a = getRandomInt(6, 12, rng) * 10;
     const b = getRandomInt(6, 12, rng) * 10;
     const c = getRandomInt(6, 12, rng) * 10;
@@ -221,7 +228,7 @@ function generateQuadrilateralProperties(rng?: {
         angleB: b,
         angleC: c,
       },
-    } as any;
+    };
   }
 }
 
@@ -239,7 +246,7 @@ function generateAreaRect(rng?: {
       width: w,
       height: h,
     },
-  } as any;
+  };
 }
 
 function generateAreaTriangle(rng?: {
@@ -256,7 +263,7 @@ function generateAreaTriangle(rng?: {
       base: b,
       height: h,
     },
-  } as any;
+  };
 }
 
 function generateCircleBasic(rng?: {

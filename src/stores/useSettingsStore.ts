@@ -21,6 +21,10 @@ interface SettingsState {
   setHasHydrated: (hydrated: boolean) => void;
 }
 
+/**
+ * [Settings Store]
+ * BGM/SFX 음량, 햅틱 진동, 화면 전환 애니메이션, 키패드 레이아웃 설정을 관리합니다.
+ */
 export const useSettingsStore = create<SettingsState>()(
   persist(
     (set) => ({

@@ -17,7 +17,7 @@ export const ProgressionSection = React.memo(function ProgressionSection() {
 
   const worlds = APP_CONFIG.WORLDS;
   const categories = APP_CONFIG.CATEGORIES.filter(
-    (c: any) => c.mountainId === worlds.find((w: any) => w.id === selectedWorld)?.mountainId
+    (c) => c.mountainId === worlds.find((w) => w.id === selectedWorld)?.mountainId
   );
 
   // 현재 선택된 월드/카테고리에 해당하는 레벨 목록 가져오기
@@ -37,7 +37,7 @@ export const ProgressionSection = React.memo(function ProgressionSection() {
     const levelNum = selectedLevel;
 
     // /quiz?mountain=math&world=World1&category=기초&level=1&mode=survival
-    const mountainId = worlds.find((w: any) => w.id === worldName)?.mountainId || 'math';
+    const mountainId = worlds.find((w) => w.id === worldName)?.mountainId || 'math';
     navigate(
       urls.quiz({
         mountain: mountainId,
@@ -85,14 +85,13 @@ export const ProgressionSection = React.memo(function ProgressionSection() {
                   setSelectedWorld(e.target.value);
                   // 카테고리 초기화
                   const firstCat = APP_CONFIG.CATEGORIES.find(
-                    (c: any) =>
-                      c.mountainId === worlds.find((w: any) => w.id === e.target.value)?.mountainId
+                    (c) => c.mountainId === worlds.find((w) => w.id === e.target.value)?.mountainId
                   )?.id;
                   if (firstCat) setSelectedCategory(firstCat);
                   setSelectedLevel(1);
                 }}
               >
-                {worlds.map((w: any) => (
+                {worlds.map((w) => (
                   <option key={w.id} value={w.id}>
                     {w.name}
                   </option>
@@ -110,7 +109,7 @@ export const ProgressionSection = React.memo(function ProgressionSection() {
                   setSelectedLevel(1);
                 }}
               >
-                {categories.map((c: any) => (
+                {categories.map((c) => (
                   <option key={c.id} value={c.id}>
                     {c.name}
                   </option>

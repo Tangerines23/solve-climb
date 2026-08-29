@@ -102,7 +102,7 @@ export function useMyPageStats(): UseMyPageStatsResult {
       }
 
       // Supabase 세션 확인
-      safeSupabaseQuery(supabase.auth.getSession()).then((res: any) => {
+      safeSupabaseQuery(supabase.auth.getSession()).then((res) => {
         setSession(res?.data?.session || null);
       });
     };

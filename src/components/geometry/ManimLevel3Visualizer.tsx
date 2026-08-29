@@ -1,4 +1,4 @@
-import React, { useMemo } from 'react';
+import React from 'react';
 import { useDebugStore } from '../../stores/useDebugStore';
 import { useManimEngine } from './useManimEngine';
 import { ManimCardLayout } from './ManimCardLayout';
@@ -76,66 +76,61 @@ export const ManimLevel3Visualizer: React.FC = React.memo(() => {
 
   const currentName = currFrame.name;
 
-  const m0: Point = useMemo(() => ({ x: (v1.x + v2.x) / 2, y: (v1.y + v2.y) / 2 }), [v1, v2]);
-  const m1: Point = useMemo(() => ({ x: (v0.x + v2.x) / 2, y: (v0.y + v2.y) / 2 }), [v0, v2]);
-  const m2: Point = useMemo(() => ({ x: (v0.x + v1.x) / 2, y: (v0.y + v1.y) / 2 }), [v0, v1]);
+  const m0: Point = { x: (v1.x + v2.x) / 2, y: (v1.y + v2.y) / 2 };
+  const m1: Point = { x: (v0.x + v2.x) / 2, y: (v0.y + v2.y) / 2 };
+  const m2: Point = { x: (v0.x + v1.x) / 2, y: (v0.y + v1.y) / 2 };
 
-  const deltaCentroid: Point = useMemo(
-    () => ({
-      x: (v0.x + v1.x + v2.x) / 3,
-      y: (v0.y + v1.y + v2.y) / 3,
-    }),
-    [v0, v1, v2]
-  );
+  const deltaCentroid: Point = {
+    x: (v0.x + v1.x + v2.x) / 3,
+    y: (v0.y + v1.y + v2.y) / 3,
+  };
 
-  const a = useMemo(() => Math.hypot(v2.x - v1.x, v2.y - v1.y), [v1, v2]);
-  const b = useMemo(() => Math.hypot(v2.x - v0.x, v2.y - v0.y), [v0, v2]);
-  const c = useMemo(() => Math.hypot(v1.x - v0.x, v1.y - v0.y), [v0, v1]);
+  const a = Math.hypot(v2.x - v1.x, v2.y - v1.y);
+  const b = Math.hypot(v2.x - v0.x, v2.y - v0.y);
+  const c = Math.hypot(v1.x - v0.x, v1.y - v0.y);
 
-  const angles = useMemo(() => {
-    const cosA = Math.max(-1, Math.min(1, (b * b + c * c - a * a) / (2 * b * c)));
-    const cosB = Math.max(-1, Math.min(1, (a * a + c * c - b * b) / (2 * a * c)));
-    const cosC = Math.max(-1, Math.min(1, (a * a + b * b - c * c) / (2 * a * b)));
+  const cosA = Math.max(-1, Math.min(1, (b * b + c * c - a * a) / (2 * b * c)));
+  const cosB = Math.max(-1, Math.min(1, (a * a + c * c - b * b) / (2 * a * c)));
+  const cosC = Math.max(-1, Math.min(1, (a * a + b * b - c * c) / (2 * a * b)));
 
-    const exactA = (Math.acos(cosA) * 180) / Math.PI;
-    const exactB = (Math.acos(cosB) * 180) / Math.PI;
-    const exactC = (Math.acos(cosC) * 180) / Math.PI;
+  const exactA = (Math.acos(cosA) * 180) / Math.PI;
+  const exactB = (Math.acos(cosB) * 180) / Math.PI;
+  const exactC = (Math.acos(cosC) * 180) / Math.PI;
 
-    let roundedA = Math.round(exactA);
-    let roundedB = Math.round(exactB);
-    let roundedC = Math.round(exactC);
+  let roundedA = Math.round(exactA);
+  let roundedB = Math.round(exactB);
+  let roundedC = Math.round(exactC);
 
-    if (Math.abs(exactB - exactC) < 1.0) {
-      const equalBase = Math.round((exactB + exactC) / 2);
-      roundedB = equalBase;
-      roundedC = equalBase;
-      roundedA = 180 - roundedB - roundedC;
-    } else if (Math.abs(exactA - exactB) < 1.0) {
-      const equalSide = Math.round((exactA + exactB) / 2);
-      roundedA = equalSide;
-      roundedB = equalSide;
-      roundedC = 180 - roundedA - roundedB;
-    } else {
-      const sum = roundedA + roundedB + roundedC;
-      if (sum !== 180) {
-        const errA = Math.abs(exactA - roundedA);
-        const errB = Math.abs(exactB - roundedB);
-        const errC = Math.abs(exactC - roundedC);
+  if (Math.abs(exactB - exactC) < 1.0) {
+    const equalBase = Math.round((exactB + exactC) / 2);
+    roundedB = equalBase;
+    roundedC = equalBase;
+    roundedA = 180 - roundedB - roundedC;
+  } else if (Math.abs(exactA - exactB) < 1.0) {
+    const equalSide = Math.round((exactA + exactB) / 2);
+    roundedA = equalSide;
+    roundedB = equalSide;
+    roundedC = 180 - roundedA - roundedB;
+  } else {
+    const sum = roundedA + roundedB + roundedC;
+    if (sum !== 180) {
+      const errA = Math.abs(exactA - roundedA);
+      const errB = Math.abs(exactB - roundedB);
+      const errC = Math.abs(exactC - roundedC);
 
-        if (errC >= errA && errC >= errB) {
-          roundedC = 180 - roundedA - roundedB;
-        } else if (errB >= errA && errB >= errC) {
-          roundedB = 180 - roundedA - roundedC;
-        } else {
-          roundedA = 180 - roundedB - roundedC;
-        }
+      if (errC >= errA && errC >= errB) {
+        roundedC = 180 - roundedA - roundedB;
+      } else if (errB >= errA && errB >= errC) {
+        roundedB = 180 - roundedA - roundedC;
+      } else {
+        roundedA = 180 - roundedB - roundedC;
       }
     }
+  }
 
-    return { alphaDeg: roundedA, betaDeg: roundedB, gammaDeg: roundedC };
-  }, [a, b, c]);
-
-  const { alphaDeg, betaDeg, gammaDeg } = angles;
+  const alphaDeg = roundedA;
+  const betaDeg = roundedB;
+  const gammaDeg = roundedC;
 
   const getArcPath = (center: Point, p1: Point, p2: Point, radius: number = 22) => {
     const a1 = Math.atan2(p1.y - center.y, p1.x - center.x);
@@ -159,9 +154,9 @@ export const ManimLevel3Visualizer: React.FC = React.memo(() => {
     return `M ${center.x} ${center.y} L ${x1} ${y1} A ${radius} ${radius} 0 ${largeArcFlag} ${sweepFlag} ${x2} ${y2} Z`;
   };
 
-  const alphaArc = useMemo(() => getArcPath(v0, v1, v2, 24), [v0, v1, v2]);
-  const betaArc = useMemo(() => getArcPath(v1, v2, v0, 22), [v0, v1, v2]);
-  const gammaArc = useMemo(() => getArcPath(v2, v0, v1, 22), [v0, v1, v2]);
+  const alphaArc = getArcPath(v0, v1, v2, 24);
+  const betaArc = getArcPath(v1, v2, v0, 22);
+  const gammaArc = getArcPath(v2, v0, v1, 22);
 
   const caption = (
     <div className="geo-stat-highlights">

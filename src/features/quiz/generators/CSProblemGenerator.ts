@@ -3,6 +3,7 @@ import { Difficulty } from '../types/quiz';
 export interface CSProblem {
   question: string;
   answer: number | string;
+  inputType?: 'number' | 'decimal' | 'fraction' | 'coordinate';
 }
 
 function getRandomInt(

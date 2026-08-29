@@ -39,6 +39,10 @@ const getOrCreateGuestUser = (): User => {
   } as unknown as User;
 };
 
+/**
+ * [Auth Store]
+ * 사용자 인증 세션(Google OAuth, Toss Login, 게스트 로그인) 및 인증 상태를 관리합니다.
+ */
 export const useAuthStore = create<AuthState>((set) => ({
   session: null,
   user: null,
@@ -83,6 +87,12 @@ export const useAuthStore = create<AuthState>((set) => ({
 
         try {
           useLevelProgressStore.getState().syncProgress();
+        } catch {
+          // ignore
+        }
+
+        try {
+          useUserStore.getState().fetchUserData();
         } catch {
           // ignore
         }

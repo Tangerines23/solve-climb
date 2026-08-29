@@ -1,4 +1,4 @@
-import { Category, World } from '@/types/quiz';
+import { Category, World, QuizQuestion } from '@/types/quiz';
 
 /**
  * 전역 퀴즈 이벤트 타입 정의
@@ -55,7 +55,7 @@ export type QuizEventMap = {
 
   // 문제 생성 완료 이벤트
   'QUIZ:QUESTION_GENERATED': {
-    question: any;
+    question: QuizQuestion;
     questionId: string;
   };
 
@@ -80,13 +80,14 @@ export type QuizEventMap = {
   'QUIZ:REVIVE_SUCCESS': void;
 };
 
-type Handler<T = any> = (data: T) => void;
+type Handler<T = unknown> = (data: T) => void;
 
 /**
  * 경량 타입 세이프 이벤트 버스
  */
-class EventBus<Events extends Record<string, any>> {
-  private handlers: Map<keyof Events, Set<Handler>> = new Map();
+class EventBus<Events extends Record<string, unknown>> {
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-function-type
+  private handlers: Map<keyof Events, Set<Function>> = new Map();
 
   /**
    * 이벤트 구독
@@ -121,7 +122,13 @@ class EventBus<Events extends Record<string, any>> {
     const data = args[0];
     const set = this.handlers.get(type);
     if (set) {
-      set.forEach((handler) => handler(data));
+      set.forEach((fn) => {
+        try {
+          (fn as Handler<Events[Key]>)(data as Events[Key]);
+        } catch (err) {
+          console.error(`[EventBus] Error executing handler for ${String(type)}:`, err);
+        }
+      });
     }
   }
 

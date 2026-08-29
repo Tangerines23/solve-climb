@@ -27,6 +27,10 @@ interface NotificationState {
   setLoading: (loading: boolean) => void;
 }
 
+/**
+ * [Notification Store]
+ * 인앱 공지사항 및 시스템 알림 내역을 관리합니다.
+ */
 export const useNotificationStore = create<NotificationState>((set) => ({
   notifications: [],
   loading: true,

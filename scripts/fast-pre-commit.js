@@ -39,6 +39,7 @@ async function main() {
     runTask('타입스크립트 타입 체크', 'npx tsc --noEmit'),
     runTask('순환 참조 검사', 'npm run check:circular'),
     runTask('보안 키(Secrets) 검사', 'npm run check:secrets'),
+    runTask('코드 맵 무결성 검사', 'npm run check:code-map'),
     runTask('미사용 코드(Knip) 검사', 'npm run diet'),
     runTask('코드 무결성/매직스트링 검사', 'npm run check:integrity'),
     runTask('자산(Assets) 무결성 검사', 'npm run check:assets'),

@@ -1,17 +1,19 @@
 /**
- * Services Module
- *
- * 의존성 주입(DI)을 위한 서비스 계층
+ * @domain 데이터 서비스 및 저장소 (Data Services & Repositories)
+ * @summary 의존성 주입(DI) 기반 로컬 스토리지, 사용자/진행도 레포지토리 및 분석 계층
+ * @type service
  */
 
 export type { IStorageService } from './IStorageService';
-export { LocalStorageService } from './LocalStorageService';
+import { LocalStorageService, storageService } from './LocalStorageService';
+export { LocalStorageService, storageService };
 export { MockStorageService } from './MockStorageService';
+export { ProgressRepository } from './ProgressRepository';
+export { UserRepository } from './UserRepository';
+export { AdService, type AdPlacement, type AdResult } from './adService';
+export { analytics } from './analytics';
+export { historyService } from './historyService';
 export { STORAGE_KEYS } from './storageKeys';
-
-// 프로덕션용 싱글톤 인스턴스
-import { LocalStorageService } from './LocalStorageService';
-export const storageService = new LocalStorageService();
 
 /**
  * Zustand Persistence Adapter

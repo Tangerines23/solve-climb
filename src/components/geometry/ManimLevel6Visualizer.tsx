@@ -56,8 +56,14 @@ export const ManimLevel6Visualizer: React.FC = React.memo(() => {
     () => ({ x: BASE_P2.x + currentOffsetX, y: BASE_P2.y }),
     [currentOffsetX]
   );
-  const p3: Point = { x: BASE_P3.x + currentOffsetX, y: BASE_P3.y };
-  const targetP4: Point = { x: BASE_TARGET_P4.x + currentOffsetX, y: BASE_TARGET_P4.y };
+  const p3: Point = useMemo(
+    () => ({ x: BASE_P3.x + currentOffsetX, y: BASE_P3.y }),
+    [currentOffsetX]
+  );
+  const targetP4: Point = useMemo(
+    () => ({ x: BASE_TARGET_P4.x + currentOffsetX, y: BASE_TARGET_P4.y }),
+    [currentOffsetX]
+  );
 
   // 복제 삼각형 렌더링 상태 계산
   const ghostState = useMemo(() => {

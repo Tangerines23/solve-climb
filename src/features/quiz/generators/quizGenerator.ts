@@ -84,9 +84,9 @@ export function generateQuestion(
         return {
           question: geoProb.question,
           answer: geoProb.answer,
-          inputType: (geoProb as any).inputType || autoInputType,
-          hintType: (geoProb as any).hintType,
-          hintData: (geoProb as any).hintData,
+          inputType: geoProb.inputType || autoInputType,
+          hintType: geoProb.hintType,
+          hintData: geoProb.hintData,
           level,
           category,
         };
@@ -115,7 +115,7 @@ export function generateQuestion(
         return {
           question: csProb.question,
           answer: csProb.answer,
-          inputType: (csProb as any).inputType || autoInputType,
+          inputType: csProb.inputType || autoInputType,
           level,
           category,
         };

@@ -25,6 +25,10 @@ interface ErrorLogState {
   ) => ErrorLogEntry[];
 }
 
+/**
+ * [Error Log Store]
+ * 런타임 에러 로그 수집 및 디버그 패널 로그 뷰어 상태를 관리합니다.
+ */
 export const useErrorLogStore = create<ErrorLogState>((set, get) => ({
   logs: [],
 

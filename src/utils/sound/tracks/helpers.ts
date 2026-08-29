@@ -7,9 +7,12 @@ export const safeGet = <T>(
 ): T => {
   if (!arr) return fallback;
   if (Array.isArray(arr)) {
-    return arr[index] !== undefined ? arr[index] : fallback;
+    return arr.at(index) ?? fallback;
   }
-  return arr[index] !== undefined ? arr[index] : fallback;
+  return Object.prototype.hasOwnProperty.call(arr, index)
+    ? // eslint-disable-next-line security/detect-object-injection -- validated above
+      arr[index]
+    : fallback;
 };
 
 /**

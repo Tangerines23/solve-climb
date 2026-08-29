@@ -32,6 +32,20 @@ export interface QuizDisplayState {
 }
 
 /**
+ * 퀴즈 모달 표시 상태 그룹
+ */
+export interface QuizModalState {
+  showLastChanceModal: boolean;
+  showCountdown: boolean;
+  showSafetyRope: boolean;
+  showTipModal: boolean;
+  showPauseModal: boolean;
+  showStaminaModal: boolean;
+  showTutorial: boolean;
+  showPromise: boolean;
+}
+
+/**
  * 퀴즈 모달 핸들러 그룹
  */
 export interface QuizModalHandlers {

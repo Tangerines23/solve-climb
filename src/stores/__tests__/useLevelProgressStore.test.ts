@@ -138,9 +138,12 @@ describe('useLevelProgressStore', () => {
       const rollbackWorld = 'math_rollback';
 
       // Specifically target this world for failure
-      vi.mocked(supabase.rpc).mockImplementationOnce(() =>
-        createMockRpcBuilder(null, { message: 'RPC Failure' })
-      );
+      vi.mocked(supabase.rpc).mockImplementation((func: string) => {
+        if (func === 'submit_game_result') {
+          return createMockRpcBuilder(null, { message: 'RPC Failure' });
+        }
+        return createMockRpcBuilder({ session_id: 'test-session-id' }, null);
+      });
 
       await act(async () => {
         await result.current.clearLevel(rollbackWorld, category, 5, 'time-attack', 500);
@@ -324,8 +327,11 @@ describe('useLevelProgressStore', () => {
     });
 
     it('should handle clearLevel exception', async () => {
-      vi.mocked(supabase.rpc).mockImplementationOnce(() => {
-        throw new Error('Exception');
+      vi.mocked(supabase.rpc).mockImplementation((func: string) => {
+        if (func === 'submit_game_result') {
+          throw new Error('Exception');
+        }
+        return createMockRpcBuilder({ session_id: 'test-session-id' }, null);
       });
       const { result } = renderHook(() => useLevelProgressStore());
 

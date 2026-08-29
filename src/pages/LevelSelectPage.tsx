@@ -49,7 +49,8 @@ export function LevelSelectPage() {
     ? APP_CONFIG.LEVELS[activeWorld as keyof typeof APP_CONFIG.LEVELS]
     : {}) as unknown as Record<string, { level: number; name: string; description: string }[]>;
   const levels = Object.prototype.hasOwnProperty.call(worldLevels, activeCategory)
-    ? worldLevels[activeCategory] || []
+    ? // eslint-disable-next-line security/detect-object-injection -- validated above
+      worldLevels[activeCategory] || []
     : [];
 
   const [isSheetTransitioning, setIsSheetTransitioning] = useState(false);

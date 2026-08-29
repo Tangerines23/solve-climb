@@ -1,4 +1,4 @@
-import React, { useMemo } from 'react';
+import React from 'react';
 import { useDebugStore } from '../../stores/useDebugStore';
 import { useManimEngine } from './useManimEngine';
 import { ManimCardLayout } from './ManimCardLayout';
@@ -83,21 +83,15 @@ export const ManimLevel4Visualizer: React.FC = React.memo(() => {
 
   const currentName = currFrame.name;
 
-  const angles = useMemo(() => {
-    const v01 = { x: v1.x - v0.x, y: v1.y - v0.y };
-    const v03 = { x: v3.x - v0.x, y: v3.y - v0.y };
+  const v01 = { x: v1.x - v0.x, y: v1.y - v0.y };
+  const v03 = { x: v3.x - v0.x, y: v3.y - v0.y };
 
-    const dot0 = v01.x * v03.x + v01.y * v03.y;
-    const len01 = Math.hypot(v01.x, v01.y);
-    const len03 = Math.hypot(v03.x, v03.y);
-    const cos0 = Math.max(-1, Math.min(1, dot0 / (len01 * len03)));
-    const alpha = Math.round((Math.acos(cos0) * 180) / Math.PI);
-    const beta = 180 - alpha;
-
-    return { alphaDeg: alpha, betaDeg: beta };
-  }, [v0, v1, v3]);
-
-  const { alphaDeg, betaDeg } = angles;
+  const dot0 = v01.x * v03.x + v01.y * v03.y;
+  const len01 = Math.hypot(v01.x, v01.y);
+  const len03 = Math.hypot(v03.x, v03.y);
+  const cos0 = Math.max(-1, Math.min(1, dot0 / (len01 * len03)));
+  const alphaDeg = Math.round((Math.acos(cos0) * 180) / Math.PI);
+  const betaDeg = 180 - alphaDeg;
 
   const getArcPath = (center: Point, p1: Point, p2: Point, radius: number = 18) => {
     const angle1 = Math.atan2(p1.y - center.y, p1.x - center.x);
@@ -117,10 +111,10 @@ export const ManimLevel4Visualizer: React.FC = React.memo(() => {
     return `M ${center.x} ${center.y} L ${startX} ${startY} A ${radius} ${radius} 0 0 ${sweepFlag} ${endX} ${endY} Z`;
   };
 
-  const arcV0 = useMemo(() => getArcPath(v0, v3, v1), [v0, v3, v1]);
-  const arcV1 = useMemo(() => getArcPath(v1, v0, v2), [v1, v0, v2]);
-  const arcV2 = useMemo(() => getArcPath(v2, v1, v3), [v2, v1, v3]);
-  const arcV3 = useMemo(() => getArcPath(v3, v2, v0), [v3, v2, v0]);
+  const arcV0 = getArcPath(v0, v3, v1);
+  const arcV1 = getArcPath(v1, v0, v2);
+  const arcV2 = getArcPath(v2, v1, v3);
+  const arcV3 = getArcPath(v3, v2, v0);
 
   const caption = (
     <div className="geo-stat-highlights">

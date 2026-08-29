@@ -13,9 +13,8 @@ import { UserState, InventoryItem } from '../types/user';
 import { UserRepository, RawInventoryItem } from '../services/UserRepository';
 
 /**
- * 전역 유저 스토어 (Zustand)
- * - 미네랄, 스태미나, 인벤토리 등 유저 상태 관리
- * - 서버 RPC 및 UserRepository 연동
+ * [User Store]
+ * 서버 DB(Supabase) 유저 재화(미네랄), 스태미나 충전/소비, 인벤토리 아이템 및 서버 RPC 연동을 관리합니다.
  */
 export const useUserStore = create<UserState>((set, get) => {
   /**
@@ -118,7 +117,12 @@ export const useUserStore = create<UserState>((set, get) => {
         supabase.rpc('check_and_recover_stamina', { p_user_id: user.id })
       );
 
-      if (error && (error as any).code === 'PGRST202') {
+      if (
+        error &&
+        typeof error === 'object' &&
+        'code' in error &&
+        (error as { code: unknown }).code === 'PGRST202'
+      ) {
         const fallbackRes = await safeSupabaseQuery(supabase.rpc('check_and_recover_stamina'));
         data = fallbackRes.data;
         error = fallbackRes.error;
@@ -212,7 +216,7 @@ export const useUserStore = create<UserState>((set, get) => {
         );
 
         // PGRST202 (함수 시그니처 미존재 404) 발생 시 p_user_id 제외하고 2차 시도
-        if (!res.success && (res as any).errorCode === 'PGRST202') {
+        if (!res.success && (res as { errorCode?: string }).errorCode === 'PGRST202') {
           console.warn(
             '[useUserStore] PGRST202 fallback: calling secure_reward_ad_view without p_user_id'
           );
@@ -255,7 +259,7 @@ export const useUserStore = create<UserState>((set, get) => {
           { refreshData: true }
         );
 
-        if (!res.success && (res as any).errorCode === 'PGRST202') {
+        if (!res.success && (res as { errorCode?: string }).errorCode === 'PGRST202') {
           console.warn(
             '[useUserStore] PGRST202 fallback: calling secure_reward_ad_view without p_user_id'
           );
@@ -288,7 +292,7 @@ export const useUserStore = create<UserState>((set, get) => {
           { refreshData: true }
         );
 
-        if (!res.success && (res as any).errorCode === 'PGRST202') {
+        if (!res.success && (res as { errorCode?: string }).errorCode === 'PGRST202') {
           console.warn(
             '[useUserStore] PGRST202 fallback: calling secure_reward_ad_view without p_user_id'
           );

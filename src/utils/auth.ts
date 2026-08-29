@@ -98,13 +98,14 @@ export async function signInWithGoogle(): Promise<{ error: AuthError | null }> {
       }
 
       return { error: error ?? null };
-    } catch (e: any) {
+    } catch (e: unknown) {
       console.error('[Auth] Native Google Sign-In 에러:', e);
+      const errorMessage = e instanceof Error ? e.message : 'Google Sign-In failed';
       return {
         error: {
           name: 'AuthError',
           status: 400,
-          message: e.message || 'Google Sign-In failed',
+          message: errorMessage,
         } as AuthError,
       };
     }

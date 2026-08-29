@@ -106,6 +106,10 @@ const getDefaultLevelRecord = (level: number): LevelRecord => ({
 
 let isSyncingProgress = false;
 
+/**
+ * [Level Progress Store]
+ * 스테이지/레벨 클리어 현황, 최고 점수 및 오프라인-온라인 동기화를 관리합니다.
+ */
 export const useLevelProgressStore = create<LevelProgressState>()(
   persist(
     (set, get) => {

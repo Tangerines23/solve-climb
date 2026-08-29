@@ -84,16 +84,15 @@ export function useQuestionGenerator({
       if (missedQuestions.length > 0) {
         // 무작위로 하나 선택하거나 순차적으로? 일단 무작위
         const randomIndex = Math.floor(Math.random() * missedQuestions.length);
-        const q =
-          randomIndex >= 0 && randomIndex < missedQuestions.length
-            ? missedQuestions.at(randomIndex)
-            : missedQuestions[0];
+        const q = missedQuestions.at(randomIndex) ?? missedQuestions[0];
 
-        quizEventBus.emit('QUIZ:QUESTION_GENERATED', {
-          question: q ?? null,
-          questionId: q?.id || generateUUID(),
-        });
-        return;
+        if (q) {
+          quizEventBus.emit('QUIZ:QUESTION_GENERATED', {
+            question: q,
+            questionId: q.id || generateUUID(),
+          });
+          return;
+        }
       }
       // 오답이 없으면 일반 모드로 전환 (콘솔 알림)
       console.log('No missed questions found for smart-retry, falling back to normal mode');

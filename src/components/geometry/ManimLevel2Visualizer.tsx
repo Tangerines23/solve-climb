@@ -100,6 +100,24 @@ export const ManimLevel2Visualizer: React.FC = React.memo(() => {
     RETRACT_DURATION +
     FINAL_REST_PAUSE;
 
+  // Swipe / Skip Transition Engine (Continuous Seamless Morphing)
+  const triggerStepChange = React.useCallback((direction: 'next' | 'prev') => {
+    setCurrSides((prev) => {
+      const nextSides =
+        direction === 'next' ? (prev === 8 ? 4 : prev + 1) : prev === 4 ? 8 : prev - 1;
+      setPrevSides(prev);
+      return nextSides;
+    });
+    setPhase('morph');
+    setMorphProgress(0);
+    setDrawProgress(0);
+    setRetractProgress(0);
+
+    const state = animStateRef.current;
+    state.startTime = null;
+    state.accumulatedPauseTime = 0;
+  }, []);
+
   useEffect(() => {
     let animId: number;
 
@@ -215,30 +233,20 @@ export const ManimLevel2Visualizer: React.FC = React.memo(() => {
 
     animId = requestAnimationFrame(tick);
     return () => cancelAnimationFrame(animId);
-  }, [currSides]);
-
-  // Swipe / Skip Transition Engine (Continuous Seamless Morphing)
-  const triggerStepChange = (direction: 'next' | 'prev') => {
-    const nextSides =
-      direction === 'next'
-        ? currSides === 8
-          ? 4
-          : currSides + 1
-        : currSides === 4
-          ? 8
-          : currSides - 1;
-
-    setPrevSides(currSides);
-    setCurrSides(nextSides);
-    setPhase('morph');
-    setMorphProgress(0);
-    setDrawProgress(0);
-    setRetractProgress(0);
-
-    const state = animStateRef.current;
-    state.startTime = null;
-    state.accumulatedPauseTime = 0;
-  };
+  }, [
+    currSides,
+    triggerStepChange,
+    MORPH_MOTION_DURATION,
+    MORPH_TOTAL_DURATION,
+    SINGLE_DRAW_DURATION,
+    SINGLE_HOLD_DURATION,
+    ALL_TOTAL_DURATION,
+    ALL_DRAW_DURATION,
+    DEDUP_HIGHLIGHT_DURATION,
+    DEDUP_RESTORE_DURATION,
+    RETRACT_DURATION,
+    TOTAL_CYCLE,
+  ]);
 
   // Drag Gesture Handlers
   const handlePointerDown = (e: React.PointerEvent) => {
