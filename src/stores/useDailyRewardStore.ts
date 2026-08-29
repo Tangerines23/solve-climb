@@ -1,6 +1,7 @@
 import { create } from 'zustand';
 import { supabase } from '../utils/supabaseClient';
 import { safeSupabaseQuery } from '../utils/debugFetch';
+import { useUserStore } from './useUserStore';
 
 interface DailyRewardResult {
   success: boolean;
@@ -59,7 +60,6 @@ export const useDailyRewardStore = create<DailyRewardState>((set) => ({
       // 3. 성공한 경우에만 모달 표시 (오늘 이미 받았으면 success: false)
       if (result && result.success) {
         // 출석 보상 지급에 따른 미네랄 동기화
-        const { useUserStore } = await import('./useUserStore');
         useUserStore.getState().fetchUserData();
 
         set({

@@ -3,6 +3,7 @@ import { safeSupabaseQuery } from '@/utils/debugFetch';
 import { GameMode, Tier } from '../types/quiz';
 import { UserResponse } from '@supabase/supabase-js';
 import { logError } from '@/utils/errorHandler';
+import { useAuthStore } from '@/stores/useAuthStore';
 
 export interface LevelSyncResult {
   success: boolean;
@@ -69,7 +70,6 @@ export class LevelSyncService {
 
       if (!user) {
         try {
-          const { useAuthStore } = await import('@/stores/useAuthStore');
           await useAuthStore.getState().signInAnonymously();
           const retryAuth = (await safeSupabaseQuery(supabase.auth.getUser())) as UserResponse;
           user = retryAuth?.data?.user;

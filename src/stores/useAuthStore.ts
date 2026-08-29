@@ -3,6 +3,10 @@ import { supabase } from '../utils/supabaseClient';
 import { Session, User } from '@supabase/supabase-js';
 import { safeSupabaseQuery } from '../utils/debugFetch';
 import { storageService, STORAGE_KEYS } from '../services';
+import { useProfileStore } from './useProfileStore';
+import { useLevelProgressStore } from './useLevelProgressStore';
+import { useUserStore } from './useUserStore';
+import { useBadgeStore } from './useBadgeStore';
 
 import { analytics } from '@/services/analytics';
 
@@ -71,17 +75,17 @@ export const useAuthStore = create<AuthState>((set) => ({
       set({ session, user, isLoading: false });
 
       if (user?.id && !String(user.id).startsWith('guest-')) {
-        import('./useProfileStore')
-          .then(({ useProfileStore }) => {
-            useProfileStore.getState().syncProfileWithAuthUser(user.id);
-          })
-          .catch(() => {});
+        try {
+          useProfileStore.getState().syncProfileWithAuthUser(user.id);
+        } catch {
+          // ignore
+        }
 
-        import('./useLevelProgressStore')
-          .then(({ useLevelProgressStore }) => {
-            useLevelProgressStore.getState().syncProgress();
-          })
-          .catch(() => {});
+        try {
+          useLevelProgressStore.getState().syncProgress();
+        } catch {
+          // ignore
+        }
       }
 
       // Analytics 유저 컨텍스트 동기화 (Static import 사용)
@@ -112,28 +116,24 @@ export const useAuthStore = create<AuthState>((set) => ({
 
     // Reset other stores to prevent cross-account state leakage
     try {
-      const { useProfileStore } = await import('./useProfileStore');
       useProfileStore.getState().clearProfile();
     } catch {
       // ignore
     }
 
     try {
-      const { useLevelProgressStore } = await import('./useLevelProgressStore');
       useLevelProgressStore.setState({ progress: {} });
     } catch {
       // ignore
     }
 
     try {
-      const { useUserStore } = await import('./useUserStore');
       useUserStore.setState({ minerals: 0, stamina: 5, inventory: [] });
     } catch {
       // ignore
     }
 
     try {
-      const { useBadgeStore } = await import('./useBadgeStore');
       useBadgeStore.setState({ userBadges: [] });
     } catch {
       // ignore
