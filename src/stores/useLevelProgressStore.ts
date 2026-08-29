@@ -104,6 +104,8 @@ const getDefaultLevelRecord = (level: number): LevelRecord => ({
   },
 });
 
+let isSyncingProgress = false;
+
 export const useLevelProgressStore = create<LevelProgressState>()(
   persist(
     (set, get) => {
@@ -343,6 +345,9 @@ export const useLevelProgressStore = create<LevelProgressState>()(
         },
 
         syncProgress: async () => {
+          if (isSyncingProgress) return;
+          isSyncingProgress = true;
+
           try {
             const authResult = await safeSupabaseQuery(supabase.auth.getUser());
             const user = authResult?.data?.user;
@@ -470,6 +475,8 @@ export const useLevelProgressStore = create<LevelProgressState>()(
           } catch (error) {
             console.error('Failed to sync progress from Supabase:', error);
             useToastStore.getState().showToast(UI_MESSAGES.FETCH_DATA_FAILED, 'error');
+          } finally {
+            isSyncingProgress = false;
           }
         },
 
