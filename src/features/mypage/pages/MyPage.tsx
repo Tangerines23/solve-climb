@@ -45,8 +45,7 @@ const formatBestSubject = (themeId: string | null): string => {
 
   if (themeId.includes('_')) {
     const [category, subject] = themeId.split('_');
-    const categoryName =
-      APP_CONFIG.CATEGORIES.find((c: any) => c.id === category)?.name || category;
+    const categoryName = APP_CONFIG.CATEGORIES.find((c) => c.id === category)?.name || category;
 
     const subjectMap: Record<string, string> = {
       add: '덧셈',
@@ -68,23 +67,23 @@ export function MyPage() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   // Zustand Selector 패턴 적용
-  const isProfileComplete = useProfileStore((state: any) => state.isProfileComplete);
-  const clearProfile = useProfileStore((state: any) => state.clearProfile);
-  const setProfile = useProfileStore((state: any) => state.setProfile);
-  const profile = useProfileStore((state: any) => state.profile);
+  const isProfileComplete = useProfileStore((state) => state.isProfileComplete);
+  const clearProfile = useProfileStore((state) => state.clearProfile);
+  const setProfile = useProfileStore((state) => state.setProfile);
+  const profile = useProfileStore((state) => state.profile);
   const nickname = profile?.nickname || '게이머';
-  const soundEnabled = useSettingsStore((state: any) => state.soundEnabled);
-  const setSoundEnabled = useSettingsStore((state: any) => state.setSoundEnabled);
-  const bgmEnabled = useSettingsStore((state: any) => state.bgmEnabled);
-  const setBgmEnabled = useSettingsStore((state: any) => state.setBgmEnabled);
-  const hapticEnabled = useSettingsStore((state: any) => state.hapticEnabled);
-  const setHapticEnabled = useSettingsStore((state: any) => state.setHapticEnabled);
-  const animationEnabled = useSettingsStore((state: any) => state.animationEnabled);
-  const setAnimationEnabled = useSettingsStore((state: any) => state.setAnimationEnabled);
+  const soundEnabled = useSettingsStore((state) => state.soundEnabled);
+  const setSoundEnabled = useSettingsStore((state) => state.setSoundEnabled);
+  const bgmEnabled = useSettingsStore((state) => state.bgmEnabled);
+  const setBgmEnabled = useSettingsStore((state) => state.setBgmEnabled);
+  const hapticEnabled = useSettingsStore((state) => state.hapticEnabled);
+  const setHapticEnabled = useSettingsStore((state) => state.setHapticEnabled);
+  const animationEnabled = useSettingsStore((state) => state.animationEnabled);
+  const setAnimationEnabled = useSettingsStore((state) => state.setAnimationEnabled);
   const { stats, session, loading: statsLoading, error: statsError, refetch } = useMyPageStats();
-  const favorites = useFavoriteStore((state: any) => state.favorites);
-  const setCategoryTopic = useQuizStore((state: any) => state.setCategoryTopic);
-  const progressMap = useLevelProgressStore((state: any) => state.progress);
+  const favorites = useFavoriteStore((state) => state.favorites);
+  const setCategoryTopic = useQuizStore((state) => state.setCategoryTopic);
+  const progressMap = useLevelProgressStore((state) => state.progress);
 
   // 오늘의 챌린지 상태
   const [todayChallenge, setTodayChallenge] = useState<TodayChallenge | null>(null);
@@ -137,10 +136,10 @@ export function MyPage() {
   // 오늘의 챌린지 가져오기
   useEffect(() => {
     getTodayChallenge(progressMap)
-      .then((challengeData: any) => {
+      .then((challengeData) => {
         setTodayChallenge(challengeData);
       })
-      .catch((error: any) => {
+      .catch((error: unknown) => {
         logError('MyPage#loadTodayChallenge', error);
       });
   }, [progressMap]);
@@ -149,7 +148,7 @@ export function MyPage() {
   useEffect(() => {
     if (stats?.cyclePromotionPending && !showPromotionModal) {
       // 티어 정보 계산하여 별 개수 가져오기
-      calculateTier(stats.totalMasteryScore).then((tierResult: any) => {
+      calculateTier(stats.totalMasteryScore).then((tierResult) => {
         setTierStars(tierResult.stars);
         setShowPromotionModal(true);
       });
