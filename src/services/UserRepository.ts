@@ -130,4 +130,18 @@ export class UserRepository {
       })) || []
     );
   }
+
+  /**
+   * 전설 달성 후 다음 사이클로 승급합니다.
+   */
+  static async promoteToNextCycle(): Promise<{
+    success: boolean;
+    message: string;
+    error?: string;
+  }> {
+    return this.callRpc<{ success: boolean; message?: string; error?: string }>(
+      supabase.rpc('promote_to_next_cycle'),
+      { errorMessage: '승급 처리에 실패했습니다.' }
+    );
+  }
 }

@@ -126,11 +126,11 @@ export function getSolutionProcess(question: string, answer: string | number): s
 
   if (qStr.includes('최빈값') || qStr.includes('Mode')) {
     const numbers = (qStr.match(/\d+/g) || []).map(Number);
-    const counts: Record<number, number> = {};
+    const counts = new Map<number, number>();
     numbers.forEach((n) => {
-      counts[n] = (counts[n] || 0) + 1;
+      counts.set(n, (counts.get(n) || 0) + 1);
     });
-    const freqDesc = Object.entries(counts)
+    const freqDesc = Array.from(counts.entries())
       .map(([num, count]) => `숫자 ${num}: ${count}회`)
       .join(', ');
     return [
@@ -409,7 +409,7 @@ export function getSolutionProcess(question: string, answer: string | number): s
     const additionParts: string[] = [];
     const len = binary.length;
     for (let i = 0; i < len; i++) {
-      const bit = binary[i];
+      const bit = binary.charAt(i);
       const weight = Math.pow(2, len - 1 - i);
       if (bit === '1') {
         additionParts.push(String(weight));
@@ -418,7 +418,7 @@ export function getSolutionProcess(question: string, answer: string | number): s
     const sumExpr = additionParts.length > 0 ? additionParts.join(' + ') : '0';
     return [
       `1단계: 2진수 \`${binary}\`의 각 비트 자리에 가중치($2^n$)를 매깁니다. 우측 끝부터 1, 2, 4, 8... 순서입니다.`,
-      `2단계: 비트가 \`1\`로 표시된 자리의 가중치들합산하는 식 \`${sumExpr}\`을 세웁니다.`,
+      `2단계: 비트가 \`1\`로 표시된 자리의 가중치들을 합산하는 식 \`${sumExpr}\`을 세웁니다.`,
       `3단계: 합산 결과를 통해 최종 10진수 값인 \`${aStr}\`을 도출합니다.`,
     ];
   }
@@ -447,7 +447,7 @@ export function getSolutionProcess(question: string, answer: string | number): s
     const additionParts: string[] = [];
     const len = hex.length;
     for (let i = 0; i < len; i++) {
-      const char = hex[i]!;
+      const char = hex.charAt(i);
       let val = parseInt(char, 10);
       if (isNaN(val)) {
         val = char.charCodeAt(0) - 'A'.charCodeAt(0) + 10;

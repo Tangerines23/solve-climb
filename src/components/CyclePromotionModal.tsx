@@ -1,4 +1,3 @@
-// src/components/CyclePromotionModal.tsx
 import React, { useState } from 'react';
 import { supabase } from '../utils/supabaseClient';
 import { BaseModal } from './BaseModal';

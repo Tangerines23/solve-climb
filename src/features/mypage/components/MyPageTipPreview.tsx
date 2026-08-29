@@ -86,18 +86,21 @@ export function MyPageTipPreview() {
   const handleWorldMove = (direction: 'prev' | 'next') => {
     if (category !== '기초') return;
 
-    const worlds: WorldType[] = ['World1', 'World2', 'World3', 'World4'];
+    const worlds: readonly WorldType[] = ['World1', 'World2', 'World3', 'World4'] as const;
     const currentIndex = worlds.indexOf(world);
     let newIndex: number;
 
     if (direction === 'prev') {
-      newIndex = currentIndex === 0 ? worlds.length - 1 : currentIndex - 1;
+      newIndex = currentIndex <= 0 ? worlds.length - 1 : currentIndex - 1;
     } else {
-      newIndex = currentIndex === worlds.length - 1 ? 0 : currentIndex + 1;
+      newIndex = currentIndex >= worlds.length - 1 ? 0 : currentIndex + 1;
     }
 
-    setWorld(worlds[newIndex]!);
-    setLevel(1); // 월드 변경 시 레벨 1로 초기화
+    const nextWorld = worlds[newIndex];
+    if (nextWorld) {
+      setWorld(nextWorld);
+      setLevel(1); // 월드 변경 시 레벨 1로 초기화
+    }
   };
 
   // 레벨 변경 화살표 동작
@@ -115,9 +118,21 @@ export function MyPageTipPreview() {
     let selectedTip: TipItem | undefined;
 
     if (category === '기초') {
-      selectedTip = WORLD_TIPS[world]?.[level];
+      const worldGroup = Object.prototype.hasOwnProperty.call(WORLD_TIPS, world)
+        ? WORLD_TIPS[world]
+        : undefined;
+      selectedTip =
+        worldGroup && Object.prototype.hasOwnProperty.call(worldGroup, level)
+          ? worldGroup[level]
+          : undefined;
     } else {
-      selectedTip = CATEGORY_TIPS[category]?.[level];
+      const categoryGroup = Object.prototype.hasOwnProperty.call(CATEGORY_TIPS, category)
+        ? CATEGORY_TIPS[category]
+        : undefined;
+      selectedTip =
+        categoryGroup && Object.prototype.hasOwnProperty.call(categoryGroup, level)
+          ? categoryGroup[level]
+          : undefined;
     }
 
     if (selectedTip) {

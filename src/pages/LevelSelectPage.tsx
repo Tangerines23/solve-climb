@@ -45,9 +45,12 @@ export function LevelSelectPage() {
   const [activeCategory, setActiveCategory] = useState<string>(categoryParam || '기초');
 
   // 레벨 데이터 가져오기 (스크롤 튕김 로직 및 컴포넌트 전반에 사용하기 위해 상단으로 선언부 호이스팅)
-  const worldLevels = (APP_CONFIG.LEVELS[activeWorld as keyof typeof APP_CONFIG.LEVELS] ||
-    {}) as unknown as Record<string, { level: number; name: string; description: string }[]>;
-  const levels = worldLevels[activeCategory] || [];
+  const worldLevels = (Object.prototype.hasOwnProperty.call(APP_CONFIG.LEVELS, activeWorld)
+    ? APP_CONFIG.LEVELS[activeWorld as keyof typeof APP_CONFIG.LEVELS]
+    : {}) as unknown as Record<string, { level: number; name: string; description: string }[]>;
+  const levels = Object.prototype.hasOwnProperty.call(worldLevels, activeCategory)
+    ? worldLevels[activeCategory] || []
+    : [];
 
   const [isSheetTransitioning, setIsSheetTransitioning] = useState(false);
   const scrollTimerRef = useRef<NodeJS.Timeout | null>(null);

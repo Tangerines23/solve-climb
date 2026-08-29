@@ -256,7 +256,7 @@ function generateBinaryDecimalProblem(rng?: {
     { question: '2진수 소수 덧셈 0.11 + 0.01 의 결과는? (2진수)', answer: '1' },
   ];
   const idx = getRandomInt(0, options.length - 1, rng);
-  const choice = options[idx] ?? options[0];
+  const choice = options.at(idx) ?? options[0];
   return {
     question: choice.question,
     answer: choice.answer,

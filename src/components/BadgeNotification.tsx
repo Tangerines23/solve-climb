@@ -1,4 +1,3 @@
-// src/components/BadgeNotification.tsx
 import React, { useEffect, useState } from 'react';
 import { supabase } from '../utils/supabaseClient';
 import { safeSupabaseQuery } from '../utils/debugFetch';

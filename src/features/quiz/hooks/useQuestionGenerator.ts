@@ -101,7 +101,7 @@ export function useQuestionGenerator({
 
     // 1.5. 세션 사전 생성 문제 체크 (서버 검증용)
     if (preGeneratedQuestions && totalQuestions < preGeneratedQuestions.length) {
-      const q = preGeneratedQuestions[totalQuestions];
+      const q = preGeneratedQuestions.at(totalQuestions);
       if (q) {
         quizEventBus.emit('QUIZ:QUESTION_GENERATED', {
           question: q,
