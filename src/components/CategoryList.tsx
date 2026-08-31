@@ -36,7 +36,7 @@ export function CategoryList() {
     navigate(urls.categorySelect({ mountain: mountainId }));
   };
 
-  const { flags } = useFeatureFlagStore();
+  const flags = useFeatureFlagStore((state) => state.flags);
 
   // 활성화된 산 목록
   const mountains = (

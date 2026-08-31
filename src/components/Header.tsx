@@ -27,12 +27,19 @@ export function Header({ title, showBack, onBack }: HeaderProps) {
   const location = useLocation();
   const [isMineralsLoading, setIsMineralsLoading] = useState(false);
   const isAdmin = useProfileStore((state) => state.isAdmin);
-  const { minerals, stamina, fetchUserData, checkStamina, recoverMineralsAds } = useUserStore();
-  const { showToast } = useToastStore();
+  const minerals = useUserStore((state) => state.minerals);
+  const stamina = useUserStore((state) => state.stamina);
+  const fetchUserData = useUserStore((state) => state.fetchUserData);
+  const checkStamina = useUserStore((state) => state.checkStamina);
+  const recoverMineralsAds = useUserStore((state) => state.recoverMineralsAds);
+  const showToast = useToastStore((state) => state.showToast);
 
   // ⚠️ useDebugStore 사용
-  const { isAdminMode, selectedResource, setSelectedResource, toggleDebugPanel, isDebugPanelOpen } =
-    useDebugStore();
+  const isAdminMode = useDebugStore((state) => state.isAdminMode);
+  const selectedResource = useDebugStore((state) => state.selectedResource);
+  const setSelectedResource = useDebugStore((state) => state.setSelectedResource);
+  const toggleDebugPanel = useDebugStore((state) => state.toggleDebugPanel);
+  const isDebugPanelOpen = useDebugStore((state) => state.isDebugPanelOpen);
 
   const doubleClickTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const lastClickTimeRef = useRef<number>(0);
@@ -40,7 +47,7 @@ export function Header({ title, showBack, onBack }: HeaderProps) {
   useEffect(() => {
     fetchUserData();
     checkStamina();
-  }, [fetchUserData, checkStamina]);
+  }, []); // Run once on Header mount
 
   // URL 파라미터 및 localStorage로 디버그 패널 자동 활성화
   useEffect(() => {

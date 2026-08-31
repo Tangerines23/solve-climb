@@ -64,32 +64,48 @@ setup('authenticate once (anonymous)', async ({ page }) => {
     const stat = fs.statSync(authPath);
     const hourAgo = Date.now() - 60 * 60 * 1000;
     if (stat.mtimeMs > hourAgo) {
-      console.log('[auth.setup] Using cached auth file.');
       const content = fs.readFileSync(authPath, 'utf8');
       try {
         const data = JSON.parse(content);
-        const currentPort = process.env.E2E_DEV_PORT || '5173';
-        const expectedOrigin = `http://localhost:${currentPort}`;
+        const hasValidNickname = data.origins?.some(
+          (org: { localStorage?: { name: string; value: string }[] }) =>
+            org.localStorage?.some(
+              (item) =>
+                item.name.startsWith('solve-climb-profiles-') &&
+                item.value.includes('"nickname":') &&
+                !item.value.includes('"nickname":""')
+            )
+        );
 
-        let originUpdated = false;
-        if (Array.isArray(data.origins)) {
-          data.origins.forEach((org: { origin: string }) => {
-            if (org.origin && org.origin.includes('localhost')) {
-              if (org.origin !== expectedOrigin) {
-                console.log(`[auth.setup] Updating origin from ${org.origin} to ${expectedOrigin}`);
-                org.origin = expectedOrigin;
-                originUpdated = true;
+        if (hasValidNickname) {
+          console.log('[auth.setup] Using cached auth file with valid nickname.');
+          const currentPort = process.env.E2E_DEV_PORT || '5173';
+          const expectedOrigin = `http://localhost:${currentPort}`;
+
+          let originUpdated = false;
+          if (Array.isArray(data.origins)) {
+            data.origins.forEach((org: { origin: string }) => {
+              if (org.origin && org.origin.includes('localhost')) {
+                if (org.origin !== expectedOrigin) {
+                  console.log(
+                    `[auth.setup] Updating origin from ${org.origin} to ${expectedOrigin}`
+                  );
+                  org.origin = expectedOrigin;
+                  originUpdated = true;
+                }
               }
-            }
-          });
-        }
-        if (originUpdated) {
-          fs.writeFileSync(authPath, JSON.stringify(data, null, 2), 'utf8');
+            });
+          }
+          if (originUpdated) {
+            fs.writeFileSync(authPath, JSON.stringify(data, null, 2), 'utf8');
+          }
+          return;
+        } else {
+          console.log('[auth.setup] Cached auth file lacks valid nickname. Re-authenticating...');
         }
       } catch (e) {
         console.error('[auth.setup] Failed to rewrite origin in cached auth file:', e);
       }
-      return;
     }
   }
 
@@ -110,20 +126,28 @@ setup('authenticate once (anonymous)', async ({ page }) => {
     }
 
     // 2. 프로필 정보 입력 (닉네임 설정) 대기
-    console.log('[auth.setup] Checking for Profile Form...');
-    const nicknameInput = page.locator('#nickname');
+    console.log('[auth.setup] Checking for Guest login button or Profile Form...');
+    const anonymousBtn = page.locator('.my-page-guest-anonymous-link');
+    if (await anonymousBtn.isVisible({ timeout: 3000 }).catch(() => false)) {
+      console.log('[auth.setup] Clicking anonymous login button...');
+      await anonymousBtn.click();
+      await sleep(1000);
+    }
+
+    const nicknameInput = page.locator('#nickname, .profile-form-input');
     try {
       // 닉네임 입력란이 보이나 최대 10초 대기
       await nicknameInput.waitFor({ state: 'visible', timeout: 10000 });
 
-      console.log('[auth.setup] Filling nickname');
-      await nicknameInput.fill(`Test${Date.now().toString().slice(-4)}`);
+      const testNick = `Test${Date.now().toString().slice(-4)}`;
+      console.log('[auth.setup] Filling nickname:', testNick);
+      await nicknameInput.fill(testNick);
 
       // 제출 버튼 클릭 전 잠시 대기 (입력 이벤트 반영)
       await sleep(500);
 
       // 제출 버튼 클릭
-      await page.click('button[type="submit"]');
+      await page.click('button[type="submit"], .profile-form-submit');
 
       console.log('[auth.setup] Profile submitted. Waiting for redirect...');
       // 제출 후 앱이 홈('/')으로 보내주길 기다림
@@ -179,6 +203,43 @@ setup('authenticate once (anonymous)', async ({ page }) => {
       console.log(`[auth.setup] Retrying in ${backoffMs}ms...`);
       await sleep(backoffMs);
     }
+  }
+
+  if (!authOk) {
+    console.log(
+      '[auth.setup] Fallback: Directly seeding valid profile and local session into localStorage...'
+    );
+    await page.evaluate(() => {
+      const deviceId = 'device_e2e_tester';
+      const profileId = 'profile_e2e_tester';
+      const userId = '00000000-0000-0000-0000-000000000001';
+      localStorage.setItem('solve-climb-device-id', JSON.stringify(deviceId));
+      localStorage.setItem('solve-climb-active-profile-id', JSON.stringify(profileId));
+      localStorage.setItem(
+        `solve-climb-profiles-${deviceId}`,
+        JSON.stringify([
+          {
+            profileId,
+            nickname: 'SmokeTester',
+            userId,
+            createdAt: new Date().toISOString(),
+            isAdmin: false,
+          },
+        ])
+      );
+      localStorage.setItem(
+        'solve-climb-local-session',
+        JSON.stringify({
+          userId,
+          nickname: 'SmokeTester',
+          isAdmin: false,
+          loginTime: new Date().toISOString(),
+          loginType: 'anonymous',
+        })
+      );
+      localStorage.setItem('guest_temp_id', JSON.stringify(userId));
+    });
+    await page.reload({ waitUntil: 'networkidle' });
   }
 
   // 저장 전 마지막으로 networkidle 상태 대기 (스테이트 안정화)

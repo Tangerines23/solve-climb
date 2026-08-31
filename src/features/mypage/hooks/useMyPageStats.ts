@@ -1,5 +1,5 @@
 // 사용자 게임 통계를 가져오는 Custom Hook
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/utils/supabaseClient';
 import { type LocalSession } from '@/utils/safeJsonParse';
 import { storageService, STORAGE_KEYS } from '@/services';
@@ -124,7 +124,7 @@ export function useMyPageStats(): UseMyPageStatsResult {
     return () => data?.subscription?.unsubscribe();
   }, []);
 
-  const fetchStats = async () => {
+  const fetchStats = useCallback(async () => {
     try {
       setLoading(true);
       setError(null);
@@ -379,11 +379,11 @@ export function useMyPageStats(): UseMyPageStatsResult {
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
 
   useEffect(() => {
     fetchStats();
-  }, []);
+  }, [fetchStats]);
 
   return {
     stats,

@@ -87,9 +87,7 @@ export function ProfileForm({ onComplete, showBackButton = false, onCancel }: Pr
     const profileData: UserProfile = {
       profileId: existingProfile?.profileId || '', // 기존 프로필이 있으면 ID 유지, 없으면 빈 문자열 (스토어에서 생성)
       nickname: sanitizedNickname,
-      // email: googleUser?.email,
-      // avatar: googleUser?.picture,
-      // userId: googleUser?.email,
+      userId: existingProfile?.userId,
       createdAt: existingProfile?.createdAt || new Date().toISOString(),
       isAdmin: isAdmin,
     };

@@ -7,7 +7,7 @@ import { useLoadingStore } from '../stores/useLoadingStore';
 import './GlobalLoadingIndicator.css';
 
 export function GlobalLoadingIndicator() {
-  const isAnyLoading = useLoadingStore((state) => state.isAnyLoading());
+  const isAnyLoading = useLoadingStore((state) => state.loadingIds.size > 0);
 
   if (!isAnyLoading) {
     return null;

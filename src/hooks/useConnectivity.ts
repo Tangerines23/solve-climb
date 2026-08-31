@@ -7,7 +7,7 @@ import { useToastStore } from '@/stores/useToastStore';
  */
 export function useConnectivity() {
   const [isOnline, setIsOnline] = useState(navigator.onLine);
-  const { showToast } = useToastStore();
+  const showToast = useToastStore((state) => state.showToast);
 
   useEffect(() => {
     const handleOnline = () => {

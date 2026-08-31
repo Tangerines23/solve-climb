@@ -419,7 +419,7 @@ export function MyPage() {
     } catch {
       // 무시
     }
-  }, [session?.user, profile?.userId, refetch, setProfile, performRedirect]);
+  }, [session?.user?.id, profile?.userId, refetch, setProfile, performRedirect]);
 
   // 로그아웃 함수
   const handleLogout = async () => {

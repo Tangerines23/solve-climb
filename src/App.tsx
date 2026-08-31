@@ -112,8 +112,8 @@ const DebugShortcutsWrapper = !shouldShowDebug
 
 function App() {
   const location = useLocation();
-  const { initialize: initializeAuth } = useAuthStore();
-  const { syncProgress } = useLevelProgressStore();
+  const initializeAuth = useAuthStore((state) => state.initialize);
+  const syncProgress = useLevelProgressStore((state) => state.syncProgress);
 
   // 네트워크 연결 상태 감시
   useConnectivity();
@@ -121,7 +121,7 @@ function App() {
   // 커스텀 뒤로가기 네비게이션 적용
   useCustomBackNavigation();
 
-  const { isDebugPanelOpen } = useDebugStore(); // Debug store state for conditional rendering
+  const isDebugPanelOpen = useDebugStore((state) => state.isDebugPanelOpen);
   const animationEnabled = useSettingsStore((state) => state.animationEnabled);
 
   // 정적 UI 모드 전환 (body 클래스 제어)
@@ -186,7 +186,7 @@ function App() {
           console.error('[Capacitor] Failed to load App plugin:', err);
         });
     }
-  }, [initializeAuth, syncProgress]);
+  }, []); // Run once on app mount
 
   // 전역 에러 핸들러 설정 (개발 환경에서만)
   useEffect(() => {

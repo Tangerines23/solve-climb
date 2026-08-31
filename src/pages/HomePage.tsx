@@ -35,7 +35,7 @@ export function HomePage() {
   // 데일리 로그인 보상 체크
   useEffect(() => {
     checkDailyLogin();
-  }, [checkDailyLogin]);
+  }, []); // 빈 의존성 배열: 마운트 시 1회만 실행
 
   useEffect(() => {
     // 가이드: "진입 시 첫 화면에서는 백버튼을 사용하지 않아요"
