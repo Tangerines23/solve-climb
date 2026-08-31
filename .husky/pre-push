@@ -1,5 +1,3 @@
-#!/usr/bin/env sh
-. "$(dirname -- "$0")/_/husky.sh"
-
 # git push 시 자동으로 리눅스 도커 환경에서 검증을 수행합니다.
 npm run ci:auto
+
