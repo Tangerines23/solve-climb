@@ -1,3 +1,4 @@
+/* eslint-disable react-refresh/only-export-components */
 import React, {
   createContext,
   useContext,
@@ -36,28 +37,30 @@ import { useQuizFeedback } from '../hooks/useQuizFeedback';
 import { useQuizBgm } from '../hooks/useQuizBgm';
 import { useDeathNoteStore } from '@/stores/useDeathNoteStore';
 import { vibrateLong } from '@/utils/haptic';
+import { InventoryItem } from '@/types/user';
 import {
   QuizDisplayState,
   QuizAnimationState,
   QuizHandlers,
   QuizModalHandlers,
+  QuizModalState,
 } from '../types/quizProps';
 
 interface QuizContextType {
   quizState: QuizDisplayState;
   quizAnimations: QuizAnimationState;
   quizHandlers: QuizHandlers;
-  modalState: any;
+  modalState: QuizModalState;
   modalHandlers: QuizModalHandlers;
   inputRef: React.RefObject<HTMLInputElement | null>;
   feedbackRef: React.RefObject<ItemFeedbackRef | null>;
   // Additional states needed by Layout
-  inventory: any[];
+  inventory: InventoryItem[];
   minerals: number;
   isAnonymous: boolean;
   feverLevel: number;
   altitudePhase: string;
-  promiseData: any;
+  promiseData: { rule: string; example: string } | null;
   activeItems: string[];
   usedItems: string[];
   score: number;
@@ -505,10 +508,17 @@ export function QuizProvider({ children, params }: QuizProviderProps) {
             .getState()
             .addMissedQuestion(
               currentQuestion,
-              (worldParam as any) || 'World1',
-              (categoryParam as any) || '기초'
+              (worldParam as World) || 'World1',
+              (categoryParam as Category) || '기초'
             );
-          gameState.setWrongAnswers((prev: any) => [...prev, currentQuestion]);
+          gameState.setWrongAnswers((prev) => [
+            ...prev,
+            {
+              question: currentQuestion.question,
+              wrongAnswer: answerInput,
+              correctAnswer: String(currentQuestion.answer),
+            },
+          ]);
         }
 
         // Survival Mode life management
@@ -676,6 +686,7 @@ export function QuizProvider({ children, params }: QuizProviderProps) {
     currentQuestionId,
     gameState,
     smartHandleGameOver,
+    stableHandleGameOver,
     handleTimeUp,
     increaseScore,
     decreaseScore,
@@ -684,13 +695,17 @@ export function QuizProvider({ children, params }: QuizProviderProps) {
     lives,
     consumeLife,
     modeParam,
+    levelParam,
     currentQuestion,
+    answerInput,
     setAnswerInput,
     setDisplayValue,
     setIsSubmitting,
     categoryParam,
     worldParam,
     useSystemKeyboard,
+    triggerSuccessFeedback,
+    triggerWrongFeedback,
   ]);
 
   useEffect(() => {
@@ -775,6 +790,7 @@ export function QuizProvider({ children, params }: QuizProviderProps) {
       answerInput,
       displayValue,
       category,
+      mountainParam,
       worldParam,
       categoryParam,
       levelParam,
@@ -920,31 +936,76 @@ export function QuizProvider({ children, params }: QuizProviderProps) {
     ]
   );
 
-  const value = {
-    quizState,
-    quizAnimations,
-    quizHandlers,
-    modalState,
-    modalHandlers,
-    inputRef,
-    feedbackRef,
-    inventory,
-    minerals,
-    isAnonymous,
-    feverLevel,
-    altitudePhase,
-    promiseData,
-    activeItems,
-    usedItems,
-    score,
-    isExhausted,
-    handleTimeUp,
-    setAnswerInput,
-    setDisplayValue,
-    setShowExitConfirm,
-    setIsFadingOut,
-    cancelExitConfirm,
-  };
+  const value = useMemo<QuizContextType>(
+    () => ({
+      quizState,
+      quizAnimations,
+      quizHandlers,
+      modalState,
+      modalHandlers,
+      inputRef,
+      feedbackRef,
+      inventory,
+      minerals,
+      isAnonymous,
+      feverLevel,
+      altitudePhase,
+      promiseData,
+      activeItems,
+      usedItems,
+      score,
+      isExhausted,
+      handleTimeUp,
+      setAnswerInput,
+      setDisplayValue,
+      setShowExitConfirm,
+      setIsFadingOut,
+      cancelExitConfirm,
+    }),
+    [
+      quizState,
+      quizAnimations,
+      quizHandlers,
+      modalState,
+      modalHandlers,
+      inputRef,
+      feedbackRef,
+      inventory,
+      minerals,
+      isAnonymous,
+      feverLevel,
+      altitudePhase,
+      promiseData,
+      activeItems,
+      usedItems,
+      score,
+      isExhausted,
+      handleTimeUp,
+      setAnswerInput,
+      setDisplayValue,
+      setShowExitConfirm,
+      setIsFadingOut,
+      cancelExitConfirm,
+    ]
+  );
 
   return <QuizContext.Provider value={value}>{children}</QuizContext.Provider>;
 }
+
+export const useQuizDisplayState = () => {
+  const context = useContext(QuizContext);
+  if (!context) throw new Error('useQuizDisplayState must be used within a QuizProvider');
+  return context.quizState;
+};
+
+export const useQuizActionHandlers = () => {
+  const context = useContext(QuizContext);
+  if (!context) throw new Error('useQuizActionHandlers must be used within a QuizProvider');
+  return context.quizHandlers;
+};
+
+export const useQuizModalState = () => {
+  const context = useContext(QuizContext);
+  if (!context) throw new Error('useQuizModalState must be used within a QuizProvider');
+  return { modalState: context.modalState, modalHandlers: context.modalHandlers };
+};

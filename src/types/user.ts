@@ -41,12 +41,6 @@ export interface UserState {
   lastAdRechargeTime: string | null;
 
   handleWatchAd: () => void;
-  // Pause System
-  showPauseModal: boolean;
-  remainingPauses: number;
-  handlePauseClick: () => void;
-  handlePauseResume: () => void;
-  handlePauseExit: () => void;
 
   fetchUserData: () => Promise<void>;
   purchaseItem: (itemId: number) => Promise<{ success: boolean; message: string }>;
@@ -63,13 +57,6 @@ export interface UserState {
   ) => Promise<{ success: boolean; message: string }>;
   refundStamina: () => Promise<{ success: boolean; message: string }>;
   updateNickname: (nickname: string) => Promise<{ success: boolean; message: string }>;
-
-  // DEV ONLY
-  debugAddItems: () => Promise<void>;
-  debugResetItems: () => Promise<void>;
-  debugRemoveItems: () => Promise<void>;
-  debugSetStamina: (amount: number) => Promise<void>;
-  debugSetMinerals: (amount: number) => Promise<void>;
 
   lastStaminaConsumeTime: number;
 }

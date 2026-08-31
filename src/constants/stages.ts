@@ -1,3 +1,5 @@
+import { safeAccess } from '../utils/validation';
+
 export const MAP_LAYOUT = {
   FIXED_MAX_LEVELS: 30,
   NODE_SPACING: 160,
@@ -170,5 +172,6 @@ export const STAGE_CONFIG: StageConfig[] = WORLD_STAGE_CONFIG.World1;
 
 export function getStagesForWorld(world: string | undefined): StageConfig[] {
   if (!world) return STAGE_CONFIG;
-  return WORLD_STAGE_CONFIG[world] || STAGE_CONFIG;
+  const stages = safeAccess(WORLD_STAGE_CONFIG, world) as StageConfig[] | undefined;
+  return stages || STAGE_CONFIG;
 }

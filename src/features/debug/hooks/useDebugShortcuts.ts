@@ -1,6 +1,7 @@
 import { useCallback, useEffect } from 'react';
 import { useDebugStore } from '@/stores/useDebugStore';
 import { useUserStore } from '@/stores/useUserStore';
+import { debugUserService } from '../services/debugUserService';
 
 /**
  * 전역 디버그 단축키 훅
@@ -16,7 +17,7 @@ export function useDebugShortcuts() {
   const { isAdminMode, selectedResource, toggleDebugPanel, toggleAdminMode, setSelectedResource } =
     useDebugStore();
 
-  const { stamina, minerals, debugSetStamina, debugSetMinerals } = useUserStore();
+  const { stamina, minerals } = useUserStore();
 
   const handleKeyDown = useCallback(
     (e: KeyboardEvent) => {
@@ -34,8 +35,8 @@ export function useDebugShortcuts() {
       if (e.key === '`' && !e.ctrlKey && !e.shiftKey && !e.metaKey) {
         e.preventDefault();
         // 스태미너 가득 채우고 minerals 1000 추가 + 어드민 모드 토글
-        debugSetStamina(5);
-        debugSetMinerals(minerals + 1000);
+        debugUserService.debugSetStamina(5);
+        debugUserService.debugSetMinerals(minerals + 1000);
         toggleAdminMode();
         console.log('[DEBUG] Simple Dev triggered: Stamina=5, Minerals+=1000, AdminMode toggled');
         return;
@@ -54,19 +55,18 @@ export function useDebugShortcuts() {
       if (e.key === '+' || e.key === '=') {
         e.preventDefault();
         if (selectedResource === 'stamina') {
-          debugSetStamina(stamina + 1);
+          debugUserService.debugSetStamina(stamina + 1);
         }
         if (selectedResource === 'minerals') {
-          debugSetMinerals(minerals + 100);
+          debugUserService.debugSetMinerals(minerals + 100);
         }
         if (selectedResource === 'items') {
-          const { debugAddItems } = useUserStore.getState();
-          debugAddItems();
+          debugUserService.debugAddItems();
         }
       } else if (e.key === '-' || e.key === '_') {
         e.preventDefault();
         if (selectedResource === 'stamina') {
-          debugSetStamina(Math.max(0, stamina - 1));
+          debugUserService.debugSetStamina(Math.max(0, stamina - 1));
         }
         if (selectedResource === 'minerals') {
           const delta = -100;
@@ -75,11 +75,10 @@ export function useDebugShortcuts() {
             console.warn('[Debug] Cannot reduce minerals below 0');
             return;
           }
-          debugSetMinerals(currentMinerals + delta);
+          debugUserService.debugSetMinerals(currentMinerals + delta);
         }
         if (selectedResource === 'items') {
-          const { debugRemoveItems } = useUserStore.getState();
-          debugRemoveItems();
+          debugUserService.debugRemoveItems();
         }
       }
 
@@ -96,8 +95,6 @@ export function useDebugShortcuts() {
       toggleDebugPanel,
       toggleAdminMode,
       setSelectedResource,
-      debugSetStamina,
-      debugSetMinerals,
     ]
   );
 

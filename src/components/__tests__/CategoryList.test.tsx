@@ -26,7 +26,7 @@ vi.mock('../../stores/useFavoriteStore', () => ({
   }),
 }));
 
-vi.mock('../../utils/scoreCalculator', () => ({
+vi.mock('@/features/quiz', () => ({
   calculateCategoryAltitude: vi.fn(() => ({ totalAltitude: 0, totalProblems: 0 })),
 }));
 

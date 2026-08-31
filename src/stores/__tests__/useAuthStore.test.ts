@@ -7,6 +7,7 @@ vi.mock('../../utils/supabaseClient', () => ({
   supabase: {
     auth: {
       getSession: vi.fn(),
+      getUser: vi.fn().mockResolvedValue({ data: { user: null }, error: null }),
       signInAnonymously: vi.fn(),
       signOut: vi.fn(),
       onAuthStateChange: vi.fn((cb) => {
@@ -28,6 +29,9 @@ vi.mock('../../services', () => ({
   },
   STORAGE_KEYS: {
     LOCAL_SESSION: 'local-session',
+    PROFILES: vi.fn((id: string) => `profiles_${id}`),
+    ACTIVE_PROFILE: vi.fn((id: string) => `active_profile_${id}`),
+    PROGRESS: vi.fn((id: string) => `progress_${id}`),
   },
 }));
 

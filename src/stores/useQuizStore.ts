@@ -28,6 +28,10 @@ export interface QuizState {
   setTimeLimit: (time: TimeLimit) => void;
 }
 
+/**
+ * [Quiz Store]
+ * 퀴즈 플레이 세션(선택된 월드/카테고리/레벨/모드, 현재 문제, 제한시간) 상태를 관리합니다.
+ */
 export const useQuizStore = create<QuizState>((set) => ({
   score: 0,
   difficulty: 'easy',

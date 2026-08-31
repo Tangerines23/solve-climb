@@ -32,10 +32,19 @@ afterAll(() => {
   }
 
   // Active handles diagnostic to find what hangs Vitest
-  if (typeof process !== 'undefined' && typeof (process as any)._getActiveHandles === 'function') {
-    const handles = (process as any)._getActiveHandles();
+  const proc = process as unknown as {
+    _getActiveHandles?: () => Array<{
+      fd?: number;
+      type?: string;
+      constructor?: { name?: string };
+      _idleTimeout?: number;
+      _onTimeout?: unknown;
+    }>;
+  };
+  if (typeof proc._getActiveHandles === 'function') {
+    const handles = proc._getActiveHandles();
     // Filter out standard handles like stdout/stderr/stdin (which have fd: 1/2/0)
-    const active = handles.filter((h: any) => {
+    const active = handles.filter((h) => {
       if (!h) return false;
       // standard streams
       if (h.fd === 0 || h.fd === 1 || h.fd === 2) return false;
@@ -43,7 +52,7 @@ afterAll(() => {
     });
     if (active.length > 0) {
       console.log(`[Teardown Diagnostic] Active handles remaining: ${active.length}`);
-      active.forEach((h: any, i: number) => {
+      active.forEach((h, i: number) => {
         console.log(`  Handle ${i}: class=${h?.constructor?.name}, type=${h?.type || 'unknown'}`);
         if (h?._idleTimeout) {
           console.log(`    - Timer timeout: ${h._idleTimeout}ms`);

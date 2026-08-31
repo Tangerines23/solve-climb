@@ -6,7 +6,7 @@ export const TodaysPromise: React.FC = () => {
   const { modalState, modalHandlers, promiseData } = useQuiz();
   const { showPromise: isVisible } = modalState;
   const { handlePromiseComplete: onComplete } = modalHandlers;
-  const { rule, example } = promiseData;
+  const { rule, example } = promiseData || { rule: '', example: '' };
 
   const [countdown, setCountdown] = useState(3);
 

@@ -1,5 +1,6 @@
 import { Category } from '@/types/quiz';
-import { storageService, STORAGE_KEYS } from './index';
+import { storageService } from './LocalStorageService';
+import { STORAGE_KEYS } from './storageKeys';
 
 const MAX_HISTORY_ITEMS = 100;
 

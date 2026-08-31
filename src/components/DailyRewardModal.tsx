@@ -3,7 +3,9 @@ import { BaseModal } from './BaseModal';
 import './DailyRewardModal.css';
 
 export function DailyRewardModal() {
-  const { showModal, rewardResult, closeModal } = useDailyRewardStore();
+  const showModal = useDailyRewardStore((state) => state.showModal);
+  const rewardResult = useDailyRewardStore((state) => state.rewardResult);
+  const closeModal = useDailyRewardStore((state) => state.closeModal);
 
   if (!showModal || !rewardResult) return null;
 

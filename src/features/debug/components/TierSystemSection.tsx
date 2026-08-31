@@ -43,7 +43,7 @@ export const TierSystemSection = React.memo(function TierSystemSection() {
         setSelectedTierLevel(stats.currentTierLevel as TierLevel);
       }
       // 계산 결과 업데이트
-      calculateTier(masteryScore).then((result: any) => {
+      calculateTier(masteryScore).then((result) => {
         setCalculationResult({
           level: result.level,
           stars: result.stars,

@@ -3,6 +3,10 @@ import { supabase } from '../utils/supabaseClient';
 import { Session, User } from '@supabase/supabase-js';
 import { safeSupabaseQuery } from '../utils/debugFetch';
 import { storageService, STORAGE_KEYS } from '../services';
+import { useProfileStore } from './useProfileStore';
+import { useLevelProgressStore } from './useLevelProgressStore';
+import { useUserStore } from './useUserStore';
+import { useBadgeStore } from './useBadgeStore';
 
 import { analytics } from '@/services/analytics';
 
@@ -35,6 +39,10 @@ const getOrCreateGuestUser = (): User => {
   } as unknown as User;
 };
 
+/**
+ * [Auth Store]
+ * 사용자 인증 세션(Google OAuth, Toss Login, 게스트 로그인) 및 인증 상태를 관리합니다.
+ */
 export const useAuthStore = create<AuthState>((set) => ({
   session: null,
   user: null,
@@ -71,17 +79,23 @@ export const useAuthStore = create<AuthState>((set) => ({
       set({ session, user, isLoading: false });
 
       if (user?.id && !String(user.id).startsWith('guest-')) {
-        import('./useProfileStore')
-          .then(({ useProfileStore }) => {
-            useProfileStore.getState().syncProfileWithAuthUser(user.id);
-          })
-          .catch(() => {});
+        try {
+          useProfileStore.getState().syncProfileWithAuthUser(user.id);
+        } catch {
+          // ignore
+        }
 
-        import('./useLevelProgressStore')
-          .then(({ useLevelProgressStore }) => {
-            useLevelProgressStore.getState().syncProgress();
-          })
-          .catch(() => {});
+        try {
+          useLevelProgressStore.getState().syncProgress();
+        } catch {
+          // ignore
+        }
+
+        try {
+          useUserStore.getState().fetchUserData();
+        } catch {
+          // ignore
+        }
       }
 
       // Analytics 유저 컨텍스트 동기화 (Static import 사용)
@@ -109,5 +123,30 @@ export const useAuthStore = create<AuthState>((set) => ({
     await safeSupabaseQuery(supabase.auth.signOut());
     storageService.remove(STORAGE_KEYS.LOCAL_SESSION);
     set({ session: null, user: null });
+
+    // Reset other stores to prevent cross-account state leakage
+    try {
+      useProfileStore.getState().clearProfile();
+    } catch {
+      // ignore
+    }
+
+    try {
+      useLevelProgressStore.setState({ progress: {} });
+    } catch {
+      // ignore
+    }
+
+    try {
+      useUserStore.setState({ minerals: 0, stamina: 5, inventory: [] });
+    } catch {
+      // ignore
+    }
+
+    try {
+      useBadgeStore.setState({ userBadges: [] });
+    } catch {
+      // ignore
+    }
   },
 }));

@@ -19,6 +19,13 @@ vi.mock('@/features/mypage', () => ({
   useMyPageStats: vi.fn(),
 }));
 
+vi.mock('../../services/debugUserService', () => ({
+  debugUserService: {
+    debugSetStamina: vi.fn(() => Promise.resolve()),
+    debugSetMinerals: vi.fn(() => Promise.resolve()),
+  },
+}));
+
 vi.mock('@/utils/supabaseClient', () => ({
   supabase: {
     auth: {
@@ -46,8 +53,6 @@ describe('QuickActionsSection', () => {
       stamina: 5,
       fetchUserData: vi.fn(() => Promise.resolve()),
       rewardMinerals: vi.fn(() => Promise.resolve()),
-      debugSetStamina: vi.fn(() => Promise.resolve()),
-      debugSetMinerals: vi.fn(() => Promise.resolve()),
     } as any);
     vi.mocked(useDebugStore).mockReturnValue({
       infiniteStamina: false,
@@ -107,7 +112,8 @@ describe('QuickActionsSection', () => {
       await act(async () => {
         fireEvent.click(incrementButton);
       });
-      expect(vi.mocked(useUserStore)().debugSetStamina).toHaveBeenCalled();
+      const { debugUserService } = await import('../../services/debugUserService');
+      expect(debugUserService.debugSetStamina).toHaveBeenCalled();
     }
   });
 
@@ -120,7 +126,8 @@ describe('QuickActionsSection', () => {
       await act(async () => {
         fireEvent.click(incrementButton);
       });
-      expect(vi.mocked(useUserStore)().debugSetMinerals).toHaveBeenCalled();
+      const { debugUserService } = await import('../../services/debugUserService');
+      expect(debugUserService.debugSetMinerals).toHaveBeenCalled();
     }
   });
 

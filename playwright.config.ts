@@ -58,7 +58,7 @@ export default defineConfig({
 
   /* 테스트 실행 전 로컬 개발 서버를 자동으로 구동 */
   webServer: {
-    command: `cross-env DEV_PORT=${DEV_PORT} npm run dev`,
+    command: `npx cross-env DEV_PORT=${DEV_PORT} npm run dev`,
     url: BASE_URL,
     reuseExistingServer: !process.env.CI,
     timeout: 120000,

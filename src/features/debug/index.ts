@@ -1,4 +1,7 @@
-// Debug Feature Public API Barrel File
+/**
+ * @domain 개발 및 디버그 도구 (Debug Tools)
+ * @summary 테스트 데이터 리셋, 더미 기록 생성, 에러 로그 뷰어 및 바운더리 테스트 패널
+ */
 
 export { default as DebugPanel } from './components/DebugPanel';
 export { useDebugShortcuts } from './hooks/useDebugShortcuts';
@@ -12,3 +15,4 @@ export { DailyRewardDebugSection } from './components/DailyRewardDebugSection';
 export { StaticUISection } from './components/StaticUISection';
 export { SitemapTree } from './components/SitemapTree';
 export { VisualSection } from './components/VisualSection';
+export { debugUserService } from './services/debugUserService';

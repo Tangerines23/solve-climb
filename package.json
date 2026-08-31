@@ -7,7 +7,6 @@
     "setup": "node scripts/setup-new-env.js",
     "build:map": "node scripts/generate-code-map.js && node scripts/check-code-map.js",
     "check:code-map": "node scripts/check-code-map.js",
-    "build:flowchart": "node scripts/generate-flowchart.js",
     "dev": "vite --host",
     "generate": "plop",
     "diet": "knip",
@@ -22,6 +21,7 @@
     "check:playstore:version": "node scripts/check-playstore-version.js",
     "capture:playstore:screenshots": "node scripts/capture-playstore-screenshots.cjs",
     "check:vercel": "node scripts/check-vercel-config.js",
+    "check:fast": "node scripts/fast-pre-commit.js",
     "check": "npm run type-check && npm run lint && npm run format:check && npm run check:css && npm run check:nav && npm run check:vercel && npm run check:db:lint",
     "validate": "npm run type-check && npm run lint && npm run format:check && npm run check:css && npm run check:nav && npm run check:vercel && npm run check:db:lint && npm run check:secrets && npm run check:circular && npm run check:integrity && npm run check:logic && npm run check:playstore:version",
     "ci:auto": "node scripts/run-ci-linux.cjs",
@@ -137,7 +137,6 @@
   "devDependencies": {
     "@axe-core/playwright": "^4.13.0",
     "@capacitor/cli": "^8.5.0",
-    "@emotion/is-prop-valid": "^1.4.0",
     "@eslint/js": "^10.0.1",
     "@playwright/test": "^1.62.1",
     "@sentry/vite-plugin": "^5.4.0",
@@ -196,7 +195,7 @@
     "supabase": "^2.116.0",
     "tailwindcss": "^4.1.18",
     "ts-morph": "^28.0.0",
-    "typescript": "^7.0.2",
+    "typescript": "^5.8.2",
     "vite": "^8.2.2",
     "vite-plugin-pwa": "^1.3.0",
     "vitest": "^4.0.16"

@@ -73,6 +73,10 @@ function calculateDecayedComboState(feverLevel: 0 | 1 | 2): {
   return { combo: 0, feverLevel: 0, showSpeedLines: false };
 }
 
+/**
+ * [Game Store]
+ * 인게임 실시간 점수, 콤보, 피버 레벨(속도선/비네트 효과), 생명(하트), 액티브 아이템 효과 상태를 관리합니다.
+ */
 export const useGameStore = create<GameState>()(
   persist(
     (set) => ({

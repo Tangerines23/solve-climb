@@ -62,6 +62,10 @@ interface DebugState {
   setBypassLevelLock: (value: boolean) => void;
 }
 
+/**
+ * [Debug Store]
+ * 개발/디버그 모드 전환, 가상 파라미터 조작 및 바운더리 테스트 설정을 관리합니다.
+ */
 export const useDebugStore = create<DebugState>()(
   persist(
     (set) => ({

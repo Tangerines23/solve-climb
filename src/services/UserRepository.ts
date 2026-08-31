@@ -13,9 +13,17 @@ export interface RawInventoryItem {
   } | null;
 }
 
+export interface UserProfileResponse {
+  minerals?: number;
+  stamina?: number;
+  is_anonymous?: boolean;
+  last_ad_stamina_recharge?: string | null;
+  updated_at?: string;
+}
+
 /**
  * 유저 재화 및 프로필 데이터베이스 저장소 (UserRepository)
- * - Supabase user_profiles 및 user_inventory 쿼리와 RPC 통신을 전담합니다.
+ * - Supabase profiles 및 inventory 쿼리와 RPC 통신을 전담합니다.
  * - useUserStore 스토어에서 직접 DB 조회를 제거하고 로직을 캡슐화합니다.
  */
 export class UserRepository {
@@ -25,7 +33,7 @@ export class UserRepository {
   static async callRpc<T extends { success: boolean; message?: string }>(
     rpcCall: PromiseLike<{ data: T | null; error: unknown }>,
     options: { errorMessage?: string } = {}
-  ): Promise<{ success: boolean; message: string } & Partial<T>> {
+  ): Promise<{ success: boolean; message: string; errorCode?: string } & Partial<T>> {
     try {
       const { data, error } = await safeSupabaseQuery(rpcCall, {
         context: 'UserRepository.callRpc',
@@ -33,9 +41,13 @@ export class UserRepository {
 
       if (error) {
         console.error(`[UserRepository RPC Error]`, error);
+        const errorCode =
+          error && typeof error === 'object' && 'code' in error
+            ? String((error as { code: unknown }).code)
+            : undefined;
         return {
           success: false,
-          errorCode: (error as any)?.code,
+          errorCode,
           message: options.errorMessage || UI_MESSAGES.COMMON_ERROR,
         } as { success: false; message: string; errorCode?: string } & Partial<T>;
       }
@@ -65,22 +77,17 @@ export class UserRepository {
    * 유저 프로필 및 인벤토리 데이터를 통합 조회합니다.
    */
   static async fetchUserData(userId: string) {
-    const profileQueryBuilder = supabase
-      .from('profiles')
-      .select('minerals, stamina, updated_at')
-      .eq('id', userId);
-
-    const profileQuery =
-      typeof (profileQueryBuilder as any).maybeSingle === 'function'
-        ? (profileQueryBuilder as any).maybeSingle()
-        : typeof (profileQueryBuilder as any).single === 'function'
-          ? (profileQueryBuilder as any).single()
-          : profileQueryBuilder;
-
     const [profileRes, inventoryRes] = await Promise.all([
-      safeSupabaseQuery(profileQuery, {
-        context: 'UserRepository.fetchUserData.profile',
-      }) as Promise<{ data: any; error: any }>,
+      safeSupabaseQuery(
+        supabase
+          .from('profiles')
+          .select('minerals, stamina, updated_at')
+          .eq('id', userId)
+          .maybeSingle(),
+        {
+          context: 'UserRepository.fetchUserData.profile',
+        }
+      ) as Promise<{ data: UserProfileResponse | null; error: unknown }>,
       safeSupabaseQuery(
         supabase
           .from('inventory')
@@ -97,21 +104,13 @@ export class UserRepository {
           )
           .eq('user_id', userId),
         { context: 'UserRepository.fetchUserData.inventory' }
-      ) as Promise<{ data: any; error: any }>,
+      ) as Promise<{ data: RawInventoryItem[] | null; error: unknown }>,
     ]);
 
-    const profileData = profileRes.data as {
-      minerals?: number;
-      stamina?: number;
-      is_anonymous?: boolean;
-      last_ad_stamina_recharge?: string | null;
-      updated_at?: string;
-    } | null;
-
     return {
-      profile: profileData,
+      profile: profileRes.data,
       profileError: profileRes.error,
-      inventory: inventoryRes.data as RawInventoryItem[] | null,
+      inventory: inventoryRes.data,
       inventoryError: inventoryRes.error,
     };
   }
@@ -128,6 +127,20 @@ export class UserRepository {
         description: item?.items?.description || '',
         quantity: item?.quantity || 0,
       })) || []
+    );
+  }
+
+  /**
+   * 전설 달성 후 다음 사이클로 승급합니다.
+   */
+  static async promoteToNextCycle(): Promise<{
+    success: boolean;
+    message: string;
+    error?: string;
+  }> {
+    return this.callRpc<{ success: boolean; message?: string; error?: string }>(
+      supabase.rpc('promote_to_next_cycle'),
+      { errorMessage: '승급 처리에 실패했습니다.' }
     );
   }
 }

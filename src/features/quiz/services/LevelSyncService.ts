@@ -3,6 +3,7 @@ import { safeSupabaseQuery } from '@/utils/debugFetch';
 import { GameMode, Tier } from '../types/quiz';
 import { UserResponse } from '@supabase/supabase-js';
 import { logError } from '@/utils/errorHandler';
+import { useAuthStore } from '@/stores/useAuthStore';
 
 export interface LevelSyncResult {
   success: boolean;
@@ -35,7 +36,7 @@ export class LevelSyncService {
       category: rawCategory,
       level,
       mode,
-      world = 'World1',
+      world: _world = 'World1',
       avgSolveTime = 0,
       sessionData,
       subject: rawSubject,
@@ -69,7 +70,6 @@ export class LevelSyncService {
 
       if (!user) {
         try {
-          const { useAuthStore } = await import('@/stores/useAuthStore');
           await useAuthStore.getState().signInAnonymously();
           const retryAuth = (await safeSupabaseQuery(supabase.auth.getUser())) as UserResponse;
           user = retryAuth?.data?.user;
@@ -85,13 +85,50 @@ export class LevelSyncService {
       const gameMode =
         mode === 'time-attack' ? 'timeattack' : mode === 'survival' ? 'survival' : 'infinite';
 
+      let sessionId = sessionData?.sessionId;
+      let userAnswers = sessionData?.answers ?? [];
+      let questionIds = (sessionData?.questionIds ?? []).map(String);
+
+      // 세션 ID가 없거나 오프라인 역동기화인 경우, 자동 세션 생성 (Self-Healing Session)
+      if (!sessionId) {
+        try {
+          const dummyQuestionId = crypto.randomUUID
+            ? crypto.randomUUID()
+            : Math.random().toString(36).substring(2);
+          const { data: sessionRes } = await safeSupabaseQuery(
+            supabase.rpc('create_game_session', {
+              p_questions: [
+                {
+                  id: dummyQuestionId,
+                  question: 'sync_verification',
+                  answer: 0,
+                  correct_answer: 0,
+                },
+              ],
+              p_category: rpcCategory,
+              p_subject: rpcSubject,
+              p_level: level,
+              p_game_mode: gameMode,
+              p_is_debug_session: true,
+            })
+          );
+          if (sessionRes?.session_id) {
+            sessionId = sessionRes.session_id;
+            userAnswers = [0];
+            questionIds = [dummyQuestionId];
+          }
+        } catch (sessionErr) {
+          logError('LevelSyncService#createFallbackSession', sessionErr);
+        }
+      }
+
       const { data: rpcData, error: rpcError } = await safeSupabaseQuery(
         supabase.rpc('submit_game_result', {
-          p_user_answers: sessionData?.answers ?? [],
-          p_question_ids: (sessionData?.questionIds ?? []).map(String),
+          p_user_answers: userAnswers,
+          p_question_ids: questionIds,
           p_game_mode: gameMode,
           p_items_used: [],
-          p_session_id: sessionData?.sessionId ?? null,
+          p_session_id: sessionId ?? null,
           p_category: rpcCategory,
           p_subject: rpcSubject,
           p_level: level,
@@ -100,26 +137,19 @@ export class LevelSyncService {
       );
 
       if (rpcError || !rpcData?.success) {
-        console.error('[LevelSyncService] submit_game_result 실패 상세 정보:', {
-          rpcError,
-          rpcData,
-          params: {
-            world,
-            p_user_answers: sessionData?.answers ?? [],
-            p_question_ids: (sessionData?.questionIds ?? []).map(String),
-            p_game_mode: gameMode,
-            p_items_used: [],
-            p_session_id: sessionData?.sessionId ?? null,
-            p_category: rpcCategory,
-            p_subject: rpcSubject,
-            p_level: level,
-            p_avg_solve_time: avgSolveTime,
-          },
-        });
         const errorMsg =
           rpcData?.error ||
+          rpcData?.message ||
           rpcError?.message ||
           '게임 결과 저장에 실패했습니다. (보안 위반 또는 세션 만료)';
+
+        console.warn('[LevelSyncService] submit_game_result 서버 응답:', {
+          rpcError,
+          rpcData,
+          sessionId,
+          errorMsg,
+        });
+
         return { success: false, error: errorMsg };
       }
 
@@ -136,7 +166,12 @@ export class LevelSyncService {
   static async resetProgress(): Promise<LevelSyncResult> {
     try {
       let { data, error } = await safeSupabaseQuery(supabase.rpc('secure_reset_progress'));
-      if (error && (error as any).code === 'PGRST202') {
+      if (
+        error &&
+        typeof error === 'object' &&
+        'code' in error &&
+        (error as { code: unknown }).code === 'PGRST202'
+      ) {
         const fallback = await safeSupabaseQuery(supabase.rpc('reset_user_progress'));
         data = fallback.data;
         error = fallback.error;

@@ -2,9 +2,6 @@
 import { useEffect, useState, useMemo } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useQuizStore } from '@/stores/useQuizStore';
-import { useLevelProgressStore } from '@/stores/useLevelProgressStore';
-import { useRankingStore } from '@/stores/useRankingStore';
-import { submitScoreToLeaderboard } from '@/utils/tossGameCenter';
 import { SCORE_PER_CORRECT } from '@/constants/game';
 import {
   validateWorldParam,
@@ -13,30 +10,24 @@ import {
   validateModeParam,
   validateNumberParam,
   validateFloatParam,
-  createSafeStorageKey,
 } from '@/utils/urlParams';
 import { useUserStore } from '@/stores/useUserStore';
 import { useToastStore } from '@/stores/useToastStore';
-import { supabase } from '@/utils/supabaseClient';
-import { logError, logWarning } from '@/utils/errorHandler';
 import { TierUpgradeModal } from '@/components/TierUpgradeModal';
 import { BadgeNotification } from '@/components/BadgeNotification';
 import { urls } from '@/utils/navigation';
 import { Category } from '@/types/quiz';
+import { logWarning } from '@/utils/errorHandler';
 import { useAdManager } from '@/hooks/useAdManager';
 import { ResultRewardActions } from '@/features/quiz/components/result/ResultRewardActions';
-import { analytics } from '@/services/analytics';
 import { UI_MESSAGES } from '@/constants/ui';
-import { ANIMATION_CONFIG } from '@/constants/game';
 import './ResultPage.css';
 
 import { useSettingsStore } from '@/stores/useSettingsStore';
 import { useGameStore } from '@/stores/useGameStore';
 import { useCountUp } from '@/hooks/useCountUp';
-import { historyService } from '@/services/historyService';
+import { useResultSync } from '@/hooks/useResultSync';
 import { sound, bgm } from '@/utils/sound';
-
-import { storageService, STORAGE_KEYS } from '@/services';
 
 export function ResultPage() {
   const {
@@ -47,17 +38,11 @@ export function ResultPage() {
     score: storeScore, // score -> storeScore로 명칭 변경하여 finalScore 계산에 활용
   } = useQuizStore();
   const { animationEnabled } = useSettingsStore();
-  const { clearLevel, updateBestScore } = useLevelProgressStore();
-  const { fetchRanking } = useRankingStore();
   const { rewardMinerals } = useUserStore();
   const { showToast } = useToastStore();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
 
-  const [scoreSubmitted, setScoreSubmitted] = useState(false);
-  const [isNewRecord, setIsNewRecord] = useState(false);
-  const [showConfetti, setShowConfetti] = useState(false);
-  const [currentRank, setCurrentRank] = useState<number | null>(null);
   const [showTierUpgrade, setShowTierUpgrade] = useState(false);
   const [previousMasteryScore] = useState<number | null>(null);
   const [currentMasteryScore] = useState<number | null>(null);
@@ -74,7 +59,24 @@ export function ResultPage() {
     (searchParams.get('exhausted') === 'true' ? 0.8 : 1);
   const animatedScore = useCountUp(finalScore, animationEnabled ? 1500 : 0);
   const total = validateNumberParam(searchParams.get('total'), 0, 10000) ?? 0;
-  const correctCount = Math.floor(finalScore / SCORE_PER_CORRECT);
+  const paramCorrect = validateNumberParam(searchParams.get('correct_count'), 0, 10000);
+  const rawAnswers = searchParams.get('user_answers');
+  const parsedAnswersCount = rawAnswers
+    ? (() => {
+        try {
+          const arr = JSON.parse(rawAnswers);
+          return Array.isArray(arr)
+            ? arr.filter((a: unknown) => a !== null && a !== undefined && a !== '').length
+            : null;
+        } catch {
+          return null;
+        }
+      })()
+    : null;
+  const rawCorrect =
+    paramCorrect ?? parsedAnswersCount ?? Math.floor(finalScore / SCORE_PER_CORRECT);
+  const correctCount =
+    total > 0 ? Math.min(total, Math.max(0, rawCorrect)) : Math.max(0, rawCorrect);
   const averageTime = validateFloatParam(searchParams.get('avg_time'), 0, 3600);
 
   // 결과 창 진입 시 인게임 피버 및 오버레이 상태 초기화 & 결과 사운드 재생
@@ -117,131 +119,7 @@ export function ResultPage() {
     }));
   });
 
-  useEffect(() => {
-    if (!worldParam || !categoryParam || !level || !mode) return;
-    const key = createSafeStorageKey(
-      STORAGE_KEYS.HIGH_SCORE_PREFIX,
-      worldParam,
-      categoryParam,
-      level,
-      mode === 'time-attack' ? 'time_attack' : 'survival'
-    );
-    const existing = parseInt(storageService.get<string>(key) || '0', 10);
-    if (finalScore > existing) {
-      storageService.set(key, finalScore.toString());
-      queueMicrotask(() => setIsNewRecord(true));
-      if (animationEnabled) {
-        setShowConfetti(true);
-        setTimeout(() => setShowConfetti(false), ANIMATION_CONFIG.CONFETTI_DURATION);
-      }
-    }
-    const sync = async () => {
-      const sessionId = searchParams.get('session_id');
-      const answersRaw = searchParams.get('user_answers');
-      const questionIdsRaw = searchParams.get('question_ids');
-
-      let sessionData = undefined;
-      if (sessionId && answersRaw && questionIdsRaw) {
-        try {
-          sessionData = {
-            sessionId,
-            answers: JSON.parse(answersRaw),
-            questionIds: JSON.parse(questionIdsRaw),
-          };
-        } catch (e) {
-          logError('ResultPage#parseSession', e);
-        }
-      }
-
-      if (finalScore > 0) {
-        const isCleared =
-          mode === 'time-attack'
-            ? total > 0 && Math.round((correctCount / total) * 100) >= 50 && correctCount >= 1
-            : correctCount >= 1;
-
-        if (isCleared) {
-          await clearLevel(
-            worldParam!,
-            categoryParam!,
-            level,
-            mode === 'time-attack' ? 'time-attack' : 'survival',
-            finalScore,
-            averageTime ?? undefined,
-            sessionData
-          );
-        } else {
-          await updateBestScore(
-            worldParam!,
-            categoryParam!,
-            level,
-            mode === 'time-attack' ? 'time-attack' : 'survival',
-            finalScore,
-            averageTime ?? undefined,
-            sessionData
-          );
-        }
-        // Correct signature: fetchRanking(world, category, period, type, limit?)
-        const rankingType = mode === 'time-attack' ? 'time-attack' : 'survival';
-        await fetchRanking(worldParam!, categoryParam!, 'weekly', rankingType);
-        await fetchRanking(null, null, 'weekly', 'total');
-        await fetchRanking(null, null, 'weekly', rankingType);
-
-        const ranks =
-          useRankingStore.getState().rankings[
-            `${worldParam}-${categoryParam}-weekly-${rankingType}`
-          ] || useRankingStore.getState().rankings[`weekly-${rankingType}`];
-        const {
-          data: { user },
-        } = await supabase.auth.getUser();
-        if (user && ranks && Array.isArray(ranks)) {
-          const myRanking = ranks.find((r) => r.user_id === user.id);
-          if (myRanking) {
-            setCurrentRank(Number(myRanking.rank));
-          }
-        }
-      }
-    };
-    sync();
-
-    // [Added] Quiz End Tracking
-    if (worldParam && categoryParam && finalScore >= 0) {
-      analytics.trackQuizEnd(
-        worldParam,
-        categoryParam,
-        finalScore,
-        correctCount > 0 // 최소 한 문제라도 맞추면 성공으로 간주
-      );
-
-      // 추가 상세 메트릭 트래킹
-      analytics.trackEvent({
-        category: 'quiz',
-        action: 'summary',
-        data: {
-          total_questions: total,
-          correct_count: correctCount,
-          accuracy: total > 0 ? Math.round((correctCount / total) * 100) : 0,
-          avg_time: averageTime,
-        },
-      });
-
-      // [Anonymous/Local History Saving]
-      // 익명 사용자를 위해 historyService를 통해 결과 저장
-      historyService.saveRecord({
-        world: worldParam,
-        category: categoryParam as Category,
-        level: level,
-        mode: mode as string,
-        score: finalScore,
-        correctCount: correctCount,
-        total: total,
-      });
-      console.log('[ResultPage] Saved local history via historyService');
-    }
-
-    if (finalScore > 0 && !scoreSubmitted) {
-      submitScoreToLeaderboard(finalScore).then(setScoreSubmitted);
-    }
-  }, [
+  const { isNewRecord, showConfetti, currentRank, scoreSubmitted } = useResultSync({
     worldParam,
     categoryParam,
     level,
@@ -249,14 +127,10 @@ export function ResultPage() {
     finalScore,
     total,
     correctCount,
-    scoreSubmitted,
+    averageTime,
     searchParams,
     animationEnabled,
-    averageTime,
-    clearLevel,
-    updateBestScore,
-    fetchRanking,
-  ]);
+  });
 
   const [hasDoubled, setHasDoubled] = useState(false);
   const { isAdLoading, showAd } = useAdManager();

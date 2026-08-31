@@ -199,7 +199,9 @@ export class BgmEngine {
 
       for (let i = 0; i < length; i++) {
         const decay = Math.exp(-i / (sampleRate * 0.38));
+        // eslint-disable-next-line security/detect-object-injection -- Float32Array buffer loop
         left[i] = (Math.random() * 2 - 1) * decay;
+        // eslint-disable-next-line security/detect-object-injection -- Float32Array buffer loop
         right[i] = (Math.random() * 2 - 1) * decay;
       }
 
@@ -222,6 +224,7 @@ export class BgmEngine {
         const buffer = ctx.createBuffer(1, sampleRate, sampleRate);
         const data = buffer.getChannelData(0);
         for (let i = 0; i < sampleRate; i++) {
+          // eslint-disable-next-line security/detect-object-injection -- Float32Array buffer loop
           data[i] = Math.random() * 2 - 1;
         }
         this.noiseBuffer = buffer;

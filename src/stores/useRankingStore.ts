@@ -32,6 +32,10 @@ interface RankingState {
   unsubscribeFromRankingUpdates: () => void;
 }
 
+/**
+ * [Ranking Store]
+ * 실시간 주간 랭킹 및 역대 시즌 명예의 전당(Leaderboard) 데이터를 관리합니다.
+ */
 export const useRankingStore = create<RankingState>((set, get) => {
   return {
     rankings: {},

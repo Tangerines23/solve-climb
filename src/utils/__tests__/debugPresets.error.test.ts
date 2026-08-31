@@ -32,9 +32,14 @@ vi.mock('../stores/useUserStore', () => ({
   useUserStore: {
     getState: vi.fn(() => ({
       fetchUserData: vi.fn(() => Promise.resolve()),
-      debugSetMinerals: vi.fn(() => Promise.resolve()),
-      debugSetStamina: vi.fn(() => Promise.resolve()),
     })),
+  },
+}));
+
+vi.mock('@/features/debug', () => ({
+  debugUserService: {
+    debugSetMinerals: vi.fn(() => Promise.resolve()),
+    debugSetStamina: vi.fn(() => Promise.resolve()),
   },
 }));
 

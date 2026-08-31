@@ -1,9 +1,18 @@
 import { Difficulty } from '../types/quiz';
+import { safeAccess } from '@/utils/validation';
 
 export interface GeometryProblem {
   question: string;
   answer: number | string;
   inputType?: 'number' | 'decimal' | 'fraction' | 'coordinate';
+  hintType?:
+    | 'transposition'
+    | 'coordinate'
+    | 'calculus'
+    | 'function-machine'
+    | 'integral-tank'
+    | 'shape-visualizer';
+  hintData?: Record<string, unknown>;
 }
 
 function getRandomInt(
@@ -11,7 +20,7 @@ function getRandomInt(
   max: number,
   rng?: { randomInt: (min: number, max: number) => number }
 ): number {
-  if (rng) return rng.randomInt(min, max + 1);
+  if (rng) return rng.randomInt(min, max);
   return Math.floor(Math.random() * (max - min + 1)) + min;
 }
 
@@ -133,7 +142,8 @@ function generateBasicShapes(rng?: {
     { name: '칠각형', vertices: 7 },
     { name: '팔각형', vertices: 8 },
   ];
-  const shape = shapes[getRandomInt(0, shapes.length - 1, rng)];
+  const idx = Math.abs(getRandomInt(0, shapes.length - 1, rng)) % shapes.length;
+  const shape = shapes.at(idx) ?? shapes[0]!;
   return {
     question: '이 도형의 꼭짓점 수 = ?',
     answer: shape.vertices,
@@ -142,7 +152,7 @@ function generateBasicShapes(rng?: {
       sides: shape.vertices,
       shapeName: shape.name,
     },
-  } as any;
+  };
 }
 
 function generateBasicShapesDiagonal(rng?: {
@@ -157,7 +167,7 @@ function generateBasicShapesDiagonal(rng?: {
     { name: '구각형', sides: 9, diagonals: 27 },
   ];
   const idx = Math.abs(getRandomInt(0, shapes.length - 1, rng)) % shapes.length;
-  const shape = shapes[idx] || shapes[0]!;
+  const shape = shapes.at(idx) ?? shapes[0]!;
   return {
     question: `이 도형의 대각선 수 = ?`,
     answer: shape.diagonals,
@@ -167,7 +177,7 @@ function generateBasicShapesDiagonal(rng?: {
       shapeType: 'n-gon',
       shapeName: shape.name,
     },
-  } as any;
+  };
 }
 
 function generateTriangleProperties(rng?: {
@@ -185,7 +195,7 @@ function generateTriangleProperties(rng?: {
       angleA: a,
       angleB: b,
     },
-  } as any;
+  };
 }
 
 function generateQuadrilateralProperties(rng?: {
@@ -193,8 +203,7 @@ function generateQuadrilateralProperties(rng?: {
 }): GeometryProblem {
   const type = getRandomInt(1, 10, rng);
   if (type <= 7) {
-    // 유형 1: 평행사변형 이웃한 각 (180 - a)
-    const a = getRandomInt(3, 15, rng) * 10; // 10단위로 깔끔한 수치 (30° ~ 150°)
+    const a = getRandomInt(3, 15, rng) * 10;
     const b = 180 - a;
     return {
       question: `평행사변형 [한 각 ${a}°] ➔ 이웃한 각 = ?°`,
@@ -204,9 +213,8 @@ function generateQuadrilateralProperties(rng?: {
         shapeType: 'parallelogram',
         angleA: a,
       },
-    } as any;
+    };
   } else {
-    // 유형 2: 사각형 내각의 합 (360 - a - b - c)
     const a = getRandomInt(6, 12, rng) * 10;
     const b = getRandomInt(6, 12, rng) * 10;
     const c = getRandomInt(6, 12, rng) * 10;
@@ -221,7 +229,7 @@ function generateQuadrilateralProperties(rng?: {
         angleB: b,
         angleC: c,
       },
-    } as any;
+    };
   }
 }
 
@@ -239,7 +247,7 @@ function generateAreaRect(rng?: {
       width: w,
       height: h,
     },
-  } as any;
+  };
 }
 
 function generateAreaTriangle(rng?: {
@@ -256,7 +264,7 @@ function generateAreaTriangle(rng?: {
       base: b,
       height: h,
     },
-  } as any;
+  };
 }
 
 function generateCircleBasic(rng?: {
@@ -326,8 +334,9 @@ export function generateSymmetry(rng?: {
     9: '정구각형',
     10: '정십각형',
   };
+  const shapeName = (safeAccess(koreanNames, n) as string | undefined) ?? '정다각형';
   return {
-    question: `${koreanNames[n]} 선대칭축 = ?`,
+    question: `${shapeName} 선대칭축 = ?`,
     answer: n,
   };
 }
@@ -342,7 +351,7 @@ export function generatePythagorean(rng?: {
     { a: 6, b: 8, c: 10 },
     { a: 8, b: 15, c: 17 },
   ];
-  const triple = triples[getRandomInt(0, triples.length - 1, rng)];
+  const triple = triples.at(getRandomInt(0, triples.length - 1, rng)) ?? triples[0]!;
   const randomVal = rng ? rng.random() : Math.random();
   const hide = randomVal > 0.5 ? 'c' : 'b';
 
@@ -404,7 +413,7 @@ function generateCoordinateDistance(rng?: {
     { a: 6, b: 8, c: 10 },
     { a: 8, b: 15, c: 17 },
   ];
-  const triple = triples[getRandomInt(0, triples.length - 1, rng)];
+  const triple = triples.at(getRandomInt(0, triples.length - 1, rng)) ?? triples[0]!;
   const x1 = getRandomInt(-5, 5, rng);
   const y1 = getRandomInt(-5, 5, rng);
   const x2 = x1 + triple.a;
@@ -424,7 +433,7 @@ function generateTrigonometry(rng?: {
     { q: 'tan(45°)', a: '1' },
   ];
   const idx = Math.abs(getRandomInt(0, questions.length - 1, rng)) % questions.length;
-  const item = questions[idx] || questions[0]!;
+  const item = questions.at(idx) ?? questions[0]!;
   return {
     question: `${item.q} 값 = ?`,
     answer: item.a,
@@ -441,7 +450,7 @@ function generatePythagoreanAdvanced(rng?: {
     { a: 11, b: 60, c: 61 },
   ];
   const t =
-    triples[Math.abs(getRandomInt(0, triples.length - 1, rng)) % triples.length] || triples[0]!;
+    triples.at(Math.abs(getRandomInt(0, triples.length - 1, rng)) % triples.length) ?? triples[0]!;
   return {
     question: `직각삼각형 [밑변 ${t.a}, 높이 ${t.b}] ➔ 빗변 = ?`,
     answer: t.c,
@@ -465,7 +474,7 @@ function generateCircleCircumference(rng?: {
   randomInt: (min: number, max: number) => number;
 }): GeometryProblem {
   const radii = [2, 5, 10, 20];
-  const r = radii[Math.abs(getRandomInt(0, radii.length - 1, rng)) % radii.length] || 10;
+  const r = radii.at(Math.abs(getRandomInt(0, radii.length - 1, rng)) % radii.length) ?? 10;
   const answer = Math.round(2 * 3.1 * r * 10) / 10;
   return {
     question: `원 [반지름 ${r}, π=3.1] 둘레 = ?`,
@@ -478,7 +487,7 @@ function generateCircleArea(rng?: {
   randomInt: (min: number, max: number) => number;
 }): GeometryProblem {
   const radii = [2, 5, 10];
-  const r = radii[Math.abs(getRandomInt(0, radii.length - 1, rng)) % radii.length] || 10;
+  const r = radii.at(Math.abs(getRandomInt(0, radii.length - 1, rng)) % radii.length) ?? 10;
   const answer = Math.round(3.1 * r * r * 10) / 10;
   return {
     question: `원 [반지름 ${r}, π=3.1] 넓이 = ?`,
@@ -518,7 +527,7 @@ function generateTrigonometryBasic(rng?: {
     { q: 'cos(60°)', a: '1/2' },
   ];
   const idx = Math.abs(getRandomInt(0, questions.length - 1, rng)) % questions.length;
-  const item = questions[idx] || questions[0]!;
+  const item = questions.at(idx) ?? questions[0]!;
   return {
     question: `${item.q} 값 = ?`,
     answer: item.a,

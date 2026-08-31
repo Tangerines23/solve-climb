@@ -98,6 +98,10 @@ const saveAdminMode = (isAdmin: boolean) => {
 // 프로필에서 관리자 모드 확인 (프로필의 isAdmin 또는 localStorage의 admin-mode)
 const savedAdminMode = loadAdminMode() || (savedProfile?.isAdmin ?? false);
 
+/**
+ * [Profile Store]
+ * 로컬 유저 프로필(다중 프로필 전환), 아바타, 닉네임 상태를 관리합니다.
+ */
 export const useProfileStore = create<ProfileState>((set, get) => ({
   profile: savedProfile,
   isProfileComplete: !!savedProfile && !!savedProfile.nickname,

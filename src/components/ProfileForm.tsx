@@ -2,7 +2,6 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { UserProfile, useProfileStore } from '../stores/useProfileStore';
 import { sanitizeNickname, validateNickname } from '../utils/validation';
-import { logError } from '../utils/errorHandler';
 import './ProfileForm.css';
 
 interface ProfileFormProps {
@@ -88,40 +87,12 @@ export function ProfileForm({ onComplete, showBackButton = false, onCancel }: Pr
     const profileData: UserProfile = {
       profileId: existingProfile?.profileId || '', // 기존 프로필이 있으면 ID 유지, 없으면 빈 문자열 (스토어에서 생성)
       nickname: sanitizedNickname,
-      // email: googleUser?.email,
-      // avatar: googleUser?.picture,
-      // userId: googleUser?.email,
+      userId: existingProfile?.userId,
       createdAt: existingProfile?.createdAt || new Date().toISOString(),
       isAdmin: isAdmin,
     };
 
     setProfile(profileData);
-
-    // [New] Supabase 프로필 닉네임 동기화 (비동기 처리)
-    import('../utils/supabaseClient').then(({ supabase }) => {
-      supabase.auth.getSession().then(({ data: { session } }) => {
-        if (session?.user) {
-          // RPC 함수 호출하여 닉네임 업데이트
-          supabase
-            .rpc('update_profile_nickname', { p_nickname: sanitizedNickname })
-            .then(({ error }) => {
-              if (error) {
-                Promise.resolve(
-                  supabase
-                    .from('profiles')
-                    .update({ nickname: sanitizedNickname, updated_at: new Date().toISOString() })
-                    .eq('id', session.user.id)
-                )
-                  .then(() => console.log('Nickname updated via direct table fallback'))
-                  .catch((err: unknown) => logError('ProfileForm#syncNicknameFallback', err));
-              } else {
-                console.log('Nickname synced to Supabase');
-              }
-            });
-        }
-      });
-    });
-
     onComplete();
   };
 

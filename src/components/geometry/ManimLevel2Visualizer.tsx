@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { useDebugStore } from '../../stores/useDebugStore';
+import { safeAccess } from '../../utils/validation';
 import { ManimCardLayout } from './ManimCardLayout';
 import './GeometryTipVisualizer.css';
 
@@ -99,6 +100,24 @@ export const ManimLevel2Visualizer: React.FC = React.memo(() => {
     DEDUP_RESTORE_DURATION +
     RETRACT_DURATION +
     FINAL_REST_PAUSE;
+
+  // Swipe / Skip Transition Engine (Continuous Seamless Morphing)
+  const triggerStepChange = React.useCallback((direction: 'next' | 'prev') => {
+    setCurrSides((prev) => {
+      const nextSides =
+        direction === 'next' ? (prev === 8 ? 4 : prev + 1) : prev === 4 ? 8 : prev - 1;
+      setPrevSides(prev);
+      return nextSides;
+    });
+    setPhase('morph');
+    setMorphProgress(0);
+    setDrawProgress(0);
+    setRetractProgress(0);
+
+    const state = animStateRef.current;
+    state.startTime = null;
+    state.accumulatedPauseTime = 0;
+  }, []);
 
   useEffect(() => {
     let animId: number;
@@ -215,30 +234,20 @@ export const ManimLevel2Visualizer: React.FC = React.memo(() => {
 
     animId = requestAnimationFrame(tick);
     return () => cancelAnimationFrame(animId);
-  }, [currSides]);
-
-  // Swipe / Skip Transition Engine (Continuous Seamless Morphing)
-  const triggerStepChange = (direction: 'next' | 'prev') => {
-    const nextSides =
-      direction === 'next'
-        ? currSides === 8
-          ? 4
-          : currSides + 1
-        : currSides === 4
-          ? 8
-          : currSides - 1;
-
-    setPrevSides(currSides);
-    setCurrSides(nextSides);
-    setPhase('morph');
-    setMorphProgress(0);
-    setDrawProgress(0);
-    setRetractProgress(0);
-
-    const state = animStateRef.current;
-    state.startTime = null;
-    state.accumulatedPauseTime = 0;
-  };
+  }, [
+    currSides,
+    triggerStepChange,
+    MORPH_MOTION_DURATION,
+    MORPH_TOTAL_DURATION,
+    SINGLE_DRAW_DURATION,
+    SINGLE_HOLD_DURATION,
+    ALL_TOTAL_DURATION,
+    ALL_DRAW_DURATION,
+    DEDUP_HIGHLIGHT_DURATION,
+    DEDUP_RESTORE_DURATION,
+    RETRACT_DURATION,
+    TOTAL_CYCLE,
+  ]);
 
   // Drag Gesture Handlers
   const handlePointerDown = (e: React.PointerEvent) => {
@@ -264,32 +273,36 @@ export const ManimLevel2Visualizer: React.FC = React.memo(() => {
   };
 
   const morphPts = useMemo(() => {
-    const targetBase = PRECOMPUTED_VERTICES[currSides] || computeRegularVertices(currSides);
+    const targetBase =
+      (safeAccess(PRECOMPUTED_VERTICES, currSides) as { x: number; y: number }[] | undefined) ??
+      computeRegularVertices(currSides);
     if (morphProgress >= 1 || prevSides === currSides) {
       return targetBase;
     }
 
-    const startBase = PRECOMPUTED_VERTICES[prevSides] || computeRegularVertices(prevSides);
+    const startBase =
+      (safeAccess(PRECOMPUTED_VERTICES, prevSides) as { x: number; y: number }[] | undefined) ??
+      computeRegularVertices(prevSides);
 
     if (currSides > prevSides) {
       // EXPAND / SPREAD (N -> N+1)
       const initialPoints: { x: number; y: number }[] = [];
       const splitVertexIdx = prevSides === 4 ? 1 : Math.floor(prevSides / 2);
-      const cornerPt = startBase[splitVertexIdx % startBase.length] || startBase[0]!;
+      const cornerPt = startBase.at(splitVertexIdx % startBase.length) ?? startBase[0]!;
 
       for (let i = 0; i < currSides; i++) {
         if (i <= splitVertexIdx) {
-          initialPoints.push(startBase[i] || startBase[startBase.length - 1]!);
+          initialPoints.push(startBase.at(i) ?? startBase[startBase.length - 1]!);
         } else if (i === splitVertexIdx + 1) {
           initialPoints.push(cornerPt);
         } else {
           const srcIdx = (i - 1) % startBase.length;
-          initialPoints.push(startBase[srcIdx] || startBase[0]!);
+          initialPoints.push(startBase.at(srcIdx) ?? startBase[0]!);
         }
       }
 
       return targetBase.map((tPt, i) => {
-        const sPt = initialPoints[i] || startBase[0] || tPt;
+        const sPt = initialPoints.at(i) ?? startBase[0] ?? tPt;
         return {
           x: sPt.x + (tPt.x - sPt.x) * morphProgress,
           y: sPt.y + (tPt.y - sPt.y) * morphProgress,
@@ -300,21 +313,25 @@ export const ManimLevel2Visualizer: React.FC = React.memo(() => {
       const startSides = currSides; // Target smaller shape (e.g. 4)
       const targetSides = prevSides; // Starting larger shape (e.g. 5 or 8)
 
-      const startBase = PRECOMPUTED_VERTICES[startSides] || computeRegularVertices(startSides);
-      const targetBase = PRECOMPUTED_VERTICES[targetSides] || computeRegularVertices(targetSides);
+      const startBase =
+        (safeAccess(PRECOMPUTED_VERTICES, startSides) as { x: number; y: number }[] | undefined) ??
+        computeRegularVertices(startSides);
+      const targetBase =
+        (safeAccess(PRECOMPUTED_VERTICES, targetSides) as { x: number; y: number }[] | undefined) ??
+        computeRegularVertices(targetSides);
 
       const initialPoints: { x: number; y: number }[] = [];
       const splitVertexIdx = startSides === 4 ? 1 : Math.floor(startSides / 2);
-      const cornerPt = startBase[splitVertexIdx % startBase.length] || startBase[0]!;
+      const cornerPt = startBase.at(splitVertexIdx % startBase.length) ?? startBase[0]!;
 
       for (let i = 0; i < targetSides; i++) {
         if (i <= splitVertexIdx) {
-          initialPoints.push(startBase[i] || startBase[startBase.length - 1]!);
+          initialPoints.push(startBase.at(i) ?? startBase[startBase.length - 1]!);
         } else if (i === splitVertexIdx + 1) {
           initialPoints.push(cornerPt);
         } else {
           const srcIdx = (i - 1) % startBase.length;
-          initialPoints.push(startBase[srcIdx] || startBase[0]!);
+          initialPoints.push(startBase.at(srcIdx) ?? startBase[0]!);
         }
       }
 
@@ -322,7 +339,7 @@ export const ManimLevel2Visualizer: React.FC = React.memo(() => {
       const revU = 1 - morphProgress;
 
       return targetBase.map((target, i) => {
-        const start = initialPoints[i] || startBase[0] || target;
+        const start = initialPoints.at(i) ?? startBase[0] ?? target;
         return {
           x: start.x + (target.x - start.x) * revU,
           y: start.y + (target.y - start.y) * revU,
@@ -331,7 +348,8 @@ export const ManimLevel2Visualizer: React.FC = React.memo(() => {
     }
   }, [currSides, prevSides, morphProgress]);
 
-  const activeName = KOREAN_POLYGON_NAMES[currSides] || `${currSides}각형`;
+  const activeName =
+    (safeAccess(KOREAN_POLYGON_NAMES, currSides) as string | undefined) ?? `${currSides}각형`;
 
   // Vertex 0 diagonals
   const vertex0Diagonals = useMemo(() => {
@@ -346,14 +364,18 @@ export const ManimLevel2Visualizer: React.FC = React.memo(() => {
     const pts = morphPts;
     const n = pts.length;
     for (let j = 2; j < n - 1; j++) {
-      res.push({
-        x1: pts[0]!.x,
-        y1: pts[0]!.y,
-        x2: pts[j]!.x,
-        y2: pts[j]!.y,
-        fromIdx: 0,
-        toIdx: j,
-      });
+      const p0 = pts.at(0);
+      const pj = pts.at(j);
+      if (p0 && pj) {
+        res.push({
+          x1: p0.x,
+          y1: p0.y,
+          x2: pj.x,
+          y2: pj.y,
+          fromIdx: 0,
+          toIdx: j,
+        });
+      }
     }
     return res;
   }, [morphPts]);
@@ -373,14 +395,18 @@ export const ManimLevel2Visualizer: React.FC = React.memo(() => {
     for (let i = 0; i < n; i++) {
       for (let j = i + 2; j < n; j++) {
         if (i === 0 && j === n - 1) continue;
-        res.push({
-          x1: pts[i]!.x,
-          y1: pts[i]!.y,
-          x2: pts[j]!.x,
-          y2: pts[j]!.y,
-          fromIdx: i,
-          toIdx: j,
-        });
+        const pi = pts.at(i);
+        const pj = pts.at(j);
+        if (pi && pj) {
+          res.push({
+            x1: pi.x,
+            y1: pi.y,
+            x2: pj.x,
+            y2: pj.y,
+            fromIdx: i,
+            toIdx: j,
+          });
+        }
       }
     }
     return res;

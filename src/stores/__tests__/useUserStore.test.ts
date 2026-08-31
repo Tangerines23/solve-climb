@@ -69,7 +69,7 @@ describe('useUserStore', () => {
   });
 
   describe('updateNickname', () => {
-    it('should call rpc_update_nickname and refresh data', async () => {
+    it('should call update_profile_nickname and refresh data', async () => {
       const mockRpc = vi.mocked(supabase.rpc).mockResolvedValue({
         data: { success: true, message: 'Updated' },
         error: null,
@@ -77,7 +77,7 @@ describe('useUserStore', () => {
 
       const result = await useUserStore.getState().updateNickname('NewName');
 
-      expect(mockRpc).toHaveBeenCalledWith('rpc_update_nickname', { p_nickname: 'NewName' });
+      expect(mockRpc).toHaveBeenCalledWith('update_profile_nickname', { p_nickname: 'NewName' });
       expect(result.success).toBe(true);
     });
 
@@ -262,45 +262,6 @@ describe('useUserStore', () => {
     });
   });
 
-  describe('debug methods', () => {
-    it('debugAddItems should call RPC', async () => {
-      await useUserStore.getState().debugAddItems();
-      expect(supabase.rpc).toHaveBeenCalledWith('debug_grant_items');
-    });
-
-    it('debugResetItems should call RPC', async () => {
-      vi.mocked(supabase.auth.getSession).mockResolvedValue({
-        data: { session: { user: { id: 'user123' } } } as any,
-        error: null,
-      });
-      await useUserStore.getState().debugResetItems();
-      expect(supabase.rpc).toHaveBeenCalledWith('debug_reset_inventory', { p_user_id: 'user123' });
-    });
-
-    it('debugRemoveItems should decrease inventory quantities', async () => {
-      vi.mocked(supabase.auth.getUser).mockResolvedValue({
-        data: { user: { id: 'user123' } } as any,
-        error: null,
-      });
-      vi.mocked(supabase.from).mockReturnValue({
-        select: vi.fn().mockReturnThis(),
-        eq: vi.fn().mockResolvedValue({ data: [{ item_id: 'item1', quantity: 10 }], error: null }),
-      } as any);
-
-      await useUserStore.getState().debugRemoveItems();
-      expect(supabase.rpc).toHaveBeenCalledWith('debug_set_inventory_quantity', expect.any(Object));
-    });
-    it('should handle remove items failure gracefully', async () => {
-      vi.mocked(supabase.from).mockReturnValue({
-        select: vi.fn().mockReturnThis(),
-        eq: vi.fn().mockResolvedValue({ data: null, error: { message: 'DB Error' } }),
-      } as any);
-
-      await useUserStore.getState().debugRemoveItems();
-      expect(supabase.rpc).not.toHaveBeenCalledWith('debug_set_inventory_quantity');
-    });
-  });
-
   describe('checkStamina', () => {
     it('should call check_and_recover_stamina', async () => {
       vi.mocked(supabase.auth.getUser).mockResolvedValue({
@@ -362,20 +323,6 @@ describe('useUserStore', () => {
     });
   });
 
-  describe('debug methods extra', () => {
-    it('debugSetStamina should call RPC and update state', async () => {
-      vi.mocked(supabase.rpc).mockResolvedValue({ data: { success: true }, error: null } as any);
-      await useUserStore.getState().debugSetStamina(50);
-      expect(useUserStore.getState().stamina).toBe(50);
-    });
-
-    it('debugSetMinerals should call RPC and update state', async () => {
-      vi.mocked(supabase.rpc).mockResolvedValue({ data: { success: true }, error: null } as any);
-      await useUserStore.getState().debugSetMinerals(1000);
-      expect(useUserStore.getState().minerals).toBe(1000);
-    });
-  });
-
   describe('unexpected RPC errors', () => {
     it('should handle database crash in consumeItem', async () => {
       vi.mocked(supabase.rpc).mockRejectedValue(new Error('Fatal'));
@@ -390,20 +337,6 @@ describe('useUserStore', () => {
       useUserStore.getState().handleWatchAd();
       expect(logSpy).toHaveBeenCalledWith('Watch Ad called (not implemented)');
       logSpy.mockRestore();
-    });
-
-    it('pause handlers should toggle showPauseModal', () => {
-      const store = useUserStore.getState();
-
-      store.handlePauseClick();
-      expect(useUserStore.getState().showPauseModal).toBe(true);
-
-      store.handlePauseResume();
-      expect(useUserStore.getState().showPauseModal).toBe(false);
-
-      store.handlePauseClick();
-      store.handlePauseExit();
-      expect(useUserStore.getState().showPauseModal).toBe(false);
     });
 
     it('fetchUserData should return early if user is not found', async () => {
@@ -452,25 +385,6 @@ describe('useUserStore', () => {
       expect(state.inventory[0].id).toBe(0);
       expect(state.inventory[0].code).toBe('');
       expect(state.inventory[1].id).toBe(2);
-    });
-
-    it('debug methods should handle anonymous user case', async () => {
-      vi.mocked(supabase.auth.getSession).mockResolvedValue({
-        data: { session: null },
-        error: null,
-      });
-      await useUserStore.getState().debugResetItems();
-      expect(supabase.rpc).toHaveBeenCalledWith('debug_reset_inventory', {
-        p_user_id: 'anonymous-debug-user',
-      });
-
-      vi.mocked(supabase.auth.getUser).mockResolvedValue({ data: { user: null }, error: null });
-      vi.mocked(supabase.from).mockReturnValue({
-        select: vi.fn().mockReturnThis(),
-        eq: vi.fn().mockResolvedValue({ data: [], error: null }),
-      } as any);
-      await useUserStore.getState().debugRemoveItems();
-      // Should handle null userId and empty inventory
     });
   });
 });

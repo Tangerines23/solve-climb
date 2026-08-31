@@ -27,7 +27,7 @@ vi.mock('@/utils/supabaseClient', () => ({
   },
 }));
 
-vi.mock('../../utils/quizGenerator', () => ({
+vi.mock('@/features/quiz', () => ({
   generateQuestion: vi.fn(),
 }));
 

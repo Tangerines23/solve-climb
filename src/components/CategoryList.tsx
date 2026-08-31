@@ -6,7 +6,7 @@ import { useFavoriteStore } from '../stores/useFavoriteStore';
 import { useFeatureFlagStore } from '../stores/useFeatureFlagStore';
 import { UnknownMountainCard } from './UnknownMountainCard';
 import { Toast } from './Toast';
-import { calculateCategoryAltitude } from '../utils/scoreCalculator';
+import { calculateCategoryAltitude } from '@/features/quiz';
 import './CategoryList.css';
 
 export function CategoryList() {
@@ -36,7 +36,7 @@ export function CategoryList() {
     navigate(urls.categorySelect({ mountain: mountainId }));
   };
 
-  const { flags } = useFeatureFlagStore();
+  const flags = useFeatureFlagStore((state) => state.flags);
 
   // 활성화된 산 목록
   const mountains = (

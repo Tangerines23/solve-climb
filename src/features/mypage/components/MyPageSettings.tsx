@@ -27,10 +27,11 @@ interface MyPageSettingsProps {
 const isVersionOlder = (current: string, server: string): boolean => {
   const cParts = current.split('.').map(Number);
   const sParts = server.split('.').map(Number);
+  const maxLen = Math.max(cParts.length, sParts.length);
 
-  for (let i = 0; i < Math.max(cParts.length, sParts.length); i++) {
-    const cVal = cParts[i] || 0;
-    const sVal = sParts[i] || 0;
+  for (let i = 0; i < maxLen; i++) {
+    const cVal = cParts.at(i) ?? 0;
+    const sVal = sParts.at(i) ?? 0;
     if (cVal < sVal) return true;
     if (cVal > sVal) return false;
   }

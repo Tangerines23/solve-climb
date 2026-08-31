@@ -10,7 +10,7 @@ import {
   Tier,
   Mountain,
 } from '../types/quiz';
-import { generateQuestion } from '@/utils/quizGenerator';
+import { generateQuestion } from '../generators/quizGenerator';
 import { useBaseCampStore } from '@/stores/useBaseCampStore';
 import { useDeathNoteStore } from '@/stores/useDeathNoteStore';
 import { SURVIVAL_CONFIG, CATEGORY_CONFIG } from '@/constants/game';
@@ -84,16 +84,15 @@ export function useQuestionGenerator({
       if (missedQuestions.length > 0) {
         // 무작위로 하나 선택하거나 순차적으로? 일단 무작위
         const randomIndex = Math.floor(Math.random() * missedQuestions.length);
-        const q =
-          randomIndex >= 0 && randomIndex < missedQuestions.length
-            ? missedQuestions.at(randomIndex)
-            : missedQuestions[0];
+        const q = missedQuestions.at(randomIndex) ?? missedQuestions[0];
 
-        quizEventBus.emit('QUIZ:QUESTION_GENERATED', {
-          question: q ?? null,
-          questionId: q?.id || generateUUID(),
-        });
-        return;
+        if (q) {
+          quizEventBus.emit('QUIZ:QUESTION_GENERATED', {
+            question: q,
+            questionId: q.id || generateUUID(),
+          });
+          return;
+        }
       }
       // 오답이 없으면 일반 모드로 전환 (콘솔 알림)
       console.log('No missed questions found for smart-retry, falling back to normal mode');
@@ -101,7 +100,7 @@ export function useQuestionGenerator({
 
     // 1.5. 세션 사전 생성 문제 체크 (서버 검증용)
     if (preGeneratedQuestions && totalQuestions < preGeneratedQuestions.length) {
-      const q = preGeneratedQuestions[totalQuestions];
+      const q = preGeneratedQuestions.at(totalQuestions);
       if (q) {
         quizEventBus.emit('QUIZ:QUESTION_GENERATED', {
           question: q,

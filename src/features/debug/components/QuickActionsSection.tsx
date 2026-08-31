@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { supabase } from '@/utils/supabaseClient';
 import { useUserStore } from '@/stores/useUserStore';
 import { useDebugStore } from '@/stores/useDebugStore';
+import { debugUserService } from '../services/debugUserService';
 import { useMyPageStats } from '@/features/mypage';
 import {
   debugPresets,
@@ -22,7 +23,7 @@ import { ConfirmModal } from '@/components/ConfirmModal';
 import './QuickActionsSection.css';
 
 export const QuickActionsSection = React.memo(function QuickActionsSection() {
-  const { minerals, stamina, debugSetStamina, debugSetMinerals } = useUserStore();
+  const { minerals, stamina } = useUserStore();
   const {
     isAdminMode,
     toggleAdminMode,
@@ -97,7 +98,7 @@ export const QuickActionsSection = React.memo(function QuickActionsSection() {
     // 인증 상태 변화 감지 리스너 추가
     const {
       data: { subscription },
-    } = supabase.auth.onAuthStateChange((_event: any, session: any) => {
+    } = supabase.auth.onAuthStateChange((_event, session) => {
       if (session) {
         checkUser();
         // 로그인 시 유저 데이터 리프레시
@@ -132,7 +133,7 @@ export const QuickActionsSection = React.memo(function QuickActionsSection() {
     try {
       const newValue = Math.max(0, stamina + delta);
       setStaminaInput(newValue.toString());
-      await debugSetStamina(newValue);
+      await debugUserService.debugSetStamina(newValue);
     } catch (e) {
       console.error('Failed to update stamina:', e);
     } finally {
@@ -148,7 +149,7 @@ export const QuickActionsSection = React.memo(function QuickActionsSection() {
     const numValue = parseInt(staminaInput, 10);
     if (!isNaN(numValue) && numValue >= 0 && numValue !== stamina) {
       setIsUpdating(true);
-      await debugSetStamina(numValue);
+      await debugUserService.debugSetStamina(numValue);
       setIsUpdating(false);
     } else {
       setStaminaInput(stamina.toString());
@@ -168,7 +169,7 @@ export const QuickActionsSection = React.memo(function QuickActionsSection() {
     try {
       const newValue = Math.max(0, minerals + delta);
       setMineralsInput(newValue.toString());
-      await debugSetMinerals(newValue);
+      await debugUserService.debugSetMinerals(newValue);
     } catch (e) {
       console.error('Failed to update minerals:', e);
     } finally {
@@ -184,7 +185,7 @@ export const QuickActionsSection = React.memo(function QuickActionsSection() {
     const numValue = parseInt(mineralsInput, 10);
     if (!isNaN(numValue) && numValue >= 0 && numValue !== minerals) {
       setIsUpdating(true);
-      await debugSetMinerals(numValue);
+      await debugUserService.debugSetMinerals(numValue);
       setIsUpdating(false);
     } else {
       setMineralsInput(minerals.toString());
@@ -350,16 +351,16 @@ export const QuickActionsSection = React.memo(function QuickActionsSection() {
             <div className="debug-sync-issues">
               <h5 className="debug-sync-issues-title">발견된 문제:</h5>
               <ul className="debug-sync-issues-list">
-                {syncResult.profile.issues.map((issue: any, idx: any) => (
+                {syncResult.profile.issues.map((issue, idx) => (
                   <li key={`profile-${idx}`}>{issue}</li>
                 ))}
-                {syncResult.tier.issues.map((issue: any, idx: any) => (
+                {syncResult.tier.issues.map((issue, idx) => (
                   <li key={`tier-${idx}`}>{issue}</li>
                 ))}
-                {syncResult.badges.issues.map((issue: any, idx: any) => (
+                {syncResult.badges.issues.map((issue, idx) => (
                   <li key={`badges-${idx}`}>{issue}</li>
                 ))}
-                {syncResult.inventory.issues.map((issue: any, idx: any) => (
+                {syncResult.inventory.issues.map((issue, idx) => (
                   <li key={`inventory-${idx}`}>{issue}</li>
                 ))}
               </ul>
@@ -582,7 +583,7 @@ export const QuickActionsSection = React.memo(function QuickActionsSection() {
         )}
 
         <div className="debug-preset-list">
-          {debugPresets.map((preset: any) => (
+          {debugPresets.map((preset) => (
             <div key={preset.id} className="debug-preset-item">
               <button
                 className="debug-preset-button"

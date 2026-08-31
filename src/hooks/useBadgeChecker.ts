@@ -69,7 +69,7 @@ export function useBadgeChecker() {
       // Subject Master
       if (badge.goalThemePart && badge.goalLevel) {
         const hasCleared = stats.categoryLevels.some(
-          (cat: any) => cat.themeId.includes(badge.goalThemePart) && cat.level >= badge.goalLevel
+          (cat) => cat.themeId.includes(badge.goalThemePart!) && cat.level >= badge.goalLevel!
         );
         if (hasCleared) qualified = true;
       }

@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from 'react';
 import { supabase } from '@/utils/supabaseClient';
 import { safeSupabaseQuery } from '@/utils/debugFetch';
 import { useDebugStore } from '@/stores/useDebugStore';
-import { generateQuestion } from '@/utils/quizGenerator';
+import { generateQuestion } from '../generators/quizGenerator';
 import { Mountain, World, Topic, QuizQuestion } from '../types/quiz';
 
 interface UseQuizSessionProps {

@@ -1,16 +1,6 @@
-// src/components/BadgeNotification.tsx
-import React, { useEffect, useState } from 'react';
-import { supabase } from '../utils/supabaseClient';
-import { safeSupabaseQuery } from '../utils/debugFetch';
-import { logError } from '../utils/errorHandler';
+import React, { useEffect } from 'react';
+import { useBadgeStore } from '../stores/useBadgeStore';
 import './BadgeNotification.css';
-
-interface BadgeDefinition {
-  id: string;
-  name: string;
-  description: string | null;
-  emoji: string | null;
-}
 
 interface BadgeNotificationProps {
   badgeIds: string[];
@@ -18,47 +8,29 @@ interface BadgeNotificationProps {
 }
 
 export const BadgeNotification: React.FC<BadgeNotificationProps> = ({ badgeIds, onClose }) => {
-  const [badgeDefs, setBadgeDefs] = useState<BadgeDefinition[]>([]);
-  const [loading, setLoading] = useState(true);
+  const badgeDefinitions = useBadgeStore((state) => state.badgeDefinitions);
+  const fetchBadgeDefinitions = useBadgeStore((state) => state.fetchBadgeDefinitions);
+  const isLoading = useBadgeStore((state) => state.isLoadingDefinitions);
 
   useEffect(() => {
-    const loadBadgeDefinitions = async () => {
-      if (badgeIds.length === 0) {
-        setLoading(false);
-        return;
-      }
+    if (badgeDefinitions.length === 0) {
+      fetchBadgeDefinitions();
+    }
+  }, [badgeDefinitions.length, fetchBadgeDefinitions]);
 
-      try {
-        const { data, error } = await safeSupabaseQuery(
-          supabase
-            .from('badge_definitions')
-            .select('id, name, description, emoji')
-            .in('id', badgeIds)
-        );
-
-        if (error) throw error;
-        setBadgeDefs(data || []);
-      } catch (error) {
-        logError('BadgeNotification', error);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    loadBadgeDefinitions();
-  }, [badgeIds]);
+  const badgeDefs = badgeDefinitions.filter((b) => badgeIds.includes(b.id));
 
   useEffect(() => {
     // 3초 후 자동으로 닫기
-    if (badgeIds.length > 0 && !loading) {
+    if (badgeIds.length > 0 && !isLoading) {
       const timer = setTimeout(() => {
         onClose();
       }, 3000);
       return () => clearTimeout(timer);
     }
-  }, [badgeIds, loading, onClose]);
+  }, [badgeIds, isLoading, onClose]);
 
-  if (badgeIds.length === 0 || loading) return null;
+  if (badgeIds.length === 0 || isLoading) return null;
 
   return (
     <div

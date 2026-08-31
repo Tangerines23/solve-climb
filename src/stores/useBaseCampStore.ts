@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
-import { generateQuestion } from '../utils/quizGenerator';
+import { generateQuestion } from '@/features/quiz';
 import { QuizQuestion, Category } from '../types/quiz';
 
 interface DiagnosticResult {
@@ -22,6 +22,10 @@ interface BaseCampState {
   setCompleted: (completed: boolean) => void;
 }
 
+/**
+ * [BaseCamp Store]
+ * 베이스캠프 진단 테스트 및 카테고리 추천 상태를 관리합니다.
+ */
 export const useBaseCampStore = create<BaseCampState>()(
   persist(
     (set, get) => ({

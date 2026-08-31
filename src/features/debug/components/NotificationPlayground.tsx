@@ -178,7 +178,9 @@ export function NotificationPlayground() {
             </span>
             <select
               value={speedLineStyle}
-              onChange={(e) => setSpeedLineStyle(e.target.value as any)}
+              onChange={(e) =>
+                setSpeedLineStyle(e.target.value as Parameters<typeof setSpeedLineStyle>[0])
+              }
               style={{
                 backgroundColor: 'rgba(255, 255, 255, 0.05)',
                 color: 'var(--color-pure-white)',

@@ -6,6 +6,7 @@ if (typeof Array.prototype.at !== 'function') {
   Object.defineProperty(Array.prototype, 'at', {
     value: function <T>(this: T[], index: number): T | undefined {
       const k = index < 0 ? this.length + index : index;
+      // eslint-disable-next-line security/detect-object-injection
       return k >= 0 && k < this.length ? this[k] : undefined;
     },
     writable: true,

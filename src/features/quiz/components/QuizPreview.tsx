@@ -61,7 +61,7 @@ export function QuizPreview({
   useSystemKeyboard,
 }: QuizPreviewProps) {
   const navigate = useNavigate();
-  const showToast = useToastStore((state: any) => state.showToast);
+  const showToast = useToastStore((state) => state.showToast);
   const [previewKeyboardType, setPreviewKeyboardType] = useState<'custom' | 'qwerty'>(
     () => keyboardType
   );
@@ -98,8 +98,9 @@ export function QuizPreview({
   const displayCategoryPreview = useMemo(() => {
     if (mountainParam) {
       const mountainMap = APP_CONFIG.MOUNTAIN_MAP as Record<string, string>;
-      if (Object.prototype.hasOwnProperty.call(mountainMap, mountainParam)) {
-        return mountainMap[mountainParam];
+      const match = safeAccess(mountainMap, mountainParam) as string | undefined;
+      if (match) {
+        return match;
       }
     }
     if (!categoryParam) return category || '연습';
@@ -108,12 +109,14 @@ export function QuizPreview({
     const mountainMap = APP_CONFIG.MOUNTAIN_MAP as Record<string, string>;
     const categoryMap = APP_CONFIG.CATEGORY_MAP as Record<string, string>;
 
-    if (Object.prototype.hasOwnProperty.call(worldMap, categoryParam))
-      return worldMap[categoryParam];
-    if (Object.prototype.hasOwnProperty.call(mountainMap, categoryParam))
-      return mountainMap[categoryParam];
-    if (Object.prototype.hasOwnProperty.call(categoryMap, categoryParam))
-      return categoryMap[categoryParam];
+    const worldVal = safeAccess(worldMap, categoryParam) as string | undefined;
+    if (worldVal) return worldVal;
+
+    const mountainVal = safeAccess(mountainMap, categoryParam) as string | undefined;
+    if (mountainVal) return mountainVal;
+
+    const catVal = safeAccess(categoryMap, categoryParam) as string | undefined;
+    if (catVal) return catVal;
 
     return category || '연습';
   }, [mountainParam, categoryParam, category]);

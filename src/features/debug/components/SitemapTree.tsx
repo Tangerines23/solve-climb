@@ -12,8 +12,8 @@ interface SiteNode {
 
 // APP_CONFIG 데이터를 기반으로 트리 구조를 동적으로 생성
 const generateSiteStructure = (): SiteNode => {
-  const mathWorlds = APP_CONFIG.WORLDS.filter((w: any) => w.mountainId === 'math');
-  const mathCategories = APP_CONFIG.CATEGORIES.filter((c: any) => c.mountainId === 'math');
+  const mathWorlds = APP_CONFIG.WORLDS.filter((w) => w.mountainId === 'math');
+  const mathCategories = APP_CONFIG.CATEGORIES.filter((c) => c.mountainId === 'math');
 
   return {
     name: '🏠 홈 (Home)',
@@ -24,10 +24,10 @@ const generateSiteStructure = (): SiteNode => {
         name: '⛰️ 수학의 산 (Mathematics)',
         path: '/category-select?mountain=math',
         isOpen: true,
-        children: mathCategories.map((cat: any) => ({
+        children: mathCategories.map((cat) => ({
           name: `${cat.icon} ${cat.name}`,
           isOpen: cat.id === '기초', // 기초 분야만 기본으로 열어둠
-          children: mathWorlds.map((world: any) => {
+          children: mathWorlds.map((world) => {
             // 해당 월드/카테고리에 레벨 데이터가 있는지 확인
             const hasLevels =
               (

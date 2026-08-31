@@ -3,6 +3,7 @@ import { Difficulty } from '../types/quiz';
 export interface CSProblem {
   question: string;
   answer: number | string;
+  inputType?: 'number' | 'decimal' | 'fraction' | 'coordinate';
 }
 
 function getRandomInt(
@@ -10,7 +11,7 @@ function getRandomInt(
   max: number,
   rng?: { randomInt: (min: number, max: number) => number }
 ): number {
-  if (rng) return rng.randomInt(min, max + 1);
+  if (rng) return rng.randomInt(min, max);
   return Math.floor(Math.random() * (max - min + 1)) + min;
 }
 
@@ -256,7 +257,7 @@ function generateBinaryDecimalProblem(rng?: {
     { question: '2진수 소수 덧셈 0.11 + 0.01 의 결과는? (2진수)', answer: '1' },
   ];
   const idx = getRandomInt(0, options.length - 1, rng);
-  const choice = options[idx] ?? options[0];
+  const choice = options.at(idx) ?? options[0];
   return {
     question: choice.question,
     answer: choice.answer,

@@ -31,6 +31,10 @@ const DEFAULT_FLAGS: FeatureFlags = {
   ENABLE_BETA_FEEDBACK: true,
 };
 
+/**
+ * [Dynamic Feature Flag Store]
+ * 애플리케이션의 특정 기능 활성화 상태(A/B 테스트 및 신규 기능 토글)를 관리합니다.
+ */
 export const useFeatureFlagStore = create<FeatureFlagState>()(
   persist(
     (set) => ({

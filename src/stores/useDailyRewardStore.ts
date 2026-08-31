@@ -1,6 +1,7 @@
 import { create } from 'zustand';
 import { supabase } from '../utils/supabaseClient';
 import { safeSupabaseQuery } from '../utils/debugFetch';
+import { useUserStore } from './useUserStore';
 
 interface DailyRewardResult {
   success: boolean;
@@ -18,6 +19,10 @@ interface DailyRewardState {
   closeModal: () => void;
 }
 
+/**
+ * [Daily Reward Store]
+ * 일일 출석 체크, 연속 출석일수 및 보상(미네랄) 수령 상태를 관리합니다.
+ */
 export const useDailyRewardStore = create<DailyRewardState>((set) => ({
   rewardResult: null,
   isLoading: false,
@@ -39,7 +44,12 @@ export const useDailyRewardStore = create<DailyRewardState>((set) => ({
         supabase.rpc('handle_daily_login', { p_user_id: user.id })
       );
 
-      if (error && (error as any).code === 'PGRST202') {
+      if (
+        error &&
+        typeof error === 'object' &&
+        'code' in error &&
+        (error as { code: unknown }).code === 'PGRST202'
+      ) {
         console.warn(
           '[useDailyRewardStore] PGRST202 fallback: calling handle_daily_login() without args'
         );
@@ -59,7 +69,6 @@ export const useDailyRewardStore = create<DailyRewardState>((set) => ({
       // 3. 성공한 경우에만 모달 표시 (오늘 이미 받았으면 success: false)
       if (result && result.success) {
         // 출석 보상 지급에 따른 미네랄 동기화
-        const { useUserStore } = await import('./useUserStore');
         useUserStore.getState().fetchUserData();
 
         set({

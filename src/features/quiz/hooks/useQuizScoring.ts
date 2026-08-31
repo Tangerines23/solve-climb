@@ -1,7 +1,7 @@
 import { useCallback } from 'react';
 import { THEME_MULTIPLIERS, BOSS_LEVEL, BOSS_BONUS, ThemeTier } from '@/constants/game';
 import { APP_CONFIG } from '@/config/app';
-import { getBaseLevelScore } from '@/utils/scoreCalculator';
+import { getBaseLevelScore } from '../utils/scoreCalculator';
 
 /**
  * 퀴즈 점수(거리) 계산을 담당하는 훅

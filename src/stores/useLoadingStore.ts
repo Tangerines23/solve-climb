@@ -21,7 +21,8 @@ interface LoadingState {
 }
 
 /**
- * 전역 로딩 상태 스토어
+ * [Loading Store]
+ * 전역 비동기 작업 로딩 인디케이터 상태를 추적하고 관리합니다.
  */
 export const useLoadingStore = create<LoadingState>((set, get) => ({
   loadingIds: new Set<string>(),

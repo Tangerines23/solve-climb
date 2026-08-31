@@ -32,11 +32,14 @@ const getRedirectUrl = (): string => {
 
   // 네이티브 앱(Capacitor) 환경에서는 capacitor://localhost 같은 스킴이
   // Supabase OAuth 콜백 URL로 작동하지 않으므로 고정 프로덕션 URL 사용.
+  const win =
+    typeof window !== 'undefined'
+      ? (window as unknown as { Capacitor?: { isNativePlatform?: () => boolean } })
+      : undefined;
   const isNativeApp =
-    typeof window !== 'undefined' &&
-    (typeof (window as any).Capacitor?.isNativePlatform === 'function'
-      ? (window as any).Capacitor.isNativePlatform()
-      : Capacitor.isNativePlatform());
+    typeof win?.Capacitor?.isNativePlatform === 'function'
+      ? win.Capacitor.isNativePlatform()
+      : Capacitor.isNativePlatform();
   if (isNativeApp) {
     const siteUrl = ENV.VITE_SITE_URL ?? 'https://solve-climb.vercel.app';
     return `${siteUrl}/auth/callback`;
@@ -73,11 +76,14 @@ const createSupabaseClient = (): SupabaseClient => {
   const isTest =
     typeof process !== 'undefined' &&
     (process.env.NODE_ENV === 'test' || process.env.VITEST === 'true');
+  const win =
+    typeof window !== 'undefined'
+      ? (window as unknown as { Capacitor?: { isNativePlatform?: () => boolean } })
+      : undefined;
   const isNativeApp =
-    typeof window !== 'undefined' &&
-    (typeof (window as any).Capacitor?.isNativePlatform === 'function'
-      ? (window as any).Capacitor.isNativePlatform()
-      : Capacitor.isNativePlatform());
+    typeof win?.Capacitor?.isNativePlatform === 'function'
+      ? win.Capacitor.isNativePlatform()
+      : Capacitor.isNativePlatform();
 
   const options = {
     auth: {

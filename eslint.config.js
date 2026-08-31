@@ -152,16 +152,25 @@ export default [
       ],
     },
     rules: {
-      'boundaries/element-types': [
+      'boundaries/dependencies': [
         'error',
         {
           default: 'allow',
-          rules: [
+          policies: [
             {
-              from: 'feature',
-              disallow: [['feature', { featureName: '!${featureName}' }]],
-              message:
-                '🛡️ [도메인 방어] 서로 다른 피처 도메인 간의 무단 내부 파일 참조는 금지됩니다. (배럴 파일 index.ts 또는 공용 레이어를 통해서만 결합 가능)',
+              from: { element: { type: 'feature' } },
+              disallow: [
+                {
+                  to: {
+                    element: {
+                      type: 'feature',
+                      captured: { featureName: '!{{from.captured.featureName}}' },
+                    },
+                  },
+                  message:
+                    '🛡️ [도메인 방어] 서로 다른 피처 도메인 간의 무단 내부 파일 참조는 금지됩니다. (배럴 파일 index.ts 또는 공용 레이어를 통해서만 결합 가능)',
+                },
+              ],
             },
           ],
         },

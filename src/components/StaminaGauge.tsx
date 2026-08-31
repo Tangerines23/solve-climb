@@ -2,7 +2,7 @@ import { useUserStore } from '../stores/useUserStore';
 import './StaminaGauge.css';
 
 export function StaminaGauge() {
-  const { stamina } = useUserStore();
+  const stamina = useUserStore((state) => state.stamina);
   const maxStamina = 5;
   const percentage = Math.min((stamina / maxStamina) * 100, 100);
 

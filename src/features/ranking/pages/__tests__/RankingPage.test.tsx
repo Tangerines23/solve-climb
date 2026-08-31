@@ -36,11 +36,11 @@ vi.mock('@/components/common/GlassCard', () => ({
   ),
 }));
 
-vi.mock('@/hooks/useRanking', () => ({
+vi.mock('../../hooks/useRanking', () => ({
   useRanking: vi.fn(),
 }));
 
-import { useRanking } from '@/hooks/useRanking';
+import { useRanking } from '../../hooks/useRanking';
 
 const mockUseRanking = useRanking as any;
 

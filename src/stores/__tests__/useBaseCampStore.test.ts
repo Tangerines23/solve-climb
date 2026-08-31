@@ -3,7 +3,7 @@ import { renderHook, act } from '@testing-library/react';
 import { useBaseCampStore } from '../useBaseCampStore';
 
 // Mock generateQuestion
-vi.mock('../utils/quizGenerator', () => ({
+vi.mock('@/features/quiz', () => ({
   generateQuestion: vi.fn((type, world, category, id, difficulty) => ({
     id: id.toString(),
     question: `Question ${id}`,

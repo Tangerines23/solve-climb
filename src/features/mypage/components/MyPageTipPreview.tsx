@@ -1,8 +1,8 @@
 import { useState, useEffect, useCallback } from 'react';
 import { GeometryTipVisualizer } from '@/components/geometry/GeometryTipVisualizer';
 import { WORLD_TIPS, CATEGORY_TIPS, type TipItem } from '@/constants/tips';
-import { generateQuestion } from '@/utils/quizGenerator';
-import { getSolutionProcess } from '@/utils/solutionExplainer';
+import { safeAccess } from '@/utils/validation';
+import { generateQuestion, getSolutionProcess } from '@/features/quiz';
 import { type QuizQuestion, type Topic, type World } from '@/types/quiz';
 import { useToastStore } from '@/stores/useToastStore';
 import './MyPageTipPreview.css';
@@ -87,18 +87,21 @@ export function MyPageTipPreview() {
   const handleWorldMove = (direction: 'prev' | 'next') => {
     if (category !== '기초') return;
 
-    const worlds: WorldType[] = ['World1', 'World2', 'World3', 'World4'];
+    const worlds: readonly WorldType[] = ['World1', 'World2', 'World3', 'World4'] as const;
     const currentIndex = worlds.indexOf(world);
     let newIndex: number;
 
     if (direction === 'prev') {
-      newIndex = currentIndex === 0 ? worlds.length - 1 : currentIndex - 1;
+      newIndex = currentIndex <= 0 ? worlds.length - 1 : currentIndex - 1;
     } else {
-      newIndex = currentIndex === worlds.length - 1 ? 0 : currentIndex + 1;
+      newIndex = currentIndex >= worlds.length - 1 ? 0 : currentIndex + 1;
     }
 
-    setWorld(worlds[newIndex]!);
-    setLevel(1); // 월드 변경 시 레벨 1로 초기화
+    const nextWorld = worlds.at(newIndex);
+    if (nextWorld) {
+      setWorld(nextWorld);
+      setLevel(1); // 월드 변경 시 레벨 1로 초기화
+    }
   };
 
   // 레벨 변경 화살표 동작
@@ -116,9 +119,12 @@ export function MyPageTipPreview() {
     let selectedTip: TipItem | undefined;
 
     if (category === '기초') {
-      selectedTip = WORLD_TIPS[world]?.[level];
+      const worldGroup = safeAccess(WORLD_TIPS, world) as Record<number, TipItem> | undefined;
+      selectedTip = safeAccess(worldGroup, level) as TipItem | undefined;
     } else {
-      selectedTip = CATEGORY_TIPS[category]?.[level];
+      const categoryGroup = safeAccess(CATEGORY_TIPS, category) as
+        Record<number, TipItem> | undefined;
+      selectedTip = safeAccess(categoryGroup, level) as TipItem | undefined;
     }
 
     if (selectedTip) {

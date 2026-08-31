@@ -69,3 +69,6 @@ export class LocalStorageService implements IStorageService {
     return this.storage.getItem(key) !== null;
   }
 }
+
+// 프로덕션용 싱글톤 인스턴스
+export const storageService = new LocalStorageService();

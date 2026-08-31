@@ -60,7 +60,7 @@ export function useRanking() {
 
   useEffect(() => {
     loadRanking();
-  }, [loadRanking]);
+  }, [loadRanking, rankingVersion]);
 
   useEffect(() => {
     if (activePeriod === 'weekly') {

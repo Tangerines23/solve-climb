@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/utils/supabaseClient';
-import { generateQuestion } from '@/utils/quizGenerator';
+import { generateQuestion } from '@/features/quiz';
 import { Category, Topic, Difficulty, QuizQuestion, GameMode } from '@/types/quiz';
 import { useQuizStore } from '@/stores/useQuizStore';
 import './GameFlowSection.css';
