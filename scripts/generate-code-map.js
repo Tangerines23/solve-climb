@@ -1,3 +1,4 @@
+/* eslint-disable security/detect-unsafe-regex */
 import { Project, SyntaxKind } from 'ts-morph';
 import fs from 'fs';
 import path from 'path';
@@ -651,6 +652,13 @@ function extractDynamicDbComments() {
     if (/^[=\-*#\s]+$/.test(raw)) return '';
     // Filter out garbled/corrupted encoding characters (e.g. ?)
     if (/[\uFFFD]|\?{2,}|(?:\?[\uAC00-\uD7AF])|(?:[\uAC00-\uD7AF]\?)/.test(raw)) return '';
+    // Filter out English PR/Commit-like comments, bug fix comments, tautological names
+    if (
+      /^(Fix|Update|Create|Define|New function|This moves|Add|Refactor|Implement)\b/i.test(
+        raw.trim()
+      )
+    )
+      return '';
     let cleaned = raw
       .replace(/^[-/*#\s]+/, '')
       .replace(/^\d+\.\s*/, '')
@@ -700,7 +708,7 @@ function extractDynamicDbComments() {
           ) {
             const firstLine = comment.split('\n').find((l) => cleanComment(l));
             const c = cleanComment(firstLine);
-            if (c) rpcComments[funcName] = c;
+            if (c && c !== funcName) rpcComments[funcName] = c;
           }
         }
       }
@@ -750,6 +758,66 @@ function extractDynamicDbComments() {
 }
 
 const dynamicDbComments = extractDynamicDbComments();
+
+/**
+ * Standard table descriptions dictionary for clean, professional metadata
+ */
+const TABLE_DESCRIPTIONS = {
+  profiles: '사용자 프로필, 닉네임 및 계정 정보 테이블',
+  inventory: '인벤토리 및 아이템 보유 현황 테이블',
+  items: '상점 판매 아이템 카탈로그 및 메타데이터 테이블',
+  game_config: '인게임 환경 및 레벨 설정 파라미터 테이블',
+  game_sessions: '실시간 게임 세션 및 진행 상태 테이블',
+  hall_of_fame: '명예의 전당 시즌 랭킹 기록 테이블',
+  ranking_view: '실시간 랭킹 및 리더보드 통합 뷰',
+  theme_mapping: '테마 및 카테고리 매핑 설정 테이블',
+  tier_definitions: '티어 등급 및 승급 기준 정의 테이블',
+  user_badges: '사용자 획득 뱃지 목록 테이블',
+  user_level_records: '유저별 레벨 클리어 기록 및 최고 점수 테이블',
+  badge_definitions: '뱃지 메타데이터 및 획득 조건 정의 테이블',
+};
+
+/**
+ * Standard RPC descriptions dictionary for clean, professional metadata
+ */
+const RPC_DESCRIPTIONS = {
+  check_and_award_badges: '조건 달성 뱃지 검증 및 지급 RPC',
+  check_and_recover_stamina: '스태미나 회복 쿨다운 확인 및 충전 RPC',
+  consume_item: '인벤토리 아이템 소비 및 차감 RPC',
+  create_game_session: '게임 세션 생성 및 시작 스태미나 차감 RPC',
+  debug_clear_game_records: '게임 플레이 기록 삭제 (디버그) RPC',
+  debug_create_persona_player: '테스트용 페르소나 플레이어 생성 (디버그) RPC',
+  debug_delete_all_dummies: '더미 유저 일괄 삭제 (디버그) RPC',
+  debug_delete_dummy_user: '특정 더미 유저 삭제 (디버그) RPC',
+  debug_grant_badge: '뱃지 강제 지급 (디버그) RPC',
+  debug_grant_items: '아이템 강제 지급 (디버그) RPC',
+  debug_remove_badge: '뱃지 강제 회수 (디버그) RPC',
+  debug_reset_inventory: '인벤토리 초기화 (디버그) RPC',
+  debug_reset_level_progress: '레벨 진행도 초기화 (디버그) RPC',
+  debug_reset_profile: '프로필 정보 초기화 (디버그) RPC',
+  debug_run_play_scenario: '자동 플레이 시나리오 실행 (디버그) RPC',
+  debug_seed_badge_definitions: '뱃지 정의 시드 데이터 주입 (디버그) RPC',
+  debug_set_inventory_quantity: '아이템 수량 강제 설정 (디버그) RPC',
+  debug_set_mastery_score: '숙련도 점수 강제 설정 (디버그) RPC',
+  debug_set_minerals: '미네랄 재화 강제 설정 (디버그) RPC',
+  debug_set_session_timer: '세션 제한시간 강제 설정 (디버그) RPC',
+  debug_set_stamina: '스태미나 수치 강제 설정 (디버그) RPC',
+  debug_set_tier: '티어 등급 강제 설정 (디버그) RPC',
+  get_ranking_v2: '통합 및 모드별 실시간 랭킹 조회 RPC',
+  get_recent_game_logs: '최근 게임 플레이 로그 조회 RPC',
+  get_user_game_stats: '유저 게임 플레이 통계 및 전적 조회 RPC',
+  handle_daily_login: '일일 출석 체크 및 출석 보상 지급 RPC',
+  promote_to_next_cycle: '전설 달성 후 다음 시즌 사이클 승급 RPC',
+  purchase_item: '상점 아이템 구매 및 재화 차감 RPC',
+  reset_user_progress: '유저 레벨 진행도 및 점수 초기화 RPC',
+  restore_default_items: '기본 아이템 카탈로그 복원 RPC',
+  rpc_update_nickname: '유저 닉네임 변경 및 유효성 검증 RPC',
+  secure_reset_progress: '보안 검증 기반 안전한 레벨 기록 초기화 RPC',
+  secure_reward_ad_view: '보상형 광고 시청 검증 및 보상 지급 RPC',
+  submit_game_result: '인게임 결과 제출, 점수 반영 및 통계 업데이트 RPC',
+  update_profile_nickname: '프로필 닉네임 수정 및 동기화 RPC',
+  withdraw_user_account: '회원 탈퇴 및 계정 데이터 삭제 RPC',
+};
 
 /**
  * Domain semantic vocabulary dictionary for dynamic description synthesis (No hardcoded static table list)
@@ -821,6 +889,9 @@ const RPC_VERBS = {
  * Pure dynamic semantic table description generator
  */
 function getTableDescription(tableName) {
+  if (TABLE_DESCRIPTIONS[tableName]) {
+    return TABLE_DESCRIPTIONS[tableName];
+  }
   if (dynamicDbComments.tableComments[tableName]) {
     return dynamicDbComments.tableComments[tableName];
   }
@@ -839,6 +910,9 @@ function getTableDescription(tableName) {
  * Pure dynamic semantic RPC description generator
  */
 function getRpcDescription(rpcName) {
+  if (RPC_DESCRIPTIONS[rpcName]) {
+    return RPC_DESCRIPTIONS[rpcName];
+  }
   if (dynamicDbComments.rpcComments[rpcName]) {
     return dynamicDbComments.rpcComments[rpcName];
   }
@@ -1074,7 +1148,7 @@ function generateMacroArchitectureMap(sourceFiles = []) {
       entryPoints: [],
     };
 
-    // Find actual entryPoints (index.ts first, then pages, then components)
+    // Find actual entryPoints (index.ts first, then pages, then top-level components/files)
     const entryCandidates = [];
     const indexFiles = ['index.ts', 'index.tsx'];
     for (const idx of indexFiles) {
@@ -1093,34 +1167,18 @@ function generateMacroArchitectureMap(sourceFiles = []) {
         }
       }
     }
-    const compDir = path.join(domain.dirPath, 'components');
-    if (fs.existsSync(compDir)) {
-      for (const f of fs.readdirSync(compDir)) {
+    // If no index and no pages, check root domain files
+    if (entryCandidates.length === 0) {
+      for (const f of fs.readdirSync(domain.dirPath)) {
+        const full = path.join(domain.dirPath, f);
         if (
-          (f.endsWith('Layout.tsx') ||
-            f.endsWith('Container.tsx') ||
-            f.endsWith('Panel.tsx') ||
-            f.endsWith('Modal.tsx') ||
-            f.endsWith('Section.tsx') ||
-            f.endsWith('.tsx')) &&
+          fs.statSync(full).isFile() &&
+          (f.endsWith('.tsx') || f.endsWith('.ts')) &&
           !f.includes('.test.') &&
           !f.includes('__tests__')
         ) {
-          entryCandidates.push(
-            path.relative(process.cwd(), path.join(compDir, f)).replace(/\\/g, '/')
-          );
+          entryCandidates.push(path.relative(process.cwd(), full).replace(/\\/g, '/'));
         }
-      }
-    }
-    for (const f of fs.readdirSync(domain.dirPath)) {
-      const full = path.join(domain.dirPath, f);
-      if (
-        fs.statSync(full).isFile() &&
-        (f.endsWith('.tsx') || f.endsWith('.ts')) &&
-        !f.includes('.test.') &&
-        !f.includes('__tests__')
-      ) {
-        entryCandidates.push(path.relative(process.cwd(), full).replace(/\\/g, '/'));
       }
     }
 
@@ -1131,7 +1189,7 @@ function generateMacroArchitectureMap(sourceFiles = []) {
       domainObj.entryPoints = validEntryPoints.slice(0, 10);
     }
 
-    // Dynamic AST scan for stores, direct & indirect dbTables, RPCs, externalIntegrations
+    // Dynamic AST scan for stores, direct dbTables, RPCs, externalIntegrations
     const storesUsed = new Set();
     const tablesUsed = new Set();
     const rpcsUsed = new Set();
@@ -1143,24 +1201,20 @@ function generateMacroArchitectureMap(sourceFiles = []) {
 
       if (!isFileInDomain) continue;
 
-      const fileText = sourceFile.getFullText();
+      // Extract real AST identifiers (ignoring comments/JSDoc)
+      const identifiers = sourceFile.getDescendantsOfKind(SyntaxKind.Identifier);
+      const usedIdentifiers = new Set(identifiers.map((id) => id.getText()));
 
       // Scan for store usages
       for (const storeName of Object.keys(globalStores)) {
-        if (fileText.includes(storeName)) {
+        if (usedIdentifiers.has(storeName)) {
+          if (rel.endsWith(`stores/${storeName}.ts`)) continue;
           storesUsed.add(storeName);
         }
       }
 
-      // Scan for shared module usages (both stores & services) to inherit indirect DB resources
-      for (const [moduleName, res] of Object.entries(sharedModuleDbResources)) {
-        if (fileText.includes(moduleName)) {
-          for (const tbl of res.tables) tablesUsed.add(tbl);
-          for (const rpc of res.rpcs) rpcsUsed.add(rpc);
-        }
-      }
-
       // Direct DB table usages
+      const fileText = sourceFile.getFullText();
       const fromMatches = fileText.matchAll(
         /\.from\s*(?:<[^>]+>)?\s*\(\s*['"`]([a-zA-Z0-9_]+)['"`]\s*\)/g
       );
@@ -1174,6 +1228,16 @@ function generateMacroArchitectureMap(sourceFiles = []) {
       );
       for (const match of rpcMatches) {
         rpcsUsed.add(match[1]);
+      }
+
+      // JSDoc annotations @table and @rpc in domain source files
+      const tableDocMatches = fileText.matchAll(/@table\s+([a-zA-Z0-9_]+)/g);
+      for (const m of tableDocMatches) {
+        tablesUsed.add(m[1]);
+      }
+      const rpcDocMatches = fileText.matchAll(/@rpc\s+([a-zA-Z0-9_]+)/g);
+      for (const m of rpcDocMatches) {
+        rpcsUsed.add(m[1]);
       }
 
       // Dynamic / Tagged external integrations (@integration <Name>)
@@ -1193,7 +1257,9 @@ function generateMacroArchitectureMap(sourceFiles = []) {
       ];
 
       for (const sdk of SDK_PATTERNS) {
-        if (sdk.match.some((keyword) => fileText.includes(keyword))) {
+        if (
+          sdk.match.some((keyword) => usedIdentifiers.has(keyword) || fileText.includes(keyword))
+        ) {
           integrationsUsed.add(sdk.name);
         }
       }

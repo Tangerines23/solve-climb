@@ -281,8 +281,8 @@ export const scheduleBrainAgeStep = ({
       88: 783.99,
       92: 1046.5,
     };
-    const mFreq = melodyMap[localStep];
-    if (mFreq) {
+    const mFreq = safeGet(melodyMap, localStep, 0);
+    if (mFreq > 0) {
       const mOsc = ctx.createOscillator();
       const mGain = ctx.createGain();
       const mFilter = ctx.createBiquadFilter();

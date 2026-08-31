@@ -32,8 +32,9 @@ export const ManimLevel5Visualizer: React.FC = React.memo(() => {
     moveDuration: 1500,
   });
 
-  const currentFrame = RECT_KEYFRAMES[stepIndex]!;
-  const nextFrame = RECT_KEYFRAMES[(stepIndex + 1) % RECT_KEYFRAMES.length]!;
+  const currentFrame = RECT_KEYFRAMES.at(stepIndex) ?? RECT_KEYFRAMES[0]!;
+  const nextFrame =
+    RECT_KEYFRAMES.at((stepIndex + 1) % RECT_KEYFRAMES.length) ?? RECT_KEYFRAMES[0]!;
 
   const eased = getEasedProgress();
   const cols = currentFrame.cols + (nextFrame.cols - currentFrame.cols) * eased;

@@ -4,7 +4,13 @@
  */
 
 // Context & Provider
-export { QuizProvider, useQuiz } from './contexts/QuizContext';
+export {
+  QuizProvider,
+  useQuiz,
+  useQuizDisplayState,
+  useQuizActionHandlers,
+  useQuizModalState,
+} from './contexts/QuizContext';
 
 // Core UI & Layout
 export { QuizLayout } from './components/QuizLayout';

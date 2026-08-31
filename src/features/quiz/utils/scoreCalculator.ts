@@ -1,4 +1,5 @@
 import { useLevelProgressStore, LevelRecord } from '@/stores/useLevelProgressStore';
+import { safeAccess } from '@/utils/validation';
 import { APP_CONFIG } from '@/config/app';
 import { Altitude } from '../domain/Altitude';
 import {
@@ -152,29 +153,25 @@ export function calculateCategoryAltitude(category: string): {
 
   // 1. 호환성 유지: 만약 category가 progress의 최상위 키(World)라면 해당 World 전체 고도 반환
   const typedProgress = progress as unknown as WorldMap;
-  if (Object.prototype.hasOwnProperty.call(typedProgress, category)) {
+  const worldProgress = safeAccess(typedProgress, category) as
+    Record<string, Record<string, LevelRecord>> | undefined;
+  if (worldProgress && typeof worldProgress === 'object') {
     let totalAltitude = 0;
-    const worldProgress = typedProgress[category];
-    if (worldProgress && typeof worldProgress === 'object') {
-      Object.values(worldProgress).forEach((subTopicData) => {
-        if (!subTopicData || typeof subTopicData !== 'object') return;
-        Object.values(subTopicData).forEach((record) => {
-          totalAltitude += getBestScore(record);
-        });
+    Object.values(worldProgress).forEach((subTopicData) => {
+      if (!subTopicData || typeof subTopicData !== 'object') return;
+      Object.values(subTopicData).forEach((record) => {
+        totalAltitude += getBestScore(record);
       });
-    }
+    });
     return { totalAltitude, totalProblems: Math.floor(totalAltitude / SCORE_PER_CORRECT) };
   }
 
   // 2. 일반 케이스: 모든 월드에서 해당 category ID를 찾아 합산
   let totalAltitude = 0;
   Object.values(typedProgress).forEach((worldProgress) => {
-    if (
-      worldProgress &&
-      typeof worldProgress === 'object' &&
-      Object.prototype.hasOwnProperty.call(worldProgress, category)
-    ) {
-      const categoryData = worldProgress[category];
+    if (worldProgress && typeof worldProgress === 'object') {
+      const categoryData = safeAccess(worldProgress, category) as
+        Record<string, LevelRecord> | undefined;
       if (categoryData && typeof categoryData === 'object') {
         Object.values(categoryData).forEach((record) => {
           totalAltitude += getBestScore(record);

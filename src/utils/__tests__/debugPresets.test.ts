@@ -11,6 +11,7 @@ import {
 } from '../debugPresets';
 import { supabase } from '../supabaseClient';
 import { useUserStore } from '../../stores/useUserStore';
+import { debugUserService } from '../../features/debug';
 import { storageService } from '../../services';
 
 vi.mock('../supabaseClient', () => ({
@@ -156,9 +157,8 @@ describe('debugPresets utility', () => {
   describe('executeDebugAction - missing cases', () => {
     it('should handle setTier, setMinerals, setStamina', async () => {
       (supabase.rpc as any).mockResolvedValue({ error: null });
-      const store = useUserStore.getState();
-      const mineralSpy = vi.spyOn(store, 'debugSetMinerals').mockResolvedValue();
-      const staminaSpy = vi.spyOn(store, 'debugSetStamina').mockResolvedValue();
+      const mineralSpy = vi.spyOn(debugUserService, 'debugSetMinerals').mockResolvedValue();
+      const staminaSpy = vi.spyOn(debugUserService, 'debugSetStamina').mockResolvedValue();
 
       await executeDebugAction({ type: 'setTier', level: 5 }, userId);
       expect(supabase.rpc).toHaveBeenCalledWith('debug_set_tier', {

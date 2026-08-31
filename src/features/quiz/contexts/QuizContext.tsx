@@ -936,31 +936,76 @@ export function QuizProvider({ children, params }: QuizProviderProps) {
     ]
   );
 
-  const value = {
-    quizState,
-    quizAnimations,
-    quizHandlers,
-    modalState,
-    modalHandlers,
-    inputRef,
-    feedbackRef,
-    inventory,
-    minerals,
-    isAnonymous,
-    feverLevel,
-    altitudePhase,
-    promiseData,
-    activeItems,
-    usedItems,
-    score,
-    isExhausted,
-    handleTimeUp,
-    setAnswerInput,
-    setDisplayValue,
-    setShowExitConfirm,
-    setIsFadingOut,
-    cancelExitConfirm,
-  };
+  const value = useMemo<QuizContextType>(
+    () => ({
+      quizState,
+      quizAnimations,
+      quizHandlers,
+      modalState,
+      modalHandlers,
+      inputRef,
+      feedbackRef,
+      inventory,
+      minerals,
+      isAnonymous,
+      feverLevel,
+      altitudePhase,
+      promiseData,
+      activeItems,
+      usedItems,
+      score,
+      isExhausted,
+      handleTimeUp,
+      setAnswerInput,
+      setDisplayValue,
+      setShowExitConfirm,
+      setIsFadingOut,
+      cancelExitConfirm,
+    }),
+    [
+      quizState,
+      quizAnimations,
+      quizHandlers,
+      modalState,
+      modalHandlers,
+      inputRef,
+      feedbackRef,
+      inventory,
+      minerals,
+      isAnonymous,
+      feverLevel,
+      altitudePhase,
+      promiseData,
+      activeItems,
+      usedItems,
+      score,
+      isExhausted,
+      handleTimeUp,
+      setAnswerInput,
+      setDisplayValue,
+      setShowExitConfirm,
+      setIsFadingOut,
+      cancelExitConfirm,
+    ]
+  );
 
   return <QuizContext.Provider value={value}>{children}</QuizContext.Provider>;
 }
+
+export const useQuizDisplayState = () => {
+  const context = useContext(QuizContext);
+  if (!context) throw new Error('useQuizDisplayState must be used within a QuizProvider');
+  return context.quizState;
+};
+
+export const useQuizActionHandlers = () => {
+  const context = useContext(QuizContext);
+  if (!context) throw new Error('useQuizActionHandlers must be used within a QuizProvider');
+  return context.quizHandlers;
+};
+
+export const useQuizModalState = () => {
+  const context = useContext(QuizContext);
+  if (!context) throw new Error('useQuizModalState must be used within a QuizProvider');
+  return { modalState: context.modalState, modalHandlers: context.modalHandlers };
+};

@@ -1,6 +1,7 @@
 import { supabase } from './supabaseClient';
 import { useUserStore } from '../stores/useUserStore';
 import { useQuizStore, type TimeLimit } from '../stores/useQuizStore';
+import { debugUserService } from '@/features/debug';
 import { calculateScoreForTier } from './tierUtils';
 import { storageService, STORAGE_KEYS } from '../services';
 
@@ -136,8 +137,7 @@ export async function executeDebugAction(action: DebugAction, userId: string): P
       if (action.value === undefined) {
         throw new Error('setMinerals action requires value');
       }
-      const { debugSetMinerals } = useUserStore.getState();
-      await debugSetMinerals(action.value);
+      await debugUserService.debugSetMinerals(action.value);
       break;
     }
 
@@ -145,8 +145,7 @@ export async function executeDebugAction(action: DebugAction, userId: string): P
       if (action.value === undefined) {
         throw new Error('setStamina action requires value');
       }
-      const { debugSetStamina } = useUserStore.getState();
-      await debugSetStamina(action.value);
+      await debugUserService.debugSetStamina(action.value);
       break;
     }
 

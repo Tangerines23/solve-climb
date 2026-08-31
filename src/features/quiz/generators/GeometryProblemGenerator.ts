@@ -1,4 +1,5 @@
 import { Difficulty } from '../types/quiz';
+import { safeAccess } from '@/utils/validation';
 
 export interface GeometryProblem {
   question: string;
@@ -142,7 +143,7 @@ function generateBasicShapes(rng?: {
     { name: '팔각형', vertices: 8 },
   ];
   const idx = Math.abs(getRandomInt(0, shapes.length - 1, rng)) % shapes.length;
-  const shape = shapes[idx]!;
+  const shape = shapes.at(idx) ?? shapes[0]!;
   return {
     question: '이 도형의 꼭짓점 수 = ?',
     answer: shape.vertices,
@@ -166,7 +167,7 @@ function generateBasicShapesDiagonal(rng?: {
     { name: '구각형', sides: 9, diagonals: 27 },
   ];
   const idx = Math.abs(getRandomInt(0, shapes.length - 1, rng)) % shapes.length;
-  const shape = shapes[idx]!;
+  const shape = shapes.at(idx) ?? shapes[0]!;
   return {
     question: `이 도형의 대각선 수 = ?`,
     answer: shape.diagonals,
@@ -333,9 +334,7 @@ export function generateSymmetry(rng?: {
     9: '정구각형',
     10: '정십각형',
   };
-  const shapeName = Object.prototype.hasOwnProperty.call(koreanNames, n)
-    ? koreanNames[n]
-    : '정다각형';
+  const shapeName = (safeAccess(koreanNames, n) as string | undefined) ?? '정다각형';
   return {
     question: `${shapeName} 선대칭축 = ?`,
     answer: n,

@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef, useMemo, useCallback } from 'react';
 import { useDebugStore } from '../../stores/useDebugStore';
+import { safeAccess } from '../../utils/validation';
 import { ManimCardLayout } from './ManimCardLayout';
 import './GeometryTipVisualizer.css';
 
@@ -85,8 +86,8 @@ export const ManimLevel1Visualizer: React.FC = React.memo(() => {
         direction === 'next'
           ? (idx + 1) % SHAPE_CONFIGS.length
           : (idx - 1 + SHAPE_CONFIGS.length) % SHAPE_CONFIGS.length;
-      const currentConfig = SHAPE_CONFIGS[idx];
-      const nextConfig = SHAPE_CONFIGS[nextIdx];
+      const currentConfig = SHAPE_CONFIGS.at(idx);
+      const nextConfig = SHAPE_CONFIGS.at(nextIdx);
       if (currentConfig && nextConfig) {
         setPrevSides(currentConfig.sides);
         setCurrSides(nextConfig.sides);
@@ -165,33 +166,37 @@ export const ManimLevel1Visualizer: React.FC = React.memo(() => {
   };
 
   const morphPts = useMemo(() => {
-    const targetBase = PRECOMPUTED_VERTICES[currSides] || PRECOMPUTED_VERTICES[3]!;
+    const targetBase =
+      (safeAccess(PRECOMPUTED_VERTICES, currSides) as { x: number; y: number }[] | undefined) ??
+      PRECOMPUTED_VERTICES[3]!;
     if (progress >= 1 || prevSides === currSides) {
       return targetBase;
     }
 
     if (currSides > prevSides) {
       // EXPAND / SPREAD (N -> N+1)
-      const startBase = PRECOMPUTED_VERTICES[prevSides] || PRECOMPUTED_VERTICES[3]!;
+      const startBase =
+        (safeAccess(PRECOMPUTED_VERTICES, prevSides) as { x: number; y: number }[] | undefined) ??
+        PRECOMPUTED_VERTICES[3]!;
       const initialPoints: { x: number; y: number }[] = [];
 
       // Align split vertex along perimeter (top-right side) to prevent central diagonal lines
       const splitVertexIdx = prevSides === 4 ? 1 : Math.floor(prevSides / 2);
-      const cornerPt = startBase[splitVertexIdx % startBase.length] || startBase[0]!;
+      const cornerPt = startBase.at(splitVertexIdx % startBase.length) ?? startBase[0]!;
 
       for (let i = 0; i < currSides; i++) {
         if (i <= splitVertexIdx) {
-          initialPoints.push(startBase[i] || startBase[startBase.length - 1]!);
+          initialPoints.push(startBase.at(i) ?? startBase[startBase.length - 1]!);
         } else if (i === splitVertexIdx + 1) {
           initialPoints.push(cornerPt);
         } else {
           const srcIdx = (i - 1) % startBase.length;
-          initialPoints.push(startBase[srcIdx] || startBase[0]!);
+          initialPoints.push(startBase.at(srcIdx) ?? startBase[0]!);
         }
       }
 
       return targetBase.map((target, i) => {
-        const start = initialPoints[i] || startBase[0] || target;
+        const start = initialPoints.at(i) ?? startBase[0] ?? target;
         return {
           x: start.x + (target.x - start.x) * progress,
           y: start.y + (target.y - start.y) * progress,
@@ -202,21 +207,25 @@ export const ManimLevel1Visualizer: React.FC = React.memo(() => {
       const startSides = currSides; // Target smaller shape (e.g. 4)
       const targetSides = prevSides; // Starting larger shape (e.g. 5 or 8)
 
-      const startBase = PRECOMPUTED_VERTICES[startSides] || PRECOMPUTED_VERTICES[3]!;
-      const targetBase = PRECOMPUTED_VERTICES[targetSides] || PRECOMPUTED_VERTICES[4]!;
+      const startBase =
+        (safeAccess(PRECOMPUTED_VERTICES, startSides) as { x: number; y: number }[] | undefined) ??
+        PRECOMPUTED_VERTICES[3]!;
+      const targetBase =
+        (safeAccess(PRECOMPUTED_VERTICES, targetSides) as { x: number; y: number }[] | undefined) ??
+        PRECOMPUTED_VERTICES[4]!;
 
       const initialPoints: { x: number; y: number }[] = [];
       const splitVertexIdx = startSides === 4 ? 1 : Math.floor(startSides / 2);
-      const cornerPt = startBase[splitVertexIdx % startBase.length] || startBase[0]!;
+      const cornerPt = startBase.at(splitVertexIdx % startBase.length) ?? startBase[0]!;
 
       for (let i = 0; i < targetSides; i++) {
         if (i <= splitVertexIdx) {
-          initialPoints.push(startBase[i] || startBase[startBase.length - 1]!);
+          initialPoints.push(startBase.at(i) ?? startBase[startBase.length - 1]!);
         } else if (i === splitVertexIdx + 1) {
           initialPoints.push(cornerPt);
         } else {
           const srcIdx = (i - 1) % startBase.length;
-          initialPoints.push(startBase[srcIdx] || startBase[0]!);
+          initialPoints.push(startBase.at(srcIdx) ?? startBase[0]!);
         }
       }
 
@@ -224,7 +233,7 @@ export const ManimLevel1Visualizer: React.FC = React.memo(() => {
       const revU = 1 - progress;
 
       return targetBase.map((target, i) => {
-        const start = initialPoints[i] || startBase[0] || target;
+        const start = initialPoints.at(i) ?? startBase[0] ?? target;
         return {
           x: start.x + (target.x - start.x) * revU,
           y: start.y + (target.y - start.y) * revU,
@@ -233,7 +242,7 @@ export const ManimLevel1Visualizer: React.FC = React.memo(() => {
     }
   }, [currSides, prevSides, progress]);
 
-  const currentConfig = SHAPE_CONFIGS[shapeIdx] || SHAPE_CONFIGS[0]!;
+  const currentConfig = SHAPE_CONFIGS.at(shapeIdx) ?? SHAPE_CONFIGS[0]!;
   const ptsStr = useMemo(
     () => morphPts.map((p) => `${p.x.toFixed(1)},${p.y.toFixed(1)}`).join(' '),
     [morphPts]

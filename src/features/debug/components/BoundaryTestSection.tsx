@@ -1,12 +1,11 @@
 import React, { useState } from 'react';
 import { supabase } from '@/utils/supabaseClient';
-import { useUserStore } from '@/stores/useUserStore';
+import { debugUserService } from '../services/debugUserService';
 import { useMyPageStats } from '@/features/mypage';
 import { STATUS_TYPES } from '@/constants/ui';
 import './BoundaryTestSection.css';
 
 export const BoundaryTestSection = React.memo(function BoundaryTestSection() {
-  const { debugSetMinerals, debugSetStamina } = useUserStore();
   const { refetch } = useMyPageStats();
   const [isUpdating, setIsUpdating] = useState(false);
   const [message, setMessage] = useState<{ type: string; text: string } | null>(null);
@@ -17,7 +16,7 @@ export const BoundaryTestSection = React.memo(function BoundaryTestSection() {
     try {
       setIsUpdating(true);
       setMessage(null);
-      await debugSetStamina(value);
+      await debugUserService.debugSetStamina(value);
       setMessage({ type: STATUS_TYPES.SUCCESS, text: `스태미나가 ${value}로 설정되었습니다.` });
     } catch (err) {
       setMessage({
@@ -35,7 +34,7 @@ export const BoundaryTestSection = React.memo(function BoundaryTestSection() {
     try {
       setIsUpdating(true);
       setMessage(null);
-      await debugSetMinerals(value);
+      await debugUserService.debugSetMinerals(value);
       setMessage({
         type: STATUS_TYPES.SUCCESS,
         text: `미네랄이 ${value.toLocaleString()}로 설정되었습니다.`,

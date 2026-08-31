@@ -15,3 +15,4 @@ export { DailyRewardDebugSection } from './components/DailyRewardDebugSection';
 export { StaticUISection } from './components/StaticUISection';
 export { SitemapTree } from './components/SitemapTree';
 export { VisualSection } from './components/VisualSection';
+export { debugUserService } from './services/debugUserService';

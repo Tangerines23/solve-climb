@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { GeometryTipVisualizer } from '@/components/geometry/GeometryTipVisualizer';
 import { WORLD_TIPS, CATEGORY_TIPS, type TipItem } from '@/constants/tips';
+import { safeAccess } from '@/utils/validation';
 import { generateQuestion, getSolutionProcess } from '@/features/quiz';
 import { type QuizQuestion, type Topic, type World } from '@/types/quiz';
 import { useToastStore } from '@/stores/useToastStore';
@@ -96,7 +97,7 @@ export function MyPageTipPreview() {
       newIndex = currentIndex >= worlds.length - 1 ? 0 : currentIndex + 1;
     }
 
-    const nextWorld = worlds[newIndex];
+    const nextWorld = worlds.at(newIndex);
     if (nextWorld) {
       setWorld(nextWorld);
       setLevel(1); // 월드 변경 시 레벨 1로 초기화
@@ -118,21 +119,12 @@ export function MyPageTipPreview() {
     let selectedTip: TipItem | undefined;
 
     if (category === '기초') {
-      const worldGroup = Object.prototype.hasOwnProperty.call(WORLD_TIPS, world)
-        ? WORLD_TIPS[world]
-        : undefined;
-      selectedTip =
-        worldGroup && Object.prototype.hasOwnProperty.call(worldGroup, level)
-          ? worldGroup[level]
-          : undefined;
+      const worldGroup = safeAccess(WORLD_TIPS, world) as Record<number, TipItem> | undefined;
+      selectedTip = safeAccess(worldGroup, level) as TipItem | undefined;
     } else {
-      const categoryGroup = Object.prototype.hasOwnProperty.call(CATEGORY_TIPS, category)
-        ? CATEGORY_TIPS[category]
-        : undefined;
-      selectedTip =
-        categoryGroup && Object.prototype.hasOwnProperty.call(categoryGroup, level)
-          ? categoryGroup[level]
-          : undefined;
+      const categoryGroup = safeAccess(CATEGORY_TIPS, category) as
+        Record<number, TipItem> | undefined;
+      selectedTip = safeAccess(categoryGroup, level) as TipItem | undefined;
     }
 
     if (selectedTip) {

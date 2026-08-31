@@ -1,12 +1,11 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useUserStore } from '@/stores/useUserStore';
+import { debugUserService } from '../services/debugUserService';
 import { builtInMacros, executeMacro, type MacroExecutionResult } from '@/utils/debugMacros';
 import './MacroSection.css';
 
 export const MacroSection = React.memo(function MacroSection() {
   const navigate = useNavigate();
-  const { debugSetStamina, debugSetMinerals } = useUserStore();
 
   const [isRunning, setIsRunning] = useState(false);
   const [currentMacroId, setCurrentMacroId] = useState<string | null>(null);
@@ -22,12 +21,12 @@ export const MacroSection = React.memo(function MacroSection() {
     setProgress({ step: 0, total: macro.steps.length });
     setLastResult(null);
 
-    // 타입 래퍼: store 함수가 비동기 RPC를 호출하므로 그대로 사용
+    // 타입 래퍼: debugUserService 함수가 비동기 RPC를 호출하므로 그대로 사용
     const wrappedSetStamina = async (v: number) => {
-      await debugSetStamina(v);
+      await debugUserService.debugSetStamina(v);
     };
     const wrappedSetMinerals = async (v: number) => {
-      await debugSetMinerals(v);
+      await debugUserService.debugSetMinerals(v);
     };
 
     const result = await executeMacro(

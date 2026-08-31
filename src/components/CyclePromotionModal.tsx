@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { supabase } from '../utils/supabaseClient';
+import { UserRepository } from '../services/UserRepository';
 import { BaseModal } from './BaseModal';
 import { logError } from '../utils/errorHandler';
 import './CyclePromotionModal.css';
@@ -27,16 +27,12 @@ export const CyclePromotionModal: React.FC<CyclePromotionModalProps> = ({
     setError(null);
 
     try {
-      const { data, error: rpcError } = await supabase.rpc('promote_to_next_cycle');
+      const result = await UserRepository.promoteToNextCycle();
 
-      if (rpcError) {
-        throw rpcError;
-      }
-
-      if (data && data.success) {
+      if (result.success) {
         onPromote();
       } else {
-        setError(data?.error || '승급 처리에 실패했습니다.');
+        setError(result.error || result.message || '승급 처리에 실패했습니다.');
       }
     } catch (err) {
       logError('CyclePromotionModal', err);

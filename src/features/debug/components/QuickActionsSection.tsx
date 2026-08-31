@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { supabase } from '@/utils/supabaseClient';
 import { useUserStore } from '@/stores/useUserStore';
 import { useDebugStore } from '@/stores/useDebugStore';
+import { debugUserService } from '../services/debugUserService';
 import { useMyPageStats } from '@/features/mypage';
 import {
   debugPresets,
@@ -22,7 +23,7 @@ import { ConfirmModal } from '@/components/ConfirmModal';
 import './QuickActionsSection.css';
 
 export const QuickActionsSection = React.memo(function QuickActionsSection() {
-  const { minerals, stamina, debugSetStamina, debugSetMinerals } = useUserStore();
+  const { minerals, stamina } = useUserStore();
   const {
     isAdminMode,
     toggleAdminMode,
@@ -132,7 +133,7 @@ export const QuickActionsSection = React.memo(function QuickActionsSection() {
     try {
       const newValue = Math.max(0, stamina + delta);
       setStaminaInput(newValue.toString());
-      await debugSetStamina(newValue);
+      await debugUserService.debugSetStamina(newValue);
     } catch (e) {
       console.error('Failed to update stamina:', e);
     } finally {
@@ -148,7 +149,7 @@ export const QuickActionsSection = React.memo(function QuickActionsSection() {
     const numValue = parseInt(staminaInput, 10);
     if (!isNaN(numValue) && numValue >= 0 && numValue !== stamina) {
       setIsUpdating(true);
-      await debugSetStamina(numValue);
+      await debugUserService.debugSetStamina(numValue);
       setIsUpdating(false);
     } else {
       setStaminaInput(stamina.toString());
@@ -168,7 +169,7 @@ export const QuickActionsSection = React.memo(function QuickActionsSection() {
     try {
       const newValue = Math.max(0, minerals + delta);
       setMineralsInput(newValue.toString());
-      await debugSetMinerals(newValue);
+      await debugUserService.debugSetMinerals(newValue);
     } catch (e) {
       console.error('Failed to update minerals:', e);
     } finally {
@@ -184,7 +185,7 @@ export const QuickActionsSection = React.memo(function QuickActionsSection() {
     const numValue = parseInt(mineralsInput, 10);
     if (!isNaN(numValue) && numValue >= 0 && numValue !== minerals) {
       setIsUpdating(true);
-      await debugSetMinerals(numValue);
+      await debugUserService.debugSetMinerals(numValue);
       setIsUpdating(false);
     } else {
       setMineralsInput(minerals.toString());

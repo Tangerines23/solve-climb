@@ -56,8 +56,9 @@ export const ManimLevel3Visualizer: React.FC = React.memo(() => {
     moveDuration: 1000,
   });
 
-  const currFrame = TRIANGLE_KEYFRAMES[stepIndex]!;
-  const nextFrame = TRIANGLE_KEYFRAMES[(stepIndex + 1) % TRIANGLE_KEYFRAMES.length]!;
+  const currFrame = TRIANGLE_KEYFRAMES.at(stepIndex) ?? TRIANGLE_KEYFRAMES[0]!;
+  const nextFrame =
+    TRIANGLE_KEYFRAMES.at((stepIndex + 1) % TRIANGLE_KEYFRAMES.length) ?? TRIANGLE_KEYFRAMES[0]!;
 
   const eased = getEasedProgress();
 

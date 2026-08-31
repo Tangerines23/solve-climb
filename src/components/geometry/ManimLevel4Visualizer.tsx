@@ -59,8 +59,9 @@ export const ManimLevel4Visualizer: React.FC = React.memo(() => {
     moveDuration: 1500, // 부드러운 1.5초 변형 애니메이션
   });
 
-  const currFrame = QUAD_KEYFRAMES[stepIndex]!;
-  const nextFrame = QUAD_KEYFRAMES[(stepIndex + 1) % QUAD_KEYFRAMES.length]!;
+  const currFrame = QUAD_KEYFRAMES.at(stepIndex) ?? QUAD_KEYFRAMES[0]!;
+  const nextFrame =
+    QUAD_KEYFRAMES.at((stepIndex + 1) % QUAD_KEYFRAMES.length) ?? QUAD_KEYFRAMES[0]!;
 
   const eased = getEasedProgress();
 
