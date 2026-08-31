@@ -54,11 +54,18 @@ async function main() {
 
   const cleanup = () => {
     if (previewProcess) {
-      previewProcess.kill('SIGTERM');
+      try {
+        previewProcess.kill('SIGTERM');
+      } catch {}
       previewProcess = null;
     }
     if (chrome) {
-      chrome.kill().catch(() => {});
+      try {
+        const killResult = chrome.kill();
+        if (killResult && typeof killResult.catch === 'function') {
+          killResult.catch(() => {});
+        }
+      } catch {}
       chrome = null;
     }
   };
@@ -114,7 +121,13 @@ async function main() {
 
   try {
     chrome = await launchChrome({
-      chromeFlags: ['--headless', '--no-sandbox', '--disable-gpu'],
+      chromeFlags: [
+        '--headless',
+        '--no-sandbox',
+        '--disable-gpu',
+        '--disable-dev-shm-usage',
+        '--disable-software-rasterizer',
+      ],
     });
   } catch (err) {
     console.error('❌ Chrome launch failed:', err.message);
@@ -124,8 +137,10 @@ async function main() {
 
   const options = {
     port: chrome.port,
-    logLevel: 'silent',
+    logLevel: 'error',
     output: 'json',
+    maxWaitForFcp: 15000,
+    maxWaitForLoad: 30000,
   };
 
   let runnerResult;
@@ -203,7 +218,9 @@ async function main() {
       console.error(`   ${f.id}: ${f.label} < ${f.minScore * 100}`);
     });
     if (process.env.CI === 'true') {
-      console.warn('\n⚠️ CI environment detected: bypassing exit code 1 to prevent headless Chrome flakiness from breaking the build.');
+      console.warn(
+        '\n⚠️ CI environment detected: bypassing exit code 1 to prevent headless Chrome flakiness from breaking the build.'
+      );
       process.exit(0);
     } else {
       process.exit(1);

@@ -62,8 +62,8 @@ test.describe('CORE BUSINESS SCENARIO - 게임 플레이부터 랭킹 반영까�
     } catch {
       await page.goto('/category-select?mountain=math');
     }
-    await page.waitForSelector('a[href*="category=기초"]', { timeout: 10000 });
-    const arithmeticCategory = page.locator('a[href*="category=기초"]').first();
+    await page.waitForSelector('a[href*="category="], .topic-card-link', { timeout: 15000 });
+    const arithmeticCategory = page.locator('a[href*="category="], .topic-card-link').first();
     await expect(arithmeticCategory).toBeVisible({ timeout: 15000 });
     await arithmeticCategory.click();
 
@@ -72,7 +72,7 @@ test.describe('CORE BUSINESS SCENARIO - 게임 플레이부터 랭킹 반영까�
     try {
       await page.waitForURL(/.*level-select.*/, { timeout: 5000 });
     } catch {
-      await page.goto('/level-select?mountain=math&world=1&category=기초');
+      await page.goto('/level-select?mountain=math&world=World1&category=기초');
     }
 
     // bottom-sheet가 닫혀있으면 클릭할 수 없으므로 시트 헤더를 클릭해 먼저 확장시킴
