@@ -56,7 +56,9 @@ async function main() {
     if (previewProcess) {
       try {
         previewProcess.kill('SIGTERM');
-      } catch {}
+      } catch (_err) {
+        // ignore error during preview cleanup
+      }
       previewProcess = null;
     }
     if (chrome) {
@@ -65,7 +67,9 @@ async function main() {
         if (killResult && typeof killResult.catch === 'function') {
           killResult.catch(() => {});
         }
-      } catch {}
+      } catch (_err) {
+        // ignore error during chrome cleanup
+      }
       chrome = null;
     }
   };

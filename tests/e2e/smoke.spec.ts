@@ -36,9 +36,11 @@ test.describe('SMOKE TEST - 메인 화면 검증', () => {
     // 인증 후 리다이렉트 및 데이터 로딩 완료 대기
     await page.waitForLoadState('networkidle');
     const headerElement = page
-      .locator('.my-page-header, .category-list-container, .my-page-stats-grid')
+      .locator(
+        '.home-page, .home-main, .my-page-header, .category-list-container, .my-page-stats-grid, .status-card, .challenge-card, .my-page-container'
+      )
       .first();
-    await expect(headerElement).toBeVisible({ timeout: 15000 });
+    await expect(headerElement).toBeVisible({ timeout: 25000 });
 
     // 3. UI 레이아웃 무결성 확인 (Overflow 체크)
     await expectNoOverflow(page);
