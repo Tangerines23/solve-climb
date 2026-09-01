@@ -32,6 +32,9 @@ export function RequireAuth({ children }: RequireAuthProps) {
 
   // 세션(또는 게스트 유저)과 프로필 완료 상태 확인 (지연 익명 인증 지원)
   if (!isAuthenticatedOrGuest || !isProfileComplete) {
+    if (location.pathname === urls.myPage()) {
+      return children;
+    }
     return <Navigate to={urls.myPage()} state={{ from: location }} replace />;
   }
 

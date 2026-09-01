@@ -83,4 +83,70 @@ describe('RequireAuth Component', () => {
     expect(screen.queryByText('인증 확인 중...')).toBeNull();
     expect(screen.getByText('Protected Content Without Flash')).toBeInTheDocument();
   });
+
+  it('should redirect to my-page when unauthenticated', () => {
+    vi.mocked(useAuthStore).mockImplementation((selector: any) =>
+      selector({
+        session: null,
+        user: null,
+        isLoading: false,
+      })
+    );
+    vi.mocked(useProfileStore).mockImplementation((selector: any) =>
+      selector({
+        isProfileComplete: false,
+      })
+    );
+
+    render(
+      <MemoryRouter initialEntries={['/protected']}>
+        <Routes>
+          <Route
+            path="/protected"
+            element={
+              <RequireAuth>
+                <div>Protected Content</div>
+              </RequireAuth>
+            }
+          />
+          <Route path="/my-page" element={<div>My Page (Login)</div>} />
+        </Routes>
+      </MemoryRouter>
+    );
+
+    expect(screen.queryByText('Protected Content')).toBeNull();
+    expect(screen.getByText('My Page (Login)')).toBeInTheDocument();
+  });
+
+  it('should render children without redirect loop if already on my-page', () => {
+    vi.mocked(useAuthStore).mockImplementation((selector: any) =>
+      selector({
+        session: null,
+        user: null,
+        isLoading: false,
+      })
+    );
+    vi.mocked(useProfileStore).mockImplementation((selector: any) =>
+      selector({
+        isProfileComplete: false,
+      })
+    );
+
+    render(
+      <MemoryRouter initialEntries={['/my-page']}>
+        <Routes>
+          <Route
+            path="/my-page"
+            element={
+              <RequireAuth>
+                <div>My Page Content</div>
+              </RequireAuth>
+            }
+          />
+        </Routes>
+      </MemoryRouter>
+    );
+
+    expect(screen.getByText('My Page Content')).toBeInTheDocument();
+  });
 });
