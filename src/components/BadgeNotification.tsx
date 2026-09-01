@@ -1,5 +1,6 @@
-import React, { useEffect } from 'react';
-import { useBadgeStore } from '../stores/useBadgeStore';
+import React, { useEffect, useState } from 'react';
+import { supabase } from '../utils/supabaseClient';
+import { useBadgeStore, type BadgeDefinition } from '../stores/useBadgeStore';
 import './BadgeNotification.css';
 
 interface BadgeNotificationProps {
@@ -8,17 +9,60 @@ interface BadgeNotificationProps {
 }
 
 export const BadgeNotification: React.FC<BadgeNotificationProps> = ({ badgeIds, onClose }) => {
-  const badgeDefinitions = useBadgeStore((state) => state.badgeDefinitions);
-  const fetchBadgeDefinitions = useBadgeStore((state) => state.fetchBadgeDefinitions);
-  const isLoading = useBadgeStore((state) => state.isLoadingDefinitions);
+  const [badges, setBadges] = useState<BadgeDefinition[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    if (badgeDefinitions.length === 0) {
-      fetchBadgeDefinitions();
+    if (badgeIds.length === 0) {
+      setBadges([]);
+      setIsLoading(false);
+      return;
     }
-  }, [badgeDefinitions.length, fetchBadgeDefinitions]);
 
-  const badgeDefs = badgeDefinitions.filter((b) => badgeIds.includes(b.id));
+    let isMounted = true;
+    setIsLoading(true);
+
+    const fetchBadges = async () => {
+      try {
+        const { data, error } = await supabase
+          .from('badge_definitions')
+          .select('id, name, description, emoji')
+          .in('id', badgeIds);
+
+        if (!isMounted) return;
+
+        if (error) {
+          console.error('Failed to load badge definitions:', error);
+          const storeDefs = useBadgeStore
+            .getState()
+            .badgeDefinitions.filter((b) => badgeIds.includes(b.id));
+          setBadges(storeDefs);
+        } else if (!data || data.length === 0) {
+          const storeDefs = useBadgeStore
+            .getState()
+            .badgeDefinitions.filter((b) => badgeIds.includes(b.id));
+          setBadges(storeDefs);
+        } else {
+          setBadges(data as BadgeDefinition[]);
+        }
+      } catch (err) {
+        if (!isMounted) return;
+        console.error('Failed to load badge definitions:', err);
+        const storeDefs = useBadgeStore
+          .getState()
+          .badgeDefinitions.filter((b) => badgeIds.includes(b.id));
+        setBadges(storeDefs);
+      } finally {
+        if (isMounted) setIsLoading(false);
+      }
+    };
+
+    fetchBadges();
+
+    return () => {
+      isMounted = false;
+    };
+  }, [badgeIds]);
 
   useEffect(() => {
     // 3초 후 자동으로 닫기
@@ -43,7 +87,7 @@ export const BadgeNotification: React.FC<BadgeNotificationProps> = ({ badgeIds, 
           <h2>🎉 뱃지 획득! 🎉</h2>
         </div>
         <div className="badge-notification-content">
-          {badgeDefs.map((badge) => (
+          {badges.map((badge) => (
             <div key={badge.id} className="badge-notification-item">
               <div className="badge-notification-icon">{badge.emoji || '🏆'}</div>
               <div className="badge-notification-info">

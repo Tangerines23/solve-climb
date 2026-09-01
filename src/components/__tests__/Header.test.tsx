@@ -29,6 +29,15 @@ vi.mock('../DebugPanel', () => ({
   DebugPanel: () => <div>DebugPanel</div>,
 }));
 
+// Helper: mock a Zustand store so that selectors work correctly.
+// When component calls useStore((state) => state.field), the mock
+// calls the selector with the fake state and returns the selected value.
+function mockZustandStore(hookFn: ReturnType<typeof vi.fn>, state: Record<string, unknown>) {
+  hookFn.mockImplementation((selector?: (s: Record<string, unknown>) => unknown) =>
+    selector ? selector(state) : state
+  );
+}
+
 describe('Header', () => {
   const mockNavigate = vi.fn();
   const mockLocation = {
@@ -41,29 +50,32 @@ describe('Header', () => {
   const mockFetchUserData = vi.fn();
   const mockCheckStamina = vi.fn();
 
+  const defaultUserState = {
+    minerals: 1000,
+    stamina: 5,
+    fetchUserData: mockFetchUserData,
+    checkStamina: mockCheckStamina,
+    setMinerals: vi.fn(),
+    setStamina: vi.fn(),
+    recoverMineralsAds: vi.fn().mockResolvedValue({ success: false, message: '' }),
+  };
+
+  const defaultDebugState = {
+    isAdminMode: false,
+    selectedResource: null,
+    toggleAdminMode: vi.fn(),
+    setSelectedResource: vi.fn(),
+    toggleDebugPanel: vi.fn(),
+    isDebugPanelOpen: false,
+  };
+
   beforeEach(() => {
     vi.clearAllMocks();
     vi.mocked(useNavigate).mockReturnValue(mockNavigate);
     vi.mocked(useLocation).mockReturnValue(mockLocation);
-    vi.mocked(useProfileStore).mockReturnValue({
-      isAdmin: false,
-    } as never);
-    vi.mocked(useUserStore).mockReturnValue({
-      minerals: 1000,
-      stamina: 5,
-      fetchUserData: mockFetchUserData,
-      checkStamina: mockCheckStamina,
-      setMinerals: vi.fn(),
-      setStamina: vi.fn(),
-    } as never);
-    vi.mocked(useDebugStore).mockReturnValue({
-      isAdminMode: false,
-      selectedResource: null,
-      toggleAdminMode: vi.fn(),
-      setSelectedResource: vi.fn(),
-      toggleDebugPanel: vi.fn(),
-      isDebugPanelOpen: false,
-    } as never);
+    mockZustandStore(vi.mocked(useProfileStore), { isAdmin: false });
+    mockZustandStore(vi.mocked(useUserStore), defaultUserState);
+    mockZustandStore(vi.mocked(useDebugStore), defaultDebugState);
   });
 
   it('should render header with user data', () => {
@@ -84,9 +96,7 @@ describe('Header', () => {
   });
 
   it('should handle logo double click for admin', () => {
-    vi.mocked(useProfileStore).mockReturnValue({
-      isAdmin: true,
-    } as never);
+    mockZustandStore(vi.mocked(useProfileStore), { isAdmin: true });
 
     render(<Header />);
 
@@ -120,14 +130,10 @@ describe('Header', () => {
   });
 
   it('should not show admin badge when not in admin mode', () => {
-    vi.mocked(useDebugStore).mockReturnValue({
+    mockZustandStore(vi.mocked(useDebugStore), {
+      ...defaultDebugState,
       isAdminMode: false,
-      selectedResource: null,
-      toggleAdminMode: vi.fn(),
-      setSelectedResource: vi.fn(),
-      toggleDebugPanel: vi.fn(),
-      isDebugPanelOpen: false,
-    } as never);
+    });
 
     render(<Header />);
 
@@ -135,14 +141,10 @@ describe('Header', () => {
   });
 
   it('should show admin badge when in admin mode', () => {
-    vi.mocked(useDebugStore).mockReturnValue({
+    mockZustandStore(vi.mocked(useDebugStore), {
+      ...defaultDebugState,
       isAdminMode: true,
-      selectedResource: null,
-      toggleAdminMode: vi.fn(),
-      setSelectedResource: vi.fn(),
-      toggleDebugPanel: vi.fn(),
-      isDebugPanelOpen: false,
-    } as never);
+    });
 
     render(<Header />);
 
@@ -150,9 +152,7 @@ describe('Header', () => {
   });
 
   it('should not navigate on logo click when not admin', () => {
-    vi.mocked(useProfileStore).mockReturnValue({
-      isAdmin: false,
-    } as never);
+    mockZustandStore(vi.mocked(useProfileStore), { isAdmin: false });
 
     render(<Header />);
 
