@@ -53,10 +53,17 @@ export class UserRepository {
       }
 
       if (!data || !data.success) {
+        const errorMsg =
+          (data as { error?: string })?.error ||
+          data?.message ||
+          options.errorMessage ||
+          '요청 처리에 실패했습니다.';
         return {
+          ...(data as Partial<T>),
           success: false,
-          message: data?.message || options.errorMessage || '요청 처리에 실패했습니다.',
-        } as { success: false; message: string } & Partial<T>;
+          error: (data as { error?: string })?.error,
+          message: errorMsg,
+        } as { success: false; message: string; error?: string } & Partial<T>;
       }
 
       return {
@@ -140,7 +147,7 @@ export class UserRepository {
   }> {
     return this.callRpc<{ success: boolean; message?: string; error?: string }>(
       supabase.rpc('promote_to_next_cycle'),
-      { errorMessage: '승급 처리에 실패했습니다.' }
+      { errorMessage: '승급 처리 중 오류가 발생했습니다.' }
     );
   }
 }
