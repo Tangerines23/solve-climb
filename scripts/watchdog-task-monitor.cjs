@@ -2,8 +2,7 @@
 /**
  * @file watchdog-task-monitor.cjs
  * @description 콘솔 프로세스 및 백그라운드 작업 와치도그(Watchdog) 모니터.
- * 무응답 정체 시 프로세스를 무조건 강제 종료하지 않고, 프로세스를 안전하게 유지하면서
- * 5분 주기 체크포인트 알림을 발생시켜 AI 에이전트와 사용자를 깨우고 상태를 점검하도록 유도합니다.
+ * 무응답 정체 시 프로세스를 종료하지 않고 안전하게 유지하며 5분 주기 AI/사용자 점검 알림을 발생시킵니다.
  *
  * 사용법:
  *   node scripts/watchdog-task-monitor.cjs --cmd "<실행할 명령어>" [--interval 300] [--auto-kill]
