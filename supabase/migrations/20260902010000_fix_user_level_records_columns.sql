@@ -6,7 +6,7 @@
 UPDATE public.user_level_records ulr
 SET 
   world_id = COALESCE(ulr.world_id, 'World1'),
-  category_id = COALESCE(ulr.category_id, tm.category, 'math'),
+  category_id = COALESCE(ulr.category_id, SPLIT_PART(tm.theme_id, '_', 1), 'math'),
   subject_id = COALESCE(ulr.subject_id, tm.theme_id, 'math_add')
 FROM public.theme_mapping tm
 WHERE ulr.theme_code = tm.code
