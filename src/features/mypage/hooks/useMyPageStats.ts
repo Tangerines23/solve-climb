@@ -232,115 +232,69 @@ export function useMyPageStats(): UseMyPageStatsResult {
         // 프로필 조회 실패 시에도 기본값으로 계속 진행
       }
 
-      // 방법 1: RPC 함수 사용 (권장 - Supabase에 함수가 생성되어 있는 경우)
+      // 1. user_level_records 기반 레벨 클리어 통계 집계
+      let totalSolved = 0;
+      let maxLevel = 0;
+      let bestSubjectId: string | null = null;
+      let totalMasteryScoreFromRecords = 0;
+
       try {
-        const rpcResult = (await safeSupabaseQuery(
-          supabase.rpc('get_user_game_stats')
-        )) as unknown as { data: RpcStats[] | null; error: PostgrestError | null };
-        const rpcData = rpcResult?.data;
-        const rpcError = rpcResult?.error;
+        const recordsResult = (await safeSupabaseQuery(
+          supabase
+            .from('user_level_records')
+            .select('world_id, category_id, subject_id, level, best_score, theme_code')
+            .eq('user_id', user_id)
+        )) as unknown as {
+          data: Array<{
+            world_id: string;
+            category_id: string;
+            subject_id: string;
+            level: number;
+            best_score: number;
+            theme_code?: number;
+          }> | null;
+          error: PostgrestError | null;
+        };
 
-        if (!rpcError && rpcData && rpcData.length > 0) {
-          const result = rpcData[0];
-          setStats({
-            totalSolved: result.total_solved || 0,
-            maxLevel: result.max_level || 0,
-            bestSubject: result.best_subject || null,
-            totalMasteryScore: profileData?.total_mastery_score || 0,
-            currentTierLevel: profileData?.current_tier_level ?? null,
-            cyclePromotionPending: profileData?.cycle_promotion_pending || false,
-            pendingCycleScore: profileData?.pending_cycle_score || 0,
-            loginStreak: profileData?.login_streak || 0,
-            totalGames: result.total_games || 0,
-            totalCorrect: result.total_correct || 0,
-            totalQuestions: result.total_questions || 0,
-            bestStreak: result.best_streak || 0,
-            avgSolveTime: result.avg_solve_time || 0,
-            lastPlayedAt: result.last_played_at || null,
+        const levelRecords = recordsResult?.data || [];
+        if (levelRecords.length > 0) {
+          totalMasteryScoreFromRecords = levelRecords.reduce(
+            (sum, r) => sum + (r.best_score || 0),
+            0
+          );
+          totalSolved = levelRecords.filter((r) => (r.best_score || 0) > 0).length;
+          maxLevel = Math.max(...levelRecords.map((r) => r.level || 0));
+
+          const subjectScores: Record<string, number> = {};
+          levelRecords.forEach((r) => {
+            const sub = r.subject_id || r.category_id || (r.theme_code === 1 ? 'math_add' : '기초');
+            subjectScores[sub] = (subjectScores[sub] || 0) + (r.best_score || 0);
           });
-          setLoading(false);
-          return;
+          bestSubjectId = Object.entries(subjectScores).sort((a, b) => b[1] - a[1])[0]?.[0] || null;
         }
+      } catch (recErr) {
+        logError('useMyPageStats#fetchLevelRecords', recErr);
+      }
 
-        // RPC 함수가 404를 반환한 경우 (함수가 없거나 접근 불가)
-        if (rpcError && rpcError.code === 'PGRST116') {
-          // 404는 정상적인 폴백 시나리오이므로 경고만 출력
-          console.warn('RPC function not found (404), falling back to direct query');
-        } else if (rpcError) {
-          // 다른 에러는 경고 출력
-          console.warn('RPC function error, falling back to direct query:', rpcError);
+      // 2. get_user_game_stats RPC 호출 및 결과 파싱 (객체/배열 모두 지원)
+      let gameStats: Partial<RpcStats> = {};
+      try {
+        const rpcResult = await safeSupabaseQuery(supabase.rpc('get_user_game_stats'));
+        const rawRpcData = rpcResult?.data;
+        if (!rpcResult?.error && rawRpcData) {
+          const parsed = Array.isArray(rawRpcData) ? rawRpcData[0] : rawRpcData;
+          if (parsed && typeof parsed === 'object') {
+            gameStats = parsed as Partial<RpcStats>;
+          }
         }
       } catch (rpcErr: unknown) {
-        // RPC 함수가 없거나 실패한 경우, 직접 쿼리로 폴백
-        const rpcErrTyped = rpcErr as { status?: number; code?: string };
-        if (rpcErrTyped?.status === 404 || rpcErrTyped?.code === 'PGRST116') {
-          console.warn('RPC function not found (404), falling back to direct query');
-        } else {
-          console.warn('RPC function not available, falling back to direct query:', rpcErr);
-        }
+        console.warn('RPC get_user_game_stats fallback:', rpcErr);
       }
-
-      // 방법 2: user_level_records 기반 직접 쿼리로 집계 (RPC 함수 실패 시 폴백)
-      const recordsResult = (await safeSupabaseQuery(
-        supabase
-          .from('user_level_records')
-          .select('world_id, category_id, subject_id, level, best_score')
-          .eq('user_id', user_id)
-      )) as unknown as {
-        data: Array<{
-          world_id: string;
-          category_id: string;
-          subject_id: string;
-          level: number;
-          best_score: number;
-        }> | null;
-        error: PostgrestError | null;
-      };
-
-      const levelRecords = recordsResult?.data;
-      if (recordsResult.error) throw recordsResult.error;
-
-      if (!levelRecords || levelRecords.length === 0) {
-        setStats({
-          totalSolved: 0,
-          maxLevel: 0,
-          bestSubject: null,
-          totalMasteryScore: profileData?.total_mastery_score || 0,
-          currentTierLevel: profileData?.current_tier_level ?? null,
-          cyclePromotionPending: profileData?.cycle_promotion_pending || false,
-          pendingCycleScore: profileData?.pending_cycle_score || 0,
-          loginStreak: profileData?.login_streak || 0,
-          totalGames: 0,
-          totalCorrect: 0,
-          totalQuestions: 0,
-          bestStreak: 0,
-          avgSolveTime: 0,
-          lastPlayedAt: null,
-        });
-        setLoading(false);
-        return;
-      }
-
-      // 통계 계산
-      const totalMasteryScoreFromRecords = levelRecords.reduce(
-        (sum, r) => sum + (r.best_score || 0),
-        0
-      );
-      const totalSolved = levelRecords.filter((r) => (r.best_score || 0) > 0).length;
-      const maxLevel = Math.max(...levelRecords.map((r) => r.level || 0));
-
-      // 주력 분야: subject_id별 best_score 합계
-      const subjectScores: Record<string, number> = {};
-      levelRecords.forEach((r) => {
-        subjectScores[r.subject_id] = (subjectScores[r.subject_id] || 0) + (r.best_score || 0);
-      });
-
-      const bestSubjectId = Object.entries(subjectScores).sort((a, b) => b[1] - a[1])[0]?.[0];
 
       setStats({
-        totalSolved,
-        maxLevel,
-        bestSubject: bestSubjectId || null,
+        totalSolved: gameStats.total_solved ?? totalSolved,
+        maxLevel: gameStats.max_level ?? maxLevel,
+        bestSubject: gameStats.best_subject ?? bestSubjectId,
         totalMasteryScore: Math.max(
           totalMasteryScoreFromRecords,
           profileData?.total_mastery_score || 0
@@ -349,12 +303,12 @@ export function useMyPageStats(): UseMyPageStatsResult {
         cyclePromotionPending: profileData?.cycle_promotion_pending || false,
         pendingCycleScore: profileData?.pending_cycle_score || 0,
         loginStreak: profileData?.login_streak || 0,
-        totalGames: 0,
-        totalCorrect: 0,
-        totalQuestions: 0,
-        bestStreak: 0,
-        avgSolveTime: 0,
-        lastPlayedAt: null,
+        totalGames: gameStats.total_games || 0,
+        totalCorrect: gameStats.total_correct || 0,
+        totalQuestions: gameStats.total_questions || 0,
+        bestStreak: gameStats.best_streak || 0,
+        avgSolveTime: gameStats.avg_solve_time || 0,
+        lastPlayedAt: gameStats.last_played_at || null,
       });
     } catch (err) {
       logError('useMyPageStats#fetchStats', err);

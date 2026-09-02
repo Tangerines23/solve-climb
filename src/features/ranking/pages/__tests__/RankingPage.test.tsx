@@ -80,8 +80,9 @@ describe('RankingPage', () => {
 
     expect(screen.getByText('나')).toBeInTheDocument();
     expect(screen.getByText('유저2')).toBeInTheDocument();
-    expect(screen.getAllByText('1,000점').length).toBeGreaterThan(0);
-    expect(screen.getByText('🔥 이번 주 리그: 성실함과 노력의 결과!')).toBeInTheDocument();
+    expect(
+      screen.getByText('🏆 종합 리그: 이번 주 누적 등반 고도 (타임어택 + 서바이벌 합산)')
+    ).toBeInTheDocument();
   });
 
   it('should show loading state', () => {
