@@ -69,7 +69,9 @@ function killProcessTree(pid) {
   } catch (_) {
     try {
       process.kill(pid, 'SIGKILL');
-    } catch (_) {}
+    } catch (_err) {
+      // ignore
+    }
   }
 }
 
@@ -150,7 +152,9 @@ if (commandStr) {
     if (fs.existsSync(logFilePath)) {
       lastSize = fs.statSync(logFilePath).size;
     }
-  } catch (_) {}
+  } catch (_) {
+    // ignore
+  }
 
   const timer = setInterval(() => {
     const now = Date.now();
@@ -163,7 +167,9 @@ if (commandStr) {
           lastAlertTriggerTime = now;
         }
       }
-    } catch (_) {}
+    } catch (_) {
+      // ignore
+    }
 
     if (now - lastHeartbeatTime >= heartbeatIntervalMs) {
       elapsedMinutes += 1;
