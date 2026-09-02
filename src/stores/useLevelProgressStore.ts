@@ -367,7 +367,7 @@ export const useLevelProgressStore = create<LevelProgressState>()(
                 const serverKeySet = new Set<string>();
 
                 records.forEach((serverRecord) => {
-                  const world = serverRecord.world_id || 'world1';
+                  const world = serverRecord.world_id || 'World1';
                   const category_id = serverRecord.category_id || '';
                   const subject_id = serverRecord.subject_id || '';
                   const level = serverRecord.level;
@@ -375,7 +375,12 @@ export const useLevelProgressStore = create<LevelProgressState>()(
                   const score = serverRecord.best_score ?? 0;
                   const updated_at = serverRecord.updated_at;
 
-                  const category = `${category_id}_${subject_id}`;
+                  const category =
+                    category_id && subject_id
+                      ? category_id === subject_id
+                        ? category_id
+                        : `${category_id}_${subject_id}`
+                      : category_id || subject_id || 'math_add';
                   serverKeySet.add(`${world}#${category}#${level}#${mode_code}`);
 
                   if (!newProgress[world]) newProgress[world] = {};

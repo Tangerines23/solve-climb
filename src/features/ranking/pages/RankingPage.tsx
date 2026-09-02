@@ -73,14 +73,22 @@ export function RankingPage() {
           <div className="ranking-info">
             {activePeriod === 'weekly' ? (
               <p className="flex items-center gap-2">
-                <span>🔥 이번 주 리그: 성실함과 노력의 결과!</span>
+                <span>
+                  {activeType === 'total'
+                    ? '🏆 종합 리그: 이번 주 누적 등반 고도 (타임어택 + 서바이벌 합산)'
+                    : activeType === 'time-attack'
+                      ? '⚡ 타임어택: 이번 주 단판 최고 기록'
+                      : '🛡️ 서바이벌: 이번 주 단판 최고 생존 기록'}
+                </span>
                 <span className="live-badge">🔴 LIVE</span>
               </p>
             ) : (
               <p className="hof-text">
                 {activeType === 'total'
                   ? '🏛️ 명예의 전당: 역대 주간 시즌 1~3위의 전설적인 기록'
-                  : '⚡ 레전드 기록: 각 분야별 역대 최고의 플레이'}
+                  : activeType === 'time-attack'
+                    ? '⚡ 레전드 기록: 타임어택 역대 최고 플레이'
+                    : '🛡️ 레전드 기록: 서바이벌 역대 최고 생존 기록'}
               </p>
             )}
           </div>
