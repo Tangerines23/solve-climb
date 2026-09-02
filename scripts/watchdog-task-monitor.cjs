@@ -2,12 +2,12 @@
 /**
  * @file watchdog-task-monitor.cjs
  * @description 콘솔 프로세스 및 백그라운드 작업 와치도그(Watchdog) 모니터.
- * 콘솔 출력이나 로그 갱신이 5분(300초) 이상 정체되면 프로세스를 강제 종료하고
- * 상태 확인(Check) 메시지를 출력하여 에이전트/사용자에게 즉시 알립니다.
+ * 무응답 정체 시 프로세스를 무조건 강제 종료하지 않고, 프로세스를 안전하게 유지하면서
+ * 5분 주기 체크포인트 알림을 발생시켜 AI 에이전트와 사용자를 깨우고 상태를 점검하도록 유도합니다.
  *
  * 사용법:
- *   node scripts/watchdog-task-monitor.cjs --cmd "<실행할 명령어>" [--timeout 300]
- *   node scripts/watchdog-task-monitor.cjs --log "<감시할 로그파일>" [--timeout 300]
+ *   node scripts/watchdog-task-monitor.cjs --cmd "<실행할 명령어>" [--interval 300] [--auto-kill]
+ *   node scripts/watchdog-task-monitor.cjs --log "<감시할 로그파일>" [--interval 300]
  */
 
 const { spawn, execSync } = require('child_process');
@@ -17,9 +17,10 @@ const fs = require('fs');
 const args = process.argv.slice(2);
 let commandStr = '';
 let logFilePath = '';
-let timeoutSeconds = 300; // 기본 5분 (300초)
+let alertIntervalSec = 300; // 기본 5분 (300초) 주기 알림
 let checkIntervalMs = 5000; // 5초 주기 정밀 검사
-let heartbeatIntervalMs = 60000; // 1분 주기 진행 상태 확인(Check) 출력
+let heartbeatIntervalMs = 60000; // 1분 주기 진행 하트비트
+let autoKill = false; // 기본값: 프로세스를 강제 종료하지 않고 AI 호출/알림만 수행
 
 for (let i = 0; i < args.length; i++) {
   if (args[i] === '--cmd' && args[i + 1]) {
@@ -28,28 +29,35 @@ for (let i = 0; i < args.length; i++) {
   } else if (args[i] === '--log' && args[i + 1]) {
     logFilePath = args[i + 1];
     i++;
-  } else if (args[i] === '--timeout' && args[i + 1]) {
-    timeoutSeconds = parseInt(args[i + 1], 10) || 300;
+  } else if (args[i] === '--interval' || args[i] === '--timeout') {
+    alertIntervalSec = parseInt(args[i + 1], 10) || 300;
     i++;
+  } else if (args[i] === '--auto-kill') {
+    autoKill = true;
   }
 }
 
 if (!commandStr && !logFilePath) {
   console.log(`
 🚨 [Watchdog Monitor] 사용법:
-  node scripts/watchdog-task-monitor.cjs --cmd "<실행할 명령어>" [--timeout <초단위>]
-  node scripts/watchdog-task-monitor.cjs --log "<감시할 로그파일 경로>" [--timeout <초단위>]
+  node scripts/watchdog-task-monitor.cjs --cmd "<실행할 명령어>" [--interval <초단위>] [--auto-kill]
+  node scripts/watchdog-task-monitor.cjs --log "<감시할 로그파일 경로>" [--interval <초단위>]
+
+옵션:
+  --interval <초>   무응답 경고 및 AI 호출 주기 (기본: 300초 / 5분)
+  --auto-kill       5분 무응답 시 강제 종료 (기본값: false - 프로세스 유지 및 알림만 발생)
 
 예시:
-  node scripts/watchdog-task-monitor.cjs --cmd "npm run check:fast" --timeout 300
-  node scripts/watchdog-task-monitor.cjs --cmd "git push origin main" --timeout 300
+  node scripts/watchdog-task-monitor.cjs --cmd "npm run check:fast" --interval 300
+  node scripts/watchdog-task-monitor.cjs --cmd "git push origin main" --interval 300
 `);
   process.exit(1);
 }
 
-const timeoutMs = timeoutSeconds * 1000;
+const alertIntervalMs = alertIntervalSec * 1000;
 let lastActiveTime = Date.now();
 let lastHeartbeatTime = Date.now();
+let lastAlertTriggerTime = Date.now();
 let elapsedMinutes = 0;
 
 function killProcessTree(pid) {
@@ -66,7 +74,7 @@ function killProcessTree(pid) {
   }
 }
 
-console.log(`🐕 [Watchdog 활성화] 타임아웃 한도: ${timeoutSeconds}초 (5분 무응답 시 자동 Kill 및 알림)`);
+console.log(`🐕 [Watchdog 활성화] 5분 무응답 시 AI 호출/알림 모드 (Auto-Kill: ${autoKill ? 'ON' : 'OFF - 프로세스 보존'})`);
 
 if (commandStr) {
   console.log(`▶️ [Watchdog 실행] "${commandStr}"`);
@@ -80,17 +88,20 @@ if (commandStr) {
 
   child.stdout.on('data', (data) => {
     lastActiveTime = Date.now();
+    lastAlertTriggerTime = Date.now();
     process.stdout.write(data);
   });
 
   child.stderr.on('data', (data) => {
     lastActiveTime = Date.now();
+    lastAlertTriggerTime = Date.now();
     process.stderr.write(data);
   });
 
   const timer = setInterval(() => {
     const now = Date.now();
     const elapsedSinceLastOutput = now - lastActiveTime;
+    const elapsedSinceLastAlert = now - lastAlertTriggerTime;
 
     // 1분 주기 진행 상태 확인 (Heartbeat Check)
     if (now - lastHeartbeatTime >= heartbeatIntervalMs) {
@@ -99,13 +110,21 @@ if (commandStr) {
       console.log(`\n⏳ [Watchdog Check] ${elapsedMinutes}분 경과 — 프로세스(PID: ${child.pid}) 실행 상태 정상 감시 중...`);
     }
 
-    // 5분 타임아웃 감지
-    if (elapsedSinceLastOutput >= timeoutMs) {
-      console.error(`\n🚨 [Watchdog Timeout] 지난 ${timeoutSeconds}초(5분) 동안 새로운 출력이 없어 작업이 정체(Hang)된 것으로 감지되었습니다.`);
-      console.error(`🛑 [상태 확인 및 조치] 정체된 프로세스(PID: ${child.pid})를 강제 종료합니다.`);
-      clearInterval(timer);
-      killProcessTree(child.pid);
-      process.exit(124); // 타임아웃 표준 종료 코드
+    // 5분(alertIntervalSec) 이상 무응답 시 -> AI 및 사용자 호출 알림
+    if (elapsedSinceLastOutput >= alertIntervalMs && elapsedSinceLastAlert >= alertIntervalMs) {
+      lastAlertTriggerTime = now;
+      const quietMinutes = Math.floor(elapsedSinceLastOutput / 60000);
+      
+      console.log(`\n🚨 [Watchdog Alert] 지난 ${quietMinutes}분 동안 새로운 콘솔 출력이 없습니다.`);
+      console.log(`📌 [프로세스 상태] PID ${child.pid} 는 종료되지 않고 백그라운드에서 정상 실행 중입니다.`);
+      console.log(`🔔 [AI 에이전트 & 사용자 점검 요청] 작업이 오래 걸리는 정상 동작인지, 인증 대기/정체인지 상태 확인이 필요합니다.`);
+
+      if (autoKill) {
+        console.error(`🛑 [--auto-kill 활성화됨] 프로세스(PID: ${child.pid})를 강제 종료합니다.`);
+        clearInterval(timer);
+        killProcessTree(child.pid);
+        process.exit(124);
+      }
     }
   }, checkIntervalMs);
 
@@ -142,6 +161,7 @@ if (commandStr) {
         if (stats.size !== lastSize) {
           lastSize = stats.size;
           lastActiveTime = stats.mtimeMs || now;
+          lastAlertTriggerTime = now;
         }
       }
     } catch (_) {}
@@ -152,11 +172,14 @@ if (commandStr) {
       console.log(`\n⏳ [Watchdog Check] ${elapsedMinutes}분 경과 — 로그 파일 감시 중...`);
     }
 
-    const elapsed = now - lastActiveTime;
-    if (elapsed >= timeoutMs) {
-      console.error(`\n🚨 [Watchdog Timeout] 지난 ${timeoutSeconds}초(5분) 동안 로그 갱신이 없습니다.`);
-      clearInterval(timer);
-      process.exit(124);
+    const elapsedSinceLastOutput = now - lastActiveTime;
+    const elapsedSinceLastAlert = now - lastAlertTriggerTime;
+
+    if (elapsedSinceLastOutput >= alertIntervalMs && elapsedSinceLastAlert >= alertIntervalMs) {
+      lastAlertTriggerTime = now;
+      const quietMinutes = Math.floor(elapsedSinceLastOutput / 60000);
+      console.log(`\n🚨 [Watchdog Alert] 지난 ${quietMinutes}분 동안 로그 갱신이 없습니다. (감시 대상: ${logFilePath})`);
+      console.log(`🔔 [AI 에이전트 & 사용자 점검 요청] 상태 확인이 필요합니다.`);
     }
   }, checkIntervalMs);
 }
