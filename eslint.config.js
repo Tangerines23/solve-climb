@@ -1,3 +1,6 @@
+process.env.TYPESCRIPT_ESLINT_EXPERIMENTAL_TSESTREE_SUPPORT_FOR_SUPPORTED_TYPESCRIPT_VERSIONS =
+  'true';
+
 import storybook from 'eslint-plugin-storybook';
 import js from '@eslint/js';
 import globals from 'globals';
