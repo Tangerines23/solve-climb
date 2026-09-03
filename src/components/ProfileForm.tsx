@@ -100,8 +100,10 @@ export function ProfileForm({ onComplete, showBackButton = false, onCancel }: Pr
     <div className="profile-form-container">
       {showBackButton && (
         <button
+          type="button"
           className="btn-icon profile-form-back-button"
           onClick={() => (onCancel ? onCancel() : navigate(-1))}
+          aria-label="뒤로 가기"
         >
           ←
         </button>

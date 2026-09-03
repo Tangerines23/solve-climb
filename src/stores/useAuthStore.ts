@@ -10,6 +10,8 @@ import { useBadgeStore } from './useBadgeStore';
 
 import { analytics } from '@/services/analytics';
 
+import { isValidUUID } from '../utils/validation';
+
 interface AuthState {
   session: Session | null;
   user: User | null;
@@ -18,26 +20,6 @@ interface AuthState {
   signInAnonymously: () => Promise<void>;
   signOut: () => Promise<void>;
 }
-
-const getOrCreateGuestUser = (): User => {
-  let guestId = storageService.get<string>('guest_temp_id');
-  if (!guestId) {
-    guestId =
-      'guest-' +
-      (typeof crypto !== 'undefined' && crypto.randomUUID
-        ? crypto.randomUUID()
-        : Math.random().toString(36).substring(2, 11));
-    storageService.set('guest_temp_id', guestId);
-  }
-  return {
-    id: guestId,
-    app_metadata: { provider: 'anonymous' },
-    user_metadata: { nickname: '익명 등반가' },
-    aud: 'authenticated',
-    created_at: new Date().toISOString(),
-    is_anonymous: true,
-  } as unknown as User;
-};
 
 /**
  * [Auth Store]
@@ -59,22 +41,51 @@ export const useAuthStore = create<AuthState>((set) => ({
     if (sbSession) {
       set({ session: sbSession, user: sbSession.user });
     } else {
-      // 2. 세션이 없으면 DB 생성 없이 로컬 게스트 유저 상태 설정 (최초 제출 시 DB 지연 생성됨)
-      console.log(
-        '[AuthStore] No active session. Local guest user initialized (DB lazy creation enabled).'
+      // 2. 기존에 저장된 로컬 세션이 있는지 확인 (이전에 익명 로그인 등으로 저장된 세션)
+      const localSession = storageService.get<{ userId?: string; nickname?: string }>(
+        STORAGE_KEYS.LOCAL_SESSION
       );
-      const guestUser = getOrCreateGuestUser();
-      storageService.set(STORAGE_KEYS.LOCAL_SESSION, {
-        userId: guestUser.id,
-        nickname: '익명 등반가',
-        isAnonymous: true,
-      });
-      set({ session: null, user: guestUser });
+      if (
+        localSession?.userId &&
+        (isValidUUID(localSession.userId) || String(localSession.userId).startsWith('guest-'))
+      ) {
+        const guestUser = {
+          id: localSession.userId,
+          app_metadata: { provider: 'anonymous' },
+          user_metadata: { nickname: localSession.nickname || '익명 등반가' },
+          aud: 'authenticated',
+          created_at: new Date().toISOString(),
+          is_anonymous: true,
+        } as unknown as User;
+        set({ session: null, user: guestUser });
+      } else {
+        // 비로그인 상태 (최초 방문 또는 로그아웃 상태)
+        set({ session: null, user: null });
+      }
     }
 
     // Listen for auth changes
     supabase.auth.onAuthStateChange((event, session) => {
-      const user = session?.user ?? (event === 'SIGNED_OUT' ? null : getOrCreateGuestUser());
+      let user: User | null = session?.user ?? null;
+
+      if (!user && event !== 'SIGNED_OUT') {
+        const localSession = storageService.get<{ userId?: string; nickname?: string }>(
+          STORAGE_KEYS.LOCAL_SESSION
+        );
+        if (
+          localSession?.userId &&
+          (isValidUUID(localSession.userId) || String(localSession.userId).startsWith('guest-'))
+        ) {
+          user = {
+            id: localSession.userId,
+            app_metadata: { provider: 'anonymous' },
+            user_metadata: { nickname: localSession.nickname || '익명 등반가' },
+            aud: 'authenticated',
+            created_at: new Date().toISOString(),
+            is_anonymous: true,
+          } as unknown as User;
+        }
+      }
 
       set({ session, user, isLoading: false });
 

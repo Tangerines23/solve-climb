@@ -82,16 +82,23 @@ export function useCustomBackNavigation() {
             isHandlingPopStateRef.current = false;
           }, 100);
           return;
-        } else {
-          // 마이페이지인데 프로필 미완성(로그인 단계)일 경우 홈으로 보내지 않음 (앱 이탈 허용)
+        } else if (pathToCheck === APP_CONFIG.ROUTES.MY_PAGE) {
+          // 마이페이지 뒤로가기 커스텀 이벤트 전달 (열려 있는 프로필 폼/모달 닫기)
+          const customEvent = new CustomEvent('mypage-back-button');
+          window.dispatchEvent(customEvent);
+
+          // 마이페이지인데 프로필 미완성(로그인 단계)일 경우 홈으로 보내지 않음
           const profileStore = useProfileStore.getState();
-          if (pathToCheck === APP_CONFIG.ROUTES.MY_PAGE && !profileStore.isProfileComplete) {
+          if (!profileStore.isProfileComplete) {
             setTimeout(() => {
               isHandlingPopStateRef.current = false;
             }, 100);
             return;
           }
 
+          // 완성된 프로필인 경우 마이페이지에서 뒤로가기 → 홈으로 이동
+          navigate(APP_CONFIG.ROUTES.HOME, { replace: true });
+        } else {
           // 다른 메인 페이지에서 뒤로가기 → 홈으로 이동
           navigate(APP_CONFIG.ROUTES.HOME, { replace: true });
         }

@@ -86,8 +86,7 @@ describe('useAuthStore', () => {
     expect(supabase.auth.signInAnonymously).not.toHaveBeenCalled();
     const { session, user } = useAuthStore.getState();
     expect(session).toBeNull();
-    expect(user).toBeTruthy();
-    expect(user?.id).toMatch(/^guest-/);
+    expect(user).toBeNull();
   });
 
   it('should handle manual anonymous sign-in', async () => {

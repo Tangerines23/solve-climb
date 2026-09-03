@@ -3,26 +3,28 @@ import { renderHook, waitFor } from '@testing-library/react';
 import { useHistoryData } from '../useHistoryData';
 import { supabase } from '@/utils/supabaseClient';
 import { storageService, STORAGE_KEYS } from '@/services';
+import { useAuthStore } from '@/stores/useAuthStore';
 import { ANONYMOUS_USER_TITLE } from '@/constants/history';
+import type { Session, User } from '@supabase/supabase-js';
 
 // Mock dependencies
 vi.mock('@/utils/supabaseClient', () => ({
   supabase: {
-    auth: {
-      getSession: vi.fn(),
-    },
     from: vi.fn(),
   },
 }));
 
-vi.mock('@/services', () => ({
-  storageService: {
-    get: vi.fn(),
-  },
-  STORAGE_KEYS: {
-    LOCAL_SESSION: 'local_session',
-  },
-}));
+vi.mock('@/services', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('@/services')>();
+  return {
+    ...actual,
+    storageService: {
+      get: vi.fn(),
+      set: vi.fn(),
+      remove: vi.fn(),
+    },
+  };
+});
 
 // Mock date utilities to fix "now" for streak calculation
 const MOCK_DATE = new Date('2024-01-10T12:00:00Z');
@@ -38,6 +40,11 @@ describe('useHistoryData', () => {
 
   beforeEach(() => {
     vi.clearAllMocks();
+    useAuthStore.setState({
+      session: null,
+      user: null,
+      isLoading: false,
+    });
     vi.mocked(supabase.from).mockImplementation(mockFrom);
 
     // Mock global Date
@@ -55,8 +62,6 @@ describe('useHistoryData', () => {
   it('should return empty stats if no session exists', async () => {
     // Mock no local session
     vi.mocked(storageService.get).mockReturnValue(null);
-    // Mock no supabase session
-    vi.mocked(supabase.auth.getSession).mockResolvedValue({ data: { session: null }, error: null });
 
     const { result } = renderHook(() => useHistoryData());
 
@@ -68,15 +73,13 @@ describe('useHistoryData', () => {
   });
 
   it('should fetch and calculate stats for logged in user', async () => {
-    // Mock logged in session (Supabase)
+    // Mock logged in session in useAuthStore
     const mockUserId = 'user_123';
-    vi.mocked(storageService.get).mockReturnValue(null);
-    vi.mocked(supabase.auth.getSession).mockResolvedValue({
-      data: {
-        session: { user: { id: mockUserId } } as any,
-      },
-      error: null,
+    useAuthStore.setState({
+      session: { user: { id: mockUserId } } as Session,
+      user: { id: mockUserId } as User,
     });
+    vi.mocked(storageService.get).mockReturnValue(null);
 
     // Mock DB responses based on table name
     mockFrom.mockImplementation((table: string) => {
@@ -154,12 +157,12 @@ describe('useHistoryData', () => {
   });
 
   it('should handle streak calculation correctly', async () => {
-    // Mock session
-    vi.mocked(storageService.get).mockReturnValue(null);
-    vi.mocked(supabase.auth.getSession).mockResolvedValue({
-      data: { session: { user: { id: 'temp' } } as any },
-      error: null,
+    // Mock session in useAuthStore
+    useAuthStore.setState({
+      session: { user: { id: 'temp' } } as Session,
+      user: { id: 'temp' } as User,
     });
+    vi.mocked(storageService.get).mockReturnValue(null);
 
     mockFrom.mockImplementation((table: string) => {
       if (table === 'user_level_records') {
@@ -218,11 +221,11 @@ describe('useHistoryData', () => {
   });
 
   it('should handle API errors gracefully', async () => {
-    vi.mocked(storageService.get).mockReturnValue(null);
-    vi.mocked(supabase.auth.getSession).mockResolvedValue({
-      data: { session: { user: { id: 'temp' } } as any },
-      error: null,
+    useAuthStore.setState({
+      session: { user: { id: 'temp' } } as Session,
+      user: { id: 'temp' } as User,
     });
+    vi.mocked(storageService.get).mockReturnValue(null);
 
     mockFrom.mockImplementation((table) => {
       if (table === 'user_level_records') {
@@ -266,7 +269,6 @@ describe('useHistoryData', () => {
       }
       return null;
     });
-    vi.mocked(supabase.auth.getSession).mockResolvedValue({ data: { session: null }, error: null });
 
     const { result } = renderHook(() => useHistoryData());
     await waitFor(() => expect(result.current.loading).toBe(false));
@@ -278,11 +280,11 @@ describe('useHistoryData', () => {
   });
 
   it('should calculate multipliers correctly for calculus and arithmetic', async () => {
-    vi.mocked(storageService.get).mockReturnValue(null);
-    vi.mocked(supabase.auth.getSession).mockResolvedValue({
-      data: { session: { user: { id: 'temp' } } as any },
-      error: null,
+    useAuthStore.setState({
+      session: { user: { id: 'temp' } } as Session,
+      user: { id: 'temp' } as User,
     });
+    vi.mocked(storageService.get).mockReturnValue(null);
 
     mockFrom.mockImplementation((table) => {
       if (table === 'user_level_records') {
@@ -347,56 +349,12 @@ describe('useHistoryData', () => {
     expect(result.current.stats?.allActivities[0].type).toBe('reward');
   });
 
-  it('should parse local session', async () => {
-    vi.mocked(storageService.get).mockImplementation((key) => {
-      if (key === STORAGE_KEYS.LOCAL_SESSION) {
-        return JSON.stringify({ userId: 'local_123', isAdmin: true });
-      }
-      return null;
-    });
-
-    mockFrom.mockImplementation((_table) => {
-      return {
-        select: vi.fn(() => ({
-          eq: vi.fn().mockReturnThis(),
-          order: vi.fn().mockReturnThis(),
-          limit: vi.fn().mockResolvedValue({ data: [], error: null }),
-          maybeSingle: vi.fn().mockResolvedValue({ data: null, error: null }),
-        })),
-        maybeSingle: vi.fn().mockResolvedValue({ data: null, error: null }),
-      };
-    });
-
-    const { result } = renderHook(() => useHistoryData());
-    await waitFor(() => expect(result.current.loading).toBe(false));
-
-    expect(supabase.from).toHaveBeenCalledWith('user_level_records'); // should have proceeded to fetch DB
-  });
-
-  it('should handle malformed local session string', async () => {
-    vi.mocked(storageService.get).mockImplementation((key) => {
-      if (key === STORAGE_KEYS.LOCAL_SESSION) return 'invalid-json';
-      return null;
-    });
-    vi.mocked(supabase.auth.getSession).mockResolvedValue({ data: { session: null }, error: null });
-
-    const consoleSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});
-    const { result } = renderHook(() => useHistoryData());
-
-    await waitFor(() => expect(result.current.loading).toBe(false));
-    expect(consoleSpy).toHaveBeenCalledWith(
-      expect.stringContaining('JSON parsing failed:'),
-      expect.anything()
-    );
-    consoleSpy.mockRestore();
-  });
-
   it('should handle heat map intensity levels', async () => {
-    vi.mocked(storageService.get).mockReturnValue(null);
-    vi.mocked(supabase.auth.getSession).mockResolvedValue({
-      data: { session: { user: { id: 'temp' } } as any },
-      error: null,
+    useAuthStore.setState({
+      session: { user: { id: 'temp' } } as Session,
+      user: { id: 'temp' } as User,
     });
+    vi.mocked(storageService.get).mockReturnValue(null);
 
     mockFrom.mockImplementation((table) => {
       if (table === 'user_level_records') {
@@ -439,11 +397,11 @@ describe('useHistoryData', () => {
   });
 
   it('should calculate streak from activity map when profile streak is 0', async () => {
-    vi.mocked(storageService.get).mockReturnValue(null);
-    vi.mocked(supabase.auth.getSession).mockResolvedValue({
-      data: { session: { user: { id: 'temp' } } as any },
-      error: null,
+    useAuthStore.setState({
+      session: { user: { id: 'temp' } } as Session,
+      user: { id: 'temp' } as User,
     });
+    vi.mocked(storageService.get).mockReturnValue(null);
 
     mockFrom.mockImplementation((table) => {
       if (table === 'user_level_records') {
@@ -492,11 +450,11 @@ describe('useHistoryData', () => {
   });
 
   it('should handle duplicate category/level records and pick the best score', async () => {
-    vi.mocked(storageService.get).mockReturnValue(null);
-    vi.mocked(supabase.auth.getSession).mockResolvedValue({
-      data: { session: { user: { id: 'temp' } } as any },
-      error: null,
+    useAuthStore.setState({
+      session: { user: { id: 'temp' } } as Session,
+      user: { id: 'temp' } as User,
     });
+    vi.mocked(storageService.get).mockReturnValue(null);
 
     mockFrom.mockImplementation((table) => {
       if (table === 'user_level_records') {

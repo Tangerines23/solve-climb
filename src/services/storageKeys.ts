@@ -6,6 +6,7 @@ export const STORAGE_KEYS = {
   LOCAL_SESSION: 'solve-climb-local-session',
   LOGIN_REDIRECT: 'login_redirect_path',
   AUTH_BYPASS: 'solve-climb-auth-bypass',
+  ANONYMOUS_ENTRY_COUNT: 'solve-climb-anonymous-entry-count',
 
   // Navigation Persistence
   LAST_VISITED_MOUNTAIN: 'last_visited_mountain',

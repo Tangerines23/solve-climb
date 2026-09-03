@@ -3,9 +3,8 @@ import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/utils/supabaseClient';
 import { safeSupabaseQuery } from '@/utils/debugFetch';
 import { APP_CONFIG } from '@/config/app';
-import { parseLocalSession } from '@/utils/safeJsonParse';
 import { storageService, STORAGE_KEYS } from '@/services';
-import { Session } from '@supabase/supabase-js';
+import { useAuthStore } from '@/stores/useAuthStore';
 import { getTimeAgo } from '@/utils/date';
 import { logError } from '@/utils/errorHandler';
 import {
@@ -93,48 +92,21 @@ export function useHistoryData() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
+  const authSession = useAuthStore((state) => state.session);
+  const authUser = useAuthStore((state) => state.user);
+
   const fetchHistoryData = useCallback(async () => {
     try {
       setLoading(true);
       setError(null);
 
-      // --- 0. 세션 및 유저 ID 확인 (My Page와 로직 통합) ---
-      let currentSession: Session | null = null;
-      let userId = null;
+      // --- 0. 세션 및 유저 ID 확인 (useAuthStore SSOT 기반) ---
+      const user = authSession?.user || authUser;
+      const currentUserId = user?.id;
 
-      try {
-        const localSessionStr = storageService.get<string>(STORAGE_KEYS.LOCAL_SESSION);
-        const localSession = parseLocalSession(localSessionStr || '');
-        if (localSession) {
-          userId = localSession.userId;
-          currentSession = {
-            user: {
-              id: localSession.userId,
-              email: null,
-              user_metadata: {
-                isAdmin: localSession.isAdmin || false,
-              },
-            },
-            access_token: 'local',
-            refresh_token: 'local',
-            expires_in: 3600,
-            token_type: 'bearer',
-          } as unknown as Session;
-        }
-      } catch (e) {
-        console.warn('Failed to read local session in useHistoryData:', e);
-      }
-
-      if (!currentSession) {
-        const {
-          data: { session: supabaseSession },
-        } = await safeSupabaseQuery(supabase.auth.getSession());
-        currentSession = supabaseSession;
-      }
-
-      if (!currentSession) {
+      if (!user || !currentUserId) {
         // [Anonymous/Local User Support]
-        // DB 세션이 없어도 로컬 기록이 있으면 통계를 보여줌
+        // 세션이 없어도 로컬 기록이 있으면 로컬 통계를 보여줌
         try {
           const localHistory = storageService.get<LocalHistoryRecord[]>(STORAGE_KEYS.LOCAL_HISTORY);
           if (localHistory && Array.isArray(localHistory) && localHistory.length > 0) {
@@ -152,9 +124,6 @@ export function useHistoryData() {
         setLoading(false);
         return;
       }
-
-      const currentUserId = userId || currentSession.user.id;
-      // 로컬 플레이어 필터링 제거 (DB에 데이터가 있다면 보여줌)
 
       // --- 1. 날짜 기준 설정 ---
       const now = new Date();

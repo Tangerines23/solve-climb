@@ -16,6 +16,8 @@ import { RequireAuth } from '@/features/auth';
 import { supabase } from '@/utils/supabaseClient';
 import { initializeGoogleSignIn } from '@/utils/auth';
 import { Capacitor } from '@capacitor/core';
+import { AnonymousDataWarningModal } from '@/components/AnonymousDataWarningModal';
+import { useAnonymousEntryWarning } from '@/hooks/useAnonymousEntryWarning';
 
 const HomePage = resilientLazy(
   () => import('@/pages/HomePage').then((module) => ({ default: module.HomePage })),
@@ -120,6 +122,13 @@ function App() {
 
   // 커스텀 뒤로가기 네비게이션 적용
   useCustomBackNavigation();
+
+  // 익명 사용자 3회 진입 주기 데이터 유실 경고 모달 제어
+  const {
+    isModalOpen: isAnonWarningOpen,
+    closeModal: closeAnonWarning,
+    handleGoToMyPage: goToMyPageFromAnonWarning,
+  } = useAnonymousEntryWarning();
 
   const isDebugPanelOpen = useDebugStore((state) => state.isDebugPanelOpen);
   const animationEnabled = useSettingsStore((state) => state.animationEnabled);
@@ -362,6 +371,13 @@ function App() {
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </AnimatePresence>
+
+      {/* Anonymous Data Loss Warning Modal (Shown every 3 entries for anonymous users) */}
+      <AnonymousDataWarningModal
+        isOpen={isAnonWarningOpen}
+        onClose={closeAnonWarning}
+        onGoToMyPage={goToMyPageFromAnonWarning}
+      />
 
       {/* Global Debug Panel (Outside Routes, High Z-Index) */}
       {import.meta.env.DEV && isDebugPanelOpen && DebugPanel && <DebugPanel />}

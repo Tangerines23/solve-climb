@@ -160,6 +160,74 @@ export function MyPage() {
     await refetch(); // 티어 정보 갱신
   };
 
+  // 로그아웃 함수
+  const handleLogout = React.useCallback(async () => {
+    try {
+      console.log('[로그아웃] 시작');
+
+      // Supabase 세션이 있으면 로그아웃
+      const {
+        data: { session: currentSession },
+      } = await safeSupabaseQuery(supabase.auth.getSession());
+      console.log('[로그아웃] 현재 세션 확인:', { hasSession: !!currentSession });
+
+      console.log('[로그아웃] useAuthStore.signOut 호출 전');
+      await useAuthStore.getState().signOut();
+      console.log('[로그아웃] useAuthStore.signOut 완료');
+
+      // 로컬 세션 삭제
+      try {
+        storageService.remove(STORAGE_KEYS.LOCAL_SESSION);
+        console.log('[로그아웃] 로컬 세션 삭제 완료');
+      } catch (e) {
+        console.warn('Failed to remove local session:', e);
+      }
+
+      // 로컬 상태 초기화
+      console.log('[로그아웃] 프로필 초기화 전');
+      clearProfile();
+      console.log('[로그아웃] 프로필 초기화 완료');
+
+      setToastMessage('로그아웃되었습니다.');
+      setShowToast(true);
+
+      // 통계 다시 불러오기 (세션 없음 상태로)
+      console.log('[로그아웃] refetch 호출 전');
+      await refetch();
+      console.log('[로그아웃] refetch 완료');
+
+      console.log('[로그아웃] 전체 과정 완료');
+    } catch (error) {
+      logError('MyPage#handleLogout', error);
+      setToastMessage('로그아웃 중 오류가 발생했습니다.');
+      setShowToast(true);
+    }
+  }, [clearProfile, refetch]);
+
+  // 프로필 폼 취소 / 뒤로가기 핸들러
+  const handleCancelProfileForm = React.useCallback(async () => {
+    setShowProfileForm(false);
+    // 프로필이 완성되지 않은 상태(최초 익명 로그인 후 프로필 미생성)에서 취소한 경우,
+    // 생성된 임시 세션을 로그아웃하여 비로그인 게스트 뷰로 복귀
+    if (!useProfileStore.getState().isProfileComplete) {
+      await handleLogout();
+    }
+  }, [handleLogout]);
+
+  // 뒤로가기 이벤트(하드웨어/브라우저 popstate) 수신 시 열린 프로필 폼 닫기
+  useEffect(() => {
+    const handleBackButton = () => {
+      if (isFormVisible) {
+        handleCancelProfileForm();
+      }
+    };
+
+    window.addEventListener('mypage-back-button', handleBackButton);
+    return () => {
+      window.removeEventListener('mypage-back-button', handleBackButton);
+    };
+  }, [isFormVisible, handleCancelProfileForm]);
+
   const handleProfileComplete = () => {
     setShowProfileForm(false);
 
@@ -421,50 +489,6 @@ export function MyPage() {
     }
   }, [session?.user?.id, profile?.userId, refetch, setProfile, performRedirect]);
 
-  // 로그아웃 함수
-  const handleLogout = async () => {
-    try {
-      console.log('[로그아웃] 시작');
-
-      // Supabase 세션이 있으면 로그아웃
-      const {
-        data: { session: currentSession },
-      } = await safeSupabaseQuery(supabase.auth.getSession());
-      console.log('[로그아웃] 현재 세션 확인:', { hasSession: !!currentSession });
-
-      console.log('[로그아웃] useAuthStore.signOut 호출 전');
-      await useAuthStore.getState().signOut();
-      console.log('[로그아웃] useAuthStore.signOut 완료');
-
-      // 로컬 세션 삭제
-      try {
-        storageService.remove(STORAGE_KEYS.LOCAL_SESSION);
-        console.log('[로그아웃] 로컬 세션 삭제 완료');
-      } catch (e) {
-        console.warn('Failed to remove local session:', e);
-      }
-
-      // 로컬 상태 초기화
-      console.log('[로그아웃] 프로필 초기화 전');
-      clearProfile();
-      console.log('[로그아웃] 프로필 초기화 완료');
-
-      setToastMessage('로그아웃되었습니다.');
-      setShowToast(true);
-
-      // 통계 다시 불러오기 (세션 없음 상태로)
-      console.log('[로그아웃] refetch 호출 전');
-      await refetch();
-      console.log('[로그아웃] refetch 완료');
-
-      console.log('[로그아웃] 전체 과정 완료');
-    } catch (error) {
-      logError('MyPage#handleLogout', error);
-      setToastMessage('로그아웃 중 오류가 발생했습니다.');
-      setShowToast(true);
-    }
-  };
-
   // Guest View (비로그인 상태)
   if (!session && !statsLoading) {
     return (
@@ -543,7 +567,7 @@ export function MyPage() {
           <ProfileForm
             onComplete={handleProfileComplete}
             showBackButton={true}
-            onCancel={() => setShowProfileForm(false)}
+            onCancel={handleCancelProfileForm}
           />
         </div>
       </div>

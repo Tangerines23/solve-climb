@@ -1,0 +1,42 @@
+﻿.anon-warning-modal-content {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-sm);
+  text-align: center;
+  padding: var(--spacing-sm) 0;
+}
+
+.anon-warning-modal-badge {
+  display: inline-block;
+  align-self: center;
+  background: var(--color-danger-bg, rgba(239, 68, 68, 0.15));
+  color: var(--color-red-500);
+  font-size: 0.85rem;
+  font-weight: 700;
+  padding: var(--spacing-xs) var(--spacing-md);
+  border-radius: var(--rounded-pill);
+  margin-bottom: var(--spacing-sm);
+}
+
+.anon-warning-modal-desc {
+  font-size: 0.95rem;
+  color: var(--color-text-secondary);
+  line-height: 1.6;
+  margin: 0;
+  word-break: keep-all;
+}
+
+.anon-warning-modal-highlight {
+  color: var(--color-text-primary);
+  font-weight: 600;
+}
+
+.anon-warning-modal-actions {
+  display: flex;
+  gap: var(--spacing-sm);
+  width: 100%;
+}
+
+.anon-warning-modal-actions .btn-base {
+  flex: 1;
+}

@@ -2,9 +2,8 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { renderHook, waitFor, act } from '@testing-library/react';
 import { useMyPageStats } from '../useMyPageStats';
 import { supabase } from '@/utils/supabaseClient';
-import { storageService, STORAGE_KEYS } from '@/services';
-import type { Subscription, PostgrestError } from '@supabase/supabase-js';
-import { isLocalSession } from '@/utils/safeJsonParse';
+import { useAuthStore } from '@/stores/useAuthStore';
+import type { PostgrestError, Session, User } from '@supabase/supabase-js';
 
 // Helper for Supabase chain mocking
 const createMockChain = (data: unknown, error: unknown = null) => {
@@ -25,28 +24,9 @@ const createMockChain = (data: unknown, error: unknown = null) => {
 
 vi.mock('@/utils/supabaseClient', () => ({
   supabase: {
-    auth: {
-      getSession: vi.fn(),
-      onAuthStateChange: vi.fn(() => ({
-        data: { subscription: { unsubscribe: vi.fn() } },
-      })),
-    },
     from: vi.fn(),
     rpc: vi.fn(),
   },
-}));
-
-vi.mock('@/services', () => ({
-  storageService: {
-    get: vi.fn(),
-  },
-  STORAGE_KEYS: {
-    LOCAL_SESSION: 'solve-climb-local-session',
-  },
-}));
-
-vi.mock('@/utils/safeJsonParse', () => ({
-  isLocalSession: vi.fn(),
 }));
 
 describe('useMyPageStats', () => {
@@ -55,16 +35,12 @@ describe('useMyPageStats', () => {
   beforeEach(() => {
     vi.resetAllMocks();
 
-    // Default mocks
-    vi.mocked(storageService.get).mockReturnValue(null);
-    vi.mocked(isLocalSession).mockReturnValue(false);
-    vi.mocked(supabase.auth.getSession).mockResolvedValue({
-      data: { session: null },
-      error: null,
-    } as any);
-    vi.mocked(supabase.auth.onAuthStateChange).mockReturnValue({
-      data: { subscription: { unsubscribe: vi.fn() } },
-    } as any);
+    useAuthStore.setState({
+      session: null,
+      user: null,
+      isLoading: false,
+    });
+
     vi.mocked(supabase.from).mockImplementation(() => createMockChain(null) as any);
     vi.mocked(supabase.rpc).mockResolvedValue({
       data: null,
@@ -75,7 +51,6 @@ describe('useMyPageStats', () => {
   it('should return default stats when no session', async () => {
     const { result } = renderHook(() => useMyPageStats());
 
-    expect(result.current.loading).toBe(true);
     await waitFor(() => expect(result.current.loading).toBe(false));
 
     expect(result.current.stats).toEqual({
@@ -97,10 +72,11 @@ describe('useMyPageStats', () => {
   });
 
   it('should fetch stats from RPC when available', async () => {
-    vi.mocked(supabase.auth.getSession).mockResolvedValue({
-      data: { session: { user: { id: mockUserId } } },
-      error: null,
-    } as any);
+    const mockSession = { user: { id: mockUserId } } as Session;
+    useAuthStore.setState({
+      session: mockSession,
+      user: mockSession.user,
+    });
 
     const mockProfileData = {
       total_mastery_score: 1500,
@@ -157,10 +133,11 @@ describe('useMyPageStats', () => {
   });
 
   it('should fallback to direct query when RPC is not found (404/PGRST116)', async () => {
-    vi.mocked(supabase.auth.getSession).mockResolvedValue({
-      data: { session: { user: { id: mockUserId } } },
-      error: null,
-    } as any);
+    const mockSession = { user: { id: mockUserId } } as Session;
+    useAuthStore.setState({
+      session: mockSession,
+      user: mockSession.user,
+    });
 
     const mockProfileData = {
       total_mastery_score: 2000,
@@ -209,10 +186,16 @@ describe('useMyPageStats', () => {
     });
   });
 
-  it('should handle local session correctly', async () => {
-    const mockLocalSession = { userId: '00000000-0000-0000-0000-000000000002', isAdmin: true };
-    vi.mocked(storageService.get).mockReturnValue(mockLocalSession);
-    vi.mocked(isLocalSession).mockReturnValue(true);
+  it('should handle local user session correctly', async () => {
+    const mockUser = {
+      id: '00000000-0000-0000-0000-000000000002',
+      user_metadata: { isAdmin: true },
+    } as unknown as User;
+
+    useAuthStore.setState({
+      session: null,
+      user: mockUser,
+    });
 
     const mockProfileData = {
       total_mastery_score: 500,
@@ -238,10 +221,11 @@ describe('useMyPageStats', () => {
   });
 
   it('should handle RPC errors and still perform fallback', async () => {
-    vi.mocked(supabase.auth.getSession).mockResolvedValue({
-      data: { session: { user: { id: mockUserId } } },
-      error: null,
-    } as any);
+    const mockSession = { user: { id: mockUserId } } as Session;
+    useAuthStore.setState({
+      session: mockSession,
+      user: mockSession.user,
+    });
 
     vi.mocked(supabase.rpc).mockResolvedValue({
       data: null,
@@ -264,10 +248,11 @@ describe('useMyPageStats', () => {
   });
 
   it('should handle refetch manually', async () => {
-    vi.mocked(supabase.auth.getSession).mockResolvedValue({
-      data: { session: { user: { id: mockUserId } } },
-      error: null,
-    } as any);
+    const mockSession = { user: { id: mockUserId } } as Session;
+    useAuthStore.setState({
+      session: mockSession,
+      user: mockSession.user,
+    });
 
     vi.mocked(supabase.rpc).mockResolvedValue({ data: [], error: null } as any);
     vi.mocked(supabase.from).mockImplementation(() => createMockChain([]));
