@@ -171,6 +171,7 @@ export function useMyPageStats(): UseMyPageStatsResult {
           const subjectScores: Record<string, number> = {};
           levelRecords.forEach((r) => {
             const sub = r.subject_id || r.category_id || (r.theme_code === 1 ? 'math_add' : '기초');
+            // eslint-disable-next-line security/detect-object-injection -- sanitized subject key
             subjectScores[sub] = (subjectScores[sub] || 0) + (r.best_score || 0);
           });
           bestSubjectId = Object.entries(subjectScores).sort((a, b) => b[1] - a[1])[0]?.[0] || null;
@@ -182,9 +183,18 @@ export function useMyPageStats(): UseMyPageStatsResult {
       // 2. get_user_game_stats RPC 호출 및 결과 파싱
       let gameStats: Partial<RpcStats> = {};
       try {
-        const rpcResult = await safeSupabaseQuery(supabase.rpc('get_user_game_stats'));
-        const rawRpcData = rpcResult?.data;
-        if (!rpcResult?.error && rawRpcData) {
+        const rpcResult = await safeSupabaseQuery(
+          supabase.rpc('get_user_game_stats', { p_user_id: user_id })
+        );
+        let rawRpcData = rpcResult?.data;
+        if (
+          !rawRpcData &&
+          (rpcResult as { error?: { code?: string } })?.error?.code === 'PGRST202'
+        ) {
+          const fallbackRes = await safeSupabaseQuery(supabase.rpc('get_user_game_stats'));
+          rawRpcData = fallbackRes?.data;
+        }
+        if (rawRpcData) {
           const parsed = Array.isArray(rawRpcData) ? rawRpcData[0] : rawRpcData;
           if (parsed && typeof parsed === 'object') {
             gameStats = parsed as Partial<RpcStats>;

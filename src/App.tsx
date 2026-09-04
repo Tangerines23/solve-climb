@@ -16,6 +16,7 @@ import { RequireAuth } from '@/features/auth';
 import { supabase } from '@/utils/supabaseClient';
 import { initializeGoogleSignIn } from '@/utils/auth';
 import { Capacitor } from '@capacitor/core';
+import { AdService } from '@/services/adService';
 import { AnonymousDataWarningModal } from '@/components/AnonymousDataWarningModal';
 import { useAnonymousEntryWarning } from '@/hooks/useAnonymousEntryWarning';
 
@@ -155,6 +156,11 @@ function App() {
         console.error('[GoogleSignIn] Initialization failed:', err);
       });
 
+      // AdMob 초기화 및 사전 로드 (백그라운드)
+      AdService.initialize().catch((err) => {
+        console.error('[AdService] Initialization failed:', err);
+      });
+
       import('@capacitor/app')
         .then(({ App }) => {
           App.addListener('appUrlOpen', async (data: { url: string }) => {
@@ -195,7 +201,8 @@ function App() {
           console.error('[Capacitor] Failed to load App plugin:', err);
         });
     }
-  }, []); // Run once on app mount
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- Run once on app mount
+  }, []);
 
   // 전역 에러 핸들러 설정 (개발 환경에서만)
   useEffect(() => {

@@ -13,6 +13,12 @@ vi.mock('@/stores/useProfileStore', () => ({
   useProfileStore: vi.fn(),
 }));
 
+vi.mock('../AuthModal', () => ({
+  AuthModal: vi.fn(({ isOpen }: any) =>
+    isOpen ? <div data-testid="auth-modal">Auth Modal</div> : null
+  ),
+}));
+
 describe('RequireAuth Component', () => {
   beforeEach(() => {
     vi.clearAllMocks();
@@ -148,5 +154,40 @@ describe('RequireAuth Component', () => {
     );
 
     expect(screen.getByText('My Page Content')).toBeInTheDocument();
+  });
+
+  it('should render children and AuthModal in-place when unauthenticated on home route (/)', () => {
+    vi.mocked(useAuthStore).mockImplementation((selector: any) =>
+      selector({
+        session: null,
+        user: null,
+        isLoading: false,
+      })
+    );
+    vi.mocked(useProfileStore).mockImplementation((selector: any) =>
+      selector({
+        isProfileComplete: false,
+      })
+    );
+
+    render(
+      <MemoryRouter initialEntries={['/']}>
+        <Routes>
+          <Route
+            path="/"
+            element={
+              <RequireAuth>
+                <div>Home Content</div>
+              </RequireAuth>
+            }
+          />
+          <Route path="/my-page" element={<div>My Page</div>} />
+        </Routes>
+      </MemoryRouter>
+    );
+
+    expect(screen.getByText('Home Content')).toBeInTheDocument();
+    expect(screen.getByTestId('auth-modal')).toBeInTheDocument();
+    expect(screen.queryByText('My Page')).toBeNull();
   });
 });

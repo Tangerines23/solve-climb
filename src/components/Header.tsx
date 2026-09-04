@@ -47,7 +47,8 @@ export function Header({ title, showBack, onBack }: HeaderProps) {
   useEffect(() => {
     fetchUserData();
     checkStamina();
-  }, []); // Run once on Header mount
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- Run once on Header mount
+  }, []);
 
   // URL 파라미터 및 localStorage로 디버그 패널 자동 활성화
   useEffect(() => {
@@ -120,6 +121,8 @@ export function Header({ title, showBack, onBack }: HeaderProps) {
     const result = await recoverMineralsAds();
     if (result.success) {
       showToast(result.message, '💎');
+    } else {
+      showToast(result.message || '광고 시청에 실패했습니다.', 'error');
     }
     setIsMineralsLoading(false);
   };

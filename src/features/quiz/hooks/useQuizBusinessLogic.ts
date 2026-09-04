@@ -1,7 +1,6 @@
 import { useCallback } from 'react';
 import { AdService } from '@/utils/adService';
 import { UI_MESSAGES } from '@/constants/ui';
-import { ANIMATION_CONFIG } from '@/constants/game';
 import { logError } from '@/utils/errorHandler';
 import { useUserStore } from '@/stores/useUserStore';
 
@@ -77,16 +76,7 @@ export const useQuizBusinessLogic = ({
         setShowSlideToast(true);
         setToastValue(UI_MESSAGES.STAMINA_RECHARGED_FULL);
 
-        const win =
-          typeof window !== 'undefined'
-            ? (window as unknown as { Capacitor?: unknown })
-            : undefined;
-        const isCapacitor = !!win?.Capacitor;
-        if (isCapacitor) {
-          await useUserStore.getState().fetchUserData();
-        } else {
-          setTimeout(() => window.location.reload(), ANIMATION_CONFIG.RELOAD_DELAY);
-        }
+        await useUserStore.getState().fetchUserData();
       } else {
         setToastValue(UI_MESSAGES.AD_WATCH_FAILED(result.message));
       }
