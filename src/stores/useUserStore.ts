@@ -55,7 +55,13 @@ export const useUserStore = create<UserState>((set, get) => {
       return res;
     },
 
+    /**
+     * @deprecated 레거시 메서드입니다. recoverStaminaAds 또는 recoverMineralsAds를 사용하세요.
+     */
     handleWatchAd: () => {
+      console.warn(
+        '[useUserStore] handleWatchAd is deprecated. Use recoverStaminaAds or recoverMineralsAds instead.'
+      );
       console.log('Watch Ad called (not implemented)');
     },
 
@@ -277,20 +283,35 @@ export const useUserStore = create<UserState>((set, get) => {
           supabase.rpc(
             'secure_reward_ad_view',
             userId
-              ? { p_ad_type: 'double_reward', p_user_id: userId }
-              : { p_ad_type: 'double_reward' }
+              ? { p_ad_type: 'double_reward', p_user_id: userId, p_amount: amount }
+              : { p_ad_type: 'double_reward', p_amount: amount }
           ),
           { refreshData: true }
         );
 
         if (!res.success && (res as { errorCode?: string }).errorCode === 'PGRST202') {
           console.warn(
-            '[useUserStore] PGRST202 fallback: calling secure_reward_ad_view without p_user_id'
+            '[useUserStore] PGRST202 fallback: calling secure_reward_ad_view without p_amount'
           );
           res = await callRpcAndRefresh<{ success: boolean; minerals: number }>(
-            supabase.rpc('secure_reward_ad_view', { p_ad_type: 'double_reward' }),
+            supabase.rpc(
+              'secure_reward_ad_view',
+              userId
+                ? { p_ad_type: 'double_reward', p_user_id: userId }
+                : { p_ad_type: 'double_reward' }
+            ),
             { refreshData: true }
           );
+
+          if (!res.success && (res as { errorCode?: string }).errorCode === 'PGRST202') {
+            console.warn(
+              '[useUserStore] PGRST202 fallback: calling secure_reward_ad_view without p_user_id'
+            );
+            res = await callRpcAndRefresh<{ success: boolean; minerals: number }>(
+              supabase.rpc('secure_reward_ad_view', { p_ad_type: 'double_reward' }),
+              { refreshData: true }
+            );
+          }
         }
 
         return res;

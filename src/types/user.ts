@@ -40,6 +40,7 @@ export interface UserState {
   isAnonymous: boolean;
   lastAdRechargeTime: string | null;
 
+  /** @deprecated 레거시 메서드. recoverStaminaAds 또는 recoverMineralsAds 사용 */
   handleWatchAd: () => void;
 
   fetchUserData: () => Promise<void>;
