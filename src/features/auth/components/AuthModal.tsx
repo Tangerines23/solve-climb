@@ -39,6 +39,20 @@ export const AuthModal: React.FC<AuthModalProps> = ({
     }
   }, [isAuthenticated, isProfileComplete]);
 
+  useEffect(() => {
+    const handleBack = () => {
+      if (step === 'profile') {
+        setStep('login');
+      }
+    };
+    window.addEventListener('home-back-button', handleBack);
+    window.addEventListener('mypage-back-button', handleBack);
+    return () => {
+      window.removeEventListener('home-back-button', handleBack);
+      window.removeEventListener('mypage-back-button', handleBack);
+    };
+  }, [step]);
+
   const handleAnonymousLogin = async () => {
     try {
       setErrorMessage(null);
@@ -108,6 +122,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
       onClose={onClose || (() => {})}
       closeOnOverlayClick={false}
       className="auth-modal-base"
+      overlayClassName="auth-modal-overlay-opaque"
     >
       {step === 'login' ? (
         <div className="auth-modal-content">

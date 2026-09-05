@@ -90,7 +90,7 @@ describe('RequireAuth Component', () => {
     expect(screen.getByText('Protected Content Without Flash')).toBeInTheDocument();
   });
 
-  it('should redirect to my-page when unauthenticated', () => {
+  it('should render AuthModal and NOT render protected content when unauthenticated', () => {
     vi.mocked(useAuthStore).mockImplementation((selector: any) =>
       selector({
         session: null,
@@ -115,48 +115,15 @@ describe('RequireAuth Component', () => {
               </RequireAuth>
             }
           />
-          <Route path="/my-page" element={<div>My Page (Login)</div>} />
         </Routes>
       </MemoryRouter>
     );
 
     expect(screen.queryByText('Protected Content')).toBeNull();
-    expect(screen.getByText('My Page (Login)')).toBeInTheDocument();
+    expect(screen.getByTestId('auth-modal')).toBeInTheDocument();
   });
 
-  it('should render children without redirect loop if already on my-page', () => {
-    vi.mocked(useAuthStore).mockImplementation((selector: any) =>
-      selector({
-        session: null,
-        user: null,
-        isLoading: false,
-      })
-    );
-    vi.mocked(useProfileStore).mockImplementation((selector: any) =>
-      selector({
-        isProfileComplete: false,
-      })
-    );
-
-    render(
-      <MemoryRouter initialEntries={['/my-page']}>
-        <Routes>
-          <Route
-            path="/my-page"
-            element={
-              <RequireAuth>
-                <div>My Page Content</div>
-              </RequireAuth>
-            }
-          />
-        </Routes>
-      </MemoryRouter>
-    );
-
-    expect(screen.getByText('My Page Content')).toBeInTheDocument();
-  });
-
-  it('should render children and AuthModal in-place when unauthenticated on home route (/)', () => {
+  it('should render AuthModal without rendering Home content when unauthenticated on home route (/)', () => {
     vi.mocked(useAuthStore).mockImplementation((selector: any) =>
       selector({
         session: null,
@@ -181,13 +148,11 @@ describe('RequireAuth Component', () => {
               </RequireAuth>
             }
           />
-          <Route path="/my-page" element={<div>My Page</div>} />
         </Routes>
       </MemoryRouter>
     );
 
-    expect(screen.getByText('Home Content')).toBeInTheDocument();
+    expect(screen.queryByText('Home Content')).toBeNull();
     expect(screen.getByTestId('auth-modal')).toBeInTheDocument();
-    expect(screen.queryByText('My Page')).toBeNull();
   });
 });

@@ -102,3 +102,22 @@
     font-size: 0.9rem;
   }
 }
+
+/* 뒷페이지(홈, 마이페이지 등)를 완전히 가리는 100% 불투명 솔리드 배경 오버레이 */
+.modal-overlay.auth-modal-overlay-opaque {
+  background-color: var(--color-bg-primary, #0a0e17) !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  opacity: 1 !important;
+  position: fixed !important;
+  inset: 0 !important;
+  width: 100vw !important;
+  height: 100vh !important;
+  z-index: 10000 !important;
+}
+
+.modal-base.auth-modal-base {
+  background-color: var(--color-bg-card, #131d31);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: 0 24px 64px rgba(0, 0, 0, 0.75);
+}

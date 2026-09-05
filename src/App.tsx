@@ -332,9 +332,11 @@ function App() {
           <Route
             path="/my-page"
             element={
-              <PageTransition>
-                <MyPage />
-              </PageTransition>
+              <RequireAuth>
+                <PageTransition>
+                  <MyPage />
+                </PageTransition>
+              </RequireAuth>
             }
           />
           <Route
