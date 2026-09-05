@@ -39,17 +39,32 @@ export const AuthModal: React.FC<AuthModalProps> = ({
     }
   }, [isAuthenticated, isProfileComplete]);
 
+  const handleCancelProfile = async () => {
+    try {
+      if (!useProfileStore.getState().isProfileComplete) {
+        await useAuthStore.getState().signOut();
+        storageService.remove(STORAGE_KEYS.LOCAL_SESSION);
+        useProfileStore.getState().clearProfile();
+      }
+    } catch {
+      // ignore
+    }
+    setStep('login');
+  };
+
   useEffect(() => {
     const handleBack = () => {
       if (step === 'profile') {
-        setStep('login');
+        handleCancelProfile();
       }
     };
     window.addEventListener('home-back-button', handleBack);
     window.addEventListener('mypage-back-button', handleBack);
+    window.addEventListener('popstate', handleBack);
     return () => {
       window.removeEventListener('home-back-button', handleBack);
       window.removeEventListener('mypage-back-button', handleBack);
+      window.removeEventListener('popstate', handleBack);
     };
   }, [step]);
 
@@ -160,7 +175,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
           <ProfileForm
             onComplete={handleProfileComplete}
             showBackButton={true}
-            onCancel={() => setStep('login')}
+            onCancel={handleCancelProfile}
           />
         </div>
       )}

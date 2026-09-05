@@ -208,11 +208,18 @@ export function MyPage() {
   const handleCancelProfileForm = React.useCallback(async () => {
     setShowProfileForm(false);
     // 프로필이 완성되지 않은 상태(최초 익명 로그인 후 프로필 미생성)에서 취소한 경우,
-    // 생성된 임시 세션을 로그아웃하여 비로그인 게스트 뷰로 복귀
+    // 불필요한 '로그아웃되었습니다' 토스트 없이 조용히 임시 세션을 정리하고 게스트 뷰로 복귀
     if (!useProfileStore.getState().isProfileComplete) {
-      await handleLogout();
+      try {
+        await useAuthStore.getState().signOut();
+        storageService.remove(STORAGE_KEYS.LOCAL_SESSION);
+        clearProfile();
+        await refetch();
+      } catch (e) {
+        logError('MyPage#handleCancelProfileForm', e);
+      }
     }
-  }, [handleLogout]);
+  }, [clearProfile, refetch]);
 
   // 뒤로가기 이벤트(하드웨어/브라우저 popstate) 수신 시 열린 프로필 폼 닫기
   useEffect(() => {
@@ -570,6 +577,62 @@ export function MyPage() {
             onCancel={handleCancelProfileForm}
           />
         </div>
+      </div>
+    );
+  }
+
+  // 프로필(닉네임)이 미완성된 상태에서는 어떠한 경우에도 마이페이지 본문(프로필, 통계 등)을 렌더링하지 않음
+  if (!isProfileComplete) {
+    return (
+      <div className="my-page">
+        <Header />
+        <main className="my-page-main">
+          <div className="my-page-content">
+            <div className="my-page-guest-view-container">
+              <div className="my-page-guest-view">
+                <div className="my-page-guest-icon">🔒</div>
+                <h1 className="my-page-guest-title">
+                  로그인하고
+                  <br />
+                  <strong className="my-page-guest-highlight">내 기록을 평생 간직하세요.</strong>
+                </h1>
+                <div className="my-page-guest-buttons">
+                  {isTossAppEnvironment() ? (
+                    <button className="my-page-guest-login-button" onClick={handleTossLoginClick}>
+                      3초 만에 시작하기
+                    </button>
+                  ) : (
+                    <button className="my-page-guest-login-button" onClick={handleGoogleLogin}>
+                      3초 만에 시작하기
+                    </button>
+                  )}
+                  <button className="my-page-guest-anonymous-link" onClick={handleAnonymousLogin}>
+                    익명 로그인하기
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </main>
+        <Toast
+          message={toastMessage}
+          isOpen={showToast}
+          onClose={() => setShowToast(false)}
+          icon="⚠️"
+        />
+        <AlertModal
+          isOpen={showAlert}
+          title="알림"
+          message={alertMessage || '리더보드를 열 수 없습니다.'}
+          onClose={() => setShowAlert(false)}
+        />
+        <CyclePromotionModal
+          isOpen={showPromotionModal}
+          stars={tierStars}
+          pendingScore={stats?.pendingCycleScore || 0}
+          onPromote={handlePromote}
+          onClose={() => setShowPromotionModal(false)}
+        />
       </div>
     );
   }
