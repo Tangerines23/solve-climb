@@ -45,8 +45,8 @@ async function run() {
   console.log(`\n🚀 Ubuntu 컨테이너 내부에서 ${isFullMode ? '전체(100%)' : '핵심'} 검증을 실행합니다...`);
 
   const runCommand = isFullMode 
-    ? 'npm install && bash scripts/ci-local-all.sh' 
-    : 'npm install && npx @playwright/test install chromium --with-deps && npm run ci:local:stage1';
+    ? 'npm install --legacy-peer-deps && bash scripts/ci-local-all.sh' 
+    : 'npm install --legacy-peer-deps && npx @playwright/test install chromium --with-deps && npm run ci:local:stage1';
 
   const dockerArgs = [
     'run',

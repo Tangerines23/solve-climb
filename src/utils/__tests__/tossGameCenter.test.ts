@@ -1,6 +1,11 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { submitScoreToLeaderboard, openLeaderboard, getErrorMessage } from '../tossGameCenter';
 
+vi.mock('../errorHandler', () => ({
+  logError: vi.fn(),
+  getUserErrorMessage: vi.fn(() => 'Mocked Error Message'),
+}));
+
 describe('tossGameCenter', () => {
   const originalWindow = global.window;
 
@@ -12,11 +17,6 @@ describe('tossGameCenter', () => {
     vi.spyOn(console, 'warn').mockImplementation(() => {});
     vi.spyOn(console, 'error').mockImplementation(() => {});
   });
-
-  vi.mock('../errorHandler', () => ({
-    logError: vi.fn(),
-    getUserErrorMessage: vi.fn(() => 'Mocked Error Message'),
-  }));
 
   afterEach(() => {
     vi.restoreAllMocks();
