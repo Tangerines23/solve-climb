@@ -18,6 +18,15 @@ export const THEME_MULTIPLIERS: Record<ThemeTier, number> = {
   expert: 3.0,
 };
 
+export type FeverLevel = 0 | 1 | 2 | 3;
+
+export const FEVER_MULTIPLIERS: Record<FeverLevel, number> = {
+  0: 1.0,
+  1: 1.2,
+  2: 1.5,
+  3: 2.0,
+};
+
 export const NUMBER_RANGE_BY_DIFFICULTY: Record<Difficulty, { min: number; max: number }> = {
   easy: { min: 0, max: 9 },
   medium: { min: 10, max: 99 },
