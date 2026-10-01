@@ -42,3 +42,11 @@ export {
   calculateCategoryAltitude,
   getBaseLevelScore,
 } from './utils/scoreCalculator';
+export {
+  computeQuizScore,
+  useQuizScoring,
+  resolveComboMultiplier,
+  resolveThemeMultiplier,
+  resolveThemeTier,
+  type QuizScoreParams,
+} from './hooks/useQuizScoring';

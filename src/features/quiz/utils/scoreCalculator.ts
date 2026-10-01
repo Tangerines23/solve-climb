@@ -24,11 +24,12 @@ const getBestScore = (record: LevelRecord): number => {
  * 1안(페이즈 단계별 고정 모델)에 따라 '기초' 분야는 페이즈별 고정 점수를 부여합니다.
  */
 export function getBaseLevelScore(level: number, categoryId: string | null): number {
+  const safeLevel = Math.max(1, Math.floor(level || 1));
   if (categoryId === '기초') {
-    const step = Math.floor((level - 1) / 5);
+    const step = Math.floor((safeLevel - 1) / 5);
     return 10 + step * 5;
   }
-  return BASE_CLIMB_DISTANCE + (level - 1) * DISTANCE_PER_LEVEL;
+  return BASE_CLIMB_DISTANCE + (safeLevel - 1) * DISTANCE_PER_LEVEL;
 }
 
 type LevelRecordMap = Record<string, LevelRecord>;

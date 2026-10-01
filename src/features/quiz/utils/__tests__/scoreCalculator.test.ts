@@ -6,6 +6,7 @@ import {
   calculateSubTopicProgress,
   calculateCategoryAltitude,
   calculateCategoryProgress,
+  getBaseLevelScore,
 } from '../scoreCalculator';
 import { useLevelProgressStore } from '@/stores/useLevelProgressStore';
 
@@ -104,6 +105,30 @@ describe('scoreCalculator', () => {
       const result = calculateCategoryProgress('기초');
       expect(result.currentAltitude).toBe(10);
       expect(result.targetAltitude).toBeGreaterThan(0);
+    });
+  });
+
+  describe('getBaseLevelScore', () => {
+    it('calculates stepped scores for 기초 category', () => {
+      expect(getBaseLevelScore(1, '기초')).toBe(10);
+      expect(getBaseLevelScore(5, '기초')).toBe(10);
+      expect(getBaseLevelScore(6, '기초')).toBe(15);
+      expect(getBaseLevelScore(10, '기초')).toBe(15);
+      expect(getBaseLevelScore(11, '기초')).toBe(20);
+    });
+
+    it('calculates linear distance for standard categories', () => {
+      expect(getBaseLevelScore(1, '대수')).toBe(10);
+      expect(getBaseLevelScore(2, '대수')).toBe(15);
+      expect(getBaseLevelScore(5, '대수')).toBe(30);
+    });
+
+    it('safely clamps non-positive or NaN levels to level 1', () => {
+      expect(getBaseLevelScore(0, '대수')).toBe(10);
+      expect(getBaseLevelScore(-5, '대수')).toBe(10);
+      expect(getBaseLevelScore(NaN, '대수')).toBe(10);
+      expect(getBaseLevelScore(0, '기초')).toBe(10);
+      expect(getBaseLevelScore(-5, '기초')).toBe(10);
     });
   });
 });
