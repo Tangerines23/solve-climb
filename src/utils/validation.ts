@@ -7,10 +7,13 @@
 const NICKNAME_PATTERN = /^[가-힣a-zA-Z0-9\s]+$/;
 
 /**
- * HTML 태그 제거
+ * HTML 태그 제거 (script, style 태그 및 그 내부 내용 포함 제거)
  */
 const removeHtmlTags = (text: string): string => {
-  return text.replace(/<[^>]*>/g, '');
+  return text
+    .replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '')
+    .replace(/<style\b[^<]*(?:(?!<\/style>)<[^<]*)*<\/style>/gi, '')
+    .replace(/<[^>]*>/g, '');
 };
 
 /**
@@ -26,7 +29,8 @@ const normalizeWhitespace = (text: string): string => {
  * - 공백 정규화
  * - 앞뒤 공백 제거
  */
-export const sanitizeNickname = (nickname: string): string => {
+export const sanitizeNickname = (nickname: string | null | undefined): string => {
+  if (!nickname || typeof nickname !== 'string') return '';
   let sanitized = nickname;
 
   // HTML 태그 제거
@@ -43,19 +47,22 @@ export const sanitizeNickname = (nickname: string): string => {
  * @param nickname 검증할 닉네임
  * @returns 검증 결과 및 에러 메시지
  */
-export const validateNickname = (nickname: string): { valid: boolean; error?: string } => {
-  // 빈 문자열 체크
-  if (!nickname.trim()) {
+export const validateNickname = (
+  nickname: string | null | undefined
+): { valid: boolean; error?: string } => {
+  if (!nickname || typeof nickname !== 'string' || !nickname.trim()) {
     return { valid: false, error: '닉네임을 입력해주세요.' };
   }
 
+  const trimmed = nickname.trim();
+
   // 길이 체크
-  if (nickname.length > 10) {
+  if (trimmed.length > 10) {
     return { valid: false, error: '닉네임은 10자 이하여야 합니다.' };
   }
 
   // 허용 문자 체크
-  if (!NICKNAME_PATTERN.test(nickname)) {
+  if (!NICKNAME_PATTERN.test(trimmed)) {
     return { valid: false, error: '닉네임은 한글, 영문, 숫자만 사용할 수 있습니다.' };
   }
 
@@ -70,7 +77,7 @@ export const safeAccess = <T extends object>(
   obj: T | undefined | null,
   key: string | number | null | undefined
 ): unknown | undefined => {
-  if (!obj || key === null || key === undefined) return undefined;
+  if (!obj || typeof obj !== 'object' || key === null || key === undefined) return undefined;
   const keyStr = String(key);
   if (Object.prototype.hasOwnProperty.call(obj, keyStr)) {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any, security/detect-object-injection
@@ -78,13 +85,14 @@ export const safeAccess = <T extends object>(
   }
   return undefined;
 };
+
 /**
  * UUID 형식 검증 함수 (PostgreSQL UUID 타입과 호환)
  */
 export const isValidUUID = (uuid: string | null | undefined): boolean => {
-  if (!uuid) return false;
+  if (!uuid || typeof uuid !== 'string') return false;
   const uuidPattern = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
-  return uuidPattern.test(uuid);
+  return uuidPattern.test(uuid.trim());
 };
 
 /**

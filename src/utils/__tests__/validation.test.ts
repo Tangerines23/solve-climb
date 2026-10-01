@@ -1,131 +1,185 @@
 import { describe, it, expect } from 'vitest';
-import { sanitizeNickname, validateNickname } from '../validation';
+import {
+  sanitizeNickname,
+  validateNickname,
+  safeAccess,
+  isValidUUID,
+  generateUUID,
+} from '../validation';
 
-describe('validation', () => {
-  describe('sanitizeNickname', () => {
-    it('should remove HTML tags', () => {
-      const result = sanitizeNickname('<script>alert("xss")</script>test');
-      expect(result).not.toContain('<script>');
-      expect(result).toContain('test');
+describe('sanitizeNickname', () => {
+  it("returns '' for null", () => {
+    expect(sanitizeNickname(null)).toBe('');
+  });
+
+  it("returns '' for undefined", () => {
+    expect(sanitizeNickname(undefined)).toBe('');
+  });
+
+  it("returns '' for numbers", () => {
+    // @ts-expect-error test invalid type
+    expect(sanitizeNickname(123)).toBe('');
+  });
+
+  it("returns '' for non-string", () => {
+    // @ts-expect-error test invalid type
+    expect(sanitizeNickname({})).toBe('');
+  });
+
+  it('removes HTML tags', () => {
+    expect(sanitizeNickname('<script>alert("xss")</script>')).toBe('');
+    expect(sanitizeNickname('<img src="x">')).toBe('');
+    expect(sanitizeNickname('<div><span>test</span></div>')).toBe('test');
+  });
+
+  it('normalizes consecutive whitespace and trims', () => {
+    expect(sanitizeNickname('  hello   world  ')).toBe('hello world');
+    expect(sanitizeNickname('\t\nhello world\n\t')).toBe('hello world');
+  });
+
+  it('handles empty string', () => {
+    expect(sanitizeNickname('')).toBe('');
+  });
+
+  it('handles strings with only HTML tags', () => {
+    expect(sanitizeNickname('<div><span></span></div>')).toBe('');
+  });
+
+  it('handles strings with only whitespace', () => {
+    expect(sanitizeNickname('   ')).toBe('');
+  });
+});
+
+describe('validateNickname', () => {
+  it('returns { valid: true } for valid Korean, English, numbers, exactly 10 chars', () => {
+    expect(validateNickname('가나다라마가나다라마')).toEqual({ valid: true });
+    expect(validateNickname('abcdefghij')).toEqual({ valid: true });
+    expect(validateNickname('1234567890')).toEqual({ valid: true });
+    expect(validateNickname('가나다라마1234')).toEqual({ valid: true });
+  });
+
+  it('returns { valid: false, error: "닉네임을 입력해주세요." } for null', () => {
+    expect(validateNickname(null)).toEqual({ valid: false, error: '닉네임을 입력해주세요.' });
+  });
+
+  it('returns { valid: false, error: "닉네임을 입력해주세요." } for undefined', () => {
+    expect(validateNickname(undefined)).toEqual({ valid: false, error: '닉네임을 입력해주세요.' });
+  });
+
+  it('returns { valid: false, error: "닉네임을 입력해주세요." } for empty string', () => {
+    expect(validateNickname('')).toEqual({ valid: false, error: '닉네임을 입력해주세요.' });
+  });
+
+  it('returns { valid: false, error: "닉네임을 입력해주세요." } for only whitespace', () => {
+    expect(validateNickname('   ')).toEqual({ valid: false, error: '닉네임을 입력해주세요.' });
+  });
+
+  it('returns { valid: false, error: "닉네임은 10자 이하여야 합니다." } for length > 10', () => {
+    expect(validateNickname('가나다라마가나다라마가')).toEqual({
+      valid: false,
+      error: '닉네임은 10자 이하여야 합니다.',
     });
-
-    it('should normalize whitespace', () => {
-      const result = sanitizeNickname('  test   name  ');
-      expect(result).toBe('test name');
+    expect(validateNickname('abcdefghijk')).toEqual({
+      valid: false,
+      error: '닉네임은 10자 이하여야 합니다.',
     });
   });
 
-  describe('validateNickname', () => {
-    it('should return valid for valid nickname', () => {
-      const result = validateNickname('user123');
-      expect(result.valid).toBe(true);
+  it('returns { valid: false, error: "닉네임은 한글, 영문, 숫자만 사용할 수 있습니다." } for special characters', () => {
+    expect(validateNickname('가나다라마!')).toEqual({
+      valid: false,
+      error: '닉네임은 한글, 영문, 숫자만 사용할 수 있습니다.',
     });
-
-    it('should return invalid for empty nickname', () => {
-      const result = validateNickname('');
-      expect(result.valid).toBe(false);
-      expect(result.error).toBe('닉네임을 입력해주세요.');
-    });
-
-    it('should return invalid for nickname longer than 10 characters', () => {
-      const result = validateNickname('a'.repeat(11));
-      expect(result.valid).toBe(false);
-      expect(result.error).toBe('닉네임은 10자 이하여야 합니다.');
-    });
-
-    it('should return invalid for nickname with special characters', () => {
-      const result = validateNickname('user@name');
-      expect(result.valid).toBe(false);
-      expect(result.error).toBe('닉네임은 한글, 영문, 숫자만 사용할 수 있습니다.');
-    });
-
-    it('should return valid for nickname with exactly 10 characters', () => {
-      const result = validateNickname('a'.repeat(10));
-      expect(result.valid).toBe(true);
-    });
-
-    it('should return invalid for nickname with only whitespace', () => {
-      const result = validateNickname('   ');
-      expect(result.valid).toBe(false);
-      expect(result.error).toBe('닉네임을 입력해주세요.');
-    });
-
-    it('should return valid for nickname with Korean characters', () => {
-      const result = validateNickname('홍길동');
-      expect(result.valid).toBe(true);
-    });
-
-    it('should return valid for nickname with mixed Korean and English', () => {
-      const result = validateNickname('홍길동123');
-      expect(result.valid).toBe(true);
-    });
-
-    it('should return invalid for nickname with various special characters', () => {
-      const specialChars = ['!', '@', '#', '$', '%', '^', '&', '*', '(', ')', '-', '_', '+', '='];
-      specialChars.forEach((char) => {
-        const result = validateNickname(`user${char}name`);
-        expect(result.valid).toBe(false);
-        expect(result.error).toBe('닉네임은 한글, 영문, 숫자만 사용할 수 있습니다.');
-      });
+    expect(validateNickname('abcdefghi!')).toEqual({
+      valid: false,
+      error: '닉네임은 한글, 영문, 숫자만 사용할 수 있습니다.',
     });
   });
+});
 
-  describe('sanitizeNickname - Edge cases', () => {
-    it('should remove various HTML tags', () => {
-      const htmlTags = [
-        '<script>alert("xss")</script>',
-        '<div>content</div>',
-        '<span>text</span>',
-        '<img src="x" onerror="alert(1)">',
-        '<a href="javascript:alert(1)">link</a>',
-      ];
+describe('safeAccess', () => {
+  it('accesses own properties on an object', () => {
+    const obj = { name: 'test', age: 30 };
+    expect(safeAccess(obj, 'name')).toBe('test');
+    expect(safeAccess(obj, 'age')).toBe(30);
+  });
 
-      htmlTags.forEach((tag) => {
-        const result = sanitizeNickname(`${tag}test`);
-        expect(result).not.toContain('<');
-        expect(result).not.toContain('>');
-        expect(result).toContain('test');
-      });
-    });
+  it('returns undefined for non-existent property', () => {
+    const obj = { name: 'test' };
+    expect(safeAccess(obj, 'age')).toBeUndefined();
+  });
 
-    it('should handle multiple consecutive spaces', () => {
-      const result = sanitizeNickname('test    name');
-      expect(result).toBe('test name');
-    });
+  it('returns undefined for prototype properties', () => {
+    const obj = {};
+    expect(safeAccess(obj, 'toString')).toBeUndefined();
+    expect(safeAccess(obj, '__proto__')).toBeUndefined();
+    expect(safeAccess(obj, 'constructor')).toBeUndefined();
+  });
 
-    it('should handle tabs and newlines', () => {
-      const result = sanitizeNickname('test\t\nname');
-      expect(result).toBe('test name');
-    });
+  it('returns undefined when obj is null', () => {
+    expect(safeAccess(null, 'name')).toBeUndefined();
+  });
 
-    it('should handle leading and trailing spaces', () => {
-      const result = sanitizeNickname('  test name  ');
-      expect(result).toBe('test name');
-    });
+  it('returns undefined when obj is undefined', () => {
+    expect(safeAccess(undefined, 'name')).toBeUndefined();
+  });
 
-    it('should handle HTML tags with attributes', () => {
-      const result = sanitizeNickname('<div class="test" id="test">content</div>');
-      expect(result).toBe('content');
-    });
+  it('returns undefined when obj is primitive', () => {
+    // @ts-expect-error test invalid type
+    expect(safeAccess(123, 'toString')).toBeUndefined();
+    // @ts-expect-error test invalid type
+    expect(safeAccess('test', 'length')).toBeUndefined();
+    // @ts-expect-error test invalid type
+    expect(safeAccess(true, 'valueOf')).toBeUndefined();
+  });
+});
 
-    it('should handle nested HTML tags', () => {
-      const result = sanitizeNickname('<div><span>nested</span></div>');
-      expect(result).toBe('nested');
-    });
+describe('isValidUUID', () => {
+  it('returns true for standard lowercase UUID', () => {
+    expect(isValidUUID('123e4567-e89b-12d3-a456-426614174000')).toBe(true);
+  });
 
-    it('should handle empty string', () => {
-      const result = sanitizeNickname('');
-      expect(result).toBe('');
-    });
+  it('returns true for uppercase UUID', () => {
+    expect(isValidUUID('123E4567-E89B-12D3-A456-426614174000')).toBe(true);
+  });
 
-    it('should handle string with only HTML tags', () => {
-      const result = sanitizeNickname('<div></div>');
-      expect(result).toBe('');
-    });
+  it('returns true for trimmed UUID', () => {
+    expect(isValidUUID('  123e4567-e89b-12d3-a456-426614174000  ')).toBe(true);
+  });
 
-    it('should handle string with only whitespace', () => {
-      const result = sanitizeNickname('   ');
-      expect(result).toBe('');
-    });
+  it('returns false for null', () => {
+    expect(isValidUUID(null)).toBe(false);
+  });
+
+  it('returns false for undefined', () => {
+    expect(isValidUUID(undefined)).toBe(false);
+  });
+
+  it('returns false for non-string', () => {
+    // @ts-expect-error test invalid type
+    expect(isValidUUID({})).toBe(false);
+  });
+
+  it('returns false for empty string', () => {
+    expect(isValidUUID('')).toBe(false);
+  });
+
+  it('returns false for invalid format', () => {
+    expect(isValidUUID('123e4567-e89b-12d3-a456-42661417400')).toBe(false);
+    expect(isValidUUID('123e4567-e89b-12d3-a456-4266141740000')).toBe(false);
+    expect(isValidUUID('123e4567-e89b-12d3-a456-42661417400g')).toBe(false);
+  });
+});
+
+describe('generateUUID', () => {
+  it('returns a valid UUID that passes isValidUUID', () => {
+    const uuid = generateUUID();
+    expect(isValidUUID(uuid)).toBe(true);
+  });
+
+  it('produces distinct values on subsequent calls', () => {
+    const uuid1 = generateUUID();
+    const uuid2 = generateUUID();
+    expect(uuid1).not.toBe(uuid2);
   });
 });
