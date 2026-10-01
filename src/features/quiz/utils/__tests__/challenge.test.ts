@@ -45,9 +45,29 @@ describe('challenge', () => {
       const rng2 = new SeededRandom(222);
       expect(rng1.random()).not.toBe(rng2.random());
     });
+
+    it('handles inverted bounds and equal bounds in randomInt', () => {
+      const rng = new SeededRandom(12345);
+      expect(rng.randomInt(10, 10)).toBe(10);
+      const inverted = rng.randomInt(10, 2);
+      expect(inverted).toBeGreaterThanOrEqual(2);
+      expect(inverted).toBeLessThanOrEqual(10);
+    });
+
+    it('handles non-finite seeds safely', () => {
+      const rng = new SeededRandom(NaN);
+      expect(Number.isFinite(rng.random())).toBe(true);
+    });
   });
 
   describe('generateTodayChallenge (Fallback Branches)', () => {
+    it('should handle null and undefined progressMap gracefully', () => {
+      const challengeNull = generateTodayChallenge(null);
+      expect(challengeNull.id).toContain('today_challenge_');
+      const challengeUndef = generateTodayChallenge(undefined);
+      expect(challengeUndef.id).toContain('today_challenge_');
+    });
+
     it('should handle empty subTopics with a fallback challenge', () => {
       // Mock sub-topics as empty
       const originalSubTopics = APP_CONFIG.SUB_TOPICS;

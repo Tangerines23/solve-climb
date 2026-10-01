@@ -12,19 +12,22 @@ import {
 } from '@/constants/game';
 
 /**
- * 레벨 기록에서 최고 점수를 추출합니다. (타임어택, 서바이벌 중 큰 값)
+ * 레벨 기록에서 최고 점수를 추출합니다. (타임어택, 서바이벌 중 큰 값, 음수 방지)
  */
-const getBestScore = (record: LevelRecord): number => {
-  if (!record?.bestScore) return 0;
-  return Math.max(record.bestScore['time-attack'] || 0, record.bestScore.survival || 0);
+const getBestScore = (record: LevelRecord | null | undefined): number => {
+  if (!record || typeof record !== 'object' || !record.bestScore) return 0;
+  const timeAttack = Number(record.bestScore['time-attack']) || 0;
+  const survival = Number(record.bestScore.survival) || 0;
+  return Math.max(0, timeAttack, survival);
 };
 
 /**
  * 레벨과 카테고리에 따른 기본 고도 점수를 계산합니다.
  * 1안(페이즈 단계별 고정 모델)에 따라 '기초' 분야는 페이즈별 고정 점수를 부여합니다.
  */
-export function getBaseLevelScore(level: number, categoryId: string | null): number {
-  const safeLevel = Math.max(1, Math.floor(level || 1));
+export function getBaseLevelScore(level: number, categoryId: string | null | undefined): number {
+  const numLevel = typeof level === 'number' && Number.isFinite(level) ? level : 1;
+  const safeLevel = Math.max(1, Math.floor(numLevel));
   if (categoryId === '기초') {
     const step = Math.floor((safeLevel - 1) / 5);
     return 10 + step * 5;
@@ -114,7 +117,8 @@ export function calculateSubTopicTargetAltitude(category: string, subTopic: stri
   let totalTarget = 0;
 
   subTopicLevels.forEach((levelData) => {
-    const { level } = levelData;
+    if (!levelData || typeof levelData !== 'object') return;
+    const level = Number(levelData.level) || 1;
     const baseLevelScore = getBaseLevelScore(level, subTopic);
     let levelTargetAltitude = baseLevelScore * themeMultiplier * GAME_CONFIG.PROBLEMS_PER_LEVEL;
 
@@ -135,7 +139,7 @@ export function calculateSubTopicProgress(
   subTopic: string
 ): { progressPercent: number; currentAltitude: number; targetAltitude: number } {
   const currentAltitude = calculateSubTopicAltitude(category, subTopic);
-  const targetAltitude = calculateSubTopicTargetAltitude('World1', subTopic);
+  const targetAltitude = calculateSubTopicTargetAltitude(category || 'World1', subTopic);
 
   const progressPercent =
     targetAltitude > 0 ? Math.round((currentAltitude / targetAltitude) * 100) : 0;

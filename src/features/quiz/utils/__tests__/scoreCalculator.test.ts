@@ -130,5 +130,30 @@ describe('scoreCalculator', () => {
       expect(getBaseLevelScore(0, '기초')).toBe(10);
       expect(getBaseLevelScore(-5, '기초')).toBe(10);
     });
+
+    it('handles undefined or null categoryId safely', () => {
+      expect(getBaseLevelScore(1, undefined)).toBe(10);
+      expect(getBaseLevelScore(2, null)).toBe(15);
+    });
+  });
+
+  describe('empty progress handling', () => {
+    it('returns zero for calculateTotalAltitude when progress is empty', () => {
+      vi.mocked(useLevelProgressStore.getState).mockReturnValue({
+        progress: {},
+      });
+      const result = calculateTotalAltitude();
+      expect(result.totalAltitude).toBe(0);
+      expect(result.totalProblems).toBe(0);
+    });
+
+    it('returns zero for calculateCategoryAltitude when category is not found', () => {
+      vi.mocked(useLevelProgressStore.getState).mockReturnValue({
+        progress: {},
+      });
+      const result = calculateCategoryAltitude('nonexistent');
+      expect(result.totalAltitude).toBe(0);
+      expect(result.totalProblems).toBe(0);
+    });
   });
 });
