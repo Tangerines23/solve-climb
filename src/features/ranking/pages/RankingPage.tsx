@@ -4,6 +4,7 @@ import { TierBadge } from '@/components/TierBadge';
 import { SegmentedControl } from '@/components/SegmentedControl';
 import { GlassCard } from '@/components/common/GlassCard';
 import { useRanking, type RankingType } from '../hooks/useRanking';
+import { formatMedalOrRank, formatSeasonBadge } from '../utils/rankingUtils';
 import './RankingPage.css';
 
 export function RankingPage() {
@@ -17,19 +18,6 @@ export function RankingPage() {
     currentRankings,
     myRank,
   } = useRanking();
-
-  const getMedalIcon = (rank: number) => {
-    switch (rank) {
-      case 1:
-        return '🥇';
-      case 2:
-        return '🥈';
-      case 3:
-        return '🥉';
-      default:
-        return rank;
-    }
-  };
 
   return (
     <div className="ranking-page">
@@ -107,22 +95,12 @@ export function RankingPage() {
                     className={`ranking-item card-interactive ${item?.rank && Number(item.rank) <= 3 ? `top-rank rank-${item.rank}` : ''} ${item?.user_id === currentUserId ? 'my-item' : ''}`}
                   >
                     <div className="ranking-item-left">
-                      <span className="ranking-rank">{getMedalIcon(Number(item.rank))}</span>
+                      <span className="ranking-rank">{formatMedalOrRank(Number(item.rank))}</span>
                       <span className="ranking-nickname">
                         {item.nickname}
                         {item.week_start_date && (
                           <span className="season-badge">
-                            {(() => {
-                              try {
-                                const date = new Date(item.week_start_date);
-                                const month = date.getMonth() + 1;
-                                const firstDay = new Date(date.getFullYear(), date.getMonth(), 1);
-                                const week = Math.ceil((date.getDate() + firstDay.getDay()) / 7);
-                                return `${month}월 ${week}주차 시즌`;
-                              } catch {
-                                return '시즌 정보 없음';
-                              }
-                            })()}
+                            {formatSeasonBadge(item.week_start_date)}
                           </span>
                         )}
                       </span>
@@ -153,7 +131,7 @@ export function RankingPage() {
               <div className="my-rank-sticky-content">
                 <GlassCard className="ranking-item my-item">
                   <div className="ranking-item-left">
-                    <span className="ranking-rank">{getMedalIcon(Number(myRank.rank))}</span>
+                    <span className="ranking-rank">{formatMedalOrRank(Number(myRank.rank))}</span>
                     <span className="ranking-nickname">나 ({myRank.nickname})</span>
                     <TierBadge
                       fixedTierLevel={myRank.tier_level}
