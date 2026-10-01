@@ -8,11 +8,7 @@ describe('AnonymousDataWarningModal', () => {
     const mockGoToMyPage = vi.fn();
 
     render(
-      <AnonymousDataWarningModal
-        isOpen={true}
-        onClose={mockClose}
-        onGoToMyPage={mockGoToMyPage}
-      />
+      <AnonymousDataWarningModal isOpen={true} onClose={mockClose} onGoToMyPage={mockGoToMyPage} />
     );
 
     expect(screen.getByText('⚠️ 데이터 유실 주의 안내')).toBeTruthy();
@@ -25,11 +21,7 @@ describe('AnonymousDataWarningModal', () => {
     const mockGoToMyPage = vi.fn();
 
     render(
-      <AnonymousDataWarningModal
-        isOpen={true}
-        onClose={mockClose}
-        onGoToMyPage={mockGoToMyPage}
-      />
+      <AnonymousDataWarningModal isOpen={true} onClose={mockClose} onGoToMyPage={mockGoToMyPage} />
     );
 
     fireEvent.click(screen.getByText('나중에 하기'));
@@ -41,11 +33,7 @@ describe('AnonymousDataWarningModal', () => {
     const mockGoToMyPage = vi.fn();
 
     render(
-      <AnonymousDataWarningModal
-        isOpen={true}
-        onClose={mockClose}
-        onGoToMyPage={mockGoToMyPage}
-      />
+      <AnonymousDataWarningModal isOpen={true} onClose={mockClose} onGoToMyPage={mockGoToMyPage} />
     );
 
     fireEvent.click(screen.getByText('3초 계정 연동하기'));
