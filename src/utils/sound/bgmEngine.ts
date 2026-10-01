@@ -466,7 +466,20 @@ export class BgmEngine {
     if (!gain) return;
     this.activeNodes.push({ osc, source, gain });
     if (this.activeNodes.length > 80) {
-      this.activeNodes.shift();
+      const evicted = this.activeNodes.shift();
+      if (evicted) {
+        try {
+          if (evicted.osc) {
+            evicted.osc.disconnect();
+          }
+          if (evicted.source) {
+            evicted.source.disconnect();
+          }
+          evicted.gain.disconnect();
+        } catch {
+          // ignore
+        }
+      }
     }
   }
 

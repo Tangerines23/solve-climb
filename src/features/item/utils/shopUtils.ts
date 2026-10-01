@@ -1,3 +1,5 @@
+import type { InventoryItem } from '@/types/user';
+
 export function getInventoryQuantity(
   inventory: Array<{ code: string; quantity: number }>,
   code: string
@@ -7,17 +9,26 @@ export function getInventoryQuantity(
 }
 
 export function addOrIncrementItem(
-  inventory: any[],
+  inventory: InventoryItem[],
   targetItem: { code: string; name: string; description?: string },
   itemId: number
-): any[] {
+): InventoryItem[] {
   const itemIndex = inventory.findIndex((i) => i.code === targetItem.code);
   if (itemIndex !== -1) {
     return inventory.map((i, index) =>
       index === itemIndex ? { ...i, quantity: i.quantity + 1 } : i
     );
   }
-  return [...inventory, { ...targetItem, quantity: 1, id: itemId }];
+  return [
+    ...inventory,
+    {
+      id: itemId,
+      code: targetItem.code,
+      name: targetItem.name,
+      description: targetItem.description ?? '',
+      quantity: 1,
+    },
+  ];
 }
 
 export function isSimulationError(error: unknown): boolean {

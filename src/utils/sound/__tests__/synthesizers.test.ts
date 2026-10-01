@@ -17,6 +17,7 @@ describe('DSP Synthesizers', () => {
         linearRampToValueAtTime: vi.fn(),
       },
       connect: vi.fn(),
+      disconnect: vi.fn(),
       start: vi.fn(),
       stop: vi.fn(),
     };
@@ -28,6 +29,7 @@ describe('DSP Synthesizers', () => {
         exponentialRampToValueAtTime: vi.fn(),
       },
       connect: vi.fn(),
+      disconnect: vi.fn(),
     };
 
     mockFilter = {
@@ -39,6 +41,7 @@ describe('DSP Synthesizers', () => {
         setValueAtTime: vi.fn(),
       },
       connect: vi.fn(),
+      disconnect: vi.fn(),
     };
 
     mockContext = {
@@ -65,6 +68,10 @@ describe('DSP Synthesizers', () => {
     expect(mockOscillator.start).toHaveBeenCalledWith(expect.any(Number));
     expect(mockOscillator.stop).toHaveBeenCalledWith(expect.any(Number));
     expect(mockGain.connect).toHaveBeenCalledWith(mockDestination);
+    expect(typeof mockOscillator.onended).toBe('function');
+    mockOscillator.onended();
+    expect(mockOscillator.disconnect).toHaveBeenCalled();
+    expect(mockGain.disconnect).toHaveBeenCalled();
   });
 
   it('playSweep ramps frequency over duration', () => {

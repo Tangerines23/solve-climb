@@ -43,7 +43,7 @@ describe('addOrIncrementItem', () => {
     expect(result).toEqual([
       { code: 'item1', quantity: 5, id: 1 },
       { code: 'item2', quantity: 10, id: 2 },
-      { code: 'item3', name: 'Item 3', quantity: 1, id: 3 },
+      { code: 'item3', name: 'Item 3', description: '', quantity: 1, id: 3 },
     ]);
   });
 });
