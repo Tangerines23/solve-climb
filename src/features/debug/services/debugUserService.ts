@@ -26,9 +26,9 @@ class DebugUserService {
   }
 
   static async debugResetItems(): Promise<void> {
-    const {
-      data: { session },
-    } = await safeSupabaseQuery(supabase.auth.getSession());
+    const sessionRes = await safeSupabaseQuery(supabase.auth.getSession());
+    const session = (sessionRes as { data?: { session?: { user?: { id?: string } } } })?.data
+      ?.session;
     const userId = session?.user?.id || 'anonymous-debug-user';
 
     const res = await this.callRpcAndRefresh(
@@ -42,15 +42,16 @@ class DebugUserService {
   }
 
   static async debugRemoveItems(): Promise<void> {
-    const {
-      data: { user: _user },
-    } = await safeSupabaseQuery(supabase.auth.getUser());
-    const userId = _user?.id || 'anonymous-debug-user';
+    const userRes = await safeSupabaseQuery(supabase.auth.getUser());
+    const user = (userRes as { data?: { user?: { id?: string } } })?.data?.user;
+    const userId = user?.id || 'anonymous-debug-user';
 
-    const { data: inventory } = await safeSupabaseQuery(
+    const inventoryRes = await safeSupabaseQuery(
       supabase.from('inventory').select('item_id, quantity').eq('user_id', userId)
     );
-    if (!inventory) return;
+    const inventory = (inventoryRes as { data?: Array<{ item_id: number; quantity: number }> })
+      ?.data;
+    if (!Array.isArray(inventory) || inventory.length === 0) return;
 
     await Promise.all(
       inventory.map((item) =>
@@ -71,12 +72,12 @@ class DebugUserService {
   }
 
   static async debugSetStamina(amount: number): Promise<void> {
-    const newStamina = Math.max(0, amount);
+    const newStamina = Math.max(0, Number.isFinite(amount) ? Math.floor(amount) : 0);
     useUserStore.setState({ stamina: newStamina });
 
     const res = await this.callRpcAndRefresh(
       validatedRpc(
-        supabase.rpc('debug_set_stamina', { p_stamina: amount }),
+        supabase.rpc('debug_set_stamina', { p_stamina: newStamina }),
         CommonResponseSchema,
         'debug_set_stamina'
       )
@@ -87,12 +88,12 @@ class DebugUserService {
   }
 
   static async debugSetMinerals(amount: number): Promise<void> {
-    const newMinerals = Math.max(0, amount);
+    const newMinerals = Math.max(0, Number.isFinite(amount) ? Math.floor(amount) : 0);
     useUserStore.setState({ minerals: newMinerals });
 
     const res = await this.callRpcAndRefresh(
       validatedRpc(
-        supabase.rpc('debug_set_minerals', { p_minerals: amount }),
+        supabase.rpc('debug_set_minerals', { p_minerals: newMinerals }),
         CommonResponseSchema,
         'debug_set_minerals'
       )
