@@ -17,7 +17,12 @@ export { QuizLayout } from './components/QuizLayout';
 export { QuizCard } from './components/QuizCard';
 
 // Services & Synchronization
-export { LevelSyncService } from './services/LevelSyncService';
+export {
+  LevelSyncService,
+  mapCategoryAndSubject,
+  mapGameMode,
+  generateSessionUUID,
+} from './services/LevelSyncService';
 export { setupQuizEventListeners } from './services/quizEventListener';
 
 // Domain Models & Types
