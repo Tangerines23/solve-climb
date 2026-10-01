@@ -126,15 +126,19 @@ export class UserRepository {
    * 원시 인벤토리 데이터를 클라이언트 표준 규격으로 포맷팅
    */
   static formatInventory(raw: RawInventoryItem[] | null): InventoryItem[] {
-    return (
-      raw?.map((item) => ({
-        id: item?.items?.id || 0,
-        code: item?.items?.code || '',
-        name: item?.items?.name || '',
-        description: item?.items?.description || '',
-        quantity: item?.quantity || 0,
-      })) || []
-    );
+    if (!Array.isArray(raw)) return [];
+    return raw
+      .filter(
+        (item): item is RawInventoryItem & { items: NonNullable<RawInventoryItem['items']> } =>
+          Boolean(item && item.items && item.items.code)
+      )
+      .map((item) => ({
+        id: item.items.id || 0,
+        code: item.items.code,
+        name: item.items.name || '',
+        description: item.items.description || '',
+        quantity: Math.max(0, item.quantity || 0),
+      }));
   }
 
   /**
