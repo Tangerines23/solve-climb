@@ -1,4 +1,4 @@
-﻿#!/usr/bin/env node
+#!/usr/bin/env node
 /**
  * scripts/auto-ci-pipeline.js
  * End-to-end Autonomous CI/CD Orchestrator with Local AI Self-Healing
@@ -7,7 +7,6 @@
 import { spawnSync } from 'child_process';
 import https from 'https';
 import http from 'http';
-import fs from 'fs';
 import path from 'path';
 import url from 'url';
 
@@ -88,7 +87,7 @@ function githubRequest(endpoint) {
         try {
           const json = JSON.parse(body);
           resolve(json);
-        } catch (e) {
+        } catch (_e) {
           resolve({ error: body, statusCode: res.statusCode });
         }
       });
@@ -160,7 +159,7 @@ async function queryLocalAI(
       });
 
       if (result) return result;
-    } catch (e) {
+    } catch (_e) {
       // Try next endpoint
     }
   }
@@ -230,7 +229,7 @@ async function stepCommit(commitMessage, maxRetries = 3) {
 /**
  * Step 2: Push & Smart GitHub Actions CI Watcher
  */
-async function stepPush(branch, options = {}) {
+async function stepPush(branch, _options = {}) {
   log('\n═══════════════════════════════════════════════════════', colors.cyan);
   log(`  [Step 2] Git Push & GitHub Actions CI Monitoring (${branch})`, colors.cyan + colors.bold);
   log('═══════════════════════════════════════════════════════', colors.cyan);
@@ -277,10 +276,8 @@ async function stepPush(branch, options = {}) {
 
   const headSha = getLatestCommitSha();
   const startTime = Date.now();
-  let pollCount = 0;
 
   while (true) {
-    pollCount++;
     await new Promise((r) => setTimeout(r, 10000)); // 10초 주기 폴링
     const elapsedSec = Math.round((Date.now() - startTime) / 1000);
 
