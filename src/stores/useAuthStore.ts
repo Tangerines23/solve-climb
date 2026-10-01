@@ -9,16 +9,71 @@ import { useUserStore } from './useUserStore';
 import { useBadgeStore } from './useBadgeStore';
 
 import { analytics } from '@/services/analytics';
-
 import { isValidUUID } from '../utils/validation';
+
+export interface AuthActionResult {
+  success: boolean;
+  error?: string;
+}
 
 interface AuthState {
   session: Session | null;
   user: User | null;
   isLoading: boolean;
   initialize: () => Promise<void>;
-  signInAnonymously: () => Promise<void>;
+  signInAnonymously: () => Promise<AuthActionResult>;
   signOut: () => Promise<void>;
+}
+
+let authSubscription: { unsubscribe: () => void } | null = null;
+
+export function _resetAuthSubscriptionForTest(): void {
+  if (authSubscription) {
+    authSubscription.unsubscribe();
+    authSubscription = null;
+  }
+}
+
+/**
+ * 저장된 로컬 세션으로부터 게스트 유저 객체 복원
+ */
+function resolveGuestUser(): User | null {
+  const localSession = storageService.get<{ userId?: string; nickname?: string }>(
+    STORAGE_KEYS.LOCAL_SESSION
+  );
+  if (!localSession?.userId) return null;
+
+  const isValidId =
+    isValidUUID(localSession.userId) || String(localSession.userId).startsWith('guest-');
+  if (!isValidId) return null;
+
+  return {
+    id: localSession.userId,
+    app_metadata: { provider: 'anonymous' },
+    user_metadata: { nickname: localSession.nickname || '익명 등반가' },
+    aud: 'authenticated',
+    created_at: new Date().toISOString(),
+    is_anonymous: true,
+  } as unknown as User;
+}
+
+/**
+ * 초기 인증 상태 해석 (Zero Else 가드 클로즈 적용)
+ */
+function resolveInitialAuth(sbSession: Session | null): {
+  session: Session | null;
+  user: User | null;
+} {
+  if (sbSession) {
+    return { session: sbSession, user: sbSession.user };
+  }
+
+  const guestUser = resolveGuestUser();
+  if (guestUser) {
+    return { session: null, user: guestUser };
+  }
+
+  return { session: null, user: null };
 }
 
 /**
@@ -33,65 +88,33 @@ export const useAuthStore = create<AuthState>((set) => ({
   initialize: async () => {
     set({ isLoading: true });
 
-    // 1. 실제 Supabase 세션 확인
+    // 1. 실제 Supabase 세션 확인 및 초기 상태 설정
     const {
       data: { session: sbSession },
     } = await safeSupabaseQuery(supabase.auth.getSession());
 
-    if (sbSession) {
-      set({ session: sbSession, user: sbSession.user });
-    } else {
-      // 2. 기존에 저장된 로컬 세션이 있는지 확인 (이전에 익명 로그인 등으로 저장된 세션)
-      const localSession = storageService.get<{ userId?: string; nickname?: string }>(
-        STORAGE_KEYS.LOCAL_SESSION
-      );
-      if (
-        localSession?.userId &&
-        (isValidUUID(localSession.userId) || String(localSession.userId).startsWith('guest-'))
-      ) {
-        const guestUser = {
-          id: localSession.userId,
-          app_metadata: { provider: 'anonymous' },
-          user_metadata: { nickname: localSession.nickname || '익명 등반가' },
-          aud: 'authenticated',
-          created_at: new Date().toISOString(),
-          is_anonymous: true,
-        } as unknown as User;
-        set({ session: null, user: guestUser });
-      } else {
-        // 비로그인 상태 (최초 방문 또는 로그아웃 상태)
-        set({ session: null, user: null });
-      }
+    const initialAuth = resolveInitialAuth(sbSession);
+    set({ session: initialAuth.session, user: initialAuth.user });
+
+    // 2. 기존 구독이 존재할 경우 먼저 해제하여 중복 리스너 메모리 누수 방지
+    if (authSubscription) {
+      authSubscription.unsubscribe();
+      authSubscription = null;
     }
 
-    // Listen for auth changes
-    supabase.auth.onAuthStateChange((event, session) => {
-      let user: User | null = session?.user ?? null;
+    // 3. Auth 상태 변경 리스너 단일 등록
+    const { data: subData } = supabase.auth.onAuthStateChange((event, session) => {
+      let currentUser: User | null = session?.user ?? null;
 
-      if (!user && event !== 'SIGNED_OUT') {
-        const localSession = storageService.get<{ userId?: string; nickname?: string }>(
-          STORAGE_KEYS.LOCAL_SESSION
-        );
-        if (
-          localSession?.userId &&
-          (isValidUUID(localSession.userId) || String(localSession.userId).startsWith('guest-'))
-        ) {
-          user = {
-            id: localSession.userId,
-            app_metadata: { provider: 'anonymous' },
-            user_metadata: { nickname: localSession.nickname || '익명 등반가' },
-            aud: 'authenticated',
-            created_at: new Date().toISOString(),
-            is_anonymous: true,
-          } as unknown as User;
-        }
+      if (!currentUser && event !== 'SIGNED_OUT') {
+        currentUser = resolveGuestUser();
       }
 
-      set({ session, user, isLoading: false });
+      set({ session, user: currentUser, isLoading: false });
 
-      if (user?.id && !String(user.id).startsWith('guest-')) {
+      if (currentUser?.id && !String(currentUser.id).startsWith('guest-')) {
         try {
-          useProfileStore.getState().syncProfileWithAuthUser(user.id);
+          useProfileStore.getState().syncProfileWithAuthUser(currentUser.id);
         } catch {
           // ignore
         }
@@ -109,25 +132,29 @@ export const useAuthStore = create<AuthState>((set) => ({
         }
       }
 
-      // Analytics 유저 컨텍스트 동기화 (Static import 사용)
-      analytics.setUser(user?.id ?? null, {
-        email: user?.email,
-        last_sign_in: user?.last_sign_in_at,
+      // Analytics 유저 컨텍스트 동기화
+      analytics.setUser(currentUser?.id ?? null, {
+        email: currentUser?.email,
+        last_sign_in: currentUser?.last_sign_in_at,
       });
     });
 
+    authSubscription = subData?.subscription ?? null;
     set({ isLoading: false });
   },
 
-  signInAnonymously: async () => {
+  signInAnonymously: async (): Promise<AuthActionResult> => {
     set({ isLoading: true });
     const { data, error } = await safeSupabaseQuery(supabase.auth.signInAnonymously());
+
     if (error) {
       console.error('[AuthStore] Manual anonymous sign-in failed:', error.message);
-    } else {
-      set({ session: data.session, user: data.user });
+      set({ isLoading: false });
+      return { success: false, error: error.message };
     }
-    set({ isLoading: false });
+
+    set({ session: data.session, user: data.user, isLoading: false });
+    return { success: true };
   },
 
   signOut: async () => {

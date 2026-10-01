@@ -291,5 +291,40 @@ describe('useAuthStore', () => {
         last_sign_in: '2023-01-01',
       });
     });
+
+    it('should unsubscribe previous auth subscription on subsequent initialize calls to prevent memory leaks', async () => {
+      const mockUnsubscribe = vi.fn();
+      vi.mocked(supabase.auth.onAuthStateChange).mockReturnValue({
+        data: { subscription: { unsubscribe: mockUnsubscribe } },
+      } as any);
+
+      await useAuthStore.getState().initialize();
+      expect(mockUnsubscribe).not.toHaveBeenCalled();
+
+      // Second initialize call should cleanly unsubscribe the first one
+      await useAuthStore.getState().initialize();
+      expect(mockUnsubscribe).toHaveBeenCalledTimes(1);
+    });
+
+    it('should return typed action result on anonymous sign-in', async () => {
+      vi.mocked(supabase.auth.signInAnonymously).mockResolvedValueOnce({
+        data: {
+          session: { user: { id: 'anon-1' }, access_token: 'tok' },
+          user: { id: 'anon-1' },
+        },
+        error: null,
+      } as any);
+
+      const successResult = await useAuthStore.getState().signInAnonymously();
+      expect(successResult).toEqual({ success: true });
+
+      vi.mocked(supabase.auth.signInAnonymously).mockResolvedValueOnce({
+        data: { session: null, user: null },
+        error: { message: 'Network error' },
+      } as any);
+
+      const failResult = await useAuthStore.getState().signInAnonymously();
+      expect(failResult).toEqual({ success: false, error: 'Network error' });
+    });
   });
 });
