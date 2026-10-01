@@ -55,7 +55,13 @@ export const useUserStore = create<UserState>((set, get) => {
       return res;
     },
 
+    /**
+     * @deprecated 레거시 메서드입니다. recoverStaminaAds 또는 recoverMineralsAds를 사용하세요.
+     */
     handleWatchAd: () => {
+      console.warn(
+        '[useUserStore] handleWatchAd is deprecated. Use recoverStaminaAds or recoverMineralsAds instead.'
+      );
       console.log('Watch Ad called (not implemented)');
     },
 
@@ -270,30 +276,55 @@ export const useUserStore = create<UserState>((set, get) => {
       if (amount <= 0) return { success: false, message: 'Invalid amount' };
 
       if (isBonus) {
-        const { data: authData } = await safeSupabaseQuery(supabase.auth.getUser());
-        const userId = authData?.user?.id;
+        if (get().isAdLoading) {
+          console.warn('[useUserStore] rewardMinerals ignored: Ad is already loading');
+          return { success: false, message: '이미 광고를 처리 중입니다.' };
+        }
+        set({ isAdLoading: true });
 
-        let res = await callRpcAndRefresh<{ success: boolean; minerals: number }>(
-          supabase.rpc(
-            'secure_reward_ad_view',
-            userId
-              ? { p_ad_type: 'double_reward', p_user_id: userId }
-              : { p_ad_type: 'double_reward' }
-          ),
-          { refreshData: true }
-        );
+        try {
+          const { data: authData } = await safeSupabaseQuery(supabase.auth.getUser());
+          const userId = authData?.user?.id;
 
-        if (!res.success && (res as { errorCode?: string }).errorCode === 'PGRST202') {
-          console.warn(
-            '[useUserStore] PGRST202 fallback: calling secure_reward_ad_view without p_user_id'
-          );
-          res = await callRpcAndRefresh<{ success: boolean; minerals: number }>(
-            supabase.rpc('secure_reward_ad_view', { p_ad_type: 'double_reward' }),
+          let res = await callRpcAndRefresh<{ success: boolean; minerals: number }>(
+            supabase.rpc(
+              'secure_reward_ad_view',
+              userId
+                ? { p_ad_type: 'double_reward', p_user_id: userId, p_amount: amount }
+                : { p_ad_type: 'double_reward', p_amount: amount }
+            ),
             { refreshData: true }
           );
-        }
 
-        return res;
+          if (!res.success && (res as { errorCode?: string }).errorCode === 'PGRST202') {
+            console.warn(
+              '[useUserStore] PGRST202 fallback: calling secure_reward_ad_view without p_amount'
+            );
+            res = await callRpcAndRefresh<{ success: boolean; minerals: number }>(
+              supabase.rpc(
+                'secure_reward_ad_view',
+                userId
+                  ? { p_ad_type: 'double_reward', p_user_id: userId }
+                  : { p_ad_type: 'double_reward' }
+              ),
+              { refreshData: true }
+            );
+
+            if (!res.success && (res as { errorCode?: string }).errorCode === 'PGRST202') {
+              console.warn(
+                '[useUserStore] PGRST202 fallback: calling secure_reward_ad_view without p_user_id'
+              );
+              res = await callRpcAndRefresh<{ success: boolean; minerals: number }>(
+                supabase.rpc('secure_reward_ad_view', { p_ad_type: 'double_reward' }),
+                { refreshData: true }
+              );
+            }
+          }
+
+          return res;
+        } finally {
+          set({ isAdLoading: false });
+        }
       }
 
       // [Security Warning] Generic mineral rewards without ads or game clear are discouraged.

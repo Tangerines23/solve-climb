@@ -40,6 +40,7 @@ describe('HomePage', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     vi.useFakeTimers();
+    sessionStorage.clear();
 
     (useDailyRewardStore as any).mockImplementation((selector?: (state: any) => any) => {
       const state = {
@@ -73,14 +74,24 @@ describe('HomePage', () => {
     );
   };
 
-  it('should render and handle age rating overlay', async () => {
-    await act(async () => {
-      renderHomePage();
+  it('should render and handle age rating overlay on first entry and skip on subsequent visits in same session', async () => {
+    // 1st visit: shows age rating
+    const { unmount } = await act(async () => {
+      return renderHomePage();
     });
     expect(screen.getByText(/전체 이용가/i)).toBeTruthy();
     act(() => {
       vi.advanceTimersByTime(3000);
     });
+
+    unmount();
+
+    // 2nd visit in same session: does NOT show age rating overlay
+    await act(async () => {
+      renderHomePage();
+    });
+    const overlay = document.querySelector('.age-rating-overlay');
+    expect(overlay?.classList.contains('visible')).toBe(false);
   });
 
   it('should check daily login', async () => {

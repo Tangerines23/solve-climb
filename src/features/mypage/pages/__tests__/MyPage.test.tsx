@@ -881,4 +881,59 @@ describe('MyPage', () => {
       expect(screen.queryByTestId('alert-modal')).toBeNull();
     });
   });
+
+  it('should cancel incomplete profile creation and reset session to guest view', async () => {
+    mockStoreState.isProfileComplete = false;
+    vi.mocked(useMyPageStats).mockReturnValue({
+      stats: null,
+      session: { user: { id: 'temp-anon-user' } } as any,
+      loading: false,
+      error: null,
+      refetch: mockRefetch,
+    });
+
+    await act(async () => {
+      render(
+        <BrowserRouter>
+          <MyPage />
+        </BrowserRouter>
+      );
+    });
+
+    expect(screen.getByTestId('profile-form')).toBeTruthy();
+
+    // Click Cancel on ProfileForm
+    const cancelBtn = screen.getByText('Cancel');
+    await act(async () => {
+      fireEvent.click(cancelBtn);
+    });
+
+    // Should call clearProfile and signOut to reset back to guest view
+    expect(mockStoreState.clearProfile).toHaveBeenCalled();
+    expect(mockStoreState.signOut).toHaveBeenCalled();
+  });
+
+  it('should handle mypage-back-button custom event to cancel profile form', async () => {
+    mockStoreState.isProfileComplete = true;
+
+    await act(async () => {
+      render(
+        <BrowserRouter>
+          <MyPage />
+        </BrowserRouter>
+      );
+    });
+
+    // Open profile form
+    const editButtons = screen.getAllByText(/프로필 수정/i);
+    fireEvent.click(editButtons[0]);
+    expect(screen.getByTestId('profile-form')).toBeTruthy();
+
+    // Dispatch mypage-back-button event
+    await act(async () => {
+      window.dispatchEvent(new CustomEvent('mypage-back-button'));
+    });
+
+    expect(screen.queryByTestId('profile-form')).toBeNull();
+  });
 });

@@ -9,6 +9,11 @@ vi.mock('../../contexts/QuizContext', () => ({
   useQuiz: vi.fn(),
 }));
 
+// Mock CoordinateGrid
+vi.mock('../CoordinateGrid', () => ({
+  CoordinateGrid: ({ onShoot }: any) => <button onClick={() => onShoot(3, 4)}>Shoot 3,4</button>,
+}));
+
 describe('QuizAnswerArea', () => {
   const mockSetAnswerInput = vi.fn();
   const mockSetDisplayValue = vi.fn();
@@ -147,13 +152,6 @@ describe('QuizAnswerArea', () => {
         },
       },
     });
-
-    // Mock CoordinateGrid to avoid deep testing
-    vi.mock('../CoordinateGrid', () => ({
-      CoordinateGrid: ({ onShoot }: any) => (
-        <button onClick={() => onShoot(3, 4)}>Shoot 3,4</button>
-      ),
-    }));
 
     render(<QuizAnswerArea />);
     const shootBtn = screen.getByText('Shoot 3,4');

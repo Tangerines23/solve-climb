@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { render, screen, fireEvent } from '@testing-library/react';
+import { render, screen, fireEvent, act } from '@testing-library/react';
 import { LastChanceModal } from '../LastChanceModal';
 
 describe('LastChanceModal', () => {
@@ -231,5 +231,79 @@ describe('LastChanceModal', () => {
     fireEvent.click(adButton);
 
     expect(onWatchAd).toHaveBeenCalled();
+  });
+
+  it('should call onGiveUp when countdown timer reaches 0', () => {
+    const onGiveUp = vi.fn();
+    render(
+      <LastChanceModal
+        isVisible={true}
+        gameMode="time-attack"
+        inventoryCount={0}
+        userMinerals={100}
+        onUseItem={vi.fn()}
+        onPurchaseAndUse={vi.fn()}
+        onWatchAd={vi.fn()}
+        onGiveUp={onGiveUp}
+        basePrice={50}
+      />
+    );
+
+    // Fast-forward past 10 seconds and flush microtasks/setTimeout
+    act(() => {
+      vi.advanceTimersByTime(10000);
+    });
+    act(() => {
+      vi.advanceTimersByTime(100);
+    });
+
+    expect(onGiveUp).toHaveBeenCalledTimes(1);
+  });
+
+  it('should pause countdown timer while ad is loading and not call onGiveUp', async () => {
+    const onGiveUp = vi.fn();
+    // Simulate long-running ad (e.g. 30 seconds)
+    let resolveAd: () => void = () => {};
+    const onWatchAd = vi.fn().mockImplementation(() => {
+      return new Promise<void>((resolve) => {
+        resolveAd = resolve;
+      });
+    });
+
+    render(
+      <LastChanceModal
+        isVisible={true}
+        gameMode="time-attack"
+        inventoryCount={0}
+        userMinerals={100}
+        onUseItem={vi.fn()}
+        onPurchaseAndUse={vi.fn()}
+        onWatchAd={onWatchAd}
+        onGiveUp={onGiveUp}
+        basePrice={50}
+      />
+    );
+
+    // 2초 경과 후 광고 버튼 클릭
+    act(() => {
+      vi.advanceTimersByTime(2000);
+    });
+    const adButton = screen.getByText(/광고 보고 무료 부활/);
+    await act(async () => {
+      fireEvent.click(adButton);
+    });
+
+    expect(onWatchAd).toHaveBeenCalledTimes(1);
+
+    // 광고 보는 동안 30초가 지나도 타이머가 일시정지되어 onGiveUp이 호출되지 않아야 함!
+    act(() => {
+      vi.advanceTimersByTime(30000);
+    });
+    expect(onGiveUp).not.toHaveBeenCalled();
+
+    // 광고 완료
+    await act(async () => {
+      resolveAd();
+    });
   });
 });

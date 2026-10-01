@@ -10,6 +10,7 @@ export interface BaseModalProps {
   showOverlay?: boolean;
   closeOnOverlayClick?: boolean;
   className?: string;
+  overlayClassName?: string;
 }
 
 export function BaseModal({
@@ -21,12 +22,13 @@ export function BaseModal({
   showOverlay = true,
   closeOnOverlayClick = true,
   className = '',
+  overlayClassName = '',
 }: BaseModalProps) {
   if (!isOpen) return null;
 
   return (
     <div
-      className={`modal-overlay animate-fade-in ${!showOverlay ? 'no-overlay' : ''}`}
+      className={`modal-overlay animate-fade-in ${overlayClassName} ${!showOverlay ? 'no-overlay' : ''}`.trim()}
       onClick={closeOnOverlayClick ? onClose : undefined}
       data-vg-ignore="true"
     >

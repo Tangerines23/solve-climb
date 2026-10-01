@@ -13,6 +13,12 @@ vi.mock('@/stores/useProfileStore', () => ({
   useProfileStore: vi.fn(),
 }));
 
+vi.mock('../AuthModal', () => ({
+  AuthModal: vi.fn(({ isOpen }: any) =>
+    isOpen ? <div data-testid="auth-modal">Auth Modal</div> : null
+  ),
+}));
+
 describe('RequireAuth Component', () => {
   beforeEach(() => {
     vi.clearAllMocks();
@@ -84,7 +90,7 @@ describe('RequireAuth Component', () => {
     expect(screen.getByText('Protected Content Without Flash')).toBeInTheDocument();
   });
 
-  it('should redirect to my-page when unauthenticated', () => {
+  it('should render AuthModal and NOT render protected content when unauthenticated', () => {
     vi.mocked(useAuthStore).mockImplementation((selector: any) =>
       selector({
         session: null,
@@ -109,16 +115,15 @@ describe('RequireAuth Component', () => {
               </RequireAuth>
             }
           />
-          <Route path="/my-page" element={<div>My Page (Login)</div>} />
         </Routes>
       </MemoryRouter>
     );
 
     expect(screen.queryByText('Protected Content')).toBeNull();
-    expect(screen.getByText('My Page (Login)')).toBeInTheDocument();
+    expect(screen.getByTestId('auth-modal')).toBeInTheDocument();
   });
 
-  it('should render children without redirect loop if already on my-page', () => {
+  it('should render AuthModal without rendering Home content when unauthenticated on home route (/)', () => {
     vi.mocked(useAuthStore).mockImplementation((selector: any) =>
       selector({
         session: null,
@@ -133,13 +138,13 @@ describe('RequireAuth Component', () => {
     );
 
     render(
-      <MemoryRouter initialEntries={['/my-page']}>
+      <MemoryRouter initialEntries={['/']}>
         <Routes>
           <Route
-            path="/my-page"
+            path="/"
             element={
               <RequireAuth>
-                <div>My Page Content</div>
+                <div>Home Content</div>
               </RequireAuth>
             }
           />
@@ -147,6 +152,7 @@ describe('RequireAuth Component', () => {
       </MemoryRouter>
     );
 
-    expect(screen.getByText('My Page Content')).toBeInTheDocument();
+    expect(screen.queryByText('Home Content')).toBeNull();
+    expect(screen.getByTestId('auth-modal')).toBeInTheDocument();
   });
 });

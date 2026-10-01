@@ -160,6 +160,81 @@ export function MyPage() {
     await refetch(); // 티어 정보 갱신
   };
 
+  // 로그아웃 함수
+  const handleLogout = React.useCallback(async () => {
+    try {
+      console.log('[로그아웃] 시작');
+
+      // Supabase 세션이 있으면 로그아웃
+      const {
+        data: { session: currentSession },
+      } = await safeSupabaseQuery(supabase.auth.getSession());
+      console.log('[로그아웃] 현재 세션 확인:', { hasSession: !!currentSession });
+
+      console.log('[로그아웃] useAuthStore.signOut 호출 전');
+      await useAuthStore.getState().signOut();
+      console.log('[로그아웃] useAuthStore.signOut 완료');
+
+      // 로컬 세션 삭제
+      try {
+        storageService.remove(STORAGE_KEYS.LOCAL_SESSION);
+        console.log('[로그아웃] 로컬 세션 삭제 완료');
+      } catch (e) {
+        console.warn('Failed to remove local session:', e);
+      }
+
+      // 로컬 상태 초기화
+      console.log('[로그아웃] 프로필 초기화 전');
+      clearProfile();
+      console.log('[로그아웃] 프로필 초기화 완료');
+
+      setToastMessage('로그아웃되었습니다.');
+      setShowToast(true);
+
+      // 통계 다시 불러오기 (세션 없음 상태로)
+      console.log('[로그아웃] refetch 호출 전');
+      await refetch();
+      console.log('[로그아웃] refetch 완료');
+
+      console.log('[로그아웃] 전체 과정 완료');
+    } catch (error) {
+      logError('MyPage#handleLogout', error);
+      setToastMessage('로그아웃 중 오류가 발생했습니다.');
+      setShowToast(true);
+    }
+  }, [clearProfile, refetch]);
+
+  // 프로필 폼 취소 / 뒤로가기 핸들러
+  const handleCancelProfileForm = React.useCallback(async () => {
+    setShowProfileForm(false);
+    // 프로필이 완성되지 않은 상태(최초 익명 로그인 후 프로필 미생성)에서 취소한 경우,
+    // 불필요한 '로그아웃되었습니다' 토스트 없이 조용히 임시 세션을 정리하고 게스트 뷰로 복귀
+    if (!useProfileStore.getState().isProfileComplete) {
+      try {
+        await useAuthStore.getState().signOut();
+        storageService.remove(STORAGE_KEYS.LOCAL_SESSION);
+        clearProfile();
+        await refetch();
+      } catch (e) {
+        logError('MyPage#handleCancelProfileForm', e);
+      }
+    }
+  }, [clearProfile, refetch]);
+
+  // 뒤로가기 이벤트(하드웨어/브라우저 popstate) 수신 시 열린 프로필 폼 닫기
+  useEffect(() => {
+    const handleBackButton = () => {
+      if (isFormVisible) {
+        handleCancelProfileForm();
+      }
+    };
+
+    window.addEventListener('mypage-back-button', handleBackButton);
+    return () => {
+      window.removeEventListener('mypage-back-button', handleBackButton);
+    };
+  }, [isFormVisible, handleCancelProfileForm]);
+
   const handleProfileComplete = () => {
     setShowProfileForm(false);
 
@@ -421,50 +496,6 @@ export function MyPage() {
     }
   }, [session?.user?.id, profile?.userId, refetch, setProfile, performRedirect]);
 
-  // 로그아웃 함수
-  const handleLogout = async () => {
-    try {
-      console.log('[로그아웃] 시작');
-
-      // Supabase 세션이 있으면 로그아웃
-      const {
-        data: { session: currentSession },
-      } = await safeSupabaseQuery(supabase.auth.getSession());
-      console.log('[로그아웃] 현재 세션 확인:', { hasSession: !!currentSession });
-
-      console.log('[로그아웃] useAuthStore.signOut 호출 전');
-      await useAuthStore.getState().signOut();
-      console.log('[로그아웃] useAuthStore.signOut 완료');
-
-      // 로컬 세션 삭제
-      try {
-        storageService.remove(STORAGE_KEYS.LOCAL_SESSION);
-        console.log('[로그아웃] 로컬 세션 삭제 완료');
-      } catch (e) {
-        console.warn('Failed to remove local session:', e);
-      }
-
-      // 로컬 상태 초기화
-      console.log('[로그아웃] 프로필 초기화 전');
-      clearProfile();
-      console.log('[로그아웃] 프로필 초기화 완료');
-
-      setToastMessage('로그아웃되었습니다.');
-      setShowToast(true);
-
-      // 통계 다시 불러오기 (세션 없음 상태로)
-      console.log('[로그아웃] refetch 호출 전');
-      await refetch();
-      console.log('[로그아웃] refetch 완료');
-
-      console.log('[로그아웃] 전체 과정 완료');
-    } catch (error) {
-      logError('MyPage#handleLogout', error);
-      setToastMessage('로그아웃 중 오류가 발생했습니다.');
-      setShowToast(true);
-    }
-  };
-
   // Guest View (비로그인 상태)
   if (!session && !statsLoading) {
     return (
@@ -543,9 +574,65 @@ export function MyPage() {
           <ProfileForm
             onComplete={handleProfileComplete}
             showBackButton={true}
-            onCancel={() => setShowProfileForm(false)}
+            onCancel={handleCancelProfileForm}
           />
         </div>
+      </div>
+    );
+  }
+
+  // 프로필(닉네임)이 미완성된 상태에서는 어떠한 경우에도 마이페이지 본문(프로필, 통계 등)을 렌더링하지 않음
+  if (!isProfileComplete) {
+    return (
+      <div className="my-page">
+        <Header />
+        <main className="my-page-main">
+          <div className="my-page-content">
+            <div className="my-page-guest-view-container">
+              <div className="my-page-guest-view">
+                <div className="my-page-guest-icon">🔒</div>
+                <h1 className="my-page-guest-title">
+                  로그인하고
+                  <br />
+                  <strong className="my-page-guest-highlight">내 기록을 평생 간직하세요.</strong>
+                </h1>
+                <div className="my-page-guest-buttons">
+                  {isTossAppEnvironment() ? (
+                    <button className="my-page-guest-login-button" onClick={handleTossLoginClick}>
+                      3초 만에 시작하기
+                    </button>
+                  ) : (
+                    <button className="my-page-guest-login-button" onClick={handleGoogleLogin}>
+                      3초 만에 시작하기
+                    </button>
+                  )}
+                  <button className="my-page-guest-anonymous-link" onClick={handleAnonymousLogin}>
+                    익명 로그인하기
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </main>
+        <Toast
+          message={toastMessage}
+          isOpen={showToast}
+          onClose={() => setShowToast(false)}
+          icon="⚠️"
+        />
+        <AlertModal
+          isOpen={showAlert}
+          title="알림"
+          message={alertMessage || '리더보드를 열 수 없습니다.'}
+          onClose={() => setShowAlert(false)}
+        />
+        <CyclePromotionModal
+          isOpen={showPromotionModal}
+          stars={tierStars}
+          pendingScore={stats?.pendingCycleScore || 0}
+          onPromote={handlePromote}
+          onClose={() => setShowPromotionModal(false)}
+        />
       </div>
     );
   }

@@ -3,10 +3,8 @@
  * 로컬 세션과 Supabase 세션을 통합 관리합니다.
  */
 
-import { useState, useEffect, useCallback } from 'react';
-import { supabase } from '@/utils/supabaseClient';
-import { storageService, STORAGE_KEYS } from '@/services';
-import { parseLocalSession } from '@/utils/safeJsonParse';
+import { useAuthStore } from '@/stores/useAuthStore';
+import { useProfileStore } from '@/stores/useProfileStore';
 import type { Session } from '@supabase/supabase-js';
 
 /**
@@ -26,107 +24,23 @@ export interface UseSessionResult {
 }
 
 /**
- * 가상 세션 생성 (로컬 세션용)
- */
-function createVirtualSession(userId: string, isAdmin: boolean = false): Session {
-  return {
-    user: {
-      id: userId,
-      email: null,
-      user_metadata: {
-        isAdmin: isAdmin || false,
-      },
-    },
-    access_token: 'local',
-    refresh_token: 'local',
-    expires_in: 3600,
-    token_type: 'bearer',
-  } as unknown as Session;
-}
-
-/**
  * 세션 관리 Hook
- * 로컬 세션과 Supabase 세션을 자동으로 확인하고 통합 관리합니다.
+ * useAuthStore 및 useProfileStore를 단일 진실 공급원(SSOT)으로 하여 인증 및 세션 상태를 반환합니다.
  */
 export function useSession(): UseSessionResult {
-  const [session, setSession] = useState<Session | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
+  const session = useAuthStore((state) => state.session);
+  const user = useAuthStore((state) => state.user);
+  const isLoading = useAuthStore((state) => state.isLoading);
+  const isProfileAdmin = useProfileStore((state) => state.isAdmin);
 
-  // 로컬 세션 확인
-  const checkLocalSession = (): Session | null => {
-    try {
-      const localSessionStr = storageService.get<string>(STORAGE_KEYS.LOCAL_SESSION);
-      const localSession = parseLocalSession(localSessionStr);
-      if (localSession) {
-        return createVirtualSession(localSession.userId, localSession.isAdmin);
-      }
-    } catch {
-      // 로컬 세션 파싱 실패 시 무시
-    }
-    return null;
-  };
-
-  // 세션 확인 및 설정
-  const checkSession = useCallback(async () => {
-    setIsLoading(true);
-
-    // 1. Supabase 실제 세션 우선 확인
-    try {
-      const {
-        data: { session: supabaseSession },
-      } = await supabase.auth.getSession();
-      if (supabaseSession) {
-        setSession(supabaseSession);
-        setIsLoading(false);
-        return;
-      }
-    } catch {
-      // Supabase 세션 확인 실패 시 로컬 세션으로 폴백
-    }
-
-    // 2. 로컬 세션 폴백 확인 (게스트 모드 등)
-    const localSession = checkLocalSession();
-    if (localSession) {
-      // 프로덕션 환경에서는 로컬 스토리지 조작을 통한 관리자 권한 위조를 방어
-      if (!import.meta.env.DEV && localSession.user?.user_metadata?.isAdmin) {
-        localSession.user.user_metadata.isAdmin = false;
-      }
-      setSession(localSession);
-    } else {
-      setSession(null);
-    }
-    setIsLoading(false);
-  }, []);
-
-  useEffect(() => {
-    // 초기 세션 확인
-    checkSession();
-
-    // 인증 상태 변경 리스너 등록
-    const {
-      data: { subscription },
-    } = supabase.auth.onAuthStateChange((_event, newSession) => {
-      // Supabase 세션이 없으면 로컬 세션 확인
-      if (!newSession) {
-        const localSession = checkLocalSession();
-        setSession(localSession);
-      } else {
-        setSession(newSession);
-      }
-    });
-
-    return () => {
-      subscription.unsubscribe();
-    };
-  }, [checkSession]);
-
-  const userId = session?.user?.id || null;
-  const isAdmin = session?.user?.user_metadata?.isAdmin || false;
+  const userId = session?.user?.id || user?.id || null;
+  const isAuthenticated = Boolean(session || user);
+  const isAdmin = isProfileAdmin || Boolean(user?.user_metadata?.isAdmin);
 
   return {
     session,
     isLoading,
-    isAuthenticated: !!session,
+    isAuthenticated,
     userId,
     isAdmin,
   };

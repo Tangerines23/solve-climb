@@ -4,5 +4,6 @@
  */
 
 export { RequireAuth } from './components/RequireAuth';
+export { AuthModal, type AuthModalProps } from './components/AuthModal';
 export { useSession } from './hooks/useSession';
 export type { UseSessionResult } from './hooks/useSession';

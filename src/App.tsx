@@ -16,6 +16,9 @@ import { RequireAuth } from '@/features/auth';
 import { supabase } from '@/utils/supabaseClient';
 import { initializeGoogleSignIn } from '@/utils/auth';
 import { Capacitor } from '@capacitor/core';
+import { AdService } from '@/services/adService';
+import { AnonymousDataWarningModal } from '@/components/AnonymousDataWarningModal';
+import { useAnonymousEntryWarning } from '@/hooks/useAnonymousEntryWarning';
 
 const HomePage = resilientLazy(
   () => import('@/pages/HomePage').then((module) => ({ default: module.HomePage })),
@@ -121,6 +124,13 @@ function App() {
   // 커스텀 뒤로가기 네비게이션 적용
   useCustomBackNavigation();
 
+  // 익명 사용자 3회 진입 주기 데이터 유실 경고 모달 제어
+  const {
+    isModalOpen: isAnonWarningOpen,
+    closeModal: closeAnonWarning,
+    handleGoToMyPage: goToMyPageFromAnonWarning,
+  } = useAnonymousEntryWarning();
+
   const isDebugPanelOpen = useDebugStore((state) => state.isDebugPanelOpen);
   const animationEnabled = useSettingsStore((state) => state.animationEnabled);
 
@@ -144,6 +154,11 @@ function App() {
       // Capacitor Google Auth 초기화
       initializeGoogleSignIn().catch((err) => {
         console.error('[GoogleSignIn] Initialization failed:', err);
+      });
+
+      // AdMob 초기화 및 사전 로드 (백그라운드)
+      AdService.initialize().catch((err) => {
+        console.error('[AdService] Initialization failed:', err);
       });
 
       import('@capacitor/app')
@@ -186,7 +201,8 @@ function App() {
           console.error('[Capacitor] Failed to load App plugin:', err);
         });
     }
-  }, []); // Run once on app mount
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- Run once on app mount
+  }, []);
 
   // 전역 에러 핸들러 설정 (개발 환경에서만)
   useEffect(() => {
@@ -316,9 +332,11 @@ function App() {
           <Route
             path="/my-page"
             element={
-              <PageTransition>
-                <MyPage />
-              </PageTransition>
+              <RequireAuth>
+                <PageTransition>
+                  <MyPage />
+                </PageTransition>
+              </RequireAuth>
             }
           />
           <Route
@@ -362,6 +380,13 @@ function App() {
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </AnimatePresence>
+
+      {/* Anonymous Data Loss Warning Modal (Shown every 3 entries for anonymous users) */}
+      <AnonymousDataWarningModal
+        isOpen={isAnonWarningOpen}
+        onClose={closeAnonWarning}
+        onGoToMyPage={goToMyPageFromAnonWarning}
+      />
 
       {/* Global Debug Panel (Outside Routes, High Z-Index) */}
       {import.meta.env.DEV && isDebugPanelOpen && DebugPanel && <DebugPanel />}

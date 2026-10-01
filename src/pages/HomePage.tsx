@@ -13,24 +13,39 @@ import { useDailyRewardStore } from '@/stores/useDailyRewardStore';
 import { APP_CONFIG } from '@/config/app';
 import './HomePage.css';
 
+const SESSION_AGE_RATING_SHOWN_KEY = 'solve_climb_age_rating_shown_session';
+
 export function HomePage() {
   const navigate = useNavigate();
   const [showExitToast, setShowExitToast] = useState(false);
   const exitConfirmTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const isWaitingForSecondBackRef = useRef<boolean>(false);
-  // 연령 등급 표기 (가이드 필수: 초기 화면 우측 상단에 3초 이상 표시)
-  // 매번 HomePage 진입 시 표시 (컴포넌트 마운트 시마다)
-  const [showAgeRating, setShowAgeRating] = useState(true);
+  // 연령 등급 표기 (앱 입장/세션 첫 진입 시 3초 이상 표시)
+  const [showAgeRating, setShowAgeRating] = useState(() => {
+    try {
+      return !sessionStorage.getItem(SESSION_AGE_RATING_SHOWN_KEY);
+    } catch {
+      return true;
+    }
+  });
   const checkDailyLogin = useDailyRewardStore((state) => state.checkDailyLogin);
 
-  // 연령 등급 표기 (3초 후 자동 숨김)
+  // 연령 등급 표기 (앱 입장 시 3초 후 자동 숨김 및 세션 기록)
   useEffect(() => {
+    if (!showAgeRating) return;
+
+    try {
+      sessionStorage.setItem(SESSION_AGE_RATING_SHOWN_KEY, 'true');
+    } catch {
+      // ignore
+    }
+
     const timer = setTimeout(() => {
       setShowAgeRating(false);
     }, 3000);
 
     return () => clearTimeout(timer);
-  }, []); // 빈 의존성 배열: 컴포넌트 마운트 시 한 번만 실행
+  }, [showAgeRating]);
 
   // 데일리 로그인 보상 체크
   useEffect(() => {

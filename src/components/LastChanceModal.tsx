@@ -36,27 +36,36 @@ export function LastChanceModal({
   useEffect(() => {
     if (isVisible) {
       setTimeLeft(10);
-      setTimeLeft(10);
       setIsAdLoading(false);
-      const timer = setInterval(() => {
-        setTimeLeft((prev) => {
-          if (prev <= 1) {
-            clearInterval(timer);
-            // onGiveUp 호출은 렌더링 도중이 아닌, 비동기로 처리
-            setTimeout(() => onGiveUpRef.current(), 0);
-            return 0;
-          }
-          return prev - 1;
-        });
-      }, 1000);
-      return () => clearInterval(timer);
     }
   }, [isVisible]);
 
-  const handleWatchAdClick = () => {
+  useEffect(() => {
+    if (!isVisible || isAdLoading) return;
+
+    const timer = setInterval(() => {
+      setTimeLeft((prev) => {
+        if (prev <= 1) {
+          clearInterval(timer);
+          // onGiveUp 호출은 렌더링 도중이 아닌, 비동기로 처리
+          setTimeout(() => onGiveUpRef.current(), 0);
+          return 0;
+        }
+        return prev - 1;
+      });
+    }, 1000);
+
+    return () => clearInterval(timer);
+  }, [isVisible, isAdLoading]);
+
+  const handleWatchAdClick = async () => {
     if (isAdLoading) return;
     setIsAdLoading(true);
-    onWatchAd();
+    try {
+      await Promise.resolve(onWatchAd());
+    } finally {
+      setIsAdLoading(false);
+    }
   };
 
   const itemName =

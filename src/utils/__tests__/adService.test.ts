@@ -33,10 +33,20 @@ describe('AdService', () => {
     });
   });
 
+  describe('state getters', () => {
+    it('should reflect initial state accurately', () => {
+      expect(AdService.isShowing()).toBe(false);
+      expect(AdService.isPrepared()).toBe(false);
+      expect(AdService.isPreparing()).toBe(false);
+      expect(AdService.isInitialized()).toBe(false);
+    });
+  });
+
   describe('initialize', () => {
     it('should not initialize if Capacitor is missing', async () => {
       await AdService.initialize();
       expect(AdMob.initialize).not.toHaveBeenCalled();
+      expect(AdService.isInitialized()).toBe(false);
     });
 
     it('should initialize if Capacitor is present', async () => {
@@ -44,12 +54,12 @@ describe('AdService', () => {
       window.Capacitor = {};
       await AdService.initialize();
       expect(AdMob.initialize).toHaveBeenCalled();
+      expect(AdService.isInitialized()).toBe(true);
     });
 
     it('should not initialize twice', async () => {
       // @ts-expect-error: Mocking Capacitor
       window.Capacitor = {};
-      // Ensure it's initialized at least once
       await AdService.initialize();
       const initialCallCount = vi.mocked(AdMob.initialize).mock.calls.length;
 
@@ -66,12 +76,13 @@ describe('AdService', () => {
       vi.useFakeTimers();
       const promise = AdService.showRewardedAd('mineral_recharge');
 
-      // Simulation ad takes 2000ms
-      await vi.advanceTimersByTimeAsync(2100);
+      // Simulation ad takes 1000ms
+      await vi.advanceTimersByTimeAsync(1100);
 
       const result = await promise;
       expect(result.success).toBe(true);
       expect(result.message).toContain('광고 시청');
+      expect(AdService.isShowing()).toBe(false);
       vi.useRealTimers();
     });
 
@@ -82,7 +93,7 @@ describe('AdService', () => {
 
       vi.useFakeTimers();
       const promise = AdService.showRewardedAd('mineral_recharge');
-      await vi.advanceTimersByTimeAsync(2100);
+      await vi.advanceTimersByTimeAsync(1100);
       await promise;
 
       expect(spy).toHaveBeenCalled();
@@ -112,6 +123,7 @@ describe('AdService', () => {
       expect(AdMob.prepareRewardVideoAd).toHaveBeenCalled();
       expect(AdMob.showRewardVideoAd).toHaveBeenCalled();
       expect(result.success).toBe(true);
+      expect(AdService.isShowing()).toBe(false);
     });
 
     it('should handle AdMob errors gracefully', async () => {
@@ -121,6 +133,24 @@ describe('AdService', () => {
 
       expect(result.success).toBe(false);
       expect(result.error).toBe('Ad load failed');
+      expect(AdService.isShowing()).toBe(false);
+    });
+
+    it('should handle timeout and release showing lock if AdMob hangs', async () => {
+      vi.useFakeTimers();
+      vi.mocked(AdMob.prepareRewardVideoAd).mockResolvedValue(undefined);
+      // Hang promise (never resolves)
+      vi.mocked(AdMob.showRewardVideoAd).mockReturnValue(new Promise(() => {}));
+
+      const promise = AdService.showMobileAppAd('mineral_recharge');
+      // Advance by 31 seconds (exceeding DEFAULT_AD_TIMEOUT_MS)
+      await vi.advanceTimersByTimeAsync(31000);
+
+      const result = await promise;
+      expect(result.success).toBe(false);
+      expect(result.error).toContain('시간이 초과되었습니다');
+      expect(AdService.isShowing()).toBe(false);
+      vi.useRealTimers();
     });
   });
 });

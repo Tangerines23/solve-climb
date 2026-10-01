@@ -14,10 +14,40 @@ export interface AdResult {
   error?: string;
 }
 
+interface WindowWithAds {
+  Capacitor?: unknown;
+  TossAds?: unknown;
+  Toss?: unknown;
+}
+
 let isAdMobInitialized = false;
 let isAdPrepared = false;
 let isPreparingAd = false;
 let isShowingAd = false;
+
+const DEFAULT_AD_TIMEOUT_MS = 30000;
+const PRELOAD_TIMEOUT_MS = 15000;
+
+/**
+ * 프로미스에 안전 타임아웃을 적용하는 헬퍼 함수 (무한 대기 방어)
+ */
+function withTimeout<T>(promise: Promise<T>, timeoutMs: number, errorMessage: string): Promise<T> {
+  let timer: ReturnType<typeof setTimeout> | null = null;
+  const timeoutPromise = new Promise<never>((_, reject) => {
+    timer = setTimeout(() => reject(new Error(errorMessage)), timeoutMs);
+  });
+
+  return Promise.race([promise, timeoutPromise]).finally(() => {
+    if (timer !== null) {
+      clearTimeout(timer);
+    }
+  });
+}
+
+function getWindowAds(): WindowWithAds | undefined {
+  if (typeof window === 'undefined') return undefined;
+  return window as unknown as WindowWithAds;
+}
 
 export function _resetAdPreparedForTest(): void {
   isAdMobInitialized = false;
@@ -28,12 +58,32 @@ export function _resetAdPreparedForTest(): void {
 
 export const AdService = {
   /**
+   * 광고 상태 조회용 게터
+   */
+  isShowing(): boolean {
+    return isShowingAd;
+  },
+
+  isPrepared(): boolean {
+    return isAdPrepared;
+  },
+
+  isPreparing(): boolean {
+    return isPreparingAd;
+  },
+
+  isInitialized(): boolean {
+    return isAdMobInitialized;
+  },
+
+  /**
    * AdMob 초기화
    */
   async initialize(): Promise<void> {
-    const win =
-      typeof window !== 'undefined' ? (window as unknown as { Capacitor?: unknown }) : undefined;
-    if (isAdMobInitialized || !win?.Capacitor) return;
+    const win = getWindowAds();
+    if (isAdMobInitialized) return;
+    if (!win?.Capacitor) return;
+
     try {
       await AdMob.initialize({
         // @ts-expect-error: AdMob initialize options
@@ -58,9 +108,10 @@ export const AdService = {
    * 백그라운드에서 미디어를 다운로드하여 버튼 클릭 시 대기 시간 0초를 보장합니다.
    */
   async preloadRewardedAd(): Promise<boolean> {
-    const win =
-      typeof window !== 'undefined' ? (window as unknown as { Capacitor?: unknown }) : undefined;
-    if (!win?.Capacitor || isAdPrepared || isPreparingAd) return isAdPrepared;
+    const win = getWindowAds();
+    if (!win?.Capacitor) return isAdPrepared;
+    if (isAdPrepared) return true;
+    if (isPreparingAd) return false;
 
     isPreparingAd = true;
     try {
@@ -70,7 +121,11 @@ export const AdService = {
         adId: String(adId),
       };
       console.log('[AdService] Preloading AdMob Rewarded Ad in background...');
-      await AdMob.prepareRewardVideoAd(options);
+      await withTimeout(
+        AdMob.prepareRewardVideoAd(options),
+        PRELOAD_TIMEOUT_MS,
+        'Ad preload timed out'
+      );
       isAdPrepared = true;
       console.log('[AdService] AdMob Rewarded Ad Preloaded Successfully!');
       return true;
@@ -101,10 +156,7 @@ export const AdService = {
     isShowingAd = true;
 
     try {
-      const win =
-        typeof window !== 'undefined'
-          ? (window as unknown as { TossAds?: unknown; Toss?: unknown; Capacitor?: unknown })
-          : undefined;
+      const win = getWindowAds();
 
       // 1. 토스 인앱 환경 감지
       if (win?.TossAds || win?.Toss) {
@@ -145,14 +197,22 @@ export const AdService = {
         const options: RewardAdOptions = {
           adId: String(adId),
         };
-        await AdMob.prepareRewardVideoAd(options);
+        await withTimeout(
+          AdMob.prepareRewardVideoAd(options),
+          PRELOAD_TIMEOUT_MS,
+          '광고 준비 시간이 초과되었습니다.'
+        );
       }
 
       // 준비 상태 소비
       isAdPrepared = false;
 
-      // 2. 광고 재생
-      const reward = await AdMob.showRewardVideoAd();
+      // 2. 광고 재생 (타임아웃 가드로 무한 대기 락 방지)
+      const reward = await withTimeout(
+        AdMob.showRewardVideoAd(),
+        DEFAULT_AD_TIMEOUT_MS,
+        '광고 재생 응답 시간이 초과되었습니다.'
+      );
       console.log('[AdService] Reward earned:', reward);
 
       // 3. 시청 완료 후 다음 광고를 백그라운드에서 즉시 사전 로드(Preload)
