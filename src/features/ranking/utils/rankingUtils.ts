@@ -3,15 +3,17 @@ import type { RankingPeriod, RankingType } from '../types';
 /**
  * 랭킹 순위에 따른 메달 아이콘 또는 순위 숫자를 반환합니다.
  * (Zero Else, Depth 1 적용)
+ * - NaN, 음수, 0, 비정수(float), non-number 방어
  */
 export function formatMedalOrRank(rank: number): string | number {
-  if (isNaN(rank) || rank <= 0) {
+  if (typeof rank !== 'number' || !Number.isFinite(rank) || rank <= 0) {
     return '-';
   }
-  if (rank === 1) return '🥇';
-  if (rank === 2) return '🥈';
-  if (rank === 3) return '🥉';
-  return rank;
+  const intRank = Math.floor(rank);
+  if (intRank === 1) return '🥇';
+  if (intRank === 2) return '🥈';
+  if (intRank === 3) return '🥉';
+  return intRank;
 }
 
 /**
@@ -19,7 +21,7 @@ export function formatMedalOrRank(rank: number): string | number {
  * 유효하지 않은 날짜나 누락 시 '시즌 정보 없음'을 안전하게 반환합니다.
  */
 export function formatSeasonBadge(dateString?: string | null): string {
-  if (!dateString) {
+  if (!dateString || typeof dateString !== 'string') {
     return '시즌 정보 없음';
   }
 
@@ -37,24 +39,35 @@ export function formatSeasonBadge(dateString?: string | null): string {
 
 /**
  * 랭킹 캐시 키를 안전하게 조합합니다.
+ * - world, category 문자열 trim 및 공백 방어
+ * - 기본 period/type fallback 보장
  */
 export function buildRankingKey(
-  period: RankingPeriod,
-  type: RankingType,
+  period: RankingPeriod = 'weekly',
+  type: RankingType = 'total',
   world?: string | null,
   category?: string | null
 ): string {
-  if (world && category) {
-    return `${world}-${category}-${period}-${type}`;
+  const safePeriod = period || 'weekly';
+  const safeType = type || 'total';
+  const cleanWorld = typeof world === 'string' ? world.trim() : '';
+  const cleanCategory = typeof category === 'string' ? category.trim() : '';
+
+  if (cleanWorld && cleanCategory) {
+    return `${cleanWorld}-${cleanCategory}-${safePeriod}-${safeType}`;
   }
-  return `${period}-${type}`;
+  return `${safePeriod}-${safeType}`;
 }
 
 /**
  * URL 쿼리 파라미터의 mode 값을 안전한 RankingType으로 검증 및 정규화합니다.
+ * - 대소문자 무시, 공백 trim, 유효하지 않은 값에 대한 'total' fallback
  */
-export function resolveModeParam(param: string | null): RankingType {
-  if (param === 'time-attack') return 'time-attack';
-  if (param === 'survival') return 'survival';
+export function resolveModeParam(param: string | null | undefined): RankingType {
+  if (!param || typeof param !== 'string') return 'total';
+  const normalized = param.trim().toLowerCase();
+  if (normalized === 'time-attack') return 'time-attack';
+  if (normalized === 'survival') return 'survival';
+  if (normalized === 'infinite') return 'infinite';
   return 'total';
 }
