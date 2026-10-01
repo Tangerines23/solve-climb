@@ -32,7 +32,12 @@ export { Altitude, type Result } from './domain/Altitude';
 export { Combo } from './domain/Combo';
 
 // Generators Engine (Public Facade)
-export { generateQuestion } from './generators/quizGenerator';
+export {
+  generateQuestion,
+  normalizeTopicCategory,
+  inferInputType,
+  clampLevel,
+} from './generators/quizGenerator';
 export { getSolutionProcess } from './generators/solutionExplainer';
 
 // Pure Calculation Utils
