@@ -494,7 +494,7 @@ export function MyPage() {
     } catch {
       // 무시
     }
-  }, [session?.user?.id, profile?.userId, refetch, setProfile, performRedirect]);
+  }, [session?.user, profile?.userId, refetch, setProfile, performRedirect]);
 
   // Guest View (비로그인 상태)
   if (!session && !statsLoading) {

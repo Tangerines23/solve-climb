@@ -404,7 +404,7 @@ export function useHistoryData() {
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [authSession, authUser]);
 
   useEffect(() => {
     fetchHistoryData();
