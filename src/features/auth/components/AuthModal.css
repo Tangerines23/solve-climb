@@ -1,107 +1,4 @@
-.auth-modal {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background: rgba(0, 0, 0, 0.5);
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  z-index: 1000;
-}
-
-.auth-modal-content {
-  background: var(--color-bg-elevated);
-  border-radius: var(--rounded-lg);
-  padding: var(--spacing-lg);
-  width: 90%;
-  max-width: 400px;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-  backdrop-filter: blur(10px);
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-}
-
-.auth-modal-icon {
-  width: 50px;
-  height: 50px;
-  margin-bottom: var(--spacing-md);
-}
-
-.auth-modal-title {
-  font-size: 1.5rem;
-  font-weight: bold;
-  color: var(--color-text-primary);
-  margin-bottom: var(--spacing-sm);
-}
-
-.auth-modal-highlight {
-  color: var(--color-primary-500);
-}
-
-.auth-modal-desc {
-  color: var(--color-text-secondary);
-  font-size: 1rem;
-  margin-bottom: var(--spacing-md);
-  text-align: center;
-}
-
-.auth-modal-buttons {
-  display: flex;
-  flex-direction: column;
-  width: 100%;
-}
-
-.auth-modal-login-btn,
-.auth-modal-anon-btn {
-  background: var(--color-primary-500);
-  color: white;
-  border: none;
-  border-radius: var(--rounded-pill);
-  padding: var(--spacing-sm) var(--spacing-md);
-  font-size: 1rem;
-  cursor: pointer;
-  transition:
-    background 0.3s ease,
-    transform 0.2s ease;
-  margin-bottom: var(--spacing-sm);
-}
-
-.auth-modal-login-btn:hover,
-.auth-modal-anon-btn:hover {
-  background: darken(var(--color-primary-500), 10%);
-  transform: scale(1.05);
-}
-
-.auth-modal-profile-wrapper {
-  margin-top: var(--spacing-md);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: var(--spacing-sm);
-}
-
-@media (max-width: 600px) {
-  .auth-modal-content {
-    padding: var(--spacing-md);
-  }
-
-  .auth-modal-title {
-    font-size: 1.25rem;
-  }
-
-  .auth-modal-desc {
-    font-size: 0.9rem;
-  }
-
-  .auth-modal-login-btn,
-  .auth-modal-anon-btn {
-    padding: var(--spacing-sm) var(--spacing-md);
-    font-size: 0.9rem;
-  }
-}
+/* AuthModal.css - High Contrast & Modern Glass Card Styling */
 
 /* 뒷페이지(홈, 마이페이지 등)를 완전히 가리는 100% 불투명 솔리드 배경 오버레이 */
 .modal-overlay.auth-modal-overlay-opaque {
@@ -114,10 +11,190 @@
   width: 100vw !important;
   height: 100vh !important;
   z-index: 10000 !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
 }
 
+/* 모달 카드 본체: 고대비 글래스 카드, 명확한 테두리 및 깊이감 있는 섀도우 */
 .modal-base.auth-modal-base {
-  background-color: var(--color-bg-card, #131d31);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  box-shadow: 0 24px 64px rgba(0, 0, 0, 0.75);
+  background: linear-gradient(180deg, #1b253b 0%, #111827 100%) !important;
+  border: 1px solid rgba(255, 255, 255, 0.15) !important;
+  border-radius: var(--rounded-large-card, 24px) !important;
+  box-shadow:
+    0 24px 64px rgba(0, 0, 0, 0.8),
+    0 0 0 1px rgba(255, 255, 255, 0.08),
+    inset 0 1px 0 rgba(255, 255, 255, 0.1) !important;
+  width: 90% !important;
+  max-width: 420px !important;
+  padding: var(--spacing-3xl) var(--spacing-xl) !important;
+  box-sizing: border-box !important;
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: center !important;
+}
+
+.auth-modal-content {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  background: transparent !important;
+  box-shadow: none !important;
+  border: none !important;
+  padding: 0 !important;
+}
+
+.auth-modal-icon {
+  font-size: 52px;
+  line-height: 1;
+  margin-bottom: var(--spacing-lg, 18px);
+  display: block;
+  filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.4));
+}
+
+.auth-modal-title {
+  font-size: 22px;
+  font-weight: 700;
+  color: var(--color-text-primary, #f8fafc);
+  line-height: 1.45;
+  margin: 0 0 var(--spacing-small-alt, 10px) 0;
+  text-align: center;
+  letter-spacing: -0.02em;
+}
+
+.auth-modal-highlight {
+  color: var(--adaptiveBlue400, #38bdf8);
+  font-weight: 800;
+}
+
+.auth-modal-desc,
+.auth-modal-description {
+  color: var(--color-text-secondary, #94a3b8);
+  font-size: 14.5px;
+  line-height: 1.55;
+  margin: 0 0 var(--spacing-2xl, 24px) 0;
+  text-align: center;
+  word-break: keep-all;
+}
+
+.auth-modal-error {
+  width: 100%;
+  color: var(--color-survival-red, #f87171);
+  background-color: rgba(239, 68, 68, 0.12);
+  border: 1px solid rgba(239, 68, 68, 0.25);
+  border-radius: var(--rounded-sm-alt, 10px);
+  padding: var(--spacing-small-alt, 10px) var(--spacing-medium-alt, 14px);
+  font-size: 13.5px;
+  margin: 0 0 var(--spacing-lg, 18px) 0;
+  text-align: center;
+}
+
+.auth-modal-buttons {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-md, 12px);
+  width: 100%;
+}
+
+/* 주요 로그인 버튼: Toss Blue 액션 */
+.auth-modal-login-btn {
+  background: linear-gradient(135deg, #3182f6 0%, #1b64da 100%) !important;
+  color: var(--color-pure-white, #ffffff) !important;
+  border: 1px solid rgba(255, 255, 255, 0.2) !important;
+  border-radius: var(--rounded-md-alt, 14px) !important;
+  height: 52px !important;
+  font-size: 16px !important;
+  font-weight: 600 !important;
+  cursor: pointer !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: var(--spacing-sm, 8px) !important;
+  width: 100% !important;
+  box-shadow: 0 4px 14px rgba(49, 130, 246, 0.35) !important;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1) !important;
+  text-decoration: none !important;
+  box-sizing: border-box !important;
+}
+
+.auth-modal-login-btn:hover {
+  background: linear-gradient(135deg, #4593fc 0%, #2272eb 100%) !important;
+  transform: translateY(-1px) !important;
+  box-shadow: 0 6px 18px rgba(49, 130, 246, 0.45) !important;
+}
+
+.auth-modal-login-btn:active {
+  transform: translateY(1px) scale(0.99) !important;
+  box-shadow: 0 2px 8px rgba(49, 130, 246, 0.3) !important;
+}
+
+/* 익명 시작 버튼: 세련된 서브 액션 버튼 (명확한 아웃라인 및 배경) */
+.auth-modal-anon-btn {
+  background: rgba(255, 255, 255, 0.08) !important;
+  color: var(--color-text-secondary, #cbd5e1) !important;
+  border: 1px solid rgba(255, 255, 255, 0.15) !important;
+  border-radius: var(--rounded-md-alt, 14px) !important;
+  height: 48px !important;
+  font-size: 15px !important;
+  font-weight: 500 !important;
+  cursor: pointer !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  width: 100% !important;
+  transition: all 0.2s ease !important;
+  text-decoration: none !important;
+  box-sizing: border-box !important;
+}
+
+.auth-modal-anon-btn:hover {
+  background: rgba(255, 255, 255, 0.14) !important;
+  color: var(--color-pure-white, #ffffff) !important;
+  border-color: rgba(255, 255, 255, 0.25) !important;
+  transform: translateY(-1px) !important;
+}
+
+.auth-modal-anon-btn:active {
+  transform: translateY(1px) scale(0.99) !important;
+}
+
+.auth-modal-profile-wrapper {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+@media (max-width: 480px) {
+  .modal-base.auth-modal-base {
+    padding: var(--spacing-xl) var(--spacing-lg) !important;
+    border-radius: var(--rounded-md, 20px) !important;
+  }
+
+  .auth-modal-icon {
+    font-size: 46px;
+    margin-bottom: var(--spacing-medium-alt, 14px);
+  }
+
+  .auth-modal-title {
+    font-size: 20px;
+  }
+
+  .auth-modal-desc,
+  .auth-modal-description {
+    font-size: 13.5px;
+    margin-bottom: var(--spacing-xl, 20px);
+  }
+
+  .auth-modal-login-btn {
+    height: 48px !important;
+    font-size: 15px !important;
+  }
+
+  .auth-modal-anon-btn {
+    height: 44px !important;
+    font-size: 14px !important;
+  }
 }
