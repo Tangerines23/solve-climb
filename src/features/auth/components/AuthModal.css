@@ -163,8 +163,150 @@
 .auth-modal-profile-wrapper {
   width: 100%;
   display: flex;
+  flex-direction: column;
   align-items: center;
   justify-content: center;
+  position: relative;
+}
+
+/* AuthModal 내부에 렌더링될 때 ProfileForm을 단일 모달 카드로 일체화 (이중 카드 방지) */
+.auth-modal-profile-wrapper .profile-form-container {
+  background: transparent !important;
+  box-shadow: none !important;
+  border: none !important;
+  border-radius: 0 !important;
+  padding: 0 !important;
+  margin: 0 !important;
+  width: 100% !important;
+  max-width: 100% !important;
+}
+
+.auth-modal-profile-wrapper .profile-form-title {
+  font-size: 22px !important;
+  font-weight: 700 !important;
+  color: var(--color-text-primary, #f8fafc) !important;
+  margin: 0 0 var(--spacing-xs, 6px) 0 !important;
+  text-align: center !important;
+  letter-spacing: -0.02em !important;
+}
+
+.auth-modal-profile-wrapper .profile-form-description {
+  font-size: 14.5px !important;
+  color: var(--color-text-secondary, #94a3b8) !important;
+  margin: 0 0 var(--spacing-2xl, 24px) 0 !important;
+  line-height: 1.55 !important;
+  text-align: center !important;
+  word-break: keep-all !important;
+}
+
+/* 뒤로가기 버튼: 모달 좌상단 글래스 원형 버튼으로 세련되게 일체화 */
+.auth-modal-profile-wrapper .profile-form-back-button {
+  position: absolute !important;
+  top: 0 !important;
+  left: 0 !important;
+  background: rgba(255, 255, 255, 0.08) !important;
+  border: 1px solid rgba(255, 255, 255, 0.15) !important;
+  border-radius: var(--rounded-full, 9999px) !important;
+  width: 36px !important;
+  height: 36px !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  color: var(--color-text-secondary, #cbd5e1) !important;
+  font-size: 16px !important;
+  cursor: pointer !important;
+  transition: all 0.2s ease !important;
+  z-index: 10 !important;
+}
+
+.auth-modal-profile-wrapper .profile-form-back-button:hover {
+  background: rgba(255, 255, 255, 0.16) !important;
+  color: var(--color-pure-white, #ffffff) !important;
+  transform: translateY(-1px) !important;
+}
+
+.auth-modal-profile-wrapper .profile-form {
+  display: flex !important;
+  flex-direction: column !important;
+  gap: var(--spacing-xl, 20px) !important;
+  width: 100% !important;
+}
+
+.auth-modal-profile-wrapper .profile-form-field {
+  display: flex !important;
+  flex-direction: column !important;
+  gap: var(--spacing-sm, 8px) !important;
+  width: 100% !important;
+}
+
+.auth-modal-profile-wrapper .profile-form-label {
+  font-size: 14px !important;
+  font-weight: 600 !important;
+  color: var(--color-text-primary, #f8fafc) !important;
+  text-align: left !important;
+}
+
+.auth-modal-profile-wrapper .profile-form-input {
+  background: rgba(255, 255, 255, 0.06) !important;
+  border: 1px solid rgba(255, 255, 255, 0.15) !important;
+  border-radius: var(--rounded-md-alt, 14px) !important;
+  height: 50px !important;
+  padding: 0 var(--spacing-lg, 16px) !important;
+  color: var(--color-text-primary, #f8fafc) !important;
+  font-size: 15px !important;
+  outline: none !important;
+  box-sizing: border-box !important;
+  transition: all 0.2s ease !important;
+}
+
+.auth-modal-profile-wrapper .profile-form-input:focus {
+  border-color: var(--adaptiveBlue400, #38bdf8) !important;
+  background: rgba(255, 255, 255, 0.1) !important;
+  box-shadow: 0 0 0 3px rgba(56, 189, 248, 0.25) !important;
+}
+
+.auth-modal-profile-wrapper .profile-form-hint {
+  font-size: 12px !important;
+  color: var(--color-text-secondary, #94a3b8) !important;
+  text-align: right !important;
+  margin: 0 !important;
+}
+
+/* 시작하기/저장하기 버튼: 로그인 카드와 동일한 토스 블루(Toss Blue) 액션으로 통일 */
+.auth-modal-profile-wrapper .profile-form-submit {
+  background: linear-gradient(135deg, #3182f6 0%, #1b64da 100%) !important;
+  color: var(--color-pure-white, #ffffff) !important;
+  border: 1px solid rgba(255, 255, 255, 0.2) !important;
+  border-radius: var(--rounded-md-alt, 14px) !important;
+  height: 52px !important;
+  font-size: 16px !important;
+  font-weight: 600 !important;
+  cursor: pointer !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  width: 100% !important;
+  box-shadow: 0 4px 14px rgba(49, 130, 246, 0.35) !important;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1) !important;
+  box-sizing: border-box !important;
+}
+
+.auth-modal-profile-wrapper .profile-form-submit:hover {
+  background: linear-gradient(135deg, #4593fc 0%, #2272eb 100%) !important;
+  transform: translateY(-1px) !important;
+  box-shadow: 0 6px 18px rgba(49, 130, 246, 0.45) !important;
+}
+
+.auth-modal-profile-wrapper .profile-form-submit:active {
+  transform: translateY(1px) scale(0.99) !important;
+  box-shadow: 0 2px 8px rgba(49, 130, 246, 0.3) !important;
+}
+
+.auth-modal-profile-wrapper .profile-form-privacy-notice {
+  margin: var(--spacing-sm, 8px) 0 0 0 !important;
+  text-align: center !important;
+  font-size: 12px !important;
+  color: var(--color-text-secondary, #94a3b8) !important;
 }
 
 @media (max-width: 480px) {
