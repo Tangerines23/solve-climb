@@ -128,17 +128,17 @@ export class UserRepository {
   static formatInventory(raw: RawInventoryItem[] | null): InventoryItem[] {
     if (!Array.isArray(raw)) return [];
     return raw
-      .filter((item): item is RawInventoryItem => Boolean(item))
-      .map((item) => {
-        const subItem = item.items;
-        return {
-          id: subItem?.id || 0,
-          code: subItem?.code || '',
-          name: subItem?.name || '',
-          description: subItem?.description || '',
-          quantity: Math.max(0, item.quantity || 0),
-        };
-      });
+      .filter(
+        (item): item is RawInventoryItem & { items: NonNullable<RawInventoryItem['items']> } =>
+          Boolean(item && item.items && item.items.code)
+      )
+      .map((item) => ({
+        id: item.items.id || 0,
+        code: item.items.code,
+        name: item.items.name || '',
+        description: item.items.description || '',
+        quantity: Math.max(0, item.quantity || 0),
+      }));
   }
 
   /**

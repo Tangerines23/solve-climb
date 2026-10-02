@@ -29,15 +29,20 @@ export function resolveThemeTier(categoryParam: string | null, subParam: string 
     return 'basic';
   }
 
-  const subTopics = APP_CONFIG.SUB_TOPICS as unknown as Record<
+  const subTopicsMap = new Map<
     string,
-    Array<{ id: string; tier?: ThemeTier }>
-  >;
+    ReadonlyArray<{ readonly id: string; readonly tier?: ThemeTier }>
+  >(
+    Object.entries(
+      (APP_CONFIG.SUB_TOPICS || {}) as unknown as Record<
+        string,
+        ReadonlyArray<{ readonly id: string; readonly tier?: ThemeTier }>
+      >
+    )
+  );
 
-  const categoryTopics = Object.prototype.hasOwnProperty.call(subTopics, categoryParam)
-    ? subTopics[categoryParam]
-    : [];
-  const matchedTopic = categoryTopics?.find((t) => t.id === subParam);
+  const categoryTopics = subTopicsMap.get(categoryParam) || [];
+  const matchedTopic = categoryTopics.find((t) => t.id === subParam);
 
   return matchedTopic?.tier || 'basic';
 }
