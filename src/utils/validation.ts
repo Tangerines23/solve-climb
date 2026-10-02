@@ -11,8 +11,8 @@ const NICKNAME_PATTERN = /^[가-힣a-zA-Z0-9\s]+$/;
  */
 const removeHtmlTags = (text: string): string => {
   return text
-    .replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '')
-    .replace(/<style\b[^<]*(?:(?!<\/style>)<[^<]*)*<\/style>/gi, '')
+    .replace(/<script\b[\s\S]*?<\/script>/gi, '')
+    .replace(/<style\b[\s\S]*?<\/style>/gi, '')
     .replace(/<[^>]*>/g, '');
 };
 

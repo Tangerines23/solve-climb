@@ -198,8 +198,8 @@ jobs:
           # Wait for services to be ready
           node scripts/check-services-health.js
           
-          # Apply current PR migrations to the local instance
-          npx supabase@v2.90.0 db reset
+          # Apply current PR migrations to the local instance (with retry on transient container 502)
+          npx supabase@v2.90.0 db reset || (echo "⚠️ Transient error during container restart, retrying in 5s..." && sleep 5 && npx supabase@v2.90.0 db reset)
           
           # Run lint against the newly reset local database
           npm run check:db:lint

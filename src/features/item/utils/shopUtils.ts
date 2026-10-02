@@ -32,12 +32,13 @@ export function addOrIncrementItem(
   const itemIndex = safeInventory.findIndex((i) => i && i.code === targetItem.code);
 
   if (itemIndex !== -1) {
-    const current = safeInventory[itemIndex];
-    safeInventory[itemIndex] = {
-      ...current,
-      quantity: Math.max(0, (current.quantity || 0) + safeIncrement),
-    };
-    return safeInventory;
+    return safeInventory.map((item, idx) => {
+      if (idx !== itemIndex) return item;
+      return {
+        ...item,
+        quantity: Math.max(0, (item.quantity || 0) + safeIncrement),
+      };
+    });
   }
 
   return [

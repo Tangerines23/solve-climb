@@ -34,7 +34,9 @@ export function resolveThemeTier(categoryParam: string | null, subParam: string 
     Array<{ id: string; tier?: ThemeTier }>
   >;
 
-  const categoryTopics = categoryParam in subTopics ? subTopics[categoryParam] : [];
+  const categoryTopics = Object.prototype.hasOwnProperty.call(subTopics, categoryParam)
+    ? subTopics[categoryParam]
+    : [];
   const matchedTopic = categoryTopics?.find((t) => t.id === subParam);
 
   return matchedTopic?.tier || 'basic';

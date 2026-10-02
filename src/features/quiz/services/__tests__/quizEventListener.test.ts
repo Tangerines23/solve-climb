@@ -26,16 +26,16 @@ describe('setupQuizEventListeners', () => {
   let unsubscribeSubmitted: () => void;
   let unsubscribeInvalidInput: () => void;
   let unsubscribeGameOver: () => void;
-  let eventHandlers: Record<string, (payload: any) => void>;
+  let eventHandlers: Map<string, (payload: any) => void>;
 
   beforeEach(() => {
     unsubscribeSubmitted = vi.fn();
     unsubscribeInvalidInput = vi.fn();
     unsubscribeGameOver = vi.fn();
-    eventHandlers = {};
+    eventHandlers = new Map();
 
     vi.mocked(quizEventBus.on).mockImplementation((event: string, handler: any) => {
-      eventHandlers[event] = handler;
+      eventHandlers.set(event, handler);
       if (event === 'QUIZ:ANSWER_SUBMITTED') return unsubscribeSubmitted;
       if (event === 'QUIZ:INVALID_INPUT') return unsubscribeInvalidInput;
       if (event === 'QUIZ:GAME_OVER') return unsubscribeGameOver;
@@ -56,13 +56,13 @@ describe('setupQuizEventListeners', () => {
 
   it('QUIZ:ANSWER_SUBMITTED handler triggers vibrateLong when isCorrect is false', () => {
     setupQuizEventListeners();
-    const handler = eventHandlers['QUIZ:ANSWER_SUBMITTED'];
+    const handler = eventHandlers.get('QUIZ:ANSWER_SUBMITTED');
     expect(handler).toBeDefined();
 
-    handler({ isCorrect: false });
+    handler!({ isCorrect: false });
     expect(vibrateLong).toHaveBeenCalledTimes(1);
 
-    handler({ isCorrect: true });
+    handler!({ isCorrect: true });
     expect(vibrateLong).toHaveBeenCalledTimes(1); // Not called again
   });
 
@@ -73,13 +73,13 @@ describe('setupQuizEventListeners', () => {
     } as unknown as ReturnType<typeof useToastStore.getState>);
 
     setupQuizEventListeners();
-    const handler = eventHandlers['QUIZ:INVALID_INPUT'];
+    const handler = eventHandlers.get('QUIZ:INVALID_INPUT');
     expect(handler).toBeDefined();
 
-    handler({ reason: '정답 범위를 초과했습니다.' });
+    handler!({ reason: '정답 범위를 초과했습니다.' });
     expect(showToastMock).toHaveBeenCalledWith('정답 범위를 초과했습니다.');
 
-    handler({ reason: '' });
+    handler!({ reason: '' });
     expect(showToastMock).toHaveBeenCalledTimes(1); // Empty reason does not show toast
   });
 
@@ -90,10 +90,10 @@ describe('setupQuizEventListeners', () => {
     } as unknown as ReturnType<typeof useToastStore.getState>);
 
     setupQuizEventListeners();
-    const handler = eventHandlers['QUIZ:GAME_OVER'];
+    const handler = eventHandlers.get('QUIZ:GAME_OVER');
     expect(handler).toBeDefined();
 
-    handler({ reason: '시간 초과!' });
+    handler!({ reason: '시간 초과!' });
     expect(showToastMock).toHaveBeenCalledWith('시간 초과!');
   });
 
