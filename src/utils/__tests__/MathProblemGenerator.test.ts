@@ -65,8 +65,7 @@ describe('MathProblemGenerator', () => {
       const problem = generateProblem(23, 'hard', 'normal', mockRng);
       expect(problem.expression).toMatch(/\d\.\d/);
       expect(typeof problem.answer).toBe('number');
-      const isInteger = Number.isInteger(problem.answer);
-      expect(problem.inputType).toBe(isInteger ? 'number' : 'decimal');
+      expect(problem.inputType).toBe('decimal');
     });
 
     it('should generate a valid problem for stage 24 (fraction)', () => {
