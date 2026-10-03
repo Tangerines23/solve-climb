@@ -18,6 +18,7 @@ import { useQuizAnimations } from '../hooks/useQuizAnimations';
 import { useQuizSubmit } from '../hooks/useQuizSubmit';
 import { useSettingsStore } from '@/stores/useSettingsStore';
 import { SURVIVAL_CONFIG, CATEGORY_CONFIG, ANIMATION_CONFIG } from '@/constants/game';
+import { Capacitor } from '@capacitor/core';
 import { useQuizRevive } from '../hooks/useQuizRevive';
 import { useUserStore } from '@/stores/useUserStore';
 import { useGameStore } from '@/stores/useGameStore';
@@ -707,6 +708,57 @@ export function QuizProvider({ children, params }: QuizProviderProps) {
     triggerSuccessFeedback,
     triggerWrongFeedback,
   ]);
+
+  // 앱 백그라운드 전환(홈 버튼, 최근 앱 전환기, 화면 잠금, 전화 수신 등) 시 퀴즈 자동 일시정지
+  useEffect(() => {
+    const handleBackgroundPause = () => {
+      // 팁 모달, 카운트다운, 라스트찬스, 게임오버 상태가 아닌 실제 문제 풀이 진행 중에만 일시정지 적용
+      if (showTipModal || showPauseModal || showLastChanceModal || isExhausted) {
+        return;
+      }
+      setShowPauseModal(true);
+    };
+
+    const handleVisibilityChange = () => {
+      if (document.hidden) {
+        handleBackgroundPause();
+      }
+    };
+
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+
+    let isSubscribed = true;
+    let removeNativeAppState: (() => void) | null = null;
+
+    if (Capacitor.isNativePlatform()) {
+      import('@capacitor/app')
+        .then(({ App }) => {
+          if (!isSubscribed) return;
+          App.addListener('appStateChange', ({ isActive }) => {
+            if (!isActive) {
+              handleBackgroundPause();
+            }
+          }).then((handle) => {
+            if (isSubscribed) {
+              removeNativeAppState = () => handle.remove();
+            } else {
+              void handle.remove();
+            }
+          });
+        })
+        .catch((err) => {
+          console.warn('[QuizContext] Failed to attach appStateChange listener:', err);
+        });
+    }
+
+    return () => {
+      isSubscribed = false;
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+      if (removeNativeAppState) {
+        removeNativeAppState();
+      }
+    };
+  }, [showTipModal, showPauseModal, showLastChanceModal, isExhausted]);
 
   useEffect(() => {
     if (isPreview || isStaminaConsumed) return;

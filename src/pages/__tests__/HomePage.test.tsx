@@ -115,6 +115,27 @@ describe('HomePage', () => {
     expect(mockNavigate).toHaveBeenCalledWith(APP_CONFIG.ROUTES.MY_PAGE, { replace: true });
   });
 
+  it('should terminate audio and trigger native exit on double-click back button in native platform', async () => {
+    const { Capacitor } = await import('@capacitor/core');
+    const nativeSpy = vi.spyOn(Capacitor, 'isNativePlatform').mockReturnValue(true);
+
+    await act(async () => {
+      renderHomePage();
+    });
+    act(() => {
+      window.dispatchEvent(new CustomEvent('home-back-button'));
+    });
+    expect(screen.getByTestId('mock-toast')).toBeTruthy();
+
+    await act(async () => {
+      window.dispatchEvent(new CustomEvent('home-back-button'));
+    });
+
+    // In native mode, it should not navigate to MY_PAGE
+    expect(mockNavigate).not.toHaveBeenCalledWith(APP_CONFIG.ROUTES.MY_PAGE, { replace: true });
+    nativeSpy.mockRestore();
+  });
+
   it('should reset back button state after timeout', async () => {
     await act(async () => {
       renderHomePage();

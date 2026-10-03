@@ -74,4 +74,31 @@ describe('haptic', () => {
     expect(() => vibrateMedium()).not.toThrow();
     expect(() => vibrateLong()).not.toThrow();
   });
+
+  it('should suppress vibration when document is hidden', () => {
+    Object.defineProperty(document, 'hidden', {
+      value: true,
+      writable: true,
+      configurable: true,
+    });
+
+    vibrateShort();
+    expect(navigator.vibrate).not.toHaveBeenCalled();
+
+    Object.defineProperty(document, 'hidden', {
+      value: false,
+      writable: true,
+      configurable: true,
+    });
+  });
+
+  it('should suppress vibration when audioContextManager is in background', async () => {
+    const { audioContextManager } = await import('../sound/audioContext');
+    await audioContextManager.suspend(true);
+
+    vibrateShort();
+    expect(navigator.vibrate).not.toHaveBeenCalled();
+
+    await audioContextManager.resume(true);
+  });
 });

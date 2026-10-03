@@ -10,6 +10,23 @@ import { audioContextManager } from '../audioContext';
 import { bgm } from '../bgmEngine';
 import { Capacitor } from '@capacitor/core';
 
+let appStateCallback: ((state: { isActive: boolean }) => void) | null = null;
+let pauseCallback: (() => void) | null = null;
+let resumeCallback: (() => void) | null = null;
+
+const mockAddListener = vi.fn().mockImplementation((event: string, cb: any) => {
+  if (event === 'appStateChange') appStateCallback = cb;
+  if (event === 'pause') pauseCallback = cb;
+  if (event === 'resume') resumeCallback = cb;
+  return Promise.resolve({ remove: vi.fn() });
+});
+
+vi.mock('@capacitor/app', () => ({
+  App: {
+    addListener: (...args: any[]) => mockAddListener(...args),
+  },
+}));
+
 vi.mock('@capacitor/core', () => ({
   Capacitor: {
     isNativePlatform: vi.fn(() => false),
@@ -99,31 +116,15 @@ describe('AudioLifecycle (audioLifecycle.ts)', () => {
     it('registers Capacitor app listeners when on native platform', async () => {
       vi.mocked(Capacitor.isNativePlatform).mockReturnValue(true);
 
-      let appStateCallback: ((state: { isActive: boolean }) => void) | null = null;
-      let pauseCallback: (() => void) | null = null;
-      let resumeCallback: (() => void) | null = null;
-
-      const mockApp = {
-        addListener: vi.fn().mockImplementation((event: string, cb: any) => {
-          if (event === 'appStateChange') appStateCallback = cb;
-          if (event === 'pause') pauseCallback = cb;
-          if (event === 'resume') resumeCallback = cb;
-          return Promise.resolve({ remove: vi.fn() });
-        }),
-      };
-
-      vi.doMock('@capacitor/app', () => ({
-        App: mockApp,
-      }));
-
       setupAudioLifecycle();
 
-      // Wait a tick for dynamic import('@capacitor/app')
-      await new Promise((r) => setTimeout(r, 20));
+      // Wait for dynamic import('@capacitor/app')
+      await Promise.resolve();
+      await new Promise((r) => setTimeout(r, 50));
 
-      expect(mockApp.addListener).toHaveBeenCalledWith('appStateChange', expect.any(Function));
-      expect(mockApp.addListener).toHaveBeenCalledWith('pause', expect.any(Function));
-      expect(mockApp.addListener).toHaveBeenCalledWith('resume', expect.any(Function));
+      expect(mockAddListener).toHaveBeenCalledWith('appStateChange', expect.any(Function));
+      expect(mockAddListener).toHaveBeenCalledWith('pause', expect.any(Function));
+      expect(mockAddListener).toHaveBeenCalledWith('resume', expect.any(Function));
 
       // Test appStateChange({ isActive: false })
       if (appStateCallback) {

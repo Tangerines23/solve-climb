@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { NavigateFunction } from 'react-router-dom';
+import { Capacitor } from '@capacitor/core';
 import { urls } from '@/utils/navigation';
 import { Category } from '../types/quiz';
 import { UI_MESSAGES } from '@/constants/ui';
@@ -58,9 +59,10 @@ export function useQuizNavigation({
           }),
           { replace: true }
         );
-      } else {
-        navigate(urls.home(), { replace: true });
+        return;
       }
+
+      navigate(urls.home(), { replace: true });
       return;
     }
 
@@ -68,17 +70,18 @@ export function useQuizNavigation({
     if (showExitConfirmRef.current) {
       if (exitConfirmTimeoutRef.current) clearTimeout(exitConfirmTimeoutRef.current);
       quizEventBus.emit('QUIZ:GAME_OVER', { reason: 'manual_exit' });
-    } else {
-      setToastValue(UI_MESSAGES.BACK_NAV_CONFIRM);
-      setShowExitConfirm(true);
-      showExitConfirmRef.current = true;
-      setTimeout(() => setIsFadingOut(true), 2500);
-      exitConfirmTimeoutRef.current = setTimeout(() => {
-        setShowExitConfirm(false);
-        showExitConfirmRef.current = false;
-        setIsFadingOut(false);
-      }, 3000);
+      return;
     }
+
+    setToastValue(UI_MESSAGES.BACK_NAV_CONFIRM);
+    setShowExitConfirm(true);
+    showExitConfirmRef.current = true;
+    setTimeout(() => setIsFadingOut(true), 2500);
+    exitConfirmTimeoutRef.current = setTimeout(() => {
+      setShowExitConfirm(false);
+      showExitConfirmRef.current = false;
+      setIsFadingOut(false);
+    }, 3000);
   }, [
     totalQuestions,
     showTipModal,
@@ -107,8 +110,35 @@ export function useQuizNavigation({
 
     window.addEventListener('popstate', handlePopState);
 
+    // 2. Capacitor 네이티브 하드웨어 백버튼 리스너 등록
+    let isSubscribed = true;
+    let removeNativeListener: (() => void) | null = null;
+
+    if (Capacitor.isNativePlatform()) {
+      import('@capacitor/app')
+        .then(({ App }) => {
+          if (!isSubscribed) return;
+          App.addListener('backButton', () => {
+            handleBack();
+          }).then((handle) => {
+            if (isSubscribed) {
+              removeNativeListener = () => handle.remove();
+            } else {
+              void handle.remove();
+            }
+          });
+        })
+        .catch((err) => {
+          console.warn('[useQuizNavigation] Failed to attach backButton listener:', err);
+        });
+    }
+
     return () => {
+      isSubscribed = false;
       window.removeEventListener('popstate', handlePopState);
+      if (removeNativeListener) {
+        removeNativeListener();
+      }
     };
   }, [handleBack, showTipModal]);
 
