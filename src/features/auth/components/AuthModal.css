@@ -1,10 +1,10 @@
 /* AuthModal.css - High Contrast & Modern Glass Card Styling */
 
-/* 뒷페이지(홈, 마이페이지 등)를 완전히 가리는 100% 불투명 솔리드 배경 오버레이 */
+/* 뒷페이지(홈, 마이페이지 등)를 정갈하게 덮어주는 글래스 오버레이 */
 .modal-overlay.auth-modal-overlay-opaque {
-  background-color: var(--color-bg-primary, #0a0e17) !important;
-  backdrop-filter: none !important;
-  -webkit-backdrop-filter: none !important;
+  background-color: rgba(18, 18, 18, 0.94) !important;
+  backdrop-filter: blur(16px) !important;
+  -webkit-backdrop-filter: blur(16px) !important;
   opacity: 1 !important;
   position: fixed !important;
   inset: 0 !important;
@@ -16,19 +16,29 @@
   justify-content: center !important;
 }
 
-/* 모달 카드 본체: 고대비 글래스 카드, 명확한 테두리 및 깊이감 있는 섀도우 */
+/* 모달 카드 본체: 단일 다크 글래스 카드 (인위적인 파란색 그라데이션 완전 제거) */
 .modal-base.auth-modal-base {
-  background: linear-gradient(180deg, #1b253b 0%, #111827 100%) !important;
-  border: 1px solid rgba(255, 255, 255, 0.15) !important;
+  background-color: var(--color-bg-primary, #121212) !important;
+  background-image: none !important;
+  border: var(--border-glass, 1px solid rgba(255, 255, 255, 0.08)) !important;
   border-radius: var(--rounded-large-card, 24px) !important;
   box-shadow:
     0 24px 64px rgba(0, 0, 0, 0.8),
-    0 0 0 1px rgba(255, 255, 255, 0.08),
-    inset 0 1px 0 rgba(255, 255, 255, 0.1) !important;
+    0 0 0 1px rgba(255, 255, 255, 0.05) !important;
   width: 90% !important;
   max-width: 420px !important;
-  padding: var(--spacing-3xl) var(--spacing-xl) !important;
+  padding: var(--spacing-3xl) var(--spacing-2xl) !important;
   box-sizing: border-box !important;
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: center !important;
+  position: relative !important;
+}
+
+.modal-base.auth-modal-base .modal-body-base {
+  margin: 0 !important;
+  padding: 0 !important;
+  width: 100% !important;
   display: flex !important;
   flex-direction: column !important;
   align-items: center !important;

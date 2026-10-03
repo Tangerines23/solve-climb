@@ -203,6 +203,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
             onComplete={handleProfileComplete}
             showBackButton={true}
             onCancel={handleCancelProfile}
+            isModal={true}
           />
         </div>
       )}
