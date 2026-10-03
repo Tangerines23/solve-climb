@@ -1,6 +1,13 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { AdService, _resetAdPreparedForTest } from '../adService';
 import { AdMob } from '@capacitor-community/admob';
+import { pauseAllAudio, resumeAllAudio } from '@/utils/sound';
+
+// Mock Sound
+vi.mock('@/utils/sound', () => ({
+  pauseAllAudio: vi.fn().mockResolvedValue(undefined),
+  resumeAllAudio: vi.fn().mockResolvedValue(undefined),
+}));
 
 // Mock AdMob
 vi.mock('@capacitor-community/admob', () => ({
@@ -110,6 +117,32 @@ describe('AdService', () => {
 
       expect(spy).toHaveBeenCalled();
       spy.mockRestore();
+    });
+
+    it('should pause audio before showing ad and resume audio when ad finishes', async () => {
+      vi.useFakeTimers();
+      const promise = AdService.showRewardedAd('mineral_recharge');
+
+      expect(pauseAllAudio).toHaveBeenCalled();
+      await vi.advanceTimersByTimeAsync(1100);
+      await promise;
+
+      expect(resumeAllAudio).toHaveBeenCalled();
+      expect(AdService.isShowing()).toBe(false);
+      vi.useRealTimers();
+    });
+
+    it('should resume audio and reset showing state even if ad fails or throws an error', async () => {
+      const errorSpy = vi
+        .spyOn(AdService, 'showSimulationAd')
+        .mockRejectedValue(new Error('Ad failure'));
+
+      await expect(AdService.showRewardedAd('mineral_recharge')).rejects.toThrow('Ad failure');
+
+      expect(pauseAllAudio).toHaveBeenCalled();
+      expect(resumeAllAudio).toHaveBeenCalled();
+      expect(AdService.isShowing()).toBe(false);
+      errorSpy.mockRestore();
     });
   });
 

@@ -63,10 +63,11 @@ export function useQuizRevive({
       if (gameMode === 'time-attack') {
         // 타임어택: 라스트 스퍼트 이벤트 발생 (15초 충전 및 피버 발동)
         quizEventBus.emit('QUIZ:LAST_SPURT');
-      } else {
-        // 서바이벌: 새 문제 요청
-        quizEventBus.emit('QUIZ:NEXT_QUESTION_REQUESTED');
+        return;
       }
+
+      // 서바이벌: 새 문제 요청
+      quizEventBus.emit('QUIZ:NEXT_QUESTION_REQUESTED');
     },
     [gameMode, inventory, consumeItem]
   );

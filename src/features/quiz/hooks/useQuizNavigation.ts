@@ -121,11 +121,11 @@ export function useQuizNavigation({
           App.addListener('backButton', () => {
             handleBack();
           }).then((handle) => {
-            if (isSubscribed) {
-              removeNativeListener = () => handle.remove();
-            } else {
+            if (!isSubscribed) {
               void handle.remove();
+              return;
             }
+            removeNativeListener = () => handle.remove();
           });
         })
         .catch((err) => {
