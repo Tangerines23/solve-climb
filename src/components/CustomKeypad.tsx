@@ -37,8 +37,10 @@ function CustomKeypadComponent({
   const handleBackspace = () => onBackspace && handleAction(onBackspace, true);
   const handleSubmit = (e: FormEvent) => handleAction(() => onSubmit(e));
 
+  const hasSpecialKey = showNegative || showDecimal || showFraction;
+
   const renderSpecialKey = () => {
-    if (!showNegative && !showDecimal && !showFraction) return null;
+    if (!hasSpecialKey) return null;
 
     const label = showDecimal
       ? KEYPAD_SYMBOLS.DECIMAL
@@ -81,7 +83,7 @@ function CustomKeypadComponent({
 
       {/* 0 (특수키가 없으면 2칸 차지하여 빈공간 메꿈) */}
       <button
-        className={`keypad-key ${!renderSpecialKey() ? 'keypad-key-zero-wide' : ''}`}
+        className={`keypad-key ${!hasSpecialKey ? 'keypad-key-zero-wide' : ''}`}
         onClick={() => handleNumberClick('0')}
         disabled={disabled}
       >
