@@ -315,29 +315,38 @@ export function QuizProvider({ children, params }: QuizProviderProps) {
 
   const handleTimeUp = useCallback(() => {
     const hasSafetyRope = activeItems.includes('safety_rope');
-    const hasLastSpurt = gameMode === 'time-attack' && activeItems.includes('last_spurt');
-
     if (hasSafetyRope) {
       consumeActiveItem('safety_rope');
       quizEventBus.emit('QUIZ:SAFETY_ROPE_USED');
-    } else if (hasLastSpurt) {
+      return;
+    }
+
+    const hasLastSpurt = gameMode === 'time-attack' && activeItems.includes('last_spurt');
+    if (hasLastSpurt) {
       consumeActiveItem('last_spurt');
       quizEventBus.emit('QUIZ:LAST_SPURT');
-    } else if (gameMode === 'survival') {
+      return;
+    }
+
+    if (gameMode === 'survival') {
       const hasFlare = activeItems.includes('flare');
       if (hasFlare) {
         consumeActiveItem('flare');
         quizEventBus.emit('QUIZ:NEXT_QUESTION_REQUESTED');
-      } else if (lives > 1) {
-        consumeLife();
-        quizEventBus.emit('QUIZ:NEXT_QUESTION_REQUESTED');
-      } else {
-        consumeLife();
-        stableHandleGameOver('timeout');
+        return;
       }
-    } else {
+
+      consumeLife();
+      if (lives > 1) {
+        quizEventBus.emit('QUIZ:NEXT_QUESTION_REQUESTED');
+        return;
+      }
+
       stableHandleGameOver('timeout');
+      return;
     }
+
+    stableHandleGameOver('timeout');
   }, [activeItems, gameMode, lives, consumeActiveItem, consumeLife, stableHandleGameOver]);
 
   const { handleSubmit: originalSubmit } = useQuizSubmit({
@@ -398,11 +407,7 @@ export function QuizProvider({ children, params }: QuizProviderProps) {
     resetGame();
     checkStamina().then(() => {
       const currentStamina = useUserStore.getState().stamina;
-      if (currentStamina <= 0) {
-        setExhausted(true);
-      } else {
-        setExhausted(false);
-      }
+      setExhausted(currentStamina <= 0);
     });
     if (modeParam === 'base-camp') {
       useBaseCampStore.getState().startDiagnostic();
@@ -475,12 +480,14 @@ export function QuizProvider({ children, params }: QuizProviderProps) {
 
         // 중복 피드백 제거: 플로팅 연출 집중을 위해 외곽의 투명한 성공 메시지 토스트를 비활성화합니다.
         // feedbackRef.current?.show('SUCCESS', `+${earnedDistance}m`, 'success');
-      } else {
+      }
+      if (!isCorrect) {
         const hadSafetyRope = useGameStore.getState().activeItems.includes('safety_rope');
         if (hadSafetyRope) {
           quizEventBus.emit('QUIZ:SAFETY_ROPE_USED');
           setToastValue('🔗 안전 로프 발동! 콤보 보호');
-        } else {
+        }
+        if (!hadSafetyRope) {
           decreaseScore(earnedDistance);
         }
         useGameStore.getState().resetCombo();
@@ -499,9 +506,6 @@ export function QuizProvider({ children, params }: QuizProviderProps) {
           },
           hapticEnabled
         );
-
-        // 중복 피드백 제거: 오답 시 외곽의 투명한 실패 메시지 토스트를 비활성화합니다.
-        // feedbackRef.current?.show('FAILURE', 'Wrong Answer', 'info'); // 'error' 대신 'info' 또는 'success'
 
         // DeathNote
         if (currentQuestion) {
@@ -524,10 +528,8 @@ export function QuizProvider({ children, params }: QuizProviderProps) {
 
         // Survival Mode life management
         if (gameMode === 'survival') {
-          if (lives > 1) {
-            consumeLife();
-          } else {
-            consumeLife();
+          consumeLife();
+          if (lives <= 1) {
             stableHandleGameOver('death');
             return; // Don't proceed to next question
           }
@@ -739,11 +741,11 @@ export function QuizProvider({ children, params }: QuizProviderProps) {
               handleBackgroundPause();
             }
           }).then((handle) => {
-            if (isSubscribed) {
-              removeNativeAppState = () => handle.remove();
-            } else {
+            if (!isSubscribed) {
               void handle.remove();
+              return;
             }
+            removeNativeAppState = () => handle.remove();
           });
         })
         .catch((err) => {
@@ -791,7 +793,10 @@ export function QuizProvider({ children, params }: QuizProviderProps) {
           const fakeEvent = { preventDefault: () => {} } as React.FormEvent;
           handleSubmit(fakeEvent);
         }, 50);
-      } else if (key === 'backspace') {
+        return;
+      }
+
+      if (key === 'backspace') {
         e.preventDefault();
         e.stopPropagation();
 
@@ -805,6 +810,7 @@ export function QuizProvider({ children, params }: QuizProviderProps) {
           const fakeEvent = { preventDefault: () => {} } as React.FormEvent;
           handleSubmit(fakeEvent);
         }, 50);
+        return;
       }
     };
 

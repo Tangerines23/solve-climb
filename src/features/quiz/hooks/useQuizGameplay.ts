@@ -33,7 +33,7 @@ export function useQuizGameplay({ setToastValue }: UseQuizGameplayProps) {
   }, []);
 
   const handlePauseResume = useCallback(() => {
-    setRemainingPauses((prev) => prev - 1);
+    setRemainingPauses((prev) => Math.max(0, prev - 1));
     quizEventBus.emit('QUIZ:NEXT_QUESTION_REQUESTED');
     quizEventBus.emit('QUIZ:UI_MODAL_TOGGLE', { modal: 'pause', show: false });
     quizEventBus.emit('QUIZ:UI_MODAL_TOGGLE', { modal: 'countdown', show: true });
