@@ -259,6 +259,9 @@ export class BgmEngine {
    * BGM 재생 시작 (또는 테마 전환)
    */
   play(theme: BgmTheme, muffled: boolean = false): void {
+    // 앱 종료(Terminated) 상태인 경우 BGM 시작 차단
+    if (audioContextManager.isTerminatedState()) return;
+
     // 백그라운드 상태인 경우 실제 오디오 출력을 시작하지 않고 테마만 기억
     if (audioContextManager.isBackground()) {
       this.isPausedForBackground = true;
@@ -402,6 +405,8 @@ export class BgmEngine {
     if (!this.isPausedForBackground) return;
     this.isPausedForBackground = false;
 
+    if (audioContextManager.isTerminatedState()) return;
+
     if (!audioContextManager.isBgmEnabled() || !this.pausedTheme) {
       this.pausedTheme = null;
       return;
@@ -449,11 +454,37 @@ export class BgmEngine {
     });
     this.activeNodes = [];
 
-    const graph = this.getGraph();
-    if (graph && this.masterGain) {
-      const now = graph.ctx.currentTime;
-      this.masterGain.gain.cancelScheduledValues(now);
-      this.masterGain.gain.setValueAtTime(0.0001, now);
+    if (this.masterGain) {
+      try {
+        const ctx = audioContextManager.getContext();
+        if (ctx) {
+          const now = ctx.currentTime;
+          this.masterGain.gain.cancelScheduledValues(now);
+          this.masterGain.gain.setValueAtTime(0.0001, now);
+        }
+        this.masterGain.disconnect();
+      } catch {
+        // ignore
+      }
+      this.masterGain = null;
+    }
+
+    if (this.masterFilter) {
+      try {
+        this.masterFilter.disconnect();
+      } catch {
+        // ignore
+      }
+      this.masterFilter = null;
+    }
+
+    if (this.masterCompressor) {
+      try {
+        this.masterCompressor.disconnect();
+      } catch {
+        // ignore
+      }
+      this.masterCompressor = null;
     }
   }
 

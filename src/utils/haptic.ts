@@ -14,7 +14,7 @@ const vibrateBrowser = (duration: number): void => {
 
   // 백그라운드 상태일 경우 진동 차단 (배터리 및 사용자 방해 방지)
   if (typeof document !== 'undefined' && document.hidden) return;
-  if (audioContextManager.isBackground()) return;
+  if (audioContextManager.isBackground() || audioContextManager.isTerminatedState()) return;
 
   if (typeof navigator !== 'undefined' && 'vibrate' in navigator) {
     try {

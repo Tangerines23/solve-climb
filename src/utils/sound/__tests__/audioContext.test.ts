@@ -125,6 +125,29 @@ describe('AudioContextManager (audioContext.ts)', () => {
 
       expect(mockAudioContext.close).toHaveBeenCalled();
       expect(audioContextManager.isBackground()).toBe(false);
+      expect(audioContextManager.isTerminatedState()).toBe(true);
+    });
+
+    it('returns null from getContext() and prevents re-creation when terminated', async () => {
+      await audioContextManager.close();
+      expect(audioContextManager.isTerminatedState()).toBe(true);
+
+      const ctx = audioContextManager.getContext();
+      expect(ctx).toBeNull();
+    });
+
+    it('ignores suspend, resume, and gestures when terminated until reset()', async () => {
+      await audioContextManager.close();
+      mockAudioContext.resume.mockClear();
+
+      await audioContextManager.suspend(true);
+      await audioContextManager.resume(true);
+      window.dispatchEvent(new MouseEvent('click'));
+
+      expect(mockAudioContext.resume).not.toHaveBeenCalled();
+
+      audioContextManager.reset();
+      expect(audioContextManager.isTerminatedState()).toBe(false);
     });
   });
 });

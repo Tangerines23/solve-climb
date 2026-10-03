@@ -90,11 +90,21 @@ export function ResultPage() {
     if (finalScore > 0) {
       sound.playStageClear();
       bgm.play('victory');
-    } else {
-      sound.playGameOver();
-      bgm.stop(0.2);
+      return;
     }
+
+    sound.playGameOver();
+    bgm.stop(0.2);
   }, [finalScore]);
+
+  // 결과 페이지 이탈 시 완등 BGM 정리
+  useEffect(() => {
+    return () => {
+      if (bgm.getCurrentTheme() === 'victory') {
+        bgm.stop(0.2);
+      }
+    };
+  }, []);
 
   // 점수 카운트업 진행 중 사운드 효과
   useEffect(() => {

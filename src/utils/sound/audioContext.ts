@@ -9,6 +9,7 @@ class AudioContextManager {
   private isUnlocked: boolean = false;
   private isBackgroundSuspended: boolean = false;
   private isManuallySuspended: boolean = false;
+  private isTerminated: boolean = false;
 
   constructor() {
     this.setupUnlockListeners();
@@ -21,6 +22,7 @@ class AudioContextManager {
     if (typeof window === 'undefined') return;
 
     const unlock = () => {
+      if (this.isTerminated) return;
       // 백그라운드 상태일 때는 제스처가 감지되어도 AudioContext를 강제 기동하지 않음
       if (this.isBackgroundSuspended || this.isManuallySuspended) {
         this.isUnlocked = true;
@@ -35,7 +37,9 @@ class AudioContextManager {
             this.isUnlocked = true;
           })
           .catch(() => {});
-      } else if (ctx && ctx.state === 'running') {
+        return;
+      }
+      if (ctx && ctx.state === 'running') {
         this.isUnlocked = true;
       }
     };
@@ -52,6 +56,7 @@ class AudioContextManager {
    */
   getContext(): AudioContext | null {
     if (typeof window === 'undefined') return null;
+    if (this.isTerminated) return null;
 
     if (!this.ctx) {
       const AudioCtx =
@@ -64,6 +69,7 @@ class AudioContextManager {
 
         // 🛡️ 최종 출력단 마스터 브릭월 리미터 (True-Peak Limiter)
         // BGM + 효과음 다중 중첩 및 고속 연타 시에도 0dBFS 초과를 원천 방어하여 스피커 찢어짐(Clipping) 방지
+        let connectedLimiter = false;
         if (typeof this.ctx.createDynamicsCompressor === 'function') {
           try {
             this.masterLimiter = this.ctx.createDynamicsCompressor();
@@ -75,10 +81,12 @@ class AudioContextManager {
 
             this.masterGain.connect(this.masterLimiter);
             this.masterLimiter.connect(this.ctx.destination);
+            connectedLimiter = true;
           } catch {
-            this.masterGain.connect(this.ctx.destination);
+            connectedLimiter = false;
           }
-        } else {
+        }
+        if (!connectedLimiter) {
           this.masterGain.connect(this.ctx.destination);
         }
       }
@@ -101,6 +109,7 @@ class AudioContextManager {
    * AudioContext 실행 상태 보장 (백그라운드/수동 정지 중이 아닐 때만)
    */
   ensureRunning(): void {
+    if (this.isTerminated) return;
     if (
       this.ctx &&
       this.ctx.state === 'suspended' &&
@@ -116,9 +125,12 @@ class AudioContextManager {
    * 오디오 컨텍스트 백그라운드/수동 일시정지
    */
   async suspend(isBackground: boolean = true): Promise<void> {
+    if (this.isTerminated) return;
+
     if (isBackground) {
       this.isBackgroundSuspended = true;
-    } else {
+    }
+    if (!isBackground) {
       this.isManuallySuspended = true;
     }
 
@@ -135,9 +147,12 @@ class AudioContextManager {
    * 오디오 컨텍스트 포그라운드/수동 재개
    */
   async resume(isBackground: boolean = true): Promise<void> {
+    if (this.isTerminated) return;
+
     if (isBackground) {
       this.isBackgroundSuspended = false;
-    } else {
+    }
+    if (!isBackground) {
       this.isManuallySuspended = false;
     }
 
@@ -214,6 +229,7 @@ class AudioContextManager {
    * 앱 종료/언로드 시 완전 종료 및 자원 해제
    */
   async close(): Promise<void> {
+    this.isTerminated = true;
     if (this.ctx && this.ctx.state !== 'closed') {
       try {
         await this.ctx.close();
@@ -230,9 +246,17 @@ class AudioContextManager {
   }
 
   /**
+   * 앱 완전 종료(Terminated) 상태 여부 확인
+   */
+  isTerminatedState(): boolean {
+    return this.isTerminated;
+  }
+
+  /**
    * 테스트 및 초기화용 리셋
    */
   reset(): void {
+    this.isTerminated = false;
     if (this.ctx && this.ctx.state !== 'closed') {
       this.ctx.close().catch(() => {});
     }

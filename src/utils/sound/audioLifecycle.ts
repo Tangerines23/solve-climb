@@ -54,9 +54,9 @@ export function setupAudioLifecycle(): () => void {
   const handleVisibilityChange = () => {
     if (document.hidden) {
       void pauseAllAudio();
-    } else {
-      void resumeAllAudio();
+      return;
     }
+    void resumeAllAudio();
   };
 
   const handlePageHide = () => {
@@ -90,9 +90,9 @@ export function setupAudioLifecycle(): () => void {
         App.addListener('appStateChange', ({ isActive }) => {
           if (!isActive) {
             void pauseAllAudio();
-          } else {
-            void resumeAllAudio();
+            return;
           }
+          void resumeAllAudio();
         }).then((h) => handles.push(h));
 
         // 네이티브 Pause (백그라운드 전환)
