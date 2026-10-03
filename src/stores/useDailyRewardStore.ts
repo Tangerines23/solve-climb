@@ -76,9 +76,9 @@ export const useDailyRewardStore = create<DailyRewardState>((set) => ({
           showModal: true,
           isLoading: false,
         });
-      } else {
-        set({ isLoading: false });
+        return;
       }
+      set({ isLoading: false });
     } catch (e) {
       console.error('[useDailyRewardStore] Unexpected Error:', e);
       set({ isLoading: false });

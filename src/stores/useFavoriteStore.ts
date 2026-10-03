@@ -41,14 +41,15 @@ export const useFavoriteStore = create<FavoriteState>()(
         if (existingId) {
           // 이미 즐겨찾기에 있으면 제거 (토글)
           get().removeFavorite(existingId);
-        } else {
-          // 즐겨찾기 추가 (id 미입력 시 자동 생성)
-          const { id: _omit, ...rest } = favorite;
-          const id = favorite.id ?? generateFavoriteId(favorite.categoryId, favorite.subCategoryId);
-          set((state) => ({
-            favorites: [{ ...rest, id, timestamp: Date.now() }, ...state.favorites],
-          }));
+          return;
         }
+
+        // 즐겨찾기 추가 (id 미입력 시 자동 생성)
+        const { id: _omit, ...rest } = favorite;
+        const id = favorite.id ?? generateFavoriteId(favorite.categoryId, favorite.subCategoryId);
+        set((state) => ({
+          favorites: [{ ...rest, id, timestamp: Date.now() }, ...state.favorites],
+        }));
       },
       removeFavorite: (id) => {
         set((state) => ({

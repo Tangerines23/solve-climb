@@ -33,6 +33,38 @@ interface RankingState {
   unsubscribeFromRankingUpdates: () => void;
 }
 
+async function fetchRankingQuery(
+  category: string | null,
+  period: 'weekly' | 'all-time',
+  type: 'total' | 'time-attack' | 'survival' | 'infinite',
+  limit: number
+): Promise<{ data: RankingRecord[] | null; error: unknown }> {
+  if (period === 'all-time') {
+    return safeSupabaseQuery(
+      supabase
+        .from('hall_of_fame')
+        .select('user_id, nickname, score, rank, week_start_date, tier_level, tier_stars')
+        .eq('mode', type)
+        .order('week_start_date', { ascending: false }) // 최신 시즌부터 표시
+        .order('rank', { ascending: true }) // 각 시즌별 1등부터 표시
+        .limit(limit)
+    );
+  }
+
+  return validatedRpc(
+    safeSupabaseQuery(
+      supabase.rpc('get_ranking_v2', {
+        p_category: category || 'all',
+        p_limit: limit,
+        p_period: period,
+        p_type: type,
+      })
+    ),
+    RankingListSchema,
+    'get_ranking_v2'
+  );
+}
+
 /**
  * [Ranking Store]
  * 실시간 주간 랭킹 및 역대 시즌 명예의 전당(Leaderboard) 데이터를 관리합니다.
@@ -45,39 +77,7 @@ export const useRankingStore = create<RankingState>((set, get) => {
 
     fetchRanking: async (world, category, period, type, limit = 50) => {
       try {
-        let data: RankingRecord[] | null = null;
-        let error: unknown = null;
-
-        if (period === 'all-time') {
-          // 명예의 전당 조회 (hall_of_fame 테이블)
-          const { data: hofData, error: hofError } = await safeSupabaseQuery(
-            supabase
-              .from('hall_of_fame')
-              .select('user_id, nickname, score, rank, week_start_date, tier_level, tier_stars')
-              .eq('mode', type)
-              .order('week_start_date', { ascending: false }) // 최신 시즌부터 표시
-              .order('rank', { ascending: true }) // 각 시즌별 1등부터 표시
-              .limit(limit)
-          );
-          data = hofData;
-          error = hofError;
-        } else {
-          // 주간 랭킹 조회 (V2 RPC 사용)
-          const { data: rankData, error: rankError } = await validatedRpc(
-            safeSupabaseQuery(
-              supabase.rpc('get_ranking_v2', {
-                p_category: category || 'all',
-                p_limit: limit,
-                p_period: period,
-                p_type: type,
-              })
-            ),
-            RankingListSchema,
-            'get_ranking_v2'
-          );
-          data = rankData;
-          error = rankError;
-        }
+        const { data, error } = await fetchRankingQuery(category, period, type, limit);
 
         if (error) throw error;
 
@@ -126,11 +126,11 @@ export const useRankingStore = create<RankingState>((set, get) => {
 
     unsubscribeFromRankingUpdates: () => {
       const state = get();
-      if (state._rankingSubscription) {
-        console.log('[useRankingStore] Unsubscribing from ranking updates...');
-        state._rankingSubscription.unsubscribe();
-        set({ _rankingSubscription: null });
-      }
+      if (!state._rankingSubscription) return;
+
+      console.log('[useRankingStore] Unsubscribing from ranking updates...');
+      state._rankingSubscription.unsubscribe();
+      set({ _rankingSubscription: null });
     },
   };
 });
