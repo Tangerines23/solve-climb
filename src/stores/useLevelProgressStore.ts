@@ -236,12 +236,12 @@ export const useLevelProgressStore = create<LevelProgressState>()(
               useToastStore
                 .getState()
                 .showToast('오프라인 상태입니다. 기록은 기기에 임시 저장됩니다.', 'warning');
-            } else {
-              // 사용자 정보 없음 또는 보안/DB 위반은 기존과 동일하게 롤백
-              set({ progress: previousProgress });
-              if (result.error !== 'No user found') {
-                useToastStore.getState().showToast(result.error || '저장 실패', 'error');
-              }
+              return;
+            }
+            // 사용자 정보 없음 또는 보안/DB 위반은 기존과 동일하게 롤백
+            set({ progress: previousProgress });
+            if (result.error !== 'No user found') {
+              useToastStore.getState().showToast(result.error || '저장 실패', 'error');
             }
           }
         },
@@ -300,9 +300,9 @@ export const useLevelProgressStore = create<LevelProgressState>()(
               useToastStore
                 .getState()
                 .showToast('오프라인 상태입니다. 기록은 기기에 임시 저장됩니다.', 'warning');
-            } else {
-              set({ progress: previousProgress });
+              return;
             }
+            set({ progress: previousProgress });
           }
         },
 
@@ -401,15 +401,16 @@ export const useLevelProgressStore = create<LevelProgressState>()(
 
                   // [Self-Healing Reconciliation]
                   // Merge local and server best scores (Take the winner)
-                  if (
-                    localRecord.bestScore[modeKey] === null ||
-                    score > localRecord.bestScore[modeKey]!
-                  ) {
+                  const localScore = localRecord.bestScore[modeKey];
+                  if (localScore === undefined || localScore === null || score > localScore) {
                     localRecord.bestScore[modeKey] = score;
                     console.log(
                       `[Reconciliation] Restored higher server score for ${category} L${level}`
                     );
-                  } else if (localRecord.bestScore[modeKey]! > score) {
+                    return;
+                  }
+
+                  if (localScore > score) {
                     // Local is higher (e.g., played offline) -> Background delayed sync to server
                     console.log(
                       `[Reconciliation] Local score higher for ${category} L${level}. Syncing back to server.`
@@ -418,7 +419,7 @@ export const useLevelProgressStore = create<LevelProgressState>()(
                       category,
                       level,
                       mode: modeKey,
-                      score: localRecord.bestScore[modeKey]!,
+                      score: localScore,
                       world,
                     }).catch((err) => {
                       console.warn(
