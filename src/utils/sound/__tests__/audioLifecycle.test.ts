@@ -8,6 +8,7 @@ import {
 } from '../audioLifecycle';
 import { audioContextManager } from '../audioContext';
 import { bgm } from '../bgmEngine';
+import * as haptic from '../../haptic';
 import { Capacitor } from '@capacitor/core';
 
 let appStateCallback: ((state: { isActive: boolean }) => void) | null = null;
@@ -43,6 +44,7 @@ describe('AudioLifecycle (audioLifecycle.ts)', () => {
     vi.spyOn(audioContextManager, 'suspend').mockResolvedValue(undefined);
     vi.spyOn(audioContextManager, 'resume').mockResolvedValue(undefined);
     vi.spyOn(audioContextManager, 'close').mockResolvedValue(undefined);
+    vi.spyOn(haptic, 'stopVibration').mockImplementation(() => {});
   });
 
   afterEach(() => {
@@ -51,9 +53,10 @@ describe('AudioLifecycle (audioLifecycle.ts)', () => {
   });
 
   describe('Core Lifecycle Handlers', () => {
-    it('pauseAllAudio pauses BGM and suspends AudioContext', async () => {
+    it('pauseAllAudio pauses BGM, halts vibration, and suspends AudioContext', async () => {
       await pauseAllAudio();
 
+      expect(haptic.stopVibration).toHaveBeenCalled();
       expect(bgm.pauseForBackground).toHaveBeenCalled();
       expect(audioContextManager.suspend).toHaveBeenCalledWith(true);
     });
@@ -65,9 +68,10 @@ describe('AudioLifecycle (audioLifecycle.ts)', () => {
       expect(bgm.resumeFromBackground).toHaveBeenCalled();
     });
 
-    it('terminateAllAudio immediately halts BGM and closes AudioContext', async () => {
+    it('terminateAllAudio immediately halts BGM, stops vibration, and closes AudioContext', async () => {
       await terminateAllAudio();
 
+      expect(haptic.stopVibration).toHaveBeenCalled();
       expect(bgm.stopImmediate).toHaveBeenCalled();
       expect(audioContextManager.close).toHaveBeenCalled();
     });
@@ -82,6 +86,7 @@ describe('AudioLifecycle (audioLifecycle.ts)', () => {
       document.dispatchEvent(new Event('visibilitychange'));
 
       await Promise.resolve();
+      expect(haptic.stopVibration).toHaveBeenCalled();
       expect(bgm.pauseForBackground).toHaveBeenCalled();
       expect(audioContextManager.suspend).toHaveBeenCalledWith(true);
 
@@ -94,26 +99,29 @@ describe('AudioLifecycle (audioLifecycle.ts)', () => {
       expect(bgm.resumeFromBackground).toHaveBeenCalled();
     });
 
-    it('handles window.pagehide and beforeunload by calling terminateAllAudio', async () => {
+    it('handles window.pagehide and beforeunload by calling terminateAllAudio and stopVibration', async () => {
       setupAudioLifecycle();
 
       window.dispatchEvent(new Event('pagehide'));
       await Promise.resolve();
+      expect(haptic.stopVibration).toHaveBeenCalled();
       expect(bgm.stopImmediate).toHaveBeenCalled();
       expect(audioContextManager.close).toHaveBeenCalled();
 
       bgm.stopImmediate.mockClear();
       audioContextManager.close.mockClear();
+      vi.mocked(haptic.stopVibration).mockClear();
 
       window.dispatchEvent(new Event('beforeunload'));
       await Promise.resolve();
+      expect(haptic.stopVibration).toHaveBeenCalled();
       expect(bgm.stopImmediate).toHaveBeenCalled();
       expect(audioContextManager.close).toHaveBeenCalled();
     });
   });
 
   describe('Capacitor Native Event Handling', () => {
-    it('registers Capacitor app listeners when on native platform', async () => {
+    it('registers Capacitor app listeners when on native platform and halts vibration on background', async () => {
       vi.mocked(Capacitor.isNativePlatform).mockReturnValue(true);
 
       setupAudioLifecycle();
@@ -128,8 +136,10 @@ describe('AudioLifecycle (audioLifecycle.ts)', () => {
 
       // Test appStateChange({ isActive: false })
       if (appStateCallback) {
+        vi.mocked(haptic.stopVibration).mockClear();
         (appStateCallback as any)({ isActive: false });
         await Promise.resolve();
+        expect(haptic.stopVibration).toHaveBeenCalled();
         expect(bgm.pauseForBackground).toHaveBeenCalled();
       }
 
@@ -142,8 +152,10 @@ describe('AudioLifecycle (audioLifecycle.ts)', () => {
 
       // Test pause event
       if (pauseCallback) {
+        vi.mocked(haptic.stopVibration).mockClear();
         (pauseCallback as any)();
         await Promise.resolve();
+        expect(haptic.stopVibration).toHaveBeenCalled();
         expect(bgm.pauseForBackground).toHaveBeenCalled();
       }
 

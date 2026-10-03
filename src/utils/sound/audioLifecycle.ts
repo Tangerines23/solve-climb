@@ -1,4 +1,5 @@
 import { Capacitor } from '@capacitor/core';
+import { stopVibration } from '../haptic';
 import { audioContextManager } from './audioContext';
 import { bgm } from './bgmEngine';
 
@@ -7,11 +8,13 @@ let removeCapacitorListeners: (() => void) | null = null;
 let removeWebListeners: (() => void) | null = null;
 
 /**
- * 앱 백그라운드 전환 시 모든 오디오 안전 일시정지
+ * 앱 백그라운드 전환 시 모든 오디오 안전 일시정지 및 진행 중인 진동 차단
  * - BGM 스케줄러 즉각 중단 및 재생 중인 Web Audio 노드 소멸
  * - AudioContext suspend를 호출하여 모바일 하드웨어 사운드 출력 완전 차단
+ * - 모바일 하드웨어 진동 즉각 취소로 백그라운드 진동 누출 방지
  */
 export async function pauseAllAudio(): Promise<void> {
+  stopVibration();
   bgm.pauseForBackground();
   await audioContextManager.suspend(true);
 }
@@ -26,17 +29,19 @@ export async function resumeAllAudio(): Promise<void> {
 }
 
 /**
- * 앱 완전 종료/페이지 이탈 시 오디오 즉각 파괴
+ * 앱 완전 종료/페이지 이탈 시 오디오 및 진동 즉각 파괴
  * - 볼륨 페이드아웃 대기 없이 0초 즉시 모든 오디오 노드 강제 차단 및 컨텍스트 정리
+ * - 모든 진동 즉시 종료
  */
 export async function terminateAllAudio(): Promise<void> {
+  stopVibration();
   bgm.stopImmediate();
   await audioContextManager.close();
 }
 
 /**
- * 모바일(Capacitor 네이티브) 및 브라우저 환경 통합 오디오 생명주기 리스너 등록
- * - Android/iOS 홈 버튼, 최근 앱 전환기(App Switcher), 화면 잠금 시 사운드 누출 원천 차단
+ * 모바일(Capacitor 네이티브) 및 브라우저 환경 통합 오디오/햅틱 생명주기 리스너 등록
+ * - Android/iOS 홈 버튼, 최근 앱 전환기(App Switcher), 화면 잠금 시 사운드/진동 누출 원천 차단
  * - 웹 document.visibilitychange, window.pagehide, beforeunload 완벽 대응
  */
 export function setupAudioLifecycle(): () => void {
@@ -53,6 +58,7 @@ export function setupAudioLifecycle(): () => void {
   // 1. Web 표준 생명주기 이벤트 (모든 브라우저 및 WebView 공통)
   const handleVisibilityChange = () => {
     if (document.hidden) {
+      stopVibration();
       void pauseAllAudio();
       return;
     }
@@ -60,10 +66,12 @@ export function setupAudioLifecycle(): () => void {
   };
 
   const handlePageHide = () => {
+    stopVibration();
     void terminateAllAudio();
   };
 
   const handleBeforeUnload = () => {
+    stopVibration();
     void terminateAllAudio();
   };
 
@@ -89,6 +97,7 @@ export function setupAudioLifecycle(): () => void {
         // App 상태 변경: 홈 버튼 누름, 앱 전환기 진입, 화면 꺼짐 등
         App.addListener('appStateChange', ({ isActive }) => {
           if (!isActive) {
+            stopVibration();
             void pauseAllAudio();
             return;
           }
@@ -97,6 +106,7 @@ export function setupAudioLifecycle(): () => void {
 
         // 네이티브 Pause (백그라운드 전환)
         App.addListener('pause', () => {
+          stopVibration();
           void pauseAllAudio();
         }).then((h) => handles.push(h));
 
@@ -128,6 +138,7 @@ export function setupAudioLifecycle(): () => void {
  * 생명주기 리스너 해제 (테스트 및 모듈 리셋용)
  */
 export function teardownAudioLifecycle(): void {
+  stopVibration();
   if (removeWebListeners) {
     removeWebListeners();
     removeWebListeners = null;
