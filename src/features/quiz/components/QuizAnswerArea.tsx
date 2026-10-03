@@ -1,6 +1,7 @@
 import React from 'react';
 import { CoordinateGrid } from './CoordinateGrid';
 import { useQuiz } from '../contexts/QuizContext';
+import { sanitizeQuizInput } from '../utils/quizInputFilter';
 
 export const QuizAnswerArea = React.memo(() => {
   const { quizState, quizAnimations, quizHandlers, inputRef, setAnswerInput, setDisplayValue } =
@@ -61,37 +62,13 @@ export const QuizAnswerArea = React.memo(() => {
               onChange={(e) => {
                 if (isError || isSubmitting || effectiveInputPaused) return;
 
-                const value = e.target.value;
-
-                if (isJapaneseQuiz) {
-                  const filtered = value.replace(/[^a-zA-Z]/g, '').slice(0, 20);
-                  setAnswerInput(filtered);
-                  setDisplayValue(filtered);
-                } else if (forceSystemKeyboard) {
-                  const truncated = value.slice(0, 10);
-                  setAnswerInput(truncated);
-                  setDisplayValue(truncated);
-                } else {
-                  if (allowNegative) {
-                    let newValue = value.replace(/[^0-9-]/g, '');
-                    if (newValue.includes('-') && newValue.indexOf('-') !== 0) {
-                      newValue = newValue.replace(/-/g, '');
-                      newValue = '-' + newValue;
-                    }
-                    const minusCount = (newValue.match(/-/g) || []).length;
-                    if (minusCount > 1) {
-                      newValue = '-' + newValue.replace(/-/g, '');
-                    }
-                    const truncated = newValue.slice(0, 6);
-                    setAnswerInput(truncated);
-                    setDisplayValue(truncated);
-                  } else {
-                    const newValue = value.replace(/[^0-9]/g, '');
-                    const truncated = newValue.slice(0, 6);
-                    setAnswerInput(truncated);
-                    setDisplayValue(truncated);
-                  }
-                }
+                const sanitized = sanitizeQuizInput(e.target.value, {
+                  isJapaneseQuiz,
+                  forceSystemKeyboard,
+                  allowNegative,
+                });
+                setAnswerInput(sanitized);
+                setDisplayValue(sanitized);
               }}
               onKeyDown={(e) => {
                 if (e.key === 'Enter' && !isError && !effectiveInputPaused && !isSubmitting) {

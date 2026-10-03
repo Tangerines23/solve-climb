@@ -195,10 +195,9 @@ function QwertyKeypadComponent({
             className="qwerty-keypad-key qwerty-keypad-key-submit"
             onClick={(e) => {
               e.preventDefault();
-              if (!disabled) {
-                vibrateShort();
-                onSubmit(e);
-              }
+              if (disabled) return;
+              vibrateShort();
+              onSubmit(e);
             }}
             disabled={disabled}
             type="button"
