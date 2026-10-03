@@ -7,29 +7,11 @@ class AudioContextManager {
   private masterGain: GainNode | null = null;
   private masterLimiter: DynamicsCompressorNode | null = null;
   private isUnlocked: boolean = false;
+  private isBackgroundSuspended: boolean = false;
+  private isManuallySuspended: boolean = false;
 
   constructor() {
     this.setupUnlockListeners();
-    this.setupVisibilityListener();
-  }
-
-  /**
-   * 모바일/웹 브라우저 백그라운드 전환 시 AudioContext 일시정지 및 복귀 시 자동 재개
-   */
-  private setupVisibilityListener(): void {
-    if (typeof document === 'undefined') return;
-
-    document.addEventListener('visibilitychange', () => {
-      if (document.hidden) {
-        if (this.ctx && this.ctx.state === 'running') {
-          this.ctx.suspend().catch(() => {});
-        }
-      } else {
-        if (this.ctx && this.ctx.state === 'suspended' && this.isUnlocked) {
-          this.ctx.resume().catch(() => {});
-        }
-      }
-    });
   }
 
   /**
@@ -39,6 +21,12 @@ class AudioContextManager {
     if (typeof window === 'undefined') return;
 
     const unlock = () => {
+      // 백그라운드 상태일 때는 제스처가 감지되어도 AudioContext를 강제 기동하지 않음
+      if (this.isBackgroundSuspended || this.isManuallySuspended) {
+        this.isUnlocked = true;
+        return;
+      }
+
       const ctx = this.getContext();
       if (!this.isUnlocked && ctx && ctx.state === 'suspended') {
         ctx
@@ -96,7 +84,13 @@ class AudioContextManager {
       }
     }
 
-    if (this.ctx && this.ctx.state === 'suspended') {
+    if (
+      this.ctx &&
+      this.ctx.state === 'suspended' &&
+      !this.isBackgroundSuspended &&
+      !this.isManuallySuspended &&
+      this.isUnlocked
+    ) {
       this.ctx.resume().catch(() => {});
     }
 
@@ -104,12 +98,78 @@ class AudioContextManager {
   }
 
   /**
-   * AudioContext 실행 상태 보장
+   * AudioContext 실행 상태 보장 (백그라운드/수동 정지 중이 아닐 때만)
    */
   ensureRunning(): void {
-    if (this.ctx && this.ctx.state === 'suspended') {
+    if (
+      this.ctx &&
+      this.ctx.state === 'suspended' &&
+      !this.isBackgroundSuspended &&
+      !this.isManuallySuspended &&
+      this.isUnlocked
+    ) {
       this.ctx.resume().catch(() => {});
     }
+  }
+
+  /**
+   * 오디오 컨텍스트 백그라운드/수동 일시정지
+   */
+  async suspend(isBackground: boolean = true): Promise<void> {
+    if (isBackground) {
+      this.isBackgroundSuspended = true;
+    } else {
+      this.isManuallySuspended = true;
+    }
+
+    if (this.ctx && this.ctx.state === 'running') {
+      try {
+        await this.ctx.suspend();
+      } catch {
+        // ignore
+      }
+    }
+  }
+
+  /**
+   * 오디오 컨텍스트 포그라운드/수동 재개
+   */
+  async resume(isBackground: boolean = true): Promise<void> {
+    if (isBackground) {
+      this.isBackgroundSuspended = false;
+    } else {
+      this.isManuallySuspended = false;
+    }
+
+    if (
+      this.ctx &&
+      this.ctx.state === 'suspended' &&
+      this.isUnlocked &&
+      !this.isBackgroundSuspended &&
+      !this.isManuallySuspended
+    ) {
+      try {
+        await this.ctx.resume();
+      } catch {
+        // ignore
+      }
+    }
+  }
+
+  /**
+   * 오디오 컨텍스트 정지 상태 여부
+   */
+  isSuspended(): boolean {
+    return (
+      this.isBackgroundSuspended || this.isManuallySuspended || this.ctx?.state === 'suspended'
+    );
+  }
+
+  /**
+   * 백그라운드 일시정지 상태 여부
+   */
+  isBackground(): boolean {
+    return this.isBackgroundSuspended;
   }
 
   /**
@@ -151,6 +211,25 @@ class AudioContextManager {
   }
 
   /**
+   * 앱 종료/언로드 시 완전 종료 및 자원 해제
+   */
+  async close(): Promise<void> {
+    if (this.ctx && this.ctx.state !== 'closed') {
+      try {
+        await this.ctx.close();
+      } catch {
+        // ignore
+      }
+    }
+    this.ctx = null;
+    this.masterGain = null;
+    this.masterLimiter = null;
+    this.isUnlocked = false;
+    this.isBackgroundSuspended = false;
+    this.isManuallySuspended = false;
+  }
+
+  /**
    * 테스트 및 초기화용 리셋
    */
   reset(): void {
@@ -161,6 +240,8 @@ class AudioContextManager {
     this.masterGain = null;
     this.masterLimiter = null;
     this.isUnlocked = false;
+    this.isBackgroundSuspended = false;
+    this.isManuallySuspended = false;
   }
 }
 

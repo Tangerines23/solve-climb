@@ -15,6 +15,7 @@ vi.mock('../synthesizers', () => ({
 vi.mock('../audioContext', () => ({
   audioContextManager: {
     isSoundEnabled: vi.fn(),
+    isBackground: vi.fn(),
     getContext: vi.fn(),
     getMasterGain: vi.fn(),
     ensureRunning: vi.fn(),
@@ -33,6 +34,7 @@ describe('SoundEngine', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     vi.mocked(audioContextManager.isSoundEnabled).mockReturnValue(true);
+    vi.mocked(audioContextManager.isBackground).mockReturnValue(false);
     vi.mocked(audioContextManager.getContext).mockReturnValue(mockCtx);
     vi.mocked(audioContextManager.getMasterGain).mockReturnValue(mockGain);
     soundEngine = new SoundEngine();
@@ -56,6 +58,25 @@ describe('SoundEngine', () => {
     });
 
     it('does not trigger synthesis when sound is disabled', () => {
+      soundEngine.playKeypad();
+      soundEngine.playCorrect();
+      soundEngine.playCombo(3);
+      soundEngine.playWrong();
+      soundEngine.playTap();
+
+      expect(playSweep).not.toHaveBeenCalled();
+      expect(playChord).not.toHaveBeenCalled();
+      expect(playFilteredTone).not.toHaveBeenCalled();
+      expect(audioContextManager.ensureRunning).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('Audio background state', () => {
+    beforeEach(() => {
+      vi.mocked(audioContextManager.isBackground).mockReturnValue(true);
+    });
+
+    it('does not trigger synthesis when app is in the background', () => {
       soundEngine.playKeypad();
       soundEngine.playCorrect();
       soundEngine.playCombo(3);
