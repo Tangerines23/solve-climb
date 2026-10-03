@@ -23,6 +23,22 @@ interface BaseCampState {
 }
 
 /**
+ * [순수 함수] 베이스캠프 정답률 및 평균 시간에 따른 추천 카테고리 산출 (Zero-Else)
+ */
+export function calculateBaseCampRecommendation(accuracy: number, avgTime: number): Category {
+  if (accuracy >= 90 && avgTime < 3000) {
+    return '심화'; // Rock Climbing
+  }
+  if (accuracy >= 80) {
+    return '대수'; // Steep
+  }
+  if (accuracy >= 60) {
+    return '논리'; // Exploration
+  }
+  return '기초'; // General
+}
+
+/**
  * [BaseCamp Store]
  * 베이스캠프 진단 테스트 및 카테고리 추천 상태를 관리합니다.
  */
@@ -72,17 +88,7 @@ export const useBaseCampStore = create<BaseCampState>()(
         const totalTime = results.reduce((acc, r) => acc + r.time, 0);
         const accuracy = (correctCount / results.length) * 100;
         const avgTime = totalTime / results.length;
-
-        let recommendation: Category;
-        if (accuracy >= 90 && avgTime < 3000) {
-          recommendation = '심화'; // Rock Climbing
-        } else if (accuracy >= 80) {
-          recommendation = '대수'; // Steep
-        } else if (accuracy >= 60) {
-          recommendation = '논리'; // Exploration
-        } else {
-          recommendation = '기초'; // General
-        }
+        const recommendation = calculateBaseCampRecommendation(accuracy, avgTime);
 
         return { accuracy, avgTime, recommendation };
       },

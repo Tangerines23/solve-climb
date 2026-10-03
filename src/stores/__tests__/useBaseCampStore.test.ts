@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { renderHook, act } from '@testing-library/react';
-import { useBaseCampStore } from '../useBaseCampStore';
+import { useBaseCampStore, calculateBaseCampRecommendation } from '../useBaseCampStore';
 
 // Mock generateQuestion
 vi.mock('@/features/quiz', () => ({
@@ -137,5 +137,28 @@ describe('useBaseCampStore', () => {
     });
 
     expect(result.current.isCompleted).toBe(true);
+  });
+
+  describe('calculateBaseCampRecommendation', () => {
+    it('returns "심화" when accuracy >= 90 and avgTime < 3000', () => {
+      expect(calculateBaseCampRecommendation(95, 2500)).toBe('심화');
+      expect(calculateBaseCampRecommendation(90, 2999)).toBe('심화');
+    });
+
+    it('returns "대수" when accuracy >= 80 or when accuracy >= 90 but time >= 3000', () => {
+      expect(calculateBaseCampRecommendation(90, 3500)).toBe('대수');
+      expect(calculateBaseCampRecommendation(80, 2000)).toBe('대수');
+      expect(calculateBaseCampRecommendation(85, 4000)).toBe('대수');
+    });
+
+    it('returns "논리" when accuracy >= 60 and < 80', () => {
+      expect(calculateBaseCampRecommendation(60, 2000)).toBe('논리');
+      expect(calculateBaseCampRecommendation(79, 1000)).toBe('논리');
+    });
+
+    it('returns "기초" when accuracy < 60', () => {
+      expect(calculateBaseCampRecommendation(59, 1000)).toBe('기초');
+      expect(calculateBaseCampRecommendation(0, 5000)).toBe('기초');
+    });
   });
 });
