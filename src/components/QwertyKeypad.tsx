@@ -83,18 +83,22 @@ function QwertyKeypadComponent({
           e.preventDefault();
           sound.playKeypad(false);
           onKeyPress(key);
-        } else if (allowNegative && key === '-') {
+          return;
+        }
+        if (allowNegative && key === '-') {
           e.preventDefault();
           sound.playKeypad(false);
           onKeyPress('-');
+          return;
         }
-      } else {
-        // 텍스트 모드: 영문자만 허용
-        if (key.length === 1 && /[a-z]/.test(key)) {
-          e.preventDefault();
-          sound.playKeypad(false);
-          onKeyPress(key);
-        }
+        return;
+      }
+
+      // 텍스트 모드: 영문자만 허용
+      if (key.length === 1 && /[a-z]/.test(key)) {
+        e.preventDefault();
+        sound.playKeypad(false);
+        onKeyPress(key);
       }
     };
 
@@ -105,19 +109,17 @@ function QwertyKeypadComponent({
   }, [disabled, mode, allowNegative, onKeyPress, onClear, onBackspace, onSubmit]);
 
   const handleKeyClick = (key: string) => {
-    if (!disabled) {
-      vibrateShort();
-      sound.playKeypad(false);
-      onKeyPress(key);
-    }
+    if (disabled) return;
+    vibrateShort();
+    sound.playKeypad(false);
+    onKeyPress(key);
   };
 
   const handleBackspace = () => {
-    if (!disabled) {
-      vibrateShort();
-      sound.playKeypad(true);
-      onBackspace();
-    }
+    if (disabled) return;
+    vibrateShort();
+    sound.playKeypad(true);
+    onBackspace();
   };
 
   const layout = mode === 'number' ? NUMBER_LAYOUT : QWERTY_LAYOUT;

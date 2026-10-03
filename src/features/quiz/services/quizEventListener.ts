@@ -1,6 +1,6 @@
 import { quizEventBus } from '@/lib/eventBus';
 import { useToastStore } from '@/stores/useToastStore';
-import { vibrateLong } from '@/utils/haptic';
+import { vibrateLong, stopVibration } from '@/utils/haptic';
 
 let currentCleanup: (() => void) | null = null;
 
@@ -48,6 +48,7 @@ export function setupQuizEventListeners(): () => void {
   cleanupFns.push(unsubscribeGameOver);
 
   const cleanup = () => {
+    stopVibration();
     cleanupFns.forEach((unsubscribe) => unsubscribe());
     if (currentCleanup === cleanup) {
       currentCleanup = null;

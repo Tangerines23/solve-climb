@@ -2,7 +2,7 @@ import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { setupQuizEventListeners } from '../quizEventListener';
 import { quizEventBus } from '@/lib/eventBus';
 import { useToastStore } from '@/stores/useToastStore';
-import { vibrateLong } from '@/utils/haptic';
+import { vibrateLong, stopVibration } from '@/utils/haptic';
 
 vi.mock('@/lib/eventBus', () => ({
   quizEventBus: {
@@ -20,6 +20,7 @@ vi.mock('@/stores/useToastStore', () => ({
 
 vi.mock('@/utils/haptic', () => ({
   vibrateLong: vi.fn(),
+  stopVibration: vi.fn(),
 }));
 
 describe('setupQuizEventListeners', () => {
@@ -97,10 +98,11 @@ describe('setupQuizEventListeners', () => {
     expect(showToastMock).toHaveBeenCalledWith('시간 초과!');
   });
 
-  it('Cleanup: calling the returned cleanup function unsubscribes all 3 listeners', () => {
+  it('Cleanup: calling the returned cleanup function unsubscribes all 3 listeners and halts vibration', () => {
     const cleanup = setupQuizEventListeners();
     cleanup();
 
+    expect(stopVibration).toHaveBeenCalled();
     expect(unsubscribeSubmitted).toHaveBeenCalled();
     expect(unsubscribeInvalidInput).toHaveBeenCalled();
     expect(unsubscribeGameOver).toHaveBeenCalled();
