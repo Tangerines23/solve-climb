@@ -118,14 +118,15 @@ export const useBadgeStore = create<BadgeState>((set, get) => ({
       } catch (err) {
         console.warn('Failed to save user badge to server:', err);
       }
-    } else {
-      // 익명 사용자: 로컬 스토리지에 저장
-      try {
-        const currentBadges = get().userBadges;
-        storageService.set(STORAGE_KEYS.LOCAL_BADGES, currentBadges);
-      } catch (e) {
-        console.warn('Failed to save local badge:', e);
-      }
+      return;
+    }
+
+    // 익명 사용자: 로컬 스토리지에 저장
+    try {
+      const currentBadges = get().userBadges;
+      storageService.set(STORAGE_KEYS.LOCAL_BADGES, currentBadges);
+    } catch (e) {
+      console.warn('Failed to save local badge:', e);
     }
   },
 }));
