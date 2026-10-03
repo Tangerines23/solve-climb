@@ -1,293 +1,153 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { render, screen, waitFor, fireEvent } from '@testing-library/react';
-import { BadgeNotification } from '../BadgeNotification';
-import { supabase } from '../../utils/supabaseClient';
-import type { SupabaseClient } from '@supabase/supabase-js';
+import { render, screen, fireEvent, waitFor } from '@testing-library/react';
+import { BadgeNotification, filterBadgesByIds } from '../BadgeNotification';
+import { useBadgeStore, type BadgeDefinition } from '../../stores/useBadgeStore';
 
-// Mock supabase
-vi.mock('../../utils/supabaseClient', () => ({
-  supabase: {
-    from: vi.fn(),
+const mockDefinitions: BadgeDefinition[] = [
+  {
+    id: 'badge1',
+    name: 'First Badge',
+    description: 'First badge description',
+    emoji: '🏆',
   },
-}));
+  {
+    id: 'badge2',
+    name: 'Second Badge',
+    description: null,
+    emoji: '⭐',
+  },
+  {
+    id: 'badge3',
+    name: 'Emoji-less Badge',
+    description: 'No emoji badge',
+    emoji: null,
+  },
+];
 
-describe('BadgeNotification', () => {
+describe('BadgeNotification & filterBadgesByIds', () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    useBadgeStore.setState({
+      badgeDefinitions: mockDefinitions,
+      isLoadingDefinitions: false,
+    });
   });
 
-  it('should not render when badgeIds is empty', () => {
-    const { container } = render(<BadgeNotification badgeIds={[]} onClose={vi.fn()} />);
-    expect(container.firstChild).toBeNull();
+  describe('filterBadgesByIds', () => {
+    it('should return empty array when badgeIds is empty', () => {
+      expect(filterBadgesByIds(mockDefinitions, [])).toEqual([]);
+    });
+
+    it('should return matched badges correctly', () => {
+      const result = filterBadgesByIds(mockDefinitions, ['badge1', 'badge2']);
+      expect(result).toHaveLength(2);
+      expect(result[0].id).toBe('badge1');
+      expect(result[1].id).toBe('badge2');
+    });
+
+    it('should ignore non-existent badgeIds', () => {
+      const result = filterBadgesByIds(mockDefinitions, ['badge1', 'non-existent']);
+      expect(result).toHaveLength(1);
+      expect(result[0].id).toBe('badge1');
+    });
   });
 
-  it('should render badge notification when badgeIds are provided', async () => {
-    const mockIn = vi.fn().mockResolvedValue({
-      data: [
-        {
-          id: 'badge1',
-          name: 'First Badge',
-          description: 'First badge description',
-          emoji: '🏆',
-        },
-      ],
-      error: null,
+  describe('BadgeNotification Component', () => {
+    it('should not render when badgeIds is empty', () => {
+      const { container } = render(<BadgeNotification badgeIds={[]} onClose={vi.fn()} />);
+      expect(container.firstChild).toBeNull();
     });
 
-    const mockSelect = vi.fn().mockReturnValue({
-      in: mockIn,
+    it('should not render when no matching badge definitions found', () => {
+      const { container } = render(
+        <BadgeNotification badgeIds={['non-existent-badge']} onClose={vi.fn()} />
+      );
+      expect(container.firstChild).toBeNull();
     });
 
-    vi.mocked(supabase.from).mockReturnValue({
-      select: mockSelect,
-    } as unknown as ReturnType<SupabaseClient['from']>);
+    it('should render badge notification when badgeIds are provided from store', () => {
+      render(<BadgeNotification badgeIds={['badge1']} onClose={vi.fn()} />);
 
-    render(<BadgeNotification badgeIds={['badge1']} onClose={vi.fn()} />);
-
-    await waitFor(
-      () => {
-        expect(screen.getByText('🎉 뱃지 획득! 🎉')).toBeInTheDocument();
-        expect(screen.getByText('First Badge')).toBeInTheDocument();
-        expect(screen.getByText('First badge description')).toBeInTheDocument();
-      },
-      { timeout: 3000 }
-    );
-  });
-
-  it('should render multiple badges', async () => {
-    const mockIn = vi.fn().mockResolvedValue({
-      data: [
-        {
-          id: 'badge1',
-          name: 'First Badge',
-          description: 'First badge description',
-          emoji: '🏆',
-        },
-        {
-          id: 'badge2',
-          name: 'Second Badge',
-          description: null,
-          emoji: '⭐',
-        },
-      ],
-      error: null,
+      expect(screen.getByText('🎉 뱃지 획득! 🎉')).toBeInTheDocument();
+      expect(screen.getByText('First Badge')).toBeInTheDocument();
+      expect(screen.getByText('First badge description')).toBeInTheDocument();
+      expect(screen.getByText('🏆')).toBeInTheDocument();
     });
 
-    const mockSelect = vi.fn().mockReturnValue({
-      in: mockIn,
-    });
+    it('should render multiple badges', () => {
+      render(<BadgeNotification badgeIds={['badge1', 'badge2']} onClose={vi.fn()} />);
 
-    vi.mocked(supabase.from).mockReturnValue({
-      select: mockSelect,
-    } as unknown as ReturnType<SupabaseClient['from']>);
-
-    render(<BadgeNotification badgeIds={['badge1', 'badge2']} onClose={vi.fn()} />);
-
-    await waitFor(() => {
       expect(screen.getByText('First Badge')).toBeInTheDocument();
       expect(screen.getByText('Second Badge')).toBeInTheDocument();
+      expect(screen.getByText('⭐')).toBeInTheDocument();
     });
-  });
 
-  it('should use default emoji when emoji is null', async () => {
-    const mockIn = vi.fn().mockResolvedValue({
-      data: [
+    it('should use default emoji when emoji is null', () => {
+      render(<BadgeNotification badgeIds={['badge3']} onClose={vi.fn()} />);
+
+      expect(screen.getByText('Emoji-less Badge')).toBeInTheDocument();
+      expect(screen.getByText('🏆')).toBeInTheDocument();
+    });
+
+    it('should not render description when description is null', () => {
+      render(<BadgeNotification badgeIds={['badge2']} onClose={vi.fn()} />);
+
+      expect(screen.getByText('Second Badge')).toBeInTheDocument();
+      expect(screen.queryByText('First badge description')).not.toBeInTheDocument();
+    });
+
+    it('should call onClose when close button is clicked', () => {
+      const onClose = vi.fn();
+      render(<BadgeNotification badgeIds={['badge1']} onClose={onClose} />);
+
+      const closeButton = screen.getByText('확인');
+      fireEvent.click(closeButton);
+
+      expect(onClose).toHaveBeenCalledTimes(1);
+    });
+
+    it('should call onClose when overlay is clicked', () => {
+      const onClose = vi.fn();
+      render(<BadgeNotification badgeIds={['badge1']} onClose={onClose} />);
+
+      const overlay = screen.getByText('🎉 뱃지 획득! 🎉').closest('.badge-notification-overlay');
+      expect(overlay).not.toBeNull();
+      if (overlay) {
+        fireEvent.click(overlay);
+        expect(onClose).toHaveBeenCalledTimes(1);
+      }
+    });
+
+    it('should render custom badges passed via prop directly without store lookup', () => {
+      const custom: BadgeDefinition[] = [
         {
-          id: 'badge1',
-          name: 'First Badge',
-          description: 'First badge description',
-          emoji: null,
+          id: 'custom1',
+          name: 'Direct Injected Badge',
+          description: 'Direct desc',
+          emoji: '🎖️',
         },
-      ],
-      error: null,
+      ];
+
+      render(<BadgeNotification badgeIds={['custom1']} badges={custom} onClose={vi.fn()} />);
+
+      expect(screen.getByText('Direct Injected Badge')).toBeInTheDocument();
+      expect(screen.getByText('Direct desc')).toBeInTheDocument();
+      expect(screen.getByText('🎖️')).toBeInTheDocument();
     });
 
-    const mockSelect = vi.fn().mockReturnValue({
-      in: mockIn,
+    it('should trigger fetchBadgeDefinitions if store is empty', async () => {
+      const mockFetch = vi.fn().mockResolvedValue(undefined);
+      useBadgeStore.setState({
+        badgeDefinitions: [],
+        fetchBadgeDefinitions: mockFetch,
+        isLoadingDefinitions: false,
+      });
+
+      render(<BadgeNotification badgeIds={['badge1']} onClose={vi.fn()} />);
+
+      await waitFor(() => {
+        expect(mockFetch).toHaveBeenCalled();
+      });
     });
-
-    vi.mocked(supabase.from).mockReturnValue({
-      select: mockSelect,
-    } as unknown as ReturnType<SupabaseClient['from']>);
-
-    render(<BadgeNotification badgeIds={['badge1']} onClose={vi.fn()} />);
-
-    await waitFor(() => {
-      // Default emoji should be used
-      const badgeIcon = screen.getByText('🏆');
-      expect(badgeIcon).toBeInTheDocument();
-    });
-  });
-
-  it('should not render description when description is null', async () => {
-    const mockIn = vi.fn().mockResolvedValue({
-      data: [
-        {
-          id: 'badge1',
-          name: 'First Badge',
-          description: null,
-          emoji: '🏆',
-        },
-      ],
-      error: null,
-    });
-
-    const mockSelect = vi.fn().mockReturnValue({
-      in: mockIn,
-    });
-
-    vi.mocked(supabase.from).mockReturnValue({
-      select: mockSelect,
-    } as unknown as ReturnType<SupabaseClient['from']>);
-
-    render(<BadgeNotification badgeIds={['badge1']} onClose={vi.fn()} />);
-
-    await waitFor(() => {
-      expect(screen.getByText('First Badge')).toBeInTheDocument();
-    });
-
-    // Description should not be rendered
-    expect(screen.queryByText(/First badge description/)).not.toBeInTheDocument();
-  });
-
-  it('should call onClose when close button is clicked', async () => {
-    const onClose = vi.fn();
-    const mockIn = vi.fn().mockResolvedValue({
-      data: [
-        {
-          id: 'badge1',
-          name: 'First Badge',
-          description: 'First badge description',
-          emoji: '🏆',
-        },
-      ],
-      error: null,
-    });
-
-    const mockSelect = vi.fn().mockReturnValue({
-      in: mockIn,
-    });
-
-    vi.mocked(supabase.from).mockReturnValue({
-      select: mockSelect,
-    } as unknown as ReturnType<SupabaseClient['from']>);
-
-    render(<BadgeNotification badgeIds={['badge1']} onClose={onClose} />);
-
-    await waitFor(() => {
-      expect(screen.getByText('확인')).toBeInTheDocument();
-    });
-
-    const closeButton = screen.getByText('확인');
-    closeButton.click();
-
-    expect(onClose).toHaveBeenCalled();
-  });
-
-  it('should call onClose when overlay is clicked', async () => {
-    const onClose = vi.fn();
-    const mockIn = vi.fn().mockResolvedValue({
-      data: [
-        {
-          id: 'badge1',
-          name: 'First Badge',
-          description: 'First badge description',
-          emoji: '🏆',
-        },
-      ],
-      error: null,
-    });
-
-    const mockSelect = vi.fn().mockReturnValue({
-      in: mockIn,
-    });
-
-    vi.mocked(supabase.from).mockReturnValue({
-      select: mockSelect,
-    } as unknown as ReturnType<SupabaseClient['from']>);
-
-    render(<BadgeNotification badgeIds={['badge1']} onClose={onClose} />);
-
-    await waitFor(() => {
-      expect(screen.getByText('🎉 뱃지 획득! 🎉')).toBeInTheDocument();
-    });
-
-    const overlay = screen.getByText('🎉 뱃지 획득! 🎉').closest('.badge-notification-overlay');
-    if (overlay) {
-      fireEvent.click(overlay);
-      expect(onClose).toHaveBeenCalled();
-    }
-  });
-
-  it('should set up auto close timer when badgeIds are provided', async () => {
-    const onClose = vi.fn();
-    const mockIn = vi.fn().mockResolvedValue({
-      data: [
-        {
-          id: 'badge1',
-          name: 'First Badge',
-          description: 'First badge description',
-          emoji: '🏆',
-        },
-      ],
-      error: null,
-    });
-
-    const mockSelect = vi.fn().mockReturnValue({
-      in: mockIn,
-    });
-
-    vi.mocked(supabase.from).mockReturnValue({
-      select: mockSelect,
-    } as unknown as ReturnType<SupabaseClient['from']>);
-
-    render(<BadgeNotification badgeIds={['badge1']} onClose={onClose} />);
-
-    await waitFor(
-      () => {
-        expect(screen.getByText('🎉 뱃지 획득! 🎉')).toBeInTheDocument();
-      },
-      { timeout: 3000 }
-    );
-
-    // Timer should be set up (we can't easily test the actual timeout without fake timers
-    // which conflict with async operations, so we just verify the component renders correctly)
-    expect(screen.getByText('First Badge')).toBeInTheDocument();
-  });
-
-  it('should handle error when loading badge definitions fails', async () => {
-    const consoleErrorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
-    const mockIn = vi.fn().mockResolvedValue({
-      data: null,
-      error: { message: 'Database error' },
-    });
-
-    const mockSelect = vi.fn().mockReturnValue({
-      in: mockIn,
-    });
-
-    vi.mocked(supabase.from).mockReturnValue({
-      select: mockSelect,
-    } as unknown);
-
-    render(<BadgeNotification badgeIds={['badge1']} onClose={vi.fn()} />);
-
-    await waitFor(
-      () => {
-        expect(consoleErrorSpy).toHaveBeenCalled();
-      },
-      { timeout: 3000 }
-    );
-
-    // Component should still render but with empty badgeDefs
-    // The modal will show but with no badge items
-    await waitFor(
-      () => {
-        expect(screen.getByText('🎉 뱃지 획득! 🎉')).toBeInTheDocument();
-      },
-      { timeout: 1000 }
-    );
-
-    consoleErrorSpy.mockRestore();
   });
 });
