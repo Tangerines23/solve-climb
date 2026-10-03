@@ -496,9 +496,9 @@ function calculateWithPrecedence(numbers: number[], operators: Operator[]): numb
       nums.splice(i, 2, result);
       ops.splice(i, 1);
       // i를 증가시키지 않고 다시 같은 위치 확인
-    } else {
-      i++;
+      continue;
     }
+    i++;
   }
 
   // 남은 덧셈과 뺄셈을 왼쪽에서 오른쪽으로 처리
@@ -545,6 +545,34 @@ export function generateProblem(
     throw new Error(`Stage ${stageId} not found`);
   }
 
+  type ProblemGeneratorFn = (
+    stage: StageConfig,
+    rng?: { random: () => number; randomInt: (min: number, max: number) => number }
+  ) => MathProblem;
+
+  const PROBLEM_GENERATORS: Record<string, ProblemGeneratorFn> = {
+    standard: generateStandardProblem,
+    'fill-blank': generateStandardProblem,
+    sequential: generateSequentialProblem,
+    parentheses: generateParenthesesProblem,
+    decimal: generateDecimalProblem,
+    fraction: generateFractionProblem,
+    time: generateTimeProblem,
+    modulo: generateModuloProblem,
+    'decimal-fraction-mix': generateDecimalFractionMixProblem,
+    'mixed-fraction': generateMixedFractionProblem,
+  };
+
+  function resolveDefaultInputType(stageType: string): 'decimal' | 'fraction' | 'number' {
+    if (stageType === 'decimal') {
+      return 'decimal';
+    }
+    if (stageType === 'fraction' || stageType === 'mixed-fraction') {
+      return 'fraction';
+    }
+    return 'number';
+  }
+
   let problem: MathProblem = { expression: '', answer: 0 };
   let isValid = false;
   let attempts = 0;
@@ -552,27 +580,11 @@ export function generateProblem(
   while (!isValid && attempts < 100) {
     attempts++;
     try {
-      if (stage.type === 'standard' || stage.type === 'fill-blank') {
-        problem = generateStandardProblem(stage, rng);
-      } else if (stage.type === 'sequential') {
-        problem = generateSequentialProblem(stage, rng);
-      } else if (stage.type === 'parentheses') {
-        problem = generateParenthesesProblem(stage, rng);
-      } else if (stage.type === 'decimal') {
-        problem = generateDecimalProblem(stage, rng);
-      } else if (stage.type === 'fraction') {
-        problem = generateFractionProblem(stage, rng);
-      } else if (stage.type === 'time') {
-        problem = generateTimeProblem(stage, rng);
-      } else if (stage.type === 'modulo') {
-        problem = generateModuloProblem(stage, rng);
-      } else if (stage.type === 'decimal-fraction-mix') {
-        problem = generateDecimalFractionMixProblem(stage, rng);
-      } else if (stage.type === 'mixed-fraction') {
-        problem = generateMixedFractionProblem(stage, rng);
-      } else {
+      const generator = PROBLEM_GENERATORS[stage.type];
+      if (!generator) {
         throw new Error(`Unknown stage type: ${stage.type}`);
       }
+      problem = generator(stage, rng);
       isValid = true;
     } catch {
       // Retry if constraints met failure (e.g. negative result when not allowed)
@@ -588,10 +600,7 @@ export function generateProblem(
 
   // Set inputType based on stage type if not already set
   if (!problem.inputType) {
-    if (stage.type === 'decimal') problem.inputType = 'decimal';
-    else if (stage.type === 'fraction' || stage.type === 'mixed-fraction')
-      problem.inputType = 'fraction';
-    else problem.inputType = 'number';
+    problem.inputType = resolveDefaultInputType(stage.type);
   }
 
   return problem;
@@ -620,38 +629,37 @@ function generateStandardProblem(
       expression: `${a} ÷ ${b}`,
       answer: answer,
     };
-  } else {
-    const r0 = stage.ranges.at(0);
-    const r1 = stage.ranges.at(1);
-    if (!r0) throw new Error('Stage has no ranges');
-    a = getRandomInt(r0.min, r0.max, rng);
-    b = getRandomInt(r1?.min ?? r0.min, r1?.max ?? r0.max, rng);
-
-    const result = calculate(a, b, op);
-
-    // Check constraints
-    if (stage.constraints?.resultMax !== undefined && result > stage.constraints.resultMax)
-      throw new Error('Result too high');
-    if (stage.constraints?.resultMin !== undefined && result < stage.constraints.resultMin)
-      throw new Error('Result too low');
-    if (!stage.constraints?.allowNegative && result < 0) throw new Error('Negative result');
-
-    const displayOp = op === '*' ? '×' : op;
-    const expression = `${a} ${displayOp} ${b}`;
-
-    if (stage.type === 'fill-blank') {
-      const hideFirst = rng ? rng.random() > 0.5 : Math.random() > 0.5;
-      if (hideFirst) {
-        // □ op b = result
-        return { expression: `□ ${displayOp} ${b} = ${result}`, answer: a };
-      } else {
-        // a op □ = result
-        return { expression: `${a} ${displayOp} □ = ${result}`, answer: b };
-      }
-    }
-
-    return { expression, answer: result };
   }
+
+  const r0 = stage.ranges.at(0);
+  const r1 = stage.ranges.at(1);
+  if (!r0) throw new Error('Stage has no ranges');
+  a = getRandomInt(r0.min, r0.max, rng);
+  b = getRandomInt(r1?.min ?? r0.min, r1?.max ?? r0.max, rng);
+
+  const result = calculate(a, b, op);
+
+  // Check constraints
+  if (stage.constraints?.resultMax !== undefined && result > stage.constraints.resultMax)
+    throw new Error('Result too high');
+  if (stage.constraints?.resultMin !== undefined && result < stage.constraints.resultMin)
+    throw new Error('Result too low');
+  if (!stage.constraints?.allowNegative && result < 0) throw new Error('Negative result');
+
+  const displayOp = op === '*' ? '×' : op;
+  const expression = `${a} ${displayOp} ${b}`;
+
+  if (stage.type === 'fill-blank') {
+    const hideFirst = rng ? rng.random() > 0.5 : Math.random() > 0.5;
+    if (hideFirst) {
+      // □ op b = result
+      return { expression: `□ ${displayOp} ${b} = ${result}`, answer: a };
+    }
+    // a op □ = result
+    return { expression: `${a} ${displayOp} □ = ${result}`, answer: b };
+  }
+
+  return { expression, answer: result };
 }
 
 function generateSequentialProblem(
@@ -713,9 +721,6 @@ function generateParenthesesProblem(
   const innerResult = calculate(a, b, op1);
   if (innerResult < 0) throw new Error('Negative inner result');
 
-  let result;
-  let expression;
-
   if (op2 === '/') {
     const finalResult = getRandomInt(2, 9, rng);
     const targetInner = finalResult * c;
@@ -724,20 +729,23 @@ function generateParenthesesProblem(
       const split = getRandomInt(1, targetInner - 1, rng);
       const newA = split;
       const newB = targetInner - split;
-      expression = `(${newA} + ${newB}) ÷ ${c}`;
-      result = finalResult;
-    } else {
-      const newB = getRandomInt(1, 9, rng);
-      const newA = targetInner + newB;
-      expression = `(${newA} - ${newB}) ÷ ${c}`;
-      result = finalResult;
+      return {
+        expression: `(${newA} + ${newB}) ÷ ${c}`,
+        answer: finalResult,
+      };
     }
-  } else {
-    result = calculate(innerResult, c, op2);
-    expression = `(${a} ${op1} ${b}) × ${c}`;
+    const newB = getRandomInt(1, 9, rng);
+    const newA = targetInner + newB;
+    return {
+      expression: `(${newA} - ${newB}) ÷ ${c}`,
+      answer: finalResult,
+    };
   }
 
-  return { expression, answer: result };
+  return {
+    expression: `(${a} ${op1} ${b}) × ${c}`,
+    answer: calculate(innerResult, c, op2),
+  };
 }
 
 function generateDecimalProblem(
@@ -756,13 +764,12 @@ function generateDecimalProblem(
 
   const result = calculate(a, b, op);
   const roundedResult = Math.round(result * factor) / factor;
-  const isIntegerResult = Number.isInteger(roundedResult);
   const displayOp = op === '*' ? '×' : op === '/' ? '÷' : op;
 
   return {
     expression: `${a.toFixed(precision)} ${displayOp} ${b.toFixed(precision)}`,
     answer: roundedResult,
-    inputType: isIntegerResult ? 'number' : 'decimal',
+    inputType: 'decimal',
   };
 }
 
