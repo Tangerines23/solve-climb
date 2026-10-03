@@ -15,7 +15,9 @@ export function useAnonymousEntryWarning() {
 
   const recordEntryAndCheck = useCallback(() => {
     const currentUser = useAuthStore.getState().user;
-    const currentIsAnonymous = Boolean(currentUser && (currentUser.is_anonymous || !currentUser.email));
+    const currentIsAnonymous = Boolean(
+      currentUser && (currentUser.is_anonymous || !currentUser.email)
+    );
 
     if (!currentIsAnonymous) {
       // 정식 로그인 상태이면 카운터 정리
@@ -52,17 +54,19 @@ export function useAnonymousEntryWarning() {
     // 2. Capacitor 백그라운드 복귀(Resume) 감지
     if (Capacitor.isNativePlatform()) {
       let cleanupListener: (() => void) | null = null;
-      import('@capacitor/app').then(({ App }) => {
-        App.addListener('appStateChange', ({ isActive }) => {
-          if (isActive) {
-            recordEntryAndCheck();
-          }
-        }).then((handle) => {
-          cleanupListener = () => handle.remove();
+      import('@capacitor/app')
+        .then(({ App }) => {
+          App.addListener('appStateChange', ({ isActive }) => {
+            if (isActive) {
+              recordEntryAndCheck();
+            }
+          }).then((handle) => {
+            cleanupListener = () => handle.remove();
+          });
+        })
+        .catch((err) => {
+          console.warn('Failed to attach appStateChange listener:', err);
         });
-      }).catch((err) => {
-        console.warn('Failed to attach appStateChange listener:', err);
-      });
 
       return () => {
         if (cleanupListener) cleanupListener();

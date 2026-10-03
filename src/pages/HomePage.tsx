@@ -11,6 +11,8 @@ import { StaminaGauge } from '@/components/StaminaGauge';
 import { DailyRewardModal } from '@/components/DailyRewardModal';
 import { useDailyRewardStore } from '@/stores/useDailyRewardStore';
 import { APP_CONFIG } from '@/config/app';
+import { Capacitor } from '@capacitor/core';
+import { terminateAllAudio } from '@/utils/sound';
 import './HomePage.css';
 
 const SESSION_AGE_RATING_SHOWN_KEY = 'solve_climb_age_rating_shown_session';
@@ -50,43 +52,53 @@ export function HomePage() {
   // 데일리 로그인 보상 체크
   useEffect(() => {
     checkDailyLogin();
-  }, []); // 빈 의존성 배열: 마운트 시 1회만 실행
+  }, [checkDailyLogin]); // Zustand 액션 참조 보장
 
   useEffect(() => {
     // 가이드: "진입 시 첫 화면에서는 백버튼을 사용하지 않아요"
-    // 첫 진입 여부 확인 (히스토리 길이와 referrer 확인)
-    const isFirstVisit = window.history.length <= 1 && document.referrer === '';
+    const isNative = Capacitor.isNativePlatform();
+    const isFirstVisit = !isNative && window.history.length <= 1 && document.referrer === '';
 
-    // 첫 진입 시에는 뒤로가기 이벤트 리스너를 등록하지 않음
+    // 웹 환경 첫 진입 시에는 뒤로가기 이벤트 리스너를 등록하지 않음 (가이드 준수)
     if (isFirstVisit) {
       return;
     }
 
     const handleHomeBackButton = (_event: CustomEvent) => {
       if (isWaitingForSecondBackRef.current) {
-        // 두 번째 뒤로가기: 마이 페이지로 이동
+        // 두 번째 뒤로가기: 네이티브 앱 완전 종료 또는 웹 마이페이지 이동
         isWaitingForSecondBackRef.current = false;
         if (exitConfirmTimeoutRef.current) {
           clearTimeout(exitConfirmTimeoutRef.current);
           exitConfirmTimeoutRef.current = null;
         }
         setShowExitToast(false);
-        navigate(APP_CONFIG.ROUTES.MY_PAGE, { replace: true });
-      } else {
-        // 첫 번째 뒤로가기: 토스트 메시지 표시
-        isWaitingForSecondBackRef.current = true;
-        setShowExitToast(true);
 
-        // 3초 후 자동으로 토스트 닫기 및 상태 리셋
-        if (exitConfirmTimeoutRef.current) {
-          clearTimeout(exitConfirmTimeoutRef.current);
+        if (Capacitor.isNativePlatform()) {
+          void terminateAllAudio();
+          import('@capacitor/app').then(({ App }) => {
+            void App.exitApp().catch(() => {});
+          });
+          return;
         }
-        exitConfirmTimeoutRef.current = setTimeout(() => {
-          setShowExitToast(false);
-          isWaitingForSecondBackRef.current = false;
-          exitConfirmTimeoutRef.current = null;
-        }, 3000);
+
+        navigate(APP_CONFIG.ROUTES.MY_PAGE, { replace: true });
+        return;
       }
+
+      // 첫 번째 뒤로가기: 토스트 메시지 표시
+      isWaitingForSecondBackRef.current = true;
+      setShowExitToast(true);
+
+      // 3초 후 자동으로 토스트 닫기 및 상태 리셋
+      if (exitConfirmTimeoutRef.current) {
+        clearTimeout(exitConfirmTimeoutRef.current);
+      }
+      exitConfirmTimeoutRef.current = setTimeout(() => {
+        setShowExitToast(false);
+        isWaitingForSecondBackRef.current = false;
+        exitConfirmTimeoutRef.current = null;
+      }, 3000);
     };
 
     window.addEventListener('home-back-button', handleHomeBackButton as EventListener);

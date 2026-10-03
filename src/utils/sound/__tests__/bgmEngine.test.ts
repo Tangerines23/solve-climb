@@ -248,4 +248,68 @@ describe('BgmEngine (bgmEngine.ts)', () => {
     bgmEngine.setMuffled(false, 0.2);
     expect(bgmEngine.getIsMuffled()).toBe(false);
   });
+
+  describe('Mobile Background Lifecycle & Audio Leak Prevention', () => {
+    it('pauses scheduler and mutes gain on background pause', () => {
+      bgmEngine.play('brain_age');
+      expect(bgmEngine.isPlaying()).toBe(true);
+
+      const oscCallCountBefore = mockAudioContext.createOscillator.mock.calls.length;
+
+      bgmEngine.pauseForBackground();
+
+      expect(bgmEngine.isPlaying()).toBe(false);
+      expect(bgmEngine.getIsPausedForBackground()).toBe(true);
+      expect(mockGainNode.gain.setValueAtTime).toHaveBeenCalledWith(0.0001, expect.any(Number));
+
+      // Advance time - scheduler must be stopped, no new oscillators created
+      vi.advanceTimersByTime(200);
+      expect(mockAudioContext.createOscillator.mock.calls.length).toBe(oscCallCountBefore);
+    });
+
+    it('resumes BGM smoothly when returning from background', () => {
+      bgmEngine.play('celeste');
+      bgmEngine.pauseForBackground();
+
+      expect(bgmEngine.isPlaying()).toBe(false);
+      expect(bgmEngine.getIsPausedForBackground()).toBe(true);
+
+      bgmEngine.resumeFromBackground();
+
+      expect(bgmEngine.isPlaying()).toBe(true);
+      expect(bgmEngine.getIsPausedForBackground()).toBe(false);
+      expect(bgmEngine.getCurrentTheme()).toBe('celeste');
+      expect(mockGainNode.gain.linearRampToValueAtTime).toHaveBeenCalledWith(
+        expect.any(Number),
+        expect.any(Number)
+      );
+    });
+
+    it('queues theme without playing if play is called while background suspended', () => {
+      vi.spyOn(audioContextManager, 'isBackground').mockReturnValue(true);
+
+      bgmEngine.play('shop');
+
+      expect(bgmEngine.isPlaying()).toBe(false);
+      expect(bgmEngine.getIsPausedForBackground()).toBe(true);
+
+      vi.spyOn(audioContextManager, 'isBackground').mockReturnValue(false);
+      bgmEngine.resumeFromBackground();
+
+      expect(bgmEngine.isPlaying()).toBe(true);
+      expect(bgmEngine.getCurrentTheme()).toBe('shop');
+    });
+
+    it('immediately stops all nodes and scheduler on stopImmediate', () => {
+      bgmEngine.play('chill');
+      expect(bgmEngine.isPlaying()).toBe(true);
+
+      bgmEngine.stopImmediate();
+
+      expect(bgmEngine.isPlaying()).toBe(false);
+      expect(bgmEngine.getCurrentTheme()).toBeNull();
+      expect(bgmEngine.getIsPausedForBackground()).toBe(false);
+      expect(mockGainNode.gain.setValueAtTime).toHaveBeenCalledWith(0.0001, expect.any(Number));
+    });
+  });
 });

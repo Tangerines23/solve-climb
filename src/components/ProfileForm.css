@@ -7,9 +7,20 @@
   position: relative;
 }
 
-/* 가로모드에서 콘텐츠 너비 확장 및 좌우 분할 */
+.profile-form-container.is-modal {
+  background: transparent !important;
+  border: none !important;
+  border-radius: 0 !important;
+  box-shadow: none !important;
+  padding: 0 !important;
+  margin: 0 !important;
+  max-width: 100% !important;
+  width: 100% !important;
+}
+
+/* 가로모드에서 콘텐츠 너비 확장 및 좌우 분할 (단독 페이지 모드에서만 적용) */
 @media (orientation: landscape) {
-  .profile-form-container {
+  .profile-form-container:not(.is-modal) {
     max-width: 800px;
     display: grid;
     grid-template-columns: 1fr 1fr;
@@ -19,12 +30,12 @@
     position: relative;
   }
 
-  .profile-form-back-button {
+  .profile-form-container:not(.is-modal) .profile-form-back-button {
     top: var(--spacing-3xl);
     left: var(--spacing-3xl);
   }
 
-  .profile-form-title {
+  .profile-form-container:not(.is-modal) .profile-form-title {
     grid-column: 1;
     text-align: left;
     margin-bottom: var(--spacing-md);
@@ -33,7 +44,7 @@
     font-size: 1.75rem;
   }
 
-  .profile-form-description {
+  .profile-form-container:not(.is-modal) .profile-form-description {
     grid-column: 1;
     text-align: left;
     margin-bottom: 0;
@@ -44,7 +55,7 @@
     white-space: pre-line;
   }
 
-  .profile-form {
+  .profile-form-container:not(.is-modal) .profile-form {
     grid-column: 2;
     gap: var(--spacing-xl);
   }

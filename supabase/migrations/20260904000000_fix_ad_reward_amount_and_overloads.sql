@@ -4,6 +4,8 @@
 -- 2. Support dynamic p_amount for double_reward with secure clamping (50 ~ 1000)
 -- 3. Maintain backward-compatible overloads for secure_reward_ad_view
 
+DROP FUNCTION IF EXISTS public.secure_reward_ad_view(TEXT) CASCADE;
+DROP FUNCTION IF EXISTS public.secure_reward_ad_view(TEXT, UUID) CASCADE;
 DROP FUNCTION IF EXISTS public.secure_reward_ad_view(TEXT, UUID, INTEGER) CASCADE;
 
 CREATE OR REPLACE FUNCTION public.secure_reward_ad_view(

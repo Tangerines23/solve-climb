@@ -18,9 +18,12 @@ function evaluateSimpleExpr(expr: string): number {
 /**
  * 문제와 정답을 기반으로 상세한 풀이 과정(Step-by-step Solution)을 한국어로 생성합니다.
  */
-export function getSolutionProcess(question: string, answer: string | number): string[] {
-  const qStr = question.toString();
-  const aStr = answer.toString();
+export function getSolutionProcess(
+  question?: string | null,
+  answer?: string | number | null
+): string[] {
+  const qStr = question ? String(question) : '';
+  const aStr = answer !== undefined && answer !== null ? String(answer) : '';
 
   // 1. 수와 연산 (사칙연산) 관련 파싱
   if (
@@ -55,9 +58,8 @@ export function getSolutionProcess(question: string, answer: string | number): s
         }
       }
 
-      // 3항 이상 연산인 경우
       // eslint-disable-next-line security/detect-unsafe-regex
-      const numbers = (qStr.match(/\d+(\.\d+)?/g) || []).map(Number);
+      const numbers = (qStr.match(/\d+(?:\.\d+)?/g) || []).map(Number);
       const operators = qStr.match(/[+\-*/×÷]/g) || [];
       if (numbers.length === 3 && operators.length === 2) {
         const op1 = operators[0] || '';
@@ -363,17 +365,9 @@ export function getSolutionProcess(question: string, answer: string | number): s
     ];
   }
 
-  if (qStr.includes('입체도형') || qStr.includes('기둥') || qStr.includes('뿔')) {
-    return [
-      `1단계: 입체도형의 모서리, 꼭짓점, 면의 개수를 구하는 수학적 규칙을 활용합니다.`,
-      `2단계: n각기둥의 꼭짓점은 2n개, 모서리는 3n개, 면은 n+2개이며, n각뿔의 꼭짓점은 n+1개, 모서리는 2n개, 면은 n+1개입니다.`,
-      `3단계: 규칙식에 대입하여 최종 개수 \`${aStr}\`을 도출합니다.`,
-    ];
-  }
-
   if (qStr.includes('직육면체의 부피') || qStr.includes('원기둥의 부피')) {
     // eslint-disable-next-line security/detect-unsafe-regex
-    const numbers = (qStr.match(/\d+(\.\d+)?/g) || []).map(Number);
+    const numbers = (qStr.match(/\d+(?:\.\d+)?/g) || []).map(Number);
     if (qStr.includes('원기둥')) {
       const r = numbers[0] || 1;
       const h = numbers[1] || 1;
@@ -392,6 +386,14 @@ export function getSolutionProcess(question: string, answer: string | number): s
         `3단계: 곱셈을 완료하여 최종 부피 \`${aStr}\`을 얻습니다.`,
       ];
     }
+  }
+
+  if (qStr.includes('입체도형') || qStr.includes('기둥') || qStr.includes('뿔')) {
+    return [
+      `1단계: 입체도형의 모서리, 꼭짓점, 면의 개수를 구하는 수학적 규칙을 활용합니다.`,
+      `2단계: n각기둥의 꼭짓점은 2n개, 모서리는 3n개, 면은 n+2개이며, n각뿔의 꼭짓점은 n+1개, 모서리는 2n개, 면은 n+1개입니다.`,
+      `3단계: 규칙식에 대입하여 최종 개수 \`${aStr}\`을 도출합니다.`,
+    ];
   }
 
   if (qStr.includes('정육면체의 겉넓이')) {
@@ -464,12 +466,12 @@ export function getSolutionProcess(question: string, answer: string | number): s
   }
 
   if (qStr.includes('AND') || qStr.includes('OR') || qStr.includes('XOR') || qStr.includes('NOT')) {
-    const op = qStr.includes('AND')
-      ? 'AND'
-      : qStr.includes('OR')
-        ? 'OR'
-        : qStr.includes('XOR')
-          ? 'XOR'
+    const op = qStr.includes('XOR')
+      ? 'XOR'
+      : qStr.includes('AND')
+        ? 'AND'
+        : qStr.includes('OR')
+          ? 'OR'
           : 'NOT';
     if (op === 'NOT') {
       const bit = qStr.match(/\d+/)?.[0] || '0';

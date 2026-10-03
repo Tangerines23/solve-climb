@@ -6,6 +6,7 @@ import {
   calculateSubTopicProgress,
   calculateCategoryAltitude,
   calculateCategoryProgress,
+  getBaseLevelScore,
 } from '../scoreCalculator';
 import { useLevelProgressStore } from '@/stores/useLevelProgressStore';
 
@@ -104,6 +105,55 @@ describe('scoreCalculator', () => {
       const result = calculateCategoryProgress('기초');
       expect(result.currentAltitude).toBe(10);
       expect(result.targetAltitude).toBeGreaterThan(0);
+    });
+  });
+
+  describe('getBaseLevelScore', () => {
+    it('calculates stepped scores for 기초 category', () => {
+      expect(getBaseLevelScore(1, '기초')).toBe(10);
+      expect(getBaseLevelScore(5, '기초')).toBe(10);
+      expect(getBaseLevelScore(6, '기초')).toBe(15);
+      expect(getBaseLevelScore(10, '기초')).toBe(15);
+      expect(getBaseLevelScore(11, '기초')).toBe(20);
+    });
+
+    it('calculates linear distance for standard categories', () => {
+      expect(getBaseLevelScore(1, '대수')).toBe(10);
+      expect(getBaseLevelScore(2, '대수')).toBe(15);
+      expect(getBaseLevelScore(5, '대수')).toBe(30);
+    });
+
+    it('safely clamps non-positive or NaN levels to level 1', () => {
+      expect(getBaseLevelScore(0, '대수')).toBe(10);
+      expect(getBaseLevelScore(-5, '대수')).toBe(10);
+      expect(getBaseLevelScore(NaN, '대수')).toBe(10);
+      expect(getBaseLevelScore(0, '기초')).toBe(10);
+      expect(getBaseLevelScore(-5, '기초')).toBe(10);
+    });
+
+    it('handles undefined or null categoryId safely', () => {
+      expect(getBaseLevelScore(1, undefined)).toBe(10);
+      expect(getBaseLevelScore(2, null)).toBe(15);
+    });
+  });
+
+  describe('empty progress handling', () => {
+    it('returns zero for calculateTotalAltitude when progress is empty', () => {
+      vi.mocked(useLevelProgressStore.getState).mockReturnValue({
+        progress: {},
+      });
+      const result = calculateTotalAltitude();
+      expect(result.totalAltitude).toBe(0);
+      expect(result.totalProblems).toBe(0);
+    });
+
+    it('returns zero for calculateCategoryAltitude when category is not found', () => {
+      vi.mocked(useLevelProgressStore.getState).mockReturnValue({
+        progress: {},
+      });
+      const result = calculateCategoryAltitude('nonexistent');
+      expect(result.totalAltitude).toBe(0);
+      expect(result.totalProblems).toBe(0);
     });
   });
 });

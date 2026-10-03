@@ -1,5 +1,5 @@
 // src/hooks/useHistoryData.ts
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { supabase } from '@/utils/supabaseClient';
 import { safeSupabaseQuery } from '@/utils/debugFetch';
 import { APP_CONFIG } from '@/config/app';
@@ -91,14 +91,17 @@ export function useHistoryData() {
   const [stats, setStats] = useState<HistoryStats | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const isMountedRef = useRef(true);
 
   const authSession = useAuthStore((state) => state.session);
   const authUser = useAuthStore((state) => state.user);
 
   const fetchHistoryData = useCallback(async () => {
     try {
-      setLoading(true);
-      setError(null);
+      if (isMountedRef.current) {
+        setLoading(true);
+        setError(null);
+      }
 
       // --- 0. 세션 및 유저 ID 확인 (useAuthStore SSOT 기반) ---
       const user = authSession?.user || authUser;
@@ -112,16 +115,20 @@ export function useHistoryData() {
           if (localHistory && Array.isArray(localHistory) && localHistory.length > 0) {
             // 로컬 데이터를 기반으로 통계 계산
             const stats = calculateLocalStats(localHistory, ANONYMOUS_USER_TITLE);
-            setStats(stats);
-            setLoading(false);
+            if (isMountedRef.current) {
+              setStats(stats);
+              setLoading(false);
+            }
             return;
           }
         } catch (e) {
           console.warn('Failed to load local history:', e);
         }
 
-        setStats(getEmptyStats(ANONYMOUS_USER_TITLE));
-        setLoading(false);
+        if (isMountedRef.current) {
+          setStats(getEmptyStats(ANONYMOUS_USER_TITLE));
+          setLoading(false);
+        }
         return;
       }
 
@@ -397,17 +404,27 @@ export function useHistoryData() {
         allActivities: formattedActivities,
       };
 
-      setStats(finalStats);
+      if (isMountedRef.current) {
+        setStats(finalStats);
+      }
     } catch (err: unknown) {
       logError('useHistoryData#fetchHistoryData', err);
-      setError((err as Error).message || '알 수 없는 오류가 발생했습니다.');
+      if (isMountedRef.current) {
+        setError((err as Error).message || '알 수 없는 오류가 발생했습니다.');
+      }
     } finally {
-      setLoading(false);
+      if (isMountedRef.current) {
+        setLoading(false);
+      }
     }
-  }, []);
+  }, [authSession, authUser]);
 
   useEffect(() => {
+    isMountedRef.current = true;
     fetchHistoryData();
+    return () => {
+      isMountedRef.current = false;
+    };
   }, [fetchHistoryData]);
 
   return { stats, loading, error, refetch: fetchHistoryData };

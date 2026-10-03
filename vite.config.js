@@ -127,8 +127,9 @@ export default defineConfig(({ mode }) => {
       },
       chunkSizeWarningLimit: 2000, // 2MB (TDS 포함 시 용량 증가 대응)
     },
-    // optimizeDeps 설정을 최적화하여 CJS/ESM 호환성 이슈를 해결합니다.
+    // optimizeDeps 설정을 최적화하여 CJS/ESM 호환성 이슈를 해결하고 android 빌드 디렉터리 스캔을 방지합니다.
     optimizeDeps: {
+      entries: ['index.html'],
       include: ['hoist-non-react-statics', 'react-is'],
     },
     // Vitest base 설정

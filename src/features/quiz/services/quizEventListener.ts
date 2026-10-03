@@ -1,13 +1,21 @@
 import { quizEventBus } from '@/lib/eventBus';
 import { useToastStore } from '@/stores/useToastStore';
-import { vibrateLong } from '@/utils/haptic';
+import { vibrateLong, stopVibration } from '@/utils/haptic';
+
+let currentCleanup: (() => void) | null = null;
 
 /**
  * 퀴즈 이벤트 리스너 등록 서비스
  * - QuizContext나 useQuizSubmit에 강결합되어 있던 사이드 이펙트(진동, Toast, 오답노트 저장)를
  *   이벤트 수신 방식으로 분리하여 구독합니다.
+ * - 멱등성 보장: 중복 호출 시 이전 구독을 자동으로 해제하여 다중 리스너 중첩을 방지합니다.
  */
 export function setupQuizEventListeners(): () => void {
+  if (currentCleanup) {
+    currentCleanup();
+    currentCleanup = null;
+  }
+
   const cleanupFns: Array<() => void> = [];
 
   // 1. 정답 제출 이벤트 수신 (사이드 이펙트: 햅틱 진동)
@@ -39,8 +47,14 @@ export function setupQuizEventListeners(): () => void {
   });
   cleanupFns.push(unsubscribeGameOver);
 
-  // cleanup 함수 반환
-  return () => {
+  const cleanup = () => {
+    stopVibration();
     cleanupFns.forEach((unsubscribe) => unsubscribe());
+    if (currentCleanup === cleanup) {
+      currentCleanup = null;
+    }
   };
+
+  currentCleanup = cleanup;
+  return cleanup;
 }

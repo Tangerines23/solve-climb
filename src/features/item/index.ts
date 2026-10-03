@@ -5,3 +5,4 @@
 
 export { ShopPage } from './pages/ShopPage';
 export { useShop } from './hooks/useShop';
+export { getInventoryQuantity, addOrIncrementItem, isSimulationError } from './utils/shopUtils';

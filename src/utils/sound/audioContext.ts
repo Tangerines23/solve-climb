@@ -7,29 +7,12 @@ class AudioContextManager {
   private masterGain: GainNode | null = null;
   private masterLimiter: DynamicsCompressorNode | null = null;
   private isUnlocked: boolean = false;
+  private isBackgroundSuspended: boolean = false;
+  private isManuallySuspended: boolean = false;
+  private isTerminated: boolean = false;
 
   constructor() {
     this.setupUnlockListeners();
-    this.setupVisibilityListener();
-  }
-
-  /**
-   * 모바일/웹 브라우저 백그라운드 전환 시 AudioContext 일시정지 및 복귀 시 자동 재개
-   */
-  private setupVisibilityListener(): void {
-    if (typeof document === 'undefined') return;
-
-    document.addEventListener('visibilitychange', () => {
-      if (document.hidden) {
-        if (this.ctx && this.ctx.state === 'running') {
-          this.ctx.suspend().catch(() => {});
-        }
-      } else {
-        if (this.ctx && this.ctx.state === 'suspended' && this.isUnlocked) {
-          this.ctx.resume().catch(() => {});
-        }
-      }
-    });
   }
 
   /**
@@ -39,6 +22,13 @@ class AudioContextManager {
     if (typeof window === 'undefined') return;
 
     const unlock = () => {
+      if (this.isTerminated) return;
+      // 백그라운드 상태일 때는 제스처가 감지되어도 AudioContext를 강제 기동하지 않음
+      if (this.isBackgroundSuspended || this.isManuallySuspended) {
+        this.isUnlocked = true;
+        return;
+      }
+
       const ctx = this.getContext();
       if (!this.isUnlocked && ctx && ctx.state === 'suspended') {
         ctx
@@ -47,7 +37,9 @@ class AudioContextManager {
             this.isUnlocked = true;
           })
           .catch(() => {});
-      } else if (ctx && ctx.state === 'running') {
+        return;
+      }
+      if (ctx && ctx.state === 'running') {
         this.isUnlocked = true;
       }
     };
@@ -64,6 +56,7 @@ class AudioContextManager {
    */
   getContext(): AudioContext | null {
     if (typeof window === 'undefined') return null;
+    if (this.isTerminated) return null;
 
     if (!this.ctx) {
       const AudioCtx =
@@ -76,6 +69,7 @@ class AudioContextManager {
 
         // 🛡️ 최종 출력단 마스터 브릭월 리미터 (True-Peak Limiter)
         // BGM + 효과음 다중 중첩 및 고속 연타 시에도 0dBFS 초과를 원천 방어하여 스피커 찢어짐(Clipping) 방지
+        let connectedLimiter = false;
         if (typeof this.ctx.createDynamicsCompressor === 'function') {
           try {
             this.masterLimiter = this.ctx.createDynamicsCompressor();
@@ -87,16 +81,24 @@ class AudioContextManager {
 
             this.masterGain.connect(this.masterLimiter);
             this.masterLimiter.connect(this.ctx.destination);
+            connectedLimiter = true;
           } catch {
-            this.masterGain.connect(this.ctx.destination);
+            connectedLimiter = false;
           }
-        } else {
+        }
+        if (!connectedLimiter) {
           this.masterGain.connect(this.ctx.destination);
         }
       }
     }
 
-    if (this.ctx && this.ctx.state === 'suspended') {
+    if (
+      this.ctx &&
+      this.ctx.state === 'suspended' &&
+      !this.isBackgroundSuspended &&
+      !this.isManuallySuspended &&
+      this.isUnlocked
+    ) {
       this.ctx.resume().catch(() => {});
     }
 
@@ -104,12 +106,85 @@ class AudioContextManager {
   }
 
   /**
-   * AudioContext 실행 상태 보장
+   * AudioContext 실행 상태 보장 (백그라운드/수동 정지 중이 아닐 때만)
    */
   ensureRunning(): void {
-    if (this.ctx && this.ctx.state === 'suspended') {
+    if (this.isTerminated) return;
+    if (
+      this.ctx &&
+      this.ctx.state === 'suspended' &&
+      !this.isBackgroundSuspended &&
+      !this.isManuallySuspended &&
+      this.isUnlocked
+    ) {
       this.ctx.resume().catch(() => {});
     }
+  }
+
+  /**
+   * 오디오 컨텍스트 백그라운드/수동 일시정지
+   */
+  async suspend(isBackground: boolean = true): Promise<void> {
+    if (this.isTerminated) return;
+
+    if (isBackground) {
+      this.isBackgroundSuspended = true;
+    }
+    if (!isBackground) {
+      this.isManuallySuspended = true;
+    }
+
+    if (this.ctx && this.ctx.state === 'running') {
+      try {
+        await this.ctx.suspend();
+      } catch {
+        // ignore
+      }
+    }
+  }
+
+  /**
+   * 오디오 컨텍스트 포그라운드/수동 재개
+   */
+  async resume(isBackground: boolean = true): Promise<void> {
+    if (this.isTerminated) return;
+
+    if (isBackground) {
+      this.isBackgroundSuspended = false;
+    }
+    if (!isBackground) {
+      this.isManuallySuspended = false;
+    }
+
+    if (
+      this.ctx &&
+      this.ctx.state === 'suspended' &&
+      this.isUnlocked &&
+      !this.isBackgroundSuspended &&
+      !this.isManuallySuspended
+    ) {
+      try {
+        await this.ctx.resume();
+      } catch {
+        // ignore
+      }
+    }
+  }
+
+  /**
+   * 오디오 컨텍스트 정지 상태 여부
+   */
+  isSuspended(): boolean {
+    return (
+      this.isBackgroundSuspended || this.isManuallySuspended || this.ctx?.state === 'suspended'
+    );
+  }
+
+  /**
+   * 백그라운드 일시정지 상태 여부
+   */
+  isBackground(): boolean {
+    return this.isBackgroundSuspended;
   }
 
   /**
@@ -151,9 +226,37 @@ class AudioContextManager {
   }
 
   /**
+   * 앱 종료/언로드 시 완전 종료 및 자원 해제
+   */
+  async close(): Promise<void> {
+    this.isTerminated = true;
+    if (this.ctx && this.ctx.state !== 'closed') {
+      try {
+        await this.ctx.close();
+      } catch {
+        // ignore
+      }
+    }
+    this.ctx = null;
+    this.masterGain = null;
+    this.masterLimiter = null;
+    this.isUnlocked = false;
+    this.isBackgroundSuspended = false;
+    this.isManuallySuspended = false;
+  }
+
+  /**
+   * 앱 완전 종료(Terminated) 상태 여부 확인
+   */
+  isTerminatedState(): boolean {
+    return this.isTerminated;
+  }
+
+  /**
    * 테스트 및 초기화용 리셋
    */
   reset(): void {
+    this.isTerminated = false;
     if (this.ctx && this.ctx.state !== 'closed') {
       this.ctx.close().catch(() => {});
     }
@@ -161,6 +264,8 @@ class AudioContextManager {
     this.masterGain = null;
     this.masterLimiter = null;
     this.isUnlocked = false;
+    this.isBackgroundSuspended = false;
+    this.isManuallySuspended = false;
   }
 }
 

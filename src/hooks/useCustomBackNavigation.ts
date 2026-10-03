@@ -1,5 +1,6 @@
 import { useEffect, useRef } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
+import { Capacitor } from '@capacitor/core';
 import { APP_CONFIG } from '../config/app';
 import { useProfileStore } from '../stores/useProfileStore';
 import { sound } from '@/utils/sound';
@@ -26,7 +27,7 @@ export function useCustomBackNavigation() {
   }, [location.pathname, location.search]);
 
   useEffect(() => {
-    const handlePopState = (_event: PopStateEvent) => {
+    const executeBackNavigation = () => {
       // 중복 처리 방지
       if (isHandlingPopStateRef.current) {
         return;
@@ -34,7 +35,7 @@ export function useCustomBackNavigation() {
 
       sound.playBack();
 
-      // 이전 위치 (popstate 발생 전)
+      // 이전 위치 (뒤로가기 발생 전)
       const previousPath = previousPathRef.current;
       const previousSearch = previousSearchRef.current;
 
@@ -55,13 +56,12 @@ export function useCustomBackNavigation() {
       if (mainPages.includes(pathToCheck)) {
         if (pathToCheck === APP_CONFIG.ROUTES.HOME) {
           // 홈에서 뒤로가기 처리
-          // 가이드: "진입 시 첫 화면에서는 백버튼을 사용하지 않아요"
-          // 히스토리가 없으면(첫 진입) 뒤로가기 무시
+          // 가이드: 웹 브라우저는 첫 화면 뒤로가기 무시, 네이티브 앱은 종료 토스트/종료 허용
+          const isNative = Capacitor.isNativePlatform();
           const historyLength = window.history.length;
-          const hasHistory = historyLength > 1 || document.referrer !== '';
+          const hasHistory = isNative || historyLength > 1 || document.referrer !== '';
 
           if (!hasHistory) {
-            // 첫 진입 시: 뒤로가기 무시 (가이드 준수)
             navigate(previousPath + previousSearch, { replace: true });
             setTimeout(() => {
               isHandlingPopStateRef.current = false;
@@ -69,7 +69,7 @@ export function useCustomBackNavigation() {
             return;
           }
 
-          // 히스토리가 있는 경우: 커스텀 이벤트 발생 (HomePage에서 토스트 표시)
+          // 히스토리가 있는 경우 또는 네이티브 앱: 커스텀 이벤트 발생 (HomePage에서 토스트/종료 처리)
           const customEvent = new CustomEvent('home-back-button', {
             detail: { previousPath: previousPath, previousSearch: previousSearch },
           });
@@ -82,7 +82,9 @@ export function useCustomBackNavigation() {
             isHandlingPopStateRef.current = false;
           }, 100);
           return;
-        } else if (pathToCheck === APP_CONFIG.ROUTES.MY_PAGE) {
+        }
+
+        if (pathToCheck === APP_CONFIG.ROUTES.MY_PAGE) {
           // 마이페이지 뒤로가기 커스텀 이벤트 전달 (열려 있는 프로필 폼/모달 닫기)
           const customEvent = new CustomEvent('mypage-back-button');
           window.dispatchEvent(customEvent);
@@ -98,10 +100,14 @@ export function useCustomBackNavigation() {
 
           // 완성된 프로필인 경우 마이페이지에서 뒤로가기 → 홈으로 이동
           navigate(APP_CONFIG.ROUTES.HOME, { replace: true });
-        } else {
-          // 다른 메인 페이지에서 뒤로가기 → 홈으로 이동
-          navigate(APP_CONFIG.ROUTES.HOME, { replace: true });
+          setTimeout(() => {
+            isHandlingPopStateRef.current = false;
+          }, 100);
+          return;
         }
+
+        // 다른 메인 페이지(랭킹 등)에서 뒤로가기 → 홈으로 이동
+        navigate(APP_CONFIG.ROUTES.HOME, { replace: true });
         setTimeout(() => {
           isHandlingPopStateRef.current = false;
         }, 100);
@@ -179,12 +185,42 @@ export function useCustomBackNavigation() {
       }, 100);
     };
 
-    // popstate 이벤트 리스너 등록
+    // 1. Web 브라우저 popstate 이벤트 리스너 등록
+    const handlePopState = (_event: PopStateEvent) => {
+      executeBackNavigation();
+    };
     window.addEventListener('popstate', handlePopState);
+
+    // 2. Capacitor 네이티브 하드웨어 백버튼 리스너 등록 (Android 뒤로가기 버튼 / 제스처)
+    let isSubscribed = true;
+    let removeNativeListener: (() => void) | null = null;
+
+    if (Capacitor.isNativePlatform()) {
+      import('@capacitor/app')
+        .then(({ App }) => {
+          if (!isSubscribed) return;
+          App.addListener('backButton', () => {
+            executeBackNavigation();
+          }).then((handle) => {
+            if (isSubscribed) {
+              removeNativeListener = () => handle.remove();
+            } else {
+              void handle.remove();
+            }
+          });
+        })
+        .catch((err) => {
+          console.warn('[useCustomBackNavigation] Failed to attach backButton listener:', err);
+        });
+    }
 
     // 클린업 함수
     return () => {
+      isSubscribed = false;
       window.removeEventListener('popstate', handlePopState);
+      if (removeNativeListener) {
+        removeNativeListener();
+      }
     };
   }, [navigate, location.pathname, location.search]);
 }

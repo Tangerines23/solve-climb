@@ -70,7 +70,7 @@ export function QuizModals() {
 
       <PauseModal
         isVisible={showPauseModal}
-        remainingPauses={3}
+        remainingPauses={quizState.remainingPauses}
         onResume={handlePauseResume}
         onExit={handlePauseExit}
       />

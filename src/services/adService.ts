@@ -5,6 +5,7 @@
 
 import { AdMob, RewardAdOptions } from '@capacitor-community/admob';
 import { ENV } from '@/utils/env';
+import { pauseAllAudio, resumeAllAudio } from '@/utils/sound';
 
 export type AdPlacement = 'revive' | 'mineral_recharge' | 'double_reward' | 'stamina_recharge';
 
@@ -155,6 +156,11 @@ export const AdService = {
     console.log(`[AdService] Showing rewarded ad for placement: ${placement}`);
     isShowingAd = true;
 
+    // 광고 재생 전 게임 BGM 및 WebAudio 안전 일시정지 (광고 오디오 간섭 및 중복 재생 방지)
+    await pauseAllAudio().catch((err) => {
+      console.warn('[AdService] pauseAllAudio failed before ad:', err);
+    });
+
     try {
       const win = getWindowAds();
 
@@ -172,6 +178,10 @@ export const AdService = {
       return await this.showSimulationAd(placement);
     } finally {
       isShowingAd = false;
+      // 광고 시청 종료(완료/취소/실패) 후 게임 오디오 정상 복원
+      await resumeAllAudio().catch((err) => {
+        console.warn('[AdService] resumeAllAudio failed after ad:', err);
+      });
     }
   },
 

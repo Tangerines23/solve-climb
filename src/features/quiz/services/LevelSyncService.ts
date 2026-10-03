@@ -11,6 +11,61 @@ export interface LevelSyncResult {
 }
 
 /**
+ * 카테고리 및 서브젝트 매핑 순수 함수
+ */
+export function mapCategoryAndSubject(
+  rawCategory: string,
+  rawSubject?: string
+): { rpcCategory: string; rpcSubject: string } {
+  let rpcCategory = rawCategory;
+  let rpcSubject = rawSubject || 'add';
+
+  if (rawCategory.includes('_')) {
+    const parts = rawCategory.split('_');
+    if (parts[0] === 'arithmetic') {
+      rpcCategory = 'math';
+      const subMap: Record<string, string> = {
+        addition: 'add',
+        subtraction: 'sub',
+        multiplication: 'mul',
+        division: 'div',
+      };
+      rpcSubject = subMap[parts[1]] || parts[1];
+    } else {
+      rpcCategory = parts[0];
+      rpcSubject = parts.slice(1).join('_');
+    }
+  } else if (rawSubject) {
+    rpcSubject = rawSubject;
+  }
+
+  return { rpcCategory, rpcSubject };
+}
+
+/**
+ * 게임 모드 매핑 순수 함수
+ */
+export function mapGameMode(mode: GameMode): 'timeattack' | 'survival' | 'infinite' {
+  if (mode === 'time-attack') return 'timeattack';
+  if (mode === 'survival') return 'survival';
+  return 'infinite';
+}
+
+/**
+ * 안전한 세션 UUID 생성 (crypto.randomUUID 폴백 지원)
+ */
+export function generateSessionUUID(): string {
+  if (typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function') {
+    try {
+      return crypto.randomUUID();
+    } catch {
+      // ignore
+    }
+  }
+  return `${Date.now().toString(36)}-${Math.random().toString(36).substring(2, 10)}`;
+}
+
+/**
  * 레벨 진행 데이터 서버 동기화 서비스
  */
 export class LevelSyncService {
@@ -42,27 +97,8 @@ export class LevelSyncService {
       subject: rawSubject,
     } = params;
 
-    let rpcCategory = rawCategory;
-    let rpcSubject = rawSubject || 'add';
-
-    if (rawCategory.includes('_')) {
-      const parts = rawCategory.split('_');
-      if (parts[0] === 'arithmetic') {
-        rpcCategory = 'math';
-        const subMap: Record<string, string> = {
-          addition: 'add',
-          subtraction: 'sub',
-          multiplication: 'mul',
-          division: 'div',
-        };
-        rpcSubject = subMap[parts[1]] || parts[1];
-      } else {
-        rpcCategory = parts[0];
-        rpcSubject = parts.slice(1).join('_');
-      }
-    } else if (rawSubject) {
-      rpcSubject = rawSubject;
-    }
+    const { rpcCategory, rpcSubject } = mapCategoryAndSubject(rawCategory, rawSubject);
+    const gameMode = mapGameMode(mode);
 
     try {
       const authResult = (await safeSupabaseQuery(supabase.auth.getUser())) as UserResponse;
@@ -82,9 +118,6 @@ export class LevelSyncService {
         return { success: false, error: 'No user found' };
       }
 
-      const gameMode =
-        mode === 'time-attack' ? 'timeattack' : mode === 'survival' ? 'survival' : 'infinite';
-
       let sessionId = sessionData?.sessionId;
       let userAnswers = sessionData?.answers ?? [];
       let questionIds = (sessionData?.questionIds ?? []).map(String);
@@ -92,9 +125,7 @@ export class LevelSyncService {
       // 세션 ID가 없거나 오프라인 역동기화인 경우, 자동 세션 생성 (Self-Healing Session)
       if (!sessionId) {
         try {
-          const dummyQuestionId = crypto.randomUUID
-            ? crypto.randomUUID()
-            : Math.random().toString(36).substring(2);
+          const dummyQuestionId = generateSessionUUID();
           const { data: sessionRes } = await safeSupabaseQuery(
             supabase.rpc('create_game_session', {
               p_questions: [

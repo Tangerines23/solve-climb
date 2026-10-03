@@ -4,6 +4,7 @@ import { safeSupabaseQuery } from '../utils/debugFetch';
 import { validatedRpc, RankingListSchema } from '../utils/rpcValidator';
 import { useToastStore } from './useToastStore';
 import { UI_MESSAGES } from '../constants/ui';
+import { buildRankingKey } from '../features/ranking/utils/rankingUtils';
 import type { RealtimeChannel } from '@supabase/supabase-js';
 
 export interface RankingRecord {
@@ -81,8 +82,7 @@ export const useRankingStore = create<RankingState>((set, get) => {
         if (error) throw error;
 
         if (data && Array.isArray(data)) {
-          const key =
-            world && category ? `${world}-${category}-${period}-${type}` : `${period}-${type}`;
+          const key = buildRankingKey(period, type, world, category);
 
           set((state) => ({
             rankings: {

@@ -29,8 +29,9 @@ function getTodayDateString(): string {
  * 날짜 문자열을 시드 숫자로 변환합니다
  */
 function dateToSeed(dateString: string): number {
+  if (!dateString || typeof dateString !== 'string') return 20260101;
   const numeric = parseInt(dateString.replace(/-/g, ''), 10);
-  return numeric;
+  return Number.isFinite(numeric) ? numeric : 20260101;
 }
 
 /**
@@ -40,7 +41,7 @@ export class SeededRandom {
   private seed: number;
 
   constructor(seed: number) {
-    this.seed = seed;
+    this.seed = Number.isFinite(seed) ? Math.floor(seed) : 12345;
   }
 
   random(): number {
@@ -49,7 +50,11 @@ export class SeededRandom {
   }
 
   randomInt(min: number, max: number): number {
-    return Math.floor(this.random() * (max - min)) + min;
+    const safeMin = Number.isFinite(min) ? Math.floor(min) : 0;
+    const safeMax = Number.isFinite(max) ? Math.floor(max) : 0;
+    if (safeMin === safeMax) return safeMin;
+    const [lower, upper] = safeMin <= safeMax ? [safeMin, safeMax] : [safeMax, safeMin];
+    return Math.floor(this.random() * (upper - lower)) + lower;
   }
 }
 
@@ -62,7 +67,7 @@ export type ProgressMap = Record<string, Record<string, Record<string, ProgressD
 /**
  * 오늘의 챌린지를 생성합니다 (Categorized League System)
  */
-export function generateTodayChallenge(progressMap: ProgressMap): TodayChallenge {
+export function generateTodayChallenge(progressMap?: ProgressMap | null): TodayChallenge {
   const todayDate = getTodayDateString();
   const seed = dateToSeed(todayDate);
   const rng = new SeededRandom(seed);
@@ -70,21 +75,33 @@ export function generateTodayChallenge(progressMap: ProgressMap): TodayChallenge
   const { flags } = useFeatureFlagStore.getState();
 
   // 1. 산 선택 (활성화된 것 중)
-  const availableMountains = APP_CONFIG.MOUNTAINS.filter((mtn) => {
+  const availableMountains = (APP_CONFIG.MOUNTAINS || []).filter((mtn) => {
     const mountainId = mtn.id as 'math' | 'language' | 'logic' | 'general';
     if (mountainId === 'math') return flags.ENABLE_MATH_MOUNTAIN;
     if (mountainId === 'language') return flags.ENABLE_LANGUAGE_MOUNTAIN;
     return false;
   });
   const mountains = [...availableMountains].sort((a, b) => a.id.localeCompare(b.id));
-  const selectedMountain = mountains[rng.randomInt(0, mountains.length)];
+  const fallbackMountain = APP_CONFIG.MOUNTAINS?.[0] || { id: 'math', name: '수학' };
+  const selectedMountain =
+    mountains.length > 0 ? mountains[rng.randomInt(0, mountains.length)] : fallbackMountain;
 
   // 2. 월드 선택 (해당 산의 월드 중)
-  const availableWorlds = APP_CONFIG.WORLDS.filter((w) => w.mountainId === selectedMountain.id);
-  const selectedWorld = availableWorlds[rng.randomInt(0, availableWorlds.length)];
+  const availableWorlds = (APP_CONFIG.WORLDS || []).filter(
+    (w) => w.mountainId === selectedMountain.id
+  );
+  const fallbackWorld = APP_CONFIG.WORLDS?.[0] || {
+    id: 'World1',
+    mountainId: 'math',
+    name: '월드 1',
+  };
+  const selectedWorld =
+    availableWorlds.length > 0
+      ? availableWorlds[rng.randomInt(0, availableWorlds.length)]
+      : fallbackWorld;
 
   // 3. 카테고리/분야 선택
-  const subTopics = APP_CONFIG.SUB_TOPICS[selectedMountain.id as 'math' | 'language'];
+  const subTopics = APP_CONFIG.SUB_TOPICS?.[selectedMountain.id as 'math' | 'language'] || [];
   const filteredSubTopics =
     selectedMountain.id === 'math'
       ? subTopics.filter((t) => (t.id as string) !== 'sequence')
@@ -98,15 +115,19 @@ export function generateTodayChallenge(progressMap: ProgressMap): TodayChallenge
 
   // 4. 로컬 실력 확인 (해당 월드/분야의 Max Level)
   let maxLevel = 0;
-  const worldProgress = progressMap?.[selectedWorld.id];
-  if (worldProgress && worldProgress[selectedTopic.id]) {
-    const topicLevels = Object.values(worldProgress[selectedTopic.id]) as unknown as Array<{
-      cleared: boolean;
-      level: number;
-    }>;
-    topicLevels.forEach((l) => {
-      if (l.cleared && l.level > maxLevel) maxLevel = l.level;
-    });
+  if (progressMap && typeof progressMap === 'object') {
+    const worldProgress = progressMap[selectedWorld.id];
+    if (worldProgress && typeof worldProgress === 'object' && worldProgress[selectedTopic.id]) {
+      const topicLevels = Object.values(worldProgress[selectedTopic.id]) as unknown as Array<{
+        cleared?: boolean;
+        level?: number;
+      }>;
+      topicLevels.forEach((l) => {
+        if (l && l.cleared && typeof l.level === 'number' && l.level > maxLevel) {
+          maxLevel = l.level;
+        }
+      });
+    }
   }
 
   // 5. 리그 결정 (10레벨 단위)
@@ -116,7 +137,7 @@ export function generateTodayChallenge(progressMap: ProgressMap): TodayChallenge
   const leagueEnd = (league + 1) * 10 + 2; // +2 Preview
 
   // 6. 후보 레벨 필터링
-  const levelsConfig = APP_CONFIG.LEVELS as unknown as Record<
+  const levelsConfig = (APP_CONFIG.LEVELS || {}) as unknown as Record<
     string,
     Record<string, { level: number; name: string }[]>
   >;
@@ -155,18 +176,17 @@ export function generateTodayChallenge(progressMap: ProgressMap): TodayChallenge
 /**
  * 오늘의 챌린지를 가져옵니다
  */
-export async function getTodayChallenge(
-  progressMap: Record<string, Record<string, Record<string, { cleared: boolean; level: number }>>>
-): Promise<TodayChallenge> {
+export async function getTodayChallenge(progressMap?: ProgressMap | null): Promise<TodayChallenge> {
+  const safeProgressMap = progressMap && typeof progressMap === 'object' ? progressMap : {};
   const todayDate = getTodayDateString();
   const storedDate = storageService.get<string>(STORAGE_KEYS.TODAY_CHALLENGE_DATE);
   const storedChallenge = storageService.get<TodayChallenge>(STORAGE_KEYS.TODAY_CHALLENGE);
 
-  if (storedDate === todayDate && storedChallenge) {
+  if (storedDate === todayDate && storedChallenge && typeof storedChallenge === 'object') {
     return storedChallenge;
   }
 
-  const newChallenge = generateTodayChallenge(progressMap);
+  const newChallenge = generateTodayChallenge(safeProgressMap);
   storageService.set(STORAGE_KEYS.TODAY_CHALLENGE_DATE, todayDate);
   storageService.set(STORAGE_KEYS.TODAY_CHALLENGE, newChallenge);
 

@@ -32,6 +32,10 @@ export class BgmEngine {
   private volume: number = 0.48; // 모바일 스피커 음압 보정을 위해 기본 0.48로 최적화
   private activeNodes: { osc?: OscillatorNode; source?: AudioBufferSourceNode; gain: GainNode }[] =
     [];
+  private isPausedForBackground: boolean = false;
+  private pausedTheme: BgmTheme | null = null;
+  private pausedStep: number = 0;
+  private pausedIsMuffled: boolean = false;
 
   /**
    * BGM 엔진 사운드 버전 설정 ('v1': 원형 기초 샘플, 'v2': 완성본 리마스터)
@@ -255,6 +259,18 @@ export class BgmEngine {
    * BGM 재생 시작 (또는 테마 전환)
    */
   play(theme: BgmTheme, muffled: boolean = false): void {
+    // 앱 종료(Terminated) 상태인 경우 BGM 시작 차단
+    if (audioContextManager.isTerminatedState()) return;
+
+    // 백그라운드 상태인 경우 실제 오디오 출력을 시작하지 않고 테마만 기억
+    if (audioContextManager.isBackground()) {
+      this.isPausedForBackground = true;
+      this.pausedTheme = theme;
+      this.pausedIsMuffled = muffled;
+      this.pausedStep = 0;
+      return;
+    }
+
     audioContextManager.ensureRunning();
     this.isMuffled = muffled;
     const graph = this.getGraph();
@@ -298,6 +314,8 @@ export class BgmEngine {
 
     this.isRunning = false;
     this.currentTheme = null;
+    this.isPausedForBackground = false;
+    this.pausedTheme = null;
 
     if (this.schedulerTimer !== null) {
       window.clearInterval(this.schedulerTimer);
@@ -333,6 +351,145 @@ export class BgmEngine {
       },
       fadeDuration * 1000 + 100
     );
+  }
+
+  /**
+   * 모바일 백그라운드 전환 시 BGM 즉각 일시정지 (스케줄러 중단 & 활성 노드 소멸 & 게인 즉시 뮤트)
+   */
+  pauseForBackground(): void {
+    if (!this.isRunning && !this.currentTheme) return;
+
+    this.isPausedForBackground = true;
+    this.pausedTheme = this.currentTheme;
+    this.pausedStep = this.currentStep;
+    this.pausedIsMuffled = this.isMuffled;
+
+    if (this.schedulerTimer !== null) {
+      window.clearInterval(this.schedulerTimer);
+      this.schedulerTimer = null;
+    }
+
+    // 기존 재생 중인 활성 노드 즉각 소멸
+    this.activeNodes.forEach(({ osc, source, gain }) => {
+      try {
+        if (osc) {
+          osc.stop();
+          osc.disconnect();
+        }
+        if (source) {
+          source.stop();
+          source.disconnect();
+        }
+        gain.disconnect();
+      } catch {
+        // ignore
+      }
+    });
+    this.activeNodes = [];
+
+    // 마스터 게인 즉시 0.0001 (하드웨어 오디오 버퍼 잔향 차단)
+    const graph = this.getGraph();
+    if (graph && this.masterGain) {
+      const now = graph.ctx.currentTime;
+      this.masterGain.gain.cancelScheduledValues(now);
+      this.masterGain.gain.setValueAtTime(0.0001, now);
+    }
+
+    this.isRunning = false;
+  }
+
+  /**
+   * 모바일 포그라운드 복귀 시 BGM 부드럽게 재개
+   */
+  resumeFromBackground(): void {
+    if (!this.isPausedForBackground) return;
+    this.isPausedForBackground = false;
+
+    if (audioContextManager.isTerminatedState()) return;
+
+    if (!audioContextManager.isBgmEnabled() || !this.pausedTheme) {
+      this.pausedTheme = null;
+      return;
+    }
+
+    const themeToResume = this.pausedTheme;
+    const stepToResume = this.pausedStep;
+    const muffledToResume = this.pausedIsMuffled;
+    this.pausedTheme = null;
+
+    this.play(themeToResume, muffledToResume);
+    if (stepToResume > 0) {
+      this.seekToStep(stepToResume);
+    }
+  }
+
+  /**
+   * 앱 종료/페이지 이탈 시 0초 즉시 정지 및 자원 해제
+   */
+  stopImmediate(): void {
+    this.isRunning = false;
+    this.currentTheme = null;
+    this.isPausedForBackground = false;
+    this.pausedTheme = null;
+
+    if (this.schedulerTimer !== null) {
+      window.clearInterval(this.schedulerTimer);
+      this.schedulerTimer = null;
+    }
+
+    this.activeNodes.forEach(({ osc, source, gain }) => {
+      try {
+        if (osc) {
+          osc.stop();
+          osc.disconnect();
+        }
+        if (source) {
+          source.stop();
+          source.disconnect();
+        }
+        gain.disconnect();
+      } catch {
+        // ignore
+      }
+    });
+    this.activeNodes = [];
+
+    if (this.masterGain) {
+      try {
+        const ctx = audioContextManager.getContext();
+        if (ctx) {
+          const now = ctx.currentTime;
+          this.masterGain.gain.cancelScheduledValues(now);
+          this.masterGain.gain.setValueAtTime(0.0001, now);
+        }
+        this.masterGain.disconnect();
+      } catch {
+        // ignore
+      }
+      this.masterGain = null;
+    }
+
+    if (this.masterFilter) {
+      try {
+        this.masterFilter.disconnect();
+      } catch {
+        // ignore
+      }
+      this.masterFilter = null;
+    }
+
+    if (this.masterCompressor) {
+      try {
+        this.masterCompressor.disconnect();
+      } catch {
+        // ignore
+      }
+      this.masterCompressor = null;
+    }
+  }
+
+  getIsPausedForBackground(): boolean {
+    return this.isPausedForBackground;
   }
 
   /**
@@ -402,8 +559,9 @@ export class BgmEngine {
   }
 
   private scheduleLoop(): void {
+    if (audioContextManager.isBackground() || !this.isRunning || !this.currentTheme) return;
     const graph = this.getGraph();
-    if (!graph || !this.isRunning || !this.currentTheme) return;
+    if (!graph) return;
 
     // AudioContext가 뒤늦게 resume되었거나 탭 비활성화 후 복귀 시 과거 시간 루프 폭주 방지
     if (this.nextStepTime < graph.ctx.currentTime) {
@@ -466,12 +624,25 @@ export class BgmEngine {
     if (!gain) return;
     this.activeNodes.push({ osc, source, gain });
     if (this.activeNodes.length > 80) {
-      this.activeNodes.shift();
+      const evicted = this.activeNodes.shift();
+      if (evicted) {
+        try {
+          if (evicted.osc) {
+            evicted.osc.disconnect();
+          }
+          if (evicted.source) {
+            evicted.source.disconnect();
+          }
+          evicted.gain.disconnect();
+        } catch {
+          // ignore
+        }
+      }
     }
   }
 
   dispose(): void {
-    this.stop(0);
+    this.stopImmediate();
   }
 }
 

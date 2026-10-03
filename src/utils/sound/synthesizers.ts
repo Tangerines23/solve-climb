@@ -43,6 +43,15 @@ export function playTone(ctx: AudioContext, destination: AudioNode, options: Ton
   osc.connect(gain);
   gain.connect(destination);
 
+  osc.onended = () => {
+    try {
+      osc.disconnect();
+      gain.disconnect();
+    } catch {
+      // ignore
+    }
+  };
+
   osc.start(now);
   osc.stop(now + duration + 0.01);
 }
@@ -90,6 +99,15 @@ export function playSweep(ctx: AudioContext, destination: AudioNode, options: Sw
   osc.connect(gain);
   gain.connect(destination);
 
+  osc.onended = () => {
+    try {
+      osc.disconnect();
+      gain.disconnect();
+    } catch {
+      // ignore
+    }
+  };
+
   osc.start(now);
   osc.stop(now + duration + 0.01);
 }
@@ -133,6 +151,15 @@ export function playChord(ctx: AudioContext, destination: AudioNode, options: Ch
 
     osc.connect(gain);
     gain.connect(destination);
+
+    osc.onended = () => {
+      try {
+        osc.disconnect();
+        gain.disconnect();
+      } catch {
+        // ignore
+      }
+    };
 
     osc.start(startTime);
     osc.stop(startTime + duration + 0.01);
@@ -187,6 +214,16 @@ export function playFilteredTone(
   filter.connect(gain);
   gain.connect(destination);
 
+  osc.onended = () => {
+    try {
+      osc.disconnect();
+      filter.disconnect();
+      gain.disconnect();
+    } catch {
+      // ignore
+    }
+  };
+
   osc.start(now);
   osc.stop(now + duration + 0.01);
 }
@@ -230,6 +267,15 @@ export function playMultiPulse(
     bodyOsc.connect(bodyGain);
     bodyGain.connect(destination);
 
+    bodyOsc.onended = () => {
+      try {
+        bodyOsc.disconnect();
+        bodyGain.disconnect();
+      } catch {
+        // ignore
+      }
+    };
+
     bodyOsc.start(startTime);
     bodyOsc.stop(startTime + dur + 0.01);
 
@@ -249,6 +295,15 @@ export function playMultiPulse(
 
       punchOsc.connect(punchGain);
       punchGain.connect(destination);
+
+      punchOsc.onended = () => {
+        try {
+          punchOsc.disconnect();
+          punchGain.disconnect();
+        } catch {
+          // ignore
+        }
+      };
 
       punchOsc.start(startTime);
       punchOsc.stop(startTime + 0.035);

@@ -22,7 +22,7 @@ import { getTodayChallenge, type TodayChallenge } from '@/utils/challenge';
 import { useLevelProgressStore } from '@/stores/useLevelProgressStore';
 import { useQuizStore } from '@/stores/useQuizStore';
 import { resetAllData } from '@/utils/dataReset';
-import { vibrateShort } from '@/utils/haptic';
+import { vibrateShort, stopVibration } from '@/utils/haptic';
 import { supabase } from '@/utils/supabaseClient';
 import { logError } from '@/utils/errorHandler';
 import { safeSupabaseQuery } from '@/utils/debugFetch';
@@ -116,21 +116,22 @@ export function MyPage() {
 
   // 로그인 성공 후 리다이렉트 처리 함수
   const performRedirect = React.useCallback(() => {
-    const savedRedirect = storageService.get<string>(STORAGE_KEYS.LOGIN_REDIRECT);
-
     // 1. 명시적인 복귀 경로가 있는 경우 (RequireAuth 등에서 전달됨)
     if (redirectPath && redirectPath !== urls.myPage()) {
       navigate(redirectPath, { replace: true });
+      return;
     }
+
     // 2. 이전에 저장된 리다이렉트 경로가 있는 경우
-    else if (savedRedirect && savedRedirect !== urls.myPage()) {
+    const savedRedirect = storageService.get<string>(STORAGE_KEYS.LOGIN_REDIRECT);
+    if (savedRedirect && savedRedirect !== urls.myPage()) {
       storageService.remove(STORAGE_KEYS.LOGIN_REDIRECT);
       navigate(savedRedirect, { replace: true });
+      return;
     }
+
     // 3. 현재 위치가 이미 마이페이지이거나 복귀 경로가 마이페이지인 경우 이동하지 않음
-    else {
-      console.log('[MyPage] Stay on MyPage');
-    }
+    console.log('[MyPage] Stay on MyPage');
   }, [redirectPath, navigate]);
 
   // 오늘의 챌린지 가져오기
@@ -237,19 +238,22 @@ export function MyPage() {
 
   const handleProfileComplete = () => {
     setShowProfileForm(false);
+    refetch(); // 프로필 완성 후 통계 다시 불러오기
 
-    const savedRedirect = storageService.get<string>(STORAGE_KEYS.LOGIN_REDIRECT);
     if (redirectPath && redirectPath !== urls.myPage()) {
       navigate(redirectPath, { replace: true });
-    } else if (savedRedirect && savedRedirect !== urls.myPage()) {
-      storageService.remove(STORAGE_KEYS.LOGIN_REDIRECT);
-      navigate(savedRedirect, { replace: true });
-    } else {
-      // 명시적 리다이렉트가 없으면 홈으로 보냄
-      navigate('/', { replace: true });
+      return;
     }
 
-    refetch(); // 프로필 완성 후 통계 다시 불러오기
+    const savedRedirect = storageService.get<string>(STORAGE_KEYS.LOGIN_REDIRECT);
+    if (savedRedirect && savedRedirect !== urls.myPage()) {
+      storageService.remove(STORAGE_KEYS.LOGIN_REDIRECT);
+      navigate(savedRedirect, { replace: true });
+      return;
+    }
+
+    // 명시적 리다이렉트가 없으면 홈으로 보냄
+    navigate('/', { replace: true });
   };
 
   // URL 파라미터 변경 감지
@@ -275,7 +279,8 @@ export function MyPage() {
     if (newValue) {
       sound.playTap();
       bgm.play('brain_age');
-    } else {
+    }
+    if (!newValue) {
       bgm.stop(0.2);
     }
     setToastMessage(newValue ? '배경음악이 켜졌습니다' : '배경음악이 꺼졌습니다');
@@ -287,6 +292,9 @@ export function MyPage() {
     setHapticEnabled(newValue);
     if (newValue) {
       vibrateShort();
+    }
+    if (!newValue) {
+      stopVibration();
     }
     setToastMessage(newValue ? '진동이 켜졌습니다' : '진동이 꺼졌습니다');
     setShowToast(true);
@@ -494,7 +502,7 @@ export function MyPage() {
     } catch {
       // 무시
     }
-  }, [session?.user?.id, profile?.userId, refetch, setProfile, performRedirect]);
+  }, [session?.user, profile?.userId, refetch, setProfile, performRedirect]);
 
   // Guest View (비로그인 상태)
   if (!session && !statsLoading) {

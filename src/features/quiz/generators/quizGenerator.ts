@@ -8,7 +8,40 @@ import { generateCSProblem } from './CSProblemGenerator';
 import { generateCalculusProblem } from './CalculusProblemGenerator';
 
 /**
- * 카테고리와 월드, 레벨에 따라 문제를 생성합니다.
+ * 토픽 문자열(WorldX-Category 또는 Category)에서 안전하게 Category를 정규화합니다.
+ */
+export function normalizeTopicCategory(topicId?: string | null): Category {
+  if (!topicId || typeof topicId !== 'string') {
+    return '기초';
+  }
+  if (topicId.includes('-')) {
+    return (topicId.split('-')[1] || '기초') as Category;
+  }
+  return topicId as Category;
+}
+
+/**
+ * 정답 형식에 따라 적절한 입력 UI 타입(fraction, decimal, number)을 추론합니다.
+ */
+export function inferInputType(answer: string | number): 'fraction' | 'decimal' | 'number' {
+  const ansStr = String(answer ?? '');
+  if (ansStr.includes('/')) return 'fraction';
+  if (ansStr.includes('.')) return 'decimal';
+  return 'number';
+}
+
+/**
+ * 레벨 번호를 1 ~ 10 범위로 안전하게 클램핑합니다.
+ */
+export function clampLevel(level: number): number {
+  if (typeof level !== 'number' || Number.isNaN(level)) {
+    return 1;
+  }
+  return Math.max(1, Math.min(10, Math.floor(level)));
+}
+
+/**
+ * 카테고리와 월드, 레벨에 따라 퀴즈 문제를 생성합니다.
  */
 export function generateQuestion(
   mountainId: Mountain,
@@ -19,161 +52,143 @@ export function generateQuestion(
   tier: Tier = 'normal',
   rng?: { random: () => number; randomInt: (min: number, max: number) => number }
 ): QuizQuestion {
-  // Category is often equivalent to topicId in current UI flow
-  // but we should normalize it to Category type if it's in Topic format (WorldX-Category)
-  let category: Category;
-  if (topicId.includes('-')) {
-    category = topicId.split('-')[1] as Category;
-  } else {
-    category = topicId as Category;
-  }
+  const category = normalizeTopicCategory(topicId);
+  const safeLevel = clampLevel(level);
 
   if (mountainId === 'math') {
     switch (worldId) {
       case 'World1': {
         // World 1 is partitioned by Category
         if (category === '논리') {
-          const logicProb = generateLogicProblem(level, difficulty, rng);
+          const logicProb = generateLogicProblem(safeLevel, difficulty, rng);
           return {
             question: logicProb.question,
             answer: logicProb.answer,
-            level,
+            level: safeLevel,
             category,
           };
         }
         if (category === '대수') {
-          const eqProb = generateEquation(level, difficulty, rng);
+          const eqProb = generateEquation(safeLevel, difficulty, rng);
           return {
             question: eqProb.question,
             answer: eqProb.x,
             hintType: eqProb.transposition ? 'transposition' : undefined,
             hintData: eqProb.transposition,
-            level,
+            level: safeLevel,
             category,
           };
         }
         if (category === '심화') {
-          const calcProb = generateCalculusProblem(level, difficulty, rng);
+          const calcProb = generateCalculusProblem(safeLevel, difficulty, rng);
           return {
             question: calcProb.question,
             answer: calcProb.answer,
-            level,
+            level: safeLevel,
             category,
           };
         }
         // Default to Basic (기초)
-        const mathProb = generateProblem(level, difficulty, tier, rng);
+        const mathProb = generateProblem(safeLevel, difficulty, tier, rng);
         return {
           question: mathProb.expression,
           answer: mathProb.answer,
           inputType: mathProb.inputType,
-          level,
+          level: safeLevel,
           category,
         };
       }
 
       case 'World2': {
         // Geometry World
-        const geoProb = generateGeometryProblem(level, difficulty, rng);
-        const ansStr = String(geoProb.answer);
-        const autoInputType = ansStr.includes('/')
-          ? 'fraction'
-          : ansStr.includes('.')
-            ? 'decimal'
-            : 'number';
+        const geoProb = generateGeometryProblem(safeLevel, difficulty, rng);
         return {
           question: geoProb.question,
           answer: geoProb.answer,
-          inputType: geoProb.inputType || autoInputType,
+          inputType: geoProb.inputType || inferInputType(geoProb.answer),
           hintType: geoProb.hintType,
           hintData: geoProb.hintData,
-          level,
+          level: safeLevel,
           category,
         };
       }
 
       case 'World3': {
         // Stats World
-        const statsProb = generateStatsProblem(level, difficulty, rng);
+        const statsProb = generateStatsProblem(safeLevel, difficulty, rng);
         return {
           question: statsProb.question,
           answer: statsProb.answer,
-          level,
+          level: safeLevel,
           category,
         };
       }
 
       case 'World4': {
         // CS/Engineering World
-        const csProb = generateCSProblem(level, difficulty, rng);
-        const ansStr = String(csProb.answer);
-        const autoInputType = ansStr.includes('/')
-          ? 'fraction'
-          : ansStr.includes('.')
-            ? 'decimal'
-            : 'number';
+        const csProb = generateCSProblem(safeLevel, difficulty, rng);
         return {
           question: csProb.question,
           answer: csProb.answer,
-          inputType: csProb.inputType || autoInputType,
-          level,
+          inputType: csProb.inputType || inferInputType(csProb.answer),
+          level: safeLevel,
           category,
         };
       }
 
       default: {
         // Fallback for unexpected math worlds
-        const fallbackMath = generateProblem(level, difficulty, tier, rng);
+        const fallbackMath = generateProblem(safeLevel, difficulty, tier, rng);
         return {
           question: fallbackMath.expression,
           answer: fallbackMath.answer,
-          level,
+          level: safeLevel,
           category,
         };
       }
     }
   } else if (mountainId === 'logic') {
     // Independent Logic Mountain (if ever used)
-    const logicProb = generateLogicProblem(level, difficulty, rng);
+    const logicProb = generateLogicProblem(safeLevel, difficulty, rng);
     return {
       question: logicProb.question,
       answer: logicProb.answer,
-      level,
+      level: safeLevel,
       category,
     };
   } else if (mountainId === 'general') {
     // General Knowledge / Science Mountain
     if (worldId === 'World1') {
-      const csProb = generateCSProblem(level, difficulty, rng);
+      const csProb = generateCSProblem(safeLevel, difficulty, rng);
       return {
         question: csProb.question,
         answer: csProb.answer,
-        level,
+        level: safeLevel,
         category,
       };
     } else if (worldId === 'World2') {
-      const calcProb = generateCalculusProblem(level, difficulty, rng);
+      const calcProb = generateCalculusProblem(safeLevel, difficulty, rng);
       return {
         question: calcProb.question,
         answer: calcProb.answer,
-        level,
+        level: safeLevel,
         category,
       };
     }
-    const fallbackLogic = generateLogicProblem(level, difficulty, rng);
+    const fallbackLogic = generateLogicProblem(safeLevel, difficulty, rng);
     return {
       question: fallbackLogic.question,
       answer: fallbackLogic.answer,
-      level,
+      level: safeLevel,
       category,
     };
   } else {
     // Default fallback (Language or others not yet implemented with specialized generators)
-    const genericProb = generateProblem(level, difficulty, tier, rng);
+    const genericProb = generateProblem(safeLevel, difficulty, tier, rng);
     return {
       question: genericProb.expression,
       answer: genericProb.answer,
-      level,
+      level: safeLevel,
       category,
     };
   }

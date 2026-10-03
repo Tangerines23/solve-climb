@@ -1,30 +1,22 @@
 import { useState, useEffect, useMemo, useCallback } from 'react';
 import { useSearchParams } from 'react-router-dom';
-import { supabase } from '@/utils/supabaseClient';
 import { useAuthStore } from '@/stores/useAuthStore';
 import { useRankingStore } from '@/stores/useRankingStore';
+import type { RankingPeriod, RankingType } from '../types';
+import { buildRankingKey, resolveModeParam } from '../utils/rankingUtils';
 
-export type RankingType = 'total' | 'time-attack' | 'survival';
-export type RankingPeriod = 'weekly' | 'all-time';
-
-const validateModeParam = (param: string | null): RankingType | null => {
-  if (param === 'total' || param === 'time-attack' || param === 'survival') {
-    return param as RankingType;
-  }
-  return null;
-};
+export type { RankingPeriod, RankingType };
 
 export function useRanking() {
   const [searchParams] = useSearchParams();
-  const modeParam = validateModeParam(searchParams.get('mode'));
+  const initialMode = resolveModeParam(searchParams.get('mode'));
 
   const [activePeriod, setActivePeriod] = useState<RankingPeriod>('weekly');
-  const [activeType, setActiveType] = useState<RankingType>(
-    modeParam === 'time-attack' ? 'time-attack' : modeParam === 'survival' ? 'survival' : 'total'
-  );
+  const [activeType, setActiveType] = useState<RankingType>(initialMode);
   const [loading, setLoading] = useState(false);
-  const authUser = useAuthStore((state) => state.user);
-  const [currentUserId, setCurrentUserId] = useState<string | null>(authUser?.id || null);
+
+  // Auth SSOT: derive directly from useAuthStore
+  const currentUserId = useAuthStore((state) => state.user?.id ?? null);
 
   const {
     fetchRanking,
@@ -35,46 +27,45 @@ export function useRanking() {
   } = useRankingStore();
 
   const currentRankings = useMemo(() => {
-    const key = `${activePeriod}-${activeType}`;
-    const entry = Object.entries(rankings).find(([k]) => k === key);
-    return entry ? entry[1] : [];
+    const key = buildRankingKey(activePeriod, activeType);
+    // eslint-disable-next-line security/detect-object-injection -- key sanitized and generated from enum values
+    return rankings[key] ?? [];
   }, [rankings, activePeriod, activeType]);
 
+  // Race condition & unmount safe data fetching
   useEffect(() => {
-    if (authUser?.id) {
-      setCurrentUserId(authUser.id);
-    } else {
-      supabase.auth.getSession().then(({ data: { session } }) => {
-        if (session?.user) {
-          setCurrentUserId(session.user.id);
-        }
-      });
-    }
-  }, [authUser?.id]);
-
-  const loadRanking = useCallback(async () => {
+    let isCurrent = true;
     setLoading(true);
-    await fetchRanking(null, null, activePeriod, activeType);
-    setLoading(false);
-  }, [activeType, activePeriod, fetchRanking]);
 
-  useEffect(() => {
-    loadRanking();
-  }, [loadRanking, rankingVersion]);
+    fetchRanking(null, null, activePeriod, activeType).finally(() => {
+      if (isCurrent) {
+        setLoading(false);
+      }
+    });
 
+    return () => {
+      isCurrent = false;
+    };
+  }, [activePeriod, activeType, fetchRanking, rankingVersion]);
+
+  // Realtime subscription lifecycle (Zero Else, Depth 1)
   useEffect(() => {
-    if (activePeriod === 'weekly') {
-      subscribeToRankingUpdates();
-      return () => {
-        unsubscribeFromRankingUpdates();
-      };
-    }
+    if (activePeriod !== 'weekly') return;
+
+    subscribeToRankingUpdates();
+    return () => {
+      unsubscribeFromRankingUpdates();
+    };
   }, [activePeriod, subscribeToRankingUpdates, unsubscribeFromRankingUpdates]);
 
-  const myRank = useMemo(
-    () => (currentUserId ? currentRankings.find((item) => item.user_id === currentUserId) : null),
-    [currentUserId, currentRankings]
-  );
+  const myRank = useMemo(() => {
+    if (!currentUserId) return null;
+    return currentRankings.find((item) => item.user_id === currentUserId) ?? null;
+  }, [currentUserId, currentRankings]);
+
+  const refresh = useCallback(() => {
+    return fetchRanking(null, null, activePeriod, activeType);
+  }, [activePeriod, activeType, fetchRanking]);
 
   return {
     activePeriod,
@@ -86,5 +77,6 @@ export function useRanking() {
     currentRankings,
     myRank,
     rankingVersion,
+    refresh,
   };
 }

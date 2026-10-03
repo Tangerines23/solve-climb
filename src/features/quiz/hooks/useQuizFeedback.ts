@@ -23,7 +23,8 @@ export function useQuizFeedback() {
       const currentCombo = useGameStore.getState().combo;
       if (currentCombo > 1) {
         sound.playCombo(currentCombo);
-      } else {
+      }
+      if (currentCombo <= 1) {
         sound.playCorrect();
       }
 

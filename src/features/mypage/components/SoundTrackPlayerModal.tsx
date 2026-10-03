@@ -143,8 +143,14 @@ export function SoundTrackPlayerModal({
     if (isOpen) {
       setActiveTab(initialTab);
       setActiveBgm(bgm.getCurrentTheme());
+      return;
     }
-  }, [isOpen, initialTab]);
+
+    // 모달 닫힐 때 로비 기본 BGM(brain_age)으로 복귀 (BGM 켜져 있을 때)
+    if (bgmEnabled) {
+      bgm.play('brain_age');
+    }
+  }, [isOpen, initialTab, bgmEnabled]);
 
   useEffect(() => {
     if (!activeBgm) return;
@@ -278,13 +284,13 @@ export function SoundTrackPlayerModal({
                           if (isActive) {
                             bgm.stop();
                             setActiveBgm(null);
-                          } else {
-                            if (!bgmEnabled) {
-                              setBgmEnabled(true);
-                            }
-                            bgm.play(track.id);
-                            setActiveBgm(track.id);
+                            return;
                           }
+                          if (!bgmEnabled) {
+                            setBgmEnabled(true);
+                          }
+                          bgm.play(track.id);
+                          setActiveBgm(track.id);
                         }}
                       >
                         <div className="sound-player-track-header">

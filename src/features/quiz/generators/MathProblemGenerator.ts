@@ -430,6 +430,9 @@ function getRandomInt(
   max: number,
   rng?: { randomInt: (min: number, max: number) => number }
 ): number {
+  if (min > max) {
+    [min, max] = [max, min];
+  }
   if (rng) return rng.randomInt(min, max);
   return Math.floor(Math.random() * (max - min + 1)) + min;
 }
@@ -453,6 +456,9 @@ function calculate(a: number, b: number, op: Operator): number {
     case '*':
       return a * b;
     case '/':
+      if (b === 0) {
+        throw new Error('Division by zero');
+      }
       return a / b;
   }
 }
@@ -484,8 +490,10 @@ function calculateWithPrecedence(numbers: number[], operators: Operator[]): numb
     if (op === '*' || op === '/') {
       if (n0 === undefined || n1 === undefined) break;
       const result = calculate(n0, n1, op);
-      nums.splice(i, 1, result);
-      nums.splice(i + 1, 1);
+      if (!Number.isFinite(result)) {
+        throw new Error('Non-finite intermediate calculation');
+      }
+      nums.splice(i, 2, result);
       ops.splice(i, 1);
       // i를 증가시키지 않고 다시 같은 위치 확인
     } else {
@@ -500,6 +508,9 @@ function calculateWithPrecedence(numbers: number[], operators: Operator[]): numb
     const o = ops.at(j);
     if (n === undefined || o === undefined) break;
     result = calculate(result, n, o);
+    if (!Number.isFinite(result)) {
+      throw new Error('Non-finite intermediate calculation');
+    }
   }
 
   calculationCache.set(cacheKey, result);
@@ -601,6 +612,7 @@ function generateStandardProblem(
     const quotientRange = { min: 2, max: 9 }; // Reasonable quotient range for mental math
 
     b = getRandomInt(divisorRange.min, divisorRange.max, rng);
+    if (b === 0) throw new Error('Divisor cannot be zero');
     const answer = getRandomInt(quotientRange.min, quotientRange.max, rng);
     a = b * answer;
 
@@ -745,9 +757,10 @@ function generateDecimalProblem(
   const result = calculate(a, b, op);
   const roundedResult = Math.round(result * factor) / factor;
   const isIntegerResult = Number.isInteger(roundedResult);
+  const displayOp = op === '*' ? '×' : op === '/' ? '÷' : op;
 
   return {
-    expression: `${a.toFixed(precision)} ${op} ${b.toFixed(precision)}`,
+    expression: `${a.toFixed(precision)} ${displayOp} ${b.toFixed(precision)}`,
     answer: roundedResult,
     inputType: isIntegerResult ? 'number' : 'decimal',
   };
@@ -758,6 +771,7 @@ function generateFractionProblem(
   rng?: { random: () => number; randomInt: (min: number, max: number) => number }
 ): MathProblem {
   const den = stage.constraints?.denominator || 4;
+  if (den <= 1) throw new Error('Denominator must be greater than 1');
   const num1 = getRandomInt(1, den - 1, rng);
   const num2 = getRandomInt(1, den - 1, rng);
 
@@ -797,6 +811,7 @@ function generateModuloProblem(
 ): MathProblem {
   const a = getRandomInt(stage.ranges[0].min, stage.ranges[0].max, rng);
   const b = getRandomInt(stage.ranges[1].min, stage.ranges[1].max, rng);
+  if (b === 0) throw new Error('Modulo divisor cannot be zero');
   const remainder = a % b;
 
   return {

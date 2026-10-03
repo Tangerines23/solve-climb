@@ -2,6 +2,7 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, fireEvent, act, screen, waitFor } from '@testing-library/react';
 import { MyPage } from '../MyPage';
 import { BrowserRouter } from 'react-router-dom';
+import { stopVibration } from '@/utils/haptic';
 
 /**
  * [Vitest Hoisting Rules]
@@ -160,7 +161,7 @@ vi.mock('@/utils/dataReset', () => ({
 vi.mock('@/utils/userWithdraw', () => ({
   withdrawAccount: vi.fn(() => Promise.resolve(true)),
 }));
-vi.mock('@/utils/haptic', () => ({ vibrateShort: vi.fn() }));
+vi.mock('@/utils/haptic', () => ({ vibrateShort: vi.fn(), stopVibration: vi.fn() }));
 vi.mock('@/utils/tossGameCenter', () => ({
   openLeaderboard: vi.fn(() => Promise.resolve({ success: true })),
 }));
@@ -318,7 +319,8 @@ describe('MyPage', () => {
       );
     });
     fireEvent.click(screen.getByText(/진동 효과/i));
-    expect(mockStoreState.setHapticEnabled).toHaveBeenCalled();
+    expect(mockStoreState.setHapticEnabled).toHaveBeenCalledWith(false);
+    expect(stopVibration).toHaveBeenCalled();
     expect(screen.getByTestId('toast')).toBeTruthy();
 
     // Test toast closing

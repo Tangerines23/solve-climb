@@ -140,5 +140,98 @@ describe('MathProblemGenerator', () => {
 
       STAGES.pop();
     });
+
+    it('should safely handle division by zero and fallback without crashing', () => {
+      const zeroDivStage = {
+        id: 101,
+        world: 9,
+        description: 'Zero Divisor Stage',
+        type: 'standard' as const,
+        operators: ['/'] as any,
+        operandCount: 2,
+        ranges: [
+          { min: 1, max: 5 },
+          { min: 0, max: 0 }, // forces b = 0
+        ],
+      };
+
+      (STAGES as any).push(zeroDivStage);
+
+      // Should hit zero divisor error and fallback cleanly to 1 + 1
+      const problem = generateProblem(101, 'easy', 'normal');
+      expect(problem.expression).toBe('1 + 1');
+      expect(problem.answer).toBe(2);
+
+      STAGES.pop();
+    });
+
+    it('should safely handle modulo with zero divisor and fallback without crashing', () => {
+      const zeroModStage = {
+        id: 102,
+        world: 9,
+        description: 'Zero Modulo Stage',
+        type: 'modulo' as const,
+        operators: ['/'] as any,
+        operandCount: 2,
+        ranges: [
+          { min: 10, max: 20 },
+          { min: 0, max: 0 }, // forces divisor = 0
+        ],
+      };
+
+      (STAGES as any).push(zeroModStage);
+
+      const problem = generateProblem(102, 'easy', 'normal');
+      expect(problem.expression).toBe('1 + 1');
+      expect(problem.answer).toBe(2);
+
+      STAGES.pop();
+    });
+
+    it('should format decimal multiplication and division with unicode symbols (×, ÷)', () => {
+      const decimalMulStage = {
+        id: 103,
+        world: 9,
+        description: 'Decimal Mul Stage',
+        type: 'decimal' as const,
+        operators: ['*'] as any,
+        operandCount: 2,
+        ranges: [
+          { min: 1, max: 5 },
+          { min: 1, max: 5 },
+        ],
+      };
+
+      (STAGES as any).push(decimalMulStage);
+
+      const problem = generateProblem(103, 'easy', 'normal', mockRng);
+      expect(problem.expression).toContain('×');
+      expect(problem.expression).not.toContain('*');
+
+      STAGES.pop();
+    });
+
+    it('should auto-heal inverted ranges where min > max', () => {
+      const invertedStage = {
+        id: 104,
+        world: 9,
+        description: 'Inverted Range Stage',
+        type: 'standard' as const,
+        operators: ['+'] as any,
+        operandCount: 2,
+        ranges: [
+          { min: 10, max: 2 }, // inverted! min > max
+          { min: 20, max: 5 }, // inverted! min > max
+        ],
+      };
+
+      (STAGES as any).push(invertedStage);
+
+      const problem = generateProblem(104, 'easy', 'normal');
+      expect(Number.isFinite(problem.answer)).toBe(true);
+      expect(problem.answer).toBeGreaterThanOrEqual(7);
+
+      STAGES.pop();
+    });
   });
 });

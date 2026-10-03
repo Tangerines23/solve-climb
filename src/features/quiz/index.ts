@@ -17,7 +17,12 @@ export { QuizLayout } from './components/QuizLayout';
 export { QuizCard } from './components/QuizCard';
 
 // Services & Synchronization
-export { LevelSyncService } from './services/LevelSyncService';
+export {
+  LevelSyncService,
+  mapCategoryAndSubject,
+  mapGameMode,
+  generateSessionUUID,
+} from './services/LevelSyncService';
 export { setupQuizEventListeners } from './services/quizEventListener';
 
 // Domain Models & Types
@@ -27,7 +32,12 @@ export { Altitude, type Result } from './domain/Altitude';
 export { Combo } from './domain/Combo';
 
 // Generators Engine (Public Facade)
-export { generateQuestion } from './generators/quizGenerator';
+export {
+  generateQuestion,
+  normalizeTopicCategory,
+  inferInputType,
+  clampLevel,
+} from './generators/quizGenerator';
 export { getSolutionProcess } from './generators/solutionExplainer';
 
 // Pure Calculation Utils
@@ -37,3 +47,11 @@ export {
   calculateCategoryAltitude,
   getBaseLevelScore,
 } from './utils/scoreCalculator';
+export {
+  computeQuizScore,
+  useQuizScoring,
+  resolveComboMultiplier,
+  resolveThemeMultiplier,
+  resolveThemeTier,
+  type QuizScoreParams,
+} from './hooks/useQuizScoring';

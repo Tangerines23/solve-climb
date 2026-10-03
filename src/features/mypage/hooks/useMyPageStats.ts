@@ -1,5 +1,5 @@
 // 사용자 게임 통계를 가져오는 Custom Hook
-import { useState, useEffect, useCallback, useMemo } from 'react';
+import { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import { supabase } from '@/utils/supabaseClient';
 import { safeSupabaseQuery } from '@/utils/debugFetch';
 import { isValidUUID } from '@/utils/validation';
@@ -77,6 +77,7 @@ export function useMyPageStats(): UseMyPageStatsResult {
   const [stats, setStats] = useState<MyPageStats | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const isMountedRef = useRef(true);
 
   const authSession = useAuthStore((state) => state.session);
   const authUser = useAuthStore((state) => state.user);
@@ -98,23 +99,29 @@ export function useMyPageStats(): UseMyPageStatsResult {
 
   const fetchStats = useCallback(async () => {
     try {
-      setLoading(true);
-      setError(null);
+      if (isMountedRef.current) {
+        setLoading(true);
+        setError(null);
+      }
 
       const user = authSession?.user || authUser;
       const user_id = user?.id;
 
       if (!user || !user_id) {
         // 로그인하지 않은 경우 기본값 반환
-        setStats(DEFAULT_STATS);
-        setLoading(false);
+        if (isMountedRef.current) {
+          setStats(DEFAULT_STATS);
+          setLoading(false);
+        }
         return;
       }
 
       // 게스트 유저(UUID가 아닌 ID)인 경우 DB 직쿼리 생략하고 기본값 세팅 후 리턴
       if (!isValidUUID(user_id)) {
-        setStats(DEFAULT_STATS);
-        setLoading(false);
+        if (isMountedRef.current) {
+          setStats(DEFAULT_STATS);
+          setLoading(false);
+        }
         return;
       }
 
@@ -166,7 +173,7 @@ export function useMyPageStats(): UseMyPageStatsResult {
             0
           );
           totalSolved = levelRecords.filter((r) => (r.best_score || 0) > 0).length;
-          maxLevel = Math.max(...levelRecords.map((r) => r.level || 0));
+          maxLevel = levelRecords.reduce((max, r) => Math.max(max, r.level || 0), 0);
 
           const subjectScores: Record<string, number> = {};
           levelRecords.forEach((r) => {
@@ -204,6 +211,8 @@ export function useMyPageStats(): UseMyPageStatsResult {
         console.warn('RPC get_user_game_stats fallback:', rpcErr);
       }
 
+      if (!isMountedRef.current) return;
+
       setStats({
         totalSolved: gameStats.total_solved ?? totalSolved,
         maxLevel: gameStats.max_level ?? maxLevel,
@@ -225,15 +234,23 @@ export function useMyPageStats(): UseMyPageStatsResult {
       });
     } catch (err) {
       logError('useMyPageStats#fetchStats', err);
-      setError(err instanceof Error ? err.message : '통계를 불러오는 중 오류가 발생했습니다.');
-      setStats(DEFAULT_STATS);
+      if (isMountedRef.current) {
+        setError(err instanceof Error ? err.message : '통계를 불러오는 중 오류가 발생했습니다.');
+        setStats(DEFAULT_STATS);
+      }
     } finally {
-      setLoading(false);
+      if (isMountedRef.current) {
+        setLoading(false);
+      }
     }
   }, [authSession, authUser]);
 
   useEffect(() => {
+    isMountedRef.current = true;
     fetchStats();
+    return () => {
+      isMountedRef.current = false;
+    };
   }, [fetchStats]);
 
   return {

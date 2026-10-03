@@ -1,3 +1,5 @@
+import { audioContextManager } from './audioContext';
+
 declare global {
   interface Window {
     __globalTapListenerActive?: boolean;
@@ -22,6 +24,9 @@ export function setupGlobalTapListener(
   let lastTapTime = 0;
 
   const handleClick = (e: MouseEvent) => {
+    if (typeof document !== 'undefined' && document.hidden) return;
+    if (audioContextManager.isBackground() || audioContextManager.isTerminatedState()) return;
+
     const target = e.target as HTMLElement | null;
     if (!target) return;
 

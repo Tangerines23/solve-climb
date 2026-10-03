@@ -8,9 +8,15 @@ interface ProfileFormProps {
   onComplete: () => void;
   showBackButton?: boolean;
   onCancel?: () => void;
+  isModal?: boolean;
 }
 
-export function ProfileForm({ onComplete, showBackButton = false, onCancel }: ProfileFormProps) {
+export function ProfileForm({
+  onComplete,
+  showBackButton = false,
+  onCancel,
+  isModal = false,
+}: ProfileFormProps) {
   const navigate = useNavigate();
   // Zustand Selector 패턴 적용
   const setProfile = useProfileStore((state) => state.setProfile);
@@ -97,7 +103,7 @@ export function ProfileForm({ onComplete, showBackButton = false, onCancel }: Pr
   };
 
   return (
-    <div className="profile-form-container">
+    <div className={`profile-form-container ${isModal ? 'is-modal' : ''}`.trim()}>
       {showBackButton && (
         <button
           type="button"

@@ -355,7 +355,7 @@ describe('useUserStore', () => {
       expect(rpcSpy).not.toHaveBeenCalledWith('check_and_recover_stamina');
     });
 
-    it('formatInventory should handle null items and missing properties', async () => {
+    it('formatInventory should filter out null items and map valid items', async () => {
       vi.mocked(supabase.auth.getUser).mockResolvedValue({
         data: { user: { id: 'user1' } },
       } as any);
@@ -372,7 +372,7 @@ describe('useUserStore', () => {
           eq: vi.fn().mockResolvedValue({
             data: [
               { quantity: 1, items: null },
-              { quantity: 2, items: { id: 2 } },
+              { quantity: 2, items: { id: 2, code: 'item_potion' } },
             ],
             error: null,
           }),
@@ -381,10 +381,10 @@ describe('useUserStore', () => {
 
       await useUserStore.getState().fetchUserData();
       const state = useUserStore.getState();
-      expect(state.inventory).toHaveLength(2);
-      expect(state.inventory[0].id).toBe(0);
-      expect(state.inventory[0].code).toBe('');
-      expect(state.inventory[1].id).toBe(2);
+      expect(state.inventory).toHaveLength(1);
+      expect(state.inventory[0].id).toBe(2);
+      expect(state.inventory[0].code).toBe('item_potion');
+      expect(state.inventory[0].quantity).toBe(2);
     });
   });
 });

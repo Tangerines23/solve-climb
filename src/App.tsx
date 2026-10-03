@@ -26,6 +26,7 @@ const HomePage = resilientLazy(
 );
 import { GlobalToastContainer } from '@/components/GlobalToastContainer';
 import { GlobalBgmManager } from '@/components/GlobalBgmManager';
+import { setupAudioLifecycle } from '@/utils/sound';
 const CategorySelectPage = resilientLazy(
   () =>
     import('@/pages/CategorySelectPage').then((module) => ({ default: module.CategorySelectPage })),
@@ -142,6 +143,14 @@ function App() {
       document.body.classList.remove('static-ui');
     }
   }, [animationEnabled]);
+
+  // 모바일 네이티브(Capacitor) 및 웹 오디오 생명주기 관리 (백그라운드/종료 시 사운드 누출 원천 방지)
+  useEffect(() => {
+    const teardownAudio = setupAudioLifecycle();
+    return () => {
+      teardownAudio();
+    };
+  }, []);
 
   useEffect(() => {
     // Parallelize initialization to avoid waterfalls

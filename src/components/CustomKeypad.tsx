@@ -27,11 +27,10 @@ function CustomKeypadComponent({
 }: CustomKeypadProps) {
   // Zustand Selector 패턴 적용
   const handleAction = (action: () => void, isBackspace: boolean = false) => {
-    if (!disabled) {
-      vibrateShort();
-      sound.playKeypad(isBackspace);
-      action();
-    }
+    if (disabled) return;
+    vibrateShort();
+    sound.playKeypad(isBackspace);
+    action();
   };
 
   const handleNumberClick = (num: string) => handleAction(() => onNumberClick(num));

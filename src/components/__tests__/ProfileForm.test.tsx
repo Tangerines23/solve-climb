@@ -229,4 +229,10 @@ describe('ProfileForm', () => {
 
     expect(mockNavigate).toHaveBeenCalledWith(-1);
   });
+
+  it('should apply is-modal class modifier when isModal prop is true', () => {
+    const { container } = renderProfileForm({ isModal: true });
+    const formContainer = container.querySelector('.profile-form-container');
+    expect(formContainer).toHaveClass('is-modal');
+  });
 });
