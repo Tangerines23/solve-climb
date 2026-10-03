@@ -34,14 +34,15 @@ const generateProfileId = (): string => {
   return `profile_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
 };
 
-// 기기 ID 가져오기 또는 생성
+// 기기 ID 가져오기 또는 생성 (Zero-Else 적용)
 const getDeviceId = (): string => {
-  let deviceId = storageService.get<string>(STORAGE_KEYS.DEVICE_ID);
-  if (!deviceId) {
-    deviceId = `device_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
-    storageService.set(STORAGE_KEYS.DEVICE_ID, deviceId);
+  const existingDeviceId = storageService.get<string>(STORAGE_KEYS.DEVICE_ID);
+  if (existingDeviceId) {
+    return existingDeviceId;
   }
-  return deviceId;
+  const newDeviceId = `device_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+  storageService.set(STORAGE_KEYS.DEVICE_ID, newDeviceId);
+  return newDeviceId;
 };
 
 // 프로필 목록 로드 (계정/기기당 최대 3개)
@@ -63,13 +64,13 @@ const loadActiveProfileId = (): string | null => {
   return storageService.get<string>(STORAGE_KEYS.ACTIVE_PROFILE_ID);
 };
 
-// 현재 활성 프로필 ID 저장
+// 현재 활성 프로필 ID 저장 (Zero-Else 적용)
 const saveActiveProfileId = (profileId: string | null) => {
   if (profileId) {
     storageService.set(STORAGE_KEYS.ACTIVE_PROFILE_ID, profileId);
-  } else {
-    storageService.remove(STORAGE_KEYS.ACTIVE_PROFILE_ID);
+    return;
   }
+  storageService.remove(STORAGE_KEYS.ACTIVE_PROFILE_ID);
 };
 
 // 프로필 목록과 활성 프로필 로드
@@ -87,16 +88,35 @@ const loadAdminMode = (): boolean => {
   return stored === 'true';
 };
 
+// 관리자 모드 저장 (Zero-Else 적용)
 const saveAdminMode = (isAdmin: boolean) => {
   if (isAdmin) {
     storageService.set(STORAGE_KEYS.ADMIN_MODE, 'true');
-  } else {
-    storageService.remove(STORAGE_KEYS.ADMIN_MODE);
+    return;
   }
+  storageService.remove(STORAGE_KEYS.ADMIN_MODE);
 };
 
 // 프로필에서 관리자 모드 확인 (프로필의 isAdmin 또는 localStorage의 admin-mode)
 const savedAdminMode = loadAdminMode() || (savedProfile?.isAdmin ?? false);
+
+/**
+ * [순수 함수] 프로필 목록 갱신 헬퍼 (최대 3개 제한, Zero-Else)
+ */
+export function upsertProfileList(
+  profiles: UserProfile[],
+  targetProfile: UserProfile
+): UserProfile[] {
+  const existingIndex = profiles.findIndex((p) => p.profileId === targetProfile.profileId);
+  if (existingIndex >= 0) {
+    const next = [...profiles];
+    next[existingIndex] = targetProfile;
+    return next;
+  }
+  const next = profiles.length >= 3 ? profiles.slice(1) : [...profiles];
+  next.push(targetProfile);
+  return next;
+}
 
 /**
  * [Profile Store]
@@ -109,44 +129,33 @@ export const useProfileStore = create<ProfileState>((set, get) => ({
   profiles: savedProfiles,
   setProfile: (profile) => {
     const state = get();
-    let updatedProfiles = [...state.profiles];
 
     // 프로필에 ID가 없거나 빈 문자열이면 생성 (새 프로필)
-    if (!profile.profileId || profile.profileId === '') {
-      profile.profileId = generateProfileId();
-    }
+    const effectiveProfile: UserProfile = {
+      ...profile,
+      profileId:
+        profile.profileId && profile.profileId !== '' ? profile.profileId : generateProfileId(),
+    };
 
-    // 기존 프로필이 있으면 업데이트, 없으면 추가
-    const existingIndex = updatedProfiles.findIndex((p) => p.profileId === profile.profileId);
-    if (
-      existingIndex >= 0 &&
-      Object.prototype.hasOwnProperty.call(updatedProfiles, existingIndex)
-    ) {
-      // eslint-disable-next-line security/detect-object-injection -- index from findIndex, validated above
-      updatedProfiles[existingIndex] = profile;
-    } else {
-      // 새 프로필 추가 (최대 3개)
-      if (updatedProfiles.length >= 3) {
-        // 가장 오래된 프로필 제거
-        updatedProfiles.shift();
-      }
-      updatedProfiles.push(profile);
-    }
+    const updatedProfiles = upsertProfileList(state.profiles, effectiveProfile);
 
     saveProfiles(updatedProfiles);
-    saveActiveProfileId(profile.profileId);
+    saveActiveProfileId(effectiveProfile.profileId);
 
     // Auto-sync nickname to Supabase DB if nickname is set
-    if (profile.nickname) {
+    if (effectiveProfile.nickname) {
       try {
         safeSupabaseQuery(
-          supabase.rpc('update_profile_nickname', { p_nickname: profile.nickname })
+          supabase.rpc('update_profile_nickname', { p_nickname: effectiveProfile.nickname })
         ).catch(() => {
           supabase.auth.getUser().then(({ data: { user } }) => {
             if (user?.id) {
               supabase
                 .from('profiles')
-                .update({ nickname: profile.nickname, updated_at: new Date().toISOString() })
+                .update({
+                  nickname: effectiveProfile.nickname,
+                  updated_at: new Date().toISOString(),
+                })
                 .eq('id', user.id);
             }
           });
@@ -161,16 +170,22 @@ export const useProfileStore = create<ProfileState>((set, get) => ({
     const currentProgress = levelProgressStore.progress;
 
     // 프로필 ID를 키로 사용하여 기록 저장
-    storageService.set(STORAGE_KEYS.PROGRESS(profile.profileId), currentProgress);
+    storageService.set(STORAGE_KEYS.PROGRESS(effectiveProfile.profileId), currentProgress);
 
-    set({ profile, isProfileComplete: !!profile.nickname, profiles: updatedProfiles });
+    set({
+      profile: effectiveProfile,
+      isProfileComplete: !!effectiveProfile.nickname,
+      profiles: updatedProfiles,
+    });
 
-    // 프로필이 변경되면 관리자 모드도 업데이트
-    if (profile.isAdmin) {
+    // 프로필이 변경되면 관리자 모드도 업데이트 (Zero-Else)
+    const nextAdmin = Boolean(effectiveProfile.isAdmin);
+    if (nextAdmin) {
       saveAdminMode(true);
       set({ isAdmin: true });
-    } else if (savedAdminMode) {
-      // 프로필이 관리자가 아니면 관리자 모드 해제
+      return;
+    }
+    if (savedAdminMode) {
       saveAdminMode(false);
       set({ isAdmin: false });
     }
@@ -208,14 +223,10 @@ export const useProfileStore = create<ProfileState>((set, get) => ({
 
     set({ profile, isProfileComplete: !!profile.nickname });
 
-    // 관리자 모드 업데이트
-    if (profile.isAdmin) {
-      saveAdminMode(true);
-      set({ isAdmin: true });
-    } else {
-      saveAdminMode(false);
-      set({ isAdmin: false });
-    }
+    // 관리자 모드 업데이트 (Zero-Else)
+    const nextAdmin = Boolean(profile.isAdmin);
+    saveAdminMode(nextAdmin);
+    set({ isAdmin: nextAdmin });
   },
   deleteProfile: (profileId: string) => {
     const state = get();
@@ -225,36 +236,45 @@ export const useProfileStore = create<ProfileState>((set, get) => ({
     // 삭제된 프로필의 기록도 삭제
     storageService.remove(STORAGE_KEYS.PROGRESS(profileId));
 
-    // 현재 프로필이 삭제된 프로필이면 첫 번째 프로필로 전환
-    if (state.profile?.profileId === profileId) {
-      if (updatedProfiles.length > 0) {
-        get().switchProfile(updatedProfiles[0].profileId);
-      } else {
-        saveActiveProfileId(null);
-        set({ profile: null, isProfileComplete: false, profiles: [] });
-      }
-    } else {
+    // 현재 프로필이 아닌 다른 프로필 삭제 시 프로필 목록만 갱신 후 조기 반환 (Zero-Else)
+    if (state.profile?.profileId !== profileId) {
       set({ profiles: updatedProfiles });
+      return;
     }
+
+    // 현재 프로필이 삭제된 경우 남은 첫 번째 프로필로 전환 (Zero-Else)
+    if (updatedProfiles.length > 0) {
+      get().switchProfile(updatedProfiles[0].profileId);
+      return;
+    }
+
+    saveActiveProfileId(null);
+    set({ profile: null, isProfileComplete: false, profiles: [] });
   },
 
   syncProfileWithAuthUser: async (userId: string) => {
     if (!userId) return;
     const state = get();
-    let currentProfile = state.profile;
+    const currentProfile = state.profile;
 
     if (!currentProfile) {
-      currentProfile = {
+      const newProfile: UserProfile = {
         profileId: generateProfileId(),
         nickname: '',
         userId,
         createdAt: new Date().toISOString(),
       };
-      get().setProfile(currentProfile);
-    } else if (currentProfile.userId !== userId) {
+      get().setProfile(newProfile);
+      return;
+    }
+
+    if (currentProfile.userId !== userId) {
       const updated = { ...currentProfile, userId };
       get().setProfile(updated);
-    } else if (currentProfile && currentProfile.nickname) {
+      return;
+    }
+
+    if (currentProfile.nickname) {
       const activeNick = currentProfile.nickname;
       try {
         await safeSupabaseQuery(
