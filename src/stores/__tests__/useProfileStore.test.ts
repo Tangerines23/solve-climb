@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach } from 'vitest';
-import { useProfileStore } from '../useProfileStore';
+import { useProfileStore, upsertProfileList } from '../useProfileStore';
 
 describe('useProfileStore', () => {
   beforeEach(() => {
@@ -327,5 +327,39 @@ describe('useProfileStore', () => {
     const { isAdmin, profile } = useProfileStore.getState();
     expect(isAdmin).toBe(true);
     expect(profile).toBeNull();
+  });
+
+  describe('upsertProfileList', () => {
+    it('updates an existing profile in place without reordering', () => {
+      const p1 = { profileId: 'p1', nickname: 'Alice', createdAt: '2026-01-01' };
+      const p2 = { profileId: 'p2', nickname: 'Bob', createdAt: '2026-01-02' };
+      const updatedP1 = { ...p1, nickname: 'AliceUpdated' };
+
+      const result = upsertProfileList([p1, p2], updatedP1);
+      expect(result).toHaveLength(2);
+      expect(result[0].nickname).toBe('AliceUpdated');
+      expect(result[1].nickname).toBe('Bob');
+    });
+
+    it('adds a new profile if under max limit of 3', () => {
+      const p1 = { profileId: 'p1', nickname: 'Alice', createdAt: '2026-01-01' };
+      const p2 = { profileId: 'p2', nickname: 'Bob', createdAt: '2026-01-02' };
+      const p3 = { profileId: 'p3', nickname: 'Charlie', createdAt: '2026-01-03' };
+
+      const result = upsertProfileList([p1, p2], p3);
+      expect(result).toHaveLength(3);
+      expect(result[2].profileId).toBe('p3');
+    });
+
+    it('drops the oldest profile when adding beyond max 3 limit', () => {
+      const p1 = { profileId: 'p1', nickname: 'Alice', createdAt: '2026-01-01' };
+      const p2 = { profileId: 'p2', nickname: 'Bob', createdAt: '2026-01-02' };
+      const p3 = { profileId: 'p3', nickname: 'Charlie', createdAt: '2026-01-03' };
+      const p4 = { profileId: 'p4', nickname: 'David', createdAt: '2026-01-04' };
+
+      const result = upsertProfileList([p1, p2, p3], p4);
+      expect(result).toHaveLength(3);
+      expect(result.map((p) => p.profileId)).toEqual(['p2', 'p3', 'p4']);
+    });
   });
 });
