@@ -1,10 +1,17 @@
 // cspell:ignore langworld langworld1
-import React, { useState, useRef, useMemo, useCallback, useEffect } from 'react';
+import React, { useMemo, useCallback } from 'react';
 import { useLevelProgressStore } from '../stores/useLevelProgressStore';
 import { useProfileStore } from '../stores/useProfileStore';
 import { ClimbBackground } from './ClimbGraphicBackgrounds';
 import { getStagesForWorld, type StageConfig, MAP_LAYOUT } from '../constants/stages';
 import { World, Category } from '../types/quiz';
+import {
+  calculateClimbPoints,
+  createSvgSmoothPath,
+  determineTargetLevelId,
+  calculateSignpostPlacement,
+} from '../utils/climbPathUtils';
+import { useClimbScroll } from '../hooks/useClimbScroll';
 import './ClimbGraphic.css';
 
 // 단순화된 LevelButton
@@ -31,10 +38,33 @@ interface ClimbGraphicProps {
   isReady?: boolean;
 }
 
-interface LevelData {
-  id: number;
+export function LevelNodeIcon({
+  status,
+  stage,
+}: {
   status: 'locked' | 'current' | 'cleared';
-  position: { x: number; y: number };
+  stage: StageConfig;
+}) {
+  if (status === 'locked') {
+    return <span className="level-node-icon">🔒</span>;
+  }
+  if (status === 'cleared') {
+    return (
+      <span className="level-node-icon" style={{ color: stage.color }}>
+        ✓
+      </span>
+    );
+  }
+  return (
+    <span
+      className="level-node-icon"
+      role="img"
+      aria-label={stage.title}
+      style={{ color: stage.color }}
+    >
+      {stage.icon}
+    </span>
+  );
 }
 
 export function ClimbGraphic({
@@ -50,10 +80,6 @@ export function ClimbGraphic({
   const isLevelCleared = useLevelProgressStore((state) => state.isLevelCleared);
   const getNextLevel = useLevelProgressStore((state) => state.getNextLevel);
   const isAdmin = useProfileStore((state) => state.isAdmin);
-  const currentLevelRef = useRef<HTMLButtonElement>(null);
-  const lastScrolledKeyRef = useRef<string>('');
-  const scrollTimeoutRef = useRef<NodeJS.Timeout | null>(null);
-  const [isScrollPositioned, setIsScrollPositioned] = useState(false);
 
   const nextLevel = getNextLevel(world, category);
   const totalLevels = levels.length;
@@ -84,258 +110,59 @@ export function ClimbGraphic({
     return (FIXED_MAX_LEVELS - totalLevels) * NODE_SPACING;
   }, [totalLevels, FIXED_MAX_LEVELS, NODE_SPACING]);
 
-  // ========== 노드 위치 계산 ==========
+  // ========== 노드 위치 계산 (순수 유틸 함수 분리) ==========
   const { levelData, pathPoints, svgHeight, lastClearedIndex } = useMemo(() => {
-    const data: LevelData[] = [];
-    const points: Array<{ x: number; y: number }> = [];
-    let lastClearedIdx = -1;
-
-    const lastNodeY = LIST_DISTANCE;
-    const firstNodeY = lastNodeY + (FIXED_MAX_LEVELS - 1) * NODE_SPACING;
-    const calculatedSvgHeight = firstNodeY + 100;
-
-    for (let i = 0; i < totalLevels; i++) {
-      const y = firstNodeY - i * NODE_SPACING; // 레벨 1은 가장 아래에 배치하고 위로 갈수록 Y가 감소(상단으로 이동)
-      const centerX = SVG_WIDTH * 0.5;
-      const amplitude = SVG_WIDTH * 0.3;
-      const FREQUENCY_PER_LEVELS = 15; // 15레벨마다 S자 한 번
-      const offsetX = Math.sin((i / FREQUENCY_PER_LEVELS) * Math.PI * 2) * amplitude;
-      const x = centerX + offsetX;
-
-      points.push({ x, y });
-
-      if (!Object.prototype.hasOwnProperty.call(levels, i)) continue;
-      // eslint-disable-next-line security/detect-object-injection -- index validated above
-      const levelId = levels[i]?.level;
-      if (levelId === undefined) continue;
-
-      const isCleared = isLevelCleared(world, category, levelId);
-      const status: 'locked' | 'current' | 'cleared' = isCleared
-        ? 'cleared'
-        : levelId === nextLevel || (isAdmin && !isCleared)
-          ? 'current'
-          : 'locked';
-
-      if (status === 'cleared') {
-        lastClearedIdx = i;
-      }
-
-      data.push({
-        id: levelId,
-        status: status as LevelData['status'],
-        position: { x, y },
-      });
-    }
-
-    return {
-      levelData: data,
-      pathPoints: points,
-      svgHeight: calculatedSvgHeight,
-      lastClearedIndex: lastClearedIdx,
-    };
+    return calculateClimbPoints({
+      totalLevels,
+      levels,
+      fixedMaxLevels: FIXED_MAX_LEVELS,
+      nodeSpacing: NODE_SPACING,
+      listDistance: LIST_DISTANCE,
+      svgWidth: SVG_WIDTH,
+      world,
+      category,
+      nextLevel,
+      isAdmin,
+      isLevelCleared,
+    });
   }, [
+    totalLevels,
+    levels,
+    FIXED_MAX_LEVELS,
+    NODE_SPACING,
+    LIST_DISTANCE,
+    SVG_WIDTH,
     world,
     category,
-    levels,
-    totalLevels,
     nextLevel,
-    isLevelCleared,
     isAdmin,
-    FIXED_MAX_LEVELS,
-    LIST_DISTANCE,
-    NODE_SPACING,
-    SVG_WIDTH,
+    isLevelCleared,
   ]);
 
-  // target level ID를 결정합니다. (current 노드가 없을 경우 cleared의 마지막 노드 또는 1번 노드를 타겟팅하여 스크롤 튕김 방지)
-  const targetLevelId = useMemo(() => {
-    const currentLevel = levelData.find((l) => l.status === 'current');
-    if (currentLevel) return currentLevel.id;
+  const targetLevelId = useMemo(() => determineTargetLevelId(levelData), [levelData]);
 
-    const clearedLevels = levelData.filter((l) => l.status === 'cleared');
-    if (clearedLevels.length > 0) {
-      return clearedLevels[clearedLevels.length - 1].id;
-    }
-
-    return levelData[0]?.id ?? 1;
-  }, [levelData]);
-
-  const createPath = (points: Array<{ x: number; y: number }>): string => {
-    if (points.length === 0) return '';
-    if (points.length === 1) return `M ${points[0].x} ${points[0].y}`;
-
-    let path = `M ${points[0].x} ${points[0].y}`;
-    for (let i = 1; i < points.length; i++) {
-      if (
-        !Object.prototype.hasOwnProperty.call(points, i - 1) ||
-        !Object.prototype.hasOwnProperty.call(points, i)
-      )
-        continue;
-      const prev = points[i - 1];
-      // eslint-disable-next-line security/detect-object-injection -- index validated above
-      const curr = points[i];
-      if (!prev || !curr) continue;
-      const cpX = (prev.x + curr.x) / 2;
-      const cpY = (prev.y + curr.y) / 2;
-      path += ` Q ${cpX} ${cpY}, ${curr.x} ${curr.y}`;
-    }
-    return path;
-  };
-
-  const pathData = useMemo(() => createPath(pathPoints), [pathPoints]);
+  const pathData = useMemo(() => createSvgSmoothPath(pathPoints), [pathPoints]);
 
   const clearedPathData = useMemo(() => {
     if (lastClearedIndex < 0) return '';
     const clearedPoints = pathPoints.slice(0, lastClearedIndex + 1);
-    return createPath(clearedPoints);
+    return createSvgSmoothPath(clearedPoints);
   }, [pathPoints, lastClearedIndex]);
 
-  const scrollToCurrentLevel = useCallback(
-    (behavior: 'auto' | 'smooth' = 'smooth') => {
-      let layoutAttempts = 0;
-      let nodeAttempts = 0;
-
-      const executeScroll = () => {
-        const node = currentLevelRef.current;
-
-        // [노드 가드] 노드 엘리먼트 레프가 마운트될 때까지 최대 120프레임 동안 대기
-        if (!node) {
-          if (nodeAttempts < 120) {
-            nodeAttempts++;
-            requestAnimationFrame(executeScroll);
-          } else {
-            // 노드를 결국 찾지 못하더라도 화면은 보여주어야 하므로 opacity 1 설정
-            setIsScrollPositioned(true);
-          }
-          return;
-        }
-
-        const scrollContainer = node.closest('.map-area') as HTMLElement;
-        if (!scrollContainer) {
-          if (typeof node.scrollIntoView === 'function') {
-            node.scrollIntoView({
-              behavior: behavior === 'auto' ? 'auto' : 'smooth',
-              block: 'center',
-            });
-          }
-          setIsScrollPositioned(true);
-          return;
-        }
-
-        const currentScrollHeight = scrollContainer.scrollHeight;
-        const currentClientWidth = scrollContainer.clientWidth;
-        const currentClientHeight = scrollContainer.clientHeight;
-
-        // [레이아웃 가드] 스크롤 영역의 유효 높이가 확보되었고,
-        // 스크롤 컨테이너의 실제 화면 너비(clientWidth)와 높이(clientHeight)가 로드되어 0보다 큰지 검증
-        const isLayoutReady =
-          currentScrollHeight >= svgHeight - clipOffset - 50 &&
-          currentClientWidth > 0 &&
-          currentClientHeight > 0;
-
-        if (!isLayoutReady && layoutAttempts < 120) {
-          layoutAttempts++;
-          requestAnimationFrame(executeScroll);
-          return;
-        }
-
-        // 스크롤 컨테이너의 padding-top 값을 동적으로 측정
-        const computedStyle = window.getComputedStyle(scrollContainer);
-        const paddingTop = parseFloat(computedStyle.paddingTop) || 0;
-
-        // 화면 해상도나 크기에 따라 SVG가 비율 매칭되어 크기가 변하므로,
-        // svgElement의 실제 너비를 기준으로 스케일을 계산하여 정밀한 수학적 절대 좌표를 산출합니다.
-        const currentLevelNode = levelData.find((l) => l.id === targetLevelId) || levelData[0];
-        const svgElement = node.closest('.path-svg') || scrollContainer.querySelector('.path-svg');
-        const svgClientWidth = svgElement ? svgElement.clientWidth : currentClientWidth;
-        const scale = svgClientWidth / SVG_WIDTH;
-
-        // preserveAspectRatio="xMidYMax meet" 하단 정렬 비율 매칭에 따른 상단 오프셋 보정
-        const svgYOffset = svgHeight * (1 - scale);
-
-        const nodeRelativeY =
-          paddingTop +
-          SCROLL_OFFSET +
-          svgYOffset +
-          (currentLevelNode ? currentLevelNode.position.y : 0) * scale;
-
-        // 기기의 방향 및 가시 영역(헤더와 바텀시트 제외)의 세로 중앙에 노드가 위치하도록 보정
-        const isPortrait = window.innerHeight > window.innerWidth;
-        const bottomSheetVisibleHeight = isPortrait ? 160 : 140;
-        const visibleHeight = Math.max(
-          0,
-          currentClientHeight - paddingTop - bottomSheetVisibleHeight
-        );
-        const visualCenterY = paddingTop + visibleHeight / 2;
-
-        // 노드가 스크롤 영역의 정중앙에 위치하도록 목표 scrollTop 설정
-        const targetScrollTop = nodeRelativeY - visualCenterY;
-
-        // 스크롤 상단 리밋 범위 보정 (활성 레벨 외 공간 진입 차단)
-        const minScrollTop = SCROLL_OFFSET + svgYOffset + clipOffset * scale;
-        const clampedTargetScrollTop = Math.max(minScrollTop, targetScrollTop);
-
-        // 브라우저 네이티브 스크롤 API에 온전히 가감속 제어권 위임
-        // 자동 스크롤 진행 중임을 표시 (동작 진행 동안 handleScroll 리밋 차단 우회용)
-        scrollContainer.setAttribute('data-auto-scrolling', 'true');
-
-        scrollContainer.scrollTo({
-          top: clampedTargetScrollTop,
-          behavior: behavior === 'auto' ? 'auto' : 'smooth',
-        });
-
-        // 위치 복원 완료 상태로 전환하여 페이드인 효과 트리거
-        setIsScrollPositioned(true);
-
-        if (scrollTimeoutRef.current) clearTimeout(scrollTimeoutRef.current);
-        const scrollDuration = behavior === 'auto' ? 50 : 800;
-        scrollTimeoutRef.current = setTimeout(() => {
-          scrollContainer.removeAttribute('data-auto-scrolling');
-          scrollTimeoutRef.current = null;
-        }, scrollDuration);
-      };
-
-      requestAnimationFrame(executeScroll);
-    },
-    [levelData, targetLevelId, svgHeight, clipOffset, SCROLL_OFFSET, SVG_WIDTH]
-  );
-
-  // 진입 및 변경 시 현재 레벨로 자동 스크롤
-  useEffect(() => {
-    if (isReady !== undefined && !isReady) return;
-    if (!levels || levels.length === 0) return;
-
-    const currentScrollKey = `${mountain || ''}_${world}_${category}_${targetLevelId}`;
-
-    // 이미 해당 목적지로 스크롤이 완료된 상태라면 리턴하여 중복 스크롤 방지
-    if (lastScrolledKeyRef.current === currentScrollKey) {
-      return;
-    }
-
-    // 최초 마운트 후 첫 실제 스크롤 동작 전까지는 애니메이션 없이 즉시 현위치를 고정('auto'),
-    // 첫 스크롤이 성공한 상태에서 월드/카테고리/레벨 전환이 일어날 때는 'smooth' 모드로 스크롤
-    const isFirstScroll = !lastScrolledKeyRef.current;
-    const scrollMode = isFirstScroll ? 'auto' : 'smooth';
-
-    lastScrolledKeyRef.current = currentScrollKey;
-
-    if (isFirstScroll) {
-      setIsScrollPositioned(false);
-    }
-
-    // 브라우저 레이아웃 엔진이 새 콘텐츠 높이 및 스케일을 확실히 반영할 수 있도록 30ms 대기 후 실행
-    const timer = setTimeout(() => {
-      scrollToCurrentLevel(scrollMode);
-    }, 30);
-
-    return () => {
-      clearTimeout(timer);
-      if (scrollTimeoutRef.current) {
-        clearTimeout(scrollTimeoutRef.current);
-      }
-    };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [mountain, world, category, targetLevelId, isReady, scrollToCurrentLevel]);
+  // ========== 정밀 스크롤 제어 훅 ==========
+  const { currentLevelRef, isScrollPositioned } = useClimbScroll({
+    levelData,
+    targetLevelId,
+    svgHeight,
+    clipOffset,
+    scrollOffset: SCROLL_OFFSET,
+    svgWidth: SVG_WIDTH,
+    isReady,
+    mountain,
+    world,
+    category,
+    totalLevels,
+  });
 
   return (
     <div
@@ -454,22 +281,7 @@ export function ClimbGraphic({
                     }}
                   >
                     <div className="level-node-content">
-                      {level.status === 'locked' ? (
-                        <span className="level-node-icon">🔒</span>
-                      ) : level.status === 'cleared' ? (
-                        <span className="level-node-icon" style={{ color: stage.color }}>
-                          ✓
-                        </span>
-                      ) : (
-                        <span
-                          className="level-node-icon"
-                          role="img"
-                          aria-label={stage.title}
-                          style={{ color: stage.color }}
-                        >
-                          {stage.icon}
-                        </span>
-                      )}
+                      <LevelNodeIcon status={level.status} stage={stage} />
                       <span className="level-node-number">{level.id}</span>
                     </div>
                   </LevelButton>
@@ -488,24 +300,7 @@ export function ClimbGraphic({
 
             if (!position) return null;
 
-            // 화면 경계 이탈 방지를 위한 대략적인 예측 뱃지 너비 (110px)
-            const ESTIMATED_BADGE_WIDTH = 110;
-            const badgeSpacing = 42;
-
-            const leftPlacementX = position.x - ESTIMATED_BADGE_WIDTH - badgeSpacing;
-            const rightPlacementX = position.x + badgeSpacing;
-
-            let isLeftSide: boolean;
-
-            if (leftPlacementX < 10) {
-              isLeftSide = false;
-            } else if (rightPlacementX + ESTIMATED_BADGE_WIDTH > 390) {
-              isLeftSide = true;
-            } else {
-              const preferredLeft = stage.id === 'basic' || stage.id === 'focus';
-              isLeftSide = preferredLeft;
-            }
-
+            const isLeftSide = calculateSignpostPlacement(position.x, stage.id);
             const FO_WIDTH = 220;
             const foX = isLeftSide ? position.x - 20 - FO_WIDTH : position.x + 20;
             const foY = position.y - 15;
