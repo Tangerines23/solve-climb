@@ -22,6 +22,22 @@ interface UseQuizStartLogicProps {
   setShowStaminaModal: (v: boolean) => void;
 }
 
+/**
+ * 시작 시 적용될 제한 시간(초)을 계산하는 순수 함수 (Zero-Else 준수)
+ * - 산소통(oxygen_tank) 장착 시 서바이벌은 20초(기본 10초), 일반/타임어택은 기본 60초 + 10초
+ */
+export function computeInitialTimeLimit(gameMode: string, equippedCodes: string[]): number {
+  const hasOxygenTank = equippedCodes.includes('oxygen_tank');
+  if (gameMode === 'survival') {
+    if (hasOxygenTank) {
+      return 20;
+    }
+    return 10;
+  }
+  const extraTime = hasOxygenTank ? 10 : 0;
+  return 60 + extraTime;
+}
+
 export function useQuizStartLogic({
   stamina,
   inventory,
@@ -88,18 +104,9 @@ export function useQuizStartLogic({
         // 인게임 세션에 장착된 아이템 등록
         useGameStore.getState().setActiveItems(equippedCodes);
 
-        // 1. 산소통 (oxygen_tank): 서바이벌은 기본 10초(산소통 20초), 타임어택/일반게임은 기본 60초(산소통 70초)
-        if (gameMode === 'survival') {
-          if (equippedCodes.includes('oxygen_tank')) {
-            useQuizStore.getState().setTimeLimit(20);
-          } else {
-            useQuizStore.getState().setTimeLimit(10);
-          }
-        } else {
-          const baseTime = 60;
-          const extraTime = equippedCodes.includes('oxygen_tank') ? 10 : 0;
-          useQuizStore.getState().setTimeLimit(baseTime + extraTime);
-        }
+        // 1. 산소통 (oxygen_tank) 시간 설정
+        const timeLimit = computeInitialTimeLimit(gameMode, equippedCodes);
+        useQuizStore.getState().setTimeLimit(timeLimit);
 
         // 2. 파워젤 (power_gel): 시작 시 콤보 1단계 즉시 부여
         if (equippedCodes.includes('power_gel')) {
@@ -120,17 +127,18 @@ export function useQuizStartLogic({
 
       const staminaRes = await consumeStamina();
 
-      if (staminaRes.success) {
-        setStaminaConsumed(true);
-        setExhausted(false);
-
-        await applyEquippedItems(selectedItems);
-
-        analytics.trackQuizStart(worldParam || '', categoryParam || '');
-        quizEventBus.emit('QUIZ:UI_MODAL_TOGGLE', { modal: 'tip', show: false });
-      } else {
+      if (!staminaRes.success) {
         quizEventBus.emit('QUIZ:UI_MODAL_TOGGLE', { modal: 'stamina', show: true });
+        return;
       }
+
+      setStaminaConsumed(true);
+      setExhausted(false);
+
+      await applyEquippedItems(selectedItems);
+
+      analytics.trackQuizStart(worldParam || '', categoryParam || '');
+      quizEventBus.emit('QUIZ:UI_MODAL_TOGGLE', { modal: 'tip', show: false });
     },
     [
       stamina,
@@ -155,22 +163,31 @@ export function useQuizStartLogic({
         // 로그인하고 기록 보호하기 → 마이페이지(로그인 화면)로 이동
         setShowStaminaModal(false);
         navigate(urls.myPage());
-      } else if (action === 'charge') {
+        return;
+      }
+      if (action === 'charge') {
         // 광고 보고 충전하기 → 중복 클릭 방지 후 광고 실행
         if (isAdRecovering.current) return;
         isAdRecovering.current = true;
         handleStaminaAdRecovery().finally(() => {
           isAdRecovering.current = false;
         });
-      } else if (action === 'play') {
+        return;
+      }
+      if (action === 'play') {
         // 지친 상태로 진행 → 모달 닫고 지침 상태로 강제 시작
         setShowStaminaModal(false);
         handleStartGame(selectedItemsRef.current, true);
-      } else if (action === 'shop') {
+        return;
+      }
+      if (action === 'shop') {
         setShowStaminaModal(false);
         navigate(urls.shop());
-      } else if (action === 'back') {
+        return;
+      }
+      if (action === 'back') {
         navigate(-1);
+        return;
       }
     },
     [handleStaminaAdRecovery, navigate, setShowStaminaModal, handleStartGame]
