@@ -12,9 +12,9 @@ export function TopicHeader({ title, onBack }: TopicHeaderProps) {
   const handleBack = () => {
     if (onBack) {
       onBack();
-    } else {
-      navigate(-1); // 이전 페이지로 돌아가기
+      return;
     }
+    navigate(-1); // 이전 페이지로 돌아가기
   };
 
   return (
