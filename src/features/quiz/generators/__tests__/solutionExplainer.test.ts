@@ -305,4 +305,60 @@ describe('getSolutionProcess', () => {
       expect(text).toContain('지원되지 않는');
     });
   });
+
+  describe('Zero-Else Branch Coverage & Hardening', () => {
+    it('should explain left-to-right operations when first operator has equal or higher precedence', () => {
+      const result = getSolutionProcess('10 - 4 + 2', '8');
+      const text = result.join(' ');
+      expect(text).toContain('왼쪽부터');
+      expect(text).toContain('8');
+    });
+
+    it('should handle diameter calculation when given diameter without radius keyword', () => {
+      const result = getSolutionProcess('원 지름 12의 값은?', '6');
+      const text = result.join(' ');
+      expect(text).toContain('반지름은 지름의 절반');
+    });
+
+    it("should explain one's complement vs two's complement correctly", () => {
+      const ones = getSolutionProcess('1010의 1의 보수', '0101');
+      expect(ones.join(' ')).toContain('1의 보수법');
+
+      const twos = getSolutionProcess('1010의 2의 보수', '0110');
+      expect(twos.join(' ')).toContain('2의 보수법');
+    });
+
+    it('should explain bitwise NOT operation with single operand inversion', () => {
+      const result = getSolutionProcess('NOT 1', '0');
+      const text = result.join(' ');
+      expect(text).toContain('논리 부정');
+    });
+
+    it('should explain bitwise binary operations AND, OR, XOR', () => {
+      const andRes = getSolutionProcess('1 AND 0', '0');
+      expect(andRes.join(' ')).toContain('두 입력이 모두 1');
+
+      const orRes = getSolutionProcess('0 OR 1', '1');
+      expect(orRes.join(' ')).toContain('두 입력 중 하나라도');
+
+      const xorRes = getSolutionProcess('1 XOR 1', '0');
+      expect(xorRes.join(' ')).toContain('두 입력 비트가 다르면');
+    });
+
+    it('should explain full factorial vs permutation subset', () => {
+      const factorial = getSolutionProcess('4명을 한 줄로 세우는 경우의 수', '24');
+      expect(factorial.join(' ')).toContain('팩토리얼');
+
+      const permutation = getSolutionProcess('5명 중 3명을 나열하는 경우의 수', '60');
+      expect(permutation.join(' ')).toContain('순열');
+    });
+
+    it('should explain winning probability vs defective probability', () => {
+      const win = getSolutionProcess('10개 중 당첨 2개 뽑기', '20');
+      expect(win.join(' ')).toContain('당첨될 확률');
+
+      const def = getSolutionProcess('10개 중 불량 2개 제외', '80');
+      expect(def.join(' ')).toContain('정상일 확률');
+    });
+  });
 });
