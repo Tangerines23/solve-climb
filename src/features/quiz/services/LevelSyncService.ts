@@ -10,36 +10,35 @@ export interface LevelSyncResult {
   error?: string;
 }
 
+const ARITHMETIC_SUBJECT_MAP: Record<string, string> = {
+  addition: 'add',
+  subtraction: 'sub',
+  multiplication: 'mul',
+  division: 'div',
+};
+
 /**
- * 카테고리 및 서브젝트 매핑 순수 함수
+ * 카테고리 및 서브젝트 매핑 순수 함수 (Zero-Else 준수)
  */
 export function mapCategoryAndSubject(
   rawCategory: string,
   rawSubject?: string
 ): { rpcCategory: string; rpcSubject: string } {
-  let rpcCategory = rawCategory;
-  let rpcSubject = rawSubject || 'add';
-
   if (rawCategory.includes('_')) {
     const parts = rawCategory.split('_');
-    if (parts[0] === 'arithmetic') {
-      rpcCategory = 'math';
-      const subMap: Record<string, string> = {
-        addition: 'add',
-        subtraction: 'sub',
-        multiplication: 'mul',
-        division: 'div',
-      };
-      rpcSubject = subMap[parts[1]] || parts[1];
-    } else {
-      rpcCategory = parts[0];
-      rpcSubject = parts.slice(1).join('_');
+    const prefix = parts[0];
+    const rest = parts.slice(1).join('_');
+
+    if (prefix === 'arithmetic') {
+      const subject = ARITHMETIC_SUBJECT_MAP[parts[1]] || parts[1];
+      return { rpcCategory: 'math', rpcSubject: subject };
     }
-  } else if (rawSubject) {
-    rpcSubject = rawSubject;
+
+    return { rpcCategory: prefix, rpcSubject: rest };
   }
 
-  return { rpcCategory, rpcSubject };
+  const rpcSubject = rawSubject || 'add';
+  return { rpcCategory: rawCategory, rpcSubject };
 }
 
 /**
