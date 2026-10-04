@@ -29,10 +29,11 @@ export function FooterNav() {
       if (location.pathname !== APP_CONFIG.ROUTES.HOME) {
         navigate(APP_CONFIG.ROUTES.HOME);
       }
-    } else {
-      // 일반 네비게이션: 해당 라우트로 이동
-      navigate(item.route);
+      return;
     }
+
+    // 일반 네비게이션: 해당 라우트로 이동
+    navigate(item.route);
   };
 
   const isActive = (item: NavItemConfig): boolean => {

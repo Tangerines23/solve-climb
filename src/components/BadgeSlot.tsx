@@ -73,13 +73,14 @@ export const BadgeCollection: React.FC<BadgeCollectionProps> = ({ userId, mode =
         .map((id) => ({ badge_id: id, earned_at: '' }));
 
       setDisplayBadges([...earned, ...locked].slice(0, 5));
-    } else {
-      const lockedBadges = allBadgeIds.filter((id) => !earnedBadgeIds.has(id));
-      setDisplayBadges([
-        ...userBadges,
-        ...lockedBadges.map((id) => ({ badge_id: id, earned_at: '' })),
-      ]);
+      return;
     }
+
+    const lockedBadges = allBadgeIds.filter((id) => !earnedBadgeIds.has(id));
+    setDisplayBadges([
+      ...userBadges,
+      ...lockedBadges.map((id) => ({ badge_id: id, earned_at: '' })),
+    ]);
   }, [userBadges, badgeDefinitions, mode]);
 
   if (isLoadingUserBadges || isLoadingDefinitions) {

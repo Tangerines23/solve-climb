@@ -100,9 +100,9 @@ export function CategoryList() {
                   e.stopPropagation();
                   if (mountain.disabled) {
                     setShowExplorerToast('셰르파들이 안전한 길을 찾는 중입니다! (준비 중) ⛏️');
-                  } else {
-                    handleMountainClick(mountain.id);
+                    return;
                   }
+                  handleMountainClick(mountain.id);
                 }}
               >
                 {mountain.disabled ? '준비 중' : '등반하기'}

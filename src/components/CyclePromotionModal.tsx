@@ -29,11 +29,12 @@ export const CyclePromotionModal: React.FC<CyclePromotionModalProps> = ({
     try {
       const result = await UserRepository.promoteToNextCycle();
 
-      if (result.success) {
-        onPromote();
-      } else {
+      if (!result.success) {
         setError(result.error || result.message || '승급 처리에 실패했습니다.');
+        return;
       }
+
+      onPromote();
     } catch (err) {
       logError('CyclePromotionModal', err);
       setError('승급 처리 중 오류가 발생했습니다.');
