@@ -76,10 +76,12 @@ export function useQuizSession({
               console.log(
                 '[useQuizSession] Local guest session mode active (unauthenticated user).'
               );
-            } else {
-              console.warn('[useQuizSession] create_game_session response:', { error, data });
+              return;
             }
+            console.warn('[useQuizSession] create_game_session response:', { error, data });
+            return;
           }
+
           if (data?.session_id) {
             setGameSessionId(data.session_id);
             setPreGeneratedQuestions(preGenerated);
