@@ -10,7 +10,11 @@ if (typeof global.Headers === 'undefined' && typeof window !== 'undefined') {
 }
 
 // MSW 서버 시작
-beforeAll(() => server.listen({ onUnhandledRequest: 'warn' }));
+beforeAll(() =>
+  (server as unknown as { listen: (opts?: Record<string, unknown>) => void }).listen({
+    onUnhandledRequest: 'warn',
+  })
+);
 
 // 각 테스트 후 핸들러 초기화 & DOM 정리
 afterEach(() => {
