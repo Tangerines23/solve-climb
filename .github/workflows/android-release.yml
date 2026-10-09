@@ -105,4 +105,5 @@ jobs:
           releaseFiles: android/app/build/outputs/bundle/release/app-release.aab
           track: ${{ inputs.track || 'production' }}
           whatsNewDirectory: android/app/src/main/play/release-notes
+          changesNotSentForReview: true
 
