@@ -62,25 +62,30 @@ export const useQuizBusinessLogic = ({
     [totalQuestions, handleGameOver, refundStamina, showGlobalToast]
   );
 
-  // [스테미너 광고 회복]
+  // [스테미너 광고 회복] (Zero-Else, Guard Clauses)
   const handleStaminaAdRecovery = useCallback(
     async (setShowStaminaModal: (s: boolean) => void) => {
       setShowSlideToast(true);
       setToastValue(UI_MESSAGES.AD_WATCH_START);
 
-      // recoverStaminaAds 단일 파이프라인 호출 (광고 시청 -> DB RPC 보상 지급)
-      const result = await recoverStaminaAds();
+      try {
+        // recoverStaminaAds 단일 파이프라인 호출 (광고 시청 -> DB RPC 보상 지급)
+        const result = await recoverStaminaAds();
 
-      if (result.success) {
-        setShowStaminaModal(false);
-        setShowSlideToast(true);
-        setToastValue(UI_MESSAGES.STAMINA_RECHARGED_FULL);
+        if (result.success) {
+          setShowStaminaModal(false);
+          setShowSlideToast(true);
+          setToastValue(UI_MESSAGES.STAMINA_RECHARGED_FULL);
 
-        await useUserStore.getState().fetchUserData();
-        return;
+          await useUserStore.getState().fetchUserData();
+          return;
+        }
+
+        setToastValue(UI_MESSAGES.AD_WATCH_FAILED(result.message));
+      } catch (error) {
+        logError('useQuizBusinessLogic#handleStaminaAdRecovery', error);
+        setToastValue(UI_MESSAGES.AD_WATCH_FAILED('광고 시청 중 오류가 발생했습니다.'));
       }
-
-      setToastValue(UI_MESSAGES.AD_WATCH_FAILED(result.message));
     },
     [setShowSlideToast, setToastValue, recoverStaminaAds]
   );

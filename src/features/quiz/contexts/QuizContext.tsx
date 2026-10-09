@@ -284,6 +284,7 @@ export function QuizProvider({ children, params }: QuizProviderProps) {
   const {
     handleRevive,
     handlePurchaseAndRevive,
+    handleWatchAdAndRevive,
     handleGiveUp,
     stableHandleGameOver,
     hasUsedLastChance,
@@ -295,13 +296,6 @@ export function QuizProvider({ children, params }: QuizProviderProps) {
     onWatchAd: handleWatchAdRevive,
     isPreview,
   });
-
-  const handleWatchAdAndRevive = useCallback(async () => {
-    const success = await handleWatchAdRevive();
-    if (success) {
-      await handleRevive(false);
-    }
-  }, [handleWatchAdRevive, handleRevive]);
 
   useQuizBgm({
     categoryParam,

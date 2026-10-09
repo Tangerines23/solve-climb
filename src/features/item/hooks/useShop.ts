@@ -18,6 +18,7 @@ export function useShop() {
   const [isAdLoading, setIsAdLoading] = useState(false);
   const isMountedRef = useRef(true);
   const isPurchasingRef = useRef(false);
+  const isAdRechargingRef = useRef(false);
   const statusTimerRef = useRef<NodeJS.Timeout | null>(null);
 
   const { minerals, inventory, fetchUserData, recoverMineralsAds } = useUserStore();
@@ -127,21 +128,32 @@ export function useShop() {
   );
 
   const handleMineralsAdRecharge = useCallback(async () => {
-    if (isAdLoading) return;
+    if (isAdRechargingRef.current || isAdLoading) return;
+    isAdRechargingRef.current = true;
     setIsAdLoading(true);
     showToast(UI_MESSAGES.AD_LOADING, STATUS_TYPES.INFO);
 
-    const result = await recoverMineralsAds();
-    if (!isMountedRef.current) return;
+    try {
+      const result = await recoverMineralsAds();
+      if (!isMountedRef.current) return;
 
-    if (result.success) {
-      showToast(result.message || UI_MESSAGES.REWARD_EARNED, '💎');
-      setIsAdLoading(false);
-      return;
+      if (result.success) {
+        showToast(result.message || UI_MESSAGES.REWARD_EARNED, '💎');
+        return;
+      }
+
+      showToast(result.message || UI_MESSAGES.AD_LOAD_FAILED, STATUS_TYPES.ERROR);
+    } catch (err) {
+      logError('useShop#handleMineralsAdRecharge', err);
+      if (isMountedRef.current) {
+        showToast(UI_MESSAGES.AD_LOAD_FAILED, STATUS_TYPES.ERROR);
+      }
+    } finally {
+      isAdRechargingRef.current = false;
+      if (isMountedRef.current) {
+        setIsAdLoading(false);
+      }
     }
-
-    showToast(result.message || UI_MESSAGES.AD_LOAD_FAILED, STATUS_TYPES.ERROR);
-    setIsAdLoading(false);
   }, [isAdLoading, showToast, recoverMineralsAds]);
 
   const getOwnedCount = useCallback(
