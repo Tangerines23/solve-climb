@@ -31,6 +31,39 @@ interface UseQuestionGeneratorParams {
   preGeneratedQuestions?: QuizQuestion[];
 }
 
+/**
+ * 서바이벌/무한 모드의 슬라이딩 윈도우 및 트랩 기반 목표 레벨을 산출하는 순수 함수 (Zero-Else 준수)
+ */
+export function calculateSurvivalTargetLevel(
+  totalQuestions: number,
+  categoryMax: number = 10,
+  randomFn: () => number = Math.random
+): number {
+  const { BASE_LEVEL_DIVIDER, MAIN_STREAM_DELTA, TRAP_PROBABILITY, TRAP_DELTA_MIN } =
+    SURVIVAL_CONFIG.SLIDING_WINDOW_CONFIG;
+
+  const baseLevel = Math.floor(totalQuestions / BASE_LEVEL_DIVIDER) + 1;
+  const isTrap = randomFn() < TRAP_PROBABILITY && baseLevel > TRAP_DELTA_MIN;
+  const scaleFactor = (categoryMax - 1) / 9; // 1->1, 10->categoryMax 기준 비율
+
+  if (isTrap) {
+    // [20% 확률] 스피드 함정: 1 ~ (기준 레벨 - 3)
+    const trapMax = baseLevel - TRAP_DELTA_MIN;
+    const scaledTrapMax = Math.min(categoryMax, Math.ceil((trapMax - 1) * scaleFactor) + 1);
+    return Math.floor(randomFn() * scaledTrapMax) + 1;
+  }
+
+  // [80% 확률] 메인 스트림: 기준 레벨 ± 2
+  const minWindow = Math.max(1, baseLevel - MAIN_STREAM_DELTA);
+  const maxWindow = baseLevel + MAIN_STREAM_DELTA;
+
+  // Capping: Ensure scaled ranges remain within [1, categoryMax] and valid
+  const scaledMax = Math.min(categoryMax, Math.ceil((maxWindow - 1) * scaleFactor) + 1);
+  const scaledMin = Math.min(scaledMax, Math.max(1, Math.floor((minWindow - 1) * scaleFactor) + 1));
+
+  return Math.floor(randomFn() * (scaledMax - scaledMin + 1)) + scaledMin;
+}
+
 export function useQuestionGenerator({
   category,
   world,
@@ -117,40 +150,11 @@ export function useQuestionGenerator({
     let targetLevel = levelParam || 1;
 
     if (gameMode === 'survival' || gameMode === 'infinite') {
-      // v2.4 Sliding Window + Trap Algorithm
-      const { BASE_LEVEL_DIVIDER, MAIN_STREAM_DELTA, TRAP_PROBABILITY, TRAP_DELTA_MIN } =
-        SURVIVAL_CONFIG.SLIDING_WINDOW_CONFIG;
-
-      const baseLevel = Math.floor(totalQuestions / BASE_LEVEL_DIVIDER) + 1;
-      const isTrap = Math.random() < TRAP_PROBABILITY && baseLevel > TRAP_DELTA_MIN;
-
       const categoryMax = Object.prototype.hasOwnProperty.call(CATEGORY_CONFIG, targetCategory)
         ? CATEGORY_CONFIG[targetCategory as keyof typeof CATEGORY_CONFIG].maxLevel
         : CATEGORY_CONFIG.default.maxLevel;
 
-      // v2.4 Note: Theoretically baseLevel can grow infinitely.
-      // We still scale it to the category's actual max level for generation.
-      const scaleFactor = (categoryMax - 1) / 9; // 1->1, 10->categoryMax 기준 비율
-
-      if (isTrap) {
-        // [20% 확률] 스피드 함정: 1 ~ (기준 레벨 - 3)
-        const trapMax = baseLevel - TRAP_DELTA_MIN;
-        const scaledTrapMax = Math.min(categoryMax, Math.ceil((trapMax - 1) * scaleFactor) + 1);
-        targetLevel = Math.floor(Math.random() * scaledTrapMax) + 1;
-      } else {
-        // [80% 확률] 메인 스트림: 기준 레벨 ± 2
-        const minWindow = Math.max(1, baseLevel - MAIN_STREAM_DELTA);
-        const maxWindow = baseLevel + MAIN_STREAM_DELTA;
-
-        // v2.4 Capping: Ensure scaled ranges remain within [1, categoryMax] and valid
-        const scaledMax = Math.min(categoryMax, Math.ceil((maxWindow - 1) * scaleFactor) + 1);
-        const scaledMin = Math.min(
-          scaledMax,
-          Math.max(1, Math.floor((minWindow - 1) * scaleFactor) + 1)
-        );
-
-        targetLevel = Math.floor(Math.random() * (scaledMax - scaledMin + 1)) + scaledMin;
-      }
+      targetLevel = calculateSurvivalTargetLevel(totalQuestions, categoryMax);
     }
 
     if (!targetWorld || !targetCategory) {
