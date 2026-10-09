@@ -185,5 +185,46 @@ describe('AdService', () => {
       expect(AdService.isShowing()).toBe(false);
       vi.useRealTimers();
     });
+
+    it('should return failure if reward amount is 0 or missing (skipped ad)', async () => {
+      // @ts-expect-error: Mocking AdMob result with 0 amount
+      vi.mocked(AdMob.showRewardVideoAd).mockResolvedValue({ type: 'rewarded', amount: 0 });
+
+      const result = await AdService.showMobileAppAd('mineral_recharge');
+
+      expect(result.success).toBe(false);
+      expect(result.error).toContain('광고 보상 획득 조건');
+      expect(AdService.isShowing()).toBe(false);
+    });
+
+    it('should return failure if adId is invalid', async () => {
+      const spyAd = vi.spyOn(AdService, 'showMobileAppAd');
+      expect(spyAd).toBeDefined();
+    });
+  });
+
+  describe('showTossAd', () => {
+    it('should invoke TossAds.showRewardAd if present on window', async () => {
+      const mockTossShow = vi.fn().mockResolvedValue({ success: true });
+      // @ts-expect-error: Mocking TossAds object
+      window.TossAds = { showRewardAd: mockTossShow };
+
+      const result = await AdService.showTossAd('mineral_recharge');
+
+      expect(mockTossShow).toHaveBeenCalledWith('mineral_recharge');
+      expect(result.success).toBe(true);
+      expect(result.message).toContain('토스 광고 시청이 완료되었습니다');
+    });
+
+    it('should handle TossAds failure and return error', async () => {
+      const mockTossShow = vi.fn().mockResolvedValue({ success: false, error: '사용자 취소' });
+      // @ts-expect-error: Mocking TossAds object
+      window.TossAds = { showRewardAd: mockTossShow };
+
+      const result = await AdService.showTossAd('mineral_recharge');
+
+      expect(result.success).toBe(false);
+      expect(result.error).toBe('사용자 취소');
+    });
   });
 });

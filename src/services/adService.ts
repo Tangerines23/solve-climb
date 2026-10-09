@@ -50,7 +50,34 @@ function getWindowAds(): WindowWithAds | undefined {
   return window as unknown as WindowWithAds;
 }
 
+const activeTimers = new Set<ReturnType<typeof setTimeout>>();
+
+function safeScheduleAdTask(fn: () => void, delayMs: number): ReturnType<typeof setTimeout> {
+  const timer = setTimeout(() => {
+    activeTimers.delete(timer);
+    fn();
+  }, delayMs);
+  activeTimers.add(timer);
+  return timer;
+}
+
+export function clearPendingAdTimers(): void {
+  for (const timer of activeTimers) {
+    clearTimeout(timer);
+  }
+  activeTimers.clear();
+}
+
+function getValidAdId(): string | null {
+  const adId = ENV.VITE_ADMOB_REWARDED_ID;
+  if (!adId || typeof adId !== 'string' || adId.trim() === '' || adId === 'undefined') {
+    return null;
+  }
+  return adId.trim();
+}
+
 export function _resetAdPreparedForTest(): void {
+  clearPendingAdTimers();
   isAdMobInitialized = false;
   isAdPrepared = false;
   isPreparingAd = false;
@@ -114,12 +141,17 @@ export const AdService = {
     if (isAdPrepared) return true;
     if (isPreparingAd) return false;
 
+    const adId = getValidAdId();
+    if (!adId) {
+      console.warn('[AdService] Missing or invalid AdMob Rewarded ID');
+      return false;
+    }
+
     isPreparingAd = true;
     try {
       await this.initialize();
-      const adId = ENV.VITE_ADMOB_REWARDED_ID;
       const options: RewardAdOptions = {
-        adId: String(adId),
+        adId,
       };
       console.log('[AdService] Preloading AdMob Rewarded Ad in background...');
       await withTimeout(
@@ -190,6 +222,20 @@ export const AdService = {
    */
   async showTossAd(_placement: AdPlacement): Promise<AdResult> {
     console.log('[AdService] Attempting to show Toss Ad');
+    const win = getWindowAds();
+    const tossAdsObj = win?.TossAds as
+      { showRewardAd?: (p: string) => Promise<{ success: boolean; error?: string }> } | undefined;
+    if (typeof tossAdsObj?.showRewardAd === 'function') {
+      try {
+        const res = await tossAdsObj.showRewardAd(_placement);
+        if (res?.success) {
+          return { success: true, message: '토스 광고 시청이 완료되었습니다.' };
+        }
+        return { success: false, error: res?.error || '토스 광고 시청에 실패했습니다.' };
+      } catch (err) {
+        console.warn('[AdService] TossAds native call failed, falling back:', err);
+      }
+    }
     return await this.showSimulationAd(_placement);
   },
 
@@ -197,7 +243,13 @@ export const AdService = {
    * 모바일 앱 전용 광고 호출 (AdMob)
    */
   async showMobileAppAd(_placement: AdPlacement): Promise<AdResult> {
-    const adId = ENV.VITE_ADMOB_REWARDED_ID;
+    const adId = getValidAdId();
+    if (!adId) {
+      return {
+        success: false,
+        error: '광고 단위 ID가 설정되지 않았습니다.',
+      };
+    }
     console.log(`[AdService] Attempting to show AdMob Rewarded Ad: ${adId}`);
 
     try {
@@ -205,7 +257,7 @@ export const AdService = {
       if (!isAdPrepared) {
         console.log('[AdService] Ad not preloaded, preparing now...');
         const options: RewardAdOptions = {
-          adId: String(adId),
+          adId,
         };
         await withTimeout(
           AdMob.prepareRewardVideoAd(options),
@@ -225,8 +277,16 @@ export const AdService = {
       );
       console.log('[AdService] Reward earned:', reward);
 
+      // 보상 무결성 가드: 스킵 및 부정 시청 방어
+      if (!reward || (typeof reward.amount === 'number' && reward.amount <= 0)) {
+        return {
+          success: false,
+          error: '광고 보상 획득 조건을 만족하지 못했습니다.',
+        };
+      }
+
       // 3. 시청 완료 후 다음 광고를 백그라운드에서 즉시 사전 로드(Preload)
-      setTimeout(() => {
+      safeScheduleAdTask(() => {
         this.preloadRewardedAd().catch(() => {});
       }, 1000);
 
@@ -239,7 +299,7 @@ export const AdService = {
       isAdPrepared = false;
 
       // 에러 발생 시 다음 기회를 위해 사전 로드 재시도
-      setTimeout(() => {
+      safeScheduleAdTask(() => {
         this.preloadRewardedAd().catch(() => {});
       }, 3000);
 
