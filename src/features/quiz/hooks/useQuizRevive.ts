@@ -12,7 +12,7 @@ interface UseQuizReviveParams {
   inventory: InventoryItem[];
   minerals: number;
   consumeItem: (itemId: number) => Promise<{ success: boolean; message: string }>;
-  onWatchAd: () => void;
+  onWatchAd: () => Promise<boolean> | boolean | void;
   isPreview: boolean;
 }
 
@@ -73,34 +73,36 @@ export function useQuizRevive({
   );
 
   /**
-   * 미네랄로 즉시 구매 & 부활
+   * 미네랄로 즉시 구매 & 부활 (Zero-Else, Depth 1)
    */
-  const handlePurchaseAndRevive = useCallback(async () => {
+  const handlePurchaseAndRevive = useCallback(async (): Promise<void> => {
     const itemType = gameMode === 'time-attack' ? 'last_spurt' : 'flare';
     const itemMeta = safeAccess(ITEM_MAP, itemType) as ItemMetadata | undefined;
     const basePrice = itemMeta?.price || 800;
     const targetPrice = basePrice * 2; // "즉시 구매 & 사용"은 상점가의 2배 (긴급 할증)
 
-    if (minerals >= targetPrice) {
-      if (itemMeta?.id) {
-        try {
-          await useUserStore.getState().purchaseItem(itemMeta.id);
-          // 즉시 사용(소모) 처리하여 인벤토리에 공짜로 남지 않도록 보장
-          await consumeItem(itemMeta.id);
-        } catch {
-          // 백엔드 RPC 실패 시에도 클라이언트 상태 진행 보장
-        }
+    if (minerals < targetPrice) return;
+
+    if (itemMeta?.id) {
+      try {
+        await useUserStore.getState().purchaseItem(itemMeta.id);
+        // 즉시 사용(소모) 처리하여 인벤토리에 공짜로 남지 않도록 보장
+        await consumeItem(itemMeta.id);
+      } catch {
+        // 백엔드 RPC 실패 시에도 클라이언트 상태 진행 보장
       }
-      await handleRevive(false);
     }
+    await handleRevive(false);
   }, [minerals, gameMode, handleRevive, consumeItem]);
 
   /**
-   * 광고 시청 후 무료 부활
+   * 광고 시청 후 무료 부활 (비동기 결과 검증 후 자동 부활 수행)
    */
-  const handleWatchAdAndRevive = useCallback(async () => {
-    onWatchAd();
-  }, [onWatchAd]);
+  const handleWatchAdAndRevive = useCallback(async (): Promise<void> => {
+    const success = await onWatchAd();
+    if (!success) return;
+    await handleRevive(false);
+  }, [onWatchAd, handleRevive]);
 
   /**
    * 포기하고 결과 기록

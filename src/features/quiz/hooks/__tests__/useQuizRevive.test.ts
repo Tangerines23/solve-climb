@@ -184,12 +184,26 @@ describe('useQuizRevive', () => {
   });
 
   describe('handleWatchAdAndRevive', () => {
-    it('calls onWatchAd callback', async () => {
-      const { result } = renderHook(() => useQuizRevive(params));
+    it('calls onWatchAd callback and revives player on success', async () => {
+      const mockWatchAd = vi.fn().mockResolvedValue(true);
+      const { result } = renderHook(() => useQuizRevive({ ...params, onWatchAd: mockWatchAd }));
       await act(async () => {
         await result.current.handleWatchAdAndRevive();
       });
-      expect(params.onWatchAd).toHaveBeenCalled();
+      expect(mockWatchAd).toHaveBeenCalled();
+      expect(quizEventBus.emit).toHaveBeenCalledWith('QUIZ:REVIVE_SUCCESS');
+      expect(result.current.hasUsedLastChance).toBe(true);
+    });
+
+    it('does not revive player when onWatchAd returns false or fails', async () => {
+      const mockWatchAd = vi.fn().mockResolvedValue(false);
+      const { result } = renderHook(() => useQuizRevive({ ...params, onWatchAd: mockWatchAd }));
+      await act(async () => {
+        await result.current.handleWatchAdAndRevive();
+      });
+      expect(mockWatchAd).toHaveBeenCalled();
+      expect(quizEventBus.emit).not.toHaveBeenCalledWith('QUIZ:REVIVE_SUCCESS');
+      expect(result.current.hasUsedLastChance).toBe(false);
     });
   });
 
