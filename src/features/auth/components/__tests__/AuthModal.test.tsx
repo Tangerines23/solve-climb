@@ -3,6 +3,7 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { AuthModal } from '../AuthModal';
 import { useAuthStore } from '@/stores/useAuthStore';
 import { signInWithGoogle } from '@/utils/auth';
+import { isTossAppEnvironment } from '@/utils/tossLogin';
 
 vi.mock('@/components/BaseModal', () => ({
   BaseModal: vi.fn(({ children, isOpen }: any) =>
@@ -97,5 +98,11 @@ describe('AuthModal Component', () => {
     fireEvent.click(screen.getByTestId('complete-profile'));
     expect(onComplete).toHaveBeenCalled();
     expect(onClose).toHaveBeenCalled();
+  });
+
+  it('renders Toss login button in Toss environment', () => {
+    vi.mocked(isTossAppEnvironment).mockReturnValue(true);
+    render(<AuthModal isOpen={true} onComplete={vi.fn()} onClose={vi.fn()} />);
+    expect(screen.getByText('토스로 3초 만에 시작하기')).toBeInTheDocument();
   });
 });
