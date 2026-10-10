@@ -38,25 +38,32 @@ export function Toast({
       timerRef.current = null;
     }
 
-    if (isOpen && message) {
-      setIsClosing(false);
-
-      // 자동 닫기
-      if (autoClose) {
-        timerRef.current = setTimeout(() => {
-          setIsClosing(true);
-          timerRef.current = setTimeout(() => {
-            onCloseRef.current?.();
-            setIsClosing(false);
-          }, 300);
-        }, autoCloseDelay);
-      }
-    } else if (!isOpen) {
-      setIsClosing(true);
-      timerRef.current = setTimeout(() => {
+    function scheduleTimer() {
+      if (isOpen && message) {
         setIsClosing(false);
-      }, 300);
+
+        // 자동 닫기
+        if (autoClose) {
+          timerRef.current = setTimeout(() => {
+            setIsClosing(true);
+            timerRef.current = setTimeout(() => {
+              onCloseRef.current?.();
+              setIsClosing(false);
+            }, 300);
+          }, autoCloseDelay);
+        }
+        return;
+      }
+
+      if (!isOpen) {
+        setIsClosing(true);
+        timerRef.current = setTimeout(() => {
+          setIsClosing(false);
+        }, 300);
+      }
     }
+
+    scheduleTimer();
 
     return () => {
       if (timerRef.current) {

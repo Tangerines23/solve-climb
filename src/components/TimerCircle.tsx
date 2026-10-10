@@ -11,6 +11,12 @@ interface TimerCircleProps {
   penaltyAmount?: number;
 }
 
+const getTimerRingColor = (pct: number): string => {
+  if (pct < 0.25) return 'var(--color-error)';
+  if (pct < 0.5) return 'var(--color-warning)';
+  return 'var(--color-success)';
+};
+
 function TimerCircleComponent({
   duration,
   onComplete,
@@ -126,14 +132,7 @@ function TimerCircleComponent({
   const { circleStyle, timeLabel } = useMemo(() => {
     const pct = Math.max(0, Math.min(1, timeLeft / duration));
     const ang = 360 * pct;
-
-    // v2.2 Ring Color Logic (Green -> Yellow -> Red)
-    let ringColor = 'var(--color-success)'; // Default Green (TDS Teal)
-    if (pct < 0.25) {
-      ringColor = 'var(--color-error)'; // Red
-    } else if (pct < 0.5) {
-      ringColor = 'var(--color-warning)'; // Yellow
-    }
+    const ringColor = getTimerRingColor(pct);
 
     return {
       percentage: pct,

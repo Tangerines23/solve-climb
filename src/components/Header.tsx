@@ -8,13 +8,6 @@ import { useDebugStore } from '../stores/useDebugStore';
 import { useToastStore } from '../stores/useToastStore';
 import { storageService, STORAGE_KEYS } from '../services';
 import './Header.css';
-// DebugPanel.css는 DebugPanel 컴포넌트 내부에서 import하므로 여기서는 제거
-// (동적 import된 컴포넌트의 CSS는 자동으로 분리되어 로드됨)
-
-// ⚠️ 개발 환경에서만 동적 임포트
-// ⚠️ 개발 환경에서만 동적 임포트 (App.tsx에서 전역 처리)
-
-// ⚠️ 개발 환경에서만 동적 임포트 (App.tsx에서 전역 처리)
 
 interface HeaderProps {
   title?: string;
@@ -34,7 +27,6 @@ export function Header({ title, showBack, onBack }: HeaderProps) {
   const recoverMineralsAds = useUserStore((state) => state.recoverMineralsAds);
   const showToast = useToastStore((state) => state.showToast);
 
-  // ⚠️ useDebugStore 사용
   const isAdminMode = useDebugStore((state) => state.isAdminMode);
   const selectedResource = useDebugStore((state) => state.selectedResource);
   const setSelectedResource = useDebugStore((state) => state.setSelectedResource);
@@ -66,6 +58,15 @@ export function Header({ title, showBack, onBack }: HeaderProps) {
     }
   }, [location.search, isDebugPanelOpen, toggleDebugPanel]);
 
+  useEffect(() => {
+    return () => {
+      if (doubleClickTimeoutRef.current) {
+        clearTimeout(doubleClickTimeoutRef.current);
+        doubleClickTimeoutRef.current = null;
+      }
+    };
+  }, []);
+
   const handleNotificationClick = () => {
     navigate(APP_CONFIG.ROUTES.NOTIFICATIONS);
   };
@@ -82,19 +83,20 @@ export function Header({ title, showBack, onBack }: HeaderProps) {
     const now = Date.now();
     const timeSinceLastClick = now - lastClickTimeRef.current;
 
+    lastClickTimeRef.current = now;
+
     if (timeSinceLastClick < 300) {
       handleLogoDoubleClick();
       if (doubleClickTimeoutRef.current) {
         clearTimeout(doubleClickTimeoutRef.current);
         doubleClickTimeoutRef.current = null;
       }
-    } else {
-      doubleClickTimeoutRef.current = setTimeout(() => {
-        doubleClickTimeoutRef.current = null;
-      }, 300);
+      return;
     }
 
-    lastClickTimeRef.current = now;
+    doubleClickTimeoutRef.current = setTimeout(() => {
+      doubleClickTimeoutRef.current = null;
+    }, 300);
   };
 
   // --- Admin Debug Mode: 클릭 기반 조작 (키보드 단축키는 App.tsx의 useDebugShortcuts 훅에서 처리) ---
@@ -118,13 +120,16 @@ export function Header({ title, showBack, onBack }: HeaderProps) {
     setIsMineralsLoading(true);
     showToast('광고를 불러오는 중... 📺', 'info');
 
-    const result = await recoverMineralsAds();
-    if (result.success) {
-      showToast(result.message, '💎');
-    } else {
+    try {
+      const result = await recoverMineralsAds();
+      if (result.success) {
+        showToast(result.message, '💎');
+        return;
+      }
       showToast(result.message || '광고 시청에 실패했습니다.', 'error');
+    } finally {
+      setIsMineralsLoading(false);
     }
-    setIsMineralsLoading(false);
   };
 
   const handleItemsClick = (e: React.MouseEvent) => {
@@ -220,8 +225,6 @@ export function Header({ title, showBack, onBack }: HeaderProps) {
           </button>
         </div>
       </div>
-
-      {/* 디버그 패널 렌더링 제거 -> App.tsx로 이동 */}
     </header>
   );
 }
