@@ -52,6 +52,7 @@ export function useDebugShortcuts() {
       // Level 1: 리소스 조작 (Admin Mode 활성화 시)
       if (!isAdminMode || !selectedResource) return;
 
+      // 리소스 증가
       if (e.key === '+' || e.key === '=') {
         e.preventDefault();
         if (selectedResource === 'stamina') {
@@ -63,7 +64,11 @@ export function useDebugShortcuts() {
         if (selectedResource === 'items') {
           debugUserService.debugAddItems();
         }
-      } else if (e.key === '-' || e.key === '_') {
+        return;
+      }
+
+      // 리소스 감소
+      if (e.key === '-' || e.key === '_') {
         e.preventDefault();
         if (selectedResource === 'stamina') {
           debugUserService.debugSetStamina(Math.max(0, stamina - 1));
@@ -80,11 +85,13 @@ export function useDebugShortcuts() {
         if (selectedResource === 'items') {
           debugUserService.debugRemoveItems();
         }
+        return;
       }
 
       // ESC: 선택 해제
       if (e.key === 'Escape') {
         setSelectedResource(null);
+        return;
       }
     },
     [

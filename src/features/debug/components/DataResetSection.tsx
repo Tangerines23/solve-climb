@@ -179,10 +179,10 @@ export const DataResetSection = React.memo(function DataResetSection() {
               type: STATUS_TYPES.ERROR,
               text: `일부 데이터 적용 실패: ${errorMessages}`,
             });
-          } else {
-            setMessage({ type: STATUS_TYPES.SUCCESS, text: '데이터가 가져와져 적용되었습니다.' });
-            await Promise.all([refetch(), fetchUserData()]);
+            return;
           }
+          setMessage({ type: STATUS_TYPES.SUCCESS, text: '데이터가 가져와져 적용되었습니다.' });
+          await Promise.all([refetch(), fetchUserData()]);
         } catch (err) {
           setMessage({
             type: STATUS_TYPES.ERROR,
@@ -274,10 +274,10 @@ export const DataResetSection = React.memo(function DataResetSection() {
           .map((e) => (e.status === 'rejected' ? e.reason?.message || '알 수 없는 오류' : ''))
           .join(', ');
         setMessage({ type: STATUS_TYPES.ERROR, text: `일부 데이터 복원 실패: ${errorMessages}` });
-      } else {
-        setMessage({ type: STATUS_TYPES.SUCCESS, text: '스냅샷이 복원되었습니다.' });
-        await Promise.all([refetch(), fetchUserData()]);
+        return;
       }
+      setMessage({ type: STATUS_TYPES.SUCCESS, text: '스냅샷이 복원되었습니다.' });
+      await Promise.all([refetch(), fetchUserData()]);
     } catch (err) {
       setMessage({
         type: STATUS_TYPES.ERROR,

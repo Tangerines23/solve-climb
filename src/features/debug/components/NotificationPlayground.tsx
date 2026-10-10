@@ -84,21 +84,12 @@ export function NotificationPlayground() {
   };
 
   const toggleSpeedLines = (level: 1 | 2) => {
-    if (level === 1) {
-      if (feverLevel === 1) {
-        setCombo(0);
-      } else {
-        setCombo(5);
-        setActiveModal('keyboard');
-      }
-    } else {
-      if (feverLevel === 2) {
-        setCombo(0);
-      } else {
-        setCombo(25);
-        setActiveModal('keyboard');
-      }
+    if (feverLevel === level) {
+      setCombo(0);
+      return;
     }
+    setCombo(level === 1 ? 5 : 25);
+    setActiveModal('keyboard');
   };
 
   const closeModals = () => {
@@ -547,16 +538,16 @@ export function NotificationPlayground() {
                       bgm.stop();
                       setActiveBgm(null);
                       triggerToast('⏹️ BGM 정지');
-                    } else {
-                      if (!bgmEnabled) {
-                        setBgmEnabled(true);
-                      }
-                      bgm.play(track.id);
-                      setActiveBgm(track.id);
-                      triggerToast(
-                        `${track.emoji} ${track.num}. ${track.title} (${track.genre})${versionBadge} 재생 중`
-                      );
+                      return;
                     }
+                    if (!bgmEnabled) {
+                      setBgmEnabled(true);
+                    }
+                    bgm.play(track.id);
+                    setActiveBgm(track.id);
+                    triggerToast(
+                      `${track.emoji} ${track.num}. ${track.title} (${track.genre})${versionBadge} 재생 중`
+                    );
                   }}
                 >
                   {track.emoji}{' '}

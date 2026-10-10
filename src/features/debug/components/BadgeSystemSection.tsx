@@ -109,19 +109,20 @@ export function BadgeSystemSection() {
           return next;
         });
         setMessage({ type: 'success', text: '뱃지가 제거되었습니다.' });
-      } else {
-        // 뱃지 부여
-        const { data, error } = await supabase.rpc('debug_grant_badge', {
-          p_user_id: user.id,
-          p_badge_id: badgeId,
-        });
-
-        if (error) throw error;
-        if (data && !data.success) throw new Error(data.message || '뱃지 부여 실패');
-
-        setUserBadges((prev) => new Set([...prev, badgeId]));
-        setMessage({ type: 'success', text: '뱃지가 부여되었습니다.' });
+        return;
       }
+
+      // 뱃지 부여
+      const { data, error } = await supabase.rpc('debug_grant_badge', {
+        p_user_id: user.id,
+        p_badge_id: badgeId,
+      });
+
+      if (error) throw error;
+      if (data && !data.success) throw new Error(data.message || '뱃지 부여 실패');
+
+      setUserBadges((prev) => new Set([...prev, badgeId]));
+      setMessage({ type: 'success', text: '뱃지가 부여되었습니다.' });
     } catch (err) {
       setMessage({
         type: 'error',

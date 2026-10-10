@@ -23,20 +23,14 @@ export function CustomPresetModal({
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
   useEffect(() => {
-    if (isOpen) {
-      if (editingPreset) {
-        setName(editingPreset.name);
-        setDescription(editingPreset.description);
-        setActions([...editingPreset.actions]);
-      } else {
-        setName('');
-        setDescription('');
-        setActions([]);
-      }
-      setEditingActionIndex(null);
-      setEditingAction(null);
-      setErrorMessage(null);
-    }
+    if (!isOpen) return;
+
+    setName(editingPreset ? editingPreset.name : '');
+    setDescription(editingPreset ? editingPreset.description : '');
+    setActions(editingPreset ? [...editingPreset.actions] : []);
+    setEditingActionIndex(null);
+    setEditingAction(null);
+    setErrorMessage(null);
   }, [isOpen, editingPreset]);
 
   if (!isOpen) return null;
@@ -63,15 +57,12 @@ export function CustomPresetModal({
   const handleSaveAction = () => {
     if (!editingAction || editingActionIndex === null) return;
 
-    if (editingActionIndex === actions.length) {
-      // 새 액션 추가
-      setActions((prev) => [...prev, editingAction]);
-    } else {
-      // 기존 액션 수정
-      setActions((prev) =>
-        prev.map((action, i) => (i === editingActionIndex ? editingAction : action))
-      );
-    }
+    const isNewAction = editingActionIndex === actions.length;
+    setActions((prev) =>
+      isNewAction
+        ? [...prev, editingAction]
+        : prev.map((action, i) => (i === editingActionIndex ? editingAction : action))
+    );
 
     setEditingAction(null);
     setEditingActionIndex(null);

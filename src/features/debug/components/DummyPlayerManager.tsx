@@ -37,9 +37,9 @@ export const DummyPlayerManager: React.FC = () => {
 
     if (error) {
       console.error('Failed to fetch dummy players:', error);
-    } else {
-      setDummyPlayers(data || []);
+      return;
     }
+    setDummyPlayers(data || []);
   }, []);
 
   useEffect(() => {
