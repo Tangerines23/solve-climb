@@ -89,8 +89,6 @@ export function generateGeometryProblem(
   }
 }
 
-// ... existing helper functions (omitted for brevity in replacement, but I will keep them)
-
 function generateCoordinateMidpoint(rng?: {
   randomInt: (min: number, max: number) => number;
 }): GeometryProblem {
@@ -214,23 +212,22 @@ function generateQuadrilateralProperties(rng?: {
         angleA: a,
       },
     };
-  } else {
-    const a = getRandomInt(6, 12, rng) * 10;
-    const b = getRandomInt(6, 12, rng) * 10;
-    const c = getRandomInt(6, 12, rng) * 10;
-    const d = 360 - a - b - c;
-    return {
-      question: `사각형 내각: ${a}°, ${b}°, ${c}°, [ ? ]°`,
-      answer: d,
-      hintType: 'shape-visualizer',
-      hintData: {
-        shapeType: 'quadrilateral',
-        angleA: a,
-        angleB: b,
-        angleC: c,
-      },
-    };
   }
+  const a = getRandomInt(6, 12, rng) * 10;
+  const b = getRandomInt(6, 12, rng) * 10;
+  const c = getRandomInt(6, 12, rng) * 10;
+  const d = 360 - a - b - c;
+  return {
+    question: `사각형 내각: ${a}°, ${b}°, ${c}°, [ ? ]°`,
+    answer: d,
+    hintType: 'shape-visualizer',
+    hintData: {
+      shapeType: 'quadrilateral',
+      angleA: a,
+      angleB: b,
+      angleC: c,
+    },
+  };
 }
 
 function generateAreaRect(rng?: {
@@ -292,14 +289,13 @@ export function generateCircleAdvanced(rng?: {
       answer: answer,
       inputType: Number.isInteger(answer) ? 'number' : 'decimal',
     };
-  } else {
-    const answer = Math.round(3.1 * r * r * 10) / 10;
-    return {
-      question: `원 [반지름 ${r}, π=3.1] 넓이 = ?`,
-      answer: answer,
-      inputType: Number.isInteger(answer) ? 'number' : 'decimal',
-    };
   }
+  const answer = Math.round(3.1 * r * r * 10) / 10;
+  return {
+    question: `원 [반지름 ${r}, π=3.1] 넓이 = ?`,
+    answer: answer,
+    inputType: Number.isInteger(answer) ? 'number' : 'decimal',
+  };
 }
 
 function generateSolidBasic(rng?: {
@@ -312,12 +308,11 @@ function generateSolidBasic(rng?: {
       question: `${n}각기둥 모서리 = ?`,
       answer: n * 3,
     };
-  } else {
-    return {
-      question: `${n}각뿔 꼭짓점 = ?`,
-      answer: n + 1,
-    };
   }
+  return {
+    question: `${n}각뿔 꼭짓점 = ?`,
+    answer: n + 1,
+  };
 }
 
 export function generateSymmetry(rng?: {
@@ -360,12 +355,11 @@ export function generatePythagorean(rng?: {
       question: `직각삼각형 [밑변 ${triple.a}, 높이 ${triple.b}] ➔ 빗변 = ?`,
       answer: triple.c,
     };
-  } else {
-    return {
-      question: `직각삼각형 [빗변 ${triple.c}, 한 변 ${triple.a}] ➔ 다른 변 = ?`,
-      answer: triple.b,
-    };
   }
+  return {
+    question: `직각삼각형 [빗변 ${triple.c}, 한 변 ${triple.a}] ➔ 다른 변 = ?`,
+    answer: triple.b,
+  };
 }
 
 function generateSolidVolume(rng?: {
@@ -382,16 +376,15 @@ function generateSolidVolume(rng?: {
       answer: answer,
       inputType: Number.isInteger(answer) ? 'number' : 'decimal',
     };
-  } else {
-    const w = getRandomInt(2, 8, rng);
-    const d = getRandomInt(2, 8, rng);
-    const h = getRandomInt(3, 10, rng);
-    return {
-      question: `직육면체 [${w} × ${d} × ${h}] 부피 = ?`,
-      answer: w * d * h,
-      inputType: 'number',
-    };
   }
+  const w = getRandomInt(2, 8, rng);
+  const d = getRandomInt(2, 8, rng);
+  const h = getRandomInt(3, 10, rng);
+  return {
+    question: `직육면체 [${w} × ${d} × ${h}] 부피 = ?`,
+    answer: w * d * h,
+    inputType: 'number',
+  };
 }
 
 function generateSolidSurfaceArea(rng?: {
