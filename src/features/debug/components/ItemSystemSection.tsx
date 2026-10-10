@@ -226,15 +226,16 @@ export function ItemSystemSection() {
 
       const result = await consumeItem(itemId);
 
-      if (result.success) {
-        setMessage({ type: 'success', text: `${currentItem.name} 아이템을 사용했습니다.` });
-        await fetchUserData();
-      } else {
+      if (!result.success) {
         setMessage({
           type: 'error',
           text: `아이템 사용 실패: ${result.message || '알 수 없는 오류'}`,
         });
+        return;
       }
+
+      setMessage({ type: 'success', text: `${currentItem.name} 아이템을 사용했습니다.` });
+      await fetchUserData();
     } catch (err) {
       setMessage({
         type: 'error',

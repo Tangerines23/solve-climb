@@ -78,19 +78,19 @@ export const QuickActionsSection = React.memo(function QuickActionsSection() {
       const {
         data: { user },
       } = await supabase.auth.getUser();
-      if (user) {
-        const { count } = await supabase
-          .from('profiles')
-          .select('*', { count: 'exact', head: true })
-          .eq('id', user.id);
-        setDebugUserInfo({
-          id: user.id,
-          email: user.email,
-          hasProfile: count !== null && count > 0,
-        });
-      } else {
+      if (!user) {
         setDebugUserInfo(null);
+        return;
       }
+      const { count } = await supabase
+        .from('profiles')
+        .select('*', { count: 'exact', head: true })
+        .eq('id', user.id);
+      setDebugUserInfo({
+        id: user.id,
+        email: user.email,
+        hasProfile: count !== null && count > 0,
+      });
     };
 
     checkUser();
@@ -99,13 +99,13 @@ export const QuickActionsSection = React.memo(function QuickActionsSection() {
     const {
       data: { subscription },
     } = supabase.auth.onAuthStateChange((_event, session) => {
-      if (session) {
-        checkUser();
-        // 로그인 시 유저 데이터 리프레시
-        useUserStore.getState().fetchUserData();
-      } else {
+      if (!session) {
         setDebugUserInfo(null);
+        return;
       }
+      checkUser();
+      // 로그인 시 유저 데이터 리프레시
+      useUserStore.getState().fetchUserData();
     });
 
     return () => {
@@ -147,13 +147,13 @@ export const QuickActionsSection = React.memo(function QuickActionsSection() {
 
   const handleStaminaInputBlur = async () => {
     const numValue = parseInt(staminaInput, 10);
-    if (!isNaN(numValue) && numValue >= 0 && numValue !== stamina) {
-      setIsUpdating(true);
-      await debugUserService.debugSetStamina(numValue);
-      setIsUpdating(false);
-    } else {
+    if (isNaN(numValue) || numValue < 0 || numValue === stamina) {
       setStaminaInput(stamina.toString());
+      return;
     }
+    setIsUpdating(true);
+    await debugUserService.debugSetStamina(numValue);
+    setIsUpdating(false);
   };
 
   const handleStaminaKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
@@ -183,13 +183,13 @@ export const QuickActionsSection = React.memo(function QuickActionsSection() {
 
   const handleMineralsInputBlur = async () => {
     const numValue = parseInt(mineralsInput, 10);
-    if (!isNaN(numValue) && numValue >= 0 && numValue !== minerals) {
-      setIsUpdating(true);
-      await debugUserService.debugSetMinerals(numValue);
-      setIsUpdating(false);
-    } else {
+    if (isNaN(numValue) || numValue < 0 || numValue === minerals) {
       setMineralsInput(minerals.toString());
+      return;
     }
+    setIsUpdating(true);
+    await debugUserService.debugSetMinerals(numValue);
+    setIsUpdating(false);
   };
 
   const handleMineralsKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {

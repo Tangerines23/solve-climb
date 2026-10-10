@@ -70,10 +70,9 @@ export const GameFlowSection = React.memo(function GameFlowSection() {
 
       // 현재 플레이 중인 세션이 있으면 자동 선택
       const playingSession = data?.find((s) => s.status === 'playing');
-      if (playingSession) {
-        setSelectedSessionId(playingSession.id);
-      } else if (data && data.length > 0) {
-        setSelectedSessionId(data[0].id);
+      const defaultSessionId = playingSession?.id ?? data?.[0]?.id;
+      if (defaultSessionId) {
+        setSelectedSessionId(defaultSessionId);
       }
     } catch (err) {
       setMessage({
