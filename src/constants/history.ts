@@ -91,29 +91,27 @@ export const ALTITUDE_MILESTONES: MilestoneItem[] = (() => {
     // 예: 12k 랜드마크 -> 20k 티어에 배속
     const parentTier = sortedTiers.find((t) => Math.round(t.altitude) >= targetAlt);
 
-    if (parentTier) {
-      const tierAlt = Math.round(parentTier.altitude);
-      if (tierAlt === targetAlt) {
-        // 고도가 정확히 일치하면 덮어쓰기 지표로 설정
-        // Cast l as MilestoneItem-ish object if needed, or strictly type BASE_LANDMARKS
-        parentTier.overlapLandmark = { ...l, id: `landmark-${targetAlt}`, type: 'landmark' };
-      } else {
-        // 구간 내에 있으면 하위 리스트에 추가
-        if (!parentTier.subLandmarks) parentTier.subLandmarks = [];
-        parentTier.subLandmarks.push({ ...l, id: `landmark-${targetAlt}`, type: 'landmark' });
-      }
+    if (!parentTier) return;
+
+    const tierAlt = Math.round(parentTier.altitude);
+    if (tierAlt === targetAlt) {
+      parentTier.overlapLandmark = { ...l, id: `landmark-${targetAlt}`, type: 'landmark' };
+      return;
     }
+
+    if (!parentTier.subLandmarks) parentTier.subLandmarks = [];
+    parentTier.subLandmarks.push({ ...l, id: `landmark-${targetAlt}`, type: 'landmark' });
   });
 
   // 3. 하위 랜드마크 정렬 및 대표 서브 선정
   list.forEach((tier) => {
-    if (tier.subLandmarks && tier.subLandmarks.length > 0) {
-      // 티어 고도에서 역순으로 가장 가까운 것부터 (등반 시 먼저 만나는 순)
-      tier.subLandmarks.sort((a, b) => b.altitude - a.altitude);
-      tier.representativeLandmark = tier.subLandmarks[0];
-    } else {
+    if (!tier.subLandmarks || tier.subLandmarks.length === 0) {
       tier.subLandmarks = [];
+      return;
     }
+
+    tier.subLandmarks.sort((a, b) => b.altitude - a.altitude);
+    tier.representativeLandmark = tier.subLandmarks[0];
   });
 
   return list.sort((a, b) => b.altitude - a.altitude);
@@ -136,18 +134,14 @@ export const getTierInfo = (altitude: number) => {
       : (reversedTiers.at(reachedTierIndex) ?? ALTITUDE_TIERS[0]);
 
   // 다음 티어: 현재 점수보다 높은 첫 번째 목표
-  let nextTierIndex = ALTITUDE_TIERS.findIndex((t) => currentCycleScore < t.goal);
-  let nextTier;
-  let nextGoalAltitude;
-
-  if (nextTierIndex === -1) {
-    // 현재 사이클의 모든 티어를 달성한 경우 다음 사이클의 첫 티어로
-    nextTier = ALTITUDE_TIERS[0];
-    nextGoalAltitude = (stars + 1) * TIER_CYCLE_LIMIT + nextTier.goal;
-  } else {
-    nextTier = ALTITUDE_TIERS.at(nextTierIndex) ?? ALTITUDE_TIERS[0];
-    nextGoalAltitude = stars * TIER_CYCLE_LIMIT + nextTier.goal;
-  }
+  const nextTierIndex = ALTITUDE_TIERS.findIndex((t) => currentCycleScore < t.goal);
+  const isCycleComplete = nextTierIndex === -1;
+  const nextTier = isCycleComplete
+    ? ALTITUDE_TIERS[0]
+    : (ALTITUDE_TIERS.at(nextTierIndex) ?? ALTITUDE_TIERS[0]);
+  const nextGoalAltitude = isCycleComplete
+    ? (stars + 1) * TIER_CYCLE_LIMIT + nextTier.goal
+    : stars * TIER_CYCLE_LIMIT + nextTier.goal;
 
   return {
     stars: 0,

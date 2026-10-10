@@ -69,7 +69,7 @@ export class SoundEngine {
 
     const scale = [
       523.25, // C5
-      587.33, // D5
+      587.03, // D5
       659.25, // E5
       698.46, // F5
       783.99, // G5
@@ -130,15 +130,16 @@ export class SoundEngine {
         attack: 0.01,
         volume: 0.2,
       });
-    } else {
-      // 0 또는 GO!: 에너제틱 화음 버스트
-      playChord(graph.ctx, graph.destination, {
-        notes: [{ freq: 523.25 }, { freq: 659.25 }, { freq: 783.99 }, { freq: 1046.5 }],
-        type: 'triangle',
-        defaultDuration: 0.35,
-        defaultVolume: 0.18,
-      });
+      return;
     }
+
+    // 0 또는 GO!: 에너제틱 화음 버스트
+    playChord(graph.ctx, graph.destination, {
+      notes: [{ freq: 523.25 }, { freq: 659.25 }, { freq: 783.99 }, { freq: 1046.5 }],
+      type: 'triangle',
+      defaultDuration: 0.35,
+      defaultVolume: 0.18,
+    });
   }
 
   // ==========================================
@@ -264,7 +265,7 @@ export class SoundEngine {
 
     playSweep(graph.ctx, graph.destination, {
       startFreq: 700,
-      endFreq: 350,
+      endFreq: 150,
       duration: 0.03,
       volume: 0.14,
       type: 'sine',

@@ -8,6 +8,22 @@ import { ToneOptions, SweepOptions, ChordOptions, FilteredToneOptions, PulseBeat
 const SCHEDULE_LOOKAHEAD = 0.005;
 
 /**
+ * 주파수 램프 스케줄링 유틸리티
+ */
+function scheduleFrequencyRamp(
+  param: AudioParam,
+  endFreq: number,
+  endTime: number,
+  exponential: boolean
+): void {
+  if (exponential) {
+    param.exponentialRampToValueAtTime(Math.max(1, endFreq), endTime);
+    return;
+  }
+  param.linearRampToValueAtTime(endFreq, endTime);
+}
+
+/**
  * 1. 단일 주파수 톤(Tone) 재생
  */
 export function playTone(ctx: AudioContext, destination: AudioNode, options: ToneOptions): void {
@@ -86,11 +102,7 @@ export function playSweep(ctx: AudioContext, destination: AudioNode, options: Sw
   osc.type = type;
   osc.frequency.setValueAtTime(options.startFreq, now);
 
-  if (exponential) {
-    osc.frequency.exponentialRampToValueAtTime(Math.max(1, options.endFreq), now + duration);
-  } else {
-    osc.frequency.linearRampToValueAtTime(options.endFreq, now + duration);
-  }
+  scheduleFrequencyRamp(osc.frequency, options.endFreq, now + duration, exponential);
 
   gain.gain.setValueAtTime(0.0001, now);
   gain.gain.linearRampToValueAtTime(volume, now + attack);

@@ -14,12 +14,11 @@ interface IntegralVisualizerProps {
 export function IntegralVisualizer({ hintData }: IntegralVisualizerProps) {
   // Determine curve points based on function type
   const functionFn = (x: number) => {
-    if (hintData.type === 'power') {
-      const h = hintData;
-      return (h.coeff || 1) * Math.pow(x, h.power || 1);
-    } else {
+    if (hintData.type !== 'power') {
       return hintData.value || 1;
     }
+    const h = hintData;
+    return (h.coeff || 1) * Math.pow(x, h.power || 1);
   };
 
   // SVG scaling constants
