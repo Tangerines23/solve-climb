@@ -93,11 +93,10 @@ export async function signInWithGoogle(): Promise<{ error: AuthError | null }> {
 
       if (error) {
         console.error('[Auth] Supabase idToken auth 실패:', error.message);
-      } else {
-        console.log('[Auth] Supabase idToken auth 성공');
+        return { error };
       }
-
-      return { error: error ?? null };
+      console.log('[Auth] Supabase idToken auth 성공');
+      return { error: null };
     } catch (e: unknown) {
       console.error('[Auth] Native Google Sign-In 에러:', e);
       const errorMessage = e instanceof Error ? e.message : 'Google Sign-In failed';

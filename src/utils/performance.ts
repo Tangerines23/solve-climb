@@ -40,14 +40,8 @@ export const performanceMonitor = {
       const observer = new PerformanceObserver((entryList) => {
         const entries = entryList.getEntries();
 
-        // 여기서는 단순화를 위해 개별 엔트리 발생 시 보고 (필요 시 로직 고도화 가능)
         entries.forEach((entry: PerformanceEntry) => {
-          let value = 0;
-          if (metricName === 'LCP') value = entry.startTime;
-          else if (metricName === 'FID')
-            value = (entry as EnhancedPerformanceEntry).processingStart! - entry.startTime;
-          else if (metricName === 'CLS') value = (entry as EnhancedPerformanceEntry).value!;
-
+          const value = this.extractPerformanceMetricValue(metricName, entry);
           this.report(metricName, value);
         });
       });
@@ -56,6 +50,20 @@ export const performanceMonitor = {
     } catch (_e) {
       // 일부 구형 브라우저에서는 지원되지 않을 수 있음
     }
+  },
+
+  /**
+   * 성능 지표 값 추출
+   */
+  extractPerformanceMetricValue(
+    metricName: 'LCP' | 'FID' | 'CLS',
+    entry: PerformanceEntry
+  ): number {
+    if (metricName === 'LCP') return entry.startTime;
+    if (metricName === 'FID')
+      return (entry as EnhancedPerformanceEntry).processingStart! - entry.startTime;
+    if (metricName === 'CLS') return (entry as EnhancedPerformanceEntry).value!;
+    return 0;
   },
 
   /**
