@@ -6,6 +6,23 @@ import { ANIMATION_CONFIG } from '@/constants/game';
 
 const VIRTUAL_RAIL_HEIGHT = 10000;
 
+function resolveTargetScaleRatio(displayRatio: number, approxAltitude: number): number {
+  const currentConfig = ROADMAP_SCALE_CONFIG.find((c) => c.ratio === displayRatio);
+  if (!currentConfig) return displayRatio;
+
+  if (currentConfig.upgrade && approxAltitude > currentConfig.upgrade) {
+    const nextConfig = ROADMAP_SCALE_CONFIG.find((c) => c.ratio > displayRatio);
+    return nextConfig ? nextConfig.ratio : displayRatio;
+  }
+
+  if (currentConfig.downgrade && approxAltitude < currentConfig.downgrade) {
+    const prevConfig = [...ROADMAP_SCALE_CONFIG].reverse().find((c) => c.ratio < displayRatio);
+    return prevConfig ? prevConfig.ratio : displayRatio;
+  }
+
+  return displayRatio;
+}
+
 export function useRoadmapLayout(
   stats: HistoryStats | null,
   isLinearScale: boolean,
@@ -20,9 +37,17 @@ export function useRoadmapLayout(
 
   const scrollProgressRef = useRef(0);
   const indicatorTimerRef = useRef<NodeJS.Timeout | null>(null);
+  const scalingTimerRef = useRef<NodeJS.Timeout | null>(null);
   const lastPrunedAltRef = useRef(0);
   const cameraRef = useRef<HTMLDivElement>(null);
   const roadmapScrollRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    return () => {
+      if (indicatorTimerRef.current) clearTimeout(indicatorTimerRef.current);
+      if (scalingTimerRef.current) clearTimeout(scalingTimerRef.current);
+    };
+  }, []);
 
   const getAltitudeY = (alt: number, ratio: number) => alt / ratio;
 
@@ -128,21 +153,7 @@ export function useRoadmapLayout(
         });
       }
 
-      const approxAltitude = bottomAlt;
-      const currentConfig = ROADMAP_SCALE_CONFIG.find((c) => c.ratio === displayRatio);
-      let targetRatio = displayRatio;
-
-      if (currentConfig) {
-        if (currentConfig.upgrade && approxAltitude > currentConfig.upgrade) {
-          const nextConfig = ROADMAP_SCALE_CONFIG.find((c) => c.ratio > displayRatio);
-          if (nextConfig) targetRatio = nextConfig.ratio;
-        } else if (currentConfig.downgrade && approxAltitude < currentConfig.downgrade) {
-          const prevConfig = [...ROADMAP_SCALE_CONFIG]
-            .reverse()
-            .find((c) => c.ratio < displayRatio);
-          if (prevConfig) targetRatio = prevConfig.ratio;
-        }
-      }
+      const targetRatio = resolveTargetScaleRatio(displayRatio, bottomAlt);
 
       if (Math.abs(targetRatio - displayRatio) > 0.1) {
         setIsScaling(true);
@@ -153,7 +164,8 @@ export function useRoadmapLayout(
           () => setShowZoomIndicator(false),
           ANIMATION_CONFIG.TOAST_DURATION
         );
-        setTimeout(() => setIsScaling(false), 850);
+        if (scalingTimerRef.current) clearTimeout(scalingTimerRef.current);
+        scalingTimerRef.current = setTimeout(() => setIsScaling(false), 850);
       }
     };
 

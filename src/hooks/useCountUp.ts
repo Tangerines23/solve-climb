@@ -22,9 +22,9 @@ export function useCountUp(targetValue: number, duration = 1000) {
 
       if (progress < 1) {
         rid = requestAnimationFrame(animate);
-      } else {
-        setCount(targetValue);
+        return;
       }
+      setCount(targetValue);
     };
     rid = requestAnimationFrame(animate);
     return () => cancelAnimationFrame(rid);

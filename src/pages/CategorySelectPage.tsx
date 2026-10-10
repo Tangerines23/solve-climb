@@ -101,6 +101,31 @@ export function CategorySelectPage() {
     );
   };
 
+  const resolveCategoryLockState = (
+    categoryId: string,
+    unlockCondition: { categoryId: string; progress: number } | undefined
+  ): { isLocked: boolean; unlockMessage: string } => {
+    if (['논리', '대수', '심화'].includes(categoryId)) {
+      return { isLocked: true, unlockMessage: '개발 중' };
+    }
+
+    if (unlockCondition && !bypassLevelLock) {
+      const parentProgress = getCategoryProgress(lastWorld, unlockCondition.categoryId);
+      if (parentProgress < unlockCondition.progress) {
+        const parentName =
+          APP_CONFIG.CATEGORY_MAP[
+            unlockCondition.categoryId as keyof typeof APP_CONFIG.CATEGORY_MAP
+          ] || unlockCondition.categoryId;
+        return {
+          isLocked: true,
+          unlockMessage: `${parentName} ${unlockCondition.progress}% 달성 시 해금`,
+        };
+      }
+    }
+
+    return { isLocked: false, unlockMessage: '' };
+  };
+
   return (
     <div className="topic-select-page">
       <TopicHeader title={mountainName} onBack={() => navigate(urls.home())} />
@@ -114,24 +139,10 @@ export function CategorySelectPage() {
               const unlockCondition = (
                 category as { unlockCondition?: { categoryId: string; progress: number } }
               ).unlockCondition;
-              let isLocked = false;
-              let unlockMessage = '';
-
-              if (['논리', '대수', '심화'].includes(category.id)) {
-                isLocked = true;
-                unlockMessage = '개발 중';
-              } else if (unlockCondition && !bypassLevelLock) {
-                // Check bypass flag
-                const parentProgress = getCategoryProgress(lastWorld, unlockCondition.categoryId);
-                if (parentProgress < unlockCondition.progress) {
-                  isLocked = true;
-                  const parentName =
-                    APP_CONFIG.CATEGORY_MAP[
-                      unlockCondition.categoryId as keyof typeof APP_CONFIG.CATEGORY_MAP
-                    ] || unlockCondition.categoryId;
-                  unlockMessage = `${parentName} ${unlockCondition.progress}% 달성 시 해금`;
-                }
-              }
+              const { isLocked, unlockMessage } = resolveCategoryLockState(
+                category.id,
+                unlockCondition
+              );
 
               const isFav = isFavorite(category.id);
               return (
