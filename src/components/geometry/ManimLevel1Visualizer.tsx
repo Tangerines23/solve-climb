@@ -1,8 +1,8 @@
 import React, { useState, useEffect, useRef, useMemo, useCallback } from 'react';
 import { useDebugStore } from '../../stores/useDebugStore';
-import { safeAccess } from '../../utils/validation';
 import { ManimCardLayout } from './ManimCardLayout';
 import './GeometryTipVisualizer.css';
+import { computeMorphedPolygonVertices, computeRegularVertices } from './manimGeometryUtils';
 
 const SIZE = 200;
 
@@ -32,20 +32,6 @@ const PRECOMPUTED_VERTICES: Record<number, { x: number; y: number }[]> = {
   7: computeRegularVertices(7),
   8: computeRegularVertices(8),
 };
-
-function computeRegularVertices(n: number): { x: number; y: number }[] {
-  const pts: { x: number; y: number }[] = [];
-  const radius = 56;
-  const center = SIZE / 2;
-  for (let i = 0; i < n; i++) {
-    const angle = -Math.PI / 2 + (i * 2 * Math.PI) / n;
-    pts.push({
-      x: center + radius * Math.cos(angle),
-      y: center + radius * Math.sin(angle),
-    });
-  }
-  return pts;
-}
 
 export const ManimLevel1Visualizer: React.FC = React.memo(() => {
   const isAdminMode = useDebugStore((state) => state.isAdminMode);
@@ -107,6 +93,23 @@ export const ManimLevel1Visualizer: React.FC = React.memo(() => {
     const highlightTotalDuration = currSides * HIGHLIGHT_STEP_DURATION;
     const totalCycleDuration = MORPH_DURATION + highlightTotalDuration + REST_PAUSE_DURATION;
 
+    const updateMorphAndHighlight = (elapsed: number) => {
+      if (elapsed <= MORPH_DURATION) {
+        setProgress(easeOutCubic(elapsed / MORPH_DURATION));
+        setHighlightIdx(null);
+        return;
+      }
+      if (elapsed <= MORPH_DURATION + currSides * HIGHLIGHT_STEP_DURATION) {
+        setProgress(1);
+        const highlightElapsed = elapsed - MORPH_DURATION;
+        const currentStep = Math.floor(highlightElapsed / HIGHLIGHT_STEP_DURATION);
+        setHighlightIdx(Math.min(currentStep, currSides - 1));
+        return;
+      }
+      setProgress(1);
+      setHighlightIdx(null);
+    };
+
     const tick = (timestamp: number) => {
       if (isPausedRef.current) {
         animId = requestAnimationFrame(tick);
@@ -117,130 +120,39 @@ export const ManimLevel1Visualizer: React.FC = React.memo(() => {
       if (state.startTime === null) state.startTime = timestamp;
       const elapsed = timestamp - state.startTime - state.accumulatedPauseTime;
 
-      if (elapsed <= MORPH_DURATION) {
-        const p = elapsed / MORPH_DURATION;
-        setProgress(easeOutCubic(p));
-        setHighlightIdx(null);
-      } else if (elapsed <= MORPH_DURATION + currSides * HIGHLIGHT_STEP_DURATION) {
-        setProgress(1);
-        const highlightElapsed = elapsed - MORPH_DURATION;
-        const currentStep = Math.floor(highlightElapsed / HIGHLIGHT_STEP_DURATION);
-        setHighlightIdx(Math.min(currentStep, currSides - 1));
-      } else {
-        setProgress(1);
-        setHighlightIdx(null);
-      }
+      updateMorphAndHighlight(elapsed);
 
       if (elapsed < totalCycleDuration) {
         animId = requestAnimationFrame(tick);
-      } else {
-        triggerStepChange('next');
+        return;
       }
+      triggerStepChange('next');
     };
 
     animId = requestAnimationFrame(tick);
     return () => cancelAnimationFrame(animId);
   }, [shapeIdx, currSides, prevSides, triggerStepChange]);
 
-  // Drag Gesture Handlers
-  const handlePointerDown = (e: React.PointerEvent) => {
-    dragStartXRef.current = e.clientX;
-  };
-
   const handlePointerUp = (e: React.PointerEvent) => {
     if (dragStartXRef.current === null) return;
     const dx = e.clientX - dragStartXRef.current;
     dragStartXRef.current = null;
 
-    if (Math.abs(dx) > 30) {
-      if (dx < 0) {
-        // Left Swipe -> Next Shape (Right Direction Split)
-        triggerStepChange('next');
-      } else {
-        // Right Swipe -> Prev Shape (Reverse Shrink Merge)
-        triggerStepChange('prev');
-      }
-    } else {
+    if (Math.abs(dx) <= 30) {
       setIsPaused((p) => !p);
+      return;
     }
+    if (dx < 0) {
+      triggerStepChange('next');
+      return;
+    }
+    triggerStepChange('prev');
   };
 
-  const morphPts = useMemo(() => {
-    const targetBase =
-      (safeAccess(PRECOMPUTED_VERTICES, currSides) as { x: number; y: number }[] | undefined) ??
-      PRECOMPUTED_VERTICES[3]!;
-    if (progress >= 1 || prevSides === currSides) {
-      return targetBase;
-    }
-
-    if (currSides > prevSides) {
-      // EXPAND / SPREAD (N -> N+1)
-      const startBase =
-        (safeAccess(PRECOMPUTED_VERTICES, prevSides) as { x: number; y: number }[] | undefined) ??
-        PRECOMPUTED_VERTICES[3]!;
-      const initialPoints: { x: number; y: number }[] = [];
-
-      // Align split vertex along perimeter (top-right side) to prevent central diagonal lines
-      const splitVertexIdx = prevSides === 4 ? 1 : Math.floor(prevSides / 2);
-      const cornerPt = startBase.at(splitVertexIdx % startBase.length) ?? startBase[0]!;
-
-      for (let i = 0; i < currSides; i++) {
-        if (i <= splitVertexIdx) {
-          initialPoints.push(startBase.at(i) ?? startBase[startBase.length - 1]!);
-        } else if (i === splitVertexIdx + 1) {
-          initialPoints.push(cornerPt);
-        } else {
-          const srcIdx = (i - 1) % startBase.length;
-          initialPoints.push(startBase.at(srcIdx) ?? startBase[0]!);
-        }
-      }
-
-      return targetBase.map((target, i) => {
-        const start = initialPoints.at(i) ?? startBase[0] ?? target;
-        return {
-          x: start.x + (target.x - start.x) * progress,
-          y: start.y + (target.y - start.y) * progress,
-        };
-      });
-    } else {
-      // REVERSE PLAYBACK (Reverse Morphing from prevSides -> currSides: e.g. 5 -> 4, 8 -> 4)
-      const startSides = currSides; // Target smaller shape (e.g. 4)
-      const targetSides = prevSides; // Starting larger shape (e.g. 5 or 8)
-
-      const startBase =
-        (safeAccess(PRECOMPUTED_VERTICES, startSides) as { x: number; y: number }[] | undefined) ??
-        PRECOMPUTED_VERTICES[3]!;
-      const targetBase =
-        (safeAccess(PRECOMPUTED_VERTICES, targetSides) as { x: number; y: number }[] | undefined) ??
-        PRECOMPUTED_VERTICES[4]!;
-
-      const initialPoints: { x: number; y: number }[] = [];
-      const splitVertexIdx = startSides === 4 ? 1 : Math.floor(startSides / 2);
-      const cornerPt = startBase.at(splitVertexIdx % startBase.length) ?? startBase[0]!;
-
-      for (let i = 0; i < targetSides; i++) {
-        if (i <= splitVertexIdx) {
-          initialPoints.push(startBase.at(i) ?? startBase[startBase.length - 1]!);
-        } else if (i === splitVertexIdx + 1) {
-          initialPoints.push(cornerPt);
-        } else {
-          const srcIdx = (i - 1) % startBase.length;
-          initialPoints.push(startBase.at(srcIdx) ?? startBase[0]!);
-        }
-      }
-
-      // Reverse time interpolation: revU = 1 - progress
-      const revU = 1 - progress;
-
-      return targetBase.map((target, i) => {
-        const start = initialPoints.at(i) ?? startBase[0] ?? target;
-        return {
-          x: start.x + (target.x - start.x) * revU,
-          y: start.y + (target.y - start.y) * revU,
-        };
-      });
-    }
-  }, [currSides, prevSides, progress]);
+  const morphPts = useMemo(
+    () => computeMorphedPolygonVertices(currSides, prevSides, progress, PRECOMPUTED_VERTICES),
+    [currSides, prevSides, progress]
+  );
 
   const currentConfig = SHAPE_CONFIGS.at(shapeIdx) ?? SHAPE_CONFIGS[0]!;
   const ptsStr = useMemo(
@@ -274,7 +186,9 @@ export const ManimLevel1Visualizer: React.FC = React.memo(() => {
 
   return (
     <div
-      onPointerDown={handlePointerDown}
+      onPointerDown={(e) => {
+        dragStartXRef.current = e.clientX;
+      }}
       onPointerUp={handlePointerUp}
       style={{ touchAction: 'pan-y', userSelect: 'none' }}
     >
