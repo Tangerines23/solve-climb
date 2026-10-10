@@ -3,6 +3,7 @@ import { useDebugStore } from '../../stores/useDebugStore';
 import { useManimEngine } from './useManimEngine';
 import { ManimCardLayout } from './ManimCardLayout';
 import './GeometryTipVisualizer.css';
+import { computeTriangleRoundedAngles } from './manimGeometryUtils';
 
 const SIZE = 200;
 
@@ -86,52 +87,7 @@ export const ManimLevel3Visualizer: React.FC = React.memo(() => {
     y: (v0.y + v1.y + v2.y) / 3,
   };
 
-  const a = Math.hypot(v2.x - v1.x, v2.y - v1.y);
-  const b = Math.hypot(v2.x - v0.x, v2.y - v0.y);
-  const c = Math.hypot(v1.x - v0.x, v1.y - v0.y);
-
-  const cosA = Math.max(-1, Math.min(1, (b * b + c * c - a * a) / (2 * b * c)));
-  const cosB = Math.max(-1, Math.min(1, (a * a + c * c - b * b) / (2 * a * c)));
-  const cosC = Math.max(-1, Math.min(1, (a * a + b * b - c * c) / (2 * a * b)));
-
-  const exactA = (Math.acos(cosA) * 180) / Math.PI;
-  const exactB = (Math.acos(cosB) * 180) / Math.PI;
-  const exactC = (Math.acos(cosC) * 180) / Math.PI;
-
-  let roundedA = Math.round(exactA);
-  let roundedB = Math.round(exactB);
-  let roundedC = Math.round(exactC);
-
-  if (Math.abs(exactB - exactC) < 1.0) {
-    const equalBase = Math.round((exactB + exactC) / 2);
-    roundedB = equalBase;
-    roundedC = equalBase;
-    roundedA = 180 - roundedB - roundedC;
-  } else if (Math.abs(exactA - exactB) < 1.0) {
-    const equalSide = Math.round((exactA + exactB) / 2);
-    roundedA = equalSide;
-    roundedB = equalSide;
-    roundedC = 180 - roundedA - roundedB;
-  } else {
-    const sum = roundedA + roundedB + roundedC;
-    if (sum !== 180) {
-      const errA = Math.abs(exactA - roundedA);
-      const errB = Math.abs(exactB - roundedB);
-      const errC = Math.abs(exactC - roundedC);
-
-      if (errC >= errA && errC >= errB) {
-        roundedC = 180 - roundedA - roundedB;
-      } else if (errB >= errA && errB >= errC) {
-        roundedB = 180 - roundedA - roundedC;
-      } else {
-        roundedA = 180 - roundedB - roundedC;
-      }
-    }
-  }
-
-  const alphaDeg = roundedA;
-  const betaDeg = roundedB;
-  const gammaDeg = roundedC;
+  const { alphaDeg, betaDeg, gammaDeg } = computeTriangleRoundedAngles(v0, v1, v2);
 
   const getArcPath = (center: Point, p1: Point, p2: Point, radius: number = 22) => {
     const a1 = Math.atan2(p1.y - center.y, p1.x - center.x);
