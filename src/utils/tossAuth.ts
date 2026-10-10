@@ -173,7 +173,6 @@ export async function handleTossLoginFlow(
   try {
     // 환경 변수 검증
     if (!ENV.VITE_SUPABASE_URL || !ENV.VITE_SUPABASE_ANON_KEY) {
-      // ... error handling ...
       const missing = [];
       if (!ENV.VITE_SUPABASE_URL) missing.push('VITE_SUPABASE_URL');
       if (!ENV.VITE_SUPABASE_ANON_KEY) missing.push('VITE_SUPABASE_ANON_KEY');
@@ -203,7 +202,6 @@ export async function handleTossLoginFlow(
         }),
       });
     } catch (fetchError) {
-      // ... existing error handling ...
       const errorMessage = fetchError instanceof Error ? fetchError.message : String(fetchError);
 
       if (errorMessage.includes('Failed to fetch') || errorMessage.includes('fetch')) {
@@ -221,7 +219,6 @@ export async function handleTossLoginFlow(
     }
 
     if (!accessTokenResponse.ok) {
-      // ... existing error handling ...
       let errorData: unknown = {};
       const clonedResponse = accessTokenResponse.clone();
       try {
@@ -231,11 +228,9 @@ export async function handleTossLoginFlow(
         errorData = { message: text || `HTTP ${accessTokenResponse.status}` };
       }
 
-      // 개발 모드 authorization code 감지
       const isDevMode = authorizationCode.startsWith('DEV_MODE_');
 
       if (accessTokenResponse.status === 400) {
-        // ... existing 400 handling ...
         const errorMessage =
           (errorData as { error?: string; message?: string })?.error ||
           (errorData as { error?: string; message?: string })?.message ||
@@ -255,9 +250,7 @@ export async function handleTossLoginFlow(
         );
       }
 
-      // 401 에러인 경우 특별 처리
       if (accessTokenResponse.status === 401) {
-        // ... existing 401 handling ...
         const errorDataTyped = errorData as {
           message?: string;
           error?: string;
@@ -280,19 +273,16 @@ export async function handleTossLoginFlow(
           userMessage += `${details.checkSecrets}\n\n`;
         }
 
-        if (details?.tossApiError) {
-          const tossError = details.tossApiError;
-          if (tossError.error || tossError.message) {
-            userMessage += `토스 API 오류: ${tossError.error || tossError.message}`;
-          }
-        } else {
-          userMessage += errorMessage;
-        }
+        const tossErrorText = details?.tossApiError
+          ? details.tossApiError.error || details.tossApiError.message
+            ? '토스 API 오류: ' + (details.tossApiError.error || details.tossApiError.message)
+            : ''
+          : errorMessage;
+        userMessage += tossErrorText;
 
         throw new Error(userMessage);
       }
 
-      // 기타 HTTP 에러
       const errorDataTyped = errorData as { error?: string; message?: string };
       const errorMessage =
         errorDataTyped.error || errorDataTyped.message || JSON.stringify(errorData);

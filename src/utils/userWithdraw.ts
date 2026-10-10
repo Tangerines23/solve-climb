@@ -14,69 +14,13 @@ import { logError } from './errorHandler';
  */
 export const withdrawAccount = async (): Promise<boolean> => {
   let serverDeleteSuccess = false;
-  let serverErrorMessage = '';
+  let serverErrorMessage: string;
 
   try {
     console.log('[탈퇴] 시작');
-
-    const authRes = await safeSupabaseQuery(supabase.auth.getUser());
-    const user = authRes?.data?.user;
-
-    if (user) {
-      // 1. 서버 측 데이터 및 계정 삭제 (1차: RPC withdraw_user_account)
-      const rpcRes = await safeSupabaseQuery(supabase.rpc('withdraw_user_account'));
-
-      if (rpcRes?.data && rpcRes.data.success) {
-        serverDeleteSuccess = true;
-        console.log('[탈퇴] 서버 계정 삭제 성공 (RPC)');
-      } else {
-        // 2차: Edge Function fallback
-        const baseUrl = ENV.VITE_SUPABASE_URL?.replace(/\/$/, '');
-        const withdrawUrl = `${baseUrl}/functions/v1/withdraw-account`;
-
-        const {
-          data: { session },
-        } = await supabase.auth.getSession();
-
-        if (session) {
-          const controller = new AbortController();
-          const timeoutId = setTimeout(() => controller.abort(), 10000);
-
-          try {
-            const response = await fetch(withdrawUrl, {
-              method: 'POST',
-              headers: {
-                'Content-Type': 'application/json',
-                Authorization: `Bearer ${session.access_token}`,
-                apikey: ENV.VITE_SUPABASE_ANON_KEY!,
-              },
-              signal: controller.signal,
-            });
-
-            clearTimeout(timeoutId);
-
-            if (response.ok) {
-              serverDeleteSuccess = true;
-              console.log('[탈퇴] 서버 계정 삭제 성공 (Edge Function)');
-            } else {
-              const errData = await response.json().catch(() => ({}));
-              serverErrorMessage = errData.error || `Error ${response.status}`;
-              logError(`userWithdraw#request_fail_${response.status}`, errData);
-            }
-          } catch (fetchError) {
-            clearTimeout(timeoutId);
-            serverErrorMessage =
-              fetchError instanceof Error ? fetchError.message : String(fetchError);
-            logError('userWithdraw#fetch_exception', fetchError);
-          }
-        } else {
-          serverDeleteSuccess = true;
-        }
-      }
-    } else {
-      console.warn('[탈퇴] 활성 세션이 없습니다. 로컬 데이터만 삭제합니다.');
-      serverDeleteSuccess = true;
-    }
+    const result = await attemptServerAccountDeletion();
+    serverDeleteSuccess = result.success;
+    serverErrorMessage = result.errorMessage;
   } catch (outerError) {
     logError('userWithdraw#outer_exception', outerError);
     serverErrorMessage = outerError instanceof Error ? outerError.message : String(outerError);
@@ -109,7 +53,6 @@ export const withdrawAccount = async (): Promise<boolean> => {
     }
   }
 
-  // 서버 삭제는 실패했지만 로컬 정리는 끝난 경우, 사용자에게 알림을 줄 수 있도록 결과 반환
   if (!serverDeleteSuccess && serverErrorMessage) {
     throw new Error(
       `계정 삭제 요청 중 오류가 발생했습니다. 네트워크 상태를 확인하시거나 다시 시도해 주세요. (상세: ${serverErrorMessage})`
@@ -118,3 +61,63 @@ export const withdrawAccount = async (): Promise<boolean> => {
 
   return true;
 };
+
+async function attemptServerAccountDeletion(): Promise<{
+  success: boolean;
+  errorMessage: string;
+}> {
+  const authRes = await safeSupabaseQuery(supabase.auth.getUser());
+  const user = authRes?.data?.user;
+
+  if (!user) {
+    console.warn('[탈퇴] 활성 세션이 없습니다. 로컬 데이터만 삭제합니다.');
+    return { success: true, errorMessage: '' };
+  }
+
+  const rpcRes = await safeSupabaseQuery(supabase.rpc('withdraw_user_account'));
+  if (rpcRes?.data && rpcRes.data.success) {
+    console.log('[탈퇴] 서버 계정 삭제 성공 (RPC)');
+    return { success: true, errorMessage: '' };
+  }
+
+  const baseUrl = ENV.VITE_SUPABASE_URL?.replace(/\/$/, '');
+  const withdrawUrl = `${baseUrl}/functions/v1/withdraw-account`;
+  const {
+    data: { session },
+  } = await supabase.auth.getSession();
+
+  if (!session) {
+    return { success: true, errorMessage: '' };
+  }
+
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), 10000);
+
+  try {
+    const response = await fetch(withdrawUrl, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${session.access_token}`,
+        apikey: ENV.VITE_SUPABASE_ANON_KEY!,
+      },
+      signal: controller.signal,
+    });
+
+    if (response.ok) {
+      console.log('[탈퇴] 서버 계정 삭제 성공 (Edge Function)');
+      return { success: true, errorMessage: '' };
+    }
+
+    const errData = await response.json().catch(() => ({}));
+    const errMsg = errData.error || `Error ${response.status}`;
+    logError(`userWithdraw#request_fail_${response.status}`, errData);
+    return { success: false, errorMessage: errMsg };
+  } catch (fetchError) {
+    const errMsg = fetchError instanceof Error ? fetchError.message : String(fetchError);
+    logError('userWithdraw#fetch_exception', fetchError);
+    return { success: false, errorMessage: errMsg };
+  } finally {
+    clearTimeout(timeoutId);
+  }
+}

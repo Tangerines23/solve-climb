@@ -45,46 +45,31 @@ function formatMessage(context: string, message: string, ..._args: unknown[]): s
  * 로그 출력 함수
  */
 function log(level: LogLevel, context: string, message: string, ...args: unknown[]): void {
-  // 프로덕션에서는 ERROR 레벨만 로깅
-  if (isProduction && level < LogLevel.ERROR) {
-    return;
-  }
-
-  // 로그 레벨 필터링
-  if (level < LOG_LEVEL) {
-    return;
-  }
+  if (isProduction && level < LogLevel.ERROR) return;
+  if (level < LOG_LEVEL) return;
 
   const formattedMessage = formatMessage(context, message, ...args);
   const styles = Object.values(LOG_STYLES) as string[];
   const style = level >= 0 && level < styles.length ? (styles.at(level) ?? '') : '';
 
-  // Dev 탭 에러 로그에 추가
   if (level >= LogLevel.INFO) {
     const errorLevel: 'info' | 'warning' | 'error' =
       level === LogLevel.ERROR ? 'error' : level === LogLevel.WARN ? 'warning' : 'info';
-
-    // stack 정보 추출 (에러 객체가 있는 경우)
     const err = args.find((a) => a instanceof Error) as Error | undefined;
 
     try {
       useErrorLogStore.getState().addLog(errorLevel, message, err?.stack, context);
     } catch (e) {
-      // 스토어가 초기화되지 않았거나 순환 참조 등 대비
       console.warn('Failed to add log to store', e);
     }
   }
 
   switch (level) {
     case LogLevel.DEBUG:
-      if (isDevelopment) {
-        console.debug(`%c${formattedMessage}`, style, ...args);
-      }
+      if (isDevelopment) console.debug(`%c${formattedMessage}`, style, ...args);
       break;
     case LogLevel.INFO:
-      if (isDevelopment) {
-        console.info(`%c${formattedMessage}`, style, ...args);
-      }
+      if (isDevelopment) console.info(`%c${formattedMessage}`, style, ...args);
       break;
     case LogLevel.WARN:
       console.warn(`%c${formattedMessage}`, style, ...args);
@@ -95,48 +80,26 @@ function log(level: LogLevel, context: string, message: string, ...args: unknown
   }
 }
 
-/**
- * 로깅 유틸리티 객체
- */
 export const logger = {
-  /**
-   * 디버그 로그 (개발 환경에서만)
-   */
   debug(context: string, message: string, ...args: unknown[]): void {
     log(LogLevel.DEBUG, context, message, ...args);
   },
 
-  /**
-   * 정보 로그 (개발 환경에서만)
-   */
   info(context: string, message: string, ...args: unknown[]): void {
     log(LogLevel.INFO, context, message, ...args);
   },
 
-  /**
-   * 경고 로그
-   */
   warn(context: string, message: string, ...args: unknown[]): void {
     log(LogLevel.WARN, context, message, ...args);
   },
 
-  /**
-   * 에러 로그
-   */
   error(context: string, message: string, error?: unknown, ...args: unknown[]): void {
-    if (error instanceof Error) {
-      log(LogLevel.ERROR, context, `${message}`, error, ...args);
-      if (isDevelopment && error.stack) {
-        console.error('Stack trace:', error.stack);
-      }
-    } else {
-      log(LogLevel.ERROR, context, `${message}`, error, ...args);
+    log(LogLevel.ERROR, context, `${message}`, error, ...args);
+    if (error instanceof Error && isDevelopment && error.stack) {
+      console.error('Stack trace:', error.stack);
     }
   },
 
-  /**
-   * 그룹 로그 (개발 환경에서만)
-   */
   group(context: string, label: string, fn: () => void): void {
     if (!isDevelopment) {
       fn();
@@ -149,31 +112,23 @@ export const logger = {
       } finally {
         console.groupEnd();
       }
-    } else {
-      console.log(`[${context}] ${label} (Group Start)`);
-      try {
-        fn();
-      } finally {
-        console.log(`[${context}] ${label} (Group End)`);
-      }
+      return;
+    }
+    console.log(`[${context}] ${label} (Group Start)`);
+    try {
+      fn();
+    } finally {
+      console.log(`[${context}] ${label} (Group End)`);
     }
   },
 
-  /**
-   * 테이블 로그 (개발 환경에서만)
-   */
   table(context: string, data: unknown): void {
-    if (!isDevelopment) {
-      return;
-    }
+    if (!isDevelopment) return;
     console.group(`[${context}] Table`);
     console.table(data);
     console.groupEnd();
   },
 
-  /**
-   * 진단용 로그 (메인 진입점 전용)
-   */
   log(message: string, color?: string): void {
     if (!isDevelopment) return;
     const style = color ? `color: ${color}; font-weight: bold;` : LOG_STYLES.info;
