@@ -210,11 +210,11 @@ function generateOnesComplement(rng?: {
   const select = getRandomInt(1, 3, rng);
   if (select === 1) {
     return { question: '4비트 이진수 0101의 1의 보수(비트 반전)는? (2진수)', answer: '1010' };
-  } else if (select === 2) {
-    return { question: '4비트 이진수 0011의 1의 보수(비트 반전)는? (2진수)', answer: '1100' };
-  } else {
-    return { question: '4비트 이진수 0110의 1의 보수(비트 반전)는? (2진수)', answer: '1001' };
   }
+  if (select === 2) {
+    return { question: '4비트 이진수 0011의 1의 보수(비트 반전)는? (2진수)', answer: '1100' };
+  }
+  return { question: '4비트 이진수 0110의 1의 보수(비트 반전)는? (2진수)', answer: '1001' };
 }
 
 function generateTwosComplement(rng?: {
@@ -223,11 +223,11 @@ function generateTwosComplement(rng?: {
   const select = getRandomInt(1, 3, rng);
   if (select === 1) {
     return { question: '4비트 이진수 0110의 2의 보수는? (2진수)', answer: '1010' };
-  } else if (select === 2) {
-    return { question: '4비트 이진수 0101의 2의 보수는? (2진수)', answer: '1011' };
-  } else {
-    return { question: '4비트 이진수 0011의 2의 보수는? (2진수)', answer: '1101' };
   }
+  if (select === 2) {
+    return { question: '4비트 이진수 0101의 2의 보수는? (2진수)', answer: '1011' };
+  }
+  return { question: '4비트 이진수 0011의 2의 보수는? (2진수)', answer: '1101' };
 }
 
 function generateBinaryAddition(rng?: {
@@ -236,11 +236,11 @@ function generateBinaryAddition(rng?: {
   const select = getRandomInt(1, 3, rng);
   if (select === 1) {
     return { question: '2진수 덧셈 011 + 010 의 결과는? (2진수)', answer: '101' };
-  } else if (select === 2) {
-    return { question: '2진수 덧셈 100 + 011 의 결과는? (2진수)', answer: '111' };
-  } else {
-    return { question: '2진수 덧셈 010 + 001 의 결과는? (2진수)', answer: '011' };
   }
+  if (select === 2) {
+    return { question: '2진수 덧셈 100 + 011 의 결과는? (2진수)', answer: '111' };
+  }
+  return { question: '2진수 덧셈 010 + 001 의 결과는? (2진수)', answer: '011' };
 }
 
 function generateBinaryDecimalProblem(rng?: {
