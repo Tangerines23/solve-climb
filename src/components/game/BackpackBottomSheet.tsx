@@ -22,10 +22,10 @@ export function BackpackBottomSheet({
   useEffect(() => {
     if (isOpen) {
       setIsAnimating(true);
-    } else {
-      const timer = setTimeout(() => setIsAnimating(false), 300);
-      return () => clearTimeout(timer);
+      return;
     }
+    const timer = setTimeout(() => setIsAnimating(false), 300);
+    return () => clearTimeout(timer);
   }, [isOpen]);
 
   if (!isOpen && !isAnimating) return null;

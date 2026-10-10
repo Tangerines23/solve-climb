@@ -36,7 +36,9 @@ export function TierBadge({
           setTierResult({ level, stars: fixedTierStars || 0 });
           const info = await getTierInfo(level);
           setTierInfo(info);
-        } else if (totalScore !== undefined) {
+          return;
+        }
+        if (totalScore !== undefined) {
           // 점수로부터 계산하는 경우
           const result = await calculateTier(totalScore);
           setTierResult(result);
