@@ -140,7 +140,8 @@ export async function executeMacro(
         case 'setResource':
           if (step.resource === 'stamina' && step.value !== undefined) {
             await setStamina(step.value);
-          } else if (step.resource === 'minerals' && step.value !== undefined) {
+          }
+          if (step.resource === 'minerals' && step.value !== undefined) {
             await setMinerals(step.value);
           }
           break;

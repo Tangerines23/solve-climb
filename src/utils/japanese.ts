@@ -33,7 +33,7 @@ export const HIRAGANA_MAPPINGS: HiraganaMapping[] = [
   { hiragana: 'ち', romaji: 'chi' },
   { hiragana: 'つ', romaji: 'tsu' },
   { hiragana: 'て', romaji: 'te' },
-  { hiragana: '도', romaji: 'to' }, // Wait, '도' in my previous reading was 'と'? No, it's 'と' in the actual file.
+  { hiragana: 'と', romaji: 'to' },
 
   // N행
   { hiragana: 'な', romaji: 'na' },
@@ -81,6 +81,12 @@ export const JAPANESE_VOCABULARY = [
   { word: 'こんにちは', meaning: '안녕(낮)', romaji: 'konnichiwa', category: '인사' },
 ];
 
+function getHiraganaMappingsForDifficulty(difficulty: Difficulty) {
+  if (difficulty === 'easy') return HIRAGANA_MAPPINGS.slice(0, 15);
+  if (difficulty === 'medium') return HIRAGANA_MAPPINGS.slice(0, 46);
+  return HIRAGANA_MAPPINGS;
+}
+
 export function generateJapaneseQuestion(
   difficulty: Difficulty,
   type: string = '히라가나'
@@ -101,14 +107,7 @@ export function generateJapaneseQuestion(
     };
   }
 
-  // 히라가나 믹스
-  let availableMappings = HIRAGANA_MAPPINGS;
-  if (difficulty === 'easy') {
-    availableMappings = HIRAGANA_MAPPINGS.slice(0, 15);
-  } else if (difficulty === 'medium') {
-    availableMappings = HIRAGANA_MAPPINGS.slice(0, 46);
-  }
-
+  const availableMappings = getHiraganaMappingsForDifficulty(difficulty);
   const selected = availableMappings[Math.floor(Math.random() * availableMappings.length)];
   return {
     question: selected.hiragana,
