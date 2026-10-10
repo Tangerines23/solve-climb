@@ -30,9 +30,9 @@ export function TutorialOverlay({ steps, isVisible, onComplete }: TutorialOverla
   const handleNext = () => {
     if (currentStepIndex < steps.length - 1) {
       setCurrentStepIndex((prev) => prev + 1);
-    } else {
-      onComplete();
+      return;
     }
+    onComplete();
   };
 
   if (!isVisible || currentStepIndex >= steps.length) return null;

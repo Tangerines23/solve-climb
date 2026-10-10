@@ -137,11 +137,7 @@ function App() {
 
   // 정적 UI 모드 전환 (body 클래스 제어)
   useEffect(() => {
-    if (!animationEnabled) {
-      document.body.classList.add('static-ui');
-    } else {
-      document.body.classList.remove('static-ui');
-    }
+    document.body.classList.toggle('static-ui', !animationEnabled);
   }, [animationEnabled]);
 
   // 모바일 네이티브(Capacitor) 및 웹 오디오 생명주기 관리 (백그라운드/종료 시 사운드 누출 원천 방지)
@@ -175,35 +171,34 @@ function App() {
           App.addListener('appUrlOpen', async (data: { url: string }) => {
             // 데이터 형식: com.solveclimb.app://google-callback?token=... 또는 com.solveclimb.app://my-page?token=...
             const urlStr = data.url;
-            if (urlStr.includes('access_token=') || urlStr.includes('refresh_token=')) {
-              // URL 해시(#) 또는 쿼리(?) 파라미터 파싱
-              const rawParams = urlStr.includes('#')
-                ? urlStr.split('#')[1]
-                : urlStr.includes('?')
-                  ? urlStr.split('?')[1]
-                  : '';
-              if (rawParams) {
-                const params = new URLSearchParams(rawParams);
-                const accessToken = params.get('access_token');
-                const refreshToken = params.get('refresh_token');
+            if (!urlStr.includes('access_token=') && !urlStr.includes('refresh_token=')) return;
 
-                if (accessToken && refreshToken) {
-                  // Supabase 클라이언트에 세션 세팅
-                  const { error } = await supabase.auth.setSession({
-                    access_token: accessToken,
-                    refresh_token: refreshToken,
-                  });
-                  if (!error) {
-                    console.log('[Auth] Deep Link OAuth Session initialized successfully');
-                    // 세션 초기화 상태 동기화 및 갱신
-                    await initializeAuth();
-                    await syncProgress();
-                  } else {
-                    console.error('[Auth] Failed to set session from deep link:', error.message);
-                  }
-                }
-              }
+            // URL 해시(#) 또는 쿼리(?) 파라미터 파싱
+            const rawParams = urlStr.includes('#')
+              ? urlStr.split('#')[1]
+              : urlStr.includes('?')
+                ? urlStr.split('?')[1]
+                : '';
+            if (!rawParams) return;
+
+            const params = new URLSearchParams(rawParams);
+            const accessToken = params.get('access_token');
+            const refreshToken = params.get('refresh_token');
+            if (!accessToken || !refreshToken) return;
+
+            // Supabase 클라이언트에 세션 세팅
+            const { error } = await supabase.auth.setSession({
+              access_token: accessToken,
+              refresh_token: refreshToken,
+            });
+            if (error) {
+              console.error('[Auth] Failed to set session from deep link:', error.message);
+              return;
             }
+            console.log('[Auth] Deep Link OAuth Session initialized successfully');
+            // 세션 초기화 상태 동기화 및 갱신
+            await initializeAuth();
+            await syncProgress();
           });
         })
         .catch((err) => {
