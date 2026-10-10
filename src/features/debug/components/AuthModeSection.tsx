@@ -25,86 +25,71 @@ export function AuthModeSection() {
   const [user, setUser] = useState<User | null>(null);
   const [actualMode, setActualMode] = useState<AuthMode>(isAdminMode ? 'developer' : 'anonymous');
 
+  const getDefaultTestResult = (accessible: boolean, error: string): TestResultData => ({
+    accessible,
+    error,
+  });
+
   const testDataAccess = async () => {
     setLoading(true);
     const results: Record<string, TestResultData> = {};
 
     try {
-      // Test 1: ranking_view 조회
+      // ranking_view test
       const { data: rankingData, error: rankingError } = await supabase
         .from('ranking_view')
         .select('*')
         .limit(3);
-
       results.ranking_view = {
         accessible: !rankingError,
         data: rankingData?.length || 0,
-        error: rankingError?.message,
       };
 
-      // Test 2: profiles 전체 조회 시도
+      // profiles_all test
       const { data: profilesData, error: profilesError } = await supabase
         .from('profiles')
         .select('*')
         .limit(3);
-
       results.profiles_all = {
         accessible: !profilesError,
         data: profilesData?.length || 0,
-        error: profilesError?.message,
       };
 
-      // Test 3: 자기 프로필 조회
-      const {
-        data: { user },
-      } = await supabase.auth.getUser();
+      // own_profile test
+      results.own_profile = getDefaultTestResult(false, 'Not authenticated');
+      const { data: { user } = {} } = await supabase.auth.getUser();
       if (user) {
         const { data: ownProfile, error: ownError } = await supabase
           .from('profiles')
           .select('*')
           .eq('id', user.id)
           .single();
-
         results.own_profile = {
           accessible: !ownError,
           hasData: !!ownProfile,
           columns: ownProfile ? Object.keys(ownProfile).length : 0,
-          error: ownError?.message,
-        };
-      } else {
-        results.own_profile = {
-          accessible: false,
-          error: 'Not authenticated',
         };
       }
 
-      // Test 4: game_config 조회 (공개 데이터)
+      // game_config test
       const { data: configData, error: configError } = await supabase
         .from('game_config')
         .select('*')
         .limit(1);
-
       results.game_config = {
         accessible: !configError,
         data: configData?.length || 0,
-        error: configError?.message,
       };
 
-      // Test 5: 게임 플레이 시도 (RPC 호출)
+      // game_play test
+      results.game_play = getDefaultTestResult(false, 'Authentication required');
       if (user) {
         const { data: staminaData, error: staminaError } = await supabase.rpc(
           'check_and_recover_stamina'
         );
-
         results.game_play = {
           accessible: !staminaError,
           canPlay: !!staminaData,
-          error: staminaError?.message,
-        };
-      } else {
-        results.game_play = {
-          accessible: false,
-          error: 'Authentication required',
         };
       }
     } catch (error: unknown) {
@@ -126,31 +111,32 @@ export function AuthModeSection() {
       const { error } = await supabase.auth.signOut();
       if (error) {
         console.error('Sign out failed:', error);
-      } else {
-        setActualMode('anonymous');
-        setUser(null);
-      }
-    } else if (mode === 'authenticated' || mode === 'developer') {
-      // 실제 로그인이 안 되어 있다면 로그인 유도 메시지 표시
-      const {
-        data: { user },
-      } = await supabase.auth.getUser();
-      if (!user) {
-        setTestResults((prev) => ({
-          ...prev,
-          auth_warning: {
-            accessible: false,
-            error: `${mode === 'developer' ? '개발자' : '일반'} 테스트를 위해서는 실제 로그인이 필요합니다. 로그인 페이지로 이동하여 로그인해 주세요.`,
-          },
-        }));
         return;
       }
+      setActualMode('anonymous');
+      setUser(null);
+      return;
     }
 
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+    if (!user) {
+      setTestResults((prev) => ({
+        ...prev,
+        auth_warning: {
+          accessible: false,
+          error: `${mode === 'developer' ? '개발자' : '일반'} 테스트를 위해서는 실제 로그인이 필요합니다. 로그인 페이지로 이동하여 로그인해 주세요.`,
+        },
+      }));
+      return;
+    }
+
+    setActualMode(user ? 'authenticated' : 'anonymous');
+    setUser(user);
     await testDataAccess();
   };
 
-  // 초기 로드 시 자동으로 테스트 실행
   useEffect(() => {
     testDataAccess();
   }, []);
