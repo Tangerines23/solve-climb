@@ -70,7 +70,10 @@ export function NotificationPage() {
     // 알림 타입에 따라 다른 페이지로 이동
     if (notification.type === 'challenge' && notification.challengeId) {
       navigate(urls.challenge({ id: notification.challengeId }));
-    } else if (notification.type === 'record_broken') {
+      return;
+    }
+
+    if (notification.type === 'record_broken') {
       // 기록이 깨진 레벨로 이동
       if (notification.category && notification.subCategory && notification.level) {
         const mountain = notification.category || 'math';
