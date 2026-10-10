@@ -26,7 +26,6 @@ export function MyPageQuickAccess({
 
   return (
     <div className="my-page-quick-access">
-      {/* 오늘의 챌린지 */}
       {todayChallenge && (
         <div className="my-page-quick-access-card">
           <div className="my-page-quick-access-header">
@@ -46,7 +45,6 @@ export function MyPageQuickAccess({
         </div>
       )}
 
-      {/* 즐겨찾는 카테고리 */}
       {favorites.length > 0 && (
         <div className="my-page-quick-access-card" style={{ display: 'none' }}>
           <div className="my-page-quick-access-header">
@@ -73,7 +71,6 @@ export function MyPageQuickAccess({
                   key={favorite.id}
                   className="my-page-favorite-item"
                   onClick={() => {
-                    // 산( mountain ) vs 카테고리( 기초, 논리 등 ) 구분: CATEGORIES에 있으면 카테고리 → levelSelect
                     const isCategoryId = APP_CONFIG.CATEGORIES.some(
                       (c) => c.id === favorite.categoryId
                     );
@@ -93,9 +90,9 @@ export function MyPageQuickAccess({
                           category: favorite.categoryId as Category,
                         })
                       );
-                    } else {
-                      navigate(urls.categorySelect({ mountain: favorite.categoryId }));
+                      return;
                     }
+                    navigate(urls.categorySelect({ mountain: favorite.categoryId }));
                   }}
                 >
                   <span className="my-page-favorite-name">

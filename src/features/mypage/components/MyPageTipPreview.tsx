@@ -10,6 +10,82 @@ import './MyPageTipPreview.css';
 type CategoryType = '기초' | '논리' | '대수' | '심화';
 type WorldType = 'World1' | 'World2' | 'World3' | 'World4';
 
+// Module-level helpers
+const getMaxLevel = (cat: CategoryType, wld: WorldType): number => {
+  if (cat === '기초') {
+    switch (wld) {
+      case 'World1':
+        return 30;
+      case 'World2':
+        return 15;
+      case 'World3':
+        return 15;
+      case 'World4':
+        return 15;
+      default:
+        return 1;
+    }
+  }
+  switch (cat) {
+    case '대수':
+      return 20;
+    case '논리':
+      return 15;
+    case '심화':
+      return 15;
+    default:
+      return 1;
+  }
+};
+
+const getWorldName = (wld: WorldType): string => {
+  const worldNames: Record<WorldType, string> = {
+    World1: '수와 연산',
+    World2: '도형과 공간',
+    World3: '확률과 통계',
+    World4: '공학 및 응용',
+  };
+  return worldNames[wld] || wld;
+};
+
+const getNextWorld = (
+  currentWorld: WorldType,
+  direction: 'prev' | 'next'
+): WorldType | undefined => {
+  const worlds: readonly WorldType[] = ['World1', 'World2', 'World3', 'World4'];
+  const currentIndex = worlds.indexOf(currentWorld);
+  if (direction === 'prev') {
+    return worlds[currentIndex <= 0 ? worlds.length - 1 : currentIndex - 1];
+  }
+  return worlds[currentIndex >= worlds.length - 1 ? 0 : currentIndex + 1];
+};
+
+const getNextLevel = (
+  currentLevel: number,
+  maxLevel: number,
+  direction: 'prev' | 'next'
+): number => {
+  if (direction === 'prev') {
+    return currentLevel === 1 ? maxLevel : currentLevel - 1;
+  }
+  return currentLevel === maxLevel ? 1 : currentLevel + 1;
+};
+
+const resolveSelectedTip = (
+  category: CategoryType,
+  world: WorldType,
+  level: number
+): TipItem | null => {
+  if (category === '기초') {
+    const worldGroup = safeAccess(WORLD_TIPS, world) as Record<number, TipItem> | undefined;
+    const tip = safeAccess(worldGroup, level) as TipItem | undefined;
+    return tip ?? null;
+  }
+  const categoryGroup = safeAccess(CATEGORY_TIPS, category) as Record<number, TipItem> | undefined;
+  const tip = safeAccess(categoryGroup, level) as TipItem | undefined;
+  return tip ?? null;
+};
+
 export function MyPageTipPreview() {
   const showToast = useToastStore((state) => state.showToast);
   const [category, setCategory] = useState<CategoryType>('기초');
@@ -24,19 +100,13 @@ export function MyPageTipPreview() {
     setRefreshTrigger((prev) => prev + 1);
   }, []);
 
-  // 실시간 예시 문제 및 풀이 과정 생성
   useEffect(() => {
     try {
       const topicId = category === '기초' ? `${world}-${category}` : `World1-${category}`;
       const targetWorld = category === '기초' ? world : 'World1';
       const q = generateQuestion('math', targetWorld as World, topicId as Topic, level, 'medium');
       setSampleQuestion(q);
-      if (q) {
-        const steps = getSolutionProcess(q.question, q.answer);
-        setSolutionSteps(steps);
-      } else {
-        setSolutionSteps([]);
-      }
+      setSolutionSteps(q ? getSolutionProcess(q.question, q.answer) : []);
     } catch (err) {
       console.error('Failed to generate sample question:', err);
       setSampleQuestion(null);
@@ -44,111 +114,33 @@ export function MyPageTipPreview() {
     }
   }, [category, world, level, refreshTrigger]);
 
-  // 각 조합별 최대 레벨 정의
-  const getMaxLevel = (cat: CategoryType, wld: WorldType): number => {
-    if (cat === '기초') {
-      switch (wld) {
-        case 'World1':
-          return 30;
-        case 'World2':
-          return 15;
-        case 'World3':
-          return 15;
-        case 'World4':
-          return 15;
-        default:
-          return 1;
-      }
-    } else {
-      // 대수, 논리, 심화는 World1만 존재
-      switch (cat) {
-        case '대수':
-          return 20;
-        case '논리':
-          return 15;
-        case '심화':
-          return 15;
-        default:
-          return 1;
-      }
-    }
-  };
-
-  // 카테고리 변경 시 유효한 월드로 자동 보정
   const handleCategoryChange = (newCat: CategoryType) => {
     setCategory(newCat);
     if (newCat !== '기초') {
-      setWorld('World1'); // 기초가 아니면 무조건 World1 고정
+      setWorld('World1');
     }
-    setLevel(1); // 레벨 1로 초기화
+    setLevel(1);
   };
 
-  // 월드 변경 화살표 동작 (기초 카테고리에서만 작동)
   const handleWorldMove = (direction: 'prev' | 'next') => {
     if (category !== '기초') return;
-
-    const worlds: readonly WorldType[] = ['World1', 'World2', 'World3', 'World4'] as const;
-    const currentIndex = worlds.indexOf(world);
-    let newIndex: number;
-
-    if (direction === 'prev') {
-      newIndex = currentIndex <= 0 ? worlds.length - 1 : currentIndex - 1;
-    } else {
-      newIndex = currentIndex >= worlds.length - 1 ? 0 : currentIndex + 1;
-    }
-
-    const nextWorld = worlds.at(newIndex);
+    const nextWorld = getNextWorld(world, direction);
     if (nextWorld) {
       setWorld(nextWorld);
-      setLevel(1); // 월드 변경 시 레벨 1로 초기화
+      setLevel(1);
     }
   };
 
-  // 레벨 변경 화살표 동작
   const handleLevelMove = (direction: 'prev' | 'next') => {
     const maxLevel = getMaxLevel(category, world);
-    if (direction === 'prev') {
-      setLevel((prev) => (prev === 1 ? maxLevel : prev - 1));
-    } else {
-      setLevel((prev) => (prev === maxLevel ? 1 : prev + 1));
-    }
+    const nextLevel = getNextLevel(level, maxLevel, direction);
+    setLevel(nextLevel);
   };
 
-  // 월드 및 레벨 정보 가져오기
   useEffect(() => {
-    let selectedTip: TipItem | undefined;
-
-    if (category === '기초') {
-      const worldGroup = safeAccess(WORLD_TIPS, world) as Record<number, TipItem> | undefined;
-      selectedTip = safeAccess(worldGroup, level) as TipItem | undefined;
-    } else {
-      const categoryGroup = safeAccess(CATEGORY_TIPS, category) as
-        Record<number, TipItem> | undefined;
-      selectedTip = safeAccess(categoryGroup, level) as TipItem | undefined;
-    }
-
-    if (selectedTip) {
-      setTip(selectedTip);
-    } else {
-      setTip(null);
-    }
+    const selectedTip = resolveSelectedTip(category, world, level);
+    setTip(selectedTip);
   }, [category, world, level]);
-
-  // 월드 한국어 이름 매핑
-  const getWorldName = (wld: WorldType): string => {
-    switch (wld) {
-      case 'World1':
-        return '수와 연산';
-      case 'World2':
-        return '도형과 공간';
-      case 'World3':
-        return '확률과 통계';
-      case 'World4':
-        return '공학 및 응용';
-      default:
-        return wld;
-    }
-  };
 
   return (
     <div className="my-page-tip-preview-card">
@@ -157,7 +149,6 @@ export function MyPageTipPreview() {
         <h3 className="my-page-tip-preview-title">예습복습 (게임팁 미리보기)</h3>
       </div>
 
-      {/* 카테고리(분야) 선택 탭 */}
       <div className="my-page-tip-preview-tabs">
         {(['기초', '논리', '대수', '심화'] as CategoryType[]).map((cat) => {
           const isLocked = cat !== '기초';
@@ -179,9 +170,7 @@ export function MyPageTipPreview() {
         })}
       </div>
 
-      {/* 조작 화살표 영역 */}
       <div className="my-page-tip-preview-selectors">
-        {/* 능선 선택 화살표 */}
         <div className={`my-page-tip-preview-selector ${category !== '기초' ? 'disabled' : ''}`}>
           <button
             className="my-page-tip-preview-arrow-btn"
@@ -204,7 +193,6 @@ export function MyPageTipPreview() {
           </button>
         </div>
 
-        {/* 레벨 선택 화살표 */}
         <div className="my-page-tip-preview-selector">
           <button
             className="my-page-tip-preview-arrow-btn"
@@ -226,7 +214,6 @@ export function MyPageTipPreview() {
         </div>
       </div>
 
-      {/* 팁 상세 정보 카드 */}
       {tip ? (
         <div className="my-page-tip-content-box animate-fade-in">
           <h4 className="my-page-tip-content-title">{tip.title}</h4>
@@ -247,7 +234,6 @@ export function MyPageTipPreview() {
               <code className="my-page-tip-example-text">{tip.example}</code>
             </div>
 
-            {/* 실시간 예시 문제 & 풀이 과정 */}
             {sampleQuestion && (
               <div className="my-page-tip-live-sample-section">
                 <div className="my-page-tip-live-sample-header">
@@ -285,7 +271,6 @@ export function MyPageTipPreview() {
                           stepBody = step.slice(colonIndex + 1).trim();
                         }
 
-                        // 백틱(`)으로 감싸진 텍스트를 <code> 태그 요소로 포맷팅
                         const parts = stepBody.split(/`([^`]+)`/g);
                         const formattedBody = parts.map((part, pIdx) => {
                           if (pIdx % 2 === 1) {
