@@ -101,7 +101,6 @@ function generateCoordinateProblem(
   rng?: { randomInt: (min: number, max: number) => number }
 ): CalculusProblem {
   if (level === 1) {
-    // 1사분면 (First quadrant)
     const x = getRandomInt(1, 5, rng);
     const y = getRandomInt(1, 5, rng);
     return {
@@ -109,17 +108,14 @@ function generateCoordinateProblem(
       answer: `${x},${y}`,
       inputType: 'coordinate',
     };
-  } else {
-    // 전 사분면 (All quadrants)
-    const x = getRandomInt(-5, 5, rng);
-    const y = getRandomInt(-5, 5, rng);
-    // 0은 너무 쉬울 수 있으니 제외 시도 (옵션)
-    return {
-      question: `좌표 (${x}, ${y})를 조준하세요!`,
-      answer: `${x},${y}`,
-      inputType: 'coordinate',
-    };
   }
+  const x = getRandomInt(-5, 5, rng);
+  const y = getRandomInt(-5, 5, rng);
+  return {
+    question: `좌표 (${x}, ${y})를 조준하세요!`,
+    answer: `${x},${y}`,
+    inputType: 'coordinate',
+  };
 }
 
 function generateFunctionProblem(rng?: {
@@ -135,14 +131,88 @@ function generateFunctionProblem(rng?: {
       hintType: 'function-machine',
       hintData: { type: 'plus', value: a, input: x },
     };
-  } else {
+  }
+  return {
+    question: `f(x) = x², f(${x}) = ?`,
+    answer: x * x,
+    hintType: 'function-machine',
+    hintData: { type: 'square', value: 2, input: x },
+  };
+}
+
+function generateIntegralProblem(
+  type: 'power' | 'simple',
+  rng?: { randomInt: (min: number, max: number) => number }
+): CalculusProblem {
+  const n = getRandomInt(1, 3, rng);
+  if (type === 'power') {
+    const power = n;
+    const coeff = n + 1;
+    const x = getRandomInt(1, 3, rng);
     return {
-      question: `f(x) = x², f(${x}) = ?`,
-      answer: x * x,
-      hintType: 'function-machine',
-      hintData: { type: 'square', value: 2, input: x },
+      question: `∫ ${coeff}x^${power} dx , x=${x} 일 때 값은? (C=0)`,
+      answer: Math.pow(x, coeff),
+      hintType: 'integral-tank',
+      hintData: { type: 'power', coeff: coeff, power: power, x: x },
     };
   }
+  const a = getRandomInt(2, 10, rng);
+  return {
+    question: `∫ ${a} dx , x=1 일 때 값은? (C=0)`,
+    answer: a,
+    hintType: 'integral-tank',
+    hintData: { type: 'simple', value: a, x: 1 },
+  };
+}
+
+function generateAdvancedDerivative(rng?: {
+  random: () => number;
+  randomInt: (min: number, max: number) => number;
+}): CalculusProblem {
+  const isProduct = rng ? rng.random() > 0.5 : Math.random() > 0.5;
+  if (isProduct) {
+    const a = getRandomInt(1, 5, rng);
+    return {
+      question: `f(x) = x(x + ${a}) 일 때, f'(1) 의 값은?`,
+      answer: 2 + a,
+      hintType: 'calculus',
+      hintData: { type: 'derivative', func: 'product_rule' },
+    };
+  }
+  const a = getRandomInt(1, 5, rng);
+  return {
+    question: `f(x) = (x + ${a})² 일 때, f'(1) 의 값은?`,
+    answer: 2 * (1 + a),
+    hintType: 'calculus',
+    hintData: { type: 'derivative', func: 'chain_rule' },
+  };
+}
+
+function generateDefiniteIntegral(rng?: {
+  randomInt: (min: number, max: number) => number;
+}): CalculusProblem {
+  const a = getRandomInt(1, 5, rng);
+  const b = getRandomInt(1, 4, rng);
+  const coeff = 2 * a;
+
+  return {
+    question: `∫(0부터 ${b}까지) ${coeff}x dx 의 값은?`,
+    answer: a * b * b,
+    hintType: 'calculus',
+    hintData: { type: 'derivative', func: 'definite_integral' },
+  };
+}
+
+function generateFactorizationLimit(rng?: {
+  randomInt: (min: number, max: number) => number;
+}): CalculusProblem {
+  const a = getRandomInt(2, 6, rng);
+  return {
+    question: `(x² - ${a * a}) / (x - ${a}) (x → ${a}) 의 극한값은?`,
+    answer: 2 * a,
+    hintType: 'calculus',
+    hintData: { type: 'limit', func: 'factorization' },
+  };
 }
 
 function generateDerivativeProblem(
@@ -155,7 +225,6 @@ function generateDerivativeProblem(
 
   switch (type) {
     case 'basic':
-      // d/dx(x^n) = n*x^(n-1)
       return {
         question: `d/dx(x^${n}) , x=${x} 일 때 값은?`,
         answer: n * Math.pow(x, n - 1),
@@ -163,7 +232,6 @@ function generateDerivativeProblem(
         hintData: { type: 'derivative', func: `x^${n}` },
       };
     case 'coefficient':
-      // d/dx(ax^n) = a*n*x^(n-1)
       return {
         question: `d/dx(${a}x^${n}) , x=1 일 때 값은?`,
         answer: a * n,
@@ -187,83 +255,4 @@ function generateDerivativeProblem(
       };
     }
   }
-}
-
-function generateIntegralProblem(
-  type: 'power' | 'simple',
-  rng?: { randomInt: (min: number, max: number) => number }
-): CalculusProblem {
-  const n = getRandomInt(1, 3, rng);
-  if (type === 'power') {
-    // ∫ x^n dx = (1/n+1)x^(n+1)
-    // Simplify for integer answers: ∫ (n+1)x^n dx = x^(n+1)
-    const power = n;
-    const coeff = n + 1;
-    const x = getRandomInt(1, 3, rng);
-    return {
-      question: `∫ ${coeff}x^${power} dx , x=${x} 일 때 값은? (C=0)`,
-      answer: Math.pow(x, coeff),
-      hintType: 'integral-tank',
-      hintData: { type: 'power', coeff: coeff, power: power, x: x },
-    };
-  } else {
-    const a = getRandomInt(2, 10, rng);
-    return {
-      question: `∫ ${a} dx , x=1 일 때 값은? (C=0)`,
-      answer: a,
-      hintType: 'integral-tank',
-      hintData: { type: 'simple', value: a, x: 1 },
-    };
-  }
-}
-
-function generateDefiniteIntegral(rng?: {
-  randomInt: (min: number, max: number) => number;
-}): CalculusProblem {
-  const a = getRandomInt(1, 5, rng);
-  const b = getRandomInt(1, 4, rng);
-  const coeff = 2 * a;
-
-  return {
-    question: `∫(0부터 ${b}까지) ${coeff}x dx 의 값은?`,
-    answer: a * b * b,
-    hintType: 'calculus',
-    hintData: { type: 'derivative', func: 'definite_integral' },
-  };
-}
-
-function generateAdvancedDerivative(rng?: {
-  random: () => number;
-  randomInt: (min: number, max: number) => number;
-}): CalculusProblem {
-  const isProduct = rng ? rng.random() > 0.5 : Math.random() > 0.5;
-  if (isProduct) {
-    const a = getRandomInt(1, 5, rng);
-    return {
-      question: `f(x) = x(x + ${a}) 일 때, f'(1) 의 값은?`,
-      answer: 2 + a,
-      hintType: 'calculus',
-      hintData: { type: 'derivative', func: 'product_rule' },
-    };
-  } else {
-    const a = getRandomInt(1, 5, rng);
-    return {
-      question: `f(x) = (x + ${a})² 일 때, f'(1) 의 값은?`,
-      answer: 2 * (1 + a),
-      hintType: 'calculus',
-      hintData: { type: 'derivative', func: 'chain_rule' },
-    };
-  }
-}
-
-function generateFactorizationLimit(rng?: {
-  randomInt: (min: number, max: number) => number;
-}): CalculusProblem {
-  const a = getRandomInt(2, 6, rng);
-  return {
-    question: `(x² - ${a * a}) / (x - ${a}) (x → ${a}) 의 극한값은?`,
-    answer: 2 * a,
-    hintType: 'calculus',
-    hintData: { type: 'limit', func: 'factorization' },
-  };
 }

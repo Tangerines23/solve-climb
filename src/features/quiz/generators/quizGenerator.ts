@@ -11,12 +11,8 @@ import { generateCalculusProblem } from './CalculusProblemGenerator';
  * 토픽 문자열(WorldX-Category 또는 Category)에서 안전하게 Category를 정규화합니다.
  */
 export function normalizeTopicCategory(topicId?: string | null): Category {
-  if (!topicId || typeof topicId !== 'string') {
-    return '기초';
-  }
-  if (topicId.includes('-')) {
-    return (topicId.split('-')[1] || '기초') as Category;
-  }
+  if (!topicId || typeof topicId !== 'string') return '기초';
+  if (topicId.includes('-')) return (topicId.split('-')[1] || '기초') as Category;
   return topicId as Category;
 }
 
@@ -34,9 +30,7 @@ export function inferInputType(answer: string | number): 'fraction' | 'decimal' 
  * 레벨 번호를 1 ~ 10 범위로 안전하게 클램핑합니다.
  */
 export function clampLevel(level: number): number {
-  if (typeof level !== 'number' || Number.isNaN(level)) {
-    return 1;
-  }
+  if (typeof level !== 'number' || Number.isNaN(level)) return 1;
   return Math.max(1, Math.min(10, Math.floor(level)));
 }
 
@@ -58,7 +52,6 @@ export function generateQuestion(
   if (mountainId === 'math') {
     switch (worldId) {
       case 'World1': {
-        // World 1 is partitioned by Category
         if (category === '논리') {
           const logicProb = generateLogicProblem(safeLevel, difficulty, rng);
           return {
@@ -88,7 +81,6 @@ export function generateQuestion(
             category,
           };
         }
-        // Default to Basic (기초)
         const mathProb = generateProblem(safeLevel, difficulty, tier, rng);
         return {
           question: mathProb.expression,
@@ -98,9 +90,7 @@ export function generateQuestion(
           category,
         };
       }
-
       case 'World2': {
-        // Geometry World
         const geoProb = generateGeometryProblem(safeLevel, difficulty, rng);
         return {
           question: geoProb.question,
@@ -112,9 +102,7 @@ export function generateQuestion(
           category,
         };
       }
-
       case 'World3': {
-        // Stats World
         const statsProb = generateStatsProblem(safeLevel, difficulty, rng);
         return {
           question: statsProb.question,
@@ -123,9 +111,7 @@ export function generateQuestion(
           category,
         };
       }
-
       case 'World4': {
-        // CS/Engineering World
         const csProb = generateCSProblem(safeLevel, difficulty, rng);
         return {
           question: csProb.question,
@@ -135,9 +121,7 @@ export function generateQuestion(
           category,
         };
       }
-
       default: {
-        // Fallback for unexpected math worlds
         const fallbackMath = generateProblem(safeLevel, difficulty, tier, rng);
         return {
           question: fallbackMath.expression,
@@ -147,33 +131,19 @@ export function generateQuestion(
         };
       }
     }
-  } else if (mountainId === 'logic') {
-    // Independent Logic Mountain (if ever used)
+  }
+  if (mountainId === 'logic') {
     const logicProb = generateLogicProblem(safeLevel, difficulty, rng);
-    return {
-      question: logicProb.question,
-      answer: logicProb.answer,
-      level: safeLevel,
-      category,
-    };
-  } else if (mountainId === 'general') {
-    // General Knowledge / Science Mountain
+    return { question: logicProb.question, answer: logicProb.answer, level: safeLevel, category };
+  }
+  if (mountainId === 'general') {
     if (worldId === 'World1') {
       const csProb = generateCSProblem(safeLevel, difficulty, rng);
-      return {
-        question: csProb.question,
-        answer: csProb.answer,
-        level: safeLevel,
-        category,
-      };
-    } else if (worldId === 'World2') {
+      return { question: csProb.question, answer: csProb.answer, level: safeLevel, category };
+    }
+    if (worldId === 'World2') {
       const calcProb = generateCalculusProblem(safeLevel, difficulty, rng);
-      return {
-        question: calcProb.question,
-        answer: calcProb.answer,
-        level: safeLevel,
-        category,
-      };
+      return { question: calcProb.question, answer: calcProb.answer, level: safeLevel, category };
     }
     const fallbackLogic = generateLogicProblem(safeLevel, difficulty, rng);
     return {
@@ -182,14 +152,12 @@ export function generateQuestion(
       level: safeLevel,
       category,
     };
-  } else {
-    // Default fallback (Language or others not yet implemented with specialized generators)
-    const genericProb = generateProblem(safeLevel, difficulty, tier, rng);
-    return {
-      question: genericProb.expression,
-      answer: genericProb.answer,
-      level: safeLevel,
-      category,
-    };
   }
+  const genericProb = generateProblem(safeLevel, difficulty, tier, rng);
+  return {
+    question: genericProb.expression,
+    answer: genericProb.answer,
+    level: safeLevel,
+    category,
+  };
 }

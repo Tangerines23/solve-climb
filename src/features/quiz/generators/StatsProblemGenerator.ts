@@ -257,14 +257,13 @@ function generatePermutationsBasic(rng?: {
       question: `${n}명의 학생을 한 줄로 세우는 모든 경우의 수는?`,
       answer: ans,
     };
-  } else {
-    const n = getRandomInt(4, 6, rng);
-    const ans = n * (n - 1);
-    return {
-      question: `학생 ${n}명 중 반장 1명, 부반장 1명을 뽑아 세우는 경우의 수는?`,
-      answer: ans,
-    };
   }
+  const n = getRandomInt(4, 6, rng);
+  const ans = n * (n - 1);
+  return {
+    question: `학생 ${n}명 중 반장 1명, 부반장 1명을 뽑아 세우는 경우의 수는?`,
+    answer: ans,
+  };
 }
 
 function generateProbBasic(rng?: {
@@ -291,26 +290,23 @@ function generateProbUnionIntersection(rng?: {
         question: `동전 1개와 주사위 1개를 동시에 던질 때, 동전은 앞면이 나오고 주사위는 홀수 눈이 나올 확률은? (%)`,
         answer: 25,
       };
-    } else {
-      return {
-        question: `동전 2개를 동시에 던질 때, 두 동전 모두 앞면이 나올 확률은? (%)`,
-        answer: 25,
-      };
     }
-  } else {
-    const select = getRandomInt(1, 2, rng);
-    if (select === 1) {
-      return {
-        question: `1부터 10까지 적힌 카드 10장 중 임의로 1장을 뽑을 때, 2의 배수이거나 9가 적힌 카드를 뽑을 확률은? (%)`,
-        answer: 60,
-      };
-    } else {
-      return {
-        question: `1부터 10까지 적힌 카드 10장 중 임의로 1장을 뽑을 때, 3의 배수이거나 10이 적힌 카드를 뽑을 확률은? (%)`,
-        answer: 40,
-      };
-    }
+    return {
+      question: `동전 2개를 동시에 던질 때, 두 동전 모두 앞면이 나올 확률은? (%)`,
+      answer: 25,
+    };
   }
+  const select = getRandomInt(1, 2, rng);
+  if (select === 1) {
+    return {
+      question: `1부터 10까지 적힌 카드 10장 중 임의로 1장을 뽑을 때, 2의 배수이거나 9가 적힌 카드를 뽑을 확률은? (%)`,
+      answer: 60,
+    };
+  }
+  return {
+    question: `1부터 10까지 적힌 카드 10장 중 임의로 1장을 뽑을 때, 3의 배수이거나 10이 적힌 카드를 뽑을 확률은? (%)`,
+    answer: 40,
+  };
 }
 
 function generateNoReplaceCount(rng?: {
@@ -333,15 +329,15 @@ function generateNoReplaceProb(rng?: {
       question: `주머니에 빨간 공 3개, 파란 공 2개가 들어있다. 꺼낸 공을 다시 넣지 않고 차례대로 공 2개를 꺼낼 때, 두 공 모두 빨간 공일 확률은? (%)`,
       answer: 30,
     };
-  } else if (select === 2) {
+  }
+  if (select === 2) {
     return {
       question: `주머니에 빨간 공 3개, 파란 공 3개가 들어있다. 꺼낸 공을 다시 넣지 않고 차례대로 공 2개를 꺼낼 때, 두 공 모두 빨간 공일 확률은? (%)`,
       answer: 20,
     };
-  } else {
-    return {
-      question: `주머니에 빨간 공 4개, 파란 공 2개가 들어있다. 꺼낸 공을 다시 넣지 않고 차례대로 공 2개를 꺼낼 때, 두 공 모두 빨간 공일 확률은? (%)`,
-      answer: 40,
-    };
   }
+  return {
+    question: `주머니에 빨간 공 4개, 파란 공 2개가 들어있다. 꺼낸 공을 다시 넣지 않고 차례대로 공 2개를 꺼낼 때, 두 공 모두 빨간 공일 확률은? (%)`,
+    answer: 40,
+  };
 }
