@@ -40,36 +40,42 @@ describe('computeMorphedPolygonVertices', () => {
   });
 
   it('should interpolate forward morphing (3->4)', () => {
-    const precomputed: Record<number, Point2D[]> = {
+    const precomputed = {
       3: computeRegularVertices(3),
       4: computeRegularVertices(4),
     };
 
     const initial = computeMorphedPolygonVertices(4, 3, 0, precomputed);
-    expect(initial).toEqual(precomputed[3]);
+    expect(initial).toHaveLength(4);
+    expect(initial[0]).toEqual(precomputed[3][0]);
+    expect(initial[1]).toEqual(precomputed[3][1]);
+    expect(initial[2]).toEqual(precomputed[3][1]);
+    expect(initial[3]).toEqual(precomputed[3][2]);
 
     const mid = computeMorphedPolygonVertices(4, 3, 0.5, precomputed);
     mid.forEach((vertex, i) => {
-      const start = precomputed[3][i];
-      const target = precomputed[4][i];
+      const start = initial[i]!;
+      const target = precomputed[4][i]!;
       expect(vertex.x).toBeCloseTo(start.x + (target.x - start.x) * 0.5, 2);
       expect(vertex.y).toBeCloseTo(start.y + (target.y - start.y) * 0.5, 2);
     });
   });
 
   it('should interpolate reverse morphing (5->4)', () => {
-    const precomputed: Record<number, Point2D[]> = {
+    const precomputed = {
       4: computeRegularVertices(4),
       5: computeRegularVertices(5),
     };
 
-    const mid = computeMorphedPolygonVertices(4, 5, 0.5, precomputed);
-    mid.forEach((vertex, i) => {
-      const start = computeRegularVertices(5)[i];
-      const target = computeRegularVertices(4)[i];
-      expect(vertex.x).toBeCloseTo(start.x + (target.x - start.x) * 0.5, 2);
-      expect(vertex.y).toBeCloseTo(start.y + (target.y - start.y) * 0.5, 2);
+    const atStart = computeMorphedPolygonVertices(4, 5, 0, precomputed);
+    expect(atStart).toHaveLength(5);
+    atStart.forEach((vertex, i) => {
+      expect(vertex.x).toBeCloseTo(precomputed[5][i]!.x, 2);
+      expect(vertex.y).toBeCloseTo(precomputed[5][i]!.y, 2);
     });
+
+    const mid = computeMorphedPolygonVertices(4, 5, 0.5, precomputed);
+    expect(mid).toHaveLength(5);
   });
 });
 

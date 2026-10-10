@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { useDebugStore } from '../../stores/useDebugStore';
 import { safeAccess } from '../../utils/validation';
 import { ManimCardLayout } from './ManimCardLayout';
+import { computeMorphedPolygonVertices, computeRegularVertices } from './manimGeometryUtils';
 import './GeometryTipVisualizer.css';
 
 const SIZE = 200;
@@ -22,20 +23,6 @@ const PRECOMPUTED_VERTICES: Record<number, { x: number; y: number }[]> = {
   7: computeRegularVertices(7),
   8: computeRegularVertices(8),
 };
-
-function computeRegularVertices(n: number): { x: number; y: number }[] {
-  const pts: { x: number; y: number }[] = [];
-  const radius = 56;
-  const center = SIZE / 2;
-  for (let i = 0; i < n; i++) {
-    const angle = -Math.PI / 2 + (i * 2 * Math.PI) / n;
-    pts.push({
-      x: center + radius * Math.cos(angle),
-      y: center + radius * Math.sin(angle),
-    });
-  }
-  return pts;
-}
 
 export const ManimLevel2Visualizer: React.FC = React.memo(() => {
   const isAdminMode = useDebugStore((state) => state.isAdminMode);
@@ -122,6 +109,83 @@ export const ManimLevel2Visualizer: React.FC = React.memo(() => {
   useEffect(() => {
     let animId: number;
 
+    const singleEnd = MORPH_TOTAL_DURATION + SINGLE_DRAW_DURATION + SINGLE_HOLD_DURATION;
+    const allEnd = singleEnd + ALL_TOTAL_DURATION;
+    const dedupEnd = allEnd + DEDUP_HIGHLIGHT_DURATION;
+    const restoreEnd = dedupEnd + DEDUP_RESTORE_DURATION;
+    const retractEnd = restoreEnd + RETRACT_DURATION;
+
+    const updatePhaseForElapsed = (elapsed: number) => {
+      if (elapsed < MORPH_MOTION_DURATION) {
+        const rawU = elapsed / MORPH_MOTION_DURATION;
+        const easedU = rawU * rawU * (3 - 2 * rawU);
+        setPhase('morph');
+        setMorphProgress(easedU);
+        setDrawProgress(0);
+        setRetractProgress(0);
+        return;
+      }
+      if (elapsed < MORPH_TOTAL_DURATION) {
+        setPhase('morph');
+        setMorphProgress(1);
+        setDrawProgress(0);
+        setRetractProgress(0);
+        return;
+      }
+      if (elapsed < singleEnd) {
+        setPhase('single');
+        setMorphProgress(1);
+        const singleElapsed = elapsed - MORPH_TOTAL_DURATION;
+        const rawU = Math.min(singleElapsed / SINGLE_DRAW_DURATION, 1);
+        const easedU = rawU * rawU * (3 - 2 * rawU);
+        setDrawProgress(easedU);
+        setRetractProgress(0);
+        return;
+      }
+      if (elapsed < allEnd) {
+        setPhase('all');
+        setMorphProgress(1);
+        const allElapsed = elapsed - singleEnd;
+        const rawU = Math.min(allElapsed / ALL_DRAW_DURATION, 1);
+        const easedU = rawU * rawU * (3 - 2 * rawU);
+        setDrawProgress(easedU);
+        setRetractProgress(0);
+        return;
+      }
+      if (elapsed < dedupEnd) {
+        setPhase('dedup');
+        setMorphProgress(1);
+        setDrawProgress(1);
+        setRetractProgress(0);
+        return;
+      }
+      if (elapsed < restoreEnd) {
+        setPhase('restore');
+        setMorphProgress(1);
+        setDrawProgress(1);
+        setRetractProgress(0);
+        return;
+      }
+      if (elapsed < retractEnd) {
+        setPhase('retract');
+        setMorphProgress(1);
+        setDrawProgress(1);
+        const retractElapsed = elapsed - restoreEnd;
+        const rawU = Math.min(retractElapsed / RETRACT_DURATION, 1);
+        const easedU = rawU * rawU * (3 - 2 * rawU);
+        setRetractProgress(easedU);
+        return;
+      }
+      if (elapsed < TOTAL_CYCLE) {
+        setPhase('rest');
+        setMorphProgress(1);
+        setDrawProgress(1);
+        setRetractProgress(1);
+        return;
+      }
+      triggerStepChange('next');
+    };
+
     const tick = (now: number) => {
       const state = animStateRef.current;
 
@@ -139,96 +203,7 @@ export const ManimLevel2Visualizer: React.FC = React.memo(() => {
       if (state.startTime === null) state.startTime = now;
       const elapsed = now - state.startTime - state.accumulatedPauseTime;
 
-      if (elapsed < MORPH_MOTION_DURATION) {
-        const rawU = elapsed / MORPH_MOTION_DURATION;
-        const easedU = rawU * rawU * (3 - 2 * rawU);
-        setPhase('morph');
-        setMorphProgress(easedU);
-        setDrawProgress(0);
-        setRetractProgress(0);
-      } else if (elapsed < MORPH_TOTAL_DURATION) {
-        setPhase('morph');
-        setMorphProgress(1);
-        setDrawProgress(0);
-        setRetractProgress(0);
-      } else if (elapsed < MORPH_TOTAL_DURATION + SINGLE_DRAW_DURATION + SINGLE_HOLD_DURATION) {
-        setPhase('single');
-        setMorphProgress(1);
-        const singleElapsed = elapsed - MORPH_TOTAL_DURATION;
-        const rawU = Math.min(singleElapsed / SINGLE_DRAW_DURATION, 1);
-        const easedU = rawU * rawU * (3 - 2 * rawU);
-        setDrawProgress(easedU);
-        setRetractProgress(0);
-      } else if (
-        elapsed <
-        MORPH_TOTAL_DURATION + SINGLE_DRAW_DURATION + SINGLE_HOLD_DURATION + ALL_TOTAL_DURATION
-      ) {
-        setPhase('all');
-        setMorphProgress(1);
-        const allElapsed =
-          elapsed - (MORPH_TOTAL_DURATION + SINGLE_DRAW_DURATION + SINGLE_HOLD_DURATION);
-        const rawU = Math.min(allElapsed / ALL_DRAW_DURATION, 1);
-        const easedU = rawU * rawU * (3 - 2 * rawU);
-        setDrawProgress(easedU);
-        setRetractProgress(0);
-      } else if (
-        elapsed <
-        MORPH_TOTAL_DURATION +
-          SINGLE_DRAW_DURATION +
-          SINGLE_HOLD_DURATION +
-          ALL_TOTAL_DURATION +
-          DEDUP_HIGHLIGHT_DURATION
-      ) {
-        setPhase('dedup');
-        setMorphProgress(1);
-        setDrawProgress(1);
-        setRetractProgress(0);
-      } else if (
-        elapsed <
-        MORPH_TOTAL_DURATION +
-          SINGLE_DRAW_DURATION +
-          SINGLE_HOLD_DURATION +
-          ALL_TOTAL_DURATION +
-          DEDUP_HIGHLIGHT_DURATION +
-          DEDUP_RESTORE_DURATION
-      ) {
-        setPhase('restore');
-        setMorphProgress(1);
-        setDrawProgress(1);
-        setRetractProgress(0);
-      } else if (
-        elapsed <
-        MORPH_TOTAL_DURATION +
-          SINGLE_DRAW_DURATION +
-          SINGLE_HOLD_DURATION +
-          ALL_TOTAL_DURATION +
-          DEDUP_HIGHLIGHT_DURATION +
-          DEDUP_RESTORE_DURATION +
-          RETRACT_DURATION
-      ) {
-        setPhase('retract');
-        setMorphProgress(1);
-        setDrawProgress(1);
-        const retractElapsed =
-          elapsed -
-          (MORPH_TOTAL_DURATION +
-            SINGLE_DRAW_DURATION +
-            SINGLE_HOLD_DURATION +
-            ALL_TOTAL_DURATION +
-            DEDUP_HIGHLIGHT_DURATION +
-            DEDUP_RESTORE_DURATION);
-        const rawU = Math.min(retractElapsed / RETRACT_DURATION, 1);
-        const easedU = rawU * rawU * (3 - 2 * rawU);
-        setRetractProgress(easedU);
-      } else if (elapsed < TOTAL_CYCLE) {
-        setPhase('rest');
-        setMorphProgress(1);
-        setDrawProgress(1);
-        setRetractProgress(1);
-      } else {
-        triggerStepChange('next');
-      }
-
+      updatePhaseForElapsed(elapsed);
       animId = requestAnimationFrame(tick);
     };
 
@@ -259,94 +234,24 @@ export const ManimLevel2Visualizer: React.FC = React.memo(() => {
     const dx = e.clientX - dragStartXRef.current;
     dragStartXRef.current = null;
 
-    if (Math.abs(dx) > 30) {
-      if (dx < 0) {
-        // Left Swipe -> Next Shape (Right Direction Split)
-        triggerStepChange('next');
-      } else {
-        // Right Swipe -> Prev Shape (Reverse Shrink Merge)
-        triggerStepChange('prev');
-      }
-    } else {
+    if (Math.abs(dx) <= 30) {
       setIsPaused((p) => !p);
+      return;
     }
+    if (dx < 0) {
+      // Left Swipe -> Next Shape (Right Direction Split)
+      triggerStepChange('next');
+      return;
+    }
+    // Right Swipe -> Prev Shape (Reverse Shrink Merge)
+    triggerStepChange('prev');
   };
 
-  const morphPts = useMemo(() => {
-    const targetBase =
-      (safeAccess(PRECOMPUTED_VERTICES, currSides) as { x: number; y: number }[] | undefined) ??
-      computeRegularVertices(currSides);
-    if (morphProgress >= 1 || prevSides === currSides) {
-      return targetBase;
-    }
-
-    const startBase =
-      (safeAccess(PRECOMPUTED_VERTICES, prevSides) as { x: number; y: number }[] | undefined) ??
-      computeRegularVertices(prevSides);
-
-    if (currSides > prevSides) {
-      // EXPAND / SPREAD (N -> N+1)
-      const initialPoints: { x: number; y: number }[] = [];
-      const splitVertexIdx = prevSides === 4 ? 1 : Math.floor(prevSides / 2);
-      const cornerPt = startBase.at(splitVertexIdx % startBase.length) ?? startBase[0]!;
-
-      for (let i = 0; i < currSides; i++) {
-        if (i <= splitVertexIdx) {
-          initialPoints.push(startBase.at(i) ?? startBase[startBase.length - 1]!);
-        } else if (i === splitVertexIdx + 1) {
-          initialPoints.push(cornerPt);
-        } else {
-          const srcIdx = (i - 1) % startBase.length;
-          initialPoints.push(startBase.at(srcIdx) ?? startBase[0]!);
-        }
-      }
-
-      return targetBase.map((tPt, i) => {
-        const sPt = initialPoints.at(i) ?? startBase[0] ?? tPt;
-        return {
-          x: sPt.x + (tPt.x - sPt.x) * morphProgress,
-          y: sPt.y + (tPt.y - sPt.y) * morphProgress,
-        };
-      });
-    } else {
-      // REVERSE PLAYBACK (Reverse Morphing from prevSides -> currSides: e.g. 5 -> 4, 8 -> 4)
-      const startSides = currSides; // Target smaller shape (e.g. 4)
-      const targetSides = prevSides; // Starting larger shape (e.g. 5 or 8)
-
-      const startBase =
-        (safeAccess(PRECOMPUTED_VERTICES, startSides) as { x: number; y: number }[] | undefined) ??
-        computeRegularVertices(startSides);
-      const targetBase =
-        (safeAccess(PRECOMPUTED_VERTICES, targetSides) as { x: number; y: number }[] | undefined) ??
-        computeRegularVertices(targetSides);
-
-      const initialPoints: { x: number; y: number }[] = [];
-      const splitVertexIdx = startSides === 4 ? 1 : Math.floor(startSides / 2);
-      const cornerPt = startBase.at(splitVertexIdx % startBase.length) ?? startBase[0]!;
-
-      for (let i = 0; i < targetSides; i++) {
-        if (i <= splitVertexIdx) {
-          initialPoints.push(startBase.at(i) ?? startBase[startBase.length - 1]!);
-        } else if (i === splitVertexIdx + 1) {
-          initialPoints.push(cornerPt);
-        } else {
-          const srcIdx = (i - 1) % startBase.length;
-          initialPoints.push(startBase.at(srcIdx) ?? startBase[0]!);
-        }
-      }
-
-      // Reverse time interpolation: revU = 1 - morphProgress
-      const revU = 1 - morphProgress;
-
-      return targetBase.map((target, i) => {
-        const start = initialPoints.at(i) ?? startBase[0] ?? target;
-        return {
-          x: start.x + (target.x - start.x) * revU,
-          y: start.y + (target.y - start.y) * revU,
-        };
-      });
-    }
-  }, [currSides, prevSides, morphProgress]);
+  const morphPts = useMemo(
+    () =>
+      computeMorphedPolygonVertices(currSides, prevSides, morphProgress, PRECOMPUTED_VERTICES, 4),
+    [currSides, prevSides, morphProgress]
+  );
 
   const activeName =
     (safeAccess(KOREAN_POLYGON_NAMES, currSides) as string | undefined) ?? `${currSides}각형`;
