@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { APP_CONFIG } from '@/config/app';
 import { urls } from '@/utils/navigation';
@@ -24,6 +24,7 @@ interface MyPageSettingsProps {
   onLogout: () => void;
   onWithdraw: () => void;
 }
+
 const isVersionOlder = (current: string, server: string): boolean => {
   const cParts = current.split('.').map(Number);
   const sParts = server.split('.').map(Number);
@@ -37,6 +38,7 @@ const isVersionOlder = (current: string, server: string): boolean => {
   }
   return false;
 };
+
 export function MyPageSettings({
   soundEnabled,
   bgmEnabled,
@@ -59,12 +61,19 @@ export function MyPageSettings({
   const [showLocalToast, setShowLocalToast] = useState(false);
   const [localToastMsg, setLocalToastMsg] = useState('');
   const [hasNewVersion, setHasNewVersion] = useState(false);
+  const reloadTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const showToast = useToastStore((state) => state.showToast);
 
+  useEffect(() => {
+    return () => {
+      if (reloadTimerRef.current) {
+        clearTimeout(reloadTimerRef.current);
+      }
+    };
+  }, []);
+
   const handleCheckUpdate = async (e?: React.MouseEvent) => {
-    if (e) {
-      e.stopPropagation();
-    }
+    if (e) e.stopPropagation();
     if (isChecking) return;
     setIsChecking(true);
     showToast('최신 버전을 확인하고 있습니다...', '🔄', 1500);
@@ -75,59 +84,58 @@ export function MyPageSettings({
     try {
       const siteUrl = ENV.VITE_SITE_URL || 'https://solve-climb.vercel.app/';
       const targetUrl = `${siteUrl.replace(/\/$/, '')}/version.json`;
-
       const response = await fetch(targetUrl, {
         signal: controller.signal,
         headers: { 'Cache-Control': 'no-cache' },
       });
       clearTimeout(timeoutId);
 
-      if (!response.ok) {
-        throw new Error('Version fetch failed');
-      }
-
+      if (!response.ok) throw new Error('Version fetch failed');
       const data = await response.json();
       const serverVersion = data.version;
 
-      if (serverVersion) {
-        if (isVersionOlder(APP_CONFIG.APP_VERSION, serverVersion)) {
-          if (isNativeAppPlatform()) {
-            setLocalToastMsg(`새로운 버전\nv${serverVersion}이\n준비되었습니다.`);
-            setHasNewVersion(true);
-            setShowLocalToast(true);
-          } else {
-            showToast(`새로운 웹 빌드 v${serverVersion}가 있습니다. 새로고침합니다.`, '🔄', 2000);
-            setTimeout(async () => {
-              if (typeof window !== 'undefined') {
-                try {
-                  if ('serviceWorker' in navigator) {
-                    const registrations = await navigator.serviceWorker.getRegistrations();
-                    for (const reg of registrations) {
-                      await reg.update().catch(() => {});
-                      await reg.unregister().catch(() => {});
-                    }
-                  }
-                  if ('caches' in window) {
-                    const keys = await caches.keys();
-                    await Promise.all(keys.map((k) => caches.delete(k)));
-                  }
-                } catch (_e) {
-                  // ignore
-                }
-                window.location.reload();
-              }
-            }, 1000);
-          }
-        } else {
-          showToast(`현재 최신 버전을 사용 중입니다. (${APP_CONFIG.APP_VERSION})`, '✅', 2500);
-        }
-      } else {
-        throw new Error('Invalid version format');
+      if (!serverVersion) throw new Error('Invalid version format');
+      if (!isVersionOlder(APP_CONFIG.APP_VERSION, serverVersion)) {
+        showToast(`현재 최신 버전을 사용 중입니다. (${APP_CONFIG.APP_VERSION})`, '✅', 2500);
+        return;
       }
+
+      if (isNativeAppPlatform()) {
+        setLocalToastMsg(`새로운 버전\nv${serverVersion}이\n준비되었습니다.`);
+        setHasNewVersion(true);
+        setShowLocalToast(true);
+        return;
+      }
+
+      showToast(`새로운 웹 빌드 v${serverVersion}가 있습니다. 새로고침합니다.`, '🔄', 2000);
+      if (reloadTimerRef.current) {
+        clearTimeout(reloadTimerRef.current);
+      }
+      reloadTimerRef.current = setTimeout(async () => {
+        if (typeof window !== 'undefined') {
+          try {
+            if ('serviceWorker' in navigator) {
+              const registrations = await navigator.serviceWorker.getRegistrations();
+              for (const reg of registrations) {
+                await reg.update().catch(() => {});
+                await reg.unregister().catch(() => {});
+              }
+            }
+            if ('caches' in window) {
+              const keys = await caches.keys();
+              await Promise.all(keys.map((k) => caches.delete(k)));
+            }
+          } catch (_e) {
+            // ignore
+          }
+          window.location.reload();
+        }
+      }, 1000);
     } catch (err) {
       console.error('[UpdateCheck] Failed to check for update:', err);
       showToast('버전 정보를 가져오지 못했습니다. 네트워크를 확인해주세요.', '❌', 2500);
     } finally {
+      clearTimeout(timeoutId);
       setIsChecking(false);
     }
   };
@@ -136,20 +144,27 @@ export function MyPageSettings({
     e.stopPropagation();
     setShowLocalToast(false);
 
-    // Play Store 앱 상세 페이지 주소
     const playStoreUrl = 'https://play.google.com/store/apps/details?id=com.solveclimb.app';
     const playStoreMarketUrl = 'market://details?id=com.solveclimb.app';
 
-    if (isNativeAppPlatform()) {
-      try {
-        // market:// 스키마를 통해 플레이스토어 앱이 직접 켜지도록 유도, 불가능할 경우 웹 브라우저로 백업
-        window.open(playStoreMarketUrl, '_system');
-      } catch (_err) {
-        window.open(playStoreUrl, '_system');
-      }
-    } else {
+    if (!isNativeAppPlatform()) {
       window.open(playStoreUrl, '_blank');
+      return;
     }
+
+    try {
+      window.open(playStoreMarketUrl, '_system');
+    } catch (_err) {
+      window.open(playStoreUrl, '_system');
+    }
+  };
+
+  const triggerAudioRowAction = (tab: 'bgm' | 'sfx', fallbackToggle: () => void) => {
+    if (onOpenSoundPlayer) {
+      onOpenSoundPlayer(tab);
+      return;
+    }
+    fallbackToggle();
   };
 
   return (
@@ -184,13 +199,7 @@ export function MyPageSettings({
           </button>
           <div
             className="my-page-settings-item my-page-settings-item-clickable"
-            onClick={() => {
-              if (onOpenSoundPlayer) {
-                onOpenSoundPlayer('sfx');
-              } else {
-                onToggleSound();
-              }
-            }}
+            onClick={() => triggerAudioRowAction('sfx', onToggleSound)}
             data-vg-ignore="true"
             role="button"
             aria-pressed={soundEnabled}
@@ -198,11 +207,7 @@ export function MyPageSettings({
             onKeyDown={(e) => {
               if (e.key === 'Enter' || e.key === ' ') {
                 e.preventDefault();
-                if (onOpenSoundPlayer) {
-                  onOpenSoundPlayer('sfx');
-                } else {
-                  onToggleSound();
-                }
+                triggerAudioRowAction('sfx', onToggleSound);
               }
             }}
           >
@@ -248,13 +253,7 @@ export function MyPageSettings({
           </div>
           <div
             className="my-page-settings-item my-page-settings-item-clickable"
-            onClick={() => {
-              if (onOpenSoundPlayer) {
-                onOpenSoundPlayer('bgm');
-              } else {
-                onToggleBgm();
-              }
-            }}
+            onClick={() => triggerAudioRowAction('bgm', onToggleBgm)}
             data-vg-ignore="true"
             role="button"
             aria-pressed={bgmEnabled}
@@ -262,11 +261,7 @@ export function MyPageSettings({
             onKeyDown={(e) => {
               if (e.key === 'Enter' || e.key === ' ') {
                 e.preventDefault();
-                if (onOpenSoundPlayer) {
-                  onOpenSoundPlayer('bgm');
-                } else {
-                  onToggleBgm();
-                }
+                triggerAudioRowAction('bgm', onToggleBgm);
               }
             }}
           >
@@ -464,7 +459,7 @@ export function MyPageSettings({
           <button
             className="my-page-settings-item my-page-settings-item-button"
             onClick={onWithdraw}
-            style={{ color: 'var(--color-toss-red-a11y)' }} // Higher contrast for a11y
+            style={{ color: 'var(--color-toss-red-a11y)' }}
           >
             <div className="my-page-settings-item-content">
               <span className="my-page-settings-item-label" style={{ color: 'inherit' }}>
