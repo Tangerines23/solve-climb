@@ -88,27 +88,16 @@ export function useResultSync({
             ? total > 0 && Math.round((correctCount / total) * 100) >= 50 && correctCount >= 1
             : correctCount >= 1;
 
-        if (isCleared) {
-          await clearLevel(
-            worldParam,
-            categoryParam,
-            level,
-            mode === 'time-attack' ? 'time-attack' : 'survival',
-            finalScore,
-            averageTime ?? undefined,
-            sessionData
-          );
-        } else {
-          await updateBestScore(
-            worldParam,
-            categoryParam,
-            level,
-            mode === 'time-attack' ? 'time-attack' : 'survival',
-            finalScore,
-            averageTime ?? undefined,
-            sessionData
-          );
-        }
+        const syncAction = isCleared ? clearLevel : updateBestScore;
+        await syncAction(
+          worldParam,
+          categoryParam,
+          level,
+          mode === 'time-attack' ? 'time-attack' : 'survival',
+          finalScore,
+          averageTime ?? undefined,
+          sessionData
+        );
 
         const rankingType = mode === 'time-attack' ? 'time-attack' : 'survival';
         await fetchRanking(worldParam, categoryParam, 'weekly', rankingType);

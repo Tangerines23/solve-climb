@@ -63,9 +63,7 @@ export function useCustomBackNavigation() {
 
           if (!hasHistory) {
             navigate(previousPath + previousSearch, { replace: true });
-            setTimeout(() => {
-              isHandlingPopStateRef.current = false;
-            }, 100);
+            clearPopStateTimer();
             return;
           }
 
@@ -78,9 +76,7 @@ export function useCustomBackNavigation() {
           // 이전 위치 유지 (뒤로가기 취소)
           navigate(previousPath + previousSearch, { replace: true });
 
-          setTimeout(() => {
-            isHandlingPopStateRef.current = false;
-          }, 100);
+          clearPopStateTimer();
           return;
         }
 
@@ -92,25 +88,19 @@ export function useCustomBackNavigation() {
           // 마이페이지인데 프로필 미완성(로그인 단계)일 경우 홈으로 보내지 않음
           const profileStore = useProfileStore.getState();
           if (!profileStore.isProfileComplete) {
-            setTimeout(() => {
-              isHandlingPopStateRef.current = false;
-            }, 100);
+            clearPopStateTimer();
             return;
           }
 
           // 완성된 프로필인 경우 마이페이지에서 뒤로가기 → 홈으로 이동
           navigate(APP_CONFIG.ROUTES.HOME, { replace: true });
-          setTimeout(() => {
-            isHandlingPopStateRef.current = false;
-          }, 100);
+          clearPopStateTimer();
           return;
         }
 
         // 다른 메인 페이지(랭킹 등)에서 뒤로가기 → 홈으로 이동
         navigate(APP_CONFIG.ROUTES.HOME, { replace: true });
-        setTimeout(() => {
-          isHandlingPopStateRef.current = false;
-        }, 100);
+        clearPopStateTimer();
         return;
       }
 
@@ -144,7 +134,7 @@ export function useCustomBackNavigation() {
         }
 
         case APP_CONFIG.ROUTES.RESULT: {
-          // 쿼리 파라미터를 확인하여 /quiz로 이동하거나 홈으로
+          targetPath = APP_CONFIG.ROUTES.HOME;
           const resultCategory = paramsToCheck.get('category');
           const resultSub = paramsToCheck.get('sub');
           const resultLevel = paramsToCheck.get('level');
@@ -155,8 +145,6 @@ export function useCustomBackNavigation() {
             newSearchParams.set('level', resultLevel);
             const mode = paramsToCheck.get('mode');
             if (mode) newSearchParams.set('mode', mode);
-          } else {
-            targetPath = APP_CONFIG.ROUTES.HOME;
           }
           break;
         }
@@ -180,9 +168,7 @@ export function useCustomBackNavigation() {
 
       navigate(finalPath, { replace: true });
 
-      setTimeout(() => {
-        isHandlingPopStateRef.current = false;
-      }, 100);
+      clearPopStateTimer();
     };
 
     // 1. Web 브라우저 popstate 이벤트 리스너 등록
@@ -194,6 +180,16 @@ export function useCustomBackNavigation() {
     // 2. Capacitor 네이티브 하드웨어 백버튼 리스너 등록 (Android 뒤로가기 버튼 / 제스처)
     let isSubscribed = true;
     let removeNativeListener: (() => void) | null = null;
+    let popStateTimerId: NodeJS.Timeout | null = null;
+
+    function clearPopStateTimer() {
+      if (popStateTimerId) {
+        clearTimeout(popStateTimerId);
+      }
+      popStateTimerId = setTimeout(() => {
+        isHandlingPopStateRef.current = false;
+      }, 100);
+    }
 
     if (Capacitor.isNativePlatform()) {
       import('@capacitor/app')
@@ -202,11 +198,11 @@ export function useCustomBackNavigation() {
           App.addListener('backButton', () => {
             executeBackNavigation();
           }).then((handle) => {
-            if (isSubscribed) {
-              removeNativeListener = () => handle.remove();
-            } else {
+            if (!isSubscribed) {
               void handle.remove();
+              return;
             }
+            removeNativeListener = () => handle.remove();
           });
         })
         .catch((err) => {
@@ -220,6 +216,10 @@ export function useCustomBackNavigation() {
       window.removeEventListener('popstate', handlePopState);
       if (removeNativeListener) {
         removeNativeListener();
+      }
+      if (popStateTimerId) {
+        clearTimeout(popStateTimerId);
+        popStateTimerId = null;
       }
     };
   }, [navigate, location.pathname, location.search]);
